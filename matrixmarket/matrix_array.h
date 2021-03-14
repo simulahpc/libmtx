@@ -1,0 +1,117 @@
+/* This file is part of libmtx.
+ *
+ * Copyright (C) 2021 James D. Trotter
+ *
+ * libmtx is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * libmtx is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with libmtx.  If not, see
+ * <https://www.gnu.org/licenses/>.
+ *
+ * Authors: James D. Trotter <james@simula.no>
+ * Last modified: 2021-06-18
+ *
+ * Dense matrices in Matrix Market format.
+ */
+
+#ifndef MATRIXMARKET_MATRIX_ARRAY_H
+#define MATRIXMARKET_MATRIX_ARRAY_H
+
+#include <matrixmarket/header.h>
+
+#include <stdint.h>
+
+struct mtx;
+
+/*
+ * Dense matrix constructors.
+ */
+
+/**
+ * `mtx_init_matrix_array_real()` creates a dense matrix with real,
+ * single-precision floating point coefficients.
+ */
+int mtx_init_matrix_array_real(
+    struct mtx * matrix,
+    int num_comment_lines,
+    const char ** comment_lines,
+    enum mtx_symmetry symmetry,
+    enum mtx_sorting sorting,
+    int num_rows,
+    int num_columns,
+    const float * data);
+
+/**
+ * `mtx_init_matrix_array_double()` creates a dense matrix with real,
+ * double-precision floating point coefficients.
+ */
+int mtx_init_matrix_array_double(
+    struct mtx * matrix,
+    int num_comment_lines,
+    const char ** comment_lines,
+    enum mtx_symmetry symmetry,
+    enum mtx_sorting sorting,
+    int num_rows,
+    int num_columns,
+    const double * data);
+
+/**
+ * `mtx_init_matrix_array_complex()` creates a dense matrix with
+ * complex, single-precision floating point coefficients.
+ */
+int mtx_init_matrix_array_complex(
+    struct mtx * matrix,
+    int num_comment_lines,
+    const char ** comment_lines,
+    enum mtx_symmetry symmetry,
+    enum mtx_sorting sorting,
+    int num_rows,
+    int num_columns,
+    const float * data);
+
+/**
+ * `mtx_init_matrix_array_integer()` creates a dense matrix with
+ * integer coefficients.
+ */
+int mtx_init_matrix_array_integer(
+    struct mtx * matrix,
+    int num_comment_lines,
+    const char ** comment_lines,
+    enum mtx_symmetry symmetry,
+    enum mtx_sorting sorting,
+    int num_rows,
+    int num_columns,
+    const int * data);
+
+/*
+ * Other dense matrix functions.
+ */
+
+/**
+ * `mtx_matrix_array_num_nonzeros()` computes the number of matrix
+ * nonzeros, including those not explicitly stored due to symmetry.
+ */
+int mtx_matrix_array_num_nonzeros(
+    int num_rows,
+    int num_columns,
+    int64_t * num_nonzeros);
+
+/**
+ * `mtx_matrix_array_size()` computes the number of matrix nonzeros,
+ * excluding those that are not stored explicitly due to symmetry.
+ */
+int mtx_matrix_array_size(
+    enum mtx_symmetry symmetry,
+    int num_rows,
+    int num_columns,
+    int64_t * size);
+
+#endif

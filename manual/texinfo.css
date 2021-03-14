@@ -1,0 +1,42 @@
+/* This file is part of libmtx.
+ *
+ * Copyright (C) 2021 James D. Trotter
+ *
+ * libmtx is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * libmtx is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with libmtx.  If not, see
+ * <https://www.gnu.org/licenses/>.
+ *
+ * Authors: James D. Trotter <james@simula.no>
+ * Last modified: 2021-06-18
+ *
+ * Style sheet for the HTML manual.
+ */
+
+code,
+samp,
+tt,
+var {
+    color: #607d8b;
+    font-size: 1em;
+}
+
+pre.example {
+    background-color: #f3f3f3;
+    border-color: #000;
+    border-style: none;
+    border-width: thin;
+    color: #607d8b;
+    font-size: smaller;
+    padding: 1em;
+    overflow: auto;
+}

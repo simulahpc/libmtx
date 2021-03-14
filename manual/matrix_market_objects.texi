@@ -1,0 +1,988 @@
+@c This file is part of libmtx.
+@c Copyright (C) 2021 James D. Trotter
+@c
+@c libmtx is free software: you can redistribute it and/or
+@c modify it under the terms of the GNU General Public License as
+@c published by the Free Software Foundation, either version 3 of the
+@c License, or (at your option) any later version.
+@c
+@c libmtx is distributed in the hope that it will be useful,
+@c but WITHOUT ANY WARRANTY; without even the implied warranty of
+@c MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+@c General Public License for more details.
+@c
+@c You should have received a copy of the GNU General Public License
+@c along with libmtx.  If not, see
+@c <https://www.gnu.org/licenses/>.
+@c
+@c Authors: James D. Trotter <james@simula.no>
+@c Last modified: 2021-06-18
+@c
+@c libmtx User Guide: Matrix Market objects.
+
+@node Matrix Market objects
+@chapter Matrix Market objects
+
+This chapter provides a detailed explanation of how the
+libmtx C library is used.
+
+For any user-facing types and functions, the library uses the
+convention of prefixing their names with @code{mtx_}. This makes it
+easier to avoid possible name clashes with other code when using
+libmtx.
+
+@menu
+* Matrix Market data types:: Basic data types for representing Matrix Market objects.
+* Error handling:: How to handle errors when working with the libmtx C library.
+* Reading and writing Matrix Market files:: Functions for reading from and writing to files in Matrix Market format.
+* Creating matrices and vectors:: Functions for creating matrices and vectors.
+* Matrix operations:: Matrix operations
+* Basic linear algebra operations:: Basic linear algebra
+* Communicating matrices and vectors:: Message-passing functions for Matrix Market objects
+@end menu
+
+
+@node Matrix Market data types
+@section Matrix Market data types
+
+This section describes the basic data types used to represent objects
+in the Matrix Market file format.
+
+@tindex struct mtx
+@tindex mtx
+The file @file{matrixmarket/mtx.h} defines the @code{struct mtx}
+type, which is used to represent objects in the Matrix Market
+format. The definition of the @code{mtx} struct is shown below.
+@example
+@code{struct mtx @{
+  /* Header */
+  enum mtx_object object;
+  enum mtx_format format;
+  enum mtx_field field;
+  enum mtx_symmetry symmetry;
+
+  /* Extra header info */
+  enum mtx_sorting sorting;
+  enum mtx_ordering ordering;
+  enum mtx_assembly assembly;
+
+  /* Comments */
+  int num_comment_lines;
+  char ** comment_lines;
+
+  /* Size */
+  int num_rows;
+  int num_columns;
+  int64_t num_nonzeros;
+  int64_t size;
+  int64_t nonzero_size;
+
+  /* Data */
+  void * data;
+@};}
+@end example
+
+Roughly speaking, the @code{mtx} struct consists of four parts:
+header information, comment lines, size information, and data.
+
+@findex mtx_free
+Note that a matrix or vector represented by a @code{struct mtx}
+object will typically have some storage allocated for its data. As a
+result, once the user is finished with the object, it is important to
+free the allocated storage by calling @code{mtx_free}:
+@example
+@code{void mtx_free(
+    struct mtx * mtx);}
+@end example
+
+The following sections provide a detailed explanation of the
+@code{mtx} struct members and their data types.
+
+
+@node Header types
+@subsection Header types
+
+@tindex mtx_object
+@tindex mtx_format
+@tindex mtx_field
+@tindex mtx_symmetry
+The four enum types, @code{mtx_object}, @code{mtx_format},
+@code{mtx_field} and @code{mtx_symmetry} are used to represent values
+that appear in the Matrix Market header (see @ref{Header line}).
+@example
+@code{enum mtx_object @{
+    mtx_matrix,
+    mtx_vector
+@};
+
+enum mtx_format @{
+    mtx_array,     /* array of dense matrix values */
+    mtx_coordinate /* coordinate format of sparse matrix values */
+@};
+
+enum mtx_field @{
+    mtx_real,    /* single-precision floating point coefficients */
+    mtx_double,  /* double-precision floating point coefficients */
+    mtx_complex, /* single-precision floating point complex
+                     * coefficients */
+    mtx_integer, /* integer coefficients */
+    mtx_pattern  /* boolean coefficients (sparsity pattern) */
+@};
+
+enum mtx_symmetry @{
+    mtx_general,        /* general, non-symmetric matrix */
+    mtx_symmetric,      /* symmetric matrix */
+    mtx_skew_symmetric, /* skew-symmetric matrix */
+    mtx_hermitian       /* Hermitian matrix */
+@};}
+@end example
+
+
+@node Comments
+@subsection Comments
+Comments are stored in the array @code{comment_lines}, which consists
+of @code{num_comment_lines} null-terminated strings.
+
+
+@node Size information
+@subsection Size information
+The size information in @code{struct mtx} includes @code{num_rows},
+@code{num_columns} and @code{num_nonzeros}, which represent the number
+of rows, column and nonzeros, respectively.
+
+Vectors are represented as row vectors, so that @code{num_rows} is
+equal to the number of elements and @code{num_columns} is equal to
+one.
+
+For a dense vector or matrix, @code{num_nonzeros} is equal to
+@code{num_rows*num_columns}. Otherwise, it is equal to the total
+number of nonzeros in the sparse vector or matrix, including any
+nonzero entries that are not explicitly stored due to symmetry.
+
+@code{size} is the number of nonzero matrix entries stored in the
+@code{data} array. This number depends on the matrix format and
+symmetry:
+@itemize
+@item
+If @code{symmetry} is @code{mtx_general}, then @code{size} is equal to
+@code{num_nonzeros}. If @code{format} is @code{mtx_array}, then
+@code{size} and @code{num_nonzeros} are equal to
+@code{num_rows*num_columns}.
+
+@item
+If @code{symmetry} is @code{mtx_symmetric} or @code{mtx_hermitian}, then
+@code{size} is the number of nonzero entries on or below the
+diagonal. If @code{format} is @code{mtx_array}, then @code{size} is
+equal to @code{(num_rows+1)*num_rows/2} (or, equivalently,
+@code{(num_columns+1)*num_columns/2}, since @code{num_rows} is equal
+to @code{num_columns}).
+
+@item
+If @code{symmetry} is @code{mtx_skew_symmetric}, then @code{size} is
+the number of nonzero entries below the diagonal. If @code{format} is
+@code{mtx_array}, then @code{size} is equal to
+@code{num_rows*num_rows/2} (or, equivalently,
+@code{num_columns*num_columns/2}, since @code{num_rows} is equal to
+@code{num_columns}).
+@end itemize
+
+@code{nonzero_size} is the size (in bytes) of each nonzero stored in
+the @code{data} array.
+
+@node Data
+@subsection Data
+Nonzero matrix or vector entries are stored in the array @code{data},
+whose type depends on the values of @code{object}, @code{format} and
+@code{field}, as described below.
+
+First, consider the case where @code{format} is @code{mtx_array}. If
+@code{field} is @code{mtx_real}, @code{mtx_double} or @code{mtx_integer},
+then @code{data} is an array of @code{size} values of type
+@code{float}, @code{double} or @code{int}, respectively. Otherwise, if
+@code{field} is @code{mtx_complex}, then @code{data} is an array of
+@code{2*size} values of type @code{float}. (Note that the combination
+of a matrix or vector with the @code{mtx_array} format and the
+@code{mtx_pattern} field is not currently supported, though, in
+principle, it could be implemented in the form of a bitmap.)
+
+@cindex sparse matrix
+@tindex mtx_matrix_coordinate_real
+@tindex mtx_matrix_coordinate_double
+@tindex mtx_matrix_coordinate_complex
+@tindex mtx_matrix_coordinate_integer
+@tindex mtx_matrix_coordinate_pattern
+@tindex mtx_vector_coordinate_real
+@tindex mtx_vector_coordinate_double
+@tindex mtx_vector_coordinate_complex
+@tindex mtx_vector_coordinate_integer
+@tindex mtx_vector_coordinate_pattern
+Second, if @code{format} is @code{mtx_coordinate}, then @code{data} is
+an array of @code{size} values of type @code{struct
+mtx_coordinate_@var{object}_@var{field}}. Here @code{@var{object}} is
+@code{matrix} or @code{vector}, corresponding to the @code{object}
+member of the @code{mtx} struct. Similarly, @code{@var{field}} is
+either @code{real}, @code{double}, @code{complex}, @code{integer} or
+@code{pattern}, corresponding to the @code{field} member of the
+@code{mtx} struct.
+
+The file @file{matrixmarket/matrix_coordinate.h} contains
+definitions of data types for representing nonzero values of sparse
+matrices in coordinate format. For matrices with different fields, the
+data types are shown below:
+@example
+@code{struct mtx_matrix_coordinate_real @{
+    int i, j; /* row and column index */
+    float a;  /* nonzero value */
+@};
+
+struct mtx_matrix_coordinate_double @{
+    int i, j; /* row and column index */
+    double a; /* nonzero value */
+@};
+
+struct mtx_matrix_coordinate_complex @{
+    int i, j;     /* row and column index */
+    float a, b;   /* real and imaginary parts of nonzero value */
+@};
+
+struct mtx_matrix_coordinate_integer @{
+    int i, j; /* row and column index */
+    int a;    /* nonzero value */
+@};
+
+struct mtx_matrix_coordinate_pattern @{
+    int i, j; /* row and column index */
+@};}
+@end example
+
+The corresponding data types for sparse vectors are defined in the
+file @file{matrixmarket/vector_coordinate.h}. These data types are
+almost identical to the ones used for sparse matrices, except that the
+column index is omitted:error
+@example
+@code{struct mtx_vector_coordinate_real @{
+    int i;    /* row index */
+    float a;  /* nonzero value */
+@};
+
+struct mtx_vector_coordinate_double @{
+    int i;    /* row index */
+    double a; /* nonzero value */
+@};
+
+struct mtx_vector_coordinate_complex @{
+    int i;        /* row index */
+    float a, b;   /* real and imaginary parts of nonzero value */
+@};
+
+struct mtx_vector_coordinate_integer @{
+    int i;    /* row index */
+    int a;    /* nonzero value */
+@};
+
+struct mtx_vector_coordinate_pattern @{
+    int i; /* row index */
+@};}
+@end example
+
+
+@node Additional header types
+@subsection Additional header types
+
+libmtx also defines some additional enum types that are not
+stored explicitly as part of the Matrix Market format, but they can be
+provided by the user as additional information about the represented
+matrices.
+
+@cindex sorting
+@cindex row-major
+@cindex column-major
+@tindex mtx_sorting
+The first, @code{mtx_sorting}, is used to enumerate different ways of
+sorting matrix entries.
+@example
+@code{enum mtx_sorting @{
+    mtx_unsorted,       /* unsorted matrix nonzeros */
+    mtx_row_major,      /* row major ordering */
+    mtx_column_major,   /* column major ordering */
+@};}
+@end example
+By default, dense matrices are assumed by default to be sorted in
+row-major order (@code{mtx_row_major}). Sparse matrices, on the other
+hand, are generally unsorted (@code{mtx_unsorted}) by default.
+
+@cindex ordering
+@cindex reordering
+@cindex unordered
+@cindex Reverse Cuthill-McKee
+@cindex RCM
+@tindex mtx_ordering
+Second, @code{mtx_ordering} is used to enumerate different orderings or
+permutations of the rows and columns of a matrix. Reordering a sparse
+matrix is typically done to improve performance, for example, through
+reduced fill-in for matrix factorisations or better data locality.
+@example
+@code{enum mtx_ordering @{
+    mtx_unordered,      /* general, unordered matrix */
+    mtx_rcm,            /* Reverse Cuthill-McKee ordering */
+@};}
+@end example
+
+@cindex assembly
+@tindex mtx_assembly
+@tindex mtx_assembled
+@tindex mtx_unassembled
+Third, @code{mtx_assembly} is used to indicate whether or not a sparse
+matrix can contain more than one value for a given row and column
+index. In other words, an unassembled matrix often contains several
+values associated with each nonzero matrix entry. Many sparse matrix
+operations will only produce correct results whenever these duplicate
+matrix entries have been added together first, using a process known
+as @dfn{assembly}. An assembled matrix may only contain a single,
+unique value for each nonzero matrix entry.
+@example
+@code{enum mtx_assembly @{
+    mtx_unassembled, /* unassembled; duplicate nonzeros allowed. */
+    mtx_assembled,   /* assembled; duplicate nonzeros not allowed. */
+@};}
+@end example
+
+@cindex cover
+@cindex partition
+@tindex mtx_partitioning
+The enum type @code{mtx_partitioning}, is used to describe whether the
+rows and columns of a distributed matrix or vector form a partition or
+merely a cover of the rows and columns of a global matrix or
+vector. In the case of a partition, each matrix or vector entry is
+owned by a single MPI process. In the case of a cover, different MPI
+processes are allowed to store values associated with the same matrix
+or vector entry.
+@example
+@code{enum mtx_partitioning @{
+    mtx_partition,   /* matrix/vector entries are owned
+                         * by a single MPI process. */
+    mtx_cover,       /* matrix/vector entries may be owned
+                         * by multiple MPI processes. */
+@};}
+@end example
+Note that some algorithms may only work with a partitioned matrix and
+might produce incorrect results in the case of a covering. Thus, it
+may be necessary to first perform a reduction to combine values
+associated with matrix or vector entries that are distributed across
+multiple MPI processes.
+
+
+@node Error handling
+@section Error handling
+Functions in the libmtx C library generally return a status
+code that either indicates success (represented by the status code
+@code{MTX_SUCCESS}) or a specific error. Possible error codes are:
+@example
+@code{enum mtx_error
+@{
+  MTX_SUCCESS = 0,                    /* no error */
+  MTX_ERR_ERRNO = -1,                 /* error code provided by errno */
+  MTX_ERR_MPI = -2,                   /* MPI error */
+  MTX_ERR_EOF = -3,                   /* unexpected end-of-file */
+  MTX_ERR_LINE_TOO_LONG = -4,         /* line exceeds maximum length */
+  MTX_ERR_INVALID_MTX_HEADER = -5,    /* invalid mtx header */
+  MTX_ERR_INVALID_MTX_OBJECT = -6,    /* invalid mtx object */
+  MTX_ERR_INVALID_MTX_FORMAT = -7,    /* invalid mtx format */
+  MTX_ERR_INVALID_MTX_FIELD = -8,     /* invalid mtx field */
+  MTX_ERR_INVALID_MTX_SYMMETRY = -9,  /* invalid mtx symmetry */
+  MTX_ERR_INVALID_MTX_SORTING = -10,  /* invalid mtx sorting */
+  MTX_ERR_INVALID_MTX_ORDERING = -11, /* invalid mtx ordering */
+  MTX_ERR_INVALID_MTX_ASSEMBLY = -12, /* invalid mtx assembly */
+  MTX_ERR_INVALID_MTX_SIZE = -13,     /* invalid mtx size info */
+  MTX_ERR_INVALID_MTX_DATA = -14,     /* invalid mtx data */
+@};}
+@end example
+
+@findex mtx_strerror
+The function @code{mtx_strerror} can be used to give a string
+containing a description of a given error code.
+@example
+@code{const char * mtx_strerror(int err);}
+@end example
+Here, the integer @code{err} should correspond to one of the error
+codes from the @code{mtx_error} enum type.
+
+@code{mtx_strerror} is typically used as shown in the example below.
+@example
+@code{
+  FILE * f = fopen("test.mtx", "r");
+  /* ... Handle errors ... */
+
+  struct mtx mtx;
+  int line, column;
+  int err = mtx_read(&mtx, f, &line, &column);
+  if (err) @{
+      fprintf(stderr, "Error: test.mtx:%d:%d: %s\n",
+              line, column, mtx_strerror(err));
+      fclose(f);
+  @}}
+@end example
+
+@cindex MPI errors
+@findex mtx_strerror_mpi
+If libmtx is built with MPI support enabled, then there are
+some functions in libmtx that may fail due to MPI errors. In
+these cases, some additional information is needed to provide helpful
+error descriptions, and the function @code{mtx_strerror_mpi} should be
+used.
+@example
+@code{const char * mtx_strerror_mpi(
+    int err,
+    int mpierrcode,
+    char * mpierrstr);}
+@end example
+The error code @code{err} is an integer corresponding to one of the
+error codes from the @code{mtx_error} enum type. The arguments
+@code{mpierrcode} and @code{mpierrstr} are only used if @code{err} is
+@code{MTX_ERR_MPI}.
+
+@findex MPI_Error_string
+@cindex @code{MPI_MAX_ERROR_STRING}
+If @code{err} is @code{MTX_ERR_MPI}, then the argument
+@code{mpierrcode} should be set to the error code that was returned
+from the MPI function call that failed. In addition, the argument
+@code{mpierrstr} must be a char array whose length is at least equal
+to @code{MPI_MAX_ERROR_STRING}. Internally, @code{mtx_strerror_mpi}
+uses @code{MPI_Error_string} to obtain a description of the error.
+
+
+@node Reading and writing Matrix Market files
+@section Reading and writing Matrix Market files
+The file @file{matrixmarket/io.h} defines functions for reading
+from and writing to files in Matrix Market format. These files are
+typically named with a @file{.mtx} extension, so we refer to them here
+as @file{mtx} files.
+
+@findex mtx_read
+To read an @file{mtx} file from a @code{FILE} stream, use the
+function:
+@example
+@code{int mtx_read(
+    struct mtx * mtx,
+    FILE * f,
+    int * line_number,
+    int * column_number);}
+@end example
+If successful, @code{MTX_SUCCESS} is returned, and @code{mtx} will
+contain the matrix or vector represented by the @code{FILE}
+stream. The user is responsible for calling @code{mtx_free} to free
+any storage that may have been allocated by @code{mtx_read}.
+Otherwise, if @code{mtx_read} fails, then it will return an error
+code, and @code{line_number} and @code{column_number} will indicate
+the location in the Matrix Market file at which an error was
+encountered.
+
+@findex mtx_write
+To write an @file{mtx} file to a @code{FILE} stream, use the function:
+@example
+@code{int mtx_write(
+    const struct mtx * mtx,
+    FILE * f,
+    int field_width,
+    int precision);}
+@end example
+If successful, @code{MTX_SUCCESS} is returned, and @code{mtx} is
+written to the stream @code{f}. The argument @code{field_width} can be
+used to set a field width for printing numerical values to the
+@code{FILE} stream, which causes numbers to be padded on the left with
+spaces to ensure that a minimum of @code{field_width} characters are
+printed. The @code{precision} argument can be used to control the
+number of decimal places to use when printing floating-point numerical
+values. Note that @code{precision} can be set to @code{-1} to use a
+default precision, which is 6 digits after the decimal point.
+
+
+@findex mtx_gzread
+@findex mtx_gzwrite
+If libmtx is built with zlib support, then the functions
+@code{mtx_gzread} and @code{mtx_gzwrite} can be used to read or
+write gzip-compressed @file{mtx} files. The function signatures are the
+similar @code{mtx_read} and @code{mtx_write}:
+@example
+@code{int mtx_gzread(
+    struct mtx * mtx,
+    gzFile f,
+    int * line_number,
+    int * column_number);
+
+int mtx_gzwrite(
+    const struct mtx * mtx,
+    gzFile f,
+    int field_width,
+    int precision);}
+@end example
+
+
+@node Creating matrices and vectors
+@section Creating matrices and vectors
+A number of functions are provided to more conveniently construct
+matrices and vectors in the Matrix Market format. These are described
+in the following subsections.
+
+@findex mtx_free
+First, it is important to note that the matrix and vector creation
+routines will allocate their own storage and copy the matrix or vector
+data that the user provides. As a result, once the user is finished
+with a Matrix Market object, it is important to free allocated storage
+by calling @code{mtx_free}:
+@example
+@code{void mtx_free(
+    struct mtx * mtx);}
+@end example
+
+@node Creating sparse matrices
+@subsection Creating sparse matrices
+The file @file{matrixmarket/matrix_coordinate.h} defines functions for
+constructing sparse matrices in the coordinate format. For example, a
+sparse matrix with real, single-precision floating point coefficients
+is created with the function:
+@findex mtx_init_matrix_coordinate_real
+@example
+@code{int mtx_init_matrix_coordinate_real(
+    struct mtx * mtx,
+    enum mtx_symmetry symmetry,
+    enum mtx_sorting sorting,
+    enum mtx_ordering ordering,
+    enum mtx_assembly assembly,
+    int num_comment_lines,
+    const char ** comment_lines,
+    int num_rows,
+    int num_columns,
+    int64_t size,
+    const struct mtx_matrix_coordinate_real * data);}
+@end example
+The sparse matrix will be stored in the Matrix Market object
+@code{mtx}, which will have @code{object}, @code{format} and
+@code{field} set to @code{mtx_matrix}, @code{mtx_coordinate} and
+@code{mtx_real}, respectively. The symmetry of the matrix is specified
+with @code{symmetry}, and the fields that make up the additional
+header information can be provided by the arguments @code{sorting},
+@code{ordering} and @code{assembly}. In addition, @code{comment_lines}
+is an array of @code{num_comment_lines} null-terminated strings, which
+will be copied to the newly constructed matrix.
+
+The size of the matrix is specified with @code{num_rows} and
+@code{num_columns}, and the number of explicitly stored nonzeros is
+given by @code{size}. The array @code{data} must contain @code{size}
+values of type @code{struct mtx_matrix_coordinate_real}.
+
+@tindex mtx_matrix_coordinate_real
+Recall that the data types for sparse matrices corresponding to the
+different Matrix Market fields were described in @ref{Data}. In the
+case of a real matrix with values in single-precision floating point,
+the appropriate data type is:
+@example
+@code{struct mtx_matrix_coordinate_real @{
+    int i, j; /* row and column index */
+    float a;  /* nonzero value */
+@};}
+@end example
+
+@findex mtx_init_matrix_coordinate_double
+@findex mtx_init_matrix_coordinate_complex
+@findex mtx_init_matrix_coordinate_integer
+@findex mtx_init_matrix_coordinate_pattern
+Similar functions are provided for creating sparse matrices with
+values from other fields.
+
+
+@node Creating dense matrices
+@subsection Creating dense matrices
+The file @file{matrixmarket/matrix_array.h} defines functions for
+constructing dense matrices. For example, a dense @math{m}-by-@math{n}
+real matrix is created with the function:
+@findex mtx_init_matrix_array_real
+@example
+@code{int mtx_init_matrix_array_real(
+    struct mtx * mtx,
+    int num_comment_lines,
+    const char ** comment_lines,
+    enum mtx_symmetry symmetry,
+    enum mtx_sorting sorting,
+    int num_rows,
+    int num_columns,
+    const float * data);}
+@end example
+Here, @code{mtx} is a pointer to an @code{mtx} object that will
+contain the dense matrix in Matrix Market format. Comment lines are
+specified with the arguments @code{num_comment_lines} and
+@code{comment_lines}, where the latter is an array of null-terminated
+strings that will be copied when constructing the matrix. The argument
+@code{symmetry} is used to specify symmetry properties of the matrix,
+and @code{sorting} is either @code{mtx_row_major} for a row-major
+ordering of the matrix entries, or @code{mtx_column_major}
+otherwise. Finally, the number of rows and columns are set with
+@code{num_rows} and @code{num_columns}, and the matrix entries are
+given as an array, @code{data}, of @code{num_rows*num_columns} values
+of type @code{float}.
+
+@findex mtx_init_matrix_array_double
+@findex mtx_init_matrix_array_complex
+@findex mtx_init_matrix_array_integer
+Similar functions are provided for @code{double}, @code{complex} and
+@code{integer} matrices.
+
+@node Creating vectors
+@subsection Creating vectors
+The following functions can be used to conveniently create dense
+vectors with real, single- or double precision floating point values,
+complex single-precision floating point values, or integer values.
+@findex mtx_init_vector_array_real
+@findex mtx_init_vector_array_double
+@findex mtx_init_vector_array_complex
+@findex mtx_init_vector_array_integer
+@example
+@code{int mtx_init_vector_array_real(
+    struct mtx * vector,
+    int num_comment_lines,
+    const char ** comment_lines,
+    int size,
+    const float * data);
+
+int mtx_init_vector_array_double(
+    struct mtx * vector,
+    int num_comment_lines,
+    const char ** comment_lines,
+    int size,
+    const double * data);
+
+int mtx_init_vector_array_complex(
+    struct mtx * vector,
+    int num_comment_lines,
+    const char ** comment_lines,
+    int size,
+    const float * data);
+
+int mtx_init_vector_array_integer(
+    struct mtx * vector,
+    int num_comment_lines,
+    const char ** comment_lines,
+    int size,
+    const int * data);}
+@end example
+
+@node Copying matrices and vectors
+@subsection Copying matrices and vectors
+The function @code{mtx_copy} can be used to make a copy of an
+existing matrix or vector:
+@findex mtx_copy
+@example
+@code{int mtx_copy(
+    struct mtx * destmtx,
+    const struct mtx * srcmtx);}
+@end example
+
+
+@node Matrix operations
+@section Matrix operations
+@cindex sorting
+@findex mtx_sort
+Sometimes, it is convenient to sort the nonzeros of a sparse matrix or
+vector in the coordinate format. This can be achieved with the
+function @code{mtx_sort}:
+@example
+@code{int mtx_sort(
+    struct mtx * mtx,
+    struct mtx_sorting sorting);}
+@end example
+If successful, @code{mtx_sort} returns @code{MTX_SUCCESS}, and
+@code{mtx} will have its nonzeros sorted according to the order
+specified by @code{sorting}. If @code{mtx->format} is @code{mtx_array},
+then @code{mtx_sort} does nothing.
+
+@cindex transpose
+@findex mtx_matrix_transpose
+The function @code{mtx_matrix_transpose} can be used to transpose a square
+matrix represented by a @code{struct mtx} object.
+@example
+@code{int mtx_matrix_transpose(
+    struct mtx * mtx);}
+@end example
+The matrix is transposed in-place. This currently only works for
+matrices where @code{format} is @code{mtx_coordinate} and
+@code{symmetry} is either @code{general} or @code{symmetric}.
+
+@cindex submatrix
+@findex mtx_matrix_submatrix
+The function @code{mtx_matrix_submatrix} can be used to obtain a submatrix
+of a @code{struct mtx} object, which consists of the nonzero
+entries from a given set of rows and columns.
+@example
+@code{int mtx_matrix_submatrix(
+    const struct mtx * mtx,
+    const struct mtx_index_set * rows,
+    const struct mtx_index_set * columns,
+    struct mtx * submatrix);}
+@end example
+Note that @code{mtx_matrix_submatrix} currently only works for
+@code{struct mtx} objects where @code{format} is
+@code{mtx_coordinate}.
+
+@node Basic linear algebra operations
+@section Basic linear algebra operations
+
+The libmtx C library implements a subset of the Basic Linear
+Algebra Subprograms (BLAS) routines. For dense operations,
+libmtx relies on optimised, third-party BLAS libraries, such
+as OpenBLAS (@url{https://www.openblas.net/}). Otherwise,
+libmtx uses internal routines for sparse matrix operations.
+
+The BLAS functions for @code{mtx} vectors and matrices are defined
+in the file @code{matrixmarket/blas.h}.
+
+@node Level 1 BLAS operations
+@subsection Level 1 BLAS operations
+The following Level 1 BLAS operations are supported:
+@cindex vector scaling
+@cindex @code{scal}
+@cindex vector addition
+@cindex @code{axpy}
+@cindex dot product
+@cindex @code{dot}
+@cindex @code{nrm2}
+@cindex Euclidean norm
+@itemize
+@item @code{scal} --- @code{x = a*x}
+@item @code{axpy} --- @code{y = a*x + y}
+@item @code{dot} --- dot product
+@item @code{nrm2} --- Euclidean norm
+@end itemize
+The corresponding function signatures are:
+@findex mtx_sscal
+@findex mtx_dscal
+@findex mtx_saxpy
+@findex mtx_daxpy
+@findex mtx_sdot
+@findex mtx_ddot
+@findex mtx_snrm2
+@findex mtx_dnrm2
+@example
+@code{int mtx_sscal(
+    float a,
+    struct mtx * x);
+
+int mtx_dscal(
+    double a,
+    struct mtx * x);
+
+int mtx_saxpy(
+    float a,
+    const struct mtx * x,
+    struct mtx * y);
+
+int mtx_daxpy(
+    double a,
+    const struct mtx * x,
+    struct mtx * y);
+
+int mtx_sdot(
+    const struct mtx * x,
+    const struct mtx * y,
+    float * dot);
+
+int mtx_ddot(
+    const struct mtx * x,
+    const struct mtx * y,
+    double * dot);
+
+int mtx_snrm2(
+    const struct mtx * x,
+    const struct mtx * y,
+    float * nrm2);
+
+int mtx_dnrm2(
+    const struct mtx * x,
+    const struct mtx * y,
+    double * nrm2);}
+@end example
+
+
+@node Level 2 BLAS operations
+@subsection Level 2 BLAS operations
+The following Level 2 BLAS operations are supported:
+@cindex @code{gemv}
+@cindex matrix-vector multiply
+@itemize
+@item @code{gemv} --- matrix-vector multiply, @code{y = alpha*A*x + beta*y}
+@end itemize
+
+The corresponding function signatures are:
+@findex mtx_sgemv
+@findex mtx_dgemv
+@example
+@code{int mtx_sgemv(
+    float alpha,
+    const struct mtx * A,
+    const struct mtx * x,
+    float beta,
+    struct mtx * y);
+
+int mtx_dgemv(
+    double alpha,
+    const struct mtx * A,
+    const struct mtx * x,
+    double beta,
+    struct mtx * y);}
+@end example
+
+
+@node Level 3 BLAS operations
+@subsection Level 3 BLAS operations
+The following Level 3 BLAS operations are supported:
+@cindex @code{gemm}
+@cindex matrix-matrix multiply
+@itemize
+@item @code{gemm} --- matrix-matrix multiply
+@end itemize
+
+
+@node Communicating matrices and vectors
+@section Communicating matrices and vectors
+
+The file @file{matrixmarket/mpi.h} defines functions that can be
+used to communicate Matrix Market objects represented by the
+@code{mtx} struct between MPI processes.
+
+
+@node MPI errors
+@subsection MPI errors
+
+@cindex MPI errors
+@findex mtx_strerror_mpi
+In the event of an MPI-related error, then the above functions return
+@code{MTX_ERR_MPI} and the argument @code{mpierrcode} is set to a
+specific MPI error code. @code{mpierrcode} can then be used with the
+function @code{mtx_strerror_mpi}, as described in @ref{Error handling}.
+
+
+@node send receive broadcast
+@subsection Send, receive and broadcast
+
+The basic functions for communicating @code{struct mtx} objects are:
+@example
+@code{int mtx_send(
+    const struct mtx * mtx,
+    int dest,
+    int tag,
+    MPI_Comm comm,
+    int * mpierrcode);
+
+int mtx_recv(
+    struct mtx * mtx,
+    int source,
+    int tag,
+    MPI_Comm comm,
+    int * mpierrcode);
+
+int mtx_bcast(
+    struct mtx * mtx,
+    int root,
+    MPI_Comm comm,
+    int * mpierrcode);}
+@end example
+These functions are analogous to @code{MPI_Send}, @code{MPI_Recv} and
+@code{MPI_Bcast}.
+
+
+@node Index sets
+@subsection Index sets
+
+@cindex Index set
+An @dfn{index set} is a set of integers, typically used to represent a
+subset of the rows of a vector or the rows or columns of a
+matrix. Index sets are used, for example, when specifying submatrices
+of a matrix, or for partitioning and distributing matrices and vectors
+among multiple processes.
+
+@tindex struct mtx_index_set
+@tindex enum mtx_index_set_type
+The file @file{matrixmarket/index_set.h} defines data types for index
+sets, including @code{struct mtx_index_set}. There are different types
+of index sets, which may be distinguished by the enum type
+@code{mtx_index_set_type}.
+@itemize
+@item @code{mtx_index_set_interval}
+represents an index set of contiguous integers from a half-open
+interval @code{[a,b)}.
+
+@item @code{mtx_index_set_array}
+represents a discrete index set, which is not necessarily contiguous,
+as an array of integers.
+
+@end itemize
+
+An index set representing a half-open interval @code{[a,b)} can be
+created with @code{mtx_index_set_init_interval}.
+@findex mtx_index_set_init_interval
+@example
+@code{int mtx_index_set_init_interval(
+    struct mtx_index_set * index_set, int a, int b);}
+@end example
+Then, the function @code{mtx_index_set_contains} can be used to test if
+a given integer @code{n} belongs to the index set.
+@findex mtx_index_set_contains
+@example
+@code{bool mtx_index_set_contains(
+    const struct mtx_index_set * index_set, int n);}
+@end example
+
+
+@subsection Gather and scatter
+@cindex gather
+@findex mtx_matrix_coordinate_gather
+Suppose each process in a group of MPI processes posesses some part of
+a distributed sparse (coordinate) matrix. Then the function
+@code{mtx_matrix_coordinate_gather} can be used to gather the
+matrices from each MPI process to form a single matrix on one of the
+MPI processes, which is designated as the root process.
+@example
+@code{int mtx_matrix_coordinate_gather(
+    struct mtx * dstmtx,
+    const struct mtx * srcmtx,
+    enum mtx_partitioning partitioning,
+    MPI_Comm comm,
+    int root,
+    int * mpierrcode);}
+@end example
+Here, @code{dstmtx} is the gathered matrix on the root process,
+whereas @code{srcmtx} is the part of the matrix owned by each MPI
+process. The MPI communicator is given by @code{comm}, and the integer
+@code{root} is the rank of the MPI root process onto which the matrix
+is gathered. The MPI process with rank equal to @code{root} must
+belong to the MPI communicator @code{comm}.
+
+If each of the matrices to gather data from is in an assembled state,
+that is, @code{assembly} is @code{mtx_assembled}, and
+@code{partitioning} is equal to @code{mtx_partition}, then the final,
+gathered matrix is considered to be in an assembled state. Otherwise,
+the gathered matrix is unassembled.
+
+
+@cindex scatter
+@findex mtx_matrix_coordinate_scatter
+Conversely, a sparse matrix can also be distributed from a single MPI
+root process to a group of MPI processes using
+@code{mtx_matrix_coordinate_scatter}.
+@example
+@code{int mtx_matrix_coordinate_scatter(
+    struct mtx * dstmtx,
+    const struct mtx * srcmtx,
+    const struct mtx_index_set * rows,
+    const struct mtx_index_set * columns,
+    MPI_Comm comm,
+    int root,
+    int * mpierrcode);}
+@end example
+Here, @code{srcmtx} is the original matrix on the MPI root process,
+whereas, on each MPI process, @code{dstmtx} is the part of the matrix
+owned by the current MPI process. Furthermore, @code{rows} and
+@code{columns} are index sets that determine the global rows and
+columns that will be scattered to the current MPI process. The matrix
+is distributed among MPI processes belonging to the communicator
+@code{comm}, and the @code{root} argument is the MPI rank of the root
+process which owns @code{dstmtx}.

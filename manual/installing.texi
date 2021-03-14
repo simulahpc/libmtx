@@ -1,0 +1,58 @@
+@c This file is part of libmtx.
+@c Copyright (C) 2021 James D. Trotter
+@c
+@c libmtx is free software: you can redistribute it and/or
+@c modify it under the terms of the GNU General Public License as
+@c published by the Free Software Foundation, either version 3 of the
+@c License, or (at your option) any later version.
+@c
+@c libmtx is distributed in the hope that it will be useful,
+@c but WITHOUT ANY WARRANTY; without even the implied warranty of
+@c MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+@c General Public License for more details.
+@c
+@c You should have received a copy of the GNU General Public License
+@c along with libmtx.  If not, see
+@c <https://www.gnu.org/licenses/>.
+@c
+@c Authors: James D. Trotter <james@simula.no>
+@c Last modified: 2021-06-18
+@c
+@c libmtx User Guide: Installing libmtx.
+
+@node Installing libmtx
+@chapter Installing libmtx
+
+@cindex installing
+libmtx uses GNU Autotools, which means that a basic build on
+a UNIX-like system can be done by running the commands
+@example
+@code{./configure
+make}
+@end example
+To run some tests, use the command
+@example
+@code{make check}
+@end example
+Finally, install the programs and library with
+@example
+@code{make install}
+@end example
+
+If you experience problems, please report them to
+@email{james@@simula.no}. See @ref{Reporting Bugs} for information on
+what to include in a bug report.
+
+@node Optional dependencies
+@section Optional dependencies
+
+@cindex MPI
+@cindex BLAS
+@cindex zlib
+Some features of libmtx are optional and will only be
+available if the following dependencies are provided:
+@itemize
+@item @emph{MPI} is needed for distributed-memory parallel matrices and vectors.
+@item @emph{BLAS} is needed for various linear algebra operations. Various implementations may be used, such as the netlib reference BLAS, OpenBLAS, BLIS, and so on.
+@item @emph{zlib} (@indicateurl{https://www.zlib.net/}) is needed for reading and writing gzip-compressed Matrix Market files.
+@end itemize

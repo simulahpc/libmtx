@@ -1,0 +1,14 @@
+Authors of libmtx.
+
+  Copyright (C) 2021 James D. Trotter
+
+  Copying and distribution of this file, with or without modification,
+  are permitted in any medium without royalty provided the copyright
+  notice and this notice are preserved.
+
+See also the ChangeLog file.
+
+James D. Trotter wrote the initial version of all files.
+
+The files ax_blas.m4, ax_check_zlib.m4 and ax_prog_cc_mpi.m4 in the
+m4/ directory are from the GNU Autoconf Archive.

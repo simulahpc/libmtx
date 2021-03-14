@@ -1,0 +1,61 @@
+@c This file is part of libmtx.
+@c Copyright (C) 2021 James D. Trotter
+@c
+@c libmtx is free software: you can redistribute it and/or
+@c modify it under the terms of the GNU General Public License as
+@c published by the Free Software Foundation, either version 3 of the
+@c License, or (at your option) any later version.
+@c
+@c libmtx is distributed in the hope that it will be useful,
+@c but WITHOUT ANY WARRANTY; without even the implied warranty of
+@c MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+@c General Public License for more details.
+@c
+@c You should have received a copy of the GNU General Public License
+@c along with libmtx.  If not, see
+@c <https://www.gnu.org/licenses/>.
+@c
+@c Authors: James D. Trotter <james@simula.no>
+@c Last modified: 2021-06-18
+@c
+@c libmtx User Guide: References.
+
+@node References
+@unnumbered References
+
+@itemize
+@item @anchor{R.F. Boisvert@comma{} R. Pozo and K. Remington (1996)}
+Ronald F. Boisvert, Roldan Pozo, and Karin Remington. @cite{The Matrix
+Market exchange formats: Initial design}. Technical Report NISTIR
+5935, National Institute of Standards and Technology, Gaithersburg,
+MD, USA, December 1996.
+
+@item @anchor{National Institute of Standards and Technology [NIST] (2007)}
+National Institute of Standards and Technology (NIST). @cite{Matrix
+Market}. Mathematical and Computational Sciences Division, Information
+Technology Laboratory, NIST, 10 May
+2007. @url{https://math.nist.gov/MatrixMarket/index.html}.
+
+@item @anchor{National Institute of Standards and Technology [NIST] (2000)}
+National Institute of Standards and Technology (NIST). @cite{ANSI C
+library for Matrix Market I/O}. Mathematical and Computational
+Sciences Division, Information Technology Laboratory, NIST, 2 May
+2000. @url{https://math.nist.gov/MatrixMarket/mmio-c.html}.
+
+@item @anchor{T. Davis@comma{} Y. Hu and S. Kolodziej (2021)}
+Tim Davis, Yifan Hu, and Scott Kolodziej. @cite{SuiteSparse Matrix
+Collection}. Computer Science and Engineering Department, Texas A&M
+University. @url{https://sparse.tamu.edu/}.
+
+@item @anchor{E. Cuthill and J. McKee (1969)}
+E. Cuthill and J. McKee. @cite{Reducing the bandwidth of sparse
+symmetric matrices}. Proc. 24th Nat. Conf. ACM, pages 157–172, 1969.
+
+@item @anchor{J.A. George and J. W-H. Liu (1981)}
+J. A. George and J. W-H. Liu, @cite{Computer Solution of Large Sparse
+Positive Definite Systems}, Prentice-Hall, 1981.
+
+@item @anchor{OpenBLAS}
+Zhang Xianyi, @cite{OpenBLAS}. @url{https://www.openblas.net/}.
+
+@end itemize

@@ -1,0 +1,81 @@
+@c This file is part of libmtx.
+@c Copyright (C) 2021 James D. Trotter
+@c
+@c libmtx is free software: you can redistribute it and/or
+@c modify it under the terms of the GNU General Public License as
+@c published by the Free Software Foundation, either version 3 of the
+@c License, or (at your option) any later version.
+@c
+@c libmtx is distributed in the hope that it will be useful,
+@c but WITHOUT ANY WARRANTY; without even the implied warranty of
+@c MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+@c General Public License for more details.
+@c
+@c You should have received a copy of the GNU General Public License
+@c along with libmtx.  If not, see
+@c <https://www.gnu.org/licenses/>.
+@c
+@c Authors: James D. Trotter <james@simula.no>
+@c Last modified: 2021-06-18
+@c
+@c libmtx User Guide: Introduction to libmtx.
+
+@node Introduction to libmtx
+@chapter Introduction to libmtx
+
+The @dfn{libmtx} C library and its accompanying utility
+programs are a collection of basic tools for working with Matrix
+Market files. In scientific computing, the Matrix Market format is a
+commonly used, human-readable text file format for storing both dense
+and sparse matrices and vectors.
+
+@cindex sparse matrix
+Matrices and vectors are basic objects of numerical linear algebra and
+thus appear in most fields of science. In particular, sparse matrices,
+where most of the entries are zero, are especially important for
+representing sparse graphs and for solving partial differential
+equations, to name just two examples. Sparse matrices require methods
+that are different from those used with dense matrices, but, in
+return, they often result in significantly fewer arithmetic operations
+to be carried out, as well as lower memory footprint and memory
+bandwidth usage.
+
+
+@section Background
+
+@cindex Matrix Market
+@cindex mmio
+@cindex Matrix Market I/O library for ANSI C
+The @cite{Matrix Market} (@ref{National Institute of Standards and
+Technology [NIST] (2007)}) is a repository of test data that has been
+used to study and compare various algorithms for numerical linear
+algebra. It was originally designed and developed by R. Boisvert,
+R. Pozo, K. Remington, R. Barrett and J.J. Dongarra, and first became
+available online in February 1996.
+
+
+@cindex Matrix Market format
+The Matrix Market data set was made available in the Matrix Market
+file format, which was initially described in the paper @cite{The
+Matrix Market Formats: Initial Design} (@ref{R.F. Boisvert@comma{}
+R. Pozo and K. Remington (1996)}). There is also a reference software
+for reading and writing Matrix Market files, known as @dfn{mmio}, or
+the ANSI C library for Matrix Market I/O, (@ref{National Institute of
+Standards and Technology [NIST] (2000)}).
+
+@cindex SuiteSparse Matrix Collection
+More recently, the @cite{SuiteSparse Matrix Collection}
+(@url{https://sparse.tamu.edu/}) has become a large, widely used
+repository of sparse matrices from numerous application domains. These
+matrices are also distributed in the Matrix Market format.
+
+
+@section How to Use This Manual
+To familiarise yourself with the Matrix Market file format, read
+@ref{Matrix Market file format}. If you need to install the library
+yourself, you should read @ref{Installing libmtx}. If you
+would like to use the libmtx C library, refer to
+@ref{Matrix Market objects}. If, on the other hand, you would like
+to get an overview of the command-line programs for working with
+Matrix Market files that are included in libmtx, then you
+should read @ref{Commands}.
