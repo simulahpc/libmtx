@@ -218,7 +218,7 @@ principle, it could be implemented in the form of a bitmap.)
 @tindex mtx_vector_coordinate_pattern
 Second, if @code{format} is @code{mtx_coordinate}, then @code{data} is
 an array of @code{size} values of type @code{struct
-mtx_coordinate_@var{object}_@var{field}}. Here @code{@var{object}} is
+mtx_@var{object}_coordinate_@var{field}}. Here @code{@var{object}} is
 @code{matrix} or @code{vector}, corresponding to the @code{object}
 member of the @code{mtx} struct. Similarly, @code{@var{field}} is
 either @code{real}, @code{double}, @code{complex}, @code{integer} or
