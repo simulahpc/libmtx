@@ -25,7 +25,7 @@
 #include <matrixmarket/error.h>
 #include <matrixmarket/io.h>
 
-#ifdef HAVE_LIBZ
+#ifdef LIBMTX_HAVE_LIBZ
 #include <zlib.h>
 #endif
 
@@ -65,7 +65,7 @@ int read_mtx(
             return err;
         fclose(f);
     } else {
-#ifdef HAVE_LIBZ
+#ifdef LIBMTX_HAVE_LIBZ
         gzFile f;
         if (strcmp(mtx_path, "-") == 0) {
             f = gzdopen(STDIN_FILENO, "r");
@@ -111,7 +111,7 @@ int write_mtx(
             return err;
         fclose(f);
     } else {
-#ifdef HAVE_LIBZ
+#ifdef LIBMTX_HAVE_LIBZ
         gzFile f;
         if (strcmp(mtx_path, "-") == 0) {
             f = gzdopen(STDOUT_FILENO, "w");

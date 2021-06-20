@@ -61,6 +61,15 @@ AC_F77_LIBRARY_LDFLAGS
 AM_PROG_AR
 LT_INIT
 
+dnl Check for BLAS
+AX_BLAS()
+AC_MSG_CHECKING([for BLAS])
+if test x"$with_blas" = xno; then
+AC_MSG_RESULT([$with_blas])
+else
+AC_MSG_RESULT([$ax_blas_ok])
+fi
+
 dnl Check for MPI
 AC_ARG_WITH(mpi,
   [AS_HELP_STRING(
@@ -73,7 +82,7 @@ if test x"$with_mpi" != xno; then
     AC_MSG_CHECKING([for MPI])
     mpi_found=yes
     AC_MSG_RESULT([$mpi_found])
-    AC_DEFINE(HAVE_MPI,1,[Define if you have the MPI library.])
+    AC_DEFINE(LIBMTX_HAVE_MPI,1,[Define if you have the MPI library.])
     AC_MSG_CHECKING([for mpicc compiler flags])
     MPICPPFLAGS="`${MPICC} --showme:compile`"
     AC_MSG_RESULT(${MPICPPFLAGS})
@@ -82,6 +91,7 @@ if test x"$with_mpi" != xno; then
     MPILDFLAGS="`${MPICC} --showme:link`"
     AC_MSG_RESULT(${MPILDFLAGS})
     AC_SUBST([MPILDFLAGS])
+    libmtx_CPPFLAGS="$libmtx_CPPFLAGS -DLIBMTX_HAVE_MPI"
    ],[
     AC_MSG_CHECKING([for MPI])
     AC_MSG_RESULT([$mpi_found])
@@ -94,50 +104,17 @@ else
 fi
 AM_CONDITIONAL([HAVE_MPI], [test x"$mpi_found" != xno])
 
-dnl Check for BLAS
-blas_found=no
-if test x"$with_blas" != xno; then
-  AX_BLAS([
-    AC_MSG_CHECKING([for BLAS])
-    blas_found=yes
-    AC_MSG_RESULT([$blas_found])
-    AC_DEFINE(HAVE_BLAS,1,[Define if you have a BLAS library.])
-   ],[
-    blas_found=no
-    if test x"$with_blas" = xyes; then
-      AC_MSG_FAILURE([BLAS not found.])
-    else
-      AC_MSG_CHECKING([for BLAS])
-      AC_MSG_RESULT([$blas_found])
-    fi])
-else
-  AC_MSG_CHECKING([for BLAS])
-  AC_MSG_RESULT([$blas_found])
-fi
-AM_CONDITIONAL([HAVE_BLAS], [test x"$blas_found" = xyes])
+dnl Check for zlib
+AX_CHECK_ZLIB([
+  CPPFLAGS="$CPPFLAGS -I${ZLIB_HOME}/include"
+  LDFLAGS="$LDFLAGS -L${ZLIB_HOME}/lib"
+  LIBS="-lz $LIBS"
+  libmtx_CPPFLAGS="$libmtx_CPPFLAGS -DLIBMTX_HAVE_LIBZ"
+  AC_DEFINE([LIBMTX_HAVE_LIBZ], [1],
+    [Define to 1 if you have `z' library (-lz)])
+])
 
-dnl Check for ZLIB
-zlib_found=no
-if test x"$with_zlib" != xno; then
-  AX_CHECK_ZLIB([
-    AC_MSG_CHECKING([for zlib])
-    zlib_found=yes
-    AC_MSG_RESULT([$zlib_found])
-    AC_DEFINE(HAVE_LIBZ,1,[Define if you have zlib.])
-   ],[
-    zlib_found=no
-    if test x"$with_zlib" = xyes; then
-      AC_MSG_FAILURE([zlib not found.])
-    else
-      AC_MSG_CHECKING([for zlib])
-      AC_MSG_RESULT([$zlib_found])
-    fi])
-else
-  AC_MSG_CHECKING([for zlib])
-  AC_MSG_RESULT([$zlib_found])
-fi
-AM_CONDITIONAL([HAVE_LIBZ], [test x"libz_found" = xyes])
-
+AC_SUBST(libmtx_CPPFLAGS)
 
 dnl Version information - split VERSION into major, minor and release
 AC_PROG_SED

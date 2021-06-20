@@ -51,6 +51,7 @@ libmtx_la_SOURCES = \
 	matrixmarket/matrix.c \
 	matrixmarket/matrix_array.c \
 	matrixmarket/matrix_coordinate.c \
+	matrixmarket/mpi.c \
 	matrixmarket/mtx.c \
 	matrixmarket/parse.c \
 	matrixmarket/parse.h \
@@ -60,13 +61,9 @@ libmtx_la_SOURCES = \
 	matrixmarket/vector_array.c \
 	matrixmarket/vector_coordinate.c \
 	matrixmarket/version.c
-if HAVE_MPI
-libmtx_la_SOURCES += \
-	matrixmarket/mpi.c
-endif
 
 # Header files
-pkginclude_HEADERS = \
+nobase_include_HEADERS = \
 	matrixmarket/blas.h \
 	matrixmarket/error.h \
 	matrixmarket/header.h \
@@ -76,14 +73,11 @@ pkginclude_HEADERS = \
 	matrixmarket/matrix_array.h \
 	matrixmarket/matrix_coordinate.h \
 	matrixmarket/matrixmarket.h \
+	matrixmarket/mpi.h \
 	matrixmarket/mtx.h \
 	matrixmarket/vector_array.h \
 	matrixmarket/vector_coordinate.h \
 	matrixmarket/version.h
-if HAVE_MPI
-pkginclude_HEADERS += \
-	matrixmarket/mpi.h
-endif
 
 # pkg-config files
 pkgconfigdir = $(libdir)/pkgconfig

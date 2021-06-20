@@ -7,4 +7,4 @@ Name: libmtx
 Description: C library and utility programs for Matrix Market files
 Version: 0.1.0
 Libs: -L${libdir} -lmtx
-Cflags: -I${includedir}
+Cflags: -I${includedir} @libmtx_CPPFLAGS@

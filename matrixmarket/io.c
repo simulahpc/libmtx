@@ -33,7 +33,7 @@
 
 #include "parse.h"
 
-#ifdef HAVE_LIBZ
+#ifdef LIBMTX_HAVE_LIBZ
 #include <zlib.h>
 #endif
 
@@ -53,7 +53,7 @@
 enum stream_type
 {
     stream_stdio,
-#ifdef HAVE_LIBZ
+#ifdef LIBMTX_HAVE_LIBZ
     stream_gz
 #endif
 };
@@ -66,7 +66,7 @@ struct stream
 {
     enum stream_type type;
     FILE * stdio_f;
-#ifdef HAVE_LIBZ
+#ifdef LIBMTX_HAVE_LIBZ
     gzFile gz_f;
 #endif
 };
@@ -79,7 +79,7 @@ static int stream_vprintf(
     if (stream->type == stream_stdio) {
         FILE * f = stream->stdio_f;
         return vfprintf(f, format, va);
-#ifdef HAVE_LIBZ
+#ifdef LIBMTX_HAVE_LIBZ
     } else if (stream->type == stream_gz) {
         gzFile f = stream->gz_f;
         return gzvprintf(f, format, va);
@@ -123,7 +123,7 @@ static int read_line(
         if (n > 0 && n == line_max && s[n-1] != '\n')
             return MTX_ERR_LINE_TOO_LONG;
         return MTX_SUCCESS;
-#ifdef HAVE_LIBZ
+#ifdef LIBMTX_HAVE_LIBZ
     } else if (stream->type == stream_gz) {
         gzFile f = stream->gz_f;
         char * s = gzgets(f, linebuf, line_max+1);
@@ -256,7 +256,7 @@ static int read_comment_lines(
             int c = fgetc(f);
             if (ungetc(c, f) == EOF || c != '%')
                 break;
-#ifdef HAVE_LIBZ
+#ifdef LIBMTX_HAVE_LIBZ
         } else if (stream->type == stream_gz) {
             gzFile f = stream->gz_f;
             int c = gzgetc(f);
@@ -1567,7 +1567,7 @@ int mtx_read(
     return read_mtx(mtx, &stream, line_number, column_number);
 }
 
-#ifdef HAVE_LIBZ
+#ifdef LIBMTX_HAVE_LIBZ
 /**
  * `mtx_gzread()` reads a matrix or vector from a gzip-compressed
  * stream in Matrix Market format.
@@ -1867,7 +1867,7 @@ int mtx_write(
     return write_mtx(mtx, &stream, field_width, precision);
 }
 
-#ifdef HAVE_LIBZ
+#ifdef LIBMTX_HAVE_LIBZ
 /**
  * `mtx_gzwrite()` writes a matrix or vector to a gzip-compressed
  * stream in Matrix Market format.

@@ -23,9 +23,7 @@
  * processes using MPI.
  */
 
-#ifndef HAVE_MPI
-#error "Please build with MPI support"
-#else
+#ifdef LIBMTX_HAVE_MPI
 #include <matrixmarket/error.h>
 #include <matrixmarket/index_set.h>
 #include <matrixmarket/header.h>

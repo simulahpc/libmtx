@@ -26,9 +26,7 @@
 #ifndef MATRIXMARKET_MPI_H
 #define MATRIXMARKET_MPI_H
 
-#ifndef HAVE_MPI
-#error "Please build with MPI support"
-#else
+#ifdef LIBMTX_HAVE_MPI
 #include <matrixmarket/header.h>
 #include <matrixmarket/mtx.h>
 

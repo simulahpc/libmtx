@@ -24,7 +24,7 @@
 
 #include <matrixmarket/error.h>
 
-#ifdef HAVE_MPI
+#ifdef LIBMTX_HAVE_MPI
 #include <mpi.h>
 #endif
 
@@ -47,10 +47,6 @@
 const char * mtx_strerror(
     int err)
 {
-#ifdef HAVE_MPI
-    int mpierrstrlen;
-#endif
-
     switch (err) {
     case MTX_SUCCESS:
         return "success";
@@ -114,7 +110,7 @@ const char * mtx_strerror_mpi(
     char * mpierrstr)
 {
     if (err == MTX_ERR_MPI) {
-#ifdef HAVE_MPI
+#ifdef LIBMTX_HAVE_MPI
         int mpierrstrlen;
         MPI_Error_string(mpierrcode, mpierrstr, &mpierrstrlen);
         return mpierrstr;

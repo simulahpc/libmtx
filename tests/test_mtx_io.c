@@ -30,7 +30,7 @@
 #include <matrixmarket/mtx.h>
 #include <matrixmarket/vector_coordinate.h>
 
-#ifdef HAVE_LIBZ
+#ifdef LIBMTX_HAVE_LIBZ
 #include <zlib.h>
 #endif
 
@@ -872,7 +872,7 @@ int test_mtx_write_matrix_coordinate_real(void)
     return TEST_SUCCESS;
 }
 
-#ifdef HAVE_LIBZ
+#ifdef LIBMTX_HAVE_LIBZ
 /**
  * `test_mtx_gzread_matrix_coordinate_real()` tests reading a
  * compressed sparse matrix with real coefficients.
@@ -1085,7 +1085,7 @@ int main(int argc, char * argv[])
     TEST_RUN(test_mtx_read_vector_array_real);
     TEST_RUN(test_mtx_read_vector_coordinate_real);
     TEST_RUN(test_mtx_write_matrix_coordinate_real);
-#ifdef HAVE_LIBZ
+#ifdef LIBMTX_HAVE_LIBZ
     TEST_RUN(test_mtx_gzread_matrix_coordinate_real);
     TEST_RUN(test_mtx_gzwrite_matrix_coordinate_real);
 #endif

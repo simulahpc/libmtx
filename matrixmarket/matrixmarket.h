@@ -33,13 +33,10 @@
 #include <matrixmarket/matrix.h>
 #include <matrixmarket/matrix_array.h>
 #include <matrixmarket/matrix_coordinate.h>
+#include <matrixmarket/mpi.h>
 #include <matrixmarket/mtx.h>
 #include <matrixmarket/vector_array.h>
 #include <matrixmarket/vector_coordinate.h>
 #include <matrixmarket/version.h>
-
-#if HAVE_MPI
-#include <matrixmarket/mpi.h>
-#endif
 
 #endif

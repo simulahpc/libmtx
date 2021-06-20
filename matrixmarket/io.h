@@ -25,7 +25,7 @@
 #ifndef MATRIXMARKET_IO_H
 #define MATRIXMARKET_IO_H
 
-#ifdef HAVE_LIBZ
+#ifdef LIBMTX_HAVE_LIBZ
 #include <zlib.h>
 #endif
 
@@ -53,7 +53,7 @@ int mtx_write(
     int field_width,
     int precision);
 
-#ifdef HAVE_LIBZ
+#ifdef LIBMTX_HAVE_LIBZ
 /**
  * `mtx_gzread()` reads a matrix or vector from a gzip-compressed
  * stream in Matrix Market format.
