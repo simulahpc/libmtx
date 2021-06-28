@@ -26,6 +26,8 @@
 #ifndef MATRIXMARKET_MPI_H
 #define MATRIXMARKET_MPI_H
 
+#include <matrixmarket/libmtx-config.h>
+
 #ifdef LIBMTX_HAVE_MPI
 #include <matrixmarket/header.h>
 #include <matrixmarket/mtx.h>

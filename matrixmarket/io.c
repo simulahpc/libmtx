@@ -22,6 +22,8 @@
  * Input/output for Matrix Market objects.
  */
 
+#include <matrixmarket/libmtx-config.h>
+
 #include <matrixmarket/error.h>
 #include <matrixmarket/io.h>
 #include <matrixmarket/matrix.h>

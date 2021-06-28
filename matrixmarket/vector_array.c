@@ -27,10 +27,6 @@
 #include <matrixmarket/mtx.h>
 #include <matrixmarket/vector_array.h>
 
-#ifdef HAVE_BLAS
-#include <cblas.h>
-#endif
-
 #include <errno.h>
 
 #include <stdlib.h>

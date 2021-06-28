@@ -22,6 +22,8 @@
  * BLAS operations for matrices and vectors in Matrix Market format.
  */
 
+#include <matrixmarket/libmtx-config.h>
+
 #include <matrixmarket/error.h>
 #include <matrixmarket/blas.h>
 #include <matrixmarket/matrix_coordinate.h>
@@ -29,7 +31,7 @@
 #include <matrixmarket/vector_array.h>
 #include <matrixmarket/vector_coordinate.h>
 
-#ifdef HAVE_BLAS
+#ifdef LIBMTX_HAVE_BLAS
 #include <cblas.h>
 #endif
 
@@ -56,7 +58,7 @@ int mtx_sscal(
 
     if (x->format == mtx_array) {
         float * xdata = (float *) x->data;
-#ifdef HAVE_BLAS
+#ifdef LIBMTX_HAVE_BLAS
         cblas_sscal(x->size, a, xdata, 1);
         return MTX_SUCCESS;
 #else
@@ -89,7 +91,7 @@ int mtx_dscal(
 
     if (x->format == mtx_array) {
         double * xdata = (double *) x->data;
-#ifdef HAVE_BLAS
+#ifdef LIBMTX_HAVE_BLAS
         cblas_dscal(x->size, a, xdata, 1);
         return MTX_SUCCESS;
 #else
@@ -135,7 +137,7 @@ int mtx_saxpy(
         }
         const float * xdata = (const float *) x->data;
         float * ydata = (float *) y->data;
-#ifdef HAVE_BLAS
+#ifdef LIBMTX_HAVE_BLAS
         cblas_saxpy(x->size, a, xdata, 1, ydata, 1);
         return MTX_SUCCESS;
 #else
@@ -181,7 +183,7 @@ int mtx_daxpy(
         }
         const double * xdata = (const double *) x->data;
         double * ydata = (double *) y->data;
-#ifdef HAVE_BLAS
+#ifdef LIBMTX_HAVE_BLAS
         cblas_daxpy(x->size, a, xdata, 1, ydata, 1);
         return MTX_SUCCESS;
 #else
@@ -227,7 +229,7 @@ int mtx_sdot(
         }
         const float * xdata = (const float *) x->data;
         const float * ydata = (const float *) y->data;
-#ifdef HAVE_BLAS
+#ifdef LIBMTX_HAVE_BLAS
         *dot = cblas_sdot(x->size, xdata, 1, ydata, 1);
         return MTX_SUCCESS;
 #else
@@ -273,7 +275,7 @@ int mtx_ddot(
         }
         const double * xdata = (const double *) x->data;
         const double * ydata = (const double *) y->data;
-#ifdef HAVE_BLAS
+#ifdef LIBMTX_HAVE_BLAS
         *dot = cblas_ddot(x->size, xdata, 1, ydata, 1);
         return MTX_SUCCESS;
 #else
@@ -310,7 +312,7 @@ int mtx_snrm2(
             return MTX_ERR_ERRNO;
         }
         const float * xdata = (const float *) x->data;
-#ifdef HAVE_BLAS
+#ifdef LIBMTX_HAVE_BLAS
         *nrm2 = cblas_snrm2(x->size, xdata, 1);
         return MTX_SUCCESS;
 #else
@@ -346,7 +348,7 @@ int mtx_dnrm2(
             return MTX_ERR_ERRNO;
         }
         const double * xdata = (const double *) x->data;
-#ifdef HAVE_BLAS
+#ifdef LIBMTX_HAVE_BLAS
         *nrm2 = cblas_dnrm2(x->size, xdata, 1);
         return MTX_SUCCESS;
 #else
@@ -403,7 +405,7 @@ int mtx_sgemv(
         const float * Adata = (const float *) A->data;
         const float * xdata = (const float *) x->data;
         float * ydata = (float *) y->data;
-#ifdef HAVE_BLAS
+#ifdef LIBMTX_HAVE_BLAS
         cblas_sgemv(
             CblasRowMajor, CblasNoTrans, A->num_rows, A->num_columns,
             alpha, Adata, A->num_columns, xdata, 1, beta, ydata, 1);
@@ -476,7 +478,7 @@ int mtx_dgemv(
         const double * Adata = (const double *) A->data;
         const double * xdata = (const double *) x->data;
         double * ydata = (double *) y->data;
-#ifdef HAVE_BLAS
+#ifdef LIBMTX_HAVE_BLAS
         cblas_dgemv(
             CblasRowMajor, CblasNoTrans, A->num_rows, A->num_columns,
             alpha, Adata, A->num_columns, xdata, 1, beta, ydata, 1);

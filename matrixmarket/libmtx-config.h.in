@@ -17,28 +17,21 @@
  * <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-06-18
+ * Last modified: 2021-06-28
  *
- * Main libmtx header file.
+ * Configuration information.
  */
 
-#ifndef MATRIXMARKET_MATRIXMARKET_H
-#define MATRIXMARKET_MATRIXMARKET_H
+#ifndef MATRIXMARKET_CONFIG_H
+#define MATRIXMARKET_CONFIG_H
 
-#include <matrixmarket/libmtx-config.h>
+/* Define if you have a BLAS library. */
+#undef LIBMTX_HAVE_BLAS
 
-#include <matrixmarket/blas.h>
-#include <matrixmarket/error.h>
-#include <matrixmarket/header.h>
-#include <matrixmarket/index_set.h>
-#include <matrixmarket/io.h>
-#include <matrixmarket/matrix.h>
-#include <matrixmarket/matrix_array.h>
-#include <matrixmarket/matrix_coordinate.h>
-#include <matrixmarket/mpi.h>
-#include <matrixmarket/mtx.h>
-#include <matrixmarket/vector_array.h>
-#include <matrixmarket/vector_coordinate.h>
-#include <matrixmarket/version.h>
+/* Define if you have an MPI library. */
+#undef LIBMTX_HAVE_MPI
+
+/* Define if you have `z' library (-lz) */
+#undef LIBMTX_HAVE_LIBZ
 
 #endif

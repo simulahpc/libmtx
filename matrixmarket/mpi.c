@@ -23,6 +23,8 @@
  * processes using MPI.
  */
 
+#include <matrixmarket/libmtx-config.h>
+
 #ifdef LIBMTX_HAVE_MPI
 #include <matrixmarket/error.h>
 #include <matrixmarket/index_set.h>

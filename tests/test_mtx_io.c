@@ -24,6 +24,8 @@
 
 #include "test.h"
 
+#include <matrixmarket/libmtx-config.h>
+
 #include <matrixmarket/error.h>
 #include <matrixmarket/io.h>
 #include <matrixmarket/matrix_coordinate.h>

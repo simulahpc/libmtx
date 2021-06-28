@@ -26,6 +26,7 @@ dnl Process this file with autoconf to produce a configure script.
 AC_INIT([libmtx],[0.1.0],[james@simula.no],[libmtx],[https://github.com/simulahpc/libmtx])
 AC_CONFIG_MACRO_DIRS([m4])
 AC_CONFIG_AUX_DIR([build-aux])
+AC_CONFIG_HEADERS([config.h matrixmarket/libmtx-config.h])
 
 AM_INIT_AUTOMAKE([subdir-objects])
 
@@ -68,6 +69,10 @@ if test x"$with_blas" = xno; then
 AC_MSG_RESULT([$with_blas])
 else
 AC_MSG_RESULT([$ax_blas_ok])
+if test x"$ax_blas_ok" = xyes; then
+AC_DEFINE(LIBMTX_HAVE_BLAS,1,[Define to 1 if you have a BLAS library.])
+AC_SUBST(LIBMTX_HAVE_BLAS)
+fi
 fi
 
 dnl Check for MPI
@@ -82,7 +87,8 @@ if test x"$with_mpi" != xno; then
     AC_MSG_CHECKING([for MPI])
     mpi_found=yes
     AC_MSG_RESULT([$mpi_found])
-    AC_DEFINE(LIBMTX_HAVE_MPI,1,[Define if you have the MPI library.])
+    AC_DEFINE(LIBMTX_HAVE_MPI,1,[Define to 1 if you have an MPI library.])
+    AC_SUBST(LIBMTX_HAVE_MPI)
     AC_MSG_CHECKING([for mpicc compiler flags])
     MPICPPFLAGS="`${MPICC} --showme:compile`"
     AC_MSG_RESULT(${MPICPPFLAGS})
@@ -112,6 +118,7 @@ AX_CHECK_ZLIB([
   libmtx_CPPFLAGS="$libmtx_CPPFLAGS -DLIBMTX_HAVE_LIBZ"
   AC_DEFINE([LIBMTX_HAVE_LIBZ], [1],
     [Define to 1 if you have `z' library (-lz)])
+  AC_SUBST(LIBMTX_HAVE_LIBZ)
 ])
 
 AC_SUBST(libmtx_CPPFLAGS)

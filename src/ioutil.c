@@ -22,6 +22,8 @@
  * Utility functions for reading Matrix Market files.
  */
 
+#include <matrixmarket/libmtx-config.h>
+
 #include <matrixmarket/error.h>
 #include <matrixmarket/io.h>
 

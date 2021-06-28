@@ -79,6 +79,10 @@ nobase_include_HEADERS = \
 	matrixmarket/vector_coordinate.h \
 	matrixmarket/version.h
 
+# Header files that will not be distributed
+nobase_nodist_include_HEADERS = \
+	matrixmarket/libmtx-config.h
+
 # pkg-config files
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = matrixmarket/libmtx.pc

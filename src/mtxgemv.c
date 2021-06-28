@@ -646,7 +646,7 @@ int main(int argc, char *argv[])
                         timespec_duration(t0, t1));
             }
         } else {
-            fprintf(stderr, "%s: %s %s\n",
+            fprintf(stderr, "%s: %s\n",
                     program_invocation_short_name,
                     strerror(ENOTSUP));
             mtx_free(&x);

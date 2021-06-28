@@ -22,6 +22,8 @@
  * Error handling.
  */
 
+#include <matrixmarket/libmtx-config.h>
+
 #include <matrixmarket/error.h>
 
 #ifdef LIBMTX_HAVE_MPI

@@ -25,6 +25,8 @@
 #ifndef MATRIXMARKET_IO_H
 #define MATRIXMARKET_IO_H
 
+#include <matrixmarket/libmtx-config.h>
+
 #ifdef LIBMTX_HAVE_LIBZ
 #include <zlib.h>
 #endif
