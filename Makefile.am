@@ -55,6 +55,8 @@ libmtx_la_SOURCES = \
 	matrixmarket/mtx.c \
 	matrixmarket/parse.c \
 	matrixmarket/parse.h \
+	matrixmarket/format.c \
+	matrixmarket/format.h \
 	matrixmarket/sort.c \
 	matrixmarket/submatrix.c \
 	matrixmarket/transpose.c \
@@ -134,6 +136,7 @@ check_PROGRAMS = \
 	tests/test_mtx_sort \
 	tests/test_mtx_transpose \
 	tests/test_parse \
+	tests/test_format \
 	tests/test_submatrix \
 	tests/test_vector
 
@@ -164,6 +167,9 @@ tests_test_mtx_transpose_SOURCES = tests/test_mtx_transpose.c tests/test.h
 tests_test_parse_CPPFLAGS = $(MPICPPFLAGS)
 tests_test_parse_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
 tests_test_parse_SOURCES = tests/test_parse.c tests/test.h
+tests_test_format_CPPFLAGS = $(MPICPPFLAGS)
+tests_test_format_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
+tests_test_format_SOURCES = tests/test_format.c tests/test.h
 tests_test_submatrix_CPPFLAGS = $(MPICPPFLAGS)
 tests_test_submatrix_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
 tests_test_submatrix_SOURCES = tests/test_submatrix.c tests/test.h
@@ -181,6 +187,7 @@ TESTS = \
 	tests/test_mtx_sort \
 	tests/test_mtx_transpose \
 	tests/test_parse \
+	tests/test_format \
 	tests/test_submatrix \
 	tests/test_vector
 
