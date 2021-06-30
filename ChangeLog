@@ -3,6 +3,8 @@
 	Allow specifying a format string for outputting numerical values
 	for Matrix Market objects.
 
+	Fix various issues with installation and distribution.
+
 2021-06-18 James D. Trotter <james@simula.no>
 
         Initial version.

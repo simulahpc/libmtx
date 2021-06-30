@@ -40,6 +40,7 @@ EXTRA_DIST = \
 lib_LTLIBRARIES = libmtx.la
 libmtx_la_CPPFLAGS = -I$(top_srcdir) $(MPICPPFLAGS)
 libmtx_la_LDFLAGS = -version-info $(LIBMTX_LT_VERSION) $(MPILDFAGS)
+libmtx_la_LIBADD = $(BLAS_LIBS) $(MPILDFLAGS)
 
 # Source files
 libmtx_la_SOURCES = \
