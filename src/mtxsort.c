@@ -26,7 +26,6 @@
 #include <matrixmarket/matrixmarket.h>
 
 #include "../matrixmarket/parse.h"
-#include "ioutil.h"
 
 #include <errno.h>
 
@@ -327,8 +326,8 @@ int main(int argc, char *argv[])
 
     struct mtx mtx;
     int line_number, column_number;
-    err = read_mtx(
-        args.mtx_path, args.gzip, &mtx, args.verbose,
+    err = mtx_read(
+        &mtx, args.mtx_path, args.gzip,
         &line_number, &column_number);
     if (err && (line_number == -1 && column_number == -1)) {
         if (args.verbose > 0)

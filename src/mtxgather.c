@@ -25,7 +25,6 @@
 #include <matrixmarket/matrixmarket.h>
 
 #include "../matrixmarket/parse.h"
-#include "ioutil.h"
 
 #include <mpi.h>
 
@@ -429,10 +428,9 @@ int main(int argc, char *argv[])
     }
 
     int line_number, column_number;
-    err = read_mtx(
-        args.mtx_paths[rank] ? args.mtx_paths[rank] : "",
-        args.gzip, &srcmtx, args.verbose,
-        &line_number, &column_number);
+    err = mtx_read(
+        &srcmtx, args.mtx_paths[rank] ? args.mtx_paths[rank] : "",
+        args.gzip, &line_number, &column_number);
     if (err && (line_number == -1 && column_number == -1)) {
         if (args.verbose > 0)
             fprintf(diagf, "\n");

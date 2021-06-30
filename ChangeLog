@@ -1,4 +1,4 @@
-2021-06-29 James D. Trotter <james@simula.no>
+2021-06-30 James D. Trotter <james@simula.no>
 
 	Allow specifying a format string for outputting numerical values
 	for Matrix Market objects.
@@ -6,6 +6,8 @@
 	Fix various issues with installation and distribution.
 
 	Rename `mtx_read' to `mtx_fread' and `mtx_write' to `mtx_fwrite'.
+	Also, add new functions `mtx_read' and `mtx_write' to read .mtx
+	files from a given path.
 
 2021-06-18 James D. Trotter <james@simula.no>
 

@@ -53,6 +53,130 @@
 #include <stdlib.h>
 #include <string.h>
 
+/**
+ * `mtx_read()' reads a `struct mtx' object from a file in Matrix
+ * Market format. The file may optionally be compressed by gzip.
+ *
+ * If `path' is `-', then standard input is used.
+ *
+ * If `format' is `NULL', then the format specifier '%d' is used to
+ * print integers and '%f' is used to print floating point
+ * numbers. Otherwise, the given format string is used when printing
+ * numerical values.
+ *
+ * The format string follows the conventions of `printf'. If the field
+ * is `real', `double' or `complex', then the format specifiers '%e',
+ * '%E', '%f', '%F', '%g' or '%G' may be used. If the field is
+ * `integer', then the format specifier must be '%d'. The format
+ * string is ignored if the field is `pattern'. Field width and
+ * precision may be specified (e.g., "%3.1f"), but variable field
+ * width and precision (e.g., "%*.*f"), as well as length modifiers
+ * (e.g., "%Lf") are not allowed.
+ */
+int mtx_read(
+    struct mtx * mtx,
+    const char * path,
+    bool gzip,
+    int * line_number,
+    int * column_number)
+{
+    int err;
+    *line_number = -1;
+    *column_number = -1;
+
+    if (!gzip) {
+        FILE * f;
+        if (strcmp(path, "-") == 0) {
+            f = stdin;
+        } else if ((f = fopen(path, "r")) == NULL) {
+            return MTX_ERR_ERRNO;
+        }
+
+        err = mtx_fread(mtx, f, line_number, column_number);
+        if (err)
+            return err;
+        fclose(f);
+    } else {
+#ifdef LIBMTX_HAVE_LIBZ
+        gzFile f;
+        if (strcmp(path, "-") == 0) {
+            f = gzdopen(STDIN_FILENO, "r");
+        } else if ((f = gzopen(path, "r")) == NULL) {
+            return MTX_ERR_ERRNO;
+        }
+
+        err = mtx_gzread(mtx, f, line_number, column_number);
+        if (err)
+            return err;
+        gzclose(f);
+#else
+        errno = ENOTSUP;
+        return MTX_ERR_ERRNO;
+#endif
+    }
+    return MTX_SUCCESS;
+}
+
+/**
+ * `mtx_write()' writes a `struct mtx' object from a file in Matrix
+ * Market format. The output may optionally be compressed by gzip.
+ *
+ * If `path' is `-', then standard output is used.
+ *
+ * If `format' is `NULL', then the format specifier '%d' is used to
+ * print integers and '%f' is used to print floating point
+ * numbers. Otherwise, the given format string is used when printing
+ * numerical values.
+ *
+ * The format string follows the conventions of `printf'. If the field
+ * is `real', `double' or `complex', then the format specifiers '%e',
+ * '%E', '%f', '%F', '%g' or '%G' may be used. If the field is
+ * `integer', then the format specifier must be '%d'. The format
+ * string is ignored if the field is `pattern'. Field width and
+ * precision may be specified (e.g., "%3.1f"), but variable field
+ * width and precision (e.g., "%*.*f"), as well as length modifiers
+ * (e.g., "%Lf") are not allowed.
+ */
+int mtx_write(
+    const struct mtx * mtx,
+    const char * path,
+    bool gzip,
+    const char * format)
+{
+    int err;
+    if (!gzip) {
+        FILE * f;
+        if (strcmp(path, "-") == 0) {
+            f = stdout;
+        } else if ((f = fopen(path, "w")) == NULL) {
+            return MTX_ERR_ERRNO;
+        }
+
+        err = mtx_fwrite(mtx, f, format);
+        if (err)
+            return err;
+        fclose(f);
+    } else {
+#ifdef LIBMTX_HAVE_LIBZ
+        gzFile f;
+        if (strcmp(path, "-") == 0) {
+            f = gzdopen(STDOUT_FILENO, "w");
+        } else if ((f = gzopen(path, "w")) == NULL) {
+            return MTX_ERR_ERRNO;
+        }
+
+        err = mtx_gzwrite(mtx, f, format);
+        if (err)
+            return err;
+        gzclose(f);
+#else
+        errno = ENOTSUP;
+        return MTX_ERR_ERRNO;
+#endif
+    }
+    return MTX_SUCCESS;
+}
+
 enum stream_type
 {
     stream_stdio,

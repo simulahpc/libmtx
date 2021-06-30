@@ -25,7 +25,6 @@
 #include <matrixmarket/matrixmarket.h>
 
 #include "../matrixmarket/parse.h"
-#include "ioutil.h"
 
 #include <mpi.h>
 
@@ -529,8 +528,8 @@ int main(int argc, char *argv[])
         }
 
         int line_number, column_number;
-        err = read_mtx(
-            args.mtx_path, args.gzip, &mtx, args.verbose,
+        err = mtx_read(
+            &mtx, args.mtx_path, args.gzip,
             &line_number, &column_number);
         if (err && (line_number == -1 && column_number == -1)) {
             if (args.verbose > 0)
@@ -700,8 +699,7 @@ int main(int argc, char *argv[])
         }
 
         /* Write scattered Matrix Market objects to file. */
-        err = write_mtx(
-            output_path, args.gzip, &dstmtx, args.format, args.verbose);
+        err = mtx_write(&dstmtx, output_path, args.gzip, args.format);
         if (err) {
             if (rank == root && args.verbose > 0)
                 fprintf(diagf, "\n");

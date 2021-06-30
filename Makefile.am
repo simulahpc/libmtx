@@ -104,27 +104,27 @@ endif
 # mtxinfo
 mtxinfo_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/src $(MPICPPFLAGS)
 mtxinfo_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
-mtxinfo_SOURCES = src/mtxinfo.c src/ioutil.h src/ioutil.c
+mtxinfo_SOURCES = src/mtxinfo.c
 
 # mtxgemv
 mtxgemv_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/src $(MPICPPFLAGS)
 mtxgemv_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
-mtxgemv_SOURCES = src/mtxgemv.c src/ioutil.h src/ioutil.c
+mtxgemv_SOURCES = src/mtxgemv.c
 
 # mtxsort
 mtxsort_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/src $(MPICPPFLAGS)
 mtxsort_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
-mtxsort_SOURCES = src/mtxsort.c src/ioutil.h src/ioutil.c
+mtxsort_SOURCES = src/mtxsort.c
 
 # mtxgather
 mtxgather_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/src $(MPICPPFLAGS)
 mtxgather_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
-mtxgather_SOURCES = src/mtxgather.c src/ioutil.h src/ioutil.c
+mtxgather_SOURCES = src/mtxgather.c
 
 # mtxscatter
 mtxscatter_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/src $(MPICPPFLAGS)
 mtxscatter_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
-mtxscatter_SOURCES = src/mtxscatter.c src/ioutil.h src/ioutil.c
+mtxscatter_SOURCES = src/mtxscatter.c
 
 # Unit tests
 check_PROGRAMS = \

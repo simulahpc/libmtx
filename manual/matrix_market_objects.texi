@@ -522,6 +522,25 @@ int mtx_gzwrite(
     const char * format);}
 @end example
 
+@findex mtx_read
+@findex mtx_write
+Additionally, for convenience, the following functions are provided to
+read and write a @code{struct mtx} object to a file specified by a
+given path. The file may optionally be compressed using gzip.
+@example
+@code{int mtx_read(
+    struct mtx * mtx,
+    const char * path,
+    bool gzip,
+    int * line_number,
+    int * column_number);
+
+int mtx_write(
+    const struct mtx * mtx,
+    const char * path,
+    bool gzip,
+    const char * format);}
+@end example
 
 @node Creating matrices and vectors
 @section Creating matrices and vectors

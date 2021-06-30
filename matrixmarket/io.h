@@ -31,9 +31,63 @@
 #include <zlib.h>
 #endif
 
+#include <stdbool.h>
 #include <stdio.h>
 
 struct mtx;
+
+/**
+ * `mtx_read()' reads a `struct mtx' object from a file in Matrix
+ * Market format. The file may optionally be compressed by gzip.
+ *
+ * If `path' is `-', then standard input is used.
+ *
+ * If `format' is `NULL', then the format specifier '%d' is used to
+ * print integers and '%f' is used to print floating point
+ * numbers. Otherwise, the given format string is used when printing
+ * numerical values.
+ *
+ * The format string follows the conventions of `printf'. If the field
+ * is `real', `double' or `complex', then the format specifiers '%e',
+ * '%E', '%f', '%F', '%g' or '%G' may be used. If the field is
+ * `integer', then the format specifier must be '%d'. The format
+ * string is ignored if the field is `pattern'. Field width and
+ * precision may be specified (e.g., "%3.1f"), but variable field
+ * width and precision (e.g., "%*.*f"), as well as length modifiers
+ * (e.g., "%Lf") are not allowed.
+ */
+int mtx_read(
+    struct mtx * mtx,
+    const char * path,
+    bool gzip,
+    int * line_number,
+    int * column_number);
+
+/**
+ * `mtx_write()' writes a `struct mtx' object from a file in Matrix
+ * Market format. The output may optionally be compressed by gzip.
+ *
+ * If `path' is `-', then standard output is used.
+ *
+ * If `format' is `NULL', then the format specifier '%d' is used to
+ * print integers and '%f' is used to print floating point
+ * numbers. Otherwise, the given format string is used when printing
+ * numerical values.
+ *
+ * The format string follows the conventions of `printf'. If the field
+ * is `real', `double' or `complex', then the format specifiers '%e',
+ * '%E', '%f', '%F', '%g' or '%G' may be used. If the field is
+ * `integer', then the format specifier must be '%d'. The format
+ * string is ignored if the field is `pattern'. Field width and
+ * precision may be specified (e.g., "%3.1f"), but variable field
+ * width and precision (e.g., "%*.*f"), as well as length modifiers
+ * (e.g., "%Lf") are not allowed.
+ */
+int mtx_write(
+    const struct mtx * mtx,
+    const char * path,
+    bool gzip,
+    const char * format);
 
 /**
  * `mtx_fread()` reads an object (matrix or vector) from a stream in

@@ -252,6 +252,8 @@ int mtx_copy(
 @findex mtx_fwrite
 @findex mtx_gzread
 @findex mtx_gzwrite
+@findex mtx_read
+@findex mtx_write
 @example
 @code{int mtx_fread(
     struct mtx * mtx,
@@ -273,6 +275,19 @@ int mtx_gzread(
 int mtx_gzwrite(
     const struct mtx * mtx,
     gzFile f,
+    const char * format);
+
+int mtx_read(
+    struct mtx * mtx,
+    const char * path,
+    bool gzip,
+    int * line_number,
+    int * column_number);
+
+int mtx_write(
+    const struct mtx * mtx,
+    const char * path,
+    bool gzip,
     const char * format);}
 @end example
 

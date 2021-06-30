@@ -27,7 +27,6 @@
 #include <matrixmarket/matrixmarket.h>
 
 #include "../matrixmarket/parse.h"
-#include "ioutil.h"
 
 #include <errno.h>
 
@@ -385,8 +384,8 @@ int main(int argc, char *argv[])
     }
 
     int line_number, column_number;
-    err = read_mtx(
-        args.A_path ? args.A_path : "", args.gzip, &A, args.verbose,
+    err = mtx_read(
+        &A, args.A_path ? args.A_path : "", args.gzip,
         &line_number, &column_number);
     if (err && (line_number == -1 && column_number == -1)) {
         if (args.verbose > 0)
@@ -429,8 +428,8 @@ int main(int argc, char *argv[])
         }
 
         int line_number, column_number;
-        err = read_mtx(
-            args.x_path, args.gzip, &x, args.verbose,
+        err = mtx_read(
+            &x, args.x_path, args.gzip,
             &line_number, &column_number);
         if (err && (line_number == -1 && column_number == -1)) {
             if (args.verbose > 0)
@@ -502,8 +501,8 @@ int main(int argc, char *argv[])
         }
 
         int line_number, column_number;
-        err = read_mtx(
-            args.y_path ? args.y_path : "", args.gzip, &y, args.verbose,
+        err = mtx_read(
+            &y, args.y_path ? args.y_path : "", args.gzip,
             &line_number, &column_number);
         if (err && (line_number == -1 && column_number == -1)) {
             if (args.verbose > 0)
