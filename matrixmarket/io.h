@@ -36,17 +36,17 @@
 struct mtx;
 
 /**
- * `mtx_read()` reads an object (matrix or vector) from a stream in
+ * `mtx_fread()` reads an object (matrix or vector) from a stream in
  * Matrix Market format.
  */
-int mtx_read(
+int mtx_fread(
     struct mtx * mtx,
     FILE * f,
     int * line_number,
     int * column_number);
 
 /**
- * `mtx_write()` writes an object (matrix or vector) to a stream in
+ * `mtx_fwrite()` writes an object (matrix or vector) to a stream in
  * Matrix Market format.
  *
  * If `format' is `NULL', then the format specifier '%d' is used to
@@ -63,7 +63,7 @@ int mtx_read(
  * width and precision (e.g., "%*.*f"), as well as length modifiers
  * (e.g., "%Lf") are not allowed.
  */
-int mtx_write(
+int mtx_fwrite(
     const struct mtx * mtx,
     FILE * f,
     const char * format);

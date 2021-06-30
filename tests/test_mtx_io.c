@@ -46,9 +46,9 @@
 #include <string.h>
 
 /**
- * `test_mtx_read_header()` tests parsing Matrix Market headers.
+ * `test_mtx_fread_header()` tests parsing Matrix Market headers.
  */
-int test_mtx_read_header(void)
+int test_mtx_fread_header(void)
 {
     {
         /* Empty file. */
@@ -58,7 +58,7 @@ int test_mtx_read_header(void)
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         struct mtx mtx;
         int line_number, column_number;
-        err = mtx_read(&mtx, f, &line_number, &column_number);
+        err = mtx_fread(&mtx, f, &line_number, &column_number);
         TEST_ASSERT_EQ_MSG(
             MTX_ERR_INVALID_MTX_HEADER, err,
             "%d:%d: %s", line_number, column_number,
@@ -76,7 +76,7 @@ int test_mtx_read_header(void)
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         struct mtx mtx;
         int line_number, column_number;
-        err = mtx_read(&mtx, f, &line_number, &column_number);
+        err = mtx_fread(&mtx, f, &line_number, &column_number);
         TEST_ASSERT_EQ_MSG(
             MTX_ERR_INVALID_MTX_HEADER, err,
             "%d:%d: %s", line_number, column_number,
@@ -102,7 +102,7 @@ int test_mtx_read_header(void)
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         struct mtx mtx;
         int line_number, column_number;
-        err = mtx_read(&mtx, f, &line_number, &column_number);
+        err = mtx_fread(&mtx, f, &line_number, &column_number);
         TEST_ASSERT_NEQ_MSG(
             MTX_ERR_LINE_TOO_LONG, err,
             "%d:%d: %s", line_number, column_number,
@@ -126,7 +126,7 @@ int test_mtx_read_header(void)
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         struct mtx mtx;
         int line_number, column_number;
-        err = mtx_read(&mtx, f, &line_number, &column_number);
+        err = mtx_fread(&mtx, f, &line_number, &column_number);
         TEST_ASSERT_EQ_MSG(
             MTX_ERR_LINE_TOO_LONG, err,
             "%d:%d: %s", line_number, column_number,
@@ -145,7 +145,7 @@ int test_mtx_read_header(void)
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         struct mtx mtx;
         int line_number, column_number;
-        err = mtx_read(&mtx, f, &line_number, &column_number);
+        err = mtx_fread(&mtx, f, &line_number, &column_number);
         TEST_ASSERT_EQ_MSG(
             MTX_ERR_INVALID_MTX_OBJECT, err,
             "%d:%d: %s", line_number, column_number,
@@ -163,7 +163,7 @@ int test_mtx_read_header(void)
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         struct mtx mtx;
         int line_number, column_number;
-        err = mtx_read(&mtx, f, &line_number, &column_number);
+        err = mtx_fread(&mtx, f, &line_number, &column_number);
         TEST_ASSERT_EQ_MSG(
             MTX_ERR_INVALID_MTX_FORMAT, err,
             "%d:%d: %s", line_number, column_number,
@@ -182,7 +182,7 @@ int test_mtx_read_header(void)
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         struct mtx mtx;
         int line_number, column_number;
-        err = mtx_read(&mtx, f, &line_number, &column_number);
+        err = mtx_fread(&mtx, f, &line_number, &column_number);
         TEST_ASSERT_EQ_MSG(
             MTX_ERR_INVALID_MTX_FIELD, err,
             "%d:%d: %s", line_number, column_number,
@@ -201,7 +201,7 @@ int test_mtx_read_header(void)
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         struct mtx mtx;
         int line_number, column_number;
-        err = mtx_read(&mtx, f, &line_number, &column_number);
+        err = mtx_fread(&mtx, f, &line_number, &column_number);
         TEST_ASSERT_EQ_MSG(
             MTX_ERR_INVALID_MTX_SYMMETRY, err,
             "%d:%d: %s", line_number, column_number,
@@ -221,7 +221,7 @@ int test_mtx_read_header(void)
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         struct mtx mtx;
         int line_number, column_number;
-        err = mtx_read(&mtx, f, &line_number, &column_number);
+        err = mtx_fread(&mtx, f, &line_number, &column_number);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err,
             "%d:%d: %s", line_number, column_number,
@@ -239,10 +239,10 @@ int test_mtx_read_header(void)
 }
 
 /**
- * `test_mtx_read_comment_lines()` tests parsing Matrix Market
+ * `test_mtx_fread_comment_lines()` tests parsing Matrix Market
  * comment lines.
  */
-int test_mtx_read_comment_lines(void)
+int test_mtx_fread_comment_lines(void)
 {
     int err;
     char mtxfile[] =
@@ -254,7 +254,7 @@ int test_mtx_read_comment_lines(void)
     TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
     struct mtx mtx;
     int line_number, column_number;
-    err = mtx_read(&mtx, f, &line_number, &column_number);
+    err = mtx_fread(&mtx, f, &line_number, &column_number);
     TEST_ASSERT_EQ_MSG(
         MTX_SUCCESS, err,
         "%d:%d: %s", line_number, column_number,
@@ -269,10 +269,10 @@ int test_mtx_read_comment_lines(void)
 }
 
 /**
- * `test_mtx_read_matrix_size_line()` tests parsing the size line
+ * `test_mtx_fread_matrix_size_line()` tests parsing the size line
  * in Matrix Market files.
  */
-int test_mtx_read_matrix_size_line(void)
+int test_mtx_fread_matrix_size_line(void)
 {
     {
         /* Dense matrix (array). */
@@ -284,7 +284,7 @@ int test_mtx_read_matrix_size_line(void)
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         struct mtx mtx;
         int line_number, column_number;
-        err = mtx_read(&mtx, f, &line_number, &column_number);
+        err = mtx_fread(&mtx, f, &line_number, &column_number);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err,
             "%d:%d: %s", line_number, column_number,
@@ -308,7 +308,7 @@ int test_mtx_read_matrix_size_line(void)
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         struct mtx mtx;
         int line_number, column_number;
-        err = mtx_read(&mtx, f, &line_number, &column_number);
+        err = mtx_fread(&mtx, f, &line_number, &column_number);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err,
             "%d:%d: %s", line_number, column_number,
@@ -331,7 +331,7 @@ int test_mtx_read_matrix_size_line(void)
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         struct mtx mtx;
         int line_number, column_number;
-        err = mtx_read(&mtx, f, &line_number, &column_number);
+        err = mtx_fread(&mtx, f, &line_number, &column_number);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err,
             "%d:%d: %s", line_number, column_number,
@@ -354,7 +354,7 @@ int test_mtx_read_matrix_size_line(void)
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         struct mtx mtx;
         int line_number, column_number;
-        err = mtx_read(&mtx, f, &line_number, &column_number);
+        err = mtx_fread(&mtx, f, &line_number, &column_number);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err,
             "%d:%d: %s", line_number, column_number,
@@ -371,10 +371,10 @@ int test_mtx_read_matrix_size_line(void)
 }
 
 /**
- * `test_mtx_read_matrix_array_real()` tests parsing data for a
+ * `test_mtx_fread_matrix_array_real()` tests parsing data for a
  * dense matrix with real coefficients.
  */
-int test_mtx_read_matrix_array_real(void)
+int test_mtx_fread_matrix_array_real(void)
 {
     int err;
     char mtxfile[] =
@@ -385,7 +385,7 @@ int test_mtx_read_matrix_array_real(void)
     TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
     struct mtx mtx;
     int line_number, column_number;
-    err = mtx_read(&mtx, f, &line_number, &column_number);
+    err = mtx_fread(&mtx, f, &line_number, &column_number);
     TEST_ASSERT_EQ_MSG(
         MTX_SUCCESS, err,
         "%d:%d: %s", line_number, column_number,
@@ -410,10 +410,10 @@ int test_mtx_read_matrix_array_real(void)
 }
 
 /**
- * `test_mtx_read_matrix_array_double()` tests parsing data for a
+ * `test_mtx_fread_matrix_array_double()` tests parsing data for a
  * dense matrix with double-precision real coefficients.
  */
-int test_mtx_read_matrix_array_double(void)
+int test_mtx_fread_matrix_array_double(void)
 {
     int err;
     char mtxfile[] =
@@ -424,7 +424,7 @@ int test_mtx_read_matrix_array_double(void)
     TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
     struct mtx mtx;
     int line_number, column_number;
-    err = mtx_read(&mtx, f, &line_number, &column_number);
+    err = mtx_fread(&mtx, f, &line_number, &column_number);
     TEST_ASSERT_EQ_MSG(
         MTX_SUCCESS, err,
         "%d:%d: %s", line_number, column_number,
@@ -449,10 +449,10 @@ int test_mtx_read_matrix_array_double(void)
 }
 
 /**
- * `test_mtx_read_matrix_array_complex()` tests parsing data for a
+ * `test_mtx_fread_matrix_array_complex()` tests parsing data for a
  * dense matrix with complex coefficients.
  */
-int test_mtx_read_matrix_array_complex(void)
+int test_mtx_fread_matrix_array_complex(void)
 {
     int err;
     char mtxfile[] =
@@ -463,7 +463,7 @@ int test_mtx_read_matrix_array_complex(void)
     TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
     struct mtx mtx;
     int line_number, column_number;
-    err = mtx_read(&mtx, f, &line_number, &column_number);
+    err = mtx_fread(&mtx, f, &line_number, &column_number);
     TEST_ASSERT_EQ_MSG(
         MTX_SUCCESS, err,
         "%d:%d: %s", line_number, column_number,
@@ -488,10 +488,10 @@ int test_mtx_read_matrix_array_complex(void)
 }
 
 /**
- * `test_mtx_read_matrix_array_integer()` tests parsing data for a
+ * `test_mtx_fread_matrix_array_integer()` tests parsing data for a
  * dense matrix with integer coefficients.
  */
-int test_mtx_read_matrix_array_integer(void)
+int test_mtx_fread_matrix_array_integer(void)
 {
     int err;
     char mtxfile[] =
@@ -502,7 +502,7 @@ int test_mtx_read_matrix_array_integer(void)
     TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
     struct mtx mtx;
     int line_number, column_number;
-    err = mtx_read(&mtx, f, &line_number, &column_number);
+    err = mtx_fread(&mtx, f, &line_number, &column_number);
     TEST_ASSERT_EQ_MSG(
         MTX_SUCCESS, err,
         "%d:%d: %s", line_number, column_number,
@@ -527,10 +527,10 @@ int test_mtx_read_matrix_array_integer(void)
 }
 
 /**
- * `test_mtx_read_matrix_coordinate_real()` tests parsing data for
+ * `test_mtx_fread_matrix_coordinate_real()` tests parsing data for
  * a sparse matrix with real coefficients.
  */
-int test_mtx_read_matrix_coordinate_real(void)
+int test_mtx_fread_matrix_coordinate_real(void)
 {
     int err;
     char mtxfile[] =
@@ -544,7 +544,7 @@ int test_mtx_read_matrix_coordinate_real(void)
     TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
     struct mtx mtx;
     int line_number, column_number;
-    err = mtx_read(&mtx, f, &line_number, &column_number);
+    err = mtx_fread(&mtx, f, &line_number, &column_number);
     TEST_ASSERT_EQ_MSG(
         MTX_SUCCESS, err,
         "%d:%d: %s", line_number, column_number,
@@ -570,10 +570,10 @@ int test_mtx_read_matrix_coordinate_real(void)
 }
 
 /**
- * `test_mtx_read_matrix_coordinate_double()` tests parsing data
+ * `test_mtx_fread_matrix_coordinate_double()` tests parsing data
  * for a sparse matrix with double-precision real coefficients.
  */
-int test_mtx_read_matrix_coordinate_double(void)
+int test_mtx_fread_matrix_coordinate_double(void)
 {
     int err;
     char mtxfile[] =
@@ -587,7 +587,7 @@ int test_mtx_read_matrix_coordinate_double(void)
     TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
     struct mtx mtx;
     int line_number, column_number;
-    err = mtx_read(&mtx, f, &line_number, &column_number);
+    err = mtx_fread(&mtx, f, &line_number, &column_number);
     TEST_ASSERT_EQ_MSG(
         MTX_SUCCESS, err,
         "%d:%d: %s", line_number, column_number,
@@ -613,10 +613,10 @@ int test_mtx_read_matrix_coordinate_double(void)
 }
 
 /**
- * `test_mtx_read_matrix_coordinate_complex()` tests parsing data
+ * `test_mtx_fread_matrix_coordinate_complex()` tests parsing data
  * for a sparse matrix with complex coefficients.
  */
-int test_mtx_read_matrix_coordinate_complex(void)
+int test_mtx_fread_matrix_coordinate_complex(void)
 {
     int err;
     char mtxfile[] =
@@ -630,7 +630,7 @@ int test_mtx_read_matrix_coordinate_complex(void)
     TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
     struct mtx mtx;
     int line_number, column_number;
-    err = mtx_read(&mtx, f, &line_number, &column_number);
+    err = mtx_fread(&mtx, f, &line_number, &column_number);
     TEST_ASSERT_EQ_MSG(
         MTX_SUCCESS, err,
         "%d:%d: %s", line_number, column_number,
@@ -660,10 +660,10 @@ int test_mtx_read_matrix_coordinate_complex(void)
 }
 
 /**
- * `test_mtx_read_matrix_coordinate_integer()` tests parsing data
+ * `test_mtx_fread_matrix_coordinate_integer()` tests parsing data
  * for a sparse matrix with integer coefficients.
  */
-int test_mtx_read_matrix_coordinate_integer(void)
+int test_mtx_fread_matrix_coordinate_integer(void)
 {
     int err;
     char mtxfile[] =
@@ -677,7 +677,7 @@ int test_mtx_read_matrix_coordinate_integer(void)
     TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
     struct mtx mtx;
     int line_number, column_number;
-    err = mtx_read(&mtx, f, &line_number, &column_number);
+    err = mtx_fread(&mtx, f, &line_number, &column_number);
     TEST_ASSERT_EQ_MSG(
         MTX_SUCCESS, err,
         "%d:%d: %s", line_number, column_number,
@@ -703,10 +703,10 @@ int test_mtx_read_matrix_coordinate_integer(void)
 }
 
 /**
- * `test_mtx_read_matrix_coordinate_pattern()` tests parsing data
+ * `test_mtx_fread_matrix_coordinate_pattern()` tests parsing data
  * for a sparse matrix with boolean coefficients (pattern).
  */
-int test_mtx_read_matrix_coordinate_pattern(void)
+int test_mtx_fread_matrix_coordinate_pattern(void)
 {
     int err;
     char mtxfile[] =
@@ -720,7 +720,7 @@ int test_mtx_read_matrix_coordinate_pattern(void)
     TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
     struct mtx mtx;
     int line_number, column_number;
-    err = mtx_read(&mtx, f, &line_number, &column_number);
+    err = mtx_fread(&mtx, f, &line_number, &column_number);
     TEST_ASSERT_EQ_MSG(
         MTX_SUCCESS, err,
         "%d:%d: %s", line_number, column_number,
@@ -746,10 +746,10 @@ int test_mtx_read_matrix_coordinate_pattern(void)
 }
 
 /**
- * `test_mtx_read_vector_array_real()` tests parsing data for a
+ * `test_mtx_fread_vector_array_real()` tests parsing data for a
  * dense vector with real coefficients.
  */
-int test_mtx_read_vector_array_real(void)
+int test_mtx_fread_vector_array_real(void)
 {
     int err;
     char mtxfile[] =
@@ -760,7 +760,7 @@ int test_mtx_read_vector_array_real(void)
     TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
     struct mtx mtx;
     int line_number, column_number;
-    err = mtx_read(&mtx, f, &line_number, &column_number);
+    err = mtx_fread(&mtx, f, &line_number, &column_number);
     TEST_ASSERT_EQ_MSG(
         MTX_SUCCESS, err,
         "%d:%d: %s", line_number, column_number,
@@ -788,10 +788,10 @@ int test_mtx_read_vector_array_real(void)
 }
 
 /**
- * `test_mtx_read_vector_coordinate_real()` tests parsing data for
+ * `test_mtx_fread_vector_coordinate_real()` tests parsing data for
  * a sparse vector with real coefficients.
  */
-int test_mtx_read_vector_coordinate_real(void)
+int test_mtx_fread_vector_coordinate_real(void)
 {
     int err;
     char mtxfile[] =
@@ -805,7 +805,7 @@ int test_mtx_read_vector_coordinate_real(void)
     TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
     struct mtx mtx;
     int line_number, column_number;
-    err = mtx_read(&mtx, f, &line_number, &column_number);
+    err = mtx_fread(&mtx, f, &line_number, &column_number);
     TEST_ASSERT_EQ_MSG(
         MTX_SUCCESS, err,
         "%d:%d: %s", line_number, column_number,
@@ -831,10 +831,10 @@ int test_mtx_read_vector_coordinate_real(void)
 }
 
 /**
- * `test_mtx_write_matrix_coordinate_real()` tests writing a sparse
+ * `test_mtx_fwrite_matrix_coordinate_real()` tests writing a sparse
  * matrix with real coefficients to a file.
  */
-int test_mtx_write_matrix_coordinate_real(void)
+int test_mtx_fwrite_matrix_coordinate_real(void)
 {
     int err;
 
@@ -859,7 +859,7 @@ int test_mtx_write_matrix_coordinate_real(void)
     /* Write the matrix to file and verify the contents. */
     char mtxfile[1024] = {};
     FILE * f = fmemopen(mtxfile, sizeof(mtxfile), "w");
-    err = mtx_write(&mtx, f, "%.1f");
+    err = mtx_fwrite(&mtx, f, "%.1f");
     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
     fclose(f);
     mtx_free(&mtx);
@@ -1072,21 +1072,21 @@ int test_mtx_gzwrite_matrix_coordinate_real(void)
 int main(int argc, char * argv[])
 {
     TEST_SUITE_BEGIN("Running tests for Matrix Market I/O\n");
-    TEST_RUN(test_mtx_read_header);
-    TEST_RUN(test_mtx_read_comment_lines);
-    TEST_RUN(test_mtx_read_matrix_size_line);
-    TEST_RUN(test_mtx_read_matrix_array_real);
-    TEST_RUN(test_mtx_read_matrix_array_double);
-    TEST_RUN(test_mtx_read_matrix_array_complex);
-    TEST_RUN(test_mtx_read_matrix_array_integer);
-    TEST_RUN(test_mtx_read_matrix_coordinate_real);
-    TEST_RUN(test_mtx_read_matrix_coordinate_double);
-    TEST_RUN(test_mtx_read_matrix_coordinate_complex);
-    TEST_RUN(test_mtx_read_matrix_coordinate_integer);
-    TEST_RUN(test_mtx_read_matrix_coordinate_pattern);
-    TEST_RUN(test_mtx_read_vector_array_real);
-    TEST_RUN(test_mtx_read_vector_coordinate_real);
-    TEST_RUN(test_mtx_write_matrix_coordinate_real);
+    TEST_RUN(test_mtx_fread_header);
+    TEST_RUN(test_mtx_fread_comment_lines);
+    TEST_RUN(test_mtx_fread_matrix_size_line);
+    TEST_RUN(test_mtx_fread_matrix_array_real);
+    TEST_RUN(test_mtx_fread_matrix_array_double);
+    TEST_RUN(test_mtx_fread_matrix_array_complex);
+    TEST_RUN(test_mtx_fread_matrix_array_integer);
+    TEST_RUN(test_mtx_fread_matrix_coordinate_real);
+    TEST_RUN(test_mtx_fread_matrix_coordinate_double);
+    TEST_RUN(test_mtx_fread_matrix_coordinate_complex);
+    TEST_RUN(test_mtx_fread_matrix_coordinate_integer);
+    TEST_RUN(test_mtx_fread_matrix_coordinate_pattern);
+    TEST_RUN(test_mtx_fread_vector_array_real);
+    TEST_RUN(test_mtx_fread_vector_coordinate_real);
+    TEST_RUN(test_mtx_fwrite_matrix_coordinate_real);
 #ifdef LIBMTX_HAVE_LIBZ
     TEST_RUN(test_mtx_gzread_matrix_coordinate_real);
     TEST_RUN(test_mtx_gzwrite_matrix_coordinate_real);

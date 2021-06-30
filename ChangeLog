@@ -5,6 +5,8 @@
 
 	Fix various issues with installation and distribution.
 
+	Rename `mtx_read' to `mtx_fread' and `mtx_write' to `mtx_fwrite'.
+
 2021-06-18 James D. Trotter <james@simula.no>
 
         Initial version.

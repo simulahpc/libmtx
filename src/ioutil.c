@@ -62,7 +62,7 @@ int read_mtx(
             return MTX_ERR_ERRNO;
         }
 
-        err = mtx_read(mtx, f, line_number, column_number);
+        err = mtx_fread(mtx, f, line_number, column_number);
         if (err)
             return err;
         fclose(f);
@@ -107,7 +107,7 @@ int write_mtx(
             return MTX_ERR_ERRNO;
         }
 
-        err = mtx_write(mtx, f, format);
+        err = mtx_fwrite(mtx, f, format);
         if (err)
             return err;
         fclose(f);

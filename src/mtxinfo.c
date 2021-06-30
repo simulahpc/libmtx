@@ -246,7 +246,7 @@ int main(int argc, char *argv[])
 
     /* 2. Read a Matrix Market file. */
     if (args.verbose > 0) {
-        fprintf(diagf, !args.gzip ? "mtx_read: " : "mtx_gzread: ");
+        fprintf(diagf, !args.gzip ? "mtx_fread: " : "mtx_gzread: ");
         fflush(diagf);
         clock_gettime(CLOCK_MONOTONIC, &t0);
     }

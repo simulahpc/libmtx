@@ -320,7 +320,7 @@ int main(int argc, char *argv[])
 
     /* 2. Read a Matrix Market file. */
     if (args.verbose > 0) {
-        fprintf(diagf, !args.gzip ? "mtx_read: " : "mtx_gzread: ");
+        fprintf(diagf, !args.gzip ? "mtx_fread: " : "mtx_gzread: ");
         fflush(diagf);
         clock_gettime(CLOCK_MONOTONIC, &t0);
     }
@@ -380,13 +380,13 @@ int main(int argc, char *argv[])
     /* 4. Write the sorted Matrix Market object to standard output. */
     if (!args.quiet) {
         if (args.verbose > 0) {
-            fprintf(diagf, "mtx_write: ");
+            fprintf(diagf, "mtx_fwrite: ");
             fflush(diagf);
             clock_gettime(CLOCK_MONOTONIC, &t0);
         }
 
         /* Write sorted Matrix Market object to file. */
-        err = mtx_write(&mtx, stdout, args.format);
+        err = mtx_fwrite(&mtx, stdout, args.format);
         if (err) {
             if (args.verbose > 0)
                 fprintf(diagf, "\n");

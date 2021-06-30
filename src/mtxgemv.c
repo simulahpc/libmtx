@@ -379,7 +379,7 @@ int main(int argc, char *argv[])
     /* 2. Read the matrix from a Matrix Market file. */
     struct mtx A;
     if (args.verbose > 0) {
-        fprintf(diagf, !args.gzip ? "mtx_read: " : "mtx_gzread: ");
+        fprintf(diagf, !args.gzip ? "mtx_fread: " : "mtx_gzread: ");
         fflush(diagf);
         clock_gettime(CLOCK_MONOTONIC, &t0);
     }
@@ -423,7 +423,7 @@ int main(int argc, char *argv[])
     struct mtx x;
     if (args.x_path && strlen(args.x_path) > 0) {
         if (args.verbose) {
-            fprintf(diagf, !args.gzip ? "mtx_read: " : "mtx_gzread: ");
+            fprintf(diagf, !args.gzip ? "mtx_fread: " : "mtx_gzread: ");
             fflush(diagf);
             clock_gettime(CLOCK_MONOTONIC, &t0);
         }
@@ -496,7 +496,7 @@ int main(int argc, char *argv[])
     struct mtx y;
     if (args.y_path) {
         if (args.verbose) {
-            fprintf(diagf, !args.gzip ? "mtx_read: " : "mtx_gzread: ");
+            fprintf(diagf, !args.gzip ? "mtx_fread: " : "mtx_gzread: ");
             fflush(diagf);
             clock_gettime(CLOCK_MONOTONIC, &t0);
         }
@@ -633,13 +633,13 @@ int main(int argc, char *argv[])
     /* 6. Write the result vector to standard output. */
     if (!args.quiet) {
         if (args.verbose > 0) {
-            fprintf(diagf, "mtx_write: ");
+            fprintf(diagf, "mtx_fwrite: ");
             fflush(diagf);
             clock_gettime(CLOCK_MONOTONIC, &t0);
         }
 
         /* Write gathered Matrix Market object to file. */
-        err = mtx_write(&y, stdout, args.format);
+        err = mtx_fwrite(&y, stdout, args.format);
         if (err) {
             if (args.verbose > 0)
                 fprintf(diagf, "\n");

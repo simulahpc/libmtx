@@ -248,18 +248,18 @@ int mtx_copy(
 
 @subsection I/O
 
-@findex mtx_read
-@findex mtx_write
+@findex mtx_fread
+@findex mtx_fwrite
 @findex mtx_gzread
 @findex mtx_gzwrite
 @example
-@code{int mtx_read(
+@code{int mtx_fread(
     struct mtx * mtx,
     FILE * f,
     int * line_number,
     int * column_number);
 
-int mtx_write(
+int mtx_fwrite(
     const struct mtx * mtx,
     FILE * f,
     const char * format);

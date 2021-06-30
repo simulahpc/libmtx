@@ -794,7 +794,7 @@ from the 'mtx_error' enum type.
 
        struct mtx mtx;
        int line, column;
-       int err = mtx_read(&mtx, f, &line, &column);
+       int err = mtx_fread(&mtx, f, &line, &column);
        if (err) {
            fprintf(stderr, "Error: test.mtx:%d:%d: %s\n",
                    line, column, mtx_strerror(err));
@@ -831,7 +831,7 @@ writing to files in Matrix Market format.  These files are typically
 named with a '.mtx' extension, so we refer to them here as 'mtx' files.
 
    To read an 'mtx' file from a 'FILE' stream, use the function:
-     int mtx_read(
+     int mtx_fread(
          struct mtx * mtx,
          FILE * f,
          int * line_number,
@@ -839,13 +839,13 @@ named with a '.mtx' extension, so we refer to them here as 'mtx' files.
    If successful, 'MTX_SUCCESS' is returned, and 'mtx' will contain the
 matrix or vector represented by the 'FILE' stream.  The user is
 responsible for calling 'mtx_free' to free any storage that may have
-been allocated by 'mtx_read'.  Otherwise, if 'mtx_read' fails, then it
+been allocated by 'mtx_fread'.  Otherwise, if 'mtx_fread' fails, then it
 will return an error code, and 'line_number' and 'column_number' will
 indicate the location in the Matrix Market file at which an error was
 encountered.
 
    To write an 'mtx' file to a 'FILE' stream, use the function:
-     int mtx_write(
+     int mtx_fwrite(
          const struct mtx * mtx,
          FILE * f,
          int field_width,
@@ -863,7 +863,7 @@ point.
    If libmtx is built with zlib support, then the functions
 'mtx_gzread' and 'mtx_gzwrite' can be used to read or write
 gzip-compressed 'mtx' files.  The function signatures are the similar
-'mtx_read' and 'mtx_write':
+'mtx_fread' and 'mtx_fwrite':
      int mtx_gzread(
          struct mtx * mtx,
          gzFile f,
@@ -1730,13 +1730,13 @@ library.
 7.4.2 I/O
 ---------
 
-     int mtx_read(
+     int mtx_fread(
          struct mtx * mtx,
          FILE * f,
          int * line_number,
          int * column_number);
 
-     int mtx_write(
+     int mtx_fwrite(
          const struct mtx * mtx,
          FILE * f,
          int field_width,
@@ -2786,9 +2786,9 @@ Function index
 * mtx_matrix_submatrix <1>:              C library reference. (line 363)
 * mtx_matrix_transpose:                  Matrix operations.   (line  16)
 * mtx_matrix_transpose <1>:              C library reference. (line 363)
-* mtx_read:                              Reading and writing Matrix Market files.
+* mtx_fread:                              Reading and writing Matrix Market files.
                                                               (line  10)
-* mtx_read <1>:                          C library reference. (line 194)
+* mtx_fread <1>:                          C library reference. (line 194)
 * mtx_recv:                              C library reference. (line 446)
 * mtx_saxpy:                             Level 1 BLAS operations.
                                                               (line  11)
@@ -2814,9 +2814,9 @@ Function index
 * mtx_strerror_mpi:                      Error handling.      (line  48)
 * mtx_strerror_mpi <1>:                  MPI errors.          (line   6)
 * mtx_strerror_mpi <2>:                  C library reference. (line  31)
-* mtx_write:                             Reading and writing Matrix Market files.
+* mtx_fwrite:                             Reading and writing Matrix Market files.
                                                               (line  24)
-* mtx_write <1>:                         C library reference. (line 194)
+* mtx_fwrite <1>:                         C library reference. (line 194)
 
 
 File: libmtx.info,  Node: Data type index,  Next: Program index,  Prev: Function index,  Up: Top

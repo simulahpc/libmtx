@@ -423,7 +423,7 @@ int main(int argc, char *argv[])
     /* 1. Read Matrix Market files on each MPI process. */
     struct mtx srcmtx;
     if (rank == root && args.verbose > 0) {
-        fprintf(diagf, !args.gzip ? "mtx_read: " : "mtx_gzread: ");
+        fprintf(diagf, !args.gzip ? "mtx_fread: " : "mtx_gzread: ");
         fflush(diagf);
         clock_gettime(CLOCK_MONOTONIC, &t0);
     }
@@ -527,13 +527,13 @@ int main(int argc, char *argv[])
     /* 3. Write the gathered Matrix Market object to file. */
     if (!args.quiet && rank == root) {
         if (args.verbose > 0) {
-            fprintf(diagf, "mtx_write: ");
+            fprintf(diagf, "mtx_fwrite: ");
             fflush(diagf);
             clock_gettime(CLOCK_MONOTONIC, &t0);
         }
 
         /* Write gathered Matrix Market object to file. */
-        err = mtx_write(&dstmtx, stdout, args.format);
+        err = mtx_fwrite(&dstmtx, stdout, args.format);
         if (err) {
             if (args.verbose > 0)
                 fprintf(diagf, "\n");

@@ -415,7 +415,7 @@ codes from the @code{mtx_error} enum type.
 
   struct mtx mtx;
   int line, column;
-  int err = mtx_read(&mtx, f, &line, &column);
+  int err = mtx_fread(&mtx, f, &line, &column);
   if (err) @{
       fprintf(stderr, "Error: test.mtx:%d:%d: %s\n",
               line, column, mtx_strerror(err));
@@ -458,11 +458,11 @@ from and writing to files in Matrix Market format. These files are
 typically named with a @file{.mtx} extension, so we refer to them here
 as @file{mtx} files.
 
-@findex mtx_read
+@findex mtx_fread
 To read an @file{mtx} file from a @code{FILE} stream, use the
 function:
 @example
-@code{int mtx_read(
+@code{int mtx_fread(
     struct mtx * mtx,
     FILE * f,
     int * line_number,
@@ -471,16 +471,16 @@ function:
 If successful, @code{MTX_SUCCESS} is returned, and @code{mtx} will
 contain the matrix or vector represented by the @code{FILE}
 stream. The user is responsible for calling @code{mtx_free} to free
-any storage that may have been allocated by @code{mtx_read}.
-Otherwise, if @code{mtx_read} fails, then it will return an error
+any storage that may have been allocated by @code{mtx_fread}.
+Otherwise, if @code{mtx_fread} fails, then it will return an error
 code, and @code{line_number} and @code{column_number} will indicate
 the location in the Matrix Market file at which an error was
 encountered.
 
-@findex mtx_write
+@findex mtx_fwrite
 To write an @file{mtx} file to a @code{FILE} stream, use the function:
 @example
-@code{int mtx_write(
+@code{int mtx_fwrite(
     const struct mtx * mtx,
     FILE * f,
     const char * format);}
@@ -508,7 +508,7 @@ allowed.
 If libmtx is built with zlib support, then the functions
 @code{mtx_gzread} and @code{mtx_gzwrite} can be used to read or
 write gzip-compressed @file{mtx} files. The function signatures are the
-similar @code{mtx_read} and @code{mtx_write}:
+similar @code{mtx_fread} and @code{mtx_fwrite}:
 @example
 @code{int mtx_gzread(
     struct mtx * mtx,
