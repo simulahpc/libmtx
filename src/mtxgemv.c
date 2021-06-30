@@ -61,8 +61,7 @@ struct program_options
     char * A_path;
     char * x_path;
     char * y_path;
-    int output_field_width;
-    int output_precision;
+    char * format;
     bool gzip;
     int repeat;
     int verbose;
@@ -80,8 +79,7 @@ static int program_options_init(
     args->A_path = NULL;
     args->x_path = NULL;
     args->y_path = NULL;
-    args->output_field_width = 0;
-    args->output_precision = -1;
+    args->format = NULL;
     args->gzip = false;
     args->repeat = 1;
     args->quiet = false;
@@ -102,6 +100,8 @@ static void program_options_free(
         free(args->x_path);
     if (args->y_path)
         free(args->y_path);
+    if(args->format)
+        free(args->format);
 }
 
 /**
@@ -138,9 +138,11 @@ static void program_options_print_help(
     fprintf(f, "\n");
     fprintf(f, " Other options are:\n");
     fprintf(f, "  -z, --gzip, --gunzip, --ungzip\tfilter files through gzip\n");
-    fprintf(f, "  --output-width=N\tfield width for outputting numerical values\n");
-    fprintf(f, "  --output-prec=N\tprecision for outputting numerical values.\n");
-    fprintf(f, "\t\t\t  The default precision is 6 digits after the decimal point.\n");
+    fprintf(f, "  --format=FORMAT\tFormat string for outputting numerical values.\n");
+    fprintf(f, "\t\t\tFor real, double and complex values, the format specifiers\n");
+    fprintf(f, "\t\t\t'%%e', '%%E', '%%f', '%%F', '%%g' or '%%G' may be used,\n");
+    fprintf(f, "\t\t\twhereas '%%d' must be used for integers. Flags, field width\n");
+    fprintf(f, "\t\t\tand precision can optionally be specified, e.g., \"%%+3.1f\".\n");
     fprintf(f, "  --repeat=N\t\trepeat matrix-vector multiplication N times\n");
     fprintf(f, "  -q, --quiet\t\tdo not print Matrix Market output\n");
     fprintf(f, "  -v, --verbose\t\tbe more verbose\n");
@@ -206,51 +208,23 @@ static int parse_program_options(
             continue;
         }
 
-        /* Parse output field width. */
-        if (strcmp((*argv)[0], "--output-width") == 0) {
+        if (strcmp((*argv)[0], "--format") == 0) {
             if (*argc < 2) {
                 program_options_free(args);
                 return EINVAL;
             }
-            err = parse_int32((*argv)[1], NULL, &args->output_field_width, NULL);
-            if (err) {
+            args->format = strdup((*argv)[1]);
+            if (!args->format) {
                 program_options_free(args);
-                return err;
+                return errno;
             }
             num_arguments_consumed += 2;
             continue;
-        } else if (strstr((*argv)[0], "--output-width=") == (*argv)[0]) {
-            err = parse_int32(
-                (*argv)[0] + strlen("--output-width="), NULL,
-                &args->output_field_width, NULL);
-            if (err) {
+        } else if (strstr((*argv)[0], "--format=") == (*argv)[0]) {
+            args->format = strdup((*argv)[0] + strlen("--format="));
+            if (!args->format) {
                 program_options_free(args);
-                return err;
-            }
-            num_arguments_consumed++;
-            continue;
-        }
-
-        /* Parse output precision. */
-        if (strcmp((*argv)[0], "--output-prec") == 0) {
-            if (*argc < 2) {
-                program_options_free(args);
-                return EINVAL;
-            }
-            err = parse_int32((*argv)[1], NULL, &args->output_precision, NULL);
-            if (err) {
-                program_options_free(args);
-                return err;
-            }
-            num_arguments_consumed += 2;
-            continue;
-        } else if (strstr((*argv)[0], "--output-prec=") == (*argv)[0]) {
-            err = parse_int32(
-                (*argv)[0] + strlen("--output-prec="), NULL,
-                &args->output_precision, NULL);
-            if (err) {
-                program_options_free(args);
-                return err;
+                return errno;
             }
             num_arguments_consumed++;
             continue;
@@ -665,10 +639,7 @@ int main(int argc, char *argv[])
         }
 
         /* Write gathered Matrix Market object to file. */
-        err = mtx_write(
-            &y, stdout,
-            args.output_field_width,
-            args.output_precision);
+        err = mtx_write(&y, stdout, args.format);
         if (err) {
             if (args.verbose > 0)
                 fprintf(diagf, "\n");

@@ -483,19 +483,25 @@ To write an @file{mtx} file to a @code{FILE} stream, use the function:
 @code{int mtx_write(
     const struct mtx * mtx,
     FILE * f,
-    int field_width,
-    int precision);}
+    const char * format);}
 @end example
 If successful, @code{MTX_SUCCESS} is returned, and @code{mtx} is
-written to the stream @code{f}. The argument @code{field_width} can be
-used to set a field width for printing numerical values to the
-@code{FILE} stream, which causes numbers to be padded on the left with
-spaces to ensure that a minimum of @code{field_width} characters are
-printed. The @code{precision} argument can be used to control the
-number of decimal places to use when printing floating-point numerical
-values. Note that @code{precision} can be set to @code{-1} to use a
-default precision, which is 6 digits after the decimal point.
+written to the stream @code{f}.
 
+If @code{format} is @code{NULL}, then the format specifier @samp{%d}
+is used to print integers and @samp{%f} is used to print floating
+point numbers. Otherwise, the given format string is used when
+printing numerical values.
+
+The format string follows the conventions of @code{printf}. If the
+field is @samp{real}, @samp{double} or @samp{complex}, then the format
+specifiers @samp{%e}, @samp{%E}, @samp{%f}, @samp{%F}, @samp{%g} or
+@samp{%G} may be used. If the field is @samp{integer}, then the format
+specifier must be @samp{%d}. The format string is ignored if the field
+is @samp{pattern}. Flags, field width and precision may be specified
+(e.g., @samp{%+3.1f}), but variable field width and precision (e.g.,
+@samp{%*.*f}), as well as length modifiers (e.g., @samp{%Lf}) are not
+allowed.
 
 @findex mtx_gzread
 @findex mtx_gzwrite
@@ -513,8 +519,7 @@ similar @code{mtx_read} and @code{mtx_write}:
 int mtx_gzwrite(
     const struct mtx * mtx,
     gzFile f,
-    int field_width,
-    int precision);}
+    const char * format);}
 @end example
 
 

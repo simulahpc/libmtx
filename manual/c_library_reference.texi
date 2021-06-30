@@ -262,8 +262,7 @@ int mtx_copy(
 int mtx_write(
     const struct mtx * mtx,
     FILE * f,
-    int field_width,
-    int precision);
+    const char * format);
 
 int mtx_gzread(
     struct mtx * mtx,
@@ -274,8 +273,7 @@ int mtx_gzread(
 int mtx_gzwrite(
     const struct mtx * mtx,
     gzFile f,
-    int field_width,
-    int precision);}
+    const char * format);}
 @end example
 
 @subsection Sparse matrices

@@ -48,12 +48,25 @@ int mtx_read(
 /**
  * `mtx_write()` writes an object (matrix or vector) to a stream in
  * Matrix Market format.
+ *
+ * If `format' is `NULL', then the format specifier '%d' is used to
+ * print integers and '%f' is used to print floating point
+ * numbers. Otherwise, the given format string is used when printing
+ * numerical values.
+ *
+ * The format string follows the conventions of `printf'. If the field
+ * is `real', `double' or `complex', then the format specifiers '%e',
+ * '%E', '%f', '%F', '%g' or '%G' may be used. If the field is
+ * `integer', then the format specifier must be '%d'. The format
+ * string is ignored if the field is `pattern'. Field width and
+ * precision may be specified (e.g., "%3.1f"), but variable field
+ * width and precision (e.g., "%*.*f"), as well as length modifiers
+ * (e.g., "%Lf") are not allowed.
  */
 int mtx_write(
     const struct mtx * mtx,
     FILE * f,
-    int field_width,
-    int precision);
+    const char * format);
 
 #ifdef LIBMTX_HAVE_LIBZ
 /**
@@ -69,12 +82,25 @@ int mtx_gzread(
 /**
  * `mtx_gzwrite()` writes a matrix or vector to a gzip-compressed
  * stream in Matrix Market format.
+ *
+ * If `format' is `NULL', then the format specifier '%d' is used to
+ * print integers and '%f' is used to print floating point
+ * numbers. Otherwise, the given format string is used when printing
+ * numerical values.
+ *
+ * The format string follows the conventions of `printf'. If the field
+ * is `real', `double' or `complex', then the format specifiers '%e',
+ * '%E', '%f', '%F', '%g' or '%G' may be used. If the field is
+ * `integer', then the format specifier must be '%d'. The format
+ * string is ignored if the field is `pattern'. Field width and
+ * precision may be specified (e.g., "%3.1f"), but variable field
+ * width and precision (e.g., "%*.*f"), as well as length modifiers
+ * (e.g., "%Lf") are not allowed.
  */
 int mtx_gzwrite(
     const struct mtx * mtx,
     gzFile f,
-    int field_width,
-    int precision);
+    const char * format);
 #endif
 
 #endif

@@ -95,8 +95,7 @@ int write_mtx(
     const char * mtx_path,
     bool gzip,
     const struct mtx * mtx,
-    int field_width,
-    int precision,
+    const char * format,
     int verbose)
 {
     int err;
@@ -108,7 +107,7 @@ int write_mtx(
             return MTX_ERR_ERRNO;
         }
 
-        err = mtx_write(mtx, f, field_width, precision);
+        err = mtx_write(mtx, f, format);
         if (err)
             return err;
         fclose(f);
@@ -121,7 +120,7 @@ int write_mtx(
             return MTX_ERR_ERRNO;
         }
 
-        err = mtx_gzwrite(mtx, f, field_width, precision);
+        err = mtx_gzwrite(mtx, f, format);
         if (err)
             return err;
         gzclose(f);

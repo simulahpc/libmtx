@@ -859,7 +859,7 @@ int test_mtx_write_matrix_coordinate_real(void)
     /* Write the matrix to file and verify the contents. */
     char mtxfile[1024] = {};
     FILE * f = fmemopen(mtxfile, sizeof(mtxfile), "w");
-    err = mtx_write(&mtx, f, 0, 1);
+    err = mtx_write(&mtx, f, "%.1f");
     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
     fclose(f);
     mtx_free(&mtx);
@@ -1001,7 +1001,7 @@ int test_mtx_gzwrite_matrix_coordinate_real(void)
             mtx_free(&mtx);
             exit(EXIT_FAILURE);
         }
-        err = mtx_gzwrite(&mtx, gz_f, 0, 1);
+        err = mtx_gzwrite(&mtx, gz_f, "%.1f");
         if (err) {
             fprintf(stdout, "FAIL:%s:%s:%d: "
                     "Assertion failed: MTX_SUCCESS != %d (%s)\n",

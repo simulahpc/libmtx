@@ -49,8 +49,7 @@ int write_mtx(
     const char * mtx_path,
     bool gzip,
     const struct mtx * mtx,
-    int field_width,
-    int precision,
+    const char * format,
     int verbose);
 
 #endif

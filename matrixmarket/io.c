@@ -25,6 +25,7 @@
 #include <matrixmarket/libmtx-config.h>
 
 #include <matrixmarket/error.h>
+#include <matrixmarket/format.h>
 #include <matrixmarket/io.h>
 #include <matrixmarket/matrix.h>
 #include <matrixmarket/matrix_array.h>
@@ -103,6 +104,24 @@ static int stream_printf(
     err = stream_vprintf(stream, format, va);
     va_end(va);
     return err;
+}
+
+static int stream_putc(
+    int c,
+    const struct stream * stream)
+{
+    if (stream->type == stream_stdio) {
+        FILE * f = stream->stdio_f;
+        return fputc(c, f);
+#ifdef LIBMTX_HAVE_LIBZ
+    } else if (stream->type == stream_gz) {
+        gzFile f = stream->gz_f;
+        return gzputc(f, c);
+#endif
+    } else {
+        errno = EINVAL;
+        return MTX_ERR_ERRNO;
+    }
 }
 
 /**
@@ -686,17 +705,17 @@ static int read_data_array(
 
         /* 2. Read each line of data. */
         for (int64_t k = 0; k < size; k++) {
-                err = read_line(stream, line_max, linebuf);
-                if (err) {
-                    free(data);
-                    return err;
-                }
-                err = parse_array_double(linebuf, &data[k]);
-                if (err) {
-                    free(data);
-                    return err;
-                }
-                (*line_number)++; *column_number = 1;
+            err = read_line(stream, line_max, linebuf);
+            if (err) {
+                free(data);
+                return err;
+            }
+            err = parse_array_double(linebuf, &data[k]);
+            if (err) {
+                free(data);
+                return err;
+            }
+            (*line_number)++; *column_number = 1;
         }
         *out_data = (void *) data;
 
@@ -708,18 +727,18 @@ static int read_data_array(
 
         /* 2. Read each line of data. */
         for (int64_t k = 0; k < size; k++) {
-                err = read_line(stream, line_max, linebuf);
-                if (err) {
-                    free(data);
-                    return err;
-                }
-                err = parse_array_complex(
-                    linebuf, &data[2*k+0], &data[2*k+1]);
-                if (err) {
-                    free(data);
-                    return err;
-                }
-                (*line_number)++; *column_number = 1;
+            err = read_line(stream, line_max, linebuf);
+            if (err) {
+                free(data);
+                return err;
+            }
+            err = parse_array_complex(
+                linebuf, &data[2*k+0], &data[2*k+1]);
+            if (err) {
+                free(data);
+                return err;
+            }
+            (*line_number)++; *column_number = 1;
         }
         *out_data = (void *) data;
 
@@ -1588,18 +1607,78 @@ int mtx_gzread(
 #endif
 
 /**
+ * `validate_format_string()' parses and validates a format string.
+ */
+static int validate_format_string(
+    const char * format_str,
+    enum mtx_field field)
+{
+    struct format_specifier format;
+    const char * endptr;
+    int err = parse_format_specifier(format_str, &format, &endptr);
+    if (err) {
+        errno = err;
+        return MTX_ERR_ERRNO;
+    } else if (*endptr != '\0') {
+        errno = EINVAL;
+        return MTX_ERR_ERRNO;
+    }
+
+    if (format.width == format_specifier_width_star ||
+        format.precision == format_specifier_precision_star ||
+        format.length != format_specifier_length_none ||
+        ((field == mtx_real ||
+          field == mtx_double ||
+          field == mtx_complex) &&
+         (format.specifier != format_specifier_e &&
+          format.specifier != format_specifier_E &&
+          format.specifier != format_specifier_f &&
+          format.specifier != format_specifier_F &&
+          format.specifier != format_specifier_g &&
+          format.specifier != format_specifier_G)) ||
+        (field == mtx_integer &&
+         (format.specifier != format_specifier_d)))
+    {
+        errno = EINVAL;
+        return MTX_ERR_ERRNO;
+    }
+    return MTX_SUCCESS;
+}
+
+/**
  * `write_matrix()` writes a matrix to a stream in Matrix Market
  * format.
+ *
+ * If `format' is `NULL', then the format specifier '%d' is used to
+ * print integers and '%f' is used to print floating point
+ * numbers. Otherwise, the given format string is used when printing
+ * numerical values.
+ *
+ * The format string follows the conventions of `printf'. If the field
+ * is `real', `double' or `complex', then the format specifiers '%e',
+ * '%E', '%f', '%F', '%g' or '%G' may be used. If the field is
+ * `integer', then the format specifier must be '%d'. The format
+ * string is ignored if the field is `pattern'. Field width and
+ * precision may be specified (e.g., "%3.1f"), but variable field
+ * width and precision (e.g., "%*.*f"), as well as length modifiers
+ * (e.g., "%Lf") are not allowed.
  */
 static int write_matrix(
     const struct mtx * matrix,
     const struct stream * stream,
-    int field_width,
-    int precision)
+    const char * format)
 {
+    int err;
     if (matrix->object != mtx_matrix) {
         errno = EINVAL;
         return MTX_ERR_ERRNO;
+    }
+
+    /* Parse and validate the format string. */
+    if (format) {
+        err = validate_format_string(format, matrix->field);
+        if (err)
+            return err;
     }
 
     /* 1. Write the header line. */
@@ -1634,39 +1713,39 @@ static int write_matrix(
             const float * a = (const float *) matrix->data;
             for (int i = 0; i < matrix->num_rows; i++) {
                 for (int j = 0; j < matrix->num_columns; j++) {
-                    stream_printf(
-                        stream, "%*.*f\n", field_width, precision,
-                        a[i*matrix->num_columns+j]);
+                    stream_printf(stream, format ? format : "%f",
+                                  a[i*matrix->num_columns+j]);
+                    stream_putc('\n', stream);
                 }
             }
         } else if (matrix->field == mtx_double) {
             const double * a = (const double *) matrix->data;
             for (int i = 0; i < matrix->num_rows; i++) {
                 for (int j = 0; j < matrix->num_columns; j++) {
-                    stream_printf(
-                        stream, "%*.*lf\n", field_width, precision,
-                        a[i*matrix->num_columns+j]);
+                    stream_printf(stream, format ? format : "%f",
+                                  a[i*matrix->num_columns+j]);
+                    stream_putc('\n', stream);
                 }
             }
         } else if (matrix->field == mtx_complex) {
             const float * a = (const float *) matrix->data;
             for (int i = 0; i < matrix->num_rows; i++) {
                 for (int j = 0; j < matrix->num_columns; j++) {
-                    stream_printf(
-                        stream, "%*.*f %*.*f\n",
-                        field_width, precision,
-                        a[2*(i*matrix->num_columns+j)+0],
-                        field_width, precision,
-                        a[2*(i*matrix->num_columns+j)+1]);
+                    stream_printf(stream, format ? format : "%f",
+                                  a[2*(i*matrix->num_columns+j)+0]);
+                    stream_putc(' ', stream);
+                    stream_printf(stream, format ? format : "%f",
+                                  a[2*(i*matrix->num_columns+j)+1]);
+                    stream_putc('\n', stream);
                 }
             }
         } else if (matrix->field == mtx_integer) {
             const int * a = (const int *) matrix->data;
             for (int i = 0; i < matrix->num_rows; i++) {
                 for (int j = 0; j < matrix->num_columns; j++) {
-                    stream_printf(
-                        stream, "%*d\n", field_width,
-                        a[i*matrix->num_columns+j]);
+                    stream_printf(stream, format ? format : "%d",
+                                  a[i*matrix->num_columns+j]);
+                    stream_putc('\n', stream);
                 }
             }
         } else {
@@ -1679,34 +1758,35 @@ static int write_matrix(
             const struct mtx_matrix_coordinate_real * a =
                 (const struct mtx_matrix_coordinate_real *) matrix->data;
             for (int64_t k = 0; k < matrix->size; k++) {
-                stream_printf(
-                    stream, "%d %d %*.*f\n", a[k].i, a[k].j,
-                    field_width, precision, a[k].a);
+                stream_printf(stream, "%d %d ", a[k].i, a[k].j);
+                stream_printf(stream, format ? format : "%f", a[k].a);
+                stream_putc('\n', stream);
             }
         } else if (matrix->field == mtx_double) {
             const struct mtx_matrix_coordinate_double * a =
                 (const struct mtx_matrix_coordinate_double *) matrix->data;
             for (int64_t k = 0; k < matrix->size; k++) {
-                stream_printf(
-                    stream, "%d %d %*.*lf\n", a[k].i, a[k].j,
-                    field_width, precision, a[k].a);
+                stream_printf(stream, "%d %d ", a[k].i, a[k].j);
+                stream_printf(stream, format ? format : "%f", a[k].a);
+                stream_putc('\n', stream);
             }
         } else if (matrix->field == mtx_complex) {
             const struct mtx_matrix_coordinate_complex * a =
                 (const struct mtx_matrix_coordinate_complex *) matrix->data;
             for (int64_t k = 0; k < matrix->size; k++) {
-                stream_printf(
-                    stream, "%d %d %*.*f %*.*f\n", a[k].i, a[k].j,
-                    field_width, precision, a[k].a,
-                    field_width, precision, a[k].b);
+                stream_printf(stream, "%d %d ", a[k].i, a[k].j);
+                stream_printf(stream, format ? format : "%f", a[k].a);
+                stream_putc(' ', stream);
+                stream_printf(stream, format ? format : "%f", a[k].b);
+                stream_putc('\n', stream);
             }
         } else if (matrix->field == mtx_integer) {
             const struct mtx_matrix_coordinate_integer * a =
                 (const struct mtx_matrix_coordinate_integer *) matrix->data;
             for (int64_t k = 0; k < matrix->size; k++) {
-                stream_printf(
-                    stream, "%d %d %*d\n", a[k].i, a[k].j,
-                    field_width, a[k].a);
+                stream_printf(stream, "%d %d ", a[k].i, a[k].j);
+                stream_printf(stream, format ? format : "%d", a[k].a);
+                stream_putc('\n', stream);
             }
         } else if (matrix->field == mtx_pattern) {
             const struct mtx_matrix_coordinate_pattern * a =
@@ -1730,17 +1810,39 @@ static int write_matrix(
 /**
  * `write_vector()` writes a vector to a stream in the Matrix Market
  * format.
+ *
+ * If `format' is `NULL', then the format specifier '%d' is used to
+ * print integers and '%f' is used to print floating point
+ * numbers. Otherwise, the given format string is used when printing
+ * numerical values.
+ *
+ * The format string follows the conventions of `printf'. If the field
+ * is `real', `double' or `complex', then the format specifiers '%e',
+ * '%E', '%f', '%F', '%g' or '%G' may be used. If the field is
+ * `integer', then the format specifier must be '%d'. The format
+ * string is ignored if the field is `pattern'. Field width and
+ * precision may be specified (e.g., "%3.1f"), but variable field
+ * width and precision (e.g., "%*.*f"), as well as length modifiers
+ * (e.g., "%Lf") are not allowed.
  */
 static int write_vector(
     const struct mtx * vector,
     const struct stream * stream,
-    int field_width,
-    int precision)
+    const char * format)
 {
+    int err;
     if (vector->object != mtx_vector) {
         errno = EINVAL;
         return MTX_ERR_ERRNO;
     }
+
+    /* Parse and validate the format string. */
+    if (format) {
+        err = validate_format_string(format, vector->field);
+        if (err)
+            return err;
+    }
+
     if (vector->format == mtx_coordinate) {
         errno = ENOTSUP;
         return MTX_ERR_ERRNO;
@@ -1760,7 +1862,7 @@ static int write_vector(
 
     /* 3. Write the size line. */
     if (vector->format == mtx_array)
-        stream_printf(stream, "%d\n", vector->num_rows);
+        stream_printf(stream, "%d\n", vector->size);
     else {
         errno = EINVAL;
         return MTX_ERR_ERRNO;
@@ -1770,42 +1872,29 @@ static int write_vector(
     if (vector->format == mtx_array) {
         if (vector->field == mtx_real) {
             const float * a = (const float *) vector->data;
-            for (int i = 0; i < vector->num_rows; i++) {
-                for (int j = 0; j < vector->num_columns; j++) {
-                    stream_printf(
-                        stream, "%*.*f\n", field_width, precision,
-                        a[i*vector->num_columns+j]);
-                }
+            for (int i = 0; i < vector->size; i++) {
+                stream_printf(stream, format ? format : "%f", a[i]);
+                stream_putc('\n', stream);
             }
         } else if (vector->field == mtx_double) {
             const double * a = (const double *) vector->data;
-            for (int i = 0; i < vector->num_rows; i++) {
-                for (int j = 0; j < vector->num_columns; j++) {
-                    stream_printf(
-                        stream, "%*.*lf\n", field_width, precision,
-                        a[i*vector->num_columns+j]);
-                }
+            for (int i = 0; i < vector->size; i++) {
+                stream_printf(stream, format ? format : "%f", a[i]);
+                stream_putc('\n', stream);
             }
         } else if (vector->field == mtx_complex) {
             const float * a = (const float *) vector->data;
-            for (int i = 0; i < vector->num_rows; i++) {
-                for (int j = 0; j < vector->num_columns; j++) {
-                    stream_printf(
-                        stream, "%*.*f %*.*f\n",
-                        field_width, precision,
-                        a[2*(i*vector->num_columns+j)+0],
-                        field_width, precision,
-                        a[2*(i*vector->num_columns+j)+1]);
-                }
+            for (int i = 0; i < vector->size; i++) {
+                stream_printf(stream, format ? format : "%f", a[2*i+0]);
+                stream_putc(' ', stream);
+                stream_printf(stream, format ? format : "%f", a[2*i+1]);
+                stream_putc('\n', stream);
             }
         } else if (vector->field == mtx_integer) {
             const int * a = (const int *) vector->data;
-            for (int i = 0; i < vector->num_rows; i++) {
-                for (int j = 0; j < vector->num_columns; j++) {
-                    stream_printf(
-                        stream, "%*d\n", field_width,
-                        a[i*vector->num_columns+j]);
-                }
+            for (int i = 0; i < vector->size; i++) {
+                stream_printf(stream, format ? format : "%d", a[i]);
+                stream_putc('\n', stream);
             }
         } else {
             errno = EINVAL;
@@ -1827,21 +1916,18 @@ static int write_vector(
 static int write_mtx(
     const struct mtx * matrix,
     const struct stream * stream,
-    int field_width,
-    int precision)
+    const char * format)
 {
     int err;
     switch (matrix->object) {
     case mtx_matrix:
-        err = write_matrix(
-            matrix, stream, field_width, precision);
+        err = write_matrix(matrix, stream, format);
         if (err)
             return err;
         break;
 
     case mtx_vector:
-        err = write_vector(
-            matrix, stream, field_width, precision);
+        err = write_vector(matrix, stream, format);
         if (err)
             return err;
         break;
@@ -1856,33 +1942,59 @@ static int write_mtx(
 /**
  * `mtx_write()` writes a matrix to a stream in the Matrix Market
  * format.
+ *
+ * If `format' is `NULL', then the format specifier '%d' is used to
+ * print integers and '%f' is used to print floating point
+ * numbers. Otherwise, the given format string is used when printing
+ * numerical values.
+ *
+ * The format string follows the conventions of `printf'. If the field
+ * is `real', `double' or `complex', then the format specifiers '%e',
+ * '%E', '%f', '%F', '%g' or '%G' may be used. If the field is
+ * `integer', then the format specifier must be '%d'. The format
+ * string is ignored if the field is `pattern'. Field width and
+ * precision may be specified (e.g., "%3.1f"), but variable field
+ * width and precision (e.g., "%*.*f"), as well as length modifiers
+ * (e.g., "%Lf") are not allowed.
  */
 int mtx_write(
     const struct mtx * mtx,
     FILE * f,
-    int field_width,
-    int precision)
+    const char * format)
 {
     struct stream stream;
     stream.type = stream_stdio;
     stream.stdio_f = f;
-    return write_mtx(mtx, &stream, field_width, precision);
+    return write_mtx(mtx, &stream, format);
 }
 
 #ifdef LIBMTX_HAVE_LIBZ
 /**
  * `mtx_gzwrite()` writes a matrix or vector to a gzip-compressed
  * stream in Matrix Market format.
+ *
+ * If `format' is `NULL', then the format specifier '%d' is used to
+ * print integers and '%f' is used to print floating point
+ * numbers. Otherwise, the given format string is used when printing
+ * numerical values.
+ *
+ * The format string follows the conventions of `printf'. If the field
+ * is `real', `double' or `complex', then the format specifiers '%e',
+ * '%E', '%f', '%F', '%g' or '%G' may be used. If the field is
+ * `integer', then the format specifier must be '%d'. The format
+ * string is ignored if the field is `pattern'. Field width and
+ * precision may be specified (e.g., "%3.1f"), but variable field
+ * width and precision (e.g., "%*.*f"), as well as length modifiers
+ * (e.g., "%Lf") are not allowed.
  */
 int mtx_gzwrite(
     const struct mtx * mtx,
     gzFile f,
-    int field_width,
-    int precision)
+    const char * format)
 {
     struct stream stream;
     stream.type = stream_gz;
     stream.gz_f = f;
-    return write_mtx(mtx, &stream, field_width, precision);
+    return write_mtx(mtx, &stream, format);
 }
 #endif
