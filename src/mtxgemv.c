@@ -642,9 +642,8 @@ int main(int argc, char *argv[])
         if (err) {
             if (args.verbose > 0)
                 fprintf(diagf, "\n");
-            fprintf(stderr, "%s: %s: %s\n",
+            fprintf(stderr, "%s: %s\n",
                     program_invocation_short_name,
-                    args.x_path,
                     mtx_strerror(err));
             mtx_free(&y);
             mtx_free(&x);
