@@ -16,7 +16,7 @@
 @c <https://www.gnu.org/licenses/>.
 @c
 @c Authors: James D. Trotter <james@simula.no>
-@c Last modified: 2021-06-18
+@c Last modified: 2021-07-01
 @c
 @c libmtx User Guide: Commands.
 
@@ -142,14 +142,12 @@ In addition, the following options are accepted:
 @item -z, --gzip, --gunzip, --ungzip
 Filter files through gzip.
 
-@item --output-width=N
-The field width to use when outputting numerical values in Matrix
-Market files.
-
-@item --output-prec=N
-The number of digits of precision to use when outputting numerical
-values in Matrix Market files. The default is to use 6 digits after
-the decimal place.
+@item --format=FORMAT
+Format string for outputting numerical values.  For real, double and
+complex values, the format specifiers @samp{%e}, @samp{%E}, @samp{%f},
+@samp{%F}, @samp{%g} or @samp{%G} may be used, whereas @samp{%d} must
+be used for integers. Flags, field width and precision can optionally
+be specified, e.g., @samp{%+3.1f}.
 
 @item --repeat=N
 The number of times to repeat the matrix-vector multiplication.
@@ -179,14 +177,12 @@ The following options are accepted:
 @item -z, --gzip, --gunzip, --ungzip
 Filter the file through gzip.
 
-@item --output-width=N
-The field width to use when outputting numerical values in Matrix
-Market files.
-
-@item --output-prec=N
-The number of digits of precision to use when outputting numerical
-values in Matrix Market files. The default is to use 6 digits after
-the decimal place.
+@item --format=FORMAT
+Format string for outputting numerical values.  For real, double and
+complex values, the format specifiers @samp{%e}, @samp{%E}, @samp{%f},
+@samp{%F}, @samp{%g} or @samp{%G} may be used, whereas @samp{%d} must
+be used for integers. Flags, field width and precision can optionally
+be specified, e.g., @samp{%+3.1f}.
 
 @item --sorting=SORTING
 The ordering to use when sorting the data. This is either
@@ -236,14 +232,12 @@ Output path for the scattered Matrix Market files, where @samp{%p} in
 the string is replaced with the rank of each MPI process. If not
 specified, the default output path is @samp{out%p.mtx}.
 
-@item --output-width=N
-The field width to use when outputting numerical values in Matrix
-Market files.
-
-@item --output-prec=N
-The number of digits of precision to use when outputting numerical
-values in Matrix Market files. The default is to use 6 digits after
-the decimal place.
+@item --format=FORMAT
+Format string for outputting numerical values.  For real, double and
+complex values, the format specifiers @samp{%e}, @samp{%E}, @samp{%f},
+@samp{%F}, @samp{%g} or @samp{%G} may be used, whereas @samp{%d} must
+be used for integers. Flags, field width and precision can optionally
+be specified, e.g., @samp{%+3.1f}.
 
 @item -v, --verbose
 Print diagnostics to standard error.
@@ -269,14 +263,12 @@ The following options are accepted:
 @item -z, --gzip, --gunzip, --ungzip
 Filter files through gzip.
 
-@item --output-width=N
-The field width to use when outputting numerical values in Matrix
-Market files.
-
-@item --output-prec=N
-The number of digits of precision to use when outputting numerical
-values in Matrix Market files. The default is to use 6 digits after
-the decimal place.
+@item --format=FORMAT
+Format string for outputting numerical values.  For real, double and
+complex values, the format specifiers @samp{%e}, @samp{%E}, @samp{%f},
+@samp{%F}, @samp{%g} or @samp{%G} may be used, whereas @samp{%d} must
+be used for integers. Flags, field width and precision can optionally
+be specified, e.g., @samp{%+3.1f}.
 
 @item -q, --quiet
 Do not print the resulting Matrix Market file to standard output.
