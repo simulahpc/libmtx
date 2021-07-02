@@ -226,6 +226,17 @@ int mtx_copy(
     const struct mtx * srcmtx);
 
 /**
+ * `mtx_set_comment_lines()' copies comment lines to a Matrix Market
+ * object.
+ *
+ * Any storage associated with existing comment lines is freed.
+ */
+int mtx_set_comment_lines(
+    struct mtx * mtx,
+    int  num_comment_lines,
+    const char ** comment_lines);
+
+/**
  * `mtx_sort()' sorts matrix or vector nonzeros in a given order.
  */
 int mtx_sort(

@@ -42,18 +42,21 @@ int mtx_alloc_vector_array_real(
     const char ** comment_lines,
     int size)
 {
+    int err;
+
     mtx->object = mtx_vector;
     mtx->format = mtx_array;
     mtx->field = mtx_real;
     mtx->symmetry = mtx_general;
-    mtx->num_comment_lines = num_comment_lines;
+    mtx->sorting = mtx_row_major;
+    mtx->ordering = mtx_unordered;
+    mtx->assembly = mtx_assembled;
 
-    /* Allocate storage for and copy comment lines. */
-    mtx->comment_lines = malloc(num_comment_lines * sizeof(char *));
-    if (!mtx->comment_lines)
-        return MTX_ERR_ERRNO;
-    for (int i = 0; i < num_comment_lines; i++)
-        mtx->comment_lines[i] = strdup(comment_lines[i]);
+    mtx->num_comment_lines = 0;
+    mtx->comment_lines = NULL;
+    err = mtx_set_comment_lines(mtx, num_comment_lines, comment_lines);
+    if (err)
+        return err;
 
     mtx->num_rows = size;
     mtx->num_columns = 1;
@@ -139,18 +142,21 @@ int mtx_alloc_vector_array_double(
     const char ** comment_lines,
     int size)
 {
+    int err;
+
     mtx->object = mtx_vector;
     mtx->format = mtx_array;
     mtx->field = mtx_double;
     mtx->symmetry = mtx_general;
-    mtx->num_comment_lines = num_comment_lines;
+    mtx->sorting = mtx_row_major;
+    mtx->ordering = mtx_unordered;
+    mtx->assembly = mtx_assembled;
 
-    /* Allocate storage for and copy comment lines. */
-    mtx->comment_lines = malloc(num_comment_lines * sizeof(char *));
-    if (!mtx->comment_lines)
-        return MTX_ERR_ERRNO;
-    for (int i = 0; i < num_comment_lines; i++)
-        mtx->comment_lines[i] = strdup(comment_lines[i]);
+    mtx->num_comment_lines = 0;
+    mtx->comment_lines = NULL;
+    err = mtx_set_comment_lines(mtx, num_comment_lines, comment_lines);
+    if (err)
+        return err;
 
     mtx->num_rows = size;
     mtx->num_columns = 1;
@@ -236,18 +242,21 @@ int mtx_alloc_vector_array_complex(
     const char ** comment_lines,
     int size)
 {
+    int err;
+
     mtx->object = mtx_vector;
     mtx->format = mtx_array;
     mtx->field = mtx_complex;
     mtx->symmetry = mtx_general;
-    mtx->num_comment_lines = num_comment_lines;
+    mtx->sorting = mtx_row_major;
+    mtx->ordering = mtx_unordered;
+    mtx->assembly = mtx_assembled;
 
-    /* Allocate storage for and copy comment lines. */
-    mtx->comment_lines = malloc(num_comment_lines * sizeof(char *));
-    if (!mtx->comment_lines)
-        return MTX_ERR_ERRNO;
-    for (int i = 0; i < num_comment_lines; i++)
-        mtx->comment_lines[i] = strdup(comment_lines[i]);
+    mtx->num_comment_lines = 0;
+    mtx->comment_lines = NULL;
+    err = mtx_set_comment_lines(mtx, num_comment_lines, comment_lines);
+    if (err)
+        return err;
 
     mtx->num_rows = size;
     mtx->num_columns = 1;
@@ -341,18 +350,21 @@ int mtx_alloc_vector_array_integer(
     const char ** comment_lines,
     int size)
 {
+    int err;
+
     mtx->object = mtx_vector;
     mtx->format = mtx_array;
     mtx->field = mtx_integer;
     mtx->symmetry = mtx_general;
-    mtx->num_comment_lines = num_comment_lines;
+    mtx->sorting = mtx_row_major;
+    mtx->ordering = mtx_unordered;
+    mtx->assembly = mtx_assembled;
 
-    /* Allocate storage for and copy comment lines. */
-    mtx->comment_lines = malloc(num_comment_lines * sizeof(char *));
-    if (!mtx->comment_lines)
-        return MTX_ERR_ERRNO;
-    for (int i = 0; i < num_comment_lines; i++)
-        mtx->comment_lines[i] = strdup(comment_lines[i]);
+    mtx->num_comment_lines = 0;
+    mtx->comment_lines = NULL;
+    err = mtx_set_comment_lines(mtx, num_comment_lines, comment_lines);
+    if (err)
+        return err;
 
     mtx->num_rows = size;
     mtx->num_columns = 1;

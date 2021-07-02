@@ -62,8 +62,15 @@ int mtx_copy(
     dst->comment_lines = malloc(dst->num_comment_lines * sizeof(char *));
     if (!dst->comment_lines)
         return MTX_ERR_ERRNO;
-    for (int i = 0; i < dst->num_comment_lines; i++)
+    for (int i = 0; i < dst->num_comment_lines; i++) {
         dst->comment_lines[i] = strdup(src->comment_lines[i]);
+        if (!dst->comment_lines[i]) {
+            for (int j = i-1; j >= 0; j--)
+                free(dst->comment_lines[j]);
+            free(dst->comment_lines);
+            return MTX_ERR_ERRNO;
+        }
+    }
     dst->num_rows = src->num_rows;
     dst->num_columns = src->num_columns;
     dst->num_nonzeros = src->num_nonzeros;
@@ -77,5 +84,42 @@ int mtx_copy(
         return MTX_ERR_ERRNO;
     }
     memcpy(dst->data, src->data, dst->size * dst->nonzero_size);
+    return MTX_SUCCESS;
+}
+
+/**
+ * `mtx_set_comment_lines()' copies comment lines to a Matrix Market
+ * object.
+ *
+ * Any storage associated with existing comment lines is freed.
+ */
+int mtx_set_comment_lines(
+    struct mtx * mtx,
+    int  num_comment_lines,
+    const char ** comment_lines)
+{
+    /* Copy the given comment lines. */
+    char ** comment_lines_copy = malloc(num_comment_lines * sizeof(char *));
+    if (!comment_lines_copy)
+        return MTX_ERR_ERRNO;
+    for (int i = 0; i < num_comment_lines; i++) {
+        comment_lines_copy[i] = strdup(comment_lines[i]);
+        if (!comment_lines_copy[i]) {
+            for (int j = i-1; j >= 0; j--)
+                free(comment_lines_copy[j]);
+            free(comment_lines_copy);
+            return MTX_ERR_ERRNO;
+        }
+    }
+
+    /* Free existing comment lines. */
+    if (mtx->comment_lines) {
+        for (int i = 0; i < mtx->num_comment_lines; i++)
+            free(mtx->comment_lines[i]);
+        free(mtx->comment_lines);
+    }
+
+    mtx->num_comment_lines = num_comment_lines;
+    mtx->comment_lines = comment_lines_copy;
     return MTX_SUCCESS;
 }

@@ -3,6 +3,10 @@
 	Add the function `mtx_matrix_size_per_row' to count the number of
 	entries stored in each row of a matrix.
 
+	Add the function `mtx_set_comment_lines' to reduce code
+	duplication related to allocating storage for and copying comment
+	lines to a Matrix Market object.
+
 2021-06-30 James D. Trotter <james@simula.no>
 
 	Allow specifying a format string for outputting numerical values
