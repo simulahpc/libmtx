@@ -17,7 +17,7 @@
  * <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-06-18
+ * Last modified: 2021-07-02
  *
  * BLAS operations for matrices and vectors in Matrix Market format.
  */
@@ -374,11 +374,11 @@ int mtx_dnrm2(
  * single precision floating-point values, `y = alpha*A*x + beta*y'.
  */
 int mtx_sgemv(
-         float alpha,
-         const struct mtx * A,
-         const struct mtx * x,
-         float beta,
-         struct mtx * y)
+    float alpha,
+    const struct mtx * A,
+    const struct mtx * x,
+    float beta,
+    struct mtx * y)
 {
     if (A->object != mtx_matrix || A->field != mtx_real ||
         A->symmetry != mtx_general ||
