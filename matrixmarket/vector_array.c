@@ -17,7 +17,7 @@
  * <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-06-18
+ * Last modified: 2021-07-02
  *
  * Dense vectors in Matrix Market format.
  */
@@ -62,6 +62,7 @@ int mtx_alloc_vector_array_real(
     mtx->num_columns = -1;
     mtx->num_nonzeros = size;
     mtx->size = size;
+    mtx->nonzero_size = sizeof(float);
 
     /* Allocate storage for vector data. */
     mtx->data = malloc(size * sizeof(float));
@@ -162,6 +163,7 @@ int mtx_alloc_vector_array_double(
     mtx->num_columns = -1;
     mtx->num_nonzeros = size;
     mtx->size = size;
+    mtx->nonzero_size = sizeof(double);
 
     /* Allocate storage for vector data. */
     mtx->data = malloc(size * sizeof(double));
@@ -262,6 +264,7 @@ int mtx_alloc_vector_array_complex(
     mtx->num_columns = -1;
     mtx->num_nonzeros = size;
     mtx->size = size;
+    mtx->nonzero_size = 2*sizeof(float);
 
     /* Allocate storage for vector data. */
     mtx->data = malloc(size * 2*sizeof(float));
@@ -370,6 +373,7 @@ int mtx_alloc_vector_array_integer(
     mtx->num_columns = -1;
     mtx->num_nonzeros = size;
     mtx->size = size;
+    mtx->nonzero_size = sizeof(int);
 
     /* Allocate storage for vector data. */
     mtx->data = malloc(size * sizeof(int));
