@@ -7,6 +7,8 @@
 	duplication related to allocating storage for and copying comment
 	lines to a Matrix Market object.
 
+	Consistently set `num_columns' to -1 for vectors.
+
 2021-06-30 James D. Trotter <james@simula.no>
 
 	Allow specifying a format string for outputting numerical values

@@ -117,7 +117,7 @@ struct mtx
     /**
      * `num_columns` is the number of columns in the matrix if
      * `object' is `matrix'. Otherwise, if `object' is `vector', then
-     * `num_columns' is equal to one.
+     * `num_columns' is equal to `-1'.
      */
     int num_columns;
 

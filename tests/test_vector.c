@@ -54,7 +54,7 @@ int test_mtx_init_vector_array_real(void)
     TEST_ASSERT_EQ(1, vector.num_comment_lines);
     TEST_ASSERT_STREQ("a comment", vector.comment_lines[0]);
     TEST_ASSERT_EQ(3, vector.num_rows);
-    TEST_ASSERT_EQ(1, vector.num_columns);
+    TEST_ASSERT_EQ(-1, vector.num_columns);
     TEST_ASSERT_EQ(3, vector.num_nonzeros);
     TEST_ASSERT_EQ(3, vector.size);
     TEST_ASSERT_EQ(1.0f, ((const float *) vector.data)[0]);
@@ -87,7 +87,7 @@ int test_mtx_init_vector_array_double(void)
     TEST_ASSERT_EQ(1, vector.num_comment_lines);
     TEST_ASSERT_STREQ("a comment", vector.comment_lines[0]);
     TEST_ASSERT_EQ(3, vector.num_rows);
-    TEST_ASSERT_EQ(1, vector.num_columns);
+    TEST_ASSERT_EQ(-1, vector.num_columns);
     TEST_ASSERT_EQ(3, vector.num_nonzeros);
     TEST_ASSERT_EQ(3, vector.size);
     TEST_ASSERT_EQ(1.0f, ((const double *) vector.data)[0]);
@@ -120,7 +120,7 @@ int test_mtx_init_vector_array_complex(void)
     TEST_ASSERT_EQ(1, vector.num_comment_lines);
     TEST_ASSERT_STREQ("a comment", vector.comment_lines[0]);
     TEST_ASSERT_EQ(2, vector.num_rows);
-    TEST_ASSERT_EQ(1, vector.num_columns);
+    TEST_ASSERT_EQ(-1, vector.num_columns);
     TEST_ASSERT_EQ(2, vector.num_nonzeros);
     TEST_ASSERT_EQ(2, vector.size);
     TEST_ASSERT_EQ(1.0f, ((const float *) vector.data)[0]);
@@ -154,7 +154,7 @@ int test_mtx_init_vector_array_integer(void)
     TEST_ASSERT_EQ(1, vector.num_comment_lines);
     TEST_ASSERT_STREQ("a comment", vector.comment_lines[0]);
     TEST_ASSERT_EQ(3, vector.num_rows);
-    TEST_ASSERT_EQ(1, vector.num_columns);
+    TEST_ASSERT_EQ(-1, vector.num_columns);
     TEST_ASSERT_EQ(3, vector.num_nonzeros);
     TEST_ASSERT_EQ(3, vector.size);
     TEST_ASSERT_EQ(1, ((const int *) vector.data)[0]);

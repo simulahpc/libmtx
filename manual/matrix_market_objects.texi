@@ -151,8 +151,8 @@ The size information in @code{struct mtx} includes @code{num_rows},
 of rows, column and nonzeros, respectively.
 
 Vectors are represented as row vectors, so that @code{num_rows} is
-equal to the number of elements and @code{num_columns} is equal to
-one.
+equal to the number of elements. @code{num_columns} is not used, so it
+is set equal to @code{-1}.
 
 For a dense vector or matrix, @code{num_nonzeros} is equal to
 @code{num_rows*num_columns}. Otherwise, it is equal to the total

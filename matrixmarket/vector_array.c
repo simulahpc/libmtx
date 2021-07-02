@@ -59,7 +59,7 @@ int mtx_alloc_vector_array_real(
         return err;
 
     mtx->num_rows = size;
-    mtx->num_columns = 1;
+    mtx->num_columns = -1;
     mtx->num_nonzeros = size;
     mtx->size = size;
 
@@ -159,7 +159,7 @@ int mtx_alloc_vector_array_double(
         return err;
 
     mtx->num_rows = size;
-    mtx->num_columns = 1;
+    mtx->num_columns = -1;
     mtx->num_nonzeros = size;
     mtx->size = size;
 
@@ -259,7 +259,7 @@ int mtx_alloc_vector_array_complex(
         return err;
 
     mtx->num_rows = size;
-    mtx->num_columns = 1;
+    mtx->num_columns = -1;
     mtx->num_nonzeros = size;
     mtx->size = size;
 
@@ -367,7 +367,7 @@ int mtx_alloc_vector_array_integer(
         return err;
 
     mtx->num_rows = size;
-    mtx->num_columns = 1;
+    mtx->num_columns = -1;
     mtx->num_nonzeros = size;
     mtx->size = size;
 
