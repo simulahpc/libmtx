@@ -122,14 +122,20 @@ int mtx_matrix_num_diagonal_nonzeros(
  * `include_strict_upper_triangular_part` is `false`, then only
  * nonzeros in the lower triangular part of the matrix are counted.
  *
- * `mtx_matrix_nonzeros_per_row()` returns `EINVAL` if `symmetry` is
- * `general` and `include_strict_upper_triangular_part` is `false`.
+ * `mtx_matrix_nonzeros_per_row()` returns `MTX_ERR_ERRNO' with
+ * `errno' set to `EINVAL' if `symmetry` is `general` and
+ * `include_strict_upper_triangular_part` is `false`.
  */
 int mtx_matrix_nonzeros_per_row(
     const struct mtx * matrix,
     bool include_strict_upper_triangular_part,
     int64_t * nonzeros_per_row)
 {
+    if (matrix->object != mtx_matrix) {
+        errno = EINVAL;
+        return MTX_ERR_ERRNO;
+    }
+
     if (matrix->format == mtx_array) {
         for (int i = 0; i < matrix->num_rows; i++)
             nonzeros_per_row[i] += matrix->num_columns;
@@ -161,7 +167,8 @@ int mtx_matrix_nonzeros_per_row(
                             nonzeros_per_row[data[k].j-1]++;
                     }
                 } else {
-                    return EINVAL;
+                    errno = EINVAL;
+                    return MTX_ERR_ERRNO;
                 }
             }
             break;
@@ -202,12 +209,108 @@ int mtx_matrix_nonzeros_per_row(
             }
             break;
         default:
-            return EINVAL;
+            errno = EINVAL;
+            return MTX_ERR_ERRNO;
         }
 
     } else {
-        return EINVAL;
+        errno = EINVAL;
+        return MTX_ERR_ERRNO;
     }
 
-    return 0;
+    return MTX_SUCCESS;
+}
+
+/**
+ * `mtx_matrix_size_per_row()' counts the number of entries stored for
+ * each row of a matrix.
+ *
+ * The array `size_per_row' must point to an array containing enough
+ * storage for `mtx->num_rows' values of type `int'.
+ */
+int mtx_matrix_size_per_row(
+    const struct mtx * mtx,
+    int * size_per_row)
+{
+    if (mtx->object != mtx_matrix) {
+        errno = EINVAL;
+        return MTX_ERR_ERRNO;
+    }
+
+    if (mtx->format == mtx_array) {
+        if (mtx->symmetry == mtx_general) {
+            for (int i = 0; i < mtx->num_rows; i++)
+                size_per_row[i] = mtx->num_columns;
+        } else if (mtx->symmetry == mtx_symmetric || mtx->symmetry == mtx_hermitian) {
+            for (int i = 0; i < mtx->num_rows; i++)
+                size_per_row[i] = i+1;
+        } else if (mtx->symmetry == mtx_skew_symmetric) {
+            for (int i = 0; i < mtx->num_rows; i++)
+                size_per_row[i] = i;
+        } else {
+            errno = EINVAL;
+            return MTX_ERR_ERRNO;
+        }
+
+    } else if (mtx->format == mtx_coordinate) {
+        for (int i = 0; i < mtx->num_rows; i++)
+            size_per_row[i] = 0;
+
+        switch (mtx->field) {
+        case mtx_real:
+            {
+                const struct mtx_matrix_coordinate_real * data =
+                    (const struct mtx_matrix_coordinate_real *)
+                    mtx->data;
+                for (int64_t k = 0; k < mtx->num_nonzeros; k++)
+                    size_per_row[data[k].i-1]++;
+            }
+            break;
+        case mtx_double:
+            {
+                const struct mtx_matrix_coordinate_double * data =
+                    (const struct mtx_matrix_coordinate_double *)
+                    mtx->data;
+                for (int64_t k = 0; k < mtx->num_nonzeros; k++)
+                    size_per_row[data[k].i-1]++;
+            }
+            break;
+        case mtx_complex:
+            {
+                const struct mtx_matrix_coordinate_complex * data =
+                    (const struct mtx_matrix_coordinate_complex *)
+                    mtx->data;
+                for (int64_t k = 0; k < mtx->num_nonzeros; k++)
+                    size_per_row[data[k].i-1]++;
+            }
+            break;
+        case mtx_integer:
+            {
+                const struct mtx_matrix_coordinate_integer * data =
+                    (const struct mtx_matrix_coordinate_integer *)
+                    mtx->data;
+                for (int64_t k = 0; k < mtx->num_nonzeros; k++)
+                    size_per_row[data[k].i-1]++;
+            }
+            break;
+        case mtx_pattern:
+            {
+                const struct mtx_matrix_coordinate_pattern * data =
+                    (const struct mtx_matrix_coordinate_pattern *)
+                    mtx->data;
+                for (int64_t k = 0; k < mtx->num_nonzeros; k++)
+                    size_per_row[data[k].i-1]++;
+            }
+            break;
+        default:
+            errno = EINVAL;
+            return MTX_ERR_ERRNO;
+        }
+
+    } else {
+        errno = EINVAL;
+        return MTX_ERR_ERRNO;
+    }
+
+    return MTX_SUCCESS;
 }

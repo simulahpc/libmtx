@@ -67,13 +67,25 @@ int mtx_matrix_num_diagonal_nonzeros(
  * `include_strict_upper_triangular_part` is `false`, then only
  * nonzeros in the lower triangular part of the matrix are counted.
  *
- * `mtx_matrix_nonzeros_per_row()` returns `EINVAL` if `symmetry` is
- * `general` and `include_strict_upper_triangular_part` is `false`.
+ * `mtx_matrix_nonzeros_per_row()` returns `MTX_ERR_ERRNO' with
+ * `errno' set to `EINVAL' if `symmetry` is `general` and
+ * `include_strict_upper_triangular_part` is `false`.
  */
 int mtx_matrix_nonzeros_per_row(
     const struct mtx * matrix,
     bool include_strict_upper_triangular_part,
     int64_t * nonzeros_per_row);
+
+/**
+ * `mtx_matrix_size_per_row()' counts the number of entries stored for
+ * each row of a matrix.
+ *
+ * The array `size_per_row' must point to an array containing enough
+ * storage for `mtx->num_rows' values of type `int'.
+ */
+int mtx_matrix_size_per_row(
+    const struct mtx * mtx,
+    int * size_per_row);
 
 /**
  * `mtx_matrix_submatrix()` obtains a submatrix consisting of the

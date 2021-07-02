@@ -105,6 +105,44 @@ int test_mtx_copy(void)
 }
 
 /**
+ * `test_mtx_matrix_size_per_row()' tests counting the number of
+ * matrix entries in each row of a matrix.
+ */
+int test_mtx_matrix_size_per_row(void)
+{
+    int err;
+
+    /* Create a sparse matrix. */
+    struct mtx mtx;
+    int num_comment_lines = 1;
+    const char * comment_lines[] = {"a comment"};
+    int num_rows = 4;
+    int num_columns = 4;
+    int64_t size = 6;
+    const struct mtx_matrix_coordinate_real data[] = {
+        {1,1,1.0f}, {1,4,2.0f},
+        {2,2,3.0f},
+        {3,3,4.0f},
+        {4,1,5.0f}, {4,4,6.0f}};
+    err = mtx_init_matrix_coordinate_real(
+        &mtx, mtx_general, mtx_unsorted, mtx_unordered, mtx_unassembled,
+        num_comment_lines, comment_lines,
+        num_rows, num_columns, size, data);
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+
+    /* Compute and check the size of each row. */
+    int size_per_row[4];
+    err = mtx_matrix_size_per_row(&mtx, size_per_row);
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ(2, size_per_row[0]);
+    TEST_ASSERT_EQ(1, size_per_row[1]);
+    TEST_ASSERT_EQ(1, size_per_row[2]);
+    TEST_ASSERT_EQ(2, size_per_row[3]);
+    mtx_free(&mtx);
+    return MTX_SUCCESS;
+}
+
+/**
  * `test_mtx_matrix_num_nonzeros()' tests computing the number of nonzeros
  * of a matrix or vector.
  */
@@ -211,6 +249,7 @@ int main(int argc, char * argv[])
 {
     TEST_SUITE_BEGIN("Running tests for Matrix Market objects\n");
     TEST_RUN(test_mtx_copy);
+    TEST_RUN(test_mtx_matrix_size_per_row);
     TEST_RUN(test_mtx_matrix_num_nonzeros);
     TEST_SUITE_END();
     return (TEST_SUITE_STATUS == TEST_SUCCESS) ?
