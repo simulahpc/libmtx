@@ -815,7 +815,7 @@ Note that @code{mtx_matrix_submatrix} currently only works for
 
 
 @node Matrix reordering
-@subsection Matrix reordering
+@section Matrix reordering
 @cindex reordering
 @cindex permutation
 There are a number of commonly used schemes for reordering the rows
@@ -856,16 +856,52 @@ used to reorder the columns based on a permutation of
 @code{column_permutation} is @code{NULL}, then no permutation is
 applied to the rows or columns, respectively.
 
+@findex mtx_matrix_reorder
+The function @code{mtx_matrix_reorder} reorders the rows and columns
+of a matrix according to the specified algorithm.
+@example
+@code{int mtx_matrix_reorder(
+    struct mtx * mtx,
+    int ** row_permutation,
+    int ** column_permutation,
+    enum mtx_ordering ordering,
+    int rcm_starting_vertex)}
+@end example
+
+Some algorithms may pose certain requirements on the matrix. For
+example, the Reverse Cuthill-McKee ordering requires a matrix to be
+square and in coordinate format.
+
+If successful, @code{mtx_matrix_reorder} returns @code{MTX_SUCCESS}, and the
+rows and columns of mtx have been reordered. If @code{row_permutation} is
+not @code{NULL} and the rows of a matrix were indeed reordered, then
+@code{row_permutation} is set to point to a newly allocated array
+containing the row permutation.  Furthermore, if @code{column_permutation}
+is not @code{NULL}, then @code{column_permutation} may be set to point to an
+array containing the column permutation. However, this is only done if
+the columns were also reordered and the permutation is not
+symmetric. That is, if the row and column permutations are the same,
+then only @code{row_permutation} is set and @code{*column_permutation} is set to
+@code{NULL}.
+
+If either of the @code{row_permutation} or @code{column_permutation} pointers
+are set, then the user is responsible for calling @code{free} to free the
+underlying storage.
+
+
+@node Reverse Cuthill-McKee (RCM)
+@subsection Reverse Cuthill-McKee (RCM)
 @findex mtx_matrix_reorder_rcm
 The function @code{mtx_matrix_reorder_rcm} can be used to reorder the
 rows and columns of a symmetric sparse matrix according to the Reverse
-Cuthill-McKee algorithm. This algorithm considers the matrix as the
-adjacency matrix of an undirected graph. The vertices of the graph,
-which correspond to rows and column of the matrix, are ordered by
-choosing a starting vertex and then traversing the graph in a
-breadth-first search, where the vertices at each level are ordered
-ascendingly by degree. In the end, after traversing the entire graph,
-the obtained ordering is reversed.
+Cuthill-McKee algorithm (@pxref{E. Cuthill and J. McKee (1969)}).
+
+The RCM algorithm considers the matrix as the adjacency matrix of an
+undirected graph. The vertices of the graph, which correspond to rows
+and column of the matrix, are ordered by choosing a starting vertex
+and then traversing the graph in a breadth-first search, where the
+vertices at each level are ordered ascendingly by degree. In the end,
+after traversing the entire graph, the obtained ordering is reversed.
 @example
 @code{int mtx_matrix_reorder_rcm(
     struct mtx * mtx,

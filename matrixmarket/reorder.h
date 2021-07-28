@@ -88,4 +88,35 @@ int mtx_matrix_reorder_rcm(
     int ** permutation,
     int starting_row);
 
+/**
+ * `mtx_matrix_reorder()` reorders the rows and columns of a matrix
+ * according to the specified algorithm.
+ *
+ * Some algorithms may pose certain requirements on the matrix. For
+ * example, the Reverse Cuthill-McKee ordering requires a matrix to be
+ * square and in coordinate format.
+ *
+ * If successful, `mtx_matrix_reorder()' returns `MTX_SUCCESS', and
+ * the rows and columns of mtx have been reordered. If
+ * `row_permutation' is not `NULL' and the rows of a matrix were
+ * indeed reordered, then `row_permutation' is set to point to a newly
+ * allocated array containing the row permutation.  Furthermore, if
+ * `column_permutation' is not `NULL', then `column_permutation' may
+ * be set to point to an array containing the column
+ * permutation. However, this is only done if the columns were also
+ * reordered and the permutation is not symmetric. That is, if the row
+ * and column permutations are the same, then only `row_permutation'
+ * is set and `*column_permutation' is set to `NULL'.
+ *
+ * If either of the `row_permutation' or `column_permutation' pointers
+ * are set, then the user is responsible for calling `free()' to free
+ * the underlying storage.
+ */
+int mtx_matrix_reorder(
+    struct mtx * mtx,
+    int ** row_permutation,
+    int ** column_permutation,
+    enum mtx_ordering ordering,
+    int rcm_starting_row);
+
 #endif
