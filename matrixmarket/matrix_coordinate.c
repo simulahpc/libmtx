@@ -17,7 +17,7 @@
  * <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-06-18
+ * Last modified: 2021-07-28
  *
  * Sparse matrices in Matrix Market format.
  */

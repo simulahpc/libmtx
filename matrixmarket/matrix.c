@@ -17,7 +17,7 @@
  * <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-06-18
+ * Last modified: 2021-07-28
  *
  * Data structures for representing objects in Matrix Market format.
  */
@@ -90,10 +90,8 @@ int mtx_matrix_num_diagonal_nonzeros(
     int64_t * num_diagonal_nonzeros)
 {
     int err;
-    if (matrix->object != mtx_matrix) {
-        errno = EINVAL;
-        return MTX_ERR_ERRNO;
-    }
+    if (matrix->object != mtx_matrix)
+        return MTX_ERR_INVALID_MTX_OBJECT;
 
     if (matrix->format == mtx_array) {
         *num_diagonal_nonzeros =
@@ -106,8 +104,7 @@ int mtx_matrix_num_diagonal_nonzeros(
         if (err)
             return err;
     } else {
-        errno = EINVAL;
-        return MTX_ERR_ERRNO;
+        return MTX_ERR_INVALID_MTX_FORMAT;
     }
     return MTX_SUCCESS;
 }
@@ -154,14 +151,14 @@ int mtx_matrix_nonzeros_per_row(
                       matrix->symmetry == mtx_skew_symmetric ||
                       matrix->symmetry == mtx_hermitian)))
                 {
-                    for (int64_t k = 0; k < matrix->num_nonzeros; k++)
+                    for (int64_t k = 0; k < matrix->size; k++)
                         nonzeros_per_row[data[k].i-1]++;
                 } else if (include_strict_upper_triangular_part &&
                            (matrix->symmetry == mtx_symmetric ||
                             matrix->symmetry == mtx_skew_symmetric ||
                             matrix->symmetry == mtx_hermitian))
                 {
-                    for (int64_t k = 0; k < matrix->num_nonzeros; k++) {
+                    for (int64_t k = 0; k < matrix->size; k++) {
                         nonzeros_per_row[data[k].i-1]++;
                         if (data[k].i != data[k].j)
                             nonzeros_per_row[data[k].j-1]++;
@@ -177,7 +174,7 @@ int mtx_matrix_nonzeros_per_row(
                 const struct mtx_matrix_coordinate_double * data =
                     (const struct mtx_matrix_coordinate_double *)
                     matrix->data;
-                for (int64_t k = 0; k < matrix->num_nonzeros; k++)
+                for (int64_t k = 0; k < matrix->size; k++)
                     nonzeros_per_row[data[k].i-1]++;
             }
             break;
@@ -186,7 +183,7 @@ int mtx_matrix_nonzeros_per_row(
                 const struct mtx_matrix_coordinate_complex * data =
                     (const struct mtx_matrix_coordinate_complex *)
                     matrix->data;
-                for (int64_t k = 0; k < matrix->num_nonzeros; k++)
+                for (int64_t k = 0; k < matrix->size; k++)
                     nonzeros_per_row[data[k].i-1]++;
             }
             break;
@@ -195,7 +192,7 @@ int mtx_matrix_nonzeros_per_row(
                 const struct mtx_matrix_coordinate_integer * data =
                     (const struct mtx_matrix_coordinate_integer *)
                     matrix->data;
-                for (int64_t k = 0; k < matrix->num_nonzeros; k++)
+                for (int64_t k = 0; k < matrix->size; k++)
                     nonzeros_per_row[data[k].i-1]++;
             }
             break;
@@ -204,7 +201,7 @@ int mtx_matrix_nonzeros_per_row(
                 const struct mtx_matrix_coordinate_pattern * data =
                     (const struct mtx_matrix_coordinate_pattern *)
                     matrix->data;
-                for (int64_t k = 0; k < matrix->num_nonzeros; k++)
+                for (int64_t k = 0; k < matrix->size; k++)
                     nonzeros_per_row[data[k].i-1]++;
             }
             break;
@@ -232,84 +229,220 @@ int mtx_matrix_size_per_row(
     const struct mtx * mtx,
     int * size_per_row)
 {
-    if (mtx->object != mtx_matrix) {
-        errno = EINVAL;
-        return MTX_ERR_ERRNO;
-    }
+    if (mtx->object != mtx_matrix)
+        return MTX_ERR_INVALID_MTX_OBJECT;
 
     if (mtx->format == mtx_array) {
         if (mtx->symmetry == mtx_general) {
             for (int i = 0; i < mtx->num_rows; i++)
                 size_per_row[i] = mtx->num_columns;
-        } else if (mtx->symmetry == mtx_symmetric || mtx->symmetry == mtx_hermitian) {
+        } else if (mtx->symmetry == mtx_symmetric ||
+                   mtx->symmetry == mtx_hermitian)
+        {
             for (int i = 0; i < mtx->num_rows; i++)
                 size_per_row[i] = i+1;
         } else if (mtx->symmetry == mtx_skew_symmetric) {
             for (int i = 0; i < mtx->num_rows; i++)
                 size_per_row[i] = i;
         } else {
-            errno = EINVAL;
-            return MTX_ERR_ERRNO;
+            return MTX_ERR_INVALID_MTX_SYMMETRY;
         }
 
     } else if (mtx->format == mtx_coordinate) {
         for (int i = 0; i < mtx->num_rows; i++)
             size_per_row[i] = 0;
 
-        switch (mtx->field) {
-        case mtx_real:
-            {
-                const struct mtx_matrix_coordinate_real * data =
-                    (const struct mtx_matrix_coordinate_real *)
-                    mtx->data;
-                for (int64_t k = 0; k < mtx->num_nonzeros; k++)
-                    size_per_row[data[k].i-1]++;
-            }
-            break;
-        case mtx_double:
-            {
-                const struct mtx_matrix_coordinate_double * data =
-                    (const struct mtx_matrix_coordinate_double *)
-                    mtx->data;
-                for (int64_t k = 0; k < mtx->num_nonzeros; k++)
-                    size_per_row[data[k].i-1]++;
-            }
-            break;
-        case mtx_complex:
-            {
-                const struct mtx_matrix_coordinate_complex * data =
-                    (const struct mtx_matrix_coordinate_complex *)
-                    mtx->data;
-                for (int64_t k = 0; k < mtx->num_nonzeros; k++)
-                    size_per_row[data[k].i-1]++;
-            }
-            break;
-        case mtx_integer:
-            {
-                const struct mtx_matrix_coordinate_integer * data =
-                    (const struct mtx_matrix_coordinate_integer *)
-                    mtx->data;
-                for (int64_t k = 0; k < mtx->num_nonzeros; k++)
-                    size_per_row[data[k].i-1]++;
-            }
-            break;
-        case mtx_pattern:
-            {
-                const struct mtx_matrix_coordinate_pattern * data =
-                    (const struct mtx_matrix_coordinate_pattern *)
-                    mtx->data;
-                for (int64_t k = 0; k < mtx->num_nonzeros; k++)
-                    size_per_row[data[k].i-1]++;
-            }
-            break;
-        default:
-            errno = EINVAL;
-            return MTX_ERR_ERRNO;
+        if (mtx->field == mtx_real) {
+            const struct mtx_matrix_coordinate_real * data =
+                (const struct mtx_matrix_coordinate_real *) mtx->data;
+            for (int64_t k = 0; k < mtx->size; k++)
+                size_per_row[data[k].i-1]++;
+        } else if (mtx->field == mtx_double) {
+            const struct mtx_matrix_coordinate_double * data =
+                (const struct mtx_matrix_coordinate_double *) mtx->data;
+            for (int64_t k = 0; k < mtx->size; k++)
+                size_per_row[data[k].i-1]++;
+        } else if (mtx->field == mtx_complex) {
+            const struct mtx_matrix_coordinate_complex * data =
+                (const struct mtx_matrix_coordinate_complex *) mtx->data;
+            for (int64_t k = 0; k < mtx->size; k++)
+                size_per_row[data[k].i-1]++;
+        } else if (mtx->field == mtx_integer) {
+            const struct mtx_matrix_coordinate_integer * data =
+                (const struct mtx_matrix_coordinate_integer *) mtx->data;
+            for (int64_t k = 0; k < mtx->size; k++)
+                size_per_row[data[k].i-1]++;
+        } else if (mtx->field == mtx_pattern) {
+            const struct mtx_matrix_coordinate_pattern * data =
+                (const struct mtx_matrix_coordinate_pattern *) mtx->data;
+            for (int64_t k = 0; k < mtx->size; k++)
+                size_per_row[data[k].i-1]++;
+        } else {
+            return MTX_ERR_INVALID_MTX_FIELD;
         }
 
     } else {
-        errno = EINVAL;
-        return MTX_ERR_ERRNO;
+        return MTX_ERR_INVALID_MTX_FORMAT;
+    }
+
+    return MTX_SUCCESS;
+}
+
+/**
+ * `mtx_matrix_row_ptr()' computes row pointers of a matrix.
+ *
+ * The array `row_ptr' must point to an array containing enough
+ * storage for `mtx->num_rows+1' values of type `int64_t'.
+ *
+ * The matrix is not required to be sorted in row major order.  If the
+ * matrix is sorted in row major order, then the `i'-th entry of the
+ * `row_ptr' is the location of the first nonzero in the `mtx->data'
+ * array that belongs to the `i+1'-th row of the matrix, for
+ * `i=0,1,...,mtx->num_rows-1'. The final entry of `row_ptr' indicates
+ * the position one place beyond the last nonzero in `mtx->data'.
+ */
+int mtx_matrix_row_ptr(
+    const struct mtx * mtx,
+    int64_t * row_ptr)
+{
+    if (mtx->object != mtx_matrix)
+        return MTX_ERR_INVALID_MTX_OBJECT;
+
+    /* 1. Count the number of entries in each row. */
+    if (mtx->format == mtx_array) {
+        if (mtx->symmetry == mtx_general) {
+            row_ptr[0] = 0;
+            for (int i = 0; i < mtx->num_rows; i++)
+                row_ptr[i+1] = mtx->num_columns;
+        } else if (mtx->symmetry == mtx_symmetric ||
+                   mtx->symmetry == mtx_hermitian)
+        {
+            row_ptr[0] = 0;
+            for (int i = 0; i < mtx->num_rows; i++)
+                row_ptr[i+1] = i+1;
+        } else if (mtx->symmetry == mtx_skew_symmetric) {
+            row_ptr[0] = 0;
+            for (int i = 0; i < mtx->num_rows; i++)
+                row_ptr[i+1] = i;
+        } else {
+            return MTX_ERR_INVALID_MTX_SYMMETRY;
+        }
+
+    } else if (mtx->format == mtx_coordinate) {
+        for (int i = 0; i <= mtx->num_rows; i++)
+            row_ptr[i] = 0;
+
+        if (mtx->field == mtx_real) {
+            const struct mtx_matrix_coordinate_real * data =
+                (const struct mtx_matrix_coordinate_real *) mtx->data;
+            for (int64_t k = 0; k < mtx->size; k++)
+                row_ptr[data[k].i]++;
+        } else if (mtx->field == mtx_double) {
+            const struct mtx_matrix_coordinate_double * data =
+                (const struct mtx_matrix_coordinate_double *) mtx->data;
+            for (int64_t k = 0; k < mtx->size; k++)
+                row_ptr[data[k].i]++;
+        } else if (mtx->field == mtx_complex) {
+            const struct mtx_matrix_coordinate_complex * data =
+                (const struct mtx_matrix_coordinate_complex *) mtx->data;
+            for (int64_t k = 0; k < mtx->size; k++)
+                row_ptr[data[k].i]++;
+        } else if (mtx->field == mtx_integer) {
+            const struct mtx_matrix_coordinate_integer * data =
+                (const struct mtx_matrix_coordinate_integer *) mtx->data;
+            for (int64_t k = 0; k < mtx->size; k++)
+                row_ptr[data[k].i]++;
+        } else if (mtx->field == mtx_pattern) {
+            const struct mtx_matrix_coordinate_pattern * data =
+                (const struct mtx_matrix_coordinate_pattern *) mtx->data;
+            for (int64_t k = 0; k < mtx->size; k++)
+                row_ptr[data[k].i]++;
+        } else {
+            return MTX_ERR_INVALID_MTX_FIELD;
+        }
+
+    } else {
+        return MTX_ERR_INVALID_MTX_FORMAT;
+    }
+
+    /* 2. Compute the prefix sum of the row lengths. */
+    for (int i = 1; i <= mtx->num_rows; i++)
+        row_ptr[i] += row_ptr[i-1];
+    return MTX_SUCCESS;
+}
+
+/**
+ * `mtx_matrix_diagonal_size_per_row()` counts for each row of a
+ * matrix the number of nonzero entries on the diagonal.
+ *
+ * The array `diagonal_size_per_row' must point to an array containing
+ * enough storage for `mtx->num_rows' values of type `int'.
+ */
+int mtx_matrix_diagonal_size_per_row(
+    const struct mtx * mtx,
+    int * diagonal_size_per_row)
+{
+    if (mtx->object != mtx_matrix)
+        return MTX_ERR_INVALID_MTX_OBJECT;
+
+    if (mtx->format == mtx_array) {
+        if (mtx->symmetry == mtx_general ||
+            mtx->symmetry == mtx_symmetric ||
+            mtx->symmetry == mtx_hermitian) {
+            for (int i = 0; i < mtx->num_rows; i++)
+                diagonal_size_per_row[i] = 1;
+        } else if (mtx->symmetry == mtx_skew_symmetric) {
+            for (int i = 0; i < mtx->num_rows; i++)
+                diagonal_size_per_row[i] = 0;
+        } else {
+            return MTX_ERR_INVALID_MTX_SYMMETRY;
+        }
+
+    } else if (mtx->format == mtx_coordinate) {
+        for (int i = 0; i < mtx->num_rows; i++)
+            diagonal_size_per_row[i] = 0;
+
+        if (mtx->field == mtx_real) {
+            const struct mtx_matrix_coordinate_real * data =
+                (const struct mtx_matrix_coordinate_real *) mtx->data;
+            for (int64_t k = 0; k < mtx->size; k++) {
+                if (data[k].i == data[k].j)
+                    diagonal_size_per_row[data[k].i-1]++;
+            }
+        } else if (mtx->field == mtx_double) {
+            const struct mtx_matrix_coordinate_double * data =
+                (const struct mtx_matrix_coordinate_double *) mtx->data;
+            for (int64_t k = 0; k < mtx->size; k++) {
+                if (data[k].i == data[k].j)
+                    diagonal_size_per_row[data[k].i-1]++;
+            }
+        } else if (mtx->field == mtx_complex) {
+            const struct mtx_matrix_coordinate_complex * data =
+                (const struct mtx_matrix_coordinate_complex *) mtx->data;
+            for (int64_t k = 0; k < mtx->size; k++) {
+                if (data[k].i == data[k].j)
+                    diagonal_size_per_row[data[k].i-1]++;
+            }
+        } else if (mtx->field == mtx_integer) {
+            const struct mtx_matrix_coordinate_integer * data =
+                (const struct mtx_matrix_coordinate_integer *) mtx->data;
+            for (int64_t k = 0; k < mtx->size; k++) {
+                if (data[k].i == data[k].j)
+                    diagonal_size_per_row[data[k].i-1]++;
+            }
+        } else if (mtx->field == mtx_pattern) {
+            const struct mtx_matrix_coordinate_pattern * data =
+                (const struct mtx_matrix_coordinate_pattern *) mtx->data;
+            for (int64_t k = 0; k < mtx->size; k++) {
+                if (data[k].i == data[k].j)
+                    diagonal_size_per_row[data[k].i-1]++;
+            }
+        } else {
+            return MTX_ERR_INVALID_MTX_FIELD;
+        }
+
+    } else {
+        return MTX_ERR_INVALID_MTX_FORMAT;
     }
 
     return MTX_SUCCESS;

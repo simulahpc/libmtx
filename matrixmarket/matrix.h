@@ -17,7 +17,7 @@
  * <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-06-18
+ * Last modified: 2021-07-28
  *
  * Various operations for matrices in the Matrix Market format.
  */
@@ -86,6 +86,34 @@ int mtx_matrix_nonzeros_per_row(
 int mtx_matrix_size_per_row(
     const struct mtx * mtx,
     int * size_per_row);
+
+/**
+ * `mtx_matrix_row_ptr()' computes row pointers of a matrix.
+ *
+ * The array `row_ptr' must point to an array containing enough
+ * storage for `mtx->num_rows+1' values of type `int64_t'.
+ *
+ * The matrix is not required to be sorted in row major order.  If the
+ * matrix is sorted in row major order, then the `i'-th entry of the
+ * `row_ptr' is the location of the first nonzero in the `mtx->data'
+ * array that belongs to the `i+1'-th row of the matrix, for
+ * `i=0,1,...,mtx->num_rows-1'. The final entry of `row_ptr' indicates
+ * the position one place beyond the last nonzero in `mtx->data'.
+ */
+int mtx_matrix_row_ptr(
+    const struct mtx * mtx,
+    int64_t * row_ptr);
+
+/**
+ * `mtx_matrix_diagonal_size_per_row()` counts for each row of a
+ * matrix the number of stored nonzero entries on the diagonal.
+ *
+ * The array `diagonal_size_per_row' must point to an array containing
+ * enough storage for `mtx->num_rows' values of type `int'.
+ */
+int mtx_matrix_diagonal_size_per_row(
+    const struct mtx * mtx,
+    int * diagonal_size_per_row);
 
 /**
  * `mtx_matrix_submatrix()` obtains a submatrix consisting of the

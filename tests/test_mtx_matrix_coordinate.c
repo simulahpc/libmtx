@@ -25,6 +25,7 @@
 #include "test.h"
 
 #include <matrixmarket/error.h>
+#include <matrixmarket/matrix.h>
 #include <matrixmarket/matrix_coordinate.h>
 #include <matrixmarket/mtx.h>
 #include <matrixmarket/header.h>
@@ -368,6 +369,45 @@ int test_mtx_init_matrix_coordinate_pattern_general(void)
 }
 
 /**
+ * `test_mtx_matrix_row_ptr_coordinate_real()` tests computing row
+ * pointers of a sparse matrix with real, single-precision
+ * coefficients in the Matrix Market format.
+ */
+int test_mtx_matrix_row_ptr_coordinate_real(void)
+{
+    int err;
+    struct mtx mtx;
+    int num_comment_lines = 0;
+    const char * comment_lines[] = {};
+    int num_rows = 4;
+    int num_columns = 4;
+    int64_t size = 6;
+    const struct mtx_matrix_coordinate_real data[] = {
+        {1,1,1.0f}, {1,4,2.0f},
+        {2,2,3.0f},
+        {3,3,4.0f},
+        {4,1,5.0f}, {4,4,6.0f}};
+    err = mtx_init_matrix_coordinate_real(
+        &mtx, mtx_general, mtx_unsorted, mtx_unordered, mtx_unassembled,
+        num_comment_lines, comment_lines,
+        num_rows, num_columns, size, data);
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+
+    int64_t * row_ptr = malloc((mtx.num_rows+1) * sizeof(int64_t));
+    TEST_ASSERT(row_ptr);
+    err = mtx_matrix_row_ptr(&mtx, row_ptr);
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ(0, row_ptr[0]);
+    TEST_ASSERT_EQ(2, row_ptr[1]);
+    TEST_ASSERT_EQ(3, row_ptr[2]);
+    TEST_ASSERT_EQ(4, row_ptr[3]);
+    TEST_ASSERT_EQ(6, row_ptr[4]);
+    free(row_ptr);
+    mtx_free(&mtx);
+    return TEST_SUCCESS;
+}
+
+/**
  * `main()' entry point and test driver.
  */
 int main(int argc, char * argv[])
@@ -380,6 +420,7 @@ int main(int argc, char * argv[])
     TEST_RUN(test_mtx_init_matrix_coordinate_complex_general);
     TEST_RUN(test_mtx_init_matrix_coordinate_integer_general);
     TEST_RUN(test_mtx_init_matrix_coordinate_pattern_general);
+    TEST_RUN(test_mtx_matrix_row_ptr_coordinate_real);
     TEST_SUITE_END();
     return (TEST_SUITE_STATUS == TEST_SUCCESS) ?
         EXIT_SUCCESS : EXIT_FAILURE;

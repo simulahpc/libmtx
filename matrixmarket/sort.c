@@ -17,7 +17,7 @@
  * <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-06-18
+ * Last modified: 2021-07-28
  *
  * Sorting matrix and vector nonzeros.
  */
@@ -25,120 +25,12 @@
 #include <matrixmarket/error.h>
 #include <matrixmarket/mtx.h>
 #include <matrixmarket/header.h>
+#include <matrixmarket/matrix.h>
 #include <matrixmarket/matrix_coordinate.h>
 
 #include <errno.h>
 
 #include <stdlib.h>
-
-/**
- * `mtx_size_per_row_matrix_array()` counts the number of
- * stored nonzeros in each row of a matrix in array format.
- *
- * If successful, `MTX_SUCCESS' is returned and `size_per_row' will be
- * an array containing `mtx->num_rows' integers, specifying the number
- * of nonzero entries in `mtx->data' belonging to each row.
- */
-static int mtx_size_per_row_matrix_array(
-    const struct mtx * mtx,
-    int64_t * size_per_row)
-{
-    if (mtx->object != mtx_matrix ||
-        mtx->format != mtx_array)
-    {
-        errno = EINVAL;
-        return MTX_ERR_ERRNO;
-    }
-    if (mtx->field != mtx_real &&
-        mtx->field != mtx_double &&
-        mtx->field != mtx_complex &&
-        mtx->field == mtx_integer)
-    {
-        return MTX_ERR_INVALID_MTX_FIELD;
-    }
-    for (int i = 0; i < mtx->num_rows; i++)
-        size_per_row[i] = mtx->num_columns;
-    return MTX_SUCCESS;
-}
-
-/**
- * `mtx_size_per_row_matrix_coordinate()` counts the number of
- * stored nonzeros in each row of a matrix in coordinate format.
- *
- * If successful, `MTX_SUCCESS' is returned and `size_per_row' will be
- * an array containing `mtx->num_rows' integers, specifying the number
- * of nonzero entries in `mtx->data' belonging to each row. Note that
- * it is assumed that `size_per_row' has been previously initialised
- * to contain only zeros.
- */
-static int mtx_size_per_row_matrix_coordinate(
-    const struct mtx * mtx,
-    int64_t * size_per_row)
-{
-    if (mtx->object != mtx_matrix ||
-        mtx->format != mtx_coordinate)
-    {
-        errno = EINVAL;
-        return MTX_ERR_ERRNO;
-    }
-
-    if (mtx->field == mtx_real) {
-        const struct mtx_matrix_coordinate_real * data =
-            (const struct mtx_matrix_coordinate_real *) mtx->data;
-        for (int64_t k = 0; k < mtx->size; k++)
-            size_per_row[data[k].i-1]++;
-    } else if (mtx->field == mtx_double) {
-        const struct mtx_matrix_coordinate_double * data =
-            (const struct mtx_matrix_coordinate_double *) mtx->data;
-        for (int64_t k = 0; k < mtx->size; k++)
-            size_per_row[data[k].i-1]++;
-    } else if (mtx->field == mtx_complex) {
-        const struct mtx_matrix_coordinate_complex * data =
-            (const struct mtx_matrix_coordinate_complex *) mtx->data;
-        for (int64_t k = 0; k < mtx->size; k++)
-            size_per_row[data[k].i-1]++;
-    } else if (mtx->field == mtx_integer) {
-        const struct mtx_matrix_coordinate_integer * data =
-            (const struct mtx_matrix_coordinate_integer *) mtx->data;
-        for (int64_t k = 0; k < mtx->size; k++)
-            size_per_row[data[k].i-1]++;
-    } else if (mtx->field == mtx_pattern) {
-        const struct mtx_matrix_coordinate_pattern * data =
-            (const struct mtx_matrix_coordinate_pattern *) mtx->data;
-        for (int64_t k = 0; k < mtx->size; k++)
-            size_per_row[data[k].i-1]++;
-    } else {
-        return MTX_ERR_INVALID_MTX_FIELD;
-    }
-    return MTX_SUCCESS;
-}
-
-/**
- * `mtx_size_per_row_matrix()` counts the number of stored nonzeros
- * in each row of a matrix in the Matrix Market format.
- *
- * If successful, `MTX_SUCCESS' is returned and `size_per_row' will be
- * an array containing `mtx->num_rows' integers, specifying the number
- * of nonzero entries in `mtx->data' belonging to each row.
- */
-static int mtx_size_per_row_matrix(
-    const struct mtx * mtx,
-    int64_t * size_per_row)
-{
-    if (mtx->object != mtx_matrix) {
-        errno = EINVAL;
-        return MTX_ERR_ERRNO;
-    }
-
-    if (mtx->format == mtx_array) {
-        return mtx_size_per_row_matrix_array(mtx, size_per_row);
-    } else if (mtx->format == mtx_coordinate) {
-        return mtx_size_per_row_matrix_coordinate(mtx, size_per_row);
-    } else {
-        return MTX_ERR_INVALID_MTX_FORMAT;
-    }
-    return MTX_SUCCESS;
-}
 
 /**
  * `mtx_sort_matrix_array()' sorts nonzeros in a given order
@@ -186,26 +78,16 @@ int mtx_sort_matrix_coordinate_real(
     }
 
     /* 1. Allocate storage for row pointers. */
-    int64_t * row_ptr = malloc((mtx->num_rows+1) * sizeof(int64_t));
+    int64_t * row_ptr = malloc((mtx->num_rows+2) * sizeof(int64_t));
     if (!row_ptr)
         return MTX_ERR_ERRNO;
-    for (int i = 0; i <= mtx->num_rows; i++)
-        row_ptr[i] = 0;
 
     /* 2. Count the number of nonzeros stored in each row. */
-    err = mtx_size_per_row_matrix_coordinate(mtx, &row_ptr[1]);
+    err = mtx_matrix_row_ptr(mtx, &row_ptr[1]);
     if (err) {
         free(row_ptr);
         return err;
     }
-
-    /* 3. Adjust row pointers to point to the first entry of the
-     * previous row. */
-    for (int i = 1; i <= mtx->num_rows; i++)
-        row_ptr[i] += row_ptr[i-1];
-    for (int i = mtx->num_rows; i > 0; i--)
-        row_ptr[i] = row_ptr[i-1];
-    row_ptr[0] = 0;
 
     /* 3. Allocate storage for the sorted data. */
     struct mtx_matrix_coordinate_real * dest = malloc(mtx->size * mtx->nonzero_size);
@@ -262,26 +144,16 @@ int mtx_sort_matrix_coordinate_double(
     }
 
     /* 1. Allocate storage for row pointers. */
-    int64_t * row_ptr = malloc((mtx->num_rows+1) * sizeof(int64_t));
+    int64_t * row_ptr = malloc((mtx->num_rows+2) * sizeof(int64_t));
     if (!row_ptr)
         return MTX_ERR_ERRNO;
-    for (int i = 0; i <= mtx->num_rows; i++)
-        row_ptr[i] = 0;
 
     /* 2. Count the number of nonzeros stored in each row. */
-    err = mtx_size_per_row_matrix_coordinate(mtx, &row_ptr[1]);
+    err = mtx_matrix_row_ptr(mtx, &row_ptr[1]);
     if (err) {
         free(row_ptr);
         return err;
     }
-
-    /* 3. Adjust row pointers to point to the first entry of the
-     * previous row. */
-    for (int i = 1; i <= mtx->num_rows; i++)
-        row_ptr[i] += row_ptr[i-1];
-    for (int i = mtx->num_rows; i > 0; i--)
-        row_ptr[i] = row_ptr[i-1];
-    row_ptr[0] = 0;
 
     /* 3. Allocate storage for the sorted data. */
     struct mtx_matrix_coordinate_double * dest = malloc(mtx->size * mtx->nonzero_size);
@@ -338,26 +210,16 @@ int mtx_sort_matrix_coordinate_complex(
     }
 
     /* 1. Allocate storage for row pointers. */
-    int64_t * row_ptr = malloc((mtx->num_rows+1) * sizeof(int64_t));
+    int64_t * row_ptr = malloc((mtx->num_rows+2) * sizeof(int64_t));
     if (!row_ptr)
         return MTX_ERR_ERRNO;
-    for (int i = 0; i <= mtx->num_rows; i++)
-        row_ptr[i] = 0;
 
     /* 2. Count the number of nonzeros stored in each row. */
-    err = mtx_size_per_row_matrix_coordinate(mtx, &row_ptr[1]);
+    err = mtx_matrix_row_ptr(mtx, &row_ptr[1]);
     if (err) {
         free(row_ptr);
         return err;
     }
-
-    /* 3. Adjust row pointers to point to the first entry of the
-     * previous row. */
-    for (int i = 1; i <= mtx->num_rows; i++)
-        row_ptr[i] += row_ptr[i-1];
-    for (int i = mtx->num_rows; i > 0; i--)
-        row_ptr[i] = row_ptr[i-1];
-    row_ptr[0] = 0;
 
     /* 3. Allocate storage for the sorted data. */
     struct mtx_matrix_coordinate_complex * dest = malloc(mtx->size * mtx->nonzero_size);
@@ -414,26 +276,16 @@ int mtx_sort_matrix_coordinate_integer(
     }
 
     /* 1. Allocate storage for row pointers. */
-    int64_t * row_ptr = malloc((mtx->num_rows+1) * sizeof(int64_t));
+    int64_t * row_ptr = malloc((mtx->num_rows+2) * sizeof(int64_t));
     if (!row_ptr)
         return MTX_ERR_ERRNO;
-    for (int i = 0; i <= mtx->num_rows; i++)
-        row_ptr[i] = 0;
 
     /* 2. Count the number of nonzeros stored in each row. */
-    err = mtx_size_per_row_matrix_coordinate(mtx, &row_ptr[1]);
+    err = mtx_matrix_row_ptr(mtx, &row_ptr[1]);
     if (err) {
         free(row_ptr);
         return err;
     }
-
-    /* 3. Adjust row pointers to point to the first entry of the
-     * previous row. */
-    for (int i = 1; i <= mtx->num_rows; i++)
-        row_ptr[i] += row_ptr[i-1];
-    for (int i = mtx->num_rows; i > 0; i--)
-        row_ptr[i] = row_ptr[i-1];
-    row_ptr[0] = 0;
 
     /* 3. Allocate storage for the sorted data. */
     struct mtx_matrix_coordinate_integer * dest = malloc(mtx->size * mtx->nonzero_size);
@@ -490,26 +342,16 @@ int mtx_sort_matrix_coordinate_pattern(
     }
 
     /* 1. Allocate storage for row pointers. */
-    int64_t * row_ptr = malloc((mtx->num_rows+1) * sizeof(int64_t));
+    int64_t * row_ptr = malloc((mtx->num_rows+2) * sizeof(int64_t));
     if (!row_ptr)
         return MTX_ERR_ERRNO;
-    for (int i = 0; i <= mtx->num_rows; i++)
-        row_ptr[i] = 0;
 
     /* 2. Count the number of nonzeros stored in each row. */
-    err = mtx_size_per_row_matrix_coordinate(mtx, &row_ptr[1]);
+    err = mtx_matrix_row_ptr(mtx, &row_ptr[1]);
     if (err) {
         free(row_ptr);
         return err;
     }
-
-    /* 3. Adjust row pointers to point to the first entry of the
-     * previous row. */
-    for (int i = 1; i <= mtx->num_rows; i++)
-        row_ptr[i] += row_ptr[i-1];
-    for (int i = mtx->num_rows; i > 0; i--)
-        row_ptr[i] = row_ptr[i-1];
-    row_ptr[0] = 0;
 
     /* 3. Allocate storage for the sorted data. */
     struct mtx_matrix_coordinate_pattern * dest = malloc(mtx->size * mtx->nonzero_size);
