@@ -17,7 +17,7 @@
  * <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-06-18
+ * Last modified: 2021-07-28
  *
  * Unit tests for sparse matrices in Matrix Market format.
  */
@@ -71,24 +71,20 @@ int test_mtx_init_matrix_coordinate_real_general(void)
     TEST_ASSERT_EQ(6, matrix.num_nonzeros);
     TEST_ASSERT_EQ(6, matrix.size);
     TEST_ASSERT_EQ(sizeof(struct mtx_matrix_coordinate_real), matrix.nonzero_size);
-    TEST_ASSERT_EQ(   1, ((const struct mtx_matrix_coordinate_real *) matrix.data)[0].i);
-    TEST_ASSERT_EQ(   1, ((const struct mtx_matrix_coordinate_real *) matrix.data)[0].j);
-    TEST_ASSERT_EQ(1.0f, ((const struct mtx_matrix_coordinate_real *) matrix.data)[0].a);
-    TEST_ASSERT_EQ(   1, ((const struct mtx_matrix_coordinate_real *) matrix.data)[1].i);
-    TEST_ASSERT_EQ(   4, ((const struct mtx_matrix_coordinate_real *) matrix.data)[1].j);
-    TEST_ASSERT_EQ(2.0f, ((const struct mtx_matrix_coordinate_real *) matrix.data)[1].a);
-    TEST_ASSERT_EQ(   2, ((const struct mtx_matrix_coordinate_real *) matrix.data)[2].i);
-    TEST_ASSERT_EQ(   2, ((const struct mtx_matrix_coordinate_real *) matrix.data)[2].j);
-    TEST_ASSERT_EQ(3.0f, ((const struct mtx_matrix_coordinate_real *) matrix.data)[2].a);
-    TEST_ASSERT_EQ(   3, ((const struct mtx_matrix_coordinate_real *) matrix.data)[3].i);
-    TEST_ASSERT_EQ(   3, ((const struct mtx_matrix_coordinate_real *) matrix.data)[3].j);
-    TEST_ASSERT_EQ(4.0f, ((const struct mtx_matrix_coordinate_real *) matrix.data)[3].a);
-    TEST_ASSERT_EQ(   4, ((const struct mtx_matrix_coordinate_real *) matrix.data)[4].i);
-    TEST_ASSERT_EQ(   1, ((const struct mtx_matrix_coordinate_real *) matrix.data)[4].j);
-    TEST_ASSERT_EQ(5.0f, ((const struct mtx_matrix_coordinate_real *) matrix.data)[4].a);
-    TEST_ASSERT_EQ(   4, ((const struct mtx_matrix_coordinate_real *) matrix.data)[5].i);
-    TEST_ASSERT_EQ(   4, ((const struct mtx_matrix_coordinate_real *) matrix.data)[5].j);
-    TEST_ASSERT_EQ(6.0f, ((const struct mtx_matrix_coordinate_real *) matrix.data)[5].a);
+    const struct mtx_matrix_coordinate_real * mtxdata =
+        (const struct mtx_matrix_coordinate_real *) matrix.data;
+    TEST_ASSERT_EQ(   1, mtxdata[0].i); TEST_ASSERT_EQ(   1, mtxdata[0].j);
+    TEST_ASSERT_EQ(1.0f, mtxdata[0].a);
+    TEST_ASSERT_EQ(   1, mtxdata[1].i); TEST_ASSERT_EQ(   4, mtxdata[1].j);
+    TEST_ASSERT_EQ(2.0f, mtxdata[1].a);
+    TEST_ASSERT_EQ(   2, mtxdata[2].i); TEST_ASSERT_EQ(   2, mtxdata[2].j);
+    TEST_ASSERT_EQ(3.0f, mtxdata[2].a);
+    TEST_ASSERT_EQ(   3, mtxdata[3].i); TEST_ASSERT_EQ(   3, mtxdata[3].j);
+    TEST_ASSERT_EQ(4.0f, mtxdata[3].a);
+    TEST_ASSERT_EQ(   4, mtxdata[4].i); TEST_ASSERT_EQ(   1, mtxdata[4].j);
+    TEST_ASSERT_EQ(5.0f, mtxdata[4].a);
+    TEST_ASSERT_EQ(   4, mtxdata[5].i); TEST_ASSERT_EQ(   4, mtxdata[5].j);
+    TEST_ASSERT_EQ(6.0f, mtxdata[5].a);
     if (!err)
         mtx_free(&matrix);
     return TEST_SUCCESS;
@@ -132,21 +128,18 @@ int test_mtx_init_matrix_coordinate_real_symmetric(void)
     TEST_ASSERT_EQ(6, matrix.num_nonzeros);
     TEST_ASSERT_EQ(5, matrix.size);
     TEST_ASSERT_EQ(sizeof(struct mtx_matrix_coordinate_real), matrix.nonzero_size);
-    TEST_ASSERT_EQ(   1, ((const struct mtx_matrix_coordinate_real *) matrix.data)[0].i);
-    TEST_ASSERT_EQ(   1, ((const struct mtx_matrix_coordinate_real *) matrix.data)[0].j);
-    TEST_ASSERT_EQ(1.0f, ((const struct mtx_matrix_coordinate_real *) matrix.data)[0].a);
-    TEST_ASSERT_EQ(   2, ((const struct mtx_matrix_coordinate_real *) matrix.data)[1].i);
-    TEST_ASSERT_EQ(   2, ((const struct mtx_matrix_coordinate_real *) matrix.data)[1].j);
-    TEST_ASSERT_EQ(2.0f, ((const struct mtx_matrix_coordinate_real *) matrix.data)[1].a);
-    TEST_ASSERT_EQ(   3, ((const struct mtx_matrix_coordinate_real *) matrix.data)[2].i);
-    TEST_ASSERT_EQ(   3, ((const struct mtx_matrix_coordinate_real *) matrix.data)[2].j);
-    TEST_ASSERT_EQ(3.0f, ((const struct mtx_matrix_coordinate_real *) matrix.data)[2].a);
-    TEST_ASSERT_EQ(   4, ((const struct mtx_matrix_coordinate_real *) matrix.data)[3].i);
-    TEST_ASSERT_EQ(   1, ((const struct mtx_matrix_coordinate_real *) matrix.data)[3].j);
-    TEST_ASSERT_EQ(4.0f, ((const struct mtx_matrix_coordinate_real *) matrix.data)[3].a);
-    TEST_ASSERT_EQ(   4, ((const struct mtx_matrix_coordinate_real *) matrix.data)[4].i);
-    TEST_ASSERT_EQ(   4, ((const struct mtx_matrix_coordinate_real *) matrix.data)[4].j);
-    TEST_ASSERT_EQ(5.0f, ((const struct mtx_matrix_coordinate_real *) matrix.data)[4].a);
+    const struct mtx_matrix_coordinate_real * mtxdata =
+        (const struct mtx_matrix_coordinate_real *) matrix.data;
+    TEST_ASSERT_EQ(   1, mtxdata[0].i); TEST_ASSERT_EQ(   1, mtxdata[0].j);
+    TEST_ASSERT_EQ(1.0f, mtxdata[0].a);
+    TEST_ASSERT_EQ(   2, mtxdata[1].i); TEST_ASSERT_EQ(   2, mtxdata[1].j);
+    TEST_ASSERT_EQ(2.0f, mtxdata[1].a);
+    TEST_ASSERT_EQ(   3, mtxdata[2].i); TEST_ASSERT_EQ(   3, mtxdata[2].j);
+    TEST_ASSERT_EQ(3.0f, mtxdata[2].a);
+    TEST_ASSERT_EQ(   4, mtxdata[3].i); TEST_ASSERT_EQ(   1, mtxdata[3].j);
+    TEST_ASSERT_EQ(4.0f, mtxdata[3].a);
+    TEST_ASSERT_EQ(   4, mtxdata[4].i); TEST_ASSERT_EQ(   4, mtxdata[4].j);
+    TEST_ASSERT_EQ(5.0f, mtxdata[4].a);
     if (!err)
         mtx_free(&matrix);
     return TEST_SUCCESS;
@@ -190,24 +183,20 @@ int test_mtx_init_matrix_coordinate_double_general(void)
     TEST_ASSERT_EQ(6, matrix.num_nonzeros);
     TEST_ASSERT_EQ(6, matrix.size);
     TEST_ASSERT_EQ(sizeof(struct mtx_matrix_coordinate_double), matrix.nonzero_size);
-    TEST_ASSERT_EQ(  1, ((const struct mtx_matrix_coordinate_double *) matrix.data)[0].i);
-    TEST_ASSERT_EQ(  1, ((const struct mtx_matrix_coordinate_double *) matrix.data)[0].j);
-    TEST_ASSERT_EQ(1.0, ((const struct mtx_matrix_coordinate_double *) matrix.data)[0].a);
-    TEST_ASSERT_EQ(  1, ((const struct mtx_matrix_coordinate_double *) matrix.data)[1].i);
-    TEST_ASSERT_EQ(  4, ((const struct mtx_matrix_coordinate_double *) matrix.data)[1].j);
-    TEST_ASSERT_EQ(2.0, ((const struct mtx_matrix_coordinate_double *) matrix.data)[1].a);
-    TEST_ASSERT_EQ(  2, ((const struct mtx_matrix_coordinate_double *) matrix.data)[2].i);
-    TEST_ASSERT_EQ(  2, ((const struct mtx_matrix_coordinate_double *) matrix.data)[2].j);
-    TEST_ASSERT_EQ(3.0, ((const struct mtx_matrix_coordinate_double *) matrix.data)[2].a);
-    TEST_ASSERT_EQ(  3, ((const struct mtx_matrix_coordinate_double *) matrix.data)[3].i);
-    TEST_ASSERT_EQ(  3, ((const struct mtx_matrix_coordinate_double *) matrix.data)[3].j);
-    TEST_ASSERT_EQ(4.0, ((const struct mtx_matrix_coordinate_double *) matrix.data)[3].a);
-    TEST_ASSERT_EQ(  4, ((const struct mtx_matrix_coordinate_double *) matrix.data)[4].i);
-    TEST_ASSERT_EQ(  1, ((const struct mtx_matrix_coordinate_double *) matrix.data)[4].j);
-    TEST_ASSERT_EQ(5.0, ((const struct mtx_matrix_coordinate_double *) matrix.data)[4].a);
-    TEST_ASSERT_EQ(  4, ((const struct mtx_matrix_coordinate_double *) matrix.data)[5].i);
-    TEST_ASSERT_EQ(  4, ((const struct mtx_matrix_coordinate_double *) matrix.data)[5].j);
-    TEST_ASSERT_EQ(6.0, ((const struct mtx_matrix_coordinate_double *) matrix.data)[5].a);
+    const struct mtx_matrix_coordinate_double * mtxdata =
+        (const struct mtx_matrix_coordinate_double *) matrix.data;
+    TEST_ASSERT_EQ(  1, mtxdata[0].i); TEST_ASSERT_EQ(  1, mtxdata[0].j);
+    TEST_ASSERT_EQ(1.0, mtxdata[0].a);
+    TEST_ASSERT_EQ(  1, mtxdata[1].i); TEST_ASSERT_EQ(  4, mtxdata[1].j);
+    TEST_ASSERT_EQ(2.0, mtxdata[1].a);
+    TEST_ASSERT_EQ(  2, mtxdata[2].i); TEST_ASSERT_EQ(  2, mtxdata[2].j);
+    TEST_ASSERT_EQ(3.0, mtxdata[2].a);
+    TEST_ASSERT_EQ(  3, mtxdata[3].i); TEST_ASSERT_EQ(  3, mtxdata[3].j);
+    TEST_ASSERT_EQ(4.0, mtxdata[3].a);
+    TEST_ASSERT_EQ(  4, mtxdata[4].i); TEST_ASSERT_EQ(  1, mtxdata[4].j);
+    TEST_ASSERT_EQ(5.0, mtxdata[4].a);
+    TEST_ASSERT_EQ(  4, mtxdata[5].i); TEST_ASSERT_EQ(  4, mtxdata[5].j);
+    TEST_ASSERT_EQ(6.0, mtxdata[5].a);
     if (!err)
         mtx_free(&matrix);
     return TEST_SUCCESS;
@@ -251,30 +240,20 @@ int test_mtx_init_matrix_coordinate_complex_general(void)
     TEST_ASSERT_EQ(6, matrix.num_nonzeros);
     TEST_ASSERT_EQ(6, matrix.size);
     TEST_ASSERT_EQ(sizeof(struct mtx_matrix_coordinate_complex), matrix.nonzero_size);
-    TEST_ASSERT_EQ(    1, ((const struct mtx_matrix_coordinate_complex *) matrix.data)[0].i);
-    TEST_ASSERT_EQ(    1, ((const struct mtx_matrix_coordinate_complex *) matrix.data)[0].j);
-    TEST_ASSERT_EQ( 1.0f, ((const struct mtx_matrix_coordinate_complex *) matrix.data)[0].a);
-    TEST_ASSERT_EQ(-1.0f, ((const struct mtx_matrix_coordinate_complex *) matrix.data)[0].b);
-    TEST_ASSERT_EQ(    1, ((const struct mtx_matrix_coordinate_complex *) matrix.data)[1].i);
-    TEST_ASSERT_EQ(    4, ((const struct mtx_matrix_coordinate_complex *) matrix.data)[1].j);
-    TEST_ASSERT_EQ( 2.0f, ((const struct mtx_matrix_coordinate_complex *) matrix.data)[1].a);
-    TEST_ASSERT_EQ(-2.0f, ((const struct mtx_matrix_coordinate_complex *) matrix.data)[1].b);
-    TEST_ASSERT_EQ(    2, ((const struct mtx_matrix_coordinate_complex *) matrix.data)[2].i);
-    TEST_ASSERT_EQ(    2, ((const struct mtx_matrix_coordinate_complex *) matrix.data)[2].j);
-    TEST_ASSERT_EQ( 3.0f, ((const struct mtx_matrix_coordinate_complex *) matrix.data)[2].a);
-    TEST_ASSERT_EQ(-3.0f, ((const struct mtx_matrix_coordinate_complex *) matrix.data)[2].b);
-    TEST_ASSERT_EQ(    3, ((const struct mtx_matrix_coordinate_complex *) matrix.data)[3].i);
-    TEST_ASSERT_EQ(    3, ((const struct mtx_matrix_coordinate_complex *) matrix.data)[3].j);
-    TEST_ASSERT_EQ( 4.0f, ((const struct mtx_matrix_coordinate_complex *) matrix.data)[3].a);
-    TEST_ASSERT_EQ(-4.0f, ((const struct mtx_matrix_coordinate_complex *) matrix.data)[3].b);
-    TEST_ASSERT_EQ(    4, ((const struct mtx_matrix_coordinate_complex *) matrix.data)[4].i);
-    TEST_ASSERT_EQ(    1, ((const struct mtx_matrix_coordinate_complex *) matrix.data)[4].j);
-    TEST_ASSERT_EQ( 5.0f, ((const struct mtx_matrix_coordinate_complex *) matrix.data)[4].a);
-    TEST_ASSERT_EQ(-5.0f, ((const struct mtx_matrix_coordinate_complex *) matrix.data)[4].b);
-    TEST_ASSERT_EQ(    4, ((const struct mtx_matrix_coordinate_complex *) matrix.data)[5].i);
-    TEST_ASSERT_EQ(    4, ((const struct mtx_matrix_coordinate_complex *) matrix.data)[5].j);
-    TEST_ASSERT_EQ( 6.0f, ((const struct mtx_matrix_coordinate_complex *) matrix.data)[5].a);
-    TEST_ASSERT_EQ(-6.0f, ((const struct mtx_matrix_coordinate_complex *) matrix.data)[5].b);
+    const struct mtx_matrix_coordinate_complex * mtxdata =
+        (const struct mtx_matrix_coordinate_complex *) matrix.data;
+    TEST_ASSERT_EQ(    1, mtxdata[0].i); TEST_ASSERT_EQ(    1, mtxdata[0].j);
+    TEST_ASSERT_EQ( 1.0f, mtxdata[0].a); TEST_ASSERT_EQ(-1.0f, mtxdata[0].b);
+    TEST_ASSERT_EQ(    1, mtxdata[1].i); TEST_ASSERT_EQ(    4, mtxdata[1].j);
+    TEST_ASSERT_EQ( 2.0f, mtxdata[1].a); TEST_ASSERT_EQ(-2.0f, mtxdata[1].b);
+    TEST_ASSERT_EQ(    2, mtxdata[2].i); TEST_ASSERT_EQ(    2, mtxdata[2].j);
+    TEST_ASSERT_EQ( 3.0f, mtxdata[2].a); TEST_ASSERT_EQ(-3.0f, mtxdata[2].b);
+    TEST_ASSERT_EQ(    3, mtxdata[3].i); TEST_ASSERT_EQ(    3, mtxdata[3].j);
+    TEST_ASSERT_EQ( 4.0f, mtxdata[3].a); TEST_ASSERT_EQ(-4.0f, mtxdata[3].b);
+    TEST_ASSERT_EQ(    4, mtxdata[4].i); TEST_ASSERT_EQ(    1, mtxdata[4].j);
+    TEST_ASSERT_EQ( 5.0f, mtxdata[4].a); TEST_ASSERT_EQ(-5.0f, mtxdata[4].b);
+    TEST_ASSERT_EQ(    4, mtxdata[5].i); TEST_ASSERT_EQ(    4, mtxdata[5].j);
+    TEST_ASSERT_EQ( 6.0f, mtxdata[5].a); TEST_ASSERT_EQ(-6.0f, mtxdata[5].b);
     if (!err)
         mtx_free(&matrix);
     return TEST_SUCCESS;
@@ -318,24 +297,20 @@ int test_mtx_init_matrix_coordinate_integer_general(void)
     TEST_ASSERT_EQ(6, matrix.num_nonzeros);
     TEST_ASSERT_EQ(6, matrix.size);
     TEST_ASSERT_EQ(sizeof(struct mtx_matrix_coordinate_integer), matrix.nonzero_size);
-    TEST_ASSERT_EQ(1, ((const struct mtx_matrix_coordinate_integer *) matrix.data)[0].i);
-    TEST_ASSERT_EQ(1, ((const struct mtx_matrix_coordinate_integer *) matrix.data)[0].j);
-    TEST_ASSERT_EQ(1, ((const struct mtx_matrix_coordinate_integer *) matrix.data)[0].a);
-    TEST_ASSERT_EQ(1, ((const struct mtx_matrix_coordinate_integer *) matrix.data)[1].i);
-    TEST_ASSERT_EQ(4, ((const struct mtx_matrix_coordinate_integer *) matrix.data)[1].j);
-    TEST_ASSERT_EQ(2, ((const struct mtx_matrix_coordinate_integer *) matrix.data)[1].a);
-    TEST_ASSERT_EQ(2, ((const struct mtx_matrix_coordinate_integer *) matrix.data)[2].i);
-    TEST_ASSERT_EQ(2, ((const struct mtx_matrix_coordinate_integer *) matrix.data)[2].j);
-    TEST_ASSERT_EQ(3, ((const struct mtx_matrix_coordinate_integer *) matrix.data)[2].a);
-    TEST_ASSERT_EQ(3, ((const struct mtx_matrix_coordinate_integer *) matrix.data)[3].i);
-    TEST_ASSERT_EQ(3, ((const struct mtx_matrix_coordinate_integer *) matrix.data)[3].j);
-    TEST_ASSERT_EQ(4, ((const struct mtx_matrix_coordinate_integer *) matrix.data)[3].a);
-    TEST_ASSERT_EQ(4, ((const struct mtx_matrix_coordinate_integer *) matrix.data)[4].i);
-    TEST_ASSERT_EQ(1, ((const struct mtx_matrix_coordinate_integer *) matrix.data)[4].j);
-    TEST_ASSERT_EQ(5, ((const struct mtx_matrix_coordinate_integer *) matrix.data)[4].a);
-    TEST_ASSERT_EQ(4, ((const struct mtx_matrix_coordinate_integer *) matrix.data)[5].i);
-    TEST_ASSERT_EQ(4, ((const struct mtx_matrix_coordinate_integer *) matrix.data)[5].j);
-    TEST_ASSERT_EQ(6, ((const struct mtx_matrix_coordinate_integer *) matrix.data)[5].a);
+    const struct mtx_matrix_coordinate_integer * mtxdata =
+        (const struct mtx_matrix_coordinate_integer *) matrix.data;
+    TEST_ASSERT_EQ(1, mtxdata[0].i); TEST_ASSERT_EQ(1, mtxdata[0].j);
+    TEST_ASSERT_EQ(1, mtxdata[0].a);
+    TEST_ASSERT_EQ(1, mtxdata[1].i); TEST_ASSERT_EQ(4, mtxdata[1].j);
+    TEST_ASSERT_EQ(2, mtxdata[1].a);
+    TEST_ASSERT_EQ(2, mtxdata[2].i); TEST_ASSERT_EQ(2, mtxdata[2].j);
+    TEST_ASSERT_EQ(3, mtxdata[2].a);
+    TEST_ASSERT_EQ(3, mtxdata[3].i); TEST_ASSERT_EQ(3, mtxdata[3].j);
+    TEST_ASSERT_EQ(4, mtxdata[3].a);
+    TEST_ASSERT_EQ(4, mtxdata[4].i); TEST_ASSERT_EQ(1, mtxdata[4].j);
+    TEST_ASSERT_EQ(5, mtxdata[4].a);
+    TEST_ASSERT_EQ(4, mtxdata[5].i); TEST_ASSERT_EQ(4, mtxdata[5].j);
+    TEST_ASSERT_EQ(6, mtxdata[5].a);
     if (!err)
         mtx_free(&matrix);
     return TEST_SUCCESS;
@@ -379,18 +354,14 @@ int test_mtx_init_matrix_coordinate_pattern_general(void)
     TEST_ASSERT_EQ(6, matrix.num_nonzeros);
     TEST_ASSERT_EQ(6, matrix.size);
     TEST_ASSERT_EQ(sizeof(struct mtx_matrix_coordinate_pattern), matrix.nonzero_size);
-    TEST_ASSERT_EQ(1, ((const struct mtx_matrix_coordinate_pattern *) matrix.data)[0].i);
-    TEST_ASSERT_EQ(1, ((const struct mtx_matrix_coordinate_pattern *) matrix.data)[0].j);
-    TEST_ASSERT_EQ(1, ((const struct mtx_matrix_coordinate_pattern *) matrix.data)[1].i);
-    TEST_ASSERT_EQ(4, ((const struct mtx_matrix_coordinate_pattern *) matrix.data)[1].j);
-    TEST_ASSERT_EQ(2, ((const struct mtx_matrix_coordinate_pattern *) matrix.data)[2].i);
-    TEST_ASSERT_EQ(2, ((const struct mtx_matrix_coordinate_pattern *) matrix.data)[2].j);
-    TEST_ASSERT_EQ(3, ((const struct mtx_matrix_coordinate_pattern *) matrix.data)[3].i);
-    TEST_ASSERT_EQ(3, ((const struct mtx_matrix_coordinate_pattern *) matrix.data)[3].j);
-    TEST_ASSERT_EQ(4, ((const struct mtx_matrix_coordinate_pattern *) matrix.data)[4].i);
-    TEST_ASSERT_EQ(1, ((const struct mtx_matrix_coordinate_pattern *) matrix.data)[4].j);
-    TEST_ASSERT_EQ(4, ((const struct mtx_matrix_coordinate_pattern *) matrix.data)[5].i);
-    TEST_ASSERT_EQ(4, ((const struct mtx_matrix_coordinate_pattern *) matrix.data)[5].j);
+    const struct mtx_matrix_coordinate_pattern * mtxdata =
+        (const struct mtx_matrix_coordinate_pattern *) matrix.data;
+    TEST_ASSERT_EQ(1, mtxdata[0].i); TEST_ASSERT_EQ(1, mtxdata[0].j);
+    TEST_ASSERT_EQ(1, mtxdata[1].i); TEST_ASSERT_EQ(4, mtxdata[1].j);
+    TEST_ASSERT_EQ(2, mtxdata[2].i); TEST_ASSERT_EQ(2, mtxdata[2].j);
+    TEST_ASSERT_EQ(3, mtxdata[3].i); TEST_ASSERT_EQ(3, mtxdata[3].j);
+    TEST_ASSERT_EQ(4, mtxdata[4].i); TEST_ASSERT_EQ(1, mtxdata[4].j);
+    TEST_ASSERT_EQ(4, mtxdata[5].i); TEST_ASSERT_EQ(4, mtxdata[5].j);
     if (!err)
         mtx_free(&matrix);
     return TEST_SUCCESS;

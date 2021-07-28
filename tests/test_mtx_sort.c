@@ -17,9 +17,9 @@
  * <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-06-18
+ * Last modified: 2021-07-27
  *
- * Unit tests for Matrix Market I/O.
+ * Unit tests for sorting Matrix Market objects.
  */
 
 #include "test.h"
