@@ -331,6 +331,100 @@ int test_mtx_permute_matrix_coordinate_real(void)
 }
 
 /**
+ * `test_mtx_matrix_reorder_rcm_coordinate_real()' tests reordering the
+ * nonzeros of a real matrix in coordinate format.
+ */
+int test_mtx_matrix_reorder_rcm_coordinate_real(void)
+{
+    int err;
+
+    /* Create matrix. */
+    struct mtx mtx;
+    int num_comment_lines = 0;
+    const char * comment_lines[] = {};
+    int num_rows = 5;
+    int num_columns = 5;
+    int64_t size = 10;
+    const struct mtx_matrix_coordinate_real data[] = {
+        {1,2, 1.0f},
+        {1,3, 2.0f},
+        {2,1, 3.0f},
+        {2,4, 4.0f},
+        {3,1, 5.0f},
+        {3,4, 6.0f},
+        {3,5, 7.0f},
+        {4,2, 8.0f},
+        {4,3, 9.0f},
+        {5,3,10.0f}};
+    err = mtx_init_matrix_coordinate_real(
+        &mtx, mtx_general, mtx_row_major, mtx_unordered, mtx_unassembled,
+        num_comment_lines, comment_lines,
+        num_rows, num_columns, size, data);
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+
+    /* Reorder the matrix and verify the results. */
+    int starting_row = 1;
+    int * permutation;
+    err = mtx_matrix_reorder_rcm(&mtx, &permutation, starting_row);
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+
+    TEST_ASSERT_EQ(5, permutation[0]);
+    TEST_ASSERT_EQ(4, permutation[1]);
+    TEST_ASSERT_EQ(2, permutation[2]);
+    TEST_ASSERT_EQ(3, permutation[3]);
+    TEST_ASSERT_EQ(1, permutation[4]);
+    free(permutation);
+
+    TEST_ASSERT_EQ(mtx_matrix, mtx.object);
+    TEST_ASSERT_EQ(mtx_coordinate, mtx.format);
+    TEST_ASSERT_EQ(mtx_real, mtx.field);
+    TEST_ASSERT_EQ(mtx_general, mtx.symmetry);
+    TEST_ASSERT_EQ(mtx_unsorted, mtx.sorting);
+    TEST_ASSERT_EQ(mtx_rcm, mtx.ordering);
+    TEST_ASSERT_EQ(mtx_unassembled, mtx.assembly);
+    TEST_ASSERT_EQ(0, mtx.num_comment_lines);
+    TEST_ASSERT_EQ(5, mtx.num_rows);
+    TEST_ASSERT_EQ(5, mtx.num_columns);
+    TEST_ASSERT_EQ(10, mtx.num_nonzeros);
+    TEST_ASSERT_EQ(10, mtx.size);
+    TEST_ASSERT_EQ(sizeof(struct mtx_matrix_coordinate_real), mtx.nonzero_size);
+    const struct mtx_matrix_coordinate_real * mtxdata =
+        (const struct mtx_matrix_coordinate_real *) mtx.data;
+    TEST_ASSERT_EQ(    5, mtxdata[0].i);
+    TEST_ASSERT_EQ(    4, mtxdata[0].j);
+    TEST_ASSERT_EQ( 1.0f, mtxdata[0].a);
+    TEST_ASSERT_EQ(    5, mtxdata[1].i);
+    TEST_ASSERT_EQ(    2, mtxdata[1].j);
+    TEST_ASSERT_EQ( 2.0f, mtxdata[1].a);
+    TEST_ASSERT_EQ(    4, mtxdata[2].i);
+    TEST_ASSERT_EQ(    5, mtxdata[2].j);
+    TEST_ASSERT_EQ( 3.0f, mtxdata[2].a);
+    TEST_ASSERT_EQ(    4, mtxdata[3].i);
+    TEST_ASSERT_EQ(    3, mtxdata[3].j);
+    TEST_ASSERT_EQ( 4.0f, mtxdata[3].a);
+    TEST_ASSERT_EQ(    2, mtxdata[4].i);
+    TEST_ASSERT_EQ(    5, mtxdata[4].j);
+    TEST_ASSERT_EQ( 5.0f, mtxdata[4].a);
+    TEST_ASSERT_EQ(    2, mtxdata[5].i);
+    TEST_ASSERT_EQ(    3, mtxdata[5].j);
+    TEST_ASSERT_EQ( 6.0f, mtxdata[5].a);
+    TEST_ASSERT_EQ(    2, mtxdata[6].i);
+    TEST_ASSERT_EQ(    1, mtxdata[6].j);
+    TEST_ASSERT_EQ( 7.0f, mtxdata[6].a);
+    TEST_ASSERT_EQ(    3, mtxdata[7].i);
+    TEST_ASSERT_EQ(    4, mtxdata[7].j);
+    TEST_ASSERT_EQ( 8.0f, mtxdata[7].a);
+    TEST_ASSERT_EQ(    3, mtxdata[8].i);
+    TEST_ASSERT_EQ(    2, mtxdata[8].j);
+    TEST_ASSERT_EQ( 9.0f, mtxdata[8].a);
+    TEST_ASSERT_EQ(    1, mtxdata[9].i);
+    TEST_ASSERT_EQ(    2, mtxdata[9].j);
+    TEST_ASSERT_EQ(10.0f, mtxdata[9].a);
+    mtx_free(&mtx);
+    return MTX_SUCCESS;
+}
+
+/**
  * `main()' entry point and test driver.
  */
 int main(int argc, char * argv[])
@@ -340,6 +434,7 @@ int main(int argc, char * argv[])
     TEST_RUN(test_mtx_permute_vector_coordinate_real);
     TEST_RUN(test_mtx_permute_matrix_array_real);
     TEST_RUN(test_mtx_permute_matrix_coordinate_real);
+    TEST_RUN(test_mtx_matrix_reorder_rcm_coordinate_real);
     TEST_SUITE_END();
     return (TEST_SUITE_STATUS == TEST_SUCCESS) ?
         EXIT_SUCCESS : EXIT_FAILURE;

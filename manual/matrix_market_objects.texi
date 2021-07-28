@@ -856,6 +856,35 @@ used to reorder the columns based on a permutation of
 @code{column_permutation} is @code{NULL}, then no permutation is
 applied to the rows or columns, respectively.
 
+@findex mtx_matrix_reorder_rcm
+The function @code{mtx_matrix_reorder_rcm} can be used to reorder the
+rows and columns of a symmetric sparse matrix according to the Reverse
+Cuthill-McKee algorithm. This algorithm considers the matrix as the
+adjacency matrix of an undirected graph. The vertices of the graph,
+which correspond to rows and column of the matrix, are ordered by
+choosing a starting vertex and then traversing the graph in a
+breadth-first search, where the vertices at each level are ordered
+ascendingly by degree. In the end, after traversing the entire graph,
+the obtained ordering is reversed.
+@example
+@code{int mtx_matrix_reorder_rcm(
+    struct mtx * mtx,
+    int ** permutation,
+    int starting_vertex);}
+@end example
+If successful, @code{mtx_matrix_reorder_rcm} returns
+@code{MTX_SUCCESS}, and the rows and columns of @code{mtx} have been
+reordered according to the Reverse Cuthill-McKee algorithm. If
+@code{permutation} is not @code{NULL}, then the underlying pointer is
+set to point to a newly allocated array containing the permutation
+used to reorder the rows and columns of @code{mtx}.
+
+Note that the sparse matrix must be square and already sorted in row
+major order (see @code{mtx_sort}). It is assumed that the matrix
+sparsity pattern is symmetric. Also, note that if the graph consists
+of multiple connected components, then only the component to which the
+starting vertex belongs is reordered.
+
 
 @node Basic linear algebra operations
 @section Basic linear algebra operations

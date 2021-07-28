@@ -1,3 +1,22 @@
+2021-07-28 James D. Trotter <james@simula.no>
+
+	Add `mtx_matrix_reorder_rcm' to reorder a sparse matrix with
+	symmetric sparsity pattern based on the Reverse Cuthill-McKee
+	algorithm.
+
+	Add `mtx_matrix_row_index' and `mtx_matrix_column_index' to obtain
+	the row or column index of a given nonzero of a matrix.
+
+	Add the function `mtx_matrix_row_ptr' to compute row pointers of a
+	matrix. This can be used, for example, when converting a matrix to
+	compressed sparse row format.
+
+	Add `mtx_permute_vector' and `mtx_permute_matrix'. The former
+	permutes the elements of a vector, whereas the latter permutes the
+	rows and/or columns of a matrix.
+
+	Add missing functions for creating sparse vectors.
+
 2021-07-02 James D. Trotter <james@simula.no>
 
 	Add the function `mtx_matrix_size_per_row' to count the number of

@@ -58,4 +58,34 @@ int mtx_permute_matrix(
     const int * row_permutation,
     const int * column_permutation);
 
+/**
+ * `mtx_matrix_reorder_rcm()` reorders the rows of a symmetric sparse
+ * matrix according to the Reverse Cuthill-McKee algorithm.
+ *
+ * `starting_row' is an integer in the range `[1,mtx->num_rows]',
+ * which designates a starting row of the matrix for the Cuthill-McKee
+ * algorithm. Alternatively, `starting_row' may be set to `0', in
+ * which case a starting row is chosen automatically by selecting a
+ * pseudo-peripheral vertex in the graph corresponding to the given
+ * matrix.
+ *
+ * The matrix must be square, in coordinate format and already sorted
+ * in row major order (see `mtx_sort'). It is assumed that the matrix
+ * sparsity pattern is symmetric. Also, note that if the graph
+ * consists of multiple connected components, then only the component
+ * to which the starting row belongs is reordered.
+ *
+ * If successful, `mtx_matrix_reorder_rcm()' returns `MTX_SUCCESS',
+ * and the rows and columns of `mtx' have been reordered according to
+ * the Reverse Cuthill-McKee algorithm. If `permutation' is not
+ * `NULL', then the underlying pointer is set to point to a newly
+ * allocated array containing the permutation used to reorder the rows
+ * and columns of `mtx'. In this case, the user is responsible for
+ * calling `free()' to free the underlying storage.
+ */
+int mtx_matrix_reorder_rcm(
+    struct mtx * mtx,
+    int ** permutation,
+    int starting_row);
+
 #endif
