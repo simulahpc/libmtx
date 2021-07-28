@@ -58,6 +58,7 @@ libmtx_la_SOURCES = \
 	matrixmarket/parse.h \
 	matrixmarket/format.c \
 	matrixmarket/format.h \
+	matrixmarket/reorder.c \
 	matrixmarket/sort.c \
 	matrixmarket/submatrix.c \
 	matrixmarket/transpose.c \
@@ -134,6 +135,7 @@ check_PROGRAMS = \
 	tests/test_mtx_io \
 	tests/test_mtx_matrix_array \
 	tests/test_mtx_matrix_coordinate \
+	tests/test_mtx_reorder \
 	tests/test_mtx_sort \
 	tests/test_mtx_transpose \
 	tests/test_parse \
@@ -159,6 +161,9 @@ tests_test_mtx_matrix_array_SOURCES = tests/test_mtx_matrix_array.c tests/test.h
 tests_test_mtx_matrix_coordinate_CPPFLAGS = $(MPICPPFLAGS)
 tests_test_mtx_matrix_coordinate_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
 tests_test_mtx_matrix_coordinate_SOURCES = tests/test_mtx_matrix_coordinate.c tests/test.h
+tests_test_mtx_reorder_CPPFLAGS = $(MPICPPFLAGS)
+tests_test_mtx_reorder_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
+tests_test_mtx_reorder_SOURCES = tests/test_mtx_reorder.c tests/test.h
 tests_test_mtx_sort_CPPFLAGS = $(MPICPPFLAGS)
 tests_test_mtx_sort_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
 tests_test_mtx_sort_SOURCES = tests/test_mtx_sort.c tests/test.h
@@ -185,6 +190,7 @@ TESTS = \
 	tests/test_mtx_io \
 	tests/test_mtx_matrix_array \
 	tests/test_mtx_matrix_coordinate \
+	tests/test_mtx_reorder \
 	tests/test_mtx_sort \
 	tests/test_mtx_transpose \
 	tests/test_parse \

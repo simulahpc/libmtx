@@ -813,6 +813,50 @@ Note that @code{mtx_matrix_submatrix} currently only works for
 @code{struct mtx} objects where @code{format} is
 @code{mtx_coordinate}.
 
+
+@node Matrix reordering
+@subsection Matrix reordering
+@cindex reordering
+@cindex permutation
+There are a number of commonly used schemes for reordering the rows
+and columns of sparse matrices with the goal of reducing fill-in that
+occurs during the factorisation stage of sparse direct solvers or
+improving the performance of operations such as sparse matrix-vector
+multiplication.
+
+@findex mtx_permute_vector
+The function @code{mtx_permute_vector} can be used to permute the
+elements of a vector based on a given permutation.
+@example
+@code{int mtx_permute_vector(
+    struct mtx * mtx,
+    const int * permutation);}
+@end example
+The array @code{permutation} should be a permutation of the integers
+@code{1,2,...,mtx->num_rows}. The element at position @code{i} in the
+permuted vector is then equal to the element at the position
+@code{permutation[i-1]} in the original vector for
+@code{i=1,2,...,mtx->num_rows}.
+
+@findex mtx_permute_matrix
+The function @code{mtx_permute_matrix} can be used to permute the rows
+and/or columns of a matrix.
+@example
+@code{int mtx_permute_matrix(
+    struct mtx * mtx,
+    const int * row_permutation,
+    const int * column_permutation);}
+@end example
+The permutation used to reorder the rows is specified through the
+array @code{row_permutation}, whose length is @code{mtx->num_rows} and
+should be a permutation of the integers
+@code{1,2,...,mtx->num_rows}. Similarly, @code{column_permutation} is
+used to reorder the columns based on a permutation of
+@code{1,2,...,mtx->num_columns}. If @code{row_permutation} or
+@code{column_permutation} is @code{NULL}, then no permutation is
+applied to the rows or columns, respectively.
+
+
 @node Basic linear algebra operations
 @section Basic linear algebra operations
 
