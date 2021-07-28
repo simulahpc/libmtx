@@ -17,15 +17,18 @@
  * <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-06-18
+ * Last modified: 2021-07-28
  *
  * Sparse vectors in Matrix Market format.
  */
 
 #include <matrixmarket/error.h>
+#include <matrixmarket/mtx.h>
 #include <matrixmarket/vector_coordinate.h>
 
 #include <errno.h>
+
+#include <stdlib.h>
 
 /**
  * `mtx_init_vector_coordinate_real()` creates a sparse vector with
@@ -33,13 +36,49 @@
  */
 int mtx_init_vector_coordinate_real(
     struct mtx * mtx,
+    enum mtx_sorting sorting,
+    enum mtx_ordering ordering,
+    enum mtx_assembly assembly,
     int num_comment_lines,
     const char ** comment_lines,
+    int num_rows,
     int size,
     const struct mtx_vector_coordinate_real * data)
 {
-    errno = ENOTSUP;
-    return MTX_ERR_ERRNO;
+    int err;
+
+    mtx->object = mtx_vector;
+    mtx->format = mtx_coordinate;
+    mtx->field = mtx_real;
+    mtx->symmetry = mtx_general;
+    mtx->sorting = sorting;
+    mtx->ordering = ordering;
+    mtx->assembly = assembly;
+
+    mtx->num_comment_lines = 0;
+    mtx->comment_lines = NULL;
+    err = mtx_set_comment_lines(mtx, num_comment_lines, comment_lines);
+    if (err)
+        return err;
+
+    mtx->num_rows = num_rows;
+    mtx->num_columns = -1;
+    mtx->num_nonzeros = size;
+    mtx->size = size;
+    mtx->nonzero_size = sizeof(struct mtx_vector_coordinate_real);
+    mtx->data = malloc(size * mtx->nonzero_size);
+    if (!mtx->data) {
+        for (int i = 0; i < num_comment_lines; i++)
+            free(mtx->comment_lines[i]);
+        free(mtx->comment_lines);
+        return MTX_ERR_ERRNO;
+    }
+
+    struct mtx_vector_coordinate_real * mtxdata =
+        (struct mtx_vector_coordinate_real *) mtx->data;
+    for (int i = 0; i < size; i++)
+        mtxdata[i] = data[i];
+    return MTX_SUCCESS;
 }
 
 /**
@@ -48,13 +87,49 @@ int mtx_init_vector_coordinate_real(
  */
 int mtx_init_vector_coordinate_double(
     struct mtx * mtx,
+    enum mtx_sorting sorting,
+    enum mtx_ordering ordering,
+    enum mtx_assembly assembly,
     int num_comment_lines,
     const char ** comment_lines,
+    int num_rows,
     int size,
     const struct mtx_vector_coordinate_double * data)
 {
-    errno = ENOTSUP;
-    return MTX_ERR_ERRNO;
+    int err;
+
+    mtx->object = mtx_vector;
+    mtx->format = mtx_coordinate;
+    mtx->field = mtx_double;
+    mtx->symmetry = mtx_general;
+    mtx->sorting = sorting;
+    mtx->ordering = ordering;
+    mtx->assembly = assembly;
+
+    mtx->num_comment_lines = 0;
+    mtx->comment_lines = NULL;
+    err = mtx_set_comment_lines(mtx, num_comment_lines, comment_lines);
+    if (err)
+        return err;
+
+    mtx->num_rows = num_rows;
+    mtx->num_columns = -1;
+    mtx->num_nonzeros = size;
+    mtx->size = size;
+    mtx->nonzero_size = sizeof(struct mtx_vector_coordinate_double);
+    mtx->data = malloc(size * mtx->nonzero_size);
+    if (!mtx->data) {
+        for (int i = 0; i < num_comment_lines; i++)
+            free(mtx->comment_lines[i]);
+        free(mtx->comment_lines);
+        return MTX_ERR_ERRNO;
+    }
+
+    struct mtx_vector_coordinate_double * mtxdata =
+        (struct mtx_vector_coordinate_double *) mtx->data;
+    for (int i = 0; i < size; i++)
+        mtxdata[i] = data[i];
+    return MTX_SUCCESS;
 }
 
 /**
@@ -63,13 +138,49 @@ int mtx_init_vector_coordinate_double(
  */
 int mtx_init_vector_coordinate_complex(
     struct mtx * mtx,
+    enum mtx_sorting sorting,
+    enum mtx_ordering ordering,
+    enum mtx_assembly assembly,
     int num_comment_lines,
     const char ** comment_lines,
+    int num_rows,
     int size,
     const struct mtx_vector_coordinate_complex * data)
 {
-    errno = ENOTSUP;
-    return MTX_ERR_ERRNO;
+    int err;
+
+    mtx->object = mtx_vector;
+    mtx->format = mtx_coordinate;
+    mtx->field = mtx_complex;
+    mtx->symmetry = mtx_general;
+    mtx->sorting = sorting;
+    mtx->ordering = ordering;
+    mtx->assembly = assembly;
+
+    mtx->num_comment_lines = 0;
+    mtx->comment_lines = NULL;
+    err = mtx_set_comment_lines(mtx, num_comment_lines, comment_lines);
+    if (err)
+        return err;
+
+    mtx->num_rows = num_rows;
+    mtx->num_columns = -1;
+    mtx->num_nonzeros = size;
+    mtx->size = size;
+    mtx->nonzero_size = sizeof(struct mtx_vector_coordinate_complex);
+    mtx->data = malloc(size * mtx->nonzero_size);
+    if (!mtx->data) {
+        for (int i = 0; i < num_comment_lines; i++)
+            free(mtx->comment_lines[i]);
+        free(mtx->comment_lines);
+        return MTX_ERR_ERRNO;
+    }
+
+    struct mtx_vector_coordinate_complex * mtxdata =
+        (struct mtx_vector_coordinate_complex *) mtx->data;
+    for (int i = 0; i < size; i++)
+        mtxdata[i] = data[i];
+    return MTX_SUCCESS;
 }
 
 /**
@@ -78,13 +189,49 @@ int mtx_init_vector_coordinate_complex(
  */
 int mtx_init_vector_coordinate_integer(
     struct mtx * mtx,
+    enum mtx_sorting sorting,
+    enum mtx_ordering ordering,
+    enum mtx_assembly assembly,
     int num_comment_lines,
     const char ** comment_lines,
+    int num_rows,
     int size,
     const struct mtx_vector_coordinate_integer * data)
 {
-    errno = ENOTSUP;
-    return MTX_ERR_ERRNO;
+    int err;
+
+    mtx->object = mtx_vector;
+    mtx->format = mtx_coordinate;
+    mtx->field = mtx_integer;
+    mtx->symmetry = mtx_general;
+    mtx->sorting = sorting;
+    mtx->ordering = ordering;
+    mtx->assembly = assembly;
+
+    mtx->num_comment_lines = 0;
+    mtx->comment_lines = NULL;
+    err = mtx_set_comment_lines(mtx, num_comment_lines, comment_lines);
+    if (err)
+        return err;
+
+    mtx->num_rows = num_rows;
+    mtx->num_columns = -1;
+    mtx->num_nonzeros = size;
+    mtx->size = size;
+    mtx->nonzero_size = sizeof(struct mtx_vector_coordinate_integer);
+    mtx->data = malloc(size * mtx->nonzero_size);
+    if (!mtx->data) {
+        for (int i = 0; i < num_comment_lines; i++)
+            free(mtx->comment_lines[i]);
+        free(mtx->comment_lines);
+        return MTX_ERR_ERRNO;
+    }
+
+    struct mtx_vector_coordinate_integer * mtxdata =
+        (struct mtx_vector_coordinate_integer *) mtx->data;
+    for (int i = 0; i < size; i++)
+        mtxdata[i] = data[i];
+    return MTX_SUCCESS;
 }
 
 /**
@@ -93,11 +240,47 @@ int mtx_init_vector_coordinate_integer(
  */
 int mtx_init_vector_coordinate_pattern(
     struct mtx * mtx,
+    enum mtx_sorting sorting,
+    enum mtx_ordering ordering,
+    enum mtx_assembly assembly,
     int num_comment_lines,
     const char ** comment_lines,
+    int num_rows,
     int size,
     const struct mtx_vector_coordinate_pattern * data)
 {
-    errno = ENOTSUP;
-    return MTX_ERR_ERRNO;
+    int err;
+
+    mtx->object = mtx_vector;
+    mtx->format = mtx_coordinate;
+    mtx->field = mtx_pattern;
+    mtx->symmetry = mtx_general;
+    mtx->sorting = sorting;
+    mtx->ordering = ordering;
+    mtx->assembly = assembly;
+
+    mtx->num_comment_lines = 0;
+    mtx->comment_lines = NULL;
+    err = mtx_set_comment_lines(mtx, num_comment_lines, comment_lines);
+    if (err)
+        return err;
+
+    mtx->num_rows = num_rows;
+    mtx->num_columns = -1;
+    mtx->num_nonzeros = size;
+    mtx->size = size;
+    mtx->nonzero_size = sizeof(struct mtx_vector_coordinate_pattern);
+    mtx->data = malloc(size * mtx->nonzero_size);
+    if (!mtx->data) {
+        for (int i = 0; i < num_comment_lines; i++)
+            free(mtx->comment_lines[i]);
+        free(mtx->comment_lines);
+        return MTX_ERR_ERRNO;
+    }
+
+    struct mtx_vector_coordinate_pattern * mtxdata =
+        (struct mtx_vector_coordinate_pattern *) mtx->data;
+    for (int i = 0; i < size; i++)
+        mtxdata[i] = data[i];
+    return MTX_SUCCESS;
 }

@@ -17,13 +17,15 @@
  * <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-06-18
+ * Last modified: 2021-07-28
  *
  * Sparse vectors in Matrix Market format.
  */
 
 #ifndef MATRIXMARKET_VECTOR_COORDINATE_H
 #define MATRIXMARKET_VECTOR_COORDINATE_H
+
+#include <matrixmarket/header.h>
 
 struct mtx;
 
@@ -95,8 +97,12 @@ struct mtx_vector_coordinate_pattern
  */
 int mtx_init_vector_coordinate_real(
     struct mtx * mtx,
+    enum mtx_sorting sorting,
+    enum mtx_ordering ordering,
+    enum mtx_assembly assembly,
     int num_comment_lines,
     const char ** comment_lines,
+    int num_rows,
     int size,
     const struct mtx_vector_coordinate_real * data);
 
@@ -106,8 +112,12 @@ int mtx_init_vector_coordinate_real(
  */
 int mtx_init_vector_coordinate_double(
     struct mtx * mtx,
+    enum mtx_sorting sorting,
+    enum mtx_ordering ordering,
+    enum mtx_assembly assembly,
     int num_comment_lines,
     const char ** comment_lines,
+    int num_rows,
     int size,
     const struct mtx_vector_coordinate_double * data);
 
@@ -117,8 +127,12 @@ int mtx_init_vector_coordinate_double(
  */
 int mtx_init_vector_coordinate_complex(
     struct mtx * mtx,
+    enum mtx_sorting sorting,
+    enum mtx_ordering ordering,
+    enum mtx_assembly assembly,
     int num_comment_lines,
     const char ** comment_lines,
+    int num_rows,
     int size,
     const struct mtx_vector_coordinate_complex * data);
 
@@ -128,8 +142,12 @@ int mtx_init_vector_coordinate_complex(
  */
 int mtx_init_vector_coordinate_integer(
     struct mtx * mtx,
+    enum mtx_sorting sorting,
+    enum mtx_ordering ordering,
+    enum mtx_assembly assembly,
     int num_comment_lines,
     const char ** comment_lines,
+    int num_rows,
     int size,
     const struct mtx_vector_coordinate_integer * data);
 
@@ -139,8 +157,12 @@ int mtx_init_vector_coordinate_integer(
  */
 int mtx_init_vector_coordinate_pattern(
     struct mtx * mtx,
+    enum mtx_sorting sorting,
+    enum mtx_ordering ordering,
+    enum mtx_assembly assembly,
     int num_comment_lines,
     const char ** comment_lines,
+    int num_rows,
     int size,
     const struct mtx_vector_coordinate_pattern * data);
 
