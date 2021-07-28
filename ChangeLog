@@ -1,5 +1,8 @@
 2021-07-28 James D. Trotter <james@simula.no>
 
+	Implement the command `mtxreorder', which reorders a symmetric
+	sparse matrix using RCM.
+
 	Add `mtx_matrix_reorder_rcm' to reorder a sparse matrix with
 	symmetric sparsity pattern based on the Reverse Cuthill-McKee
 	algorithm.

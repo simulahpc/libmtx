@@ -202,11 +202,48 @@ Print diagnostics to standard error.
 @section @command{mtxreorder}
 @pindex mtxreorder
 
-The command @command{mtxreorder} is used to reorder the nonzeros of a
-sparse matrix, for example, using the Reverse Cuthill-McKee (RCM)
-ordering (@pxref{E. Cuthill and J. McKee (1969)}).
+The command @command{mtxreorder} is used to reorder the rows and
+columns of a sparse matrix, for example, using the Reverse
+Cuthill-McKee (RCM) ordering (@pxref{E. Cuthill and J. McKee (1969)}).
+@example
+@code{mtxreorder [OPTION..] FILE}
+@end example
 
-This command is not yet implemented.
+The following options are accepted:
+
+@table @option
+@item -z, --gzip, --gunzip, --ungzip
+Filter the file through gzip
+
+@item --format=FORMAT
+Format string for outputting numerical values.  For real, double and
+complex values, the format specifiers '%e', '%E', '%f', '%F', '%g' or
+'%G' may be used, whereas '%d' must be used for integers. Flags, field
+width and precision can optionally be specified, e.g., "%+3.1f".
+
+@item --rowperm-path=FILE
+Path for outputting row permuation as a dense vector in Matrix Market
+format.
+
+@item --colperm-path=FILE
+Path for outputting column permuation as a dense vector in Matrix
+Market format.
+
+@item --ordering=ORDERING
+The reordering algorithm to use. For now, the only supported algorithm
+is @samp{rcm}.
+
+@item --rcm-starting-row=N
+Starting row for the RCM algorithm.  The default value is @samp{-1},
+which means to choose a starting row automatically.
+
+@item -q, --quiet
+Do not print the resulting Matrix Market file to standard output.
+
+@item -v, --verbose
+Print diagnostics to standard error.
+
+@end table
 
 
 @node @command{mtxscatter}

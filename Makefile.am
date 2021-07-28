@@ -95,6 +95,7 @@ pkgconfig_DATA = matrixmarket/libmtx.pc
 bin_PROGRAMS = \
 	mtxinfo \
 	mtxgemv \
+	mtxreorder \
 	mtxsort
 if HAVE_MPI
 bin_PROGRAMS += \
@@ -111,6 +112,11 @@ mtxinfo_SOURCES = src/mtxinfo.c
 mtxgemv_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/src $(MPICPPFLAGS)
 mtxgemv_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
 mtxgemv_SOURCES = src/mtxgemv.c
+
+# mtxreorder
+mtxreorder_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/src $(MPICPPFLAGS)
+mtxreorder_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
+mtxreorder_SOURCES = src/mtxreorder.c
 
 # mtxsort
 mtxsort_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/src $(MPICPPFLAGS)
