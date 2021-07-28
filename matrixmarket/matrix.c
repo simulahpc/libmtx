@@ -40,6 +40,156 @@
 #include <string.h>
 
 /**
+ * `mtx_matrix_row_index()` retrieves the row index for a given
+ * nonzero of a matrix.
+ */
+int mtx_matrix_row_index(
+    const struct mtx * mtx,
+    int64_t k,
+    int * row)
+{
+    if (mtx->object != mtx_matrix)
+        return MTX_ERR_INVALID_MTX_OBJECT;
+    if (k < 0 || k > mtx->size) {
+        errno = EINVAL;
+        return MTX_ERR_ERRNO;
+    }
+
+    if (mtx->format == mtx_array) {
+        if (mtx->symmetry == mtx_general) {
+            *row = k / mtx->num_columns;
+        } else if (mtx->symmetry == mtx_symmetric ||
+                   mtx->symmetry == mtx_hermitian)
+        {
+            /* Here we assume that the lower triangular part of the
+             * matrix is stored. */
+            for (int i = 0; i < mtx->num_rows; i++) {
+                if (k < i+1) {
+                    *row = i;
+                    return MTX_SUCCESS;
+                }
+                k -= i+1;
+            }
+        } else if (mtx->symmetry == mtx_skew_symmetric) {
+            /* Here we assume that the strict lower triangular part of
+             * the matrix is stored. */
+            for (int i = 0; i < mtx->num_rows; i++) {
+                if (k < i) {
+                    *row = i;
+                    return MTX_SUCCESS;
+                }
+                k -= i;
+            }
+        } else {
+            return MTX_ERR_INVALID_MTX_SYMMETRY;
+        }
+
+    } else if (mtx->format == mtx_coordinate) {
+        if (mtx->field == mtx_real) {
+            const struct mtx_matrix_coordinate_real * data =
+                (const struct mtx_matrix_coordinate_real *) mtx->data;
+            *row = data[k].i;
+        } else if (mtx->field == mtx_double) {
+            const struct mtx_matrix_coordinate_double * data =
+                (const struct mtx_matrix_coordinate_double *) mtx->data;
+            *row = data[k].i;
+        } else if (mtx->field == mtx_complex) {
+            const struct mtx_matrix_coordinate_complex * data =
+                (const struct mtx_matrix_coordinate_complex *) mtx->data;
+            *row = data[k].i;
+        } else if (mtx->field == mtx_integer) {
+            const struct mtx_matrix_coordinate_integer * data =
+                (const struct mtx_matrix_coordinate_integer *) mtx->data;
+            *row = data[k].i;
+        } else if (mtx->field == mtx_pattern) {
+            const struct mtx_matrix_coordinate_pattern * data =
+                (const struct mtx_matrix_coordinate_pattern *) mtx->data;
+            *row = data[k].i;
+        } else {
+            return MTX_ERR_INVALID_MTX_FIELD;
+        }
+    } else {
+        return MTX_ERR_INVALID_MTX_FORMAT;
+    }
+    return MTX_SUCCESS;
+}
+
+/**
+ * `mtx_matrix_column_index()` retrieves the column index for a given
+ * nonzero of a matrix.
+ */
+int mtx_matrix_column_index(
+    const struct mtx * mtx,
+    int64_t k,
+    int * column)
+{
+    if (mtx->object != mtx_matrix)
+        return MTX_ERR_INVALID_MTX_OBJECT;
+    if (k < 0 || k > mtx->size) {
+        errno = EINVAL;
+        return MTX_ERR_ERRNO;
+    }
+
+    if (mtx->format == mtx_array) {
+        if (mtx->symmetry == mtx_general) {
+            *column = k % mtx->num_rows;
+        } else if (mtx->symmetry == mtx_symmetric ||
+                   mtx->symmetry == mtx_hermitian)
+        {
+            /* Here we assume that the lower triangular part of the
+             * matrix is stored. */
+            for (int i = 0; i < mtx->num_rows; i++) {
+                if (k < i+1) {
+                    *column = k;
+                    return MTX_SUCCESS;
+                }
+                k -= i+1;
+            }
+        } else if (mtx->symmetry == mtx_skew_symmetric) {
+            /* Here we assume that the strict lower triangular part of
+             * the matrix is stored. */
+            for (int i = 0; i < mtx->num_rows; i++) {
+                if (k < i) {
+                    *column = k;
+                    return MTX_SUCCESS;
+                }
+                k -= i;
+            }
+        } else {
+            return MTX_ERR_INVALID_MTX_SYMMETRY;
+        }
+
+    } else if (mtx->format == mtx_coordinate) {
+        if (mtx->field == mtx_real) {
+            const struct mtx_matrix_coordinate_real * data =
+                (const struct mtx_matrix_coordinate_real *) mtx->data;
+            *column = data[k].j;
+        } else if (mtx->field == mtx_double) {
+            const struct mtx_matrix_coordinate_double * data =
+                (const struct mtx_matrix_coordinate_double *) mtx->data;
+            *column = data[k].j;
+        } else if (mtx->field == mtx_complex) {
+            const struct mtx_matrix_coordinate_complex * data =
+                (const struct mtx_matrix_coordinate_complex *) mtx->data;
+            *column = data[k].j;
+        } else if (mtx->field == mtx_integer) {
+            const struct mtx_matrix_coordinate_integer * data =
+                (const struct mtx_matrix_coordinate_integer *) mtx->data;
+            *column = data[k].j;
+        } else if (mtx->field == mtx_pattern) {
+            const struct mtx_matrix_coordinate_pattern * data =
+                (const struct mtx_matrix_coordinate_pattern *) mtx->data;
+            *column = data[k].j;
+        } else {
+            return MTX_ERR_INVALID_MTX_FIELD;
+        }
+    } else {
+        return MTX_ERR_INVALID_MTX_FORMAT;
+    }
+    return MTX_SUCCESS;
+}
+
+/**
  * `mtx_matrix_num_nonzeros()` computes the number of nonzeros, including,
  * in the case of a matrix, any nonzeros that are not stored
  * explicitly due to symmetry.

@@ -34,6 +34,24 @@ struct mtx_index_set;
 struct mtx;
 
 /**
+ * `mtx_matrix_row_index()` retrieves the row index for a given
+ * nonzero of a matrix.
+ */
+int mtx_matrix_row_index(
+    const struct mtx * mtx,
+    int64_t k,
+    int * row);
+
+/**
+ * `mtx_matrix_column_index()` retrieves the column index for a given
+ * nonzero of a matrix.
+ */
+int mtx_matrix_column_index(
+    const struct mtx * mtx,
+    int64_t k,
+    int * column);
+
+/**
  * `mtx_matrix_num_nonzeros()` computes the number of nonzeros,
  * including, in the case of a matrix, any nonzeros that are not
  * stored explicitly due to symmetry.
