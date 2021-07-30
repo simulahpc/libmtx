@@ -50,7 +50,7 @@ int mtx_matrix_row_index(
 {
     if (mtx->object != mtx_matrix)
         return MTX_ERR_INVALID_MTX_OBJECT;
-    if (k < 0 || k > mtx->size) {
+    if (k < 0 || k >= mtx->size) {
         errno = EINVAL;
         return MTX_ERR_ERRNO;
     }
@@ -125,7 +125,7 @@ int mtx_matrix_column_index(
 {
     if (mtx->object != mtx_matrix)
         return MTX_ERR_INVALID_MTX_OBJECT;
-    if (k < 0 || k > mtx->size) {
+    if (k < 0 || k >= mtx->size) {
         errno = EINVAL;
         return MTX_ERR_ERRNO;
     }
