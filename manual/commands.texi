@@ -54,10 +54,14 @@ resulting distributed Matrix Market file for each process.
 
 @pindex mtxgather
 @item mtxgather
-collects Matrix Market files that
-represent a distributed matrix or vector from multiple MPI processes,
-accumulates the results on a single MPI root process and stores the
-resulting Matrix Market file.
+collects Matrix Market files that represent a distributed matrix or
+vector from multiple MPI processes, accumulates the results on a
+single MPI root process and stores the resulting Matrix Market file.
+
+@pindex mtxspy
+@item mtxspy
+draws an image of a matrix sparsity pattern and writes it to a PNG
+file.
 
 @end table
 
@@ -71,6 +75,7 @@ sections.
 * @command{mtxreorder}::
 * @command{mtxscatter}::
 * @command{mtxgather}::
+* @command{mtxspy}::
 @end menu
 
 @node @command{mtxinfo}
@@ -309,6 +314,58 @@ be specified, e.g., @samp{%+3.1f}.
 
 @item -q, --quiet
 Do not print the resulting Matrix Market file to standard output.
+
+@item -v, --verbose
+Print diagnostics to standard error.
+
+@end table
+
+
+@node @command{mtxspy}
+@section @command{mtxspy}
+@pindex mtxspy
+
+The command @command{mtxspy} draws an image of the sparsity pattern of
+a matrix, saving it to a PNG file.  This command is only available if
+libmtx is compiled with libpng support.
+@example
+@code{mtxspy [OPTION..] FILE}
+@end example
+
+The following options are accepted:
+
+@table @option
+@item --output-path=FILE
+Output path for the PNG image file. If not specified, the default
+output path is @samp{out.png}.
+
+@item -z, --gzip, --gunzip, --ungzip
+Filter files through gzip.
+
+@item --max-height=M
+@item --max-width=N
+Maximum width and height of the rendered image in pixels. The default
+maximum image size is 1000x1000 pixels.
+
+@item fgcolor=COLOR
+@item bgcolor=COLOR
+Foreground and background colors used to indicate sparse matrix
+entries that are present and absent in the sparsity pattern,
+respectively. Colors are specified in hexadecimal, optionally prefixed
+with a @samp{#} character (e.g., @samp{#38B6F1}). The default a black
+foreground and white background.
+
+@item gamma=GAMMA
+Gamma value to embed in the PNG.
+
+@item --title=TEXT
+@item --author=TEXT
+@item --description=TEXT
+@item --copyright=TEXT
+@item --email=TEXT
+@item --url=TEXT
+These options specify various text fields that may be stored in the
+PNG image to provide additional metadata about the image.
 
 @item -v, --verbose
 Print diagnostics to standard error.

@@ -121,6 +121,20 @@ AX_CHECK_ZLIB([
   AC_SUBST(LIBMTX_HAVE_LIBZ)
 ])
 
+dnl Check for libpng
+AX_LIBPNG([
+  LIBPNG_CPPFLAGS="-I${LIBPNG_HOME}/include"
+  LIBPNG_LDFLAGS="-L${LIBPNG_HOME}/lib"
+  LIBPNG_LIBS="-lpng"
+  AC_SUBST(LIBPNG_CPPFLAGS)
+  AC_SUBST(LIBPNG_LDFLAGS)
+  AC_SUBST(LIBPNG_LIBS)
+  AC_DEFINE([LIBMTX_HAVE_LIBPNG], [1], [Define to 1 if you have libpng])
+  AC_SUBST(LIBMTX_HAVE_LIBPNG)
+])
+AM_CONDITIONAL([HAVE_LIBPNG],
+  [test x"$with_libpng" != xno -a x"$libpng_found" != xno])
+
 AC_SUBST(libmtx_CPPFLAGS)
 
 dnl Version information - split VERSION into major, minor and release

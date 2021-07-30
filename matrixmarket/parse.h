@@ -61,6 +61,40 @@ int parse_int32(
     const char ** endptr);
 
 /**
+ * `parse_int32_hex()` parses a hexadecimal number string that may be
+ * represented as a 32-bit integer.
+ *
+ * The number is parsed using `strtoll()`, following the conventions
+ * documented in the man page for that function.  In addition, some
+ * further error checking is performed to ensure that the number is
+ * parsed correctly.  The parsed number is stored in `number`.
+ *
+ * `valid_delimiters` is either `NULL`, in which case it is ignored,
+ * or, it may contain a string of characters that constitute valid
+ * delimiters for the parsed string.  That is, after parsing a number,
+ * if there are any remaining, unconsumed characters in the string,
+ * `parse_int32_hex()` checks if the next character is found in the
+ * string `valid_delimiters`.  If the character is not found, then the
+ * string is judged to be invalid, and `EINVAL` is returned.
+ * Otherwise, the final, delimiter character is consumed by the
+ * parser.
+ *
+ * If `endptr` is not `NULL`, the address stored in `endptr` points to
+ * the first character beyond the characters that were consumed during
+ * parsing.
+ *
+ * On success, `parse_int32_hex()` returns `0`.  Otherwise, if the
+ * input contained invalid characters, `parse_int32_hex()` returns
+ * `EINVAL`.  If the resulting number cannot be represented as a
+ * signed 32-bit integer, `parse_int32_hex()` returns `ERANGE`.
+ */
+int parse_int32_hex(
+    const char * s,
+    const char * valid_delimiters,
+    int32_t * out_number,
+    const char ** endptr);
+
+/**
  * `parse_int64()` parses a string to produce a number that may be
  * represented as a 64-bit integer.
  *

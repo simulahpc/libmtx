@@ -49,10 +49,22 @@ what to include in a bug report.
 @cindex MPI
 @cindex BLAS
 @cindex zlib
+@cindex libpng
 Some features of libmtx are optional and will only be
 available if the following dependencies are provided:
 @itemize
-@item @emph{MPI} is needed for distributed-memory parallel matrices and vectors.
-@item @emph{BLAS} is needed for various linear algebra operations. Various implementations may be used, such as the netlib reference BLAS, OpenBLAS, BLIS, and so on.
-@item @emph{zlib} (@indicateurl{https://www.zlib.net/}) is needed for reading and writing gzip-compressed Matrix Market files.
+@item @emph{MPI}
+is needed for distributed-memory parallel matrices and vectors.
+
+@item @emph{BLAS}
+is needed for various linear algebra operations. Various
+implementations may be used, such as the netlib reference BLAS,
+OpenBLAS, BLIS, and so on.
+
+@item @emph{zlib} (@indicateurl{https://www.zlib.net/})
+is needed for reading and writing gzip-compressed Matrix Market files.
+
+@item @emph{libpng} (@indicateurl{http://www.libpng.org/pub/png/libpng.html})
+is needed for writing PNG images of matrix sparsity patterns.
+
 @end itemize

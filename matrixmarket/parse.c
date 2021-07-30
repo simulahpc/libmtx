@@ -113,6 +113,65 @@ int parse_int32(
 }
 
 /**
+ * `parse_int32_hex()` parses a hexadecimal number string that may be
+ * represented as a 32-bit integer.
+ *
+ * The number is parsed using `strtoll()`, following the conventions
+ * documented in the man page for that function.  In addition, some
+ * further error checking is performed to ensure that the number is
+ * parsed correctly.  The parsed number is stored in `number`.
+ *
+ * `valid_delimiters` is either `NULL`, in which case it is ignored,
+ * or, it may contain a string of characters that constitute valid
+ * delimiters for the parsed string.  That is, after parsing a number,
+ * if there are any remaining, unconsumed characters in the string,
+ * `parse_int32_hex()` checks if the next character is found in the
+ * string `valid_delimiters`.  If the character is not found, then the
+ * string is judged to be invalid, and `EINVAL` is returned.
+ * Otherwise, the final, delimiter character is consumed by the
+ * parser.
+ *
+ * If `endptr` is not `NULL`, the address stored in `endptr` points to
+ * the first character beyond the characters that were consumed during
+ * parsing.
+ *
+ * On success, `parse_int32_hex()` returns `0`.  Otherwise, if the
+ * input contained invalid characters, `parse_int32_hex()` returns
+ * `EINVAL`.  If the resulting number cannot be represented as a
+ * signed 32-bit integer, `parse_int32_hex()` returns `ERANGE`.
+ */
+int parse_int32_hex(
+    const char * s,
+    const char * valid_delimiters,
+    int32_t * out_number,
+    const char ** endptr)
+{
+    int base = 16;
+    char * s_end;
+    long long int number;
+    int err = parse_long_long_int(s, &s_end, base, &number);
+    if (err)
+        return err;
+
+    /* Check that the number is within range. */
+    if (number < INT32_MIN || number > INT32_MAX)
+        return ERANGE;
+
+    /* Check for a valid delimiter following the parsed number. */
+    if (valid_delimiters && s_end && *s_end != '\0') {
+        if (!strchr(valid_delimiters, *s_end)) {
+            return EINVAL;
+        }
+        s_end++;
+    }
+
+    if (endptr)
+        *endptr = s_end;
+    *out_number = number;
+    return 0;
+}
+
+/**
  * `parse_int64()` parses a string to produce a number that may be
  * represented as a 64-bit integer.
  *

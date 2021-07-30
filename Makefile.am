@@ -93,14 +93,18 @@ pkgconfig_DATA = matrixmarket/libmtx.pc
 
 # Matrix Market utility programs
 bin_PROGRAMS = \
-	mtxinfo \
 	mtxgemv \
+	mtxinfo \
 	mtxreorder \
 	mtxsort
 if HAVE_MPI
 bin_PROGRAMS += \
 	mtxgather \
 	mtxscatter
+endif
+if HAVE_LIBPNG
+bin_PROGRAMS += \
+	mtxspy
 endif
 
 # mtxinfo
@@ -132,6 +136,11 @@ mtxgather_SOURCES = src/mtxgather.c
 mtxscatter_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/src $(MPICPPFLAGS)
 mtxscatter_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
 mtxscatter_SOURCES = src/mtxscatter.c
+
+# mtxspy
+mtxspy_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/src $(MPICPPFLAGS)
+mtxspy_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS) $(LIBPNG_LIBS)
+mtxspy_SOURCES = src/mtxspy.c
 
 # Unit tests
 check_PROGRAMS = \
