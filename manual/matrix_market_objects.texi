@@ -37,6 +37,7 @@ libmtx.
 * Reading and writing Matrix Market files:: Functions for reading from and writing to files in Matrix Market format.
 * Creating matrices and vectors:: Functions for creating matrices and vectors.
 * Matrix operations:: Matrix operations
+* Matrix reordering:: Reordering matrix rows and columns
 * Basic linear algebra operations:: Basic linear algebra
 * Communicating matrices and vectors:: Message-passing functions for Matrix Market objects
 @end menu

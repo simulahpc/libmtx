@@ -234,7 +234,7 @@ The reordering algorithm to use. For now, the only supported algorithm
 is @samp{rcm}.
 
 @item --rcm-starting-row=N
-Starting row for the RCM algorithm.  The default value is @samp{-1},
+Starting row for the RCM algorithm.  The default value is @samp{0},
 which means to choose a starting row automatically.
 
 @item -q, --quiet
