@@ -60,13 +60,12 @@ int mtx_sort_matrix_coordinate_real(
     enum mtx_sorting sorting)
 {
     int err;
-    if (mtx->object != mtx_matrix ||
-        mtx->format != mtx_coordinate ||
-        mtx->field != mtx_real)
-    {
-        errno = EINVAL;
-        return MTX_ERR_ERRNO;
-    }
+    if (mtx->object != mtx_matrix)
+        return MTX_ERR_INVALID_MTX_OBJECT;
+    if (mtx->format != mtx_coordinate)
+        return MTX_ERR_INVALID_MTX_FORMAT;
+    if (mtx->field != mtx_real)
+        return MTX_ERR_INVALID_MTX_FIELD;
 
     if (sorting == mtx_row_major) {
     } else if (sorting == mtx_column_major) {
@@ -81,6 +80,7 @@ int mtx_sort_matrix_coordinate_real(
     int64_t * row_ptr = malloc((mtx->num_rows+2) * sizeof(int64_t));
     if (!row_ptr)
         return MTX_ERR_ERRNO;
+    row_ptr[0] = 0;
 
     /* 2. Count the number of nonzeros stored in each row. */
     err = mtx_matrix_row_ptr(mtx, &row_ptr[1]);
@@ -147,6 +147,7 @@ int mtx_sort_matrix_coordinate_double(
     int64_t * row_ptr = malloc((mtx->num_rows+2) * sizeof(int64_t));
     if (!row_ptr)
         return MTX_ERR_ERRNO;
+    row_ptr[0] = 0;
 
     /* 2. Count the number of nonzeros stored in each row. */
     err = mtx_matrix_row_ptr(mtx, &row_ptr[1]);
@@ -213,6 +214,7 @@ int mtx_sort_matrix_coordinate_complex(
     int64_t * row_ptr = malloc((mtx->num_rows+2) * sizeof(int64_t));
     if (!row_ptr)
         return MTX_ERR_ERRNO;
+    row_ptr[0] = 0;
 
     /* 2. Count the number of nonzeros stored in each row. */
     err = mtx_matrix_row_ptr(mtx, &row_ptr[1]);
@@ -279,6 +281,7 @@ int mtx_sort_matrix_coordinate_integer(
     int64_t * row_ptr = malloc((mtx->num_rows+2) * sizeof(int64_t));
     if (!row_ptr)
         return MTX_ERR_ERRNO;
+    row_ptr[0] = 0;
 
     /* 2. Count the number of nonzeros stored in each row. */
     err = mtx_matrix_row_ptr(mtx, &row_ptr[1]);
@@ -345,6 +348,7 @@ int mtx_sort_matrix_coordinate_pattern(
     int64_t * row_ptr = malloc((mtx->num_rows+2) * sizeof(int64_t));
     if (!row_ptr)
         return MTX_ERR_ERRNO;
+    row_ptr[0] = 0;
 
     /* 2. Count the number of nonzeros stored in each row. */
     err = mtx_matrix_row_ptr(mtx, &row_ptr[1]);
@@ -390,10 +394,10 @@ int mtx_sort_matrix_coordinate(
     enum mtx_sorting sorting)
 {
     int err;
-    if (mtx->object != mtx_matrix || mtx->format != mtx_coordinate) {
-        errno = EINVAL;
-        return MTX_ERR_ERRNO;
-    }
+    if (mtx->object != mtx_matrix)
+        return MTX_ERR_INVALID_MTX_OBJECT;
+    if (mtx->format != mtx_coordinate)
+        return MTX_ERR_INVALID_MTX_FORMAT;
 
     if (mtx->field == mtx_real) {
         return mtx_sort_matrix_coordinate_real(mtx, sorting);
@@ -418,10 +422,8 @@ int mtx_sort_matrix(
     enum mtx_sorting sorting)
 {
     int err;
-    if (mtx->object != mtx_matrix) {
-        errno = EINVAL;
-        return MTX_ERR_ERRNO;
-    }
+    if (mtx->object != mtx_matrix)
+        return MTX_ERR_INVALID_MTX_OBJECT;
 
     /* TODO: Implement sorting for dense matrices. */
     if (mtx->format == mtx_array) {
