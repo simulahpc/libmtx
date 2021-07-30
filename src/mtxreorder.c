@@ -122,7 +122,7 @@ static void program_options_print_help(
     fprintf(f, "  --colperm-path=FILE\tpath for outputting column permuation\n");
     fprintf(f, "  --ordering=ORDERING\tordering to use: rcm (default: rcm).\n");
     fprintf(f, "  --rcm-starting-row=N\tstarting row for the RCM algorithm.\n");
-    fprintf(f, "\t\t\tThe default value is -1, which means to choose automatically.\n");
+    fprintf(f, "\t\t\tThe default value is 0, which means to choose automatically.\n");
     fprintf(f, "  -q, --quiet\t\tdo not print Matrix Market output\n");
     fprintf(f, "  -v, --verbose\t\tbe more verbose\n");
     fprintf(f, "\n");
@@ -490,6 +490,7 @@ int main(int argc, char *argv[])
             program_options_free(&args);
             return EXIT_FAILURE;
         }
+        fflush(stdout);
 
         if (args.verbose > 0) {
             clock_gettime(CLOCK_MONOTONIC, &t1);

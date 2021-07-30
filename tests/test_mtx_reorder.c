@@ -121,6 +121,7 @@ int test_mtx_permute_matrix_array_real(void)
         const int row_permutation[] = {2, 1, 3};
         const int * column_permutation = NULL;
         err = mtx_permute_matrix(&mtx, row_permutation, column_permutation);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(9, mtx.size);
         const float * mtxdata = (const float *) mtx.data;
         TEST_ASSERT_EQ(1.0f, mtxdata[3]);
@@ -152,6 +153,7 @@ int test_mtx_permute_matrix_array_real(void)
         const int * row_permutation = NULL;
         const int column_permutation[] = {2, 1, 3};
         err = mtx_permute_matrix(&mtx, row_permutation, column_permutation);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(9, mtx.size);
         const float * mtxdata = (const float *) mtx.data;
         TEST_ASSERT_EQ(1.0f, mtxdata[1]);
@@ -183,6 +185,7 @@ int test_mtx_permute_matrix_array_real(void)
         const int row_permutation[] = {2, 1, 3};
         const int column_permutation[] = {2, 1, 3};
         err = mtx_permute_matrix(&mtx, row_permutation, column_permutation);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(9, mtx.size);
         const float * mtxdata = (const float *) mtx.data;
         TEST_ASSERT_EQ(1.0f, mtxdata[4]);
@@ -228,6 +231,7 @@ int test_mtx_permute_matrix_coordinate_real(void)
         const int row_permutation[] = {2, 1, 4, 3};
         const int * column_permutation = NULL;
         err = mtx_permute_matrix(&mtx, row_permutation, column_permutation);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(6, mtx.size);
         const struct mtx_matrix_coordinate_real * mtxdata =
             (const struct mtx_matrix_coordinate_real *) mtx.data;
@@ -269,6 +273,7 @@ int test_mtx_permute_matrix_coordinate_real(void)
         const int * row_permutation = NULL;
         const int column_permutation[] = {2, 1, 4, 3};
         err = mtx_permute_matrix(&mtx, row_permutation, column_permutation);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(6, mtx.size);
         const struct mtx_matrix_coordinate_real * mtxdata =
             (const struct mtx_matrix_coordinate_real *) mtx.data;
@@ -310,6 +315,7 @@ int test_mtx_permute_matrix_coordinate_real(void)
         const int row_permutation[] = {2, 1, 4, 3};
         const int column_permutation[] = {2, 1, 4, 3};
         err = mtx_permute_matrix(&mtx, row_permutation, column_permutation);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(6, mtx.size);
         const struct mtx_matrix_coordinate_real * mtxdata =
             (const struct mtx_matrix_coordinate_real *) mtx.data;
@@ -325,6 +331,72 @@ int test_mtx_permute_matrix_coordinate_real(void)
         TEST_ASSERT_EQ(5.0f, mtxdata[4].a);
         TEST_ASSERT_EQ(   3, mtxdata[5].i); TEST_ASSERT_EQ(   3, mtxdata[5].j);
         TEST_ASSERT_EQ(6.0f, mtxdata[5].a);
+        mtx_free(&mtx);
+    }
+
+    /* Permute rows and columns.    */
+    /*                              */
+    /*    5--7--6           7--8--9 */
+    /*    |  | /            |  | /  */
+    /* 4--8--2     -->   3--5--6    */
+    /* |  |  |           |  |  |    */
+    /* 9--1--3           1--2--4    */
+    {
+        int err;
+        struct mtx mtx;
+        int num_comment_lines = 0;
+        const char * comment_lines[] = {};
+        int num_rows = 9;
+        int num_columns = 9;
+        int64_t size = 24;
+        const struct mtx_matrix_coordinate_pattern data[] = {
+            {1,3}, {1,8}, {1,9},
+            {2,3}, {2,6}, {2,7}, {2,8},
+            {3,1}, {3,2},
+            {4,8}, {4,9},
+            {5,7}, {5,8},
+            {6,2}, {6,7},
+            {7,2}, {7,5}, {7,6},
+            {8,1}, {8,2}, {8,4}, {8,5},
+            {9,1}, {9,4}};
+        err = mtx_init_matrix_coordinate_pattern(
+            &mtx, mtx_general, mtx_unsorted, mtx_unordered, mtx_unassembled,
+            num_comment_lines, comment_lines,
+            num_rows, num_columns, size, data);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+
+        const int row_permutation[] = {2,6,4,3,7,9,8,5,1};
+        err = mtx_permute_matrix(&mtx, row_permutation, row_permutation);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        err = mtx_sort(&mtx, mtx_row_major);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        TEST_ASSERT_EQ(24, mtx.size);
+        const struct mtx_matrix_coordinate_pattern * mtxdata =
+            (const struct mtx_matrix_coordinate_pattern *) mtx.data;
+        TEST_ASSERT_EQ(1, mtxdata[ 0].i); TEST_ASSERT_EQ(2, mtxdata[ 0].j);
+        TEST_ASSERT_EQ(1, mtxdata[ 1].i); TEST_ASSERT_EQ(3, mtxdata[ 1].j);
+        TEST_ASSERT_EQ(2, mtxdata[ 2].i); TEST_ASSERT_EQ(1, mtxdata[ 2].j);
+        TEST_ASSERT_EQ(2, mtxdata[ 3].i); TEST_ASSERT_EQ(4, mtxdata[ 3].j);
+        TEST_ASSERT_EQ(2, mtxdata[ 4].i); TEST_ASSERT_EQ(5, mtxdata[ 4].j);
+        TEST_ASSERT_EQ(3, mtxdata[ 5].i); TEST_ASSERT_EQ(1, mtxdata[ 5].j);
+        TEST_ASSERT_EQ(3, mtxdata[ 6].i); TEST_ASSERT_EQ(5, mtxdata[ 6].j);
+        TEST_ASSERT_EQ(4, mtxdata[ 7].i); TEST_ASSERT_EQ(2, mtxdata[ 7].j);
+        TEST_ASSERT_EQ(4, mtxdata[ 8].i); TEST_ASSERT_EQ(6, mtxdata[ 8].j);
+        TEST_ASSERT_EQ(5, mtxdata[ 9].i); TEST_ASSERT_EQ(2, mtxdata[ 9].j);
+        TEST_ASSERT_EQ(5, mtxdata[10].i); TEST_ASSERT_EQ(3, mtxdata[10].j);
+        TEST_ASSERT_EQ(5, mtxdata[11].i); TEST_ASSERT_EQ(6, mtxdata[11].j);
+        TEST_ASSERT_EQ(5, mtxdata[12].i); TEST_ASSERT_EQ(7, mtxdata[12].j);
+        TEST_ASSERT_EQ(6, mtxdata[13].i); TEST_ASSERT_EQ(4, mtxdata[13].j);
+        TEST_ASSERT_EQ(6, mtxdata[14].i); TEST_ASSERT_EQ(5, mtxdata[14].j);
+        TEST_ASSERT_EQ(6, mtxdata[15].i); TEST_ASSERT_EQ(8, mtxdata[15].j);
+        TEST_ASSERT_EQ(6, mtxdata[16].i); TEST_ASSERT_EQ(9, mtxdata[16].j);
+        TEST_ASSERT_EQ(7, mtxdata[17].i); TEST_ASSERT_EQ(5, mtxdata[17].j);
+        TEST_ASSERT_EQ(7, mtxdata[18].i); TEST_ASSERT_EQ(8, mtxdata[18].j);
+        TEST_ASSERT_EQ(8, mtxdata[19].i); TEST_ASSERT_EQ(6, mtxdata[19].j);
+        TEST_ASSERT_EQ(8, mtxdata[20].i); TEST_ASSERT_EQ(7, mtxdata[20].j);
+        TEST_ASSERT_EQ(8, mtxdata[21].i); TEST_ASSERT_EQ(9, mtxdata[21].j);
+        TEST_ASSERT_EQ(9, mtxdata[22].i); TEST_ASSERT_EQ(6, mtxdata[22].j);
+        TEST_ASSERT_EQ(9, mtxdata[23].i); TEST_ASSERT_EQ(8, mtxdata[23].j);
         mtx_free(&mtx);
     }
     return TEST_SUCCESS;
@@ -369,9 +441,9 @@ int test_mtx_matrix_reorder_rcm_coordinate_real(void)
     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
 
     TEST_ASSERT_EQ(5, permutation[0]);
-    TEST_ASSERT_EQ(4, permutation[1]);
-    TEST_ASSERT_EQ(2, permutation[2]);
-    TEST_ASSERT_EQ(3, permutation[3]);
+    TEST_ASSERT_EQ(3, permutation[1]);
+    TEST_ASSERT_EQ(4, permutation[2]);
+    TEST_ASSERT_EQ(2, permutation[3]);
     TEST_ASSERT_EQ(1, permutation[4]);
     free(permutation);
 
@@ -390,35 +462,25 @@ int test_mtx_matrix_reorder_rcm_coordinate_real(void)
     TEST_ASSERT_EQ(sizeof(struct mtx_matrix_coordinate_real), mtx.nonzero_size);
     const struct mtx_matrix_coordinate_real * mtxdata =
         (const struct mtx_matrix_coordinate_real *) mtx.data;
-    TEST_ASSERT_EQ(    5, mtxdata[0].i);
-    TEST_ASSERT_EQ(    4, mtxdata[0].j);
+    TEST_ASSERT_EQ(    5, mtxdata[0].i); TEST_ASSERT_EQ(3, mtxdata[0].j);
     TEST_ASSERT_EQ( 1.0f, mtxdata[0].a);
-    TEST_ASSERT_EQ(    5, mtxdata[1].i);
-    TEST_ASSERT_EQ(    2, mtxdata[1].j);
+    TEST_ASSERT_EQ(    5, mtxdata[1].i); TEST_ASSERT_EQ(4, mtxdata[1].j);
     TEST_ASSERT_EQ( 2.0f, mtxdata[1].a);
-    TEST_ASSERT_EQ(    4, mtxdata[2].i);
-    TEST_ASSERT_EQ(    5, mtxdata[2].j);
+    TEST_ASSERT_EQ(    3, mtxdata[2].i); TEST_ASSERT_EQ(5, mtxdata[2].j);
     TEST_ASSERT_EQ( 3.0f, mtxdata[2].a);
-    TEST_ASSERT_EQ(    4, mtxdata[3].i);
-    TEST_ASSERT_EQ(    3, mtxdata[3].j);
+    TEST_ASSERT_EQ(    3, mtxdata[3].i); TEST_ASSERT_EQ(2, mtxdata[3].j);
     TEST_ASSERT_EQ( 4.0f, mtxdata[3].a);
-    TEST_ASSERT_EQ(    2, mtxdata[4].i);
-    TEST_ASSERT_EQ(    5, mtxdata[4].j);
+    TEST_ASSERT_EQ(    4, mtxdata[4].i); TEST_ASSERT_EQ(5, mtxdata[4].j);
     TEST_ASSERT_EQ( 5.0f, mtxdata[4].a);
-    TEST_ASSERT_EQ(    2, mtxdata[5].i);
-    TEST_ASSERT_EQ(    3, mtxdata[5].j);
+    TEST_ASSERT_EQ(    4, mtxdata[5].i); TEST_ASSERT_EQ(2, mtxdata[5].j);
     TEST_ASSERT_EQ( 6.0f, mtxdata[5].a);
-    TEST_ASSERT_EQ(    2, mtxdata[6].i);
-    TEST_ASSERT_EQ(    1, mtxdata[6].j);
+    TEST_ASSERT_EQ(    4, mtxdata[6].i); TEST_ASSERT_EQ(1, mtxdata[6].j);
     TEST_ASSERT_EQ( 7.0f, mtxdata[6].a);
-    TEST_ASSERT_EQ(    3, mtxdata[7].i);
-    TEST_ASSERT_EQ(    4, mtxdata[7].j);
+    TEST_ASSERT_EQ(    2, mtxdata[7].i); TEST_ASSERT_EQ(3, mtxdata[7].j);
     TEST_ASSERT_EQ( 8.0f, mtxdata[7].a);
-    TEST_ASSERT_EQ(    3, mtxdata[8].i);
-    TEST_ASSERT_EQ(    2, mtxdata[8].j);
+    TEST_ASSERT_EQ(    2, mtxdata[8].i); TEST_ASSERT_EQ(4, mtxdata[8].j);
     TEST_ASSERT_EQ( 9.0f, mtxdata[8].a);
-    TEST_ASSERT_EQ(    1, mtxdata[9].i);
-    TEST_ASSERT_EQ(    2, mtxdata[9].j);
+    TEST_ASSERT_EQ(    1, mtxdata[9].i); TEST_ASSERT_EQ(4, mtxdata[9].j);
     TEST_ASSERT_EQ(10.0f, mtxdata[9].a);
     mtx_free(&mtx);
     return MTX_SUCCESS;

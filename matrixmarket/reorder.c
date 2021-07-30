@@ -721,7 +721,7 @@ static int rooted_level_structure(
         return MTX_SUCCESS;
     }
 
-    /* 1. Add the root vertex to the first level. */
+    /* Add the root vertex to the first level. */
     vertex_in_set[root_vertex] = 1;
     vertices_per_level[0] = root_vertex;
     vertices_per_level_ptr[0] = 0;
@@ -1005,8 +1005,8 @@ static int cuthill_mckee(
         if (err)
             return err;
 
-        free(vertices_per_level_ptr);
         free(vertex_in_set);
+        free(vertices_per_level_ptr);
         *out_vertex_order = vertices_per_level;
         return MTX_SUCCESS;
     }
@@ -1041,7 +1041,7 @@ static int cuthill_mckee(
  */
 int mtx_matrix_reorder_rcm(
     struct mtx * mtx,
-    int ** permutation,
+    int ** out_permutation,
     int starting_row)
 {
     int err;
@@ -1096,6 +1096,10 @@ int mtx_matrix_reorder_rcm(
     free(vertex_degrees);
     free(row_ptr);
 
+    /* Add one to shift from 0-based to 1-based indexing. */
+    for (int i = 0; i < mtx->num_rows; i++)
+        vertex_order[i]++;
+
     /* 4. Reverse the ordering. */
     for (int i = 0; i < mtx->num_rows/2; i++) {
         int tmp = vertex_order[i];
@@ -1103,22 +1107,27 @@ int mtx_matrix_reorder_rcm(
         vertex_order[mtx->num_rows-i-1] = tmp;
     }
 
-    /* Add one to shift from 0-based to 1-based indexing. */
-    for (int i = 0; i < mtx->num_rows; i++)
-        vertex_order[i]++;
-
-    /* 5. Permute the matrix. */
-    err = mtx_permute_matrix(mtx, vertex_order, vertex_order);
+    int * permutation = malloc(mtx->num_rows * sizeof(int));
     if (err) {
         free(vertex_order);
         return err;
     }
 
-    if (permutation)
-        *permutation = vertex_order;
-    else
-        free(vertex_order);
+    for (int i = 0; i < mtx->num_rows; i++)
+        permutation[vertex_order[i]-1] = i+1;
+    free(vertex_order);
 
+    /* 5. Permute the matrix. */
+    err = mtx_permute_matrix(mtx, permutation, permutation);
+    if (err) {
+        free(vertex_order);
+        return err;
+    }
+
+    if (out_permutation)
+        *out_permutation = permutation;
+    else
+        free(permutation);
     mtx->ordering = mtx_rcm;
     return MTX_SUCCESS;
 }
