@@ -16,7 +16,7 @@
 @c <https://www.gnu.org/licenses/>.
 @c
 @c Authors: James D. Trotter <james@simula.no>
-@c Last modified: 2021-07-01
+@c Last modified: 2021-08-03
 @c
 @c libmtx User Guide: Commands.
 
@@ -43,6 +43,10 @@ adds two vectors.
 @pindex mtxdot
 @item mtxdot
 computes the dot product of two vectors.
+
+@pindex mtxnrm2
+@item mtxnrm2
+computes the Euclidean norm of a vector.
 
 @pindex mtxgemv
 @item mtxgemv
@@ -84,6 +88,7 @@ sections.
 * @command{mtxinfo}::
 * @command{mtxscal}::
 * @command{mtxdot}::
+* @command{mtxnrm2}::
 * @command{mtxaxpy}::
 * @command{mtxgemv}::
 * @command{mtxsort}::
@@ -194,6 +199,51 @@ Path to a Matrix Market file containing the vector
 Path to a Matrix Market file containing the vector
 @option{@var{y}}. If this argument is omitted, then a vector of ones
 of length equal to @option{@var{x}} is used.
+
+@end table
+
+In addition, the following options are accepted:
+
+@table @option
+@item -z, --gzip, --gunzip, --ungzip
+Filter files through gzip.
+
+@item --format=FORMAT
+Format string for outputting numerical values.  For real, double and
+complex values, the format specifiers @samp{%e}, @samp{%E}, @samp{%f},
+@samp{%F}, @samp{%g} or @samp{%G} may be used, whereas @samp{%d} must
+be used for integers. Flags, field width and precision can optionally
+be specified, e.g., @samp{%+3.1f}.
+
+@item -q, --quiet
+Do not print the resulting Matrix Market file to standard output.
+
+@item -v, --verbose
+Print some diagnostics to the standard error stream.
+
+@end table
+
+
+@node @command{mtxnrm2}
+@section @command{mtxnrm2}
+@pindex mtxnrm2
+
+The command @command{mtxnrm2} is used to compute the Euclidean norm of
+a vector.  That is, @samp{@var{nrm2} := sqrt(@var{x}'@var{x})}, where
+@samp{@var{x}} is a vector and @samp{@var{x}'} denotes its transpose.
+
+@example
+@code{mtxnrm2 [OPTION..] @var{x} [@var{y}]}
+@end example
+
+If matrices are provided instead of vectors, then the Frobenius norm
+of the matrices is computed.
+
+The positional arguments are:
+@table @option
+@item @var{x}
+Path to a Matrix Market file containing the vector
+@option{@var{x}}.
 
 @end table
 
