@@ -88,8 +88,7 @@ int mtx_matrix_coordinate_num_nonzeros(
         }
 
     } else {
-        errno = EINVAL;
-        return MTX_ERR_ERRNO;
+        return MTX_ERR_INVALID_MTX_SYMMETRY;
     }
     return MTX_SUCCESS;
 }
@@ -142,8 +141,7 @@ int mtx_matrix_coordinate_num_diagonal_nonzeros(
                 (*num_diagonal_nonzeros)++;
         }
     } else {
-        errno = EINVAL;
-        return MTX_ERR_ERRNO;
+        return MTX_ERR_INVALID_MTX_FIELD;
     }
     return MTX_SUCCESS;
 }

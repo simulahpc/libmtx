@@ -17,7 +17,7 @@
  * <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-07-28
+ * Last modified: 2021-08-02
  *
  * Sorting matrix and vector nonzeros.
  */
@@ -41,10 +41,13 @@ int mtx_sort_matrix_array(
     enum mtx_sorting sorting)
 {
     int err;
-    if (mtx->object != mtx_matrix || mtx->format != mtx_array) {
-        errno = EINVAL;
-        return MTX_ERR_ERRNO;
-    }
+    if (mtx->object != mtx_matrix)
+        return MTX_ERR_INVALID_MTX_OBJECT;
+    if (mtx->format != mtx_array)
+        return MTX_ERR_INVALID_MTX_FORMAT;
+
+    if (mtx->sorting == sorting)
+        return MTX_SUCCESS;
 
     /* TODO: Implement sorting for matrices in array format. */
     errno = ENOTSUP;
@@ -126,13 +129,12 @@ int mtx_sort_matrix_coordinate_double(
     enum mtx_sorting sorting)
 {
     int err;
-    if (mtx->object != mtx_matrix ||
-        mtx->format != mtx_coordinate ||
-        mtx->field != mtx_double)
-    {
-        errno = EINVAL;
-        return MTX_ERR_ERRNO;
-    }
+    if (mtx->object != mtx_matrix)
+        return MTX_ERR_INVALID_MTX_OBJECT;
+    if (mtx->format != mtx_coordinate)
+        return MTX_ERR_INVALID_MTX_FORMAT;
+    if (mtx->field != mtx_double)
+        return MTX_ERR_INVALID_MTX_FIELD;
 
     if (sorting == mtx_row_major) {
     } else if (sorting == mtx_column_major) {
@@ -193,13 +195,12 @@ int mtx_sort_matrix_coordinate_complex(
     enum mtx_sorting sorting)
 {
     int err;
-    if (mtx->object != mtx_matrix ||
-        mtx->format != mtx_coordinate ||
-        mtx->field != mtx_complex)
-    {
-        errno = EINVAL;
-        return MTX_ERR_ERRNO;
-    }
+    if (mtx->object != mtx_matrix)
+        return MTX_ERR_INVALID_MTX_OBJECT;
+    if (mtx->format != mtx_coordinate)
+        return MTX_ERR_INVALID_MTX_FORMAT;
+    if (mtx->field != mtx_complex)
+        return MTX_ERR_INVALID_MTX_FIELD;
 
     if (sorting == mtx_row_major) {
     } else if (sorting == mtx_column_major) {
@@ -260,13 +261,12 @@ int mtx_sort_matrix_coordinate_integer(
     enum mtx_sorting sorting)
 {
     int err;
-    if (mtx->object != mtx_matrix ||
-        mtx->format != mtx_coordinate ||
-        mtx->field != mtx_integer)
-    {
-        errno = EINVAL;
-        return MTX_ERR_ERRNO;
-    }
+    if (mtx->object != mtx_matrix)
+        return MTX_ERR_INVALID_MTX_OBJECT;
+    if (mtx->format != mtx_coordinate)
+        return MTX_ERR_INVALID_MTX_FORMAT;
+    if (mtx->field != mtx_integer)
+        return MTX_ERR_INVALID_MTX_FIELD;
 
     if (sorting == mtx_row_major) {
     } else if (sorting == mtx_column_major) {
@@ -327,13 +327,12 @@ int mtx_sort_matrix_coordinate_pattern(
     enum mtx_sorting sorting)
 {
     int err;
-    if (mtx->object != mtx_matrix ||
-        mtx->format != mtx_coordinate ||
-        mtx->field != mtx_pattern)
-    {
-        errno = EINVAL;
-        return MTX_ERR_ERRNO;
-    }
+    if (mtx->object != mtx_matrix)
+        return MTX_ERR_INVALID_MTX_OBJECT;
+    if (mtx->format != mtx_coordinate)
+        return MTX_ERR_INVALID_MTX_FORMAT;
+    if (mtx->field != mtx_pattern)
+        return MTX_ERR_INVALID_MTX_FIELD;
 
     if (sorting == mtx_row_major) {
     } else if (sorting == mtx_column_major) {
@@ -425,10 +424,8 @@ int mtx_sort_matrix(
     if (mtx->object != mtx_matrix)
         return MTX_ERR_INVALID_MTX_OBJECT;
 
-    /* TODO: Implement sorting for dense matrices. */
     if (mtx->format == mtx_array) {
-        errno = ENOTSUP;
-        return MTX_ERR_ERRNO;
+        return mtx_sort_matrix_array(mtx, sorting);
     } else if (mtx->format == mtx_coordinate) {
         return mtx_sort_matrix_coordinate(mtx, sorting);
     } else {
@@ -446,10 +443,10 @@ int mtx_sort_vector_coordinate(
     enum mtx_sorting sorting)
 {
     int err;
-    if (mtx->object != mtx_vector || mtx->format != mtx_coordinate) {
-        errno = EINVAL;
-        return MTX_ERR_ERRNO;
-    }
+    if (mtx->object != mtx_vector)
+        return MTX_ERR_INVALID_MTX_OBJECT;
+    if (mtx->format != mtx_coordinate)
+        return MTX_ERR_INVALID_MTX_FORMAT;
 
     /* TODO: Implement sorting for sparse vectors. */
     errno = ENOTSUP;
@@ -464,17 +461,16 @@ int mtx_sort_vector(
     enum mtx_sorting sorting)
 {
     int err;
-    if (mtx->object != mtx_vector) {
-        errno = EINVAL;
-        return MTX_ERR_ERRNO;
-    }
+    if (mtx->object != mtx_vector)
+        return MTX_ERR_INVALID_MTX_OBJECT;
 
     if (mtx->format == mtx_array) {
-        if (sorting != mtx_row_major && sorting != mtx_column_major) {
-            errno = EINVAL;
-            return MTX_ERR_ERRNO;
-        }
-        return MTX_SUCCESS;
+        if (mtx->sorting == sorting)
+            return MTX_SUCCESS;
+
+        /* TODO: Implement sorting for vectors in array format. */
+        errno = ENOTSUP;
+        return MTX_ERR_ERRNO;
     } else if (mtx->format == mtx_coordinate) {
         return mtx_sort_vector_coordinate(mtx, sorting);
     } else {

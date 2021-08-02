@@ -17,7 +17,7 @@
  * <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-06-18
+ * Last modified: 2021-08-02
  *
  * Index sets.
  */
@@ -73,11 +73,10 @@ int mtx_index_set_size(
     if (index_set->type == mtx_index_set_interval) {
         const struct mtx_index_set_interval * interval = &index_set->interval;
         *size = interval->b - interval->a;
-        return MTX_SUCCESS;
+    } else {
+        return MTX_ERR_INVALID_INDEX_SET_TYPE;
     }
-
-    errno = EINVAL;
-    return MTX_ERR_ERRNO;
+    return MTX_SUCCESS;
 }
 
 /**

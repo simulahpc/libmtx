@@ -259,7 +259,7 @@ struct mtx_matrix_coordinate_pattern @{
 The corresponding data types for sparse vectors are defined in the
 file @file{matrixmarket/vector_coordinate.h}. These data types are
 almost identical to the ones used for sparse matrices, except that the
-column index is omitted:error
+column index is omitted:
 @example
 @code{struct mtx_vector_coordinate_real @{
     int i;    /* row index */
@@ -381,21 +381,25 @@ code that either indicates success (represented by the status code
 @example
 @code{enum mtx_error
 @{
-  MTX_SUCCESS = 0,                    /* no error */
-  MTX_ERR_ERRNO = -1,                 /* error code provided by errno */
-  MTX_ERR_MPI = -2,                   /* MPI error */
-  MTX_ERR_EOF = -3,                   /* unexpected end-of-file */
-  MTX_ERR_LINE_TOO_LONG = -4,         /* line exceeds maximum length */
-  MTX_ERR_INVALID_MTX_HEADER = -5,    /* invalid mtx header */
-  MTX_ERR_INVALID_MTX_OBJECT = -6,    /* invalid mtx object */
-  MTX_ERR_INVALID_MTX_FORMAT = -7,    /* invalid mtx format */
-  MTX_ERR_INVALID_MTX_FIELD = -8,     /* invalid mtx field */
-  MTX_ERR_INVALID_MTX_SYMMETRY = -9,  /* invalid mtx symmetry */
-  MTX_ERR_INVALID_MTX_SORTING = -10,  /* invalid mtx sorting */
-  MTX_ERR_INVALID_MTX_ORDERING = -11, /* invalid mtx ordering */
-  MTX_ERR_INVALID_MTX_ASSEMBLY = -12, /* invalid mtx assembly */
-  MTX_ERR_INVALID_MTX_SIZE = -13,     /* invalid mtx size info */
-  MTX_ERR_INVALID_MTX_DATA = -14,     /* invalid mtx data */
+  MTX_SUCCESS = 0,                        /* no error */
+  MTX_ERR_ERRNO = -1,                     /* error code given by errno */
+  MTX_ERR_MPI = -2,                       /* MPI error */
+  MTX_ERR_EOF = -3,                       /* unexpected end-of-file */
+  MTX_ERR_LINE_TOO_LONG = -4,             /* line exceeds max length */
+  MTX_ERR_INVALID_MTX_HEADER = -5,        /* invalid mtx header */
+  MTX_ERR_INVALID_MTX_OBJECT = -6,        /* invalid mtx object */
+  MTX_ERR_INVALID_MTX_FORMAT = -7,        /* invalid mtx format */
+  MTX_ERR_INVALID_MTX_FIELD = -8,         /* invalid mtx field */
+  MTX_ERR_INVALID_MTX_SYMMETRY = -9,      /* invalid mtx symmetry */
+  MTX_ERR_INVALID_MTX_SORTING = -10,      /* invalid mtx sorting */
+  MTX_ERR_INVALID_MTX_ORDERING = -11,     /* invalid mtx ordering */
+  MTX_ERR_INVALID_MTX_ASSEMBLY = -12,     /* invalid mtx assembly */
+  MTX_ERR_INVALID_MTX_SIZE = -13,         /* invalid mtx size info */
+  MTX_ERR_INVALID_MTX_DATA = -14,         /* invalid mtx data */
+  MTX_ERR_INVALID_INDEX_SET_TYPE = -15,   /* invalid index set type */
+  MTX_ERR_INVALID_STREAM_TYPE = -16,      /* invalid stream type */
+  MTX_ERR_INVALID_FORMAT_SPECIFIER = -17, /* invalid format specifier */
+  MTX_ERR_INDEX_OUT_OF_BOUNDS = -18,      /* index out of bounds */
 @};}
 @end example
 

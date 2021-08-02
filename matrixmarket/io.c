@@ -17,7 +17,7 @@
  * <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-06-18
+ * Last modified: 2021-08-02
  *
  * Input/output for Matrix Market objects.
  */
@@ -212,8 +212,7 @@ static int stream_vprintf(
         return gzvprintf(f, format, va);
 #endif
     } else {
-        errno = EINVAL;
-        return MTX_ERR_ERRNO;
+        return MTX_ERR_INVALID_STREAM_TYPE;
     }
 }
 
@@ -243,8 +242,7 @@ static int stream_putc(
         return gzputc(f, c);
 #endif
     } else {
-        errno = EINVAL;
-        return MTX_ERR_ERRNO;
+        return MTX_ERR_INVALID_STREAM_TYPE;
     }
 }
 
@@ -267,7 +265,6 @@ static int read_line(
         int n = strlen(s);
         if (n > 0 && n == line_max && s[n-1] != '\n')
             return MTX_ERR_LINE_TOO_LONG;
-        return MTX_SUCCESS;
 #ifdef LIBMTX_HAVE_LIBZ
     } else if (stream->type == stream_gz) {
         gzFile f = stream->gz_f;
@@ -279,12 +276,11 @@ static int read_line(
         int n = strlen(s);
         if (n > 0 && n == line_max && s[n-1] != '\n')
             return MTX_ERR_LINE_TOO_LONG;
-        return MTX_SUCCESS;
 #endif
     } else {
-        errno = EINVAL;
-        return MTX_ERR_ERRNO;
+        return MTX_ERR_INVALID_STREAM_TYPE;
     }
+    return MTX_SUCCESS;
 }
 
 /**
@@ -1744,8 +1740,7 @@ static int validate_format_string(
         errno = err;
         return MTX_ERR_ERRNO;
     } else if (*endptr != '\0') {
-        errno = EINVAL;
-        return MTX_ERR_ERRNO;
+        return MTX_ERR_INVALID_FORMAT_SPECIFIER;
     }
 
     if (format.width == format_specifier_width_star ||
@@ -1763,8 +1758,7 @@ static int validate_format_string(
         (field == mtx_integer &&
          (format.specifier != format_specifier_d)))
     {
-        errno = EINVAL;
-        return MTX_ERR_ERRNO;
+        return MTX_ERR_INVALID_FORMAT_SPECIFIER;
     }
     return MTX_SUCCESS;
 }
@@ -1793,10 +1787,8 @@ static int write_matrix(
     const char * format)
 {
     int err;
-    if (matrix->object != mtx_matrix) {
-        errno = EINVAL;
-        return MTX_ERR_ERRNO;
-    }
+    if (matrix->object != mtx_matrix)
+        return MTX_ERR_INVALID_MTX_OBJECT;
 
     /* Parse and validate the format string. */
     if (format) {
@@ -1827,8 +1819,7 @@ static int write_matrix(
             matrix->num_columns,
             matrix->size);
     } else {
-        errno = EINVAL;
-        return MTX_ERR_ERRNO;
+        return MTX_ERR_INVALID_MTX_FORMAT;
     }
 
     /* 4. Write the data. */
@@ -1873,8 +1864,7 @@ static int write_matrix(
                 }
             }
         } else {
-            errno = EINVAL;
-            return MTX_ERR_ERRNO;
+            return MTX_ERR_INVALID_MTX_FIELD;
         }
 
     } else if (matrix->format == mtx_coordinate) {
@@ -1919,13 +1909,11 @@ static int write_matrix(
                 stream_printf(stream, "%d %d\n", a[k].i, a[k].j);
             }
         } else {
-            errno = EINVAL;
-            return MTX_ERR_ERRNO;
+            return MTX_ERR_INVALID_MTX_FIELD;
         }
 
     } else {
-        errno = EINVAL;
-        return MTX_ERR_ERRNO;
+        return MTX_ERR_INVALID_MTX_FORMAT;
     }
 
     return MTX_SUCCESS;
@@ -1955,10 +1943,8 @@ static int write_vector(
     const char * format)
 {
     int err;
-    if (vector->object != mtx_vector) {
-        errno = EINVAL;
-        return MTX_ERR_ERRNO;
-    }
+    if (vector->object != mtx_vector)
+        return MTX_ERR_INVALID_MTX_OBJECT;
 
     /* Parse and validate the format string. */
     if (format) {
@@ -1985,8 +1971,7 @@ static int write_vector(
     } else if (vector->format == mtx_coordinate) {
         stream_printf(stream, "%d %"PRId64"\n", vector->num_rows, vector->size);
     } else {
-        errno = EINVAL;
-        return MTX_ERR_ERRNO;
+        return MTX_ERR_INVALID_MTX_FORMAT;
     }
 
     /* 4. Write the data. */
@@ -2018,8 +2003,7 @@ static int write_vector(
                 stream_putc('\n', stream);
             }
         } else {
-            errno = EINVAL;
-            return MTX_ERR_ERRNO;
+            return MTX_ERR_INVALID_MTX_FIELD;
         }
 
     } else if (vector->format == mtx_coordinate) {
@@ -2064,13 +2048,11 @@ static int write_vector(
                 stream_printf(stream, "%d\n", a[k].i);
             }
         } else {
-            errno = EINVAL;
-            return MTX_ERR_ERRNO;
+            return MTX_ERR_INVALID_MTX_FIELD;
         }
 
     } else {
-        errno = EINVAL;
-        return MTX_ERR_ERRNO;
+        return MTX_ERR_INVALID_MTX_FORMAT;
     }
 
     return MTX_SUCCESS;
@@ -2081,27 +2063,17 @@ static int write_vector(
  * Market format.
  */
 static int write_mtx(
-    const struct mtx * matrix,
+    const struct mtx * mtx,
     const struct stream * stream,
     const char * format)
 {
     int err;
-    switch (matrix->object) {
-    case mtx_matrix:
-        err = write_matrix(matrix, stream, format);
-        if (err)
-            return err;
-        break;
-
-    case mtx_vector:
-        err = write_vector(matrix, stream, format);
-        if (err)
-            return err;
-        break;
-
-    default:
-        errno = EINVAL;
-        return MTX_ERR_ERRNO;
+    if (mtx->object == mtx_matrix) {
+        return write_matrix(mtx, stream, format);
+    } else if (mtx->object == mtx_vector) {
+        return write_vector(mtx, stream, format);
+    } else {
+        return MTX_ERR_INVALID_MTX_OBJECT;
     }
     return MTX_SUCCESS;
 }

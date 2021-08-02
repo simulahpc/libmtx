@@ -1,3 +1,16 @@
+2021-08-02 James D. Trotter <james@simula.no>
+
+	Implement several new commands, including mtxscal, mtxaxpy, mtxdot
+	and mtxnrm2. These are based on the corresponding BLAS operations.
+
+	Also, add functions for setting matrix or vector values equal to
+	zero or a given constant value.
+
+	Add support for writing vectors in coordinate format to file.
+
+	Remove some unused functions, improve error handling and fix
+	various, minor issues.
+
 2021-07-28 James D. Trotter <james@simula.no>
 
 	Implement the command `mtxreorder', which reorders a symmetric

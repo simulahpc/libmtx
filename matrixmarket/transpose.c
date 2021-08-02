@@ -17,7 +17,7 @@
  * <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-06-18
+ * Last modified: 2021-08-02
  *
  * Matrix transpose.
  */
@@ -36,19 +36,12 @@
 int mtx_matrix_coordinate_transpose(
     struct mtx * matrix)
 {
-    /* Ensure the matrix is sparse. */
-    if (matrix->object != mtx_matrix ||
-        matrix->format != mtx_coordinate)
-    {
-        errno = EINVAL;
-        return MTX_ERR_ERRNO;
-    }
-
-    /* Ensure the matrix is square. */
-    if (matrix->num_rows != matrix->num_columns) {
-        errno = EINVAL;
-        return MTX_ERR_ERRNO;
-    }
+    if (matrix->object != mtx_matrix)
+        return MTX_ERR_INVALID_MTX_OBJECT;
+    if (matrix->format != mtx_coordinate)
+        return MTX_ERR_INVALID_MTX_FORMAT;
+    if (matrix->num_rows != matrix->num_columns)
+        return MTX_ERR_INVALID_MTX_SIZE;
 
     if (matrix->symmetry == mtx_symmetric) {
         return MTX_SUCCESS;
@@ -56,7 +49,7 @@ int mtx_matrix_coordinate_transpose(
         /* TODO: Implement transpose for skew-symmetric matrices. */
         errno = ENOTSUP;
         return MTX_ERR_ERRNO;
-    } else if (matrix->symmetry  == mtx_hermitian) {
+    } else if (matrix->symmetry == mtx_hermitian) {
         errno = ENOTSUP;
         return MTX_ERR_ERRNO;
     } else if (matrix->symmetry == mtx_general) {
@@ -106,8 +99,7 @@ int mtx_matrix_coordinate_transpose(
                 data[k].j = i;
             }
         } else {
-            errno = EINVAL;
-            return MTX_ERR_ERRNO;
+            return MTX_ERR_INVALID_MTX_FIELD;
         }
     }
 
@@ -121,10 +113,8 @@ int mtx_matrix_transpose(
     struct mtx * matrix)
 {
     int err;
-    if (matrix->object != mtx_matrix) {
-        errno = EINVAL;
-        return MTX_ERR_ERRNO;
-    }
+    if (matrix->object != mtx_matrix)
+        return MTX_ERR_INVALID_MTX_OBJECT;
 
     if (matrix->format == mtx_array) {
         /* TODO: Implement dense matrix transpose. */
@@ -135,9 +125,7 @@ int mtx_matrix_transpose(
         if (err)
             return err;
     } else {
-        errno = EINVAL;
-        return MTX_ERR_ERRNO;
+        return MTX_ERR_INVALID_MTX_FORMAT;
     }
-
     return MTX_SUCCESS;
 }

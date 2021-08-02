@@ -1054,8 +1054,7 @@ int mtx_matrix_reorder_rcm(
     if (mtx->sorting != mtx_row_major)
         return MTX_ERR_INVALID_MTX_SORTING;
     if (starting_row < 0 || starting_row > mtx->num_rows) {
-        errno = EINVAL;
-        return MTX_ERR_ERRNO;
+        return MTX_ERR_INDEX_OUT_OF_BOUNDS;
     }
 
     /* 1. Allocate storage for and compute row pointers. */

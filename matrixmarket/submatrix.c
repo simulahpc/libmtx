@@ -17,7 +17,7 @@
  * <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-06-18
+ * Last modified: 2021-08-02
  *
  * Extracting submatrices from dense and sparse matrices in the Matrix
  * Market format.
@@ -45,11 +45,8 @@ int mtx_matrix_submatrix(
     struct mtx * submtx)
 {
     int err;
-    if (mtx->object != mtx_matrix) {
-        errno = EINVAL;
-        return MTX_ERR_ERRNO;
-    }
-
+    if (mtx->object != mtx_matrix)
+        return MTX_ERR_INVALID_MTX_OBJECT;
     if (mtx->symmetry != mtx_general) {
         errno = ENOTSUP;
         return MTX_ERR_ERRNO;
@@ -94,40 +91,33 @@ int mtx_matrix_submatrix(
         err = mtx_index_set_size(columns, &num_submtx_columns);
         size = num_submtx_rows * num_submtx_columns;
     } else if (mtx->format == mtx_coordinate) {
-        if (mtx->field == mtx_real) {
-            const struct mtx_matrix_coordinate_real * nonzeros =
-                (const struct mtx_matrix_coordinate_real *) mtx->data;
-            size = 0;
-            for (int k = 0; k < mtx->size; k++) {
-                bool has_row = mtx_index_set_contains(rows, nonzeros[k].i);
-                bool has_column = mtx_index_set_contains(columns, nonzeros[k].j);
-                if (has_row && has_column)
-                    size++;
+        size = 0;
+        for (int k = 0; k < mtx->size; k++) {
+            int i, j;
+            err = mtx_matrix_row_index(mtx, k, &i);
+            if (err) {
+                for (int j = 0; j < submtx->num_comment_lines; j++)
+                    free(submtx->comment_lines[j]);
+                free(submtx->comment_lines);
+                return err;
             }
-        } else if (mtx->field == mtx_double ||
-                   mtx->field == mtx_complex ||
-                   mtx->field == mtx_integer ||
-                   mtx->field == mtx_pattern)
-        {
-            for (int j = 0; j < submtx->num_comment_lines; j++)
-                free(submtx->comment_lines[j]);
-            free(submtx->comment_lines);
-            errno = ENOTSUP;
-            return MTX_ERR_ERRNO;
-        } else {
-            for (int j = 0; j < submtx->num_comment_lines; j++)
-                free(submtx->comment_lines[j]);
-            free(submtx->comment_lines);
-            errno = EINVAL;
-            return MTX_ERR_ERRNO;
+            err = mtx_matrix_column_index(mtx, k, &j);
+            if (err) {
+                for (int j = 0; j < submtx->num_comment_lines; j++)
+                    free(submtx->comment_lines[j]);
+                free(submtx->comment_lines);
+                return err;
+            }
+            bool has_row = mtx_index_set_contains(rows, i);
+            bool has_column = mtx_index_set_contains(columns, j);
+            if (has_row && has_column)
+                size++;
         }
-
     } else {
         for (int j = 0; j < submtx->num_comment_lines; j++)
             free(submtx->comment_lines[j]);
         free(submtx->comment_lines);
-        errno = EINVAL;
-        return MTX_ERR_ERRNO;
+        return MTX_ERR_INVALID_MTX_FORMAT;
     }
 
     submtx->size = size;
@@ -183,8 +173,7 @@ int mtx_matrix_submatrix(
             for (int j = 0; j < submtx->num_comment_lines; j++)
                 free(submtx->comment_lines[j]);
             free(submtx->comment_lines);
-            errno = EINVAL;
-            return MTX_ERR_ERRNO;
+            return MTX_ERR_INVALID_MTX_FIELD;
         }
 
     } else {
@@ -192,8 +181,7 @@ int mtx_matrix_submatrix(
         for (int j = 0; j < submtx->num_comment_lines; j++)
             free(submtx->comment_lines[j]);
         free(submtx->comment_lines);
-        errno = EINVAL;
-        return MTX_ERR_ERRNO;
+        return MTX_ERR_INVALID_MTX_FORMAT;
     }
 
     /* Calculate the number of nonzeros. */

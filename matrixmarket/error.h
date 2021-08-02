@@ -17,7 +17,7 @@
  * <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-06-18
+ * Last modified: 2021-08-02
  *
  * Error handling.
  */
@@ -50,6 +50,10 @@ enum mtx_error
     MTX_ERR_INVALID_MTX_ASSEMBLY = -12, /* invalid Matrix Market assembly */
     MTX_ERR_INVALID_MTX_SIZE = -13,     /* invalid Matrix Market size info */
     MTX_ERR_INVALID_MTX_DATA = -14,     /* invalid Matrix Market data */
+    MTX_ERR_INVALID_INDEX_SET_TYPE = -15, /* invalid index set type */
+    MTX_ERR_INVALID_STREAM_TYPE = -16,  /* invalid stream type */
+    MTX_ERR_INVALID_FORMAT_SPECIFIER = -17, /* invalid format specifier */
+    MTX_ERR_INDEX_OUT_OF_BOUNDS = -18,  /* index out of bounds */
 };
 
 /**

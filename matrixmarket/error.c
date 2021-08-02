@@ -17,7 +17,7 @@
  * <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-06-18
+ * Last modified: 2021-08-02
  *
  * Error handling.
  */
@@ -81,6 +81,14 @@ const char * mtx_strerror(
         return "invalid Matrix Market size";
     case MTX_ERR_INVALID_MTX_DATA:
         return "invalid Matrix Market data";
+    case MTX_ERR_INVALID_INDEX_SET_TYPE:
+        return "invalid index set type";
+    case MTX_ERR_INVALID_STREAM_TYPE:
+        return "invalid stream type";
+    case MTX_ERR_INVALID_FORMAT_SPECIFIER:
+        return "invalid format specifier";
+    case MTX_ERR_INDEX_OUT_OF_BOUNDS:
+        return "index out of bounds";
     default:
         return "unknown error";
     }

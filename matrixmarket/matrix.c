@@ -28,8 +28,6 @@
 #include <matrixmarket/matrix_coordinate.h>
 #include <matrixmarket/mtx.h>
 
-#include <errno.h>
-
 #include <inttypes.h>
 #include <limits.h>
 #include <math.h>
@@ -50,10 +48,8 @@ int mtx_matrix_row_index(
 {
     if (mtx->object != mtx_matrix)
         return MTX_ERR_INVALID_MTX_OBJECT;
-    if (k < 0 || k >= mtx->size) {
-        errno = EINVAL;
-        return MTX_ERR_ERRNO;
-    }
+    if (k < 0 || k >= mtx->size)
+        return MTX_ERR_INDEX_OUT_OF_BOUNDS;
 
     if (mtx->format == mtx_array) {
         if (mtx->symmetry == mtx_general) {
@@ -125,10 +121,8 @@ int mtx_matrix_column_index(
 {
     if (mtx->object != mtx_matrix)
         return MTX_ERR_INVALID_MTX_OBJECT;
-    if (k < 0 || k >= mtx->size) {
-        errno = EINVAL;
-        return MTX_ERR_ERRNO;
-    }
+    if (k < 0 || k >= mtx->size)
+        return MTX_ERR_INDEX_OUT_OF_BOUNDS;
 
     if (mtx->format == mtx_array) {
         if (mtx->symmetry == mtx_general) {
@@ -311,27 +305,22 @@ int mtx_matrix_num_nonzeros(
     int64_t * num_nonzeros)
 {
     int err;
-    if (object == mtx_matrix) {
-        if (format == mtx_array) {
-            err = mtx_matrix_array_num_nonzeros(
-                num_rows, num_columns, num_nonzeros);
-            if (err)
-                return err;
-        } else if (format == mtx_coordinate) {
-            err = mtx_matrix_coordinate_num_nonzeros(
-                field, symmetry, num_rows, num_columns,
-                size, data, num_nonzeros);
-            if (err)
-                return err;
-        } else {
-            return MTX_ERR_INVALID_MTX_FORMAT;
-        }
-
-    } else if (object == mtx_vector) {
-        errno = ENOTSUP;
-        return MTX_ERR_ERRNO;
-    } else {
+    if (object != mtx_matrix)
         return MTX_ERR_INVALID_MTX_OBJECT;
+
+    if (format == mtx_array) {
+        err = mtx_matrix_array_num_nonzeros(
+            num_rows, num_columns, num_nonzeros);
+        if (err)
+            return err;
+    } else if (format == mtx_coordinate) {
+        err = mtx_matrix_coordinate_num_nonzeros(
+            field, symmetry, num_rows, num_columns,
+            size, data, num_nonzeros);
+        if (err)
+            return err;
+    } else {
+        return MTX_ERR_INVALID_MTX_FORMAT;
     }
     return MTX_SUCCESS;
 }
