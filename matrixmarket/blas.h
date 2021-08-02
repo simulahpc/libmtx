@@ -32,24 +32,24 @@ struct mtx;
  */
 
 /**
- * `mtx_sscal()' scales a vector by a single precision floating-point
- * scalar, `x = a*x'.
+ * `mtx_sscal()' scales a vector (or matrix) by a single precision
+ * floating-point scalar, `x = a*x'.
  */
 int mtx_sscal(
     float a,
     struct mtx * x);
 
 /**
- * `mtx_dscal()' scales a vector by a double precision floating-point
- * scalar, `x = a*x'.
+ * `mtx_dscal()' scales a vector (or matrix) by a double precision
+ * floating-point scalar, `x = a*x'.
  */
 int mtx_dscal(
     double a,
     struct mtx * x);
 
 /**
- * `mtx_saxpy()' adds two vectors of single precision floating-point
- * values, `y = a*x + y'.
+ * `mtx_saxpy()' adds two vectors (or matrices) of single precision
+ * floating-point values, `y = a*x + y'.
  */
 int mtx_saxpy(
     float a,
@@ -57,8 +57,8 @@ int mtx_saxpy(
     struct mtx * y);
 
 /**
- * `mtx_daxpy()' adds two vectors of double precision floating-point
- * values, `y = a*x + y'.
+ * `mtx_daxpy()' adds two vectors (or matrices) of double precision
+ * floating-point values, `y = a*x + y'.
  */
 int mtx_daxpy(
     double a,
@@ -66,8 +66,9 @@ int mtx_daxpy(
     struct mtx * y);
 
 /**
- * `mtx_sdot()' computes the dot product of two dense vectors of
- * single precision floating-point values.
+ * `mtx_sdot()' computes the Euclidean dot product of two vectors (or
+ * Frobenius inner product of two matrices) of single precision
+ * floating-point values.
  */
 int mtx_sdot(
     const struct mtx * x,
@@ -75,8 +76,9 @@ int mtx_sdot(
     float * dot);
 
 /**
- * `mtx_ddot()' computes the dot product of two dense vectors of
- * double precision floating-point values.
+ * `mtx_ddot()' computes the Euclidean dot product of two vectors (or
+ * Frobenius inner product of two matrices) of double precision
+ * floating-point values.
  */
 int mtx_ddot(
     const struct mtx * x,
@@ -84,16 +86,16 @@ int mtx_ddot(
     double * dot);
 
 /**
- * `mtx_snrm2()' computes the Euclidean norm of a vector of single
- * precision floating-point values.
+ * `mtx_snrm2()' computes the Euclidean norm of a vector (or Frobenius
+ * norm of a matrix) of single precision floating-point values.
  */
 int mtx_snrm2(
     const struct mtx * x,
     float * nrm2);
 
 /**
- * `mtx_dnrm2()' computes the Euclidean norm of a vector of double
- * precision floating-point values.
+ * `mtx_dnrm2()' computes the Euclidean norm of a vector (or Frobenius
+ * norm of a matrix) of double precision floating-point values.
  */
 int mtx_dnrm2(
     const struct mtx * x,
