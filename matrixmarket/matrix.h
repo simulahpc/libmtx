@@ -116,25 +116,6 @@ int mtx_matrix_num_diagonal_nonzeros(
     int64_t * num_diagonal_nonzeros);
 
 /**
- * `mtx_matrix_nonzeros_per_row()` counts the number of nonzeros in
- * each row of a matrix in the Matrix Market format.
- *
- * If `include_strict_upper_triangular_part` is `true` and `symmetry`
- * is `symmetric`, `skew-symmetric` or `hermitian`, then nonzeros in
- * the strict upper triangular part are also counted. Conversely, if
- * `include_strict_upper_triangular_part` is `false`, then only
- * nonzeros in the lower triangular part of the matrix are counted.
- *
- * `mtx_matrix_nonzeros_per_row()` returns `MTX_ERR_ERRNO' with
- * `errno' set to `EINVAL' if `symmetry` is `general` and
- * `include_strict_upper_triangular_part` is `false`.
- */
-int mtx_matrix_nonzeros_per_row(
-    const struct mtx * matrix,
-    bool include_strict_upper_triangular_part,
-    int64_t * nonzeros_per_row);
-
-/**
  * `mtx_matrix_size_per_row()' counts the number of entries stored for
  * each row of a matrix.
  *
