@@ -96,6 +96,7 @@ pkgconfig_DATA = matrixmarket/libmtx.pc
 
 # Matrix Market utility programs
 bin_PROGRAMS = \
+	mtxaxpy \
 	mtxgemv \
 	mtxinfo \
 	mtxreorder \
@@ -110,6 +111,11 @@ if HAVE_LIBPNG
 bin_PROGRAMS += \
 	mtxspy
 endif
+
+# mtxaxpy
+mtxaxpy_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/src $(MPICPPFLAGS)
+mtxaxpy_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
+mtxaxpy_SOURCES = src/mtxaxpy.c
 
 # mtxgemv
 mtxgemv_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/src $(MPICPPFLAGS)

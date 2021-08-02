@@ -36,6 +36,10 @@ high-level information about the Matrix Market object.
 @item mtxscal
 scales a vector by a scalar.
 
+@pindex mtxaxpy
+@item mtxaxpy
+adds two vectors.
+
 @pindex mtxgemv
 @item mtxgemv
 multiplies a general, unsymmetric matrix by a vector.
@@ -75,6 +79,7 @@ sections.
 @menu
 * @command{mtxinfo}::
 * @command{mtxscal}::
+* @command{mtxaxpy}::
 * @command{mtxgemv}::
 * @command{mtxsort}::
 * @command{mtxreorder}::
@@ -156,6 +161,85 @@ Do not print the resulting Matrix Market file to standard output.
 Print some diagnostics to the standard error stream.
 
 @end table
+
+
+@node @command{mtxaxpy}
+@section @command{mtxaxpy}
+@pindex mtxaxpy
+
+The command @command{mtxaxpy} is used to add two vectors. The result
+is written to standard output in the form of a Matrix Market file
+representing the result vector. More specifically, the calculation
+carried out is @samp{@var{y} := @var{alpha}*@var{x} + @var{y}}.
+
+@example
+@code{mtxaxpy [OPTION..] @var{alpha} @var{x} [@var{y}]}
+@end example
+
+The positional arguments are:
+@table @option
+@item @var{alpha}
+The scalar floating-point value @option{@var{alpha}}.
+
+@item @var{x}
+Path to a Matrix Market file containing the vector
+@option{@var{x}}.
+
+@item @var{y}
+Path to a Matrix Market file containing the vector
+@option{@var{y}}. If this argument is omitted, then a vector of zeros
+of length equal to @option{@var{x}} is used.
+
+@end table
+
+In addition, the following options are accepted:
+
+@table @option
+@item -z, --gzip, --gunzip, --ungzip
+Filter files through gzip.
+
+@item --format=FORMAT
+Format string for outputting numerical values.  For real, double and
+complex values, the format specifiers @samp{%e}, @samp{%E}, @samp{%f},
+@samp{%F}, @samp{%g} or @samp{%G} may be used, whereas @samp{%d} must
+be used for integers. Flags, field width and precision can optionally
+be specified, e.g., @samp{%+3.1f}.
+
+@item --repeat=N
+The number of times to repeat the matrix-vector multiplication.
+
+@item -q, --quiet
+Do not print the resulting Matrix Market file to standard output.
+
+@item -v, --verbose
+Print some diagnostics to the standard error stream.
+
+@end table
+
+
+The @command{mtxaxpy} command can be used in the same way as the
+STREAM benchmark (@pxref{J.D. McCalpin (2013)}). to measure
+realistically achievable memory bandwidth of a single core.  For
+example, the following command will run the vector addition one
+hundred times using a double precision floating point vector with ten
+million elements:
+@example
+@code{$ ./mtxaxpy --verbose -q --repeat=100 1.0 - < <( \
+    N=10000000; \
+    printf "%%%%MatrixMarket vector array double general\n"; \
+    printf "$@{N@}\n"; \
+    for i in $(seq $@{N@}); do printf "1.0\n"; done)
+mtx_read: 39.443018 seconds
+mtx_daxpy: 0.013981 seconds
+mtx_daxpy: 0.013948 seconds
+[...]}
+@end example
+At eight bytes per element, each vector occupies 80 MB of memory.
+Assuming that the data is too large to fit in cache, then every vector
+addition causes 160 MB of data to be read from main memory. Thus,
+dividing the volume of memory traffic by the time required for a
+single vector addition, we find that, in this example, the memory
+throughput is about 11.47 GB/s.
 
 
 @node @command{mtxgemv}

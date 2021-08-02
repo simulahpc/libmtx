@@ -58,4 +58,11 @@ Positive Definite Systems}, Prentice-Hall, 1981.
 @item @anchor{OpenBLAS}
 Zhang Xianyi, @cite{OpenBLAS}. @url{https://www.openblas.net/}.
 
+@item @anchor{J.D. McCalpin (2013)}
+J. D. McCalpin @cite{STREAM: Sustainable Memory Bandwidth in High
+Performance Computers}. Department of Computer Science School of
+Engineering and Applied Science, University of Virginia,
+Charlottesville, Virginia. June 9, 2020.
+@url{https://www.cs.virginia.edu/stream/}.
+
 @end itemize
