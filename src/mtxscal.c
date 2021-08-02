@@ -19,9 +19,9 @@
  * Authors: James D. Trotter <james@simula.no>
  * Last modified: 2021-08-02
  *
- * Multiply a general, unsymmetric matrix with a vector.
+ * Scale a vector by a constant.
  *
- * ‘y := alpha*A*x + beta*y’.
+ * ‘x := alpha*x’.
  */
 
 #include <matrixmarket/matrixmarket.h>
@@ -39,7 +39,7 @@
 #include <string.h>
 #include <time.h>
 
-const char * program_name = "mtxgemv";
+const char * program_name = "mtxscal";
 const char * program_version = "0.1.0";
 const char * program_copyright =
     "Copyright (C) 2021 James D. Trotter";
@@ -56,10 +56,7 @@ const char * program_invocation_short_name;
 struct program_options
 {
     double alpha;
-    double beta;
-    char * A_path;
     char * x_path;
-    char * y_path;
     char * format;
     bool gzip;
     int repeat;
@@ -74,10 +71,7 @@ static int program_options_init(
     struct program_options * args)
 {
     args->alpha = 1.0;
-    args->beta = 1.0;
-    args->A_path = NULL;
     args->x_path = NULL;
-    args->y_path = NULL;
     args->format = NULL;
     args->gzip = false;
     args->repeat = 1;
@@ -93,12 +87,8 @@ static int program_options_init(
 static void program_options_free(
     struct program_options * args)
 {
-    if (args->A_path)
-        free(args->A_path);
     if (args->x_path)
         free(args->x_path);
-    if (args->y_path)
-        free(args->y_path);
     if(args->format)
         free(args->format);
 }
@@ -109,7 +99,7 @@ static void program_options_free(
 static void program_options_print_usage(
     FILE * f)
 {
-    fprintf(f, "Usage: %s [OPTION..] alpha A [x] [beta] [y]\n", program_name);
+    fprintf(f, "Usage: %s [OPTION..] alpha x\n", program_name);
 }
 
 /**
@@ -120,20 +110,14 @@ static void program_options_print_help(
 {
     program_options_print_usage(f);
     fprintf(f, "\n");
-    fprintf(f, " Multiply a general, unsymmetric matrix with a vector.\n");
+    fprintf(f, " Scale a vector by a constant.\n");
     fprintf(f, "\n");
-    fprintf(f, " The operation performed is `y := alpha*A*x + beta*y',\n");
-    fprintf(f, " where `A' is a matrix, `x' and `y' are vectors, and\n");
-    fprintf(f, " `alpha' and `beta' are scalar, floating-point values.\n");
+    fprintf(f, " The operation performed is `x := alpha*x', where `x' is\n");
+    fprintf(f, " a vector and `alpha' is a scalar, floating-point value.\n");
     fprintf(f, "\n");
     fprintf(f, " Positional arguments are:\n");
     fprintf(f, "  alpha\tScalar floating-point value.\n");
-    fprintf(f, "  A\tPath to Matrix Market file for the matrix A.\n");
-    fprintf(f, "  x\tOptional path to Matrix Market file for the vector x.\n");
-    fprintf(f, "   \tIf omitted, then a vector of ones is used.\n");
-    fprintf(f, "  beta\tOptional scalar floating-point value (default: 1.0).\n");
-    fprintf(f, "  y\tOptional path to Matrix Market file for the vector y.\n");
-    fprintf(f, "   \tIf omitted, then a vector of zeros is used.\n");
+    fprintf(f, "  x\tPath to Matrix Market file for the vector x.\n");
     fprintf(f, "\n");
     fprintf(f, " Other options are:\n");
     fprintf(f, "  -z, --gzip, --gunzip, --ungzip\tfilter files through gzip\n");
@@ -302,26 +286,8 @@ static int parse_program_options(
                 return err;
             }
         } else if (num_positional_arguments_consumed == 1) {
-            args->A_path = strdup((*argv)[0]);
-            if (!args->A_path) {
-                program_options_free(args);
-                return errno;
-            }
-        } else if (num_positional_arguments_consumed == 2) {
             args->x_path = strdup((*argv)[0]);
             if (!args->x_path) {
-                program_options_free(args);
-                return errno;
-            }
-        } else if (num_positional_arguments_consumed == 3) {
-            err = parse_double((*argv)[0], NULL, &args->beta, NULL);
-            if (err) {
-                program_options_free(args);
-                return err;
-            }
-        } else if (num_positional_arguments_consumed == 4) {
-            args->y_path = strdup((*argv)[0]);
-            if (!args->y_path) {
                 program_options_free(args);
                 return errno;
             }
@@ -375,24 +341,24 @@ int main(int argc, char *argv[])
         return EXIT_FAILURE;
     }
 
-    /* 2. Read the matrix from a Matrix Market file. */
-    struct mtx A;
+    /* 2. Read the vector from a Matrix Market file. */
+    struct mtx x;
     if (args.verbose > 0) {
-        fprintf(diagf, !args.gzip ? "mtx_fread: " : "mtx_gzread: ");
+        fprintf(diagf, "mtx_read: ");
         fflush(diagf);
         clock_gettime(CLOCK_MONOTONIC, &t0);
     }
 
     int line_number, column_number;
     err = mtx_read(
-        &A, args.A_path ? args.A_path : "", args.gzip,
+        &x, args.x_path ? args.x_path : "", args.gzip,
         &line_number, &column_number);
     if (err && (line_number == -1 && column_number == -1)) {
         if (args.verbose > 0)
             fprintf(diagf, "\n");
         fprintf(stderr, "%s: %s: %s\n",
                 program_invocation_short_name,
-                args.A_path, mtx_strerror(err));
+                args.x_path, mtx_strerror(err));
         program_options_free(&args);
         return EXIT_FAILURE;
     } else if (err) {
@@ -400,16 +366,11 @@ int main(int argc, char *argv[])
             fprintf(diagf, "\n");
         fprintf(stderr, "%s: %s:%d:%d: %s\n",
                 program_invocation_short_name,
-                args.A_path, line_number, column_number,
+                args.x_path, line_number, column_number,
                 mtx_strerror(err));
         program_options_free(&args);
         return EXIT_FAILURE;
     }
-
-    /* TODO: We are assuming that the matrix is not assembled, meaning
-     * that multiple values are allowed for each nonzero. This should
-     * probably be controlled by by the user through a program option. */
-    A.assembly = mtx_unassembled;
 
     if (args.verbose > 0) {
         clock_gettime(CLOCK_MONOTONIC, &t1);
@@ -417,175 +378,22 @@ int main(int argc, char *argv[])
                 timespec_duration(t0, t1));
     }
 
-    /* 3. Read the vector x from a Matrix Market file, or use a zero
-     * vector. */
-    struct mtx x;
-    if (args.x_path && strlen(args.x_path) > 0) {
-        if (args.verbose) {
-            fprintf(diagf, !args.gzip ? "mtx_fread: " : "mtx_gzread: ");
-            fflush(diagf);
-            clock_gettime(CLOCK_MONOTONIC, &t0);
-        }
-
-        int line_number, column_number;
-        err = mtx_read(
-            &x, args.x_path, args.gzip,
-            &line_number, &column_number);
-        if (err && (line_number == -1 && column_number == -1)) {
-            if (args.verbose > 0)
-                fprintf(diagf, "\n");
-            fprintf(stderr, "%s: %s: %s\n",
-                    program_invocation_short_name,
-                    args.x_path, mtx_strerror(err));
-            mtx_free(&A);
-            program_options_free(&args);
-            return EXIT_FAILURE;
-        } else if (err) {
-            if (args.verbose > 0)
-                fprintf(diagf, "\n");
-            fprintf(stderr, "%s: %s:%d:%d: %s\n",
-                    program_invocation_short_name,
-                    args.x_path, line_number, column_number,
-                    mtx_strerror(err));
-            mtx_free(&A);
-            program_options_free(&args);
-            return EXIT_FAILURE;
-        }
-
-        if (args.verbose > 0) {
-            clock_gettime(CLOCK_MONOTONIC, &t1);
-            fprintf(diagf, "%.6f seconds\n",
-                    timespec_duration(t0, t1));
-        }
-    } else {
-        if (A.field == mtx_real) {
-            err = mtx_init_vector_array_real_ones(
-                &x, 0, NULL, A.num_columns);
-            if (err) {
-                fprintf(stderr, "%s: %s\n",
-                        program_invocation_short_name,
-                        mtx_strerror(err));
-                mtx_free(&A);
-                program_options_free(&args);
-                return EXIT_FAILURE;
-            }
-        } else if (A.field == mtx_double) {
-            err = mtx_init_vector_array_double_ones(
-                &x, 0, NULL, A.num_columns);
-            if (err) {
-                fprintf(stderr, "%s: %s\n",
-                        program_invocation_short_name,
-                        mtx_strerror(err));
-                mtx_free(&A);
-                program_options_free(&args);
-                return EXIT_FAILURE;
-            }
-        } else {
-            fprintf(stderr, "%s: %s\n",
-                    program_invocation_short_name,
-                    strerror(ENOTSUP));
-            mtx_free(&A);
-            program_options_free(&args);
-            return EXIT_FAILURE;
-        }
-    }
-
-    /* 4. Read the vector y from a Matrix Market file, or use a vector
-     * of all ones. */
-    struct mtx y;
-    if (args.y_path) {
-        if (args.verbose) {
-            fprintf(diagf, !args.gzip ? "mtx_fread: " : "mtx_gzread: ");
-            fflush(diagf);
-            clock_gettime(CLOCK_MONOTONIC, &t0);
-        }
-
-        int line_number, column_number;
-        err = mtx_read(
-            &y, args.y_path ? args.y_path : "", args.gzip,
-            &line_number, &column_number);
-        if (err && (line_number == -1 && column_number == -1)) {
-            if (args.verbose > 0)
-                fprintf(diagf, "\n");
-            fprintf(stderr, "%s: %s: %s\n",
-                    program_invocation_short_name,
-                    args.y_path, mtx_strerror(err));
-            mtx_free(&x);
-            mtx_free(&A);
-            program_options_free(&args);
-            return EXIT_FAILURE;
-        } else if (err) {
-            if (args.verbose > 0)
-                fprintf(diagf, "\n");
-            fprintf(stderr, "%s: %s:%d:%d: %s\n",
-                    program_invocation_short_name,
-                    args.y_path, line_number, column_number,
-                    mtx_strerror(err));
-            mtx_free(&x);
-            mtx_free(&A);
-            program_options_free(&args);
-            return EXIT_FAILURE;
-        }
-
-        if (args.verbose > 0) {
-            clock_gettime(CLOCK_MONOTONIC, &t1);
-            fprintf(diagf, "%.6f seconds\n",
-                    timespec_duration(t0, t1));
-        }
-    } else {
-        if (A.field == mtx_real) {
-            err = mtx_init_vector_array_real_zero(
-                &y, 0, NULL, A.num_rows);
-            if (err) {
-                fprintf(stderr, "%s: %s\n",
-                        program_invocation_short_name,
-                        mtx_strerror(err));
-                mtx_free(&x);
-                mtx_free(&A);
-                program_options_free(&args);
-                return EXIT_FAILURE;
-            }
-        } else if (A.field == mtx_double) {
-            err = mtx_init_vector_array_double_zero(
-                &y, 0, NULL, A.num_rows);
-            if (err) {
-                fprintf(stderr, "%s: %s\n",
-                        program_invocation_short_name,
-                        mtx_strerror(err));
-                mtx_free(&x);
-                mtx_free(&A);
-                program_options_free(&args);
-                return EXIT_FAILURE;
-            }
-        } else {
-            fprintf(stderr, "%s: %s\n",
-                    program_invocation_short_name,
-                    strerror(ENOTSUP));
-            mtx_free(&x);
-            mtx_free(&A);
-            program_options_free(&args);
-            return EXIT_FAILURE;
-        }
-    }
-
-    /* 5. Compute matrix-vector multiplication. */
+    /* 3. Scale the vector. */
     for (int i = 0; i < args.repeat; i++) {
-        if (A.field == mtx_real) {
+        if (x.field == mtx_real) {
             if (args.verbose > 0) {
-                fprintf(diagf, "mtx_sgemv: ");
+                fprintf(diagf, "mtx_sscal: ");
                 fflush(diagf);
                 clock_gettime(CLOCK_MONOTONIC, &t0);
             }
-            err = mtx_sgemv(args.alpha, &A, &x, args.beta, &y);
+            err = mtx_sscal(args.alpha, &x);
             if (err) {
                 if (args.verbose > 0)
                     fprintf(diagf, "\n");
                 fprintf(stderr, "%s: %s\n",
                         program_invocation_short_name,
                         mtx_strerror(err));
-                mtx_free(&y);
                 mtx_free(&x);
-                mtx_free(&A);
                 program_options_free(&args);
                 return EXIT_FAILURE;
             }
@@ -594,22 +402,20 @@ int main(int argc, char *argv[])
                 fprintf(diagf, "%.6f seconds\n",
                         timespec_duration(t0, t1));
             }
-        } else if (A.field == mtx_double) {
+        } else if (x.field == mtx_double) {
             if (args.verbose > 0) {
-                fprintf(diagf, "mtx_dgemv: ");
+                fprintf(diagf, "mtx_dscal: ");
                 fflush(diagf);
                 clock_gettime(CLOCK_MONOTONIC, &t0);
             }
-            err = mtx_dgemv(args.alpha, &A, &x, args.beta, &y);
+            err = mtx_dscal(args.alpha, &x);
             if (err) {
                 if (args.verbose > 0)
                     fprintf(diagf, "\n");
                 fprintf(stderr, "%s: %s\n",
                         program_invocation_short_name,
                         mtx_strerror(err));
-                mtx_free(&y);
                 mtx_free(&x);
-                mtx_free(&A);
                 program_options_free(&args);
                 return EXIT_FAILURE;
             }
@@ -623,13 +429,12 @@ int main(int argc, char *argv[])
                     program_invocation_short_name,
                     strerror(ENOTSUP));
             mtx_free(&x);
-            mtx_free(&A);
             program_options_free(&args);
             return EXIT_FAILURE;
         }
     }
 
-    /* 6. Write the result vector to standard output. */
+    /* 4. Write the result vector to standard output. */
     if (!args.quiet) {
         if (args.verbose > 0) {
             fprintf(diagf, "mtx_fwrite: ");
@@ -638,16 +443,14 @@ int main(int argc, char *argv[])
         }
 
         /* Write gathered Matrix Market object to file. */
-        err = mtx_fwrite(&y, stdout, args.format);
+        err = mtx_fwrite(&x, stdout, args.format);
         if (err) {
             if (args.verbose > 0)
                 fprintf(diagf, "\n");
             fprintf(stderr, "%s: %s\n",
                     program_invocation_short_name,
                     mtx_strerror(err));
-            mtx_free(&y);
             mtx_free(&x);
-            mtx_free(&A);
             program_options_free(&args);
             return EXIT_FAILURE;
         }
@@ -660,9 +463,7 @@ int main(int argc, char *argv[])
     }
 
     /* 5. Clean up. */
-    mtx_free(&y);
     mtx_free(&x);
-    mtx_free(&A);
     program_options_free(&args);
     return EXIT_SUCCESS;
 }

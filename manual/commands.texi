@@ -32,6 +32,10 @@ libmtx for working with Matrix Market files.
 reads a Matrix Market file, validates the contents and displays some
 high-level information about the Matrix Market object.
 
+@pindex mtxscal
+@item mtxscal
+scales a vector by a scalar.
+
 @pindex mtxgemv
 @item mtxgemv
 multiplies a general, unsymmetric matrix by a vector.
@@ -70,6 +74,7 @@ sections.
 
 @menu
 * @command{mtxinfo}::
+* @command{mtxscal}::
 * @command{mtxgemv}::
 * @command{mtxsort}::
 * @command{mtxreorder}::
@@ -96,6 +101,59 @@ Filter the file through gzip.
 
 @item -v, --verbose
 Print diagnostics to standard error.
+
+@end table
+
+
+@node @command{mtxscal}
+@section @command{mtxscal}
+@pindex mtxscal
+
+The command @command{mtxscal} is used to scale a vector by a scalar,
+floating point value. The result is written to standard output in the
+form of a Matrix Market file representing the scaled vector. More
+specifically, the calculation carried out is @samp{@var{x} :=
+@var{alpha}*@var{x}}, where @samp{@var{x}} is a vector and
+@samp{@var{alpha}} is a scalar.
+
+The @command{mtxscal} command accepts the following positional
+arguments:
+@example
+@code{mtxscal [OPTION..] @var{alpha} @var{x}}
+@end example
+
+The positional arguments are:
+@table @option
+@item @var{alpha}
+The scalar floating-point value @option{@var{alpha}}.
+
+@item @var{x}
+Path to a Matrix Market file containing the vector
+@option{@var{x}}.
+
+@end table
+
+In addition, the following options are accepted:
+
+@table @option
+@item -z, --gzip, --gunzip, --ungzip
+Filter files through gzip.
+
+@item --format=FORMAT
+Format string for outputting numerical values.  For real, double and
+complex values, the format specifiers @samp{%e}, @samp{%E}, @samp{%f},
+@samp{%F}, @samp{%g} or @samp{%G} may be used, whereas @samp{%d} must
+be used for integers. Flags, field width and precision can optionally
+be specified, e.g., @samp{%+3.1f}.
+
+@item --repeat=N
+The number of times to repeat the matrix-vector multiplication.
+
+@item -q, --quiet
+Do not print the resulting Matrix Market file to standard output.
+
+@item -v, --verbose
+Print some diagnostics to the standard error stream.
 
 @end table
 

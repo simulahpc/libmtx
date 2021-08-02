@@ -96,6 +96,7 @@ bin_PROGRAMS = \
 	mtxgemv \
 	mtxinfo \
 	mtxreorder \
+	mtxscal \
 	mtxsort
 if HAVE_MPI
 bin_PROGRAMS += \
@@ -107,20 +108,25 @@ bin_PROGRAMS += \
 	mtxspy
 endif
 
-# mtxinfo
-mtxinfo_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/src $(MPICPPFLAGS)
-mtxinfo_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
-mtxinfo_SOURCES = src/mtxinfo.c
-
 # mtxgemv
 mtxgemv_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/src $(MPICPPFLAGS)
 mtxgemv_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
 mtxgemv_SOURCES = src/mtxgemv.c
 
+# mtxinfo
+mtxinfo_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/src $(MPICPPFLAGS)
+mtxinfo_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
+mtxinfo_SOURCES = src/mtxinfo.c
+
 # mtxreorder
 mtxreorder_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/src $(MPICPPFLAGS)
 mtxreorder_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
 mtxreorder_SOURCES = src/mtxreorder.c
+
+# mtxscal
+mtxscal_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/src $(MPICPPFLAGS)
+mtxscal_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
+mtxscal_SOURCES = src/mtxscal.c
 
 # mtxsort
 mtxsort_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/src $(MPICPPFLAGS)
