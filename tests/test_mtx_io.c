@@ -30,6 +30,7 @@
 #include <matrixmarket/io.h>
 #include <matrixmarket/matrix_coordinate.h>
 #include <matrixmarket/mtx.h>
+#include <matrixmarket/vector_array.h>
 #include <matrixmarket/vector_coordinate.h>
 
 #ifdef LIBMTX_HAVE_LIBZ
@@ -1067,6 +1068,83 @@ int test_mtx_gzwrite_matrix_coordinate_real(void)
 #endif
 
 /**
+ * `test_mtx_fwrite_vector_array_real()` tests writing a sparse
+ * vector with real coefficients to a file.
+ */
+int test_mtx_fwrite_vector_array_real(void)
+{
+    int err;
+
+    /* Create a sparse vector. */
+    struct mtx mtx;
+    int num_comment_lines = 0;
+    const char * comment_lines[] = {};
+    int64_t size = 4;
+    const float data[] = {1.0f,2.0f,3.0f,4.0f};
+    err = mtx_init_vector_array_real(
+        &mtx, num_comment_lines, comment_lines, size, data);
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+
+    /* Write the vector to file and verify the contents. */
+    char mtxfile[1024] = {};
+    FILE * f = fmemopen(mtxfile, sizeof(mtxfile), "w");
+    err = mtx_fwrite(&mtx, f, "%.1f");
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    fclose(f);
+    mtx_free(&mtx);
+    char expected_mtxfile[] =
+        "%%MatrixMarket vector array real general\n"
+        "4\n"
+        "1.0\n"
+        "2.0\n"
+        "3.0\n"
+        "4.0\n";
+    TEST_ASSERT_STREQ_MSG(expected_mtxfile, mtxfile, "\nexpected: %s\nactual: %s\n", expected_mtxfile, mtxfile);
+    return TEST_SUCCESS;
+}
+
+/**
+ * `test_mtx_fwrite_vector_coordinate_real()` tests writing a sparse
+ * vector with real coefficients to a file.
+ */
+int test_mtx_fwrite_vector_coordinate_real(void)
+{
+    int err;
+
+    /* Create a sparse vector. */
+    struct mtx mtx;
+    int num_comment_lines = 0;
+    const char * comment_lines[] = {};
+    int num_rows = 4;
+    int64_t size = 3;
+    const struct mtx_vector_coordinate_real data[] = {
+        {1,1.0f},
+        {2,2.0f},
+        {4,4.0f}};
+    err = mtx_init_vector_coordinate_real(
+        &mtx, mtx_unsorted, mtx_unordered, mtx_unassembled,
+        num_comment_lines, comment_lines,
+        num_rows, size, data);
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+
+    /* Write the vector to file and verify the contents. */
+    char mtxfile[1024] = {};
+    FILE * f = fmemopen(mtxfile, sizeof(mtxfile), "w");
+    err = mtx_fwrite(&mtx, f, "%.1f");
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    fclose(f);
+    mtx_free(&mtx);
+    char expected_mtxfile[] =
+        "%%MatrixMarket vector coordinate real general\n"
+        "4 3\n"
+        "1 1.0\n"
+        "2 2.0\n"
+        "4 4.0\n";
+    TEST_ASSERT_STREQ_MSG(expected_mtxfile, mtxfile, "\nexpected: %s\nactual: %s\n", expected_mtxfile, mtxfile);
+    return TEST_SUCCESS;
+}
+
+/**
  * `main()' entry point and test driver.
  */
 int main(int argc, char * argv[])
@@ -1091,6 +1169,8 @@ int main(int argc, char * argv[])
     TEST_RUN(test_mtx_gzread_matrix_coordinate_real);
     TEST_RUN(test_mtx_gzwrite_matrix_coordinate_real);
 #endif
+    TEST_RUN(test_mtx_fwrite_vector_array_real);
+    TEST_RUN(test_mtx_fwrite_vector_coordinate_real);
     TEST_SUITE_END();
     return (TEST_SUITE_STATUS == TEST_SUCCESS) ?
         EXIT_SUCCESS : EXIT_FAILURE;

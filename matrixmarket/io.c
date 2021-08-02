@@ -1967,11 +1967,6 @@ static int write_vector(
             return err;
     }
 
-    if (vector->format == mtx_coordinate) {
-        errno = ENOTSUP;
-        return MTX_ERR_ERRNO;
-    }
-
     /* 1. Write the header line. */
     stream_printf(
         stream, "%%%%MatrixMarket %s %s %s %s\n",
@@ -1985,9 +1980,11 @@ static int write_vector(
         stream_printf(stream, "%s", vector->comment_lines[i]);
 
     /* 3. Write the size line. */
-    if (vector->format == mtx_array)
-        stream_printf(stream, "%d\n", vector->size);
-    else {
+    if (vector->format == mtx_array) {
+        stream_printf(stream, "%"PRId64"\n", vector->size);
+    } else if (vector->format == mtx_coordinate) {
+        stream_printf(stream, "%d %"PRId64"\n", vector->num_rows, vector->size);
+    } else {
         errno = EINVAL;
         return MTX_ERR_ERRNO;
     }
@@ -2019,6 +2016,52 @@ static int write_vector(
             for (int i = 0; i < vector->size; i++) {
                 stream_printf(stream, format ? format : "%d", a[i]);
                 stream_putc('\n', stream);
+            }
+        } else {
+            errno = EINVAL;
+            return MTX_ERR_ERRNO;
+        }
+
+    } else if (vector->format == mtx_coordinate) {
+        if (vector->field == mtx_real) {
+            const struct mtx_vector_coordinate_real * a =
+                (const struct mtx_vector_coordinate_real *) vector->data;
+            for (int64_t k = 0; k < vector->size; k++) {
+                stream_printf(stream, "%d ", a[k].i);
+                stream_printf(stream, format ? format : "%f", a[k].a);
+                stream_putc('\n', stream);
+            }
+        } else if (vector->field == mtx_double) {
+            const struct mtx_vector_coordinate_double * a =
+                (const struct mtx_vector_coordinate_double *) vector->data;
+            for (int64_t k = 0; k < vector->size; k++) {
+                stream_printf(stream, "%d ", a[k].i);
+                stream_printf(stream, format ? format : "%f", a[k].a);
+                stream_putc('\n', stream);
+            }
+        } else if (vector->field == mtx_complex) {
+            const struct mtx_vector_coordinate_complex * a =
+                (const struct mtx_vector_coordinate_complex *) vector->data;
+            for (int64_t k = 0; k < vector->size; k++) {
+                stream_printf(stream, "%d ", a[k].i);
+                stream_printf(stream, format ? format : "%f", a[k].a);
+                stream_putc(' ', stream);
+                stream_printf(stream, format ? format : "%f", a[k].b);
+                stream_putc('\n', stream);
+            }
+        } else if (vector->field == mtx_integer) {
+            const struct mtx_vector_coordinate_integer * a =
+                (const struct mtx_vector_coordinate_integer *) vector->data;
+            for (int64_t k = 0; k < vector->size; k++) {
+                stream_printf(stream, "%d ", a[k].i);
+                stream_printf(stream, format ? format : "%d", a[k].a);
+                stream_putc('\n', stream);
+            }
+        } else if (vector->field == mtx_pattern) {
+            const struct mtx_vector_coordinate_pattern * a =
+                (const struct mtx_vector_coordinate_pattern *) vector->data;
+            for (int64_t k = 0; k < vector->size; k++) {
+                stream_printf(stream, "%d\n", a[k].i);
             }
         } else {
             errno = EINVAL;
