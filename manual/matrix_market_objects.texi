@@ -769,13 +769,27 @@ existing matrix or vector:
 @end example
 
 
-@node Zeroing matrices and vectors
-@subsection Zeroing matrices and vectors
+@node Setting matrix and vector values
+@subsection Setting matrix and vector values
 The function @code{mtx_set_zero} can be used to set all of the values
 associated with the entries of a matrix or vector to zero:
-@findex mtx_zero
+@findex mtx_set_zero
 @example
 @code{int mtx_set_zero(struct mtx * mtx);}
+@end example
+
+Depending on the field, there are several functions that may be used
+to set all (nonzero) values associated of a matrix or vector to some
+given, constant value:
+@findex mtx_set_constant_real
+@findex mtx_set_constant_double
+@findex mtx_set_constant_complex
+@findex mtx_set_constant_integer
+@example
+@code{int mtx_set_constant_real(struct mtx * mtx, float a);
+int mtx_set_constant_double(struct mtx * mtx, double a);
+int mtx_set_constant_complex(struct mtx * mtx, float a, float b);
+int mtx_set_constant_integer(struct mtx * mtx, int a);}
 @end example
 
 

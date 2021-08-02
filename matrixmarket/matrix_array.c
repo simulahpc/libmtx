@@ -448,3 +448,91 @@ int mtx_matrix_array_set_zero(
     }
     return MTX_SUCCESS;
 }
+
+/**
+ * `mtx_matrix_array_set_constant_real()' sets every value of a matrix
+ * equal to a constant, single precision floating point number.
+ */
+int mtx_matrix_array_set_constant_real(
+    struct mtx * mtx,
+    float a)
+{
+    if (mtx->object != mtx_matrix)
+        return MTX_ERR_INVALID_MTX_OBJECT;
+    if (mtx->format != mtx_array)
+        return MTX_ERR_INVALID_MTX_FORMAT;
+    if (mtx->field != mtx_real)
+        return MTX_ERR_INVALID_MTX_FIELD;
+
+    float * data = (float *) mtx->data;
+    for (int64_t k = 0; k < mtx->size; k++)
+        data[k] = a;
+    return MTX_SUCCESS;
+}
+
+/**
+ * `mtx_matrix_array_set_constant_double()' sets every value of a
+ * matrix equal to a constant, double precision floating point number.
+ */
+int mtx_matrix_array_set_constant_double(
+    struct mtx * mtx,
+    double a)
+{
+    if (mtx->object != mtx_matrix)
+        return MTX_ERR_INVALID_MTX_OBJECT;
+    if (mtx->format != mtx_array)
+        return MTX_ERR_INVALID_MTX_FORMAT;
+    if (mtx->field != mtx_double)
+        return MTX_ERR_INVALID_MTX_FIELD;
+
+    double * data = (double *) mtx->data;
+    for (int64_t k = 0; k < mtx->size; k++)
+        data[k] = a;
+    return MTX_SUCCESS;
+}
+
+/**
+ * `mtx_matrix_array_set_constant_complex()' sets every value of a
+ * matrix equal to a constant, single precision floating point complex
+ * number.
+ */
+int mtx_matrix_array_set_constant_complex(
+    struct mtx * mtx,
+    float a,
+    float b)
+{
+    if (mtx->object != mtx_matrix)
+        return MTX_ERR_INVALID_MTX_OBJECT;
+    if (mtx->format != mtx_array)
+        return MTX_ERR_INVALID_MTX_FORMAT;
+    if (mtx->field != mtx_complex)
+        return MTX_ERR_INVALID_MTX_FIELD;
+
+    float * data = (float *) mtx->data;
+    for (int64_t k = 0; k < mtx->size; k++) {
+        data[2*k+0] = a;
+        data[2*k+1] = b;
+    }
+    return MTX_SUCCESS;
+}
+
+/**
+ * `mtx_matrix_array_set_constant_integer()' sets every value of a
+ * matrix equal to a constant integer.
+ */
+int mtx_matrix_array_set_constant_integer(
+    struct mtx * mtx,
+    int a)
+{
+    if (mtx->object != mtx_matrix)
+        return MTX_ERR_INVALID_MTX_OBJECT;
+    if (mtx->format != mtx_array)
+        return MTX_ERR_INVALID_MTX_FORMAT;
+    if (mtx->field != mtx_complex)
+        return MTX_ERR_INVALID_MTX_FIELD;
+
+    int * data = (int *) mtx->data;
+    for (int64_t k = 0; k < mtx->size; k++)
+        data[k] = a;
+    return MTX_SUCCESS;
+}

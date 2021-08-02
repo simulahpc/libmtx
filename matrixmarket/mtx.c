@@ -141,3 +141,78 @@ int mtx_set_zero(
     }
     return MTX_SUCCESS;
 }
+
+/**
+ * `mtx_set_constant_real()' sets every (nonzero) value of a matrix or
+ * vector equal to a constant, single precision floating point number.
+ */
+int mtx_set_constant_real(
+    struct mtx * mtx,
+    float a)
+{
+    if (mtx->object == mtx_matrix) {
+        return mtx_matrix_set_constant_real(mtx, a);
+    } else if (mtx->object == mtx_vector) {
+        return mtx_vector_set_constant_real(mtx, a);
+    } else {
+        return MTX_ERR_INVALID_MTX_OBJECT;
+    }
+    return MTX_SUCCESS;
+}
+
+/**
+ * `mtx_set_constant_double()' sets every (nonzero) value of a matrix
+ * or vector equal to a constant, double precision floating point
+ * number.
+ */
+int mtx_set_constant_double(
+    struct mtx * mtx,
+    double a)
+{
+    if (mtx->object == mtx_matrix) {
+        return mtx_matrix_set_constant_double(mtx, a);
+    } else if (mtx->object == mtx_vector) {
+        return mtx_vector_set_constant_double(mtx, a);
+    } else {
+        return MTX_ERR_INVALID_MTX_OBJECT;
+    }
+    return MTX_SUCCESS;
+}
+
+/**
+ * `mtx_set_constant_complex()' sets every (nonzero) value of a matrix
+ * or vector equal to a constant, single precision floating point
+ * complex number.
+ */
+int mtx_set_constant_complex(
+    struct mtx * mtx,
+    float a,
+    float b)
+{
+    if (mtx->object == mtx_matrix) {
+        return mtx_matrix_set_constant_complex(mtx, a, b);
+    } else if (mtx->object == mtx_vector) {
+        return mtx_vector_set_constant_complex(mtx, a, b);
+    } else {
+        return MTX_ERR_INVALID_MTX_OBJECT;
+    }
+    return MTX_SUCCESS;
+}
+
+/**
+ * `mtx_set_constant_integer()' sets every (nonzero) value of a matrix
+ * or vector equal to a constant integer.
+ */
+int mtx_set_constant_integer(
+    struct mtx * mtx,
+    int a)
+{
+    if (mtx->object == mtx_matrix) {
+        return mtx_matrix_set_constant_integer(mtx, a);
+    } else if (mtx->object == mtx_vector) {
+        return mtx_vector_set_constant_integer(mtx, a);
+    } else {
+        return MTX_ERR_INVALID_MTX_OBJECT;
+    }
+    return MTX_SUCCESS;
+}

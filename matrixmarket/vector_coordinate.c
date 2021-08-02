@@ -326,3 +326,97 @@ int mtx_vector_coordinate_set_zero(
     }
     return MTX_SUCCESS;
 }
+
+/**
+ * `mtx_vector_coordinate_set_constant_real()' sets every nonzero
+ * value of a vector equal to a constant, single precision floating
+ * point number.
+ */
+int mtx_vector_coordinate_set_constant_real(
+    struct mtx * mtx,
+    float a)
+{
+    if (mtx->object != mtx_vector)
+        return MTX_ERR_INVALID_MTX_OBJECT;
+    if (mtx->format != mtx_coordinate)
+        return MTX_ERR_INVALID_MTX_FORMAT;
+    if (mtx->field != mtx_real)
+        return MTX_ERR_INVALID_MTX_FIELD;
+
+    struct mtx_vector_coordinate_real * data =
+        (struct mtx_vector_coordinate_real *) mtx->data;
+    for (int64_t k = 0; k < mtx->size; k++)
+        data[k].a = a;
+    return MTX_SUCCESS;
+}
+
+/**
+ * `mtx_vector_coordinate_set_constant_double()' sets every nonzero
+ * value of a vector equal to a constant, double precision floating
+ * point number.
+ */
+int mtx_vector_coordinate_set_constant_double(
+    struct mtx * mtx,
+    double a)
+{
+    if (mtx->object != mtx_vector)
+        return MTX_ERR_INVALID_MTX_OBJECT;
+    if (mtx->format != mtx_coordinate)
+        return MTX_ERR_INVALID_MTX_FORMAT;
+    if (mtx->field != mtx_double)
+        return MTX_ERR_INVALID_MTX_FIELD;
+
+    struct mtx_vector_coordinate_double * data =
+        (struct mtx_vector_coordinate_double *) mtx->data;
+    for (int64_t k = 0; k < mtx->size; k++)
+        data[k].a = a;
+    return MTX_SUCCESS;
+}
+
+/**
+ * `mtx_vector_coordinate_set_constant_complex()' sets every nonzero
+ * value of a vector equal to a constant, single precision floating
+ * point complex number.
+ */
+int mtx_vector_coordinate_set_constant_complex(
+    struct mtx * mtx,
+    float a,
+    float b)
+{
+    if (mtx->object != mtx_vector)
+        return MTX_ERR_INVALID_MTX_OBJECT;
+    if (mtx->format != mtx_coordinate)
+        return MTX_ERR_INVALID_MTX_FORMAT;
+    if (mtx->field != mtx_complex)
+        return MTX_ERR_INVALID_MTX_FIELD;
+
+    struct mtx_vector_coordinate_complex * data =
+        (struct mtx_vector_coordinate_complex *) mtx->data;
+    for (int64_t k = 0; k < mtx->size; k++) {
+        data[k].a = a;
+        data[k].b = b;
+    }
+    return MTX_SUCCESS;
+}
+
+/**
+ * `mtx_vector_coordinate_set_constant_integer()' sets every nonzero
+ * value of a vector equal to a constant integer.
+ */
+int mtx_vector_coordinate_set_constant_integer(
+    struct mtx * mtx,
+    int a)
+{
+    if (mtx->object != mtx_vector)
+        return MTX_ERR_INVALID_MTX_OBJECT;
+    if (mtx->format != mtx_coordinate)
+        return MTX_ERR_INVALID_MTX_FORMAT;
+    if (mtx->field != mtx_integer)
+        return MTX_ERR_INVALID_MTX_FIELD;
+
+    struct mtx_vector_coordinate_integer * data =
+        (struct mtx_vector_coordinate_integer *) mtx->data;
+    for (int64_t k = 0; k < mtx->size; k++)
+        data[k].a = a;
+    return MTX_SUCCESS;
+}

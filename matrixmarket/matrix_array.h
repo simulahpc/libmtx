@@ -110,6 +110,40 @@ int mtx_matrix_array_set_zero(
     struct mtx * mtx);
 
 /**
+ * `mtx_matrix_array_set_constant_real()' sets every value of a matrix
+ * equal to a constant, single precision floating point number.
+ */
+int mtx_matrix_array_set_constant_real(
+    struct mtx * mtx,
+    float a);
+
+/**
+ * `mtx_matrix_array_set_constant_double()' sets every value of a
+ * matrix equal to a constant, double precision floating point number.
+ */
+int mtx_matrix_array_set_constant_double(
+    struct mtx * mtx,
+    double a);
+
+/**
+ * `mtx_matrix_array_set_constant_complex()' sets every value of a
+ * matrix equal to a constant, single precision floating point complex
+ * number.
+ */
+int mtx_matrix_array_set_constant_complex(
+    struct mtx * mtx,
+    float a,
+    float b);
+
+/**
+ * `mtx_matrix_array_set_constant_integer()' sets every value of a
+ * matrix equal to a constant integer.
+ */
+int mtx_matrix_array_set_constant_integer(
+    struct mtx * mtx,
+    int a);
+
+/**
  * `mtx_matrix_array_num_nonzeros()` computes the number of matrix
  * nonzeros, including those not explicitly stored due to symmetry.
  */
