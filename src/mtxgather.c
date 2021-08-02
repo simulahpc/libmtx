@@ -422,7 +422,7 @@ int main(int argc, char *argv[])
     /* 1. Read Matrix Market files on each MPI process. */
     struct mtx srcmtx;
     if (rank == root && args.verbose > 0) {
-        fprintf(diagf, !args.gzip ? "mtx_fread: " : "mtx_gzread: ");
+        fprintf(diagf, "mtx_read: ");
         fflush(diagf);
         clock_gettime(CLOCK_MONOTONIC, &t0);
     }
