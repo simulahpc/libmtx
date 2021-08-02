@@ -17,7 +17,7 @@
  * <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-07-28
+ * Last modified: 2021-08-02
  *
  * Sparse vectors in Matrix Market format.
  */
@@ -282,5 +282,47 @@ int mtx_init_vector_coordinate_pattern(
         (struct mtx_vector_coordinate_pattern *) mtx->data;
     for (int i = 0; i < size; i++)
         mtxdata[i] = data[i];
+    return MTX_SUCCESS;
+}
+
+/**
+ * `mtx_vector_coordinate_set_zero()' zeroes a vector in coordinate
+ * format.
+ */
+int mtx_vector_coordinate_set_zero(
+    struct mtx * mtx)
+{
+    if (mtx->object != mtx_vector)
+        return MTX_ERR_INVALID_MTX_OBJECT;
+    if (mtx->format != mtx_coordinate)
+        return MTX_ERR_INVALID_MTX_FORMAT;
+
+    if (mtx->field == mtx_real) {
+        struct mtx_vector_coordinate_real * data =
+            (struct mtx_vector_coordinate_real *) mtx->data;
+        for (int64_t k = 0; k < mtx->size; k++)
+            data[k].a = 0;
+    } else if (mtx->field == mtx_double) {
+        struct mtx_vector_coordinate_double * data =
+            (struct mtx_vector_coordinate_double *) mtx->data;
+        for (int64_t k = 0; k < mtx->size; k++)
+            data[k].a = 0;
+    } else if (mtx->field == mtx_complex) {
+        struct mtx_vector_coordinate_complex * data =
+            (struct mtx_vector_coordinate_complex *) mtx->data;
+        for (int64_t k = 0; k < mtx->size; k++) {
+            data[k].a = 0;
+            data[k].b = 0;
+        }
+    } else if (mtx->field == mtx_integer) {
+        struct mtx_vector_coordinate_integer * data =
+            (struct mtx_vector_coordinate_integer *) mtx->data;
+        for (int64_t k = 0; k < mtx->size; k++)
+            data[k].a = 0;
+    } else if (mtx->field == mtx_pattern) {
+        /* Since no values are stored, there is nothing to do here. */
+    } else {
+        return MTX_ERR_INVALID_MTX_FIELD;
+    }
     return MTX_SUCCESS;
 }

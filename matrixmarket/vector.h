@@ -17,30 +17,20 @@
  * <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-06-18
+ * Last modified: 2021-08-02
  *
- * Main libmtx header file.
+ * Various operations for vectors in the Matrix Market format.
  */
 
-#ifndef MATRIXMARKET_MATRIXMARKET_H
-#define MATRIXMARKET_MATRIXMARKET_H
+#ifndef MATRIXMARKET_VECTOR_H
+#define MATRIXMARKET_VECTOR_H
 
-#include <matrixmarket/libmtx-config.h>
+struct mtx;
 
-#include <matrixmarket/blas.h>
-#include <matrixmarket/error.h>
-#include <matrixmarket/header.h>
-#include <matrixmarket/index_set.h>
-#include <matrixmarket/io.h>
-#include <matrixmarket/matrix.h>
-#include <matrixmarket/matrix_array.h>
-#include <matrixmarket/matrix_coordinate.h>
-#include <matrixmarket/mpi.h>
-#include <matrixmarket/mtx.h>
-#include <matrixmarket/reorder.h>
-#include <matrixmarket/vector.h>
-#include <matrixmarket/vector_array.h>
-#include <matrixmarket/vector_coordinate.h>
-#include <matrixmarket/version.h>
+/**
+ * `mtx_vector_set_zero()' zeroes a vector.
+ */
+int mtx_vector_set_zero(
+    struct mtx * mtx);
 
 #endif

@@ -17,7 +17,7 @@
  * <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-06-18
+ * Last modified: 2021-08-02
  *
  * Data structures for representing objects in Matrix Market format.
  */
@@ -235,6 +235,12 @@ int mtx_set_comment_lines(
     struct mtx * mtx,
     int  num_comment_lines,
     const char ** comment_lines);
+
+/**
+ * `mtx_set_zero()' zeroes a matrix or vector.
+ */
+int mtx_set_zero(
+    struct mtx * mtx);
 
 /**
  * `mtx_sort()' sorts matrix or vector nonzeros in a given order.

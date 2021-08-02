@@ -17,7 +17,7 @@
  * <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-07-28
+ * Last modified: 2021-08-02
  *
  * Sparse vectors in Matrix Market format.
  */
@@ -165,5 +165,15 @@ int mtx_init_vector_coordinate_pattern(
     int num_rows,
     int size,
     const struct mtx_vector_coordinate_pattern * data);
+
+/*
+ * Other sparse vector functions.
+ */
+
+/**
+ * `mtx_vector_coordinate_set_zero()' zeroes a vector in coordinate format.
+ */
+int mtx_vector_coordinate_set_zero(
+    struct mtx * mtx);
 
 #endif

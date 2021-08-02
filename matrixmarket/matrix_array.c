@@ -17,7 +17,7 @@
  * <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-06-18
+ * Last modified: 2021-08-02
  *
  * Dense matrices in Matrix Market format.
  */
@@ -111,6 +111,8 @@ int mtx_matrix_array_size(
 /**
  * `mtx_init_matrix_array_real()` creates a dense matrix with real,
  * single-precision floating point coefficients.
+ *
+ * ´sorting' must be `mtx_row_major' or `mtx_column_major'.
  */
 int mtx_init_matrix_array_real(
     struct mtx * matrix,
@@ -124,16 +126,16 @@ int mtx_init_matrix_array_real(
 {
     int err;
 
+    if (sorting != mtx_row_major &&
+        sorting != mtx_column_major)
+    {
+        return MTX_ERR_INVALID_MTX_SORTING;
+    }
+
     matrix->object = mtx_matrix;
     matrix->format = mtx_array;
     matrix->field = mtx_real;
     matrix->symmetry = symmetry;
-    if (sorting != mtx_row_major &&
-        sorting != mtx_column_major)
-    {
-        errno = EINVAL;
-        return MTX_ERR_ERRNO;
-    }
     matrix->sorting = sorting;
     matrix->ordering = mtx_unordered;
     matrix->assembly = mtx_assembled;
@@ -185,6 +187,8 @@ int mtx_init_matrix_array_real(
 /**
  * `mtx_init_matrix_array_double()` creates a dense matrix with real,
  * double-precision floating point coefficients.
+ *
+ * ´sorting' must be `mtx_row_major' or `mtx_column_major'.
  */
 int mtx_init_matrix_array_double(
     struct mtx * matrix,
@@ -198,16 +202,16 @@ int mtx_init_matrix_array_double(
 {
     int err;
 
-    matrix->object = mtx_matrix;
-    matrix->format = mtx_array;
-    matrix->field = mtx_double;
-    matrix->symmetry = mtx_general;
     if (sorting != mtx_row_major &&
         sorting != mtx_column_major)
     {
-        errno = EINVAL;
-        return MTX_ERR_ERRNO;
+        return MTX_ERR_INVALID_MTX_SORTING;
     }
+
+    matrix->object = mtx_matrix;
+    matrix->format = mtx_array;
+    matrix->field = mtx_double;
+    matrix->symmetry = symmetry;
     matrix->sorting = sorting;
     matrix->ordering = mtx_unordered;
     matrix->assembly = mtx_assembled;
@@ -259,6 +263,8 @@ int mtx_init_matrix_array_double(
 /**
  * `mtx_init_matrix_array_complex()` creates a dense matrix with complex,
  * single-precision floating point coefficients.
+ *
+ * ´sorting' must be `mtx_row_major' or `mtx_column_major'.
  */
 int mtx_init_matrix_array_complex(
     struct mtx * matrix,
@@ -272,16 +278,16 @@ int mtx_init_matrix_array_complex(
 {
     int err;
 
-    matrix->object = mtx_matrix;
-    matrix->format = mtx_array;
-    matrix->field = mtx_complex;
-    matrix->symmetry = mtx_general;
     if (sorting != mtx_row_major &&
         sorting != mtx_column_major)
     {
-        errno = EINVAL;
-        return MTX_ERR_ERRNO;
+        return MTX_ERR_INVALID_MTX_SORTING;
     }
+
+    matrix->object = mtx_matrix;
+    matrix->format = mtx_array;
+    matrix->field = mtx_complex;
+    matrix->symmetry = symmetry;
     matrix->sorting = sorting;
     matrix->ordering = mtx_unordered;
     matrix->assembly = mtx_assembled;
@@ -335,6 +341,8 @@ int mtx_init_matrix_array_complex(
 /**
  * `mtx_init_matrix_array_integer()` creates a dense matrix with integer
  * coefficients.
+ *
+ * ´sorting' must be `mtx_row_major' or `mtx_column_major'.
  */
 int mtx_init_matrix_array_integer(
     struct mtx * matrix,
@@ -348,16 +356,16 @@ int mtx_init_matrix_array_integer(
 {
     int err;
 
-    matrix->object = mtx_matrix;
-    matrix->format = mtx_array;
-    matrix->field = mtx_integer;
-    matrix->symmetry = mtx_general;
     if (sorting != mtx_row_major &&
         sorting != mtx_column_major)
     {
-        errno = EINVAL;
-        return MTX_ERR_ERRNO;
+        return MTX_ERR_INVALID_MTX_SORTING;
     }
+
+    matrix->object = mtx_matrix;
+    matrix->format = mtx_array;
+    matrix->field = mtx_integer;
+    matrix->symmetry = symmetry;
     matrix->sorting = sorting;
     matrix->ordering = mtx_unordered;
     matrix->assembly = mtx_assembled;
@@ -403,5 +411,40 @@ int mtx_init_matrix_array_integer(
     for (int64_t i = 0; i < matrix->size; i++)
         ((int *) matrix->data)[i] = data[i];
 
+    return MTX_SUCCESS;
+}
+
+/**
+ * `mtx_matrix_array_set_zero()' zeroes a matrix in array format.
+ */
+int mtx_matrix_array_set_zero(
+    struct mtx * mtx)
+{
+    if (mtx->object != mtx_matrix)
+        return MTX_ERR_INVALID_MTX_OBJECT;
+    if (mtx->format != mtx_array)
+        return MTX_ERR_INVALID_MTX_FORMAT;
+
+    if (mtx->field == mtx_real) {
+        float * data = (float *) mtx->data;
+        for (int64_t k = 0; k < mtx->size; k++)
+            data[k] = 0;
+    } else if (mtx->field == mtx_double) {
+        double * data = (double *) mtx->data;
+        for (int64_t k = 0; k < mtx->size; k++)
+            data[k] = 0;
+    } else if (mtx->field == mtx_complex) {
+        float * data = (float *) mtx->data;
+        for (int64_t k = 0; k < mtx->size; k++) {
+            data[2*k+0] = 0;
+            data[2*k+1] = 0;
+        }
+    } else if (mtx->field == mtx_integer) {
+        int * data = (int *) mtx->data;
+        for (int64_t k = 0; k < mtx->size; k++)
+            data[k] = 0;
+    } else {
+        return MTX_ERR_INVALID_MTX_FIELD;
+    }
     return MTX_SUCCESS;
 }

@@ -17,7 +17,7 @@
  * <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-06-18
+ * Last modified: 2021-08-02
  *
  * Data structures for representing objects in Matrix Market format.
  */
@@ -25,6 +25,8 @@
 #include <matrixmarket/error.h>
 #include <matrixmarket/header.h>
 #include <matrixmarket/mtx.h>
+#include <matrixmarket/matrix.h>
+#include <matrixmarket/vector.h>
 
 #include <errno.h>
 
@@ -121,5 +123,21 @@ int mtx_set_comment_lines(
 
     mtx->num_comment_lines = num_comment_lines;
     mtx->comment_lines = comment_lines_copy;
+    return MTX_SUCCESS;
+}
+
+/**
+ * `mtx_set_zero()' zeroes a matrix or vector.
+ */
+int mtx_set_zero(
+    struct mtx * mtx)
+{
+    if (mtx->object == mtx_matrix) {
+        return mtx_matrix_set_zero(mtx);
+    } else if (mtx->object == mtx_vector) {
+        return mtx_vector_set_zero(mtx);
+    } else {
+        return MTX_ERR_INVALID_MTX_OBJECT;
+    }
     return MTX_SUCCESS;
 }

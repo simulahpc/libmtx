@@ -17,7 +17,7 @@
  * <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-07-28
+ * Last modified: 2021-08-02
  *
  * Various operations for matrices in the Matrix Market format.
  */
@@ -50,6 +50,12 @@ int mtx_matrix_column_index(
     const struct mtx * mtx,
     int64_t k,
     int * column);
+
+/**
+ * `mtx_matrix_set_zero()' zeroes a matrix.
+ */
+int mtx_matrix_set_zero(
+    struct mtx * mtx);
 
 /**
  * `mtx_matrix_num_nonzeros()` computes the number of nonzeros,

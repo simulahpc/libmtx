@@ -17,7 +17,7 @@
  * <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-06-18
+ * Last modified: 2021-08-02
  *
  * Sparse matrices in Matrix Market format.
  */
@@ -181,6 +181,13 @@ int mtx_init_matrix_coordinate_pattern(
 /*
  * Other sparse matrix functions.
  */
+
+/**
+ * `mtx_matrix_coordinate_set_zero()' zeroes a matrix in coordinate
+ * format.
+ */
+int mtx_matrix_coordinate_set_zero(
+    struct mtx * mtx);
 
 /**
  * `mtx_matrix_coordinate_num_nonzeros()` computes the number of

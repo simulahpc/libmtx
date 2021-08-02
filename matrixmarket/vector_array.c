@@ -17,7 +17,7 @@
  * <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-07-02
+ * Last modified: 2021-08-02
  *
  * Dense vectors in Matrix Market format.
  */
@@ -441,5 +441,40 @@ int mtx_init_vector_array_integer_ones(
         return err;
     for (int i = 0; i < size; i++)
         ((int *) mtx->data)[i] = 1;
+    return MTX_SUCCESS;
+}
+
+/**
+ * `mtx_vector_array_set_zero()' zeroes a vector in array format.
+ */
+int mtx_vector_array_set_zero(
+    struct mtx * mtx)
+{
+    if (mtx->object != mtx_vector)
+        return MTX_ERR_INVALID_MTX_OBJECT;
+    if (mtx->format != mtx_array)
+        return MTX_ERR_INVALID_MTX_FORMAT;
+
+    if (mtx->field == mtx_real) {
+        float * data = (float *) mtx->data;
+        for (int64_t k = 0; k < mtx->size; k++)
+            data[k] = 0;
+    } else if (mtx->field == mtx_double) {
+        double * data = (double *) mtx->data;
+        for (int64_t k = 0; k < mtx->size; k++)
+            data[k] = 0;
+    } else if (mtx->field == mtx_complex) {
+        float * data = (float *) mtx->data;
+        for (int64_t k = 0; k < mtx->size; k++) {
+            data[2*k+0] = 0;
+            data[2*k+1] = 0;
+        }
+    } else if (mtx->field == mtx_integer) {
+        int * data = (int *) mtx->data;
+        for (int64_t k = 0; k < mtx->size; k++)
+            data[k] = 0;
+    } else {
+        return MTX_ERR_INVALID_MTX_FIELD;
+    }
     return MTX_SUCCESS;
 }

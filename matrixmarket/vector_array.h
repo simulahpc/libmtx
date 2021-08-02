@@ -17,7 +17,7 @@
  * <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-06-18
+ * Last modified: 2021-08-02
  *
  * Dense vectors in Matrix Market format.
  */
@@ -194,5 +194,15 @@ int mtx_init_vector_array_integer_ones(
     int num_comment_lines,
     const char ** comment_lines,
     int size);
+
+/*
+ * Other dense vector functions.
+ */
+
+/**
+ * `mtx_vector_array_set_zero()' zeroes a vector in array format.
+ */
+int mtx_vector_array_set_zero(
+    struct mtx * mtx);
 
 #endif

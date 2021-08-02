@@ -17,7 +17,7 @@
 # <https://www.gnu.org/licenses/>.
 #
 # Authors: James D. Trotter <james@simula.no>
-# Last modified: 2021-06-18
+# Last modified: 2021-08-02
 #
 # Makefile for the top-level directory of libmtx.
 #
@@ -62,6 +62,7 @@ libmtx_la_SOURCES = \
 	matrixmarket/sort.c \
 	matrixmarket/submatrix.c \
 	matrixmarket/transpose.c \
+	matrixmarket/vector.c \
 	matrixmarket/vector_array.c \
 	matrixmarket/vector_coordinate.c \
 	matrixmarket/version.c
@@ -79,6 +80,8 @@ nobase_include_HEADERS = \
 	matrixmarket/matrixmarket.h \
 	matrixmarket/mpi.h \
 	matrixmarket/mtx.h \
+	matrixmarket/reorder.h \
+	matrixmarket/vector.h \
 	matrixmarket/vector_array.h \
 	matrixmarket/vector_coordinate.h \
 	matrixmarket/version.h

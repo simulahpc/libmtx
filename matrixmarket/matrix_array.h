@@ -17,7 +17,7 @@
  * <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-06-18
+ * Last modified: 2021-08-02
  *
  * Dense matrices in Matrix Market format.
  */
@@ -38,6 +38,8 @@ struct mtx;
 /**
  * `mtx_init_matrix_array_real()` creates a dense matrix with real,
  * single-precision floating point coefficients.
+ *
+ * ´sorting' must be `mtx_row_major' or `mtx_column_major'.
  */
 int mtx_init_matrix_array_real(
     struct mtx * matrix,
@@ -52,6 +54,8 @@ int mtx_init_matrix_array_real(
 /**
  * `mtx_init_matrix_array_double()` creates a dense matrix with real,
  * double-precision floating point coefficients.
+ *
+ * ´sorting' must be `mtx_row_major' or `mtx_column_major'.
  */
 int mtx_init_matrix_array_double(
     struct mtx * matrix,
@@ -66,6 +70,8 @@ int mtx_init_matrix_array_double(
 /**
  * `mtx_init_matrix_array_complex()` creates a dense matrix with
  * complex, single-precision floating point coefficients.
+ *
+ * ´sorting' must be `mtx_row_major' or `mtx_column_major'.
  */
 int mtx_init_matrix_array_complex(
     struct mtx * matrix,
@@ -80,6 +86,8 @@ int mtx_init_matrix_array_complex(
 /**
  * `mtx_init_matrix_array_integer()` creates a dense matrix with
  * integer coefficients.
+ *
+ * ´sorting' must be `mtx_row_major' or `mtx_column_major'.
  */
 int mtx_init_matrix_array_integer(
     struct mtx * matrix,
@@ -94,6 +102,12 @@ int mtx_init_matrix_array_integer(
 /*
  * Other dense matrix functions.
  */
+
+/**
+ * `mtx_matrix_array_set_zero()' zeroes a matrix in array format.
+ */
+int mtx_matrix_array_set_zero(
+    struct mtx * mtx);
 
 /**
  * `mtx_matrix_array_num_nonzeros()` computes the number of matrix

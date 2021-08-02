@@ -769,6 +769,16 @@ existing matrix or vector:
 @end example
 
 
+@node Zeroing matrices and vectors
+@subsection Zeroing matrices and vectors
+The function @code{mtx_set_zero} can be used to set all of the values
+associated with the entries of a matrix or vector to zero:
+@findex mtx_zero
+@example
+@code{int mtx_set_zero(struct mtx * mtx);}
+@end example
+
+
 @node Matrix operations
 @section Matrix operations
 @cindex sorting

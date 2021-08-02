@@ -17,9 +17,9 @@
  * <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-07-28
+ * Last modified: 2021-08-02
  *
- * Data structures for representing objects in Matrix Market format.
+ * Various operations for matrices in the Matrix Market format.
  */
 
 #include <matrixmarket/error.h>
@@ -183,6 +183,25 @@ int mtx_matrix_column_index(
         } else {
             return MTX_ERR_INVALID_MTX_FIELD;
         }
+    } else {
+        return MTX_ERR_INVALID_MTX_FORMAT;
+    }
+    return MTX_SUCCESS;
+}
+
+/**
+ * `mtx_matrix_set_zero()' zeroes a matrix.
+ */
+int mtx_matrix_set_zero(
+    struct mtx * mtx)
+{
+    if (mtx->object != mtx_matrix)
+        return MTX_ERR_INVALID_MTX_OBJECT;
+
+    if (mtx->format == mtx_array) {
+        return mtx_matrix_array_set_zero(mtx);
+    } else if (mtx->format == mtx_coordinate) {
+        return mtx_matrix_coordinate_set_zero(mtx);
     } else {
         return MTX_ERR_INVALID_MTX_FORMAT;
     }

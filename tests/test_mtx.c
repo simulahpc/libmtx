@@ -27,8 +27,11 @@
 #include <matrixmarket/error.h>
 #include <matrixmarket/io.h>
 #include <matrixmarket/matrix.h>
+#include <matrixmarket/matrix_array.h>
 #include <matrixmarket/matrix_coordinate.h>
 #include <matrixmarket/mtx.h>
+#include <matrixmarket/vector_array.h>
+#include <matrixmarket/vector_coordinate.h>
 
 #include <errno.h>
 #include <unistd.h>
@@ -243,6 +246,125 @@ int test_mtx_matrix_num_nonzeros(void)
 }
 
 /**
+ * `test_mtx_set_zero_matrix_array_real()` tests zeroing a dense, real
+ * matrix in Matrix Market format.
+ */
+int test_mtx_set_zero_matrix_array_real(void)
+{
+    int err;
+    struct mtx mtx;
+    int num_comment_lines = 0;
+    const char * comment_lines[] = {};
+    int num_rows = 2;
+    int num_columns = 2;
+    float data[] = {1.0f, 2.0f, 3.0f, 4.0f};
+    int size = sizeof(data) / sizeof(*data);
+    err = mtx_init_matrix_array_real(
+        &mtx, num_comment_lines, comment_lines,
+        mtx_general, mtx_row_major,
+        num_rows, num_columns, data);
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    err = mtx_set_zero(&mtx);
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ(4, mtx.size);
+    const float * mtxdata = (const float *) mtx.data;
+    TEST_ASSERT_EQ(0.0f, mtxdata[0]);
+    TEST_ASSERT_EQ(0.0f, mtxdata[1]);
+    TEST_ASSERT_EQ(0.0f, mtxdata[2]);
+    TEST_ASSERT_EQ(0.0f, mtxdata[3]);
+    mtx_free(&mtx);
+    return TEST_SUCCESS;
+}
+
+/**
+ * `test_mtx_set_zero_matrix_coordinate_real()` tests zeroing a dense, real
+ * matrix in Matrix Market format.
+ */
+int test_mtx_set_zero_matrix_coordinate_real(void)
+{
+    int err;
+    struct mtx mtx;
+    int num_comment_lines = 0;
+    const char * comment_lines[] = {};
+    int num_rows = 4;
+    int num_columns = 4;
+    struct mtx_matrix_coordinate_real data[] = {
+        {1, 1, 1.0f}, {2, 3, 2.0f}, {4, 2, 4.0f}};
+    int size = sizeof(data) / sizeof(*data);
+    err = mtx_init_matrix_coordinate_real(
+        &mtx, mtx_general, mtx_unsorted, mtx_unordered, mtx_unassembled,
+        num_comment_lines, comment_lines, num_rows, num_columns, size, data);
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    err = mtx_set_zero(&mtx);
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ(3, mtx.size);
+    const struct mtx_matrix_coordinate_real * mtxdata =
+        (const struct mtx_matrix_coordinate_real *) mtx.data;
+    TEST_ASSERT_EQ(0.0f, mtxdata[0].a);
+    TEST_ASSERT_EQ(0.0f, mtxdata[1].a);
+    TEST_ASSERT_EQ(0.0f, mtxdata[3].a);
+    mtx_free(&mtx);
+    return TEST_SUCCESS;
+}
+
+/**
+ * `test_mtx_set_zero_vector_array_real()` tests zeroing a dense, real
+ * vector in Matrix Market format.
+ */
+int test_mtx_set_zero_vector_array_real(void)
+{
+    int err;
+    struct mtx mtx;
+    int num_comment_lines = 0;
+    const char * comment_lines[] = {};
+    float data[] = {1.0f, 2.0f, 3.0f, 4.0f};
+    int size = sizeof(data) / sizeof(*data);
+    err = mtx_init_vector_array_real(
+        &mtx, num_comment_lines, comment_lines, size, data);
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    err = mtx_set_zero(&mtx);
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ(4, mtx.size);
+    const float * mtxdata = (const float *) mtx.data;
+    TEST_ASSERT_EQ(0.0f, mtxdata[0]);
+    TEST_ASSERT_EQ(0.0f, mtxdata[1]);
+    TEST_ASSERT_EQ(0.0f, mtxdata[2]);
+    TEST_ASSERT_EQ(0.0f, mtxdata[3]);
+    mtx_free(&mtx);
+    return TEST_SUCCESS;
+}
+
+/**
+ * `test_mtx_set_zero_vector_coordinate_real()` tests zeroing a dense, real
+ * vector in Matrix Market format.
+ */
+int test_mtx_set_zero_vector_coordinate_real(void)
+{
+    int err;
+    struct mtx mtx;
+    int num_comment_lines = 0;
+    const char * comment_lines[] = {};
+    int num_rows = 4;
+    struct mtx_vector_coordinate_real data[] = {
+        {1, 1.0f}, {2, 2.0f}, {4, 4.0f}};
+    int size = sizeof(data) / sizeof(*data);
+    err = mtx_init_vector_coordinate_real(
+        &mtx, mtx_unsorted, mtx_unordered, mtx_unassembled,
+        num_comment_lines, comment_lines, num_rows, size, data);
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    err = mtx_set_zero(&mtx);
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ(3, mtx.size);
+    const struct mtx_vector_coordinate_real * mtxdata =
+        (const struct mtx_vector_coordinate_real *) mtx.data;
+    TEST_ASSERT_EQ(0.0f, mtxdata[0].a);
+    TEST_ASSERT_EQ(0.0f, mtxdata[1].a);
+    TEST_ASSERT_EQ(0.0f, mtxdata[3].a);
+    mtx_free(&mtx);
+    return TEST_SUCCESS;
+}
+
+/**
  * `main()' entry point and test driver.
  */
 int main(int argc, char * argv[])
@@ -251,6 +373,10 @@ int main(int argc, char * argv[])
     TEST_RUN(test_mtx_copy);
     TEST_RUN(test_mtx_matrix_size_per_row);
     TEST_RUN(test_mtx_matrix_num_nonzeros);
+    TEST_RUN(test_mtx_set_zero_matrix_array_real);
+    TEST_RUN(test_mtx_set_zero_matrix_coordinate_real);
+    TEST_RUN(test_mtx_set_zero_vector_array_real);
+    TEST_RUN(test_mtx_set_zero_vector_coordinate_real);
     TEST_SUITE_END();
     return (TEST_SUITE_STATUS == TEST_SUCCESS) ?
         EXIT_SUCCESS : EXIT_FAILURE;
