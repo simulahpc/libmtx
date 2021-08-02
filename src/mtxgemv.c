@@ -286,12 +286,6 @@ static int parse_program_options(
             break;
         }
 
-        /* Unrecognised option. */
-        if (strlen((*argv)[0]) > 1 && (*argv)[0][0] == '-') {
-            program_options_free(args);
-            return EINVAL;
-        }
-        
         /*
          * Parse positional arguments.
          */

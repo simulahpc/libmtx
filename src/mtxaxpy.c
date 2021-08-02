@@ -277,11 +277,13 @@ static int parse_program_options(
         }
 
         /* Unrecognised option. */
-        if (strlen((*argv)[0]) > 1 && (*argv)[0][0] == '-') {
+        if (strlen((*argv)[0]) > 1 && (*argv)[0][0] == '-' &&
+            ((*argv)[0][1] < '0' || (*argv)[0][1] > '9'))
+        {
             program_options_free(args);
             return EINVAL;
         }
-        
+
         /*
          * Parse positional arguments.
          */
