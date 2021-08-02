@@ -40,6 +40,10 @@ scales a vector by a scalar.
 @item mtxaxpy
 adds two vectors.
 
+@pindex mtxdot
+@item mtxdot
+computes the dot product of two vectors.
+
 @pindex mtxgemv
 @item mtxgemv
 multiplies a general, unsymmetric matrix by a vector.
@@ -79,6 +83,7 @@ sections.
 @menu
 * @command{mtxinfo}::
 * @command{mtxscal}::
+* @command{mtxdot}::
 * @command{mtxaxpy}::
 * @command{mtxgemv}::
 * @command{mtxsort}::
@@ -153,6 +158,57 @@ be specified, e.g., @samp{%+3.1f}.
 
 @item --repeat=N
 The number of times to repeat the matrix-vector multiplication.
+
+@item -q, --quiet
+Do not print the resulting Matrix Market file to standard output.
+
+@item -v, --verbose
+Print some diagnostics to the standard error stream.
+
+@end table
+
+
+@node @command{mtxdot}
+@section @command{mtxdot}
+@pindex mtxdot
+
+The command @command{mtxdot} is used to compute the dot product of two
+vectors.  That is, @samp{@var{dot} := @var{x}'@var{y}}, where
+@samp{@var{x}} and @samp{@var{y}} are vectors, and @samp{@var{x}'}
+denotes the transpose of @samp{@var{x}}.
+
+@example
+@code{mtxdot [OPTION..] @var{x} [@var{y}]}
+@end example
+
+If matrices are provided instead of vectors, then the Frobenius inner
+product is computed.
+
+The positional arguments are:
+@table @option
+@item @var{x}
+Path to a Matrix Market file containing the vector
+@option{@var{x}}.
+
+@item @var{y}
+Path to a Matrix Market file containing the vector
+@option{@var{y}}. If this argument is omitted, then a vector of ones
+of length equal to @option{@var{x}} is used.
+
+@end table
+
+In addition, the following options are accepted:
+
+@table @option
+@item -z, --gzip, --gunzip, --ungzip
+Filter files through gzip.
+
+@item --format=FORMAT
+Format string for outputting numerical values.  For real, double and
+complex values, the format specifiers @samp{%e}, @samp{%E}, @samp{%f},
+@samp{%F}, @samp{%g} or @samp{%G} may be used, whereas @samp{%d} must
+be used for integers. Flags, field width and precision can optionally
+be specified, e.g., @samp{%+3.1f}.
 
 @item -q, --quiet
 Do not print the resulting Matrix Market file to standard output.

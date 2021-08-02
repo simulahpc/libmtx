@@ -97,6 +97,7 @@ pkgconfig_DATA = matrixmarket/libmtx.pc
 # Matrix Market utility programs
 bin_PROGRAMS = \
 	mtxaxpy \
+	mtxdot \
 	mtxgemv \
 	mtxinfo \
 	mtxreorder \
@@ -116,6 +117,11 @@ endif
 mtxaxpy_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/src $(MPICPPFLAGS)
 mtxaxpy_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
 mtxaxpy_SOURCES = src/mtxaxpy.c
+
+# mtxdot
+mtxdot_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/src $(MPICPPFLAGS)
+mtxdot_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
+mtxdot_SOURCES = src/mtxdot.c
 
 # mtxgemv
 mtxgemv_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/src $(MPICPPFLAGS)
