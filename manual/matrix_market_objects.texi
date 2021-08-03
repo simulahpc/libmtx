@@ -16,7 +16,7 @@
 @c <https://www.gnu.org/licenses/>.
 @c
 @c Authors: James D. Trotter <james@simula.no>
-@c Last modified: 2021-06-18
+@c Last modified: 2021-08-03
 @c
 @c libmtx User Guide: Matrix Market objects.
 
@@ -629,10 +629,10 @@ real matrix is created with the function:
 @example
 @code{int mtx_init_matrix_array_real(
     struct mtx * mtx,
-    int num_comment_lines,
-    const char ** comment_lines,
     enum mtx_symmetry symmetry,
     enum mtx_sorting sorting,
+    int num_comment_lines,
+    const char ** comment_lines,
     int num_rows,
     int num_columns,
     const float * data);}

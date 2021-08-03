@@ -43,10 +43,10 @@ struct mtx;
  */
 int mtx_init_matrix_array_real(
     struct mtx * matrix,
-    int num_comment_lines,
-    const char ** comment_lines,
     enum mtx_symmetry symmetry,
     enum mtx_sorting sorting,
+    int num_comment_lines,
+    const char ** comment_lines,
     int num_rows,
     int num_columns,
     const float * data);
@@ -59,10 +59,10 @@ int mtx_init_matrix_array_real(
  */
 int mtx_init_matrix_array_double(
     struct mtx * matrix,
-    int num_comment_lines,
-    const char ** comment_lines,
     enum mtx_symmetry symmetry,
     enum mtx_sorting sorting,
+    int num_comment_lines,
+    const char ** comment_lines,
     int num_rows,
     int num_columns,
     const double * data);
@@ -75,10 +75,10 @@ int mtx_init_matrix_array_double(
  */
 int mtx_init_matrix_array_complex(
     struct mtx * matrix,
-    int num_comment_lines,
-    const char ** comment_lines,
     enum mtx_symmetry symmetry,
     enum mtx_sorting sorting,
+    int num_comment_lines,
+    const char ** comment_lines,
     int num_rows,
     int num_columns,
     const float * data);
@@ -91,10 +91,10 @@ int mtx_init_matrix_array_complex(
  */
 int mtx_init_matrix_array_integer(
     struct mtx * matrix,
-    int num_comment_lines,
-    const char ** comment_lines,
     enum mtx_symmetry symmetry,
     enum mtx_sorting sorting,
+    int num_comment_lines,
+    const char ** comment_lines,
     int num_rows,
     int num_columns,
     const int * data);

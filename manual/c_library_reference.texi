@@ -16,7 +16,7 @@
 @c <https://www.gnu.org/licenses/>.
 @c
 @c Authors: James D. Trotter <james@simula.no>
-@c Last modified: 2021-06-18
+@c Last modified: 2021-08-03
 @c
 @c libmtx User Guide: C library reference.
 
@@ -373,40 +373,40 @@ int mtx_init_matrix_coordinate_pattern(
 @example
 @code{int mtx_init_matrix_array_real(
     struct mtx * mtx,
-    int num_comment_lines,
-    const char ** comment_lines,
     enum mtx_symmetry symmetry,
     enum mtx_sorting sorting,
+    int num_comment_lines,
+    const char ** comment_lines,
     int num_rows,
     int num_columns,
     const float * data);
 
 int mtx_init_matrix_array_double(
     struct mtx * mtx,
-    int num_comment_lines,
-    const char ** comment_lines,
     enum mtx_symmetry symmetry,
     enum mtx_sorting sorting,
+    int num_comment_lines,
+    const char ** comment_lines,
     int num_rows,
     int num_columns,
     const double * data);
 
 int mtx_init_matrix_array_complex(
     struct mtx * mtx,
-    int num_comment_lines,
-    const char ** comment_lines,
     enum mtx_symmetry symmetry,
     enum mtx_sorting sorting,
+    int num_comment_lines,
+    const char ** comment_lines,
     int num_rows,
     int num_columns,
     const float * data);
 
 int mtx_init_matrix_array_integer(
     struct mtx * mtx,
-    int num_comment_lines,
-    const char ** comment_lines,
     enum mtx_symmetry symmetry,
     enum mtx_sorting sorting,
+    int num_comment_lines,
+    const char ** comment_lines,
     int num_rows,
     int num_columns,
     const int * data);}

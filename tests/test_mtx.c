@@ -260,8 +260,8 @@ int test_mtx_set_zero_matrix_array_real(void)
     float data[] = {1.0f, 2.0f, 3.0f, 4.0f};
     int size = sizeof(data) / sizeof(*data);
     err = mtx_init_matrix_array_real(
-        &mtx, num_comment_lines, comment_lines,
-        mtx_general, mtx_row_major,
+        &mtx, mtx_general, mtx_row_major,
+        num_comment_lines, comment_lines,
         num_rows, num_columns, data);
     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
     err = mtx_set_zero(&mtx);

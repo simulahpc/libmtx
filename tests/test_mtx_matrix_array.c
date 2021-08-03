@@ -17,7 +17,7 @@
  * <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-06-18
+ * Last modified: 2021-08-03
  *
  * Unit tests for dense matrices in Matrix Market format.
  */
@@ -47,8 +47,9 @@ int test_mtx_init_matrix_array_real(void)
     int num_columns = 2;
     float data[] = {1.0f, 2.0f, 3.0f, 4.0f};
     err = mtx_init_matrix_array_real(
-        &matrix, num_comment_lines, comment_lines,
-        mtx_general, mtx_row_major, num_rows, num_columns, data);
+        &matrix, mtx_general, mtx_row_major,
+        num_comment_lines, comment_lines,
+        num_rows, num_columns, data);
     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
     TEST_ASSERT_EQ(mtx_matrix, matrix.object);
     TEST_ASSERT_EQ(mtx_array, matrix.format);
@@ -87,8 +88,9 @@ int test_mtx_init_matrix_array_real_symmetric(void)
     int num_columns = 2;
     float data[] = {1.0f, 2.0f, 4.0f};
     err = mtx_init_matrix_array_real(
-        &matrix, num_comment_lines, comment_lines,
-        mtx_symmetric, mtx_row_major, num_rows, num_columns, data);
+        &matrix, mtx_symmetric, mtx_row_major,
+        num_comment_lines, comment_lines,
+        num_rows, num_columns, data);
     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
     TEST_ASSERT_EQ(mtx_matrix, matrix.object);
     TEST_ASSERT_EQ(mtx_array, matrix.format);
@@ -127,8 +129,9 @@ int test_mtx_init_matrix_array_real_skew_symmetric(void)
     int num_columns = 3;
     float data[] = {1.0f, 2.0f, 4.0f};
     err = mtx_init_matrix_array_real(
-        &matrix, num_comment_lines, comment_lines,
-        mtx_skew_symmetric, mtx_row_major, num_rows, num_columns, data);
+        &matrix, mtx_skew_symmetric, mtx_row_major,
+        num_comment_lines, comment_lines,
+        num_rows, num_columns, data);
     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
     TEST_ASSERT_EQ(mtx_matrix, matrix.object);
     TEST_ASSERT_EQ(mtx_array, matrix.format);
@@ -166,8 +169,9 @@ int test_mtx_init_matrix_array_double(void)
     int num_columns = 2;
     double data[] = {1.0, 2.0, 3.0, 4.0};
     err = mtx_init_matrix_array_double(
-        &matrix, num_comment_lines, comment_lines,
-        mtx_general, mtx_row_major, num_rows, num_columns, data);
+        &matrix, mtx_general, mtx_row_major,
+        num_comment_lines, comment_lines,
+        num_rows, num_columns, data);
     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
     TEST_ASSERT_EQ(mtx_matrix, matrix.object);
     TEST_ASSERT_EQ(mtx_array, matrix.format);
@@ -206,8 +210,9 @@ int test_mtx_init_matrix_array_complex(void)
     int num_columns = 2;
     float data[] = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0};
     err = mtx_init_matrix_array_complex(
-        &matrix, num_comment_lines, comment_lines,
-        mtx_general, mtx_row_major, num_rows, num_columns, data);
+        &matrix, mtx_general, mtx_row_major,
+        num_comment_lines, comment_lines,
+        num_rows, num_columns, data);
     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
     TEST_ASSERT_EQ(mtx_matrix, matrix.object);
     TEST_ASSERT_EQ(mtx_array, matrix.format);
@@ -250,8 +255,9 @@ int test_mtx_init_matrix_array_integer(void)
     int num_columns = 2;
     int data[] = {1, 2, 3, 4};
     err = mtx_init_matrix_array_integer(
-        &matrix, num_comment_lines, comment_lines,
-        mtx_general, mtx_row_major, num_rows, num_columns, data);
+        &matrix, mtx_general, mtx_row_major,
+        num_comment_lines, comment_lines,
+        num_rows, num_columns, data);
     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
     TEST_ASSERT_EQ(mtx_matrix, matrix.object);
     TEST_ASSERT_EQ(mtx_array, matrix.format);

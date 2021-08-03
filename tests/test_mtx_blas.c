@@ -233,7 +233,7 @@ int test_mtx_sgemv_array(void)
     int num_columns = 2;
     float A_data[] = {1.0f, 2.0f, 3.0f, 4.0f};
     err = mtx_init_matrix_array_real(
-        &A, 0, NULL, mtx_general, mtx_row_major, num_rows, num_columns, A_data);
+        &A, mtx_general, mtx_row_major, 0, NULL, num_rows, num_columns, A_data);
     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
 
     /* Create vectors */
@@ -274,7 +274,7 @@ int test_mtx_dgemv_array(void)
     int num_columns = 2;
     double A_data[] = {1.0, 2.0, 3.0, 4.0};
     err = mtx_init_matrix_array_double(
-        &A, 0, NULL, mtx_general, mtx_row_major, num_rows, num_columns, A_data);
+        &A, mtx_general, mtx_row_major, 0, NULL, num_rows, num_columns, A_data);
     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
 
     /* Create vectors */

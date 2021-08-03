@@ -114,8 +114,9 @@ int test_mtx_permute_matrix_array_real(void)
         int num_columns = 3;
         float data[] = {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f, 9.0f};
         err = mtx_init_matrix_array_real(
-            &mtx, num_comment_lines, comment_lines,
-            mtx_general, mtx_row_major, num_rows, num_columns, data);
+            &mtx, mtx_general, mtx_row_major,
+            num_comment_lines, comment_lines,
+            num_rows, num_columns, data);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
 
         const int row_permutation[] = {2, 1, 3};
@@ -146,8 +147,9 @@ int test_mtx_permute_matrix_array_real(void)
         int num_columns = 3;
         float data[] = {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f, 9.0f};
         err = mtx_init_matrix_array_real(
-            &mtx, num_comment_lines, comment_lines,
-            mtx_general, mtx_row_major, num_rows, num_columns, data);
+            &mtx, mtx_general, mtx_row_major,
+            num_comment_lines, comment_lines,
+            num_rows, num_columns, data);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
 
         const int * row_permutation = NULL;
@@ -178,8 +180,9 @@ int test_mtx_permute_matrix_array_real(void)
         int num_columns = 3;
         float data[] = {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f, 9.0f};
         err = mtx_init_matrix_array_real(
-            &mtx, num_comment_lines, comment_lines,
-            mtx_general, mtx_row_major, num_rows, num_columns, data);
+            &mtx, mtx_general, mtx_row_major,
+            num_comment_lines, comment_lines,
+            num_rows, num_columns, data);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
 
         const int row_permutation[] = {2, 1, 3};
