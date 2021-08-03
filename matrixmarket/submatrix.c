@@ -57,6 +57,7 @@ int mtx_matrix_submatrix(
     submtx->format = mtx->format;
     submtx->field = mtx->field;
     submtx->symmetry = mtx->symmetry;
+    submtx->triangle = mtx->triangle;
     submtx->sorting = mtx->sorting;
     submtx->ordering = mtx->ordering;
     submtx->assembly = mtx->assembly;

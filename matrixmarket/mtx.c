@@ -57,6 +57,7 @@ int mtx_copy(
     dst->format = src->format;
     dst->field = src->field;
     dst->symmetry = src->symmetry;
+    dst->triangle = src->triangle;
     dst->sorting = src->sorting;
     dst->ordering = src->ordering;
     dst->assembly = src->assembly;

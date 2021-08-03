@@ -86,6 +86,28 @@ const char * mtx_symmetry_str(
 }
 
 /**
+ * `mtx_triangle_str()' is a string representing the given triangle
+ * type.
+ */
+const char * mtx_triangle_str(
+    enum mtx_triangle triangle)
+{
+    switch (triangle) {
+    case mtx_nontriangular: return "nontriangular";
+    case mtx_lower_triangular: return "lower-triangular";
+    case mtx_upper_triangular: return "upper-triangular";
+    case mtx_diagonal: return "diagonal";
+    /* case mtx_unit_lower_triangular: return "unit-lower-triangular"; */
+    /* case mtx_unit_upper_triangular: return "unit-upper-triangular"; */
+    /* case mtx_unit_diagonal: return "unit-diagonal"; */
+    /* case mtx_strict_lower_triangular: return "strict-lower-triangular"; */
+    /* case mtx_strict_upper_triangular: return "strict-upper-triangular"; */
+    /* case mtx_zero: return "zero"; */
+    default: return "unknown";
+    }
+}
+
+/**
  * `mtx_sorting_str()` is a string representing the sorting type.
  */
 const char * mtx_sorting_str(

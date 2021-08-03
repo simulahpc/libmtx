@@ -17,7 +17,7 @@
  * <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-06-18
+ * Last modified: 2021-08-02
  *
  * Unit tests for transposing sparse matrices.
  */
@@ -35,11 +35,11 @@
 #include <string.h>
 
 /**
- * `test_mtx_init_matrix_coordinate_real_general_transpose()` tests transposing
- * non-symmetric sparse matrices with real, single-precision
- * coefficients in the Matrix Market format.
+ * `test_mtx_matrix_transpose_coordinate_real_general()` tests
+ * transposing non-symmetric sparse matrices with real,
+ * single-precision coefficients in the Matrix Market format.
  */
-int test_mtx_init_matrix_coordinate_real_general_transpose(void)
+int test_mtx_matrix_transpose_coordinate_real_general(void)
 {
     int err;
     struct mtx matrix;
@@ -54,7 +54,9 @@ int test_mtx_init_matrix_coordinate_real_general_transpose(void)
         {3,3,4.0f},
         {4,1,5.0f}, {4,4,6.0f}};
     err = mtx_init_matrix_coordinate_real(
-        &matrix, mtx_general, mtx_unsorted, mtx_unordered, mtx_unassembled,
+        &matrix, mtx_general,
+        mtx_nontriangular, mtx_unsorted,
+        mtx_unordered, mtx_unassembled,
         num_comment_lines, comment_lines,
         num_rows, num_columns, size, data);
     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
@@ -64,6 +66,7 @@ int test_mtx_init_matrix_coordinate_real_general_transpose(void)
     TEST_ASSERT_EQ(mtx_coordinate, matrix.format);
     TEST_ASSERT_EQ(mtx_real, matrix.field);
     TEST_ASSERT_EQ(mtx_general, matrix.symmetry);
+    TEST_ASSERT_EQ(mtx_nontriangular, matrix.triangle);
     TEST_ASSERT_EQ(mtx_unsorted, matrix.sorting);
     TEST_ASSERT_EQ(mtx_unordered, matrix.ordering);
     TEST_ASSERT_EQ(mtx_unassembled, matrix.assembly);
@@ -95,11 +98,11 @@ int test_mtx_init_matrix_coordinate_real_general_transpose(void)
 }
 
 /**
- * `test_mtx_init_matrix_coordinate_real_symmetric_transpose()` tests
+ * `test_mtx_matrix_transpose_coordinate_real_symmetric()` tests
  * transposing symmetric sparse matrices with real, single-precision
  * coefficients in the Matrix Market format.
  */
-int test_mtx_init_matrix_coordinate_real_symmetric_transpose(void)
+int test_mtx_matrix_transpose_coordinate_real_symmetric(void)
 {
     int err;
     struct mtx matrix;
@@ -114,7 +117,9 @@ int test_mtx_init_matrix_coordinate_real_symmetric_transpose(void)
         {3,3,3.0f},
         {4,1,4.0f}, {4,4,5.0f}};
     err = mtx_init_matrix_coordinate_real(
-        &matrix, mtx_symmetric, mtx_unsorted, mtx_unordered, mtx_unassembled,
+        &matrix, mtx_symmetric,
+        mtx_nontriangular, mtx_unsorted,
+        mtx_unordered, mtx_unassembled,
         num_comment_lines, comment_lines,
         num_rows, num_columns, size, data);
     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
@@ -151,11 +156,11 @@ int test_mtx_init_matrix_coordinate_real_symmetric_transpose(void)
 }
 
 /**
- * `test_mtx_init_matrix_coordinate_double_general_transpose()` tests
+ * `test_mtx_matrix_transpose_coordinate_double_general()` tests
  * transposing non-symmetric sparse matrices with real,
  * double-precision coefficients in the Matrix Market format.
  */
-int test_mtx_init_matrix_coordinate_double_general_transpose(void)
+int test_mtx_matrix_transpose_coordinate_double_general(void)
 {
     int err;
     struct mtx matrix;
@@ -170,7 +175,9 @@ int test_mtx_init_matrix_coordinate_double_general_transpose(void)
         {3,3,4.0},
         {4,1,5.0}, {4,4,6.0}};
     err = mtx_init_matrix_coordinate_double(
-        &matrix, mtx_general, mtx_unsorted, mtx_unordered, mtx_unassembled,
+        &matrix, mtx_general,
+        mtx_nontriangular, mtx_unsorted,
+        mtx_unordered, mtx_unassembled,
         num_comment_lines, comment_lines,
         num_rows, num_columns, size, data);
     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
@@ -180,6 +187,7 @@ int test_mtx_init_matrix_coordinate_double_general_transpose(void)
     TEST_ASSERT_EQ(mtx_coordinate, matrix.format);
     TEST_ASSERT_EQ(mtx_double, matrix.field);
     TEST_ASSERT_EQ(mtx_general, matrix.symmetry);
+    TEST_ASSERT_EQ(mtx_nontriangular, matrix.triangle);
     TEST_ASSERT_EQ(mtx_unsorted, matrix.sorting);
     TEST_ASSERT_EQ(mtx_unordered, matrix.ordering);
     TEST_ASSERT_EQ(mtx_unassembled, matrix.assembly);
@@ -211,11 +219,11 @@ int test_mtx_init_matrix_coordinate_double_general_transpose(void)
 }
 
 /**
- * `test_mtx_init_matrix_coordinate_complex_general_transpose()` tests
+ * `test_mtx_matrix_transpose_coordinate_complex_general()` tests
  * transposing non-symmetric sparse matrices with real,
  * single-precision coefficients in the Matrix Market format.
  */
-int test_mtx_init_matrix_coordinate_complex_general_transpose(void)
+int test_mtx_matrix_transpose_coordinate_complex_general(void)
 {
     int err;
     struct mtx matrix;
@@ -230,7 +238,9 @@ int test_mtx_init_matrix_coordinate_complex_general_transpose(void)
         {3,3,4.0,-4.0},
         {4,1,5.0,-5.0}, {4,4,6.0,-6.0}};
     err = mtx_init_matrix_coordinate_complex(
-        &matrix, mtx_general, mtx_unsorted, mtx_unordered, mtx_unassembled,
+        &matrix, mtx_general,
+        mtx_nontriangular, mtx_unsorted,
+        mtx_unordered, mtx_unassembled,
         num_comment_lines, comment_lines,
         num_rows, num_columns, size, data);
     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
@@ -240,6 +250,7 @@ int test_mtx_init_matrix_coordinate_complex_general_transpose(void)
     TEST_ASSERT_EQ(mtx_coordinate, matrix.format);
     TEST_ASSERT_EQ(mtx_complex, matrix.field);
     TEST_ASSERT_EQ(mtx_general, matrix.symmetry);
+    TEST_ASSERT_EQ(mtx_nontriangular, matrix.triangle);
     TEST_ASSERT_EQ(mtx_unsorted, matrix.sorting);
     TEST_ASSERT_EQ(mtx_unordered, matrix.ordering);
     TEST_ASSERT_EQ(mtx_unassembled, matrix.assembly);
@@ -277,11 +288,11 @@ int test_mtx_init_matrix_coordinate_complex_general_transpose(void)
 }
 
 /**
- * `test_mtx_init_matrix_coordinate_integer_general_transpose()` tests
+ * `test_mtx_matrix_transpose_coordinate_integer_general()` tests
  * transposing non-symmetric sparse matrices with integer coefficients
  * in the Matrix Market format.
  */
-int test_mtx_init_matrix_coordinate_integer_general_transpose(void)
+int test_mtx_matrix_transpose_coordinate_integer_general(void)
 {
     int err;
     struct mtx matrix;
@@ -296,7 +307,9 @@ int test_mtx_init_matrix_coordinate_integer_general_transpose(void)
         {3,3,4},
         {4,1,5}, {4,4,6}};
     err = mtx_init_matrix_coordinate_integer(
-        &matrix, mtx_general, mtx_unsorted, mtx_unordered, mtx_unassembled,
+        &matrix, mtx_general,
+        mtx_nontriangular, mtx_unsorted,
+        mtx_unordered, mtx_unassembled,
         num_comment_lines, comment_lines,
         num_rows, num_columns, size, data);
     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
@@ -306,6 +319,7 @@ int test_mtx_init_matrix_coordinate_integer_general_transpose(void)
     TEST_ASSERT_EQ(mtx_coordinate, matrix.format);
     TEST_ASSERT_EQ(mtx_integer, matrix.field);
     TEST_ASSERT_EQ(mtx_general, matrix.symmetry);
+    TEST_ASSERT_EQ(mtx_nontriangular, matrix.triangle);
     TEST_ASSERT_EQ(mtx_unsorted, matrix.sorting);
     TEST_ASSERT_EQ(mtx_unordered, matrix.ordering);
     TEST_ASSERT_EQ(mtx_unassembled, matrix.assembly);
@@ -337,11 +351,11 @@ int test_mtx_init_matrix_coordinate_integer_general_transpose(void)
 }
 
 /**
- * `test_mtx_init_matrix_coordinate_pattern_general_transpose()` tests
+ * `test_mtx_matrix_transpose_coordinate_pattern_general()` tests
  * transposing non-symmetric sparse matrices with boolean coefficients
  * in the Matrix Market format.
  */
-int test_mtx_init_matrix_coordinate_pattern_general_transpose(void)
+int test_mtx_matrix_transpose_coordinate_pattern_general(void)
 {
     int err;
     struct mtx matrix;
@@ -356,7 +370,9 @@ int test_mtx_init_matrix_coordinate_pattern_general_transpose(void)
         {3,3},
         {4,1}, {4,4}};
     err = mtx_init_matrix_coordinate_pattern(
-        &matrix, mtx_general, mtx_unsorted, mtx_unordered, mtx_unassembled,
+        &matrix, mtx_general,
+        mtx_nontriangular, mtx_unsorted,
+        mtx_unordered, mtx_unassembled,
         num_comment_lines, comment_lines,
         num_rows, num_columns, size, data);
     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
@@ -366,6 +382,7 @@ int test_mtx_init_matrix_coordinate_pattern_general_transpose(void)
     TEST_ASSERT_EQ(mtx_coordinate, matrix.format);
     TEST_ASSERT_EQ(mtx_pattern, matrix.field);
     TEST_ASSERT_EQ(mtx_general, matrix.symmetry);
+    TEST_ASSERT_EQ(mtx_nontriangular, matrix.triangle);
     TEST_ASSERT_EQ(mtx_unsorted, matrix.sorting);
     TEST_ASSERT_EQ(mtx_unordered, matrix.ordering);
     TEST_ASSERT_EQ(mtx_unassembled, matrix.assembly);
@@ -397,12 +414,12 @@ int main(int argc, char * argv[])
 {
     TEST_SUITE_BEGIN(
         "Running tests for transposing sparse matrices in Matrix Market format.\n");
-    TEST_RUN(test_mtx_init_matrix_coordinate_real_general_transpose);
-    TEST_RUN(test_mtx_init_matrix_coordinate_real_symmetric_transpose);
-    TEST_RUN(test_mtx_init_matrix_coordinate_double_general_transpose);
-    TEST_RUN(test_mtx_init_matrix_coordinate_complex_general_transpose);
-    TEST_RUN(test_mtx_init_matrix_coordinate_integer_general_transpose);
-    TEST_RUN(test_mtx_init_matrix_coordinate_pattern_general_transpose);
+    TEST_RUN(test_mtx_matrix_transpose_coordinate_real_general);
+    TEST_RUN(test_mtx_matrix_transpose_coordinate_real_symmetric);
+    TEST_RUN(test_mtx_matrix_transpose_coordinate_double_general);
+    TEST_RUN(test_mtx_matrix_transpose_coordinate_complex_general);
+    TEST_RUN(test_mtx_matrix_transpose_coordinate_integer_general);
+    TEST_RUN(test_mtx_matrix_transpose_coordinate_pattern_general);
     TEST_SUITE_END();
     return (TEST_SUITE_STATUS == TEST_SUCCESS) ?
         EXIT_SUCCESS : EXIT_FAILURE;

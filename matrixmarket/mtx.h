@@ -66,6 +66,22 @@ struct mtx
     enum mtx_symmetry symmetry;
 
     /**
+     * `triangle' specifies triangular properties of a matrix:
+     * `nontriangular', `lower-triangular', `upper-triangular' or
+     * `diagonal'.
+     *
+     * For symmetric, dense matrices in array format, `triangle' is
+     * `lower-triangular' if the lower triangular part of the matrix
+     * is stored, and `upper-triangular' if the upper triangular part
+     * of the matrix is stored.
+     *
+     * Note that the triangular properties of a matrix are not
+     * explicitly stored in a Matrix Market file, but it is useful
+     * additional data that can be provided by the user.
+     */
+    enum mtx_triangle triangle;
+
+    /**
      * `sorting' is the sorting of matrix nonzeros: `unsorted',
      * 'row-major' or 'column-major'.
      *

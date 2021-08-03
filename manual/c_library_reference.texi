@@ -102,6 +102,7 @@ enum mtx_symmetry @{
 
 @subsection Additional header information
 
+@tindex mtx_triangle
 @tindex mtx_sorting
 @tindex mtx_ordering
 @tindex mtx_assembly
@@ -109,7 +110,14 @@ enum mtx_symmetry @{
 @tindex mtx_unassembled
 @tindex mtx_partitioning
 @example
-@code{enum mtx_sorting @{
+@code{enum mtx_triangle @{
+    mtx_nontriangular,    /* nonzero above, below or on main diagonal */
+    mtx_lower_triangular, /* zero above main diagonal */
+    mtx_upper_triangular, /* zero below main diagonal */
+    mtx_diagonal,         /* zero above and below main diagonal */
+@};
+
+enum mtx_sorting @{
     mtx_unsorted,       /* unsorted matrix nonzeros */
     mtx_row_major,      /* row major ordering */
     mtx_column_major,   /* column major ordering */
@@ -306,6 +314,7 @@ int mtx_write(
 @code{int mtx_init_matrix_coordinate_real(
     struct mtx * mtx,
     enum mtx_symmetry symmetry,
+    enum mtx_triangle triangle,
     enum mtx_sorting sorting,
     enum mtx_ordering ordering,
     enum mtx_assembly assembly,
@@ -319,6 +328,7 @@ int mtx_write(
 int mtx_init_matrix_coordinate_double(
     struct mtx * matrix,
     enum mtx_symmetry symmetry,
+    enum mtx_triangle triangle,
     enum mtx_sorting sorting,
     enum mtx_ordering ordering,
     enum mtx_assembly assembly,
@@ -332,6 +342,7 @@ int mtx_init_matrix_coordinate_double(
 int mtx_init_matrix_coordinate_complex(
     struct mtx * matrix,
     enum mtx_symmetry symmetry,
+    enum mtx_triangle triangle,
     enum mtx_sorting sorting,
     enum mtx_ordering ordering,
     enum mtx_assembly assembly,
@@ -345,6 +356,7 @@ int mtx_init_matrix_coordinate_complex(
 int mtx_init_matrix_coordinate_integer(
     struct mtx * matrix,
     enum mtx_symmetry symmetry,
+    enum mtx_triangle triangle,
     enum mtx_sorting sorting,
     enum mtx_ordering ordering,
     enum mtx_assembly assembly,
@@ -358,6 +370,7 @@ int mtx_init_matrix_coordinate_integer(
 int mtx_init_matrix_coordinate_pattern(
     struct mtx * matrix,
     enum mtx_symmetry symmetry,
+    enum mtx_triangle triangle,
     enum mtx_sorting sorting,
     enum mtx_ordering ordering,
     enum mtx_assembly assembly,
@@ -378,6 +391,7 @@ int mtx_init_matrix_coordinate_pattern(
 @code{int mtx_init_matrix_array_real(
     struct mtx * mtx,
     enum mtx_symmetry symmetry,
+    enum mtx_triangle triangle,
     enum mtx_sorting sorting,
     int num_comment_lines,
     const char ** comment_lines,
@@ -388,6 +402,7 @@ int mtx_init_matrix_coordinate_pattern(
 int mtx_init_matrix_array_double(
     struct mtx * mtx,
     enum mtx_symmetry symmetry,
+    enum mtx_triangle triangle,
     enum mtx_sorting sorting,
     int num_comment_lines,
     const char ** comment_lines,
@@ -398,6 +413,7 @@ int mtx_init_matrix_array_double(
 int mtx_init_matrix_array_complex(
     struct mtx * mtx,
     enum mtx_symmetry symmetry,
+    enum mtx_triangle triangle,
     enum mtx_sorting sorting,
     int num_comment_lines,
     const char ** comment_lines,
@@ -408,6 +424,7 @@ int mtx_init_matrix_array_complex(
 int mtx_init_matrix_array_integer(
     struct mtx * mtx,
     enum mtx_symmetry symmetry,
+    enum mtx_triangle triangle,
     enum mtx_sorting sorting,
     int num_comment_lines,
     const char ** comment_lines,

@@ -17,7 +17,7 @@
  * <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-06-18
+ * Last modified: 2021-08-03
  *
  * Unit tests for MPI communication routines for matrices and vectors
  * in Matrix Market format.
@@ -86,7 +86,8 @@ int test_mtx_mpi_sendrecv(void)
     struct mtx srcmtx;
     if (rank == 0) {
         err = mtx_init_matrix_coordinate_real(
-            &srcmtx, mtx_general, mtx_unsorted, mtx_unordered, mtx_unassembled,
+            &srcmtx, mtx_general, mtx_nontriangular,
+            mtx_unsorted, mtx_unordered, mtx_unassembled,
             num_comment_lines, comment_lines,
             num_rows, num_columns, size, data);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
@@ -206,7 +207,8 @@ int test_mtx_matrix_coordinate_gather(void)
     const char * comment_lines[] = { "a comment" };
     struct mtx srcmtx;
     err = mtx_init_matrix_coordinate_real(
-        &srcmtx, mtx_general, mtx_unsorted, mtx_unordered, mtx_assembled,
+        &srcmtx, mtx_general, mtx_nontriangular,
+        mtx_unsorted, mtx_unordered, mtx_assembled,
         num_comment_lines, comment_lines,
         num_rows, num_columns, size, data);
     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
@@ -300,8 +302,8 @@ int test_mtx_matrix_coordinate_scatter(void)
     struct mtx srcmtx;
     if (rank == root) {
         err = mtx_init_matrix_coordinate_real(
-            &srcmtx, mtx_general, mtx_unsorted,
-            mtx_unordered, mtx_unassembled,
+            &srcmtx, mtx_general, mtx_nontriangular,
+            mtx_unsorted, mtx_unordered, mtx_unassembled,
             num_comment_lines, comment_lines,
             num_rows, num_columns, size, data);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));

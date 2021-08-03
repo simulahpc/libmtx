@@ -47,7 +47,8 @@ int test_mtx_init_matrix_array_real(void)
     int num_columns = 2;
     float data[] = {1.0f, 2.0f, 3.0f, 4.0f};
     err = mtx_init_matrix_array_real(
-        &matrix, mtx_general, mtx_row_major,
+        &matrix, mtx_general,
+        mtx_nontriangular, mtx_row_major,
         num_comment_lines, comment_lines,
         num_rows, num_columns, data);
     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
@@ -55,6 +56,7 @@ int test_mtx_init_matrix_array_real(void)
     TEST_ASSERT_EQ(mtx_array, matrix.format);
     TEST_ASSERT_EQ(mtx_real, matrix.field);
     TEST_ASSERT_EQ(mtx_general, matrix.symmetry);
+    TEST_ASSERT_EQ(mtx_nontriangular, matrix.triangle);
     TEST_ASSERT_EQ(mtx_row_major, matrix.sorting);
     TEST_ASSERT_EQ(mtx_unordered, matrix.ordering);
     TEST_ASSERT_EQ(mtx_assembled, matrix.assembly);
@@ -88,7 +90,8 @@ int test_mtx_init_matrix_array_real_symmetric(void)
     int num_columns = 2;
     float data[] = {1.0f, 2.0f, 4.0f};
     err = mtx_init_matrix_array_real(
-        &matrix, mtx_symmetric, mtx_row_major,
+        &matrix, mtx_symmetric,
+        mtx_lower_triangular, mtx_row_major,
         num_comment_lines, comment_lines,
         num_rows, num_columns, data);
     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
@@ -96,6 +99,7 @@ int test_mtx_init_matrix_array_real_symmetric(void)
     TEST_ASSERT_EQ(mtx_array, matrix.format);
     TEST_ASSERT_EQ(mtx_real, matrix.field);
     TEST_ASSERT_EQ(mtx_symmetric, matrix.symmetry);
+    TEST_ASSERT_EQ(mtx_lower_triangular, matrix.triangle);
     TEST_ASSERT_EQ(mtx_row_major, matrix.sorting);
     TEST_ASSERT_EQ(mtx_unordered, matrix.ordering);
     TEST_ASSERT_EQ(mtx_assembled, matrix.assembly);
@@ -129,7 +133,8 @@ int test_mtx_init_matrix_array_real_skew_symmetric(void)
     int num_columns = 3;
     float data[] = {1.0f, 2.0f, 4.0f};
     err = mtx_init_matrix_array_real(
-        &matrix, mtx_skew_symmetric, mtx_row_major,
+        &matrix, mtx_skew_symmetric,
+        mtx_lower_triangular, mtx_row_major,
         num_comment_lines, comment_lines,
         num_rows, num_columns, data);
     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
@@ -137,6 +142,7 @@ int test_mtx_init_matrix_array_real_skew_symmetric(void)
     TEST_ASSERT_EQ(mtx_array, matrix.format);
     TEST_ASSERT_EQ(mtx_real, matrix.field);
     TEST_ASSERT_EQ(mtx_skew_symmetric, matrix.symmetry);
+    TEST_ASSERT_EQ(mtx_lower_triangular, matrix.triangle);
     TEST_ASSERT_EQ(mtx_row_major, matrix.sorting);
     TEST_ASSERT_EQ(mtx_unordered, matrix.ordering);
     TEST_ASSERT_EQ(mtx_assembled, matrix.assembly);
@@ -169,7 +175,8 @@ int test_mtx_init_matrix_array_double(void)
     int num_columns = 2;
     double data[] = {1.0, 2.0, 3.0, 4.0};
     err = mtx_init_matrix_array_double(
-        &matrix, mtx_general, mtx_row_major,
+        &matrix, mtx_general,
+        mtx_nontriangular, mtx_row_major,
         num_comment_lines, comment_lines,
         num_rows, num_columns, data);
     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
@@ -177,6 +184,7 @@ int test_mtx_init_matrix_array_double(void)
     TEST_ASSERT_EQ(mtx_array, matrix.format);
     TEST_ASSERT_EQ(mtx_double, matrix.field);
     TEST_ASSERT_EQ(mtx_general, matrix.symmetry);
+    TEST_ASSERT_EQ(mtx_nontriangular, matrix.triangle);
     TEST_ASSERT_EQ(mtx_row_major, matrix.sorting);
     TEST_ASSERT_EQ(mtx_unordered, matrix.ordering);
     TEST_ASSERT_EQ(mtx_assembled, matrix.assembly);
@@ -210,7 +218,8 @@ int test_mtx_init_matrix_array_complex(void)
     int num_columns = 2;
     float data[] = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0};
     err = mtx_init_matrix_array_complex(
-        &matrix, mtx_general, mtx_row_major,
+        &matrix, mtx_general,
+        mtx_nontriangular, mtx_row_major,
         num_comment_lines, comment_lines,
         num_rows, num_columns, data);
     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
@@ -218,6 +227,7 @@ int test_mtx_init_matrix_array_complex(void)
     TEST_ASSERT_EQ(mtx_array, matrix.format);
     TEST_ASSERT_EQ(mtx_complex, matrix.field);
     TEST_ASSERT_EQ(mtx_general, matrix.symmetry);
+    TEST_ASSERT_EQ(mtx_nontriangular, matrix.triangle);
     TEST_ASSERT_EQ(mtx_row_major, matrix.sorting);
     TEST_ASSERT_EQ(mtx_unordered, matrix.ordering);
     TEST_ASSERT_EQ(mtx_assembled, matrix.assembly);
@@ -255,7 +265,8 @@ int test_mtx_init_matrix_array_integer(void)
     int num_columns = 2;
     int data[] = {1, 2, 3, 4};
     err = mtx_init_matrix_array_integer(
-        &matrix, mtx_general, mtx_row_major,
+        &matrix, mtx_general,
+        mtx_nontriangular, mtx_row_major,
         num_comment_lines, comment_lines,
         num_rows, num_columns, data);
     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
@@ -263,6 +274,7 @@ int test_mtx_init_matrix_array_integer(void)
     TEST_ASSERT_EQ(mtx_array, matrix.format);
     TEST_ASSERT_EQ(mtx_integer, matrix.field);
     TEST_ASSERT_EQ(mtx_general, matrix.symmetry);
+    TEST_ASSERT_EQ(mtx_nontriangular, matrix.triangle);
     TEST_ASSERT_EQ(mtx_row_major, matrix.sorting);
     TEST_ASSERT_EQ(mtx_unordered, matrix.ordering);
     TEST_ASSERT_EQ(mtx_assembled, matrix.assembly);

@@ -17,7 +17,7 @@
  * <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-07-28
+ * Last modified: 2021-08-03
  *
  * Unit tests for reordering sparse matrices.
  */
@@ -114,7 +114,7 @@ int test_mtx_permute_matrix_array_real(void)
         int num_columns = 3;
         float data[] = {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f, 9.0f};
         err = mtx_init_matrix_array_real(
-            &mtx, mtx_general, mtx_row_major,
+            &mtx, mtx_general, mtx_nontriangular, mtx_row_major,
             num_comment_lines, comment_lines,
             num_rows, num_columns, data);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
@@ -147,7 +147,7 @@ int test_mtx_permute_matrix_array_real(void)
         int num_columns = 3;
         float data[] = {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f, 9.0f};
         err = mtx_init_matrix_array_real(
-            &mtx, mtx_general, mtx_row_major,
+            &mtx, mtx_general, mtx_nontriangular, mtx_row_major,
             num_comment_lines, comment_lines,
             num_rows, num_columns, data);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
@@ -180,7 +180,7 @@ int test_mtx_permute_matrix_array_real(void)
         int num_columns = 3;
         float data[] = {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f, 9.0f};
         err = mtx_init_matrix_array_real(
-            &mtx, mtx_general, mtx_row_major,
+            &mtx, mtx_general, mtx_nontriangular, mtx_row_major,
             num_comment_lines, comment_lines,
             num_rows, num_columns, data);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
@@ -226,7 +226,8 @@ int test_mtx_permute_matrix_coordinate_real(void)
             {3,3,4.0f},
             {4,1,5.0f}, {4,4,6.0f}};
         err = mtx_init_matrix_coordinate_real(
-            &mtx, mtx_general, mtx_unsorted, mtx_unordered, mtx_unassembled,
+            &mtx, mtx_general, mtx_nontriangular,
+            mtx_unsorted, mtx_unordered, mtx_unassembled,
             num_comment_lines, comment_lines,
             num_rows, num_columns, size, data);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
@@ -268,7 +269,8 @@ int test_mtx_permute_matrix_coordinate_real(void)
             {3,3,4.0f},
             {4,1,5.0f}, {4,4,6.0f}};
         err = mtx_init_matrix_coordinate_real(
-            &mtx, mtx_general, mtx_unsorted, mtx_unordered, mtx_unassembled,
+            &mtx, mtx_general, mtx_nontriangular,
+            mtx_unsorted, mtx_unordered, mtx_unassembled,
             num_comment_lines, comment_lines,
             num_rows, num_columns, size, data);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
@@ -310,7 +312,8 @@ int test_mtx_permute_matrix_coordinate_real(void)
             {3,3,4.0f},
             {4,1,5.0f}, {4,4,6.0f}};
         err = mtx_init_matrix_coordinate_real(
-            &mtx, mtx_general, mtx_unsorted, mtx_unordered, mtx_unassembled,
+            &mtx, mtx_general, mtx_nontriangular,
+            mtx_unsorted, mtx_unordered, mtx_unassembled,
             num_comment_lines, comment_lines,
             num_rows, num_columns, size, data);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
@@ -363,7 +366,8 @@ int test_mtx_permute_matrix_coordinate_real(void)
             {8,1}, {8,2}, {8,4}, {8,5},
             {9,1}, {9,4}};
         err = mtx_init_matrix_coordinate_pattern(
-            &mtx, mtx_general, mtx_unsorted, mtx_unordered, mtx_unassembled,
+            &mtx, mtx_general, mtx_nontriangular,
+            mtx_unsorted, mtx_unordered, mtx_unassembled,
             num_comment_lines, comment_lines,
             num_rows, num_columns, size, data);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
@@ -432,7 +436,8 @@ int test_mtx_matrix_reorder_rcm_coordinate_real(void)
         {4,3, 9.0f},
         {5,3,10.0f}};
     err = mtx_init_matrix_coordinate_real(
-        &mtx, mtx_general, mtx_row_major, mtx_unordered, mtx_unassembled,
+        &mtx, mtx_general, mtx_nontriangular,
+        mtx_row_major, mtx_unordered, mtx_unassembled,
         num_comment_lines, comment_lines,
         num_rows, num_columns, size, data);
     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
@@ -454,6 +459,7 @@ int test_mtx_matrix_reorder_rcm_coordinate_real(void)
     TEST_ASSERT_EQ(mtx_coordinate, mtx.format);
     TEST_ASSERT_EQ(mtx_real, mtx.field);
     TEST_ASSERT_EQ(mtx_general, mtx.symmetry);
+    TEST_ASSERT_EQ(mtx_nontriangular, mtx.triangle);
     TEST_ASSERT_EQ(mtx_unsorted, mtx.sorting);
     TEST_ASSERT_EQ(mtx_rcm, mtx.ordering);
     TEST_ASSERT_EQ(mtx_unassembled, mtx.assembly);

@@ -17,7 +17,7 @@
  * <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-06-18
+ * Last modified: 2021-08-03
  *
  * Unit tests for Matrix Market I/O.
  */
@@ -852,7 +852,8 @@ int test_mtx_fwrite_matrix_coordinate_real(void)
         {2,2,3.0f},
         {3,3,4.0f}};
     err = mtx_init_matrix_coordinate_real(
-        &mtx, mtx_general, mtx_unsorted, mtx_unordered, mtx_unassembled,
+        &mtx, mtx_general, mtx_nontriangular, mtx_unsorted,
+        mtx_unordered, mtx_unassembled,
         num_comment_lines, comment_lines,
         num_rows, num_columns, size, data);
     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
@@ -974,7 +975,8 @@ int test_mtx_gzwrite_matrix_coordinate_real(void)
         {2,2,3.0f},
         {3,3,4.0f}};
     err = mtx_init_matrix_coordinate_real(
-        &mtx, mtx_general, mtx_unsorted, mtx_unordered, mtx_unassembled,
+        &mtx, mtx_general, mtx_nontriangular, mtx_unsorted,
+        mtx_unordered, mtx_unassembled,
         num_comment_lines, comment_lines,
         num_rows, num_columns, size, data);
     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));

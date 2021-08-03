@@ -295,12 +295,32 @@ stored explicitly as part of the Matrix Market format, but they can be
 provided by the user as additional information about the represented
 matrices.
 
+@cindex triangular matrix
+@cindex lower triangular matrix
+@cindex upper triangular matrix
+@tindex mtx_triangular
+The enum type @code{mtx_triangular} is used to enumerate matrix
+properties related to whether or not matrices are upper or lower
+triangular. Note that the term triangular is still used even for
+non-square matrices, where the term trapezoidal would be more
+accurate.
+@example
+@code{enum mtx_triangular @{
+    mtx_nontriangular,    /* nonzero above, below or on main diagonal */
+    mtx_lower_triangular, /* zero above main diagonal */
+    mtx_upper_triangular, /* zero below main diagonal */
+    mtx_diagonal,         /* zero above and below main diagonal */
+@};}
+@end example
+The default for dense, symmetric matrices is to assume that the lower
+triangular part is stored.
+
 @cindex sorting
 @cindex row-major
 @cindex column-major
 @tindex mtx_sorting
-The first, @code{mtx_sorting}, is used to enumerate different ways of
-sorting matrix entries.
+The enum type @code{mtx_sorting} is used to enumerate different ways
+of sorting matrix entries.
 @example
 @code{enum mtx_sorting @{
     mtx_unsorted,       /* unsorted matrix nonzeros */
@@ -318,10 +338,11 @@ hand, are generally unsorted (@code{mtx_unsorted}) by default.
 @cindex Reverse Cuthill-McKee
 @cindex RCM
 @tindex mtx_ordering
-Second, @code{mtx_ordering} is used to enumerate different orderings or
-permutations of the rows and columns of a matrix. Reordering a sparse
-matrix is typically done to improve performance, for example, through
-reduced fill-in for matrix factorisations or better data locality.
+The enum type @code{mtx_ordering} is used to enumerate different
+orderings or permutations of the rows and columns of a
+matrix. Reordering a sparse matrix is typically done to improve
+performance, for example, through reduced fill-in for matrix
+factorisations or better data locality.
 @example
 @code{enum mtx_ordering @{
     mtx_unordered,      /* general, unordered matrix */
@@ -333,14 +354,14 @@ reduced fill-in for matrix factorisations or better data locality.
 @tindex mtx_assembly
 @tindex mtx_assembled
 @tindex mtx_unassembled
-Third, @code{mtx_assembly} is used to indicate whether or not a sparse
-matrix can contain more than one value for a given row and column
-index. In other words, an unassembled matrix often contains several
-values associated with each nonzero matrix entry. Many sparse matrix
-operations will only produce correct results whenever these duplicate
-matrix entries have been added together first, using a process known
-as @dfn{assembly}. An assembled matrix may only contain a single,
-unique value for each nonzero matrix entry.
+The enum type @code{mtx_assembly} is used to indicate whether or not a
+sparse matrix can contain more than one value for a given row and
+column index. In other words, an unassembled matrix often contains
+several values associated with each nonzero matrix entry. Many sparse
+matrix operations will only produce correct results whenever these
+duplicate matrix entries have been added together first, using a
+process known as @dfn{assembly}. An assembled matrix may only contain
+a single, unique value for each nonzero matrix entry.
 @example
 @code{enum mtx_assembly @{
     mtx_unassembled, /* unassembled; duplicate nonzeros allowed. */
@@ -575,6 +596,7 @@ is created with the function:
 @code{int mtx_init_matrix_coordinate_real(
     struct mtx * mtx,
     enum mtx_symmetry symmetry,
+    enum mtx_triangle triangle,
     enum mtx_sorting sorting,
     enum mtx_ordering ordering,
     enum mtx_assembly assembly,
@@ -630,6 +652,7 @@ real matrix is created with the function:
 @code{int mtx_init_matrix_array_real(
     struct mtx * mtx,
     enum mtx_symmetry symmetry,
+    enum mtx_triangle triangle,
     enum mtx_sorting sorting,
     int num_comment_lines,
     const char ** comment_lines,
@@ -641,9 +664,18 @@ Here, @code{mtx} is a pointer to an @code{mtx} object that will
 contain the dense matrix in Matrix Market format. Comment lines are
 specified with the arguments @code{num_comment_lines} and
 @code{comment_lines}, where the latter is an array of null-terminated
-strings that will be copied when constructing the matrix. The argument
-@code{symmetry} is used to specify symmetry properties of the matrix,
-and @code{sorting} is either @code{mtx_row_major} for a row-major
+strings that will be copied when constructing the matrix.
+
+The argument @code{symmetry} is used to specify symmetry properties of
+the matrix.  If @code{symmetry} is @code{mtx_symmetric},
+@code{mtx_skew_symmetric} or @code{mtx_hermitian}, then
+@code{triangle} must be either @code{mtx_lower_triangular} or
+@code{mtx_upper_triangular} to indicate which triangle of the matrix
+is stored in @code{data}. Otherwise, if @code{symmetry} is
+@code{mtx_general}, then @code{triangle} must be
+@code{mtx_nontriangular}.
+
+Further, @code{sorting} is either @code{mtx_row_major} for a row-major
 ordering of the matrix entries, or @code{mtx_column_major}
 otherwise. Finally, the number of rows and columns are set with
 @code{num_rows} and @code{num_columns}, and the matrix entries are

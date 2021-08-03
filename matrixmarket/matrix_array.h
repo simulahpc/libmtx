@@ -39,11 +39,18 @@ struct mtx;
  * `mtx_init_matrix_array_real()` creates a dense matrix with real,
  * single-precision floating point coefficients.
  *
+ * If `symmetry' is `symmetric', `skew-symmetric' or `hermitian', then
+ * `triangle' must be either `lower-triangular' or `upper-triangular'
+ * to indicate which triangle of the matrix is stored in `data'.
+ * Otherwise, if `symmetry' is `general', then `triangle' must be
+ * `nontriangular'.
+ *
  * ´sorting' must be `mtx_row_major' or `mtx_column_major'.
  */
 int mtx_init_matrix_array_real(
     struct mtx * matrix,
     enum mtx_symmetry symmetry,
+    enum mtx_triangle triangle,
     enum mtx_sorting sorting,
     int num_comment_lines,
     const char ** comment_lines,
@@ -55,11 +62,18 @@ int mtx_init_matrix_array_real(
  * `mtx_init_matrix_array_double()` creates a dense matrix with real,
  * double-precision floating point coefficients.
  *
+ * If `symmetry' is `symmetric', `skew-symmetric' or `hermitian', then
+ * `triangle' must be either `lower-triangular' or `upper-triangular'
+ * to indicate which triangle of the matrix is stored in `data'.
+ * Otherwise, if `symmetry' is `general', then `triangle' must be
+ * `nontriangular'.
+ *
  * ´sorting' must be `mtx_row_major' or `mtx_column_major'.
  */
 int mtx_init_matrix_array_double(
     struct mtx * matrix,
     enum mtx_symmetry symmetry,
+    enum mtx_triangle triangle,
     enum mtx_sorting sorting,
     int num_comment_lines,
     const char ** comment_lines,
@@ -71,11 +85,18 @@ int mtx_init_matrix_array_double(
  * `mtx_init_matrix_array_complex()` creates a dense matrix with
  * complex, single-precision floating point coefficients.
  *
+ * If `symmetry' is `symmetric', `skew-symmetric' or `hermitian', then
+ * `triangle' must be either `lower-triangular' or `upper-triangular'
+ * to indicate which triangle of the matrix is stored in `data'.
+ * Otherwise, if `symmetry' is `general', then `triangle' must be
+ * `nontriangular'.
+ *
  * ´sorting' must be `mtx_row_major' or `mtx_column_major'.
  */
 int mtx_init_matrix_array_complex(
     struct mtx * matrix,
     enum mtx_symmetry symmetry,
+    enum mtx_triangle triangle,
     enum mtx_sorting sorting,
     int num_comment_lines,
     const char ** comment_lines,
@@ -87,11 +108,18 @@ int mtx_init_matrix_array_complex(
  * `mtx_init_matrix_array_integer()` creates a dense matrix with
  * integer coefficients.
  *
+ * If `symmetry' is `symmetric', `skew-symmetric' or `hermitian', then
+ * `triangle' must be either `lower-triangular' or `upper-triangular'
+ * to indicate which triangle of the matrix is stored in `data'.
+ * Otherwise, if `symmetry' is `general', then `triangle' must be
+ * `nontriangular'.
+ *
  * ´sorting' must be `mtx_row_major' or `mtx_column_major'.
  */
 int mtx_init_matrix_array_integer(
     struct mtx * matrix,
     enum mtx_symmetry symmetry,
+    enum mtx_triangle triangle,
     enum mtx_sorting sorting,
     int num_comment_lines,
     const char ** comment_lines,

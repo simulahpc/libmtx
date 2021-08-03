@@ -17,7 +17,7 @@
  * <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-07-27
+ * Last modified: 2021-08-03
  *
  * Unit tests for sorting Matrix Market objects.
  */
@@ -60,7 +60,8 @@ int test_mtx_sort_matrix_coordinate_real(void)
         {2,2,3.0f},
         {4,4,6.0f}};
     err = mtx_init_matrix_coordinate_real(
-        &mtx, mtx_general, mtx_unsorted, mtx_unordered, mtx_unassembled,
+        &mtx, mtx_general, mtx_nontriangular,
+        mtx_unsorted, mtx_unordered, mtx_unassembled,
         num_comment_lines, comment_lines,
         num_rows, num_columns, size, data);
     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
@@ -73,6 +74,7 @@ int test_mtx_sort_matrix_coordinate_real(void)
     TEST_ASSERT_EQ(mtx_coordinate, mtx.format);
     TEST_ASSERT_EQ(mtx_real, mtx.field);
     TEST_ASSERT_EQ(mtx_general, mtx.symmetry);
+    TEST_ASSERT_EQ(mtx_nontriangular, mtx.triangle);
     TEST_ASSERT_EQ(mtx_row_major, mtx.sorting);
     TEST_ASSERT_EQ(mtx_unordered, mtx.ordering);
     TEST_ASSERT_EQ(mtx_unassembled, mtx.assembly);
@@ -128,7 +130,8 @@ int test_mtx_sort_matrix_coordinate_double(void)
         {2,2,3.0f},
         {4,4,6.0f}};
     err = mtx_init_matrix_coordinate_double(
-        &mtx, mtx_general, mtx_unsorted, mtx_unordered, mtx_unassembled,
+        &mtx, mtx_general, mtx_nontriangular,
+        mtx_unsorted, mtx_unordered, mtx_unassembled,
         num_comment_lines, comment_lines,
         num_rows, num_columns, size, data);
     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
@@ -141,6 +144,7 @@ int test_mtx_sort_matrix_coordinate_double(void)
     TEST_ASSERT_EQ(mtx_coordinate, mtx.format);
     TEST_ASSERT_EQ(mtx_double, mtx.field);
     TEST_ASSERT_EQ(mtx_general, mtx.symmetry);
+    TEST_ASSERT_EQ(mtx_nontriangular, mtx.symmetry);
     TEST_ASSERT_EQ(mtx_row_major, mtx.sorting);
     TEST_ASSERT_EQ(mtx_unordered, mtx.ordering);
     TEST_ASSERT_EQ(mtx_unassembled, mtx.assembly);
@@ -196,7 +200,8 @@ int test_mtx_sort_matrix_coordinate_complex(void)
         {2,2,3.0f,3.0f},
         {4,4,6.0f,6.0f}};
     err = mtx_init_matrix_coordinate_complex(
-        &mtx, mtx_general, mtx_unsorted, mtx_unordered, mtx_unassembled,
+        &mtx, mtx_general, mtx_nontriangular,
+        mtx_unsorted, mtx_unordered, mtx_unassembled,
         num_comment_lines, comment_lines,
         num_rows, num_columns, size, data);
     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
@@ -209,6 +214,7 @@ int test_mtx_sort_matrix_coordinate_complex(void)
     TEST_ASSERT_EQ(mtx_coordinate, mtx.format);
     TEST_ASSERT_EQ(mtx_complex, mtx.field);
     TEST_ASSERT_EQ(mtx_general, mtx.symmetry);
+    TEST_ASSERT_EQ(mtx_nontriangular, mtx.symmetry);
     TEST_ASSERT_EQ(mtx_row_major, mtx.sorting);
     TEST_ASSERT_EQ(mtx_unordered, mtx.ordering);
     TEST_ASSERT_EQ(mtx_unassembled, mtx.assembly);
@@ -270,7 +276,8 @@ int test_mtx_sort_matrix_coordinate_integer(void)
         {2,2,3.0f},
         {4,4,6.0f}};
     err = mtx_init_matrix_coordinate_integer(
-        &mtx, mtx_general, mtx_unsorted, mtx_unordered, mtx_unassembled,
+        &mtx, mtx_general, mtx_nontriangular,
+        mtx_unsorted, mtx_unordered, mtx_unassembled,
         num_comment_lines, comment_lines,
         num_rows, num_columns, size, data);
     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
@@ -283,6 +290,7 @@ int test_mtx_sort_matrix_coordinate_integer(void)
     TEST_ASSERT_EQ(mtx_coordinate, mtx.format);
     TEST_ASSERT_EQ(mtx_integer, mtx.field);
     TEST_ASSERT_EQ(mtx_general, mtx.symmetry);
+    TEST_ASSERT_EQ(mtx_nontriangular, mtx.symmetry);
     TEST_ASSERT_EQ(mtx_row_major, mtx.sorting);
     TEST_ASSERT_EQ(mtx_unordered, mtx.ordering);
     TEST_ASSERT_EQ(mtx_unassembled, mtx.assembly);
@@ -338,7 +346,8 @@ int test_mtx_sort_matrix_coordinate_pattern(void)
         {2,2},
         {4,4}};
     err = mtx_init_matrix_coordinate_pattern(
-        &mtx, mtx_general, mtx_unsorted, mtx_unordered, mtx_unassembled,
+        &mtx, mtx_general, mtx_nontriangular,
+        mtx_unsorted, mtx_unordered, mtx_unassembled,
         num_comment_lines, comment_lines,
         num_rows, num_columns, size, data);
     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
@@ -351,6 +360,7 @@ int test_mtx_sort_matrix_coordinate_pattern(void)
     TEST_ASSERT_EQ(mtx_coordinate, mtx.format);
     TEST_ASSERT_EQ(mtx_pattern, mtx.field);
     TEST_ASSERT_EQ(mtx_general, mtx.symmetry);
+    TEST_ASSERT_EQ(mtx_nontriangular, mtx.symmetry);
     TEST_ASSERT_EQ(mtx_row_major, mtx.sorting);
     TEST_ASSERT_EQ(mtx_unordered, mtx.ordering);
     TEST_ASSERT_EQ(mtx_unassembled, mtx.assembly);

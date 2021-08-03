@@ -17,7 +17,7 @@
  * <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-06-18
+ * Last modified: 2021-08-02
  *
  * Unit tests for extracting submatrices.
  */
@@ -36,11 +36,11 @@
 #include <string.h>
 
 /**
- * `test_mtx_init_matrix_coordinate_real_general_submatrix()` tests
+ * `test_mtx_matrix_submatrix_coordinate_real_general()` tests
  * transposing non-symmetric sparse matrices with real,
  * single-precision coefficients in the Matrix Market format.
  */
-int test_mtx_init_matrix_coordinate_real_general_submatrix(void)
+int test_mtx_matrix_submatrix_coordinate_real_general(void)
 {
     int err;
 
@@ -57,7 +57,9 @@ int test_mtx_init_matrix_coordinate_real_general_submatrix(void)
         {3,3,4.0f},
         {4,1,5.0f}, {4,4,6.0f}};
     err = mtx_init_matrix_coordinate_real(
-        &mtx, mtx_general, mtx_unsorted, mtx_unordered, mtx_unassembled,
+        &mtx, mtx_general,
+        mtx_nontriangular, mtx_unsorted,
+        mtx_unordered, mtx_unassembled,
         num_comment_lines, comment_lines,
         num_rows, num_columns, size, data);
     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
@@ -74,6 +76,7 @@ int test_mtx_init_matrix_coordinate_real_general_submatrix(void)
     TEST_ASSERT_EQ(mtx_coordinate, submtx.format);
     TEST_ASSERT_EQ(mtx_real, submtx.field);
     TEST_ASSERT_EQ(mtx_general, submtx.symmetry);
+    TEST_ASSERT_EQ(mtx_nontriangular, submtx.triangle);
     TEST_ASSERT_EQ(mtx_unsorted, submtx.sorting);
     TEST_ASSERT_EQ(mtx_unordered, submtx.ordering);
     TEST_ASSERT_EQ(mtx_unassembled, submtx.assembly);
@@ -103,7 +106,7 @@ int main(int argc, char * argv[])
 {
     TEST_SUITE_BEGIN(
         "Running tests for extracting submatrices.\n");
-    TEST_RUN(test_mtx_init_matrix_coordinate_real_general_submatrix);
+    TEST_RUN(test_mtx_matrix_submatrix_coordinate_real_general);
     TEST_SUITE_END();
     return (TEST_SUITE_STATUS == TEST_SUCCESS) ?
         EXIT_SUCCESS : EXIT_FAILURE;

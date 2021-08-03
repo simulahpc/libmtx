@@ -17,7 +17,7 @@
  * <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-06-18
+ * Last modified: 2021-08-03
  *
  * Unit tests for BLAS operations with Matrix Market objects.
  */
@@ -233,7 +233,8 @@ int test_mtx_sgemv_array(void)
     int num_columns = 2;
     float A_data[] = {1.0f, 2.0f, 3.0f, 4.0f};
     err = mtx_init_matrix_array_real(
-        &A, mtx_general, mtx_row_major, 0, NULL, num_rows, num_columns, A_data);
+        &A, mtx_general, mtx_nontriangular, mtx_row_major,
+        0, NULL, num_rows, num_columns, A_data);
     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
 
     /* Create vectors */
@@ -274,7 +275,8 @@ int test_mtx_dgemv_array(void)
     int num_columns = 2;
     double A_data[] = {1.0, 2.0, 3.0, 4.0};
     err = mtx_init_matrix_array_double(
-        &A, mtx_general, mtx_row_major, 0, NULL, num_rows, num_columns, A_data);
+        &A, mtx_general, mtx_nontriangular, mtx_row_major,
+        0, NULL, num_rows, num_columns, A_data);
     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
 
     /* Create vectors */
@@ -319,8 +321,9 @@ int test_mtx_sgemv_coordinate(void)
     const struct mtx_matrix_coordinate_real Adata[] = {
         {1,1,1.0f}, {1,2,2.0f}, {2,2,3.0f}};
     err = mtx_init_matrix_coordinate_real(
-        &A, mtx_general, mtx_unsorted, mtx_unordered,
-        mtx_unassembled, num_comment_lines, comment_lines,
+        &A, mtx_general, mtx_nontriangular, mtx_unsorted,
+        mtx_unordered, mtx_unassembled,
+        num_comment_lines, comment_lines,
         num_rows, num_columns, size, Adata);
     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
 

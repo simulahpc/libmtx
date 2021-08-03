@@ -17,7 +17,7 @@
  * <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-06-18
+ * Last modified: 2021-08-03
  *
  * Unit tests for Matrix Market I/O.
  */
@@ -61,7 +61,8 @@ int test_mtx_copy(void)
         {3,3,4.0f},
         {4,1,5.0f}, {4,4,6.0f}};
     err = mtx_init_matrix_coordinate_real(
-        &srcmtx, mtx_general, mtx_unsorted, mtx_unordered, mtx_unassembled,
+        &srcmtx, mtx_general, mtx_nontriangular,
+        mtx_unsorted, mtx_unordered, mtx_unassembled,
         num_comment_lines, comment_lines,
         num_rows, num_columns, size, data);
     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
@@ -74,6 +75,7 @@ int test_mtx_copy(void)
     TEST_ASSERT_EQ(mtx_coordinate, destmtx.format);
     TEST_ASSERT_EQ(mtx_real, destmtx.field);
     TEST_ASSERT_EQ(mtx_general, destmtx.symmetry);
+    TEST_ASSERT_EQ(mtx_nontriangular, destmtx.triangle);
     TEST_ASSERT_EQ(mtx_unsorted, destmtx.sorting);
     TEST_ASSERT_EQ(mtx_unordered, destmtx.ordering);
     TEST_ASSERT_EQ(mtx_unassembled, destmtx.assembly);
@@ -128,7 +130,8 @@ int test_mtx_matrix_size_per_row(void)
         {3,3,4.0f},
         {4,1,5.0f}, {4,4,6.0f}};
     err = mtx_init_matrix_coordinate_real(
-        &mtx, mtx_general, mtx_unsorted, mtx_unordered, mtx_unassembled,
+        &mtx, mtx_general, mtx_nontriangular,
+        mtx_unsorted, mtx_unordered, mtx_unassembled,
         num_comment_lines, comment_lines,
         num_rows, num_columns, size, data);
     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
@@ -260,7 +263,7 @@ int test_mtx_set_zero_matrix_array_real(void)
     float data[] = {1.0f, 2.0f, 3.0f, 4.0f};
     int size = sizeof(data) / sizeof(*data);
     err = mtx_init_matrix_array_real(
-        &mtx, mtx_general, mtx_row_major,
+        &mtx, mtx_general, mtx_nontriangular, mtx_row_major,
         num_comment_lines, comment_lines,
         num_rows, num_columns, data);
     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
@@ -292,7 +295,8 @@ int test_mtx_set_zero_matrix_coordinate_real(void)
         {1, 1, 1.0f}, {2, 3, 2.0f}, {4, 2, 4.0f}};
     int size = sizeof(data) / sizeof(*data);
     err = mtx_init_matrix_coordinate_real(
-        &mtx, mtx_general, mtx_unsorted, mtx_unordered, mtx_unassembled,
+        &mtx, mtx_general, mtx_nontriangular,
+        mtx_unsorted, mtx_unordered, mtx_unassembled,
         num_comment_lines, comment_lines, num_rows, num_columns, size, data);
     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
     err = mtx_set_zero(&mtx);
