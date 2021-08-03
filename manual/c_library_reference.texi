@@ -31,21 +31,25 @@ library.
 @example
 @code{enum mtx_error
 @{
-  MTX_SUCCESS = 0,                    /* no error */
-  MTX_ERR_ERRNO = -1,                 /* error code provided by errno */
-  MTX_ERR_MPI = -2,                   /* MPI error */
-  MTX_ERR_EOF = -3,                   /* unexpected end-of-file */
-  MTX_ERR_LINE_TOO_LONG = -4,         /* line exceeds maximum length */
-  MTX_ERR_INVALID_MTX_HEADER = -5,    /* invalid mtx header */
-  MTX_ERR_INVALID_MTX_OBJECT = -6,    /* invalid mtx object */
-  MTX_ERR_INVALID_MTX_FORMAT = -7,    /* invalid mtx format */
-  MTX_ERR_INVALID_MTX_FIELD = -8,     /* invalid mtx field */
-  MTX_ERR_INVALID_MTX_SYMMETRY = -9,  /* invalid mtx symmetry */
-  MTX_ERR_INVALID_MTX_SORTING = -10,  /* invalid mtx sorting */
-  MTX_ERR_INVALID_MTX_ORDERING = -11, /* invalid mtx ordering */
-  MTX_ERR_INVALID_MTX_ASSEMBLY = -12, /* invalid mtx assembly */
-  MTX_ERR_INVALID_MTX_SIZE = -13,     /* invalid mtx size info */
-  MTX_ERR_INVALID_MTX_DATA = -14,     /* invalid mtx data */
+  MTX_SUCCESS = 0,                        /* no error */
+  MTX_ERR_ERRNO = -1,                     /* error code given by errno */
+  MTX_ERR_MPI = -2,                       /* MPI error */
+  MTX_ERR_EOF = -3,                       /* unexpected end-of-file */
+  MTX_ERR_LINE_TOO_LONG = -4,             /* line exceeds max length */
+  MTX_ERR_INVALID_MTX_HEADER = -5,        /* invalid mtx header */
+  MTX_ERR_INVALID_MTX_OBJECT = -6,        /* invalid mtx object */
+  MTX_ERR_INVALID_MTX_FORMAT = -7,        /* invalid mtx format */
+  MTX_ERR_INVALID_MTX_FIELD = -8,         /* invalid mtx field */
+  MTX_ERR_INVALID_MTX_SYMMETRY = -9,      /* invalid mtx symmetry */
+  MTX_ERR_INVALID_MTX_SORTING = -10,      /* invalid mtx sorting */
+  MTX_ERR_INVALID_MTX_ORDERING = -11,     /* invalid mtx ordering */
+  MTX_ERR_INVALID_MTX_ASSEMBLY = -12,     /* invalid mtx assembly */
+  MTX_ERR_INVALID_MTX_SIZE = -13,         /* invalid mtx size info */
+  MTX_ERR_INVALID_MTX_DATA = -14,         /* invalid mtx data */
+  MTX_ERR_INVALID_INDEX_SET_TYPE = -15,   /* invalid index set type */
+  MTX_ERR_INVALID_STREAM_TYPE = -16,      /* invalid stream type */
+  MTX_ERR_INVALID_FORMAT_SPECIFIER = -17, /* invalid format specifier */
+  MTX_ERR_INDEX_OUT_OF_BOUNDS = -18,      /* index out of bounds */
 @};}
 @end example
 
@@ -445,6 +449,68 @@ int mtx_init_vector_array_integer(
     const char ** comment_lines,
     int size,
     const int * data);}
+@end example
+
+@subsection Sparse vectors
+@findex mtx_init_vector_coordinate_real
+@findex mtx_init_vector_coordinate_double
+@findex mtx_init_vector_coordinate_complex
+@findex mtx_init_vector_coordinate_integer
+@example
+@code{int mtx_init_vector_coordinate_real(
+    struct mtx * mtx,
+    enum mtx_sorting sorting,
+    enum mtx_ordering ordering,
+    enum mtx_assembly assembly,
+    int num_comment_lines,
+    const char ** comment_lines,
+    int num_rows,
+    int size,
+    const struct mtx_vector_coordinate_real * data);
+
+int mtx_init_vector_coordinate_double(
+    struct mtx * mtx,
+    enum mtx_sorting sorting,
+    enum mtx_ordering ordering,
+    enum mtx_assembly assembly,
+    int num_comment_lines,
+    const char ** comment_lines,
+    int num_rows,
+    int size,
+    const struct mtx_vector_coordinate_double * data);
+
+int mtx_init_vector_coordinate_complex(
+    struct mtx * mtx,
+    enum mtx_sorting sorting,
+    enum mtx_ordering ordering,
+    enum mtx_assembly assembly,
+    int num_comment_lines,
+    const char ** comment_lines,
+    int num_rows,
+    int size,
+    const struct mtx_vector_coordinate_complex * data);
+
+int mtx_init_vector_coordinate_integer(
+    struct mtx * mtx,
+    enum mtx_sorting sorting,
+    enum mtx_ordering ordering,
+    enum mtx_assembly assembly,
+    int num_comment_lines,
+    const char ** comment_lines,
+    int num_rows,
+    int size,
+    const struct mtx_vector_coordinate_integer * data);
+
+int mtx_init_vector_coordinate_pattern(
+    struct mtx * mtx,
+    enum mtx_sorting sorting,
+    enum mtx_ordering ordering,
+    enum mtx_assembly assembly,
+    int num_comment_lines,
+    const char ** comment_lines,
+    int num_rows,
+    int size,
+    const struct mtx_vector_coordinate_pattern * data);}
 @end example
 
 

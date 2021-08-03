@@ -990,43 +990,17 @@ The corresponding function signatures are:
 @findex mtx_snrm2
 @findex mtx_dnrm2
 @example
-@code{int mtx_sscal(
-    float a,
-    struct mtx * x);
+@code{int mtx_sscal(float a, struct mtx *x);
+int mtx_dscal(double a, struct mtx *x);
 
-int mtx_dscal(
-    double a,
-    struct mtx * x);
+int mtx_saxpy(float a, const struct mtx *x, struct mtx *y);
+int mtx_daxpy(double a, const struct mtx *x, struct mtx *y);
 
-int mtx_saxpy(
-    float a,
-    const struct mtx * x,
-    struct mtx * y);
+int mtx_sdot(const struct mtx *x, const struct mtx *y, float *dot);
+int mtx_ddot(const struct mtx *x, const struct mtx *y, double *dot);
 
-int mtx_daxpy(
-    double a,
-    const struct mtx * x,
-    struct mtx * y);
-
-int mtx_sdot(
-    const struct mtx * x,
-    const struct mtx * y,
-    float * dot);
-
-int mtx_ddot(
-    const struct mtx * x,
-    const struct mtx * y,
-    double * dot);
-
-int mtx_snrm2(
-    const struct mtx * x,
-    const struct mtx * y,
-    float * nrm2);
-
-int mtx_dnrm2(
-    const struct mtx * x,
-    const struct mtx * y,
-    double * nrm2);}
+int mtx_snrm2(const struct mtx *x, const struct mtx *y, float *nrm2);
+int mtx_dnrm2(const struct mtx *x, const struct mtx *y, double *nrm2);}
 @end example
 
 
