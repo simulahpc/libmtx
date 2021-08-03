@@ -17,7 +17,7 @@
  * <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-06-28
+ * Last modified: 2021-08-03
  *
  * Configuration information.
  */
@@ -33,5 +33,8 @@
 
 /* Define if you have `z' library (-lz) */
 #undef LIBMTX_HAVE_LIBZ
+
+/* Define if you have libpng */
+#undef LIBMTX_HAVE_LIBPNG
 
 #endif
