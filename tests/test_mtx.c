@@ -306,7 +306,7 @@ int test_mtx_set_zero_matrix_coordinate_real(void)
         (const struct mtx_matrix_coordinate_real *) mtx.data;
     TEST_ASSERT_EQ(0.0f, mtxdata[0].a);
     TEST_ASSERT_EQ(0.0f, mtxdata[1].a);
-    TEST_ASSERT_EQ(0.0f, mtxdata[3].a);
+    TEST_ASSERT_EQ(0.0f, mtxdata[2].a);
     mtx_free(&mtx);
     return TEST_SUCCESS;
 }
@@ -363,7 +363,7 @@ int test_mtx_set_zero_vector_coordinate_real(void)
         (const struct mtx_vector_coordinate_real *) mtx.data;
     TEST_ASSERT_EQ(0.0f, mtxdata[0].a);
     TEST_ASSERT_EQ(0.0f, mtxdata[1].a);
-    TEST_ASSERT_EQ(0.0f, mtxdata[3].a);
+    TEST_ASSERT_EQ(0.0f, mtxdata[2].a);
     mtx_free(&mtx);
     return TEST_SUCCESS;
 }
