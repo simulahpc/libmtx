@@ -144,6 +144,64 @@ int mtx_matrix_row_ptr(
     int64_t * row_ptr);
 
 /**
+ * `mtx_matrix_column_indices()' extracts the column indices of a
+ * matrix to a separate array.
+ *
+ * The array `column_indices' must point to an array containing enough
+ * storage for `mtx->size' values of type `int'.
+ */
+int mtx_matrix_column_indices(
+    const struct mtx * mtx,
+    int * column_indices);
+
+/**
+ * `mtx_matrix_data_real()' extracts the nonzero values of a real
+ * matrix to a separate array of single precision floating point
+ * values.
+ *
+ * The array `data' must point to an array containing enough storage
+ * for `mtx->size' values of type `float'.
+ */
+int mtx_matrix_data_real(
+    const struct mtx * mtx,
+    float * data);
+
+/**
+ * `mtx_matrix_data_double()' extracts the nonzero values of a double
+ * matrix to a separate array of double precision floating point
+ * values.
+ *
+ * The array `data' must point to an array containing enough storage
+ * for `mtx->size' values of type `double'.
+ */
+int mtx_matrix_data_double(
+    const struct mtx * mtx,
+    double * data);
+
+/**
+ * `mtx_matrix_data_complex()' extracts the nonzero values of a
+ * complex matrix to a separate array of single precision floating
+ * point values.
+ *
+ * The array `data' must point to an array containing enough storage
+ * for `2*mtx->size' values of type `float'.
+ */
+int mtx_matrix_data_complex(
+    const struct mtx * mtx,
+    float * data);
+
+/**
+ * `mtx_matrix_data_integer()' extracts the nonzero values of an
+ * integer matrix to a separate array of integers.
+ *
+ * The array `data' must point to an array containing enough storage
+ * for `mtx->size' values of type `int'.
+ */
+int mtx_matrix_data_integer(
+    const struct mtx * mtx,
+    int * data);
+
+/**
  * `mtx_matrix_diagonal_size_per_row()` counts for each row of a
  * matrix the number of stored nonzero entries on the diagonal.
  *
