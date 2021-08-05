@@ -22,6 +22,9 @@
  * Unit test utilities.
  */
 
+#include <float.h>
+#include <math.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -169,4 +172,104 @@
                 __FUNCTION__, __FILE__, __LINE__,               \
                 #expected, #actual, ##__VA_ARGS__);             \
         return TEST_FAILURE;                                    \
+    }
+
+/*
+ * Test assertions for floating point numbers.
+ */
+
+/**
+ * `float_nearly_equal()' compares two single precision floating point
+ * numbers for equality using a given tolerance.
+ *
+ * If either `a' or `b' is `NaN', then `false' is returned.  If `a'
+ * and `b' are infinities of equal sign, then `true' is returned.
+ *
+ * If `a' or `b' are zero or sub-normal (i.e., less than `FLT_MIN'),
+ * then the absolute difference `|a-b|/FLT_MIN' is compared to
+ * `epsilon'. Otherwise, the relative difference `|a-b|/(|a|+|b|)' is
+ * used (or, `|a-b|/FLT_MAX' if `|a|+|b|>FLT_MAX').
+ */
+static inline bool float_nearly_equal(
+    float a,
+    float b,
+    float epsilon)
+{
+    float a_abs = fabsf(a);
+    float b_abs = fabsf(b);
+    float diff_abs = fabsf(a - b);
+    if (a == b) {
+        return true;
+    } else if (a == 0 || b == 0 || (a_abs + b_abs) < FLT_MIN) {
+        return diff_abs < (epsilon * FLT_MIN);
+    } else {
+        return diff_abs / fminf(a_abs + b_abs, FLT_MAX) < epsilon;
+    }
+}
+
+#define TEST_ASSERT_FLOAT_NEAR(expected, actual, epsilon)       \
+    if (!float_nearly_equal((expected), (actual), (epsilon))) { \
+        fprintf(stdout, "FAIL:%s:%s:%d: "                       \
+                "Assertion failed: %s != %s\n",                 \
+                __FUNCTION__, __FILE__, __LINE__,               \
+                #expected, #actual);                            \
+        return TEST_FAILURE;                                    \
+    }
+
+#define TEST_ASSERT_FLOAT_NEAR_MSG(                             \
+    expected, actual, epsilon, msg, ...)                        \
+    if (!float_nearly_equal((expected), (actual), (epsilon))) { \
+        fprintf(stdout, "FAIL:%s:%s:%d: "                       \
+                "Assertion failed: %s != %s ("msg")\n",         \
+                __FUNCTION__, __FILE__, __LINE__,               \
+                #expected, #actual, ##__VA_ARGS__);             \
+        return TEST_FAILURE;                                    \
+    }
+
+/**
+ * `double_nearly_equal()' compares two double precision floating
+ * point numbers for equality using a given tolerance.
+ *
+ * If either `a' or `b' is `NaN', then `false' is returned.  If `a'
+ * and `b' are infinities of equal sign, then `true' is returned.
+ *
+ * If `a' or `b' are zero or sub-normal (i.e., less than `DBL_MIN'),
+ * then the absolute difference `|a-b|/DBL_MIN' is compared to
+ * `epsilon'. Otherwise, the relative difference `|a-b|/(|a|+|b|)' is
+ * used (or, `|a-b|/DBL_MAX' if `|a|+|b|>DBL_MAX').
+ */
+static inline bool double_nearly_equal(
+    double a,
+    double b,
+    double epsilon)
+{
+    double a_abs = fabs(a);
+    double b_abs = fabs(b);
+    double diff_abs = fabs(a - b);
+    if (a == b) {
+        return true;
+    } else if (a == 0 || b == 0 || (a_abs + b_abs) < DBL_MIN) {
+        return diff_abs < (epsilon * DBL_MIN);
+    } else {
+        return diff_abs / fmin(a_abs + b_abs, DBL_MAX) < epsilon;
+    }
+}
+
+#define TEST_ASSERT_DOUBLE_NEAR(expected, actual, epsilon)       \
+    if (!double_nearly_equal((expected), (actual), (epsilon))) { \
+        fprintf(stdout, "FAIL:%s:%s:%d: "                        \
+                "Assertion failed: %s != %s\n",                  \
+                __FUNCTION__, __FILE__, __LINE__,                \
+                #expected, #actual);                             \
+        return TEST_FAILURE;                                     \
+    }
+
+#define TEST_ASSERT_DOUBLE_NEAR_MSG(                             \
+    expected, actual, epsilon, msg, ...)                         \
+    if (!double_nearly_equal((expected), (actual), (epsilon))) { \
+        fprintf(stdout, "FAIL:%s:%s:%d: "                        \
+                "Assertion failed: %s != %s ("msg")\n",          \
+                __FUNCTION__, __FILE__, __LINE__,                \
+                #expected, #actual, ##__VA_ARGS__);              \
+        return TEST_FAILURE;                                     \
     }
