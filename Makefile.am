@@ -34,18 +34,21 @@ EXTRA_DIST = \
 	README \
 	autogen.sh \
 	manual/texinfo.css \
-	tests/test_mtx_mpi_parallel
+	tests/test_mtx_mpi_parallel \
+	tests/test_superlu_dist_serial
 
 # Matrix Market library
 lib_LTLIBRARIES = libmtx.la
 libmtx_la_CPPFLAGS = -I$(top_srcdir) $(MPICPPFLAGS)
 libmtx_la_LDFLAGS = -version-info $(LIBMTX_LT_VERSION) $(MPILDFAGS)
-libmtx_la_LIBADD = $(BLAS_LIBS) $(MPILDFLAGS)
+libmtx_la_LIBADD = $(BLAS_LIBS) $(MPILDFLAGS) $(SUPERLU_DIST_LIBS)
 
 # Source files
 libmtx_la_SOURCES = \
 	matrixmarket/blas.c \
 	matrixmarket/error.c \
+	matrixmarket/format.c \
+	matrixmarket/format.h \
 	matrixmarket/header.c \
 	matrixmarket/index_set.c \
 	matrixmarket/io.c \
@@ -56,11 +59,10 @@ libmtx_la_SOURCES = \
 	matrixmarket/mtx.c \
 	matrixmarket/parse.c \
 	matrixmarket/parse.h \
-	matrixmarket/format.c \
-	matrixmarket/format.h \
 	matrixmarket/reorder.c \
 	matrixmarket/sort.c \
 	matrixmarket/submatrix.c \
+	matrixmarket/superlu_dist.c \
 	matrixmarket/transpose.c \
 	matrixmarket/vector.c \
 	matrixmarket/vector_array.c \
@@ -81,6 +83,7 @@ nobase_include_HEADERS = \
 	matrixmarket/mpi.h \
 	matrixmarket/mtx.h \
 	matrixmarket/reorder.h \
+	matrixmarket/superlu_dist.h \
 	matrixmarket/vector.h \
 	matrixmarket/vector_array.h \
 	matrixmarket/vector_coordinate.h \
@@ -113,6 +116,10 @@ if HAVE_LIBPNG
 bin_PROGRAMS += \
 	mtxspy
 endif
+if HAVE_SUPERLU_DIST
+bin_PROGRAMS += \
+	mtxlusolve
+endif
 
 # mtxaxpy
 mtxaxpy_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/src $(MPICPPFLAGS)
@@ -133,6 +140,11 @@ mtxgemv_SOURCES = src/mtxgemv.c
 mtxinfo_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/src $(MPICPPFLAGS)
 mtxinfo_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
 mtxinfo_SOURCES = src/mtxinfo.c
+
+# mtxlusolve
+mtxlusolve_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/src $(MPICPPFLAGS)
+mtxlusolve_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
+mtxlusolve_SOURCES = src/mtxlusolve.c
 
 # mtxnrm2
 mtxnrm2_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/src $(MPICPPFLAGS)
@@ -252,6 +264,19 @@ tests/test_mtx_mpi_parallel: tests/test_mtx_mpi
 
 TESTS += \
 	tests/test_mtx_mpi_parallel
+
+if HAVE_SUPERLU_DIST
+check_PROGRAMS += \
+	tests/test_superlu_dist
+
+tests_test_superlu_dist_CPPFLAGS = $(MPICPPFLAGS)
+tests_test_superlu_dist_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(SUPERLU_DIST_LIBS) $(BLAS_LIBS)
+tests_test_superlu_dist_SOURCES = tests/test_superlu_dist.c tests/test.h
+tests/test_superlu_dist_parallel: tests/test_superlu_dist
+
+TESTS += \
+	tests/test_superlu_dist_serial
+endif
 endif
 
 # Documentation

@@ -56,6 +56,8 @@ const char * mtx_strerror(
         return strerror(errno);
     case MTX_ERR_MPI:
         return "MPI error";
+    case MTX_ERR_MPI_NOT_INITIALIZED:
+        return "MPI not initialized";
     case MTX_ERR_EOF:
         if (errno) return strerror(errno);
         else return "unexpected end-of-file";
@@ -71,6 +73,8 @@ const char * mtx_strerror(
         return "invalid Matrix Market field";
     case MTX_ERR_INVALID_MTX_SYMMETRY:
         return "invalid Matrix Market symmetry";
+    case MTX_ERR_INVALID_MTX_TRIANGLE:
+        return "invalid Matrix Market triangle";
     case MTX_ERR_INVALID_MTX_SORTING:
         return "invalid Matrix Market sorting";
     case MTX_ERR_INVALID_MTX_ORDERING:
@@ -89,6 +93,10 @@ const char * mtx_strerror(
         return "invalid format specifier";
     case MTX_ERR_INDEX_OUT_OF_BOUNDS:
         return "index out of bounds";
+    case MTX_ERR_SUPERLU_DIST_NEEDED:
+        return "SuperLU_DIST is needed to perform "
+            "the requested operation. Please recompile "
+            "with SuperLU_DIST support.";
     default:
         return "unknown error";
     }

@@ -22,8 +22,8 @@
  * Configuration information.
  */
 
-#ifndef MATRIXMARKET_CONFIG_H
-#define MATRIXMARKET_CONFIG_H
+#ifndef MATRIXMARKET_LIBMTX_CONFIG_H
+#define MATRIXMARKET_LIBMTX_CONFIG_H
 
 /* Define if you have a BLAS library. */
 #undef LIBMTX_HAVE_BLAS
@@ -36,5 +36,8 @@
 
 /* Define if you have libpng */
 #undef LIBMTX_HAVE_LIBPNG
+
+/* Define if you have SuperLU_DIST */
+#undef LIBMTX_HAVE_SUPERLU_DIST
 
 #endif

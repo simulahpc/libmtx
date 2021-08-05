@@ -38,6 +38,7 @@
 #include <matrixmarket/mpi.h>
 #include <matrixmarket/mtx.h>
 #include <matrixmarket/reorder.h>
+#include <matrixmarket/superlu_dist.h>
 #include <matrixmarket/vector.h>
 #include <matrixmarket/vector_array.h>
 #include <matrixmarket/vector_coordinate.h>
