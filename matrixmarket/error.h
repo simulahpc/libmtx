@@ -57,6 +57,10 @@ enum mtx_error
     MTX_ERR_INVALID_STREAM_TYPE = -19,      /* invalid stream type */
     MTX_ERR_INVALID_FORMAT_SPECIFIER = -20, /* invalid format specifier */
     MTX_ERR_INDEX_OUT_OF_BOUNDS = -21,      /* index out of bounds */
+    MTX_ERR_INDEX_OUT_OF_BOUNDS = -19,      /* index out of bounds */
+    MTX_ERR_SUPERLU_DIST_NEEDED = -20,      /* SuperLU_DIST is needed
+                                             * to perform the
+                                             * requested operation. */
 };
 
 /**

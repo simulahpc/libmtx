@@ -17,7 +17,7 @@ dnl along with libmtx.  If not, see
 dnl <https://www.gnu.org/licenses/>.
 dnl
 dnl Authors: James D. Trotter <james@simula.no>
-dnl Last modified: 2021-06-18
+dnl Last modified: 2021-08-03
 dnl
 dnl autoconf script for the top-level directory of libmtx.
 dnl
@@ -134,6 +134,22 @@ AX_LIBPNG([
 ])
 AM_CONDITIONAL([HAVE_LIBPNG],
   [test x"$with_libpng" != xno -a x"$libpng_found" != xno])
+
+AC_SUBST(libmtx_CPPFLAGS)
+
+dnl Check for SuperLU_DIST
+AX_SUPERLU_DIST([
+  SUPERLU_DIST_CPPFLAGS="-I${SUPERLU_DIST_HOME}/include"
+  SUPERLU_DIST_LDFLAGS="-L${SUPERLU_DIST_HOME}/lib"
+  SUPERLU_DIST_LIBS="-lsuperlu_dist"
+  AC_SUBST(SUPERLU_DIST_CPPFLAGS)
+  AC_SUBST(SUPERLU_DIST_LDFLAGS)
+  AC_SUBST(SUPERLU_DIST_LIBS)
+  AC_DEFINE([LIBMTX_HAVE_SUPERLU_DIST], [1], [Define to 1 if you have SuperLU_DIST])
+  AC_SUBST(LIBMTX_HAVE_SUPERLU_DIST)
+])
+AM_CONDITIONAL([HAVE_SUPERLU_DIST],
+  [test x"$with_superlu_dist" != xno -a x"$superlu_dist_found" != xno])
 
 AC_SUBST(libmtx_CPPFLAGS)
 
