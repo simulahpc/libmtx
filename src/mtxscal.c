@@ -444,7 +444,6 @@ int main(int argc, char *argv[])
             clock_gettime(CLOCK_MONOTONIC, &t0);
         }
 
-        /* Write gathered Matrix Market object to file. */
         err = mtx_fwrite(&x, stdout, args.format);
         if (err) {
             if (args.verbose > 0)
