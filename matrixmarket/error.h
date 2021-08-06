@@ -38,27 +38,29 @@ enum mtx_error
     MTX_SUCCESS = 0,                        /* no error */
     MTX_ERR_ERRNO = -1,                     /* error code provided by errno */
     MTX_ERR_MPI = -2,                       /* MPI error */
-    MTX_ERR_MPI_NOT_INITIALIZED = -21,      /* MPI not initialized */
-    MTX_ERR_EOF = -3,                       /* unexpected end-of-file */
-    MTX_ERR_LINE_TOO_LONG = -4,             /* line exceeds maximum length */
-    MTX_ERR_INVALID_MTX_HEADER = -5,        /* invalid Matrix Market header */
-    MTX_ERR_INVALID_MTX_OBJECT = -6,        /* invalid Matrix Market object */
-    MTX_ERR_INVALID_MTX_FORMAT = -7,        /* invalid Matrix Market format */
-    MTX_ERR_INVALID_MTX_FIELD = -8,         /* invalid Matrix Market field */
-    MTX_ERR_INVALID_MTX_SYMMETRY = -9,      /* invalid Matrix Market symmetry */
-    MTX_ERR_INVALID_MTX_TRIANGLE = -10,     /* invalid Matrix Market triangle */
-    MTX_ERR_INVALID_MTX_SORTING = -11,      /* invalid Matrix Market sorting */
-    MTX_ERR_INVALID_MTX_ORDERING = -12,     /* invalid Matrix Market ordering */
-    MTX_ERR_INVALID_MTX_ASSEMBLY = -13,     /* invalid Matrix Market assembly */
-    MTX_ERR_INVALID_MTX_SIZE = -14,         /* invalid Matrix Market size info */
-    MTX_ERR_INVALID_MTX_DATA = -15,         /* invalid Matrix Market data */
-    MTX_ERR_INVALID_INDEX_SET_TYPE = -16,   /* invalid index set type */
-    MTX_ERR_INVALID_STREAM_TYPE = -17,      /* invalid stream type */
-    MTX_ERR_INVALID_FORMAT_SPECIFIER = -18, /* invalid format specifier */
-    MTX_ERR_INDEX_OUT_OF_BOUNDS = -19,      /* index out of bounds */
-    MTX_ERR_SUPERLU_DIST_NEEDED = -20,      /* SuperLU_DIST is needed
+    MTX_ERR_MPI_NOT_INITIALIZED = -3,       /* MPI not initialized */
+    MTX_ERR_EOF = -4,                       /* unexpected end-of-file */
+    MTX_ERR_LINE_TOO_LONG = -5,             /* line exceeds maximum length */
+    MTX_ERR_INVALID_MTX_HEADER = -6,        /* invalid Matrix Market header */
+    MTX_ERR_INVALID_MTX_OBJECT = -7,        /* invalid Matrix Market object */
+    MTX_ERR_INVALID_MTX_FORMAT = -8,        /* invalid Matrix Market format */
+    MTX_ERR_INVALID_MTX_FIELD = -9,         /* invalid Matrix Market field */
+    MTX_ERR_INVALID_MTX_SYMMETRY = -10,     /* invalid Matrix Market symmetry */
+    MTX_ERR_INVALID_MTX_TRIANGLE = -11,     /* invalid Matrix Market triangle */
+    MTX_ERR_INVALID_MTX_SORTING = -12,      /* invalid Matrix Market sorting */
+    MTX_ERR_INVALID_MTX_ORDERING = -13,     /* invalid Matrix Market ordering */
+    MTX_ERR_INVALID_MTX_ASSEMBLY = -14,     /* invalid Matrix Market assembly */
+    MTX_ERR_INVALID_MTX_SIZE = -15,         /* invalid Matrix Market size info */
+    MTX_ERR_INVALID_MTX_DATA = -16,         /* invalid Matrix Market data */
+    MTX_ERR_INVALID_INDEX_SET_TYPE = -17,   /* invalid index set type */
+    MTX_ERR_INVALID_STREAM_TYPE = -18,      /* invalid stream type */
+    MTX_ERR_INVALID_FORMAT_SPECIFIER = -19, /* invalid format specifier */
+    MTX_ERR_INDEX_OUT_OF_BOUNDS = -20,      /* index out of bounds */
+    MTX_ERR_SUPERLU_DIST_NEEDED = -21,      /* SuperLU_DIST is needed
                                              * to perform the
                                              * requested operation. */
+    MTX_ERR_SUPERLU_DIST_GRID_SIZE = -22,   /* invalid SuperLU_DIST
+                                             * process grid size. */
 };
 
 /**

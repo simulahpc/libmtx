@@ -65,7 +65,7 @@ struct program_options
 
     /* SuperLU_DIST options. */
     int num_process_rows;
-    int num_process_cols;
+    int num_process_columns;
     enum mtx_superlu_dist_fact fact;
     bool equil;
     bool parsymbfact;
@@ -97,7 +97,7 @@ static int program_options_init(
 
     /* SuperLU_DIST options. */
     args->num_process_rows = 1;
-    args->num_process_cols = 1;
+    args->num_process_columns = 1;
     args->fact = mtx_superlu_dist_fact_DOFACT;
     args->equil = true;
     args->parsymbfact = false;
@@ -170,7 +170,7 @@ static void program_options_print_help(
     fprintf(f, "\n");
     fprintf(f, " Options related to SuperLU_DIST are:\n");
     fprintf(f, "  --process-rows=N\tnumber of rows in 2D process grid\n");
-    fprintf(f, "  --process-cols=N\tnumber of columns in 2D process grid\n");
+    fprintf(f, "  --process-columns=N\tnumber of columns in 2D process grid\n");
     fprintf(f, "  --no-equil\t\tdisable equilibration\n");
     fprintf(f, "  --equil\t\tenable equilibration (default)\n");
     fprintf(f, "  --no-parsymbfact\tdo not perform symbolic factorisation in parallel (default)\n");
@@ -331,23 +331,23 @@ static int parse_program_options(
             continue;
         }
 
-        if (strcmp((*argv)[0], "--process-cols") == 0) {
+        if (strcmp((*argv)[0], "--process-columns") == 0) {
             if (*argc < 2) {
                 program_options_free(args);
                 errno = EINVAL;
                 return MTX_ERR_ERRNO;
             }
-            err = parse_int32((*argv)[1], NULL, &args->num_process_cols, NULL);
+            err = parse_int32((*argv)[1], NULL, &args->num_process_columns, NULL);
             if (err) {
                 program_options_free(args);
                 return err;
             }
             num_arguments_consumed += 2;
             continue;
-        } else if (strstr((*argv)[0], "--process-cols=") == (*argv)[0]) {
+        } else if (strstr((*argv)[0], "--process-columns=") == (*argv)[0]) {
             err = parse_int32(
-                (*argv)[0] + strlen("--process-cols="), NULL,
-                &args->num_process_cols, NULL);
+                (*argv)[0] + strlen("--process-columns="), NULL,
+                &args->num_process_columns, NULL);
             if (err) {
                 program_options_free(args);
                 return err;
@@ -535,6 +535,35 @@ static int parse_program_options(
 }
 
 /**
+ * `mpi_allgather_err()' is used to gather return codes from all MPI
+ * processes in the communicator `comm', write them to the array
+ * `errs', and then set the value of `err' for every MPI process if
+ * any of the return codes from any of the processes are nonzero.
+ */
+static int mpi_allgather_err(
+    MPI_Comm comm,
+    int comm_size,
+    int err,
+    int * errs)
+{
+    int mpierr;
+    char mpierrstr[MPI_MAX_ERROR_STRING];
+    int mpierrstrlen;
+    mpierr = MPI_Allgather(&err, 1, MPI_INT, errs, 1, MPI_INT, comm);
+    if (mpierr) {
+        MPI_Error_string(mpierr, mpierrstr, &mpierrstrlen);
+        fprintf(stderr, "%s: MPI_Allgather failed with %s\n",
+                program_invocation_short_name, mpierrstr);
+        MPI_Abort(comm, EXIT_FAILURE);
+    }
+    for (int i = 0; i < comm_size; i++) {
+        if (errs[i])
+            return errs[i];
+    }
+    return MTX_SUCCESS;
+}
+
+/**
  * `timespec_duration()` is the duration, in seconds, elapsed between
  * two given time points.
  */
@@ -558,18 +587,7 @@ int main(int argc, char *argv[])
     struct timespec t0, t1;
     FILE * diagf = stderr;
 
-    /* 1. Parse program options. */
-    struct program_options args;
-    int argc_copy = argc;
-    char ** argv_copy = argv;
-    err = parse_program_options(&argc_copy, &argv_copy, &args);
-    if (err) {
-        fprintf(stderr, "%s: %s %s\n", program_invocation_short_name,
-                mtx_strerror(err), argv_copy[0]);
-        return EXIT_FAILURE;
-    }
-
-    /* 2. Initialise MPI. */
+    /* 1. Initialise MPI. */
     const MPI_Comm world_comm = MPI_COMM_WORLD;
     const int root = 0;
     mpierr = MPI_Init(&argc, &argv);
@@ -577,7 +595,6 @@ int main(int argc, char *argv[])
         MPI_Error_string(mpierr, mpierrstr, &mpierrstrlen);
         fprintf(stderr, "%s: MPI_Init failed with %s\n",
                 program_invocation_short_name, mpierrstr);
-        program_options_free(&args);
         return EXIT_FAILURE;
     }
 
@@ -588,7 +605,6 @@ int main(int argc, char *argv[])
         MPI_Error_string(mpierr, mpierrstr, &mpierrstrlen);
         fprintf(stderr, "%s: MPI_Comm_rank failed with %s\n",
                 program_invocation_short_name, mpierrstr);
-        program_options_free(&args);
         MPI_Abort(world_comm, EXIT_FAILURE);
     }
 
@@ -599,87 +615,187 @@ int main(int argc, char *argv[])
         MPI_Error_string(mpierr, mpierrstr, &mpierrstrlen);
         fprintf(stderr, "%s: MPI_Comm_size failed with %s\n",
                 program_invocation_short_name, mpierrstr);
-        program_options_free(&args);
         MPI_Abort(world_comm, EXIT_FAILURE);
     }
 
-    /* 2. Read the matrix from a Matrix Market file. */
+    /* Allocate storage for error handling. */
+    int * errs = alloca(world_comm_size * sizeof(int));
+    if (!errs) {
+        fprintf(stderr, "%s: %s %s\n", program_invocation_short_name,
+                strerror(errno));
+        MPI_Abort(world_comm, EXIT_FAILURE);
+    }
+    for (int i = 0; i < world_comm_size; i++)
+        errs[i] = 0;
+
+    /* 2. Parse program options. */
+    struct program_options args;
+    int argc_copy = argc;
+    char ** argv_copy = argv;
+    err = parse_program_options(&argc_copy, &argv_copy, &args);
+    if (mpi_allgather_err(world_comm, world_comm_size, err, errs)) {
+        if (errs[rank]) {
+            fprintf(stderr, "%s: %s %s\n", program_invocation_short_name,
+                    mtx_strerror(err), argv_copy[0]);
+        }
+        MPI_Finalize();
+        return EXIT_FAILURE;
+    }
+
+    /* 3. Read the matrix from a Matrix Market file. */
     struct mtx A;
-    if (args.verbose > 0) {
-        fprintf(diagf, "mtx_read: ");
-        fflush(diagf);
-        clock_gettime(CLOCK_MONOTONIC, &t0);
-    }
-
     int line_number, column_number;
-    err = mtx_read(
-        &A, args.A_path ? args.A_path : "", args.gzip,
-        &line_number, &column_number);
-    if (err && (line_number == -1 && column_number == -1)) {
-        if (args.verbose > 0)
-            fprintf(diagf, "\n");
-        fprintf(stderr, "%s: %s: %s\n",
-                program_invocation_short_name,
-                args.A_path, mtx_strerror(err));
-        MPI_Finalize();
-        program_options_free(&args);
-        return EXIT_FAILURE;
-    } else if (err) {
-        if (args.verbose > 0)
-            fprintf(diagf, "\n");
-        fprintf(stderr, "%s: %s:%d:%d: %s\n",
-                program_invocation_short_name,
-                args.A_path, line_number, column_number,
-                mtx_strerror(err));
-        MPI_Finalize();
-        program_options_free(&args);
-        return EXIT_FAILURE;
-    }
-
-    if (args.verbose > 0) {
-        clock_gettime(CLOCK_MONOTONIC, &t1);
-        fprintf(diagf, "%.6f seconds\n",
-                timespec_duration(t0, t1));
-    }
-
-    /* 3. Read the vector b from a Matrix Market file, or use a vector
-     * of all ones. */
-    struct mtx b;
-    if (args.b_path && strlen(args.b_path) > 0) {
-        if (args.verbose) {
+    if (rank == root) {
+        if (args.verbose > 0) {
             fprintf(diagf, "mtx_read: ");
             fflush(diagf);
             clock_gettime(CLOCK_MONOTONIC, &t0);
         }
 
-        int line_number, column_number;
         err = mtx_read(
-            &b, args.b_path, args.gzip,
+            &A, args.A_path ? args.A_path : "", args.gzip,
             &line_number, &column_number);
-        if (err && (line_number == -1 && column_number == -1)) {
-            if (args.verbose > 0)
-                fprintf(diagf, "\n");
+    }
+    if (mpi_allgather_err(world_comm, world_comm_size, err, errs)) {
+        if (rank == root && args.verbose > 0)
+            fprintf(diagf, "\n");
+        if (errs[rank] && line_number == -1 && column_number == -1) {
             fprintf(stderr, "%s: %s: %s\n",
                     program_invocation_short_name,
-                    args.b_path, mtx_strerror(err));
-            mtx_free(&A);
-            MPI_Finalize();
-            program_options_free(&args);
-            return EXIT_FAILURE;
-        } else if (err) {
-            if (args.verbose > 0)
-                fprintf(diagf, "\n");
+                    args.A_path, mtx_strerror(err));
+        } else if (errs[rank]) {
             fprintf(stderr, "%s: %s:%d:%d: %s\n",
                     program_invocation_short_name,
-                    args.b_path, line_number, column_number,
+                    args.A_path, line_number, column_number,
                     mtx_strerror(err));
+        }
+        program_options_free(&args);
+        MPI_Finalize();
+        return EXIT_FAILURE;
+    }
+
+    if (rank == root && args.verbose > 0) {
+        clock_gettime(CLOCK_MONOTONIC, &t1);
+        fprintf(diagf, "%.6f seconds\n",
+                timespec_duration(t0, t1));
+    }
+
+    /* If necessary, sort the matrix in column major order. */
+    if (rank == root && A.sorting != mtx_column_major) {
+        if (args.verbose > 0) {
+            fprintf(diagf, "mtx_sort: ");
+            fflush(diagf);
+            clock_gettime(CLOCK_MONOTONIC, &t0);
+        }
+
+        err = mtx_sort(&A, mtx_column_major);
+    }
+    if (mpi_allgather_err(world_comm, world_comm_size, err, errs)) {
+        if (rank == root && args.verbose > 0)
+            fprintf(diagf, "\n");
+        if (errs[rank]) {
+            fprintf(stderr, "%s: %s\n", program_invocation_short_name,
+                    mtx_strerror(err));
+        }
+        if (rank == root)
             mtx_free(&A);
-            MPI_Finalize();
+        program_options_free(&args);
+        MPI_Finalize();
+        return EXIT_FAILURE;
+    }
+
+    if (rank == root && args.verbose > 0) {
+        clock_gettime(CLOCK_MONOTONIC, &t1);
+        fprintf(diagf, "%.6f seconds\n",
+                timespec_duration(t0, t1));
+        fprintf(diagf, "mtx_bcast: ");
+        fflush(diagf);
+        clock_gettime(CLOCK_MONOTONIC, &t0);
+    }
+
+    /* Broadcast matrix to all MPI processes. */
+    err = mtx_bcast(&A, root, world_comm, &mpierr);
+    if (mpi_allgather_err(world_comm, world_comm_size, err, errs)) {
+        if (rank == root && args.verbose > 0)
+            fprintf(diagf, "\n");
+        if (errs[rank]) {
+            fprintf(stderr, "%s: %s\n", program_invocation_short_name,
+                    mtx_strerror_mpi(err, mpierr, mpierrstr));
+        }
+        if (rank == root)
+            mtx_free(&A);
+        program_options_free(&args);
+        MPI_Finalize();
+        return EXIT_FAILURE;
+    }
+
+    if (rank == root && args.verbose > 0) {
+        clock_gettime(CLOCK_MONOTONIC, &t1);
+        fprintf(diagf, "%.6f seconds\n",
+                timespec_duration(t0, t1));
+    }
+
+    /* 4. Read the vector b from a Matrix Market file, or use a vector
+     * of all ones. */
+    struct mtx b;
+    if (args.b_path && strlen(args.b_path) > 0) {
+        if (rank == root) {
+            if (args.verbose > 0) {
+                fprintf(diagf, "mtx_read: ");
+                fflush(diagf);
+                clock_gettime(CLOCK_MONOTONIC, &t0);
+            }
+
+            err = mtx_read(
+                &b, args.b_path ? args.b_path : "", args.gzip,
+                &line_number, &column_number);
+        }
+        if (mpi_allgather_err(world_comm, world_comm_size, err, errs)) {
+            if (rank == root && args.verbose > 0)
+                fprintf(diagf, "\n");
+            if (errs[rank] && line_number == -1 && column_number == -1) {
+                fprintf(stderr, "%s: %s: %s\n",
+                        program_invocation_short_name,
+                        args.b_path, mtx_strerror(err));
+            } else if (errs[rank]) {
+                fprintf(stderr, "%s: %s:%d:%d: %s\n",
+                        program_invocation_short_name,
+                        args.b_path, line_number, column_number,
+                        mtx_strerror(err));
+            }
+            mtx_free(&A);
             program_options_free(&args);
+            MPI_Finalize();
             return EXIT_FAILURE;
         }
 
-        if (args.verbose > 0) {
+        if (rank == root && args.verbose > 0) {
+            clock_gettime(CLOCK_MONOTONIC, &t1);
+            fprintf(diagf, "%.6f seconds\n",
+                    timespec_duration(t0, t1));
+            fprintf(diagf, "mtx_bcast: ");
+            fflush(diagf);
+            clock_gettime(CLOCK_MONOTONIC, &t0);
+        }
+
+        /* Broadcast vector to all MPI processes. */
+        err = mtx_bcast(&b, root, world_comm, &mpierr);
+        if (mpi_allgather_err(world_comm, world_comm_size, err, errs)) {
+            if (rank == root && args.verbose > 0)
+                fprintf(diagf, "\n");
+            if (errs[rank]) {
+                fprintf(stderr, "%s: %s\n", program_invocation_short_name,
+                        mtx_strerror_mpi(err, mpierr, mpierrstr));
+            }
+            if (rank == root)
+                mtx_free(&b);
+            mtx_free(&A);
+            program_options_free(&args);
+            MPI_Finalize();
+            return EXIT_FAILURE;
+        }
+
+        if (rank == root && args.verbose > 0) {
             clock_gettime(CLOCK_MONOTONIC, &t1);
             fprintf(diagf, "%.6f seconds\n",
                     timespec_duration(t0, t1));
@@ -688,47 +804,51 @@ int main(int argc, char *argv[])
         if (A.field == mtx_real) {
             err = mtx_alloc_vector_array_real(
                 &b, 0, NULL, A.num_columns);
-            if (err) {
-                fprintf(stderr, "%s: %s\n",
-                        program_invocation_short_name,
-                        mtx_strerror(err));
+            if (mpi_allgather_err(world_comm, world_comm_size, err, errs)) {
+                if (errs[rank]) {
+                    fprintf(stderr, "%s: %s\n", program_invocation_short_name,
+                            mtx_strerror(err));
+                }
                 mtx_free(&A);
-                MPI_Finalize();
                 program_options_free(&args);
+                MPI_Finalize();
                 return EXIT_FAILURE;
             }
             err = mtx_set_constant_real(&b, 1.0f);
-            if (err) {
-                fprintf(stderr, "%s: %s\n",
-                        program_invocation_short_name,
-                        mtx_strerror(err));
+            if (mpi_allgather_err(world_comm, world_comm_size, err, errs)) {
+                if (errs[rank]) {
+                    fprintf(stderr, "%s: %s\n", program_invocation_short_name,
+                            mtx_strerror(err));
+                }
                 mtx_free(&b);
                 mtx_free(&A);
-                MPI_Finalize();
                 program_options_free(&args);
+                MPI_Finalize();
                 return EXIT_FAILURE;
             }
         } else if (A.field == mtx_double) {
             err = mtx_alloc_vector_array_double(
                 &b, 0, NULL, A.num_columns);
-            if (err) {
-                fprintf(stderr, "%s: %s\n",
-                        program_invocation_short_name,
-                        mtx_strerror(err));
+            if (mpi_allgather_err(world_comm, world_comm_size, err, errs)) {
+                if (errs[rank]) {
+                    fprintf(stderr, "%s: %s\n", program_invocation_short_name,
+                            mtx_strerror(err));
+                }
                 mtx_free(&A);
-                MPI_Finalize();
                 program_options_free(&args);
+                MPI_Finalize();
                 return EXIT_FAILURE;
             }
             err = mtx_set_constant_double(&b, 1.0);
-            if (err) {
-                fprintf(stderr, "%s: %s\n",
-                        program_invocation_short_name,
-                        mtx_strerror(err));
+            if (mpi_allgather_err(world_comm, world_comm_size, err, errs)) {
+                if (errs[rank]) {
+                    fprintf(stderr, "%s: %s\n", program_invocation_short_name,
+                            mtx_strerror(err));
+                }
                 mtx_free(&b);
                 mtx_free(&A);
-                MPI_Finalize();
                 program_options_free(&args);
+                MPI_Finalize();
                 return EXIT_FAILURE;
             }
         } else {
@@ -736,38 +856,40 @@ int main(int argc, char *argv[])
                     program_invocation_short_name,
                     strerror(ENOTSUP));
             mtx_free(&A);
-            MPI_Finalize();
             program_options_free(&args);
+            MPI_Finalize();
             return EXIT_FAILURE;
         }
     }
 
-    /* 4. Create an output vector. */
+    /* 5. Create an output vector. */
     struct mtx x;
     if (A.field == mtx_real) {
         err = mtx_alloc_vector_array_real(
             &x, 0, NULL, A.num_rows);
-        if (err) {
-            fprintf(stderr, "%s: %s\n",
-                    program_invocation_short_name,
-                    mtx_strerror(err));
+        if (mpi_allgather_err(world_comm, world_comm_size, err, errs)) {
+            if (errs[rank]) {
+                fprintf(stderr, "%s: %s\n", program_invocation_short_name,
+                        mtx_strerror(err));
+            }
             mtx_free(&b);
             mtx_free(&A);
-            MPI_Finalize();
             program_options_free(&args);
+            MPI_Finalize();
             return EXIT_FAILURE;
         }
     } else if (A.field == mtx_double) {
         err = mtx_alloc_vector_array_double(
             &x, 0, NULL, A.num_rows);
-        if (err) {
-            fprintf(stderr, "%s: %s\n",
-                    program_invocation_short_name,
-                    mtx_strerror(err));
+        if (mpi_allgather_err(world_comm, world_comm_size, err, errs)) {
+            if (errs[rank]) {
+                fprintf(stderr, "%s: %s\n", program_invocation_short_name,
+                        mtx_strerror(err));
+            }
             mtx_free(&b);
             mtx_free(&A);
-            MPI_Finalize();
             program_options_free(&args);
+            MPI_Finalize();
             return EXIT_FAILURE;
         }
     } else {
@@ -776,66 +898,39 @@ int main(int argc, char *argv[])
                 strerror(ENOTSUP));
         mtx_free(&b);
         mtx_free(&A);
-        MPI_Finalize();
         program_options_free(&args);
+        MPI_Finalize();
         return EXIT_FAILURE;
     }
     err = mtx_set_zero(&x);
-    if (err) {
-        fprintf(stderr, "%s: %s\n",
-                program_invocation_short_name,
-                mtx_strerror(err));
+    if (mpi_allgather_err(world_comm, world_comm_size, err, errs)) {
+        if (errs[rank]) {
+            fprintf(stderr, "%s: %s\n", program_invocation_short_name,
+                    mtx_strerror(err));
+        }
         mtx_free(&x);
         mtx_free(&b);
         mtx_free(&A);
-        MPI_Finalize();
         program_options_free(&args);
+        MPI_Finalize();
         return EXIT_FAILURE;
     }
 
-    /* If necessary, sort the matrix in row major order. */
-    if (A.sorting != mtx_row_major) {
-        if (args.verbose > 0) {
-            fprintf(diagf, "mtx_sort: ");
-            fflush(diagf);
-            clock_gettime(CLOCK_MONOTONIC, &t0);
-        }
-
-        err = mtx_sort(&A, mtx_row_major);
-        if (err) {
-            if (args.verbose > 0)
-                fprintf(diagf, "\n");
-            fprintf(stderr, "%s: %s\n",
-                    program_invocation_short_name,
-                    mtx_strerror(err));
-            mtx_free(&x);
-            mtx_free(&b);
-            mtx_free(&A);
-            MPI_Finalize();
-            program_options_free(&args);
-            return EXIT_FAILURE;
-        }
-
-        if (args.verbose > 0) {
-            clock_gettime(CLOCK_MONOTONIC, &t1);
-            fprintf(diagf, "%.6f seconds\n",
-                    timespec_duration(t0, t1));
-        }
-    }
-
-    /* 5. Solve the linear system `Ax=b'. */
-    if (args.verbose > 0) {
-        fprintf(diagf, "mtx_superlu_dist_solve: ");
+    /* 6. Solve the linear system `Ax=b'. */
+    if (rank == root && args.verbose > 0) {
+        fprintf(diagf, "mtx_superlu_dist_solve_global: ");
         fflush(diagf);
         clock_gettime(CLOCK_MONOTONIC, &t0);
     }
-    MPI_Comm comm = MPI_COMM_WORLD;
-    err = mtx_superlu_dist_solve(
-        &A, &b, &x, args.verbose, diagf,
+    err = mtx_superlu_dist_solve_global(
+        &A, &b, &x,
+        args.verbose,
+        diagf,
         &mpierr,
-        comm,
+        world_comm,
+        root,
         args.num_process_rows,
-        args.num_process_cols,
+        args.num_process_columns,
         args.fact,
         args.equil,
         args.parsymbfact,
@@ -850,27 +945,28 @@ int main(int argc, char *argv[])
         args.num_lookaheads,
         args.lookahead_etree,
         args.sympattern);
-    if (err) {
-        if (args.verbose > 0)
+    if (mpi_allgather_err(world_comm, world_comm_size, err, errs)) {
+        if (rank == root && args.verbose > 0)
             fprintf(diagf, "\n");
-        fprintf(stderr, "%s: %s\n",
-                program_invocation_short_name,
-                mtx_strerror_mpi(err, mpierr, mpierrstr));
+        if (errs[rank]) {
+            fprintf(stderr, "%s: %s\n", program_invocation_short_name,
+                    mtx_strerror_mpi(err, mpierr, mpierrstr));
+        }
         mtx_free(&x);
         mtx_free(&b);
         mtx_free(&A);
-        MPI_Finalize();
         program_options_free(&args);
+        MPI_Finalize();
         return EXIT_FAILURE;
     }
-    if (args.verbose > 0) {
+    if (rank == root && args.verbose > 0) {
         clock_gettime(CLOCK_MONOTONIC, &t1);
         fprintf(diagf, "%.6f seconds\n",
                 timespec_duration(t0, t1));
     }
 
-    /* 6. Write the result to standard output. */
-    if (!args.quiet) {
+    /* 7. Write the result to standard output. */
+    if (!args.quiet && rank == root) {
         if (args.verbose > 0) {
             fprintf(diagf, "mtx_fwrite: ");
             fflush(diagf);
@@ -878,33 +974,36 @@ int main(int argc, char *argv[])
         }
 
         err = mtx_fwrite(&x, stdout, args.format);
-        if (err) {
-            if (args.verbose > 0)
-                fprintf(diagf, "\n");
-            fprintf(stderr, "%s: %s\n",
-                    program_invocation_short_name,
+    }
+    if (mpi_allgather_err(world_comm, world_comm_size, err, errs)) {
+        if (rank == root && args.verbose > 0) {
+            fflush(stdout);
+            fprintf(diagf, "\n");
+        }
+        if (errs[rank]) {
+            fprintf(stderr, "%s: %s\n", program_invocation_short_name,
                     mtx_strerror(err));
-            mtx_free(&x);
-            mtx_free(&b);
-            mtx_free(&A);
-            MPI_Finalize();
-            program_options_free(&args);
-            return EXIT_FAILURE;
         }
-        fflush(stdout);
-
-        if (args.verbose > 0) {
-            clock_gettime(CLOCK_MONOTONIC, &t1);
-            fprintf(diagf, "%.6f seconds\n", timespec_duration(t0, t1));
-            fflush(diagf);
-        }
+        mtx_free(&x);
+        mtx_free(&b);
+        mtx_free(&A);
+        program_options_free(&args);
+        MPI_Finalize();
+        return EXIT_FAILURE;
     }
 
-    /* 7. Clean up. */
+    if (!args.quiet && rank == root && args.verbose > 0) {
+        fflush(stdout);
+        clock_gettime(CLOCK_MONOTONIC, &t1);
+        fprintf(diagf, "%.6f seconds\n", timespec_duration(t0, t1));
+        fflush(diagf);
+    }
+
+    /* 8. Clean up. */
     mtx_free(&x);
     mtx_free(&b);
     mtx_free(&A);
-    MPI_Finalize();
     program_options_free(&args);
+    MPI_Finalize();
     return EXIT_SUCCESS;
 }
