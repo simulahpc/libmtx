@@ -282,12 +282,11 @@ int main(int argc, char *argv[])
 
     /* 3. Print some info about the Matrix Market file. */
     fprintf(stdout, "%s\n", args.mtx_path);
-    for (int i = 0; i < mtx.num_comment_lines; i++)
-        fputs(mtx.comment_lines[i], stdout);
     fprintf(stdout, "object: %s\n", mtx_object_str(mtx.object));
     fprintf(stdout, "format: %s\n", mtx_format_str(mtx.format));
     fprintf(stdout, "field: %s\n", mtx_field_str(mtx.field));
     fprintf(stdout, "symmetry: %s\n", mtx_symmetry_str(mtx.symmetry));
+    fprintf(stdout, "triangle: %s\n", mtx_triangle_str(mtx.triangle));
     fprintf(stdout, "sorting: %s\n", mtx_sorting_str(mtx.sorting));
     fprintf(stdout, "ordering: %s\n", mtx_ordering_str(mtx.ordering));
     fprintf(stdout, "assembly: %s\n", mtx_assembly_str(mtx.assembly));
@@ -295,6 +294,8 @@ int main(int argc, char *argv[])
     fprintf(stdout, "columns: %d\n", mtx.num_columns);
     fprintf(stdout, "nonzeros: %"PRId64"\n", mtx.num_nonzeros);
     fprintf(stdout, "size: %"PRId64"\n", mtx.size);
+    for (int i = 0; i < mtx.num_comment_lines; i++)
+        fputs(mtx.comment_lines[i], stdout);
 
     /* 4. Clean up. */
     mtx_free(&mtx);

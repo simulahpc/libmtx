@@ -1622,6 +1622,13 @@ static int read_mtx(
     }
 
     /* Set extra header information. */
+    matrix->triangle =
+        matrix->object == mtx_matrix &&
+        matrix->format == mtx_array &&
+        (matrix->symmetry == mtx_symmetric ||
+         matrix->symmetry == mtx_skew_symmetric ||
+         matrix->symmetry == mtx_hermitian)
+        ? mtx_lower_triangular : mtx_nontriangular;
     matrix->sorting = matrix->format == mtx_array ? mtx_row_major : mtx_unsorted;
     matrix->ordering = mtx_unordered;
     matrix->assembly = matrix->format == mtx_array ? mtx_assembled : mtx_unassembled;
