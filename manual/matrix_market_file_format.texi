@@ -172,23 +172,44 @@ is @code{matrix}, then it is used as follows:
 @code{@var{symmetry}} is @code{general}. Every nonzero matrix entry is
 stored explicitly.
 
+@cindex triangular matrix
+@cindex row major
 @item For a symmetric matrix,
 (i.e., a matrix that is equal to its transpose), @code{@var{symmetry}}
-is @code{symmetric}. The matrix must be square, and only the lower or
-upper triangular part of the matrix is stored explicitly.
+is @code{symmetric}. The matrix must be square.  If
+@code{@var{format}} is @code{array}, then only the lower or upper
+triangular part of the matrix is stored explicitly.  (Note that there
+is no indication in the Matrix Market file regarding which part is
+stored, but libmtx assumes by default that the lower triangular part
+is stored in row major order.)  Otherwise, if @code{@var{format}} is
+@code{coordinate}, then values may be explicitly represented from the
+lower or upper triangular part of the matrix, or both.
 
 @item For a Hermitian matrix,
 (i.e., a matrix that is equal to its conjugate transpose),
-@code{@var{symmetry}} is @code{hermitian}. The matrix must be square,
-and only the lower or upper triangular part of the matrix is stored
-explicitly.
+@code{@var{symmetry}} is @code{hermitian}. The matrix must be square.
+If @code{@var{format}} is @code{array}, then only the lower or upper
+triangular part of the matrix is stored explicitly. (Note that there
+is no indication in the Matrix Market file regarding which part is
+stored, but libmtx assumes by default that the lower triangular part
+is stored in row major order.)  Otherwise, if @code{@var{format}} is
+@code{coordinate}, then values may be explicitly represented from the
+lower or upper triangular part of the matrix, or both.
 
 @item For a skew-symmetric matrix,
 (i.e., a matrix that is equal to the negative of its transpose),
 @code{@var{symmetry}} is @code{skew-symmetric}. The matrix must be
-square. Since skew symmetry implies that diagonal entries are zero,
-only the strictly lower or upper triangular part of the matrix is
-stored explicitly.
+square, but skew symmetry implies that diagonal entries are zero.
+Therefore, if @code{@var{format}} is @code{array}, then only the
+strictly lower or upper triangular part of the matrix is stored
+explicitly.  (Note that there is no indication in the Matrix Market
+file regarding which part is stored, but libmtx assumes by default
+that the strictly lower triangular part is stored in row major order.)
+Otherwise, if @code{@var{format}} is @code{coordinate}, then values
+may be explicitly represented from the strictly lower or upper
+triangular part of the matrix, or both.  Nonzero diagonal entries are
+not allowed.
+
 @end itemize
 
 
@@ -246,8 +267,15 @@ For dense matrices, where @code{@var{object}} is @code{matrix} and
 @code{@var{m} @var{n}}
 @end example
 Here, @code{@var{m}} and @code{@var{n}} denote the number of rows and
-columns in the matrix. Thus, there are @code{@var{m}*@var{n}} matrix
-entries stored in the data section of the Matrix Market file.
+columns in the matrix.  In the case of a general, unsymmetric matrix,
+where @code{@var{symmetry}} is @code{general}, there are
+@code{@var{m}*@var{n}} matrix entries stored in the data section of
+the Matrix Market file.  If @code{@var{symmetry}} is @code{symmetric}
+or @code{hermitian}, then @code{@var{m}} and @code{@var{n}} are equal,
+and there are @code{@var{m}*(@var{n}+1)/2} entries in the data
+section.  Finally, if @code{@var{symmetry}} is @code{skew-symmetric},
+then @code{@var{m}} and @code{@var{n}} are again equal, and there are
+@code{@var{m}*(@var{n}-1)/2} entries in the data section.
 
 @cindex sparse matrix
 @item
@@ -273,11 +301,18 @@ for each nonzero matrix (or vector) entry. The number of data lines
 depends on the matrix (or vector) size, as described in the previous
 section.
 
-@cindex row-major
+@cindex row major
 By default, it is assumed that dense matrix entries are stored in
-row-major order. For sparse matrices and vectors, the nonzero entries
-may appear in any order. Moreover, there may be more than one entry
-corresponding to a single location in a sparse matrix or vector.
+row major order.
+
+@cindex assembly
+For sparse matrices and vectors, the nonzero entries may appear in any
+order.  Moreover, there may be more than one entry corresponding to a
+single location in a sparse matrix or vector.  In this case, it is
+assumed that the value associated with such a location can be obtained
+by taking the sum of all the entries for that location.  The procedure
+of adding together values for duplicate entries is sometimes referred
+to as @dfn{assembly}.
 
 The format of a data line depends on the @code{@var{object}},
 @code{@var{format}} and @code{@var{field}} values in the header, as

@@ -16,7 +16,7 @@
 @c <https://www.gnu.org/licenses/>.
 @c
 @c Authors: James D. Trotter <james@simula.no>
-@c Last modified: 2021-06-18
+@c Last modified: 2021-08-06
 @c
 @c libmtx User Guide: Installing libmtx.
 
@@ -50,14 +50,14 @@ what to include in a bug report.
 @cindex BLAS
 @cindex zlib
 @cindex libpng
-Some features of libmtx are optional and will only be
-available if the following dependencies are provided:
+Some features of libmtx are optional and will only be available if
+some of the following dependencies are provided:
 @itemize
 @item @emph{MPI}
 is needed for distributed-memory parallel matrices and vectors.
 
 @item @emph{BLAS}
-is needed for various linear algebra operations. Various
+is needed for various linear algebra operations. Different
 implementations may be used, such as the netlib reference BLAS,
 OpenBLAS, BLIS, and so on.
 
