@@ -17,7 +17,7 @@
 # <https://www.gnu.org/licenses/>.
 #
 # Authors: James D. Trotter <james@simula.no>
-# Last modified: 2021-08-02
+# Last modified: 2021-08-06
 #
 # Makefile for the top-level directory of libmtx.
 #
@@ -286,7 +286,8 @@ manual_libmtx_TEXINFOS = \
 	manual/installing.texi \
 	manual/reporting_bugs.texi \
 	manual/matrix_market_file_format.texi \
-	manual/matrix_market_objects.texi \
+	manual/matrices_and_vectors.texi \
+	manual/distributed_matrices_and_vectors.texi \
 	manual/commands.texi \
 	manual/c_library_reference.texi \
 	manual/references.texi \
