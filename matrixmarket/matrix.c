@@ -424,6 +424,90 @@ int mtx_matrix_size_per_row(
 }
 
 /**
+ * `mtx_matrix_column_ptr()' computes column pointers of a matrix.
+ *
+ * The array `column_ptr' must point to an array containing enough
+ * storage for `mtx->num_columns+1' values of type `int64_t'.
+ *
+ * The matrix is not required to be sorted in column major order.  If the
+ * matrix is sorted in column major order, then the `i'-th entry of the
+ * `column_ptr' is the location of the first nonzero in the `mtx->data'
+ * array that belongs to the `i+1'-th column of the matrix, for
+ * `i=0,1,...,mtx->num_columns-1'. The final entry of `column_ptr' indicates
+ * the position one place beyond the last nonzero in `mtx->data'.
+ */
+int mtx_matrix_column_ptr(
+    const struct mtx * mtx,
+    int64_t * column_ptr)
+{
+    if (mtx->object != mtx_matrix)
+        return MTX_ERR_INVALID_MTX_OBJECT;
+
+    /* 1. Count the number of entries in each column. */
+    if (mtx->format == mtx_array) {
+        if (mtx->symmetry == mtx_general) {
+            column_ptr[0] = 0;
+            for (int i = 0; i < mtx->num_columns; i++)
+                column_ptr[i+1] = mtx->num_rows;
+        } else if (mtx->symmetry == mtx_symmetric ||
+                   mtx->symmetry == mtx_hermitian)
+        {
+            column_ptr[0] = 0;
+            for (int i = 0; i < mtx->num_columns; i++)
+                column_ptr[i+1] = i+1;
+        } else if (mtx->symmetry == mtx_skew_symmetric) {
+            column_ptr[0] = 0;
+            for (int i = 0; i < mtx->num_columns; i++)
+                column_ptr[i+1] = i;
+        } else {
+            return MTX_ERR_INVALID_MTX_SYMMETRY;
+        }
+
+    } else if (mtx->format == mtx_coordinate) {
+        for (int i = 0; i <= mtx->num_columns; i++)
+            column_ptr[i] = 0;
+
+        if (mtx->field == mtx_real) {
+            const struct mtx_matrix_coordinate_real * data =
+                (const struct mtx_matrix_coordinate_real *) mtx->data;
+            for (int64_t k = 0; k < mtx->size; k++)
+                column_ptr[data[k].j]++;
+        } else if (mtx->field == mtx_double) {
+            const struct mtx_matrix_coordinate_double * data =
+                (const struct mtx_matrix_coordinate_double *) mtx->data;
+            for (int64_t k = 0; k < mtx->size; k++) {
+                column_ptr[data[k].j]++;
+            }
+        } else if (mtx->field == mtx_complex) {
+            const struct mtx_matrix_coordinate_complex * data =
+                (const struct mtx_matrix_coordinate_complex *) mtx->data;
+            for (int64_t k = 0; k < mtx->size; k++)
+                column_ptr[data[k].j]++;
+        } else if (mtx->field == mtx_integer) {
+            const struct mtx_matrix_coordinate_integer * data =
+                (const struct mtx_matrix_coordinate_integer *) mtx->data;
+            for (int64_t k = 0; k < mtx->size; k++)
+                column_ptr[data[k].j]++;
+        } else if (mtx->field == mtx_pattern) {
+            const struct mtx_matrix_coordinate_pattern * data =
+                (const struct mtx_matrix_coordinate_pattern *) mtx->data;
+            for (int64_t k = 0; k < mtx->size; k++)
+                column_ptr[data[k].j]++;
+        } else {
+            return MTX_ERR_INVALID_MTX_FIELD;
+        }
+
+    } else {
+        return MTX_ERR_INVALID_MTX_FORMAT;
+    }
+
+    /* 2. Compute the prefix sum of the column lengths. */
+    for (int i = 1; i <= mtx->num_columns; i++)
+        column_ptr[i] += column_ptr[i-1];
+    return MTX_SUCCESS;
+}
+
+/**
  * `mtx_matrix_row_ptr()' computes row pointers of a matrix.
  *
  * The array `row_ptr' must point to an array containing enough
@@ -586,6 +670,96 @@ int mtx_matrix_column_indices(
                 (const struct mtx_matrix_coordinate_pattern *) mtx->data;
             for (int64_t k = 0; k < mtx->size; k++)
                 column_indices[k] = data[k].j;
+        } else {
+            return MTX_ERR_INVALID_MTX_FIELD;
+        }
+
+    } else {
+        return MTX_ERR_INVALID_MTX_FORMAT;
+    }
+    return MTX_SUCCESS;
+}
+
+/**
+ * `mtx_matrix_row_indices()' extracts the row indices of a matrix to
+ * a separate array.
+ *
+ * The array `row_indices' must point to an array containing enough
+ * storage for `mtx->size' values of type `int'.
+ */
+int mtx_matrix_row_indices(
+    const struct mtx * mtx,
+    int * row_indices)
+{
+    if (mtx->object != mtx_matrix)
+        return MTX_ERR_INVALID_MTX_OBJECT;
+
+    if (mtx->format == mtx_array) {
+        if (mtx->symmetry == mtx_general) {
+            int64_t k = 0;
+            for (int i = 0; i < mtx->num_rows; i++)
+                for (int j = 0; j < mtx->num_rows; j++, k++)
+                    row_indices[k] = i;
+        } else if (mtx->symmetry == mtx_symmetric ||
+                   mtx->symmetry == mtx_hermitian)
+        {
+            if (mtx->triangle == mtx_lower_triangular) {
+                int64_t k = 0;
+                for (int i = 0; i < mtx->num_rows; i++)
+                    for (int j = 0; j <= i; j++, k++)
+                        row_indices[k] = i;
+            } else if (mtx->triangle == mtx_upper_triangular) {
+                int64_t k = 0;
+                for (int i = 0; i < mtx->num_rows; i++)
+                    for (int j = i; j < mtx->num_rows; j++, k++)
+                        row_indices[k] = i;
+            } else {
+                return MTX_ERR_INVALID_MTX_TRIANGLE;
+            }
+        } else if (mtx->symmetry == mtx_skew_symmetric) {
+            if (mtx->triangle == mtx_lower_triangular) {
+                int64_t k = 0;
+                for (int i = 0; i < mtx->num_rows; i++)
+                    for (int j = 0; j < i; j++, k++)
+                        row_indices[k] = i;
+            } else if (mtx->triangle == mtx_upper_triangular) {
+                int64_t k = 0;
+                for (int i = 0; i < mtx->num_rows; i++)
+                    for (int j = i+1; j < mtx->num_rows; j++, k++)
+                        row_indices[k] = i;
+            } else {
+                return MTX_ERR_INVALID_MTX_TRIANGLE;
+            }
+        } else {
+            return MTX_ERR_INVALID_MTX_SYMMETRY;
+        }
+
+    } else if (mtx->format == mtx_coordinate) {
+        if (mtx->field == mtx_real) {
+            const struct mtx_matrix_coordinate_real * data =
+                (const struct mtx_matrix_coordinate_real *) mtx->data;
+            for (int64_t k = 0; k < mtx->size; k++)
+                row_indices[k] = data[k].i;
+        } else if (mtx->field == mtx_double) {
+            const struct mtx_matrix_coordinate_double * data =
+                (const struct mtx_matrix_coordinate_double *) mtx->data;
+            for (int64_t k = 0; k < mtx->size; k++)
+                row_indices[k] = data[k].i;
+        } else if (mtx->field == mtx_complex) {
+            const struct mtx_matrix_coordinate_complex * data =
+                (const struct mtx_matrix_coordinate_complex *) mtx->data;
+            for (int64_t k = 0; k < mtx->size; k++)
+                row_indices[k] = data[k].i;
+        } else if (mtx->field == mtx_integer) {
+            const struct mtx_matrix_coordinate_integer * data =
+                (const struct mtx_matrix_coordinate_integer *) mtx->data;
+            for (int64_t k = 0; k < mtx->size; k++)
+                row_indices[k] = data[k].i;
+        } else if (mtx->field == mtx_pattern) {
+            const struct mtx_matrix_coordinate_pattern * data =
+                (const struct mtx_matrix_coordinate_pattern *) mtx->data;
+            for (int64_t k = 0; k < mtx->size; k++)
+                row_indices[k] = data[k].i;
         } else {
             return MTX_ERR_INVALID_MTX_FIELD;
         }

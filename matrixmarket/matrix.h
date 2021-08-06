@@ -127,6 +127,24 @@ int mtx_matrix_size_per_row(
     int * size_per_row);
 
 /**
+ * `mtx_matrix_column_ptr()' computes column pointers of a matrix.
+ *
+ * The array `column_ptr' must point to an array containing enough
+ * storage for `mtx->num_columns+1' values of type `int64_t'.
+ *
+ * The matrix is not required to be sorted in column major order.  If
+ * the matrix is sorted in column major order, then the `i'-th entry
+ * of the `column_ptr' is the location of the first nonzero in the
+ * `mtx->data' array that belongs to the `i+1'-th column of the
+ * matrix, for `i=0,1,...,mtx->num_columns-1'. The final entry of
+ * `column_ptr' indicates the position one place beyond the last
+ * nonzero in `mtx->data'.
+ */
+int mtx_matrix_column_ptr(
+    const struct mtx * mtx,
+    int64_t * column_ptr);
+
+/**
  * `mtx_matrix_row_ptr()' computes row pointers of a matrix.
  *
  * The array `row_ptr' must point to an array containing enough
@@ -153,6 +171,17 @@ int mtx_matrix_row_ptr(
 int mtx_matrix_column_indices(
     const struct mtx * mtx,
     int * column_indices);
+
+/**
+ * `mtx_matrix_row_indices()' extracts the row indices of a matrix to
+ * a separate array.
+ *
+ * The array `row_indices' must point to an array containing enough
+ * storage for `mtx->size' values of type `int'.
+ */
+int mtx_matrix_row_indices(
+    const struct mtx * mtx,
+    int * row_indices);
 
 /**
  * `mtx_matrix_data_real()' extracts the nonzero values of a real
