@@ -99,6 +99,10 @@ const char * mtx_strerror(
         return "SuperLU_DIST is needed to perform "
             "the requested operation. Please recompile "
             "with SuperLU_DIST support.";
+    case MTX_ERR_SUPERLU_DIST_GRID_SIZE:
+        return "invalid SuperLU_DIST process grid size. "
+            "The number of MPI processes must match "
+            "the size of the SuperLU_DIST process grid.";
     default:
         return "unknown error";
     }

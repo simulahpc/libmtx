@@ -538,6 +538,123 @@ static int superlu_dist_options_set(
 }
 
 /**
+ * `mtx_matrix_indices_to_csc()' converts the index information of a
+ * sparse matrix in coordinate format to an array of column pointers
+ * and another array of row indices, as in the compressed sparse
+ * column (CSC) format.
+ */
+static int mtx_matrix_indices_to_csc(
+    const struct mtx * A,
+    int32_t ** out_column_ptr,
+    int ** out_row_indices)
+{
+    int err;
+    if (A->object != mtx_matrix)
+        return MTX_ERR_INVALID_MTX_OBJECT;
+    if (A->format != mtx_coordinate)
+        return MTX_ERR_INVALID_MTX_FORMAT;
+    if (A->sorting != mtx_column_major)
+        return MTX_ERR_INVALID_MTX_SORTING;
+
+    /* SuperLU_DIST only support 32-bit integer column pointers. */
+    if (A->size > INT32_MAX) {
+        errno = ERANGE;
+        return MTX_ERR_ERRNO;
+    }
+
+    /* Compute column pointers. */
+    int64_t * column_ptr64 = malloc((A->num_columns+1) * sizeof(int64_t));
+    if (!column_ptr64)
+        return MTX_ERR_ERRNO;
+    err = mtx_matrix_column_ptr(A, column_ptr64);
+    if (err) {
+        free(column_ptr64);
+        return err;
+    }
+
+    /* Copy column pointers to 32-bit integers, as required by SuperLU_DIST. */
+    int32_t * column_ptr = malloc((A->num_columns+1) * sizeof(int32_t));
+    if (!column_ptr) {
+        free(column_ptr64);
+        return MTX_ERR_ERRNO;
+    }
+    for (int i = 0; i <= A->num_columns; i++) {
+        if (column_ptr64[i] > INT32_MAX) {
+            free(column_ptr);
+            free(column_ptr64);
+            errno = ERANGE;
+            return MTX_ERR_ERRNO;
+        }
+
+        column_ptr[i] = (int32_t) column_ptr64[i];
+    }
+    free(column_ptr64);
+
+    /* Extract column indices. */
+    int * row_indices = malloc(A->size * sizeof(int));
+    if (!row_indices) {
+        free(column_ptr);
+        return MTX_ERR_ERRNO;
+    }
+    err = mtx_matrix_row_indices(A, row_indices);
+    if (err) {
+        free(row_indices);
+        free(column_ptr);
+        return err;
+    }
+    /* Subtract one to obtain zero-based indices. */
+    for (int64_t k = 0; k < A->size; k++)
+        row_indices[k]--;
+
+    *out_column_ptr = column_ptr;
+    *out_row_indices = row_indices;
+    return MTX_SUCCESS;
+}
+
+/**
+ * `mtx_matrix_to_csc_coordinate_double()' converts a sparse matrix in
+ * coordinate format to an array of row pointers, another array of
+ * column indices, and a third array of double precision floating
+ * point values, as in the compressed sparse row (CSC) format.
+ */
+static int mtx_matrix_to_csc_coordinate_double(
+    const struct mtx * A,
+    int32_t ** out_column_ptr,
+    int ** out_row_indices,
+    double ** out_values)
+{
+    int err;
+    if (A->object != mtx_matrix)
+        return MTX_ERR_INVALID_MTX_OBJECT;
+    if (A->format != mtx_coordinate)
+        return MTX_ERR_INVALID_MTX_FORMAT;
+    if (A->sorting != mtx_column_major)
+        return MTX_ERR_INVALID_MTX_SORTING;
+
+    err = mtx_matrix_indices_to_csc(
+        A, out_column_ptr, out_row_indices);
+    if (err)
+        return err;
+
+    /* Extract nonzero values. */
+    double * values = malloc(A->size * sizeof(double));
+    if (!values) {
+        free(*out_row_indices);
+        free(*out_column_ptr);
+        return MTX_ERR_ERRNO;
+    }
+    err = mtx_matrix_data_double(A, values);
+    if (err) {
+        free(values);
+        free(*out_row_indices);
+        free(*out_column_ptr);
+        return err;
+    }
+    *out_values = values;
+    return MTX_SUCCESS;
+}
+
+/**
  * `mtx_matrix_indices_to_csr()' converts the index information of a
  * sparse matrix in coordinate format to an array of row pointers and
  * another array of column indices, as in the compressed sparse row
@@ -655,18 +772,162 @@ static int mtx_matrix_to_csr_coordinate_double(
 }
 
 /**
- * `mtx_superlu_dist_solve_double()' solves the linear system `Ax=b'
- * using an LU factorisation-based direct linear solver from
+ * `mtx_superlu_dist_solve_global_double()' solves the linear system
+ * `Ax=b' using an LU factorisation-based direct linear solver from
  * SuperLU_DIST, where `A' is a real matrix and `x' and `b' are real
  * vectors of double precision floating point values.
  */
-static int mtx_superlu_dist_solve_double(
+static int mtx_superlu_dist_solve_global_double(
+    const struct mtx * A,
+    const struct mtx * b,
+    struct mtx * x,
+    int verbose,
+    FILE * f,
+    int * mpierr,
+    MPI_Comm comm,
+    int root,
+    int num_process_rows,
+    int num_process_columns,
+    superlu_dist_options_t * options)
+{
+#ifdef LIBMTX_HAVE_SUPERLU_DIST
+    int err;
+    if (A->object != mtx_matrix ||
+        b->object != mtx_vector ||
+        x->object != mtx_vector)
+        return MTX_ERR_INVALID_MTX_OBJECT;
+    if (A->format != mtx_coordinate ||
+        b->format != mtx_array ||
+        x->format != mtx_array)
+        return MTX_ERR_INVALID_MTX_FORMAT;
+    if (A->field != mtx_double ||
+        b->field != mtx_double ||
+        x->field != mtx_double)
+        return MTX_ERR_INVALID_MTX_FIELD;
+    if (A->symmetry != mtx_general)
+        return MTX_ERR_INVALID_MTX_SYMMETRY;
+    if (A->num_rows != A->num_columns ||
+        A->num_rows != b->num_rows ||
+        A->num_columns != x->num_rows ||
+        b->size != x->size)
+        return MTX_ERR_INVALID_MTX_SIZE;
+    if (A->sorting != mtx_column_major)
+        return MTX_ERR_INVALID_MTX_SORTING;
+
+    /* SuperLU_DIST only supports 32-bit integer row or column
+     * pointers. */
+    if (A->size > INT32_MAX) {
+        errno = ERANGE;
+        return MTX_ERR_ERRNO;
+    }
+
+    int comm_size;
+    *mpierr = MPI_Comm_size(comm, &comm_size);
+    if (*mpierr)
+        return MTX_ERR_MPI;
+    int rank;
+    *mpierr = MPI_Comm_rank(comm, &rank);
+    if (*mpierr)
+        return MTX_ERR_MPI;
+    if (comm_size != num_process_rows * num_process_columns)
+        return MTX_ERR_SUPERLU_DIST_GRID_SIZE;
+
+    /*
+     * Convert the matrix to a compressed sparse row (CSR) format,
+     * which requires the matrix to already be sorted in row major
+     * order.  Then we compute row pointers and extract column indices
+     * and nonzero values into separate arrays.
+     *
+     * Note that SuperLU_DIST takes ownership of the matrix data, so
+     * there is no need to free the arrays `col_ptr', `row_indices'
+     * and `values' after calling `dCreate_CompRowLoc_Matrix_dist'.
+     * The underlying storage is instead freed with
+     * `Destroy_CompRowLoc_Matrix_dist'.
+     */
+    int32_t * col_ptr;
+    int * row_indices;
+    double * values;
+    err = mtx_matrix_to_csc_coordinate_double(
+        A, &col_ptr, &row_indices, &values);
+    if (err)
+        return err;
+
+    /*
+     * SuperLU_DIST uses a single array for the right-hand side and
+     * solution vector, where the latter overwrites the former.
+     * Therefore, we copy the values from `b' to `x'.
+     */
+    memmove(x->data, b->data, x->size * x->nonzero_size);
+
+    if (rank == root && verbose) {
+        print_options_dist(options);
+        print_sp_ienv_dist(options);
+    }
+
+    /* Initialize SuperLU process grid. */
+    gridinfo_t grid;
+    superlu_gridinit(
+        comm, num_process_rows,
+        num_process_columns, &grid);
+
+    /* Set up the matrix. */
+    SuperMatrix super_A;
+    Stype_t stype = SLU_NC; /* compressed sparse column format */
+    Dtype_t dtype = SLU_D;  /* double precision floating point */
+    Mtype_t mtype = SLU_GE; /* general, unsymmetric matrix. */
+    dCreate_CompCol_Matrix_dist(
+        &super_A, A->num_rows, A->num_columns, A->size,
+        values, row_indices, col_ptr,
+        stype, dtype, mtype);
+
+    /* Set up data structures for LU factorisation and solver
+     * statistics. */
+    dScalePermstruct_t scale_perm;
+    dLUstruct_t LU;
+    SuperLUStat_t stat;
+    dScalePermstructInit(
+        A->num_rows, A->num_columns, &scale_perm);
+    dLUstructInit(A->num_columns, &LU);
+    PStatInit(&stat);
+
+    /* Solve the linear system. */
+    int num_right_hand_sides = 1;
+    double berr;
+    pdgssvx_ABglobal(
+        options, &super_A, &scale_perm,
+        (double *) x->data, x->size, num_right_hand_sides,
+        &grid, &LU, &berr, &stat, &err);
+
+    if (verbose)
+        PStatPrint(options, &stat, &grid);
+
+    /* Clean up. */
+    PStatFree(&stat);
+    dDestroy_LU(A->num_columns, &grid, &LU);
+    dLUstructFree(&LU);
+    dScalePermstructFree(&scale_perm);
+    Destroy_CompCol_Matrix_dist(&super_A);
+    superlu_gridexit(&grid);
+    return MTX_SUCCESS;
+#else
+    return MTX_ERR_SUPERLU_DIST_NEEDED;
+#endif
+}
+
+/**
+ * `mtx_superlu_dist_solve_distributed_double()' solves the linear
+ * system `Ax=b' using an LU factorisation-based direct linear solver
+ * from SuperLU_DIST, where `A' is a real matrix and `x' and `b' are
+ * real vectors of double precision floating point values.
+ */
+static int mtx_superlu_dist_solve_distributed_double(
     const struct mtx * A,
     const struct mtx * b,
     struct mtx * x,
     int verbose,
     FILE * f,
     MPI_Comm comm,
+    int root,
     int num_process_rows,
     int num_process_columns,
     superlu_dist_options_t * options)
@@ -701,7 +962,7 @@ static int mtx_superlu_dist_solve_double(
         return MTX_ERR_ERRNO;
     }
 
-    /* 
+    /*
      * Convert the matrix to a compressed sparse row (CSR) format,
      * which requires the matrix to already be sorted in row major
      * order.  Then we compute row pointers and extract column indices
@@ -732,6 +993,8 @@ static int mtx_superlu_dist_solve_double(
         print_options_dist(options);
         print_sp_ienv_dist(options);
     }
+
+    /* Find the first and last row */
 
     /* Set up the matrix. */
     SuperMatrix super_A;
@@ -787,7 +1050,6 @@ static int mtx_superlu_dist_solve_double(
     return MTX_ERR_SUPERLU_DIST_NEEDED;
 #endif
 }
-#endif
 
 /**
  * `redirect_stdout()' redirects standard output to the given file
@@ -830,12 +1092,14 @@ static int restore_stdout(
 }
 
 /**
- * `mtx_superlu_dist_solve()' solves the linear system `Ax=b' using an
- * LU factorisation-based direct linear solver from SuperLU_DIST.
+ * `mtx_superlu_dist_solve_global()' solves the linear system `Ax=b'
+ * using an LU factorisation-based direct linear solver from
+ * SuperLU_DIST. The matrix and right-hand side are replicated
+ * globally on every MPI process in the communicator `comm'.
  *
  * Note that MPI must have been initialised prior to calling
- * `mtx_superlu_dist_solve()'. SuperLU_DIST uses a 2D process grid
- * with dimensions given by `num_process_rows' and
+ * `mtx_superlu_dist_solve_global()'. SuperLU_DIST uses a 2D process
+ * grid with dimensions given by `num_process_rows' and
  * `num_process_columns'.  These processes must belong to the MPI
  * communicator `comm'.
  *
@@ -865,9 +1129,9 @@ static int restore_stdout(
  *   - SymPattern = NO
  *
  * Based on the above defaults, most users will wish to use
- * `mtx_superlu_dist_solve()' as follows:
+ * `mtx_superlu_dist_solve_global()' as follows:
  *
- *   int err = mtx_superlu_dist_solve(
+ *   int err = mtx_superlu_dist_solve_global(
  *       A, b, x, verbose, stderr, MPI_COMM_WORLD,
  *       num_process_rows, num_process_cols,
  *       mtx_superlu_dist_fact_DOFACT,
@@ -886,14 +1150,174 @@ static int restore_stdout(
  *   Piyush Sao, Meiyue Shao and Ichitaro Yamazaki. "SuperLU Users'
  *   Guide". June 2018.
  */
-int mtx_superlu_dist_solve(
+int mtx_superlu_dist_solve_global(
     const struct mtx * A,
     const struct mtx * b,
     struct mtx * x,
     int verbose,
     FILE * f,
-    int * mpierrcode,
+    int * mpierr,
     MPI_Comm comm,
+    int root,
+    int num_process_rows,
+    int num_process_columns,
+    enum mtx_superlu_dist_fact Fact,
+    bool Equil,
+    bool ParSymbFact,
+    enum mtx_superlu_dist_colperm ColPerm,
+    enum mtx_superlu_dist_rowperm RowPerm,
+    bool ReplaceTinyPivot,
+    enum mtx_superlu_dist_iterrefine IterRefine,
+    enum mtx_superlu_dist_trans Trans,
+    bool SolveInitialized,
+    bool RefineInitialized,
+    bool PrintStat,
+    int num_lookaheads,
+    bool lookahead_etree,
+    bool SymPattern)
+{
+    int err;
+
+
+    int mpi_initialized;
+    MPI_Initialized(&mpi_initialized);
+    if (!mpi_initialized)
+        return MTX_ERR_MPI_NOT_INITIALIZED;
+
+    int comm_size;
+    *mpierr = MPI_Comm_size(comm, &comm_size);
+    if (*mpierr)
+        return MTX_ERR_MPI;
+    if (comm_size != num_process_rows * num_process_columns)
+        return MTX_ERR_SUPERLU_DIST_GRID_SIZE;
+
+    /*
+     * SuperLU_DIST will sometimes write to standard output, which
+     * will pollute the output of our program. Since there is no easy
+     * way to disable the output from SuperLU_DIST, we need to
+     * temporarily redirect `stdout' to another file descriptor, and
+     * then reinstate `stdout' when we are done.
+     */
+    int fd = verbose ? fileno(f) : open("/dev/null", O_WRONLY);
+    if (fd == -1)
+        return MTX_ERR_ERRNO;
+    int stdout_copy;
+    err = redirect_stdout(fd, &stdout_copy);
+    if (err) {
+        if (!verbose)
+            close(fd);
+        return err;
+    }
+
+    superlu_dist_options_t options;
+    err = superlu_dist_options_set(
+        &options, Fact, Equil, ParSymbFact,
+        ColPerm, RowPerm, ReplaceTinyPivot, IterRefine,
+        Trans, SolveInitialized, RefineInitialized,
+        PrintStat, num_lookaheads, lookahead_etree,
+        SymPattern);
+    if (err) {
+        int olderrno = errno;
+        restore_stdout(fd, stdout_copy);
+        if (!verbose)
+            close(fd);
+        errno = olderrno;
+        return err;
+    }
+
+    if (A->field == mtx_double) {
+        err = mtx_superlu_dist_solve_global_double(
+            A, b, x, verbose, f, mpierr, comm, root,
+            num_process_rows, num_process_columns,
+            &options);
+        if (err) {
+            int olderrno = errno;
+            restore_stdout(fd, stdout_copy);
+            if (!verbose)
+                close(fd);
+            errno = olderrno;
+            return err;
+        }
+    } else {
+        return MTX_ERR_INVALID_MTX_FIELD;
+    }
+
+    /* Restore standard output. */
+    err = restore_stdout(fd, stdout_copy);
+    if (err)
+        return err;
+    return MTX_SUCCESS;
+}
+
+/**
+ * `mtx_superlu_dist_solve_distributed()' solves the linear system
+ * `Ax=b' using an LU factorisation-based direct linear solver from
+ * SuperLU_DIST. The matrix and right-hand side are distributed across
+ * MPI processes in the communicator `comm', such that each process
+ * owns a block of consecutive rows of `A' and `b'.
+ *
+ * Note that MPI must have been initialised prior to calling
+ * `mtx_superlu_dist_solve_distributed()'. SuperLU_DIST uses a 2D
+ * process grid with dimensions given by `num_process_rows' and
+ * `num_process_columns'.  These processes must belong to the MPI
+ * communicator `comm'.
+ *
+ * The matrix `A' must already be sorted in row-major order.
+ *
+ * Most of the remaining arguments relate to various SuperLU_DIST
+ * options that control how the linear system is solved.  Note that
+ * these arguments are named just like the corresponding options in
+ * SuperLU_DIST (using Camel case). The relevant options are described
+ * in the SuperLU User Guide (Li et. al. (2018)).
+ *
+ * The following values are normally used as defaults by SuperLU_DIST:
+ *   - Fact = DOFACT
+ *   - Equil = YES
+ *   - ParSymbFact = NO
+ *   - ColPerm = METIS_AT_PLUS_A if ParMETIS is available, or
+ *               MMD_AT_PLUS_A otherwise
+ *   - RowPerm = LargeDiag_MC64
+ *   - ReplaceTinyPivot = NO
+ *   - IterRefine = SLU_DOUBLE
+ *   - Trans = NOTRANS
+ *   - SolveInitialized = NO
+ *   - RefineInitialized = NO
+ *   - PrintStat = YES
+ *   - num_lookaheads = 10
+ *   - lookahead_etree = NO
+ *   - SymPattern = NO
+ *
+ * Based on the above defaults, most users will wish to use
+ * `mtx_superlu_dist_solve_distributed()' as follows:
+ *
+ *   int err = mtx_superlu_dist_solve_distributed(
+ *       A, b, x, verbose, stderr, MPI_COMM_WORLD,
+ *       0, num_process_rows, num_process_cols,
+ *       mtx_superlu_dist_fact_DOFACT,
+ *       true, false,
+ *       mtx_superlu_dist_colperm_MMD_AT_PLUS_A,
+ *       mtx_superlu_dist_rowperm_LargeDiag_MC64,
+ *       false,
+ *       mtx_superlu_dist_iterrefine_DOUBLE,
+ *       mtx_superlu_dist_trans_NOTRANS,
+ *       false, false, true, 10, false, false);
+ *
+ *
+ * References:
+ *
+ *   Xiaoye S. Li, James W. Demmel, John R. Gilbert, Laura Grigori,
+ *   Piyush Sao, Meiyue Shao and Ichitaro Yamazaki. "SuperLU Users'
+ *   Guide". June 2018.
+ */
+int mtx_superlu_dist_solve_distributed(
+    const struct mtx * A,
+    const struct mtx * b,
+    struct mtx * x,
+    int verbose,
+    FILE * f,
+    int * mpierr,
+    MPI_Comm comm,
+    int root,
     int num_process_rows,
     int num_process_columns,
     enum mtx_superlu_dist_fact Fact,
@@ -919,9 +1343,11 @@ int mtx_superlu_dist_solve(
         return MTX_ERR_MPI_NOT_INITIALIZED;
 
     int comm_size;
-    MPI_Comm_size(comm, &comm_size);
+    *mpierr = MPI_Comm_size(comm, &comm_size);
+    if (*mpierr)
+        return MTX_ERR_MPI;
     if (comm_size < num_process_rows * num_process_columns) {
-        *mpierrcode = MPI_ERR_COMM;
+        *mpierr = MPI_ERR_COMM;
         return MTX_ERR_MPI;
     }
 
@@ -960,8 +1386,8 @@ int mtx_superlu_dist_solve(
     }
 
     if (A->field == mtx_double) {
-        err = mtx_superlu_dist_solve_double(
-            A, b, x, verbose, f, comm,
+        err = mtx_superlu_dist_solve_distributed_double(
+            A, b, x, verbose, f, comm, root,
             num_process_rows, num_process_columns,
             &options);
         if (err) {
@@ -982,3 +1408,4 @@ int mtx_superlu_dist_solve(
         return err;
     return MTX_SUCCESS;
 }
+#endif

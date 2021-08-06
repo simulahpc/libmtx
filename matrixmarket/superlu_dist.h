@@ -273,12 +273,14 @@ int mtx_superlu_dist_trans_parse(
     const char * valid_delimiters);
 
 /**
- * `mtx_superlu_dist_solve()' solves the linear system `Ax=b' using an
- * LU factorisation-based direct linear solver from SuperLU_DIST.
+ * `mtx_superlu_dist_solve_global()' solves the linear system `Ax=b'
+ * using an LU factorisation-based direct linear solver from
+ * SuperLU_DIST. The matrix and right-hand side are replicated
+ * globally on every MPI process in the communicator `comm'.
  *
  * Note that MPI must have been initialised prior to calling
- * `mtx_superlu_dist_solve()'. SuperLU_DIST uses a 2D process grid
- * with dimensions given by `num_process_rows' and
+ * `mtx_superlu_dist_solve_global()'. SuperLU_DIST uses a 2D process
+ * grid with dimensions given by `num_process_rows' and
  * `num_process_columns'.  These processes must belong to the MPI
  * communicator `comm'.
  *
@@ -308,11 +310,11 @@ int mtx_superlu_dist_trans_parse(
  *   - SymPattern = NO
  *
  * Based on the above defaults, most users will wish to use
- * `mtx_superlu_dist_solve()' as follows:
+ * `mtx_superlu_dist_solve_global()' as follows:
  *
- *   int err = mtx_superlu_dist_solve(
+ *   int err = mtx_superlu_dist_solve_global(
  *       A, b, x, verbose, stderr, MPI_COMM_WORLD,
- *       num_process_rows, num_process_cols,
+ *       0, num_process_rows, num_process_cols,
  *       mtx_superlu_dist_fact_DOFACT,
  *       true, false,
  *       mtx_superlu_dist_colperm_MMD_AT_PLUS_A,
@@ -329,7 +331,7 @@ int mtx_superlu_dist_trans_parse(
  *   Piyush Sao, Meiyue Shao and Ichitaro Yamazaki. "SuperLU Users'
  *   Guide". June 2018.
  */
-int mtx_superlu_dist_solve(
+int mtx_superlu_dist_solve_global(
     const struct mtx * A,
     const struct mtx * b,
     struct mtx * x,
@@ -337,6 +339,93 @@ int mtx_superlu_dist_solve(
     FILE * f,
     int * mpierr,
     MPI_Comm comm,
+    int root,
+    int num_process_rows,
+    int num_process_columns,
+    enum mtx_superlu_dist_fact Fact,
+    bool Equil,
+    bool ParSymbFact,
+    enum mtx_superlu_dist_colperm ColPerm,
+    enum mtx_superlu_dist_rowperm RowPerm,
+    bool ReplaceTinyPivot,
+    enum mtx_superlu_dist_iterrefine IterRefine,
+    enum mtx_superlu_dist_trans Trans,
+    bool SolveInitialized,
+    bool RefineInitialized,
+    bool PrintStat,
+    int num_lookaheads,
+    bool lookahead_etree,
+    bool SymPattern);
+
+/**
+ * `mtx_superlu_dist_solve_distributed()' solves the linear system
+ * `Ax=b' using an LU factorisation-based direct linear solver from
+ * SuperLU_DIST. The matrix and right-hand side are distributed across
+ * MPI processes in the communicator `comm', such that each process
+ * owns a block of consecutive rows of `A' and `b'.
+ *
+ * Note that MPI must have been initialised prior to calling
+ * `mtx_superlu_dist_solve_distributed()'. SuperLU_DIST uses a 2D
+ * process grid with dimensions given by `num_process_rows' and
+ * `num_process_columns'.  These processes must belong to the MPI
+ * communicator `comm'.
+ *
+ * The matrix `A' must already be sorted in row-major order.
+ *
+ * Most of the remaining arguments relate to various SuperLU_DIST
+ * options that control how the linear system is solved.  Note that
+ * these arguments are named just like the corresponding options in
+ * SuperLU_DIST (using Camel case). The relevant options are described
+ * in the SuperLU User Guide (Li et. al. (2018)).
+ *
+ * The following values are normally used as defaults by SuperLU_DIST:
+ *   - Fact = DOFACT
+ *   - Equil = YES
+ *   - ParSymbFact = NO
+ *   - ColPerm = METIS_AT_PLUS_A if ParMETIS is available, or
+ *               MMD_AT_PLUS_A otherwise
+ *   - RowPerm = LargeDiag_MC64
+ *   - ReplaceTinyPivot = NO
+ *   - IterRefine = SLU_DOUBLE
+ *   - Trans = NOTRANS
+ *   - SolveInitialized = NO
+ *   - RefineInitialized = NO
+ *   - PrintStat = YES
+ *   - num_lookaheads = 10
+ *   - lookahead_etree = NO
+ *   - SymPattern = NO
+ *
+ * Based on the above defaults, most users will wish to use
+ * `mtx_superlu_dist_solve_distributed()' as follows:
+ *
+ *   int err = mtx_superlu_dist_solve_distributed(
+ *       A, b, x, verbose, stderr, MPI_COMM_WORLD,
+ *       0, num_process_rows, num_process_cols,
+ *       mtx_superlu_dist_fact_DOFACT,
+ *       true, false,
+ *       mtx_superlu_dist_colperm_MMD_AT_PLUS_A,
+ *       mtx_superlu_dist_rowperm_LargeDiag_MC64,
+ *       false,
+ *       mtx_superlu_dist_iterrefine_DOUBLE,
+ *       mtx_superlu_dist_trans_NOTRANS,
+ *       false, false, true, 10, false, false);
+ *
+ *
+ * References:
+ *
+ *   Xiaoye S. Li, James W. Demmel, John R. Gilbert, Laura Grigori,
+ *   Piyush Sao, Meiyue Shao and Ichitaro Yamazaki. "SuperLU Users'
+ *   Guide". June 2018.
+ */
+int mtx_superlu_dist_solve_distributed(
+    const struct mtx * A,
+    const struct mtx * b,
+    struct mtx * x,
+    int verbose,
+    FILE * f,
+    int * mpierr,
+    MPI_Comm comm,
+    int root,
     int num_process_rows,
     int num_process_columns,
     enum mtx_superlu_dist_fact Fact,
