@@ -63,6 +63,7 @@ format. The definition of the @code{mtx} struct is shown below.
   enum mtx_symmetry symmetry;
 
   /* Extra header info */
+  enum mtx_triangle triangle;
   enum mtx_sorting sorting;
   enum mtx_ordering ordering;
   enum mtx_assembly assembly;
