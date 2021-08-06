@@ -1,3 +1,8 @@
+2021-08-05 James D. Trotter <james@simula.no>
+
+	Implement column major sorting for sparse matrices in coordinate
+	format.
+
 2021-08-02 James D. Trotter <james@simula.no>
 
 	Implement several new commands, including mtxscal, mtxaxpy, mtxdot
