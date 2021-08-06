@@ -3,6 +3,8 @@
 	Implement column major sorting for sparse matrices in coordinate
 	format.
 
+	Add functions for computing column pointers and row indices.
+
 2021-08-02 James D. Trotter <james@simula.no>
 
 	Implement several new commands, including mtxscal, mtxaxpy, mtxdot
