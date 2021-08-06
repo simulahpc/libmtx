@@ -17,7 +17,7 @@
  * <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-06-18
+ * Last modified: 2021-08-06
  *
  * Functions for communicating objects in Matrix Market format between
  * processes using MPI.
@@ -273,43 +273,30 @@ static int mtx_send_header(
     MPI_Comm comm,
     int * mpierrcode)
 {
-    *mpierrcode = MPI_SUCCESS;
-
-    /* Send Matrix Market object type. */
     *mpierrcode = MPI_Send(&mtx->object, 1, MPI_INT, dest, tag, comm);
     if (*mpierrcode)
         return MTX_ERR_MPI;
-
-    /* Send Matrix Market format. */
     *mpierrcode = MPI_Send(&mtx->format, 1, MPI_INT, dest, tag, comm);
     if (*mpierrcode)
         return MTX_ERR_MPI;
-
-    /* Send Matrix Market field. */
     *mpierrcode = MPI_Send(&mtx->field, 1, MPI_INT, dest, tag, comm);
     if (*mpierrcode)
         return MTX_ERR_MPI;
-
-    /* Send Matrix Market symmetry. */
     *mpierrcode = MPI_Send(&mtx->symmetry, 1, MPI_INT, dest, tag, comm);
     if (*mpierrcode)
         return MTX_ERR_MPI;
-
-    /* Send Matrix Market sorting. */
+    *mpierrcode = MPI_Send(&mtx->triangle, 1, MPI_INT, dest, tag, comm);
+    if (*mpierrcode)
+        return MTX_ERR_MPI;
     *mpierrcode = MPI_Send(&mtx->sorting, 1, MPI_INT, dest, tag, comm);
     if (*mpierrcode)
         return MTX_ERR_MPI;
-
-    /* Send Matrix Market ordering. */
     *mpierrcode = MPI_Send(&mtx->ordering, 1, MPI_INT, dest, tag, comm);
     if (*mpierrcode)
         return MTX_ERR_MPI;
-
-    /* Send Matrix Market assembly. */
     *mpierrcode = MPI_Send(&mtx->assembly, 1, MPI_INT, dest, tag, comm);
     if (*mpierrcode)
         return MTX_ERR_MPI;
-
     return MTX_SUCCESS;
 }
 
@@ -479,50 +466,38 @@ static int mtx_recv_header(
     MPI_Comm comm,
     int * mpierrcode)
 {
-    *mpierrcode = MPI_SUCCESS;
-
-    /* Receive Matrix Market object type. */
     *mpierrcode = MPI_Recv(
         &mtx->object, 1, MPI_INT, source, tag, comm, MPI_STATUS_IGNORE);
     if (*mpierrcode)
         return MTX_ERR_MPI;
-
-    /* Receive Matrix Market format. */
     *mpierrcode = MPI_Recv(
         &mtx->format, 1, MPI_INT, source, tag, comm, MPI_STATUS_IGNORE);
     if (*mpierrcode)
         return MTX_ERR_MPI;
-
-    /* Receive Matrix Market field. */
     *mpierrcode = MPI_Recv(
         &mtx->field, 1, MPI_INT, source, tag, comm, MPI_STATUS_IGNORE);
     if (*mpierrcode)
         return MTX_ERR_MPI;
-
-    /* Receive Matrix Market symmetry. */
     *mpierrcode = MPI_Recv(
         &mtx->symmetry, 1, MPI_INT, source, tag, comm, MPI_STATUS_IGNORE);
     if (*mpierrcode)
         return MTX_ERR_MPI;
-
-    /* Receive Matrix Market sorting. */
+    *mpierrcode = MPI_Recv(
+        &mtx->triangle, 1, MPI_INT, source, tag, comm, MPI_STATUS_IGNORE);
+    if (*mpierrcode)
+        return MTX_ERR_MPI;
     *mpierrcode = MPI_Recv(
         &mtx->sorting, 1, MPI_INT, source, tag, comm, MPI_STATUS_IGNORE);
     if (*mpierrcode)
         return MTX_ERR_MPI;
-
-    /* Receive Matrix Market ordering. */
     *mpierrcode = MPI_Recv(
         &mtx->ordering, 1, MPI_INT, source, tag, comm, MPI_STATUS_IGNORE);
     if (*mpierrcode)
         return MTX_ERR_MPI;
-
-    /* Receive Matrix Market assembly. */
     *mpierrcode = MPI_Recv(
         &mtx->assembly, 1, MPI_INT, source, tag, comm, MPI_STATUS_IGNORE);
     if (*mpierrcode)
         return MTX_ERR_MPI;
-
     return MTX_SUCCESS;
 }
 
@@ -542,7 +517,7 @@ static int mtx_recv_comments(
 {
     *mpierrcode = MPI_SUCCESS;
 
-    /* Send the number of comment lines. */
+    /* Receive the number of comment lines. */
     *mpierrcode = MPI_Recv(
         &mtx->num_comment_lines, 1, MPI_INT, dest, tag, comm, MPI_STATUS_IGNORE);
     if (*mpierrcode)
@@ -724,6 +699,189 @@ int mtx_recv(
 }
 
 /**
+ * `mtx_bcast_header()' broadcasts the header section of `struct mtx'
+ * to other MPI processes in a communicator.
+ *
+ * This is analogous to `MPI_Bcast()' and requires all processes in
+ * the communicator to collectively call `mtx_bcast_header()'.
+ */
+static int mtx_bcast_header(
+    struct mtx * mtx,
+    int root,
+    MPI_Comm comm,
+    int * mpierrcode)
+{
+    *mpierrcode = MPI_Bcast(&mtx->object, 1, MPI_INT, root, comm);
+    if (*mpierrcode)
+        return MTX_ERR_MPI;
+    *mpierrcode = MPI_Bcast(&mtx->format, 1, MPI_INT, root, comm);
+    if (*mpierrcode)
+        return MTX_ERR_MPI;
+    *mpierrcode = MPI_Bcast(&mtx->field, 1, MPI_INT, root, comm);
+    if (*mpierrcode)
+        return MTX_ERR_MPI;
+    *mpierrcode = MPI_Bcast(&mtx->symmetry, 1, MPI_INT, root, comm);
+    if (*mpierrcode)
+        return MTX_ERR_MPI;
+    *mpierrcode = MPI_Bcast(&mtx->triangle, 1, MPI_INT, root, comm);
+    if (*mpierrcode)
+        return MTX_ERR_MPI;
+    *mpierrcode = MPI_Bcast(&mtx->sorting, 1, MPI_INT, root, comm);
+    if (*mpierrcode)
+        return MTX_ERR_MPI;
+    *mpierrcode = MPI_Bcast(&mtx->ordering, 1, MPI_INT, root, comm);
+    if (*mpierrcode)
+        return MTX_ERR_MPI;
+    *mpierrcode = MPI_Bcast(&mtx->assembly, 1, MPI_INT, root, comm);
+    if (*mpierrcode)
+        return MTX_ERR_MPI;
+    return MTX_SUCCESS;
+}
+
+/**
+ * `mtx_bcast_comments()' broadcasts the comments section of `struct
+ * mtx' to other MPI processes in a communicator.
+ *
+ * This is analogous to `MPI_Bcast()' and requires all processes in
+ * the communicator to collectively call `mtx_bcast_comments()'.
+ */
+static int mtx_bcast_comments(
+    struct mtx * mtx,
+    int root,
+    MPI_Comm comm,
+    int * mpierrcode)
+{
+    /* Get the MPI rank of the current process. */
+    int rank;
+    *mpierrcode = MPI_Comm_rank(comm, &rank);
+    if (*mpierrcode)
+        return MTX_ERR_MPI;
+
+    /* Broadcast the number of comment lines. */
+    *mpierrcode = MPI_Bcast(&mtx->num_comment_lines, 1, MPI_INT, root, comm);
+    if (*mpierrcode)
+        return MTX_ERR_MPI;
+
+    /* Allocate storage for comment lines. */
+    if (rank != root) {
+        mtx->comment_lines = malloc(mtx->num_comment_lines * sizeof(char *));
+        if (!mtx->comment_lines)
+            return MTX_ERR_ERRNO;
+    }
+
+    /* Broadcast each comment line. */
+    for (int i = 0; i < mtx->num_comment_lines; i++) {
+        int n = rank == root ? strlen(mtx->comment_lines[i]) : 0;
+        *mpierrcode = MPI_Bcast(&n, 1, MPI_INT, root, comm);
+        if (*mpierrcode)
+            return MTX_ERR_MPI;
+
+        /* Allocate storage for the comment line. */
+        if (rank != root) {
+            mtx->comment_lines[i] = malloc((n+1) * sizeof(char));
+            if (!mtx->comment_lines[i]) {
+                for (int j = i-1; j >= 0; j--)
+                    free(mtx->comment_lines[j]);
+                free(mtx->comment_lines);
+                return MTX_ERR_ERRNO;
+            }
+        }
+
+        *mpierrcode = MPI_Bcast(
+            mtx->comment_lines[i], n, MPI_CHAR, root, comm);
+        if (*mpierrcode)
+            return MTX_ERR_MPI;
+        if (rank != root)
+            mtx->comment_lines[i][n] = '\0';
+    }
+    return MTX_SUCCESS;
+}
+
+/**
+ * `mtx_bcast_size()' broadcasts the size section of `struct mtx' to
+ * other MPI processes in a communicator.
+ *
+ * This is analogous to `MPI_Bcast()' and requires all processes in
+ * the communicator to collectively call `mtx_bcast_size()'.
+ */
+static int mtx_bcast_size(
+    struct mtx * mtx,
+    int root,
+    MPI_Comm comm,
+    int * mpierrcode)
+{
+    *mpierrcode = MPI_Bcast(
+        &mtx->num_rows, 1, MPI_INT, root, comm);
+    if (*mpierrcode)
+        return MTX_ERR_MPI;
+    *mpierrcode = MPI_Bcast(
+        &mtx->num_columns, 1, MPI_INT, root, comm);
+    if (*mpierrcode)
+        return MTX_ERR_MPI;
+    *mpierrcode = MPI_Bcast(
+        &mtx->num_nonzeros, 1, MPI_INT64_T, root, comm);
+    if (*mpierrcode)
+        return MTX_ERR_MPI;
+    *mpierrcode = MPI_Bcast(
+        &mtx->size, 1, MPI_INT64_T, root, comm);
+    if (*mpierrcode)
+        return MTX_ERR_MPI;
+    *mpierrcode = MPI_Bcast(
+        &mtx->nonzero_size, 1, MPI_INT, root, comm);
+    if (*mpierrcode)
+        return MTX_ERR_MPI;
+    return MTX_SUCCESS;
+}
+
+/**
+ * `mtx_bcast_data()' broadcasts the data section of `struct mtx' to
+ * other MPI processes in a communicator.
+ *
+ * This is analogous to `MPI_Bcast()' and requires all processes in
+ * the communicator to collectively call `mtx_bcast_data()'.
+ */
+static int mtx_bcast_data(
+    struct mtx * mtx,
+    int root,
+    MPI_Comm comm,
+    int * mpierrcode)
+{
+    /* Get the MPI rank of the current process. */
+    int rank;
+    *mpierrcode = MPI_Comm_rank(comm, &rank);
+    if (*mpierrcode)
+        return MTX_ERR_MPI;
+
+    /* Allocate storage for the Matrix Market data. */
+    if (rank != root) {
+        mtx->data = malloc(mtx->size * mtx->nonzero_size);
+        if (!mtx->data)
+            return MTX_ERR_ERRNO;
+    }
+
+    /* Get the data type. */
+    MPI_Datatype datatype;
+    int err = mtx_datatype(mtx, &datatype, mpierrcode);
+    if (err) {
+        if (rank != root)
+            free(mtx->data);
+        return err;
+    }
+
+    /* Broadcast the data. */
+    *mpierrcode = MPI_Bcast(
+        mtx->data, mtx->size, datatype, root, comm);
+    if (*mpierrcode) {
+        MPI_Type_free(&datatype);
+        if (rank != root)
+            free(mtx->data);
+        return MTX_ERR_MPI;
+    }
+    MPI_Type_free(&datatype);
+    return MTX_SUCCESS;
+}
+
+/**
  * `mtx_bcast()' broadcasts a `struct mtx' from an MPI root
  * process to other processes in a communicator.
  *
@@ -736,301 +894,21 @@ int mtx_bcast(
     MPI_Comm comm,
     int * mpierrcode)
 {
-    errno = ENOTSUP;
-    return MTX_ERR_ERRNO;
-
-    /* int err; */
-    /* int mpierr; */
-    /* struct mtx mm; */
-
-    /* /\* Broadcast Matrix Market object type. *\/ */
-    /* if (mpi_rank == mpi_root) */
-    /*     mm.object = mmin->object; */
-    /* *mpierrcode = MPI_Bcast(&mm.object, 1, MPI_INT, mpi_root, comm); */
-    /* if (*mpierrcode) */
-    /*     return MTX_ERR_MPI; */
-
-    /* /\* Broadcast Matrix Market format. *\/ */
-    /* if (mpi_rank == mpi_root) */
-    /*     mm.format = mmin->format; */
-    /* *mpierrcode = MPI_Bcast(&mm.format, 1, MPI_INT, mpi_root, comm); */
-    /* if (*mpierrcode) */
-    /*     return MTX_ERR_MPI; */
-
-    /* /\* Broadcast Matrix Market field. *\/ */
-    /* if (mpi_rank == mpi_root) */
-    /*     mm.field = mmin->field; */
-    /* *mpierrcode = MPI_Bcast(&mm.field, 1, MPI_INT, mpi_root, comm); */
-    /* if (*mpierrcode) */
-    /*     return MTX_ERR_MPI; */
-
-    /* /\* Broadcast Matrix Market symmetry. *\/ */
-    /* if (mpi_rank == mpi_root) */
-    /*     mm.symmetry = mmin->symmetry; */
-    /* *mpierrcode = MPI_Bcast(&mm.symmetry, 1, MPI_INT, mpi_root, comm); */
-    /* if (*mpierrcode) */
-    /*     return MTX_ERR_MPI; */
-
-    /* /\* Broadcast the number of comment lines. *\/ */
-    /* if (mpi_rank == mpi_root) */
-    /*     mm.num_comment_lines = mmin->num_comment_lines; */
-    /* *mpierrcode = MPI_Bcast(&mm.num_comment_lines, 1, MPI_INT, mpi_root, comm); */
-    /* if (*mpierrcode) */
-    /*     return MTX_ERR_MPI; */
-
-    /* /\* Allocate storage for comment lines. *\/ */
-    /* mm.comment_lines = malloc(mm.num_comment_lines * sizeof(char *)); */
-    /* if (!mm.comment_lines) */
-    /*     return errno; */
-
-    /* for (int i = 0; i < mm.num_comment_lines; i++) { */
-    /*     int n; */
-    /*     if (mpi_rank == mpi_root) { */
-    /*         mm.comment_lines[i] = strdup(mmin->comment_lines[i]); */
-    /*         if (!mm.comment_lines[i]) { */
-    /*             for (int j = i-1; j >= 0; j--) */
-    /*                 free(mm.comment_lines[j]); */
-    /*             free(mm.comment_lines); */
-    /*             return errno; */
-    /*         } */
-    /*         n = strlen(mm.comment_lines[i]); */
-    /*         *mpierrcode = MPI_Bcast(&n, 1, MPI_INT, mpi_root, comm); */
-    /*         if (*mpierrcode) { */
-    /*             for (int j = i-1; j >= 0; j--) */
-    /*                 free(mm.comment_lines[j]); */
-    /*             free(mm.comment_lines); */
-    /*             return MTX_ERR_MPI; */
-    /*         } */
-    /*     } */
-
-    /*     *mpierrcode = MPI_Bcast( */
-    /*         &mm.comment_lines[i], n, MPI_CHAR, mpi_root, comm); */
-    /*     if (*mpierrcode) { */
-    /*         for (int j = i-1; j >= 0; j--) */
-    /*             free(mm.comment_lines[j]); */
-    /*         free(mm.comment_lines); */
-    /*         return MTX_ERR_MPI; */
-    /*     } */
-    /* } */
-
-    /* /\* Broadcast the number of rows. *\/ */
-    /* if (mpi_rank == mpi_root) */
-    /*     mm.num_rows = mmin->num_rows; */
-    /* *mpierrcode = MPI_Bcast(&mm.num_rows, 1, MPI_INT, mpi_root, comm); */
-    /* if (*mpierrcode) { */
-    /*     for (int j = mm.num_comment_lines; j >= 0; j--) */
-    /*         free(mm.comment_lines[j]); */
-    /*     free(mm.comment_lines); */
-    /*     return MTX_ERR_MPI; */
-    /* } */
-
-    /* /\* Broadcast the number of columns. *\/ */
-    /* if (mpi_rank == mpi_root) */
-    /*     mm.num_columns = mmin->num_columns; */
-    /* *mpierrcode = MPI_Bcast(&mm.num_columns, 1, MPI_INT, mpi_root, comm); */
-    /* if (*mpierrcode) { */
-    /*     for (int j = mm.num_comment_lines; j >= 0; j--) */
-    /*         free(mm.comment_lines[j]); */
-    /*     free(mm.comment_lines); */
-    /*     return MTX_ERR_MPI; */
-    /* } */
+    int err;
+    err = mtx_bcast_header(mtx, root, comm, mpierrcode);
+    if (err)
+        return err;
+    err = mtx_bcast_comments(mtx, root, comm, mpierrcode);
+    if (err)
+        return err;
+    err = mtx_bcast_size(mtx, root, comm, mpierrcode);
+    if (err)
+        return err;
+    err = mtx_bcast_data(mtx, root, comm, mpierrcode);
+    if (err)
+        return err;
+    return MTX_SUCCESS;
 }
-
-/* /\** */
-/*  * `mtx_bcast_header()` broadcasts the header information of a */
-/*  * Matrix Market object from a root process to a group of MPI */
-/*  * processes. */
-/*  *\/ */
-/* static int mtx_bcast_header( */
-/*     struct mtx * destmtx, */
-/*     MPI_Comm comm, */
-/*     int comm_size, */
-/*     int root, */
-/*     int rank, */
-/*     const struct mtx * rootmtx, */
-/*     int * mpierrcode) */
-/* { */
-/*     int err; */
-
-/*     /\* Broadcast Matrix Market object type. *\/ */
-/*     if (rank == root) */
-/*         destmtx->object = rootmtx->object; */
-/*     err = MPI_Bcast(&destmtx->object, 1, MPI_INT, root, comm); */
-/*     if (err) { */
-/*         *mpierrcode = err; */
-/*         return MTX_ERR_MPI; */
-/*     } */
-
-/*     /\* Broadcast Matrix Market format. *\/ */
-/*     if (rank == root) */
-/*         destmtx->format = rootmtx->format; */
-/*     err = MPI_Bcast(&destmtx->format, 1, MPI_INT, root, comm); */
-/*     if (err) { */
-/*         *mpierrcode = err; */
-/*         return MTX_ERR_MPI; */
-/*     } */
-
-/*     /\* Broadcast Matrix Market field. *\/ */
-/*     if (rank == root) */
-/*         destmtx->field = rootmtx->field; */
-/*     err = MPI_Bcast(&destmtx->field, 1, MPI_INT, root, comm); */
-/*     if (err) { */
-/*         *mpierrcode = err; */
-/*         return MTX_ERR_MPI; */
-/*     } */
-
-/*     /\* Broadcast Matrix Market symmetry. *\/ */
-/*     if (rank == root) */
-/*         destmtx->symmetry = rootmtx->symmetry; */
-/*     err = MPI_Bcast(&destmtx->symmetry, 1, MPI_INT, root, comm); */
-/*     if (err) { */
-/*         *mpierrcode = err; */
-/*         return MTX_ERR_MPI; */
-/*     } */
-
-/*     /\* Broadcast sorting. *\/ */
-/*     if (rank == root) */
-/*         destmtx->sorting = rootmtx->sorting; */
-/*     err = MPI_Bcast(&destmtx->sorting, 1, MPI_INT, root, comm); */
-/*     if (err) { */
-/*         *mpierrcode = err; */
-/*         return MTX_ERR_MPI; */
-/*     } */
-
-/*     /\* Broadcast ordering. *\/ */
-/*     if (rank == root) */
-/*         destmtx->ordering = rootmtx->ordering; */
-/*     err = MPI_Bcast(&destmtx->ordering, 1, MPI_INT, root, comm); */
-/*     if (err) { */
-/*         *mpierrcode = err; */
-/*         return MTX_ERR_MPI; */
-/*     } */
-
-/*     /\* Broadcast assembly. *\/ */
-/*     if (rank == root) */
-/*         destmtx->assembly = rootmtx->assembly; */
-/*     err = MPI_Bcast(&destmtx->assembly, 1, MPI_INT, root, comm); */
-/*     if (err) { */
-/*         *mpierrcode = err; */
-/*         return MTX_ERR_MPI; */
-/*     } */
-
-/*     return MTX_SUCCESS; */
-/* } */
-
-/* /\** */
-/*  * `mtx_bcast_comment_lines()` broadcasts comment lines from a */
-/*  * root process to a group of MPI processes. */
-/*  *\/ */
-/* static int mtx_bcast_comment_lines( */
-/*     struct mtx * destmtx, */
-/*     MPI_Comm comm, */
-/*     int comm_size, */
-/*     int root, */
-/*     int rank, */
-/*     const struct mtx * rootmtx, */
-/*     int * mpierrcode) */
-/* { */
-/*     int err; */
-
-/*     /\* Broadcast the number of comment lines. *\/ */
-/*     if (rank == root) */
-/*         destmtx->num_comment_lines = rootmtx->num_comment_lines; */
-/*     err = MPI_Bcast(&destmtx->num_comment_lines, 1, MPI_INT, root, comm); */
-/*     if (err) { */
-/*         *mpierrcode = err; */
-/*         return MTX_ERR_MPI; */
-/*     } */
-
-/*     /\* Allocate storage for comment lines. *\/ */
-/*     destmtx->comment_lines = malloc(destmtx->num_comment_lines * sizeof(char *)); */
-/*     if (!destmtx->comment_lines) */
-/*         return MTX_ERR_ERRNO; */
-
-/*     /\* Broadcast comment lines. *\/ */
-/*     for (int i = 0; i < destmtx->num_comment_lines; i++) { */
-/*         int n; */
-/*         if (rank == root) { */
-/*             destmtx->comment_lines[i] = strdup(rootmtx->comment_lines[i]); */
-/*             if (!destmtx->comment_lines[i]) { */
-/*                 for (int j = i-1; j >= 0; j--) */
-/*                     free(destmtx->comment_lines[j]); */
-/*                 free(destmtx->comment_lines); */
-/*                 return MTX_ERR_ERRNO; */
-/*             } */
-/*             n = strlen(destmtx->comment_lines[i]); */
-/*         } */
-
-/*         err = MPI_Bcast(&n, 1, MPI_INT, root, comm); */
-/*         if (err) { */
-/*             if (rank == root) */
-/*                 free(destmtx->comment_lines[i]); */
-/*             for (int j = i-1; j >= 0; j--) */
-/*                 free(destmtx->comment_lines[j]); */
-/*             free(destmtx->comment_lines); */
-/*             *mpierrcode = err; */
-/*             return MTX_ERR_MPI; */
-/*         } */
-
-/*         if (rank != root) { */
-/*             destmtx->comment_lines[i] = malloc((n+1) * sizeof(char)); */
-/*             if (!destmtx->comment_lines[i]) { */
-/*                 for (int j = i-1; j >= 0; j--) */
-/*                     free(destmtx->comment_lines[j]); */
-/*                 free(destmtx->comment_lines); */
-/*                 return MTX_ERR_ERRNO; */
-/*             } */
-/*         } */
-
-/*         err = MPI_Bcast( */
-/*             destmtx->comment_lines[i], n, MPI_CHAR, root, comm); */
-/*         if (err) { */
-/*             for (int j = i; j >= 0; j--) */
-/*                 free(destmtx->comment_lines[j]); */
-/*             free(destmtx->comment_lines); */
-/*             *mpierrcode = err; */
-/*             return MTX_ERR_MPI; */
-/*         } */
-/*     } */
-
-/*     return MTX_SUCCESS; */
-/* } */
-
-/* /\** */
-/*  * `mtx_bcast_size()` broadcasts size information from a root */
-/*  * process to a group of MPI processes. */
-/*  *\/ */
-/* static int mtx_bcast_size( */
-/*     struct mtx * destmtx, */
-/*     MPI_Comm comm, */
-/*     int comm_size, */
-/*     int root, */
-/*     int rank, */
-/*     const struct mtx * rootmtx, */
-/*     int * mpierrcode) */
-/* { */
-/*     int err; */
-
-/*     /\* Broadcast the number of rows. *\/ */
-/*     if (rank == root) */
-/*         destmtx->num_rows = rootmtx->num_rows; */
-/*     err = MPI_Bcast(&destmtx->num_rows, 1, MPI_INT, root, comm); */
-/*     if (err) { */
-/*         *mpierrcode = err; */
-/*         return MTX_ERR_MPI; */
-/*     } */
-
-/*     /\* Broadcast the number of columns. *\/ */
-/*     if (rank == root) */
-/*         destmtx->num_columns = rootmtx->num_columns; */
-/*     err = MPI_Bcast(&destmtx->num_columns, 1, MPI_INT, root, comm); */
-/*     if (err) { */
-/*         *mpierrcode = err; */
-/*         return MTX_ERR_MPI; */
-/*     } */
-
-/*     return MTX_SUCCESS; */
-/* } */
 
 /**
  * `mtx_matrix_coordinate_gather()` gathers a distributed Matrix

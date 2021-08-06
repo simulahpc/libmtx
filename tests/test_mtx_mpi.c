@@ -119,6 +119,7 @@ int test_mtx_mpi_sendrecv(void)
         TEST_ASSERT_EQ(mtx_coordinate, destmtx.format);
         TEST_ASSERT_EQ(mtx_real, destmtx.field);
         TEST_ASSERT_EQ(mtx_general, destmtx.symmetry);
+        TEST_ASSERT_EQ(mtx_nontriangular, destmtx.triangle);
         TEST_ASSERT_EQ(mtx_unsorted, destmtx.sorting);
         TEST_ASSERT_EQ(mtx_unordered, destmtx.ordering);
         TEST_ASSERT_EQ(mtx_unassembled, destmtx.assembly);
@@ -128,22 +129,124 @@ int test_mtx_mpi_sendrecv(void)
         TEST_ASSERT_EQ(4, destmtx.num_columns);
         TEST_ASSERT_EQ(4, destmtx.num_nonzeros);
         TEST_ASSERT_EQ(4, destmtx.size);
-        TEST_ASSERT_EQ(   1, ((const struct mtx_matrix_coordinate_real *) destmtx.data)[0].i);
-        TEST_ASSERT_EQ(   1, ((const struct mtx_matrix_coordinate_real *) destmtx.data)[0].j);
-        TEST_ASSERT_EQ(1.0f, ((const struct mtx_matrix_coordinate_real *) destmtx.data)[0].a);
-        TEST_ASSERT_EQ(   2, ((const struct mtx_matrix_coordinate_real *) destmtx.data)[1].i);
-        TEST_ASSERT_EQ(   2, ((const struct mtx_matrix_coordinate_real *) destmtx.data)[1].j);
-        TEST_ASSERT_EQ(2.0f, ((const struct mtx_matrix_coordinate_real *) destmtx.data)[1].a);
-        TEST_ASSERT_EQ(   3, ((const struct mtx_matrix_coordinate_real *) destmtx.data)[2].i);
-        TEST_ASSERT_EQ(   3, ((const struct mtx_matrix_coordinate_real *) destmtx.data)[2].j);
-        TEST_ASSERT_EQ(3.0f, ((const struct mtx_matrix_coordinate_real *) destmtx.data)[2].a);
-        TEST_ASSERT_EQ(   4, ((const struct mtx_matrix_coordinate_real *) destmtx.data)[3].i);
-        TEST_ASSERT_EQ(   4, ((const struct mtx_matrix_coordinate_real *) destmtx.data)[3].j);
-        TEST_ASSERT_EQ(4.0f, ((const struct mtx_matrix_coordinate_real *) destmtx.data)[3].a);
+        const struct mtx_matrix_coordinate_real * destmtxdata =
+            (const struct mtx_matrix_coordinate_real *) destmtx.data;
+        TEST_ASSERT_EQ(   1, destmtxdata[0].i);
+        TEST_ASSERT_EQ(   1, destmtxdata[0].j);
+        TEST_ASSERT_EQ(1.0f, destmtxdata[0].a);
+        TEST_ASSERT_EQ(   2, destmtxdata[1].i);
+        TEST_ASSERT_EQ(   2, destmtxdata[1].j);
+        TEST_ASSERT_EQ(2.0f, destmtxdata[1].a);
+        TEST_ASSERT_EQ(   3, destmtxdata[2].i);
+        TEST_ASSERT_EQ(   3, destmtxdata[2].j);
+        TEST_ASSERT_EQ(3.0f, destmtxdata[2].a);
+        TEST_ASSERT_EQ(   4, destmtxdata[3].i);
+        TEST_ASSERT_EQ(   4, destmtxdata[3].j);
+        TEST_ASSERT_EQ(4.0f, destmtxdata[3].a);
         mtx_free(&destmtx);
     } else if (rank == 0) {
         mtx_free(&srcmtx);
     }
+    return TEST_SUCCESS;
+}
+
+/**
+ * `test_mtx_mpi_bcast()` tests broadcasting a matrix from an MPI root
+ * process to all other MPI processes in a communicator.
+ */
+int test_mtx_mpi_bcast(void)
+{
+    int err;
+    int mpierr;
+    char mpierrstr[MPI_MAX_ERROR_STRING];
+    int mpierrstrlen;
+
+    /* Get the size of the MPI communicator. */
+    MPI_Comm comm = MPI_COMM_WORLD;
+    int comm_size;
+    mpierr = MPI_Comm_size(comm, &comm_size);
+    if (mpierr) {
+        MPI_Error_string(mpierr, mpierrstr, &mpierrstrlen);
+        fprintf(stderr, "%s: MPI_Comm_size failed with %s\n",
+                program_invocation_short_name, mpierrstr);
+        MPI_Abort(comm, EXIT_FAILURE);
+    }
+
+    /* Get the MPI rank of the current process. */
+    int rank;
+    err = MPI_Comm_rank(comm, &rank);
+    if (mpierr) {
+        MPI_Error_string(err, mpierrstr, &mpierrstrlen);
+        fprintf(stderr, "%s: MPI_Comm_rank failed with %s\n",
+                program_invocation_short_name, mpierrstr);
+        MPI_Abort(comm, EXIT_FAILURE);
+    }
+
+    /* Create a sparse matrix on the root process. */
+    int num_comment_lines = 1;
+    const char * comment_lines[] = { "a comment" };
+    int num_rows = 4;
+    int num_columns = 4;
+    int64_t size = 4;
+    const struct mtx_matrix_coordinate_real data[] = {
+        {1, 1, 1.0f},
+        {2, 2, 2.0f},
+        {3, 3, 3.0f},
+        {4, 4, 4.0f},
+    };
+    struct mtx mtx;
+    if (rank == 0) {
+        err = mtx_init_matrix_coordinate_real(
+            &mtx, mtx_general, mtx_nontriangular,
+            mtx_unsorted, mtx_unordered, mtx_unassembled,
+            num_comment_lines, comment_lines,
+            num_rows, num_columns, size, data);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    }
+
+    /* Send the matrix from the root process to another process. */
+    int mpierrcode;
+    struct mtx destmtx;
+    if (comm_size < 2) {
+        mtx_free(&mtx);
+        TEST_FAIL_MSG("Expected at least two MPI processes");
+    }
+    err = mtx_bcast(&mtx, 0, comm, &mpierrcode);
+    if (err)
+        mtx_free(&mtx);
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s",
+                       mtx_strerror_mpi(err, mpierrcode, mpierrstr));
+
+    /* Check the received matrix. */
+    TEST_ASSERT_EQ(mtx_matrix, mtx.object);
+    TEST_ASSERT_EQ(mtx_coordinate, mtx.format);
+    TEST_ASSERT_EQ(mtx_real, mtx.field);
+    TEST_ASSERT_EQ(mtx_general, mtx.symmetry);
+    TEST_ASSERT_EQ(mtx_nontriangular, mtx.triangle);
+    TEST_ASSERT_EQ(mtx_unsorted, mtx.sorting);
+    TEST_ASSERT_EQ(mtx_unordered, mtx.ordering);
+    TEST_ASSERT_EQ(mtx_unassembled, mtx.assembly);
+    TEST_ASSERT_EQ(1, mtx.num_comment_lines);
+    TEST_ASSERT_STREQ("a comment", mtx.comment_lines[0]);
+    TEST_ASSERT_EQ(4, mtx.num_rows);
+    TEST_ASSERT_EQ(4, mtx.num_columns);
+    TEST_ASSERT_EQ(4, mtx.num_nonzeros);
+    TEST_ASSERT_EQ(4, mtx.size);
+    const struct mtx_matrix_coordinate_real * mtxdata =
+        (const struct mtx_matrix_coordinate_real *) mtx.data;
+    TEST_ASSERT_EQ(   1, mtxdata[0].i);
+    TEST_ASSERT_EQ(   1, mtxdata[0].j);
+    TEST_ASSERT_EQ(1.0f, mtxdata[0].a);
+    TEST_ASSERT_EQ(   2, mtxdata[1].i);
+    TEST_ASSERT_EQ(   2, mtxdata[1].j);
+    TEST_ASSERT_EQ(2.0f, mtxdata[1].a);
+    TEST_ASSERT_EQ(   3, mtxdata[2].i);
+    TEST_ASSERT_EQ(   3, mtxdata[2].j);
+    TEST_ASSERT_EQ(3.0f, mtxdata[2].a);
+    TEST_ASSERT_EQ(   4, mtxdata[3].i);
+    TEST_ASSERT_EQ(   4, mtxdata[3].j);
+    TEST_ASSERT_EQ(4.0f, mtxdata[3].a);
+    mtx_free(&mtx);
     return TEST_SUCCESS;
 }
 
@@ -228,6 +331,7 @@ int test_mtx_matrix_coordinate_gather(void)
         TEST_ASSERT_EQ(mtx_coordinate, dstmtx.format);
         TEST_ASSERT_EQ(mtx_real, dstmtx.field);
         TEST_ASSERT_EQ(mtx_general, dstmtx.symmetry);
+        TEST_ASSERT_EQ(mtx_nontriangular, dstmtx.triangle);
         TEST_ASSERT_EQ(mtx_unsorted, dstmtx.sorting);
         TEST_ASSERT_EQ(mtx_unordered, dstmtx.ordering);
         TEST_ASSERT_EQ(mtx_assembled, dstmtx.assembly);
@@ -237,18 +341,20 @@ int test_mtx_matrix_coordinate_gather(void)
         TEST_ASSERT_EQ(4, dstmtx.num_columns);
         TEST_ASSERT_EQ(4, dstmtx.num_nonzeros);
         TEST_ASSERT_EQ(4, dstmtx.size);
-        TEST_ASSERT_EQ(   1, ((const struct mtx_matrix_coordinate_real *) dstmtx.data)[0].i);
-        TEST_ASSERT_EQ(   1, ((const struct mtx_matrix_coordinate_real *) dstmtx.data)[0].j);
-        TEST_ASSERT_EQ(1.0f, ((const struct mtx_matrix_coordinate_real *) dstmtx.data)[0].a);
-        TEST_ASSERT_EQ(   2, ((const struct mtx_matrix_coordinate_real *) dstmtx.data)[1].i);
-        TEST_ASSERT_EQ(   2, ((const struct mtx_matrix_coordinate_real *) dstmtx.data)[1].j);
-        TEST_ASSERT_EQ(2.0f, ((const struct mtx_matrix_coordinate_real *) dstmtx.data)[1].a);
-        TEST_ASSERT_EQ(   3, ((const struct mtx_matrix_coordinate_real *) dstmtx.data)[2].i);
-        TEST_ASSERT_EQ(   3, ((const struct mtx_matrix_coordinate_real *) dstmtx.data)[2].j);
-        TEST_ASSERT_EQ(3.0f, ((const struct mtx_matrix_coordinate_real *) dstmtx.data)[2].a);
-        TEST_ASSERT_EQ(   4, ((const struct mtx_matrix_coordinate_real *) dstmtx.data)[3].i);
-        TEST_ASSERT_EQ(   4, ((const struct mtx_matrix_coordinate_real *) dstmtx.data)[3].j);
-        TEST_ASSERT_EQ(4.0f, ((const struct mtx_matrix_coordinate_real *) dstmtx.data)[3].a);
+        const struct mtx_matrix_coordinate_real * dstmtxdata =
+            (const struct mtx_matrix_coordinate_real *) dstmtx.data;
+        TEST_ASSERT_EQ(   1, dstmtxdata[0].i);
+        TEST_ASSERT_EQ(   1, dstmtxdata[0].j);
+        TEST_ASSERT_EQ(1.0f, dstmtxdata[0].a);
+        TEST_ASSERT_EQ(   2, dstmtxdata[1].i);
+        TEST_ASSERT_EQ(   2, dstmtxdata[1].j);
+        TEST_ASSERT_EQ(2.0f, dstmtxdata[1].a);
+        TEST_ASSERT_EQ(   3, dstmtxdata[2].i);
+        TEST_ASSERT_EQ(   3, dstmtxdata[2].j);
+        TEST_ASSERT_EQ(3.0f, dstmtxdata[2].a);
+        TEST_ASSERT_EQ(   4, dstmtxdata[3].i);
+        TEST_ASSERT_EQ(   4, dstmtxdata[3].j);
+        TEST_ASSERT_EQ(4.0f, dstmtxdata[3].a);
         mtx_free(&dstmtx);
     }
     return TEST_SUCCESS;
@@ -353,6 +459,7 @@ int test_mtx_matrix_coordinate_scatter(void)
     TEST_ASSERT_EQ(mtx_coordinate, dstmtx.format);
     TEST_ASSERT_EQ(mtx_real, dstmtx.field);
     TEST_ASSERT_EQ(mtx_general, dstmtx.symmetry);
+    TEST_ASSERT_EQ(mtx_nontriangular, dstmtx.triangle);
     TEST_ASSERT_EQ(mtx_unsorted, dstmtx.sorting);
     TEST_ASSERT_EQ(mtx_unordered, dstmtx.ordering);
     TEST_ASSERT_EQ(mtx_unassembled, dstmtx.assembly);
@@ -360,40 +467,42 @@ int test_mtx_matrix_coordinate_scatter(void)
     TEST_ASSERT_STREQ("a comment", dstmtx.comment_lines[0]);
     TEST_ASSERT_EQ(4, dstmtx.num_rows);
     TEST_ASSERT_EQ(4, dstmtx.num_columns);
+    const struct mtx_matrix_coordinate_real * dstmtxdata =
+        (const struct mtx_matrix_coordinate_real *) dstmtx.data;
     if (comm_size == 1) {
         TEST_ASSERT_EQ(4, dstmtx.num_nonzeros);
         TEST_ASSERT_EQ(4, dstmtx.size);
-        TEST_ASSERT_EQ(   1, ((const struct mtx_matrix_coordinate_real *) dstmtx.data)[0].i);
-        TEST_ASSERT_EQ(   1, ((const struct mtx_matrix_coordinate_real *) dstmtx.data)[0].j);
-        TEST_ASSERT_EQ(1.0f, ((const struct mtx_matrix_coordinate_real *) dstmtx.data)[0].a);
-        TEST_ASSERT_EQ(   2, ((const struct mtx_matrix_coordinate_real *) dstmtx.data)[1].i);
-        TEST_ASSERT_EQ(   2, ((const struct mtx_matrix_coordinate_real *) dstmtx.data)[1].j);
-        TEST_ASSERT_EQ(2.0f, ((const struct mtx_matrix_coordinate_real *) dstmtx.data)[1].a);
-        TEST_ASSERT_EQ(   3, ((const struct mtx_matrix_coordinate_real *) dstmtx.data)[2].i);
-        TEST_ASSERT_EQ(   3, ((const struct mtx_matrix_coordinate_real *) dstmtx.data)[2].j);
-        TEST_ASSERT_EQ(3.0f, ((const struct mtx_matrix_coordinate_real *) dstmtx.data)[2].a);
-        TEST_ASSERT_EQ(   4, ((const struct mtx_matrix_coordinate_real *) dstmtx.data)[3].i);
-        TEST_ASSERT_EQ(   4, ((const struct mtx_matrix_coordinate_real *) dstmtx.data)[3].j);
-        TEST_ASSERT_EQ(4.0f, ((const struct mtx_matrix_coordinate_real *) dstmtx.data)[3].a);
+        TEST_ASSERT_EQ(   1, dstmtxdata[0].i);
+        TEST_ASSERT_EQ(   1, dstmtxdata[0].j);
+        TEST_ASSERT_EQ(1.0f, dstmtxdata[0].a);
+        TEST_ASSERT_EQ(   2, dstmtxdata[1].i);
+        TEST_ASSERT_EQ(   2, dstmtxdata[1].j);
+        TEST_ASSERT_EQ(2.0f, dstmtxdata[1].a);
+        TEST_ASSERT_EQ(   3, dstmtxdata[2].i);
+        TEST_ASSERT_EQ(   3, dstmtxdata[2].j);
+        TEST_ASSERT_EQ(3.0f, dstmtxdata[2].a);
+        TEST_ASSERT_EQ(   4, dstmtxdata[3].i);
+        TEST_ASSERT_EQ(   4, dstmtxdata[3].j);
+        TEST_ASSERT_EQ(4.0f, dstmtxdata[3].a);
     } else if (comm_size == 2) {
         if (rank == 0) {
             TEST_ASSERT_EQ(2, dstmtx.num_nonzeros);
             TEST_ASSERT_EQ(2, dstmtx.size);
-            TEST_ASSERT_EQ(   1, ((const struct mtx_matrix_coordinate_real *) dstmtx.data)[0].i);
-            TEST_ASSERT_EQ(   1, ((const struct mtx_matrix_coordinate_real *) dstmtx.data)[0].j);
-            TEST_ASSERT_EQ(1.0f, ((const struct mtx_matrix_coordinate_real *) dstmtx.data)[0].a);
-            TEST_ASSERT_EQ(   2, ((const struct mtx_matrix_coordinate_real *) dstmtx.data)[1].i);
-            TEST_ASSERT_EQ(   2, ((const struct mtx_matrix_coordinate_real *) dstmtx.data)[1].j);
-            TEST_ASSERT_EQ(2.0f, ((const struct mtx_matrix_coordinate_real *) dstmtx.data)[1].a);
+            TEST_ASSERT_EQ(   1, dstmtxdata[0].i);
+            TEST_ASSERT_EQ(   1, dstmtxdata[0].j);
+            TEST_ASSERT_EQ(1.0f, dstmtxdata[0].a);
+            TEST_ASSERT_EQ(   2, dstmtxdata[1].i);
+            TEST_ASSERT_EQ(   2, dstmtxdata[1].j);
+            TEST_ASSERT_EQ(2.0f, dstmtxdata[1].a);
         } else if (rank == 1) {
             TEST_ASSERT_EQ(2, dstmtx.num_nonzeros);
             TEST_ASSERT_EQ(2, dstmtx.size);
-            TEST_ASSERT_EQ(   3, ((const struct mtx_matrix_coordinate_real *) dstmtx.data)[0].i);
-            TEST_ASSERT_EQ(   3, ((const struct mtx_matrix_coordinate_real *) dstmtx.data)[0].j);
-            TEST_ASSERT_EQ(3.0f, ((const struct mtx_matrix_coordinate_real *) dstmtx.data)[0].a);
-            TEST_ASSERT_EQ(   4, ((const struct mtx_matrix_coordinate_real *) dstmtx.data)[1].i);
-            TEST_ASSERT_EQ(   4, ((const struct mtx_matrix_coordinate_real *) dstmtx.data)[1].j);
-            TEST_ASSERT_EQ(4.0f, ((const struct mtx_matrix_coordinate_real *) dstmtx.data)[1].a);
+            TEST_ASSERT_EQ(   3, dstmtxdata[0].i);
+            TEST_ASSERT_EQ(   3, dstmtxdata[0].j);
+            TEST_ASSERT_EQ(3.0f, dstmtxdata[0].a);
+            TEST_ASSERT_EQ(   4, dstmtxdata[1].i);
+            TEST_ASSERT_EQ(   4, dstmtxdata[1].j);
+            TEST_ASSERT_EQ(4.0f, dstmtxdata[1].a);
         }
     } else {
         TEST_FAIL_MSG("Expected one or two MPI processes");
@@ -432,6 +541,7 @@ int main(int argc, char * argv[])
     /* 2. Run test suite. */
     TEST_SUITE_BEGIN("Running tests for distributed Matrix Market files\n");
     TEST_RUN(test_mtx_mpi_sendrecv);
+    TEST_RUN(test_mtx_mpi_bcast);
     TEST_RUN(test_mtx_matrix_coordinate_gather);
     TEST_RUN(test_mtx_matrix_coordinate_scatter);
     TEST_SUITE_END();
