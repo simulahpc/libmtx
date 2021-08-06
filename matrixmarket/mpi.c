@@ -1031,6 +1031,17 @@ int mtx_matrix_coordinate_gather(
         }
     }
 
+    if (comm_size > 0)
+        dstmtx->triangle = tmpmtxs[0].triangle;
+    for (int p = 1; p < comm_size; p++) {
+        if (dstmtx->triangle != tmpmtxs[p].triangle) {
+            for (int p = 0; p < comm_size; p++)
+                mtx_free(&tmpmtxs[p]);
+            free(tmpmtxs);
+            return MTX_ERR_INVALID_MTX_TRIANGLE;
+        }
+    }
+
     /* Get the Matrix Market sorting. */
     if (dstmtx->format == mtx_array) {
         if (comm_size > 0)
