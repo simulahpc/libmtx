@@ -22,8 +22,8 @@
  * Assembling sparse matrices and vectors.
  */
 
-#ifndef LIBMTX_ASSEMBLY_H
-#define LIBMTX_ASSEMBLY_H
+#ifndef LIBMTX_MTX_ASSEMBLY_H
+#define LIBMTX_MTX_ASSEMBLY_H
 
 /**
  * `mtx_assembly` is used to enumerate assembly states for sparse

@@ -25,7 +25,7 @@
 
 #include "test.h"
 
-#include <libmtx/blas.h>
+#include <libmtx/mtx/blas.h>
 #include <libmtx/error.h>
 #include <libmtx/superlu_dist.h>
 #include <libmtx/matrix/coordinate/coordinate.h>

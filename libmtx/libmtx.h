@@ -27,7 +27,7 @@
 
 #include <libmtx/libmtx-config.h>
 
-#include <libmtx/blas.h>
+#include <libmtx/mtx/blas.h>
 #include <libmtx/error.h>
 #include <libmtx/mtx/header.h>
 #include <libmtx/index_set.h>

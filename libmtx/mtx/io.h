@@ -22,8 +22,8 @@
  * Input/output for Matrix Market objects.
  */
 
-#ifndef LIBMTX_IO_H
-#define LIBMTX_IO_H
+#ifndef LIBMTX_MTX_IO_H
+#define LIBMTX_MTX_IO_H
 
 #include <libmtx/libmtx-config.h>
 
