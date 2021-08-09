@@ -17,14 +17,14 @@
  * <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-06-29
+ * Last modified: 2021-08-09
  *
  * Unit tests for string printing functions.
  */
 
 #include "test.h"
 
-#include "matrixmarket/format.h"
+#include "libmtx/format.h"
 
 #include <errno.h>
 

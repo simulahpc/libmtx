@@ -17,15 +17,15 @@
  * <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-08-03
+ * Last modified: 2021-08-09
  *
  * Solve a linear system of equation `Ax=b' using a LU
  * factorisation-based direct solver from SuperLU_DIST.
  */
 
-#include <matrixmarket/matrixmarket.h>
+#include <libmtx/libmtx.h>
 
-#include "../matrixmarket/parse.h"
+#include "../libmtx/parse.h"
 
 #include <mpi.h>
 

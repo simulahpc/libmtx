@@ -17,16 +17,16 @@
  * <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-08-02
+ * Last modified: 2021-08-09
  *
  * Scale a vector by a constant.
  *
  * ‘x := alpha*x’.
  */
 
-#include <matrixmarket/matrixmarket.h>
+#include <libmtx/libmtx.h>
 
-#include "../matrixmarket/parse.h"
+#include "../libmtx/parse.h"
 
 #include <errno.h>
 

@@ -17,16 +17,16 @@
  * <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-07-27
+ * Last modified: 2021-08-09
  *
  * Reorder the nonzeros of a sparse matrix and any number of vectors
  * in Matrix Market format according to a specified reordering
  * algorithm or a given permutation.
  */
 
-#include <matrixmarket/matrixmarket.h>
+#include <libmtx/libmtx.h>
 
-#include "../matrixmarket/parse.h"
+#include "../libmtx/parse.h"
 
 #include <errno.h>
 

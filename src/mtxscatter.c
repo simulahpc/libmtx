@@ -17,14 +17,14 @@
  * <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-06-18
+ * Last modified: 2021-08-09
  *
  * Scatter a Matrix Market object to one or more MPI processes.
  */
 
-#include <matrixmarket/matrixmarket.h>
+#include <libmtx/libmtx.h>
 
-#include "../matrixmarket/parse.h"
+#include "../libmtx/parse.h"
 
 #include <mpi.h>
 

@@ -18,7 +18,7 @@
 # <https://www.gnu.org/licenses/>.
 #
 # Authors: James D. Trotter <james@simula.no>
-# Last modified: 2021-08-04
+# Last modified: 2021-08-09
 #
 # Unit tests for direct solver based on SuperLU_DIST.
 

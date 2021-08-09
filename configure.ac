@@ -17,7 +17,7 @@ dnl along with libmtx.  If not, see
 dnl <https://www.gnu.org/licenses/>.
 dnl
 dnl Authors: James D. Trotter <james@simula.no>
-dnl Last modified: 2021-08-03
+dnl Last modified: 2021-08-09
 dnl
 dnl autoconf script for the top-level directory of libmtx.
 dnl
@@ -26,7 +26,7 @@ dnl Process this file with autoconf to produce a configure script.
 AC_INIT([libmtx],[0.1.0],[james@simula.no],[libmtx],[https://github.com/simulahpc/libmtx])
 AC_CONFIG_MACRO_DIRS([m4])
 AC_CONFIG_AUX_DIR([build-aux])
-AC_CONFIG_HEADERS([config.h matrixmarket/libmtx-config.h])
+AC_CONFIG_HEADERS([config.h libmtx/libmtx-config.h])
 
 AM_INIT_AUTOMAKE([subdir-objects])
 
@@ -166,6 +166,6 @@ AC_SUBST(LIBMTX_RELEASE_VERSION)
 
 AC_CONFIG_FILES([
 	Makefile
-	matrixmarket/version.h
-	matrixmarket/libmtx.pc:matrixmarket/libmtx.pc.in])
+	libmtx/version.h
+	libmtx/libmtx.pc:libmtx/libmtx.pc.in])
 AC_OUTPUT

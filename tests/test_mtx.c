@@ -24,14 +24,14 @@
 
 #include "test.h"
 
-#include <matrixmarket/error.h>
-#include <matrixmarket/io.h>
-#include <matrixmarket/matrix.h>
-#include <matrixmarket/matrix_array.h>
-#include <matrixmarket/matrix_coordinate.h>
-#include <matrixmarket/mtx.h>
-#include <matrixmarket/vector_array.h>
-#include <matrixmarket/vector_coordinate.h>
+#include <libmtx/error.h>
+#include <libmtx/io.h>
+#include <libmtx/matrix.h>
+#include <libmtx/matrix_array.h>
+#include <libmtx/matrix_coordinate.h>
+#include <libmtx/mtx.h>
+#include <libmtx/vector_array.h>
+#include <libmtx/vector_coordinate.h>
 
 #include <errno.h>
 #include <unistd.h>

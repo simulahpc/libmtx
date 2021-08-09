@@ -1,0 +1,43 @@
+/* This file is part of libmtx.
+ *
+ * Copyright (C) 2021 James D. Trotter
+ *
+ * libmtx is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * libmtx is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with libmtx.  If not, see
+ * <https://www.gnu.org/licenses/>.
+ *
+ * Authors: James D. Trotter <james@simula.no>
+ * Last modified: 2021-08-09
+ *
+ * Configuration information.
+ */
+
+#ifndef LIBMTX_LIBMTX_CONFIG_H
+#define LIBMTX_LIBMTX_CONFIG_H
+
+/* Define if you have a BLAS library. */
+#undef LIBMTX_HAVE_BLAS
+
+/* Define if you have an MPI library. */
+#undef LIBMTX_HAVE_MPI
+
+/* Define if you have `z' library (-lz) */
+#undef LIBMTX_HAVE_LIBZ
+
+/* Define if you have libpng */
+#undef LIBMTX_HAVE_LIBPNG
+
+/* Define if you have SuperLU_DIST */
+#undef LIBMTX_HAVE_SUPERLU_DIST
+
+#endif

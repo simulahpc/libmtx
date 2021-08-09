@@ -17,16 +17,16 @@
  * <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-08-02
+ * Last modified: 2021-08-09
  *
  * Add two vectors.
  *
  * ‘y := alpha*x + y’.
  */
 
-#include <matrixmarket/matrixmarket.h>
+#include <libmtx/libmtx.h>
 
-#include "../matrixmarket/parse.h"
+#include "../libmtx/parse.h"
 
 #include <errno.h>
 

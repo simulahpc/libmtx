@@ -16,7 +16,7 @@
 @c <https://www.gnu.org/licenses/>.
 @c
 @c Authors: James D. Trotter <james@simula.no>
-@c Last modified: 2021-08-06
+@c Last modified: 2021-08-09
 @c
 @c libmtx User Guide: Matrix Market objects.
 
@@ -45,7 +45,7 @@ distributed matrices and vectors.
 
 @tindex struct mtxdist
 @tindex mtxdist
-The file @file{matrixmarket/mtxdist.h} defines the @code{struct
+The file @file{libmtx/mtxdist.h} defines the @code{struct
 mtxdist} type, which is used to represent distributed objects in the
 Matrix Market format. The definition of the @code{mtxdist} struct is shown
 below.
@@ -165,7 +165,7 @@ among multiple processes.
 
 @tindex struct mtx_index_set
 @tindex enum mtx_index_set_type
-The file @file{matrixmarket/index_set.h} defines data types for index
+The file @file{libmtx/index_set.h} defines data types for index
 sets, including @code{struct mtx_index_set}. There are different types
 of index sets, which may be distinguished by the enum type
 @code{mtx_index_set_type}.
@@ -266,7 +266,7 @@ are finished with the matrix or vector:
 @node Communicating matrices and vectors
 @section Communicating matrices and vectors
 
-The file @file{matrixmarket/mpi.h} defines functions that can be
+The file @file{libmtx/mpi.h} defines functions that can be
 used to communicate Matrix Market objects represented by the
 @code{mtx} struct between MPI processes.
 
