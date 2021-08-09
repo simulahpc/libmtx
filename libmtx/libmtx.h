@@ -39,7 +39,7 @@
 #include <libmtx/mtx.h>
 #include <libmtx/reorder.h>
 #include <libmtx/superlu_dist.h>
-#include <libmtx/vector.h>
+#include <libmtx/vector/vector.h>
 #include <libmtx/vector/array/array.h>
 #include <libmtx/vector/coordinate/coordinate.h>
 #include <libmtx/version.h>
