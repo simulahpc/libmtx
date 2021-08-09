@@ -22,7 +22,7 @@
  * Triangular (or trapezoidal) properties of matrices.
  */
 
-#include <libmtx/triangle.h>
+#include <libmtx/mtx/triangle.h>
 
 /**
  * `mtx_triangle_str()' is a string representing the given triangle
