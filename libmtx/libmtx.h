@@ -29,7 +29,7 @@
 
 #include <libmtx/blas.h>
 #include <libmtx/error.h>
-#include <libmtx/header.h>
+#include <libmtx/mtx/header.h>
 #include <libmtx/index_set.h>
 #include <libmtx/io.h>
 #include <libmtx/matrix/array/array.h>

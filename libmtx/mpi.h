@@ -29,7 +29,7 @@
 #include <libmtx/libmtx-config.h>
 
 #ifdef LIBMTX_HAVE_MPI
-#include <libmtx/header.h>
+#include <libmtx/mtx/header.h>
 #include <libmtx/mtx.h>
 
 #include <mpi.h>

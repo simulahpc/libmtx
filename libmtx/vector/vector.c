@@ -23,7 +23,7 @@
  */
 
 #include <libmtx/error.h>
-#include <libmtx/header.h>
+#include <libmtx/mtx/header.h>
 #include <libmtx/mtx.h>
 #include <libmtx/vector/array/array.h>
 #include <libmtx/vector/coordinate/coordinate.h>

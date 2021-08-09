@@ -49,7 +49,7 @@ libmtx_la_SOURCES = \
 	libmtx/error.c \
 	libmtx/format.c \
 	libmtx/format.h \
-	libmtx/header.c \
+	libmtx/mtx/header.c \
 	libmtx/index_set.c \
 	libmtx/io.c \
 	libmtx/matrix/array/array.c \
@@ -74,7 +74,7 @@ nobase_include_HEADERS = \
 	libmtx/assembly.h \
 	libmtx/blas.h \
 	libmtx/error.h \
-	libmtx/header.h \
+	libmtx/mtx/header.h \
 	libmtx/index_set.h \
 	libmtx/io.h \
 	libmtx/libmtx.h \

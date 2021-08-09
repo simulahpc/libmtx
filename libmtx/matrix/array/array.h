@@ -25,7 +25,7 @@
 #ifndef LIBMTX_MATRIX_ARRAY_ARRAY_H
 #define LIBMTX_MATRIX_ARRAY_ARRAY_H
 
-#include <libmtx/header.h>
+#include <libmtx/mtx/header.h>
 #include <libmtx/mtx/sort.h>
 #include <libmtx/triangle.h>
 
