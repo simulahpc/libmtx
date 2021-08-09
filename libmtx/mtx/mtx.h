@@ -22,8 +22,8 @@
  * Data structures for representing objects in Matrix Market format.
  */
 
-#ifndef LIBMTX_MTX_H
-#define LIBMTX_MTX_H
+#ifndef LIBMTX_MTX_MTX_H
+#define LIBMTX_MTX_MTX_H
 
 #include <libmtx/mtx/assembly.h>
 #include <libmtx/mtx/header.h>

@@ -22,7 +22,7 @@
  * Data structures for representing objects in Matrix Market format.
  */
 
-#include <libmtx/mtx.h>
+#include <libmtx/mtx/mtx.h>
 
 #include <libmtx/error.h>
 #include <libmtx/mtx/header.h>

@@ -474,7 +474,7 @@ File: libmtx.info,  Node: Matrix Market data types,  Next: Error handling,  Up: 
 This section describes the basic data types used to represent objects in
 the Matrix Market file format.
 
-   The file 'libmtx/mtx.h' defines the 'struct mtx' type, which is
+   The file 'libmtx/mtx/mtx.h' defines the 'struct mtx' type, which is
 used to represent objects in the Matrix Market format.  The definition
 of the 'mtx' struct is shown below.
      struct mtx {

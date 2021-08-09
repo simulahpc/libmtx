@@ -56,7 +56,7 @@ libmtx_la_SOURCES = \
 	libmtx/matrix/coordinate/coordinate.c \
 	libmtx/matrix/matrix.c \
 	libmtx/mtx/mpi.c \
-	libmtx/mtx.c \
+	libmtx/mtx/mtx.c \
 	libmtx/mtx/header.c \
 	libmtx/mtx/reorder.c \
 	libmtx/mtx/sort.c \
@@ -83,7 +83,7 @@ nobase_include_HEADERS = \
 	libmtx/matrix/coordinate/coordinate.h \
 	libmtx/matrix/matrix.h \
 	libmtx/mtx/mpi.h \
-	libmtx/mtx.h \
+	libmtx/mtx/mtx.h \
 	libmtx/mtx/header.h \
 	libmtx/mtx/reorder.h \
 	libmtx/mtx/sort.h \
