@@ -66,6 +66,7 @@ libmtx_la_SOURCES = \
 	libmtx/util/parse.h \
 	libmtx/vector/array/array.c \
 	libmtx/vector/array/blas.c \
+	libmtx/vector/coordinate/blas.c \
 	libmtx/vector/coordinate/coordinate.c \
 	libmtx/vector/vector.c \
 	libmtx/version.c
@@ -90,6 +91,7 @@ nobase_include_HEADERS = \
 	libmtx/mtx/triangle.h \
 	libmtx/vector/array/array.h \
 	libmtx/vector/array/blas.h \
+	libmtx/vector/coordinate/blas.h \
 	libmtx/vector/coordinate/coordinate.h \
 	libmtx/vector/vector.h \
 	libmtx/version.h

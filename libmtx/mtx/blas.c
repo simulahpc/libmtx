@@ -30,6 +30,7 @@
 #include <libmtx/mtx/mtx.h>
 #include <libmtx/vector/array/array.h>
 #include <libmtx/vector/array/blas.h>
+#include <libmtx/vector/coordinate/blas.h>
 #include <libmtx/vector/coordinate/coordinate.h>
 
 #ifdef LIBMTX_HAVE_BLAS
@@ -58,21 +59,7 @@ int mtx_sscal(
     if (x->format == mtx_array) {
         return mtx_vector_array_sscal(a, x);
     } else if (x->format == mtx_coordinate) {
-        if (x->object == mtx_matrix) {
-            struct mtx_matrix_coordinate_real * xdata =
-                (struct mtx_matrix_coordinate_real *) x->data;
-            for (int64_t i = 0; i < x->size; i++)
-                xdata[i].a *= a;
-        } else if (x->object == mtx_vector) {
-            if (x->field != mtx_real)
-                return MTX_ERR_INVALID_MTX_FIELD;
-            struct mtx_vector_coordinate_real * xdata =
-                (struct mtx_vector_coordinate_real *) x->data;
-            for (int64_t i = 0; i < x->size; i++)
-                xdata[i].a *= a;
-        } else {
-            return MTX_ERR_INVALID_MTX_OBJECT;
-        }
+        return mtx_vector_coordinate_sscal(a, x);
     } else {
         return MTX_ERR_INVALID_MTX_FORMAT;
     }
@@ -93,21 +80,7 @@ int mtx_dscal(
     if (x->format == mtx_array) {
         return mtx_vector_array_dscal(a, x);
     } else if (x->format == mtx_coordinate) {
-        if (x->field != mtx_double)
-            return MTX_ERR_INVALID_MTX_FIELD;
-        if (x->object == mtx_matrix) {
-            struct mtx_matrix_coordinate_double * xdata =
-                (struct mtx_matrix_coordinate_double *) x->data;
-            for (int64_t i = 0; i < x->size; i++)
-                xdata[i].a *= a;
-        } else if (x->object == mtx_vector) {
-            struct mtx_vector_coordinate_double * xdata =
-                (struct mtx_vector_coordinate_double *) x->data;
-            for (int64_t i = 0; i < x->size; i++)
-                xdata[i].a *= a;
-        } else {
-            return MTX_ERR_INVALID_MTX_OBJECT;
-        }
+        return mtx_vector_coordinate_dscal(a, x);
     } else {
         return MTX_ERR_INVALID_MTX_FORMAT;
     }
@@ -133,14 +106,7 @@ int mtx_saxpy(
     } else if (x->format == mtx_coordinate &&
                y->format == mtx_coordinate)
     {
-        if (x->field != mtx_real || y->field != mtx_real)
-            return MTX_ERR_INVALID_MTX_FIELD;
-        if (x->num_rows != y->num_rows || x->num_columns != y->num_columns)
-            return MTX_ERR_INVALID_MTX_SIZE;
-
-        /* TODO: Implement vector addition for sparse vectors. */
-        errno = ENOTSUP;
-        return MTX_ERR_ERRNO;
+        return mtx_vector_coordinate_saxpy(a, x, y);
     } else {
         return MTX_ERR_INVALID_MTX_FORMAT;
     }
@@ -166,14 +132,7 @@ int mtx_daxpy(
     } else if (x->format == mtx_coordinate &&
                y->format == mtx_coordinate)
     {
-        if (x->field != mtx_double || y->field != mtx_double)
-            return MTX_ERR_INVALID_MTX_FIELD;
-        if (x->num_rows != y->num_rows || x->num_columns != y->num_columns)
-            return MTX_ERR_INVALID_MTX_SIZE;
-
-        /* TODO: Implement vector addition for sparse vectors. */
-        errno = ENOTSUP;
-        return MTX_ERR_ERRNO;
+        return mtx_vector_coordinate_daxpy(a, x, y);
     } else {
         return MTX_ERR_INVALID_MTX_FORMAT;
     }
@@ -200,15 +159,7 @@ int mtx_sdot(
     } else if (x->format == mtx_coordinate &&
                y->format == mtx_coordinate)
     {
-        if (x->field != mtx_real || y->field != mtx_real)
-            return MTX_ERR_INVALID_MTX_FIELD;
-        if (x->num_rows != y->num_rows ||
-            x->num_columns != y->num_columns)
-            return MTX_ERR_INVALID_MTX_SIZE;
-
-        /* TODO: Implement dot product for sparse vectors. */
-        errno = ENOTSUP;
-        return MTX_ERR_ERRNO;
+        return mtx_vector_coordinate_sdot(x, y, dot);
     } else {
         return MTX_ERR_INVALID_MTX_FORMAT;
     }
@@ -235,15 +186,7 @@ int mtx_ddot(
     } else if (x->format == mtx_coordinate &&
                y->format == mtx_coordinate)
     {
-        if (x->field != mtx_double || y->field != mtx_double)
-            return MTX_ERR_INVALID_MTX_FIELD;
-        if (x->num_rows != y->num_rows ||
-            x->num_columns != y->num_columns)
-            return MTX_ERR_INVALID_MTX_SIZE;
-
-        /* TODO: Implement dot product for sparse vectors. */
-        errno = ENOTSUP;
-        return MTX_ERR_ERRNO;
+        return mtx_vector_coordinate_ddot(x, y, dot);
     } else {
         return MTX_ERR_INVALID_MTX_FORMAT;
     }
@@ -264,12 +207,7 @@ int mtx_snrm2(
     if (x->format == mtx_array) {
         return mtx_vector_array_snrm2(x, nrm2);
     } else if (x->format == mtx_coordinate) {
-        if (x->field != mtx_real)
-            return MTX_ERR_INVALID_MTX_FIELD;
-
-        /* TODO: Implement Euclidean norm for sparse vectors. */
-        errno = ENOTSUP;
-        return MTX_ERR_ERRNO;
+        return mtx_vector_coordinate_snrm2(x, nrm2);
     } else {
         return MTX_ERR_INVALID_MTX_FORMAT;
     }
@@ -290,12 +228,7 @@ int mtx_dnrm2(
     if (x->format == mtx_array) {
         return mtx_vector_array_dnrm2(x, nrm2);
     } else if (x->format == mtx_coordinate) {
-        if (x->field != mtx_double)
-            return MTX_ERR_INVALID_MTX_FIELD;
-
-        /* TODO: Implement Euclidean norm for sparse vectors. */
-        errno = ENOTSUP;
-        return MTX_ERR_ERRNO;
+        return mtx_vector_array_dnrm2(x, nrm2);
     } else {
         return MTX_ERR_INVALID_MTX_FORMAT;
     }
