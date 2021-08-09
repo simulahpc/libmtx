@@ -22,7 +22,7 @@
  * Reordering the rows and columns of sparse matrices.
  */
 
-#include <libmtx/reorder.h>
+#include <libmtx/mtx/reorder.h>
 
 #include <libmtx/error.h>
 #include <libmtx/header.h>
