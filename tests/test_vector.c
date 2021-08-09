@@ -26,7 +26,7 @@
 
 #include <libmtx/error.h>
 #include <libmtx/mtx.h>
-#include <libmtx/vector_array.h>
+#include <libmtx/vector/array/array.h>
 #include <libmtx/vector_coordinate.h>
 
 #include <stdio.h>
