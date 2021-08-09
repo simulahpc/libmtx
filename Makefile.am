@@ -66,7 +66,7 @@ libmtx_la_SOURCES = \
 	libmtx/transpose.c \
 	libmtx/vector.c \
 	libmtx/vector/array/array.c \
-	libmtx/vector_coordinate.c \
+	libmtx/vector/coordinate/coordinate.c \
 	libmtx/version.c
 
 # Header files
@@ -86,7 +86,7 @@ nobase_include_HEADERS = \
 	libmtx/superlu_dist.h \
 	libmtx/vector.h \
 	libmtx/vector/array/array.h \
-	libmtx/vector_coordinate.h \
+	libmtx/vector/coordinate/coordinate.h \
 	libmtx/version.h
 
 # Header files that will not be distributed

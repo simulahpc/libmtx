@@ -19,11 +19,11 @@
  * Authors: James D. Trotter <james@simula.no>
  * Last modified: 2021-08-09
  *
- * Sparse vectors in Matrix Market format.
+ * Sparse vectors in Matrix Market coordinate format.
  */
 
-#ifndef LIBMTX_VECTOR_COORDINATE_H
-#define LIBMTX_VECTOR_COORDINATE_H
+#ifndef LIBMTX_VECTOR_COORDINATE_COORDINATE_H
+#define LIBMTX_VECTOR_COORDINATE_COORDINATE_H
 
 #include <libmtx/header.h>
 

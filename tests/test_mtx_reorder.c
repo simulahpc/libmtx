@@ -32,7 +32,7 @@
 #include <libmtx/mtx.h>
 #include <libmtx/reorder.h>
 #include <libmtx/vector/array/array.h>
-#include <libmtx/vector_coordinate.h>
+#include <libmtx/vector/coordinate/coordinate.h>
 
 #include <errno.h>
 #include <unistd.h>
