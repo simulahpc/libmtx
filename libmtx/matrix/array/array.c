@@ -28,7 +28,7 @@
 #include <libmtx/mtx.h>
 #include <libmtx/mtx/header.h>
 #include <libmtx/mtx/sort.h>
-#include <libmtx/triangle.h>
+#include <libmtx/mtx/triangle.h>
 
 #include <errno.h>
 
