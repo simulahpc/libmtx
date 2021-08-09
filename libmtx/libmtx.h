@@ -31,7 +31,7 @@
 #include <libmtx/error.h>
 #include <libmtx/mtx/header.h>
 #include <libmtx/index_set.h>
-#include <libmtx/io.h>
+#include <libmtx/mtx/io.h>
 #include <libmtx/matrix/array/array.h>
 #include <libmtx/matrix/coordinate/coordinate.h>
 #include <libmtx/matrix/matrix.h>
