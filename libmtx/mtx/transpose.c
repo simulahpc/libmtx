@@ -19,81 +19,99 @@
  * Authors: James D. Trotter <james@simula.no>
  * Last modified: 2021-08-09
  *
- * Matrix transpose.
+ * Transpose and complex conjugate of matrices and vectors.
  */
 
+#include <libmtx/mtx/transpose.h>
+
 #include <libmtx/error.h>
+#include <libmtx/matrix/coordinate/coordinate.h>
 #include <libmtx/mtx.h>
 #include <libmtx/mtx/header.h>
-#include <libmtx/matrix/coordinate/coordinate.h>
 
 #include <errno.h>
+
+/**
+ * `mtx_transposition_str()' is a string representing the
+ * transposition type.
+ */
+const char * mtx_transposition_str(
+    enum mtx_transposition transposition)
+{
+    switch (transposition) {
+    case mtx_nontransposed: return "nontransposed";
+    case mtx_transposed: return "transposed";
+    case mtx_conjugated: return "conjugated";
+    case mtx_conjugate_transposed: return "conjugate-transposed";
+    default: return "unknown";
+    }
+}
 
 /**
  * `mtx_matrix_coordinate_transpose()` transposes a square sparse
  * matrix.
  */
 int mtx_matrix_coordinate_transpose(
-    struct mtx * matrix)
+    struct mtx * mtx)
 {
-    if (matrix->object != mtx_matrix)
+    if (mtx->object != mtx_matrix)
         return MTX_ERR_INVALID_MTX_OBJECT;
-    if (matrix->format != mtx_coordinate)
+    if (mtx->format != mtx_coordinate)
         return MTX_ERR_INVALID_MTX_FORMAT;
-    if (matrix->num_rows != matrix->num_columns)
+    if (mtx->num_rows != mtx->num_columns)
         return MTX_ERR_INVALID_MTX_SIZE;
 
-    if (matrix->symmetry == mtx_symmetric) {
+    if (mtx->symmetry == mtx_symmetric) {
         return MTX_SUCCESS;
-    } else if (matrix->symmetry == mtx_skew_symmetric) {
+    } else if (mtx->symmetry == mtx_skew_symmetric) {
         /* TODO: Implement transpose for skew-symmetric matrices. */
         errno = ENOTSUP;
         return MTX_ERR_ERRNO;
-    } else if (matrix->symmetry == mtx_hermitian) {
+    } else if (mtx->symmetry == mtx_hermitian) {
         errno = ENOTSUP;
         return MTX_ERR_ERRNO;
-    } else if (matrix->symmetry == mtx_general) {
-        if (matrix->field == mtx_real) {
+    } else if (mtx->symmetry == mtx_general) {
+        if (mtx->field == mtx_real) {
             struct mtx_matrix_coordinate_real * data =
                 (struct mtx_matrix_coordinate_real *)
-                matrix->data;
-            for (int64_t k = 0; k < matrix->size; k++) {
+                mtx->data;
+            for (int64_t k = 0; k < mtx->size; k++) {
                 int i = data[k].i;
                 data[k].i = data[k].j;
                 data[k].j = i;
             }
-        } else if (matrix->field == mtx_double) {
+        } else if (mtx->field == mtx_double) {
             struct mtx_matrix_coordinate_double * data =
                 (struct mtx_matrix_coordinate_double *)
-                matrix->data;
-            for (int64_t k = 0; k < matrix->size; k++) {
+                mtx->data;
+            for (int64_t k = 0; k < mtx->size; k++) {
                 int i = data[k].i;
                 data[k].i = data[k].j;
                 data[k].j = i;
             }
-        } else if (matrix->field == mtx_complex) {
+        } else if (mtx->field == mtx_complex) {
             struct mtx_matrix_coordinate_complex * data =
                 (struct mtx_matrix_coordinate_complex *)
-                matrix->data;
-            for (int64_t k = 0; k < matrix->size; k++) {
+                mtx->data;
+            for (int64_t k = 0; k < mtx->size; k++) {
                 int i = data[k].i;
                 data[k].i = data[k].j;
                 data[k].j = i;
             }
-        } else if (matrix->field == mtx_integer) {
+        } else if (mtx->field == mtx_integer) {
             struct mtx_matrix_coordinate_integer * data =
                 (struct mtx_matrix_coordinate_integer *)
-                matrix->data;
-            for (int64_t k = 0; k < matrix->size; k++) {
+                mtx->data;
+            for (int64_t k = 0; k < mtx->size; k++) {
                 int i = data[k].i;
                 data[k].i = data[k].j;
                 data[k].j = i;
             }
-        } else if (matrix->field == mtx_pattern) {
+        } else if (mtx->field == mtx_pattern) {
             struct mtx_matrix_coordinate_pattern * data =
                 (struct mtx_matrix_coordinate_pattern *)
-                matrix->data;
-            for (int64_t k = 0; k < matrix->size; k++) {
+                mtx->data;
+            for (int64_t k = 0; k < mtx->size; k++) {
                 int i = data[k].i;
                 data[k].i = data[k].j;
                 data[k].j = i;
@@ -107,21 +125,21 @@ int mtx_matrix_coordinate_transpose(
 }
 
 /**
- * `mtx_matrix_transpose()` transposes a square matrix.
+ * `mtx_transpose()' transposes a matrix or vector.
  */
-int mtx_matrix_transpose(
-    struct mtx * matrix)
+int mtx_transpose(
+    struct mtx * mtx)
 {
     int err;
-    if (matrix->object != mtx_matrix)
+    if (mtx->object != mtx_matrix)
         return MTX_ERR_INVALID_MTX_OBJECT;
 
-    if (matrix->format == mtx_array) {
+    if (mtx->format == mtx_array) {
         /* TODO: Implement dense matrix transpose. */
         errno = ENOTSUP;
         return MTX_ERR_ERRNO;
-    } else if (matrix->format == mtx_coordinate) {
-        err = mtx_matrix_coordinate_transpose(matrix);
+    } else if (mtx->format == mtx_coordinate) {
+        err = mtx_matrix_coordinate_transpose(mtx);
         if (err)
             return err;
     } else {

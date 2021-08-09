@@ -49,7 +49,6 @@ libmtx_la_SOURCES = \
 	libmtx/error.c \
 	libmtx/format.c \
 	libmtx/format.h \
-	libmtx/mtx/header.c \
 	libmtx/index_set.c \
 	libmtx/io.c \
 	libmtx/matrix/array/array.c \
@@ -57,12 +56,13 @@ libmtx_la_SOURCES = \
 	libmtx/matrix/matrix.c \
 	libmtx/mpi.c \
 	libmtx/mtx.c \
-	libmtx/parse.c \
-	libmtx/parse.h \
+	libmtx/mtx/header.c \
 	libmtx/mtx/reorder.c \
 	libmtx/mtx/sort.c \
+	libmtx/mtx/transpose.c \
+	libmtx/parse.c \
+	libmtx/parse.h \
 	libmtx/submatrix.c \
-	libmtx/transpose.c \
 	libmtx/triangle.c \
 	libmtx/vector/array/array.c \
 	libmtx/vector/coordinate/coordinate.c \
@@ -74,7 +74,6 @@ nobase_include_HEADERS = \
 	libmtx/assembly.h \
 	libmtx/blas.h \
 	libmtx/error.h \
-	libmtx/mtx/header.h \
 	libmtx/index_set.h \
 	libmtx/io.h \
 	libmtx/libmtx.h \
@@ -83,8 +82,10 @@ nobase_include_HEADERS = \
 	libmtx/matrix/matrix.h \
 	libmtx/mpi.h \
 	libmtx/mtx.h \
+	libmtx/mtx/header.h \
 	libmtx/mtx/reorder.h \
 	libmtx/mtx/sort.h \
+	libmtx/mtx/transpose.h \
 	libmtx/triangle.h \
 	libmtx/vector/array/array.h \
 	libmtx/vector/coordinate/coordinate.h \
