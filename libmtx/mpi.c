@@ -43,6 +43,20 @@
 #include <string.h>
 
 /**
+ * `mtx_partitioning_str()` is a string representing the partitioning
+ * type.
+ */
+const char * mtx_partitioning_str(
+    enum mtx_partitioning partitioning)
+{
+    switch (partitioning) {
+    case mtx_partition: return "partition";
+    case mtx_cover: return "cover";
+    default: return "unknown";
+    }
+}
+
+/**
  * `mtx_datatype()' creates a custom MPI data type for sending or
  * receiving Matrix Market nonzero data for a given matrix or vector.
  *
