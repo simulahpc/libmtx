@@ -64,9 +64,7 @@ codes from the @code{mtx_error} enum type.
 
 @code{mtx_strerror} is typically used as shown in the example below.
 @example
-@code{
-  FILE * f = fopen("test.mtx", "r");
-  /* ... Handle errors ... */
+@code{  FILE * f = fopen("test.mtx", "r");
 
   struct mtx mtx;
   int line, column;
@@ -92,9 +90,18 @@ in the Matrix Market file format.
 
 @tindex struct mtx
 @tindex mtx
-The file @file{matrixmarket/mtx.h} defines the @code{struct mtx}
-type, which is used to represent objects in the Matrix Market
-format. The definition of the @code{mtx} struct is shown below.
+The file @file{matrixmarket/mtx.h} defines the @code{struct mtx} type.
+The main purpose of @code{struct mtx} is to describe objects in the
+Matrix Market format.  However, this single, abstract data type is
+used throughout libmtx to represent both matrices and vectors with
+different underlying storage formats.  The two most important formats
+are those used in Matrix Market files, namely the array format, which
+is used for dense matrices and vectors, and the coordinate format,
+which is used for sparse matrices and vectors.  In addition, libmtx
+defines a few other, advanced storage formats that are suitable for
+sparse matrices with a particular structure.
+
+The definition of the @code{mtx} struct is shown below.
 @example
 @code{struct mtx @{
   /* Header */
