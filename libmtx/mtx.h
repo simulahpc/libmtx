@@ -26,6 +26,7 @@
 #define LIBMTX_MTX_H
 
 #include <libmtx/header.h>
+#include <libmtx/sort.h>
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -292,12 +293,5 @@ int mtx_set_constant_complex(
 int mtx_set_constant_integer(
     struct mtx * mtx,
     int a);
-
-/**
- * `mtx_sort()' sorts matrix or vector nonzeros in a given order.
- */
-int mtx_sort(
-    struct mtx * mtx,
-    enum mtx_sorting sorting);
 
 #endif

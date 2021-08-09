@@ -19,30 +19,36 @@
  * Authors: James D. Trotter <james@simula.no>
  * Last modified: 2021-08-09
  *
- * Main libmtx header file.
+ * Sorting matrices and vectors.
  */
 
-#ifndef LIBMTX_LIBMTX_H
-#define LIBMTX_LIBMTX_H
+#ifndef LIBMTX_SORT_H
+#define LIBMTX_SORT_H
 
-#include <libmtx/libmtx-config.h>
+struct mtx;
 
-#include <libmtx/blas.h>
-#include <libmtx/error.h>
-#include <libmtx/header.h>
-#include <libmtx/index_set.h>
-#include <libmtx/io.h>
-#include <libmtx/matrix/array/array.h>
-#include <libmtx/matrix/coordinate/coordinate.h>
-#include <libmtx/matrix/matrix.h>
-#include <libmtx/mpi.h>
-#include <libmtx/mtx.h>
-#include <libmtx/reorder.h>
-#include <libmtx/sort.h>
-#include <libmtx/superlu_dist.h>
-#include <libmtx/vector/array/array.h>
-#include <libmtx/vector/coordinate/coordinate.h>
-#include <libmtx/vector/vector.h>
-#include <libmtx/version.h>
+/**
+ * `mtx_sorting` is used to enumerate different ways of sorting the
+ * entries of vectors and matrices.
+ */
+enum mtx_sorting
+{
+    mtx_unsorted,       /* unsorted matrix or vector entries */
+    mtx_row_major,      /* row major ordering */
+    mtx_column_major,   /* column major ordering */
+};
+
+/**
+ * `mtx_sorting_str()` is a string representing the sorting type.
+ */
+const char * mtx_sorting_str(
+    enum mtx_sorting sorting);
+
+/**
+ * `mtx_sort()' sorts matrix or vector entries in a given order.
+ */
+int mtx_sort(
+    struct mtx * mtx,
+    enum mtx_sorting sorting);
 
 #endif

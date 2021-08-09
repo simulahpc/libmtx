@@ -83,6 +83,7 @@ nobase_include_HEADERS = \
 	libmtx/mpi.h \
 	libmtx/mtx.h \
 	libmtx/reorder.h \
+	libmtx/sort.h \
 	libmtx/superlu_dist.h \
 	libmtx/vector/array/array.h \
 	libmtx/vector/coordinate/coordinate.h \

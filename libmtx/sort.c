@@ -19,18 +19,34 @@
  * Authors: James D. Trotter <james@simula.no>
  * Last modified: 2021-08-09
  *
- * Sorting matrix and vector nonzeros.
+ * Sorting matrices and vectors.
  */
 
+#include <libmtx/sort.h>
+
 #include <libmtx/error.h>
-#include <libmtx/mtx.h>
 #include <libmtx/header.h>
-#include <libmtx/matrix/matrix.h>
 #include <libmtx/matrix/coordinate/coordinate.h>
+#include <libmtx/matrix/matrix.h>
+#include <libmtx/mtx.h>
 
 #include <errno.h>
 
 #include <stdlib.h>
+
+/**
+ * `mtx_sorting_str()` is a string representing the sorting type.
+ */
+const char * mtx_sorting_str(
+    enum mtx_sorting sorting)
+{
+    switch (sorting) {
+    case mtx_unsorted: return "unsorted";
+    case mtx_row_major: return "row-major";
+    case mtx_column_major: return "column-major";
+    default: return "unknown";
+    }
+}
 
 /**
  * `mtx_sort_matrix_array()' sorts nonzeros in a given order

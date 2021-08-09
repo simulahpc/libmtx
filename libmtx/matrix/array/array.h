@@ -26,6 +26,7 @@
 #define LIBMTX_MATRIX_ARRAY_ARRAY_H
 
 #include <libmtx/header.h>
+#include <libmtx/sort.h>
 
 #include <stdint.h>
 
