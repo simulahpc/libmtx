@@ -52,7 +52,7 @@ libmtx_la_SOURCES = \
 	libmtx/index_set.c \
 	libmtx/io.c \
 	libmtx/matrix.c \
-	libmtx/matrix_array.c \
+	libmtx/matrix/array/array.c \
 	libmtx/matrix_coordinate.c \
 	libmtx/mpi.c \
 	libmtx/mtx.c \
@@ -76,7 +76,7 @@ nobase_include_HEADERS = \
 	libmtx/io.h \
 	libmtx/libmtx.h \
 	libmtx/matrix.h \
-	libmtx/matrix_array.h \
+	libmtx/matrix/array/array.h \
 	libmtx/matrix_coordinate.h \
 	libmtx/mpi.h \
 	libmtx/mtx.h \

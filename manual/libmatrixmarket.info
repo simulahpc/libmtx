@@ -955,7 +955,7 @@ File: libmtx.info,  Node: Creating dense matrices,  Next: Creating vectors,  Pre
 5.4.2 Creating dense matrices
 -----------------------------
 
-The file 'libmtx/matrix_array.h' defines functions for
+The file 'libmtx/matrix/array/array.h' defines functions for
 constructing dense matrices.  For example, a dense m-by-n real matrix is
 created with the function:
      int mtx_init_matrix_array_real(
