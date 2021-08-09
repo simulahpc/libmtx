@@ -24,7 +24,7 @@
 
 #include "test.h"
 
-#include "libmtx/format.h"
+#include "libmtx/util/format.h"
 
 #include <errno.h>
 
