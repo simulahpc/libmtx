@@ -25,6 +25,7 @@
 #ifndef LIBMTX_MATRIX_COORDINATE_H
 #define LIBMTX_MATRIX_COORDINATE_H
 
+#include <libmtx/assembly.h>
 #include <libmtx/header.h>
 #include <libmtx/reorder.h>
 #include <libmtx/sort.h>

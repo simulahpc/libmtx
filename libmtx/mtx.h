@@ -25,6 +25,7 @@
 #ifndef LIBMTX_MTX_H
 #define LIBMTX_MTX_H
 
+#include <libmtx/assembly.h>
 #include <libmtx/header.h>
 #include <libmtx/reorder.h>
 #include <libmtx/sort.h>

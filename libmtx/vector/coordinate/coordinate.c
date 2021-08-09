@@ -24,6 +24,7 @@
 
 #include <libmtx/vector/coordinate/coordinate.h>
 
+#include <libmtx/assembly.h>
 #include <libmtx/error.h>
 #include <libmtx/mtx.h>
 #include <libmtx/reorder.h>

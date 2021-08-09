@@ -103,24 +103,4 @@ enum mtx_symmetry
 const char * mtx_symmetry_str(
     enum mtx_symmetry symmetry);
 
-/*
- * Additional types used with objects in Matrix Market format.
- */
-
-/**
- * `mtx_assembly` is used to enumerate assembly states for sparse
- * matrices in Matrix Market format.
- */
-enum mtx_assembly
-{
-    mtx_unassembled,    /* unassembled; duplicate nonzeros allowed. */
-    mtx_assembled,      /* assembled; duplicate nonzeros not allowed. */
-};
-
-/**
- * `mtx_assembly_str()` is a string representing the assembly type.
- */
-const char * mtx_assembly_str(
-    enum mtx_assembly assembly);
-
 #endif
