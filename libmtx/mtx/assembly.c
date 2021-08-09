@@ -22,7 +22,7 @@
  * Assembling sparse matrices and vectors.
  */
 
-#include <libmtx/assembly.h>
+#include <libmtx/mtx/assembly.h>
 
 /**
  * `mtx_assembly_str()` is a string representing the assembly type.
