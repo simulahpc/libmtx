@@ -27,14 +27,14 @@
 
 #include <libmtx/libmtx-config.h>
 
-#include <libmtx/mtx/blas.h>
 #include <libmtx/error.h>
-#include <libmtx/mtx/header.h>
 #include <libmtx/index_set.h>
-#include <libmtx/mtx/io.h>
 #include <libmtx/matrix/array/array.h>
 #include <libmtx/matrix/coordinate/coordinate.h>
 #include <libmtx/matrix/matrix.h>
+#include <libmtx/mtx/blas.h>
+#include <libmtx/mtx/header.h>
+#include <libmtx/mtx/io.h>
 #include <libmtx/mtx/mpi.h>
 #include <libmtx/mtx/mtx.h>
 #include <libmtx/mtx/reorder.h>
