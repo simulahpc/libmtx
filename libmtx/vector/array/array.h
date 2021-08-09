@@ -19,11 +19,11 @@
  * Authors: James D. Trotter <james@simula.no>
  * Last modified: 2021-08-09
  *
- * Dense vectors in Matrix Market format.
+ * Dense vectors in Matrix Market array format.
  */
 
-#ifndef LIBMTX_VECTOR_ARRAY_H
-#define LIBMTX_VECTOR_ARRAY_H
+#ifndef LIBMTX_VECTOR_ARRAY_ARRAY_H
+#define LIBMTX_VECTOR_ARRAY_ARRAY_H
 
 struct mtx;
 
