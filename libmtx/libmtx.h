@@ -40,7 +40,7 @@
 #include <libmtx/reorder.h>
 #include <libmtx/vector.h>
 #include <libmtx/vector/array/array.h>
-#include <libmtx/vector_coordinate.h>
+#include <libmtx/vector/coordinate/coordinate.h>
 #include <libmtx/version.h>
 
 #endif

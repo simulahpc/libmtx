@@ -31,7 +31,7 @@
 #include <libmtx/header.h>
 #include <libmtx/matrix.h>
 #include <libmtx/matrix_coordinate.h>
-#include <libmtx/vector_coordinate.h>
+#include <libmtx/vector/coordinate/coordinate.h>
 #include <libmtx/mtx.h>
 #include <libmtx/mpi.h>
 
