@@ -26,7 +26,7 @@
 
 #include <libmtx/error.h>
 #include <libmtx/format.h>
-#include <libmtx/io.h>
+#include <libmtx/mtx/io.h>
 #include <libmtx/matrix/matrix.h>
 #include <libmtx/matrix/array/array.h>
 #include <libmtx/matrix/coordinate/coordinate.h>
@@ -34,7 +34,7 @@
 #include <libmtx/vector/array/array.h>
 #include <libmtx/vector/coordinate/coordinate.h>
 
-#include "parse.h"
+#include "../parse.h"
 
 #ifdef LIBMTX_HAVE_LIBZ
 #include <zlib.h>

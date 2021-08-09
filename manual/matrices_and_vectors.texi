@@ -949,7 +949,7 @@ and columns to include in the submatrix.
 
 @node Reading and writing Matrix Market files
 @section Reading and writing Matrix Market files
-The file @file{libmtx/io.h} defines functions for reading
+The file @file{libmtx/mtx/io.h} defines functions for reading
 from and writing to files in Matrix Market format. These files are
 typically named with a @file{.mtx} extension, so we refer to them here
 as @file{mtx} files.
