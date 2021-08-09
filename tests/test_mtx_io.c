@@ -17,21 +17,21 @@
  * <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-08-03
+ * Last modified: 2021-08-09
  *
  * Unit tests for Matrix Market I/O.
  */
 
 #include "test.h"
 
-#include <matrixmarket/libmtx-config.h>
+#include <libmtx/libmtx-config.h>
 
-#include <matrixmarket/error.h>
-#include <matrixmarket/io.h>
-#include <matrixmarket/matrix_coordinate.h>
-#include <matrixmarket/mtx.h>
-#include <matrixmarket/vector_array.h>
-#include <matrixmarket/vector_coordinate.h>
+#include <libmtx/error.h>
+#include <libmtx/io.h>
+#include <libmtx/matrix_coordinate.h>
+#include <libmtx/mtx.h>
+#include <libmtx/vector_array.h>
+#include <libmtx/vector_coordinate.h>
 
 #ifdef LIBMTX_HAVE_LIBZ
 #include <zlib.h>

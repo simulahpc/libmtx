@@ -17,14 +17,14 @@
  * <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-07-29
+ * Last modified: 2021-08-09
  *
  * Draw an image of a matrix sparsity pattern and save to a PNG file.
  */
 
-#include <matrixmarket/matrixmarket.h>
+#include <libmtx/libmtx.h>
 
-#include "../matrixmarket/parse.h"
+#include "../libmtx/parse.h"
 
 #include <png.h>
 

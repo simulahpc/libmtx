@@ -17,15 +17,15 @@
  * <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-06-18
+ * Last modified: 2021-08-09
  *
  * Unit tests for index sets.
  */
 
 #include "test.h"
 
-#include <matrixmarket/error.h>
-#include <matrixmarket/index_set.h>
+#include <libmtx/error.h>
+#include <libmtx/index_set.h>
 
 #include <stdbool.h>
 #include <stdlib.h>

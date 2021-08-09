@@ -50,7 +50,7 @@ Functions in the libmtx C library generally return a status code that
 either indicates success (represented by the status code
 @code{MTX_SUCCESS}) or a specific error.  Valid error codes correspond
 to values of the type @code{enum mtx_error}, which is defined in the
-file @file{matrixmarket/error.h} along with some error handling
+file @file{libmtx/error.h} along with some error handling
 functions.
 
 @findex mtx_strerror
@@ -90,7 +90,7 @@ in the Matrix Market file format.
 
 @tindex struct mtx
 @tindex mtx
-The file @file{matrixmarket/mtx.h} defines the @code{struct mtx} type.
+The file @file{libmtx/mtx.h} defines the @code{struct mtx} type.
 The main purpose of @code{struct mtx} is to describe objects in the
 Matrix Market format.  However, this single, abstract data type is
 used throughout libmtx to represent both matrices and vectors with
@@ -427,7 +427,7 @@ either @code{real}, @code{double}, @code{complex}, @code{integer} or
 @code{pattern}, corresponding to the @code{field} member of the
 @code{mtx} struct.
 
-The file @file{matrixmarket/matrix_coordinate.h} contains definitions
+The file @file{libmtx/matrix_coordinate.h} contains definitions
 of data types for representing nonzero values of sparse matrices in
 coordinate format. For matrices with different fields, the data types
 are shown below:
@@ -458,7 +458,7 @@ struct mtx_matrix_coordinate_pattern @{
 @end example
 
 The corresponding data types for sparse vectors are defined in the
-file @file{matrixmarket/vector_coordinate.h}. These data types are
+file @file{libmtx/vector_coordinate.h}. These data types are
 almost identical to the ones used for sparse matrices, except that the
 column index is omitted:
 @example
@@ -527,7 +527,7 @@ allocation and creation functions.
 @subsection Creating dense vectors
 
 @cindex dense vector
-The file @file{matrixmarket/vector_array.h} defines functions for
+The file @file{libmtx/vector_array.h} defines functions for
 constructing dense vectors in array format.  For example, a dense
 vector of real, single-precision floating point values is created with
 the function:
@@ -610,7 +610,7 @@ vectors with @code{double}, @code{complex} and @code{integer} fields.
 @subsection Creating sparse vectors
 
 @cindex sparse vector
-The file @file{matrixmarket/vector_coordinate.h} defines functions for
+The file @file{libmtx/vector_coordinate.h} defines functions for
 constructing sparse vectors in coordinate format.  On the whole,
 sparse vectors are allocated and created in a similar manner to dense
 vectors, but some additional arguments must be provided.
@@ -696,7 +696,7 @@ the definitions of the struct data types for each field.
 @subsection Creating dense matrices
 
 @findex mtx_init_matrix_array_real
-The file @file{matrixmarket/matrix_array.h} defines functions for
+The file @file{libmtx/matrix_array.h} defines functions for
 constructing dense matrices.  Roughly speaking, these functions
 imitate the ones for allocating and initialising dense vectors in
 array format, but there are a few additional arguments that must be
@@ -786,7 +786,7 @@ type of the @code{data} argument is modified accordingly.
 
 @cindex sparse matrix
 @findex mtx_init_matrix_coordinate_real
-The file @file{matrixmarket/matrix_coordinate.h} defines functions for
+The file @file{libmtx/matrix_coordinate.h} defines functions for
 constructing sparse matrices in coordinate format.  Although this is
 mostly similar to creating dense matrices, there are a few additional
 arguments that must be given.  Also, in the case where data is
@@ -949,7 +949,7 @@ and columns to include in the submatrix.
 
 @node Reading and writing Matrix Market files
 @section Reading and writing Matrix Market files
-The file @file{matrixmarket/io.h} defines functions for reading
+The file @file{libmtx/io.h} defines functions for reading
 from and writing to files in Matrix Market format. These files are
 typically named with a @file{.mtx} extension, so we refer to them here
 as @file{mtx} files.
@@ -1205,7 +1205,7 @@ as OpenBLAS (@url{https://www.openblas.net/}). Otherwise,
 libmtx uses internal routines for sparse matrix operations.
 
 The BLAS functions for @code{mtx} vectors and matrices are defined
-in the file @code{matrixmarket/blas.h}.
+in the file @code{libmtx/blas.h}.
 
 @node Level 1 BLAS operations
 @subsection Level 1 BLAS operations

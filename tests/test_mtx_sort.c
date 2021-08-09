@@ -24,10 +24,10 @@
 
 #include "test.h"
 
-#include <matrixmarket/error.h>
-#include <matrixmarket/mtx.h>
-#include <matrixmarket/io.h>
-#include <matrixmarket/matrix_coordinate.h>
+#include <libmtx/error.h>
+#include <libmtx/mtx.h>
+#include <libmtx/io.h>
+#include <libmtx/matrix_coordinate.h>
 
 #include <errno.h>
 #include <unistd.h>

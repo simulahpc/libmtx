@@ -24,9 +24,9 @@
  * ‘y := alpha*A*x + beta*y’.
  */
 
-#include <matrixmarket/matrixmarket.h>
+#include <libmtx/libmtx.h>
 
-#include "../matrixmarket/parse.h"
+#include "../libmtx/parse.h"
 
 #include <errno.h>
 

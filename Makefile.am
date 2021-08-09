@@ -17,7 +17,7 @@
 # <https://www.gnu.org/licenses/>.
 #
 # Authors: James D. Trotter <james@simula.no>
-# Last modified: 2021-08-06
+# Last modified: 2021-08-16
 #
 # Makefile for the top-level directory of libmtx.
 #
@@ -44,55 +44,55 @@ libmtx_la_LIBADD = $(BLAS_LIBS) $(MPILDFLAGS)
 
 # Source files
 libmtx_la_SOURCES = \
-	matrixmarket/blas.c \
-	matrixmarket/error.c \
-	matrixmarket/header.c \
-	matrixmarket/index_set.c \
-	matrixmarket/io.c \
-	matrixmarket/matrix.c \
-	matrixmarket/matrix_array.c \
-	matrixmarket/matrix_coordinate.c \
-	matrixmarket/mpi.c \
-	matrixmarket/mtx.c \
-	matrixmarket/parse.c \
-	matrixmarket/parse.h \
-	matrixmarket/format.c \
-	matrixmarket/format.h \
-	matrixmarket/reorder.c \
-	matrixmarket/sort.c \
-	matrixmarket/submatrix.c \
-	matrixmarket/transpose.c \
-	matrixmarket/vector.c \
-	matrixmarket/vector_array.c \
-	matrixmarket/vector_coordinate.c \
-	matrixmarket/version.c
+	libmtx/blas.c \
+	libmtx/error.c \
+	libmtx/format.c \
+	libmtx/format.h \
+	libmtx/header.c \
+	libmtx/index_set.c \
+	libmtx/io.c \
+	libmtx/matrix.c \
+	libmtx/matrix_array.c \
+	libmtx/matrix_coordinate.c \
+	libmtx/mpi.c \
+	libmtx/mtx.c \
+	libmtx/parse.c \
+	libmtx/parse.h \
+	libmtx/reorder.c \
+	libmtx/sort.c \
+	libmtx/submatrix.c \
+	libmtx/transpose.c \
+	libmtx/vector.c \
+	libmtx/vector_array.c \
+	libmtx/vector_coordinate.c \
+	libmtx/version.c
 
 # Header files
 nobase_include_HEADERS = \
-	matrixmarket/blas.h \
-	matrixmarket/error.h \
-	matrixmarket/header.h \
-	matrixmarket/index_set.h \
-	matrixmarket/io.h \
-	matrixmarket/matrix.h \
-	matrixmarket/matrix_array.h \
-	matrixmarket/matrix_coordinate.h \
-	matrixmarket/matrixmarket.h \
-	matrixmarket/mpi.h \
-	matrixmarket/mtx.h \
-	matrixmarket/reorder.h \
-	matrixmarket/vector.h \
-	matrixmarket/vector_array.h \
-	matrixmarket/vector_coordinate.h \
-	matrixmarket/version.h
+	libmtx/blas.h \
+	libmtx/error.h \
+	libmtx/header.h \
+	libmtx/index_set.h \
+	libmtx/io.h \
+	libmtx/libmtx.h \
+	libmtx/matrix.h \
+	libmtx/matrix_array.h \
+	libmtx/matrix_coordinate.h \
+	libmtx/mpi.h \
+	libmtx/mtx.h \
+	libmtx/reorder.h \
+	libmtx/vector.h \
+	libmtx/vector_array.h \
+	libmtx/vector_coordinate.h \
+	libmtx/version.h
 
 # Header files that will not be distributed
 nobase_nodist_include_HEADERS = \
-	matrixmarket/libmtx-config.h
+	libmtx/libmtx-config.h
 
 # pkg-config files
 pkgconfigdir = $(libdir)/pkgconfig
-pkgconfig_DATA = matrixmarket/libmtx.pc
+pkgconfig_DATA = libmtx/libmtx.pc
 
 # Matrix Market utility programs
 bin_PROGRAMS = \

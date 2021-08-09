@@ -17,17 +17,17 @@
  * <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-08-08
+ * Last modified: 2021-08-09
  *
  * Unit tests for vectors in Matrix Market format.
  */
 
 #include "test.h"
 
-#include <matrixmarket/error.h>
-#include <matrixmarket/mtx.h>
-#include <matrixmarket/vector_array.h>
-#include <matrixmarket/vector_coordinate.h>
+#include <libmtx/error.h>
+#include <libmtx/mtx.h>
+#include <libmtx/vector_array.h>
+#include <libmtx/vector_coordinate.h>
 
 #include <stdio.h>
 #include <stdlib.h>

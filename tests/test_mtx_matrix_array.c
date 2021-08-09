@@ -17,17 +17,17 @@
  * <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-08-03
+ * Last modified: 2021-08-09
  *
  * Unit tests for dense matrices in Matrix Market format.
  */
 
 #include "test.h"
 
-#include <matrixmarket/error.h>
-#include <matrixmarket/matrix_array.h>
-#include <matrixmarket/mtx.h>
-#include <matrixmarket/header.h>
+#include <libmtx/error.h>
+#include <libmtx/matrix_array.h>
+#include <libmtx/mtx.h>
+#include <libmtx/header.h>
 
 #include <stdio.h>
 #include <stdlib.h>

@@ -17,19 +17,19 @@
  * <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-08-02
+ * Last modified: 2021-08-09
  *
  * Unit tests for extracting submatrices.
  */
 
 #include "test.h"
 
-#include <matrixmarket/error.h>
-#include <matrixmarket/index_set.h>
-#include <matrixmarket/header.h>
-#include <matrixmarket/matrix.h>
-#include <matrixmarket/matrix_coordinate.h>
-#include <matrixmarket/mtx.h>
+#include <libmtx/error.h>
+#include <libmtx/index_set.h>
+#include <libmtx/header.h>
+#include <libmtx/matrix.h>
+#include <libmtx/matrix_coordinate.h>
+#include <libmtx/mtx.h>
 
 #include <stdio.h>
 #include <stdlib.h>

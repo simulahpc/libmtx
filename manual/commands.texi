@@ -16,7 +16,7 @@
 @c <https://www.gnu.org/licenses/>.
 @c
 @c Authors: James D. Trotter <james@simula.no>
-@c Last modified: 2021-08-03
+@c Last modified: 2021-08-09
 @c
 @c libmtx User Guide: Commands.
 

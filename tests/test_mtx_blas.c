@@ -17,19 +17,19 @@
  * <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-08-03
+ * Last modified: 2021-08-09
  *
  * Unit tests for BLAS operations with Matrix Market objects.
  */
 
 #include "test.h"
 
-#include <matrixmarket/error.h>
-#include <matrixmarket/blas.h>
-#include <matrixmarket/matrix_array.h>
-#include <matrixmarket/matrix_coordinate.h>
-#include <matrixmarket/mtx.h>
-#include <matrixmarket/vector_array.h>
+#include <libmtx/error.h>
+#include <libmtx/blas.h>
+#include <libmtx/matrix_array.h>
+#include <libmtx/matrix_coordinate.h>
+#include <libmtx/mtx.h>
+#include <libmtx/vector_array.h>
 
 #include <errno.h>
 

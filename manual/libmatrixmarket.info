@@ -474,7 +474,7 @@ File: libmtx.info,  Node: Matrix Market data types,  Next: Error handling,  Up: 
 This section describes the basic data types used to represent objects in
 the Matrix Market file format.
 
-   The file 'matrixmarket/mtx.h' defines the 'struct mtx' type, which is
+   The file 'libmtx/mtx.h' defines the 'struct mtx' type, which is
 used to represent objects in the Matrix Market format.  The definition
 of the 'mtx' struct is shown below.
      struct mtx {
@@ -635,7 +635,7 @@ of the 'mtx' struct.  Similarly, 'FIELD' is either 'real', 'double',
 'complex', 'integer' or 'pattern', corresponding to the 'field' member
 of the 'mtx' struct.
 
-   The file 'matrixmarket/matrix_coordinate.h' contains definitions of
+   The file 'libmtx/matrix_coordinate.h' contains definitions of
 data types for representing nonzero values of sparse matrices in
 coordinate format.  For matrices with different fields, the data types
 are shown below:
@@ -664,7 +664,7 @@ are shown below:
      };
 
    The corresponding data types for sparse vectors are defined in the
-file 'matrixmarket/vector_coordinate.h'.  These data types are almost
+file 'libmtx/vector_coordinate.h'.  These data types are almost
 identical to the ones used for sparse matrices, except that the column
 index is omitted:error
      struct mtx_vector_coordinate_real {
@@ -826,7 +826,7 @@ File: libmtx.info,  Node: Reading and writing Matrix Market files,  Next: Creati
 5.3 Reading and writing Matrix Market files
 ===========================================
 
-The file 'matrixmarket/io.h' defines functions for reading from and
+The file 'libmtx/io.h' defines functions for reading from and
 writing to files in Matrix Market format.  These files are typically
 named with a '.mtx' extension, so we refer to them here as 'mtx' files.
 
@@ -907,7 +907,7 @@ File: libmtx.info,  Node: Creating sparse matrices,  Next: Creating dense matric
 5.4.1 Creating sparse matrices
 ------------------------------
 
-The file 'matrixmarket/matrix_coordinate.h' defines functions for
+The file 'libmtx/matrix_coordinate.h' defines functions for
 constructing sparse matrices in the coordinate format.  For example, a
 sparse matrix with real, single-precision floating point coefficients is
 created with the function:
@@ -955,7 +955,7 @@ File: libmtx.info,  Node: Creating dense matrices,  Next: Creating vectors,  Pre
 5.4.2 Creating dense matrices
 -----------------------------
 
-The file 'matrixmarket/matrix_array.h' defines functions for
+The file 'libmtx/matrix_array.h' defines functions for
 constructing dense matrices.  For example, a dense m-by-n real matrix is
 created with the function:
      int mtx_init_matrix_array_real(
@@ -1079,7 +1079,7 @@ OpenBLAS (<https://www.openblas.net/>).  Otherwise, libmtx uses
 internal routines for sparse matrix operations.
 
    The BLAS functions for 'mtx' vectors and matrices are defined in the
-file 'matrixmarket/blas.h'.
+file 'libmtx/blas.h'.
 
 * Menu:
 
@@ -1176,7 +1176,7 @@ File: libmtx.info,  Node: Communicating matrices and vectors,  Prev: Basic linea
 5.7 Communicating matrices and vectors
 ======================================
 
-The file 'matrixmarket/mpi.h' defines functions that can be used to
+The file 'libmtx/mpi.h' defines functions that can be used to
 communicate Matrix Market objects represented by the 'mtx' struct
 between MPI processes.
 
@@ -1238,7 +1238,7 @@ Index sets are used, for example, when specifying submatrices of a
 matrix, or for partitioning and distributing matrices and vectors among
 multiple processes.
 
-   The file 'matrixmarket/index_set.h' defines data types for index
+   The file 'libmtx/index_set.h' defines data types for index
 sets, including 'struct mtx_index_set'.  There are different types of
 index sets, which may be distinguished by the enum type
 'mtx_index_set_type'.

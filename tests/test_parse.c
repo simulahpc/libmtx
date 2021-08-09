@@ -17,14 +17,14 @@
  * <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-06-18
+ * Last modified: 2021-08-09
  *
  * Unit tests for string parsing functions.
  */
 
 #include "test.h"
 
-#include "matrixmarket/parse.h"
+#include "libmtx/parse.h"
 
 #include <errno.h>
 
