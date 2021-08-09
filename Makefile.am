@@ -61,11 +61,11 @@ libmtx_la_SOURCES = \
 	libmtx/mtx/submatrix.c \
 	libmtx/mtx/transpose.c \
 	libmtx/mtx/triangle.c \
-	libmtx/parse.c \
-	libmtx/parse.h \
 	libmtx/superlu_dist.c \
 	libmtx/util/format.c \
 	libmtx/util/format.h \
+	libmtx/util/parse.c \
+	libmtx/util/parse.h \
 	libmtx/vector/array/array.c \
 	libmtx/vector/coordinate/coordinate.c \
 	libmtx/vector/vector.c \

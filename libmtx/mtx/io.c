@@ -33,8 +33,8 @@
 #include <libmtx/vector/array/array.h>
 #include <libmtx/vector/coordinate/coordinate.h>
 
-#include "../parse.h"
 #include "../util/format.h"
+#include "../util/parse.h"
 
 #ifdef LIBMTX_HAVE_LIBZ
 #include <zlib.h>
