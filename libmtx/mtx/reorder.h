@@ -22,8 +22,8 @@
  * Reordering the rows and columns of sparse matrices.
  */
 
-#ifndef LIBMTX_REORDER_H
-#define LIBMTX_REORDER_H
+#ifndef LIBMTX_MTX_REORDER_H
+#define LIBMTX_MTX_REORDER_H
 
 struct mtx;
 

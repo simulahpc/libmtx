@@ -22,8 +22,8 @@
  * Data types for the Matrix Market header.
  */
 
-#ifndef LIBMTX_HEADER_H
-#define LIBMTX_HEADER_H
+#ifndef LIBMTX_MTX_HEADER_H
+#define LIBMTX_MTX_HEADER_H
 
 /*
  * Matrix Market header types.

@@ -22,7 +22,7 @@
  * Data types for the Matrix Market header.
  */
 
-#include <libmtx/header.h>
+#include <libmtx/mtx/header.h>
 
 /**
  * `mtx_object_str()` is a string representing the Matrix Market object

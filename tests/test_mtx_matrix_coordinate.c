@@ -28,7 +28,7 @@
 #include <libmtx/matrix/matrix.h>
 #include <libmtx/matrix/coordinate/coordinate.h>
 #include <libmtx/mtx.h>
-#include <libmtx/header.h>
+#include <libmtx/mtx/header.h>
 
 #include <stdio.h>
 #include <stdlib.h>

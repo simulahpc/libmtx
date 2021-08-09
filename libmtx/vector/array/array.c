@@ -25,7 +25,7 @@
 #include <libmtx/vector/array/array.h>
 
 #include <libmtx/error.h>
-#include <libmtx/header.h>
+#include <libmtx/mtx/header.h>
 #include <libmtx/mtx.h>
 
 #include <errno.h>

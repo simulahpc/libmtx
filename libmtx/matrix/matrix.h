@@ -25,7 +25,7 @@
 #ifndef LIBMTX_MATRIX_H
 #define LIBMTX_MATRIX_H
 
-#include <libmtx/header.h>
+#include <libmtx/mtx/header.h>
 
 #include <stdbool.h>
 #include <stdint.h>

@@ -22,8 +22,8 @@
  * Sorting matrices and vectors.
  */
 
-#ifndef LIBMTX_SORT_H
-#define LIBMTX_SORT_H
+#ifndef LIBMTX_MTX_SORT_H
+#define LIBMTX_MTX_SORT_H
 
 struct mtx;
 
