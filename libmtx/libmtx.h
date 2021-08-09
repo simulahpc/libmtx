@@ -38,7 +38,7 @@
 #include <libmtx/mpi.h>
 #include <libmtx/mtx.h>
 #include <libmtx/mtx/reorder.h>
-#include <libmtx/sort.h>
+#include <libmtx/mtx/sort.h>
 #include <libmtx/superlu_dist.h>
 #include <libmtx/vector/array/array.h>
 #include <libmtx/vector/coordinate/coordinate.h>

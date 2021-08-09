@@ -22,7 +22,7 @@
  * Sorting matrices and vectors.
  */
 
-#include <libmtx/sort.h>
+#include <libmtx/mtx/sort.h>
 
 #include <libmtx/error.h>
 #include <libmtx/header.h>

@@ -28,7 +28,7 @@
 #include <libmtx/header.h>
 #include <libmtx/matrix/matrix.h>
 #include <libmtx/mtx/reorder.h>
-#include <libmtx/sort.h>
+#include <libmtx/mtx/sort.h>
 #include <libmtx/triangle.h>
 #include <libmtx/vector/vector.h>
 
