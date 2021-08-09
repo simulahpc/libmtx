@@ -27,7 +27,7 @@
 
 #include <libmtx/assembly.h>
 #include <libmtx/header.h>
-#include <libmtx/reorder.h>
+#include <libmtx/mtx/reorder.h>
 #include <libmtx/sort.h>
 #include <libmtx/triangle.h>
 
