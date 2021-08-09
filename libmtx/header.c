@@ -108,20 +108,6 @@ const char * mtx_triangle_str(
 }
 
 /**
- * `mtx_sorting_str()` is a string representing the sorting type.
- */
-const char * mtx_sorting_str(
-    enum mtx_sorting sorting)
-{
-    switch (sorting) {
-    case mtx_unsorted: return "unsorted";
-    case mtx_row_major: return "row-major";
-    case mtx_column_major: return "column-major";
-    default: return "unknown";
-    }
-}
-
-/**
  * `mtx_ordering_str()` is a string representing the ordering type.
  */
 const char * mtx_ordering_str(

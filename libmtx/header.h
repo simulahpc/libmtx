@@ -134,23 +134,6 @@ const char * mtx_triangle_str(
     enum mtx_triangle triangle);
 
 /**
- * `mtx_sorting` is used to enumerate different kinds of sortings of
- * matrix nonzeros for matrices in Matrix Market format.
- */
-enum mtx_sorting
-{
-    mtx_unsorted,       /* unsorted matrix nonzeros */
-    mtx_row_major,      /* row major ordering */
-    mtx_column_major,   /* column major ordering */
-};
-
-/**
- * `mtx_sorting_str()` is a string representing the sorting type.
- */
-const char * mtx_sorting_str(
-    enum mtx_sorting sorting);
-
-/**
  * `mtx_ordering` is used to enumerate different kinds of orderings
  * for matrices in Matrix Market format.
  */

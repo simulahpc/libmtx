@@ -26,6 +26,7 @@
 #define LIBMTX_VECTOR_COORDINATE_COORDINATE_H
 
 #include <libmtx/header.h>
+#include <libmtx/sort.h>
 
 struct mtx;
 
