@@ -62,6 +62,7 @@ libmtx_la_SOURCES = \
 	libmtx/sort.c \
 	libmtx/submatrix.c \
 	libmtx/transpose.c \
+	libmtx/triangle.c \
 	libmtx/vector/array/array.c \
 	libmtx/vector/coordinate/coordinate.c \
 	libmtx/vector/vector.c \
@@ -82,6 +83,7 @@ nobase_include_HEADERS = \
 	libmtx/mtx.h \
 	libmtx/reorder.h \
 	libmtx/sort.h \
+	libmtx/triangle.h \
 	libmtx/vector/array/array.h \
 	libmtx/vector/coordinate/coordinate.h \
 	libmtx/vector/vector.h \

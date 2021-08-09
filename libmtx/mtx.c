@@ -22,10 +22,14 @@
  * Data structures for representing objects in Matrix Market format.
  */
 
+#include <libmtx/mtx.h>
+
 #include <libmtx/error.h>
 #include <libmtx/header.h>
-#include <libmtx/mtx.h>
 #include <libmtx/matrix/matrix.h>
+#include <libmtx/reorder.h>
+#include <libmtx/sort.h>
+#include <libmtx/triangle.h>
 #include <libmtx/vector/vector.h>
 
 #include <errno.h>
