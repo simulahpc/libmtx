@@ -1205,7 +1205,7 @@ as OpenBLAS (@url{https://www.openblas.net/}). Otherwise,
 libmtx uses internal routines for sparse matrix operations.
 
 The BLAS functions for @code{mtx} vectors and matrices are defined
-in the file @code{libmtx/blas.h}.
+in the file @code{libmtx/mtx/blas.h}.
 
 @node Level 1 BLAS operations
 @subsection Level 1 BLAS operations

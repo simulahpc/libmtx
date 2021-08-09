@@ -45,7 +45,7 @@ libmtx_la_LIBADD = $(BLAS_LIBS) $(MPILDFLAGS)
 # Source files
 libmtx_la_SOURCES = \
 	libmtx/mtx/assembly.c \
-	libmtx/blas.c \
+	libmtx/mtx/blas.c \
 	libmtx/error.c \
 	libmtx/format.c \
 	libmtx/format.h \
@@ -72,7 +72,7 @@ libmtx_la_SOURCES = \
 # Header files
 nobase_include_HEADERS = \
 	libmtx/mtx/assembly.h \
-	libmtx/blas.h \
+	libmtx/mtx/blas.h \
 	libmtx/error.h \
 	libmtx/index_set.h \
 	libmtx/mtx/io.h \

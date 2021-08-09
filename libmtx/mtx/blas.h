@@ -22,8 +22,8 @@
  * BLAS operations for matrices and vectors in Matrix Market format.
  */
 
-#ifndef LIBMTX_BLAS_H
-#define LIBMTX_BLAS_H
+#ifndef LIBMTX_MTX_BLAS_H
+#define LIBMTX_MTX_BLAS_H
 
 struct mtx;
 

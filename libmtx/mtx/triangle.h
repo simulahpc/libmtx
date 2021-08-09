@@ -22,8 +22,8 @@
  * Triangular (or trapezoidal) properties of matrices.
  */
 
-#ifndef LIBMTX_TRIANGLE_H
-#define LIBMTX_TRIANGLE_H
+#ifndef LIBMTX_MTX_TRIANGLE_H
+#define LIBMTX_MTX_TRIANGLE_H
 
 /**
  * `mtx_triangle' is used to enumerate matrix properties related to
