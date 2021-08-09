@@ -28,7 +28,7 @@
 #include <libmtx/error.h>
 #include <libmtx/index_set.h>
 #include <libmtx/mtx.h>
-#include <libmtx/mpi.h>
+#include <libmtx/mtx/mpi.h>
 #include <libmtx/matrix/coordinate/coordinate.h>
 
 #include <mpi.h>

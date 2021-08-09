@@ -266,7 +266,7 @@ are finished with the matrix or vector:
 @node Communicating matrices and vectors
 @section Communicating matrices and vectors
 
-The file @file{libmtx/mpi.h} defines functions that can be
+The file @file{libmtx/mtx/mpi.h} defines functions that can be
 used to communicate Matrix Market objects represented by the
 @code{mtx} struct between MPI processes.
 

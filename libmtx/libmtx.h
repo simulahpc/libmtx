@@ -35,7 +35,7 @@
 #include <libmtx/matrix/array/array.h>
 #include <libmtx/matrix/coordinate/coordinate.h>
 #include <libmtx/matrix/matrix.h>
-#include <libmtx/mpi.h>
+#include <libmtx/mtx/mpi.h>
 #include <libmtx/mtx.h>
 #include <libmtx/mtx/reorder.h>
 #include <libmtx/mtx/sort.h>

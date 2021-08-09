@@ -23,8 +23,8 @@
  * processes using MPI.
  */
 
-#ifndef LIBMTX_MPI_H
-#define LIBMTX_MPI_H
+#ifndef LIBMTX_MTX_MPI_H
+#define LIBMTX_MTX_MPI_H
 
 #include <libmtx/libmtx-config.h>
 

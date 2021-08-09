@@ -33,7 +33,7 @@
 #include <libmtx/matrix/coordinate/coordinate.h>
 #include <libmtx/vector/coordinate/coordinate.h>
 #include <libmtx/mtx.h>
-#include <libmtx/mpi.h>
+#include <libmtx/mtx/mpi.h>
 
 #include <mpi.h>
 
