@@ -1176,7 +1176,7 @@ File: libmtx.info,  Node: Communicating matrices and vectors,  Prev: Basic linea
 5.7 Communicating matrices and vectors
 ======================================
 
-The file 'libmtx/mpi.h' defines functions that can be used to
+The file 'libmtx/mtx/mpi.h' defines functions that can be used to
 communicate Matrix Market objects represented by the 'mtx' struct
 between MPI processes.
 
