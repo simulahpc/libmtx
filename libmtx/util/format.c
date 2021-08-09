@@ -23,7 +23,7 @@
  */
 
 #include "format.h"
-#include "parse.h"
+#include "../parse.h"
 
 #include <errno.h>
 

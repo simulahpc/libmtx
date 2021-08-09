@@ -44,26 +44,26 @@ libmtx_la_LIBADD = $(BLAS_LIBS) $(MPILDFLAGS)
 
 # Source files
 libmtx_la_SOURCES = \
-	libmtx/mtx/assembly.c \
-	libmtx/mtx/blas.c \
 	libmtx/error.c \
-	libmtx/format.c \
-	libmtx/format.h \
 	libmtx/index_set.c \
-	libmtx/mtx/io.c \
 	libmtx/matrix/array/array.c \
 	libmtx/matrix/coordinate/coordinate.c \
 	libmtx/matrix/matrix.c \
+	libmtx/mtx/assembly.c \
+	libmtx/mtx/blas.c \
+	libmtx/mtx/header.c \
+	libmtx/mtx/io.c \
 	libmtx/mtx/mpi.c \
 	libmtx/mtx/mtx.c \
-	libmtx/mtx/header.c \
 	libmtx/mtx/reorder.c \
 	libmtx/mtx/sort.c \
+	libmtx/mtx/submatrix.c \
 	libmtx/mtx/transpose.c \
+	libmtx/mtx/triangle.c \
 	libmtx/parse.c \
 	libmtx/parse.h \
-	libmtx/mtx/submatrix.c \
-	libmtx/mtx/triangle.c \
+	libmtx/util/format.c \
+	libmtx/util/format.h \
 	libmtx/vector/array/array.c \
 	libmtx/vector/coordinate/coordinate.c \
 	libmtx/vector/vector.c \
