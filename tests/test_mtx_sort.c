@@ -27,7 +27,7 @@
 #include <libmtx/error.h>
 #include <libmtx/mtx.h>
 #include <libmtx/io.h>
-#include <libmtx/matrix_coordinate.h>
+#include <libmtx/matrix/coordinate/coordinate.h>
 
 #include <errno.h>
 #include <unistd.h>

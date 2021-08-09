@@ -635,7 +635,7 @@ of the 'mtx' struct.  Similarly, 'FIELD' is either 'real', 'double',
 'complex', 'integer' or 'pattern', corresponding to the 'field' member
 of the 'mtx' struct.
 
-   The file 'libmtx/matrix_coordinate.h' contains definitions of
+   The file 'libmtx/matrix/coordinate/coordinate.h' contains definitions of
 data types for representing nonzero values of sparse matrices in
 coordinate format.  For matrices with different fields, the data types
 are shown below:
@@ -907,7 +907,7 @@ File: libmtx.info,  Node: Creating sparse matrices,  Next: Creating dense matric
 5.4.1 Creating sparse matrices
 ------------------------------
 
-The file 'libmtx/matrix_coordinate.h' defines functions for
+The file 'libmtx/matrix/coordinate/coordinate.h' defines functions for
 constructing sparse matrices in the coordinate format.  For example, a
 sparse matrix with real, single-precision floating point coefficients is
 created with the function:

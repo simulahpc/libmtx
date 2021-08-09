@@ -28,7 +28,7 @@
 #include <libmtx/blas.h>
 #include <libmtx/error.h>
 #include <libmtx/superlu_dist.h>
-#include <libmtx/matrix_coordinate.h>
+#include <libmtx/matrix/coordinate/coordinate.h>
 #include <libmtx/mtx.h>
 #include <libmtx/vector/array/array.h>
 

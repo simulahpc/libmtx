@@ -29,7 +29,7 @@
 #include <libmtx/index_set.h>
 #include <libmtx/mtx.h>
 #include <libmtx/mpi.h>
-#include <libmtx/matrix_coordinate.h>
+#include <libmtx/matrix/coordinate/coordinate.h>
 
 #include <mpi.h>
 
