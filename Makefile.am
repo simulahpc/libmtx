@@ -61,7 +61,7 @@ libmtx_la_SOURCES = \
 	libmtx/mtx/submatrix.c \
 	libmtx/mtx/transpose.c \
 	libmtx/mtx/triangle.c \
-	libmtx/superlu_dist.c \
+	libmtx/mtx/superlu_dist.c \
 	libmtx/util/format.c \
 	libmtx/util/format.h \
 	libmtx/util/parse.c \
@@ -88,7 +88,7 @@ nobase_include_HEADERS = \
 	libmtx/mtx/reorder.h \
 	libmtx/mtx/sort.h \
 	libmtx/mtx/transpose.h \
-	libmtx/superlu_dist.h \
+	libmtx/mtx/superlu_dist.h \
 	libmtx/mtx/triangle.h \
 	libmtx/vector/array/array.h \
 	libmtx/vector/coordinate/coordinate.h \

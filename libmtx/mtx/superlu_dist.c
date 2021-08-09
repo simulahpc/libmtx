@@ -29,7 +29,7 @@
 #include <libmtx/error.h>
 #include <libmtx/matrix/matrix.h>
 #include <libmtx/mtx/mtx.h>
-#include <libmtx/superlu_dist.h>
+#include <libmtx/mtx/superlu_dist.h>
 
 #include <superlu_defs.h>
 #include <superlu_ddefs.h>

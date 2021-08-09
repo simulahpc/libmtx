@@ -23,8 +23,8 @@
  * vectors in Matrix Market format.
  */
 
-#ifndef LIBMTX_SUPERLU_DIST_H
-#define LIBMTX_SUPERLU_DIST_H
+#ifndef LIBMTX_MTX_SUPERLU_DIST_H
+#define LIBMTX_MTX_SUPERLU_DIST_H
 
 #include <libmtx/libmtx-config.h>
 
