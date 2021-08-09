@@ -35,6 +35,25 @@
 #include <mpi.h>
 
 /**
+ * `mtx_partitioning` is used to enumerate different ways of
+ * partitioning matrices and vectors in Matrix Market format.
+ */
+enum mtx_partitioning
+{
+    mtx_partition,   /* matrix/vector entries are owned by a single
+                      * MPI process. */
+    mtx_cover,       /* matrix/vector entries may be shared by
+                      * multiple MPI processes. */
+};
+
+/**
+ * `mtx_partitioning_str()` is a string representing the partitioning
+ * type.
+ */
+const char * mtx_partitioning_str(
+    enum mtx_partitioning partitioning);
+
+/**
  * `mtx_datatype()' creates a custom MPI data type for sending or
  * receiving Matrix Market nonzero data for a given matrix or vector.
  *

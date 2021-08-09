@@ -119,17 +119,3 @@ const char * mtx_assembly_str(
     default: return "unknown";
     }
 }
-
-/**
- * `mtx_partitioning_str()` is a string representing the partitioning
- * type.
- */
-const char * mtx_partitioning_str(
-    enum mtx_partitioning partitioning)
-{
-    switch (partitioning) {
-    case mtx_partition: return "partition";
-    case mtx_cover: return "cover";
-    default: return "unknown";
-    }
-}
