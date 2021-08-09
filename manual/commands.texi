@@ -27,14 +27,6 @@ This section contains a list of command-line programs provided by
 libmtx for working with Matrix Market files.
 
 @table @command
-@pindex mtxinfo
-@item mtxinfo
-reads a Matrix Market file, validates the contents and displays some
-high-level information about the Matrix Market object.
-
-@pindex mtxscal
-@item mtxscal
-scales a vector by a scalar.
 
 @pindex mtxaxpy
 @item mtxaxpy
@@ -44,18 +36,24 @@ adds two vectors.
 @item mtxdot
 computes the dot product of two vectors.
 
-@pindex mtxnrm2
-@item mtxnrm2
-computes the Euclidean norm of a vector.
+@pindex mtxgather
+@item mtxgather
+collects Matrix Market files that represent a distributed matrix or
+vector from multiple MPI processes, accumulates the results on a
+single MPI root process and stores the resulting Matrix Market file.
 
 @pindex mtxgemv
 @item mtxgemv
 multiplies a general, unsymmetric matrix by a vector.
 
-@pindex mtxsort
-@item mtxsort
-sorts the entries of a dense or sparse matrix, for example, in row- or
-column-major order.
+@pindex mtxinfo
+@item mtxinfo
+reads a Matrix Market file, validates the contents and displays some
+high-level information about the Matrix Market object.
+
+@pindex mtxnrm2
+@item mtxnrm2
+computes the Euclidean norm of a vector.
 
 @pindex mtxreorder
 @item mtxreorder
@@ -63,16 +61,19 @@ reorders the nonzeros of a sparse matrix, for example, using the
 Reverse Cuthill-McKee (RCM) ordering (@pxref{E. Cuthill and J. McKee
 (1969)}).
 
+@pindex mtxscal
+@item mtxscal
+scales a vector by a scalar.
+
 @pindex mtxscatter
 @item mtxscatter
 distributes a Matrix Market file among MPI processes and stores the
 resulting distributed Matrix Market file for each process.
 
-@pindex mtxgather
-@item mtxgather
-collects Matrix Market files that represent a distributed matrix or
-vector from multiple MPI processes, accumulates the results on a
-single MPI root process and stores the resulting Matrix Market file.
+@pindex mtxsort
+@item mtxsort
+sorts the entries of a dense or sparse matrix, for example, in row- or
+column-major order.
 
 @pindex mtxspy
 @item mtxspy
@@ -85,188 +86,18 @@ Further details about each program are given in the following
 sections.
 
 @menu
-* @command{mtxinfo}::
-* @command{mtxscal}::
-* @command{mtxdot}::
-* @command{mtxnrm2}::
 * @command{mtxaxpy}::
-* @command{mtxgemv}::
-* @command{mtxsort}::
-* @command{mtxreorder}::
-* @command{mtxscatter}::
+* @command{mtxdot}::
 * @command{mtxgather}::
+* @command{mtxgemv}::
+* @command{mtxinfo}::
+* @command{mtxnrm2}::
+* @command{mtxreorder}::
+* @command{mtxscal}::
+* @command{mtxscatter}::
+* @command{mtxsort}::
 * @command{mtxspy}::
 @end menu
-
-@node @command{mtxinfo}
-@section @command{mtxinfo}
-@pindex mtxinfo
-
-The command @command{mtxinfo} reads a Matrix Market file, validates the
-contents and displays some high-level information about the Matrix
-Market object.
-@example
-@code{mtxinfo [OPTION..] FILE}
-@end example
-
-The following options are accepted:
-@table @option
-@item -z, --gzip, --gunzip, --ungzip
-Filter the file through gzip.
-
-@item -v, --verbose
-Print diagnostics to standard error.
-
-@end table
-
-
-@node @command{mtxscal}
-@section @command{mtxscal}
-@pindex mtxscal
-
-The command @command{mtxscal} is used to scale a vector by a scalar,
-floating point value. The result is written to standard output in the
-form of a Matrix Market file representing the scaled vector. More
-specifically, the calculation carried out is @samp{@var{x} :=
-@var{alpha}*@var{x}}, where @samp{@var{x}} is a vector and
-@samp{@var{alpha}} is a scalar.
-
-The @command{mtxscal} command accepts the following positional
-arguments:
-@example
-@code{mtxscal [OPTION..] @var{alpha} @var{x}}
-@end example
-
-The positional arguments are:
-@table @option
-@item @var{alpha}
-The scalar floating-point value @option{@var{alpha}}.
-
-@item @var{x}
-Path to a Matrix Market file containing the vector
-@option{@var{x}}.
-
-@end table
-
-In addition, the following options are accepted:
-
-@table @option
-@item -z, --gzip, --gunzip, --ungzip
-Filter files through gzip.
-
-@item --format=FORMAT
-Format string for outputting numerical values.  For real, double and
-complex values, the format specifiers @samp{%e}, @samp{%E}, @samp{%f},
-@samp{%F}, @samp{%g} or @samp{%G} may be used, whereas @samp{%d} must
-be used for integers. Flags, field width and precision can optionally
-be specified, e.g., @samp{%+3.1f}.
-
-@item --repeat=N
-The number of times to repeat the matrix-vector multiplication.
-
-@item -q, --quiet
-Do not print the resulting Matrix Market file to standard output.
-
-@item -v, --verbose
-Print some diagnostics to the standard error stream.
-
-@end table
-
-
-@node @command{mtxdot}
-@section @command{mtxdot}
-@pindex mtxdot
-
-The command @command{mtxdot} is used to compute the dot product of two
-vectors.  That is, @samp{@var{dot} := @var{x}'@var{y}}, where
-@samp{@var{x}} and @samp{@var{y}} are vectors, and @samp{@var{x}'}
-denotes the transpose of @samp{@var{x}}.
-
-@example
-@code{mtxdot [OPTION..] @var{x} [@var{y}]}
-@end example
-
-If matrices are provided instead of vectors, then the Frobenius inner
-product is computed.
-
-The positional arguments are:
-@table @option
-@item @var{x}
-Path to a Matrix Market file containing the vector
-@option{@var{x}}.
-
-@item @var{y}
-Path to a Matrix Market file containing the vector
-@option{@var{y}}. If this argument is omitted, then a vector of ones
-of length equal to @option{@var{x}} is used.
-
-@end table
-
-In addition, the following options are accepted:
-
-@table @option
-@item -z, --gzip, --gunzip, --ungzip
-Filter files through gzip.
-
-@item --format=FORMAT
-Format string for outputting numerical values.  For real, double and
-complex values, the format specifiers @samp{%e}, @samp{%E}, @samp{%f},
-@samp{%F}, @samp{%g} or @samp{%G} may be used, whereas @samp{%d} must
-be used for integers. Flags, field width and precision can optionally
-be specified, e.g., @samp{%+3.1f}.
-
-@item -q, --quiet
-Do not print the resulting Matrix Market file to standard output.
-
-@item -v, --verbose
-Print some diagnostics to the standard error stream.
-
-@end table
-
-
-@node @command{mtxnrm2}
-@section @command{mtxnrm2}
-@pindex mtxnrm2
-
-The command @command{mtxnrm2} is used to compute the Euclidean norm of
-a vector.  That is, @samp{@var{nrm2} := sqrt(@var{x}'@var{x})}, where
-@samp{@var{x}} is a vector and @samp{@var{x}'} denotes its transpose.
-
-@example
-@code{mtxnrm2 [OPTION..] @var{x} [@var{y}]}
-@end example
-
-If matrices are provided instead of vectors, then the Frobenius norm
-of the matrices is computed.
-
-The positional arguments are:
-@table @option
-@item @var{x}
-Path to a Matrix Market file containing the vector
-@option{@var{x}}.
-
-@end table
-
-In addition, the following options are accepted:
-
-@table @option
-@item -z, --gzip, --gunzip, --ungzip
-Filter files through gzip.
-
-@item --format=FORMAT
-Format string for outputting numerical values.  For real, double and
-complex values, the format specifiers @samp{%e}, @samp{%E}, @samp{%f},
-@samp{%F}, @samp{%g} or @samp{%G} may be used, whereas @samp{%d} must
-be used for integers. Flags, field width and precision can optionally
-be specified, e.g., @samp{%+3.1f}.
-
-@item -q, --quiet
-Do not print the resulting Matrix Market file to standard output.
-
-@item -v, --verbose
-Print some diagnostics to the standard error stream.
-
-@end table
 
 
 @node @command{mtxaxpy}
@@ -348,6 +179,92 @@ single vector addition, we find that, in this example, the memory
 throughput is about 11.47 GB/s.
 
 
+@node @command{mtxdot}
+@section @command{mtxdot}
+@pindex mtxdot
+
+The command @command{mtxdot} is used to compute the dot product of two
+vectors.  That is, @samp{@var{dot} := @var{x}'@var{y}}, where
+@samp{@var{x}} and @samp{@var{y}} are vectors, and @samp{@var{x}'}
+denotes the transpose of @samp{@var{x}}.
+
+@example
+@code{mtxdot [OPTION..] @var{x} [@var{y}]}
+@end example
+
+If matrices are provided instead of vectors, then the Frobenius inner
+product is computed.
+
+The positional arguments are:
+@table @option
+@item @var{x}
+Path to a Matrix Market file containing the vector
+@option{@var{x}}.
+
+@item @var{y}
+Path to a Matrix Market file containing the vector
+@option{@var{y}}. If this argument is omitted, then a vector of ones
+of length equal to @option{@var{x}} is used.
+
+@end table
+
+In addition, the following options are accepted:
+
+@table @option
+@item -z, --gzip, --gunzip, --ungzip
+Filter files through gzip.
+
+@item --format=FORMAT
+Format string for outputting numerical values.  For real, double and
+complex values, the format specifiers @samp{%e}, @samp{%E}, @samp{%f},
+@samp{%F}, @samp{%g} or @samp{%G} may be used, whereas @samp{%d} must
+be used for integers. Flags, field width and precision can optionally
+be specified, e.g., @samp{%+3.1f}.
+
+@item -q, --quiet
+Do not print the resulting Matrix Market file to standard output.
+
+@item -v, --verbose
+Print some diagnostics to the standard error stream.
+
+@end table
+
+
+@node @command{mtxgather}
+@section @command{mtxgather}
+@pindex mtxgather
+
+The command @command{mtxgather} collects Matrix Market files that
+represent a distributed matrix or vector from multiple MPI processes,
+accumulates the results on a single MPI root process and stores the
+resulting Matrix Market file. This command is only included if MPI
+support is enabled.
+@example
+@code{mtxgather [OPTION..] FILE..}
+@end example
+
+The following options are accepted:
+
+@table @option
+@item -z, --gzip, --gunzip, --ungzip
+Filter files through gzip.
+
+@item --format=FORMAT
+Format string for outputting numerical values.  For real, double and
+complex values, the format specifiers @samp{%e}, @samp{%E}, @samp{%f},
+@samp{%F}, @samp{%g} or @samp{%G} may be used, whereas @samp{%d} must
+be used for integers. Flags, field width and precision can optionally
+be specified, e.g., @samp{%+3.1f}.
+
+@item -q, --quiet
+Do not print the resulting Matrix Market file to standard output.
+
+@item -v, --verbose
+Print diagnostics to standard error.
+
+@end table
+
+
 @node @command{mtxgemv}
 @section @command{mtxgemv}
 @pindex mtxgemv
@@ -414,21 +331,56 @@ Print some diagnostics to the standard error stream.
 @end table
 
 
-@node @command{mtxsort}
-@section @command{mtxsort}
-@pindex mtxsort
+@node @command{mtxinfo}
+@section @command{mtxinfo}
+@pindex mtxinfo
 
-The command @command{mtxsort} is used to sort the entries of a dense
-or sparse matrix, for example, in row- or column-major order.
+The command @command{mtxinfo} reads a Matrix Market file, validates the
+contents and displays some high-level information about the Matrix
+Market object.
 @example
-@code{mtxsort [OPTION..] FILE}
+@code{mtxinfo [OPTION..] FILE}
 @end example
 
 The following options are accepted:
-
 @table @option
 @item -z, --gzip, --gunzip, --ungzip
 Filter the file through gzip.
+
+@item -v, --verbose
+Print diagnostics to standard error.
+
+@end table
+
+
+@node @command{mtxnrm2}
+@section @command{mtxnrm2}
+@pindex mtxnrm2
+
+The command @command{mtxnrm2} is used to compute the Euclidean norm of
+a vector.  That is, @samp{@var{nrm2} := sqrt(@var{x}'@var{x})}, where
+@samp{@var{x}} is a vector and @samp{@var{x}'} denotes its transpose.
+
+@example
+@code{mtxnrm2 [OPTION..] @var{x} [@var{y}]}
+@end example
+
+If matrices are provided instead of vectors, then the Frobenius norm
+of the matrices is computed.
+
+The positional arguments are:
+@table @option
+@item @var{x}
+Path to a Matrix Market file containing the vector
+@option{@var{x}}.
+
+@end table
+
+In addition, the following options are accepted:
+
+@table @option
+@item -z, --gzip, --gunzip, --ungzip
+Filter files through gzip.
 
 @item --format=FORMAT
 Format string for outputting numerical values.  For real, double and
@@ -437,16 +389,11 @@ complex values, the format specifiers @samp{%e}, @samp{%E}, @samp{%f},
 be used for integers. Flags, field width and precision can optionally
 be specified, e.g., @samp{%+3.1f}.
 
-@item --sorting=SORTING
-The ordering to use when sorting the data. This is either
-@samp{row-major} or @samp{column-major}. By default, @samp{row-major}
-is used.
-
 @item -q, --quiet
 Do not print the resulting Matrix Market file to standard output.
 
 @item -v, --verbose
-Print diagnostics to standard error.
+Print some diagnostics to the standard error stream.
 
 @end table
 
@@ -499,6 +446,59 @@ Print diagnostics to standard error.
 @end table
 
 
+@node @command{mtxscal}
+@section @command{mtxscal}
+@pindex mtxscal
+
+The command @command{mtxscal} is used to scale a vector by a scalar,
+floating point value. The result is written to standard output in the
+form of a Matrix Market file representing the scaled vector. More
+specifically, the calculation carried out is @samp{@var{x} :=
+@var{alpha}*@var{x}}, where @samp{@var{x}} is a vector and
+@samp{@var{alpha}} is a scalar.
+
+The @command{mtxscal} command accepts the following positional
+arguments:
+@example
+@code{mtxscal [OPTION..] @var{alpha} @var{x}}
+@end example
+
+The positional arguments are:
+@table @option
+@item @var{alpha}
+The scalar floating-point value @option{@var{alpha}}.
+
+@item @var{x}
+Path to a Matrix Market file containing the vector
+@option{@var{x}}.
+
+@end table
+
+In addition, the following options are accepted:
+
+@table @option
+@item -z, --gzip, --gunzip, --ungzip
+Filter files through gzip.
+
+@item --format=FORMAT
+Format string for outputting numerical values.  For real, double and
+complex values, the format specifiers @samp{%e}, @samp{%E}, @samp{%f},
+@samp{%F}, @samp{%g} or @samp{%G} may be used, whereas @samp{%d} must
+be used for integers. Flags, field width and precision can optionally
+be specified, e.g., @samp{%+3.1f}.
+
+@item --repeat=N
+The number of times to repeat the matrix-vector multiplication.
+
+@item -q, --quiet
+Do not print the resulting Matrix Market file to standard output.
+
+@item -v, --verbose
+Print some diagnostics to the standard error stream.
+
+@end table
+
+
 @node @command{mtxscatter}
 @section @command{mtxscatter}
 @pindex mtxscatter
@@ -534,24 +534,22 @@ Print diagnostics to standard error.
 
 @end table
 
-@node @command{mtxgather}
-@section @command{mtxgather}
-@pindex mtxgather
 
-The command @command{mtxgather} collects Matrix Market files that
-represent a distributed matrix or vector from multiple MPI processes,
-accumulates the results on a single MPI root process and stores the
-resulting Matrix Market file. This command is only included if MPI
-support is enabled.
+@node @command{mtxsort}
+@section @command{mtxsort}
+@pindex mtxsort
+
+The command @command{mtxsort} is used to sort the entries of a dense
+or sparse matrix, for example, in row- or column-major order.
 @example
-@code{mtxgather [OPTION..] FILE..}
+@code{mtxsort [OPTION..] FILE}
 @end example
 
 The following options are accepted:
 
 @table @option
 @item -z, --gzip, --gunzip, --ungzip
-Filter files through gzip.
+Filter the file through gzip.
 
 @item --format=FORMAT
 Format string for outputting numerical values.  For real, double and
@@ -559,6 +557,11 @@ complex values, the format specifiers @samp{%e}, @samp{%E}, @samp{%f},
 @samp{%F}, @samp{%g} or @samp{%G} may be used, whereas @samp{%d} must
 be used for integers. Flags, field width and precision can optionally
 be specified, e.g., @samp{%+3.1f}.
+
+@item --sorting=SORTING
+The ordering to use when sorting the data. This is either
+@samp{row-major} or @samp{column-major}. By default, @samp{row-major}
+is used.
 
 @item -q, --quiet
 Do not print the resulting Matrix Market file to standard output.
