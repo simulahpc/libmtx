@@ -108,19 +108,6 @@ const char * mtx_triangle_str(
 }
 
 /**
- * `mtx_ordering_str()` is a string representing the ordering type.
- */
-const char * mtx_ordering_str(
-    enum mtx_ordering ordering)
-{
-    switch (ordering) {
-    case mtx_unordered: return "unordered";
-    case mtx_rcm: return "rcm";
-    default: return "unknown";
-    }
-}
-
-/**
  * `mtx_assembly_str()` is a string representing the assembly type.
  */
 const char * mtx_assembly_str(

@@ -22,10 +22,13 @@
  * Sparse matrices in Matrix Market format.
  */
 
-#include <libmtx/error.h>
 #include <libmtx/matrix/coordinate/coordinate.h>
+
+#include <libmtx/error.h>
 #include <libmtx/mtx.h>
 #include <libmtx/header.h>
+#include <libmtx/reorder.h>
+#include <libmtx/sort.h>
 
 #include <errno.h>
 

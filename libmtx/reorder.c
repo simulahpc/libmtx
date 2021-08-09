@@ -22,17 +22,32 @@
  * Reordering the rows and columns of sparse matrices.
  */
 
+#include <libmtx/reorder.h>
+
 #include <libmtx/error.h>
-#include <libmtx/matrix/matrix.h>
-#include <libmtx/mtx.h>
 #include <libmtx/header.h>
 #include <libmtx/matrix/coordinate/coordinate.h>
+#include <libmtx/matrix/matrix.h>
+#include <libmtx/mtx.h>
 #include <libmtx/vector/array/array.h>
 #include <libmtx/vector/coordinate/coordinate.h>
 
 #include <errno.h>
 
 #include <stdlib.h>
+
+/**
+ * `mtx_ordering_str()` is a string representing the ordering type.
+ */
+const char * mtx_ordering_str(
+    enum mtx_ordering ordering)
+{
+    switch (ordering) {
+    case mtx_unordered: return "unordered";
+    case mtx_rcm: return "rcm";
+    default: return "unknown";
+    }
+}
 
 static int mtx_permute_vector_array_real(
     struct mtx * mtx,

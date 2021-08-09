@@ -26,6 +26,8 @@
 
 #include <libmtx/error.h>
 #include <libmtx/mtx.h>
+#include <libmtx/reorder.h>
+#include <libmtx/sort.h>
 
 #include <errno.h>
 

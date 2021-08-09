@@ -134,22 +134,6 @@ const char * mtx_triangle_str(
     enum mtx_triangle triangle);
 
 /**
- * `mtx_ordering` is used to enumerate different kinds of orderings
- * for matrices in Matrix Market format.
- */
-enum mtx_ordering
-{
-    mtx_unordered,      /* general, unordered matrix */
-    mtx_rcm,            /* Reverse Cuthill-McKee ordering */
-};
-
-/**
- * `mtx_ordering_str()` is a string representing the ordering type.
- */
-const char * mtx_ordering_str(
-    enum mtx_ordering ordering);
-
-/**
  * `mtx_assembly` is used to enumerate assembly states for sparse
  * matrices in Matrix Market format.
  */
