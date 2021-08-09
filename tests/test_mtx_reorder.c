@@ -17,7 +17,7 @@
  * <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-08-03
+ * Last modified: 2021-08-09
  *
  * Unit tests for reordering sparse matrices.
  */
@@ -466,7 +466,7 @@ int test_mtx_matrix_reorder_rcm_coordinate_real(void)
     TEST_ASSERT_EQ(0, mtx.num_comment_lines);
     TEST_ASSERT_EQ(5, mtx.num_rows);
     TEST_ASSERT_EQ(5, mtx.num_columns);
-    TEST_ASSERT_EQ(10, mtx.num_nonzeros);
+    TEST_ASSERT_EQ(-1, mtx.num_nonzeros);
     TEST_ASSERT_EQ(10, mtx.size);
     TEST_ASSERT_EQ(sizeof(struct mtx_matrix_coordinate_real), mtx.nonzero_size);
     const struct mtx_matrix_coordinate_real * mtxdata =

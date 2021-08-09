@@ -17,7 +17,7 @@
  * <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-08-02
+ * Last modified: 2021-08-09
  *
  * Sparse vectors in Matrix Market format.
  */
@@ -88,7 +88,66 @@ struct mtx_vector_coordinate_pattern
 };
 
 /*
- * Sparse vector constructors.
+ * Sparse (coordinate) vector allocation.
+ */
+
+/**
+ * `mtx_alloc_vector_coordinate_real()` allocates a sparse vector with
+ * real, single-precision floating point coefficients.
+ */
+int mtx_alloc_vector_coordinate_real(
+    struct mtx * mtx,
+    int num_comment_lines,
+    const char ** comment_lines,
+    int num_rows,
+    int size);
+
+/**
+ * `mtx_alloc_vector_coordinate_double()` allocates a sparse vector
+ * with real, double-precision floating point coefficients.
+ */
+int mtx_alloc_vector_coordinate_double(
+    struct mtx * mtx,
+    int num_comment_lines,
+    const char ** comment_lines,
+    int num_rows,
+    int size);
+
+/**
+ * `mtx_alloc_vector_coordinate_complex()` allocates a sparse vector
+ * with complex, single-precision floating point coefficients.
+ */
+int mtx_alloc_vector_coordinate_complex(
+    struct mtx * mtx,
+    int num_comment_lines,
+    const char ** comment_lines,
+    int num_rows,
+    int size);
+
+/**
+ * `mtx_alloc_vector_coordinate_integer()` allocates a sparse vector
+ * with integer coefficients.
+ */
+int mtx_alloc_vector_coordinate_integer(
+    struct mtx * mtx,
+    int num_comment_lines,
+    const char ** comment_lines,
+    int num_rows,
+    int size);
+
+/**
+ * `mtx_alloc_vector_coordinate_pattern()` allocates a sparse vector
+ * with boolean coefficients.
+ */
+int mtx_alloc_vector_coordinate_pattern(
+    struct mtx * mtx,
+    int num_comment_lines,
+    const char ** comment_lines,
+    int num_rows,
+    int size);
+
+/*
+ * Sparse (coordinate) vector allocation and initialisation.
  */
 
 /**
@@ -167,7 +226,7 @@ int mtx_init_vector_coordinate_pattern(
     const struct mtx_vector_coordinate_pattern * data);
 
 /*
- * Other sparse vector functions.
+ * Sparse (coordinate) vector value initialisation.
  */
 
 /**

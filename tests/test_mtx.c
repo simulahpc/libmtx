@@ -17,7 +17,7 @@
  * <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-08-03
+ * Last modified: 2021-08-09
  *
  * Unit tests for Matrix Market I/O.
  */
@@ -51,7 +51,7 @@ int test_mtx_copy(void)
     /* Create a sparse matrix. */
     struct mtx srcmtx;
     int num_comment_lines = 1;
-    const char * comment_lines[] = {"a comment"};
+    const char * comment_lines[] = {"% a comment"};
     int num_rows = 4;
     int num_columns = 4;
     int64_t size = 6;
@@ -80,32 +80,65 @@ int test_mtx_copy(void)
     TEST_ASSERT_EQ(mtx_unordered, destmtx.ordering);
     TEST_ASSERT_EQ(mtx_unassembled, destmtx.assembly);
     TEST_ASSERT_EQ(1, destmtx.num_comment_lines);
-    TEST_ASSERT_STREQ("a comment", destmtx.comment_lines[0]);
+    TEST_ASSERT_STREQ("% a comment", destmtx.comment_lines[0]);
     TEST_ASSERT_EQ(4, destmtx.num_rows);
     TEST_ASSERT_EQ(4, destmtx.num_columns);
-    TEST_ASSERT_EQ(6, destmtx.num_nonzeros);
+    TEST_ASSERT_EQ(-1, destmtx.num_nonzeros);
     TEST_ASSERT_EQ(6, destmtx.size);
     TEST_ASSERT_EQ(sizeof(struct mtx_matrix_coordinate_real), destmtx.nonzero_size);
-    TEST_ASSERT_EQ(   1, ((const struct mtx_matrix_coordinate_real *) destmtx.data)[0].i);
-    TEST_ASSERT_EQ(   1, ((const struct mtx_matrix_coordinate_real *) destmtx.data)[0].j);
-    TEST_ASSERT_EQ(1.0f, ((const struct mtx_matrix_coordinate_real *) destmtx.data)[0].a);
-    TEST_ASSERT_EQ(   1, ((const struct mtx_matrix_coordinate_real *) destmtx.data)[1].i);
-    TEST_ASSERT_EQ(   4, ((const struct mtx_matrix_coordinate_real *) destmtx.data)[1].j);
-    TEST_ASSERT_EQ(2.0f, ((const struct mtx_matrix_coordinate_real *) destmtx.data)[1].a);
-    TEST_ASSERT_EQ(   2, ((const struct mtx_matrix_coordinate_real *) destmtx.data)[2].i);
-    TEST_ASSERT_EQ(   2, ((const struct mtx_matrix_coordinate_real *) destmtx.data)[2].j);
-    TEST_ASSERT_EQ(3.0f, ((const struct mtx_matrix_coordinate_real *) destmtx.data)[2].a);
-    TEST_ASSERT_EQ(   3, ((const struct mtx_matrix_coordinate_real *) destmtx.data)[3].i);
-    TEST_ASSERT_EQ(   3, ((const struct mtx_matrix_coordinate_real *) destmtx.data)[3].j);
-    TEST_ASSERT_EQ(4.0f, ((const struct mtx_matrix_coordinate_real *) destmtx.data)[3].a);
-    TEST_ASSERT_EQ(   4, ((const struct mtx_matrix_coordinate_real *) destmtx.data)[4].i);
-    TEST_ASSERT_EQ(   1, ((const struct mtx_matrix_coordinate_real *) destmtx.data)[4].j);
-    TEST_ASSERT_EQ(5.0f, ((const struct mtx_matrix_coordinate_real *) destmtx.data)[4].a);
-    TEST_ASSERT_EQ(   4, ((const struct mtx_matrix_coordinate_real *) destmtx.data)[5].i);
-    TEST_ASSERT_EQ(   4, ((const struct mtx_matrix_coordinate_real *) destmtx.data)[5].j);
-    TEST_ASSERT_EQ(6.0f, ((const struct mtx_matrix_coordinate_real *) destmtx.data)[5].a);
+    const struct mtx_matrix_coordinate_real * destmtxdata =
+        (const struct mtx_matrix_coordinate_real *) destmtx.data;
+    TEST_ASSERT_EQ(   1, destmtxdata[0].i); TEST_ASSERT_EQ(   1, destmtxdata[0].j);
+    TEST_ASSERT_EQ(1.0f, destmtxdata[0].a);
+    TEST_ASSERT_EQ(   1, destmtxdata[1].i); TEST_ASSERT_EQ(   4, destmtxdata[1].j);
+    TEST_ASSERT_EQ(2.0f, destmtxdata[1].a);
+    TEST_ASSERT_EQ(   2, destmtxdata[2].i); TEST_ASSERT_EQ(   2, destmtxdata[2].j);
+    TEST_ASSERT_EQ(3.0f, destmtxdata[2].a);
+    TEST_ASSERT_EQ(   3, destmtxdata[3].i); TEST_ASSERT_EQ(   3, destmtxdata[3].j);
+    TEST_ASSERT_EQ(4.0f, destmtxdata[3].a);
+    TEST_ASSERT_EQ(   4, destmtxdata[4].i); TEST_ASSERT_EQ(   1, destmtxdata[4].j);
+    TEST_ASSERT_EQ(5.0f, destmtxdata[4].a);
+    TEST_ASSERT_EQ(   4, destmtxdata[5].i); TEST_ASSERT_EQ(   4, destmtxdata[5].j);
+    TEST_ASSERT_EQ(6.0f, destmtxdata[5].a);
     mtx_free(&destmtx);
     mtx_free(&srcmtx);
+    return MTX_SUCCESS;
+}
+
+/**
+ * `test_mtx_set_comment_lines()' tests setting comment lines for a
+ * matrix or vector.
+ */
+int test_mtx_set_comment_lines(void)
+{
+    {
+        struct mtx mtx;
+        mtx.num_comment_lines = 0;
+        mtx.comment_lines = NULL;
+        int num_comment_lines = 1;
+        const char * comment_lines[] = {"% comment"};
+        int err = mtx_set_comment_lines(
+            &mtx, num_comment_lines, comment_lines);
+        TEST_ASSERT_EQ(MTX_SUCCESS, err);
+        TEST_ASSERT_STREQ("% comment", mtx.comment_lines[0]);
+        for (int i = 0; i < mtx.num_comment_lines; i++)
+            free(mtx.comment_lines[i]);
+        free(mtx.comment_lines);
+    }
+
+    {
+        struct mtx mtx;
+        mtx.num_comment_lines = 0;
+        mtx.comment_lines = NULL;
+        int num_comment_lines = 1;
+        const char * comment_lines[] = {"invalid comment"};
+        int err = mtx_set_comment_lines(
+            &mtx, num_comment_lines, comment_lines);
+        TEST_ASSERT_EQ(MTX_ERR_INVALID_MTX_COMMENT, err);
+        for (int i = 0; i < mtx.num_comment_lines; i++)
+            free(mtx.comment_lines[i]);
+        free(mtx.comment_lines);
+    }
     return MTX_SUCCESS;
 }
 
@@ -120,7 +153,7 @@ int test_mtx_matrix_size_per_row(void)
     /* Create a sparse matrix. */
     struct mtx mtx;
     int num_comment_lines = 1;
-    const char * comment_lines[] = {"a comment"};
+    const char * comment_lines[] = {"% a comment"};
     int num_rows = 4;
     int num_columns = 4;
     int64_t size = 6;
@@ -375,6 +408,7 @@ int main(int argc, char * argv[])
 {
     TEST_SUITE_BEGIN("Running tests for Matrix Market objects\n");
     TEST_RUN(test_mtx_copy);
+    TEST_RUN(test_mtx_set_comment_lines);
     TEST_RUN(test_mtx_matrix_size_per_row);
     TEST_RUN(test_mtx_matrix_num_nonzeros);
     TEST_RUN(test_mtx_set_zero_matrix_array_real);

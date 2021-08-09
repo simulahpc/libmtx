@@ -17,7 +17,7 @@
  * <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-08-02
+ * Last modified: 2021-08-09
  *
  * Multiply a general, unsymmetric matrix with a vector.
  *
@@ -453,7 +453,7 @@ int main(int argc, char *argv[])
         }
     } else {
         if (A.field == mtx_real) {
-            err = mtx_init_vector_array_real_ones(
+            err = mtx_alloc_vector_array_real(
                 &x, 0, NULL, A.num_columns);
             if (err) {
                 fprintf(stderr, "%s: %s\n",
@@ -463,13 +463,35 @@ int main(int argc, char *argv[])
                 program_options_free(&args);
                 return EXIT_FAILURE;
             }
+
+            err = mtx_set_constant_real(&x, 1.0f);
+            if (err) {
+                fprintf(stderr, "%s: %s\n",
+                        program_invocation_short_name,
+                        mtx_strerror(err));
+                mtx_free(&x);
+                mtx_free(&A);
+                program_options_free(&args);
+                return EXIT_FAILURE;
+            }
         } else if (A.field == mtx_double) {
-            err = mtx_init_vector_array_double_ones(
+            err = mtx_alloc_vector_array_double(
                 &x, 0, NULL, A.num_columns);
             if (err) {
                 fprintf(stderr, "%s: %s\n",
                         program_invocation_short_name,
                         mtx_strerror(err));
+                mtx_free(&A);
+                program_options_free(&args);
+                return EXIT_FAILURE;
+            }
+
+            err = mtx_set_constant_double(&x, 1.0);
+            if (err) {
+                fprintf(stderr, "%s: %s\n",
+                        program_invocation_short_name,
+                        mtx_strerror(err));
+                mtx_free(&x);
                 mtx_free(&A);
                 program_options_free(&args);
                 return EXIT_FAILURE;
@@ -528,7 +550,7 @@ int main(int argc, char *argv[])
         }
     } else {
         if (A.field == mtx_real) {
-            err = mtx_init_vector_array_real_zero(
+            err = mtx_alloc_vector_array_real(
                 &y, 0, NULL, A.num_rows);
             if (err) {
                 fprintf(stderr, "%s: %s\n",
@@ -540,7 +562,7 @@ int main(int argc, char *argv[])
                 return EXIT_FAILURE;
             }
         } else if (A.field == mtx_double) {
-            err = mtx_init_vector_array_double_zero(
+            err = mtx_alloc_vector_array_double(
                 &y, 0, NULL, A.num_rows);
             if (err) {
                 fprintf(stderr, "%s: %s\n",
@@ -555,6 +577,18 @@ int main(int argc, char *argv[])
             fprintf(stderr, "%s: %s\n",
                     program_invocation_short_name,
                     strerror(ENOTSUP));
+            mtx_free(&x);
+            mtx_free(&A);
+            program_options_free(&args);
+            return EXIT_FAILURE;
+        }
+
+        err = mtx_set_zero(&y);
+        if (err) {
+            fprintf(stderr, "%s: %s\n",
+                    program_invocation_short_name,
+                    mtx_strerror(err));
+            mtx_free(&y);
             mtx_free(&x);
             mtx_free(&A);
             program_options_free(&args);

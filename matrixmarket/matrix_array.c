@@ -17,7 +17,7 @@
  * <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-08-02
+ * Last modified: 2021-08-09
  *
  * Dense matrices in Matrix Market format.
  */
@@ -56,57 +56,343 @@ int mtx_matrix_array_num_nonzeros(
  */
 int mtx_matrix_array_size(
     enum mtx_symmetry symmetry,
+    enum mtx_triangle triangle,
     int num_rows,
     int num_columns,
     int64_t * size)
 {
-    /* Compute the number of nonzeros. */
-    int64_t num_nonzeros;
-    int err = mtx_matrix_array_num_nonzeros(
-        num_rows, num_columns, &num_nonzeros);
-    if (err)
-        return err;
-
     /*
      * Compute the number of stored nonzeros, while ensuring that a
      * symmetric, skew-symmetric or Hermitian matrix is also square.
      */
     if (symmetry == mtx_general) {
-        *size = num_nonzeros;
+        if (triangle != mtx_nontriangular)
+            return MTX_ERR_INVALID_MTX_TRIANGLE;
+
+        if (__builtin_mul_overflow(
+                num_rows, num_columns, size))
+        {
+            errno = EOVERFLOW;
+            return MTX_ERR_ERRNO;
+        }
 
     } else if (symmetry == mtx_symmetric ||
                symmetry == mtx_hermitian)
     {
-        if (num_rows != num_columns)
-            return MTX_ERR_INVALID_MTX_SIZE;
-        if (__builtin_mul_overflow(
-                num_rows+1, num_columns,
-                size))
-        {
-            errno = EOVERFLOW;
-            return MTX_ERR_ERRNO;
+        if (triangle == mtx_lower_triangular) {
+            if (num_rows <= num_columns) {
+                if (__builtin_mul_overflow(
+                        num_rows, num_rows+1, size))
+                {
+                    errno = EOVERFLOW;
+                    return MTX_ERR_ERRNO;
+                }
+                *size /= 2;
+            } else {
+                int a;
+                if (__builtin_mul_overflow(
+                        num_columns, num_columns+1, &a))
+                {
+                    errno = EOVERFLOW;
+                    return MTX_ERR_ERRNO;
+                }
+                a /= 2;
+
+                int b;
+                if (__builtin_mul_overflow(
+                        num_rows-num_columns, num_columns, &b))
+                {
+                    errno = EOVERFLOW;
+                    return MTX_ERR_ERRNO;
+                }
+                *size = a + b;
+            }
+        } else if (triangle == mtx_upper_triangular) {
+            if (num_columns <= num_rows) {
+                if (__builtin_mul_overflow(
+                        num_columns, num_columns+1, size))
+                {
+                    errno = EOVERFLOW;
+                    return MTX_ERR_ERRNO;
+                }
+                *size /= 2;
+            } else {
+                int a;
+                if (__builtin_mul_overflow(
+                        num_rows, num_rows+1, &a))
+                {
+                    errno = EOVERFLOW;
+                    return MTX_ERR_ERRNO;
+                }
+                a /= 2;
+
+                int b;
+                if (__builtin_mul_overflow(
+                        num_columns-num_rows, num_rows, &b))
+                {
+                    errno = EOVERFLOW;
+                    return MTX_ERR_ERRNO;
+                }
+                *size = a + b;
+            }
+        } else {
+            return MTX_ERR_INVALID_MTX_TRIANGLE;
         }
-        *size /= 2;
 
     } else if (symmetry == mtx_skew_symmetric) {
-        if (num_rows != num_columns)
-            return MTX_ERR_INVALID_MTX_SIZE;
-        if (__builtin_mul_overflow(
-                num_rows+1, num_columns,
-                size))
-        {
-            errno = EOVERFLOW;
-            return MTX_ERR_ERRNO;
+        if (triangle == mtx_lower_triangular) {
+            if (num_rows <= num_columns) {
+                if (__builtin_mul_overflow(
+                        num_rows, num_rows-1, size))
+                {
+                    errno = EOVERFLOW;
+                    return MTX_ERR_ERRNO;
+                }
+                *size /= 2;
+            } else {
+                int a;
+                if (__builtin_mul_overflow(
+                        num_columns, num_columns-1, &a))
+                {
+                    errno = EOVERFLOW;
+                    return MTX_ERR_ERRNO;
+                }
+                a /= 2;
+
+                int b;
+                if (__builtin_mul_overflow(
+                        num_rows-num_columns, num_columns, &b))
+                {
+                    errno = EOVERFLOW;
+                    return MTX_ERR_ERRNO;
+                }
+                *size = a + b;
+            }
+        } else if (triangle == mtx_upper_triangular) {
+            if (num_columns <= num_rows) {
+                if (__builtin_mul_overflow(
+                        num_columns, num_columns-1, size))
+                {
+                    errno = EOVERFLOW;
+                    return MTX_ERR_ERRNO;
+                }
+                *size /= 2;
+            } else {
+                int a;
+                if (__builtin_mul_overflow(
+                        num_rows, num_rows-1, &a))
+                {
+                    errno = EOVERFLOW;
+                    return MTX_ERR_ERRNO;
+                }
+                a /= 2;
+
+                int b;
+                if (__builtin_mul_overflow(
+                        num_columns-num_rows, num_rows, &b))
+                {
+                    errno = EOVERFLOW;
+                    return MTX_ERR_ERRNO;
+                }
+                *size = a + b;
+            }
+        } else {
+            return MTX_ERR_INVALID_MTX_TRIANGLE;
         }
-        *size /= 2;
-        *size = num_nonzeros - *size;
 
     } else {
         return MTX_ERR_INVALID_MTX_SYMMETRY;
     }
-
     return MTX_SUCCESS;
 }
+
+/*
+ * Dense matrix allocation.
+ */
+
+static int mtx_alloc_matrix_array_field(
+    struct mtx * mtx,
+    enum mtx_field field,
+    enum mtx_symmetry symmetry,
+    enum mtx_triangle triangle,
+    enum mtx_sorting sorting,
+    int num_comment_lines,
+    const char ** comment_lines,
+    int num_rows,
+    int num_columns,
+    int nonzero_size)
+{
+    int err;
+    if (sorting != mtx_row_major &&
+        sorting != mtx_column_major)
+    {
+        return MTX_ERR_INVALID_MTX_SORTING;
+    }
+
+    mtx->object = mtx_matrix;
+    mtx->format = mtx_array;
+    mtx->field = field;
+    mtx->symmetry = symmetry;
+    mtx->triangle = triangle;
+    mtx->sorting = sorting;
+    mtx->ordering = mtx_unordered;
+    mtx->assembly = mtx_assembled;
+
+    mtx->num_comment_lines = 0;
+    mtx->comment_lines = NULL;
+    err = mtx_set_comment_lines(mtx, num_comment_lines, comment_lines);
+    if (err)
+        return err;
+
+    mtx->num_rows = num_rows;
+    mtx->num_columns = num_columns;
+    err = mtx_matrix_array_num_nonzeros(
+        num_rows, num_columns, &mtx->num_nonzeros);
+    if (err) {
+        for (int i = 0; i < num_comment_lines; i++)
+            free(mtx->comment_lines[i]);
+        free(mtx->comment_lines);
+        return err;
+    }
+    err = mtx_matrix_array_size(
+        symmetry, triangle, num_rows, num_columns, &mtx->size);
+    if (err) {
+        for (int i = 0; i < num_comment_lines; i++)
+            free(mtx->comment_lines[i]);
+        free(mtx->comment_lines);
+        return err;
+    }
+
+    mtx->nonzero_size = nonzero_size;
+    mtx->data = malloc(mtx->size * mtx->nonzero_size);
+    if (!mtx->data) {
+        for (int i = 0; i < num_comment_lines; i++)
+            free(mtx->comment_lines[i]);
+        free(mtx->comment_lines);
+        return MTX_ERR_ERRNO;
+    }
+    return MTX_SUCCESS;
+}
+
+/**
+ * `mtx_alloc_matrix_array_real()` allocates a dense matrix with real,
+ * single-precision floating point coefficients.
+ *
+ * If `symmetry' is `mtx_symmetric', `mtx_skew_symmetric' or
+ * `mtx_hermitian', then `triangle' must be either
+ * `mtx_lower_triangular' or `mtx_upper_triangular' to indicate which
+ * triangle of the matrix is stored in `data'.  Otherwise, if
+ * `symmetry' is `mtx_general', then `triangle' must be
+ * `mtx_nontriangular'.
+ *
+ * ´sorting' must be `mtx_row_major' or `mtx_column_major'.
+ */
+int mtx_alloc_matrix_array_real(
+    struct mtx * mtx,
+    enum mtx_symmetry symmetry,
+    enum mtx_triangle triangle,
+    enum mtx_sorting sorting,
+    int num_comment_lines,
+    const char ** comment_lines,
+    int num_rows,
+    int num_columns)
+{
+    return mtx_alloc_matrix_array_field(
+        mtx, mtx_real, symmetry, triangle, sorting,
+        num_comment_lines, comment_lines,
+        num_rows, num_columns, sizeof(float));
+}
+
+/**
+ * `mtx_alloc_matrix_array_double()` allocates a dense matrix with
+ * real, double-precision floating point coefficients.
+ *
+ * If `symmetry' is `mtx_symmetric', `mtx_skew_symmetric' or
+ * `mtx_hermitian', then `triangle' must be either
+ * `mtx_lower_triangular' or `mtx_upper_triangular' to indicate which
+ * triangle of the matrix is stored in `data'.  Otherwise, if
+ * `symmetry' is `mtx_general', then `triangle' must be
+ * `mtx_nontriangular'.
+ *
+ * ´sorting' must be `mtx_row_major' or `mtx_column_major'.
+ */
+int mtx_alloc_matrix_array_double(
+    struct mtx * mtx,
+    enum mtx_symmetry symmetry,
+    enum mtx_triangle triangle,
+    enum mtx_sorting sorting,
+    int num_comment_lines,
+    const char ** comment_lines,
+    int num_rows,
+    int num_columns)
+{
+    return mtx_alloc_matrix_array_field(
+        mtx, mtx_double, symmetry, triangle, sorting,
+        num_comment_lines, comment_lines,
+        num_rows, num_columns, sizeof(double));
+}
+
+/**
+ * `mtx_alloc_matrix_array_complex()` allocates a dense matrix with
+ * complex, single-precision floating point coefficients.
+ *
+ * If `symmetry' is `mtx_symmetric', `mtx_skew_symmetric' or
+ * `mtx_hermitian', then `triangle' must be either
+ * `mtx_lower_triangular' or `mtx_upper_triangular' to indicate which
+ * triangle of the matrix is stored in `data'.  Otherwise, if
+ * `symmetry' is `mtx_general', then `triangle' must be
+ * `mtx_nontriangular'.
+ *
+ * ´sorting' must be `mtx_row_major' or `mtx_column_major'.
+ */
+int mtx_alloc_matrix_array_complex(
+    struct mtx * mtx,
+    enum mtx_symmetry symmetry,
+    enum mtx_triangle triangle,
+    enum mtx_sorting sorting,
+    int num_comment_lines,
+    const char ** comment_lines,
+    int num_rows,
+    int num_columns)
+{
+    return mtx_alloc_matrix_array_field(
+        mtx, mtx_complex, symmetry, triangle, sorting,
+        num_comment_lines, comment_lines,
+        num_rows, num_columns, 2*sizeof(float));
+}
+
+/**
+ * `mtx_alloc_matrix_array_integer()` allocates a dense matrix with
+ * integer coefficients.
+ *
+ * If `symmetry' is `mtx_symmetric', `mtx_skew_symmetric' or
+ * `mtx_hermitian', then `triangle' must be either
+ * `mtx_lower_triangular' or `mtx_upper_triangular' to indicate which
+ * triangle of the matrix is stored in `data'.  Otherwise, if
+ * `symmetry' is `mtx_general', then `triangle' must be
+ * `mtx_nontriangular'.
+ *
+ * ´sorting' must be `mtx_row_major' or `mtx_column_major'.
+ */
+int mtx_alloc_matrix_array_integer(
+    struct mtx * mtx,
+    enum mtx_symmetry symmetry,
+    enum mtx_triangle triangle,
+    enum mtx_sorting sorting,
+    int num_comment_lines,
+    const char ** comment_lines,
+    int num_rows,
+    int num_columns)
+{
+    return mtx_alloc_matrix_array_field(
+        mtx, mtx_integer, symmetry, triangle, sorting,
+        num_comment_lines, comment_lines,
+        num_rows, num_columns, sizeof(int));
+}
+
+/*
+ * Dense matrix creation.
+ */
 
 /**
  * `mtx_init_matrix_array_real()` creates a dense matrix with real,
@@ -121,7 +407,7 @@ int mtx_matrix_array_size(
  * ´sorting' must be `mtx_row_major' or `mtx_column_major'.
  */
 int mtx_init_matrix_array_real(
-    struct mtx * matrix,
+    struct mtx * mtx,
     enum mtx_symmetry symmetry,
     enum mtx_triangle triangle,
     enum mtx_sorting sorting,
@@ -131,64 +417,14 @@ int mtx_init_matrix_array_real(
     int num_columns,
     const float * data)
 {
-    int err;
-
-    if (sorting != mtx_row_major &&
-        sorting != mtx_column_major)
-    {
-        return MTX_ERR_INVALID_MTX_SORTING;
-    }
-
-    matrix->object = mtx_matrix;
-    matrix->format = mtx_array;
-    matrix->field = mtx_real;
-    matrix->symmetry = symmetry;
-    matrix->triangle = triangle;
-    matrix->sorting = sorting;
-    matrix->ordering = mtx_unordered;
-    matrix->assembly = mtx_assembled;
-
-    /* Allocate storage for and copy comment lines. */
-    matrix->num_comment_lines = num_comment_lines;
-    matrix->comment_lines = malloc(
-        num_comment_lines * sizeof(char *));
-    if (!matrix->comment_lines)
-        return MTX_ERR_ERRNO;
-    for (int i = 0; i < num_comment_lines; i++)
-        matrix->comment_lines[i] = strdup(comment_lines[i]);
-
-    /* Compute the matrix size. */
-    matrix->num_rows = num_rows;
-    matrix->num_columns = num_columns;
-    err = mtx_matrix_array_num_nonzeros(
-        num_rows, num_columns, &matrix->num_nonzeros);
-    if (err) {
-        for (int i = 0; i < num_comment_lines; i++)
-            free(matrix->comment_lines[i]);
-        free(matrix->comment_lines);
+    int err = mtx_alloc_matrix_array_real(
+        mtx, symmetry, triangle, sorting,
+        num_comment_lines, comment_lines,
+        num_rows, num_columns);
+    if (err)
         return err;
-    }
-    err = mtx_matrix_array_size(
-        symmetry, num_rows, num_columns, &matrix->size);
-    if (err) {
-        for (int i = 0; i < num_comment_lines; i++)
-            free(matrix->comment_lines[i]);
-        free(matrix->comment_lines);
-        return err;
-    }
-
-    /* Allocate storage for and copy matrix data. */
-    matrix->nonzero_size = sizeof(float);
-    matrix->data = malloc(matrix->size * matrix->nonzero_size);
-    if (!matrix->data) {
-        for (int i = 0; i < num_comment_lines; i++)
-            free(matrix->comment_lines[i]);
-        free(matrix->comment_lines);
-        return MTX_ERR_ERRNO;
-    }
-    for (int64_t i = 0; i < matrix->size; i++)
-        ((float *) matrix->data)[i] = data[i];
-
+    for (int64_t i = 0; i < mtx->size; i++)
+        ((float *) mtx->data)[i] = data[i];
     return MTX_SUCCESS;
 }
 
@@ -205,7 +441,7 @@ int mtx_init_matrix_array_real(
  * ´sorting' must be `mtx_row_major' or `mtx_column_major'.
  */
 int mtx_init_matrix_array_double(
-    struct mtx * matrix,
+    struct mtx * mtx,
     enum mtx_symmetry symmetry,
     enum mtx_triangle triangle,
     enum mtx_sorting sorting,
@@ -215,64 +451,14 @@ int mtx_init_matrix_array_double(
     int num_columns,
     const double * data)
 {
-    int err;
-
-    if (sorting != mtx_row_major &&
-        sorting != mtx_column_major)
-    {
-        return MTX_ERR_INVALID_MTX_SORTING;
-    }
-
-    matrix->object = mtx_matrix;
-    matrix->format = mtx_array;
-    matrix->field = mtx_double;
-    matrix->symmetry = symmetry;
-    matrix->triangle = triangle;
-    matrix->sorting = sorting;
-    matrix->ordering = mtx_unordered;
-    matrix->assembly = mtx_assembled;
-
-    /* Allocate storage for and copy comment lines. */
-    matrix->num_comment_lines = num_comment_lines;
-    matrix->comment_lines = malloc(
-        num_comment_lines * sizeof(char *));
-    if (!matrix->comment_lines)
-        return MTX_ERR_ERRNO;
-    for (int i = 0; i < num_comment_lines; i++)
-        matrix->comment_lines[i] = strdup(comment_lines[i]);
-
-    /* Compute the matrix size. */
-    matrix->num_rows = num_rows;
-    matrix->num_columns = num_columns;
-    err = mtx_matrix_array_num_nonzeros(
-        num_rows, num_columns, &matrix->num_nonzeros);
-    if (err) {
-        for (int i = 0; i < num_comment_lines; i++)
-            free(matrix->comment_lines[i]);
-        free(matrix->comment_lines);
+    int err = mtx_alloc_matrix_array_double(
+        mtx, symmetry, triangle, sorting,
+        num_comment_lines, comment_lines,
+        num_rows, num_columns);
+    if (err)
         return err;
-    }
-    err = mtx_matrix_array_size(
-        symmetry, num_rows, num_columns, &matrix->size);
-    if (err) {
-        for (int i = 0; i < num_comment_lines; i++)
-            free(matrix->comment_lines[i]);
-        free(matrix->comment_lines);
-        return err;
-    }
-
-    /* Allocate storage for and copy matrix data. */
-    matrix->nonzero_size = sizeof(double);
-    matrix->data = malloc(matrix->size * matrix->nonzero_size);
-    if (!matrix->data) {
-        for (int i = 0; i < num_comment_lines; i++)
-            free(matrix->comment_lines[i]);
-        free(matrix->comment_lines);
-        return MTX_ERR_ERRNO;
-    }
-    for (int64_t i = 0; i < matrix->size; i++)
-        ((double *) matrix->data)[i] = data[i];
-
+    for (int64_t i = 0; i < mtx->size; i++)
+        ((double *) mtx->data)[i] = data[i];
     return MTX_SUCCESS;
 }
 
@@ -289,7 +475,7 @@ int mtx_init_matrix_array_double(
  * ´sorting' must be `mtx_row_major' or `mtx_column_major'.
  */
 int mtx_init_matrix_array_complex(
-    struct mtx * matrix,
+    struct mtx * mtx,
     enum mtx_symmetry symmetry,
     enum mtx_triangle triangle,
     enum mtx_sorting sorting,
@@ -299,72 +485,22 @@ int mtx_init_matrix_array_complex(
     int num_columns,
     const float * data)
 {
-    int err;
-
-    if (sorting != mtx_row_major &&
-        sorting != mtx_column_major)
-    {
-        return MTX_ERR_INVALID_MTX_SORTING;
-    }
-
-    matrix->object = mtx_matrix;
-    matrix->format = mtx_array;
-    matrix->field = mtx_complex;
-    matrix->symmetry = symmetry;
-    matrix->triangle = triangle;
-    matrix->sorting = sorting;
-    matrix->ordering = mtx_unordered;
-    matrix->assembly = mtx_assembled;
-
-    /* Allocate storage for and copy comment lines. */
-    matrix->num_comment_lines = num_comment_lines;
-    matrix->comment_lines = malloc(
-        num_comment_lines * sizeof(char *));
-    if (!matrix->comment_lines)
-        return MTX_ERR_ERRNO;
-    for (int i = 0; i < num_comment_lines; i++)
-        matrix->comment_lines[i] = strdup(comment_lines[i]);
-
-    /* Compute the matrix size. */
-    matrix->num_rows = num_rows;
-    matrix->num_columns = num_columns;
-    err = mtx_matrix_array_num_nonzeros(
-        num_rows, num_columns, &matrix->num_nonzeros);
-    if (err) {
-        for (int i = 0; i < num_comment_lines; i++)
-            free(matrix->comment_lines[i]);
-        free(matrix->comment_lines);
+    int err = mtx_alloc_matrix_array_complex(
+        mtx, symmetry, triangle, sorting,
+        num_comment_lines, comment_lines,
+        num_rows, num_columns);
+    if (err)
         return err;
+    for (int64_t i = 0; i < mtx->size; i++) {
+        ((float *) mtx->data)[2*i+0] = data[2*i+0];
+        ((float *) mtx->data)[2*i+1] = data[2*i+1];
     }
-    err = mtx_matrix_array_size(
-        symmetry, num_rows, num_columns, &matrix->size);
-    if (err) {
-        for (int i = 0; i < num_comment_lines; i++)
-            free(matrix->comment_lines[i]);
-        free(matrix->comment_lines);
-        return err;
-    }
-
-    /* Allocate storage for and copy matrix data. */
-    matrix->nonzero_size = 2*sizeof(float);
-    matrix->data = malloc(matrix->size * matrix->nonzero_size);
-    if (!matrix->data) {
-        for (int i = 0; i < num_comment_lines; i++)
-            free(matrix->comment_lines[i]);
-        free(matrix->comment_lines);
-        return MTX_ERR_ERRNO;
-    }
-    for (int64_t i = 0; i < matrix->size; i++) {
-        ((float *) matrix->data)[2*i+0] = data[2*i+0];
-        ((float *) matrix->data)[2*i+1] = data[2*i+1];
-    }
-
     return MTX_SUCCESS;
 }
 
 /**
- * `mtx_init_matrix_array_integer()` creates a dense matrix with integer
- * coefficients.
+ * `mtx_init_matrix_array_integer()` creates a dense matrix with
+ * integer coefficients.
  *
  * If `symmetry' is `symmetric', `skew-symmetric' or `hermitian', then
  * `triangle' must be either `lower-triangular' or `upper-triangular'
@@ -375,7 +511,7 @@ int mtx_init_matrix_array_complex(
  * ´sorting' must be `mtx_row_major' or `mtx_column_major'.
  */
 int mtx_init_matrix_array_integer(
-    struct mtx * matrix,
+    struct mtx * mtx,
     enum mtx_symmetry symmetry,
     enum mtx_triangle triangle,
     enum mtx_sorting sorting,
@@ -385,66 +521,20 @@ int mtx_init_matrix_array_integer(
     int num_columns,
     const int * data)
 {
-    int err;
-
-    if (sorting != mtx_row_major &&
-        sorting != mtx_column_major)
-    {
-        return MTX_ERR_INVALID_MTX_SORTING;
-    }
-
-    matrix->object = mtx_matrix;
-    matrix->format = mtx_array;
-    matrix->field = mtx_integer;
-    matrix->symmetry = symmetry;
-    matrix->triangle = triangle;
-    matrix->sorting = sorting;
-    matrix->ordering = mtx_unordered;
-    matrix->assembly = mtx_assembled;
-
-    /* Allocate storage for and copy comment lines. */
-    matrix->num_comment_lines = num_comment_lines;
-    matrix->comment_lines = malloc(
-        num_comment_lines * sizeof(char *));
-    if (!matrix->comment_lines)
-        return MTX_ERR_ERRNO;
-    for (int i = 0; i < num_comment_lines; i++)
-        matrix->comment_lines[i] = strdup(comment_lines[i]);
-
-    /* Compute the matrix size. */
-    matrix->num_rows = num_rows;
-    matrix->num_columns = num_columns;
-    err = mtx_matrix_array_num_nonzeros(
-        num_rows, num_columns, &matrix->num_nonzeros);
-    if (err) {
-        for (int i = 0; i < num_comment_lines; i++)
-            free(matrix->comment_lines[i]);
-        free(matrix->comment_lines);
+    int err = mtx_alloc_matrix_array_integer(
+        mtx, symmetry, triangle, sorting,
+        num_comment_lines, comment_lines,
+        num_rows, num_columns);
+    if (err)
         return err;
-    }
-    err = mtx_matrix_array_size(
-        symmetry, num_rows, num_columns, &matrix->size);
-    if (err) {
-        for (int i = 0; i < num_comment_lines; i++)
-            free(matrix->comment_lines[i]);
-        free(matrix->comment_lines);
-        return err;
-    }
-
-    /* Allocate storage for and copy matrix data. */
-    matrix->nonzero_size = sizeof(int);
-    matrix->data = malloc(matrix->size * matrix->nonzero_size);
-    if (!matrix->data) {
-        for (int i = 0; i < num_comment_lines; i++)
-            free(matrix->comment_lines[i]);
-        free(matrix->comment_lines);
-        return MTX_ERR_ERRNO;
-    }
-    for (int64_t i = 0; i < matrix->size; i++)
-        ((int *) matrix->data)[i] = data[i];
-
+    for (int64_t i = 0; i < mtx->size; i++)
+        ((int *) mtx->data)[i] = data[i];
     return MTX_SUCCESS;
 }
+
+/*
+ * Other dense matrix functions.
+ */
 
 /**
  * `mtx_matrix_array_set_zero()' zeroes a matrix in array format.

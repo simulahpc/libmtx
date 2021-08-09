@@ -17,7 +17,7 @@
  * <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-08-03
+ * Last modified: 2021-08-09
  *
  * Unit tests for MPI communication routines for matrices and vectors
  * in Matrix Market format.
@@ -63,7 +63,7 @@ int test_mtx_mpi_sendrecv(void)
 
     /* Get the MPI rank of the current process. */
     int rank;
-    err = MPI_Comm_rank(comm, &rank);
+    mpierr = MPI_Comm_rank(comm, &rank);
     if (mpierr) {
         MPI_Error_string(err, mpierrstr, &mpierrstrlen);
         fprintf(stderr, "%s: MPI_Comm_rank failed with %s\n",
@@ -73,7 +73,7 @@ int test_mtx_mpi_sendrecv(void)
 
     /* Create a sparse matrix on the root process. */
     int num_comment_lines = 1;
-    const char * comment_lines[] = { "a comment" };
+    const char * comment_lines[] = { "% a comment" };
     int num_rows = 4;
     int num_columns = 4;
     int64_t size = 4;
@@ -124,10 +124,10 @@ int test_mtx_mpi_sendrecv(void)
         TEST_ASSERT_EQ(mtx_unordered, destmtx.ordering);
         TEST_ASSERT_EQ(mtx_unassembled, destmtx.assembly);
         TEST_ASSERT_EQ(1, destmtx.num_comment_lines);
-        TEST_ASSERT_STREQ("a comment", destmtx.comment_lines[0]);
+        TEST_ASSERT_STREQ("% a comment", destmtx.comment_lines[0]);
         TEST_ASSERT_EQ(4, destmtx.num_rows);
         TEST_ASSERT_EQ(4, destmtx.num_columns);
-        TEST_ASSERT_EQ(4, destmtx.num_nonzeros);
+        TEST_ASSERT_EQ(-1, destmtx.num_nonzeros);
         TEST_ASSERT_EQ(4, destmtx.size);
         const struct mtx_matrix_coordinate_real * destmtxdata =
             (const struct mtx_matrix_coordinate_real *) destmtx.data;
@@ -184,7 +184,7 @@ int test_mtx_mpi_bcast(void)
 
     /* Create a sparse matrix on the root process. */
     int num_comment_lines = 1;
-    const char * comment_lines[] = { "a comment" };
+    const char * comment_lines[] = { "% a comment" };
     int num_rows = 4;
     int num_columns = 4;
     int64_t size = 4;
@@ -227,10 +227,10 @@ int test_mtx_mpi_bcast(void)
     TEST_ASSERT_EQ(mtx_unordered, mtx.ordering);
     TEST_ASSERT_EQ(mtx_unassembled, mtx.assembly);
     TEST_ASSERT_EQ(1, mtx.num_comment_lines);
-    TEST_ASSERT_STREQ("a comment", mtx.comment_lines[0]);
+    TEST_ASSERT_STREQ("% a comment", mtx.comment_lines[0]);
     TEST_ASSERT_EQ(4, mtx.num_rows);
     TEST_ASSERT_EQ(4, mtx.num_columns);
-    TEST_ASSERT_EQ(4, mtx.num_nonzeros);
+    TEST_ASSERT_EQ(-1, mtx.num_nonzeros);
     TEST_ASSERT_EQ(4, mtx.size);
     const struct mtx_matrix_coordinate_real * mtxdata =
         (const struct mtx_matrix_coordinate_real *) mtx.data;
@@ -307,7 +307,7 @@ int test_mtx_matrix_coordinate_gather(void)
     }
 
     int num_comment_lines = 1;
-    const char * comment_lines[] = { "a comment" };
+    const char * comment_lines[] = { "% a comment" };
     struct mtx srcmtx;
     err = mtx_init_matrix_coordinate_real(
         &srcmtx, mtx_general, mtx_nontriangular,
@@ -336,7 +336,7 @@ int test_mtx_matrix_coordinate_gather(void)
         TEST_ASSERT_EQ(mtx_unordered, dstmtx.ordering);
         TEST_ASSERT_EQ(mtx_assembled, dstmtx.assembly);
         TEST_ASSERT_EQ(1, dstmtx.num_comment_lines);
-        TEST_ASSERT_STREQ("a comment", dstmtx.comment_lines[0]);
+        TEST_ASSERT_STREQ("% a comment", dstmtx.comment_lines[0]);
         TEST_ASSERT_EQ(4, dstmtx.num_rows);
         TEST_ASSERT_EQ(4, dstmtx.num_columns);
         TEST_ASSERT_EQ(4, dstmtx.num_nonzeros);
@@ -395,7 +395,7 @@ int test_mtx_matrix_coordinate_scatter(void)
     /* Create a sparse matrix on the MPI root process (rank 0). */
     int root = 0;
     int num_comment_lines = 1;
-    const char * comment_lines[] = {"a comment"};
+    const char * comment_lines[] = {"% a comment"};
     int num_rows = 4;
     int num_columns = 4;
     int64_t size = 4;
@@ -464,7 +464,7 @@ int test_mtx_matrix_coordinate_scatter(void)
     TEST_ASSERT_EQ(mtx_unordered, dstmtx.ordering);
     TEST_ASSERT_EQ(mtx_unassembled, dstmtx.assembly);
     TEST_ASSERT_EQ(1, dstmtx.num_comment_lines);
-    TEST_ASSERT_STREQ("a comment", dstmtx.comment_lines[0]);
+    TEST_ASSERT_STREQ("% a comment", dstmtx.comment_lines[0]);
     TEST_ASSERT_EQ(4, dstmtx.num_rows);
     TEST_ASSERT_EQ(4, dstmtx.num_columns);
     const struct mtx_matrix_coordinate_real * dstmtxdata =

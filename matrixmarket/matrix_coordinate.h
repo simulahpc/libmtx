@@ -90,7 +90,76 @@ struct mtx_matrix_coordinate_pattern
 };
 
 /*
- * Sparse matrix constructors.
+ * Sparse (coordinate) matrix allocation.
+ */
+
+/**
+ * `mtx_alloc_matrix_coordinate_real()` allocates a sparse matrix with
+ * real, single-precision floating point coefficients.
+ */
+int mtx_alloc_matrix_coordinate_real(
+    struct mtx * mtx,
+    enum mtx_symmetry symmetry,
+    int num_comment_lines,
+    const char ** comment_lines,
+    int num_rows,
+    int num_columns,
+    int64_t size);
+
+/**
+ * `mtx_alloc_matrix_coordinate_double()` allocates a sparse matrix
+ * with real, double-precision floating point coefficients.
+ */
+int mtx_alloc_matrix_coordinate_double(
+    struct mtx * mtx,
+    enum mtx_symmetry symmetry,
+    int num_comment_lines,
+    const char ** comment_lines,
+    int num_rows,
+    int num_columns,
+    int64_t size);
+
+/**
+ * `mtx_alloc_matrix_coordinate_complex()` allocates a sparse matrix
+ * with complex, single-precision floating point coefficients.
+ */
+int mtx_alloc_matrix_coordinate_complex(
+    struct mtx * mtx,
+    enum mtx_symmetry symmetry,
+    int num_comment_lines,
+    const char ** comment_lines,
+    int num_rows,
+    int num_columns,
+    int64_t size);
+
+/**
+ * `mtx_alloc_matrix_coordinate_integer()` allocates a sparse matrix
+ * with integer coefficients.
+ */
+int mtx_alloc_matrix_coordinate_integer(
+    struct mtx * mtx,
+    enum mtx_symmetry symmetry,
+    int num_comment_lines,
+    const char ** comment_lines,
+    int num_rows,
+    int num_columns,
+    int64_t size);
+
+/**
+ * `mtx_alloc_matrix_coordinate_pattern()` allocates a sparse matrix
+ * with boolean coefficients.
+ */
+int mtx_alloc_matrix_coordinate_pattern(
+    struct mtx * mtx,
+    enum mtx_symmetry symmetry,
+    int num_comment_lines,
+    const char ** comment_lines,
+    int num_rows,
+    int num_columns,
+    int64_t size);
+
+/*
+ * Sparse (coordinate) matrix initialisation.
  */
 
 /**
@@ -98,7 +167,7 @@ struct mtx_matrix_coordinate_pattern
  * real, single-precision floating point coefficients.
  */
 int mtx_init_matrix_coordinate_real(
-    struct mtx * matrix,
+    struct mtx * mtx,
     enum mtx_symmetry symmetry,
     enum mtx_triangle triangle,
     enum mtx_sorting sorting,
@@ -116,7 +185,7 @@ int mtx_init_matrix_coordinate_real(
  * real, double-precision floating point coefficients.
  */
 int mtx_init_matrix_coordinate_double(
-    struct mtx * matrix,
+    struct mtx * mtx,
     enum mtx_symmetry symmetry,
     enum mtx_triangle triangle,
     enum mtx_sorting sorting,
@@ -134,7 +203,7 @@ int mtx_init_matrix_coordinate_double(
  * complex, single-precision floating point coefficients.
  */
 int mtx_init_matrix_coordinate_complex(
-    struct mtx * matrix,
+    struct mtx * mtx,
     enum mtx_symmetry symmetry,
     enum mtx_triangle triangle,
     enum mtx_sorting sorting,
@@ -152,7 +221,7 @@ int mtx_init_matrix_coordinate_complex(
  * integer coefficients.
  */
 int mtx_init_matrix_coordinate_integer(
-    struct mtx * matrix,
+    struct mtx * mtx,
     enum mtx_symmetry symmetry,
     enum mtx_triangle triangle,
     enum mtx_sorting sorting,
@@ -170,7 +239,7 @@ int mtx_init_matrix_coordinate_integer(
  * boolean coefficients.
  */
 int mtx_init_matrix_coordinate_pattern(
-    struct mtx * matrix,
+    struct mtx * mtx,
     enum mtx_symmetry symmetry,
     enum mtx_triangle triangle,
     enum mtx_sorting sorting,
@@ -184,7 +253,7 @@ int mtx_init_matrix_coordinate_pattern(
     const struct mtx_matrix_coordinate_pattern * data);
 
 /*
- * Other sparse matrix functions.
+ * Sparse (coordinate) matrix value initialisation.
  */
 
 /**
@@ -230,6 +299,10 @@ int mtx_matrix_coordinate_set_constant_integer(
     struct mtx * mtx,
     int a);
 
+/*
+ * Other, sparse (coordinate) matrix functions.
+ */
+
 /**
  * `mtx_matrix_coordinate_num_nonzeros()` computes the number of
  * matrix nonzeros, including those that are not stored explicitly due
@@ -260,6 +333,6 @@ int mtx_matrix_coordinate_num_diagonal_nonzeros(
  * matrix.
  */
 int mtx_matrix_coordinate_transpose(
-    struct mtx * matrix);
+    struct mtx * mtx);
 
 #endif

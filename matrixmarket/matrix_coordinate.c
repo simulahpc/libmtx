@@ -146,12 +146,166 @@ int mtx_matrix_coordinate_num_diagonal_nonzeros(
     return MTX_SUCCESS;
 }
 
+
+/*
+ * Sparse (coordinate) matrix allocation.
+ */
+
+static int mtx_alloc_matrix_coordinate_field(
+    struct mtx * mtx,
+    enum mtx_field field,
+    enum mtx_symmetry symmetry,
+    int num_comment_lines,
+    const char ** comment_lines,
+    int num_rows,
+    int num_columns,
+    int64_t nonzero_size,
+    int64_t size)
+{
+    int err;
+    mtx->object = mtx_matrix;
+    mtx->format = mtx_coordinate;
+    mtx->field = field;
+    mtx->symmetry = symmetry;
+    mtx->triangle = mtx_nontriangular;
+    mtx->sorting = mtx_unsorted;
+    mtx->ordering = mtx_unordered;
+    mtx->assembly = mtx_unassembled;
+
+    mtx->num_comment_lines = 0;
+    mtx->comment_lines = NULL;
+    err = mtx_set_comment_lines(mtx, num_comment_lines, comment_lines);
+    if (err)
+        return err;
+
+    mtx->num_rows = num_rows;
+    mtx->num_columns = num_columns;
+    mtx->size = size;
+    mtx->num_nonzeros = -1;
+
+    /* Allocate storage for matrix data. */
+    mtx->nonzero_size = nonzero_size;
+    mtx->data = malloc(mtx->size * mtx->nonzero_size);
+    if (!mtx->data) {
+        for (int i = 0; i < num_comment_lines; i++)
+            free(mtx->comment_lines[i]);
+        free(mtx->comment_lines);
+        return MTX_ERR_ERRNO;
+    }
+    return MTX_SUCCESS;
+}
+
+/**
+ * `mtx_alloc_matrix_coordinate_real()` allocates a sparse matrix with
+ * real, single-precision floating point coefficients.
+ */
+int mtx_alloc_matrix_coordinate_real(
+    struct mtx * mtx,
+    enum mtx_symmetry symmetry,
+    int num_comment_lines,
+    const char ** comment_lines,
+    int num_rows,
+    int num_columns,
+    int64_t size)
+{
+    return mtx_alloc_matrix_coordinate_field(
+        mtx, mtx_real, symmetry,
+        num_comment_lines, comment_lines,
+        num_rows, num_columns,
+        sizeof(struct mtx_matrix_coordinate_real),
+        size);
+}
+
+/**
+ * `mtx_alloc_matrix_coordinate_double()` allocates a sparse matrix
+ * with real, double-precision floating point coefficients.
+ */
+int mtx_alloc_matrix_coordinate_double(
+    struct mtx * mtx,
+    enum mtx_symmetry symmetry,
+    int num_comment_lines,
+    const char ** comment_lines,
+    int num_rows,
+    int num_columns,
+    int64_t size)
+{
+    return mtx_alloc_matrix_coordinate_field(
+        mtx, mtx_double, symmetry,
+        num_comment_lines, comment_lines,
+        num_rows, num_columns,
+        sizeof(struct mtx_matrix_coordinate_double),
+        size);
+}
+
+/**
+ * `mtx_alloc_matrix_coordinate_complex()` allocates a sparse matrix
+ * with complex, single-precision floating point coefficients.
+ */
+int mtx_alloc_matrix_coordinate_complex(
+    struct mtx * mtx,
+    enum mtx_symmetry symmetry,
+    int num_comment_lines,
+    const char ** comment_lines,
+    int num_rows,
+    int num_columns,
+    int64_t size)
+{
+    return mtx_alloc_matrix_coordinate_field(
+        mtx, mtx_complex, symmetry,
+        num_comment_lines, comment_lines,
+        num_rows, num_columns,
+        sizeof(struct mtx_matrix_coordinate_complex),
+        size);
+}
+
+/**
+ * `mtx_alloc_matrix_coordinate_integer()` allocates a sparse matrix
+ * with integer coefficients.
+ */
+int mtx_alloc_matrix_coordinate_integer(
+    struct mtx * mtx,
+    enum mtx_symmetry symmetry,
+    int num_comment_lines,
+    const char ** comment_lines,
+    int num_rows,
+    int num_columns,
+    int64_t size)
+{
+    return mtx_alloc_matrix_coordinate_field(
+        mtx, mtx_integer, symmetry,
+        num_comment_lines, comment_lines,
+        num_rows, num_columns,
+        sizeof(struct mtx_matrix_coordinate_integer),
+        size);
+}
+
+/**
+ * `mtx_alloc_matrix_coordinate_pattern()` allocates a sparse matrix
+ * with boolean coefficients.
+ */
+int mtx_alloc_matrix_coordinate_pattern(
+    struct mtx * mtx,
+    enum mtx_symmetry symmetry,
+    int num_comment_lines,
+    const char ** comment_lines,
+    int num_rows,
+    int num_columns,
+    int64_t size)
+{
+    return mtx_alloc_matrix_coordinate_field(
+        mtx, mtx_pattern, symmetry,
+        num_comment_lines, comment_lines,
+        num_rows, num_columns,
+        sizeof(struct mtx_matrix_coordinate_pattern),
+        size);
+}
+
 /**
  * `mtx_init_matrix_coordinate_real()` creates a sparse matrix with real,
  * single-precision floating point coefficients.
  */
 int mtx_init_matrix_coordinate_real(
-    struct mtx * matrix,
+    struct mtx * mtx,
     enum mtx_symmetry symmetry,
     enum mtx_triangle triangle,
     enum mtx_sorting sorting,
@@ -164,49 +318,18 @@ int mtx_init_matrix_coordinate_real(
     int64_t size,
     const struct mtx_matrix_coordinate_real * data)
 {
-    matrix->object = mtx_matrix;
-    matrix->format = mtx_coordinate;
-    matrix->field = mtx_real;
-    matrix->symmetry = symmetry;
-    matrix->triangle = triangle;
-    matrix->sorting = sorting;
-    matrix->ordering = ordering;
-    matrix->assembly = assembly;
-
-    /* Allocate storage for and copy comment lines. */
-    matrix->num_comment_lines = num_comment_lines;
-    matrix->comment_lines = malloc(
-        num_comment_lines * sizeof(char *));
-    if (!matrix->comment_lines)
-        return MTX_ERR_ERRNO;
-    for (int i = 0; i < num_comment_lines; i++)
-        matrix->comment_lines[i] = strdup(comment_lines[i]);
-
-    /* Compute the matrix size. */
-    matrix->num_rows = num_rows;
-    matrix->num_columns = num_columns;
-    matrix->size = size;
-    int err = mtx_matrix_coordinate_num_nonzeros(
-        matrix->field, symmetry, num_rows, num_columns,
-        size, data, &matrix->num_nonzeros);
-    if (err) {
-        for (int i = 0; i < num_comment_lines; i++)
-            free(matrix->comment_lines[i]);
-        free(matrix->comment_lines);
+    int err = mtx_alloc_matrix_coordinate_real(
+        mtx, symmetry, num_comment_lines, comment_lines,
+        num_rows, num_columns, size);
+    if (err)
         return err;
-    }
 
-    /* Allocate storage for and copy matrix data. */
-    matrix->nonzero_size = sizeof(struct mtx_matrix_coordinate_real);
-    matrix->data = malloc(matrix->size * matrix->nonzero_size);
-    if (!matrix->data) {
-        for (int i = 0; i < num_comment_lines; i++)
-            free(matrix->comment_lines[i]);
-        free(matrix->comment_lines);
-        return MTX_ERR_ERRNO;
-    }
-    for (int64_t i = 0; i < matrix->size; i++)
-        ((struct mtx_matrix_coordinate_real *) matrix->data)[i] = data[i];
+    mtx->triangle = triangle;
+    mtx->sorting = sorting;
+    mtx->ordering = ordering;
+    mtx->assembly = assembly;
+    for (int64_t i = 0; i < mtx->size; i++)
+        ((struct mtx_matrix_coordinate_real *) mtx->data)[i] = data[i];
     return MTX_SUCCESS;
 }
 
@@ -215,7 +338,7 @@ int mtx_init_matrix_coordinate_real(
  * double-precision floating point coefficients.
  */
 int mtx_init_matrix_coordinate_double(
-    struct mtx * matrix,
+    struct mtx * mtx,
     enum mtx_symmetry symmetry,
     enum mtx_triangle triangle,
     enum mtx_sorting sorting,
@@ -228,49 +351,18 @@ int mtx_init_matrix_coordinate_double(
     int64_t size,
     const struct mtx_matrix_coordinate_double * data)
 {
-    matrix->object = mtx_matrix;
-    matrix->format = mtx_coordinate;
-    matrix->field = mtx_double;
-    matrix->symmetry = symmetry;
-    matrix->triangle = triangle;
-    matrix->sorting = sorting;
-    matrix->ordering = ordering;
-    matrix->assembly = assembly;
-
-    /* Allocate storage for and copy comment lines. */
-    matrix->num_comment_lines = num_comment_lines;
-    matrix->comment_lines = malloc(
-        num_comment_lines * sizeof(char *));
-    if (!matrix->comment_lines)
-        return MTX_ERR_ERRNO;
-    for (int i = 0; i < num_comment_lines; i++)
-        matrix->comment_lines[i] = strdup(comment_lines[i]);
-
-    /* Compute the matrix size. */
-    matrix->num_rows = num_rows;
-    matrix->num_columns = num_columns;
-    matrix->size = size;
-    int err = mtx_matrix_coordinate_num_nonzeros(
-        matrix->field, symmetry, num_rows, num_columns,
-        size, data, &matrix->num_nonzeros);
-    if (err) {
-        for (int i = 0; i < num_comment_lines; i++)
-            free(matrix->comment_lines[i]);
-        free(matrix->comment_lines);
+    int err = mtx_alloc_matrix_coordinate_double(
+        mtx, symmetry, num_comment_lines, comment_lines,
+        num_rows, num_columns, size);
+    if (err)
         return err;
-    }
 
-    /* Allocate storage for and copy matrix data. */
-    matrix->nonzero_size = sizeof(struct mtx_matrix_coordinate_double);
-    matrix->data = malloc(matrix->size * matrix->nonzero_size);
-    if (!matrix->data) {
-        for (int i = 0; i < num_comment_lines; i++)
-            free(matrix->comment_lines[i]);
-        free(matrix->comment_lines);
-        return MTX_ERR_ERRNO;
-    }
-    for (int64_t i = 0; i < matrix->size; i++)
-        ((struct mtx_matrix_coordinate_double *) matrix->data)[i] = data[i];
+    mtx->triangle = triangle;
+    mtx->sorting = sorting;
+    mtx->ordering = ordering;
+    mtx->assembly = assembly;
+    for (int64_t i = 0; i < mtx->size; i++)
+        ((struct mtx_matrix_coordinate_double *) mtx->data)[i] = data[i];
     return MTX_SUCCESS;
 }
 
@@ -279,7 +371,7 @@ int mtx_init_matrix_coordinate_double(
  * single-precision floating point coefficients.
  */
 int mtx_init_matrix_coordinate_complex(
-    struct mtx * matrix,
+    struct mtx * mtx,
     enum mtx_symmetry symmetry,
     enum mtx_triangle triangle,
     enum mtx_sorting sorting,
@@ -292,49 +384,18 @@ int mtx_init_matrix_coordinate_complex(
     int64_t size,
     const struct mtx_matrix_coordinate_complex * data)
 {
-    matrix->object = mtx_matrix;
-    matrix->format = mtx_coordinate;
-    matrix->field = mtx_complex;
-    matrix->symmetry = symmetry;
-    matrix->triangle = triangle;
-    matrix->sorting = sorting;
-    matrix->ordering = ordering;
-    matrix->assembly = assembly;
-
-    /* Allocate storage for and copy comment lines. */
-    matrix->num_comment_lines = num_comment_lines;
-    matrix->comment_lines = malloc(
-        num_comment_lines * sizeof(char *));
-    if (!matrix->comment_lines)
-        return MTX_ERR_ERRNO;
-    for (int i = 0; i < num_comment_lines; i++)
-        matrix->comment_lines[i] = strdup(comment_lines[i]);
-
-    /* Compute the matrix size. */
-    matrix->num_rows = num_rows;
-    matrix->num_columns = num_columns;
-    matrix->size = size;
-    int err = mtx_matrix_coordinate_num_nonzeros(
-        matrix->field, symmetry, num_rows, num_columns,
-        size, data, &matrix->num_nonzeros);
-    if (err) {
-        for (int i = 0; i < num_comment_lines; i++)
-            free(matrix->comment_lines[i]);
-        free(matrix->comment_lines);
+    int err = mtx_alloc_matrix_coordinate_complex(
+        mtx, symmetry, num_comment_lines, comment_lines,
+        num_rows, num_columns, size);
+    if (err)
         return err;
-    }
 
-    /* Allocate storage for and copy matrix data. */
-    matrix->nonzero_size = sizeof(struct mtx_matrix_coordinate_complex);
-    matrix->data = malloc(matrix->size * matrix->nonzero_size);
-    if (!matrix->data) {
-        for (int i = 0; i < num_comment_lines; i++)
-            free(matrix->comment_lines[i]);
-        free(matrix->comment_lines);
-        return MTX_ERR_ERRNO;
-    }
-    for (int64_t i = 0; i < matrix->size; i++)
-        ((struct mtx_matrix_coordinate_complex *) matrix->data)[i] = data[i];
+    mtx->triangle = triangle;
+    mtx->sorting = sorting;
+    mtx->ordering = ordering;
+    mtx->assembly = assembly;
+    for (int64_t i = 0; i < mtx->size; i++)
+        ((struct mtx_matrix_coordinate_complex *) mtx->data)[i] = data[i];
     return MTX_SUCCESS;
 }
 
@@ -343,7 +404,7 @@ int mtx_init_matrix_coordinate_complex(
  * coefficients.
  */
 int mtx_init_matrix_coordinate_integer(
-    struct mtx * matrix,
+    struct mtx * mtx,
     enum mtx_symmetry symmetry,
     enum mtx_triangle triangle,
     enum mtx_sorting sorting,
@@ -356,49 +417,18 @@ int mtx_init_matrix_coordinate_integer(
     int64_t size,
     const struct mtx_matrix_coordinate_integer * data)
 {
-    matrix->object = mtx_matrix;
-    matrix->format = mtx_coordinate;
-    matrix->field = mtx_integer;
-    matrix->symmetry = symmetry;
-    matrix->triangle = triangle;
-    matrix->sorting = sorting;
-    matrix->ordering = ordering;
-    matrix->assembly = assembly;
-
-    /* Allocate storage for and copy comment lines. */
-    matrix->num_comment_lines = num_comment_lines;
-    matrix->comment_lines = malloc(
-        num_comment_lines * sizeof(char *));
-    if (!matrix->comment_lines)
-        return MTX_ERR_ERRNO;
-    for (int i = 0; i < num_comment_lines; i++)
-        matrix->comment_lines[i] = strdup(comment_lines[i]);
-
-    /* Compute the matrix size. */
-    matrix->num_rows = num_rows;
-    matrix->num_columns = num_columns;
-    matrix->size = size;
-    int err = mtx_matrix_coordinate_num_nonzeros(
-        matrix->field, symmetry, num_rows, num_columns,
-        size, data, &matrix->num_nonzeros);
-    if (err) {
-        for (int i = 0; i < num_comment_lines; i++)
-            free(matrix->comment_lines[i]);
-        free(matrix->comment_lines);
+    int err = mtx_alloc_matrix_coordinate_integer(
+        mtx, symmetry, num_comment_lines, comment_lines,
+        num_rows, num_columns, size);
+    if (err)
         return err;
-    }
 
-    /* Allocate storage for and copy matrix data. */
-    matrix->nonzero_size = sizeof(struct mtx_matrix_coordinate_integer);
-    matrix->data = malloc(matrix->size * matrix->nonzero_size);
-    if (!matrix->data) {
-        for (int i = 0; i < num_comment_lines; i++)
-            free(matrix->comment_lines[i]);
-        free(matrix->comment_lines);
-        return MTX_ERR_ERRNO;
-    }
-    for (int64_t i = 0; i < matrix->size; i++)
-        ((struct mtx_matrix_coordinate_integer *) matrix->data)[i] = data[i];
+    mtx->triangle = triangle;
+    mtx->sorting = sorting;
+    mtx->ordering = ordering;
+    mtx->assembly = assembly;
+    for (int64_t i = 0; i < mtx->size; i++)
+        ((struct mtx_matrix_coordinate_integer *) mtx->data)[i] = data[i];
     return MTX_SUCCESS;
 }
 
@@ -407,7 +437,7 @@ int mtx_init_matrix_coordinate_integer(
  * coefficients.
  */
 int mtx_init_matrix_coordinate_pattern(
-    struct mtx * matrix,
+    struct mtx * mtx,
     enum mtx_symmetry symmetry,
     enum mtx_triangle triangle,
     enum mtx_sorting sorting,
@@ -420,49 +450,18 @@ int mtx_init_matrix_coordinate_pattern(
     int64_t size,
     const struct mtx_matrix_coordinate_pattern * data)
 {
-    matrix->object = mtx_matrix;
-    matrix->format = mtx_coordinate;
-    matrix->field = mtx_pattern;
-    matrix->symmetry = symmetry;
-    matrix->triangle = triangle;
-    matrix->sorting = sorting;
-    matrix->ordering = ordering;
-    matrix->assembly = assembly;
-
-    /* Allocate storage for and copy comment lines. */
-    matrix->num_comment_lines = num_comment_lines;
-    matrix->comment_lines = malloc(
-        num_comment_lines * sizeof(char *));
-    if (!matrix->comment_lines)
-        return MTX_ERR_ERRNO;
-    for (int i = 0; i < num_comment_lines; i++)
-        matrix->comment_lines[i] = strdup(comment_lines[i]);
-
-    /* Compute the matrix size. */
-    matrix->num_rows = num_rows;
-    matrix->num_columns = num_columns;
-    matrix->size = size;
-    int err = mtx_matrix_coordinate_num_nonzeros(
-        matrix->field, symmetry, num_rows, num_columns,
-        size, data, &matrix->num_nonzeros);
-    if (err) {
-        for (int i = 0; i < num_comment_lines; i++)
-            free(matrix->comment_lines[i]);
-        free(matrix->comment_lines);
+    int err = mtx_alloc_matrix_coordinate_pattern(
+        mtx, symmetry, num_comment_lines, comment_lines,
+        num_rows, num_columns, size);
+    if (err)
         return err;
-    }
 
-    /* Allocate storage for and copy matrix data. */
-    matrix->nonzero_size = sizeof(struct mtx_matrix_coordinate_pattern);
-    matrix->data = malloc(matrix->size * matrix->nonzero_size);
-    if (!matrix->data) {
-        for (int i = 0; i < num_comment_lines; i++)
-            free(matrix->comment_lines[i]);
-        free(matrix->comment_lines);
-        return MTX_ERR_ERRNO;
-    }
-    for (int64_t i = 0; i < matrix->size; i++)
-        ((struct mtx_matrix_coordinate_pattern *) matrix->data)[i] = data[i];
+    mtx->triangle = triangle;
+    mtx->sorting = sorting;
+    mtx->ordering = ordering;
+    mtx->assembly = assembly;
+    for (int64_t i = 0; i < mtx->size; i++)
+        ((struct mtx_matrix_coordinate_pattern *) mtx->data)[i] = data[i];
     return MTX_SUCCESS;
 }
 

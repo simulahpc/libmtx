@@ -221,8 +221,8 @@ not allowed.
 Matrix Market files allow for an optional section of comments, which
 are ignored when processing the file. If present, comments must follow
 immediately after the header line and right before the size line. Each
-comment line begins with the character `@code{%}' and continues until
-the end of the line.
+comment line begins with the character @samp{@code{%}} and continues
+until the end of the line.
 
 
 @node Size line
