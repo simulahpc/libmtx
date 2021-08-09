@@ -26,7 +26,7 @@
 #include <libmtx/header.h>
 #include <libmtx/mtx.h>
 #include <libmtx/matrix.h>
-#include <libmtx/vector.h>
+#include <libmtx/vector/vector.h>
 
 #include <errno.h>
 
