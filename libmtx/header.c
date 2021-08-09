@@ -84,16 +84,3 @@ const char * mtx_symmetry_str(
     default: return "unknown";
     }
 }
-
-/**
- * `mtx_assembly_str()` is a string representing the assembly type.
- */
-const char * mtx_assembly_str(
-    enum mtx_assembly assembly)
-{
-    switch (assembly) {
-    case mtx_unassembled: return "unassembled";
-    case mtx_assembled: return "assembled";
-    default: return "unknown";
-    }
-}

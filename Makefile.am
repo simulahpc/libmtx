@@ -45,6 +45,7 @@ libmtx_la_LIBADD = $(BLAS_LIBS) $(MPILDFLAGS) $(SUPERLU_DIST_LIBS)
 
 # Source files
 libmtx_la_SOURCES = \
+	libmtx/assembly.c \
 	libmtx/blas.c \
 	libmtx/error.c \
 	libmtx/format.c \
@@ -72,6 +73,7 @@ libmtx_la_SOURCES = \
 
 # Header files
 nobase_include_HEADERS = \
+	libmtx/assembly.h \
 	libmtx/blas.h \
 	libmtx/error.h \
 	libmtx/header.h \

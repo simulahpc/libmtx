@@ -25,6 +25,7 @@
 #ifndef LIBMTX_VECTOR_COORDINATE_COORDINATE_H
 #define LIBMTX_VECTOR_COORDINATE_COORDINATE_H
 
+#include <libmtx/assembly.h>
 #include <libmtx/header.h>
 #include <libmtx/reorder.h>
 #include <libmtx/sort.h>
