@@ -26,6 +26,7 @@
 #define LIBMTX_MTX_H
 
 #include <libmtx/header.h>
+#include <libmtx/reorder.h>
 #include <libmtx/sort.h>
 
 #include <stdbool.h>
