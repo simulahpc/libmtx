@@ -90,7 +90,7 @@ in the Matrix Market file format.
 
 @tindex struct mtx
 @tindex mtx
-The file @file{libmtx/mtx.h} defines the @code{struct mtx} type.
+The file @file{libmtx/mtx/mtx.h} defines the @code{struct mtx} type.
 The main purpose of @code{struct mtx} is to describe objects in the
 Matrix Market format.  However, this single, abstract data type is
 used throughout libmtx to represent both matrices and vectors with
