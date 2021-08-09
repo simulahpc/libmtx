@@ -28,6 +28,7 @@
 #include <libmtx/header.h>
 #include <libmtx/reorder.h>
 #include <libmtx/sort.h>
+#include <libmtx/triangle.h>
 
 #include <stdint.h>
 
