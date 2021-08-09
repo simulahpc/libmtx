@@ -19,11 +19,12 @@
  * Authors: James D. Trotter <james@simula.no>
  * Last modified: 2021-08-09
  *
- * Dense matrices in Matrix Market format.
+ * Dense matrices in Matrix Market array format.
  */
 
+#include <libmtx/matrix/array/array.h>
+
 #include <libmtx/error.h>
-#include <libmtx/matrix_array.h>
 #include <libmtx/mtx.h>
 #include <libmtx/header.h>
 

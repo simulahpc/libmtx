@@ -696,7 +696,7 @@ the definitions of the struct data types for each field.
 @subsection Creating dense matrices
 
 @findex mtx_init_matrix_array_real
-The file @file{libmtx/matrix_array.h} defines functions for
+The file @file{libmtx/matrix/array/array.h} defines functions for
 constructing dense matrices.  Roughly speaking, these functions
 imitate the ones for allocating and initialising dense vectors in
 array format, but there are a few additional arguments that must be

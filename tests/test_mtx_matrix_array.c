@@ -25,7 +25,7 @@
 #include "test.h"
 
 #include <libmtx/error.h>
-#include <libmtx/matrix_array.h>
+#include <libmtx/matrix/array/array.h>
 #include <libmtx/mtx.h>
 #include <libmtx/header.h>
 
