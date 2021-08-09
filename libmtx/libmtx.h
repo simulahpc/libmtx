@@ -32,7 +32,7 @@
 #include <libmtx/header.h>
 #include <libmtx/index_set.h>
 #include <libmtx/io.h>
-#include <libmtx/matrix.h>
+#include <libmtx/matrix/matrix.h>
 #include <libmtx/matrix/array/array.h>
 #include <libmtx/matrix/coordinate/coordinate.h>
 #include <libmtx/mpi.h>
