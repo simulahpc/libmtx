@@ -251,10 +251,4 @@ int mtx_matrix_submatrix(
     const struct mtx_index_set * columns,
     struct mtx * submatrix);
 
-/**
- * `mtx_matrix_transpose()` transposes a square matrix.
- */
-int mtx_matrix_transpose(
-    struct mtx * matrix);
-
 #endif
