@@ -17,7 +17,7 @@
  * <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-08-02
+ * Last modified: 2021-08-09
  *
  * Dense vectors in Matrix Market format.
  */
@@ -28,7 +28,7 @@
 struct mtx;
 
 /*
- * Dense vector constructors.
+ * Dense (array) vector allocation.
  */
 
 /**
@@ -36,37 +36,6 @@ struct mtx;
  * single-precision floating point coefficients.
  */
 int mtx_alloc_vector_array_real(
-    struct mtx * mtx,
-    int num_comment_lines,
-    const char ** comment_lines,
-    int size);
-
-/**
- * `mtx_init_vector_array_real()` creates a vector with real,
- * single-precision floating point coefficients.
- */
-int mtx_init_vector_array_real(
-    struct mtx * mtx,
-    int num_comment_lines,
-    const char ** comment_lines,
-    int size,
-    const float * data);
-
-/**
- * `mtx_init_vector_array_real_zero()` creates a vector of real,
- * single-precision floating point coefficients by filling with zeros.
- */
-int mtx_init_vector_array_real_zero(
-    struct mtx * mtx,
-    int num_comment_lines,
-    const char ** comment_lines,
-    int size);
-
-/**
- * `mtx_init_vector_array_real_ones()` creates a vector of real,
- * single-precision floating point coefficients by filling with ones.
- */
-int mtx_init_vector_array_real_ones(
     struct mtx * mtx,
     int num_comment_lines,
     const char ** comment_lines,
@@ -83,72 +52,10 @@ int mtx_alloc_vector_array_double(
     int size);
 
 /**
- * `mtx_init_vector_array_double()` creates a vector with real,
- * double-precision floating point coefficients.
- */
-int mtx_init_vector_array_double(
-    struct mtx * mtx,
-    int num_comment_lines,
-    const char ** comment_lines,
-    int size,
-    const double * data);
-
-/**
- * `mtx_init_vector_array_double_zero()` creates a vector of real,
- * double-precision floating point coefficients by filling with zeros.
- */
-int mtx_init_vector_array_double_zero(
-    struct mtx * mtx,
-    int num_comment_lines,
-    const char ** comment_lines,
-    int size);
-
-/**
- * `mtx_init_vector_array_double_ones()` creates a vector of real,
- * double-precision floating point coefficients by filling with ones.
- */
-int mtx_init_vector_array_double_ones(
-    struct mtx * mtx,
-    int num_comment_lines,
-    const char ** comment_lines,
-    int size);
-
-/**
  * `mtx_alloc_vector_array_complex()` allocates a vector with complex,
  * single-precision floating point coefficients.
  */
 int mtx_alloc_vector_array_complex(
-    struct mtx * mtx,
-    int num_comment_lines,
-    const char ** comment_lines,
-    int size);
-
-/**
- * `mtx_init_vector_array_complex()` creates a vector with complex,
- * single-precision floating point coefficients.
- */
-int mtx_init_vector_array_complex(
-    struct mtx * mtx,
-    int num_comment_lines,
-    const char ** comment_lines,
-    int size,
-    const float * data);
-
-/**
- * `mtx_init_vector_array_complex_zero()` creates a vector of complex,
- * single-precision floating point coefficients by filling with zeros.
- */
-int mtx_init_vector_array_complex_zero(
-    struct mtx * mtx,
-    int num_comment_lines,
-    const char ** comment_lines,
-    int size);
-
-/**
- * `mtx_init_vector_array_complex_ones()` creates a vector of complex,
- * single-precision floating point coefficients by filling with ones.
- */
-int mtx_init_vector_array_complex_ones(
     struct mtx * mtx,
     int num_comment_lines,
     const char ** comment_lines,
@@ -164,6 +71,43 @@ int mtx_alloc_vector_array_integer(
     const char ** comment_lines,
     int size);
 
+/*
+ * Dense (array) vector allocation and initialisation.
+ */
+
+/**
+ * `mtx_init_vector_array_real()` creates a vector with real,
+ * single-precision floating point coefficients.
+ */
+int mtx_init_vector_array_real(
+    struct mtx * mtx,
+    int num_comment_lines,
+    const char ** comment_lines,
+    int size,
+    const float * data);
+
+/**
+ * `mtx_init_vector_array_double()` creates a vector with real,
+ * double-precision floating point coefficients.
+ */
+int mtx_init_vector_array_double(
+    struct mtx * mtx,
+    int num_comment_lines,
+    const char ** comment_lines,
+    int size,
+    const double * data);
+
+/**
+ * `mtx_init_vector_array_complex()` creates a vector with complex,
+ * single-precision floating point coefficients.
+ */
+int mtx_init_vector_array_complex(
+    struct mtx * mtx,
+    int num_comment_lines,
+    const char ** comment_lines,
+    int size,
+    const float * data);
+
 /**
  * `mtx_init_vector_array_integer()` creates a vector with integer
  * coefficients.
@@ -175,28 +119,8 @@ int mtx_init_vector_array_integer(
     int size,
     const int * data);
 
-/**
- * `mtx_init_vector_array_integer_zero()` creates a vector of integer,
- * coefficients by filling with zeros.
- */
-int mtx_init_vector_array_integer_zero(
-    struct mtx * mtx,
-    int num_comment_lines,
-    const char ** comment_lines,
-    int size);
-
-/**
- * `mtx_init_vector_array_integer_ones()` creates a vector of integer,
- * coefficients by filling with ones.
- */
-int mtx_init_vector_array_integer_ones(
-    struct mtx * mtx,
-    int num_comment_lines,
-    const char ** comment_lines,
-    int size);
-
 /*
- * Other dense vector functions.
+ * Dense (array) vector value initialisation.
  */
 
 /**

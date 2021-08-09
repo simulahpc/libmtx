@@ -153,6 +153,49 @@ associated with matrix or vector entries that are distributed across
 multiple MPI processes.
 
 
+@node Index sets
+@subsection Index sets
+
+@cindex Index set
+An @dfn{index set} is a set of integers, typically used to represent a
+subset of the rows of a vector or the rows or columns of a
+matrix. Index sets are used, for example, when specifying submatrices
+of a matrix, or for partitioning and distributing matrices and vectors
+among multiple processes.
+
+@tindex struct mtx_index_set
+@tindex enum mtx_index_set_type
+The file @file{matrixmarket/index_set.h} defines data types for index
+sets, including @code{struct mtx_index_set}. There are different types
+of index sets, which may be distinguished by the enum type
+@code{mtx_index_set_type}.
+@itemize
+@item @code{mtx_index_set_interval}
+represents an index set of contiguous integers from a half-open
+interval @code{[a,b)}.
+
+@item @code{mtx_index_set_array}
+represents a discrete index set, which is not necessarily contiguous,
+as an array of integers.
+
+@end itemize
+
+An index set representing a half-open interval @code{[a,b)} can be
+created with @code{mtx_index_set_init_interval}.
+@findex mtx_index_set_init_interval
+@example
+@code{int mtx_index_set_init_interval(
+    struct mtx_index_set * index_set, int a, int b);}
+@end example
+Then, the function @code{mtx_index_set_contains} can be used to test if
+a given integer @code{n} belongs to the index set.
+@findex mtx_index_set_contains
+@example
+@code{bool mtx_index_set_contains(
+    const struct mtx_index_set * index_set, int n);}
+@end example
+
+
 @node MPI error handling
 @section MPI error handling
 
@@ -266,49 +309,6 @@ int mtx_bcast(
 @end example
 These functions are analogous to @code{MPI_Send}, @code{MPI_Recv} and
 @code{MPI_Bcast}.
-
-
-@node Index sets
-@subsection Index sets
-
-@cindex Index set
-An @dfn{index set} is a set of integers, typically used to represent a
-subset of the rows of a vector or the rows or columns of a
-matrix. Index sets are used, for example, when specifying submatrices
-of a matrix, or for partitioning and distributing matrices and vectors
-among multiple processes.
-
-@tindex struct mtx_index_set
-@tindex enum mtx_index_set_type
-The file @file{matrixmarket/index_set.h} defines data types for index
-sets, including @code{struct mtx_index_set}. There are different types
-of index sets, which may be distinguished by the enum type
-@code{mtx_index_set_type}.
-@itemize
-@item @code{mtx_index_set_interval}
-represents an index set of contiguous integers from a half-open
-interval @code{[a,b)}.
-
-@item @code{mtx_index_set_array}
-represents a discrete index set, which is not necessarily contiguous,
-as an array of integers.
-
-@end itemize
-
-An index set representing a half-open interval @code{[a,b)} can be
-created with @code{mtx_index_set_init_interval}.
-@findex mtx_index_set_init_interval
-@example
-@code{int mtx_index_set_init_interval(
-    struct mtx_index_set * index_set, int a, int b);}
-@end example
-Then, the function @code{mtx_index_set_contains} can be used to test if
-a given integer @code{n} belongs to the index set.
-@findex mtx_index_set_contains
-@example
-@code{bool mtx_index_set_contains(
-    const struct mtx_index_set * index_set, int n);}
-@end example
 
 
 @subsection Gather and scatter

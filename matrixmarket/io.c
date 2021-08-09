@@ -604,8 +604,11 @@ static int read_size_line(
                 *num_rows, *num_columns, num_nonzeros);
             if (err)
                 return err;
+            enum mtx_triangle triangle =
+                (symmetry == mtx_general) ?
+                mtx_nontriangular : mtx_lower_triangular;
             err = mtx_matrix_array_size(
-                symmetry, *num_rows, *num_columns, size);
+                symmetry, triangle, *num_rows, *num_columns, size);
             if (err)
                 return err;
 

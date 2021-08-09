@@ -40,39 +40,39 @@
 int test_mtx_init_matrix_array_real(void)
 {
     int err;
-    struct mtx matrix;
+    struct mtx mtx;
     int num_comment_lines = 1;
-    const char * comment_lines[] = {"a comment"};
+    const char * comment_lines[] = {"% a comment"};
     int num_rows = 2;
     int num_columns = 2;
     float data[] = {1.0f, 2.0f, 3.0f, 4.0f};
     err = mtx_init_matrix_array_real(
-        &matrix, mtx_general,
+        &mtx, mtx_general,
         mtx_nontriangular, mtx_row_major,
         num_comment_lines, comment_lines,
         num_rows, num_columns, data);
     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
-    TEST_ASSERT_EQ(mtx_matrix, matrix.object);
-    TEST_ASSERT_EQ(mtx_array, matrix.format);
-    TEST_ASSERT_EQ(mtx_real, matrix.field);
-    TEST_ASSERT_EQ(mtx_general, matrix.symmetry);
-    TEST_ASSERT_EQ(mtx_nontriangular, matrix.triangle);
-    TEST_ASSERT_EQ(mtx_row_major, matrix.sorting);
-    TEST_ASSERT_EQ(mtx_unordered, matrix.ordering);
-    TEST_ASSERT_EQ(mtx_assembled, matrix.assembly);
-    TEST_ASSERT_EQ(1, matrix.num_comment_lines);
-    TEST_ASSERT_STREQ("a comment", matrix.comment_lines[0]);
-    TEST_ASSERT_EQ(2, matrix.num_rows);
-    TEST_ASSERT_EQ(2, matrix.num_columns);
-    TEST_ASSERT_EQ(4, matrix.num_nonzeros);
-    TEST_ASSERT_EQ(4, matrix.size);
-    TEST_ASSERT_EQ(sizeof(float), matrix.nonzero_size);
-    TEST_ASSERT_EQ(1.0f, ((const float *) matrix.data)[0]);
-    TEST_ASSERT_EQ(2.0f, ((const float *) matrix.data)[1]);
-    TEST_ASSERT_EQ(3.0f, ((const float *) matrix.data)[2]);
-    TEST_ASSERT_EQ(4.0f, ((const float *) matrix.data)[3]);
+    TEST_ASSERT_EQ(mtx_matrix, mtx.object);
+    TEST_ASSERT_EQ(mtx_array, mtx.format);
+    TEST_ASSERT_EQ(mtx_real, mtx.field);
+    TEST_ASSERT_EQ(mtx_general, mtx.symmetry);
+    TEST_ASSERT_EQ(mtx_nontriangular, mtx.triangle);
+    TEST_ASSERT_EQ(mtx_row_major, mtx.sorting);
+    TEST_ASSERT_EQ(mtx_unordered, mtx.ordering);
+    TEST_ASSERT_EQ(mtx_assembled, mtx.assembly);
+    TEST_ASSERT_EQ(1, mtx.num_comment_lines);
+    TEST_ASSERT_STREQ("% a comment", mtx.comment_lines[0]);
+    TEST_ASSERT_EQ(2, mtx.num_rows);
+    TEST_ASSERT_EQ(2, mtx.num_columns);
+    TEST_ASSERT_EQ(4, mtx.num_nonzeros);
+    TEST_ASSERT_EQ(4, mtx.size);
+    TEST_ASSERT_EQ(sizeof(float), mtx.nonzero_size);
+    TEST_ASSERT_EQ(1.0f, ((const float *) mtx.data)[0]);
+    TEST_ASSERT_EQ(2.0f, ((const float *) mtx.data)[1]);
+    TEST_ASSERT_EQ(3.0f, ((const float *) mtx.data)[2]);
+    TEST_ASSERT_EQ(4.0f, ((const float *) mtx.data)[3]);
     if (!err)
-        mtx_free(&matrix);
+        mtx_free(&mtx);
     return TEST_SUCCESS;
 }
 
@@ -83,38 +83,38 @@ int test_mtx_init_matrix_array_real(void)
 int test_mtx_init_matrix_array_real_symmetric(void)
 {
     int err;
-    struct mtx matrix;
+    struct mtx mtx;
     int num_comment_lines = 1;
-    const char * comment_lines[] = {"a comment"};
+    const char * comment_lines[] = {"% a comment"};
     int num_rows = 2;
     int num_columns = 2;
-    float data[] = {1.0f, 2.0f, 4.0f};
+    float data[] = {1.0f, 3.0f, 4.0f};
     err = mtx_init_matrix_array_real(
-        &matrix, mtx_symmetric,
+        &mtx, mtx_symmetric,
         mtx_lower_triangular, mtx_row_major,
         num_comment_lines, comment_lines,
         num_rows, num_columns, data);
     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
-    TEST_ASSERT_EQ(mtx_matrix, matrix.object);
-    TEST_ASSERT_EQ(mtx_array, matrix.format);
-    TEST_ASSERT_EQ(mtx_real, matrix.field);
-    TEST_ASSERT_EQ(mtx_symmetric, matrix.symmetry);
-    TEST_ASSERT_EQ(mtx_lower_triangular, matrix.triangle);
-    TEST_ASSERT_EQ(mtx_row_major, matrix.sorting);
-    TEST_ASSERT_EQ(mtx_unordered, matrix.ordering);
-    TEST_ASSERT_EQ(mtx_assembled, matrix.assembly);
-    TEST_ASSERT_EQ(1, matrix.num_comment_lines);
-    TEST_ASSERT_STREQ("a comment", matrix.comment_lines[0]);
-    TEST_ASSERT_EQ(2, matrix.num_rows);
-    TEST_ASSERT_EQ(2, matrix.num_columns);
-    TEST_ASSERT_EQ(4, matrix.num_nonzeros);
-    TEST_ASSERT_EQ(3, matrix.size);
-    TEST_ASSERT_EQ(sizeof(float), matrix.nonzero_size);
-    TEST_ASSERT_EQ(1.0f, ((const float *) matrix.data)[0]);
-    TEST_ASSERT_EQ(2.0f, ((const float *) matrix.data)[1]);
-    TEST_ASSERT_EQ(4.0f, ((const float *) matrix.data)[2]);
+    TEST_ASSERT_EQ(mtx_matrix, mtx.object);
+    TEST_ASSERT_EQ(mtx_array, mtx.format);
+    TEST_ASSERT_EQ(mtx_real, mtx.field);
+    TEST_ASSERT_EQ(mtx_symmetric, mtx.symmetry);
+    TEST_ASSERT_EQ(mtx_lower_triangular, mtx.triangle);
+    TEST_ASSERT_EQ(mtx_row_major, mtx.sorting);
+    TEST_ASSERT_EQ(mtx_unordered, mtx.ordering);
+    TEST_ASSERT_EQ(mtx_assembled, mtx.assembly);
+    TEST_ASSERT_EQ(1, mtx.num_comment_lines);
+    TEST_ASSERT_STREQ("% a comment", mtx.comment_lines[0]);
+    TEST_ASSERT_EQ(2, mtx.num_rows);
+    TEST_ASSERT_EQ(2, mtx.num_columns);
+    TEST_ASSERT_EQ(4, mtx.num_nonzeros);
+    TEST_ASSERT_EQ(3, mtx.size);
+    TEST_ASSERT_EQ(sizeof(float), mtx.nonzero_size);
+    TEST_ASSERT_EQ(1.0f, ((const float *) mtx.data)[0]);
+    TEST_ASSERT_EQ(3.0f, ((const float *) mtx.data)[1]);
+    TEST_ASSERT_EQ(4.0f, ((const float *) mtx.data)[2]);
     if (!err)
-        mtx_free(&matrix);
+        mtx_free(&mtx);
     return TEST_SUCCESS;
 }
 
@@ -126,38 +126,38 @@ int test_mtx_init_matrix_array_real_symmetric(void)
 int test_mtx_init_matrix_array_real_skew_symmetric(void)
 {
     int err;
-    struct mtx matrix;
+    struct mtx mtx;
     int num_comment_lines = 1;
-    const char * comment_lines[] = {"a comment"};
+    const char * comment_lines[] = {"% a comment"};
     int num_rows = 3;
     int num_columns = 3;
     float data[] = {1.0f, 2.0f, 4.0f};
     err = mtx_init_matrix_array_real(
-        &matrix, mtx_skew_symmetric,
+        &mtx, mtx_skew_symmetric,
         mtx_lower_triangular, mtx_row_major,
         num_comment_lines, comment_lines,
         num_rows, num_columns, data);
     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
-    TEST_ASSERT_EQ(mtx_matrix, matrix.object);
-    TEST_ASSERT_EQ(mtx_array, matrix.format);
-    TEST_ASSERT_EQ(mtx_real, matrix.field);
-    TEST_ASSERT_EQ(mtx_skew_symmetric, matrix.symmetry);
-    TEST_ASSERT_EQ(mtx_lower_triangular, matrix.triangle);
-    TEST_ASSERT_EQ(mtx_row_major, matrix.sorting);
-    TEST_ASSERT_EQ(mtx_unordered, matrix.ordering);
-    TEST_ASSERT_EQ(mtx_assembled, matrix.assembly);
-    TEST_ASSERT_EQ(1, matrix.num_comment_lines);
-    TEST_ASSERT_STREQ("a comment", matrix.comment_lines[0]);
-    TEST_ASSERT_EQ(3, matrix.num_rows);
-    TEST_ASSERT_EQ(3, matrix.num_columns);
-    TEST_ASSERT_EQ(9, matrix.num_nonzeros);
-    TEST_ASSERT_EQ(3, matrix.size);
-    TEST_ASSERT_EQ(sizeof(float), matrix.nonzero_size);
-    TEST_ASSERT_EQ(1.0f, ((const float *) matrix.data)[0]);
-    TEST_ASSERT_EQ(2.0f, ((const float *) matrix.data)[1]);
-    TEST_ASSERT_EQ(4.0f, ((const float *) matrix.data)[2]);
+    TEST_ASSERT_EQ(mtx_matrix, mtx.object);
+    TEST_ASSERT_EQ(mtx_array, mtx.format);
+    TEST_ASSERT_EQ(mtx_real, mtx.field);
+    TEST_ASSERT_EQ(mtx_skew_symmetric, mtx.symmetry);
+    TEST_ASSERT_EQ(mtx_lower_triangular, mtx.triangle);
+    TEST_ASSERT_EQ(mtx_row_major, mtx.sorting);
+    TEST_ASSERT_EQ(mtx_unordered, mtx.ordering);
+    TEST_ASSERT_EQ(mtx_assembled, mtx.assembly);
+    TEST_ASSERT_EQ(1, mtx.num_comment_lines);
+    TEST_ASSERT_STREQ("% a comment", mtx.comment_lines[0]);
+    TEST_ASSERT_EQ(3, mtx.num_rows);
+    TEST_ASSERT_EQ(3, mtx.num_columns);
+    TEST_ASSERT_EQ(9, mtx.num_nonzeros);
+    TEST_ASSERT_EQ(3, mtx.size);
+    TEST_ASSERT_EQ(sizeof(float), mtx.nonzero_size);
+    TEST_ASSERT_EQ(1.0f, ((const float *) mtx.data)[0]);
+    TEST_ASSERT_EQ(2.0f, ((const float *) mtx.data)[1]);
+    TEST_ASSERT_EQ(4.0f, ((const float *) mtx.data)[2]);
     if (!err)
-        mtx_free(&matrix);
+        mtx_free(&mtx);
     return TEST_SUCCESS;
 }
 
@@ -168,39 +168,39 @@ int test_mtx_init_matrix_array_real_skew_symmetric(void)
 int test_mtx_init_matrix_array_double(void)
 {
     int err;
-    struct mtx matrix;
+    struct mtx mtx;
     int num_comment_lines = 1;
-    const char * comment_lines[] = {"a comment"};
+    const char * comment_lines[] = {"% a comment"};
     int num_rows = 2;
     int num_columns = 2;
     double data[] = {1.0, 2.0, 3.0, 4.0};
     err = mtx_init_matrix_array_double(
-        &matrix, mtx_general,
+        &mtx, mtx_general,
         mtx_nontriangular, mtx_row_major,
         num_comment_lines, comment_lines,
         num_rows, num_columns, data);
     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
-    TEST_ASSERT_EQ(mtx_matrix, matrix.object);
-    TEST_ASSERT_EQ(mtx_array, matrix.format);
-    TEST_ASSERT_EQ(mtx_double, matrix.field);
-    TEST_ASSERT_EQ(mtx_general, matrix.symmetry);
-    TEST_ASSERT_EQ(mtx_nontriangular, matrix.triangle);
-    TEST_ASSERT_EQ(mtx_row_major, matrix.sorting);
-    TEST_ASSERT_EQ(mtx_unordered, matrix.ordering);
-    TEST_ASSERT_EQ(mtx_assembled, matrix.assembly);
-    TEST_ASSERT_EQ(1, matrix.num_comment_lines);
-    TEST_ASSERT_STREQ("a comment", matrix.comment_lines[0]);
-    TEST_ASSERT_EQ(2, matrix.num_rows);
-    TEST_ASSERT_EQ(2, matrix.num_columns);
-    TEST_ASSERT_EQ(4, matrix.num_nonzeros);
-    TEST_ASSERT_EQ(4, matrix.size);
-    TEST_ASSERT_EQ(sizeof(double), matrix.nonzero_size);
-    TEST_ASSERT_EQ(1.0, ((const double *) matrix.data)[0]);
-    TEST_ASSERT_EQ(2.0, ((const double *) matrix.data)[1]);
-    TEST_ASSERT_EQ(3.0, ((const double *) matrix.data)[2]);
-    TEST_ASSERT_EQ(4.0, ((const double *) matrix.data)[3]);
+    TEST_ASSERT_EQ(mtx_matrix, mtx.object);
+    TEST_ASSERT_EQ(mtx_array, mtx.format);
+    TEST_ASSERT_EQ(mtx_double, mtx.field);
+    TEST_ASSERT_EQ(mtx_general, mtx.symmetry);
+    TEST_ASSERT_EQ(mtx_nontriangular, mtx.triangle);
+    TEST_ASSERT_EQ(mtx_row_major, mtx.sorting);
+    TEST_ASSERT_EQ(mtx_unordered, mtx.ordering);
+    TEST_ASSERT_EQ(mtx_assembled, mtx.assembly);
+    TEST_ASSERT_EQ(1, mtx.num_comment_lines);
+    TEST_ASSERT_STREQ("% a comment", mtx.comment_lines[0]);
+    TEST_ASSERT_EQ(2, mtx.num_rows);
+    TEST_ASSERT_EQ(2, mtx.num_columns);
+    TEST_ASSERT_EQ(4, mtx.num_nonzeros);
+    TEST_ASSERT_EQ(4, mtx.size);
+    TEST_ASSERT_EQ(sizeof(double), mtx.nonzero_size);
+    TEST_ASSERT_EQ(1.0, ((const double *) mtx.data)[0]);
+    TEST_ASSERT_EQ(2.0, ((const double *) mtx.data)[1]);
+    TEST_ASSERT_EQ(3.0, ((const double *) mtx.data)[2]);
+    TEST_ASSERT_EQ(4.0, ((const double *) mtx.data)[3]);
     if (!err)
-        mtx_free(&matrix);
+        mtx_free(&mtx);
     return TEST_SUCCESS;
 }
 
@@ -211,43 +211,43 @@ int test_mtx_init_matrix_array_double(void)
 int test_mtx_init_matrix_array_complex(void)
 {
     int err;
-    struct mtx matrix;
+    struct mtx mtx;
     int num_comment_lines = 1;
-    const char * comment_lines[] = {"a comment"};
+    const char * comment_lines[] = {"% a comment"};
     int num_rows = 2;
     int num_columns = 2;
     float data[] = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0};
     err = mtx_init_matrix_array_complex(
-        &matrix, mtx_general,
+        &mtx, mtx_general,
         mtx_nontriangular, mtx_row_major,
         num_comment_lines, comment_lines,
         num_rows, num_columns, data);
     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
-    TEST_ASSERT_EQ(mtx_matrix, matrix.object);
-    TEST_ASSERT_EQ(mtx_array, matrix.format);
-    TEST_ASSERT_EQ(mtx_complex, matrix.field);
-    TEST_ASSERT_EQ(mtx_general, matrix.symmetry);
-    TEST_ASSERT_EQ(mtx_nontriangular, matrix.triangle);
-    TEST_ASSERT_EQ(mtx_row_major, matrix.sorting);
-    TEST_ASSERT_EQ(mtx_unordered, matrix.ordering);
-    TEST_ASSERT_EQ(mtx_assembled, matrix.assembly);
-    TEST_ASSERT_EQ(1, matrix.num_comment_lines);
-    TEST_ASSERT_STREQ("a comment", matrix.comment_lines[0]);
-    TEST_ASSERT_EQ(2, matrix.num_rows);
-    TEST_ASSERT_EQ(2, matrix.num_columns);
-    TEST_ASSERT_EQ(4, matrix.num_nonzeros);
-    TEST_ASSERT_EQ(4, matrix.size);
-    TEST_ASSERT_EQ(2*sizeof(float), matrix.nonzero_size);
-    TEST_ASSERT_EQ(1.0, ((const float *) matrix.data)[0]);
-    TEST_ASSERT_EQ(2.0, ((const float *) matrix.data)[1]);
-    TEST_ASSERT_EQ(3.0, ((const float *) matrix.data)[2]);
-    TEST_ASSERT_EQ(4.0, ((const float *) matrix.data)[3]);
-    TEST_ASSERT_EQ(5.0, ((const float *) matrix.data)[4]);
-    TEST_ASSERT_EQ(6.0, ((const float *) matrix.data)[5]);
-    TEST_ASSERT_EQ(7.0, ((const float *) matrix.data)[6]);
-    TEST_ASSERT_EQ(8.0, ((const float *) matrix.data)[7]);
+    TEST_ASSERT_EQ(mtx_matrix, mtx.object);
+    TEST_ASSERT_EQ(mtx_array, mtx.format);
+    TEST_ASSERT_EQ(mtx_complex, mtx.field);
+    TEST_ASSERT_EQ(mtx_general, mtx.symmetry);
+    TEST_ASSERT_EQ(mtx_nontriangular, mtx.triangle);
+    TEST_ASSERT_EQ(mtx_row_major, mtx.sorting);
+    TEST_ASSERT_EQ(mtx_unordered, mtx.ordering);
+    TEST_ASSERT_EQ(mtx_assembled, mtx.assembly);
+    TEST_ASSERT_EQ(1, mtx.num_comment_lines);
+    TEST_ASSERT_STREQ("% a comment", mtx.comment_lines[0]);
+    TEST_ASSERT_EQ(2, mtx.num_rows);
+    TEST_ASSERT_EQ(2, mtx.num_columns);
+    TEST_ASSERT_EQ(4, mtx.num_nonzeros);
+    TEST_ASSERT_EQ(4, mtx.size);
+    TEST_ASSERT_EQ(2*sizeof(float), mtx.nonzero_size);
+    TEST_ASSERT_EQ(1.0, ((const float *) mtx.data)[0]);
+    TEST_ASSERT_EQ(2.0, ((const float *) mtx.data)[1]);
+    TEST_ASSERT_EQ(3.0, ((const float *) mtx.data)[2]);
+    TEST_ASSERT_EQ(4.0, ((const float *) mtx.data)[3]);
+    TEST_ASSERT_EQ(5.0, ((const float *) mtx.data)[4]);
+    TEST_ASSERT_EQ(6.0, ((const float *) mtx.data)[5]);
+    TEST_ASSERT_EQ(7.0, ((const float *) mtx.data)[6]);
+    TEST_ASSERT_EQ(8.0, ((const float *) mtx.data)[7]);
     if (!err)
-        mtx_free(&matrix);
+        mtx_free(&mtx);
     return TEST_SUCCESS;
 }
 
@@ -258,39 +258,39 @@ int test_mtx_init_matrix_array_complex(void)
 int test_mtx_init_matrix_array_integer(void)
 {
     int err;
-    struct mtx matrix;
+    struct mtx mtx;
     int num_comment_lines = 1;
-    const char * comment_lines[] = {"a comment"};
+    const char * comment_lines[] = {"% a comment"};
     int num_rows = 2;
     int num_columns = 2;
     int data[] = {1, 2, 3, 4};
     err = mtx_init_matrix_array_integer(
-        &matrix, mtx_general,
+        &mtx, mtx_general,
         mtx_nontriangular, mtx_row_major,
         num_comment_lines, comment_lines,
         num_rows, num_columns, data);
     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
-    TEST_ASSERT_EQ(mtx_matrix, matrix.object);
-    TEST_ASSERT_EQ(mtx_array, matrix.format);
-    TEST_ASSERT_EQ(mtx_integer, matrix.field);
-    TEST_ASSERT_EQ(mtx_general, matrix.symmetry);
-    TEST_ASSERT_EQ(mtx_nontriangular, matrix.triangle);
-    TEST_ASSERT_EQ(mtx_row_major, matrix.sorting);
-    TEST_ASSERT_EQ(mtx_unordered, matrix.ordering);
-    TEST_ASSERT_EQ(mtx_assembled, matrix.assembly);
-    TEST_ASSERT_EQ(1, matrix.num_comment_lines);
-    TEST_ASSERT_STREQ("a comment", matrix.comment_lines[0]);
-    TEST_ASSERT_EQ(2, matrix.num_rows);
-    TEST_ASSERT_EQ(2, matrix.num_columns);
-    TEST_ASSERT_EQ(4, matrix.num_nonzeros);
-    TEST_ASSERT_EQ(4, matrix.size);
-    TEST_ASSERT_EQ(sizeof(int), matrix.nonzero_size);
-    TEST_ASSERT_EQ(1, ((const int *) matrix.data)[0]);
-    TEST_ASSERT_EQ(2, ((const int *) matrix.data)[1]);
-    TEST_ASSERT_EQ(3, ((const int *) matrix.data)[2]);
-    TEST_ASSERT_EQ(4, ((const int *) matrix.data)[3]);
+    TEST_ASSERT_EQ(mtx_matrix, mtx.object);
+    TEST_ASSERT_EQ(mtx_array, mtx.format);
+    TEST_ASSERT_EQ(mtx_integer, mtx.field);
+    TEST_ASSERT_EQ(mtx_general, mtx.symmetry);
+    TEST_ASSERT_EQ(mtx_nontriangular, mtx.triangle);
+    TEST_ASSERT_EQ(mtx_row_major, mtx.sorting);
+    TEST_ASSERT_EQ(mtx_unordered, mtx.ordering);
+    TEST_ASSERT_EQ(mtx_assembled, mtx.assembly);
+    TEST_ASSERT_EQ(1, mtx.num_comment_lines);
+    TEST_ASSERT_STREQ("% a comment", mtx.comment_lines[0]);
+    TEST_ASSERT_EQ(2, mtx.num_rows);
+    TEST_ASSERT_EQ(2, mtx.num_columns);
+    TEST_ASSERT_EQ(4, mtx.num_nonzeros);
+    TEST_ASSERT_EQ(4, mtx.size);
+    TEST_ASSERT_EQ(sizeof(int), mtx.nonzero_size);
+    TEST_ASSERT_EQ(1, ((const int *) mtx.data)[0]);
+    TEST_ASSERT_EQ(2, ((const int *) mtx.data)[1]);
+    TEST_ASSERT_EQ(3, ((const int *) mtx.data)[2]);
+    TEST_ASSERT_EQ(4, ((const int *) mtx.data)[3]);
     if (!err)
-        mtx_free(&matrix);
+        mtx_free(&mtx);
     return TEST_SUCCESS;
 }
 

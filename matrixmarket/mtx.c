@@ -106,6 +106,13 @@ int mtx_set_comment_lines(
     if (!comment_lines_copy)
         return MTX_ERR_ERRNO;
     for (int i = 0; i < num_comment_lines; i++) {
+        if (strlen(comment_lines[i]) <= 0 || comment_lines[i][0] != '%') {
+            for (int j = i-1; j >= 0; j--)
+                free(comment_lines_copy[j]);
+            free(comment_lines_copy);
+            return MTX_ERR_INVALID_MTX_COMMENT;
+        }
+
         comment_lines_copy[i] = strdup(comment_lines[i]);
         if (!comment_lines_copy[i]) {
             for (int j = i-1; j >= 0; j--)

@@ -17,7 +17,7 @@
  * <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-08-02
+ * Last modified: 2021-08-09
  *
  * Unit tests for transposing sparse matrices.
  */
@@ -72,7 +72,7 @@ int test_mtx_matrix_transpose_coordinate_real_general(void)
     TEST_ASSERT_EQ(mtx_unassembled, matrix.assembly);
     TEST_ASSERT_EQ(4, matrix.num_rows);
     TEST_ASSERT_EQ(4, matrix.num_columns);
-    TEST_ASSERT_EQ(6, matrix.num_nonzeros);
+    TEST_ASSERT_EQ(-1, matrix.num_nonzeros);
     TEST_ASSERT_EQ(6, matrix.size);
     TEST_ASSERT_EQ(   1, ((const struct mtx_matrix_coordinate_real *) matrix.data)[0].i);
     TEST_ASSERT_EQ(   1, ((const struct mtx_matrix_coordinate_real *) matrix.data)[0].j);
@@ -134,7 +134,7 @@ int test_mtx_matrix_transpose_coordinate_real_symmetric(void)
     TEST_ASSERT_EQ(mtx_unassembled, matrix.assembly);
     TEST_ASSERT_EQ(4, matrix.num_rows);
     TEST_ASSERT_EQ(4, matrix.num_columns);
-    TEST_ASSERT_EQ(6, matrix.num_nonzeros);
+    TEST_ASSERT_EQ(-1, matrix.num_nonzeros);
     TEST_ASSERT_EQ(5, matrix.size);
     TEST_ASSERT_EQ(   1, ((const struct mtx_matrix_coordinate_real *) matrix.data)[0].i);
     TEST_ASSERT_EQ(   1, ((const struct mtx_matrix_coordinate_real *) matrix.data)[0].j);
@@ -193,7 +193,7 @@ int test_mtx_matrix_transpose_coordinate_double_general(void)
     TEST_ASSERT_EQ(mtx_unassembled, matrix.assembly);
     TEST_ASSERT_EQ(4, matrix.num_rows);
     TEST_ASSERT_EQ(4, matrix.num_columns);
-    TEST_ASSERT_EQ(6, matrix.num_nonzeros);
+    TEST_ASSERT_EQ(-1, matrix.num_nonzeros);
     TEST_ASSERT_EQ(6, matrix.size);
     TEST_ASSERT_EQ(  1, ((const struct mtx_matrix_coordinate_double *) matrix.data)[0].i);
     TEST_ASSERT_EQ(  1, ((const struct mtx_matrix_coordinate_double *) matrix.data)[0].j);
@@ -256,7 +256,7 @@ int test_mtx_matrix_transpose_coordinate_complex_general(void)
     TEST_ASSERT_EQ(mtx_unassembled, matrix.assembly);
     TEST_ASSERT_EQ(4, matrix.num_rows);
     TEST_ASSERT_EQ(4, matrix.num_columns);
-    TEST_ASSERT_EQ(6, matrix.num_nonzeros);
+    TEST_ASSERT_EQ(-1, matrix.num_nonzeros);
     TEST_ASSERT_EQ(6, matrix.size);
     TEST_ASSERT_EQ(   1, ((const struct mtx_matrix_coordinate_complex *) matrix.data)[0].i);
     TEST_ASSERT_EQ(   1, ((const struct mtx_matrix_coordinate_complex *) matrix.data)[0].j);
@@ -325,7 +325,7 @@ int test_mtx_matrix_transpose_coordinate_integer_general(void)
     TEST_ASSERT_EQ(mtx_unassembled, matrix.assembly);
     TEST_ASSERT_EQ(4, matrix.num_rows);
     TEST_ASSERT_EQ(4, matrix.num_columns);
-    TEST_ASSERT_EQ(6, matrix.num_nonzeros);
+    TEST_ASSERT_EQ(-1, matrix.num_nonzeros);
     TEST_ASSERT_EQ(6, matrix.size);
     TEST_ASSERT_EQ(1, ((const struct mtx_matrix_coordinate_integer *) matrix.data)[0].i);
     TEST_ASSERT_EQ(1, ((const struct mtx_matrix_coordinate_integer *) matrix.data)[0].j);
@@ -388,7 +388,7 @@ int test_mtx_matrix_transpose_coordinate_pattern_general(void)
     TEST_ASSERT_EQ(mtx_unassembled, matrix.assembly);
     TEST_ASSERT_EQ(4, matrix.num_rows);
     TEST_ASSERT_EQ(4, matrix.num_columns);
-    TEST_ASSERT_EQ(6, matrix.num_nonzeros);
+    TEST_ASSERT_EQ(-1, matrix.num_nonzeros);
     TEST_ASSERT_EQ(6, matrix.size);
     TEST_ASSERT_EQ(1, ((const struct mtx_matrix_coordinate_pattern *) matrix.data)[0].i);
     TEST_ASSERT_EQ(1, ((const struct mtx_matrix_coordinate_pattern *) matrix.data)[0].j);

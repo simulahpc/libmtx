@@ -50,17 +50,18 @@ enum mtx_error
     MTX_ERR_INVALID_MTX_SORTING = -12,      /* invalid Matrix Market sorting */
     MTX_ERR_INVALID_MTX_ORDERING = -13,     /* invalid Matrix Market ordering */
     MTX_ERR_INVALID_MTX_ASSEMBLY = -14,     /* invalid Matrix Market assembly */
-    MTX_ERR_INVALID_MTX_SIZE = -15,         /* invalid Matrix Market size info */
-    MTX_ERR_INVALID_MTX_DATA = -16,         /* invalid Matrix Market data */
-    MTX_ERR_INVALID_INDEX_SET_TYPE = -17,   /* invalid index set type */
-    MTX_ERR_INVALID_STREAM_TYPE = -18,      /* invalid stream type */
-    MTX_ERR_INVALID_FORMAT_SPECIFIER = -19, /* invalid format specifier */
-    MTX_ERR_INDEX_OUT_OF_BOUNDS = -20,      /* index out of bounds */
-    MTX_ERR_SUPERLU_DIST_NEEDED = -21,      /* SuperLU_DIST is needed
-                                             * to perform the
-                                             * requested operation. */
-    MTX_ERR_SUPERLU_DIST_GRID_SIZE = -22,   /* invalid SuperLU_DIST
-                                             * process grid size. */
+    MTX_ERR_INVALID_MTX_COMMENT = -15,      /* invalid Matrix Market comment line */
+    MTX_ERR_INVALID_MTX_SIZE = -16,         /* invalid Matrix Market size info */
+    MTX_ERR_INVALID_MTX_DATA = -17,         /* invalid Matrix Market data */
+    MTX_ERR_INVALID_INDEX_SET_TYPE = -18,   /* invalid index set type */
+    MTX_ERR_INVALID_STREAM_TYPE = -19,      /* invalid stream type */
+    MTX_ERR_INVALID_FORMAT_SPECIFIER = -20, /* invalid format specifier */
+    MTX_ERR_INDEX_OUT_OF_BOUNDS = -21,      /* index out of bounds */
+    MTX_ERR_SUPERLU_DIST_NEEDED = -22,      /* SuperLU_DIST is needed
+                                               to perform the
+                                               requested operation. */
+    MTX_ERR_SUPERLU_DIST_GRID_SIZE = -23,   /* invalid SuperLU_DIST
+                                               process grid size. */
 };
 
 /**
