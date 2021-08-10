@@ -103,4 +103,27 @@ enum mtx_symmetry
 const char * mtx_symmetry_str(
     enum mtx_symmetry symmetry);
 
+/**
+ * `mtx_header_parse()' parses a string containing the header line for
+ * a file in Matrix Market format.
+ *
+ * If `endptr' is not `NULL', then the address stored in `endptr'
+ * points to the first character beyond the characters that were
+ * consumed during parsing.
+ *
+ * On success, `mtx_header_parse()` returns `MTX_SUCCESS' and
+ * `object', `format', `field' and `symmetry' will be set according to
+ * the contents of the parsed Matrix Market header.  Otherwise, an
+ * appropriate error code is returned if the input is not a valid
+ * Matrix Market header.
+ */
+int mtx_header_parse(
+    const char * line,
+    int * bytes_read,
+    const char ** endptr,
+    enum mtx_object * object,
+    enum mtx_format * format,
+    enum mtx_field * field,
+    enum mtx_symmetry * symmetry);
+
 #endif

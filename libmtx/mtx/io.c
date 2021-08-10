@@ -31,6 +31,7 @@
 #include <libmtx/mtx/io.h>
 #include <libmtx/mtx/mtx.h>
 #include <libmtx/vector/array/array.h>
+#include <libmtx/vector/array/io.h>
 #include <libmtx/vector/coordinate/coordinate.h>
 
 #include "../util/format.h"
@@ -194,63 +195,18 @@ static int read_header_line(
     int * column_number)
 {
     int err;
-
-    /* 1. Read the header line. */
     err = stream_read_line(stream, line_max, linebuf);
     if (err)
         return err;
 
-    /* 2. Parse the identifier. */
-    char * s = strtok(linebuf, " ");
-    if (!s || strcmp("%%MatrixMarket", s) != 0)
-        return MTX_ERR_INVALID_MTX_HEADER;
-    *column_number += strlen(s)+1;
-
-    /* 3. Parse the object type. */
-    s = strtok(NULL, " ");
-    if (s && strcmp("matrix", s) == 0)
-        *object = mtx_matrix;
-    else if (s && strcmp("vector", s) == 0)
-        *object = mtx_vector;
-    else return MTX_ERR_INVALID_MTX_OBJECT;
-    *column_number += strlen(s)+1;
-
-    /* 4. Parse the format. */
-    s = strtok(NULL, " ");
-    if (s && strcmp("array", s) == 0)
-        *format = mtx_array;
-    else if (s && strcmp("coordinate", s) == 0)
-        *format = mtx_coordinate;
-    else return MTX_ERR_INVALID_MTX_FORMAT;
-    *column_number += strlen(s)+1;
-
-    /* 5. Parse the field type. */
-    s = strtok(NULL, " ");
-    if (s && strcmp("real", s) == 0)
-        *field = mtx_real;
-    else if (s && strcmp("double", s) == 0)
-        *field = mtx_double;
-    else if (s && strcmp("complex", s) == 0)
-        *field = mtx_complex;
-    else if (s && strcmp("integer", s) == 0)
-        *field = mtx_integer;
-    else if (s && strcmp("pattern", s) == 0)
-        *field = mtx_pattern;
-    else return MTX_ERR_INVALID_MTX_FIELD;
-    *column_number += strlen(s)+1;
-
-    /* 6. Parse the symmetry type. */
-    s = strtok(NULL, "\n");
-    if (s && strcmp("general", s) == 0)
-        *symmetry = mtx_general;
-    else if (s && strcmp("symmetric", s) == 0)
-        *symmetry = mtx_symmetric;
-    else if (s && strcmp("skew-symmetric", s) == 0)
-        *symmetry = mtx_skew_symmetric;
-    else if (s && (strcmp("hermitian", s) == 0 ||
-                   strcmp("Hermitian", s) == 0))
-        *symmetry = mtx_hermitian;
-    else return MTX_ERR_INVALID_MTX_SYMMETRY;
+    int bytes_read;
+    err = mtx_header_parse(
+        linebuf, &bytes_read, NULL,
+        object, format, field, symmetry);
+    if (err) {
+        *column_number = bytes_read+1;
+        return err;
+    }
     (*line_number)++; *column_number = 1;
     return MTX_SUCCESS;
 }
@@ -545,18 +501,17 @@ static int read_size_line(
         }
     } else if (object == mtx_vector) {
         if (format == mtx_array) {
-            /* Parse the number of rows. */
-            err = parse_int32(s, "\n", num_rows, NULL);
-            if (err == EINVAL) {
-                return MTX_ERR_INVALID_MTX_SIZE;
-            } else if (err) {
-                errno = err;
-                return MTX_ERR_ERRNO;
+            int bytes_read;
+            err = mtx_vector_array_parse_size(
+                s, &bytes_read, &s,
+                object, format, field, symmetry,
+                num_rows, num_columns, num_nonzeros,
+                size, nonzero_size);
+            if (err) {
+                *column_number += bytes_read;
+                return err;
             }
             (*line_number)++; *column_number = 1;
-            *num_columns = -1;
-            *num_nonzeros = *num_rows;
-            *size = *num_nonzeros;
 
         } else if (format == mtx_coordinate) {
             /* Parse the number of rows. */

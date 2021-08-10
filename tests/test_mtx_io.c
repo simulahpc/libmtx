@@ -47,6 +47,158 @@
 #include <string.h>
 
 /**
+ * `test_mtx_header_parse()` tests parsing Matrix Market headers.
+ */
+int test_mtx_header_parse(void)
+{
+    {
+        const char line[] = "";
+        int bytes_read;
+        enum mtx_object object;
+        enum mtx_format format;
+        enum mtx_field field;
+        enum mtx_symmetry symmetry;
+        const char * endptr;
+        int err = mtx_header_parse(
+            line, &bytes_read, &endptr,
+            &object, &format, &field, &symmetry);
+        TEST_ASSERT_EQ(MTX_ERR_INVALID_MTX_HEADER, err);
+        TEST_ASSERT_EQ(0, bytes_read);
+    }
+
+    {
+        const char line[] = "%MatrixMarket";
+        int bytes_read;
+        enum mtx_object object;
+        enum mtx_format format;
+        enum mtx_field field;
+        enum mtx_symmetry symmetry;
+        const char * endptr;
+        int err = mtx_header_parse(
+            line, &bytes_read, &endptr,
+            &object, &format, &field, &symmetry);
+        TEST_ASSERT_EQ(MTX_ERR_INVALID_MTX_HEADER, err);
+        TEST_ASSERT_EQ(0, bytes_read);
+    }
+
+    {
+        const char line[] = "%MatrixMarketasdf";
+        int bytes_read;
+        enum mtx_object object;
+        enum mtx_format format;
+        enum mtx_field field;
+        enum mtx_symmetry symmetry;
+        const char * endptr;
+        int err = mtx_header_parse(
+            line, &bytes_read, &endptr,
+            &object, &format, &field, &symmetry);
+        TEST_ASSERT_EQ(MTX_ERR_INVALID_MTX_HEADER, err);
+        TEST_ASSERT_EQ(0, bytes_read);
+    }
+
+    {
+        const char line[] = "%%MatrixMarket invalid_object";
+        int bytes_read;
+        enum mtx_object object;
+        enum mtx_format format;
+        enum mtx_field field;
+        enum mtx_symmetry symmetry;
+        const char * endptr;
+        int err = mtx_header_parse(
+            line, &bytes_read, &endptr,
+            &object, &format, &field, &symmetry);
+        TEST_ASSERT_EQ(MTX_ERR_INVALID_MTX_OBJECT, err);
+        TEST_ASSERT_EQ(15, bytes_read);
+    }
+
+    {
+        const char line[] = "%%MatrixMarket matrix invalid_format";
+        int bytes_read;
+        enum mtx_object object;
+        enum mtx_format format;
+        enum mtx_field field;
+        enum mtx_symmetry symmetry;
+        const char * endptr;
+        int err = mtx_header_parse(
+            line, &bytes_read, &endptr,
+            &object, &format, &field, &symmetry);
+        TEST_ASSERT_EQ(MTX_ERR_INVALID_MTX_FORMAT, err);
+        TEST_ASSERT_EQ(22, bytes_read);
+    }
+
+    {
+        const char line[] = "%%MatrixMarket matrix coordinate invalid_field";
+        int bytes_read;
+        enum mtx_object object;
+        enum mtx_format format;
+        enum mtx_field field;
+        enum mtx_symmetry symmetry;
+        const char * endptr;
+        int err = mtx_header_parse(
+            line, &bytes_read, &endptr,
+            &object, &format, &field, &symmetry);
+        TEST_ASSERT_EQ(MTX_ERR_INVALID_MTX_FIELD, err);
+        TEST_ASSERT_EQ(33, bytes_read);
+    }
+
+    {
+        const char line[] = "%%MatrixMarket matrix coordinate real invalid_symmetry";
+        int bytes_read;
+        enum mtx_object object;
+        enum mtx_format format;
+        enum mtx_field field;
+        enum mtx_symmetry symmetry;
+        const char * endptr;
+        int err = mtx_header_parse(
+            line, &bytes_read, &endptr,
+            &object, &format, &field, &symmetry);
+        TEST_ASSERT_EQ(MTX_ERR_INVALID_MTX_SYMMETRY, err);
+        TEST_ASSERT_EQ(38, bytes_read);
+    }
+
+    {
+        const char line[] = "%%MatrixMarket matrix coordinate real general";
+        int bytes_read;
+        enum mtx_object object;
+        enum mtx_format format;
+        enum mtx_field field;
+        enum mtx_symmetry symmetry;
+        const char * endptr;
+        int err = mtx_header_parse(
+            line, &bytes_read, &endptr,
+            &object, &format, &field, &symmetry);
+        TEST_ASSERT_EQ(MTX_SUCCESS, err);
+        TEST_ASSERT_EQ(mtx_matrix, object);
+        TEST_ASSERT_EQ(mtx_coordinate, format);
+        TEST_ASSERT_EQ(mtx_real, field);
+        TEST_ASSERT_EQ(mtx_general, symmetry);
+        TEST_ASSERT_EQ(strlen(line), bytes_read);
+        TEST_ASSERT_EQ(line + strlen(line), endptr);
+    }
+
+    {
+        const char line[] = "%%MatrixMarket matrix coordinate real general\n";
+        int bytes_read;
+        enum mtx_object object;
+        enum mtx_format format;
+        enum mtx_field field;
+        enum mtx_symmetry symmetry;
+        const char * endptr;
+        int err = mtx_header_parse(
+            line, &bytes_read, &endptr,
+            &object, &format, &field, &symmetry);
+        TEST_ASSERT_EQ(MTX_SUCCESS, err);
+        TEST_ASSERT_EQ(mtx_matrix, object);
+        TEST_ASSERT_EQ(mtx_coordinate, format);
+        TEST_ASSERT_EQ(mtx_real, field);
+        TEST_ASSERT_EQ(mtx_general, symmetry);
+        TEST_ASSERT_EQ(strlen(line)-1, bytes_read);
+        TEST_ASSERT_EQ(line + strlen(line)-1, endptr);
+    }
+    return TEST_SUCCESS;
+}
+
+/**
  * `test_mtx_fread_header()` tests parsing Matrix Market headers.
  */
 int test_mtx_fread_header(void)
@@ -1152,6 +1304,7 @@ int test_mtx_fwrite_vector_coordinate_real(void)
 int main(int argc, char * argv[])
 {
     TEST_SUITE_BEGIN("Running tests for Matrix Market I/O\n");
+    TEST_RUN(test_mtx_header_parse);
     TEST_RUN(test_mtx_fread_header);
     TEST_RUN(test_mtx_fread_comment_lines);
     TEST_RUN(test_mtx_fread_matrix_size_line);
