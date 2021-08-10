@@ -322,45 +322,12 @@ int mtx_sgemv(
         A->num_columns != x->num_rows)
         return MTX_ERR_INVALID_MTX_SIZE;
 
-    if (A->format == mtx_array &&
-        x->format == mtx_array &&
-        y->format == mtx_array)
-    {
-        if (A->sorting != mtx_row_major)
-            return MTX_ERR_INVALID_MTX_SORTING;
-        const float * Adata = (const float *) A->data;
-        const float * xdata = (const float *) x->data;
-        float * ydata = (float *) y->data;
-#ifdef LIBMTX_HAVE_BLAS
-        cblas_sgemv(
-            CblasRowMajor, CblasNoTrans, A->num_rows, A->num_columns,
-            alpha, Adata, A->num_columns, xdata, 1, beta, ydata, 1);
-#else
-        for (int i = 0; i < A->num_rows; i++) {
-            float z = 0.0f;
-            for (int j = 0; j < A->num_columns; j++)
-                z += alpha*Adata[i*A->num_columns+j]*xdata[j];
-            ydata[i] = z + beta*ydata[i];
-        }
-#endif
-    } else if (A->format == mtx_coordinate &&
-               x->format == mtx_array &&
-               y->format == mtx_array)
-    {
-        /* TODO: The naive algorithm below only works if `beta' is
-         * equal to one. Otherwise, some intermediate storage will be
-         * needed for the values of the matrix-vector product, and a
-         * final vector addition must be performed. */
-        if (beta != 1.0) {
-            errno = ENOTSUP;
-            return MTX_ERR_ERRNO;
-        }
-        const struct mtx_matrix_coordinate_real * Adata =
-            (const struct mtx_matrix_coordinate_real *) A->data;
-        const float * xdata = (const float *) x->data;
-        float * ydata = (float *) y->data;
-        for (int64_t k = 0; k < A->size; k++)
-            ydata[Adata[k].i-1] += alpha*Adata[k].a*xdata[Adata[k].j-1];
+    if (A->format == mtx_array) {
+        return mtx_matrix_array_sgemv(
+            alpha, A, x, beta, y);
+    } else if (A->format == mtx_coordinate) {
+        return mtx_matrix_coordinate_sgemv(
+            alpha, A, x, beta, y);
     } else {
         return MTX_ERR_INVALID_MTX_FORMAT;
     }
@@ -392,46 +359,12 @@ int mtx_dgemv(
         A->num_columns != x->num_rows)
         return MTX_ERR_INVALID_MTX_SIZE;
 
-    if (A->format == mtx_array &&
-        x->format == mtx_array &&
-        y->format == mtx_array)
-    {
-        if (A->sorting != mtx_row_major)
-            return MTX_ERR_INVALID_MTX_SORTING;
-        const double * Adata = (const double *) A->data;
-        const double * xdata = (const double *) x->data;
-        double * ydata = (double *) y->data;
-#ifdef LIBMTX_HAVE_BLAS
-        cblas_dgemv(
-            CblasRowMajor, CblasNoTrans, A->num_rows, A->num_columns,
-            alpha, Adata, A->num_columns, xdata, 1, beta, ydata, 1);
-#else
-        for (int i = 0; i < A->num_rows; i++) {
-            double z = 0.0;
-            for (int j = 0; j < A->num_columns; j++)
-                z += alpha*Adata[i*A->num_columns+j]*xdata[j];
-            ydata[i] = z + beta*ydata[i];
-        }
-#endif
-    } else if (A->format == mtx_coordinate &&
-               x->format == mtx_array &&
-               y->format == mtx_array)
-    {
-        /* TODO: The naive algorithm below only works if `beta' is
-         * equal to one. Otherwise, some intermediate storage will be
-         * needed for the values of the matrix-vector product, and a
-         * final vector addition must be performed. */
-        if (beta != 1.0) {
-            errno = ENOTSUP;
-            return MTX_ERR_ERRNO;
-        }
-        const struct mtx_matrix_coordinate_double * Adata =
-            (const struct mtx_matrix_coordinate_double *) A->data;
-        const double * xdata = (const double *) x->data;
-        double * ydata = (double *) y->data;
-        for (int64_t k = 0; k < A->size; k++)
-            ydata[Adata[k].i-1] += alpha*Adata[k].a*xdata[Adata[k].j-1];
-        return MTX_SUCCESS;
+    if (A->format == mtx_array) {
+        return mtx_matrix_array_dgemv(
+            alpha, A, x, beta, y);
+    } else if (A->format == mtx_coordinate) {
+        return mtx_matrix_coordinate_dgemv(
+            alpha, A, x, beta, y);
     } else {
         return MTX_ERR_INVALID_MTX_FORMAT;
     }

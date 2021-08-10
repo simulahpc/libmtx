@@ -34,6 +34,10 @@
 
 struct mtx;
 
+/*
+ * Level 1 BLAS operations.
+ */
+
 /**
  * `mtx_matrix_coordinate_sscal()' scales a matrix by a single
  * precision floating-point scalar, `x = a*x'.
@@ -216,4 +220,104 @@ int mtx_matrix_coordinate_dnrm2(
     /* TODO: Implement dot product for sparse matrices. */
     errno = ENOTSUP;
     return MTX_ERR_ERRNO;
+}
+
+/*
+ * Level 2 BLAS operations.
+ */
+
+/**
+ * `mtx_matrix_coordinate_sgemv()' computes the product of a matrix
+ * and a vector of single precision floating-point values, `y =
+ * alpha*A*x + beta*y'.
+ */
+int mtx_matrix_coordinate_sgemv(
+    float alpha,
+    const struct mtx * A,
+    const struct mtx * x,
+    float beta,
+    struct mtx * y)
+{
+    if (A->object != mtx_matrix ||
+        x->object != mtx_vector ||
+        y->object != mtx_vector)
+        return MTX_ERR_INVALID_MTX_OBJECT;
+    if (A->field != mtx_real ||
+        x->field != mtx_real ||
+        y->field != mtx_real)
+        return MTX_ERR_INVALID_MTX_FIELD;
+    if (A->symmetry != mtx_general)
+        return MTX_ERR_INVALID_MTX_SYMMETRY;
+    if (A->num_rows != y->num_rows ||
+        A->num_columns != x->num_rows)
+        return MTX_ERR_INVALID_MTX_SIZE;
+    if (A->format != mtx_coordinate ||
+        x->format != mtx_array ||
+        y->format != mtx_array)
+        return MTX_ERR_INVALID_MTX_FORMAT;
+
+    /* TODO: The naive algorithm below only works if `beta' is
+     * equal to one. Otherwise, some intermediate storage will be
+     * needed for the values of the matrix-vector product, and a
+     * final vector addition must be performed. */
+    if (beta != 1.0) {
+        errno = ENOTSUP;
+        return MTX_ERR_ERRNO;
+    }
+
+    const struct mtx_matrix_coordinate_real * Adata =
+        (const struct mtx_matrix_coordinate_real *) A->data;
+    const float * xdata = (const float *) x->data;
+    float * ydata = (float *) y->data;
+    for (int64_t k = 0; k < A->size; k++)
+        ydata[Adata[k].i-1] += alpha*Adata[k].a*xdata[Adata[k].j-1];
+    return MTX_SUCCESS;
+}
+
+/**
+ * `mtx_matrix_coordinate_dgemv()' computes the product of a matrix
+ * and a vector of single precision floating-point values, `y =
+ * alpha*A*x + beta*y'.
+ */
+int mtx_matrix_coordinate_dgemv(
+    double alpha,
+    const struct mtx * A,
+    const struct mtx * x,
+    double beta,
+    struct mtx * y)
+{
+    if (A->object != mtx_matrix ||
+        x->object != mtx_vector ||
+        y->object != mtx_vector)
+        return MTX_ERR_INVALID_MTX_OBJECT;
+    if (A->field != mtx_double ||
+        x->field != mtx_double ||
+        y->field != mtx_double)
+        return MTX_ERR_INVALID_MTX_FIELD;
+    if (A->symmetry != mtx_general)
+        return MTX_ERR_INVALID_MTX_SYMMETRY;
+    if (A->num_rows != y->num_rows ||
+        A->num_columns != x->num_rows)
+        return MTX_ERR_INVALID_MTX_SIZE;
+    if (A->format != mtx_coordinate ||
+        x->format != mtx_array ||
+        y->format != mtx_array)
+        return MTX_ERR_INVALID_MTX_FORMAT;
+
+    /* TODO: The naive algorithm below only works if `beta' is
+     * equal to one. Otherwise, some intermediate storage will be
+     * needed for the values of the matrix-vector product, and a
+     * final vector addition must be performed. */
+    if (beta != 1.0) {
+        errno = ENOTSUP;
+        return MTX_ERR_ERRNO;
+    }
+
+    const struct mtx_matrix_coordinate_double * Adata =
+        (const struct mtx_matrix_coordinate_double *) A->data;
+    const double * xdata = (const double *) x->data;
+    double * ydata = (double *) y->data;
+    for (int64_t k = 0; k < A->size; k++)
+        ydata[Adata[k].i-1] += alpha*Adata[k].a*xdata[Adata[k].j-1];
+    return MTX_SUCCESS;
 }

@@ -38,6 +38,10 @@
 
 struct mtx;
 
+/*
+ * Level 1 BLAS operations.
+ */
+
 /**
  * `mtx_matrix_array_sscal()' scales a matrix by a single precision
  * floating-point scalar, `x = a*x'.
@@ -260,6 +264,110 @@ int mtx_matrix_array_dnrm2(
     for (int64_t i = 0; i < x->size; i++)
         *nrm2 += xdata[i]*xdata[i];
     *nrm2 = sqrt(*nrm2);
+#endif
+    return MTX_SUCCESS;
+}
+
+/*
+ * Level 2 BLAS operations.
+ */
+
+/**
+ * `mtx_matrix_array_sgemv()' computes the product of a matrix and a
+ * vector of single precision floating-point values, `y = alpha*A*x +
+ * beta*y'.
+ */
+int mtx_matrix_array_sgemv(
+    float alpha,
+    const struct mtx * A,
+    const struct mtx * x,
+    float beta,
+    struct mtx * y)
+{
+    if (A->object != mtx_matrix ||
+        x->object != mtx_vector ||
+        y->object != mtx_vector)
+        return MTX_ERR_INVALID_MTX_OBJECT;
+    if (A->field != mtx_real ||
+        x->field != mtx_real ||
+        y->field != mtx_real)
+        return MTX_ERR_INVALID_MTX_FIELD;
+    if (A->symmetry != mtx_general)
+        return MTX_ERR_INVALID_MTX_SYMMETRY;
+    if (A->num_rows != y->num_rows ||
+        A->num_columns != x->num_rows)
+        return MTX_ERR_INVALID_MTX_SIZE;
+    if (A->format != mtx_array ||
+        x->format != mtx_array ||
+        y->format != mtx_array)
+        return MTX_ERR_INVALID_MTX_FORMAT;
+    if (A->sorting != mtx_row_major)
+        return MTX_ERR_INVALID_MTX_SORTING;
+
+    const float * Adata = (const float *) A->data;
+    const float * xdata = (const float *) x->data;
+    float * ydata = (float *) y->data;
+#ifdef LIBMTX_HAVE_BLAS
+    cblas_sgemv(
+        CblasRowMajor, CblasNoTrans, A->num_rows, A->num_columns,
+        alpha, Adata, A->num_columns, xdata, 1, beta, ydata, 1);
+#else
+    for (int i = 0; i < A->num_rows; i++) {
+        float z = 0.0f;
+        for (int j = 0; j < A->num_columns; j++)
+            z += alpha*Adata[i*A->num_columns+j]*xdata[j];
+        ydata[i] = z + beta*ydata[i];
+    }
+#endif
+    return MTX_SUCCESS;
+}
+
+/**
+ * `mtx_matrix_array_dgemv()' computes the product of a matrix and a
+ * vector of single precision floating-point values, `y = alpha*A*x +
+ * beta*y'.
+ */
+int mtx_matrix_array_dgemv(
+    double alpha,
+    const struct mtx * A,
+    const struct mtx * x,
+    double beta,
+    struct mtx * y)
+{
+    if (A->object != mtx_matrix ||
+        x->object != mtx_vector ||
+        y->object != mtx_vector)
+        return MTX_ERR_INVALID_MTX_OBJECT;
+    if (A->field != mtx_double ||
+        x->field != mtx_double ||
+        y->field != mtx_double)
+        return MTX_ERR_INVALID_MTX_FIELD;
+    if (A->symmetry != mtx_general)
+        return MTX_ERR_INVALID_MTX_SYMMETRY;
+    if (A->num_rows != y->num_rows ||
+        A->num_columns != x->num_rows)
+        return MTX_ERR_INVALID_MTX_SIZE;
+    if (A->format != mtx_array &&
+        x->format != mtx_array &&
+        y->format != mtx_array)
+        return MTX_ERR_INVALID_MTX_FORMAT;
+
+    if (A->sorting != mtx_row_major)
+        return MTX_ERR_INVALID_MTX_SORTING;
+    const double * Adata = (const double *) A->data;
+    const double * xdata = (const double *) x->data;
+    double * ydata = (double *) y->data;
+#ifdef LIBMTX_HAVE_BLAS
+    cblas_dgemv(
+        CblasRowMajor, CblasNoTrans, A->num_rows, A->num_columns,
+        alpha, Adata, A->num_columns, xdata, 1, beta, ydata, 1);
+#else
+    for (int i = 0; i < A->num_rows; i++) {
+        double z = 0.0;
+        for (int j = 0; j < A->num_columns; j++)
+            z += alpha*Adata[i*A->num_columns+j]*xdata[j];
+        ydata[i] = z + beta*ydata[i];
+    }
 #endif
     return MTX_SUCCESS;
 }
