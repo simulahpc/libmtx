@@ -75,6 +75,42 @@ static int mtx_alloc_vector_array_field(
 }
 
 /**
+ * `mtx_alloc_vector_array()` allocates a dense vector in array
+ * format.
+ */
+int mtx_alloc_vector_array(
+    struct mtx * mtx,
+    enum mtx_field field,
+    int num_comment_lines,
+    const char ** comment_lines,
+    int size)
+{
+    if (field == mtx_real) {
+        return mtx_alloc_vector_array_field(
+            mtx, mtx_real,
+            num_comment_lines, comment_lines,
+            sizeof(float), size);
+    } else if (field == mtx_double) {
+        return mtx_alloc_vector_array_field(
+            mtx, mtx_double,
+            num_comment_lines, comment_lines,
+            sizeof(double), size);
+    } else if (field == mtx_complex) {
+        return mtx_alloc_vector_array_field(
+            mtx, mtx_complex,
+            num_comment_lines, comment_lines,
+            2*sizeof(float), size);
+    } else if (field == mtx_integer) {
+        return mtx_alloc_vector_array_field(
+            mtx, mtx_integer,
+            num_comment_lines, comment_lines,
+            sizeof(int), size);
+    } else {
+        return MTX_ERR_INVALID_MTX_FIELD;
+    }
+}
+
+/**
  * `mtx_alloc_vector_array_real()` allocates a vector with real,
  * single-precision floating point coefficients.
  */

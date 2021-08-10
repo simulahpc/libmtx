@@ -278,6 +278,55 @@ static int mtx_alloc_matrix_array_field(
 }
 
 /**
+ * `mtx_alloc_matrix_array()` allocates a dense matrix in array
+ * format.
+ *
+ * If `symmetry' is `mtx_symmetric', `mtx_skew_symmetric' or
+ * `mtx_hermitian', then `triangle' must be either
+ * `mtx_lower_triangular' or `mtx_upper_triangular' to indicate which
+ * triangle of the matrix is stored in `data'.  Otherwise, if
+ * `symmetry' is `mtx_general', then `triangle' must be
+ * `mtx_nontriangular'.
+ *
+ * ´sorting' must be `mtx_row_major' or `mtx_column_major'.
+ */
+int mtx_alloc_matrix_array(
+    struct mtx * mtx,
+    enum mtx_field field,
+    enum mtx_symmetry symmetry,
+    enum mtx_triangle triangle,
+    enum mtx_sorting sorting,
+    int num_comment_lines,
+    const char ** comment_lines,
+    int num_rows,
+    int num_columns)
+{
+    if (field == mtx_real) {
+        return mtx_alloc_matrix_array_field(
+            mtx, mtx_real, symmetry, triangle, sorting,
+            num_comment_lines, comment_lines,
+            num_rows, num_columns, sizeof(float));
+    } else if (field == mtx_double) {
+        return mtx_alloc_matrix_array_field(
+            mtx, mtx_double, symmetry, triangle, sorting,
+            num_comment_lines, comment_lines,
+            num_rows, num_columns, sizeof(double));
+    } else if (field == mtx_complex) {
+        return mtx_alloc_matrix_array_field(
+            mtx, mtx_complex, symmetry, triangle, sorting,
+            num_comment_lines, comment_lines,
+            num_rows, num_columns, 2*sizeof(float));
+    } else if (field == mtx_integer) {
+        return mtx_alloc_matrix_array_field(
+            mtx, mtx_integer, symmetry, triangle, sorting,
+            num_comment_lines, comment_lines,
+            num_rows, num_columns, sizeof(int));
+    } else {
+        return MTX_ERR_INVALID_MTX_FIELD;
+    }
+}
+
+/**
  * `mtx_alloc_matrix_array_real()` allocates a dense matrix with real,
  * single-precision floating point coefficients.
  *

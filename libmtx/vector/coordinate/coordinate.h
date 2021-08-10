@@ -95,6 +95,18 @@ struct mtx_vector_coordinate_pattern
  */
 
 /**
+ * `mtx_alloc_vector_coordinate()` allocates a sparse vector in
+ * coordinate format.
+ */
+int mtx_alloc_vector_coordinate(
+    struct mtx * mtx,
+    enum mtx_field field,
+    int num_comment_lines,
+    const char ** comment_lines,
+    int num_rows,
+    int size);
+
+/**
  * `mtx_alloc_vector_coordinate_real()` allocates a sparse vector with
  * real, single-precision floating point coefficients.
  */
