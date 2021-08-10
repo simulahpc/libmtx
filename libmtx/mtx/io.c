@@ -34,6 +34,7 @@
 #include <libmtx/vector/coordinate/coordinate.h>
 
 #include "../util/format.h"
+#include "../util/io.h"
 #include "../util/parse.h"
 
 #ifdef LIBMTX_HAVE_LIBZ
@@ -177,112 +178,6 @@ int mtx_write(
     return MTX_SUCCESS;
 }
 
-enum stream_type
-{
-    stream_stdio,
-#ifdef LIBMTX_HAVE_LIBZ
-    stream_gz
-#endif
-};
-
-/**
- * `stream' is used to abstract the underlying I/O stream, so that we
- * can easily use standard C library I/O or libz.
- */
-struct stream
-{
-    enum stream_type type;
-    FILE * stdio_f;
-#ifdef LIBMTX_HAVE_LIBZ
-    gzFile gz_f;
-#endif
-};
-
-static int stream_vprintf(
-    const struct stream * stream,
-    const char * format,
-    va_list va)
-{
-    if (stream->type == stream_stdio) {
-        FILE * f = stream->stdio_f;
-        return vfprintf(f, format, va);
-#ifdef LIBMTX_HAVE_LIBZ
-    } else if (stream->type == stream_gz) {
-        gzFile f = stream->gz_f;
-        return gzvprintf(f, format, va);
-#endif
-    } else {
-        return MTX_ERR_INVALID_STREAM_TYPE;
-    }
-}
-
-static int stream_printf(
-    const struct stream * stream,
-    const char * format,
-    ...)
-{
-    int err;
-    va_list va;
-    va_start(va, format);
-    err = stream_vprintf(stream, format, va);
-    va_end(va);
-    return err;
-}
-
-static int stream_putc(
-    int c,
-    const struct stream * stream)
-{
-    if (stream->type == stream_stdio) {
-        FILE * f = stream->stdio_f;
-        return fputc(c, f);
-#ifdef LIBMTX_HAVE_LIBZ
-    } else if (stream->type == stream_gz) {
-        gzFile f = stream->gz_f;
-        return gzputc(f, c);
-#endif
-    } else {
-        return MTX_ERR_INVALID_STREAM_TYPE;
-    }
-}
-
-/**
- * `read_line()` reads a single line from a stream in the Matrix Market
- * format.
- */
-static int read_line(
-    const struct stream * stream,
-    size_t line_max,
-    char * linebuf)
-{
-    if (stream->type == stream_stdio) {
-        FILE * f = stream->stdio_f;
-        char * s = fgets(linebuf, line_max+1, f);
-        if (!s && feof(f))
-            return MTX_ERR_EOF;
-        else if (!s)
-            return MTX_ERR_ERRNO;
-        int n = strlen(s);
-        if (n > 0 && n == line_max && s[n-1] != '\n')
-            return MTX_ERR_LINE_TOO_LONG;
-#ifdef LIBMTX_HAVE_LIBZ
-    } else if (stream->type == stream_gz) {
-        gzFile f = stream->gz_f;
-        char * s = gzgets(f, linebuf, line_max+1);
-        if (!s && gzeof(f))
-            return MTX_ERR_EOF;
-        else if (!s)
-            return MTX_ERR_ERRNO;
-        int n = strlen(s);
-        if (n > 0 && n == line_max && s[n-1] != '\n')
-            return MTX_ERR_LINE_TOO_LONG;
-#endif
-    } else {
-        return MTX_ERR_INVALID_STREAM_TYPE;
-    }
-    return MTX_SUCCESS;
-}
-
 /**
  * `read_header_line()` reads a header line from a stream in
  * the Matrix Market file format.
@@ -301,7 +196,7 @@ static int read_header_line(
     int err;
 
     /* 1. Read the header line. */
-    err = read_line(stream, line_max, linebuf);
+    err = stream_read_line(stream, line_max, linebuf);
     if (err)
         return err;
 
@@ -391,23 +286,17 @@ static int read_comment_lines(
     struct comment_line_list * node = NULL;
     *num_comment_lines = 0;
     while (true) {
-        /* 1.1. Check if the line starts with '%'. */
-        if (stream->type == stream_stdio) {
-            FILE * f = stream->stdio_f;
-            int c = fgetc(f);
-            if (ungetc(c, f) == EOF || c != '%')
-                break;
-#ifdef LIBMTX_HAVE_LIBZ
-        } else if (stream->type == stream_gz) {
-            gzFile f = stream->gz_f;
-            int c = gzgetc(f);
-            if (gzungetc(c, f) == EOF || c != '%')
-                break;
-#endif
-        } else {
-            errno = EINVAL;
-            return MTX_ERR_ERRNO;
-        }
+        int c = stream_getc(stream);
+        if (c == MTX_ERR_INVALID_STREAM_TYPE)
+            return MTX_ERR_INVALID_STREAM_TYPE;
+        c = stream_ungetc(c, stream);
+        if (c == MTX_ERR_INVALID_STREAM_TYPE)
+            return MTX_ERR_INVALID_STREAM_TYPE;
+
+        /* Stop parsing comments on end-of-file or if the line does
+         * not start with '%'. */
+        if (c == EOF || c != '%')
+            break;
 
         /* Allocate a list node. */
         struct comment_line_list * next =
@@ -424,8 +313,8 @@ static int read_comment_lines(
         next->comment_line = NULL;
         next->prev = next->next = NULL;
 
-        /* 1.2. Read the next line as a comment line. */
-        err = read_line(stream, line_max, linebuf);
+        /* Read the next line as a comment line. */
+        err = stream_read_line(stream, line_max, linebuf);
         if (err) {
             free(next);
             while (node) {
@@ -437,7 +326,7 @@ static int read_comment_lines(
             return err;
         }
 
-        /* 1.3. Add the new node to the list. */
+        /* Add the new node to the list. */
         next->comment_line = strdup(linebuf);
         if (!node) {
             root = node = next;
@@ -573,7 +462,7 @@ static int read_size_line(
     int err;
 
     /* Read the size line. */
-    err = read_line(stream, line_max, linebuf);
+    err = stream_read_line(stream, line_max, linebuf);
     if (err)
         return err;
 
@@ -806,7 +695,7 @@ static int read_data_array(
 
         /* 2. Read each line of data. */
         for (int64_t k = 0; k < size; k++) {
-            err = read_line(stream, line_max, linebuf);
+            err = stream_read_line(stream, line_max, linebuf);
             if (err) {
                 free(data);
                 return err;
@@ -828,7 +717,7 @@ static int read_data_array(
 
         /* 2. Read each line of data. */
         for (int64_t k = 0; k < size; k++) {
-            err = read_line(stream, line_max, linebuf);
+            err = stream_read_line(stream, line_max, linebuf);
             if (err) {
                 free(data);
                 return err;
@@ -850,7 +739,7 @@ static int read_data_array(
 
         /* 2. Read each line of data. */
         for (int64_t k = 0; k < size; k++) {
-            err = read_line(stream, line_max, linebuf);
+            err = stream_read_line(stream, line_max, linebuf);
             if (err) {
                 free(data);
                 return err;
@@ -873,7 +762,7 @@ static int read_data_array(
 
         /* 2. Read each line of data. */
         for (int64_t k = 0; k < size; k++) {
-            err = read_line(stream, line_max, linebuf);
+            err = stream_read_line(stream, line_max, linebuf);
             if (err) {
                 free(data);
                 return err;
@@ -1117,7 +1006,7 @@ static int read_data_matrix_coordinate(
 
         /* 2. Read each line of data. */
         for (int64_t k = 0; k < size; k++) {
-            err = read_line(stream, line_max, linebuf);
+            err = stream_read_line(stream, line_max, linebuf);
             if (err) {
                 free(data);
                 return err;
@@ -1142,7 +1031,7 @@ static int read_data_matrix_coordinate(
 
         /* 2. Read each line of data. */
         for (int64_t k = 0; k < size; k++) {
-            err = read_line(stream, line_max, linebuf);
+            err = stream_read_line(stream, line_max, linebuf);
             if (err) {
                 free(data);
                 return err;
@@ -1166,7 +1055,7 @@ static int read_data_matrix_coordinate(
 
         /* 2. Read each line of data. */
         for (int64_t k = 0; k < size; k++) {
-            err = read_line(stream, line_max, linebuf);
+            err = stream_read_line(stream, line_max, linebuf);
             if (err) {
                 free(data);
                 return err;
@@ -1191,7 +1080,7 @@ static int read_data_matrix_coordinate(
 
         /* 2. Read each line of data. */
         for (int64_t k = 0; k < size; k++) {
-            err = read_line(stream, line_max, linebuf);
+            err = stream_read_line(stream, line_max, linebuf);
             if (err) {
                 free(data);
                 return err;
@@ -1216,7 +1105,7 @@ static int read_data_matrix_coordinate(
 
         /* 2. Read each line of data. */
         for (int64_t k = 0; k < size; k++) {
-            err = read_line(stream, line_max, linebuf);
+            err = stream_read_line(stream, line_max, linebuf);
             if (err) {
                 free(data);
                 return err;
@@ -1412,7 +1301,7 @@ static int read_data_vector_coordinate(
 
         /* 2. Read each line of data. */
         for (int64_t k = 0; k < size; k++) {
-            err = read_line(stream, line_max, linebuf);
+            err = stream_read_line(stream, line_max, linebuf);
             if (err) {
                 free(data);
                 return err;
@@ -1437,7 +1326,7 @@ static int read_data_vector_coordinate(
 
         /* 2. Read each line of data. */
         for (int64_t k = 0; k < size; k++) {
-            err = read_line(stream, line_max, linebuf);
+            err = stream_read_line(stream, line_max, linebuf);
             if (err) {
                 free(data);
                 return err;
@@ -1461,7 +1350,7 @@ static int read_data_vector_coordinate(
 
         /* 2. Read each line of data. */
         for (int64_t k = 0; k < size; k++) {
-            err = read_line(stream, line_max, linebuf);
+            err = stream_read_line(stream, line_max, linebuf);
             if (err) {
                 free(data);
                 return err;
@@ -1486,7 +1375,7 @@ static int read_data_vector_coordinate(
 
         /* 2. Read each line of data. */
         for (int64_t k = 0; k < size; k++) {
-            err = read_line(stream, line_max, linebuf);
+            err = stream_read_line(stream, line_max, linebuf);
             if (err) {
                 free(data);
                 return err;
@@ -1511,7 +1400,7 @@ static int read_data_vector_coordinate(
 
         /* 2. Read each line of data. */
         for (int64_t k = 0; k < size; k++) {
-            err = read_line(stream, line_max, linebuf);
+            err = stream_read_line(stream, line_max, linebuf);
             if (err) {
                 free(data);
                 return err;
@@ -1712,10 +1601,12 @@ int mtx_fread(
     int * line_number,
     int * column_number)
 {
-    struct stream stream;
-    stream.type = stream_stdio;
-    stream.stdio_f = f;
-    return read_mtx(mtx, &stream, line_number, column_number);
+    struct stream * stream = stream_init_stdio(f);
+    if (!stream)
+        return MTX_ERR_ERRNO;
+    int err = read_mtx(mtx, stream, line_number, column_number);
+    free(stream);
+    return err;
 }
 
 #ifdef LIBMTX_HAVE_LIBZ
@@ -1729,10 +1620,12 @@ int mtx_gzread(
     int * line_number,
     int * column_number)
 {
-    struct stream stream;
-    stream.type = stream_gz;
-    stream.gz_f = f;
-    return read_mtx(mtx, &stream, line_number, column_number);
+    struct stream * stream = stream_init_gz(f);
+    if (!stream)
+        return MTX_ERR_ERRNO;
+    int err = read_mtx(mtx, stream, line_number, column_number);
+    free(stream);
+    return err;
 }
 #endif
 
@@ -2111,10 +2004,12 @@ int mtx_fwrite(
     FILE * f,
     const char * format)
 {
-    struct stream stream;
-    stream.type = stream_stdio;
-    stream.stdio_f = f;
-    return write_mtx(mtx, &stream, format);
+    struct stream * stream = stream_init_stdio(f);
+    if (!stream)
+        return MTX_ERR_ERRNO;
+    int err = write_mtx(mtx, stream, format);
+    free(stream);
+    return err;
 }
 
 #ifdef LIBMTX_HAVE_LIBZ
@@ -2141,9 +2036,11 @@ int mtx_gzwrite(
     gzFile f,
     const char * format)
 {
-    struct stream stream;
-    stream.type = stream_gz;
-    stream.gz_f = f;
-    return write_mtx(mtx, &stream, format);
+    struct stream * stream = stream_init_gz(f);
+    if (!stream)
+        return MTX_ERR_ERRNO;
+    int err = write_mtx(mtx, stream, format);
+    free(stream);
+    return err;
 }
 #endif

@@ -62,6 +62,8 @@ libmtx_la_SOURCES = \
 	libmtx/mtx/triangle.c \
 	libmtx/util/format.c \
 	libmtx/util/format.h \
+	libmtx/util/io.c \
+	libmtx/util/io.h \
 	libmtx/util/parse.c \
 	libmtx/util/parse.h \
 	libmtx/vector/array/array.c \
