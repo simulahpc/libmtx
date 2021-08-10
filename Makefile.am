@@ -47,7 +47,9 @@ libmtx_la_SOURCES = \
 	libmtx/error.c \
 	libmtx/index_set.c \
 	libmtx/matrix/array/array.c \
+	libmtx/matrix/array/io.c \
 	libmtx/matrix/coordinate/coordinate.c \
+	libmtx/matrix/coordinate/io.c \
 	libmtx/matrix/matrix.c \
 	libmtx/mtx/assembly.c \
 	libmtx/mtx/blas.c \
@@ -71,6 +73,7 @@ libmtx_la_SOURCES = \
 	libmtx/vector/array/io.c \
 	libmtx/vector/coordinate/blas.c \
 	libmtx/vector/coordinate/coordinate.c \
+	libmtx/vector/coordinate/io.c \
 	libmtx/vector/vector.c \
 	libmtx/version.c
 
@@ -83,7 +86,9 @@ nobase_include_HEADERS = \
 	libmtx/mtx/io.h \
 	libmtx/libmtx.h \
 	libmtx/matrix/array/array.h \
+	libmtx/matrix/array/io.h \
 	libmtx/matrix/coordinate/coordinate.h \
+	libmtx/matrix/coordinate/io.h \
 	libmtx/matrix/matrix.h \
 	libmtx/mtx/mpi.h \
 	libmtx/mtx/mtx.h \
@@ -97,6 +102,7 @@ nobase_include_HEADERS = \
 	libmtx/vector/array/io.h \
 	libmtx/vector/coordinate/blas.h \
 	libmtx/vector/coordinate/coordinate.h \
+	libmtx/vector/coordinate/io.h \
 	libmtx/vector/vector.h \
 	libmtx/version.h
 
