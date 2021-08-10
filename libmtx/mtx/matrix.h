@@ -22,8 +22,8 @@
  * Various operations for matrices in the Matrix Market format.
  */
 
-#ifndef LIBMTX_MATRIX_H
-#define LIBMTX_MATRIX_H
+#ifndef LIBMTX_MTX_MATRIX_H
+#define LIBMTX_MTX_MATRIX_H
 
 #include <libmtx/mtx/header.h>
 

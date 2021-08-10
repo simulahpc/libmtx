@@ -22,8 +22,8 @@
  * Various operations for vectors in the Matrix Market format.
  */
 
-#ifndef LIBMTX_VECTOR_H
-#define LIBMTX_VECTOR_H
+#ifndef LIBMTX_MTX_VECTOR_H
+#define LIBMTX_MTX_VECTOR_H
 
 struct mtx;
 

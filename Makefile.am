@@ -54,7 +54,7 @@ libmtx_la_SOURCES = \
 	libmtx/matrix/coordinate/coordinate.c \
 	libmtx/matrix/coordinate/io.c \
 	libmtx/matrix/coordinate/sort.c \
-	libmtx/matrix/matrix.c \
+	libmtx/mtx/matrix.c \
 	libmtx/mtx/assembly.c \
 	libmtx/mtx/blas.c \
 	libmtx/mtx/header.c \
@@ -78,7 +78,7 @@ libmtx_la_SOURCES = \
 	libmtx/vector/coordinate/blas.c \
 	libmtx/vector/coordinate/coordinate.c \
 	libmtx/vector/coordinate/io.c \
-	libmtx/vector/vector.c \
+	libmtx/mtx/vector.c \
 	libmtx/version.c
 
 # Header files
@@ -97,7 +97,7 @@ nobase_include_HEADERS = \
 	libmtx/matrix/coordinate/coordinate.h \
 	libmtx/matrix/coordinate/io.h \
 	libmtx/matrix/coordinate/sort.h \
-	libmtx/matrix/matrix.h \
+	libmtx/mtx/matrix.h \
 	libmtx/mtx/mpi.h \
 	libmtx/mtx/mtx.h \
 	libmtx/mtx/header.h \
@@ -111,7 +111,7 @@ nobase_include_HEADERS = \
 	libmtx/vector/coordinate/blas.h \
 	libmtx/vector/coordinate/coordinate.h \
 	libmtx/vector/coordinate/io.h \
-	libmtx/vector/vector.h \
+	libmtx/mtx/vector.h \
 	libmtx/version.h
 
 # Header files that will not be distributed
