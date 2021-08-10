@@ -201,6 +201,60 @@ static int mtx_alloc_matrix_coordinate_field(
 }
 
 /**
+ * `mtx_alloc_matrix_coordinate()` allocates a sparse matrix in
+ * coordinate format.
+ */
+int mtx_alloc_matrix_coordinate(
+    struct mtx * mtx,
+    enum mtx_field field,
+    enum mtx_symmetry symmetry,
+    int num_comment_lines,
+    const char ** comment_lines,
+    int num_rows,
+    int num_columns,
+    int64_t size)
+{
+    if (field == mtx_real) {
+        return mtx_alloc_matrix_coordinate_field(
+            mtx, mtx_real, symmetry,
+            num_comment_lines, comment_lines,
+            num_rows, num_columns,
+            sizeof(struct mtx_matrix_coordinate_real),
+            size);
+    } else if (field == mtx_double) {
+        return mtx_alloc_matrix_coordinate_field(
+            mtx, mtx_double, symmetry,
+            num_comment_lines, comment_lines,
+            num_rows, num_columns,
+            sizeof(struct mtx_matrix_coordinate_double),
+            size);
+    } else if (field == mtx_complex) {
+        return mtx_alloc_matrix_coordinate_field(
+            mtx, mtx_complex, symmetry,
+            num_comment_lines, comment_lines,
+            num_rows, num_columns,
+            sizeof(struct mtx_matrix_coordinate_complex),
+            size);
+    } else if (field == mtx_integer) {
+        return mtx_alloc_matrix_coordinate_field(
+            mtx, mtx_integer, symmetry,
+            num_comment_lines, comment_lines,
+            num_rows, num_columns,
+            sizeof(struct mtx_matrix_coordinate_integer),
+            size);
+    } else if (field == mtx_pattern) {
+        return mtx_alloc_matrix_coordinate_field(
+            mtx, mtx_pattern, symmetry,
+            num_comment_lines, comment_lines,
+            num_rows, num_columns,
+            sizeof(struct mtx_matrix_coordinate_pattern),
+            size);
+    } else {
+        return MTX_ERR_INVALID_MTX_FIELD;
+    }
+}
+
+/**
  * `mtx_alloc_matrix_coordinate_real()` allocates a sparse matrix with
  * real, single-precision floating point coefficients.
  */

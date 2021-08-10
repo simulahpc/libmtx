@@ -494,7 +494,7 @@ static int parse_array_integer(
 static int read_data_array(
     enum mtx_field field,
     int64_t size,
-    void ** out_data,
+    void * out_data,
     const struct stream * stream,
     size_t line_max,
     char * linebuf,
@@ -504,93 +504,53 @@ static int read_data_array(
     int err;
 
     if (field == mtx_real) {
-        /* 1. Allocate storage for matrix data. */
-        float * data = (float *) malloc(size * sizeof(float));
-        if (!data)
-            return MTX_ERR_ERRNO;
-
-        /* 2. Read each line of data. */
+        float * data = (float *) out_data;
         for (int64_t k = 0; k < size; k++) {
             err = stream_read_line(stream, line_max, linebuf);
-            if (err) {
-                free(data);
+            if (err)
                 return err;
-            }
             err = parse_array_real(linebuf, &data[k]);
-            if (err) {
-                free(data);
+            if (err)
                 return err;
-            }
             (*line_number)++; *column_number = 1;
         }
-        *out_data = (void *) data;
 
     } else if (field == mtx_double) {
-        /* 1. Allocate storage for matrix data. */
-        double * data = (double *) malloc(size * sizeof(double));
-        if (!data)
-            return MTX_ERR_ERRNO;
-
-        /* 2. Read each line of data. */
+        double * data = (double *) out_data;
         for (int64_t k = 0; k < size; k++) {
             err = stream_read_line(stream, line_max, linebuf);
-            if (err) {
-                free(data);
+            if (err)
                 return err;
-            }
             err = parse_array_double(linebuf, &data[k]);
-            if (err) {
-                free(data);
+            if (err)
                 return err;
-            }
             (*line_number)++; *column_number = 1;
         }
-        *out_data = (void *) data;
 
     } else if (field == mtx_complex) {
-        /* 1. Allocate storage for matrix data. */
-        float * data = (float *) malloc(size * 2 * sizeof(float));
-        if (!data)
-            return MTX_ERR_ERRNO;
-
-        /* 2. Read each line of data. */
+        float * data = (float *) out_data;
         for (int64_t k = 0; k < size; k++) {
             err = stream_read_line(stream, line_max, linebuf);
-            if (err) {
-                free(data);
+            if (err)
                 return err;
-            }
             err = parse_array_complex(
                 linebuf, &data[2*k+0], &data[2*k+1]);
-            if (err) {
-                free(data);
+            if (err)
                 return err;
-            }
             (*line_number)++; *column_number = 1;
         }
-        *out_data = (void *) data;
 
     } else if (field == mtx_integer) {
-        /* 1. Allocate storage for matrix data. */
-        int * data = (int *) malloc(size * sizeof(int));
-        if (!data)
-            return MTX_ERR_ERRNO;
-
-        /* 2. Read each line of data. */
+        int * data = (int *) out_data;
         for (int64_t k = 0; k < size; k++) {
             err = stream_read_line(stream, line_max, linebuf);
-            if (err) {
-                free(data);
+            if (err)
                 return err;
-            }
             err = parse_array_integer(linebuf, &data[k]);
-            if (err) {
-                free(data);
+            if (err)
                 return err;
-            }
             (*line_number)++; *column_number = 1;
         }
-        *out_data = (void *) data;
 
     } else {
         return MTX_ERR_INVALID_MTX_FIELD;
@@ -803,7 +763,7 @@ static int read_data_matrix_coordinate(
     int num_rows,
     int num_columns,
     int64_t size,
-    void ** out_data,
+    void * out_data,
     const struct stream * stream,
     size_t line_max,
     char * linebuf,
@@ -813,128 +773,73 @@ static int read_data_matrix_coordinate(
     int err;
 
     if (field == mtx_real) {
-        /* 1. Allocate storage for matrix data. */
         struct mtx_matrix_coordinate_real * data =
-            (struct mtx_matrix_coordinate_real *) malloc(
-                size * sizeof(struct mtx_matrix_coordinate_real));
-        if (!data)
-            return MTX_ERR_ERRNO;
-
-        /* 2. Read each line of data. */
+            (struct mtx_matrix_coordinate_real *) out_data;
         for (int64_t k = 0; k < size; k++) {
             err = stream_read_line(stream, line_max, linebuf);
-            if (err) {
-                free(data);
+            if (err)
                 return err;
-            }
             err = parse_matrix_coordinate_real(
                 linebuf, &data[k], num_rows, num_columns,
                 line_number, column_number);
-            if (err) {
-                free(data);
+            if (err)
                 return err;
-            }
         }
-        *out_data = (void *) data;
 
     } else if (field == mtx_double) {
-        /* 1. Allocate storage for matrix data. */
         struct mtx_matrix_coordinate_double * data =
-            (struct mtx_matrix_coordinate_double *) malloc(
-                size * sizeof(struct mtx_matrix_coordinate_double));
-        if (!data)
-            return MTX_ERR_ERRNO;
-
-        /* 2. Read each line of data. */
+            (struct mtx_matrix_coordinate_double *) out_data;
         for (int64_t k = 0; k < size; k++) {
             err = stream_read_line(stream, line_max, linebuf);
-            if (err) {
-                free(data);
+            if (err)
                 return err;
-            }
             err = parse_matrix_coordinate_double(
                 linebuf, &data[k], num_rows, num_columns, line_number, column_number);
-            if (err) {
-                free(data);
+            if (err)
                 return err;
-            }
         }
-        *out_data = (void *) data;
 
     } else if (field == mtx_complex) {
-        /* 1. Allocate storage for matrix data. */
         struct mtx_matrix_coordinate_complex * data =
-            (struct mtx_matrix_coordinate_complex *) malloc(
-                size * sizeof(struct mtx_matrix_coordinate_complex));
-        if (!data)
-            return MTX_ERR_ERRNO;
-
-        /* 2. Read each line of data. */
+            (struct mtx_matrix_coordinate_complex *) out_data;
         for (int64_t k = 0; k < size; k++) {
             err = stream_read_line(stream, line_max, linebuf);
-            if (err) {
-                free(data);
+            if (err)
                 return err;
-            }
             err = parse_matrix_coordinate_complex(
                 linebuf, &data[k], num_rows, num_columns,
                 line_number, column_number);
-            if (err) {
-                free(data);
+            if (err)
                 return err;
-            }
         }
-        *out_data = (void *) data;
 
     } else if (field == mtx_integer) {
-        /* 1. Allocate storage for matrix data. */
         struct mtx_matrix_coordinate_integer * data =
-            (struct mtx_matrix_coordinate_integer *) malloc(
-                size * sizeof(struct mtx_matrix_coordinate_integer));
-        if (!data)
-            return MTX_ERR_ERRNO;
-
-        /* 2. Read each line of data. */
+            (struct mtx_matrix_coordinate_integer *) out_data;
         for (int64_t k = 0; k < size; k++) {
             err = stream_read_line(stream, line_max, linebuf);
-            if (err) {
-                free(data);
+            if (err)
                 return err;
-            }
             err = parse_matrix_coordinate_integer(
                 linebuf, &data[k], num_rows, num_columns,
                 line_number, column_number);
-            if (err) {
-                free(data);
+            if (err)
                 return err;
-            }
         }
-        *out_data = (void *) data;
 
     } else if (field == mtx_pattern) {
-        /* 1. Allocate storage for matrix data. */
         struct mtx_matrix_coordinate_pattern * data =
-            (struct mtx_matrix_coordinate_pattern *) malloc(
-                size * sizeof(struct mtx_matrix_coordinate_pattern));
-        if (!data)
-            return MTX_ERR_ERRNO;
-
-        /* 2. Read each line of data. */
+            (struct mtx_matrix_coordinate_pattern *) out_data;
         for (int64_t k = 0; k < size; k++) {
             err = stream_read_line(stream, line_max, linebuf);
-            if (err) {
-                free(data);
+            if (err)
                 return err;
-            }
             err = parse_matrix_coordinate_pattern(
                 linebuf, &data[k], num_rows, num_columns,
                 line_number, column_number);
-            if (err) {
-                free(data);
+            if (err)
                 return err;
-            }
         }
-        *out_data = (void *) data;
 
     } else {
         return MTX_ERR_INVALID_MTX_FIELD;
@@ -1108,128 +1013,73 @@ static int read_data_vector_coordinate(
 {
     int err;
     if (field == mtx_real) {
-        /* 1. Allocate storage for vector data. */
         struct mtx_vector_coordinate_real * data =
-            (struct mtx_vector_coordinate_real *) malloc(
-                size * sizeof(struct mtx_vector_coordinate_real));
-        if (!data)
-            return MTX_ERR_ERRNO;
-
-        /* 2. Read each line of data. */
+            (struct mtx_vector_coordinate_real *) out_data;
         for (int64_t k = 0; k < size; k++) {
             err = stream_read_line(stream, line_max, linebuf);
-            if (err) {
-                free(data);
+            if (err)
                 return err;
-            }
             err = parse_vector_coordinate_real(
                 linebuf, &data[k], num_rows,
                 line_number, column_number);
-            if (err) {
-                free(data);
+            if (err)
                 return err;
-            }
         }
-        *out_data = (void *) data;
 
     } else if (field == mtx_double) {
-        /* 1. Allocate storage for vector data. */
         struct mtx_vector_coordinate_double * data =
-            (struct mtx_vector_coordinate_double *) malloc(
-                size * sizeof(struct mtx_vector_coordinate_double));
-        if (!data)
-            return MTX_ERR_ERRNO;
-
-        /* 2. Read each line of data. */
+            (struct mtx_vector_coordinate_double *) out_data;
         for (int64_t k = 0; k < size; k++) {
             err = stream_read_line(stream, line_max, linebuf);
-            if (err) {
-                free(data);
+            if (err)
                 return err;
-            }
             err = parse_vector_coordinate_double(
                 linebuf, &data[k], num_rows, line_number, column_number);
-            if (err) {
-                free(data);
+            if (err)
                 return err;
-            }
         }
-        *out_data = (void *) data;
 
     } else if (field == mtx_complex) {
-        /* 1. Allocate storage for vector data. */
         struct mtx_vector_coordinate_complex * data =
-            (struct mtx_vector_coordinate_complex *) malloc(
-                size * sizeof(struct mtx_vector_coordinate_complex));
-        if (!data)
-            return MTX_ERR_ERRNO;
-
-        /* 2. Read each line of data. */
+            (struct mtx_vector_coordinate_complex *) out_data;
         for (int64_t k = 0; k < size; k++) {
             err = stream_read_line(stream, line_max, linebuf);
-            if (err) {
-                free(data);
+            if (err)
                 return err;
-            }
             err = parse_vector_coordinate_complex(
                 linebuf, &data[k], num_rows,
                 line_number, column_number);
-            if (err) {
-                free(data);
+            if (err)
                 return err;
-            }
         }
-        *out_data = (void *) data;
 
     } else if (field == mtx_integer) {
-        /* 1. Allocate storage for vector data. */
         struct mtx_vector_coordinate_integer * data =
-            (struct mtx_vector_coordinate_integer *) malloc(
-                size * sizeof(struct mtx_vector_coordinate_integer));
-        if (!data)
-            return MTX_ERR_ERRNO;
-
-        /* 2. Read each line of data. */
+            (struct mtx_vector_coordinate_integer *) out_data;
         for (int64_t k = 0; k < size; k++) {
             err = stream_read_line(stream, line_max, linebuf);
-            if (err) {
-                free(data);
+            if (err)
                 return err;
-            }
             err = parse_vector_coordinate_integer(
                 linebuf, &data[k], num_rows,
                 line_number, column_number);
-            if (err) {
-                free(data);
+            if (err)
                 return err;
-            }
         }
-        *out_data = (void *) data;
 
     } else if (field == mtx_pattern) {
-        /* 1. Allocate storage for vector data. */
         struct mtx_vector_coordinate_pattern * data =
-            (struct mtx_vector_coordinate_pattern *) malloc(
-                size * sizeof(struct mtx_vector_coordinate_pattern));
-        if (!data)
-            return MTX_ERR_ERRNO;
-
-        /* 2. Read each line of data. */
+            (struct mtx_vector_coordinate_pattern *) out_data;
         for (int64_t k = 0; k < size; k++) {
             err = stream_read_line(stream, line_max, linebuf);
-            if (err) {
-                free(data);
+            if (err)
                 return err;
-            }
             err = parse_vector_coordinate_pattern(
                 linebuf, &data[k], num_rows,
                 line_number, column_number);
-            if (err) {
-                free(data);
+            if (err)
                 return err;
-            }
         }
-        *out_data = (void *) data;
 
     } else {
         return MTX_ERR_INVALID_MTX_FIELD;
@@ -1248,7 +1098,7 @@ static int read_data_lines(
     int num_rows,
     int num_columns,
     int64_t size,
-    void ** data,
+    void * data,
     const struct stream * stream,
     size_t line_max,
     char * linebuf,
@@ -1304,7 +1154,7 @@ static int read_data_lines(
  * error was encountered during the parsing of the Matrix Market file.
  */
 static int read_mtx(
-    struct mtx * matrix,
+    struct mtx * mtx,
     const struct stream * stream,
     int * line_number,
     int * column_number)
@@ -1317,15 +1167,15 @@ static int read_mtx(
     if (!linebuf)
         return MTX_ERR_ERRNO;
 
-    matrix->comment_lines = NULL;
-    matrix->data = NULL;
-
     /* 1. Parse the header line. */
     *line_number = 1;
     *column_number = 1;
+    enum mtx_object object;
+    enum mtx_format format;
+    enum mtx_field field;
+    enum mtx_symmetry symmetry;
     err = read_header_line(
-        &matrix->object, &matrix->format,
-        &matrix->field, &matrix->symmetry,
+        &object, &format, &field, &symmetry,
         stream, line_max, linebuf,
         line_number, column_number);
     if (err) {
@@ -1334,20 +1184,24 @@ static int read_mtx(
     }
 
     /* Set extra header information. */
-    matrix->triangle =
-        matrix->object == mtx_matrix &&
-        matrix->format == mtx_array &&
-        (matrix->symmetry == mtx_symmetric ||
-         matrix->symmetry == mtx_skew_symmetric ||
-         matrix->symmetry == mtx_hermitian)
-        ? mtx_lower_triangular : mtx_nontriangular;
-    matrix->sorting = matrix->format == mtx_array ? mtx_row_major : mtx_unsorted;
-    matrix->ordering = mtx_unordered;
-    matrix->assembly = matrix->format == mtx_array ? mtx_assembled : mtx_unassembled;
+    enum mtx_triangle triangle = mtx_nontriangular;
+    if (object == mtx_matrix && format == mtx_array &&
+        (symmetry == mtx_symmetric ||
+         symmetry == mtx_skew_symmetric ||
+         symmetry == mtx_hermitian))
+    {
+        triangle = mtx_lower_triangular;
+    }
+
+    enum mtx_sorting sorting = format == mtx_array ? mtx_row_major : mtx_unsorted;
+    enum mtx_ordering ordering = mtx_unordered;
+    enum mtx_assembly assembly = format == mtx_array ? mtx_assembled : mtx_unassembled;
 
     /* 2. Parse comment lines. */
+    int num_comment_lines;
+    char ** comment_lines;
     err = read_comment_lines(
-        &matrix->num_comment_lines, &matrix->comment_lines,
+        &num_comment_lines, &comment_lines,
         stream, line_max, linebuf, line_number, column_number);
     if (err) {
         free(linebuf);
@@ -1355,53 +1209,119 @@ static int read_mtx(
     }
 
     /* 3. Parse the size line. */
+    int num_rows;
+    int num_columns;
+    int64_t num_nonzeros;
+    int64_t size;
+    int nonzero_size;
     err = read_size_line(
-        matrix->object, matrix->format, matrix->field, matrix->symmetry,
-        &matrix->num_rows, &matrix->num_columns,
-        &matrix->num_nonzeros, &matrix->size, &matrix->nonzero_size,
+        object, format, field, symmetry,
+        &num_rows, &num_columns,
+        &num_nonzeros, &size, &nonzero_size,
         stream, line_max, linebuf, line_number, column_number);
     if (err) {
-        for (int i = 0; i < matrix->num_comment_lines; i++)
-            free(matrix->comment_lines[i]);
-        free(matrix->comment_lines);
-        matrix->comment_lines = NULL;
+        for (int i = 0; i < num_comment_lines; i++)
+            free(comment_lines[i]);
+        free(comment_lines);
         free(linebuf);
         return err;
     }
 
-    /* 4. Parse the data. */
+    /* 4. Allocate storage for the matrix or vector. */
+    if (object == mtx_matrix) {
+        if (format == mtx_array) {
+            err = mtx_alloc_matrix_array(
+                mtx, field, symmetry, triangle, sorting,
+                num_comment_lines, (const char **) comment_lines,
+                num_rows, num_columns);
+            if (err) {
+                for (int i = 0; i < num_comment_lines; i++)
+                    free(comment_lines[i]);
+                free(comment_lines);
+                free(linebuf);
+                return err;
+            }
+        } else if (format == mtx_coordinate) {
+            err = mtx_alloc_matrix_coordinate(
+                mtx, field, symmetry,
+                num_comment_lines, (const char **) comment_lines,
+                num_rows, num_columns, size);
+            if (err) {
+                for (int i = 0; i < num_comment_lines; i++)
+                    free(comment_lines[i]);
+                free(comment_lines);
+                free(linebuf);
+                return err;
+            }
+        } else {
+            return MTX_ERR_INVALID_MTX_FORMAT;
+        }
+    } else if (object == mtx_vector) {
+        if (format == mtx_array) {
+            err = mtx_alloc_vector_array(
+                mtx, field,
+                num_comment_lines,
+                (const char **) comment_lines, size);
+            if (err) {
+                for (int i = 0; i < num_comment_lines; i++)
+                    free(comment_lines[i]);
+                free(comment_lines);
+                free(linebuf);
+                return err;
+            }
+        } else if (format == mtx_coordinate) {
+            err = mtx_alloc_vector_coordinate(
+                mtx, field,
+                num_comment_lines, (const char **) comment_lines,
+                num_rows, size);
+            if (err) {
+                for (int i = 0; i < num_comment_lines; i++)
+                    free(comment_lines[i]);
+                free(comment_lines);
+                free(linebuf);
+                return err;
+            }
+        } else {
+            return MTX_ERR_INVALID_MTX_FORMAT;
+        }
+
+    } else {
+        for (int i = 0; i < num_comment_lines; i++)
+            free(comment_lines[i]);
+        free(comment_lines);
+        free(linebuf);
+        return MTX_ERR_INVALID_MTX_OBJECT;
+    }
+    for (int i = 0; i < num_comment_lines; i++)
+        free(comment_lines[i]);
+    free(comment_lines);
+
+    /* 5. Parse the data lines. */
     err = read_data_lines(
-        matrix->object, matrix->format, matrix->field,
-        matrix->num_rows, matrix->num_columns, matrix->size,
-        &matrix->data, stream, line_max, linebuf,
+        object, format, field,
+        num_rows, num_columns, size,
+        mtx->data, stream, line_max, linebuf,
         line_number, column_number);
     if (err) {
-        for (int i = 0; i < matrix->num_comment_lines; i++)
-            free(matrix->comment_lines[i]);
-        free(matrix->comment_lines);
-        matrix->comment_lines = NULL;
+        mtx_free(mtx);
         free(linebuf);
         return err;
     }
 
     /*
-     * 5. If the matrix is sparse, then we can now compute the total
+     * 6. If the matrix is sparse, then we can now compute the total
      * number of matrix nonzeros.
      */
-    if (matrix->object == mtx_matrix &&
-        matrix->format == mtx_coordinate)
+    if (mtx->object == mtx_matrix &&
+        mtx->format == mtx_coordinate)
     {
         err = mtx_matrix_coordinate_num_nonzeros(
-            matrix->field, matrix->symmetry,
-            matrix->num_rows, matrix->num_columns,
-            matrix->size, matrix->data,
-            &matrix->num_nonzeros);
+            mtx->field, mtx->symmetry,
+            mtx->num_rows, mtx->num_columns,
+            mtx->size, mtx->data,
+            &mtx->num_nonzeros);
         if (err) {
-            free(matrix->data);
-            for (int i = 0; i < matrix->num_comment_lines; i++)
-                free(matrix->comment_lines[i]);
-            free(matrix->comment_lines);
-            matrix->comment_lines = NULL;
+            mtx_free(mtx);
             free(linebuf);
             return err;
         }

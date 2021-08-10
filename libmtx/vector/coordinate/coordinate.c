@@ -35,19 +35,21 @@
 #include <stdlib.h>
 
 /**
- * `mtx_alloc_vector_coordinate_real()` allocates a sparse vector with
- * real, single-precision floating point coefficients.
+ * `mtx_alloc_vector_coordinate_field()` allocates a sparse vector in
+ * coordinate format with the given field.
  */
-int mtx_alloc_vector_coordinate_real(
+int mtx_alloc_vector_coordinate_field(
     struct mtx * mtx,
+    enum mtx_field field,
     int num_comment_lines,
     const char ** comment_lines,
     int num_rows,
+    int64_t nonzero_size,
     int size)
 {
     mtx->object = mtx_vector;
     mtx->format = mtx_coordinate;
-    mtx->field = mtx_real;
+    mtx->field = field;
     mtx->symmetry = mtx_general;
     mtx->triangle = mtx_nontriangular;
     mtx->sorting = mtx_unsorted;
@@ -65,7 +67,7 @@ int mtx_alloc_vector_coordinate_real(
     mtx->num_columns = -1;
     mtx->num_nonzeros = size;
     mtx->size = size;
-    mtx->nonzero_size = sizeof(struct mtx_vector_coordinate_real);
+    mtx->nonzero_size = nonzero_size;
     mtx->data = malloc(size * mtx->nonzero_size);
     if (!mtx->data) {
         for (int i = 0; i < num_comment_lines; i++)
@@ -74,6 +76,70 @@ int mtx_alloc_vector_coordinate_real(
         return MTX_ERR_ERRNO;
     }
     return MTX_SUCCESS;
+}
+
+/**
+ * `mtx_alloc_vector_coordinate()` allocates a sparse vector in
+ * coordinate format.
+ */
+int mtx_alloc_vector_coordinate(
+    struct mtx * mtx,
+    enum mtx_field field,
+    int num_comment_lines,
+    const char ** comment_lines,
+    int num_rows,
+    int size)
+{
+    if (field == mtx_real) {
+        return mtx_alloc_vector_coordinate_field(
+            mtx, mtx_real,
+            num_comment_lines, comment_lines,
+            num_rows, sizeof(struct mtx_vector_coordinate_real),
+            size);
+    } else if (field == mtx_double) {
+        return mtx_alloc_vector_coordinate_field(
+            mtx, mtx_double,
+            num_comment_lines, comment_lines,
+            num_rows, sizeof(struct mtx_vector_coordinate_double),
+            size);
+    } else if (field == mtx_complex) {
+        return mtx_alloc_vector_coordinate_field(
+            mtx, mtx_complex,
+            num_comment_lines, comment_lines,
+            num_rows, sizeof(struct mtx_vector_coordinate_complex),
+            size);
+    } else if (field == mtx_integer) {
+        return mtx_alloc_vector_coordinate_field(
+            mtx, mtx_integer,
+            num_comment_lines, comment_lines,
+            num_rows, sizeof(struct mtx_vector_coordinate_integer),
+            size);
+    } else if (field == mtx_pattern) {
+        return mtx_alloc_vector_coordinate_field(
+            mtx, mtx_pattern,
+            num_comment_lines, comment_lines,
+            num_rows, sizeof(struct mtx_vector_coordinate_pattern),
+            size);
+    } else {
+        return MTX_ERR_INVALID_MTX_FIELD;
+    }
+}
+
+/**
+ * `mtx_alloc_vector_coordinate_real()` allocates a sparse vector with
+ * real, single-precision floating point coefficients.
+ */
+int mtx_alloc_vector_coordinate_real(
+    struct mtx * mtx,
+    int num_comment_lines,
+    const char ** comment_lines,
+    int num_rows,
+    int size)
+{
+    return mtx_alloc_vector_coordinate(
+        mtx, mtx_real,
+        num_comment_lines, comment_lines,
+        num_rows, size);
 }
 
 /**
@@ -87,35 +153,10 @@ int mtx_alloc_vector_coordinate_double(
     int num_rows,
     int size)
 {
-    mtx->object = mtx_vector;
-    mtx->format = mtx_coordinate;
-    mtx->field = mtx_double;
-    mtx->symmetry = mtx_general;
-    mtx->triangle = mtx_nontriangular;
-    mtx->sorting = mtx_unsorted;
-    mtx->ordering = mtx_unordered;
-    mtx->assembly = mtx_unassembled;
-
-    mtx->num_comment_lines = 0;
-    mtx->comment_lines = NULL;
-    int err = mtx_set_comment_lines(
-        mtx, num_comment_lines, comment_lines);
-    if (err)
-        return err;
-
-    mtx->num_rows = num_rows;
-    mtx->num_columns = -1;
-    mtx->num_nonzeros = size;
-    mtx->size = size;
-    mtx->nonzero_size = sizeof(struct mtx_vector_coordinate_double);
-    mtx->data = malloc(size * mtx->nonzero_size);
-    if (!mtx->data) {
-        for (int i = 0; i < num_comment_lines; i++)
-            free(mtx->comment_lines[i]);
-        free(mtx->comment_lines);
-        return MTX_ERR_ERRNO;
-    }
-    return MTX_SUCCESS;
+    return mtx_alloc_vector_coordinate(
+        mtx, mtx_double,
+        num_comment_lines, comment_lines,
+        num_rows, size);
 }
 
 /**
@@ -129,35 +170,10 @@ int mtx_alloc_vector_coordinate_complex(
     int num_rows,
     int size)
 {
-    mtx->object = mtx_vector;
-    mtx->format = mtx_coordinate;
-    mtx->field = mtx_complex;
-    mtx->symmetry = mtx_general;
-    mtx->triangle = mtx_nontriangular;
-    mtx->sorting = mtx_unsorted;
-    mtx->ordering = mtx_unordered;
-    mtx->assembly = mtx_unassembled;
-
-    mtx->num_comment_lines = 0;
-    mtx->comment_lines = NULL;
-    int err = mtx_set_comment_lines(
-        mtx, num_comment_lines, comment_lines);
-    if (err)
-        return err;
-
-    mtx->num_rows = num_rows;
-    mtx->num_columns = -1;
-    mtx->num_nonzeros = size;
-    mtx->size = size;
-    mtx->nonzero_size = sizeof(struct mtx_vector_coordinate_complex);
-    mtx->data = malloc(size * mtx->nonzero_size);
-    if (!mtx->data) {
-        for (int i = 0; i < num_comment_lines; i++)
-            free(mtx->comment_lines[i]);
-        free(mtx->comment_lines);
-        return MTX_ERR_ERRNO;
-    }
-    return MTX_SUCCESS;
+    return mtx_alloc_vector_coordinate(
+        mtx, mtx_complex,
+        num_comment_lines, comment_lines,
+        num_rows, size);
 }
 
 /**
@@ -171,35 +187,10 @@ int mtx_alloc_vector_coordinate_integer(
     int num_rows,
     int size)
 {
-    mtx->object = mtx_vector;
-    mtx->format = mtx_coordinate;
-    mtx->field = mtx_integer;
-    mtx->symmetry = mtx_general;
-    mtx->triangle = mtx_nontriangular;
-    mtx->sorting = mtx_unsorted;
-    mtx->ordering = mtx_unordered;
-    mtx->assembly = mtx_unassembled;
-
-    mtx->num_comment_lines = 0;
-    mtx->comment_lines = NULL;
-    int err = mtx_set_comment_lines(
-        mtx, num_comment_lines, comment_lines);
-    if (err)
-        return err;
-
-    mtx->num_rows = num_rows;
-    mtx->num_columns = -1;
-    mtx->num_nonzeros = size;
-    mtx->size = size;
-    mtx->nonzero_size = sizeof(struct mtx_vector_coordinate_integer);
-    mtx->data = malloc(size * mtx->nonzero_size);
-    if (!mtx->data) {
-        for (int i = 0; i < num_comment_lines; i++)
-            free(mtx->comment_lines[i]);
-        free(mtx->comment_lines);
-        return MTX_ERR_ERRNO;
-    }
-    return MTX_SUCCESS;
+    return mtx_alloc_vector_coordinate(
+        mtx, mtx_integer,
+        num_comment_lines, comment_lines,
+        num_rows, size);
 }
 
 /**
@@ -213,35 +204,10 @@ int mtx_alloc_vector_coordinate_pattern(
     int num_rows,
     int size)
 {
-    mtx->object = mtx_vector;
-    mtx->format = mtx_coordinate;
-    mtx->field = mtx_pattern;
-    mtx->symmetry = mtx_general;
-    mtx->triangle = mtx_nontriangular;
-    mtx->sorting = mtx_unsorted;
-    mtx->ordering = mtx_unordered;
-    mtx->assembly = mtx_unassembled;
-
-    mtx->num_comment_lines = 0;
-    mtx->comment_lines = NULL;
-    int err = mtx_set_comment_lines(
-        mtx, num_comment_lines, comment_lines);
-    if (err)
-        return err;
-
-    mtx->num_rows = num_rows;
-    mtx->num_columns = -1;
-    mtx->num_nonzeros = size;
-    mtx->size = size;
-    mtx->nonzero_size = sizeof(struct mtx_vector_coordinate_pattern);
-    mtx->data = malloc(size * mtx->nonzero_size);
-    if (!mtx->data) {
-        for (int i = 0; i < num_comment_lines; i++)
-            free(mtx->comment_lines[i]);
-        free(mtx->comment_lines);
-        return MTX_ERR_ERRNO;
-    }
-    return MTX_SUCCESS;
+    return mtx_alloc_vector_coordinate(
+        mtx, mtx_pattern,
+        num_comment_lines, comment_lines,
+        num_rows, size);
 }
 
 /**

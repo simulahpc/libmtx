@@ -25,11 +25,24 @@
 #ifndef LIBMTX_VECTOR_ARRAY_ARRAY_H
 #define LIBMTX_VECTOR_ARRAY_ARRAY_H
 
+#include <libmtx/mtx/header.h>
+
 struct mtx;
 
 /*
  * Dense (array) vector allocation.
  */
+
+/**
+ * `mtx_alloc_vector_array()` allocates a dense vector in array
+ * format.
+ */
+int mtx_alloc_vector_array(
+    struct mtx * mtx,
+    enum mtx_field field,
+    int num_comment_lines,
+    const char ** comment_lines,
+    int size);
 
 /**
  * `mtx_alloc_vector_array_real()` allocates a vector with real,

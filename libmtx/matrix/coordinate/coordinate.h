@@ -98,6 +98,20 @@ struct mtx_matrix_coordinate_pattern
  */
 
 /**
+ * `mtx_alloc_matrix_coordinate()` allocates a sparse matrix in
+ * coordinate format.
+ */
+int mtx_alloc_matrix_coordinate(
+    struct mtx * mtx,
+    enum mtx_field field,
+    enum mtx_symmetry symmetry,
+    int num_comment_lines,
+    const char ** comment_lines,
+    int num_rows,
+    int num_columns,
+    int64_t size);
+
+/**
  * `mtx_alloc_matrix_coordinate_real()` allocates a sparse matrix with
  * real, single-precision floating point coefficients.
  */
