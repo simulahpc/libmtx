@@ -19,14 +19,14 @@
  * Authors: James D. Trotter <james@simula.no>
  * Last modified: 2021-08-09
  *
- * Level 1 BLAS operations for sparse vectors in coordinate format.
+ * BLAS operations for sparse matrices in coordinate format.
  */
 
-#include <libmtx/vector/coordinate/blas.h>
+#include <libmtx/matrix/coordinate/blas.h>
 
 #include <libmtx/error.h>
 #include <libmtx/mtx/mtx.h>
-#include <libmtx/vector/coordinate/coordinate.h>
+#include <libmtx/matrix/coordinate/coordinate.h>
 
 #include <errno.h>
 
@@ -35,59 +35,59 @@
 struct mtx;
 
 /**
- * `mtx_vector_coordinate_sscal()' scales a vector by a single
+ * `mtx_matrix_coordinate_sscal()' scales a matrix by a single
  * precision floating-point scalar, `x = a*x'.
  */
-int mtx_vector_coordinate_sscal(
+int mtx_matrix_coordinate_sscal(
     float a,
     struct mtx * x)
 {
-    if (x->object != mtx_vector)
+    if (x->object != mtx_matrix)
         return MTX_ERR_INVALID_MTX_OBJECT;
     if (x->format != mtx_coordinate)
         return MTX_ERR_INVALID_MTX_FORMAT;
     if (x->field != mtx_real)
         return MTX_ERR_INVALID_MTX_FIELD;
 
-    struct mtx_vector_coordinate_real * xdata =
-        (struct mtx_vector_coordinate_real *) x->data;
+    struct mtx_matrix_coordinate_real * xdata =
+        (struct mtx_matrix_coordinate_real *) x->data;
     for (int64_t i = 0; i < x->size; i++)
         xdata[i].a *= a;
     return MTX_SUCCESS;
 }
 
 /**
- * `mtx_vector_coordinate_dscal()' scales a vector by a double
+ * `mtx_matrix_coordinate_dscal()' scales a matrix by a double
  * precision floating-point scalar, `x = a*x'.
  */
-int mtx_vector_coordinate_dscal(
+int mtx_matrix_coordinate_dscal(
     double a,
     struct mtx * x)
 {
-    if (x->object != mtx_vector)
+    if (x->object != mtx_matrix)
         return MTX_ERR_INVALID_MTX_OBJECT;
     if (x->format != mtx_coordinate)
         return MTX_ERR_INVALID_MTX_FORMAT;
     if (x->field != mtx_double)
         return MTX_ERR_INVALID_MTX_FIELD;
 
-    struct mtx_vector_coordinate_double * xdata =
-        (struct mtx_vector_coordinate_double *) x->data;
+    struct mtx_matrix_coordinate_double * xdata =
+        (struct mtx_matrix_coordinate_double *) x->data;
     for (int64_t i = 0; i < x->size; i++)
         xdata[i].a *= a;
     return MTX_SUCCESS;
 }
 
 /**
- * `mtx_vector_coordinate_saxpy()' adds two vectors of single
+ * `mtx_matrix_coordinate_saxpy()' adds two matrices of single
  * precision floating-point values, `y = a*x + y'.
  */
-int mtx_vector_coordinate_saxpy(
+int mtx_matrix_coordinate_saxpy(
     float a,
     const struct mtx * x,
     struct mtx * y)
 {
-    if (x->object != mtx_vector || y->object != mtx_vector)
+    if (x->object != mtx_matrix || y->object != mtx_matrix)
         return MTX_ERR_INVALID_MTX_OBJECT;
     if (x->format != mtx_coordinate || y->format != mtx_coordinate)
         return MTX_ERR_INVALID_MTX_FORMAT;
@@ -98,21 +98,21 @@ int mtx_vector_coordinate_saxpy(
     if (x->sorting != y->sorting)
         return MTX_ERR_INVALID_MTX_SORTING;
 
-    /* TODO: Implement vector addition for sparse vectors. */
+    /* TODO: Implement matrix addition for sparse matrices. */
     errno = ENOTSUP;
     return MTX_ERR_ERRNO;
 }
 
 /**
- * `mtx_vector_coordinate_daxpy()' adds two vectors of double
+ * `mtx_matrix_coordinate_daxpy()' adds two matrices of double
  * precision floating-point values, `y = a*x + y'.
  */
-int mtx_vector_coordinate_daxpy(
+int mtx_matrix_coordinate_daxpy(
     double a,
     const struct mtx * x,
     struct mtx * y)
 {
-    if (x->object != mtx_vector || y->object != mtx_vector)
+    if (x->object != mtx_matrix || y->object != mtx_matrix)
         return MTX_ERR_INVALID_MTX_OBJECT;
     if (x->format != mtx_coordinate || y->format != mtx_coordinate)
         return MTX_ERR_INVALID_MTX_FORMAT;
@@ -123,21 +123,21 @@ int mtx_vector_coordinate_daxpy(
     if (x->sorting != y->sorting)
         return MTX_ERR_INVALID_MTX_SORTING;
 
-    /* TODO: Implement vector addition for sparse vectors. */
+    /* TODO: Implement matrix addition for sparse matrices. */
     errno = ENOTSUP;
     return MTX_ERR_ERRNO;
 }
 
 /**
- * `mtx_vector_coordinate_sdot()' computes the Euclidean dot product
- * of two vectors of single precision floating-point values.
+ * `mtx_matrix_coordinate_sdot()' computes the Euclidean dot product
+ * of two matrices of single precision floating-point values.
  */
-int mtx_vector_coordinate_sdot(
+int mtx_matrix_coordinate_sdot(
     const struct mtx * x,
     const struct mtx * y,
     float * dot)
 {
-    if (x->object != mtx_vector || y->object != mtx_vector)
+    if (x->object != mtx_matrix || y->object != mtx_matrix)
         return MTX_ERR_INVALID_MTX_OBJECT;
     if (x->format != mtx_coordinate || y->format != mtx_coordinate)
         return MTX_ERR_INVALID_MTX_FORMAT;
@@ -148,21 +148,21 @@ int mtx_vector_coordinate_sdot(
     if (x->sorting != y->sorting)
         return MTX_ERR_INVALID_MTX_SORTING;
 
-    /* TODO: Implement dot product for sparse vectors. */
+    /* TODO: Implement dot product for sparse matrices. */
     errno = ENOTSUP;
     return MTX_ERR_ERRNO;
 }
 
 /**
- * `mtx_vector_coordinate_ddot()' computes the Euclidean dot product
- * of two vectors of double precision floating-point values.
+ * `mtx_matrix_coordinate_ddot()' computes the Euclidean dot product
+ * of two matrices of double precision floating-point values.
  */
-int mtx_vector_coordinate_ddot(
+int mtx_matrix_coordinate_ddot(
     const struct mtx * x,
     const struct mtx * y,
     double * dot)
 {
-    if (x->object != mtx_vector || y->object != mtx_vector)
+    if (x->object != mtx_matrix || y->object != mtx_matrix)
         return MTX_ERR_INVALID_MTX_OBJECT;
     if (x->format != mtx_coordinate || y->format != mtx_coordinate)
         return MTX_ERR_INVALID_MTX_FORMAT;
@@ -173,47 +173,47 @@ int mtx_vector_coordinate_ddot(
     if (x->sorting != y->sorting)
         return MTX_ERR_INVALID_MTX_SORTING;
 
-    /* TODO: Implement dot product for sparse vectors. */
+    /* TODO: Implement dot product for sparse matrices. */
     errno = ENOTSUP;
     return MTX_ERR_ERRNO;
 }
 
 /**
- * `mtx_vector_coordinate_snrm2()' computes the Euclidean norm of a
- * vector of single precision floating-point values.
+ * `mtx_matrix_coordinate_snrm2()' computes the Euclidean norm of a
+ * matrix of single precision floating-point values.
  */
-int mtx_vector_coordinate_snrm2(
+int mtx_matrix_coordinate_snrm2(
     const struct mtx * x,
     float * nrm2)
 {
-    if (x->object != mtx_vector)
+    if (x->object != mtx_matrix)
         return MTX_ERR_INVALID_MTX_OBJECT;
     if (x->format != mtx_coordinate)
         return MTX_ERR_INVALID_MTX_FORMAT;
     if (x->field != mtx_real)
         return MTX_ERR_INVALID_MTX_FIELD;
 
-    /* TODO: Implement dot product for sparse vectors. */
+    /* TODO: Implement dot product for sparse matrices. */
     errno = ENOTSUP;
     return MTX_ERR_ERRNO;
 }
 
 /**
- * `mtx_vector_coordinate_dnrm2()' computes the Euclidean norm of a
- * vector of double precision floating-point values.
+ * `mtx_matrix_coordinate_dnrm2()' computes the Euclidean norm of a
+ * matrix of double precision floating-point values.
  */
-int mtx_vector_coordinate_dnrm2(
+int mtx_matrix_coordinate_dnrm2(
     const struct mtx * x,
     double * nrm2)
 {
-    if (x->object != mtx_vector)
+    if (x->object != mtx_matrix)
         return MTX_ERR_INVALID_MTX_OBJECT;
     if (x->format != mtx_coordinate)
         return MTX_ERR_INVALID_MTX_FORMAT;
     if (x->field != mtx_double)
         return MTX_ERR_INVALID_MTX_FIELD;
 
-    /* TODO: Implement dot product for sparse vectors. */
+    /* TODO: Implement dot product for sparse matrices. */
     errno = ENOTSUP;
     return MTX_ERR_ERRNO;
 }

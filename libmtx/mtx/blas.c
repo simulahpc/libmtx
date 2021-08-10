@@ -26,7 +26,9 @@
 
 #include <libmtx/error.h>
 #include <libmtx/mtx/blas.h>
+#include <libmtx/matrix/array/blas.h>
 #include <libmtx/matrix/coordinate/coordinate.h>
+#include <libmtx/matrix/coordinate/blas.h>
 #include <libmtx/mtx/mtx.h>
 #include <libmtx/vector/array/array.h>
 #include <libmtx/vector/array/blas.h>
@@ -53,15 +55,24 @@ int mtx_sscal(
     float a,
     struct mtx * x)
 {
-    if (x->object != mtx_vector)
-        return MTX_ERR_INVALID_MTX_OBJECT;
-
-    if (x->format == mtx_array) {
-        return mtx_vector_array_sscal(a, x);
-    } else if (x->format == mtx_coordinate) {
-        return mtx_vector_coordinate_sscal(a, x);
+    if (x->object == mtx_matrix) {
+        if (x->format == mtx_array) {
+            return mtx_matrix_array_sscal(a, x);
+        } else if (x->format == mtx_coordinate) {
+            return mtx_matrix_coordinate_sscal(a, x);
+        } else {
+            return MTX_ERR_INVALID_MTX_FORMAT;
+        }
+    } else if (x->object == mtx_vector) {
+        if (x->format == mtx_array) {
+            return mtx_vector_array_sscal(a, x);
+        } else if (x->format == mtx_coordinate) {
+            return mtx_vector_coordinate_sscal(a, x);
+        } else {
+            return MTX_ERR_INVALID_MTX_FORMAT;
+        }
     } else {
-        return MTX_ERR_INVALID_MTX_FORMAT;
+        return MTX_ERR_INVALID_MTX_OBJECT;
     }
     return MTX_SUCCESS;
 }
@@ -74,15 +85,24 @@ int mtx_dscal(
     double a,
     struct mtx * x)
 {
-    if (x->object != mtx_vector)
-        return MTX_ERR_INVALID_MTX_OBJECT;
-
-    if (x->format == mtx_array) {
-        return mtx_vector_array_dscal(a, x);
-    } else if (x->format == mtx_coordinate) {
-        return mtx_vector_coordinate_dscal(a, x);
+    if (x->object == mtx_matrix) {
+        if (x->format == mtx_array) {
+            return mtx_matrix_array_dscal(a, x);
+        } else if (x->format == mtx_coordinate) {
+            return mtx_matrix_coordinate_dscal(a, x);
+        } else {
+            return MTX_ERR_INVALID_MTX_FORMAT;
+        }
+    } else if (x->object == mtx_vector) {
+        if (x->format == mtx_array) {
+            return mtx_vector_array_dscal(a, x);
+        } else if (x->format == mtx_coordinate) {
+            return mtx_vector_coordinate_dscal(a, x);
+        } else {
+            return MTX_ERR_INVALID_MTX_FORMAT;
+        }
     } else {
-        return MTX_ERR_INVALID_MTX_FORMAT;
+        return MTX_ERR_INVALID_MTX_OBJECT;
     }
     return MTX_SUCCESS;
 }
@@ -96,19 +116,24 @@ int mtx_saxpy(
     const struct mtx * x,
     struct mtx * y)
 {
-    if (x->object != mtx_vector || y->object != mtx_vector)
-        return MTX_ERR_INVALID_MTX_OBJECT;
-
-    if (x->format == mtx_array &&
-        y->format == mtx_array)
-    {
-        return mtx_vector_array_saxpy(a, x, y);
-    } else if (x->format == mtx_coordinate &&
-               y->format == mtx_coordinate)
-    {
-        return mtx_vector_coordinate_saxpy(a, x, y);
+    if (x->object == mtx_matrix && y->object == mtx_matrix) {
+        if (x->format == mtx_array && y->format == mtx_array) {
+            return mtx_matrix_array_saxpy(a, x, y);
+        } else if (x->format == mtx_coordinate && y->format == mtx_coordinate) {
+            return mtx_matrix_coordinate_saxpy(a, x, y);
+        } else {
+            return MTX_ERR_INVALID_MTX_FORMAT;
+        }
+    } else if (x->object == mtx_vector && y->object == mtx_vector) {
+        if (x->format == mtx_array && y->format == mtx_array) {
+            return mtx_vector_array_saxpy(a, x, y);
+        } else if (x->format == mtx_coordinate && y->format == mtx_coordinate) {
+            return mtx_vector_coordinate_saxpy(a, x, y);
+        } else {
+            return MTX_ERR_INVALID_MTX_FORMAT;
+        }
     } else {
-        return MTX_ERR_INVALID_MTX_FORMAT;
+        return MTX_ERR_INVALID_MTX_OBJECT;
     }
     return MTX_SUCCESS;
 }
@@ -122,19 +147,24 @@ int mtx_daxpy(
     const struct mtx * x,
     struct mtx * y)
 {
-    if (x->object != mtx_vector || y->object != mtx_vector)
-        return MTX_ERR_INVALID_MTX_OBJECT;
-
-    if (x->format == mtx_array &&
-        y->format == mtx_array)
-    {
-        return mtx_vector_array_daxpy(a, x, y);
-    } else if (x->format == mtx_coordinate &&
-               y->format == mtx_coordinate)
-    {
-        return mtx_vector_coordinate_daxpy(a, x, y);
+    if (x->object == mtx_matrix && y->object == mtx_matrix) {
+        if (x->format == mtx_array && y->format == mtx_array) {
+            return mtx_matrix_array_daxpy(a, x, y);
+        } else if (x->format == mtx_coordinate && y->format == mtx_coordinate) {
+            return mtx_matrix_coordinate_daxpy(a, x, y);
+        } else {
+            return MTX_ERR_INVALID_MTX_FORMAT;
+        }
+    } else if (x->object == mtx_vector && y->object == mtx_vector) {
+        if (x->format == mtx_array && y->format == mtx_array) {
+            return mtx_vector_array_daxpy(a, x, y);
+        } else if (x->format == mtx_coordinate && y->format == mtx_coordinate) {
+            return mtx_vector_coordinate_daxpy(a, x, y);
+        } else {
+            return MTX_ERR_INVALID_MTX_FORMAT;
+        }
     } else {
-        return MTX_ERR_INVALID_MTX_FORMAT;
+        return MTX_ERR_INVALID_MTX_OBJECT;
     }
     return MTX_SUCCESS;
 }
@@ -149,19 +179,24 @@ int mtx_sdot(
     const struct mtx * y,
     float * dot)
 {
-    if (x->object != mtx_vector || y->object != mtx_vector)
-        return MTX_ERR_INVALID_MTX_OBJECT;
-
-    if (x->format == mtx_array &&
-        y->format == mtx_array)
-    {
-        return mtx_vector_array_sdot(x, y, dot);
-    } else if (x->format == mtx_coordinate &&
-               y->format == mtx_coordinate)
-    {
-        return mtx_vector_coordinate_sdot(x, y, dot);
+    if (x->object == mtx_matrix && y->object == mtx_matrix) {
+        if (x->format == mtx_array && y->format == mtx_array) {
+            return mtx_matrix_array_sdot(x, y, dot);
+        } else if (x->format == mtx_coordinate && y->format == mtx_coordinate) {
+            return mtx_matrix_coordinate_sdot(x, y, dot);
+        } else {
+            return MTX_ERR_INVALID_MTX_FORMAT;
+        }
+    } else if (x->object == mtx_vector && y->object == mtx_vector) {
+        if (x->format == mtx_array && y->format == mtx_array) {
+            return mtx_vector_array_sdot(x, y, dot);
+        } else if (x->format == mtx_coordinate && y->format == mtx_coordinate) {
+            return mtx_vector_coordinate_sdot(x, y, dot);
+        } else {
+            return MTX_ERR_INVALID_MTX_FORMAT;
+        }
     } else {
-        return MTX_ERR_INVALID_MTX_FORMAT;
+        return MTX_ERR_INVALID_MTX_OBJECT;
     }
     return MTX_SUCCESS;
 }
@@ -176,19 +211,24 @@ int mtx_ddot(
     const struct mtx * y,
     double * dot)
 {
-    if (x->object != mtx_vector || y->object != mtx_vector)
-        return MTX_ERR_INVALID_MTX_OBJECT;
-
-    if (x->format == mtx_array &&
-        y->format == mtx_array)
-    {
-        return mtx_vector_array_ddot(x, y, dot);
-    } else if (x->format == mtx_coordinate &&
-               y->format == mtx_coordinate)
-    {
-        return mtx_vector_coordinate_ddot(x, y, dot);
+    if (x->object == mtx_matrix && y->object == mtx_matrix) {
+        if (x->format == mtx_array && y->format == mtx_array) {
+            return mtx_matrix_array_ddot(x, y, dot);
+        } else if (x->format == mtx_coordinate && y->format == mtx_coordinate) {
+            return mtx_matrix_coordinate_ddot(x, y, dot);
+        } else {
+            return MTX_ERR_INVALID_MTX_FORMAT;
+        }
+    } else if (x->object == mtx_vector && y->object == mtx_vector) {
+        if (x->format == mtx_array && y->format == mtx_array) {
+            return mtx_vector_array_ddot(x, y, dot);
+        } else if (x->format == mtx_coordinate && y->format == mtx_coordinate) {
+            return mtx_vector_coordinate_ddot(x, y, dot);
+        } else {
+            return MTX_ERR_INVALID_MTX_FORMAT;
+        }
     } else {
-        return MTX_ERR_INVALID_MTX_FORMAT;
+        return MTX_ERR_INVALID_MTX_OBJECT;
     }
     return MTX_SUCCESS;
 }
@@ -201,15 +241,24 @@ int mtx_snrm2(
     const struct mtx * x,
     float * nrm2)
 {
-    if (x->object != mtx_vector)
-        return MTX_ERR_INVALID_MTX_OBJECT;
-
-    if (x->format == mtx_array) {
-        return mtx_vector_array_snrm2(x, nrm2);
-    } else if (x->format == mtx_coordinate) {
-        return mtx_vector_coordinate_snrm2(x, nrm2);
+    if (x->object == mtx_matrix) {
+        if (x->format == mtx_array) {
+            return mtx_matrix_array_snrm2(x, nrm2);
+        } else if (x->format == mtx_coordinate) {
+            return mtx_matrix_coordinate_snrm2(x, nrm2);
+        } else {
+            return MTX_ERR_INVALID_MTX_FORMAT;
+        }
+    } else if (x->object == mtx_vector) {
+        if (x->format == mtx_array) {
+            return mtx_vector_array_snrm2(x, nrm2);
+        } else if (x->format == mtx_coordinate) {
+            return mtx_vector_coordinate_snrm2(x, nrm2);
+        } else {
+            return MTX_ERR_INVALID_MTX_FORMAT;
+        }
     } else {
-        return MTX_ERR_INVALID_MTX_FORMAT;
+        return MTX_ERR_INVALID_MTX_OBJECT;
     }
     return MTX_SUCCESS;
 }
@@ -222,15 +271,24 @@ int mtx_dnrm2(
     const struct mtx * x,
     double * nrm2)
 {
-    if (x->object != mtx_vector)
-        return MTX_ERR_INVALID_MTX_OBJECT;
-
-    if (x->format == mtx_array) {
-        return mtx_vector_array_dnrm2(x, nrm2);
-    } else if (x->format == mtx_coordinate) {
-        return mtx_vector_array_dnrm2(x, nrm2);
+    if (x->object == mtx_matrix) {
+        if (x->format == mtx_array) {
+            return mtx_matrix_array_dnrm2(x, nrm2);
+        } else if (x->format == mtx_coordinate) {
+            return mtx_matrix_coordinate_dnrm2(x, nrm2);
+        } else {
+            return MTX_ERR_INVALID_MTX_FORMAT;
+        }
+    } else if (x->object == mtx_vector) {
+        if (x->format == mtx_array) {
+            return mtx_vector_array_dnrm2(x, nrm2);
+        } else if (x->format == mtx_coordinate) {
+            return mtx_vector_coordinate_dnrm2(x, nrm2);
+        } else {
+            return MTX_ERR_INVALID_MTX_FORMAT;
+        }
     } else {
-        return MTX_ERR_INVALID_MTX_FORMAT;
+        return MTX_ERR_INVALID_MTX_OBJECT;
     }
     return MTX_SUCCESS;
 }
