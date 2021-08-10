@@ -560,201 +560,6 @@ static int read_data_array(
 }
 
 /**
- * `parse_matrix_coordinate_real()` parses a single nonzero for a matrix
- * whose format is `coordinate` and field is `real`.
- */
-static int parse_matrix_coordinate_real(
-    const char * s,
-    struct mtx_matrix_coordinate_real * data,
-    int num_rows,
-    int num_columns,
-    int * line_number, int * column_number)
-{
-    const char * start = s;
-    int err = parse_int32(s, " ", &data->i, &s);
-    if (err == EINVAL || (!err && (data->i < 1 || data->i > num_rows))) {
-        return MTX_ERR_INVALID_MTX_DATA;
-    } else if (err) {
-        errno = err;
-        return MTX_ERR_ERRNO;
-    }
-    *column_number += s-start; start = s;
-    err = parse_int32(s, " ", &data->j, &s);
-    if (err == EINVAL || (!err && (data->j < 1 || data->j > num_columns))) {
-        return MTX_ERR_INVALID_MTX_DATA;
-    } else if (err) {
-        errno = err;
-        return MTX_ERR_ERRNO;
-    }
-    *column_number += s-start; start = s;
-    err = parse_float(s, "\n", &data->a, NULL);
-    if (err == EINVAL) {
-        return MTX_ERR_INVALID_MTX_DATA;
-    } else if (err) {
-        errno = err;
-        return MTX_ERR_ERRNO;
-    }
-    (*line_number)++; *column_number = 1;
-    return MTX_SUCCESS;
-}
-
-/**
- * `parse_matrix_coordinate_double()` parses a single nonzero for a matrix
- * whose format is `coordinate` and field is `double`.
- */
-static int parse_matrix_coordinate_double(
-    const char * s,
-    struct mtx_matrix_coordinate_double * data,
-    int num_rows,
-    int num_columns,
-    int * line_number, int * column_number)
-{
-    const char * start = s;
-    int err = parse_int32(s, " ", &data->i, &s);
-    if (err == EINVAL || (!err && (data->i < 1 || data->i > num_rows))) {
-        return MTX_ERR_INVALID_MTX_DATA;
-    } else if (err) {
-        errno = err;
-        return MTX_ERR_ERRNO;
-    }
-    *column_number += s-start; start = s;
-    err = parse_int32(s, " ", &data->j, &s);
-    if (err == EINVAL || (!err && (data->j < 1 || data->j > num_columns))) {
-        return MTX_ERR_INVALID_MTX_DATA;
-    } else if (err) {
-        errno = err;
-        return MTX_ERR_ERRNO;
-    }
-    *column_number += s-start; start = s;
-    err = parse_double(s, "\n", &data->a, NULL);
-    if (err == EINVAL) {
-        return MTX_ERR_INVALID_MTX_DATA;
-    } else if (err) {
-        errno = err;
-        return MTX_ERR_ERRNO;
-    }
-    (*line_number)++; *column_number = 1;
-    return MTX_SUCCESS;
-}
-
-/**
- * `parse_matrix_coordinate_complex()` parses a single nonzero for a matrix
- * whose format is `coordinate` and field is `complex`.
- */
-static int parse_matrix_coordinate_complex(
-    const char * s,
-    struct mtx_matrix_coordinate_complex * data,
-    int num_rows,
-    int num_columns,
-    int * line_number, int * column_number)
-{
-    const char * start = s;
-    int err = parse_int32(s, " ", &data->i, &s);
-    if (err == EINVAL || (!err && (data->i < 1 || data->i > num_rows))) {
-        return MTX_ERR_INVALID_MTX_DATA;
-    } else if (err) {
-        errno = err;
-        return MTX_ERR_ERRNO;
-    }
-    *column_number += s-start; start = s;
-    err = parse_int32(s, " ", &data->j, &s);
-    if (err == EINVAL || (!err && (data->j < 1 || data->j > num_columns))) {
-        return MTX_ERR_INVALID_MTX_DATA;
-    } else if (err) {
-        errno = err;
-        return MTX_ERR_ERRNO;
-    }
-    *column_number += s-start; start = s;
-    err = parse_float(s, " ", &data->a, &s);
-    if (err == EINVAL) {
-        return MTX_ERR_INVALID_MTX_DATA;
-    } else if (err) {
-        errno = err;
-        return MTX_ERR_ERRNO;
-    }
-    *column_number += s-start; start = s;
-    err = parse_float(s, "\n", &data->b, NULL);
-    if (err == EINVAL) {
-        return MTX_ERR_INVALID_MTX_DATA;
-    } else if (err) {
-        errno = err;
-        return MTX_ERR_ERRNO;
-    }
-    (*line_number)++; *column_number = 1;
-    return MTX_SUCCESS;
-}
-
-/**
- * `parse_matrix_coordinate_integer()` parses a single nonzero for a matrix
- * whose format is `coordinate` and field is `integer`.
- */
-static int parse_matrix_coordinate_integer(
-    const char * s,
-    struct mtx_matrix_coordinate_integer * data,
-    int num_rows,
-    int num_columns,
-    int * line_number, int * column_number)
-{
-    const char * start = s;
-    int err = parse_int32(s, " ", &data->i, &s);
-    if (err == EINVAL || (!err && (data->i < 1 || data->i > num_rows))) {
-        return MTX_ERR_INVALID_MTX_DATA;
-    } else if (err) {
-        errno = err;
-        return MTX_ERR_ERRNO;
-    }
-    *column_number += s-start; start = s;
-    err = parse_int32(s, " ", &data->j, &s);
-    if (err == EINVAL || (!err && (data->j < 1 || data->j > num_columns))) {
-        return MTX_ERR_INVALID_MTX_DATA;
-    } else if (err) {
-        errno = err;
-        return MTX_ERR_ERRNO;
-    }
-    *column_number += s-start; start = s;
-    err = parse_int32(s, "\n", &data->a, NULL);
-    if (err == EINVAL) {
-        return MTX_ERR_INVALID_MTX_DATA;
-    } else if (err) {
-        errno = err;
-        return MTX_ERR_ERRNO;
-    }
-    (*line_number)++; *column_number = 1;
-    return MTX_SUCCESS;
-}
-
-/**
- * `parse_matrix_coordinate_pattern()` parses a single nonzero for a matrix
- * whose format is `coordinate` and field is `pattern`.
- */
-static int parse_matrix_coordinate_pattern(
-    const char * s,
-    struct mtx_matrix_coordinate_pattern * data,
-    int num_rows,
-    int num_columns,
-    int * line_number, int * column_number)
-{
-    const char * start = s;
-    int err = parse_int32(s, " ", &data->i, &s);
-    if (err == EINVAL || (!err && (data->i < 1 || data->i > num_rows))) {
-        return MTX_ERR_INVALID_MTX_DATA;
-    } else if (err) {
-        errno = err;
-        return MTX_ERR_ERRNO;
-    }
-    *column_number += s-start; start = s;
-    err = parse_int32(s, "\n", &data->j, NULL);
-    if (err == EINVAL || (!err && (data->j < 1 || data->j > num_columns))) {
-        return MTX_ERR_INVALID_MTX_DATA;
-    } else if (err) {
-        errno = err;
-        return MTX_ERR_ERRNO;
-    }
-    (*line_number)++; *column_number = 1;
-    return MTX_SUCCESS;
-}
-
-/**
  * `read_data_matrix_coordinate()` reads lines of sparse (coordinate)
  * matrix data from a stream in the Matrix Market file format.
  */
@@ -771,228 +576,72 @@ static int read_data_matrix_coordinate(
     int * column_number)
 {
     int err;
+    for (int64_t k = 0; k < size; k++) {
+        err = stream_read_line(stream, line_max, linebuf);
+        if (err)
+            return err;
 
-    if (field == mtx_real) {
-        struct mtx_matrix_coordinate_real * data =
-            (struct mtx_matrix_coordinate_real *) out_data;
-        for (int64_t k = 0; k < size; k++) {
-            err = stream_read_line(stream, line_max, linebuf);
-            if (err)
+        if (field == mtx_real) {
+            struct mtx_matrix_coordinate_real * data =
+                (struct mtx_matrix_coordinate_real *) out_data;
+            int bytes_read;
+            err = mtx_matrix_coordinate_parse_data_real(
+                linebuf, &bytes_read, NULL,
+                &data[k], num_rows, num_columns);
+            if (err) {
+                *column_number += bytes_read;
                 return err;
-            err = parse_matrix_coordinate_real(
-                linebuf, &data[k], num_rows, num_columns,
-                line_number, column_number);
-            if (err)
+            }
+        } else if (field == mtx_double) {
+            struct mtx_matrix_coordinate_double * data =
+                (struct mtx_matrix_coordinate_double *) out_data;
+            int bytes_read;
+            err = mtx_matrix_coordinate_parse_data_double(
+                linebuf, &bytes_read, NULL,
+                &data[k], num_rows, num_columns);
+            if (err) {
+                *column_number += bytes_read;
                 return err;
+            }
+        } else if (field == mtx_complex) {
+            struct mtx_matrix_coordinate_complex * data =
+                (struct mtx_matrix_coordinate_complex *) out_data;
+            int bytes_read;
+            err = mtx_matrix_coordinate_parse_data_complex(
+                linebuf, &bytes_read, NULL,
+                &data[k], num_rows, num_columns);
+            if (err) {
+                *column_number += bytes_read;
+                return err;
+            }
+        } else if (field == mtx_integer) {
+            struct mtx_matrix_coordinate_integer * data =
+                (struct mtx_matrix_coordinate_integer *) out_data;
+            int bytes_read;
+            err = mtx_matrix_coordinate_parse_data_integer(
+                linebuf, &bytes_read, NULL,
+                &data[k], num_rows, num_columns);
+            if (err) {
+                *column_number += bytes_read;
+                return err;
+            }
+        } else if (field == mtx_pattern) {
+            struct mtx_matrix_coordinate_pattern * data =
+                (struct mtx_matrix_coordinate_pattern *) out_data;
+            int bytes_read;
+            err = mtx_matrix_coordinate_parse_data_pattern(
+                linebuf, &bytes_read, NULL,
+                &data[k], num_rows, num_columns);
+            if (err) {
+                *column_number += bytes_read;
+                return err;
+            }
+        } else {
+            return MTX_ERR_INVALID_MTX_FIELD;
         }
 
-    } else if (field == mtx_double) {
-        struct mtx_matrix_coordinate_double * data =
-            (struct mtx_matrix_coordinate_double *) out_data;
-        for (int64_t k = 0; k < size; k++) {
-            err = stream_read_line(stream, line_max, linebuf);
-            if (err)
-                return err;
-            err = parse_matrix_coordinate_double(
-                linebuf, &data[k], num_rows, num_columns, line_number, column_number);
-            if (err)
-                return err;
-        }
-
-    } else if (field == mtx_complex) {
-        struct mtx_matrix_coordinate_complex * data =
-            (struct mtx_matrix_coordinate_complex *) out_data;
-        for (int64_t k = 0; k < size; k++) {
-            err = stream_read_line(stream, line_max, linebuf);
-            if (err)
-                return err;
-            err = parse_matrix_coordinate_complex(
-                linebuf, &data[k], num_rows, num_columns,
-                line_number, column_number);
-            if (err)
-                return err;
-        }
-
-    } else if (field == mtx_integer) {
-        struct mtx_matrix_coordinate_integer * data =
-            (struct mtx_matrix_coordinate_integer *) out_data;
-        for (int64_t k = 0; k < size; k++) {
-            err = stream_read_line(stream, line_max, linebuf);
-            if (err)
-                return err;
-            err = parse_matrix_coordinate_integer(
-                linebuf, &data[k], num_rows, num_columns,
-                line_number, column_number);
-            if (err)
-                return err;
-        }
-
-    } else if (field == mtx_pattern) {
-        struct mtx_matrix_coordinate_pattern * data =
-            (struct mtx_matrix_coordinate_pattern *) out_data;
-        for (int64_t k = 0; k < size; k++) {
-            err = stream_read_line(stream, line_max, linebuf);
-            if (err)
-                return err;
-            err = parse_matrix_coordinate_pattern(
-                linebuf, &data[k], num_rows, num_columns,
-                line_number, column_number);
-            if (err)
-                return err;
-        }
-
-    } else {
-        return MTX_ERR_INVALID_MTX_FIELD;
+        (*line_number)++; *column_number = 1;
     }
-    return MTX_SUCCESS;
-}
-
-/**
- * `parse_vector_coordinate_real()` parses a single nonzero for a vector
- * whose format is `coordinate` and field is `real`.
- */
-static int parse_vector_coordinate_real(
-    const char * s,
-    struct mtx_vector_coordinate_real * data,
-    int num_rows,
-    int * line_number, int * column_number)
-{
-    const char * start = s;
-    int err = parse_int32(s, " ", &data->i, &s);
-    if (err == EINVAL || (!err && (data->i < 1 || data->i > num_rows))) {
-        return MTX_ERR_INVALID_MTX_DATA;
-    } else if (err) {
-        errno = err;
-        return MTX_ERR_ERRNO;
-    }
-    *column_number += s-start; start = s;
-    err = parse_float(s, "\n", &data->a, NULL);
-    if (err == EINVAL) {
-        return MTX_ERR_INVALID_MTX_DATA;
-    } else if (err) {
-        errno = err;
-        return MTX_ERR_ERRNO;
-    }
-    (*line_number)++; *column_number = 1;
-    return MTX_SUCCESS;
-}
-
-/**
- * `parse_vector_coordinate_double()` parses a single nonzero for a vector
- * whose format is `coordinate` and field is `double`.
- */
-static int parse_vector_coordinate_double(
-    const char * s,
-    struct mtx_vector_coordinate_double * data,
-    int num_rows,
-    int * line_number, int * column_number)
-{
-    const char * start = s;
-    int err = parse_int32(s, " ", &data->i, &s);
-    if (err == EINVAL || (!err && (data->i < 1 || data->i > num_rows))) {
-        return MTX_ERR_INVALID_MTX_DATA;
-    } else if (err) {
-        errno = err;
-        return MTX_ERR_ERRNO;
-    }
-    *column_number += s-start; start = s;
-    err = parse_double(s, "\n", &data->a, NULL);
-    if (err == EINVAL) {
-        return MTX_ERR_INVALID_MTX_DATA;
-    } else if (err) {
-        errno = err;
-        return MTX_ERR_ERRNO;
-    }
-    (*line_number)++; *column_number = 1;
-    return MTX_SUCCESS;
-}
-
-/**
- * `parse_vector_coordinate_complex()` parses a single nonzero for a vector
- * whose format is `coordinate` and field is `complex`.
- */
-static int parse_vector_coordinate_complex(
-    const char * s,
-    struct mtx_vector_coordinate_complex * data,
-    int num_rows,
-    int * line_number, int * column_number)
-{
-    const char * start = s;
-    int err = parse_int32(s, " ", &data->i, &s);
-    if (err == EINVAL || (!err && (data->i < 1 || data->i > num_rows))) {
-        return MTX_ERR_INVALID_MTX_DATA;
-    } else if (err) {
-        errno = err;
-        return MTX_ERR_ERRNO;
-    }
-    *column_number += s-start; start = s;
-    err = parse_float(s, " ", &data->a, &s);
-    if (err == EINVAL) {
-        return MTX_ERR_INVALID_MTX_DATA;
-    } else if (err) {
-        errno = err;
-        return MTX_ERR_ERRNO;
-    }
-    *column_number += s-start; start = s;
-    err = parse_float(s, "\n", &data->b, NULL);
-    if (err == EINVAL) {
-        return MTX_ERR_INVALID_MTX_DATA;
-    } else if (err) {
-        errno = err;
-        return MTX_ERR_ERRNO;
-    }
-    (*line_number)++; *column_number = 1;
-    return MTX_SUCCESS;
-}
-
-/**
- * `parse_vector_coordinate_integer()` parses a single nonzero for a vector
- * whose format is `coordinate` and field is `integer`.
- */
-static int parse_vector_coordinate_integer(
-    const char * s,
-    struct mtx_vector_coordinate_integer * data,
-    int num_rows,
-    int * line_number, int * column_number)
-{
-    const char * start = s;
-    int err = parse_int32(s, " ", &data->i, &s);
-    if (err == EINVAL || (!err && (data->i < 1 || data->i > num_rows))) {
-        return MTX_ERR_INVALID_MTX_DATA;
-    } else if (err) {
-        errno = err;
-        return MTX_ERR_ERRNO;
-    }
-    *column_number += s-start; start = s;
-    err = parse_int32(s, "\n", &data->a, NULL);
-    if (err == EINVAL) {
-        return MTX_ERR_INVALID_MTX_DATA;
-    } else if (err) {
-        errno = err;
-        return MTX_ERR_ERRNO;
-    }
-    (*line_number)++; *column_number = 1;
-    return MTX_SUCCESS;
-}
-
-/**
- * `parse_vector_coordinate_pattern()` parses a single nonzero for a vector
- * whose format is `coordinate` and field is `pattern`.
- */
-static int parse_vector_coordinate_pattern(
-    const char * s,
-    struct mtx_vector_coordinate_pattern * data,
-    int num_rows,
-    int * line_number, int * column_number)
-{
-    int err = parse_int32(s, " ", &data->i, &s);
-    if (err == EINVAL || (!err && (data->i < 1 || data->i > num_rows))) {
-        return MTX_ERR_INVALID_MTX_DATA;
-    } else if (err) {
-        errno = err;
-        return MTX_ERR_ERRNO;
-    }
-    (*line_number)++; *column_number = 1;
     return MTX_SUCCESS;
 }
 
@@ -1012,77 +661,71 @@ static int read_data_vector_coordinate(
     int * column_number)
 {
     int err;
-    if (field == mtx_real) {
-        struct mtx_vector_coordinate_real * data =
-            (struct mtx_vector_coordinate_real *) out_data;
-        for (int64_t k = 0; k < size; k++) {
-            err = stream_read_line(stream, line_max, linebuf);
-            if (err)
+    for (int64_t k = 0; k < size; k++) {
+        err = stream_read_line(stream, line_max, linebuf);
+        if (err)
+            return err;
+
+        if (field == mtx_real) {
+            struct mtx_vector_coordinate_real * data =
+                (struct mtx_vector_coordinate_real *) out_data;
+            int bytes_read;
+            err = mtx_vector_coordinate_parse_data_real(
+                linebuf, &bytes_read, NULL,
+                &data[k], num_rows);
+            if (err) {
+                *column_number += bytes_read;
                 return err;
-            err = parse_vector_coordinate_real(
-                linebuf, &data[k], num_rows,
-                line_number, column_number);
-            if (err)
+            }
+        } else if (field == mtx_double) {
+            struct mtx_vector_coordinate_double * data =
+                (struct mtx_vector_coordinate_double *) out_data;
+            int bytes_read;
+            err = mtx_vector_coordinate_parse_data_double(
+                linebuf, &bytes_read, NULL,
+                &data[k], num_rows);
+            if (err) {
+                *column_number += bytes_read;
                 return err;
+            }
+        } else if (field == mtx_complex) {
+            struct mtx_vector_coordinate_complex * data =
+                (struct mtx_vector_coordinate_complex *) out_data;
+            int bytes_read;
+            err = mtx_vector_coordinate_parse_data_complex(
+                linebuf, &bytes_read, NULL,
+                &data[k], num_rows);
+            if (err) {
+                *column_number += bytes_read;
+                return err;
+            }
+        } else if (field == mtx_integer) {
+            struct mtx_vector_coordinate_integer * data =
+                (struct mtx_vector_coordinate_integer *) out_data;
+            int bytes_read;
+            err = mtx_vector_coordinate_parse_data_integer(
+                linebuf, &bytes_read, NULL,
+                &data[k], num_rows);
+            if (err) {
+                *column_number += bytes_read;
+                return err;
+            }
+        } else if (field == mtx_pattern) {
+            struct mtx_vector_coordinate_pattern * data =
+                (struct mtx_vector_coordinate_pattern *) out_data;
+            int bytes_read;
+            err = mtx_vector_coordinate_parse_data_pattern(
+                linebuf, &bytes_read, NULL,
+                &data[k], num_rows);
+            if (err) {
+                *column_number += bytes_read;
+                return err;
+            }
+        } else {
+            return MTX_ERR_INVALID_MTX_FIELD;
         }
 
-    } else if (field == mtx_double) {
-        struct mtx_vector_coordinate_double * data =
-            (struct mtx_vector_coordinate_double *) out_data;
-        for (int64_t k = 0; k < size; k++) {
-            err = stream_read_line(stream, line_max, linebuf);
-            if (err)
-                return err;
-            err = parse_vector_coordinate_double(
-                linebuf, &data[k], num_rows, line_number, column_number);
-            if (err)
-                return err;
-        }
-
-    } else if (field == mtx_complex) {
-        struct mtx_vector_coordinate_complex * data =
-            (struct mtx_vector_coordinate_complex *) out_data;
-        for (int64_t k = 0; k < size; k++) {
-            err = stream_read_line(stream, line_max, linebuf);
-            if (err)
-                return err;
-            err = parse_vector_coordinate_complex(
-                linebuf, &data[k], num_rows,
-                line_number, column_number);
-            if (err)
-                return err;
-        }
-
-    } else if (field == mtx_integer) {
-        struct mtx_vector_coordinate_integer * data =
-            (struct mtx_vector_coordinate_integer *) out_data;
-        for (int64_t k = 0; k < size; k++) {
-            err = stream_read_line(stream, line_max, linebuf);
-            if (err)
-                return err;
-            err = parse_vector_coordinate_integer(
-                linebuf, &data[k], num_rows,
-                line_number, column_number);
-            if (err)
-                return err;
-        }
-
-    } else if (field == mtx_pattern) {
-        struct mtx_vector_coordinate_pattern * data =
-            (struct mtx_vector_coordinate_pattern *) out_data;
-        for (int64_t k = 0; k < size; k++) {
-            err = stream_read_line(stream, line_max, linebuf);
-            if (err)
-                return err;
-            err = parse_vector_coordinate_pattern(
-                linebuf, &data[k], num_rows,
-                line_number, column_number);
-            if (err)
-                return err;
-        }
-
-    } else {
-        return MTX_ERR_INVALID_MTX_FIELD;
+        (*line_number)++; *column_number = 1;
     }
     return MTX_SUCCESS;
 }

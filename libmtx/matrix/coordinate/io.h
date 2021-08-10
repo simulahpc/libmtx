@@ -49,4 +49,64 @@ int mtx_matrix_coordinate_parse_size(
     int64_t * size,
     int * nonzero_size);
 
+/**
+ * `mtx_matrix_coordinate_parse_data_real()' parses a data line from a
+ * Matrix Market file for a real matrix in coordinate format.
+ */
+int mtx_matrix_coordinate_parse_data_real(
+    const char * line,
+    int * bytes_read,
+    const char ** endptr,
+    struct mtx_matrix_coordinate_real * data,
+    int num_rows,
+    int num_columns);
+
+/**
+ * `mtx_matrix_coordinate_parse_data_double()' parses a data line from a
+ * Matrix Market file for a double matrix in coordinate format.
+ */
+int mtx_matrix_coordinate_parse_data_double(
+    const char * line,
+    int * bytes_read,
+    const char ** endptr,
+    struct mtx_matrix_coordinate_double * data,
+    int num_rows,
+    int num_columns);
+
+/**
+ * `mtx_matrix_coordinate_parse_data_complex()' parses a data line from a
+ * Matrix Market file for a complex matrix in coordinate format.
+ */
+int mtx_matrix_coordinate_parse_data_complex(
+    const char * line,
+    int * bytes_read,
+    const char ** endptr,
+    struct mtx_matrix_coordinate_complex * data,
+    int num_rows,
+    int num_columns);
+
+/**
+ * `mtx_matrix_coordinate_parse_data_integer()' parses a data line from a
+ * Matrix Market file for a integer matrix in coordinate format.
+ */
+int mtx_matrix_coordinate_parse_data_integer(
+    const char * line,
+    int * bytes_read,
+    const char ** endptr,
+    struct mtx_matrix_coordinate_integer * data,
+    int num_rows,
+    int num_columns);
+
+/**
+ * `mtx_matrix_coordinate_parse_data_pattern()' parses a data line from a
+ * Matrix Market file for a pattern matrix in coordinate format.
+ */
+int mtx_matrix_coordinate_parse_data_pattern(
+    const char * line,
+    int * bytes_read,
+    const char ** endptr,
+    struct mtx_matrix_coordinate_pattern * data,
+    int num_rows,
+    int num_columns);
+
 #endif
