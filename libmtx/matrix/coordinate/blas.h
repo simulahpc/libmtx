@@ -19,83 +19,80 @@
  * Authors: James D. Trotter <james@simula.no>
  * Last modified: 2021-08-09
  *
- * Level 1 BLAS operations for sparse vectors in coordinate format.
+ * BLAS operations for sparse matrices in coordinate format.
  */
 
-#ifndef LIBMTX_VECTOR_COORDINATE_BLAS_H
-#define LIBMTX_VECTOR_COORDINATE_BLAS_H
+#ifndef LIBMTX_MATRIX_COORDINATE_BLAS_H
+#define LIBMTX_MATRIX_COORDINATE_BLAS_H
 
 struct mtx;
 
 /**
- * `mtx_vector_coordinate_sscal()' scales a vector by a single
+ * `mtx_matrix_coordinate_sscal()' scales a matrix by a single
  * precision floating-point scalar, `x = a*x'.
  */
-int mtx_vector_coordinate_sscal(
+int mtx_matrix_coordinate_sscal(
     float a,
     struct mtx * x);
 
 /**
- * `mtx_vector_coordinate_dscal()' scales a vector by a double
+ * `mtx_matrix_coordinate_dscal()' scales a matrix by a double
  * precision floating-point scalar, `x = a*x'.
  */
-int mtx_vector_coordinate_dscal(
+int mtx_matrix_coordinate_dscal(
     double a,
     struct mtx * x);
 
 /**
- * `mtx_vector_coordinate_saxpy()' adds two vectors of single
+ * `mtx_matrix_coordinate_saxpy()' adds two matrices of single
  * precision floating-point values, `y = a*x + y'.
  */
-int mtx_vector_coordinate_saxpy(
+int mtx_matrix_coordinate_saxpy(
     float a,
     const struct mtx * x,
     struct mtx * y);
 
 /**
- * `mtx_vector_coordinate_daxpy()' adds two vectors of double
+ * `mtx_matrix_coordinate_daxpy()' adds two matrices of double
  * precision floating-point values, `y = a*x + y'.
  */
-int mtx_vector_coordinate_daxpy(
+int mtx_matrix_coordinate_daxpy(
     double a,
     const struct mtx * x,
     struct mtx * y);
 
 /**
- * `mtx_vector_coordinate_sdot()' computes the Euclidean dot product
- * of two vectors (or Frobenius inner product of two matrices) of
- * single precision floating-point values.
+ * `mtx_matrix_coordinate_sdot()' computes the Euclidean Frobenius
+ * inner product of two matrices of single precision floating-point
+ * values.
  */
-int mtx_vector_coordinate_sdot(
+int mtx_matrix_coordinate_sdot(
     const struct mtx * x,
     const struct mtx * y,
     float * dot);
 
 /**
- * `mtx_vector_coordinate_ddot()' computes the Euclidean dot product
- * of two vectors (or Frobenius inner product of two matrices) of
- * double precision floating-point values.
+ * `mtx_matrix_coordinate_ddot()' computes the Frobenius inner product
+ * of two matrices of double precision floating-point values.
  */
-int mtx_vector_coordinate_ddot(
+int mtx_matrix_coordinate_ddot(
     const struct mtx * x,
     const struct mtx * y,
     double * dot);
 
 /**
- * `mtx_vector_coordinate_snrm2()' computes the Euclidean norm of a
- * vector (or Frobenius norm of a matrix) of single precision
- * floating-point values.
+ * `mtx_matrix_coordinate_snrm2()' computes the Frobenius norm of a
+ * matrix of single precision floating-point values.
  */
-int mtx_vector_coordinate_snrm2(
+int mtx_matrix_coordinate_snrm2(
     const struct mtx * x,
     float * nrm2);
 
 /**
- * `mtx_vector_coordinate_dnrm2()' computes the Euclidean norm of a
- * vector (or Frobenius norm of a matrix) of double precision
- * floating-point values.
+ * `mtx_matrix_coordinate_dnrm2()' computes the Frobenius norm of a
+ * matrix of double precision floating-point values.
  */
-int mtx_vector_coordinate_dnrm2(
+int mtx_matrix_coordinate_dnrm2(
     const struct mtx * x,
     double * nrm2);
 

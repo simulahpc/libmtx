@@ -47,8 +47,10 @@ libmtx_la_SOURCES = \
 	libmtx/error.c \
 	libmtx/index_set.c \
 	libmtx/matrix/array/array.c \
+	libmtx/matrix/array/blas.c \
 	libmtx/matrix/array/io.c \
 	libmtx/matrix/coordinate/coordinate.c \
+	libmtx/matrix/coordinate/blas.c \
 	libmtx/matrix/coordinate/io.c \
 	libmtx/matrix/matrix.c \
 	libmtx/mtx/assembly.c \
@@ -86,8 +88,10 @@ nobase_include_HEADERS = \
 	libmtx/mtx/io.h \
 	libmtx/libmtx.h \
 	libmtx/matrix/array/array.h \
+	libmtx/matrix/array/blas.h \
 	libmtx/matrix/array/io.h \
 	libmtx/matrix/coordinate/coordinate.h \
+	libmtx/matrix/coordinate/blas.h \
 	libmtx/matrix/coordinate/io.h \
 	libmtx/matrix/matrix.h \
 	libmtx/mtx/mpi.h \

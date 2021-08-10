@@ -19,14 +19,14 @@
  * Authors: James D. Trotter <james@simula.no>
  * Last modified: 2021-08-09
  *
- * Level 1 BLAS operations for dense vectors in array format.
+ * BLAS operations for dense matrices in array format.
  */
 
-#include <libmtx/vector/array/blas.h>
+#include <libmtx/matrix/array/blas.h>
 
 #include <libmtx/error.h>
 #include <libmtx/mtx/mtx.h>
-#include <libmtx/vector/array/array.h>
+#include <libmtx/matrix/array/array.h>
 
 #ifdef LIBMTX_HAVE_BLAS
 #include <cblas.h>
@@ -39,14 +39,14 @@
 struct mtx;
 
 /**
- * `mtx_vector_array_sscal()' scales a vector by a single precision
+ * `mtx_matrix_array_sscal()' scales a matrix by a single precision
  * floating-point scalar, `x = a*x'.
  */
-int mtx_vector_array_sscal(
+int mtx_matrix_array_sscal(
     float a,
     struct mtx * x)
 {
-    if (x->object != mtx_vector)
+    if (x->object != mtx_matrix)
         return MTX_ERR_INVALID_MTX_OBJECT;
     if (x->format != mtx_array)
         return MTX_ERR_INVALID_MTX_FORMAT;
@@ -64,14 +64,14 @@ int mtx_vector_array_sscal(
 }
 
 /**
- * `mtx_vector_array_dscal()' scales a vector by a double precision
+ * `mtx_matrix_array_dscal()' scales a matrix by a double precision
  * floating-point scalar, `x = a*x'.
  */
-int mtx_vector_array_dscal(
+int mtx_matrix_array_dscal(
     double a,
     struct mtx * x)
 {
-    if (x->object != mtx_vector)
+    if (x->object != mtx_matrix)
         return MTX_ERR_INVALID_MTX_OBJECT;
     if (x->format != mtx_array)
         return MTX_ERR_INVALID_MTX_FORMAT;
@@ -89,15 +89,15 @@ int mtx_vector_array_dscal(
 }
 
 /**
- * `mtx_vector_array_saxpy()' adds two vectors of single precision
+ * `mtx_matrix_array_saxpy()' adds two matrices of single precision
  * floating-point values, `y = a*x + y'.
  */
-int mtx_vector_array_saxpy(
+int mtx_matrix_array_saxpy(
     float a,
     const struct mtx * x,
     struct mtx * y)
 {
-    if (x->object != mtx_vector || y->object != mtx_vector)
+    if (x->object != mtx_matrix || y->object != mtx_matrix)
         return MTX_ERR_INVALID_MTX_OBJECT;
     if (x->format != mtx_array || y->format != mtx_array)
         return MTX_ERR_INVALID_MTX_FORMAT;
@@ -120,15 +120,15 @@ int mtx_vector_array_saxpy(
 }
 
 /**
- * `mtx_vector_array_daxpy()' adds two vectors of double precision
+ * `mtx_matrix_array_daxpy()' adds two matrices of double precision
  * floating-point values, `y = a*x + y'.
  */
-int mtx_vector_array_daxpy(
+int mtx_matrix_array_daxpy(
     double a,
     const struct mtx * x,
     struct mtx * y)
 {
-    if (x->object != mtx_vector || y->object != mtx_vector)
+    if (x->object != mtx_matrix || y->object != mtx_matrix)
         return MTX_ERR_INVALID_MTX_OBJECT;
     if (x->format != mtx_array || y->format != mtx_array)
         return MTX_ERR_INVALID_MTX_FORMAT;
@@ -151,16 +151,15 @@ int mtx_vector_array_daxpy(
 }
 
 /**
- * `mtx_vector_array_sdot()' computes the Euclidean dot product of two
- * vectors (or Frobenius inner product of two matrices) of single
- * precision floating-point values.
+ * `mtx_matrix_array_sdot()' computes the Frobenius inner product of
+ * two matrices of single precision floating-point values.
  */
-int mtx_vector_array_sdot(
+int mtx_matrix_array_sdot(
     const struct mtx * x,
     const struct mtx * y,
     float * dot)
 {
-    if (x->object != mtx_vector || y->object != mtx_vector)
+    if (x->object != mtx_matrix || y->object != mtx_matrix)
         return MTX_ERR_INVALID_MTX_OBJECT;
     if (x->format != mtx_array || y->format != mtx_array)
         return MTX_ERR_INVALID_MTX_FORMAT;
@@ -183,16 +182,15 @@ int mtx_vector_array_sdot(
 }
 
 /**
- * `mtx_vector_array_ddot()' computes the Euclidean dot product of two
- * vectors (or Frobenius inner product of two matrices) of double
- * precision floating-point values.
+ * `mtx_matrix_array_ddot()' computes the Frobenius inner product of
+ * two matrices of double precision floating-point values.
  */
-int mtx_vector_array_ddot(
+int mtx_matrix_array_ddot(
     const struct mtx * x,
     const struct mtx * y,
     double * dot)
 {
-    if (x->object != mtx_vector || y->object != mtx_vector)
+    if (x->object != mtx_matrix || y->object != mtx_matrix)
         return MTX_ERR_INVALID_MTX_OBJECT;
     if (x->format != mtx_array || y->format != mtx_array)
         return MTX_ERR_INVALID_MTX_FORMAT;
@@ -215,15 +213,14 @@ int mtx_vector_array_ddot(
 }
 
 /**
- * `mtx_vector_array_snrm2()' computes the Euclidean norm of a vector
- * (or Frobenius norm of a matrix) of single precision floating-point
- * values.
+ * `mtx_matrix_array_snrm2()' computes the Frobenius norm of a matrix
+ * of single precision floating-point values.
  */
-int mtx_vector_array_snrm2(
+int mtx_matrix_array_snrm2(
     const struct mtx * x,
     float * nrm2)
 {
-    if (x->object != mtx_vector)
+    if (x->object != mtx_matrix)
         return MTX_ERR_INVALID_MTX_OBJECT;
     if (x->format != mtx_array)
         return MTX_ERR_INVALID_MTX_FORMAT;
@@ -242,15 +239,14 @@ int mtx_vector_array_snrm2(
 }
 
 /**
- * `mtx_vector_array_dnrm2()' computes the Euclidean norm of a vector
- * (or Frobenius norm of a matrix) of double precision floating-point
- * values.
+ * `mtx_matrix_array_dnrm2()' computes the Frobenius norm of a matrix
+ * of double precision floating-point values.
  */
-int mtx_vector_array_dnrm2(
+int mtx_matrix_array_dnrm2(
     const struct mtx * x,
     double * nrm2)
 {
-    if (x->object != mtx_vector)
+    if (x->object != mtx_matrix)
         return MTX_ERR_INVALID_MTX_OBJECT;
     if (x->format != mtx_array)
         return MTX_ERR_INVALID_MTX_FORMAT;
