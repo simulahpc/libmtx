@@ -44,22 +44,8 @@ const char * mtx_ordering_str(
     enum mtx_ordering ordering);
 
 /**
- * `mtx_permute_vector()' permutes the elements of a vector based on a
- * given permutation.
- *
- * The array `permutation' should be a permutation of the integers
- * `1,2,...,mtx->num_rows'. The element at position `i' in the
- * permuted vector is then equal to the element at the position
- * `permutation[i-1]' in the original vector, for
- * `i=1,2,...,mtx->num_rows'.
- */
-int mtx_permute_vector(
-    struct mtx * mtx,
-    const int * permutation);
-
-/**
- * `mtx_permute_matrix()' permutes the elements of a matrix based on a
- * given permutation.
+ * `mtx_permute()' permutes the elements of a matrix or vector based
+ * on given row and column permutations.
  *
  * The array `row_permutation' should be a permutation of the integers
  * `1,2,...,mtx->num_rows', and the array `column_permutation' should
@@ -69,7 +55,7 @@ int mtx_permute_vector(
  * column `column_permutation[j-1]' in the original matrix, for
  * `i=1,2,...,mtx->num_rows' and `j=1,2,...,mtx->num_columns'.
  */
-int mtx_permute_matrix(
+int mtx_permute(
     struct mtx * mtx,
     const int * row_permutation,
     const int * column_permutation);

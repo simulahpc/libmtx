@@ -1093,23 +1093,9 @@ occurs during the factorisation stage of sparse direct solvers or
 improving the performance of operations such as sparse matrix-vector
 multiplication.
 
-@findex mtx_permute_vector
-The function @code{mtx_permute_vector} can be used to permute the
-elements of a vector based on a given permutation.
-@example
-@code{int mtx_permute_vector(
-    struct mtx * mtx,
-    const int * permutation);}
-@end example
-The array @code{permutation} should be a permutation of the integers
-@code{1,2,...,mtx->num_rows}. The element at position @code{i} in the
-permuted vector is then equal to the element at the position
-@code{permutation[i-1]} in the original vector for
-@code{i=1,2,...,mtx->num_rows}.
-
-@findex mtx_permute_matrix
-The function @code{mtx_permute_matrix} can be used to permute the rows
-and/or columns of a matrix.
+@findex mtx_permute
+The function @code{mtx_permute} can be used to permute the rows and/or
+columns of a matrix or vector.
 @example
 @code{int mtx_permute_matrix(
     struct mtx * mtx,
