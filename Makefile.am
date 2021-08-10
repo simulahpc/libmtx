@@ -59,11 +59,13 @@ libmtx_la_SOURCES = \
 	libmtx/mtx/reorder.c \
 	libmtx/mtx/sort.c \
 	libmtx/mtx/submatrix.c \
+	libmtx/mtx/superlu_dist.c \
 	libmtx/mtx/transpose.c \
 	libmtx/mtx/triangle.c \
-	libmtx/mtx/superlu_dist.c \
 	libmtx/util/format.c \
 	libmtx/util/format.h \
+	libmtx/util/io.c \
+	libmtx/util/io.h \
 	libmtx/util/parse.c \
 	libmtx/util/parse.h \
 	libmtx/vector/array/array.c \
