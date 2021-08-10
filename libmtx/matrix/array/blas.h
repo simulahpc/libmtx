@@ -27,6 +27,10 @@
 
 struct mtx;
 
+/*
+ * Level 2 BLAS operations.
+ */
+
 /**
  * `mtx_matrix_array_sscal()' scales a matrix by a single precision
  * floating-point scalar, `x = a*x'.
@@ -94,5 +98,33 @@ int mtx_matrix_array_snrm2(
 int mtx_matrix_array_dnrm2(
     const struct mtx * x,
     double * nrm2);
+
+/*
+ * Level 2 BLAS operations.
+ */
+
+/**
+ * `mtx_matrix_array_sgemv()' computes the product of a matrix and a
+ * vector of single precision floating-point values, `y = alpha*A*x +
+ * beta*y'.
+ */
+int mtx_matrix_array_sgemv(
+    float alpha,
+    const struct mtx * A,
+    const struct mtx * x,
+    float beta,
+    struct mtx * y);
+
+/**
+ * `mtx_matrix_array_dgemv()' computes the product of a matrix and a
+ * vector of single precision floating-point values, `y = alpha*A*x +
+ * beta*y'.
+ */
+int mtx_matrix_array_dgemv(
+    double alpha,
+    const struct mtx * A,
+    const struct mtx * x,
+    double beta,
+    struct mtx * y);
 
 #endif
