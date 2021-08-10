@@ -32,7 +32,7 @@
 struct mtx;
 
 /**
- * `mtx_vector_coordinate_parse_size()` parse a size line from a
+ * `mtx_vector_coordinate_parse_size()` parses a size line from a
  * Matrix Market file for a vector in coordinate format.
  */
 int mtx_vector_coordinate_parse_size(
@@ -48,5 +48,60 @@ int mtx_vector_coordinate_parse_size(
     int64_t * num_nonzeros,
     int64_t * size,
     int * nonzero_size);
+
+/**
+ * `mtx_vector_coordinate_parse_data_real()' parses a data line from a
+ * Matrix Market file for a real vector in coordinate format.
+ */
+int mtx_vector_coordinate_parse_data_real(
+    const char * line,
+    int * bytes_read,
+    const char ** endptr,
+    struct mtx_vector_coordinate_real * data,
+    int num_rows);
+
+/**
+ * `mtx_vector_coordinate_parse_data_double()' parses a data line from a
+ * Matrix Market file for a double vector in coordinate format.
+ */
+int mtx_vector_coordinate_parse_data_double(
+    const char * line,
+    int * bytes_read,
+    const char ** endptr,
+    struct mtx_vector_coordinate_double * data,
+    int num_rows);
+
+/**
+ * `mtx_vector_coordinate_parse_data_complex()' parses a data line from a
+ * Matrix Market file for a complex vector in coordinate format.
+ */
+int mtx_vector_coordinate_parse_data_complex(
+    const char * line,
+    int * bytes_read,
+    const char ** endptr,
+    struct mtx_vector_coordinate_complex * data,
+    int num_rows);
+
+/**
+ * `mtx_vector_coordinate_parse_data_integer()' parses a data line from a
+ * Matrix Market file for a integer vector in coordinate format.
+ */
+int mtx_vector_coordinate_parse_data_integer(
+    const char * line,
+    int * bytes_read,
+    const char ** endptr,
+    struct mtx_vector_coordinate_integer * data,
+    int num_rows);
+
+/**
+ * `mtx_vector_coordinate_parse_data_pattern()' parses a data line from a
+ * Matrix Market file for a pattern vector in coordinate format.
+ */
+int mtx_vector_coordinate_parse_data_pattern(
+    const char * line,
+    int * bytes_read,
+    const char ** endptr,
+    struct mtx_vector_coordinate_pattern * data,
+    int num_rows);
 
 #endif

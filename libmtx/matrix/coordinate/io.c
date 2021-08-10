@@ -122,3 +122,228 @@ int mtx_matrix_coordinate_parse_size(
     }
     return MTX_SUCCESS;
 }
+
+/**
+ * `mtx_matrix_coordinate_parse_data_real()' parses a data line from a
+ * Matrix Market file for a real matrix in coordinate format.
+ */
+int mtx_matrix_coordinate_parse_data_real(
+    const char * line,
+    int * bytes_read,
+    const char ** endptr,
+    struct mtx_matrix_coordinate_real * data,
+    int num_rows,
+    int num_columns)
+{
+    int err;
+    const char * tmp;
+    if (!endptr)
+        endptr = &tmp;
+    err = parse_int32(line, " ", &data->i, endptr);
+    if (err == EINVAL || (!err && (data->i < 1 || data->i > num_rows))) {
+        return MTX_ERR_INVALID_MTX_DATA;
+    } else if (err) {
+        errno = err;
+        return MTX_ERR_ERRNO;
+    }
+    *bytes_read = *endptr - line;
+
+    err = parse_int32(*endptr, " ", &data->j, endptr);
+    if (err == EINVAL || (!err && (data->j < 1 || data->j > num_columns))) {
+        return MTX_ERR_INVALID_MTX_DATA;
+    } else if (err) {
+        errno = err;
+        return MTX_ERR_ERRNO;
+    }
+    *bytes_read = *endptr - line;
+
+    err = parse_float(*endptr, "\n", &data->a, endptr);
+    if (err == EINVAL) {
+        return MTX_ERR_INVALID_MTX_DATA;
+    } else if (err) {
+        errno = err;
+        return MTX_ERR_ERRNO;
+    }
+    *bytes_read = *endptr - line;
+    return MTX_SUCCESS;
+}
+
+/**
+ * `mtx_matrix_coordinate_parse_data_double()' parses a data line from a
+ * Matrix Market file for a double matrix in coordinate format.
+ */
+int mtx_matrix_coordinate_parse_data_double(
+    const char * line,
+    int * bytes_read,
+    const char ** endptr,
+    struct mtx_matrix_coordinate_double * data,
+    int num_rows,
+    int num_columns)
+{
+    int err;
+    const char * tmp;
+    if (!endptr)
+        endptr = &tmp;
+    err = parse_int32(line, " ", &data->i, endptr);
+    if (err == EINVAL || (!err && (data->i < 1 || data->i > num_rows))) {
+        return MTX_ERR_INVALID_MTX_DATA;
+    } else if (err) {
+        errno = err;
+        return MTX_ERR_ERRNO;
+    }
+    *bytes_read = *endptr - line;
+
+    err = parse_int32(*endptr, " ", &data->j, endptr);
+    if (err == EINVAL || (!err && (data->j < 1 || data->j > num_columns))) {
+        return MTX_ERR_INVALID_MTX_DATA;
+    } else if (err) {
+        errno = err;
+        return MTX_ERR_ERRNO;
+    }
+    *bytes_read = *endptr - line;
+
+    err = parse_double(*endptr, "\n", &data->a, endptr);
+    if (err == EINVAL) {
+        return MTX_ERR_INVALID_MTX_DATA;
+    } else if (err) {
+        errno = err;
+        return MTX_ERR_ERRNO;
+    }
+    *bytes_read = *endptr - line;
+    return MTX_SUCCESS;
+}
+
+/**
+ * `mtx_matrix_coordinate_parse_data_complex()' parses a data line from a
+ * Matrix Market file for a complex matrix in coordinate format.
+ */
+int mtx_matrix_coordinate_parse_data_complex(
+    const char * line,
+    int * bytes_read,
+    const char ** endptr,
+    struct mtx_matrix_coordinate_complex * data,
+    int num_rows,
+    int num_columns)
+{
+    int err;
+    const char * tmp;
+    if (!endptr)
+        endptr = &tmp;
+    err = parse_int32(line, " ", &data->i, endptr);
+    if (err == EINVAL || (!err && (data->i < 1 || data->i > num_rows))) {
+        return MTX_ERR_INVALID_MTX_DATA;
+    } else if (err) {
+        errno = err;
+        return MTX_ERR_ERRNO;
+    }
+    *bytes_read = *endptr - line;
+
+    err = parse_int32(*endptr, " ", &data->j, endptr);
+    if (err == EINVAL || (!err && (data->j < 1 || data->j > num_columns))) {
+        return MTX_ERR_INVALID_MTX_DATA;
+    } else if (err) {
+        errno = err;
+        return MTX_ERR_ERRNO;
+    }
+    *bytes_read = *endptr - line;
+
+    err = parse_float(*endptr, " ", &data->a, endptr);
+    if (err == EINVAL) {
+        return MTX_ERR_INVALID_MTX_DATA;
+    } else if (err) {
+        errno = err;
+        return MTX_ERR_ERRNO;
+    }
+    *bytes_read = *endptr - line;
+
+    err = parse_float(*endptr, "\n", &data->b, endptr);
+    if (err == EINVAL) {
+        return MTX_ERR_INVALID_MTX_DATA;
+    } else if (err) {
+        errno = err;
+        return MTX_ERR_ERRNO;
+    }
+    *bytes_read = *endptr - line;
+    return MTX_SUCCESS;
+}
+
+/**
+ * `mtx_matrix_coordinate_parse_data_integer()' parses a data line from a
+ * Matrix Market file for a integer matrix in coordinate format.
+ */
+int mtx_matrix_coordinate_parse_data_integer(
+    const char * line,
+    int * bytes_read,
+    const char ** endptr,
+    struct mtx_matrix_coordinate_integer * data,
+    int num_rows,
+    int num_columns)
+{
+    int err;
+    const char * tmp;
+    if (!endptr)
+        endptr = &tmp;
+    err = parse_int32(line, " ", &data->i, endptr);
+    if (err == EINVAL || (!err && (data->i < 1 || data->i > num_rows))) {
+        return MTX_ERR_INVALID_MTX_DATA;
+    } else if (err) {
+        errno = err;
+        return MTX_ERR_ERRNO;
+    }
+    *bytes_read = *endptr - line;
+
+    err = parse_int32(*endptr, " ", &data->j, endptr);
+    if (err == EINVAL || (!err && (data->j < 1 || data->j > num_columns))) {
+        return MTX_ERR_INVALID_MTX_DATA;
+    } else if (err) {
+        errno = err;
+        return MTX_ERR_ERRNO;
+    }
+    *bytes_read = *endptr - line;
+
+    err = parse_int32(*endptr, "\n", &data->a, endptr);
+    if (err == EINVAL) {
+        return MTX_ERR_INVALID_MTX_DATA;
+    } else if (err) {
+        errno = err;
+        return MTX_ERR_ERRNO;
+    }
+    *bytes_read = *endptr - line;
+    return MTX_SUCCESS;
+}
+
+/**
+ * `mtx_matrix_coordinate_parse_data_pattern()' parses a data line from a
+ * Matrix Market file for a pattern matrix in coordinate format.
+ */
+int mtx_matrix_coordinate_parse_data_pattern(
+    const char * line,
+    int * bytes_read,
+    const char ** endptr,
+    struct mtx_matrix_coordinate_pattern * data,
+    int num_rows,
+    int num_columns)
+{
+    int err;
+    const char * tmp;
+    if (!endptr)
+        endptr = &tmp;
+    err = parse_int32(line, " ", &data->i, endptr);
+    if (err == EINVAL || (!err && (data->i < 1 || data->i > num_rows))) {
+        return MTX_ERR_INVALID_MTX_DATA;
+    } else if (err) {
+        errno = err;
+        return MTX_ERR_ERRNO;
+    }
+    *bytes_read = *endptr - line;
+
+    err = parse_int32(*endptr, "\n", &data->j, endptr);
+    if (err == EINVAL || (!err && (data->j < 1 || data->j > num_columns))) {
+        return MTX_ERR_INVALID_MTX_DATA;
+    } else if (err) {
+        errno = err;
+        return MTX_ERR_ERRNO;
+    }
+    *bytes_read = *endptr - line;
+    return MTX_SUCCESS;
+}
