@@ -27,7 +27,7 @@
 
 #ifdef LIBMTX_HAVE_MPI
 #include <libmtx/error.h>
-#include <libmtx/matrix/matrix.h>
+#include <libmtx/mtx/matrix.h>
 #include <libmtx/mtx/mtx.h>
 #include <libmtx/mtx/superlu_dist.h>
 

@@ -29,7 +29,7 @@
 #include <libmtx/matrix/array/io.h>
 #include <libmtx/matrix/coordinate/coordinate.h>
 #include <libmtx/matrix/coordinate/io.h>
-#include <libmtx/matrix/matrix.h>
+#include <libmtx/mtx/matrix.h>
 #include <libmtx/mtx/io.h>
 #include <libmtx/mtx/mtx.h>
 #include <libmtx/vector/array/array.h>

@@ -31,7 +31,7 @@
 #include <libmtx/index_set.h>
 #include <libmtx/matrix/array/array.h>
 #include <libmtx/matrix/coordinate/coordinate.h>
-#include <libmtx/matrix/matrix.h>
+#include <libmtx/mtx/matrix.h>
 #include <libmtx/mtx/blas.h>
 #include <libmtx/mtx/header.h>
 #include <libmtx/mtx/io.h>
@@ -42,7 +42,7 @@
 #include <libmtx/mtx/superlu_dist.h>
 #include <libmtx/vector/array/array.h>
 #include <libmtx/vector/coordinate/coordinate.h>
-#include <libmtx/vector/vector.h>
+#include <libmtx/mtx/vector.h>
 #include <libmtx/version.h>
 
 #endif

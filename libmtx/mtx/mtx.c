@@ -26,11 +26,11 @@
 
 #include <libmtx/error.h>
 #include <libmtx/mtx/header.h>
-#include <libmtx/matrix/matrix.h>
+#include <libmtx/mtx/matrix.h>
 #include <libmtx/mtx/reorder.h>
 #include <libmtx/mtx/sort.h>
 #include <libmtx/mtx/triangle.h>
-#include <libmtx/vector/vector.h>
+#include <libmtx/mtx/vector.h>
 
 #include <errno.h>
 
