@@ -42,19 +42,9 @@ struct mtx;
  *
  * If `path' is `-', then standard input is used.
  *
- * If `format' is `NULL', then the format specifier '%d' is used to
- * print integers and '%f' is used to print floating point
- * numbers. Otherwise, the given format string is used when printing
- * numerical values.
- *
- * The format string follows the conventions of `printf'. If the field
- * is `real', `double' or `complex', then the format specifiers '%e',
- * '%E', '%f', '%F', '%g' or '%G' may be used. If the field is
- * `integer', then the format specifier must be '%d'. The format
- * string is ignored if the field is `pattern'. Field width and
- * precision may be specified (e.g., "%3.1f"), but variable field
- * width and precision (e.g., "%*.*f"), as well as length modifiers
- * (e.g., "%Lf") are not allowed.
+ * If an error code is returned, then `line_number' and
+ * `column_number' are used to return the line and column at which the
+ * error was encountered during the parsing of the Matrix Market file.
  */
 int mtx_read(
     struct mtx * mtx,
@@ -92,6 +82,10 @@ int mtx_write(
 /**
  * `mtx_fread()` reads an object (matrix or vector) from a stream in
  * Matrix Market format.
+ *
+ * If an error code is returned, then `line_number' and
+ * `column_number' are used to return the line and column at which the
+ * error was encountered during the parsing of the Matrix Market file.
  */
 int mtx_fread(
     struct mtx * mtx,
@@ -126,6 +120,10 @@ int mtx_fwrite(
 /**
  * `mtx_gzread()` reads a matrix or vector from a gzip-compressed
  * stream in Matrix Market format.
+ *
+ * If an error code is returned, then `line_number' and
+ * `column_number' are used to return the line and column at which the
+ * error was encountered during the parsing of the Matrix Market file.
  */
 int mtx_gzread(
     struct mtx * mtx,
