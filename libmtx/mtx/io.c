@@ -26,13 +26,16 @@
 
 #include <libmtx/error.h>
 #include <libmtx/matrix/array/array.h>
+#include <libmtx/matrix/array/io.h>
 #include <libmtx/matrix/coordinate/coordinate.h>
+#include <libmtx/matrix/coordinate/io.h>
 #include <libmtx/matrix/matrix.h>
 #include <libmtx/mtx/io.h>
 #include <libmtx/mtx/mtx.h>
 #include <libmtx/vector/array/array.h>
 #include <libmtx/vector/array/io.h>
 #include <libmtx/vector/coordinate/coordinate.h>
+#include <libmtx/vector/coordinate/io.h>
 
 #include "../util/format.h"
 #include "../util/io.h"
@@ -323,78 +326,6 @@ static int read_comment_lines(
     return MTX_SUCCESS;
 }
 
-static int mtx_nonzero_size(
-    enum mtx_object object,
-    enum mtx_format format,
-    enum mtx_field field,
-    int * nonzero_size)
-{
-    if (object == mtx_matrix) {
-        if (format == mtx_array) {
-            if (field == mtx_real) {
-                *nonzero_size = sizeof(float);
-            } else if (field == mtx_double) {
-                *nonzero_size = sizeof(double);
-            } else if (field == mtx_complex) {
-                *nonzero_size = 2 * sizeof(float);
-            } else if (field == mtx_integer) {
-                *nonzero_size = sizeof(int);
-            } else {
-                return MTX_ERR_INVALID_MTX_FIELD;
-            }
-        } else if (format == mtx_coordinate) {
-            if (field == mtx_real) {
-                *nonzero_size = sizeof(struct mtx_matrix_coordinate_real);
-            } else if (field == mtx_double) {
-                *nonzero_size = sizeof(struct mtx_matrix_coordinate_double);
-            } else if (field == mtx_complex) {
-                *nonzero_size = sizeof(struct mtx_matrix_coordinate_complex);
-            } else if (field == mtx_integer) {
-                *nonzero_size = sizeof(struct mtx_matrix_coordinate_integer);
-            } else if (field == mtx_pattern) {
-                *nonzero_size = sizeof(struct mtx_matrix_coordinate_pattern);
-            } else {
-                return MTX_ERR_INVALID_MTX_FIELD;
-            }
-        } else {
-            return MTX_ERR_INVALID_MTX_FORMAT;
-        }
-    } else if (object == mtx_vector) {
-        if (format == mtx_array) {
-            if (field == mtx_real) {
-                *nonzero_size = sizeof(float);
-            } else if (field == mtx_double) {
-                *nonzero_size = sizeof(double);
-            } else if (field == mtx_complex) {
-                *nonzero_size = 2 * sizeof(float);
-            } else if (field == mtx_integer) {
-                *nonzero_size = sizeof(int);
-            } else {
-                return MTX_ERR_INVALID_MTX_FIELD;
-            }
-        } else if (format == mtx_coordinate) {
-            if (field == mtx_real) {
-                *nonzero_size = sizeof(struct mtx_vector_coordinate_real);
-            } else if (field == mtx_double) {
-                *nonzero_size = sizeof(struct mtx_vector_coordinate_double);
-            } else if (field == mtx_complex) {
-                *nonzero_size = sizeof(struct mtx_vector_coordinate_complex);
-            } else if (field == mtx_integer) {
-                *nonzero_size = sizeof(struct mtx_vector_coordinate_integer);
-            } else if (field == mtx_pattern) {
-                *nonzero_size = sizeof(struct mtx_vector_coordinate_pattern);
-            } else {
-                return MTX_ERR_INVALID_MTX_FIELD;
-            }
-        } else {
-            return MTX_ERR_INVALID_MTX_FORMAT;
-        }
-    } else {
-        return MTX_ERR_INVALID_MTX_OBJECT;
-    }
-    return MTX_SUCCESS;
-}
-
 /**
  * `read_size_line()` reads a size line from a stream in the Matrix
  * Market file format.
@@ -425,80 +356,35 @@ static int read_size_line(
     const char * s = linebuf;
     if (object == mtx_matrix) {
         if (format == mtx_array) {
-            /* Parse the number of rows. */
-            err = parse_int32(s, " ", num_rows, &s);
-            if (err == EINVAL) {
-                return MTX_ERR_INVALID_MTX_SIZE;
-            } else if (err) {
-                errno = err;
-                return MTX_ERR_ERRNO;
-            }
-            *column_number = s-linebuf+1;
-
-            /* Parse the number of columns. */
-            err = parse_int32(s, "\n", num_columns, NULL);
-            if (err == EINVAL) {
-                return MTX_ERR_INVALID_MTX_SIZE;
-            } else if (err) {
-                errno = err;
-                return MTX_ERR_ERRNO;
-            }
-
-            /* Compute the matrix size. */
-            err = mtx_matrix_array_num_nonzeros(
-                *num_rows, *num_columns, num_nonzeros);
-            if (err)
+            int bytes_read;
+            err = mtx_matrix_array_parse_size(
+                s, &bytes_read, &s,
+                object, format, field, symmetry,
+                num_rows, num_columns, num_nonzeros,
+                size, nonzero_size);
+            if (err) {
+                *column_number += bytes_read;
                 return err;
-            enum mtx_triangle triangle =
-                (symmetry == mtx_general) ?
-                mtx_nontriangular : mtx_lower_triangular;
-            err = mtx_matrix_array_size(
-                symmetry, triangle, *num_rows, *num_columns, size);
-            if (err)
-                return err;
-
+            }
             (*line_number)++; *column_number = 1;
+
         } else if (format == mtx_coordinate) {
-            /* Parse the number of rows. */
-            err = parse_int32(s, " ", num_rows, &s);
-            if (err == EINVAL) {
-                return MTX_ERR_INVALID_MTX_SIZE;
-            } else if (err) {
-                errno = err;
-                return MTX_ERR_ERRNO;
-            }
-            *column_number = s-linebuf+1;
-
-            /* Parse the number of columns. */
-            err = parse_int32(s, " ", num_columns, &s);
-            if (err == EINVAL) {
-                return MTX_ERR_INVALID_MTX_SIZE;
-            } else if (err) {
-                errno = err;
-                return MTX_ERR_ERRNO;
-            }
-            *column_number = s-linebuf+1;
-
-            /* Parse the number of stored nonzeros. */
-            err = parse_int64(s, "\n", size, NULL);
-            if (err == EINVAL) {
-                return MTX_ERR_INVALID_MTX_SIZE;
-            } else if (err) {
-                errno = err;
-                return MTX_ERR_ERRNO;
+            int bytes_read;
+            err = mtx_matrix_coordinate_parse_size(
+                s, &bytes_read, &s,
+                object, format, field, symmetry,
+                num_rows, num_columns, num_nonzeros,
+                size, nonzero_size);
+            if (err) {
+                *column_number += bytes_read;
+                return err;
             }
             (*line_number)++; *column_number = 1;
-
-            /*
-             * Defer computing the total number of nonzeros until the
-             * matrix data has been read in, which is needed for symmetric
-             * and Hermitian matrices.
-             */
-            *num_nonzeros = -1;
 
         } else {
             return MTX_ERR_INVALID_MTX_FORMAT;
         }
+
     } else if (object == mtx_vector) {
         if (format == mtx_array) {
             int bytes_read;
@@ -514,27 +400,17 @@ static int read_size_line(
             (*line_number)++; *column_number = 1;
 
         } else if (format == mtx_coordinate) {
-            /* Parse the number of rows. */
-            err = parse_int32(s, " ", num_rows, &s);
-            if (err == EINVAL) {
-                return MTX_ERR_INVALID_MTX_SIZE;
-            } else if (err) {
-                errno = err;
-                return MTX_ERR_ERRNO;
-            }
-            *column_number = s-linebuf+1;
-            *num_columns = -1;
-
-            /* Parse the number of stored nonzeros. */
-            err = parse_int64(s, "\n", size, NULL);
-            if (err == EINVAL) {
-                return MTX_ERR_INVALID_MTX_SIZE;
-            } else if (err) {
-                errno = err;
-                return MTX_ERR_ERRNO;
+            int bytes_read;
+            err = mtx_vector_coordinate_parse_size(
+                s, &bytes_read, &s,
+                object, format, field, symmetry,
+                num_rows, num_columns, num_nonzeros,
+                size, nonzero_size);
+            if (err) {
+                *column_number += bytes_read;
+                return err;
             }
             (*line_number)++; *column_number = 1;
-            *num_nonzeros = *size;
 
         } else {
             return MTX_ERR_INVALID_MTX_FORMAT;
@@ -542,11 +418,6 @@ static int read_size_line(
     } else {
         return MTX_ERR_INVALID_MTX_OBJECT;
     }
-
-    /* Determine the size of each nonzero. */
-    err = mtx_nonzero_size(object, format, field, nonzero_size);
-    if (err)
-        return err;
 
     return MTX_SUCCESS;
 }
