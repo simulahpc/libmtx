@@ -62,6 +62,9 @@ AC_F77_LIBRARY_LDFLAGS
 AM_PROG_AR
 LT_INIT
 
+dnl Check for C math library
+AC_SEARCH_LIBS([floor], [m])
+
 dnl Check for BLAS
 AX_BLAS()
 AC_MSG_CHECKING([for BLAS])
