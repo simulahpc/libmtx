@@ -32,9 +32,9 @@
 #include <libmtx/mtx/matrix.h>
 #include <libmtx/mtx/io.h>
 #include <libmtx/mtx/mtx.h>
-#include <libmtx/vector/array/array.h>
+#include <libmtx/vector/array.h>
 #include <libmtx/vector/array/io.h>
-#include <libmtx/vector/coordinate/coordinate.h>
+#include <libmtx/vector/coordinate.h>
 #include <libmtx/vector/coordinate/io.h>
 
 #include "../util/format.h"

@@ -22,7 +22,7 @@
  * Sparse vectors in Matrix Market coordinate format.
  */
 
-#include <libmtx/vector/coordinate/coordinate.h>
+#include <libmtx/vector/coordinate.h>
 
 #include <libmtx/mtx/assembly.h>
 #include <libmtx/error.h>

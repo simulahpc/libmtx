@@ -27,7 +27,7 @@
 #include <libmtx/error.h>
 #include <libmtx/mtx/io.h>
 #include <libmtx/mtx/mtx.h>
-#include <libmtx/vector/array/array.h>
+#include <libmtx/vector/array.h>
 
 #include "libmtx/util/format.h"
 #include "libmtx/util/parse.h"

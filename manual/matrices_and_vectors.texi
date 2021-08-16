@@ -458,7 +458,7 @@ struct mtx_matrix_coordinate_pattern @{
 @end example
 
 The corresponding data types for sparse vectors are defined in the
-file @file{libmtx/vector/coordinate/coordinate.h}. These data types are
+file @file{libmtx/vector/coordinate.h}. These data types are
 almost identical to the ones used for sparse matrices, except that the
 column index is omitted:
 @example
@@ -527,7 +527,7 @@ allocation and creation functions.
 @subsection Creating dense vectors
 
 @cindex dense vector
-The file @file{libmtx/vector/array/array.h} defines functions for
+The file @file{libmtx/vector/array.h} defines functions for
 constructing dense vectors in array format.  For example, a dense
 vector of real, single-precision floating point values is created with
 the function:
@@ -610,7 +610,7 @@ vectors with @code{double}, @code{complex} and @code{integer} fields.
 @subsection Creating sparse vectors
 
 @cindex sparse vector
-The file @file{libmtx/vector/coordinate/coordinate.h} defines functions for
+The file @file{libmtx/vector/coordinate.h} defines functions for
 constructing sparse vectors in coordinate format.  On the whole,
 sparse vectors are allocated and created in a similar manner to dense
 vectors, but some additional arguments must be provided.

@@ -39,8 +39,8 @@
 #include <libmtx/mtx/mtx.h>
 #include <libmtx/mtx/reorder.h>
 #include <libmtx/mtx/sort.h>
-#include <libmtx/vector/array/array.h>
-#include <libmtx/vector/coordinate/coordinate.h>
+#include <libmtx/vector/array.h>
+#include <libmtx/vector/coordinate.h>
 #include <libmtx/mtx/vector.h>
 #include <libmtx/version.h>
 

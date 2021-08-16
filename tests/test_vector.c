@@ -26,8 +26,8 @@
 
 #include <libmtx/error.h>
 #include <libmtx/mtx/mtx.h>
-#include <libmtx/vector/array/array.h>
-#include <libmtx/vector/coordinate/coordinate.h>
+#include <libmtx/vector/array.h>
+#include <libmtx/vector/coordinate.h>
 
 #include <stdio.h>
 #include <stdlib.h>

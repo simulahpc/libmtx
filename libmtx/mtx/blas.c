@@ -30,10 +30,10 @@
 #include <libmtx/matrix/coordinate/coordinate.h>
 #include <libmtx/matrix/coordinate/blas.h>
 #include <libmtx/mtx/mtx.h>
-#include <libmtx/vector/array/array.h>
+#include <libmtx/vector/array.h>
 #include <libmtx/vector/array/blas.h>
 #include <libmtx/vector/coordinate/blas.h>
-#include <libmtx/vector/coordinate/coordinate.h>
+#include <libmtx/vector/coordinate.h>
 
 #ifdef LIBMTX_HAVE_BLAS
 #include <cblas.h>

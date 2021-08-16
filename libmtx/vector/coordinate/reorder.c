@@ -27,7 +27,7 @@
 #include <libmtx/error.h>
 #include <libmtx/mtx/mtx.h>
 #include <libmtx/mtx/reorder.h>
-#include <libmtx/vector/coordinate/coordinate.h>
+#include <libmtx/vector/coordinate.h>
 
 static int mtx_vector_coordinate_real_permute(
     struct mtx * mtx,

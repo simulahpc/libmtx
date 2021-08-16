@@ -30,8 +30,8 @@
 #include <libmtx/mtx/io.h>
 #include <libmtx/matrix/coordinate/coordinate.h>
 #include <libmtx/mtx/mtx.h>
-#include <libmtx/vector/array/array.h>
-#include <libmtx/vector/coordinate/coordinate.h>
+#include <libmtx/vector/array.h>
+#include <libmtx/vector/coordinate.h>
 
 #ifdef LIBMTX_HAVE_LIBZ
 #include <zlib.h>

@@ -664,7 +664,7 @@ are shown below:
      };
 
    The corresponding data types for sparse vectors are defined in the
-file 'libmtx/vector/coordinate/coordinate.h'.  These data types are almost
+file 'libmtx/vector/coordinate.h'.  These data types are almost
 identical to the ones used for sparse matrices, except that the column
 index is omitted:error
      struct mtx_vector_coordinate_real {
