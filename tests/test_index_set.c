@@ -25,7 +25,7 @@
 #include "test.h"
 
 #include <libmtx/error.h>
-#include <libmtx/index_set.h>
+#include <libmtx/util/index_set.h>
 
 #include <stdbool.h>
 #include <stdlib.h>

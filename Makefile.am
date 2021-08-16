@@ -45,7 +45,7 @@ libmtx_la_LIBADD = $(BLAS_LIBS) $(MPILDFLAGS)
 # Source files
 libmtx_la_SOURCES = \
 	libmtx/error.c \
-	libmtx/index_set.c \
+	libmtx/util/index_set.c \
 	libmtx/matrix/array.c \
 	libmtx/matrix/array/blas.c \
 	libmtx/matrix/array/io.c \
@@ -88,7 +88,7 @@ libmtx_la_SOURCES = \
 # Header files
 nobase_include_HEADERS = \
 	libmtx/error.h \
-	libmtx/index_set.h \
+	libmtx/util/index_set.h \
 	libmtx/libmtx.h \
 	libmtx/matrix/array.h \
 	libmtx/matrix/array/blas.h \
@@ -221,7 +221,7 @@ check_PROGRAMS = \
 
 tests_test_index_set_CPPFLAGS = $(MPICPPFLAGS)
 tests_test_index_set_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
-tests_test_index_set_SOURCES = tests/test_index_set.c tests/test.h
+tests_test_index_set_SOURCES = tests/test_util/index_set.c tests/test.h
 tests_test_mtx_CPPFLAGS = $(MPICPPFLAGS)
 tests_test_mtx_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
 tests_test_mtx_SOURCES = tests/test_mtx.c tests/test.h

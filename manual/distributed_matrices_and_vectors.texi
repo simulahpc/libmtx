@@ -165,7 +165,7 @@ among multiple processes.
 
 @tindex struct mtx_index_set
 @tindex enum mtx_index_set_type
-The file @file{libmtx/index_set.h} defines data types for index
+The file @file{libmtx/util/index_set.h} defines data types for index
 sets, including @code{struct mtx_index_set}. There are different types
 of index sets, which may be distinguished by the enum type
 @code{mtx_index_set_type}.

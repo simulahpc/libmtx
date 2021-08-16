@@ -1238,7 +1238,7 @@ Index sets are used, for example, when specifying submatrices of a
 matrix, or for partitioning and distributing matrices and vectors among
 multiple processes.
 
-   The file 'libmtx/index_set.h' defines data types for index
+   The file 'libmtx/util/index_set.h' defines data types for index
 sets, including 'struct mtx_index_set'.  There are different types of
 index sets, which may be distinguished by the enum type
 'mtx_index_set_type'.
