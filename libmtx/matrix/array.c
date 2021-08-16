@@ -22,7 +22,7 @@
  * Dense matrices in Matrix Market array format.
  */
 
-#include <libmtx/matrix/array/array.h>
+#include <libmtx/matrix/array.h>
 
 #include <libmtx/error.h>
 #include <libmtx/mtx/mtx.h>

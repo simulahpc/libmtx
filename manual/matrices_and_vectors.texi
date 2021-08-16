@@ -427,7 +427,7 @@ either @code{real}, @code{double}, @code{complex}, @code{integer} or
 @code{pattern}, corresponding to the @code{field} member of the
 @code{mtx} struct.
 
-The file @file{libmtx/matrix/coordinate/coordinate.h} contains definitions
+The file @file{libmtx/matrix/coordinate.h} contains definitions
 of data types for representing nonzero values of sparse matrices in
 coordinate format. For matrices with different fields, the data types
 are shown below:
@@ -696,7 +696,7 @@ the definitions of the struct data types for each field.
 @subsection Creating dense matrices
 
 @findex mtx_init_matrix_array_real
-The file @file{libmtx/matrix/array/array.h} defines functions for
+The file @file{libmtx/matrix/array.h} defines functions for
 constructing dense matrices.  Roughly speaking, these functions
 imitate the ones for allocating and initialising dense vectors in
 array format, but there are a few additional arguments that must be
@@ -786,7 +786,7 @@ type of the @code{data} argument is modified accordingly.
 
 @cindex sparse matrix
 @findex mtx_init_matrix_coordinate_real
-The file @file{libmtx/matrix/coordinate/coordinate.h} defines functions for
+The file @file{libmtx/matrix/coordinate.h} defines functions for
 constructing sparse matrices in coordinate format.  Although this is
 mostly similar to creating dense matrices, there are a few additional
 arguments that must be given.  Also, in the case where data is

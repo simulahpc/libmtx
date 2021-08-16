@@ -26,7 +26,7 @@
 
 #include <libmtx/error.h>
 #include <libmtx/mtx/mtx.h>
-#include <libmtx/matrix/array/array.h>
+#include <libmtx/matrix/array.h>
 
 #ifdef LIBMTX_HAVE_BLAS
 #include <cblas.h>

@@ -46,13 +46,13 @@ libmtx_la_LIBADD = $(BLAS_LIBS) $(MPILDFLAGS)
 libmtx_la_SOURCES = \
 	libmtx/error.c \
 	libmtx/index_set.c \
-	libmtx/matrix/array/array.c \
+	libmtx/matrix/array.c \
 	libmtx/matrix/array/blas.c \
 	libmtx/matrix/array/io.c \
 	libmtx/matrix/array/reorder.c \
 	libmtx/matrix/array/sort.c \
+	libmtx/matrix/coordinate.c \
 	libmtx/matrix/coordinate/blas.c \
-	libmtx/matrix/coordinate/coordinate.c \
 	libmtx/matrix/coordinate/io.c \
 	libmtx/matrix/coordinate/reorder.c \
 	libmtx/matrix/coordinate/sort.c \
@@ -90,13 +90,13 @@ nobase_include_HEADERS = \
 	libmtx/error.h \
 	libmtx/index_set.h \
 	libmtx/libmtx.h \
-	libmtx/matrix/array/array.h \
+	libmtx/matrix/array.h \
 	libmtx/matrix/array/blas.h \
 	libmtx/matrix/array/io.h \
 	libmtx/matrix/array/reorder.h \
 	libmtx/matrix/array/sort.h \
+	libmtx/matrix/coordinate.h \
 	libmtx/matrix/coordinate/blas.h \
-	libmtx/matrix/coordinate/coordinate.h \
 	libmtx/matrix/coordinate/io.h \
 	libmtx/matrix/coordinate/reorder.h \
 	libmtx/matrix/coordinate/sort.h \
