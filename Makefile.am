@@ -221,7 +221,7 @@ check_PROGRAMS = \
 
 tests_test_index_set_CPPFLAGS = $(MPICPPFLAGS)
 tests_test_index_set_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
-tests_test_index_set_SOURCES = tests/test_util/index_set.c tests/test.h
+tests_test_index_set_SOURCES = tests/test_index_set.c tests/test.h
 tests_test_mtx_CPPFLAGS = $(MPICPPFLAGS)
 tests_test_mtx_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
 tests_test_mtx_SOURCES = tests/test_mtx.c tests/test.h
