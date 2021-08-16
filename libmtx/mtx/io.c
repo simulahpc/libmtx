@@ -192,6 +192,9 @@ static int read_header_line(
     if (err)
         return err;
 
+    *line_number = 1;
+    *column_number = 1;
+
     int bytes_read;
     err = mtx_header_parse(
         linebuf, &bytes_read, NULL,
@@ -811,8 +814,6 @@ static int read_mtx(
         return MTX_ERR_ERRNO;
 
     /* 1. Parse the header line. */
-    *line_number = 1;
-    *column_number = 1;
     enum mtx_object object;
     enum mtx_format format;
     enum mtx_field field;
