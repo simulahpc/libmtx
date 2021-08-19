@@ -17,9 +17,9 @@
  * <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-08-09
+ * Last modified: 2021-08-19
  *
- * Dense vectors in Matrix Market array format.
+ * Vectors in array format.
  */
 
 #include <libmtx/vector/array.h>
@@ -27,52 +27,12 @@
 #include <libmtx/error.h>
 #include <libmtx/mtx/header.h>
 #include <libmtx/mtx/mtx.h>
+#include <libmtx/mtx/precision.h>
 
 #include <errno.h>
 
 #include <stdlib.h>
 #include <string.h>
-
-static int mtx_alloc_vector_array_field(
-    struct mtx * mtx,
-    enum mtx_field field,
-    int num_comment_lines,
-    const char ** comment_lines,
-    int nonzero_size,
-    int size)
-{
-    int err;
-    mtx->object = mtx_vector;
-    mtx->format = mtx_array;
-    mtx->field = field;
-    mtx->symmetry = mtx_general;
-    mtx->triangle = mtx_nontriangular;
-    mtx->sorting = mtx_row_major;
-    mtx->ordering = mtx_unordered;
-    mtx->assembly = mtx_assembled;
-
-    mtx->num_comment_lines = 0;
-    mtx->comment_lines = NULL;
-    err = mtx_set_comment_lines(mtx, num_comment_lines, comment_lines);
-    if (err)
-        return err;
-
-    mtx->num_rows = size;
-    mtx->num_columns = -1;
-    mtx->num_nonzeros = size;
-    mtx->size = size;
-    mtx->nonzero_size = nonzero_size;
-
-    /* Allocate storage for vector data. */
-    mtx->data = malloc(size * nonzero_size);
-    if (!mtx->data) {
-        for (int i = 0; i < num_comment_lines; i++)
-            free(mtx->comment_lines[i]);
-        free(mtx->comment_lines);
-        return MTX_ERR_ERRNO;
-    }
-    return MTX_SUCCESS;
-}
 
 /**
  * `mtx_alloc_vector_array()` allocates a dense vector in array
@@ -81,174 +41,186 @@ static int mtx_alloc_vector_array_field(
 int mtx_alloc_vector_array(
     struct mtx * mtx,
     enum mtx_field field,
+    enum mtx_precision precision,
     int num_comment_lines,
     const char ** comment_lines,
-    int size)
+    int num_rows)
 {
-    if (field == mtx_real) {
-        return mtx_alloc_vector_array_field(
-            mtx, mtx_real,
-            num_comment_lines, comment_lines,
-            sizeof(float), size);
-    } else if (field == mtx_double) {
-        return mtx_alloc_vector_array_field(
-            mtx, mtx_double,
-            num_comment_lines, comment_lines,
-            sizeof(double), size);
-    } else if (field == mtx_complex) {
-        return mtx_alloc_vector_array_field(
-            mtx, mtx_complex,
-            num_comment_lines, comment_lines,
-            2*sizeof(float), size);
-    } else if (field == mtx_integer) {
-        return mtx_alloc_vector_array_field(
-            mtx, mtx_integer,
-            num_comment_lines, comment_lines,
-            sizeof(int), size);
-    } else {
-        return MTX_ERR_INVALID_MTX_FIELD;
-    }
-}
+    int err;
+    mtx->object = mtx_vector;
+    mtx->format = mtx_array;
+    mtx->field = field;
+    mtx->symmetry = mtx_general;
 
-/**
- * `mtx_alloc_vector_array_real()` allocates a vector with real,
- * single-precision floating point coefficients.
- */
-int mtx_alloc_vector_array_real(
-    struct mtx * mtx,
-    int num_comment_lines,
-    const char ** comment_lines,
-    int size)
-{
-    return mtx_alloc_vector_array_field(
-        mtx, mtx_real, num_comment_lines, comment_lines,
-        sizeof(float), size);
-}
-
-/**
- * `mtx_init_vector_array_real()` creates a vector with real,
- * single-precision floating point coefficients.
- */
-int mtx_init_vector_array_real(
-    struct mtx * mtx,
-    int num_comment_lines,
-    const char ** comment_lines,
-    int size,
-    const float * data)
-{
-    int err = mtx_alloc_vector_array_real(
-        mtx, num_comment_lines, comment_lines, size);
+    mtx->num_comment_lines = 0;
+    mtx->comment_lines = NULL;
+    err = mtx_set_comment_lines(
+        mtx, num_comment_lines, comment_lines);
     if (err)
         return err;
-    for (int i = 0; i < size; i++)
-        ((float *) mtx->data)[i] = data[i];
+
+    mtx->num_rows = num_rows;
+    mtx->num_columns = -1;
+    mtx->num_nonzeros = -1;
+
+    /* Allocate storage for vector data. */
+    err = mtx_vector_array_data_alloc(
+        &mtx->storage.vector_array,
+        field, precision, mtx->num_rows);
+    if (err) {
+        for (int i = 0; i < num_comment_lines; i++)
+            free(mtx->comment_lines[i]);
+        free(mtx->comment_lines);
+        return err;
+    }
+    return MTX_SUCCESS;
+}
+
+/*
+ * Array vector allocation and initialisation.
+ */
+
+/**
+ * `mtx_init_vector_array_real_single()' creates a vector with real,
+ * single-precision floating point coefficients.
+ */
+int mtx_init_vector_array_real_single(
+    struct mtx * mtx,
+    int num_comment_lines,
+    const char ** comment_lines,
+    int64_t size,
+    const float * data)
+{
+    struct mtx_vector_array_data * mtxdata =
+        &mtx->storage.vector_array;
+    int err = mtx_vector_array_data_init_real_single(
+        mtxdata, size, data);
+    if (err)
+        return err;
+
+    mtx->object = mtx_vector;
+    mtx->format = mtx_array;
+    mtx->field = mtx_real;
+    mtx->symmetry = mtx_general;
+    mtx->num_comment_lines = 0;
+    mtx->comment_lines = NULL;
+    err = mtx_set_comment_lines(mtx, num_comment_lines, comment_lines);
+    if (err) {
+        mtx_vector_array_data_free(mtxdata);
+        return err;
+    }
+
+    mtx->num_rows = size;
+    mtx->num_columns = -1;
+    mtx->num_nonzeros = -1;
     return MTX_SUCCESS;
 }
 
 /**
- * `mtx_alloc_vector_array_double()` creates a vector with real,
+ * `mtx_init_vector_array_real_double()' creates a vector with real,
  * double-precision floating point coefficients.
  */
-int mtx_alloc_vector_array_double(
+int mtx_init_vector_array_real_double(
     struct mtx * mtx,
     int num_comment_lines,
     const char ** comment_lines,
-    int size)
-{
-    return mtx_alloc_vector_array_field(
-        mtx, mtx_double, num_comment_lines, comment_lines,
-        sizeof(double), size);
-}
-
-/**
- * `mtx_init_vector_array_double()` creates a vector with real,
- * double-precision floating point coefficients.
- */
-int mtx_init_vector_array_double(
-    struct mtx * mtx,
-    int num_comment_lines,
-    const char ** comment_lines,
-    int size,
+    int64_t size,
     const double * data)
 {
-    int err = mtx_alloc_vector_array_double(
-        mtx, num_comment_lines, comment_lines, size);
+    struct mtx_vector_array_data * mtxdata =
+        &mtx->storage.vector_array;
+    int err = mtx_vector_array_data_init_real_double(
+        mtxdata, size, data);
     if (err)
         return err;
-    for (int i = 0; i < size; i++)
-        ((double *) mtx->data)[i] = data[i];
+
+    mtx->object = mtx_vector;
+    mtx->format = mtx_array;
+    mtx->field = mtx_real;
+    mtx->symmetry = mtx_general;
+    mtx->num_comment_lines = 0;
+    mtx->comment_lines = NULL;
+    err = mtx_set_comment_lines(mtx, num_comment_lines, comment_lines);
+    if (err) {
+        mtx_vector_array_data_free(mtxdata);
+        return err;
+    }
+
+    mtx->num_rows = size;
+    mtx->num_columns = -1;
+    mtx->num_nonzeros = -1;
     return MTX_SUCCESS;
 }
 
 /**
- * `mtx_alloc_vector_array_complex()` allocates a vector with
+ * `mtx_init_vector_array_complex_single()' creates a vector with
  * complex, single-precision floating point coefficients.
  */
-int mtx_alloc_vector_array_complex(
+int mtx_init_vector_array_complex_single(
     struct mtx * mtx,
     int num_comment_lines,
     const char ** comment_lines,
-    int size)
+    int64_t size,
+    const float (* data)[2])
 {
-    return mtx_alloc_vector_array_field(
-        mtx, mtx_complex, num_comment_lines, comment_lines,
-        2*sizeof(float), size);
-}
-
-/**
- * `mtx_init_vector_array_complex()` creates a vector with complex,
- * single-precision floating point coefficients.
- */
-int mtx_init_vector_array_complex(
-    struct mtx * mtx,
-    int num_comment_lines,
-    const char ** comment_lines,
-    int size,
-    const float * data)
-{
-    int err = mtx_alloc_vector_array_complex(
-        mtx, num_comment_lines, comment_lines, size);
+    struct mtx_vector_array_data * mtxdata =
+        &mtx->storage.vector_array;
+    int err = mtx_vector_array_data_init_complex_single(
+        mtxdata, size, data);
     if (err)
         return err;
-    for (int i = 0; i < size; i++) {
-        ((float *) mtx->data)[2*i+0] = data[2*i+0];
-        ((float *) mtx->data)[2*i+1] = data[2*i+1];
+
+    mtx->object = mtx_vector;
+    mtx->format = mtx_array;
+    mtx->field = mtx_complex;
+    mtx->symmetry = mtx_general;
+    mtx->num_comment_lines = 0;
+    mtx->comment_lines = NULL;
+    err = mtx_set_comment_lines(mtx, num_comment_lines, comment_lines);
+    if (err) {
+        mtx_vector_array_data_free(mtxdata);
+        return err;
     }
+
+    mtx->num_rows = size;
+    mtx->num_columns = -1;
+    mtx->num_nonzeros = -1;
     return MTX_SUCCESS;
 }
 
 /**
- * `mtx_alloc_vector_array_integer()` allocates a vector with
- * integer coefficients.
+ * `mtx_init_vector_array_integer_single()` creates a vector with
+ * single precision, integer coefficients.
  */
-int mtx_alloc_vector_array_integer(
+int mtx_init_vector_array_integer_single(
     struct mtx * mtx,
     int num_comment_lines,
     const char ** comment_lines,
-    int size)
+    int64_t size,
+    const int32_t * data)
 {
-    return mtx_alloc_vector_array_field(
-        mtx, mtx_integer, num_comment_lines, comment_lines,
-        sizeof(int), size);
-}
-
-/**
- * `mtx_init_vector_array_integer()` creates a vector with integer
- * coefficients.
- */
-int mtx_init_vector_array_integer(
-    struct mtx * mtx,
-    int num_comment_lines,
-    const char ** comment_lines,
-    int size,
-    const int * data)
-{
-    int err = mtx_alloc_vector_array_integer(
-        mtx, num_comment_lines, comment_lines, size);
+    struct mtx_vector_array_data * mtxdata =
+        &mtx->storage.vector_array;
+    int err = mtx_vector_array_data_init_integer_single(
+        mtxdata, size, data);
     if (err)
         return err;
-    for (int i = 0; i < size; i++)
-        ((int *) mtx->data)[i] = data[i];
+
+    mtx->object = mtx_vector;
+    mtx->format = mtx_array;
+    mtx->field = mtx_integer;
+    mtx->symmetry = mtx_general;
+    mtx->num_comment_lines = 0;
+    mtx->comment_lines = NULL;
+    err = mtx_set_comment_lines(mtx, num_comment_lines, comment_lines);
+    if (err) {
+        mtx_vector_array_data_free(mtxdata);
+        return err;
+    }
+
+    mtx->num_rows = size;
+    mtx->num_columns = -1;
+    mtx->num_nonzeros = -1;
     return MTX_SUCCESS;
 }
 
@@ -262,36 +234,16 @@ int mtx_vector_array_set_zero(
         return MTX_ERR_INVALID_MTX_OBJECT;
     if (mtx->format != mtx_array)
         return MTX_ERR_INVALID_MTX_FORMAT;
-
-    if (mtx->field == mtx_real) {
-        float * data = (float *) mtx->data;
-        for (int64_t k = 0; k < mtx->size; k++)
-            data[k] = 0;
-    } else if (mtx->field == mtx_double) {
-        double * data = (double *) mtx->data;
-        for (int64_t k = 0; k < mtx->size; k++)
-            data[k] = 0;
-    } else if (mtx->field == mtx_complex) {
-        float * data = (float *) mtx->data;
-        for (int64_t k = 0; k < mtx->size; k++) {
-            data[2*k+0] = 0;
-            data[2*k+1] = 0;
-        }
-    } else if (mtx->field == mtx_integer) {
-        int * data = (int *) mtx->data;
-        for (int64_t k = 0; k < mtx->size; k++)
-            data[k] = 0;
-    } else {
-        return MTX_ERR_INVALID_MTX_FIELD;
-    }
-    return MTX_SUCCESS;
+    struct mtx_vector_array_data * mtxdata =
+        &mtx->storage.vector_array;
+    return mtx_vector_array_data_set_zero(mtxdata);
 }
 
 /**
- * `mtx_vector_array_set_constant_real()' sets every value of a vector
- * equal to a constant, single precision floating point number.
+ * `mtx_vector_array_set_constant_real_single()' sets every value of a
+ * vector equal to a constant, single precision floating point number.
  */
-int mtx_vector_array_set_constant_real(
+int mtx_vector_array_set_constant_real_single(
     struct mtx * mtx,
     float a)
 {
@@ -299,20 +251,16 @@ int mtx_vector_array_set_constant_real(
         return MTX_ERR_INVALID_MTX_OBJECT;
     if (mtx->format != mtx_array)
         return MTX_ERR_INVALID_MTX_FORMAT;
-    if (mtx->field != mtx_real)
-        return MTX_ERR_INVALID_MTX_FIELD;
-
-    float * data = (float *) mtx->data;
-    for (int64_t k = 0; k < mtx->size; k++)
-        data[k] = a;
-    return MTX_SUCCESS;
+    struct mtx_vector_array_data * mtxdata =
+        &mtx->storage.vector_array;
+    return mtx_vector_array_data_set_constant_real_single(mtxdata, a);
 }
 
 /**
- * `mtx_vector_array_set_constant_double()' sets every value of a
+ * `mtx_vector_array_set_constant_real_double()' sets every value of a
  * vector equal to a constant, double precision floating point number.
  */
-int mtx_vector_array_set_constant_double(
+int mtx_vector_array_set_constant_real_double(
     struct mtx * mtx,
     double a)
 {
@@ -320,57 +268,42 @@ int mtx_vector_array_set_constant_double(
         return MTX_ERR_INVALID_MTX_OBJECT;
     if (mtx->format != mtx_array)
         return MTX_ERR_INVALID_MTX_FORMAT;
-    if (mtx->field != mtx_double)
-        return MTX_ERR_INVALID_MTX_FIELD;
-
-    double * data = (double *) mtx->data;
-    for (int64_t k = 0; k < mtx->size; k++)
-        data[k] = a;
-    return MTX_SUCCESS;
+    struct mtx_vector_array_data * mtxdata =
+        &mtx->storage.vector_array;
+    return mtx_vector_array_data_set_constant_real_double(mtxdata, a);
 }
 
 /**
- * `mtx_vector_array_set_constant_complex()' sets every value of a
- * vector equal to a constant, single precision floating point complex
- * number.
+ * `mtx_vector_array_set_constant_complex_single()' sets every value
+ * of a vector equal to a constant, single precision floating point
+ * complex number.
  */
-int mtx_vector_array_set_constant_complex(
+int mtx_vector_array_set_constant_complex_single(
     struct mtx * mtx,
-    float a,
-    float b)
+    float a[2])
 {
     if (mtx->object != mtx_vector)
         return MTX_ERR_INVALID_MTX_OBJECT;
     if (mtx->format != mtx_array)
         return MTX_ERR_INVALID_MTX_FORMAT;
-    if (mtx->field != mtx_complex)
-        return MTX_ERR_INVALID_MTX_FIELD;
-
-    float * data = (float *) mtx->data;
-    for (int64_t k = 0; k < mtx->size; k++) {
-        data[2*k+0] = a;
-        data[2*k+1] = b;
-    }
-    return MTX_SUCCESS;
+    struct mtx_vector_array_data * mtxdata =
+        &mtx->storage.vector_array;
+    return mtx_vector_array_data_set_constant_complex_single(mtxdata, a);
 }
 
 /**
- * `mtx_vector_array_set_constant_integer()' sets every value of a
- * vector equal to a constant integer.
+ * `mtx_vector_array_set_constant_integer_single()' sets every value
+ * of a vector equal to a constant, single precision integer.
  */
-int mtx_vector_array_set_constant_integer(
+int mtx_vector_array_set_constant_integer_single(
     struct mtx * mtx,
-    int a)
+    int32_t a)
 {
     if (mtx->object != mtx_vector)
         return MTX_ERR_INVALID_MTX_OBJECT;
     if (mtx->format != mtx_array)
         return MTX_ERR_INVALID_MTX_FORMAT;
-    if (mtx->field != mtx_integer)
-        return MTX_ERR_INVALID_MTX_FIELD;
-
-    int * data = (int *) mtx->data;
-    for (int64_t k = 0; k < mtx->size; k++)
-        data[k] = a;
-    return MTX_SUCCESS;
+    struct mtx_vector_array_data * mtxdata =
+        &mtx->storage.vector_array;
+    return mtx_vector_array_data_set_constant_integer_single(mtxdata, a);
 }

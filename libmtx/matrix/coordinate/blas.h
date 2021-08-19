@@ -25,7 +25,8 @@
 #ifndef LIBMTX_MATRIX_COORDINATE_BLAS_H
 #define LIBMTX_MATRIX_COORDINATE_BLAS_H
 
-struct mtx;
+struct mtx_matrix_coordinate_data;
+struct mtx_vector_array_data;
 
 /*
  * Level 1 BLAS operations.
@@ -37,7 +38,7 @@ struct mtx;
  */
 int mtx_matrix_coordinate_sscal(
     float a,
-    struct mtx * x);
+    struct mtx_matrix_coordinate_data * x);
 
 /**
  * `mtx_matrix_coordinate_dscal()' scales a matrix by a double
@@ -45,7 +46,7 @@ int mtx_matrix_coordinate_sscal(
  */
 int mtx_matrix_coordinate_dscal(
     double a,
-    struct mtx * x);
+    struct mtx_matrix_coordinate_data * x);
 
 /**
  * `mtx_matrix_coordinate_saxpy()' adds two matrices of single
@@ -53,8 +54,8 @@ int mtx_matrix_coordinate_dscal(
  */
 int mtx_matrix_coordinate_saxpy(
     float a,
-    const struct mtx * x,
-    struct mtx * y);
+    const struct mtx_matrix_coordinate_data * x,
+    struct mtx_matrix_coordinate_data * y);
 
 /**
  * `mtx_matrix_coordinate_daxpy()' adds two matrices of double
@@ -62,42 +63,41 @@ int mtx_matrix_coordinate_saxpy(
  */
 int mtx_matrix_coordinate_daxpy(
     double a,
-    const struct mtx * x,
-    struct mtx * y);
+    const struct mtx_matrix_coordinate_data * x,
+    struct mtx_matrix_coordinate_data * y);
 
 /**
- * `mtx_matrix_coordinate_sdot()' computes the Euclidean Frobenius
- * inner product of two matrices of single precision floating-point
- * values.
+ * `mtx_matrix_coordinate_sdot()' computes the Frobenius inner product
+ * of two matrices in single precision floating point.
  */
 int mtx_matrix_coordinate_sdot(
-    const struct mtx * x,
-    const struct mtx * y,
+    const struct mtx_matrix_coordinate_data * x,
+    const struct mtx_matrix_coordinate_data * y,
     float * dot);
 
 /**
  * `mtx_matrix_coordinate_ddot()' computes the Frobenius inner product
- * of two matrices of double precision floating-point values.
+ * of two matrices in double precision floating point.
  */
 int mtx_matrix_coordinate_ddot(
-    const struct mtx * x,
-    const struct mtx * y,
+    const struct mtx_matrix_coordinate_data * x,
+    const struct mtx_matrix_coordinate_data * y,
     double * dot);
 
 /**
  * `mtx_matrix_coordinate_snrm2()' computes the Frobenius norm of a
- * matrix of single precision floating-point values.
+ * matrix in single precision floating point.
  */
 int mtx_matrix_coordinate_snrm2(
-    const struct mtx * x,
+    const struct mtx_matrix_coordinate_data * x,
     float * nrm2);
 
 /**
  * `mtx_matrix_coordinate_dnrm2()' computes the Frobenius norm of a
- * matrix of double precision floating-point values.
+ * matrix in double precision floating point.
  */
 int mtx_matrix_coordinate_dnrm2(
-    const struct mtx * x,
+    const struct mtx_matrix_coordinate_data * x,
     double * nrm2);
 
 /*
@@ -111,10 +111,10 @@ int mtx_matrix_coordinate_dnrm2(
  */
 int mtx_matrix_coordinate_sgemv(
     float alpha,
-    const struct mtx * A,
-    const struct mtx * x,
+    const struct mtx_matrix_coordinate_data * A,
+    const struct mtx_vector_array_data * x,
     float beta,
-    struct mtx * y);
+    struct mtx_vector_array_data * y);
 
 /**
  * `mtx_matrix_coordinate_dgemv()' computes the product of a matrix
@@ -123,9 +123,9 @@ int mtx_matrix_coordinate_sgemv(
  */
 int mtx_matrix_coordinate_dgemv(
     double alpha,
-    const struct mtx * A,
-    const struct mtx * x,
+    const struct mtx_matrix_coordinate_data * A,
+    const struct mtx_vector_array_data * x,
     double beta,
-    struct mtx * y);
+    struct mtx_vector_array_data * y);
 
 #endif

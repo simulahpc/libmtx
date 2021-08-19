@@ -29,71 +29,89 @@
 
 #include <stdint.h>
 
-struct mtx;
+struct mtx_matrix_coordinate_real_single;
+struct mtx_matrix_coordinate_real_double;
+struct mtx_matrix_coordinate_complex_single;
+struct mtx_matrix_coordinate_complex_double;
+struct mtx_matrix_coordinate_integer_single;
+struct mtx_matrix_coordinate_integer_double;
+struct mtx_matrix_coordinate_pattern;
 
 /**
- * `mtx_matrix_coordinate_parse_size()` parse a size line from a
- * Matrix Market file for a matrix in coordinate format.
+ * `mtx_matrix_coordinate_parse_data_real_single()' parses a data line
+ * from a Matrix Market file for a single precision, real matrix in
+ * coordinate format.
  */
-int mtx_matrix_coordinate_parse_size(
+int mtx_matrix_coordinate_parse_data_real_single(
     const char * line,
     int * bytes_read,
     const char ** endptr,
-    enum mtx_object object,
-    enum mtx_format format,
-    enum mtx_field field,
-    enum mtx_symmetry symmetry,
-    int * num_rows,
-    int * num_columns,
-    int64_t * num_nonzeros,
-    int64_t * size,
-    int * nonzero_size);
-
-/**
- * `mtx_matrix_coordinate_parse_data_real()' parses a data line from a
- * Matrix Market file for a real matrix in coordinate format.
- */
-int mtx_matrix_coordinate_parse_data_real(
-    const char * line,
-    int * bytes_read,
-    const char ** endptr,
-    struct mtx_matrix_coordinate_real * data,
+    struct mtx_matrix_coordinate_real_single * data,
     int num_rows,
     int num_columns);
 
 /**
- * `mtx_matrix_coordinate_parse_data_double()' parses a data line from a
- * Matrix Market file for a double matrix in coordinate format.
+ * `mtx_matrix_coordinate_parse_data_real_double()' parses a data line
+ * from a Matrix Market file for a double precision, real matrix in
+ * coordinate format.
  */
-int mtx_matrix_coordinate_parse_data_double(
+int mtx_matrix_coordinate_parse_data_real_double(
     const char * line,
     int * bytes_read,
     const char ** endptr,
-    struct mtx_matrix_coordinate_double * data,
+    struct mtx_matrix_coordinate_real_double * data,
     int num_rows,
     int num_columns);
 
 /**
- * `mtx_matrix_coordinate_parse_data_complex()' parses a data line from a
- * Matrix Market file for a complex matrix in coordinate format.
+ * `mtx_matrix_coordinate_parse_data_complex_single()' parses a data
+ * line from a Matrix Market file for a single precision, complex
+ * matrix in coordinate format.
  */
-int mtx_matrix_coordinate_parse_data_complex(
+int mtx_matrix_coordinate_parse_data_complex_single(
     const char * line,
     int * bytes_read,
     const char ** endptr,
-    struct mtx_matrix_coordinate_complex * data,
+    struct mtx_matrix_coordinate_complex_single * data,
     int num_rows,
     int num_columns);
 
 /**
- * `mtx_matrix_coordinate_parse_data_integer()' parses a data line from a
- * Matrix Market file for a integer matrix in coordinate format.
+ * `mtx_matrix_coordinate_parse_data_complex_double()' parses a data
+ * line from a Matrix Market file for a double precision, complex
+ * matrix in coordinate format.
  */
-int mtx_matrix_coordinate_parse_data_integer(
+int mtx_matrix_coordinate_parse_data_complex_double(
     const char * line,
     int * bytes_read,
     const char ** endptr,
-    struct mtx_matrix_coordinate_integer * data,
+    struct mtx_matrix_coordinate_complex_double * data,
+    int num_rows,
+    int num_columns);
+
+/**
+ * `mtx_matrix_coordinate_parse_data_integer_single()' parses a data
+ * line from a Matrix Market file for a single precision, integer
+ * matrix in coordinate format.
+ */
+int mtx_matrix_coordinate_parse_data_integer_single(
+    const char * line,
+    int * bytes_read,
+    const char ** endptr,
+    struct mtx_matrix_coordinate_integer_single * data,
+    int num_rows,
+    int num_columns);
+
+/**
+ * `mtx_matrix_coordinate_parse_data_integer_double()' parses a data
+ * line from a Matrix Market file for a double precision, integer
+ * matrix in coordinate format.
+ */
+int mtx_matrix_coordinate_parse_data_integer_double(
+    const char * line,
+    int * bytes_read,
+    const char ** endptr,
+    struct mtx_matrix_coordinate_integer_double * data,
     int num_rows,
     int num_columns);
 

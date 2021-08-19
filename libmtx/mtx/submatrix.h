@@ -19,34 +19,22 @@
  * Authors: James D. Trotter <james@simula.no>
  * Last modified: 2021-08-09
  *
- * Input/output for dense vectors in array format.
+ * Extracting submatrices from a matrix.
  */
 
-#ifndef LIBMTX_VECTOR_ARRAY_IO_H
-#define LIBMTX_VECTOR_ARRAY_IO_H
-
-#include <libmtx/mtx/header.h>
-
-#include <stdint.h>
+#ifndef LIBMTX_MTX_SUBMATRIX_H
+#define LIBMTX_MTX_SUBMATRIX_H
 
 struct mtx;
 
 /**
- * `mtx_vector_array_parse_size()` parse a size line from a Matrix
- * Market file for a vector in array format.
+ * `mtx_matrix_submatrix()` obtains a submatrix consisting of the
+ * given rows and columns.
  */
-int mtx_vector_array_parse_size(
-    const char * line,
-    int * bytes_read,
-    const char ** endptr,
-    enum mtx_object object,
-    enum mtx_format format,
-    enum mtx_field field,
-    enum mtx_symmetry symmetry,
-    int * num_rows,
-    int * num_columns,
-    int64_t * num_nonzeros,
-    int64_t * size,
-    int * nonzero_size);
+int mtx_matrix_submatrix(
+    struct mtx * submtx,
+    const struct mtx * mtx,
+    const struct mtx_index_set * rows,
+    const struct mtx_index_set * columns);
 
 #endif

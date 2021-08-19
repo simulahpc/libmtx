@@ -25,7 +25,7 @@
 #include <libmtx/mtx/assembly.h>
 
 /**
- * `mtx_assembly_str()` is a string representing the assembly type.
+ * `mtx_assembly_str()' is a string representing the assembly type.
  */
 const char * mtx_assembly_str(
     enum mtx_assembly assembly)

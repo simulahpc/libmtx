@@ -25,11 +25,11 @@
 #include "test.h"
 
 #include <libmtx/error.h>
-#include <libmtx/util/index_set.h>
-#include <libmtx/mtx/header.h>
-#include <libmtx/mtx/matrix.h>
 #include <libmtx/matrix/coordinate.h>
+#include <libmtx/mtx/header.h>
 #include <libmtx/mtx/mtx.h>
+#include <libmtx/mtx/submatrix.h>
+#include <libmtx/util/index_set.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -51,15 +51,14 @@ int test_mtx_matrix_submatrix_coordinate_real_general(void)
     int num_rows = 4;
     int num_columns = 4;
     int64_t size = 6;
-    const struct mtx_matrix_coordinate_real data[] = {
+    const struct mtx_matrix_coordinate_real_single data[] = {
         {1,1,1.0f}, {1,4,2.0f},
         {2,2,3.0f},
         {3,3,4.0f},
         {4,1,5.0f}, {4,4,6.0f}};
-    err = mtx_init_matrix_coordinate_real(
+    err = mtx_init_matrix_coordinate_real_single(
         &mtx, mtx_general,
-        mtx_nontriangular, mtx_unsorted,
-        mtx_unordered, mtx_unassembled,
+        mtx_nontriangular, mtx_unsorted, mtx_unassembled,
         num_comment_lines, comment_lines,
         num_rows, num_columns, size, data);
     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
@@ -70,31 +69,36 @@ int test_mtx_matrix_submatrix_coordinate_real_general(void)
     struct mtx_index_set columns;
     mtx_index_set_init_interval(&columns, 1, 5);
     struct mtx submtx;
-    err = mtx_matrix_submatrix(&mtx, &rows, &columns, &submtx);
+    err = mtx_matrix_submatrix(&submtx, &mtx, &rows, &columns);
     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
     TEST_ASSERT_EQ(mtx_matrix, submtx.object);
     TEST_ASSERT_EQ(mtx_coordinate, submtx.format);
     TEST_ASSERT_EQ(mtx_real, submtx.field);
     TEST_ASSERT_EQ(mtx_general, submtx.symmetry);
-    TEST_ASSERT_EQ(mtx_nontriangular, submtx.triangle);
-    TEST_ASSERT_EQ(mtx_unsorted, submtx.sorting);
-    TEST_ASSERT_EQ(mtx_unordered, submtx.ordering);
-    TEST_ASSERT_EQ(mtx_unassembled, submtx.assembly);
     TEST_ASSERT_EQ(4, submtx.num_rows);
     TEST_ASSERT_EQ(4, submtx.num_columns);
     TEST_ASSERT_EQ(3, submtx.num_nonzeros);
-    TEST_ASSERT_EQ(3, submtx.size);
-    TEST_ASSERT_EQ(   1, ((const struct mtx_matrix_coordinate_real *) submtx.data)[0].i);
-    TEST_ASSERT_EQ(   1, ((const struct mtx_matrix_coordinate_real *) submtx.data)[0].j);
-    TEST_ASSERT_EQ(1.0f, ((const struct mtx_matrix_coordinate_real *) submtx.data)[0].a);
-    TEST_ASSERT_EQ(   1, ((const struct mtx_matrix_coordinate_real *) submtx.data)[1].i);
-    TEST_ASSERT_EQ(   4, ((const struct mtx_matrix_coordinate_real *) submtx.data)[1].j);
-    TEST_ASSERT_EQ(2.0f, ((const struct mtx_matrix_coordinate_real *) submtx.data)[1].a);
-    TEST_ASSERT_EQ(   2, ((const struct mtx_matrix_coordinate_real *) submtx.data)[2].i);
-    TEST_ASSERT_EQ(   2, ((const struct mtx_matrix_coordinate_real *) submtx.data)[2].j);
-    TEST_ASSERT_EQ(3.0f, ((const struct mtx_matrix_coordinate_real *) submtx.data)[2].a);
-    if (!err)
-        mtx_free(&submtx);
+
+    const struct mtx_matrix_coordinate_data * matrix_coordinate =
+        &submtx.storage.matrix_coordinate;
+    TEST_ASSERT_EQ(mtx_real, matrix_coordinate->field);
+    TEST_ASSERT_EQ(mtx_single, matrix_coordinate->precision);
+    TEST_ASSERT_EQ(mtx_general, matrix_coordinate->symmetry);
+    TEST_ASSERT_EQ(mtx_nontriangular, matrix_coordinate->triangle);
+    TEST_ASSERT_EQ(mtx_unsorted, matrix_coordinate->sorting);
+    TEST_ASSERT_EQ(mtx_unassembled, matrix_coordinate->assembly);
+    TEST_ASSERT_EQ(4, matrix_coordinate->num_rows);
+    TEST_ASSERT_EQ(4, matrix_coordinate->num_columns);
+    TEST_ASSERT_EQ(3, matrix_coordinate->size);
+    const struct mtx_matrix_coordinate_real_single * mtxdata =
+        matrix_coordinate->data.real_single;
+    TEST_ASSERT_EQ(   1, mtxdata[0].i); TEST_ASSERT_EQ(   1, mtxdata[0].j);
+    TEST_ASSERT_EQ(1.0f, mtxdata[0].a);
+    TEST_ASSERT_EQ(   1, mtxdata[1].i); TEST_ASSERT_EQ(   4, mtxdata[1].j);
+    TEST_ASSERT_EQ(2.0f, mtxdata[1].a);
+    TEST_ASSERT_EQ(   2, mtxdata[2].i); TEST_ASSERT_EQ(   2, mtxdata[2].j);
+    TEST_ASSERT_EQ(3.0f, mtxdata[2].a);
+    mtx_free(&submtx);
     mtx_free(&mtx);
     return TEST_SUCCESS;
 }

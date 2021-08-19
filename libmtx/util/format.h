@@ -22,8 +22,8 @@
  * Printing formatted output.
  */
 
-#ifndef LIBMTX_PRINT_H
-#define LIBMTX_PRINT_H
+#ifndef LIBMTX_FORMAT_H
+#define LIBMTX_FORMAT_H
 
 #include <stdio.h>
 

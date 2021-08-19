@@ -26,6 +26,7 @@
 
 #include <libmtx/error.h>
 #include <libmtx/matrix/coordinate.h>
+#include <libmtx/matrix/coordinate/data.h>
 #include <libmtx/mtx/mtx.h>
 #include <libmtx/mtx/header.h>
 
@@ -48,83 +49,6 @@ const char * mtx_transposition_str(
 }
 
 /**
- * `mtx_matrix_coordinate_transpose()` transposes a square sparse
- * matrix.
- */
-int mtx_matrix_coordinate_transpose(
-    struct mtx * mtx)
-{
-    if (mtx->object != mtx_matrix)
-        return MTX_ERR_INVALID_MTX_OBJECT;
-    if (mtx->format != mtx_coordinate)
-        return MTX_ERR_INVALID_MTX_FORMAT;
-    if (mtx->num_rows != mtx->num_columns)
-        return MTX_ERR_INVALID_MTX_SIZE;
-
-    if (mtx->symmetry == mtx_symmetric) {
-        return MTX_SUCCESS;
-    } else if (mtx->symmetry == mtx_skew_symmetric) {
-        /* TODO: Implement transpose for skew-symmetric matrices. */
-        errno = ENOTSUP;
-        return MTX_ERR_ERRNO;
-    } else if (mtx->symmetry == mtx_hermitian) {
-        errno = ENOTSUP;
-        return MTX_ERR_ERRNO;
-    } else if (mtx->symmetry == mtx_general) {
-        if (mtx->field == mtx_real) {
-            struct mtx_matrix_coordinate_real * data =
-                (struct mtx_matrix_coordinate_real *)
-                mtx->data;
-            for (int64_t k = 0; k < mtx->size; k++) {
-                int i = data[k].i;
-                data[k].i = data[k].j;
-                data[k].j = i;
-            }
-        } else if (mtx->field == mtx_double) {
-            struct mtx_matrix_coordinate_double * data =
-                (struct mtx_matrix_coordinate_double *)
-                mtx->data;
-            for (int64_t k = 0; k < mtx->size; k++) {
-                int i = data[k].i;
-                data[k].i = data[k].j;
-                data[k].j = i;
-            }
-        } else if (mtx->field == mtx_complex) {
-            struct mtx_matrix_coordinate_complex * data =
-                (struct mtx_matrix_coordinate_complex *)
-                mtx->data;
-            for (int64_t k = 0; k < mtx->size; k++) {
-                int i = data[k].i;
-                data[k].i = data[k].j;
-                data[k].j = i;
-            }
-        } else if (mtx->field == mtx_integer) {
-            struct mtx_matrix_coordinate_integer * data =
-                (struct mtx_matrix_coordinate_integer *)
-                mtx->data;
-            for (int64_t k = 0; k < mtx->size; k++) {
-                int i = data[k].i;
-                data[k].i = data[k].j;
-                data[k].j = i;
-            }
-        } else if (mtx->field == mtx_pattern) {
-            struct mtx_matrix_coordinate_pattern * data =
-                (struct mtx_matrix_coordinate_pattern *)
-                mtx->data;
-            for (int64_t k = 0; k < mtx->size; k++) {
-                int i = data[k].i;
-                data[k].i = data[k].j;
-                data[k].j = i;
-            }
-        } else {
-            return MTX_ERR_INVALID_MTX_FIELD;
-        }
-    }
-
-    return MTX_SUCCESS;
-}
-
-/**
  * `mtx_transpose()' transposes a matrix or vector.
  */
 int mtx_transpose(
@@ -139,9 +63,14 @@ int mtx_transpose(
         errno = ENOTSUP;
         return MTX_ERR_ERRNO;
     } else if (mtx->format == mtx_coordinate) {
-        err = mtx_matrix_coordinate_transpose(mtx);
+        struct mtx_matrix_coordinate_data * matrix_coordinate =
+            &mtx->storage.matrix_coordinate;
+        err = mtx_matrix_coordinate_data_transpose(matrix_coordinate);
         if (err)
             return err;
+        int num_rows = mtx->num_rows;
+        mtx->num_rows = mtx->num_columns;
+        mtx->num_columns = num_rows;
     } else {
         return MTX_ERR_INVALID_MTX_FORMAT;
     }

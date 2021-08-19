@@ -57,6 +57,7 @@ struct program_options
 {
     double alpha;
     char * x_path;
+    enum mtx_precision precision;
     char * format;
     bool gzip;
     int repeat;
@@ -72,6 +73,7 @@ static int program_options_init(
 {
     args->alpha = 1.0;
     args->x_path = NULL;
+    args->precision = mtx_double;
     args->format = NULL;
     args->gzip = false;
     args->repeat = 1;
@@ -120,6 +122,8 @@ static void program_options_print_help(
     fprintf(f, "  x\tPath to Matrix Market file for the vector x.\n");
     fprintf(f, "\n");
     fprintf(f, " Other options are:\n");
+    fprintf(f, "  --precision=PRECISION\tprecision used to represent matrix or\n");
+    fprintf(f, "\t\t\tvector values: single or double. (default: double)\n");
     fprintf(f, "  -z, --gzip, --gunzip, --ungzip\tfilter files through gzip\n");
     fprintf(f, "  --format=FORMAT\tFormat string for outputting numerical values.\n");
     fprintf(f, "\t\t\tFor real, double and complex values, the format specifiers\n");
@@ -180,6 +184,36 @@ static int parse_program_options(
         num_arguments_consumed = 0;
         if (*argc <= 0)
             break;
+
+        if (strcmp((*argv)[0], "--precision") == 0) {
+            if (*argc < 2) {
+                program_options_free(args);
+                return EINVAL;
+            }
+            char * s = (*argv)[1];
+            if (strcmp(s, "single") == 0) {
+                args->precision = mtx_single;
+            } else if (strcmp(s, "double") == 0) {
+                args->precision = mtx_double;
+            } else {
+                program_options_free(args);
+                return EINVAL;
+            }
+            num_arguments_consumed += 2;
+            continue;
+        } else if (strstr((*argv)[0], "--precision=") == (*argv)[0]) {
+            char * s = (*argv)[0] + strlen("--precision=");
+            if (strcmp(s, "single") == 0) {
+                args->precision = mtx_single;
+            } else if (strcmp(s, "double") == 0) {
+                args->precision = mtx_double;
+            } else {
+                program_options_free(args);
+                return EINVAL;
+            }
+            num_arguments_consumed++;
+            continue;
+        }
 
         if (strcmp((*argv)[0], "-z") == 0 ||
             strcmp((*argv)[0], "--gzip") == 0 ||
@@ -353,7 +387,7 @@ int main(int argc, char *argv[])
 
     int line_number, column_number;
     err = mtx_read(
-        &x, args.x_path ? args.x_path : "", args.gzip,
+        &x, args.precision, args.x_path ? args.x_path : "", args.gzip,
         &line_number, &column_number);
     if (err && (line_number == -1 && column_number == -1)) {
         if (args.verbose > 0)
@@ -383,53 +417,72 @@ int main(int argc, char *argv[])
     /* 3. Scale the vector. */
     for (int i = 0; i < args.repeat; i++) {
         if (x.field == mtx_real) {
-            if (args.verbose > 0) {
-                fprintf(diagf, "mtx_sscal: ");
-                fflush(diagf);
-                clock_gettime(CLOCK_MONOTONIC, &t0);
-            }
-            err = mtx_sscal(args.alpha, &x);
-            if (err) {
-                if (args.verbose > 0)
-                    fprintf(diagf, "\n");
+            if (args.precision == mtx_single) {
+                if (args.verbose > 0) {
+                    fprintf(diagf, "mtx_sscal: ");
+                    fflush(diagf);
+                    clock_gettime(CLOCK_MONOTONIC, &t0);
+                }
+                err = mtx_sscal(args.alpha, &x);
+                if (err) {
+                    if (args.verbose > 0)
+                        fprintf(diagf, "\n");
+                    fprintf(stderr, "%s: %s\n",
+                            program_invocation_short_name,
+                            mtx_strerror(err));
+                    mtx_free(&x);
+                    program_options_free(&args);
+                    return EXIT_FAILURE;
+                }
+                if (args.verbose > 0) {
+                    clock_gettime(CLOCK_MONOTONIC, &t1);
+                    fprintf(diagf, "%.6f seconds\n",
+                            timespec_duration(t0, t1));
+                }
+            } else if (args.precision == mtx_double) {
+                if (args.verbose > 0) {
+                    fprintf(diagf, "mtx_dscal: ");
+                    fflush(diagf);
+                    clock_gettime(CLOCK_MONOTONIC, &t0);
+                }
+                err = mtx_dscal(args.alpha, &x);
+                if (err) {
+                    if (args.verbose > 0)
+                        fprintf(diagf, "\n");
+                    fprintf(stderr, "%s: %s\n",
+                            program_invocation_short_name,
+                            mtx_strerror(err));
+                    mtx_free(&x);
+                    program_options_free(&args);
+                    return EXIT_FAILURE;
+                }
+                if (args.verbose > 0) {
+                    clock_gettime(CLOCK_MONOTONIC, &t1);
+                    fprintf(diagf, "%.6f seconds\n",
+                            timespec_duration(t0, t1));
+                }
+            } else {
                 fprintf(stderr, "%s: %s\n",
                         program_invocation_short_name,
-                        mtx_strerror(err));
+                        mtx_strerror(MTX_ERR_INVALID_PRECISION));
                 mtx_free(&x);
                 program_options_free(&args);
                 return EXIT_FAILURE;
             }
-            if (args.verbose > 0) {
-                clock_gettime(CLOCK_MONOTONIC, &t1);
-                fprintf(diagf, "%.6f seconds\n",
-                        timespec_duration(t0, t1));
-            }
-        } else if (x.field == mtx_double) {
-            if (args.verbose > 0) {
-                fprintf(diagf, "mtx_dscal: ");
-                fflush(diagf);
-                clock_gettime(CLOCK_MONOTONIC, &t0);
-            }
-            err = mtx_dscal(args.alpha, &x);
-            if (err) {
-                if (args.verbose > 0)
-                    fprintf(diagf, "\n");
-                fprintf(stderr, "%s: %s\n",
-                        program_invocation_short_name,
-                        mtx_strerror(err));
-                mtx_free(&x);
-                program_options_free(&args);
-                return EXIT_FAILURE;
-            }
-            if (args.verbose > 0) {
-                clock_gettime(CLOCK_MONOTONIC, &t1);
-                fprintf(diagf, "%.6f seconds\n",
-                        timespec_duration(t0, t1));
-            }
-        } else {
+        } else if (x.field == mtx_complex ||
+                   x.field == mtx_integer ||
+                   x.field == mtx_pattern)
+        {
             fprintf(stderr, "%s: %s\n",
                     program_invocation_short_name,
                     strerror(ENOTSUP));
+            mtx_free(&x);
+            program_options_free(&args);
+            return EXIT_FAILURE;
+        } else {
+            fprintf(stderr, "%s: %s\n",
+                    program_invocation_short_name,
+                    mtx_strerror(MTX_ERR_INVALID_MTX_FIELD));
             mtx_free(&x);
             program_options_free(&args);
             return EXIT_FAILURE;

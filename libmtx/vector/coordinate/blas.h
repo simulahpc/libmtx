@@ -25,7 +25,7 @@
 #ifndef LIBMTX_VECTOR_COORDINATE_BLAS_H
 #define LIBMTX_VECTOR_COORDINATE_BLAS_H
 
-struct mtx;
+struct mtx_vector_coordinate_data;
 
 /**
  * `mtx_vector_coordinate_sscal()' scales a vector by a single
@@ -33,7 +33,7 @@ struct mtx;
  */
 int mtx_vector_coordinate_sscal(
     float a,
-    struct mtx * x);
+    struct mtx_vector_coordinate_data * x);
 
 /**
  * `mtx_vector_coordinate_dscal()' scales a vector by a double
@@ -41,7 +41,7 @@ int mtx_vector_coordinate_sscal(
  */
 int mtx_vector_coordinate_dscal(
     double a,
-    struct mtx * x);
+    struct mtx_vector_coordinate_data * x);
 
 /**
  * `mtx_vector_coordinate_saxpy()' adds two vectors of single
@@ -49,8 +49,8 @@ int mtx_vector_coordinate_dscal(
  */
 int mtx_vector_coordinate_saxpy(
     float a,
-    const struct mtx * x,
-    struct mtx * y);
+    const struct mtx_vector_coordinate_data * x,
+    struct mtx_vector_coordinate_data * y);
 
 /**
  * `mtx_vector_coordinate_daxpy()' adds two vectors of double
@@ -58,8 +58,8 @@ int mtx_vector_coordinate_saxpy(
  */
 int mtx_vector_coordinate_daxpy(
     double a,
-    const struct mtx * x,
-    struct mtx * y);
+    const struct mtx_vector_coordinate_data * x,
+    struct mtx_vector_coordinate_data * y);
 
 /**
  * `mtx_vector_coordinate_sdot()' computes the Euclidean dot product
@@ -67,8 +67,8 @@ int mtx_vector_coordinate_daxpy(
  * single precision floating-point values.
  */
 int mtx_vector_coordinate_sdot(
-    const struct mtx * x,
-    const struct mtx * y,
+    const struct mtx_vector_coordinate_data * x,
+    const struct mtx_vector_coordinate_data * y,
     float * dot);
 
 /**
@@ -77,8 +77,8 @@ int mtx_vector_coordinate_sdot(
  * double precision floating-point values.
  */
 int mtx_vector_coordinate_ddot(
-    const struct mtx * x,
-    const struct mtx * y,
+    const struct mtx_vector_coordinate_data * x,
+    const struct mtx_vector_coordinate_data * y,
     double * dot);
 
 /**
@@ -87,7 +87,7 @@ int mtx_vector_coordinate_ddot(
  * floating-point values.
  */
 int mtx_vector_coordinate_snrm2(
-    const struct mtx * x,
+    const struct mtx_vector_coordinate_data * x,
     float * nrm2);
 
 /**
@@ -96,7 +96,7 @@ int mtx_vector_coordinate_snrm2(
  * floating-point values.
  */
 int mtx_vector_coordinate_dnrm2(
-    const struct mtx * x,
+    const struct mtx_vector_coordinate_data * x,
     double * nrm2);
 
 #endif

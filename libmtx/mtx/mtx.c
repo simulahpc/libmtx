@@ -26,16 +26,37 @@
 
 #include <libmtx/error.h>
 #include <libmtx/mtx/header.h>
-#include <libmtx/mtx/matrix.h>
-#include <libmtx/mtx/reorder.h>
-#include <libmtx/mtx/sort.h>
-#include <libmtx/mtx/triangle.h>
-#include <libmtx/mtx/vector.h>
+#include <libmtx/matrix/array.h>
+#include <libmtx/matrix/coordinate.h>
+#include <libmtx/vector/array.h>
+#include <libmtx/vector/coordinate.h>
 
 #include <errno.h>
 
 #include <stdlib.h>
 #include <string.h>
+
+static void mtx_free_data(
+    struct mtx * mtx)
+{
+    if (mtx->object == mtx_matrix) {
+        if (mtx->format == mtx_array) {
+            mtx_matrix_array_data_free(
+                &mtx->storage.matrix_array);
+        } else if (mtx->format == mtx_coordinate) {
+            mtx_matrix_coordinate_data_free(
+                &mtx->storage.matrix_coordinate);
+        }
+    } else if (mtx->object == mtx_vector) {
+        if (mtx->format == mtx_array) {
+            mtx_vector_array_data_free(
+                &mtx->storage.vector_array);
+        } else if (mtx->format == mtx_coordinate) {
+            mtx_vector_coordinate_data_free(
+                &mtx->storage.vector_coordinate);
+        }
+    }
+}
 
 /**
  * `mtx_free()` frees resources associated with a Matrix Market
@@ -44,10 +65,43 @@
 void mtx_free(
     struct mtx * mtx)
 {
-    free(mtx->data);
+    mtx_free_data(mtx);
     for (int i = 0; i < mtx->num_comment_lines; i++)
         free(mtx->comment_lines[i]);
     free(mtx->comment_lines);
+}
+
+static int mtx_copy_data(
+    struct mtx * dst,
+    const struct mtx * src)
+{
+    if (src->object == mtx_matrix) {
+        if (src->format == mtx_array) {
+            return mtx_matrix_array_data_copy(
+                &dst->storage.matrix_array,
+                &src->storage.matrix_array);
+        } else if (src->format == mtx_coordinate) {
+            return mtx_matrix_coordinate_data_copy(
+                &dst->storage.matrix_coordinate,
+                &src->storage.matrix_coordinate);
+        } else {
+            return MTX_ERR_INVALID_MTX_FORMAT;
+        }
+    } else if (src->object == mtx_vector) {
+        if (src->format == mtx_array) {
+            return mtx_vector_array_data_copy(
+                &dst->storage.vector_array,
+                &src->storage.vector_array);
+        } else if (src->format == mtx_coordinate) {
+            return mtx_vector_coordinate_data_copy(
+                &dst->storage.vector_coordinate,
+                &src->storage.vector_coordinate);
+        } else {
+            return MTX_ERR_INVALID_MTX_FORMAT;
+        }
+    } else {
+        return MTX_ERR_INVALID_MTX_OBJECT;
+    }
 }
 
 /**
@@ -57,14 +111,11 @@ int mtx_copy(
     struct mtx * dst,
     const struct mtx * src)
 {
+    int err;
     dst->object = src->object;
     dst->format = src->format;
     dst->field = src->field;
     dst->symmetry = src->symmetry;
-    dst->triangle = src->triangle;
-    dst->sorting = src->sorting;
-    dst->ordering = src->ordering;
-    dst->assembly = src->assembly;
     dst->num_comment_lines = src->num_comment_lines;
     dst->comment_lines = malloc(dst->num_comment_lines * sizeof(char *));
     if (!dst->comment_lines)
@@ -81,16 +132,14 @@ int mtx_copy(
     dst->num_rows = src->num_rows;
     dst->num_columns = src->num_columns;
     dst->num_nonzeros = src->num_nonzeros;
-    dst->size = src->size;
-    dst->nonzero_size = src->nonzero_size;
-    dst->data = malloc(dst->size * dst->nonzero_size);
-    if (!dst->data) {
+
+    err = mtx_copy_data(dst, src);
+    if (err) {
         for (int i = 0; i < dst->num_comment_lines; i++)
             free(dst->comment_lines[i]);
         free(dst->comment_lines);
-        return MTX_ERR_ERRNO;
+        return err;
     }
-    memcpy(dst->data, src->data, dst->size * dst->nonzero_size);
     return MTX_SUCCESS;
 }
 
@@ -145,9 +194,21 @@ int mtx_set_zero(
     struct mtx * mtx)
 {
     if (mtx->object == mtx_matrix) {
-        return mtx_matrix_set_zero(mtx);
+        if (mtx->format == mtx_array) {
+            return mtx_matrix_array_set_zero(mtx);
+        } else if (mtx->format == mtx_coordinate) {
+            return mtx_matrix_coordinate_set_zero(mtx);
+        } else {
+            return MTX_ERR_INVALID_MTX_FORMAT;
+        }
     } else if (mtx->object == mtx_vector) {
-        return mtx_vector_set_zero(mtx);
+        if (mtx->format == mtx_array) {
+            return mtx_vector_array_set_zero(mtx);
+        } else if (mtx->format == mtx_coordinate) {
+            return mtx_vector_coordinate_set_zero(mtx);
+        } else {
+            return MTX_ERR_INVALID_MTX_FORMAT;
+        }
     } else {
         return MTX_ERR_INVALID_MTX_OBJECT;
     }
@@ -155,17 +216,30 @@ int mtx_set_zero(
 }
 
 /**
- * `mtx_set_constant_real()' sets every (nonzero) value of a matrix or
- * vector equal to a constant, single precision floating point number.
+ * `mtx_set_constant_real_single()' sets every (nonzero) value of a
+ * matrix or vector equal to a constant, single precision floating
+ * point number.
  */
-int mtx_set_constant_real(
+int mtx_set_constant_real_single(
     struct mtx * mtx,
     float a)
 {
     if (mtx->object == mtx_matrix) {
-        return mtx_matrix_set_constant_real(mtx, a);
+        if (mtx->format == mtx_array) {
+            return mtx_matrix_array_set_constant_real_single(mtx, a);
+        } else if (mtx->format == mtx_coordinate) {
+            return mtx_matrix_coordinate_set_constant_real_single(mtx, a);
+        } else {
+            return MTX_ERR_INVALID_MTX_FORMAT;
+        }
     } else if (mtx->object == mtx_vector) {
-        return mtx_vector_set_constant_real(mtx, a);
+        if (mtx->format == mtx_array) {
+            return mtx_vector_array_set_constant_real_single(mtx, a);
+        } else if (mtx->format == mtx_coordinate) {
+            return mtx_vector_coordinate_set_constant_real_single(mtx, a);
+        } else {
+            return MTX_ERR_INVALID_MTX_FORMAT;
+        }
     } else {
         return MTX_ERR_INVALID_MTX_OBJECT;
     }
@@ -173,18 +247,30 @@ int mtx_set_constant_real(
 }
 
 /**
- * `mtx_set_constant_double()' sets every (nonzero) value of a matrix
- * or vector equal to a constant, double precision floating point
- * number.
+ * `mtx_set_constant_real_double()' sets every (nonzero) value of a
+ * matrix or vector equal to a constant, double precision floating
+ * point number.
  */
-int mtx_set_constant_double(
+int mtx_set_constant_real_double(
     struct mtx * mtx,
     double a)
 {
     if (mtx->object == mtx_matrix) {
-        return mtx_matrix_set_constant_double(mtx, a);
+        if (mtx->format == mtx_array) {
+            return mtx_matrix_array_set_constant_real_double(mtx, a);
+        } else if (mtx->format == mtx_coordinate) {
+            return mtx_matrix_coordinate_set_constant_real_double(mtx, a);
+        } else {
+            return MTX_ERR_INVALID_MTX_FORMAT;
+        }
     } else if (mtx->object == mtx_vector) {
-        return mtx_vector_set_constant_double(mtx, a);
+        if (mtx->format == mtx_array) {
+            return mtx_vector_array_set_constant_real_double(mtx, a);
+        } else if (mtx->format == mtx_coordinate) {
+            return mtx_vector_coordinate_set_constant_real_double(mtx, a);
+        } else {
+            return MTX_ERR_INVALID_MTX_FORMAT;
+        }
     } else {
         return MTX_ERR_INVALID_MTX_OBJECT;
     }
@@ -192,19 +278,30 @@ int mtx_set_constant_double(
 }
 
 /**
- * `mtx_set_constant_complex()' sets every (nonzero) value of a matrix
- * or vector equal to a constant, single precision floating point
- * complex number.
+ * `mtx_set_constant_complex_single()' sets every (nonzero) value of a
+ * matrix or vector equal to a constant, single precision floating
+ * point complex number.
  */
-int mtx_set_constant_complex(
+int mtx_set_constant_complex_single(
     struct mtx * mtx,
-    float a,
-    float b)
+    float a[2])
 {
     if (mtx->object == mtx_matrix) {
-        return mtx_matrix_set_constant_complex(mtx, a, b);
+        if (mtx->format == mtx_array) {
+            return mtx_matrix_array_set_constant_complex_single(mtx, a);
+        } else if (mtx->format == mtx_coordinate) {
+            return mtx_matrix_coordinate_set_constant_complex_single(mtx, a);
+        } else {
+            return MTX_ERR_INVALID_MTX_FORMAT;
+        }
     } else if (mtx->object == mtx_vector) {
-        return mtx_vector_set_constant_complex(mtx, a, b);
+        if (mtx->format == mtx_array) {
+            return mtx_vector_array_set_constant_complex_single(mtx, a);
+        } else if (mtx->format == mtx_coordinate) {
+            return mtx_vector_coordinate_set_constant_complex_single(mtx, a);
+        } else {
+            return MTX_ERR_INVALID_MTX_FORMAT;
+        }
     } else {
         return MTX_ERR_INVALID_MTX_OBJECT;
     }
@@ -212,17 +309,29 @@ int mtx_set_constant_complex(
 }
 
 /**
- * `mtx_set_constant_integer()' sets every (nonzero) value of a matrix
- * or vector equal to a constant integer.
+ * `mtx_set_constant_integer_single()' sets every (nonzero) value of a
+ * matrix or vector equal to a constant integer.
  */
-int mtx_set_constant_integer(
+int mtx_set_constant_integer_single(
     struct mtx * mtx,
-    int a)
+    int32_t a)
 {
     if (mtx->object == mtx_matrix) {
-        return mtx_matrix_set_constant_integer(mtx, a);
+        if (mtx->format == mtx_array) {
+            return mtx_matrix_array_set_constant_integer_single(mtx, a);
+        } else if (mtx->format == mtx_coordinate) {
+            return mtx_matrix_coordinate_set_constant_integer_single(mtx, a);
+        } else {
+            return MTX_ERR_INVALID_MTX_FORMAT;
+        }
     } else if (mtx->object == mtx_vector) {
-        return mtx_vector_set_constant_integer(mtx, a);
+        if (mtx->format == mtx_array) {
+            return mtx_vector_array_set_constant_integer_single(mtx, a);
+        } else if (mtx->format == mtx_coordinate) {
+            return mtx_vector_coordinate_set_constant_integer_single(mtx, a);
+        } else {
+            return MTX_ERR_INVALID_MTX_FORMAT;
+        }
     } else {
         return MTX_ERR_INVALID_MTX_OBJECT;
     }

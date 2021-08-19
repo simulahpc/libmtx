@@ -25,9 +25,8 @@
 #include <libmtx/libmtx-config.h>
 
 #include <libmtx/error.h>
-#include <libmtx/mtx/io.h>
-#include <libmtx/mtx/mtx.h>
-#include <libmtx/vector/coordinate.h>
+#include <libmtx/vector/coordinate/data.h>
+#include <libmtx/vector/coordinate/io.h>
 
 #include "libmtx/util/format.h"
 #include "libmtx/util/parse.h"
@@ -46,77 +45,15 @@
 #include <string.h>
 
 /**
- * `mtx_vector_coordinate_parse_size()` parse a size line from a
- * Matrix Market file for a vector in coordinate format.
+ * `mtx_vector_coordinate_parse_data_real_single()' parses a data line
+ * from a Matrix Market file for a single precision, real vector in
+ * coordinate format.
  */
-int mtx_vector_coordinate_parse_size(
+int mtx_vector_coordinate_parse_data_real_single(
     const char * line,
     int * bytes_read,
     const char ** endptr,
-    enum mtx_object object,
-    enum mtx_format format,
-    enum mtx_field field,
-    enum mtx_symmetry symmetry,
-    int * num_rows,
-    int * num_columns,
-    int64_t * num_nonzeros,
-    int64_t * size,
-    int * nonzero_size)
-{
-    int err;
-    *bytes_read = 0;
-    if (object != mtx_vector)
-        return MTX_ERR_INVALID_MTX_OBJECT;
-    if (format != mtx_coordinate)
-        return MTX_ERR_INVALID_MTX_FORMAT;
-
-    /* Parse the number of rows. */
-    err = parse_int32(line, " ", num_rows, endptr);
-    if (err == EINVAL) {
-        return MTX_ERR_INVALID_MTX_SIZE;
-    } else if (err) {
-        errno = err;
-        return MTX_ERR_ERRNO;
-    }
-    *bytes_read = (*endptr) - line;
-
-    /* Parse the number of stored nonzeros. */
-    err = parse_int64(*endptr, "\n", size, endptr);
-    if (err == EINVAL) {
-        return MTX_ERR_INVALID_MTX_SIZE;
-    } else if (err) {
-        errno = err;
-        return MTX_ERR_ERRNO;
-    }
-    *bytes_read = (*endptr) - line;
-
-    *num_columns = -1;
-    *num_nonzeros = *size;
-    if (field == mtx_real) {
-        *nonzero_size = sizeof(struct mtx_vector_coordinate_real);
-    } else if (field == mtx_double) {
-        *nonzero_size = sizeof(struct mtx_vector_coordinate_double);
-    } else if (field == mtx_complex) {
-        *nonzero_size = sizeof(struct mtx_vector_coordinate_complex);
-    } else if (field == mtx_integer) {
-        *nonzero_size = sizeof(struct mtx_vector_coordinate_integer);
-    } else if (field == mtx_pattern) {
-        *nonzero_size = sizeof(struct mtx_vector_coordinate_pattern);
-    } else {
-        return MTX_ERR_INVALID_MTX_FIELD;
-    }
-    return MTX_SUCCESS;
-}
-
-/**
- * `mtx_vector_coordinate_parse_data_real()' parses a data line from a
- * Matrix Market file for a real vector in coordinate format.
- */
-int mtx_vector_coordinate_parse_data_real(
-    const char * line,
-    int * bytes_read,
-    const char ** endptr,
-    struct mtx_vector_coordinate_real * data,
+    struct mtx_vector_coordinate_real_single * data,
     int num_rows)
 {
     int err;
@@ -144,14 +81,15 @@ int mtx_vector_coordinate_parse_data_real(
 }
 
 /**
- * `mtx_vector_coordinate_parse_data_double()' parses a data line from a
- * Matrix Market file for a double vector in coordinate format.
+ * `mtx_vector_coordinate_parse_data_real_double()' parses a data line
+ * from a Matrix Market file for a double precision, real vector in
+ * coordinate format.
  */
-int mtx_vector_coordinate_parse_data_double(
+int mtx_vector_coordinate_parse_data_real_double(
     const char * line,
     int * bytes_read,
     const char ** endptr,
-    struct mtx_vector_coordinate_double * data,
+    struct mtx_vector_coordinate_real_double * data,
     int num_rows)
 {
     int err;
@@ -179,14 +117,15 @@ int mtx_vector_coordinate_parse_data_double(
 }
 
 /**
- * `mtx_vector_coordinate_parse_data_complex()' parses a data line from a
- * Matrix Market file for a complex vector in coordinate format.
+ * `mtx_vector_coordinate_parse_data_complex_single()' parses a data
+ * line from a Matrix Market file for a single precision, complex
+ * vector in coordinate format.
  */
-int mtx_vector_coordinate_parse_data_complex(
+int mtx_vector_coordinate_parse_data_complex_single(
     const char * line,
     int * bytes_read,
     const char ** endptr,
-    struct mtx_vector_coordinate_complex * data,
+    struct mtx_vector_coordinate_complex_single * data,
     int num_rows)
 {
     int err;
@@ -202,7 +141,7 @@ int mtx_vector_coordinate_parse_data_complex(
     }
     *bytes_read = *endptr - line;
 
-    err = parse_float(*endptr, " ", &data->a, endptr);
+    err = parse_float(*endptr, " ", &data->a[0], endptr);
     if (err == EINVAL) {
         return MTX_ERR_INVALID_MTX_DATA;
     } else if (err) {
@@ -211,7 +150,7 @@ int mtx_vector_coordinate_parse_data_complex(
     }
     *bytes_read = *endptr - line;
 
-    err = parse_float(*endptr, "\n", &data->b, endptr);
+    err = parse_float(*endptr, "\n", &data->a[1], endptr);
     if (err == EINVAL) {
         return MTX_ERR_INVALID_MTX_DATA;
     } else if (err) {
@@ -223,14 +162,60 @@ int mtx_vector_coordinate_parse_data_complex(
 }
 
 /**
- * `mtx_vector_coordinate_parse_data_integer()' parses a data line from a
- * Matrix Market file for a integer vector in coordinate format.
+ * `mtx_vector_coordinate_parse_data_complex_double()' parses a data
+ * line from a Matrix Market file for a double precision, complex
+ * vector in coordinate format.
  */
-int mtx_vector_coordinate_parse_data_integer(
+int mtx_vector_coordinate_parse_data_complex_double(
     const char * line,
     int * bytes_read,
     const char ** endptr,
-    struct mtx_vector_coordinate_integer * data,
+    struct mtx_vector_coordinate_complex_double * data,
+    int num_rows)
+{
+    int err;
+    const char * tmp;
+    if (!endptr)
+        endptr = &tmp;
+    err = parse_int32(line, " ", &data->i, endptr);
+    if (err == EINVAL || (!err && (data->i < 1 || data->i > num_rows))) {
+        return MTX_ERR_INVALID_MTX_DATA;
+    } else if (err) {
+        errno = err;
+        return MTX_ERR_ERRNO;
+    }
+    *bytes_read = *endptr - line;
+
+    err = parse_double(*endptr, " ", &data->a[0], endptr);
+    if (err == EINVAL) {
+        return MTX_ERR_INVALID_MTX_DATA;
+    } else if (err) {
+        errno = err;
+        return MTX_ERR_ERRNO;
+    }
+    *bytes_read = *endptr - line;
+
+    err = parse_double(*endptr, "\n", &data->a[1], endptr);
+    if (err == EINVAL) {
+        return MTX_ERR_INVALID_MTX_DATA;
+    } else if (err) {
+        errno = err;
+        return MTX_ERR_ERRNO;
+    }
+    *bytes_read = *endptr - line;
+    return MTX_SUCCESS;
+}
+
+/**
+ * `mtx_vector_coordinate_parse_data_integer_single()' parses a data
+ * line from a Matrix Market file for a single precision, integer
+ * vector in coordinate format.
+ */
+int mtx_vector_coordinate_parse_data_integer_single(
+    const char * line,
+    int * bytes_read,
+    const char ** endptr,
+    struct mtx_vector_coordinate_integer_single * data,
     int num_rows)
 {
     int err;
@@ -258,8 +243,45 @@ int mtx_vector_coordinate_parse_data_integer(
 }
 
 /**
- * `mtx_vector_coordinate_parse_data_pattern()' parses a data line from a
- * Matrix Market file for a pattern vector in coordinate format.
+ * `mtx_vector_coordinate_parse_data_integer_double()' parses a data
+ * line from a Matrix Market file for a double precision, integer
+ * vector in coordinate format.
+ */
+int mtx_vector_coordinate_parse_data_integer_double(
+    const char * line,
+    int * bytes_read,
+    const char ** endptr,
+    struct mtx_vector_coordinate_integer_double * data,
+    int num_rows)
+{
+    int err;
+    const char * tmp;
+    if (!endptr)
+        endptr = &tmp;
+    err = parse_int32(line, " ", &data->i, endptr);
+    if (err == EINVAL || (!err && (data->i < 1 || data->i > num_rows))) {
+        return MTX_ERR_INVALID_MTX_DATA;
+    } else if (err) {
+        errno = err;
+        return MTX_ERR_ERRNO;
+    }
+    *bytes_read = *endptr - line;
+
+    err = parse_int64(*endptr, "\n", &data->a, endptr);
+    if (err == EINVAL) {
+        return MTX_ERR_INVALID_MTX_DATA;
+    } else if (err) {
+        errno = err;
+        return MTX_ERR_ERRNO;
+    }
+    *bytes_read = *endptr - line;
+    return MTX_SUCCESS;
+}
+
+/**
+ * `mtx_vector_coordinate_parse_data_pattern()' parses a data line
+ * from a Matrix Market file for a pattern vector in coordinate
+ * format.
  */
 int mtx_vector_coordinate_parse_data_pattern(
     const char * line,

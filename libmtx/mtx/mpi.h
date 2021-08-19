@@ -35,37 +35,6 @@
 #include <mpi.h>
 
 /**
- * `mtx_partitioning` is used to enumerate different ways of
- * partitioning matrices and vectors in Matrix Market format.
- */
-enum mtx_partitioning
-{
-    mtx_partition,   /* matrix/vector entries are owned by a single
-                      * MPI process. */
-    mtx_cover,       /* matrix/vector entries may be shared by
-                      * multiple MPI processes. */
-};
-
-/**
- * `mtx_partitioning_str()` is a string representing the partitioning
- * type.
- */
-const char * mtx_partitioning_str(
-    enum mtx_partitioning partitioning);
-
-/**
- * `mtx_datatype()' creates a custom MPI data type for sending or
- * receiving Matrix Market nonzero data for a given matrix or vector.
- *
- * The user is responsible for calling `MPI_Type_free()' on the
- * returned datatype.
- */
-int mtx_datatype(
-    const struct mtx * mtx,
-    MPI_Datatype * datatype,
-    int * mpierrcode);
-
-/**
  * `mtx_send()' sends a `struct mtx' to another MPI process.
  *
  * This is analogous to `MPI_Send()' and requires the receiving
@@ -112,7 +81,6 @@ int mtx_bcast(
 int mtx_matrix_coordinate_gather(
     struct mtx * dstmtx,
     const struct mtx * srcmtx,
-    enum mtx_partitioning partitioning,
     MPI_Comm comm,
     int root,
     int * mpierrcode);

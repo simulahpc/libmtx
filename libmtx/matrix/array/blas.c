@@ -19,14 +19,14 @@
  * Authors: James D. Trotter <james@simula.no>
  * Last modified: 2021-08-09
  *
- * BLAS operations for dense matrices in array format.
+ * BLAS operations for matrices in array format.
  */
 
-#include <libmtx/matrix/array/blas.h>
-
 #include <libmtx/error.h>
-#include <libmtx/mtx/mtx.h>
 #include <libmtx/matrix/array.h>
+#include <libmtx/matrix/array/blas.h>
+#include <libmtx/matrix/array/data.h>
+#include <libmtx/vector/array/data.h>
 
 #ifdef LIBMTX_HAVE_BLAS
 #include <cblas.h>
@@ -35,8 +35,6 @@
 #include <errno.h>
 
 #include <math.h>
-
-struct mtx;
 
 /*
  * Level 1 BLAS operations.
@@ -48,22 +46,31 @@ struct mtx;
  */
 int mtx_matrix_array_sscal(
     float a,
-    struct mtx * x)
+    struct mtx_matrix_array_data * x)
 {
-    if (x->object != mtx_matrix)
-        return MTX_ERR_INVALID_MTX_OBJECT;
-    if (x->format != mtx_array)
-        return MTX_ERR_INVALID_MTX_FORMAT;
-    if (x->field != mtx_real)
-        return MTX_ERR_INVALID_MTX_FIELD;
-
-    float * xdata = (float *) x->data;
+    if (x->field == mtx_real) {
+        if (x->precision == mtx_single) {
+            float * xdata = x->data.real_single;
 #ifdef LIBMTX_HAVE_BLAS
-    cblas_sscal(x->size, a, xdata, 1);
+            cblas_sscal(x->size, a, xdata, 1);
 #else
-    for (int64_t i = 0; i < x->size; i++)
-        xdata[i] *= a;
+            for (int64_t k = 0; k < x->size; k++)
+                xdata[k] *= a;
 #endif
+        } else if (x->precision == mtx_double) {
+            double * xdata = x->data.real_double;
+#ifdef LIBMTX_HAVE_BLAS
+            cblas_dscal(x->size, a, xdata, 1);
+#else
+            for (int64_t k = 0; k < x->size; k++)
+                xdata[k] *= a;
+#endif
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else {
+        return MTX_ERR_INVALID_MTX_FIELD;
+    }
     return MTX_SUCCESS;
 }
 
@@ -73,198 +80,313 @@ int mtx_matrix_array_sscal(
  */
 int mtx_matrix_array_dscal(
     double a,
-    struct mtx * x)
+    struct mtx_matrix_array_data * x)
 {
-    if (x->object != mtx_matrix)
-        return MTX_ERR_INVALID_MTX_OBJECT;
-    if (x->format != mtx_array)
-        return MTX_ERR_INVALID_MTX_FORMAT;
-    if (x->field != mtx_double)
-        return MTX_ERR_INVALID_MTX_FIELD;
-
-    double * xdata = (double *) x->data;
+    if (x->field == mtx_real) {
+        if (x->precision == mtx_single) {
+            float * xdata = x->data.real_single;
 #ifdef LIBMTX_HAVE_BLAS
-    cblas_dscal(x->size, a, xdata, 1);
+            cblas_sscal(x->size, a, xdata, 1);
 #else
-    for (int64_t i = 0; i < x->size; i++)
-        xdata[i] *= a;
+            for (int64_t k = 0; k < x->size; k++)
+                xdata[k] *= a;
 #endif
+        } else if (x->precision == mtx_double) {
+            double * xdata = x->data.real_double;
+#ifdef LIBMTX_HAVE_BLAS
+            cblas_dscal(x->size, a, xdata, 1);
+#else
+            for (int64_t k = 0; k < x->size; k++)
+                xdata[k] *= a;
+#endif
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else {
+        return MTX_ERR_INVALID_MTX_FIELD;
+    }
     return MTX_SUCCESS;
 }
 
 /**
- * `mtx_matrix_array_saxpy()' adds two matrices of single precision
+ * `mtx_matrix_array_saxpy()' adds two matrixs of single precision
  * floating-point values, `y = a*x + y'.
  */
 int mtx_matrix_array_saxpy(
     float a,
-    const struct mtx * x,
-    struct mtx * y)
+    const struct mtx_matrix_array_data * x,
+    struct mtx_matrix_array_data * y)
 {
-    if (x->object != mtx_matrix || y->object != mtx_matrix)
-        return MTX_ERR_INVALID_MTX_OBJECT;
-    if (x->format != mtx_array || y->format != mtx_array)
-        return MTX_ERR_INVALID_MTX_FORMAT;
-    if (x->field != mtx_real || y->field != mtx_real)
-        return MTX_ERR_INVALID_MTX_FIELD;
-    if (x->size != y->size)
-        return MTX_ERR_INVALID_MTX_SIZE;
+    if (x->symmetry != y->symmetry)
+        return MTX_ERR_INVALID_MTX_SYMMETRY;
+    if (x->triangle != y->triangle)
+        return MTX_ERR_INVALID_MTX_TRIANGLE;
     if (x->sorting != y->sorting)
         return MTX_ERR_INVALID_MTX_SORTING;
+    if (x->num_rows != y->num_rows ||
+        x->num_columns != y->num_columns ||
+        x->size != y->size)
+        return MTX_ERR_INVALID_MTX_SIZE;
 
-    const float * xdata = (const float *) x->data;
-    float * ydata = (float *) y->data;
+    if (x->field == mtx_real && y->field == mtx_real) {
+        if (x->precision == mtx_single && y->precision == mtx_single) {
+            const float * xdata = x->data.real_single;
+            float * ydata = y->data.real_single;
 #ifdef LIBMTX_HAVE_BLAS
-    cblas_saxpy(x->size, a, xdata, 1, ydata, 1);
+            cblas_saxpy(x->size, a, xdata, 1, ydata, 1);
 #else
-    for (int64_t i = 0; i < x->size; i++)
-        ydata[i] += a*xdata[i];
+            for (int64_t k = 0; k < x->size; k++)
+                ydata[k] += a*xdata[k];
 #endif
+        } else if (x->precision == mtx_double && y->precision == mtx_double) {
+            const double * xdata = x->data.real_double;
+            double * ydata = y->data.real_double;
+#ifdef LIBMTX_HAVE_BLAS
+            cblas_daxpy(x->size, a, xdata, 1, ydata, 1);
+#else
+            for (int64_t k = 0; k < x->size; k++)
+                ydata[k] += a*xdata[k];
+#endif
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else {
+        return MTX_ERR_INVALID_MTX_FIELD;
+    }
     return MTX_SUCCESS;
 }
 
 /**
- * `mtx_matrix_array_daxpy()' adds two matrices of double precision
+ * `mtx_matrix_array_daxpy()' adds two matrixs of double precision
  * floating-point values, `y = a*x + y'.
  */
 int mtx_matrix_array_daxpy(
     double a,
-    const struct mtx * x,
-    struct mtx * y)
+    const struct mtx_matrix_array_data * x,
+    struct mtx_matrix_array_data * y)
 {
-    if (x->object != mtx_matrix || y->object != mtx_matrix)
-        return MTX_ERR_INVALID_MTX_OBJECT;
-    if (x->format != mtx_array || y->format != mtx_array)
-        return MTX_ERR_INVALID_MTX_FORMAT;
-    if (x->field != mtx_double || y->field != mtx_double)
-        return MTX_ERR_INVALID_MTX_FIELD;
-    if (x->size != y->size)
-        return MTX_ERR_INVALID_MTX_SIZE;
+    if (x->symmetry != y->symmetry)
+        return MTX_ERR_INVALID_MTX_SYMMETRY;
+    if (x->triangle != y->triangle)
+        return MTX_ERR_INVALID_MTX_TRIANGLE;
     if (x->sorting != y->sorting)
         return MTX_ERR_INVALID_MTX_SORTING;
+    if (x->num_rows != y->num_rows ||
+        x->num_columns != y->num_columns ||
+        x->size != y->size)
+        return MTX_ERR_INVALID_MTX_SIZE;
 
-    const double * xdata = (const double *) x->data;
-    double * ydata = (double *) y->data;
+    if (x->field == mtx_real && y->field == mtx_real) {
+        if (x->precision == mtx_single && y->precision == mtx_single) {
+            const float * xdata = x->data.real_single;
+            float * ydata = y->data.real_single;
 #ifdef LIBMTX_HAVE_BLAS
-    cblas_daxpy(x->size, a, xdata, 1, ydata, 1);
+            cblas_saxpy(x->size, a, xdata, 1, ydata, 1);
 #else
-    for (int64_t i = 0; i < x->size; i++)
-        ydata[i] += a*xdata[i];
+            for (int64_t k = 0; k < x->size; k++)
+                ydata[k] += a*xdata[k];
 #endif
+        } else if (x->precision == mtx_double && y->precision == mtx_double) {
+            const double * xdata = x->data.real_double;
+            double * ydata = y->data.real_double;
+#ifdef LIBMTX_HAVE_BLAS
+            cblas_daxpy(x->size, a, xdata, 1, ydata, 1);
+#else
+            for (int64_t k = 0; k < x->size; k++)
+                ydata[k] += a*xdata[k];
+#endif
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else {
+        return MTX_ERR_INVALID_MTX_FIELD;
+    }
     return MTX_SUCCESS;
 }
 
 /**
- * `mtx_matrix_array_sdot()' computes the Frobenius inner product of
- * two matrices of single precision floating-point values.
+ * `mtx_matrix_array_sdot()' computes the Euclidean dot product of two
+ * matrixs (or Frobenius inner product of two matrices) of single
+ * precision floating-point values.
  */
 int mtx_matrix_array_sdot(
-    const struct mtx * x,
-    const struct mtx * y,
+    const struct mtx_matrix_array_data * x,
+    const struct mtx_matrix_array_data * y,
     float * dot)
 {
-    if (x->object != mtx_matrix || y->object != mtx_matrix)
-        return MTX_ERR_INVALID_MTX_OBJECT;
-    if (x->format != mtx_array || y->format != mtx_array)
-        return MTX_ERR_INVALID_MTX_FORMAT;
-    if (x->field != mtx_real || y->field != mtx_real)
-        return MTX_ERR_INVALID_MTX_FIELD;
-    if (x->size != y->size)
-        return MTX_ERR_INVALID_MTX_SIZE;
+    if (x->symmetry != y->symmetry)
+        return MTX_ERR_INVALID_MTX_SYMMETRY;
+    if (x->triangle != y->triangle)
+        return MTX_ERR_INVALID_MTX_TRIANGLE;
     if (x->sorting != y->sorting)
         return MTX_ERR_INVALID_MTX_SORTING;
+    if (x->num_rows != y->num_rows ||
+        x->num_columns != y->num_columns ||
+        x->size != y->size)
+        return MTX_ERR_INVALID_MTX_SIZE;
 
-    const float * xdata = (const float *) x->data;
-    const float * ydata = (const float *) y->data;
+    if (x->field == mtx_real && y->field == mtx_real) {
+        if (x->precision == mtx_single && y->precision == mtx_single) {
+            const float * xdata = x->data.real_single;
+            const float * ydata = y->data.real_single;
 #ifdef LIBMTX_HAVE_BLAS
-    *dot = cblas_sdot(x->size, xdata, 1, ydata, 1);
+            *dot = cblas_sdot(x->size, xdata, 1, ydata, 1);
 #else
-    for (int64_t i = 0; i < x->size; i++)
-        *dot += xdata[i]*ydata[i];
+            *dot = 0;
+            for (int64_t k = 0; k < x->size; k++)
+                *dot += xdata[k]*ydata[k];
 #endif
+        } else if (x->precision == mtx_double && y->precision == mtx_double) {
+            const double * xdata = x->data.real_double;
+            const double * ydata = y->data.real_double;
+#ifdef LIBMTX_HAVE_BLAS
+            *dot = cblas_ddot(x->size, xdata, 1, ydata, 1);
+#else
+            *dot = 0;
+            for (int64_t k = 0; k < x->size; k++)
+                *dot += xdata[k]*ydata[k];
+#endif
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else {
+        return MTX_ERR_INVALID_MTX_FIELD;
+    }
     return MTX_SUCCESS;
 }
 
 /**
- * `mtx_matrix_array_ddot()' computes the Frobenius inner product of
- * two matrices of double precision floating-point values.
+ * `mtx_matrix_array_ddot()' computes the Euclidean dot product of two
+ * matrixs (or Frobenius inner product of two matrices) of double
+ * precision floating-point values.
  */
 int mtx_matrix_array_ddot(
-    const struct mtx * x,
-    const struct mtx * y,
+    const struct mtx_matrix_array_data * x,
+    const struct mtx_matrix_array_data * y,
     double * dot)
 {
-    if (x->object != mtx_matrix || y->object != mtx_matrix)
-        return MTX_ERR_INVALID_MTX_OBJECT;
-    if (x->format != mtx_array || y->format != mtx_array)
-        return MTX_ERR_INVALID_MTX_FORMAT;
-    if (x->field != mtx_double || y->field != mtx_double)
-        return MTX_ERR_INVALID_MTX_FIELD;
-    if (x->size != y->size)
-        return MTX_ERR_INVALID_MTX_SIZE;
+    if (x->symmetry != y->symmetry)
+        return MTX_ERR_INVALID_MTX_SYMMETRY;
+    if (x->triangle != y->triangle)
+        return MTX_ERR_INVALID_MTX_TRIANGLE;
     if (x->sorting != y->sorting)
         return MTX_ERR_INVALID_MTX_SORTING;
+    if (x->num_rows != y->num_rows ||
+        x->num_columns != y->num_columns ||
+        x->size != y->size)
+        return MTX_ERR_INVALID_MTX_SIZE;
 
-    const double * xdata = (const double *) x->data;
-    const double * ydata = (const double *) y->data;
+    if (x->field == mtx_real && y->field == mtx_real) {
+        if (x->precision == mtx_single && y->precision == mtx_single) {
+            const float * xdata = x->data.real_single;
+            const float * ydata = y->data.real_single;
 #ifdef LIBMTX_HAVE_BLAS
-    *dot = cblas_ddot(x->size, xdata, 1, ydata, 1);
+            *dot = cblas_sdot(x->size, xdata, 1, ydata, 1);
 #else
-    for (int64_t i = 0; i < x->size; i++)
-        *dot += xdata[i]*ydata[i];
+            *dot = 0;
+            for (int64_t k = 0; k < x->size; k++)
+                *dot += xdata[k]*ydata[k];
 #endif
+        } else if (x->precision == mtx_double && y->precision == mtx_double) {
+            const double * xdata = x->data.real_double;
+            const double * ydata = y->data.real_double;
+#ifdef LIBMTX_HAVE_BLAS
+            *dot = cblas_ddot(x->size, xdata, 1, ydata, 1);
+#else
+            *dot = 0;
+            for (int64_t k = 0; k < x->size; k++)
+                *dot += xdata[k]*ydata[k];
+#endif
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else {
+        return MTX_ERR_INVALID_MTX_FIELD;
+    }
     return MTX_SUCCESS;
 }
 
 /**
- * `mtx_matrix_array_snrm2()' computes the Frobenius norm of a matrix
- * of single precision floating-point values.
+ * `mtx_matrix_array_snrm2()' computes the Euclidean norm of a matrix
+ * (or Frobenius norm of a matrix) of single precision floating-point
+ * values.
  */
 int mtx_matrix_array_snrm2(
-    const struct mtx * x,
+    const struct mtx_matrix_array_data * x,
     float * nrm2)
 {
-    if (x->object != mtx_matrix)
-        return MTX_ERR_INVALID_MTX_OBJECT;
-    if (x->format != mtx_array)
-        return MTX_ERR_INVALID_MTX_FORMAT;
-    if (x->field != mtx_real)
-        return MTX_ERR_INVALID_MTX_FIELD;
+    if (x->symmetry != mtx_general)
+        return MTX_ERR_INVALID_MTX_SYMMETRY;
 
-    const float * xdata = (const float *) x->data;
+    if (x->field == mtx_real) {
+        if (x->precision == mtx_single) {
+            const float * xdata = x->data.real_single;
 #ifdef LIBMTX_HAVE_BLAS
-    *nrm2 = cblas_snrm2(x->size, xdata, 1);
+            *nrm2 = cblas_snrm2(x->size, xdata, 1);
 #else
-    for (int64_t i = 0; i < x->size; i++)
-        *nrm2 += xdata[i]*xdata[i];
-    *nrm2 = sqrtf(*nrm2);
+            *nrm2 = 0;
+            for (int64_t k = 0; k < x->size; k++)
+                *nrm2 += xdata[k]*xdata[k];
+            *nrm2 = sqrtf(*nrm2);
 #endif
+        } else if (x->precision == mtx_double) {
+            const double * xdata = x->data.real_double;
+#ifdef LIBMTX_HAVE_BLAS
+            *nrm2 = cblas_dnrm2(x->size, xdata, 1);
+#else
+            *nrm2 = 0;
+            for (int64_t k = 0; k < x->size; k++)
+                *nrm2 += xdata[k]*xdata[k];
+            *nrm2 = sqrtf(*nrm2);
+#endif
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else {
+        return MTX_ERR_INVALID_MTX_FIELD;
+    }
     return MTX_SUCCESS;
 }
 
 /**
- * `mtx_matrix_array_dnrm2()' computes the Frobenius norm of a matrix
- * of double precision floating-point values.
+ * `mtx_matrix_array_dnrm2()' computes the Euclidean norm of a matrix
+ * (or Frobenius norm of a matrix) of double precision floating-point
+ * values.
  */
 int mtx_matrix_array_dnrm2(
-    const struct mtx * x,
+    const struct mtx_matrix_array_data * x,
     double * nrm2)
 {
-    if (x->object != mtx_matrix)
-        return MTX_ERR_INVALID_MTX_OBJECT;
-    if (x->format != mtx_array)
-        return MTX_ERR_INVALID_MTX_FORMAT;
-    if (x->field != mtx_double)
-        return MTX_ERR_INVALID_MTX_FIELD;
+    if (x->symmetry != mtx_general)
+        return MTX_ERR_INVALID_MTX_SYMMETRY;
 
-    const double * xdata = (const double *) x->data;
+    if (x->field == mtx_real) {
+        if (x->precision == mtx_single) {
+            const float * xdata = x->data.real_single;
 #ifdef LIBMTX_HAVE_BLAS
-    *nrm2 = cblas_dnrm2(x->size, xdata, 1);
+            *nrm2 = cblas_snrm2(x->size, xdata, 1);
 #else
-    for (int64_t i = 0; i < x->size; i++)
-        *nrm2 += xdata[i]*xdata[i];
-    *nrm2 = sqrt(*nrm2);
+            *nrm2 = 0;
+            for (int64_t k = 0; k < x->size; k++)
+                *nrm2 += xdata[k]*xdata[k];
+            *nrm2 = sqrt(*nrm2);
 #endif
+        } else if (x->precision == mtx_double) {
+            const double * xdata = x->data.real_double;
+#ifdef LIBMTX_HAVE_BLAS
+            *nrm2 = cblas_dnrm2(x->size, xdata, 1);
+#else
+            *nrm2 = 0;
+            for (int64_t k = 0; k < x->size; k++)
+                *nrm2 += xdata[k]*xdata[k];
+            *nrm2 = sqrt(*nrm2);
+#endif
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else {
+        return MTX_ERR_INVALID_MTX_FIELD;
+    }
     return MTX_SUCCESS;
 }
 
@@ -279,46 +401,69 @@ int mtx_matrix_array_dnrm2(
  */
 int mtx_matrix_array_sgemv(
     float alpha,
-    const struct mtx * A,
-    const struct mtx * x,
+    const struct mtx_matrix_array_data * A,
+    const struct mtx_vector_array_data * x,
     float beta,
-    struct mtx * y)
+    struct mtx_vector_array_data * y)
 {
-    if (A->object != mtx_matrix ||
-        x->object != mtx_vector ||
-        y->object != mtx_vector)
-        return MTX_ERR_INVALID_MTX_OBJECT;
-    if (A->field != mtx_real ||
-        x->field != mtx_real ||
-        y->field != mtx_real)
-        return MTX_ERR_INVALID_MTX_FIELD;
     if (A->symmetry != mtx_general)
         return MTX_ERR_INVALID_MTX_SYMMETRY;
-    if (A->num_rows != y->num_rows ||
-        A->num_columns != x->num_rows)
-        return MTX_ERR_INVALID_MTX_SIZE;
-    if (A->format != mtx_array ||
-        x->format != mtx_array ||
-        y->format != mtx_array)
-        return MTX_ERR_INVALID_MTX_FORMAT;
+    if (A->triangle != mtx_nontriangular)
+        return MTX_ERR_INVALID_MTX_TRIANGLE;
     if (A->sorting != mtx_row_major)
         return MTX_ERR_INVALID_MTX_SORTING;
+    if (A->num_rows != y->size ||
+        A->num_columns != x->size)
+        return MTX_ERR_INVALID_MTX_SIZE;
 
-    const float * Adata = (const float *) A->data;
-    const float * xdata = (const float *) x->data;
-    float * ydata = (float *) y->data;
+    if (A->field == mtx_real &&
+        x->field == mtx_real &&
+        y->field == mtx_real)
+    {
+        if (A->precision == mtx_single &&
+            x->precision == mtx_single &&
+            y->precision == mtx_single)
+        {
+            const float * Adata = A->data.real_single;
+            const float * xdata = x->data.real_single;
+            float * ydata = y->data.real_single;
 #ifdef LIBMTX_HAVE_BLAS
-    cblas_sgemv(
-        CblasRowMajor, CblasNoTrans, A->num_rows, A->num_columns,
-        alpha, Adata, A->num_columns, xdata, 1, beta, ydata, 1);
+            cblas_sgemv(
+                CblasRowMajor, CblasNoTrans, A->num_rows, A->num_columns,
+                alpha, Adata, A->num_columns, xdata, 1, beta, ydata, 1);
 #else
-    for (int i = 0; i < A->num_rows; i++) {
-        float z = 0.0f;
-        for (int j = 0; j < A->num_columns; j++)
-            z += alpha*Adata[i*A->num_columns+j]*xdata[j];
-        ydata[i] = z + beta*ydata[i];
-    }
+            for (int i = 0; i < A->num_rows; i++) {
+                float z = 0.0f;
+                for (int j = 0; j < A->num_columns; j++)
+                    z += alpha*Adata[i*A->num_columns+j]*xdata[j];
+                ydata[i] = z + beta*ydata[i];
+            }
 #endif
+        } else if (A->precision == mtx_double &&
+            x->precision == mtx_double &&
+            y->precision == mtx_double)
+        {
+            const double * Adata = A->data.real_double;
+            const double * xdata = x->data.real_double;
+            double * ydata = y->data.real_double;
+#ifdef LIBMTX_HAVE_BLAS
+            cblas_dgemv(
+                CblasRowMajor, CblasNoTrans, A->num_rows, A->num_columns,
+                alpha, Adata, A->num_columns, xdata, 1, beta, ydata, 1);
+#else
+            for (int i = 0; i < A->num_rows; i++) {
+                double z = 0.0;
+                for (int j = 0; j < A->num_columns; j++)
+                    z += alpha*Adata[i*A->num_columns+j]*xdata[j];
+                ydata[i] = z + beta*ydata[i];
+            }
+#endif
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else {
+        return MTX_ERR_INVALID_MTX_FIELD;
+    }
     return MTX_SUCCESS;
 }
 
@@ -329,45 +474,68 @@ int mtx_matrix_array_sgemv(
  */
 int mtx_matrix_array_dgemv(
     double alpha,
-    const struct mtx * A,
-    const struct mtx * x,
+    const struct mtx_matrix_array_data * A,
+    const struct mtx_vector_array_data * x,
     double beta,
-    struct mtx * y)
+    struct mtx_vector_array_data * y)
 {
-    if (A->object != mtx_matrix ||
-        x->object != mtx_vector ||
-        y->object != mtx_vector)
-        return MTX_ERR_INVALID_MTX_OBJECT;
-    if (A->field != mtx_double ||
-        x->field != mtx_double ||
-        y->field != mtx_double)
-        return MTX_ERR_INVALID_MTX_FIELD;
     if (A->symmetry != mtx_general)
         return MTX_ERR_INVALID_MTX_SYMMETRY;
-    if (A->num_rows != y->num_rows ||
-        A->num_columns != x->num_rows)
-        return MTX_ERR_INVALID_MTX_SIZE;
-    if (A->format != mtx_array &&
-        x->format != mtx_array &&
-        y->format != mtx_array)
-        return MTX_ERR_INVALID_MTX_FORMAT;
-
+    if (A->triangle != mtx_nontriangular)
+        return MTX_ERR_INVALID_MTX_TRIANGLE;
     if (A->sorting != mtx_row_major)
         return MTX_ERR_INVALID_MTX_SORTING;
-    const double * Adata = (const double *) A->data;
-    const double * xdata = (const double *) x->data;
-    double * ydata = (double *) y->data;
+    if (A->num_rows != y->size ||
+        A->num_columns != x->size)
+        return MTX_ERR_INVALID_MTX_SIZE;
+
+    if (A->field == mtx_real &&
+        x->field == mtx_real &&
+        y->field == mtx_real)
+    {
+        if (A->precision == mtx_single &&
+            x->precision == mtx_single &&
+            y->precision == mtx_single)
+        {
+            const float * Adata = A->data.real_single;
+            const float * xdata = x->data.real_single;
+            float * ydata = y->data.real_single;
 #ifdef LIBMTX_HAVE_BLAS
-    cblas_dgemv(
-        CblasRowMajor, CblasNoTrans, A->num_rows, A->num_columns,
-        alpha, Adata, A->num_columns, xdata, 1, beta, ydata, 1);
+            cblas_sgemv(
+                CblasRowMajor, CblasNoTrans, A->num_rows, A->num_columns,
+                alpha, Adata, A->num_columns, xdata, 1, beta, ydata, 1);
 #else
-    for (int i = 0; i < A->num_rows; i++) {
-        double z = 0.0;
-        for (int j = 0; j < A->num_columns; j++)
-            z += alpha*Adata[i*A->num_columns+j]*xdata[j];
-        ydata[i] = z + beta*ydata[i];
-    }
+            for (int i = 0; i < A->num_rows; i++) {
+                float z = 0.0f;
+                for (int j = 0; j < A->num_columns; j++)
+                    z += alpha*Adata[i*A->num_columns+j]*xdata[j];
+                ydata[i] = z + beta*ydata[i];
+            }
 #endif
+        } else if (A->precision == mtx_double &&
+            x->precision == mtx_double &&
+            y->precision == mtx_double)
+        {
+            const double * Adata = A->data.real_double;
+            const double * xdata = x->data.real_double;
+            double * ydata = y->data.real_double;
+#ifdef LIBMTX_HAVE_BLAS
+            cblas_dgemv(
+                CblasRowMajor, CblasNoTrans, A->num_rows, A->num_columns,
+                alpha, Adata, A->num_columns, xdata, 1, beta, ydata, 1);
+#else
+            for (int i = 0; i < A->num_rows; i++) {
+                double z = 0.0;
+                for (int j = 0; j < A->num_columns; j++)
+                    z += alpha*Adata[i*A->num_columns+j]*xdata[j];
+                ydata[i] = z + beta*ydata[i];
+            }
+#endif
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else {
+        return MTX_ERR_INVALID_MTX_FIELD;
+    }
     return MTX_SUCCESS;
 }

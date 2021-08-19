@@ -83,6 +83,8 @@ const char * mtx_strerror(
         return "invalid Matrix Market size";
     case MTX_ERR_INVALID_MTX_DATA:
         return "invalid Matrix Market data";
+    case MTX_ERR_INVALID_PRECISION:
+        return "invalid precision";
     case MTX_ERR_INVALID_INDEX_SET_TYPE:
         return "invalid index set type";
     case MTX_ERR_INVALID_STREAM_TYPE:

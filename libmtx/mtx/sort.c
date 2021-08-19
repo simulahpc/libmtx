@@ -27,6 +27,7 @@
 #include <libmtx/error.h>
 #include <libmtx/matrix/array/sort.h>
 #include <libmtx/matrix/coordinate/sort.h>
+#include <libmtx/matrix/coordinate/data.h>
 #include <libmtx/mtx/header.h>
 #include <libmtx/mtx/mtx.h>
 
@@ -49,72 +50,6 @@ const char * mtx_sorting_str(
 }
 
 /**
- * `mtx_sort_matrix()' sorts matrix nonzeros in a given order.
- */
-int mtx_sort_matrix(
-    struct mtx * mtx,
-    enum mtx_sorting sorting)
-{
-    int err;
-    if (mtx->object != mtx_matrix)
-        return MTX_ERR_INVALID_MTX_OBJECT;
-
-    if (mtx->format == mtx_array) {
-        return mtx_matrix_array_sort(mtx, sorting);
-    } else if (mtx->format == mtx_coordinate) {
-        return mtx_matrix_coordinate_sort(mtx, sorting);
-    } else {
-        return MTX_ERR_INVALID_MTX_FORMAT;
-    }
-    return MTX_SUCCESS;
-}
-
-/**
- * `mtx_sort_vector_coordinate()' sorts nonzeros in a given order
- * for vectors in coordinate format.
- */
-int mtx_sort_vector_coordinate(
-    struct mtx * mtx,
-    enum mtx_sorting sorting)
-{
-    int err;
-    if (mtx->object != mtx_vector)
-        return MTX_ERR_INVALID_MTX_OBJECT;
-    if (mtx->format != mtx_coordinate)
-        return MTX_ERR_INVALID_MTX_FORMAT;
-
-    /* TODO: Implement sorting for sparse vectors. */
-    errno = ENOTSUP;
-    return MTX_ERR_ERRNO;
-}
-
-/**
- * `mtx_sort_vector()' sorts vector nonzeros in a given order.
- */
-int mtx_sort_vector(
-    struct mtx * mtx,
-    enum mtx_sorting sorting)
-{
-    int err;
-    if (mtx->object != mtx_vector)
-        return MTX_ERR_INVALID_MTX_OBJECT;
-
-    if (mtx->format == mtx_array) {
-        if (mtx->sorting == sorting)
-            return MTX_SUCCESS;
-
-        /* TODO: Implement sorting for vectors in array format. */
-        errno = ENOTSUP;
-        return MTX_ERR_ERRNO;
-    } else if (mtx->format == mtx_coordinate) {
-        return mtx_sort_vector_coordinate(mtx, sorting);
-    } else {
-        return MTX_ERR_INVALID_MTX_FORMAT;
-    }
-    return MTX_SUCCESS;
-}
-
-/**
  * `mtx_sort()' sorts matrix or vector nonzeros in a given order.
  */
 int mtx_sort(
@@ -122,9 +57,28 @@ int mtx_sort(
     enum mtx_sorting sorting)
 {
     if (mtx->object == mtx_matrix) {
-        return mtx_sort_matrix(mtx, sorting);
+        if (mtx->format == mtx_array) {
+            return mtx_matrix_array_sort(mtx, sorting);
+        } else if (mtx->format == mtx_coordinate) {
+            struct mtx_matrix_coordinate_data * matrix_coordinate =
+                &mtx->storage.matrix_coordinate;
+            return mtx_matrix_coordinate_data_sort(
+                matrix_coordinate, sorting);
+        } else {
+            return MTX_ERR_INVALID_MTX_FORMAT;
+        }
     } else if (mtx->object == mtx_vector) {
-        return mtx_sort_vector(mtx, sorting);
+        if (mtx->format == mtx_array) {
+            /* TODO: Implement sorting for vectors in array format. */
+            errno = ENOTSUP;
+            return MTX_ERR_ERRNO;
+        } else if (mtx->format == mtx_coordinate) {
+            /* TODO: Implement sorting for vectors in coordinate format. */
+            errno = ENOTSUP;
+            return MTX_ERR_ERRNO;
+        } else {
+            return MTX_ERR_INVALID_MTX_FORMAT;
+        }
     } else {
         return MTX_ERR_INVALID_MTX_OBJECT;
     }

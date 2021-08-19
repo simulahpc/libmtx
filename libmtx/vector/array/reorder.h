@@ -25,22 +25,24 @@
 #ifndef LIBMTX_MTX_VECTOR_ARRAY_REORDER_H
 #define LIBMTX_MTX_VECTOR_ARRAY_REORDER_H
 
-struct mtx;
+struct mtx_vector_array_data;
 
 /**
- * `mtx_vector_array_permute()' permutes the elements of a vector
- * based on a given permutation.
+ * `mtx_vector_array_data_permute()' permutes the elements of a vector
+ * in array format based on a given permutation.
  *
  * The array `row_permutation' should be a permutation of the integers
- * `1,2,...,mtx->num_rows', and the array `column_permutation' should
- * be a permutation of the integers `1,2,...,mtx->num_columns'. The
- * elements belonging to row `i' (or column `j') in the permuted
- * vector are then equal to the elements in row `row_permutation[i-1]'
- * (or column `column_permutation[j-1]') in the original vector, for
- * `i=1,2,...,mtx->num_rows' (and `j=1,2,...,mtx->num_columns').
+ * `1,2,...,mtxdata->num_rows', and the array `column_permutation'
+ * should be a permutation of the integers
+ * `1,2,...,mtxdata->num_columns'. The elements belonging to row `i'
+ * (or column `j') in the permuted vector are then equal to the
+ * elements in row `row_permutation[i-1]' (or column
+ * `column_permutation[j-1]') in the original vector, for
+ * `i=1,2,...,mtxdata->num_rows' (and
+ * `j=1,2,...,mtxdata->num_columns').
  */
-int mtx_vector_array_permute(
-    struct mtx * mtx,
+int mtx_vector_array_data_permute(
+    struct mtx_vector_array_data * mtxdata,
     const int * row_permutation,
     const int * column_permutation);
 

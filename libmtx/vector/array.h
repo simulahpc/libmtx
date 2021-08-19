@@ -17,20 +17,23 @@
  * <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-08-09
+ * Last modified: 2021-08-19
  *
- * Dense vectors in Matrix Market array format.
+ * Vectors in array format.
  */
 
 #ifndef LIBMTX_VECTOR_ARRAY_ARRAY_H
 #define LIBMTX_VECTOR_ARRAY_ARRAY_H
 
 #include <libmtx/mtx/header.h>
+#include <libmtx/mtx/precision.h>
+
+#include <stdint.h>
 
 struct mtx;
 
 /*
- * Dense (array) vector allocation.
+ * Array vector allocation and initialisation.
  */
 
 /**
@@ -40,100 +43,57 @@ struct mtx;
 int mtx_alloc_vector_array(
     struct mtx * mtx,
     enum mtx_field field,
+    enum mtx_precision precision,
     int num_comment_lines,
     const char ** comment_lines,
     int size);
 
 /**
- * `mtx_alloc_vector_array_real()` allocates a vector with real,
+ * `mtx_init_vector_array_real_single()' creates a vector with real,
  * single-precision floating point coefficients.
  */
-int mtx_alloc_vector_array_real(
+int mtx_init_vector_array_real_single(
     struct mtx * mtx,
     int num_comment_lines,
     const char ** comment_lines,
-    int size);
-
-/**
- * `mtx_alloc_vector_array_double()` allocates a vector with real,
- * double-precision floating point coefficients.
- */
-int mtx_alloc_vector_array_double(
-    struct mtx * mtx,
-    int num_comment_lines,
-    const char ** comment_lines,
-    int size);
-
-/**
- * `mtx_alloc_vector_array_complex()` allocates a vector with complex,
- * single-precision floating point coefficients.
- */
-int mtx_alloc_vector_array_complex(
-    struct mtx * mtx,
-    int num_comment_lines,
-    const char ** comment_lines,
-    int size);
-
-/**
- * `mtx_alloc_vector_array_integer()` allocates a vector with integer
- * coefficients.
- */
-int mtx_alloc_vector_array_integer(
-    struct mtx * mtx,
-    int num_comment_lines,
-    const char ** comment_lines,
-    int size);
-
-/*
- * Dense (array) vector allocation and initialisation.
- */
-
-/**
- * `mtx_init_vector_array_real()` creates a vector with real,
- * single-precision floating point coefficients.
- */
-int mtx_init_vector_array_real(
-    struct mtx * mtx,
-    int num_comment_lines,
-    const char ** comment_lines,
-    int size,
+    int64_t size,
     const float * data);
 
 /**
- * `mtx_init_vector_array_double()` creates a vector with real,
+ * `mtx_init_vector_array_real_double()' creates a vector with real,
  * double-precision floating point coefficients.
  */
-int mtx_init_vector_array_double(
+int mtx_init_vector_array_real_double(
     struct mtx * mtx,
     int num_comment_lines,
     const char ** comment_lines,
-    int size,
+    int64_t size,
     const double * data);
 
 /**
- * `mtx_init_vector_array_complex()` creates a vector with complex,
- * single-precision floating point coefficients.
+ * `mtx_init_vector_array_complex_single()' creates a vector with
+ * complex, single-precision floating point coefficients.
  */
-int mtx_init_vector_array_complex(
+int mtx_init_vector_array_complex_single(
     struct mtx * mtx,
     int num_comment_lines,
     const char ** comment_lines,
-    int size,
-    const float * data);
+    int64_t size,
+    const float (* data)[2]);
 
 /**
- * `mtx_init_vector_array_integer()` creates a vector with integer
- * coefficients.
+ * `mtx_init_vector_array_integer_single()` creates a vector with
+ * single precision, integer coefficients.
  */
-int mtx_init_vector_array_integer(
+int mtx_init_vector_array_integer_single(
     struct mtx * mtx,
     int num_comment_lines,
     const char ** comment_lines,
-    int size,
-    const int * data);
+    int64_t size,
+    const int32_t * data);
 
 /*
- * Dense (array) vector value initialisation.
+ * Array vector value initialisation.
  */
 
 /**
@@ -143,37 +103,36 @@ int mtx_vector_array_set_zero(
     struct mtx * mtx);
 
 /**
- * `mtx_vector_array_set_constant_real()' sets every value of a vector
- * equal to a constant, single precision floating point number.
+ * `mtx_vector_array_set_constant_real_single()' sets every value of a
+ * vector equal to a constant, single precision floating point number.
  */
-int mtx_vector_array_set_constant_real(
+int mtx_vector_array_set_constant_real_single(
     struct mtx * mtx,
     float a);
 
 /**
- * `mtx_vector_array_set_constant_double()' sets every value of a
+ * `mtx_vector_array_set_constant_real_double()' sets every value of a
  * vector equal to a constant, double precision floating point number.
  */
-int mtx_vector_array_set_constant_double(
+int mtx_vector_array_set_constant_real_double(
     struct mtx * mtx,
     double a);
 
 /**
- * `mtx_vector_array_set_constant_complex()' sets every value of a
- * vector equal to a constant, single precision floating point complex
- * number.
+ * `mtx_vector_array_set_constant_complex_single()' sets every value
+ * of a vector equal to a constant, single precision floating point
+ * complex number.
  */
-int mtx_vector_array_set_constant_complex(
+int mtx_vector_array_set_constant_complex_single(
     struct mtx * mtx,
-    float a,
-    float b);
+    float a[2]);
 
 /**
- * `mtx_vector_array_set_constant_integer()' sets every value of a
- * vector equal to a constant integer.
+ * `mtx_vector_array_set_constant_integer_single()' sets every value
+ * of a vector equal to a constant, single precision integer.
  */
-int mtx_vector_array_set_constant_integer(
+int mtx_vector_array_set_constant_integer_single(
     struct mtx * mtx,
-    int a);
+    int32_t a);
 
 #endif

@@ -57,6 +57,7 @@ const char * program_invocation_short_name;
 struct program_options
 {
     char * mtx_path;
+    enum mtx_precision precision;
     bool gzip;
     char * png_output_path;
     int max_width;
@@ -80,6 +81,7 @@ static int program_options_init(
     struct program_options * args)
 {
     args->mtx_path = NULL;
+    args->precision = mtx_double;
     args->gzip = false;
     args->png_output_path = strdup("out.png");
     args->max_width = 1000;
@@ -133,6 +135,8 @@ static void program_options_print_help(
     fprintf(f, " Save an image of a matrix sparsity pattern to a PNG file.\n");
     fprintf(f, "\n");
     fprintf(f, " Options are:\n");
+    fprintf(f, "  --precision=PRECISION\tprecision used to represent matrix or\n");
+    fprintf(f, "\t\t\tvector values: single or double. (default: double)\n");
     fprintf(f, "  -z, --gzip, --gunzip, --ungzip\tfilter files through gzip\n");
     fprintf(f, "  --output-path=FILE\tpath for outputting the image (default: out.png).\n");
     fprintf(f, "  -v, --verbose\t\tbe more verbose\n");
@@ -200,6 +204,36 @@ static int parse_program_options(
             break;
 
         char * s;
+
+        if (strcmp((*argv)[0], "--precision") == 0) {
+            if (*argc < 2) {
+                program_options_free(args);
+                return EINVAL;
+            }
+            char * s = (*argv)[1];
+            if (strcmp(s, "single") == 0) {
+                args->precision = mtx_single;
+            } else if (strcmp(s, "double") == 0) {
+                args->precision = mtx_double;
+            } else {
+                program_options_free(args);
+                return EINVAL;
+            }
+            num_arguments_consumed += 2;
+            continue;
+        } else if (strstr((*argv)[0], "--precision=") == (*argv)[0]) {
+            char * s = (*argv)[0] + strlen("--precision=");
+            if (strcmp(s, "single") == 0) {
+                args->precision = mtx_single;
+            } else if (strcmp(s, "double") == 0) {
+                args->precision = mtx_double;
+            } else {
+                program_options_free(args);
+                return EINVAL;
+            }
+            num_arguments_consumed++;
+            continue;
+        }
 
         if (strcmp((*argv)[0], "-z") == 0 ||
             strcmp((*argv)[0], "--gzip") == 0 ||
@@ -578,94 +612,124 @@ static int draw_sparsity_pattern(
     unsigned char fg_green = ((fgcolor >> 8) & 0xFF);
     unsigned char fg_blue = fgcolor & 0xFF;
 
-    if (mtx->field == mtx_real) {
-        const struct mtx_matrix_coordinate_real * data =
-            (const struct mtx_matrix_coordinate_real *) mtx->data;
-        for (int64_t k = 0; k < mtx->size; k++) {
-            int i = data[k].i-1;
-            int j = data[k].j-1;
-            double x = (((double) i + 0.5) / (double) mtx->num_columns) * (double) width;
-            double y = (((double) j + 0.5) / (double) mtx->num_rows) * (double) width;
-            int left = (int) floor(x);
-            int right = (int) ceil(x);
-            int top = (int) floor(y);
-            int bottom = (int) ceil(y);
-            for (int r = left; r < right; r++) {
-                for (int s = top; s < bottom; s++) {
-                    imgbuf[(s*width+r)*3+0] = fg_red;
-                    imgbuf[(s*width+r)*3+1] = fg_green;
-                    imgbuf[(s*width+r)*3+2] = fg_blue;
+    const struct mtx_matrix_coordinate_data * mtxstorage =
+        &mtx->storage.matrix_coordinate;
+    if (mtxstorage->field == mtx_real) {
+        if (mtxstorage->precision == mtx_single) {
+            const struct mtx_matrix_coordinate_real_single * data =
+                mtxstorage->data.real_single;
+            for (int64_t k = 0; k < mtxstorage->size; k++) {
+                int i = data[k].i-1;
+                int j = data[k].j-1;
+                double x = (((double) i + 0.5) /
+                            (double) mtxstorage->num_columns) * (double) width;
+                double y = (((double) j + 0.5) /
+                            (double) mtxstorage->num_rows) * (double) width;
+                int left = (int) floor(x);
+                int right = (int) ceil(x);
+                int top = (int) floor(y);
+                int bottom = (int) ceil(y);
+                for (int r = left; r < right; r++) {
+                    for (int s = top; s < bottom; s++) {
+                        imgbuf[(s*width+r)*3+0] = fg_red;
+                        imgbuf[(s*width+r)*3+1] = fg_green;
+                        imgbuf[(s*width+r)*3+2] = fg_blue;
+                    }
                 }
             }
-        }
-    } else if (mtx->field == mtx_double) {
-        const struct mtx_matrix_coordinate_double * data =
-            (const struct mtx_matrix_coordinate_double *) mtx->data;
-        for (int64_t k = 0; k < mtx->size; k++) {
-            int i = data[k].i-1;
-            int j = data[k].j-1;
-            double x = (((double) i + 0.5) / (double) mtx->num_columns) * (double) width;
-            double y = (((double) j + 0.5) / (double) mtx->num_rows) * (double) width;
-            int left = (int) floor(x);
-            int right = (int) ceil(x);
-            int top = (int) floor(y);
-            int bottom = (int) ceil(y);
-            for (int r = left; r < right; r++) {
-                for (int s = top; s < bottom; s++) {
-                    imgbuf[(s*width+r)*3+0] = fg_red;
-                    imgbuf[(s*width+r)*3+1] = fg_green;
-                    imgbuf[(s*width+r)*3+2] = fg_blue;
+        } else if (mtxstorage->precision == mtx_double) {
+            const struct mtx_matrix_coordinate_real_double * data =
+                mtxstorage->data.real_double;
+            for (int64_t k = 0; k < mtxstorage->size; k++) {
+                int i = data[k].i-1;
+                int j = data[k].j-1;
+                double x = (((double) i + 0.5) /
+                            (double) mtxstorage->num_columns) * (double) width;
+                double y = (((double) j + 0.5) /
+                            (double) mtxstorage->num_rows) * (double) width;
+                int left = (int) floor(x);
+                int right = (int) ceil(x);
+                int top = (int) floor(y);
+                int bottom = (int) ceil(y);
+                for (int r = left; r < right; r++) {
+                    for (int s = top; s < bottom; s++) {
+                        imgbuf[(s*width+r)*3+0] = fg_red;
+                        imgbuf[(s*width+r)*3+1] = fg_green;
+                        imgbuf[(s*width+r)*3+2] = fg_blue;
+                    }
                 }
             }
+        } else {
+            free(row_pointers);
+            free(imgbuf);
+            return MTX_ERR_INVALID_PRECISION;
         }
-    } else if (mtx->field == mtx_complex) {
-        const struct mtx_matrix_coordinate_complex * data =
-            (const struct mtx_matrix_coordinate_complex *) mtx->data;
-        for (int64_t k = 0; k < mtx->size; k++) {
-            int i = data[k].i-1;
-            int j = data[k].j-1;
-            double x = (((double) i + 0.5) / (double) mtx->num_columns) * (double) width;
-            double y = (((double) j + 0.5) / (double) mtx->num_rows) * (double) width;
-            int left = (int) floor(x);
-            int right = (int) ceil(x);
-            int top = (int) floor(y);
-            int bottom = (int) ceil(y);
-            for (int r = left; r < right; r++) {
-                for (int s = top; s < bottom; s++) {
-                    imgbuf[(s*width+r)*3+0] = fg_red;
-                    imgbuf[(s*width+r)*3+1] = fg_green;
-                    imgbuf[(s*width+r)*3+2] = fg_blue;
+    } else if (mtxstorage->field == mtx_complex) {
+        if (mtxstorage->precision == mtx_single) {
+            const struct mtx_matrix_coordinate_complex_single * data =
+                mtxstorage->data.complex_single;
+            for (int64_t k = 0; k < mtxstorage->size; k++) {
+                int i = data[k].i-1;
+                int j = data[k].j-1;
+                double x = (((double) i + 0.5) /
+                            (double) mtxstorage->num_columns) * (double) width;
+                double y = (((double) j + 0.5) /
+                            (double) mtxstorage->num_rows) * (double) width;
+                int left = (int) floor(x);
+                int right = (int) ceil(x);
+                int top = (int) floor(y);
+                int bottom = (int) ceil(y);
+                for (int r = left; r < right; r++) {
+                    for (int s = top; s < bottom; s++) {
+                        imgbuf[(s*width+r)*3+0] = fg_red;
+                        imgbuf[(s*width+r)*3+1] = fg_green;
+                        imgbuf[(s*width+r)*3+2] = fg_blue;
+                    }
                 }
             }
+        } else {
+            free(row_pointers);
+            free(imgbuf);
+            return MTX_ERR_INVALID_PRECISION;
         }
-    } else if (mtx->field == mtx_integer) {
-        const struct mtx_matrix_coordinate_integer * data =
-            (const struct mtx_matrix_coordinate_integer *) mtx->data;
-        for (int64_t k = 0; k < mtx->size; k++) {
-            int i = data[k].i-1;
-            int j = data[k].j-1;
-            double x = (((double) i + 0.5) / (double) mtx->num_columns) * (double) width;
-            double y = (((double) j + 0.5) / (double) mtx->num_rows) * (double) width;
-            int left = (int) floor(x);
-            int right = (int) ceil(x);
-            int top = (int) floor(y);
-            int bottom = (int) ceil(y);
-            for (int r = left; r < right; r++) {
-                for (int s = top; s < bottom; s++) {
-                    imgbuf[(s*width+r)*3+0] = fg_red;
-                    imgbuf[(s*width+r)*3+1] = fg_green;
-                    imgbuf[(s*width+r)*3+2] = fg_blue;
+    } else if (mtxstorage->field == mtx_integer) {
+        if (mtxstorage->precision == mtx_single) {
+            const struct mtx_matrix_coordinate_integer_single * data =
+                mtxstorage->data.integer_single;
+            for (int64_t k = 0; k < mtxstorage->size; k++) {
+                int i = data[k].i-1;
+                int j = data[k].j-1;
+                double x = (((double) i + 0.5) /
+                            (double) mtxstorage->num_columns) * (double) width;
+                double y = (((double) j + 0.5) /
+                            (double) mtxstorage->num_rows) * (double) width;
+                int left = (int) floor(x);
+                int right = (int) ceil(x);
+                int top = (int) floor(y);
+                int bottom = (int) ceil(y);
+                for (int r = left; r < right; r++) {
+                    for (int s = top; s < bottom; s++) {
+                        imgbuf[(s*width+r)*3+0] = fg_red;
+                        imgbuf[(s*width+r)*3+1] = fg_green;
+                        imgbuf[(s*width+r)*3+2] = fg_blue;
+                    }
                 }
             }
+        } else {
+            free(row_pointers);
+            free(imgbuf);
+            return MTX_ERR_INVALID_PRECISION;
         }
-    } else if (mtx->field == mtx_pattern) {
+    } else if (mtxstorage->field == mtx_pattern) {
         const struct mtx_matrix_coordinate_pattern * data =
-            (const struct mtx_matrix_coordinate_pattern *) mtx->data;
-        for (int64_t k = 0; k < mtx->size; k++) {
+            mtxstorage->data.pattern;
+        for (int64_t k = 0; k < mtxstorage->size; k++) {
             int i = data[k].i-1;
             int j = data[k].j-1;
-            double x = (((double) i + 0.5) / (double) mtx->num_columns) * (double) width;
-            double y = (((double) j + 0.5) / (double) mtx->num_rows) * (double) width;
+            double x = (((double) i + 0.5) /
+                        (double) mtxstorage->num_columns) * (double) width;
+            double y = (((double) j + 0.5) /
+                        (double) mtxstorage->num_rows) * (double) width;
             int left = (int) floor(x);
             int right = (int) ceil(x);
             int top = (int) floor(y);
@@ -909,7 +973,7 @@ int main(int argc, char *argv[])
 
     int line_number, column_number;
     err = mtx_read(
-        &mtx, args.mtx_path, args.gzip,
+        &mtx, args.precision, args.mtx_path, args.gzip,
         &line_number, &column_number);
     if (err && (line_number == -1 && column_number == -1)) {
         if (args.verbose > 0)

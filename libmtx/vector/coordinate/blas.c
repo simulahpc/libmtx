@@ -22,17 +22,14 @@
  * Level 1 BLAS operations for sparse vectors in coordinate format.
  */
 
-#include <libmtx/vector/coordinate/blas.h>
-
 #include <libmtx/error.h>
-#include <libmtx/mtx/mtx.h>
 #include <libmtx/vector/coordinate.h>
+#include <libmtx/vector/coordinate/blas.h>
+#include <libmtx/vector/coordinate/data.h>
 
 #include <errno.h>
 
 #include <math.h>
-
-struct mtx;
 
 /**
  * `mtx_vector_coordinate_sscal()' scales a vector by a single
@@ -40,19 +37,41 @@ struct mtx;
  */
 int mtx_vector_coordinate_sscal(
     float a,
-    struct mtx * x)
+    struct mtx_vector_coordinate_data * x)
 {
-    if (x->object != mtx_vector)
-        return MTX_ERR_INVALID_MTX_OBJECT;
-    if (x->format != mtx_coordinate)
-        return MTX_ERR_INVALID_MTX_FORMAT;
-    if (x->field != mtx_real)
+    if (x->field == mtx_real) {
+        if (x->precision == mtx_single) {
+            struct mtx_vector_coordinate_real_single * xdata = x->data.real_single;
+            for (int64_t k = 0; k < x->size; k++)
+                xdata[k].a *= a;
+        } else if (x->precision == mtx_double) {
+            struct mtx_vector_coordinate_real_double * xdata = x->data.real_double;
+            for (int64_t k = 0; k < x->size; k++)
+                xdata[k].a *= a;
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else if (x->field == mtx_complex) {
+        if (x->precision == mtx_single) {
+            struct mtx_vector_coordinate_complex_single * xdata =
+                x->data.complex_single;
+            for (int64_t k = 0; k < x->size; k++) {
+                xdata[k].a[0] *= a;
+                xdata[k].a[1] *= a;
+            }
+        } else if (x->precision == mtx_double) {
+            struct mtx_vector_coordinate_complex_double * xdata =
+                x->data.complex_double;
+            for (int64_t k = 0; k < x->size; k++) {
+                xdata[k].a[0] *= a;
+                xdata[k].a[1] *= a;
+            }
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else {
         return MTX_ERR_INVALID_MTX_FIELD;
-
-    struct mtx_vector_coordinate_real * xdata =
-        (struct mtx_vector_coordinate_real *) x->data;
-    for (int64_t i = 0; i < x->size; i++)
-        xdata[i].a *= a;
+    }
     return MTX_SUCCESS;
 }
 
@@ -62,19 +81,43 @@ int mtx_vector_coordinate_sscal(
  */
 int mtx_vector_coordinate_dscal(
     double a,
-    struct mtx * x)
+    struct mtx_vector_coordinate_data * x)
 {
-    if (x->object != mtx_vector)
-        return MTX_ERR_INVALID_MTX_OBJECT;
-    if (x->format != mtx_coordinate)
-        return MTX_ERR_INVALID_MTX_FORMAT;
-    if (x->field != mtx_double)
+    if (x->field == mtx_real) {
+        if (x->precision == mtx_single) {
+            struct mtx_vector_coordinate_real_single * xdata =
+                x->data.real_single;
+            for (int64_t k = 0; k < x->size; k++)
+                xdata[k].a *= a;
+        } else if (x->precision == mtx_double) {
+            struct mtx_vector_coordinate_real_double * xdata =
+                x->data.real_double;
+            for (int64_t k = 0; k < x->size; k++)
+                xdata[k].a *= a;
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else if (x->field == mtx_complex) {
+        if (x->precision == mtx_single) {
+            struct mtx_vector_coordinate_complex_single * xdata =
+                x->data.complex_single;
+            for (int64_t k = 0; k < x->size; k++) {
+                xdata[k].a[0] *= a;
+                xdata[k].a[1] *= a;
+            }
+        } else if (x->precision == mtx_double) {
+            struct mtx_vector_coordinate_complex_double * xdata =
+                x->data.complex_double;
+            for (int64_t k = 0; k < x->size; k++) {
+                xdata[k].a[0] *= a;
+                xdata[k].a[1] *= a;
+            }
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else {
         return MTX_ERR_INVALID_MTX_FIELD;
-
-    struct mtx_vector_coordinate_double * xdata =
-        (struct mtx_vector_coordinate_double *) x->data;
-    for (int64_t i = 0; i < x->size; i++)
-        xdata[i].a *= a;
+    }
     return MTX_SUCCESS;
 }
 
@@ -84,20 +127,9 @@ int mtx_vector_coordinate_dscal(
  */
 int mtx_vector_coordinate_saxpy(
     float a,
-    const struct mtx * x,
-    struct mtx * y)
+    const struct mtx_vector_coordinate_data * x,
+    struct mtx_vector_coordinate_data * y)
 {
-    if (x->object != mtx_vector || y->object != mtx_vector)
-        return MTX_ERR_INVALID_MTX_OBJECT;
-    if (x->format != mtx_coordinate || y->format != mtx_coordinate)
-        return MTX_ERR_INVALID_MTX_FORMAT;
-    if (x->field != mtx_real || y->field != mtx_real)
-        return MTX_ERR_INVALID_MTX_FIELD;
-    if (x->size != y->size)
-        return MTX_ERR_INVALID_MTX_SIZE;
-    if (x->sorting != y->sorting)
-        return MTX_ERR_INVALID_MTX_SORTING;
-
     /* TODO: Implement vector addition for sparse vectors. */
     errno = ENOTSUP;
     return MTX_ERR_ERRNO;
@@ -109,20 +141,9 @@ int mtx_vector_coordinate_saxpy(
  */
 int mtx_vector_coordinate_daxpy(
     double a,
-    const struct mtx * x,
-    struct mtx * y)
+    const struct mtx_vector_coordinate_data * x,
+    struct mtx_vector_coordinate_data * y)
 {
-    if (x->object != mtx_vector || y->object != mtx_vector)
-        return MTX_ERR_INVALID_MTX_OBJECT;
-    if (x->format != mtx_coordinate || y->format != mtx_coordinate)
-        return MTX_ERR_INVALID_MTX_FORMAT;
-    if (x->field != mtx_double || y->field != mtx_double)
-        return MTX_ERR_INVALID_MTX_FIELD;
-    if (x->size != y->size)
-        return MTX_ERR_INVALID_MTX_SIZE;
-    if (x->sorting != y->sorting)
-        return MTX_ERR_INVALID_MTX_SORTING;
-
     /* TODO: Implement vector addition for sparse vectors. */
     errno = ENOTSUP;
     return MTX_ERR_ERRNO;
@@ -133,21 +154,10 @@ int mtx_vector_coordinate_daxpy(
  * of two vectors of single precision floating-point values.
  */
 int mtx_vector_coordinate_sdot(
-    const struct mtx * x,
-    const struct mtx * y,
+    const struct mtx_vector_coordinate_data * x,
+    const struct mtx_vector_coordinate_data * y,
     float * dot)
 {
-    if (x->object != mtx_vector || y->object != mtx_vector)
-        return MTX_ERR_INVALID_MTX_OBJECT;
-    if (x->format != mtx_coordinate || y->format != mtx_coordinate)
-        return MTX_ERR_INVALID_MTX_FORMAT;
-    if (x->field != mtx_real || y->field != mtx_real)
-        return MTX_ERR_INVALID_MTX_FIELD;
-    if (x->size != y->size)
-        return MTX_ERR_INVALID_MTX_SIZE;
-    if (x->sorting != y->sorting)
-        return MTX_ERR_INVALID_MTX_SORTING;
-
     /* TODO: Implement dot product for sparse vectors. */
     errno = ENOTSUP;
     return MTX_ERR_ERRNO;
@@ -158,21 +168,10 @@ int mtx_vector_coordinate_sdot(
  * of two vectors of double precision floating-point values.
  */
 int mtx_vector_coordinate_ddot(
-    const struct mtx * x,
-    const struct mtx * y,
+    const struct mtx_vector_coordinate_data * x,
+    const struct mtx_vector_coordinate_data * y,
     double * dot)
 {
-    if (x->object != mtx_vector || y->object != mtx_vector)
-        return MTX_ERR_INVALID_MTX_OBJECT;
-    if (x->format != mtx_coordinate || y->format != mtx_coordinate)
-        return MTX_ERR_INVALID_MTX_FORMAT;
-    if (x->field != mtx_double || y->field != mtx_double)
-        return MTX_ERR_INVALID_MTX_FIELD;
-    if (x->size != y->size)
-        return MTX_ERR_INVALID_MTX_SIZE;
-    if (x->sorting != y->sorting)
-        return MTX_ERR_INVALID_MTX_SORTING;
-
     /* TODO: Implement dot product for sparse vectors. */
     errno = ENOTSUP;
     return MTX_ERR_ERRNO;
@@ -183,19 +182,45 @@ int mtx_vector_coordinate_ddot(
  * vector of single precision floating-point values.
  */
 int mtx_vector_coordinate_snrm2(
-    const struct mtx * x,
+    const struct mtx_vector_coordinate_data * x,
     float * nrm2)
 {
-    if (x->object != mtx_vector)
-        return MTX_ERR_INVALID_MTX_OBJECT;
-    if (x->format != mtx_coordinate)
-        return MTX_ERR_INVALID_MTX_FORMAT;
-    if (x->field != mtx_real)
+    if (x->field == mtx_real) {
+        if (x->precision == mtx_single) {
+            struct mtx_vector_coordinate_real_single * xdata =
+                x->data.real_single;
+            *nrm2 = 0;
+            for (int64_t k = 0; k < x->size; k++)
+                *nrm2 += xdata[k].a*xdata[k].a;
+        } else if (x->precision == mtx_double) {
+            struct mtx_vector_coordinate_real_double * xdata =
+                x->data.real_double;
+            *nrm2 = 0;
+            for (int64_t k = 0; k < x->size; k++)
+                *nrm2 += xdata[k].a*xdata[k].a;
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else if (x->field == mtx_complex) {
+        if (x->precision == mtx_single) {
+            struct mtx_vector_coordinate_complex_single * xdata =
+                x->data.complex_single;
+            *nrm2 = 0;
+            for (int64_t k = 0; k < x->size; k++)
+                *nrm2 += xdata[k].a[0]*xdata[k].a[0] + xdata[k].a[1]*xdata[k].a[1];
+        } else if (x->precision == mtx_double) {
+            struct mtx_vector_coordinate_complex_double * xdata =
+                x->data.complex_double;
+            *nrm2 = 0;
+            for (int64_t k = 0; k < x->size; k++)
+                *nrm2 += xdata[k].a[0]*xdata[k].a[0] + xdata[k].a[1]*xdata[k].a[1];
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else {
         return MTX_ERR_INVALID_MTX_FIELD;
-
-    /* TODO: Implement dot product for sparse vectors. */
-    errno = ENOTSUP;
-    return MTX_ERR_ERRNO;
+    }
+    return MTX_SUCCESS;
 }
 
 /**
@@ -203,17 +228,43 @@ int mtx_vector_coordinate_snrm2(
  * vector of double precision floating-point values.
  */
 int mtx_vector_coordinate_dnrm2(
-    const struct mtx * x,
+    const struct mtx_vector_coordinate_data * x,
     double * nrm2)
 {
-    if (x->object != mtx_vector)
-        return MTX_ERR_INVALID_MTX_OBJECT;
-    if (x->format != mtx_coordinate)
-        return MTX_ERR_INVALID_MTX_FORMAT;
-    if (x->field != mtx_double)
+    if (x->field == mtx_real) {
+        if (x->precision == mtx_single) {
+            struct mtx_vector_coordinate_real_single * xdata =
+                x->data.real_single;
+            *nrm2 = 0;
+            for (int64_t k = 0; k < x->size; k++)
+                *nrm2 += xdata[k].a*xdata[k].a;
+        } else if (x->precision == mtx_double) {
+            struct mtx_vector_coordinate_real_double * xdata =
+                x->data.real_double;
+            *nrm2 = 0;
+            for (int64_t k = 0; k < x->size; k++)
+                *nrm2 += xdata[k].a*xdata[k].a;
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else if (x->field == mtx_complex) {
+        if (x->precision == mtx_single) {
+            struct mtx_vector_coordinate_complex_single * xdata =
+                x->data.complex_single;
+            *nrm2 = 0;
+            for (int64_t k = 0; k < x->size; k++)
+                *nrm2 += xdata[k].a[0]*xdata[k].a[0] + xdata[k].a[1]*xdata[k].a[1];
+        } else if (x->precision == mtx_double) {
+            struct mtx_vector_coordinate_complex_double * xdata =
+                x->data.complex_double;
+            *nrm2 = 0;
+            for (int64_t k = 0; k < x->size; k++)
+                *nrm2 += xdata[k].a[0]*xdata[k].a[0] + xdata[k].a[1]*xdata[k].a[1];
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else {
         return MTX_ERR_INVALID_MTX_FIELD;
-
-    /* TODO: Implement dot product for sparse vectors. */
-    errno = ENOTSUP;
-    return MTX_ERR_ERRNO;
+    }
+    return MTX_SUCCESS;
 }

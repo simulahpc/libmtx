@@ -28,208 +28,235 @@
 #include <libmtx/mtx/mtx.h>
 #include <libmtx/mtx/reorder.h>
 
-static int mtx_matrix_array_real_permute(
-    struct mtx * mtx,
-    const int * rowperm,
-    const int * colperm)
-{
-    struct mtx orig;
-    int err = mtx_copy(&orig, mtx);
-    if (err)
-        return err;
-
-    const float * src = (const float *) orig.data;
-    float * dst = (float *) mtx->data;
-    if (rowperm && colperm) {
-        for (int i = 0; i < mtx->num_rows; i++) {
-            for (int j = 0; j < mtx->num_columns; j++) {
-                int k = i*mtx->num_columns+j;
-                int l = (rowperm[i]-1)*mtx->num_columns + colperm[j]-1;
-                dst[k] = src[l];
-            }
-        }
-    } else if (rowperm) {
-        for (int i = 0; i < mtx->num_rows; i++) {
-            for (int j = 0; j < mtx->num_columns; j++) {
-                int k = i*mtx->num_columns+j;
-                int l = (rowperm[i]-1)*mtx->num_columns + j;
-                dst[k] = src[l];
-            }
-        }
-    } else if (colperm) {
-        for (int i = 0; i < mtx->num_rows; i++) {
-            for (int j = 0; j < mtx->num_columns; j++) {
-                int k = i*mtx->num_columns+j;
-                int l = i*mtx->num_columns + colperm[j]-1;
-                dst[k] = src[l];
-            }
-        }
-    }
-
-    mtx_free(&orig);
-    return MTX_SUCCESS;
-}
-
-static int mtx_matrix_array_double_permute(
-    struct mtx * mtx,
-    const int * rowperm,
-    const int * colperm)
-{
-    struct mtx orig;
-    int err = mtx_copy(&orig, mtx);
-    if (err)
-        return err;
-
-    const double * src = (const double *) orig.data;
-    double * dst = (double *) mtx->data;
-    if (rowperm && colperm) {
-        for (int i = 0; i < mtx->num_rows; i++) {
-            for (int j = 0; j < mtx->num_columns; j++) {
-                int k = i*mtx->num_columns+j;
-                int l = (rowperm[i]-1)*mtx->num_columns + colperm[j]-1;
-                dst[k] = src[l];
-            }
-        }
-    } else if (rowperm) {
-        for (int i = 0; i < mtx->num_rows; i++) {
-            for (int j = 0; j < mtx->num_columns; j++) {
-                int k = i*mtx->num_columns+j;
-                int l = (rowperm[i]-1)*mtx->num_columns + j;
-                dst[k] = src[l];
-            }
-        }
-    } else if (colperm) {
-        for (int i = 0; i < mtx->num_rows; i++) {
-            for (int j = 0; j < mtx->num_columns; j++) {
-                int k = i*mtx->num_columns+j;
-                int l = i*mtx->num_columns + colperm[j]-1;
-                dst[k] = src[l];
-            }
-        }
-    }
-
-    mtx_free(&orig);
-    return MTX_SUCCESS;
-}
-
-static int mtx_matrix_array_complex_permute(
-    struct mtx * mtx,
-    const int * rowperm,
-    const int * colperm)
-{
-    struct mtx orig;
-    int err = mtx_copy(&orig, mtx);
-    if (err)
-        return err;
-
-    const float * src = (const float *) orig.data;
-    float * dst = (float *) mtx->data;
-    if (rowperm && colperm) {
-        for (int i = 0; i < mtx->num_rows; i++) {
-            for (int j = 0; j < mtx->num_columns; j++) {
-                int k = i*mtx->num_columns+j;
-                int l = (rowperm[i]-1)*mtx->num_columns + colperm[j]-1;
-                dst[2*k+0] = src[2*l+0];
-                dst[2*k+1] = src[2*l+1];
-            }
-        }
-    } else if (rowperm) {
-        for (int i = 0; i < mtx->num_rows; i++) {
-            for (int j = 0; j < mtx->num_columns; j++) {
-                int k = i*mtx->num_columns+j;
-                int l = (rowperm[i]-1)*mtx->num_columns + j;
-                dst[2*k+0] = src[2*l+0];
-                dst[2*k+1] = src[2*l+1];
-            }
-        }
-    } else if (colperm) {
-        for (int i = 0; i < mtx->num_rows; i++) {
-            for (int j = 0; j < mtx->num_columns; j++) {
-                int k = i*mtx->num_columns+j;
-                int l = i*mtx->num_columns + colperm[j]-1;
-                dst[2*k+0] = src[2*l+0];
-                dst[2*k+1] = src[2*l+1];
-            }
-        }
-    }
-
-    mtx_free(&orig);
-    return MTX_SUCCESS;
-}
-
-static int mtx_matrix_array_integer_permute(
-    struct mtx * mtx,
-    const int * rowperm,
-    const int * colperm)
-{
-    struct mtx orig;
-    int err = mtx_copy(&orig, mtx);
-    if (err)
-        return err;
-
-    const int * src = (const int *) orig.data;
-    int * dst = (int *) mtx->data;
-    if (rowperm && colperm) {
-        for (int i = 0; i < mtx->num_rows; i++) {
-            for (int j = 0; j < mtx->num_columns; j++) {
-                int k = i*mtx->num_columns+j;
-                int l = (rowperm[i]-1)*mtx->num_columns + colperm[j]-1;
-                dst[k] = src[l];
-            }
-        }
-    } else if (rowperm) {
-        for (int i = 0; i < mtx->num_rows; i++) {
-            for (int j = 0; j < mtx->num_columns; j++) {
-                int k = i*mtx->num_columns+j;
-                int l = (rowperm[i]-1)*mtx->num_columns + j;
-                dst[k] = src[l];
-            }
-        }
-    } else if (colperm) {
-        for (int i = 0; i < mtx->num_rows; i++) {
-            for (int j = 0; j < mtx->num_columns; j++) {
-                int k = i*mtx->num_columns+j;
-                int l = i*mtx->num_columns + colperm[j]-1;
-                dst[k] = src[l];
-            }
-        }
-    }
-
-    mtx_free(&orig);
-    return MTX_SUCCESS;
-}
+#include <errno.h>
 
 /**
- * `mtx_matrix_array_permute()' permutes the elements of a matrix
- * based on a given permutation.
+ * `mtx_matrix_array_data_permute()' permutes the elements of a matrix
+ * in array format based on a given permutation.
  *
- * The array `row_permutation' should be a permutation of the integers
- * `1,2,...,mtx->num_rows', and the array `column_permutation' should
- * be a permutation of the integers `1,2,...,mtx->num_columns'. The
+ * The array `rowperm' should be a permutation of the integers
+ * `1,2,...,mtxdata->num_rows', and the array `colperm' should be a
+ * permutation of the integers `1,2,...,mtxdata->num_columns'. The
  * elements belonging to row `i' and column `j' in the permuted matrix
- * are then equal to the elements in row `row_permutation[i-1]' and
- * column `column_permutation[j-1]' in the original matrix, for
- * `i=1,2,...,mtx->num_rows' and `j=1,2,...,mtx->num_columns'.
+ * are then equal to the elements in row `rowperm[i-1]' and column
+ * `colperm[j-1]' in the original matrix, for
+ * `i=1,2,...,mtxdata->num_rows' and `j=1,2,...,mtxdata->num_columns'.
  */
-int mtx_matrix_array_permute(
-    struct mtx * mtx,
-    const int * row_permutation,
-    const int * column_permutation)
+int mtx_matrix_array_data_permute(
+    struct mtx_matrix_array_data * mtxdata,
+    const int * rowperm,
+    const int * colperm)
 {
-    if (mtx->field == mtx_real) {
-        return mtx_matrix_array_real_permute(
-            mtx, row_permutation, column_permutation);
-    } else if (mtx->field == mtx_double) {
-        return mtx_matrix_array_double_permute(
-            mtx, row_permutation, column_permutation);
-    } else if (mtx->field == mtx_complex) {
-        return mtx_matrix_array_complex_permute(
-            mtx, row_permutation, column_permutation);
-    } else if (mtx->field == mtx_integer) {
-        return mtx_matrix_array_integer_permute(
-            mtx, row_permutation, column_permutation);
+    if (mtxdata->triangle != mtx_nontriangular) {
+        errno = ENOTSUP;
+        return MTX_ERR_ERRNO;
+    }
+
+    struct mtx_matrix_array_data srcmtxdata;
+    int err = mtx_matrix_array_data_copy(&srcmtxdata, mtxdata);
+    if (err)
+        return err;
+
+    if (mtxdata->field == mtx_real) {
+        if (mtxdata->precision == mtx_single) {
+            const float * src = srcmtxdata.data.real_single;
+            float * dst = mtxdata->data.real_single;
+            if (rowperm && colperm) {
+                for (int i = 0; i < mtxdata->num_rows; i++) {
+                    for (int j = 0; j < mtxdata->num_columns; j++) {
+                        int k = i*mtxdata->num_columns+j;
+                        int l = (rowperm[i]-1)*mtxdata->num_columns + colperm[j]-1;
+                        dst[k] = src[l];
+                    }
+                }
+            } else if (rowperm) {
+                for (int i = 0; i < mtxdata->num_rows; i++) {
+                    for (int j = 0; j < mtxdata->num_columns; j++) {
+                        int k = i*mtxdata->num_columns+j;
+                        int l = (rowperm[i]-1)*mtxdata->num_columns + j;
+                        dst[k] = src[l];
+                    }
+                }
+            } else if (colperm) {
+                for (int i = 0; i < mtxdata->num_rows; i++) {
+                    for (int j = 0; j < mtxdata->num_columns; j++) {
+                        int k = i*mtxdata->num_columns+j;
+                        int l = i*mtxdata->num_columns + colperm[j]-1;
+                        dst[k] = src[l];
+                    }
+                }
+            }
+
+        } else if (mtxdata->precision == mtx_double) {
+            const double * src = srcmtxdata.data.real_double;
+            double * dst = mtxdata->data.real_double;
+            if (rowperm && colperm) {
+                for (int i = 0; i < mtxdata->num_rows; i++) {
+                    for (int j = 0; j < mtxdata->num_columns; j++) {
+                        int k = i*mtxdata->num_columns+j;
+                        int l = (rowperm[i]-1)*mtxdata->num_columns + colperm[j]-1;
+                        dst[k] = src[l];
+                    }
+                }
+            } else if (rowperm) {
+                for (int i = 0; i < mtxdata->num_rows; i++) {
+                    for (int j = 0; j < mtxdata->num_columns; j++) {
+                        int k = i*mtxdata->num_columns+j;
+                        int l = (rowperm[i]-1)*mtxdata->num_columns + j;
+                        dst[k] = src[l];
+                    }
+                }
+            } else if (colperm) {
+                for (int i = 0; i < mtxdata->num_rows; i++) {
+                    for (int j = 0; j < mtxdata->num_columns; j++) {
+                        int k = i*mtxdata->num_columns+j;
+                        int l = i*mtxdata->num_columns + colperm[j]-1;
+                        dst[k] = src[l];
+                    }
+                }
+            }
+
+        } else {
+            mtx_matrix_array_data_free(&srcmtxdata);
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else if (mtxdata->field == mtx_complex) {
+        if (mtxdata->precision == mtx_single) {
+            const float (* src)[2] = srcmtxdata.data.complex_single;
+            float (* dst)[2] = mtxdata->data.complex_single;
+            if (rowperm && colperm) {
+                for (int i = 0; i < mtxdata->num_rows; i++) {
+                    for (int j = 0; j < mtxdata->num_columns; j++) {
+                        int k = i*mtxdata->num_columns+j;
+                        int l = (rowperm[i]-1)*mtxdata->num_columns + colperm[j]-1;
+                        dst[k][0] = src[l][0];
+                        dst[k][1] = src[l][1];
+                    }
+                }
+            } else if (rowperm) {
+                for (int i = 0; i < mtxdata->num_rows; i++) {
+                    for (int j = 0; j < mtxdata->num_columns; j++) {
+                        int k = i*mtxdata->num_columns+j;
+                        int l = (rowperm[i]-1)*mtxdata->num_columns + j;
+                        dst[k][0] = src[l][0];
+                        dst[k][1] = src[l][1];
+                    }
+                }
+            } else if (colperm) {
+                for (int i = 0; i < mtxdata->num_rows; i++) {
+                    for (int j = 0; j < mtxdata->num_columns; j++) {
+                        int k = i*mtxdata->num_columns+j;
+                        int l = i*mtxdata->num_columns + colperm[j]-1;
+                        dst[k][0] = src[l][0];
+                        dst[k][1] = src[l][1];
+                    }
+                }
+            }
+
+        } else if (mtxdata->precision == mtx_double) {
+            const double (* src)[2] = srcmtxdata.data.complex_double;
+            double (* dst)[2] = mtxdata->data.complex_double;
+            if (rowperm && colperm) {
+                for (int i = 0; i < mtxdata->num_rows; i++) {
+                    for (int j = 0; j < mtxdata->num_columns; j++) {
+                        int k = i*mtxdata->num_columns+j;
+                        int l = (rowperm[i]-1)*mtxdata->num_columns + colperm[j]-1;
+                        dst[k][0] = src[l][0];
+                        dst[k][1] = src[l][1];
+                    }
+                }
+            } else if (rowperm) {
+                for (int i = 0; i < mtxdata->num_rows; i++) {
+                    for (int j = 0; j < mtxdata->num_columns; j++) {
+                        int k = i*mtxdata->num_columns+j;
+                        int l = (rowperm[i]-1)*mtxdata->num_columns + j;
+                        dst[k][0] = src[l][0];
+                        dst[k][1] = src[l][1];
+                    }
+                }
+            } else if (colperm) {
+                for (int i = 0; i < mtxdata->num_rows; i++) {
+                    for (int j = 0; j < mtxdata->num_columns; j++) {
+                        int k = i*mtxdata->num_columns+j;
+                        int l = i*mtxdata->num_columns + colperm[j]-1;
+                        dst[k][0] = src[l][0];
+                        dst[k][1] = src[l][1];
+                    }
+                }
+            }
+
+        } else {
+            mtx_matrix_array_data_free(&srcmtxdata);
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else if (mtxdata->field == mtx_integer) {
+        if (mtxdata->precision == mtx_single) {
+            const int32_t * src = srcmtxdata.data.integer_single;
+            int32_t * dst = mtxdata->data.integer_single;
+            if (rowperm && colperm) {
+                for (int i = 0; i < mtxdata->num_rows; i++) {
+                    for (int j = 0; j < mtxdata->num_columns; j++) {
+                        int k = i*mtxdata->num_columns+j;
+                        int l = (rowperm[i]-1)*mtxdata->num_columns + colperm[j]-1;
+                        dst[k] = src[l];
+                    }
+                }
+            } else if (rowperm) {
+                for (int i = 0; i < mtxdata->num_rows; i++) {
+                    for (int j = 0; j < mtxdata->num_columns; j++) {
+                        int k = i*mtxdata->num_columns+j;
+                        int l = (rowperm[i]-1)*mtxdata->num_columns + j;
+                        dst[k] = src[l];
+                    }
+                }
+            } else if (colperm) {
+                for (int i = 0; i < mtxdata->num_rows; i++) {
+                    for (int j = 0; j < mtxdata->num_columns; j++) {
+                        int k = i*mtxdata->num_columns+j;
+                        int l = i*mtxdata->num_columns + colperm[j]-1;
+                        dst[k] = src[l];
+                    }
+                }
+            }
+
+        } else if (mtxdata->precision == mtx_double) {
+            const int64_t * src = srcmtxdata.data.integer_double;
+            int64_t * dst = mtxdata->data.integer_double;
+            if (rowperm && colperm) {
+                for (int i = 0; i < mtxdata->num_rows; i++) {
+                    for (int j = 0; j < mtxdata->num_columns; j++) {
+                        int k = i*mtxdata->num_columns+j;
+                        int l = (rowperm[i]-1)*mtxdata->num_columns + colperm[j]-1;
+                        dst[k] = src[l];
+                    }
+                }
+            } else if (rowperm) {
+                for (int i = 0; i < mtxdata->num_rows; i++) {
+                    for (int j = 0; j < mtxdata->num_columns; j++) {
+                        int k = i*mtxdata->num_columns+j;
+                        int l = (rowperm[i]-1)*mtxdata->num_columns + j;
+                        dst[k] = src[l];
+                    }
+                }
+            } else if (colperm) {
+                for (int i = 0; i < mtxdata->num_rows; i++) {
+                    for (int j = 0; j < mtxdata->num_columns; j++) {
+                        int k = i*mtxdata->num_columns+j;
+                        int l = i*mtxdata->num_columns + colperm[j]-1;
+                        dst[k] = src[l];
+                    }
+                }
+            }
+
+        } else {
+            mtx_matrix_array_data_free(&srcmtxdata);
+            return MTX_ERR_INVALID_PRECISION;
+        }
     } else {
+        mtx_matrix_array_data_free(&srcmtxdata);
         return MTX_ERR_INVALID_MTX_FIELD;
     }
+
+    mtx_matrix_array_data_free(&srcmtxdata);
     return MTX_SUCCESS;
 }

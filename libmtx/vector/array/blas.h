@@ -19,13 +19,13 @@
  * Authors: James D. Trotter <james@simula.no>
  * Last modified: 2021-08-09
  *
- * Level 1 BLAS operations for dense vectors in array format.
+ * Level 1 BLAS operations for vectors in array format.
  */
 
 #ifndef LIBMTX_VECTOR_ARRAY_BLAS_H
 #define LIBMTX_VECTOR_ARRAY_BLAS_H
 
-struct mtx;
+struct mtx_vector_array_data;
 
 /**
  * `mtx_vector_array_sscal()' scales a vector by a single precision
@@ -33,7 +33,7 @@ struct mtx;
  */
 int mtx_vector_array_sscal(
     float a,
-    struct mtx * x);
+    struct mtx_vector_array_data * x);
 
 /**
  * `mtx_vector_array_dscal()' scales a vector by a double precision
@@ -41,7 +41,7 @@ int mtx_vector_array_sscal(
  */
 int mtx_vector_array_dscal(
     double a,
-    struct mtx * x);
+    struct mtx_vector_array_data * x);
 
 /**
  * `mtx_vector_array_saxpy()' adds two vectors of single precision
@@ -49,8 +49,8 @@ int mtx_vector_array_dscal(
  */
 int mtx_vector_array_saxpy(
     float a,
-    const struct mtx * x,
-    struct mtx * y);
+    const struct mtx_vector_array_data * x,
+    struct mtx_vector_array_data * y);
 
 /**
  * `mtx_vector_array_daxpy()' adds two vectors of double precision
@@ -58,8 +58,8 @@ int mtx_vector_array_saxpy(
  */
 int mtx_vector_array_daxpy(
     double a,
-    const struct mtx * x,
-    struct mtx * y);
+    const struct mtx_vector_array_data * x,
+    struct mtx_vector_array_data * y);
 
 /**
  * `mtx_vector_array_sdot()' computes the Euclidean dot product of two
@@ -67,8 +67,8 @@ int mtx_vector_array_daxpy(
  * precision floating-point values.
  */
 int mtx_vector_array_sdot(
-    const struct mtx * x,
-    const struct mtx * y,
+    const struct mtx_vector_array_data * x,
+    const struct mtx_vector_array_data * y,
     float * dot);
 
 /**
@@ -77,8 +77,8 @@ int mtx_vector_array_sdot(
  * precision floating-point values.
  */
 int mtx_vector_array_ddot(
-    const struct mtx * x,
-    const struct mtx * y,
+    const struct mtx_vector_array_data * x,
+    const struct mtx_vector_array_data * y,
     double * dot);
 
 /**
@@ -87,7 +87,7 @@ int mtx_vector_array_ddot(
  * values.
  */
 int mtx_vector_array_snrm2(
-    const struct mtx * x,
+    const struct mtx_vector_array_data * x,
     float * nrm2);
 
 /**
@@ -96,7 +96,7 @@ int mtx_vector_array_snrm2(
  * values.
  */
 int mtx_vector_array_dnrm2(
-    const struct mtx * x,
+    const struct mtx_vector_array_data * x,
     double * nrm2);
 
 #endif

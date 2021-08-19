@@ -27,71 +27,23 @@
 
 #include <libmtx/mtx/assembly.h>
 #include <libmtx/mtx/header.h>
+#include <libmtx/mtx/precision.h>
 #include <libmtx/mtx/reorder.h>
 #include <libmtx/mtx/sort.h>
 
+#include <stdint.h>
+
 struct mtx;
+struct mtx_vector_coordinate_real_single;
+struct mtx_vector_coordinate_real_double;
+struct mtx_vector_coordinate_complex_single;
+struct mtx_vector_coordinate_complex_double;
+struct mtx_vector_coordinate_integer_single;
+struct mtx_vector_coordinate_integer_double;
+struct mtx_vector_coordinate_pattern;
 
 /*
- * Data types for sparse vector nonzero values.
- */
-
-/**
- * `mtx_vector_coordinate_real' represents a nonzero vector entry in a
- * Matrix Market file with `vector' object, `coordinate' format and
- * `real' field.
- */
-struct mtx_vector_coordinate_real
-{
-    int i;    /* row index */
-    float a;  /* nonzero value */
-};
-
-/**
- * `mtx_vector_coordinate_double' represents a nonzero vector entry in
- * a Matrix Market file with `vector' object, `coordinate' format and
- * `double' field.
- */
-struct mtx_vector_coordinate_double
-{
-    int i;    /* row index */
-    double a; /* nonzero value */
-};
-
-/**
- * `mtx_vector_coordinate_complex' represents a nonzero vector entry
- * in a Matrix Market file with `vector' object, `coordinate' format
- * and `complex' field.
- */
-struct mtx_vector_coordinate_complex
-{
-    int i;        /* row index */
-    float a, b;   /* real and imaginary parts of nonzero value */
-};
-
-/**
- * `mtx_vector_coordinate_integer' represents a nonzero vector entry
- * in a Matrix Market file with `vector' object, `coordinate' format
- * and `integer' field.
- */
-struct mtx_vector_coordinate_integer
-{
-    int i;    /* row index */
-    int a;    /* nonzero value */
-};
-
-/**
- * `mtx_vector_coordinate_pattern' represents a nonzero vector entry
- * in a Matrix Market file with `vector' object, `coordinate' format
- * and `pattern' field.
- */
-struct mtx_vector_coordinate_pattern
-{
-    int i; /* row index */
-};
-
-/*
- * Sparse (coordinate) vector allocation.
+ * Coordinate vector allocation and initialisation.
  */
 
 /**
@@ -101,189 +53,127 @@ struct mtx_vector_coordinate_pattern
 int mtx_alloc_vector_coordinate(
     struct mtx * mtx,
     enum mtx_field field,
+    enum mtx_precision precision,
     int num_comment_lines,
     const char ** comment_lines,
     int num_rows,
-    int size);
+    int64_t size);
 
 /**
- * `mtx_alloc_vector_coordinate_real()` allocates a sparse vector with
- * real, single-precision floating point coefficients.
+ * `mtx_init_vector_coordinate_real_single()' creates a coordinate
+ * vector with real, single-precision floating point coefficients.
  */
-int mtx_alloc_vector_coordinate_real(
-    struct mtx * mtx,
-    int num_comment_lines,
-    const char ** comment_lines,
-    int num_rows,
-    int size);
-
-/**
- * `mtx_alloc_vector_coordinate_double()` allocates a sparse vector
- * with real, double-precision floating point coefficients.
- */
-int mtx_alloc_vector_coordinate_double(
-    struct mtx * mtx,
-    int num_comment_lines,
-    const char ** comment_lines,
-    int num_rows,
-    int size);
-
-/**
- * `mtx_alloc_vector_coordinate_complex()` allocates a sparse vector
- * with complex, single-precision floating point coefficients.
- */
-int mtx_alloc_vector_coordinate_complex(
-    struct mtx * mtx,
-    int num_comment_lines,
-    const char ** comment_lines,
-    int num_rows,
-    int size);
-
-/**
- * `mtx_alloc_vector_coordinate_integer()` allocates a sparse vector
- * with integer coefficients.
- */
-int mtx_alloc_vector_coordinate_integer(
-    struct mtx * mtx,
-    int num_comment_lines,
-    const char ** comment_lines,
-    int num_rows,
-    int size);
-
-/**
- * `mtx_alloc_vector_coordinate_pattern()` allocates a sparse vector
- * with boolean coefficients.
- */
-int mtx_alloc_vector_coordinate_pattern(
-    struct mtx * mtx,
-    int num_comment_lines,
-    const char ** comment_lines,
-    int num_rows,
-    int size);
-
-/*
- * Sparse (coordinate) vector allocation and initialisation.
- */
-
-/**
- * `mtx_init_vector_coordinate_real()` creates a sparse vector with
- * real, single-precision floating point coefficients.
- */
-int mtx_init_vector_coordinate_real(
+int mtx_init_vector_coordinate_real_single(
     struct mtx * mtx,
     enum mtx_sorting sorting,
-    enum mtx_ordering ordering,
     enum mtx_assembly assembly,
     int num_comment_lines,
     const char ** comment_lines,
     int num_rows,
-    int size,
-    const struct mtx_vector_coordinate_real * data);
+    int64_t size,
+    const struct mtx_vector_coordinate_real_single * data);
 
 /**
- * `mtx_init_vector_coordinate_double()` creates a sparse vector with
- * real, double-precision floating point coefficients.
+ * `mtx_init_vector_coordinate_real_double()' creates a coordinate
+ * vector with real, double-precision floating point coefficients.
  */
-int mtx_init_vector_coordinate_double(
+int mtx_init_vector_coordinate_real_double(
     struct mtx * mtx,
     enum mtx_sorting sorting,
-    enum mtx_ordering ordering,
     enum mtx_assembly assembly,
     int num_comment_lines,
     const char ** comment_lines,
     int num_rows,
-    int size,
-    const struct mtx_vector_coordinate_double * data);
+    int64_t size,
+    const struct mtx_vector_coordinate_real_double * data);
 
 /**
- * `mtx_init_vector_coordinate_complex()` creates a sparse vector with
- * complex, single-precision floating point coefficients.
+ * `mtx_init_vector_coordinate_complex_single()' creates a coordinate
+ * vector with complex, single-precision floating point coefficients.
  */
-int mtx_init_vector_coordinate_complex(
+int mtx_init_vector_coordinate_complex_single(
     struct mtx * mtx,
     enum mtx_sorting sorting,
-    enum mtx_ordering ordering,
     enum mtx_assembly assembly,
     int num_comment_lines,
     const char ** comment_lines,
     int num_rows,
-    int size,
-    const struct mtx_vector_coordinate_complex * data);
+    int64_t size,
+    const struct mtx_vector_coordinate_complex_single * data);
 
 /**
- * `mtx_init_vector_coordinate_integer()` creates a sparse vector with
- * integer coefficients.
+ * `mtx_init_vector_coordinate_integer_single()' creates a coordinate
+ * vector with single precision, integer coefficients.
  */
-int mtx_init_vector_coordinate_integer(
+int mtx_init_vector_coordinate_integer_single(
     struct mtx * mtx,
     enum mtx_sorting sorting,
-    enum mtx_ordering ordering,
     enum mtx_assembly assembly,
     int num_comment_lines,
     const char ** comment_lines,
     int num_rows,
-    int size,
-    const struct mtx_vector_coordinate_integer * data);
+    int64_t size,
+    const struct mtx_vector_coordinate_integer_single * data);
 
 /**
- * `mtx_init_vector_coordinate_pattern()` creates a sparse vector with
- * boolean coefficients.
+ * `mtx_init_vector_coordinate_pattern()` creates a coordinate vector
+ * with boolean (pattern) coefficients.
  */
 int mtx_init_vector_coordinate_pattern(
     struct mtx * mtx,
     enum mtx_sorting sorting,
-    enum mtx_ordering ordering,
     enum mtx_assembly assembly,
     int num_comment_lines,
     const char ** comment_lines,
     int num_rows,
-    int size,
+    int64_t size,
     const struct mtx_vector_coordinate_pattern * data);
 
 /*
- * Sparse (coordinate) vector value initialisation.
+ * Coordinate vector value initialisation.
  */
 
 /**
- * `mtx_vector_coordinate_set_zero()' zeroes a vector in coordinate format.
+ * `mtx_vector_coordinate_set_zero()' zeroes a vector in coordinate
+ * format.
  */
 int mtx_vector_coordinate_set_zero(
     struct mtx * mtx);
 
 /**
- * `mtx_vector_coordinate_set_constant_real()' sets every nonzero
- * value of a vector equal to a constant, single precision floating
- * point number.
+ * `mtx_vector_coordinate_set_constant_real_single()' sets every
+ * nonzero value of a vector equal to a constant, single precision
+ * floating point number.
  */
-int mtx_vector_coordinate_set_constant_real(
+int mtx_vector_coordinate_set_constant_real_single(
     struct mtx * mtx,
     float a);
 
 /**
- * `mtx_vector_coordinate_set_constant_double()' sets every nonzero
- * value of a vector equal to a constant, double precision floating
- * point number.
+ * `mtx_vector_coordinate_set_constant_real_double()' sets every
+ * nonzero value of a vector equal to a constant, double precision
+ * floating point number.
  */
-int mtx_vector_coordinate_set_constant_double(
+int mtx_vector_coordinate_set_constant_real_double(
     struct mtx * mtx,
     double a);
 
 /**
- * `mtx_vector_coordinate_set_constant_complex()' sets every nonzero
- * value of a vector equal to a constant, single precision floating
- * point complex number.
+ * `mtx_vector_coordinate_set_constant_complex_single()' sets every
+ * nonzero value of a vector equal to a constant, single precision
+ * floating point complex number.
  */
-int mtx_vector_coordinate_set_constant_complex(
+int mtx_vector_coordinate_set_constant_complex_single(
     struct mtx * mtx,
-    float a,
-    float b);
+    float a[2]);
 
 /**
- * `mtx_vector_coordinate_set_constant_integer()' sets every nonzero
- * value of a vector equal to a constant integer.
+ * `mtx_vector_coordinate_set_constant_integer_single()' sets every
+ * nonzero value of a vector equal to a constant, single precision
+ * integer.
  */
-int mtx_vector_coordinate_set_constant_integer(
+int mtx_vector_coordinate_set_constant_integer_single(
     struct mtx * mtx,
-    int a);
+    int32_t a);
 
 #endif

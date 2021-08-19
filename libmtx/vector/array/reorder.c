@@ -22,153 +22,98 @@
  * Reordering the rows or columns of vectors in array format.
  */
 
+#include <libmtx/vector/array/data.h>
 #include <libmtx/vector/array/reorder.h>
 
 #include <libmtx/error.h>
-#include <libmtx/mtx/mtx.h>
-#include <libmtx/mtx/reorder.h>
-
-static int mtx_vector_array_real_permute(
-    struct mtx * mtx,
-    const int * row_permutation,
-    const int * column_permutation)
-{
-    const int * permutation;
-    if (mtx->num_rows >= 0 && mtx->num_columns == -1) {
-        permutation = row_permutation;
-    } else if (mtx->num_rows == -1 && mtx->num_columns >= 0) {
-        permutation = column_permutation;
-    } else {
-        return MTX_ERR_INVALID_MTX_SIZE;
-    }
-
-    struct mtx copy;
-    int err = mtx_copy(&copy, mtx);
-    if (err)
-        return err;
-
-    const float * src = (const float *) copy.data;
-    float * dst = (float *) mtx->data;
-    for (int i = 0; i < mtx->size; i++)
-        dst[i] = src[permutation[i]-1];
-    mtx_free(&copy);
-    return MTX_SUCCESS;
-}
-
-static int mtx_vector_array_double_permute(
-    struct mtx * mtx,
-    const int * row_permutation,
-    const int * column_permutation)
-{
-    const int * permutation;
-    if (mtx->num_rows >= 0 && mtx->num_columns == -1) {
-        permutation = row_permutation;
-    } else if (mtx->num_rows == -1 && mtx->num_columns >= 0) {
-        permutation = column_permutation;
-    } else {
-        return MTX_ERR_INVALID_MTX_SIZE;
-    }
-
-    struct mtx copy;
-    int err = mtx_copy(&copy, mtx);
-    if (err)
-        return err;
-
-    const double * src = (const double *) copy.data;
-    double * dst = (double *) mtx->data;
-    for (int i = 0; i < mtx->size; i++)
-        dst[i] = src[permutation[i]-1];
-    mtx_free(&copy);
-    return MTX_SUCCESS;
-}
-
-static int mtx_vector_array_complex_permute(
-    struct mtx * mtx,
-    const int * row_permutation,
-    const int * column_permutation)
-{
-    const int * permutation;
-    if (mtx->num_rows >= 0 && mtx->num_columns == -1) {
-        permutation = row_permutation;
-    } else if (mtx->num_rows == -1 && mtx->num_columns >= 0) {
-        permutation = column_permutation;
-    } else {
-        return MTX_ERR_INVALID_MTX_SIZE;
-    }
-
-    struct mtx copy;
-    int err = mtx_copy(&copy, mtx);
-    if (err)
-        return err;
-
-    const float * src = (const float *) copy.data;
-    float * dst = (float *) mtx->data;
-    for (int i = 0; i < mtx->size; i++) {
-        dst[2*i+0] = src[2*(permutation[i]-1)+0];
-        dst[2*i+1] = src[2*(permutation[i]-1)+1];
-    }
-    mtx_free(&copy);
-    return MTX_SUCCESS;
-}
-
-static int mtx_vector_array_integer_permute(
-    struct mtx * mtx,
-    const int * row_permutation,
-    const int * column_permutation)
-{
-    const int * permutation;
-    if (mtx->num_rows >= 0 && mtx->num_columns == -1) {
-        permutation = row_permutation;
-    } else if (mtx->num_rows == -1 && mtx->num_columns >= 0) {
-        permutation = column_permutation;
-    } else {
-        return MTX_ERR_INVALID_MTX_SIZE;
-    }
-
-    struct mtx copy;
-    int err = mtx_copy(&copy, mtx);
-    if (err)
-        return err;
-
-    const int * src = (const int *) copy.data;
-    int * dst = (int *) mtx->data;
-    for (int i = 0; i < mtx->size; i++)
-        dst[i] = src[permutation[i]-1];
-    mtx_free(&copy);
-    return MTX_SUCCESS;
-}
 
 /**
- * `mtx_vector_array_permute()' permutes the elements of a vector
- * based on a given permutation.
+ * `mtx_vector_array_data_permute()' permutes the elements of a vector
+ * in array format based on a given permutation.
  *
  * The array `row_permutation' should be a permutation of the integers
- * `1,2,...,mtx->num_rows', and the array `column_permutation' should
- * be a permutation of the integers `1,2,...,mtx->num_columns'. The
- * elements belonging to row `i' (or column `j') in the permuted
- * vector are then equal to the elements in row `row_permutation[i-1]'
- * (or column `column_permutation[j-1]') in the original vector, for
- * `i=1,2,...,mtx->num_rows' (and `j=1,2,...,mtx->num_columns').
+ * `1,2,...,mtxdata->num_rows', and the array `column_permutation'
+ * should be a permutation of the integers
+ * `1,2,...,mtxdata->num_columns'. The elements belonging to row `i'
+ * (or column `j') in the permuted vector are then equal to the
+ * elements in row `row_permutation[i-1]' (or column
+ * `column_permutation[j-1]') in the original vector, for
+ * `i=1,2,...,mtxdata->num_rows' (and
+ * `j=1,2,...,mtxdata->num_columns').
  */
-int mtx_vector_array_permute(
-    struct mtx * mtx,
+int mtx_vector_array_data_permute(
+    struct mtx_vector_array_data * mtxdata,
     const int * row_permutation,
     const int * column_permutation)
 {
-    if (mtx->field == mtx_real) {
-        return mtx_vector_array_real_permute(
-            mtx, row_permutation, column_permutation);
-    } else if (mtx->field == mtx_double) {
-        return mtx_vector_array_double_permute(
-            mtx, row_permutation, column_permutation);
-    } else if (mtx->field == mtx_complex) {
-        return mtx_vector_array_complex_permute(
-            mtx, row_permutation, column_permutation);
-    } else if (mtx->field == mtx_integer) {
-        return mtx_vector_array_integer_permute(
-            mtx, row_permutation, column_permutation);
+    const int * permutation;
+    if (mtxdata->num_rows >= 0 && mtxdata->num_columns == -1) {
+        permutation = row_permutation;
+    } else if (mtxdata->num_rows == -1 && mtxdata->num_columns >= 0) {
+        permutation = column_permutation;
     } else {
+        return MTX_ERR_INVALID_MTX_SIZE;
+    }
+
+    struct mtx_vector_array_data srcmtxdata;
+    int err = mtx_vector_array_data_copy(&srcmtxdata, mtxdata);
+    if (err)
+        return err;
+
+    if (mtxdata->field == mtx_real) {
+        if (mtxdata->precision == mtx_single) {
+            const float * src = srcmtxdata.data.real_single;
+            float * dst = mtxdata->data.real_single;
+            for (int64_t k = 0; k < mtxdata->size; k++)
+                dst[k] = src[permutation[k]-1];
+        } else if (mtxdata->precision == mtx_double) {
+            const double * src = srcmtxdata.data.real_double;
+            double * dst = mtxdata->data.real_double;
+            for (int64_t k = 0; k < mtxdata->size; k++)
+                dst[k] = src[permutation[k]-1];
+        } else {
+            mtx_vector_array_data_free(&srcmtxdata);
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else if (mtxdata->field == mtx_complex) {
+        if (mtxdata->precision == mtx_single) {
+            const float (* src)[2] = srcmtxdata.data.complex_single;
+            float (* dst)[2] = mtxdata->data.complex_single;
+            for (int64_t k = 0; k < mtxdata->size; k++) {
+                dst[k][0] = src[permutation[k]-1][0];
+                dst[k][1] = src[permutation[k]-1][1];
+            }
+        } else if (mtxdata->precision == mtx_double) {
+            const double (* src)[2] = srcmtxdata.data.complex_double;
+            double (* dst)[2] = mtxdata->data.complex_double;
+            for (int64_t k = 0; k < mtxdata->size; k++) {
+                dst[k][0] = src[permutation[k]-1][0];
+                dst[k][1] = src[permutation[k]-1][1];
+            }
+        } else {
+            mtx_vector_array_data_free(&srcmtxdata);
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else if (mtxdata->field == mtx_integer) {
+        if (mtxdata->precision == mtx_single) {
+            const int32_t * src = srcmtxdata.data.integer_single;
+            int32_t * dst = mtxdata->data.integer_single;
+            for (int64_t k = 0; k < mtxdata->size; k++)
+                dst[k] = src[permutation[k]-1];
+        } else if (mtxdata->precision == mtx_double) {
+            const int64_t * src = srcmtxdata.data.integer_double;
+            int64_t * dst = mtxdata->data.integer_double;
+            for (int64_t k = 0; k < mtxdata->size; k++)
+                dst[k] = src[permutation[k]-1];
+        } else {
+            mtx_vector_array_data_free(&srcmtxdata);
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else {
+        mtx_vector_array_data_free(&srcmtxdata);
         return MTX_ERR_INVALID_MTX_FIELD;
     }
+
+    mtx_vector_array_data_free(&srcmtxdata);
     return MTX_SUCCESS;
 }

@@ -25,19 +25,17 @@
 #ifndef LIBMTX_MTX_MTX_H
 #define LIBMTX_MTX_MTX_H
 
-#include <libmtx/mtx/assembly.h>
 #include <libmtx/mtx/header.h>
-#include <libmtx/mtx/reorder.h>
-#include <libmtx/mtx/sort.h>
-#include <libmtx/mtx/triangle.h>
 
-#include <stdbool.h>
+#include <libmtx/matrix/array/data.h>
+#include <libmtx/matrix/coordinate/data.h>
+#include <libmtx/vector/array/data.h>
+#include <libmtx/vector/coordinate/data.h>
+
 #include <stdint.h>
 
-struct mtx_index_set;
-
 /**
- * `mtx` is a data structure for objects (vectors or matrices) in the
+ * `mtx' is a data structure for objects (vectors or matrices) in the
  * Matrix Market format.
  */
 struct mtx
@@ -70,56 +68,6 @@ struct mtx
     enum mtx_symmetry symmetry;
 
     /**
-     * `triangle' specifies triangular properties of a matrix:
-     * `nontriangular', `lower-triangular', `upper-triangular' or
-     * `diagonal'.
-     *
-     * For symmetric, dense matrices in array format, `triangle' is
-     * `lower-triangular' if the lower triangular part of the matrix
-     * is stored, and `upper-triangular' if the upper triangular part
-     * of the matrix is stored.
-     *
-     * Note that the triangular properties of a matrix are not
-     * explicitly stored in a Matrix Market file, but it is useful
-     * additional data that can be provided by the user.
-     */
-    enum mtx_triangle triangle;
-
-    /**
-     * `sorting' is the sorting of matrix nonzeros: `unsorted',
-     * 'row-major' or 'column-major'.
-     *
-     * Note that the sorting is not explicitly stored in a Matrix
-     * Market file, but it is useful additional data that can be
-     * provided by the user.
-     */
-    enum mtx_sorting sorting;
-
-    /**
-     * `ordering' is the matrix ordering: `unordered' or `rcm'.
-     *
-     * Note that the ordering is not explicitly stored in a Matrix
-     * Market file, but it is useful additional data that can be
-     * provided by the user.
-     */
-    enum mtx_ordering ordering;
-
-    /**
-     * `assembly' is the matrix assembly state: `unassembled' or
-     * `assembled'.
-     *
-     * An unassembled sparse matrix may contain more than one value
-     * associated with each nonzero matrix entry. In contrast, there
-     * is only one value associated with each nonzero matrix entry of
-     * an assembled sparse matrix.
-     *
-     * Note that the assembly state is not explicitly stored in a
-     * Matrix Market file, but it is useful additional data that can
-     * be provided by the user.
-     */
-    enum mtx_assembly assembly;
-
-    /**
      * `num_comment_lines` is the number of comment lines.
      */
     int num_comment_lines;
@@ -142,93 +90,35 @@ struct mtx
     int num_columns;
 
     /**
-     * `num_nonzeros` is the number of nonzero matrix entries,
-     * including entries that are not stored explicitly, for example,
-     * due to symmetry.
+     * `num_nonzeros' is the number of nonzero matrix or vector
+     * entries for a sparse matrix or vector.  This only includes
+     * entries that are stored explicitly, and not those that are
+     * implicitly, for example, due to symmetry.
      *
-     * The number of nonzeros depends on the matrix `format':
-     *
-     * If `format' is `array', then `num_nonzeros' is equal to
-     * `num_rows*num_columns'. Otherwise, the value is a non-negative
-     * integer less than or equal to `num_rows*num_columns'.
+     * If `format' is `array', then `num_nonzeros' is set to `-1', and
+     * it is not used.
      */
     int64_t num_nonzeros;
 
     /**
-     * `size` is the number of nonzero matrix entries stored in the
-     * `data` array.
+     * `storage' contains data for the (nonzero) matrix or vector
+     * entries.
      *
-     * The number of stored nonzeros depends on the matrix `format`
-     * and `symmetry`:
+     * The storage format of the matrix or vector data depends on
+     * `object' and `format'.  Only the member of the `storage' union
+     * that corresponds to the matrix (or vector) `object' and
+     * `format' should be used to access the data.
      *
-     * - If `symmetry` is `general`, then `size` is the number of
-     *   nonzero entries. Whenever `format` is `array`, then `size` is
-     *   equal to `num_rows*num_columns`.
-     *
-     * - If `symmetry` is `symmetric` or `hermitian`, then `size` is
-     *   the number of nonzero entries on or below the
-     *   diagonal. Whenever `format` is `array`, then `size' is equal
-     *   to `(n+1)*n/2', where `n' is equal to `num_rows' and
-     *   `num_columns'.
-     *
-     * - If `symmetry` is `skew-symmetric`, then `size` is the number
-     *   of nonzero entries below the diagonal. Whenever `format` is
-     *   `array`, then `size' is equal to `n*n/2', where `n' is equal
-     *   to `num_rows' and `num_columns'.
+     * For example, if `object' is `matrix' and `format' is `array',
+     * then `data.matrix_array' is used to store the matrix entries in
+     * the array format.
      */
-    int64_t size;
-
-    /**
-     * `nonzero_size' is the size (in bytes) of each nonzero entry in
-     * the `data' array.
-     *
-     * The size of each nonzero depends on the `format' and `field':
-     *
-     *   - If `format` is `array' and `field' is `real', `double',
-     *     `complex' or `integer', then `nonzero_size' is
-     *     `sizeof(float)', `sizeof(double)', `2*sizeof(float)', or
-     *     `sizeof(int)', respectively.
-     *
-     *   - If `format' is `coordinate', then `nonzero_size' is equal
-     *     to the size of the corresponding struct
-     *     `mtx_<object>_coordinate_<field>', where `<object>' is
-     *     `matrix' or `vector' and `<field>' is `real', `double',
-     *     `complex', `integer' or `pattern'.
-     */
-    int nonzero_size;
-
-    /**
-     * `data` contains data for the nonzero matrix entries.
-     *
-     * The storage format of nonzero values depends on the matrix
-     * `format` and `field`:
-     *
-     *   - If `format` is `array` and `field` is `real`, `double` or
-     *     `integer`, then `data` is an array of `size` values of type
-     *     `float`, `double` or `int`, respectively.
-     *
-     *   - If `format` is `array` and `field` is `complex`, then
-     *     `data` is an array of `2*size` values of type `float`.
-     *
-     *   - If `object' is `matrix', `format` is `coordinate` and
-     *     `field` is `real`, `double`, `complex`, `integer` or
-     *     `pattern`, then `data` is an array of `size` values of type
-     *     `mtx_matrix_coordinate_real`,
-     *     `mtx_matrix_coordinate_double`,
-     *     `mtx_matrix_coordinate_complex`,
-     *     `mtx_matrix_coordinate_integer` or
-     *     `mtx_matrix_coordinate_pattern`, respectively.
-     *
-     *   - If `object' is `vector', `format` is `coordinate` and
-     *     `field` is `real`, `double`, `complex`, `integer` or
-     *     `pattern`, then `data` is an array of `size` values of type
-     *     `mtx_vector_coordinate_real`,
-     *     `mtx_vector_coordinate_double`,
-     *     `mtx_vector_coordinate_complex`,
-     *     `mtx_vector_coordinate_integer` or
-     *     `mtx_vector_coordinate_pattern`, respectively.
-     */
-    void * data;
+    union {
+        struct mtx_matrix_array_data matrix_array;
+        struct mtx_matrix_coordinate_data matrix_coordinate;
+        struct mtx_vector_array_data vector_array;
+        struct mtx_vector_coordinate_data vector_coordinate;
+    } storage;
 };
 
 /**
@@ -263,38 +153,38 @@ int mtx_set_zero(
     struct mtx * mtx);
 
 /**
- * `mtx_set_constant_real()' sets every (nonzero) value of a matrix or
- * vector equal to a constant, single precision floating point number.
+ * `mtx_set_constant_real_single()' sets every (nonzero) value of a
+ * matrix or vector equal to a constant, single precision floating
+ * point number.
  */
-int mtx_set_constant_real(
+int mtx_set_constant_real_single(
     struct mtx * mtx,
     float a);
 
 /**
- * `mtx_set_constant_double()' sets every (nonzero) value of a matrix
- * or vector equal to a constant, double precision floating point
- * number.
+ * `mtx_set_constant_real_double()' sets every (nonzero) value of a
+ * matrix or vector equal to a constant, double precision floating
+ * point number.
  */
-int mtx_set_constant_double(
+int mtx_set_constant_real_double(
     struct mtx * mtx,
     double a);
 
 /**
- * `mtx_set_constant_complex()' sets every (nonzero) value of a matrix
- * or vector equal to a constant, single precision floating point
- * complex number.
+ * `mtx_set_constant_complex_single()' sets every (nonzero) value of a
+ * matrix or vector equal to a constant, single precision floating
+ * point complex number.
  */
-int mtx_set_constant_complex(
+int mtx_set_constant_complex_single(
     struct mtx * mtx,
-    float a,
-    float b);
+    float a[2]);
 
 /**
- * `mtx_set_constant_integer()' sets every (nonzero) value of a matrix
- * or vector equal to a constant integer.
+ * `mtx_set_constant_integer_single()' sets every (nonzero) value of a
+ * matrix or vector equal to a constant integer.
  */
-int mtx_set_constant_integer(
+int mtx_set_constant_integer_single(
     struct mtx * mtx,
-    int a);
+    int32_t a);
 
 #endif

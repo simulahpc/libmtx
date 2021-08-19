@@ -27,6 +27,8 @@
 
 #include <libmtx/libmtx-config.h>
 
+#include <libmtx/mtx/precision.h>
+
 #ifdef LIBMTX_HAVE_LIBZ
 #include <zlib.h>
 #endif
@@ -40,6 +42,9 @@ struct mtx;
  * `mtx_read()' reads a `struct mtx' object from a file in Matrix
  * Market format. The file may optionally be compressed by gzip.
  *
+ * The `precision' argument specifies which precision to use for
+ * storing matrix or vector values.
+ *
  * If `path' is `-', then standard input is used.
  *
  * If an error code is returned, then `line_number' and
@@ -48,6 +53,7 @@ struct mtx;
  */
 int mtx_read(
     struct mtx * mtx,
+    enum mtx_precision precision,
     const char * path,
     bool gzip,
     int * line_number,
@@ -83,12 +89,16 @@ int mtx_write(
  * `mtx_fread()` reads an object (matrix or vector) from a stream in
  * Matrix Market format.
  *
+ * The `precision' argument specifies which precision to use for
+ * storing matrix or vector values.
+ *
  * If an error code is returned, then `line_number' and
  * `column_number' are used to return the line and column at which the
  * error was encountered during the parsing of the Matrix Market file.
  */
 int mtx_fread(
     struct mtx * mtx,
+    enum mtx_precision precision,
     FILE * f,
     int * line_number,
     int * column_number);
@@ -121,12 +131,16 @@ int mtx_fwrite(
  * `mtx_gzread()` reads a matrix or vector from a gzip-compressed
  * stream in Matrix Market format.
  *
+ * The `precision' argument specifies which precision to use for
+ * storing matrix or vector values.
+ *
  * If an error code is returned, then `line_number' and
  * `column_number' are used to return the line and column at which the
  * error was encountered during the parsing of the Matrix Market file.
  */
 int mtx_gzread(
     struct mtx * mtx,
+    enum mtx_precision precision,
     gzFile f,
     int * line_number,
     int * column_number);

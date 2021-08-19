@@ -17,7 +17,7 @@
  * <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-08-16
+ * Last modified: 2021-08-19
  *
  * Main libmtx header file.
  */
@@ -28,20 +28,23 @@
 #include <libmtx/libmtx-config.h>
 
 #include <libmtx/error.h>
-#include <libmtx/util/index_set.h>
 #include <libmtx/matrix/array.h>
 #include <libmtx/matrix/coordinate.h>
-#include <libmtx/mtx/matrix.h>
+#include <libmtx/mtx/assembly.h>
 #include <libmtx/mtx/blas.h>
 #include <libmtx/mtx/header.h>
 #include <libmtx/mtx/io.h>
 #include <libmtx/mtx/mpi.h>
 #include <libmtx/mtx/mtx.h>
+#include <libmtx/mtx/precision.h>
 #include <libmtx/mtx/reorder.h>
 #include <libmtx/mtx/sort.h>
+#include <libmtx/mtx/submatrix.h>
+#include <libmtx/mtx/transpose.h>
+#include <libmtx/mtx/triangle.h>
+#include <libmtx/util/index_set.h>
 #include <libmtx/vector/array.h>
 #include <libmtx/vector/coordinate.h>
-#include <libmtx/mtx/vector.h>
 #include <libmtx/version.h>
 
 #endif

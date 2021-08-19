@@ -17,36 +17,31 @@
  * <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-08-09
+ * Last modified: 2021-08-17
  *
- * Input/output for dense matrices in array format.
+ * Cuthill-McKee algorithm for reordering symmetric, sparse matrices.
  */
 
-#ifndef LIBMTX_MATRIX_ARRAY_IO_H
-#define LIBMTX_MATRIX_ARRAY_IO_H
-
-#include <libmtx/mtx/header.h>
+#ifndef LIBMTX_UTIL_CUTHILL_MCKEE
+#define LIBMTX_UTIL_CUTHILL_MCKEE
 
 #include <stdint.h>
 
-struct mtx;
-
 /**
- * `mtx_matrix_array_parse_size()` parse a size line from a Matrix
- * Market file for a matrix in array format.
+ * `cuthill_mckee()' uses the Cuthill-McKee algorithm to compute a
+ * reordering of the vertices of an undirected graph.
+ *
+ * On success, the array `vertex_order' will contain the new ordering
+ * of the vertices (i.e., the rows of the matrix).  Therefore, it must
+ * hold enough storage for at least `num_rows' values of type `int'.
  */
-int mtx_matrix_array_parse_size(
-    const char * line,
-    int * bytes_read,
-    const char ** endptr,
-    enum mtx_object object,
-    enum mtx_format format,
-    enum mtx_field field,
-    enum mtx_symmetry symmetry,
-    int * num_rows,
-    int * num_columns,
-    int64_t * num_nonzeros,
-    int64_t * size,
-    int * nonzero_size);
+int cuthill_mckee(
+    int num_rows,
+    const int64_t * row_ptr,
+    const int * column_indices,
+    const int * vertex_degrees,
+    int starting_vertex,
+    int size,
+    int * vertex_order);
 
 #endif

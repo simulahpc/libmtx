@@ -25,77 +25,92 @@
 #ifndef LIBMTX_VECTOR_COORDINATE_IO_H
 #define LIBMTX_VECTOR_COORDINATE_IO_H
 
-#include <libmtx/mtx/header.h>
-
 #include <stdint.h>
 
-struct mtx;
+struct mtx_vector_coordinate_real_single;
+struct mtx_vector_coordinate_real_double;
+struct mtx_vector_coordinate_complex_single;
+struct mtx_vector_coordinate_complex_double;
+struct mtx_vector_coordinate_integer_single;
+struct mtx_vector_coordinate_integer_double;
+struct mtx_vector_coordinate_pattern;
 
 /**
- * `mtx_vector_coordinate_parse_size()` parses a size line from a
- * Matrix Market file for a vector in coordinate format.
+ * `mtx_vector_coordinate_parse_data_real_single()' parses a data line
+ * from a Matrix Market file for a single precision, real vector in
+ * coordinate format.
  */
-int mtx_vector_coordinate_parse_size(
+int mtx_vector_coordinate_parse_data_real_single(
     const char * line,
     int * bytes_read,
     const char ** endptr,
-    enum mtx_object object,
-    enum mtx_format format,
-    enum mtx_field field,
-    enum mtx_symmetry symmetry,
-    int * num_rows,
-    int * num_columns,
-    int64_t * num_nonzeros,
-    int64_t * size,
-    int * nonzero_size);
-
-/**
- * `mtx_vector_coordinate_parse_data_real()' parses a data line from a
- * Matrix Market file for a real vector in coordinate format.
- */
-int mtx_vector_coordinate_parse_data_real(
-    const char * line,
-    int * bytes_read,
-    const char ** endptr,
-    struct mtx_vector_coordinate_real * data,
+    struct mtx_vector_coordinate_real_single * data,
     int num_rows);
 
 /**
- * `mtx_vector_coordinate_parse_data_double()' parses a data line from a
- * Matrix Market file for a double vector in coordinate format.
+ * `mtx_vector_coordinate_parse_data_real_double()' parses a data line
+ * from a Matrix Market file for a double precision, real vector in
+ * coordinate format.
  */
-int mtx_vector_coordinate_parse_data_double(
+int mtx_vector_coordinate_parse_data_real_double(
     const char * line,
     int * bytes_read,
     const char ** endptr,
-    struct mtx_vector_coordinate_double * data,
+    struct mtx_vector_coordinate_real_double * data,
     int num_rows);
 
 /**
- * `mtx_vector_coordinate_parse_data_complex()' parses a data line from a
- * Matrix Market file for a complex vector in coordinate format.
+ * `mtx_vector_coordinate_parse_data_complex_single()' parses a data
+ * line from a Matrix Market file for a single precision, complex
+ * vector in coordinate format.
  */
-int mtx_vector_coordinate_parse_data_complex(
+int mtx_vector_coordinate_parse_data_complex_single(
     const char * line,
     int * bytes_read,
     const char ** endptr,
-    struct mtx_vector_coordinate_complex * data,
+    struct mtx_vector_coordinate_complex_single * data,
     int num_rows);
 
 /**
- * `mtx_vector_coordinate_parse_data_integer()' parses a data line from a
- * Matrix Market file for a integer vector in coordinate format.
+ * `mtx_vector_coordinate_parse_data_complex_double()' parses a data
+ * line from a Matrix Market file for a double precision, complex
+ * vector in coordinate format.
  */
-int mtx_vector_coordinate_parse_data_integer(
+int mtx_vector_coordinate_parse_data_complex_double(
     const char * line,
     int * bytes_read,
     const char ** endptr,
-    struct mtx_vector_coordinate_integer * data,
+    struct mtx_vector_coordinate_complex_double * data,
     int num_rows);
 
 /**
- * `mtx_vector_coordinate_parse_data_pattern()' parses a data line from a
- * Matrix Market file for a pattern vector in coordinate format.
+ * `mtx_vector_coordinate_parse_data_integer_single()' parses a data
+ * line from a Matrix Market file for a single precision, integer
+ * vector in coordinate format.
+ */
+int mtx_vector_coordinate_parse_data_integer_single(
+    const char * line,
+    int * bytes_read,
+    const char ** endptr,
+    struct mtx_vector_coordinate_integer_single * data,
+    int num_rows);
+
+/**
+ * `mtx_vector_coordinate_parse_data_integer_double()' parses a data
+ * line from a Matrix Market file for a double precision, integer
+ * vector in coordinate format.
+ */
+int mtx_vector_coordinate_parse_data_integer_double(
+    const char * line,
+    int * bytes_read,
+    const char ** endptr,
+    struct mtx_vector_coordinate_integer_double * data,
+    int num_rows);
+
+/**
+ * `mtx_vector_coordinate_parse_data_pattern()' parses a data line
+ * from a Matrix Market file for a pattern vector in coordinate
+ * format.
  */
 int mtx_vector_coordinate_parse_data_pattern(
     const char * line,

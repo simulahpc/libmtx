@@ -22,17 +22,15 @@
  * BLAS operations for sparse matrices in coordinate format.
  */
 
-#include <libmtx/matrix/coordinate/blas.h>
-
 #include <libmtx/error.h>
-#include <libmtx/mtx/mtx.h>
 #include <libmtx/matrix/coordinate.h>
+#include <libmtx/matrix/coordinate/blas.h>
+#include <libmtx/matrix/coordinate/data.h>
+#include <libmtx/vector/array/data.h>
 
 #include <errno.h>
 
 #include <math.h>
-
-struct mtx;
 
 /*
  * Level 1 BLAS operations.
@@ -44,19 +42,43 @@ struct mtx;
  */
 int mtx_matrix_coordinate_sscal(
     float a,
-    struct mtx * x)
+    struct mtx_matrix_coordinate_data * x)
 {
-    if (x->object != mtx_matrix)
-        return MTX_ERR_INVALID_MTX_OBJECT;
-    if (x->format != mtx_coordinate)
-        return MTX_ERR_INVALID_MTX_FORMAT;
-    if (x->field != mtx_real)
+    if (x->field == mtx_real) {
+        if (x->precision == mtx_single) {
+            struct mtx_matrix_coordinate_real_single * xdata =
+                x->data.real_single;
+            for (int64_t k = 0; k < x->size; k++)
+                xdata[k].a *= a;
+        } else if (x->precision == mtx_double) {
+            struct mtx_matrix_coordinate_real_double * xdata =
+                x->data.real_double;
+            for (int64_t k = 0; k < x->size; k++)
+                xdata[k].a *= a;
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else if (x->field == mtx_complex) {
+        if (x->precision == mtx_single) {
+            struct mtx_matrix_coordinate_complex_single * xdata =
+                x->data.complex_single;
+            for (int64_t k = 0; k < x->size; k++) {
+                xdata[k].a[0] *= a;
+                xdata[k].a[1] *= a;
+            }
+        } else if (x->precision == mtx_double) {
+            struct mtx_matrix_coordinate_complex_double * xdata =
+                x->data.complex_double;
+            for (int64_t k = 0; k < x->size; k++) {
+                xdata[k].a[0] *= a;
+                xdata[k].a[1] *= a;
+            }
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else {
         return MTX_ERR_INVALID_MTX_FIELD;
-
-    struct mtx_matrix_coordinate_real * xdata =
-        (struct mtx_matrix_coordinate_real *) x->data;
-    for (int64_t i = 0; i < x->size; i++)
-        xdata[i].a *= a;
+    }
     return MTX_SUCCESS;
 }
 
@@ -66,19 +88,43 @@ int mtx_matrix_coordinate_sscal(
  */
 int mtx_matrix_coordinate_dscal(
     double a,
-    struct mtx * x)
+    struct mtx_matrix_coordinate_data * x)
 {
-    if (x->object != mtx_matrix)
-        return MTX_ERR_INVALID_MTX_OBJECT;
-    if (x->format != mtx_coordinate)
-        return MTX_ERR_INVALID_MTX_FORMAT;
-    if (x->field != mtx_double)
+    if (x->field == mtx_real) {
+        if (x->precision == mtx_single) {
+            struct mtx_matrix_coordinate_real_single * xdata =
+                x->data.real_single;
+            for (int64_t k = 0; k < x->size; k++)
+                xdata[k].a *= a;
+        } else if (x->precision == mtx_double) {
+            struct mtx_matrix_coordinate_real_double * xdata =
+                x->data.real_double;
+            for (int64_t k = 0; k < x->size; k++)
+                xdata[k].a *= a;
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else if (x->field == mtx_complex) {
+        if (x->precision == mtx_single) {
+            struct mtx_matrix_coordinate_complex_single * xdata =
+                x->data.complex_single;
+            for (int64_t k = 0; k < x->size; k++) {
+                xdata[k].a[0] *= a;
+                xdata[k].a[1] *= a;
+            }
+        } else if (x->precision == mtx_double) {
+            struct mtx_matrix_coordinate_complex_double * xdata =
+                x->data.complex_double;
+            for (int64_t k = 0; k < x->size; k++) {
+                xdata[k].a[0] *= a;
+                xdata[k].a[1] *= a;
+            }
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else {
         return MTX_ERR_INVALID_MTX_FIELD;
-
-    struct mtx_matrix_coordinate_double * xdata =
-        (struct mtx_matrix_coordinate_double *) x->data;
-    for (int64_t i = 0; i < x->size; i++)
-        xdata[i].a *= a;
+    }
     return MTX_SUCCESS;
 }
 
@@ -88,21 +134,10 @@ int mtx_matrix_coordinate_dscal(
  */
 int mtx_matrix_coordinate_saxpy(
     float a,
-    const struct mtx * x,
-    struct mtx * y)
+    const struct mtx_matrix_coordinate_data * x,
+    struct mtx_matrix_coordinate_data * y)
 {
-    if (x->object != mtx_matrix || y->object != mtx_matrix)
-        return MTX_ERR_INVALID_MTX_OBJECT;
-    if (x->format != mtx_coordinate || y->format != mtx_coordinate)
-        return MTX_ERR_INVALID_MTX_FORMAT;
-    if (x->field != mtx_real || y->field != mtx_real)
-        return MTX_ERR_INVALID_MTX_FIELD;
-    if (x->size != y->size)
-        return MTX_ERR_INVALID_MTX_SIZE;
-    if (x->sorting != y->sorting)
-        return MTX_ERR_INVALID_MTX_SORTING;
-
-    /* TODO: Implement matrix addition for sparse matrices. */
+    /* TODO: Implement addition of matrices in coordinate format. */
     errno = ENOTSUP;
     return MTX_ERR_ERRNO;
 }
@@ -113,113 +148,138 @@ int mtx_matrix_coordinate_saxpy(
  */
 int mtx_matrix_coordinate_daxpy(
     double a,
-    const struct mtx * x,
-    struct mtx * y)
+    const struct mtx_matrix_coordinate_data * x,
+    struct mtx_matrix_coordinate_data * y)
 {
-    if (x->object != mtx_matrix || y->object != mtx_matrix)
-        return MTX_ERR_INVALID_MTX_OBJECT;
-    if (x->format != mtx_coordinate || y->format != mtx_coordinate)
-        return MTX_ERR_INVALID_MTX_FORMAT;
-    if (x->field != mtx_double || y->field != mtx_double)
-        return MTX_ERR_INVALID_MTX_FIELD;
-    if (x->size != y->size)
-        return MTX_ERR_INVALID_MTX_SIZE;
-    if (x->sorting != y->sorting)
-        return MTX_ERR_INVALID_MTX_SORTING;
-
-    /* TODO: Implement matrix addition for sparse matrices. */
+    /* TODO: Implement addition of matrices in coordinate format. */
     errno = ENOTSUP;
     return MTX_ERR_ERRNO;
 }
 
 /**
- * `mtx_matrix_coordinate_sdot()' computes the Euclidean dot product
- * of two matrices of single precision floating-point values.
+ * `mtx_matrix_coordinate_sdot()' computes the Frobenius inner product
+ * of two matrices in single precision floating point.
  */
 int mtx_matrix_coordinate_sdot(
-    const struct mtx * x,
-    const struct mtx * y,
+    const struct mtx_matrix_coordinate_data * x,
+    const struct mtx_matrix_coordinate_data * y,
     float * dot)
 {
-    if (x->object != mtx_matrix || y->object != mtx_matrix)
-        return MTX_ERR_INVALID_MTX_OBJECT;
-    if (x->format != mtx_coordinate || y->format != mtx_coordinate)
-        return MTX_ERR_INVALID_MTX_FORMAT;
-    if (x->field != mtx_real || y->field != mtx_real)
-        return MTX_ERR_INVALID_MTX_FIELD;
-    if (x->size != y->size)
-        return MTX_ERR_INVALID_MTX_SIZE;
-    if (x->sorting != y->sorting)
-        return MTX_ERR_INVALID_MTX_SORTING;
-
-    /* TODO: Implement dot product for sparse matrices. */
+    /* TODO: Implement dot product for matrices in coordinate format. */
     errno = ENOTSUP;
     return MTX_ERR_ERRNO;
 }
 
 /**
- * `mtx_matrix_coordinate_ddot()' computes the Euclidean dot product
- * of two matrices of double precision floating-point values.
+ * `mtx_matrix_coordinate_ddot()' computes the Frobenius inner product
+ * of two matrices in double precision floating point.
  */
 int mtx_matrix_coordinate_ddot(
-    const struct mtx * x,
-    const struct mtx * y,
+    const struct mtx_matrix_coordinate_data * x,
+    const struct mtx_matrix_coordinate_data * y,
     double * dot)
 {
-    if (x->object != mtx_matrix || y->object != mtx_matrix)
-        return MTX_ERR_INVALID_MTX_OBJECT;
-    if (x->format != mtx_coordinate || y->format != mtx_coordinate)
-        return MTX_ERR_INVALID_MTX_FORMAT;
-    if (x->field != mtx_double || y->field != mtx_double)
-        return MTX_ERR_INVALID_MTX_FIELD;
-    if (x->size != y->size)
-        return MTX_ERR_INVALID_MTX_SIZE;
-    if (x->sorting != y->sorting)
-        return MTX_ERR_INVALID_MTX_SORTING;
-
-    /* TODO: Implement dot product for sparse matrices. */
+    /* TODO: Implement dot product for matrices in coordinate format. */
     errno = ENOTSUP;
     return MTX_ERR_ERRNO;
 }
 
 /**
- * `mtx_matrix_coordinate_snrm2()' computes the Euclidean norm of a
- * matrix of single precision floating-point values.
+ * `mtx_matrix_coordinate_snrm2()' computes the Frobenius norm of a
+ * matrix in single precision floating point.
  */
 int mtx_matrix_coordinate_snrm2(
-    const struct mtx * x,
+    const struct mtx_matrix_coordinate_data * x,
     float * nrm2)
 {
-    if (x->object != mtx_matrix)
-        return MTX_ERR_INVALID_MTX_OBJECT;
-    if (x->format != mtx_coordinate)
-        return MTX_ERR_INVALID_MTX_FORMAT;
-    if (x->field != mtx_real)
-        return MTX_ERR_INVALID_MTX_FIELD;
+    if (x->symmetry != mtx_general)
+        return MTX_ERR_INVALID_MTX_SYMMETRY;
 
-    /* TODO: Implement dot product for sparse matrices. */
-    errno = ENOTSUP;
-    return MTX_ERR_ERRNO;
+    if (x->field == mtx_real) {
+        if (x->precision == mtx_single) {
+            struct mtx_matrix_coordinate_real_single * xdata =
+                x->data.real_single;
+            *nrm2 = 0;
+            for (int64_t k = 0; k < x->size; k++)
+                *nrm2 += xdata[k].a*xdata[k].a;
+        } else if (x->precision == mtx_double) {
+            struct mtx_matrix_coordinate_real_double * xdata =
+                x->data.real_double;
+            *nrm2 = 0;
+            for (int64_t k = 0; k < x->size; k++)
+                *nrm2 += xdata[k].a*xdata[k].a;
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else if (x->field == mtx_complex) {
+        if (x->precision == mtx_single) {
+            struct mtx_matrix_coordinate_complex_single * xdata =
+                x->data.complex_single;
+            *nrm2 = 0;
+            for (int64_t k = 0; k < x->size; k++)
+                *nrm2 += xdata[k].a[0]*xdata[k].a[0] + xdata[k].a[1]*xdata[k].a[1];
+        } else if (x->precision == mtx_double) {
+            struct mtx_matrix_coordinate_complex_double * xdata =
+                x->data.complex_double;
+            *nrm2 = 0;
+            for (int64_t k = 0; k < x->size; k++)
+                *nrm2 += xdata[k].a[0]*xdata[k].a[0] + xdata[k].a[1]*xdata[k].a[1];
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else {
+        return MTX_ERR_INVALID_MTX_FIELD;
+    }
+    return MTX_SUCCESS;
 }
 
 /**
- * `mtx_matrix_coordinate_dnrm2()' computes the Euclidean norm of a
- * matrix of double precision floating-point values.
+ * `mtx_matrix_coordinate_dnrm2()' computes the Frobenius norm of a
+ * matrix in double precision floating point.
  */
 int mtx_matrix_coordinate_dnrm2(
-    const struct mtx * x,
+    const struct mtx_matrix_coordinate_data * x,
     double * nrm2)
 {
-    if (x->object != mtx_matrix)
-        return MTX_ERR_INVALID_MTX_OBJECT;
-    if (x->format != mtx_coordinate)
-        return MTX_ERR_INVALID_MTX_FORMAT;
-    if (x->field != mtx_double)
-        return MTX_ERR_INVALID_MTX_FIELD;
+    if (x->symmetry != mtx_general)
+        return MTX_ERR_INVALID_MTX_SYMMETRY;
 
-    /* TODO: Implement dot product for sparse matrices. */
-    errno = ENOTSUP;
-    return MTX_ERR_ERRNO;
+    if (x->field == mtx_real) {
+        if (x->precision == mtx_single) {
+            struct mtx_matrix_coordinate_real_single * xdata =
+                x->data.real_single;
+            *nrm2 = 0;
+            for (int64_t k = 0; k < x->size; k++)
+                *nrm2 += xdata[k].a*xdata[k].a;
+        } else if (x->precision == mtx_double) {
+            struct mtx_matrix_coordinate_real_double * xdata =
+                x->data.real_double;
+            *nrm2 = 0;
+            for (int64_t k = 0; k < x->size; k++)
+                *nrm2 += xdata[k].a*xdata[k].a;
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else if (x->field == mtx_complex) {
+        if (x->precision == mtx_single) {
+            struct mtx_matrix_coordinate_complex_single * xdata =
+                x->data.complex_single;
+            *nrm2 = 0;
+            for (int64_t k = 0; k < x->size; k++)
+                *nrm2 += xdata[k].a[0]*xdata[k].a[0] + xdata[k].a[1]*xdata[k].a[1];
+        } else if (x->precision == mtx_double) {
+            struct mtx_matrix_coordinate_complex_double * xdata =
+                x->data.complex_double;
+            *nrm2 = 0;
+            for (int64_t k = 0; k < x->size; k++)
+                *nrm2 += xdata[k].a[0]*xdata[k].a[0] + xdata[k].a[1]*xdata[k].a[1];
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else {
+        return MTX_ERR_INVALID_MTX_FIELD;
+    }
+    return MTX_SUCCESS;
 }
 
 /*
@@ -233,28 +293,16 @@ int mtx_matrix_coordinate_dnrm2(
  */
 int mtx_matrix_coordinate_sgemv(
     float alpha,
-    const struct mtx * A,
-    const struct mtx * x,
+    const struct mtx_matrix_coordinate_data * A,
+    const struct mtx_vector_array_data * x,
     float beta,
-    struct mtx * y)
+    struct mtx_vector_array_data * y)
 {
-    if (A->object != mtx_matrix ||
-        x->object != mtx_vector ||
-        y->object != mtx_vector)
-        return MTX_ERR_INVALID_MTX_OBJECT;
-    if (A->field != mtx_real ||
-        x->field != mtx_real ||
-        y->field != mtx_real)
-        return MTX_ERR_INVALID_MTX_FIELD;
     if (A->symmetry != mtx_general)
         return MTX_ERR_INVALID_MTX_SYMMETRY;
-    if (A->num_rows != y->num_rows ||
-        A->num_columns != x->num_rows)
+    if (A->num_rows != y->size ||
+        A->num_columns != x->size)
         return MTX_ERR_INVALID_MTX_SIZE;
-    if (A->format != mtx_coordinate ||
-        x->format != mtx_array ||
-        y->format != mtx_array)
-        return MTX_ERR_INVALID_MTX_FORMAT;
 
     /* TODO: The naive algorithm below only works if `beta' is
      * equal to one. Otherwise, some intermediate storage will be
@@ -265,12 +313,36 @@ int mtx_matrix_coordinate_sgemv(
         return MTX_ERR_ERRNO;
     }
 
-    const struct mtx_matrix_coordinate_real * Adata =
-        (const struct mtx_matrix_coordinate_real *) A->data;
-    const float * xdata = (const float *) x->data;
-    float * ydata = (float *) y->data;
-    for (int64_t k = 0; k < A->size; k++)
-        ydata[Adata[k].i-1] += alpha*Adata[k].a*xdata[Adata[k].j-1];
+    if (A->field == mtx_real &&
+        x->field == mtx_real &&
+        y->field == mtx_real)
+    {
+        if (A->precision == mtx_single &&
+            x->precision == mtx_single &&
+            y->precision == mtx_single)
+        {
+            const struct mtx_matrix_coordinate_real_single * Adata =
+                A->data.real_single;
+            const float * xdata = x->data.real_single;
+            float * ydata = y->data.real_single;
+            for (int64_t k = 0; k < A->size; k++)
+                ydata[Adata[k].i-1] += alpha*Adata[k].a*xdata[Adata[k].j-1];
+        } else if (A->precision == mtx_double &&
+                   x->precision == mtx_double &&
+                   y->precision == mtx_double)
+        {
+            const struct mtx_matrix_coordinate_real_double * Adata =
+                A->data.real_double;
+            const double * xdata = x->data.real_double;
+            double * ydata = y->data.real_double;
+            for (int64_t k = 0; k < A->size; k++)
+                ydata[Adata[k].i-1] += alpha*Adata[k].a*xdata[Adata[k].j-1];
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else {
+        return MTX_ERR_INVALID_MTX_FIELD;
+    }
     return MTX_SUCCESS;
 }
 
@@ -281,28 +353,16 @@ int mtx_matrix_coordinate_sgemv(
  */
 int mtx_matrix_coordinate_dgemv(
     double alpha,
-    const struct mtx * A,
-    const struct mtx * x,
+    const struct mtx_matrix_coordinate_data * A,
+    const struct mtx_vector_array_data * x,
     double beta,
-    struct mtx * y)
+    struct mtx_vector_array_data * y)
 {
-    if (A->object != mtx_matrix ||
-        x->object != mtx_vector ||
-        y->object != mtx_vector)
-        return MTX_ERR_INVALID_MTX_OBJECT;
-    if (A->field != mtx_double ||
-        x->field != mtx_double ||
-        y->field != mtx_double)
-        return MTX_ERR_INVALID_MTX_FIELD;
     if (A->symmetry != mtx_general)
         return MTX_ERR_INVALID_MTX_SYMMETRY;
-    if (A->num_rows != y->num_rows ||
-        A->num_columns != x->num_rows)
+    if (A->num_rows != y->size ||
+        A->num_columns != x->size)
         return MTX_ERR_INVALID_MTX_SIZE;
-    if (A->format != mtx_coordinate ||
-        x->format != mtx_array ||
-        y->format != mtx_array)
-        return MTX_ERR_INVALID_MTX_FORMAT;
 
     /* TODO: The naive algorithm below only works if `beta' is
      * equal to one. Otherwise, some intermediate storage will be
@@ -313,11 +373,35 @@ int mtx_matrix_coordinate_dgemv(
         return MTX_ERR_ERRNO;
     }
 
-    const struct mtx_matrix_coordinate_double * Adata =
-        (const struct mtx_matrix_coordinate_double *) A->data;
-    const double * xdata = (const double *) x->data;
-    double * ydata = (double *) y->data;
-    for (int64_t k = 0; k < A->size; k++)
-        ydata[Adata[k].i-1] += alpha*Adata[k].a*xdata[Adata[k].j-1];
+    if (A->field == mtx_real &&
+        x->field == mtx_real &&
+        y->field == mtx_real)
+    {
+        if (A->precision == mtx_single &&
+            x->precision == mtx_single &&
+            y->precision == mtx_single)
+        {
+            const struct mtx_matrix_coordinate_real_single * Adata =
+                A->data.real_single;
+            const float * xdata = x->data.real_single;
+            float * ydata = y->data.real_single;
+            for (int64_t k = 0; k < A->size; k++)
+                ydata[Adata[k].i-1] += alpha*Adata[k].a*xdata[Adata[k].j-1];
+        } else if (A->precision == mtx_double &&
+                   x->precision == mtx_double &&
+                   y->precision == mtx_double)
+        {
+            const struct mtx_matrix_coordinate_real_double * Adata =
+                A->data.real_double;
+            const double * xdata = x->data.real_double;
+            double * ydata = y->data.real_double;
+            for (int64_t k = 0; k < A->size; k++)
+                ydata[Adata[k].i-1] += alpha*Adata[k].a*xdata[Adata[k].j-1];
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else {
+        return MTX_ERR_INVALID_MTX_FIELD;
+    }
     return MTX_SUCCESS;
 }

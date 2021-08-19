@@ -45,42 +45,47 @@ libmtx_la_LIBADD = $(BLAS_LIBS) $(MPILDFLAGS)
 # Source files
 libmtx_la_SOURCES = \
 	libmtx/error.c \
-	libmtx/util/index_set.c \
 	libmtx/matrix/array.c \
 	libmtx/matrix/array/blas.c \
-	libmtx/matrix/array/io.c \
+	libmtx/matrix/array/data.c \
+	libmtx/matrix/array/mpi.c \
 	libmtx/matrix/array/reorder.c \
 	libmtx/matrix/array/sort.c \
 	libmtx/matrix/coordinate.c \
 	libmtx/matrix/coordinate/blas.c \
+	libmtx/matrix/coordinate/data.c \
 	libmtx/matrix/coordinate/io.c \
+	libmtx/matrix/coordinate/mpi.c \
 	libmtx/matrix/coordinate/reorder.c \
 	libmtx/matrix/coordinate/sort.c \
 	libmtx/mtx/assembly.c \
 	libmtx/mtx/blas.c \
 	libmtx/mtx/header.c \
 	libmtx/mtx/io.c \
-	libmtx/mtx/matrix.c \
 	libmtx/mtx/mpi.c \
 	libmtx/mtx/mtx.c \
+	libmtx/mtx/precision.c \
 	libmtx/mtx/reorder.c \
 	libmtx/mtx/sort.c \
 	libmtx/mtx/submatrix.c \
 	libmtx/mtx/transpose.c \
 	libmtx/mtx/triangle.c \
-	libmtx/mtx/vector.c \
+	libmtx/util/cuthill_mckee.c \
+	libmtx/util/cuthill_mckee.h \
 	libmtx/util/format.c \
 	libmtx/util/format.h \
+	libmtx/util/index_set.c \
 	libmtx/util/io.c \
 	libmtx/util/io.h \
 	libmtx/util/parse.c \
 	libmtx/util/parse.h \
 	libmtx/vector/array.c \
 	libmtx/vector/array/blas.c \
-	libmtx/vector/array/io.c \
+	libmtx/vector/array/data.c \
 	libmtx/vector/array/reorder.c \
 	libmtx/vector/coordinate.c \
 	libmtx/vector/coordinate/blas.c \
+	libmtx/vector/coordinate/data.c \
 	libmtx/vector/coordinate/io.c \
 	libmtx/vector/coordinate/reorder.c \
 	libmtx/version.c
@@ -88,36 +93,42 @@ libmtx_la_SOURCES = \
 # Header files
 nobase_include_HEADERS = \
 	libmtx/error.h \
-	libmtx/util/index_set.h \
 	libmtx/libmtx.h \
 	libmtx/matrix/array.h \
 	libmtx/matrix/array/blas.h \
-	libmtx/matrix/array/io.h \
+	libmtx/matrix/array/data.h \
+	libmtx/matrix/array/mpi.h \
 	libmtx/matrix/array/reorder.h \
 	libmtx/matrix/array/sort.h \
 	libmtx/matrix/coordinate.h \
 	libmtx/matrix/coordinate/blas.h \
+	libmtx/matrix/coordinate/data.h \
 	libmtx/matrix/coordinate/io.h \
+	libmtx/matrix/coordinate/mpi.h \
 	libmtx/matrix/coordinate/reorder.h \
 	libmtx/matrix/coordinate/sort.h \
 	libmtx/mtx/assembly.h \
 	libmtx/mtx/blas.h \
 	libmtx/mtx/header.h \
 	libmtx/mtx/io.h \
-	libmtx/mtx/matrix.h \
 	libmtx/mtx/mpi.h \
 	libmtx/mtx/mtx.h \
+	libmtx/mtx/precision.h \
 	libmtx/mtx/reorder.h \
 	libmtx/mtx/sort.h \
+	libmtx/mtx/submatrix.h \
 	libmtx/mtx/transpose.h \
 	libmtx/mtx/triangle.h \
-	libmtx/mtx/vector.h \
+	libmtx/util/index_set.h \
 	libmtx/vector/array.h \
 	libmtx/vector/array/blas.h \
-	libmtx/vector/array/io.h \
+	libmtx/vector/array/data.h \
+	libmtx/vector/array/reorder.h \
 	libmtx/vector/coordinate.h \
 	libmtx/vector/coordinate/blas.h \
+	libmtx/vector/coordinate/data.h \
 	libmtx/vector/coordinate/io.h \
+	libmtx/vector/coordinate/reorder.h \
 	libmtx/version.h
 
 # Header files that will not be distributed

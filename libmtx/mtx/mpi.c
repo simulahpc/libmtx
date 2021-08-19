@@ -27,13 +27,14 @@
 
 #ifdef LIBMTX_HAVE_MPI
 #include <libmtx/error.h>
-#include <libmtx/util/index_set.h>
-#include <libmtx/mtx/header.h>
-#include <libmtx/mtx/matrix.h>
 #include <libmtx/matrix/coordinate.h>
-#include <libmtx/vector/coordinate.h>
-#include <libmtx/mtx/mtx.h>
+#include <libmtx/matrix/coordinate/mpi.h>
+#include <libmtx/mtx/header.h>
 #include <libmtx/mtx/mpi.h>
+#include <libmtx/mtx/mtx.h>
+#include <libmtx/mtx/submatrix.h>
+#include <libmtx/util/index_set.h>
+#include <libmtx/vector/coordinate.h>
 
 #include <mpi.h>
 
@@ -43,239 +44,8 @@
 #include <string.h>
 
 /**
- * `mtx_partitioning_str()` is a string representing the partitioning
- * type.
- */
-const char * mtx_partitioning_str(
-    enum mtx_partitioning partitioning)
-{
-    switch (partitioning) {
-    case mtx_partition: return "partition";
-    case mtx_cover: return "cover";
-    default: return "unknown";
-    }
-}
-
-/**
- * `mtx_datatype()' creates a custom MPI data type for sending or
- * receiving Matrix Market nonzero data for a given matrix or vector.
- *
- * The user is responsible for calling `MPI_Type_free()' on the
- * returned datatype.
- */
-int mtx_datatype(
-    const struct mtx * mtx,
-    MPI_Datatype * datatype,
-    int * mpierrcode)
-{
-    /* Configure a custom data type based on the format and field. */
-    int num_elements;
-    int block_lengths[4];
-    MPI_Datatype element_types[4];
-    MPI_Aint element_offsets[4];
-    if (mtx->object == mtx_matrix) {
-        if (mtx->format == mtx_coordinate) {
-            if (mtx->field == mtx_real) {
-                num_elements = 3;
-                element_types[0] = MPI_INT;
-                block_lengths[0] = 1;
-                element_offsets[0] = offsetof(struct mtx_matrix_coordinate_real, i);
-                element_types[1] = MPI_INT;
-                block_lengths[1] = 1;
-                element_offsets[1] = offsetof(struct mtx_matrix_coordinate_real, j);
-                element_types[2] = MPI_FLOAT;
-                block_lengths[2] = 1;
-                element_offsets[2] = offsetof(struct mtx_matrix_coordinate_real, a);
-            } else if (mtx->field == mtx_double) {
-                num_elements = 3;
-                element_types[0] = MPI_INT;
-                block_lengths[0] = 1;
-                element_offsets[0] = offsetof(struct mtx_matrix_coordinate_double, i);
-                element_types[1] = MPI_INT;
-                block_lengths[1] = 1;
-                element_offsets[1] = offsetof(struct mtx_matrix_coordinate_double, j);
-                element_types[2] = MPI_DOUBLE;
-                block_lengths[2] = 1;
-                element_offsets[2] = offsetof(struct mtx_matrix_coordinate_double, a);
-            } else if (mtx->field == mtx_complex) {
-                num_elements = 4;
-                element_types[0] = MPI_INT;
-                block_lengths[0] = 1;
-                element_offsets[0] = offsetof(struct mtx_matrix_coordinate_complex, i);
-                element_types[1] = MPI_INT;
-                block_lengths[1] = 1;
-                element_offsets[1] = offsetof(struct mtx_matrix_coordinate_complex, j);
-                element_types[2] = MPI_FLOAT;
-                block_lengths[2] = 1;
-                element_offsets[2] = offsetof(struct mtx_matrix_coordinate_complex, a);
-                element_types[3] = MPI_FLOAT;
-                block_lengths[3] = 1;
-                element_offsets[3] = offsetof(struct mtx_matrix_coordinate_complex, b);
-            } else if (mtx->field == mtx_integer) {
-                num_elements = 3;
-                element_types[0] = MPI_INT;
-                block_lengths[0] = 1;
-                element_offsets[0] = offsetof(struct mtx_matrix_coordinate_integer, i);
-                element_types[1] = MPI_INT;
-                block_lengths[1] = 1;
-                element_offsets[1] = offsetof(struct mtx_matrix_coordinate_integer, j);
-                element_types[2] = MPI_INT;
-                block_lengths[2] = 1;
-                element_offsets[2] = offsetof(struct mtx_matrix_coordinate_integer, a);
-            } else if (mtx->field == mtx_pattern) {
-                num_elements = 2;
-                element_types[0] = MPI_INT;
-                block_lengths[0] = 1;
-                element_offsets[0] = offsetof(struct mtx_matrix_coordinate_pattern, i);
-                element_types[1] = MPI_INT;
-                block_lengths[1] = 1;
-                element_offsets[1] = offsetof(struct mtx_matrix_coordinate_pattern, j);
-            } else {
-                return MTX_ERR_INVALID_MTX_FIELD;
-            }
-        } else if (mtx->format == mtx_array) {
-            if (mtx->field == mtx_real) {
-                num_elements = 1;
-                element_types[0] = MPI_FLOAT;
-                block_lengths[0] = 1;
-                element_offsets[0] = 0;
-            } else if (mtx->field == mtx_double) {
-                num_elements = 1;
-                element_types[0] = MPI_DOUBLE;
-                block_lengths[0] = 1;
-                element_offsets[0] = 0;
-            } else if (mtx->field == mtx_complex) {
-                num_elements = 2;
-                element_types[0] = MPI_FLOAT;
-                block_lengths[0] = 1;
-                element_offsets[0] = 0;
-                element_types[1] = MPI_FLOAT;
-                block_lengths[1] = 1;
-                element_offsets[1] = sizeof(MPI_FLOAT);
-            } else if (mtx->field == mtx_integer) {
-                num_elements = 1;
-                element_types[0] = MPI_INT;
-                block_lengths[0] = 1;
-                element_offsets[0] = 0;
-            } else {
-                return MTX_ERR_INVALID_MTX_FIELD;
-            }
-        } else {
-            return MTX_ERR_INVALID_MTX_FORMAT;
-        }
-    } else if (mtx->object == mtx_vector) {
-        if (mtx->format == mtx_coordinate) {
-            if (mtx->field == mtx_real) {
-                num_elements = 2;
-                element_types[0] = MPI_INT;
-                block_lengths[0] = 1;
-                element_offsets[0] = offsetof(struct mtx_vector_coordinate_real, i);
-                element_types[1] = MPI_FLOAT;
-                block_lengths[1] = 1;
-                element_offsets[1] = offsetof(struct mtx_vector_coordinate_real, a);
-            } else if (mtx->field == mtx_double) {
-                num_elements = 3;
-                element_types[0] = MPI_INT;
-                block_lengths[0] = 1;
-                element_offsets[0] = offsetof(struct mtx_vector_coordinate_double, i);
-                element_types[1] = MPI_DOUBLE;
-                block_lengths[1] = 1;
-                element_offsets[1] = offsetof(struct mtx_vector_coordinate_double, a);
-            } else if (mtx->field == mtx_complex) {
-                num_elements = 4;
-                element_types[0] = MPI_INT;
-                block_lengths[0] = 1;
-                element_offsets[0] = offsetof(struct mtx_vector_coordinate_complex, i);
-                element_types[1] = MPI_FLOAT;
-                block_lengths[1] = 1;
-                element_offsets[1] = offsetof(struct mtx_vector_coordinate_complex, a);
-                element_types[2] = MPI_FLOAT;
-                block_lengths[2] = 1;
-                element_offsets[2] = offsetof(struct mtx_vector_coordinate_complex, b);
-            } else if (mtx->field == mtx_integer) {
-                num_elements = 3;
-                element_types[0] = MPI_INT;
-                block_lengths[0] = 1;
-                element_offsets[0] = offsetof(struct mtx_vector_coordinate_integer, i);
-                element_types[1] = MPI_INT;
-                block_lengths[1] = 1;
-                element_offsets[1] = offsetof(struct mtx_vector_coordinate_integer, a);
-            } else if (mtx->field == mtx_pattern) {
-                num_elements = 1;
-                element_types[0] = MPI_INT;
-                block_lengths[0] = 1;
-                element_offsets[0] = offsetof(struct mtx_vector_coordinate_pattern, i);
-            } else {
-                return MTX_ERR_INVALID_MTX_FIELD;
-            }
-        } else if (mtx->format == mtx_array) {
-            if (mtx->field == mtx_real) {
-                num_elements = 1;
-                element_types[0] = MPI_FLOAT;
-                block_lengths[0] = 1;
-                element_offsets[0] = 0;
-            } else if (mtx->field == mtx_double) {
-                num_elements = 1;
-                element_types[0] = MPI_DOUBLE;
-                block_lengths[0] = 1;
-                element_offsets[0] = 0;
-            } else if (mtx->field == mtx_complex) {
-                num_elements = 2;
-                element_types[0] = MPI_FLOAT;
-                block_lengths[0] = 1;
-                element_offsets[0] = 0;
-                element_types[1] = MPI_FLOAT;
-                block_lengths[1] = 1;
-                element_offsets[1] = sizeof(MPI_FLOAT);
-            } else if (mtx->field == mtx_integer) {
-                num_elements = 1;
-                element_types[0] = MPI_INT;
-                block_lengths[0] = 1;
-                element_offsets[0] = 0;
-            } else {
-                return MTX_ERR_INVALID_MTX_FIELD;
-            }
-        } else {
-            return MTX_ERR_INVALID_MTX_FORMAT;
-        }
-    } else {
-        return MTX_ERR_INVALID_MTX_OBJECT;
-    }
-
-    /* Create an MPI data type for receiving nonzero data. */
-    MPI_Datatype tmp_datatype;
-    *mpierrcode = MPI_Type_create_struct(
-        num_elements, block_lengths, element_offsets,
-        element_types, &tmp_datatype);
-    if (*mpierrcode)
-        return MTX_ERR_MPI;
-
-    /* Enable sending an array of the custom data type. */
-    MPI_Aint lb, extent;
-    *mpierrcode = MPI_Type_get_extent(tmp_datatype, &lb, &extent);
-    if (*mpierrcode) {
-        MPI_Type_free(&tmp_datatype);
-        return MTX_ERR_MPI;
-    }
-    *mpierrcode = MPI_Type_create_resized(tmp_datatype, lb, extent, datatype);
-    if (*mpierrcode) {
-        MPI_Type_free(&tmp_datatype);
-        return MTX_ERR_MPI;
-    }
-    *mpierrcode = MPI_Type_commit(datatype);
-    if (*mpierrcode) {
-        MPI_Type_free(datatype);
-        MPI_Type_free(&tmp_datatype);
-        return MTX_ERR_MPI;
-    }
-
-    MPI_Type_free(&tmp_datatype);
-    return MTX_SUCCESS;
-}
-
-/**
- * `mtx_send_header()' sends the header information of `struct
- * mtx' to another MPI process.
+ * `mtx_send_header()' sends the header information of `struct mtx' to
+ * another MPI process.
  *
  * This is analogous to `MPI_Send()' and requires the receiving
  * process to perform a matching call to `mtx_recv_header()'.
@@ -297,18 +67,6 @@ static int mtx_send_header(
     if (*mpierrcode)
         return MTX_ERR_MPI;
     *mpierrcode = MPI_Send(&mtx->symmetry, 1, MPI_INT, dest, tag, comm);
-    if (*mpierrcode)
-        return MTX_ERR_MPI;
-    *mpierrcode = MPI_Send(&mtx->triangle, 1, MPI_INT, dest, tag, comm);
-    if (*mpierrcode)
-        return MTX_ERR_MPI;
-    *mpierrcode = MPI_Send(&mtx->sorting, 1, MPI_INT, dest, tag, comm);
-    if (*mpierrcode)
-        return MTX_ERR_MPI;
-    *mpierrcode = MPI_Send(&mtx->ordering, 1, MPI_INT, dest, tag, comm);
-    if (*mpierrcode)
-        return MTX_ERR_MPI;
-    *mpierrcode = MPI_Send(&mtx->assembly, 1, MPI_INT, dest, tag, comm);
     if (*mpierrcode)
         return MTX_ERR_MPI;
     return MTX_SUCCESS;
@@ -380,18 +138,6 @@ static int mtx_send_size(
         &mtx->num_nonzeros, 1, MPI_INT64_T, dest, tag, comm);
     if (*mpierrcode)
         return MTX_ERR_MPI;
-
-    /* Receive the number of elements and the size each element in the
-     * data array. */
-    *mpierrcode = MPI_Send(
-        &mtx->size, 1, MPI_INT64_T, dest, tag, comm);
-    if (*mpierrcode)
-        return MTX_ERR_MPI;
-    *mpierrcode = MPI_Send(
-        &mtx->nonzero_size, 1, MPI_INT, dest, tag, comm);
-    if (*mpierrcode)
-        return MTX_ERR_MPI;
-
     return MTX_SUCCESS;
 }
 
@@ -409,22 +155,22 @@ static int mtx_send_data(
     MPI_Comm comm,
     int * mpierrcode)
 {
-    /* Get the data type. */
-    MPI_Datatype datatype;
-    int err = mtx_datatype(mtx, &datatype, mpierrcode);
-    if (err)
-        return err;
+    int err;
 
     /* Send the nonzero data. */
-    *mpierrcode = MPI_Send(
-        mtx->data, mtx->size, datatype, dest, 0, comm);
-    if (*mpierrcode) {
-        MPI_Type_free(&datatype);
-        return MTX_ERR_MPI;
+    if (mtx->object == mtx_matrix) {
+        if (mtx->format == mtx_coordinate) {
+            const struct mtx_matrix_coordinate_data * matrix_coordinate =
+                &mtx->storage.matrix_coordinate;
+            return mtx_matrix_coordinate_send(
+                matrix_coordinate,
+                dest, tag, comm, mpierrcode);
+        } else {
+            return MTX_ERR_INVALID_MTX_FORMAT;
+        }
+    } else {
+        return MTX_ERR_INVALID_MTX_OBJECT;
     }
-
-    MPI_Type_free(&datatype);
-    return MTX_SUCCESS;
 }
 
 /**
@@ -494,22 +240,6 @@ static int mtx_recv_header(
         return MTX_ERR_MPI;
     *mpierrcode = MPI_Recv(
         &mtx->symmetry, 1, MPI_INT, source, tag, comm, MPI_STATUS_IGNORE);
-    if (*mpierrcode)
-        return MTX_ERR_MPI;
-    *mpierrcode = MPI_Recv(
-        &mtx->triangle, 1, MPI_INT, source, tag, comm, MPI_STATUS_IGNORE);
-    if (*mpierrcode)
-        return MTX_ERR_MPI;
-    *mpierrcode = MPI_Recv(
-        &mtx->sorting, 1, MPI_INT, source, tag, comm, MPI_STATUS_IGNORE);
-    if (*mpierrcode)
-        return MTX_ERR_MPI;
-    *mpierrcode = MPI_Recv(
-        &mtx->ordering, 1, MPI_INT, source, tag, comm, MPI_STATUS_IGNORE);
-    if (*mpierrcode)
-        return MTX_ERR_MPI;
-    *mpierrcode = MPI_Recv(
-        &mtx->assembly, 1, MPI_INT, source, tag, comm, MPI_STATUS_IGNORE);
     if (*mpierrcode)
         return MTX_ERR_MPI;
     return MTX_SUCCESS;
@@ -606,18 +336,6 @@ static int mtx_recv_size(
         &mtx->num_nonzeros, 1, MPI_INT64_T, source, tag, comm, MPI_STATUS_IGNORE);
     if (*mpierrcode)
         return MTX_ERR_MPI;
-
-    /* Receive the number of elements and the size each element in the
-     * data array. */
-    *mpierrcode = MPI_Recv(
-        &mtx->size, 1, MPI_INT64_T, source, tag, comm, MPI_STATUS_IGNORE);
-    if (*mpierrcode)
-        return MTX_ERR_MPI;
-    *mpierrcode = MPI_Recv(
-        &mtx->nonzero_size, 1, MPI_INT, source, tag, comm, MPI_STATUS_IGNORE);
-    if (*mpierrcode)
-        return MTX_ERR_MPI;
-
     return MTX_SUCCESS;
 }
 
@@ -636,32 +354,19 @@ static int mtx_recv_data(
     int * mpierrcode)
 {
     int err;
-
-    /* Allocate storage for the Matrix Market data. */
-    mtx->data = malloc(mtx->size * mtx->nonzero_size);
-    if (!mtx->data)
-        return MTX_ERR_ERRNO;
-
-    /* Get the MPI data type. */
-    MPI_Datatype datatype;
-    err = mtx_datatype(mtx, &datatype, mpierrcode);
-    if (err) {
-        free(mtx->data);
-        return err;
+    if (mtx->object == mtx_matrix) {
+        if (mtx->format == mtx_coordinate) {
+            struct mtx_matrix_coordinate_data * matrix_coordinate =
+                &mtx->storage.matrix_coordinate;
+            return mtx_matrix_coordinate_recv(
+                matrix_coordinate,
+                source, tag, comm, mpierrcode);
+        } else {
+            return MTX_ERR_INVALID_MTX_FORMAT;
+        }
+    } else {
+        return MTX_ERR_INVALID_MTX_OBJECT;
     }
-
-    /* Receive the nonzero data. */
-    *mpierrcode = MPI_Recv(
-        mtx->data, mtx->size, datatype, source, 0, comm,
-        MPI_STATUS_IGNORE);
-    if (*mpierrcode) {
-        MPI_Type_free(&datatype);
-        free(mtx->data);
-        return MTX_ERR_MPI;
-    }
-
-    MPI_Type_free(&datatype);
-    return MTX_SUCCESS;
 }
 
 /**
@@ -735,18 +440,6 @@ static int mtx_bcast_header(
     if (*mpierrcode)
         return MTX_ERR_MPI;
     *mpierrcode = MPI_Bcast(&mtx->symmetry, 1, MPI_INT, root, comm);
-    if (*mpierrcode)
-        return MTX_ERR_MPI;
-    *mpierrcode = MPI_Bcast(&mtx->triangle, 1, MPI_INT, root, comm);
-    if (*mpierrcode)
-        return MTX_ERR_MPI;
-    *mpierrcode = MPI_Bcast(&mtx->sorting, 1, MPI_INT, root, comm);
-    if (*mpierrcode)
-        return MTX_ERR_MPI;
-    *mpierrcode = MPI_Bcast(&mtx->ordering, 1, MPI_INT, root, comm);
-    if (*mpierrcode)
-        return MTX_ERR_MPI;
-    *mpierrcode = MPI_Bcast(&mtx->assembly, 1, MPI_INT, root, comm);
     if (*mpierrcode)
         return MTX_ERR_MPI;
     return MTX_SUCCESS;
@@ -836,14 +529,6 @@ static int mtx_bcast_size(
         &mtx->num_nonzeros, 1, MPI_INT64_T, root, comm);
     if (*mpierrcode)
         return MTX_ERR_MPI;
-    *mpierrcode = MPI_Bcast(
-        &mtx->size, 1, MPI_INT64_T, root, comm);
-    if (*mpierrcode)
-        return MTX_ERR_MPI;
-    *mpierrcode = MPI_Bcast(
-        &mtx->nonzero_size, 1, MPI_INT, root, comm);
-    if (*mpierrcode)
-        return MTX_ERR_MPI;
     return MTX_SUCCESS;
 }
 
@@ -860,39 +545,19 @@ static int mtx_bcast_data(
     MPI_Comm comm,
     int * mpierrcode)
 {
-    /* Get the MPI rank of the current process. */
-    int rank;
-    *mpierrcode = MPI_Comm_rank(comm, &rank);
-    if (*mpierrcode)
-        return MTX_ERR_MPI;
-
-    /* Allocate storage for the Matrix Market data. */
-    if (rank != root) {
-        mtx->data = malloc(mtx->size * mtx->nonzero_size);
-        if (!mtx->data)
-            return MTX_ERR_ERRNO;
+    int err;
+    if (mtx->object == mtx_matrix) {
+        if (mtx->format == mtx_coordinate) {
+            struct mtx_matrix_coordinate_data * matrix_coordinate =
+                &mtx->storage.matrix_coordinate;
+            return mtx_matrix_coordinate_bcast(
+                matrix_coordinate, root, comm, mpierrcode);
+        } else {
+            return MTX_ERR_INVALID_MTX_FORMAT;
+        }
+    } else {
+        return MTX_ERR_INVALID_MTX_OBJECT;
     }
-
-    /* Get the data type. */
-    MPI_Datatype datatype;
-    int err = mtx_datatype(mtx, &datatype, mpierrcode);
-    if (err) {
-        if (rank != root)
-            free(mtx->data);
-        return err;
-    }
-
-    /* Broadcast the data. */
-    *mpierrcode = MPI_Bcast(
-        mtx->data, mtx->size, datatype, root, comm);
-    if (*mpierrcode) {
-        MPI_Type_free(&datatype);
-        if (rank != root)
-            free(mtx->data);
-        return MTX_ERR_MPI;
-    }
-    MPI_Type_free(&datatype);
-    return MTX_SUCCESS;
 }
 
 /**
@@ -932,7 +597,6 @@ int mtx_bcast(
 int mtx_matrix_coordinate_gather(
     struct mtx * dstmtx,
     const struct mtx * srcmtx,
-    enum mtx_partitioning partitioning,
     MPI_Comm comm,
     int root,
     int * mpierrcode)
@@ -998,10 +662,11 @@ int mtx_matrix_coordinate_gather(
         return MTX_SUCCESS;
 
     /* Get the Matrix Market object type. */
+    enum mtx_object object;
     if (comm_size > 0)
-        dstmtx->object = tmpmtxs[0].object;
+        object = tmpmtxs[0].object;
     for (int p = 1; p < comm_size; p++) {
-        if (dstmtx->object != tmpmtxs[p].object) {
+        if (object != tmpmtxs[p].object) {
             for (int p = 0; p < comm_size; p++)
                 mtx_free(&tmpmtxs[p]);
             free(tmpmtxs);
@@ -1010,10 +675,11 @@ int mtx_matrix_coordinate_gather(
     }
 
     /* Get the Matrix Market format. */
+    enum mtx_format format;
     if (comm_size > 0)
-        dstmtx->format = tmpmtxs[0].format;
+        format = tmpmtxs[0].format;
     for (int p = 1; p < comm_size; p++) {
-        if (dstmtx->format != tmpmtxs[p].format) {
+        if (format != tmpmtxs[p].format) {
             for (int p = 0; p < comm_size; p++)
                 mtx_free(&tmpmtxs[p]);
             free(tmpmtxs);
@@ -1022,10 +688,11 @@ int mtx_matrix_coordinate_gather(
     }
 
     /* Get the Matrix Market field. */
+    enum mtx_field field;
     if (comm_size > 0)
-        dstmtx->field = tmpmtxs[0].field;
+        field = tmpmtxs[0].field;
     for (int p = 1; p < comm_size; p++) {
-        if (dstmtx->field != tmpmtxs[p].field) {
+        if (field != tmpmtxs[p].field) {
             for (int p = 0; p < comm_size; p++)
                 mtx_free(&tmpmtxs[p]);
             free(tmpmtxs);
@@ -1034,10 +701,11 @@ int mtx_matrix_coordinate_gather(
     }
 
     /* Get the Matrix Market symmetry. */
+    enum mtx_symmetry symmetry;
     if (comm_size > 0)
-        dstmtx->symmetry = tmpmtxs[0].symmetry;
+        symmetry = tmpmtxs[0].symmetry;
     for (int p = 1; p < comm_size; p++) {
-        if (dstmtx->symmetry != tmpmtxs[p].symmetry) {
+        if (symmetry != tmpmtxs[p].symmetry) {
             for (int p = 0; p < comm_size; p++)
                 mtx_free(&tmpmtxs[p]);
             free(tmpmtxs);
@@ -1045,59 +713,13 @@ int mtx_matrix_coordinate_gather(
         }
     }
 
-    if (comm_size > 0)
-        dstmtx->triangle = tmpmtxs[0].triangle;
-    for (int p = 1; p < comm_size; p++) {
-        if (dstmtx->triangle != tmpmtxs[p].triangle) {
-            for (int p = 0; p < comm_size; p++)
-                mtx_free(&tmpmtxs[p]);
-            free(tmpmtxs);
-            return MTX_ERR_INVALID_MTX_TRIANGLE;
-        }
-    }
-
-    /* Get the Matrix Market sorting. */
-    if (dstmtx->format == mtx_array) {
-        if (comm_size > 0)
-            dstmtx->sorting = tmpmtxs[0].sorting;
-        for (int p = 1; p < comm_size; p++) {
-            if (dstmtx->sorting != tmpmtxs[p].sorting) {
-                for (int p = 0; p < comm_size; p++)
-                    mtx_free(&tmpmtxs[p]);
-                free(tmpmtxs);
-                return MTX_ERR_INVALID_MTX_SORTING;
-            }
-        }
-    } else if (dstmtx->format == mtx_coordinate) {
-        dstmtx->sorting = mtx_unsorted;
-    } else {
-        for (int p = 0; p < comm_size; p++)
-            mtx_free(&tmpmtxs[p]);
-        free(tmpmtxs);
-        return MTX_ERR_INVALID_MTX_FORMAT;
-    }
-
-    /* Assume that the gathered matrix is unordered. */
-    dstmtx->ordering = mtx_unordered;
-
-    /* Get the Matrix Market assembly. */
-    dstmtx->assembly = mtx_assembled;
-    if (partitioning != mtx_partition) {
-        dstmtx->assembly = mtx_unassembled;
-    } else {
-        for (int p = 1; p < comm_size; p++) {
-            if (tmpmtxs[p].assembly != mtx_assembled) {
-                dstmtx->assembly = mtx_unassembled;
-            }
-        }
-    }
-
     /* Get the number of comment lines. */
+    int num_comment_lines;
     if (comm_size > 0)
-        dstmtx->num_comment_lines = tmpmtxs[0].num_comment_lines;
+        num_comment_lines = tmpmtxs[0].num_comment_lines;
     for (int p = 1; p < comm_size; p++) {
         if (tmpmtxs[0].num_comment_lines != tmpmtxs[p].num_comment_lines) {
-            dstmtx->num_comment_lines += tmpmtxs[p].num_comment_lines;
+            num_comment_lines += tmpmtxs[p].num_comment_lines;
             continue;
         }
 
@@ -1106,15 +728,16 @@ int mtx_matrix_coordinate_gather(
                 tmpmtxs[0].comment_lines[i],
                 tmpmtxs[p].comment_lines[i]);
             if (cmp != 0) {
-                dstmtx->num_comment_lines += tmpmtxs[p].num_comment_lines;
+                num_comment_lines += tmpmtxs[p].num_comment_lines;
                 break;
             }
         }
     }
 
     /* Allocate storage for comment lines. */
-    dstmtx->comment_lines = malloc(dstmtx->num_comment_lines * sizeof(char *));
-    if (!dstmtx->comment_lines) {
+    char ** comment_lines;
+    comment_lines = malloc(num_comment_lines * sizeof(char *));
+    if (!comment_lines) {
         for (int p = 0; p < comm_size; p++)
             mtx_free(&tmpmtxs[p]);
         free(tmpmtxs);
@@ -1124,14 +747,14 @@ int mtx_matrix_coordinate_gather(
     /* Get the comment lines. */
     if (comm_size > 0) {
         for (int i = 0; i < tmpmtxs[0].num_comment_lines; i++)
-            dstmtx->comment_lines[i] = strdup(tmpmtxs[0].comment_lines[i]);
-        dstmtx->num_comment_lines = tmpmtxs[0].num_comment_lines;
+            comment_lines[i] = strdup(tmpmtxs[0].comment_lines[i]);
+        num_comment_lines = tmpmtxs[0].num_comment_lines;
     }
     for (int p = 1; p < comm_size; p++) {
         if (tmpmtxs[0].num_comment_lines != tmpmtxs[p].num_comment_lines) {
             for (int i = 0; i < tmpmtxs[p].num_comment_lines; i++)
-                dstmtx->comment_lines[i] = strdup(tmpmtxs[p].comment_lines[i]);
-            dstmtx->num_comment_lines += tmpmtxs[p].num_comment_lines;
+                comment_lines[i] = strdup(tmpmtxs[p].comment_lines[i]);
+            num_comment_lines += tmpmtxs[p].num_comment_lines;
             continue;
         }
 
@@ -1141,21 +764,22 @@ int mtx_matrix_coordinate_gather(
                 tmpmtxs[p].comment_lines[i]);
             if (cmp != 0) {
                 for (int j = 0; j < tmpmtxs[p].num_comment_lines; j++)
-                    dstmtx->comment_lines[j] = strdup(tmpmtxs[p].comment_lines[j]);
-                dstmtx->num_comment_lines += tmpmtxs[p].num_comment_lines;
+                    comment_lines[j] = strdup(tmpmtxs[p].comment_lines[j]);
+                num_comment_lines += tmpmtxs[p].num_comment_lines;
                 break;
             }
         }
     }
 
     /* Get the number of rows. */
+    int num_rows;
     if (comm_size > 0)
-        dstmtx->num_rows = tmpmtxs[0].num_rows;
+        num_rows = tmpmtxs[0].num_rows;
     for (int p = 1; p < comm_size; p++) {
-        if (dstmtx->num_rows != tmpmtxs[p].num_rows) {
-            for (int i = 0; i < dstmtx->num_comment_lines; i++)
-                free(dstmtx->comment_lines[i]);
-            free(dstmtx->comment_lines);
+        if (num_rows != tmpmtxs[p].num_rows) {
+            for (int i = 0; i < num_comment_lines; i++)
+                free(comment_lines[i]);
+            free(comment_lines);
             for (int p = 0; p < comm_size; p++)
                 mtx_free(&tmpmtxs[p]);
             free(tmpmtxs);
@@ -1164,13 +788,14 @@ int mtx_matrix_coordinate_gather(
     }
 
     /* Get the number of columns. */
+    int num_columns;
     if (comm_size > 0)
-        dstmtx->num_columns = tmpmtxs[0].num_columns;
+        num_columns = tmpmtxs[0].num_columns;
     for (int p = 1; p < comm_size; p++) {
-        if (dstmtx->num_columns != tmpmtxs[p].num_columns) {
-            for (int i = 0; i < dstmtx->num_comment_lines; i++)
-                free(dstmtx->comment_lines[i]);
-            free(dstmtx->comment_lines);
+        if (num_columns != tmpmtxs[p].num_columns) {
+            for (int i = 0; i < num_comment_lines; i++)
+                free(comment_lines[i]);
+            free(comment_lines);
             for (int p = 0; p < comm_size; p++)
                 mtx_free(&tmpmtxs[p]);
             free(tmpmtxs);
@@ -1179,64 +804,139 @@ int mtx_matrix_coordinate_gather(
     }
 
     /* Get the number of stored nonzeros. */
-    dstmtx->size = 0;
+    int64_t num_nonzeros = 0;
     for (int p = 0; p < comm_size; p++)
-        dstmtx->size += tmpmtxs[p].size;
+        num_nonzeros += tmpmtxs[p].num_nonzeros;
 
-    /* Get the size of nonzeros. */
+    /* Get the precision. */
+    enum mtx_precision precision;
     if (comm_size > 0)
-        dstmtx->nonzero_size = tmpmtxs[0].nonzero_size;
+        precision = tmpmtxs[0].storage.matrix_coordinate.precision;
     for (int p = 1; p < comm_size; p++) {
-        if (dstmtx->nonzero_size != tmpmtxs[p].nonzero_size) {
-            for (int i = 0; i < dstmtx->num_comment_lines; i++)
-                free(dstmtx->comment_lines[i]);
-            free(dstmtx->comment_lines);
+        if (precision != tmpmtxs[p].storage.matrix_coordinate.precision) {
             for (int p = 0; p < comm_size; p++)
                 mtx_free(&tmpmtxs[p]);
             free(tmpmtxs);
-            return MTX_ERR_INVALID_MTX_SIZE;
+            return MTX_ERR_INVALID_PRECISION;
         }
     }
 
-    /* Allocate storage for matrix nonzeros. */
-    dstmtx->data = malloc(dstmtx->size * dstmtx->nonzero_size);
-    if (!dstmtx->data) {
-        for (int i = 0; i < dstmtx->num_comment_lines; i++)
-            free(dstmtx->comment_lines[i]);
-        free(dstmtx->comment_lines);
+    /* Allocate storage for the gathered matrix. */
+    err = mtx_alloc_matrix_coordinate(
+        dstmtx, field, precision, symmetry,
+        num_comment_lines, (const char **) comment_lines,
+        num_rows, num_columns, num_nonzeros);
+    if (err) {
+        for (int i = 0; i < num_comment_lines; i++)
+            free(comment_lines[i]);
+        free(comment_lines);
         for (int p = 0; p < comm_size; p++)
             mtx_free(&tmpmtxs[p]);
         free(tmpmtxs);
-        return MTX_ERR_ERRNO;
+        return err;
     }
+    for (int i = 0; i < num_comment_lines; i++)
+        free(comment_lines[i]);
+    free(comment_lines);
 
-    /* Get the matrix nonzeros. */
-    dstmtx->size = 0;
-    for (int p = 0; p < comm_size; p++) {
-        memcpy(
-            dstmtx->data + dstmtx->size * dstmtx->nonzero_size,
-            tmpmtxs[p].data,
-            tmpmtxs[p].size * tmpmtxs[p].nonzero_size);
-        dstmtx->size += tmpmtxs[p].size;
+    /* Copy the matrix nonzeros. */
+    if (field == mtx_real) {
+        if (precision == mtx_single) {
+            struct mtx_matrix_coordinate_real_single * dstdata =
+                dstmtx->storage.matrix_coordinate.data.real_single;
+            int64_t k = 0;
+            for (int p = 0; p < comm_size; p++) {
+                int64_t size = tmpmtxs[p].storage.matrix_coordinate.size;
+                const struct mtx_matrix_coordinate_real_single * srcdata =
+                    tmpmtxs[p].storage.matrix_coordinate.data.real_single;
+                memcpy(&dstdata[k], srcdata, size * sizeof(*srcdata));
+                k += size;
+            }
+        } else if (precision == mtx_double) {
+            struct mtx_matrix_coordinate_real_double * dstdata =
+                dstmtx->storage.matrix_coordinate.data.real_double;
+            int64_t k = 0;
+            for (int p = 0; p < comm_size; p++) {
+                int64_t size = tmpmtxs[p].storage.matrix_coordinate.size;
+                const struct mtx_matrix_coordinate_real_double * srcdata =
+                    tmpmtxs[p].storage.matrix_coordinate.data.real_double;
+                memcpy(&dstdata[k], srcdata, size * sizeof(*srcdata));
+                k += size;
+            }
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else if (field == mtx_complex) {
+        if (precision == mtx_single) {
+            struct mtx_matrix_coordinate_complex_single * dstdata =
+                dstmtx->storage.matrix_coordinate.data.complex_single;
+            int64_t k = 0;
+            for (int p = 0; p < comm_size; p++) {
+                int64_t size = tmpmtxs[p].storage.matrix_coordinate.size;
+                const struct mtx_matrix_coordinate_complex_single * srcdata =
+                    tmpmtxs[p].storage.matrix_coordinate.data.complex_single;
+                memcpy(&dstdata[k], srcdata, size * sizeof(*srcdata));
+                k += size;
+            }
+        } else if (precision == mtx_double) {
+            struct mtx_matrix_coordinate_complex_double * dstdata =
+                dstmtx->storage.matrix_coordinate.data.complex_double;
+            int64_t k = 0;
+            for (int p = 0; p < comm_size; p++) {
+                int64_t size = tmpmtxs[p].storage.matrix_coordinate.size;
+                const struct mtx_matrix_coordinate_complex_double * srcdata =
+                    tmpmtxs[p].storage.matrix_coordinate.data.complex_double;
+                memcpy(&dstdata[k], srcdata, size * sizeof(*srcdata));
+                k += size;
+            }
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else if (field == mtx_integer) {
+        if (precision == mtx_single) {
+            struct mtx_matrix_coordinate_integer_single * dstdata =
+                dstmtx->storage.matrix_coordinate.data.integer_single;
+            int64_t k = 0;
+            for (int p = 0; p < comm_size; p++) {
+                int64_t size = tmpmtxs[p].storage.matrix_coordinate.size;
+                const struct mtx_matrix_coordinate_integer_single * srcdata =
+                    tmpmtxs[p].storage.matrix_coordinate.data.integer_single;
+                memcpy(&dstdata[k], srcdata, size * sizeof(*srcdata));
+                k += size;
+            }
+        } else if (precision == mtx_double) {
+            struct mtx_matrix_coordinate_integer_double * dstdata =
+                dstmtx->storage.matrix_coordinate.data.integer_double;
+            int64_t k = 0;
+            for (int p = 0; p < comm_size; p++) {
+                int64_t size = tmpmtxs[p].storage.matrix_coordinate.size;
+                const struct mtx_matrix_coordinate_integer_double * srcdata =
+                    tmpmtxs[p].storage.matrix_coordinate.data.integer_double;
+                memcpy(&dstdata[k], srcdata, size * sizeof(*srcdata));
+                k += size;
+            }
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else if (field == mtx_pattern) {
+          struct mtx_matrix_coordinate_pattern * dstdata =
+              dstmtx->storage.matrix_coordinate.data.pattern;
+          int64_t k = 0;
+          for (int p = 0; p < comm_size; p++) {
+              int64_t size = tmpmtxs[p].storage.matrix_coordinate.size;
+              const struct mtx_matrix_coordinate_pattern * srcdata =
+                  tmpmtxs[p].storage.matrix_coordinate.data.pattern;
+              memcpy(&dstdata[k], srcdata, size * sizeof(*srcdata));
+              k += size;
+          }
+    } else {
+        return MTX_ERR_INVALID_MTX_FIELD;
     }
 
     /* Free the temporarily gathered matrices. */
     for (int p = 0; p < comm_size; p++)
         mtx_free(&tmpmtxs[p]);
     free(tmpmtxs);
-
-    /* Calculate the number of nonzeros. */
-    err = mtx_matrix_num_nonzeros(
-        dstmtx->object, dstmtx->format, dstmtx->field, dstmtx->symmetry,
-        dstmtx->num_rows, dstmtx->num_columns, dstmtx->size, dstmtx->data,
-        &dstmtx->num_nonzeros);
-    if (err) {
-        for (int i = 0; i < dstmtx->num_comment_lines; i++)
-            free(dstmtx->comment_lines[i]);
-        free(dstmtx->comment_lines);
-        return err;
-    }
-
     return MTX_SUCCESS;
 }
 
@@ -1275,7 +975,7 @@ int mtx_matrix_coordinate_scatter(
             if (p == root) {
                 /* For the root process, there is no need for any
                  * communication; just fetch the submatrix. */
-                err = mtx_matrix_submatrix(srcmtx, &row_sets[p], &column_sets[p], dstmtx);
+                err = mtx_matrix_submatrix(dstmtx, srcmtx, &row_sets[p], &column_sets[p]);
                 if (err)
                     return err;
 
@@ -1283,7 +983,7 @@ int mtx_matrix_coordinate_scatter(
                 /* Otherwise, fetch the submatrix and send it to the
                  * MPI process that will own it. */
                 struct mtx submtx;
-                err = mtx_matrix_submatrix(srcmtx, &row_sets[p], &column_sets[p], &submtx);
+                err = mtx_matrix_submatrix(&submtx, srcmtx, &row_sets[p], &column_sets[p]);
                 if (err)
                     return err;
 

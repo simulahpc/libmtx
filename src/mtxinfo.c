@@ -55,6 +55,7 @@ const char * program_invocation_short_name;
 struct program_options
 {
     char * mtx_path;
+    enum mtx_precision precision;
     bool gzip;
     int verbose;
 };
@@ -66,6 +67,7 @@ static int program_options_init(
     struct program_options * args)
 {
     args->mtx_path = NULL;
+    args->precision = mtx_double;
     args->gzip = false;
     args->verbose = 0;
     return 0;
@@ -93,6 +95,8 @@ static void program_options_print_help(
     fprintf(f, " Print information about a Matrix Market file.\n");
     fprintf(f, "\n");
     fprintf(f, " Options are:\n");
+    fprintf(f, "  --precision=PRECISION\tprecision used to represent matrix or\n");
+    fprintf(f, "\t\t\tvector values: single or double. (default: double)\n");
     fprintf(f, "  -z, --gzip, --gunzip, --ungzip\tfilter the file through gzip\n");
     fprintf(f, "  -v, --verbose\t\t\t\tbe more verbose\n");
     fprintf(f, "\n");
@@ -145,6 +149,36 @@ static int parse_program_options(
         num_arguments_consumed = 0;
         if (*argc <= 0)
             break;
+
+        if (strcmp((*argv)[0], "--precision") == 0) {
+            if (*argc < 2) {
+                program_options_free(args);
+                return EINVAL;
+            }
+            char * s = (*argv)[1];
+            if (strcmp(s, "single") == 0) {
+                args->precision = mtx_single;
+            } else if (strcmp(s, "double") == 0) {
+                args->precision = mtx_double;
+            } else {
+                program_options_free(args);
+                return EINVAL;
+            }
+            num_arguments_consumed += 2;
+            continue;
+        } else if (strstr((*argv)[0], "--precision=") == (*argv)[0]) {
+            char * s = (*argv)[0] + strlen("--precision=");
+            if (strcmp(s, "single") == 0) {
+                args->precision = mtx_single;
+            } else if (strcmp(s, "double") == 0) {
+                args->precision = mtx_double;
+            } else {
+                program_options_free(args);
+                return EINVAL;
+            }
+            num_arguments_consumed++;
+            continue;
+        }
 
         if (strcmp((*argv)[0], "-z") == 0 ||
             strcmp((*argv)[0], "--gzip") == 0 ||
@@ -253,7 +287,7 @@ int main(int argc, char *argv[])
     struct mtx mtx;
     int line_number, column_number;
     err = mtx_read(
-        &mtx, args.mtx_path, args.gzip,
+        &mtx, args.precision, args.mtx_path, args.gzip,
         &line_number, &column_number);
     if (err && (line_number == -1 && column_number == -1)) {
         if (args.verbose > 0)
@@ -286,14 +320,9 @@ int main(int argc, char *argv[])
     fprintf(stdout, "format: %s\n", mtx_format_str(mtx.format));
     fprintf(stdout, "field: %s\n", mtx_field_str(mtx.field));
     fprintf(stdout, "symmetry: %s\n", mtx_symmetry_str(mtx.symmetry));
-    fprintf(stdout, "triangle: %s\n", mtx_triangle_str(mtx.triangle));
-    fprintf(stdout, "sorting: %s\n", mtx_sorting_str(mtx.sorting));
-    fprintf(stdout, "ordering: %s\n", mtx_ordering_str(mtx.ordering));
-    fprintf(stdout, "assembly: %s\n", mtx_assembly_str(mtx.assembly));
     fprintf(stdout, "rows: %d\n", mtx.num_rows);
     fprintf(stdout, "columns: %d\n", mtx.num_columns);
     fprintf(stdout, "nonzeros: %"PRId64"\n", mtx.num_nonzeros);
-    fprintf(stdout, "size: %"PRId64"\n", mtx.size);
     for (int i = 0; i < mtx.num_comment_lines; i++)
         fputs(mtx.comment_lines[i], stdout);
 

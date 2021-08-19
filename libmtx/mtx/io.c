@@ -26,14 +26,12 @@
 
 #include <libmtx/error.h>
 #include <libmtx/matrix/array.h>
-#include <libmtx/matrix/array/io.h>
 #include <libmtx/matrix/coordinate.h>
 #include <libmtx/matrix/coordinate/io.h>
-#include <libmtx/mtx/matrix.h>
 #include <libmtx/mtx/io.h>
 #include <libmtx/mtx/mtx.h>
+#include <libmtx/mtx/precision.h>
 #include <libmtx/vector/array.h>
-#include <libmtx/vector/array/io.h>
 #include <libmtx/vector/coordinate.h>
 #include <libmtx/vector/coordinate/io.h>
 
@@ -70,6 +68,7 @@
  */
 int mtx_read(
     struct mtx * mtx,
+    enum mtx_precision precision,
     const char * path,
     bool gzip,
     int * line_number,
@@ -87,7 +86,9 @@ int mtx_read(
             return MTX_ERR_ERRNO;
         }
 
-        err = mtx_fread(mtx, f, line_number, column_number);
+        err = mtx_fread(
+            mtx, precision, f,
+            line_number, column_number);
         if (err)
             return err;
         fclose(f);
@@ -100,7 +101,9 @@ int mtx_read(
             return MTX_ERR_ERRNO;
         }
 
-        err = mtx_gzread(mtx, f, line_number, column_number);
+        err = mtx_gzread(
+            mtx, precision, f,
+            line_number, column_number);
         if (err)
             return err;
         gzclose(f);
@@ -177,10 +180,7 @@ int mtx_write(
  * the Matrix Market file format.
  */
 static int read_header_line(
-    enum mtx_object * object,
-    enum mtx_format * format,
-    enum mtx_field * field,
-    enum mtx_symmetry * symmetry,
+    struct mtx_header * header,
     const struct stream * stream,
     size_t line_max,
     char * linebuf,
@@ -197,8 +197,7 @@ static int read_header_line(
 
     int bytes_read;
     err = mtx_header_parse(
-        linebuf, &bytes_read, NULL,
-        object, format, field, symmetry);
+        header, linebuf, &bytes_read, NULL);
     if (err) {
         *column_number = bytes_read+1;
         return err;
@@ -223,8 +222,7 @@ struct comment_line_list
  * Matrix Market file format.
  */
 static int read_comment_lines(
-    int * num_comment_lines,
-    char *** comment_lines,
+    struct mtx_comments * comments,
     const struct stream * stream,
     size_t line_max,
     char * linebuf,
@@ -236,7 +234,7 @@ static int read_comment_lines(
     /* 1. Read comment lines into a list. */
     struct comment_line_list * root = NULL;
     struct comment_line_list * node = NULL;
-    *num_comment_lines = 0;
+    comments->num_comment_lines = 0;
     while (true) {
         int c = stream_getc(stream);
         if (c == MTX_ERR_INVALID_STREAM_TYPE)
@@ -289,12 +287,13 @@ static int read_comment_lines(
         }
 
         (*line_number)++; *column_number = 1;
-        (*num_comment_lines)++;
+        comments->num_comment_lines++;
     }
 
     /* 2. Allocate storage for comment lines. */
-    *comment_lines = malloc(*num_comment_lines * sizeof(char *));
-    if (!*comment_lines) {
+    comments->comment_lines = malloc(
+        comments->num_comment_lines * sizeof(char *));
+    if (!comments->comment_lines) {
         while (node) {
             struct comment_line_list * prev = node->prev;
             free(node->comment_line);
@@ -305,8 +304,8 @@ static int read_comment_lines(
     }
 
     /* 3. Initialise the array of comment lines. */
-    for (int i = 0; i < *num_comment_lines; i++) {
-        (*comment_lines)[i] = root->comment_line;
+    for (int i = 0; i < comments->num_comment_lines; i++) {
+        comments->comment_lines[i] = root->comment_line;
         root = root->next;
     }
 
@@ -324,15 +323,9 @@ static int read_comment_lines(
  * Market file format.
  */
 static int read_size_line(
+    struct mtx_size * size,
     enum mtx_object object,
     enum mtx_format format,
-    enum mtx_field field,
-    enum mtx_symmetry symmetry,
-    int * num_rows,
-    int * num_columns,
-    int64_t * num_nonzeros,
-    int64_t * size,
-    int * nonzero_size,
     const struct stream * stream,
     size_t line_max,
     char * linebuf,
@@ -340,86 +333,27 @@ static int read_size_line(
     int * column_number)
 {
     int err;
-
-    /* Read the size line. */
     err = stream_read_line(stream, line_max, linebuf);
     if (err)
         return err;
 
-    const char * s = linebuf;
-    if (object == mtx_matrix) {
-        if (format == mtx_array) {
-            int bytes_read;
-            err = mtx_matrix_array_parse_size(
-                s, &bytes_read, &s,
-                object, format, field, symmetry,
-                num_rows, num_columns, num_nonzeros,
-                size, nonzero_size);
-            if (err) {
-                *column_number += bytes_read;
-                return err;
-            }
-            (*line_number)++; *column_number = 1;
-
-        } else if (format == mtx_coordinate) {
-            int bytes_read;
-            err = mtx_matrix_coordinate_parse_size(
-                s, &bytes_read, &s,
-                object, format, field, symmetry,
-                num_rows, num_columns, num_nonzeros,
-                size, nonzero_size);
-            if (err) {
-                *column_number += bytes_read;
-                return err;
-            }
-            (*line_number)++; *column_number = 1;
-
-        } else {
-            return MTX_ERR_INVALID_MTX_FORMAT;
-        }
-
-    } else if (object == mtx_vector) {
-        if (format == mtx_array) {
-            int bytes_read;
-            err = mtx_vector_array_parse_size(
-                s, &bytes_read, &s,
-                object, format, field, symmetry,
-                num_rows, num_columns, num_nonzeros,
-                size, nonzero_size);
-            if (err) {
-                *column_number += bytes_read;
-                return err;
-            }
-            (*line_number)++; *column_number = 1;
-
-        } else if (format == mtx_coordinate) {
-            int bytes_read;
-            err = mtx_vector_coordinate_parse_size(
-                s, &bytes_read, &s,
-                object, format, field, symmetry,
-                num_rows, num_columns, num_nonzeros,
-                size, nonzero_size);
-            if (err) {
-                *column_number += bytes_read;
-                return err;
-            }
-            (*line_number)++; *column_number = 1;
-
-        } else {
-            return MTX_ERR_INVALID_MTX_FORMAT;
-        }
-    } else {
-        return MTX_ERR_INVALID_MTX_OBJECT;
+    int bytes_read;
+    err = mtx_size_parse(
+        size, object, format,
+        linebuf, &bytes_read, NULL);
+    if (err) {
+        *column_number = bytes_read+1;
+        return err;
     }
-
+    (*line_number)++; *column_number = 1;
     return MTX_SUCCESS;
 }
 
 /**
- * `parse_array_real()` parses a single nonzero for a matrix whose
- * format is `array` and field is `real`.
+ * `parse_array_real_single()' parses a single nonzero for a matrix
+ * whose format is `array' and field is `real' in single precision.
  */
-static int parse_array_real(
+static int parse_array_real_single(
     const char * s, float * a)
 {
     int err = parse_float(s, "\n", a, NULL);
@@ -433,10 +367,10 @@ static int parse_array_real(
 }
 
 /**
- * `parse_array_double()` parses a single nonzero for a matrix whose
- * format is `array` and field is `double`.
+ * `parse_array_real_double()' parses a single nonzero for a matrix
+ * whose format is `array' and field is `double' in double precision.
  */
-static int parse_array_double(
+static int parse_array_real_double(
     const char * s, double * a)
 {
     int err = parse_double(s, "\n", a, NULL);
@@ -450,10 +384,10 @@ static int parse_array_double(
 }
 
 /**
- * `parse_array_complex()` parses a single nonzero for a matrix whose
- * format is `array` and field is `complex`.
+ * `parse_array_complex_single()' parses a single nonzero for a matrix
+ * whose format is `array' and field is `complex' in single precision.
  */
-static int parse_array_complex(
+static int parse_array_complex_single(
     const char * s, float * a, float * b)
 {
     int err = parse_float(s, " ", a, &s);
@@ -474,11 +408,11 @@ static int parse_array_complex(
 }
 
 /**
- * `parse_array_integer()` parses a single nonzero for a matrix whose
- * format is `array` and field is `integer`.
+ * `parse_array_integer_single()' parses a single nonzero for a matrix
+ * whose format is `array' and field is `integer' in single precision.
  */
-static int parse_array_integer(
-    const char * s, int * a)
+static int parse_array_integer_single(
+    const char * s, int32_t * a)
 {
     int err = parse_int32(s, "\n", a, NULL);
     if (err == EINVAL) {
@@ -491,13 +425,11 @@ static int parse_array_integer(
 }
 
 /**
- * `read_data_array()` reads lines of dense (array) matrix data from a
- * stream in the Matrix Market file format.
+ * `read_data_matrix_array()` reads data lines for a matrix in array
+ * format from a stream in the Matrix Market file format.
  */
-static int read_data_array(
-    enum mtx_field field,
-    int64_t size,
-    void * out_data,
+static int read_data_matrix_array(
+    struct mtx_matrix_array_data * matrix_array,
     const struct stream * stream,
     size_t line_max,
     char * linebuf,
@@ -506,72 +438,76 @@ static int read_data_array(
 {
     int err;
 
-    if (field == mtx_real) {
-        float * data = (float *) out_data;
-        for (int64_t k = 0; k < size; k++) {
-            err = stream_read_line(stream, line_max, linebuf);
-            if (err)
-                return err;
-            err = parse_array_real(linebuf, &data[k]);
-            if (err)
-                return err;
-            (*line_number)++; *column_number = 1;
+    if (matrix_array->field == mtx_real) {
+        if (matrix_array->precision == mtx_single) {
+            float * data = matrix_array->data.real_single;
+            for (int64_t k = 0; k < matrix_array->size; k++) {
+                err = stream_read_line(stream, line_max, linebuf);
+                if (err)
+                    return err;
+                err = parse_array_real_single(linebuf, &data[k]);
+                if (err)
+                    return err;
+                (*line_number)++; *column_number = 1;
+            }
+        } else if (matrix_array->precision == mtx_double) {
+            double * data = matrix_array->data.real_double;
+            for (int64_t k = 0; k < matrix_array->size; k++) {
+                err = stream_read_line(stream, line_max, linebuf);
+                if (err)
+                    return err;
+                err = parse_array_real_double(linebuf, &data[k]);
+                if (err)
+                    return err;
+                (*line_number)++; *column_number = 1;
+            }
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else if (matrix_array->field == mtx_complex) {
+        if (matrix_array->precision == mtx_single) {
+            float (* data)[2] = matrix_array->data.complex_single;
+            for (int64_t k = 0; k < matrix_array->size; k++) {
+                err = stream_read_line(stream, line_max, linebuf);
+                if (err)
+                    return err;
+                err = parse_array_complex_single(
+                    linebuf, &data[k][0], &data[k][1]);
+                if (err)
+                    return err;
+                (*line_number)++; *column_number = 1;
+            }
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
         }
 
-    } else if (field == mtx_double) {
-        double * data = (double *) out_data;
-        for (int64_t k = 0; k < size; k++) {
-            err = stream_read_line(stream, line_max, linebuf);
-            if (err)
-                return err;
-            err = parse_array_double(linebuf, &data[k]);
-            if (err)
-                return err;
-            (*line_number)++; *column_number = 1;
+    } else if (matrix_array->field == mtx_integer) {
+        if (matrix_array->precision == mtx_single) {
+            int32_t * data = matrix_array->data.integer_single;
+            for (int64_t k = 0; k < matrix_array->size; k++) {
+                err = stream_read_line(stream, line_max, linebuf);
+                if (err)
+                    return err;
+                err = parse_array_integer_single(linebuf, &data[k]);
+                if (err)
+                    return err;
+                (*line_number)++; *column_number = 1;
+            }
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
         }
-
-    } else if (field == mtx_complex) {
-        float * data = (float *) out_data;
-        for (int64_t k = 0; k < size; k++) {
-            err = stream_read_line(stream, line_max, linebuf);
-            if (err)
-                return err;
-            err = parse_array_complex(
-                linebuf, &data[2*k+0], &data[2*k+1]);
-            if (err)
-                return err;
-            (*line_number)++; *column_number = 1;
-        }
-
-    } else if (field == mtx_integer) {
-        int * data = (int *) out_data;
-        for (int64_t k = 0; k < size; k++) {
-            err = stream_read_line(stream, line_max, linebuf);
-            if (err)
-                return err;
-            err = parse_array_integer(linebuf, &data[k]);
-            if (err)
-                return err;
-            (*line_number)++; *column_number = 1;
-        }
-
     } else {
         return MTX_ERR_INVALID_MTX_FIELD;
     }
-
     return MTX_SUCCESS;
 }
 
 /**
- * `read_data_matrix_coordinate()` reads lines of sparse (coordinate)
- * matrix data from a stream in the Matrix Market file format.
+ * `read_data_matrix_coordinate()` reads data lines for a matrix in
+ * coordinate format from a stream in the Matrix Market file format.
  */
 static int read_data_matrix_coordinate(
-    enum mtx_field field,
-    int num_rows,
-    int num_columns,
-    int64_t size,
-    void * out_data,
+    struct mtx_matrix_coordinate_data * matrix_coordinate,
     const struct stream * stream,
     size_t line_max,
     char * linebuf,
@@ -579,62 +515,79 @@ static int read_data_matrix_coordinate(
     int * column_number)
 {
     int err;
-    for (int64_t k = 0; k < size; k++) {
+    for (int64_t k = 0; k < matrix_coordinate->size; k++) {
         err = stream_read_line(stream, line_max, linebuf);
         if (err)
             return err;
 
-        if (field == mtx_real) {
-            struct mtx_matrix_coordinate_real * data =
-                (struct mtx_matrix_coordinate_real *) out_data;
-            int bytes_read;
-            err = mtx_matrix_coordinate_parse_data_real(
-                linebuf, &bytes_read, NULL,
-                &data[k], num_rows, num_columns);
-            if (err) {
-                *column_number += bytes_read;
-                return err;
+        if (matrix_coordinate->field == mtx_real) {
+            if (matrix_coordinate->precision == mtx_single) {
+                struct mtx_matrix_coordinate_real_single * data =
+                    matrix_coordinate->data.real_single;
+                int bytes_read;
+                err = mtx_matrix_coordinate_parse_data_real_single(
+                    linebuf, &bytes_read, NULL, &data[k],
+                    matrix_coordinate->num_rows,
+                    matrix_coordinate->num_columns);
+                if (err) {
+                    *column_number += bytes_read;
+                    return err;
+                }
+            } else if (matrix_coordinate->precision == mtx_double) {
+                struct mtx_matrix_coordinate_real_double * data =
+                    matrix_coordinate->data.real_double;
+                int bytes_read;
+                err = mtx_matrix_coordinate_parse_data_real_double(
+                    linebuf, &bytes_read, NULL, &data[k],
+                    matrix_coordinate->num_rows,
+                    matrix_coordinate->num_columns);
+                if (err) {
+                    *column_number += bytes_read;
+                    return err;
+                }
+            } else {
+                return MTX_ERR_INVALID_PRECISION;
             }
-        } else if (field == mtx_double) {
-            struct mtx_matrix_coordinate_double * data =
-                (struct mtx_matrix_coordinate_double *) out_data;
-            int bytes_read;
-            err = mtx_matrix_coordinate_parse_data_double(
-                linebuf, &bytes_read, NULL,
-                &data[k], num_rows, num_columns);
-            if (err) {
-                *column_number += bytes_read;
-                return err;
+        } else if (matrix_coordinate->field == mtx_complex) {
+            if (matrix_coordinate->precision == mtx_single) {
+                struct mtx_matrix_coordinate_complex_single * data =
+                    matrix_coordinate->data.complex_single;
+                int bytes_read;
+                err = mtx_matrix_coordinate_parse_data_complex_single(
+                    linebuf, &bytes_read, NULL, &data[k],
+                    matrix_coordinate->num_rows,
+                    matrix_coordinate->num_columns);
+                if (err) {
+                    *column_number += bytes_read;
+                    return err;
+                }
+            } else {
+                return MTX_ERR_INVALID_PRECISION;
             }
-        } else if (field == mtx_complex) {
-            struct mtx_matrix_coordinate_complex * data =
-                (struct mtx_matrix_coordinate_complex *) out_data;
-            int bytes_read;
-            err = mtx_matrix_coordinate_parse_data_complex(
-                linebuf, &bytes_read, NULL,
-                &data[k], num_rows, num_columns);
-            if (err) {
-                *column_number += bytes_read;
-                return err;
+        } else if (matrix_coordinate->field == mtx_integer) {
+            if (matrix_coordinate->precision == mtx_single) {
+                struct mtx_matrix_coordinate_integer_single * data =
+                    matrix_coordinate->data.integer_single;
+                int bytes_read;
+                err = mtx_matrix_coordinate_parse_data_integer_single(
+                    linebuf, &bytes_read, NULL, &data[k],
+                    matrix_coordinate->num_rows,
+                    matrix_coordinate->num_columns);
+                if (err) {
+                    *column_number += bytes_read;
+                    return err;
+                }
+            } else {
+                return MTX_ERR_INVALID_PRECISION;
             }
-        } else if (field == mtx_integer) {
-            struct mtx_matrix_coordinate_integer * data =
-                (struct mtx_matrix_coordinate_integer *) out_data;
-            int bytes_read;
-            err = mtx_matrix_coordinate_parse_data_integer(
-                linebuf, &bytes_read, NULL,
-                &data[k], num_rows, num_columns);
-            if (err) {
-                *column_number += bytes_read;
-                return err;
-            }
-        } else if (field == mtx_pattern) {
+        } else if (matrix_coordinate->field == mtx_pattern) {
             struct mtx_matrix_coordinate_pattern * data =
-                (struct mtx_matrix_coordinate_pattern *) out_data;
+                    matrix_coordinate->data.pattern;
             int bytes_read;
             err = mtx_matrix_coordinate_parse_data_pattern(
-                linebuf, &bytes_read, NULL,
-                &data[k], num_rows, num_columns);
+                linebuf, &bytes_read, NULL, &data[k],
+                matrix_coordinate->num_rows,
+                matrix_coordinate->num_columns);
             if (err) {
                 *column_number += bytes_read;
                 return err;
@@ -649,14 +602,11 @@ static int read_data_matrix_coordinate(
 }
 
 /**
- * `read_data_vector_coordinate()` reads lines of sparse (coordinate)
- * vector data from a stream in the Matrix Market file format.
+ * `read_data_vector_array()` reads data lines for a vector in array
+ * format from a stream in the Matrix Market file format.
  */
-static int read_data_vector_coordinate(
-    enum mtx_field field,
-    int num_rows,
-    int64_t size,
-    void ** out_data,
+static int read_data_vector_array(
+    struct mtx_vector_array_data * vector_array,
     const struct stream * stream,
     size_t line_max,
     char * linebuf,
@@ -664,62 +614,152 @@ static int read_data_vector_coordinate(
     int * column_number)
 {
     int err;
-    for (int64_t k = 0; k < size; k++) {
+
+    if (vector_array->field == mtx_real) {
+        if (vector_array->precision == mtx_single) {
+            float * data = vector_array->data.real_single;
+            for (int64_t k = 0; k < vector_array->size; k++) {
+                err = stream_read_line(stream, line_max, linebuf);
+                if (err)
+                    return err;
+                err = parse_array_real_single(linebuf, &data[k]);
+                if (err)
+                    return err;
+                (*line_number)++; *column_number = 1;
+            }
+        } else if (vector_array->precision == mtx_double) {
+            double * data = vector_array->data.real_double;
+            for (int64_t k = 0; k < vector_array->size; k++) {
+                err = stream_read_line(stream, line_max, linebuf);
+                if (err)
+                    return err;
+                err = parse_array_real_double(linebuf, &data[k]);
+                if (err)
+                    return err;
+                (*line_number)++; *column_number = 1;
+            }
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else if (vector_array->field == mtx_complex) {
+        if (vector_array->precision == mtx_single) {
+            float (* data)[2] = vector_array->data.complex_single;
+            for (int64_t k = 0; k < vector_array->size; k++) {
+                err = stream_read_line(stream, line_max, linebuf);
+                if (err)
+                    return err;
+                err = parse_array_complex_single(
+                    linebuf, &data[k][0], &data[k][1]);
+                if (err)
+                    return err;
+                (*line_number)++; *column_number = 1;
+            }
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+
+    } else if (vector_array->field == mtx_integer) {
+        if (vector_array->precision == mtx_single) {
+            int32_t * data = vector_array->data.integer_single;
+            for (int64_t k = 0; k < vector_array->size; k++) {
+                err = stream_read_line(stream, line_max, linebuf);
+                if (err)
+                    return err;
+                err = parse_array_integer_single(linebuf, &data[k]);
+                if (err)
+                    return err;
+                (*line_number)++; *column_number = 1;
+            }
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else {
+        return MTX_ERR_INVALID_MTX_FIELD;
+    }
+    return MTX_SUCCESS;
+}
+
+/**
+ * `read_data_vector_coordinate()` reads data lines of a vector in
+ * coordinate format from a stream in the Matrix Market file format.
+ */
+static int read_data_vector_coordinate(
+    struct mtx_vector_coordinate_data * vector_coordinate,
+    const struct stream * stream,
+    size_t line_max,
+    char * linebuf,
+    int * line_number,
+    int * column_number)
+{
+    int err;
+    for (int64_t k = 0; k < vector_coordinate->size; k++) {
         err = stream_read_line(stream, line_max, linebuf);
         if (err)
             return err;
 
-        if (field == mtx_real) {
-            struct mtx_vector_coordinate_real * data =
-                (struct mtx_vector_coordinate_real *) out_data;
-            int bytes_read;
-            err = mtx_vector_coordinate_parse_data_real(
-                linebuf, &bytes_read, NULL,
-                &data[k], num_rows);
-            if (err) {
-                *column_number += bytes_read;
-                return err;
+        if (vector_coordinate->field == mtx_real) {
+            if (vector_coordinate->precision == mtx_single) {
+                struct mtx_vector_coordinate_real_single * data =
+                    vector_coordinate->data.real_single;
+                int bytes_read;
+                err = mtx_vector_coordinate_parse_data_real_single(
+                    linebuf, &bytes_read, NULL,
+                    &data[k], vector_coordinate->num_rows);
+                if (err) {
+                    *column_number += bytes_read;
+                    return err;
+                }
+            } else if (vector_coordinate->precision == mtx_double) {
+                struct mtx_vector_coordinate_real_double * data =
+                    vector_coordinate->data.real_double;
+                int bytes_read;
+                err = mtx_vector_coordinate_parse_data_real_double(
+                    linebuf, &bytes_read, NULL,
+                    &data[k], vector_coordinate->num_rows);
+                if (err) {
+                    *column_number += bytes_read;
+                    return err;
+                }
+            } else {
+                return MTX_ERR_INVALID_PRECISION;
             }
-        } else if (field == mtx_double) {
-            struct mtx_vector_coordinate_double * data =
-                (struct mtx_vector_coordinate_double *) out_data;
-            int bytes_read;
-            err = mtx_vector_coordinate_parse_data_double(
-                linebuf, &bytes_read, NULL,
-                &data[k], num_rows);
-            if (err) {
-                *column_number += bytes_read;
-                return err;
+        } else if (vector_coordinate->field == mtx_complex) {
+            if (vector_coordinate->precision == mtx_single) {
+                struct mtx_vector_coordinate_complex_single * data =
+                    vector_coordinate->data.complex_single;
+                int bytes_read;
+                err = mtx_vector_coordinate_parse_data_complex_single(
+                    linebuf, &bytes_read, NULL,
+                    &data[k], vector_coordinate->num_rows);
+                if (err) {
+                    *column_number += bytes_read;
+                    return err;
+                }
+            } else {
+                return MTX_ERR_INVALID_PRECISION;
             }
-        } else if (field == mtx_complex) {
-            struct mtx_vector_coordinate_complex * data =
-                (struct mtx_vector_coordinate_complex *) out_data;
-            int bytes_read;
-            err = mtx_vector_coordinate_parse_data_complex(
-                linebuf, &bytes_read, NULL,
-                &data[k], num_rows);
-            if (err) {
-                *column_number += bytes_read;
-                return err;
+        } else if (vector_coordinate->field == mtx_integer) {
+            if (vector_coordinate->precision == mtx_single) {
+                struct mtx_vector_coordinate_integer_single * data =
+                    vector_coordinate->data.integer_single;
+                int bytes_read;
+                err = mtx_vector_coordinate_parse_data_integer_single(
+                    linebuf, &bytes_read, NULL,
+                    &data[k], vector_coordinate->num_rows);
+                if (err) {
+                    *column_number += bytes_read;
+                    return err;
+                }
+            } else {
+                return MTX_ERR_INVALID_PRECISION;
             }
-        } else if (field == mtx_integer) {
-            struct mtx_vector_coordinate_integer * data =
-                (struct mtx_vector_coordinate_integer *) out_data;
-            int bytes_read;
-            err = mtx_vector_coordinate_parse_data_integer(
-                linebuf, &bytes_read, NULL,
-                &data[k], num_rows);
-            if (err) {
-                *column_number += bytes_read;
-                return err;
-            }
-        } else if (field == mtx_pattern) {
+        } else if (vector_coordinate->field == mtx_pattern) {
             struct mtx_vector_coordinate_pattern * data =
-                (struct mtx_vector_coordinate_pattern *) out_data;
+                    vector_coordinate->data.pattern;
             int bytes_read;
             err = mtx_vector_coordinate_parse_data_pattern(
                 linebuf, &bytes_read, NULL,
-                &data[k], num_rows);
+                &data[k], vector_coordinate->num_rows);
             if (err) {
                 *column_number += bytes_read;
                 return err;
@@ -734,64 +774,7 @@ static int read_data_vector_coordinate(
 }
 
 /**
- * `read_data_lines()` reads lines of matrix data from a stream in the
- * Matrix Market file format.
- */
-static int read_data_lines(
-    enum mtx_object object,
-    enum mtx_format format,
-    enum mtx_field field,
-    int num_rows,
-    int num_columns,
-    int64_t size,
-    void * data,
-    const struct stream * stream,
-    size_t line_max,
-    char * linebuf,
-    int * line_number,
-    int * column_number)
-{
-    int err;
-    if (object == mtx_matrix) {
-        if (format == mtx_array) {
-            err = read_data_array(
-                field, size, data, stream, line_max, linebuf,
-                line_number, column_number);
-            if (err)
-                return err;
-        } else if (format == mtx_coordinate) {
-            err = read_data_matrix_coordinate(
-                field, num_rows, num_columns, size, data,
-                stream, line_max, linebuf, line_number, column_number);
-            if (err)
-                return err;
-        } else {
-            return MTX_ERR_INVALID_MTX_FORMAT;
-        }
-    } else if (object == mtx_vector) {
-        if (format == mtx_array) {
-            err = read_data_array(
-                field, size, data, stream, line_max, linebuf,
-                line_number, column_number);
-            if (err)
-                return err;
-        } else if (format == mtx_coordinate) {
-            err = read_data_vector_coordinate(
-                field, num_rows, size, data,
-                stream, line_max, linebuf, line_number, column_number);
-            if (err)
-                return err;
-        } else {
-            return MTX_ERR_INVALID_MTX_FORMAT;
-        }
-    } else {
-        return MTX_ERR_INVALID_MTX_OBJECT;
-    }
-    return MTX_SUCCESS;
-}
-
-/**
- * `read_mtx()` reads a matrix or vector from a stream in Matrix
+ * `read_mtx()' reads a matrix or vector from a stream in Matrix
  * Market format using the given `getline' function to fetch each
  * line.
  *
@@ -800,7 +783,9 @@ static int read_data_lines(
  * error was encountered during the parsing of the Matrix Market file.
  */
 static int read_mtx(
+    struct mtx_header * header,
     struct mtx * mtx,
+    enum mtx_precision precision,
     const struct stream * stream,
     int * line_number,
     int * column_number)
@@ -814,161 +799,159 @@ static int read_mtx(
         return MTX_ERR_ERRNO;
 
     /* 1. Parse the header line. */
-    enum mtx_object object;
-    enum mtx_format format;
-    enum mtx_field field;
-    enum mtx_symmetry symmetry;
     err = read_header_line(
-        &object, &format, &field, &symmetry,
-        stream, line_max, linebuf,
+        header, stream, line_max, linebuf,
         line_number, column_number);
     if (err) {
         free(linebuf);
         return err;
     }
 
-    /* Set extra header information. */
-    enum mtx_triangle triangle = mtx_nontriangular;
-    if (object == mtx_matrix && format == mtx_array &&
-        (symmetry == mtx_symmetric ||
-         symmetry == mtx_skew_symmetric ||
-         symmetry == mtx_hermitian))
-    {
-        triangle = mtx_lower_triangular;
-    }
-
-    enum mtx_sorting sorting = format == mtx_array ? mtx_row_major : mtx_unsorted;
-    enum mtx_ordering ordering = mtx_unordered;
-    enum mtx_assembly assembly = format == mtx_array ? mtx_assembled : mtx_unassembled;
-
     /* 2. Parse comment lines. */
-    int num_comment_lines;
-    char ** comment_lines;
+    struct mtx_comments comments;
     err = read_comment_lines(
-        &num_comment_lines, &comment_lines,
-        stream, line_max, linebuf, line_number, column_number);
+        &comments, stream, line_max, linebuf,
+        line_number, column_number);
     if (err) {
         free(linebuf);
         return err;
     }
 
     /* 3. Parse the size line. */
-    int num_rows;
-    int num_columns;
-    int64_t num_nonzeros;
-    int64_t size;
-    int nonzero_size;
+    struct mtx_size size;
     err = read_size_line(
-        object, format, field, symmetry,
-        &num_rows, &num_columns,
-        &num_nonzeros, &size, &nonzero_size,
-        stream, line_max, linebuf, line_number, column_number);
+        &size, header->object, header->format,
+        stream, line_max, linebuf,
+        line_number, column_number);
     if (err) {
-        for (int i = 0; i < num_comment_lines; i++)
-            free(comment_lines[i]);
-        free(comment_lines);
+        mtx_comments_free(&comments);
         free(linebuf);
         return err;
     }
 
-    /* 4. Allocate storage for the matrix or vector. */
-    if (object == mtx_matrix) {
-        if (format == mtx_array) {
+    /* 4. Allocate storage for the matrix or vector, and parse the
+     *    data lines. */
+    if (header->object == mtx_matrix) {
+        if (header->format == mtx_array) {
+            enum mtx_triangle triangle;
+            if (header->symmetry == mtx_general) {
+                triangle = mtx_nontriangular;
+            } else if (header->symmetry == mtx_symmetric ||
+                       header->symmetry == mtx_hermitian)
+            {
+                triangle = mtx_lower_triangular;
+            } else if (header->symmetry == mtx_skew_symmetric) {
+                triangle = mtx_strict_lower_triangular;
+            } else {
+                mtx_comments_free(&comments);
+                free(linebuf);
+                return MTX_ERR_INVALID_MTX_SYMMETRY;
+            }
+
             err = mtx_alloc_matrix_array(
-                mtx, field, symmetry, triangle, sorting,
-                num_comment_lines, (const char **) comment_lines,
-                num_rows, num_columns);
+                mtx, header->field, precision, header->symmetry,
+                triangle, mtx_row_major,
+                comments.num_comment_lines, (const char **) comments.comment_lines,
+                size.num_rows, size.num_columns);
             if (err) {
-                for (int i = 0; i < num_comment_lines; i++)
-                    free(comment_lines[i]);
-                free(comment_lines);
+                mtx_comments_free(&comments);
                 free(linebuf);
                 return err;
             }
-        } else if (format == mtx_coordinate) {
+            mtx_comments_free(&comments);
+
+            err = read_data_matrix_array(
+                &mtx->storage.matrix_array,
+                stream, line_max, linebuf,
+                line_number, column_number);
+            if (err) {
+                mtx_free(mtx);
+                free(linebuf);
+                return err;
+            }
+
+        } else if (header->format == mtx_coordinate) {
             err = mtx_alloc_matrix_coordinate(
-                mtx, field, symmetry,
-                num_comment_lines, (const char **) comment_lines,
-                num_rows, num_columns, size);
+                mtx, header->field, precision, header->symmetry,
+                comments.num_comment_lines, (const char **) comments.comment_lines,
+                size.num_rows, size.num_columns, size.num_nonzeros);
             if (err) {
-                for (int i = 0; i < num_comment_lines; i++)
-                    free(comment_lines[i]);
-                free(comment_lines);
+                mtx_comments_free(&comments);
                 free(linebuf);
                 return err;
             }
+            mtx_comments_free(&comments);
+
+            err = read_data_matrix_coordinate(
+                &mtx->storage.matrix_coordinate,
+                stream, line_max, linebuf,
+                line_number, column_number);
+            if (err) {
+                mtx_free(mtx);
+                free(linebuf);
+                return err;
+            }
+
         } else {
+            mtx_comments_free(&comments);
+            free(linebuf);
             return MTX_ERR_INVALID_MTX_FORMAT;
         }
-    } else if (object == mtx_vector) {
-        if (format == mtx_array) {
+
+    } else if (header->object == mtx_vector) {
+        if (header->format == mtx_array) {
             err = mtx_alloc_vector_array(
-                mtx, field,
-                num_comment_lines,
-                (const char **) comment_lines, size);
+                mtx, header->field, precision,
+                comments.num_comment_lines, (const char **) comments.comment_lines,
+                size.num_rows);
             if (err) {
-                for (int i = 0; i < num_comment_lines; i++)
-                    free(comment_lines[i]);
-                free(comment_lines);
+                mtx_comments_free(&comments);
                 free(linebuf);
                 return err;
             }
-        } else if (format == mtx_coordinate) {
-            err = mtx_alloc_vector_coordinate(
-                mtx, field,
-                num_comment_lines, (const char **) comment_lines,
-                num_rows, size);
+            mtx_comments_free(&comments);
+
+            err = read_data_vector_array(
+                &mtx->storage.vector_array,
+                stream, line_max, linebuf,
+                line_number, column_number);
             if (err) {
-                for (int i = 0; i < num_comment_lines; i++)
-                    free(comment_lines[i]);
-                free(comment_lines);
+                mtx_free(mtx);
+                free(linebuf);
+                return err;
+            }
+
+        } else if (header->format == mtx_coordinate) {
+            err = mtx_alloc_vector_coordinate(
+                mtx, header->field, precision,
+                comments.num_comment_lines, (const char **) comments.comment_lines,
+                size.num_rows, size.num_nonzeros);
+            if (err) {
+                mtx_comments_free(&comments);
+                free(linebuf);
+                return err;
+            }
+            mtx_comments_free(&comments);
+
+            err = read_data_vector_coordinate(
+                &mtx->storage.vector_coordinate,
+                stream, line_max, linebuf,
+                line_number, column_number);
+            if (err) {
+                mtx_free(mtx);
                 free(linebuf);
                 return err;
             }
         } else {
+            mtx_comments_free(&comments);
+            free(linebuf);
             return MTX_ERR_INVALID_MTX_FORMAT;
         }
 
     } else {
-        for (int i = 0; i < num_comment_lines; i++)
-            free(comment_lines[i]);
-        free(comment_lines);
+        mtx_comments_free(&comments);
         free(linebuf);
         return MTX_ERR_INVALID_MTX_OBJECT;
-    }
-    for (int i = 0; i < num_comment_lines; i++)
-        free(comment_lines[i]);
-    free(comment_lines);
-
-    /* 5. Parse the data lines. */
-    err = read_data_lines(
-        object, format, field,
-        num_rows, num_columns, size,
-        mtx->data, stream, line_max, linebuf,
-        line_number, column_number);
-    if (err) {
-        mtx_free(mtx);
-        free(linebuf);
-        return err;
-    }
-
-    /*
-     * 6. If the matrix is sparse, then we can now compute the total
-     * number of matrix nonzeros.
-     */
-    if (mtx->object == mtx_matrix &&
-        mtx->format == mtx_coordinate)
-    {
-        err = mtx_matrix_coordinate_num_nonzeros(
-            mtx->field, mtx->symmetry,
-            mtx->num_rows, mtx->num_columns,
-            mtx->size, mtx->data,
-            &mtx->num_nonzeros);
-        if (err) {
-            mtx_free(mtx);
-            free(linebuf);
-            return err;
-        }
     }
 
     free(linebuf);
@@ -979,12 +962,16 @@ static int read_mtx(
  * `mtx_fread()` reads an object (matrix or vector) from a stream in
  * Matrix Market format.
  *
+ * The `precision' argument specifies which precision to use for
+ * storing matrix or vector values.
+ *
  * If an error code is returned, then `line_number' and
  * `column_number' are used to return the line and column at which the
  * error was encountered during the parsing of the Matrix Market file.
  */
 int mtx_fread(
     struct mtx * mtx,
+    enum mtx_precision precision,
     FILE * f,
     int * line_number,
     int * column_number)
@@ -992,7 +979,10 @@ int mtx_fread(
     struct stream * stream = stream_init_stdio(f);
     if (!stream)
         return MTX_ERR_ERRNO;
-    int err = read_mtx(mtx, stream, line_number, column_number);
+    struct mtx_header header;
+    int err = read_mtx(
+        &header, mtx, precision,
+        stream, line_number, column_number);
     free(stream);
     return err;
 }
@@ -1002,12 +992,16 @@ int mtx_fread(
  * `mtx_gzread()` reads a matrix or vector from a gzip-compressed
  * stream in Matrix Market format.
  *
+ * The `precision' argument specifies which precision to use for
+ * storing matrix or vector values.
+ *
  * If an error code is returned, then `line_number' and
  * `column_number' are used to return the line and column at which the
  * error was encountered during the parsing of the Matrix Market file.
  */
 int mtx_gzread(
     struct mtx * mtx,
+    enum mtx_precision precision,
     gzFile f,
     int * line_number,
     int * column_number)
@@ -1015,7 +1009,10 @@ int mtx_gzread(
     struct stream * stream = stream_init_gz(f);
     if (!stream)
         return MTX_ERR_ERRNO;
-    int err = read_mtx(mtx, stream, line_number, column_number);
+    struct mtx_header header;
+    int err = read_mtx(
+        &header, mtx, precision,
+        stream, line_number, column_number);
     free(stream);
     return err;
 }
@@ -1042,7 +1039,6 @@ static int validate_format_string(
         format.precision == format_specifier_precision_star ||
         format.length != format_specifier_length_none ||
         ((field == mtx_real ||
-          field == mtx_double ||
           field == mtx_complex) &&
          (format.specifier != format_specifier_e &&
           format.specifier != format_specifier_E &&
@@ -1112,95 +1108,123 @@ static int write_matrix(
             stream, "%d %d %"PRId64"\n",
             matrix->num_rows,
             matrix->num_columns,
-            matrix->size);
+            matrix->num_nonzeros);
     } else {
         return MTX_ERR_INVALID_MTX_FORMAT;
     }
 
     /* 4. Write the data. */
     if (matrix->format == mtx_array) {
-        if (matrix->field == mtx_real) {
-            const float * a = (const float *) matrix->data;
-            for (int i = 0; i < matrix->num_rows; i++) {
-                for (int j = 0; j < matrix->num_columns; j++) {
-                    stream_printf(stream, format ? format : "%f",
-                                  a[i*matrix->num_columns+j]);
-                    stream_putc('\n', stream);
+        const struct mtx_matrix_array_data * matrix_array =
+            &matrix->storage.matrix_array;
+        if (matrix_array->field == mtx_real) {
+            if (matrix_array->precision == mtx_single) {
+                const float * a = matrix_array->data.real_single;
+                for (int i = 0; i < matrix_array->num_rows; i++) {
+                    for (int j = 0; j < matrix_array->num_columns; j++) {
+                        stream_printf(stream, format ? format : "%f",
+                                      a[i*matrix_array->num_columns+j]);
+                        stream_putc('\n', stream);
+                    }
                 }
+            } else if (matrix_array->precision == mtx_double) {
+                const double * a = matrix_array->data.real_double;
+                for (int i = 0; i < matrix_array->num_rows; i++) {
+                    for (int j = 0; j < matrix_array->num_columns; j++) {
+                        stream_printf(stream, format ? format : "%f",
+                                      a[i*matrix_array->num_columns+j]);
+                        stream_putc('\n', stream);
+                    }
+                }
+            } else {
+                return MTX_ERR_INVALID_PRECISION;
             }
-        } else if (matrix->field == mtx_double) {
-            const double * a = (const double *) matrix->data;
-            for (int i = 0; i < matrix->num_rows; i++) {
-                for (int j = 0; j < matrix->num_columns; j++) {
-                    stream_printf(stream, format ? format : "%f",
-                                  a[i*matrix->num_columns+j]);
-                    stream_putc('\n', stream);
+        } else if (matrix_array->field == mtx_complex) {
+            if (matrix_array->precision == mtx_single) {
+                const float (* a)[2] = matrix_array->data.complex_single;
+                for (int i = 0; i < matrix_array->num_rows; i++) {
+                    for (int j = 0; j < matrix_array->num_columns; j++) {
+                        stream_printf(stream, format ? format : "%f",
+                                      a[i*matrix_array->num_columns+j][0]);
+                        stream_putc(' ', stream);
+                        stream_printf(stream, format ? format : "%f",
+                                      a[i*matrix_array->num_columns+j][1]);
+                        stream_putc('\n', stream);
+                    }
                 }
+            } else {
+                return MTX_ERR_INVALID_PRECISION;
             }
-        } else if (matrix->field == mtx_complex) {
-            const float * a = (const float *) matrix->data;
-            for (int i = 0; i < matrix->num_rows; i++) {
-                for (int j = 0; j < matrix->num_columns; j++) {
-                    stream_printf(stream, format ? format : "%f",
-                                  a[2*(i*matrix->num_columns+j)+0]);
-                    stream_putc(' ', stream);
-                    stream_printf(stream, format ? format : "%f",
-                                  a[2*(i*matrix->num_columns+j)+1]);
-                    stream_putc('\n', stream);
+        } else if (matrix_array->field == mtx_integer) {
+            if (matrix_array->precision == mtx_single) {
+                const int32_t * a = matrix_array->data.integer_single;
+                for (int i = 0; i < matrix_array->num_rows; i++) {
+                    for (int j = 0; j < matrix_array->num_columns; j++) {
+                        stream_printf(stream, format ? format : "%d",
+                                      a[i*matrix_array->num_columns+j]);
+                        stream_putc('\n', stream);
+                    }
                 }
-            }
-        } else if (matrix->field == mtx_integer) {
-            const int * a = (const int *) matrix->data;
-            for (int i = 0; i < matrix->num_rows; i++) {
-                for (int j = 0; j < matrix->num_columns; j++) {
-                    stream_printf(stream, format ? format : "%d",
-                                  a[i*matrix->num_columns+j]);
-                    stream_putc('\n', stream);
-                }
+            } else {
+                return MTX_ERR_INVALID_PRECISION;
             }
         } else {
             return MTX_ERR_INVALID_MTX_FIELD;
         }
 
     } else if (matrix->format == mtx_coordinate) {
-        if (matrix->field == mtx_real) {
-            const struct mtx_matrix_coordinate_real * a =
-                (const struct mtx_matrix_coordinate_real *) matrix->data;
-            for (int64_t k = 0; k < matrix->size; k++) {
-                stream_printf(stream, "%d %d ", a[k].i, a[k].j);
-                stream_printf(stream, format ? format : "%f", a[k].a);
-                stream_putc('\n', stream);
+        const struct mtx_matrix_coordinate_data * matrix_coordinate =
+            &matrix->storage.matrix_coordinate;
+        if (matrix_coordinate->field == mtx_real) {
+            if (matrix_coordinate->precision == mtx_single) {
+                const struct mtx_matrix_coordinate_real_single * a =
+                    matrix_coordinate->data.real_single;
+                for (int64_t k = 0; k < matrix_coordinate->size; k++) {
+                    stream_printf(stream, "%d %d ", a[k].i, a[k].j);
+                    stream_printf(stream, format ? format : "%f", a[k].a);
+                    stream_putc('\n', stream);
+                }
+            } else if (matrix_coordinate->precision == mtx_double) {
+                const struct mtx_matrix_coordinate_real_double * a =
+                    matrix_coordinate->data.real_double;
+                for (int64_t k = 0; k < matrix_coordinate->size; k++) {
+                    stream_printf(stream, "%d %d ", a[k].i, a[k].j);
+                    stream_printf(stream, format ? format : "%f", a[k].a);
+                    stream_putc('\n', stream);
+                }
+            } else {
+                return MTX_ERR_INVALID_PRECISION;
             }
-        } else if (matrix->field == mtx_double) {
-            const struct mtx_matrix_coordinate_double * a =
-                (const struct mtx_matrix_coordinate_double *) matrix->data;
-            for (int64_t k = 0; k < matrix->size; k++) {
-                stream_printf(stream, "%d %d ", a[k].i, a[k].j);
-                stream_printf(stream, format ? format : "%f", a[k].a);
-                stream_putc('\n', stream);
+        } else if (matrix_coordinate->field == mtx_complex) {
+            if (matrix_coordinate->precision == mtx_single) {
+                const struct mtx_matrix_coordinate_complex_single * a =
+                    matrix_coordinate->data.complex_single;
+                for (int64_t k = 0; k < matrix_coordinate->size; k++) {
+                    stream_printf(stream, "%d %d ", a[k].i, a[k].j);
+                    stream_printf(stream, format ? format : "%f", a[k].a[0]);
+                    stream_putc(' ', stream);
+                    stream_printf(stream, format ? format : "%f", a[k].a[1]);
+                    stream_putc('\n', stream);
+                }
+            } else {
+                return MTX_ERR_INVALID_PRECISION;
             }
-        } else if (matrix->field == mtx_complex) {
-            const struct mtx_matrix_coordinate_complex * a =
-                (const struct mtx_matrix_coordinate_complex *) matrix->data;
-            for (int64_t k = 0; k < matrix->size; k++) {
-                stream_printf(stream, "%d %d ", a[k].i, a[k].j);
-                stream_printf(stream, format ? format : "%f", a[k].a);
-                stream_putc(' ', stream);
-                stream_printf(stream, format ? format : "%f", a[k].b);
-                stream_putc('\n', stream);
+        } else if (matrix_coordinate->field == mtx_integer) {
+            if (matrix_coordinate->precision == mtx_single) {
+                const struct mtx_matrix_coordinate_integer_single * a =
+                    matrix_coordinate->data.integer_single;
+                for (int64_t k = 0; k < matrix_coordinate->size; k++) {
+                    stream_printf(stream, "%d %d ", a[k].i, a[k].j);
+                    stream_printf(stream, format ? format : "%d", a[k].a);
+                    stream_putc('\n', stream);
+                }
+            } else {
+                return MTX_ERR_INVALID_PRECISION;
             }
-        } else if (matrix->field == mtx_integer) {
-            const struct mtx_matrix_coordinate_integer * a =
-                (const struct mtx_matrix_coordinate_integer *) matrix->data;
-            for (int64_t k = 0; k < matrix->size; k++) {
-                stream_printf(stream, "%d %d ", a[k].i, a[k].j);
-                stream_printf(stream, format ? format : "%d", a[k].a);
-                stream_putc('\n', stream);
-            }
-        } else if (matrix->field == mtx_pattern) {
+        } else if (matrix_coordinate->field == mtx_pattern) {
             const struct mtx_matrix_coordinate_pattern * a =
-                (const struct mtx_matrix_coordinate_pattern *) matrix->data;
-            for (int64_t k = 0; k < matrix->size; k++) {
+                    matrix_coordinate->data.pattern;
+            for (int64_t k = 0; k < matrix_coordinate->size; k++) {
                 stream_printf(stream, "%d %d\n", a[k].i, a[k].j);
             }
         } else {
@@ -1262,84 +1286,114 @@ static int write_vector(
 
     /* 3. Write the size line. */
     if (vector->format == mtx_array) {
-        stream_printf(stream, "%"PRId64"\n", vector->size);
+        stream_printf(stream, "%"PRId64"\n", vector->num_rows);
     } else if (vector->format == mtx_coordinate) {
-        stream_printf(stream, "%d %"PRId64"\n", vector->num_rows, vector->size);
+        stream_printf(
+            stream, "%d %"PRId64"\n",
+            vector->num_rows, vector->num_nonzeros);
     } else {
         return MTX_ERR_INVALID_MTX_FORMAT;
     }
 
     /* 4. Write the data. */
     if (vector->format == mtx_array) {
-        if (vector->field == mtx_real) {
-            const float * a = (const float *) vector->data;
-            for (int i = 0; i < vector->size; i++) {
-                stream_printf(stream, format ? format : "%f", a[i]);
-                stream_putc('\n', stream);
+        const struct mtx_vector_array_data * vector_array =
+            &vector->storage.vector_array;
+        if (vector_array->field == mtx_real) {
+            if (vector_array->precision == mtx_single) {
+                const float * a = vector_array->data.real_single;
+                for (int64_t k = 0; k < vector_array->size; k++) {
+                    stream_printf(stream, format ? format : "%f", a[k]);
+                    stream_putc('\n', stream);
+                }
+            } else if (vector_array->precision == mtx_double) {
+                const double * a = vector_array->data.real_double;
+                for (int64_t k = 0; k < vector_array->size; k++) {
+                    stream_printf(stream, format ? format : "%f", a[k]);
+                    stream_putc('\n', stream);
+                }
+            } else {
+                return MTX_ERR_INVALID_PRECISION;
             }
-        } else if (vector->field == mtx_double) {
-            const double * a = (const double *) vector->data;
-            for (int i = 0; i < vector->size; i++) {
-                stream_printf(stream, format ? format : "%f", a[i]);
-                stream_putc('\n', stream);
+        } else if (vector_array->field == mtx_complex) {
+            if (vector_array->precision == mtx_single) {
+                const float (* a)[2] = vector_array->data.complex_single;
+                for (int64_t k = 0; k < vector_array->size; k++) {
+                    stream_printf(stream, format ? format : "%f", a[k][0]);
+                    stream_putc(' ', stream);
+                    stream_printf(stream, format ? format : "%f", a[k][1]);
+                    stream_putc('\n', stream);
+                }
+            } else {
+                return MTX_ERR_INVALID_PRECISION;
             }
-        } else if (vector->field == mtx_complex) {
-            const float * a = (const float *) vector->data;
-            for (int i = 0; i < vector->size; i++) {
-                stream_printf(stream, format ? format : "%f", a[2*i+0]);
-                stream_putc(' ', stream);
-                stream_printf(stream, format ? format : "%f", a[2*i+1]);
-                stream_putc('\n', stream);
-            }
-        } else if (vector->field == mtx_integer) {
-            const int * a = (const int *) vector->data;
-            for (int i = 0; i < vector->size; i++) {
-                stream_printf(stream, format ? format : "%d", a[i]);
-                stream_putc('\n', stream);
+        } else if (vector_array->field == mtx_integer) {
+            if (vector_array->precision == mtx_single) {
+                const int32_t * a = vector_array->data.integer_single;
+                for (int64_t k = 0; k < vector_array->size; k++) {
+                    stream_printf(stream, format ? format : "%d", a[k]);
+                    stream_putc('\n', stream);
+                }
+            } else {
+                return MTX_ERR_INVALID_PRECISION;
             }
         } else {
             return MTX_ERR_INVALID_MTX_FIELD;
         }
 
     } else if (vector->format == mtx_coordinate) {
-        if (vector->field == mtx_real) {
-            const struct mtx_vector_coordinate_real * a =
-                (const struct mtx_vector_coordinate_real *) vector->data;
-            for (int64_t k = 0; k < vector->size; k++) {
-                stream_printf(stream, "%d ", a[k].i);
-                stream_printf(stream, format ? format : "%f", a[k].a);
-                stream_putc('\n', stream);
+        const struct mtx_vector_coordinate_data * vector_coordinate =
+            &vector->storage.vector_coordinate;
+        if (vector_coordinate->field == mtx_real) {
+            if (vector_coordinate->precision == mtx_single) {
+                const struct mtx_vector_coordinate_real_single * a =
+                    vector_coordinate->data.real_single;
+                for (int64_t k = 0; k < vector_coordinate->size; k++) {
+                    stream_printf(stream, "%d ", a[k].i);
+                    stream_printf(stream, format ? format : "%f", a[k].a);
+                    stream_putc('\n', stream);
+                }
+            } else if (vector_coordinate->precision == mtx_double) {
+                const struct mtx_vector_coordinate_real_double * a =
+                    vector_coordinate->data.real_double;
+                for (int64_t k = 0; k < vector_coordinate->size; k++) {
+                    stream_printf(stream, "%d ", a[k].i);
+                    stream_printf(stream, format ? format : "%f", a[k].a);
+                    stream_putc('\n', stream);
+                }
+            } else {
+                return MTX_ERR_INVALID_PRECISION;
             }
-        } else if (vector->field == mtx_double) {
-            const struct mtx_vector_coordinate_double * a =
-                (const struct mtx_vector_coordinate_double *) vector->data;
-            for (int64_t k = 0; k < vector->size; k++) {
-                stream_printf(stream, "%d ", a[k].i);
-                stream_printf(stream, format ? format : "%f", a[k].a);
-                stream_putc('\n', stream);
+        } else if (vector_coordinate->field == mtx_complex) {
+            if (vector_coordinate->precision == mtx_single) {
+                const struct mtx_vector_coordinate_complex_single * a =
+                    vector_coordinate->data.complex_single;
+                for (int64_t k = 0; k < vector_coordinate->size; k++) {
+                    stream_printf(stream, "%d ", a[k].i);
+                    stream_printf(stream, format ? format : "%f", a[k].a[0]);
+                    stream_putc(' ', stream);
+                    stream_printf(stream, format ? format : "%f", a[k].a[1]);
+                    stream_putc('\n', stream);
+                }
+            } else {
+                return MTX_ERR_INVALID_PRECISION;
             }
-        } else if (vector->field == mtx_complex) {
-            const struct mtx_vector_coordinate_complex * a =
-                (const struct mtx_vector_coordinate_complex *) vector->data;
-            for (int64_t k = 0; k < vector->size; k++) {
-                stream_printf(stream, "%d ", a[k].i);
-                stream_printf(stream, format ? format : "%f", a[k].a);
-                stream_putc(' ', stream);
-                stream_printf(stream, format ? format : "%f", a[k].b);
-                stream_putc('\n', stream);
+        } else if (vector_coordinate->field == mtx_integer) {
+            if (vector_coordinate->precision == mtx_single) {
+                const struct mtx_vector_coordinate_integer_single * a =
+                    vector_coordinate->data.integer_single;
+                for (int64_t k = 0; k < vector_coordinate->size; k++) {
+                    stream_printf(stream, "%d ", a[k].i);
+                    stream_printf(stream, format ? format : "%d", a[k].a);
+                    stream_putc('\n', stream);
+                }
+            } else {
+                return MTX_ERR_INVALID_PRECISION;
             }
-        } else if (vector->field == mtx_integer) {
-            const struct mtx_vector_coordinate_integer * a =
-                (const struct mtx_vector_coordinate_integer *) vector->data;
-            for (int64_t k = 0; k < vector->size; k++) {
-                stream_printf(stream, "%d ", a[k].i);
-                stream_printf(stream, format ? format : "%d", a[k].a);
-                stream_putc('\n', stream);
-            }
-        } else if (vector->field == mtx_pattern) {
+        } else if (vector_coordinate->field == mtx_pattern) {
             const struct mtx_vector_coordinate_pattern * a =
-                (const struct mtx_vector_coordinate_pattern *) vector->data;
-            for (int64_t k = 0; k < vector->size; k++) {
+                vector_coordinate->data.pattern;
+            for (int64_t k = 0; k < vector_coordinate->size; k++) {
                 stream_printf(stream, "%d\n", a[k].i);
             }
         } else {

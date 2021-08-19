@@ -52,146 +52,110 @@
 int test_mtx_header_parse(void)
 {
     {
+        struct mtx_header header;
         const char line[] = "";
         int bytes_read;
-        enum mtx_object object;
-        enum mtx_format format;
-        enum mtx_field field;
-        enum mtx_symmetry symmetry;
         const char * endptr;
         int err = mtx_header_parse(
-            line, &bytes_read, &endptr,
-            &object, &format, &field, &symmetry);
+            &header, line, &bytes_read, &endptr);
         TEST_ASSERT_EQ(MTX_ERR_INVALID_MTX_HEADER, err);
         TEST_ASSERT_EQ(0, bytes_read);
     }
 
     {
+        struct mtx_header header;
         const char line[] = "%MatrixMarket";
         int bytes_read;
-        enum mtx_object object;
-        enum mtx_format format;
-        enum mtx_field field;
-        enum mtx_symmetry symmetry;
         const char * endptr;
         int err = mtx_header_parse(
-            line, &bytes_read, &endptr,
-            &object, &format, &field, &symmetry);
+            &header, line, &bytes_read, &endptr);
         TEST_ASSERT_EQ(MTX_ERR_INVALID_MTX_HEADER, err);
         TEST_ASSERT_EQ(0, bytes_read);
     }
 
     {
+        struct mtx_header header;
         const char line[] = "%MatrixMarketasdf";
         int bytes_read;
-        enum mtx_object object;
-        enum mtx_format format;
-        enum mtx_field field;
-        enum mtx_symmetry symmetry;
         const char * endptr;
         int err = mtx_header_parse(
-            line, &bytes_read, &endptr,
-            &object, &format, &field, &symmetry);
+            &header, line, &bytes_read, &endptr);
         TEST_ASSERT_EQ(MTX_ERR_INVALID_MTX_HEADER, err);
         TEST_ASSERT_EQ(0, bytes_read);
     }
 
     {
+        struct mtx_header header;
         const char line[] = "%%MatrixMarket invalid_object";
         int bytes_read;
-        enum mtx_object object;
-        enum mtx_format format;
-        enum mtx_field field;
-        enum mtx_symmetry symmetry;
         const char * endptr;
         int err = mtx_header_parse(
-            line, &bytes_read, &endptr,
-            &object, &format, &field, &symmetry);
+            &header, line, &bytes_read, &endptr);
         TEST_ASSERT_EQ(MTX_ERR_INVALID_MTX_OBJECT, err);
         TEST_ASSERT_EQ(15, bytes_read);
     }
 
     {
+        struct mtx_header header;
         const char line[] = "%%MatrixMarket matrix invalid_format";
         int bytes_read;
-        enum mtx_object object;
-        enum mtx_format format;
-        enum mtx_field field;
-        enum mtx_symmetry symmetry;
         const char * endptr;
         int err = mtx_header_parse(
-            line, &bytes_read, &endptr,
-            &object, &format, &field, &symmetry);
+            &header, line, &bytes_read, &endptr);
         TEST_ASSERT_EQ(MTX_ERR_INVALID_MTX_FORMAT, err);
         TEST_ASSERT_EQ(22, bytes_read);
     }
 
     {
+        struct mtx_header header;
         const char line[] = "%%MatrixMarket matrix coordinate invalid_field";
         int bytes_read;
-        enum mtx_object object;
-        enum mtx_format format;
-        enum mtx_field field;
-        enum mtx_symmetry symmetry;
         const char * endptr;
         int err = mtx_header_parse(
-            line, &bytes_read, &endptr,
-            &object, &format, &field, &symmetry);
+            &header, line, &bytes_read, &endptr);
         TEST_ASSERT_EQ(MTX_ERR_INVALID_MTX_FIELD, err);
         TEST_ASSERT_EQ(33, bytes_read);
     }
 
     {
+        struct mtx_header header;
         const char line[] = "%%MatrixMarket matrix coordinate real invalid_symmetry";
         int bytes_read;
-        enum mtx_object object;
-        enum mtx_format format;
-        enum mtx_field field;
-        enum mtx_symmetry symmetry;
         const char * endptr;
         int err = mtx_header_parse(
-            line, &bytes_read, &endptr,
-            &object, &format, &field, &symmetry);
+            &header, line, &bytes_read, &endptr);
         TEST_ASSERT_EQ(MTX_ERR_INVALID_MTX_SYMMETRY, err);
         TEST_ASSERT_EQ(38, bytes_read);
     }
 
     {
+        struct mtx_header header;
         const char line[] = "%%MatrixMarket matrix coordinate real general";
         int bytes_read;
-        enum mtx_object object;
-        enum mtx_format format;
-        enum mtx_field field;
-        enum mtx_symmetry symmetry;
         const char * endptr;
         int err = mtx_header_parse(
-            line, &bytes_read, &endptr,
-            &object, &format, &field, &symmetry);
+            &header, line, &bytes_read, &endptr);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
-        TEST_ASSERT_EQ(mtx_matrix, object);
-        TEST_ASSERT_EQ(mtx_coordinate, format);
-        TEST_ASSERT_EQ(mtx_real, field);
-        TEST_ASSERT_EQ(mtx_general, symmetry);
+        TEST_ASSERT_EQ(mtx_matrix, header.object);
+        TEST_ASSERT_EQ(mtx_coordinate, header.format);
+        TEST_ASSERT_EQ(mtx_real, header.field);
+        TEST_ASSERT_EQ(mtx_general, header.symmetry);
         TEST_ASSERT_EQ(strlen(line), bytes_read);
         TEST_ASSERT_EQ(line + strlen(line), endptr);
     }
 
     {
+        struct mtx_header header;
         const char line[] = "%%MatrixMarket matrix coordinate real general\n";
         int bytes_read;
-        enum mtx_object object;
-        enum mtx_format format;
-        enum mtx_field field;
-        enum mtx_symmetry symmetry;
         const char * endptr;
         int err = mtx_header_parse(
-            line, &bytes_read, &endptr,
-            &object, &format, &field, &symmetry);
+            &header, line, &bytes_read, &endptr);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
-        TEST_ASSERT_EQ(mtx_matrix, object);
-        TEST_ASSERT_EQ(mtx_coordinate, format);
-        TEST_ASSERT_EQ(mtx_real, field);
-        TEST_ASSERT_EQ(mtx_general, symmetry);
+        TEST_ASSERT_EQ(mtx_matrix, header.object);
+        TEST_ASSERT_EQ(mtx_coordinate, header.format);
+        TEST_ASSERT_EQ(mtx_real, header.field);
+        TEST_ASSERT_EQ(mtx_general, header.symmetry);
         TEST_ASSERT_EQ(strlen(line)-1, bytes_read);
         TEST_ASSERT_EQ(line + strlen(line)-1, endptr);
     }
@@ -211,7 +175,7 @@ int test_mtx_fread_header(void)
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         struct mtx mtx;
         int line_number, column_number;
-        err = mtx_fread(&mtx, f, &line_number, &column_number);
+        err = mtx_fread(&mtx, mtx_double, f, &line_number, &column_number);
         TEST_ASSERT_EQ_MSG(
             MTX_ERR_INVALID_MTX_HEADER, err,
             "%d:%d: %s", line_number, column_number,
@@ -229,7 +193,7 @@ int test_mtx_fread_header(void)
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         struct mtx mtx;
         int line_number, column_number;
-        err = mtx_fread(&mtx, f, &line_number, &column_number);
+        err = mtx_fread(&mtx, mtx_double, f, &line_number, &column_number);
         TEST_ASSERT_EQ_MSG(
             MTX_ERR_INVALID_MTX_HEADER, err,
             "%d:%d: %s", line_number, column_number,
@@ -255,7 +219,7 @@ int test_mtx_fread_header(void)
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         struct mtx mtx;
         int line_number, column_number;
-        err = mtx_fread(&mtx, f, &line_number, &column_number);
+        err = mtx_fread(&mtx, mtx_double, f, &line_number, &column_number);
         TEST_ASSERT_NEQ_MSG(
             MTX_ERR_LINE_TOO_LONG, err,
             "%d:%d: %s", line_number, column_number,
@@ -279,7 +243,7 @@ int test_mtx_fread_header(void)
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         struct mtx mtx;
         int line_number, column_number;
-        err = mtx_fread(&mtx, f, &line_number, &column_number);
+        err = mtx_fread(&mtx, mtx_double, f, &line_number, &column_number);
         TEST_ASSERT_EQ_MSG(
             MTX_ERR_LINE_TOO_LONG, err,
             "%d:%d: %s", line_number, column_number,
@@ -298,7 +262,7 @@ int test_mtx_fread_header(void)
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         struct mtx mtx;
         int line_number, column_number;
-        err = mtx_fread(&mtx, f, &line_number, &column_number);
+        err = mtx_fread(&mtx, mtx_double, f, &line_number, &column_number);
         TEST_ASSERT_EQ_MSG(
             MTX_ERR_INVALID_MTX_OBJECT, err,
             "%d:%d: %s", line_number, column_number,
@@ -316,7 +280,7 @@ int test_mtx_fread_header(void)
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         struct mtx mtx;
         int line_number, column_number;
-        err = mtx_fread(&mtx, f, &line_number, &column_number);
+        err = mtx_fread(&mtx, mtx_double, f, &line_number, &column_number);
         TEST_ASSERT_EQ_MSG(
             MTX_ERR_INVALID_MTX_FORMAT, err,
             "%d:%d: %s", line_number, column_number,
@@ -335,7 +299,7 @@ int test_mtx_fread_header(void)
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         struct mtx mtx;
         int line_number, column_number;
-        err = mtx_fread(&mtx, f, &line_number, &column_number);
+        err = mtx_fread(&mtx, mtx_double, f, &line_number, &column_number);
         TEST_ASSERT_EQ_MSG(
             MTX_ERR_INVALID_MTX_FIELD, err,
             "%d:%d: %s", line_number, column_number,
@@ -354,7 +318,7 @@ int test_mtx_fread_header(void)
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         struct mtx mtx;
         int line_number, column_number;
-        err = mtx_fread(&mtx, f, &line_number, &column_number);
+        err = mtx_fread(&mtx, mtx_double, f, &line_number, &column_number);
         TEST_ASSERT_EQ_MSG(
             MTX_ERR_INVALID_MTX_SYMMETRY, err,
             "%d:%d: %s", line_number, column_number,
@@ -374,7 +338,7 @@ int test_mtx_fread_header(void)
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         struct mtx mtx;
         int line_number, column_number;
-        err = mtx_fread(&mtx, f, &line_number, &column_number);
+        err = mtx_fread(&mtx, mtx_double, f, &line_number, &column_number);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err,
             "%d:%d: %s", line_number, column_number,
@@ -407,7 +371,7 @@ int test_mtx_fread_comment_lines(void)
     TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
     struct mtx mtx;
     int line_number, column_number;
-    err = mtx_fread(&mtx, f, &line_number, &column_number);
+    err = mtx_fread(&mtx, mtx_double, f, &line_number, &column_number);
     TEST_ASSERT_EQ_MSG(
         MTX_SUCCESS, err,
         "%d:%d: %s", line_number, column_number,
@@ -437,15 +401,14 @@ int test_mtx_fread_matrix_size_line(void)
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         struct mtx mtx;
         int line_number, column_number;
-        err = mtx_fread(&mtx, f, &line_number, &column_number);
+        err = mtx_fread(&mtx, mtx_double, f, &line_number, &column_number);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err,
             "%d:%d: %s", line_number, column_number,
             mtx_strerror(err));
         TEST_ASSERT_EQ(0, mtx.num_rows);
         TEST_ASSERT_EQ(0, mtx.num_columns);
-        TEST_ASSERT_EQ(0, mtx.num_nonzeros);
-        TEST_ASSERT_EQ(0, mtx.size);
+        TEST_ASSERT_EQ(-1, mtx.num_nonzeros);
         if (!err)
             mtx_free(&mtx);
         fclose(f);
@@ -461,7 +424,7 @@ int test_mtx_fread_matrix_size_line(void)
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         struct mtx mtx;
         int line_number, column_number;
-        err = mtx_fread(&mtx, f, &line_number, &column_number);
+        err = mtx_fread(&mtx, mtx_double, f, &line_number, &column_number);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err,
             "%d:%d: %s", line_number, column_number,
@@ -469,7 +432,6 @@ int test_mtx_fread_matrix_size_line(void)
         TEST_ASSERT_EQ(0, mtx.num_rows);
         TEST_ASSERT_EQ(0, mtx.num_columns);
         TEST_ASSERT_EQ(0, mtx.num_nonzeros);
-        TEST_ASSERT_EQ(0, mtx.size);
         if (!err)
             mtx_free(&mtx);
         fclose(f);
@@ -484,15 +446,14 @@ int test_mtx_fread_matrix_size_line(void)
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         struct mtx mtx;
         int line_number, column_number;
-        err = mtx_fread(&mtx, f, &line_number, &column_number);
+        err = mtx_fread(&mtx, mtx_double, f, &line_number, &column_number);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err,
             "%d:%d: %s", line_number, column_number,
             mtx_strerror(err));
         TEST_ASSERT_EQ(0, mtx.num_rows);
         TEST_ASSERT_EQ(-1, mtx.num_columns);
-        TEST_ASSERT_EQ(0, mtx.num_nonzeros);
-        TEST_ASSERT_EQ(0, mtx.size);
+        TEST_ASSERT_EQ(-1, mtx.num_nonzeros);
         if (!err)
             mtx_free(&mtx);
         fclose(f);
@@ -507,7 +468,7 @@ int test_mtx_fread_matrix_size_line(void)
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         struct mtx mtx;
         int line_number, column_number;
-        err = mtx_fread(&mtx, f, &line_number, &column_number);
+        err = mtx_fread(&mtx, mtx_double, f, &line_number, &column_number);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err,
             "%d:%d: %s", line_number, column_number,
@@ -515,7 +476,6 @@ int test_mtx_fread_matrix_size_line(void)
         TEST_ASSERT_EQ(0, mtx.num_rows);
         TEST_ASSERT_EQ(-1, mtx.num_columns);
         TEST_ASSERT_EQ(0, mtx.num_nonzeros);
-        TEST_ASSERT_EQ(0, mtx.size);
         if (!err)
             mtx_free(&mtx);
         fclose(f);
@@ -524,10 +484,10 @@ int test_mtx_fread_matrix_size_line(void)
 }
 
 /**
- * `test_mtx_fread_matrix_array_real()` tests parsing data for a
- * dense matrix with real coefficients.
+ * `test_mtx_fread_matrix_array_real_single()` tests parsing data for
+ * a dense matrix with single precision, real coefficients.
  */
-int test_mtx_fread_matrix_array_real(void)
+int test_mtx_fread_matrix_array_real_single(void)
 {
     int err;
     char mtxfile[] =
@@ -538,74 +498,78 @@ int test_mtx_fread_matrix_array_real(void)
     TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
     struct mtx mtx;
     int line_number, column_number;
-    err = mtx_fread(&mtx, f, &line_number, &column_number);
+    err = mtx_fread(&mtx, mtx_single, f, &line_number, &column_number);
     TEST_ASSERT_EQ_MSG(
         MTX_SUCCESS, err,
         "%d:%d: %s", line_number, column_number,
         mtx_strerror(err));
-    TEST_ASSERT_EQ(mtx_row_major, mtx.sorting);
-    TEST_ASSERT_EQ(mtx_unordered, mtx.ordering);
-    TEST_ASSERT_EQ(mtx_assembled, mtx.assembly);
     TEST_ASSERT_EQ(2, mtx.num_rows);
     TEST_ASSERT_EQ(2, mtx.num_columns);
-    TEST_ASSERT_EQ(4, mtx.num_nonzeros);
-    TEST_ASSERT_EQ(4, mtx.size);
-    TEST_ASSERT_EQ(sizeof(float), mtx.nonzero_size);
-    const float * data = (const float *) mtx.data;
-    TEST_ASSERT_EQ(1.0, data[0]);
-    TEST_ASSERT_EQ(2.0, data[1]);
-    TEST_ASSERT_EQ(3.0, data[2]);
-    TEST_ASSERT_EQ(4.0, data[3]);
-    if (!err)
-        mtx_free(&mtx);
+    TEST_ASSERT_EQ(-1, mtx.num_nonzeros);
+
+    const struct mtx_matrix_array_data * matrix_array = &mtx.storage.matrix_array;
+    TEST_ASSERT_EQ(mtx_real, matrix_array->field);
+    TEST_ASSERT_EQ(mtx_single, matrix_array->precision);
+    TEST_ASSERT_EQ(mtx_general, matrix_array->symmetry);
+    TEST_ASSERT_EQ(mtx_nontriangular, matrix_array->triangle);
+    TEST_ASSERT_EQ(mtx_row_major, matrix_array->sorting);
+    TEST_ASSERT_EQ(4, matrix_array->size);
+    const float * data = matrix_array->data.real_single;
+    TEST_ASSERT_EQ(1.0f, data[0]);
+    TEST_ASSERT_EQ(2.0f, data[1]);
+    TEST_ASSERT_EQ(3.0f, data[2]);
+    TEST_ASSERT_EQ(4.0f, data[3]);
+    mtx_free(&mtx);
     fclose(f);
     return TEST_SUCCESS;
 }
 
 /**
- * `test_mtx_fread_matrix_array_double()` tests parsing data for a
- * dense matrix with double-precision real coefficients.
+ * `test_mtx_fread_matrix_array_real_double()` tests parsing data for
+ * a dense matrix with double precision, real coefficients.
  */
-int test_mtx_fread_matrix_array_double(void)
+int test_mtx_fread_matrix_array_real_double(void)
 {
     int err;
     char mtxfile[] =
-        "%%MatrixMarket matrix array double general\n"
+        "%%MatrixMarket matrix array real general\n"
         "2 2\n"
         "1.0\n2.0\n3.0\n4.0\n";
     FILE * f = fmemopen(mtxfile, sizeof(mtxfile), "r");
     TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
     struct mtx mtx;
     int line_number, column_number;
-    err = mtx_fread(&mtx, f, &line_number, &column_number);
+    err = mtx_fread(&mtx, mtx_double, f, &line_number, &column_number);
     TEST_ASSERT_EQ_MSG(
         MTX_SUCCESS, err,
         "%d:%d: %s", line_number, column_number,
         mtx_strerror(err));
-    TEST_ASSERT_EQ(mtx_row_major, mtx.sorting);
-    TEST_ASSERT_EQ(mtx_unordered, mtx.ordering);
-    TEST_ASSERT_EQ(mtx_assembled, mtx.assembly);
     TEST_ASSERT_EQ(2, mtx.num_rows);
     TEST_ASSERT_EQ(2, mtx.num_columns);
-    TEST_ASSERT_EQ(4, mtx.num_nonzeros);
-    TEST_ASSERT_EQ(4, mtx.size);
-    TEST_ASSERT_EQ(sizeof(double), mtx.nonzero_size);
-    const double * data = (const double *) mtx.data;
+    TEST_ASSERT_EQ(-1, mtx.num_nonzeros);
+
+    const struct mtx_matrix_array_data * matrix_array = &mtx.storage.matrix_array;
+    TEST_ASSERT_EQ(mtx_real, matrix_array->field);
+    TEST_ASSERT_EQ(mtx_double, matrix_array->precision);
+    TEST_ASSERT_EQ(mtx_general, matrix_array->symmetry);
+    TEST_ASSERT_EQ(mtx_nontriangular, matrix_array->triangle);
+    TEST_ASSERT_EQ(mtx_row_major, matrix_array->sorting);
+    TEST_ASSERT_EQ(4, matrix_array->size);
+    const double * data = matrix_array->data.real_double;
     TEST_ASSERT_EQ(1.0, data[0]);
     TEST_ASSERT_EQ(2.0, data[1]);
     TEST_ASSERT_EQ(3.0, data[2]);
     TEST_ASSERT_EQ(4.0, data[3]);
-    if (!err)
-        mtx_free(&mtx);
+    mtx_free(&mtx);
     fclose(f);
     return TEST_SUCCESS;
 }
 
 /**
- * `test_mtx_fread_matrix_array_complex()` tests parsing data for a
- * dense matrix with complex coefficients.
+ * `test_mtx_fread_matrix_array_complex_single()` tests parsing data
+ * for a dense matrix with single precision, complex coefficients.
  */
-int test_mtx_fread_matrix_array_complex(void)
+int test_mtx_fread_matrix_array_complex_single(void)
 {
     int err;
     char mtxfile[] =
@@ -616,35 +580,37 @@ int test_mtx_fread_matrix_array_complex(void)
     TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
     struct mtx mtx;
     int line_number, column_number;
-    err = mtx_fread(&mtx, f, &line_number, &column_number);
+    err = mtx_fread(&mtx, mtx_single, f, &line_number, &column_number);
     TEST_ASSERT_EQ_MSG(
         MTX_SUCCESS, err,
         "%d:%d: %s", line_number, column_number,
         mtx_strerror(err));
-    TEST_ASSERT_EQ(mtx_row_major, mtx.sorting);
-    TEST_ASSERT_EQ(mtx_unordered, mtx.ordering);
-    TEST_ASSERT_EQ(mtx_assembled, mtx.assembly);
     TEST_ASSERT_EQ(2, mtx.num_rows);
     TEST_ASSERT_EQ(2, mtx.num_columns);
-    TEST_ASSERT_EQ(4, mtx.num_nonzeros);
-    TEST_ASSERT_EQ(4, mtx.size);
-    TEST_ASSERT_EQ(2*sizeof(float), mtx.nonzero_size);
-    const float * data = (const float *) mtx.data;
-    TEST_ASSERT_EQ(1.0, data[0]); TEST_ASSERT_EQ(2.0, data[1]);
-    TEST_ASSERT_EQ(3.0, data[2]); TEST_ASSERT_EQ(4.0, data[3]);
-    TEST_ASSERT_EQ(5.0, data[4]); TEST_ASSERT_EQ(6.0, data[5]);
-    TEST_ASSERT_EQ(7.0, data[6]); TEST_ASSERT_EQ(8.0, data[7]);
-    if (!err)
-        mtx_free(&mtx);
+    TEST_ASSERT_EQ(-1, mtx.num_nonzeros);
+
+    const struct mtx_matrix_array_data * matrix_array = &mtx.storage.matrix_array;
+    TEST_ASSERT_EQ(mtx_complex, matrix_array->field);
+    TEST_ASSERT_EQ(mtx_single, matrix_array->precision);
+    TEST_ASSERT_EQ(mtx_general, matrix_array->symmetry);
+    TEST_ASSERT_EQ(mtx_nontriangular, matrix_array->triangle);
+    TEST_ASSERT_EQ(mtx_row_major, matrix_array->sorting);
+    TEST_ASSERT_EQ(4, matrix_array->size);
+    const float (* data)[2] = matrix_array->data.complex_single;
+    TEST_ASSERT_EQ(1.0, data[0][0]); TEST_ASSERT_EQ(2.0, data[0][1]);
+    TEST_ASSERT_EQ(3.0, data[1][0]); TEST_ASSERT_EQ(4.0, data[1][1]);
+    TEST_ASSERT_EQ(5.0, data[2][0]); TEST_ASSERT_EQ(6.0, data[2][1]);
+    TEST_ASSERT_EQ(7.0, data[3][0]); TEST_ASSERT_EQ(8.0, data[3][1]);
+    mtx_free(&mtx);
     fclose(f);
     return TEST_SUCCESS;
 }
 
 /**
- * `test_mtx_fread_matrix_array_integer()` tests parsing data for a
- * dense matrix with integer coefficients.
+ * `test_mtx_fread_matrix_array_integer_single()` tests parsing data
+ * for a dense matrix with single precision, integer coefficients.
  */
-int test_mtx_fread_matrix_array_integer(void)
+int test_mtx_fread_matrix_array_integer_single(void)
 {
     int err;
     char mtxfile[] =
@@ -655,35 +621,37 @@ int test_mtx_fread_matrix_array_integer(void)
     TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
     struct mtx mtx;
     int line_number, column_number;
-    err = mtx_fread(&mtx, f, &line_number, &column_number);
+    err = mtx_fread(&mtx, mtx_single, f, &line_number, &column_number);
     TEST_ASSERT_EQ_MSG(
         MTX_SUCCESS, err,
         "%d:%d: %s", line_number, column_number,
         mtx_strerror(err));
-    TEST_ASSERT_EQ(mtx_row_major, mtx.sorting);
-    TEST_ASSERT_EQ(mtx_unordered, mtx.ordering);
-    TEST_ASSERT_EQ(mtx_assembled, mtx.assembly);
     TEST_ASSERT_EQ(2, mtx.num_rows);
     TEST_ASSERT_EQ(2, mtx.num_columns);
-    TEST_ASSERT_EQ(4, mtx.num_nonzeros);
-    TEST_ASSERT_EQ(4, mtx.size);
-    TEST_ASSERT_EQ(sizeof(int), mtx.nonzero_size);
-    const int * data = (const int *) mtx.data;
+    TEST_ASSERT_EQ(-1, mtx.num_nonzeros);
+
+    const struct mtx_matrix_array_data * matrix_array = &mtx.storage.matrix_array;
+    TEST_ASSERT_EQ(mtx_integer, matrix_array->field);
+    TEST_ASSERT_EQ(mtx_single, matrix_array->precision);
+    TEST_ASSERT_EQ(mtx_general, matrix_array->symmetry);
+    TEST_ASSERT_EQ(mtx_nontriangular, matrix_array->triangle);
+    TEST_ASSERT_EQ(mtx_row_major, matrix_array->sorting);
+    TEST_ASSERT_EQ(4, matrix_array->size);
+    const int32_t * data = matrix_array->data.integer_single;
     TEST_ASSERT_EQ(1, data[0]);
     TEST_ASSERT_EQ(2, data[1]);
     TEST_ASSERT_EQ(3, data[2]);
     TEST_ASSERT_EQ(4, data[3]);
-    if (!err)
-        mtx_free(&mtx);
+    mtx_free(&mtx);
     fclose(f);
     return TEST_SUCCESS;
 }
 
 /**
- * `test_mtx_fread_matrix_coordinate_real()` tests parsing data for
- * a sparse matrix with real coefficients.
+ * `test_mtx_fread_matrix_coordinate_real_single()` tests parsing data
+ * for a sparse matrix with single precision, real coefficients.
  */
-int test_mtx_fread_matrix_coordinate_real(void)
+int test_mtx_fread_matrix_coordinate_real_single(void)
 {
     int err;
     char mtxfile[] =
@@ -697,40 +665,44 @@ int test_mtx_fread_matrix_coordinate_real(void)
     TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
     struct mtx mtx;
     int line_number, column_number;
-    err = mtx_fread(&mtx, f, &line_number, &column_number);
+    err = mtx_fread(&mtx, mtx_single, f, &line_number, &column_number);
     TEST_ASSERT_EQ_MSG(
         MTX_SUCCESS, err,
         "%d:%d: %s", line_number, column_number,
         mtx_strerror(err));
-    TEST_ASSERT_EQ(mtx_unsorted, mtx.sorting);
-    TEST_ASSERT_EQ(mtx_unordered, mtx.ordering);
-    TEST_ASSERT_EQ(mtx_unassembled, mtx.assembly);
     TEST_ASSERT_EQ(3, mtx.num_rows);
     TEST_ASSERT_EQ(3, mtx.num_columns);
     TEST_ASSERT_EQ(4, mtx.num_nonzeros);
-    TEST_ASSERT_EQ(4, mtx.size);
-    TEST_ASSERT_EQ(sizeof(struct mtx_matrix_coordinate_real), mtx.nonzero_size);
-    const struct mtx_matrix_coordinate_real * data =
-        (const struct mtx_matrix_coordinate_real *) mtx.data;
+
+    const struct mtx_matrix_coordinate_data * matrix_coordinate =
+        &mtx.storage.matrix_coordinate;
+    TEST_ASSERT_EQ(mtx_real, matrix_coordinate->field);
+    TEST_ASSERT_EQ(mtx_single, matrix_coordinate->precision);
+    TEST_ASSERT_EQ(mtx_general, matrix_coordinate->symmetry);
+    TEST_ASSERT_EQ(mtx_nontriangular, matrix_coordinate->triangle);
+    TEST_ASSERT_EQ(mtx_unsorted, matrix_coordinate->sorting);
+    TEST_ASSERT_EQ(mtx_unassembled, matrix_coordinate->assembly);
+    TEST_ASSERT_EQ(4, matrix_coordinate->size);
+    const struct mtx_matrix_coordinate_real_single * data =
+        matrix_coordinate->data.real_single;
     TEST_ASSERT_EQ(1,data[0].i); TEST_ASSERT_EQ(1,data[0].j); TEST_ASSERT_EQ(1.0,data[0].a);
     TEST_ASSERT_EQ(1,data[1].i); TEST_ASSERT_EQ(3,data[1].j); TEST_ASSERT_EQ(2.0,data[1].a);
     TEST_ASSERT_EQ(2,data[2].i); TEST_ASSERT_EQ(2,data[2].j); TEST_ASSERT_EQ(3.0,data[2].a);
     TEST_ASSERT_EQ(3,data[3].i); TEST_ASSERT_EQ(3,data[3].j); TEST_ASSERT_EQ(4.0,data[3].a);
-    if (!err)
-        mtx_free(&mtx);
+    mtx_free(&mtx);
     fclose(f);
     return TEST_SUCCESS;
 }
 
 /**
- * `test_mtx_fread_matrix_coordinate_double()` tests parsing data
- * for a sparse matrix with double-precision real coefficients.
+ * `test_mtx_fread_matrix_coordinate_real_double()` tests parsing data
+ * for a sparse matrix with double precision, real coefficients.
  */
-int test_mtx_fread_matrix_coordinate_double(void)
+int test_mtx_fread_matrix_coordinate_real_double(void)
 {
     int err;
     char mtxfile[] =
-        "%%MatrixMarket matrix coordinate double general\n"
+        "%%MatrixMarket matrix coordinate real general\n"
         "3 3 4\n"
         "1 1 1.0\n"
         "1 3 2.0\n"
@@ -740,36 +712,41 @@ int test_mtx_fread_matrix_coordinate_double(void)
     TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
     struct mtx mtx;
     int line_number, column_number;
-    err = mtx_fread(&mtx, f, &line_number, &column_number);
+    err = mtx_fread(&mtx, mtx_double, f, &line_number, &column_number);
     TEST_ASSERT_EQ_MSG(
         MTX_SUCCESS, err,
         "%d:%d: %s", line_number, column_number,
         mtx_strerror(err));
-    TEST_ASSERT_EQ(mtx_unsorted, mtx.sorting);
-    TEST_ASSERT_EQ(mtx_unordered, mtx.ordering);
-    TEST_ASSERT_EQ(mtx_unassembled, mtx.assembly);
     TEST_ASSERT_EQ(3, mtx.num_rows);
     TEST_ASSERT_EQ(3, mtx.num_columns);
     TEST_ASSERT_EQ(4, mtx.num_nonzeros);
-    TEST_ASSERT_EQ(4, mtx.size);
-    TEST_ASSERT_EQ(sizeof(struct mtx_matrix_coordinate_double), mtx.nonzero_size);
-    const struct mtx_matrix_coordinate_double * data =
-        (const struct mtx_matrix_coordinate_double *) mtx.data;
+
+    const struct mtx_matrix_coordinate_data * matrix_coordinate =
+        &mtx.storage.matrix_coordinate;
+    TEST_ASSERT_EQ(mtx_real, matrix_coordinate->field);
+    TEST_ASSERT_EQ(mtx_double, matrix_coordinate->precision);
+    TEST_ASSERT_EQ(mtx_general, matrix_coordinate->symmetry);
+    TEST_ASSERT_EQ(mtx_nontriangular, matrix_coordinate->triangle);
+    TEST_ASSERT_EQ(mtx_unsorted, matrix_coordinate->sorting);
+    TEST_ASSERT_EQ(mtx_unassembled, matrix_coordinate->assembly);
+    TEST_ASSERT_EQ(4, matrix_coordinate->size);
+    const struct mtx_matrix_coordinate_real_double * data =
+        matrix_coordinate->data.real_double;
     TEST_ASSERT_EQ(1,data[0].i); TEST_ASSERT_EQ(1,data[0].j); TEST_ASSERT_EQ(1.0,data[0].a);
     TEST_ASSERT_EQ(1,data[1].i); TEST_ASSERT_EQ(3,data[1].j); TEST_ASSERT_EQ(2.0,data[1].a);
     TEST_ASSERT_EQ(2,data[2].i); TEST_ASSERT_EQ(2,data[2].j); TEST_ASSERT_EQ(3.0,data[2].a);
     TEST_ASSERT_EQ(3,data[3].i); TEST_ASSERT_EQ(3,data[3].j); TEST_ASSERT_EQ(4.0,data[3].a);
-    if (!err)
-        mtx_free(&mtx);
+    mtx_free(&mtx);
     fclose(f);
     return TEST_SUCCESS;
 }
 
 /**
- * `test_mtx_fread_matrix_coordinate_complex()` tests parsing data
- * for a sparse matrix with complex coefficients.
+ * `test_mtx_fread_matrix_coordinate_complex_single()` tests parsing
+ * data for a sparse matrix with single precision, complex
+ * coefficients.
  */
-int test_mtx_fread_matrix_coordinate_complex(void)
+int test_mtx_fread_matrix_coordinate_complex_single(void)
 {
     int err;
     char mtxfile[] =
@@ -783,40 +760,45 @@ int test_mtx_fread_matrix_coordinate_complex(void)
     TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
     struct mtx mtx;
     int line_number, column_number;
-    err = mtx_fread(&mtx, f, &line_number, &column_number);
+    err = mtx_fread(&mtx, mtx_single, f, &line_number, &column_number);
     TEST_ASSERT_EQ_MSG(
         MTX_SUCCESS, err,
         "%d:%d: %s", line_number, column_number,
         mtx_strerror(err));
-    TEST_ASSERT_EQ(mtx_unsorted, mtx.sorting);
-    TEST_ASSERT_EQ(mtx_unordered, mtx.ordering);
-    TEST_ASSERT_EQ(mtx_unassembled, mtx.assembly);
     TEST_ASSERT_EQ(3, mtx.num_rows);
     TEST_ASSERT_EQ(3, mtx.num_columns);
     TEST_ASSERT_EQ(4, mtx.num_nonzeros);
-    TEST_ASSERT_EQ(4, mtx.size);
-    TEST_ASSERT_EQ(sizeof(struct mtx_matrix_coordinate_complex), mtx.nonzero_size);
-    const struct mtx_matrix_coordinate_complex * data =
-        (const struct mtx_matrix_coordinate_complex *) mtx.data;
+
+    const struct mtx_matrix_coordinate_data * matrix_coordinate =
+        &mtx.storage.matrix_coordinate;
+    TEST_ASSERT_EQ(mtx_complex, matrix_coordinate->field);
+    TEST_ASSERT_EQ(mtx_single, matrix_coordinate->precision);
+    TEST_ASSERT_EQ(mtx_general, matrix_coordinate->symmetry);
+    TEST_ASSERT_EQ(mtx_nontriangular, matrix_coordinate->triangle);
+    TEST_ASSERT_EQ(mtx_unsorted, matrix_coordinate->sorting);
+    TEST_ASSERT_EQ(mtx_unassembled, matrix_coordinate->assembly);
+    TEST_ASSERT_EQ(4, matrix_coordinate->size);
+    const struct mtx_matrix_coordinate_complex_single * data =
+        matrix_coordinate->data.complex_single;
     TEST_ASSERT_EQ(1,data[0].i); TEST_ASSERT_EQ(1,data[0].j);
-    TEST_ASSERT_EQ(1.0,data[0].a); TEST_ASSERT_EQ(2.0,data[0].b);
+    TEST_ASSERT_EQ(1.0,data[0].a[0]); TEST_ASSERT_EQ(2.0,data[0].a[1]);
     TEST_ASSERT_EQ(1,data[1].i); TEST_ASSERT_EQ(3,data[1].j);
-    TEST_ASSERT_EQ(3.0,data[1].a); TEST_ASSERT_EQ(4.0,data[1].b);
+    TEST_ASSERT_EQ(3.0,data[1].a[0]); TEST_ASSERT_EQ(4.0,data[1].a[1]);
     TEST_ASSERT_EQ(2,data[2].i); TEST_ASSERT_EQ(2,data[2].j);
-    TEST_ASSERT_EQ(5.0,data[2].a); TEST_ASSERT_EQ(6.0,data[2].b);
+    TEST_ASSERT_EQ(5.0,data[2].a[0]); TEST_ASSERT_EQ(6.0,data[2].a[1]);
     TEST_ASSERT_EQ(3,data[3].i); TEST_ASSERT_EQ(3,data[3].j);
-    TEST_ASSERT_EQ(7.0,data[3].a); TEST_ASSERT_EQ(8.0,data[3].b);
-    if (!err)
-        mtx_free(&mtx);
+    TEST_ASSERT_EQ(7.0,data[3].a[0]); TEST_ASSERT_EQ(8.0,data[3].a[1]);
+    mtx_free(&mtx);
     fclose(f);
     return TEST_SUCCESS;
 }
 
 /**
- * `test_mtx_fread_matrix_coordinate_integer()` tests parsing data
- * for a sparse matrix with integer coefficients.
+ * `test_mtx_fread_matrix_coordinate_integer_single()` tests parsing
+ * data for a sparse matrix with single precision, integer
+ * coefficients.
  */
-int test_mtx_fread_matrix_coordinate_integer(void)
+int test_mtx_fread_matrix_coordinate_integer_single(void)
 {
     int err;
     char mtxfile[] =
@@ -830,27 +812,31 @@ int test_mtx_fread_matrix_coordinate_integer(void)
     TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
     struct mtx mtx;
     int line_number, column_number;
-    err = mtx_fread(&mtx, f, &line_number, &column_number);
+    err = mtx_fread(&mtx, mtx_single, f, &line_number, &column_number);
     TEST_ASSERT_EQ_MSG(
         MTX_SUCCESS, err,
         "%d:%d: %s", line_number, column_number,
         mtx_strerror(err));
-    TEST_ASSERT_EQ(mtx_unsorted, mtx.sorting);
-    TEST_ASSERT_EQ(mtx_unordered, mtx.ordering);
-    TEST_ASSERT_EQ(mtx_unassembled, mtx.assembly);
     TEST_ASSERT_EQ(3, mtx.num_rows);
     TEST_ASSERT_EQ(3, mtx.num_columns);
     TEST_ASSERT_EQ(4, mtx.num_nonzeros);
-    TEST_ASSERT_EQ(4, mtx.size);
-    TEST_ASSERT_EQ(sizeof(struct mtx_matrix_coordinate_integer), mtx.nonzero_size);
-    const struct mtx_matrix_coordinate_integer * data =
-        (const struct mtx_matrix_coordinate_integer *) mtx.data;
+
+    const struct mtx_matrix_coordinate_data * matrix_coordinate =
+        &mtx.storage.matrix_coordinate;
+    TEST_ASSERT_EQ(mtx_integer, matrix_coordinate->field);
+    TEST_ASSERT_EQ(mtx_single, matrix_coordinate->precision);
+    TEST_ASSERT_EQ(mtx_general, matrix_coordinate->symmetry);
+    TEST_ASSERT_EQ(mtx_nontriangular, matrix_coordinate->triangle);
+    TEST_ASSERT_EQ(mtx_unsorted, matrix_coordinate->sorting);
+    TEST_ASSERT_EQ(mtx_unassembled, matrix_coordinate->assembly);
+    TEST_ASSERT_EQ(4, matrix_coordinate->size);
+    const struct mtx_matrix_coordinate_integer_single * data =
+        matrix_coordinate->data.integer_single;
     TEST_ASSERT_EQ(1,data[0].i); TEST_ASSERT_EQ(1,data[0].j); TEST_ASSERT_EQ(1,data[0].a);
     TEST_ASSERT_EQ(1,data[1].i); TEST_ASSERT_EQ(3,data[1].j); TEST_ASSERT_EQ(2,data[1].a);
     TEST_ASSERT_EQ(2,data[2].i); TEST_ASSERT_EQ(2,data[2].j); TEST_ASSERT_EQ(3,data[2].a);
     TEST_ASSERT_EQ(3,data[3].i); TEST_ASSERT_EQ(3,data[3].j); TEST_ASSERT_EQ(4,data[3].a);
-    if (!err)
-        mtx_free(&mtx);
+    mtx_free(&mtx);
     fclose(f);
     return TEST_SUCCESS;
 }
@@ -873,36 +859,39 @@ int test_mtx_fread_matrix_coordinate_pattern(void)
     TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
     struct mtx mtx;
     int line_number, column_number;
-    err = mtx_fread(&mtx, f, &line_number, &column_number);
+    err = mtx_fread(&mtx, mtx_single, f, &line_number, &column_number);
     TEST_ASSERT_EQ_MSG(
         MTX_SUCCESS, err,
         "%d:%d: %s", line_number, column_number,
         mtx_strerror(err));
-    TEST_ASSERT_EQ(mtx_unsorted, mtx.sorting);
-    TEST_ASSERT_EQ(mtx_unordered, mtx.ordering);
-    TEST_ASSERT_EQ(mtx_unassembled, mtx.assembly);
     TEST_ASSERT_EQ(3, mtx.num_rows);
     TEST_ASSERT_EQ(3, mtx.num_columns);
     TEST_ASSERT_EQ(4, mtx.num_nonzeros);
-    TEST_ASSERT_EQ(4, mtx.size);
-    TEST_ASSERT_EQ(sizeof(struct mtx_matrix_coordinate_pattern), mtx.nonzero_size);
+
+    const struct mtx_matrix_coordinate_data * matrix_coordinate =
+        &mtx.storage.matrix_coordinate;
+    TEST_ASSERT_EQ(mtx_pattern, matrix_coordinate->field);
+    TEST_ASSERT_EQ(mtx_general, matrix_coordinate->symmetry);
+    TEST_ASSERT_EQ(mtx_nontriangular, matrix_coordinate->triangle);
+    TEST_ASSERT_EQ(mtx_unsorted, matrix_coordinate->sorting);
+    TEST_ASSERT_EQ(mtx_unassembled, matrix_coordinate->assembly);
+    TEST_ASSERT_EQ(4, matrix_coordinate->size);
     const struct mtx_matrix_coordinate_pattern * data =
-        (const struct mtx_matrix_coordinate_pattern *) mtx.data;
+        matrix_coordinate->data.pattern;
     TEST_ASSERT_EQ(1,data[0].i); TEST_ASSERT_EQ(1,data[0].j);
     TEST_ASSERT_EQ(1,data[1].i); TEST_ASSERT_EQ(3,data[1].j);
     TEST_ASSERT_EQ(2,data[2].i); TEST_ASSERT_EQ(2,data[2].j);
     TEST_ASSERT_EQ(3,data[3].i); TEST_ASSERT_EQ(3,data[3].j);
-    if (!err)
-        mtx_free(&mtx);
+    mtx_free(&mtx);
     fclose(f);
     return TEST_SUCCESS;
 }
 
 /**
- * `test_mtx_fread_vector_array_real()` tests parsing data for a
- * dense vector with real coefficients.
+ * `test_mtx_fread_vector_array_real()` tests parsing data for a dense
+ * vector with single precision, real coefficients.
  */
-int test_mtx_fread_vector_array_real(void)
+int test_mtx_fread_vector_array_real_single(void)
 {
     int err;
     char mtxfile[] =
@@ -913,7 +902,7 @@ int test_mtx_fread_vector_array_real(void)
     TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
     struct mtx mtx;
     int line_number, column_number;
-    err = mtx_fread(&mtx, f, &line_number, &column_number);
+    err = mtx_fread(&mtx, mtx_single, f, &line_number, &column_number);
     TEST_ASSERT_EQ_MSG(
         MTX_SUCCESS, err,
         "%d:%d: %s", line_number, column_number,
@@ -921,30 +910,29 @@ int test_mtx_fread_vector_array_real(void)
     TEST_ASSERT_EQ(mtx_vector, mtx.object);
     TEST_ASSERT_EQ(mtx_array, mtx.format);
     TEST_ASSERT_EQ(mtx_real, mtx.field);
-    TEST_ASSERT_EQ(mtx_row_major, mtx.sorting);
-    TEST_ASSERT_EQ(mtx_unordered, mtx.ordering);
-    TEST_ASSERT_EQ(mtx_assembled, mtx.assembly);
     TEST_ASSERT_EQ(4, mtx.num_rows);
     TEST_ASSERT_EQ(-1, mtx.num_columns);
-    TEST_ASSERT_EQ(4, mtx.num_nonzeros);
-    TEST_ASSERT_EQ(4, mtx.size);
-    TEST_ASSERT_EQ(sizeof(float), mtx.nonzero_size);
-    const float * data = (const float *) mtx.data;
-    TEST_ASSERT_EQ(1.0, data[0]);
-    TEST_ASSERT_EQ(2.0, data[1]);
-    TEST_ASSERT_EQ(3.0, data[2]);
-    TEST_ASSERT_EQ(4.0, data[3]);
-    if (!err)
-        mtx_free(&mtx);
+    TEST_ASSERT_EQ(-1, mtx.num_nonzeros);
+
+    const struct mtx_vector_array_data * vector_array = &mtx.storage.vector_array;
+    TEST_ASSERT_EQ(mtx_real, vector_array->field);
+    TEST_ASSERT_EQ(mtx_single, vector_array->precision);
+    TEST_ASSERT_EQ(4, vector_array->size);
+    const float * data = vector_array->data.real_single;
+    TEST_ASSERT_EQ(1.0f, data[0]);
+    TEST_ASSERT_EQ(2.0f, data[1]);
+    TEST_ASSERT_EQ(3.0f, data[2]);
+    TEST_ASSERT_EQ(4.0f, data[3]);
+    mtx_free(&mtx);
     fclose(f);
     return TEST_SUCCESS;
 }
 
 /**
- * `test_mtx_fread_vector_coordinate_real()` tests parsing data for
- * a sparse vector with real coefficients.
+ * `test_mtx_fread_vector_coordinate_real_single()` tests parsing data
+ * for a sparse vector with single precision, real coefficients.
  */
-int test_mtx_fread_vector_coordinate_real(void)
+int test_mtx_fread_vector_coordinate_real_single(void)
 {
     int err;
     char mtxfile[] =
@@ -958,36 +946,38 @@ int test_mtx_fread_vector_coordinate_real(void)
     TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
     struct mtx mtx;
     int line_number, column_number;
-    err = mtx_fread(&mtx, f, &line_number, &column_number);
+    err = mtx_fread(&mtx, mtx_single, f, &line_number, &column_number);
     TEST_ASSERT_EQ_MSG(
         MTX_SUCCESS, err,
         "%d:%d: %s", line_number, column_number,
         mtx_strerror(err));
-    TEST_ASSERT_EQ(mtx_unsorted, mtx.sorting);
-    TEST_ASSERT_EQ(mtx_unordered, mtx.ordering);
-    TEST_ASSERT_EQ(mtx_unassembled, mtx.assembly);
     TEST_ASSERT_EQ(8, mtx.num_rows);
     TEST_ASSERT_EQ(-1, mtx.num_columns);
     TEST_ASSERT_EQ(4, mtx.num_nonzeros);
-    TEST_ASSERT_EQ(4, mtx.size);
-    TEST_ASSERT_EQ(sizeof(struct mtx_vector_coordinate_real), mtx.nonzero_size);
-    const struct mtx_vector_coordinate_real * data =
-        (const struct mtx_vector_coordinate_real *) mtx.data;
+
+    const struct mtx_vector_coordinate_data * vector_coordinate =
+        &mtx.storage.vector_coordinate;
+    TEST_ASSERT_EQ(mtx_real, vector_coordinate->field);
+    TEST_ASSERT_EQ(mtx_single, vector_coordinate->precision);
+    TEST_ASSERT_EQ(mtx_unsorted, vector_coordinate->sorting);
+    TEST_ASSERT_EQ(mtx_unassembled, vector_coordinate->assembly);
+    TEST_ASSERT_EQ(4, vector_coordinate->size);
+    const struct mtx_vector_coordinate_real_single * data =
+        vector_coordinate->data.real_single;
     TEST_ASSERT_EQ(1,data[0].i); TEST_ASSERT_EQ(1.0,data[0].a);
     TEST_ASSERT_EQ(3,data[1].i); TEST_ASSERT_EQ(2.0,data[1].a);
     TEST_ASSERT_EQ(5,data[2].i); TEST_ASSERT_EQ(3.0,data[2].a);
     TEST_ASSERT_EQ(6,data[3].i); TEST_ASSERT_EQ(4.0,data[3].a);
-    if (!err)
-        mtx_free(&mtx);
+    mtx_free(&mtx);
     fclose(f);
     return TEST_SUCCESS;
 }
 
 /**
- * `test_mtx_fwrite_matrix_coordinate_real()` tests writing a sparse
- * matrix with real coefficients to a file.
+ * `test_mtx_fwrite_matrix_coordinate_real_single()` tests writing a
+ * sparse matrix with single precision, real coefficients to a file.
  */
-int test_mtx_fwrite_matrix_coordinate_real(void)
+int test_mtx_fwrite_matrix_coordinate_real_single(void)
 {
     int err;
 
@@ -997,15 +987,14 @@ int test_mtx_fwrite_matrix_coordinate_real(void)
     const char * comment_lines[] = {};
     int num_rows = 3;
     int num_columns = 3;
-    int64_t size = 4;
-    const struct mtx_matrix_coordinate_real data[] = {
+    const struct mtx_matrix_coordinate_real_single data[] = {
         {1,1,1.0f},
         {1,3,2.0f},
         {2,2,3.0f},
         {3,3,4.0f}};
-    err = mtx_init_matrix_coordinate_real(
-        &mtx, mtx_general, mtx_nontriangular, mtx_unsorted,
-        mtx_unordered, mtx_unassembled,
+    size_t size = sizeof(data) / sizeof(*data);
+    err = mtx_init_matrix_coordinate_real_single(
+        &mtx, mtx_general, mtx_nontriangular, mtx_unsorted, mtx_unassembled,
         num_comment_lines, comment_lines,
         num_rows, num_columns, size, data);
     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
@@ -1024,16 +1013,19 @@ int test_mtx_fwrite_matrix_coordinate_real(void)
         "1 3 2.0\n"
         "2 2 3.0\n"
         "3 3 4.0\n";
-    TEST_ASSERT_STREQ_MSG(expected_mtxfile, mtxfile, "\nexpected: %s\nactual: %s\n", expected_mtxfile, mtxfile);
+    TEST_ASSERT_STREQ_MSG(
+        expected_mtxfile, mtxfile,
+        "\nexpected: %s\nactual: %s\n",
+        expected_mtxfile, mtxfile);
     return TEST_SUCCESS;
 }
 
 #ifdef LIBMTX_HAVE_LIBZ
 /**
  * `test_mtx_gzread_matrix_coordinate_real()` tests reading a
- * compressed sparse matrix with real coefficients.
+ * compressed sparse matrix with single precision, real coefficients.
  */
-int test_mtx_gzread_matrix_coordinate_real(void)
+int test_mtx_gzread_matrix_coordinate_real_single(void)
 {
     int err;
     unsigned char test_mtx_gz[] = {
@@ -1081,36 +1073,40 @@ int test_mtx_gzread_matrix_coordinate_real(void)
     TEST_ASSERT_NEQ_MSG(NULL, gz_f, "%s", strerror(errno));
     struct mtx mtx;
     int line_number, column_number;
-    err = mtx_gzread(&mtx, gz_f, &line_number, &column_number);
+    err = mtx_gzread(&mtx, mtx_single, gz_f, &line_number, &column_number);
     TEST_ASSERT_EQ_MSG(
         MTX_SUCCESS, err,
         "%d:%d: %s", line_number, column_number,
         mtx_strerror(err));
-    TEST_ASSERT_EQ(mtx_unsorted, mtx.sorting);
-    TEST_ASSERT_EQ(mtx_unordered, mtx.ordering);
-    TEST_ASSERT_EQ(mtx_unassembled, mtx.assembly);
     TEST_ASSERT_EQ(3, mtx.num_rows);
     TEST_ASSERT_EQ(3, mtx.num_columns);
     TEST_ASSERT_EQ(4, mtx.num_nonzeros);
-    TEST_ASSERT_EQ(4, mtx.size);
-    TEST_ASSERT_EQ(sizeof(struct mtx_matrix_coordinate_real), mtx.nonzero_size);
-    const struct mtx_matrix_coordinate_real * data =
-        (const struct mtx_matrix_coordinate_real *) mtx.data;
+
+    const struct mtx_matrix_coordinate_data * matrix_coordinate =
+        &mtx.storage.matrix_coordinate;
+    TEST_ASSERT_EQ(mtx_real, matrix_coordinate->field);
+    TEST_ASSERT_EQ(mtx_single, matrix_coordinate->precision);
+    TEST_ASSERT_EQ(mtx_general, matrix_coordinate->symmetry);
+    TEST_ASSERT_EQ(mtx_nontriangular, matrix_coordinate->triangle);
+    TEST_ASSERT_EQ(mtx_unsorted, matrix_coordinate->sorting);
+    TEST_ASSERT_EQ(mtx_unassembled, matrix_coordinate->assembly);
+    TEST_ASSERT_EQ(4, matrix_coordinate->size);
+    const struct mtx_matrix_coordinate_real_single * data =
+        matrix_coordinate->data.real_single;
     TEST_ASSERT_EQ(1,data[0].i); TEST_ASSERT_EQ(1,data[0].j); TEST_ASSERT_EQ(1.0,data[0].a);
     TEST_ASSERT_EQ(1,data[1].i); TEST_ASSERT_EQ(3,data[1].j); TEST_ASSERT_EQ(2.0,data[1].a);
     TEST_ASSERT_EQ(2,data[2].i); TEST_ASSERT_EQ(2,data[2].j); TEST_ASSERT_EQ(3.0,data[2].a);
     TEST_ASSERT_EQ(3,data[3].i); TEST_ASSERT_EQ(3,data[3].j); TEST_ASSERT_EQ(4.0,data[3].a);
-    if (!err)
-        mtx_free(&mtx);
+    mtx_free(&mtx);
     gzclose(gz_f);
     return TEST_SUCCESS;
 }
 
 /**
- * `test_mtx_gzwrite_matrix_coordinate_real()` tests writing a sparse
- * matrix with real coefficients to a file.
+ * `test_mtx_gzwrite_matrix_coordinate_real_single()` tests writing a sparse
+ * matrix with single precision, real coefficients to a file.
  */
-int test_mtx_gzwrite_matrix_coordinate_real(void)
+int test_mtx_gzwrite_matrix_coordinate_real_single(void)
 {
     int err;
 
@@ -1121,14 +1117,13 @@ int test_mtx_gzwrite_matrix_coordinate_real(void)
     int num_rows = 3;
     int num_columns = 3;
     int64_t size = 4;
-    const struct mtx_matrix_coordinate_real data[] = {
+    const struct mtx_matrix_coordinate_real_single data[] = {
         {1,1,1.0f},
         {1,3,2.0f},
         {2,2,3.0f},
         {3,3,4.0f}};
-    err = mtx_init_matrix_coordinate_real(
-        &mtx, mtx_general, mtx_nontriangular, mtx_unsorted,
-        mtx_unordered, mtx_unassembled,
+    err = mtx_init_matrix_coordinate_real_single(
+        &mtx, mtx_general, mtx_nontriangular, mtx_unsorted, mtx_unassembled,
         num_comment_lines, comment_lines,
         num_rows, num_columns, size, data);
     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
@@ -1222,10 +1217,10 @@ int test_mtx_gzwrite_matrix_coordinate_real(void)
 #endif
 
 /**
- * `test_mtx_fwrite_vector_array_real()` tests writing a sparse
- * vector with real coefficients to a file.
+ * `test_mtx_fwrite_vector_array_real_single()' tests writing a sparse
+ * vector with single precision, real coefficients to a file.
  */
-int test_mtx_fwrite_vector_array_real(void)
+int test_mtx_fwrite_vector_array_real_single(void)
 {
     int err;
 
@@ -1235,7 +1230,7 @@ int test_mtx_fwrite_vector_array_real(void)
     const char * comment_lines[] = {};
     int64_t size = 4;
     const float data[] = {1.0f,2.0f,3.0f,4.0f};
-    err = mtx_init_vector_array_real(
+    err = mtx_init_vector_array_real_single(
         &mtx, num_comment_lines, comment_lines, size, data);
     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
 
@@ -1253,15 +1248,18 @@ int test_mtx_fwrite_vector_array_real(void)
         "2.0\n"
         "3.0\n"
         "4.0\n";
-    TEST_ASSERT_STREQ_MSG(expected_mtxfile, mtxfile, "\nexpected: %s\nactual: %s\n", expected_mtxfile, mtxfile);
+    TEST_ASSERT_STREQ_MSG(
+        expected_mtxfile, mtxfile,
+        "\nexpected: %s\nactual: %s\n",
+        expected_mtxfile, mtxfile);
     return TEST_SUCCESS;
 }
 
 /**
- * `test_mtx_fwrite_vector_coordinate_real()` tests writing a sparse
- * vector with real coefficients to a file.
+ * `test_mtx_fwrite_vector_coordinate_real_single()` tests writing a
+ * sparse vector with single precision, real coefficients to a file.
  */
-int test_mtx_fwrite_vector_coordinate_real(void)
+int test_mtx_fwrite_vector_coordinate_real_single(void)
 {
     int err;
 
@@ -1271,12 +1269,12 @@ int test_mtx_fwrite_vector_coordinate_real(void)
     const char * comment_lines[] = {};
     int num_rows = 4;
     int64_t size = 3;
-    const struct mtx_vector_coordinate_real data[] = {
+    const struct mtx_vector_coordinate_real_single data[] = {
         {1,1.0f},
         {2,2.0f},
         {4,4.0f}};
-    err = mtx_init_vector_coordinate_real(
-        &mtx, mtx_unsorted, mtx_unordered, mtx_unassembled,
+    err = mtx_init_vector_coordinate_real_single(
+        &mtx, mtx_unsorted, mtx_unassembled,
         num_comment_lines, comment_lines,
         num_rows, size, data);
     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
@@ -1294,7 +1292,10 @@ int test_mtx_fwrite_vector_coordinate_real(void)
         "1 1.0\n"
         "2 2.0\n"
         "4 4.0\n";
-    TEST_ASSERT_STREQ_MSG(expected_mtxfile, mtxfile, "\nexpected: %s\nactual: %s\n", expected_mtxfile, mtxfile);
+    TEST_ASSERT_STREQ_MSG(
+        expected_mtxfile, mtxfile,
+        "\nexpected: %s\nactual: %s\n",
+        expected_mtxfile, mtxfile);
     return TEST_SUCCESS;
 }
 
@@ -1308,24 +1309,24 @@ int main(int argc, char * argv[])
     TEST_RUN(test_mtx_fread_header);
     TEST_RUN(test_mtx_fread_comment_lines);
     TEST_RUN(test_mtx_fread_matrix_size_line);
-    TEST_RUN(test_mtx_fread_matrix_array_real);
-    TEST_RUN(test_mtx_fread_matrix_array_double);
-    TEST_RUN(test_mtx_fread_matrix_array_complex);
-    TEST_RUN(test_mtx_fread_matrix_array_integer);
-    TEST_RUN(test_mtx_fread_matrix_coordinate_real);
-    TEST_RUN(test_mtx_fread_matrix_coordinate_double);
-    TEST_RUN(test_mtx_fread_matrix_coordinate_complex);
-    TEST_RUN(test_mtx_fread_matrix_coordinate_integer);
+    TEST_RUN(test_mtx_fread_matrix_array_real_single);
+    TEST_RUN(test_mtx_fread_matrix_array_real_double);
+    TEST_RUN(test_mtx_fread_matrix_array_complex_single);
+    TEST_RUN(test_mtx_fread_matrix_array_integer_single);
+    TEST_RUN(test_mtx_fread_matrix_coordinate_real_single);
+    TEST_RUN(test_mtx_fread_matrix_coordinate_real_double);
+    TEST_RUN(test_mtx_fread_matrix_coordinate_complex_single);
+    TEST_RUN(test_mtx_fread_matrix_coordinate_integer_single);
     TEST_RUN(test_mtx_fread_matrix_coordinate_pattern);
-    TEST_RUN(test_mtx_fread_vector_array_real);
-    TEST_RUN(test_mtx_fread_vector_coordinate_real);
-    TEST_RUN(test_mtx_fwrite_matrix_coordinate_real);
+    TEST_RUN(test_mtx_fread_vector_array_real_single);
+    TEST_RUN(test_mtx_fread_vector_coordinate_real_single);
+    TEST_RUN(test_mtx_fwrite_matrix_coordinate_real_single);
 #ifdef LIBMTX_HAVE_LIBZ
-    TEST_RUN(test_mtx_gzread_matrix_coordinate_real);
-    TEST_RUN(test_mtx_gzwrite_matrix_coordinate_real);
+    TEST_RUN(test_mtx_gzread_matrix_coordinate_real_single);
+    TEST_RUN(test_mtx_gzwrite_matrix_coordinate_real_single);
 #endif
-    TEST_RUN(test_mtx_fwrite_vector_array_real);
-    TEST_RUN(test_mtx_fwrite_vector_coordinate_real);
+    TEST_RUN(test_mtx_fwrite_vector_array_real_single);
+    TEST_RUN(test_mtx_fwrite_vector_coordinate_real_single);
     TEST_SUITE_END();
     return (TEST_SUITE_STATUS == TEST_SUCCESS) ?
         EXIT_SUCCESS : EXIT_FAILURE;

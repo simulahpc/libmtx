@@ -19,13 +19,14 @@
  * Authors: James D. Trotter <james@simula.no>
  * Last modified: 2021-08-09
  *
- * BLAS operations for dense matrices in array format.
+ * BLAS operations for matrices in array format.
  */
 
 #ifndef LIBMTX_MATRIX_ARRAY_BLAS_H
 #define LIBMTX_MATRIX_ARRAY_BLAS_H
 
-struct mtx;
+struct mtx_matrix_array_data;
+struct mtx_vector_array_data;
 
 /*
  * Level 2 BLAS operations.
@@ -37,7 +38,7 @@ struct mtx;
  */
 int mtx_matrix_array_sscal(
     float a,
-    struct mtx * x);
+    struct mtx_matrix_array_data * x);
 
 /**
  * `mtx_matrix_array_dscal()' scales a matrix by a double precision
@@ -45,7 +46,7 @@ int mtx_matrix_array_sscal(
  */
 int mtx_matrix_array_dscal(
     double a,
-    struct mtx * x);
+    struct mtx_matrix_array_data * x);
 
 /**
  * `mtx_matrix_array_saxpy()' adds two matrices of single precision
@@ -53,8 +54,8 @@ int mtx_matrix_array_dscal(
  */
 int mtx_matrix_array_saxpy(
     float a,
-    const struct mtx * x,
-    struct mtx * y);
+    const struct mtx_matrix_array_data * x,
+    struct mtx_matrix_array_data * y);
 
 /**
  * `mtx_matrix_array_daxpy()' adds two matrices of double precision
@@ -62,16 +63,16 @@ int mtx_matrix_array_saxpy(
  */
 int mtx_matrix_array_daxpy(
     double a,
-    const struct mtx * x,
-    struct mtx * y);
+    const struct mtx_matrix_array_data * x,
+    struct mtx_matrix_array_data * y);
 
 /**
  * `mtx_matrix_array_sdot()' computes the Frobenius inner product of
  * two matrices of single precision floating-point values.
  */
 int mtx_matrix_array_sdot(
-    const struct mtx * x,
-    const struct mtx * y,
+    const struct mtx_matrix_array_data * x,
+    const struct mtx_matrix_array_data * y,
     float * dot);
 
 /**
@@ -79,8 +80,8 @@ int mtx_matrix_array_sdot(
  * two matrices of double precision floating-point values.
  */
 int mtx_matrix_array_ddot(
-    const struct mtx * x,
-    const struct mtx * y,
+    const struct mtx_matrix_array_data * x,
+    const struct mtx_matrix_array_data * y,
     double * dot);
 
 /**
@@ -88,7 +89,7 @@ int mtx_matrix_array_ddot(
  * of single precision floating-point values.
  */
 int mtx_matrix_array_snrm2(
-    const struct mtx * x,
+    const struct mtx_matrix_array_data * x,
     float * nrm2);
 
 /**
@@ -96,7 +97,7 @@ int mtx_matrix_array_snrm2(
  * of double precision floating-point values.
  */
 int mtx_matrix_array_dnrm2(
-    const struct mtx * x,
+    const struct mtx_matrix_array_data * x,
     double * nrm2);
 
 /*
@@ -110,10 +111,10 @@ int mtx_matrix_array_dnrm2(
  */
 int mtx_matrix_array_sgemv(
     float alpha,
-    const struct mtx * A,
-    const struct mtx * x,
+    const struct mtx_matrix_array_data * A,
+    const struct mtx_vector_array_data * x,
     float beta,
-    struct mtx * y);
+    struct mtx_vector_array_data * y);
 
 /**
  * `mtx_matrix_array_dgemv()' computes the product of a matrix and a
@@ -122,9 +123,9 @@ int mtx_matrix_array_sgemv(
  */
 int mtx_matrix_array_dgemv(
     double alpha,
-    const struct mtx * A,
-    const struct mtx * x,
+    const struct mtx_matrix_array_data * A,
+    const struct mtx_vector_array_data * x,
     double beta,
-    struct mtx * y);
+    struct mtx_vector_array_data * y);
 
 #endif

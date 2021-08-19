@@ -46,9 +46,6 @@ int mtx_matrix_array_sort(
     if (mtx->format != mtx_array)
         return MTX_ERR_INVALID_MTX_FORMAT;
 
-    if (mtx->sorting == sorting)
-        return MTX_SUCCESS;
-
     /* TODO: Implement sorting for matrices in array format. */
     errno = ENOTSUP;
     return MTX_ERR_ERRNO;

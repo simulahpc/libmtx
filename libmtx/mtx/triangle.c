@@ -39,8 +39,8 @@ const char * mtx_triangle_str(
     /* case mtx_unit_lower_triangular: return "unit-lower-triangular"; */
     /* case mtx_unit_upper_triangular: return "unit-upper-triangular"; */
     /* case mtx_unit_diagonal: return "unit-diagonal"; */
-    /* case mtx_strict_lower_triangular: return "strict-lower-triangular"; */
-    /* case mtx_strict_upper_triangular: return "strict-upper-triangular"; */
+    case mtx_strict_lower_triangular: return "strict-lower-triangular";
+    case mtx_strict_upper_triangular: return "strict-upper-triangular";
     /* case mtx_zero: return "zero"; */
     default: return "unknown";
     }

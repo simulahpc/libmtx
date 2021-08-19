@@ -26,7 +26,7 @@
 #define LIBMTX_MTX_ASSEMBLY_H
 
 /**
- * `mtx_assembly` is used to enumerate assembly states for sparse
+ * `mtx_assembly' is used to enumerate assembly states for sparse
  * matrices in Matrix Market format.
  */
 enum mtx_assembly
@@ -36,7 +36,7 @@ enum mtx_assembly
 };
 
 /**
- * `mtx_assembly_str()` is a string representing the assembly type.
+ * `mtx_assembly_str()' is a string representing the assembly type.
  */
 const char * mtx_assembly_str(
     enum mtx_assembly assembly);

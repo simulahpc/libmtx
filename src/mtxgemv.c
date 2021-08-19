@@ -61,6 +61,7 @@ struct program_options
     char * x_path;
     char * y_path;
     char * format;
+    enum mtx_precision precision;
     bool gzip;
     int repeat;
     int verbose;
@@ -79,6 +80,7 @@ static int program_options_init(
     args->x_path = NULL;
     args->y_path = NULL;
     args->format = NULL;
+    args->precision = mtx_double;
     args->gzip = false;
     args->repeat = 1;
     args->quiet = false;
@@ -136,6 +138,8 @@ static void program_options_print_help(
     fprintf(f, "   \tIf omitted, then a vector of zeros is used.\n");
     fprintf(f, "\n");
     fprintf(f, " Other options are:\n");
+    fprintf(f, "  --precision=PRECISION\tprecision used to represent matrix or\n");
+    fprintf(f, "\t\t\tvector values: single or double. (default: double)\n");
     fprintf(f, "  -z, --gzip, --gunzip, --ungzip\tfilter files through gzip\n");
     fprintf(f, "  --format=FORMAT\tFormat string for outputting numerical values.\n");
     fprintf(f, "\t\t\tFor real, double and complex values, the format specifiers\n");
@@ -196,6 +200,36 @@ static int parse_program_options(
         num_arguments_consumed = 0;
         if (*argc <= 0)
             break;
+
+        if (strcmp((*argv)[0], "--precision") == 0) {
+            if (*argc < 2) {
+                program_options_free(args);
+                return EINVAL;
+            }
+            char * s = (*argv)[1];
+            if (strcmp(s, "single") == 0) {
+                args->precision = mtx_single;
+            } else if (strcmp(s, "double") == 0) {
+                args->precision = mtx_double;
+            } else {
+                program_options_free(args);
+                return EINVAL;
+            }
+            num_arguments_consumed += 2;
+            continue;
+        } else if (strstr((*argv)[0], "--precision=") == (*argv)[0]) {
+            char * s = (*argv)[0] + strlen("--precision=");
+            if (strcmp(s, "single") == 0) {
+                args->precision = mtx_single;
+            } else if (strcmp(s, "double") == 0) {
+                args->precision = mtx_double;
+            } else {
+                program_options_free(args);
+                return EINVAL;
+            }
+            num_arguments_consumed++;
+            continue;
+        }
 
         if (strcmp((*argv)[0], "-z") == 0 ||
             strcmp((*argv)[0], "--gzip") == 0 ||
@@ -379,7 +413,7 @@ int main(int argc, char *argv[])
 
     int line_number, column_number;
     err = mtx_read(
-        &A, args.A_path ? args.A_path : "", args.gzip,
+        &A, args.precision, args.A_path ? args.A_path : "", args.gzip,
         &line_number, &column_number);
     if (err && (line_number == -1 && column_number == -1)) {
         if (args.verbose > 0)
@@ -400,11 +434,6 @@ int main(int argc, char *argv[])
         return EXIT_FAILURE;
     }
 
-    /* TODO: We are assuming that the matrix is not assembled, meaning
-     * that multiple values are allowed for each nonzero. This should
-     * probably be controlled by by the user through a program option. */
-    A.assembly = mtx_unassembled;
-
     if (args.verbose > 0) {
         clock_gettime(CLOCK_MONOTONIC, &t1);
         fprintf(diagf, "%.6f seconds\n",
@@ -423,7 +452,7 @@ int main(int argc, char *argv[])
 
         int line_number, column_number;
         err = mtx_read(
-            &x, args.x_path, args.gzip,
+            &x, args.precision, args.x_path, args.gzip,
             &line_number, &column_number);
         if (err && (line_number == -1 && column_number == -1)) {
             if (args.verbose > 0)
@@ -452,41 +481,19 @@ int main(int argc, char *argv[])
                     timespec_duration(t0, t1));
         }
     } else {
+        err = mtx_alloc_vector_array(
+            &x, A.field, args.precision, 0, NULL, A.num_columns);
+        if (err) {
+            fprintf(stderr, "%s: %s\n",
+                    program_invocation_short_name,
+                    mtx_strerror(err));
+            mtx_free(&A);
+            program_options_free(&args);
+            return EXIT_FAILURE;
+        }
+
         if (A.field == mtx_real) {
-            err = mtx_alloc_vector_array_real(
-                &x, 0, NULL, A.num_columns);
-            if (err) {
-                fprintf(stderr, "%s: %s\n",
-                        program_invocation_short_name,
-                        mtx_strerror(err));
-                mtx_free(&A);
-                program_options_free(&args);
-                return EXIT_FAILURE;
-            }
-
-            err = mtx_set_constant_real(&x, 1.0f);
-            if (err) {
-                fprintf(stderr, "%s: %s\n",
-                        program_invocation_short_name,
-                        mtx_strerror(err));
-                mtx_free(&x);
-                mtx_free(&A);
-                program_options_free(&args);
-                return EXIT_FAILURE;
-            }
-        } else if (A.field == mtx_double) {
-            err = mtx_alloc_vector_array_double(
-                &x, 0, NULL, A.num_columns);
-            if (err) {
-                fprintf(stderr, "%s: %s\n",
-                        program_invocation_short_name,
-                        mtx_strerror(err));
-                mtx_free(&A);
-                program_options_free(&args);
-                return EXIT_FAILURE;
-            }
-
-            err = mtx_set_constant_double(&x, 1.0);
+            err = mtx_set_constant_real_single(&x, 1.0f);
             if (err) {
                 fprintf(stderr, "%s: %s\n",
                         program_invocation_short_name,
@@ -518,7 +525,7 @@ int main(int argc, char *argv[])
 
         int line_number, column_number;
         err = mtx_read(
-            &y, args.y_path ? args.y_path : "", args.gzip,
+            &y, args.precision, args.y_path ? args.y_path : "", args.gzip,
             &line_number, &column_number);
         if (err && (line_number == -1 && column_number == -1)) {
             if (args.verbose > 0)
@@ -549,34 +556,12 @@ int main(int argc, char *argv[])
                     timespec_duration(t0, t1));
         }
     } else {
-        if (A.field == mtx_real) {
-            err = mtx_alloc_vector_array_real(
-                &y, 0, NULL, A.num_rows);
-            if (err) {
-                fprintf(stderr, "%s: %s\n",
-                        program_invocation_short_name,
-                        mtx_strerror(err));
-                mtx_free(&x);
-                mtx_free(&A);
-                program_options_free(&args);
-                return EXIT_FAILURE;
-            }
-        } else if (A.field == mtx_double) {
-            err = mtx_alloc_vector_array_double(
-                &y, 0, NULL, A.num_rows);
-            if (err) {
-                fprintf(stderr, "%s: %s\n",
-                        program_invocation_short_name,
-                        mtx_strerror(err));
-                mtx_free(&x);
-                mtx_free(&A);
-                program_options_free(&args);
-                return EXIT_FAILURE;
-            }
-        } else {
+        err = mtx_alloc_vector_array(
+            &y, A.field, args.precision, 0, NULL, A.num_rows);
+        if (err) {
             fprintf(stderr, "%s: %s\n",
                     program_invocation_short_name,
-                    strerror(ENOTSUP));
+                    mtx_strerror(err));
             mtx_free(&x);
             mtx_free(&A);
             program_options_free(&args);
@@ -599,57 +584,78 @@ int main(int argc, char *argv[])
     /* 5. Compute matrix-vector multiplication. */
     for (int i = 0; i < args.repeat; i++) {
         if (A.field == mtx_real) {
-            if (args.verbose > 0) {
-                fprintf(diagf, "mtx_sgemv: ");
-                fflush(diagf);
-                clock_gettime(CLOCK_MONOTONIC, &t0);
-            }
-            err = mtx_sgemv(args.alpha, &A, &x, args.beta, &y);
-            if (err) {
-                if (args.verbose > 0)
-                    fprintf(diagf, "\n");
+            if (args.precision == mtx_single) {
+                if (args.verbose > 0) {
+                    fprintf(diagf, "mtx_sgemv: ");
+                    fflush(diagf);
+                    clock_gettime(CLOCK_MONOTONIC, &t0);
+                }
+                err = mtx_sgemv(args.alpha, &A, &x, args.beta, &y);
+                if (err) {
+                    if (args.verbose > 0)
+                        fprintf(diagf, "\n");
+                    fprintf(stderr, "%s: %s\n",
+                            program_invocation_short_name,
+                            mtx_strerror(err));
+                    mtx_free(&y);
+                    mtx_free(&x);
+                    mtx_free(&A);
+                    program_options_free(&args);
+                    return EXIT_FAILURE;
+                }
+                if (args.verbose > 0) {
+                    clock_gettime(CLOCK_MONOTONIC, &t1);
+                    fprintf(diagf, "%.6f seconds\n",
+                            timespec_duration(t0, t1));
+                }
+            } else if (args.precision == mtx_double) {
+                if (args.verbose > 0) {
+                    fprintf(diagf, "mtx_dgemv: ");
+                    fflush(diagf);
+                    clock_gettime(CLOCK_MONOTONIC, &t0);
+                }
+                err = mtx_dgemv(args.alpha, &A, &x, args.beta, &y);
+                if (err) {
+                    if (args.verbose > 0)
+                        fprintf(diagf, "\n");
+                    fprintf(stderr, "%s: %s\n",
+                            program_invocation_short_name,
+                            mtx_strerror(err));
+                    mtx_free(&y);
+                    mtx_free(&x);
+                    mtx_free(&A);
+                    program_options_free(&args);
+                    return EXIT_FAILURE;
+                }
+                if (args.verbose > 0) {
+                    clock_gettime(CLOCK_MONOTONIC, &t1);
+                    fprintf(diagf, "%.6f seconds\n",
+                            timespec_duration(t0, t1));
+                }
+            } else {
                 fprintf(stderr, "%s: %s\n",
                         program_invocation_short_name,
-                        mtx_strerror(err));
-                mtx_free(&y);
+                        mtx_strerror(MTX_ERR_INVALID_PRECISION));
                 mtx_free(&x);
                 mtx_free(&A);
                 program_options_free(&args);
                 return EXIT_FAILURE;
             }
-            if (args.verbose > 0) {
-                clock_gettime(CLOCK_MONOTONIC, &t1);
-                fprintf(diagf, "%.6f seconds\n",
-                        timespec_duration(t0, t1));
-            }
-        } else if (A.field == mtx_double) {
-            if (args.verbose > 0) {
-                fprintf(diagf, "mtx_dgemv: ");
-                fflush(diagf);
-                clock_gettime(CLOCK_MONOTONIC, &t0);
-            }
-            err = mtx_dgemv(args.alpha, &A, &x, args.beta, &y);
-            if (err) {
-                if (args.verbose > 0)
-                    fprintf(diagf, "\n");
-                fprintf(stderr, "%s: %s\n",
-                        program_invocation_short_name,
-                        mtx_strerror(err));
-                mtx_free(&y);
-                mtx_free(&x);
-                mtx_free(&A);
-                program_options_free(&args);
-                return EXIT_FAILURE;
-            }
-            if (args.verbose > 0) {
-                clock_gettime(CLOCK_MONOTONIC, &t1);
-                fprintf(diagf, "%.6f seconds\n",
-                        timespec_duration(t0, t1));
-            }
-        } else {
+        } else if (A.field == mtx_complex ||
+                   A.field == mtx_integer ||
+                   A.field == mtx_pattern)
+        {
             fprintf(stderr, "%s: %s\n",
                     program_invocation_short_name,
                     strerror(ENOTSUP));
+            mtx_free(&x);
+            mtx_free(&A);
+            program_options_free(&args);
+            return EXIT_FAILURE;
+        } else {
+            fprintf(stderr, "%s: %s\n",
+                    program_invocation_short_name,
+                    mtx_strerror(MTX_ERR_INVALID_MTX_FIELD));
             mtx_free(&x);
             mtx_free(&A);
             program_options_free(&args);

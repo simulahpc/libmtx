@@ -22,160 +22,86 @@
  * Reordering the rows or columns of vectors in coordinate format.
  */
 
-#include <libmtx/vector/array/reorder.h>
+#include <libmtx/vector/coordinate/data.h>
+#include <libmtx/vector/coordinate/reorder.h>
 
 #include <libmtx/error.h>
-#include <libmtx/mtx/mtx.h>
-#include <libmtx/mtx/reorder.h>
-#include <libmtx/vector/coordinate.h>
-
-static int mtx_vector_coordinate_real_permute(
-    struct mtx * mtx,
-    const int * row_permutation,
-    const int * column_permutation)
-{
-    const int * permutation;
-    if (mtx->num_rows >= 0 && mtx->num_columns == -1) {
-        permutation = row_permutation;
-    } else if (mtx->num_rows == -1 && mtx->num_columns >= 0) {
-        permutation = column_permutation;
-    } else {
-        return MTX_ERR_INVALID_MTX_SIZE;
-    }
-
-    struct mtx_vector_coordinate_real * data =
-        (struct mtx_vector_coordinate_real *) mtx->data;
-    for (int i = 0; i < mtx->size; i++)
-        data[i].i = permutation[data[i].i-1];
-    mtx->sorting = mtx_unsorted;
-    return MTX_SUCCESS;
-}
-
-static int mtx_vector_coordinate_double_permute(
-    struct mtx * mtx,
-    const int * row_permutation,
-    const int * column_permutation)
-{
-    const int * permutation;
-    if (mtx->num_rows >= 0 && mtx->num_columns == -1) {
-        permutation = row_permutation;
-    } else if (mtx->num_rows == -1 && mtx->num_columns >= 0) {
-        permutation = column_permutation;
-    } else {
-        return MTX_ERR_INVALID_MTX_SIZE;
-    }
-
-    struct mtx_vector_coordinate_double * data =
-        (struct mtx_vector_coordinate_double *) mtx->data;
-    for (int i = 0; i < mtx->size; i++)
-        data[i].i = permutation[data[i].i-1];
-    mtx->sorting = mtx_unsorted;
-    return MTX_SUCCESS;
-}
-
-static int mtx_vector_coordinate_complex_permute(
-    struct mtx * mtx,
-    const int * row_permutation,
-    const int * column_permutation)
-{
-    const int * permutation;
-    if (mtx->num_rows >= 0 && mtx->num_columns == -1) {
-        permutation = row_permutation;
-    } else if (mtx->num_rows == -1 && mtx->num_columns >= 0) {
-        permutation = column_permutation;
-    } else {
-        return MTX_ERR_INVALID_MTX_SIZE;
-    }
-
-    struct mtx_vector_coordinate_complex * data =
-        (struct mtx_vector_coordinate_complex *) mtx->data;
-    for (int i = 0; i < mtx->size; i++)
-        data[i].i = permutation[data[i].i-1];
-    mtx->sorting = mtx_unsorted;
-    return MTX_SUCCESS;
-}
-
-static int mtx_vector_coordinate_integer_permute(
-    struct mtx * mtx,
-    const int * row_permutation,
-    const int * column_permutation)
-{
-    const int * permutation;
-    if (mtx->num_rows >= 0 && mtx->num_columns == -1) {
-        permutation = row_permutation;
-    } else if (mtx->num_rows == -1 && mtx->num_columns >= 0) {
-        permutation = column_permutation;
-    } else {
-        return MTX_ERR_INVALID_MTX_SIZE;
-    }
-
-    struct mtx_vector_coordinate_integer * data =
-        (struct mtx_vector_coordinate_integer *) mtx->data;
-    for (int i = 0; i < mtx->size; i++)
-        data[i].i = permutation[data[i].i-1];
-    mtx->sorting = mtx_unsorted;
-    return MTX_SUCCESS;
-}
-
-static int mtx_vector_coordinate_pattern_permute(
-    struct mtx * mtx,
-    const int * row_permutation,
-    const int * column_permutation)
-{
-    const int * permutation;
-    if (mtx->num_rows >= 0 && mtx->num_columns == -1) {
-        permutation = row_permutation;
-    } else if (mtx->num_rows == -1 && mtx->num_columns >= 0) {
-        permutation = column_permutation;
-    } else {
-        return MTX_ERR_INVALID_MTX_SIZE;
-    }
-
-    struct mtx_vector_coordinate_pattern * data =
-        (struct mtx_vector_coordinate_pattern *) mtx->data;
-    for (int i = 0; i < mtx->size; i++)
-        data[i].i = permutation[data[i].i-1];
-    mtx->sorting = mtx_unsorted;
-    return MTX_SUCCESS;
-}
 
 /**
- * `mtx_vector_coordinate_permute()' permutes the elements of a vector
- * based on a given permutation.
+ * `mtx_vector_coordinate_data_permute()' permutes the elements of a
+ * vector in coordinate format based on a given permutation.
  *
  * The array `row_permutation' should be a permutation of the integers
- * `1,2,...,mtx->num_rows', and the array `column_permutation' should
- * be a permutation of the integers `1,2,...,mtx->num_columns'. The
- * elements belonging to row `i' (or column `j') in the permuted
- * vector are then equal to the elements in row `row_permutation[i-1]'
- * (or column `column_permutation[j-1]') in the original vector, for
- * `i=1,2,...,mtx->num_rows' (and `j=1,2,...,mtx->num_columns').
+ * `1,2,...,mtxdata->num_rows', and the array `column_permutation'
+ * should be a permutation of the integers
+ * `1,2,...,mtxdata->num_columns'. The elements belonging to row `i'
+ * (or column `j') in the permuted vector are then equal to the
+ * elements in row `row_permutation[i-1]' (or column
+ * `column_permutation[j-1]') in the original vector, for
+ * `i=1,2,...,mtxdata->num_rows' (and
+ * `j=1,2,...,mtxdata->num_columns').
  */
-int mtx_vector_coordinate_permute(
-    struct mtx * mtx,
+int mtx_vector_coordinate_data_permute(
+    struct mtx_vector_coordinate_data * mtxdata,
     const int * row_permutation,
     const int * column_permutation)
 {
-    if (mtx->object != mtx_vector)
-        return MTX_ERR_INVALID_MTX_OBJECT;
-    if (mtx->format != mtx_coordinate)
-        return MTX_ERR_INVALID_MTX_FORMAT;
+    const int * permutation;
+    if (mtxdata->num_rows >= 0 && mtxdata->num_columns == -1) {
+        permutation = row_permutation;
+    } else if (mtxdata->num_rows == -1 && mtxdata->num_columns >= 0) {
+        permutation = column_permutation;
+    } else {
+        return MTX_ERR_INVALID_MTX_SIZE;
+    }
 
-    if (mtx->field == mtx_real) {
-        return mtx_vector_coordinate_real_permute(
-            mtx, row_permutation, column_permutation);
-    } else if (mtx->field == mtx_double) {
-        return mtx_vector_coordinate_double_permute(
-            mtx, row_permutation, column_permutation);
-    } else if (mtx->field == mtx_complex) {
-        return mtx_vector_coordinate_complex_permute(
-            mtx, row_permutation, column_permutation);
-    } else if (mtx->field == mtx_integer) {
-        return mtx_vector_coordinate_integer_permute(
-            mtx, row_permutation, column_permutation);
-    } else if (mtx->field == mtx_pattern) {
-        return mtx_vector_coordinate_pattern_permute(
-            mtx, row_permutation, column_permutation);
+    if (mtxdata->field == mtx_real) {
+        if (mtxdata->precision == mtx_single) {
+            struct mtx_vector_coordinate_real_single * data =
+                mtxdata->data.real_single;
+            for (int64_t k = 0; k < mtxdata->size; k++)
+                data[k].i = permutation[data[k].i-1];
+        } else if (mtxdata->precision == mtx_double) {
+            struct mtx_vector_coordinate_real_double * data =
+                mtxdata->data.real_double;
+            for (int64_t k = 0; k < mtxdata->size; k++)
+                data[k].i = permutation[data[k].i-1];
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else if (mtxdata->field == mtx_complex) {
+        if (mtxdata->precision == mtx_single) {
+            struct mtx_vector_coordinate_complex_single * data =
+                mtxdata->data.complex_single;
+            for (int64_t k = 0; k < mtxdata->size; k++)
+                data[k].i = permutation[data[k].i-1];
+        } else if (mtxdata->precision == mtx_double) {
+            struct mtx_vector_coordinate_complex_double * data =
+                mtxdata->data.complex_double;
+            for (int64_t k = 0; k < mtxdata->size; k++)
+                data[k].i = permutation[data[k].i-1];
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else if (mtxdata->field == mtx_integer) {
+        if (mtxdata->precision == mtx_single) {
+            struct mtx_vector_coordinate_integer_single * data =
+                mtxdata->data.integer_single;
+            for (int64_t k = 0; k < mtxdata->size; k++)
+                data[k].i = permutation[data[k].i-1];
+        } else if (mtxdata->precision == mtx_double) {
+            struct mtx_vector_coordinate_integer_double * data =
+                mtxdata->data.integer_double;
+            for (int64_t k = 0; k < mtxdata->size; k++)
+                data[k].i = permutation[data[k].i-1];
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else if (mtxdata->field == mtx_pattern) {
+        struct mtx_vector_coordinate_pattern * data =
+            mtxdata->data.pattern;
+        for (int64_t k = 0; k < mtxdata->size; k++)
+            data[k].i = permutation[data[k].i-1];
     } else {
         return MTX_ERR_INVALID_MTX_FIELD;
     }

@@ -26,6 +26,7 @@
 #define LIBMTX_MATRIX_ARRAY_ARRAY_H
 
 #include <libmtx/mtx/header.h>
+#include <libmtx/mtx/precision.h>
 #include <libmtx/mtx/sort.h>
 #include <libmtx/mtx/triangle.h>
 
@@ -53,6 +54,7 @@ struct mtx;
 int mtx_alloc_matrix_array(
     struct mtx * mtx,
     enum mtx_field field,
+    enum mtx_precision precision,
     enum mtx_symmetry symmetry,
     enum mtx_triangle triangle,
     enum mtx_sorting sorting,
@@ -61,9 +63,13 @@ int mtx_alloc_matrix_array(
     int num_rows,
     int num_columns);
 
+/*
+ * Array matrix allocation and initialisation.
+ */
+
 /**
- * `mtx_alloc_matrix_array_real()` allocates a dense matrix with real,
- * single-precision floating point coefficients.
+ * `mtx_init_matrix_array_real_single()` creates a dense matrix with
+ * real, single-precision floating point coefficients.
  *
  * If `symmetry' is `mtx_symmetric', `mtx_skew_symmetric' or
  * `mtx_hermitian', then `triangle' must be either
@@ -74,7 +80,7 @@ int mtx_alloc_matrix_array(
  *
  * ´sorting' must be `mtx_row_major' or `mtx_column_major'.
  */
-int mtx_alloc_matrix_array_real(
+int mtx_init_matrix_array_real_single(
     struct mtx * mtx,
     enum mtx_symmetry symmetry,
     enum mtx_triangle triangle,
@@ -82,10 +88,12 @@ int mtx_alloc_matrix_array_real(
     int num_comment_lines,
     const char ** comment_lines,
     int num_rows,
-    int num_columns);
+    int num_columns,
+    int64_t size,
+    const float * data);
 
 /**
- * `mtx_alloc_matrix_array_double()` allocates a dense matrix with
+ * `mtx_init_matrix_array_real_double()` creates a dense matrix with
  * real, double-precision floating point coefficients.
  *
  * If `symmetry' is `mtx_symmetric', `mtx_skew_symmetric' or
@@ -97,80 +105,7 @@ int mtx_alloc_matrix_array_real(
  *
  * ´sorting' must be `mtx_row_major' or `mtx_column_major'.
  */
-int mtx_alloc_matrix_array_double(
-    struct mtx * mtx,
-    enum mtx_symmetry symmetry,
-    enum mtx_triangle triangle,
-    enum mtx_sorting sorting,
-    int num_comment_lines,
-    const char ** comment_lines,
-    int num_rows,
-    int num_columns);
-
-/**
- * `mtx_alloc_matrix_array_complex()` allocates a dense matrix with
- * complex, single-precision floating point coefficients.
- *
- * If `symmetry' is `mtx_symmetric', `mtx_skew_symmetric' or
- * `mtx_hermitian', then `triangle' must be either
- * `mtx_lower_triangular' or `mtx_upper_triangular' to indicate which
- * triangle of the matrix is stored in `data'.  Otherwise, if
- * `symmetry' is `mtx_general', then `triangle' must be
- * `mtx_nontriangular'.
- *
- * ´sorting' must be `mtx_row_major' or `mtx_column_major'.
- */
-int mtx_alloc_matrix_array_complex(
-    struct mtx * mtx,
-    enum mtx_symmetry symmetry,
-    enum mtx_triangle triangle,
-    enum mtx_sorting sorting,
-    int num_comment_lines,
-    const char ** comment_lines,
-    int num_rows,
-    int num_columns);
-
-/**
- * `mtx_alloc_matrix_array_integer()` allocates a dense matrix with
- * integer coefficients.
- *
- * If `symmetry' is `mtx_symmetric', `mtx_skew_symmetric' or
- * `mtx_hermitian', then `triangle' must be either
- * `mtx_lower_triangular' or `mtx_upper_triangular' to indicate which
- * triangle of the matrix is stored in `data'.  Otherwise, if
- * `symmetry' is `mtx_general', then `triangle' must be
- * `mtx_nontriangular'.
- *
- * ´sorting' must be `mtx_row_major' or `mtx_column_major'.
- */
-int mtx_alloc_matrix_array_integer(
-    struct mtx * mtx,
-    enum mtx_symmetry symmetry,
-    enum mtx_triangle triangle,
-    enum mtx_sorting sorting,
-    int num_comment_lines,
-    const char ** comment_lines,
-    int num_rows,
-    int num_columns);
-
-/*
- * Dense (array) matrix allocation and initialisation.
- */
-
-/**
- * `mtx_alloc_matrix_array_real()` creates a dense matrix with real,
- * single-precision floating point coefficients.
- *
- * If `symmetry' is `mtx_symmetric', `mtx_skew_symmetric' or
- * `mtx_hermitian', then `triangle' must be either
- * `mtx_lower_triangular' or `mtx_upper_triangular' to indicate which
- * triangle of the matrix is stored in `data'.  Otherwise, if
- * `symmetry' is `mtx_general', then `triangle' must be
- * `mtx_nontriangular'.
- *
- * ´sorting' must be `mtx_row_major' or `mtx_column_major'.
- */
-int mtx_init_matrix_array_real(
+int mtx_init_matrix_array_real_double(
     struct mtx * mtx,
     enum mtx_symmetry symmetry,
     enum mtx_triangle triangle,
@@ -179,35 +114,12 @@ int mtx_init_matrix_array_real(
     const char ** comment_lines,
     int num_rows,
     int num_columns,
-    const float * data);
-
-/**
- * `mtx_init_matrix_array_double()` creates a dense matrix with real,
- * double-precision floating point coefficients.
- *
- * If `symmetry' is `mtx_symmetric', `mtx_skew_symmetric' or
- * `mtx_hermitian', then `triangle' must be either
- * `mtx_lower_triangular' or `mtx_upper_triangular' to indicate which
- * triangle of the matrix is stored in `data'.  Otherwise, if
- * `symmetry' is `mtx_general', then `triangle' must be
- * `mtx_nontriangular'.
- *
- * ´sorting' must be `mtx_row_major' or `mtx_column_major'.
- */
-int mtx_init_matrix_array_double(
-    struct mtx * mtx,
-    enum mtx_symmetry symmetry,
-    enum mtx_triangle triangle,
-    enum mtx_sorting sorting,
-    int num_comment_lines,
-    const char ** comment_lines,
-    int num_rows,
-    int num_columns,
+    int64_t size,
     const double * data);
 
 /**
- * `mtx_init_matrix_array_complex()` creates a dense matrix with
- * complex, single-precision floating point coefficients.
+ * `mtx_init_matrix_array_complex_single()` creates a dense matrix
+ * with complex, single-precision floating point coefficients.
  *
  * If `symmetry' is `mtx_symmetric', `mtx_skew_symmetric' or
  * `mtx_hermitian', then `triangle' must be either
@@ -218,7 +130,7 @@ int mtx_init_matrix_array_double(
  *
  * ´sorting' must be `mtx_row_major' or `mtx_column_major'.
  */
-int mtx_init_matrix_array_complex(
+int mtx_init_matrix_array_complex_single(
     struct mtx * mtx,
     enum mtx_symmetry symmetry,
     enum mtx_triangle triangle,
@@ -227,11 +139,12 @@ int mtx_init_matrix_array_complex(
     const char ** comment_lines,
     int num_rows,
     int num_columns,
-    const float * data);
+    int64_t size,
+    const float (* data)[2]);
 
 /**
- * `mtx_init_matrix_array_integer()` creates a dense matrix with
- * integer coefficients.
+ * `mtx_init_matrix_array_integer_single()` creates a dense matrix
+ * with integer coefficients.
  *
  * If `symmetry' is `mtx_symmetric', `mtx_skew_symmetric' or
  * `mtx_hermitian', then `triangle' must be either
@@ -242,7 +155,7 @@ int mtx_init_matrix_array_complex(
  *
  * ´sorting' must be `mtx_row_major' or `mtx_column_major'.
  */
-int mtx_init_matrix_array_integer(
+int mtx_init_matrix_array_integer_single(
     struct mtx * mtx,
     enum mtx_symmetry symmetry,
     enum mtx_triangle triangle,
@@ -251,7 +164,8 @@ int mtx_init_matrix_array_integer(
     const char ** comment_lines,
     int num_rows,
     int num_columns,
-    const int * data);
+    int64_t size,
+    const int32_t * data);
 
 /*
  * Dense (array) matrix value initialisation.
@@ -264,61 +178,36 @@ int mtx_matrix_array_set_zero(
     struct mtx * mtx);
 
 /**
- * `mtx_matrix_array_set_constant_real()' sets every value of a matrix
- * equal to a constant, single precision floating point number.
+ * `mtx_matrix_array_set_constant_real_single()' sets every value of a
+ * matrix equal to a constant, single precision floating point number.
  */
-int mtx_matrix_array_set_constant_real(
+int mtx_matrix_array_set_constant_real_single(
     struct mtx * mtx,
     float a);
 
 /**
- * `mtx_matrix_array_set_constant_double()' sets every value of a
+ * `mtx_matrix_array_set_constant_real_double()' sets every value of a
  * matrix equal to a constant, double precision floating point number.
  */
-int mtx_matrix_array_set_constant_double(
+int mtx_matrix_array_set_constant_real_double(
     struct mtx * mtx,
     double a);
 
 /**
- * `mtx_matrix_array_set_constant_complex()' sets every value of a
- * matrix equal to a constant, single precision floating point complex
- * number.
+ * `mtx_matrix_array_set_constant_complex_single()' sets every value
+ * of a matrix equal to a constant, single precision floating point
+ * complex number.
  */
-int mtx_matrix_array_set_constant_complex(
+int mtx_matrix_array_set_constant_complex_single(
     struct mtx * mtx,
-    float a,
-    float b);
+    float a[2]);
 
 /**
- * `mtx_matrix_array_set_constant_integer()' sets every value of a
- * matrix equal to a constant integer.
+ * `mtx_matrix_array_set_constant_integer_single()' sets every value
+ * of a matrix equal to a constant, single precision integer.
  */
-int mtx_matrix_array_set_constant_integer(
+int mtx_matrix_array_set_constant_integer_single(
     struct mtx * mtx,
-    int a);
-
-/*
- * Other dense (array) matrix functions.
- */
-
-/**
- * `mtx_matrix_array_num_nonzeros()` computes the number of matrix
- * nonzeros, including those not explicitly stored due to symmetry.
- */
-int mtx_matrix_array_num_nonzeros(
-    int num_rows,
-    int num_columns,
-    int64_t * num_nonzeros);
-
-/**
- * `mtx_matrix_array_size()` computes the number of matrix nonzeros,
- * excluding those that are not stored explicitly due to symmetry.
- */
-int mtx_matrix_array_size(
-    enum mtx_symmetry symmetry,
-    enum mtx_triangle triangle,
-    int num_rows,
-    int num_columns,
-    int64_t * size);
+    int32_t a);
 
 #endif
