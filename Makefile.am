@@ -60,6 +60,7 @@ libmtx_la_SOURCES = \
 	libmtx/matrix/coordinate/sort.c \
 	libmtx/mtx/assembly.c \
 	libmtx/mtx/blas.c \
+	libmtx/mtx/cg.c \
 	libmtx/mtx/header.c \
 	libmtx/mtx/io.c \
 	libmtx/mtx/mpi.c \
@@ -109,6 +110,7 @@ nobase_include_HEADERS = \
 	libmtx/matrix/coordinate/sort.h \
 	libmtx/mtx/assembly.h \
 	libmtx/mtx/blas.h \
+	libmtx/mtx/cg.h \
 	libmtx/mtx/header.h \
 	libmtx/mtx/io.h \
 	libmtx/mtx/mpi.h \
@@ -142,6 +144,7 @@ pkgconfig_DATA = libmtx/libmtx.pc
 # Matrix Market utility programs
 bin_PROGRAMS = \
 	mtxaxpy \
+	mtxcg \
 	mtxdot \
 	mtxgemv \
 	mtxinfo \
@@ -163,6 +166,11 @@ endif
 mtxaxpy_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/src $(MPICPPFLAGS)
 mtxaxpy_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
 mtxaxpy_SOURCES = src/mtxaxpy.c
+
+# mtxcg
+mtxcg_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/src $(MPICPPFLAGS)
+mtxcg_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
+mtxcg_SOURCES = src/mtxcg.c
 
 # mtxdot
 mtxdot_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/src $(MPICPPFLAGS)
@@ -219,6 +227,7 @@ check_PROGRAMS = \
 	tests/test_index_set \
 	tests/test_mtx \
 	tests/test_mtx_blas \
+	tests/test_mtx_cg \
 	tests/test_mtx_io \
 	tests/test_mtx_matrix_array \
 	tests/test_mtx_matrix_coordinate \
@@ -239,6 +248,9 @@ tests_test_mtx_SOURCES = tests/test_mtx.c tests/test.h
 tests_test_mtx_blas_CPPFLAGS = $(MPICPPFLAGS)
 tests_test_mtx_blas_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
 tests_test_mtx_blas_SOURCES = tests/test_mtx_blas.c tests/test.h
+tests_test_mtx_cg_CPPFLAGS = $(MPICPPFLAGS)
+tests_test_mtx_cg_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
+tests_test_mtx_cg_SOURCES = tests/test_mtx_cg.c tests/test.h
 tests_test_mtx_io_CPPFLAGS = $(MPICPPFLAGS)
 tests_test_mtx_io_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
 tests_test_mtx_io_SOURCES = tests/test_mtx_io.c tests/test.h
@@ -274,6 +286,7 @@ TESTS = \
 	tests/test_index_set \
 	tests/test_mtx \
 	tests/test_mtx_blas \
+	tests/test_mtx_cg \
 	tests/test_mtx_io \
 	tests/test_mtx_matrix_array \
 	tests/test_mtx_matrix_coordinate \

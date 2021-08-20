@@ -93,6 +93,8 @@ const char * mtx_strerror(
         return "invalid format specifier";
     case MTX_ERR_INDEX_OUT_OF_BOUNDS:
         return "index out of bounds";
+    case MTX_ERR_NOT_CONVERGED:
+        return "not converged";
     default:
         return "unknown error";
     }

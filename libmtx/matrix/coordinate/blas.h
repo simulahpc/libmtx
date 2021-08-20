@@ -74,6 +74,24 @@ int mtx_matrix_coordinate_daxpy(
     struct mtx_matrix_coordinate_data * y);
 
 /**
+ * `mtx_matrix_coordinate_saypx()' adds two matrices of single
+ * precision floating-point values, `y = a*y + x'.
+ */
+int mtx_matrix_coordinate_saypx(
+    float a,
+    struct mtx_matrix_coordinate_data * y,
+    const struct mtx_matrix_coordinate_data * x);
+
+/**
+ * `mtx_matrix_coordinate_daypx()' adds two matrices of double
+ * precision floating-point values, `y = a*y + x'.
+ */
+int mtx_matrix_coordinate_daypx(
+    double a,
+    struct mtx_matrix_coordinate_data * y,
+    const struct mtx_matrix_coordinate_data * x);
+
+/**
  * `mtx_matrix_coordinate_sdot()' computes the Frobenius inner product
  * of two matrices in single precision floating point.
  */

@@ -224,6 +224,70 @@ int mtx_vector_array_daxpy(
 }
 
 /**
+ * `mtx_vector_array_saypx()' adds two vectors of single precision
+ * floating-point values, `y = a*y + x'.
+ */
+int mtx_vector_array_saypx(
+    float a,
+    struct mtx_vector_array_data * y,
+    const struct mtx_vector_array_data * x)
+{
+    if (x->size != y->size)
+        return MTX_ERR_INVALID_MTX_SIZE;
+
+    if (x->field == mtx_real && y->field == mtx_real) {
+        if (x->precision == mtx_single && y->precision == mtx_single) {
+            const float * xdata = x->data.real_single;
+            float * ydata = y->data.real_single;
+            for (int64_t k = 0; k < x->size; k++)
+                ydata[k] = a*ydata[k]+xdata[k];
+        } else if (x->precision == mtx_double && y->precision == mtx_double) {
+            const double * xdata = x->data.real_double;
+            double * ydata = y->data.real_double;
+            for (int64_t k = 0; k < x->size; k++)
+                ydata[k] = a*ydata[k]+xdata[k];
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else {
+        return MTX_ERR_INVALID_MTX_FIELD;
+    }
+    return MTX_SUCCESS;
+}
+
+/**
+ * `mtx_vector_array_daypx()' adds two vectors of double precision
+ * floating-point values, `y = a*y + x'.
+ */
+int mtx_vector_array_daypx(
+    double a,
+    struct mtx_vector_array_data * y,
+    const struct mtx_vector_array_data * x)
+{
+    if (x->size != y->size)
+        return MTX_ERR_INVALID_MTX_SIZE;
+
+    if (x->field == mtx_real && y->field == mtx_real) {
+        if (x->precision == mtx_single && y->precision == mtx_single) {
+            const float * xdata = x->data.real_single;
+            float * ydata = y->data.real_single;
+            for (int64_t k = 0; k < x->size; k++)
+                ydata[k] = a*ydata[k]+xdata[k];
+        } else if (x->precision == mtx_double && y->precision == mtx_double) {
+            const double * xdata = x->data.real_double;
+            double * ydata = y->data.real_double;
+            for (int64_t k = 0; k < x->size; k++)
+                ydata[k] = a*ydata[k]+xdata[k];
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else {
+        return MTX_ERR_INVALID_MTX_FIELD;
+    }
+    return MTX_SUCCESS;
+}
+
+/**
  * `mtx_vector_array_sdot()' computes the Euclidean dot product of two
  * vectors (or Frobenius inner product of two matrices) of single
  * precision floating-point values.

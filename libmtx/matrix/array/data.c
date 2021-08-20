@@ -573,10 +573,15 @@ int mtx_matrix_array_data_set_constant_real_single(
 {
     if (mtxdata->field != mtx_real)
         return MTX_ERR_INVALID_MTX_FIELD;
-    if (mtxdata->precision != mtx_single)
+    if (mtxdata->precision == mtx_single) {
+        for (int64_t k = 0; k < mtxdata->size; k++)
+            mtxdata->data.real_single[k] = a;
+    } else if (mtxdata->precision == mtx_double) {
+        for (int64_t k = 0; k < mtxdata->size; k++)
+            mtxdata->data.real_double[k] = a;
+    } else {
         return MTX_ERR_INVALID_PRECISION;
-    for (int64_t k = 0; k < mtxdata->size; k++)
-        mtxdata->data.real_single[k] = a;
+    }
     return MTX_SUCCESS;
 }
 
@@ -591,10 +596,15 @@ int mtx_matrix_array_data_set_constant_real_double(
 {
     if (mtxdata->field != mtx_real)
         return MTX_ERR_INVALID_MTX_FIELD;
-    if (mtxdata->precision != mtx_double)
+    if (mtxdata->precision == mtx_single) {
+        for (int64_t k = 0; k < mtxdata->size; k++)
+            mtxdata->data.real_single[k] = a;
+    } else if (mtxdata->precision == mtx_double) {
+        for (int64_t k = 0; k < mtxdata->size; k++)
+            mtxdata->data.real_double[k] = a;
+    } else {
         return MTX_ERR_INVALID_PRECISION;
-    for (int64_t k = 0; k < mtxdata->size; k++)
-        mtxdata->data.real_double[k] = a;
+    }
     return MTX_SUCCESS;
 }
 
@@ -609,11 +619,18 @@ int mtx_matrix_array_data_set_constant_complex_single(
 {
     if (mtxdata->field != mtx_complex)
         return MTX_ERR_INVALID_MTX_FIELD;
-    if (mtxdata->precision != mtx_single)
+    if (mtxdata->precision == mtx_single) {
+        for (int64_t k = 0; k < mtxdata->size; k++) {
+            mtxdata->data.complex_single[k][0] = a[0];
+            mtxdata->data.complex_single[k][1] = a[1];
+        }
+    } else if (mtxdata->precision == mtx_double) {
+        for (int64_t k = 0; k < mtxdata->size; k++) {
+            mtxdata->data.complex_double[k][0] = a[0];
+            mtxdata->data.complex_double[k][1] = a[1];
+        }
+    } else {
         return MTX_ERR_INVALID_PRECISION;
-    for (int64_t k = 0; k < mtxdata->size; k++) {
-        mtxdata->data.complex_single[k][0] = a[0];
-        mtxdata->data.complex_single[k][1] = a[1];
     }
     return MTX_SUCCESS;
 }
@@ -629,11 +646,18 @@ int mtx_matrix_array_data_set_constant_complex_double(
 {
     if (mtxdata->field != mtx_complex)
         return MTX_ERR_INVALID_MTX_FIELD;
-    if (mtxdata->precision != mtx_double)
+    if (mtxdata->precision == mtx_single) {
+        for (int64_t k = 0; k < mtxdata->size; k++) {
+            mtxdata->data.complex_single[k][0] = a[0];
+            mtxdata->data.complex_single[k][1] = a[1];
+        }
+    } else if (mtxdata->precision == mtx_double) {
+        for (int64_t k = 0; k < mtxdata->size; k++) {
+            mtxdata->data.complex_double[k][0] = a[0];
+            mtxdata->data.complex_double[k][1] = a[1];
+        }
+    } else {
         return MTX_ERR_INVALID_PRECISION;
-    for (int64_t k = 0; k < mtxdata->size; k++) {
-        mtxdata->data.complex_double[k][0] = a[0];
-        mtxdata->data.complex_double[k][1] = a[1];
     }
     return MTX_SUCCESS;
 }
@@ -648,10 +672,15 @@ int mtx_matrix_array_data_set_constant_integer_single(
 {
     if (mtxdata->field != mtx_integer)
         return MTX_ERR_INVALID_MTX_FIELD;
-    if (mtxdata->precision != mtx_single)
+    if (mtxdata->precision == mtx_single) {
+        for (int64_t k = 0; k < mtxdata->size; k++)
+            mtxdata->data.integer_single[k] = a;
+    } else if (mtxdata->precision == mtx_double) {
+        for (int64_t k = 0; k < mtxdata->size; k++)
+            mtxdata->data.integer_double[k] = a;
+    } else {
         return MTX_ERR_INVALID_PRECISION;
-    for (int64_t k = 0; k < mtxdata->size; k++)
-        mtxdata->data.integer_single[k] = a;
+    }
     return MTX_SUCCESS;
 }
 
@@ -665,9 +694,14 @@ int mtx_matrix_array_data_set_constant_integer_double(
 {
     if (mtxdata->field != mtx_integer)
         return MTX_ERR_INVALID_MTX_FIELD;
-    if (mtxdata->precision != mtx_double)
+    if (mtxdata->precision == mtx_single) {
+        for (int64_t k = 0; k < mtxdata->size; k++)
+            mtxdata->data.integer_single[k] = a;
+    } else if (mtxdata->precision == mtx_double) {
+        for (int64_t k = 0; k < mtxdata->size; k++)
+            mtxdata->data.integer_double[k] = a;
+    } else {
         return MTX_ERR_INVALID_PRECISION;
-    for (int64_t k = 0; k < mtxdata->size; k++)
-        mtxdata->data.integer_double[k] = a;
+    }
     return MTX_SUCCESS;
 }

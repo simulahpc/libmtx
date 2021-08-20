@@ -162,6 +162,34 @@ int mtx_vector_coordinate_daxpy(
 }
 
 /**
+ * `mtx_vector_coordinate_saypx()' adds two vectors of single
+ * precision floating-point values, `y = a*y + x'.
+ */
+int mtx_vector_coordinate_saypx(
+    float a,
+    struct mtx_vector_coordinate_data * y,
+    const struct mtx_vector_coordinate_data * x)
+{
+    /* TODO: Implement vector addition for sparse vectors. */
+    errno = ENOTSUP;
+    return MTX_ERR_ERRNO;
+}
+
+/**
+ * `mtx_vector_coordinate_daypx()' adds two vectors of double
+ * precision floating-point values, `y = a*y + x'.
+ */
+int mtx_vector_coordinate_daypx(
+    double a,
+    struct mtx_vector_coordinate_data * y,
+    const struct mtx_vector_coordinate_data * x)
+{
+    /* TODO: Implement vector addition for sparse vectors. */
+    errno = ENOTSUP;
+    return MTX_ERR_ERRNO;
+}
+
+/**
  * `mtx_vector_coordinate_sdot()' computes the Euclidean dot product
  * of two vectors of single precision floating-point values.
  */

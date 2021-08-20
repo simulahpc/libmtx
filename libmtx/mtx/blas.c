@@ -227,6 +227,84 @@ int mtx_daxpy(
 }
 
 /**
+ * `mtx_saypx()' adds two vectors (or matrices) of single precision
+ * floating-point values, `y = a*y + x'.
+ */
+int mtx_saypx(
+    float a,
+    struct mtx * y,
+    const struct mtx * x)
+{
+    if (x->object == mtx_matrix && y->object == mtx_matrix) {
+        if (x->format == mtx_array && y->format == mtx_array) {
+            return mtx_matrix_array_saypx(
+                a, &y->storage.matrix_array,
+                &x->storage.matrix_array);
+        } else if (x->format == mtx_coordinate && y->format == mtx_coordinate) {
+            return mtx_matrix_coordinate_saypx(
+                a, &y->storage.matrix_coordinate,
+                &x->storage.matrix_coordinate);
+        } else {
+            return MTX_ERR_INVALID_MTX_FORMAT;
+        }
+    } else if (x->object == mtx_vector && y->object == mtx_vector) {
+        if (x->format == mtx_array && y->format == mtx_array) {
+            return mtx_vector_array_saypx(
+                a, &y->storage.vector_array,
+                &x->storage.vector_array);
+        } else if (x->format == mtx_coordinate && y->format == mtx_coordinate) {
+            return mtx_vector_coordinate_saypx(
+                a, &y->storage.vector_coordinate,
+                &x->storage.vector_coordinate);
+        } else {
+            return MTX_ERR_INVALID_MTX_FORMAT;
+        }
+    } else {
+        return MTX_ERR_INVALID_MTX_OBJECT;
+    }
+    return MTX_SUCCESS;
+}
+
+/**
+ * `mtx_daypx()' adds two vectors (or matrices) of double precision
+ * floating-point values, `y = a*y + x'.
+ */
+int mtx_daypx(
+    double a,
+    struct mtx * y,
+    const struct mtx * x)
+{
+    if (x->object == mtx_matrix && y->object == mtx_matrix) {
+        if (x->format == mtx_array && y->format == mtx_array) {
+            return mtx_matrix_array_daypx(
+                a, &y->storage.matrix_array,
+                &x->storage.matrix_array);
+        } else if (x->format == mtx_coordinate && y->format == mtx_coordinate) {
+            return mtx_matrix_coordinate_daypx(
+                a, &y->storage.matrix_coordinate,
+                &x->storage.matrix_coordinate);
+        } else {
+            return MTX_ERR_INVALID_MTX_FORMAT;
+        }
+    } else if (x->object == mtx_vector && y->object == mtx_vector) {
+        if (x->format == mtx_array && y->format == mtx_array) {
+            return mtx_vector_array_daypx(
+                a, &y->storage.vector_array,
+                &x->storage.vector_array);
+        } else if (x->format == mtx_coordinate && y->format == mtx_coordinate) {
+            return mtx_vector_coordinate_daypx(
+                a, &y->storage.vector_coordinate,
+                &x->storage.vector_coordinate);
+        } else {
+            return MTX_ERR_INVALID_MTX_FORMAT;
+        }
+    } else {
+        return MTX_ERR_INVALID_MTX_OBJECT;
+    }
+    return MTX_SUCCESS;
+}
+
+/**
  * `mtx_sdot()' computes the Euclidean dot product of two vectors (or
  * Frobenius inner product of two matrices) of single precision
  * floating-point values.

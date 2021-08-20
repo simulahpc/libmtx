@@ -157,7 +157,7 @@ int mtx_matrix_array_dscal(
 }
 
 /**
- * `mtx_matrix_array_saxpy()' adds two matrixs of single precision
+ * `mtx_matrix_array_saxpy()' adds two matrices of single precision
  * floating-point values, `y = a*x + y'.
  */
 int mtx_matrix_array_saxpy(
@@ -205,7 +205,7 @@ int mtx_matrix_array_saxpy(
 }
 
 /**
- * `mtx_matrix_array_daxpy()' adds two matrixs of double precision
+ * `mtx_matrix_array_daxpy()' adds two matrices of double precision
  * floating-point values, `y = a*x + y'.
  */
 int mtx_matrix_array_daxpy(
@@ -253,9 +253,88 @@ int mtx_matrix_array_daxpy(
 }
 
 /**
- * `mtx_matrix_array_sdot()' computes the Euclidean dot product of two
- * matrixs (or Frobenius inner product of two matrices) of single
- * precision floating-point values.
+ * `mtx_matrix_array_saypx()' adds two matrices of single precision
+ * floating-point values, `y = a*x + y'.
+ */
+int mtx_matrix_array_saypx(
+    float a,
+    struct mtx_matrix_array_data * y,
+    const struct mtx_matrix_array_data * x)
+{
+    if (x->symmetry != y->symmetry)
+        return MTX_ERR_INVALID_MTX_SYMMETRY;
+    if (x->triangle != y->triangle)
+        return MTX_ERR_INVALID_MTX_TRIANGLE;
+    if (x->sorting != y->sorting)
+        return MTX_ERR_INVALID_MTX_SORTING;
+    if (x->num_rows != y->num_rows ||
+        x->num_columns != y->num_columns ||
+        x->size != y->size)
+        return MTX_ERR_INVALID_MTX_SIZE;
+
+    if (x->field == mtx_real && y->field == mtx_real) {
+        if (x->precision == mtx_single && y->precision == mtx_single) {
+            const float * xdata = x->data.real_single;
+            float * ydata = y->data.real_single;
+            for (int64_t k = 0; k < x->size; k++)
+                ydata[k] = a*ydata[k]+xdata[k];
+        } else if (x->precision == mtx_double && y->precision == mtx_double) {
+            const double * xdata = x->data.real_double;
+            double * ydata = y->data.real_double;
+            for (int64_t k = 0; k < x->size; k++)
+                ydata[k] = a*ydata[k]+xdata[k];
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else {
+        return MTX_ERR_INVALID_MTX_FIELD;
+    }
+    return MTX_SUCCESS;
+}
+
+/**
+ * `mtx_matrix_array_daypx()' adds two matrices of double precision
+ * floating-point values, `y = a*y + x'.
+ */
+int mtx_matrix_array_daypx(
+    double a,
+    struct mtx_matrix_array_data * y,
+    const struct mtx_matrix_array_data * x)
+{
+    if (x->symmetry != y->symmetry)
+        return MTX_ERR_INVALID_MTX_SYMMETRY;
+    if (x->triangle != y->triangle)
+        return MTX_ERR_INVALID_MTX_TRIANGLE;
+    if (x->sorting != y->sorting)
+        return MTX_ERR_INVALID_MTX_SORTING;
+    if (x->num_rows != y->num_rows ||
+        x->num_columns != y->num_columns ||
+        x->size != y->size)
+        return MTX_ERR_INVALID_MTX_SIZE;
+
+    if (x->field == mtx_real && y->field == mtx_real) {
+        if (x->precision == mtx_single && y->precision == mtx_single) {
+            const float * xdata = x->data.real_single;
+            float * ydata = y->data.real_single;
+            for (int64_t k = 0; k < x->size; k++)
+                ydata[k] = a*ydata[k]+xdata[k];
+        } else if (x->precision == mtx_double && y->precision == mtx_double) {
+            const double * xdata = x->data.real_double;
+            double * ydata = y->data.real_double;
+            for (int64_t k = 0; k < x->size; k++)
+                ydata[k] = a*ydata[k]+xdata[k];
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else {
+        return MTX_ERR_INVALID_MTX_FIELD;
+    }
+    return MTX_SUCCESS;
+}
+
+/**
+ * `mtx_matrix_array_sdot()' computes the Frobenius inner product of
+ * two matrices in single precision floating point.
  */
 int mtx_matrix_array_sdot(
     const struct mtx_matrix_array_data * x,
@@ -304,9 +383,8 @@ int mtx_matrix_array_sdot(
 }
 
 /**
- * `mtx_matrix_array_ddot()' computes the Euclidean dot product of two
- * matrixs (or Frobenius inner product of two matrices) of double
- * precision floating-point values.
+ * `mtx_matrix_array_ddot()' computes the Frobenius inner product of
+ * two matrices in double precision floating point.
  */
 int mtx_matrix_array_ddot(
     const struct mtx_matrix_array_data * x,
@@ -355,9 +433,8 @@ int mtx_matrix_array_ddot(
 }
 
 /**
- * `mtx_matrix_array_snrm2()' computes the Euclidean norm of a matrix
- * (or Frobenius norm of a matrix) of single precision floating-point
- * values.
+ * `mtx_matrix_array_snrm2()' computes the Frobenius norm of a matrix
+ * in single precision floating point.
  */
 int mtx_matrix_array_snrm2(
     const struct mtx_matrix_array_data * x,
@@ -397,9 +474,8 @@ int mtx_matrix_array_snrm2(
 }
 
 /**
- * `mtx_matrix_array_dnrm2()' computes the Euclidean norm of a matrix
- * (or Frobenius norm of a matrix) of double precision floating-point
- * values.
+ * `mtx_matrix_array_dnrm2()' computes the Frobenius norm of a matrix
+ * in double precision floating point.
  */
 int mtx_matrix_array_dnrm2(
     const struct mtx_matrix_array_data * x,

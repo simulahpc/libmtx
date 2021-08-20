@@ -58,6 +58,7 @@ enum mtx_error
     MTX_ERR_INVALID_STREAM_TYPE = -20,      /* invalid stream type */
     MTX_ERR_INVALID_FORMAT_SPECIFIER = -21, /* invalid format specifier */
     MTX_ERR_INDEX_OUT_OF_BOUNDS = -22,      /* index out of bounds */
+    MTX_ERR_NOT_CONVERGED = -23,            /* iterative method did not converge */
 };
 
 /**

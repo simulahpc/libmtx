@@ -73,6 +73,24 @@ int mtx_daxpy(
     struct mtx * y);
 
 /**
+ * `mtx_saypx()' adds two vectors (or matrices) of single precision
+ * floating-point values, `y = a*y + x'.
+ */
+int mtx_saypx(
+    float a,
+    struct mtx * y,
+    const struct mtx * x);
+
+/**
+ * `mtx_daypx()' adds two vectors (or matrices) of double precision
+ * floating-point values, `y = a*y + x'.
+ */
+int mtx_daypx(
+    double a,
+    struct mtx * y,
+    const struct mtx * x);
+
+/**
  * `mtx_sdot()' computes the Euclidean dot product of two vectors (or
  * Frobenius inner product of two matrices) of single precision
  * floating-point values.

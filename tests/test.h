@@ -187,8 +187,11 @@
  *
  * If `a' or `b' are zero or sub-normal (i.e., less than `FLT_MIN'),
  * then the absolute difference `|a-b|/FLT_MIN' is compared to
- * `epsilon'. Otherwise, the relative difference `|a-b|/(|a|+|b|)' is
- * used (or, `|a-b|/FLT_MAX' if `|a|+|b|>FLT_MAX').
+ * `epsilon'.  If `a' and `b' are near zero (`|a|+|b|' is smaller than
+ * `FLT_EPSILON'), then their absolute difference, `|a-b|', is
+ * compared to `epsilon'.  Otherwise, the relative difference
+ * `|a-b|/(|a|+|b|)' is used (or, `|a-b|/FLT_MAX' if
+ * `|a|+|b|>FLT_MAX').
  */
 static inline bool float_nearly_equal(
     float a,
@@ -202,6 +205,8 @@ static inline bool float_nearly_equal(
         return true;
     } else if (a == 0 || b == 0 || (a_abs + b_abs) < FLT_MIN) {
         return diff_abs < (epsilon * FLT_MIN);
+    } else if (a_abs + b_abs < DBL_EPSILON) {
+        return diff_abs < epsilon;
     } else {
         return diff_abs / fminf(a_abs + b_abs, FLT_MAX) < epsilon;
     }
@@ -235,8 +240,11 @@ static inline bool float_nearly_equal(
  *
  * If `a' or `b' are zero or sub-normal (i.e., less than `DBL_MIN'),
  * then the absolute difference `|a-b|/DBL_MIN' is compared to
- * `epsilon'. Otherwise, the relative difference `|a-b|/(|a|+|b|)' is
- * used (or, `|a-b|/DBL_MAX' if `|a|+|b|>DBL_MAX').
+ * `epsilon'.  If `a' and `b' are near zero (`|a|+|b|' is smaller than
+ * `DBL_EPSILON'), then their absolute difference, `|a-b|', is
+ * compared to `epsilon'.  Otherwise, the relative difference
+ * `|a-b|/(|a|+|b|)' is used (or, `|a-b|/DBL_MAX' if
+ * `|a|+|b|>DBL_MAX').
  */
 static inline bool double_nearly_equal(
     double a,
@@ -250,6 +258,8 @@ static inline bool double_nearly_equal(
         return true;
     } else if (a == 0 || b == 0 || (a_abs + b_abs) < DBL_MIN) {
         return diff_abs < (epsilon * DBL_MIN);
+    } else if (a_abs + b_abs < DBL_EPSILON) {
+        return diff_abs < epsilon;
     } else {
         return diff_abs / fmin(a_abs + b_abs, DBL_MAX) < epsilon;
     }

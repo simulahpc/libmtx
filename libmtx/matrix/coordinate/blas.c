@@ -169,6 +169,34 @@ int mtx_matrix_coordinate_daxpy(
 }
 
 /**
+ * `mtx_matrix_coordinate_saypx()' adds two matrices of single
+ * precision floating-point values, `y = a*y + x'.
+ */
+int mtx_matrix_coordinate_saypx(
+    float a,
+    struct mtx_matrix_coordinate_data * y,
+    const struct mtx_matrix_coordinate_data * x)
+{
+    /* TODO: Implement addition of matrices in coordinate format. */
+    errno = ENOTSUP;
+    return MTX_ERR_ERRNO;
+}
+
+/**
+ * `mtx_matrix_coordinate_daypx()' adds two matrices of double
+ * precision floating-point values, `y = a*y + x'.
+ */
+int mtx_matrix_coordinate_daypx(
+    double a,
+    struct mtx_matrix_coordinate_data * y,
+    const struct mtx_matrix_coordinate_data * x)
+{
+    /* TODO: Implement addition of matrices in coordinate format. */
+    errno = ENOTSUP;
+    return MTX_ERR_ERRNO;
+}
+
+/**
  * `mtx_matrix_coordinate_sdot()' computes the Frobenius inner product
  * of two matrices in single precision floating point.
  */
@@ -316,14 +344,10 @@ int mtx_matrix_coordinate_sgemv(
         A->num_columns != x->size)
         return MTX_ERR_INVALID_MTX_SIZE;
 
-    /* TODO: The naive algorithm below only works if `beta' is
-     * equal to one. Otherwise, some intermediate storage will be
-     * needed for the values of the matrix-vector product, and a
-     * final vector addition must be performed. */
-    if (beta != 1.0) {
-        errno = ENOTSUP;
-        return MTX_ERR_ERRNO;
-    }
+    /* TODO: The naive algorithm below only works if `beta' is equal
+     * to zero or one. Otherwise, some intermediate storage will be
+     * needed for the values of the matrix-vector product, and a final
+     * vector addition must be performed. */
 
     if (A->field == mtx_real &&
         x->field == mtx_real &&
@@ -337,8 +361,18 @@ int mtx_matrix_coordinate_sgemv(
                 A->data.real_single;
             const float * xdata = x->data.real_single;
             float * ydata = y->data.real_single;
-            for (int64_t k = 0; k < A->size; k++)
-                ydata[Adata[k].i-1] += alpha*Adata[k].a*xdata[Adata[k].j-1];
+            if (beta == 0.0f) {
+                for (int64_t i = 0; i < y->size; i++)
+                    ydata[i] = 0.0f;
+                for (int64_t k = 0; k < A->size; k++)
+                    ydata[Adata[k].i-1] += alpha*Adata[k].a*xdata[Adata[k].j-1];
+            } else if (beta == 1.0f) {
+                for (int64_t k = 0; k < A->size; k++)
+                    ydata[Adata[k].i-1] += alpha*Adata[k].a*xdata[Adata[k].j-1];
+            } else {
+                errno = ENOTSUP;
+                return MTX_ERR_ERRNO;
+            }
         } else if (A->precision == mtx_double &&
                    x->precision == mtx_double &&
                    y->precision == mtx_double)
@@ -347,8 +381,18 @@ int mtx_matrix_coordinate_sgemv(
                 A->data.real_double;
             const double * xdata = x->data.real_double;
             double * ydata = y->data.real_double;
-            for (int64_t k = 0; k < A->size; k++)
-                ydata[Adata[k].i-1] += alpha*Adata[k].a*xdata[Adata[k].j-1];
+            if (beta == 0.0f) {
+                for (int64_t i = 0; i < y->size; i++)
+                    ydata[i] = 0.0;
+                for (int64_t k = 0; k < A->size; k++)
+                    ydata[Adata[k].i-1] += alpha*Adata[k].a*xdata[Adata[k].j-1];
+            } else if (beta == 1.0f) {
+                for (int64_t k = 0; k < A->size; k++)
+                    ydata[Adata[k].i-1] += alpha*Adata[k].a*xdata[Adata[k].j-1];
+            } else {
+                errno = ENOTSUP;
+                return MTX_ERR_ERRNO;
+            }
         } else {
             return MTX_ERR_INVALID_PRECISION;
         }
@@ -376,14 +420,10 @@ int mtx_matrix_coordinate_dgemv(
         A->num_columns != x->size)
         return MTX_ERR_INVALID_MTX_SIZE;
 
-    /* TODO: The naive algorithm below only works if `beta' is
-     * equal to one. Otherwise, some intermediate storage will be
-     * needed for the values of the matrix-vector product, and a
-     * final vector addition must be performed. */
-    if (beta != 1.0) {
-        errno = ENOTSUP;
-        return MTX_ERR_ERRNO;
-    }
+    /* TODO: The naive algorithm below only works if `beta' is equal
+     * to zero or one. Otherwise, some intermediate storage will be
+     * needed for the values of the matrix-vector product, and a final
+     * vector addition must be performed. */
 
     if (A->field == mtx_real &&
         x->field == mtx_real &&
@@ -397,8 +437,18 @@ int mtx_matrix_coordinate_dgemv(
                 A->data.real_single;
             const float * xdata = x->data.real_single;
             float * ydata = y->data.real_single;
-            for (int64_t k = 0; k < A->size; k++)
-                ydata[Adata[k].i-1] += alpha*Adata[k].a*xdata[Adata[k].j-1];
+            if (beta == 0.0) {
+                for (int64_t i = 0; i < y->size; i++)
+                    ydata[i] = 0.0f;
+                for (int64_t k = 0; k < A->size; k++)
+                    ydata[Adata[k].i-1] += alpha*Adata[k].a*xdata[Adata[k].j-1];
+            } else if (beta == 1.0) {
+                for (int64_t k = 0; k < A->size; k++)
+                    ydata[Adata[k].i-1] += alpha*Adata[k].a*xdata[Adata[k].j-1];
+            } else {
+                errno = ENOTSUP;
+                return MTX_ERR_ERRNO;
+            }
         } else if (A->precision == mtx_double &&
                    x->precision == mtx_double &&
                    y->precision == mtx_double)
@@ -407,8 +457,18 @@ int mtx_matrix_coordinate_dgemv(
                 A->data.real_double;
             const double * xdata = x->data.real_double;
             double * ydata = y->data.real_double;
-            for (int64_t k = 0; k < A->size; k++)
-                ydata[Adata[k].i-1] += alpha*Adata[k].a*xdata[Adata[k].j-1];
+            if (beta == 0.0) {
+                for (int64_t i = 0; i < y->size; i++)
+                    ydata[i] = 0.0;
+                for (int64_t k = 0; k < A->size; k++)
+                    ydata[Adata[k].i-1] += alpha*Adata[k].a*xdata[Adata[k].j-1];
+            } else if (beta == 1.0) {
+                for (int64_t k = 0; k < A->size; k++)
+                    ydata[Adata[k].i-1] += alpha*Adata[k].a*xdata[Adata[k].j-1];
+            } else {
+                errno = ENOTSUP;
+                return MTX_ERR_ERRNO;
+            }
         } else {
             return MTX_ERR_INVALID_PRECISION;
         }

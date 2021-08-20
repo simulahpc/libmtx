@@ -74,8 +74,26 @@ int mtx_matrix_array_daxpy(
     struct mtx_matrix_array_data * y);
 
 /**
+ * `mtx_matrix_array_saypx()' adds two matrices of single precision
+ * floating-point values, `y = a*y + x'.
+ */
+int mtx_matrix_array_saypx(
+    float a,
+    struct mtx_matrix_array_data * y,
+    const struct mtx_matrix_array_data * x);
+
+/**
+ * `mtx_matrix_array_daypx()' adds two matrices of double precision
+ * floating-point values, `y = a*y + x'.
+ */
+int mtx_matrix_array_daypx(
+    double a,
+    struct mtx_matrix_array_data * y,
+    const struct mtx_matrix_array_data * x);
+
+/**
  * `mtx_matrix_array_sdot()' computes the Frobenius inner product of
- * two matrices of single precision floating-point values.
+ * two matrices in single precision floating point.
  */
 int mtx_matrix_array_sdot(
     const struct mtx_matrix_array_data * x,
@@ -84,7 +102,7 @@ int mtx_matrix_array_sdot(
 
 /**
  * `mtx_matrix_array_ddot()' computes the Frobenius inner product of
- * two matrices of double precision floating-point values.
+ * two matrices in double precision floating point.
  */
 int mtx_matrix_array_ddot(
     const struct mtx_matrix_array_data * x,
@@ -93,7 +111,7 @@ int mtx_matrix_array_ddot(
 
 /**
  * `mtx_matrix_array_snrm2()' computes the Frobenius norm of a matrix
- * of single precision floating-point values.
+ * in single precision floating point.
  */
 int mtx_matrix_array_snrm2(
     const struct mtx_matrix_array_data * x,
@@ -101,7 +119,7 @@ int mtx_matrix_array_snrm2(
 
 /**
  * `mtx_matrix_array_dnrm2()' computes the Frobenius norm of a matrix
- * of double precision floating-point values.
+ * in double precision floating point.
  */
 int mtx_matrix_array_dnrm2(
     const struct mtx_matrix_array_data * x,

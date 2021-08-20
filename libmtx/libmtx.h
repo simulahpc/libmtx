@@ -32,6 +32,7 @@
 #include <libmtx/matrix/coordinate.h>
 #include <libmtx/mtx/assembly.h>
 #include <libmtx/mtx/blas.h>
+#include <libmtx/mtx/cg.h>
 #include <libmtx/mtx/header.h>
 #include <libmtx/mtx/io.h>
 #include <libmtx/mtx/mpi.h>
