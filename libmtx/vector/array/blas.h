@@ -28,6 +28,13 @@
 struct mtx_vector_array_data;
 
 /**
+ * `mtx_vector_array_copy()' copies values of a vector, `y = x'.
+ */
+int mtx_vector_array_copy(
+    struct mtx_vector_array_data * y,
+    const struct mtx_vector_array_data * x);
+
+/**
  * `mtx_vector_array_sscal()' scales a vector by a single precision
  * floating-point scalar, `x = a*x'.
  */

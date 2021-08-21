@@ -43,6 +43,52 @@
  */
 
 /**
+ * `mtx_matrix_array_copy()' copies values of a matrix, `y = x'.
+ */
+int mtx_matrix_array_copy(
+    struct mtx_matrix_array_data * y,
+    const struct mtx_matrix_array_data * x)
+{
+    if (x->symmetry != y->symmetry)
+        return MTX_ERR_INVALID_MTX_SYMMETRY;
+    if (x->triangle != y->triangle)
+        return MTX_ERR_INVALID_MTX_TRIANGLE;
+    if (x->sorting != y->sorting)
+        return MTX_ERR_INVALID_MTX_SORTING;
+    if (x->num_rows != y->num_rows ||
+        x->num_columns != y->num_columns ||
+        x->size != y->size)
+        return MTX_ERR_INVALID_MTX_SIZE;
+
+    if (x->field == mtx_real && y->field == mtx_real) {
+        if (x->precision == mtx_single && y->precision == mtx_single) {
+            const float * xdata = x->data.real_single;
+            float * ydata = y->data.real_single;
+#ifdef LIBMTX_HAVE_BLAS
+            cblas_scopy(x->size, xdata, 1, ydata, 1);
+#else
+            for (int64_t k = 0; k < x->size; k++)
+                ydata[k] = xdata[k];
+#endif
+        } else if (x->precision == mtx_double && y->precision == mtx_double) {
+            const double * xdata = x->data.real_double;
+            double * ydata = y->data.real_double;
+#ifdef LIBMTX_HAVE_BLAS
+            cblas_dcopy(x->size, xdata, 1, ydata, 1);
+#else
+            for (int64_t k = 0; k < x->size; k++)
+                ydata[k] = xdata[k];
+#endif
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else {
+        return MTX_ERR_INVALID_MTX_FIELD;
+    }
+    return MTX_SUCCESS;
+}
+
+/**
  * `mtx_matrix_array_sscal()' scales a matrix by a single precision
  * floating-point scalar, `x = a*x'.
  */

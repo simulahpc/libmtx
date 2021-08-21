@@ -33,6 +33,13 @@ struct mtx_vector_array_data;
  */
 
 /**
+ * `mtx_matrix_coordinate_copy()' copies values of a matrix, `y = x'.
+ */
+int mtx_matrix_coordinate_copy(
+    struct mtx_matrix_coordinate_data * y,
+    const struct mtx_matrix_coordinate_data * x);
+
+/**
  * `mtx_matrix_coordinate_sscal()' scales a matrix by a single
  * precision floating-point scalar, `x = a*x'.
  */

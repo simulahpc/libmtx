@@ -32,6 +32,18 @@
 #include <math.h>
 
 /**
+ * `mtx_vector_coordinate_copy()' copies values of a vector, `y = x'.
+ */
+int mtx_vector_coordinate_copy(
+    struct mtx_vector_coordinate_data * y,
+    const struct mtx_vector_coordinate_data * x)
+{
+    /* TODO: Implement copying of matrices in coordinate format. */
+    errno = ENOTSUP;
+    return MTX_ERR_ERRNO;
+}
+
+/**
  * `mtx_vector_coordinate_sscal()' scales a vector by a single
  * precision floating-point scalar, `x = a*x'.
  */

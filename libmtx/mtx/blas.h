@@ -32,6 +32,13 @@ struct mtx;
  */
 
 /**
+ * `mtx_copy()' copies the values of a vector (or matrix), `y = x'.
+ */
+int mtx_copy(
+    struct mtx * y,
+    const struct mtx * x);
+
+/**
  * `mtx_sscal()' scales a vector (or matrix) by a single precision
  * floating-point scalar, `x = a*x'.
  */

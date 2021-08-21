@@ -38,6 +38,44 @@
 #include <math.h>
 
 /**
+ * `mtx_vector_array_copy()' copies values of a vector, `y = x'.
+ */
+int mtx_vector_array_copy(
+    struct mtx_vector_array_data * y,
+    const struct mtx_vector_array_data * x)
+{
+    if (x->size != y->size)
+        return MTX_ERR_INVALID_MTX_SIZE;
+
+    if (x->field == mtx_real && y->field == mtx_real) {
+        if (x->precision == mtx_single && y->precision == mtx_single) {
+            const float * xdata = x->data.real_single;
+            float * ydata = y->data.real_single;
+#ifdef LIBMTX_HAVE_BLAS
+            cblas_scopy(x->size, xdata, 1, ydata, 1);
+#else
+            for (int64_t k = 0; k < x->size; k++)
+                ydata[k] = xdata[k];
+#endif
+        } else if (x->precision == mtx_double && y->precision == mtx_double) {
+            const double * xdata = x->data.real_double;
+            double * ydata = y->data.real_double;
+#ifdef LIBMTX_HAVE_BLAS
+            cblas_dcopy(x->size, xdata, 1, ydata, 1);
+#else
+            for (int64_t k = 0; k < x->size; k++)
+                ydata[k] = xdata[k];
+#endif
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else {
+        return MTX_ERR_INVALID_MTX_FIELD;
+    }
+    return MTX_SUCCESS;
+}
+
+/**
  * `mtx_vector_array_sscal()' scales a vector by a single precision
  * floating-point scalar, `x = a*x'.
  */
