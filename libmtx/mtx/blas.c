@@ -35,10 +35,6 @@
 #include <libmtx/vector/coordinate/blas.h>
 #include <libmtx/vector/coordinate.h>
 
-#ifdef LIBMTX_HAVE_BLAS
-#include <cblas.h>
-#endif
-
 #include <errno.h>
 
 #include <math.h>

@@ -22,6 +22,8 @@
  * BLAS operations for matrices in array format.
  */
 
+#include <libmtx/libmtx-config.h>
+
 #include <libmtx/error.h>
 #include <libmtx/matrix/array.h>
 #include <libmtx/matrix/array/blas.h>

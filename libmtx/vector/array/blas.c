@@ -22,6 +22,8 @@
  * Level 1 BLAS operations for vectors in array format.
  */
 
+#include <libmtx/libmtx-config.h>
+
 #include <libmtx/error.h>
 #include <libmtx/vector/array.h>
 #include <libmtx/vector/array/blas.h>
