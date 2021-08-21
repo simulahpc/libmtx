@@ -64,7 +64,7 @@ static int mtx_matrix_coordinate_data_sort_column_major(
      *    using an insertion sort within each column.
      */
     struct mtx_matrix_coordinate_data srcmtxdata;
-    err = mtx_matrix_coordinate_data_copy(&srcmtxdata, mtxdata);
+    err = mtx_matrix_coordinate_data_copy_init(&srcmtxdata, mtxdata);
     if (err) {
         free(column_ptr);
         return err;
@@ -237,7 +237,7 @@ static int mtx_matrix_coordinate_data_sort_row_major(
      *    using an insertion sort within each row.
      */
     struct mtx_matrix_coordinate_data srcmtxdata;
-    err = mtx_matrix_coordinate_data_copy(&srcmtxdata, mtxdata);
+    err = mtx_matrix_coordinate_data_copy_init(&srcmtxdata, mtxdata);
     if (err) {
         free(row_ptr);
         return err;

@@ -306,9 +306,24 @@ int mtx_vector_coordinate_data_init_pattern(
 }
 
 /**
- * `mtx_vector_coordinate_data_copy()' copies vector data.
+ * `mtx_vector_coordinate_data_copy_alloc()' allocates a copy of a vector
+ * without copying the vector values.
  */
-int mtx_vector_coordinate_data_copy(
+int mtx_vector_coordinate_data_copy_alloc(
+    struct mtx_vector_coordinate_data * dst,
+    const struct mtx_vector_coordinate_data * src)
+{
+    return mtx_vector_coordinate_data_alloc(
+        dst, src->field, src->precision,
+        src->sorting, src->assembly,
+        src->num_rows, src->num_columns, src->size);
+}
+
+/**
+ * `mtx_vector_coordinate_data_copy_init()' creates a copy of a vector
+ * and also copies vector values.
+ */
+int mtx_vector_coordinate_data_copy_init(
     struct mtx_vector_coordinate_data * dst,
     const struct mtx_vector_coordinate_data * src)
 {

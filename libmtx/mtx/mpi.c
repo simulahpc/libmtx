@@ -633,7 +633,7 @@ int mtx_matrix_coordinate_gather(
             if (p == root) {
                 /* For the root process, there is no need for any
                  * communication; just copy the matrix. */
-                err = mtx_copy(&tmpmtxs[p], srcmtx);
+                err = mtx_copy_init(&tmpmtxs[p], srcmtx);
                 if (err) {
                     for (int q = p-1; q >= 0; q--)
                         mtx_free(&tmpmtxs[q]);

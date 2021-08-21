@@ -374,9 +374,18 @@ int mtx_matrix_coordinate_data_init_pattern(
     const struct mtx_matrix_coordinate_pattern * data);
 
 /**
- * `mtx_matrix_coordinate_data_copy()' copies matrix data.
+ * `mtx_matrix_coordinate_data_copy_alloc()' allocates a copy of a
+ * matrix without copying the matrix values.
  */
-int mtx_matrix_coordinate_data_copy(
+int mtx_matrix_coordinate_data_copy_alloc(
+    struct mtx_matrix_coordinate_data * dst,
+    const struct mtx_matrix_coordinate_data * src);
+
+/**
+ * `mtx_matrix_coordinate_data_copy_init()' creates a copy of a matrix
+ * and also copies matrix values.
+ */
+int mtx_matrix_coordinate_data_copy_init(
     struct mtx_matrix_coordinate_data * dst,
     const struct mtx_matrix_coordinate_data * src);
 

@@ -42,9 +42,9 @@
 #include <string.h>
 
 /**
- * `test_mtx_copy()' tests copying an `mtx' object.
+ * `test_mtx_copy_init()' tests copying an `mtx' object.
  */
-int test_mtx_copy(void)
+int test_mtx_copy_init(void)
 {
     int err;
 
@@ -69,7 +69,7 @@ int test_mtx_copy(void)
 
     /* Make a copy and verify the copied contents. */
     struct mtx destmtx;
-    err = mtx_copy(&destmtx, &srcmtx);
+    err = mtx_copy_init(&destmtx, &srcmtx);
     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
     TEST_ASSERT_EQ(mtx_matrix, destmtx.object);
     TEST_ASSERT_EQ(mtx_coordinate, destmtx.format);
@@ -259,7 +259,7 @@ int test_mtx_set_zero_vector_coordinate_real_single(void)
 int main(int argc, char * argv[])
 {
     TEST_SUITE_BEGIN("Running tests for Matrix Market objects\n");
-    TEST_RUN(test_mtx_copy);
+    TEST_RUN(test_mtx_copy_init);
     TEST_RUN(test_mtx_set_comment_lines);
     TEST_RUN(test_mtx_set_zero_matrix_coordinate_real_single);
     TEST_RUN(test_mtx_set_zero_vector_array_real_single);

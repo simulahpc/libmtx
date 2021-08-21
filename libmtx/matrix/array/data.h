@@ -289,14 +289,23 @@ int mtx_matrix_array_data_init_integer_double(
     const int64_t * data);
 
 /**
- * `mtx_matrix_array_data_copy()' copies a matrix or matrix.
+ * `mtx_matrix_array_data_copy_alloc()' allocates a copy of a matrix
+ * without copying the matrix values.
  */
-int mtx_matrix_array_data_copy(
+int mtx_matrix_array_data_copy_alloc(
     struct mtx_matrix_array_data * dst,
     const struct mtx_matrix_array_data * src);
 
 /**
- * `mtx_matrix_array_data_set_zero()' zeroes a matrix or matrix.
+ * `mtx_matrix_array_data_copy_init()' creates a copy of a matrix and
+ * also copies matrix values.
+ */
+int mtx_matrix_array_data_copy_init(
+    struct mtx_matrix_array_data * dst,
+    const struct mtx_matrix_array_data * src);
+
+/**
+ * `mtx_matrix_array_data_set_zero()' zeroes a matrix.
  */
 int mtx_matrix_array_data_set_zero(
     struct mtx_matrix_array_data * mtxdata);

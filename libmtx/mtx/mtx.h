@@ -129,9 +129,18 @@ void mtx_free(
     struct mtx * mtx);
 
 /**
- * `mtx_copy()' copies a matrix or vector.
+ * `mtx_copy_alloc()' allocates a copy of a matrix or vector without
+ * copying the matrix or vector values.
  */
-int mtx_copy(
+int mtx_copy_alloc(
+    struct mtx * dstmtx,
+    const struct mtx * srcmtx);
+
+/**
+ * `mtx_copy_init()' creates a copy of a matrix or vector and also
+ * copies the matrix or vector values.
+ */
+int mtx_copy_init(
     struct mtx * dstmtx,
     const struct mtx * srcmtx);
 

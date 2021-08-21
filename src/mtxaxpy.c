@@ -468,7 +468,7 @@ int main(int argc, char *argv[])
         }
     } else {
         /* Create a copy of the `x' vector. */
-        err = mtx_copy(&y, &x);
+        err = mtx_copy_alloc(&y, &x);
         if (err) {
             fprintf(stderr, "%s: %s\n",
                     program_invocation_short_name,

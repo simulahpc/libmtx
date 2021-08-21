@@ -71,17 +71,17 @@ void mtx_free(
     free(mtx->comment_lines);
 }
 
-static int mtx_copy_data(
+static int mtx_copy_alloc_data(
     struct mtx * dst,
     const struct mtx * src)
 {
     if (src->object == mtx_matrix) {
         if (src->format == mtx_array) {
-            return mtx_matrix_array_data_copy(
+            return mtx_matrix_array_data_copy_alloc(
                 &dst->storage.matrix_array,
                 &src->storage.matrix_array);
         } else if (src->format == mtx_coordinate) {
-            return mtx_matrix_coordinate_data_copy(
+            return mtx_matrix_coordinate_data_copy_alloc(
                 &dst->storage.matrix_coordinate,
                 &src->storage.matrix_coordinate);
         } else {
@@ -89,11 +89,11 @@ static int mtx_copy_data(
         }
     } else if (src->object == mtx_vector) {
         if (src->format == mtx_array) {
-            return mtx_vector_array_data_copy(
+            return mtx_vector_array_data_copy_alloc(
                 &dst->storage.vector_array,
                 &src->storage.vector_array);
         } else if (src->format == mtx_coordinate) {
-            return mtx_vector_coordinate_data_copy(
+            return mtx_vector_coordinate_data_copy_alloc(
                 &dst->storage.vector_coordinate,
                 &src->storage.vector_coordinate);
         } else {
@@ -105,9 +105,10 @@ static int mtx_copy_data(
 }
 
 /**
- * `mtx_copy()' copies a matrix or vector.
+ * `mtx_copy_alloc()' allocates a copy of a matrix or vector without
+ * copying the matrix or vector values.
  */
-int mtx_copy(
+int mtx_copy_alloc(
     struct mtx * dst,
     const struct mtx * src)
 {
@@ -133,7 +134,80 @@ int mtx_copy(
     dst->num_columns = src->num_columns;
     dst->num_nonzeros = src->num_nonzeros;
 
-    err = mtx_copy_data(dst, src);
+    err = mtx_copy_alloc_data(dst, src);
+    if (err) {
+        for (int i = 0; i < dst->num_comment_lines; i++)
+            free(dst->comment_lines[i]);
+        free(dst->comment_lines);
+        return err;
+    }
+    return MTX_SUCCESS;
+}
+
+static int mtx_copy_init_data(
+    struct mtx * dst,
+    const struct mtx * src)
+{
+    if (src->object == mtx_matrix) {
+        if (src->format == mtx_array) {
+            return mtx_matrix_array_data_copy_init(
+                &dst->storage.matrix_array,
+                &src->storage.matrix_array);
+        } else if (src->format == mtx_coordinate) {
+            return mtx_matrix_coordinate_data_copy_init(
+                &dst->storage.matrix_coordinate,
+                &src->storage.matrix_coordinate);
+        } else {
+            return MTX_ERR_INVALID_MTX_FORMAT;
+        }
+    } else if (src->object == mtx_vector) {
+        if (src->format == mtx_array) {
+            return mtx_vector_array_data_copy_init(
+                &dst->storage.vector_array,
+                &src->storage.vector_array);
+        } else if (src->format == mtx_coordinate) {
+            return mtx_vector_coordinate_data_copy_init(
+                &dst->storage.vector_coordinate,
+                &src->storage.vector_coordinate);
+        } else {
+            return MTX_ERR_INVALID_MTX_FORMAT;
+        }
+    } else {
+        return MTX_ERR_INVALID_MTX_OBJECT;
+    }
+}
+
+/**
+ * `mtx_copy_init()' creates a copy of a matrix or vector and also
+ * copies the matrix or vector values.
+ */
+int mtx_copy_init(
+    struct mtx * dst,
+    const struct mtx * src)
+{
+    int err;
+    dst->object = src->object;
+    dst->format = src->format;
+    dst->field = src->field;
+    dst->symmetry = src->symmetry;
+    dst->num_comment_lines = src->num_comment_lines;
+    dst->comment_lines = malloc(dst->num_comment_lines * sizeof(char *));
+    if (!dst->comment_lines)
+        return MTX_ERR_ERRNO;
+    for (int i = 0; i < dst->num_comment_lines; i++) {
+        dst->comment_lines[i] = strdup(src->comment_lines[i]);
+        if (!dst->comment_lines[i]) {
+            for (int j = i-1; j >= 0; j--)
+                free(dst->comment_lines[j]);
+            free(dst->comment_lines);
+            return MTX_ERR_ERRNO;
+        }
+    }
+    dst->num_rows = src->num_rows;
+    dst->num_columns = src->num_columns;
+    dst->num_nonzeros = src->num_nonzeros;
+
+    err = mtx_copy_init_data(dst, src);
     if (err) {
         for (int i = 0; i < dst->num_comment_lines; i++)
             free(dst->comment_lines[i]);

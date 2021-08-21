@@ -53,7 +53,7 @@ int mtx_matrix_array_data_permute(
     }
 
     struct mtx_matrix_array_data srcmtxdata;
-    int err = mtx_matrix_array_data_copy(&srcmtxdata, mtxdata);
+    int err = mtx_matrix_array_data_copy_init(&srcmtxdata, mtxdata);
     if (err)
         return err;
 
