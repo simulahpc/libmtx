@@ -43,7 +43,7 @@ int test_mtx_init_matrix_array_real_single(void)
     int err;
     struct mtx mtx;
     int num_comment_lines = 1;
-    const char * comment_lines[] = {"% a comment"};
+    const char * comment_lines[] = {"% a comment\n"};
     int num_rows = 2;
     int num_columns = 2;
     float data[] = {1.0f, 2.0f, 3.0f, 4.0f};
@@ -59,7 +59,7 @@ int test_mtx_init_matrix_array_real_single(void)
     TEST_ASSERT_EQ(mtx_real, mtx.field);
     TEST_ASSERT_EQ(mtx_general, mtx.symmetry);
     TEST_ASSERT_EQ(1, mtx.num_comment_lines);
-    TEST_ASSERT_STREQ("% a comment", mtx.comment_lines[0]);
+    TEST_ASSERT_STREQ("% a comment\n", mtx.comment_lines[0]);
     TEST_ASSERT_EQ(2, mtx.num_rows);
     TEST_ASSERT_EQ(2, mtx.num_columns);
     TEST_ASSERT_EQ(-1, mtx.num_nonzeros);
@@ -92,8 +92,8 @@ int test_mtx_init_matrix_array_real_single_symmetric(void)
 {
     int err;
     struct mtx mtx;
-    int num_comment_lines = 1;
-    const char * comment_lines[] = {"% a comment"};
+    int num_comment_lines = 0;
+    const char * comment_lines[] = {};
     int num_rows = 2;
     int num_columns = 2;
     float data[] = {1.0f, 3.0f, 4.0f};
@@ -108,8 +108,6 @@ int test_mtx_init_matrix_array_real_single_symmetric(void)
     TEST_ASSERT_EQ(mtx_array, mtx.format);
     TEST_ASSERT_EQ(mtx_real, mtx.field);
     TEST_ASSERT_EQ(mtx_symmetric, mtx.symmetry);
-    TEST_ASSERT_EQ(1, mtx.num_comment_lines);
-    TEST_ASSERT_STREQ("% a comment", mtx.comment_lines[0]);
     TEST_ASSERT_EQ(2, mtx.num_rows);
     TEST_ASSERT_EQ(2, mtx.num_columns);
     TEST_ASSERT_EQ(-1, mtx.num_nonzeros);
@@ -141,8 +139,8 @@ int test_mtx_init_matrix_array_real_single_skew_symmetric(void)
 {
     int err;
     struct mtx mtx;
-    int num_comment_lines = 1;
-    const char * comment_lines[] = {"% a comment"};
+    int num_comment_lines = 0;
+    const char * comment_lines[] = {};
     int num_rows = 3;
     int num_columns = 3;
     float data[] = {1.0f, 2.0f, 4.0f};
@@ -157,8 +155,6 @@ int test_mtx_init_matrix_array_real_single_skew_symmetric(void)
     TEST_ASSERT_EQ(mtx_array, mtx.format);
     TEST_ASSERT_EQ(mtx_real, mtx.field);
     TEST_ASSERT_EQ(mtx_skew_symmetric, mtx.symmetry);
-    TEST_ASSERT_EQ(1, mtx.num_comment_lines);
-    TEST_ASSERT_STREQ("% a comment", mtx.comment_lines[0]);
     TEST_ASSERT_EQ(3, mtx.num_rows);
     TEST_ASSERT_EQ(3, mtx.num_columns);
     TEST_ASSERT_EQ(-1, mtx.num_nonzeros);
@@ -190,8 +186,8 @@ int test_mtx_init_matrix_array_real_double(void)
 {
     int err;
     struct mtx mtx;
-    int num_comment_lines = 1;
-    const char * comment_lines[] = {"% a comment"};
+    int num_comment_lines = 0;
+    const char * comment_lines[] = {};
     int num_rows = 2;
     int num_columns = 2;
     double data[] = {1.0, 2.0, 3.0, 4.0};
@@ -205,8 +201,6 @@ int test_mtx_init_matrix_array_real_double(void)
     TEST_ASSERT_EQ(mtx_array, mtx.format);
     TEST_ASSERT_EQ(mtx_real, mtx.field);
     TEST_ASSERT_EQ(mtx_general, mtx.symmetry);
-    TEST_ASSERT_EQ(1, mtx.num_comment_lines);
-    TEST_ASSERT_STREQ("% a comment", mtx.comment_lines[0]);
     TEST_ASSERT_EQ(2, mtx.num_rows);
     TEST_ASSERT_EQ(2, mtx.num_columns);
     TEST_ASSERT_EQ(-1, mtx.num_nonzeros);
@@ -239,8 +233,8 @@ int test_mtx_init_matrix_array_complex_single(void)
 {
     int err;
     struct mtx mtx;
-    int num_comment_lines = 1;
-    const char * comment_lines[] = {"% a comment"};
+    int num_comment_lines = 0;
+    const char * comment_lines[] = {};
     int num_rows = 2;
     int num_columns = 2;
     float data[][2] = {{1.0,2.0}, {3.0,4.0}, {5.0,6.0}, {7.0,8.0}};
@@ -254,8 +248,6 @@ int test_mtx_init_matrix_array_complex_single(void)
     TEST_ASSERT_EQ(mtx_array, mtx.format);
     TEST_ASSERT_EQ(mtx_complex, mtx.field);
     TEST_ASSERT_EQ(mtx_general, mtx.symmetry);
-    TEST_ASSERT_EQ(1, mtx.num_comment_lines);
-    TEST_ASSERT_STREQ("% a comment", mtx.comment_lines[0]);
     TEST_ASSERT_EQ(2, mtx.num_rows);
     TEST_ASSERT_EQ(2, mtx.num_columns);
     TEST_ASSERT_EQ(-1, mtx.num_nonzeros);
@@ -288,8 +280,8 @@ int test_mtx_init_matrix_array_integer_single(void)
 {
     int err;
     struct mtx mtx;
-    int num_comment_lines = 1;
-    const char * comment_lines[] = {"% a comment"};
+    int num_comment_lines = 0;
+    const char * comment_lines[] = {};
     int num_rows = 2;
     int num_columns = 2;
     int32_t data[] = {1, 2, 3, 4};
@@ -303,8 +295,6 @@ int test_mtx_init_matrix_array_integer_single(void)
     TEST_ASSERT_EQ(mtx_array, mtx.format);
     TEST_ASSERT_EQ(mtx_integer, mtx.field);
     TEST_ASSERT_EQ(mtx_general, mtx.symmetry);
-    TEST_ASSERT_EQ(1, mtx.num_comment_lines);
-    TEST_ASSERT_STREQ("% a comment", mtx.comment_lines[0]);
     TEST_ASSERT_EQ(2, mtx.num_rows);
     TEST_ASSERT_EQ(2, mtx.num_columns);
     TEST_ASSERT_EQ(-1, mtx.num_nonzeros);

@@ -223,13 +223,19 @@ int mtx_comments_alloc(
         return MTX_ERR_ERRNO;
 
     for (int i = 0; i < num_comment_lines; i++) {
-        comments->comment_lines[i] = malloc(len[i] * sizeof(char));
+        if (len[i] < 2)
+            return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+
+        comments->comment_lines[i] = malloc((len[i]+1) * sizeof(char));
         if (!comments->comment_lines[i]) {
             for (int j = i-1; j >= 0; j--)
                 free(comments->comment_lines[j]);
             free(comments->comment_lines);
             return MTX_ERR_ERRNO;
         }
+        comments->comment_lines[i][0] = '%';
+        comments->comment_lines[i][1] = '\n';
+        comments->comment_lines[i][2] = '\0';
     }
     comments->num_comment_lines = num_comment_lines;
     return MTX_SUCCESS;
@@ -251,11 +257,12 @@ int mtx_comments_init(
     if (!comments->comment_lines)
         return MTX_ERR_ERRNO;
     for (int i = 0; i < num_comment_lines; i++) {
-        if (strlen(comment_lines[i]) <= 0 || comment_lines[i][0] != '%') {
+        int err = mtx_comments_validate(comment_lines[i]);
+        if (err) {
             for (int j = i-1; j >= 0; j--)
                 free(comments->comment_lines[j]);
             free(comments->comment_lines);
-            return MTX_ERR_INVALID_MTX_COMMENT;
+            return err;
         }
 
         comments->comment_lines[i] = strdup(comment_lines[i]);
@@ -291,6 +298,28 @@ int mtx_comments_copy(
     return mtx_comments_init(
         dst, src->num_comment_lines,
         (const char **) src->comment_lines);
+}
+
+/**
+ * `mtx_comments_validate()' validates a comment line.
+ *
+ * A comment line must be a non-empty, null-terminated string,
+ * beginning with '%' and ending with '\n'.  Moreover, no other
+ * newline characters are allowed other than the final, ending
+ * newline.
+ *
+ * If the comment line is valid, then `MTX_SUCCESS' is
+ * returned. Otherwise, `MTX_ERR_INVALID_MTX_COMMENT' is returned.
+ */
+int mtx_comments_validate(
+    const char * comment_line)
+{
+    int n = strlen(comment_line);
+    if (n <= 1 || comment_line[0] != '%' || comment_line[n-1] != '\n')
+        return MTX_ERR_INVALID_MTX_COMMENT;
+    if (strchr(comment_line, '\n') != &comment_line[n-1])
+        return MTX_ERR_INVALID_MTX_COMMENT;
+    return MTX_SUCCESS;
 }
 
 /*

@@ -43,7 +43,7 @@ int test_mtx_init_matrix_coordinate_real_single_general(void)
     int err;
     struct mtx mtx;
     int num_comment_lines = 1;
-    const char * comment_lines[] = {"% a comment"};
+    const char * comment_lines[] = {"% a comment\n"};
     int num_rows = 4;
     int num_columns = 4;
     const struct mtx_matrix_coordinate_real_single data[] = {
@@ -63,7 +63,7 @@ int test_mtx_init_matrix_coordinate_real_single_general(void)
     TEST_ASSERT_EQ(mtx_real, mtx.field);
     TEST_ASSERT_EQ(mtx_general, mtx.symmetry);
     TEST_ASSERT_EQ(1, mtx.num_comment_lines);
-    TEST_ASSERT_STREQ("% a comment", mtx.comment_lines[0]);
+    TEST_ASSERT_STREQ("% a comment\n", mtx.comment_lines[0]);
     TEST_ASSERT_EQ(4, mtx.num_rows);
     TEST_ASSERT_EQ(4, mtx.num_columns);
     TEST_ASSERT_EQ(6, mtx.num_nonzeros);
@@ -107,7 +107,7 @@ int test_mtx_init_matrix_coordinate_real_single_symmetric(void)
     int err;
     struct mtx mtx;
     int num_comment_lines = 1;
-    const char * comment_lines[] = {"% a comment"};
+    const char * comment_lines[] = {"% a comment\n"};
     int num_rows = 4;
     int num_columns = 4;
     const struct mtx_matrix_coordinate_real_single data[] = {
@@ -127,7 +127,7 @@ int test_mtx_init_matrix_coordinate_real_single_symmetric(void)
     TEST_ASSERT_EQ(mtx_real, mtx.field);
     TEST_ASSERT_EQ(mtx_symmetric, mtx.symmetry);
     TEST_ASSERT_EQ(1, mtx.num_comment_lines);
-    TEST_ASSERT_STREQ("% a comment", mtx.comment_lines[0]);
+    TEST_ASSERT_STREQ("% a comment\n", mtx.comment_lines[0]);
     TEST_ASSERT_EQ(4, mtx.num_rows);
     TEST_ASSERT_EQ(4, mtx.num_columns);
     TEST_ASSERT_EQ(5, mtx.num_nonzeros);
@@ -166,8 +166,8 @@ int test_mtx_init_matrix_coordinate_real_double_general(void)
 {
     int err;
     struct mtx mtx;
-    int num_comment_lines = 1;
-    const char * comment_lines[] = {"% a comment"};
+    int num_comment_lines = 0;
+    const char * comment_lines[] = {};
     int num_rows = 4;
     int num_columns = 4;
     const struct mtx_matrix_coordinate_real_double data[] = {
@@ -186,8 +186,6 @@ int test_mtx_init_matrix_coordinate_real_double_general(void)
     TEST_ASSERT_EQ(mtx_coordinate, mtx.format);
     TEST_ASSERT_EQ(mtx_real, mtx.field);
     TEST_ASSERT_EQ(mtx_general, mtx.symmetry);
-    TEST_ASSERT_EQ(1, mtx.num_comment_lines);
-    TEST_ASSERT_STREQ("% a comment", mtx.comment_lines[0]);
     TEST_ASSERT_EQ(4, mtx.num_rows);
     TEST_ASSERT_EQ(4, mtx.num_columns);
     TEST_ASSERT_EQ(6, mtx.num_nonzeros);
@@ -228,8 +226,8 @@ int test_mtx_init_matrix_coordinate_complex_single_general(void)
 {
     int err;
     struct mtx mtx;
-    int num_comment_lines = 1;
-    const char * comment_lines[] = {"% a comment"};
+    int num_comment_lines = 0;
+    const char * comment_lines[] = {};
     int num_rows = 4;
     int num_columns = 4;
     const struct mtx_matrix_coordinate_complex_single data[] = {
@@ -248,8 +246,6 @@ int test_mtx_init_matrix_coordinate_complex_single_general(void)
     TEST_ASSERT_EQ(mtx_coordinate, mtx.format);
     TEST_ASSERT_EQ(mtx_complex, mtx.field);
     TEST_ASSERT_EQ(mtx_general, mtx.symmetry);
-    TEST_ASSERT_EQ(1, mtx.num_comment_lines);
-    TEST_ASSERT_STREQ("% a comment", mtx.comment_lines[0]);
     TEST_ASSERT_EQ(4, mtx.num_rows);
     TEST_ASSERT_EQ(4, mtx.num_columns);
     TEST_ASSERT_EQ(6, mtx.num_nonzeros);
@@ -290,8 +286,8 @@ int test_mtx_init_matrix_coordinate_integer_single_general(void)
 {
     int err;
     struct mtx mtx;
-    int num_comment_lines = 1;
-    const char * comment_lines[] = {"% a comment"};
+    int num_comment_lines = 0;
+    const char * comment_lines[] = {};
     int num_rows = 4;
     int num_columns = 4;
     const struct mtx_matrix_coordinate_integer_single data[] = {
@@ -310,8 +306,6 @@ int test_mtx_init_matrix_coordinate_integer_single_general(void)
     TEST_ASSERT_EQ(mtx_coordinate, mtx.format);
     TEST_ASSERT_EQ(mtx_integer, mtx.field);
     TEST_ASSERT_EQ(mtx_general, mtx.symmetry);
-    TEST_ASSERT_EQ(1, mtx.num_comment_lines);
-    TEST_ASSERT_STREQ("% a comment", mtx.comment_lines[0]);
     TEST_ASSERT_EQ(4, mtx.num_rows);
     TEST_ASSERT_EQ(4, mtx.num_columns);
     TEST_ASSERT_EQ(6, mtx.num_nonzeros);
@@ -352,8 +346,8 @@ int test_mtx_init_matrix_coordinate_pattern_general(void)
 {
     int err;
     struct mtx mtx;
-    int num_comment_lines = 1;
-    const char * comment_lines[] = {"% a comment"};
+    int num_comment_lines = 0;
+    const char * comment_lines[] = {};
     int num_rows = 4;
     int num_columns = 4;
     const struct mtx_matrix_coordinate_pattern data[] = {
@@ -372,8 +366,6 @@ int test_mtx_init_matrix_coordinate_pattern_general(void)
     TEST_ASSERT_EQ(mtx_coordinate, mtx.format);
     TEST_ASSERT_EQ(mtx_pattern, mtx.field);
     TEST_ASSERT_EQ(mtx_general, mtx.symmetry);
-    TEST_ASSERT_EQ(1, mtx.num_comment_lines);
-    TEST_ASSERT_STREQ("% a comment", mtx.comment_lines[0]);
     TEST_ASSERT_EQ(4, mtx.num_rows);
     TEST_ASSERT_EQ(4, mtx.num_columns);
     TEST_ASSERT_EQ(6, mtx.num_nonzeros);
@@ -450,8 +442,8 @@ int test_mtx_matrix_coordinate_data_size_per_row(void)
 
     /* Create a sparse matrix. */
     struct mtx mtx;
-    int num_comment_lines = 1;
-    const char * comment_lines[] = {"% a comment"};
+    int num_comment_lines = 0;
+    const char * comment_lines[] = {};
     int num_rows = 4;
     int num_columns = 4;
     const struct mtx_matrix_coordinate_real_single data[] = {

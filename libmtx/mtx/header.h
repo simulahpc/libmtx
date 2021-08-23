@@ -183,6 +183,10 @@ struct mtx_comments
 
 /**
  * `mtx_comments_alloc()' allocates storage for comment lines.
+ *
+ * Note that `len[i]' specifies the length to allocate for the `i'-th
+ * comment line (excluding the terminating null byte), and `len[i]'
+ * must be `2' or greater.
  */
 int mtx_comments_alloc(
     struct mtx_comments * comments,
@@ -193,7 +197,8 @@ int mtx_comments_alloc(
  * `mtx_comments_init()' allocates storage for comment lines and
  * copies contents from the given array of strings.
  *
- * Note that each string in `comment_lines' must begin with '%'.
+ * Each string in `comment_lines' must be formatted as a comment line,
+ * see `mtx_comments_validate'.
  */
 int mtx_comments_init(
     struct mtx_comments * comments,
@@ -212,6 +217,20 @@ void mtx_comments_free(
 int mtx_comments_copy(
     struct mtx_comments * dst,
     const struct mtx_comments * src);
+
+/**
+ * `mtx_comments_validate()' validates a comment line.
+ *
+ * A comment line must be a non-empty, null-terminated string,
+ * beginning with '%' and ending with '\n'.  Moreover, no other
+ * newline characters are allowed other than the final, ending
+ * newline.
+ *
+ * If the comment line is valid, then `MTX_SUCCESS' is
+ * returned. Otherwise, `MTX_ERR_INVALID_MTX_COMMENT' is returned.
+ */
+int mtx_comments_validate(
+    const char * comment_line);
 
 /*
  * Matrix Market size line. 

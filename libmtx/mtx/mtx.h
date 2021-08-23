@@ -156,6 +156,29 @@ int mtx_set_comment_lines(
     const char ** comment_lines);
 
 /**
+ * `mtx_add_comment_line()' appends another comment line to a Matrix
+ * Market object.
+ */
+int mtx_add_comment_line(
+    struct mtx * mtx,
+    const char * comment_line);
+
+/**
+ * `mtx_add_comment_line_printf()' appends another comment line to a
+ * Matrix Market object using a printf-like syntax.
+ *
+ * Note that because `format' is a printf-style format string, where
+ * '%' is used to denote a format specifier, then `format' must begin
+ * with "%%" to produce the initial '%' character that is required for
+ * a comment line.  The `format' string must also end with a newline
+ * character, '\n'.
+ */
+int mtx_add_comment_line_printf(
+    struct mtx * mtx,
+    const char * format,
+    ...);
+
+/**
  * `mtx_set_zero()' zeroes a matrix or vector.
  */
 int mtx_set_zero(

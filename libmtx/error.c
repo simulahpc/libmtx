@@ -78,7 +78,7 @@ const char * mtx_strerror(
     case MTX_ERR_INVALID_MTX_ASSEMBLY:
         return "invalid Matrix Market assembly";
     case MTX_ERR_INVALID_MTX_COMMENT:
-        return "invalid Matrix Market comment line; comments must begin with `%'";
+        return "invalid Matrix Market comment line; comments must begin with '%' and end with '\\n'";
     case MTX_ERR_INVALID_MTX_SIZE:
         return "invalid Matrix Market size";
     case MTX_ERR_INVALID_MTX_DATA:

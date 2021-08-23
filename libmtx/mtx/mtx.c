@@ -33,6 +33,8 @@
 
 #include <errno.h>
 
+#include <stdarg.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -233,11 +235,12 @@ int mtx_set_comment_lines(
     if (!comment_lines_copy)
         return MTX_ERR_ERRNO;
     for (int i = 0; i < num_comment_lines; i++) {
-        if (strlen(comment_lines[i]) <= 0 || comment_lines[i][0] != '%') {
+        int err = mtx_comments_validate(comment_lines[i]);
+        if (err) {
             for (int j = i-1; j >= 0; j--)
                 free(comment_lines_copy[j]);
             free(comment_lines_copy);
-            return MTX_ERR_INVALID_MTX_COMMENT;
+            return err;
         }
 
         comment_lines_copy[i] = strdup(comment_lines[i]);
@@ -259,6 +262,99 @@ int mtx_set_comment_lines(
     mtx->num_comment_lines = num_comment_lines;
     mtx->comment_lines = comment_lines_copy;
     return MTX_SUCCESS;
+}
+
+/**
+ * `mtx_add_comment_line()' appends another comment line to a Matrix
+ * Market object.
+ */
+int mtx_add_comment_line(
+    struct mtx * mtx,
+    const char * comment_line)
+{
+    int err = mtx_comments_validate(comment_line);
+    if (err)
+        return err;
+
+    /* Copy the existing comment lines. */
+    char ** comment_lines = malloc((mtx->num_comment_lines+1) * sizeof(char *));
+    if (!comment_lines)
+        return MTX_ERR_ERRNO;
+    for (int i = 0; i < mtx->num_comment_lines; i++) {
+        comment_lines[i] = strdup(mtx->comment_lines[i]);
+        if (!comment_lines[i]) {
+            for (int j = i-1; j >= 0; j--)
+                free(comment_lines[j]);
+            free(comment_lines);
+            return MTX_ERR_ERRNO;
+        }
+    }
+
+    /* Append the new line. */
+    comment_lines[mtx->num_comment_lines] = strdup(comment_line);
+    if (!comment_lines[mtx->num_comment_lines]) {
+        for (int j = mtx->num_comment_lines-1; j >= 0; j--)
+            free(comment_lines[j]);
+        free(comment_lines);
+        return MTX_ERR_ERRNO;
+    }
+
+    /* Replace the existing comment lines. */
+    for (int i = 0; i < mtx->num_comment_lines; i++)
+        free(mtx->comment_lines[i]);
+    free(mtx->comment_lines);
+
+    mtx->num_comment_lines = mtx->num_comment_lines+1;
+    mtx->comment_lines = comment_lines;
+    return MTX_SUCCESS;
+}
+
+/**
+ * `mtx_add_comment_line_printf()' appends another comment line to a
+ * Matrix Market object using a printf-like syntax.
+ *
+ * Note that because `format' is a printf-style format string, where
+ * '%' is used to denote a format specifier, then `format' must begin
+ * with "%%" to produce the initial '%' character that is required for
+ * a comment line.  The `format' string must also end with a newline
+ * character, '\n'.
+ */
+int mtx_add_comment_line_printf(
+    struct mtx * mtx,
+    const char * format,
+    ...)
+{
+    int err;
+    int n = strlen(format);
+    if (n <= 0 || format[0] != '%')
+        return MTX_ERR_INVALID_MTX_COMMENT;
+    err = mtx_comments_validate(&format[1]);
+    if (err)
+        return err;
+
+    va_list va;
+    va_start(va, format);
+    int len = vsnprintf(NULL, 0, format, va);
+    va_end(va);
+    if (len < 0)
+        return MTX_ERR_ERRNO;
+
+    char * s = malloc(len+1);
+    if (!s)
+        return MTX_ERR_ERRNO;
+
+    va_start(va, format);
+    int newlen = vsnprintf(s, len+1, format, va);
+    va_end(va);
+    if (newlen < 0 || len != newlen) {
+        free(s);
+        return MTX_ERR_ERRNO;
+    }
+    s[newlen] = '\0';
+
+    err = mtx_add_comment_line(mtx, s);
+    free(s);
+    return err;
 }
 
 /**

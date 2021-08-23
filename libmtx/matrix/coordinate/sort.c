@@ -31,7 +31,6 @@
 
 #include <stdlib.h>
 
-
 /**
  * `mtx_matrix_coordinate_data_sort_column_major()' sorts the entries
  * of a matrix in coordinate format in column major order.

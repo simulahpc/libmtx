@@ -73,7 +73,7 @@ int test_mtx_mpi_sendrecv(void)
 
     /* Create a sparse matrix on the root process. */
     int num_comment_lines = 1;
-    const char * comment_lines[] = { "% a comment" };
+    const char * comment_lines[] = { "% a comment\n" };
     int num_rows = 4;
     int num_columns = 4;
     int64_t size = 4;
@@ -119,7 +119,7 @@ int test_mtx_mpi_sendrecv(void)
         TEST_ASSERT_EQ(mtx_real, destmtx.field);
         TEST_ASSERT_EQ(mtx_general, destmtx.symmetry);
         TEST_ASSERT_EQ(1, destmtx.num_comment_lines);
-        TEST_ASSERT_STREQ("% a comment", destmtx.comment_lines[0]);
+        TEST_ASSERT_STREQ("% a comment\n", destmtx.comment_lines[0]);
         TEST_ASSERT_EQ(4, destmtx.num_rows);
         TEST_ASSERT_EQ(4, destmtx.num_columns);
         TEST_ASSERT_EQ(4, destmtx.num_nonzeros);
@@ -186,7 +186,7 @@ int test_mtx_mpi_bcast(void)
 
     /* Create a sparse matrix on the root process. */
     int num_comment_lines = 1;
-    const char * comment_lines[] = { "% a comment" };
+    const char * comment_lines[] = { "% a comment\n" };
     int num_rows = 4;
     int num_columns = 4;
     int64_t size = 4;
@@ -225,7 +225,7 @@ int test_mtx_mpi_bcast(void)
     TEST_ASSERT_EQ(mtx_real, mtx.field);
     TEST_ASSERT_EQ(mtx_general, mtx.symmetry);
     TEST_ASSERT_EQ(1, mtx.num_comment_lines);
-    TEST_ASSERT_STREQ("% a comment", mtx.comment_lines[0]);
+    TEST_ASSERT_STREQ("% a comment\n", mtx.comment_lines[0]);
     TEST_ASSERT_EQ(4, mtx.num_rows);
     TEST_ASSERT_EQ(4, mtx.num_columns);
     TEST_ASSERT_EQ(4, mtx.num_nonzeros);
@@ -312,7 +312,7 @@ int test_mtx_matrix_coordinate_gather(void)
     }
 
     int num_comment_lines = 1;
-    const char * comment_lines[] = { "% a comment" };
+    const char * comment_lines[] = { "% a comment\n" };
     struct mtx srcmtx;
     err = mtx_init_matrix_coordinate_real_single(
         &srcmtx, mtx_general, mtx_nontriangular,
@@ -337,7 +337,7 @@ int test_mtx_matrix_coordinate_gather(void)
         TEST_ASSERT_EQ(mtx_real, dstmtx.field);
         TEST_ASSERT_EQ(mtx_general, dstmtx.symmetry);
         TEST_ASSERT_EQ(1, dstmtx.num_comment_lines);
-        TEST_ASSERT_STREQ("% a comment", dstmtx.comment_lines[0]);
+        TEST_ASSERT_STREQ("% a comment\n", dstmtx.comment_lines[0]);
         TEST_ASSERT_EQ(4, dstmtx.num_rows);
         TEST_ASSERT_EQ(4, dstmtx.num_columns);
         TEST_ASSERT_EQ(4, dstmtx.num_nonzeros);
@@ -403,7 +403,7 @@ int test_mtx_matrix_coordinate_scatter(void)
     /* Create a sparse matrix on the MPI root process (rank 0). */
     int root = 0;
     int num_comment_lines = 1;
-    const char * comment_lines[] = {"% a comment"};
+    const char * comment_lines[] = {"% a comment\n"};
     int num_rows = 4;
     int num_columns = 4;
     int64_t size = 4;
@@ -469,7 +469,7 @@ int test_mtx_matrix_coordinate_scatter(void)
     TEST_ASSERT_EQ(mtx_real, dstmtx.field);
     TEST_ASSERT_EQ(mtx_general, dstmtx.symmetry);
     TEST_ASSERT_EQ(1, dstmtx.num_comment_lines);
-    TEST_ASSERT_STREQ("% a comment", dstmtx.comment_lines[0]);
+    TEST_ASSERT_STREQ("% a comment\n", dstmtx.comment_lines[0]);
     TEST_ASSERT_EQ(4, dstmtx.num_rows);
     TEST_ASSERT_EQ(4, dstmtx.num_columns);
     if (comm_size == 1) {
