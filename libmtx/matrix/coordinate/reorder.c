@@ -227,8 +227,6 @@ int mtx_matrix_coordinate_data_reorder_rcm(
     int err;
     if (mtxdata->num_rows != mtxdata->num_columns)
         return MTX_ERR_INVALID_MTX_SIZE;
-    if (mtxdata->sorting != mtx_row_major)
-        return MTX_ERR_INVALID_MTX_SORTING;
     if (starting_row < 0 || starting_row > mtxdata->num_rows)
         return MTX_ERR_INDEX_OUT_OF_BOUNDS;
 
