@@ -780,7 +780,7 @@ int main(int argc, char *argv[])
                             "absolute tolerance %g, relative tolerance %g\n",
                             timespec_duration(t0, t1),
                             num_iterations, r_nrm2, b_nrm2,
-                            abs(b_nrm2) > FLT_EPSILON ? r_nrm2 / b_nrm2 : INFINITY,
+                            fabs(b_nrm2) > FLT_EPSILON ? r_nrm2 / b_nrm2 : INFINITY,
                             args.atol, args.rtol);
                     } else if (err == MTX_ERR_NOT_CONVERGED) {
                         fprintf(
@@ -790,7 +790,7 @@ int main(int argc, char *argv[])
                             "absolute tolerance %g, relative tolerance %g%s\n",
                             timespec_duration(t0, t1),
                             num_iterations, r_nrm2, b_nrm2,
-                            abs(b_nrm2) > FLT_EPSILON ? r_nrm2 / b_nrm2 : INFINITY,
+                            fabs(b_nrm2) > FLT_EPSILON ? r_nrm2 / b_nrm2 : INFINITY,
                             args.atol, args.rtol,
                             next_restart == num_iterations_in_current_round ?
                             ", restarting" : "");
@@ -862,7 +862,7 @@ int main(int argc, char *argv[])
                             "absolute tolerance %g, relative tolerance %g\n",
                             timespec_duration(t0, t1),
                             num_iterations, r_nrm2, b_nrm2,
-                            abs(b_nrm2) > DBL_EPSILON ? r_nrm2 / b_nrm2 : INFINITY,
+                            fabs(b_nrm2) > DBL_EPSILON ? r_nrm2 / b_nrm2 : INFINITY,
                             args.atol, args.rtol);
                     } else if (err == MTX_ERR_NOT_CONVERGED) {
                         fprintf(
@@ -872,7 +872,7 @@ int main(int argc, char *argv[])
                             "absolute tolerance %g, relative tolerance %g%s\n",
                             timespec_duration(t0, t1),
                             num_iterations, r_nrm2, b_nrm2,
-                            abs(b_nrm2) > DBL_EPSILON ? r_nrm2 / b_nrm2 : INFINITY,
+                            fabs(b_nrm2) > DBL_EPSILON ? r_nrm2 / b_nrm2 : INFINITY,
                             args.atol, args.rtol,
                             next_restart == num_iterations_in_current_round ?
                             ", restarting" : "");

@@ -32,6 +32,7 @@
 #include <zlib.h>
 #endif
 
+#include <stdarg.h>
 #include <stdio.h>
 
 struct stream;

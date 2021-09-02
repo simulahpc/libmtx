@@ -85,7 +85,7 @@ int mtx_scg_workspace_alloc(
  * `mtx_scg_workspace_free()' frees allocated workspace used by
  * `mtx_scg()'.
  */
-int mtx_scg_workspace_free(
+void mtx_scg_workspace_free(
     struct mtx_scg_workspace * workspace);
 
 /**
@@ -159,7 +159,7 @@ int mtx_dcg_workspace_alloc(
  * `mtx_dcg_workspace_free()' frees allocated workspace used by
  * `mtx_dcg'.
  */
-int mtx_dcg_workspace_free(
+void mtx_dcg_workspace_free(
     struct mtx_dcg_workspace * workspace);
 
 /**

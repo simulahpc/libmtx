@@ -33,6 +33,7 @@
 #include <zlib.h>
 #endif
 
+#include <stdarg.h>
 #include <stdbool.h>
 #include <stdio.h>
 
