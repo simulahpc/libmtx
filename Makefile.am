@@ -71,6 +71,11 @@ libmtx_la_SOURCES = \
 	libmtx/mtx/submatrix.c \
 	libmtx/mtx/transpose.c \
 	libmtx/mtx/triangle.c \
+	libmtx/mtxfile/header.c \
+	libmtx/mtxfile/comments.c \
+	libmtx/mtxfile/mtxfile.c \
+	libmtx/mtxfile/size.c \
+	libmtx/mtxfile/data.c \
 	libmtx/util/cuthill_mckee.c \
 	libmtx/util/cuthill_mckee.h \
 	libmtx/util/format.c \
@@ -121,6 +126,11 @@ nobase_include_HEADERS = \
 	libmtx/mtx/submatrix.h \
 	libmtx/mtx/transpose.h \
 	libmtx/mtx/triangle.h \
+	libmtx/mtxfile/header.h \
+	libmtx/mtxfile/comments.h \
+	libmtx/mtxfile/mtxfile.h \
+	libmtx/mtxfile/size.h \
+	libmtx/mtxfile/data.h \
 	libmtx/util/index_set.h \
 	libmtx/vector/array.h \
 	libmtx/vector/array/blas.h \
@@ -226,6 +236,7 @@ mtxspy_SOURCES = src/mtxspy.c
 check_PROGRAMS = \
 	tests/test_index_set \
 	tests/test_mtx \
+	tests/test_mtxfile \
 	tests/test_mtx_blas \
 	tests/test_mtx_cg \
 	tests/test_mtx_io \
@@ -245,6 +256,9 @@ tests_test_index_set_SOURCES = tests/test_index_set.c tests/test.h
 tests_test_mtx_CPPFLAGS = $(MPICPPFLAGS)
 tests_test_mtx_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
 tests_test_mtx_SOURCES = tests/test_mtx.c tests/test.h
+tests_test_mtxfile_CPPFLAGS = $(MPICPPFLAGS)
+tests_test_mtxfile_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
+tests_test_mtxfile_SOURCES = tests/test_mtxfile.c tests/test.h
 tests_test_mtx_blas_CPPFLAGS = $(MPICPPFLAGS)
 tests_test_mtx_blas_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
 tests_test_mtx_blas_SOURCES = tests/test_mtx_blas.c tests/test.h
@@ -285,6 +299,7 @@ tests_test_vector_SOURCES = tests/test_vector.c tests/test.h
 TESTS = \
 	tests/test_index_set \
 	tests/test_mtx \
+	tests/test_mtxfile \
 	tests/test_mtx_blas \
 	tests/test_mtx_cg \
 	tests/test_mtx_io \
