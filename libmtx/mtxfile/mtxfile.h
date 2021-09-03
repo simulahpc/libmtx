@@ -72,6 +72,10 @@ struct mtxfile
     union mtxfile_data data;
 };
 
+/*
+ * Memory management
+ */
+
 /**
  * `mtxfile_free()' frees storage allocated for a Matrix Market file.
  */
@@ -84,6 +88,373 @@ void mtxfile_free(
 int mtxfile_copy(
     struct mtxfile * dst,
     const struct mtxfile * src);
+
+/*
+ * Matrix array formats
+ */
+
+/**
+ * `mtxfile_alloc_matrix_array()' allocates a matrix in array format.
+ */
+int mtxfile_alloc_matrix_array(
+    struct mtxfile * mtxfile,
+    enum mtxfile_field field,
+    enum mtxfile_symmetry symmetry,
+    enum mtx_precision precision,
+    int num_rows,
+    int num_columns);
+
+/**
+ * `mtxfile_init_matrix_array_real_single()' allocates and initialises
+ * a matrix in array format with real, single precision coefficients.
+ */
+int mtxfile_init_matrix_array_real_single(
+    struct mtxfile * mtxfile,
+    enum mtxfile_symmetry symmetry,
+    int num_rows,
+    int num_columns,
+    const float * data);
+
+/**
+ * `mtxfile_init_matrix_array_real_double()' allocates and initialises
+ * a matrix in array format with real, double precision coefficients.
+ */
+int mtxfile_init_matrix_array_real_double(
+    struct mtxfile * mtxfile,
+    enum mtxfile_symmetry symmetry,
+    int num_rows,
+    int num_columns,
+    const double * data);
+
+/**
+ * `mtxfile_init_matrix_array_complex_single()' allocates and
+ * initialises a matrix in array format with complex, single precision
+ * coefficients.
+ */
+int mtxfile_init_matrix_array_complex_single(
+    struct mtxfile * mtxfile,
+    enum mtxfile_symmetry symmetry,
+    int num_rows,
+    int num_columns,
+    const float (* data)[2]);
+
+/**
+ * `mtxfile_init_matrix_array_complex_double()' allocates and
+ * initialises a matrix in array format with complex, double precision
+ * coefficients.
+ */
+int mtxfile_init_matrix_array_complex_double(
+    struct mtxfile * mtxfile,
+    enum mtxfile_symmetry symmetry,
+    int num_rows,
+    int num_columns,
+    const double (* data)[2]);
+
+/**
+ * `mtxfile_init_matrix_array_integer_single()' allocates and
+ * initialises a matrix in array format with integer, single precision
+ * coefficients.
+ */
+int mtxfile_init_matrix_array_integer_single(
+    struct mtxfile * mtxfile,
+    enum mtxfile_symmetry symmetry,
+    int num_rows,
+    int num_columns,
+    const int32_t * data);
+
+/**
+ * `mtxfile_init_matrix_array_integer_double()' allocates and
+ * initialises a matrix in array format with integer, double precision
+ * coefficients.
+ */
+int mtxfile_init_matrix_array_integer_double(
+    struct mtxfile * mtxfile,
+    enum mtxfile_symmetry symmetry,
+    int num_rows,
+    int num_columns,
+    const int64_t * data);
+
+/*
+ * Vector array formats
+ */
+
+/**
+ * `mtxfile_alloc_vector_array()' allocates a vector in array format.
+ */
+int mtxfile_alloc_vector_array(
+    struct mtxfile * mtxfile,
+    enum mtxfile_field field,
+    enum mtx_precision precision,
+    int num_rows);
+
+/**
+ * `mtxfile_init_vector_array_real_single()' allocates and initialises
+ * a vector in array format with real, single precision coefficients.
+ */
+int mtxfile_init_vector_array_real_single(
+    struct mtxfile * mtxfile,
+    int num_rows,
+    const float * data);
+
+/**
+ * `mtxfile_init_vector_array_real_double()' allocates and initialises
+ * a vector in array format with real, double precision coefficients.
+ */
+int mtxfile_init_vector_array_real_double(
+    struct mtxfile * mtxfile,
+    int num_rows,
+    const double * data);
+
+/**
+ * `mtxfile_init_vector_array_complex_single()' allocates and
+ * initialises a vector in array format with complex, single precision
+ * coefficients.
+ */
+int mtxfile_init_vector_array_complex_single(
+    struct mtxfile * mtxfile,
+    int num_rows,
+    const float (* data)[2]);
+
+/**
+ * `mtxfile_init_vector_array_complex_double()' allocates and
+ * initialises a vector in array format with complex, double precision
+ * coefficients.
+ */
+int mtxfile_init_vector_array_complex_double(
+    struct mtxfile * mtxfile,
+    int num_rows,
+    const double (* data)[2]);
+
+/**
+ * `mtxfile_init_vector_array_integer_single()' allocates and
+ * initialises a vector in array format with integer, single precision
+ * coefficients.
+ */
+int mtxfile_init_vector_array_integer_single(
+    struct mtxfile * mtxfile,
+    int num_rows,
+    const int32_t * data);
+
+/**
+ * `mtxfile_init_vector_array_integer_double()' allocates and
+ * initialises a vector in array format with integer, double precision
+ * coefficients.
+ */
+int mtxfile_init_vector_array_integer_double(
+    struct mtxfile * mtxfile,
+    int num_rows,
+    const int64_t * data);
+
+/*
+ * Matrix coordinate formats
+ */
+
+/**
+ * `mtxfile_alloc_matrix_coordinate()' allocates a matrix in
+ * coordinate format.
+ */
+int mtxfile_alloc_matrix_coordinate(
+    struct mtxfile * mtxfile,
+    enum mtxfile_field field,
+    enum mtxfile_symmetry symmetry,
+    enum mtx_precision precision,
+    int num_rows,
+    int num_columns,
+    int64_t num_nonzeros);
+
+/**
+ * `mtxfile_init_matrix_coordinate_real_single()' allocates and initialises
+ * a matrix in coordinate format with real, single precision coefficients.
+ */
+int mtxfile_init_matrix_coordinate_real_single(
+    struct mtxfile * mtxfile,
+    enum mtxfile_symmetry symmetry,
+    int num_rows,
+    int num_columns,
+    int64_t num_nonzeros,
+    const struct mtxfile_matrix_coordinate_real_single * data);
+
+/**
+ * `mtxfile_init_matrix_coordinate_real_double()' allocates and initialises
+ * a matrix in coordinate format with real, double precision coefficients.
+ */
+int mtxfile_init_matrix_coordinate_real_double(
+    struct mtxfile * mtxfile,
+    enum mtxfile_symmetry symmetry,
+    int num_rows,
+    int num_columns,
+    int64_t num_nonzeros,
+    const struct mtxfile_matrix_coordinate_real_double * data);
+
+/**
+ * `mtxfile_init_matrix_coordinate_complex_single()' allocates and
+ * initialises a matrix in coordinate format with complex, single precision
+ * coefficients.
+ */
+int mtxfile_init_matrix_coordinate_complex_single(
+    struct mtxfile * mtxfile,
+    enum mtxfile_symmetry symmetry,
+    int num_rows,
+    int num_columns,
+    int64_t num_nonzeros,
+    const struct mtxfile_matrix_coordinate_complex_single * data);
+
+/**
+ * `mtxfile_init_matrix_coordinate_complex_double()' allocates and
+ * initialises a matrix in coordinate format with complex, double precision
+ * coefficients.
+ */
+int mtxfile_init_matrix_coordinate_complex_double(
+    struct mtxfile * mtxfile,
+    enum mtxfile_symmetry symmetry,
+    int num_rows,
+    int num_columns,
+    int64_t num_nonzeros,
+    const struct mtxfile_matrix_coordinate_complex_double * data);
+
+/**
+ * `mtxfile_init_matrix_coordinate_integer_single()' allocates and
+ * initialises a matrix in coordinate format with integer, single precision
+ * coefficients.
+ */
+int mtxfile_init_matrix_coordinate_integer_single(
+    struct mtxfile * mtxfile,
+    enum mtxfile_symmetry symmetry,
+    int num_rows,
+    int num_columns,
+    int64_t num_nonzeros,
+    const struct mtxfile_matrix_coordinate_integer_single * data);
+
+/**
+ * `mtxfile_init_matrix_coordinate_integer_double()' allocates and
+ * initialises a matrix in coordinate format with integer, double precision
+ * coefficients.
+ */
+int mtxfile_init_matrix_coordinate_integer_double(
+    struct mtxfile * mtxfile,
+    enum mtxfile_symmetry symmetry,
+    int num_rows,
+    int num_columns,
+    int64_t num_nonzeros,
+    const struct mtxfile_matrix_coordinate_integer_double * data);
+
+/**
+ * `mtxfile_init_matrix_coordinate_pattern()' allocates and
+ * initialises a matrix in coordinate format with integer, double precision
+ * coefficients.
+ */
+int mtxfile_init_matrix_coordinate_pattern(
+    struct mtxfile * mtxfile,
+    enum mtxfile_symmetry symmetry,
+    int num_rows,
+    int num_columns,
+    int64_t num_nonzeros,
+    const struct mtxfile_matrix_coordinate_pattern * data);
+
+/*
+ * Vector coordinate formats
+ */
+
+/**
+ * `mtxfile_alloc_vector_coordinate()' allocates a vector in
+ * coordinate format.
+ */
+int mtxfile_alloc_vector_coordinate(
+    struct mtxfile * mtxfile,
+    enum mtxfile_field field,
+    enum mtx_precision precision,
+    int num_rows,
+    int64_t num_nonzeros);
+
+/**
+ * `mtxfile_alloc_vector_coordinate()' allocates a vector in
+ * coordinate format.
+ */
+int mtxfile_alloc_vector_coordinate(
+    struct mtxfile * mtxfile,
+    enum mtxfile_field field,
+    enum mtx_precision precision,
+    int num_rows,
+    int64_t num_nonzeros);
+
+/**
+ * `mtxfile_init_vector_coordinate_real_single()' allocates and initialises
+ * a vector in coordinate format with real, single precision coefficients.
+ */
+int mtxfile_init_vector_coordinate_real_single(
+    struct mtxfile * mtxfile,
+    int num_rows,
+    int64_t num_nonzeros,
+    const struct mtxfile_vector_coordinate_real_single * data);
+
+/**
+ * `mtxfile_init_vector_coordinate_real_double()' allocates and initialises
+ * a vector in coordinate format with real, double precision coefficients.
+ */
+int mtxfile_init_vector_coordinate_real_double(
+    struct mtxfile * mtxfile,
+    int num_rows,
+    int64_t num_nonzeros,
+    const struct mtxfile_vector_coordinate_real_double * data);
+
+/**
+ * `mtxfile_init_vector_coordinate_complex_single()' allocates and
+ * initialises a vector in coordinate format with complex, single precision
+ * coefficients.
+ */
+int mtxfile_init_vector_coordinate_complex_single(
+    struct mtxfile * mtxfile,
+    int num_rows,
+    int64_t num_nonzeros,
+    const struct mtxfile_vector_coordinate_complex_single * data);
+
+/**
+ * `mtxfile_init_vector_coordinate_complex_double()' allocates and
+ * initialises a vector in coordinate format with complex, double precision
+ * coefficients.
+ */
+int mtxfile_init_vector_coordinate_complex_double(
+    struct mtxfile * mtxfile,
+    int num_rows,
+    int64_t num_nonzeros,
+    const struct mtxfile_vector_coordinate_complex_double * data);
+
+/**
+ * `mtxfile_init_vector_coordinate_integer_single()' allocates and
+ * initialises a vector in coordinate format with integer, single precision
+ * coefficients.
+ */
+int mtxfile_init_vector_coordinate_integer_single(
+    struct mtxfile * mtxfile,
+    int num_rows,
+    int64_t num_nonzeros,
+    const struct mtxfile_vector_coordinate_integer_single * data);
+
+/**
+ * `mtxfile_init_vector_coordinate_integer_double()' allocates and
+ * initialises a vector in coordinate format with integer, double precision
+ * coefficients.
+ */
+int mtxfile_init_vector_coordinate_integer_double(
+    struct mtxfile * mtxfile,
+    int num_rows,
+    int64_t num_nonzeros,
+    const struct mtxfile_vector_coordinate_integer_double * data);
+
+/**
+ * `mtxfile_init_vector_coordinate_pattern()' allocates and
+ * initialises a vector in coordinate format with integer, double precision
+ * coefficients.
+ */
+int mtxfile_init_vector_coordinate_pattern(
+    struct mtxfile * mtxfile,
+    int num_rows,
+    int64_t num_nonzeros,
+    const struct mtxfile_vector_coordinate_pattern * data);
+
+/*
+ * I/O functions
+ */
 
 /**
  * `mtxfile_fread()` reads a Matrix Market file from a stream.
