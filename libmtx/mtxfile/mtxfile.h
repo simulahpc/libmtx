@@ -32,6 +32,10 @@
 #include <libmtx/mtxfile/header.h>
 #include <libmtx/mtxfile/size.h>
 
+#ifdef LIBMTX_HAVE_MPI
+#include <mpi.h>
+#endif
+
 #ifdef LIBMTX_HAVE_LIBZ
 #include <zlib.h>
 #endif
@@ -39,6 +43,8 @@
 #include <stdarg.h>
 #include <stddef.h>
 #include <stdio.h>
+
+struct mtxmpierror;
 
 /**
  * `mtxfile' represents a file in the Matrix Market file format.
@@ -495,6 +501,52 @@ int mtxfile_gzread(
     size_t line_max,
     char * linebuf,
     enum mtx_precision precision);
+#endif
+
+/*
+ * MPI functions
+ */
+
+#ifdef LIBMTX_HAVE_MPI
+/**
+ * `mtxfile_send()' sends a Matrix Market file to another MPI process.
+ *
+ * This is analogous to `MPI_Send()' and requires the receiving
+ * process to perform a matching call to `mtxfile_recv()'.
+ */
+int mtxfile_send(
+    const struct mtxfile * mtxfile,
+    int dest,
+    int tag,
+    MPI_Comm comm,
+    struct mtxmpierror * mpierror);
+
+/**
+ * `mtxfile_recv()' receives a Matrix Market file from another MPI
+ * process.
+ *
+ * This is analogous to `MPI_Recv()' and requires the sending process
+ * to perform a matching call to `mtxfile_send()'.
+ */
+int mtxfile_recv(
+    struct mtxfile * mtxfile,
+    int source,
+    int tag,
+    MPI_Comm comm,
+    struct mtxmpierror * mpierror);
+
+/**
+ * `mtxfile_bcast()' broadcasts a Matrix Market file from an MPI root
+ * process to other processes in a communicator.
+ *
+ * This is analogous to `MPI_Bcast()' and requires every process in
+ * the communicator to perform matching calls to `mtxfile_bcast()'.
+ */
+int mtxfile_bcast(
+    struct mtxfile * mtxfile,
+    int root,
+    MPI_Comm comm,
+    struct mtxmpierror * mpierror);
 #endif
 
 #endif

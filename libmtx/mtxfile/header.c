@@ -26,6 +26,10 @@
 #include <libmtx/error.h>
 #include <libmtx/mtxfile/header.h>
 
+#ifdef LIBMTX_HAVE_MPI
+#include <mpi.h>
+#endif
+
 #ifdef LIBMTX_HAVE_LIBZ
 #include <zlib.h>
 #endif
@@ -522,6 +526,113 @@ int mtxfile_gzread_header(
         (*lines_read)++;
     if (free_linebuf)
         free(linebuf);
+    return MTX_SUCCESS;
+}
+#endif
+
+
+/*
+ * MPI functions
+ */
+
+#ifdef LIBMTX_HAVE_MPI
+/**
+ * `mtxfile_header_send()' sends a Matrix Market header to another MPI
+ * process.
+ *
+ * This is analogous to `MPI_Send()' and requires the receiving
+ * process to perform a matching call to `mtxfile_header_recv()'.
+ */
+int mtxfile_header_send(
+    const struct mtxfile_header * header,
+    int dest,
+    int tag,
+    MPI_Comm comm,
+    struct mtxmpierror * mpierror)
+{
+    mpierror->err = MPI_Send(
+        &header->object, 1, MPI_INT, dest, tag, comm);
+    if (mpierror->err)
+        return MTX_ERR_MPI;
+    mpierror->err = MPI_Send(
+        &header->format, 1, MPI_INT, dest, tag, comm);
+    if (mpierror->err)
+        return MTX_ERR_MPI;
+    mpierror->err = MPI_Send(
+        &header->field, 1, MPI_INT, dest, tag, comm);
+    if (mpierror->err)
+        return MTX_ERR_MPI;
+    mpierror->err = MPI_Send(
+        &header->symmetry, 1, MPI_INT, dest, tag, comm);
+    if (mpierror->err)
+        return MTX_ERR_MPI;
+    return MTX_SUCCESS;
+}
+
+/**
+ * `mtxfile_header_recv()' receives a Matrix Market header from
+ * another MPI process.
+ *
+ * This is analogous to `MPI_Recv()' and requires the sending process
+ * to perform a matching call to `mtxfile_header_send()'.
+ */
+int mtxfile_header_recv(
+    struct mtxfile_header * header,
+    int source,
+    int tag,
+    MPI_Comm comm,
+    struct mtxmpierror * mpierror)
+{
+    mpierror->err = MPI_Recv(
+        &header->object, 1, MPI_INT, source, tag, comm, MPI_STATUS_IGNORE);
+    if (mpierror->err)
+        return MTX_ERR_MPI;
+    mpierror->err = MPI_Recv(
+        &header->format, 1, MPI_INT, source, tag, comm, MPI_STATUS_IGNORE);
+    if (mpierror->err)
+        return MTX_ERR_MPI;
+    mpierror->err = MPI_Recv(
+        &header->field, 1, MPI_INT, source, tag, comm, MPI_STATUS_IGNORE);
+    if (mpierror->err)
+        return MTX_ERR_MPI;
+    mpierror->err = MPI_Recv(
+        &header->symmetry, 1, MPI_INT, source, tag, comm, MPI_STATUS_IGNORE);
+    if (mpierror->err)
+        return MTX_ERR_MPI;
+    return MTX_SUCCESS;
+}
+
+/**
+ * `mtxfile_header_bcast()' broadcasts a Matrix Market header from an
+ * MPI root process to other processes in a communicator.
+ *
+ * This is analogous to `MPI_Bcast()' and requires every process in
+ * the communicator to perform matching calls to
+ * `mtxfile_header_bcast()'.
+ */
+int mtxfile_header_bcast(
+    struct mtxfile_header * header,
+    int root,
+    MPI_Comm comm,
+    struct mtxmpierror * mpierror)
+{
+    int err;
+    err = MPI_Bcast(
+        &header->object, 1, MPI_INT, root, comm);
+    if (mtxmpierror_allreduce(mpierror, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+    err = MPI_Bcast(
+        &header->format, 1, MPI_INT, root, comm);
+    if (mtxmpierror_allreduce(mpierror, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+    err = MPI_Bcast(
+        &header->field, 1, MPI_INT, root, comm);
+    if (mtxmpierror_allreduce(mpierror, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+    err = MPI_Bcast(
+        &header->symmetry, 1, MPI_INT, root, comm);
+    if (mtxmpierror_allreduce(mpierror, err))
+        return MTX_ERR_MPI_COLLECTIVE;
     return MTX_SUCCESS;
 }
 #endif

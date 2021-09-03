@@ -26,12 +26,18 @@
 
 #include <libmtx/libmtx-config.h>
 
+#ifdef LIBMTX_HAVE_MPI
+#include <mpi.h>
+#endif
+
 #ifdef LIBMTX_HAVE_LIBZ
 #include <zlib.h>
 #endif
 
 #include <stddef.h>
 #include <stdio.h>
+
+struct mtxmpierror;
 
 /*
  * Matrix Market header data types.
@@ -290,6 +296,10 @@ int mtxfile_header_copy(
     struct mtxfile_header * dst,
     const struct mtxfile_header * src);
 
+/*
+ * I/O functions
+ */
+
 /**
  * `mtxfile_fread_header()` reads a Matrix Market header from a
  * stream.
@@ -322,6 +332,54 @@ int mtxfile_gzread_header(
     int * bytes_read,
     size_t line_max,
     char * linebuf);
+#endif
+
+/*
+ * MPI functions
+ */
+
+#ifdef LIBMTX_HAVE_MPI
+/**
+ * `mtxfile_header_send()' sends a Matrix Market header to another MPI
+ * process.
+ *
+ * This is analogous to `MPI_Send()' and requires the receiving
+ * process to perform a matching call to `mtxfile_header_recv()'.
+ */
+int mtxfile_header_send(
+    const struct mtxfile_header * header,
+    int dest,
+    int tag,
+    MPI_Comm comm,
+    struct mtxmpierror * mpierror);
+
+/**
+ * `mtxfile_header_recv()' receives a Matrix Market header from
+ * another MPI process.
+ *
+ * This is analogous to `MPI_Recv()' and requires the sending process
+ * to perform a matching call to `mtxfile_header_send()'.
+ */
+int mtxfile_header_recv(
+    struct mtxfile_header * header,
+    int source,
+    int tag,
+    MPI_Comm comm,
+    struct mtxmpierror * mpierror);
+
+/**
+ * `mtxfile_header_bcast()' broadcasts a Matrix Market header from an
+ * MPI root process to other processes in a communicator.
+ *
+ * This is analogous to `MPI_Bcast()' and requires every process in
+ * the communicator to perform matching calls to
+ * `mtxfile_header_bcast()'.
+ */
+int mtxfile_header_bcast(
+    struct mtxfile_header * header,
+    int root,
+    MPI_Comm comm,
+    struct mtxmpierror * mpierror);
 #endif
 
 #endif

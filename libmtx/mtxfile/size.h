@@ -28,6 +28,10 @@
 
 #include <libmtx/mtxfile/header.h>
 
+#ifdef LIBMTX_HAVE_MPI
+#include <mpi.h>
+#endif
+
 #ifdef LIBMTX_HAVE_LIBZ
 #include <zlib.h>
 #endif
@@ -35,6 +39,8 @@
 #include <stdarg.h>
 #include <stddef.h>
 #include <stdio.h>
+
+struct mtxmpierror;
 
 /**
  * `mtxfile_size' represents a size line of a Matrix Market file.
@@ -100,6 +106,10 @@ int mtxfile_size_num_data_lines(
     const struct mtxfile_size * size,
     size_t * num_data_lines);
 
+/*
+ * I/O functions
+ */
+
 /**
  * `mtxfile_fread_size()` reads a Matrix Market size line from a
  * stream.
@@ -136,6 +146,54 @@ int mtxfile_gzread_size(
     char * linebuf,
     enum mtxfile_object object,
     enum mtxfile_format format);
+#endif
+
+/*
+ * MPI functions
+ */
+
+#ifdef LIBMTX_HAVE_MPI
+/**
+ * `mtxfile_size_send()' sends a Matrix Market size line to another
+ * MPI process.
+ *
+ * This is analogous to `MPI_Send()' and requires the receiving
+ * process to perform a matching call to `mtxfile_size_recv()'.
+ */
+int mtxfile_size_send(
+    const struct mtxfile_size * size,
+    int dest,
+    int tag,
+    MPI_Comm comm,
+    struct mtxmpierror * mpierror);
+
+/**
+ * `mtxfile_size_recv()' receives a Matrix Market size line from
+ * another MPI process.
+ *
+ * This is analogous to `MPI_Recv()' and requires the sending process
+ * to perform a matching call to `mtxfile_size_send()'.
+ */
+int mtxfile_size_recv(
+    struct mtxfile_size * size,
+    int source,
+    int tag,
+    MPI_Comm comm,
+    struct mtxmpierror * mpierror);
+
+/**
+ * `mtxfile_size_bcast()' broadcasts a Matrix Market size line from an
+ * MPI root process to other processes in a communicator.
+ *
+ * This is analogous to `MPI_Bcast()' and requires every process in
+ * the communicator to perform matching calls to
+ * `mtxfile_size_bcast()'.
+ */
+int mtxfile_size_bcast(
+    struct mtxfile_size * size,
+    int root,
+    MPI_Comm comm,
+    struct mtxmpierror * mpierror);
 #endif
 
 #endif

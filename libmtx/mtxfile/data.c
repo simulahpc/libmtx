@@ -32,6 +32,10 @@
 
 #include <libmtx/util/parse.h>
 
+#ifdef LIBMTX_HAVE_MPI
+#include <mpi.h>
+#endif
+
 #ifdef LIBMTX_HAVE_LIBZ
 #include <zlib.h>
 #endif
@@ -1676,6 +1680,951 @@ int mtxfile_gzread_data(
 
     if (free_linebuf)
         free(linebuf);
+    return MTX_SUCCESS;
+}
+#endif
+
+/*
+ * MPI functions
+ */
+
+#ifdef LIBMTX_HAVE_MPI
+static int mtxfile_data_send_array(
+    const union mtxfile_data * data,
+    enum mtxfile_field field,
+    enum mtx_precision precision,
+    size_t size,
+    int dest,
+    int tag,
+    MPI_Comm comm,
+    int * mpierrcode)
+{
+    if (field == mtxfile_real) {
+        if (precision == mtx_single) {
+            *mpierrcode = MPI_Send(
+                data->array_real_single, size, MPI_FLOAT, dest, tag, comm);
+            if (*mpierrcode)
+                return MTX_ERR_MPI;
+        } else if (precision == mtx_double) {
+            *mpierrcode = MPI_Send(
+                data->array_real_double, size, MPI_DOUBLE, dest, tag, comm);
+            if (*mpierrcode)
+                return MTX_ERR_MPI;
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else if (field == mtxfile_complex) {
+        if (precision == mtx_single) {
+            *mpierrcode = MPI_Send(
+                data->array_complex_single, 2*size, MPI_FLOAT, dest, tag, comm);
+            if (*mpierrcode)
+                return MTX_ERR_MPI;
+        } else if (precision == mtx_double) {
+            *mpierrcode = MPI_Send(
+                data->array_complex_double, 2*size, MPI_DOUBLE, dest, tag, comm);
+            if (*mpierrcode)
+                return MTX_ERR_MPI;
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else if (field == mtxfile_integer) {
+        if (precision == mtx_single) {
+            *mpierrcode = MPI_Send(
+                data->array_integer_single, size, MPI_INT32_T, dest, tag, comm);
+            if (*mpierrcode)
+                return MTX_ERR_MPI;
+        } else if (precision == mtx_double) {
+            *mpierrcode = MPI_Send(
+                data->array_integer_double, size, MPI_INT64_T, dest, tag, comm);
+            if (*mpierrcode)
+                return MTX_ERR_MPI;
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else {
+        return MTX_ERR_INVALID_MTX_FIELD;
+    }
+    return MTX_SUCCESS;
+}
+
+/**
+ * `mtxfile_coordinate_datatype()' creates a custom MPI data type for
+ * sending or receiving data in coordinate format.
+ *
+ * The user is responsible for calling `MPI_Type_free()' on the
+ * returned datatype.
+ */
+static int mtxfile_coordinate_datatype(
+    enum mtxfile_object object,
+    enum mtxfile_field field,
+    enum mtx_precision precision,
+    MPI_Datatype * datatype,
+    int * mpierrcode)
+{
+    int num_elements;
+    int block_lengths[3];
+    MPI_Datatype element_types[3];
+    MPI_Aint element_offsets[3];
+    if (object == mtxfile_matrix) {
+        if (field == mtxfile_real) {
+            if (precision == mtx_single) {
+                num_elements = 3;
+                element_types[0] = MPI_INT;
+                block_lengths[0] = 1;
+                element_offsets[0] =
+                    offsetof(struct mtxfile_matrix_coordinate_real_single, i);
+                element_types[1] = MPI_INT;
+                block_lengths[1] = 1;
+                element_offsets[1] =
+                    offsetof(struct mtxfile_matrix_coordinate_real_single, j);
+                element_types[2] = MPI_FLOAT;
+                block_lengths[2] = 1;
+                element_offsets[2] =
+                    offsetof(struct mtxfile_matrix_coordinate_real_single, a);
+            } else if (precision == mtx_double) {
+                num_elements = 3;
+                element_types[0] = MPI_INT;
+                block_lengths[0] = 1;
+                element_offsets[0] =
+                    offsetof(struct mtxfile_matrix_coordinate_real_double, i);
+                element_types[1] = MPI_INT;
+                block_lengths[1] = 1;
+                element_offsets[1] =
+                    offsetof(struct mtxfile_matrix_coordinate_real_double, j);
+                element_types[2] = MPI_DOUBLE;
+                block_lengths[2] = 1;
+                element_offsets[2] =
+                    offsetof(struct mtxfile_matrix_coordinate_real_double, a);
+            } else {
+                return MTX_ERR_INVALID_PRECISION;
+            }
+        } else if (field == mtxfile_complex) {
+            if (precision == mtx_single) {
+                num_elements = 3;
+                element_types[0] = MPI_INT;
+                block_lengths[0] = 1;
+                element_offsets[0] =
+                    offsetof(struct mtxfile_matrix_coordinate_complex_single, i);
+                element_types[1] = MPI_INT;
+                block_lengths[1] = 1;
+                element_offsets[1] =
+                    offsetof(struct mtxfile_matrix_coordinate_complex_single, j);
+                element_types[2] = MPI_FLOAT;
+                block_lengths[2] = 2;
+                element_offsets[2] =
+                    offsetof(struct mtxfile_matrix_coordinate_complex_single, a);
+            } else if (precision == mtx_double) {
+                num_elements = 3;
+                element_types[0] = MPI_INT;
+                block_lengths[0] = 1;
+                element_offsets[0] =
+                    offsetof(struct mtxfile_matrix_coordinate_complex_double, i);
+                element_types[1] = MPI_INT;
+                block_lengths[1] = 1;
+                element_offsets[1] =
+                    offsetof(struct mtxfile_matrix_coordinate_complex_double, j);
+                element_types[2] = MPI_DOUBLE;
+                block_lengths[2] = 2;
+                element_offsets[2] =
+                    offsetof(struct mtxfile_matrix_coordinate_complex_double, a);
+            } else {
+                return MTX_ERR_INVALID_PRECISION;
+            }
+        } else if (field == mtxfile_integer) {
+            if (precision == mtx_single) {
+                num_elements = 3;
+                element_types[0] = MPI_INT;
+                block_lengths[0] = 1;
+                element_offsets[0] =
+                    offsetof(struct mtxfile_matrix_coordinate_integer_single, i);
+                element_types[1] = MPI_INT;
+                block_lengths[1] = 1;
+                element_offsets[1] =
+                    offsetof(struct mtxfile_matrix_coordinate_integer_single, j);
+                element_types[2] = MPI_INT32_T;
+                block_lengths[2] = 1;
+                element_offsets[2] =
+                    offsetof(struct mtxfile_matrix_coordinate_integer_single, a);
+            } else if (precision == mtx_double) {
+                num_elements = 3;
+                element_types[0] = MPI_INT;
+                block_lengths[0] = 1;
+                element_offsets[0] =
+                    offsetof(struct mtxfile_matrix_coordinate_integer_double, i);
+                element_types[1] = MPI_INT;
+                block_lengths[1] = 1;
+                element_offsets[1] =
+                    offsetof(struct mtxfile_matrix_coordinate_integer_double, j);
+                element_types[2] = MPI_INT64_T;
+                block_lengths[2] = 1;
+                element_offsets[2] =
+                    offsetof(struct mtxfile_matrix_coordinate_integer_double, a);
+            } else {
+                return MTX_ERR_INVALID_PRECISION;
+            }
+        } else if (field == mtxfile_pattern) {
+            num_elements = 2;
+            element_types[0] = MPI_INT;
+            block_lengths[0] = 1;
+            element_offsets[0] =
+                offsetof(struct mtxfile_matrix_coordinate_pattern, i);
+            element_types[1] = MPI_INT;
+            block_lengths[1] = 1;
+            element_offsets[1] =
+                offsetof(struct mtxfile_matrix_coordinate_pattern, j);
+        } else {
+            return MTX_ERR_INVALID_MTX_FIELD;
+        }
+    } else if (object == mtxfile_vector) {
+        if (field == mtxfile_real) {
+            if (precision == mtx_single) {
+                num_elements = 2;
+                element_types[0] = MPI_INT;
+                block_lengths[0] = 1;
+                element_offsets[0] =
+                    offsetof(struct mtxfile_vector_coordinate_real_single, i);
+                element_types[1] = MPI_FLOAT;
+                block_lengths[1] = 1;
+                element_offsets[1] =
+                    offsetof(struct mtxfile_vector_coordinate_real_single, a);
+            } else if (precision == mtx_double) {
+                num_elements = 2;
+                element_types[0] = MPI_INT;
+                block_lengths[0] = 1;
+                element_offsets[0] =
+                    offsetof(struct mtxfile_vector_coordinate_real_double, i);
+                element_types[1] = MPI_DOUBLE;
+                block_lengths[1] = 1;
+                element_offsets[1] =
+                    offsetof(struct mtxfile_vector_coordinate_real_double, a);
+            } else {
+                return MTX_ERR_INVALID_PRECISION;
+            }
+        } else if (field == mtxfile_complex) {
+            if (precision == mtx_single) {
+                num_elements = 2;
+                element_types[0] = MPI_INT;
+                block_lengths[0] = 1;
+                element_offsets[0] =
+                    offsetof(struct mtxfile_vector_coordinate_complex_single, i);
+                element_types[1] = MPI_FLOAT;
+                block_lengths[1] = 2;
+                element_offsets[1] =
+                    offsetof(struct mtxfile_vector_coordinate_complex_single, a);
+            } else if (precision == mtx_double) {
+                num_elements = 2;
+                element_types[0] = MPI_INT;
+                block_lengths[0] = 1;
+                element_offsets[0] =
+                    offsetof(struct mtxfile_vector_coordinate_complex_double, i);
+                element_types[1] = MPI_DOUBLE;
+                block_lengths[1] = 2;
+                element_offsets[1] =
+                    offsetof(struct mtxfile_vector_coordinate_complex_double, a);
+            } else {
+                return MTX_ERR_INVALID_PRECISION;
+            }
+        } else if (field == mtxfile_integer) {
+            if (precision == mtx_single) {
+                num_elements = 2;
+                element_types[0] = MPI_INT;
+                block_lengths[0] = 1;
+                element_offsets[0] =
+                    offsetof(struct mtxfile_vector_coordinate_integer_single, i);
+                element_types[1] = MPI_INT32_T;
+                block_lengths[1] = 1;
+                element_offsets[1] =
+                    offsetof(struct mtxfile_vector_coordinate_integer_single, a);
+            } else if (precision == mtx_double) {
+                num_elements = 2;
+                element_types[0] = MPI_INT;
+                block_lengths[0] = 1;
+                element_offsets[0] =
+                    offsetof(struct mtxfile_vector_coordinate_integer_double, i);
+                element_types[1] = MPI_INT64_T;
+                block_lengths[1] = 1;
+                element_offsets[1] =
+                    offsetof(struct mtxfile_vector_coordinate_integer_double, a);
+            } else {
+                return MTX_ERR_INVALID_PRECISION;
+            }
+        } else if (field == mtxfile_pattern) {
+            num_elements = 1;
+            element_types[0] = MPI_INT;
+            block_lengths[0] = 1;
+            element_offsets[0] =
+                offsetof(struct mtxfile_vector_coordinate_pattern, i);
+        } else {
+            return MTX_ERR_INVALID_MTX_FIELD;
+        }
+    } else {
+        return MTX_ERR_INVALID_MTX_OBJECT;
+    }
+
+    /* Create an MPI data type for receiving nonzero data. */
+    MPI_Datatype tmp_datatype;
+    *mpierrcode = MPI_Type_create_struct(
+        num_elements, block_lengths, element_offsets,
+        element_types, &tmp_datatype);
+    if (*mpierrcode)
+        return MTX_ERR_MPI;
+
+    /* Enable sending an array of the custom data type. */
+    MPI_Aint lb, extent;
+    *mpierrcode = MPI_Type_get_extent(tmp_datatype, &lb, &extent);
+    if (*mpierrcode) {
+        MPI_Type_free(&tmp_datatype);
+        return MTX_ERR_MPI;
+    }
+    *mpierrcode = MPI_Type_create_resized(tmp_datatype, lb, extent, datatype);
+    if (*mpierrcode) {
+        MPI_Type_free(&tmp_datatype);
+        return MTX_ERR_MPI;
+    }
+    *mpierrcode = MPI_Type_commit(datatype);
+    if (*mpierrcode) {
+        MPI_Type_free(datatype);
+        MPI_Type_free(&tmp_datatype);
+        return MTX_ERR_MPI;
+    }
+
+    MPI_Type_free(&tmp_datatype);
+    return MTX_SUCCESS;
+}
+
+static int mtxfile_data_send_coordinate(
+    const union mtxfile_data * data,
+    enum mtxfile_object object,
+    enum mtxfile_field field,
+    enum mtx_precision precision,
+    size_t size,
+    int dest,
+    int tag,
+    MPI_Comm comm,
+    int * mpierrcode)
+{
+    int err;
+    MPI_Datatype datatype;
+    err = mtxfile_coordinate_datatype(
+        object, field, precision, &datatype, mpierrcode);
+    if (err)
+        return err;
+
+    if (object == mtxfile_matrix) {
+        if (field == mtxfile_real) {
+            if (precision == mtx_single) {
+                *mpierrcode = MPI_Send(
+                    data->matrix_coordinate_real_single,
+                    size, datatype, dest, tag, comm);
+                if (*mpierrcode)
+                    return MTX_ERR_MPI;
+            } else if (precision == mtx_double) {
+                *mpierrcode = MPI_Send(
+                    data->matrix_coordinate_real_double,
+                    size, datatype, dest, tag, comm);
+                if (*mpierrcode)
+                    return MTX_ERR_MPI;
+            } else {
+                return MTX_ERR_INVALID_PRECISION;
+            }
+        } else if (field == mtxfile_complex) {
+            if (precision == mtx_single) {
+                *mpierrcode = MPI_Send(
+                    data->matrix_coordinate_complex_single,
+                    size, datatype, dest, tag, comm);
+                if (*mpierrcode)
+                    return MTX_ERR_MPI;
+            } else if (precision == mtx_double) {
+                *mpierrcode = MPI_Send(
+                    data->matrix_coordinate_complex_double,
+                    size, datatype, dest, tag, comm);
+                if (*mpierrcode)
+                    return MTX_ERR_MPI;
+            } else {
+                return MTX_ERR_INVALID_PRECISION;
+            }
+        } else if (field == mtxfile_integer) {
+            if (precision == mtx_single) {
+                *mpierrcode = MPI_Send(
+                    data->matrix_coordinate_integer_single,
+                    size, datatype, dest, tag, comm);
+                if (*mpierrcode)
+                    return MTX_ERR_MPI;
+            } else if (precision == mtx_double) {
+                *mpierrcode = MPI_Send(
+                    data->matrix_coordinate_integer_double,
+                    size, datatype, dest, tag, comm);
+                if (*mpierrcode)
+                    return MTX_ERR_MPI;
+            } else {
+                return MTX_ERR_INVALID_PRECISION;
+            }
+        } else if (field == mtxfile_pattern) {
+            *mpierrcode = MPI_Send(
+                data->matrix_coordinate_pattern,
+                size, datatype, dest, tag, comm);
+            if (*mpierrcode)
+                return MTX_ERR_MPI;
+        } else {
+            return MTX_ERR_INVALID_MTX_FIELD;
+        }
+
+    } else if (object == mtxfile_vector) {
+        if (field == mtxfile_real) {
+            if (precision == mtx_single) {
+                *mpierrcode = MPI_Send(
+                    data->vector_coordinate_real_single,
+                    size, datatype, dest, tag, comm);
+                if (*mpierrcode)
+                    return MTX_ERR_MPI;
+            } else if (precision == mtx_double) {
+                *mpierrcode = MPI_Send(
+                    data->vector_coordinate_real_double,
+                    size, datatype, dest, tag, comm);
+                if (*mpierrcode)
+                    return MTX_ERR_MPI;
+            } else {
+                return MTX_ERR_INVALID_PRECISION;
+            }
+        } else if (field == mtxfile_complex) {
+            if (precision == mtx_single) {
+                *mpierrcode = MPI_Send(
+                    data->vector_coordinate_complex_single,
+                    size, datatype, dest, tag, comm);
+                if (*mpierrcode)
+                    return MTX_ERR_MPI;
+            } else if (precision == mtx_double) {
+                *mpierrcode = MPI_Send(
+                    data->vector_coordinate_complex_double,
+                    size, datatype, dest, tag, comm);
+                if (*mpierrcode)
+                    return MTX_ERR_MPI;
+            } else {
+                return MTX_ERR_INVALID_PRECISION;
+            }
+        } else if (field == mtxfile_integer) {
+            if (precision == mtx_single) {
+                *mpierrcode = MPI_Send(
+                    data->vector_coordinate_integer_single,
+                    size, datatype, dest, tag, comm);
+                if (*mpierrcode)
+                    return MTX_ERR_MPI;
+            } else if (precision == mtx_double) {
+                *mpierrcode = MPI_Send(
+                    data->vector_coordinate_integer_double,
+                    size, datatype, dest, tag, comm);
+                if (*mpierrcode)
+                    return MTX_ERR_MPI;
+            } else {
+                return MTX_ERR_INVALID_PRECISION;
+            }
+        } else if (field == mtxfile_pattern) {
+            *mpierrcode = MPI_Send(
+                data->vector_coordinate_real_single,
+                size, datatype, dest, tag, comm);
+            if (*mpierrcode)
+                return MTX_ERR_MPI;
+        } else {
+            return MTX_ERR_INVALID_MTX_FIELD;
+        }
+    } else {
+        return MTX_ERR_INVALID_MTX_OBJECT;
+    }
+    return MTX_SUCCESS;
+}
+
+/**
+ * `mtxfile_data_send()' sends Matrix Market data lines to another MPI
+ * process.
+ *
+ * This is analogous to `MPI_Send()' and requires the receiving
+ * process to perform a matching call to `mtxfile_data_recv()'.
+ */
+int mtxfile_data_send(
+    const union mtxfile_data * data,
+    enum mtxfile_object object,
+    enum mtxfile_format format,
+    enum mtxfile_field field,
+    enum mtx_precision precision,
+    size_t size,
+    int dest,
+    int tag,
+    MPI_Comm comm,
+    struct mtxmpierror * mpierror)
+{
+    if (format == mtxfile_array) {
+        return mtxfile_data_send_array(
+            data, field, precision, size, dest, tag, comm, &mpierror->err);
+    } else if (format == mtxfile_coordinate) {
+        return mtxfile_data_send_coordinate(
+            data, object, field, precision, size, dest, tag, comm, &mpierror->err);
+    } else {
+        return MTX_ERR_INVALID_MTX_FORMAT;
+    }
+    return MTX_SUCCESS;
+}
+
+static int mtxfile_data_recv_array(
+    const union mtxfile_data * data,
+    enum mtxfile_field field,
+    enum mtx_precision precision,
+    size_t size,
+    int source,
+    int tag,
+    MPI_Comm comm,
+    int * mpierrcode)
+{
+    if (field == mtxfile_real) {
+        if (precision == mtx_single) {
+            *mpierrcode = MPI_Recv(
+                data->array_real_single, size, MPI_FLOAT, source, tag, comm,
+                MPI_STATUS_IGNORE);
+            if (*mpierrcode)
+                return MTX_ERR_MPI;
+        } else if (precision == mtx_double) {
+            *mpierrcode = MPI_Recv(
+                data->array_real_double, size, MPI_DOUBLE, source, tag, comm,
+                MPI_STATUS_IGNORE);
+            if (*mpierrcode)
+                return MTX_ERR_MPI;
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else if (field == mtxfile_complex) {
+        if (precision == mtx_single) {
+            *mpierrcode = MPI_Recv(
+                data->array_complex_single, 2*size, MPI_FLOAT, source, tag, comm,
+                MPI_STATUS_IGNORE);
+            if (*mpierrcode)
+                return MTX_ERR_MPI;
+        } else if (precision == mtx_double) {
+            *mpierrcode = MPI_Recv(
+                data->array_complex_double, 2*size, MPI_DOUBLE, source, tag, comm,
+                MPI_STATUS_IGNORE);
+            if (*mpierrcode)
+                return MTX_ERR_MPI;
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else if (field == mtxfile_integer) {
+        if (precision == mtx_single) {
+            *mpierrcode = MPI_Recv(
+                data->array_integer_single, size, MPI_INT32_T, source, tag, comm,
+                MPI_STATUS_IGNORE);
+            if (*mpierrcode)
+                return MTX_ERR_MPI;
+        } else if (precision == mtx_double) {
+            *mpierrcode = MPI_Recv(
+                data->array_integer_double, size, MPI_INT64_T, source, tag, comm,
+                MPI_STATUS_IGNORE);
+            if (*mpierrcode)
+                return MTX_ERR_MPI;
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else {
+        return MTX_ERR_INVALID_MTX_FIELD;
+    }
+    return MTX_SUCCESS;
+}
+
+static int mtxfile_data_recv_coordinate(
+    const union mtxfile_data * data,
+    enum mtxfile_object object,
+    enum mtxfile_field field,
+    enum mtx_precision precision,
+    size_t size,
+    int source,
+    int tag,
+    MPI_Comm comm,
+    int * mpierrcode)
+{
+    int err;
+    MPI_Datatype datatype;
+    err = mtxfile_coordinate_datatype(
+        object, field, precision, &datatype, mpierrcode);
+    if (err)
+        return err;
+
+    if (object == mtxfile_matrix) {
+        if (field == mtxfile_real) {
+            if (precision == mtx_single) {
+                *mpierrcode = MPI_Recv(
+                    data->matrix_coordinate_real_single,
+                    size, datatype, source, tag, comm, MPI_STATUS_IGNORE);
+                if (*mpierrcode)
+                    return MTX_ERR_MPI;
+            } else if (precision == mtx_double) {
+                *mpierrcode = MPI_Recv(
+                    data->matrix_coordinate_real_double,
+                    size, datatype, source, tag, comm, MPI_STATUS_IGNORE);
+                if (*mpierrcode)
+                    return MTX_ERR_MPI;
+            } else {
+                return MTX_ERR_INVALID_PRECISION;
+            }
+        } else if (field == mtxfile_complex) {
+            if (precision == mtx_single) {
+                *mpierrcode = MPI_Recv(
+                    data->matrix_coordinate_complex_single,
+                    size, datatype, source, tag, comm, MPI_STATUS_IGNORE);
+                if (*mpierrcode)
+                    return MTX_ERR_MPI;
+            } else if (precision == mtx_double) {
+                *mpierrcode = MPI_Recv(
+                    data->matrix_coordinate_complex_double,
+                    size, datatype, source, tag, comm, MPI_STATUS_IGNORE);
+                if (*mpierrcode)
+                    return MTX_ERR_MPI;
+            } else {
+                return MTX_ERR_INVALID_PRECISION;
+            }
+        } else if (field == mtxfile_integer) {
+            if (precision == mtx_single) {
+                *mpierrcode = MPI_Recv(
+                    data->matrix_coordinate_integer_single,
+                    size, datatype, source, tag, comm, MPI_STATUS_IGNORE);
+                if (*mpierrcode)
+                    return MTX_ERR_MPI;
+            } else if (precision == mtx_double) {
+                *mpierrcode = MPI_Recv(
+                    data->matrix_coordinate_integer_double,
+                    size, datatype, source, tag, comm, MPI_STATUS_IGNORE);
+                if (*mpierrcode)
+                    return MTX_ERR_MPI;
+            } else {
+                return MTX_ERR_INVALID_PRECISION;
+            }
+        } else if (field == mtxfile_pattern) {
+            *mpierrcode = MPI_Recv(
+                data->matrix_coordinate_pattern,
+                size, datatype, source, tag, comm, MPI_STATUS_IGNORE);
+            if (*mpierrcode)
+                return MTX_ERR_MPI;
+        } else {
+            return MTX_ERR_INVALID_MTX_FIELD;
+        }
+
+    } else if (object == mtxfile_vector) {
+        if (field == mtxfile_real) {
+            if (precision == mtx_single) {
+                *mpierrcode = MPI_Recv(
+                    data->vector_coordinate_real_single,
+                    size, datatype, source, tag, comm, MPI_STATUS_IGNORE);
+                if (*mpierrcode)
+                    return MTX_ERR_MPI;
+            } else if (precision == mtx_double) {
+                *mpierrcode = MPI_Recv(
+                    data->vector_coordinate_real_double,
+                    size, datatype, source, tag, comm, MPI_STATUS_IGNORE);
+                if (*mpierrcode)
+                    return MTX_ERR_MPI;
+            } else {
+                return MTX_ERR_INVALID_PRECISION;
+            }
+        } else if (field == mtxfile_complex) {
+            if (precision == mtx_single) {
+                *mpierrcode = MPI_Recv(
+                    data->vector_coordinate_complex_single,
+                    size, datatype, source, tag, comm, MPI_STATUS_IGNORE);
+                if (*mpierrcode)
+                    return MTX_ERR_MPI;
+            } else if (precision == mtx_double) {
+                *mpierrcode = MPI_Recv(
+                    data->vector_coordinate_complex_double,
+                    size, datatype, source, tag, comm, MPI_STATUS_IGNORE);
+                if (*mpierrcode)
+                    return MTX_ERR_MPI;
+            } else {
+                return MTX_ERR_INVALID_PRECISION;
+            }
+        } else if (field == mtxfile_integer) {
+            if (precision == mtx_single) {
+                *mpierrcode = MPI_Recv(
+                    data->vector_coordinate_integer_single,
+                    size, datatype, source, tag, comm, MPI_STATUS_IGNORE);
+                if (*mpierrcode)
+                    return MTX_ERR_MPI;
+            } else if (precision == mtx_double) {
+                *mpierrcode = MPI_Recv(
+                    data->vector_coordinate_integer_double,
+                    size, datatype, source, tag, comm, MPI_STATUS_IGNORE);
+                if (*mpierrcode)
+                    return MTX_ERR_MPI;
+            } else {
+                return MTX_ERR_INVALID_PRECISION;
+            }
+        } else if (field == mtxfile_pattern) {
+            *mpierrcode = MPI_Recv(
+                data->vector_coordinate_real_single,
+                size, datatype, source, tag, comm, MPI_STATUS_IGNORE);
+            if (*mpierrcode)
+                return MTX_ERR_MPI;
+        } else {
+            return MTX_ERR_INVALID_MTX_FIELD;
+        }
+    } else {
+        return MTX_ERR_INVALID_MTX_OBJECT;
+    }
+    return MTX_SUCCESS;
+}
+
+/**
+ * `mtxfile_data_recv()' receives Matrix Market data lines from
+ * another MPI process.
+ *
+ * This is analogous to `MPI_Recv()' and requires the sending process
+ * to perform a matching call to `mtxfile_data_send()'.
+ */
+int mtxfile_data_recv(
+    union mtxfile_data * data,
+    enum mtxfile_object object,
+    enum mtxfile_format format,
+    enum mtxfile_field field,
+    enum mtx_precision precision,
+    size_t size,
+    int source,
+    int tag,
+    MPI_Comm comm,
+    struct mtxmpierror * mpierror)
+{
+    if (format == mtxfile_array) {
+        return mtxfile_data_recv_array(
+            data, field, precision, size, source, tag, comm, &mpierror->err);
+    } else if (format == mtxfile_coordinate) {
+        return mtxfile_data_recv_coordinate(
+            data, object, field, precision, size, source, tag, comm, &mpierror->err);
+    } else {
+        return MTX_ERR_INVALID_MTX_FORMAT;
+    }
+    return MTX_SUCCESS;
+}
+
+static int mtxfile_data_bcast_array(
+    const union mtxfile_data * data,
+    enum mtxfile_field field,
+    enum mtx_precision precision,
+    size_t size,
+    int root,
+    MPI_Comm comm,
+    int * mpierrcode)
+{
+    if (field == mtxfile_real) {
+        if (precision == mtx_single) {
+            *mpierrcode = MPI_Bcast(
+                data->array_real_single, size, MPI_FLOAT, root, comm);
+            if (*mpierrcode)
+                return MTX_ERR_MPI;
+        } else if (precision == mtx_double) {
+            *mpierrcode = MPI_Bcast(
+                data->array_real_double, size, MPI_DOUBLE, root, comm);
+            if (*mpierrcode)
+                return MTX_ERR_MPI;
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else if (field == mtxfile_complex) {
+        if (precision == mtx_single) {
+            *mpierrcode = MPI_Bcast(
+                data->array_complex_single, 2*size, MPI_FLOAT, root, comm);
+            if (*mpierrcode)
+                return MTX_ERR_MPI;
+        } else if (precision == mtx_double) {
+            *mpierrcode = MPI_Bcast(
+                data->array_complex_double, 2*size, MPI_DOUBLE, root, comm);
+            if (*mpierrcode)
+                return MTX_ERR_MPI;
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else if (field == mtxfile_integer) {
+        if (precision == mtx_single) {
+            *mpierrcode = MPI_Bcast(
+                data->array_integer_single, size, MPI_INT32_T, root, comm);
+            if (*mpierrcode)
+                return MTX_ERR_MPI;
+        } else if (precision == mtx_double) {
+            *mpierrcode = MPI_Bcast(
+                data->array_integer_double, size, MPI_INT64_T, root, comm);
+            if (*mpierrcode)
+                return MTX_ERR_MPI;
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else {
+        return MTX_ERR_INVALID_MTX_FIELD;
+    }
+    return MTX_SUCCESS;
+}
+
+static int mtxfile_data_bcast_coordinate(
+    const union mtxfile_data * data,
+    enum mtxfile_object object,
+    enum mtxfile_field field,
+    enum mtx_precision precision,
+    size_t size,
+    int root,
+    MPI_Comm comm,
+    int * mpierrcode)
+{
+    int err;
+    MPI_Datatype datatype;
+    err = mtxfile_coordinate_datatype(
+        object, field, precision, &datatype, mpierrcode);
+    if (err)
+        return err;
+
+    if (object == mtxfile_matrix) {
+        if (field == mtxfile_real) {
+            if (precision == mtx_single) {
+                *mpierrcode = MPI_Bcast(
+                    data->matrix_coordinate_real_single,
+                    size, datatype, root, comm);
+                if (*mpierrcode)
+                    return MTX_ERR_MPI;
+            } else if (precision == mtx_double) {
+                *mpierrcode = MPI_Bcast(
+                    data->matrix_coordinate_real_double,
+                    size, datatype, root, comm);
+                if (*mpierrcode)
+                    return MTX_ERR_MPI;
+            } else {
+                return MTX_ERR_INVALID_PRECISION;
+            }
+        } else if (field == mtxfile_complex) {
+            if (precision == mtx_single) {
+                *mpierrcode = MPI_Bcast(
+                    data->matrix_coordinate_complex_single,
+                    size, datatype, root, comm);
+                if (*mpierrcode)
+                    return MTX_ERR_MPI;
+            } else if (precision == mtx_double) {
+                *mpierrcode = MPI_Bcast(
+                    data->matrix_coordinate_complex_double,
+                    size, datatype, root, comm);
+                if (*mpierrcode)
+                    return MTX_ERR_MPI;
+            } else {
+                return MTX_ERR_INVALID_PRECISION;
+            }
+        } else if (field == mtxfile_integer) {
+            if (precision == mtx_single) {
+                *mpierrcode = MPI_Bcast(
+                    data->matrix_coordinate_integer_single,
+                    size, datatype, root, comm);
+                if (*mpierrcode)
+                    return MTX_ERR_MPI;
+            } else if (precision == mtx_double) {
+                *mpierrcode = MPI_Bcast(
+                    data->matrix_coordinate_integer_double,
+                    size, datatype, root, comm);
+                if (*mpierrcode)
+                    return MTX_ERR_MPI;
+            } else {
+                return MTX_ERR_INVALID_PRECISION;
+            }
+        } else if (field == mtxfile_pattern) {
+            *mpierrcode = MPI_Bcast(
+                data->matrix_coordinate_pattern,
+                size, datatype, root, comm);
+            if (*mpierrcode)
+                return MTX_ERR_MPI;
+        } else {
+            return MTX_ERR_INVALID_MTX_FIELD;
+        }
+
+    } else if (object == mtxfile_vector) {
+        if (field == mtxfile_real) {
+            if (precision == mtx_single) {
+                *mpierrcode = MPI_Bcast(
+                    data->vector_coordinate_real_single,
+                    size, datatype, root, comm);
+                if (*mpierrcode)
+                    return MTX_ERR_MPI;
+            } else if (precision == mtx_double) {
+                *mpierrcode = MPI_Bcast(
+                    data->vector_coordinate_real_double,
+                    size, datatype, root, comm);
+                if (*mpierrcode)
+                    return MTX_ERR_MPI;
+            } else {
+                return MTX_ERR_INVALID_PRECISION;
+            }
+        } else if (field == mtxfile_complex) {
+            if (precision == mtx_single) {
+                *mpierrcode = MPI_Bcast(
+                    data->vector_coordinate_complex_single,
+                    size, datatype, root, comm);
+                if (*mpierrcode)
+                    return MTX_ERR_MPI;
+            } else if (precision == mtx_double) {
+                *mpierrcode = MPI_Bcast(
+                    data->vector_coordinate_complex_double,
+                    size, datatype, root, comm);
+                if (*mpierrcode)
+                    return MTX_ERR_MPI;
+            } else {
+                return MTX_ERR_INVALID_PRECISION;
+            }
+        } else if (field == mtxfile_integer) {
+            if (precision == mtx_single) {
+                *mpierrcode = MPI_Bcast(
+                    data->vector_coordinate_integer_single,
+                    size, datatype, root, comm);
+                if (*mpierrcode)
+                    return MTX_ERR_MPI;
+            } else if (precision == mtx_double) {
+                *mpierrcode = MPI_Bcast(
+                    data->vector_coordinate_integer_double,
+                    size, datatype, root, comm);
+                if (*mpierrcode)
+                    return MTX_ERR_MPI;
+            } else {
+                return MTX_ERR_INVALID_PRECISION;
+            }
+        } else if (field == mtxfile_pattern) {
+            *mpierrcode = MPI_Bcast(
+                data->vector_coordinate_real_single,
+                size, datatype, root, comm);
+            if (*mpierrcode)
+                return MTX_ERR_MPI;
+        } else {
+            return MTX_ERR_INVALID_MTX_FIELD;
+        }
+    } else {
+        return MTX_ERR_INVALID_MTX_OBJECT;
+    }
+    return MTX_SUCCESS;
+}
+
+/**
+ * `mtxfile_data_bcast()' broadcasts Matrix Market data lines from an
+ * MPI root process to other processes in a communicator.
+ *
+ * This is analogous to `MPI_Bcast()' and requires every process in
+ * the communicator to perform matching calls to
+ * `mtxfile_data_bcast()'.
+ */
+int mtxfile_data_bcast(
+    union mtxfile_data * data,
+    enum mtxfile_object object,
+    enum mtxfile_format format,
+    enum mtxfile_field field,
+    enum mtx_precision precision,
+    size_t size,
+    int root,
+    MPI_Comm comm,
+    struct mtxmpierror * mpierror)
+{
+    if (format == mtxfile_array) {
+        return mtxfile_data_bcast_array(
+            data, field, precision, size, root, comm, &mpierror->err);
+    } else if (format == mtxfile_coordinate) {
+        return mtxfile_data_bcast_coordinate(
+            data, object, field, precision, size, root, comm, &mpierror->err);
+    } else {
+        return MTX_ERR_INVALID_MTX_FORMAT;
+    }
     return MTX_SUCCESS;
 }
 #endif

@@ -316,15 +316,22 @@ TESTS = \
 # MPI unit tests
 if HAVE_MPI
 check_PROGRAMS += \
-	tests/test_mtx_mpi
+	tests/test_mtx_mpi \
+	tests/test_mtxfile_mpi
 
 tests_test_mtx_mpi_CPPFLAGS = $(MPICPPFLAGS)
 tests_test_mtx_mpi_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
 tests_test_mtx_mpi_SOURCES = tests/test_mtx_mpi.c tests/test.h
 tests/test_mtx_mpi_parallel: tests/test_mtx_mpi
 
+tests_test_mtxfile_mpi_CPPFLAGS = $(MPICPPFLAGS)
+tests_test_mtxfile_mpi_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
+tests_test_mtxfile_mpi_SOURCES = tests/test_mtxfile_mpi.c tests/test.h
+tests/test_mtxfile_mpi_parallel: tests/test_mtxfile_mpi
+
 TESTS += \
-	tests/test_mtx_mpi_parallel
+	tests/test_mtx_mpi_parallel \
+	tests/test_mtxfile_mpi_parallel
 endif
 
 # Documentation

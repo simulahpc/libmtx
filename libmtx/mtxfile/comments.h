@@ -26,6 +26,10 @@
 
 #include <libmtx/libmtx-config.h>
 
+#ifdef LIBMTX_HAVE_MPI
+#include <mpi.h>
+#endif
+
 #ifdef LIBMTX_HAVE_LIBZ
 #include <zlib.h>
 #endif
@@ -33,6 +37,8 @@
 #include <stdarg.h>
 #include <stddef.h>
 #include <stdio.h>
+
+struct mtxmpierror;
 
 /**
  * `mtxfile_comment' represents a single comment line of a Matrix
@@ -112,6 +118,10 @@ int mtxfile_comments_printf(
     struct mtxfile_comments * comment,
     const char * format, ...);
 
+/*
+ * I/O functions
+ */
+
 /**
  * `mtxfile_fread_comments()` reads Matrix Market comment lines from a
  * stream.
@@ -144,6 +154,54 @@ int mtxfile_gzread_comments(
     int * bytes_read,
     size_t line_max,
     char * linebuf);
+#endif
+
+/*
+ * MPI functions
+ */
+
+#ifdef LIBMTX_HAVE_MPI
+/**
+ * `mtxfile_comments_send()' sends Matrix Market comment lines to
+ * another MPI process.
+ *
+ * This is analogous to `MPI_Send()' and requires the receiving
+ * process to perform a matching call to `mtxfile_comments_recv()'.
+ */
+int mtxfile_comments_send(
+    const struct mtxfile_comments * comments,
+    int dest,
+    int tag,
+    MPI_Comm comm,
+    struct mtxmpierror * mpierror);
+
+/**
+ * `mtxfile_comments_recv()' receives Matrix Market comment lines from
+ * another MPI process.
+ *
+ * This is analogous to `MPI_Recv()' and requires the sending process
+ * to perform a matching call to `mtxfile_comments_send()'.
+ */
+int mtxfile_comments_recv(
+    struct mtxfile_comments * comments,
+    int source,
+    int tag,
+    MPI_Comm comm,
+    struct mtxmpierror * mpierror);
+
+/**
+ * `mtxfile_comments_bcast()' broadcasts Matrix Market comment lines
+ * from an MPI root process to other processes in a communicator.
+ *
+ * This is analogous to `MPI_Bcast()' and requires every process in
+ * the communicator to perform matching calls to
+ * `mtxfile_comments_bcast()'.
+ */
+int mtxfile_comments_bcast(
+    struct mtxfile_comments * comments,
+    int root,
+    MPI_Comm comm,
+    struct mtxmpierror * mpierror);
 #endif
 
 #endif

@@ -29,6 +29,10 @@
 #include <libmtx/mtxfile/header.h>
 #include <libmtx/mtx/precision.h>
 
+#ifdef LIBMTX_HAVE_MPI
+#include <mpi.h>
+#endif
+
 #ifdef LIBMTX_HAVE_LIBZ
 #include <zlib.h>
 #endif
@@ -36,6 +40,8 @@
 #include <stdarg.h>
 #include <stddef.h>
 #include <stdio.h>
+
+struct mtxmpierror;
 
 /**
  * `mtxfile_data' represents an array of data lines from a Matrix
@@ -545,6 +551,69 @@ int mtxfile_gzread_data(
     int num_rows,
     int num_columns,
     size_t size);
+#endif
+
+/*
+ * MPI functions
+ */
+
+#ifdef LIBMTX_HAVE_MPI
+/**
+ * `mtxfile_data_send()' sends Matrix Market data lines to another MPI
+ * process.
+ *
+ * This is analogous to `MPI_Send()' and requires the receiving
+ * process to perform a matching call to `mtxfile_data_recv()'.
+ */
+int mtxfile_data_send(
+    const union mtxfile_data * data,
+    enum mtxfile_object object,
+    enum mtxfile_format format,
+    enum mtxfile_field field,
+    enum mtx_precision precision,
+    size_t size,
+    int dest,
+    int tag,
+    MPI_Comm comm,
+    struct mtxmpierror * mpierror);
+
+/**
+ * `mtxfile_data_recv()' receives Matrix Market data lines from
+ * another MPI process.
+ *
+ * This is analogous to `MPI_Recv()' and requires the sending process
+ * to perform a matching call to `mtxfile_data_send()'.
+ */
+int mtxfile_data_recv(
+    union mtxfile_data * data,
+    enum mtxfile_object object,
+    enum mtxfile_format format,
+    enum mtxfile_field field,
+    enum mtx_precision precision,
+    size_t size,
+    int source,
+    int tag,
+    MPI_Comm comm,
+    struct mtxmpierror * mpierror);
+
+/**
+ * `mtxfile_data_bcast()' broadcasts Matrix Market data lines from an
+ * MPI root process to other processes in a communicator.
+ *
+ * This is analogous to `MPI_Bcast()' and requires every process in
+ * the communicator to perform matching calls to
+ * `mtxfile_data_bcast()'.
+ */
+int mtxfile_data_bcast(
+    union mtxfile_data * data,
+    enum mtxfile_object object,
+    enum mtxfile_format format,
+    enum mtxfile_field field,
+    enum mtx_precision precision,
+    size_t size,
+    int root,
+    MPI_Comm comm,
+    struct mtxmpierror * mpierror);
 #endif
 
 #endif

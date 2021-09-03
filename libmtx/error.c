@@ -32,7 +32,9 @@
 
 #include <errno.h>
 
+#include <stdlib.h>
 #include <string.h>
+
 
 /**
  * `mtx_strerror()' is a string describing an error code.
@@ -78,7 +80,8 @@ const char * mtx_strerror(
     case MTX_ERR_INVALID_MTX_ASSEMBLY:
         return "invalid Matrix Market assembly";
     case MTX_ERR_INVALID_MTX_COMMENT:
-        return "invalid Matrix Market comment line; comments must begin with '%' and end with '\\n'";
+        return "invalid Matrix Market comment line; "
+            "comments must begin with '%' and end with '\\n'";
     case MTX_ERR_INVALID_MTX_SIZE:
         return "invalid Matrix Market size";
     case MTX_ERR_INVALID_MTX_DATA:
@@ -138,3 +141,109 @@ const char * mtx_strerror_mpi(
     }
     return mtx_strerror(err);
 }
+
+#ifdef LIBMTX_HAVE_MPI
+/**
+ * `mtxmpierror_alloc()' allocates storage needed for the MPI error
+ * handling data structure `mtxmpierror'.
+ */
+int mtxmpierror_alloc(
+    struct mtxmpierror * mpierror,
+    MPI_Comm comm)
+{
+    int err;
+    int comm_size;
+    err = MPI_Comm_size(comm, &comm_size);
+    if (err)
+        MPI_Abort(comm, EXIT_FAILURE);
+
+    int rank;
+    err = MPI_Comm_rank(comm, &rank);
+    if (err)
+        MPI_Abort(comm, EXIT_FAILURE);
+
+    int (* buf)[2] = malloc(2*comm_size * sizeof(int));
+    if (!buf)
+        MPI_Abort(comm, EXIT_FAILURE);
+
+    mpierror->comm = comm;
+    mpierror->comm_size = comm_size;
+    mpierror->rank = rank;
+    mpierror->buf = buf;
+    return MTX_SUCCESS;
+}
+
+/**
+ * `mtxmpierror_free()' frees storage held by `struct mtxmpierror'.
+ */
+void mtxmpierror_free(
+    struct mtxmpierror * mpierror)
+{
+    free(mpierror->buf);
+}
+
+/**
+ * `mtxmpierror_allreduce()' performs a collective reduction on error
+ * codes provided by each MPI process in a communicator.
+ *
+ * This is a collective operations that must be performed by every
+ * process in the communicator of the MPI error struct `mpierror'.
+ *
+ * Each process gathers the error code and rank of every other
+ * process.  If the error code of each and every process is
+ * `MTX_SUCCESS', then `mtxmpierror_allreduce()' returns
+ * `MTX_SUCCESS'. Otherwise, `MTX_ERR_MPI_COLLECTIVE' is returned.
+ * Moreover, the `buf' member of `mpierror' will contain the rank and
+ * error code of each process.
+ *
+ * If the error code `err' is `MTX_ERR_MPI_COLLECTIVE', then it is
+ * assumed that a reduction has already been performed, and
+ * `mtxmpierror_allreduce()' returns immediately with
+ * `MTX_ERR_MPI_COLLECTIVE'.  As a result, if any process calls
+ * `mtxmpierror_allreduce()' with `err' set to
+ * `MTX_ERR_MPI_COLLECTIVE', then every other process in the
+ * communicator must also set `err' to `MTX_ERR_MPI_COLLECTIVE', or
+ * else the program may hang indefinitely.
+ *
+ * Example usage:
+ *
+ *     int err;
+ *     MPI_Comm comm = MPI_COMM_WORLD;
+ *     struct mtx_mpierror mpierror;
+ *     err = mtxmpierror_alloc(&mpierror, comm);
+ *     if (err)
+ *         MPI_Abort(comm, EXIT_FAILURE);
+ *
+ *     // Get the MPI rank of the current process.
+ *     // Perform an all-reduction on the error code from
+ *     // MPI_Comm_rank, so that if any process fails,
+ *     // then we can exit gracefully.
+ *     int comm_err, rank;
+ *     err = MPI_Comm_rank(comm, &rank);
+ *     comm_err = mtxmpierror_allreduce(mpierror, err);
+ *     if (comm_err)
+ *         return comm_err;
+ *
+ *     ...
+ *
+ */
+int mtxmpierror_allreduce(
+    struct mtxmpierror * mpierror,
+    int err)
+{
+    if (err == MTX_ERR_MPI_COLLECTIVE)
+        return err;
+
+    int buf[2] = { mpierror->rank, err };
+    int mpierr = MPI_Allgather(
+        &buf, 2, MPI_INT, mpierror->buf, 2, MPI_INT,
+        mpierror->comm);
+    if (mpierr)
+        MPI_Abort(mpierror->comm, EXIT_FAILURE);
+    for (int p = 0; p < mpierror->comm_size; p++) {
+        if (mpierror->buf[p][1])
+            return MTX_ERR_MPI_COLLECTIVE;
+    }
+    return MTX_SUCCESS;
+}
+#endif

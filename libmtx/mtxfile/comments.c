@@ -26,6 +26,10 @@
 #include <libmtx/error.h>
 #include <libmtx/mtxfile/comments.h>
 
+#ifdef LIBMTX_HAVE_MPI
+#include <mpi.h>
+#endif
+
 #ifdef LIBMTX_HAVE_LIBZ
 #include <zlib.h>
 #endif
@@ -385,6 +389,196 @@ int mtxfile_gzread_comments(
 
     if (free_linebuf)
         free(linebuf);
+    return MTX_SUCCESS;
+}
+#endif
+
+/*
+ * MPI functions
+ */
+
+#ifdef LIBMTX_HAVE_MPI
+/**
+ * `mtxfile_comments_send()' sends Matrix Market comment lines to
+ * another MPI process.
+ *
+ * This is analogous to `MPI_Send()' and requires the receiving
+ * process to perform a matching call to `mtxfile_comments_recv()'.
+ */
+int mtxfile_comments_send(
+    const struct mtxfile_comments * comments,
+    int dest,
+    int tag,
+    MPI_Comm comm,
+    struct mtxmpierror * mpierror)
+{
+    int err;
+    int num_comments = 0;
+    const struct mtxfile_comment * node;
+    for (node = comments->root; node; node = node->next)
+        num_comments++;
+
+    mpierror->err = MPI_Send(&num_comments, 1, MPI_INT, dest, tag, comm);
+    if (mpierror->err)
+        return MTX_ERR_MPI;
+
+    for (node = comments->root; node; node = node->next) {
+        int len = strlen(node->comment_line);
+        mpierror->err = MPI_Send(&len, 1, MPI_INT, dest, tag, comm);
+        if (mpierror->err)
+            return MTX_ERR_MPI;
+        mpierror->err = MPI_Send(node->comment_line, len, MPI_CHAR, dest, tag, comm);
+        if (mpierror->err)
+            return MTX_ERR_MPI;
+    }
+    return MTX_SUCCESS;
+}
+
+/**
+ * `mtxfile_comments_recv()' receives Matrix Market comment lines from
+ * another MPI process.
+ *
+ * This is analogous to `MPI_Recv()' and requires the sending process
+ * to perform a matching call to `mtxfile_comments_send()'.
+ */
+int mtxfile_comments_recv(
+    struct mtxfile_comments * comments,
+    int source,
+    int tag,
+    MPI_Comm comm,
+    struct mtxmpierror * mpierror)
+{
+    int err;
+    int num_comments;
+    mpierror->err = MPI_Recv(
+        &num_comments, 1, MPI_INT, source, tag, comm, MPI_STATUS_IGNORE);
+    if (mpierror->err)
+        return MTX_ERR_MPI;
+
+    for (int i = 0; i < num_comments; i++) {
+        int len;
+        mpierror->err = MPI_Recv(
+            &len, 1, MPI_INT, source, tag, comm, MPI_STATUS_IGNORE);
+        if (mpierror->err) {
+            mtxfile_comments_free(comments);
+            return MTX_ERR_MPI;
+        }
+
+        char * comment_line = malloc((len+1) * sizeof(char));
+        if (!comment_line) {
+            mtxfile_comments_free(comments);
+            return MTX_ERR_ERRNO;
+        }
+
+        mpierror->err = MPI_Recv(
+            comment_line, len, MPI_CHAR, source, tag, comm, MPI_STATUS_IGNORE);
+        if (mpierror->err) {
+            free(comment_line);
+            mtxfile_comments_free(comments);
+            return MTX_ERR_MPI;
+        }
+        comment_line[len] = '\0';
+
+        err = mtxfile_comments_write(comments, comment_line);
+        if (err) {
+            free(comment_line);
+            mtxfile_comments_free(comments);
+            return err;
+        }
+        free(comment_line);
+    }
+    return MTX_SUCCESS;
+}
+
+/**
+ * `mtxfile_comments_bcast()' broadcasts Matrix Market comment lines
+ * from an MPI root process to other processes in a communicator.
+ *
+ * This is analogous to `MPI_Bcast()' and requires every process in
+ * the communicator to perform matching calls to
+ * `mtxfile_comments_bcast()'.
+ */
+int mtxfile_comments_bcast(
+    struct mtxfile_comments * comments,
+    int root,
+    MPI_Comm comm,
+    struct mtxmpierror * mpierror)
+{
+    int err;
+    int rank;
+    err = MPI_Comm_rank(comm, &rank);
+    if (mtxmpierror_allreduce(mpierror, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+
+    int num_comments;
+    if (rank == root) {
+        num_comments = 0;
+        const struct mtxfile_comment * node;
+        for (node = comments->root; node; node = node->next)
+            num_comments++;
+    }
+
+    err = MPI_Bcast(&num_comments, 1, MPI_INT, root, comm);
+    if (mtxmpierror_allreduce(mpierror, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+
+    const struct mtxfile_comment * node;
+    if (rank == root)
+        node = comments->root;
+    else
+        mtxfile_comments_init(comments);
+    for (int i = 0; i < num_comments; i++) {
+
+        int len;
+        if (rank == root)
+            len = strlen(node->comment_line);
+
+        err = MPI_Bcast(&len, 1, MPI_INT, root, comm);
+        if (mtxmpierror_allreduce(mpierror, err)) {
+            mtxfile_comments_free(comments);
+            return MTX_ERR_MPI_COLLECTIVE;
+        }
+
+        char * comment_line = NULL;
+        if (rank == root)
+            comment_line = node->comment_line;
+        else
+            comment_line = malloc((len+1) * sizeof(char));
+
+        err = !comment_line ? MTX_ERR_ERRNO : MTX_SUCCESS;
+        if (mtxmpierror_allreduce(mpierror, err)) {
+            if (rank != root && comment_line)
+                free(comment_line);
+            if (rank != root)
+                mtxfile_comments_free(comments);
+            return MTX_ERR_MPI_COLLECTIVE;
+        }
+
+        err = MPI_Bcast(comment_line, len, MPI_CHAR, root, comm);
+        if (mtxmpierror_allreduce(mpierror, err)) {
+            if (rank != root) {
+                free(comment_line);
+                mtxfile_comments_free(comments);
+            }
+            return MTX_ERR_MPI_COLLECTIVE;
+        }
+        comment_line[len] = '\0';
+
+        if (rank != root)
+            err = mtxfile_comments_write(comments, comment_line);
+        if (mtxmpierror_allreduce(mpierror, err)) {
+            if (rank != root) {
+                free(comment_line);
+                mtxfile_comments_free(comments);
+            }
+            return MTX_ERR_MPI_COLLECTIVE;
+        }
+        if (rank != root)
+            free(comment_line);
+
+        if (rank == root)
+            node = node->next;
+    }
     return MTX_SUCCESS;
 }
 #endif
