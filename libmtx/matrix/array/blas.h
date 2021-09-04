@@ -29,7 +29,7 @@ struct mtx_matrix_array_data;
 struct mtx_vector_array_data;
 
 /*
- * Level 2 BLAS operations.
+ * Level 1 BLAS operations.
  */
 
 /**

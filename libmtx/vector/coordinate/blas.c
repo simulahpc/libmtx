@@ -38,7 +38,7 @@ int mtx_vector_coordinate_copy(
     struct mtx_vector_coordinate_data * y,
     const struct mtx_vector_coordinate_data * x)
 {
-    /* TODO: Implement copying of matrices in coordinate format. */
+    /* TODO: Implement copying of vectors in coordinate format. */
     errno = ENOTSUP;
     return MTX_ERR_ERRNO;
 }

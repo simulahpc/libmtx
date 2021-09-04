@@ -290,7 +290,7 @@ int mtx_vector_array_data_copy_init(
 }
 
 /**
- * `mtx_vector_array_data_set_zero()' zeroes a matrix or vector.
+ * `mtx_vector_array_data_set_zero()' zeros a vector.
  */
 int mtx_vector_array_data_set_zero(
     struct mtx_vector_array_data * mtxdata)
