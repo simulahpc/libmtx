@@ -2627,4 +2627,297 @@ int mtxfile_data_bcast(
     }
     return MTX_SUCCESS;
 }
+
+static int mtxfile_data_scatterv_array(
+    const union mtxfile_data * sendbuf,
+    enum mtxfile_field field,
+    enum mtx_precision precision,
+    size_t sendoffset,
+    int * sendcounts,
+    int * displs,
+    union mtxfile_data * recvbuf,
+    size_t recvoffset,
+    int recvcount,
+    int root,
+    MPI_Comm comm,
+    int * mpierrcode)
+{
+    if (field == mtxfile_real) {
+        if (precision == mtx_single) {
+            *mpierrcode = MPI_Scatterv(
+                &sendbuf->array_real_single[sendoffset], sendcounts, displs, MPI_FLOAT,
+                &recvbuf->array_real_single[recvoffset], recvcount, MPI_FLOAT,
+                root, comm);
+            if (*mpierrcode)
+                return MTX_ERR_MPI;
+        } else if (precision == mtx_double) {
+            *mpierrcode = MPI_Scatterv(
+                &sendbuf->array_real_double[sendoffset], sendcounts, displs, MPI_DOUBLE,
+                &recvbuf->array_real_double[recvoffset], recvcount, MPI_DOUBLE,
+                root, comm);
+            if (*mpierrcode)
+                return MTX_ERR_MPI;
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else if (field == mtxfile_complex) {
+        int comm_size;
+        *mpierrcode = MPI_Comm_size(comm, &comm_size);
+        if (*mpierrcode)
+            MPI_Abort(comm, EXIT_FAILURE);
+        for (int p = 0; p < comm_size; p++) {
+            sendcounts[p] *= 2;
+            displs[p] *= 2;
+        }
+        if (precision == mtx_single) {
+            *mpierrcode = MPI_Scatterv(
+                &sendbuf->array_complex_single[sendoffset], sendcounts, displs, MPI_FLOAT,
+                &recvbuf->array_complex_single[recvoffset], recvcount, MPI_FLOAT,
+                root, comm);
+            if (*mpierrcode)
+                return MTX_ERR_MPI;
+        } else if (precision == mtx_double) {
+            *mpierrcode = MPI_Scatterv(
+                &sendbuf->array_complex_double[sendoffset], sendcounts, displs, MPI_DOUBLE,
+                &recvbuf->array_complex_double[recvoffset], recvcount, MPI_DOUBLE,
+                root, comm);
+            if (*mpierrcode)
+                return MTX_ERR_MPI;
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else if (field == mtxfile_integer) {
+        if (precision == mtx_single) {
+            *mpierrcode = MPI_Scatterv(
+                &sendbuf->array_integer_single[sendoffset], sendcounts, displs, MPI_INT32_T,
+                &recvbuf->array_integer_single[recvoffset], recvcount, MPI_INT32_T,
+                root, comm);
+            if (*mpierrcode)
+                return MTX_ERR_MPI;
+        } else if (precision == mtx_double) {
+            *mpierrcode = MPI_Scatterv(
+                &sendbuf->array_integer_double[sendoffset], sendcounts, displs, MPI_INT64_T,
+                &recvbuf->array_integer_double[recvoffset], recvcount, MPI_INT64_T,
+                root, comm);
+            if (*mpierrcode)
+                return MTX_ERR_MPI;
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else {
+        return MTX_ERR_INVALID_MTX_FIELD;
+    }
+    return MTX_SUCCESS;
+}
+
+static int mtxfile_data_scatterv_coordinate(
+    const union mtxfile_data * sendbuf,
+    enum mtxfile_object object,
+    enum mtxfile_field field,
+    enum mtx_precision precision,
+    size_t sendoffset,
+    int * sendcounts,
+    int * displs,
+    union mtxfile_data * recvbuf,
+    size_t recvoffset,
+    int recvcount,
+    int root,
+    MPI_Comm comm,
+    int * mpierrcode)
+{
+    int err;
+    MPI_Datatype datatype;
+    err = mtxfile_coordinate_datatype(
+        object, field, precision, &datatype, mpierrcode);
+    if (err)
+        return err;
+
+    if (object == mtxfile_matrix) {
+        if (field == mtxfile_real) {
+            if (precision == mtx_single) {
+                *mpierrcode = MPI_Scatterv(
+                    &sendbuf->matrix_coordinate_real_single[sendoffset],
+                    sendcounts, displs, datatype,
+                    &recvbuf->matrix_coordinate_real_single[recvoffset],
+                    recvcount, datatype, root, comm);
+                if (*mpierrcode)
+                    return MTX_ERR_MPI;
+            } else if (precision == mtx_double) {
+                *mpierrcode = MPI_Scatterv(
+                    &sendbuf->matrix_coordinate_real_double[sendoffset],
+                    sendcounts, displs, datatype,
+                    &recvbuf->matrix_coordinate_real_double[recvoffset],
+                    recvcount, datatype, root, comm);
+                if (*mpierrcode)
+                    return MTX_ERR_MPI;
+            } else {
+                return MTX_ERR_INVALID_PRECISION;
+            }
+        } else if (field == mtxfile_complex) {
+            if (precision == mtx_single) {
+                *mpierrcode = MPI_Scatterv(
+                    &sendbuf->matrix_coordinate_complex_single[sendoffset],
+                    sendcounts, displs, datatype,
+                    &recvbuf->matrix_coordinate_complex_single[recvoffset],
+                    recvcount, datatype, root, comm);
+                if (*mpierrcode)
+                    return MTX_ERR_MPI;
+            } else if (precision == mtx_double) {
+                *mpierrcode = MPI_Scatterv(
+                    &sendbuf->matrix_coordinate_complex_double[sendoffset],
+                    sendcounts, displs, datatype,
+                    &recvbuf->matrix_coordinate_complex_double[recvoffset],
+                    recvcount, datatype, root, comm);
+                if (*mpierrcode)
+                    return MTX_ERR_MPI;
+            } else {
+                return MTX_ERR_INVALID_PRECISION;
+            }
+        } else if (field == mtxfile_integer) {
+            if (precision == mtx_single) {
+                *mpierrcode = MPI_Scatterv(
+                    &sendbuf->matrix_coordinate_integer_single[sendoffset],
+                    sendcounts, displs, datatype,
+                    &recvbuf->matrix_coordinate_integer_single[recvoffset],
+                    recvcount, datatype, root, comm);
+                if (*mpierrcode)
+                    return MTX_ERR_MPI;
+            } else if (precision == mtx_double) {
+                *mpierrcode = MPI_Scatterv(
+                    &sendbuf->matrix_coordinate_integer_double[sendoffset],
+                    sendcounts, displs, datatype,
+                    &recvbuf->matrix_coordinate_integer_double[recvoffset],
+                    recvcount, datatype, root, comm);
+                if (*mpierrcode)
+                    return MTX_ERR_MPI;
+            } else {
+                return MTX_ERR_INVALID_PRECISION;
+            }
+        } else if (field == mtxfile_pattern) {
+            *mpierrcode = MPI_Scatterv(
+                &sendbuf->matrix_coordinate_pattern[sendoffset],
+                sendcounts, displs, datatype,
+                &recvbuf->matrix_coordinate_pattern[recvoffset],
+                recvcount, datatype, root, comm);
+            if (*mpierrcode)
+                return MTX_ERR_MPI;
+        } else {
+            return MTX_ERR_INVALID_MTX_FIELD;
+        }
+
+    } else if (object == mtxfile_vector) {
+        if (field == mtxfile_real) {
+            if (precision == mtx_single) {
+                *mpierrcode = MPI_Scatterv(
+                    &sendbuf->vector_coordinate_real_single[sendoffset],
+                    sendcounts, displs, datatype,
+                    &recvbuf->vector_coordinate_real_single[recvoffset],
+                    recvcount, datatype, root, comm);
+                if (*mpierrcode)
+                    return MTX_ERR_MPI;
+            } else if (precision == mtx_double) {
+                *mpierrcode = MPI_Scatterv(
+                    &sendbuf->vector_coordinate_real_double[sendoffset],
+                    sendcounts, displs, datatype,
+                    &recvbuf->vector_coordinate_real_double[recvoffset],
+                    recvcount, datatype, root, comm);
+                if (*mpierrcode)
+                    return MTX_ERR_MPI;
+            } else {
+                return MTX_ERR_INVALID_PRECISION;
+            }
+        } else if (field == mtxfile_complex) {
+            if (precision == mtx_single) {
+                *mpierrcode = MPI_Scatterv(
+                    &sendbuf->vector_coordinate_complex_single[sendoffset],
+                    sendcounts, displs, datatype,
+                    &recvbuf->vector_coordinate_complex_single[recvoffset],
+                    recvcount, datatype, root, comm);
+                if (*mpierrcode)
+                    return MTX_ERR_MPI;
+            } else if (precision == mtx_double) {
+                *mpierrcode = MPI_Scatterv(
+                    &sendbuf->vector_coordinate_complex_double[sendoffset],
+                    sendcounts, displs, datatype,
+                    &recvbuf->vector_coordinate_complex_double[recvoffset],
+                    recvcount, datatype, root, comm);
+                if (*mpierrcode)
+                    return MTX_ERR_MPI;
+            } else {
+                return MTX_ERR_INVALID_PRECISION;
+            }
+        } else if (field == mtxfile_integer) {
+            if (precision == mtx_single) {
+                *mpierrcode = MPI_Scatterv(
+                    &sendbuf->vector_coordinate_integer_single[sendoffset],
+                    sendcounts, displs, datatype,
+                    &recvbuf->vector_coordinate_integer_single[recvoffset],
+                    recvcount, datatype, root, comm);
+                if (*mpierrcode)
+                    return MTX_ERR_MPI;
+            } else if (precision == mtx_double) {
+                *mpierrcode = MPI_Scatterv(
+                    &sendbuf->vector_coordinate_integer_double[sendoffset],
+                    sendcounts, displs, datatype,
+                    &recvbuf->vector_coordinate_integer_double[recvoffset],
+                    recvcount, datatype, root, comm);
+                if (*mpierrcode)
+                    return MTX_ERR_MPI;
+            } else {
+                return MTX_ERR_INVALID_PRECISION;
+            }
+        } else if (field == mtxfile_pattern) {
+            *mpierrcode = MPI_Scatterv(
+                &sendbuf->vector_coordinate_pattern[sendoffset],
+                sendcounts, displs, datatype,
+                &recvbuf->vector_coordinate_pattern[recvoffset],
+                recvcount, datatype, root, comm);
+            if (*mpierrcode)
+                return MTX_ERR_MPI;
+        } else {
+            return MTX_ERR_INVALID_MTX_FIELD;
+        }
+    } else {
+        return MTX_ERR_INVALID_MTX_OBJECT;
+    }
+    return MTX_SUCCESS;
+}
+
+/**
+ * `mtxfile_data_scatterv()' scatters Matrix Market data lines from an
+ * MPI root process to other processes in a communicator.
+ *
+ * This is analogous to `MPI_Scatterv()' and requires every process in
+ * the communicator to perform matching calls to
+ * `mtxfile_data_scatterv()'.
+ */
+int mtxfile_data_scatterv(
+    const union mtxfile_data * sendbuf,
+    enum mtxfile_object object,
+    enum mtxfile_format format,
+    enum mtxfile_field field,
+    enum mtx_precision precision,
+    size_t sendoffset,
+    int * sendcounts,
+    int * displs,
+    union mtxfile_data * recvbuf,
+    size_t recvoffset,
+    int recvcount,
+    int root,
+    MPI_Comm comm,
+    struct mtxmpierror * mpierror)
+{
+    if (format == mtxfile_array) {
+        return mtxfile_data_scatterv_array(
+            sendbuf, field, precision, sendoffset, sendcounts, displs,
+            recvbuf, recvoffset, recvcount, root, comm, &mpierror->err);
+    } else if (format == mtxfile_coordinate) {
+        return mtxfile_data_scatterv_coordinate(
+            sendbuf, object, field, precision, sendoffset, sendcounts, displs,
+            recvbuf, recvoffset, recvcount, root, comm, &mpierror->err);
+    } else {
+        return MTX_ERR_INVALID_MTX_FORMAT;
+    }
+    return MTX_SUCCESS;
+}
 #endif

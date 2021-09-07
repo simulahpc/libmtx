@@ -40,10 +40,10 @@
 const char * program_invocation_short_name = "test_mtxfile_mpi";
 
 /**
- * `test_mtxfile_mpi_sendrecv()` tests sending a matrix from one MPI
+ * `test_mtxfile_sendrecv()` tests sending a matrix from one MPI
  * process and receiving it at another.
  */
-int test_mtxfile_mpi_sendrecv(void)
+int test_mtxfile_sendrecv(void)
 {
     int err;
     int mpierr;
@@ -143,10 +143,10 @@ int test_mtxfile_mpi_sendrecv(void)
 }
 
 /**
- * `test_mtxfile_mpi_bcast()` tests broadcasting a matrix from an MPI
- * root process to all other MPI processes in a communicator.
+ * `test_mtxfile_bcast()` tests broadcasting a matrix from an MPI root
+ * process to all other MPI processes in a communicator.
  */
-int test_mtxfile_mpi_bcast(void)
+int test_mtxfile_bcast(void)
 {
     int err;
     int mpierr;
@@ -166,7 +166,7 @@ int test_mtxfile_mpi_bcast(void)
 
     /* Get the MPI rank of the current process. */
     int rank;
-    err = MPI_Comm_rank(comm, &rank);
+    mpierr = MPI_Comm_rank(comm, &rank);
     if (mpierr) {
         MPI_Error_string(err, mpierrstr, &mpierrstrlen);
         fprintf(stderr, "%s: MPI_Comm_rank failed with %s\n",
@@ -233,10 +233,106 @@ int test_mtxfile_mpi_bcast(void)
     return TEST_SUCCESS;
 }
 
+/**
+ * `test_mtxfile_data_scatterv()` tests scattering data lines from an
+ * MPI root process to all other MPI processes in a communicator.
+ */
+int test_mtxfile_data_scatterv(void)
+{
+    int err;
+    int mpierr;
+    char mpierrstr[MPI_MAX_ERROR_STRING];
+    int mpierrstrlen;
+    int root = 0;
+
+    /* Get the size of the MPI communicator. */
+    MPI_Comm comm = MPI_COMM_WORLD;
+    int comm_size;
+    mpierr = MPI_Comm_size(comm, &comm_size);
+    if (mpierr) {
+        MPI_Error_string(mpierr, mpierrstr, &mpierrstrlen);
+        fprintf(stderr, "%s: MPI_Comm_size failed with %s\n",
+                program_invocation_short_name, mpierrstr);
+        MPI_Abort(comm, EXIT_FAILURE);
+    }
+    if (comm_size != 2)
+        TEST_FAIL_MSG("Expected exactly two MPI processes");
+
+    /* Get the MPI rank of the current process. */
+    int rank;
+    mpierr = MPI_Comm_rank(comm, &rank);
+    if (mpierr) {
+        MPI_Error_string(err, mpierrstr, &mpierrstrlen);
+        fprintf(stderr, "%s: MPI_Comm_rank failed with %s\n",
+                program_invocation_short_name, mpierrstr);
+        MPI_Abort(comm, EXIT_FAILURE);
+    }
+
+    /* Create a matrix on the root process. */
+    int num_rows = 4;
+    int num_columns = 4;
+    const struct mtxfile_matrix_coordinate_real_double srcdata[] = {
+        {1, 1, 1.0},
+        {2, 2, 2.0},
+        {3, 3, 3.0},
+        {4, 4, 4.0}};
+    int64_t num_nonzeros = sizeof(srcdata) / sizeof(*srcdata);
+    struct mtxfile srcmtx;
+    if (rank == root) {
+        err = mtxfile_init_matrix_coordinate_real_double(
+            &srcmtx, mtxfile_general, num_rows, num_columns, num_nonzeros, srcdata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    }
+
+    /* Alloc a destination buffer. */
+    union mtxfile_data dst;
+    int recvcount = rank == root ? 2 : 2;
+    err = mtxfile_data_alloc(
+        &dst, mtxfile_matrix, mtxfile_coordinate, mtxfile_real, mtx_double,
+        recvcount);
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+
+    /* Scatter the data lines from the root process. */
+    struct mtxmpierror mpierror;
+    err = mtxmpierror_alloc(&mpierror, comm);
+    if (err)
+        MPI_Abort(comm, EXIT_FAILURE);
+
+    int sendcounts[2] = {2, 2};
+    int displs[2] = {0, 2};
+    err = mtxfile_data_scatterv(
+        &srcmtx.data, mtxfile_matrix, mtxfile_coordinate, mtxfile_real, mtx_double,
+        0, sendcounts, displs, &dst, 0, recvcount, root, comm, &mpierror);
+    TEST_ASSERT_EQ(MTX_SUCCESS, err);
+
+    /* Check the scattered matrix values. */
+    if (rank == 0) {
+        const struct mtxfile_matrix_coordinate_real_double * data =
+            dst.matrix_coordinate_real_double;
+        TEST_ASSERT_EQ(  1, data[0].i); TEST_ASSERT_EQ(   1, data[0].j);
+        TEST_ASSERT_EQ(1.0, data[0].a);
+        TEST_ASSERT_EQ(  2, data[1].i); TEST_ASSERT_EQ(   2, data[1].j);
+        TEST_ASSERT_EQ(2.0, data[1].a);
+    } else if (rank == 1) {
+        const struct mtxfile_matrix_coordinate_real_double * data =
+            dst.matrix_coordinate_real_double;
+        TEST_ASSERT_EQ(  3, data[0].i); TEST_ASSERT_EQ(   3, data[0].j);
+        TEST_ASSERT_EQ(3.0, data[0].a);
+        TEST_ASSERT_EQ(  4, data[1].i); TEST_ASSERT_EQ(   4, data[1].j);
+        TEST_ASSERT_EQ(4.0, data[1].a);
+    }
+
+    mtxfile_data_free(
+        &dst, mtxfile_matrix, mtxfile_coordinate, mtxfile_real, mtx_double);
+    if (rank == root)
+        mtxfile_free(&srcmtx);
+    return TEST_SUCCESS;
+}
+
 #if 0
 /**
- * `test_mtxfile_matrix_coordinate_gather()` tests gathering a distributed
- * sparse matrix onto a single MPI root process.
+ * `test_mtxfile_matrix_coordinate_gather()` tests gathering a
+ * distributed sparse matrix onto a single MPI root process.
  */
 int test_mtxfile_matrix_coordinate_gather(void)
 {
@@ -258,7 +354,7 @@ int test_mtxfile_matrix_coordinate_gather(void)
 
     /* Get the MPI rank of the current process. */
     int rank;
-    err = MPI_Comm_rank(comm, &rank);
+    mpierr = MPI_Comm_rank(comm, &rank);
     if (mpierr) {
         MPI_Error_string(err, mpierrstr, &mpierrstrlen);
         fprintf(stderr, "%s: MPI_Comm_rank failed with %s\n",
@@ -348,8 +444,9 @@ int test_mtxfile_matrix_coordinate_gather(void)
 }
 
 /**
- * `test_mtxfile_matrix_coordinate_scatter()` tests scattering a sparse
- * matrix fom a single MPI root process to a group of processes.
+ * `test_mtxfile_matrix_coordinate_scatter()` tests scattering a
+ * sparse matrix fom a single MPI root process to a group of
+ * processes.
  */
 int test_mtxfile_matrix_coordinate_scatter(void)
 {
@@ -371,7 +468,7 @@ int test_mtxfile_matrix_coordinate_scatter(void)
 
     /* Get the MPI rank of the current process. */
     int rank;
-    err = MPI_Comm_rank(comm, &rank);
+    mpierr = MPI_Comm_rank(comm, &rank);
     if (mpierr) {
         MPI_Error_string(err, mpierrstr, &mpierrstrlen);
         fprintf(stderr, "%s: MPI_Comm_rank failed with %s\n",
@@ -545,8 +642,9 @@ int main(int argc, char * argv[])
 
     /* 2. Run test suite. */
     TEST_SUITE_BEGIN("Running tests for distributed Matrix Market files\n");
-    TEST_RUN(test_mtxfile_mpi_sendrecv);
-    TEST_RUN(test_mtxfile_mpi_bcast);
+    TEST_RUN(test_mtxfile_sendrecv);
+    TEST_RUN(test_mtxfile_bcast);
+    TEST_RUN(test_mtxfile_data_scatterv);
 #if 0
     TEST_RUN(test_mtxfile_matrix_coordinate_gather);
     TEST_RUN(test_mtxfile_matrix_coordinate_scatter);

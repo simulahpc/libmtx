@@ -611,6 +611,31 @@ int mtxfile_data_bcast(
     enum mtxfile_field field,
     enum mtx_precision precision,
     size_t size,
+    size_t offset,
+    int root,
+    MPI_Comm comm,
+    struct mtxmpierror * mpierror);
+
+/**
+ * `mtxfile_data_scatterv()' scatters Matrix Market data lines from an
+ * MPI root process to other processes in a communicator.
+ *
+ * This is analogous to `MPI_Scatterv()' and requires every process in
+ * the communicator to perform matching calls to
+ * `mtxfile_data_scatterv()'.
+ */
+int mtxfile_data_scatterv(
+    const union mtxfile_data * sendbuf,
+    enum mtxfile_object object,
+    enum mtxfile_format format,
+    enum mtxfile_field field,
+    enum mtx_precision precision,
+    size_t sendoffset,
+    int * sendcounts,
+    int * displs,
+    union mtxfile_data * recvbuf,
+    size_t recvoffset,
+    int recvcount,
     int root,
     MPI_Comm comm,
     struct mtxmpierror * mpierror);
