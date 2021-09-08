@@ -76,6 +76,18 @@ union mtxfile_data
     struct mtxfile_vector_coordinate_pattern * vector_coordinate_pattern;
 };
 
+/**
+ * `mtxfile_data_size_per_element()' calculates the size of each
+ * element in an array of Matrix Market data corresponding to the
+ * given `object', `format', `field' and `precision'.
+ */
+int mtxfile_data_size_per_element(
+    size_t * size_per_element,
+    enum mtxfile_object object,
+    enum mtxfile_format format,
+    enum mtxfile_field field,
+    enum mtx_precision precision);
+
 /*
  * Array formats
  */
