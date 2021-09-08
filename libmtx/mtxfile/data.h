@@ -485,7 +485,9 @@ int mtxfile_data_copy(
     enum mtxfile_format format,
     enum mtxfile_field field,
     enum mtx_precision precision,
-    size_t size);
+    size_t size,
+    size_t dst_offset,
+    size_t src_offset);
 
 /*
  * I/O functions
@@ -572,6 +574,7 @@ int mtxfile_data_send(
     enum mtxfile_field field,
     enum mtx_precision precision,
     size_t size,
+    size_t offset,
     int dest,
     int tag,
     MPI_Comm comm,
@@ -591,6 +594,7 @@ int mtxfile_data_recv(
     enum mtxfile_field field,
     enum mtx_precision precision,
     size_t size,
+    size_t offset,
     int source,
     int tag,
     MPI_Comm comm,

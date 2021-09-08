@@ -100,7 +100,8 @@ int mtxfile_copy(
     err = mtxfile_data_copy(
         &dst->data, &src->data,
         src->header.object, src->header.format,
-        src->header.field, src->precision, num_data_lines);
+        src->header.field, src->precision,
+        num_data_lines, 0, 0);
     if (err) {
         mtxfile_comments_free(&dst->comments);
         return err;
@@ -829,7 +830,7 @@ int mtxfile_send(
         mtxfile->header.format,
         mtxfile->header.field,
         mtxfile->precision,
-        num_data_lines,
+        num_data_lines, 0,
         dest, tag, comm, mpierror);
     if (err)
         return err;
@@ -894,7 +895,7 @@ int mtxfile_recv(
         mtxfile->header.format,
         mtxfile->header.field,
         mtxfile->precision,
-        num_data_lines,
+        num_data_lines, 0,
         source, tag, comm, mpierror);
     if (err) {
         mtxfile_data_free(
@@ -974,7 +975,7 @@ int mtxfile_bcast(
         mtxfile->header.format,
         mtxfile->header.field,
         mtxfile->precision,
-        num_data_lines,
+        num_data_lines, 0,
         root, comm, mpierror);
     if (err) {
         if (rank != root) {
