@@ -194,6 +194,24 @@ int mtxfile_size_bcast(
     int root,
     MPI_Comm comm,
     struct mtxmpierror * mpierror);
+
+/**
+ * `mtxfile_size_scatterv()' scatters a Matrix Market size line from
+ * an MPI root process to other processes in a communicator.
+ *
+ * This is analogous to `MPI_Scatterv()' and requires every process in
+ * the communicator to perform matching calls to
+ * `mtxfile_size_scatterv()'.
+ */
+int mtxfile_size_scatterv(
+    const struct mtxfile_size * sendsize,
+    struct mtxfile_size * recvsize,
+    enum mtxfile_object object,
+    enum mtxfile_format format,
+    int recvcount,
+    int root,
+    MPI_Comm comm,
+    struct mtxmpierror * mpierror);
 #endif
 
 #endif

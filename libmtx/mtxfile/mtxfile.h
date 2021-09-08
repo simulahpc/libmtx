@@ -547,6 +547,27 @@ int mtxfile_bcast(
     int root,
     MPI_Comm comm,
     struct mtxmpierror * mpierror);
+
+/**
+ * `mtxfile_scatterv()' scatters a Matrix Market file from an MPI root
+ * process to other processes in a communicator.
+ *
+ * This is analogous to `MPI_Scatterv()' and requires every process in
+ * the communicator to perform matching calls to `mtxfile_scatterv()'.
+ *
+ * For a matrix in `array' format, entire rows are scattered, which
+ * means that the send and receive counts must be multiples of the
+ * number of matrix columns.
+ */
+int mtxfile_scatterv(
+    const struct mtxfile * sendmtxfile,
+    int * sendcounts,
+    int * displs,
+    struct mtxfile * recvmtxfile,
+    int recvcount,
+    int root,
+    MPI_Comm comm,
+    struct mtxmpierror * mpierror);
 #endif
 
 #endif

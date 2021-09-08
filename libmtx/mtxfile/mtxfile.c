@@ -1038,4 +1038,115 @@ int mtxfile_bcast(
     }
     return MTX_SUCCESS;
 }
+
+/**
+ * `mtxfile_scatterv()' scatters a Matrix Market file from an MPI root
+ * process to other processes in a communicator.
+ *
+ * This is analogous to `MPI_Scatterv()' and requires every process in
+ * the communicator to perform matching calls to `mtxfile_scatterv()'.
+ */
+int mtxfile_scatterv(
+    const struct mtxfile * sendmtxfile,
+    int * sendcounts,
+    int * displs,
+    struct mtxfile * recvmtxfile,
+    int recvcount,
+    int root,
+    MPI_Comm comm,
+    struct mtxmpierror * mpierror)
+{
+    int err;
+    int comm_size;
+    err = MPI_Comm_size(comm, &comm_size);
+    if (mtxmpierror_allreduce(mpierror, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+
+    int rank;
+    err = MPI_Comm_rank(comm, &rank);
+    if (mtxmpierror_allreduce(mpierror, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+
+    err = (rank == root)
+        ? mtxfile_header_copy(&recvmtxfile->header, &sendmtxfile->header)
+        : MTX_SUCCESS;
+    if (mtxmpierror_allreduce(mpierror, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+    err = mtxfile_header_bcast(&recvmtxfile->header, root, comm, mpierror);
+    if (err)
+        return err;
+
+    err = (rank == root)
+        ? mtxfile_comments_init(&recvmtxfile->comments)
+        : MTX_SUCCESS;
+    if (mtxmpierror_allreduce(mpierror, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+    err = (rank == root)
+        ? mtxfile_comments_copy(&recvmtxfile->comments, &sendmtxfile->comments)
+        : MTX_SUCCESS;
+    if (mtxmpierror_allreduce(mpierror, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+    err = mtxfile_comments_bcast(&recvmtxfile->comments, root, comm, mpierror);
+    if (err) {
+        mtxfile_comments_free(&recvmtxfile->comments);
+        return err;
+    }
+
+    err = mtxfile_size_scatterv(
+        &sendmtxfile->size, &recvmtxfile->size,
+        recvmtxfile->header.object, recvmtxfile->header.format,
+        recvcount, root, comm, mpierror);
+    if (err) {
+        mtxfile_comments_free(&recvmtxfile->comments);
+        return err;
+    }
+
+    recvmtxfile->precision = sendmtxfile->precision;
+    err = MPI_Bcast(
+        &recvmtxfile->precision, 1, MPI_INT, root, comm);
+    if (mtxmpierror_allreduce(mpierror, err)) {
+        mtxfile_comments_free(&recvmtxfile->comments);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+
+    size_t num_data_lines;
+    err = mtxfile_size_num_data_lines(&recvmtxfile->size, &num_data_lines);
+    if (mtxmpierror_allreduce(mpierror, err)) {
+        mtxfile_comments_free(&recvmtxfile->comments);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+    err = recvcount != num_data_lines ? MTX_ERR_INDEX_OUT_OF_BOUNDS : MTX_SUCCESS;
+    if (mtxmpierror_allreduce(mpierror, err)) {
+        mtxfile_comments_free(&recvmtxfile->comments);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+
+    err = mtxfile_data_alloc(
+        &recvmtxfile->data,
+        recvmtxfile->header.object,
+        recvmtxfile->header.format,
+        recvmtxfile->header.field,
+        recvmtxfile->precision,
+        recvcount);
+    if (mtxmpierror_allreduce(mpierror, err)) {
+        mtxfile_comments_free(&recvmtxfile->comments);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+
+    err = mtxfile_data_scatterv(
+        &sendmtxfile->data,
+        recvmtxfile->header.object, recvmtxfile->header.format,
+        recvmtxfile->header.field, recvmtxfile->precision,
+        0, sendcounts, displs,
+        &recvmtxfile->data, 0, recvcount,
+        root, comm, mpierror);
+    if (err) {
+        mtxfile_data_free(
+            &recvmtxfile->data, recvmtxfile->header.object, recvmtxfile->header.format,
+            recvmtxfile->header.field, recvmtxfile->precision);
+        mtxfile_comments_free(&recvmtxfile->comments);
+        return err;
+    }
+    return MTX_SUCCESS;
+}
 #endif

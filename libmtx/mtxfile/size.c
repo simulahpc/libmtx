@@ -494,4 +494,67 @@ int mtxfile_size_bcast(
         return MTX_ERR_MPI_COLLECTIVE;
     return MTX_SUCCESS;
 }
+
+/**
+ * `mtxfile_size_scatterv()' scatters a Matrix Market size line from
+ * an MPI root process to other processes in a communicator.
+ *
+ * This is analogous to `MPI_Scatterv()' and requires every process in
+ * the communicator to perform matching calls to
+ * `mtxfile_size_scatterv()'.
+ */
+int mtxfile_size_scatterv(
+    const struct mtxfile_size * sendsize,
+    struct mtxfile_size * recvsize,
+    enum mtxfile_object object,
+    enum mtxfile_format format,
+    int recvcount,
+    int root,
+    MPI_Comm comm,
+    struct mtxmpierror * mpierror)
+{
+    int err;
+    if (format == mtxfile_array) {
+        if (object == mtxfile_matrix) {
+            int rank;
+            err = MPI_Comm_rank(comm, &rank);
+            if (mtxmpierror_allreduce(mpierror, err))
+                return MTX_ERR_MPI_COLLECTIVE;
+            if (rank == root)
+                recvsize->num_columns = sendsize->num_columns;
+            err = MPI_Bcast(&recvsize->num_columns, 1, MPI_INT32_T, root, comm);
+            if (mtxmpierror_allreduce(mpierror, err))
+                return MTX_ERR_MPI_COLLECTIVE;
+            recvsize->num_rows =
+                (recvcount + recvsize->num_columns-1) / recvsize->num_columns;
+            recvsize->num_nonzeros = -1;
+        } else if (object == mtxfile_vector) {
+            recvsize->num_rows = recvcount;
+            recvsize->num_columns = -1;
+            recvsize->num_nonzeros = -1;
+        } else {
+            return MTX_ERR_INVALID_MTX_OBJECT;
+        }
+
+    } else if (format == mtxfile_coordinate) {
+        int rank;
+        err = MPI_Comm_rank(comm, &rank);
+        if (mtxmpierror_allreduce(mpierror, err))
+            return MTX_ERR_MPI_COLLECTIVE;
+        if (rank == root)
+            recvsize->num_rows = sendsize->num_rows;
+        err = MPI_Bcast(&recvsize->num_rows, 1, MPI_INT32_T, root, comm);
+        if (mtxmpierror_allreduce(mpierror, err))
+            return MTX_ERR_MPI_COLLECTIVE;
+        if (rank == root)
+            recvsize->num_columns = sendsize->num_columns;
+        err = MPI_Bcast(&recvsize->num_columns, 1, MPI_INT32_T, root, comm);
+        if (mtxmpierror_allreduce(mpierror, err))
+            return MTX_ERR_MPI_COLLECTIVE;
+        recvsize->num_nonzeros = recvcount;
+    } else {
+        return MTX_ERR_INVALID_MTX_FORMAT;
+    }
+    return MTX_SUCCESS;
+}
 #endif
