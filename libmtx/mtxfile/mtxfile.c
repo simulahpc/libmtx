@@ -109,6 +109,93 @@ int mtxfile_copy(
     return MTX_SUCCESS;
 }
 
+/**
+ * `mtxfile_cat()' concatenates two Matrix Market files.
+ *
+ * The files must have identical header lines. Furthermore, for
+ * matrices in array format, both matrices must have the same number
+ * of columns, since entire rows are concatenated.  For matrices or
+ * vectors in coordinate format, the number of rows and columns must
+ * be the same.
+ */
+int mtxfile_cat(
+    struct mtxfile * dst,
+    const struct mtxfile * src)
+{
+    int err;
+    if (dst->header.object != src->header.object)
+        return MTX_ERR_INVALID_MTX_OBJECT;
+    if (dst->header.format != src->header.format)
+        return MTX_ERR_INVALID_MTX_FORMAT;
+    if (dst->header.field != src->header.field)
+        return MTX_ERR_INVALID_MTX_FIELD;
+    if (dst->header.symmetry != src->header.symmetry)
+        return MTX_ERR_INVALID_MTX_SYMMETRY;
+
+    err = mtxfile_comments_cat(&dst->comments, &src->comments);
+    if (err)
+        return err;
+
+    size_t num_data_lines_dst;
+    err = mtxfile_size_num_data_lines(&dst->size, &num_data_lines_dst);
+    if (err)
+        return err;
+    size_t num_data_lines_src;
+    err = mtxfile_size_num_data_lines(&src->size, &num_data_lines_src);
+    if (err)
+        return err;
+
+    err = mtxfile_size_cat(
+        &dst->size, &src->size, dst->header.object, dst->header.format);
+    if (err)
+        return err;
+
+    size_t num_data_lines;
+    err = mtxfile_size_num_data_lines(&dst->size, &num_data_lines);
+    if (err)
+        return err;
+    if (num_data_lines_dst + num_data_lines_src != num_data_lines)
+        return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+
+    union mtxfile_data data;
+    err = mtxfile_data_alloc(
+        &data, dst->header.object, dst->header.format,
+        dst->header.field, dst->precision, num_data_lines);
+    if (err)
+        return err;
+
+    err = mtxfile_data_copy(
+        &data, &dst->data,
+        dst->header.object, dst->header.format,
+        dst->header.field, dst->precision,
+        num_data_lines_dst, 0, 0);
+    if (err) {
+        mtxfile_data_free(
+            &data, dst->header.object, dst->header.format,
+            dst->header.field, dst->precision);
+        return err;
+    }
+
+    err = mtxfile_data_copy(
+        &data, &src->data,
+        dst->header.object, dst->header.format,
+        dst->header.field, dst->precision,
+        num_data_lines_src, num_data_lines_dst, 0);
+    if (err) {
+        mtxfile_data_free(
+            &data, dst->header.object, dst->header.format,
+            dst->header.field, dst->precision);
+        return err;
+    }
+
+    union mtxfile_data olddata = dst->data;
+    dst->data = data;
+    mtxfile_data_free(
+        &olddata, dst->header.object, dst->header.format,
+        dst->header.field, dst->precision);
+    return MTX_SUCCESS;
+}
+
 /*
  * Matrix array formats
  */

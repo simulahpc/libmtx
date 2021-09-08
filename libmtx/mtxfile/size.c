@@ -242,6 +242,38 @@ int mtxfile_size_copy(
 }
 
 /**
+ * `mtxfile_size_cat()' updates a size line to match with the
+ * concatenation of two Matrix Market files.
+ */
+int mtxfile_size_cat(
+    struct mtxfile_size * dst,
+    const struct mtxfile_size * src,
+    enum mtxfile_object object,
+    enum mtxfile_format format)
+{
+    int err;
+    if (format == mtxfile_array) {
+        if (object == mtxfile_matrix) {
+            if (dst->num_columns != src->num_columns)
+                return MTX_ERR_INVALID_MTX_SIZE;
+            dst->num_rows += src->num_rows;
+        } else if (object == mtxfile_vector) {
+            dst->num_rows += src->num_rows;
+        } else {
+            return MTX_ERR_INVALID_MTX_OBJECT;
+        }
+    } else if (format == mtxfile_coordinate) {
+        if (dst->num_rows != src->num_rows ||
+            dst->num_columns != src->num_columns)
+            return MTX_ERR_INVALID_MTX_SIZE;
+        dst->num_nonzeros += src->num_nonzeros;
+    } else {
+        return MTX_ERR_INVALID_MTX_FORMAT;
+    }
+    return MTX_SUCCESS;
+}
+
+/**
  * `mtxfile_size_num_data_lines()' computes the number of data lines
  * that are required in a Matrix Market file with the given size line.
  */

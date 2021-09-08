@@ -2014,6 +2014,146 @@ int test_mtxfile_gzread(void)
 #endif
 
 /**
+ * `test_mtxfile_cat()' tests concatenating Matrix Market files.
+ */
+int test_mtxfile_cat(void)
+{
+    int err;
+
+    /*
+     * Array formats
+     */
+
+    {
+        int num_rows_src = 1;
+        int num_columns_src = 3;
+        const double srcdata[] = {7.0, 8.0, 9.0};
+        int64_t num_nonzeros_src = sizeof(srcdata) / sizeof(*srcdata);
+        struct mtxfile srcmtx;
+        err = mtxfile_init_matrix_array_real_double(
+            &srcmtx, mtxfile_general, num_rows_src, num_columns_src, srcdata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+
+        int num_rows_dst = 2;
+        int num_columns_dst = 3;
+        const double dstdata[] = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0};
+        int64_t num_nonzeros_dst = sizeof(dstdata) / sizeof(*dstdata);
+        struct mtxfile dstmtx;
+        err = mtxfile_init_matrix_array_real_double(
+            &dstmtx, mtxfile_general, num_rows_dst, num_columns_dst, dstdata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+
+        err = mtxfile_cat(&dstmtx, &srcmtx);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        TEST_ASSERT_EQ(mtxfile_matrix, dstmtx.header.object);
+        TEST_ASSERT_EQ(mtxfile_array, dstmtx.header.format);
+        TEST_ASSERT_EQ(mtxfile_real, dstmtx.header.field);
+        TEST_ASSERT_EQ(mtxfile_general, dstmtx.header.symmetry);
+        TEST_ASSERT_EQ(mtx_double, dstmtx.precision);
+        TEST_ASSERT_EQ(3, dstmtx.size.num_rows);
+        TEST_ASSERT_EQ(3, dstmtx.size.num_columns);
+        TEST_ASSERT_EQ(-1, dstmtx.size.num_nonzeros);
+        const double * data = dstmtx.data.array_real_double;
+        TEST_ASSERT_EQ(1.0, data[0]);
+        TEST_ASSERT_EQ(2.0, data[1]);
+        TEST_ASSERT_EQ(3.0, data[2]);
+        TEST_ASSERT_EQ(4.0, data[3]);
+        TEST_ASSERT_EQ(5.0, data[4]);
+        TEST_ASSERT_EQ(6.0, data[5]);
+        TEST_ASSERT_EQ(7.0, data[6]);
+        TEST_ASSERT_EQ(8.0, data[7]);
+        TEST_ASSERT_EQ(9.0, data[8]);
+        mtxfile_free(&dstmtx);
+        mtxfile_free(&srcmtx);
+    }
+
+    {
+        int num_rows_src = 3;
+        const double srcdata[] = {3.0, 4.0, 5.0};
+        int64_t num_nonzeros_src = sizeof(srcdata) / sizeof(*srcdata);
+        struct mtxfile srcmtx;
+        err = mtxfile_init_vector_array_real_double(
+            &srcmtx, num_rows_src, srcdata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+
+        int num_rows_dst = 2;
+        const double dstdata[] = {1.0, 2.0};
+        int64_t num_nonzeros_dst = sizeof(dstdata) / sizeof(*dstdata);
+        struct mtxfile dstmtx;
+        err = mtxfile_init_vector_array_real_double(
+            &dstmtx, num_rows_dst, dstdata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+
+        err = mtxfile_cat(&dstmtx, &srcmtx);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        TEST_ASSERT_EQ(mtxfile_vector, dstmtx.header.object);
+        TEST_ASSERT_EQ(mtxfile_array, dstmtx.header.format);
+        TEST_ASSERT_EQ(mtxfile_real, dstmtx.header.field);
+        TEST_ASSERT_EQ(mtxfile_general, dstmtx.header.symmetry);
+        TEST_ASSERT_EQ(mtx_double, dstmtx.precision);
+        TEST_ASSERT_EQ(5, dstmtx.size.num_rows);
+        TEST_ASSERT_EQ(-1, dstmtx.size.num_columns);
+        TEST_ASSERT_EQ(-1, dstmtx.size.num_nonzeros);
+        const double * data = dstmtx.data.array_real_double;
+        TEST_ASSERT_EQ(1.0, data[0]);
+        TEST_ASSERT_EQ(2.0, data[1]);
+        TEST_ASSERT_EQ(3.0, data[2]);
+        TEST_ASSERT_EQ(4.0, data[3]);
+        TEST_ASSERT_EQ(5.0, data[4]);
+        mtxfile_free(&dstmtx);
+        mtxfile_free(&srcmtx);
+    }
+
+    /*
+     * Matrix coordinate formats
+     */
+
+    {
+        int num_rows = 4;
+        int num_columns = 4;
+        const struct mtxfile_matrix_coordinate_real_double srcdata[] = {
+            {3, 3, 3.0}, {4, 4, 4.0}};
+        int64_t num_nonzeros_src = sizeof(srcdata) / sizeof(*srcdata);
+        struct mtxfile srcmtx;
+        err = mtxfile_init_matrix_coordinate_real_double(
+            &srcmtx, mtxfile_general, num_rows, num_columns, num_nonzeros_src, srcdata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+
+        const struct mtxfile_matrix_coordinate_real_double dstdata[] = {
+            {1, 1, 1.0}, {2, 2, 2.0}};
+        int64_t num_nonzeros_dst = sizeof(dstdata) / sizeof(*dstdata);
+        struct mtxfile dstmtx;
+        err = mtxfile_init_matrix_coordinate_real_double(
+            &dstmtx, mtxfile_general, num_rows, num_columns, num_nonzeros_dst, dstdata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+
+        err = mtxfile_cat(&dstmtx, &srcmtx);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        TEST_ASSERT_EQ(mtxfile_matrix, dstmtx.header.object);
+        TEST_ASSERT_EQ(mtxfile_coordinate, dstmtx.header.format);
+        TEST_ASSERT_EQ(mtxfile_real, dstmtx.header.field);
+        TEST_ASSERT_EQ(mtxfile_general, dstmtx.header.symmetry);
+        TEST_ASSERT_EQ(mtx_double, dstmtx.precision);
+        TEST_ASSERT_EQ(4, dstmtx.size.num_rows);
+        TEST_ASSERT_EQ(4, dstmtx.size.num_columns);
+        TEST_ASSERT_EQ(4, dstmtx.size.num_nonzeros);
+        const struct mtxfile_matrix_coordinate_real_double * data =
+            dstmtx.data.matrix_coordinate_real_double;
+        TEST_ASSERT_EQ(  1, data[0].i); TEST_ASSERT_EQ(   1, data[0].j);
+        TEST_ASSERT_EQ(1.0, data[0].a);
+        TEST_ASSERT_EQ(  2, data[1].i); TEST_ASSERT_EQ(   2, data[1].j);
+        TEST_ASSERT_EQ(2.0, data[1].a);
+        TEST_ASSERT_EQ(  3, data[2].i); TEST_ASSERT_EQ(   3, data[2].j);
+        TEST_ASSERT_EQ(3.0, data[2].a);
+        TEST_ASSERT_EQ(  4, data[3].i); TEST_ASSERT_EQ(   4, data[3].j);
+        TEST_ASSERT_EQ(4.0, data[3].a);
+        mtxfile_free(&dstmtx);
+        mtxfile_free(&srcmtx);
+    }
+    return TEST_SUCCESS;
+}
+
+/**
  * `main()' entry point and test driver.
  */
 int main(int argc, char * argv[])
@@ -2030,6 +2170,7 @@ int main(int argc, char * argv[])
 #ifdef LIBMTX_HAVE_LIBZ
     TEST_RUN(test_mtxfile_gzread);
 #endif
+    TEST_RUN(test_mtxfile_cat);
     TEST_SUITE_END();
     return (TEST_SUITE_STATUS == TEST_SUCCESS) ?
         EXIT_SUCCESS : EXIT_FAILURE;

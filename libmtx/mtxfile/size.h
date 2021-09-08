@@ -99,6 +99,16 @@ int mtxfile_size_copy(
     const struct mtxfile_size * src);
 
 /**
+ * `mtxfile_size_cat()' updates a size line to match with the
+ * concatenation of two Matrix Market files.
+ */
+int mtxfile_size_cat(
+    struct mtxfile_size * dst,
+    const struct mtxfile_size * src,
+    enum mtxfile_object object,
+    enum mtxfile_format format);
+
+/**
  * `mtxfile_size_num_data_lines()' computes the number of data lines
  * that are required in a Matrix Market file with the given size line.
  */

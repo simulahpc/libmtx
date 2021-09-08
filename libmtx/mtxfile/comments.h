@@ -88,6 +88,14 @@ int mtxfile_comments_copy(
     const struct mtxfile_comments * src);
 
 /**
+ * `mtxfile_comments_cat()' concatenates a list of comment lines to
+ * another list of comment lines.
+ */
+int mtxfile_comments_cat(
+    struct mtxfile_comments * dst,
+    const struct mtxfile_comments * src);
+
+/**
  * `mtxfile_comments_free()' frees storage used for comment lines.
  */
 void mtxfile_comments_free(

@@ -101,13 +101,35 @@ int mtxfile_comments_copy(
     struct mtxfile_comments * dst,
     const struct mtxfile_comments * src)
 {
+    int err = mtxfile_comments_init(dst);
+    if (err)
+        return err;
+
     const struct mtxfile_comment * node = src->root;
     while (node) {
-        int err = mtxfile_comments_write(dst, node->comment_line);
+        err = mtxfile_comments_write(dst, node->comment_line);
         if (err) {
             mtxfile_comments_free(dst);
             return err;
         }
+        node = node->next;
+    }
+    return MTX_SUCCESS;
+}
+
+/**
+ * `mtxfile_comments_cat()' concatenates a list of comment lines to
+ * another list of comment lines.
+ */
+int mtxfile_comments_cat(
+    struct mtxfile_comments * dst,
+    const struct mtxfile_comments * src)
+{
+    const struct mtxfile_comment * node = src->root;
+    while (node) {
+        int err = mtxfile_comments_write(dst, node->comment_line);
+        if (err)
+            return err;
         node = node->next;
     }
     return MTX_SUCCESS;

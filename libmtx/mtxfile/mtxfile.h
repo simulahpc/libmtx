@@ -95,6 +95,19 @@ int mtxfile_copy(
     struct mtxfile * dst,
     const struct mtxfile * src);
 
+/**
+ * `mtxfile_cat()' concatenates two Matrix Market files.
+ *
+ * The files must have identical header lines. Furthermore, for
+ * matrices in array format, both matrices must have the same number
+ * of columns, since entire rows are concatenated.  For matrices or
+ * vectors in coordinate format, the number of rows and columns must
+ * be the same.
+ */
+int mtxfile_cat(
+    struct mtxfile * dst,
+    const struct mtxfile * src);
+
 /*
  * Matrix array formats
  */
