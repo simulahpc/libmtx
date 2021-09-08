@@ -50,6 +50,89 @@
 #include <stdlib.h>
 #include <string.h>
 
+/**
+ * `mtxfile_data_size_per_element()' calculates the size of each
+ * element in an array of Matrix Market data corresponding to the
+ * given `object', `format', `field' and `precision'.
+ */
+int mtxfile_data_size_per_element(
+    size_t * size,
+    enum mtxfile_object object,
+    enum mtxfile_format format,
+    enum mtxfile_field field,
+    enum mtx_precision precision)
+{
+    union mtxfile_data data;
+    if (format == mtxfile_array) {
+        if (field == mtxfile_real) {
+            if (precision == mtx_single) {
+                *size = sizeof(*data.array_real_single);
+            } else if (precision == mtx_double) {
+                *size = sizeof(*data.array_real_double);
+            } else { return MTX_ERR_INVALID_PRECISION; }
+        } else if (field == mtxfile_complex) {
+            if (precision == mtx_single) {
+                *size = sizeof(*data.array_complex_single);
+            } else if (precision == mtx_double) {
+                *size = sizeof(*data.array_complex_double);
+            } else { return MTX_ERR_INVALID_PRECISION; }
+        } else if (field == mtxfile_integer) {
+            if (precision == mtx_single) {
+                *size = sizeof(*data.array_integer_single);
+            } else if (precision == mtx_double) {
+                *size = sizeof(*data.array_integer_double);
+            } else { return MTX_ERR_INVALID_PRECISION; }
+        } else { return MTX_ERR_INVALID_MTX_FIELD; }
+    } else if (format == mtxfile_coordinate) {
+        if (object == mtxfile_matrix) {
+            if (field == mtxfile_real) {
+                if (precision == mtx_single) {
+                    *size = sizeof(*data.matrix_coordinate_real_single);
+                } else if (precision == mtx_double) {
+                    *size = sizeof(*data.matrix_coordinate_real_double);
+                } else { return MTX_ERR_INVALID_PRECISION; }
+            } else if (field == mtxfile_complex) {
+                if (precision == mtx_single) {
+                    *size = sizeof(*data.matrix_coordinate_complex_single);
+                } else if (precision == mtx_double) {
+                    *size = sizeof(*data.matrix_coordinate_complex_double);
+                } else { return MTX_ERR_INVALID_PRECISION; }
+            } else if (field == mtxfile_integer) {
+                if (precision == mtx_single) {
+                    *size = sizeof(*data.matrix_coordinate_integer_single);
+                } else if (precision == mtx_double) {
+                    *size = sizeof(*data.matrix_coordinate_integer_double);
+                } else { return MTX_ERR_INVALID_PRECISION; }
+            } else if (field == mtxfile_pattern) {
+                *size = sizeof(*data.matrix_coordinate_pattern);
+            } else { return MTX_ERR_INVALID_MTX_FIELD; }
+        } else if (object == mtxfile_vector) {
+            if (field == mtxfile_real) {
+                if (precision == mtx_single) {
+                    *size = sizeof(*data.vector_coordinate_real_single);
+                } else if (precision == mtx_double) {
+                    *size = sizeof(*data.vector_coordinate_real_double);
+                } else { return MTX_ERR_INVALID_PRECISION; }
+            } else if (field == mtxfile_complex) {
+                if (precision == mtx_single) {
+                    *size = sizeof(*data.vector_coordinate_complex_single);
+                } else if (precision == mtx_double) {
+                    *size = sizeof(*data.vector_coordinate_complex_double);
+                } else { return MTX_ERR_INVALID_PRECISION; }
+            } else if (field == mtxfile_integer) {
+                if (precision == mtx_single) {
+                    *size = sizeof(*data.vector_coordinate_integer_single);
+                } else if (precision == mtx_double) {
+                    *size = sizeof(*data.vector_coordinate_integer_double);
+                } else { return MTX_ERR_INVALID_PRECISION; }
+            } else if (field == mtxfile_pattern) {
+                *size = sizeof(*data.vector_coordinate_pattern);
+            } else { return MTX_ERR_INVALID_MTX_FIELD; }
+        } else { return MTX_ERR_INVALID_MTX_OBJECT; }
+    } else { return MTX_ERR_INVALID_MTX_FORMAT; }
+    return MTX_SUCCESS;
+}
+
 /*
  * Array formats
  */
