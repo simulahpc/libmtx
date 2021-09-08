@@ -186,7 +186,22 @@ int mtxfile_init_matrix_array_real_double(
     enum mtxfile_symmetry symmetry,
     int num_rows,
     int num_columns,
-    const double * data);
+    const double * data)
+{
+    int err;
+    err = mtxfile_alloc_matrix_array(
+        mtxfile, mtxfile_real, symmetry, mtx_double, num_rows, num_columns);
+    if (err)
+        return err;
+    size_t num_data_lines;
+    err = mtxfile_size_num_data_lines(&mtxfile->size, &num_data_lines);
+    if (err) {
+        mtxfile_free(mtxfile);
+        return err;
+    }
+    memcpy(mtxfile->data.array_real_double, data, num_data_lines * sizeof(*data));
+    return MTX_SUCCESS;
+}
 
 /**
  * `mtxfile_init_matrix_array_complex_single()' allocates and
@@ -247,7 +262,34 @@ int mtxfile_alloc_vector_array(
     struct mtxfile * mtxfile,
     enum mtxfile_field field,
     enum mtx_precision precision,
-    int num_rows);
+    int num_rows)
+{
+    int err;
+    if (field != mtxfile_real &&
+        field != mtxfile_complex &&
+        field != mtxfile_integer)
+        return MTX_ERR_INVALID_MTX_FIELD;
+    if (precision != mtx_single &&
+        precision != mtx_double)
+        return MTX_ERR_INVALID_PRECISION;
+    mtxfile->header.object = mtxfile_vector;
+    mtxfile->header.format = mtxfile_array;
+    mtxfile->header.field = field;
+    mtxfile->header.symmetry = mtxfile_general;
+    mtxfile_comments_init(&mtxfile->comments);
+    mtxfile->size.num_rows = num_rows;
+    mtxfile->size.num_columns = -1;
+    mtxfile->size.num_nonzeros = -1;
+    mtxfile->precision = precision;
+    err = mtxfile_data_alloc(
+        &mtxfile->data, mtxfile->header.object, mtxfile->header.format,
+        mtxfile->header.field, mtxfile->precision, num_rows);
+    if (err) {
+        mtxfile_comments_free(&mtxfile->comments);
+        return err;
+    }
+    return MTX_SUCCESS;
+}
 
 /**
  * `mtxfile_init_vector_array_real_single()' allocates and initialises
@@ -265,7 +307,15 @@ int mtxfile_init_vector_array_real_single(
 int mtxfile_init_vector_array_real_double(
     struct mtxfile * mtxfile,
     int num_rows,
-    const double * data);
+    const double * data)
+{
+    int err;
+    err = mtxfile_alloc_vector_array(mtxfile, mtxfile_real, mtx_double, num_rows);
+    if (err)
+        return err;
+    memcpy(mtxfile->data.array_real_double, data, num_rows * sizeof(*data));
+    return MTX_SUCCESS;
+}
 
 /**
  * `mtxfile_init_vector_array_complex_single()' allocates and
@@ -577,7 +627,7 @@ int mtxfile_init_vector_coordinate_pattern(
  */
 
 /**
- * `mtxfile_fread()` reads a Matrix Market file from a stream.
+ * `mtxfile_fread()' reads a Matrix Market file from a stream.
  *
  * `precision' is used to determine the precision to use for storing
  * the values of matrix or vector entries.
@@ -681,7 +731,7 @@ int mtxfile_fread(
 
 #ifdef LIBMTX_HAVE_LIBZ
 /**
- * `mtxfile_gzread()` reads a Matrix Market file from a
+ * `mtxfile_gzread()' reads a Matrix Market file from a
  * gzip-compressed stream.
  *
  * `precision' is used to determine the precision to use for storing

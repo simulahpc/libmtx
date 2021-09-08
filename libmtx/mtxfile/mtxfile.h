@@ -463,7 +463,7 @@ int mtxfile_init_vector_coordinate_pattern(
  */
 
 /**
- * `mtxfile_fread()` reads a Matrix Market file from a stream.
+ * `mtxfile_fread()' reads a Matrix Market file from a stream.
  *
  * `precision' is used to determine the precision to use for storing
  * the values of matrix or vector entries.
@@ -483,7 +483,7 @@ int mtxfile_fread(
 
 #ifdef LIBMTX_HAVE_LIBZ
 /**
- * `mtxfile_gzread()` reads a Matrix Market file from a
+ * `mtxfile_gzread()' reads a Matrix Market file from a
  * gzip-compressed stream.
  *
  * `precision' is used to determine the precision to use for storing
