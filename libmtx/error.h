@@ -120,6 +120,7 @@ struct mtxmpierror
     int comm_size;
     int rank;
     int err;
+    int mpierrcode;
     int (* buf)[2];
 };
 

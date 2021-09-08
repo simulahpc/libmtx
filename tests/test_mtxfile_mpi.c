@@ -28,6 +28,7 @@
 #include <libmtx/libmtx-config.h>
 
 #include <libmtx/error.h>
+#include <libmtx/util/partition.h>
 #include <libmtx/mtxfile/coordinate.h>
 #include <libmtx/mtxfile/mtxfile.h>
 
@@ -234,8 +235,9 @@ int test_mtxfile_bcast(void)
 }
 
 /**
- * `test_mtxfile_scatterv()' tests scattering data lines from an
- * MPI root process to all other MPI processes in a communicator.
+ * `test_mtxfile_scatterv()' tests scattering a Matrix Market file
+ * from an MPI root process to all other MPI processes in a
+ * communicator.
  */
 int test_mtxfile_scatterv(void)
 {
@@ -433,6 +435,221 @@ int test_mtxfile_scatterv(void)
     return TEST_SUCCESS;
 }
 
+/**
+ * `test_mtxfile_distribute_rows()' tests distributing the rows of a
+ * Matrix Market file from an MPI root process to all other MPI
+ * processes in a communicator.
+ */
+int test_mtxfile_distribute_rows(void)
+{
+    int err;
+    int mpierr;
+    char mpierrstr[MPI_MAX_ERROR_STRING];
+    int mpierrstrlen;
+    int root = 0;
+
+    /* Get the size of the MPI communicator. */
+    MPI_Comm comm = MPI_COMM_WORLD;
+    int comm_size;
+    mpierr = MPI_Comm_size(comm, &comm_size);
+    if (mpierr) {
+        MPI_Error_string(mpierr, mpierrstr, &mpierrstrlen);
+        fprintf(stderr, "%s: MPI_Comm_size failed with %s\n",
+                program_invocation_short_name, mpierrstr);
+        MPI_Abort(comm, EXIT_FAILURE);
+    }
+    if (comm_size != 2)
+        TEST_FAIL_MSG("Expected exactly two MPI processes");
+
+    /* Get the MPI rank of the current process. */
+    int rank;
+    mpierr = MPI_Comm_rank(comm, &rank);
+    if (mpierr) {
+        MPI_Error_string(err, mpierrstr, &mpierrstrlen);
+        fprintf(stderr, "%s: MPI_Comm_rank failed with %s\n",
+                program_invocation_short_name, mpierrstr);
+        MPI_Abort(comm, EXIT_FAILURE);
+    }
+
+    struct mtxmpierror mpierror;
+    err = mtxmpierror_alloc(&mpierror, comm);
+    if (err)
+        MPI_Abort(comm, EXIT_FAILURE);
+
+    /*
+     * Array formats
+     */
+
+    {
+        int num_rows = 3;
+        int num_columns = 3;
+        const double srcdata[] = {
+            1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0};
+        int64_t num_nonzeros = sizeof(srcdata) / sizeof(*srcdata);
+        struct mtxfile srcmtx;
+        if (rank == root) {
+            err = mtxfile_init_matrix_array_real_double(
+                &srcmtx, mtxfile_general, num_rows, num_columns, srcdata);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        }
+
+        struct mtx_partition row_partition;
+        if (rank == root) {
+            err = mtx_partition_init(&row_partition, mtx_block, num_rows, comm_size, 0);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        }
+
+        struct mtxfile dstmtx;
+        err = mtxfile_distribute_rows(
+            &dstmtx, &srcmtx, &row_partition, root, comm, &mpierror);
+        TEST_ASSERT_EQ_MSG(
+            MTX_SUCCESS, err, "%s",
+            err == MTX_ERR_MPI_COLLECTIVE
+            ? mtxmpierror_description(&mpierror)
+            : mtx_strerror(err));
+
+        TEST_ASSERT_EQ(mtxfile_matrix, dstmtx.header.object);
+        TEST_ASSERT_EQ(mtxfile_array, dstmtx.header.format);
+        TEST_ASSERT_EQ(mtxfile_real, dstmtx.header.field);
+        TEST_ASSERT_EQ(mtxfile_general, dstmtx.header.symmetry);
+        TEST_ASSERT_EQ(mtx_double, dstmtx.precision);
+        TEST_ASSERT_EQ(rank == root ? 2 : 1, dstmtx.size.num_rows);
+        TEST_ASSERT_EQ(3, dstmtx.size.num_columns);
+        TEST_ASSERT_EQ(-1, dstmtx.size.num_nonzeros);
+        if (rank == 0) {
+            const double * data = dstmtx.data.array_real_double;
+            TEST_ASSERT_EQ(1.0, data[0]);
+            TEST_ASSERT_EQ(2.0, data[1]);
+            TEST_ASSERT_EQ(3.0, data[2]);
+            TEST_ASSERT_EQ(4.0, data[3]);
+            TEST_ASSERT_EQ(5.0, data[4]);
+            TEST_ASSERT_EQ(6.0, data[5]);
+        } else if (rank == 1) {
+            const double * data = dstmtx.data.array_real_double;
+            TEST_ASSERT_EQ(7.0, data[0]);
+            TEST_ASSERT_EQ(8.0, data[1]);
+            TEST_ASSERT_EQ(9.0, data[2]);
+        }
+        mtxfile_free(&dstmtx);
+        if (rank == root) {
+            mtx_partition_free(&row_partition);
+            mtxfile_free(&srcmtx);
+        }
+    }
+
+    {
+        int num_rows = 4;
+        const double srcdata[] = {1.0, 2.0, 3.0, 4.0};
+        int64_t num_nonzeros = sizeof(srcdata) / sizeof(*srcdata);
+        struct mtxfile srcmtx;
+        if (rank == root) {
+            err = mtxfile_init_vector_array_real_double(&srcmtx, num_rows, srcdata);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        }
+
+        struct mtx_partition row_partition;
+        if (rank == root) {
+            err = mtx_partition_init(
+                &row_partition, mtx_cyclic, num_rows, comm_size, 0);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        }
+
+        struct mtxfile dstmtx;
+        err = mtxfile_distribute_rows(
+            &dstmtx, &srcmtx, &row_partition, root, comm, &mpierror);
+        TEST_ASSERT_EQ_MSG(
+            MTX_SUCCESS, err, "%s",
+            err == MTX_ERR_MPI_COLLECTIVE
+            ? mtxmpierror_description(&mpierror)
+            : mtx_strerror(err));
+
+        TEST_ASSERT_EQ(mtxfile_vector, dstmtx.header.object);
+        TEST_ASSERT_EQ(mtxfile_array, dstmtx.header.format);
+        TEST_ASSERT_EQ(mtxfile_real, dstmtx.header.field);
+        TEST_ASSERT_EQ(mtxfile_general, dstmtx.header.symmetry);
+        TEST_ASSERT_EQ(mtx_double, dstmtx.precision);
+        TEST_ASSERT_EQ(rank == root ? 2 : 2, dstmtx.size.num_rows);
+        TEST_ASSERT_EQ(-1, dstmtx.size.num_columns);
+        TEST_ASSERT_EQ(-1, dstmtx.size.num_nonzeros);
+        if (rank == 0) {
+            const double * data = dstmtx.data.array_real_double;
+            TEST_ASSERT_EQ(1.0, data[0]);
+            TEST_ASSERT_EQ(3.0, data[1]);
+        } else if (rank == 1) {
+            const double * data = dstmtx.data.array_real_double;
+            TEST_ASSERT_EQ(2.0, data[0]);
+            TEST_ASSERT_EQ(4.0, data[1]);
+        }
+        mtxfile_free(&dstmtx);
+        if (rank == root) {
+            mtx_partition_free(&row_partition);
+            mtxfile_free(&srcmtx);
+        }
+    }
+
+    /*
+     * Matrix coordinate formats
+     */
+
+    {
+        int num_rows = 4;
+        int num_columns = 4;
+        const struct mtxfile_matrix_coordinate_real_double srcdata[] = {
+            {1, 1, 1.0}, {2, 2, 2.0}, {3, 3, 3.0}, {4, 4, 4.0}};
+        int64_t num_nonzeros = sizeof(srcdata) / sizeof(*srcdata);
+        struct mtxfile srcmtx;
+        if (rank == root) {
+            err = mtxfile_init_matrix_coordinate_real_double(
+                &srcmtx, mtxfile_general, num_rows, num_columns, num_nonzeros, srcdata);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        }
+
+        struct mtx_partition row_partition;
+        if (rank == root) {
+            err = mtx_partition_init(&row_partition, mtx_block, num_rows, comm_size, 0);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        }
+
+        struct mtxfile dstmtx;
+        err = mtxfile_distribute_rows(
+            &dstmtx, &srcmtx, &row_partition, root, comm, &mpierror);
+        TEST_ASSERT_EQ_MSG(
+            MTX_SUCCESS, err, "%s",
+            err == MTX_ERR_MPI_COLLECTIVE
+            ? mtxmpierror_description(&mpierror)
+            : mtx_strerror(err));
+        TEST_ASSERT_EQ(mtxfile_matrix, dstmtx.header.object);
+        TEST_ASSERT_EQ(mtxfile_coordinate, dstmtx.header.format);
+        TEST_ASSERT_EQ(mtxfile_real, dstmtx.header.field);
+        TEST_ASSERT_EQ(mtxfile_general, dstmtx.header.symmetry);
+        TEST_ASSERT_EQ(mtx_double, dstmtx.precision);
+        TEST_ASSERT_EQ(4, dstmtx.size.num_rows);
+        TEST_ASSERT_EQ(4, dstmtx.size.num_columns);
+        TEST_ASSERT_EQ(rank == root ? 2 : 2, dstmtx.size.num_nonzeros);
+        if (rank == 0) {
+            const struct mtxfile_matrix_coordinate_real_double * data =
+                dstmtx.data.matrix_coordinate_real_double;
+            TEST_ASSERT_EQ(  1, data[0].i); TEST_ASSERT_EQ(   1, data[0].j);
+            TEST_ASSERT_EQ(1.0, data[0].a);
+            TEST_ASSERT_EQ(  2, data[1].i); TEST_ASSERT_EQ(   2, data[1].j);
+            TEST_ASSERT_EQ(2.0, data[1].a);
+        } else if (rank == 1) {
+            const struct mtxfile_matrix_coordinate_real_double * data =
+                dstmtx.data.matrix_coordinate_real_double;
+            TEST_ASSERT_EQ(  3, data[0].i); TEST_ASSERT_EQ(   3, data[0].j);
+            TEST_ASSERT_EQ(3.0, data[0].a);
+            TEST_ASSERT_EQ(  4, data[1].i); TEST_ASSERT_EQ(   4, data[1].j);
+            TEST_ASSERT_EQ(4.0, data[1].a);
+        }
+        mtxfile_free(&dstmtx);
+        if (rank == root) {
+            mtx_partition_free(&row_partition);
+            mtxfile_free(&srcmtx);
+        }
+    }
+    return TEST_SUCCESS;
+}
+
 #if 0
 /**
  * `test_mtxfile_matrix_coordinate_gather()` tests gathering a
@@ -573,6 +790,7 @@ int main(int argc, char * argv[])
     TEST_RUN(test_mtxfile_sendrecv);
     TEST_RUN(test_mtxfile_bcast);
     TEST_RUN(test_mtxfile_scatterv);
+    TEST_RUN(test_mtxfile_distribute_rows);
 #if 0
     TEST_RUN(test_mtxfile_matrix_coordinate_gather);
 #endif

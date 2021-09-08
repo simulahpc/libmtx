@@ -196,25 +196,28 @@ void mtxmpierror_free(
 char * mtxmpierror_description(
     struct mtxmpierror * mpierror)
 {
+    char mpierrstr[MPI_MAX_ERROR_STRING];
     int comm_err = MTX_SUCCESS;
     for (int p = 0; p < mpierror->comm_size; p++) {
         if (mpierror->buf[p][1])
             comm_err = MTX_ERR_MPI_COLLECTIVE;
     }
     if (comm_err == MTX_SUCCESS)
-        return strdup(mtx_strerror(comm_err));
+        return strdup(mtx_strerror(MTX_SUCCESS));
 
     const char * format_header = "%s";
     const char * format_err_first = ": rank %d - %s";
     const char * format_err = ", rank %d - %s";
 
-    int len = snprintf(NULL, 0, format_header, mtx_strerror(comm_err));
+    int len = snprintf(NULL, 0, format_header, mtx_strerror(MTX_ERR_MPI_COLLECTIVE));
     int num_errors = 0;
     for (int p = 0; p < mpierror->comm_size; p++) {
         if (mpierror->buf[p][1]) {
             len += snprintf(
                 NULL, 0, num_errors == 0 ? format_err_first : format_err,
-                mpierror->buf[p][0], mtx_strerror(mpierror->buf[p][1]));
+                mpierror->buf[p][0],
+                mtx_strerror_mpi(
+                    mpierror->buf[p][1], mpierror->mpierrcode, mpierrstr));
             num_errors++;
         }
     }
@@ -230,7 +233,9 @@ char * mtxmpierror_description(
             newlen += snprintf(
                 &description[newlen], len-newlen+1,
                 num_errors == 0 ? format_err_first : format_err,
-                mpierror->buf[p][0], mtx_strerror(mpierror->buf[p][1]));
+                mpierror->buf[p][0],
+                mtx_strerror_mpi(
+                    mpierror->buf[p][1], mpierror->mpierrcode, mpierrstr));
             num_errors++;
         }
     }

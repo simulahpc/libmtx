@@ -1015,10 +1015,10 @@ int mtxfile_send(
     err = mtxfile_size_send(&mtxfile->size, dest, tag, comm, mpierror);
     if (err)
         return err;
-    err = MPI_Send(
+    mpierror->mpierrcode = MPI_Send(
         &mtxfile->precision, 1, MPI_INT, dest, tag, comm);
-    if (err)
-        return err;
+    if (mpierror->mpierrcode)
+        return MTX_ERR_MPI;
 
     size_t num_data_lines;
     err = mtxfile_size_num_data_lines(
@@ -1065,9 +1065,9 @@ int mtxfile_recv(
         mtxfile_comments_free(&mtxfile->comments);
         return err;
     }
-    mpierror->err = MPI_Recv(
+    mpierror->mpierrcode = MPI_Recv(
         &mtxfile->precision, 1, MPI_INT, source, tag, comm, MPI_STATUS_IGNORE);
-    if (mpierror->err) {
+    if (mpierror->mpierrcode) {
         mtxfile_comments_free(&mtxfile->comments);
         return MTX_ERR_MPI;
     }
@@ -1124,7 +1124,8 @@ int mtxfile_bcast(
 {
     int err;
     int rank;
-    err = MPI_Comm_rank(comm, &rank);
+    mpierror->mpierrcode = MPI_Comm_rank(comm, &rank);
+    err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
     if (mtxmpierror_allreduce(mpierror, err))
         return MTX_ERR_MPI_COLLECTIVE;
 
@@ -1140,8 +1141,9 @@ int mtxfile_bcast(
             mtxfile_comments_free(&mtxfile->comments);
         return err;
     }
-    err = MPI_Bcast(
+    mpierror->mpierrcode = MPI_Bcast(
         &mtxfile->precision, 1, MPI_INT, root, comm);
+    err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
     if (mtxmpierror_allreduce(mpierror, err)) {
         if (rank != root)
             mtxfile_comments_free(&mtxfile->comments);
@@ -1210,12 +1212,14 @@ int mtxfile_scatterv(
 {
     int err;
     int comm_size;
-    err = MPI_Comm_size(comm, &comm_size);
+    mpierror->mpierrcode = MPI_Comm_size(comm, &comm_size);
+    err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
     if (mtxmpierror_allreduce(mpierror, err))
         return MTX_ERR_MPI_COLLECTIVE;
 
     int rank;
-    err = MPI_Comm_rank(comm, &rank);
+    mpierror->mpierrcode = MPI_Comm_rank(comm, &rank);
+    err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
     if (mtxmpierror_allreduce(mpierror, err))
         return MTX_ERR_MPI_COLLECTIVE;
 
@@ -1254,8 +1258,9 @@ int mtxfile_scatterv(
     }
 
     recvmtxfile->precision = sendmtxfile->precision;
-    err = MPI_Bcast(
+    mpierror->mpierrcode = MPI_Bcast(
         &recvmtxfile->precision, 1, MPI_INT, root, comm);
+    err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
     if (mtxmpierror_allreduce(mpierror, err)) {
         mtxfile_comments_free(&recvmtxfile->comments);
         return MTX_ERR_MPI_COLLECTIVE;
@@ -1299,6 +1304,95 @@ int mtxfile_scatterv(
         mtxfile_comments_free(&recvmtxfile->comments);
         return err;
     }
+    return MTX_SUCCESS;
+}
+
+/**
+ * `mtxfile_distribute_rows()' partitions and distributes rows of a
+ * Matrix Market file from an MPI root process to other processes in a
+ * communicator.
+ *
+ * This function performs collective communication and therefore
+ * requires every process in the communicator to perform matching
+ * calls to `mtxfile_distribute_rows()'.
+ *
+ * `row_partition' must be a partitioning of the rows of the matrix or
+ * vector represented by `src'.
+ */
+int mtxfile_distribute_rows(
+    struct mtxfile * dst,
+    struct mtxfile * src,
+    const struct mtx_partition * row_partition,
+    int root,
+    MPI_Comm comm,
+    struct mtxmpierror * mpierror)
+{
+    int err;
+    int comm_size;
+    mpierror->mpierrcode = MPI_Comm_size(comm, &comm_size);
+    err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxmpierror_allreduce(mpierror, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+
+    int rank;
+    mpierror->mpierrcode = MPI_Comm_rank(comm, &rank);
+    err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxmpierror_allreduce(mpierror, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+
+    /* Partition the rows. */
+    int64_t * data_lines_per_part_ptr =
+        (rank == root) ? malloc((comm_size+1) * sizeof(int64_t)) : NULL;
+    err = (rank == root && !data_lines_per_part_ptr) ? MTX_ERR_ERRNO : MTX_SUCCESS;
+    if (mtxmpierror_allreduce(mpierror, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+    err = (rank == root)
+        ? mtxfile_partition_rows(src, row_partition, data_lines_per_part_ptr)
+        : MTX_SUCCESS;
+    if (mtxmpierror_allreduce(mpierror, err)) {
+        if (rank == root)
+            free(data_lines_per_part_ptr);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+
+    /* Find the number of data lines and offsets for each part. */
+    int * sendcounts = (rank == root) ? malloc(2*comm_size * sizeof(int)) : NULL;
+    err = (rank == root && !sendcounts) ? MTX_ERR_ERRNO : MTX_SUCCESS;
+    if (mtxmpierror_allreduce(mpierror, err)) {
+        if (rank == root)
+            free(data_lines_per_part_ptr);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+    int * displs = (rank == root) ? &sendcounts[comm_size] : NULL;
+    if (rank == root) {
+        for (int p = 0; p < comm_size; p++) {
+            sendcounts[p] = data_lines_per_part_ptr[p+1] - data_lines_per_part_ptr[p];
+            displs[p] = data_lines_per_part_ptr[p];
+        }
+        free(data_lines_per_part_ptr);
+    }
+
+    int recvcount;
+    mpierror->mpierrcode = MPI_Scatter(
+        sendcounts, 1, MPI_INT, &recvcount, 1, MPI_INT, root, comm);
+    err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxmpierror_allreduce(mpierror, err)) {
+        if (rank == root)
+            free(sendcounts);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+
+    /* Scatter the Matrix Market file. */
+    err = mtxfile_scatterv(
+        src, sendcounts, displs, dst, recvcount, root, comm, mpierror);
+    if (err) {
+        if (rank == root)
+            free(sendcounts);
+        return err;
+    }
+
+    if (rank == root)
+        free(sendcounts);
     return MTX_SUCCESS;
 }
 #endif

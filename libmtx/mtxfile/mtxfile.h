@@ -31,6 +31,7 @@
 #include <libmtx/mtxfile/data.h>
 #include <libmtx/mtxfile/header.h>
 #include <libmtx/mtxfile/size.h>
+#include <libmtx/util/partition.h>
 
 #ifdef LIBMTX_HAVE_MPI
 #include <mpi.h>
@@ -599,6 +600,26 @@ int mtxfile_scatterv(
     int * displs,
     struct mtxfile * recvmtxfile,
     int recvcount,
+    int root,
+    MPI_Comm comm,
+    struct mtxmpierror * mpierror);
+
+/**
+ * `mtxfile_distribute_rows()' partitions and distributes rows of a
+ * Matrix Market file from an MPI root process to other processes in a
+ * communicator.
+ *
+ * This function performs collective communication and therefore
+ * requires every process in the communicator to perform matching
+ * calls to `mtxfile_distribute_rows()'.
+ *
+ * `row_partition' must be a partitioning of the rows of the matrix or
+ * vector represented by `src'.
+ */
+int mtxfile_distribute_rows(
+    struct mtxfile * dst,
+    struct mtxfile * src,
+    const struct mtx_partition * row_partition,
     int root,
     MPI_Comm comm,
     struct mtxmpierror * mpierror);
