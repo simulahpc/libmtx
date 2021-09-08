@@ -922,6 +922,71 @@ int mtxfile_gzread(
 }
 #endif
 
+/**
+ * `mtxfile_partition_rows()' partitions and reorders data lines of a
+ * Matrix Market file according to the given row partitioning.
+ *
+ * The array `data_lines_per_part_ptr' must contain at least enough
+ * storage for `row_partition->num_parts+1' values of type `int64_t'.
+ * If successful, the `p'-th value of `data_lines_per_part_ptr' is an
+ * offset to the first data line belonging to the `p'-th part of the
+ * partition, while the final value of the array points to one place
+ * beyond the final data line.
+ */
+int mtxfile_partition_rows(
+    struct mtxfile * mtxfile,
+    const struct mtx_partition * row_partition,
+    int64_t * data_lines_per_part_ptr)
+{
+    int err;
+    size_t num_data_lines;
+    err = mtxfile_size_num_data_lines(&mtxfile->size, &num_data_lines);
+    if (err)
+        return err;
+
+    int * row_parts = malloc(num_data_lines * sizeof(int));
+    if (!row_parts)
+        return MTX_ERR_ERRNO;
+
+    /* Partition the data lines. */
+    err = mtxfile_data_partition_rows(
+        &mtxfile->data, mtxfile->header.object, mtxfile->header.format,
+        mtxfile->header.field, mtxfile->precision,
+        mtxfile->size.num_rows, mtxfile->size.num_columns,
+        num_data_lines, 0,
+        row_partition,
+        row_parts);
+    if (err) {
+        free(row_parts);
+        return err;
+    }
+
+    /* Sort the data lines according to the partitioning. */
+    err = mtxfile_data_sort_by_key(
+        &mtxfile->data, mtxfile->header.object, mtxfile->header.format,
+        mtxfile->header.field, mtxfile->precision, num_data_lines, 0,
+        row_parts);
+    if (err) {
+        free(row_parts);
+        return err;
+    }
+
+    /* Calculate offset to the first element of each part. */
+    for (int p = 0; p <= row_partition->num_parts; p++)
+        data_lines_per_part_ptr[p] = 0;
+    for (int64_t l = 0; l < num_data_lines; l++) {
+        int part = row_parts[l];
+        data_lines_per_part_ptr[part+1]++;
+    }
+    for (int p = 0; p < row_partition->num_parts; p++) {
+        data_lines_per_part_ptr[p+1] +=
+            data_lines_per_part_ptr[p];
+    }
+
+    free(row_parts);
+    return MTX_SUCCESS;
+}
+
 /*
  * MPI functions
  */

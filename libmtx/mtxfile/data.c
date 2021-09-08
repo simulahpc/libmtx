@@ -31,6 +31,7 @@
 #include <libmtx/mtxfile/size.h>
 
 #include <libmtx/util/parse.h>
+#include <libmtx/util/partition.h>
 
 #ifdef LIBMTX_HAVE_MPI
 #include <mpi.h>
@@ -1768,6 +1769,267 @@ int mtxfile_gzread_data(
     return MTX_SUCCESS;
 }
 #endif
+
+/*
+ * Partitioning
+ */
+
+/**
+ * `mtxfile_data_partition_rows()' partitions data lines according to
+ * a given row partitioning.
+ *
+ * The array `row_parts' must contain enough storage for an array of
+ * `size' values of type `int'.  If successful, the `k'-th value of
+ * `row_parts' is equal to the part to which the `k'-th data line
+ * belongs.
+ */
+int mtxfile_data_partition_rows(
+    const union mtxfile_data * data,
+    enum mtxfile_object object,
+    enum mtxfile_format format,
+    enum mtxfile_field field,
+    enum mtx_precision precision,
+    int num_rows,
+    int num_columns,
+    size_t size,
+    size_t offset,
+    const struct mtx_partition * row_partition,
+    int * row_parts)
+{
+    int err;
+    if (format == mtxfile_array) {
+        if (object == mtxfile_matrix) {
+            for (int64_t l = 0; l < size; l++) {
+                int64_t k = offset + l;
+                int i = k / num_columns;
+                err = mtx_partition_part(row_partition, &row_parts[l], i);
+                if (err)
+                    return err;
+            }
+        } else if (object == mtxfile_vector) {
+            for (int64_t l = 0; l < size; l++) {
+                int64_t k = offset + l;
+                int i = k;
+                err = mtx_partition_part(row_partition, &row_parts[l], i);
+                if (err)
+                    return err;
+            }
+        } else {
+            return MTX_ERR_INVALID_MTX_OBJECT;
+        }
+    } else if (format == mtxfile_coordinate) {
+        if (object == mtxfile_matrix) {
+            if (field == mtxfile_real) {
+                if (precision == mtx_single) {
+                    for (int64_t l = 0; l < size; l++) {
+                        int64_t k = offset + l;
+                        int i = data->matrix_coordinate_real_single[k].i-1;
+                        err = mtx_partition_part(row_partition, &row_parts[l], i);
+                        if (err)
+                            return err;
+                    }
+                } else if (precision == mtx_double) {
+                    for (int64_t l = 0; l < size; l++) {
+                        int64_t k = offset + l;
+                        int i = data->matrix_coordinate_real_double[k].i-1;
+                        err = mtx_partition_part(row_partition, &row_parts[l], i);
+                        if (err)
+                            return err;
+                    }
+                } else {
+                    return MTX_ERR_INVALID_PRECISION;
+                }
+            } else if (field == mtxfile_complex) {
+                if (precision == mtx_single) {
+                    for (int64_t l = 0; l < size; l++) {
+                        int64_t k = offset + l;
+                        int i = data->matrix_coordinate_complex_single[k].i-1;
+                        err = mtx_partition_part(row_partition, &row_parts[l], i);
+                        if (err)
+                            return err;
+                    }
+                } else if (precision == mtx_double) {
+                    for (int64_t l = 0; l < size; l++) {
+                        int64_t k = offset + l;
+                        int i = data->matrix_coordinate_complex_double[k].i-1;
+                        err = mtx_partition_part(row_partition, &row_parts[l], i);
+                        if (err)
+                            return err;
+                    }
+                } else {
+                    return MTX_ERR_INVALID_PRECISION;
+                }
+            } else if (field == mtxfile_integer) {
+                if (precision == mtx_single) {
+                    for (int64_t l = 0; l < size; l++) {
+                        int64_t k = offset + l;
+                        int i = data->matrix_coordinate_integer_single[k].i-1;
+                        err = mtx_partition_part(row_partition, &row_parts[l], i);
+                        if (err)
+                            return err;
+                    }
+                } else if (precision == mtx_double) {
+                    for (int64_t l = 0; l < size; l++) {
+                        int64_t k = offset + l;
+                        int i = data->matrix_coordinate_integer_double[k].i-1;
+                        err = mtx_partition_part(row_partition, &row_parts[l], i);
+                        if (err)
+                            return err;
+                    }
+                } else {
+                    return MTX_ERR_INVALID_PRECISION;
+                }
+            } else if (field == mtxfile_pattern) {
+                for (int64_t l = 0; l < size; l++) {
+                    int64_t k = offset + l;
+                    int i = data->matrix_coordinate_pattern[k].i-1;
+                    err = mtx_partition_part(row_partition, &row_parts[l], i);
+                    if (err)
+                        return err;
+                }
+            } else {
+                return MTX_ERR_INVALID_MTX_FIELD;
+            }
+        } else if (object == mtxfile_vector) {
+            if (field == mtxfile_real) {
+                if (precision == mtx_single) {
+                    for (int64_t l = 0; l < size; l++) {
+                        int64_t k = offset + l;
+                        int i = data->matrix_coordinate_real_single[k].i-1;
+                        err = mtx_partition_part(row_partition, &row_parts[l], i);
+                        if (err)
+                            return err;
+                    }
+                } else if (precision == mtx_double) {
+                    for (int64_t l = 0; l < size; l++) {
+                        int64_t k = offset + l;
+                        int i = data->matrix_coordinate_real_double[k].i-1;
+                        err = mtx_partition_part(row_partition, &row_parts[l], i);
+                        if (err)
+                            return err;
+                    }
+                } else {
+                    return MTX_ERR_INVALID_PRECISION;
+                }
+            } else if (field == mtxfile_complex) {
+                if (precision == mtx_single) {
+                    for (int64_t l = 0; l < size; l++) {
+                        int64_t k = offset + l;
+                        int i = data->matrix_coordinate_complex_single[k].i-1;
+                        err = mtx_partition_part(row_partition, &row_parts[l], i);
+                        if (err)
+                            return err;
+                    }
+                } else if (precision == mtx_double) {
+                    for (int64_t l = 0; l < size; l++) {
+                        int64_t k = offset + l;
+                        int i = data->matrix_coordinate_complex_double[k].i-1;
+                        err = mtx_partition_part(row_partition, &row_parts[l], i);
+                        if (err)
+                            return err;
+                    }
+                } else {
+                    return MTX_ERR_INVALID_PRECISION;
+                }
+            } else if (field == mtxfile_integer) {
+                if (precision == mtx_single) {
+                    for (int64_t l = 0; l < size; l++) {
+                        int64_t k = offset + l;
+                        int i = data->matrix_coordinate_integer_single[k].i-1;
+                        err = mtx_partition_part(row_partition, &row_parts[l], i);
+                        if (err)
+                            return err;
+                    }
+                } else if (precision == mtx_double) {
+                    for (int64_t l = 0; l < size; l++) {
+                        int64_t k = offset + l;
+                        int i = data->matrix_coordinate_integer_double[k].i-1;
+                        err = mtx_partition_part(row_partition, &row_parts[l], i);
+                        if (err)
+                            return err;
+                    }
+                } else {
+                    return MTX_ERR_INVALID_PRECISION;
+                }
+            } else if (field == mtxfile_pattern) {
+                for (int64_t l = 0; l < size; l++) {
+                    int64_t k = offset + l;
+                    int i = data->matrix_coordinate_pattern[k].i-1;
+                    err = mtx_partition_part(row_partition, &row_parts[l], i);
+                    if (err)
+                        return err;
+                }
+            } else {
+                return MTX_ERR_INVALID_MTX_FIELD;
+            }
+        } else {
+            return MTX_ERR_INVALID_MTX_OBJECT;
+        }
+    } else {
+        return MTX_ERR_INVALID_MTX_FORMAT;
+    }
+    return MTX_SUCCESS;
+}
+
+/*
+ * Sorting
+ */
+
+/**
+ * `mtxfile_data_sort_by_key()' sorts data lines according to the
+ * given keys using a stable, in-place insertion sort algorihtm.
+ */
+int mtxfile_data_sort_by_key(
+    union mtxfile_data * data,
+    enum mtxfile_object object,
+    enum mtxfile_format format,
+    enum mtxfile_field field,
+    enum mtx_precision precision,
+    size_t size,
+    size_t offset,
+    int * keys)
+{
+    int err;
+
+    /* Allocate storage for a single data line. */
+    union mtxfile_data x;
+    err = mtxfile_data_alloc(&x, object, format, field, precision, 1);
+    if (err)
+        return err;
+
+    for (int64_t i = offset; i < offset+size; i++) {
+        int xkey = keys[i];
+        err = mtxfile_data_copy(
+            &x, data, object, format, field, precision, 1, 0, i);
+        if (err) {
+            mtxfile_data_free(&x, object, format, field, precision);
+            return err;
+        }
+
+        int64_t j = i-1;
+        while (j >= 0 && keys[j] > xkey) {
+            keys[j+1] = keys[j];
+            err = mtxfile_data_copy(
+                data, data, object, format, field, precision, 1, j+1, j);
+            if (err) {
+                mtxfile_data_free(&x, object, format, field, precision);
+                return err;
+            }
+            j--;
+        }
+
+        keys[j+1] = xkey;
+        err = mtxfile_data_copy(
+            data, &x, object, format, field, precision, 1, j+1, 0);
+        if (err) {
+            mtxfile_data_free(&x, object, format, field, precision);
+            return err;
+        }
+    }
+
+    mtxfile_data_free(&x, object, format, field, precision);
+    return MTX_SUCCESS;
+}
 
 /*
  * MPI functions

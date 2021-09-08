@@ -2154,6 +2154,319 @@ int test_mtxfile_cat(void)
 }
 
 /**
+ * `test_mtxfile_partition()' tests partitioning Matrix Market files.
+ */
+int test_mtxfile_partition(void)
+{
+    int err;
+
+    /*
+     * Array formats
+     */
+
+    {
+        int num_rows = 3;
+        int num_columns = 3;
+        const double mtxdata[] = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0};
+        int64_t num_nonzeros = sizeof(mtxdata) / sizeof(*mtxdata);
+        struct mtxfile mtx;
+        err = mtxfile_init_matrix_array_real_double(
+            &mtx, mtxfile_general, num_rows, num_columns, mtxdata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+
+        int num_parts = 2;
+        struct mtx_partition row_partition;
+        err = mtx_partition_init(
+            &row_partition, mtx_block, num_rows, num_parts, 0);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        TEST_ASSERT_EQ(mtx_block, row_partition.type);
+        TEST_ASSERT_EQ(num_rows, row_partition.size);
+        TEST_ASSERT_EQ(2, row_partition.num_parts);
+        TEST_ASSERT_EQ(2, row_partition.size_per_part[0]);
+        TEST_ASSERT_EQ(1, row_partition.size_per_part[1]);
+
+        int64_t data_lines_per_part_ptr[3] = {};
+        err = mtxfile_partition_rows(
+            &mtx, &row_partition, data_lines_per_part_ptr);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        TEST_ASSERT_EQ(0, data_lines_per_part_ptr[0]);
+        TEST_ASSERT_EQ(6, data_lines_per_part_ptr[1]);
+        TEST_ASSERT_EQ(9, data_lines_per_part_ptr[2]);
+        TEST_ASSERT_EQ(mtxfile_matrix, mtx.header.object);
+        TEST_ASSERT_EQ(mtxfile_array, mtx.header.format);
+        TEST_ASSERT_EQ(mtxfile_real, mtx.header.field);
+        TEST_ASSERT_EQ(mtxfile_general, mtx.header.symmetry);
+        TEST_ASSERT_EQ(mtx_double, mtx.precision);
+        TEST_ASSERT_EQ(3, mtx.size.num_rows);
+        TEST_ASSERT_EQ(3, mtx.size.num_columns);
+        TEST_ASSERT_EQ(-1, mtx.size.num_nonzeros);
+        const double * data = mtx.data.array_real_double;
+        TEST_ASSERT_EQ(1.0, data[0]);
+        TEST_ASSERT_EQ(2.0, data[1]);
+        TEST_ASSERT_EQ(3.0, data[2]);
+        TEST_ASSERT_EQ(4.0, data[3]);
+        TEST_ASSERT_EQ(5.0, data[4]);
+        TEST_ASSERT_EQ(6.0, data[5]);
+        TEST_ASSERT_EQ(7.0, data[6]);
+        TEST_ASSERT_EQ(8.0, data[7]);
+        TEST_ASSERT_EQ(9.0, data[8]);
+        mtxfile_free(&mtx);
+    }
+
+    {
+        int num_rows = 3;
+        int num_columns = 3;
+        const double mtxdata[] = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0};
+        int64_t num_nonzeros = sizeof(mtxdata) / sizeof(*mtxdata);
+        struct mtxfile mtx;
+        err = mtxfile_init_matrix_array_real_double(
+            &mtx, mtxfile_general, num_rows, num_columns, mtxdata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+
+        int num_parts = 2;
+        struct mtx_partition row_partition;
+        err = mtx_partition_init(
+            &row_partition, mtx_cyclic, num_rows, num_parts, 0);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        TEST_ASSERT_EQ(mtx_cyclic, row_partition.type);
+        TEST_ASSERT_EQ(num_rows, row_partition.size);
+        TEST_ASSERT_EQ(2, row_partition.num_parts);
+        TEST_ASSERT_EQ(2, row_partition.size_per_part[0]);
+        TEST_ASSERT_EQ(1, row_partition.size_per_part[1]);
+
+        int64_t data_lines_per_part_ptr[3] = {};
+        err = mtxfile_partition_rows(
+            &mtx, &row_partition, data_lines_per_part_ptr);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        TEST_ASSERT_EQ(0, data_lines_per_part_ptr[0]);
+        TEST_ASSERT_EQ(6, data_lines_per_part_ptr[1]);
+        TEST_ASSERT_EQ(9, data_lines_per_part_ptr[2]);
+        TEST_ASSERT_EQ(mtxfile_matrix, mtx.header.object);
+        TEST_ASSERT_EQ(mtxfile_array, mtx.header.format);
+        TEST_ASSERT_EQ(mtxfile_real, mtx.header.field);
+        TEST_ASSERT_EQ(mtxfile_general, mtx.header.symmetry);
+        TEST_ASSERT_EQ(mtx_double, mtx.precision);
+        TEST_ASSERT_EQ(3, mtx.size.num_rows);
+        TEST_ASSERT_EQ(3, mtx.size.num_columns);
+        TEST_ASSERT_EQ(-1, mtx.size.num_nonzeros);
+        const double * data = mtx.data.array_real_double;
+        TEST_ASSERT_EQ(1.0, data[0]);
+        TEST_ASSERT_EQ(2.0, data[1]);
+        TEST_ASSERT_EQ(3.0, data[2]);
+        TEST_ASSERT_EQ(7.0, data[3]);
+        TEST_ASSERT_EQ(8.0, data[4]);
+        TEST_ASSERT_EQ(9.0, data[5]);
+        TEST_ASSERT_EQ(4.0, data[6]);
+        TEST_ASSERT_EQ(5.0, data[7]);
+        TEST_ASSERT_EQ(6.0, data[8]);
+        mtxfile_free(&mtx);
+    }
+
+    {
+        int num_rows = 8;
+        const double mtxdata[] = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0};
+        int64_t num_nonzeros = sizeof(mtxdata) / sizeof(*mtxdata);
+        struct mtxfile mtx;
+        err = mtxfile_init_vector_array_real_double(
+            &mtx, num_rows, mtxdata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+
+        int num_parts = 3;
+        struct mtx_partition row_partition;
+        err = mtx_partition_init(
+            &row_partition, mtx_block, num_rows, num_parts, 0);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        TEST_ASSERT_EQ(mtx_block, row_partition.type);
+        TEST_ASSERT_EQ(num_rows, row_partition.size);
+        TEST_ASSERT_EQ(3, row_partition.num_parts);
+        TEST_ASSERT_EQ(3, row_partition.size_per_part[0]);
+        TEST_ASSERT_EQ(3, row_partition.size_per_part[1]);
+        TEST_ASSERT_EQ(2, row_partition.size_per_part[2]);
+
+        int64_t data_lines_per_part_ptr[4] = {};
+        err = mtxfile_partition_rows(
+            &mtx, &row_partition, data_lines_per_part_ptr);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        TEST_ASSERT_EQ(0, data_lines_per_part_ptr[0]);
+        TEST_ASSERT_EQ(3, data_lines_per_part_ptr[1]);
+        TEST_ASSERT_EQ(6, data_lines_per_part_ptr[2]);
+        TEST_ASSERT_EQ(8, data_lines_per_part_ptr[3]);
+        TEST_ASSERT_EQ(mtxfile_vector, mtx.header.object);
+        TEST_ASSERT_EQ(mtxfile_array, mtx.header.format);
+        TEST_ASSERT_EQ(mtxfile_real, mtx.header.field);
+        TEST_ASSERT_EQ(mtxfile_general, mtx.header.symmetry);
+        TEST_ASSERT_EQ(mtx_double, mtx.precision);
+        TEST_ASSERT_EQ(8, mtx.size.num_rows);
+        TEST_ASSERT_EQ(-1, mtx.size.num_columns);
+        TEST_ASSERT_EQ(-1, mtx.size.num_nonzeros);
+        const double * data = mtx.data.array_real_double;
+        TEST_ASSERT_EQ(1.0, data[0]);
+        TEST_ASSERT_EQ(2.0, data[1]);
+        TEST_ASSERT_EQ(3.0, data[2]);
+        TEST_ASSERT_EQ(4.0, data[3]);
+        TEST_ASSERT_EQ(5.0, data[4]);
+        TEST_ASSERT_EQ(6.0, data[5]);
+        TEST_ASSERT_EQ(7.0, data[6]);
+        TEST_ASSERT_EQ(8.0, data[7]);
+        mtxfile_free(&mtx);
+    }
+
+    {
+        int num_rows = 8;
+        const double mtxdata[] = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0};
+        int64_t num_nonzeros = sizeof(mtxdata) / sizeof(*mtxdata);
+        struct mtxfile mtx;
+        err = mtxfile_init_vector_array_real_double(
+            &mtx, num_rows, mtxdata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+
+        int num_parts = 3;
+        struct mtx_partition row_partition;
+        err = mtx_partition_init(
+            &row_partition, mtx_cyclic, num_rows, num_parts, 0);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        TEST_ASSERT_EQ(mtx_cyclic, row_partition.type);
+        TEST_ASSERT_EQ(num_rows, row_partition.size);
+        TEST_ASSERT_EQ(3, row_partition.num_parts);
+        TEST_ASSERT_EQ(3, row_partition.size_per_part[0]);
+        TEST_ASSERT_EQ(3, row_partition.size_per_part[1]);
+        TEST_ASSERT_EQ(2, row_partition.size_per_part[2]);
+
+        int64_t data_lines_per_part_ptr[4] = {};
+        err = mtxfile_partition_rows(
+            &mtx, &row_partition, data_lines_per_part_ptr);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        TEST_ASSERT_EQ(0, data_lines_per_part_ptr[0]);
+        TEST_ASSERT_EQ(3, data_lines_per_part_ptr[1]);
+        TEST_ASSERT_EQ(6, data_lines_per_part_ptr[2]);
+        TEST_ASSERT_EQ(8, data_lines_per_part_ptr[3]);
+        TEST_ASSERT_EQ(mtxfile_vector, mtx.header.object);
+        TEST_ASSERT_EQ(mtxfile_array, mtx.header.format);
+        TEST_ASSERT_EQ(mtxfile_real, mtx.header.field);
+        TEST_ASSERT_EQ(mtxfile_general, mtx.header.symmetry);
+        TEST_ASSERT_EQ(mtx_double, mtx.precision);
+        TEST_ASSERT_EQ(8, mtx.size.num_rows);
+        TEST_ASSERT_EQ(-1, mtx.size.num_columns);
+        TEST_ASSERT_EQ(-1, mtx.size.num_nonzeros);
+        const double * data = mtx.data.array_real_double;
+        TEST_ASSERT_EQ(1.0, data[0]);
+        TEST_ASSERT_EQ(4.0, data[1]);
+        TEST_ASSERT_EQ(7.0, data[2]);
+        TEST_ASSERT_EQ(2.0, data[3]);
+        TEST_ASSERT_EQ(5.0, data[4]);
+        TEST_ASSERT_EQ(8.0, data[5]);
+        TEST_ASSERT_EQ(3.0, data[6]);
+        TEST_ASSERT_EQ(6.0, data[7]);
+        mtxfile_free(&mtx);
+    }
+
+    /*
+     * Matrix coordinate formats
+     */
+
+    {
+        int num_rows = 4;
+        int num_columns = 4;
+        const struct mtxfile_matrix_coordinate_real_double mtxdata[] = {
+            {4, 4, 4.0}, {3, 3, 3.0}, {2, 2, 2.0}, {1, 1, 1.0}};
+        int64_t num_nonzeros = sizeof(mtxdata) / sizeof(*mtxdata);
+        struct mtxfile mtx;
+        err = mtxfile_init_matrix_coordinate_real_double(
+            &mtx, mtxfile_general, num_rows, num_columns, num_nonzeros, mtxdata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+
+        int num_parts = 2;
+        struct mtx_partition row_partition;
+        err = mtx_partition_init(
+            &row_partition, mtx_block, num_rows, num_parts, 0);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        TEST_ASSERT_EQ(mtx_block, row_partition.type);
+        TEST_ASSERT_EQ(num_rows, row_partition.size);
+        TEST_ASSERT_EQ(2, row_partition.num_parts);
+        TEST_ASSERT_EQ(2, row_partition.size_per_part[0]);
+        TEST_ASSERT_EQ(2, row_partition.size_per_part[1]);
+
+        int64_t data_lines_per_part_ptr[3] = {};
+        err = mtxfile_partition_rows(
+            &mtx, &row_partition, data_lines_per_part_ptr);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        TEST_ASSERT_EQ(0, data_lines_per_part_ptr[0]);
+        TEST_ASSERT_EQ(2, data_lines_per_part_ptr[1]);
+        TEST_ASSERT_EQ(4, data_lines_per_part_ptr[2]);
+        TEST_ASSERT_EQ(mtxfile_matrix, mtx.header.object);
+        TEST_ASSERT_EQ(mtxfile_coordinate, mtx.header.format);
+        TEST_ASSERT_EQ(mtxfile_real, mtx.header.field);
+        TEST_ASSERT_EQ(mtxfile_general, mtx.header.symmetry);
+        TEST_ASSERT_EQ(mtx_double, mtx.precision);
+        TEST_ASSERT_EQ(4, mtx.size.num_rows);
+        TEST_ASSERT_EQ(4, mtx.size.num_columns);
+        TEST_ASSERT_EQ(4, mtx.size.num_nonzeros);
+        const struct mtxfile_matrix_coordinate_real_double * data =
+            mtx.data.matrix_coordinate_real_double;
+        TEST_ASSERT_EQ(  2, data[0].i); TEST_ASSERT_EQ(   2, data[0].j);
+        TEST_ASSERT_EQ(2.0, data[0].a);
+        TEST_ASSERT_EQ(  1, data[1].i); TEST_ASSERT_EQ(   1, data[1].j);
+        TEST_ASSERT_EQ(1.0, data[1].a);
+        TEST_ASSERT_EQ(  4, data[2].i); TEST_ASSERT_EQ(   4, data[2].j);
+        TEST_ASSERT_EQ(4.0, data[2].a);
+        TEST_ASSERT_EQ(  3, data[3].i); TEST_ASSERT_EQ(   3, data[3].j);
+        TEST_ASSERT_EQ(3.0, data[3].a);
+        mtxfile_free(&mtx);
+    }
+
+    {
+        int num_rows = 4;
+        int num_columns = 4;
+        const struct mtxfile_matrix_coordinate_real_double mtxdata[] = {
+            {4, 4, 4.0}, {3, 3, 3.0}, {2, 2, 2.0}, {1, 1, 1.0}};
+        int64_t num_nonzeros = sizeof(mtxdata) / sizeof(*mtxdata);
+        struct mtxfile mtx;
+        err = mtxfile_init_matrix_coordinate_real_double(
+            &mtx, mtxfile_general, num_rows, num_columns, num_nonzeros, mtxdata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+
+        int num_parts = 2;
+        struct mtx_partition row_partition;
+        err = mtx_partition_init(
+            &row_partition, mtx_cyclic, num_rows, num_parts, 0);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        TEST_ASSERT_EQ(mtx_cyclic, row_partition.type);
+        TEST_ASSERT_EQ(num_rows, row_partition.size);
+        TEST_ASSERT_EQ(2, row_partition.num_parts);
+        TEST_ASSERT_EQ(2, row_partition.size_per_part[0]);
+        TEST_ASSERT_EQ(2, row_partition.size_per_part[1]);
+
+        int64_t data_lines_per_part_ptr[3] = {};
+        err = mtxfile_partition_rows(
+            &mtx, &row_partition, data_lines_per_part_ptr);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        TEST_ASSERT_EQ(0, data_lines_per_part_ptr[0]);
+        TEST_ASSERT_EQ(2, data_lines_per_part_ptr[1]);
+        TEST_ASSERT_EQ(4, data_lines_per_part_ptr[2]);
+        TEST_ASSERT_EQ(mtxfile_matrix, mtx.header.object);
+        TEST_ASSERT_EQ(mtxfile_coordinate, mtx.header.format);
+        TEST_ASSERT_EQ(mtxfile_real, mtx.header.field);
+        TEST_ASSERT_EQ(mtxfile_general, mtx.header.symmetry);
+        TEST_ASSERT_EQ(mtx_double, mtx.precision);
+        TEST_ASSERT_EQ(4, mtx.size.num_rows);
+        TEST_ASSERT_EQ(4, mtx.size.num_columns);
+        TEST_ASSERT_EQ(4, mtx.size.num_nonzeros);
+        const struct mtxfile_matrix_coordinate_real_double * data =
+            mtx.data.matrix_coordinate_real_double;
+        TEST_ASSERT_EQ(  3, data[0].i); TEST_ASSERT_EQ(   3, data[0].j);
+        TEST_ASSERT_EQ(3.0, data[0].a);
+        TEST_ASSERT_EQ(  1, data[1].i); TEST_ASSERT_EQ(   1, data[1].j);
+        TEST_ASSERT_EQ(1.0, data[1].a);
+        TEST_ASSERT_EQ(  4, data[2].i); TEST_ASSERT_EQ(   4, data[2].j);
+        TEST_ASSERT_EQ(4.0, data[2].a);
+        TEST_ASSERT_EQ(  2, data[3].i); TEST_ASSERT_EQ(   2, data[3].j);
+        TEST_ASSERT_EQ(2.0, data[3].a);
+        mtxfile_free(&mtx);
+    }
+    return TEST_SUCCESS;
+}
+
+/**
  * `main()' entry point and test driver.
  */
 int main(int argc, char * argv[])
@@ -2171,6 +2484,7 @@ int main(int argc, char * argv[])
     TEST_RUN(test_mtxfile_gzread);
 #endif
     TEST_RUN(test_mtxfile_cat);
+    TEST_RUN(test_mtxfile_partition);
     TEST_SUITE_END();
     return (TEST_SUITE_STATUS == TEST_SUCCESS) ?
         EXIT_SUCCESS : EXIT_FAILURE;

@@ -85,6 +85,7 @@ libmtx_la_SOURCES = \
 	libmtx/util/io.h \
 	libmtx/util/parse.c \
 	libmtx/util/parse.h \
+	libmtx/util/partition.c \
 	libmtx/vector/array.c \
 	libmtx/vector/array/blas.c \
 	libmtx/vector/array/data.c \
@@ -132,6 +133,7 @@ nobase_include_HEADERS = \
 	libmtx/mtxfile/size.h \
 	libmtx/mtxfile/data.h \
 	libmtx/util/index_set.h \
+	libmtx/util/partition.h \
 	libmtx/vector/array.h \
 	libmtx/vector/array/blas.h \
 	libmtx/vector/array/data.h \

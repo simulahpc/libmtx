@@ -45,6 +45,7 @@
 #include <stdio.h>
 
 struct mtxmpierror;
+struct row_partition;
 
 /**
  * `mtxfile' represents a file in the Matrix Market file format.
@@ -515,6 +516,26 @@ int mtxfile_gzread(
     char * linebuf,
     enum mtx_precision precision);
 #endif
+
+/*
+ * Partitioning
+ */
+
+/**
+ * `mtxfile_partition_rows()' partitions and reorders data lines of a
+ * Matrix Market file according to the given row partitioning.
+ *
+ * The array `data_lines_per_part_ptr' must contain at least enough
+ * storage for `row_partition->num_parts+1' values of type `int64_t'.
+ * If successful, the `p'-th value of `data_lines_per_part_ptr' is an
+ * offset to the first data line belonging to the `p'-th part of the
+ * partition, while the final value of the array points to one place
+ * beyond the final data line.
+ */
+int mtxfile_partition_rows(
+    struct mtxfile * mtxfile,
+    const struct mtx_partition * row_partition,
+    int64_t * data_lines_per_part_ptr);
 
 /*
  * MPI functions

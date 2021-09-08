@@ -92,6 +92,8 @@ const char * mtx_strerror(
         return "invalid precision";
     case MTX_ERR_INVALID_INDEX_SET_TYPE:
         return "invalid index set type";
+    case MTX_ERR_INVALID_PARTITION_TYPE:
+        return "invalid partition type";
     case MTX_ERR_INVALID_STREAM_TYPE:
         return "invalid stream type";
     case MTX_ERR_INVALID_FORMAT_SPECIFIER:

@@ -42,6 +42,7 @@
 #include <stdio.h>
 
 struct mtxmpierror;
+struct mtx_partition;
 
 /**
  * `mtxfile_data' represents an array of data lines from a Matrix
@@ -566,6 +567,72 @@ int mtxfile_gzread_data(
     int num_columns,
     size_t size);
 #endif
+
+/*
+ * Partitioning
+ */
+
+/**
+ * `mtxfile_data_partition_rows()' partitions data lines according to
+ * a given row partitioning.
+ *
+ * The array `row_parts' must contain enough storage for an array of
+ * `size' values of type `int'.  If successful, the `k'-th value of
+ * `row_parts' is equal to the part to which the `k'-th data line
+ * belongs.
+ */
+int mtxfile_data_partition_rows(
+    const union mtxfile_data * data,
+    enum mtxfile_object object,
+    enum mtxfile_format format,
+    enum mtxfile_field field,
+    enum mtx_precision precision,
+    int num_rows,
+    int num_columns,
+    size_t size,
+    size_t offset,
+    const struct mtx_partition * row_partition,
+    int * row_parts);
+
+/**
+ * `mtxfile_data_partition_columns()' partitions data lines according
+ * to a given column partitioning.
+ *
+ * The array `column_parts' must contain enough storage for an array
+ * of `size' values of type `int'.  If successful, the `k'-th value of
+ * `column_parts' is equal to the part to which the `k'-th data line
+ * belongs.
+ */
+int mtxfile_data_partition_columns(
+    const union mtxfile_data * data,
+    enum mtxfile_object object,
+    enum mtxfile_format format,
+    enum mtxfile_field field,
+    enum mtx_precision precision,
+    int num_rows,
+    int num_columns,
+    size_t size,
+    size_t offset,
+    const struct mtx_partition * column_partition,
+    int * column_parts);
+
+/*
+ * Sorting
+ */
+
+/**
+ * `mtxfile_data_sort_by_key()' sorts data lines according to the
+ * given keys using a stable, in-place insertion sort algorihtm.
+ */
+int mtxfile_data_sort_by_key(
+    union mtxfile_data * data,
+    enum mtxfile_object object,
+    enum mtxfile_format format,
+    enum mtxfile_field field,
+    enum mtx_precision precision,
+    size_t size,
+    size_t offset,
+    int * keys);
 
 /*
  * MPI functions

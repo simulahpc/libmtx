@@ -60,10 +60,11 @@ enum mtx_error
     MTX_ERR_INVALID_MTX_DATA = -18,         /* invalid Matrix Market data */
     MTX_ERR_INVALID_PRECISION = -19,        /* invalid precision */
     MTX_ERR_INVALID_INDEX_SET_TYPE = -20,   /* invalid index set type */
-    MTX_ERR_INVALID_STREAM_TYPE = -21,      /* invalid stream type */
-    MTX_ERR_INVALID_FORMAT_SPECIFIER = -22, /* invalid format specifier */
-    MTX_ERR_INDEX_OUT_OF_BOUNDS = -23,      /* index out of bounds */
-    MTX_ERR_NOT_CONVERGED = -24,            /* iterative method did not converge */
+    MTX_ERR_INVALID_PARTITION_TYPE = -22,   /* invalid partition type */
+    MTX_ERR_INVALID_STREAM_TYPE = -23,      /* invalid stream type */
+    MTX_ERR_INVALID_FORMAT_SPECIFIER = -24, /* invalid format specifier */
+    MTX_ERR_INDEX_OUT_OF_BOUNDS = -25,      /* index out of bounds */
+    MTX_ERR_NOT_CONVERGED = -26,            /* iterative method did not converge */
 };
 
 /**
