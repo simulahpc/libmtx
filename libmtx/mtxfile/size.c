@@ -133,15 +133,15 @@ int mtxfile_parse_size_vector_array(
 {
     int err;
     const char * t = s;
-    err = parse_int64(t, "\n", &size->num_nonzeros, &t);
+    err = parse_int32(t, "\n", &size->num_rows, &t);
     if (err == EINVAL) {
         return MTX_ERR_INVALID_MTX_SIZE;
     } else if (err) {
         errno = err;
         return MTX_ERR_ERRNO;
     }
-    size->num_rows = -1;
     size->num_columns = -1;
+    size->num_nonzeros = -1;
     if (bytes_read)
         (*bytes_read) += t - s;
     if (endptr)

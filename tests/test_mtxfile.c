@@ -211,9 +211,9 @@ int test_mtxfile_parse_size(void)
         int err = mtxfile_parse_size(
             &size, &bytes_read, &endptr, line, mtxfile_vector, mtxfile_array);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
-        TEST_ASSERT_EQ(size.num_rows, -1);
+        TEST_ASSERT_EQ(size.num_rows, 10);
         TEST_ASSERT_EQ(size.num_columns, -1);
-        TEST_ASSERT_EQ(size.num_nonzeros, 10);
+        TEST_ASSERT_EQ(size.num_nonzeros, -1);
         TEST_ASSERT_EQ(strlen(line), bytes_read);
         TEST_ASSERT_EQ(line + strlen(line), endptr);
     }
@@ -827,9 +827,9 @@ int test_mtxfile_fread_size(void)
             mtxfile_vector, mtxfile_array);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%d: %s", lines_read, mtx_strerror(err));
-        TEST_ASSERT_EQ(-1, size.num_rows);
+        TEST_ASSERT_EQ( 4, size.num_rows);
         TEST_ASSERT_EQ(-1, size.num_columns);
-        TEST_ASSERT_EQ( 4, size.num_nonzeros);
+        TEST_ASSERT_EQ(-1, size.num_nonzeros);
         fclose(f);
     }
 
