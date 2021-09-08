@@ -32,9 +32,9 @@
 
 #include <errno.h>
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
 
 /**
  * `mtx_strerror()' is a string describing an error code.
@@ -58,6 +58,8 @@ const char * mtx_strerror(
         return strerror(errno);
     case MTX_ERR_MPI:
         return "MPI error";
+    case MTX_ERR_MPI_COLLECTIVE:
+        return "Collective MPI error";
     case MTX_ERR_EOF:
         if (errno) return strerror(errno);
         else return "unexpected end-of-file";
@@ -180,6 +182,58 @@ void mtxmpierror_free(
     struct mtxmpierror * mpierror)
 {
     free(mpierror->buf);
+}
+
+/**
+ * `mtxmpierror_description()' returns a string describing an MPI
+ * error.
+ *
+ * The caller is responsible for freeing the storage required for the
+ * string that is returned by calling `free()'.
+ */
+char * mtxmpierror_description(
+    struct mtxmpierror * mpierror)
+{
+    int comm_err = MTX_SUCCESS;
+    for (int p = 0; p < mpierror->comm_size; p++) {
+        if (mpierror->buf[p][1])
+            comm_err = MTX_ERR_MPI_COLLECTIVE;
+    }
+    if (comm_err == MTX_SUCCESS)
+        return strdup(mtx_strerror(comm_err));
+
+    const char * format_header = "%s";
+    const char * format_err_first = ": rank %d - %s";
+    const char * format_err = ", rank %d - %s";
+
+    int len = snprintf(NULL, 0, format_header, mtx_strerror(comm_err));
+    int num_errors = 0;
+    for (int p = 0; p < mpierror->comm_size; p++) {
+        if (mpierror->buf[p][1]) {
+            len += snprintf(
+                NULL, 0, num_errors == 0 ? format_err_first : format_err,
+                mpierror->buf[p][0], mtx_strerror(mpierror->buf[p][1]));
+            num_errors++;
+        }
+    }
+
+    char * description = malloc(len+1);
+    if (!description)
+        return NULL;
+
+    int newlen = snprintf(description, len, format_header, mtx_strerror(comm_err));
+    num_errors = 0;
+    for (int p = 0; p < mpierror->comm_size; p++) {
+        if (mpierror->buf[p][1]) {
+            newlen += snprintf(
+                &description[newlen], len-newlen+1,
+                num_errors == 0 ? format_err_first : format_err,
+                mpierror->buf[p][0], mtx_strerror(mpierror->buf[p][1]));
+            num_errors++;
+        }
+    }
+    description[len] = '\0';
+    return description;
 }
 
 /**

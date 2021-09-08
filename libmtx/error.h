@@ -137,6 +137,16 @@ void mtxmpierror_free(
     struct mtxmpierror * mpierror);
 
 /**
+ * `mtxmpierror_description()' returns a string describing an MPI
+ * error.
+ *
+ * The caller is responsible for freeing the storage required for the
+ * string that is returned by calling `free()'.
+ */
+char * mtxmpierror_description(
+    struct mtxmpierror * mpierror);
+
+/**
  * `mtxmpierror_allreduce()' performs a collective reduction on error
  * codes provided by each MPI process in a communicator.
  *
