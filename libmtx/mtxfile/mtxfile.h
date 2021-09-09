@@ -623,6 +623,35 @@ int mtxfile_distribute_rows(
     int root,
     MPI_Comm comm,
     struct mtxmpierror * mpierror);
+
+/**
+ * `mtxfile_fread_distribute_rows()' reads a Matrix Market file from a
+ * stream and distributes the rows of the underlying matrix or vector
+ * among MPI processes in a communicator.
+ *
+ * `precision' is used to determine the precision to use for storing
+ * the values of matrix or vector entries.
+ *
+ * If an error code is returned, then `lines_read' and `bytes_read'
+ * are used to return the line number and byte at which the error was
+ * encountered during the parsing of the Matrix Market file.
+ *
+ * For a matrix or vector in array format, `bufsize' must be at least
+ * large enough to fit one row per MPI process in the communicator.
+ */
+int mtxfile_fread_distribute_rows(
+    struct mtxfile * mtxfile,
+    FILE * f,
+    int * lines_read,
+    int * bytes_read,
+    size_t line_max,
+    char * linebuf,
+    enum mtx_precision precision,
+    enum mtx_partition_type row_partition_type,
+    size_t bufsize,
+    int root,
+    MPI_Comm comm,
+    struct mtxmpierror * mpierror);
 #endif
 
 #endif

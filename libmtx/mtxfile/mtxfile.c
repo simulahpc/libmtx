@@ -1395,4 +1395,364 @@ int mtxfile_distribute_rows(
         free(sendcounts);
     return MTX_SUCCESS;
 }
+
+/**
+ * `mtxfile_buffer_size()' configures a size line for a Matrix Market
+ * file that can be used as a temporary buffer for reading on an MPI
+ * root process and distributing to all the processes in a
+ * communicator.  The buffer will be no greater than the given buffer
+ * size `bufsize' in bytes.
+ */
+static int mtxfile_buffer_size(
+    struct mtxfile_size * size,
+    enum mtxfile_object object,
+    enum mtxfile_format format,
+    enum mtxfile_field field,
+    enum mtx_precision precision,
+    int num_rows,
+    int num_columns,
+    int64_t num_nonzeros,
+    size_t bufsize,
+    MPI_Comm comm,
+    int * mpierrcode)
+{
+    int err;
+    size_t size_per_data_line;
+    err = mtxfile_data_size_per_element(
+        &size_per_data_line, object, format,
+        field, precision);
+    if (err)
+        return err;
+    int64_t num_data_lines = bufsize / size_per_data_line;
+
+    if (format == mtxfile_array) {
+        int comm_size;
+        *mpierrcode = MPI_Comm_size(comm, &comm_size);
+        if (*mpierrcode)
+            return MTX_ERR_MPI;
+
+        if (object == mtxfile_matrix) {
+            /* Round to a multiple of the product of the number of
+             * columns and the number of processes, since we need
+             * to read the same number of entire rows per process
+             * to correctly distribute the data. */
+            size->num_rows =
+                (num_data_lines / (num_columns*comm_size)) * (num_columns*comm_size);
+            if (size->num_rows > num_rows)
+                size->num_rows = num_rows;
+            size->num_columns = num_columns;
+            size->num_nonzeros = -1;
+        } else if (object == mtxfile_vector) {
+            /* Round to a multiple of the number of processes,
+             * since we need to read the same number of lines per
+             * process to correctly distribute the data. */
+            size->num_rows =
+                ((num_data_lines / comm_size) * comm_size < num_rows) ?
+                (num_data_lines / comm_size) * comm_size : num_rows;
+            size->num_columns = -1;
+            size->num_nonzeros = -1;
+        } else {
+            return MTX_ERR_INVALID_MTX_OBJECT;
+        }
+        if (size->num_rows <= 0)
+            return MTX_ERR_NO_BUFFER_SPACE;
+    } else if (format == mtxfile_coordinate) {
+        size->num_rows = num_rows;
+        size->num_columns = num_columns;
+        size->num_nonzeros =
+            (num_data_lines < num_nonzeros) ? num_data_lines : num_nonzeros;
+        if (size->num_nonzeros <= 0)
+            return MTX_ERR_NO_BUFFER_SPACE;
+    } else {
+        return MTX_ERR_INVALID_MTX_FORMAT;
+    }
+    return MTX_SUCCESS;
+}
+
+/**
+ * `mtxfile_fread_distribute_rows()' reads a Matrix Market file from a
+ * stream and distributes the rows of the underlying matrix or vector
+ * among MPI processes in a communicator.
+ *
+ * `precision' is used to determine the precision to use for storing
+ * the values of matrix or vector entries.
+ *
+ * If an error code is returned, then `lines_read' and `bytes_read'
+ * are used to return the line number and byte at which the error was
+ * encountered during the parsing of the Matrix Market file.
+ *
+ * For a matrix or vector in array format, `bufsize' must be at least
+ * large enough to fit one row per MPI process in the communicator.
+ */
+int mtxfile_fread_distribute_rows(
+    struct mtxfile * mtxfile,
+    FILE * f,
+    int * lines_read,
+    int * bytes_read,
+    size_t line_max,
+    char * linebuf,
+    enum mtx_precision precision,
+    enum mtx_partition_type row_partition_type,
+    size_t bufsize,
+    int root,
+    MPI_Comm comm,
+    struct mtxmpierror * mpierror)
+{
+    int err;
+
+    int comm_size;
+    mpierror->mpierrcode = MPI_Comm_size(comm, &comm_size);
+    err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxmpierror_allreduce(mpierror, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+    int rank;
+    mpierror->mpierrcode = MPI_Comm_rank(comm, &rank);
+    err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxmpierror_allreduce(mpierror, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+
+    bool free_linebuf = (rank == root) && !linebuf;
+    if (rank == root && !linebuf) {
+        line_max = sysconf(_SC_LINE_MAX);
+        linebuf = malloc(line_max+1);
+    }
+    err = (rank == root && !linebuf) ? MTX_ERR_ERRNO : MTX_SUCCESS;
+    if (mtxmpierror_allreduce(mpierror, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+
+    /* Read the header on the root process */
+    struct mtxfile rootmtx;
+    if (rank == root) {
+        err = mtxfile_fread_header(
+            &rootmtx.header, f, lines_read, bytes_read, line_max, linebuf);
+    }
+    if (mtxmpierror_allreduce(mpierror, err)) {
+        if (free_linebuf)
+            free(linebuf);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+
+    /* Read comments on the root process */
+    err = (rank == root) ? mtxfile_fread_comments(
+        &rootmtx.comments, f, lines_read, bytes_read, line_max, linebuf)
+        : MTX_SUCCESS;
+    if (mtxmpierror_allreduce(mpierror, err)) {
+        if (free_linebuf)
+            free(linebuf);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+
+    /* Read the size line on the root process into a temporary
+     * location. */
+    struct mtxfile_size size;
+    err = (rank == root) ? mtxfile_fread_size(
+        &size, f, lines_read, bytes_read, line_max, linebuf,
+        rootmtx.header.object, rootmtx.header.format)
+        : MTX_SUCCESS;
+    if (mtxmpierror_allreduce(mpierror, err)) {
+        if (rank == root)
+            mtxfile_comments_free(&rootmtx.comments);
+        if (free_linebuf)
+            free(linebuf);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+    rootmtx.precision = precision;
+
+    /* Partition the rows of the matrix or vector. */
+    struct mtx_partition row_partition;
+    err = (rank == root) ? mtx_partition_init(
+        &row_partition, row_partition_type, size.num_rows, comm_size, 0)
+        : MTX_SUCCESS;
+    if (mtxmpierror_allreduce(mpierror, err)) {
+        if (rank == root)
+            mtxfile_comments_free(&rootmtx.comments);
+        if (free_linebuf)
+            free(linebuf);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+
+    /* Distribute the initial, empty matrix. */
+    if (rank == root) {
+        rootmtx.size.num_rows = (size.num_nonzeros >= 0) ? size.num_rows : 0;
+        rootmtx.size.num_columns = size.num_columns;
+        rootmtx.size.num_nonzeros = (size.num_nonzeros >= 0) ? 0 : -1;
+    }
+    err = mtxfile_distribute_rows(
+        mtxfile, &rootmtx, &row_partition, root, comm, mpierror);
+    if (err) {
+        if (rank == root) {
+            mtx_partition_free(&row_partition);
+            mtxfile_comments_free(&rootmtx.comments);
+        }
+        if (free_linebuf)
+            free(linebuf);
+        return err;
+    }
+
+    /* Configure the size line for the temporary Matrix Market file to
+     * be used as a buffer for reading on the root process. */
+    err = (rank == root)
+        ? mtxfile_buffer_size(
+            &rootmtx.size, rootmtx.header.object, rootmtx.header.format,
+            rootmtx.header.field, precision,
+            size.num_rows, size.num_columns, size.num_nonzeros,
+            bufsize, comm, &mpierror->mpierrcode)
+        : MTX_SUCCESS;
+    if (mtxmpierror_allreduce(mpierror, err)) {
+        mtxfile_free(mtxfile);
+        if (rank == root) {
+            mtx_partition_free(&row_partition);
+            mtxfile_comments_free(&rootmtx.comments);
+        }
+        if (free_linebuf)
+            free(linebuf);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+    int64_t num_data_lines_rootmtx;
+    err = (rank == root)
+        ? mtxfile_size_num_data_lines(&rootmtx.size, &num_data_lines_rootmtx)
+        : MTX_SUCCESS;
+    if (mtxmpierror_allreduce(mpierror, err)) {
+        mtxfile_free(mtxfile);
+        if (rank == root) {
+            mtx_partition_free(&row_partition);
+            mtxfile_comments_free(&rootmtx.comments);
+        }
+        if (free_linebuf)
+            free(linebuf);
+        return err;
+    }
+    mpierror->mpierrcode = MPI_Bcast(
+        &num_data_lines_rootmtx, 1, MPI_INT64_T, root, comm);
+    err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxmpierror_allreduce(mpierror, err)) {
+        mtxfile_free(mtxfile);
+        if (rank == root) {
+            mtx_partition_free(&row_partition);
+            mtxfile_comments_free(&rootmtx.comments);
+        }
+        if (free_linebuf)
+            free(linebuf);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+
+    /* Allocate a temporary Matrix Market file on the root. */
+    err = (rank == root) ?
+        mtxfile_data_alloc(
+            &rootmtx.data, rootmtx.header.object, rootmtx.header.format,
+            rootmtx.header.field, rootmtx.precision, num_data_lines_rootmtx)
+        : MTX_SUCCESS;
+    if (mtxmpierror_allreduce(mpierror, err)) {
+        mtxfile_free(mtxfile);
+        if (rank == root) {
+            mtx_partition_free(&row_partition);
+            mtxfile_comments_free(&rootmtx.comments);
+        }
+        if (free_linebuf)
+            free(linebuf);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+
+    /* Determine the total number of data lines. */
+    int64_t num_data_lines;
+    err = (rank == root)
+        ? mtxfile_size_num_data_lines(&size, &num_data_lines)
+        : MTX_SUCCESS;
+    if (mtxmpierror_allreduce(mpierror, err)) {
+        mtxfile_free(mtxfile);
+        if (rank == root) {
+            mtx_partition_free(&row_partition);
+            mtxfile_free(&rootmtx);
+        }
+        if (free_linebuf)
+            free(linebuf);
+        return err;
+    }
+    mpierror->mpierrcode = MPI_Bcast(
+        &num_data_lines, 1, MPI_INT64_T, root, comm);
+    err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxmpierror_allreduce(mpierror, err)) {
+        mtxfile_free(mtxfile);
+        if (rank == root) {
+            mtx_partition_free(&row_partition);
+            mtxfile_free(&rootmtx);
+        }
+        if (free_linebuf)
+            free(linebuf);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+
+    int64_t num_data_lines_remaining = num_data_lines;
+    while (num_data_lines_remaining > 0) {
+        int64_t num_data_lines_to_read =
+            (num_data_lines_rootmtx < num_data_lines_remaining)
+            ? num_data_lines_rootmtx : num_data_lines_remaining;
+        if (rank == root && rootmtx.size.num_nonzeros >= 0)
+            rootmtx.size.num_nonzeros = num_data_lines_to_read;
+
+        /* Read the next set of data lines on the root process. */
+        if (rank == root) {
+            err = mtxfile_fread_data(
+                &rootmtx.data, f, lines_read, bytes_read, line_max, linebuf,
+                rootmtx.header.object,
+                rootmtx.header.format,
+                rootmtx.header.field,
+                rootmtx.precision,
+                rootmtx.size.num_rows,
+                rootmtx.size.num_columns,
+                num_data_lines_to_read);
+        }
+        if (mtxmpierror_allreduce(mpierror, err)) {
+            mtxfile_free(mtxfile);
+            if (rank == root) {
+                mtx_partition_free(&row_partition);
+                mtxfile_free(&rootmtx);
+            }
+            if (free_linebuf)
+                free(linebuf);
+            return MTX_ERR_MPI_COLLECTIVE;
+        }
+
+        /* Distribute the matrix rows. */
+        struct mtxfile tmpmtx;
+        err = mtxfile_distribute_rows(
+            &tmpmtx, &rootmtx, &row_partition, root, comm, mpierror);
+        if (err) {
+            mtxfile_free(mtxfile);
+            if (rank == root) {
+                mtx_partition_free(&row_partition);
+                mtxfile_free(&rootmtx);
+            }
+            if (free_linebuf)
+                free(linebuf);
+            return err;
+        }
+
+        /* Concatenate the newly distributed matrices with the
+         * existing ones. */
+        err = mtxfile_cat(mtxfile, &tmpmtx);
+        if (mtxmpierror_allreduce(mpierror, err)) {
+            mtxfile_free(&tmpmtx);
+            mtxfile_free(mtxfile);
+            if (rank == root) {
+                mtx_partition_free(&row_partition);
+                mtxfile_free(&rootmtx);
+            }
+            if (free_linebuf)
+                free(linebuf);
+            return MTX_ERR_MPI_COLLECTIVE;
+        }
+
+        mtxfile_free(&tmpmtx);
+        num_data_lines_remaining -= num_data_lines_to_read;
+    }
+
+    if (rank == root) {
+        mtx_partition_free(&row_partition);
+        mtxfile_free(&rootmtx);
+    }
+    if (free_linebuf)
+        free(linebuf);
+    return MTX_SUCCESS;
+}
 #endif

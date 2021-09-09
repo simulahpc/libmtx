@@ -557,6 +557,10 @@ int mtxfile_size_scatterv(
             err = MPI_Bcast(&recvsize->num_columns, 1, MPI_INT32_T, root, comm);
             if (mtxmpierror_allreduce(mpierror, err))
                 return MTX_ERR_MPI_COLLECTIVE;
+            err = (recvsize->num_columns == 0)
+                ? MTX_ERR_INVALID_MTX_SIZE : MTX_SUCCESS;
+            if (mtxmpierror_allreduce(mpierror, err))
+                return MTX_ERR_MPI_COLLECTIVE;
             recvsize->num_rows =
                 (recvcount + recvsize->num_columns-1) / recvsize->num_columns;
             recvsize->num_nonzeros = -1;
