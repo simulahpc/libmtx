@@ -31,6 +31,7 @@
 
 #include <assert.h>
 #include <inttypes.h>
+#include <locale.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -95,8 +96,8 @@ static void program_options_print_help(
     fprintf(f, " Print information about a Matrix Market file.\n");
     fprintf(f, "\n");
     fprintf(f, " Options are:\n");
-    fprintf(f, "  --precision=PRECISION\tprecision used to represent matrix or\n");
-    fprintf(f, "\t\t\tvector values: single or double. (default: double)\n");
+    fprintf(f, "  --precision=PRECISION\t\t\tprecision used to represent matrix or\n");
+    fprintf(f, "\t\t\t\t\tvector values: single or double. (default: double)\n");
     fprintf(f, "  -z, --gzip, --gunzip, --ungzip\tfilter the file through gzip\n");
     fprintf(f, "  -v, --verbose\t\t\t\tbe more verbose\n");
     fprintf(f, "\n");
@@ -259,6 +260,7 @@ int main(int argc, char *argv[])
     int err;
     struct timespec t0, t1;
     FILE * diagf = stderr;
+    setlocale(LC_ALL, "");
 
     /* 1. Parse program options. */
     struct program_options args;
@@ -279,17 +281,19 @@ int main(int argc, char *argv[])
 
     /* 2. Read a Matrix Market file. */
     if (args.verbose > 0) {
-        fprintf(diagf, "mtx_read: ");
+        fprintf(diagf, "mtxfile_read: ");
         fflush(diagf);
         clock_gettime(CLOCK_MONOTONIC, &t0);
     }
 
-    struct mtx mtx;
-    int line_number, column_number;
-    err = mtx_read(
-        &mtx, args.precision, args.mtx_path, args.gzip,
-        &line_number, &column_number);
-    if (err && (line_number == -1 && column_number == -1)) {
+    setlocale(LC_ALL, "C");
+    struct mtxfile mtxfile;
+    int line_number, bytes_read;
+    err = mtxfile_read(
+        &mtxfile, args.precision, args.mtx_path, args.gzip,
+        &line_number, &bytes_read);
+    setlocale(LC_ALL, "");
+    if (err && bytes_read <= 0) {
         if (args.verbose > 0)
             fprintf(diagf, "\n");
         fprintf(stderr, "%s: %s: %s\n",
@@ -300,9 +304,9 @@ int main(int argc, char *argv[])
     } else if (err) {
         if (args.verbose > 0)
             fprintf(diagf, "\n");
-        fprintf(stderr, "%s: %s:%d:%d: %s\n",
+        fprintf(stderr, "%s: %s:%d: %s\n",
                 program_invocation_short_name,
-                args.mtx_path, line_number, column_number,
+                args.mtx_path, line_number,
                 mtx_strerror(err));
         program_options_free(&args);
         return EXIT_FAILURE;
@@ -310,24 +314,24 @@ int main(int argc, char *argv[])
 
     if (args.verbose > 0) {
         clock_gettime(CLOCK_MONOTONIC, &t1);
-        fprintf(diagf, "%.6f seconds\n",
-                timespec_duration(t0, t1));
+        fprintf(diagf, "%'.6f seconds (%'.1f MB/s)\n",
+                timespec_duration(t0, t1),
+                1.0e-6 * bytes_read / timespec_duration(t0, t1));
     }
 
     /* 3. Print some info about the Matrix Market file. */
     fprintf(stdout, "%s\n", args.mtx_path);
-    fprintf(stdout, "object: %s\n", mtx_object_str(mtx.object));
-    fprintf(stdout, "format: %s\n", mtx_format_str(mtx.format));
-    fprintf(stdout, "field: %s\n", mtx_field_str(mtx.field));
-    fprintf(stdout, "symmetry: %s\n", mtx_symmetry_str(mtx.symmetry));
-    fprintf(stdout, "rows: %d\n", mtx.num_rows);
-    fprintf(stdout, "columns: %d\n", mtx.num_columns);
-    fprintf(stdout, "nonzeros: %"PRId64"\n", mtx.num_nonzeros);
-    for (int i = 0; i < mtx.num_comment_lines; i++)
-        fputs(mtx.comment_lines[i], stdout);
+    fprintf(stdout, "object: %s\n", mtxfile_object_str(mtxfile.header.object));
+    fprintf(stdout, "format: %s\n", mtxfile_format_str(mtxfile.header.format));
+    fprintf(stdout, "field: %s\n", mtxfile_field_str(mtxfile.header.field));
+    fprintf(stdout, "symmetry: %s\n", mtxfile_symmetry_str(mtxfile.header.symmetry));
+    fprintf(stdout, "rows: %'d\n", mtxfile.size.num_rows);
+    fprintf(stdout, "columns: %'d\n", mtxfile.size.num_columns);
+    fprintf(stdout, "nonzeros: %'"PRId64"\n", mtxfile.size.num_nonzeros);
+    mtxfile_comments_fputs(&mtxfile.comments, stdout);
 
     /* 4. Clean up. */
-    mtx_free(&mtx);
+    mtxfile_free(&mtxfile);
     program_options_free(&args);
     return EXIT_SUCCESS;
 }

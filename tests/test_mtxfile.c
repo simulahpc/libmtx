@@ -1468,7 +1468,7 @@ int test_mtxfile_fread(void)
         struct mtxfile mtxfile;
         enum mtx_precision precision = mtx_single;
         err = mtxfile_fread(
-            &mtxfile, f, &lines_read, &bytes_read, 0, NULL, precision);
+            &mtxfile, precision, f, &lines_read, &bytes_read, 0, NULL);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
         TEST_ASSERT_EQ(strlen(s), bytes_read);
         TEST_ASSERT_EQ(5, lines_read);
@@ -1498,7 +1498,7 @@ int test_mtxfile_fread(void)
         struct mtxfile mtxfile;
         enum mtx_precision precision = mtx_double;
         err = mtxfile_fread(
-            &mtxfile, f, &lines_read, &bytes_read, 0, NULL, precision);
+            &mtxfile, precision, f, &lines_read, &bytes_read, 0, NULL);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
         TEST_ASSERT_EQ(strlen(s), bytes_read);
         TEST_ASSERT_EQ(5, lines_read);
@@ -1528,7 +1528,7 @@ int test_mtxfile_fread(void)
         struct mtxfile mtxfile;
         enum mtx_precision precision = mtx_single;
         err = mtxfile_fread(
-            &mtxfile, f, &lines_read, &bytes_read, 0, NULL, precision);
+            &mtxfile, precision, f, &lines_read, &bytes_read, 0, NULL);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
         TEST_ASSERT_EQ(strlen(s), bytes_read);
         TEST_ASSERT_EQ(5, lines_read);
@@ -1560,7 +1560,7 @@ int test_mtxfile_fread(void)
         struct mtxfile mtxfile;
         enum mtx_precision precision = mtx_double;
         err = mtxfile_fread(
-            &mtxfile, f, &lines_read, &bytes_read, 0, NULL, precision);
+            &mtxfile, precision, f, &lines_read, &bytes_read, 0, NULL);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
         TEST_ASSERT_EQ(strlen(s), bytes_read);
         TEST_ASSERT_EQ(5, lines_read);
@@ -1592,7 +1592,7 @@ int test_mtxfile_fread(void)
         struct mtxfile mtxfile;
         enum mtx_precision precision = mtx_single;
         err = mtxfile_fread(
-            &mtxfile, f, &lines_read, &bytes_read, 0, NULL, precision);
+            &mtxfile, precision, f, &lines_read, &bytes_read, 0, NULL);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
         TEST_ASSERT_EQ(strlen(s), bytes_read);
         TEST_ASSERT_EQ(5, lines_read);
@@ -1622,7 +1622,7 @@ int test_mtxfile_fread(void)
         struct mtxfile mtxfile;
         enum mtx_precision precision = mtx_double;
         err = mtxfile_fread(
-            &mtxfile, f, &lines_read, &bytes_read, 0, NULL, precision);
+            &mtxfile, precision, f, &lines_read, &bytes_read, 0, NULL);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
         TEST_ASSERT_EQ(strlen(s), bytes_read);
         TEST_ASSERT_EQ(5, lines_read);
@@ -1656,7 +1656,7 @@ int test_mtxfile_fread(void)
         struct mtxfile mtxfile;
         enum mtx_precision precision = mtx_single;
         err = mtxfile_fread(
-            &mtxfile, f, &lines_read, &bytes_read, 0, NULL, precision);
+            &mtxfile, precision, f, &lines_read, &bytes_read, 0, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%d: %s",lines_read+1,mtx_strerror(err));
         TEST_ASSERT_EQ(strlen(s), bytes_read);
         TEST_ASSERT_EQ(5, lines_read);
@@ -1691,7 +1691,7 @@ int test_mtxfile_fread(void)
         struct mtxfile mtxfile;
         enum mtx_precision precision = mtx_double;
         err = mtxfile_fread(
-            &mtxfile, f, &lines_read, &bytes_read, 0, NULL, precision);
+            &mtxfile, precision, f, &lines_read, &bytes_read, 0, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%d: %s",lines_read+1,mtx_strerror(err));
         TEST_ASSERT_EQ(strlen(s), bytes_read);
         TEST_ASSERT_EQ(5, lines_read);
@@ -1727,7 +1727,7 @@ int test_mtxfile_fread(void)
         struct mtxfile mtxfile;
         enum mtx_precision precision = mtx_single;
         err = mtxfile_fread(
-            &mtxfile, f, &lines_read, &bytes_read, 0, NULL, precision);
+            &mtxfile, precision, f, &lines_read, &bytes_read, 0, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%d: %s",lines_read+1,mtx_strerror(err));
         TEST_ASSERT_EQ(strlen(s), bytes_read);
         TEST_ASSERT_EQ(5, lines_read);
@@ -1761,7 +1761,7 @@ int test_mtxfile_fread(void)
         struct mtxfile mtxfile;
         enum mtx_precision precision = mtx_single;
         err = mtxfile_fread(
-            &mtxfile, f, &lines_read, &bytes_read, 0, NULL, precision);
+            &mtxfile, precision, f, &lines_read, &bytes_read, 0, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%d: %s",lines_read+1,mtx_strerror(err));
         TEST_ASSERT_EQ(strlen(s), bytes_read);
         TEST_ASSERT_EQ(5, lines_read);
@@ -1797,7 +1797,7 @@ int test_mtxfile_fread(void)
         struct mtxfile mtxfile;
         enum mtx_precision precision = mtx_single;
         err = mtxfile_fread(
-            &mtxfile, f, &lines_read, &bytes_read, 0, NULL, precision);
+            &mtxfile, precision, f, &lines_read, &bytes_read, 0, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%d: %s",lines_read+1,mtx_strerror(err));
         TEST_ASSERT_EQ(strlen(s), bytes_read);
         TEST_ASSERT_EQ(5, lines_read);
@@ -1830,7 +1830,7 @@ int test_mtxfile_fread(void)
         struct mtxfile mtxfile;
         enum mtx_precision precision = mtx_double;
         err = mtxfile_fread(
-            &mtxfile, f, &lines_read, &bytes_read, 0, NULL, precision);
+            &mtxfile, precision, f, &lines_read, &bytes_read, 0, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%d: %s",lines_read+1,mtx_strerror(err));
         TEST_ASSERT_EQ(strlen(s), bytes_read);
         TEST_ASSERT_EQ(5, lines_read);
@@ -1865,7 +1865,7 @@ int test_mtxfile_fread(void)
         struct mtxfile mtxfile;
         enum mtx_precision precision = mtx_single;
         err = mtxfile_fread(
-            &mtxfile, f, &lines_read, &bytes_read, 0, NULL, precision);
+            &mtxfile, precision, f, &lines_read, &bytes_read, 0, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%d: %s",lines_read+1,mtx_strerror(err));
         TEST_ASSERT_EQ(strlen(s), bytes_read);
         TEST_ASSERT_EQ(5, lines_read);
@@ -1898,7 +1898,7 @@ int test_mtxfile_fread(void)
         struct mtxfile mtxfile;
         enum mtx_precision precision = mtx_single;
         err = mtxfile_fread(
-            &mtxfile, f, &lines_read, &bytes_read, 0, NULL, precision);
+            &mtxfile, precision, f, &lines_read, &bytes_read, 0, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%d: %s",lines_read+1,mtx_strerror(err));
         TEST_ASSERT_EQ(strlen(s), bytes_read);
         TEST_ASSERT_EQ(5, lines_read);
@@ -1983,7 +1983,7 @@ int test_mtxfile_gzread(void)
     struct mtxfile mtxfile;
     enum mtx_precision precision = mtx_single;
     err = mtxfile_gzread(
-        &mtxfile, gz_f, &lines_read, &bytes_read, 0, NULL, precision);
+        &mtxfile, precision, gz_f, &lines_read, &bytes_read, 0, NULL);
     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%d: %s",lines_read+1,mtx_strerror(err));
     TEST_ASSERT_EQ(84, bytes_read);
     TEST_ASSERT_EQ(6, lines_read);

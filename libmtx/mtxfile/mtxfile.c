@@ -714,6 +714,64 @@ int mtxfile_init_vector_coordinate_pattern(
  */
 
 /**
+ * `mtxfile_read()' reads a Matrix Market file from the given path.
+ * The file may optionally be compressed by gzip.
+ *
+ * The `precision' argument specifies which precision to use for
+ * storing matrix or vector values.
+ *
+ * If `path' is `-', then standard input is used.
+ *
+ * If an error code is returned, then `lines_read' and `bytes_read'
+ * are used to return the line number and byte at which the error was
+ * encountered during the parsing of the Matrix Market file.
+ */
+int mtxfile_read(
+    struct mtxfile * mtxfile,
+    enum mtx_precision precision,
+    const char * path,
+    bool gzip,
+    int * line_number,
+    int * bytes_read)
+{
+    int err;
+    *line_number = 0;
+    *bytes_read = 0;
+
+    if (!gzip) {
+        FILE * f;
+        if (strcmp(path, "-") == 0) {
+            f = stdin;
+        } else if ((f = fopen(path, "r")) == NULL) {
+            return MTX_ERR_ERRNO;
+        }
+        err = mtxfile_fread(
+            mtxfile, precision, f, line_number, bytes_read, 0, NULL);
+        if (err)
+            return err;
+        fclose(f);
+    } else {
+#ifdef LIBMTX_HAVE_LIBZ
+        gzFile f;
+        if (strcmp(path, "-") == 0) {
+            f = gzdopen(STDIN_FILENO, "r");
+        } else if ((f = gzopen(path, "r")) == NULL) {
+            return MTX_ERR_ERRNO;
+        }
+        err = mtxfile_gzread(
+            mtxfile, precision, f, line_number, bytes_read, 0, NULL);
+        if (err)
+            return err;
+        gzclose(f);
+#else
+        errno = ENOTSUP;
+        return MTX_ERR_ERRNO;
+#endif
+    }
+    return MTX_SUCCESS;
+}
+
+/**
  * `mtxfile_fread()' reads a Matrix Market file from a stream.
  *
  * `precision' is used to determine the precision to use for storing
@@ -725,12 +783,12 @@ int mtxfile_init_vector_coordinate_pattern(
  */
 int mtxfile_fread(
     struct mtxfile * mtxfile,
+    enum mtx_precision precision,
     FILE * f,
     int * lines_read,
     int * bytes_read,
     size_t line_max,
-    char * linebuf,
-    enum mtx_precision precision)
+    char * linebuf)
 {
     int err;
     bool free_linebuf = !linebuf;
@@ -830,12 +888,12 @@ int mtxfile_fread(
  */
 int mtxfile_gzread(
     struct mtxfile * mtxfile,
+    enum mtx_precision precision,
     gzFile f,
     int * lines_read,
     int * bytes_read,
     size_t line_max,
-    char * linebuf,
-    enum mtx_precision precision)
+    char * linebuf)
 {
     int err;
     bool free_linebuf = !linebuf;

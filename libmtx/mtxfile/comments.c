@@ -415,6 +415,23 @@ int mtxfile_gzread_comments(
 }
 #endif
 
+/**
+ * `mtxfile_comments_fputs()` write Matrix Market comment lines to a
+ * stream.
+ */
+int mtxfile_comments_fputs(
+    const struct mtxfile_comments * comments,
+    FILE * f)
+{
+    const struct mtxfile_comment * node = comments->root;
+    while (node) {
+        if (fputs(node->comment_line, f) == EOF)
+            return MTX_ERR_ERRNO;
+        node = node->next;
+    }
+    return MTX_SUCCESS;
+}
+
 /*
  * MPI functions
  */

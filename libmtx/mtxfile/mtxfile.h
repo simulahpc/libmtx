@@ -42,6 +42,7 @@
 #endif
 
 #include <stdarg.h>
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdio.h>
 
@@ -478,6 +479,27 @@ int mtxfile_init_vector_coordinate_pattern(
  */
 
 /**
+ * `mtxfile_read()' reads a Matrix Market file from the given path.
+ * The file may optionally be compressed by gzip.
+ *
+ * The `precision' argument specifies which precision to use for
+ * storing matrix or vector values.
+ *
+ * If `path' is `-', then standard input is used.
+ *
+ * If an error code is returned, then `lines_read' and `bytes_read'
+ * are used to return the line number and byte at which the error was
+ * encountered during the parsing of the Matrix Market file.
+ */
+int mtxfile_read(
+    struct mtxfile * mtxfile,
+    enum mtx_precision precision,
+    const char * path,
+    bool gzip,
+    int * line_number,
+    int * bytes_read);
+
+/**
  * `mtxfile_fread()' reads a Matrix Market file from a stream.
  *
  * `precision' is used to determine the precision to use for storing
@@ -489,12 +511,12 @@ int mtxfile_init_vector_coordinate_pattern(
  */
 int mtxfile_fread(
     struct mtxfile * mtxfile,
+    enum mtx_precision precision,
     FILE * f,
     int * lines_read,
     int * bytes_read,
     size_t line_max,
-    char * linebuf,
-    enum mtx_precision precision);
+    char * linebuf);
 
 #ifdef LIBMTX_HAVE_LIBZ
 /**
@@ -510,12 +532,12 @@ int mtxfile_fread(
  */
 int mtxfile_gzread(
     struct mtxfile * mtxfile,
+    enum mtx_precision precision,
     gzFile f,
     int * lines_read,
     int * bytes_read,
     size_t line_max,
-    char * linebuf,
-    enum mtx_precision precision);
+    char * linebuf);
 #endif
 
 /*

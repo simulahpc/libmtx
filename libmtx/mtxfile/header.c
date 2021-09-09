@@ -300,6 +300,9 @@ int mtxfile_parse_symmetry(
     } else if (strncmp("hermitian", t, strlen("hermitian")) == 0) {
         t += strlen("hermitian");
         *symmetry = mtxfile_hermitian;
+    } else if (strncmp("Hermitian", t, strlen("Hermitian")) == 0) {
+        t += strlen("Hermitian");
+        *symmetry = mtxfile_hermitian;
     } else if (strncmp("skew-symmetric", t, strlen("skew-symmetric")) == 0) {
         t += strlen("skew-symmetric");
         *symmetry = mtxfile_skew_symmetric;

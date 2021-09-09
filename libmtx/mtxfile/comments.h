@@ -164,6 +164,14 @@ int mtxfile_gzread_comments(
     char * linebuf);
 #endif
 
+/**
+ * `mtxfile_comments_fputs()` write Matrix Market comment lines to a
+ * stream.
+ */
+int mtxfile_comments_fputs(
+    const struct mtxfile_comments * comments,
+    FILE * f);
+
 /*
  * MPI functions
  */
