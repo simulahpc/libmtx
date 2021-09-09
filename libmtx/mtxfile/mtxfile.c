@@ -89,7 +89,7 @@ int mtxfile_copy(
         return err;
     }
 
-    size_t num_data_lines;
+    int64_t num_data_lines;
     err = mtxfile_size_num_data_lines(
         &src->size, &num_data_lines);
     if (err) {
@@ -136,11 +136,11 @@ int mtxfile_cat(
     if (err)
         return err;
 
-    size_t num_data_lines_dst;
+    int64_t num_data_lines_dst;
     err = mtxfile_size_num_data_lines(&dst->size, &num_data_lines_dst);
     if (err)
         return err;
-    size_t num_data_lines_src;
+    int64_t num_data_lines_src;
     err = mtxfile_size_num_data_lines(&src->size, &num_data_lines_src);
     if (err)
         return err;
@@ -150,7 +150,7 @@ int mtxfile_cat(
     if (err)
         return err;
 
-    size_t num_data_lines;
+    int64_t num_data_lines;
     err = mtxfile_size_num_data_lines(&dst->size, &num_data_lines);
     if (err)
         return err;
@@ -235,7 +235,7 @@ int mtxfile_alloc_matrix_array(
     mtxfile->size.num_nonzeros = -1;
     mtxfile->precision = precision;
 
-    size_t num_data_lines;
+    int64_t num_data_lines;
     err = mtxfile_size_num_data_lines(
         &mtxfile->size, &num_data_lines);
     if (err)
@@ -280,7 +280,7 @@ int mtxfile_init_matrix_array_real_double(
         mtxfile, mtxfile_real, symmetry, mtx_double, num_rows, num_columns);
     if (err)
         return err;
-    size_t num_data_lines;
+    int64_t num_data_lines;
     err = mtxfile_size_num_data_lines(&mtxfile->size, &num_data_lines);
     if (err) {
         mtxfile_free(mtxfile);
@@ -767,7 +767,7 @@ int mtxfile_fread(
         return err;
     }
 
-    size_t num_data_lines;
+    int64_t num_data_lines;
     err = mtxfile_size_num_data_lines(
         &mtxfile->size, &num_data_lines);
     if (err) {
@@ -872,7 +872,7 @@ int mtxfile_gzread(
         return err;
     }
 
-    size_t num_data_lines;
+    int64_t num_data_lines;
     err = mtxfile_size_num_data_lines(
         &mtxfile->size, &num_data_lines);
     if (err) {
@@ -939,7 +939,7 @@ int mtxfile_partition_rows(
     int64_t * data_lines_per_part_ptr)
 {
     int err;
-    size_t num_data_lines;
+    int64_t num_data_lines;
     err = mtxfile_size_num_data_lines(&mtxfile->size, &num_data_lines);
     if (err)
         return err;
@@ -1020,7 +1020,7 @@ int mtxfile_send(
     if (mpierror->mpierrcode)
         return MTX_ERR_MPI;
 
-    size_t num_data_lines;
+    int64_t num_data_lines;
     err = mtxfile_size_num_data_lines(
         &mtxfile->size, &num_data_lines);
     if (err)
@@ -1072,7 +1072,7 @@ int mtxfile_recv(
         return MTX_ERR_MPI;
     }
 
-    size_t num_data_lines;
+    int64_t num_data_lines;
     err = mtxfile_size_num_data_lines(
         &mtxfile->size, &num_data_lines);
     if (err) {
@@ -1150,7 +1150,7 @@ int mtxfile_bcast(
         return MTX_ERR_MPI_COLLECTIVE;
     }
 
-    size_t num_data_lines;
+    int64_t num_data_lines;
     err = mtxfile_size_num_data_lines(
         &mtxfile->size, &num_data_lines);
     if (mtxmpierror_allreduce(mpierror, err)) {
@@ -1266,7 +1266,7 @@ int mtxfile_scatterv(
         return MTX_ERR_MPI_COLLECTIVE;
     }
 
-    size_t num_data_lines;
+    int64_t num_data_lines;
     err = mtxfile_size_num_data_lines(&recvmtxfile->size, &num_data_lines);
     if (mtxmpierror_allreduce(mpierror, err)) {
         mtxfile_comments_free(&recvmtxfile->comments);

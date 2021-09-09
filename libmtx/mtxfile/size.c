@@ -279,7 +279,7 @@ int mtxfile_size_cat(
  */
 int mtxfile_size_num_data_lines(
     const struct mtxfile_size * size,
-    size_t * num_data_lines)
+    int64_t * num_data_lines)
 {
     if (size->num_nonzeros >= 0) {
         *num_data_lines = size->num_nonzeros;

@@ -114,7 +114,7 @@ int mtxfile_size_cat(
  */
 int mtxfile_size_num_data_lines(
     const struct mtxfile_size * size,
-    size_t * num_data_lines);
+    int64_t * num_data_lines);
 
 /*
  * I/O functions
