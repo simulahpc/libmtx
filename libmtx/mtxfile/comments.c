@@ -274,7 +274,7 @@ int mtxfile_fread_comments(
     struct mtxfile_comments * comments,
     FILE * f,
     int * lines_read,
-    int * bytes_read,
+    int64_t * bytes_read,
     size_t line_max,
     char * linebuf)
 {
@@ -360,7 +360,7 @@ int mtxfile_gzread_comments(
     struct mtxfile_comments * comments,
     gzFile f,
     int * lines_read,
-    int * bytes_read,
+    int64_t * bytes_read,
     size_t line_max,
     char * linebuf)
 {

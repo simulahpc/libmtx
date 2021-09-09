@@ -496,8 +496,8 @@ int mtxfile_read(
     enum mtx_precision precision,
     const char * path,
     bool gzip,
-    int * line_number,
-    int * bytes_read);
+    int * lines_read,
+    int64_t * bytes_read);
 
 /**
  * `mtxfile_fread()' reads a Matrix Market file from a stream.
@@ -514,7 +514,7 @@ int mtxfile_fread(
     enum mtx_precision precision,
     FILE * f,
     int * lines_read,
-    int * bytes_read,
+    int64_t * bytes_read,
     size_t line_max,
     char * linebuf);
 
@@ -535,7 +535,7 @@ int mtxfile_gzread(
     enum mtx_precision precision,
     gzFile f,
     int * lines_read,
-    int * bytes_read,
+    int64_t * bytes_read,
     size_t line_max,
     char * linebuf);
 #endif
@@ -665,7 +665,7 @@ int mtxfile_fread_distribute_rows(
     struct mtxfile * mtxfile,
     FILE * f,
     int * lines_read,
-    int * bytes_read,
+    int64_t * bytes_read,
     size_t line_max,
     char * linebuf,
     enum mtx_precision precision,

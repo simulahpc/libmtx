@@ -85,7 +85,7 @@ struct mtxfile_size
  */
 int mtxfile_parse_size(
     struct mtxfile_size * size,
-    int * bytes_read,
+    int64_t * bytes_read,
     const char ** endptr,
     const char * s,
     enum mtxfile_object object,
@@ -132,7 +132,7 @@ int mtxfile_fread_size(
     struct mtxfile_size * size,
     FILE * f,
     int * lines_read,
-    int * bytes_read,
+    int64_t * bytes_read,
     size_t line_max,
     char * linebuf,
     enum mtxfile_object object,
@@ -151,7 +151,7 @@ int mtxfile_gzread_size(
     struct mtxfile_size * size,
     gzFile f,
     int * lines_read,
-    int * bytes_read,
+    int64_t * bytes_read,
     size_t line_max,
     char * linebuf,
     enum mtxfile_object object,

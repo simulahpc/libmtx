@@ -17,7 +17,7 @@
  * <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-08-09
+ * Last modified: 2021-09-09
  *
  * Unit tests for MPI communication routines for matrices and vectors
  * in Matrix Market format.
@@ -702,7 +702,7 @@ int test_mtxfile_fread_distribute_rows(void)
         FILE * f = fmemopen(s, sizeof(s), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         int lines_read = 0;
-        int bytes_read = 0;
+        int64_t bytes_read = 0;
         struct mtxfile mtxfile;
         enum mtx_precision precision = mtx_single;
         int root = 0;
@@ -751,7 +751,7 @@ int test_mtxfile_fread_distribute_rows(void)
         FILE * f = fmemopen(s, sizeof(s), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         int lines_read = 0;
-        int bytes_read = 0;
+        int64_t bytes_read = 0;
         struct mtxfile mtxfile;
         enum mtx_precision precision = mtx_double;
         int root = 0;
@@ -818,7 +818,7 @@ int test_mtxfile_fread_distribute_rows(void)
         FILE * f = fmemopen(s, sizeof(s), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         int lines_read = 0;
-        int bytes_read = 0;
+        int64_t bytes_read = 0;
         struct mtxfile mtxfile;
         enum mtx_precision precision = mtx_single;
         int root = 0;

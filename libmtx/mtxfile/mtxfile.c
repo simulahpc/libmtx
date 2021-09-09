@@ -731,11 +731,11 @@ int mtxfile_read(
     enum mtx_precision precision,
     const char * path,
     bool gzip,
-    int * line_number,
-    int * bytes_read)
+    int * lines_read,
+    int64_t * bytes_read)
 {
     int err;
-    *line_number = 0;
+    *lines_read = -1;
     *bytes_read = 0;
 
     if (!gzip) {
@@ -745,8 +745,9 @@ int mtxfile_read(
         } else if ((f = fopen(path, "r")) == NULL) {
             return MTX_ERR_ERRNO;
         }
+        *lines_read = 0;
         err = mtxfile_fread(
-            mtxfile, precision, f, line_number, bytes_read, 0, NULL);
+            mtxfile, precision, f, lines_read, bytes_read, 0, NULL);
         if (err)
             return err;
         fclose(f);
@@ -758,8 +759,9 @@ int mtxfile_read(
         } else if ((f = gzopen(path, "r")) == NULL) {
             return MTX_ERR_ERRNO;
         }
+        *lines_read = 0;
         err = mtxfile_gzread(
-            mtxfile, precision, f, line_number, bytes_read, 0, NULL);
+            mtxfile, precision, f, lines_read, bytes_read, 0, NULL);
         if (err)
             return err;
         gzclose(f);
@@ -786,7 +788,7 @@ int mtxfile_fread(
     enum mtx_precision precision,
     FILE * f,
     int * lines_read,
-    int * bytes_read,
+    int64_t * bytes_read,
     size_t line_max,
     char * linebuf)
 {
@@ -891,7 +893,7 @@ int mtxfile_gzread(
     enum mtx_precision precision,
     gzFile f,
     int * lines_read,
-    int * bytes_read,
+    int64_t * bytes_read,
     size_t line_max,
     char * linebuf)
 {
@@ -1546,7 +1548,7 @@ int mtxfile_fread_distribute_rows(
     struct mtxfile * mtxfile,
     FILE * f,
     int * lines_read,
-    int * bytes_read,
+    int64_t * bytes_read,
     size_t line_max,
     char * linebuf,
     enum mtx_precision precision,

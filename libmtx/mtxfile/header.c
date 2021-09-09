@@ -83,7 +83,7 @@ const char * mtxfile_object_str(
  */
 int mtxfile_parse_object(
     enum mtxfile_object * object,
-    int * bytes_read,
+    int64_t * bytes_read,
     const char ** endptr,
     const char * s,
     const char * valid_delimiters)
@@ -147,7 +147,7 @@ const char * mtxfile_format_str(
  */
 int mtxfile_parse_format(
     enum mtxfile_format * format,
-    int * bytes_read,
+    int64_t * bytes_read,
     const char ** endptr,
     const char * s,
     const char * valid_delimiters)
@@ -213,7 +213,7 @@ const char * mtxfile_field_str(
  */
 int mtxfile_parse_field(
     enum mtxfile_field * field,
-    int * bytes_read,
+    int64_t * bytes_read,
     const char ** endptr,
     const char * s,
     const char * valid_delimiters)
@@ -285,7 +285,7 @@ const char * mtxfile_symmetry_str(
  */
 int mtxfile_parse_symmetry(
     enum mtxfile_symmetry * symmetry,
-    int * bytes_read,
+    int64_t * bytes_read,
     const char ** endptr,
     const char * s,
     const char * valid_delimiters)
@@ -326,7 +326,7 @@ int mtxfile_parse_symmetry(
  */
 
 static int mtxfile_parse_identifier(
-    int * bytes_read,
+    int64_t * bytes_read,
     const char ** endptr,
     const char * s,
     const char * valid_delimiters)
@@ -365,7 +365,7 @@ static int mtxfile_parse_identifier(
  */
 int mtxfile_parse_header(
     struct mtxfile_header * header,
-    int * bytes_read,
+    int64_t * bytes_read,
     const char ** endptr,
     const char * s)
 {
@@ -438,7 +438,7 @@ int mtxfile_fread_header(
     struct mtxfile_header * header,
     FILE * f,
     int * lines_read,
-    int * bytes_read,
+    int64_t * bytes_read,
     size_t line_max,
     char * linebuf)
 {
@@ -501,7 +501,7 @@ int mtxfile_gzread_header(
     struct mtxfile_header * header,
     gzFile f,
     int * lines_read,
-    int * bytes_read,
+    int64_t * bytes_read,
     size_t line_max,
     char * linebuf)
 {

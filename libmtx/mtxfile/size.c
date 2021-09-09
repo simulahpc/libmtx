@@ -53,7 +53,7 @@
  */
 static int mtxfile_parse_size_matrix_array(
     struct mtxfile_size * size,
-    int * bytes_read,
+    int64_t * bytes_read,
     const char ** endptr,
     const char * s)
 {
@@ -87,7 +87,7 @@ static int mtxfile_parse_size_matrix_array(
  */
 static int mtxfile_parse_size_matrix_coordinate(
     struct mtxfile_size * size,
-    int * bytes_read,
+    int64_t * bytes_read,
     const char ** endptr,
     const char * s)
 {
@@ -127,7 +127,7 @@ static int mtxfile_parse_size_matrix_coordinate(
  */
 int mtxfile_parse_size_vector_array(
     struct mtxfile_size * size,
-    int * bytes_read,
+    int64_t * bytes_read,
     const char ** endptr,
     const char * s)
 {
@@ -155,7 +155,7 @@ int mtxfile_parse_size_vector_array(
  */
 int mtxfile_parse_size_vector_coordinate(
     struct mtxfile_size * size,
-    int * bytes_read,
+    int64_t * bytes_read,
     const char ** endptr,
     const char * s)
 {
@@ -197,7 +197,7 @@ int mtxfile_parse_size_vector_coordinate(
  */
 int mtxfile_parse_size(
     struct mtxfile_size * size,
-    int * bytes_read,
+    int64_t * bytes_read,
     const char ** endptr,
     const char * s,
     enum mtxfile_object object,
@@ -327,7 +327,7 @@ int mtxfile_fread_size(
     struct mtxfile_size * size,
     FILE * f,
     int * lines_read,
-    int * bytes_read,
+    int64_t * bytes_read,
     size_t line_max,
     char * linebuf,
     enum mtxfile_object object,
@@ -396,7 +396,7 @@ int mtxfile_gzread_size(
     struct mtxfile_size * size,
     gzFile f,
     int * lines_read,
-    int * bytes_read,
+    int64_t * bytes_read,
     size_t line_max,
     char * linebuf,
     enum mtxfile_object object,

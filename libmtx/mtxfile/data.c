@@ -151,7 +151,7 @@ int mtxfile_data_size_per_element(
  */
 int mtxfile_parse_data_array_real_single(
     float * data,
-    int * bytes_read,
+    int64_t * bytes_read,
     const char ** endptr,
     const char * s)
 {
@@ -183,7 +183,7 @@ int mtxfile_parse_data_array_real_single(
  */
 int mtxfile_parse_data_array_real_double(
     double * data,
-    int * bytes_read,
+    int64_t * bytes_read,
     const char ** endptr,
     const char * s)
 {
@@ -215,7 +215,7 @@ int mtxfile_parse_data_array_real_double(
  */
 int mtxfile_parse_data_array_complex_single(
     float (* data)[2],
-    int * bytes_read,
+    int64_t * bytes_read,
     const char ** endptr,
     const char * s)
 {
@@ -255,7 +255,7 @@ int mtxfile_parse_data_array_complex_single(
  */
 int mtxfile_parse_data_array_complex_double(
     double (* data)[2],
-    int * bytes_read,
+    int64_t * bytes_read,
     const char ** endptr,
     const char * s)
 {
@@ -295,7 +295,7 @@ int mtxfile_parse_data_array_complex_double(
  */
 int mtxfile_parse_data_array_integer_single(
     int32_t * data,
-    int * bytes_read,
+    int64_t * bytes_read,
     const char ** endptr,
     const char * s)
 {
@@ -327,7 +327,7 @@ int mtxfile_parse_data_array_integer_single(
  */
 int mtxfile_parse_data_array_integer_double(
     int64_t * data,
-    int * bytes_read,
+    int64_t * bytes_read,
     const char ** endptr,
     const char * s)
 {
@@ -363,7 +363,7 @@ int mtxfile_parse_data_array_integer_double(
  */
 int mtxfile_parse_data_matrix_coordinate_real_single(
     struct mtxfile_matrix_coordinate_real_single * data,
-    int * bytes_read,
+    int64_t * bytes_read,
     const char ** endptr,
     const char * s,
     int num_rows,
@@ -416,7 +416,7 @@ int mtxfile_parse_data_matrix_coordinate_real_single(
  */
 int mtxfile_parse_data_matrix_coordinate_real_double(
     struct mtxfile_matrix_coordinate_real_double * data,
-    int * bytes_read,
+    int64_t * bytes_read,
     const char ** endptr,
     const char * s,
     int num_rows,
@@ -469,7 +469,7 @@ int mtxfile_parse_data_matrix_coordinate_real_double(
  */
 int mtxfile_parse_data_matrix_coordinate_complex_single(
     struct mtxfile_matrix_coordinate_complex_single * data,
-    int * bytes_read,
+    int64_t * bytes_read,
     const char ** endptr,
     const char * s,
     int num_rows,
@@ -529,7 +529,7 @@ int mtxfile_parse_data_matrix_coordinate_complex_single(
  */
 int mtxfile_parse_data_matrix_coordinate_complex_double(
     struct mtxfile_matrix_coordinate_complex_double * data,
-    int * bytes_read,
+    int64_t * bytes_read,
     const char ** endptr,
     const char * s,
     int num_rows,
@@ -589,7 +589,7 @@ int mtxfile_parse_data_matrix_coordinate_complex_double(
  */
 int mtxfile_parse_data_matrix_coordinate_integer_single(
     struct mtxfile_matrix_coordinate_integer_single * data,
-    int * bytes_read,
+    int64_t * bytes_read,
     const char ** endptr,
     const char * s,
     int num_rows,
@@ -642,7 +642,7 @@ int mtxfile_parse_data_matrix_coordinate_integer_single(
  */
 int mtxfile_parse_data_matrix_coordinate_integer_double(
     struct mtxfile_matrix_coordinate_integer_double * data,
-    int * bytes_read,
+    int64_t * bytes_read,
     const char ** endptr,
     const char * s,
     int num_rows,
@@ -695,7 +695,7 @@ int mtxfile_parse_data_matrix_coordinate_integer_double(
  */
 int mtxfile_parse_data_matrix_coordinate_pattern(
     struct mtxfile_matrix_coordinate_pattern * data,
-    int * bytes_read,
+    int64_t * bytes_read,
     const char ** endptr,
     const char * s,
     int num_rows,
@@ -745,7 +745,7 @@ int mtxfile_parse_data_matrix_coordinate_pattern(
  */
 int mtxfile_parse_data_vector_coordinate_real_single(
     struct mtxfile_vector_coordinate_real_single * data,
-    int * bytes_read,
+    int64_t * bytes_read,
     const char ** endptr,
     const char * s,
     int num_rows)
@@ -788,7 +788,7 @@ int mtxfile_parse_data_vector_coordinate_real_single(
  */
 int mtxfile_parse_data_vector_coordinate_real_double(
     struct mtxfile_vector_coordinate_real_double * data,
-    int * bytes_read,
+    int64_t * bytes_read,
     const char ** endptr,
     const char * s,
     int num_rows)
@@ -831,7 +831,7 @@ int mtxfile_parse_data_vector_coordinate_real_double(
  */
 int mtxfile_parse_data_vector_coordinate_complex_single(
     struct mtxfile_vector_coordinate_complex_single * data,
-    int * bytes_read,
+    int64_t * bytes_read,
     const char ** endptr,
     const char * s,
     int num_rows)
@@ -881,7 +881,7 @@ int mtxfile_parse_data_vector_coordinate_complex_single(
  */
 int mtxfile_parse_data_vector_coordinate_complex_double(
     struct mtxfile_vector_coordinate_complex_double * data,
-    int * bytes_read,
+    int64_t * bytes_read,
     const char ** endptr,
     const char * s,
     int num_rows)
@@ -931,7 +931,7 @@ int mtxfile_parse_data_vector_coordinate_complex_double(
  */
 int mtxfile_parse_data_vector_coordinate_integer_single(
     struct mtxfile_vector_coordinate_integer_single * data,
-    int * bytes_read,
+    int64_t * bytes_read,
     const char ** endptr,
     const char * s,
     int num_rows)
@@ -974,7 +974,7 @@ int mtxfile_parse_data_vector_coordinate_integer_single(
  */
 int mtxfile_parse_data_vector_coordinate_integer_double(
     struct mtxfile_vector_coordinate_integer_double * data,
-    int * bytes_read,
+    int64_t * bytes_read,
     const char ** endptr,
     const char * s,
     int num_rows)
@@ -1017,7 +1017,7 @@ int mtxfile_parse_data_vector_coordinate_integer_double(
  */
 int mtxfile_parse_data_vector_coordinate_pattern(
     struct mtxfile_vector_coordinate_pattern * data,
-    int * bytes_read,
+    int64_t * bytes_read,
     const char ** endptr,
     const char * s,
     int num_rows)
@@ -1448,7 +1448,7 @@ int mtxfile_data_copy(
 
 static int mtxfile_parse_data(
     union mtxfile_data * data,
-    int * bytes_read,
+    int64_t * bytes_read,
     const char ** endptr,
     const char * s,
     enum mtxfile_object object,
@@ -1638,7 +1638,7 @@ int mtxfile_fread_data(
     union mtxfile_data * data,
     FILE * f,
     int * lines_read,
-    int * bytes_read,
+    int64_t * bytes_read,
     size_t line_max,
     char * linebuf,
     enum mtxfile_object object,
@@ -1723,7 +1723,7 @@ int mtxfile_gzread_data(
     union mtxfile_data * data,
     gzFile f,
     int * lines_read,
-    int * bytes_read,
+    int64_t * bytes_read,
     size_t line_max,
     char * linebuf,
     enum mtxfile_object object,

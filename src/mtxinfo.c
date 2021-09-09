@@ -288,26 +288,27 @@ int main(int argc, char *argv[])
 
     setlocale(LC_ALL, "C");
     struct mtxfile mtxfile;
-    int line_number, bytes_read;
+    int lines_read;
+    int64_t bytes_read;
     err = mtxfile_read(
         &mtxfile, args.precision, args.mtx_path, args.gzip,
-        &line_number, &bytes_read);
+        &lines_read, &bytes_read);
     setlocale(LC_ALL, "");
-    if (err && bytes_read <= 0) {
+    if (err && lines_read >= 0) {
         if (args.verbose > 0)
             fprintf(diagf, "\n");
-        fprintf(stderr, "%s: %s: %s\n",
+        fprintf(stderr, "%s: %s:%d: %s\n",
                 program_invocation_short_name,
-                args.mtx_path, mtx_strerror(err));
+                args.mtx_path, lines_read+1,
+                mtx_strerror(err));
         program_options_free(&args);
         return EXIT_FAILURE;
     } else if (err) {
         if (args.verbose > 0)
             fprintf(diagf, "\n");
-        fprintf(stderr, "%s: %s:%d: %s\n",
+        fprintf(stderr, "%s: %s: %s\n",
                 program_invocation_short_name,
-                args.mtx_path, line_number,
-                mtx_strerror(err));
+                args.mtx_path, mtx_strerror(err));
         program_options_free(&args);
         return EXIT_FAILURE;
     }
