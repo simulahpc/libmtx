@@ -58,7 +58,6 @@ const char * program_invocation_short_name;
 struct program_options
 {
     char * x_path;
-    char * y_path;
     char * format;
     enum mtx_precision precision;
     bool gzip;
@@ -73,7 +72,6 @@ static int program_options_init(
     struct program_options * args)
 {
     args->x_path = NULL;
-    args->y_path = NULL;
     args->format = NULL;
     args->precision = mtx_double;
     args->gzip = false;
@@ -91,8 +89,6 @@ static void program_options_free(
 {
     if (args->x_path)
         free(args->x_path);
-    if (args->y_path)
-        free(args->y_path);
     if(args->format)
         free(args->format);
 }
@@ -291,12 +287,6 @@ static int parse_program_options(
         if (num_positional_arguments_consumed == 0) {
             args->x_path = strdup((*argv)[0]);
             if (!args->x_path) {
-                program_options_free(args);
-                return errno;
-            }
-        } else if (num_positional_arguments_consumed == 1) {
-            args->y_path = strdup((*argv)[0]);
-            if (!args->y_path) {
                 program_options_free(args);
                 return errno;
             }
