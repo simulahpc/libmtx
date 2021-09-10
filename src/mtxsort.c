@@ -17,10 +17,9 @@
  * <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-08-09
+ * Last modified: 2021-09-10
  *
- * Sort nonzeros of a Matrix Market object in row- or column-major
- * order.
+ * Sort a Matrix Market file in row- or column-major order.
  */
 
 #include <libmtx/libmtx.h>
@@ -31,6 +30,7 @@
 
 #include <assert.h>
 #include <inttypes.h>
+#include <locale.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -58,7 +58,7 @@ struct program_options
     enum mtx_precision precision;
     bool gzip;
     char * format;
-    enum mtx_sorting sorting;
+    enum mtxfile_sorting sorting;
     int verbose;
     bool quiet;
 };
@@ -73,7 +73,7 @@ static int program_options_init(
     args->precision = mtx_double;
     args->gzip = false;
     args->format = NULL;
-    args->sorting = mtx_row_major;
+    args->sorting = mtxfile_row_major;
     args->verbose = 0;
     args->quiet = false;
     return 0;
@@ -100,7 +100,7 @@ static void program_options_print_help(
 {
     fprintf(f, "Usage: %s [OPTION..] FILE\n", program_name);
     fprintf(f, "\n");
-    fprintf(f, " Sort nonzeros of a Matrix Market object.\n");
+    fprintf(f, " Sort a Matrix Market file.\n");
     fprintf(f, "\n");
     fprintf(f, " Options are:\n");
     fprintf(f, "  --precision=PRECISION\tprecision used to represent matrix or\n");
@@ -235,9 +235,9 @@ static int parse_program_options(
             }
             char * s = (*argv)[1];
             if (strcmp(s, "row-major") == 0) {
-                args->sorting = mtx_row_major;
+                args->sorting = mtxfile_row_major;
             } else if (strcmp(s, "column-major") == 0) {
-                args->sorting = mtx_column_major;
+                args->sorting = mtxfile_column_major;
             } else {
                 program_options_free(args);
                 return EINVAL;
@@ -247,9 +247,9 @@ static int parse_program_options(
         } else if (strstr((*argv)[0], "--sorting=") == (*argv)[0]) {
             char * s = (*argv)[0] + strlen("--sorting=");
             if (strcmp(s, "row-major") == 0) {
-                args->sorting = mtx_row_major;
+                args->sorting = mtxfile_row_major;
             } else if (strcmp(s, "column-major") == 0) {
-                args->sorting = mtx_column_major;
+                args->sorting = mtxfile_column_major;
             } else {
                 program_options_free(args);
                 return EINVAL;
@@ -333,6 +333,7 @@ int main(int argc, char *argv[])
     int err;
     struct timespec t0, t1;
     FILE * diagf = stderr;
+    setlocale(LC_ALL, "");
 
     /* 1. Parse program options. */
     struct program_options args;
@@ -353,17 +354,29 @@ int main(int argc, char *argv[])
 
     /* 2. Read a Matrix Market file. */
     if (args.verbose > 0) {
-        fprintf(diagf, "mtx_read: ");
+        fprintf(diagf, "mtxfile_read: ");
         fflush(diagf);
         clock_gettime(CLOCK_MONOTONIC, &t0);
     }
 
-    struct mtx mtx;
-    int line_number, column_number;
-    err = mtx_read(
-        &mtx, args.precision, args.mtx_path, args.gzip,
-        &line_number, &column_number);
-    if (err && (line_number == -1 && column_number == -1)) {
+    struct mtxfile mtxfile;
+    int lines_read;
+    int64_t bytes_read;
+    setlocale(LC_ALL, "C");
+    err = mtxfile_read(
+        &mtxfile, args.precision, args.mtx_path, args.gzip,
+        &lines_read, &bytes_read);
+    setlocale(LC_ALL, "");
+    if (err && lines_read >= 0) {
+        if (args.verbose > 0)
+            fprintf(diagf, "\n");
+        fprintf(stderr, "%s: %s:%d: %s\n",
+                program_invocation_short_name,
+                args.mtx_path, lines_read+1,
+                mtx_strerror(err));
+        program_options_free(&args);
+        return EXIT_FAILURE;
+    } else if (err) {
         if (args.verbose > 0)
             fprintf(diagf, "\n");
         fprintf(stderr, "%s: %s: %s\n",
@@ -371,55 +384,47 @@ int main(int argc, char *argv[])
                 args.mtx_path, mtx_strerror(err));
         program_options_free(&args);
         return EXIT_FAILURE;
-    } else if (err) {
-        if (args.verbose > 0)
-            fprintf(diagf, "\n");
-        fprintf(stderr, "%s: %s:%d:%d: %s\n",
-                program_invocation_short_name,
-                args.mtx_path, line_number, column_number,
-                mtx_strerror(err));
-        program_options_free(&args);
-        return EXIT_FAILURE;
     }
     
     if (args.verbose > 0) {
         clock_gettime(CLOCK_MONOTONIC, &t1);
-        fprintf(diagf, "%.6f seconds\n",
-                timespec_duration(t0, t1));
-        fprintf(diagf, "mtx_sort: ");
+        fprintf(diagf, "%'.6f seconds (%'.1f MB/s)\n",
+                timespec_duration(t0, t1),
+                1.0e-6 * bytes_read / timespec_duration(t0, t1));
+        fprintf(diagf, "mtxfile_sort: ");
         fflush(diagf);
         clock_gettime(CLOCK_MONOTONIC, &t0);
     }
 
-    /* 3. Sort the nonzeros of the Matrix Market object. */
-    err = mtx_sort(&mtx, args.sorting);
+    /* 3. Sort the Matrix Market file. */
+    err = mtxfile_sort(&mtxfile, args.sorting);
     if (err) {
         if (args.verbose > 0)
             fprintf(diagf, "\n");
         fprintf(stderr, "%s: %s\n",
                 program_invocation_short_name,
                 mtx_strerror(err));
-        mtx_free(&mtx);
+        mtxfile_free(&mtxfile);
         program_options_free(&args);
         return EXIT_FAILURE;
     }
 
     if (args.verbose > 0) {
         clock_gettime(CLOCK_MONOTONIC, &t1);
-        fprintf(diagf, "%.6f seconds\n",
+        fprintf(diagf, "%'.6f seconds\n",
                 timespec_duration(t0, t1));
     }
 
     /* 4. Write the sorted Matrix Market object to standard output. */
     if (!args.quiet) {
         if (args.verbose > 0) {
-            fprintf(diagf, "mtx_fwrite: ");
+            fprintf(diagf, "mtxfile_fwrite: ");
             fflush(diagf);
             clock_gettime(CLOCK_MONOTONIC, &t0);
         }
 
-        err = mtx_add_comment_line_printf(
-            &mtx, "%% This file was generated by %s %s\n",
+        err = mtxfile_comments_printf(
+            &mtxfile.comments, "%% This file was generated by %s %s\n",
             program_name, program_version);
         if (err) {
             if (args.verbose > 0)
@@ -427,33 +432,37 @@ int main(int argc, char *argv[])
             fprintf(stderr, "%s: %s\n",
                     program_invocation_short_name,
                     mtx_strerror(err));
-            mtx_free(&mtx);
+            mtxfile_free(&mtxfile);
             program_options_free(&args);
             return EXIT_FAILURE;
         }
 
-        /* Write sorted Matrix Market object to file. */
-        err = mtx_fwrite(&mtx, stdout, args.format);
+        setlocale(LC_ALL, "C");
+        int64_t bytes_written;
+        err = mtxfile_fwrite(&mtxfile, stdout, args.format, &bytes_written);
+        setlocale(LC_ALL, "");
         if (err) {
             if (args.verbose > 0)
                 fprintf(diagf, "\n");
             fprintf(stderr, "%s: %s\n",
                     program_invocation_short_name,
                     mtx_strerror(err));
-            mtx_free(&mtx);
+            mtxfile_free(&mtxfile);
             program_options_free(&args);
             return EXIT_FAILURE;
         }
 
         if (args.verbose > 0) {
             clock_gettime(CLOCK_MONOTONIC, &t1);
-            fprintf(diagf, "%.6f seconds\n", timespec_duration(t0, t1));
+            fprintf(diagf, "%'.6f seconds (%'.1f MB/s)\n",
+                    timespec_duration(t0, t1),
+                    1.0e-6 * bytes_written / timespec_duration(t0, t1));
             fflush(diagf);
         }
     }
 
     /* 5. Clean up. */
-    mtx_free(&mtx);
+    mtxfile_free(&mtxfile);
     program_options_free(&args);
     return EXIT_SUCCESS;
 }

@@ -584,6 +584,27 @@ int mtxfile_conjugate_transpose(
     struct mtxfile * mtxfile);
 
 /*
+ * Sorting
+ */
+
+/**
+ * `mtxfile_sorting' is used to enumerate different ways of sorting
+ * Matrix Market files.
+ */
+enum mtxfile_sorting
+{
+    mtxfile_row_major,      /* row major ordering */
+    mtxfile_column_major,   /* column major ordering */
+};
+
+/**
+ * `mtxfile_sort()' sorts a Matrix Market file in a given order.
+ */
+int mtxfile_sort(
+    struct mtxfile * mtx,
+    enum mtxfile_sorting sorting);
+
+/*
  * Partitioning
  */
 

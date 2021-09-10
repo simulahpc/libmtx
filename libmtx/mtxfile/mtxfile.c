@@ -575,7 +575,17 @@ int mtxfile_init_matrix_coordinate_complex_single(
     int num_rows,
     int num_columns,
     int64_t num_nonzeros,
-    const struct mtxfile_matrix_coordinate_complex_single * data);
+    const struct mtxfile_matrix_coordinate_complex_single * data)
+{
+    int err = mtxfile_alloc_matrix_coordinate(
+        mtxfile, mtxfile_complex, symmetry, mtx_single,
+        num_rows, num_columns, num_nonzeros);
+    if (err)
+        return err;
+    memcpy(mtxfile->data.matrix_coordinate_complex_single,
+           data, num_nonzeros * sizeof(*data));
+    return MTX_SUCCESS;
+}
 
 /**
  * `mtxfile_init_matrix_coordinate_complex_double()' allocates and
@@ -588,7 +598,17 @@ int mtxfile_init_matrix_coordinate_complex_double(
     int num_rows,
     int num_columns,
     int64_t num_nonzeros,
-    const struct mtxfile_matrix_coordinate_complex_double * data);
+    const struct mtxfile_matrix_coordinate_complex_double * data)
+{
+    int err = mtxfile_alloc_matrix_coordinate(
+        mtxfile, mtxfile_complex, symmetry, mtx_double,
+        num_rows, num_columns, num_nonzeros);
+    if (err)
+        return err;
+    memcpy(mtxfile->data.matrix_coordinate_complex_double,
+           data, num_nonzeros * sizeof(*data));
+    return MTX_SUCCESS;
+}
 
 /**
  * `mtxfile_init_matrix_coordinate_integer_single()' allocates and
@@ -601,7 +621,17 @@ int mtxfile_init_matrix_coordinate_integer_single(
     int num_rows,
     int num_columns,
     int64_t num_nonzeros,
-    const struct mtxfile_matrix_coordinate_integer_single * data);
+    const struct mtxfile_matrix_coordinate_integer_single * data)
+{
+    int err = mtxfile_alloc_matrix_coordinate(
+        mtxfile, mtxfile_integer, symmetry, mtx_single,
+        num_rows, num_columns, num_nonzeros);
+    if (err)
+        return err;
+    memcpy(mtxfile->data.matrix_coordinate_integer_single,
+           data, num_nonzeros * sizeof(*data));
+    return MTX_SUCCESS;
+}
 
 /**
  * `mtxfile_init_matrix_coordinate_integer_double()' allocates and
@@ -614,7 +644,17 @@ int mtxfile_init_matrix_coordinate_integer_double(
     int num_rows,
     int num_columns,
     int64_t num_nonzeros,
-    const struct mtxfile_matrix_coordinate_integer_double * data);
+    const struct mtxfile_matrix_coordinate_integer_double * data)
+{
+    int err = mtxfile_alloc_matrix_coordinate(
+        mtxfile, mtxfile_integer, symmetry, mtx_double,
+        num_rows, num_columns, num_nonzeros);
+    if (err)
+        return err;
+    memcpy(mtxfile->data.matrix_coordinate_integer_double,
+           data, num_nonzeros * sizeof(*data));
+    return MTX_SUCCESS;
+}
 
 /**
  * `mtxfile_init_matrix_coordinate_pattern()' allocates and
@@ -627,7 +667,17 @@ int mtxfile_init_matrix_coordinate_pattern(
     int num_rows,
     int num_columns,
     int64_t num_nonzeros,
-    const struct mtxfile_matrix_coordinate_pattern * data);
+    const struct mtxfile_matrix_coordinate_pattern * data)
+{
+    int err = mtxfile_alloc_matrix_coordinate(
+        mtxfile, mtxfile_pattern, symmetry, mtx_single,
+        num_rows, num_columns, num_nonzeros);
+    if (err)
+        return err;
+    memcpy(mtxfile->data.matrix_coordinate_pattern,
+           data, num_nonzeros * sizeof(*data));
+    return MTX_SUCCESS;
+}
 
 /*
  * Vector coordinate formats
@@ -722,7 +772,16 @@ int mtxfile_init_vector_coordinate_complex_single(
     struct mtxfile * mtxfile,
     int num_rows,
     int64_t num_nonzeros,
-    const struct mtxfile_vector_coordinate_complex_single * data);
+    const struct mtxfile_vector_coordinate_complex_single * data)
+{
+    int err = mtxfile_alloc_vector_coordinate(
+        mtxfile, mtxfile_complex, mtx_single, num_rows, num_nonzeros);
+    if (err)
+        return err;
+    memcpy(mtxfile->data.vector_coordinate_complex_single,
+           data, num_nonzeros * sizeof(*data));
+    return MTX_SUCCESS;
+}
 
 /**
  * `mtxfile_init_vector_coordinate_complex_double()' allocates and
@@ -733,7 +792,16 @@ int mtxfile_init_vector_coordinate_complex_double(
     struct mtxfile * mtxfile,
     int num_rows,
     int64_t num_nonzeros,
-    const struct mtxfile_vector_coordinate_complex_double * data);
+    const struct mtxfile_vector_coordinate_complex_double * data)
+{
+    int err = mtxfile_alloc_vector_coordinate(
+        mtxfile, mtxfile_complex, mtx_double, num_rows, num_nonzeros);
+    if (err)
+        return err;
+    memcpy(mtxfile->data.vector_coordinate_complex_double,
+           data, num_nonzeros * sizeof(*data));
+    return MTX_SUCCESS;
+}
 
 /**
  * `mtxfile_init_vector_coordinate_integer_single()' allocates and
@@ -744,7 +812,16 @@ int mtxfile_init_vector_coordinate_integer_single(
     struct mtxfile * mtxfile,
     int num_rows,
     int64_t num_nonzeros,
-    const struct mtxfile_vector_coordinate_integer_single * data);
+    const struct mtxfile_vector_coordinate_integer_single * data)
+{
+    int err = mtxfile_alloc_vector_coordinate(
+        mtxfile, mtxfile_integer, mtx_single, num_rows, num_nonzeros);
+    if (err)
+        return err;
+    memcpy(mtxfile->data.vector_coordinate_integer_single,
+           data, num_nonzeros * sizeof(*data));
+    return MTX_SUCCESS;
+}
 
 /**
  * `mtxfile_init_vector_coordinate_integer_double()' allocates and
@@ -755,7 +832,16 @@ int mtxfile_init_vector_coordinate_integer_double(
     struct mtxfile * mtxfile,
     int num_rows,
     int64_t num_nonzeros,
-    const struct mtxfile_vector_coordinate_integer_double * data);
+    const struct mtxfile_vector_coordinate_integer_double * data)
+{
+    int err = mtxfile_alloc_vector_coordinate(
+        mtxfile, mtxfile_integer, mtx_double, num_rows, num_nonzeros);
+    if (err)
+        return err;
+    memcpy(mtxfile->data.vector_coordinate_integer_double,
+           data, num_nonzeros * sizeof(*data));
+    return MTX_SUCCESS;
+}
 
 /**
  * `mtxfile_init_vector_coordinate_pattern()' allocates and
@@ -766,7 +852,16 @@ int mtxfile_init_vector_coordinate_pattern(
     struct mtxfile * mtxfile,
     int num_rows,
     int64_t num_nonzeros,
-    const struct mtxfile_vector_coordinate_pattern * data);
+    const struct mtxfile_vector_coordinate_pattern * data)
+{
+    int err = mtxfile_alloc_vector_coordinate(
+        mtxfile, mtxfile_pattern, mtx_single, num_rows, num_nonzeros);
+    if (err)
+        return err;
+    memcpy(mtxfile->data.vector_coordinate_pattern,
+           data, num_nonzeros * sizeof(*data));
+    return MTX_SUCCESS;
+}
 
 /*
  * I/O functions
@@ -1132,6 +1227,37 @@ int mtxfile_transpose(
  */
 int mtxfile_conjugate_transpose(
     struct mtxfile * mtxfile);
+
+/*
+ * Sorting
+ */
+
+/**
+ * `mtxfile_sort()' sorts a Matrix Market file in a given order.
+ */
+int mtxfile_sort(
+    struct mtxfile * mtxfile,
+    enum mtxfile_sorting sorting)
+{
+    int64_t num_data_lines;
+    int err = mtxfile_size_num_data_lines(&mtxfile->size, &num_data_lines);
+    if (err)
+        return err;
+
+    if (sorting == mtxfile_row_major) {
+        return mtxfile_data_sort_row_major(
+            &mtxfile->data, mtxfile->header.object, mtxfile->header.format,
+            mtxfile->header.field, mtxfile->precision, mtxfile->size.num_rows,
+            mtxfile->size.num_columns, num_data_lines);
+    } else if (sorting == mtxfile_column_major) {
+        return mtxfile_data_sort_column_major(
+            &mtxfile->data, mtxfile->header.object, mtxfile->header.format,
+            mtxfile->header.field, mtxfile->precision, mtxfile->size.num_rows,
+            mtxfile->size.num_columns, num_data_lines);
+    } else {
+        return MTX_ERR_INVALID_MTX_SORTING;
+    }
+}
 
 /*
  * Partitioning

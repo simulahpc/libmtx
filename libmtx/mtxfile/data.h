@@ -619,6 +619,59 @@ int mtxfile_data_transpose(
     size_t size);
 
 /*
+ * Sorting
+ */
+
+/**
+ * `mtxfile_data_sort_row_major()' sorts data lines of a Matrix Market
+ * file in row major order.
+ */
+int mtxfile_data_sort_row_major(
+    union mtxfile_data * data,
+    enum mtxfile_object object,
+    enum mtxfile_format format,
+    enum mtxfile_field field,
+    enum mtx_precision precision,
+    int num_rows,
+    int num_columns,
+    size_t size);
+
+/**
+ * `mtxfile_data_sort_column_major()' sorts data lines of a Matrix
+ * Market file in column major order.
+ *
+ * This operation is not supported for non-square matrices in array
+ * format, since they are always stored in row major order.  In this
+ * case, one might want to transpose the matrix, which will rearrange
+ * the elements to correspond with a column major ordering of the
+ * original matrix, but the dimensions of the matrix are also
+ * exchanged.
+ */
+int mtxfile_data_sort_column_major(
+    union mtxfile_data * data,
+    enum mtxfile_object object,
+    enum mtxfile_format format,
+    enum mtxfile_field field,
+    enum mtx_precision precision,
+    int num_rows,
+    int num_columns,
+    size_t size);
+
+/**
+ * `mtxfile_data_sort_by_key()' sorts data lines according to the
+ * given keys using a stable, in-place insertion sort algorihtm.
+ */
+int mtxfile_data_sort_by_key(
+    union mtxfile_data * data,
+    enum mtxfile_object object,
+    enum mtxfile_format format,
+    enum mtxfile_field field,
+    enum mtx_precision precision,
+    size_t size,
+    size_t offset,
+    int * keys);
+
+/*
  * Partitioning
  */
 
@@ -665,24 +718,6 @@ int mtxfile_data_partition_columns(
     size_t offset,
     const struct mtx_partition * column_partition,
     int * column_parts);
-
-/*
- * Sorting
- */
-
-/**
- * `mtxfile_data_sort_by_key()' sorts data lines according to the
- * given keys using a stable, in-place insertion sort algorihtm.
- */
-int mtxfile_data_sort_by_key(
-    union mtxfile_data * data,
-    enum mtxfile_object object,
-    enum mtxfile_format format,
-    enum mtxfile_field field,
-    enum mtx_precision precision,
-    size_t size,
-    size_t offset,
-    int * keys);
 
 /*
  * MPI functions
