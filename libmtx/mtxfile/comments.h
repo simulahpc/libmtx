@@ -170,7 +170,8 @@ int mtxfile_gzread_comments(
  */
 int mtxfile_comments_fputs(
     const struct mtxfile_comments * comments,
-    FILE * f);
+    FILE * f,
+    int64_t * bytes_written);
 
 /*
  * MPI functions

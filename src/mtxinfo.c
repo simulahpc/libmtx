@@ -329,7 +329,7 @@ int main(int argc, char *argv[])
     fprintf(stdout, "rows: %'d\n", mtxfile.size.num_rows);
     fprintf(stdout, "columns: %'d\n", mtxfile.size.num_columns);
     fprintf(stdout, "nonzeros: %'"PRId64"\n", mtxfile.size.num_nonzeros);
-    mtxfile_comments_fputs(&mtxfile.comments, stdout);
+    mtxfile_comments_fputs(&mtxfile.comments, stdout, NULL);
 
     /* 4. Clean up. */
     mtxfile_free(&mtxfile);

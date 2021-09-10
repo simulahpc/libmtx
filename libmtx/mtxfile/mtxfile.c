@@ -385,7 +385,14 @@ int mtxfile_alloc_vector_array(
 int mtxfile_init_vector_array_real_single(
     struct mtxfile * mtxfile,
     int num_rows,
-    const float * data);
+    const float * data)
+{
+    int err = mtxfile_alloc_vector_array(mtxfile, mtxfile_real, mtx_single, num_rows);
+    if (err)
+        return err;
+    memcpy(mtxfile->data.array_real_single, data, num_rows * sizeof(*data));
+    return MTX_SUCCESS;
+}
 
 /**
  * `mtxfile_init_vector_array_real_double()' allocates and initialises
@@ -396,8 +403,7 @@ int mtxfile_init_vector_array_real_double(
     int num_rows,
     const double * data)
 {
-    int err;
-    err = mtxfile_alloc_vector_array(mtxfile, mtxfile_real, mtx_double, num_rows);
+    int err = mtxfile_alloc_vector_array(mtxfile, mtxfile_real, mtx_double, num_rows);
     if (err)
         return err;
     memcpy(mtxfile->data.array_real_double, data, num_rows * sizeof(*data));
@@ -412,7 +418,15 @@ int mtxfile_init_vector_array_real_double(
 int mtxfile_init_vector_array_complex_single(
     struct mtxfile * mtxfile,
     int num_rows,
-    const float (* data)[2]);
+    const float (* data)[2])
+{
+    int err = mtxfile_alloc_vector_array(
+        mtxfile, mtxfile_complex, mtx_single, num_rows);
+    if (err)
+        return err;
+    memcpy(mtxfile->data.array_complex_single, data, num_rows * sizeof(*data));
+    return MTX_SUCCESS;
+}
 
 /**
  * `mtxfile_init_vector_array_complex_double()' allocates and
@@ -422,7 +436,15 @@ int mtxfile_init_vector_array_complex_single(
 int mtxfile_init_vector_array_complex_double(
     struct mtxfile * mtxfile,
     int num_rows,
-    const double (* data)[2]);
+    const double (* data)[2])
+{
+    int err = mtxfile_alloc_vector_array(
+        mtxfile, mtxfile_complex, mtx_double, num_rows);
+    if (err)
+        return err;
+    memcpy(mtxfile->data.array_complex_double, data, num_rows * sizeof(*data));
+    return MTX_SUCCESS;
+}
 
 /**
  * `mtxfile_init_vector_array_integer_single()' allocates and
@@ -509,8 +531,7 @@ int mtxfile_init_matrix_coordinate_real_single(
     int64_t num_nonzeros,
     const struct mtxfile_matrix_coordinate_real_single * data)
 {
-    int err;
-    err = mtxfile_alloc_matrix_coordinate(
+    int err = mtxfile_alloc_matrix_coordinate(
         mtxfile, mtxfile_real, symmetry, mtx_single,
         num_rows, num_columns, num_nonzeros);
     if (err)
@@ -621,18 +642,38 @@ int mtxfile_alloc_vector_coordinate(
     enum mtxfile_field field,
     enum mtx_precision precision,
     int num_rows,
-    int64_t num_nonzeros);
+    int64_t num_nonzeros)
+{
+    int err;
+    if (field != mtxfile_real &&
+        field != mtxfile_complex &&
+        field != mtxfile_integer)
+        return MTX_ERR_INVALID_MTX_FIELD;
+    if (precision != mtx_single &&
+        precision != mtx_double)
+        return MTX_ERR_INVALID_PRECISION;
 
-/**
- * `mtxfile_alloc_vector_coordinate()' allocates a vector in
- * coordinate format.
- */
-int mtxfile_alloc_vector_coordinate(
-    struct mtxfile * mtxfile,
-    enum mtxfile_field field,
-    enum mtx_precision precision,
-    int num_rows,
-    int64_t num_nonzeros);
+    mtxfile->header.object = mtxfile_vector;
+    mtxfile->header.format = mtxfile_coordinate;
+    mtxfile->header.field = field;
+    mtxfile->header.symmetry = mtxfile_general;
+    mtxfile_comments_init(&mtxfile->comments);
+    mtxfile->size.num_rows = num_rows;
+    mtxfile->size.num_columns = -1;
+    mtxfile->size.num_nonzeros = num_nonzeros;
+    mtxfile->precision = precision;
+
+    err = mtxfile_data_alloc(
+        &mtxfile->data,
+        mtxfile->header.object,
+        mtxfile->header.format,
+        mtxfile->header.field,
+        mtxfile->precision,
+        num_nonzeros);
+    if (err)
+        return err;
+    return MTX_SUCCESS;
+}
 
 /**
  * `mtxfile_init_vector_coordinate_real_single()' allocates and initialises
@@ -642,7 +683,16 @@ int mtxfile_init_vector_coordinate_real_single(
     struct mtxfile * mtxfile,
     int num_rows,
     int64_t num_nonzeros,
-    const struct mtxfile_vector_coordinate_real_single * data);
+    const struct mtxfile_vector_coordinate_real_single * data)
+{
+    int err = mtxfile_alloc_vector_coordinate(
+        mtxfile, mtxfile_real, mtx_single, num_rows, num_nonzeros);
+    if (err)
+        return err;
+    memcpy(mtxfile->data.vector_coordinate_real_single,
+           data, num_nonzeros * sizeof(*data));
+    return MTX_SUCCESS;
+}
 
 /**
  * `mtxfile_init_vector_coordinate_real_double()' allocates and initialises
@@ -652,7 +702,16 @@ int mtxfile_init_vector_coordinate_real_double(
     struct mtxfile * mtxfile,
     int num_rows,
     int64_t num_nonzeros,
-    const struct mtxfile_vector_coordinate_real_double * data);
+    const struct mtxfile_vector_coordinate_real_double * data)
+{
+    int err = mtxfile_alloc_vector_coordinate(
+        mtxfile, mtxfile_real, mtx_double, num_rows, num_nonzeros);
+    if (err)
+        return err;
+    memcpy(mtxfile->data.vector_coordinate_real_double,
+           data, num_nonzeros * sizeof(*data));
+    return MTX_SUCCESS;
+}
 
 /**
  * `mtxfile_init_vector_coordinate_complex_single()' allocates and
@@ -981,6 +1040,62 @@ int mtxfile_gzread(
     return MTX_SUCCESS;
 }
 #endif
+
+/**
+ * `mtxfile_fwrite()' writes a Matrix Market file to a stream.
+ *
+ * If `format' is `NULL', then the format specifier '%d' is used to
+ * print integers and '%f' is used to print floating point
+ * numbers. Otherwise, the given format string is used when printing
+ * numerical values.
+ *
+ * The format string follows the conventions of `printf'. If the field
+ * is `real', `double' or `complex', then the format specifiers '%e',
+ * '%E', '%f', '%F', '%g' or '%G' may be used. If the field is
+ * `integer', then the format specifier must be '%d'. The format
+ * string is ignored if the field is `pattern'. Field width and
+ * precision may be specified (e.g., "%3.1f"), but variable field
+ * width and precision (e.g., "%*.*f"), as well as length modifiers
+ * (e.g., "%Lf") are not allowed.
+ *
+ * If it is not `NULL', then the number of bytes written to the stream
+ * is returned in `bytes_written'.
+ */
+int mtxfile_fwrite(
+    const struct mtxfile * mtxfile,
+    FILE * f,
+    const char * format,
+    int64_t * bytes_written)
+{
+    int err;
+    err = mtxfile_header_fwrite(&mtxfile->header, f, bytes_written);
+    if (err)
+        return err;
+    err = mtxfile_comments_fputs(&mtxfile->comments, f, bytes_written);
+    if (err)
+        return err;
+    err = mtxfile_size_fwrite(
+        &mtxfile->size, mtxfile->header.object, mtxfile->header.format,
+        f, bytes_written);
+    if (err)
+        return err;
+    int64_t num_data_lines;
+    err = mtxfile_size_num_data_lines(
+        &mtxfile->size, &num_data_lines);
+    if (err)
+        return err;
+    err = mtxfile_data_fwrite(
+        &mtxfile->data, mtxfile->header.object, mtxfile->header.format,
+        mtxfile->header.field, mtxfile->precision, num_data_lines,
+        f, format, bytes_written);
+    if (err)
+        return err;
+    return MTX_SUCCESS;
+}
+
+/*
+ * Partitioning
+ */
 
 /**
  * `mtxfile_partition_rows()' partitions and reorders data lines of a

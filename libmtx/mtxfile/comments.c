@@ -421,12 +421,15 @@ int mtxfile_gzread_comments(
  */
 int mtxfile_comments_fputs(
     const struct mtxfile_comments * comments,
-    FILE * f)
+    FILE * f,
+    int64_t * bytes_written)
 {
     const struct mtxfile_comment * node = comments->root;
     while (node) {
         if (fputs(node->comment_line, f) == EOF)
             return MTX_ERR_ERRNO;
+        if (bytes_written)
+            *bytes_written += strlen(node->comment_line);
         node = node->next;
     }
     return MTX_SUCCESS;

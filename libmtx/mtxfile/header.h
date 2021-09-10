@@ -334,6 +334,18 @@ int mtxfile_gzread_header(
     char * linebuf);
 #endif
 
+/**
+ * `mtxfile_header_fwrite()' writes the header line of a Matrix Market
+ * file to a stream.
+ *
+ * If it is not `NULL', then the number of bytes written to the stream
+ * is returned in `bytes_written'.
+ */
+int mtxfile_header_fwrite(
+    const struct mtxfile_header * header,
+    FILE * f,
+    int64_t * bytes_written);
+
 /*
  * MPI functions
  */

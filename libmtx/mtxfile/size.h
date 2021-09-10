@@ -158,6 +158,20 @@ int mtxfile_gzread_size(
     enum mtxfile_format format);
 #endif
 
+/**
+ * `mtxfile_size_fwrite()' writes the size line of a Matrix Market
+ * file to a stream.
+ *
+ * If it is not `NULL', then the number of bytes written to the stream
+ * is returned in `bytes_written'.
+ */
+int mtxfile_size_fwrite(
+    const struct mtxfile_size * size,
+    enum mtxfile_object object,
+    enum mtxfile_format format,
+    FILE * f,
+    int64_t * bytes_written);
+
 /*
  * MPI functions
  */

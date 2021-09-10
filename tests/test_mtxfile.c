@@ -2014,6 +2014,138 @@ int test_mtxfile_gzread(void)
 #endif
 
 /**
+ * `test_mtxfile_fwrite()' tests writing Matrix Market files to a
+ * stream.
+ */
+int test_mtxfile_fwrite(void)
+{
+    int err;
+
+    /*
+     * Array formats
+     */
+
+    {
+        struct mtxfile mtxfile;
+        int num_rows = 3;
+        int num_columns = 3;
+        const double data[] = {
+            1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0};
+        err = mtxfile_init_matrix_array_real_double(
+            &mtxfile, mtxfile_general, num_rows, num_columns, data);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        char buf[1024] = {};
+        FILE * f = fmemopen(buf, sizeof(buf), "w");
+        int64_t bytes_written;
+        err = mtxfile_fwrite(&mtxfile, f, "%.1f", &bytes_written);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        fclose(f);
+        mtxfile_free(&mtxfile);
+        char expected[] =
+            "%%MatrixMarket matrix array real general\n"
+            "3 3\n"
+            "1.0\n" "2.0\n" "3.0\n"
+            "4.0\n" "5.0\n" "6.0\n"
+            "7.0\n" "8.0\n" "9.0\n";
+        TEST_ASSERT_STREQ_MSG(
+            expected, buf, "\nexpected: %s\nactual: %s\n",
+            expected, buf);
+    }
+
+    {
+        struct mtxfile mtxfile;
+        int num_rows = 4;
+        const double data[] = {1.0,2.0,3.0,4.0};
+        err = mtxfile_init_vector_array_real_double(&mtxfile, num_rows, data);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        char buf[1024] = {};
+        FILE * f = fmemopen(buf, sizeof(buf), "w");
+        int64_t bytes_written;
+        err = mtxfile_fwrite(&mtxfile, f, "%.1f", &bytes_written);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        fclose(f);
+        mtxfile_free(&mtxfile);
+        char expected[] =
+            "%%MatrixMarket vector array real general\n"
+            "4\n"
+            "1.0\n" "2.0\n" "3.0\n" "4.0\n";
+        TEST_ASSERT_STREQ_MSG(
+            expected, buf, "\nexpected: %s\nactual: %s\n",
+            expected, buf);
+    }
+
+    /*
+     * Matrix coordinate formats
+     */
+
+    {
+        struct mtxfile mtxfile;
+        int num_rows = 3;
+        int num_columns = 3;
+        const struct mtxfile_matrix_coordinate_real_single data[] = {
+            {1,1,1.0f},
+            {1,3,2.0f},
+            {2,2,3.0f},
+            {3,3,4.0f}};
+        int64_t num_nonzeros = sizeof(data) / sizeof(*data);
+        err = mtxfile_init_matrix_coordinate_real_single(
+            &mtxfile, mtxfile_general, num_rows, num_columns, num_nonzeros, data);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        char buf[1024] = {};
+        FILE * f = fmemopen(buf, sizeof(buf), "w");
+        int64_t bytes_written;
+        err = mtxfile_fwrite(&mtxfile, f, "%.1f", &bytes_written);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        fclose(f);
+        mtxfile_free(&mtxfile);
+        char expected[] =
+            "%%MatrixMarket matrix coordinate real general\n"
+            "3 3 4\n"
+            "1 1 1.0\n"
+            "1 3 2.0\n"
+            "2 2 3.0\n"
+            "3 3 4.0\n";
+        TEST_ASSERT_STREQ_MSG(
+            expected, buf, "\nexpected: %s\nactual: %s\n",
+            expected, buf);
+    }
+
+    /*
+     * Vector coordinate formats
+     */
+
+    {
+        struct mtxfile mtxfile;
+        int num_rows = 4;
+        const struct mtxfile_vector_coordinate_real_single data[] = {
+            {1,1.0f},
+            {2,2.0f},
+            {4,4.0f}};
+        int64_t num_nonzeros = sizeof(data) / sizeof(*data);
+        err = mtxfile_init_vector_coordinate_real_single(
+            &mtxfile, num_rows, num_nonzeros, data);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        char buf[1024] = {};
+        FILE * f = fmemopen(buf, sizeof(buf), "w");
+        int64_t bytes_written;
+        err = mtxfile_fwrite(&mtxfile, f, "%.1f", &bytes_written);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        fclose(f);
+        mtxfile_free(&mtxfile);
+        char expected[] =
+            "%%MatrixMarket vector coordinate real general\n"
+            "4 3\n"
+            "1 1.0\n"
+            "2 2.0\n"
+            "4 4.0\n";
+        TEST_ASSERT_STREQ_MSG(
+            expected, buf, "\nexpected: %s\nactual: %s\n",
+            expected, buf);
+    }
+    return TEST_SUCCESS;
+}
+
+/**
  * `test_mtxfile_cat()' tests concatenating Matrix Market files.
  */
 int test_mtxfile_cat(void)
@@ -2483,6 +2615,7 @@ int main(int argc, char * argv[])
 #ifdef LIBMTX_HAVE_LIBZ
     TEST_RUN(test_mtxfile_gzread);
 #endif
+    TEST_RUN(test_mtxfile_fwrite);
     TEST_RUN(test_mtxfile_cat);
     TEST_RUN(test_mtxfile_partition);
     TEST_SUITE_END();
