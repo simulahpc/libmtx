@@ -1094,6 +1094,46 @@ int mtxfile_fwrite(
 }
 
 /*
+ * Transpose and conjugate transpose.
+ */
+
+/**
+ * `mtxfile_transpose()' tranposes a Matrix Market file.
+ */
+int mtxfile_transpose(
+    struct mtxfile * mtxfile)
+{
+    int err;
+    if (mtxfile->header.object == mtxfile_matrix) {
+        int64_t num_data_lines;
+        err = mtxfile_size_num_data_lines(&mtxfile->size, &num_data_lines);
+        if (err)
+            return err;
+        err = mtxfile_data_transpose(
+            &mtxfile->data, mtxfile->header.object, mtxfile->header.format,
+            mtxfile->header.field, mtxfile->precision, mtxfile->size.num_rows,
+            mtxfile->size.num_columns, num_data_lines);
+        if (err)
+            return err;
+        err = mtxfile_size_transpose(&mtxfile->size);
+        if (err)
+            return err;
+    } else if (mtxfile->header.object == mtxfile_vector) {
+        return MTX_SUCCESS;
+    } else {
+        return MTX_ERR_INVALID_MTX_OBJECT;
+    }
+    return MTX_SUCCESS;
+}
+
+/**
+ * `mtxfile_conjugate_transpose()' tranposes and complex conjugates a
+ * Matrix Market file.
+ */
+int mtxfile_conjugate_transpose(
+    struct mtxfile * mtxfile);
+
+/*
  * Partitioning
  */
 

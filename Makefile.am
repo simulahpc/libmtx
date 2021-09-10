@@ -163,7 +163,8 @@ bin_PROGRAMS = \
 	mtxnrm2 \
 	mtxreorder \
 	mtxscal \
-	mtxsort
+	mtxsort \
+	mtxtranspose
 if HAVE_MPI
 bin_PROGRAMS += \
 	mtxgather \
@@ -218,6 +219,11 @@ mtxscal_SOURCES = src/mtxscal.c
 mtxsort_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/src $(MPICPPFLAGS)
 mtxsort_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
 mtxsort_SOURCES = src/mtxsort.c
+
+# mtxtranspose
+mtxtranspose_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/src $(MPICPPFLAGS)
+mtxtranspose_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
+mtxtranspose_SOURCES = src/mtxtranspose.c
 
 # mtxgather
 mtxgather_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/src $(MPICPPFLAGS)

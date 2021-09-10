@@ -173,6 +173,17 @@ int mtxfile_size_fwrite(
     int64_t * bytes_written);
 
 /*
+ * Transpose
+ */
+
+/**
+ * `mtxfile_size_transpose()' tranposes the size line of a Matrix
+ * Market file.
+ */
+int mtxfile_size_transpose(
+    struct mtxfile_size * size);
+
+/*
  * MPI functions
  */
 

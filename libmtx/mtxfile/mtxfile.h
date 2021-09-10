@@ -567,6 +567,23 @@ int mtxfile_fwrite(
     int64_t * bytes_written);
 
 /*
+ * Transpose and conjugate transpose.
+ */
+
+/**
+ * `mtxfile_transpose()' tranposes a Matrix Market file.
+ */
+int mtxfile_transpose(
+    struct mtxfile * mtxfile);
+
+/**
+ * `mtxfile_conjugate_transpose()' tranposes and complex conjugates a
+ * Matrix Market file.
+ */
+int mtxfile_conjugate_transpose(
+    struct mtxfile * mtxfile);
+
+/*
  * Partitioning
  */
 

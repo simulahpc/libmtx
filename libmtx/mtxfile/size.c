@@ -479,6 +479,23 @@ int mtxfile_size_fwrite(
 }
 
 /*
+ * Transpose
+ */
+
+/**
+ * `mtxfile_size_transpose()' tranposes the size line of a Matrix
+ * Market file.
+ */
+int mtxfile_size_transpose(
+    struct mtxfile_size * size)
+{
+    int num_rows = size->num_rows;
+    size->num_rows = size->num_columns;
+    size->num_columns = num_rows;
+    return MTX_SUCCESS;
+}
+
+/*
  * MPI functions
  */
 

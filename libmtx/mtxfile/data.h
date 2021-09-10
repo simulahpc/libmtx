@@ -601,6 +601,24 @@ int mtxfile_data_fwrite(
     int64_t * bytes_written);
 
 /*
+ * Transpose and conjugate transpose.
+ */
+
+/**
+ * `mtxfile_data_transpose()' tranposes the data lines of a Matrix
+ * Market file.
+ */
+int mtxfile_data_transpose(
+    union mtxfile_data * data,
+    enum mtxfile_object object,
+    enum mtxfile_format format,
+    enum mtxfile_field field,
+    enum mtx_precision precision,
+    int num_rows,
+    int num_columns,
+    size_t size);
+
+/*
  * Partitioning
  */
 

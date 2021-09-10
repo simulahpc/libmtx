@@ -2213,6 +2213,193 @@ int mtxfile_data_fwrite(
 }
 
 /*
+ * Transpose and conjugate transpose.
+ */
+
+/**
+ * `mtxfile_data_transpose()' tranposes the data lines of a Matrix
+ * Market file.
+ */
+int mtxfile_data_transpose(
+    union mtxfile_data * data,
+    enum mtxfile_object object,
+    enum mtxfile_format format,
+    enum mtxfile_field field,
+    enum mtx_precision precision,
+    int num_rows,
+    int num_columns,
+    size_t size)
+{
+    int err;
+    if (object == mtxfile_matrix) {
+        if (format == mtxfile_coordinate) {
+            if (field == mtxfile_real) {
+                if (precision == mtx_single) {
+                    for (int64_t k = 0; k < size; k++) {
+                        int i = data->matrix_coordinate_real_single[k].i;
+                        int j = data->matrix_coordinate_real_single[k].j;
+                        data->matrix_coordinate_real_single[k].i = j;
+                        data->matrix_coordinate_real_single[k].j = i;
+                    }
+                } else if (precision == mtx_double) {
+                    for (int64_t k = 0; k < size; k++) {
+                        int i = data->matrix_coordinate_real_double[k].i;
+                        int j = data->matrix_coordinate_real_double[k].j;
+                        data->matrix_coordinate_real_double[k].i = j;
+                        data->matrix_coordinate_real_double[k].j = i;
+                    }
+                } else {
+                    return MTX_ERR_INVALID_PRECISION;
+                }
+            } else if (field == mtxfile_complex) {
+                if (precision == mtx_single) {
+                    for (int64_t k = 0; k < size; k++) {
+                        int i = data->matrix_coordinate_complex_single[k].i;
+                        int j = data->matrix_coordinate_complex_single[k].j;
+                        data->matrix_coordinate_complex_single[k].i = j;
+                        data->matrix_coordinate_complex_single[k].j = i;
+                    }
+                } else if (precision == mtx_double) {
+                    for (int64_t k = 0; k < size; k++) {
+                        int i = data->matrix_coordinate_complex_double[k].i;
+                        int j = data->matrix_coordinate_complex_double[k].j;
+                        data->matrix_coordinate_complex_double[k].i = j;
+                        data->matrix_coordinate_complex_double[k].j = i;
+                    }
+                } else {
+                    return MTX_ERR_INVALID_PRECISION;
+                }
+            } else if (field == mtxfile_integer) {
+                if (precision == mtx_single) {
+                    for (int64_t k = 0; k < size; k++) {
+                        int i = data->matrix_coordinate_integer_single[k].i;
+                        int j = data->matrix_coordinate_integer_single[k].j;
+                        data->matrix_coordinate_integer_single[k].i = j;
+                        data->matrix_coordinate_integer_single[k].j = i;
+                    }
+                } else if (precision == mtx_double) {
+                    for (int64_t k = 0; k < size; k++) {
+                        int i = data->matrix_coordinate_integer_double[k].i;
+                        int j = data->matrix_coordinate_integer_double[k].j;
+                        data->matrix_coordinate_integer_double[k].i = j;
+                        data->matrix_coordinate_integer_double[k].j = i;
+                    }
+                } else {
+                    return MTX_ERR_INVALID_PRECISION;
+                }
+            } else if (field == mtxfile_pattern) {
+                for (int64_t k = 0; k < size; k++) {
+                    int i = data->matrix_coordinate_pattern[k].i;
+                    int j = data->matrix_coordinate_pattern[k].j;
+                    data->matrix_coordinate_pattern[k].i = j;
+                    data->matrix_coordinate_pattern[k].j = i;
+                }
+            } else {
+                return MTX_ERR_INVALID_MTX_FIELD;
+            }
+
+        } else if (format == mtxfile_array) {
+            union mtxfile_data copy;
+            err = mtxfile_data_alloc(&copy, object, format, field, precision, size);
+            if (err)
+                return err;
+            err = mtxfile_data_copy(
+                &copy, data, object, format, field, precision, size, 0, 0);
+            if (err) {
+                mtxfile_data_free(&copy, object, format, field, precision);
+                return err;
+            }
+
+            int64_t k, l;
+            if (field == mtxfile_real) {
+                if (precision == mtx_single) {
+                    for (int i = 0; i < num_rows; i++) {
+                        for (int j = 0; j < num_columns; j++) {
+                            k = (int64_t) i * (int64_t) num_columns + (int64_t) j;
+                            l = (int64_t) j * (int64_t) num_rows + (int64_t) i;
+                            data->array_real_single[l] = copy.array_real_single[k];
+                        }
+                    }
+                } else if (precision == mtx_double) {
+                    for (int i = 0; i < num_rows; i++) {
+                        for (int j = 0; j < num_columns; j++) {
+                            k = (int64_t) i * (int64_t) num_columns + (int64_t) j;
+                            l = (int64_t) j * (int64_t) num_rows + (int64_t) i;
+                            data->array_real_double[l] = copy.array_real_double[k];
+                        }
+                    }
+                } else {
+                    return MTX_ERR_INVALID_PRECISION;
+                }
+            } else if (field == mtxfile_complex) {
+                if (precision == mtx_single) {
+                    for (int i = 0; i < num_rows; i++) {
+                        for (int j = 0; j < num_columns; j++) {
+                            k = (int64_t) i * (int64_t) num_columns + (int64_t) j;
+                            l = (int64_t) j * (int64_t) num_rows + (int64_t) i;
+                            data->array_complex_single[l][0] =
+                                copy.array_complex_single[k][0];
+                            data->array_complex_single[l][1] =
+                                copy.array_complex_single[k][1];
+                        }
+                    }
+                } else if (precision == mtx_double) {
+                    for (int i = 0; i < num_rows; i++) {
+                        for (int j = 0; j < num_columns; j++) {
+                            k = (int64_t) i * (int64_t) num_columns + (int64_t) j;
+                            l = (int64_t) j * (int64_t) num_rows + (int64_t) i;
+                            data->array_complex_double[l][0] =
+                                copy.array_complex_double[k][0];
+                            data->array_complex_double[l][1] =
+                                copy.array_complex_double[k][1];
+                        }
+                    }
+                } else {
+                    return MTX_ERR_INVALID_PRECISION;
+                }
+            } else if (field == mtxfile_integer) {
+                if (precision == mtx_single) {
+                    for (int i = 0; i < num_rows; i++) {
+                        for (int j = 0; j < num_columns; j++) {
+                            k = (int64_t) i * (int64_t) num_columns + (int64_t) j;
+                            l = (int64_t) j * (int64_t) num_rows + (int64_t) i;
+                            data->array_integer_single[l] =
+                                copy.array_integer_single[k];
+                            data->array_integer_single[l] =
+                                copy.array_integer_single[k];
+                        }
+                    }
+                } else if (precision == mtx_double) {
+                    for (int i = 0; i < num_rows; i++) {
+                        for (int j = 0; j < num_columns; j++) {
+                            k = (int64_t) i * (int64_t) num_columns + (int64_t) j;
+                            l = (int64_t) j * (int64_t) num_rows + (int64_t) i;
+                            data->array_integer_double[l] =
+                                copy.array_integer_double[k];
+                        }
+                    }
+                } else {
+                    return MTX_ERR_INVALID_PRECISION;
+                }
+            } else {
+                return MTX_ERR_INVALID_MTX_FIELD;
+            }
+
+
+            mtxfile_data_free(&copy, object, format, field, precision);
+        } else {
+            return MTX_ERR_INVALID_MTX_FORMAT;
+        }
+
+    } else if (object == mtxfile_vector) {
+        return MTX_SUCCESS;
+    } else {
+        return MTX_ERR_INVALID_MTX_OBJECT;
+    }
+    return MTX_SUCCESS;
+}
+
+/*
  * Partitioning
  */
 
