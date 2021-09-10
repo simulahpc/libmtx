@@ -161,6 +161,7 @@ bin_PROGRAMS = \
 	mtxgemv \
 	mtxinfo \
 	mtxnrm2 \
+	mtxpartition \
 	mtxreorder \
 	mtxscal \
 	mtxsort \
@@ -204,6 +205,11 @@ mtxinfo_SOURCES = src/mtxinfo.c
 mtxnrm2_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/src $(MPICPPFLAGS)
 mtxnrm2_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
 mtxnrm2_SOURCES = src/mtxnrm2.c
+
+# mtxpartition
+mtxpartition_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/src $(MPICPPFLAGS)
+mtxpartition_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
+mtxpartition_SOURCES = src/mtxpartition.c
 
 # mtxreorder
 mtxreorder_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/src $(MPICPPFLAGS)

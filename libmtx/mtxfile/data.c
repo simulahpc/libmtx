@@ -1055,7 +1055,7 @@ int mtxfile_data_alloc(
     enum mtxfile_format format,
     enum mtxfile_field field,
     enum mtx_precision precision,
-    size_t size)
+    int64_t size)
 {
     if (format == mtxfile_array) {
         if (field == mtxfile_real) {
@@ -1299,9 +1299,9 @@ int mtxfile_data_copy(
     enum mtxfile_format format,
     enum mtxfile_field field,
     enum mtx_precision precision,
-    size_t size,
-    size_t dst_offset,
-    size_t src_offset)
+    int64_t size,
+    int64_t dst_offset,
+    int64_t src_offset)
 {
     if (format == mtxfile_array) {
         if (field == mtxfile_real) {
@@ -1458,7 +1458,7 @@ static int mtxfile_parse_data(
     enum mtx_precision precision,
     int num_rows,
     int num_columns,
-    size_t i)
+    int64_t i)
 {
     if (format == mtxfile_array) {
         if (field == mtxfile_real) {
@@ -1648,7 +1648,7 @@ int mtxfile_fread_data(
     enum mtx_precision precision,
     int num_rows,
     int num_columns,
-    size_t size)
+    int64_t size)
 {
     int err;
     bool free_linebuf = !linebuf;
@@ -1659,7 +1659,7 @@ int mtxfile_fread_data(
             return MTX_ERR_ERRNO;
     }
 
-    for (size_t i = 0; i < size; i++) {
+    for (int64_t i = 0; i < size; i++) {
         err = freadline(linebuf, line_max, f);
         if (err) {
             if (free_linebuf)
@@ -1733,7 +1733,7 @@ int mtxfile_gzread_data(
     enum mtx_precision precision,
     int num_rows,
     int num_columns,
-    size_t size)
+    int64_t size)
 {
     int err;
     bool free_linebuf = !linebuf;
@@ -1744,7 +1744,7 @@ int mtxfile_gzread_data(
             return MTX_ERR_ERRNO;
     }
 
-    for (size_t i = 0; i < size; i++) {
+    for (int64_t i = 0; i < size; i++) {
         err = gzreadline(linebuf, line_max, f);
         if (err) {
             if (free_linebuf)
@@ -2228,7 +2228,7 @@ int mtxfile_data_transpose(
     enum mtx_precision precision,
     int num_rows,
     int num_columns,
-    size_t size)
+    int64_t size)
 {
     int err;
     if (object == mtxfile_matrix) {
@@ -2423,7 +2423,7 @@ static int mtxfile_data_matrix_coordinate_row_ptr(
     enum mtx_precision precision,
     int num_rows,
     int num_columns,
-    size_t size,
+    int64_t size,
     int64_t * row_ptr)
 {
     for (int i = 0; i <= num_rows; i++)
@@ -2475,7 +2475,7 @@ static int mtxfile_data_sort_matrix_coordinate_row_major(
     enum mtx_precision precision,
     int num_rows,
     int num_columns,
-    size_t size)
+    int64_t size)
 {
     int err;
 
@@ -2662,42 +2662,42 @@ static int mtxfile_data_vector_coordinate_row_indices(
     union mtxfile_data * data,
     enum mtxfile_field field,
     enum mtx_precision precision,
-    size_t size,
+    int64_t size,
     int * rowidx)
 {
     if (field == mtxfile_real) {
         if (precision == mtx_single) {
             for (int64_t k = 0; k < size; k++)
-                rowidx[k] = data->matrix_coordinate_real_single[k].i;
+                rowidx[k] = data->vector_coordinate_real_single[k].i;
         } else if (precision == mtx_double) {
             for (int64_t k = 0; k < size; k++)
-                rowidx[k] = data->matrix_coordinate_real_double[k].i;
+                rowidx[k] = data->vector_coordinate_real_double[k].i;
         } else {
             return MTX_ERR_INVALID_PRECISION;
         }
     } else if (field == mtxfile_complex) {
         if (precision == mtx_single) {
             for (int64_t k = 0; k < size; k++)
-                rowidx[k] = data->matrix_coordinate_complex_single[k].i;
+                rowidx[k] = data->vector_coordinate_complex_single[k].i;
         } else if (precision == mtx_double) {
             for (int64_t k = 0; k < size; k++)
-                rowidx[k] = data->matrix_coordinate_complex_double[k].i;
+                rowidx[k] = data->vector_coordinate_complex_double[k].i;
         } else {
             return MTX_ERR_INVALID_PRECISION;
         }
     } else if (field == mtxfile_integer) {
         if (precision == mtx_single) {
             for (int64_t k = 0; k < size; k++)
-                rowidx[k] = data->matrix_coordinate_integer_single[k].i;
+                rowidx[k] = data->vector_coordinate_integer_single[k].i;
         } else if (precision == mtx_double) {
             for (int64_t k = 0; k < size; k++)
-                rowidx[k] = data->matrix_coordinate_integer_double[k].i;
+                rowidx[k] = data->vector_coordinate_integer_double[k].i;
         } else {
             return MTX_ERR_INVALID_PRECISION;
         }
     } else if (field == mtxfile_pattern) {
         for (int64_t k = 0; k < size; k++)
-            rowidx[k] = data->matrix_coordinate_pattern[k].i;
+            rowidx[k] = data->vector_coordinate_pattern[k].i;
     } else {
         return MTX_ERR_INVALID_MTX_FIELD;
     }
@@ -2708,7 +2708,7 @@ static int mtxfile_data_sort_vector_coordinate_row_major(
     union mtxfile_data * data,
     enum mtxfile_field field,
     enum mtx_precision precision,
-    size_t size)
+    int64_t size)
 {
     int err;
     int * rowidx = malloc(size * sizeof(int));
@@ -2742,7 +2742,7 @@ int mtxfile_data_sort_row_major(
     enum mtx_precision precision,
     int num_rows,
     int num_columns,
-    size_t size)
+    int64_t size)
 {
     if (format == mtxfile_array) {
         return MTX_SUCCESS;
@@ -2783,7 +2783,7 @@ static int mtxfile_data_matrix_coordinate_column_ptr(
     enum mtx_precision precision,
     int num_rows,
     int num_columns,
-    size_t size,
+    int64_t size,
     int64_t * column_ptr)
 {
     for (int i = 0; i <= num_columns; i++)
@@ -2835,7 +2835,7 @@ static int mtxfile_data_sort_matrix_coordinate_column_major(
     enum mtx_precision precision,
     int num_rows,
     int num_columns,
-    size_t size)
+    int64_t size)
 {
     int err;
 
@@ -3030,7 +3030,7 @@ int mtxfile_data_sort_column_major(
     enum mtx_precision precision,
     int num_rows,
     int num_columns,
-    size_t size)
+    int64_t size)
 {
     if (format == mtxfile_array) {
         if (object == mtxfile_matrix) {
@@ -3073,8 +3073,8 @@ int mtxfile_data_sort_by_key(
     enum mtxfile_format format,
     enum mtxfile_field field,
     enum mtx_precision precision,
-    size_t size,
-    size_t offset,
+    int64_t size,
+    int64_t offset,
     int * keys)
 {
     int err;
@@ -3140,8 +3140,8 @@ int mtxfile_data_partition_rows(
     enum mtx_precision precision,
     int num_rows,
     int num_columns,
-    size_t size,
-    size_t offset,
+    int64_t size,
+    int64_t offset,
     const struct mtx_partition * row_partition,
     int * row_parts)
 {
@@ -3329,8 +3329,8 @@ static int mtxfile_data_send_array(
     const union mtxfile_data * data,
     enum mtxfile_field field,
     enum mtx_precision precision,
-    size_t size,
-    size_t offset,
+    int64_t size,
+    int64_t offset,
     int dest,
     int tag,
     MPI_Comm comm,
@@ -3640,8 +3640,8 @@ static int mtxfile_data_send_coordinate(
     enum mtxfile_object object,
     enum mtxfile_field field,
     enum mtx_precision precision,
-    size_t size,
-    size_t offset,
+    int64_t size,
+    int64_t offset,
     int dest,
     int tag,
     MPI_Comm comm,
@@ -3790,8 +3790,8 @@ int mtxfile_data_send(
     enum mtxfile_format format,
     enum mtxfile_field field,
     enum mtx_precision precision,
-    size_t size,
-    size_t offset,
+    int64_t size,
+    int64_t offset,
     int dest,
     int tag,
     MPI_Comm comm,
@@ -3815,8 +3815,8 @@ static int mtxfile_data_recv_array(
     const union mtxfile_data * data,
     enum mtxfile_field field,
     enum mtx_precision precision,
-    size_t size,
-    size_t offset,
+    int64_t size,
+    int64_t offset,
     int source,
     int tag,
     MPI_Comm comm,
@@ -3887,8 +3887,8 @@ static int mtxfile_data_recv_coordinate(
     enum mtxfile_object object,
     enum mtxfile_field field,
     enum mtx_precision precision,
-    size_t size,
-    size_t offset,
+    int64_t size,
+    int64_t offset,
     int source,
     int tag,
     MPI_Comm comm,
@@ -4037,8 +4037,8 @@ int mtxfile_data_recv(
     enum mtxfile_format format,
     enum mtxfile_field field,
     enum mtx_precision precision,
-    size_t size,
-    size_t offset,
+    int64_t size,
+    int64_t offset,
     int source,
     int tag,
     MPI_Comm comm,
@@ -4062,8 +4062,8 @@ static int mtxfile_data_bcast_array(
     const union mtxfile_data * data,
     enum mtxfile_field field,
     enum mtx_precision precision,
-    size_t size,
-    size_t offset,
+    int64_t size,
+    int64_t offset,
     int root,
     MPI_Comm comm,
     int * mpierrcode)
@@ -4121,8 +4121,8 @@ static int mtxfile_data_bcast_coordinate(
     enum mtxfile_object object,
     enum mtxfile_field field,
     enum mtx_precision precision,
-    size_t size,
-    size_t offset,
+    int64_t size,
+    int64_t offset,
     int root,
     MPI_Comm comm,
     int * mpierrcode)
@@ -4271,8 +4271,8 @@ int mtxfile_data_bcast(
     enum mtxfile_format format,
     enum mtxfile_field field,
     enum mtx_precision precision,
-    size_t size,
-    size_t offset,
+    int64_t size,
+    int64_t offset,
     int root,
     MPI_Comm comm,
     struct mtxmpierror * mpierror)
@@ -4295,11 +4295,11 @@ static int mtxfile_data_scatterv_array(
     const union mtxfile_data * sendbuf,
     enum mtxfile_field field,
     enum mtx_precision precision,
-    size_t sendoffset,
+    int64_t sendoffset,
     int * sendcounts,
     int * displs,
     union mtxfile_data * recvbuf,
-    size_t recvoffset,
+    int64_t recvoffset,
     int recvcount,
     int root,
     MPI_Comm comm,
@@ -4378,11 +4378,11 @@ static int mtxfile_data_scatterv_coordinate(
     enum mtxfile_object object,
     enum mtxfile_field field,
     enum mtx_precision precision,
-    size_t sendoffset,
+    int64_t sendoffset,
     int * sendcounts,
     int * displs,
     union mtxfile_data * recvbuf,
-    size_t recvoffset,
+    int64_t recvoffset,
     int recvcount,
     int root,
     MPI_Comm comm,
@@ -4560,11 +4560,11 @@ int mtxfile_data_scatterv(
     enum mtxfile_format format,
     enum mtxfile_field field,
     enum mtx_precision precision,
-    size_t sendoffset,
+    int64_t sendoffset,
     int * sendcounts,
     int * displs,
     union mtxfile_data * recvbuf,
-    size_t recvoffset,
+    int64_t recvoffset,
     int recvcount,
     int root,
     MPI_Comm comm,

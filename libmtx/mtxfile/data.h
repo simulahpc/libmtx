@@ -476,7 +476,7 @@ int mtxfile_data_alloc(
     enum mtxfile_format format,
     enum mtxfile_field field,
     enum mtx_precision precision,
-    size_t size);
+    int64_t size);
 
 /**
  * `mtxfile_data_free()' frees allocaed storage for data lines.
@@ -498,9 +498,9 @@ int mtxfile_data_copy(
     enum mtxfile_format format,
     enum mtxfile_field field,
     enum mtx_precision precision,
-    size_t size,
-    size_t dst_offset,
-    size_t src_offset);
+    int64_t size,
+    int64_t dst_offset,
+    int64_t src_offset);
 
 /*
  * I/O functions
@@ -534,7 +534,7 @@ int mtxfile_fread_data(
     enum mtx_precision precision,
     int num_rows,
     int num_columns,
-    size_t size);
+    int64_t size);
 
 #ifdef LIBMTX_HAVE_LIBZ
 /**
@@ -565,7 +565,7 @@ int mtxfile_gzread_data(
     enum mtx_precision precision,
     int num_rows,
     int num_columns,
-    size_t size);
+    int64_t size);
 #endif
 
 /**
@@ -616,7 +616,7 @@ int mtxfile_data_transpose(
     enum mtx_precision precision,
     int num_rows,
     int num_columns,
-    size_t size);
+    int64_t size);
 
 /*
  * Sorting
@@ -634,7 +634,7 @@ int mtxfile_data_sort_row_major(
     enum mtx_precision precision,
     int num_rows,
     int num_columns,
-    size_t size);
+    int64_t size);
 
 /**
  * `mtxfile_data_sort_column_major()' sorts data lines of a Matrix
@@ -655,7 +655,7 @@ int mtxfile_data_sort_column_major(
     enum mtx_precision precision,
     int num_rows,
     int num_columns,
-    size_t size);
+    int64_t size);
 
 /**
  * `mtxfile_data_sort_by_key()' sorts data lines according to the
@@ -667,8 +667,8 @@ int mtxfile_data_sort_by_key(
     enum mtxfile_format format,
     enum mtxfile_field field,
     enum mtx_precision precision,
-    size_t size,
-    size_t offset,
+    int64_t size,
+    int64_t offset,
     int * keys);
 
 /*
@@ -692,8 +692,8 @@ int mtxfile_data_partition_rows(
     enum mtx_precision precision,
     int num_rows,
     int num_columns,
-    size_t size,
-    size_t offset,
+    int64_t size,
+    int64_t offset,
     const struct mtx_partition * row_partition,
     int * row_parts);
 
@@ -714,8 +714,8 @@ int mtxfile_data_partition_columns(
     enum mtx_precision precision,
     int num_rows,
     int num_columns,
-    size_t size,
-    size_t offset,
+    int64_t size,
+    int64_t offset,
     const struct mtx_partition * column_partition,
     int * column_parts);
 
@@ -737,8 +737,8 @@ int mtxfile_data_send(
     enum mtxfile_format format,
     enum mtxfile_field field,
     enum mtx_precision precision,
-    size_t size,
-    size_t offset,
+    int64_t size,
+    int64_t offset,
     int dest,
     int tag,
     MPI_Comm comm,
@@ -757,8 +757,8 @@ int mtxfile_data_recv(
     enum mtxfile_format format,
     enum mtxfile_field field,
     enum mtx_precision precision,
-    size_t size,
-    size_t offset,
+    int64_t size,
+    int64_t offset,
     int source,
     int tag,
     MPI_Comm comm,
@@ -778,8 +778,8 @@ int mtxfile_data_bcast(
     enum mtxfile_format format,
     enum mtxfile_field field,
     enum mtx_precision precision,
-    size_t size,
-    size_t offset,
+    int64_t size,
+    int64_t offset,
     int root,
     MPI_Comm comm,
     struct mtxmpierror * mpierror);
@@ -798,11 +798,11 @@ int mtxfile_data_scatterv(
     enum mtxfile_format format,
     enum mtxfile_field field,
     enum mtx_precision precision,
-    size_t sendoffset,
+    int64_t sendoffset,
     int * sendcounts,
     int * displs,
     union mtxfile_data * recvbuf,
-    size_t recvoffset,
+    int64_t recvoffset,
     int recvcount,
     int root,
     MPI_Comm comm,

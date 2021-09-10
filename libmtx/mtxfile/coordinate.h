@@ -164,7 +164,7 @@ struct mtxfile_vector_coordinate_complex_single
 struct mtxfile_vector_coordinate_complex_double
 {
     int i;        /* row index */
-    double a[2];   /* real and imaginary parts of nonzero value */
+    double a[2];  /* real and imaginary parts of nonzero value */
 };
 
 /**

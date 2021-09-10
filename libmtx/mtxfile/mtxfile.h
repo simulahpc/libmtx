@@ -541,7 +541,36 @@ int mtxfile_gzread(
 #endif
 
 /**
- * `mtxfile_fwrite()' writes a Matrix Market file to a stream.
+ * `mtxfile_write()' writes a Matrix Market file to the given path.
+ * Market format. The file may optionally be compressed by gzip.
+ *
+ * If `path' is `-', then standard output is used.
+ *
+ * If `format' is `NULL', then the format specifier '%d' is used to
+ * print integers and '%f' is used to print floating point
+ * numbers. Otherwise, the given format string is used when printing
+ * numerical values.
+ *
+ * The format string follows the conventions of `printf'. If the field
+ * is `real', `double' or `complex', then the format specifiers '%e',
+ * '%E', '%f', '%F', '%g' or '%G' may be used. If the field is
+ * `integer', then the format specifier must be '%d'. The format
+ * string is ignored if the field is `pattern'. Field width and
+ * precision may be specified (e.g., "%3.1f"), but variable field
+ * width and precision (e.g., "%*.*f"), as well as length modifiers
+ * (e.g., "%Lf") are not allowed.
+ */
+int mtxfile_write(
+    const struct mtxfile * mtxfile,
+    const char * path,
+    bool gzip,
+    const char * format,
+    int64_t * bytes_written);
+
+#ifdef LIBMTX_HAVE_LIBZ
+/**
+ * `mtxfile_gzwrite()' writes a Matrix Market file to a
+ * gzip-compressed stream.
  *
  * If `format' is `NULL', then the format specifier '%d' is used to
  * print integers and '%f' is used to print floating point
@@ -560,11 +589,12 @@ int mtxfile_gzread(
  * If it is not `NULL', then the number of bytes written to the stream
  * is returned in `bytes_written'.
  */
-int mtxfile_fwrite(
+int mtxfile_gzwrite(
     const struct mtxfile * mtxfile,
-    FILE * f,
+    gzFile * f,
     const char * format,
     int64_t * bytes_written);
+#endif
 
 /*
  * Transpose and conjugate transpose.
@@ -623,6 +653,20 @@ int mtxfile_partition_rows(
     struct mtxfile * mtxfile,
     const struct mtx_partition * row_partition,
     int64_t * data_lines_per_part_ptr);
+
+/**
+ * `mtxfile_init_from_row_partition()' creates a Matrix Market file
+ * from a subset of the rows of another Matrix Market file.
+ *
+ * The array `data_lines_per_part_ptr' should have been obtained
+ * previously by calling `mtxfile_partition_rows'.
+ */
+int mtxfile_init_from_row_partition(
+    struct mtxfile * dst,
+    const struct mtxfile * src,
+    const struct mtx_partition * row_partition,
+    int64_t * data_lines_per_part_ptr,
+    int part);
 
 /*
  * MPI functions

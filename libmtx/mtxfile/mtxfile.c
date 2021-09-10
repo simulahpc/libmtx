@@ -1137,6 +1137,69 @@ int mtxfile_gzread(
 #endif
 
 /**
+ * `mtxfile_write()' writes a Matrix Market file to the given path.
+ * Market format. The file may optionally be compressed by gzip.
+ *
+ * If `path' is `-', then standard output is used.
+ *
+ * If `format' is `NULL', then the format specifier '%d' is used to
+ * print integers and '%f' is used to print floating point
+ * numbers. Otherwise, the given format string is used when printing
+ * numerical values.
+ *
+ * The format string follows the conventions of `printf'. If the field
+ * is `real', `double' or `complex', then the format specifiers '%e',
+ * '%E', '%f', '%F', '%g' or '%G' may be used. If the field is
+ * `integer', then the format specifier must be '%d'. The format
+ * string is ignored if the field is `pattern'. Field width and
+ * precision may be specified (e.g., "%3.1f"), but variable field
+ * width and precision (e.g., "%*.*f"), as well as length modifiers
+ * (e.g., "%Lf") are not allowed.
+ */
+int mtxfile_write(
+    const struct mtxfile * mtxfile,
+    const char * path,
+    bool gzip,
+    const char * format,
+    int64_t * bytes_written)
+{
+    int err;
+    *bytes_written = 0;
+
+    if (!gzip) {
+        FILE * f;
+        if (strcmp(path, "-") == 0) {
+            f = stdout;
+        } else if ((f = fopen(path, "w")) == NULL) {
+            return MTX_ERR_ERRNO;
+        }
+        err = mtxfile_fwrite(mtxfile, f, format, bytes_written);
+        if (err)
+            return err;
+        if (strcmp(path, "-") != 0)
+            fclose(f);
+    } else {
+#ifdef LIBMTX_HAVE_LIBZ
+        gzFile f;
+        if (strcmp(path, "-") == 0) {
+            f = gzdopen(STDOUT_FILENO, "w");
+        } else if ((f = gzopen(path, "w")) == NULL) {
+            return MTX_ERR_ERRNO;
+        }
+        err = mtxfile_gzwrite(mtxfile, f, format, bytes_written);
+        if (err)
+            return err;
+        if (strcmp(path, "-") != 0)
+            gzclose(f);
+#else
+        errno = ENOTSUP;
+        return MTX_ERR_ERRNO;
+#endif
+    }
+    return MTX_SUCCESS;
+}
+
+/**
  * `mtxfile_fwrite()' writes a Matrix Market file to a stream.
  *
  * If `format' is `NULL', then the format specifier '%d' is used to
@@ -1187,6 +1250,65 @@ int mtxfile_fwrite(
         return err;
     return MTX_SUCCESS;
 }
+
+#ifdef LIBMTX_HAVE_LIBZ
+/**
+ * `mtxfile_gzwrite()' writes a Matrix Market file to a
+ * gzip-compressed stream.
+ *
+ * If `format' is `NULL', then the format specifier '%d' is used to
+ * print integers and '%f' is used to print floating point
+ * numbers. Otherwise, the given format string is used when printing
+ * numerical values.
+ *
+ * The format string follows the conventions of `printf'. If the field
+ * is `real', `double' or `complex', then the format specifiers '%e',
+ * '%E', '%f', '%F', '%g' or '%G' may be used. If the field is
+ * `integer', then the format specifier must be '%d'. The format
+ * string is ignored if the field is `pattern'. Field width and
+ * precision may be specified (e.g., "%3.1f"), but variable field
+ * width and precision (e.g., "%*.*f"), as well as length modifiers
+ * (e.g., "%Lf") are not allowed.
+ *
+ * If it is not `NULL', then the number of bytes written to the stream
+ * is returned in `bytes_written'.
+ */
+int mtxfile_gzwrite(
+    const struct mtxfile * mtxfile,
+    gzFile * f,
+    const char * format,
+    int64_t * bytes_written)
+{
+    errno = ENOTSUP;
+    return MTX_ERR_ERRNO;
+
+    /* TODO: Implement writing to gzip-compressed files. */
+    /* int err; */
+    /* err = mtxfile_header_gzwrite(&mtxfile->header, f, bytes_written); */
+    /* if (err) */
+    /*     return err; */
+    /* err = mtxfile_comments_gzputs(&mtxfile->comments, f, bytes_written); */
+    /* if (err) */
+    /*     return err; */
+    /* err = mtxfile_size_gzwrite( */
+    /*     &mtxfile->size, mtxfile->header.object, mtxfile->header.format, */
+    /*     f, bytes_written); */
+    /* if (err) */
+    /*     return err; */
+    /* int64_t num_data_lines; */
+    /* err = mtxfile_size_num_data_lines( */
+    /*     &mtxfile->size, &num_data_lines); */
+    /* if (err) */
+    /*     return err; */
+    /* err = mtxfile_data_gzwrite( */
+    /*     &mtxfile->data, mtxfile->header.object, mtxfile->header.format, */
+    /*     mtxfile->header.field, mtxfile->precision, num_data_lines, */
+    /*     f, format, bytes_written); */
+    /* if (err) */
+    /*     return err; */
+    /* return MTX_SUCCESS; */
+}
+#endif
 
 /*
  * Transpose and conjugate transpose.
@@ -1325,6 +1447,79 @@ int mtxfile_partition_rows(
     }
 
     free(row_parts);
+    return MTX_SUCCESS;
+}
+
+/**
+ * `mtxfile_init_from_row_partition()' creates a Matrix Market file
+ * from a subset of the rows of another Matrix Market file.
+ *
+ * The array `data_lines_per_part_ptr' should have been obtained
+ * previously by calling `mtxfile_partition_rows'.
+ */
+int mtxfile_init_from_row_partition(
+    struct mtxfile * dst,
+    const struct mtxfile * src,
+    const struct mtx_partition * row_partition,
+    int64_t * data_lines_per_part_ptr,
+    int part)
+{
+    int err;
+    err = mtxfile_header_copy(&dst->header, &src->header);
+    if (err)
+        return err;
+    err = mtxfile_comments_copy(&dst->comments, &src->comments);
+    if (err)
+        return err;
+    err = mtxfile_size_copy(&dst->size, &src->size);
+    if (err) {
+        mtxfile_comments_free(&dst->comments);
+        return err;
+    }
+    dst->precision = src->precision;
+
+    if (dst->header.format == mtxfile_array) {
+        dst->size.num_rows = row_partition->size_per_part[part];
+    } else if (dst->header.format == mtxfile_coordinate) {
+        dst->size.num_nonzeros =
+            data_lines_per_part_ptr[part+1] - data_lines_per_part_ptr[part];
+    } else {
+        mtxfile_comments_free(&dst->comments);
+        return MTX_ERR_INVALID_MTX_FORMAT;
+    }
+
+    int64_t num_data_lines;
+    err = mtxfile_size_num_data_lines(&dst->size, &num_data_lines);
+    if (err) {
+        mtxfile_comments_free(&dst->comments);
+        return err;
+    }
+    if (num_data_lines != data_lines_per_part_ptr[part+1]-data_lines_per_part_ptr[part])
+    {
+        mtxfile_comments_free(&dst->comments);
+        errno = EINVAL;
+        return MTX_ERR_ERRNO;
+    }
+
+    err = mtxfile_data_alloc(
+        &dst->data,
+        dst->header.object,
+        dst->header.format,
+        dst->header.field,
+        dst->precision, num_data_lines);
+    if (err) {
+        mtxfile_comments_free(&dst->comments);
+        return err;
+    }
+    err = mtxfile_data_copy(
+        &dst->data, &src->data,
+        src->header.object, src->header.format,
+        src->header.field, src->precision,
+        num_data_lines, 0, data_lines_per_part_ptr[part]);
+    if (err) {
+        mtxfile_free(dst);
+        return err;
+    }
     return MTX_SUCCESS;
 }
 

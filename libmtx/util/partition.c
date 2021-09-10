@@ -29,6 +29,7 @@
 
 #include <stdint.h>
 #include <stdlib.h>
+#include <string.h>
 
 /**
  * `mtx_partition_type_str()' is a string representing the partition
@@ -44,6 +45,59 @@ const char * mtx_partition_type_str(
     case mtx_block_cyclic: return "block-cyclic";
     default: return mtx_strerror(MTX_ERR_INVALID_PARTITION_TYPE);
     }
+}
+
+/**
+ * `mtx_parse_partition_type()' parses a string to obtain one of the
+ * partition types of `enum mtx_partition_type'.
+ *
+ * `valid_delimiters' is either `NULL', in which case it is ignored,
+ * or it is a string of characters considered to be valid delimiters
+ * for the parsed string.  That is, if there are any remaining,
+ * non-NULL characters after parsing, then then the next character is
+ * searched for in `valid_delimiters'.  If the character is found,
+ * then the parsing succeeds and the final delimiter character is
+ * consumed by the parser. Otherwise, the parsing fails with an error.
+ *
+ * If `endptr' is not `NULL', then the address stored in `endptr'
+ * points to the first character beyond the characters that were
+ * consumed during parsing.
+ *
+ * On success, `mtx_parse_partition_type()' returns `MTX_SUCCESS' and
+ * `partition_type' is set according to the parsed string and
+ * `bytes_read' is set to the number of bytes that were consumed by
+ * the parser.  Otherwise, an error code is returned.
+ */
+int mtx_parse_partition_type(
+    enum mtx_partition_type * partition_type,
+    int64_t * bytes_read,
+    const char ** endptr,
+    const char * s,
+    const char * valid_delimiters)
+{
+    const char * t = s;
+    if (strncmp("block", t, strlen("block")) == 0) {
+        t += strlen("block");
+        *partition_type = mtx_block;
+    } else if (strncmp("cyclic", t, strlen("cyclic")) == 0) {
+        t += strlen("cyclic");
+        *partition_type = mtx_cyclic;
+    } else if (strncmp("block-cyclic", t, strlen("block-cyclic")) == 0) {
+        t += strlen("block-cyclic");
+        *partition_type = mtx_block_cyclic;
+    } else {
+        return MTX_ERR_INVALID_PARTITION_TYPE;
+    }
+    if (valid_delimiters && *t != '\0') {
+        if (!strchr(valid_delimiters, *t))
+            return MTX_ERR_INVALID_PARTITION_TYPE;
+        t++;
+    }
+    if (bytes_read)
+        *bytes_read += t-s;
+    if (endptr)
+        *endptr = t;
+    return MTX_SUCCESS;
 }
 
 /**
@@ -170,7 +224,9 @@ int mtx_partition_part(
         return MTX_ERR_INDEX_OUT_OF_BOUNDS;
 
     if (partition->type == mtx_block) {
-        *p = n / partition->num_parts;
+        int64_t size_per_part = (partition->size + partition->num_parts-1)
+            / partition->num_parts;
+        *p = n / size_per_part;
     } else if (partition->type == mtx_cyclic) {
         *p = n % partition->num_parts;
     } else if (partition->type == mtx_block_cyclic) {

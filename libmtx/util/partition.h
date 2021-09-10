@@ -47,6 +47,34 @@ const char * mtx_partition_type_str(
     enum mtx_partition_type type);
 
 /**
+ * `mtx_parse_partition_type()' parses a string to obtain one of the
+ * partition types of `enum mtx_partition_type'.
+ *
+ * `valid_delimiters' is either `NULL', in which case it is ignored,
+ * or it is a string of characters considered to be valid delimiters
+ * for the parsed string.  That is, if there are any remaining,
+ * non-NULL characters after parsing, then then the next character is
+ * searched for in `valid_delimiters'.  If the character is found,
+ * then the parsing succeeds and the final delimiter character is
+ * consumed by the parser. Otherwise, the parsing fails with an error.
+ *
+ * If `endptr' is not `NULL', then the address stored in `endptr'
+ * points to the first character beyond the characters that were
+ * consumed during parsing.
+ *
+ * On success, `mtx_parse_partition_type()' returns `MTX_SUCCESS' and
+ * `partition_type' is set according to the parsed string and
+ * `bytes_read' is set to the number of bytes that were consumed by
+ * the parser.  Otherwise, an error code is returned.
+ */
+int mtx_parse_partition_type(
+    enum mtx_partition_type * partition_type,
+    int64_t * bytes_read,
+    const char ** endptr,
+    const char * s,
+    const char * valid_delimiters);
+
+/**
  * `mtx_partition' represents a partitioning of a finite set.
  */
 struct mtx_partition
