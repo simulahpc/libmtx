@@ -168,11 +168,9 @@ int mtx_partition_init_block(
     partition->size_per_part = malloc(num_parts * sizeof(int));
     if (!partition->size_per_part)
         return MTX_ERR_ERRNO;
-    for (int p = 0; p < num_parts-1; p++)
-        partition->size_per_part[p] = (size + num_parts-1) / num_parts;
-    if (num_parts > 0) {
-        partition->size_per_part[num_parts-1] =
-            size - (num_parts-1) * ((size + num_parts-1) / num_parts);
+    for (int p = 0; p < num_parts; p++) {
+        partition->size_per_part[p] =
+            size / num_parts + (p < (size % num_parts) ? 1 : 0);
     }
     partition->block_size = -1;
     return MTX_SUCCESS;
@@ -224,9 +222,11 @@ int mtx_partition_part(
         return MTX_ERR_INDEX_OUT_OF_BOUNDS;
 
     if (partition->type == mtx_block) {
-        int64_t size_per_part = (partition->size + partition->num_parts-1)
-            / partition->num_parts;
-        *p = n / size_per_part;
+        int64_t size_per_part = partition->size / partition->num_parts;
+        int64_t remainder = partition->size % partition->num_parts;
+        *p = n / (size_per_part+1);
+        if (*p >= remainder)
+            *p = remainder + (n - remainder * (size_per_part+1)) / size_per_part;
     } else if (partition->type == mtx_cyclic) {
         *p = n % partition->num_parts;
     } else if (partition->type == mtx_block_cyclic) {
