@@ -567,6 +567,32 @@ int mtxfile_write(
     const char * format,
     int64_t * bytes_written);
 
+/**
+ * `mtxfile_fwrite()' writes a Matrix Market file to a stream.
+ *
+ * If `format' is `NULL', then the format specifier '%d' is used to
+ * print integers and '%f' is used to print floating point
+ * numbers. Otherwise, the given format string is used when printing
+ * numerical values.
+ *
+ * The format string follows the conventions of `printf'. If the field
+ * is `real', `double' or `complex', then the format specifiers '%e',
+ * '%E', '%f', '%F', '%g' or '%G' may be used. If the field is
+ * `integer', then the format specifier must be '%d'. The format
+ * string is ignored if the field is `pattern'. Field width and
+ * precision may be specified (e.g., "%3.1f"), but variable field
+ * width and precision (e.g., "%*.*f"), as well as length modifiers
+ * (e.g., "%Lf") are not allowed.
+ *
+ * If it is not `NULL', then the number of bytes written to the stream
+ * is returned in `bytes_written'.
+ */
+int mtxfile_fwrite(
+    const struct mtxfile * mtxfile,
+    FILE * f,
+    const char * format,
+    int64_t * bytes_written);
+
 #ifdef LIBMTX_HAVE_LIBZ
 /**
  * `mtxfile_gzwrite()' writes a Matrix Market file to a
@@ -591,7 +617,7 @@ int mtxfile_write(
  */
 int mtxfile_gzwrite(
     const struct mtxfile * mtxfile,
-    gzFile * f,
+    gzFile f,
     const char * format,
     int64_t * bytes_written);
 #endif
