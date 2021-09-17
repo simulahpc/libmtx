@@ -3306,7 +3306,7 @@ int test_mtxfile_partition(void)
 
         int64_t data_lines_per_part_ptr[3] = {};
         err = mtxfile_partition_rows(
-            &mtx, &row_partition, data_lines_per_part_ptr);
+            &mtx, &row_partition, data_lines_per_part_ptr, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(0, data_lines_per_part_ptr[0]);
         TEST_ASSERT_EQ(6, data_lines_per_part_ptr[1]);
@@ -3355,7 +3355,7 @@ int test_mtxfile_partition(void)
 
         int64_t data_lines_per_part_ptr[3] = {};
         err = mtxfile_partition_rows(
-            &mtx, &row_partition, data_lines_per_part_ptr);
+            &mtx, &row_partition, data_lines_per_part_ptr, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(0, data_lines_per_part_ptr[0]);
         TEST_ASSERT_EQ(6, data_lines_per_part_ptr[1]);
@@ -3404,7 +3404,7 @@ int test_mtxfile_partition(void)
 
         int64_t data_lines_per_part_ptr[4] = {};
         err = mtxfile_partition_rows(
-            &mtx, &row_partition, data_lines_per_part_ptr);
+            &mtx, &row_partition, data_lines_per_part_ptr, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(0, data_lines_per_part_ptr[0]);
         TEST_ASSERT_EQ(3, data_lines_per_part_ptr[1]);
@@ -3453,7 +3453,7 @@ int test_mtxfile_partition(void)
 
         int64_t data_lines_per_part_ptr[4] = {};
         err = mtxfile_partition_rows(
-            &mtx, &row_partition, data_lines_per_part_ptr);
+            &mtx, &row_partition, data_lines_per_part_ptr, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(0, data_lines_per_part_ptr[0]);
         TEST_ASSERT_EQ(3, data_lines_per_part_ptr[1]);
@@ -3507,7 +3507,7 @@ int test_mtxfile_partition(void)
 
         int64_t data_lines_per_part_ptr[3] = {};
         err = mtxfile_partition_rows(
-            &mtx, &row_partition, data_lines_per_part_ptr);
+            &mtx, &row_partition, data_lines_per_part_ptr, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(0, data_lines_per_part_ptr[0]);
         TEST_ASSERT_EQ(2, data_lines_per_part_ptr[1]);
@@ -3557,7 +3557,7 @@ int test_mtxfile_partition(void)
 
         int64_t data_lines_per_part_ptr[3] = {};
         err = mtxfile_partition_rows(
-            &mtx, &row_partition, data_lines_per_part_ptr);
+            &mtx, &row_partition, data_lines_per_part_ptr, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(0, data_lines_per_part_ptr[0]);
         TEST_ASSERT_EQ(2, data_lines_per_part_ptr[1]);

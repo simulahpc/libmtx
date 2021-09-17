@@ -454,7 +454,15 @@ int mtxfile_init_vector_array_complex_double(
 int mtxfile_init_vector_array_integer_single(
     struct mtxfile * mtxfile,
     int num_rows,
-    const int32_t * data);
+    const int32_t * data)
+{
+    int err = mtxfile_alloc_vector_array(
+        mtxfile, mtxfile_integer, mtx_single, num_rows);
+    if (err)
+        return err;
+    memcpy(mtxfile->data.array_integer_single, data, num_rows * sizeof(*data));
+    return MTX_SUCCESS;
+}
 
 /**
  * `mtxfile_init_vector_array_integer_double()' allocates and
@@ -464,7 +472,15 @@ int mtxfile_init_vector_array_integer_single(
 int mtxfile_init_vector_array_integer_double(
     struct mtxfile * mtxfile,
     int num_rows,
-    const int64_t * data);
+    const int64_t * data)
+{
+    int err = mtxfile_alloc_vector_array(
+        mtxfile, mtxfile_integer, mtx_double, num_rows);
+    if (err)
+        return err;
+    memcpy(mtxfile->data.array_integer_double, data, num_rows * sizeof(*data));
+    return MTX_SUCCESS;
+}
 
 /*
  * Matrix coordinate formats
@@ -1391,11 +1407,18 @@ int mtxfile_sort(
  * offset to the first data line belonging to the `p'-th part of the
  * partition, while the final value of the array points to one place
  * beyond the final data line.
+ *
+ * If it is not `NULL', the array `row_parts' must contain enough
+ * storage to hold one `int' for each data line. (The number of data
+ * lines is obtained by calling `mtxfile_size_num_data_lines()'). On a
+ * successful return, the `k'-th entry in the array specifies the part
+ * number that was assigned to the `k'-th data line.
  */
 int mtxfile_partition_rows(
     struct mtxfile * mtxfile,
     const struct mtx_partition * row_partition,
-    int64_t * data_lines_per_part_ptr)
+    int64_t * data_lines_per_part_ptr,
+    int * row_parts)
 {
     int err;
     int64_t num_data_lines;
@@ -1403,9 +1426,12 @@ int mtxfile_partition_rows(
     if (err)
         return err;
 
-    int * row_parts = malloc(num_data_lines * sizeof(int));
-    if (!row_parts)
-        return MTX_ERR_ERRNO;
+    bool alloc_row_parts = !row_parts;
+    if (alloc_row_parts) {
+        row_parts = malloc(num_data_lines * sizeof(int));
+        if (!row_parts)
+            return MTX_ERR_ERRNO;
+    }
 
     /* Partition the data lines. */
     err = mtxfile_data_partition_rows(
@@ -1416,33 +1442,23 @@ int mtxfile_partition_rows(
         row_partition,
         row_parts);
     if (err) {
-        free(row_parts);
+        if (alloc_row_parts)
+            free(row_parts);
         return err;
     }
 
     /* Sort the data lines according to the partitioning. */
-    err = mtxfile_data_sort_by_key(
+    err = mtxfile_data_sort_by_part(
         &mtxfile->data, mtxfile->header.object, mtxfile->header.format,
         mtxfile->header.field, mtxfile->precision, num_data_lines, 0,
-        row_parts);
+        row_partition->num_parts, row_parts, data_lines_per_part_ptr);
     if (err) {
-        free(row_parts);
+        if (alloc_row_parts)
+            free(row_parts);
         return err;
     }
-
-    /* Calculate offset to the first element of each part. */
-    for (int p = 0; p <= row_partition->num_parts; p++)
-        data_lines_per_part_ptr[p] = 0;
-    for (int64_t l = 0; l < num_data_lines; l++) {
-        int part = row_parts[l];
-        data_lines_per_part_ptr[part+1]++;
-    }
-    for (int p = 0; p < row_partition->num_parts; p++) {
-        data_lines_per_part_ptr[p+1] +=
-            data_lines_per_part_ptr[p];
-    }
-
-    free(row_parts);
+    if (alloc_row_parts)
+        free(row_parts);
     return MTX_SUCCESS;
 }
 
@@ -1879,7 +1895,7 @@ int mtxfile_distribute_rows(
     if (mtxmpierror_allreduce(mpierror, err))
         return MTX_ERR_MPI_COLLECTIVE;
     err = (rank == root)
-        ? mtxfile_partition_rows(src, row_partition, data_lines_per_part_ptr)
+        ? mtxfile_partition_rows(src, row_partition, data_lines_per_part_ptr, NULL)
         : MTX_SUCCESS;
     if (mtxmpierror_allreduce(mpierror, err)) {
         if (rank == root)

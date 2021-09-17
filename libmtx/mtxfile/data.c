@@ -3530,6 +3530,88 @@ int mtxfile_data_sort_by_key(
  */
 
 /**
+ * `mtxfile_data_sort_by_part()' sorts data lines according to a given
+ * partitioning using a stable counting sort algorihtm.
+ *
+ * The array `parts_per_data_line' must contain `size' integers with
+ * values in the range `[0,num_parts-1]', specifying which part of the
+ * partition that each data line belongs to.
+ *
+ * If it is not `NULL', the array `data_lines_per_part_ptr' must
+ * contain enough storage for `num_parts+1' values of type
+ * `int64_t'. On a successful return, the array will contain offsets
+ * to the first data line belonging to each part.
+ */
+int mtxfile_data_sort_by_part(
+    union mtxfile_data * data,
+    enum mtxfile_object object,
+    enum mtxfile_format format,
+    enum mtxfile_field field,
+    enum mtx_precision precision,
+    int64_t size,
+    int64_t offset,
+    int num_parts,
+    int * parts_per_data_line,
+    int64_t * data_lines_per_part_ptr)
+{
+    int err;
+
+    /* Create a temporary copy of the data lines to be sorted. */
+    union mtxfile_data original;
+    err = mtxfile_data_alloc(
+        &original, object, format, field, precision, size);
+    if (err)
+        return err;
+    err = mtxfile_data_copy(
+        &original, data, object, format, field, precision, size, 0, offset);
+    if (err) {
+        mtxfile_data_free(&original, object, format, field, precision);
+        return err;
+    }
+
+    /* Count the number of data lines in each part and the offset to
+     * the first data line of each part. */
+    bool alloc_data_lines_per_part_ptr = !data_lines_per_part_ptr;
+    if (alloc_data_lines_per_part_ptr) {
+        data_lines_per_part_ptr = malloc((num_parts+1) * sizeof(int64_t));
+        if (!data_lines_per_part_ptr) {
+            mtxfile_data_free(&original, object, format, field, precision);
+            return err;
+        }
+    }
+    for (int p = 0; p <= num_parts; p++)
+        data_lines_per_part_ptr[p] = 0;
+    for (int64_t l = 0; l < size; l++) {
+        int part = parts_per_data_line[l];
+        data_lines_per_part_ptr[part+1]++;
+    }
+    for (int p = 0; p < num_parts; p++) {
+        data_lines_per_part_ptr[p+1] +=
+            data_lines_per_part_ptr[p];
+    }
+
+    /* Sort elements into their respective parts. */
+    for (int64_t l = 0; l < size; l++) {
+        int part = parts_per_data_line[l];
+        int dstidx = data_lines_per_part_ptr[part];
+        err = mtxfile_data_copy(
+            data, &original, object, format, field, precision, 1, dstidx, l);
+        data_lines_per_part_ptr[part]++;
+    }
+
+    /* If needed, adjust offsets to each part. */
+    if (alloc_data_lines_per_part_ptr) {
+        free(data_lines_per_part_ptr);
+    } else {
+        for (int p = num_parts; p > 0; p--)
+            data_lines_per_part_ptr[p] = data_lines_per_part_ptr[p-1];
+        data_lines_per_part_ptr[0] = 0;
+    }
+    mtxfile_data_free(&original, object, format, field, precision);
+    return MTX_SUCCESS;
+}
+
+/**
  * `mtxfile_data_partition_rows()' partitions data lines according to
  * a given row partitioning.
  *

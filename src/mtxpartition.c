@@ -59,8 +59,9 @@ struct program_options
     bool gzip;
     char * mtx_output_path;
     char * format;
-    enum mtx_partition_type row_partition;
     int num_row_parts;
+    enum mtx_partition_type row_partition;
+    char * partition_output_path;
     int verbose;
 };
 
@@ -74,9 +75,10 @@ static int program_options_init(
     args->precision = mtx_double;
     args->gzip = false;
     args->mtx_output_path = strdup("out%p.mtx");
+    args->partition_output_path = NULL;
     args->format = NULL;
-    args->row_partition = mtx_block;
     args->num_row_parts = 1;
+    args->row_partition = mtx_block;
     args->verbose = 0;
     return 0;
 }
@@ -92,6 +94,8 @@ static void program_options_free(
         free(args->mtx_path);
     if (args->mtx_output_path)
         free(args->mtx_output_path);
+    if (args->partition_output_path)
+        free(args->partition_output_path);
     if (args->format)
         free(args->format);
 }
@@ -118,9 +122,11 @@ static void program_options_print_help(
     fprintf(f, "\t\t\t'%%e', '%%E', '%%f', '%%F', '%%g' or '%%G' may be used,\n");
     fprintf(f, "\t\t\twhereas '%%d' must be used for integers. Flags, field width\n");
     fprintf(f, "\t\t\tand precision can optionally be specified, e.g., \"%%+3.1f\".\n");
+    fprintf(f, "  --partition-output-path=FILE\tpath to Matrix Market file for outputting\n");
+    fprintf(f, "\t\t\t\tpart numbers assigned to each matrix or vector entry.\n");
+    fprintf(f, "  --row-parts=N\t\tnumber of parts to use when partitioning rows.\n");
     fprintf(f, "  --row-partition=TYPE\tmethod of partitioning matrix or vector rows:\n");
     fprintf(f, "\t\t\tblock, cyclic, block-cyclic. (default: block)\n");
-    fprintf(f, "  --row-parts=N\t\tnumber of parts to use when partitioning rows.\n");
     fprintf(f, "  -v, --verbose\t\tbe more verbose\n");
     fprintf(f, "\n");
     fprintf(f, "  -h, --help\t\tdisplay this help and exit\n");
@@ -241,6 +247,33 @@ static int parse_program_options(
             continue;
         }
 
+        if (strcmp((*argv)[0], "--partition-output-path") == 0) {
+            if (*argc < 2) {
+                program_options_free(args);
+                return EINVAL;
+            }
+            if (args->partition_output_path)
+                free(args->partition_output_path);
+            args->partition_output_path = strdup((*argv)[1]);
+            if (!args->partition_output_path) {
+                program_options_free(args);
+                return errno;
+            }
+            num_arguments_consumed += 2;
+            continue;
+        } else if (strstr((*argv)[0], "--partition-output-path=") == (*argv)[0]) {
+            if (args->partition_output_path)
+                free(args->partition_output_path);
+            args->partition_output_path =
+                strdup((*argv)[0] + strlen("--partition-output-path="));
+            if (!args->partition_output_path) {
+                program_options_free(args);
+                return errno;
+            }
+            num_arguments_consumed++;
+            continue;
+        }
+
         if (strcmp((*argv)[0], "--format") == 0) {
             if (*argc < 2) {
                 program_options_free(args);
@@ -278,7 +311,7 @@ static int parse_program_options(
             }
             num_arguments_consumed += 2;
             continue;
-        } else if (strstr((*argv)[0], "--sorting=") == (*argv)[0]) {
+        } else if (strstr((*argv)[0], "--row-partition=") == (*argv)[0]) {
             char * s = (*argv)[0] + strlen("--row-partition=");
             err = mtx_parse_partition_type(
                 &args->row_partition, NULL, NULL, s, NULL);
@@ -464,12 +497,6 @@ int main(int argc, char *argv[])
     FILE * diagf = stderr;
     setlocale(LC_ALL, "");
 
-#if 0
-    int mpierr;
-    char mpierrstr[MPI_MAX_ERROR_STRING];
-    int mpierrstrlen;
-#endif
-
     /* 1. Parse program options. */
     struct program_options args;
     int argc_copy = argc;
@@ -556,14 +583,39 @@ int main(int argc, char *argv[])
         program_options_free(&args);
         return EXIT_FAILURE;
     }
+    int64_t num_data_lines;
+    err = mtxfile_size_num_data_lines(&mtxfile.size, &num_data_lines);
+    if (err) {
+        if (args.verbose > 0)
+            fprintf(diagf, "\n");
+        fprintf(stderr, "%s: %s\n", program_invocation_short_name, mtx_strerror(err));
+        free(data_lines_per_part_ptr);
+        mtx_partition_free(&row_partition);
+        mtxfile_free(&mtxfile);
+        program_options_free(&args);
+        return EXIT_FAILURE;
+    }
+    int * row_parts = malloc(num_data_lines * sizeof(int));
+    if (!row_parts) {
+        if (args.verbose > 0)
+            fprintf(diagf, "\n");
+        fprintf(stderr, "%s: %s\n", program_invocation_short_name, strerror(errno));
+        free(data_lines_per_part_ptr);
+        mtx_partition_free(&row_partition);
+        mtxfile_free(&mtxfile);
+        program_options_free(&args);
+        return EXIT_FAILURE;
+    }
 
-    err = mtxfile_partition_rows(&mtxfile, &row_partition, data_lines_per_part_ptr);
+    err = mtxfile_partition_rows(
+        &mtxfile, &row_partition, data_lines_per_part_ptr, row_parts);
     if (err) {
         if (args.verbose > 0)
             fprintf(diagf, "\n");
         fprintf(stderr, "%s: %s\n",
                 program_invocation_short_name,
                 strerror(errno));
+        free(row_parts);
         free(data_lines_per_part_ptr);
         mtx_partition_free(&row_partition);
         mtxfile_free(&mtxfile);
@@ -590,6 +642,7 @@ int main(int argc, char *argv[])
                 fprintf(stderr, "%s: %s\n",
                         program_invocation_short_name,
                         mtx_strerror(err));
+                free(row_parts);
                 free(data_lines_per_part_ptr);
                 mtx_partition_free(&row_partition);
                 mtxfile_free(&mtxfile);
@@ -607,6 +660,7 @@ int main(int argc, char *argv[])
                         program_invocation_short_name,
                         mtx_strerror(err));
                 mtxfile_free(&mtxfile_p);
+                free(row_parts);
                 free(data_lines_per_part_ptr);
                 mtx_partition_free(&row_partition);
                 mtxfile_free(&mtxfile);
@@ -625,6 +679,7 @@ int main(int argc, char *argv[])
                         program_invocation_short_name, strerror(err),
                         output_path);
                 mtxfile_free(&mtxfile_p);
+                free(row_parts);
                 free(data_lines_per_part_ptr);
                 mtx_partition_free(&row_partition);
                 mtxfile_free(&mtxfile);
@@ -652,6 +707,7 @@ int main(int argc, char *argv[])
                         mtx_strerror(err));
                 free(output_path);
                 mtxfile_free(&mtxfile_p);
+                free(row_parts);
                 free(data_lines_per_part_ptr);
                 mtx_partition_free(&row_partition);
                 mtxfile_free(&mtxfile);
@@ -672,7 +728,84 @@ int main(int argc, char *argv[])
         }
     }
 
-    /* 5. Clean up. */
+    /* 5. Write Matrix Market file for parts assigned to each matrix
+     * or vector entry. */
+    if (args.partition_output_path) {
+        struct mtxfile mtxfile_row_partition;
+        err = mtxfile_init_vector_array_integer_single(
+            &mtxfile_row_partition, num_data_lines, row_parts);
+        if (err) {
+            if (args.verbose > 0)
+                fprintf(diagf, "\n");
+            fprintf(stderr, "%s: %s\n",
+                    program_invocation_short_name,
+                    mtx_strerror(err));
+            free(row_parts);
+            free(data_lines_per_part_ptr);
+            mtx_partition_free(&row_partition);
+            mtxfile_free(&mtxfile);
+            program_options_free(&args);
+            return EXIT_FAILURE;
+        }
+
+        err = mtxfile_comments_printf(
+            &mtxfile_row_partition.comments, "%% This file was generated by %s %s\n",
+            program_name, program_version);
+        if (err) {
+            if (args.verbose > 0)
+                fprintf(diagf, "\n");
+            fprintf(stderr, "%s: %s\n",
+                    program_invocation_short_name,
+                    mtx_strerror(err));
+            mtxfile_free(&mtxfile_row_partition);
+            free(row_parts);
+            free(data_lines_per_part_ptr);
+            mtx_partition_free(&row_partition);
+            mtxfile_free(&mtxfile);
+            program_options_free(&args);
+            return EXIT_FAILURE;
+        }
+
+        if (args.verbose > 0) {
+            fprintf(diagf, "mtxfile_write: ");
+            fflush(diagf);
+            clock_gettime(CLOCK_MONOTONIC, &t0);
+        }
+
+        setlocale(LC_ALL, "C");
+        int64_t bytes_written;
+        err = mtxfile_write(
+            &mtxfile_row_partition, args.partition_output_path,
+            args.gzip, args.format, &bytes_written);
+        setlocale(LC_ALL, "");
+        if (err) {
+            if (args.verbose > 0)
+                fprintf(diagf, "\n");
+            fprintf(stderr, "%s: %s\n",
+                    program_invocation_short_name,
+                    mtx_strerror(err));
+            mtxfile_free(&mtxfile_row_partition);
+            free(row_parts);
+            free(data_lines_per_part_ptr);
+            mtx_partition_free(&row_partition);
+            mtxfile_free(&mtxfile);
+            program_options_free(&args);
+            return EXIT_FAILURE;
+        }
+
+        if (args.verbose > 0) {
+            clock_gettime(CLOCK_MONOTONIC, &t1);
+            fprintf(diagf, "%'.6f seconds (%'.1f MB/s)\n",
+                    timespec_duration(t0, t1),
+                    1.0e-6 * bytes_written / timespec_duration(t0, t1));
+            fflush(diagf);
+        }
+
+        mtxfile_free(&mtxfile_row_partition);
+    }
+
+    /* 6. Clean up. */
+    free(row_parts);
     free(data_lines_per_part_ptr);
     mtx_partition_free(&row_partition);
     mtxfile_free(&mtxfile);

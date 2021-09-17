@@ -710,6 +710,31 @@ int mtxfile_data_sort_by_key(
  */
 
 /**
+ * `mtxfile_data_sort_by_part()' sorts data lines according to a given
+ * partitioning using a stable counting sort algorihtm.
+ *
+ * The array `parts_per_data_line' must contain `size' integers with
+ * values in the range `[0,num_parts-1]', specifying which part of the
+ * partition that each data line belongs to.
+ *
+ * If it is not `NULL', the array `data_lines_per_part_ptr' must
+ * contain enough storage for `num_parts+1' values of type
+ * `int64_t'. On a successful return, the array will contain offsets
+ * to the first data line belonging to each part.
+ */
+int mtxfile_data_sort_by_part(
+    union mtxfile_data * data,
+    enum mtxfile_object object,
+    enum mtxfile_format format,
+    enum mtxfile_field field,
+    enum mtx_precision precision,
+    int64_t size,
+    int64_t offset,
+    int num_parts,
+    int * parts_per_data_line,
+    int64_t * data_lines_per_part_ptr);
+
+/**
  * `mtxfile_data_partition_rows()' partitions data lines according to
  * a given row partitioning.
  *

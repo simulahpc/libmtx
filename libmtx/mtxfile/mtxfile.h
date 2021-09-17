@@ -674,11 +674,18 @@ int mtxfile_sort(
  * offset to the first data line belonging to the `p'-th part of the
  * partition, while the final value of the array points to one place
  * beyond the final data line.
+ *
+ * If it is not `NULL', the array `row_parts' must contain enough
+ * storage to hold one `int' for each data line. (The number of data
+ * lines is obtained by calling `mtxfile_size_num_data_lines()'). On a
+ * successful return, the `k'-th entry in the array specifies the part
+ * number that was assigned to the `k'-th data line.
  */
 int mtxfile_partition_rows(
     struct mtxfile * mtxfile,
     const struct mtx_partition * row_partition,
-    int64_t * data_lines_per_part_ptr);
+    int64_t * data_lines_per_part_ptr,
+    int * row_parts);
 
 /**
  * `mtxfile_init_from_row_partition()' creates a Matrix Market file
