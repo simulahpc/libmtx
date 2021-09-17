@@ -27,7 +27,6 @@
 #include <libmtx/error.h>
 #include <libmtx/mtx/precision.h>
 #include <libmtx/mtxfile/comments.h>
-#include <libmtx/mtxfile/coordinate.h>
 #include <libmtx/mtxfile/data.h>
 #include <libmtx/mtxfile/header.h>
 #include <libmtx/mtxfile/mtxfile.h>

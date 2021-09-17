@@ -44,6 +44,185 @@
 struct mtxmpierror;
 struct mtx_partition;
 
+/*
+ * Matrix coordinate formats
+ */
+
+/**
+ * `mtxfile_matrix_coordinate_real_single' represents a nonzero matrix
+ * entry in a Matrix Market file with `matrix' object, `coordinate'
+ * format and `real' field, when using single precision data types.
+ */
+struct mtxfile_matrix_coordinate_real_single
+{
+    int i;    /* row index */
+    int j;    /* column index */
+    float a;  /* nonzero value */
+};
+
+/**
+ * `mtxfile_matrix_coordinate_double' represents a nonzero matrix
+ * entry in a Matrix Market file with `matrix' object, `coordinate'
+ * format and `real' field, when using double precision data types.
+ */
+struct mtxfile_matrix_coordinate_real_double
+{
+    int i;     /* row index */
+    int j;     /* column index */
+    double a;  /* nonzero value */
+};
+
+/**
+ * `mtxfile_matrix_coordinate_complex_single' represents a nonzero
+ * matrix entry in a Matrix Market file with `matrix' object,
+ * `coordinate' format and `complex' field, when using single
+ * precision data types.
+ */
+struct mtxfile_matrix_coordinate_complex_single
+{
+    int i;       /* row index */
+    int j;       /* column index */
+    float a[2];  /* real and imaginary parts of nonzero value */
+};
+
+/**
+ * `mtxfile_matrix_coordinate_complex_double' represents a nonzero
+ * matrix entry in a Matrix Market file with `matrix' object,
+ * `coordinate' format and `complex' field, when using double
+ * precision data types.
+ */
+struct mtxfile_matrix_coordinate_complex_double
+{
+    int i;       /* row index */
+    int j;       /* column index */
+    double a[2];  /* real and imaginary parts of nonzero value */
+};
+
+/**
+ * `mtxfile_matrix_coordinate_integer_single' represents a nonzero
+ * matrix entry in a Matrix Market file with `matrix' object,
+ * `coordinate' format and `integer' field, when using single
+ * precision data types.
+ */
+struct mtxfile_matrix_coordinate_integer_single
+{
+    int i;      /* row index */
+    int j;      /* column index */
+    int32_t a;  /* nonzero value */
+};
+
+/**
+ * `mtxfile_matrix_coordinate_integer_double' represents a nonzero
+ * matrix entry in a Matrix Market file with `matrix' object,
+ * `coordinate' format and `integer' field, when using double
+ * precision data types.
+ */
+struct mtxfile_matrix_coordinate_integer_double
+{
+    int i;      /* row index */
+    int j;      /* column index */
+    int64_t a;  /* nonzero value */
+};
+
+/**
+ * `mtxfile_matrix_coordinate_pattern' represents a nonzero matrix
+ * entry in a Matrix Market file with `matrix' object, `coordinate'
+ * format and `pattern' field.
+ */
+struct mtxfile_matrix_coordinate_pattern
+{
+    int i;  /* row index */
+    int j;  /* column index */
+};
+
+/*
+ * Vector coordinate formats
+ */
+
+/**
+ * `mtxfile_vector_coordinate_real_single' represents a nonzero vector
+ * entry in a Matrix Market file with `vector' object, `coordinate'
+ * format and `real' field, when using single precision data types.
+ */
+struct mtxfile_vector_coordinate_real_single
+{
+    int i;    /* row index */
+    float a;  /* nonzero value */
+};
+
+/**
+ * `mtxfile_vector_coordinate_double' represents a nonzero vector
+ * entry in a Matrix Market file with `vector' object, `coordinate'
+ * format and `real' field, when using double precision data types.
+ */
+struct mtxfile_vector_coordinate_real_double
+{
+    int i;    /* row index */
+    double a; /* nonzero value */
+};
+
+/**
+ * `mtxfile_vector_coordinate_complex_single' represents a nonzero
+ * vector entry in a Matrix Market file with `vector' object,
+ * `coordinate' format and `complex' field, when using single
+ * precision data types.
+ */
+struct mtxfile_vector_coordinate_complex_single
+{
+    int i;        /* row index */
+    float a[2];   /* real and imaginary parts of nonzero value */
+};
+
+/**
+ * `mtxfile_vector_coordinate_complex_double' represents a nonzero
+ * vector entry in a Matrix Market file with `vector' object,
+ * `coordinate' format and `complex' field, when using double
+ * precision data types.
+ */
+struct mtxfile_vector_coordinate_complex_double
+{
+    int i;        /* row index */
+    double a[2];  /* real and imaginary parts of nonzero value */
+};
+
+/**
+ * `mtxfile_vector_coordinate_integer_single' represents a nonzero
+ * vector entry in a Matrix Market file with `vector' object,
+ * `coordinate' format and `integer' field, when using single
+ * precision data types.
+ */
+struct mtxfile_vector_coordinate_integer_single
+{
+    int i;      /* row index */
+    int32_t a;  /* nonzero value */
+};
+
+/**
+ * `mtxfile_vector_coordinate_integer_double' represents a nonzero
+ * vector entry in a Matrix Market file with `vector' object,
+ * `coordinate' format and `integer' field, when using double
+ * precision data types.
+ */
+struct mtxfile_vector_coordinate_integer_double
+{
+    int i;      /* row index */
+    int64_t a;  /* nonzero value */
+};
+
+/**
+ * `mtxfile_vector_coordinate_pattern' represents a nonzero vector
+ * entry in a Matrix Market file with `vector' object, `coordinate'
+ * format and `pattern' field.
+ */
+struct mtxfile_vector_coordinate_pattern
+{
+    int i; /* row index */
+};
+
+/*
+ * Data structures for Matrix Market data lines.
+ */
+
 /**
  * `mtxfile_data' represents an array of data lines from a Matrix
  * Market file.

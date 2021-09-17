@@ -29,7 +29,6 @@
 
 #include <libmtx/error.h>
 #include <libmtx/util/partition.h>
-#include <libmtx/mtxfile/coordinate.h>
 #include <libmtx/mtxfile/mtxfile.h>
 
 #include <mpi.h>
