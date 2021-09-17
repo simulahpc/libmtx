@@ -1275,38 +1275,34 @@ int mtxfile_fwrite(
  */
 int mtxfile_gzwrite(
     const struct mtxfile * mtxfile,
-    gzFile * f,
+    gzFile f,
     const char * format,
     int64_t * bytes_written)
 {
-    errno = ENOTSUP;
-    return MTX_ERR_ERRNO;
-
-    /* TODO: Implement writing to gzip-compressed files. */
-    /* int err; */
-    /* err = mtxfile_header_gzwrite(&mtxfile->header, f, bytes_written); */
-    /* if (err) */
-    /*     return err; */
-    /* err = mtxfile_comments_gzputs(&mtxfile->comments, f, bytes_written); */
-    /* if (err) */
-    /*     return err; */
-    /* err = mtxfile_size_gzwrite( */
-    /*     &mtxfile->size, mtxfile->header.object, mtxfile->header.format, */
-    /*     f, bytes_written); */
-    /* if (err) */
-    /*     return err; */
-    /* int64_t num_data_lines; */
-    /* err = mtxfile_size_num_data_lines( */
-    /*     &mtxfile->size, &num_data_lines); */
-    /* if (err) */
-    /*     return err; */
-    /* err = mtxfile_data_gzwrite( */
-    /*     &mtxfile->data, mtxfile->header.object, mtxfile->header.format, */
-    /*     mtxfile->header.field, mtxfile->precision, num_data_lines, */
-    /*     f, format, bytes_written); */
-    /* if (err) */
-    /*     return err; */
-    /* return MTX_SUCCESS; */
+    int err;
+    err = mtxfile_header_gzwrite(&mtxfile->header, f, bytes_written);
+    if (err)
+        return err;
+    err = mtxfile_comments_gzputs(&mtxfile->comments, f, bytes_written);
+    if (err)
+        return err;
+    err = mtxfile_size_gzwrite(
+        &mtxfile->size, mtxfile->header.object, mtxfile->header.format,
+        f, bytes_written);
+    if (err)
+        return err;
+    int64_t num_data_lines;
+    err = mtxfile_size_num_data_lines(
+        &mtxfile->size, &num_data_lines);
+    if (err)
+        return err;
+    err = mtxfile_data_gzwrite(
+        &mtxfile->data, mtxfile->header.object, mtxfile->header.format,
+        mtxfile->header.field, mtxfile->precision, num_data_lines,
+        f, format, bytes_written);
+    if (err)
+        return err;
+    return MTX_SUCCESS;
 }
 #endif
 

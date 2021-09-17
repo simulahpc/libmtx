@@ -600,6 +600,40 @@ int mtxfile_data_fwrite(
     const char * fmt,
     int64_t * bytes_written);
 
+#ifdef LIBMTX_HAVE_LIBZ
+/**
+ * `mtxfile_data_gzwrite()' writes data lines of a Matrix Market file
+ * to a gzip-compressed stream.
+ *
+ * If `fmt' is `NULL', then the format specifier '%d' is used to print
+ * integers and '%f' is used to print floating point
+ * numbers. Otherwise, the given format string is used when printing
+ * numerical values.
+ *
+ * The format string follows the conventions of `printf'. If the field
+ * is `real', `double' or `complex', then the format specifiers '%e',
+ * '%E', '%f', '%F', '%g' or '%G' may be used. If the field is
+ * `integer', then the format specifier must be '%d'. The format
+ * string is ignored if the field is `pattern'. Field width and
+ * precision may be specified (e.g., "%3.1f"), but variable field
+ * width and precision (e.g., "%*.*f"), as well as length modifiers
+ * (e.g., "%Lf") are not allowed.
+ *
+ * If it is not `NULL', then the number of bytes written to the stream
+ * is returned in `bytes_written'.
+ */
+int mtxfile_data_gzwrite(
+    const union mtxfile_data * data,
+    enum mtxfile_object object,
+    enum mtxfile_format format,
+    enum mtxfile_field field,
+    enum mtx_precision precision,
+    int64_t size,
+    gzFile f,
+    const char * fmt,
+    int64_t * bytes_written);
+#endif
+
 /*
  * Transpose and conjugate transpose.
  */

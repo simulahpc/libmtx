@@ -478,6 +478,51 @@ int mtxfile_size_fwrite(
     return MTX_SUCCESS;
 }
 
+#ifdef LIBMTX_HAVE_LIBZ
+/**
+ * `mtxfile_size_gzwrite()' writes the size line of a Matrix Market
+ * file to a gzip-compressed stream.
+ *
+ * If it is not `NULL', then the number of bytes written to the stream
+ * is returned in `bytes_written'.
+ */
+int mtxfile_size_gzwrite(
+    const struct mtxfile_size * size,
+    enum mtxfile_object object,
+    enum mtxfile_format format,
+    gzFile f,
+    int64_t * bytes_written)
+{
+    int ret;
+    if (object == mtxfile_matrix) {
+        if (format == mtxfile_array) {
+            ret = gzprintf(f, "%d %d\n", size->num_rows, size->num_columns);
+        } else if (format == mtxfile_coordinate) {
+            ret = gzprintf(
+                f, "%d %d %"PRId64"\n",
+                size->num_rows, size->num_columns, size->num_nonzeros);
+        } else {
+            return MTX_ERR_INVALID_MTX_FORMAT;
+        }
+    } else if (object == mtxfile_vector) {
+        if (format == mtxfile_array) {
+            ret = gzprintf(f, "%d\n", size->num_rows);
+        } else if (format == mtxfile_coordinate) {
+            ret = gzprintf(f, "%d %"PRId64"\n", size->num_rows, size->num_nonzeros);
+        } else {
+            return MTX_ERR_INVALID_MTX_FORMAT;
+        }
+    } else {
+        return MTX_ERR_INVALID_MTX_OBJECT;
+    }
+    if (ret < 0)
+        return MTX_ERR_ERRNO;
+    if (bytes_written)
+        *bytes_written += ret;
+    return MTX_SUCCESS;
+}
+#endif
+
 /*
  * Transpose
  */

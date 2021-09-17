@@ -172,6 +172,22 @@ int mtxfile_size_fwrite(
     FILE * f,
     int64_t * bytes_written);
 
+#ifdef LIBMTX_HAVE_LIBZ
+/**
+ * `mtxfile_size_gzwrite()' writes the size line of a Matrix Market
+ * file to a gzip-compressed stream.
+ *
+ * If it is not `NULL', then the number of bytes written to the stream
+ * is returned in `bytes_written'.
+ */
+int mtxfile_size_gzwrite(
+    const struct mtxfile_size * size,
+    enum mtxfile_object object,
+    enum mtxfile_format format,
+    gzFile f,
+    int64_t * bytes_written);
+#endif
+
 /*
  * Transpose
  */

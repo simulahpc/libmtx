@@ -349,7 +349,7 @@ static int gzreadline(
 }
 
 /**
- * `mtxfile_gzread_comments()` reads Matrix Market comment lines from
+ * `mtxfile_gzread_comments()' reads Matrix Market comment lines from
  * a gzip-compressed stream.
  *
  * If an error code is returned, then `lines_read' and `bytes_read'
@@ -416,7 +416,7 @@ int mtxfile_gzread_comments(
 #endif
 
 /**
- * `mtxfile_comments_fputs()` write Matrix Market comment lines to a
+ * `mtxfile_comments_fputs()' write Matrix Market comment lines to a
  * stream.
  */
 int mtxfile_comments_fputs(
@@ -434,6 +434,28 @@ int mtxfile_comments_fputs(
     }
     return MTX_SUCCESS;
 }
+
+#ifdef LIBMTX_HAVE_LIBZ
+/**
+ * `mtxfile_comments_gzputs()' write Matrix Market comment lines to a
+ * gzip-compressed stream.
+ */
+int mtxfile_comments_gzputs(
+    const struct mtxfile_comments * comments,
+    gzFile f,
+    int64_t * bytes_written)
+{
+    const struct mtxfile_comment * node = comments->root;
+    while (node) {
+        if (gzputs(f, node->comment_line) == EOF)
+            return MTX_ERR_ERRNO;
+        if (bytes_written)
+            *bytes_written += strlen(node->comment_line);
+        node = node->next;
+    }
+    return MTX_SUCCESS;
+}
+#endif
 
 /*
  * MPI functions

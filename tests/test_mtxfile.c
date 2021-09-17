@@ -1918,101 +1918,6 @@ int test_mtxfile_fread(void)
     return TEST_SUCCESS;
 }
 
-#ifdef LIBMTX_HAVE_LIBZ
-/**
- * `test_mtx_gzread()` tests reading a sparse matrix with single
- * precision, real coefficients from a gzip-compressed stream.
- */
-int test_mtxfile_gzread(void)
-{
-    int err;
-
-    /* This is a gzip-compressed stream of the following file:
-     *
-     * %%MatrixMarket matrix coordinate real general
-     * 3 3 4
-     * 1 1 1.0
-     * 1 3 2.0
-     * 2 2 3.0
-     * 3 3 4.0
-     */
-    unsigned char test_mtx_gz[] = {
-        0x1f, 0x8b, 0x08, 0x08, 0xb2, 0x36, 0xca, 0x60, 0x00, 0x03, 0x74, 0x65,
-        0x73, 0x74, 0x32, 0x2e, 0x6d, 0x74, 0x78, 0x00, 0x53, 0x55, 0xf5, 0x4d,
-        0x2c, 0x29, 0xca, 0xac, 0xf0, 0x4d, 0x2c, 0xca, 0x4e, 0x2d, 0x51, 0xc8,
-        0x05, 0x73, 0x14, 0x92, 0xf3, 0xf3, 0x8b, 0x52, 0x32, 0xf3, 0x12, 0x4b,
-        0x52, 0x15, 0x8a, 0x52, 0x13, 0x73, 0x14, 0xd2, 0x53, 0xf3, 0x52, 0x8b,
-        0x12, 0x73, 0xb8, 0x8c, 0x15, 0x8c, 0x15, 0x4c, 0xb8, 0x0c, 0x15, 0x80,
-        0x50, 0xcf, 0x00, 0x48, 0x1b, 0x2b, 0x18, 0x01, 0x69, 0x23, 0x05, 0x23,
-        0x05, 0x63, 0x20, 0x0d, 0x96, 0x05, 0xd2, 0x00, 0x8b, 0xe5, 0xb5, 0x08,
-        0x54, 0x00, 0x00, 0x00 };
-
-    /*
-     * We cannot use fmemopen together with gzdopen, since there is no
-     * file descriptor associated with the file stream returned by
-     * fmemopen.  Instead, we open a pipe to get a file descriptor of
-     * a buffer that only exists in memory.  Then we fork the process
-     * and let the child process write the contents to the pipe. The
-     * parent process can then read the file contents from the file
-     * descriptor corresponding to the read end of the pipe.
-     */
-    int p[2];
-    err = pipe(p);
-    TEST_ASSERT_EQ_MSG(0, err, "%s", strerror(errno));
-    fflush(stdout);
-    fflush(stderr);
-    pid_t pid = fork();
-    if (pid == 0) {
-        /* The child process writes the matrix to file. */
-        ssize_t bytes_written = write(p[1], test_mtx_gz, sizeof(test_mtx_gz));
-        close(p[1]);
-        if (bytes_written != sizeof(test_mtx_gz))
-            exit(EXIT_FAILURE);
-        exit(EXIT_SUCCESS);
-    }
-    close(p[1]);
-
-    /* Wait for the child process to finish. */
-    if (waitpid(pid, NULL, 0) == -1)
-        TEST_FAIL_MSG("%s", strerror(errno));
-
-    gzFile gz_f = gzdopen(p[0], "r");
-    TEST_ASSERT_NEQ_MSG(NULL, gz_f, "%s", strerror(errno));
-    int lines_read = 0;
-    int64_t bytes_read = 0;
-    struct mtxfile mtxfile;
-    enum mtx_precision precision = mtx_single;
-    err = mtxfile_gzread(
-        &mtxfile, precision, gz_f, &lines_read, &bytes_read, 0, NULL);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%d: %s",lines_read+1,mtx_strerror(err));
-    TEST_ASSERT_EQ(84, bytes_read);
-    TEST_ASSERT_EQ(6, lines_read);
-    TEST_ASSERT_EQ(mtxfile_matrix, mtxfile.header.object);
-    TEST_ASSERT_EQ(mtxfile_coordinate, mtxfile.header.format);
-    TEST_ASSERT_EQ(mtxfile_real, mtxfile.header.field);
-    TEST_ASSERT_EQ(mtxfile_general, mtxfile.header.symmetry);
-    TEST_ASSERT_EQ(3, mtxfile.size.num_rows);
-    TEST_ASSERT_EQ(3, mtxfile.size.num_columns);
-    TEST_ASSERT_EQ(4, mtxfile.size.num_nonzeros);
-    TEST_ASSERT_EQ(precision, mtxfile.precision);
-    TEST_ASSERT_EQ(mtxfile.data.matrix_coordinate_real_single[0].i, 1);
-    TEST_ASSERT_EQ(mtxfile.data.matrix_coordinate_real_single[0].j, 1);
-    TEST_ASSERT_EQ(mtxfile.data.matrix_coordinate_real_single[0].a, 1.0f);
-    TEST_ASSERT_EQ(mtxfile.data.matrix_coordinate_real_single[1].i, 1);
-    TEST_ASSERT_EQ(mtxfile.data.matrix_coordinate_real_single[1].j, 3);
-    TEST_ASSERT_EQ(mtxfile.data.matrix_coordinate_real_single[1].a, 2.0f);
-    TEST_ASSERT_EQ(mtxfile.data.matrix_coordinate_real_single[2].i, 2);
-    TEST_ASSERT_EQ(mtxfile.data.matrix_coordinate_real_single[2].j, 2);
-    TEST_ASSERT_EQ(mtxfile.data.matrix_coordinate_real_single[2].a, 3.0f);
-    TEST_ASSERT_EQ(mtxfile.data.matrix_coordinate_real_single[3].i, 3);
-    TEST_ASSERT_EQ(mtxfile.data.matrix_coordinate_real_single[3].j, 3);
-    TEST_ASSERT_EQ(mtxfile.data.matrix_coordinate_real_single[3].a, 4.0f);
-    mtxfile_free(&mtxfile);
-    gzclose(gz_f);
-    return TEST_SUCCESS;
-}
-#endif
-
 /**
  * `test_mtxfile_fwrite()' tests writing Matrix Market files to a
  * stream.
@@ -2144,6 +2049,217 @@ int test_mtxfile_fwrite(void)
     }
     return TEST_SUCCESS;
 }
+
+#ifdef LIBMTX_HAVE_LIBZ
+/**
+ * `test_mtx_gzread()` tests reading a sparse matrix with single
+ * precision, real coefficients from a gzip-compressed stream.
+ */
+int test_mtxfile_gzread(void)
+{
+    int err;
+
+    /* This is a gzip-compressed stream of the following file:
+     *
+     * %%MatrixMarket matrix coordinate real general
+     * 3 3 4
+     * 1 1 1.0
+     * 1 3 2.0
+     * 2 2 3.0
+     * 3 3 4.0
+     */
+    unsigned char test_mtx_gz[] = {
+        0x1f, 0x8b, 0x08, 0x08, 0xb2, 0x36, 0xca, 0x60, 0x00, 0x03, 0x74, 0x65,
+        0x73, 0x74, 0x32, 0x2e, 0x6d, 0x74, 0x78, 0x00, 0x53, 0x55, 0xf5, 0x4d,
+        0x2c, 0x29, 0xca, 0xac, 0xf0, 0x4d, 0x2c, 0xca, 0x4e, 0x2d, 0x51, 0xc8,
+        0x05, 0x73, 0x14, 0x92, 0xf3, 0xf3, 0x8b, 0x52, 0x32, 0xf3, 0x12, 0x4b,
+        0x52, 0x15, 0x8a, 0x52, 0x13, 0x73, 0x14, 0xd2, 0x53, 0xf3, 0x52, 0x8b,
+        0x12, 0x73, 0xb8, 0x8c, 0x15, 0x8c, 0x15, 0x4c, 0xb8, 0x0c, 0x15, 0x80,
+        0x50, 0xcf, 0x00, 0x48, 0x1b, 0x2b, 0x18, 0x01, 0x69, 0x23, 0x05, 0x23,
+        0x05, 0x63, 0x20, 0x0d, 0x96, 0x05, 0xd2, 0x00, 0x8b, 0xe5, 0xb5, 0x08,
+        0x54, 0x00, 0x00, 0x00 };
+
+    /*
+     * We cannot use fmemopen together with gzdopen, since there is no
+     * file descriptor associated with the file stream returned by
+     * fmemopen.  Instead, we open a pipe to get a file descriptor of
+     * a buffer that only exists in memory.  Then we fork the process
+     * and let the child process write the contents to the pipe. The
+     * parent process can then read the file contents from the file
+     * descriptor corresponding to the read end of the pipe.
+     */
+    int p[2];
+    err = pipe(p);
+    TEST_ASSERT_EQ_MSG(0, err, "%s", strerror(errno));
+    fflush(stdout);
+    fflush(stderr);
+    pid_t pid = fork();
+    if (pid == 0) {
+        /* The child process writes the matrix to file. */
+        ssize_t bytes_written = write(p[1], test_mtx_gz, sizeof(test_mtx_gz));
+        close(p[1]);
+        if (bytes_written != sizeof(test_mtx_gz))
+            exit(EXIT_FAILURE);
+        exit(EXIT_SUCCESS);
+    }
+    close(p[1]);
+
+    /* Wait for the child process to finish. */
+    if (waitpid(pid, NULL, 0) == -1)
+        TEST_FAIL_MSG("%s", strerror(errno));
+
+    gzFile gz_f = gzdopen(p[0], "r");
+    TEST_ASSERT_NEQ_MSG(NULL, gz_f, "%s", strerror(errno));
+    int lines_read = 0;
+    int64_t bytes_read = 0;
+    struct mtxfile mtxfile;
+    enum mtx_precision precision = mtx_single;
+    err = mtxfile_gzread(
+        &mtxfile, precision, gz_f, &lines_read, &bytes_read, 0, NULL);
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%d: %s",lines_read+1,mtx_strerror(err));
+    TEST_ASSERT_EQ(84, bytes_read);
+    TEST_ASSERT_EQ(6, lines_read);
+    TEST_ASSERT_EQ(mtxfile_matrix, mtxfile.header.object);
+    TEST_ASSERT_EQ(mtxfile_coordinate, mtxfile.header.format);
+    TEST_ASSERT_EQ(mtxfile_real, mtxfile.header.field);
+    TEST_ASSERT_EQ(mtxfile_general, mtxfile.header.symmetry);
+    TEST_ASSERT_EQ(3, mtxfile.size.num_rows);
+    TEST_ASSERT_EQ(3, mtxfile.size.num_columns);
+    TEST_ASSERT_EQ(4, mtxfile.size.num_nonzeros);
+    TEST_ASSERT_EQ(precision, mtxfile.precision);
+    TEST_ASSERT_EQ(mtxfile.data.matrix_coordinate_real_single[0].i, 1);
+    TEST_ASSERT_EQ(mtxfile.data.matrix_coordinate_real_single[0].j, 1);
+    TEST_ASSERT_EQ(mtxfile.data.matrix_coordinate_real_single[0].a, 1.0f);
+    TEST_ASSERT_EQ(mtxfile.data.matrix_coordinate_real_single[1].i, 1);
+    TEST_ASSERT_EQ(mtxfile.data.matrix_coordinate_real_single[1].j, 3);
+    TEST_ASSERT_EQ(mtxfile.data.matrix_coordinate_real_single[1].a, 2.0f);
+    TEST_ASSERT_EQ(mtxfile.data.matrix_coordinate_real_single[2].i, 2);
+    TEST_ASSERT_EQ(mtxfile.data.matrix_coordinate_real_single[2].j, 2);
+    TEST_ASSERT_EQ(mtxfile.data.matrix_coordinate_real_single[2].a, 3.0f);
+    TEST_ASSERT_EQ(mtxfile.data.matrix_coordinate_real_single[3].i, 3);
+    TEST_ASSERT_EQ(mtxfile.data.matrix_coordinate_real_single[3].j, 3);
+    TEST_ASSERT_EQ(mtxfile.data.matrix_coordinate_real_single[3].a, 4.0f);
+    mtxfile_free(&mtxfile);
+    gzclose(gz_f);
+    return TEST_SUCCESS;
+}
+
+/**
+ * `test_mtxfile_gzwrite()' tests writing a Matrix Market files to a
+ * gzip-compressed stream.
+ */
+int test_mtxfile_gzwrite(void)
+{
+    int err;
+
+    struct mtxfile mtx;
+    int num_rows = 3;
+    int num_columns = 3;
+    int64_t num_nonzeros = 4;
+    const struct mtxfile_matrix_coordinate_real_single data[] = {
+        {1,1,1.0f},
+        {1,3,2.0f},
+        {2,2,3.0f},
+        {3,3,4.0f}};
+    err = mtxfile_init_matrix_coordinate_real_single(
+        &mtx, mtxfile_general, num_rows, num_columns, num_nonzeros, data);
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+
+    /*
+     * Write the matrix to file and verify the contents.
+     *
+     * Here we open a pipe to get a file descriptor of a buffer that
+     * only exists in memory.
+     */
+    int p[2];
+    err = pipe(p);
+    TEST_ASSERT_EQ_MSG(0, err, "%s", strerror(errno));
+    fflush(stdout);
+    fflush(stderr);
+    pid_t pid = fork();
+    if (pid == 0) {
+        /* The child process writes the matrix to file. */
+        gzFile gz_f = gzdopen(p[1], "w");
+        if (gz_f == Z_NULL) {
+            fprintf(stdout, "FAIL:%s:%s:%d: "
+                    "Assertion failed: Z_NULL == gz_f (%s)\n",
+                    __FUNCTION__, __FILE__, __LINE__,
+                    strerror(errno));
+            mtxfile_free(&mtx);
+            exit(EXIT_FAILURE);
+        }
+        err = mtxfile_gzwrite(&mtx, gz_f, "%.1f", NULL);
+        if (err) {
+            fprintf(stdout, "FAIL:%s:%s:%d: "
+                    "Assertion failed: MTX_SUCCESS != %d (%s)\n",
+                    __FUNCTION__, __FILE__, __LINE__,
+                    err, mtx_strerror(err));
+            gzclose(gz_f);
+            mtxfile_free(&mtx);
+            exit(EXIT_FAILURE);
+        }
+        gzclose(gz_f);
+        mtxfile_free(&mtx);
+        exit(EXIT_SUCCESS);
+    }
+
+    /* Wait for the child process to finish. */
+    if (waitpid(pid, NULL, 0) == -1)
+        TEST_FAIL_MSG("%s", strerror(errno));
+    close(p[1]);
+    mtxfile_free(&mtx);
+
+    unsigned char expected_mtx_gz_file[] = {
+        0x1F, 0x8B, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03, 0x53, 0x55,
+        0xF5, 0x4D, 0x2C, 0x29, 0xCA, 0xAC, 0xF0, 0x4D, 0x2C, 0xCA, 0x4E, 0x2D,
+        0x51, 0xC8, 0x05, 0x73, 0x14, 0x92, 0xF3, 0xF3, 0x8B, 0x52, 0x32, 0xF3,
+        0x12, 0x4B, 0x52, 0x15, 0x8A, 0x52, 0x13, 0x73, 0x14, 0xD2, 0x53, 0xF3,
+        0x52, 0x8B, 0x12, 0x73, 0xB8, 0x8C, 0x15, 0x8C, 0x15, 0x4C, 0xB8, 0x0C,
+        0x15, 0x80, 0x50, 0xCF, 0x00, 0x48, 0x1B, 0x2B, 0x18, 0x01, 0x69, 0x23,
+        0x05, 0x23, 0x05, 0x63, 0x20, 0x0D, 0x96, 0x05, 0xD2, 0x00, 0x8B, 0xE5,
+        0xB5, 0x08, 0x54, 0x00, 0x00, 0x00
+    };
+
+    /* The parent process reads the resulting compressed matrix from
+     * the pipe. */
+    unsigned char mtx_gz_file[1024] = {};
+    ssize_t bytes_read = read(p[0], mtx_gz_file, sizeof(expected_mtx_gz_file));
+    if (bytes_read == -1)
+        TEST_FAIL_MSG("%s", strerror(errno));
+    close(p[0]);
+
+#if 1
+    fprintf(stdout, "gzip-compressed .mtx file: {\n");
+    for (int i = 0; i < bytes_read-1; i++) {
+        fprintf(stdout, "0x%02hhX, ", mtx_gz_file[i]);
+    }
+    if (bytes_read > 0)
+        fprintf(stdout, "0x%02hhX", mtx_gz_file[bytes_read-1]);
+    fprintf(stdout, "}\n");
+#endif
+
+    for (int i = 0; i < sizeof(expected_mtx_gz_file) && i < bytes_read; i++) {
+        // Skip the 9th byte, which is the OS field, and varies from
+        // one operating system to another (e.g., Linux and Mac OS may
+        // use different values).  See RFC 1952 - GZIP file format
+        // specification version 4.3
+        // (https://datatracker.ietf.org/doc/html/rfc1952.html).
+        if (i == 9)
+            continue;
+
+        if (expected_mtx_gz_file[i] != mtx_gz_file[i]) {
+            fprintf(stdout, "FAIL:%s:%s:%d: "
+                    "Assertion failed: "
+                    "expected_mtx_gz_file[%d] (0x%02X) != "
+                    "mtx_gz_file[%d] (0x%02X)\n",
+                    __FUNCTION__, __FILE__, __LINE__,
+                    i, expected_mtx_gz_file[i], i, mtx_gz_file[i]);
+            return TEST_FAILURE;
+        }
+    }
+    return TEST_SUCCESS;
+}
+#endif
 
 /**
  * `test_mtxfile_cat()' tests concatenating Matrix Market files.
@@ -3483,10 +3599,11 @@ int main(int argc, char * argv[])
     TEST_RUN(test_mtxfile_fread_size);
     TEST_RUN(test_mtxfile_fread_data);
     TEST_RUN(test_mtxfile_fread);
+    TEST_RUN(test_mtxfile_fwrite);
 #ifdef LIBMTX_HAVE_LIBZ
     TEST_RUN(test_mtxfile_gzread);
+    TEST_RUN(test_mtxfile_gzwrite);
 #endif
-    TEST_RUN(test_mtxfile_fwrite);
     TEST_RUN(test_mtxfile_cat);
     TEST_RUN(test_mtxfile_transpose);
     TEST_RUN(test_mtxfile_sort);

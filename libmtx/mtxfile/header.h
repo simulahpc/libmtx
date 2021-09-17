@@ -346,6 +346,20 @@ int mtxfile_header_fwrite(
     FILE * f,
     int64_t * bytes_written);
 
+#ifdef LIBMTX_HAVE_LIBZ
+/**
+ * `mtxfile_header_gzwrite()' writes the header line of a Matrix
+ * Market file to a gzip-compressed stream.
+ *
+ * If it is not `NULL', then the number of bytes written to the stream
+ * is returned in `bytes_written'.
+ */
+int mtxfile_header_gzwrite(
+    const struct mtxfile_header * header,
+    gzFile f,
+    int64_t * bytes_written);
+#endif
+
 /*
  * MPI functions
  */
