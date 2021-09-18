@@ -494,7 +494,8 @@ int test_mtxfile_distribute_rows(void)
 
         struct mtx_partition row_partition;
         if (rank == root) {
-            err = mtx_partition_init(&row_partition, mtx_block, num_rows, comm_size, 0);
+            err = mtx_partition_init(
+                &row_partition, mtx_block, num_rows, comm_size, 0, NULL);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         }
 
@@ -549,7 +550,7 @@ int test_mtxfile_distribute_rows(void)
         struct mtx_partition row_partition;
         if (rank == root) {
             err = mtx_partition_init(
-                &row_partition, mtx_cyclic, num_rows, comm_size, 0);
+                &row_partition, mtx_cyclic, num_rows, comm_size, 0, NULL);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         }
 
@@ -605,7 +606,8 @@ int test_mtxfile_distribute_rows(void)
 
         struct mtx_partition row_partition;
         if (rank == root) {
-            err = mtx_partition_init(&row_partition, mtx_block, num_rows, comm_size, 0);
+            err = mtx_partition_init(
+                &row_partition, mtx_block, num_rows, comm_size, 0, NULL);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         }
 

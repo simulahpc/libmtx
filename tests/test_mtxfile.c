@@ -2914,7 +2914,7 @@ int test_mtxfile_partition(void)
         int num_parts = 1;
         struct mtx_partition partition;
         err = mtx_partition_init(
-            &partition, mtx_block, size, num_parts, 0);
+            &partition, mtx_block, size, num_parts, 0, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(mtx_block, partition.type);
         TEST_ASSERT_EQ(size, partition.size);
@@ -2942,7 +2942,7 @@ int test_mtxfile_partition(void)
         int num_parts = 2;
         struct mtx_partition partition;
         err = mtx_partition_init(
-            &partition, mtx_block, size, num_parts, 0);
+            &partition, mtx_block, size, num_parts, 0, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(mtx_block, partition.type);
         TEST_ASSERT_EQ(size, partition.size);
@@ -2971,7 +2971,7 @@ int test_mtxfile_partition(void)
         int num_parts = 3;
         struct mtx_partition partition;
         err = mtx_partition_init(
-            &partition, mtx_block, size, num_parts, 0);
+            &partition, mtx_block, size, num_parts, 0, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(mtx_block, partition.type);
         TEST_ASSERT_EQ(size, partition.size);
@@ -3001,7 +3001,7 @@ int test_mtxfile_partition(void)
         int num_parts = 4;
         struct mtx_partition partition;
         err = mtx_partition_init(
-            &partition, mtx_block, size, num_parts, 0);
+            &partition, mtx_block, size, num_parts, 0, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(mtx_block, partition.type);
         TEST_ASSERT_EQ(size, partition.size);
@@ -3032,7 +3032,7 @@ int test_mtxfile_partition(void)
         int num_parts = 5;
         struct mtx_partition partition;
         err = mtx_partition_init(
-            &partition, mtx_block, size, num_parts, 0);
+            &partition, mtx_block, size, num_parts, 0, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(mtx_block, partition.type);
         TEST_ASSERT_EQ(size, partition.size);
@@ -3064,7 +3064,7 @@ int test_mtxfile_partition(void)
         int num_parts = 6;
         struct mtx_partition partition;
         err = mtx_partition_init(
-            &partition, mtx_block, size, num_parts, 0);
+            &partition, mtx_block, size, num_parts, 0, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(mtx_block, partition.type);
         TEST_ASSERT_EQ(size, partition.size);
@@ -3099,7 +3099,7 @@ int test_mtxfile_partition(void)
         int num_parts = 1;
         struct mtx_partition partition;
         err = mtx_partition_init(
-            &partition, mtx_cyclic, size, num_parts, 0);
+            &partition, mtx_cyclic, size, num_parts, 0, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(mtx_cyclic, partition.type);
         TEST_ASSERT_EQ(size, partition.size);
@@ -3127,7 +3127,7 @@ int test_mtxfile_partition(void)
         int num_parts = 2;
         struct mtx_partition partition;
         err = mtx_partition_init(
-            &partition, mtx_cyclic, size, num_parts, 0);
+            &partition, mtx_cyclic, size, num_parts, 0, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(mtx_cyclic, partition.type);
         TEST_ASSERT_EQ(size, partition.size);
@@ -3156,7 +3156,7 @@ int test_mtxfile_partition(void)
         int num_parts = 3;
         struct mtx_partition partition;
         err = mtx_partition_init(
-            &partition, mtx_cyclic, size, num_parts, 0);
+            &partition, mtx_cyclic, size, num_parts, 0, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(mtx_cyclic, partition.type);
         TEST_ASSERT_EQ(size, partition.size);
@@ -3186,7 +3186,7 @@ int test_mtxfile_partition(void)
         int num_parts = 4;
         struct mtx_partition partition;
         err = mtx_partition_init(
-            &partition, mtx_cyclic, size, num_parts, 0);
+            &partition, mtx_cyclic, size, num_parts, 0, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(mtx_cyclic, partition.type);
         TEST_ASSERT_EQ(size, partition.size);
@@ -3217,7 +3217,7 @@ int test_mtxfile_partition(void)
         int num_parts = 5;
         struct mtx_partition partition;
         err = mtx_partition_init(
-            &partition, mtx_cyclic, size, num_parts, 0);
+            &partition, mtx_cyclic, size, num_parts, 0, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(mtx_cyclic, partition.type);
         TEST_ASSERT_EQ(size, partition.size);
@@ -3249,7 +3249,7 @@ int test_mtxfile_partition(void)
         int num_parts = 6;
         struct mtx_partition partition;
         err = mtx_partition_init(
-            &partition, mtx_cyclic, size, num_parts, 0);
+            &partition, mtx_cyclic, size, num_parts, 0, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(mtx_cyclic, partition.type);
         TEST_ASSERT_EQ(size, partition.size);
@@ -3295,7 +3295,7 @@ int test_mtxfile_partition(void)
         int num_parts = 2;
         struct mtx_partition row_partition;
         err = mtx_partition_init(
-            &row_partition, mtx_block, num_rows, num_parts, 0);
+            &row_partition, mtx_block, num_rows, num_parts, 0, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(mtx_block, row_partition.type);
         TEST_ASSERT_EQ(num_rows, row_partition.size);
@@ -3344,7 +3344,7 @@ int test_mtxfile_partition(void)
         int num_parts = 2;
         struct mtx_partition row_partition;
         err = mtx_partition_init(
-            &row_partition, mtx_cyclic, num_rows, num_parts, 0);
+            &row_partition, mtx_cyclic, num_rows, num_parts, 0, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(mtx_cyclic, row_partition.type);
         TEST_ASSERT_EQ(num_rows, row_partition.size);
@@ -3392,7 +3392,7 @@ int test_mtxfile_partition(void)
         int num_parts = 3;
         struct mtx_partition row_partition;
         err = mtx_partition_init(
-            &row_partition, mtx_block, num_rows, num_parts, 0);
+            &row_partition, mtx_block, num_rows, num_parts, 0, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(mtx_block, row_partition.type);
         TEST_ASSERT_EQ(num_rows, row_partition.size);
@@ -3441,7 +3441,7 @@ int test_mtxfile_partition(void)
         int num_parts = 3;
         struct mtx_partition row_partition;
         err = mtx_partition_init(
-            &row_partition, mtx_cyclic, num_rows, num_parts, 0);
+            &row_partition, mtx_cyclic, num_rows, num_parts, 0, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(mtx_cyclic, row_partition.type);
         TEST_ASSERT_EQ(num_rows, row_partition.size);
@@ -3496,7 +3496,7 @@ int test_mtxfile_partition(void)
         int num_parts = 2;
         struct mtx_partition row_partition;
         err = mtx_partition_init(
-            &row_partition, mtx_block, num_rows, num_parts, 0);
+            &row_partition, mtx_block, num_rows, num_parts, 0, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(mtx_block, row_partition.type);
         TEST_ASSERT_EQ(num_rows, row_partition.size);
@@ -3546,7 +3546,7 @@ int test_mtxfile_partition(void)
         int num_parts = 2;
         struct mtx_partition row_partition;
         err = mtx_partition_init(
-            &row_partition, mtx_cyclic, num_rows, num_parts, 0);
+            &row_partition, mtx_cyclic, num_rows, num_parts, 0, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(mtx_cyclic, row_partition.type);
         TEST_ASSERT_EQ(num_rows, row_partition.size);

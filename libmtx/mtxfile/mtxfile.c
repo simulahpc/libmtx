@@ -2108,7 +2108,7 @@ int mtxfile_fread_distribute_rows(
     /* Partition the rows of the matrix or vector. */
     struct mtx_partition row_partition;
     err = (rank == root) ? mtx_partition_init(
-        &row_partition, row_partition_type, size.num_rows, comm_size, 0)
+        &row_partition, row_partition_type, size.num_rows, comm_size, 0, NULL)
         : MTX_SUCCESS;
     if (mtxmpierror_allreduce(mpierror, err)) {
         if (rank == root)
