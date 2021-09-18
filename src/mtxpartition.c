@@ -130,7 +130,8 @@ static void program_options_print_help(
     fprintf(f, "\t\t\t\tpart numbers assigned to each matrix or vector entry.\n");
     fprintf(f, "  --row-parts=N\t\tnumber of parts to use when partitioning rows.\n");
     fprintf(f, "  --row-partition=TYPE\tmethod of partitioning matrix or vector rows:\n");
-    fprintf(f, "\t\t\tblock, cyclic, block-cyclic, unstructured. (default: block)\n");
+    fprintf(f, "\t\t\tblock, cyclic, block-cyclic, singleton or unstructured.\n");
+    fprintf(f, "\t\t\t(default: block)\n");
     fprintf(f, "  --row-partition-path=FILE\t"
             "path to Matrix Market file with a row partition\n");
     fprintf(f, "\t\t\t\tto use when the row partition is `unstructured'.\n");

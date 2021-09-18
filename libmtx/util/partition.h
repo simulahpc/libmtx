@@ -25,6 +25,8 @@
 #ifndef LIBMTX_UTIL_PARTITION_H
 #define LIBMTX_UTIL_PARTITION_H
 
+#include <libmtx/util/index_set.h>
+
 #include <stdint.h>
 
 /**
@@ -32,12 +34,11 @@
  */
 enum mtx_partition_type
 {
-    mtx_nonpartitioned,
-    mtx_block,          /* contiguous, fixed-size blocks */
-    mtx_cyclic,         /* cyclic partitioning */
-    mtx_block_cyclic,   /* cyclic partitioning of contiguous,
-                         * fixed-size blocks. */
-    mtx_unstructured,   /* unstructured partition */
+    mtx_singleton,    /* trivial partition */
+    mtx_block,        /* contiguous, fixed-size blocks */
+    mtx_cyclic,       /* cyclic partition */
+    mtx_block_cyclic, /* cyclic partition of fixed-size blocks. */
+    mtx_unstructured, /* unstructured partition */
 };
 
 /**
@@ -96,20 +97,16 @@ struct mtx_partition
     int num_parts;
 
     /**
-     * `size_per_part' is an array containing the size of each part of
-     * the partition.
+     * `index_sets' is an array containing an index set for each part,
+     * where the pth index set describes the elements of the
+     * partitioned set belonging to the pth part of the partition.
      */
-    int * size_per_part;
+    struct mtx_index_set * index_sets;
 
     /**
-     * `block_size' is the size of each block, if `type' is
-     * `mtx_block_cyclic'. Otherwise, this value is ignored.
-     */
-    int block_size;
-
-    /**
-     * `parts' is an array containing the part number for each element
-     * in the partitioned set.
+     * `parts' is an array containing the part number assigned to each
+     * element in the partitioned set, if `type' is
+     * `mtx_unstructured'.  Otherwise, this value is not used.
      */
     int * parts;
 };
@@ -133,10 +130,11 @@ int mtx_partition_init(
     const int * parts);
 
 /**
- * `mtx_partition_init_nonpartitioned()' initialises a finite set that
- * is not partitioned.
+ * `mtx_partition_init_singleton()' initialises a singleton partition
+ * of a finite set.  That is, a partition with only one part, also
+ * called the trivial partition.
  */
-int mtx_partition_init_nonpartitioned(
+int mtx_partition_init_singleton(
     struct mtx_partition * partition,
     int64_t size);
 

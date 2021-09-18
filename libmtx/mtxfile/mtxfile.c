@@ -1490,7 +1490,7 @@ int mtxfile_init_from_row_partition(
     dst->precision = src->precision;
 
     if (dst->header.format == mtxfile_array) {
-        dst->size.num_rows = row_partition->size_per_part[part];
+        dst->size.num_rows = row_partition->index_sets[part].size;
     } else if (dst->header.format == mtxfile_coordinate) {
         dst->size.num_nonzeros =
             data_lines_per_part_ptr[part+1] - data_lines_per_part_ptr[part];

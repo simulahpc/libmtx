@@ -17,13 +17,14 @@
  * <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-09-06
+ * Last modified: 2021-09-18
  *
  * Data types and functions for partitioning finite sets.
  */
 
 #include <libmtx/error.h>
 #include <libmtx/util/partition.h>
+#include <libmtx/util/index_set.h>
 
 #include <errno.h>
 
@@ -39,7 +40,7 @@ const char * mtx_partition_type_str(
     enum mtx_partition_type type)
 {
     switch (type) {
-    case mtx_nonpartitioned: return "non-partitioned";
+    case mtx_singleton: return "singleton";
     case mtx_block: return "block";
     case mtx_cyclic: return "cyclic";
     case mtx_block_cyclic: return "block-cyclic";
@@ -77,7 +78,10 @@ int mtx_parse_partition_type(
     const char * valid_delimiters)
 {
     const char * t = s;
-    if (strncmp("block", t, strlen("block")) == 0) {
+    if (strncmp("singleton", t, strlen("singleton")) == 0) {
+        t += strlen("singleton");
+        *partition_type = mtx_singleton;
+    } else if (strncmp("block", t, strlen("block")) == 0) {
         t += strlen("block");
         *partition_type = mtx_block;
     } else if (strncmp("cyclic", t, strlen("cyclic")) == 0) {
@@ -112,7 +116,9 @@ void mtx_partition_free(
     struct mtx_partition * partition)
 {
     free(partition->parts);
-    free(partition->size_per_part);
+    for (int p = 0; p < partition->num_parts; p++)
+        mtx_index_set_free(&partition->index_sets[p]);
+    free(partition->index_sets);
 }
 
 /**
@@ -126,8 +132,8 @@ int mtx_partition_init(
     int block_size,
     const int * parts)
 {
-    if (type == mtx_nonpartitioned) {
-        return mtx_partition_init_nonpartitioned(partition, size);
+    if (type == mtx_singleton) {
+        return mtx_partition_init_singleton(partition, size);
     } else if (type == mtx_block) {
         return mtx_partition_init_block(partition, size, num_parts);
     } else if (type == mtx_cyclic) {
@@ -144,21 +150,25 @@ int mtx_partition_init(
 }
 
 /**
- * `mtx_partition_init_nonpartitioned()' initialises a finite set that
+ * `mtx_partition_init_singleton()' initialises a finite set that
  * is not partitioned.
  */
-int mtx_partition_init_nonpartitioned(
+int mtx_partition_init_singleton(
     struct mtx_partition * partition,
     int64_t size)
 {
-    partition->type = mtx_nonpartitioned;
+    partition->type = mtx_singleton;
     partition->size = size;
     partition->num_parts = 1;
-    partition->size_per_part = malloc(partition->num_parts * sizeof(int));
-    if (!partition->size_per_part)
+    partition->index_sets = malloc(
+        partition->num_parts * sizeof(struct mtx_index_set));
+    if (!partition->index_sets)
         return MTX_ERR_ERRNO;
-    partition->size_per_part[0] = size;
-    partition->block_size = -1;
+    int err = mtx_index_set_init_interval(&partition->index_sets[0], 0, size);
+    if (err) {
+        free(partition->index_sets);
+        return err;
+    }
     partition->parts = NULL;
     return MTX_SUCCESS;
 }
@@ -175,14 +185,21 @@ int mtx_partition_init_block(
     partition->type = mtx_block;
     partition->size = size;
     partition->num_parts = num_parts;
-    partition->size_per_part = malloc(num_parts * sizeof(int));
-    if (!partition->size_per_part)
+    partition->index_sets = malloc(num_parts * sizeof(struct mtx_index_set));
+    if (!partition->index_sets)
         return MTX_ERR_ERRNO;
+    int64_t a = 0;
     for (int p = 0; p < num_parts; p++) {
-        partition->size_per_part[p] =
-            size / num_parts + (p < (size % num_parts) ? 1 : 0);
+        int64_t b = a + (size / num_parts + (p < (size % num_parts) ? 1 : 0));
+        int err = mtx_index_set_init_interval(&partition->index_sets[p], a, b);
+        a = b;
+        if (err) {
+            for (int q = p-1; q > 0; q--)
+                mtx_index_set_free(&partition->index_sets[q]);
+            free(partition->index_sets);
+            return err;
+        }
     }
-    partition->block_size = -1;
     partition->parts = NULL;
     return MTX_SUCCESS;
 }
@@ -196,17 +213,24 @@ int mtx_partition_init_cyclic(
     int64_t size,
     int num_parts)
 {
+    int err;
     partition->type = mtx_cyclic;
     partition->size = size;
     partition->num_parts = num_parts;
-    partition->size_per_part = malloc(num_parts * sizeof(int));
-    if (!partition->size_per_part)
+    partition->index_sets = malloc(num_parts * sizeof(struct mtx_index_set));
+    if (!partition->index_sets)
         return MTX_ERR_ERRNO;
     for (int p = 0; p < num_parts; p++) {
-        partition->size_per_part[p] =
-            size / num_parts + (p < (size % num_parts) ? 1 : 0);
+        int64_t part_size = size / num_parts + (p < (size % num_parts) ? 1 : 0);
+        err = mtx_index_set_init_strided(
+            &partition->index_sets[p], p, part_size, num_parts);
+        if (err) {
+            for (int q = p-1; q > 0; q--)
+                mtx_index_set_free(&partition->index_sets[q]);
+            free(partition->index_sets);
+            return err;
+        }
     }
-    partition->block_size = -1;
     partition->parts = NULL;
     return MTX_SUCCESS;
 }
@@ -231,6 +255,7 @@ int mtx_partition_init_unstructured(
     int num_parts,
     const int * parts)
 {
+    int err;
     for (int64_t i = 0; i < size; i++) {
         if (parts[i] < 0 || parts[i] >= num_parts)
             return MTX_ERR_INDEX_OUT_OF_BOUNDS;
@@ -238,21 +263,63 @@ int mtx_partition_init_unstructured(
     partition->type = mtx_unstructured;
     partition->size = size;
     partition->num_parts = num_parts;
-    partition->size_per_part = malloc(num_parts * sizeof(int));
-    if (!partition->size_per_part)
+    partition->index_sets = malloc(num_parts * sizeof(struct mtx_index_set));
+    if (!partition->index_sets)
         return MTX_ERR_ERRNO;
+
+    int64_t * size_per_part = malloc(num_parts * sizeof(int64_t));
+    if (!size_per_part) {
+        free(partition->index_sets);
+        return MTX_ERR_ERRNO;
+    }
     for (int64_t i = 0; i < size; i++) {
         int p = parts[i];
-        partition->size_per_part[p]++;
+        size_per_part[p]++;
     }
-    partition->block_size = -1;
+
+    for (int p = 0; p < num_parts; p++) {
+        int64_t * indices = malloc(size_per_part[p] * sizeof(int64_t));
+        if (!indices) {
+            for (int q = p-1; q > 0; q--)
+                mtx_index_set_free(&partition->index_sets[q]);
+            free(partition->index_sets);
+            free(size_per_part);
+            return MTX_ERR_ERRNO;
+        }
+
+        int64_t k = 0;
+        for (int64_t i = 0; i < size; i++) {
+            if (parts[i] == p) {
+                indices[k] = i;
+                k++;
+            }
+        }
+
+        err = mtx_index_set_init_discrete(
+            &partition->index_sets[p], size_per_part[p], indices);
+        if (err) {
+            free(indices);
+            for (int q = p-1; q > 0; q--)
+                mtx_index_set_free(&partition->index_sets[q]);
+            free(partition->index_sets);
+            free(size_per_part);
+            return err;
+        }
+        free(indices);
+    }
+
     partition->parts = malloc(size * sizeof(int));
     if (!partition->parts) {
-        free(partition->size_per_part);
+        for (int p = 0; p < num_parts; p++)
+            mtx_index_set_free(&partition->index_sets[p]);
+        free(partition->index_sets);
+        free(size_per_part);
         return MTX_ERR_ERRNO;
     }
     for (int64_t i = 0; i < size; i++)
         partition->parts[i] = parts[i];
+
+    free(size_per_part);
     return MTX_SUCCESS;
 }
 
@@ -268,7 +335,9 @@ int mtx_partition_part(
     if (n >= partition->size)
         return MTX_ERR_INDEX_OUT_OF_BOUNDS;
 
-    if (partition->type == mtx_block) {
+    if (partition->type == mtx_singleton) {
+        *p = 0;
+    } else if (partition->type == mtx_block) {
         int64_t size_per_part = partition->size / partition->num_parts;
         int64_t remainder = partition->size % partition->num_parts;
         *p = n / (size_per_part+1);

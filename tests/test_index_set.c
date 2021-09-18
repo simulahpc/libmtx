@@ -39,8 +39,7 @@ int test_index_set_interval(void)
     struct mtx_index_set index_set;
     TEST_ASSERT_EQ(MTX_SUCCESS, mtx_index_set_init_interval(&index_set, 0, 4));
     int size;
-    TEST_ASSERT_EQ(MTX_SUCCESS, mtx_index_set_size(&index_set, &size));
-    TEST_ASSERT_EQ(4, size);
+    TEST_ASSERT_EQ(4, index_set.size);
     TEST_ASSERT(mtx_index_set_contains(&index_set, 0));
     TEST_ASSERT(mtx_index_set_contains(&index_set, 1));
     TEST_ASSERT(mtx_index_set_contains(&index_set, 2));
