@@ -1153,7 +1153,7 @@ int mtxfile_gzread(
 
 /**
  * `mtxfile_write()' writes a Matrix Market file to the given path.
- * Market format. The file may optionally be compressed by gzip.
+ * The file may optionally be compressed by gzip.
  *
  * If `path' is `-', then standard output is used.
  *
