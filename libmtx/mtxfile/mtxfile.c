@@ -910,29 +910,45 @@ int mtxfile_read(
     if (!gzip) {
         FILE * f;
         if (strcmp(path, "-") == 0) {
-            f = stdin;
+            int fd = dup(STDIN_FILENO);
+            if (fd == -1)
+                return MTX_ERR_ERRNO;
+            if ((f = fdopen(fd, "r")) == NULL) {
+                close(fd);
+                return MTX_ERR_ERRNO;
+            }
         } else if ((f = fopen(path, "r")) == NULL) {
             return MTX_ERR_ERRNO;
         }
         *lines_read = 0;
         err = mtxfile_fread(
             mtxfile, precision, f, lines_read, bytes_read, 0, NULL);
-        if (err)
+        if (err) {
+            fclose(f);
             return err;
+        }
         fclose(f);
     } else {
 #ifdef LIBMTX_HAVE_LIBZ
         gzFile f;
         if (strcmp(path, "-") == 0) {
-            f = gzdopen(STDIN_FILENO, "r");
+            int fd = dup(STDIN_FILENO);
+            if (fd == -1)
+                return MTX_ERR_ERRNO;
+            if ((f = gzdopen(fd, "r")) == NULL) {
+                close(fd);
+                return MTX_ERR_ERRNO;
+            }
         } else if ((f = gzopen(path, "r")) == NULL) {
             return MTX_ERR_ERRNO;
         }
         *lines_read = 0;
         err = mtxfile_gzread(
             mtxfile, precision, f, lines_read, bytes_read, 0, NULL);
-        if (err)
+        if (err) {
+            gzclose(f);
             return err;
+        }
         gzclose(f);
 #else
         errno = ENOTSUP;
@@ -1184,28 +1200,42 @@ int mtxfile_write(
     if (!gzip) {
         FILE * f;
         if (strcmp(path, "-") == 0) {
-            f = stdout;
+            int fd = dup(STDOUT_FILENO);
+            if (fd == -1)
+                return MTX_ERR_ERRNO;
+            if ((f = fdopen(fd, "w")) == NULL) {
+                close(fd);
+                return MTX_ERR_ERRNO;
+            }
         } else if ((f = fopen(path, "w")) == NULL) {
             return MTX_ERR_ERRNO;
         }
         err = mtxfile_fwrite(mtxfile, f, format, bytes_written);
-        if (err)
-            return err;
-        if (strcmp(path, "-") != 0)
+        if (err) {
             fclose(f);
+            return err;
+        }
+        fclose(f);
     } else {
 #ifdef LIBMTX_HAVE_LIBZ
         gzFile f;
         if (strcmp(path, "-") == 0) {
-            f = gzdopen(STDOUT_FILENO, "w");
+            int fd = dup(STDOUT_FILENO);
+            if (fd == -1)
+                return MTX_ERR_ERRNO;
+            if ((f = gzdopen(fd, "w")) == NULL) {
+                close(fd);
+                return MTX_ERR_ERRNO;
+            }
         } else if ((f = gzopen(path, "w")) == NULL) {
             return MTX_ERR_ERRNO;
         }
         err = mtxfile_gzwrite(mtxfile, f, format, bytes_written);
-        if (err)
-            return err;
-        if (strcmp(path, "-") != 0)
+        if (err) {
             gzclose(f);
+            return err;
+        }
+        gzclose(f);
 #else
         errno = ENOTSUP;
         return MTX_ERR_ERRNO;
