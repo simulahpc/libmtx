@@ -24,9 +24,17 @@
 #ifndef LIBMTX_INDEX_SET_H
 #define LIBMTX_INDEX_SET_H
 
+#include <libmtx/libmtx-config.h>
+
+#ifdef LIBMTX_HAVE_MPI
+#include <mpi.h>
+#endif
+
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
+
+struct mtxmpierror;
 
 /**
  * `mtx_index_set_type' enumerates different kinds of index sets.
@@ -224,5 +232,38 @@ int mtx_index_set_fwrite(
     FILE * f,
     const char * format,
     int64_t * bytes_written);
+
+/*
+ * MPI functions
+ */
+
+#ifdef LIBMTX_HAVE_MPI
+/**
+ * `mtx_index_set_send()' sends an index set to another MPI process.
+ *
+ * This is analogous to `MPI_Send()' and requires the receiving
+ * process to perform a matching call to `mtx_index_set_recv()'.
+ */
+int mtx_index_set_send(
+    const struct mtx_index_set * index_set,
+    int dest,
+    int tag,
+    MPI_Comm comm,
+    struct mtxmpierror * mpierror);
+
+/**
+ * `mtx_index_set_recv()' receives an index set from another MPI
+ * process.
+ *
+ * This is analogous to `MPI_Recv()' and requires the sending process
+ * to perform a matching call to `mtx_index_set_send()'.
+ */
+int mtx_index_set_recv(
+    struct mtx_index_set * index_set,
+    int source,
+    int tag,
+    MPI_Comm comm,
+    struct mtxmpierror * mpierror);
+#endif
 
 #endif

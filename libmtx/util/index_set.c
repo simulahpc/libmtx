@@ -22,6 +22,8 @@
  * Index sets.
  */
 
+#include <libmtx/libmtx-config.h>
+
 #include <libmtx/error.h>
 #include <libmtx/mtxfile/mtxfile.h>
 #include <libmtx/util/index_set.h>
@@ -357,3 +359,98 @@ int mtx_index_set_fwrite(
     mtxfile_free(&mtxfile);
     return MTX_SUCCESS;
 }
+
+/*
+ * MPI functions
+ */
+
+#ifdef LIBMTX_HAVE_MPI
+/**
+ * `mtx_index_set_send()' sends an index set to another MPI process.
+ *
+ * This is analogous to `MPI_Send()' and requires the receiving
+ * process to perform a matching call to `mtx_index_set_recv()'.
+ */
+int mtx_index_set_send(
+    const struct mtx_index_set * index_set,
+    int dest,
+    int tag,
+    MPI_Comm comm,
+    struct mtxmpierror * mpierror)
+{
+    mpierror->err = MPI_Send(
+        &index_set->type, 1, MPI_INT, dest, tag, comm);
+    if (mpierror->err)
+        return MTX_ERR_MPI;
+    mpierror->err = MPI_Send(
+        &index_set->size, 1, MPI_INT64_T, dest, tag, comm);
+    if (mpierror->err)
+        return MTX_ERR_MPI;
+    mpierror->err = MPI_Send(
+        &index_set->offset, 1, MPI_INT64_T, dest, tag, comm);
+    if (mpierror->err)
+        return MTX_ERR_MPI;
+    mpierror->err = MPI_Send(
+        &index_set->stride, 1, MPI_INT, dest, tag, comm);
+    if (mpierror->err)
+        return MTX_ERR_MPI;
+    mpierror->err = MPI_Send(
+        &index_set->block_size, 1, MPI_INT, dest, tag, comm);
+    if (mpierror->err)
+        return MTX_ERR_MPI;
+    if (index_set->type == mtx_index_set_discrete) {
+        mpierror->err = MPI_Send(
+            &index_set->indices, index_set->size, MPI_INT64_T, dest, tag, comm);
+        if (mpierror->err)
+            return MTX_ERR_MPI;
+    }
+    return MTX_SUCCESS;
+}
+
+/**
+ * `mtx_index_set_recv()' receives an index set from another MPI
+ * process.
+ *
+ * This is analogous to `MPI_Recv()' and requires the sending process
+ * to perform a matching call to `mtx_index_set_send()'.
+ */
+int mtx_index_set_recv(
+    struct mtx_index_set * index_set,
+    int source,
+    int tag,
+    MPI_Comm comm,
+    struct mtxmpierror * mpierror)
+{
+    mpierror->err = MPI_Recv(
+        &index_set->type, 1, MPI_INT, source, tag, comm, MPI_STATUS_IGNORE);
+    if (mpierror->err)
+        return MTX_ERR_MPI;
+    mpierror->err = MPI_Recv(
+        &index_set->size, 1, MPI_INT64_T, source, tag, comm, MPI_STATUS_IGNORE);
+    if (mpierror->err)
+        return MTX_ERR_MPI;
+    mpierror->err = MPI_Recv(
+        &index_set->offset, 1, MPI_INT64_T, source, tag, comm, MPI_STATUS_IGNORE);
+    if (mpierror->err)
+        return MTX_ERR_MPI;
+    mpierror->err = MPI_Recv(
+        &index_set->stride, 1, MPI_INT, source, tag, comm, MPI_STATUS_IGNORE);
+    if (mpierror->err)
+        return MTX_ERR_MPI;
+    mpierror->err = MPI_Recv(
+        &index_set->block_size, 1, MPI_INT, source, tag, comm, MPI_STATUS_IGNORE);
+    if (mpierror->err)
+        return MTX_ERR_MPI;
+    if (index_set->type == mtx_index_set_discrete) {
+        index_set->indices = malloc(index_set->size * sizeof(int64_t));
+        if (!index_set->indices)
+            return MTX_ERR_ERRNO;
+        mpierror->err = MPI_Recv(
+            &index_set->indices, index_set->size, MPI_INT64_T,
+            source, tag, comm, MPI_STATUS_IGNORE);
+        if (mpierror->err)
+            return MTX_ERR_MPI;
+    }
+    return MTX_SUCCESS;
+}
+#endif
