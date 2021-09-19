@@ -32,6 +32,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 /**
  * `mtx_index_set_type_str()' is a string representing the index set
@@ -169,6 +170,50 @@ bool mtx_index_set_contains(
 }
 
 /**
+ * `mtx_index_set_read()' reads an index set from the given path as a
+ * Matrix Market file in the form of an integer vector in array
+ * format.
+ *
+ * If `path' is `-', then standard input is used.
+ *
+ * If an error code is returned, then `lines_read' and `bytes_read'
+ * are used to return the line number and byte at which the error was
+ * encountered during the parsing of the Matrix Market file.
+ */
+int mtx_index_set_read(
+    struct mtx_index_set * index_set,
+    const char * path,
+    int * lines_read,
+    int64_t * bytes_read)
+{
+    int err;
+    *lines_read = -1;
+    *bytes_read = 0;
+
+    FILE * f;
+    if (strcmp(path, "-") == 0) {
+        int fd = dup(STDIN_FILENO);
+        if (fd == -1)
+            return MTX_ERR_ERRNO;
+        if ((f = fdopen(fd, "r")) == NULL) {
+            close(fd);
+            return MTX_ERR_ERRNO;
+        }
+    } else if ((f = fopen(path, "r")) == NULL) {
+        return MTX_ERR_ERRNO;
+    }
+    *lines_read = 0;
+    err = mtx_index_set_fread(
+        index_set, f, lines_read, bytes_read, 0, NULL);
+    if (err) {
+        fclose(f);
+        return err;
+    }
+    fclose(f);
+    return MTX_SUCCESS;
+}
+
+/**
  * `mtx_index_set_fread()' reads an index set from a stream as a
  * Matrix Market file in the form of an integer vector in array
  * format.
@@ -214,6 +259,50 @@ int mtx_index_set_fread(
 }
 
 /**
+ * `mtx_index_set_write()' writes an index set to the given path as a
+ * Matrix Market file in the form of an integer vector in array
+ * format.
+ *
+ * If `path' is `-', then standard output is used.
+ *
+ * If `format' is not `NULL', then the given format string is used
+ * when printing numerical values.  The format specifier must be '%d',
+ * and a fixed field width may optionally be specified (e.g., "%3d"),
+ * but variable field width (e.g., "%*d"), as well as length modifiers
+ * (e.g., "%ld") are not allowed.  If `format' is `NULL', then the
+ * format specifier '%d' is used.
+ */
+int mtx_index_set_write(
+    const struct mtx_index_set * index_set,
+    const char * path,
+    const char * format,
+    int64_t * bytes_written)
+{
+    int err;
+    *bytes_written = 0;
+
+    FILE * f;
+    if (strcmp(path, "-") == 0) {
+        int fd = dup(STDOUT_FILENO);
+        if (fd == -1)
+            return MTX_ERR_ERRNO;
+        if ((f = fdopen(fd, "w")) == NULL) {
+            close(fd);
+            return MTX_ERR_ERRNO;
+        }
+    } else if ((f = fopen(path, "w")) == NULL) {
+        return MTX_ERR_ERRNO;
+    }
+    err = mtx_index_set_fwrite(index_set, f, format, bytes_written);
+    if (err) {
+        fclose(f);
+        return err;
+    }
+    fclose(f);
+    return MTX_SUCCESS;
+}
+
+/**
  * `mtx_index_set_fwrite()' writes an index set to a stream as a
  * Matrix Market file in the form of an integer vector in array
  * format.
@@ -222,7 +311,7 @@ int mtx_index_set_fread(
  * when printing numerical values.  The format specifier must be '%d',
  * and a fixed field width may optionally be specified (e.g., "%3d"),
  * but variable field width (e.g., "%*d"), as well as length modifiers
- * (e.g., "%Lf") are not allowed.  If `format' is `NULL', then the
+ * (e.g., "%ld") are not allowed.  If `format' is `NULL', then the
  * format specifier '%d' is used.
  *
  * If it is not `NULL', then the number of bytes written to the stream

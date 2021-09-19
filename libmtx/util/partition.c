@@ -2,19 +2,18 @@
  *
  * Copyright (C) 2021 James D. Trotter
  *
- * libmtx is free software: you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 3 of the
- * License, or (at your option) any later version.
+ * libmtx is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * libmtx is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * libmtx is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with libmtx.  If not, see
- * <https://www.gnu.org/licenses/>.
+ * along with libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
  * Last modified: 2021-09-18
@@ -23,10 +22,12 @@
  */
 
 #include <libmtx/error.h>
+#include <libmtx/mtxfile/mtxfile.h>
 #include <libmtx/util/partition.h>
 #include <libmtx/util/index_set.h>
 
 #include <errno.h>
+#include <unistd.h>
 
 #include <stdint.h>
 #include <stdlib.h>
@@ -150,8 +151,8 @@ int mtx_partition_init(
 }
 
 /**
- * `mtx_partition_init_singleton()' initialises a finite set that
- * is not partitioned.
+ * `mtx_partition_init_singleton()' initialises a finite set that is
+ * not partitioned.
  */
 int mtx_partition_init_singleton(
     struct mtx_partition * partition,
@@ -182,6 +183,10 @@ int mtx_partition_init_block(
     int64_t size,
     int num_parts)
 {
+    int err;
+    if (num_parts <= 0)
+        return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+
     partition->type = mtx_block;
     partition->size = size;
     partition->num_parts = num_parts;
@@ -191,7 +196,7 @@ int mtx_partition_init_block(
     int64_t a = 0;
     for (int p = 0; p < num_parts; p++) {
         int64_t b = a + (size / num_parts + (p < (size % num_parts) ? 1 : 0));
-        int err = mtx_index_set_init_interval(&partition->index_sets[p], a, b);
+        err = mtx_index_set_init_interval(&partition->index_sets[p], a, b);
         a = b;
         if (err) {
             for (int q = p-1; q > 0; q--)
@@ -214,6 +219,9 @@ int mtx_partition_init_cyclic(
     int num_parts)
 {
     int err;
+    if (num_parts <= 0)
+        return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+
     partition->type = mtx_cyclic;
     partition->size = size;
     partition->num_parts = num_parts;
@@ -356,3 +364,278 @@ int mtx_partition_part(
     }
     return MTX_SUCCESS;
 }
+
+/*
+ * I/O functions
+ */
+
+/**
+ * `mtx_partition_read_parts()' reads the part numbers assigned to
+ * each element of a partitioned set from the given path.  The path
+ * must be to a Matrix Market file in the form of an integer vector in
+ * array format.
+ *
+ * If `path' is `-', then standard input is used.
+ *
+ * If an error code is returned, then `lines_read' and `bytes_read'
+ * are used to return the line number and byte at which the error was
+ * encountered during the parsing of the Matrix Market file.
+ */
+int mtx_partition_read_parts(
+    struct mtx_partition * partition,
+    int num_parts,
+    const char * path,
+    int * lines_read,
+    int64_t * bytes_read)
+{
+    int err;
+    *lines_read = -1;
+    *bytes_read = 0;
+
+    FILE * f;
+    if (strcmp(path, "-") == 0) {
+        int fd = dup(STDIN_FILENO);
+        if (fd == -1)
+            return MTX_ERR_ERRNO;
+        if ((f = fdopen(fd, "r")) == NULL) {
+            close(fd);
+            return MTX_ERR_ERRNO;
+        }
+    } else if ((f = fopen(path, "r")) == NULL) {
+        return MTX_ERR_ERRNO;
+    }
+    *lines_read = 0;
+    err = mtx_partition_fread_parts(
+        partition, num_parts, f, lines_read, bytes_read, 0, NULL);
+    if (err) {
+        fclose(f);
+        return err;
+    }
+    fclose(f);
+    return MTX_SUCCESS;
+}
+
+/**
+ * `mtx_partition_fread_parts()' reads the part numbers assigned to
+ * each element of a partitioned set from a stream formatted as a
+ * Matrix Market file.  The Matrix Market file must be in the form of
+ * an integer vector in array format.
+ *
+ * If an error code is returned, then `lines_read' and `bytes_read'
+ * are used to return the line number and byte at which the error was
+ * encountered during the parsing of the Matrix Market file.
+ */
+int mtx_partition_fread_parts(
+    struct mtx_partition * partition,
+    int num_parts,
+    FILE * f,
+    int * lines_read,
+    int64_t * bytes_read,
+    size_t line_max,
+    char * linebuf)
+{
+    int err;
+    struct mtxfile mtxfile;
+    err = mtxfile_fread(
+        &mtxfile, mtx_single, f, lines_read, bytes_read, line_max, linebuf);
+    if (err)
+        return err;
+
+    if (mtxfile.header.object != mtxfile_vector) {
+        mtxfile_free(&mtxfile);
+        return MTX_ERR_INVALID_MTX_OBJECT;
+    } else if (mtxfile.header.format != mtxfile_array) {
+        mtxfile_free(&mtxfile);
+        return MTX_ERR_INVALID_MTX_FORMAT;
+    } else if (mtxfile.header.field != mtxfile_integer) {
+        mtxfile_free(&mtxfile);
+        return MTX_ERR_INVALID_MTX_FIELD;
+    }
+
+    err = mtx_partition_init(
+        partition, mtx_unstructured, mtxfile.size.num_rows, num_parts, 0,
+        mtxfile.data.array_integer_single);
+    if (err) {
+        mtxfile_free(&mtxfile);
+        return err;
+    }
+    mtxfile_free(&mtxfile);
+    return MTX_SUCCESS;
+}
+
+/**
+ * `mtx_partition_fread_indices()' reads the global indices of
+ * elements belonging to a given part of a partitioned set from a
+ * stream formatted as a Matrix Market file.  The Matrix Market file
+ * must be in the form of an integer vector in array format.
+ *
+ * If an error code is returned, then `lines_read' and `bytes_read'
+ * are used to return the line number and byte at which the error was
+ * encountered during the parsing of the Matrix Market file.
+ */
+int mtx_partition_fread_indices(
+    struct mtx_partition * partition,
+    int part,
+    FILE * f,
+    int * lines_read,
+    int64_t * bytes_read,
+    size_t line_max,
+    char * linebuf);
+
+/**
+ * `mtx_partition_write_parts()' writes the part numbers assigned to
+ * each element of a partitioned set to the given path.  The file is
+ * written as a Matrix Market file in the form of an integer vector in
+ * array format.
+ *
+ * If `path' is `-', then standard output is used.
+ *
+ * If `format' is not `NULL', then the given format string is used
+ * when printing numerical values.  The format specifier must be '%d',
+ * and a fixed field width may optionally be specified (e.g., "%3d"),
+ * but variable field width (e.g., "%*d"), as well as length modifiers
+ * (e.g., "%ld") are not allowed.  If `format' is `NULL', then the
+ * format specifier '%d' is used.
+ */
+int mtx_partition_write_parts(
+    const struct mtx_partition * partition,
+    const char * path,
+    const char * format,
+    int64_t * bytes_written)
+{
+    int err;
+    *bytes_written = 0;
+
+    FILE * f;
+    if (strcmp(path, "-") == 0) {
+        int fd = dup(STDOUT_FILENO);
+        if (fd == -1)
+            return MTX_ERR_ERRNO;
+        if ((f = fdopen(fd, "w")) == NULL) {
+            close(fd);
+            return MTX_ERR_ERRNO;
+        }
+    } else if ((f = fopen(path, "w")) == NULL) {
+        return MTX_ERR_ERRNO;
+    }
+    err = mtx_partition_fwrite_parts(partition, f, format, bytes_written);
+    if (err) {
+        fclose(f);
+        return err;
+    }
+    fclose(f);
+    return MTX_SUCCESS;
+}
+
+/**
+ * `mtx_partition_fwrite_parts()' writes the part numbers assigned to
+ * each element of a partitioned set to a stream formatted as a Matrix
+ * Market file.  The Matrix Market file is written in the form of an
+ * integer vector in array format.
+ *
+ * If `format' is not `NULL', then the given format string is used
+ * when printing numerical values.  The format specifier must be '%d',
+ * and a fixed field width may optionally be specified (e.g., "%3d"),
+ * but variable field width (e.g., "%*d"), as well as length modifiers
+ * (e.g., "%ld") are not allowed.  If `format' is `NULL', then the
+ * format specifier '%d' is used.
+ *
+ * If it is not `NULL', then the number of bytes written to the stream
+ * is returned in `bytes_written'.
+ */
+int mtx_partition_fwrite_parts(
+    const struct mtx_partition * partition,
+    FILE * f,
+    const char * format,
+    int64_t * bytes_written)
+{
+    int err;
+    struct mtxfile mtxfile;
+    err = mtxfile_alloc_vector_array(
+        &mtxfile, mtxfile_integer, mtx_single, partition->size);
+    if (err)
+        return err;
+
+    int * parts = mtxfile.data.array_integer_single;
+    if (partition->type == mtx_singleton) {
+        for (int64_t i = 0; i < partition->size; i++)
+            parts[i] = 0;
+    } else if (partition->type == mtx_block) {
+        int64_t size_per_part = partition->size / partition->num_parts;
+        int64_t remainder = partition->size % partition->num_parts;
+        for (int64_t i = 0; i < partition->size; i++) {
+            parts[i] = i / (size_per_part+1);
+            if (parts[i] >= remainder) {
+                parts[i] = remainder +
+                    (i - remainder * (size_per_part+1)) / size_per_part;
+            }
+        }
+    } else if (partition->type == mtx_cyclic) {
+        for (int64_t i = 0; i < partition->size; i++)
+            parts[i] = i % partition->num_parts;
+    } else if (partition->type == mtx_block_cyclic) {
+        /* TODO: Not implemented. */
+        mtxfile_free(&mtxfile);
+        errno = ENOTSUP;
+        return MTX_ERR_ERRNO;
+    } else if (partition->type == mtx_unstructured) {
+        for (int64_t i = 0; i < partition->size; i++)
+            parts[i] = partition->parts[i];
+    } else {
+        mtxfile_free(&mtxfile);
+        return MTX_ERR_INVALID_PARTITION_TYPE;
+    }
+
+    err = mtxfile_fwrite(&mtxfile, f, format, bytes_written);
+    if (err) {
+        mtxfile_free(&mtxfile);
+        return err;
+    }
+    mtxfile_free(&mtxfile);
+    return MTX_SUCCESS;
+}
+
+/**
+ * `mtx_partition_write_indices()' writes the global indices of
+ * elements belonging to a given part of a partitioned set to the
+ * given path.  The file is written as a Matrix Market file in the
+ * form of an integer vector in array format.
+ *
+ * If `path' is `-', then standard output is used.
+ *
+ * If `format' is not `NULL', then the given format string is used
+ * when printing numerical values.  The format specifier must be '%d',
+ * and a fixed field width may optionally be specified (e.g., "%3d"),
+ * but variable field width (e.g., "%*d"), as well as length modifiers
+ * (e.g., "%ld") are not allowed.  If `format' is `NULL', then the
+ * format specifier '%d' is used.
+ */
+int mtx_partition_write_indices(
+    const struct mtx_partition * partition,
+    int part,
+    const char * path,
+    const char * format,
+    int64_t * bytes_written);
+
+/**
+ * `mtx_partition_fwrite_indices()' writes the global indices of
+ * elements belonging to a given part of a partitioned set to a stream
+ * as a Matrix Market file.  The Matrix Market file is written in the
+ * form of an integer vector in array format.
+ *
+ * If `format' is not `NULL', then the given format string is used
+ * when printing numerical values.  The format specifier must be '%d',
+ * and a fixed field width may optionally be specified (e.g., "%3d"),
+ * but variable field width (e.g., "%*d"), as well as length modifiers
+ * (e.g., "%ld") are not allowed.  If `format' is `NULL', then the
+ * format specifier '%d' is used.
+ *
+ * If it is not `NULL', then the number of bytes written to the stream
+ * is returned in `bytes_written'.
+ */
+int mtx_partition_fwrite_indices(
+    const struct mtx_partition * partition,
+    int part,
+    FILE * f,
+    const char * format,
+    int64_t * bytes_written);

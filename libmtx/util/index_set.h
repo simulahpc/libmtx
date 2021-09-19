@@ -151,6 +151,23 @@ bool mtx_index_set_contains(
     int64_t n);
 
 /**
+ * `mtx_index_set_read()' reads an index set from the given path as a
+ * Matrix Market file in the form of an integer vector in array
+ * format.
+ *
+ * If `path' is `-', then standard input is used.
+ *
+ * If an error code is returned, then `lines_read' and `bytes_read'
+ * are used to return the line number and byte at which the error was
+ * encountered during the parsing of the Matrix Market file.
+ */
+int mtx_index_set_read(
+    struct mtx_index_set * index_set,
+    const char * path,
+    int * lines_read,
+    int64_t * bytes_read);
+
+/**
  * `mtx_index_set_fread()' reads an index set from a stream as a
  * Matrix Market file in the form of an integer vector in array
  * format.
@@ -168,6 +185,26 @@ int mtx_index_set_fread(
     char * linebuf);
 
 /**
+ * `mtx_index_set_write()' writes an index set to the given path as a
+ * Matrix Market file in the form of an integer vector in array
+ * format.
+ *
+ * If `path' is `-', then standard output is used.
+ *
+ * If `format' is not `NULL', then the given format string is used
+ * when printing numerical values.  The format specifier must be '%d',
+ * and a fixed field width may optionally be specified (e.g., "%3d"),
+ * but variable field width (e.g., "%*d"), as well as length modifiers
+ * (e.g., "%ld") are not allowed.  If `format' is `NULL', then the
+ * format specifier '%d' is used.
+ */
+int mtx_index_set_write(
+    const struct mtx_index_set * index_set,
+    const char * path,
+    const char * format,
+    int64_t * bytes_written);
+
+/**
  * `mtx_index_set_fwrite()' writes an index set to a stream as a
  * Matrix Market file in the form of an integer vector in array
  * format.
@@ -176,7 +213,7 @@ int mtx_index_set_fread(
  * when printing numerical values.  The format specifier must be '%d',
  * and a fixed field width may optionally be specified (e.g., "%3d"),
  * but variable field width (e.g., "%*d"), as well as length modifiers
- * (e.g., "%Lf") are not allowed.  If `format' is `NULL', then the
+ * (e.g., "%ld") are not allowed.  If `format' is `NULL', then the
  * format specifier '%d' is used.
  *
  * If it is not `NULL', then the number of bytes written to the stream
