@@ -66,6 +66,7 @@ enum mtx_error
     MTX_ERR_INDEX_OUT_OF_BOUNDS = -25,      /* index out of bounds */
     MTX_ERR_NO_BUFFER_SPACE = -26,          /* not enough space in buffer */
     MTX_ERR_NOT_CONVERGED = -27,            /* iterative method did not converge */
+    MTX_ERR_INVALID_PATH_FORMAT = -28,      /* invalid path format */
 };
 
 /**

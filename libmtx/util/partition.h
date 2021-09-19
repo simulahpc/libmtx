@@ -275,6 +275,9 @@ int mtx_partition_fread_indices(
  * but variable field width (e.g., "%*d"), as well as length modifiers
  * (e.g., "%ld") are not allowed.  If `format' is `NULL', then the
  * format specifier '%d' is used.
+ *
+ * If it is not `NULL', then the number of bytes written to the stream
+ * is returned in `bytes_written'.
  */
 int mtx_partition_write_parts(
     const struct mtx_partition * partition,
@@ -305,32 +308,14 @@ int mtx_partition_fwrite_parts(
     int64_t * bytes_written);
 
 /**
- * `mtx_partition_write_indices()' writes the global indices of
- * elements belonging to a given part of a partitioned set to the
- * given path.  The file is written as a Matrix Market file in the
- * form of an integer vector in array format.
+ * `mtx_partition_write_permutation()' writes the permutation of a
+ * given part of a partitioned set to the given path.  The permutation
+ * is represented by an array of global indices of the elements
+ * belonging to the given part prior to partitioning.  The file is
+ * written as a Matrix Market file in the form of an integer vector in
+ * array format.
  *
  * If `path' is `-', then standard output is used.
- *
- * If `format' is not `NULL', then the given format string is used
- * when printing numerical values.  The format specifier must be '%d',
- * and a fixed field width may optionally be specified (e.g., "%3d"),
- * but variable field width (e.g., "%*d"), as well as length modifiers
- * (e.g., "%ld") are not allowed.  If `format' is `NULL', then the
- * format specifier '%d' is used.
- */
-int mtx_partition_write_indices(
-    const struct mtx_partition * partition,
-    int part,
-    const char * path,
-    const char * format,
-    int64_t * bytes_written);
-
-/**
- * `mtx_partition_fwrite_indices()' writes the global indices of
- * elements belonging to a given part of a partitioned set to a stream
- * as a Matrix Market file.  The Matrix Market file is written in the
- * form of an integer vector in array format.
  *
  * If `format' is not `NULL', then the given format string is used
  * when printing numerical values.  The format specifier must be '%d',
@@ -342,7 +327,59 @@ int mtx_partition_write_indices(
  * If it is not `NULL', then the number of bytes written to the stream
  * is returned in `bytes_written'.
  */
-int mtx_partition_fwrite_indices(
+int mtx_partition_write_permutation(
+    const struct mtx_partition * partition,
+    int part,
+    const char * path,
+    const char * format,
+    int64_t * bytes_written);
+
+/**
+ * `mtx_partition_write_permutations()' writes the permutations for
+ * each part of a partitioned set to the given path.  The permutation
+ * is represented by an array of global indices of the elements
+ * belonging each part prior to partitioning.  The file for each part
+ * is written as a Matrix Market file in the form of an integer vector
+ * in array format.
+ *
+ * Each occurrence of '%p' in `pathfmt' is replaced by the number of
+ * each part number.
+ *
+ * If `format' is not `NULL', then the given format string is used
+ * when printing numerical values.  The format specifier must be '%d',
+ * and a fixed field width may optionally be specified (e.g., "%3d"),
+ * but variable field width (e.g., "%*d"), as well as length modifiers
+ * (e.g., "%ld") are not allowed.  If `format' is `NULL', then the
+ * format specifier '%d' is used.
+ *
+ * If it is not `NULL', then the number of bytes written to the stream
+ * is returned in `bytes_written'.
+ */
+int mtx_partition_write_permutations(
+    const struct mtx_partition * partition,
+    const char * pathfmt,
+    const char * format,
+    int64_t * bytes_written);
+
+/**
+ * `mtx_partition_write_permutation()' writes the permutation of a
+ * given part of a partitioned set to a stream as a Matrix Market
+ * file.  The permutation is represented by an array of global indices
+ * of the elements belonging to the given part prior to partitioning.
+ * The file is written as a Matrix Market file in the form of an
+ * integer vector in array format.
+ *
+ * If `format' is not `NULL', then the given format string is used
+ * when printing numerical values.  The format specifier must be '%d',
+ * and a fixed field width may optionally be specified (e.g., "%3d"),
+ * but variable field width (e.g., "%*d"), as well as length modifiers
+ * (e.g., "%ld") are not allowed.  If `format' is `NULL', then the
+ * format specifier '%d' is used.
+ *
+ * If it is not `NULL', then the number of bytes written to the stream
+ * is returned in `bytes_written'.
+ */
+int mtx_partition_fwrite_permutation(
     const struct mtx_partition * partition,
     int part,
     FILE * f,

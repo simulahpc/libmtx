@@ -29,6 +29,7 @@
 #include <errno.h>
 #include <unistd.h>
 
+#include <assert.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
@@ -596,32 +597,14 @@ int mtx_partition_fwrite_parts(
 }
 
 /**
- * `mtx_partition_write_indices()' writes the global indices of
- * elements belonging to a given part of a partitioned set to the
- * given path.  The file is written as a Matrix Market file in the
- * form of an integer vector in array format.
+ * `mtx_partition_write_permutation()' writes the permutation of a
+ * given part of a partitioned set to the given path.  The permutation
+ * is represented by an array of global indices of the elements
+ * belonging to the given part prior to partitioning.  The file is
+ * written as a Matrix Market file in the form of an integer vector in
+ * array format.
  *
  * If `path' is `-', then standard output is used.
- *
- * If `format' is not `NULL', then the given format string is used
- * when printing numerical values.  The format specifier must be '%d',
- * and a fixed field width may optionally be specified (e.g., "%3d"),
- * but variable field width (e.g., "%*d"), as well as length modifiers
- * (e.g., "%ld") are not allowed.  If `format' is `NULL', then the
- * format specifier '%d' is used.
- */
-int mtx_partition_write_indices(
-    const struct mtx_partition * partition,
-    int part,
-    const char * path,
-    const char * format,
-    int64_t * bytes_written);
-
-/**
- * `mtx_partition_fwrite_indices()' writes the global indices of
- * elements belonging to a given part of a partitioned set to a stream
- * as a Matrix Market file.  The Matrix Market file is written in the
- * form of an integer vector in array format.
  *
  * If `format' is not `NULL', then the given format string is used
  * when printing numerical values.  The format specifier must be '%d',
@@ -633,9 +616,171 @@ int mtx_partition_write_indices(
  * If it is not `NULL', then the number of bytes written to the stream
  * is returned in `bytes_written'.
  */
-int mtx_partition_fwrite_indices(
+int mtx_partition_write_permutation(
+    const struct mtx_partition * partition,
+    int part,
+    const char * path,
+    const char * format,
+    int64_t * bytes_written)
+{
+    if (part < 0 || part >= partition->num_parts)
+        return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+    return mtx_index_set_write(
+        &partition->index_sets[part], path, format, bytes_written);
+}
+
+/**
+ * `num_places()` is the number of digits or places in a given
+ * non-negative integer.
+ */
+static int num_places(int n, int * places)
+{
+    int r = 1;
+    if (n < 0)
+        return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+    while (n > 9) {
+        n /= 10;
+        r++;
+    }
+    *places = r;
+    return 0;
+}
+
+/**
+ * `format_path()` formats a path by replacing any occurence of '%p'
+ * in `pathfmt' with the number `part'.
+ */
+static int format_path(
+    const char * pathfmt,
+    char ** output_path,
+    int part,
+    int comm_size)
+{
+    int err;
+    int part_places;
+    err = num_places(comm_size, &part_places);
+    if (err)
+        return err;
+
+    /* Count the number of occurences of '%p' in the format string. */
+    int count = 0;
+    const char * needle = "%p";
+    const int needle_len = strlen(needle);
+    const int pathfmt_len = strlen(pathfmt);
+
+    const char * src = pathfmt;
+    const char * next;
+    while ((next = strstr(src, needle))) {
+        count++;
+        src = next + needle_len;
+        assert(src < pathfmt + pathfmt_len);
+    }
+    if (count < 1)
+        return MTX_ERR_INVALID_PATH_FORMAT;
+
+    /* Allocate storage for the path. */
+    int path_len = pathfmt_len + (part_places-needle_len)*count;
+    char * path = malloc(path_len+1);
+    if (!path)
+        return errno;
+    path[path_len] = '\0';
+
+    src = pathfmt;
+    char * dest = path;
+    while ((next = strstr(src, needle))) {
+        /* Copy the format string up until the needle, '%p'. */
+        while (src < next && dest <= path + path_len)
+            *dest++ = *src++;
+        src += needle_len;
+
+        /* Replace '%p' with the number of the current part. */
+        assert(dest + part_places <= path + path_len);
+        int len = snprintf(dest, part_places+1, "%0*d", part_places, part);
+        assert(len == part_places);
+        dest += part_places;
+    }
+
+    /* Copy the remainder of the format string. */
+    while (*src != '\0' && dest <= path + path_len)
+        *dest++ = *src++;
+    assert(dest == path + path_len);
+    *dest = '\0';
+
+    *output_path = path;
+    return MTX_SUCCESS;
+}
+
+/**
+ * `mtx_partition_write_permutations()' writes the permutations for
+ * each part of a partitioned set to the given path.  The permutation
+ * is represented by an array of global indices of the elements
+ * belonging each part prior to partitioning.  The file for each part
+ * is written as a Matrix Market file in the form of an integer vector
+ * in array format.
+ *
+ * Each occurrence of '%p' in `pathfmt' is replaced by the number of
+ * each part number.
+ *
+ * If `format' is not `NULL', then the given format string is used
+ * when printing numerical values.  The format specifier must be '%d',
+ * and a fixed field width may optionally be specified (e.g., "%3d"),
+ * but variable field width (e.g., "%*d"), as well as length modifiers
+ * (e.g., "%ld") are not allowed.  If `format' is `NULL', then the
+ * format specifier '%d' is used.
+ *
+ * If it is not `NULL', then the number of bytes written to the stream
+ * is returned in `bytes_written'.
+ */
+int mtx_partition_write_permutations(
+    const struct mtx_partition * partition,
+    const char * pathfmt,
+    const char * format,
+    int64_t * bytes_written)
+{
+    int err;
+    for (int p = 0; p < partition->num_parts; p++) {
+        char * path;
+        err = format_path(pathfmt, &path, p, partition->num_parts);
+        if (err)
+            return err;
+        err = mtx_partition_write_permutation(
+            partition, p, path, format, bytes_written);
+        if (err) {
+            free(path);
+            return err;
+        }
+        free(path);
+    }
+    return MTX_SUCCESS;
+}
+
+/**
+ * `mtx_partition_write_permutation()' writes the permutation of a
+ * given part of a partitioned set to a stream as a Matrix Market
+ * file.  The permutation is represented by an array of global indices
+ * of the elements belonging to the given part prior to partitioning.
+ * The file is written as a Matrix Market file in the form of an
+ * integer vector in array format.
+ *
+ * If `format' is not `NULL', then the given format string is used
+ * when printing numerical values.  The format specifier must be '%d',
+ * and a fixed field width may optionally be specified (e.g., "%3d"),
+ * but variable field width (e.g., "%*d"), as well as length modifiers
+ * (e.g., "%ld") are not allowed.  If `format' is `NULL', then the
+ * format specifier '%d' is used.
+ *
+ * If it is not `NULL', then the number of bytes written to the stream
+ * is returned in `bytes_written'.
+ */
+int mtx_partition_fwrite_permutation(
     const struct mtx_partition * partition,
     int part,
     FILE * f,
     const char * format,
-    int64_t * bytes_written);
+    int64_t * bytes_written)
+{
+    if (part < 0 || part >= partition->num_parts)
+        return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+    return mtx_index_set_fwrite(
+        &partition->index_sets[part], f, format, bytes_written);
+}

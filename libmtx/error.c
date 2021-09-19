@@ -104,6 +104,8 @@ const char * mtx_strerror(
         return "not enough space in buffer";
     case MTX_ERR_NOT_CONVERGED:
         return "not converged";
+    case MTX_ERR_INVALID_PATH_FORMAT:
+        return "invalid path format";
     default:
         return "unknown error";
     }

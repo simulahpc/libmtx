@@ -61,6 +61,7 @@ struct program_options
     char * format;
     int num_row_parts;
     enum mtx_partition_type row_partition;
+    char * rowperm_output_path;
     char * row_partition_path;
     char * row_partition_output_path;
     char * partition_output_path;
@@ -81,6 +82,7 @@ static int program_options_init(
     args->format = NULL;
     args->num_row_parts = 1;
     args->row_partition = mtx_block;
+    args->rowperm_output_path = NULL;
     args->row_partition_path = NULL;
     args->row_partition_output_path = NULL;
     args->verbose = 0;
@@ -100,6 +102,8 @@ static void program_options_free(
         free(args->mtx_output_path);
     if (args->partition_output_path)
         free(args->partition_output_path);
+    if (args->rowperm_output_path)
+        free(args->rowperm_output_path);
     if (args->row_partition_path)
         free(args->row_partition_path);
     if (args->row_partition_output_path)
@@ -123,8 +127,12 @@ static void program_options_print_help(
     fprintf(f, "\t\t\tvector values: single or double. (default: double)\n");
     fprintf(f, "  -z, --gzip, --gunzip, --ungzip\tfilter files through gzip\n");
     fprintf(f, "  --output-path=FILE\tpath for partitioned Matrix Market files, where\n");
-    fprintf(f, "\t\t\t'%%p' in the string is replaced with the number of\n");
+    fprintf(f, "\t\t\t'%%p' in the string is replaced with the number\n");
     fprintf(f, "\t\t\tof each part (default: out%%p.mtx).\n");
+    fprintf(f, "  --rowperm-output-path=FILE\t"
+            "path for outputting row permutations of each part,\n");
+    fprintf(f, "\t\t\twhere '%%p' in the string is replaced with the number\n");
+    fprintf(f, "\t\t\tof each part.\n");
     fprintf(f, "  --format=FORMAT\tFormat string for outputting numerical values.\n");
     fprintf(f, "\t\t\tFor real, double and complex values, the format specifiers\n");
     fprintf(f, "\t\t\t'%%e', '%%E', '%%f', '%%F', '%%g' or '%%G' may be used,\n");
@@ -138,9 +146,9 @@ static void program_options_print_help(
     fprintf(f, "\t\t\t(default: block)\n");
     fprintf(f, "  --row-partition-path=FILE\t"
             "path to Matrix Market file for reading row partition\n");
+    fprintf(f, "\t\t\t\twhen the row partition is `unstructured'.\n");
     fprintf(f, "  --row-partition-output-path=FILE\t"
             "path to Matrix Market file for writing row partition\n");
-    fprintf(f, "\t\t\t\tto use when the row partition is `unstructured'.\n");
     fprintf(f, "  -v, --verbose\t\tbe more verbose\n");
     fprintf(f, "\n");
     fprintf(f, "  -h, --help\t\tdisplay this help and exit\n");
@@ -318,7 +326,7 @@ static int parse_program_options(
             }
             char * s = (*argv)[1];
             err = mtx_parse_partition_type(
-                &args->row_partition, NULL, NULL, s, NULL);
+                &args->row_partition, NULL, NULL, s, "");
             if (err) {
                 program_options_free(args);
                 return EINVAL;
@@ -328,7 +336,7 @@ static int parse_program_options(
         } else if (strstr((*argv)[0], "--row-partition=") == (*argv)[0]) {
             char * s = (*argv)[0] + strlen("--row-partition=");
             err = mtx_parse_partition_type(
-                &args->row_partition, NULL, NULL, s, NULL);
+                &args->row_partition, NULL, NULL, s, "");
             if (err) {
                 program_options_free(args);
                 return EINVAL;
@@ -356,6 +364,33 @@ static int parse_program_options(
             if (err) {
                 program_options_free(args);
                 return err;
+            }
+            num_arguments_consumed++;
+            continue;
+        }
+
+        if (strcmp((*argv)[0], "--rowperm-output-path") == 0) {
+            if (*argc < 2) {
+                program_options_free(args);
+                return EINVAL;
+            }
+            if (args->rowperm_output_path)
+                free(args->rowperm_output_path);
+            args->rowperm_output_path = strdup((*argv)[1]);
+            if (!args->rowperm_output_path) {
+                program_options_free(args);
+                return errno;
+            }
+            num_arguments_consumed += 2;
+            continue;
+        } else if (strstr((*argv)[0], "--rowperm-output-path=") == (*argv)[0]) {
+            if (args->rowperm_output_path)
+                free(args->rowperm_output_path);
+            args->rowperm_output_path =
+                strdup((*argv)[0] + strlen("--rowperm-output-path="));
+            if (!args->rowperm_output_path) {
+                program_options_free(args);
+                return errno;
             }
             num_arguments_consumed++;
             continue;
@@ -900,7 +935,45 @@ int main(int argc, char *argv[])
         }
     }
 
-    /* 6. Write Matrix Market file for parts assigned to each matrix
+    /* 6. Write a Matrix Market file containing the part numbers
+     * assigned to each row of the matrix or vector. */
+    if (args.rowperm_output_path) {
+        if (args.verbose > 0) {
+            fprintf(diagf, "mtx_partition_write_permutations: ");
+            fflush(diagf);
+            clock_gettime(CLOCK_MONOTONIC, &t0);
+        }
+
+        int64_t bytes_written = 0;
+        setlocale(LC_ALL, "C");
+        err = mtx_partition_write_permutations(
+            &row_partition, args.rowperm_output_path, NULL, &bytes_written);
+        setlocale(LC_ALL, "");
+        if (err) {
+            if (args.verbose > 0)
+                fprintf(diagf, "\n");
+            fprintf(stderr, "%s: %s: %s\n",
+                    program_invocation_short_name,
+                    args.rowperm_output_path,
+                    mtx_strerror(err));
+            free(part_per_data_line);
+            free(data_lines_per_part_ptr);
+            mtx_partition_free(&row_partition);
+            mtxfile_free(&mtxfile);
+            program_options_free(&args);
+            return EXIT_FAILURE;
+        }
+
+        if (args.verbose > 0) {
+            clock_gettime(CLOCK_MONOTONIC, &t1);
+            fprintf(diagf, "%'.6f seconds (%'.1f MB/s)\n",
+                    timespec_duration(t0, t1),
+                    1.0e-6 * bytes_written / timespec_duration(t0, t1));
+            fflush(diagf);
+        }
+    }
+
+    /* 7. Write Matrix Market file for parts assigned to each matrix
      * or vector entry. */
     if (args.partition_output_path) {
         struct mtxfile mtxfile_parts;
@@ -976,7 +1049,7 @@ int main(int argc, char *argv[])
         mtxfile_free(&mtxfile_parts);
     }
 
-    /* 7. Clean up. */
+    /* 8. Clean up. */
     free(part_per_data_line);
     free(data_lines_per_part_ptr);
     mtx_partition_free(&row_partition);
