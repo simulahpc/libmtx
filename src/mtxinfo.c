@@ -286,14 +286,12 @@ int main(int argc, char *argv[])
         clock_gettime(CLOCK_MONOTONIC, &t0);
     }
 
-    setlocale(LC_ALL, "C");
     struct mtxfile mtxfile;
     int lines_read;
     int64_t bytes_read;
     err = mtxfile_read(
         &mtxfile, args.precision, args.mtx_path, args.gzip,
         &lines_read, &bytes_read);
-    setlocale(LC_ALL, "");
     if (err && lines_read >= 0) {
         if (args.verbose > 0)
             fprintf(diagf, "\n");

@@ -699,6 +699,10 @@ int mtxfile_data_copy(
  * If an error code is returned, then `lines_read' and `bytes_read'
  * are used to return the line number and byte at which the error was
  * encountered during the parsing of the Matrix Market file.
+ *
+ * During parsing, the locale is temporarily changed to "C" to ensure
+ * that locale-specific settings, such as the type of decimal point,
+ * do not affect parsing.
  */
 int mtxfile_fread_data(
     union mtxfile_data * data,
@@ -730,6 +734,10 @@ int mtxfile_fread_data(
  * If an error code is returned, then `lines_read' and `bytes_read'
  * are used to return the line number and byte at which the error was
  * encountered during the parsing of the Matrix Market file.
+ *
+ * During parsing, the locale is temporarily changed to "C" to ensure
+ * that locale-specific settings, such as the type of decimal point,
+ * do not affect parsing.
  */
 int mtxfile_gzread_data(
     union mtxfile_data * data,
@@ -767,6 +775,10 @@ int mtxfile_gzread_data(
  *
  * If it is not `NULL', then the number of bytes written to the stream
  * is returned in `bytes_written'.
+ *
+ * The locale is temporarily changed to "C" to ensure that
+ * locale-specific settings, such as the type of decimal point, do not
+ * affect output.
  */
 int mtxfile_data_fwrite(
     const union mtxfile_data * data,
@@ -800,6 +812,10 @@ int mtxfile_data_fwrite(
  *
  * If it is not `NULL', then the number of bytes written to the stream
  * is returned in `bytes_written'.
+ *
+ * The locale is temporarily changed to "C" to ensure that
+ * locale-specific settings, such as the type of decimal point, do not
+ * affect output.
  */
 int mtxfile_data_gzwrite(
     const union mtxfile_data * data,

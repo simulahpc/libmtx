@@ -634,11 +634,9 @@ int main(int argc, char *argv[])
     struct mtxfile mtxfile;
     int lines_read;
     int64_t bytes_read;
-    setlocale(LC_ALL, "C");
     err = mtxfile_read(
         &mtxfile, args.precision, args.mtx_path, args.gzip,
         &lines_read, &bytes_read);
-    setlocale(LC_ALL, "");
     if (err && lines_read >= 0) {
         if (args.verbose > 0)
             fprintf(diagf, "\n");
@@ -676,11 +674,9 @@ int main(int argc, char *argv[])
 
         int lines_read = 0;
         int64_t bytes_read = 0;
-        setlocale(LC_ALL, "C");
         err = mtx_partition_read_parts(
             &row_partition, args.num_row_parts, args.row_partition_path,
             &lines_read, &bytes_read);
-        setlocale(LC_ALL, "");
         if (err && lines_read >= 0) {
             if (args.verbose > 0)
                 fprintf(diagf, "\n");
@@ -863,11 +859,9 @@ int main(int argc, char *argv[])
             }
 
             /* Write the part to a file. */
-            setlocale(LC_ALL, "C");
             int64_t bytes_written;
             err = mtxfile_write(
                 &mtxfile_p, output_path, args.gzip, args.format, &bytes_written);
-            setlocale(LC_ALL, "");
             if (err) {
                 if (args.verbose > 0)
                     fprintf(diagf, "\n");
@@ -907,10 +901,8 @@ int main(int argc, char *argv[])
         }
 
         int64_t bytes_written = 0;
-        setlocale(LC_ALL, "C");
         err = mtx_partition_write_parts(
             &row_partition, args.row_partition_output_path, "%d", &bytes_written);
-        setlocale(LC_ALL, "");
         if (err) {
             if (args.verbose > 0)
                 fprintf(diagf, "\n");
@@ -945,10 +937,8 @@ int main(int argc, char *argv[])
         }
 
         int64_t bytes_written = 0;
-        setlocale(LC_ALL, "C");
         err = mtx_partition_write_permutations(
             &row_partition, args.rowperm_output_path, NULL, &bytes_written);
-        setlocale(LC_ALL, "");
         if (err) {
             if (args.verbose > 0)
                 fprintf(diagf, "\n");
@@ -1017,12 +1007,10 @@ int main(int argc, char *argv[])
             clock_gettime(CLOCK_MONOTONIC, &t0);
         }
 
-        setlocale(LC_ALL, "C");
         int64_t bytes_written;
         err = mtxfile_write(
             &mtxfile_parts, args.partition_output_path,
             args.gzip, args.format, &bytes_written);
-        setlocale(LC_ALL, "");
         if (err) {
             if (args.verbose > 0)
                 fprintf(diagf, "\n");

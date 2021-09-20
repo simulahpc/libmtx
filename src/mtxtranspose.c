@@ -327,11 +327,9 @@ int main(int argc, char *argv[])
     struct mtxfile mtxfile;
     int lines_read;
     int64_t bytes_read;
-    setlocale(LC_ALL, "C");
     err = mtxfile_read(
         &mtxfile, args.precision, args.mtx_path, args.gzip,
         &lines_read, &bytes_read);
-    setlocale(LC_ALL, "");
     if (err && lines_read >= 0) {
         if (args.verbose > 0)
             fprintf(diagf, "\n");
@@ -402,10 +400,8 @@ int main(int argc, char *argv[])
             return EXIT_FAILURE;
         }
 
-        setlocale(LC_ALL, "C");
         int64_t bytes_written;
         err = mtxfile_fwrite(&mtxfile, stdout, args.format, &bytes_written);
-        setlocale(LC_ALL, "");
         if (err) {
             if (args.verbose > 0)
                 fprintf(diagf, "\n");
