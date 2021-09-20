@@ -49,7 +49,7 @@ enum mtx_error
     MTX_ERR_INVALID_MTX_HEADER = -7,        /* invalid Matrix Market header */
     MTX_ERR_INVALID_MTX_OBJECT = -8,        /* invalid Matrix Market object */
     MTX_ERR_INVALID_MTX_FORMAT = -9,        /* invalid Matrix Market format */
-    MTX_ERR_INVALID_MTX_FIELD = -10,         /* invalid Matrix Market field */
+    MTX_ERR_INVALID_MTX_FIELD = -10,        /* invalid Matrix Market field */
     MTX_ERR_INVALID_MTX_SYMMETRY = -11,     /* invalid Matrix Market symmetry */
     MTX_ERR_INVALID_MTX_TRIANGLE = -12,     /* invalid Matrix Market triangle */
     MTX_ERR_INVALID_MTX_SORTING = -13,      /* invalid Matrix Market sorting */
@@ -67,6 +67,13 @@ enum mtx_error
     MTX_ERR_NO_BUFFER_SPACE = -26,          /* not enough space in buffer */
     MTX_ERR_NOT_CONVERGED = -27,            /* iterative method did not converge */
     MTX_ERR_INVALID_PATH_FORMAT = -28,      /* invalid path format */
+    MTX_ERR_INVALID_FIELD = -29,            /* invalid field */
+    MTX_ERR_INVALID_VECTOR_TYPE = -30,      /* invalid vector type */
+    MTX_ERR_INCOMPATIBLE_MTX_OBJECT = -31,  /* incompatible Matrix Market object */
+    MTX_ERR_INCOMPATIBLE_MTX_FORMAT = -32,  /* incompatible Matrix Market object */
+    MTX_ERR_INCOMPATIBLE_MTX_FIELD = -33,   /* incompatible Matrix Market object */
+    MTX_ERR_INCOMPATIBLE_MTX_SYMMETRY = -34,/* incompatible Matrix Market object */
+    MTX_ERR_INCOMPATIBLE_MTX_SIZE = -35,    /* incompatible Matrix Market object */
 };
 
 /**

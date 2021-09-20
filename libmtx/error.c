@@ -106,6 +106,20 @@ const char * mtx_strerror(
         return "not converged";
     case MTX_ERR_INVALID_PATH_FORMAT:
         return "invalid path format";
+    case MTX_ERR_INVALID_FIELD:
+        return "invalid field";
+    case MTX_ERR_INVALID_VECTOR_TYPE:
+        return "invalid vector type";
+    case MTX_ERR_INCOMPATIBLE_MTX_OBJECT:
+        return "incompatible Matrix Market object";
+    case MTX_ERR_INCOMPATIBLE_MTX_FORMAT:
+        return "incompatible Matrix Market format";
+    case MTX_ERR_INCOMPATIBLE_MTX_FIELD:
+        return "incompatible Matrix Market field";
+    case MTX_ERR_INCOMPATIBLE_MTX_SYMMETRY:
+        return "incompatible Matrix Market symmetry";
+    case MTX_ERR_INCOMPATIBLE_MTX_SIZE:
+        return "incompatible Matrix Market size";
     default:
         return "unknown error";
     }

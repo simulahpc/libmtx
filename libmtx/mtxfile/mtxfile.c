@@ -712,7 +712,8 @@ int mtxfile_alloc_vector_coordinate(
     int err;
     if (field != mtxfile_real &&
         field != mtxfile_complex &&
-        field != mtxfile_integer)
+        field != mtxfile_integer &&
+        field != mtxfile_pattern)
         return MTX_ERR_INVALID_MTX_FIELD;
     if (precision != mtx_single &&
         precision != mtx_double)

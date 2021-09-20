@@ -44,9 +44,12 @@
 #include <libmtx/mtx/submatrix.h>
 #include <libmtx/mtx/transpose.h>
 #include <libmtx/mtx/triangle.h>
+#include <libmtx/util/field.h>
 #include <libmtx/util/index_set.h>
+#include <libmtx/util/partition.h>
 #include <libmtx/vector/array.h>
 #include <libmtx/vector/coordinate.h>
+#include <libmtx/vector/vector.h>
 #include <libmtx/version.h>
 
 #endif

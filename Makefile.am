@@ -80,6 +80,7 @@ libmtx_la_SOURCES = \
 	libmtx/util/cuthill_mckee.h \
 	libmtx/util/format.c \
 	libmtx/util/format.h \
+	libmtx/util/field.c \
 	libmtx/util/index_set.c \
 	libmtx/util/io.c \
 	libmtx/util/io.h \
@@ -96,6 +97,9 @@ libmtx_la_SOURCES = \
 	libmtx/vector/coordinate/data.c \
 	libmtx/vector/coordinate/io.c \
 	libmtx/vector/coordinate/reorder.c \
+	libmtx/vector/vector.c \
+	libmtx/vector/vector_array.c \
+	libmtx/vector/vector_coordinate.c \
 	libmtx/version.c
 
 # Header files
@@ -133,9 +137,13 @@ nobase_include_HEADERS = \
 	libmtx/mtxfile/mtxfile.h \
 	libmtx/mtxfile/size.h \
 	libmtx/mtxfile/data.h \
+	libmtx/util/field.h \
 	libmtx/util/index_set.h \
 	libmtx/util/distpartition.h \
 	libmtx/util/partition.h \
+	libmtx/vector/vector.h \
+	libmtx/vector/vector_array.h \
+	libmtx/vector/vector_coordinate.h \
 	libmtx/vector/array.h \
 	libmtx/vector/array/blas.h \
 	libmtx/vector/array/data.h \
@@ -253,6 +261,7 @@ check_PROGRAMS = \
 	tests/test_index_set \
 	tests/test_mtx \
 	tests/test_mtxfile \
+	tests/test_mtxvector \
 	tests/test_mtx_blas \
 	tests/test_mtx_cg \
 	tests/test_mtx_io \
@@ -275,6 +284,9 @@ tests_test_mtx_SOURCES = tests/test_mtx.c tests/test.h
 tests_test_mtxfile_CPPFLAGS = $(MPICPPFLAGS)
 tests_test_mtxfile_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
 tests_test_mtxfile_SOURCES = tests/test_mtxfile.c tests/test.h
+tests_test_mtxvector_CPPFLAGS = $(MPICPPFLAGS)
+tests_test_mtxvector_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
+tests_test_mtxvector_SOURCES = tests/test_mtxvector.c tests/test.h
 tests_test_mtx_blas_CPPFLAGS = $(MPICPPFLAGS)
 tests_test_mtx_blas_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
 tests_test_mtx_blas_SOURCES = tests/test_mtx_blas.c tests/test.h
@@ -316,6 +328,7 @@ TESTS = \
 	tests/test_index_set \
 	tests/test_mtx \
 	tests/test_mtxfile \
+	tests/test_mtxvector \
 	tests/test_mtx_blas \
 	tests/test_mtx_cg \
 	tests/test_mtx_io \
