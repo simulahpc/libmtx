@@ -887,6 +887,7 @@ int test_mtxfile_fread_data(void)
         TEST_ASSERT_EQ(data.array_real_single[0], 1.5f);
         TEST_ASSERT_EQ(data.array_real_single[1], 1.6f);
         mtxfile_data_free(&data, object, format, field, precision);
+        fclose(f);
     }
 
     {
@@ -913,6 +914,7 @@ int test_mtxfile_fread_data(void)
         TEST_ASSERT_EQ(data.array_real_double[0], 1.5);
         TEST_ASSERT_EQ(data.array_real_double[1], 1.6);
         mtxfile_data_free(&data, object, format, field, precision);
+        fclose(f);
     }
 
     {
@@ -941,6 +943,7 @@ int test_mtxfile_fread_data(void)
         TEST_ASSERT_EQ(data.array_complex_single[1][0], 1.6f);
         TEST_ASSERT_EQ(data.array_complex_single[1][1], 2.2f);
         mtxfile_data_free(&data, object, format, field, precision);
+        fclose(f);
     }
 
     {
@@ -969,6 +972,7 @@ int test_mtxfile_fread_data(void)
         TEST_ASSERT_EQ(data.array_complex_double[1][0], 1.6);
         TEST_ASSERT_EQ(data.array_complex_double[1][1], 2.2);
         mtxfile_data_free(&data, object, format, field, precision);
+        fclose(f);
     }
 
     {
@@ -995,6 +999,7 @@ int test_mtxfile_fread_data(void)
         TEST_ASSERT_EQ(data.array_integer_single[0], 2);
         TEST_ASSERT_EQ(data.array_integer_single[1], 3);
         mtxfile_data_free(&data, object, format, field, precision);
+        fclose(f);
     }
 
     {
@@ -1021,6 +1026,7 @@ int test_mtxfile_fread_data(void)
         TEST_ASSERT_EQ(data.array_integer_double[0], 2);
         TEST_ASSERT_EQ(data.array_integer_double[1], 3);
         mtxfile_data_free(&data, object, format, field, precision);
+        fclose(f);
     }
 
     /*
@@ -1055,6 +1061,7 @@ int test_mtxfile_fread_data(void)
         TEST_ASSERT_EQ(data.matrix_coordinate_real_single[1].j, 3);
         TEST_ASSERT_EQ(data.matrix_coordinate_real_single[1].a, 1.5f);
         mtxfile_data_free(&data, object, format, field, precision);
+        fclose(f);
     }
 
     {
@@ -1085,6 +1092,7 @@ int test_mtxfile_fread_data(void)
         TEST_ASSERT_EQ(data.matrix_coordinate_real_double[1].j, 3);
         TEST_ASSERT_EQ(data.matrix_coordinate_real_double[1].a, 1.5f);
         mtxfile_data_free(&data, object, format, field, precision);
+        fclose(f);
     }
 
     {
@@ -1117,6 +1125,7 @@ int test_mtxfile_fread_data(void)
         TEST_ASSERT_EQ(data.matrix_coordinate_complex_single[1].a[0], -1.5f);
         TEST_ASSERT_EQ(data.matrix_coordinate_complex_single[1].a[1], -2.1f);
         mtxfile_data_free(&data, object, format, field, precision);
+        fclose(f);
     }
 
     {
@@ -1149,6 +1158,7 @@ int test_mtxfile_fread_data(void)
         TEST_ASSERT_EQ(data.matrix_coordinate_complex_double[1].a[0], -1.5);
         TEST_ASSERT_EQ(data.matrix_coordinate_complex_double[1].a[1], -2.1);
         mtxfile_data_free(&data, object, format, field, precision);
+        fclose(f);
     }
 
     {
@@ -1179,6 +1189,7 @@ int test_mtxfile_fread_data(void)
         TEST_ASSERT_EQ(data.matrix_coordinate_integer_single[1].j, 3);
         TEST_ASSERT_EQ(data.matrix_coordinate_integer_single[1].a, 4);
         mtxfile_data_free(&data, object, format, field, precision);
+        fclose(f);
     }
 
     {
@@ -1209,6 +1220,7 @@ int test_mtxfile_fread_data(void)
         TEST_ASSERT_EQ(data.matrix_coordinate_integer_double[1].j, 3);
         TEST_ASSERT_EQ(data.matrix_coordinate_integer_double[1].a, 4);
         mtxfile_data_free(&data, object, format, field, precision);
+        fclose(f);
     }
 
     {
@@ -1237,6 +1249,7 @@ int test_mtxfile_fread_data(void)
         TEST_ASSERT_EQ(data.matrix_coordinate_pattern[1].i, 2);
         TEST_ASSERT_EQ(data.matrix_coordinate_pattern[1].j, 3);
         mtxfile_data_free(&data, object, format, field, precision);
+        fclose(f);
     }
 
     /*
@@ -1269,6 +1282,7 @@ int test_mtxfile_fread_data(void)
         TEST_ASSERT_EQ(data.vector_coordinate_real_single[1].i, 4);
         TEST_ASSERT_EQ(data.vector_coordinate_real_single[1].a, 1.6f);
         mtxfile_data_free(&data, object, format, field, precision);
+        fclose(f);
     }
 
     {
@@ -1297,6 +1311,7 @@ int test_mtxfile_fread_data(void)
         TEST_ASSERT_EQ(data.vector_coordinate_real_double[1].i, 4);
         TEST_ASSERT_EQ(data.vector_coordinate_real_double[1].a, 1.6);
         mtxfile_data_free(&data, object, format, field, precision);
+        fclose(f);
     }
 
     {
@@ -1327,6 +1342,7 @@ int test_mtxfile_fread_data(void)
         TEST_ASSERT_EQ(data.vector_coordinate_complex_single[1].a[0], 1.6f);
         TEST_ASSERT_EQ(data.vector_coordinate_complex_single[1].a[1], 2.2f);
         mtxfile_data_free(&data, object, format, field, precision);
+        fclose(f);
     }
 
     {
@@ -1357,6 +1373,7 @@ int test_mtxfile_fread_data(void)
         TEST_ASSERT_EQ(data.vector_coordinate_complex_double[1].a[0], 1.6);
         TEST_ASSERT_EQ(data.vector_coordinate_complex_double[1].a[1], 2.2);
         mtxfile_data_free(&data, object, format, field, precision);
+        fclose(f);
     }
 
     {
@@ -1385,6 +1402,7 @@ int test_mtxfile_fread_data(void)
         TEST_ASSERT_EQ(data.vector_coordinate_integer_single[1].i, 4);
         TEST_ASSERT_EQ(data.vector_coordinate_integer_single[1].a, 1);
         mtxfile_data_free(&data, object, format, field, precision);
+        fclose(f);
     }
 
     {
@@ -1413,6 +1431,7 @@ int test_mtxfile_fread_data(void)
         TEST_ASSERT_EQ(data.vector_coordinate_integer_double[1].i, 4);
         TEST_ASSERT_EQ(data.vector_coordinate_integer_double[1].a, 1);
         mtxfile_data_free(&data, object, format, field, precision);
+        fclose(f);
     }
 
     {
@@ -1439,6 +1458,7 @@ int test_mtxfile_fread_data(void)
         TEST_ASSERT_EQ(data.vector_coordinate_pattern[0].i, 3);
         TEST_ASSERT_EQ(data.vector_coordinate_pattern[1].i, 4);
         mtxfile_data_free(&data, object, format, field, precision);
+        fclose(f);
     }
 
     return TEST_SUCCESS;
@@ -1482,6 +1502,7 @@ int test_mtxfile_fread(void)
         TEST_ASSERT_EQ(mtxfile.data.array_real_single[0], 1.5f);
         TEST_ASSERT_EQ(mtxfile.data.array_real_single[1], 1.6f);
         mtxfile_free(&mtxfile);
+        fclose(f);
     }
 
     {
@@ -1512,6 +1533,7 @@ int test_mtxfile_fread(void)
         TEST_ASSERT_EQ(mtxfile.data.array_real_double[0], 1.5);
         TEST_ASSERT_EQ(mtxfile.data.array_real_double[1], 1.6);
         mtxfile_free(&mtxfile);
+        fclose(f);
     }
 
     {
@@ -1544,6 +1566,7 @@ int test_mtxfile_fread(void)
         TEST_ASSERT_EQ(mtxfile.data.array_complex_single[1][0], 1.6f);
         TEST_ASSERT_EQ(mtxfile.data.array_complex_single[1][1], 2.2f);
         mtxfile_free(&mtxfile);
+        fclose(f);
     }
 
     {
@@ -1576,6 +1599,7 @@ int test_mtxfile_fread(void)
         TEST_ASSERT_EQ(mtxfile.data.array_complex_double[1][0], 1.6);
         TEST_ASSERT_EQ(mtxfile.data.array_complex_double[1][1], 2.2);
         mtxfile_free(&mtxfile);
+        fclose(f);
     }
 
     {
@@ -1606,6 +1630,7 @@ int test_mtxfile_fread(void)
         TEST_ASSERT_EQ(mtxfile.data.array_integer_single[0], 2);
         TEST_ASSERT_EQ(mtxfile.data.array_integer_single[1], 3);
         mtxfile_free(&mtxfile);
+        fclose(f);
     }
 
     {
@@ -1636,6 +1661,7 @@ int test_mtxfile_fread(void)
         TEST_ASSERT_EQ(mtxfile.data.array_integer_double[0], 2);
         TEST_ASSERT_EQ(mtxfile.data.array_integer_double[1], 3);
         mtxfile_free(&mtxfile);
+        fclose(f);
     }
 
     /*
@@ -1674,6 +1700,7 @@ int test_mtxfile_fread(void)
         TEST_ASSERT_EQ(mtxfile.data.matrix_coordinate_real_single[1].j, 3);
         TEST_ASSERT_EQ(mtxfile.data.matrix_coordinate_real_single[1].a, 1.5f);
         mtxfile_free(&mtxfile);
+        fclose(f);
     }
 
     {
@@ -1711,6 +1738,7 @@ int test_mtxfile_fread(void)
         TEST_ASSERT_EQ(mtxfile.data.matrix_coordinate_complex_double[1].a[0], -1.5);
         TEST_ASSERT_EQ(mtxfile.data.matrix_coordinate_complex_double[1].a[1], -2.1);
         mtxfile_free(&mtxfile);
+        fclose(f);
     }
 
     {
@@ -1745,6 +1773,7 @@ int test_mtxfile_fread(void)
         TEST_ASSERT_EQ(mtxfile.data.matrix_coordinate_integer_single[1].j, 3);
         TEST_ASSERT_EQ(mtxfile.data.matrix_coordinate_integer_single[1].a, 6);
         mtxfile_free(&mtxfile);
+        fclose(f);
     }
 
     {
@@ -1777,6 +1806,7 @@ int test_mtxfile_fread(void)
         TEST_ASSERT_EQ(mtxfile.data.matrix_coordinate_pattern[1].i, 2);
         TEST_ASSERT_EQ(mtxfile.data.matrix_coordinate_pattern[1].j, 3);
         mtxfile_free(&mtxfile);
+        fclose(f);
     }
 
     /*
@@ -1813,6 +1843,7 @@ int test_mtxfile_fread(void)
         TEST_ASSERT_EQ(mtxfile.data.vector_coordinate_real_single[1].i, 2);
         TEST_ASSERT_EQ(mtxfile.data.vector_coordinate_real_single[1].a, 1.5f);
         mtxfile_free(&mtxfile);
+        fclose(f);
     }
 
     {
@@ -1848,6 +1879,7 @@ int test_mtxfile_fread(void)
         TEST_ASSERT_EQ(mtxfile.data.vector_coordinate_complex_double[1].a[0], -1.5);
         TEST_ASSERT_EQ(mtxfile.data.vector_coordinate_complex_double[1].a[1], -2.1);
         mtxfile_free(&mtxfile);
+        fclose(f);
     }
 
     {
@@ -1881,6 +1913,7 @@ int test_mtxfile_fread(void)
         TEST_ASSERT_EQ(mtxfile.data.vector_coordinate_integer_single[1].i, 2);
         TEST_ASSERT_EQ(mtxfile.data.vector_coordinate_integer_single[1].a, 6);
         mtxfile_free(&mtxfile);
+        fclose(f);
     }
 
     {
@@ -1912,6 +1945,7 @@ int test_mtxfile_fread(void)
         TEST_ASSERT_EQ(mtxfile.data.vector_coordinate_pattern[0].i, 3);
         TEST_ASSERT_EQ(mtxfile.data.vector_coordinate_pattern[1].i, 2);
         mtxfile_free(&mtxfile);
+        fclose(f);
     }
 
     return TEST_SUCCESS;
@@ -1954,6 +1988,7 @@ int test_mtxfile_fwrite(void)
         TEST_ASSERT_STREQ_MSG(
             expected, buf, "\nexpected: %s\nactual: %s\n",
             expected, buf);
+        fclose(f);
     }
 
     {
@@ -1976,6 +2011,7 @@ int test_mtxfile_fwrite(void)
         TEST_ASSERT_STREQ_MSG(
             expected, buf, "\nexpected: %s\nactual: %s\n",
             expected, buf);
+        fclose(f);
     }
 
     /*
@@ -2012,6 +2048,7 @@ int test_mtxfile_fwrite(void)
         TEST_ASSERT_STREQ_MSG(
             expected, buf, "\nexpected: %s\nactual: %s\n",
             expected, buf);
+        fclose(f);
     }
 
     /*
@@ -2045,6 +2082,7 @@ int test_mtxfile_fwrite(void)
         TEST_ASSERT_STREQ_MSG(
             expected, buf, "\nexpected: %s\nactual: %s\n",
             expected, buf);
+        fclose(f);
     }
     return TEST_SUCCESS;
 }
@@ -2227,7 +2265,7 @@ int test_mtxfile_gzwrite(void)
         TEST_FAIL_MSG("%s", strerror(errno));
     close(p[0]);
 
-#if 1
+#if 0
     fprintf(stdout, "gzip-compressed .mtx file: {\n");
     for (int i = 0; i < bytes_read-1; i++) {
         fprintf(stdout, "0x%02hhX, ", mtx_gz_file[i]);
