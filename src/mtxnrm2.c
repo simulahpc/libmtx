@@ -34,6 +34,7 @@
 
 #include <assert.h>
 #include <inttypes.h>
+#include <locale.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -60,6 +61,7 @@ struct program_options
     char * x_path;
     char * format;
     enum mtx_precision precision;
+    enum mtxvector_type vector_type;
     bool gzip;
     int verbose;
     bool quiet;
@@ -74,6 +76,7 @@ static int program_options_init(
     args->x_path = NULL;
     args->format = NULL;
     args->precision = mtx_double;
+    args->vector_type = mtxvector_auto;
     args->gzip = false;
     args->quiet = false;
     args->verbose = 0;
@@ -121,6 +124,8 @@ static void program_options_print_help(
     fprintf(f, " Other options are:\n");
     fprintf(f, "  --precision=PRECISION\tprecision used to represent matrix or\n");
     fprintf(f, "\t\t\tvector values: single or double. (default: double)\n");
+    fprintf(f, "  --vector-type=TYPE\tformat for representing vectors:\n");
+    fprintf(f, "\t\t\tauto, array, coordinate or distributed. (default: auto)\n");
     fprintf(f, "  -z, --gzip, --gunzip, --ungzip\tfilter files through gzip\n");
     fprintf(f, "  --format=FORMAT\tFormat string for outputting numerical values.\n");
     fprintf(f, "\t\t\tFor real, double and complex values, the format specifiers\n");
@@ -204,6 +209,32 @@ static int parse_program_options(
             } else if (strcmp(s, "double") == 0) {
                 args->precision = mtx_double;
             } else {
+                program_options_free(args);
+                return EINVAL;
+            }
+            num_arguments_consumed++;
+            continue;
+        }
+
+        if (strcmp((*argv)[0], "--vector-type") == 0) {
+            if (*argc < 2) {
+                program_options_free(args);
+                return EINVAL;
+            }
+            char * s = (*argv)[1];
+            err = mtxvector_type_parse(
+                &args->vector_type, NULL, NULL, s, "");
+            if (err) {
+                program_options_free(args);
+                return EINVAL;
+            }
+            num_arguments_consumed += 2;
+            continue;
+        } else if (strstr((*argv)[0], "--vector-type=") == (*argv)[0]) {
+            char * s = (*argv)[0] + strlen("--vector-type=");
+            err = mtxvector_type_parse(
+                &args->vector_type, NULL, NULL, s, "");
+            if (err) {
                 program_options_free(args);
                 return EINVAL;
             }
@@ -321,6 +352,114 @@ static double timespec_duration(
 }
 
 /**
+ * `vector_nrm2()' converts a Matrix Market file to a vector of the
+ * given type, computes the Euclidean norm and prints the result to
+ * standard output.
+ */
+static int vector_nrm2(
+    struct mtxfile * mtxfile,
+    enum mtxvector_type vector_type,
+    const char * format,
+    int verbose,
+    FILE * diagf,
+    bool quiet)
+{
+    int err;
+    struct timespec t0, t1;
+    enum mtx_precision precision = mtxfile->precision;
+
+    /* 1. Convert Matrix Market file to a vector. */
+    if (verbose > 0) {
+        fprintf(diagf, "mtxvector_from_mtxfile: ");
+        fflush(diagf);
+        clock_gettime(CLOCK_MONOTONIC, &t0);
+    }
+
+    struct mtxvector x;
+    err = mtxvector_from_mtxfile(&x, mtxfile, vector_type);
+    if (err) {
+        if (verbose > 0)
+            fprintf(diagf, "\n");
+        return err;
+    }
+
+    if (verbose > 0) {
+        clock_gettime(CLOCK_MONOTONIC, &t1);
+        fprintf(diagf, "%.6f seconds\n",
+                timespec_duration(t0, t1));
+    }
+
+    /* 2. Compute the Euclidean norm. */
+    if (mtxfile->header.field == mtx_real ||
+        mtxfile->header.field == mtx_complex)
+    {
+        if (precision == mtx_single) {
+            if (verbose > 0) {
+                fprintf(diagf, "mtxvector_snrm2: ");
+                fflush(diagf);
+                clock_gettime(CLOCK_MONOTONIC, &t0);
+            }
+            float nrm2 = 0.0f;
+            err = mtxvector_snrm2(&x, &nrm2);
+            if (err) {
+                if (verbose > 0)
+                    fprintf(diagf, "\n");
+                mtxvector_free(&x);
+                return err;
+            }
+            if (verbose > 0) {
+                clock_gettime(CLOCK_MONOTONIC, &t1);
+                fprintf(diagf, "%.6f seconds\n",
+                        timespec_duration(t0, t1));
+            }
+            if (!quiet) {
+                fprintf(stdout, format ? format : "%f", nrm2);
+                fputc('\n', stdout);
+            }
+        } else if (precision == mtx_double) {
+            if (verbose > 0) {
+                fprintf(diagf, "mtxvector_dnrm2: ");
+                fflush(diagf);
+                clock_gettime(CLOCK_MONOTONIC, &t0);
+            }
+            double nrm2 = 0.0;
+            err = mtxvector_dnrm2(&x, &nrm2);
+            if (err) {
+                if (verbose > 0)
+                    fprintf(diagf, "\n");
+                mtxvector_free(&x);
+                return err;
+            }
+            if (verbose > 0) {
+                clock_gettime(CLOCK_MONOTONIC, &t1);
+                fprintf(diagf, "%.6f seconds\n",
+                        timespec_duration(t0, t1));
+            }
+            if (!quiet) {
+                fprintf(stdout, format ? format : "%f", nrm2);
+                fputc('\n', stdout);
+            }
+        } else {
+            mtxvector_free(&x);
+            return MTX_ERR_INVALID_PRECISION;
+        }
+
+    } else if (mtxfile->header.field == mtx_integer ||
+               mtxfile->header.field == mtx_pattern)
+    {
+        mtxvector_free(&x);
+        errno = ENOTSUP;
+        return MTX_ERR_ERRNO;
+    } else {
+        mtxvector_free(&x);
+        return MTX_ERR_INVALID_MTX_FIELD;
+    }
+
+    mtxvector_free(&x);
+    return MTX_SUCCESS;
+}
+
+/**
  * `main()`.
  */
 int main(int argc, char *argv[])
@@ -328,6 +467,7 @@ int main(int argc, char *argv[])
     int err;
     struct timespec t0, t1;
     FILE * diagf = stderr;
+    setlocale(LC_ALL, "");
 
     /* 1. Parse program options. */
     struct program_options args;
@@ -341,18 +481,28 @@ int main(int argc, char *argv[])
     }
 
     /* 2. Read the `x' vector from a Matrix Market file. */
-    struct mtx x;
     if (args.verbose > 0) {
-        fprintf(diagf, "mtx_read: ");
+        fprintf(diagf, "mtxfile_read: ");
         fflush(diagf);
         clock_gettime(CLOCK_MONOTONIC, &t0);
     }
 
-    int line_number, column_number;
-    err = mtx_read(
-        &x, args.precision, args.x_path ? args.x_path : "", args.gzip,
-        &line_number, &column_number);
-    if (err && (line_number == -1 && column_number == -1)) {
+    struct mtxfile mtxfile;
+    int lines_read;
+    int64_t bytes_read;
+    err = mtxfile_read(
+        &mtxfile, args.precision, args.x_path ? args.x_path : "", args.gzip,
+        &lines_read, &bytes_read);
+    if (err && lines_read >= 0) {
+        if (args.verbose > 0)
+            fprintf(diagf, "\n");
+        fprintf(stderr, "%s: %s:%d: %s\n",
+                program_invocation_short_name,
+                args.x_path, lines_read+1,
+                mtx_strerror(err));
+        program_options_free(&args);
+        return EXIT_FAILURE;
+    } else if (err) {
         if (args.verbose > 0)
             fprintf(diagf, "\n");
         fprintf(stderr, "%s: %s: %s\n",
@@ -360,108 +510,49 @@ int main(int argc, char *argv[])
                 args.x_path, mtx_strerror(err));
         program_options_free(&args);
         return EXIT_FAILURE;
-    } else if (err) {
-        if (args.verbose > 0)
-            fprintf(diagf, "\n");
-        fprintf(stderr, "%s: %s:%d:%d: %s\n",
-                program_invocation_short_name,
-                args.x_path, line_number, column_number,
-                mtx_strerror(err));
-        program_options_free(&args);
-        return EXIT_FAILURE;
     }
 
     if (args.verbose > 0) {
         clock_gettime(CLOCK_MONOTONIC, &t1);
-        fprintf(diagf, "%.6f seconds\n",
-                timespec_duration(t0, t1));
+        fprintf(diagf, "%'.6f seconds (%'.1f MB/s)\n",
+                timespec_duration(t0, t1),
+                1.0e-6 * bytes_read / timespec_duration(t0, t1));
     }
 
-    /* 3. Compute the Euclidean norm product. */
-    if (x.field == mtx_real) {
-        if (args.precision == mtx_single) {
-            if (args.verbose > 0) {
-                fprintf(diagf, "mtx_snrm2: ");
-                fflush(diagf);
-                clock_gettime(CLOCK_MONOTONIC, &t0);
-            }
-            float nrm2 = 0.0f;
-            err = mtx_snrm2(&x, &nrm2);
-            if (err) {
-                if (args.verbose > 0)
-                    fprintf(diagf, "\n");
-                fprintf(stderr, "%s: %s\n",
-                        program_invocation_short_name,
-                        mtx_strerror(err));
-                mtx_free(&x);
-                program_options_free(&args);
-                return EXIT_FAILURE;
-            }
-            if (args.verbose > 0) {
-                clock_gettime(CLOCK_MONOTONIC, &t1);
-                fprintf(diagf, "%.6f seconds\n",
-                        timespec_duration(t0, t1));
-            }
-            if (!args.quiet) {
-                fprintf(stdout, args.format ? args.format : "%f", nrm2);
-                fputc('\n', stdout);
-            }
-        } else if (args.precision == mtx_double) {
-            if (args.verbose > 0) {
-                fprintf(diagf, "mtx_dnrm2: ");
-                fflush(diagf);
-                clock_gettime(CLOCK_MONOTONIC, &t0);
-            }
-            double nrm2 = 0.0;
-            err = mtx_dnrm2(&x, &nrm2);
-            if (err) {
-                if (args.verbose > 0)
-                    fprintf(diagf, "\n");
-                fprintf(stderr, "%s: %s\n",
-                        program_invocation_short_name,
-                        mtx_strerror(err));
-                mtx_free(&x);
-                program_options_free(&args);
-                return EXIT_FAILURE;
-            }
-            if (args.verbose > 0) {
-                clock_gettime(CLOCK_MONOTONIC, &t1);
-                fprintf(diagf, "%.6f seconds\n",
-                        timespec_duration(t0, t1));
-            }
-            if (!args.quiet) {
-                fprintf(stdout, args.format ? args.format : "%f", nrm2);
-                fputc('\n', stdout);
-            }
-        } else {
-            fprintf(stderr, "%s: %s\n",
-                    program_invocation_short_name,
-                    mtx_strerror(MTX_ERR_INVALID_PRECISION));
-            mtx_free(&x);
-            program_options_free(&args);
-            return EXIT_FAILURE;
-        }
-    } else if (x.field == mtx_complex ||
-               x.field == mtx_integer ||
-               x.field == mtx_pattern)
-    {
+    /* 3. Compute the Euclidean norm. */
+    if (mtxfile.header.object == mtxfile_matrix) {
+        /* TODO: Compute the Frobenius norm of the matrix. */
         fprintf(stderr, "%s: %s\n",
                 program_invocation_short_name,
                 strerror(ENOTSUP));
-        mtx_free(&x);
+        mtxfile_free(&mtxfile);
         program_options_free(&args);
         return EXIT_FAILURE;
+
+    } else if (mtxfile.header.object == mtxfile_vector) {
+        err = vector_nrm2(
+            &mtxfile, args.vector_type, args.format,
+            args.verbose, diagf, args.quiet);
+        if (err) {
+            fprintf(stderr, "%s: %s\n",
+                    program_invocation_short_name,
+                    mtx_strerror(err));
+            mtxfile_free(&mtxfile);
+            program_options_free(&args);
+            return EXIT_FAILURE;
+        }
+
     } else {
         fprintf(stderr, "%s: %s\n",
                 program_invocation_short_name,
-                mtx_strerror(MTX_ERR_INVALID_MTX_FIELD));
-        mtx_free(&x);
+                mtx_strerror(MTX_ERR_INVALID_MTX_OBJECT));
+        mtxfile_free(&mtxfile);
         program_options_free(&args);
         return EXIT_FAILURE;
     }
 
     /* 4. Clean up. */
-    mtx_free(&x);
+    mtxfile_free(&mtxfile);
     program_options_free(&args);
     return EXIT_SUCCESS;
 }
