@@ -54,6 +54,49 @@
  */
 
 /**
+ * `mtxfile_alloc()' allocates storage for a Matrix Market file with
+ * the given header line, comment lines and size line.
+ */
+int mtxfile_alloc(
+    struct mtxfile * mtxfile,
+    const struct mtxfile_header * header,
+    const struct mtxfile_comments * comments,
+    const struct mtxfile_size * size,
+    enum mtx_precision precision)
+{
+    int err;
+    err = mtxfile_header_copy(&mtxfile->header, header);
+    if (err)
+        return err;
+    err = mtxfile_comments_copy(&mtxfile->comments, comments);
+    if (err)
+        return err;
+    err = mtxfile_size_copy(&mtxfile->size, size);
+    if (err) {
+        mtxfile_comments_free(&mtxfile->comments);
+        return err;
+    }
+    mtxfile->precision = precision;
+
+    int64_t num_data_lines;
+    err = mtxfile_size_num_data_lines(
+        size, &num_data_lines);
+    if (err) {
+        mtxfile_comments_free(&mtxfile->comments);
+        return err;
+    }
+
+    err = mtxfile_data_alloc(
+        &mtxfile->data, mtxfile->header.object, mtxfile->header.format,
+        mtxfile->header.field, mtxfile->precision, num_data_lines);
+    if (err) {
+        mtxfile_comments_free(&mtxfile->comments);
+        return err;
+    }
+    return MTX_SUCCESS;
+}
+
+/**
  * `mtxfile_free()' frees storage allocated for a Matrix Market file.
  */
 void mtxfile_free(

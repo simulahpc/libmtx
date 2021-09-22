@@ -73,6 +73,7 @@ libmtx_la_SOURCES = \
 	libmtx/mtx/triangle.c \
 	libmtx/mtxfile/header.c \
 	libmtx/mtxfile/comments.c \
+	libmtx/mtxfile/mtxdistfile.c \
 	libmtx/mtxfile/mtxfile.c \
 	libmtx/mtxfile/size.c \
 	libmtx/mtxfile/data.c \
@@ -134,6 +135,7 @@ nobase_include_HEADERS = \
 	libmtx/mtx/triangle.h \
 	libmtx/mtxfile/header.h \
 	libmtx/mtxfile/comments.h \
+	libmtx/mtxfile/mtxdistfile.h \
 	libmtx/mtxfile/mtxfile.h \
 	libmtx/mtxfile/size.h \
 	libmtx/mtxfile/data.h \
@@ -259,9 +261,8 @@ mtxspy_SOURCES = src/mtxspy.c
 # Unit tests
 check_PROGRAMS = \
 	tests/test_index_set \
+	tests/test_format \
 	tests/test_mtx \
-	tests/test_mtxfile \
-	tests/test_mtxvector \
 	tests/test_mtx_blas \
 	tests/test_mtx_cg \
 	tests/test_mtx_io \
@@ -270,8 +271,9 @@ check_PROGRAMS = \
 	tests/test_mtx_reorder \
 	tests/test_mtx_sort \
 	tests/test_mtx_transpose \
+	tests/test_mtxfile \
+	tests/test_mtxvector \
 	tests/test_parse \
-	tests/test_format \
 	tests/test_submatrix \
 	tests/test_vector
 
@@ -325,10 +327,9 @@ tests_test_vector_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
 tests_test_vector_SOURCES = tests/test_vector.c tests/test.h
 
 TESTS = \
+	tests/test_format \
 	tests/test_index_set \
 	tests/test_mtx \
-	tests/test_mtxfile \
-	tests/test_mtxvector \
 	tests/test_mtx_blas \
 	tests/test_mtx_cg \
 	tests/test_mtx_io \
@@ -337,8 +338,9 @@ TESTS = \
 	tests/test_mtx_reorder \
 	tests/test_mtx_sort \
 	tests/test_mtx_transpose \
+	tests/test_mtxfile \
+	tests/test_mtxvector \
 	tests/test_parse \
-	tests/test_format \
 	tests/test_submatrix \
 	tests/test_vector
 
@@ -346,6 +348,7 @@ TESTS = \
 if HAVE_MPI
 check_PROGRAMS += \
 	tests/test_mtx_mpi \
+	tests/test_mtxdistfile \
 	tests/test_mtxfile_mpi
 
 tests_test_mtx_mpi_CPPFLAGS = $(MPICPPFLAGS)
@@ -358,9 +361,15 @@ tests_test_mtxfile_mpi_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LI
 tests_test_mtxfile_mpi_SOURCES = tests/test_mtxfile_mpi.c tests/test.h
 tests/test_mtxfile_mpi_parallel: tests/test_mtxfile_mpi
 
+tests_test_mtxdistfile_CPPFLAGS = $(MPICPPFLAGS)
+tests_test_mtxdistfile_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
+tests_test_mtxdistfile_SOURCES = tests/test_mtxdistfile.c tests/test.h
+tests/test_mtxdistfile_parallel: tests/test_mtxdistfile
+
 TESTS += \
 	tests/test_mtx_mpi_parallel \
-	tests/test_mtxfile_mpi_parallel
+	tests/test_mtxfile_mpi_parallel \
+	tests/test_mtxdistfile_parallel
 endif
 
 # Documentation
