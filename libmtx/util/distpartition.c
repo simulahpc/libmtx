@@ -37,21 +37,26 @@
 
 #ifdef LIBMTX_HAVE_MPI
 /**
- * `mtx_distpartition_free()' frees resources associated with a
+ * `mtxdistpartition_free()' frees resources associated with a
  * partitioning.
  */
-void mtx_distpartition_free(
-    struct mtx_distpartition * partition)
+void mtxdistpartition_free(
+    struct mtxdistpartition * partition)
 {
     mtx_index_set_free(&partition->index_set);
 }
 
 /**
- * `mtx_distpartition_init()' initialises a distributed partitioning
+ * `mtxdistpartition_init()' initialises a distributed partitioning
  * of a finite set.
+ *
+ * This function is a collective operation which requires every
+ * process in the communicator to perform matching calls.  In
+ * particular, every process in the communicator must provide the same
+ * values for `type', `size', `num_parts' and `block_size'.
  */
-int mtx_distpartition_init(
-    struct mtx_distpartition * partition,
+int mtxdistpartition_init(
+    struct mtxdistpartition * partition,
     enum mtx_partition_type type,
     int64_t size,
     int num_parts,
@@ -61,33 +66,37 @@ int mtx_distpartition_init(
     int root,
     struct mtxmpierror * mpierror)
 {
+    int err;
     if (type == mtx_singleton) {
-        return mtx_distpartition_init_singleton(
+        err = mtxdistpartition_init_singleton(
             partition, size, comm, root, mpierror);
     } else if (type == mtx_block) {
-        return mtx_distpartition_init_block(
+        err = mtxdistpartition_init_block(
             partition, size, num_parts, comm, mpierror);
     } else if (type == mtx_cyclic) {
-        return mtx_distpartition_init_cyclic(
+        err = mtxdistpartition_init_cyclic(
             partition, size, num_parts, comm, mpierror);
     } else if (type == mtx_block_cyclic) {
-        return mtx_distpartition_init_block_cyclic(
+        err = mtxdistpartition_init_block_cyclic(
             partition, size, num_parts, block_size, comm, mpierror);
     } else if (type == mtx_unstructured) {
-        return mtx_distpartition_init_unstructured(
+        err = mtxdistpartition_init_unstructured(
             partition, size, num_parts, parts, comm, mpierror);
     } else {
-        return MTX_ERR_INVALID_PARTITION_TYPE;
+        err = MTX_ERR_INVALID_PARTITION_TYPE;
     }
+    if (mtxmpierror_allreduce(mpierror, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+    return MTX_SUCCESS;
 }
 
 /**
- * `mtx_distpartition_init_singleton()' initialises a distributed
+ * `mtxdistpartition_init_singleton()' initialises a distributed
  * singleton partition of a finite set.  That is, a partition with
  * only one part, also called the trivial partition.
  */
-int mtx_distpartition_init_singleton(
-    struct mtx_distpartition * partition,
+int mtxdistpartition_init_singleton(
+    struct mtxdistpartition * partition,
     int64_t size,
     MPI_Comm comm,
     int root,
@@ -112,11 +121,11 @@ int mtx_distpartition_init_singleton(
 }
 
 /**
- * `mtx_distpartition_init_block()' initialises a distributed block
+ * `mtxdistpartition_init_block()' initialises a distributed block
  * partitioning of a finite set.
  */
-int mtx_distpartition_init_block(
-    struct mtx_distpartition * partition,
+int mtxdistpartition_init_block(
+    struct mtxdistpartition * partition,
     int64_t size,
     int num_parts,
     MPI_Comm comm,
@@ -152,22 +161,49 @@ int mtx_distpartition_init_block(
 }
 
 /**
- * `mtx_distpartition_init_cyclic()' initialises a distributed cyclic
+ * `mtxdistpartition_init_cyclic()' initialises a distributed cyclic
  * partitioning of a finite set.
  */
-int mtx_distpartition_init_cyclic(
-    struct mtx_distpartition * partition,
+int mtxdistpartition_init_cyclic(
+    struct mtxdistpartition * partition,
     int64_t size,
     int num_parts,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxmpierror * mpierror)
+{
+    int err;
+    int comm_size;
+    mpierror->mpierrcode = MPI_Comm_size(comm, &comm_size);
+    err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxmpierror_allreduce(mpierror, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+    err = comm_size < num_parts ? MTX_ERR_INDEX_OUT_OF_BOUNDS : MTX_SUCCESS;
+    if (mtxmpierror_allreduce(mpierror, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+    int rank;
+    mpierror->mpierrcode = MPI_Comm_rank(comm, &rank);
+    err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxmpierror_allreduce(mpierror, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+    partition->comm = comm;
+    partition->type = mtx_cyclic;
+    partition->size = size;
+    partition->num_parts = num_parts;
+
+    int64_t part_size = size / num_parts + (rank < (size % num_parts) ? 1 : 0);
+    err = mtx_index_set_init_strided(
+        &partition->index_set, rank, part_size, num_parts);
+    if (mtxmpierror_allreduce(mpierror, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+    return MTX_SUCCESS;
+}
 
 /**
- * `mtx_distpartition_init_block_cyclic()' initialises a distributed
+ * `mtxdistpartition_init_block_cyclic()' initialises a distributed
  * block-cyclic partitioning of a finite set.
  */
-int mtx_distpartition_init_block_cyclic(
-    struct mtx_distpartition * partition,
+int mtxdistpartition_init_block_cyclic(
+    struct mtxdistpartition * partition,
     int64_t size,
     int num_parts,
     int block_size,
@@ -175,11 +211,11 @@ int mtx_distpartition_init_block_cyclic(
     struct mtxmpierror * mpierror);
 
 /**
- * `mtx_distpartition_init_unstructured()' initialises a distributed,
+ * `mtxdistpartition_init_unstructured()' initialises a distributed,
  * unstructured partitioning of a finite set.
  */
-int mtx_distpartition_init_unstructured(
-    struct mtx_distpartition * partition,
+int mtxdistpartition_init_unstructured(
+    struct mtxdistpartition * partition,
     int64_t size,
     int num_parts,
     const int * parts,
@@ -207,7 +243,7 @@ int mtx_distpartition_init_unstructured(
  */
 
 /**
- * `mtx_distpartition_read_parts()' reads the part numbers assigned to
+ * `mtxdistpartition_read_parts()' reads the part numbers assigned to
  * each element of a partitioned set from the given path.  The path
  * must be to a Matrix Market file in the form of an integer vector in
  * array format.
@@ -218,15 +254,15 @@ int mtx_distpartition_init_unstructured(
  * are used to return the line number and byte at which the error was
  * encountered during the parsing of the Matrix Market file.
  */
-int mtx_distpartition_read_parts(
-    struct mtx_distpartition * partition,
+int mtxdistpartition_read_parts(
+    struct mtxdistpartition * partition,
     int num_parts,
     const char * path,
     int * lines_read,
     int64_t * bytes_read);
 
 /**
- * `mtx_distpartition_fread_parts()' reads the part numbers assigned
+ * `mtxdistpartition_fread_parts()' reads the part numbers assigned
  * to each element of a partitioned set from a stream formatted as a
  * Matrix Market file.  The Matrix Market file must be in the form of
  * an integer vector in array format.
@@ -235,8 +271,8 @@ int mtx_distpartition_read_parts(
  * are used to return the line number and byte at which the error was
  * encountered during the parsing of the Matrix Market file.
  */
-int mtx_distpartition_fread_parts(
-    struct mtx_distpartition * partition,
+int mtxdistpartition_fread_parts(
+    struct mtxdistpartition * partition,
     int num_parts,
     FILE * f,
     int * lines_read,
@@ -245,7 +281,7 @@ int mtx_distpartition_fread_parts(
     char * linebuf);
 
 /**
- * `mtx_distpartition_fread_indices()' reads the global indices of
+ * `mtxdistpartition_fread_indices()' reads the global indices of
  * elements belonging to a given part of a partitioned set from a
  * stream formatted as a Matrix Market file.  The Matrix Market file
  * must be in the form of an integer vector in array format.
@@ -254,8 +290,8 @@ int mtx_distpartition_fread_parts(
  * are used to return the line number and byte at which the error was
  * encountered during the parsing of the Matrix Market file.
  */
-int mtx_distpartition_fread_indices(
-    struct mtx_distpartition * partition,
+int mtxdistpartition_fread_indices(
+    struct mtxdistpartition * partition,
     int part,
     FILE * f,
     int * lines_read,
@@ -264,7 +300,7 @@ int mtx_distpartition_fread_indices(
     char * linebuf);
 
 /**
- * `mtx_distpartition_write_parts()' writes the part numbers assigned
+ * `mtxdistpartition_write_parts()' writes the part numbers assigned
  * to each element of a partitioned set to the given path.  The file
  * is written as a Matrix Market file in the form of an integer vector
  * in array format.
@@ -278,14 +314,14 @@ int mtx_distpartition_fread_indices(
  * (e.g., "%ld") are not allowed.  If `format' is `NULL', then the
  * format specifier '%d' is used.
  */
-int mtx_distpartition_write_parts(
-    const struct mtx_distpartition * partition,
+int mtxdistpartition_write_parts(
+    const struct mtxdistpartition * partition,
     const char * path,
     const char * format,
     int64_t * bytes_written);
 
 /**
- * `mtx_distpartition_fwrite_parts()' writes the part numbers assigned
+ * `mtxdistpartition_fwrite_parts()' writes the part numbers assigned
  * to each element of a partitioned set to a stream formatted as a
  * Matrix Market file.  The Matrix Market file is written in the form
  * of an integer vector in array format.
@@ -300,14 +336,14 @@ int mtx_distpartition_write_parts(
  * If it is not `NULL', then the number of bytes written to the stream
  * is returned in `bytes_written'.
  */
-int mtx_distpartition_fwrite_parts(
-    const struct mtx_distpartition * partition,
+int mtxdistpartition_fwrite_parts(
+    const struct mtxdistpartition * partition,
     FILE * f,
     const char * format,
     int64_t * bytes_written);
 
 /**
- * `mtx_distpartition_write_indices()' writes the global indices of
+ * `mtxdistpartition_write_indices()' writes the global indices of
  * elements belonging to a given part of a partitioned set to the
  * given path.  The file is written as a Matrix Market file in the
  * form of an integer vector in array format.
@@ -321,15 +357,15 @@ int mtx_distpartition_fwrite_parts(
  * (e.g., "%ld") are not allowed.  If `format' is `NULL', then the
  * format specifier '%d' is used.
  */
-int mtx_distpartition_write_indices(
-    const struct mtx_distpartition * partition,
+int mtxdistpartition_write_indices(
+    const struct mtxdistpartition * partition,
     int part,
     const char * path,
     const char * format,
     int64_t * bytes_written);
 
 /**
- * `mtx_distpartition_fwrite_indices()' writes the global indices of
+ * `mtxdistpartition_fwrite_indices()' writes the global indices of
  * elements belonging to a given part of a partitioned set to a stream
  * as a Matrix Market file.  The Matrix Market file is written in the
  * form of an integer vector in array format.
@@ -344,8 +380,8 @@ int mtx_distpartition_write_indices(
  * If it is not `NULL', then the number of bytes written to the stream
  * is returned in `bytes_written'.
  */
-int mtx_distpartition_fwrite_indices(
-    const struct mtx_distpartition * partition,
+int mtxdistpartition_fwrite_indices(
+    const struct mtxdistpartition * partition,
     int part,
     FILE * f,
     const char * format,
