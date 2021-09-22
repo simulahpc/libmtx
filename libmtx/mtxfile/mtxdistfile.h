@@ -132,10 +132,12 @@ int mtxdistfile_copy(
  * Convert to and from (non-distributed) Matrix Market format
  */
 
+
 /**
- * `mtxdistfile_from_mtxfile()' partitions and distributes rows of a
- * distributed Matrix Market file from an MPI root process to other
- * processes in a communicator.
+ * `mtxdistfile_from_mtxfile()' creates a distributed Matrix Market
+ * file from a Matrix Market file stored on a single root process by
+ * partitioning and distributing rows of the underlying matrix or
+ * vector to other processes in a communicator.
  *
  * This function performs collective communication and therefore
  * requires every process in the communicator to perform matching
@@ -144,7 +146,7 @@ int mtxdistfile_copy(
  * `row_partition' must be a partitioning of the rows of the matrix or
  * vector represented by `src'.
  */
-int mtxdistfile_distribute_rows(
+int mtxdistfile_from_mtxfile(
     struct mtxdistfile * dst,
     struct mtxfile * src,
     const struct mtx_partition * row_partition,
