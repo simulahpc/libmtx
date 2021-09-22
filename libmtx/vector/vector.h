@@ -502,6 +502,14 @@ int mtxvector_gzwrite(
  */
 
 /**
+ * `mtxvector_swap()' swaps values of two vectors, simultaneously
+ * performing `y <- x' and `x <- y'.
+ */
+int mtxvector_swap(
+    struct mtxvector * x,
+    struct mtxvector * y);
+
+/**
  * `mtxvector_copy()' copies values of a vector, `y = x'.
  */
 int mtxvector_copy(
@@ -593,6 +601,30 @@ int mtxvector_snrm2(
 int mtxvector_dnrm2(
     const struct mtxvector * x,
     double * nrm2);
+
+/**
+ * `mtxvector_sasum()' computes the sum of absolute values (1-norm) of
+ * a vector in single precision floating point.
+ */
+int mtxvector_sasum(
+    const struct mtxvector * x,
+    float * asum);
+
+/**
+ * `mtxvector_dasum()' computes the sum of absolute values (1-norm) of
+ * a vector in double precision floating point.
+ */
+int mtxvector_dasum(
+    const struct mtxvector * x,
+    double * asum);
+
+/**
+ * `mtxvector_imax()' finds the index of the first element having the
+ * maximum absolute value.
+ */
+int mtxvector_imax(
+    const struct mtxvector * x,
+    int * max);
 
 /*
  * Partitioning
