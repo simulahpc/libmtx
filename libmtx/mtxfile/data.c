@@ -1430,7 +1430,7 @@ int mtxfile_data_copy(
             } else if (field == mtxfile_pattern) {
                 memcpy(&dst->vector_coordinate_pattern[dst_offset],
                        &src->vector_coordinate_pattern[src_offset],
-                       size * sizeof(src->vector_coordinate_pattern));
+                       size * sizeof(*src->vector_coordinate_pattern));
             } else {
                 return MTX_ERR_INVALID_MTX_FIELD;
             }
@@ -3820,7 +3820,7 @@ int mtxfile_data_partition_rows(
                 if (precision == mtx_single) {
                     for (int64_t l = 0; l < size; l++) {
                         int64_t k = offset + l;
-                        int i = data->matrix_coordinate_real_single[k].i-1;
+                        int i = data->vector_coordinate_real_single[k].i-1;
                         err = mtx_partition_part(row_partition, &row_parts[l], i);
                         if (err)
                             return err;
@@ -3828,7 +3828,7 @@ int mtxfile_data_partition_rows(
                 } else if (precision == mtx_double) {
                     for (int64_t l = 0; l < size; l++) {
                         int64_t k = offset + l;
-                        int i = data->matrix_coordinate_real_double[k].i-1;
+                        int i = data->vector_coordinate_real_double[k].i-1;
                         err = mtx_partition_part(row_partition, &row_parts[l], i);
                         if (err)
                             return err;
@@ -3840,7 +3840,7 @@ int mtxfile_data_partition_rows(
                 if (precision == mtx_single) {
                     for (int64_t l = 0; l < size; l++) {
                         int64_t k = offset + l;
-                        int i = data->matrix_coordinate_complex_single[k].i-1;
+                        int i = data->vector_coordinate_complex_single[k].i-1;
                         err = mtx_partition_part(row_partition, &row_parts[l], i);
                         if (err)
                             return err;
@@ -3848,7 +3848,7 @@ int mtxfile_data_partition_rows(
                 } else if (precision == mtx_double) {
                     for (int64_t l = 0; l < size; l++) {
                         int64_t k = offset + l;
-                        int i = data->matrix_coordinate_complex_double[k].i-1;
+                        int i = data->vector_coordinate_complex_double[k].i-1;
                         err = mtx_partition_part(row_partition, &row_parts[l], i);
                         if (err)
                             return err;
@@ -3860,7 +3860,7 @@ int mtxfile_data_partition_rows(
                 if (precision == mtx_single) {
                     for (int64_t l = 0; l < size; l++) {
                         int64_t k = offset + l;
-                        int i = data->matrix_coordinate_integer_single[k].i-1;
+                        int i = data->vector_coordinate_integer_single[k].i-1;
                         err = mtx_partition_part(row_partition, &row_parts[l], i);
                         if (err)
                             return err;
@@ -3868,7 +3868,7 @@ int mtxfile_data_partition_rows(
                 } else if (precision == mtx_double) {
                     for (int64_t l = 0; l < size; l++) {
                         int64_t k = offset + l;
-                        int i = data->matrix_coordinate_integer_double[k].i-1;
+                        int i = data->vector_coordinate_integer_double[k].i-1;
                         err = mtx_partition_part(row_partition, &row_parts[l], i);
                         if (err)
                             return err;
@@ -3879,7 +3879,7 @@ int mtxfile_data_partition_rows(
             } else if (field == mtxfile_pattern) {
                 for (int64_t l = 0; l < size; l++) {
                     int64_t k = offset + l;
-                    int i = data->matrix_coordinate_pattern[k].i-1;
+                    int i = data->vector_coordinate_pattern[k].i-1;
                     err = mtx_partition_part(row_partition, &row_parts[l], i);
                     if (err)
                         return err;
@@ -4900,14 +4900,21 @@ static int mtxfile_data_scatterv_array(
             return MTX_ERR_INVALID_PRECISION;
         }
     } else if (field == mtxfile_complex) {
-        int comm_size;
-        *mpierrcode = MPI_Comm_size(comm, &comm_size);
+        int rank;
+        *mpierrcode = MPI_Comm_rank(comm, &rank);
         if (*mpierrcode)
             MPI_Abort(comm, EXIT_FAILURE);
-        for (int p = 0; p < comm_size; p++) {
-            sendcounts[p] *= 2;
-            displs[p] *= 2;
+        if (rank == root) {
+            int comm_size;
+            *mpierrcode = MPI_Comm_size(comm, &comm_size);
+            if (*mpierrcode)
+                MPI_Abort(comm, EXIT_FAILURE);
+            for (int p = 0; p < comm_size; p++) {
+                sendcounts[p] *= 2;
+                displs[p] *= 2;
+            }
         }
+        recvcount *= 2;
         if (precision == mtx_single) {
             *mpierrcode = MPI_Scatterv(
                 &sendbuf->array_complex_single[sendoffset], sendcounts, displs, MPI_FLOAT,
