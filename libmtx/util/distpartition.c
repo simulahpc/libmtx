@@ -124,7 +124,7 @@ int mtx_distpartition_init_block(
 {
     int err;
     int comm_size;
-    mpierror->mpierrcode = MPI_Comm_rank(comm, &comm_size);
+    mpierror->mpierrcode = MPI_Comm_size(comm, &comm_size);
     err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
     if (mtxmpierror_allreduce(mpierror, err))
         return MTX_ERR_MPI_COLLECTIVE;
