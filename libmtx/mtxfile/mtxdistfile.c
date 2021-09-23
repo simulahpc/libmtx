@@ -38,11 +38,14 @@
 #ifdef LIBMTX_HAVE_MPI
 #include <mpi.h>
 
+#include <errno.h>
+
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 /*
  * Memory management
@@ -140,7 +143,54 @@ int mtxdistfile_read(
     size_t bufsize,
     int root,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxmpierror * mpierror)
+{
+    int err;
+    if (lines_read)
+        *lines_read = -1;
+    if (bytes_read)
+        *bytes_read = 0;
+
+    int rank;
+    mpierror->mpierrcode = MPI_Comm_rank(comm, &rank);
+    err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxmpierror_allreduce(mpierror, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+
+    FILE * f;
+    if (rank == root && strcmp(path, "-") == 0) {
+        int fd = dup(STDIN_FILENO);
+        if (fd == -1) {
+            err = MTX_ERR_ERRNO;
+        } else if ((f = fdopen(fd, "r")) == NULL) {
+            int olderrno = errno;
+            close(fd);
+            errno = olderrno;
+            err = MTX_ERR_ERRNO;
+        }
+    } else if (rank == root && ((f = fopen(path, "r")) == NULL)) {
+        err = MTX_ERR_ERRNO;
+    } else {
+        err = MTX_SUCCESS;
+    }
+    if (mtxmpierror_allreduce(mpierror, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+
+    if (lines_read)
+        *lines_read = 0;
+    err = mtxdistfile_fread(
+        mtxdistfile, precision, row_partition_type,
+        f, lines_read, bytes_read, line_max, linebuf, bufsize,
+        root, comm, mpierror);
+    if (err) {
+        if (rank == root)
+            fclose(f);
+        return err;
+    }
+    if (rank == root)
+        fclose(f);
+    return MTX_SUCCESS;
+}
 
 /**
  * `mtxfile_buffer_size()' configures a size line for a Matrix Market

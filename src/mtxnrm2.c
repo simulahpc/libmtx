@@ -351,6 +351,315 @@ static double timespec_duration(
         (t1.tv_nsec - t0.tv_nsec) * 1e-9;
 }
 
+#ifdef LIBMTX_HAVE_MPI
+struct mtxdistvector
+{
+};
+
+/**
+ * `mtxdistvector_free()' frees storage allocated for a vector.
+ */
+void mtxdistvector_free(
+    struct mtxdistvector * vector)
+{
+}
+
+/**
+ * `mtxdistvector_from_mtxdistfile()' converts a vector in Matrix Market
+ * format to a vector.
+ */
+int mtxdistvector_from_mtxdistfile(
+    struct mtxdistvector * vector,
+    const struct mtxdistfile * mtxdistfile,
+    enum mtxvector_type type)
+{
+    return MTX_SUCCESS;
+}
+
+/**
+ * `mtxdistvector_snrm2()' computes the Euclidean norm of a vector in
+ * single precision floating point.
+ */
+int mtxdistvector_snrm2(
+    const struct mtxdistvector * x,
+    float * nrm2)
+{
+    return MTX_SUCCESS;
+}
+
+/**
+ * `mtxdistvector_dnrm2()' computes the Euclidean norm of a vector in
+ * double precision floating point.
+ */
+int mtxdistvector_dnrm2(
+    const struct mtxdistvector * x,
+    double * nrm2)
+{
+    return MTX_SUCCESS;
+}
+
+/**
+ * `distvector_nrm2()' converts a Matrix Market file to a vector of the
+ * given type, computes the Euclidean norm and prints the result to
+ * standard output.
+ */
+static int distvector_nrm2(
+    struct mtxdistfile * mtxdistfile,
+    enum mtxvector_type vector_type,
+    const char * format,
+    int verbose,
+    FILE * diagf,
+    bool quiet,
+    MPI_Comm comm,
+    int comm_size,
+    int rank,
+    int root,
+    struct mtxmpierror * mpierror)
+{
+    int err;
+    struct timespec t0, t1;
+    enum mtx_precision precision = mtxdistfile->precision;
+
+    /* 1. Convert Matrix Market file to a vector. */
+    if (verbose > 0) {
+        fprintf(diagf, "mtxdistvector_from_mtxdistfile: ");
+        fflush(diagf);
+        clock_gettime(CLOCK_MONOTONIC, &t0);
+    }
+
+    struct mtxdistvector x;
+    err = mtxdistvector_from_mtxdistfile(&x, mtxdistfile, vector_type);
+    if (err) {
+        if (verbose > 0)
+            fprintf(diagf, "\n");
+        return err;
+    }
+
+    if (verbose > 0) {
+        clock_gettime(CLOCK_MONOTONIC, &t1);
+        fprintf(diagf, "%.6f seconds\n",
+                timespec_duration(t0, t1));
+    }
+
+    /* 2. Compute the Euclidean norm. */
+    if (mtxdistfile->header.field == mtx_real ||
+        mtxdistfile->header.field == mtx_complex)
+    {
+        if (precision == mtx_single) {
+            if (verbose > 0) {
+                fprintf(diagf, "mtxdistvector_snrm2: ");
+                fflush(diagf);
+                clock_gettime(CLOCK_MONOTONIC, &t0);
+            }
+            float nrm2 = 0.0f;
+            err = mtxdistvector_snrm2(&x, &nrm2);
+            if (err) {
+                if (verbose > 0)
+                    fprintf(diagf, "\n");
+                mtxdistvector_free(&x);
+                return err;
+            }
+            if (verbose > 0) {
+                clock_gettime(CLOCK_MONOTONIC, &t1);
+                fprintf(diagf, "%.6f seconds\n",
+                        timespec_duration(t0, t1));
+            }
+            if (!quiet) {
+                fprintf(stdout, format ? format : "%f", nrm2);
+                fputc('\n', stdout);
+            }
+        } else if (precision == mtx_double) {
+            if (verbose > 0) {
+                fprintf(diagf, "mtxdistvector_dnrm2: ");
+                fflush(diagf);
+                clock_gettime(CLOCK_MONOTONIC, &t0);
+            }
+            double nrm2 = 0.0;
+            err = mtxdistvector_dnrm2(&x, &nrm2);
+            if (err) {
+                if (verbose > 0)
+                    fprintf(diagf, "\n");
+                mtxdistvector_free(&x);
+                return err;
+            }
+            if (verbose > 0) {
+                clock_gettime(CLOCK_MONOTONIC, &t1);
+                fprintf(diagf, "%.6f seconds\n",
+                        timespec_duration(t0, t1));
+            }
+            if (!quiet) {
+                fprintf(stdout, format ? format : "%f", nrm2);
+                fputc('\n', stdout);
+            }
+        } else {
+            mtxdistvector_free(&x);
+            return MTX_ERR_INVALID_PRECISION;
+        }
+
+    } else if (mtxdistfile->header.field == mtx_integer ||
+               mtxdistfile->header.field == mtx_pattern)
+    {
+        mtxdistvector_free(&x);
+        errno = ENOTSUP;
+        return MTX_ERR_ERRNO;
+    } else {
+        mtxdistvector_free(&x);
+        return MTX_ERR_INVALID_MTX_FIELD;
+    }
+
+    mtxdistvector_free(&x);
+    return MTX_SUCCESS;
+}
+
+/**
+ * `main()`.
+ */
+int main(int argc, char *argv[])
+{
+    int err;
+    struct timespec t0, t1;
+    FILE * diagf = stderr;
+    setlocale(LC_ALL, "");
+
+    /* 1. Initialise MPI. */
+    const MPI_Comm comm = MPI_COMM_WORLD;
+    const int root = 0;
+    int mpierr;
+    char mpierrstr[MPI_MAX_ERROR_STRING];
+    int mpierrstrlen;
+    struct mtxmpierror mpierror;
+    mpierr = MPI_Init(&argc, &argv);
+    if (mpierr) {
+        MPI_Error_string(mpierr, mpierrstr, &mpierrstrlen);
+        fprintf(stderr, "%s: MPI_Init failed with %s\n",
+                program_invocation_short_name, mpierrstr);
+        MPI_Finalize();
+        return EXIT_FAILURE;
+    }
+    int comm_size;
+    mpierr = MPI_Comm_size(comm, &comm_size);
+    if (mpierr) {
+        MPI_Error_string(mpierr, mpierrstr, &mpierrstrlen);
+        fprintf(stderr, "%s: MPI_Comm_size failed with %s\n",
+                program_invocation_short_name, mpierrstr);
+        MPI_Abort(comm, EXIT_FAILURE);
+    }
+    int rank;
+    mpierr = MPI_Comm_rank(comm, &rank);
+    if (mpierr) {
+        MPI_Error_string(err, mpierrstr, &mpierrstrlen);
+        fprintf(stderr, "%s: MPI_Comm_rank failed with %s\n",
+                program_invocation_short_name, mpierrstr);
+        MPI_Abort(comm, EXIT_FAILURE);
+    }
+    err = mtxmpierror_alloc(&mpierror, comm);
+    if (err)
+        MPI_Abort(comm, EXIT_FAILURE);
+
+    /* 2. Parse program options. */
+    struct program_options args;
+    int argc_copy = argc;
+    char ** argv_copy = argv;
+    err = parse_program_options(&argc_copy, &argv_copy, &args);
+    if (err) {
+        fprintf(stderr, "%s: %s %s\n", program_invocation_short_name,
+                strerror(err), argv_copy[0]);
+        MPI_Finalize();
+        return EXIT_FAILURE;
+    }
+    if (rank != root) {
+        args.verbose = false;
+        args.quiet = true;
+    }
+
+    /* 3. Read the `x' vector from a Matrix Market file. */
+    if (args.verbose > 0) {
+        fprintf(diagf, "mtxdistfile_read: ");
+        fflush(diagf);
+        clock_gettime(CLOCK_MONOTONIC, &t0);
+    }
+
+    /* TODO: Make row partitioning configurable, see mtxpartition.c */
+    const enum mtx_partition_type row_partition_type = mtx_block;
+    /* TODO: Make buffer size configurable. */
+    size_t bufsize = 100*1024*1024;
+
+    struct mtxdistfile mtxdistfile;
+    int lines_read;
+    int64_t bytes_read;
+    err = mtxdistfile_read(
+        &mtxdistfile, args.precision, row_partition_type,
+        args.x_path ? args.x_path : "",
+        &lines_read, &bytes_read, 0, NULL, bufsize,
+        root, comm, &mpierror);
+    if (err) {
+        if (args.verbose > 0)
+            fprintf(diagf, "\n");
+        if (rank == root && lines_read >= 0) {
+            fprintf(stderr, "%s: %s:%d: %s\n",
+                    program_invocation_short_name,
+                    args.x_path, lines_read+1,
+                    mtxmpierror_description(&mpierror));
+        } else if (rank == root) {
+            fprintf(stderr, "%s: %s: %s\n",
+                    program_invocation_short_name,
+                    args.x_path, mtxmpierror_description(&mpierror));
+        }
+        program_options_free(&args);
+        MPI_Finalize();
+        return EXIT_FAILURE;
+    }
+
+    if (args.verbose > 0) {
+        clock_gettime(CLOCK_MONOTONIC, &t1);
+        fprintf(diagf, "%'.6f seconds (%'.1f MB/s)\n",
+                timespec_duration(t0, t1),
+                1.0e-6 * bytes_read / timespec_duration(t0, t1));
+    }
+
+    /* 4. Compute the Euclidean norm. */
+    if (mtxdistfile.header.object == mtxfile_matrix) {
+        /* TODO: Compute the Frobenius norm of the matrix. */
+        fprintf(stderr, "%s: %s\n",
+                program_invocation_short_name,
+                strerror(ENOTSUP));
+        mtxdistfile_free(&mtxdistfile);
+        program_options_free(&args);
+        MPI_Finalize();
+        return EXIT_FAILURE;
+
+    } else if (mtxdistfile.header.object == mtxfile_vector) {
+        err = distvector_nrm2(
+            &mtxdistfile, args.vector_type, args.format,
+            args.verbose, diagf, args.quiet,
+            comm, comm_size, rank, root, &mpierror);
+        if (err) {
+            fprintf(stderr, "%s: %s\n",
+                    program_invocation_short_name,
+                    mtx_strerror(err));
+            mtxdistfile_free(&mtxdistfile);
+            program_options_free(&args);
+            MPI_Finalize();
+            return EXIT_FAILURE;
+        }
+
+    } else {
+        fprintf(stderr, "%s: %s\n",
+                program_invocation_short_name,
+                mtx_strerror(MTX_ERR_INVALID_MTX_OBJECT));
+        mtxdistfile_free(&mtxdistfile);
+        program_options_free(&args);
+        MPI_Finalize();
+        return EXIT_FAILURE;
+    }
+
+    /* 5. Clean up. */
+    mtxdistfile_free(&mtxdistfile);
+    program_options_free(&args);
+    MPI_Finalize();
+    return EXIT_SUCCESS;
+}
+#else
 /**
  * `vector_nrm2()' converts a Matrix Market file to a vector of the
  * given type, computes the Euclidean norm and prints the result to
@@ -556,3 +865,4 @@ int main(int argc, char *argv[])
     program_options_free(&args);
     return EXIT_SUCCESS;
 }
+#endif
