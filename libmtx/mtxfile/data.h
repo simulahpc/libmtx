@@ -692,9 +692,11 @@ int mtxfile_data_copy(
  * Storage for the corresponding array of the `data' union, according
  * to the given `object', `format', `field' and `precision' variables,
  * must already be allocated with enough storage to hold at least
- * `size' elements.
+ * `offset+size' elements.
  *
- * At most `size' lines are read from the stream.
+ * At most `size' lines are read from the stream and written to the
+ * appropriate array of the `data' union, starting `offset' elements
+ * from the beginning of the array.
  *
  * If an error code is returned, then `lines_read' and `bytes_read'
  * are used to return the line number and byte at which the error was
@@ -717,7 +719,8 @@ int mtxfile_fread_data(
     enum mtx_precision precision,
     int num_rows,
     int num_columns,
-    int64_t size);
+    int64_t size,
+    int64_t offset);
 
 #ifdef LIBMTX_HAVE_LIBZ
 /**
@@ -727,9 +730,11 @@ int mtxfile_fread_data(
  * Storage for the corresponding array of the `data' union, according
  * to the given `object', `format', `field' and `precision' variables,
  * must already be allocated with enough storage to hold at least
- * `size' elements.
+ * `offset+size' elements.
  *
- * At most `size' lines are read from the stream.
+ * At most `size' lines are read from the stream and written to the
+ * appropriate array of the `data' union, starting `offset' elements
+ * from the beginning of the array.
  *
  * If an error code is returned, then `lines_read' and `bytes_read'
  * are used to return the line number and byte at which the error was
@@ -752,7 +757,8 @@ int mtxfile_gzread_data(
     enum mtx_precision precision,
     int num_rows,
     int num_columns,
-    int64_t size);
+    int64_t size,
+    int64_t offset);
 #endif
 
 /**

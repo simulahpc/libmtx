@@ -880,7 +880,7 @@ int test_mtxfile_fread_data(void)
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
         err = mtxfile_fread_data(
             &data, f, &lines_read, &bytes_read, 0, NULL,
-            object, format, field, precision, -1, -1, size);
+            object, format, field, precision, -1, -1, size, 0);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
         TEST_ASSERT_EQ(strlen(s), bytes_read);
         TEST_ASSERT_EQ(size, lines_read);
@@ -907,7 +907,7 @@ int test_mtxfile_fread_data(void)
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
         err = mtxfile_fread_data(
             &data, f, &lines_read, &bytes_read, 0, NULL,
-            object, format, field, precision, -1, -1, size);
+            object, format, field, precision, -1, -1, size, 0);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
         TEST_ASSERT_EQ(strlen(s), bytes_read);
         TEST_ASSERT_EQ(size, lines_read);
@@ -934,7 +934,7 @@ int test_mtxfile_fread_data(void)
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
         err = mtxfile_fread_data(
             &data, f, &lines_read, &bytes_read, 0, NULL,
-            object, format, field, precision, -1, -1, size);
+            object, format, field, precision, -1, -1, size, 0);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
         TEST_ASSERT_EQ(strlen(s), bytes_read);
         TEST_ASSERT_EQ(size, lines_read);
@@ -963,7 +963,7 @@ int test_mtxfile_fread_data(void)
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
         err = mtxfile_fread_data(
             &data, f, &lines_read, &bytes_read, 0, NULL,
-            object, format, field, precision, -1, -1, size);
+            object, format, field, precision, -1, -1, size, 0);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
         TEST_ASSERT_EQ(strlen(s), bytes_read);
         TEST_ASSERT_EQ(size, lines_read);
@@ -992,7 +992,7 @@ int test_mtxfile_fread_data(void)
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
         err = mtxfile_fread_data(
             &data, f, &lines_read, &bytes_read, 0, NULL,
-            object, format, field, precision, -1, -1, size);
+            object, format, field, precision, -1, -1, size, 0);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
         TEST_ASSERT_EQ(strlen(s), bytes_read);
         TEST_ASSERT_EQ(size, lines_read);
@@ -1019,7 +1019,7 @@ int test_mtxfile_fread_data(void)
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
         err = mtxfile_fread_data(
             &data, f, &lines_read, &bytes_read, 0, NULL,
-            object, format, field, precision, -1, -1, size);
+            object, format, field, precision, -1, -1, size, 0);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
         TEST_ASSERT_EQ(strlen(s), bytes_read);
         TEST_ASSERT_EQ(size, lines_read);
@@ -1050,7 +1050,7 @@ int test_mtxfile_fread_data(void)
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
         err = mtxfile_fread_data(
             &data, f, &lines_read, &bytes_read, 0, NULL,
-            object, format, field, precision, 4, 4, size);
+            object, format, field, precision, 4, 4, size, 0);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
         TEST_ASSERT_EQ(strlen(s), bytes_read);
         TEST_ASSERT_EQ(size, lines_read);
@@ -1081,7 +1081,7 @@ int test_mtxfile_fread_data(void)
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
         err = mtxfile_fread_data(
             &data, f, &lines_read, &bytes_read, 0, NULL,
-            object, format, field, precision, 4, 4, size);
+            object, format, field, precision, 4, 4, size, 0);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
         TEST_ASSERT_EQ(strlen(s), bytes_read);
         TEST_ASSERT_EQ(size, lines_read);
@@ -1112,7 +1112,7 @@ int test_mtxfile_fread_data(void)
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
         err = mtxfile_fread_data(
             &data, f, &lines_read, &bytes_read, 0, NULL,
-            object, format, field, precision, 4, 4, size);
+            object, format, field, precision, 4, 4, size, 0);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
         TEST_ASSERT_EQ(strlen(s), bytes_read);
         TEST_ASSERT_EQ(size, lines_read);
@@ -1145,7 +1145,7 @@ int test_mtxfile_fread_data(void)
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
         err = mtxfile_fread_data(
             &data, f, &lines_read, &bytes_read, 0, NULL,
-            object, format, field, precision, 4, 4, size);
+            object, format, field, precision, 4, 4, size, 0);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
         TEST_ASSERT_EQ(strlen(s), bytes_read);
         TEST_ASSERT_EQ(size, lines_read);
@@ -1178,7 +1178,7 @@ int test_mtxfile_fread_data(void)
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
         err = mtxfile_fread_data(
             &data, f, &lines_read, &bytes_read, 0, NULL,
-            object, format, field, precision, 4, 4, size);
+            object, format, field, precision, 4, 4, size, 0);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
         TEST_ASSERT_EQ(strlen(s), bytes_read);
         TEST_ASSERT_EQ(size, lines_read);
@@ -1209,7 +1209,7 @@ int test_mtxfile_fread_data(void)
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
         err = mtxfile_fread_data(
             &data, f, &lines_read, &bytes_read, 0, NULL,
-            object, format, field, precision, 4, 4, size);
+            object, format, field, precision, 4, 4, size, 0);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
         TEST_ASSERT_EQ(strlen(s), bytes_read);
         TEST_ASSERT_EQ(size, lines_read);
@@ -1240,7 +1240,7 @@ int test_mtxfile_fread_data(void)
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
         err = mtxfile_fread_data(
             &data, f, &lines_read, &bytes_read, 0, NULL,
-            object, format, field, precision, 4, 4, size);
+            object, format, field, precision, 4, 4, size, 0);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
         TEST_ASSERT_EQ(strlen(s), bytes_read);
         TEST_ASSERT_EQ(size, lines_read);
@@ -1273,7 +1273,7 @@ int test_mtxfile_fread_data(void)
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
         err = mtxfile_fread_data(
             &data, f, &lines_read, &bytes_read, 0, NULL,
-            object, format, field, precision, 4, -1, size);
+            object, format, field, precision, 4, -1, size, 0);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
         TEST_ASSERT_EQ(strlen(s), bytes_read);
         TEST_ASSERT_EQ(size, lines_read);
@@ -1302,7 +1302,7 @@ int test_mtxfile_fread_data(void)
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
         err = mtxfile_fread_data(
             &data, f, &lines_read, &bytes_read, 0, NULL,
-            object, format, field, precision, 4, -1, size);
+            object, format, field, precision, 4, -1, size, 0);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
         TEST_ASSERT_EQ(strlen(s), bytes_read);
         TEST_ASSERT_EQ(size, lines_read);
@@ -1331,7 +1331,7 @@ int test_mtxfile_fread_data(void)
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
         err = mtxfile_fread_data(
             &data, f, &lines_read, &bytes_read, 0, NULL,
-            object, format, field, precision, 4, -1, size);
+            object, format, field, precision, 4, -1, size, 0);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
         TEST_ASSERT_EQ(strlen(s), bytes_read);
         TEST_ASSERT_EQ(size, lines_read);
@@ -1362,7 +1362,7 @@ int test_mtxfile_fread_data(void)
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
         err = mtxfile_fread_data(
             &data, f, &lines_read, &bytes_read, 0, NULL,
-            object, format, field, precision, 4, -1, size);
+            object, format, field, precision, 4, -1, size, 0);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
         TEST_ASSERT_EQ(strlen(s), bytes_read);
         TEST_ASSERT_EQ(size, lines_read);
@@ -1393,7 +1393,7 @@ int test_mtxfile_fread_data(void)
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
         err = mtxfile_fread_data(
             &data, f, &lines_read, &bytes_read, 0, NULL,
-            object, format, field, precision, 4, -1, size);
+            object, format, field, precision, 4, -1, size, 0);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
         TEST_ASSERT_EQ(strlen(s), bytes_read);
         TEST_ASSERT_EQ(size, lines_read);
@@ -1422,7 +1422,7 @@ int test_mtxfile_fread_data(void)
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
         err = mtxfile_fread_data(
             &data, f, &lines_read, &bytes_read, 0, NULL,
-            object, format, field, precision, 4, -1, size);
+            object, format, field, precision, 4, -1, size, 0);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
         TEST_ASSERT_EQ(strlen(s), bytes_read);
         TEST_ASSERT_EQ(size, lines_read);
@@ -1451,7 +1451,7 @@ int test_mtxfile_fread_data(void)
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
         err = mtxfile_fread_data(
             &data, f, &lines_read, &bytes_read, 0, NULL,
-            object, format, field, precision, 4, -1, size);
+            object, format, field, precision, 4, -1, size, 0);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
         TEST_ASSERT_EQ(strlen(s), bytes_read);
         TEST_ASSERT_EQ(size, lines_read);

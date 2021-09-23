@@ -514,7 +514,7 @@ int mtxdistfile_fread(
                 rootmtx.header.object, rootmtx.header.format,
                 rootmtx.header.field, rootmtx.precision,
                 rootmtx.size.num_rows, rootmtx.size.num_columns,
-                num_data_lines_to_read)
+                num_data_lines_to_read, 0)
             : MTX_SUCCESS;
         if (mtxmpierror_allreduce(mpierror, err)) {
             if (rank == root) {

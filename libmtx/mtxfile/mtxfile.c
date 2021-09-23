@@ -1087,7 +1087,7 @@ int mtxfile_fread(
         precision,
         mtxfile->size.num_rows,
         mtxfile->size.num_columns,
-        num_data_lines);
+        num_data_lines, 0);
     if (err) {
         mtxfile_data_free(
             &mtxfile->data, mtxfile->header.object,
@@ -1192,7 +1192,7 @@ int mtxfile_gzread(
         precision,
         mtxfile->size.num_rows,
         mtxfile->size.num_columns,
-        num_data_lines);
+        num_data_lines, 0);
     if (err) {
         mtxfile_data_free(
             &mtxfile->data, mtxfile->header.object,
@@ -2321,7 +2321,7 @@ int mtxfile_fread_distribute_rows(
                 rootmtx.precision,
                 rootmtx.size.num_rows,
                 rootmtx.size.num_columns,
-                num_data_lines_to_read);
+                num_data_lines_to_read, 0);
         }
         if (mtxmpierror_allreduce(mpierror, err)) {
             mtxfile_free(mtxfile);
