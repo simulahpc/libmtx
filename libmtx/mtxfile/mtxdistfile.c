@@ -90,10 +90,150 @@ int mtxdistfile_copy(
 int mtxdistfile_from_mtxfile(
     struct mtxdistfile * dst,
     struct mtxfile * src,
-    const struct mtx_partition * row_partition,
-    int root,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    int root,
+    struct mtxmpierror * mpierror)
+{
+    int err;
+    int comm_size;
+    mpierror->mpierrcode = MPI_Comm_size(comm, &comm_size);
+    err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxmpierror_allreduce(mpierror, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+    int rank;
+    mpierror->mpierrcode = MPI_Comm_rank(comm, &rank);
+    err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxmpierror_allreduce(mpierror, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+
+    /* Broadcast the header, comments, size line and precision. */
+    err = (rank == root) ? mtxfile_header_copy(
+        &dst->header, &src->header) : MTX_SUCCESS;
+    if (mtxmpierror_allreduce(mpierror, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+    err = mtxfile_header_bcast(&dst->header, root, comm, mpierror);
+    if (err)
+        return err;
+    err = (rank == root) ? mtxfile_comments_copy(
+        &dst->comments, &src->comments) : MTX_SUCCESS;
+    if (mtxmpierror_allreduce(mpierror, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+    err = mtxfile_comments_bcast(&dst->comments, root, comm, mpierror);
+    if (err) {
+        if (rank == root)
+            mtxfile_comments_free(&dst->comments);
+        return err;
+    }
+    err = (rank == root) ? mtxfile_size_copy(
+        &dst->size, &src->size) : MTX_SUCCESS;
+    if (mtxmpierror_allreduce(mpierror, err)) {
+        mtxfile_comments_free(&dst->comments);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+    err = mtxfile_size_bcast(&dst->size, root, comm, mpierror);
+    if (err) {
+        mtxfile_comments_free(&dst->comments);
+        return err;
+    }
+    if (rank == root)
+        dst->precision = src->precision;
+    mpierror->mpierrcode = MPI_Bcast(
+        &dst->precision, 1, MPI_INT, root, comm);
+    err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxmpierror_allreduce(mpierror, err)) {
+        mtxfile_comments_free(&dst->comments);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+
+    int * sendcounts = (rank == root) ?
+        malloc((2*comm_size+1) * sizeof(int)) : NULL;
+    err = (rank == root && !sendcounts) ? MTX_ERR_ERRNO : MTX_SUCCESS;
+    if (mtxmpierror_allreduce(mpierror, err)) {
+        mtxfile_comments_free(&dst->comments);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+    int * displs = (rank == root) ? &sendcounts[comm_size] : NULL;
+
+    /* Find the number of data lines to send and offsets for each
+     * part. Note for matrices in array format, we evenly distribute
+     * the number of rows, whereas in all other cases we evenly
+     * distribute the total number of data lines. */
+    err = MTX_SUCCESS;
+    if (rank == root) {
+        int64_t size;
+        if (src->size.num_nonzeros >= 0) {
+            size = src->size.num_nonzeros;
+            displs[0] = 0;
+            for (int p = 0; p < comm_size; p++) {
+                displs[p+1] = displs[p] +
+                    size / comm_size + (p < (size % comm_size) ? 1 : 0);
+                sendcounts[p] = displs[p+1] - displs[p];
+            }
+        } else if (src->size.num_rows >= 0 && src->size.num_columns >= 0) {
+            int64_t num_rows = src->size.num_rows;
+            int64_t num_columns = src->size.num_columns;
+            displs[0] = 0;
+            for (int p = 0; p < comm_size; p++) {
+                displs[p+1] = displs[p] +
+                    (num_rows / comm_size + (p < (num_rows % comm_size) ? 1 : 0)) *
+                    num_columns;
+                sendcounts[p] = displs[p+1] - displs[p];
+            }
+        } else if (src->size.num_rows >= 0) {
+            size = src->size.num_rows;
+            displs[0] = 0;
+            for (int p = 0; p < comm_size; p++) {
+                displs[p+1] = displs[p] +
+                    size / comm_size + (p < (size % comm_size) ? 1 : 0);
+                sendcounts[p] = displs[p+1] - displs[p];
+            }
+        } else {
+            err = MTX_ERR_INVALID_MTX_SIZE;
+        }
+    }
+    if (mtxmpierror_allreduce(mpierror, err)) {
+        if (rank == root)
+            free(sendcounts);
+        mtxfile_comments_free(&dst->comments);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+
+    int recvcount;
+    mpierror->mpierrcode = MPI_Scatter(
+        sendcounts, 1, MPI_INT, &recvcount, 1, MPI_INT, root, comm);
+    err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxmpierror_allreduce(mpierror, err)) {
+        if (rank == root)
+            free(sendcounts);
+        mtxfile_comments_free(&dst->comments);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+
+    /* Scatter the Matrix Market file. */
+    err = mtxfile_scatterv(
+        src, sendcounts, displs, &dst->mtxfile, recvcount, root, comm, mpierror);
+    if (err) {
+        if (rank == root)
+            free(sendcounts);
+        mtxfile_comments_free(&dst->comments);
+        return err;
+    }
+
+    if (rank == root)
+        free(sendcounts);
+
+    /* TODO: This should not be needed, if we remove the partitioning
+     * information from ‘struct mtxdistfile’. */
+    mtxdistpartition_init(
+        &dst->row_partition, mtx_block, dst->size.num_rows, comm_size,
+        0, NULL, comm, root, mpierror);
+    if (err) {
+        mtxfile_free(&dst->mtxfile);
+        mtxfile_comments_free(&dst->comments);
+        return err;
+    }
+    return MTX_SUCCESS;
+}
 
 /*
  * I/O functions

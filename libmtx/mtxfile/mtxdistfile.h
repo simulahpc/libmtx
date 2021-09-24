@@ -149,9 +149,8 @@ int mtxdistfile_copy(
 int mtxdistfile_from_mtxfile(
     struct mtxdistfile * dst,
     struct mtxfile * src,
-    const struct mtx_partition * row_partition,
-    int root,
     MPI_Comm comm,
+    int root,
     struct mtxmpierror * mpierror);
 
 /*
