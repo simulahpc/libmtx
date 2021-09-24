@@ -4943,6 +4943,303 @@ int mtxfile_data_bcast(
     return MTX_SUCCESS;
 }
 
+static int mtxfile_data_gatherv_array(
+    const union mtxfile_data * sendbuf,
+    enum mtxfile_field field,
+    enum mtx_precision precision,
+    int64_t sendoffset,
+    int sendcount,
+    union mtxfile_data * recvbuf,
+    int64_t recvoffset,
+    const int * recvcounts,
+    const int * recvdispls,
+    int root,
+    MPI_Comm comm,
+    int * mpierrcode)
+{
+    if (field == mtxfile_real) {
+        if (precision == mtx_single) {
+            *mpierrcode = MPI_Gatherv(
+                &sendbuf->array_real_single[sendoffset], sendcount, MPI_FLOAT,
+                &recvbuf->array_real_single[recvoffset], recvcounts, recvdispls, MPI_FLOAT,
+                root, comm);
+            if (*mpierrcode)
+                return MTX_ERR_MPI;
+        } else if (precision == mtx_double) {
+            *mpierrcode = MPI_Gatherv(
+                &sendbuf->array_real_double[sendoffset], sendcount, MPI_DOUBLE,
+                &recvbuf->array_real_double[recvoffset], recvcounts, recvdispls, MPI_DOUBLE,
+                root, comm);
+            if (*mpierrcode)
+                return MTX_ERR_MPI;
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else if (field == mtxfile_complex) {
+        MPI_Datatype complex;
+        int err = mtxfile_array_complex_datatype(&complex, precision, mpierrcode);
+        if (err)
+            return err;
+        if (precision == mtx_single) {
+            *mpierrcode = MPI_Gatherv(
+                &sendbuf->array_complex_single[sendoffset], sendcount, complex,
+                &recvbuf->array_complex_single[recvoffset], recvcounts, recvdispls, complex,
+                root, comm);
+            if (*mpierrcode) {
+                MPI_Type_free(&complex);
+                return MTX_ERR_MPI;
+            }
+        } else if (precision == mtx_double) {
+            *mpierrcode = MPI_Gatherv(
+                &sendbuf->array_complex_double[sendoffset], sendcount, complex,
+                &recvbuf->array_complex_double[recvoffset], recvcounts, recvdispls, complex,
+                root, comm);
+            if (*mpierrcode) {
+                MPI_Type_free(&complex);
+                return MTX_ERR_MPI;
+            }
+        } else {
+            MPI_Type_free(&complex);
+            return MTX_ERR_INVALID_PRECISION;
+        }
+        MPI_Type_free(&complex);
+    } else if (field == mtxfile_integer) {
+        if (precision == mtx_single) {
+            *mpierrcode = MPI_Gatherv(
+                &sendbuf->array_integer_single[sendoffset], sendcount, MPI_INT32_T,
+                &recvbuf->array_integer_single[recvoffset], recvcounts, recvdispls, MPI_INT32_T,
+                root, comm);
+            if (*mpierrcode)
+                return MTX_ERR_MPI;
+        } else if (precision == mtx_double) {
+            *mpierrcode = MPI_Gatherv(
+                &sendbuf->array_integer_double[sendoffset], sendcount, MPI_INT64_T,
+                &recvbuf->array_integer_double[recvoffset], recvcounts, recvdispls, MPI_INT64_T,
+                root, comm);
+            if (*mpierrcode)
+                return MTX_ERR_MPI;
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else {
+        return MTX_ERR_INVALID_MTX_FIELD;
+    }
+    return MTX_SUCCESS;
+}
+
+static int mtxfile_data_gatherv_coordinate(
+    const union mtxfile_data * sendbuf,
+    enum mtxfile_object object,
+    enum mtxfile_field field,
+    enum mtx_precision precision,
+    int64_t sendoffset,
+    int sendcount,
+    union mtxfile_data * recvbuf,
+    int64_t recvoffset,
+    const int * recvcounts,
+    const int * recvdispls,
+    int root,
+    MPI_Comm comm,
+    int * mpierrcode)
+{
+    int err;
+    MPI_Datatype datatype;
+    err = mtxfile_coordinate_datatype(
+        object, field, precision, &datatype, mpierrcode);
+    if (err)
+        return err;
+
+    if (object == mtxfile_matrix) {
+        if (field == mtxfile_real) {
+            if (precision == mtx_single) {
+                *mpierrcode = MPI_Gatherv(
+                    &sendbuf->matrix_coordinate_real_single[sendoffset],
+                    sendcount, datatype,
+                    &recvbuf->matrix_coordinate_real_single[recvoffset],
+                    recvcounts, recvdispls, datatype, root, comm);
+                if (*mpierrcode)
+                    return MTX_ERR_MPI;
+            } else if (precision == mtx_double) {
+                *mpierrcode = MPI_Gatherv(
+                    &sendbuf->matrix_coordinate_real_double[sendoffset],
+                    sendcount, datatype,
+                    &recvbuf->matrix_coordinate_real_double[recvoffset],
+                    recvcounts, recvdispls, datatype, root, comm);
+                if (*mpierrcode)
+                    return MTX_ERR_MPI;
+            } else {
+                return MTX_ERR_INVALID_PRECISION;
+            }
+        } else if (field == mtxfile_complex) {
+            if (precision == mtx_single) {
+                *mpierrcode = MPI_Gatherv(
+                    &sendbuf->matrix_coordinate_complex_single[sendoffset],
+                    sendcount, datatype,
+                    &recvbuf->matrix_coordinate_complex_single[recvoffset],
+                    recvcounts, recvdispls, datatype, root, comm);
+                if (*mpierrcode)
+                    return MTX_ERR_MPI;
+            } else if (precision == mtx_double) {
+                *mpierrcode = MPI_Gatherv(
+                    &sendbuf->matrix_coordinate_complex_double[sendoffset],
+                    sendcount, datatype,
+                    &recvbuf->matrix_coordinate_complex_double[recvoffset],
+                    recvcounts, recvdispls, datatype, root, comm);
+                if (*mpierrcode)
+                    return MTX_ERR_MPI;
+            } else {
+                return MTX_ERR_INVALID_PRECISION;
+            }
+        } else if (field == mtxfile_integer) {
+            if (precision == mtx_single) {
+                *mpierrcode = MPI_Gatherv(
+                    &sendbuf->matrix_coordinate_integer_single[sendoffset],
+                    sendcount, datatype,
+                    &recvbuf->matrix_coordinate_integer_single[recvoffset],
+                    recvcounts, recvdispls, datatype, root, comm);
+                if (*mpierrcode)
+                    return MTX_ERR_MPI;
+            } else if (precision == mtx_double) {
+                *mpierrcode = MPI_Gatherv(
+                    &sendbuf->matrix_coordinate_integer_double[sendoffset],
+                    sendcount, datatype,
+                    &recvbuf->matrix_coordinate_integer_double[recvoffset],
+                    recvcounts, recvdispls, datatype, root, comm);
+                if (*mpierrcode)
+                    return MTX_ERR_MPI;
+            } else {
+                return MTX_ERR_INVALID_PRECISION;
+            }
+        } else if (field == mtxfile_pattern) {
+            *mpierrcode = MPI_Gatherv(
+                &sendbuf->matrix_coordinate_pattern[sendoffset],
+                sendcount, datatype,
+                &recvbuf->matrix_coordinate_pattern[recvoffset],
+                recvcounts, recvdispls, datatype, root, comm);
+            if (*mpierrcode)
+                return MTX_ERR_MPI;
+        } else {
+            return MTX_ERR_INVALID_MTX_FIELD;
+        }
+
+    } else if (object == mtxfile_vector) {
+        if (field == mtxfile_real) {
+            if (precision == mtx_single) {
+                *mpierrcode = MPI_Gatherv(
+                    &sendbuf->vector_coordinate_real_single[sendoffset],
+                    sendcount, datatype,
+                    &recvbuf->vector_coordinate_real_single[recvoffset],
+                    recvcounts, recvdispls, datatype, root, comm);
+                if (*mpierrcode)
+                    return MTX_ERR_MPI;
+            } else if (precision == mtx_double) {
+                *mpierrcode = MPI_Gatherv(
+                    &sendbuf->vector_coordinate_real_double[sendoffset],
+                    sendcount, datatype,
+                    &recvbuf->vector_coordinate_real_double[recvoffset],
+                    recvcounts, recvdispls, datatype, root, comm);
+                if (*mpierrcode)
+                    return MTX_ERR_MPI;
+            } else {
+                return MTX_ERR_INVALID_PRECISION;
+            }
+        } else if (field == mtxfile_complex) {
+            if (precision == mtx_single) {
+                *mpierrcode = MPI_Gatherv(
+                    &sendbuf->vector_coordinate_complex_single[sendoffset],
+                    sendcount, datatype,
+                    &recvbuf->vector_coordinate_complex_single[recvoffset],
+                    recvcounts, recvdispls, datatype, root, comm);
+                if (*mpierrcode)
+                    return MTX_ERR_MPI;
+            } else if (precision == mtx_double) {
+                *mpierrcode = MPI_Gatherv(
+                    &sendbuf->vector_coordinate_complex_double[sendoffset],
+                    sendcount, datatype,
+                    &recvbuf->vector_coordinate_complex_double[recvoffset],
+                    recvcounts, recvdispls, datatype, root, comm);
+                if (*mpierrcode)
+                    return MTX_ERR_MPI;
+            } else {
+                return MTX_ERR_INVALID_PRECISION;
+            }
+        } else if (field == mtxfile_integer) {
+            if (precision == mtx_single) {
+                *mpierrcode = MPI_Gatherv(
+                    &sendbuf->vector_coordinate_integer_single[sendoffset],
+                    sendcount, datatype,
+                    &recvbuf->vector_coordinate_integer_single[recvoffset],
+                    recvcounts, recvdispls, datatype, root, comm);
+                if (*mpierrcode)
+                    return MTX_ERR_MPI;
+            } else if (precision == mtx_double) {
+                *mpierrcode = MPI_Gatherv(
+                    &sendbuf->vector_coordinate_integer_double[sendoffset],
+                    sendcount, datatype,
+                    &recvbuf->vector_coordinate_integer_double[recvoffset],
+                    recvcounts, recvdispls, datatype, root, comm);
+                if (*mpierrcode)
+                    return MTX_ERR_MPI;
+            } else {
+                return MTX_ERR_INVALID_PRECISION;
+            }
+        } else if (field == mtxfile_pattern) {
+            *mpierrcode = MPI_Gatherv(
+                &sendbuf->vector_coordinate_pattern[sendoffset],
+                sendcount, datatype,
+                &recvbuf->vector_coordinate_pattern[recvoffset],
+                recvcounts, recvdispls, datatype, root, comm);
+            if (*mpierrcode)
+                return MTX_ERR_MPI;
+        } else {
+            return MTX_ERR_INVALID_MTX_FIELD;
+        }
+    } else {
+        return MTX_ERR_INVALID_MTX_OBJECT;
+    }
+    return MTX_SUCCESS;
+}
+
+/**
+ * `mtxfile_data_gatherv()' gathers Matrix Market data lines onto an
+ * MPI root process from other processes in a communicator.
+ *
+ * This is analogous to `MPI_Gatherv()' and requires every process in
+ * the communicator to perform matching calls to
+ * `mtxfile_data_gatherv()'.
+ */
+int mtxfile_data_gatherv(
+    const union mtxfile_data * sendbuf,
+    enum mtxfile_object object,
+    enum mtxfile_format format,
+    enum mtxfile_field field,
+    enum mtx_precision precision,
+    int64_t sendoffset,
+    int sendcount,
+    union mtxfile_data * recvbuf,
+    int64_t recvoffset,
+    const int * recvcounts,
+    const int * recvdispls,
+    int root,
+    MPI_Comm comm,
+    struct mtxmpierror * mpierror)
+{
+    if (format == mtxfile_array) {
+        return mtxfile_data_gatherv_array(
+            sendbuf, field, precision, sendoffset, sendcount,
+            recvbuf, recvoffset, recvcounts, recvdispls,
+            root, comm, &mpierror->err);
+    } else if (format == mtxfile_coordinate) {
+        return mtxfile_data_gatherv_coordinate(
+            sendbuf, object, field, precision, sendoffset, sendcount,
+            recvbuf, recvoffset, recvcounts, recvdispls,
+            root, comm, &mpierror->err);
+    } else {
+        return MTX_ERR_INVALID_MTX_FORMAT;
+    }
+    return MTX_SUCCESS;
+}
+
 static int mtxfile_data_scatterv_array(
     const union mtxfile_data * sendbuf,
     enum mtxfile_field field,
@@ -5232,6 +5529,303 @@ int mtxfile_data_scatterv(
         return mtxfile_data_scatterv_coordinate(
             sendbuf, object, field, precision, sendoffset, sendcounts, displs,
             recvbuf, recvoffset, recvcount, root, comm, &mpierror->err);
+    } else {
+        return MTX_ERR_INVALID_MTX_FORMAT;
+    }
+    return MTX_SUCCESS;
+}
+
+static int mtxfile_data_alltoallv_array(
+    const union mtxfile_data * sendbuf,
+    enum mtxfile_field field,
+    enum mtx_precision precision,
+    int64_t sendoffset,
+    const int * sendcounts,
+    const int * senddispls,
+    union mtxfile_data * recvbuf,
+    int64_t recvoffset,
+    const int * recvcounts,
+    const int * recvdispls,
+    MPI_Comm comm,
+    int * mpierrcode)
+{
+    if (field == mtxfile_real) {
+        if (precision == mtx_single) {
+            *mpierrcode = MPI_Alltoallv(
+                &sendbuf->array_real_single[sendoffset], sendcounts, senddispls, MPI_FLOAT,
+                &recvbuf->array_real_single[recvoffset], recvcounts, recvdispls, MPI_FLOAT,
+                comm);
+            if (*mpierrcode)
+                return MTX_ERR_MPI;
+        } else if (precision == mtx_double) {
+            *mpierrcode = MPI_Alltoallv(
+                &sendbuf->array_real_double[sendoffset], sendcounts, senddispls, MPI_DOUBLE,
+                &recvbuf->array_real_double[recvoffset], recvcounts, recvdispls, MPI_DOUBLE,
+                comm);
+            if (*mpierrcode)
+                return MTX_ERR_MPI;
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else if (field == mtxfile_complex) {
+        MPI_Datatype complex;
+        int err = mtxfile_array_complex_datatype(&complex, precision, mpierrcode);
+        if (err)
+            return err;
+        if (precision == mtx_single) {
+            *mpierrcode = MPI_Alltoallv(
+                &sendbuf->array_complex_single[sendoffset], sendcounts, senddispls, complex,
+                &recvbuf->array_complex_single[recvoffset], recvcounts, recvdispls, complex,
+                comm);
+            if (*mpierrcode) {
+                MPI_Type_free(&complex);
+                return MTX_ERR_MPI;
+            }
+        } else if (precision == mtx_double) {
+            *mpierrcode = MPI_Alltoallv(
+                &sendbuf->array_complex_double[sendoffset], sendcounts, senddispls, complex,
+                &recvbuf->array_complex_double[recvoffset], recvcounts, recvdispls, complex,
+                comm);
+            if (*mpierrcode) {
+                MPI_Type_free(&complex);
+                return MTX_ERR_MPI;
+            }
+        } else {
+            MPI_Type_free(&complex);
+            return MTX_ERR_INVALID_PRECISION;
+        }
+        MPI_Type_free(&complex);
+    } else if (field == mtxfile_integer) {
+        if (precision == mtx_single) {
+            *mpierrcode = MPI_Alltoallv(
+                &sendbuf->array_integer_single[sendoffset], sendcounts, senddispls, MPI_INT32_T,
+                &recvbuf->array_integer_single[recvoffset], recvcounts, recvdispls, MPI_INT32_T,
+                comm);
+            if (*mpierrcode)
+                return MTX_ERR_MPI;
+        } else if (precision == mtx_double) {
+            *mpierrcode = MPI_Alltoallv(
+                &sendbuf->array_integer_double[sendoffset], sendcounts, senddispls, MPI_INT64_T,
+                &recvbuf->array_integer_double[recvoffset], recvcounts, recvdispls, MPI_INT64_T,
+                comm);
+            if (*mpierrcode)
+                return MTX_ERR_MPI;
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else {
+        return MTX_ERR_INVALID_MTX_FIELD;
+    }
+    return MTX_SUCCESS;
+}
+
+static int mtxfile_data_alltoallv_coordinate(
+    const union mtxfile_data * sendbuf,
+    enum mtxfile_object object,
+    enum mtxfile_field field,
+    enum mtx_precision precision,
+    int64_t sendoffset,
+    const int * sendcounts,
+    const int * senddispls,
+    union mtxfile_data * recvbuf,
+    int64_t recvoffset,
+    const int * recvcounts,
+    const int * recvdispls,
+    MPI_Comm comm,
+    int * mpierrcode)
+{
+    int err;
+    MPI_Datatype datatype;
+    err = mtxfile_coordinate_datatype(
+        object, field, precision, &datatype, mpierrcode);
+    if (err)
+        return err;
+
+    if (object == mtxfile_matrix) {
+        if (field == mtxfile_real) {
+            if (precision == mtx_single) {
+                *mpierrcode = MPI_Alltoallv(
+                    &sendbuf->matrix_coordinate_real_single[sendoffset],
+                    sendcounts, senddispls, datatype,
+                    &recvbuf->matrix_coordinate_real_single[recvoffset],
+                    recvcounts, recvdispls, datatype, comm);
+                if (*mpierrcode)
+                    return MTX_ERR_MPI;
+            } else if (precision == mtx_double) {
+                *mpierrcode = MPI_Alltoallv(
+                    &sendbuf->matrix_coordinate_real_double[sendoffset],
+                    sendcounts, senddispls, datatype,
+                    &recvbuf->matrix_coordinate_real_double[recvoffset],
+                    recvcounts, recvdispls, datatype, comm);
+                if (*mpierrcode)
+                    return MTX_ERR_MPI;
+            } else {
+                return MTX_ERR_INVALID_PRECISION;
+            }
+        } else if (field == mtxfile_complex) {
+            if (precision == mtx_single) {
+                *mpierrcode = MPI_Alltoallv(
+                    &sendbuf->matrix_coordinate_complex_single[sendoffset],
+                    sendcounts, senddispls, datatype,
+                    &recvbuf->matrix_coordinate_complex_single[recvoffset],
+                    recvcounts, recvdispls, datatype, comm);
+                if (*mpierrcode)
+                    return MTX_ERR_MPI;
+            } else if (precision == mtx_double) {
+                *mpierrcode = MPI_Alltoallv(
+                    &sendbuf->matrix_coordinate_complex_double[sendoffset],
+                    sendcounts, senddispls, datatype,
+                    &recvbuf->matrix_coordinate_complex_double[recvoffset],
+                    recvcounts, recvdispls, datatype, comm);
+                if (*mpierrcode)
+                    return MTX_ERR_MPI;
+            } else {
+                return MTX_ERR_INVALID_PRECISION;
+            }
+        } else if (field == mtxfile_integer) {
+            if (precision == mtx_single) {
+                *mpierrcode = MPI_Alltoallv(
+                    &sendbuf->matrix_coordinate_integer_single[sendoffset],
+                    sendcounts, senddispls, datatype,
+                    &recvbuf->matrix_coordinate_integer_single[recvoffset],
+                    recvcounts, recvdispls, datatype, comm);
+                if (*mpierrcode)
+                    return MTX_ERR_MPI;
+            } else if (precision == mtx_double) {
+                *mpierrcode = MPI_Alltoallv(
+                    &sendbuf->matrix_coordinate_integer_double[sendoffset],
+                    sendcounts, senddispls, datatype,
+                    &recvbuf->matrix_coordinate_integer_double[recvoffset],
+                    recvcounts, recvdispls, datatype, comm);
+                if (*mpierrcode)
+                    return MTX_ERR_MPI;
+            } else {
+                return MTX_ERR_INVALID_PRECISION;
+            }
+        } else if (field == mtxfile_pattern) {
+            *mpierrcode = MPI_Alltoallv(
+                &sendbuf->matrix_coordinate_pattern[sendoffset],
+                sendcounts, senddispls, datatype,
+                &recvbuf->matrix_coordinate_pattern[recvoffset],
+                recvcounts, recvdispls, datatype, comm);
+            if (*mpierrcode)
+                return MTX_ERR_MPI;
+        } else {
+            return MTX_ERR_INVALID_MTX_FIELD;
+        }
+
+    } else if (object == mtxfile_vector) {
+        if (field == mtxfile_real) {
+            if (precision == mtx_single) {
+                *mpierrcode = MPI_Alltoallv(
+                    &sendbuf->vector_coordinate_real_single[sendoffset],
+                    sendcounts, senddispls, datatype,
+                    &recvbuf->vector_coordinate_real_single[recvoffset],
+                    recvcounts, recvdispls, datatype, comm);
+                if (*mpierrcode)
+                    return MTX_ERR_MPI;
+            } else if (precision == mtx_double) {
+                *mpierrcode = MPI_Alltoallv(
+                    &sendbuf->vector_coordinate_real_double[sendoffset],
+                    sendcounts, senddispls, datatype,
+                    &recvbuf->vector_coordinate_real_double[recvoffset],
+                    recvcounts, recvdispls, datatype, comm);
+                if (*mpierrcode)
+                    return MTX_ERR_MPI;
+            } else {
+                return MTX_ERR_INVALID_PRECISION;
+            }
+        } else if (field == mtxfile_complex) {
+            if (precision == mtx_single) {
+                *mpierrcode = MPI_Alltoallv(
+                    &sendbuf->vector_coordinate_complex_single[sendoffset],
+                    sendcounts, senddispls, datatype,
+                    &recvbuf->vector_coordinate_complex_single[recvoffset],
+                    recvcounts, recvdispls, datatype, comm);
+                if (*mpierrcode)
+                    return MTX_ERR_MPI;
+            } else if (precision == mtx_double) {
+                *mpierrcode = MPI_Alltoallv(
+                    &sendbuf->vector_coordinate_complex_double[sendoffset],
+                    sendcounts, senddispls, datatype,
+                    &recvbuf->vector_coordinate_complex_double[recvoffset],
+                    recvcounts, recvdispls, datatype, comm);
+                if (*mpierrcode)
+                    return MTX_ERR_MPI;
+            } else {
+                return MTX_ERR_INVALID_PRECISION;
+            }
+        } else if (field == mtxfile_integer) {
+            if (precision == mtx_single) {
+                *mpierrcode = MPI_Alltoallv(
+                    &sendbuf->vector_coordinate_integer_single[sendoffset],
+                    sendcounts, senddispls, datatype,
+                    &recvbuf->vector_coordinate_integer_single[recvoffset],
+                    recvcounts, recvdispls, datatype, comm);
+                if (*mpierrcode)
+                    return MTX_ERR_MPI;
+            } else if (precision == mtx_double) {
+                *mpierrcode = MPI_Alltoallv(
+                    &sendbuf->vector_coordinate_integer_double[sendoffset],
+                    sendcounts, senddispls, datatype,
+                    &recvbuf->vector_coordinate_integer_double[recvoffset],
+                    recvcounts, recvdispls, datatype, comm);
+                if (*mpierrcode)
+                    return MTX_ERR_MPI;
+            } else {
+                return MTX_ERR_INVALID_PRECISION;
+            }
+        } else if (field == mtxfile_pattern) {
+            *mpierrcode = MPI_Alltoallv(
+                &sendbuf->vector_coordinate_pattern[sendoffset],
+                sendcounts, senddispls, datatype,
+                &recvbuf->vector_coordinate_pattern[recvoffset],
+                recvcounts, recvdispls, datatype, comm);
+            if (*mpierrcode)
+                return MTX_ERR_MPI;
+        } else {
+            return MTX_ERR_INVALID_MTX_FIELD;
+        }
+    } else {
+        return MTX_ERR_INVALID_MTX_OBJECT;
+    }
+    return MTX_SUCCESS;
+}
+
+/**
+ * `mtxfile_data_alltoallv()' performs an all-to-all exchange of
+ * Matrix Market data lines between MPI processes in a communicator.
+ *
+ * This is analogous to `MPI_Alltoallv()' and requires every process
+ * in the communicator to perform matching calls to
+ * `mtxfile_data_alltoallv()'.
+ */
+int mtxfile_data_alltoallv(
+    const union mtxfile_data * sendbuf,
+    enum mtxfile_object object,
+    enum mtxfile_format format,
+    enum mtxfile_field field,
+    enum mtx_precision precision,
+    int64_t sendoffset,
+    const int * sendcounts,
+    const int * senddispls,
+    union mtxfile_data * recvbuf,
+    int64_t recvoffset,
+    const int * recvcounts,
+    const int * recvdispls,
+    MPI_Comm comm,
+    struct mtxmpierror * mpierror)
+{
+    if (format == mtxfile_array) {
+        return mtxfile_data_alltoallv_array(
+            sendbuf, field, precision, sendoffset, sendcounts, senddispls,
+            recvbuf, recvoffset, recvcounts, recvdispls,
+            comm, &mpierror->err);
+    } else if (format == mtxfile_coordinate) {
+        return mtxfile_data_alltoallv_coordinate(
+            sendbuf, object, field, precision, sendoffset, sendcounts, senddispls,
+            recvbuf, recvoffset, recvcounts, recvdispls,
+            comm, &mpierror->err);
     } else {
         return MTX_ERR_INVALID_MTX_FORMAT;
     }

@@ -1045,6 +1045,30 @@ int mtxfile_data_bcast(
     struct mtxmpierror * mpierror);
 
 /**
+ * `mtxfile_data_gatherv()' gathers Matrix Market data lines onto an
+ * MPI root process from other processes in a communicator.
+ *
+ * This is analogous to `MPI_Gatherv()' and requires every process in
+ * the communicator to perform matching calls to
+ * `mtxfile_data_gatherv()'.
+ */
+int mtxfile_data_gatherv(
+    const union mtxfile_data * sendbuf,
+    enum mtxfile_object object,
+    enum mtxfile_format format,
+    enum mtxfile_field field,
+    enum mtx_precision precision,
+    int64_t sendoffset,
+    int sendcount,
+    union mtxfile_data * recvbuf,
+    int64_t recvoffset,
+    const int * recvcounts,
+    const int * recvdispls,
+    int root,
+    MPI_Comm comm,
+    struct mtxmpierror * mpierror);
+
+/**
  * `mtxfile_data_scatterv()' scatters Matrix Market data lines from an
  * MPI root process to other processes in a communicator.
  *
@@ -1065,6 +1089,30 @@ int mtxfile_data_scatterv(
     int64_t recvoffset,
     int recvcount,
     int root,
+    MPI_Comm comm,
+    struct mtxmpierror * mpierror);
+
+/**
+ * `mtxfile_data_alltoallv()' performs an all-to-all exchange of
+ * Matrix Market data lines between MPI processes in a communicator.
+ *
+ * This is analogous to `MPI_Alltoallv()' and requires every process
+ * in the communicator to perform matching calls to
+ * `mtxfile_data_alltoallv()'.
+ */
+int mtxfile_data_alltoallv(
+    const union mtxfile_data * sendbuf,
+    enum mtxfile_object object,
+    enum mtxfile_format format,
+    enum mtxfile_field field,
+    enum mtx_precision precision,
+    int64_t sendoffset,
+    const int * sendcounts,
+    const int * senddispls,
+    union mtxfile_data * recvbuf,
+    int64_t recvoffset,
+    const int * recvcounts,
+    const int * recvdispls,
     MPI_Comm comm,
     struct mtxmpierror * mpierror);
 #endif
