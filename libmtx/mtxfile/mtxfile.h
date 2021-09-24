@@ -676,8 +676,10 @@ int mtxfile_sort(
  */
 
 /**
- * `mtxfile_partition_rows()' partitions and reorders data lines of a
- * Matrix Market file according to the given row partitioning.
+ * `mtxfile_partition_rows()' partitions data lines of a Matrix Market
+ * file according to the given row partitioning.  Furthermore, the
+ * data lines are sorted in ascending order by the part number they
+ * are assigned.
  *
  * The array `data_lines_per_part_ptr' must contain at least enough
  * storage for `row_partition->num_parts+1' values of type `int64_t'.
@@ -690,7 +692,7 @@ int mtxfile_sort(
  * storage to hold one `int' for each data line. (The number of data
  * lines is obtained by calling `mtxfile_size_num_data_lines()'). On a
  * successful return, the `k'-th entry in the array specifies the part
- * number that was assigned to the `k'-th data line.
+ * number that was assigned to the `k'-th data line prior to sorting.
  */
 int mtxfile_partition_rows(
     struct mtxfile * mtxfile,

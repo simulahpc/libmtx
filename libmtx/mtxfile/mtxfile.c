@@ -304,7 +304,22 @@ int mtxfile_init_matrix_array_real_single(
     enum mtxfile_symmetry symmetry,
     int num_rows,
     int num_columns,
-    const float * data);
+    const float * data)
+{
+    int err;
+    err = mtxfile_alloc_matrix_array(
+        mtxfile, mtxfile_real, symmetry, mtx_single, num_rows, num_columns);
+    if (err)
+        return err;
+    int64_t num_data_lines;
+    err = mtxfile_size_num_data_lines(&mtxfile->size, &num_data_lines);
+    if (err) {
+        mtxfile_free(mtxfile);
+        return err;
+    }
+    memcpy(mtxfile->data.array_real_single, data, num_data_lines * sizeof(*data));
+    return MTX_SUCCESS;
+}
 
 /**
  * `mtxfile_init_matrix_array_real_double()' allocates and initialises
@@ -342,7 +357,22 @@ int mtxfile_init_matrix_array_complex_single(
     enum mtxfile_symmetry symmetry,
     int num_rows,
     int num_columns,
-    const float (* data)[2]);
+    const float (* data)[2])
+{
+    int err;
+    err = mtxfile_alloc_matrix_array(
+        mtxfile, mtxfile_complex, symmetry, mtx_single, num_rows, num_columns);
+    if (err)
+        return err;
+    int64_t num_data_lines;
+    err = mtxfile_size_num_data_lines(&mtxfile->size, &num_data_lines);
+    if (err) {
+        mtxfile_free(mtxfile);
+        return err;
+    }
+    memcpy(mtxfile->data.array_complex_single, data, num_data_lines * sizeof(*data));
+    return MTX_SUCCESS;
+}
 
 /**
  * `mtxfile_init_matrix_array_complex_double()' allocates and
@@ -354,7 +384,22 @@ int mtxfile_init_matrix_array_complex_double(
     enum mtxfile_symmetry symmetry,
     int num_rows,
     int num_columns,
-    const double (* data)[2]);
+    const double (* data)[2])
+{
+    int err;
+    err = mtxfile_alloc_matrix_array(
+        mtxfile, mtxfile_complex, symmetry, mtx_double, num_rows, num_columns);
+    if (err)
+        return err;
+    int64_t num_data_lines;
+    err = mtxfile_size_num_data_lines(&mtxfile->size, &num_data_lines);
+    if (err) {
+        mtxfile_free(mtxfile);
+        return err;
+    }
+    memcpy(mtxfile->data.array_complex_double, data, num_data_lines * sizeof(*data));
+    return MTX_SUCCESS;
+}
 
 /**
  * `mtxfile_init_matrix_array_integer_single()' allocates and
@@ -366,7 +411,22 @@ int mtxfile_init_matrix_array_integer_single(
     enum mtxfile_symmetry symmetry,
     int num_rows,
     int num_columns,
-    const int32_t * data);
+    const int32_t * data)
+{
+    int err;
+    err = mtxfile_alloc_matrix_array(
+        mtxfile, mtxfile_integer, symmetry, mtx_single, num_rows, num_columns);
+    if (err)
+        return err;
+    int64_t num_data_lines;
+    err = mtxfile_size_num_data_lines(&mtxfile->size, &num_data_lines);
+    if (err) {
+        mtxfile_free(mtxfile);
+        return err;
+    }
+    memcpy(mtxfile->data.array_integer_single, data, num_data_lines * sizeof(*data));
+    return MTX_SUCCESS;
+}
 
 /**
  * `mtxfile_init_matrix_array_integer_double()' allocates and
@@ -378,7 +438,22 @@ int mtxfile_init_matrix_array_integer_double(
     enum mtxfile_symmetry symmetry,
     int num_rows,
     int num_columns,
-    const int64_t * data);
+    const int64_t * data)
+{
+    int err;
+    err = mtxfile_alloc_matrix_array(
+        mtxfile, mtxfile_integer, symmetry, mtx_double, num_rows, num_columns);
+    if (err)
+        return err;
+    int64_t num_data_lines;
+    err = mtxfile_size_num_data_lines(&mtxfile->size, &num_data_lines);
+    if (err) {
+        mtxfile_free(mtxfile);
+        return err;
+    }
+    memcpy(mtxfile->data.array_integer_double, data, num_data_lines * sizeof(*data));
+    return MTX_SUCCESS;
+}
 
 /*
  * Vector array formats
@@ -1471,8 +1546,10 @@ int mtxfile_sort(
  */
 
 /**
- * `mtxfile_partition_rows()' partitions and reorders data lines of a
- * Matrix Market file according to the given row partitioning.
+ * `mtxfile_partition_rows()' partitions data lines of a Matrix Market
+ * file according to the given row partitioning.  Furthermore, the
+ * data lines are sorted in ascending order by the part number they
+ * are assigned.
  *
  * The array `data_lines_per_part_ptr' must contain at least enough
  * storage for `row_partition->num_parts+1' values of type `int64_t'.
@@ -1485,7 +1562,7 @@ int mtxfile_sort(
  * storage to hold one `int' for each data line. (The number of data
  * lines is obtained by calling `mtxfile_size_num_data_lines()'). On a
  * successful return, the `k'-th entry in the array specifies the part
- * number that was assigned to the `k'-th data line.
+ * number that was assigned to the `k'-th data line prior to sorting.
  */
 int mtxfile_partition_rows(
     struct mtxfile * mtxfile,
