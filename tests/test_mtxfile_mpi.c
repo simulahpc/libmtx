@@ -292,8 +292,8 @@ int test_mtxfile_scatterv(void)
         }
 
         struct mtxfile dstmtx;
-        int sendcounts[2] = {3, 6};
-        int displs[2] = {0, 3};
+        const int sendcounts[2] = {3, 6};
+        const int displs[2] = {0, 3};
         int recvcount = rank == root ? 3 : 6;
         err = mtxfile_scatterv(
             &srcmtx, sendcounts, displs, &dstmtx, recvcount,
@@ -341,8 +341,8 @@ int test_mtxfile_scatterv(void)
         }
 
         struct mtxfile dstmtx;
-        int sendcounts[2] = {1, 3};
-        int displs[2] = {0, 1};
+        const int sendcounts[2] = {1, 3};
+        const int displs[2] = {0, 1};
         int recvcount = rank == root ? 1 : 3;
         err = mtxfile_scatterv(
             &srcmtx, sendcounts, displs, &dstmtx, recvcount,
@@ -392,8 +392,8 @@ int test_mtxfile_scatterv(void)
         }
 
         struct mtxfile dstmtx;
-        int sendcounts[2] = {1, 3};
-        int displs[2] = {0, 1};
+        const int sendcounts[2] = {1, 3};
+        const int displs[2] = {0, 1};
         int recvcount = rank == root ? 1 : 3;
         err = mtxfile_scatterv(
             &srcmtx, sendcounts, displs, &dstmtx, recvcount,

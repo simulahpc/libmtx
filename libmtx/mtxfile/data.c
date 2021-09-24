@@ -2885,7 +2885,6 @@ int mtxfile_data_transpose(
                 return MTX_ERR_INVALID_MTX_FIELD;
             }
 
-
             mtxfile_data_free(&copy, object, format, field, precision);
         } else {
             return MTX_ERR_INVALID_MTX_FORMAT;
@@ -3907,6 +3906,47 @@ int mtxfile_data_partition_rows(
  */
 
 #ifdef LIBMTX_HAVE_MPI
+static int mtxfile_array_complex_datatype(
+    MPI_Datatype * datatype,
+    enum mtx_precision precision,
+    int * mpierrcode)
+{
+    int num_elements = 1;
+    MPI_Datatype element_type;
+    if (precision == mtx_single)
+        element_type = MPI_FLOAT;
+    else if (precision == mtx_double)
+        element_type = MPI_DOUBLE;
+    else
+        return MTX_ERR_INVALID_PRECISION;
+    int block_length = 2;
+    MPI_Aint element_offset = 0;
+    MPI_Datatype single_datatype;
+    *mpierrcode = MPI_Type_create_struct(
+        num_elements, &block_length, &element_offset, &element_type, &single_datatype);
+    if (*mpierrcode)
+        return MTX_ERR_MPI;
+    MPI_Aint lb, extent;
+    *mpierrcode = MPI_Type_get_extent(single_datatype, &lb, &extent);
+    if (*mpierrcode) {
+        MPI_Type_free(&single_datatype);
+        return MTX_ERR_MPI;
+    }
+    *mpierrcode = MPI_Type_create_resized(single_datatype, lb, extent, datatype);
+    if (*mpierrcode) {
+        MPI_Type_free(&single_datatype);
+        return MTX_ERR_MPI;
+    }
+    *mpierrcode = MPI_Type_commit(datatype);
+    if (*mpierrcode) {
+        MPI_Type_free(datatype);
+        MPI_Type_free(&single_datatype);
+        return MTX_ERR_MPI;
+    }
+    MPI_Type_free(&single_datatype);
+    return MTX_SUCCESS;
+}
+
 static int mtxfile_data_send_array(
     const union mtxfile_data * data,
     enum mtxfile_field field,
@@ -3935,21 +3975,31 @@ static int mtxfile_data_send_array(
             return MTX_ERR_INVALID_PRECISION;
         }
     } else if (field == mtxfile_complex) {
+        MPI_Datatype complex;
+        int err = mtxfile_array_complex_datatype(&complex, precision, mpierrcode);
+        if (err)
+            return err;
         if (precision == mtx_single) {
             *mpierrcode = MPI_Send(
                 &data->array_complex_single[offset],
-                2*size, MPI_FLOAT, dest, tag, comm);
-            if (*mpierrcode)
+                size, complex, dest, tag, comm);
+            if (*mpierrcode) {
+                MPI_Type_free(&complex);
                 return MTX_ERR_MPI;
+            }
         } else if (precision == mtx_double) {
             *mpierrcode = MPI_Send(
                 &data->array_complex_double[offset],
-                2*size, MPI_DOUBLE, dest, tag, comm);
-            if (*mpierrcode)
+                size, complex, dest, tag, comm);
+            if (*mpierrcode) {
+                MPI_Type_free(&complex);
                 return MTX_ERR_MPI;
+            }
         } else {
+            MPI_Type_free(&complex);
             return MTX_ERR_INVALID_PRECISION;
         }
+        MPI_Type_free(&complex);
     } else if (field == mtxfile_integer) {
         if (precision == mtx_single) {
             *mpierrcode = MPI_Send(
@@ -4423,23 +4473,33 @@ static int mtxfile_data_recv_array(
             return MTX_ERR_INVALID_PRECISION;
         }
     } else if (field == mtxfile_complex) {
+        MPI_Datatype complex;
+        int err = mtxfile_array_complex_datatype(&complex, precision, mpierrcode);
+        if (err)
+            return err;
         if (precision == mtx_single) {
             *mpierrcode = MPI_Recv(
                 &data->array_complex_single[offset],
-                2*size, MPI_FLOAT, source, tag, comm,
+                size, complex, source, tag, comm,
                 MPI_STATUS_IGNORE);
-            if (*mpierrcode)
+            if (*mpierrcode) {
+                MPI_Type_free(&complex);
                 return MTX_ERR_MPI;
+            }
         } else if (precision == mtx_double) {
             *mpierrcode = MPI_Recv(
                 &data->array_complex_double[offset],
-                2*size, MPI_DOUBLE, source, tag, comm,
+                size, complex, source, tag, comm,
                 MPI_STATUS_IGNORE);
-            if (*mpierrcode)
+            if (*mpierrcode) {
+                MPI_Type_free(&complex);
                 return MTX_ERR_MPI;
+            }
         } else {
+            MPI_Type_free(&complex);
             return MTX_ERR_INVALID_PRECISION;
         }
+        MPI_Type_free(&complex);
     } else if (field == mtxfile_integer) {
         if (precision == mtx_single) {
             *mpierrcode = MPI_Recv(
@@ -4665,19 +4725,29 @@ static int mtxfile_data_bcast_array(
             return MTX_ERR_INVALID_PRECISION;
         }
     } else if (field == mtxfile_complex) {
+        MPI_Datatype complex;
+        int err = mtxfile_array_complex_datatype(&complex, precision, mpierrcode);
+        if (err)
+            return err;
         if (precision == mtx_single) {
             *mpierrcode = MPI_Bcast(
-                &data->array_complex_single[offset], 2*size, MPI_FLOAT, root, comm);
-            if (*mpierrcode)
+                &data->array_complex_single[offset], size, complex, root, comm);
+            if (*mpierrcode) {
+                MPI_Type_free(&complex);
                 return MTX_ERR_MPI;
+            }
         } else if (precision == mtx_double) {
             *mpierrcode = MPI_Bcast(
-                &data->array_complex_double[offset], 2*size, MPI_DOUBLE, root, comm);
-            if (*mpierrcode)
+                &data->array_complex_double[offset], size, complex, root, comm);
+            if (*mpierrcode) {
+                MPI_Type_free(&complex);
                 return MTX_ERR_MPI;
+            }
         } else {
+            MPI_Type_free(&complex);
             return MTX_ERR_INVALID_PRECISION;
         }
+        MPI_Type_free(&complex);
     } else if (field == mtxfile_integer) {
         if (precision == mtx_single) {
             *mpierrcode = MPI_Bcast(
@@ -4878,8 +4948,8 @@ static int mtxfile_data_scatterv_array(
     enum mtxfile_field field,
     enum mtx_precision precision,
     int64_t sendoffset,
-    int * sendcounts,
-    int * displs,
+    const int * sendcounts,
+    const int * displs,
     union mtxfile_data * recvbuf,
     int64_t recvoffset,
     int recvcount,
@@ -4906,38 +4976,33 @@ static int mtxfile_data_scatterv_array(
             return MTX_ERR_INVALID_PRECISION;
         }
     } else if (field == mtxfile_complex) {
-        int rank;
-        *mpierrcode = MPI_Comm_rank(comm, &rank);
-        if (*mpierrcode)
-            MPI_Abort(comm, EXIT_FAILURE);
-        if (rank == root) {
-            int comm_size;
-            *mpierrcode = MPI_Comm_size(comm, &comm_size);
-            if (*mpierrcode)
-                MPI_Abort(comm, EXIT_FAILURE);
-            for (int p = 0; p < comm_size; p++) {
-                sendcounts[p] *= 2;
-                displs[p] *= 2;
-            }
-        }
-        recvcount *= 2;
+        MPI_Datatype complex;
+        int err = mtxfile_array_complex_datatype(&complex, precision, mpierrcode);
+        if (err)
+            return err;
         if (precision == mtx_single) {
             *mpierrcode = MPI_Scatterv(
-                &sendbuf->array_complex_single[sendoffset], sendcounts, displs, MPI_FLOAT,
-                &recvbuf->array_complex_single[recvoffset], recvcount, MPI_FLOAT,
+                &sendbuf->array_complex_single[sendoffset], sendcounts, displs, complex,
+                &recvbuf->array_complex_single[recvoffset], recvcount, complex,
                 root, comm);
-            if (*mpierrcode)
+            if (*mpierrcode) {
+                MPI_Type_free(&complex);
                 return MTX_ERR_MPI;
+            }
         } else if (precision == mtx_double) {
             *mpierrcode = MPI_Scatterv(
-                &sendbuf->array_complex_double[sendoffset], sendcounts, displs, MPI_DOUBLE,
-                &recvbuf->array_complex_double[recvoffset], recvcount, MPI_DOUBLE,
+                &sendbuf->array_complex_double[sendoffset], sendcounts, displs, complex,
+                &recvbuf->array_complex_double[recvoffset], recvcount, complex,
                 root, comm);
-            if (*mpierrcode)
+            if (*mpierrcode) {
+                MPI_Type_free(&complex);
                 return MTX_ERR_MPI;
+            }
         } else {
+            MPI_Type_free(&complex);
             return MTX_ERR_INVALID_PRECISION;
         }
+        MPI_Type_free(&complex);
     } else if (field == mtxfile_integer) {
         if (precision == mtx_single) {
             *mpierrcode = MPI_Scatterv(
@@ -4968,8 +5033,8 @@ static int mtxfile_data_scatterv_coordinate(
     enum mtxfile_field field,
     enum mtx_precision precision,
     int64_t sendoffset,
-    int * sendcounts,
-    int * displs,
+    const int * sendcounts,
+    const int * displs,
     union mtxfile_data * recvbuf,
     int64_t recvoffset,
     int recvcount,
@@ -5150,8 +5215,8 @@ int mtxfile_data_scatterv(
     enum mtxfile_field field,
     enum mtx_precision precision,
     int64_t sendoffset,
-    int * sendcounts,
-    int * displs,
+    const int * sendcounts,
+    const int * displs,
     union mtxfile_data * recvbuf,
     int64_t recvoffset,
     int recvcount,

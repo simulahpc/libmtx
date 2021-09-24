@@ -1823,8 +1823,8 @@ int mtxfile_bcast(
  */
 int mtxfile_scatterv(
     const struct mtxfile * sendmtxfile,
-    int * sendcounts,
-    int * displs,
+    const int * sendcounts,
+    const int * displs,
     struct mtxfile * recvmtxfile,
     int recvcount,
     int root,
