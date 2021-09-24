@@ -70,10 +70,10 @@ enum mtx_error
     MTX_ERR_INVALID_FIELD = -29,            /* invalid field */
     MTX_ERR_INVALID_VECTOR_TYPE = -30,      /* invalid vector type */
     MTX_ERR_INCOMPATIBLE_MTX_OBJECT = -31,  /* incompatible Matrix Market object */
-    MTX_ERR_INCOMPATIBLE_MTX_FORMAT = -32,  /* incompatible Matrix Market object */
-    MTX_ERR_INCOMPATIBLE_MTX_FIELD = -33,   /* incompatible Matrix Market object */
-    MTX_ERR_INCOMPATIBLE_MTX_SYMMETRY = -34,/* incompatible Matrix Market object */
-    MTX_ERR_INCOMPATIBLE_MTX_SIZE = -35,    /* incompatible Matrix Market object */
+    MTX_ERR_INCOMPATIBLE_MTX_FORMAT = -32,  /* incompatible Matrix Market format */
+    MTX_ERR_INCOMPATIBLE_MTX_FIELD = -33,   /* incompatible Matrix Market field */
+    MTX_ERR_INCOMPATIBLE_MTX_SYMMETRY = -34,/* incompatible Matrix Market symmetry */
+    MTX_ERR_INCOMPATIBLE_MTX_SIZE = -35,    /* incompatible Matrix Market size */
 };
 
 /**
