@@ -130,6 +130,20 @@ int mtxfile_cat(
     struct mtxfile * dst,
     const struct mtxfile * src);
 
+/**
+ * `mtxfile_catn()' concatenates multiple Matrix Market files.
+ *
+ * The files must have identical header lines. Furthermore, for
+ * matrices in array format, all matrices must have the same number of
+ * columns, since entire rows are concatenated.  For matrices or
+ * vectors in coordinate format, the number of rows and columns must
+ * be the same.
+ */
+int mtxfile_catn(
+    struct mtxfile * dst,
+    int num_srcs,
+    const struct mtxfile * srcs);
+
 /*
  * Matrix array formats
  */
@@ -778,6 +792,47 @@ int mtxfile_gather(
     const struct mtxfile * sendmtxfile,
     struct mtxfile * recvmtxfiles,
     int root,
+    MPI_Comm comm,
+    struct mtxmpierror * mpierror);
+
+/**
+ * `mtxfile_allgather()' gathers Matrix Market files onto every MPI
+ * process from other processes in a communicator.
+ *
+ * This is analogous to `MPI_Allgather()' and requires every process
+ * in the communicator to perform matching calls to
+ * `mtxfile_allgather()'.
+ */
+int mtxfile_allgather(
+    const struct mtxfile * sendmtxfile,
+    struct mtxfile * recvmtxfiles,
+    MPI_Comm comm,
+    struct mtxmpierror * mpierror);
+
+/**
+ * `mtxfile_scatter()' scatters Matrix Market files from an MPI root
+ * process to other processes in a communicator.
+ *
+ * This is analogous to `MPI_Scatter()' and requires every process in
+ * the communicator to perform matching calls to `mtxfile_scatter()'.
+ */
+int mtxfile_scatter(
+    const struct mtxfile * sendmtxfiles,
+    struct mtxfile * recvmtxfile,
+    int root,
+    MPI_Comm comm,
+    struct mtxmpierror * mpierror);
+
+/**
+ * `mtxfile_alltoall()' performs an all-to-all exchange of Matrix
+ * Market files between MPI process in a communicator.
+ *
+ * This is analogous to `MPI_Alltoall()' and requires every process in
+ * the communicator to perform matching calls to `mtxfile_alltoall()'.
+ */
+int mtxfile_alltoall(
+    const struct mtxfile * sendmtxfiles,
+    struct mtxfile * recvmtxfiles,
     MPI_Comm comm,
     struct mtxmpierror * mpierror);
 

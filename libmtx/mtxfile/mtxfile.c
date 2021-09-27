@@ -268,6 +268,114 @@ int mtxfile_cat(
     return MTX_SUCCESS;
 }
 
+/**
+ * `mtxfile_catn()' concatenates multiple Matrix Market files.
+ *
+ * The files must have identical header lines. Furthermore, for
+ * matrices in array format, all matrices must have the same number of
+ * columns, since entire rows are concatenated.  For matrices or
+ * vectors in coordinate format, the number of rows and columns must
+ * be the same.
+ */
+int mtxfile_catn(
+    struct mtxfile * dst,
+    int num_srcs,
+    const struct mtxfile * srcs)
+{
+    int err;
+    for (int i = 0; i < num_srcs; i++) {
+        const struct mtxfile * src = &srcs[i];
+        if (dst->header.object != src->header.object)
+            return MTX_ERR_INVALID_MTX_OBJECT;
+        if (dst->header.format != src->header.format)
+            return MTX_ERR_INVALID_MTX_FORMAT;
+        if (dst->header.field != src->header.field)
+            return MTX_ERR_INVALID_MTX_FIELD;
+        if (dst->header.symmetry != src->header.symmetry)
+            return MTX_ERR_INVALID_MTX_SYMMETRY;
+    }
+
+    for (int i = 0; i < num_srcs; i++) {
+        const struct mtxfile * src = &srcs[i];
+        err = mtxfile_comments_cat(&dst->comments, &src->comments);
+        if (err)
+            return err;
+    }
+
+    int64_t num_data_lines_dst;
+    err = mtxfile_size_num_data_lines(&dst->size, &num_data_lines_dst);
+    if (err)
+        return err;
+
+    for (int i = 0; i < num_srcs; i++) {
+        const struct mtxfile * src = &srcs[i];
+        int64_t num_data_lines_src;
+        err = mtxfile_size_num_data_lines(&src->size, &num_data_lines_src);
+        if (err)
+            return err;
+
+        err = mtxfile_size_cat(
+            &dst->size, &src->size, dst->header.object, dst->header.format);
+        if (err)
+            return err;
+    }
+
+    int64_t num_data_lines;
+    err = mtxfile_size_num_data_lines(&dst->size, &num_data_lines);
+    if (err)
+        return err;
+
+    union mtxfile_data data;
+    err = mtxfile_data_alloc(
+        &data, dst->header.object, dst->header.format,
+        dst->header.field, dst->precision, num_data_lines);
+    if (err)
+        return err;
+
+    int64_t dstoffset = 0;
+    int64_t srcoffset = 0;
+    err = mtxfile_data_copy(
+        &data, &dst->data,
+        dst->header.object, dst->header.format,
+        dst->header.field, dst->precision,
+        num_data_lines_dst, 0, 0);
+    if (err) {
+        mtxfile_data_free(
+            &data, dst->header.object, dst->header.format,
+            dst->header.field, dst->precision);
+        return err;
+    }
+    dstoffset += num_data_lines_dst;
+
+    for (int i = 0; i < num_srcs; i++) {
+        const struct mtxfile * src = &srcs[i];
+        int64_t num_data_lines_src;
+        err = mtxfile_size_num_data_lines(&src->size, &num_data_lines_src);
+        if (err)
+            return err;
+
+        err = mtxfile_data_copy(
+            &data, &src->data,
+            dst->header.object, dst->header.format,
+            dst->header.field, dst->precision,
+            num_data_lines_src, dstoffset, 0);
+        if (err) {
+            mtxfile_data_free(
+                &data, dst->header.object, dst->header.format,
+                dst->header.field, dst->precision);
+            return err;
+        }
+        dstoffset += num_data_lines_src;
+    }
+
+    union mtxfile_data olddata = dst->data;
+    dst->data = data;
+    mtxfile_data_free(
+        &olddata, dst->header.object, dst->header.format,
+        dst->header.field, dst->precision);
+    return MTX_SUCCESS;
+}
+
 /*
  * Matrix array formats
  */
@@ -1981,6 +2089,133 @@ int mtxfile_gather(
                     mtxfile_free(&recvmtxfiles[q]);
             }
             return MTX_ERR_MPI_COLLECTIVE;
+        }
+    }
+    return MTX_SUCCESS;
+}
+
+/**
+ * `mtxfile_allgather()' gathers Matrix Market files onto every MPI
+ * process from other processes in a communicator.
+ *
+ * This is analogous to `MPI_Allgather()' and requires every process
+ * in the communicator to perform matching calls to
+ * `mtxfile_allgather()'.
+ */
+int mtxfile_allgather(
+    const struct mtxfile * sendmtxfile,
+    struct mtxfile * recvmtxfiles,
+    MPI_Comm comm,
+    struct mtxmpierror * mpierror)
+{
+    int err;
+    int comm_size;
+    mpierror->mpierrcode = MPI_Comm_size(comm, &comm_size);
+    err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxmpierror_allreduce(mpierror, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+    int rank;
+    mpierror->mpierrcode = MPI_Comm_rank(comm, &rank);
+    err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxmpierror_allreduce(mpierror, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+    for (int p = 0; p < comm_size; p++) {
+        err = mtxfile_gather(sendmtxfile, recvmtxfiles, p, comm, mpierror);
+        if (err)
+            return err;
+    }
+    return MTX_SUCCESS;
+}
+
+/**
+ * `mtxfile_scatter()' scatters Matrix Market files from an MPI root
+ * process to other processes in a communicator.
+ *
+ * This is analogous to `MPI_Scatter()' and requires every process in
+ * the communicator to perform matching calls to `mtxfile_scatter()'.
+ */
+int mtxfile_scatter(
+    const struct mtxfile * sendmtxfiles,
+    struct mtxfile * recvmtxfile,
+    int root,
+    MPI_Comm comm,
+    struct mtxmpierror * mpierror)
+{
+    int err;
+    int comm_size;
+    mpierror->mpierrcode = MPI_Comm_size(comm, &comm_size);
+    err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxmpierror_allreduce(mpierror, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+    int rank;
+    mpierror->mpierrcode = MPI_Comm_rank(comm, &rank);
+    err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxmpierror_allreduce(mpierror, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+
+    for (int p = 0; p < comm_size; p++) {
+        /* Send from the root process */
+        err = (rank == root && p != root)
+            ? mtxfile_send(&sendmtxfiles[p], p, 0, comm, mpierror)
+            : MTX_SUCCESS;
+        if (mtxmpierror_allreduce(mpierror, err)) {
+            if (rank < p)
+                mtxfile_free(recvmtxfile);
+            return MTX_ERR_MPI_COLLECTIVE;
+        }
+
+        /* Receive from the root process */
+        err = (rank != root && rank == p)
+            ? mtxfile_recv(recvmtxfile, root, 0, comm, mpierror)
+            : MTX_SUCCESS;
+        if (mtxmpierror_allreduce(mpierror, err)) {
+            if (rank < p)
+                mtxfile_free(recvmtxfile);
+            return MTX_ERR_MPI_COLLECTIVE;
+        }
+
+        /* Perform a copy on the root process */
+        err = (rank == root && p == root)
+            ? mtxfile_init_copy(recvmtxfile, &sendmtxfiles[p]) : MTX_SUCCESS;
+        if (mtxmpierror_allreduce(mpierror, err)) {
+            if (rank < p)
+                mtxfile_free(recvmtxfile);
+            return MTX_ERR_MPI_COLLECTIVE;
+        }
+    }
+    return MTX_SUCCESS;
+}
+
+/**
+ * `mtxfile_alltoall()' performs an all-to-all exchange of Matrix
+ * Market files between MPI process in a communicator.
+ *
+ * This is analogous to `MPI_Alltoall()' and requires every process in
+ * the communicator to perform matching calls to `mtxfile_alltoall()'.
+ */
+int mtxfile_alltoall(
+    const struct mtxfile * sendmtxfiles,
+    struct mtxfile * recvmtxfiles,
+    MPI_Comm comm,
+    struct mtxmpierror * mpierror)
+{
+    int err;
+    int comm_size;
+    mpierror->mpierrcode = MPI_Comm_size(comm, &comm_size);
+    err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxmpierror_allreduce(mpierror, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+    int rank;
+    mpierror->mpierrcode = MPI_Comm_rank(comm, &rank);
+    err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxmpierror_allreduce(mpierror, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+    for (int p = 0; p < comm_size; p++) {
+        err = mtxfile_scatter(sendmtxfiles, &recvmtxfiles[p], p, comm, mpierror);
+        if (err) {
+            for (int q = p-1; q >= 0; q--)
+                mtxfile_free(&recvmtxfiles[q]);
+            return err;
         }
     }
     return MTX_SUCCESS;
