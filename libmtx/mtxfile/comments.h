@@ -230,6 +230,21 @@ int mtxfile_comments_bcast(
     int root,
     MPI_Comm comm,
     struct mtxmpierror * mpierror);
+
+/**
+ * `mtxfile_comments_gather()' gathers Matrix Market comments onto an
+ * MPI root process from other processes in a communicator.
+ *
+ * This is analogous to `MPI_Gather()' and requires every process in
+ * the communicator to perform matching calls to
+ * `mtxfile_comments_gather()'.
+ */
+int mtxfile_comments_gather(
+    const struct mtxfile_comments * sendcomments,
+    struct mtxfile_comments * recvcomments,
+    int root,
+    MPI_Comm comm,
+    struct mtxmpierror * mpierror);
 #endif
 
 #endif

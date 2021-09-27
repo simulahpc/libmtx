@@ -513,6 +513,10 @@ int mtxfile_comments_recv(
     struct mtxmpierror * mpierror)
 {
     int err;
+    err = mtxfile_comments_init(comments);
+    if (err)
+        return err;
+
     int num_comments;
     mpierror->err = MPI_Recv(
         &num_comments, 1, MPI_INT, source, tag, comm, MPI_STATUS_IGNORE);
@@ -642,6 +646,72 @@ int mtxfile_comments_bcast(
 
         if (rank == root)
             node = node->next;
+    }
+    return MTX_SUCCESS;
+}
+
+/**
+ * `mtxfile_comments_gather()' gathers Matrix Market comments onto an
+ * MPI root process from other processes in a communicator.
+ *
+ * This is analogous to `MPI_Gather()' and requires every process in
+ * the communicator to perform matching calls to
+ * `mtxfile_comments_gather()'.
+ */
+int mtxfile_comments_gather(
+    const struct mtxfile_comments * sendcomments,
+    struct mtxfile_comments * recvcomments,
+    int root,
+    MPI_Comm comm,
+    struct mtxmpierror * mpierror)
+{
+    int err;
+    int comm_size;
+    mpierror->mpierrcode = MPI_Comm_size(comm, &comm_size);
+    err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxmpierror_allreduce(mpierror, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+    int rank;
+    mpierror->mpierrcode = MPI_Comm_rank(comm, &rank);
+    err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxmpierror_allreduce(mpierror, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+
+    for (int p = 0; p < comm_size; p++) {
+        /* Send to the root process */
+        err = (rank != root && rank == p)
+            ? mtxfile_comments_send(sendcomments, root, 0, comm, mpierror)
+            : MTX_SUCCESS;
+        if (mtxmpierror_allreduce(mpierror, err)) {
+            if (rank == root) {
+                for (int q = p-1; q >= 0; q--)
+                    mtxfile_comments_free(&recvcomments[q]);
+            }
+            return MTX_ERR_MPI_COLLECTIVE;
+        }
+
+        /* Receive on the root process */
+        err = (rank == root && p != root)
+            ? mtxfile_comments_recv(&recvcomments[p], p, 0, comm, mpierror)
+            : MTX_SUCCESS;
+        if (mtxmpierror_allreduce(mpierror, err)) {
+            if (rank == root) {
+                for (int q = p-1; q >= 0; q--)
+                    mtxfile_comments_free(&recvcomments[q]);
+            }
+            return MTX_ERR_MPI_COLLECTIVE;
+        }
+
+        /* Perform a copy on the root process */
+        err = (rank == root && p == root)
+            ? mtxfile_comments_copy(&recvcomments[p], sendcomments) : MTX_SUCCESS;
+        if (mtxmpierror_allreduce(mpierror, err)) {
+            if (rank == root) {
+                for (int q = p-1; q >= 0; q--)
+                    mtxfile_comments_free(&recvcomments[q]);
+            }
+            return MTX_ERR_MPI_COLLECTIVE;
+        }
     }
     return MTX_SUCCESS;
 }

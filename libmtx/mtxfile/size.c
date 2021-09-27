@@ -546,6 +546,51 @@ int mtxfile_size_transpose(
 
 #ifdef LIBMTX_HAVE_MPI
 /**
+ * `mtxfile_size_datatype()' creates a custom MPI data type for
+ * sending or receiving Matrix Market size lines.
+ *
+ * The user is responsible for calling `MPI_Type_free()' on the
+ * returned datatype.
+ */
+static int mtxfile_size_datatype(
+    MPI_Datatype * datatype,
+    int * mpierrcode)
+{
+    int num_elements = 2;
+    int block_lengths[] = {2, 1};
+    MPI_Datatype element_types[] = {MPI_INT, MPI_INT64_T};
+    MPI_Aint element_offsets[] = {
+        0, offsetof(struct mtxfile_size, num_nonzeros)};
+    MPI_Datatype single_datatype;
+    *mpierrcode = MPI_Type_create_struct(
+        num_elements, block_lengths, element_offsets,
+        element_types, &single_datatype);
+    if (*mpierrcode)
+        return MTX_ERR_MPI;
+
+    /* Enable sending an array of the custom data type. */
+    MPI_Aint lb, extent;
+    *mpierrcode = MPI_Type_get_extent(single_datatype, &lb, &extent);
+    if (*mpierrcode) {
+        MPI_Type_free(&single_datatype);
+        return MTX_ERR_MPI;
+    }
+    *mpierrcode = MPI_Type_create_resized(single_datatype, lb, extent, datatype);
+    if (*mpierrcode) {
+        MPI_Type_free(&single_datatype);
+        return MTX_ERR_MPI;
+    }
+    *mpierrcode = MPI_Type_commit(datatype);
+    if (*mpierrcode) {
+        MPI_Type_free(datatype);
+        MPI_Type_free(&single_datatype);
+        return MTX_ERR_MPI;
+    }
+    MPI_Type_free(&single_datatype);
+    return MTX_SUCCESS;
+}
+
+/**
  * `mtxfile_size_send()' sends a Matrix Market size line to another
  * MPI process.
  *
@@ -630,6 +675,35 @@ int mtxfile_size_bcast(
         &size->num_nonzeros, 1, MPI_INT64_T, root, comm);
     if (mtxmpierror_allreduce(mpierror, err))
         return MTX_ERR_MPI_COLLECTIVE;
+    return MTX_SUCCESS;
+}
+
+/**
+ * `mtxfile_size_gather()' gathers Matrix Market size lines onto an
+ * MPI root process from other processes in a communicator.
+ *
+ * This is analogous to `MPI_Gather()' and requires every process in
+ * the communicator to perform matching calls to
+ * `mtxfile_size_gather()'.
+ */
+int mtxfile_size_gather(
+    const struct mtxfile_size * sendsize,
+    struct mtxfile_size * recvsizes,
+    int root,
+    MPI_Comm comm,
+    struct mtxmpierror * mpierror)
+{
+    int err;
+    MPI_Datatype sizetype;
+    err = mtxfile_size_datatype(&sizetype, &mpierror->mpierrcode);
+    if (mtxmpierror_allreduce(mpierror, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+    mpierror->mpierrcode = MPI_Gather(
+        sendsize, 1, sizetype, recvsizes, 1, sizetype, root, comm);
+    err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxmpierror_allreduce(mpierror, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+    MPI_Type_free(&sizetype);
     return MTX_SUCCESS;
 }
 

@@ -112,9 +112,10 @@ void mtxfile_free(
 }
 
 /**
- * `mtxfile_copy()' copies a Matrix Market file.
+ * `mtxfile_alloc_copy()' allocates storage for a copy of a Matrix
+ * Market file without initialising the underlying values.
  */
-int mtxfile_copy(
+int mtxfile_alloc_copy(
     struct mtxfile * dst,
     const struct mtxfile * src)
 {
@@ -130,6 +131,7 @@ int mtxfile_copy(
         mtxfile_comments_free(&dst->comments);
         return err;
     }
+    dst->precision = src->precision;
 
     int64_t num_data_lines;
     err = mtxfile_size_num_data_lines(
@@ -139,6 +141,34 @@ int mtxfile_copy(
         return err;
     }
 
+    err = mtxfile_data_alloc(
+        &dst->data, dst->header.object, dst->header.format,
+        dst->header.field, dst->precision, num_data_lines);
+    if (err) {
+        mtxfile_comments_free(&dst->comments);
+        return err;
+    }
+    return MTX_SUCCESS;
+}
+
+/**
+ * `mtxfile_init_copy()' creates a copy of a Matrix Market file.
+ */
+int mtxfile_init_copy(
+    struct mtxfile * dst,
+    const struct mtxfile * src)
+{
+    int err;
+    err = mtxfile_alloc_copy(dst, src);
+    if (err)
+        return err;
+    int64_t num_data_lines;
+    err = mtxfile_size_num_data_lines(
+        &src->size, &num_data_lines);
+    if (err) {
+        mtxfile_comments_free(&dst->comments);
+        return err;
+    }
     err = mtxfile_data_copy(
         &dst->data, &src->data,
         src->header.object, src->header.format,
@@ -1887,6 +1917,71 @@ int mtxfile_bcast(
             mtxfile_comments_free(&mtxfile->comments);
         }
         return err;
+    }
+    return MTX_SUCCESS;
+}
+
+/**
+ * `mtxfile_gather()' gathers Matrix Market files onto an MPI root
+ * process from other processes in a communicator.
+ *
+ * This is analogous to `MPI_Gather()' and requires every process in
+ * the communicator to perform matching calls to `mtxfile_gather()'.
+ */
+int mtxfile_gather(
+    const struct mtxfile * sendmtxfile,
+    struct mtxfile * recvmtxfiles,
+    int root,
+    MPI_Comm comm,
+    struct mtxmpierror * mpierror)
+{
+    int err;
+    int comm_size;
+    mpierror->mpierrcode = MPI_Comm_size(comm, &comm_size);
+    err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxmpierror_allreduce(mpierror, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+    int rank;
+    mpierror->mpierrcode = MPI_Comm_rank(comm, &rank);
+    err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxmpierror_allreduce(mpierror, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+
+    for (int p = 0; p < comm_size; p++) {
+        /* Send to the root process */
+        err = (rank != root && rank == p)
+            ? mtxfile_send(sendmtxfile, root, 0, comm, mpierror)
+            : MTX_SUCCESS;
+        if (mtxmpierror_allreduce(mpierror, err)) {
+            if (rank == root) {
+                for (int q = p-1; q >= 0; q--)
+                    mtxfile_free(&recvmtxfiles[q]);
+            }
+            return MTX_ERR_MPI_COLLECTIVE;
+        }
+
+        /* Receive on the root process */
+        err = (rank == root && p != root)
+            ? mtxfile_recv(&recvmtxfiles[p], p, 0, comm, mpierror)
+            : MTX_SUCCESS;
+        if (mtxmpierror_allreduce(mpierror, err)) {
+            if (rank == root) {
+                for (int q = p-1; q >= 0; q--)
+                    mtxfile_free(&recvmtxfiles[q]);
+            }
+            return MTX_ERR_MPI_COLLECTIVE;
+        }
+
+        /* Perform a copy on the root process */
+        err = (rank == root && p == root)
+            ? mtxfile_init_copy(&recvmtxfiles[p], sendmtxfile) : MTX_SUCCESS;
+        if (mtxmpierror_allreduce(mpierror, err)) {
+            if (rank == root) {
+                for (int q = p-1; q >= 0; q--)
+                    mtxfile_free(&recvmtxfiles[q]);
+            }
+            return MTX_ERR_MPI_COLLECTIVE;
+        }
     }
     return MTX_SUCCESS;
 }

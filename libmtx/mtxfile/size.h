@@ -247,6 +247,21 @@ int mtxfile_size_bcast(
     struct mtxmpierror * mpierror);
 
 /**
+ * `mtxfile_size_gather()' gathers Matrix Market size lines onto an
+ * MPI root process from other processes in a communicator.
+ *
+ * This is analogous to `MPI_Gather()' and requires every process in
+ * the communicator to perform matching calls to
+ * `mtxfile_size_gather()'.
+ */
+int mtxfile_size_gather(
+    const struct mtxfile_size * sendsize,
+    struct mtxfile_size * recvsizes,
+    int root,
+    MPI_Comm comm,
+    struct mtxmpierror * mpierror);
+
+/**
  * `mtxfile_size_scatterv()' scatters a Matrix Market size line from
  * an MPI root process to other processes in a communicator.
  *

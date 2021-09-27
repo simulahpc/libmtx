@@ -591,6 +591,50 @@ int mtxfile_header_gzwrite(
 
 #ifdef LIBMTX_HAVE_MPI
 /**
+ * `mtxfile_header_datatype()' creates a custom MPI data type for
+ * sending or receiving Matrix Market headers.
+ *
+ * The user is responsible for calling `MPI_Type_free()' on the
+ * returned datatype.
+ */
+static int mtxfile_header_datatype(
+    MPI_Datatype * datatype,
+    int * mpierrcode)
+{
+    int num_elements = 1;
+    int block_lengths[] = {4};
+    MPI_Datatype element_types[] = {MPI_INT};
+    MPI_Aint element_offsets[] = {0};
+    MPI_Datatype single_datatype;
+    *mpierrcode = MPI_Type_create_struct(
+        num_elements, block_lengths, element_offsets,
+        element_types, &single_datatype);
+    if (*mpierrcode)
+        return MTX_ERR_MPI;
+
+    /* Enable sending an array of the custom data type. */
+    MPI_Aint lb, extent;
+    *mpierrcode = MPI_Type_get_extent(single_datatype, &lb, &extent);
+    if (*mpierrcode) {
+        MPI_Type_free(&single_datatype);
+        return MTX_ERR_MPI;
+    }
+    *mpierrcode = MPI_Type_create_resized(single_datatype, lb, extent, datatype);
+    if (*mpierrcode) {
+        MPI_Type_free(&single_datatype);
+        return MTX_ERR_MPI;
+    }
+    *mpierrcode = MPI_Type_commit(datatype);
+    if (*mpierrcode) {
+        MPI_Type_free(datatype);
+        MPI_Type_free(&single_datatype);
+        return MTX_ERR_MPI;
+    }
+    MPI_Type_free(&single_datatype);
+    return MTX_SUCCESS;
+}
+
+/**
  * `mtxfile_header_send()' sends a Matrix Market header to another MPI
  * process.
  *
@@ -687,6 +731,35 @@ int mtxfile_header_bcast(
         &header->symmetry, 1, MPI_INT, root, comm);
     if (mtxmpierror_allreduce(mpierror, err))
         return MTX_ERR_MPI_COLLECTIVE;
+    return MTX_SUCCESS;
+}
+
+/**
+ * `mtxfile_header_gather()' gathers Matrix Market headers onto an MPI
+ * root process from other processes in a communicator.
+ *
+ * This is analogous to `MPI_Gather()' and requires every process in
+ * the communicator to perform matching calls to
+ * `mtxfile_header_gather()'.
+ */
+int mtxfile_header_gather(
+    const struct mtxfile_header * sendheader,
+    struct mtxfile_header * recvheaders,
+    int root,
+    MPI_Comm comm,
+    struct mtxmpierror * mpierror)
+{
+    int err;
+    MPI_Datatype headertype;
+    err = mtxfile_header_datatype(&headertype, &mpierror->mpierrcode);
+    if (mtxmpierror_allreduce(mpierror, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+    mpierror->mpierrcode = MPI_Gather(
+        sendheader, 1, headertype, recvheaders, 1, headertype, root, comm);
+    err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxmpierror_allreduce(mpierror, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+    MPI_Type_free(&headertype);
     return MTX_SUCCESS;
 }
 #endif

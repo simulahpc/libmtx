@@ -103,9 +103,17 @@ void mtxfile_free(
     struct mtxfile * mtxfile);
 
 /**
- * `mtxfile_copy()' copies a Matrix Market file.
+ * `mtxfile_alloc_copy()' allocates storage for a copy of a Matrix
+ * Market file without initialising the underlying values.
  */
-int mtxfile_copy(
+int mtxfile_alloc_copy(
+    struct mtxfile * dst,
+    const struct mtxfile * src);
+
+/**
+ * `mtxfile_init_copy()' creates a copy of a Matrix Market file.
+ */
+int mtxfile_init_copy(
     struct mtxfile * dst,
     const struct mtxfile * src);
 
@@ -755,6 +763,20 @@ int mtxfile_recv(
  */
 int mtxfile_bcast(
     struct mtxfile * mtxfile,
+    int root,
+    MPI_Comm comm,
+    struct mtxmpierror * mpierror);
+
+/**
+ * `mtxfile_gather()' gathers Matrix Market files onto an MPI root
+ * process from other processes in a communicator.
+ *
+ * This is analogous to `MPI_Gather()' and requires every process in
+ * the communicator to perform matching calls to `mtxfile_gather()'.
+ */
+int mtxfile_gather(
+    const struct mtxfile * sendmtxfile,
+    struct mtxfile * recvmtxfiles,
     int root,
     MPI_Comm comm,
     struct mtxmpierror * mpierror);
