@@ -75,14 +75,6 @@ struct mtxdistfile
     int rank;
 
     /**
-     * `row_partition' is a partitioning of the rows of the underlying
-     * matrix or vector.  The partitioning information is also
-     * distributed among processes, so the current process stores the
-     * part of the partitioning that it owns.
-     */
-    struct mtxdistpartition row_partition;
-
-    /**
      * `header' is the Matrix Market file header.
      */
     struct mtxfile_header header;
@@ -129,22 +121,119 @@ int mtxdistfile_copy(
     const struct mtxdistfile * src);
 
 /*
- * Convert to and from (non-distributed) Matrix Market format
+ * Matrix array formats
  */
 
+/**
+ * `mtxdistfile_alloc_matrix_array()' allocates a distributed matrix
+ * in array format.
+ */
+int mtxdistfile_alloc_matrix_array(
+    struct mtxdistfile * mtxdistfile,
+    enum mtxfile_field field,
+    enum mtxfile_symmetry symmetry,
+    enum mtx_precision precision,
+    int num_rows,
+    int num_columns,
+    MPI_Comm comm,
+    struct mtxmpierror * mpierror);
+
+/**
+ * `mtxdistfile_init_matrix_array_real_single()' allocates and
+ * initialises a distributed matrix in array format with real, single
+ * precision coefficients.
+ */
+int mtxdistfile_init_matrix_array_real_single(
+    struct mtxdistfile * mtxdistfile,
+    enum mtxfile_symmetry symmetry,
+    int num_rows,
+    int num_columns,
+    const float * data,
+    MPI_Comm comm,
+    struct mtxmpierror * mpierror);
+
+/**
+ * `mtxdistfile_init_matrix_array_real_double()' allocates and initialises
+ * a matrix in array format with real, double precision coefficients.
+ */
+int mtxdistfile_init_matrix_array_real_double(
+    struct mtxdistfile * mtxdistfile,
+    enum mtxfile_symmetry symmetry,
+    int num_rows,
+    int num_columns,
+    const double * data,
+    MPI_Comm comm,
+    struct mtxmpierror * mpierror);
+
+/**
+ * `mtxdistfile_init_matrix_array_complex_single()' allocates and
+ * initialises a distributed matrix in array format with complex,
+ * single precision coefficients.
+ */
+int mtxdistfile_init_matrix_array_complex_single(
+    struct mtxdistfile * mtxdistfile,
+    enum mtxfile_symmetry symmetry,
+    int num_rows,
+    int num_columns,
+    const float (* data)[2],
+    MPI_Comm comm,
+    struct mtxmpierror * mpierror);
+
+/**
+ * `mtxdistfile_init_matrix_array_complex_double()' allocates and
+ * initialises a matrix in array format with complex, double precision
+ * coefficients.
+ */
+int mtxdistfile_init_matrix_array_complex_double(
+    struct mtxdistfile * mtxdistfile,
+    enum mtxfile_symmetry symmetry,
+    int num_rows,
+    int num_columns,
+    const double (* data)[2],
+    MPI_Comm comm,
+    struct mtxmpierror * mpierror);
+
+/**
+ * `mtxdistfile_init_matrix_array_integer_single()' allocates and
+ * initialises a distributed matrix in array format with integer,
+ * single precision coefficients.
+ */
+int mtxdistfile_init_matrix_array_integer_single(
+    struct mtxdistfile * mtxdistfile,
+    enum mtxfile_symmetry symmetry,
+    int num_rows,
+    int num_columns,
+    const int32_t * data,
+    MPI_Comm comm,
+    struct mtxmpierror * mpierror);
+
+/**
+ * `mtxdistfile_init_matrix_array_integer_double()' allocates and
+ * initialises a matrix in array format with integer, double precision
+ * coefficients.
+ */
+int mtxdistfile_init_matrix_array_integer_double(
+    struct mtxdistfile * mtxdistfile,
+    enum mtxfile_symmetry symmetry,
+    int num_rows,
+    int num_columns,
+    const int64_t * data,
+    MPI_Comm comm,
+    struct mtxmpierror * mpierror);
+
+/*
+ * Convert to and from (non-distributed) Matrix Market format
+ */
 
 /**
  * `mtxdistfile_from_mtxfile()' creates a distributed Matrix Market
  * file from a Matrix Market file stored on a single root process by
- * partitioning and distributing rows of the underlying matrix or
- * vector to other processes in a communicator.
+ * distributing the data of the underlying matrix or vector among
+ * processes in a communicator.
  *
  * This function performs collective communication and therefore
  * requires every process in the communicator to perform matching
- * calls to `mtxdistfile_from_mtxfile()'.
- *
- * `row_partition' must be a partitioning of the rows of the matrix or
- * vector represented by `src'.
+ * calls to this function.
  */
 int mtxdistfile_from_mtxfile(
     struct mtxdistfile * dst,
@@ -159,54 +248,7 @@ int mtxdistfile_from_mtxfile(
 
 /**
  * `mtxdistfile_read()' reads a Matrix Market file from the given path
- * and distributes the rows of the underlying matrix or vector among
- * MPI processes in a communicator.
- *
- * The `precision' argument specifies which precision to use for
- * storing matrix or vector values.
- *
- * If `path' is `-', then standard input is used.
- *
- * If an error code is returned, then `lines_read' and `bytes_read'
- * are used to return the line number and byte at which the error was
- * encountered during the parsing of the Matrix Market file.
- *
- * Only the designated root process will read from the specified
- * stream.  The file is read in a buffered manner to avoid reading the
- * entire file into the memory of the root process, which would
- * severely limit the size of files that could be read.  That is, a
- * buffer of at most `bufsize' bytes is allocated, and data is read
- * into the buffer until it is full.  The data is then distributed
- * among processes before the buffer is cleared and filled with data
- * from the stream once more.  This continues until an error occurs or
- * until end-of-file.
- *
- * Note that for a matrix (or vector) in array format, `bufsize' must
- * be at least large enough to fit one row of matrix (or vector) data
- * per MPI process in the communicator.
- *
- * This function performs collective communication and therefore
- * requires every process in the communicator to perform matching
- * calls to the function.
- */
-int mtxdistfile_read(
-    struct mtxdistfile * mtxdistfile,
-    enum mtx_precision precision,
-    enum mtx_partition_type row_partition_type,
-    const char * path,
-    int * lines_read,
-    int64_t * bytes_read,
-    size_t line_max,
-    char * linebuf,
-    size_t bufsize,
-    int root,
-    MPI_Comm comm,
-    struct mtxmpierror * mpierror);
-
-/**
- * `mtxdistfile_fread()' reads a Matrix Market file from a stream and
- * distributes the rows of the underlying matrix or vector among MPI
- * processes in a communicator.
+ * and distributes the data among MPI processes in a communicator.
  *
  * `precision' is used to determine the precision to use for storing
  * the values of matrix or vector entries.
@@ -215,19 +257,53 @@ int mtxdistfile_read(
  * are used to return the line number and byte at which the error was
  * encountered during the parsing of the Matrix Market file.
  *
- * Only the designated root process will read from the specified
- * stream.  The file is read in a buffered manner to avoid reading the
- * entire file into the memory of the root process, which would
- * severely limit the size of files that could be read.  That is, a
- * buffer of at most `bufsize' bytes is allocated, and data is read
- * into the buffer until it is full.  The data is then distributed
- * among processes before the buffer is cleared and filled with data
- * from the stream once more.  This continues until an error occurs or
- * until end-of-file.
+ * Only a single root process will read from the specified stream.
+ * The data is partitioned into equal-sized parts for each process.
+ * For matrices and vectors in coordinate format, the total number of
+ * data lines is evenly distributed among processes. Otherwise, the
+ * rows are evenly distributed among processes.
  *
- * Note that for a matrix (or vector) in array format, `bufsize' must
- * be at least large enough to fit one row of matrix (or vector) data
- * per MPI process in the communicator.
+ * The file is read one part at a time, which is then sent to the
+ * owning process. This avoids reading the entire file into the memory
+ * of the root process at once, which would severely limit the size of
+ * files that could be read.
+ *
+ * This function performs collective communication and therefore
+ * requires every process in the communicator to perform matching
+ * calls to the function.
+ */
+int mtxdistfile_read(
+    struct mtxdistfile * mtxdistfile,
+    enum mtx_precision precision,
+    const char * path,
+    int * lines_read,
+    int64_t * bytes_read,
+    size_t line_max,
+    char * linebuf,
+    MPI_Comm comm,
+    struct mtxmpierror * mpierror);
+
+/**
+ * `mtxdistfile_fread()' reads a Matrix Market file from a stream and
+ * distributes the data among MPI processes in a communicator.
+ *
+ * `precision' is used to determine the precision to use for storing
+ * the values of matrix or vector entries.
+ *
+ * If an error code is returned, then `lines_read' and `bytes_read'
+ * are used to return the line number and byte at which the error was
+ * encountered during the parsing of the Matrix Market file.
+ *
+ * Only a single root process will read from the specified stream.
+ * The data is partitioned into equal-sized parts for each process.
+ * For matrices and vectors in coordinate format, the total number of
+ * data lines is evenly distributed among processes. Otherwise, the
+ * rows are evenly distributed among processes.
+ *
+ * The file is read one part at a time, which is then sent to the
+ * owning process. This avoids reading the entire file into the memory
+ * of the root process at once, which would severely limit the size of
+ * files that could be read.
  *
  * This function performs collective communication and therefore
  * requires every process in the communicator to perform matching
@@ -236,14 +312,11 @@ int mtxdistfile_read(
 int mtxdistfile_fread(
     struct mtxdistfile * mtxdistfile,
     enum mtx_precision precision,
-    enum mtx_partition_type row_partition_type,
     FILE * f,
     int * lines_read,
     int64_t * bytes_read,
     size_t line_max,
     char * linebuf,
-    size_t bufsize,
-    int root,
     MPI_Comm comm,
     struct mtxmpierror * mpierror);
 

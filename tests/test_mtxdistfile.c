@@ -251,7 +251,6 @@ int test_mtxdistfile_fread(void)
     char mpierrstr[MPI_MAX_ERROR_STRING];
     int mpierrstrlen;
     MPI_Comm comm = MPI_COMM_WORLD;
-    int root = 0;
 
     int comm_size;
     err = MPI_Comm_size(comm, &comm_size);
@@ -273,7 +272,6 @@ int test_mtxdistfile_fread(void)
     if (comm_size != 2)
         TEST_FAIL_MSG("Expected exactly two MPI processes");
 
-    size_t bufsize = 1024*1024;
     struct mtxmpierror mpierror;
     err = mtxmpierror_alloc(&mpierror, comm);
     if (err)
@@ -294,18 +292,17 @@ int test_mtxdistfile_fread(void)
         int64_t bytes_read = 0;
         struct mtxdistfile mtxdistfile;
         enum mtx_precision precision = mtx_single;
-        enum mtx_partition_type row_partition_type = mtx_block;
         err = mtxdistfile_fread(
-            &mtxdistfile, precision, row_partition_type,
-            f, &lines_read, &bytes_read, 0, NULL, bufsize,
-            root, comm, &mpierror);
+            &mtxdistfile, precision,
+            f, &lines_read, &bytes_read, 0, NULL,
+            comm, &mpierror);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s",
             err == MTX_ERR_MPI_COLLECTIVE
             ? mtxmpierror_description(&mpierror)
             : mtx_strerror(err));
-        TEST_ASSERT_EQ(rank == root ? strlen(s) : 0, bytes_read);
-        TEST_ASSERT_EQ(rank == root ? 5 : 0, lines_read);
+        TEST_ASSERT_EQ(strlen(s), bytes_read);
+        TEST_ASSERT_EQ(5, lines_read);
         TEST_ASSERT_EQ(mtxfile_matrix, mtxdistfile.header.object);
         TEST_ASSERT_EQ(mtxfile_array, mtxdistfile.header.format);
         TEST_ASSERT_EQ(mtxfile_real, mtxdistfile.header.field);
@@ -343,18 +340,16 @@ int test_mtxdistfile_fread(void)
         int64_t bytes_read = 0;
         struct mtxdistfile mtxdistfile;
         enum mtx_precision precision = mtx_double;
-        enum mtx_partition_type row_partition_type = mtx_block;
         err = mtxdistfile_fread(
-            &mtxdistfile, precision, row_partition_type,
-            f, &lines_read, &bytes_read, 0, NULL, bufsize,
-            root, comm, &mpierror);
+            &mtxdistfile, precision,
+            f, &lines_read, &bytes_read, 0, NULL, comm, &mpierror);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s",
             err == MTX_ERR_MPI_COLLECTIVE
             ? mtxmpierror_description(&mpierror)
             : mtx_strerror(err));
-        TEST_ASSERT_EQ(rank == root ? strlen(s) : 0, bytes_read);
-        TEST_ASSERT_EQ(rank == root ? 5 : 0, lines_read);
+        TEST_ASSERT_EQ(strlen(s), bytes_read);
+        TEST_ASSERT_EQ(5, lines_read);
         TEST_ASSERT_EQ(mtxfile_matrix, mtxdistfile.header.object);
         TEST_ASSERT_EQ(mtxfile_array, mtxdistfile.header.format);
         TEST_ASSERT_EQ(mtxfile_real, mtxdistfile.header.field);
@@ -392,18 +387,16 @@ int test_mtxdistfile_fread(void)
         int64_t bytes_read = 0;
         struct mtxdistfile mtxdistfile;
         enum mtx_precision precision = mtx_single;
-        enum mtx_partition_type row_partition_type = mtx_block;
         err = mtxdistfile_fread(
-            &mtxdistfile, precision, row_partition_type,
-            f, &lines_read, &bytes_read, 0, NULL, bufsize,
-            root, comm, &mpierror);
+            &mtxdistfile, precision,
+            f, &lines_read, &bytes_read, 0, NULL, comm, &mpierror);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s",
             err == MTX_ERR_MPI_COLLECTIVE
             ? mtxmpierror_description(&mpierror)
             : mtx_strerror(err));
-        TEST_ASSERT_EQ(rank == root ? strlen(s) : 0, bytes_read);
-        TEST_ASSERT_EQ(rank == root ? 5 : 0, lines_read);
+        TEST_ASSERT_EQ(strlen(s), bytes_read);
+        TEST_ASSERT_EQ(5, lines_read);
         TEST_ASSERT_EQ(mtxfile_matrix, mtxdistfile.header.object);
         TEST_ASSERT_EQ(mtxfile_array, mtxdistfile.header.format);
         TEST_ASSERT_EQ(mtxfile_complex, mtxdistfile.header.field);
@@ -443,18 +436,16 @@ int test_mtxdistfile_fread(void)
         int64_t bytes_read = 0;
         struct mtxdistfile mtxdistfile;
         enum mtx_precision precision = mtx_double;
-        enum mtx_partition_type row_partition_type = mtx_block;
         err = mtxdistfile_fread(
-            &mtxdistfile, precision, row_partition_type,
-            f, &lines_read, &bytes_read, 0, NULL, bufsize,
-            root, comm, &mpierror);
+            &mtxdistfile, precision,
+            f, &lines_read, &bytes_read, 0, NULL, comm, &mpierror);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s",
             err == MTX_ERR_MPI_COLLECTIVE
             ? mtxmpierror_description(&mpierror)
             : mtx_strerror(err));
-        TEST_ASSERT_EQ(rank == root ? strlen(s) : 0, bytes_read);
-        TEST_ASSERT_EQ(rank == root ? 5 : 0, lines_read);
+        TEST_ASSERT_EQ(strlen(s), bytes_read);
+        TEST_ASSERT_EQ(5, lines_read);
         TEST_ASSERT_EQ(mtxfile_matrix, mtxdistfile.header.object);
         TEST_ASSERT_EQ(mtxfile_array, mtxdistfile.header.format);
         TEST_ASSERT_EQ(mtxfile_complex, mtxdistfile.header.field);
@@ -494,18 +485,16 @@ int test_mtxdistfile_fread(void)
         int64_t bytes_read = 0;
         struct mtxdistfile mtxdistfile;
         enum mtx_precision precision = mtx_single;
-        enum mtx_partition_type row_partition_type = mtx_block;
         err = mtxdistfile_fread(
-            &mtxdistfile, precision, row_partition_type,
-            f, &lines_read, &bytes_read, 0, NULL, bufsize,
-            root, comm, &mpierror);
+            &mtxdistfile, precision,
+            f, &lines_read, &bytes_read, 0, NULL, comm, &mpierror);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s",
             err == MTX_ERR_MPI_COLLECTIVE
             ? mtxmpierror_description(&mpierror)
             : mtx_strerror(err));
-        TEST_ASSERT_EQ(rank == root ? strlen(s) : 0, bytes_read);
-        TEST_ASSERT_EQ(rank == root ? 5 : 0, lines_read);
+        TEST_ASSERT_EQ(strlen(s), bytes_read);
+        TEST_ASSERT_EQ(5, lines_read);
         TEST_ASSERT_EQ(mtxfile_matrix, mtxdistfile.header.object);
         TEST_ASSERT_EQ(mtxfile_array, mtxdistfile.header.format);
         TEST_ASSERT_EQ(mtxfile_integer, mtxdistfile.header.field);
@@ -543,18 +532,16 @@ int test_mtxdistfile_fread(void)
         int64_t bytes_read = 0;
         struct mtxdistfile mtxdistfile;
         enum mtx_precision precision = mtx_double;
-        enum mtx_partition_type row_partition_type = mtx_block;
         err = mtxdistfile_fread(
-            &mtxdistfile, precision, row_partition_type,
-            f, &lines_read, &bytes_read, 0, NULL, bufsize,
-            root, comm, &mpierror);
+            &mtxdistfile, precision,
+            f, &lines_read, &bytes_read, 0, NULL, comm, &mpierror);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s",
             err == MTX_ERR_MPI_COLLECTIVE
             ? mtxmpierror_description(&mpierror)
             : mtx_strerror(err));
-        TEST_ASSERT_EQ(rank == root ? strlen(s) : 0, bytes_read);
-        TEST_ASSERT_EQ(rank == root ? 5 : 0, lines_read);
+        TEST_ASSERT_EQ(strlen(s), bytes_read);
+        TEST_ASSERT_EQ(5, lines_read);
         TEST_ASSERT_EQ(mtxfile_matrix, mtxdistfile.header.object);
         TEST_ASSERT_EQ(mtxfile_array, mtxdistfile.header.format);
         TEST_ASSERT_EQ(mtxfile_integer, mtxdistfile.header.field);
@@ -595,18 +582,16 @@ int test_mtxdistfile_fread(void)
         int64_t bytes_read = 0;
         struct mtxdistfile mtxdistfile;
         enum mtx_precision precision = mtx_single;
-        enum mtx_partition_type row_partition_type = mtx_block;
         err = mtxdistfile_fread(
-            &mtxdistfile, precision, row_partition_type,
-            f, &lines_read, &bytes_read, 0, NULL, bufsize,
-            root, comm, &mpierror);
+            &mtxdistfile, precision,
+            f, &lines_read, &bytes_read, 0, NULL, comm, &mpierror);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s",
             err == MTX_ERR_MPI_COLLECTIVE
             ? mtxmpierror_description(&mpierror)
             : mtx_strerror(err));
-        TEST_ASSERT_EQ(rank == root ? strlen(s) : 0, bytes_read);
-        TEST_ASSERT_EQ(rank == root ? 5 : 0, lines_read);
+        TEST_ASSERT_EQ(strlen(s), bytes_read);
+        TEST_ASSERT_EQ(5, lines_read);
         TEST_ASSERT_EQ(mtxfile_matrix, mtxdistfile.header.object);
         TEST_ASSERT_EQ(mtxfile_coordinate, mtxdistfile.header.format);
         TEST_ASSERT_EQ(mtxfile_real, mtxdistfile.header.field);
@@ -625,12 +610,12 @@ int test_mtxdistfile_fread(void)
         TEST_ASSERT_EQ(1, mtxfile->size.num_nonzeros);
         TEST_ASSERT_EQ(precision, mtxfile->precision);
         if (rank == 0) {
-            TEST_ASSERT_EQ(mtxfile->data.matrix_coordinate_real_single[0].i, 2);
-            TEST_ASSERT_EQ(mtxfile->data.matrix_coordinate_real_single[0].j, 3);
-            TEST_ASSERT_EQ(mtxfile->data.matrix_coordinate_real_single[0].a, 1.5f);
-        } else if (rank == 1) {
             TEST_ASSERT_EQ(mtxfile->data.matrix_coordinate_real_single[0].i, 3);
             TEST_ASSERT_EQ(mtxfile->data.matrix_coordinate_real_single[0].j, 2);
+            TEST_ASSERT_EQ(mtxfile->data.matrix_coordinate_real_single[0].a, 1.5f);
+        } else if (rank == 1) {
+            TEST_ASSERT_EQ(mtxfile->data.matrix_coordinate_real_single[0].i, 2);
+            TEST_ASSERT_EQ(mtxfile->data.matrix_coordinate_real_single[0].j, 3);
             TEST_ASSERT_EQ(mtxfile->data.matrix_coordinate_real_single[0].a, 1.5f);
         }
         mtxdistfile_free(&mtxdistfile);
@@ -649,18 +634,16 @@ int test_mtxdistfile_fread(void)
         int64_t bytes_read = 0;
         struct mtxdistfile mtxdistfile;
         enum mtx_precision precision = mtx_double;
-        enum mtx_partition_type row_partition_type = mtx_block;
         err = mtxdistfile_fread(
-            &mtxdistfile, precision, row_partition_type,
-            f, &lines_read, &bytes_read, 0, NULL, bufsize,
-            root, comm, &mpierror);
+            &mtxdistfile, precision,
+            f, &lines_read, &bytes_read, 0, NULL, comm, &mpierror);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s",
             err == MTX_ERR_MPI_COLLECTIVE
             ? mtxmpierror_description(&mpierror)
             : mtx_strerror(err));
-        TEST_ASSERT_EQ(rank == root ? strlen(s) : 0, bytes_read);
-        TEST_ASSERT_EQ(rank == root ? 5 : 0, lines_read);
+        TEST_ASSERT_EQ(strlen(s), bytes_read);
+        TEST_ASSERT_EQ(5, lines_read);
         TEST_ASSERT_EQ(mtxfile_matrix, mtxdistfile.header.object);
         TEST_ASSERT_EQ(mtxfile_coordinate, mtxdistfile.header.format);
         TEST_ASSERT_EQ(mtxfile_complex, mtxdistfile.header.field);
@@ -679,15 +662,15 @@ int test_mtxdistfile_fread(void)
         TEST_ASSERT_EQ(1, mtxfile->size.num_nonzeros);
         TEST_ASSERT_EQ(precision, mtxfile->precision);
         if (rank == 0) {
-            TEST_ASSERT_EQ(mtxfile->data.matrix_coordinate_complex_double[0].i, 2);
-            TEST_ASSERT_EQ(mtxfile->data.matrix_coordinate_complex_double[0].j, 3);
-            TEST_ASSERT_EQ(mtxfile->data.matrix_coordinate_complex_double[0].a[0], -1.5);
-            TEST_ASSERT_EQ(mtxfile->data.matrix_coordinate_complex_double[0].a[1], -2.1);
-        } else if (rank == 1) {
             TEST_ASSERT_EQ(mtxfile->data.matrix_coordinate_complex_double[0].i, 3);
             TEST_ASSERT_EQ(mtxfile->data.matrix_coordinate_complex_double[0].j, 2);
             TEST_ASSERT_EQ(mtxfile->data.matrix_coordinate_complex_double[0].a[0], 1.5);
             TEST_ASSERT_EQ(mtxfile->data.matrix_coordinate_complex_double[0].a[1], 2.1);
+        } else if (rank == 1) {
+            TEST_ASSERT_EQ(mtxfile->data.matrix_coordinate_complex_double[0].i, 2);
+            TEST_ASSERT_EQ(mtxfile->data.matrix_coordinate_complex_double[0].j, 3);
+            TEST_ASSERT_EQ(mtxfile->data.matrix_coordinate_complex_double[0].a[0], -1.5);
+            TEST_ASSERT_EQ(mtxfile->data.matrix_coordinate_complex_double[0].a[1], -2.1);
         }
         mtxdistfile_free(&mtxdistfile);
         fclose(f);
@@ -704,18 +687,16 @@ int test_mtxdistfile_fread(void)
         int64_t bytes_read = 0;
         struct mtxdistfile mtxdistfile;
         enum mtx_precision precision = mtx_single;
-        enum mtx_partition_type row_partition_type = mtx_block;
         err = mtxdistfile_fread(
-            &mtxdistfile, precision, row_partition_type,
-            f, &lines_read, &bytes_read, 0, NULL, bufsize,
-            root, comm, &mpierror);
+            &mtxdistfile, precision,
+            f, &lines_read, &bytes_read, 0, NULL, comm, &mpierror);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s",
             err == MTX_ERR_MPI_COLLECTIVE
             ? mtxmpierror_description(&mpierror)
             : mtx_strerror(err));
-        TEST_ASSERT_EQ(rank == root ? strlen(s) : 0, bytes_read);
-        TEST_ASSERT_EQ(rank == root ? 5 : 0, lines_read);
+        TEST_ASSERT_EQ(strlen(s), bytes_read);
+        TEST_ASSERT_EQ(5, lines_read);
         TEST_ASSERT_EQ(mtxfile_matrix, mtxdistfile.header.object);
         TEST_ASSERT_EQ(mtxfile_coordinate, mtxdistfile.header.format);
         TEST_ASSERT_EQ(mtxfile_integer, mtxdistfile.header.field);
@@ -734,13 +715,13 @@ int test_mtxdistfile_fread(void)
         TEST_ASSERT_EQ(1, mtxfile->size.num_nonzeros);
         TEST_ASSERT_EQ(precision, mtxfile->precision);
         if (rank == 0) {
-            TEST_ASSERT_EQ(mtxfile->data.matrix_coordinate_integer_single[0].i, 2);
-            TEST_ASSERT_EQ(mtxfile->data.matrix_coordinate_integer_single[0].j, 3);
-            TEST_ASSERT_EQ(mtxfile->data.matrix_coordinate_integer_single[0].a, 6);
-        } else if (rank == 1) {
             TEST_ASSERT_EQ(mtxfile->data.matrix_coordinate_integer_single[0].i, 3);
             TEST_ASSERT_EQ(mtxfile->data.matrix_coordinate_integer_single[0].j, 2);
             TEST_ASSERT_EQ(mtxfile->data.matrix_coordinate_integer_single[0].a, 5);
+        } else if (rank == 1) {
+            TEST_ASSERT_EQ(mtxfile->data.matrix_coordinate_integer_single[0].i, 2);
+            TEST_ASSERT_EQ(mtxfile->data.matrix_coordinate_integer_single[0].j, 3);
+            TEST_ASSERT_EQ(mtxfile->data.matrix_coordinate_integer_single[0].a, 6);
         }
         mtxdistfile_free(&mtxdistfile);
         fclose(f);
@@ -757,18 +738,16 @@ int test_mtxdistfile_fread(void)
         int64_t bytes_read = 0;
         struct mtxdistfile mtxdistfile;
         enum mtx_precision precision = mtx_single;
-        enum mtx_partition_type row_partition_type = mtx_block;
         err = mtxdistfile_fread(
-            &mtxdistfile, precision, row_partition_type,
-            f, &lines_read, &bytes_read, 0, NULL, bufsize,
-            root, comm, &mpierror);
+            &mtxdistfile, precision,
+            f, &lines_read, &bytes_read, 0, NULL, comm, &mpierror);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s",
             err == MTX_ERR_MPI_COLLECTIVE
             ? mtxmpierror_description(&mpierror)
             : mtx_strerror(err));
-        TEST_ASSERT_EQ(rank == root ? strlen(s) : 0, bytes_read);
-        TEST_ASSERT_EQ(rank == root ? 5 : 0, lines_read);
+        TEST_ASSERT_EQ(strlen(s), bytes_read);
+        TEST_ASSERT_EQ(5, lines_read);
         TEST_ASSERT_EQ(mtxfile_matrix, mtxdistfile.header.object);
         TEST_ASSERT_EQ(mtxfile_coordinate, mtxdistfile.header.format);
         TEST_ASSERT_EQ(mtxfile_pattern, mtxdistfile.header.field);
@@ -787,11 +766,11 @@ int test_mtxdistfile_fread(void)
         TEST_ASSERT_EQ(1, mtxfile->size.num_nonzeros);
         TEST_ASSERT_EQ(precision, mtxfile->precision);
         if (rank == 0) {
-            TEST_ASSERT_EQ(mtxfile->data.matrix_coordinate_pattern[0].i, 2);
-            TEST_ASSERT_EQ(mtxfile->data.matrix_coordinate_pattern[0].j, 3);
-        } else if (rank == 1) {
             TEST_ASSERT_EQ(mtxfile->data.matrix_coordinate_pattern[0].i, 3);
             TEST_ASSERT_EQ(mtxfile->data.matrix_coordinate_pattern[0].j, 2);
+        } else if (rank == 1) {
+            TEST_ASSERT_EQ(mtxfile->data.matrix_coordinate_pattern[0].i, 2);
+            TEST_ASSERT_EQ(mtxfile->data.matrix_coordinate_pattern[0].j, 3);
         }
         mtxdistfile_free(&mtxdistfile);
         fclose(f);
@@ -811,18 +790,16 @@ int test_mtxdistfile_fread(void)
         int64_t bytes_read = 0;
         struct mtxdistfile mtxdistfile;
         enum mtx_precision precision = mtx_single;
-        enum mtx_partition_type row_partition_type = mtx_cyclic;
         err = mtxdistfile_fread(
-            &mtxdistfile, precision, row_partition_type,
-            f, &lines_read, &bytes_read, 0, NULL, bufsize,
-            root, comm, &mpierror);
+            &mtxdistfile, precision,
+            f, &lines_read, &bytes_read, 0, NULL, comm, &mpierror);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s",
             err == MTX_ERR_MPI_COLLECTIVE
             ? mtxmpierror_description(&mpierror)
             : mtx_strerror(err));
-        TEST_ASSERT_EQ(rank == root ? strlen(s) : 0, bytes_read);
-        TEST_ASSERT_EQ(rank == root ? 5 : 0, lines_read);
+        TEST_ASSERT_EQ(strlen(s), bytes_read);
+        TEST_ASSERT_EQ(5, lines_read);
         TEST_ASSERT_EQ(mtxfile_vector, mtxdistfile.header.object);
         TEST_ASSERT_EQ(mtxfile_coordinate, mtxdistfile.header.format);
         TEST_ASSERT_EQ(mtxfile_real, mtxdistfile.header.field);
@@ -863,18 +840,16 @@ int test_mtxdistfile_fread(void)
         int64_t bytes_read = 0;
         struct mtxdistfile mtxdistfile;
         enum mtx_precision precision = mtx_double;
-        enum mtx_partition_type row_partition_type = mtx_cyclic;
         err = mtxdistfile_fread(
-            &mtxdistfile, precision, row_partition_type,
-            f, &lines_read, &bytes_read, 0, NULL, bufsize,
-            root, comm, &mpierror);
+            &mtxdistfile, precision,
+            f, &lines_read, &bytes_read, 0, NULL, comm, &mpierror);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s",
             err == MTX_ERR_MPI_COLLECTIVE
             ? mtxmpierror_description(&mpierror)
             : mtx_strerror(err));
-        TEST_ASSERT_EQ(rank == root ? strlen(s) : 0, bytes_read);
-        TEST_ASSERT_EQ(rank == root ? 5 : 0, lines_read);
+        TEST_ASSERT_EQ(strlen(s), bytes_read);
+        TEST_ASSERT_EQ(5, lines_read);
         TEST_ASSERT_EQ(mtxfile_vector, mtxdistfile.header.object);
         TEST_ASSERT_EQ(mtxfile_coordinate, mtxdistfile.header.format);
         TEST_ASSERT_EQ(mtxfile_complex, mtxdistfile.header.field);
@@ -917,18 +892,16 @@ int test_mtxdistfile_fread(void)
         int64_t bytes_read = 0;
         struct mtxdistfile mtxdistfile;
         enum mtx_precision precision = mtx_single;
-        enum mtx_partition_type row_partition_type = mtx_cyclic;
         err = mtxdistfile_fread(
-            &mtxdistfile, precision, row_partition_type,
-            f, &lines_read, &bytes_read, 0, NULL, bufsize,
-            root, comm, &mpierror);
+            &mtxdistfile, precision,
+            f, &lines_read, &bytes_read, 0, NULL, comm, &mpierror);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s",
             err == MTX_ERR_MPI_COLLECTIVE
             ? mtxmpierror_description(&mpierror)
             : mtx_strerror(err));
-        TEST_ASSERT_EQ(rank == root ? strlen(s) : 0, bytes_read);
-        TEST_ASSERT_EQ(rank == root ? 5 : 0, lines_read);
+        TEST_ASSERT_EQ(strlen(s), bytes_read);
+        TEST_ASSERT_EQ(5, lines_read);
         TEST_ASSERT_EQ(mtxfile_vector, mtxdistfile.header.object);
         TEST_ASSERT_EQ(mtxfile_coordinate, mtxdistfile.header.format);
         TEST_ASSERT_EQ(mtxfile_integer, mtxdistfile.header.field);
@@ -969,18 +942,16 @@ int test_mtxdistfile_fread(void)
         int64_t bytes_read = 0;
         struct mtxdistfile mtxdistfile;
         enum mtx_precision precision = mtx_single;
-        enum mtx_partition_type row_partition_type = mtx_cyclic;
         err = mtxdistfile_fread(
-            &mtxdistfile, precision, row_partition_type,
-            f, &lines_read, &bytes_read, 0, NULL, bufsize,
-            root, comm, &mpierror);
+            &mtxdistfile, precision,
+            f, &lines_read, &bytes_read, 0, NULL, comm, &mpierror);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s",
             err == MTX_ERR_MPI_COLLECTIVE
             ? mtxmpierror_description(&mpierror)
             : mtx_strerror(err));
-        TEST_ASSERT_EQ(rank == root ? strlen(s) : 0, bytes_read);
-        TEST_ASSERT_EQ(rank == root ? 5 : 0, lines_read);
+        TEST_ASSERT_EQ(strlen(s), bytes_read);
+        TEST_ASSERT_EQ(5, lines_read);
         TEST_ASSERT_EQ(mtxfile_vector, mtxdistfile.header.object);
         TEST_ASSERT_EQ(mtxfile_coordinate, mtxdistfile.header.format);
         TEST_ASSERT_EQ(mtxfile_pattern, mtxdistfile.header.field);

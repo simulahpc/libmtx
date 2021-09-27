@@ -581,17 +581,15 @@ int main(int argc, char *argv[])
 
     /* TODO: Make row partitioning configurable, see mtxpartition.c */
     const enum mtx_partition_type row_partition_type = mtx_block;
-    /* TODO: Make buffer size configurable. */
-    size_t bufsize = 100*1024*1024;
 
     struct mtxdistfile mtxdistfile;
     int lines_read;
     int64_t bytes_read;
     err = mtxdistfile_read(
-        &mtxdistfile, args.precision, row_partition_type,
+        &mtxdistfile, args.precision,
         args.x_path ? args.x_path : "",
-        &lines_read, &bytes_read, 0, NULL, bufsize,
-        root, comm, &mpierror);
+        &lines_read, &bytes_read, 0, NULL,
+        comm, &mpierror);
     if (err) {
         if (args.verbose > 0)
             fprintf(diagf, "\n");
