@@ -733,24 +733,12 @@ int main(int argc, char *argv[])
         }
     }
 
-    int64_t * data_lines_per_part_ptr =
-        malloc((args.num_row_parts+1) * sizeof(int64_t));
-    if (!data_lines_per_part_ptr) {
-        if (args.verbose > 0)
-            fprintf(diagf, "\n");
-        fprintf(stderr, "%s: %s\n", program_invocation_short_name, strerror(errno));
-        mtx_partition_free(&row_partition);
-        mtxfile_free(&mtxfile);
-        program_options_free(&args);
-        return EXIT_FAILURE;
-    }
     int64_t num_data_lines;
     err = mtxfile_size_num_data_lines(&mtxfile.size, &num_data_lines);
     if (err) {
         if (args.verbose > 0)
             fprintf(diagf, "\n");
         fprintf(stderr, "%s: %s\n", program_invocation_short_name, mtx_strerror(err));
-        free(data_lines_per_part_ptr);
         mtx_partition_free(&row_partition);
         mtxfile_free(&mtxfile);
         program_options_free(&args);
@@ -761,7 +749,31 @@ int main(int argc, char *argv[])
         if (args.verbose > 0)
             fprintf(diagf, "\n");
         fprintf(stderr, "%s: %s\n", program_invocation_short_name, strerror(errno));
+        mtx_partition_free(&row_partition);
+        mtxfile_free(&mtxfile);
+        program_options_free(&args);
+        return EXIT_FAILURE;
+    }
+    int64_t * data_lines_per_part_ptr =
+        malloc((args.num_row_parts+1) * sizeof(int64_t));
+    if (!data_lines_per_part_ptr) {
+        if (args.verbose > 0)
+            fprintf(diagf, "\n");
+        fprintf(stderr, "%s: %s\n", program_invocation_short_name, strerror(errno));
+        free(part_per_data_line);
+        mtx_partition_free(&row_partition);
+        mtxfile_free(&mtxfile);
+        program_options_free(&args);
+        return EXIT_FAILURE;
+    }
+    int64_t * data_lines_per_part =
+        malloc(num_data_lines * sizeof(int64_t));
+    if (!data_lines_per_part) {
+        if (args.verbose > 0)
+            fprintf(diagf, "\n");
+        fprintf(stderr, "%s: %s\n", program_invocation_short_name, strerror(errno));
         free(data_lines_per_part_ptr);
+        free(part_per_data_line);
         mtx_partition_free(&row_partition);
         mtxfile_free(&mtxfile);
         program_options_free(&args);
@@ -775,13 +787,15 @@ int main(int argc, char *argv[])
     }
 
     err = mtxfile_partition_rows(
-        &mtxfile, &row_partition, data_lines_per_part_ptr, part_per_data_line);
+        &mtxfile, &row_partition,
+        part_per_data_line, data_lines_per_part_ptr, data_lines_per_part);
     if (err) {
         if (args.verbose > 0)
             fprintf(diagf, "\n");
         fprintf(stderr, "%s: %s\n", program_invocation_short_name, mtx_strerror(err));
-        free(part_per_data_line);
+        free(data_lines_per_part);
         free(data_lines_per_part_ptr);
+        free(part_per_data_line);
         mtx_partition_free(&row_partition);
         mtxfile_free(&mtxfile);
         program_options_free(&args);
@@ -807,8 +821,9 @@ int main(int argc, char *argv[])
                 fprintf(stderr, "%s: %s\n",
                         program_invocation_short_name,
                         mtx_strerror(err));
-                free(part_per_data_line);
+                free(data_lines_per_part);
                 free(data_lines_per_part_ptr);
+                free(part_per_data_line);
                 mtx_partition_free(&row_partition);
                 mtxfile_free(&mtxfile);
                 program_options_free(&args);
@@ -825,8 +840,9 @@ int main(int argc, char *argv[])
                         program_invocation_short_name,
                         mtx_strerror(err));
                 mtxfile_free(&mtxfile_p);
-                free(part_per_data_line);
+                free(data_lines_per_part);
                 free(data_lines_per_part_ptr);
+                free(part_per_data_line);
                 mtx_partition_free(&row_partition);
                 mtxfile_free(&mtxfile);
                 program_options_free(&args);
@@ -844,8 +860,9 @@ int main(int argc, char *argv[])
                         program_invocation_short_name, strerror(err),
                         output_path);
                 mtxfile_free(&mtxfile_p);
-                free(part_per_data_line);
+                free(data_lines_per_part);
                 free(data_lines_per_part_ptr);
+                free(part_per_data_line);
                 mtx_partition_free(&row_partition);
                 mtxfile_free(&mtxfile);
                 program_options_free(&args);
@@ -870,8 +887,9 @@ int main(int argc, char *argv[])
                         mtx_strerror(err));
                 free(output_path);
                 mtxfile_free(&mtxfile_p);
-                free(part_per_data_line);
+                free(data_lines_per_part);
                 free(data_lines_per_part_ptr);
+                free(part_per_data_line);
                 mtx_partition_free(&row_partition);
                 mtxfile_free(&mtxfile);
                 program_options_free(&args);
@@ -910,8 +928,9 @@ int main(int argc, char *argv[])
                     program_invocation_short_name,
                     args.row_partition_output_path,
                     mtx_strerror(err));
-            free(part_per_data_line);
+            free(data_lines_per_part);
             free(data_lines_per_part_ptr);
+            free(part_per_data_line);
             mtx_partition_free(&row_partition);
             mtxfile_free(&mtxfile);
             program_options_free(&args);
@@ -946,8 +965,9 @@ int main(int argc, char *argv[])
                     program_invocation_short_name,
                     args.rowperm_output_path,
                     mtx_strerror(err));
-            free(part_per_data_line);
+            free(data_lines_per_part);
             free(data_lines_per_part_ptr);
+            free(part_per_data_line);
             mtx_partition_free(&row_partition);
             mtxfile_free(&mtxfile);
             program_options_free(&args);
@@ -975,8 +995,9 @@ int main(int argc, char *argv[])
             fprintf(stderr, "%s: %s\n",
                     program_invocation_short_name,
                     mtx_strerror(err));
-            free(part_per_data_line);
+            free(data_lines_per_part);
             free(data_lines_per_part_ptr);
+            free(part_per_data_line);
             mtx_partition_free(&row_partition);
             mtxfile_free(&mtxfile);
             program_options_free(&args);
@@ -993,8 +1014,9 @@ int main(int argc, char *argv[])
                     program_invocation_short_name,
                     mtx_strerror(err));
             mtxfile_free(&mtxfile_parts);
-            free(part_per_data_line);
+            free(data_lines_per_part);
             free(data_lines_per_part_ptr);
+            free(part_per_data_line);
             mtx_partition_free(&row_partition);
             mtxfile_free(&mtxfile);
             program_options_free(&args);
@@ -1018,8 +1040,9 @@ int main(int argc, char *argv[])
                     program_invocation_short_name,
                     mtx_strerror(err));
             mtxfile_free(&mtxfile_parts);
-            free(part_per_data_line);
+            free(data_lines_per_part);
             free(data_lines_per_part_ptr);
+            free(part_per_data_line);
             mtx_partition_free(&row_partition);
             mtxfile_free(&mtxfile);
             program_options_free(&args);
@@ -1038,8 +1061,9 @@ int main(int argc, char *argv[])
     }
 
     /* 8. Clean up. */
-    free(part_per_data_line);
+    free(data_lines_per_part);
     free(data_lines_per_part_ptr);
+    free(part_per_data_line);
     mtx_partition_free(&row_partition);
     mtxfile_free(&mtxfile);
     program_options_free(&args);

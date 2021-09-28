@@ -681,6 +681,21 @@ int mtxfile_data_copy(
     int64_t dst_offset,
     int64_t src_offset);
 
+/**
+ * ‘mtxfile_data_copy_gather()’ performs an irregular copying (gather)
+ * of data lines from specified locations to a contiguous array.
+ */
+int mtxfile_data_copy_gather(
+    union mtxfile_data * dst,
+    const union mtxfile_data * src,
+    enum mtxfile_object object,
+    enum mtxfile_format format,
+    enum mtxfile_field field,
+    enum mtx_precision precision,
+    int64_t size,
+    int64_t dstoffset,
+    const int64_t * srcdispls);
+
 /*
  * I/O functions
  */

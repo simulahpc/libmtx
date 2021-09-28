@@ -1443,6 +1443,184 @@ int mtxfile_data_copy(
     return MTX_SUCCESS;
 }
 
+/**
+ * ‘mtxfile_data_copy_gather()’ performs an irregular copying (gather)
+ * of data lines from specified locations to a contiguous array.
+ */
+int mtxfile_data_copy_gather(
+    union mtxfile_data * dst,
+    const union mtxfile_data * src,
+    enum mtxfile_object object,
+    enum mtxfile_format format,
+    enum mtxfile_field field,
+    enum mtx_precision precision,
+    int64_t size,
+    int64_t dstoffset,
+    const int64_t * srcdispls)
+{
+    if (format == mtxfile_array) {
+        if (field == mtxfile_real) {
+            if (precision == mtx_single) {
+                for (int64_t k = 0; k < size; k++) {
+                    dst->array_real_single[dstoffset+k] =
+                        src->array_real_single[srcdispls[k]];
+                }
+            } else if (precision == mtx_double) {
+                for (int64_t k = 0; k < size; k++) {
+                    dst->array_real_double[dstoffset+k] =
+                        src->array_real_double[srcdispls[k]];
+                }
+            } else {
+                return MTX_ERR_INVALID_PRECISION;
+            }
+        } else if (field == mtxfile_complex) {
+            if (precision == mtx_single) {
+                for (int64_t k = 0; k < size; k++) {
+                    dst->array_complex_single[dstoffset+k][0] =
+                        src->array_complex_single[srcdispls[k]][0];
+                    dst->array_complex_single[dstoffset+k][1] =
+                        src->array_complex_single[srcdispls[k]][1];
+                }
+            } else if (precision == mtx_double) {
+                for (int64_t k = 0; k < size; k++) {
+                    dst->array_complex_double[dstoffset+k][0] =
+                        src->array_complex_double[srcdispls[k]][0];
+                    dst->array_complex_double[dstoffset+k][1] =
+                        src->array_complex_double[srcdispls[k]][1];
+                }
+            } else {
+                return MTX_ERR_INVALID_PRECISION;
+            }
+        } else if (field == mtxfile_integer) {
+            if (precision == mtx_single) {
+                for (int64_t k = 0; k < size; k++) {
+                    dst->array_integer_single[dstoffset+k] =
+                        src->array_integer_single[srcdispls[k]];
+                }
+            } else if (precision == mtx_double) {
+                for (int64_t k = 0; k < size; k++) {
+                    dst->array_integer_double[dstoffset+k] =
+                        src->array_integer_double[srcdispls[k]];
+                }
+            } else {
+                return MTX_ERR_INVALID_PRECISION;
+            }
+        } else {
+            return MTX_ERR_INVALID_MTX_FIELD;
+        }
+
+    } else if (format == mtxfile_coordinate) {
+        if (object == mtxfile_matrix) {
+            if (field == mtxfile_real) {
+                if (precision == mtx_single) {
+                    for (int64_t k = 0; k < size; k++) {
+                        dst->matrix_coordinate_real_single[dstoffset+k] =
+                            src->matrix_coordinate_real_single[srcdispls[k]];
+                    }
+                } else if (precision == mtx_double) {
+                    for (int64_t k = 0; k < size; k++) {
+                        dst->matrix_coordinate_real_double[dstoffset+k] =
+                            src->matrix_coordinate_real_double[srcdispls[k]];
+                    }
+                } else {
+                    return MTX_ERR_INVALID_PRECISION;
+                }
+            } else if (field == mtxfile_complex) {
+                if (precision == mtx_single) {
+                    for (int64_t k = 0; k < size; k++) {
+                        dst->matrix_coordinate_complex_single[dstoffset+k] =
+                            src->matrix_coordinate_complex_single[srcdispls[k]];
+                    }
+                } else if (precision == mtx_double) {
+                    for (int64_t k = 0; k < size; k++) {
+                        dst->matrix_coordinate_complex_double[dstoffset+k] =
+                            src->matrix_coordinate_complex_double[srcdispls[k]];
+                    }
+                } else {
+                    return MTX_ERR_INVALID_PRECISION;
+                }
+            } else if (field == mtxfile_integer) {
+                if (precision == mtx_single) {
+                    for (int64_t k = 0; k < size; k++) {
+                        dst->matrix_coordinate_integer_single[dstoffset+k] =
+                            src->matrix_coordinate_integer_single[srcdispls[k]];
+                    }
+                } else if (precision == mtx_double) {
+                    for (int64_t k = 0; k < size; k++) {
+                        dst->matrix_coordinate_integer_double[dstoffset+k] =
+                            src->matrix_coordinate_integer_double[srcdispls[k]];
+                    }
+                } else {
+                    return MTX_ERR_INVALID_PRECISION;
+                }
+            } else if (field == mtxfile_pattern) {
+                for (int64_t k = 0; k < size; k++) {
+                    dst->matrix_coordinate_pattern[dstoffset+k] =
+                        src->matrix_coordinate_pattern[srcdispls[k]];
+                }
+            } else {
+                return MTX_ERR_INVALID_MTX_FIELD;
+            }
+        } else if (object == mtxfile_vector) {
+            if (field == mtxfile_real) {
+                if (precision == mtx_single) {
+                    for (int64_t k = 0; k < size; k++) {
+                        dst->vector_coordinate_real_single[dstoffset+k] =
+                            src->vector_coordinate_real_single[srcdispls[k]];
+                    }
+                } else if (precision == mtx_double) {
+                    for (int64_t k = 0; k < size; k++) {
+                        dst->vector_coordinate_real_double[dstoffset+k] =
+                            src->vector_coordinate_real_double[srcdispls[k]];
+                    }
+                } else {
+                    return MTX_ERR_INVALID_PRECISION;
+                }
+            } else if (field == mtxfile_complex) {
+                if (precision == mtx_single) {
+                    for (int64_t k = 0; k < size; k++) {
+                        dst->vector_coordinate_complex_single[dstoffset+k] =
+                            src->vector_coordinate_complex_single[srcdispls[k]];
+                    }
+                } else if (precision == mtx_double) {
+                    for (int64_t k = 0; k < size; k++) {
+                        dst->vector_coordinate_complex_double[dstoffset+k] =
+                            src->vector_coordinate_complex_double[srcdispls[k]];
+                    }
+                } else {
+                    return MTX_ERR_INVALID_PRECISION;
+                }
+            } else if (field == mtxfile_integer) {
+                if (precision == mtx_single) {
+                    for (int64_t k = 0; k < size; k++) {
+                        dst->vector_coordinate_integer_single[dstoffset+k] =
+                            src->vector_coordinate_integer_single[srcdispls[k]];
+                    }
+                } else if (precision == mtx_double) {
+                    for (int64_t k = 0; k < size; k++) {
+                        dst->vector_coordinate_integer_double[dstoffset+k] =
+                            src->vector_coordinate_integer_double[srcdispls[k]];
+                    }
+                } else {
+                    return MTX_ERR_INVALID_PRECISION;
+                }
+            } else if (field == mtxfile_pattern) {
+                for (int64_t k = 0; k < size; k++) {
+                    dst->vector_coordinate_pattern[dstoffset+k] =
+                        src->vector_coordinate_pattern[srcdispls[k]];
+                }
+            } else {
+                return MTX_ERR_INVALID_MTX_FIELD;
+            }
+        } else {
+            return MTX_ERR_INVALID_MTX_OBJECT;
+        }
+    } else {
+        return MTX_ERR_INVALID_MTX_FORMAT;
+    }
+    return MTX_SUCCESS;
+}
+
 /*
  * I/O functions
  */
