@@ -762,4 +762,31 @@ int mtxfile_header_gather(
     MPI_Type_free(&headertype);
     return MTX_SUCCESS;
 }
+
+/**
+ * `mtxfile_header_allgather()' gathers Matrix Market headers onto
+ * every MPI process from other processes in a communicator.
+ *
+ * This is analogous to `MPI_Allgather()' and requires every process
+ * in the communicator to perform matching calls to this function.
+ */
+int mtxfile_header_allgather(
+    const struct mtxfile_header * sendheader,
+    struct mtxfile_header * recvheaders,
+    MPI_Comm comm,
+    struct mtxmpierror * mpierror)
+{
+    int err;
+    MPI_Datatype headertype;
+    err = mtxfile_header_datatype(&headertype, &mpierror->mpierrcode);
+    if (mtxmpierror_allreduce(mpierror, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+    mpierror->mpierrcode = MPI_Allgather(
+        sendheader, 1, headertype, recvheaders, 1, headertype, comm);
+    err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxmpierror_allreduce(mpierror, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+    MPI_Type_free(&headertype);
+    return MTX_SUCCESS;
+}
 #endif

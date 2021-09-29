@@ -421,6 +421,19 @@ int mtxfile_header_gather(
     int root,
     MPI_Comm comm,
     struct mtxmpierror * mpierror);
+
+/**
+ * `mtxfile_header_allgather()' gathers Matrix Market headers onto
+ * every MPI process from other processes in a communicator.
+ *
+ * This is analogous to `MPI_Allgather()' and requires every process
+ * in the communicator to perform matching calls to this function.
+ */
+int mtxfile_header_allgather(
+    const struct mtxfile_header * sendheader,
+    struct mtxfile_header * recvheaders,
+    MPI_Comm comm,
+    struct mtxmpierror * mpierror);
 #endif
 
 #endif

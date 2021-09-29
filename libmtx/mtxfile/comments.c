@@ -715,4 +715,36 @@ int mtxfile_comments_gather(
     }
     return MTX_SUCCESS;
 }
+
+/**
+ * `mtxfile_comments_allgather()' gathers Matrix Market comment lines
+ * onto every MPI process from other processes in a communicator.
+ *
+ * This is analogous to `MPI_Allgather()' and requires every process
+ * in the communicator to perform matching calls to this function.
+ */
+int mtxfile_comments_allgather(
+    const struct mtxfile_comments * sendcomments,
+    struct mtxfile_comments * recvcomments,
+    MPI_Comm comm,
+    struct mtxmpierror * mpierror)
+{
+    int err;
+    int comm_size;
+    mpierror->mpierrcode = MPI_Comm_size(comm, &comm_size);
+    err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxmpierror_allreduce(mpierror, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+    int rank;
+    mpierror->mpierrcode = MPI_Comm_rank(comm, &rank);
+    err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxmpierror_allreduce(mpierror, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+    for (int p = 0; p < comm_size; p++) {
+        err = mtxfile_comments_gather(sendcomments, recvcomments, p, comm, mpierror);
+        if (err)
+            return err;
+    }
+    return MTX_SUCCESS;
+}
 #endif
