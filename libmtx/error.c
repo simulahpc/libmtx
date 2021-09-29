@@ -120,6 +120,8 @@ const char * mtx_strerror(
         return "incompatible Matrix Market symmetry";
     case MTX_ERR_INCOMPATIBLE_MTX_SIZE:
         return "incompatible Matrix Market size";
+    case MTX_ERR_INCOMPATIBLE_PRECISION:
+        return "incompatible precision";
     default:
         return "unknown error";
     }

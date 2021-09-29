@@ -787,7 +787,7 @@ int main(int argc, char *argv[])
     }
 
     err = mtxfile_partition_rows(
-        &mtxfile, &row_partition,
+        &mtxfile, num_data_lines, 0, &row_partition,
         part_per_data_line, data_lines_per_part_ptr, data_lines_per_part);
     if (err) {
         if (args.verbose > 0)

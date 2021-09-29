@@ -74,6 +74,7 @@ enum mtx_error
     MTX_ERR_INCOMPATIBLE_MTX_FIELD = -33,   /* incompatible Matrix Market field */
     MTX_ERR_INCOMPATIBLE_MTX_SYMMETRY = -34,/* incompatible Matrix Market symmetry */
     MTX_ERR_INCOMPATIBLE_MTX_SIZE = -35,    /* incompatible Matrix Market size */
+    MTX_ERR_INCOMPATIBLE_PRECISION = -36,   /* incompatible precision */
 };
 
 /**

@@ -395,7 +395,7 @@ int mtxfile_init_matrix_coordinate_integer_double(
 
 /**
  * `mtxfile_init_matrix_coordinate_pattern()' allocates and
- * initialises a matrix in coordinate format with integer, double precision
+ * initialises a matrix in coordinate format with boolean (pattern)
  * coefficients.
  */
 int mtxfile_init_matrix_coordinate_pattern(
@@ -498,8 +498,8 @@ int mtxfile_init_vector_coordinate_integer_double(
 
 /**
  * `mtxfile_init_vector_coordinate_pattern()' allocates and
- * initialises a vector in coordinate format with integer, double precision
- * coefficients.
+ * initialises a vector in coordinate format with boolean (pattern)
+ * precision coefficients.
  */
 int mtxfile_init_vector_coordinate_pattern(
     struct mtxfile * mtxfile,
@@ -726,16 +726,9 @@ int mtxfile_init_from_partition(
  * ‘mtxfile_partition_rows()’ partitions data lines of a Matrix Market
  * file according to the given row partitioning.
  *
- * ‘dst’ must point to an array of type ‘struct mtxfile’ whose length
- *  is equal to the number of parts in the partitioning (i.e.,
- *  ‘row_partition->num_parts’).  The ‘p’th entry in the array will be
- *  a Matrix Market file containing the ‘p’th part of the original
- *  Matrix Market file, ‘src’, according to the row partitioning given
- *  by ‘row_partition’.
- *
- * If it is not ‘NULL’, the array ‘row_parts’ must contain enough
- * storage to hold one ‘int’ for each data line. (The number of data
- * lines is obtained by calling ‘mtxfile_size_num_data_lines()’). On a
+ * If it is not ‘NULL’, the array ‘part_per_data_line’ must contain
+ * enough storage to hold one ‘int’ for each data line. (The number of
+ * data lines is obtained from ‘mtxfile_size_num_data_lines()’). On a
  * successful return, the ‘k’th entry in the array specifies the part
  * number that was assigned to the ‘k’th data line of ‘src’.
  *
@@ -753,8 +746,10 @@ int mtxfile_init_from_partition(
  */
 int mtxfile_partition_rows(
     const struct mtxfile * mtxfile,
+    int64_t size,
+    int64_t offset,
     const struct mtx_partition * row_partition,
-    int * row_parts,
+    int * part_per_data_line,
     int64_t * data_lines_per_part_ptr,
     int64_t * data_lines_per_part);
 

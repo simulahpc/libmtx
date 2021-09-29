@@ -73,8 +73,8 @@ struct mtx_index_set
 
     /**
      * `offset' is an offset to the first element of the indexed set,
-     * if `type' is `mtx_index_set_strided' or
-     * `mtx_index_set_block_strided'.  Otherwise, this value is not
+     * if `type' is `mtx_index_set_interval', `mtx_index_set_strided'
+     * or `mtx_index_set_block_strided'.  Otherwise, this value is not
      * used.
      */
     int64_t offset;

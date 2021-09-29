@@ -262,6 +262,19 @@ int mtxfile_size_gather(
     struct mtxmpierror * mpierror);
 
 /**
+ * `mtxfile_size_allgather()' gathers Matrix Market size lines onto
+ * every MPI process from other processes in a communicator.
+ *
+ * This is analogous to `MPI_Allgather()' and requires every process
+ * in the communicator to perform matching calls to this function.
+ */
+int mtxfile_size_allgather(
+    const struct mtxfile_size * sendsize,
+    struct mtxfile_size * recvsizes,
+    MPI_Comm comm,
+    struct mtxmpierror * mpierror);
+
+/**
  * `mtxfile_size_scatterv()' scatters a Matrix Market size line from
  * an MPI root process to other processes in a communicator.
  *

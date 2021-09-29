@@ -114,6 +114,20 @@ void mtxdistfile_free(
     struct mtxdistfile * mtxdistfile);
 
 /**
+ * `mtxdistfile_init()' creates a distributed Matrix Market file from
+ * Matrix Market file on each process in a communicator.
+ *
+ * This function performs collective communication and therefore
+ * requires every process in the communicator to perform matching
+ * calls to the function.
+ */
+int mtxdistfile_init(
+    struct mtxdistfile * mtxdistfile,
+    const struct mtxfile * mtxfile,
+    MPI_Comm comm,
+    struct mtxmpierror * mpierror);
+
+/**
  * `mtxdistfile_copy()' copies a distributed Matrix Market file.
  */
 int mtxdistfile_copy(
@@ -218,6 +232,217 @@ int mtxdistfile_init_matrix_array_integer_double(
     int num_rows,
     int num_columns,
     const int64_t * data,
+    MPI_Comm comm,
+    struct mtxmpierror * mpierror);
+
+/*
+ * Vector array formats
+ */
+
+/**
+ * `mtxdistfile_alloc_vector_array()' allocates a distributed vector
+ * in array format.
+ */
+int mtxdistfile_alloc_vector_array(
+    struct mtxdistfile * mtxdistfile,
+    enum mtxfile_field field,
+    enum mtx_precision precision,
+    int num_rows,
+    MPI_Comm comm,
+    struct mtxmpierror * mpierror);
+
+/**
+ * `mtxdistfile_init_vector_array_real_single()' allocates and
+ * initialises a distributed vector in array format with real, single
+ * precision coefficients.
+ */
+int mtxdistfile_init_vector_array_real_single(
+    struct mtxdistfile * mtxdistfile,
+    int num_rows,
+    const float * data,
+    MPI_Comm comm,
+    struct mtxmpierror * mpierror);
+
+/**
+ * `mtxdistfile_init_vector_array_real_double()' allocates and initialises
+ * a vector in array format with real, double precision coefficients.
+ */
+int mtxdistfile_init_vector_array_real_double(
+    struct mtxdistfile * mtxdistfile,
+    int num_rows,
+    const double * data,
+    MPI_Comm comm,
+    struct mtxmpierror * mpierror);
+
+/**
+ * `mtxdistfile_init_vector_array_complex_single()' allocates and
+ * initialises a distributed vector in array format with complex,
+ * single precision coefficients.
+ */
+int mtxdistfile_init_vector_array_complex_single(
+    struct mtxdistfile * mtxdistfile,
+    int num_rows,
+    const float (* data)[2],
+    MPI_Comm comm,
+    struct mtxmpierror * mpierror);
+
+/**
+ * `mtxdistfile_init_vector_array_complex_double()' allocates and
+ * initialises a vector in array format with complex, double precision
+ * coefficients.
+ */
+int mtxdistfile_init_vector_array_complex_double(
+    struct mtxdistfile * mtxdistfile,
+    int num_rows,
+    const double (* data)[2],
+    MPI_Comm comm,
+    struct mtxmpierror * mpierror);
+
+/**
+ * `mtxdistfile_init_vector_array_integer_single()' allocates and
+ * initialises a distributed vector in array format with integer,
+ * single precision coefficients.
+ */
+int mtxdistfile_init_vector_array_integer_single(
+    struct mtxdistfile * mtxdistfile,
+    int num_rows,
+    const int32_t * data,
+    MPI_Comm comm,
+    struct mtxmpierror * mpierror);
+
+/**
+ * `mtxdistfile_init_vector_array_integer_double()' allocates and
+ * initialises a vector in array format with integer, double precision
+ * coefficients.
+ */
+int mtxdistfile_init_vector_array_integer_double(
+    struct mtxdistfile * mtxdistfile,
+    int num_rows,
+    const int64_t * data,
+    MPI_Comm comm,
+    struct mtxmpierror * mpierror);
+
+/*
+ * Matrix coordinate formats
+ */
+
+/**
+ * `mtxdistfile_alloc_matrix_coordinate()' allocates a distributed
+ * matrix in coordinate format.
+ */
+int mtxdistfile_alloc_matrix_coordinate(
+    struct mtxdistfile * mtxdistfile,
+    enum mtxfile_field field,
+    enum mtxfile_symmetry symmetry,
+    enum mtx_precision precision,
+    int num_rows,
+    int num_columns,
+    int64_t num_nonzeros,
+    MPI_Comm comm,
+    struct mtxmpierror * mpierror);
+
+/**
+ * `mtxdistfile_init_matrix_coordinate_real_single()' allocates and
+ * initialises a distributed matrix in coordinate format with real,
+ * single precision coefficients.
+ */
+int mtxdistfile_init_matrix_coordinate_real_single(
+    struct mtxdistfile * mtxdistfile,
+    enum mtxfile_symmetry symmetry,
+    int num_rows,
+    int num_columns,
+    int64_t num_nonzeros,
+    const struct mtxfile_matrix_coordinate_real_single * data,
+    MPI_Comm comm,
+    struct mtxmpierror * mpierror);
+
+/**
+ * `mtxdistfile_init_matrix_coordinate_real_double()' allocates and
+ * initialises a matrix in coordinate format with real, double
+ * precision coefficients.
+ */
+int mtxdistfile_init_matrix_coordinate_real_double(
+    struct mtxdistfile * mtxdistfile,
+    enum mtxfile_symmetry symmetry,
+    int num_rows,
+    int num_columns,
+    int64_t num_nonzeros,
+    const struct mtxfile_matrix_coordinate_real_double * data,
+    MPI_Comm comm,
+    struct mtxmpierror * mpierror);
+
+/**
+ * `mtxdistfile_init_matrix_coordinate_complex_single()' allocates and
+ * initialises a distributed matrix in coordinate format with complex,
+ * single precision coefficients.
+ */
+int mtxdistfile_init_matrix_coordinate_complex_single(
+    struct mtxdistfile * mtxdistfile,
+    enum mtxfile_symmetry symmetry,
+    int num_rows,
+    int num_columns,
+    int64_t num_nonzeros,
+    const struct mtxfile_matrix_coordinate_complex_single * data,
+    MPI_Comm comm,
+    struct mtxmpierror * mpierror);
+
+/**
+ * `mtxdistfile_init_matrix_coordinate_complex_double()' allocates and
+ * initialises a matrix in coordinate format with complex, double
+ * precision coefficients.
+ */
+int mtxdistfile_init_matrix_coordinate_complex_double(
+    struct mtxdistfile * mtxdistfile,
+    enum mtxfile_symmetry symmetry,
+    int num_rows,
+    int num_columns,
+    int64_t num_nonzeros,
+    const struct mtxfile_matrix_coordinate_complex_double * data,
+    MPI_Comm comm,
+    struct mtxmpierror * mpierror);
+
+/**
+ * `mtxdistfile_init_matrix_coordinate_integer_single()' allocates and
+ * initialises a distributed matrix in coordinate format with integer,
+ * single precision coefficients.
+ */
+int mtxdistfile_init_matrix_coordinate_integer_single(
+    struct mtxdistfile * mtxdistfile,
+    enum mtxfile_symmetry symmetry,
+    int num_rows,
+    int num_columns,
+    int64_t num_nonzeros,
+    const struct mtxfile_matrix_coordinate_integer_single * data,
+    MPI_Comm comm,
+    struct mtxmpierror * mpierror);
+
+/**
+ * `mtxdistfile_init_matrix_coordinate_integer_double()' allocates and
+ * initialises a matrix in coordinate format with integer, double
+ * precision coefficients.
+ */
+int mtxdistfile_init_matrix_coordinate_integer_double(
+    struct mtxdistfile * mtxdistfile,
+    enum mtxfile_symmetry symmetry,
+    int num_rows,
+    int num_columns,
+    int64_t num_nonzeros,
+    const struct mtxfile_matrix_coordinate_integer_double * data,
+    MPI_Comm comm,
+    struct mtxmpierror * mpierror);
+
+/**
+ * `mtxdistfile_init_matrix_coordinate_pattern()' allocates and
+ * initialises a matrix in coordinate format with boolean (pattern)
+ * precision coefficients.
+ */
+int mtxdistfile_init_matrix_coordinate_pattern(
+    struct mtxdistfile * mtxdistfile,
+    enum mtxfile_symmetry symmetry,
+    int num_rows,
+    int num_columns,
+    int64_t num_nonzeros,
+    const struct mtxfile_matrix_coordinate_pattern * data,
     MPI_Comm comm,
     struct mtxmpierror * mpierror);
 
@@ -388,6 +613,71 @@ int mtxdistfile_fwrite(
     const char * format,
     int64_t * bytes_written,
     bool sequential);
+
+/*
+ * Partitioning
+ */
+
+/**
+ * ‘mtxdistfile_init_from_partition()’ creates a distributed Matrix
+ * Market file from a partitioning of another distributed Matrix
+ * Market file.
+ *
+ * On each process, a partitioning can be obtained from
+ * ‘mtxdistfile_partition_rows()’. This provides the arrays
+ * ‘data_lines_per_part_ptr’ and ‘data_lines_per_part’, which together
+ * describe the size of each part and the indices to its data lines on
+ * the current process. The number of parts in the partitioning must
+ * be less than or equal to the number of processes in the MPI
+ * communicator.
+ *
+ * The ‘p’th value of ‘data_lines_per_part_ptr’ must be an offset to
+ * the first data line belonging to the ‘p’th part of the partition,
+ * while the final value of the array points to one place beyond the
+ * final data line.  Moreover for each part ‘p’ of the partitioning,
+ * the entries from ‘data_lines_per_part[p]’ up to, but not including,
+ * ‘data_lines_per_part[p+1]’, are the indices of the data lines in
+ * ‘src’ that are assigned to the ‘p’th part of the partitioning.
+ */
+int mtxdistfile_init_from_partition(
+    struct mtxdistfile * dst,
+    const struct mtxdistfile * src,
+    int num_parts,
+    const int64_t * data_lines_per_part_ptr,
+    const int64_t * data_lines_per_part,
+    struct mtxmpierror * mpierror);
+
+/**
+ * ‘mtxdistfile_partition_rows()’ partitions data lines of a
+ * distributed Matrix Market file according to the given row
+ * partitioning.
+ *
+ * If it is not ‘NULL’, the array ‘part_per_data_line’ must contain
+ * enough storage to hold one ‘int’ for each data line held by the
+ * current process. (The number of data lines is obtained from
+ * ‘mtxfile_size_num_data_lines()’). On a successful return, the ‘k’th
+ * entry in the array specifies the part number that was assigned to
+ * the ‘k’th data line of ‘src’.
+ *
+ * The array ‘data_lines_per_part_ptr’ must contain at least enough
+ * storage for ‘row_partition->num_parts+1’ values of type ‘int64_t’.
+ * If successful, the ‘p’th value of ‘data_lines_per_part_ptr’ is an
+ * offset to the first data line belonging to the ‘p’th part of the
+ * partition, while the final value of the array points to one place
+ * beyond the final data line.  Moreover ‘data_lines_per_part’ must
+ * contain enough storage to hold one ‘int64_t’ for each data line.
+ * For each part ‘p’ of the partitioning, the entries from
+ * ‘data_lines_per_part[p]’ up to, but not including,
+ * ‘data_lines_per_part[p+1]’, are the indices of the data lines in
+ * ‘src’ that are assigned to the ‘p’th part of the partitioning.
+ */
+int mtxdistfile_partition_rows(
+    const struct mtxdistfile * mtxdistfile,
+    const struct mtx_partition * row_partition,
+    int * part_per_data_line,
+    int64_t * data_lines_per_part_ptr,
+    int64_t * data_lines_per_part,
+    struct mtxmpierror * mpierror);
 #endif
 
 #endif
