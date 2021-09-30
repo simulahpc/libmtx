@@ -186,7 +186,7 @@ int mtxmpierror_alloc(
     if (err)
         MPI_Abort(comm, EXIT_FAILURE);
 
-    int (* buf)[2] = malloc(2*comm_size * sizeof(int));
+    int (* buf)[3] = malloc(3*comm_size * sizeof(int));
     if (!buf)
         MPI_Abort(comm, EXIT_FAILURE);
 
@@ -233,6 +233,8 @@ char * mtxmpierror_description(
     int num_errors = 0;
     for (int p = 0; p < mpierror->comm_size; p++) {
         if (mpierror->buf[p][1]) {
+            if (mpierror->buf[p][1] == MTX_ERR_ERRNO)
+                errno = mpierror->buf[p][2];
             len += snprintf(
                 NULL, 0, num_errors == 0 ? format_err_first : format_err,
                 mpierror->buf[p][0],
@@ -250,6 +252,8 @@ char * mtxmpierror_description(
     num_errors = 0;
     for (int p = 0; p < mpierror->comm_size; p++) {
         if (mpierror->buf[p][1]) {
+            if (mpierror->buf[p][1] == MTX_ERR_ERRNO)
+                errno = mpierror->buf[p][2];
             newlen += snprintf(
                 &description[newlen], len-newlen+1,
                 num_errors == 0 ? format_err_first : format_err,
@@ -315,9 +319,9 @@ int mtxmpierror_allreduce(
     if (err == MTX_ERR_MPI_COLLECTIVE)
         return err;
 
-    int buf[2] = { mpierror->rank, err };
+    int buf[3] = { mpierror->rank, err, errno };
     int mpierr = MPI_Allgather(
-        &buf, 2, MPI_INT, mpierror->buf, 2, MPI_INT,
+        &buf, 3, MPI_INT, mpierror->buf, 3, MPI_INT,
         mpierror->comm);
     if (mpierr)
         MPI_Abort(mpierror->comm, EXIT_FAILURE);

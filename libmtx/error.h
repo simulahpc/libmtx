@@ -131,7 +131,7 @@ struct mtxmpierror
     int rank;
     int err;
     int mpierrcode;
-    int (* buf)[2];
+    int (* buf)[3];
 };
 
 /**

@@ -1246,6 +1246,7 @@ int mtxdistfile_read(
             errno = olderrno;
             err = MTX_ERR_ERRNO;
         }
+        err = MTX_SUCCESS;
     } else if (rank == root && ((f = fopen(path, "r")) == NULL)) {
         err = MTX_ERR_ERRNO;
     } else {
