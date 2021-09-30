@@ -26,13 +26,12 @@
 
 #include <libmtx/libmtx-config.h>
 
+#ifdef LIBMTX_HAVE_MPI
 #include <libmtx/mtx/precision.h>
 #include <libmtx/util/field.h>
 #include <libmtx/util/partition.h>
 
-#ifdef LIBMTX_HAVE_MPI
 #include <mpi.h>
-#endif
 
 #ifdef LIBMTX_HAVE_LIBZ
 #include <zlib.h>
@@ -371,7 +370,6 @@ int mtxvector_distributed_init_from_row_partition(
  * MPI functions
  */
 
-#ifdef LIBMTX_HAVE_MPI
 /**
  * `mtxvector_distributed_send()' sends a vector to another MPI
  * process.

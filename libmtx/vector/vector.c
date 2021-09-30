@@ -53,7 +53,9 @@ const char * mtxvector_type_str(
     case mtxvector_auto: return "auto";
     case mtxvector_array: return "array";
     case mtxvector_coordinate: return "coordinate";
+#ifdef LIBMTX_HAVE_MPI
     case mtxvector_distributed: return "distributed";
+#endif
     default: return mtx_strerror(MTX_ERR_INVALID_VECTOR_TYPE);
     }
 }
@@ -96,9 +98,11 @@ int mtxvector_type_parse(
     } else if (strncmp("coordinate", t, strlen("coordinate")) == 0) {
         t += strlen("coordinate");
         *vector_type = mtxvector_coordinate;
+#ifdef LIBMTX_HAVE_MPI
     } else if (strncmp("distributed", t, strlen("distributed")) == 0) {
         t += strlen("distributed");
         *vector_type = mtxvector_distributed;
+#endif
     } else {
         return MTX_ERR_INVALID_VECTOR_TYPE;
     }
@@ -128,8 +132,10 @@ void mtxvector_free(
         mtxvector_array_free(&vector->storage.array);
     } else if (vector->type == mtxvector_coordinate) {
         mtxvector_coordinate_free(&vector->storage.coordinate);
+#ifdef LIBMTX_HAVE_MPI
     } else if (vector->type == mtxvector_distributed) {
         mtxvector_distributed_free(&vector->storage.distributed);
+#endif
     }
 }
 
@@ -421,10 +427,12 @@ int mtxvector_from_mtxfile(
         vector->type = mtxvector_coordinate;
         return mtxvector_coordinate_from_mtxfile(
             &vector->storage.coordinate, mtxfile);
+#ifdef LIBMTX_HAVE_MPI
     } else if (type == mtxvector_distributed) {
         vector->type = mtxvector_distributed;
         return mtxvector_distributed_from_mtxfile(
             &vector->storage.distributed, mtxfile);
+#endif
     } else {
         return MTX_ERR_INVALID_VECTOR_TYPE;
     }
@@ -738,8 +746,10 @@ int mtxvector_snrm2(
         return mtxvector_array_snrm2(&x->storage.array, nrm2);
     } else if (x->type == mtxvector_coordinate) {
         return mtxvector_coordinate_snrm2(&x->storage.coordinate, nrm2);
+#ifdef LIBMTX_HAVE_MPI
     } else if (x->type == mtxvector_distributed) {
         return mtxvector_distributed_snrm2(&x->storage.distributed, nrm2);
+#endif
     } else {
         return MTX_ERR_INVALID_VECTOR_TYPE;
     }
@@ -757,8 +767,10 @@ int mtxvector_dnrm2(
         return mtxvector_array_dnrm2(&x->storage.array, nrm2);
     } else if (x->type == mtxvector_coordinate) {
         return mtxvector_coordinate_dnrm2(&x->storage.coordinate, nrm2);
+#ifdef LIBMTX_HAVE_MPI
     } else if (x->type == mtxvector_distributed) {
         return mtxvector_distributed_dnrm2(&x->storage.distributed, nrm2);
+#endif
     } else {
         return MTX_ERR_INVALID_VECTOR_TYPE;
     }

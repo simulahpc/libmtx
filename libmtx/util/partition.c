@@ -281,6 +281,8 @@ int mtx_partition_init_unstructured(
         free(partition->index_sets);
         return MTX_ERR_ERRNO;
     }
+    for (int p = 0; p < num_parts; p++)
+        size_per_part[p] = 0;
     for (int64_t i = 0; i < size; i++) {
         int p = parts[i];
         size_per_part[p]++;
@@ -453,8 +455,8 @@ int mtx_partition_fread_parts(
         return MTX_ERR_INVALID_MTX_FIELD;
     }
 
-    err = mtx_partition_init(
-        partition, mtx_unstructured, mtxfile.size.num_rows, num_parts, 0,
+    err = mtx_partition_init_unstructured(
+        partition, mtxfile.size.num_rows, num_parts,
         mtxfile.data.array_integer_single);
     if (err) {
         mtxfile_free(&mtxfile);

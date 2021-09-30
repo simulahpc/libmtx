@@ -29,6 +29,7 @@
 #include <libmtx/util/index_set.h>
 
 #include <errno.h>
+#include <unistd.h>
 
 #include <stdbool.h>
 #include <stdint.h>

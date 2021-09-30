@@ -594,7 +594,23 @@ int mtxdistfile_init_vector_array_integer_single(
     int num_rows,
     const int32_t * data,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxmpierror * mpierror)
+{
+    int err;
+    err = mtxdistfile_alloc_vector_array(
+        mtxdistfile, mtxfile_integer, mtx_single, num_rows, comm, mpierror);
+    if (err)
+        return err;
+    struct mtxfile * mtxfile = &mtxdistfile->mtxfile;
+    int64_t num_data_lines;
+    err = mtxfile_size_num_data_lines(&mtxfile->size, &num_data_lines);
+    if (err) {
+        mtxdistfile_free(mtxdistfile);
+        return err;
+    }
+    memcpy(mtxfile->data.array_integer_single, data, num_data_lines * sizeof(*data));
+    return MTX_SUCCESS;
+}
 
 /**
  * `mtxdistfile_init_vector_array_integer_double()' allocates and
@@ -1640,6 +1656,69 @@ int mtxdistfile_write(
     return MTX_SUCCESS;
 }
 
+/**
+ * `mtxdistfile_write_shared()' writes a distributed Matrix Market
+ * file to a single file that is shared by all processes in the
+ * communicator.  The file may optionally be compressed by gzip.
+ *
+ * If `path' is `-', then standard output is used.
+ *
+ * If `format' is `NULL', then the format specifier '%d' is used to
+ * print integers and '%f' is used to print floating point
+ * numbers. Otherwise, the given format string is used when printing
+ * numerical values.
+ *
+ * The format string follows the conventions of `printf'. If the field
+ * is `real', `double' or `complex', then the format specifiers '%e',
+ * '%E', '%f', '%F', '%g' or '%G' may be used. If the field is
+ * `integer', then the format specifier must be '%d'. The format
+ * string is ignored if the field is `pattern'. Field width and
+ * precision may be specified (e.g., "%3.1f"), but variable field
+ * width and precision (e.g., "%*.*f"), as well as length modifiers
+ * (e.g., "%Lf") are not allowed.
+ *
+ * This function performs collective communication and therefore
+ * requires every process in the communicator to perform matching
+ * calls to the function.
+ */
+int mtxdistfile_write_shared(
+    const struct mtxdistfile * mtxdistfile,
+    const char * path,
+    bool gzip,
+    const char * format,
+    int64_t * bytes_written,
+    struct mtxmpierror * mpierror)
+{
+    int err;
+    const char * mode = mtxdistfile->rank == 0 ? "w" : "a";
+    *bytes_written = 0;
+    if (!gzip) {
+        FILE * f;
+        if (strcmp(path, "-") == 0) {
+            int fd = dup(STDOUT_FILENO);
+            if (fd == -1)
+                return MTX_ERR_ERRNO;
+            if ((f = fdopen(fd, mode)) == NULL) {
+                close(fd);
+                return MTX_ERR_ERRNO;
+            }
+        } else if ((f = fopen(path, mode)) == NULL) {
+            return MTX_ERR_ERRNO;
+        }
+        err = mtxdistfile_fwrite_shared(
+            mtxdistfile, f, format, bytes_written, mpierror);
+        if (err) {
+            fclose(f);
+            return err;
+        }
+        fclose(f);
+    } else {
+        errno = ENOTSUP;
+        return MTX_ERR_ERRNO;
+    }
+    return MTX_SUCCESS;
+}
+
 static int mtxdistfile_fwrite_mtxfile(
     const struct mtxdistfile * mtxdistfile,
     FILE * f,
@@ -1652,9 +1731,6 @@ static int mtxdistfile_fwrite_mtxfile(
     if (err)
         return err;
     err = mtxfile_comments_fputs(&mtxdistfile->comments, f, bytes_written);
-    if (err)
-        return err;
-    err = mtxfile_comments_fputs(&mtxfile->comments, f, bytes_written);
     if (err)
         return err;
     err = mtxfile_comments_fputs(&mtxfile->comments, f, bytes_written);
@@ -1730,6 +1806,89 @@ int mtxdistfile_fwrite(
         }
     } else {
         err = mtxdistfile_fwrite_mtxfile(mtxdistfile, f, format, bytes_written);
+        if (mtxmpierror_allreduce(mpierror, err))
+            return MTX_ERR_MPI_COLLECTIVE;
+    }
+    return MTX_SUCCESS;
+}
+
+/**
+ * `mtxdistfile_fwrite_shared()' writes a distributed Matrix Market
+ * file to a single stream that is shared by every process in the
+ * communicator.
+ *
+ * If `format' is `NULL', then the format specifier '%d' is used to
+ * print integers and '%f' is used to print floating point
+ * numbers. Otherwise, the given format string is used when printing
+ * numerical values.
+ *
+ * The format string follows the conventions of `printf'. If the field
+ * is `real', `double' or `complex', then the format specifiers '%e',
+ * '%E', '%f', '%F', '%g' or '%G' may be used. If the field is
+ * `integer', then the format specifier must be '%d'. The format
+ * string is ignored if the field is `pattern'. Field width and
+ * precision may be specified (e.g., "%3.1f"), but variable field
+ * width and precision (e.g., "%*.*f"), as well as length modifiers
+ * (e.g., "%Lf") are not allowed.
+ *
+ * If it is not `NULL', then the number of bytes written to the stream
+ * is returned in `bytes_written'.
+ *
+ * This function performs collective communication and therefore
+ * requires every process in the communicator to perform matching
+ * calls to the function.
+ */
+int mtxdistfile_fwrite_shared(
+    const struct mtxdistfile * mtxdistfile,
+    FILE * f,
+    const char * format,
+    int64_t * bytes_written,
+    struct mtxmpierror * mpierror)
+{
+    int err;
+    int rank = mtxdistfile->rank;
+    err = (rank == 0) ? mtxfile_header_fwrite(&mtxdistfile->header, f, bytes_written)
+        : MTX_SUCCESS;
+    if (mtxmpierror_allreduce(mpierror, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+    err = (rank == 0) ? mtxfile_comments_fputs(
+        &mtxdistfile->comments, f, bytes_written)
+        : MTX_SUCCESS;
+    if (mtxmpierror_allreduce(mpierror, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+    err = (rank == 0) ? mtxfile_size_fwrite(
+        &mtxdistfile->size, mtxdistfile->header.object, mtxdistfile->header.format,
+        f, bytes_written)
+        : MTX_SUCCESS;
+    if (mtxmpierror_allreduce(mpierror, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+    fflush(f);
+    MPI_Barrier(mtxdistfile->comm);
+
+    for (int p = 0; p < mtxdistfile->comm_size; p++) {
+        const struct mtxfile * mtxfile = &mtxdistfile->mtxfile;
+        int64_t num_data_lines;
+        err = (rank == p) ? mtxfile_size_num_data_lines(
+            &mtxfile->size, &num_data_lines) : MTX_SUCCESS;
+        if (mtxmpierror_allreduce(mpierror, err))
+            return MTX_ERR_MPI_COLLECTIVE;
+        err = (rank == p) ? mtxfile_data_fwrite(
+            &mtxfile->data, mtxfile->header.object, mtxfile->header.format,
+            mtxfile->header.field, mtxfile->precision, num_data_lines,
+            f, format, bytes_written)
+            : MTX_SUCCESS;
+        if (mtxmpierror_allreduce(mpierror, err))
+            return MTX_ERR_MPI_COLLECTIVE;
+        fflush(f);
+        MPI_Barrier(mtxdistfile->comm);
+    }
+
+    if (bytes_written) {
+        int64_t bytes_written_per_process = *bytes_written;
+        mpierror->mpierrcode = MPI_Allreduce(
+            &bytes_written_per_process, bytes_written, 1, MPI_INT64_T, MPI_SUM,
+            mtxdistfile->comm);
+        err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
         if (mtxmpierror_allreduce(mpierror, err))
             return MTX_ERR_MPI_COLLECTIVE;
     }

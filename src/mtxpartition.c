@@ -26,6 +26,10 @@
 
 #include "../libmtx/util/parse.h"
 
+#ifdef LIBMTX_HAVE_MPI
+#include <mpi.h>
+#endif
+
 #include <errno.h>
 
 #include <assert.h>
@@ -459,14 +463,46 @@ static int parse_program_options(
         /* If requested, print program help text. */
         if (strcmp((*argv)[0], "-h") == 0 || strcmp((*argv)[0], "--help") == 0) {
             program_options_free(args);
+#ifdef LIBMTX_HAVE_MPI
+            int rank;
+            err = MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+            if (err) {
+                char mpierrstr[MPI_MAX_ERROR_STRING];
+                int mpierrstrlen;
+                MPI_Error_string(err, mpierrstr, &mpierrstrlen);
+                fprintf(stderr, "%s: MPI_Comm_rank failed with %s\n",
+                        program_invocation_short_name, mpierrstr);
+                MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
+            }
+            if (rank == 0)
+                program_options_print_help(stdout);
+            MPI_Finalize();
+#else
             program_options_print_help(stdout);
+#endif
             exit(EXIT_SUCCESS);
         }
 
         /* If requested, print program version information. */
         if (strcmp((*argv)[0], "--version") == 0) {
             program_options_free(args);
+#ifdef LIBMTX_HAVE_MPI
+            int rank;
+            err = MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+            if (err) {
+                char mpierrstr[MPI_MAX_ERROR_STRING];
+                int mpierrstrlen;
+                MPI_Error_string(err, mpierrstr, &mpierrstrlen);
+                fprintf(stderr, "%s: MPI_Comm_rank failed with %s\n",
+                        program_invocation_short_name, mpierrstr);
+                MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
+            }
+            if (rank == 0)
+                program_options_print_version(stdout);
+            MPI_Finalize();
+#else
             program_options_print_version(stdout);
+#endif
             exit(EXIT_SUCCESS);
         }
 
@@ -590,6 +626,650 @@ static int format_path(
     return 0;
 }
 
+#ifdef LIBMTX_HAVE_MPI
+/**
+ * `main()`.
+ */
+int main(int argc, char *argv[])
+{
+    int err;
+    struct timespec t0, t1;
+    FILE * diagf = stderr;
+    setlocale(LC_ALL, "");
+
+    /* 1. Initialise MPI. */
+    const MPI_Comm comm = MPI_COMM_WORLD;
+    const int root = 0;
+    int mpierr;
+    char mpierrstr[MPI_MAX_ERROR_STRING];
+    int mpierrstrlen;
+    struct mtxmpierror mpierror;
+    mpierr = MPI_Init(&argc, &argv);
+    if (mpierr) {
+        MPI_Error_string(mpierr, mpierrstr, &mpierrstrlen);
+        fprintf(stderr, "%s: MPI_Init failed with %s\n",
+                program_invocation_short_name, mpierrstr);
+        MPI_Finalize();
+        return EXIT_FAILURE;
+    }
+    int comm_size;
+    mpierr = MPI_Comm_size(comm, &comm_size);
+    if (mpierr) {
+        MPI_Error_string(mpierr, mpierrstr, &mpierrstrlen);
+        fprintf(stderr, "%s: MPI_Comm_size failed with %s\n",
+                program_invocation_short_name, mpierrstr);
+        MPI_Abort(comm, EXIT_FAILURE);
+    }
+    int rank;
+    mpierr = MPI_Comm_rank(comm, &rank);
+    if (mpierr) {
+        MPI_Error_string(mpierr, mpierrstr, &mpierrstrlen);
+        fprintf(stderr, "%s: MPI_Comm_rank failed with %s\n",
+                program_invocation_short_name, mpierrstr);
+        MPI_Abort(comm, EXIT_FAILURE);
+    }
+    err = mtxmpierror_alloc(&mpierror, comm);
+    if (err)
+        MPI_Abort(comm, EXIT_FAILURE);
+
+    /* 2. Parse program options. */
+    struct program_options args;
+    int argc_copy = argc;
+    char ** argv_copy = argv;
+    err = parse_program_options(&argc_copy, &argv_copy, &args);
+    if (err) {
+        if (rank == root) {
+            fprintf(stderr, "%s: %s %s\n", program_invocation_short_name,
+                    strerror(err), argv_copy[0]);
+        }
+        mtxmpierror_free(&mpierror);
+        MPI_Finalize();
+        return EXIT_FAILURE;
+    }
+    if (rank != root)
+        args.verbose = 0;
+    if (!args.mtx_path) {
+        if (rank == root) {
+            fprintf(stderr, "%s: Please specify a Matrix Market file\n",
+                    program_invocation_short_name);
+        }
+        program_options_free(&args);
+        mtxmpierror_free(&mpierror);
+        MPI_Finalize();
+        return EXIT_FAILURE;
+    }
+    if (args.row_partition == mtx_unstructured && !args.row_partition_path) {
+        if (rank == root) {
+            fprintf(stderr, "%s: Please specify a Matrix Market file "
+                    "with --row-partition-path\n",
+                    program_invocation_short_name);
+        }
+        program_options_free(&args);
+        mtxmpierror_free(&mpierror);
+        MPI_Finalize();
+        return EXIT_FAILURE;
+    }
+    if (comm_size < args.num_row_parts) {
+        if (rank == root) {
+            fprintf(stderr, "%s: The number of MPI processes (%d) must "
+                    "equal or exceed the number of parts in the partition (%d).\n",
+                    program_invocation_short_name,
+                    comm_size, args.num_row_parts);
+        }
+        program_options_free(&args);
+        mtxmpierror_free(&mpierror);
+        MPI_Finalize();
+        return EXIT_FAILURE;
+    }
+
+    /* 2. Read a Matrix Market file. */
+    if (args.verbose > 0) {
+        fprintf(diagf, "mtxdistfile_read: ");
+        fflush(diagf);
+        clock_gettime(CLOCK_MONOTONIC, &t0);
+    }
+
+    struct mtxdistfile src;
+    int lines_read;
+    int64_t bytes_read;
+    err = mtxdistfile_read(
+        &src, args.precision,
+        args.mtx_path ? args.mtx_path : "",
+        &lines_read, &bytes_read, 0, NULL,
+        comm, &mpierror);
+    if (err) {
+        if (args.verbose > 0)
+            fprintf(diagf, "\n");
+        if (rank == root && lines_read >= 0) {
+            fprintf(stderr, "%s: %s:%d: %s\n",
+                    program_invocation_short_name,
+                    args.mtx_path, lines_read+1,
+                    err == MTX_ERR_MPI_COLLECTIVE
+                    ? mtxmpierror_description(&mpierror)
+                    : mtx_strerror(err));
+        } else if (rank == root) {
+            fprintf(stderr, "%s: %s: %s\n",
+                    program_invocation_short_name,
+                    args.mtx_path,
+                    err == MTX_ERR_MPI_COLLECTIVE
+                    ? mtxmpierror_description(&mpierror)
+                    : mtx_strerror(err));
+        }
+        program_options_free(&args);
+        mtxmpierror_free(&mpierror);
+        MPI_Finalize();
+        return EXIT_FAILURE;
+    }
+
+    if (args.verbose > 0) {
+        clock_gettime(CLOCK_MONOTONIC, &t1);
+        fprintf(diagf, "%'.6f seconds (%'.1f MB/s)\n",
+                timespec_duration(t0, t1),
+                1.0e-6 * bytes_read / timespec_duration(t0, t1));
+    }
+
+    /* 3. Partition the rows of the matrix or vector. */
+    struct mtx_partition row_partition;
+    if (args.row_partition == mtx_unstructured) {
+        if (args.verbose > 0) {
+            fprintf(diagf, "mtx_partition_read_parts: ");
+            fflush(diagf);
+            clock_gettime(CLOCK_MONOTONIC, &t0);
+        }
+
+        int lines_read = 0;
+        int64_t bytes_read = 0;
+        err = mtx_partition_read_parts(
+            &row_partition, args.num_row_parts, args.row_partition_path,
+            &lines_read, &bytes_read);
+        if (mtxmpierror_allreduce(&mpierror, err)) {
+            if (args.verbose > 0)
+                fprintf(diagf, "\n");
+            if (rank == root && lines_read >= 0) {
+                fprintf(stderr, "%s: %s:%d: %s\n",
+                        program_invocation_short_name,
+                        args.row_partition_path, lines_read+1,
+                        mtxmpierror_description(&mpierror));
+            } else if (rank == root) {
+                fprintf(stderr, "%s: %s: %s\n",
+                        program_invocation_short_name,
+                        args.row_partition_path, mtxmpierror_description(&mpierror));
+            }
+            mtxdistfile_free(&src);
+            program_options_free(&args);
+            mtxmpierror_free(&mpierror);
+            MPI_Finalize();
+            return EXIT_FAILURE;
+        }
+
+        if (args.verbose > 0) {
+            clock_gettime(CLOCK_MONOTONIC, &t1);
+            fprintf(diagf, "%'.6f seconds (%'.1f MB/s)\n",
+                    timespec_duration(t0, t1),
+                    1.0e-6 * bytes_read / timespec_duration(t0, t1));
+            fflush(diagf);
+        }
+
+    } else {
+        if (args.verbose > 0) {
+            fprintf(diagf, "mtx_partition_init: ");
+            fflush(diagf);
+            clock_gettime(CLOCK_MONOTONIC, &t0);
+        }
+
+        err = mtx_partition_init(
+            &row_partition, args.row_partition,
+            src.size.num_rows, args.num_row_parts, 0, NULL);
+        if (mtxmpierror_allreduce(&mpierror, err)) {
+            if (args.verbose > 0)
+                fprintf(diagf, "\n");
+            if (rank == root) {
+                fprintf(stderr, "%s: %s\n",
+                        program_invocation_short_name,
+                        mtxmpierror_description(&mpierror));
+            }
+            mtxdistfile_free(&src);
+            program_options_free(&args);
+            mtxmpierror_free(&mpierror);
+            MPI_Finalize();
+            return EXIT_FAILURE;
+        }
+
+        if (args.verbose > 0) {
+            clock_gettime(CLOCK_MONOTONIC, &t1);
+            fprintf(diagf, "%'.6f seconds\n", timespec_duration(t0, t1));
+            fflush(diagf);
+        }
+    }
+
+    int64_t num_data_lines;
+    err = mtxfile_size_num_data_lines(&src.mtxfile.size, &num_data_lines);
+    if (mtxmpierror_allreduce(&mpierror, err)) {
+        if (args.verbose > 0)
+            fprintf(diagf, "\n");
+        if (rank == root) {
+            fprintf(stderr, "%s: %s\n",
+                    program_invocation_short_name,
+                    mtxmpierror_description(&mpierror));
+        }
+        mtx_partition_free(&row_partition);
+        mtxdistfile_free(&src);
+        program_options_free(&args);
+        mtxmpierror_free(&mpierror);
+        MPI_Finalize();
+        return EXIT_FAILURE;
+    }
+    int * part_per_data_line = malloc(num_data_lines * sizeof(int));
+    err = !part_per_data_line ? MTX_ERR_ERRNO : MTX_SUCCESS;
+    if (mtxmpierror_allreduce(&mpierror, err)) {
+        if (args.verbose > 0)
+            fprintf(diagf, "\n");
+        if (rank == root) {
+            fprintf(stderr, "%s: %s\n",
+                    program_invocation_short_name,
+                    mtxmpierror_description(&mpierror));
+        }
+        mtx_partition_free(&row_partition);
+        mtxdistfile_free(&src);
+        program_options_free(&args);
+        mtxmpierror_free(&mpierror);
+        MPI_Finalize();
+        return EXIT_FAILURE;
+    }
+    int64_t * data_lines_per_part_ptr =
+        malloc((args.num_row_parts+1) * sizeof(int64_t));
+    err = !data_lines_per_part_ptr ? MTX_ERR_ERRNO : MTX_SUCCESS;
+    if (mtxmpierror_allreduce(&mpierror, err)) {
+        if (args.verbose > 0)
+            fprintf(diagf, "\n");
+        if (rank == root) {
+            fprintf(stderr, "%s: %s\n",
+                    program_invocation_short_name,
+                    mtxmpierror_description(&mpierror));
+        }
+        free(part_per_data_line);
+        mtx_partition_free(&row_partition);
+        mtxdistfile_free(&src);
+        program_options_free(&args);
+        mtxmpierror_free(&mpierror);
+        MPI_Finalize();
+        return EXIT_FAILURE;
+    }
+    int64_t * data_lines_per_part =
+        malloc(num_data_lines * sizeof(int64_t));
+    err = !data_lines_per_part ? MTX_ERR_ERRNO : MTX_SUCCESS;
+    if (mtxmpierror_allreduce(&mpierror, err)) {
+        if (args.verbose > 0)
+            fprintf(diagf, "\n");
+        if (rank == root) {
+            fprintf(stderr, "%s: %s\n",
+                    program_invocation_short_name,
+                    mtxmpierror_description(&mpierror));
+        }
+        free(data_lines_per_part_ptr);
+        free(part_per_data_line);
+        mtx_partition_free(&row_partition);
+        mtxdistfile_free(&src);
+        program_options_free(&args);
+        mtxmpierror_free(&mpierror);
+        MPI_Finalize();
+        return EXIT_FAILURE;
+    }
+
+    if (args.verbose > 0) {
+        fprintf(diagf, "mtxdistfile_partition_rows: ");
+        fflush(diagf);
+        clock_gettime(CLOCK_MONOTONIC, &t0);
+    }
+
+    err = mtxdistfile_partition_rows(
+        &src, &row_partition,
+        part_per_data_line, data_lines_per_part_ptr, data_lines_per_part,
+        &mpierror);
+    if (err) {
+        if (args.verbose > 0)
+            fprintf(diagf, "\n");
+        if (rank == root) {
+            fprintf(stderr, "%s: %s\n",
+                    program_invocation_short_name,
+                    err == MTX_ERR_MPI_COLLECTIVE
+                    ? mtxmpierror_description(&mpierror)
+                    : mtx_strerror(err));
+        }
+        free(data_lines_per_part);
+        free(data_lines_per_part_ptr);
+        free(part_per_data_line);
+        mtx_partition_free(&row_partition);
+        mtxdistfile_free(&src);
+        program_options_free(&args);
+        mtxmpierror_free(&mpierror);
+        MPI_Finalize();
+        return EXIT_FAILURE;
+    }
+
+    if (args.verbose > 0) {
+        clock_gettime(CLOCK_MONOTONIC, &t1);
+        fprintf(diagf, "%'.6f seconds\n", timespec_duration(t0, t1));
+    }
+
+    if (args.verbose > 0) {
+        fprintf(diagf, "mtxdistfile_init_from_partition: ");
+        fflush(diagf);
+        clock_gettime(CLOCK_MONOTONIC, &t0);
+    }
+
+    struct mtxdistfile dst;
+    err = mtxdistfile_init_from_partition(
+        &dst, &src, row_partition.num_parts,
+        data_lines_per_part_ptr, data_lines_per_part, &mpierror);
+    if (err) {
+        if (args.verbose > 0)
+            fprintf(diagf, "\n");
+        if (rank == root) {
+            fprintf(stderr, "%s: %s\n",
+                    program_invocation_short_name,
+                    err == MTX_ERR_MPI_COLLECTIVE
+                    ? mtxmpierror_description(&mpierror)
+                    : mtx_strerror(err));
+        }
+        free(data_lines_per_part);
+        free(data_lines_per_part_ptr);
+        free(part_per_data_line);
+        mtx_partition_free(&row_partition);
+        mtxdistfile_free(&src);
+        program_options_free(&args);
+        mtxmpierror_free(&mpierror);
+        MPI_Finalize();
+        return EXIT_FAILURE;
+    }
+
+    if (args.verbose > 0) {
+        clock_gettime(CLOCK_MONOTONIC, &t1);
+        fprintf(diagf, "%'.6f seconds\n", timespec_duration(t0, t1));
+    }
+    mtxdistfile_free(&src);
+
+    /* 4. Write a Matrix Market file for each part. */
+    if (args.mtx_output_path) {
+        err = mtxfile_comments_printf(
+            &dst.comments, "%% This file was generated by %s %s\n",
+            program_name, program_version);
+        if (mtxmpierror_allreduce(&mpierror, err)) {
+            if (args.verbose > 0)
+                fprintf(diagf, "\n");
+            if (rank == root) {
+                fprintf(stderr, "%s: %s\n",
+                        program_invocation_short_name,
+                        mtxmpierror_description(&mpierror));
+            }
+            mtxdistfile_free(&dst);
+            free(data_lines_per_part);
+            free(data_lines_per_part_ptr);
+            free(part_per_data_line);
+            mtx_partition_free(&row_partition);
+            program_options_free(&args);
+            mtxmpierror_free(&mpierror);
+            MPI_Finalize();
+            return EXIT_FAILURE;
+        }
+
+        /* Format the output path. */
+        char * output_path;
+        err = format_path(
+            args.mtx_output_path, &output_path, rank, args.num_row_parts);
+        if (mtxmpierror_allreduce(&mpierror, err)) {
+            if (args.verbose > 0)
+                fprintf(diagf, "\n");
+            if (rank == root) {
+                fprintf(stderr, "%s: %s: %s\n",
+                        program_invocation_short_name,
+                        args.mtx_output_path,
+                        mtxmpierror_description(&mpierror));
+            }
+            mtxdistfile_free(&dst);
+            free(data_lines_per_part);
+            free(data_lines_per_part_ptr);
+            free(part_per_data_line);
+            mtx_partition_free(&row_partition);
+            program_options_free(&args);
+            mtxmpierror_free(&mpierror);
+            MPI_Finalize();
+            return EXIT_FAILURE;
+        }
+
+        if (args.verbose > 0) {
+            fprintf(diagf, "mtxdistfile_write: ");
+            fflush(diagf);
+            clock_gettime(CLOCK_MONOTONIC, &t0);
+        }
+
+        /* Write the part to a file. */
+        int64_t bytes_written;
+        err = mtxdistfile_write(
+            &dst, output_path, args.gzip, args.format, &bytes_written,
+            false, &mpierror);
+        if (err) {
+            if (args.verbose > 0)
+                fprintf(diagf, "\n");
+            if (rank == root) {
+                fprintf(stderr, "%s: %s\n",
+                        program_invocation_short_name,
+                        err == MTX_ERR_MPI_COLLECTIVE
+                        ? mtxmpierror_description(&mpierror)
+                        : mtx_strerror(err));
+            }
+            free(output_path);
+            mtxdistfile_free(&dst);
+            free(data_lines_per_part);
+            free(data_lines_per_part_ptr);
+            free(part_per_data_line);
+            mtx_partition_free(&row_partition);
+            program_options_free(&args);
+            mtxmpierror_free(&mpierror);
+            MPI_Finalize();
+            return EXIT_FAILURE;
+        }
+
+        if (args.verbose > 0) {
+            clock_gettime(CLOCK_MONOTONIC, &t1);
+            fprintf(diagf, "%'.6f seconds (%'.1f MB/s)\n",
+                    timespec_duration(t0, t1),
+                    1.0e-6 * bytes_written / timespec_duration(t0, t1));
+            fflush(diagf);
+        }
+
+        free(output_path);
+    }
+
+    /* 5. Write a Matrix Market file containing the part numbers
+     * assigned to each row of the matrix or vector. */
+    if (args.row_partition != mtx_unstructured && args.row_partition_output_path) {
+        if (args.verbose > 0) {
+            fprintf(diagf, "mtx_partition_write_parts: ");
+            fflush(diagf);
+            clock_gettime(CLOCK_MONOTONIC, &t0);
+        }
+
+        int64_t bytes_written = 0;
+        err = (rank == root) ? mtx_partition_write_parts(
+            &row_partition, args.row_partition_output_path, "%d", &bytes_written)
+            : MTX_SUCCESS;
+        if (mtxmpierror_allreduce(&mpierror, err)) {
+            if (args.verbose > 0)
+                fprintf(diagf, "\n");
+            if (rank == root) {
+                fprintf(stderr, "%s: %s: %s\n",
+                        program_invocation_short_name,
+                        args.row_partition_output_path,
+                        mtxmpierror_description(&mpierror));
+            }
+            mtxdistfile_free(&dst);
+            free(data_lines_per_part);
+            free(data_lines_per_part_ptr);
+            free(part_per_data_line);
+            mtx_partition_free(&row_partition);
+            program_options_free(&args);
+            mtxmpierror_free(&mpierror);
+            MPI_Finalize();
+            return EXIT_FAILURE;
+        }
+
+        if (args.verbose > 0) {
+            clock_gettime(CLOCK_MONOTONIC, &t1);
+            fprintf(diagf, "%'.6f seconds (%'.1f MB/s)\n",
+                    timespec_duration(t0, t1),
+                    1.0e-6 * bytes_written / timespec_duration(t0, t1));
+            fflush(diagf);
+        }
+    }
+
+    /* 6. Write a Matrix Market file containing the part numbers
+     * assigned to each row of the matrix or vector. */
+    if (args.rowperm_output_path) {
+        if (args.verbose > 0) {
+            fprintf(diagf, "mtx_partition_write_permutations: ");
+            fflush(diagf);
+            clock_gettime(CLOCK_MONOTONIC, &t0);
+        }
+
+        int64_t bytes_written = 0;
+        err = (rank == root) ? mtx_partition_write_permutations(
+            &row_partition, args.rowperm_output_path, NULL, &bytes_written)
+            : MTX_SUCCESS;
+        if (mtxmpierror_allreduce(&mpierror, err)) {
+            if (args.verbose > 0)
+                fprintf(diagf, "\n");
+            if (rank == root) {
+                fprintf(stderr, "%s: %s: %s\n",
+                        program_invocation_short_name,
+                        args.rowperm_output_path,
+                        mtxmpierror_description(&mpierror));
+            }
+            mtxdistfile_free(&dst);
+            free(data_lines_per_part);
+            free(data_lines_per_part_ptr);
+            free(part_per_data_line);
+            mtx_partition_free(&row_partition);
+            program_options_free(&args);
+            mtxmpierror_free(&mpierror);
+            MPI_Finalize();
+            return EXIT_FAILURE;
+        }
+
+        if (args.verbose > 0) {
+            clock_gettime(CLOCK_MONOTONIC, &t1);
+            fprintf(diagf, "%'.6f seconds (%'.1f MB/s)\n",
+                    timespec_duration(t0, t1),
+                    1.0e-6 * bytes_written / timespec_duration(t0, t1));
+            fflush(diagf);
+        }
+    }
+
+    /* 7. Write Matrix Market file for parts assigned to each matrix
+     * or vector entry. */
+    if (args.partition_output_path) {
+        struct mtxdistfile mtxdistfile_parts;
+        err = mtxdistfile_init_vector_array_integer_single(
+            &mtxdistfile_parts, num_data_lines, part_per_data_line, comm, &mpierror);
+        if (err) {
+            if (args.verbose > 0)
+                fprintf(diagf, "\n");
+            if (rank == root) {
+                fprintf(stderr, "%s: %s\n",
+                        program_invocation_short_name,
+                        err == MTX_ERR_MPI_COLLECTIVE
+                        ? mtxmpierror_description(&mpierror)
+                        : mtx_strerror(err));
+            }
+            mtxdistfile_free(&dst);
+            free(data_lines_per_part);
+            free(data_lines_per_part_ptr);
+            free(part_per_data_line);
+            mtx_partition_free(&row_partition);
+            program_options_free(&args);
+            mtxmpierror_free(&mpierror);
+            MPI_Finalize();
+            return EXIT_FAILURE;
+        }
+
+        err = mtxfile_comments_printf(
+            &mtxdistfile_parts.comments, "%% This file was generated by %s %s\n",
+            program_name, program_version);
+        if (mtxmpierror_allreduce(&mpierror, err)) {
+            if (args.verbose > 0)
+                fprintf(diagf, "\n");
+            if (rank == root) {
+                fprintf(stderr, "%s: %s\n",
+                        program_invocation_short_name,
+                        mtxmpierror_description(&mpierror));
+            }
+            mtxdistfile_free(&mtxdistfile_parts);
+            mtxdistfile_free(&dst);
+            free(data_lines_per_part);
+            free(data_lines_per_part_ptr);
+            free(part_per_data_line);
+            mtx_partition_free(&row_partition);
+            program_options_free(&args);
+            mtxmpierror_free(&mpierror);
+            MPI_Finalize();
+            return EXIT_FAILURE;
+        }
+
+        if (args.verbose > 0) {
+            fprintf(diagf, "mtxdistfile_write_shared: ");
+            fflush(diagf);
+            clock_gettime(CLOCK_MONOTONIC, &t0);
+        }
+
+        int64_t bytes_written;
+        err = mtxdistfile_write_shared(
+            &mtxdistfile_parts, args.partition_output_path,
+            args.gzip, NULL, &bytes_written, &mpierror);
+        if (err) {
+            if (args.verbose > 0)
+                fprintf(diagf, "\n");
+            if (rank == root) {
+                fprintf(stderr, "%s: %s\n",
+                        program_invocation_short_name,
+                        err == MTX_ERR_MPI_COLLECTIVE
+                        ? mtxmpierror_description(&mpierror)
+                        : mtx_strerror(err));
+            }
+            mtxdistfile_free(&mtxdistfile_parts);
+            mtxdistfile_free(&dst);
+            free(data_lines_per_part);
+            free(data_lines_per_part_ptr);
+            free(part_per_data_line);
+            mtx_partition_free(&row_partition);
+            program_options_free(&args);
+            mtxmpierror_free(&mpierror);
+            MPI_Finalize();
+            return EXIT_FAILURE;
+        }
+
+        if (args.verbose > 0) {
+            clock_gettime(CLOCK_MONOTONIC, &t1);
+            fprintf(diagf, "%'.6f seconds (%'.1f MB/s)\n",
+                    timespec_duration(t0, t1),
+                    1.0e-6 * bytes_written / timespec_duration(t0, t1));
+            fflush(diagf);
+        }
+
+        mtxdistfile_free(&mtxdistfile_parts);
+    }
+
+    /* 8. Clean up. */
+    mtxdistfile_free(&dst);
+    free(data_lines_per_part);
+    free(data_lines_per_part_ptr);
+    free(part_per_data_line);
+    mtx_partition_free(&row_partition);
+    program_options_free(&args);
+    mtxmpierror_free(&mpierror);
+    MPI_Finalize();
+    return EXIT_SUCCESS;
+}
+#else
 /**
  * `main()`.
  */
@@ -1069,3 +1749,4 @@ int main(int argc, char *argv[])
     program_options_free(&args);
     return EXIT_SUCCESS;
 }
+#endif

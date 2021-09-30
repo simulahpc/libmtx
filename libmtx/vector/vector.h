@@ -56,7 +56,9 @@ enum mtxvector_type
     mtxvector_auto,       /* automatic selection of vector type */
     mtxvector_array,      /* array format for dense vectors */
     mtxvector_coordinate, /* coordinate format for sparse vectors */
+#ifdef LIBMTX_HAVE_MPI
     mtxvector_distributed /* distributed format using MPI */
+#endif
 };
 
 /**
@@ -113,7 +115,9 @@ struct mtxvector
     {
         struct mtxvector_array array;
         struct mtxvector_coordinate coordinate;
+#ifdef LIBMTX_HAVE_MPI
         struct mtxvector_distributed distributed;
+#endif
     } storage;
 };
 

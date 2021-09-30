@@ -547,7 +547,7 @@ int main(int argc, char *argv[])
     int rank;
     mpierr = MPI_Comm_rank(comm, &rank);
     if (mpierr) {
-        MPI_Error_string(err, mpierrstr, &mpierrstrlen);
+        MPI_Error_string(mpierr, mpierrstr, &mpierrstrlen);
         fprintf(stderr, "%s: MPI_Comm_rank failed with %s\n",
                 program_invocation_short_name, mpierrstr);
         MPI_Abort(comm, EXIT_FAILURE);
