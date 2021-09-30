@@ -115,7 +115,7 @@ void mtxdistfile_free(
 
 /**
  * `mtxdistfile_init()' creates a distributed Matrix Market file from
- * Matrix Market file on each process in a communicator.
+ * Matrix Market files on each process in a communicator.
  *
  * This function performs collective communication and therefore
  * requires every process in the communicator to perform matching
@@ -126,13 +126,6 @@ int mtxdistfile_init(
     const struct mtxfile * mtxfile,
     MPI_Comm comm,
     struct mtxmpierror * mpierror);
-
-/**
- * `mtxdistfile_copy()' copies a distributed Matrix Market file.
- */
-int mtxdistfile_copy(
-    struct mtxdistfile * dst,
-    const struct mtxdistfile * src);
 
 /*
  * Matrix array formats
@@ -570,7 +563,7 @@ int mtxdistfile_init_vector_coordinate_pattern(
  */
 int mtxdistfile_from_mtxfile(
     struct mtxdistfile * dst,
-    struct mtxfile * src,
+    const struct mtxfile * src,
     MPI_Comm comm,
     int root,
     struct mtxmpierror * mpierror);

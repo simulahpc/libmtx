@@ -64,7 +64,7 @@ void mtxdistfile_free(
 
 /**
  * `mtxdistfile_init()' creates a distributed Matrix Market file from
- * Matrix Market file on each process in a communicator.
+ * Matrix Market files on each process in a communicator.
  *
  * This function performs collective communication and therefore
  * requires every process in the communicator to perform matching
@@ -234,13 +234,6 @@ int mtxdistfile_init(
     }
     return MTX_SUCCESS;
 }
-
-/**
- * `mtxdistfile_copy()' copies a distributed Matrix Market file.
- */
-int mtxdistfile_copy(
-    struct mtxdistfile * dst,
-    const struct mtxdistfile * src);
 
 /*
  * Matrix array formats
@@ -1057,7 +1050,7 @@ int mtxdistfile_init_vector_coordinate_pattern(
  */
 int mtxdistfile_from_mtxfile(
     struct mtxdistfile * dst,
-    struct mtxfile * src,
+    const struct mtxfile * src,
     MPI_Comm comm,
     int root,
     struct mtxmpierror * mpierror)
@@ -1073,6 +1066,10 @@ int mtxdistfile_from_mtxfile(
     err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
     if (mtxmpierror_allreduce(mpierror, err))
         return MTX_ERR_MPI_COLLECTIVE;
+
+    dst->comm = comm;
+    dst->comm_size = comm_size;
+    dst->rank = rank;
 
     /* Broadcast the header, comments, size line and precision. */
     err = (rank == root) ? mtxfile_header_copy(

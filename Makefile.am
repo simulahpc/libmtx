@@ -99,6 +99,7 @@ libmtx_la_SOURCES = \
 	libmtx/vector/coordinate/io.c \
 	libmtx/vector/coordinate/reorder.c \
 	libmtx/vector/vector.c \
+	libmtx/vector/distvector.c \
 	libmtx/vector/vector_array.c \
 	libmtx/vector/vector_coordinate.c \
 	libmtx/version.c
@@ -144,6 +145,7 @@ nobase_include_HEADERS = \
 	libmtx/util/distpartition.h \
 	libmtx/util/partition.h \
 	libmtx/vector/vector.h \
+	libmtx/vector/distvector.h \
 	libmtx/vector/vector_array.h \
 	libmtx/vector/vector_coordinate.h \
 	libmtx/vector/array.h \
@@ -349,6 +351,7 @@ if HAVE_MPI
 check_PROGRAMS += \
 	tests/test_mtx_mpi \
 	tests/test_mtxdistfile \
+	tests/test_mtxdistvector \
 	tests/test_mtxfile_mpi
 
 tests_test_mtx_mpi_CPPFLAGS = $(MPICPPFLAGS)
@@ -366,10 +369,16 @@ tests_test_mtxdistfile_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LI
 tests_test_mtxdistfile_SOURCES = tests/test_mtxdistfile.c tests/test.h
 tests/test_mtxdistfile_parallel: tests/test_mtxdistfile
 
+tests_test_mtxdistvector_CPPFLAGS = $(MPICPPFLAGS)
+tests_test_mtxdistvector_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
+tests_test_mtxdistvector_SOURCES = tests/test_mtxdistvector.c tests/test.h
+tests/test_mtxdistvector_parallel: tests/test_mtxdistvector
+
 TESTS += \
 	tests/test_mtx_mpi_parallel \
 	tests/test_mtxfile_mpi_parallel \
-	tests/test_mtxdistfile_parallel
+	tests/test_mtxdistfile_parallel \
+	tests/test_mtxdistvector_parallel
 endif
 
 # Documentation

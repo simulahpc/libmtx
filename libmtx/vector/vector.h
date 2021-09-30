@@ -31,7 +31,6 @@
 #include <libmtx/util/partition.h>
 #include <libmtx/vector/vector_array.h>
 #include <libmtx/vector/vector_coordinate.h>
-#include <libmtx/vector/vector_distributed.h>
 
 #ifdef LIBMTX_HAVE_MPI
 #include <mpi.h>
@@ -56,9 +55,6 @@ enum mtxvector_type
     mtxvector_auto,       /* automatic selection of vector type */
     mtxvector_array,      /* array format for dense vectors */
     mtxvector_coordinate, /* coordinate format for sparse vectors */
-#ifdef LIBMTX_HAVE_MPI
-    mtxvector_distributed /* distributed format using MPI */
-#endif
 };
 
 /**
@@ -102,8 +98,7 @@ int mtxvector_type_parse(
 struct mtxvector
 {
     /**
-     * `format' is the vector format: `array', `coordinate' or
-     * `distributed'.
+     * `format' is the vector format: `array' or `coordinate'.
      */
     enum mtxvector_type type;
 
@@ -115,9 +110,6 @@ struct mtxvector
     {
         struct mtxvector_array array;
         struct mtxvector_coordinate coordinate;
-#ifdef LIBMTX_HAVE_MPI
-        struct mtxvector_distributed distributed;
-#endif
     } storage;
 };
 
@@ -711,77 +703,6 @@ int mtxvector_recv(
  */
 int mtxvector_bcast(
     struct mtxvector * vector,
-    int root,
-    MPI_Comm comm,
-    struct mtxmpierror * mpierror);
-
-/**
- * `mtxvector_scatterv()' scatters a vector from an MPI root process
- * to other processes in a communicator.
- *
- * This is analogous to `MPI_Scatterv()' and requires every process in
- * the communicator to perform matching calls to
- * `mtxvector_scatterv()'.
- *
- * For a matrix in `array' format, entire rows are scattered, which
- * means that the send and receive counts must be multiples of the
- * number of matrix columns.
- */
-int mtxvector_scatterv(
-    const struct mtxvector * sendvector,
-    int * sendcounts,
-    int * displs,
-    struct mtxvector * recvvector,
-    int recvcount,
-    int root,
-    MPI_Comm comm,
-    struct mtxmpierror * mpierror);
-
-/**
- * `mtxvector_distribute_rows()' partitions and distributes rows of a
- * vector from an MPI root process to other processes in a
- * communicator.
- *
- * This function performs collective communication and therefore
- * requires every process in the communicator to perform matching
- * calls to `mtxvector_distribute_rows()'.
- *
- * `row_partition' must be a partitioning of the rows of the matrix or
- * vector represented by `src'.
- */
-int mtxvector_distribute_rows(
-    struct mtxvector * dst,
-    struct mtxvector * src,
-    const struct mtx_partition * row_partition,
-    int root,
-    MPI_Comm comm,
-    struct mtxmpierror * mpierror);
-
-/**
- * `mtxvector_fread_distribute_rows()' reads a vector from a stream
- * and distributes the rows of the underlying matrix or vector among
- * MPI processes in a communicator.
- *
- * `precision' is used to determine the precision to use for storing
- * the values of matrix or vector entries.
- *
- * If an error code is returned, then `lines_read' and `bytes_read'
- * are used to return the line number and byte at which the error was
- * encountered during the parsing of the vector.
- *
- * For a matrix or vector in array format, `bufsize' must be at least
- * large enough to fit one row per MPI process in the communicator.
- */
-int mtxvector_fread_distribute_rows(
-    struct mtxvector * vector,
-    FILE * f,
-    int * lines_read,
-    int64_t * bytes_read,
-    size_t line_max,
-    char * linebuf,
-    enum mtx_precision precision,
-    enum mtx_partition_type row_partition_type,
-    size_t bufsize,
     int root,
     MPI_Comm comm,
     struct mtxmpierror * mpierror);

@@ -53,9 +53,6 @@ const char * mtxvector_type_str(
     case mtxvector_auto: return "auto";
     case mtxvector_array: return "array";
     case mtxvector_coordinate: return "coordinate";
-#ifdef LIBMTX_HAVE_MPI
-    case mtxvector_distributed: return "distributed";
-#endif
     default: return mtx_strerror(MTX_ERR_INVALID_VECTOR_TYPE);
     }
 }
@@ -98,11 +95,6 @@ int mtxvector_type_parse(
     } else if (strncmp("coordinate", t, strlen("coordinate")) == 0) {
         t += strlen("coordinate");
         *vector_type = mtxvector_coordinate;
-#ifdef LIBMTX_HAVE_MPI
-    } else if (strncmp("distributed", t, strlen("distributed")) == 0) {
-        t += strlen("distributed");
-        *vector_type = mtxvector_distributed;
-#endif
     } else {
         return MTX_ERR_INVALID_VECTOR_TYPE;
     }
@@ -132,10 +124,6 @@ void mtxvector_free(
         mtxvector_array_free(&vector->storage.array);
     } else if (vector->type == mtxvector_coordinate) {
         mtxvector_coordinate_free(&vector->storage.coordinate);
-#ifdef LIBMTX_HAVE_MPI
-    } else if (vector->type == mtxvector_distributed) {
-        mtxvector_distributed_free(&vector->storage.distributed);
-#endif
     }
 }
 
@@ -427,12 +415,6 @@ int mtxvector_from_mtxfile(
         vector->type = mtxvector_coordinate;
         return mtxvector_coordinate_from_mtxfile(
             &vector->storage.coordinate, mtxfile);
-#ifdef LIBMTX_HAVE_MPI
-    } else if (type == mtxvector_distributed) {
-        vector->type = mtxvector_distributed;
-        return mtxvector_distributed_from_mtxfile(
-            &vector->storage.distributed, mtxfile);
-#endif
     } else {
         return MTX_ERR_INVALID_VECTOR_TYPE;
     }
@@ -746,10 +728,6 @@ int mtxvector_snrm2(
         return mtxvector_array_snrm2(&x->storage.array, nrm2);
     } else if (x->type == mtxvector_coordinate) {
         return mtxvector_coordinate_snrm2(&x->storage.coordinate, nrm2);
-#ifdef LIBMTX_HAVE_MPI
-    } else if (x->type == mtxvector_distributed) {
-        return mtxvector_distributed_snrm2(&x->storage.distributed, nrm2);
-#endif
     } else {
         return MTX_ERR_INVALID_VECTOR_TYPE;
     }
@@ -767,10 +745,6 @@ int mtxvector_dnrm2(
         return mtxvector_array_dnrm2(&x->storage.array, nrm2);
     } else if (x->type == mtxvector_coordinate) {
         return mtxvector_coordinate_dnrm2(&x->storage.coordinate, nrm2);
-#ifdef LIBMTX_HAVE_MPI
-    } else if (x->type == mtxvector_distributed) {
-        return mtxvector_distributed_dnrm2(&x->storage.distributed, nrm2);
-#endif
     } else {
         return MTX_ERR_INVALID_VECTOR_TYPE;
     }
@@ -881,77 +855,6 @@ int mtxvector_recv(
  */
 int mtxvector_bcast(
     struct mtxvector * vector,
-    int root,
-    MPI_Comm comm,
-    struct mtxmpierror * mpierror);
-
-/**
- * `mtxvector_scatterv()' scatters a vector from an MPI root process
- * to other processes in a communicator.
- *
- * This is analogous to `MPI_Scatterv()' and requires every process in
- * the communicator to perform matching calls to
- * `mtxvector_scatterv()'.
- *
- * For a matrix in `array' format, entire rows are scattered, which
- * means that the send and receive counts must be multiples of the
- * number of matrix columns.
- */
-int mtxvector_scatterv(
-    const struct mtxvector * sendvector,
-    int * sendcounts,
-    int * displs,
-    struct mtxvector * recvvector,
-    int recvcount,
-    int root,
-    MPI_Comm comm,
-    struct mtxmpierror * mpierror);
-
-/**
- * `mtxvector_distribute_rows()' partitions and distributes rows of a
- * vector from an MPI root process to other processes in a
- * communicator.
- *
- * This function performs collective communication and therefore
- * requires every process in the communicator to perform matching
- * calls to `mtxvector_distribute_rows()'.
- *
- * `row_partition' must be a partitioning of the rows of the matrix or
- * vector represented by `src'.
- */
-int mtxvector_distribute_rows(
-    struct mtxvector * dst,
-    struct mtxvector * src,
-    const struct mtx_partition * row_partition,
-    int root,
-    MPI_Comm comm,
-    struct mtxmpierror * mpierror);
-
-/**
- * `mtxvector_fread_distribute_rows()' reads a vector from a stream
- * and distributes the rows of the underlying matrix or vector among
- * MPI processes in a communicator.
- *
- * `precision' is used to determine the precision to use for storing
- * the values of matrix or vector entries.
- *
- * If an error code is returned, then `lines_read' and `bytes_read'
- * are used to return the line number and byte at which the error was
- * encountered during the parsing of the vector.
- *
- * For a matrix or vector in array format, `bufsize' must be at least
- * large enough to fit one row per MPI process in the communicator.
- */
-int mtxvector_fread_distribute_rows(
-    struct mtxvector * vector,
-    FILE * f,
-    int * lines_read,
-    int64_t * bytes_read,
-    size_t line_max,
-    char * linebuf,
-    enum mtx_precision precision,
-    enum mtx_partition_type row_partition_type,
-    size_t bufsize,
     int root,
     MPI_Comm comm,
     struct mtxmpierror * mpierror);
