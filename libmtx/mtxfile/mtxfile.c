@@ -56,6 +56,8 @@
 /**
  * `mtxfile_alloc()' allocates storage for a Matrix Market file with
  * the given header line, comment lines and size line.
+ *
+ * ‘comments’ may be ‘NULL’, in which case it is ignored.
  */
 int mtxfile_alloc(
     struct mtxfile * mtxfile,
@@ -68,9 +70,15 @@ int mtxfile_alloc(
     err = mtxfile_header_copy(&mtxfile->header, header);
     if (err)
         return err;
-    err = mtxfile_comments_copy(&mtxfile->comments, comments);
-    if (err)
-        return err;
+    if (comments) {
+        err = mtxfile_comments_copy(&mtxfile->comments, comments);
+        if (err)
+            return err;
+    } else {
+        err = mtxfile_comments_init(&mtxfile->comments);
+        if (err)
+            return err;
+    }
     err = mtxfile_size_copy(&mtxfile->size, size);
     if (err) {
         mtxfile_comments_free(&mtxfile->comments);
@@ -189,10 +197,14 @@ int mtxfile_init_copy(
  * of columns, since entire rows are concatenated.  For matrices or
  * vectors in coordinate format, the number of rows and columns must
  * be the same.
+ *
+ * If ‘skip_comments’ is ‘true’, then comment lines from ‘src’ are not
+ * concatenated to those of ‘dst’.
  */
 int mtxfile_cat(
     struct mtxfile * dst,
-    const struct mtxfile * src)
+    const struct mtxfile * src,
+    bool skip_comments)
 {
     int err;
     if (dst->header.object != src->header.object)
@@ -204,9 +216,11 @@ int mtxfile_cat(
     if (dst->header.symmetry != src->header.symmetry)
         return MTX_ERR_INCOMPATIBLE_MTX_SYMMETRY;
 
-    err = mtxfile_comments_cat(&dst->comments, &src->comments);
-    if (err)
-        return err;
+    if (!skip_comments) {
+        err = mtxfile_comments_cat(&dst->comments, &src->comments);
+        if (err)
+            return err;
+    }
 
     int64_t num_data_lines_dst;
     err = mtxfile_size_num_data_lines(&dst->size, &num_data_lines_dst);
@@ -276,11 +290,15 @@ int mtxfile_cat(
  * columns, since entire rows are concatenated.  For matrices or
  * vectors in coordinate format, the number of rows and columns must
  * be the same.
+ *
+ * If ‘skip_comments’ is ‘true’, then comment lines from ‘src’ are not
+ * concatenated to those of ‘dst’.
  */
 int mtxfile_catn(
     struct mtxfile * dst,
     int num_srcs,
-    const struct mtxfile * srcs)
+    const struct mtxfile * srcs,
+    bool skip_comments)
 {
     int err;
     for (int i = 0; i < num_srcs; i++) {
@@ -295,11 +313,13 @@ int mtxfile_catn(
             return MTX_ERR_INCOMPATIBLE_MTX_SYMMETRY;
     }
 
-    for (int i = 0; i < num_srcs; i++) {
-        const struct mtxfile * src = &srcs[i];
-        err = mtxfile_comments_cat(&dst->comments, &src->comments);
-        if (err)
-            return err;
+    if (!skip_comments) {
+        for (int i = 0; i < num_srcs; i++) {
+            const struct mtxfile * src = &srcs[i];
+            err = mtxfile_comments_cat(&dst->comments, &src->comments);
+            if (err)
+                return err;
+        }
     }
 
     int64_t num_data_lines_dst;
@@ -2226,29 +2246,18 @@ int mtxfile_scatter(
         return MTX_ERR_MPI_COLLECTIVE;
 
     for (int p = 0; p < comm_size; p++) {
-        /* Send from the root process */
-        err = (rank == root && p != root)
-            ? mtxfile_send(&sendmtxfiles[p], p, 0, comm, mpierror)
-            : MTX_SUCCESS;
-        if (mtxmpierror_allreduce(mpierror, err)) {
-            if (rank < p)
-                mtxfile_free(recvmtxfile);
-            return MTX_ERR_MPI_COLLECTIVE;
+        if (rank == root && p != root) {
+            /* Send from the root process */
+            err = mtxfile_send(&sendmtxfiles[p], p, 0, comm, mpierror);
+        } else if (rank != root && rank == p) {
+            /* Receive from the root process */
+            err = mtxfile_recv(recvmtxfile, root, 0, comm, mpierror);
+        } else if (rank == root && p == root) {
+            /* Perform a copy on the root process */
+            err = mtxfile_init_copy(recvmtxfile, &sendmtxfiles[p]);
+        } else {
+            err = MTX_SUCCESS;
         }
-
-        /* Receive from the root process */
-        err = (rank != root && rank == p)
-            ? mtxfile_recv(recvmtxfile, root, 0, comm, mpierror)
-            : MTX_SUCCESS;
-        if (mtxmpierror_allreduce(mpierror, err)) {
-            if (rank < p)
-                mtxfile_free(recvmtxfile);
-            return MTX_ERR_MPI_COLLECTIVE;
-        }
-
-        /* Perform a copy on the root process */
-        err = (rank == root && p == root)
-            ? mtxfile_init_copy(recvmtxfile, &sendmtxfiles[p]) : MTX_SUCCESS;
         if (mtxmpierror_allreduce(mpierror, err)) {
             if (rank < p)
                 mtxfile_free(recvmtxfile);

@@ -447,6 +447,114 @@ int mtxdistfile_init_matrix_coordinate_pattern(
     struct mtxmpierror * mpierror);
 
 /*
+ * Vector coordinate formats
+ */
+
+/**
+ * `mtxdistfile_alloc_vector_coordinate()' allocates a distributed
+ * vector in coordinate format.
+ */
+int mtxdistfile_alloc_vector_coordinate(
+    struct mtxdistfile * mtxdistfile,
+    enum mtxfile_field field,
+    enum mtx_precision precision,
+    int num_rows,
+    int64_t num_nonzeros,
+    MPI_Comm comm,
+    struct mtxmpierror * mpierror);
+
+/**
+ * `mtxdistfile_init_vector_coordinate_real_single()' allocates and
+ * initialises a distributed vector in coordinate format with real,
+ * single precision coefficients.
+ */
+int mtxdistfile_init_vector_coordinate_real_single(
+    struct mtxdistfile * mtxdistfile,
+    int num_rows,
+    int64_t num_nonzeros,
+    const struct mtxfile_vector_coordinate_real_single * data,
+    MPI_Comm comm,
+    struct mtxmpierror * mpierror);
+
+/**
+ * `mtxdistfile_init_vector_coordinate_real_double()' allocates and
+ * initialises a vector in coordinate format with real, double
+ * precision coefficients.
+ */
+int mtxdistfile_init_vector_coordinate_real_double(
+    struct mtxdistfile * mtxdistfile,
+    int num_rows,
+    int64_t num_nonzeros,
+    const struct mtxfile_vector_coordinate_real_double * data,
+    MPI_Comm comm,
+    struct mtxmpierror * mpierror);
+
+/**
+ * `mtxdistfile_init_vector_coordinate_complex_single()' allocates and
+ * initialises a distributed vector in coordinate format with complex,
+ * single precision coefficients.
+ */
+int mtxdistfile_init_vector_coordinate_complex_single(
+    struct mtxdistfile * mtxdistfile,
+    int num_rows,
+    int64_t num_nonzeros,
+    const struct mtxfile_vector_coordinate_complex_single * data,
+    MPI_Comm comm,
+    struct mtxmpierror * mpierror);
+
+/**
+ * `mtxdistfile_init_vector_coordinate_complex_double()' allocates and
+ * initialises a vector in coordinate format with complex, double
+ * precision coefficients.
+ */
+int mtxdistfile_init_vector_coordinate_complex_double(
+    struct mtxdistfile * mtxdistfile,
+    int num_rows,
+    int64_t num_nonzeros,
+    const struct mtxfile_vector_coordinate_complex_double * data,
+    MPI_Comm comm,
+    struct mtxmpierror * mpierror);
+
+/**
+ * `mtxdistfile_init_vector_coordinate_integer_single()' allocates and
+ * initialises a distributed vector in coordinate format with integer,
+ * single precision coefficients.
+ */
+int mtxdistfile_init_vector_coordinate_integer_single(
+    struct mtxdistfile * mtxdistfile,
+    int num_rows,
+    int64_t num_nonzeros,
+    const struct mtxfile_vector_coordinate_integer_single * data,
+    MPI_Comm comm,
+    struct mtxmpierror * mpierror);
+
+/**
+ * `mtxdistfile_init_vector_coordinate_integer_double()' allocates and
+ * initialises a vector in coordinate format with integer, double
+ * precision coefficients.
+ */
+int mtxdistfile_init_vector_coordinate_integer_double(
+    struct mtxdistfile * mtxdistfile,
+    int num_rows,
+    int64_t num_nonzeros,
+    const struct mtxfile_vector_coordinate_integer_double * data,
+    MPI_Comm comm,
+    struct mtxmpierror * mpierror);
+
+/**
+ * `mtxdistfile_init_vector_coordinate_pattern()' allocates and
+ * initialises a vector in coordinate format with boolean (pattern)
+ * precision coefficients.
+ */
+int mtxdistfile_init_vector_coordinate_pattern(
+    struct mtxdistfile * mtxdistfile,
+    int num_rows,
+    int64_t num_nonzeros,
+    const struct mtxfile_vector_coordinate_pattern * data,
+    MPI_Comm comm,
+    struct mtxmpierror * mpierror);
+
+/*
  * Convert to and from (non-distributed) Matrix Market format
  */
 
@@ -574,7 +682,9 @@ int mtxdistfile_write(
     const char * path,
     bool gzip,
     const char * format,
-    int64_t * bytes_written);
+    int64_t * bytes_written,
+    bool sequential,
+    struct mtxmpierror * mpierror);
 
 /**
  * `mtxdistfile_fwrite()' writes a distributed Matrix Market file to
@@ -599,9 +709,9 @@ int mtxdistfile_write(
  *
  * If `sequential' is true, then output is performed in sequence by
  * MPI processes in the communicator.  This is useful, for example,
- * when writing to standard output.  In this case, we want to ensure
- * that the processes write their data in the correct order without
- * interfering with each other.
+ * when writing to a common stream, such as standard output.  In this
+ * case, we want to ensure that the processes write their data in the
+ * correct order without interfering with each other.
  *
  * This function performs collective communication and therefore
  * requires every process in the communicator to perform matching
@@ -612,7 +722,8 @@ int mtxdistfile_fwrite(
     FILE * f,
     const char * format,
     int64_t * bytes_written,
-    bool sequential);
+    bool sequential,
+    struct mtxmpierror * mpierror);
 
 /*
  * Partitioning

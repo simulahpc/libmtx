@@ -88,6 +88,8 @@ struct mtxfile
 /**
  * `mtxfile_alloc()' allocates storage for a Matrix Market file with
  * the given header line, comment lines and size line.
+ *
+ * ‘comments’ may be ‘NULL’, in which case it is ignored.
  */
 int mtxfile_alloc(
     struct mtxfile * mtxfile,
@@ -125,10 +127,14 @@ int mtxfile_init_copy(
  * of columns, since entire rows are concatenated.  For matrices or
  * vectors in coordinate format, the number of rows and columns must
  * be the same.
+ *
+ * If ‘skip_comments’ is ‘true’, then comment lines from ‘src’ are not
+ * concatenated to those of ‘dst’.
  */
 int mtxfile_cat(
     struct mtxfile * dst,
-    const struct mtxfile * src);
+    const struct mtxfile * src,
+    bool skip_comments);
 
 /**
  * `mtxfile_catn()' concatenates multiple Matrix Market files.
@@ -138,11 +144,15 @@ int mtxfile_cat(
  * columns, since entire rows are concatenated.  For matrices or
  * vectors in coordinate format, the number of rows and columns must
  * be the same.
+ *
+ * If ‘skip_comments’ is ‘true’, then comment lines from ‘srcs’ are
+ * not concatenated to those of ‘dst’.
  */
 int mtxfile_catn(
     struct mtxfile * dst,
     int num_srcs,
-    const struct mtxfile * srcs);
+    const struct mtxfile * srcs,
+    bool skip_comments);
 
 /*
  * Matrix array formats

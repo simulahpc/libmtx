@@ -97,18 +97,10 @@ int mtxdistfile_init(
     err = !headers ? MTX_ERR_ERRNO : MTX_SUCCESS;
     if (mtxmpierror_allreduce(mpierror, err))
         return MTX_ERR_MPI_COLLECTIVE;
-    struct mtxfile_comments * comments = malloc(
-        comm_size * sizeof(struct mtxfile_comments));
-    err = !comments ? MTX_ERR_ERRNO : MTX_SUCCESS;
-    if (mtxmpierror_allreduce(mpierror, err)) {
-        free(headers);
-        return MTX_ERR_MPI_COLLECTIVE;
-    }
     struct mtxfile_size * sizes = malloc(
         comm_size * sizeof(struct mtxfile_size));
     err = !sizes ? MTX_ERR_ERRNO : MTX_SUCCESS;
     if (mtxmpierror_allreduce(mpierror, err)) {
-        free(comments);
         free(headers);
         return MTX_ERR_MPI_COLLECTIVE;
     }
@@ -116,35 +108,22 @@ int mtxdistfile_init(
     err = !precisions ? MTX_ERR_ERRNO : MTX_SUCCESS;
     if (mtxmpierror_allreduce(mpierror, err)) {
         free(sizes);
-        free(comments);
         free(headers);
         return MTX_ERR_MPI_COLLECTIVE;
     }
 
-    /* Gather headers, comments, size lines and precisions. */
+    /* Gather headers, size lines and precisions. */
     err = mtxfile_header_allgather(&mtxfile->header, headers, comm, mpierror);
     if (err) {
         free(precisions);
         free(sizes);
-        free(comments);
-        free(headers);
-        return err;
-    }
-    err = mtxfile_comments_allgather(&mtxfile->comments, comments, comm, mpierror);
-    if (err) {
-        free(precisions);
-        free(sizes);
-        free(comments);
         free(headers);
         return err;
     }
     err = mtxfile_size_allgather(&mtxfile->size, sizes, comm, mpierror);
     if (err) {
-        for (int p = 0; p < comm_size; p++)
-            mtxfile_comments_free(&comments[p]);
         free(precisions);
         free(sizes);
-        free(comments);
         free(headers);
         return err;
     }
@@ -152,11 +131,8 @@ int mtxdistfile_init(
         &mtxfile->precision, 1, MPI_INT, precisions, 1, MPI_INT, comm);
     err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
     if (mtxmpierror_allreduce(mpierror, err)) {
-        for (int p = 0; p < comm_size; p++)
-            mtxfile_comments_free(&comments[p]);
         free(precisions);
         free(sizes);
-        free(comments);
         free(headers);
         return MTX_ERR_MPI_COLLECTIVE;
     }
@@ -183,22 +159,16 @@ int mtxdistfile_init(
         }
     }
     if (err) {
-        for (int p = 0; p < comm_size; p++)
-            mtxfile_comments_free(&comments[p]);
         free(precisions);
         free(sizes);
-        free(comments);
         free(headers);
         return err;
     }
 
     err = mtxfile_header_copy(&mtxdistfile->header, &headers[0]);
     if (mtxmpierror_allreduce(mpierror, err)) {
-        for (int p = 0; p < comm_size; p++)
-            mtxfile_comments_free(&comments[p]);
         free(precisions);
         free(sizes);
-        free(comments);
         free(headers);
         return MTX_ERR_MPI_COLLECTIVE;
     }
@@ -206,29 +176,11 @@ int mtxdistfile_init(
     mtxdistfile->precision = precisions[0];
     free(precisions);
 
-    /* Concatenate comments from each Matrix Market file. */
     err = mtxfile_comments_init(&mtxdistfile->comments);
     if (mtxmpierror_allreduce(mpierror, err)) {
-        for (int p = 0; p < comm_size; p++)
-            mtxfile_comments_free(&comments[p]);
         free(sizes);
-        free(comments);
         return MTX_ERR_MPI_COLLECTIVE;
     }
-    for (int p = 0; p < comm_size; p++) {
-        err = mtxfile_comments_cat(&mtxdistfile->comments, &comments[p]);
-        if (mtxmpierror_allreduce(mpierror, err)) {
-            mtxfile_comments_free(&mtxdistfile->comments);
-            for (int q = 0; q < comm_size; q++)
-                mtxfile_comments_free(&comments[q]);
-            free(sizes);
-            free(comments);
-            return MTX_ERR_MPI_COLLECTIVE;
-        }
-    }
-    for (int p = 0; p < comm_size; p++)
-        mtxfile_comments_free(&comments[p]);
-    free(comments);
 
     /* Calcalute the size of the distributed Matrix Market file. */
     if (mtxdistfile->header.format == mtxfile_array) {
@@ -885,6 +837,195 @@ int mtxdistfile_init_matrix_coordinate_pattern(
     struct mtxmpierror * mpierror);
 
 /*
+ * Vector coordinate formats
+ */
+
+/**
+ * `mtxdistfile_alloc_vector_coordinate()' allocates a distributed
+ * vector in coordinate format.
+ */
+int mtxdistfile_alloc_vector_coordinate(
+    struct mtxdistfile * mtxdistfile,
+    enum mtxfile_field field,
+    enum mtx_precision precision,
+    int num_rows,
+    int64_t num_nonzeros,
+    MPI_Comm comm,
+    struct mtxmpierror * mpierror)
+{
+    int err;
+    if (field != mtxfile_real &&
+        field != mtxfile_complex &&
+        field != mtxfile_integer &&
+        field != mtxfile_pattern)
+        return MTX_ERR_INVALID_MTX_FIELD;
+    if (precision != mtx_single &&
+        precision != mtx_double)
+        return MTX_ERR_INVALID_PRECISION;
+
+    int comm_size;
+    mpierror->mpierrcode = MPI_Comm_size(comm, &comm_size);
+    err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxmpierror_allreduce(mpierror, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+    int rank;
+    mpierror->mpierrcode = MPI_Comm_rank(comm, &rank);
+    err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxmpierror_allreduce(mpierror, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+
+    /* Check that all processes specify the same number of rows. */
+    int * num_rows_per_process = malloc(comm_size * sizeof(int));
+    err = !num_rows_per_process ? MTX_ERR_ERRNO : MTX_SUCCESS;
+    if (mtxmpierror_allreduce(mpierror, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+    mpierror->mpierrcode = MPI_Allgather(
+        &num_rows, 1, MPI_INT, num_rows_per_process, 1, MPI_INT, comm);
+    err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxmpierror_allreduce(mpierror, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+    for (int p = 0; p < comm_size; p++) {
+        if (num_rows != num_rows_per_process[p]) {
+            free(num_rows_per_process);
+            return MTX_ERR_INCOMPATIBLE_MTX_SIZE;
+        }
+    }
+    free(num_rows_per_process);
+
+    mtxdistfile->comm = comm;
+    mtxdistfile->comm_size = comm_size;
+    mtxdistfile->rank = rank;
+    mtxdistfile->header.object = mtxfile_vector;
+    mtxdistfile->header.format = mtxfile_coordinate;
+    mtxdistfile->header.field = field;
+    mtxdistfile->header.symmetry = mtxfile_general;
+    mtxfile_comments_init(&mtxdistfile->comments);
+    mtxdistfile->size.num_rows = num_rows;
+    mtxdistfile->size.num_columns = -1;
+    mpierror->mpierrcode = MPI_Allreduce(
+        &num_nonzeros, &mtxdistfile->size.num_nonzeros, 1, MPI_INT64_T, MPI_SUM, comm);
+    err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxmpierror_allreduce(mpierror, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+    mtxdistfile->precision = precision;
+
+    err = mtxfile_alloc_vector_coordinate(
+        &mtxdistfile->mtxfile, field, precision, num_rows, num_nonzeros);
+    if (mtxmpierror_allreduce(mpierror, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+    return MTX_SUCCESS;
+}
+
+/**
+ * `mtxdistfile_init_vector_coordinate_real_single()' allocates and
+ * initialises a distributed vector in coordinate format with real,
+ * single precision coefficients.
+ */
+int mtxdistfile_init_vector_coordinate_real_single(
+    struct mtxdistfile * mtxdistfile,
+    int num_rows,
+    int64_t num_nonzeros,
+    const struct mtxfile_vector_coordinate_real_single * data,
+    MPI_Comm comm,
+    struct mtxmpierror * mpierror);
+
+/**
+ * `mtxdistfile_init_vector_coordinate_real_double()' allocates and
+ * initialises a vector in coordinate format with real, double
+ * precision coefficients.
+ */
+int mtxdistfile_init_vector_coordinate_real_double(
+    struct mtxdistfile * mtxdistfile,
+    int num_rows,
+    int64_t num_nonzeros,
+    const struct mtxfile_vector_coordinate_real_double * data,
+    MPI_Comm comm,
+    struct mtxmpierror * mpierror)
+{
+    int err;
+    err = mtxdistfile_alloc_vector_coordinate(
+        mtxdistfile, mtxfile_real, mtx_double,
+        num_rows, num_nonzeros, comm, mpierror);
+    if (err)
+        return err;
+    struct mtxfile * mtxfile = &mtxdistfile->mtxfile;
+    int64_t num_data_lines;
+    err = mtxfile_size_num_data_lines(&mtxfile->size, &num_data_lines);
+    if (err) {
+        mtxdistfile_free(mtxdistfile);
+        return err;
+    }
+    memcpy(mtxfile->data.vector_coordinate_real_double, data,
+           num_data_lines * sizeof(*data));
+    return MTX_SUCCESS;
+}
+
+/**
+ * `mtxdistfile_init_vector_coordinate_complex_single()' allocates and
+ * initialises a distributed vector in coordinate format with complex,
+ * single precision coefficients.
+ */
+int mtxdistfile_init_vector_coordinate_complex_single(
+    struct mtxdistfile * mtxdistfile,
+    int num_rows,
+    int64_t num_nonzeros,
+    const struct mtxfile_vector_coordinate_complex_single * data,
+    MPI_Comm comm,
+    struct mtxmpierror * mpierror);
+
+/**
+ * `mtxdistfile_init_vector_coordinate_complex_double()' allocates and
+ * initialises a vector in coordinate format with complex, double
+ * precision coefficients.
+ */
+int mtxdistfile_init_vector_coordinate_complex_double(
+    struct mtxdistfile * mtxdistfile,
+    int num_rows,
+    int64_t num_nonzeros,
+    const struct mtxfile_vector_coordinate_complex_double * data,
+    MPI_Comm comm,
+    struct mtxmpierror * mpierror);
+
+/**
+ * `mtxdistfile_init_vector_coordinate_integer_single()' allocates and
+ * initialises a distributed vector in coordinate format with integer,
+ * single precision coefficients.
+ */
+int mtxdistfile_init_vector_coordinate_integer_single(
+    struct mtxdistfile * mtxdistfile,
+    int num_rows,
+    int64_t num_nonzeros,
+    const struct mtxfile_vector_coordinate_integer_single * data,
+    MPI_Comm comm,
+    struct mtxmpierror * mpierror);
+
+/**
+ * `mtxdistfile_init_vector_coordinate_integer_double()' allocates and
+ * initialises a vector in coordinate format with integer, double
+ * precision coefficients.
+ */
+int mtxdistfile_init_vector_coordinate_integer_double(
+    struct mtxdistfile * mtxdistfile,
+    int num_rows,
+    int64_t num_nonzeros,
+    const struct mtxfile_vector_coordinate_integer_double * data,
+    MPI_Comm comm,
+    struct mtxmpierror * mpierror);
+
+/**
+ * `mtxdistfile_init_vector_coordinate_pattern()' allocates and
+ * initialises a vector in coordinate format with boolean (pattern)
+ * precision coefficients.
+ */
+int mtxdistfile_init_vector_coordinate_pattern(
+    struct mtxdistfile * mtxdistfile,
+    int num_rows,
+    int64_t num_nonzeros,
+    const struct mtxfile_vector_coordinate_pattern * data,
+    MPI_Comm comm,
+    struct mtxmpierror * mpierror);
+
+/*
  * Convert to and from (non-distributed) Matrix Market format
  */
 
@@ -1286,7 +1427,7 @@ int mtxdistfile_fread(
 
     /* Allocate storage for a Matrix Market file on the root process. */
     err = (rank == root) ? mtxfile_alloc(
-        &mtxdistfile->mtxfile, &mtxdistfile->header, &mtxdistfile->comments,
+        &mtxdistfile->mtxfile, &mtxdistfile->header, NULL,
         &sizes[0], mtxdistfile->precision)
         : MTX_SUCCESS;
     if (mtxmpierror_allreduce(mpierror, err)) {
@@ -1465,7 +1606,77 @@ int mtxdistfile_write(
     const char * path,
     bool gzip,
     const char * format,
-    int64_t * bytes_written);
+    int64_t * bytes_written,
+    bool sequential,
+    struct mtxmpierror * mpierror)
+{
+    int err;
+    *bytes_written = 0;
+    if (!gzip) {
+        FILE * f;
+        if (strcmp(path, "-") == 0) {
+            int fd = dup(STDOUT_FILENO);
+            if (fd == -1)
+                return MTX_ERR_ERRNO;
+            if ((f = fdopen(fd, "w")) == NULL) {
+                close(fd);
+                return MTX_ERR_ERRNO;
+            }
+        } else if ((f = fopen(path, "w")) == NULL) {
+            return MTX_ERR_ERRNO;
+        }
+        err = mtxdistfile_fwrite(
+            mtxdistfile, f, format, bytes_written, sequential, mpierror);
+        if (err) {
+            fclose(f);
+            return err;
+        }
+        fclose(f);
+    } else {
+        errno = ENOTSUP;
+        return MTX_ERR_ERRNO;
+    }
+    return MTX_SUCCESS;
+}
+
+static int mtxdistfile_fwrite_mtxfile(
+    const struct mtxdistfile * mtxdistfile,
+    FILE * f,
+    const char * format,
+    int64_t * bytes_written)
+{
+    int err;
+    const struct mtxfile * mtxfile = &mtxdistfile->mtxfile;
+    err = mtxfile_header_fwrite(&mtxfile->header, f, bytes_written);
+    if (err)
+        return err;
+    err = mtxfile_comments_fputs(&mtxdistfile->comments, f, bytes_written);
+    if (err)
+        return err;
+    err = mtxfile_comments_fputs(&mtxfile->comments, f, bytes_written);
+    if (err)
+        return err;
+    err = mtxfile_comments_fputs(&mtxfile->comments, f, bytes_written);
+    if (err)
+        return err;
+    err = mtxfile_size_fwrite(
+        &mtxfile->size, mtxfile->header.object, mtxfile->header.format,
+        f, bytes_written);
+    if (err)
+        return err;
+    int64_t num_data_lines;
+    err = mtxfile_size_num_data_lines(
+        &mtxfile->size, &num_data_lines);
+    if (err)
+        return err;
+    err = mtxfile_data_fwrite(
+        &mtxfile->data, mtxfile->header.object, mtxfile->header.format,
+        mtxfile->header.field, mtxfile->precision, num_data_lines,
+        f, format, bytes_written);
+    if (err)
+        return err;
+    return MTX_SUCCESS;
+}
 
 /**
  * `mtxdistfile_fwrite()' writes a distributed Matrix Market file to
@@ -1490,9 +1701,9 @@ int mtxdistfile_write(
  *
  * If `sequential' is true, then output is performed in sequence by
  * MPI processes in the communicator.  This is useful, for example,
- * when writing to standard output.  In this case, we want to ensure
- * that the processes write their data in the correct order without
- * interfering with each other.
+ * when writing to a common stream, such as standard output.  In this
+ * case, we want to ensure that the processes write their data in the
+ * correct order without interfering with each other.
  *
  * This function performs collective communication and therefore
  * requires every process in the communicator to perform matching
@@ -1503,7 +1714,26 @@ int mtxdistfile_fwrite(
     FILE * f,
     const char * format,
     int64_t * bytes_written,
-    bool sequential);
+    bool sequential,
+    struct mtxmpierror * mpierror)
+{
+    int err;
+    if (sequential) {
+        for (int p = 0; p < mtxdistfile->comm_size; p++) {
+            err = (mtxdistfile->rank == p)
+                ? mtxdistfile_fwrite_mtxfile(mtxdistfile, f, format, bytes_written)
+                : MTX_SUCCESS;
+            if (mtxmpierror_allreduce(mpierror, err))
+                return MTX_ERR_MPI_COLLECTIVE;
+            MPI_Barrier(mtxdistfile->comm);
+        }
+    } else {
+        err = mtxdistfile_fwrite_mtxfile(mtxdistfile, f, format, bytes_written);
+        if (mtxmpierror_allreduce(mpierror, err))
+            return MTX_ERR_MPI_COLLECTIVE;
+    }
+    return MTX_SUCCESS;
+}
 
 /*
  * Partitioning
@@ -1572,7 +1802,10 @@ int mtxdistfile_init_from_partition(
             size.num_nonzeros = src->size.num_nonzeros;
         }
         err = mtxfile_alloc(
-            &sendmtxfiles[p], &src->header, &src->comments, &size, src->precision);
+            &sendmtxfiles[p],
+            &src->mtxfile.header,
+            &src->mtxfile.comments,
+            &size, src->mtxfile.precision);
         if (mtxmpierror_allreduce(mpierror, err)) {
             for (int q = p-1; q >= 0; q--)
                 mtxfile_free(&sendmtxfiles[q]);
@@ -1602,7 +1835,8 @@ int mtxdistfile_init_from_partition(
         return MTX_ERR_MPI_COLLECTIVE;
     }
 
-    err = mtxfile_catn(&dstmtxfile, src->comm_size-1, &recvmtxfiles[1]);
+    err = mtxfile_catn(
+        &dstmtxfile, src->comm_size-1, &recvmtxfiles[1], false);
     if (mtxmpierror_allreduce(mpierror, err)) {
         mtxfile_free(&dstmtxfile);
         for (int p = 0; p < src->comm_size; p++)
@@ -1625,6 +1859,11 @@ int mtxdistfile_init_from_partition(
         return err;
     }
     mtxfile_free(&dstmtxfile);
+    err = mtxfile_comments_copy(&dst->comments, &src->comments);
+    if (err) {
+        mtxdistfile_free(dst);
+        return err;
+    }
     return MTX_SUCCESS;
 }
 

@@ -2328,7 +2328,7 @@ int test_mtxfile_cat(void)
             &dstmtx, mtxfile_general, num_rows_dst, num_columns_dst, dstdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
 
-        err = mtxfile_cat(&dstmtx, &srcmtx);
+        err = mtxfile_cat(&dstmtx, &srcmtx, true);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(mtxfile_matrix, dstmtx.header.object);
         TEST_ASSERT_EQ(mtxfile_array, dstmtx.header.format);
@@ -2369,7 +2369,7 @@ int test_mtxfile_cat(void)
             &dstmtx, num_rows_dst, dstdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
 
-        err = mtxfile_cat(&dstmtx, &srcmtx);
+        err = mtxfile_cat(&dstmtx, &srcmtx, true);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(mtxfile_vector, dstmtx.header.object);
         TEST_ASSERT_EQ(mtxfile_array, dstmtx.header.format);
@@ -2412,7 +2412,7 @@ int test_mtxfile_cat(void)
             &dstmtx, mtxfile_general, num_rows, num_columns, num_nonzeros_dst, dstdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
 
-        err = mtxfile_cat(&dstmtx, &srcmtx);
+        err = mtxfile_cat(&dstmtx, &srcmtx, true);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(mtxfile_matrix, dstmtx.header.object);
         TEST_ASSERT_EQ(mtxfile_coordinate, dstmtx.header.format);

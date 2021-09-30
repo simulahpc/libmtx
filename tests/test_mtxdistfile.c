@@ -983,6 +983,217 @@ int test_mtxdistfile_fread(void)
 }
 
 /**
+ * `test_mtxdistfile_fwrite()' tests writing distributed Matrix Market
+ * files to one or more streams.
+ */
+int test_mtxdistfile_fwrite(void)
+{
+    int err;
+    char mpierrstr[MPI_MAX_ERROR_STRING];
+    int mpierrstrlen;
+    MPI_Comm comm = MPI_COMM_WORLD;
+    int root = 0;
+
+    int comm_size;
+    err = MPI_Comm_size(comm, &comm_size);
+    if (err) {
+        MPI_Error_string(err, mpierrstr, &mpierrstrlen);
+        fprintf(stderr, "%s: MPI_Comm_size failed with %s\n",
+                program_invocation_short_name, mpierrstr);
+        MPI_Abort(comm, EXIT_FAILURE);
+    }
+    int rank;
+    err = MPI_Comm_rank(comm, &rank);
+    if (err) {
+        MPI_Error_string(err, mpierrstr, &mpierrstrlen);
+        fprintf(stderr, "%s: MPI_Comm_rank failed with %s\n",
+                program_invocation_short_name, mpierrstr);
+        MPI_Abort(comm, EXIT_FAILURE);
+    }
+    if (comm_size != 2)
+        TEST_FAIL_MSG("Expected exactly two MPI processes");
+
+    struct mtxmpierror mpierror;
+    err = mtxmpierror_alloc(&mpierror, comm);
+    if (err)
+        MPI_Abort(comm, EXIT_FAILURE);
+
+    /*
+     * Array formats
+     */
+
+    {
+        int num_rows = (rank == 0) ? 2 : 1;
+        int num_columns = 3;
+        const double * srcdata = (rank == 0)
+            ? ((const double[6]) {1.0, 2.0, 3.0, 4.0, 5.0, 6.0})
+            : ((const double[3]) {7.0, 8.0, 9.0});
+        struct mtxdistfile mtxdistfile;
+        err = mtxdistfile_init_matrix_array_real_double(
+            &mtxdistfile, mtxfile_general, num_rows, num_columns, srcdata,
+            comm, &mpierror);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        char buf[1024] = {};
+        FILE * f = fmemopen(buf, sizeof(buf), "w");
+        int64_t bytes_written;
+        err = mtxdistfile_fwrite(
+            &mtxdistfile, f, "%.1f", &bytes_written, false, &mpierror);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        fclose(f);
+        mtxdistfile_free(&mtxdistfile);
+        if (rank == 0) {
+            char expected[] =
+                "%%MatrixMarket matrix array real general\n"
+                "2 3\n"
+                "1.0\n" "2.0\n" "3.0\n"
+                "4.0\n" "5.0\n" "6.0\n";
+            TEST_ASSERT_STREQ_MSG(
+                expected, buf, "\nexpected: %s\nactual: %s\n",
+                expected, buf);
+        } else if (rank == 1) {
+            char expected[] =
+                "%%MatrixMarket matrix array real general\n"
+                "1 3\n"
+                "7.0\n" "8.0\n" "9.0\n";
+            TEST_ASSERT_STREQ_MSG(
+                expected, buf, "\nexpected: %s\nactual: %s\n",
+                expected, buf);
+        }
+        fclose(f);
+    }
+
+    {
+        int num_rows = (rank == 0) ? 2 : 3;
+        const double * srcdata = (rank == 0)
+            ? ((const double[2]) {1.0, 2.0})
+            : ((const double[3]) {3.0, 4.0, 5.0});
+        struct mtxdistfile mtxdistfile;
+        err = mtxdistfile_init_vector_array_real_double(
+            &mtxdistfile, num_rows, srcdata, comm, &mpierror);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        char buf[1024] = {};
+        FILE * f = fmemopen(buf, sizeof(buf), "w");
+        int64_t bytes_written;
+        err = mtxdistfile_fwrite(
+            &mtxdistfile, f, "%.1f", &bytes_written, false, &mpierror);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        fclose(f);
+        mtxdistfile_free(&mtxdistfile);
+        if (rank == 0) {
+            char expected[] =
+                "%%MatrixMarket vector array real general\n"
+                "2\n"
+                "1.0\n" "2.0\n";
+            TEST_ASSERT_STREQ_MSG(
+                expected, buf, "\nexpected: %s\nactual: %s\n",
+                expected, buf);
+        } else if (rank == 1) {
+            char expected[] =
+                "%%MatrixMarket vector array real general\n"
+                "3\n"
+                "3.0\n" "4.0\n" "5.0\n";
+            TEST_ASSERT_STREQ_MSG(
+                expected, buf, "\nexpected: %s\nactual: %s\n",
+                expected, buf);
+        }
+        fclose(f);
+    }
+
+    /*
+     * Matrix coordinate formats
+     */
+
+    {
+        int num_rows = 4;
+        int num_columns = 4;
+        const struct mtxfile_matrix_coordinate_real_double * srcdata = (rank == 0)
+            ? ((const struct mtxfile_matrix_coordinate_real_double[2]) {
+                    {1,1,1.0}, {2,2,2.0}})
+            : ((const struct mtxfile_matrix_coordinate_real_double[3]) {
+                    {3,3,3.0}, {4,1,4.1}, {4,4,4.0}});
+        int64_t num_nonzeros = (rank == 0) ? 2 : 3;
+        struct mtxdistfile mtxdistfile;
+        err = mtxdistfile_init_matrix_coordinate_real_double(
+            &mtxdistfile, mtxfile_general, num_rows, num_columns, num_nonzeros, srcdata,
+            comm, &mpierror);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        char buf[1024] = {};
+        FILE * f = fmemopen(buf, sizeof(buf), "w");
+        int64_t bytes_written;
+        err = mtxdistfile_fwrite(
+            &mtxdistfile, f, "%.1f", &bytes_written, false, &mpierror);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        fclose(f);
+        mtxdistfile_free(&mtxdistfile);
+        if (rank == 0) {
+            char expected[] =
+                "%%MatrixMarket matrix coordinate real general\n"
+                "4 4 2\n"
+                "1 1 1.0\n" "2 2 2.0\n";
+            TEST_ASSERT_STREQ_MSG(
+                expected, buf, "\nexpected: %s\nactual: %s\n",
+                expected, buf);
+        } else if (rank == 1) {
+            char expected[] =
+                "%%MatrixMarket matrix coordinate real general\n"
+                "4 4 3\n"
+                "3 3 3.0\n" "4 1 4.1\n" "4 4 4.0\n";
+            TEST_ASSERT_STREQ_MSG(
+                expected, buf, "\nexpected: %s\nactual: %s\n",
+                expected, buf);
+        }
+        fclose(f);
+    }
+
+    /*
+     * Vector coordinate formats
+     */
+
+    {
+        int num_rows = 6;
+        const struct mtxfile_vector_coordinate_real_double * srcdata = (rank == 0)
+            ? ((const struct mtxfile_vector_coordinate_real_double[2]) {
+                    {1,1.0}, {2,2.0}})
+            : ((const struct mtxfile_vector_coordinate_real_double[3]) {
+                    {3,3.0}, {1,1.0}, {6,6.0}});
+        int64_t num_nonzeros = (rank == 0) ? 2 : 3;
+        struct mtxdistfile mtxdistfile;
+        err = mtxdistfile_init_vector_coordinate_real_double(
+            &mtxdistfile, num_rows, num_nonzeros, srcdata,
+            comm, &mpierror);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        char buf[1024] = {};
+        FILE * f = fmemopen(buf, sizeof(buf), "w");
+        int64_t bytes_written;
+        err = mtxdistfile_fwrite(
+            &mtxdistfile, f, "%.1f", &bytes_written, false, &mpierror);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        fclose(f);
+        mtxdistfile_free(&mtxdistfile);
+        if (rank == 0) {
+            char expected[] =
+                "%%MatrixMarket vector coordinate real general\n"
+                "6 2\n"
+                "1 1.0\n" "2 2.0\n";
+            TEST_ASSERT_STREQ_MSG(
+                expected, buf, "\nexpected: %s\nactual: %s\n",
+                expected, buf);
+        } else if (rank == 1) {
+            char expected[] =
+                "%%MatrixMarket vector coordinate real general\n"
+                "6 3\n"
+                "3 3.0\n" "1 1.0\n" "6 6.0\n";
+            TEST_ASSERT_STREQ_MSG(
+                expected, buf, "\nexpected: %s\nactual: %s\n",
+                expected, buf);
+        }
+        fclose(f);
+    }
+    mtxmpierror_free(&mpierror);
+    return TEST_SUCCESS;
+}
+
+/**
  * `test_mtxdistfile_partition_rows()' tests partitioning and
  * redistributing distributed Matrix Market files.
  */
@@ -1017,11 +1228,6 @@ int test_mtxdistfile_partition_rows(void)
     err = mtxmpierror_alloc(&mpierror, comm);
     if (err)
         MPI_Abort(comm, EXIT_FAILURE);
-
-    int num_process_rows = 2;
-    int num_process_columns = 1;
-    int process_row = rank;
-    int process_column = 0;
 
     /*
      * Array formats
@@ -1377,6 +1583,7 @@ int main(int argc, char * argv[])
     TEST_SUITE_BEGIN("Running tests for distributed Matrix Market files\n");
     TEST_RUN(test_mtxdistfile_from_mtxfile);
     TEST_RUN(test_mtxdistfile_fread);
+    TEST_RUN(test_mtxdistfile_fwrite);
     TEST_RUN(test_mtxdistfile_partition_rows);
     TEST_SUITE_END();
 
