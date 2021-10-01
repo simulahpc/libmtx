@@ -402,7 +402,77 @@ int mtxvector_array_daypx(
 int mtxvector_array_sdot(
     const struct mtxvector_array * x,
     const struct mtxvector_array * y,
-    float * dot);
+    float * dot)
+{
+    if (x->field == mtx_field_real) {
+        if (x->precision == mtx_single) {
+            const float * xdata = x->data.real_single;
+            const float * ydata = y->data.real_single;
+#ifdef LIBMTX_HAVE_BLAS
+            *dot = cblas_sdot(x->size, xdata, 1, ydata, 1);
+#else
+            *dot = 0;
+            for (int64_t k = 0; k < x->size; k++)
+                *dot += xdata[k]*ydata[k];
+#endif
+        } else if (x->precision == mtx_double) {
+            const double * xdata = x->data.real_double;
+            const double * ydata = y->data.real_double;
+#ifdef LIBMTX_HAVE_BLAS
+            *dot = cblas_ddot(x->size, xdata, 1, ydata, 1);
+#else
+            *dot = 0;
+            for (int64_t k = 0; k < x->size; k++)
+                *dot += xdata[k]*ydata[k];
+#endif
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else if (x->field == mtx_field_complex) {
+        if (x->precision == mtx_single) {
+            const float (* xdata)[2] = x->data.complex_single;
+            const float (* ydata)[2] = y->data.complex_single;
+#ifdef LIBMTX_HAVE_BLAS
+            *dot = cblas_scdot(x->size, xdata, 1);
+#else
+            *dot = 0;
+            for (int64_t k = 0; k < x->size; k++)
+                *dot += xdata[k][0]*xdata[k][0] + xdata[k][1]*xdata[k][1];
+#endif
+        } else if (x->precision == mtx_double) {
+            const double (* xdata)[2] = x->data.complex_double;
+            const double (* ydata)[2] = y->data.complex_double;
+#ifdef LIBMTX_HAVE_BLAS
+            *dot = cblas_dzdot(x->size, xdata, 1, ydata, 1);
+#else
+            *dot = 0;
+            for (int64_t k = 0; k < x->size; k++)
+                *dot += xdata[k][0]*ydata[k][0] + xdata[k][1]*ydata[k][1];
+#endif
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else if (x->field == mtx_field_integer) {
+        if (x->precision == mtx_single) {
+            const int32_t * xdata = x->data.integer_single;
+            const int32_t * ydata = y->data.integer_single;
+            *dot = 0;
+            for (int64_t k = 0; k < x->size; k++)
+                *dot += xdata[k]*ydata[k];
+        } else if (x->precision == mtx_double) {
+            const int64_t * xdata = x->data.integer_double;
+            const int64_t * ydata = y->data.integer_double;
+            *dot = 0;
+            for (int64_t k = 0; k < x->size; k++)
+                *dot += xdata[k]*ydata[k];
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else {
+        return MTX_ERR_INVALID_FIELD;
+    }
+    return MTX_SUCCESS;
+}
 
 /**
  * `mtxvector_array_ddot()' computes the Euclidean dot product of two
@@ -411,7 +481,77 @@ int mtxvector_array_sdot(
 int mtxvector_array_ddot(
     const struct mtxvector_array * x,
     const struct mtxvector_array * y,
-    double * dot);
+    double * dot)
+{
+    if (x->field == mtx_field_real) {
+        if (x->precision == mtx_single) {
+            const float * xdata = x->data.real_single;
+            const float * ydata = y->data.real_single;
+#ifdef LIBMTX_HAVE_BLAS
+            *dot = cblas_sdot(x->size, xdata, 1, ydata, 1);
+#else
+            *dot = 0;
+            for (int64_t k = 0; k < x->size; k++)
+                *dot += xdata[k]*ydata[k];
+#endif
+        } else if (x->precision == mtx_double) {
+            const double * xdata = x->data.real_double;
+            const double * ydata = y->data.real_double;
+#ifdef LIBMTX_HAVE_BLAS
+            *dot = cblas_ddot(x->size, xdata, 1, ydata, 1);
+#else
+            *dot = 0;
+            for (int64_t k = 0; k < x->size; k++)
+                *dot += xdata[k]*ydata[k];
+#endif
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else if (x->field == mtx_field_complex) {
+        if (x->precision == mtx_single) {
+            const float (* xdata)[2] = x->data.complex_single;
+            const float (* ydata)[2] = y->data.complex_single;
+#ifdef LIBMTX_HAVE_BLAS
+            *dot = cblas_scdot(x->size, xdata, 1);
+#else
+            *dot = 0;
+            for (int64_t k = 0; k < x->size; k++)
+                *dot += xdata[k][0]*xdata[k][0] + xdata[k][1]*xdata[k][1];
+#endif
+        } else if (x->precision == mtx_double) {
+            const double (* xdata)[2] = x->data.complex_double;
+            const double (* ydata)[2] = y->data.complex_double;
+#ifdef LIBMTX_HAVE_BLAS
+            *dot = cblas_dzdot(x->size, xdata, 1, ydata, 1);
+#else
+            *dot = 0;
+            for (int64_t k = 0; k < x->size; k++)
+                *dot += xdata[k][0]*ydata[k][0] + xdata[k][1]*ydata[k][1];
+#endif
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else if (x->field == mtx_field_integer) {
+        if (x->precision == mtx_single) {
+            const int32_t * xdata = x->data.integer_single;
+            const int32_t * ydata = y->data.integer_single;
+            *dot = 0;
+            for (int64_t k = 0; k < x->size; k++)
+                *dot += xdata[k]*ydata[k];
+        } else if (x->precision == mtx_double) {
+            const int64_t * xdata = x->data.integer_double;
+            const int64_t * ydata = y->data.integer_double;
+            *dot = 0;
+            for (int64_t k = 0; k < x->size; k++)
+                *dot += xdata[k]*ydata[k];
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else {
+        return MTX_ERR_INVALID_FIELD;
+    }
+    return MTX_SUCCESS;
+}
 
 /**
  * `mtxvector_array_snrm2()' computes the Euclidean norm of a vector in

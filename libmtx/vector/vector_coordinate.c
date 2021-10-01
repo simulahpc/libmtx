@@ -488,6 +488,10 @@ int mtxvector_coordinate_dscal(
 /**
  * `mtxvector_coordinate_saxpy()' adds a vector to another vector multiplied by a
  * single precision floating point value, `y = a*x + y'.
+ *
+ * The vectors ‘x’ and ‘y’ must have the same field, precision, size
+ * and number of nonzeros.  Furthermore, it is assumed that the
+ * locations of the nonzeros is the same for both vectors.
  */
 int mtxvector_coordinate_saxpy(
     float a,
@@ -497,6 +501,10 @@ int mtxvector_coordinate_saxpy(
 /**
  * `mtxvector_coordinate_daxpy()' adds a vector to another vector multiplied by a
  * double precision floating point value, `y = a*x + y'.
+ *
+ * The vectors ‘x’ and ‘y’ must have the same field, precision, size
+ * and number of nonzeros.  Furthermore, it is assumed that the
+ * locations of the nonzeros is the same for both vectors.
  */
 int mtxvector_coordinate_daxpy(
     double a,
@@ -506,6 +514,10 @@ int mtxvector_coordinate_daxpy(
 /**
  * `mtxvector_coordinate_saypx()' multiplies a vector by a single precision
  * floating point scalar and adds another vector, `y = a*y + x'.
+ *
+ * The vectors ‘x’ and ‘y’ must have the same field, precision, size
+ * and number of nonzeros.  Furthermore, it is assumed that the
+ * locations of the nonzeros is the same for both vectors.
  */
 int mtxvector_coordinate_saypx(
     float a,
@@ -515,6 +527,10 @@ int mtxvector_coordinate_saypx(
 /**
  * `mtxvector_coordinate_daypx()' multiplies a vector by a double precision
  * floating point scalar and adds another vector, `y = a*y + x'.
+ *
+ * The vectors ‘x’ and ‘y’ must have the same field, precision, size
+ * and number of nonzeros.  Furthermore, it is assumed that the
+ * locations of the nonzeros is the same for both vectors.
  */
 int mtxvector_coordinate_daypx(
     double a,
@@ -522,22 +538,186 @@ int mtxvector_coordinate_daypx(
     const struct mtxvector_coordinate * x);
 
 /**
- * `mtxvector_coordinate_sdot()' computes the Euclidean dot product of two
- * vectors in single precision floating point.
+ * `mtxvector_coordinate_sdot()' computes the Euclidean dot product of
+ * two vectors in single precision floating point.
+ *
+ * The vectors ‘x’ and ‘y’ must have the same field, precision, size
+ * and number of nonzeros.  Furthermore, it is assumed that the
+ * locations of the nonzeros is the same for both vectors.
  */
 int mtxvector_coordinate_sdot(
     const struct mtxvector_coordinate * x,
     const struct mtxvector_coordinate * y,
-    float * dot);
+    float * dot)
+{
+    if (x->field != y->field)
+        return MTX_ERR_INCOMPATIBLE_FIELD;
+    if (x->precision != y->precision)
+        return MTX_ERR_INCOMPATIBLE_PRECISION;
+    if (x->size != y->size || x->num_nonzeros != y->num_nonzeros)
+        return MTX_ERR_INCOMPATIBLE_SIZE;
+    if (x->field == mtx_field_real) {
+        if (x->precision == mtx_single) {
+            const float * xdata = x->data.real_single;
+            const float * ydata = y->data.real_single;
+#ifdef LIBMTX_HAVE_BLAS
+            *dot = cblas_sdot(x->num_nonzeros, xdata, 1, ydata, 1);
+#else
+            *dot = 0;
+            for (int64_t k = 0; k < x->num_nonzeros; k++)
+                *dot += xdata[k]*ydata[k];
+#endif
+        } else if (x->precision == mtx_double) {
+            const double * xdata = x->data.real_double;
+            const double * ydata = y->data.real_double;
+#ifdef LIBMTX_HAVE_BLAS
+            *dot = cblas_ddot(x->num_nonzeros, xdata, 1, ydata, 1);
+#else
+            *dot = 0;
+            for (int64_t k = 0; k < x->num_nonzeros; k++)
+                *dot += xdata[k]*ydata[k];
+#endif
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else if (x->field == mtx_field_complex) {
+        if (x->precision == mtx_single) {
+            const float (* xdata)[2] = x->data.complex_single;
+            const float (* ydata)[2] = y->data.complex_single;
+#ifdef LIBMTX_HAVE_BLAS
+            *dot = cblas_scdot(x->num_nonzeros, xdata, 1);
+#else
+            *dot = 0;
+            for (int64_t k = 0; k < x->num_nonzeros; k++)
+                *dot += xdata[k][0]*xdata[k][0] + xdata[k][1]*xdata[k][1];
+#endif
+        } else if (x->precision == mtx_double) {
+            const double (* xdata)[2] = x->data.complex_double;
+            const double (* ydata)[2] = y->data.complex_double;
+#ifdef LIBMTX_HAVE_BLAS
+            *dot = cblas_dzdot(x->num_nonzeros, xdata, 1, ydata, 1);
+#else
+            *dot = 0;
+            for (int64_t k = 0; k < x->num_nonzeros; k++)
+                *dot += xdata[k][0]*ydata[k][0] + xdata[k][1]*ydata[k][1];
+#endif
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else if (x->field == mtx_field_integer) {
+        if (x->precision == mtx_single) {
+            const int32_t * xdata = x->data.integer_single;
+            const int32_t * ydata = y->data.integer_single;
+            *dot = 0;
+            for (int64_t k = 0; k < x->num_nonzeros; k++)
+                *dot += xdata[k]*ydata[k];
+        } else if (x->precision == mtx_double) {
+            const int64_t * xdata = x->data.integer_double;
+            const int64_t * ydata = y->data.integer_double;
+            *dot = 0;
+            for (int64_t k = 0; k < x->num_nonzeros; k++)
+                *dot += xdata[k]*ydata[k];
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else if (x->field == mtx_field_pattern) {
+        *dot = x->num_nonzeros;
+    } else {
+        return MTX_ERR_INVALID_FIELD;
+    }
+    return MTX_SUCCESS;
+}
 
 /**
  * `mtxvector_coordinate_ddot()' computes the Euclidean dot product of two
  * vectors in double precision floating point.
+ *
+ * The vectors ‘x’ and ‘y’ must have the same field, precision, size
+ * and number of nonzeros.  Furthermore, it is assumed that the
+ * locations of the nonzeros is the same for both vectors.
  */
 int mtxvector_coordinate_ddot(
     const struct mtxvector_coordinate * x,
     const struct mtxvector_coordinate * y,
-    double * dot);
+    double * dot)
+{
+    if (x->field != y->field)
+        return MTX_ERR_INCOMPATIBLE_FIELD;
+    if (x->precision != y->precision)
+        return MTX_ERR_INCOMPATIBLE_PRECISION;
+    if (x->size != y->size || x->num_nonzeros != y->num_nonzeros)
+        return MTX_ERR_INCOMPATIBLE_SIZE;
+    if (x->field == mtx_field_real) {
+        if (x->precision == mtx_single) {
+            const float * xdata = x->data.real_single;
+            const float * ydata = y->data.real_single;
+#ifdef LIBMTX_HAVE_BLAS
+            *dot = cblas_sdot(x->num_nonzeros, xdata, 1, ydata, 1);
+#else
+            *dot = 0;
+            for (int64_t k = 0; k < x->num_nonzeros; k++)
+                *dot += xdata[k]*ydata[k];
+#endif
+        } else if (x->precision == mtx_double) {
+            const double * xdata = x->data.real_double;
+            const double * ydata = y->data.real_double;
+#ifdef LIBMTX_HAVE_BLAS
+            *dot = cblas_ddot(x->num_nonzeros, xdata, 1, ydata, 1);
+#else
+            *dot = 0;
+            for (int64_t k = 0; k < x->num_nonzeros; k++)
+                *dot += xdata[k]*ydata[k];
+#endif
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else if (x->field == mtx_field_complex) {
+        if (x->precision == mtx_single) {
+            const float (* xdata)[2] = x->data.complex_single;
+            const float (* ydata)[2] = y->data.complex_single;
+#ifdef LIBMTX_HAVE_BLAS
+            *dot = cblas_scdot(x->num_nonzeros, xdata, 1);
+#else
+            *dot = 0;
+            for (int64_t k = 0; k < x->num_nonzeros; k++)
+                *dot += xdata[k][0]*xdata[k][0] + xdata[k][1]*xdata[k][1];
+#endif
+        } else if (x->precision == mtx_double) {
+            const double (* xdata)[2] = x->data.complex_double;
+            const double (* ydata)[2] = y->data.complex_double;
+#ifdef LIBMTX_HAVE_BLAS
+            *dot = cblas_dzdot(x->num_nonzeros, xdata, 1, ydata, 1);
+#else
+            *dot = 0;
+            for (int64_t k = 0; k < x->num_nonzeros; k++)
+                *dot += xdata[k][0]*ydata[k][0] + xdata[k][1]*ydata[k][1];
+#endif
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else if (x->field == mtx_field_integer) {
+        if (x->precision == mtx_single) {
+            const int32_t * xdata = x->data.integer_single;
+            const int32_t * ydata = y->data.integer_single;
+            *dot = 0;
+            for (int64_t k = 0; k < x->num_nonzeros; k++)
+                *dot += xdata[k]*ydata[k];
+        } else if (x->precision == mtx_double) {
+            const int64_t * xdata = x->data.integer_double;
+            const int64_t * ydata = y->data.integer_double;
+            *dot = 0;
+            for (int64_t k = 0; k < x->num_nonzeros; k++)
+                *dot += xdata[k]*ydata[k];
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else if (x->field == mtx_field_pattern) {
+        *dot = x->num_nonzeros;
+    } else {
+        return MTX_ERR_INVALID_FIELD;
+    }
+    return MTX_SUCCESS;
+}
 
 /**
  * `mtxvector_coordinate_snrm2()' computes the Euclidean norm of a vector in

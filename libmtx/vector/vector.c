@@ -705,7 +705,18 @@ int mtxvector_daypx(
 int mtxvector_sdot(
     const struct mtxvector * x,
     const struct mtxvector * y,
-    float * dot);
+    float * dot)
+{
+    if (x->type == mtxvector_array) {
+        return mtxvector_array_sdot(
+            &x->storage.array, &y->storage.array, dot);
+    } else if (x->type == mtxvector_coordinate) {
+        return mtxvector_coordinate_sdot(
+            &x->storage.coordinate, &y->storage.coordinate, dot);
+    } else {
+        return MTX_ERR_INVALID_VECTOR_TYPE;
+    }
+}
 
 /**
  * `mtxvector_ddot()' computes the Euclidean dot product of two
@@ -714,7 +725,18 @@ int mtxvector_sdot(
 int mtxvector_ddot(
     const struct mtxvector * x,
     const struct mtxvector * y,
-    double * dot);
+    double * dot)
+{
+    if (x->type == mtxvector_array) {
+        return mtxvector_array_ddot(
+            &x->storage.array, &y->storage.array, dot);
+    } else if (x->type == mtxvector_coordinate) {
+        return mtxvector_coordinate_ddot(
+            &x->storage.coordinate, &y->storage.coordinate, dot);
+    } else {
+        return MTX_ERR_INVALID_VECTOR_TYPE;
+    }
+}
 
 /**
  * `mtxvector_snrm2()' computes the Euclidean norm of a vector in

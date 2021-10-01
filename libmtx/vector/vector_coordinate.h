@@ -265,6 +265,10 @@ int mtxvector_coordinate_dscal(
 /**
  * `mtxvector_coordinate_saxpy()' adds a vector to another vector multiplied by a
  * single precision floating point value, `y = a*x + y'.
+ *
+ * The vectors ‘x’ and ‘y’ must have the same field, precision, size
+ * and number of nonzeros.  Furthermore, it is assumed that the
+ * locations of the nonzeros is the same for both vectors.
  */
 int mtxvector_coordinate_saxpy(
     float a,
@@ -274,6 +278,10 @@ int mtxvector_coordinate_saxpy(
 /**
  * `mtxvector_coordinate_daxpy()' adds a vector to another vector multiplied by a
  * double precision floating point value, `y = a*x + y'.
+ *
+ * The vectors ‘x’ and ‘y’ must have the same field, precision, size
+ * and number of nonzeros.  Furthermore, it is assumed that the
+ * locations of the nonzeros is the same for both vectors.
  */
 int mtxvector_coordinate_daxpy(
     double a,
@@ -283,6 +291,10 @@ int mtxvector_coordinate_daxpy(
 /**
  * `mtxvector_coordinate_saypx()' multiplies a vector by a single precision
  * floating point scalar and adds another vector, `y = a*y + x'.
+ *
+ * The vectors ‘x’ and ‘y’ must have the same field, precision, size
+ * and number of nonzeros.  Furthermore, it is assumed that the
+ * locations of the nonzeros is the same for both vectors.
  */
 int mtxvector_coordinate_saypx(
     float a,
@@ -292,6 +304,10 @@ int mtxvector_coordinate_saypx(
 /**
  * `mtxvector_coordinate_daypx()' multiplies a vector by a double precision
  * floating point scalar and adds another vector, `y = a*y + x'.
+ *
+ * The vectors ‘x’ and ‘y’ must have the same field, precision, size
+ * and number of nonzeros.  Furthermore, it is assumed that the
+ * locations of the nonzeros is the same for both vectors.
  */
 int mtxvector_coordinate_daypx(
     double a,
@@ -301,6 +317,10 @@ int mtxvector_coordinate_daypx(
 /**
  * `mtxvector_coordinate_sdot()' computes the Euclidean dot product of two
  * vectors in single precision floating point.
+ *
+ * The vectors ‘x’ and ‘y’ must have the same field, precision, size
+ * and number of nonzeros.  Furthermore, it is assumed that the
+ * locations of the nonzeros is the same for both vectors.
  */
 int mtxvector_coordinate_sdot(
     const struct mtxvector_coordinate * x,
@@ -310,6 +330,10 @@ int mtxvector_coordinate_sdot(
 /**
  * `mtxvector_coordinate_ddot()' computes the Euclidean dot product of two
  * vectors in double precision floating point.
+ *
+ * The vectors ‘x’ and ‘y’ must have the same field, precision, size
+ * and number of nonzeros.  Furthermore, it is assumed that the
+ * locations of the nonzeros is the same for both vectors.
  */
 int mtxvector_coordinate_ddot(
     const struct mtxvector_coordinate * x,
