@@ -583,6 +583,44 @@ int mtxvector_ddot(
     double * dot);
 
 /**
+ * `mtxvector_cdotu()' computes the product of the transpose of a
+ * complex row vector with another complex row vector in single
+ * precision floating point, ‘dot := x^T*y’.
+ */
+int mtxvector_cdotu(
+    const struct mtxvector * x,
+    const struct mtxvector * y,
+    float (* dot)[2]);
+
+/**
+ * `mtxvector_zdotu()' computes the product of the transpose of a
+ * complex row vector with another complex row vector in double
+ * precision floating point, ‘dot := x^T*y’.
+ */
+int mtxvector_zdotu(
+    const struct mtxvector * x,
+    const struct mtxvector * y,
+    double (* dot)[2]);
+
+/**
+ * `mtxvector_cdotc()' computes the Euclidean dot product of two
+ * complex vectors in single precision floating point, ‘dot := x^H*y’.
+ */
+int mtxvector_cdotc(
+    const struct mtxvector * x,
+    const struct mtxvector * y,
+    float (* dot)[2]);
+
+/**
+ * `mtxvector_zdotc()' computes the Euclidean dot product of two
+ * complex vectors in double precision floating point, ‘dot := x^H*y’.
+ */
+int mtxvector_zdotc(
+    const struct mtxvector * x,
+    const struct mtxvector * y,
+    double (* dot)[2]);
+
+/**
  * `mtxvector_snrm2()' computes the Euclidean norm of a vector in
  * single precision floating point.
  */

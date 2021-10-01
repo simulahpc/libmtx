@@ -739,6 +739,88 @@ int mtxvector_ddot(
 }
 
 /**
+ * `mtxvector_cdotu()' computes the product of the transpose of a
+ * complex row vector with another complex row vector in single
+ * precision floating point, ‘dot := x^T*y’.
+ */
+int mtxvector_cdotu(
+    const struct mtxvector * x,
+    const struct mtxvector * y,
+    float (* dot)[2])
+{
+    if (x->type == mtxvector_array) {
+        return mtxvector_array_cdotu(
+            &x->storage.array, &y->storage.array, dot);
+    } else if (x->type == mtxvector_coordinate) {
+        return mtxvector_coordinate_cdotu(
+            &x->storage.coordinate, &y->storage.coordinate, dot);
+    } else {
+        return MTX_ERR_INVALID_VECTOR_TYPE;
+    }
+}
+
+/**
+ * `mtxvector_zdotu()' computes the product of the transpose of a
+ * complex row vector with another complex row vector in double
+ * precision floating point, ‘dot := x^T*y’.
+ */
+int mtxvector_zdotu(
+    const struct mtxvector * x,
+    const struct mtxvector * y,
+    double (* dot)[2])
+{
+    if (x->type == mtxvector_array) {
+        return mtxvector_array_zdotu(
+            &x->storage.array, &y->storage.array, dot);
+    } else if (x->type == mtxvector_coordinate) {
+        return mtxvector_coordinate_zdotu(
+            &x->storage.coordinate, &y->storage.coordinate, dot);
+    } else {
+        return MTX_ERR_INVALID_VECTOR_TYPE;
+    }
+}
+
+/**
+ * `mtxvector_cdotc()' computes the Euclidean dot product of two
+ * complex vectors in single precision floating point, ‘dot := x^H*y’.
+ */
+int mtxvector_cdotc(
+    const struct mtxvector * x,
+    const struct mtxvector * y,
+    float (* dot)[2])
+{
+    if (x->type == mtxvector_array) {
+        return mtxvector_array_cdotc(
+            &x->storage.array, &y->storage.array, dot);
+    } else if (x->type == mtxvector_coordinate) {
+        return mtxvector_coordinate_cdotc(
+            &x->storage.coordinate, &y->storage.coordinate, dot);
+    } else {
+        return MTX_ERR_INVALID_VECTOR_TYPE;
+    }
+}
+
+/**
+ * `mtxvector_zdotc()' computes the Euclidean dot product of two
+ * complex vectors in double precision floating point, ‘dot := x^H*y’.
+ */
+int mtxvector_zdotc(
+    const struct mtxvector * x,
+    const struct mtxvector * y,
+    double (* dot)[2])
+{
+    if (x->type == mtxvector_array) {
+        return mtxvector_array_zdotc(
+            &x->storage.array, &y->storage.array, dot);
+    } else if (x->type == mtxvector_coordinate) {
+        return mtxvector_coordinate_zdotc(
+            &x->storage.coordinate, &y->storage.coordinate, dot);
+    } else {
+        return MTX_ERR_INVALID_VECTOR_TYPE;
+    }
+}
+
+/**
  * `mtxvector_snrm2()' computes the Euclidean norm of a vector in
  * single precision floating point.
  */

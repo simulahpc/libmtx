@@ -580,30 +580,6 @@ int mtxvector_coordinate_sdot(
         } else {
             return MTX_ERR_INVALID_PRECISION;
         }
-    } else if (x->field == mtx_field_complex) {
-        if (x->precision == mtx_single) {
-            const float (* xdata)[2] = x->data.complex_single;
-            const float (* ydata)[2] = y->data.complex_single;
-#ifdef LIBMTX_HAVE_BLAS
-            *dot = cblas_scdot(x->num_nonzeros, xdata, 1);
-#else
-            *dot = 0;
-            for (int64_t k = 0; k < x->num_nonzeros; k++)
-                *dot += xdata[k][0]*xdata[k][0] + xdata[k][1]*xdata[k][1];
-#endif
-        } else if (x->precision == mtx_double) {
-            const double (* xdata)[2] = x->data.complex_double;
-            const double (* ydata)[2] = y->data.complex_double;
-#ifdef LIBMTX_HAVE_BLAS
-            *dot = cblas_dzdot(x->num_nonzeros, xdata, 1, ydata, 1);
-#else
-            *dot = 0;
-            for (int64_t k = 0; k < x->num_nonzeros; k++)
-                *dot += xdata[k][0]*ydata[k][0] + xdata[k][1]*ydata[k][1];
-#endif
-        } else {
-            return MTX_ERR_INVALID_PRECISION;
-        }
     } else if (x->field == mtx_field_integer) {
         if (x->precision == mtx_single) {
             const int32_t * xdata = x->data.integer_single;
@@ -671,30 +647,6 @@ int mtxvector_coordinate_ddot(
         } else {
             return MTX_ERR_INVALID_PRECISION;
         }
-    } else if (x->field == mtx_field_complex) {
-        if (x->precision == mtx_single) {
-            const float (* xdata)[2] = x->data.complex_single;
-            const float (* ydata)[2] = y->data.complex_single;
-#ifdef LIBMTX_HAVE_BLAS
-            *dot = cblas_scdot(x->num_nonzeros, xdata, 1);
-#else
-            *dot = 0;
-            for (int64_t k = 0; k < x->num_nonzeros; k++)
-                *dot += xdata[k][0]*xdata[k][0] + xdata[k][1]*xdata[k][1];
-#endif
-        } else if (x->precision == mtx_double) {
-            const double (* xdata)[2] = x->data.complex_double;
-            const double (* ydata)[2] = y->data.complex_double;
-#ifdef LIBMTX_HAVE_BLAS
-            *dot = cblas_dzdot(x->num_nonzeros, xdata, 1, ydata, 1);
-#else
-            *dot = 0;
-            for (int64_t k = 0; k < x->num_nonzeros; k++)
-                *dot += xdata[k][0]*ydata[k][0] + xdata[k][1]*ydata[k][1];
-#endif
-        } else {
-            return MTX_ERR_INVALID_PRECISION;
-        }
     } else if (x->field == mtx_field_integer) {
         if (x->precision == mtx_single) {
             const int32_t * xdata = x->data.integer_single;
@@ -715,6 +667,226 @@ int mtxvector_coordinate_ddot(
         *dot = x->num_nonzeros;
     } else {
         return MTX_ERR_INVALID_FIELD;
+    }
+    return MTX_SUCCESS;
+}
+
+/**
+ * `mtxvector_coordinate_cdotu()' computes the product of the
+ * transpose of a complex row vector with another complex row vector
+ * in single precision floating point, ‘dot := x^T*y’.
+ *
+ * The vectors ‘x’ and ‘y’ must have the same field, precision, size
+ * and number of nonzeros.  Furthermore, it is assumed that the
+ * locations of the nonzeros is the same for both vectors.
+ */
+int mtxvector_coordinate_cdotu(
+    const struct mtxvector_coordinate * x,
+    const struct mtxvector_coordinate * y,
+    float (* dot)[2])
+{
+    if (x->field != y->field)
+        return MTX_ERR_INCOMPATIBLE_FIELD;
+    if (x->precision != y->precision)
+        return MTX_ERR_INCOMPATIBLE_PRECISION;
+    if (x->size != y->size || x->num_nonzeros != y->num_nonzeros)
+        return MTX_ERR_INCOMPATIBLE_SIZE;
+    if (x->field == mtx_field_complex) {
+        if (x->precision == mtx_single) {
+            const float (* xdata)[2] = x->data.complex_single;
+            const float (* ydata)[2] = y->data.complex_single;
+#ifdef LIBMTX_HAVE_BLAS
+            cblas_cdotu_sub(x->num_nonzeros, xdata, 1, ydata, 1, dot);
+#else
+            (*dot)[0] = (*dot)[1] = 0;
+            for (int64_t k = 0; k < x->num_nonzeros; k++) {
+                (*dot)[0] += xdata[k][0]*ydata[k][0] - xdata[k][1]*ydata[k][1];
+                (*dot)[1] += xdata[k][0]*ydata[k][1] + xdata[k][1]*ydata[k][0];
+            }
+#endif
+        } else if (x->precision == mtx_double) {
+            const double (* xdata)[2] = x->data.complex_double;
+            const double (* ydata)[2] = y->data.complex_double;
+#ifdef LIBMTX_HAVE_BLAS
+            cblas_zdotu_sub(x->num_nonzeros, xdata, 1, ydata, 1, dot);
+#else
+            (*dot)[0] = (*dot)[1] = 0;
+            for (int64_t k = 0; k < x->num_nonzeros; k++) {
+                (*dot)[0] += xdata[k][0]*ydata[k][0] - xdata[k][1]*ydata[k][1];
+                (*dot)[1] += xdata[k][0]*ydata[k][1] + xdata[k][1]*ydata[k][0];
+            }
+#endif
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else {
+        (*dot)[1] = 0;
+        return mtxvector_coordinate_sdot(x, y, &(*dot)[0]);
+    }
+    return MTX_SUCCESS;
+}
+
+/**
+ * `mtxvector_coordinate_zdotu()' computes the product of the
+ * transpose of a complex row vector with another complex row vector
+ * in double precision floating point, ‘dot := x^T*y’.
+ *
+ * The vectors ‘x’ and ‘y’ must have the same field, precision, size
+ * and number of nonzeros.  Furthermore, it is assumed that the
+ * locations of the nonzeros is the same for both vectors.
+ */
+int mtxvector_coordinate_zdotu(
+    const struct mtxvector_coordinate * x,
+    const struct mtxvector_coordinate * y,
+    double (* dot)[2])
+{
+    if (x->field != y->field)
+        return MTX_ERR_INCOMPATIBLE_FIELD;
+    if (x->precision != y->precision)
+        return MTX_ERR_INCOMPATIBLE_PRECISION;
+    if (x->size != y->size || x->num_nonzeros != y->num_nonzeros)
+        return MTX_ERR_INCOMPATIBLE_SIZE;
+    if (x->field == mtx_field_complex) {
+        if (x->precision == mtx_single) {
+            const float (* xdata)[2] = x->data.complex_single;
+            const float (* ydata)[2] = y->data.complex_single;
+#ifdef LIBMTX_HAVE_BLAS
+            cblas_cdotu_sub(x->num_nonzeros, xdata, 1, ydata, 1, dot);
+#else
+            (*dot)[0] = (*dot)[1] = 0;
+            for (int64_t k = 0; k < x->num_nonzeros; k++) {
+                (*dot)[0] += xdata[k][0]*ydata[k][0] - xdata[k][1]*ydata[k][1];
+                (*dot)[1] += xdata[k][0]*ydata[k][1] + xdata[k][1]*ydata[k][0];
+            }
+#endif
+        } else if (x->precision == mtx_double) {
+            const double (* xdata)[2] = x->data.complex_double;
+            const double (* ydata)[2] = y->data.complex_double;
+#ifdef LIBMTX_HAVE_BLAS
+            cblas_zdotu_sub(x->num_nonzeros, xdata, 1, ydata, 1, dot);
+#else
+            (*dot)[0] = (*dot)[1] = 0;
+            for (int64_t k = 0; k < x->num_nonzeros; k++) {
+                (*dot)[0] += xdata[k][0]*ydata[k][0] - xdata[k][1]*ydata[k][1];
+                (*dot)[1] += xdata[k][0]*ydata[k][1] + xdata[k][1]*ydata[k][0];
+            }
+#endif
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else {
+        (*dot)[1] = 0;
+        return mtxvector_coordinate_ddot(x, y, &(*dot)[0]);
+    }
+    return MTX_SUCCESS;
+}
+
+/**
+ * `mtxvector_coordinate_cdotc()' computes the Euclidean dot product
+ * of two complex vectors in single precision floating point, ‘dot :=
+ * x^H*y’.
+ *
+ * The vectors ‘x’ and ‘y’ must have the same field, precision, size
+ * and number of nonzeros.  Furthermore, it is assumed that the
+ * locations of the nonzeros is the same for both vectors.
+ */
+int mtxvector_coordinate_cdotc(
+    const struct mtxvector_coordinate * x,
+    const struct mtxvector_coordinate * y,
+    float (* dot)[2])
+{
+    if (x->field != y->field)
+        return MTX_ERR_INCOMPATIBLE_FIELD;
+    if (x->precision != y->precision)
+        return MTX_ERR_INCOMPATIBLE_PRECISION;
+    if (x->size != y->size || x->num_nonzeros != y->num_nonzeros)
+        return MTX_ERR_INCOMPATIBLE_SIZE;
+    if (x->field == mtx_field_complex) {
+        if (x->precision == mtx_single) {
+            const float (* xdata)[2] = x->data.complex_single;
+            const float (* ydata)[2] = y->data.complex_single;
+#ifdef LIBMTX_HAVE_BLAS
+            cblas_cdotc_sub(x->num_nonzeros, xdata, 1, ydata, 1, dot);
+#else
+            (*dot)[0] = (*dot)[1] = 0;
+            for (int64_t k = 0; k < x->num_nonzeros; k++) {
+                (*dot)[0] += xdata[k][0]*ydata[k][0] + xdata[k][1]*ydata[k][1];
+                (*dot)[1] += xdata[k][0]*ydata[k][1] - xdata[k][1]*ydata[k][0];
+            }
+#endif
+        } else if (x->precision == mtx_double) {
+            const double (* xdata)[2] = x->data.complex_double;
+            const double (* ydata)[2] = y->data.complex_double;
+#ifdef LIBMTX_HAVE_BLAS
+            cblas_zdotc_sub(x->num_nonzeros, xdata, 1, ydata, 1, dot);
+#else
+            (*dot)[0] = (*dot)[1] = 0;
+            for (int64_t k = 0; k < x->num_nonzeros; k++) {
+                (*dot)[0] += xdata[k][0]*ydata[k][0] + xdata[k][1]*ydata[k][1];
+                (*dot)[1] += xdata[k][0]*ydata[k][1] - xdata[k][1]*ydata[k][0];
+            }
+#endif
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else {
+        (*dot)[1] = 0;
+        return mtxvector_coordinate_sdot(x, y, &(*dot)[0]);
+    }
+    return MTX_SUCCESS;
+}
+
+/**
+ * `mtxvector_coordinate_zdotc()' computes the Euclidean dot product
+ * of two complex vectors in double precision floating point, ‘dot :=
+ * x^H*y’.
+ *
+ * The vectors ‘x’ and ‘y’ must have the same field, precision, size
+ * and number of nonzeros.  Furthermore, it is assumed that the
+ * locations of the nonzeros is the same for both vectors.
+ */
+int mtxvector_coordinate_zdotc(
+    const struct mtxvector_coordinate * x,
+    const struct mtxvector_coordinate * y,
+    double (* dot)[2])
+{
+    if (x->field != y->field)
+        return MTX_ERR_INCOMPATIBLE_FIELD;
+    if (x->precision != y->precision)
+        return MTX_ERR_INCOMPATIBLE_PRECISION;
+    if (x->size != y->size || x->num_nonzeros != y->num_nonzeros)
+        return MTX_ERR_INCOMPATIBLE_SIZE;
+    if (x->field == mtx_field_complex) {
+        if (x->precision == mtx_single) {
+            const float (* xdata)[2] = x->data.complex_single;
+            const float (* ydata)[2] = y->data.complex_single;
+#ifdef LIBMTX_HAVE_BLAS
+            cblas_cdotc_sub(x->num_nonzeros, xdata, 1, ydata, 1, dot);
+#else
+            (*dot)[0] = (*dot)[1] = 0;
+            for (int64_t k = 0; k < x->num_nonzeros; k++) {
+                (*dot)[0] += xdata[k][0]*ydata[k][0] + xdata[k][1]*ydata[k][1];
+                (*dot)[1] += xdata[k][0]*ydata[k][1] - xdata[k][1]*ydata[k][0];
+            }
+#endif
+        } else if (x->precision == mtx_double) {
+            const double (* xdata)[2] = x->data.complex_double;
+            const double (* ydata)[2] = y->data.complex_double;
+#ifdef LIBMTX_HAVE_BLAS
+            cblas_zdotc_sub(x->num_nonzeros, xdata, 1, ydata, 1, dot);
+#else
+            (*dot)[0] = (*dot)[1] = 0;
+            for (int64_t k = 0; k < x->num_nonzeros; k++) {
+                (*dot)[0] += xdata[k][0]*ydata[k][0] + xdata[k][1]*ydata[k][1];
+                (*dot)[1] += xdata[k][0]*ydata[k][1] - xdata[k][1]*ydata[k][0];
+            }
+#endif
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else {
+        (*dot)[1] = 0;
+        return mtxvector_coordinate_ddot(x, y, &(*dot)[0]);
     }
     return MTX_SUCCESS;
 }
@@ -887,77 +1059,6 @@ int mtxvector_coordinate_recv(
  */
 int mtxvector_coordinate_bcast(
     struct mtxvector_coordinate * vector,
-    int root,
-    MPI_Comm comm,
-    struct mtxmpierror * mpierror);
-
-/**
- * `mtxvector_coordinate_scatterv()' scatters a vector from an MPI
- * root process to other processes in a communicator.
- *
- * This is analogous to `MPI_Scatterv()' and requires every process in
- * the communicator to perform matching calls to
- * `mtxvector_coordinate_scatterv()'.
- *
- * For a matrix in `array' format, entire rows are scattered, which
- * means that the send and receive counts must be multiples of the
- * number of matrix columns.
- */
-int mtxvector_coordinate_scatterv(
-    const struct mtxvector_coordinate * sendmtxvector,
-    int * sendcounts,
-    int * displs,
-    struct mtxvector_coordinate * recvmtxvector,
-    int recvcount,
-    int root,
-    MPI_Comm comm,
-    struct mtxmpierror * mpierror);
-
-/**
- * `mtxvector_coordinate_distribute_rows()' partitions and distributes
- * rows of a vector from an MPI root process to other processes in a
- * communicator.
- *
- * This function performs collective communication and therefore
- * requires every process in the communicator to perform matching
- * calls to `mtxvector_coordinate_distribute_rows()'.
- *
- * `row_partition' must be a partitioning of the rows of the matrix or
- * vector represented by `src'.
- */
-int mtxvector_coordinate_distribute_rows(
-    struct mtxvector_coordinate * dst,
-    struct mtxvector_coordinate * src,
-    const struct mtx_partition * row_partition,
-    int root,
-    MPI_Comm comm,
-    struct mtxmpierror * mpierror);
-
-/**
- * `mtxvector_coordinate_fread_distribute_rows()' reads a vector from
- * a stream and distributes the rows of the underlying matrix or
- * vector among MPI processes in a communicator.
- *
- * `precision' is used to determine the precision to use for storing
- * the values of matrix or vector entries.
- *
- * If an error code is returned, then `lines_read' and `bytes_read'
- * are used to return the line number and byte at which the error was
- * encountered during the parsing of the vector.
- *
- * For a matrix or vector in array format, `bufsize' must be at least
- * large enough to fit one row per MPI process in the communicator.
- */
-int mtxvector_coordinate_fread_distribute_rows(
-    struct mtxvector_coordinate * vector,
-    FILE * f,
-    int * lines_read,
-    int64_t * bytes_read,
-    size_t line_max,
-    char * linebuf,
-    enum mtx_precision precision,
-    enum mtx_partition_type row_partition_type,
-    size_t bufsize,
     int root,
     MPI_Comm comm,
     struct mtxmpierror * mpierror);

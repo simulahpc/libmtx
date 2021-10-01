@@ -341,6 +341,62 @@ int mtxvector_coordinate_ddot(
     double * dot);
 
 /**
+ * `mtxvector_coordinate_cdotu()' computes the product of the
+ * transpose of a complex row vector with another complex row vector
+ * in single precision floating point, ‘dot := x^T*y’.
+ *
+ * The vectors ‘x’ and ‘y’ must have the same field, precision, size
+ * and number of nonzeros.  Furthermore, it is assumed that the
+ * locations of the nonzeros is the same for both vectors.
+ */
+int mtxvector_coordinate_cdotu(
+    const struct mtxvector_coordinate * x,
+    const struct mtxvector_coordinate * y,
+    float (* dot)[2]);
+
+/**
+ * `mtxvector_coordinate_zdotu()' computes the product of the
+ * transpose of a complex row vector with another complex row vector
+ * in double precision floating point, ‘dot := x^T*y’.
+ *
+ * The vectors ‘x’ and ‘y’ must have the same field, precision, size
+ * and number of nonzeros.  Furthermore, it is assumed that the
+ * locations of the nonzeros is the same for both vectors.
+ */
+int mtxvector_coordinate_zdotu(
+    const struct mtxvector_coordinate * x,
+    const struct mtxvector_coordinate * y,
+    double (* dot)[2]);
+
+/**
+ * `mtxvector_coordinate_cdotc()' computes the Euclidean dot product
+ * of two complex vectors in single precision floating point, ‘dot :=
+ * x^H*y’.
+ *
+ * The vectors ‘x’ and ‘y’ must have the same field, precision, size
+ * and number of nonzeros.  Furthermore, it is assumed that the
+ * locations of the nonzeros is the same for both vectors.
+ */
+int mtxvector_coordinate_cdotc(
+    const struct mtxvector_coordinate * x,
+    const struct mtxvector_coordinate * y,
+    float (* dot)[2]);
+
+/**
+ * `mtxvector_coordinate_zdotc()' computes the Euclidean dot product
+ * of two complex vectors in double precision floating point, ‘dot :=
+ * x^H*y’.
+ *
+ * The vectors ‘x’ and ‘y’ must have the same field, precision, size
+ * and number of nonzeros.  Furthermore, it is assumed that the
+ * locations of the nonzeros is the same for both vectors.
+ */
+int mtxvector_coordinate_zdotc(
+    const struct mtxvector_coordinate * x,
+    const struct mtxvector_coordinate * y,
+    double (* dot)[2]);
+
+/**
  * `mtxvector_coordinate_snrm2()' computes the Euclidean norm of a vector in
  * single precision floating point.
  */
