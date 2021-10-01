@@ -478,6 +478,7 @@ int mtxdistvector_init_coordinate_pattern(
 int mtxdistvector_from_mtxfile(
     struct mtxdistvector * distvector,
     const struct mtxfile * mtxfile,
+    enum mtxvector_type vector_type,
     MPI_Comm comm,
     int root,
     struct mtxmpierror * mpierror)
@@ -485,20 +486,9 @@ int mtxdistvector_from_mtxfile(
     int err;
     if (mtxfile->header.object != mtxfile_vector)
         return MTX_ERR_INCOMPATIBLE_MTX_OBJECT;
-
-    int comm_size;
-    mpierror->mpierrcode = MPI_Comm_size(comm, &comm_size);
-    err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
-    if (mtxmpierror_allreduce(mpierror, err))
-        return MTX_ERR_MPI_COLLECTIVE;
-    int rank;
-    mpierror->mpierrcode = MPI_Comm_rank(comm, &rank);
-    err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
-    if (mtxmpierror_allreduce(mpierror, err))
-        return MTX_ERR_MPI_COLLECTIVE;
-    distvector->comm = comm;
-    distvector->comm_size = comm_size;
-    distvector->rank = rank;
+    err = mtxdistvector_init_comm(distvector, comm, mpierror);
+    if (err)
+        return err;
 
     /* 1. Distribute the Matrix Market file among processes. */
     struct mtxdistfile src;
@@ -509,7 +499,7 @@ int mtxdistvector_from_mtxfile(
     /* 2. Partition the rows of the vector. */
     struct mtx_partition row_partition;
     enum mtx_partition_type partition_type = mtx_block;
-    int num_parts = comm_size;
+    int num_parts = distvector->comm_size;
     err = mtx_partition_init(
         &row_partition, partition_type,
         src.size.num_rows, num_parts, 0, NULL);
@@ -580,7 +570,7 @@ int mtxdistvector_from_mtxfile(
 
     /* 4. Create the distributed vector. */
     err = mtxvector_from_mtxfile(
-        &distvector->interior, &dst.mtxfile, mtxvector_auto);
+        &distvector->interior, &dst.mtxfile, vector_type);
     if (mtxmpierror_allreduce(mpierror, err)) {
         mtxdistfile_free(&dst);
         mtx_partition_free(&row_partition);
@@ -588,6 +578,30 @@ int mtxdistvector_from_mtxfile(
     }
     mtxdistfile_free(&dst);
     mtx_partition_free(&row_partition);
+    return MTX_SUCCESS;
+}
+
+/**
+ * ‘mtxdistvector_from_mtxdistfile()’ converts a vector in distributed
+ * Matrix Market format to a distributed vector.
+ */
+int mtxdistvector_from_mtxdistfile(
+    struct mtxdistvector * distvector,
+    const struct mtxdistfile * mtxdistfile,
+    enum mtxvector_type vector_type,
+    MPI_Comm comm,
+    struct mtxmpierror * mpierror)
+{
+    int err;
+    if (mtxdistfile->header.object != mtxfile_vector)
+        return MTX_ERR_INCOMPATIBLE_MTX_OBJECT;
+    err = mtxdistvector_init_comm(distvector, comm, mpierror);
+    if (err)
+        return err;
+    err = mtxvector_from_mtxfile(
+        &distvector->interior, &mtxdistfile->mtxfile, vector_type);
+    if (mtxmpierror_allreduce(mpierror, err))
+        return MTX_ERR_MPI_COLLECTIVE;
     return MTX_SUCCESS;
 }
 

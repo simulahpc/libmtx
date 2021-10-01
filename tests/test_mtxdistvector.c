@@ -27,6 +27,7 @@
 
 #include <libmtx/error.h>
 #include <libmtx/mtxfile/mtxfile.h>
+#include <libmtx/mtxfile/mtxdistfile.h>
 #include <libmtx/vector/distvector.h>
 
 #include <mpi.h>
@@ -88,7 +89,7 @@ int test_mtxdistvector_from_mtxfile(void)
 
         struct mtxdistvector mtxdistvector;
         err = mtxdistvector_from_mtxfile(
-            &mtxdistvector, &srcmtxfile, comm, root, &mpierror);
+            &mtxdistvector, &srcmtxfile, mtxvector_auto, comm, root, &mpierror);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s",
             err == MTX_ERR_MPI_COLLECTIVE
@@ -131,7 +132,7 @@ int test_mtxdistvector_from_mtxfile(void)
 
         struct mtxdistvector mtxdistvector;
         err = mtxdistvector_from_mtxfile(
-            &mtxdistvector, &srcmtxfile, comm, root, &mpierror);
+            &mtxdistvector, &srcmtxfile, mtxvector_auto, comm, root, &mpierror);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s",
             err == MTX_ERR_MPI_COLLECTIVE
@@ -159,6 +160,144 @@ int test_mtxdistvector_from_mtxfile(void)
         }
         mtxdistvector_free(&mtxdistvector);
         mtxfile_free(&srcmtxfile);
+    }
+
+    mtxmpierror_free(&mpierror);
+    return TEST_SUCCESS;
+}
+
+/**
+ * `test_mtxdistvector_from_mtxdistfile()' tests converting
+ * distributed Matrix Market files to distributed vectors.
+ */
+int test_mtxdistvector_from_mtxdistfile(void)
+{
+    int err;
+    char mpierrstr[MPI_MAX_ERROR_STRING];
+    int mpierrstrlen;
+    MPI_Comm comm = MPI_COMM_WORLD;
+    int root = 0;
+
+    int comm_size;
+    err = MPI_Comm_size(comm, &comm_size);
+    if (err) {
+        MPI_Error_string(err, mpierrstr, &mpierrstrlen);
+        fprintf(stderr, "%s: MPI_Comm_size failed with %s\n",
+                program_invocation_short_name, mpierrstr);
+        MPI_Abort(comm, EXIT_FAILURE);
+    }
+    int rank;
+    err = MPI_Comm_rank(comm, &rank);
+    if (err) {
+        MPI_Error_string(err, mpierrstr, &mpierrstrlen);
+        fprintf(stderr, "%s: MPI_Comm_rank failed with %s\n",
+                program_invocation_short_name, mpierrstr);
+        MPI_Abort(comm, EXIT_FAILURE);
+    }
+    if (comm_size != 2)
+        TEST_FAIL_MSG("Expected exactly two MPI processes");
+
+    struct mtxmpierror mpierror;
+    err = mtxmpierror_alloc(&mpierror, comm);
+    if (err)
+        MPI_Abort(comm, EXIT_FAILURE);
+
+    /*
+     * Array formats
+     */
+
+    {
+        int num_rows = (rank == 0) ? 2 : 6;
+        const double * srcdata = (rank == 0)
+            ? ((const double[2]) {1.0, 2.0})
+            : ((const double[6]) {3.0, 4.0, 5.0, 6.0, 7.0, 8.0});
+        struct mtxdistfile src;
+        err = mtxdistfile_init_vector_array_real_double(
+            &src, num_rows, srcdata, comm, &mpierror);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+
+        struct mtxdistvector mtxdistvector;
+        err = mtxdistvector_from_mtxdistfile(
+            &mtxdistvector, &src, mtxvector_auto, comm, &mpierror);
+        TEST_ASSERT_EQ_MSG(
+            MTX_SUCCESS, err, "%s",
+            err == MTX_ERR_MPI_COLLECTIVE
+            ? mtxmpierror_description(&mpierror)
+            : mtx_strerror(err));
+        TEST_ASSERT_EQ(mtxvector_array, mtxdistvector.interior.type);
+        const struct mtxvector_array * interior =
+            &mtxdistvector.interior.storage.array;
+        TEST_ASSERT_EQ(mtx_field_real, interior->field);
+        TEST_ASSERT_EQ(mtx_double, interior->precision);
+        TEST_ASSERT_EQ(rank == 0 ? 2 : 6, interior->size);
+        if (rank == 0) {
+            TEST_ASSERT_EQ(1.0, interior->data.real_double[0]);
+            TEST_ASSERT_EQ(2.0, interior->data.real_double[1]);
+        } else if (rank == 1) {
+            TEST_ASSERT_EQ(3.0, interior->data.real_double[0]);
+            TEST_ASSERT_EQ(4.0, interior->data.real_double[1]);
+            TEST_ASSERT_EQ(5.0, interior->data.real_double[2]);
+            TEST_ASSERT_EQ(6.0, interior->data.real_double[3]);
+            TEST_ASSERT_EQ(7.0, interior->data.real_double[4]);
+            TEST_ASSERT_EQ(8.0, interior->data.real_double[5]);
+        }
+        mtxdistvector_free(&mtxdistvector);
+        mtxdistfile_free(&src);
+    }
+
+    /*
+     * Coordinate formats
+     */
+
+    {
+        int num_rows = 9;
+        const struct mtxfile_vector_coordinate_real_double * srcdata = (rank == 0)
+            ? ((const struct mtxfile_vector_coordinate_real_double[2])
+                {{1,1.0}, {2,2.0}})
+            : ((const struct mtxfile_vector_coordinate_real_double[6])
+                {{3,3.0}, {4,4.0}, {5,5.0}, {6,6.0}, {7,7.0}, {8,8.0}});
+        int64_t num_nonzeros = (rank == 0) ? 2 : 6;
+        struct mtxdistfile src;
+        err = mtxdistfile_init_vector_coordinate_real_double(
+            &src, num_rows, num_nonzeros, srcdata, comm, &mpierror);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+
+        struct mtxdistvector mtxdistvector;
+        err = mtxdistvector_from_mtxdistfile(
+            &mtxdistvector, &src, mtxvector_auto, comm, &mpierror);
+        TEST_ASSERT_EQ_MSG(
+            MTX_SUCCESS, err, "%s",
+            err == MTX_ERR_MPI_COLLECTIVE
+            ? mtxmpierror_description(&mpierror)
+            : mtx_strerror(err));
+        TEST_ASSERT_EQ(mtxvector_coordinate, mtxdistvector.interior.type);
+        const struct mtxvector_coordinate * interior =
+            &mtxdistvector.interior.storage.coordinate;
+        TEST_ASSERT_EQ(mtx_field_real, interior->field);
+        TEST_ASSERT_EQ(mtx_double, interior->precision);
+        TEST_ASSERT_EQ(9, interior->size);
+        TEST_ASSERT_EQ(rank == 0 ? 2 : 6, interior->num_nonzeros);
+        if (rank == 0) {
+            TEST_ASSERT_EQ(1, interior->indices[0]);
+            TEST_ASSERT_EQ(2, interior->indices[1]);
+            TEST_ASSERT_EQ(1.0, interior->data.real_double[0]);
+            TEST_ASSERT_EQ(2.0, interior->data.real_double[1]);
+        } else if (rank == 1) {
+            TEST_ASSERT_EQ(3, interior->indices[0]);
+            TEST_ASSERT_EQ(4, interior->indices[1]);
+            TEST_ASSERT_EQ(5, interior->indices[2]);
+            TEST_ASSERT_EQ(6, interior->indices[3]);
+            TEST_ASSERT_EQ(7, interior->indices[4]);
+            TEST_ASSERT_EQ(8, interior->indices[5]);
+            TEST_ASSERT_EQ(3.0, interior->data.real_double[0]);
+            TEST_ASSERT_EQ(4.0, interior->data.real_double[1]);
+            TEST_ASSERT_EQ(5.0, interior->data.real_double[2]);
+            TEST_ASSERT_EQ(6.0, interior->data.real_double[3]);
+            TEST_ASSERT_EQ(7.0, interior->data.real_double[4]);
+            TEST_ASSERT_EQ(8.0, interior->data.real_double[5]);
+        }
+        mtxdistvector_free(&mtxdistvector);
+        mtxdistfile_free(&src);
     }
 
     mtxmpierror_free(&mpierror);
@@ -738,6 +877,7 @@ int main(int argc, char * argv[])
     /* 2. Run test suite. */
     TEST_SUITE_BEGIN("Running tests for distributed vectors\n");
     TEST_RUN(test_mtxdistvector_from_mtxfile);
+    TEST_RUN(test_mtxdistvector_from_mtxdistfile);
     TEST_RUN(test_mtxdistvector_snrm2);
     TEST_RUN(test_mtxdistvector_dnrm2);
     TEST_SUITE_END();

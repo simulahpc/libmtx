@@ -237,6 +237,59 @@ int test_mtxdistfile_from_mtxfile(void)
         mtxfile_free(&srcmtxfile);
     }
 
+    /*
+     * Vector coordinate formats
+     */
+
+    {
+        int num_rows = 6;
+        const struct mtxfile_vector_coordinate_real_double mtxdata[] = {
+            {5, 5.0}, {3, 3.0}, {2, 2.0}, {1, 1.0}};
+        int64_t num_nonzeros = sizeof(mtxdata) / sizeof(*mtxdata);
+        struct mtxfile srcmtxfile;
+        err = mtxfile_init_vector_coordinate_real_double(
+            &srcmtxfile, num_rows, num_nonzeros, mtxdata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+
+        struct mtxdistfile mtxdistfile;
+        err = mtxdistfile_from_mtxfile(
+            &mtxdistfile, &srcmtxfile, comm, root, &mpierror);
+        TEST_ASSERT_EQ_MSG(
+            MTX_SUCCESS, err, "%s",
+            err == MTX_ERR_MPI_COLLECTIVE
+            ? mtxmpierror_description(&mpierror)
+            : mtx_strerror(err));
+        TEST_ASSERT_EQ(mtxfile_vector, mtxdistfile.header.object);
+        TEST_ASSERT_EQ(mtxfile_coordinate, mtxdistfile.header.format);
+        TEST_ASSERT_EQ(mtxfile_real, mtxdistfile.header.field);
+        TEST_ASSERT_EQ(mtxfile_general, mtxdistfile.header.symmetry);
+        TEST_ASSERT_EQ(mtx_double, mtxdistfile.precision);
+        TEST_ASSERT_EQ(6, mtxdistfile.size.num_rows);
+        TEST_ASSERT_EQ(-1, mtxdistfile.size.num_columns);
+        TEST_ASSERT_EQ(4, mtxdistfile.size.num_nonzeros);
+        TEST_ASSERT_EQ(mtx_double, mtxdistfile.precision);
+        const struct mtxfile * mtxfile = &mtxdistfile.mtxfile;
+        TEST_ASSERT_EQ(mtxfile_vector, mtxfile->header.object);
+        TEST_ASSERT_EQ(mtxfile_coordinate, mtxfile->header.format);
+        TEST_ASSERT_EQ(mtxfile_real, mtxfile->header.field);
+        TEST_ASSERT_EQ(mtxfile_general, mtxfile->header.symmetry);
+        TEST_ASSERT_EQ(6, mtxfile->size.num_rows);
+        TEST_ASSERT_EQ(-1, mtxfile->size.num_columns);
+        TEST_ASSERT_EQ(2, mtxfile->size.num_nonzeros);
+        TEST_ASSERT_EQ(mtx_double, mtxfile->precision);
+        const struct mtxfile_matrix_coordinate_real_double * data =
+            mtxfile->data.matrix_coordinate_real_double;
+        if (rank == 0) {
+            TEST_ASSERT_EQ(5, data[0].i); TEST_ASSERT_EQ(5.0, data[0].a);
+            TEST_ASSERT_EQ(3, data[1].i); TEST_ASSERT_EQ(3.0, data[1].a);
+        } else if (rank == 1) {
+            TEST_ASSERT_EQ(2, data[0].i); TEST_ASSERT_EQ(2.0, data[0].a);
+            TEST_ASSERT_EQ(1, data[1].i); TEST_ASSERT_EQ(1.0, data[1].a);
+        }
+        mtxdistfile_free(&mtxdistfile);
+        mtxfile_free(&srcmtxfile);
+    }
+
     mtxmpierror_free(&mpierror);
     return TEST_SUCCESS;
 }
