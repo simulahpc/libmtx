@@ -518,6 +518,45 @@ int mtxfile_init_vector_coordinate_pattern(
     const struct mtxfile_vector_coordinate_pattern * data);
 
 /*
+ * Modifying values
+ */
+
+/**
+ * `mtxfile_set_constant_real_single()' sets every (nonzero) value of
+ * a matrix or vector equal to a constant, single precision floating
+ * point number.
+ */
+int mtxfile_set_constant_real_single(
+    struct mtxfile * mtxfile,
+    float a);
+
+/**
+ * `mtxfile_set_constant_real_double()' sets every (nonzero) value of
+ * a matrix or vector equal to a constant, double precision floating
+ * point number.
+ */
+int mtxfile_set_constant_real_double(
+    struct mtxfile * mtxfile,
+    double a);
+
+/**
+ * `mtxfile_set_constant_complex_single()' sets every (nonzero) value
+ * of a matrix or vector equal to a constant, single precision
+ * floating point complex number.
+ */
+int mtxfile_set_constant_complex_single(
+    struct mtxfile * mtxfile,
+    float a[2]);
+
+/**
+ * `mtxfile_set_constant_integer_single()' sets every (nonzero) value
+ * of a matrix or vector equal to a constant integer.
+ */
+int mtxfile_set_constant_integer_single(
+    struct mtxfile * mtxfile,
+    int32_t a);
+
+/*
  * I/O functions
  */
 

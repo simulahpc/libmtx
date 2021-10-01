@@ -107,13 +107,6 @@ struct mtxdistfile
  */
 
 /**
- * `mtxdistfile_free()' frees storage allocated for a distributed
- * Matrix Market file.
- */
-void mtxdistfile_free(
-    struct mtxdistfile * mtxdistfile);
-
-/**
  * `mtxdistfile_init()' creates a distributed Matrix Market file from
  * Matrix Market files on each process in a communicator.
  *
@@ -125,6 +118,30 @@ int mtxdistfile_init(
     struct mtxdistfile * mtxdistfile,
     const struct mtxfile * mtxfile,
     MPI_Comm comm,
+    struct mtxmpierror * mpierror);
+
+/**
+ * `mtxdistfile_free()' frees storage allocated for a distributed
+ * Matrix Market file.
+ */
+void mtxdistfile_free(
+    struct mtxdistfile * mtxdistfile);
+
+/**
+ * `mtxdistfile_alloc_copy()' allocates storage for a copy of a Matrix
+ * Market file without initialising the underlying values.
+ */
+int mtxdistfile_alloc_copy(
+    struct mtxdistfile * dst,
+    const struct mtxdistfile * src,
+    struct mtxmpierror * mpierror);
+
+/**
+ * `mtxdistfile_init_copy()' creates a copy of a Matrix Market file.
+ */
+int mtxdistfile_init_copy(
+    struct mtxdistfile * dst,
+    const struct mtxdistfile * src,
     struct mtxmpierror * mpierror);
 
 /*
@@ -545,6 +562,49 @@ int mtxdistfile_init_vector_coordinate_pattern(
     int64_t num_nonzeros,
     const struct mtxfile_vector_coordinate_pattern * data,
     MPI_Comm comm,
+    struct mtxmpierror * mpierror);
+
+/*
+ * Modifying values
+ */
+
+/**
+ * `mtxdistfile_set_constant_real_single()' sets every (nonzero) value
+ * of a matrix or vector equal to a constant, single precision
+ * floating point number.
+ */
+int mtxdistfile_set_constant_real_single(
+    struct mtxdistfile * mtxdistfile,
+    float a,
+    struct mtxmpierror * mpierror);
+
+/**
+ * `mtxdistfile_set_constant_real_double()' sets every (nonzero) value
+ * of a matrix or vector equal to a constant, double precision
+ * floating point number.
+ */
+int mtxdistfile_set_constant_real_double(
+    struct mtxdistfile * mtxdistfile,
+    double a,
+    struct mtxmpierror * mpierror);
+
+/**
+ * `mtxdistfile_set_constant_complex_single()' sets every (nonzero)
+ * value of a matrix or vector equal to a constant, single precision
+ * floating point complex number.
+ */
+int mtxdistfile_set_constant_complex_single(
+    struct mtxdistfile * mtxdistfile,
+    float a[2],
+    struct mtxmpierror * mpierror);
+
+/**
+ * `mtxdistfile_set_constant_integer_single()' sets every (nonzero)
+ * value of a matrix or vector equal to a constant integer.
+ */
+int mtxdistfile_set_constant_integer_single(
+    struct mtxdistfile * mtxdistfile,
+    int32_t a,
     struct mtxmpierror * mpierror);
 
 /*

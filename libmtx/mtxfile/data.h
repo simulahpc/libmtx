@@ -697,6 +697,69 @@ int mtxfile_data_copy_gather(
     const int64_t * srcdispls);
 
 /*
+ * Modifying values
+ */
+
+/**
+ * `mtxfile_data_set_constant_real_single()' sets every (nonzero)
+ * value of a matrix or vector equal to a constant, single precision
+ * floating point number.
+ */
+int mtxfile_data_set_constant_real_single(
+    union mtxfile_data * data,
+    enum mtxfile_object object,
+    enum mtxfile_format format,
+    enum mtxfile_field field,
+    enum mtx_precision precision,
+    int64_t size,
+    int64_t offset,
+    float a);
+
+/**
+ * `mtxfile_data_set_constant_real_double()' sets every (nonzero)
+ * value of a matrix or vector equal to a constant, double precision
+ * floating point number.
+ */
+int mtxfile_data_set_constant_real_double(
+    union mtxfile_data * data,
+    enum mtxfile_object object,
+    enum mtxfile_format format,
+    enum mtxfile_field field,
+    enum mtx_precision precision,
+    int64_t size,
+    int64_t offset,
+    double a);
+
+/**
+ * `mtxfile_data_set_constant_complex_single()' sets every (nonzero)
+ * value of a matrix or vector equal to a constant, single precision
+ * floating point complex number.
+ */
+int mtxfile_data_set_constant_complex_single(
+    union mtxfile_data * data,
+    enum mtxfile_object object,
+    enum mtxfile_format format,
+    enum mtxfile_field field,
+    enum mtx_precision precision,
+    int64_t size,
+    int64_t offset,
+    float a[2]);
+
+/**
+ * `mtxfile_data_set_constant_integer_single()' sets every (nonzero)
+ * value of a matrix or vector equal to a constant integer.
+ */
+int mtxfile_data_set_constant_integer_single(
+    union mtxfile_data * data,
+    enum mtxfile_object object,
+    enum mtxfile_format format,
+    enum mtxfile_field field,
+    enum mtx_precision precision,
+    int64_t size,
+    int64_t offset,
+    int32_t a);
+
+/*
  * I/O functions
  */
 

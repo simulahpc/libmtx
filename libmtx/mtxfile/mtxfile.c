@@ -1156,6 +1156,65 @@ int mtxfile_init_vector_coordinate_pattern(
 }
 
 /*
+ * Modifying values
+ */
+
+/**
+ * `mtxfile_set_constant_real_single()' sets every (nonzero) value of
+ * a matrix or vector equal to a constant, single precision floating
+ * point number.
+ */
+int mtxfile_set_constant_real_single(
+    struct mtxfile * mtxfile,
+    float a)
+{
+    int err;
+    int64_t num_data_lines;
+    err = mtxfile_size_num_data_lines(&mtxfile->size, &num_data_lines);
+    if (err)
+        return err;
+    return mtxfile_data_set_constant_real_single(
+        &mtxfile->data, mtxfile->header.object, mtxfile->header.format,
+        mtxfile->header.field, mtxfile->precision,
+        num_data_lines, 0, a);
+}
+
+/**
+ * `mtxfile_set_constant_real_double()' sets every (nonzero) value of
+ * a matrix or vector equal to a constant, double precision floating
+ * point number.
+ */
+int mtxfile_set_constant_real_double(
+    struct mtxfile * mtxfile,
+    double a)
+{
+    return MTX_SUCCESS;
+}
+
+/**
+ * `mtxfile_set_constant_complex_single()' sets every (nonzero) value
+ * of a matrix or vector equal to a constant, single precision
+ * floating point complex number.
+ */
+int mtxfile_set_constant_complex_single(
+    struct mtxfile * mtxfile,
+    float a[2])
+{
+    return MTX_SUCCESS;
+}
+
+/**
+ * `mtxfile_set_constant_integer_single()' sets every (nonzero) value
+ * of a matrix or vector equal to a constant integer.
+ */
+int mtxfile_set_constant_integer_single(
+    struct mtxfile * mtxfile,
+    int32_t a)
+{
+    return MTX_SUCCESS;
+}
+
+/*
  * I/O functions
  */
 
