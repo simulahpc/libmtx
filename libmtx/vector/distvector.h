@@ -324,6 +324,11 @@ int mtxdistvector_from_mtxfile(
 /**
  * ‘mtxdistvector_from_mtxdistfile()’ converts a vector in distributed
  * Matrix Market format to a distributed vector.
+ *
+ * TODO: This function should also ensure that the distributed vector
+ * is partitioned (that is, each location in the vector is assigned to
+ * a single process.)  Furthermore, the array and coordinate vectors
+ * on each process should ensure that there are no duplicate entries.
  */
 int mtxdistvector_from_mtxdistfile(
     struct mtxdistvector * distvector,

@@ -50,6 +50,7 @@
 #include <libmtx/util/partition.h>
 #include <libmtx/vector/array.h>
 #include <libmtx/vector/coordinate.h>
+#include <libmtx/vector/distvector.h>
 #include <libmtx/vector/vector.h>
 #include <libmtx/version.h>
 

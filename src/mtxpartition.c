@@ -128,11 +128,11 @@ static void program_options_print_help(
     fprintf(f, "\n");
     fprintf(f, " Options are:\n");
     fprintf(f, "  --precision=PRECISION\tprecision used to represent matrix or\n");
-    fprintf(f, "\t\t\tvector values: single or double. (default: double)\n");
+    fprintf(f, "\t\t\tvector values: ‘single’ or ‘double’. (default: ‘double’)\n");
     fprintf(f, "  -z, --gzip, --gunzip, --ungzip\tfilter files through gzip\n");
     fprintf(f, "  --output-path=FILE\tpath for partitioned Matrix Market files, where\n");
     fprintf(f, "\t\t\t'%%p' in the string is replaced with the number\n");
-    fprintf(f, "\t\t\tof each part (default: out%%p.mtx).\n");
+    fprintf(f, "\t\t\tof each part (default: ‘out%%p.mtx’).\n");
     fprintf(f, "  --rowperm-output-path=FILE\t"
             "path for outputting row permutations of each part,\n");
     fprintf(f, "\t\t\twhere '%%p' in the string is replaced with the number\n");
@@ -146,11 +146,11 @@ static void program_options_print_help(
     fprintf(f, "\t\t\t\tpart numbers assigned to each matrix or vector entry.\n");
     fprintf(f, "  --row-parts=N\t\tnumber of parts to use when partitioning rows.\n");
     fprintf(f, "  --row-partition=TYPE\tmethod of partitioning matrix or vector rows:\n");
-    fprintf(f, "\t\t\tblock, cyclic, block-cyclic, singleton or unstructured.\n");
-    fprintf(f, "\t\t\t(default: block)\n");
+    fprintf(f, "\t\t\t‘block’, ‘cyclic’, ‘block-cyclic’, ‘singleton’ or ‘unstructured’.\n");
+    fprintf(f, "\t\t\t(default: ‘block’)\n");
     fprintf(f, "  --row-partition-path=FILE\t"
             "path to Matrix Market file for reading row partition\n");
-    fprintf(f, "\t\t\t\twhen the row partition is `unstructured'.\n");
+    fprintf(f, "\t\t\t\twhen the row partition is ‘unstructured’.\n");
     fprintf(f, "  --row-partition-output-path=FILE\t"
             "path to Matrix Market file for writing row partition\n");
     fprintf(f, "  -v, --verbose\t\tbe more verbose\n");
