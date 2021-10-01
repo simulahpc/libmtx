@@ -594,6 +594,48 @@ int mtxdistvector_ddot(
     struct mtxmpierror * mpierror);
 
 /**
+ * `mtxdistvector_cdotu()' computes the product of the transpose of a
+ * complex row vector with another complex row vector in single
+ * precision floating point, ‘dot := x^T*y’.
+ */
+int mtxdistvector_cdotu(
+    const struct mtxdistvector * x,
+    const struct mtxdistvector * y,
+    float (* dot)[2],
+    struct mtxmpierror * mpierror);
+
+/**
+ * `mtxdistvector_zdotu()' computes the product of the transpose of a
+ * complex row vector with another complex row vector in double
+ * precision floating point, ‘dot := x^T*y’.
+ */
+int mtxdistvector_zdotu(
+    const struct mtxdistvector * x,
+    const struct mtxdistvector * y,
+    double (* dot)[2],
+    struct mtxmpierror * mpierror);
+
+/**
+ * `mtxdistvector_cdotc()' computes the Euclidean dot product of two
+ * complex vectors in single precision floating point, ‘dot := x^H*y’.
+ */
+int mtxdistvector_cdotc(
+    const struct mtxdistvector * x,
+    const struct mtxdistvector * y,
+    float (* dot)[2],
+    struct mtxmpierror * mpierror);
+
+/**
+ * `mtxdistvector_zdotc()' computes the Euclidean dot product of two
+ * complex vectors in double precision floating point, ‘dot := x^H*y’.
+ */
+int mtxdistvector_zdotc(
+    const struct mtxdistvector * x,
+    const struct mtxdistvector * y,
+    double (* dot)[2],
+    struct mtxmpierror * mpierror);
+
+/**
  * `mtxdistvector_snrm2()' computes the Euclidean norm of a vector in
  * single precision floating point.
  */

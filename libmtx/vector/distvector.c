@@ -849,7 +849,20 @@ int mtxdistvector_sdot(
     const struct mtxdistvector * x,
     const struct mtxdistvector * y,
     float * dot,
-    struct mtxmpierror * mpierror);
+    struct mtxmpierror * mpierror)
+{
+    int err;
+    float dotp;
+    err = mtxvector_sdot(&x->interior, &y->interior, &dotp);
+    if (mtxmpierror_allreduce(mpierror, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+    mpierror->mpierrcode = MPI_Allreduce(
+        &dotp, dot, 1, MPI_FLOAT, MPI_SUM, x->comm);
+    err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxmpierror_allreduce(mpierror, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+    return MTX_SUCCESS;
+}
 
 /**
  * `mtxdistvector_ddot()' computes the Euclidean dot product of two
@@ -859,7 +872,114 @@ int mtxdistvector_ddot(
     const struct mtxdistvector * x,
     const struct mtxdistvector * y,
     double * dot,
-    struct mtxmpierror * mpierror);
+    struct mtxmpierror * mpierror)
+{
+    int err;
+    double dotp;
+    err = mtxvector_ddot(&x->interior, &y->interior, &dotp);
+    if (mtxmpierror_allreduce(mpierror, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+    mpierror->mpierrcode = MPI_Allreduce(
+        &dotp, dot, 1, MPI_DOUBLE, MPI_SUM, x->comm);
+    err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxmpierror_allreduce(mpierror, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+    return MTX_SUCCESS;
+}
+
+/**
+ * `mtxdistvector_cdotu()' computes the product of the transpose of a
+ * complex row vector with another complex row vector in single
+ * precision floating point, ‘dot := x^T*y’.
+ */
+int mtxdistvector_cdotu(
+    const struct mtxdistvector * x,
+    const struct mtxdistvector * y,
+    float (* dot)[2],
+    struct mtxmpierror * mpierror)
+{
+    int err;
+    float dotp[2];
+    err = mtxvector_cdotu(&x->interior, &y->interior, &dotp);
+    if (mtxmpierror_allreduce(mpierror, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+    mpierror->mpierrcode = MPI_Allreduce(
+        dotp, *dot, 2, MPI_FLOAT, MPI_SUM, x->comm);
+    err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxmpierror_allreduce(mpierror, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+    return MTX_SUCCESS;
+}
+
+/**
+ * `mtxdistvector_zdotu()' computes the product of the transpose of a
+ * complex row vector with another complex row vector in double
+ * precision floating point, ‘dot := x^T*y’.
+ */
+int mtxdistvector_zdotu(
+    const struct mtxdistvector * x,
+    const struct mtxdistvector * y,
+    double (* dot)[2],
+    struct mtxmpierror * mpierror)
+{
+    int err;
+    double dotp[2];
+    err = mtxvector_zdotu(&x->interior, &y->interior, &dotp);
+    if (mtxmpierror_allreduce(mpierror, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+    mpierror->mpierrcode = MPI_Allreduce(
+        dotp, *dot, 2, MPI_DOUBLE, MPI_SUM, x->comm);
+    err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxmpierror_allreduce(mpierror, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+    return MTX_SUCCESS;
+}
+
+/**
+ * `mtxdistvector_cdotc()' computes the Euclidean dot product of two
+ * complex vectors in single precision floating point, ‘dot := x^H*y’.
+ */
+int mtxdistvector_cdotc(
+    const struct mtxdistvector * x,
+    const struct mtxdistvector * y,
+    float (* dot)[2],
+    struct mtxmpierror * mpierror)
+{
+    int err;
+    float dotp[2];
+    err = mtxvector_cdotc(&x->interior, &y->interior, &dotp);
+    if (mtxmpierror_allreduce(mpierror, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+    mpierror->mpierrcode = MPI_Allreduce(
+        dotp, *dot, 2, MPI_FLOAT, MPI_SUM, x->comm);
+    err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxmpierror_allreduce(mpierror, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+    return MTX_SUCCESS;
+}
+
+/**
+ * `mtxdistvector_zdotc()' computes the Euclidean dot product of two
+ * complex vectors in double precision floating point, ‘dot := x^H*y’.
+ */
+int mtxdistvector_zdotc(
+    const struct mtxdistvector * x,
+    const struct mtxdistvector * y,
+    double (* dot)[2],
+    struct mtxmpierror * mpierror)
+{
+    int err;
+    double dotp[2];
+    err = mtxvector_zdotc(&x->interior, &y->interior, &dotp);
+    if (mtxmpierror_allreduce(mpierror, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+    mpierror->mpierrcode = MPI_Allreduce(
+        dotp, *dot, 2, MPI_DOUBLE, MPI_SUM, x->comm);
+    err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxmpierror_allreduce(mpierror, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+    return MTX_SUCCESS;
+}
 
 /**
  * `mtxdistvector_snrm2()' computes the Euclidean norm of a vector in

@@ -260,6 +260,9 @@ int mtxvector_array_daypx(
 /**
  * `mtxvector_array_sdot()' computes the Euclidean dot product of two
  * vectors in single precision floating point.
+ *
+ * The vectors ‘x’ and ‘y’ must have the same field, precision and
+ * size.
  */
 int mtxvector_array_sdot(
     const struct mtxvector_array * x,
@@ -269,6 +272,9 @@ int mtxvector_array_sdot(
 /**
  * `mtxvector_array_ddot()' computes the Euclidean dot product of two
  * vectors in double precision floating point.
+ *
+ * The vectors ‘x’ and ‘y’ must have the same field, precision and
+ * size.
  */
 int mtxvector_array_ddot(
     const struct mtxvector_array * x,
@@ -279,6 +285,9 @@ int mtxvector_array_ddot(
  * `mtxvector_array_cdotu()' computes the product of the transpose of
  * a complex row vector with another complex row vector in single
  * precision floating point, ‘dot := x^T*y’.
+ *
+ * The vectors ‘x’ and ‘y’ must have the same field, precision and
+ * size.
  */
 int mtxvector_array_cdotu(
     const struct mtxvector_array * x,
@@ -289,6 +298,9 @@ int mtxvector_array_cdotu(
  * `mtxvector_array_zdotu()' computes the product of the transpose of
  * a complex row vector with another complex row vector in double
  * precision floating point, ‘dot := x^T*y’.
+ *
+ * The vectors ‘x’ and ‘y’ must have the same field, precision and
+ * size.
  */
 int mtxvector_array_zdotu(
     const struct mtxvector_array * x,
@@ -298,6 +310,9 @@ int mtxvector_array_zdotu(
 /**
  * `mtxvector_array_cdotc()' computes the Euclidean dot product of two
  * complex vectors in single precision floating point, ‘dot := x^H*y’.
+ *
+ * The vectors ‘x’ and ‘y’ must have the same field, precision and
+ * size.
  */
 int mtxvector_array_cdotc(
     const struct mtxvector_array * x,
@@ -307,6 +322,9 @@ int mtxvector_array_cdotc(
 /**
  * `mtxvector_array_zdotc()' computes the Euclidean dot product of two
  * complex vectors in double precision floating point, ‘dot := x^H*y’.
+ *
+ * The vectors ‘x’ and ‘y’ must have the same field, precision and
+ * size.
  */
 int mtxvector_array_zdotc(
     const struct mtxvector_array * x,
