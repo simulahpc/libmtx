@@ -432,17 +432,6 @@ int mtxfile_alloc_vector_coordinate(
     int64_t num_nonzeros);
 
 /**
- * `mtxfile_alloc_vector_coordinate()' allocates a vector in
- * coordinate format.
- */
-int mtxfile_alloc_vector_coordinate(
-    struct mtxfile * mtxfile,
-    enum mtxfile_field field,
-    enum mtx_precision precision,
-    int num_rows,
-    int64_t num_nonzeros);
-
-/**
  * `mtxfile_init_vector_coordinate_real_single()' allocates and initialises
  * a vector in coordinate format with real, single precision coefficients.
  */

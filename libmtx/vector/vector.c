@@ -426,7 +426,18 @@ int mtxvector_from_mtxfile(
  */
 int mtxvector_to_mtxfile(
     const struct mtxvector * vector,
-    struct mtxfile * mtxfile);
+    struct mtxfile * mtxfile)
+{
+    if (vector->type == mtxvector_array) {
+        return mtxvector_array_to_mtxfile(
+            &vector->storage.array, mtxfile);
+    } else if (vector->type == mtxvector_coordinate) {
+        return mtxvector_coordinate_to_mtxfile(
+            &vector->storage.coordinate, mtxfile);
+    } else {
+        return MTX_ERR_INVALID_VECTOR_TYPE;
+    }
+}
 
 /*
  * I/O functions

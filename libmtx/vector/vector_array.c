@@ -330,7 +330,44 @@ int mtxvector_array_from_mtxfile(
  */
 int mtxvector_array_to_mtxfile(
     const struct mtxvector_array * vector,
-    struct mtxfile * mtxfile);
+    struct mtxfile * mtxfile)
+{
+    if (vector->field == mtx_field_real) {
+        if (vector->precision == mtx_single) {
+            return mtxfile_init_vector_array_real_single(
+                mtxfile, vector->size, vector->data.real_single);
+        } else if (vector->precision == mtx_double) {
+            return mtxfile_init_vector_array_real_double(
+                mtxfile, vector->size, vector->data.real_double);
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else if (vector->field == mtx_field_complex) {
+        if (vector->precision == mtx_single) {
+            return mtxfile_init_vector_array_complex_single(
+                mtxfile, vector->size, vector->data.complex_single);
+        } else if (vector->precision == mtx_double) {
+            return mtxfile_init_vector_array_complex_double(
+                mtxfile, vector->size, vector->data.complex_double);
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else if (vector->field == mtx_field_integer) {
+        if (vector->precision == mtx_single) {
+            return mtxfile_init_vector_array_integer_single(
+                mtxfile, vector->size, vector->data.integer_single);
+        } else if (vector->precision == mtx_double) {
+            return mtxfile_init_vector_array_integer_double(
+                mtxfile, vector->size, vector->data.integer_double);
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else if (vector->field == mtx_field_pattern) {
+        return MTX_ERR_INCOMPATIBLE_FIELD;
+    } else {
+        return MTX_ERR_INVALID_FIELD;
+    }
+}
 
 /*
  * Level 1 BLAS operations

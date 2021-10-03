@@ -456,7 +456,95 @@ int mtxvector_coordinate_from_mtxfile(
  */
 int mtxvector_coordinate_to_mtxfile(
     const struct mtxvector_coordinate * vector,
-    struct mtxfile * mtxfile);
+    struct mtxfile * mtxfile)
+{
+    int err;
+    if (vector->field == mtx_field_real) {
+        err = mtxfile_alloc_vector_coordinate(
+            mtxfile, mtxfile_real, vector->precision,
+            vector->size, vector->num_nonzeros);
+        if (err)
+            return err;
+        if (vector->precision == mtx_single) {
+            struct mtxfile_vector_coordinate_real_single * data =
+                mtxfile->data.vector_coordinate_real_single;
+            for (int64_t k = 0; k < vector->num_nonzeros; k++) {
+                data[k].i = vector->indices[k];
+                data[k].a = vector->data.real_single[k];
+            }
+        } else if (vector->precision == mtx_double) {
+            struct mtxfile_vector_coordinate_real_double * data =
+                mtxfile->data.vector_coordinate_real_double;
+            for (int64_t k = 0; k < vector->num_nonzeros; k++) {
+                data[k].i = vector->indices[k];
+                data[k].a = vector->data.real_double[k];
+            }
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else if (vector->field == mtx_field_complex) {
+        err = mtxfile_alloc_vector_coordinate(
+            mtxfile, mtxfile_complex, vector->precision,
+            vector->size, vector->num_nonzeros);
+        if (err)
+            return err;
+        if (vector->precision == mtx_single) {
+            struct mtxfile_vector_coordinate_complex_single * data =
+                mtxfile->data.vector_coordinate_complex_single;
+            for (int64_t k = 0; k < vector->num_nonzeros; k++) {
+                data[k].i = vector->indices[k];
+                data[k].a[0] = vector->data.complex_single[k][0];
+                data[k].a[1] = vector->data.complex_single[k][1];
+            }
+        } else if (vector->precision == mtx_double) {
+            struct mtxfile_vector_coordinate_complex_double * data =
+                mtxfile->data.vector_coordinate_complex_double;
+            for (int64_t k = 0; k < vector->num_nonzeros; k++) {
+                data[k].i = vector->indices[k];
+                data[k].a[0] = vector->data.complex_double[k][0];
+                data[k].a[1] = vector->data.complex_double[k][1];
+            }
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else if (vector->field == mtx_field_integer) {
+        err = mtxfile_alloc_vector_coordinate(
+            mtxfile, mtxfile_integer, vector->precision,
+            vector->size, vector->num_nonzeros);
+        if (err)
+            return err;
+        if (vector->precision == mtx_single) {
+            struct mtxfile_vector_coordinate_integer_single * data =
+                mtxfile->data.vector_coordinate_integer_single;
+            for (int64_t k = 0; k < vector->num_nonzeros; k++) {
+                data[k].i = vector->indices[k];
+                data[k].a = vector->data.integer_single[k];
+            }
+        } else if (vector->precision == mtx_double) {
+            struct mtxfile_vector_coordinate_integer_double * data =
+                mtxfile->data.vector_coordinate_integer_double;
+            for (int64_t k = 0; k < vector->num_nonzeros; k++) {
+                data[k].i = vector->indices[k];
+                data[k].a = vector->data.integer_double[k];
+            }
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else if (vector->field == mtx_field_pattern) {
+        err = mtxfile_alloc_vector_coordinate(
+            mtxfile, mtxfile_pattern, mtx_single,
+            vector->size, vector->num_nonzeros);
+        if (err)
+            return err;
+        struct mtxfile_vector_coordinate_pattern * data =
+            mtxfile->data.vector_coordinate_pattern;
+        for (int64_t k = 0; k < vector->num_nonzeros; k++)
+            data[k].i = vector->indices[k];
+    } else {
+        return MTX_ERR_INVALID_FIELD;
+    }
+    return MTX_SUCCESS;
+}
 
 /*
  * Level 1 BLAS operations
