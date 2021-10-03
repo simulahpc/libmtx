@@ -475,7 +475,57 @@ int mtxvector_coordinate_copy(
  */
 int mtxvector_coordinate_sscal(
     float a,
-    struct mtxvector_coordinate * x);
+    struct mtxvector_coordinate * x)
+{
+    if (x->field == mtx_field_real) {
+        if (x->precision == mtx_single) {
+            float * xdata = x->data.real_single;
+#ifdef LIBMTX_HAVE_BLAS
+            cblas_sscal(x->num_nonzeros, xdata, 1);
+#else
+            for (int64_t k = 0; k < x->num_nonzeros; k++)
+                xdata[k] *= a;
+#endif
+        } else if (x->precision == mtx_double) {
+            double * xdata = x->data.real_double;
+#ifdef LIBMTX_HAVE_BLAS
+            cblas_dscal(x->num_nonzeros, xdata, 1);
+#else
+            for (int64_t k = 0; k < x->num_nonzeros; k++)
+                xdata[k] *= a;
+#endif
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else if (x->field == mtx_field_complex) {
+        if (x->precision == mtx_single) {
+            float (* xdata)[2] = x->data.complex_single;
+#ifdef LIBMTX_HAVE_BLAS
+            cblas_sscal(2*x->num_nonzeros, xdata, 1);
+#else
+            for (int64_t k = 0; k < x->num_nonzeros; k++) {
+                xdata[k][0] *= a;
+                xdata[k][1] *= a;
+            }
+#endif
+        } else if (x->precision == mtx_double) {
+            double (* xdata)[2] = x->data.complex_double;
+#ifdef LIBMTX_HAVE_BLAS
+            cblas_dscal(2*x->num_nonzeros, xdata, 1);
+#else
+            for (int64_t k = 0; k < x->num_nonzeros; k++) {
+                xdata[k][0] *= a;
+                xdata[k][1] *= a;
+            }
+#endif
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else {
+        return MTX_ERR_INVALID_FIELD;
+    }
+    return MTX_SUCCESS;
+}
 
 /**
  * `mtxvector_coordinate_dscal()' scales a vector by a double precision floating
@@ -483,7 +533,57 @@ int mtxvector_coordinate_sscal(
  */
 int mtxvector_coordinate_dscal(
     double a,
-    struct mtxvector_coordinate * x);
+    struct mtxvector_coordinate * x)
+{
+    if (x->field == mtx_field_real) {
+        if (x->precision == mtx_single) {
+            float * xdata = x->data.real_single;
+#ifdef LIBMTX_HAVE_BLAS
+            cblas_sscal(x->num_nonzeros, xdata, 1);
+#else
+            for (int64_t k = 0; k < x->num_nonzeros; k++)
+                xdata[k] *= a;
+#endif
+        } else if (x->precision == mtx_double) {
+            double * xdata = x->data.real_double;
+#ifdef LIBMTX_HAVE_BLAS
+            cblas_dscal(x->num_nonzeros, xdata, 1);
+#else
+            for (int64_t k = 0; k < x->num_nonzeros; k++)
+                xdata[k] *= a;
+#endif
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else if (x->field == mtx_field_complex) {
+        if (x->precision == mtx_single) {
+            float (* xdata)[2] = x->data.complex_single;
+#ifdef LIBMTX_HAVE_BLAS
+            cblas_sscal(2*x->num_nonzeros, xdata, 1);
+#else
+            for (int64_t k = 0; k < x->num_nonzeros; k++) {
+                xdata[k][0] *= a;
+                xdata[k][1] *= a;
+            }
+#endif
+        } else if (x->precision == mtx_double) {
+            double (* xdata)[2] = x->data.complex_double;
+#ifdef LIBMTX_HAVE_BLAS
+            cblas_dscal(2*x->num_nonzeros, xdata, 1);
+#else
+            for (int64_t k = 0; k < x->num_nonzeros; k++) {
+                xdata[k][0] *= a;
+                xdata[k][1] *= a;
+            }
+#endif
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else {
+        return MTX_ERR_INVALID_FIELD;
+    }
+    return MTX_SUCCESS;
+}
 
 /**
  * `mtxvector_coordinate_saxpy()' adds a vector to another vector multiplied by a

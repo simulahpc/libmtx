@@ -790,7 +790,14 @@ int mtxdistvector_copy(
 int mtxdistvector_sscal(
     float a,
     struct mtxdistvector * x,
-    struct mtxmpierror * mpierror);
+    struct mtxmpierror * mpierror)
+{
+    int err;
+    err = mtxvector_sscal(a, &x->interior);
+    if (mtxmpierror_allreduce(mpierror, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+    return MTX_SUCCESS;
+}
 
 /**
  * `mtxdistvector_dscal()' scales a vector by a double precision
@@ -799,7 +806,14 @@ int mtxdistvector_sscal(
 int mtxdistvector_dscal(
     double a,
     struct mtxdistvector * x,
-    struct mtxmpierror * mpierror);
+    struct mtxmpierror * mpierror)
+{
+    int err;
+    err = mtxvector_dscal(a, &x->interior);
+    if (mtxmpierror_allreduce(mpierror, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+    return MTX_SUCCESS;
+}
 
 /**
  * `mtxdistvector_saxpy()' adds a vector to another vector multiplied

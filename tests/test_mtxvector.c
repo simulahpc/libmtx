@@ -1040,6 +1040,227 @@ int test_mtxvector_nrm2(void)
 }
 
 /**
+ * `test_mtxvector_scal()' tests scaling vectors by a constant.
+ */
+int test_mtxvector_scal(void)
+{
+    int err;
+
+    /*
+     * Array formats
+     */
+
+    {
+        struct mtxvector x;
+        float data[] = {1.0f, 1.0f, 1.0f, 2.0f, 3.0f};
+        int size = sizeof(data) / sizeof(*data);
+        err = mtxvector_init_array_real_single(&x, size, data);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        err = mtxvector_sscal(2.0f, &x);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        TEST_ASSERT_EQ(2.0f, x.storage.array.data.real_single[0]);
+        TEST_ASSERT_EQ(2.0f, x.storage.array.data.real_single[1]);
+        TEST_ASSERT_EQ(2.0f, x.storage.array.data.real_single[2]);
+        TEST_ASSERT_EQ(4.0f, x.storage.array.data.real_single[3]);
+        TEST_ASSERT_EQ(6.0f, x.storage.array.data.real_single[4]);
+        err = mtxvector_dscal(2.0, &x);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        TEST_ASSERT_EQ(4.0f, x.storage.array.data.real_single[0]);
+        TEST_ASSERT_EQ(4.0f, x.storage.array.data.real_single[1]);
+        TEST_ASSERT_EQ(4.0f, x.storage.array.data.real_single[2]);
+        TEST_ASSERT_EQ(8.0f, x.storage.array.data.real_single[3]);
+        TEST_ASSERT_EQ(12.0f, x.storage.array.data.real_single[4]);
+        mtxvector_free(&x);
+    }
+
+    {
+        struct mtxvector x;
+        double data[] = {1.0, 1.0, 1.0, 2.0, 3.0};
+        int size = sizeof(data) / sizeof(*data);
+        err = mtxvector_init_array_real_double(&x, size, data);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        err = mtxvector_sscal(2.0f, &x);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        TEST_ASSERT_EQ(2.0, x.storage.array.data.real_double[0]);
+        TEST_ASSERT_EQ(2.0, x.storage.array.data.real_double[1]);
+        TEST_ASSERT_EQ(2.0, x.storage.array.data.real_double[2]);
+        TEST_ASSERT_EQ(4.0, x.storage.array.data.real_double[3]);
+        TEST_ASSERT_EQ(6.0, x.storage.array.data.real_double[4]);
+        err = mtxvector_dscal(2.0, &x);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        TEST_ASSERT_EQ(4.0, x.storage.array.data.real_double[0]);
+        TEST_ASSERT_EQ(4.0, x.storage.array.data.real_double[1]);
+        TEST_ASSERT_EQ(4.0, x.storage.array.data.real_double[2]);
+        TEST_ASSERT_EQ(8.0, x.storage.array.data.real_double[3]);
+        TEST_ASSERT_EQ(12.0, x.storage.array.data.real_double[4]);
+        mtxvector_free(&x);
+    }
+
+    {
+        struct mtxvector x;
+        float data[][2] = {{1.0f,1.0f}, {1.0f,2.0f}, {3.0f,0.0f}};
+        int size = sizeof(data) / sizeof(*data);
+        err = mtxvector_init_array_complex_single(&x, size, data);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        err = mtxvector_sscal(2.0f, &x);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        TEST_ASSERT_EQ(2.0f, x.storage.array.data.complex_single[0][0]);
+        TEST_ASSERT_EQ(2.0f, x.storage.array.data.complex_single[0][1]);
+        TEST_ASSERT_EQ(2.0f, x.storage.array.data.complex_single[1][0]);
+        TEST_ASSERT_EQ(4.0f, x.storage.array.data.complex_single[1][1]);
+        TEST_ASSERT_EQ(6.0f, x.storage.array.data.complex_single[2][0]);
+        TEST_ASSERT_EQ(0.0f, x.storage.array.data.complex_single[2][1]);
+        err = mtxvector_dscal(2.0, &x);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        TEST_ASSERT_EQ(4.0f, x.storage.array.data.complex_single[0][0]);
+        TEST_ASSERT_EQ(4.0f, x.storage.array.data.complex_single[0][1]);
+        TEST_ASSERT_EQ(4.0f, x.storage.array.data.complex_single[1][0]);
+        TEST_ASSERT_EQ(8.0f, x.storage.array.data.complex_single[1][1]);
+        TEST_ASSERT_EQ(12.0f, x.storage.array.data.complex_single[2][0]);
+        TEST_ASSERT_EQ(0.0f, x.storage.array.data.complex_single[2][1]);
+        mtxvector_free(&x);
+    }
+
+    {
+        struct mtxvector x;
+        double data[][2] = {{1.0,1.0}, {1.0,2.0}, {3.0,0.0}};
+        int size = sizeof(data) / sizeof(*data);
+        err = mtxvector_init_array_complex_double(&x, size, data);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        err = mtxvector_sscal(2.0f, &x);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        TEST_ASSERT_EQ(2.0, x.storage.array.data.complex_double[0][0]);
+        TEST_ASSERT_EQ(2.0, x.storage.array.data.complex_double[0][1]);
+        TEST_ASSERT_EQ(2.0, x.storage.array.data.complex_double[1][0]);
+        TEST_ASSERT_EQ(4.0, x.storage.array.data.complex_double[1][1]);
+        TEST_ASSERT_EQ(6.0, x.storage.array.data.complex_double[2][0]);
+        TEST_ASSERT_EQ(0.0, x.storage.array.data.complex_double[2][1]);
+        err = mtxvector_dscal(2.0, &x);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        TEST_ASSERT_EQ(4.0, x.storage.array.data.complex_double[0][0]);
+        TEST_ASSERT_EQ(4.0, x.storage.array.data.complex_double[0][1]);
+        TEST_ASSERT_EQ(4.0, x.storage.array.data.complex_double[1][0]);
+        TEST_ASSERT_EQ(8.0, x.storage.array.data.complex_double[1][1]);
+        TEST_ASSERT_EQ(12.0, x.storage.array.data.complex_double[2][0]);
+        TEST_ASSERT_EQ(0.0, x.storage.array.data.complex_double[2][1]);
+        mtxvector_free(&x);
+    }
+
+    /*
+     * Coordinate formats
+     */
+
+    {
+        struct mtxvector x;
+        int size = 12;
+        int indices[] = {0, 3, 5, 6, 9};
+        float data[] = {1.0f, 1.0f, 1.0f, 2.0f, 3.0f};
+        int num_nonzeros = sizeof(data) / sizeof(*data);
+        err = mtxvector_init_coordinate_real_single(
+            &x, size, num_nonzeros, indices, data);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        err = mtxvector_sscal(2.0f, &x);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        TEST_ASSERT_EQ(2.0f, x.storage.coordinate.data.real_single[0]);
+        TEST_ASSERT_EQ(2.0f, x.storage.coordinate.data.real_single[1]);
+        TEST_ASSERT_EQ(2.0f, x.storage.coordinate.data.real_single[2]);
+        TEST_ASSERT_EQ(4.0f, x.storage.coordinate.data.real_single[3]);
+        TEST_ASSERT_EQ(6.0f, x.storage.coordinate.data.real_single[4]);
+        err = mtxvector_dscal(2.0, &x);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        TEST_ASSERT_EQ(4.0f, x.storage.coordinate.data.real_single[0]);
+        TEST_ASSERT_EQ(4.0f, x.storage.coordinate.data.real_single[1]);
+        TEST_ASSERT_EQ(4.0f, x.storage.coordinate.data.real_single[2]);
+        TEST_ASSERT_EQ(8.0f, x.storage.coordinate.data.real_single[3]);
+        TEST_ASSERT_EQ(12.0f, x.storage.coordinate.data.real_single[4]);
+        mtxvector_free(&x);
+    }
+
+    {
+        struct mtxvector x;
+        int size = 12;
+        int indices[] = {0, 3, 5, 6, 9};
+        double data[] = {1.0, 1.0, 1.0, 2.0, 3.0};
+        int num_nonzeros = sizeof(data) / sizeof(*data);
+        err = mtxvector_init_coordinate_real_double(
+            &x, size, num_nonzeros, indices, data);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        err = mtxvector_sscal(2.0f, &x);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        TEST_ASSERT_EQ(2.0f, x.storage.coordinate.data.real_double[0]);
+        TEST_ASSERT_EQ(2.0f, x.storage.coordinate.data.real_double[1]);
+        TEST_ASSERT_EQ(2.0f, x.storage.coordinate.data.real_double[2]);
+        TEST_ASSERT_EQ(4.0f, x.storage.coordinate.data.real_double[3]);
+        TEST_ASSERT_EQ(6.0f, x.storage.coordinate.data.real_double[4]);
+        err = mtxvector_dscal(2.0, &x);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        TEST_ASSERT_EQ(4.0f, x.storage.coordinate.data.real_double[0]);
+        TEST_ASSERT_EQ(4.0f, x.storage.coordinate.data.real_double[1]);
+        TEST_ASSERT_EQ(4.0f, x.storage.coordinate.data.real_double[2]);
+        TEST_ASSERT_EQ(8.0f, x.storage.coordinate.data.real_double[3]);
+        TEST_ASSERT_EQ(12.0f, x.storage.coordinate.data.real_double[4]);
+        mtxvector_free(&x);
+    }
+
+    {
+        struct mtxvector x;
+        int size = 12;
+        int indices[] = {0, 3, 5, 6, 9};
+        float data[][2] = {{1.0f,1.0f}, {1.0f,2.0f}, {3.0f,0.0f}};
+        int64_t num_nonzeros = sizeof(data) / sizeof(*data);
+        err = mtxvector_init_coordinate_complex_single(
+            &x, size, num_nonzeros, indices, data);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        err = mtxvector_sscal(2.0f, &x);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        TEST_ASSERT_EQ(2.0f, x.storage.coordinate.data.complex_single[0][0]);
+        TEST_ASSERT_EQ(2.0f, x.storage.coordinate.data.complex_single[0][1]);
+        TEST_ASSERT_EQ(2.0f, x.storage.coordinate.data.complex_single[1][0]);
+        TEST_ASSERT_EQ(4.0f, x.storage.coordinate.data.complex_single[1][1]);
+        TEST_ASSERT_EQ(6.0f, x.storage.coordinate.data.complex_single[2][0]);
+        TEST_ASSERT_EQ(0.0f, x.storage.coordinate.data.complex_single[2][1]);
+        err = mtxvector_dscal(2.0, &x);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        TEST_ASSERT_EQ(4.0f, x.storage.coordinate.data.complex_single[0][0]);
+        TEST_ASSERT_EQ(4.0f, x.storage.coordinate.data.complex_single[0][1]);
+        TEST_ASSERT_EQ(4.0f, x.storage.coordinate.data.complex_single[1][0]);
+        TEST_ASSERT_EQ(8.0f, x.storage.coordinate.data.complex_single[1][1]);
+        TEST_ASSERT_EQ(12.0f, x.storage.coordinate.data.complex_single[2][0]);
+        TEST_ASSERT_EQ(0.0f, x.storage.coordinate.data.complex_single[2][1]);
+        mtxvector_free(&x);
+    }
+
+    {
+        struct mtxvector x;
+        int size = 12;
+        int indices[] = {0, 3, 5, 6, 9};
+        double data[][2] = {{1.0,1.0}, {1.0,2.0}, {3.0,0.0}};
+        int64_t num_nonzeros = sizeof(data) / sizeof(*data);
+        err = mtxvector_init_coordinate_complex_double(
+            &x, size, num_nonzeros, indices, data);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        err = mtxvector_sscal(2.0f, &x);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        TEST_ASSERT_EQ(2.0f, x.storage.coordinate.data.complex_double[0][0]);
+        TEST_ASSERT_EQ(2.0f, x.storage.coordinate.data.complex_double[0][1]);
+        TEST_ASSERT_EQ(2.0f, x.storage.coordinate.data.complex_double[1][0]);
+        TEST_ASSERT_EQ(4.0f, x.storage.coordinate.data.complex_double[1][1]);
+        TEST_ASSERT_EQ(6.0f, x.storage.coordinate.data.complex_double[2][0]);
+        TEST_ASSERT_EQ(0.0f, x.storage.coordinate.data.complex_double[2][1]);
+        err = mtxvector_dscal(2.0, &x);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        TEST_ASSERT_EQ(4.0f, x.storage.coordinate.data.complex_double[0][0]);
+        TEST_ASSERT_EQ(4.0f, x.storage.coordinate.data.complex_double[0][1]);
+        TEST_ASSERT_EQ(4.0f, x.storage.coordinate.data.complex_double[1][0]);
+        TEST_ASSERT_EQ(8.0f, x.storage.coordinate.data.complex_double[1][1]);
+        TEST_ASSERT_EQ(12.0f, x.storage.coordinate.data.complex_double[2][0]);
+        TEST_ASSERT_EQ(0.0f, x.storage.coordinate.data.complex_double[2][1]);
+        mtxvector_free(&x);
+    }
+    return TEST_SUCCESS;
+}
+
+/**
  * `main()' entry point and test driver.
  */
 int main(int argc, char * argv[])
@@ -1048,6 +1269,7 @@ int main(int argc, char * argv[])
     TEST_RUN(test_mtxvector_from_mtxfile);
     TEST_RUN(test_mtxvector_dot);
     TEST_RUN(test_mtxvector_nrm2);
+    TEST_RUN(test_mtxvector_scal);
     TEST_SUITE_END();
     return (TEST_SUITE_STATUS == TEST_SUCCESS) ?
         EXIT_SUCCESS : EXIT_FAILURE;

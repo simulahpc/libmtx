@@ -652,7 +652,16 @@ int mtxvector_copy(
  */
 int mtxvector_sscal(
     float a,
-    struct mtxvector * x);
+    struct mtxvector * x)
+{
+    if (x->type == mtxvector_array) {
+        return mtxvector_array_sscal(a, &x->storage.array);
+    } else if (x->type == mtxvector_coordinate) {
+        return mtxvector_coordinate_sscal(a, &x->storage.coordinate);
+    } else {
+        return MTX_ERR_INVALID_VECTOR_TYPE;
+    }
+}
 
 /**
  * `mtxvector_dscal()' scales a vector by a double precision floating
@@ -660,7 +669,16 @@ int mtxvector_sscal(
  */
 int mtxvector_dscal(
     double a,
-    struct mtxvector * x);
+    struct mtxvector * x)
+{
+    if (x->type == mtxvector_array) {
+        return mtxvector_array_dscal(a, &x->storage.array);
+    } else if (x->type == mtxvector_coordinate) {
+        return mtxvector_coordinate_dscal(a, &x->storage.coordinate);
+    } else {
+        return MTX_ERR_INVALID_VECTOR_TYPE;
+    }
+}
 
 /**
  * `mtxvector_saxpy()' adds a vector to another vector multiplied by a
