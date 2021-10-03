@@ -2566,6 +2566,9 @@ int mtxfile_data_fwrite(
                             data->vector_coordinate_complex_single[k].a[0]);
                         if (ret < 0) { err = MTX_ERR_ERRNO; goto fwrite_exit; }
                         if (bytes_written) *bytes_written += ret;
+                        ret = fputc(' ', f);
+                        if (ret == EOF) { err = MTX_ERR_ERRNO; goto fwrite_exit; }
+                        if (bytes_written) (*bytes_written)++;
                         ret = fprintf(
                             f, fmt ? fmt : "%f",
                             data->vector_coordinate_complex_single[k].a[1]);
@@ -2586,6 +2589,9 @@ int mtxfile_data_fwrite(
                             data->vector_coordinate_complex_double[k].a[0]);
                         if (ret < 0) { err = MTX_ERR_ERRNO; goto fwrite_exit; }
                         if (bytes_written) *bytes_written += ret;
+                        ret = fputc(' ', f);
+                        if (ret == EOF) { err = MTX_ERR_ERRNO; goto fwrite_exit; }
+                        if (bytes_written) (*bytes_written)++;
                         ret = fprintf(
                             f, fmt ? fmt : "%f",
                             data->vector_coordinate_complex_double[k].a[1]);
