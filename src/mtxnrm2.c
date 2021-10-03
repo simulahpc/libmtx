@@ -443,7 +443,7 @@ static int distvector_nrm2(
 
     if (verbose > 0) {
         clock_gettime(CLOCK_MONOTONIC, &t1);
-        fprintf(diagf, "%.6f seconds\n",
+        fprintf(diagf, "%'.6f seconds\n",
                 timespec_duration(t0, t1));
     }
 
@@ -464,7 +464,7 @@ static int distvector_nrm2(
         }
         if (verbose > 0) {
             clock_gettime(CLOCK_MONOTONIC, &t1);
-            fprintf(diagf, "%.6f seconds\n",
+            fprintf(diagf, "%'.6f seconds\n",
                     timespec_duration(t0, t1));
         }
         if (!quiet) {
@@ -487,7 +487,7 @@ static int distvector_nrm2(
         }
         if (verbose > 0) {
             clock_gettime(CLOCK_MONOTONIC, &t1);
-            fprintf(diagf, "%.6f seconds\n",
+            fprintf(diagf, "%'.6f seconds\n",
                     timespec_duration(t0, t1));
         }
         if (!quiet) {
@@ -704,7 +704,7 @@ static int vector_nrm2(
 
     if (verbose > 0) {
         clock_gettime(CLOCK_MONOTONIC, &t1);
-        fprintf(diagf, "%.6f seconds\n",
+        fprintf(diagf, "%'.6f seconds\n",
                 timespec_duration(t0, t1));
     }
 
@@ -728,7 +728,7 @@ static int vector_nrm2(
             }
             if (verbose > 0) {
                 clock_gettime(CLOCK_MONOTONIC, &t1);
-                fprintf(diagf, "%.6f seconds\n",
+                fprintf(diagf, "%'.6f seconds\n",
                         timespec_duration(t0, t1));
             }
             if (!quiet) {
@@ -751,7 +751,7 @@ static int vector_nrm2(
             }
             if (verbose > 0) {
                 clock_gettime(CLOCK_MONOTONIC, &t1);
-                fprintf(diagf, "%.6f seconds\n",
+                fprintf(diagf, "%'.6f seconds\n",
                         timespec_duration(t0, t1));
             }
             if (!quiet) {

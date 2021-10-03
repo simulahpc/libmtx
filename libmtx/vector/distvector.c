@@ -606,12 +606,27 @@ int mtxdistvector_from_mtxdistfile(
 }
 
 /**
- * ‘mtxdistvector_to_mtxfile()’ converts a distributed vector to a
- * vector in Matrix Market format.
+ * ‘mtxdistvector_to_mtxdistfile()’ converts a distributed vector to a
+ * vector in a distributed Matrix Market format.
  */
-int mtxdistvector_to_mtxfile(
+int mtxdistvector_to_mtxdistfile(
     const struct mtxdistvector * distvector,
-    struct mtxfile * mtxfile);
+    struct mtxdistfile * mtxdistfile,
+    struct mtxmpierror * mpierror)
+{
+    int err;
+    struct mtxfile mtxfile;
+    err = mtxvector_to_mtxfile(&distvector->interior, &mtxfile);
+    if (mtxmpierror_allreduce(mpierror, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+    err = mtxdistfile_init(mtxdistfile, &mtxfile, distvector->comm, mpierror);
+    if (err) {
+        mtxfile_free(&mtxfile);
+        return err;
+    }
+    mtxfile_free(&mtxfile);
+    return MTX_SUCCESS;
+}
 
 /*
  * I/O functions
@@ -732,6 +747,56 @@ int mtxdistvector_fwrite(
     FILE * f,
     const char * format,
     int64_t * bytes_written);
+
+/**
+ * `mtxdistvector_fwrite_shared()' writes a distributed vector as a
+ * Matrix Market file to a single stream that is shared by every
+ * process in the communicator.
+ *
+ * If `format' is `NULL', then the format specifier '%d' is used to
+ * print integers and '%f' is used to print floating point
+ * numbers. Otherwise, the given format string is used when printing
+ * numerical values.
+ *
+ * The format string follows the conventions of `printf'. If the field
+ * is `real', `double' or `complex', then the format specifiers '%e',
+ * '%E', '%f', '%F', '%g' or '%G' may be used. If the field is
+ * `integer', then the format specifier must be '%d'. The format
+ * string is ignored if the field is `pattern'. Field width and
+ * precision may be specified (e.g., "%3.1f"), but variable field
+ * width and precision (e.g., "%*.*f"), as well as length modifiers
+ * (e.g., "%Lf") are not allowed.
+ *
+ * If it is not `NULL', then the number of bytes written to the stream
+ * is returned in `bytes_written'.
+ *
+ * This function performs collective communication and therefore
+ * requires every process in the communicator to perform matching
+ * calls to the function.
+ */
+int mtxdistvector_fwrite_shared(
+    const struct mtxdistvector * mtxdistvector,
+    FILE * f,
+    const char * format,
+    int64_t * bytes_written,
+    struct mtxmpierror * mpierror)
+{
+    int err;
+    struct mtxdistfile mtxdistfile;
+    err = mtxdistvector_to_mtxdistfile(
+        mtxdistvector, &mtxdistfile, mpierror);
+    if (err)
+        return err;
+
+    err = mtxdistfile_fwrite_shared(
+        &mtxdistfile, f, format, bytes_written, mpierror);
+    if (err) {
+        mtxdistfile_free(&mtxdistfile);
+        return err;
+    }
+    mtxdistfile_free(&mtxdistfile);
+    return MTX_SUCCESS;
+}
 
 #ifdef LIBMTX_HAVE_LIBZ
 /**

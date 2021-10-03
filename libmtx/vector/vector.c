@@ -608,7 +608,23 @@ int mtxvector_fwrite(
     const struct mtxvector * vector,
     FILE * f,
     const char * format,
-    int64_t * bytes_written);
+    int64_t * bytes_written)
+{
+    int err;
+    struct mtxfile mtxfile;
+    err = mtxvector_to_mtxfile(vector, &mtxfile);
+    if (err)
+        return err;
+
+    err = mtxfile_fwrite(
+        &mtxfile, f, format, bytes_written);
+    if (err) {
+        mtxfile_free(&mtxfile);
+        return err;
+    }
+    mtxfile_free(&mtxfile);
+    return MTX_SUCCESS;
+}
 
 #ifdef LIBMTX_HAVE_LIBZ
 /**
