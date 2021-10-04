@@ -777,7 +777,8 @@ int mtxfile_alloc_matrix_coordinate(
     int err;
     if (field != mtxfile_real &&
         field != mtxfile_complex &&
-        field != mtxfile_integer)
+        field != mtxfile_integer &&
+        field != mtxfile_pattern)
         return MTX_ERR_INVALID_MTX_FIELD;
     if (symmetry != mtxfile_general &&
         symmetry != mtxfile_symmetric &&
@@ -1971,6 +1972,45 @@ int mtxfile_init_from_row_partition(
         mtxfile_free(dst);
         return err;
     }
+    return MTX_SUCCESS;
+}
+
+/*
+ * Reordering
+ */
+
+/**
+ * `mtxfile_permute()' permutes the elements of a matrix or vector in
+ * Matrix Market format based on given row and column permutations.
+ *
+ * The array ‘row_permutation’ should be a permutation of the integers
+ * ‘1,2,...,M’, where ‘M’ is the number of rows in the matrix or
+ * vector.  If the Matrix Market file represents a matrix, then the
+ * array ‘column_permutation’ should be a permutation of the integers
+ * ‘1,2,...,N’, where ‘N’ is the number of columns in the matrix.  The
+ * elements belonging to row ‘i’ and column ‘j’ in the permuted matrix
+ * are then equal to the elements in row ‘row_permutation[i-1]’ and
+ * column ‘column_permutation[j-1]’ in the original matrix, for
+ * ‘i=1,2,...,M’ and ‘j=1,2,...,N’.
+ */
+int mtxfile_permute(
+    struct mtxfile * mtxfile,
+    const int * row_permutation,
+    const int * column_permutation)
+{
+    int err;
+    int64_t num_data_lines;
+    err = mtxfile_size_num_data_lines(
+        &mtxfile->size, &num_data_lines);
+    if (err)
+        return err;
+    err = mtxfile_data_permute(
+        &mtxfile->data, mtxfile->header.object, mtxfile->header.format,
+        mtxfile->header.field, mtxfile->precision, num_data_lines, 0,
+        mtxfile->size.num_rows, row_permutation,
+        mtxfile->size.num_columns, column_permutation);
+    if (err)
+        return err;
     return MTX_SUCCESS;
 }
 

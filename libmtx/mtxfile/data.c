@@ -4278,6 +4278,515 @@ int mtxfile_data_partition_rows(
 }
 
 /*
+ * Reordering
+ */
+
+/**
+ * `mtxfile_data_permute()' permutes the elements of a matrix or
+ * vector in Matrix Market format based on given row and column
+ * permutations.
+ *
+ * The array ‘rowperm’ should be a permutation of the integers
+ * ‘1,2,...,num_rows’.  For a matrix, the array ‘colperm’ should be a
+ * permutation of the integers ‘1,2,...,num_columns’.  The elements
+ * belonging to row ‘i’ and column ‘j’ in the permuted matrix are then
+ * equal to the elements in row ‘rowperm[i-1]’ and column
+ * ‘colperm[j-1]’ in the original matrix, for ‘i=1,2,...,num_rows’ and
+ * ‘j=1,2,...,num_columns’.
+ */
+int mtxfile_data_permute(
+    const union mtxfile_data * data,
+    enum mtxfile_object object,
+    enum mtxfile_format format,
+    enum mtxfile_field field,
+    enum mtx_precision precision,
+    int64_t size,
+    int64_t offset,
+    int num_rows,
+    const int * rowperm,
+    int num_columns,
+    const int * colperm)
+{
+    int err;
+    if (format == mtxfile_array) {
+        /* Create a temporary copy of the data to be permuted. */
+        union mtxfile_data original;
+        err = mtxfile_data_alloc(
+            &original, object, format, field, precision, size);
+        if (err)
+            return err;
+        err = mtxfile_data_copy(
+            &original, data, object, format, field, precision, size, 0, offset);
+        if (err) {
+            mtxfile_data_free(&original, object, format, field, precision);
+            return err;
+        }
+
+        if (object == mtxfile_matrix) {
+            if (field == mtxfile_real) {
+                if (precision == mtx_single) {
+                    const float * src = original.array_real_single;
+                    float * dst = data->array_real_single;
+                    if (rowperm && colperm) {
+                        for (int64_t i = 0; i < num_rows; i++) {
+                            for (int64_t j = 0; j < num_columns; j++) {
+                                int64_t k = (int64_t) i*num_columns+j;
+                                int64_t l = (int64_t) (rowperm[i]-1)*num_columns + colperm[j]-1;
+                                dst[k] = src[l];
+                            }
+                        }
+                    } else if (rowperm) {
+                        for (int64_t i = 0; i < num_rows; i++) {
+                            for (int64_t j = 0; j < num_columns; j++) {
+                                int64_t k = (int64_t) i*num_columns+j;
+                                int64_t l = (int64_t) (rowperm[i]-1)*num_columns + j;
+                                dst[k] = src[l];
+                            }
+                        }
+                    } else if (colperm) {
+                        for (int64_t i = 0; i < num_rows; i++) {
+                            for (int64_t j = 0; j < num_columns; j++) {
+                                int64_t k = (int64_t) i*num_columns+j;
+                                int64_t l = (int64_t) i*num_columns + colperm[j]-1;
+                                dst[k] = src[l];
+                            }
+                        }
+                    }
+                } else if (precision == mtx_double) {
+                    const double * src = original.array_real_double;
+                    double * dst = data->array_real_double;
+                    if (rowperm && colperm) {
+                        for (int64_t i = 0; i < num_rows; i++) {
+                            for (int64_t j = 0; j < num_columns; j++) {
+                                int64_t k = (int64_t) i*num_columns+j;
+                                int64_t l = (int64_t) (rowperm[i]-1)*num_columns + colperm[j]-1;
+                                dst[k] = src[l];
+                            }
+                        }
+                    } else if (rowperm) {
+                        for (int64_t i = 0; i < num_rows; i++) {
+                            for (int64_t j = 0; j < num_columns; j++) {
+                                int64_t k = (int64_t) i*num_columns+j;
+                                int64_t l = (int64_t) (rowperm[i]-1)*num_columns + j;
+                                dst[k] = src[l];
+                            }
+                        }
+                    } else if (colperm) {
+                        for (int64_t i = 0; i < num_rows; i++) {
+                            for (int64_t j = 0; j < num_columns; j++) {
+                                int64_t k = (int64_t) i*num_columns+j;
+                                int64_t l = (int64_t) i*num_columns + colperm[j]-1;
+                                dst[k] = src[l];
+                            }
+                        }
+                    }
+                } else {
+                    mtxfile_data_free(&original, object, format, field, precision);
+                    return MTX_ERR_INVALID_PRECISION;
+                }
+            } else if (field == mtxfile_complex) {
+                if (precision == mtx_single) {
+                    const float (* src)[2] = original.array_complex_single;
+                    float (* dst)[2] = data->array_complex_single;
+                    if (rowperm && colperm) {
+                        for (int64_t i = 0; i < num_rows; i++) {
+                            for (int64_t j = 0; j < num_columns; j++) {
+                                int64_t k = (int64_t) i*num_columns+j;
+                                int64_t l = (int64_t) (rowperm[i]-1)*num_columns + colperm[j]-1;
+                                dst[k][0] = src[l][0];
+                                dst[k][1] = src[l][1];
+                            }
+                        }
+                    } else if (rowperm) {
+                        for (int64_t i = 0; i < num_rows; i++) {
+                            for (int64_t j = 0; j < num_columns; j++) {
+                                int64_t k = (int64_t) i*num_columns+j;
+                                int64_t l = (int64_t) (rowperm[i]-1)*num_columns + j;
+                                dst[k][0] = src[l][0];
+                                dst[k][1] = src[l][1];
+                            }
+                        }
+                    } else if (colperm) {
+                        for (int64_t i = 0; i < num_rows; i++) {
+                            for (int64_t j = 0; j < num_columns; j++) {
+                                int64_t k = (int64_t) i*num_columns+j;
+                                int64_t l = (int64_t) i*num_columns + colperm[j]-1;
+                                dst[k][0] = src[l][0];
+                                dst[k][1] = src[l][1];
+                            }
+                        }
+                    }
+                } else if (precision == mtx_double) {
+                    const double (* src)[2] = original.array_complex_double;
+                    double (* dst)[2] = data->array_complex_double;
+                    if (rowperm && colperm) {
+                        for (int64_t i = 0; i < num_rows; i++) {
+                            for (int64_t j = 0; j < num_columns; j++) {
+                                int64_t k = (int64_t) i*num_columns+j;
+                                int64_t l = (int64_t) (rowperm[i]-1)*num_columns + colperm[j]-1;
+                                dst[k][0] = src[l][0];
+                                dst[k][1] = src[l][1];
+                            }
+                        }
+                    } else if (rowperm) {
+                        for (int64_t i = 0; i < num_rows; i++) {
+                            for (int64_t j = 0; j < num_columns; j++) {
+                                int64_t k = (int64_t) i*num_columns+j;
+                                int64_t l = (int64_t) (rowperm[i]-1)*num_columns + j;
+                                dst[k][0] = src[l][0];
+                                dst[k][1] = src[l][1];
+                            }
+                        }
+                    } else if (colperm) {
+                        for (int64_t i = 0; i < num_rows; i++) {
+                            for (int64_t j = 0; j < num_columns; j++) {
+                                int64_t k = (int64_t) i*num_columns+j;
+                                int64_t l = (int64_t) i*num_columns + colperm[j]-1;
+                                dst[k][0] = src[l][0];
+                                dst[k][1] = src[l][1];
+                            }
+                        }
+                    }
+                } else {
+                    mtxfile_data_free(&original, object, format, field, precision);
+                    return MTX_ERR_INVALID_PRECISION;
+                }
+            } else if (field == mtxfile_integer) {
+                if (precision == mtx_single) {
+                    const int32_t * src = original.array_integer_single;
+                    int32_t * dst = data->array_integer_single;
+                    if (rowperm && colperm) {
+                        for (int64_t i = 0; i < num_rows; i++) {
+                            for (int64_t j = 0; j < num_columns; j++) {
+                                int64_t k = (int64_t) i*num_columns+j;
+                                int64_t l = (int64_t) (rowperm[i]-1)*num_columns + colperm[j]-1;
+                                dst[k] = src[l];
+                            }
+                        }
+                    } else if (rowperm) {
+                        for (int64_t i = 0; i < num_rows; i++) {
+                            for (int64_t j = 0; j < num_columns; j++) {
+                                int64_t k = (int64_t) i*num_columns+j;
+                                int64_t l = (int64_t) (rowperm[i]-1)*num_columns + j;
+                                dst[k] = src[l];
+                            }
+                        }
+                    } else if (colperm) {
+                        for (int64_t i = 0; i < num_rows; i++) {
+                            for (int64_t j = 0; j < num_columns; j++) {
+                                int64_t k = (int64_t) i*num_columns+j;
+                                int64_t l = (int64_t) i*num_columns + colperm[j]-1;
+                                dst[k] = src[l];
+                            }
+                        }
+                    }
+                } else if (precision == mtx_double) {
+                    const int64_t * src = original.array_integer_double;
+                    int64_t * dst = data->array_integer_double;
+                    if (rowperm && colperm) {
+                        for (int64_t i = 0; i < num_rows; i++) {
+                            for (int64_t j = 0; j < num_columns; j++) {
+                                int64_t k = (int64_t) i*num_columns+j;
+                                int64_t l = (int64_t) (rowperm[i]-1)*num_columns + colperm[j]-1;
+                                dst[k] = src[l];
+                            }
+                        }
+                    } else if (rowperm) {
+                        for (int64_t i = 0; i < num_rows; i++) {
+                            for (int64_t j = 0; j < num_columns; j++) {
+                                int64_t k = (int64_t) i*num_columns+j;
+                                int64_t l = (int64_t) (rowperm[i]-1)*num_columns + j;
+                                dst[k] = src[l];
+                            }
+                        }
+                    } else if (colperm) {
+                        for (int64_t i = 0; i < num_rows; i++) {
+                            for (int64_t j = 0; j < num_columns; j++) {
+                                int64_t k = (int64_t) i*num_columns+j;
+                                int64_t l = (int64_t) i*num_columns + colperm[j]-1;
+                                dst[k] = src[l];
+                            }
+                        }
+                    }
+                } else {
+                    mtxfile_data_free(&original, object, format, field, precision);
+                    return MTX_ERR_INVALID_PRECISION;
+                }
+            } else {
+                mtxfile_data_free(&original, object, format, field, precision);
+                return MTX_ERR_INVALID_MTX_FIELD;
+            }
+
+        } else if (object == mtxfile_vector) {
+            if (field == mtxfile_real) {
+                if (precision == mtx_single) {
+                    const float * src = original.array_real_single;
+                    float * dst = data->array_real_single;
+                    if (rowperm) {
+                        for (int i = 0; i < num_rows; i++)
+                            dst[i] = src[rowperm[i]-1];
+                    }
+                } else if (precision == mtx_double) {
+                    const double * src = original.array_real_double;
+                    double * dst = data->array_real_double;
+                    if (rowperm) {
+                        for (int i = 0; i < num_rows; i++)
+                            dst[i] = src[rowperm[i]-1];
+                    }
+                } else {
+                    mtxfile_data_free(&original, object, format, field, precision);
+                    return MTX_ERR_INVALID_PRECISION;
+                }
+            } else if (field == mtxfile_complex) {
+                if (precision == mtx_single) {
+                    const float (* src)[2] = original.array_complex_single;
+                    float (* dst)[2] = data->array_complex_single;
+                    if (rowperm) {
+                        for (int i = 0; i < num_rows; i++) {
+                            dst[i][0] = src[rowperm[i]-1][0];
+                            dst[i][1] = src[rowperm[i]-1][1];
+                        }
+                    }
+                } else if (precision == mtx_double) {
+                    const double (* src)[2] = original.array_complex_double;
+                    double (* dst)[2] = data->array_complex_double;
+                    if (rowperm) {
+                        for (int i = 0; i < num_rows; i++) {
+                            dst[i][0] = src[rowperm[i]-1][0];
+                            dst[i][1] = src[rowperm[i]-1][1];
+                        }
+                    }
+                } else {
+                    mtxfile_data_free(&original, object, format, field, precision);
+                    return MTX_ERR_INVALID_PRECISION;
+                }
+            } else if (field == mtxfile_integer) {
+                if (precision == mtx_single) {
+                    const int32_t * src = original.array_integer_single;
+                    int32_t * dst = data->array_integer_single;
+                    if (rowperm) {
+                        for (int i = 0; i < num_rows; i++)
+                            dst[i] = src[rowperm[i]-1];
+                    }
+                } else if (precision == mtx_double) {
+                    const int64_t * src = original.array_integer_double;
+                    int64_t * dst = data->array_integer_double;
+                    if (rowperm) {
+                        for (int i = 0; i < num_rows; i++)
+                            dst[i] = src[rowperm[i]-1];
+                    }
+                } else {
+                    mtxfile_data_free(&original, object, format, field, precision);
+                    return MTX_ERR_INVALID_PRECISION;
+                }
+            } else {
+                mtxfile_data_free(&original, object, format, field, precision);
+                return MTX_ERR_INVALID_MTX_FIELD;
+            }
+        } else {
+            mtxfile_data_free(&original, object, format, field, precision);
+            return MTX_ERR_INVALID_MTX_OBJECT;
+        }
+        mtxfile_data_free(&original, object, format, field, precision);
+
+    } else if (format == mtxfile_coordinate) {
+        if (object == mtxfile_matrix) {
+            if (field == mtxfile_real) {
+                if (precision == mtx_single) {
+                    struct mtxfile_matrix_coordinate_real_single * dst =
+                        data->matrix_coordinate_real_single;
+                    if (rowperm && colperm) {
+                        for (int64_t k = 0; k < size; k++) {
+                            dst[k+offset].i = rowperm[dst[k+offset].i-1];
+                            dst[k+offset].j = colperm[dst[k+offset].j-1];
+                        }
+                    } else if (rowperm) {
+                        for (int64_t k = 0; k < size; k++)
+                            dst[k+offset].i = rowperm[dst[k+offset].i-1];
+                    } else if (colperm) {
+                        for (int64_t k = 0; k < size; k++)
+                            dst[k+offset].j = colperm[dst[k+offset].j-1];
+                    }
+                } else if (precision == mtx_double) {
+                    struct mtxfile_matrix_coordinate_real_double * dst =
+                        data->matrix_coordinate_real_double;
+                    if (rowperm && colperm) {
+                        for (int64_t k = 0; k < size; k++) {
+                            dst[k+offset].i = rowperm[dst[k+offset].i-1];
+                            dst[k+offset].j = colperm[dst[k+offset].j-1];
+                        }
+                    } else if (rowperm) {
+                        for (int64_t k = 0; k < size; k++)
+                            dst[k+offset].i = rowperm[dst[k+offset].i-1];
+                    } else if (colperm) {
+                        for (int64_t k = 0; k < size; k++)
+                            dst[k+offset].j = colperm[dst[k+offset].j-1];
+                    }
+                } else {
+                    return MTX_ERR_INVALID_PRECISION;
+                }
+            } else if (field == mtxfile_complex) {
+                if (precision == mtx_single) {
+                    struct mtxfile_matrix_coordinate_complex_single * dst =
+                        data->matrix_coordinate_complex_single;
+                    if (rowperm && colperm) {
+                        for (int64_t k = 0; k < size; k++) {
+                            dst[k+offset].i = rowperm[dst[k+offset].i-1];
+                            dst[k+offset].j = colperm[dst[k+offset].j-1];
+                        }
+                    } else if (rowperm) {
+                        for (int64_t k = 0; k < size; k++)
+                            dst[k+offset].i = rowperm[dst[k+offset].i-1];
+                    } else if (colperm) {
+                        for (int64_t k = 0; k < size; k++)
+                            dst[k+offset].j = colperm[dst[k+offset].j-1];
+                    }
+                } else if (precision == mtx_double) {
+                    struct mtxfile_matrix_coordinate_complex_double * dst =
+                        data->matrix_coordinate_complex_double;
+                    if (rowperm && colperm) {
+                        for (int64_t k = 0; k < size; k++) {
+                            dst[k+offset].i = rowperm[dst[k+offset].i-1];
+                            dst[k+offset].j = colperm[dst[k+offset].j-1];
+                        }
+                    } else if (rowperm) {
+                        for (int64_t k = 0; k < size; k++)
+                            dst[k+offset].i = rowperm[dst[k+offset].i-1];
+                    } else if (colperm) {
+                        for (int64_t k = 0; k < size; k++)
+                            dst[k+offset].j = colperm[dst[k+offset].j-1];
+                    }
+                } else {
+                    return MTX_ERR_INVALID_PRECISION;
+                }
+            } else if (field == mtxfile_integer) {
+                if (precision == mtx_single) {
+                    struct mtxfile_matrix_coordinate_integer_single * dst =
+                        data->matrix_coordinate_integer_single;
+                    if (rowperm && colperm) {
+                        for (int64_t k = 0; k < size; k++) {
+                            dst[k+offset].i = rowperm[dst[k+offset].i-1];
+                            dst[k+offset].j = colperm[dst[k+offset].j-1];
+                        }
+                    } else if (rowperm) {
+                        for (int64_t k = 0; k < size; k++)
+                            dst[k+offset].i = rowperm[dst[k+offset].i-1];
+                    } else if (colperm) {
+                        for (int64_t k = 0; k < size; k++)
+                            dst[k+offset].j = colperm[dst[k+offset].j-1];
+                    }
+                } else if (precision == mtx_double) {
+                    struct mtxfile_matrix_coordinate_integer_double * dst =
+                        data->matrix_coordinate_integer_double;
+                    if (rowperm && colperm) {
+                        for (int64_t k = 0; k < size; k++) {
+                            dst[k+offset].i = rowperm[dst[k+offset].i-1];
+                            dst[k+offset].j = colperm[dst[k+offset].j-1];
+                        }
+                    } else if (rowperm) {
+                        for (int64_t k = 0; k < size; k++)
+                            dst[k+offset].i = rowperm[dst[k+offset].i-1];
+                    } else if (colperm) {
+                        for (int64_t k = 0; k < size; k++)
+                            dst[k+offset].j = colperm[dst[k+offset].j-1];
+                    }
+                } else {
+                    return MTX_ERR_INVALID_PRECISION;
+                }
+            } else if (field == mtxfile_pattern) {
+                struct mtxfile_matrix_coordinate_pattern * dst =
+                    data->matrix_coordinate_pattern;
+                if (rowperm && colperm) {
+                    for (int64_t k = 0; k < size; k++) {
+                        dst[k+offset].i = rowperm[dst[k+offset].i-1];
+                        dst[k+offset].j = colperm[dst[k+offset].j-1];
+                    }
+                } else if (rowperm) {
+                    for (int64_t k = 0; k < size; k++)
+                        dst[k+offset].i = rowperm[dst[k+offset].i-1];
+                } else if (colperm) {
+                    for (int64_t k = 0; k < size; k++)
+                        dst[k+offset].j = colperm[dst[k+offset].j-1];
+                }
+            } else {
+                return MTX_ERR_INVALID_MTX_FIELD;
+            }
+
+        } else if (object == mtxfile_vector) {
+            if (field == mtxfile_real) {
+                if (precision == mtx_single) {
+                    struct mtxfile_vector_coordinate_real_single * dst =
+                        data->vector_coordinate_real_single;
+                    if (rowperm) {
+                        for (int64_t k = 0; k < size; k++)
+                            dst[k+offset].i = rowperm[dst[k+offset].i-1];
+                    }
+                } else if (precision == mtx_double) {
+                    struct mtxfile_vector_coordinate_real_double * dst =
+                        data->vector_coordinate_real_double;
+                    if (rowperm) {
+                        for (int64_t k = 0; k < size; k++)
+                            dst[k+offset].i = rowperm[dst[k+offset].i-1];
+                    }
+                } else {
+                    return MTX_ERR_INVALID_PRECISION;
+                }
+            } else if (field == mtxfile_complex) {
+                if (precision == mtx_single) {
+                    struct mtxfile_vector_coordinate_complex_single * dst =
+                        data->vector_coordinate_complex_single;
+                    if (rowperm) {
+                        for (int64_t k = 0; k < size; k++)
+                            dst[k+offset].i = rowperm[dst[k+offset].i-1];
+                    }
+                } else if (precision == mtx_double) {
+                    struct mtxfile_vector_coordinate_complex_double * dst =
+                        data->vector_coordinate_complex_double;
+                    if (rowperm) {
+                        for (int64_t k = 0; k < size; k++)
+                            dst[k+offset].i = rowperm[dst[k+offset].i-1];
+                    }
+                } else {
+                    return MTX_ERR_INVALID_PRECISION;
+                }
+            } else if (field == mtxfile_integer) {
+                if (precision == mtx_single) {
+                    struct mtxfile_vector_coordinate_integer_single * dst =
+                        data->vector_coordinate_integer_single;
+                    if (rowperm) {
+                        for (int64_t k = 0; k < size; k++)
+                            dst[k+offset].i = rowperm[dst[k+offset].i-1];
+                    }
+                } else if (precision == mtx_double) {
+                    struct mtxfile_vector_coordinate_integer_double * dst =
+                        data->vector_coordinate_integer_double;
+                    if (rowperm) {
+                        for (int64_t k = 0; k < size; k++)
+                            dst[k+offset].i = rowperm[dst[k+offset].i-1];
+                    }
+                } else {
+                    return MTX_ERR_INVALID_PRECISION;
+                }
+            } else if (field == mtxfile_pattern) {
+                struct mtxfile_vector_coordinate_pattern * dst =
+                    data->vector_coordinate_pattern;
+                if (rowperm) {
+                    for (int64_t k = 0; k < size; k++)
+                        dst[k+offset].i = rowperm[dst[k+offset].i-1];
+                }
+            } else {
+                return MTX_ERR_INVALID_MTX_FIELD;
+            }
+        } else {
+            return MTX_ERR_INVALID_MTX_OBJECT;
+        }
+    } else {
+        return MTX_ERR_INVALID_MTX_FORMAT;
+    }
+    return MTX_SUCCESS;
+}
+
+/*
  * MPI functions
  */
 

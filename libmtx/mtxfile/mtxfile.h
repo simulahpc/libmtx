@@ -806,6 +806,29 @@ int mtxfile_init_from_row_partition(
     int part);
 
 /*
+ * Reordering
+ */
+
+/**
+ * `mtxfile_permute()' permutes the elements of a matrix or vector in
+ * Matrix Market format based on given row and column permutations.
+ *
+ * The array ‘row_permutation’ should be a permutation of the integers
+ * ‘1,2,...,M’, where ‘M’ is the number of rows in the matrix or
+ * vector.  If the Matrix Market file represents a matrix, then the
+ * array ‘column_permutation’ should be a permutation of the integers
+ * ‘1,2,...,N’, where ‘N’ is the number of columns in the matrix.  The
+ * elements belonging to row ‘i’ and column ‘j’ in the permuted matrix
+ * are then equal to the elements in row ‘row_permutation[i-1]’ and
+ * column ‘column_permutation[j-1]’ in the original matrix, for
+ * ‘i=1,2,...,M’ and ‘j=1,2,...,N’.
+ */
+int mtxfile_permute(
+    struct mtxfile * mtxfile,
+    const int * row_permutation,
+    const int * column_permutation);
+
+/*
  * MPI functions
  */
 

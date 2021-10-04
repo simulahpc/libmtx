@@ -1058,6 +1058,36 @@ int mtxfile_data_partition_columns(
     int * column_parts);
 
 /*
+ * Reordering
+ */
+
+/**
+ * `mtxfile_data_permute()' permutes the elements of a matrix or
+ * vector in Matrix Market format based on given row and column
+ * permutations.
+ *
+ * The array ‘rowperm’ should be a permutation of the integers
+ * ‘1,2,...,num_rows’.  For a matrix, the array ‘colperm’ should be a
+ * permutation of the integers ‘1,2,...,num_columns’.  The elements
+ * belonging to row ‘i’ and column ‘j’ in the permuted matrix are then
+ * equal to the elements in row ‘rowperm[i-1]’ and column
+ * ‘colperm[j-1]’ in the original matrix, for ‘i=1,2,...,num_rows’ and
+ * ‘j=1,2,...,num_columns’.
+ */
+int mtxfile_data_permute(
+    const union mtxfile_data * data,
+    enum mtxfile_object object,
+    enum mtxfile_format format,
+    enum mtxfile_field field,
+    enum mtx_precision precision,
+    int64_t size,
+    int64_t offset,
+    int num_rows,
+    const int * row_permutation,
+    int num_columns,
+    const int * column_permutation);
+
+/*
  * MPI functions
  */
 
