@@ -180,11 +180,6 @@ bin_PROGRAMS = \
 	mtxscal \
 	mtxsort \
 	mtxtranspose
-if HAVE_MPI
-bin_PROGRAMS += \
-	mtxgather \
-	mtxscatter
-endif
 if HAVE_LIBPNG
 bin_PROGRAMS += \
 	mtxspy
@@ -244,16 +239,6 @@ mtxsort_SOURCES = src/mtxsort.c
 mtxtranspose_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/src $(MPICPPFLAGS)
 mtxtranspose_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
 mtxtranspose_SOURCES = src/mtxtranspose.c
-
-# mtxgather
-mtxgather_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/src $(MPICPPFLAGS)
-mtxgather_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
-mtxgather_SOURCES = src/mtxgather.c
-
-# mtxscatter
-mtxscatter_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/src $(MPICPPFLAGS)
-mtxscatter_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
-mtxscatter_SOURCES = src/mtxscatter.c
 
 # mtxspy
 mtxspy_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/src $(MPICPPFLAGS) $(LIBPNG_CPPFLAGS)

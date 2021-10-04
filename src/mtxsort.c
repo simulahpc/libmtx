@@ -435,7 +435,7 @@ int main(int argc, char *argv[])
             return EXIT_FAILURE;
         }
 
-        int64_t bytes_written;
+        int64_t bytes_written = 0;
         err = mtxfile_fwrite(&mtxfile, stdout, args.format, &bytes_written);
         if (err) {
             if (args.verbose > 0)

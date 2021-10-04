@@ -740,7 +740,6 @@ int mtxvector_coordinate_saxpy(
         } else {
             return MTX_ERR_INVALID_PRECISION;
         }
-
     } else if (x->field == mtx_field_integer) {
         if (x->precision == mtx_single) {
             const int32_t * xdata = x->data.integer_single;
