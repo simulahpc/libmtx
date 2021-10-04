@@ -222,8 +222,11 @@ int mtxvector_array_dscal(
     struct mtxvector_array * x);
 
 /**
- * `mtxvector_array_saxpy()' adds a vector to another vector multiplied by a
- * single precision floating point value, `y = a*x + y'.
+ * `mtxvector_array_saxpy()' adds a vector to another one multiplied
+ * by a single precision floating point value, ‘y = a*x + y’.
+ *
+ * The vectors ‘x’ and ‘y’ must have the same field, precision and
+ * size.
  */
 int mtxvector_array_saxpy(
     float a,
@@ -231,8 +234,11 @@ int mtxvector_array_saxpy(
     struct mtxvector_array * y);
 
 /**
- * `mtxvector_array_daxpy()' adds a vector to another vector multiplied by a
- * double precision floating point value, `y = a*x + y'.
+ * `mtxvector_array_daxpy()' adds a vector to another one multiplied
+ * by a double precision floating point value, ‘y = a*x + y’.
+ *
+ * The vectors ‘x’ and ‘y’ must have the same field, precision and
+ * size.
  */
 int mtxvector_array_daxpy(
     double a,
@@ -241,7 +247,10 @@ int mtxvector_array_daxpy(
 
 /**
  * `mtxvector_array_saypx()' multiplies a vector by a single precision
- * floating point scalar and adds another vector, `y = a*y + x'.
+ * floating point scalar and adds another vector, ‘y = a*y + x’.
+ *
+ * The vectors ‘x’ and ‘y’ must have the same field, precision and
+ * size.
  */
 int mtxvector_array_saypx(
     float a,
@@ -250,7 +259,10 @@ int mtxvector_array_saypx(
 
 /**
  * `mtxvector_array_daypx()' multiplies a vector by a double precision
- * floating point scalar and adds another vector, `y = a*y + x'.
+ * floating point scalar and adds another vector, ‘y = a*y + x’.
+ *
+ * The vectors ‘x’ and ‘y’ must have the same field, precision and
+ * size.
  */
 int mtxvector_array_daypx(
     double a,

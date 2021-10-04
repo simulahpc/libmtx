@@ -126,6 +126,8 @@ const char * mtx_strerror(
         return "incompatible precision";
     case MTX_ERR_INCOMPATIBLE_SIZE:
         return "incompatible size";
+    case MTX_ERR_INCOMPATIBLE_VECTOR_TYPE:
+        return "incompatible vector type";
     default:
         return "unknown error";
     }

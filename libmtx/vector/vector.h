@@ -499,14 +499,14 @@ int mtxvector_gzwrite(
 
 /**
  * `mtxvector_swap()' swaps values of two vectors, simultaneously
- * performing `y <- x' and `x <- y'.
+ * performing ‘y <- x’ and ‘x = y’.
  */
 int mtxvector_swap(
     struct mtxvector * x,
     struct mtxvector * y);
 
 /**
- * `mtxvector_copy()' copies values of a vector, `y = x'.
+ * `mtxvector_copy()' copies values of a vector, ‘y = x’.
  */
 int mtxvector_copy(
     struct mtxvector * y,
@@ -514,7 +514,7 @@ int mtxvector_copy(
 
 /**
  * `mtxvector_sscal()' scales a vector by a single precision floating
- * point scalar, `x = a*x'.
+ * point scalar, ‘x = a*x’.
  */
 int mtxvector_sscal(
     float a,
@@ -522,7 +522,7 @@ int mtxvector_sscal(
 
 /**
  * `mtxvector_dscal()' scales a vector by a double precision floating
- * point scalar, `x = a*x'.
+ * point scalar, ‘x = a*x’.
  */
 int mtxvector_dscal(
     double a,
@@ -530,7 +530,7 @@ int mtxvector_dscal(
 
 /**
  * `mtxvector_saxpy()' adds a vector to another vector multiplied by a
- * single precision floating point value, `y = a*x + y'.
+ * single precision floating point value, ‘y = a*x + y’.
  */
 int mtxvector_saxpy(
     float a,
@@ -539,7 +539,7 @@ int mtxvector_saxpy(
 
 /**
  * `mtxvector_daxpy()' adds a vector to another vector multiplied by a
- * double precision floating point value, `y = a*x + y'.
+ * double precision floating point value, ‘y = a*x + y’.
  */
 int mtxvector_daxpy(
     double a,
@@ -548,7 +548,7 @@ int mtxvector_daxpy(
 
 /**
  * `mtxvector_saypx()' multiplies a vector by a single precision
- * floating point scalar and adds another vector, `y = a*y + x'.
+ * floating point scalar and adds another vector, ‘y = a*y + x’.
  */
 int mtxvector_saypx(
     float a,
@@ -557,7 +557,7 @@ int mtxvector_saypx(
 
 /**
  * `mtxvector_daypx()' multiplies a vector by a double precision
- * floating point scalar and adds another vector, `y = a*y + x'.
+ * floating point scalar and adds another vector, ‘y = a*y + x’.
  */
 int mtxvector_daypx(
     double a,

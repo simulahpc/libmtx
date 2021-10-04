@@ -240,7 +240,7 @@ int mtxvector_coordinate_to_mtxfile(
  */
 
 /**
- * `mtxvector_coordinate_copy()' copies values of a vector, `y = x'.
+ * `mtxvector_coordinate_copy()' copies values of a vector, ‘y = x’.
  */
 int mtxvector_coordinate_copy(
     struct mtxvector_coordinate * y,
@@ -248,7 +248,7 @@ int mtxvector_coordinate_copy(
 
 /**
  * `mtxvector_coordinate_sscal()' scales a vector by a single precision floating
- * point scalar, `x = a*x'.
+ * point scalar, ‘x = a*x’.
  */
 int mtxvector_coordinate_sscal(
     float a,
@@ -256,7 +256,7 @@ int mtxvector_coordinate_sscal(
 
 /**
  * `mtxvector_coordinate_dscal()' scales a vector by a double precision floating
- * point scalar, `x = a*x'.
+ * point scalar, ‘x = a*x’.
  */
 int mtxvector_coordinate_dscal(
     double a,
@@ -264,7 +264,7 @@ int mtxvector_coordinate_dscal(
 
 /**
  * `mtxvector_coordinate_saxpy()' adds a vector to another vector multiplied by a
- * single precision floating point value, `y = a*x + y'.
+ * single precision floating point value, ‘y = a*x + y’.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision, size
  * and number of nonzeros.  Furthermore, it is assumed that the
@@ -277,7 +277,7 @@ int mtxvector_coordinate_saxpy(
 
 /**
  * `mtxvector_coordinate_daxpy()' adds a vector to another vector multiplied by a
- * double precision floating point value, `y = a*x + y'.
+ * double precision floating point value, ‘y = a*x + y’.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision, size
  * and number of nonzeros.  Furthermore, it is assumed that the
@@ -290,7 +290,7 @@ int mtxvector_coordinate_daxpy(
 
 /**
  * `mtxvector_coordinate_saypx()' multiplies a vector by a single precision
- * floating point scalar and adds another vector, `y = a*y + x'.
+ * floating point scalar and adds another vector, ‘y = a*y + x’.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision, size
  * and number of nonzeros.  Furthermore, it is assumed that the
@@ -303,7 +303,7 @@ int mtxvector_coordinate_saypx(
 
 /**
  * `mtxvector_coordinate_daypx()' multiplies a vector by a double precision
- * floating point scalar and adds another vector, `y = a*y + x'.
+ * floating point scalar and adds another vector, ‘y = a*y + x’.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision, size
  * and number of nonzeros.  Furthermore, it is assumed that the

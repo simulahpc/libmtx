@@ -675,7 +675,7 @@ int mtxvector_copy(
 
 /**
  * `mtxvector_sscal()' scales a vector by a single precision floating
- * point scalar, `x = a*x'.
+ * point scalar, ‘x = a*x’.
  */
 int mtxvector_sscal(
     float a,
@@ -692,7 +692,7 @@ int mtxvector_sscal(
 
 /**
  * `mtxvector_dscal()' scales a vector by a double precision floating
- * point scalar, `x = a*x'.
+ * point scalar, ‘x = a*x’.
  */
 int mtxvector_dscal(
     double a,
@@ -709,39 +709,91 @@ int mtxvector_dscal(
 
 /**
  * `mtxvector_saxpy()' adds a vector to another vector multiplied by a
- * single precision floating point value, `y = a*x + y'.
+ * single precision floating point value, ‘y = a*x + y’.
  */
 int mtxvector_saxpy(
     float a,
     const struct mtxvector * x,
-    struct mtxvector * y);
+    struct mtxvector * y)
+{
+    if (x->type != y->type)
+        return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
+    if (x->type == mtxvector_array) {
+        return mtxvector_array_saxpy(
+            a, &x->storage.array, &y->storage.array);
+    } else if (x->type == mtxvector_coordinate) {
+        return mtxvector_coordinate_saxpy(
+            a, &x->storage.coordinate, &y->storage.coordinate);
+    } else {
+        return MTX_ERR_INVALID_VECTOR_TYPE;
+    }
+}
 
 /**
  * `mtxvector_daxpy()' adds a vector to another vector multiplied by a
- * double precision floating point value, `y = a*x + y'.
+ * double precision floating point value, ‘y = a*x + y’.
  */
 int mtxvector_daxpy(
     double a,
     const struct mtxvector * x,
-    struct mtxvector * y);
+    struct mtxvector * y)
+{
+    if (x->type != y->type)
+        return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
+    if (x->type == mtxvector_array) {
+        return mtxvector_array_daxpy(
+            a, &x->storage.array, &y->storage.array);
+    } else if (x->type == mtxvector_coordinate) {
+        return mtxvector_coordinate_daxpy(
+            a, &x->storage.coordinate, &y->storage.coordinate);
+    } else {
+        return MTX_ERR_INVALID_VECTOR_TYPE;
+    }
+}
 
 /**
  * `mtxvector_saypx()' multiplies a vector by a single precision
- * floating point scalar and adds another vector, `y = a*y + x'.
+ * floating point scalar and adds another vector, ‘y = a*y + x’.
  */
 int mtxvector_saypx(
     float a,
     struct mtxvector * y,
-    const struct mtxvector * x);
+    const struct mtxvector * x)
+{
+    if (x->type != y->type)
+        return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
+    if (x->type == mtxvector_array) {
+        return mtxvector_array_saypx(
+            a, &y->storage.array, &x->storage.array);
+    } else if (x->type == mtxvector_coordinate) {
+        return mtxvector_coordinate_saypx(
+            a, &y->storage.coordinate, &x->storage.coordinate);
+    } else {
+        return MTX_ERR_INVALID_VECTOR_TYPE;
+    }
+}
 
 /**
  * `mtxvector_daypx()' multiplies a vector by a double precision
- * floating point scalar and adds another vector, `y = a*y + x'.
+ * floating point scalar and adds another vector, ‘y = a*y + x’.
  */
 int mtxvector_daypx(
     double a,
     struct mtxvector * y,
-    const struct mtxvector * x);
+    const struct mtxvector * x)
+{
+    if (x->type != y->type)
+        return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
+    if (x->type == mtxvector_array) {
+        return mtxvector_array_daypx(
+            a, &y->storage.array, &x->storage.array);
+    } else if (x->type == mtxvector_coordinate) {
+        return mtxvector_coordinate_daypx(
+            a, &y->storage.coordinate, &x->storage.coordinate);
+    } else {
+        return MTX_ERR_INVALID_VECTOR_TYPE;
+    }
+}
 
 /**
  * `mtxvector_sdot()' computes the Euclidean dot product of two
@@ -752,6 +804,8 @@ int mtxvector_sdot(
     const struct mtxvector * y,
     float * dot)
 {
+    if (x->type != y->type)
+        return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
     if (x->type == mtxvector_array) {
         return mtxvector_array_sdot(
             &x->storage.array, &y->storage.array, dot);
@@ -772,6 +826,8 @@ int mtxvector_ddot(
     const struct mtxvector * y,
     double * dot)
 {
+    if (x->type != y->type)
+        return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
     if (x->type == mtxvector_array) {
         return mtxvector_array_ddot(
             &x->storage.array, &y->storage.array, dot);
@@ -793,6 +849,8 @@ int mtxvector_cdotu(
     const struct mtxvector * y,
     float (* dot)[2])
 {
+    if (x->type != y->type)
+        return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
     if (x->type == mtxvector_array) {
         return mtxvector_array_cdotu(
             &x->storage.array, &y->storage.array, dot);
@@ -814,6 +872,8 @@ int mtxvector_zdotu(
     const struct mtxvector * y,
     double (* dot)[2])
 {
+    if (x->type != y->type)
+        return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
     if (x->type == mtxvector_array) {
         return mtxvector_array_zdotu(
             &x->storage.array, &y->storage.array, dot);
@@ -834,6 +894,8 @@ int mtxvector_cdotc(
     const struct mtxvector * y,
     float (* dot)[2])
 {
+    if (x->type != y->type)
+        return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
     if (x->type == mtxvector_array) {
         return mtxvector_array_cdotc(
             &x->storage.array, &y->storage.array, dot);
@@ -854,6 +916,8 @@ int mtxvector_zdotc(
     const struct mtxvector * y,
     double (* dot)[2])
 {
+    if (x->type != y->type)
+        return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
     if (x->type == mtxvector_array) {
         return mtxvector_array_zdotc(
             &x->storage.array, &y->storage.array, dot);

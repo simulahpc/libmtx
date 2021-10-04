@@ -497,40 +497,320 @@ int mtxvector_array_dscal(
 }
 
 /**
- * `mtxvector_array_saxpy()' adds a vector to another vector multiplied by a
- * single precision floating point value, `y = a*x + y'.
+ * `mtxvector_array_saxpy()' adds a vector to another one multiplied
+ * by a single precision floating point value, ‘y = a*x + y’.
+ *
+ * The vectors ‘x’ and ‘y’ must have the same field, precision and
+ * size.
  */
 int mtxvector_array_saxpy(
     float a,
     const struct mtxvector_array * x,
-    struct mtxvector_array * y);
+    struct mtxvector_array * y)
+{
+    if (x->field != y->field)
+        return MTX_ERR_INCOMPATIBLE_FIELD;
+    if (x->precision != y->precision)
+        return MTX_ERR_INCOMPATIBLE_PRECISION;
+    if (x->size != y->size)
+        return MTX_ERR_INCOMPATIBLE_SIZE;
+    if (x->field == mtx_field_real) {
+        if (x->precision == mtx_single) {
+            const float * xdata = x->data.real_single;
+            float * ydata = y->data.real_single;
+#ifdef LIBMTX_HAVE_BLAS
+            cblas_saxpy(x->size, a, xdata, 1, ydata, 1);
+#else
+            for (int64_t k = 0; k < x->size; k++)
+                ydata[k] += a*xdata[k];
+#endif
+        } else if (x->precision == mtx_double) {
+            const double * xdata = x->data.real_double;
+            double * ydata = y->data.real_double;
+#ifdef LIBMTX_HAVE_BLAS
+            *axpy = cblas_daxpy(x->size, a, xdata, 1, ydata, 1);
+#else
+            for (int64_t k = 0; k < x->size; k++)
+                ydata[k] += a*xdata[k];
+#endif
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else if (x->field == mtx_field_complex) {
+        if (x->precision == mtx_single) {
+            const float (* xdata)[2] = x->data.complex_single;
+            float (* ydata)[2] = y->data.complex_single;
+#ifdef LIBMTX_HAVE_BLAS
+            cblas_saxpy(2*x->size, a, xdata, 1, ydata, 1);
+#else
+            for (int64_t k = 0; k < x->size; k++) {
+                ydata[k][0] += a*xdata[k][0];
+                ydata[k][1] += a*xdata[k][1];
+            }
+#endif
+        } else if (x->precision == mtx_double) {
+            const double (* xdata)[2] = x->data.complex_double;
+            double (* ydata)[2] = y->data.complex_double;
+#ifdef LIBMTX_HAVE_BLAS
+            *axpy = cblas_daxpy(2*x->size, a, xdata, 1, ydata, 1);
+#else
+            for (int64_t k = 0; k < x->size; k++) {
+                ydata[k][0] += a*xdata[k][0];
+                ydata[k][1] += a*xdata[k][1];
+            }
+#endif
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+
+    } else if (x->field == mtx_field_integer) {
+        if (x->precision == mtx_single) {
+            const int32_t * xdata = x->data.integer_single;
+            int32_t * ydata = y->data.integer_single;
+            for (int64_t k = 0; k < x->size; k++)
+                ydata[k] += a*xdata[k];
+        } else if (x->precision == mtx_double) {
+            const int64_t * xdata = x->data.integer_double;
+            int64_t * ydata = y->data.integer_double;
+            for (int64_t k = 0; k < x->size; k++)
+                ydata[k] += a*xdata[k];
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else {
+        return MTX_ERR_INVALID_FIELD;
+    }
+    return MTX_SUCCESS;
+}
 
 /**
- * `mtxvector_array_daxpy()' adds a vector to another vector multiplied by a
- * double precision floating point value, `y = a*x + y'.
+ * `mtxvector_array_daxpy()' adds a vector to another one multiplied
+ * by a double precision floating point value, ‘y = a*x + y’.
+ *
+ * The vectors ‘x’ and ‘y’ must have the same field, precision and
+ * size.
  */
 int mtxvector_array_daxpy(
     double a,
     const struct mtxvector_array * x,
-    struct mtxvector_array * y);
+    struct mtxvector_array * y)
+{
+    if (x->field != y->field)
+        return MTX_ERR_INCOMPATIBLE_FIELD;
+    if (x->precision != y->precision)
+        return MTX_ERR_INCOMPATIBLE_PRECISION;
+    if (x->size != y->size)
+        return MTX_ERR_INCOMPATIBLE_SIZE;
+    if (x->field == mtx_field_real) {
+        if (x->precision == mtx_single) {
+            const float * xdata = x->data.real_single;
+            float * ydata = y->data.real_single;
+#ifdef LIBMTX_HAVE_BLAS
+            cblas_saxpy(x->size, a, xdata, 1, ydata, 1);
+#else
+            for (int64_t k = 0; k < x->size; k++)
+                ydata[k] += a*xdata[k];
+#endif
+        } else if (x->precision == mtx_double) {
+            const double * xdata = x->data.real_double;
+            double * ydata = y->data.real_double;
+#ifdef LIBMTX_HAVE_BLAS
+            *axpy = cblas_daxpy(x->size, a, xdata, 1, ydata, 1);
+#else
+            for (int64_t k = 0; k < x->size; k++)
+                ydata[k] += a*xdata[k];
+#endif
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else if (x->field == mtx_field_complex) {
+        if (x->precision == mtx_single) {
+            const float (* xdata)[2] = x->data.complex_single;
+            float (* ydata)[2] = y->data.complex_single;
+#ifdef LIBMTX_HAVE_BLAS
+            cblas_saxpy(2*x->size, a, xdata, 1, ydata, 1);
+#else
+            for (int64_t k = 0; k < x->size; k++) {
+                ydata[k][0] += a*xdata[k][0];
+                ydata[k][1] += a*xdata[k][1];
+            }
+#endif
+        } else if (x->precision == mtx_double) {
+            const double (* xdata)[2] = x->data.complex_double;
+            double (* ydata)[2] = y->data.complex_double;
+#ifdef LIBMTX_HAVE_BLAS
+            *axpy = cblas_daxpy(2*x->size, a, xdata, 1, ydata, 1);
+#else
+            for (int64_t k = 0; k < x->size; k++) {
+                ydata[k][0] += a*xdata[k][0];
+                ydata[k][1] += a*xdata[k][1];
+            }
+#endif
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+
+    } else if (x->field == mtx_field_integer) {
+        if (x->precision == mtx_single) {
+            const int32_t * xdata = x->data.integer_single;
+            int32_t * ydata = y->data.integer_single;
+            for (int64_t k = 0; k < x->size; k++)
+                ydata[k] += a*xdata[k];
+        } else if (x->precision == mtx_double) {
+            const int64_t * xdata = x->data.integer_double;
+            int64_t * ydata = y->data.integer_double;
+            for (int64_t k = 0; k < x->size; k++)
+                ydata[k] += a*xdata[k];
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else {
+        return MTX_ERR_INVALID_FIELD;
+    }
+    return MTX_SUCCESS;
+}
 
 /**
  * `mtxvector_array_saypx()' multiplies a vector by a single precision
- * floating point scalar and adds another vector, `y = a*y + x'.
+ * floating point scalar and adds another vector, ‘y = a*y + x’.
+ *
+ * The vectors ‘x’ and ‘y’ must have the same field, precision and
+ * size.
  */
 int mtxvector_array_saypx(
     float a,
     struct mtxvector_array * y,
-    const struct mtxvector_array * x);
+    const struct mtxvector_array * x)
+{
+    if (x->field != y->field)
+        return MTX_ERR_INCOMPATIBLE_FIELD;
+    if (x->precision != y->precision)
+        return MTX_ERR_INCOMPATIBLE_PRECISION;
+    if (x->size != y->size)
+        return MTX_ERR_INCOMPATIBLE_SIZE;
+    if (x->field == mtx_field_real) {
+        if (x->precision == mtx_single) {
+            const float * xdata = x->data.real_single;
+            float * ydata = y->data.real_single;
+            for (int64_t k = 0; k < x->size; k++)
+                ydata[k] = a*ydata[k]+xdata[k];
+        } else if (x->precision == mtx_double) {
+            const double * xdata = x->data.real_double;
+            double * ydata = y->data.real_double;
+            for (int64_t k = 0; k < x->size; k++)
+                ydata[k] = a*ydata[k]+xdata[k];
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else if (x->field == mtx_field_complex) {
+        if (x->precision == mtx_single) {
+            const float (* xdata)[2] = x->data.complex_single;
+            float (* ydata)[2] = y->data.complex_single;
+            for (int64_t k = 0; k < x->size; k++) {
+                ydata[k][0] = a*ydata[k][0]+xdata[k][0];
+                ydata[k][1] = a*ydata[k][1]+xdata[k][1];
+            }
+        } else if (x->precision == mtx_double) {
+            const double (* xdata)[2] = x->data.complex_double;
+            double (* ydata)[2] = y->data.complex_double;
+            for (int64_t k = 0; k < x->size; k++) {
+                ydata[k][0] = a*ydata[k][0]+xdata[k][0];
+                ydata[k][1] = a*ydata[k][1]+xdata[k][1];
+            }
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+
+    } else if (x->field == mtx_field_integer) {
+        if (x->precision == mtx_single) {
+            const int32_t * xdata = x->data.integer_single;
+            int32_t * ydata = y->data.integer_single;
+            for (int64_t k = 0; k < x->size; k++)
+                ydata[k] = a*ydata[k]+xdata[k];
+        } else if (x->precision == mtx_double) {
+            const int64_t * xdata = x->data.integer_double;
+            int64_t * ydata = y->data.integer_double;
+            for (int64_t k = 0; k < x->size; k++)
+                ydata[k] = a*ydata[k]+xdata[k];
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else {
+        return MTX_ERR_INVALID_FIELD;
+    }
+    return MTX_SUCCESS;
+}
 
 /**
  * `mtxvector_array_daypx()' multiplies a vector by a double precision
- * floating point scalar and adds another vector, `y = a*y + x'.
+ * floating point scalar and adds another vector, ‘y = a*y + x’.
+ *
+ * The vectors ‘x’ and ‘y’ must have the same field, precision and
+ * size.
  */
 int mtxvector_array_daypx(
     double a,
     struct mtxvector_array * y,
-    const struct mtxvector_array * x);
+    const struct mtxvector_array * x)
+{
+    if (x->field != y->field)
+        return MTX_ERR_INCOMPATIBLE_FIELD;
+    if (x->precision != y->precision)
+        return MTX_ERR_INCOMPATIBLE_PRECISION;
+    if (x->size != y->size)
+        return MTX_ERR_INCOMPATIBLE_SIZE;
+    if (x->field == mtx_field_real) {
+        if (x->precision == mtx_single) {
+            const float * xdata = x->data.real_single;
+            float * ydata = y->data.real_single;
+            for (int64_t k = 0; k < x->size; k++)
+                ydata[k] = a*ydata[k]+xdata[k];
+        } else if (x->precision == mtx_double) {
+            const double * xdata = x->data.real_double;
+            double * ydata = y->data.real_double;
+            for (int64_t k = 0; k < x->size; k++)
+                ydata[k] = a*ydata[k]+xdata[k];
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else if (x->field == mtx_field_complex) {
+        if (x->precision == mtx_single) {
+            const float (* xdata)[2] = x->data.complex_single;
+            float (* ydata)[2] = y->data.complex_single;
+            for (int64_t k = 0; k < x->size; k++) {
+                ydata[k][0] = a*ydata[k][0]+xdata[k][0];
+                ydata[k][1] = a*ydata[k][1]+xdata[k][1];
+            }
+        } else if (x->precision == mtx_double) {
+            const double (* xdata)[2] = x->data.complex_double;
+            double (* ydata)[2] = y->data.complex_double;
+            for (int64_t k = 0; k < x->size; k++) {
+                ydata[k][0] = a*ydata[k][0]+xdata[k][0];
+                ydata[k][1] = a*ydata[k][1]+xdata[k][1];
+            }
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+
+    } else if (x->field == mtx_field_integer) {
+        if (x->precision == mtx_single) {
+            const int32_t * xdata = x->data.integer_single;
+            int32_t * ydata = y->data.integer_single;
+            for (int64_t k = 0; k < x->size; k++)
+                ydata[k] = a*ydata[k]+xdata[k];
+        } else if (x->precision == mtx_double) {
+            const int64_t * xdata = x->data.integer_double;
+            int64_t * ydata = y->data.integer_double;
+            for (int64_t k = 0; k < x->size; k++)
+                ydata[k] = a*ydata[k]+xdata[k];
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else {
+        return MTX_ERR_INVALID_FIELD;
+    }
+    return MTX_SUCCESS;
+}
 
 /**
  * `mtxvector_array_sdot()' computes the Euclidean dot product of two

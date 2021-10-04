@@ -77,6 +77,7 @@ enum mtx_error
     MTX_ERR_INCOMPATIBLE_FIELD = -36,       /* incompatible field */
     MTX_ERR_INCOMPATIBLE_PRECISION = -37,   /* incompatible precision */
     MTX_ERR_INCOMPATIBLE_SIZE = -38,        /* incompatible size */
+    MTX_ERR_INCOMPATIBLE_VECTOR_TYPE = -39, /* incompatible vector type */
 };
 
 /**
