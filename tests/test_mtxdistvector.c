@@ -1260,18 +1260,24 @@ int test_mtxdistvector_scal(void)
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         err = mtxdistvector_sscal(2.0f, &x, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
-        TEST_ASSERT_EQ(2.0f, x.interior.storage.array.data.real_single[0]);
-        TEST_ASSERT_EQ(2.0f, x.interior.storage.array.data.real_single[1]);
-        TEST_ASSERT_EQ(2.0f, x.interior.storage.array.data.real_single[2]);
-        TEST_ASSERT_EQ(4.0f, x.interior.storage.array.data.real_single[3]);
-        TEST_ASSERT_EQ(6.0f, x.interior.storage.array.data.real_single[4]);
+        if (rank == 0) {
+            TEST_ASSERT_EQ(2.0f, x.interior.storage.array.data.real_single[0]);
+            TEST_ASSERT_EQ(2.0f, x.interior.storage.array.data.real_single[1]);
+        } else if (rank == 1) {
+            TEST_ASSERT_EQ(2.0f, x.interior.storage.array.data.real_single[0]);
+            TEST_ASSERT_EQ(4.0f, x.interior.storage.array.data.real_single[1]);
+            TEST_ASSERT_EQ(6.0f, x.interior.storage.array.data.real_single[2]);
+        }
         err = mtxdistvector_dscal(2.0, &x, &mpierror);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
-        TEST_ASSERT_EQ(4.0f, x.interior.storage.array.data.real_single[0]);
-        TEST_ASSERT_EQ(4.0f, x.interior.storage.array.data.real_single[1]);
-        TEST_ASSERT_EQ(4.0f, x.interior.storage.array.data.real_single[2]);
-        TEST_ASSERT_EQ(8.0f, x.interior.storage.array.data.real_single[3]);
-        TEST_ASSERT_EQ(12.0f, x.interior.storage.array.data.real_single[4]);
+        if (rank == 0) {
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+            TEST_ASSERT_EQ(4.0f, x.interior.storage.array.data.real_single[0]);
+            TEST_ASSERT_EQ(4.0f, x.interior.storage.array.data.real_single[1]);
+        } else if (rank == 1) {
+            TEST_ASSERT_EQ(4.0f, x.interior.storage.array.data.real_single[0]);
+            TEST_ASSERT_EQ(8.0f, x.interior.storage.array.data.real_single[1]);
+            TEST_ASSERT_EQ(12.0f, x.interior.storage.array.data.real_single[2]);
+        }
         mtxdistvector_free(&x);
     }
 
@@ -1285,18 +1291,24 @@ int test_mtxdistvector_scal(void)
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         err = mtxdistvector_sscal(2.0f, &x, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
-        TEST_ASSERT_EQ(2.0, x.interior.storage.array.data.real_double[0]);
-        TEST_ASSERT_EQ(2.0, x.interior.storage.array.data.real_double[1]);
-        TEST_ASSERT_EQ(2.0, x.interior.storage.array.data.real_double[2]);
-        TEST_ASSERT_EQ(4.0, x.interior.storage.array.data.real_double[3]);
-        TEST_ASSERT_EQ(6.0, x.interior.storage.array.data.real_double[4]);
+        if (rank == 0) {
+            TEST_ASSERT_EQ(2.0, x.interior.storage.array.data.real_double[0]);
+            TEST_ASSERT_EQ(2.0, x.interior.storage.array.data.real_double[1]);
+        } else if (rank == 1) {
+            TEST_ASSERT_EQ(2.0, x.interior.storage.array.data.real_double[0]);
+            TEST_ASSERT_EQ(4.0, x.interior.storage.array.data.real_double[1]);
+            TEST_ASSERT_EQ(6.0, x.interior.storage.array.data.real_double[2]);
+        }
         err = mtxdistvector_dscal(2.0, &x, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
-        TEST_ASSERT_EQ(4.0, x.interior.storage.array.data.real_double[0]);
-        TEST_ASSERT_EQ(4.0, x.interior.storage.array.data.real_double[1]);
-        TEST_ASSERT_EQ(4.0, x.interior.storage.array.data.real_double[2]);
-        TEST_ASSERT_EQ(8.0, x.interior.storage.array.data.real_double[3]);
-        TEST_ASSERT_EQ(12.0, x.interior.storage.array.data.real_double[4]);
+        if (rank == 0) {
+            TEST_ASSERT_EQ(4.0, x.interior.storage.array.data.real_double[0]);
+            TEST_ASSERT_EQ(4.0, x.interior.storage.array.data.real_double[1]);
+        } else if (rank == 1) {
+            TEST_ASSERT_EQ(4.0, x.interior.storage.array.data.real_double[0]);
+            TEST_ASSERT_EQ(8.0, x.interior.storage.array.data.real_double[1]);
+            TEST_ASSERT_EQ(12.0, x.interior.storage.array.data.real_double[2]);
+        }
         mtxdistvector_free(&x);
     }
 
@@ -1310,20 +1322,26 @@ int test_mtxdistvector_scal(void)
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         err = mtxdistvector_sscal(2.0f, &x, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
-        TEST_ASSERT_EQ(2.0f, x.interior.storage.array.data.complex_single[0][0]);
-        TEST_ASSERT_EQ(2.0f, x.interior.storage.array.data.complex_single[0][1]);
-        TEST_ASSERT_EQ(2.0f, x.interior.storage.array.data.complex_single[1][0]);
-        TEST_ASSERT_EQ(4.0f, x.interior.storage.array.data.complex_single[1][1]);
-        TEST_ASSERT_EQ(6.0f, x.interior.storage.array.data.complex_single[2][0]);
-        TEST_ASSERT_EQ(0.0f, x.interior.storage.array.data.complex_single[2][1]);
+        if (rank == 0) {
+            TEST_ASSERT_EQ(2.0f, x.interior.storage.array.data.complex_single[0][0]);
+            TEST_ASSERT_EQ(2.0f, x.interior.storage.array.data.complex_single[0][1]);
+        } else if (rank == 1) {
+            TEST_ASSERT_EQ(2.0f, x.interior.storage.array.data.complex_single[0][0]);
+            TEST_ASSERT_EQ(4.0f, x.interior.storage.array.data.complex_single[0][1]);
+            TEST_ASSERT_EQ(6.0f, x.interior.storage.array.data.complex_single[1][0]);
+            TEST_ASSERT_EQ(0.0f, x.interior.storage.array.data.complex_single[1][1]);
+        }
         err = mtxdistvector_dscal(2.0, &x, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
-        TEST_ASSERT_EQ(4.0f, x.interior.storage.array.data.complex_single[0][0]);
-        TEST_ASSERT_EQ(4.0f, x.interior.storage.array.data.complex_single[0][1]);
-        TEST_ASSERT_EQ(4.0f, x.interior.storage.array.data.complex_single[1][0]);
-        TEST_ASSERT_EQ(8.0f, x.interior.storage.array.data.complex_single[1][1]);
-        TEST_ASSERT_EQ(12.0f, x.interior.storage.array.data.complex_single[2][0]);
-        TEST_ASSERT_EQ(0.0f, x.interior.storage.array.data.complex_single[2][1]);
+        if (rank == 0) {
+            TEST_ASSERT_EQ(4.0f, x.interior.storage.array.data.complex_single[0][0]);
+            TEST_ASSERT_EQ(4.0f, x.interior.storage.array.data.complex_single[0][1]);
+        } else if (rank == 1) {
+            TEST_ASSERT_EQ(4.0f, x.interior.storage.array.data.complex_single[0][0]);
+            TEST_ASSERT_EQ(8.0f, x.interior.storage.array.data.complex_single[0][1]);
+            TEST_ASSERT_EQ(12.0f, x.interior.storage.array.data.complex_single[1][0]);
+            TEST_ASSERT_EQ(0.0f, x.interior.storage.array.data.complex_single[1][1]);
+        }
         mtxdistvector_free(&x);
     }
 
@@ -1337,20 +1355,26 @@ int test_mtxdistvector_scal(void)
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         err = mtxdistvector_sscal(2.0f, &x, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
-        TEST_ASSERT_EQ(2.0, x.interior.storage.array.data.complex_double[0][0]);
-        TEST_ASSERT_EQ(2.0, x.interior.storage.array.data.complex_double[0][1]);
-        TEST_ASSERT_EQ(2.0, x.interior.storage.array.data.complex_double[1][0]);
-        TEST_ASSERT_EQ(4.0, x.interior.storage.array.data.complex_double[1][1]);
-        TEST_ASSERT_EQ(6.0, x.interior.storage.array.data.complex_double[2][0]);
-        TEST_ASSERT_EQ(0.0, x.interior.storage.array.data.complex_double[2][1]);
+        if (rank == 0) {
+            TEST_ASSERT_EQ(2.0, x.interior.storage.array.data.complex_double[0][0]);
+            TEST_ASSERT_EQ(2.0, x.interior.storage.array.data.complex_double[0][1]);
+        } else if (rank == 1) {
+            TEST_ASSERT_EQ(2.0, x.interior.storage.array.data.complex_double[0][0]);
+            TEST_ASSERT_EQ(4.0, x.interior.storage.array.data.complex_double[0][1]);
+            TEST_ASSERT_EQ(6.0, x.interior.storage.array.data.complex_double[1][0]);
+            TEST_ASSERT_EQ(0.0, x.interior.storage.array.data.complex_double[1][1]);
+        }
         err = mtxdistvector_dscal(2.0, &x, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
-        TEST_ASSERT_EQ(4.0, x.interior.storage.array.data.complex_double[0][0]);
-        TEST_ASSERT_EQ(4.0, x.interior.storage.array.data.complex_double[0][1]);
-        TEST_ASSERT_EQ(4.0, x.interior.storage.array.data.complex_double[1][0]);
-        TEST_ASSERT_EQ(8.0, x.interior.storage.array.data.complex_double[1][1]);
-        TEST_ASSERT_EQ(12.0, x.interior.storage.array.data.complex_double[2][0]);
-        TEST_ASSERT_EQ(0.0, x.interior.storage.array.data.complex_double[2][1]);
+        if (rank == 0) {
+            TEST_ASSERT_EQ(4.0, x.interior.storage.array.data.complex_double[0][0]);
+            TEST_ASSERT_EQ(4.0, x.interior.storage.array.data.complex_double[0][1]);
+        } else if (rank == 1) {
+            TEST_ASSERT_EQ(4.0, x.interior.storage.array.data.complex_double[0][0]);
+            TEST_ASSERT_EQ(8.0, x.interior.storage.array.data.complex_double[0][1]);
+            TEST_ASSERT_EQ(12.0, x.interior.storage.array.data.complex_double[1][0]);
+            TEST_ASSERT_EQ(0.0, x.interior.storage.array.data.complex_double[1][1]);
+        }
         mtxdistvector_free(&x);
     }
 
@@ -1373,18 +1397,24 @@ int test_mtxdistvector_scal(void)
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         err = mtxdistvector_sscal(2.0f, &x, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
-        TEST_ASSERT_EQ(2.0f, x.interior.storage.coordinate.data.real_single[0]);
-        TEST_ASSERT_EQ(2.0f, x.interior.storage.coordinate.data.real_single[1]);
-        TEST_ASSERT_EQ(2.0f, x.interior.storage.coordinate.data.real_single[2]);
-        TEST_ASSERT_EQ(4.0f, x.interior.storage.coordinate.data.real_single[3]);
-        TEST_ASSERT_EQ(6.0f, x.interior.storage.coordinate.data.real_single[4]);
+        if (rank == 0) {
+            TEST_ASSERT_EQ(2.0f, x.interior.storage.coordinate.data.real_single[0]);
+            TEST_ASSERT_EQ(2.0f, x.interior.storage.coordinate.data.real_single[1]);
+        } else if (rank == 1) {
+            TEST_ASSERT_EQ(2.0f, x.interior.storage.coordinate.data.real_single[0]);
+            TEST_ASSERT_EQ(4.0f, x.interior.storage.coordinate.data.real_single[1]);
+            TEST_ASSERT_EQ(6.0f, x.interior.storage.coordinate.data.real_single[2]);
+        }
         err = mtxdistvector_dscal(2.0, &x, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
-        TEST_ASSERT_EQ(4.0f, x.interior.storage.coordinate.data.real_single[0]);
-        TEST_ASSERT_EQ(4.0f, x.interior.storage.coordinate.data.real_single[1]);
-        TEST_ASSERT_EQ(4.0f, x.interior.storage.coordinate.data.real_single[2]);
-        TEST_ASSERT_EQ(8.0f, x.interior.storage.coordinate.data.real_single[3]);
-        TEST_ASSERT_EQ(12.0f, x.interior.storage.coordinate.data.real_single[4]);
+        if (rank == 0) {
+            TEST_ASSERT_EQ(4.0f, x.interior.storage.coordinate.data.real_single[0]);
+            TEST_ASSERT_EQ(4.0f, x.interior.storage.coordinate.data.real_single[1]);
+        } else if (rank == 1) {
+            TEST_ASSERT_EQ(4.0f, x.interior.storage.coordinate.data.real_single[0]);
+            TEST_ASSERT_EQ(8.0f, x.interior.storage.coordinate.data.real_single[1]);
+            TEST_ASSERT_EQ(12.0f, x.interior.storage.coordinate.data.real_single[2]);
+        }
         mtxdistvector_free(&x);
     }
 
@@ -1403,18 +1433,24 @@ int test_mtxdistvector_scal(void)
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         err = mtxdistvector_sscal(2.0f, &x, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
-        TEST_ASSERT_EQ(2.0f, x.interior.storage.coordinate.data.real_double[0]);
-        TEST_ASSERT_EQ(2.0f, x.interior.storage.coordinate.data.real_double[1]);
-        TEST_ASSERT_EQ(2.0f, x.interior.storage.coordinate.data.real_double[2]);
-        TEST_ASSERT_EQ(4.0f, x.interior.storage.coordinate.data.real_double[3]);
-        TEST_ASSERT_EQ(6.0f, x.interior.storage.coordinate.data.real_double[4]);
+        if (rank == 0) {
+            TEST_ASSERT_EQ(2.0f, x.interior.storage.coordinate.data.real_double[0]);
+            TEST_ASSERT_EQ(2.0f, x.interior.storage.coordinate.data.real_double[1]);
+        } else if (rank == 1) {
+            TEST_ASSERT_EQ(2.0f, x.interior.storage.coordinate.data.real_double[0]);
+            TEST_ASSERT_EQ(4.0f, x.interior.storage.coordinate.data.real_double[1]);
+            TEST_ASSERT_EQ(6.0f, x.interior.storage.coordinate.data.real_double[2]);
+        }
         err = mtxdistvector_dscal(2.0, &x, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
-        TEST_ASSERT_EQ(4.0f, x.interior.storage.coordinate.data.real_double[0]);
-        TEST_ASSERT_EQ(4.0f, x.interior.storage.coordinate.data.real_double[1]);
-        TEST_ASSERT_EQ(4.0f, x.interior.storage.coordinate.data.real_double[2]);
-        TEST_ASSERT_EQ(8.0f, x.interior.storage.coordinate.data.real_double[3]);
-        TEST_ASSERT_EQ(12.0f, x.interior.storage.coordinate.data.real_double[4]);
+        if (rank == 0) {
+            TEST_ASSERT_EQ(4.0f, x.interior.storage.coordinate.data.real_double[0]);
+            TEST_ASSERT_EQ(4.0f, x.interior.storage.coordinate.data.real_double[1]);
+        } else if (rank == 1) {
+            TEST_ASSERT_EQ(4.0f, x.interior.storage.coordinate.data.real_double[0]);
+            TEST_ASSERT_EQ(8.0f, x.interior.storage.coordinate.data.real_double[1]);
+            TEST_ASSERT_EQ(12.0f, x.interior.storage.coordinate.data.real_double[2]);
+        }
         mtxdistvector_free(&x);
     }
 
@@ -1433,20 +1469,26 @@ int test_mtxdistvector_scal(void)
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         err = mtxdistvector_sscal(2.0f, &x, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
-        TEST_ASSERT_EQ(2.0f, x.interior.storage.coordinate.data.complex_single[0][0]);
-        TEST_ASSERT_EQ(2.0f, x.interior.storage.coordinate.data.complex_single[0][1]);
-        TEST_ASSERT_EQ(2.0f, x.interior.storage.coordinate.data.complex_single[1][0]);
-        TEST_ASSERT_EQ(4.0f, x.interior.storage.coordinate.data.complex_single[1][1]);
-        TEST_ASSERT_EQ(6.0f, x.interior.storage.coordinate.data.complex_single[2][0]);
-        TEST_ASSERT_EQ(0.0f, x.interior.storage.coordinate.data.complex_single[2][1]);
+        if (rank == 0) {
+            TEST_ASSERT_EQ(2.0f, x.interior.storage.coordinate.data.complex_single[0][0]);
+            TEST_ASSERT_EQ(2.0f, x.interior.storage.coordinate.data.complex_single[0][1]);
+        } else if (rank == 1) {
+            TEST_ASSERT_EQ(2.0f, x.interior.storage.coordinate.data.complex_single[0][0]);
+            TEST_ASSERT_EQ(4.0f, x.interior.storage.coordinate.data.complex_single[0][1]);
+            TEST_ASSERT_EQ(6.0f, x.interior.storage.coordinate.data.complex_single[1][0]);
+            TEST_ASSERT_EQ(0.0f, x.interior.storage.coordinate.data.complex_single[1][1]);
+        }
         err = mtxdistvector_dscal(2.0, &x, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
-        TEST_ASSERT_EQ(4.0f, x.interior.storage.coordinate.data.complex_single[0][0]);
-        TEST_ASSERT_EQ(4.0f, x.interior.storage.coordinate.data.complex_single[0][1]);
-        TEST_ASSERT_EQ(4.0f, x.interior.storage.coordinate.data.complex_single[1][0]);
-        TEST_ASSERT_EQ(8.0f, x.interior.storage.coordinate.data.complex_single[1][1]);
-        TEST_ASSERT_EQ(12.0f, x.interior.storage.coordinate.data.complex_single[2][0]);
-        TEST_ASSERT_EQ(0.0f, x.interior.storage.coordinate.data.complex_single[2][1]);
+        if (rank == 0) {
+            TEST_ASSERT_EQ(4.0f, x.interior.storage.coordinate.data.complex_single[0][0]);
+            TEST_ASSERT_EQ(4.0f, x.interior.storage.coordinate.data.complex_single[0][1]);
+        } else if (rank == 1) {
+            TEST_ASSERT_EQ(4.0f, x.interior.storage.coordinate.data.complex_single[0][0]);
+            TEST_ASSERT_EQ(8.0f, x.interior.storage.coordinate.data.complex_single[0][1]);
+            TEST_ASSERT_EQ(12.0f, x.interior.storage.coordinate.data.complex_single[1][0]);
+            TEST_ASSERT_EQ(0.0f, x.interior.storage.coordinate.data.complex_single[1][1]);
+        }
         mtxdistvector_free(&x);
     }
 
@@ -1465,20 +1507,26 @@ int test_mtxdistvector_scal(void)
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         err = mtxdistvector_sscal(2.0f, &x, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
-        TEST_ASSERT_EQ(2.0f, x.interior.storage.coordinate.data.complex_double[0][0]);
-        TEST_ASSERT_EQ(2.0f, x.interior.storage.coordinate.data.complex_double[0][1]);
-        TEST_ASSERT_EQ(2.0f, x.interior.storage.coordinate.data.complex_double[1][0]);
-        TEST_ASSERT_EQ(4.0f, x.interior.storage.coordinate.data.complex_double[1][1]);
-        TEST_ASSERT_EQ(6.0f, x.interior.storage.coordinate.data.complex_double[2][0]);
-        TEST_ASSERT_EQ(0.0f, x.interior.storage.coordinate.data.complex_double[2][1]);
+        if (rank == 0) {
+            TEST_ASSERT_EQ(2.0f, x.interior.storage.coordinate.data.complex_double[0][0]);
+            TEST_ASSERT_EQ(2.0f, x.interior.storage.coordinate.data.complex_double[0][1]);
+        } else if (rank == 1) {
+            TEST_ASSERT_EQ(2.0f, x.interior.storage.coordinate.data.complex_double[0][0]);
+            TEST_ASSERT_EQ(4.0f, x.interior.storage.coordinate.data.complex_double[0][1]);
+            TEST_ASSERT_EQ(6.0f, x.interior.storage.coordinate.data.complex_double[1][0]);
+            TEST_ASSERT_EQ(0.0f, x.interior.storage.coordinate.data.complex_double[1][1]);
+        }
         err = mtxdistvector_dscal(2.0, &x, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
-        TEST_ASSERT_EQ(4.0f, x.interior.storage.coordinate.data.complex_double[0][0]);
-        TEST_ASSERT_EQ(4.0f, x.interior.storage.coordinate.data.complex_double[0][1]);
-        TEST_ASSERT_EQ(4.0f, x.interior.storage.coordinate.data.complex_double[1][0]);
-        TEST_ASSERT_EQ(8.0f, x.interior.storage.coordinate.data.complex_double[1][1]);
-        TEST_ASSERT_EQ(12.0f, x.interior.storage.coordinate.data.complex_double[2][0]);
-        TEST_ASSERT_EQ(0.0f, x.interior.storage.coordinate.data.complex_double[2][1]);
+        if (rank == 0) {
+            TEST_ASSERT_EQ(4.0f, x.interior.storage.coordinate.data.complex_double[0][0]);
+            TEST_ASSERT_EQ(4.0f, x.interior.storage.coordinate.data.complex_double[0][1]);
+        } else if (rank == 1) {
+            TEST_ASSERT_EQ(4.0f, x.interior.storage.coordinate.data.complex_double[0][0]);
+            TEST_ASSERT_EQ(8.0f, x.interior.storage.coordinate.data.complex_double[0][1]);
+            TEST_ASSERT_EQ(12.0f, x.interior.storage.coordinate.data.complex_double[1][0]);
+            TEST_ASSERT_EQ(0.0f, x.interior.storage.coordinate.data.complex_double[1][1]);
+        }
         mtxdistvector_free(&x);
     }
 
@@ -1512,6 +1560,7 @@ int main(int argc, char * argv[])
     TEST_RUN(test_mtxdistvector_from_mtxdistfile);
     TEST_RUN(test_mtxdistvector_dot);
     TEST_RUN(test_mtxdistvector_nrm2);
+    TEST_RUN(test_mtxdistvector_scal);
     TEST_SUITE_END();
 
     /* 3. Clean up and return. */
