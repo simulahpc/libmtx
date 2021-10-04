@@ -534,7 +534,7 @@ int mtxdistvector_gzwrite(
 
 /**
  * `mtxdistvector_swap()' swaps values of two vectors, simultaneously
- * performing `y <- x' and `x <- y'.
+ * performing ‘y <- x’ and ‘x <- y’.
  */
 int mtxdistvector_swap(
     struct mtxdistvector * x,
@@ -542,7 +542,7 @@ int mtxdistvector_swap(
     struct mtxmpierror * mpierror);
 
 /**
- * `mtxdistvector_copy()' copies values of a vector, `y = x'.
+ * `mtxdistvector_copy()' copies values of a vector, ‘y = x’.
  */
 int mtxdistvector_copy(
     struct mtxdistvector * y,
@@ -551,7 +551,7 @@ int mtxdistvector_copy(
 
 /**
  * `mtxdistvector_sscal()' scales a vector by a single precision
- * floating point scalar, `x = a*x'.
+ * floating point scalar, ‘x = a*x’.
  */
 int mtxdistvector_sscal(
     float a,
@@ -560,7 +560,7 @@ int mtxdistvector_sscal(
 
 /**
  * `mtxdistvector_dscal()' scales a vector by a double precision
- * floating point scalar, `x = a*x'.
+ * floating point scalar, ‘x = a*x’.
  */
 int mtxdistvector_dscal(
     double a,
@@ -569,7 +569,7 @@ int mtxdistvector_dscal(
 
 /**
  * `mtxdistvector_saxpy()' adds a vector to another vector multiplied
- * by a single precision floating point value, `y = a*x + y'.
+ * by a single precision floating point value, ‘y = a*x + y’.
  */
 int mtxdistvector_saxpy(
     float a,
@@ -579,7 +579,7 @@ int mtxdistvector_saxpy(
 
 /**
  * `mtxdistvector_daxpy()' adds a vector to another vector multiplied
- * by a double precision floating point value, `y = a*x + y'.
+ * by a double precision floating point value, ‘y = a*x + y’.
  */
 int mtxdistvector_daxpy(
     double a,
@@ -589,7 +589,7 @@ int mtxdistvector_daxpy(
 
 /**
  * `mtxdistvector_saypx()' multiplies a vector by a single precision
- * floating point scalar and adds another vector, `y = a*y + x'.
+ * floating point scalar and adds another vector, ‘y = a*y + x’.
  */
 int mtxdistvector_saypx(
     float a,
@@ -599,7 +599,7 @@ int mtxdistvector_saypx(
 
 /**
  * `mtxdistvector_daypx()' multiplies a vector by a double precision
- * floating point scalar and adds another vector, `y = a*y + x'.
+ * floating point scalar and adds another vector, ‘y = a*y + x’.
  */
 int mtxdistvector_daypx(
     double a,
