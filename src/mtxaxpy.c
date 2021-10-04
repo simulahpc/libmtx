@@ -17,21 +17,27 @@
  * <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-08-09
+ * Last modified: 2021-10-04
  *
- * Add two vectors.
+ * Multiply a vector by a scalar and add it to another vector.
  *
- * ‘y := alpha*x + y’.
+ * ‘y := alpha*x + y’,
+ *
+ * where ‘x’ and ‘y’ are vectors and ‘alpha’ is a scalar constant.
  */
 
 #include <libmtx/libmtx.h>
 
 #include "../libmtx/util/parse.h"
 
+#ifdef LIBMTX_HAVE_MPI
+#include <mpi.h>
+#endif
+
 #include <errno.h>
 
-#include <assert.h>
 #include <inttypes.h>
+#include <locale.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -60,6 +66,7 @@ struct program_options
     char * y_path;
     char * format;
     enum mtx_precision precision;
+    enum mtxvector_type vector_type;
     bool gzip;
     int repeat;
     int verbose;
@@ -77,8 +84,9 @@ static int program_options_init(
     args->y_path = NULL;
     args->format = NULL;
     args->precision = mtx_double;
-    args->gzip = false;
+    args->vector_type = mtxvector_auto;
     args->repeat = 1;
+    args->gzip = false;
     args->quiet = false;
     args->verbose = 0;
     return 0;
@@ -116,27 +124,29 @@ static void program_options_print_help(
 {
     program_options_print_usage(f);
     fprintf(f, "\n");
-    fprintf(f, " Add two vectors.\n");
+    fprintf(f, " Multiply a vector by a scalar and add it to another vector.\n");
     fprintf(f, "\n");
-    fprintf(f, " The operation performed is `y := alpha*x + y', where\n");
-    fprintf(f, " `x' and `y' are vectors and `alpha' is a scalar.\n");
+    fprintf(f, " The operation performed is ‘y := alpha*x + y’, where\n");
+    fprintf(f, " where ‘x’ and ‘y’ are vectors and ‘alpha’ is a scalar constant.\n");
     fprintf(f, "\n");
     fprintf(f, " Positional arguments are:\n");
-    fprintf(f, "  alpha\tScalar floating-point value.\n");
+    fprintf(f, "  alpha\tConstant scalar value.\n");
     fprintf(f, "  x\tPath to Matrix Market file for the vector x.\n");
     fprintf(f, "  y\tOptional path to Matrix Market file for the vector y.\n");
-    fprintf(f, "   \tIf omitted, then a vector of zeros is used.\n");
+    fprintf(f, "   \tIf omitted, then a vector of ones is used.\n");
     fprintf(f, "\n");
     fprintf(f, " Other options are:\n");
     fprintf(f, "  --precision=PRECISION\tprecision used to represent matrix or\n");
-    fprintf(f, "\t\t\tvector values: single or double. (default: double)\n");
+    fprintf(f, "\t\t\tvector values: ‘single’ or ‘double’. (default: ‘double’)\n");
+    fprintf(f, "  --vector-type=TYPE\tformat for representing vectors:\n");
+    fprintf(f, "\t\t\t‘auto’, ‘array’ or ‘coordinate’. (default: ‘auto’)\n");
     fprintf(f, "  -z, --gzip, --gunzip, --ungzip\tfilter files through gzip\n");
     fprintf(f, "  --format=FORMAT\tFormat string for outputting numerical values.\n");
     fprintf(f, "\t\t\tFor real, double and complex values, the format specifiers\n");
     fprintf(f, "\t\t\t'%%e', '%%E', '%%f', '%%F', '%%g' or '%%G' may be used,\n");
     fprintf(f, "\t\t\twhereas '%%d' must be used for integers. Flags, field width\n");
     fprintf(f, "\t\t\tand precision can optionally be specified, e.g., \"%%+3.1f\".\n");
-    fprintf(f, "  --repeat=N\t\trepeat matrix-vector multiplication N times\n");
+    fprintf(f, "  --repeat=N\t\trepeat the calculation N times\n");
     fprintf(f, "  -q, --quiet\t\tdo not print Matrix Market output\n");
     fprintf(f, "  -v, --verbose\t\tbe more verbose\n");
     fprintf(f, "\n");
@@ -221,6 +231,32 @@ static int parse_program_options(
             continue;
         }
 
+        if (strcmp((*argv)[0], "--vector-type") == 0) {
+            if (*argc < 2) {
+                program_options_free(args);
+                return EINVAL;
+            }
+            char * s = (*argv)[1];
+            err = mtxvector_type_parse(
+                &args->vector_type, NULL, NULL, s, "");
+            if (err) {
+                program_options_free(args);
+                return EINVAL;
+            }
+            num_arguments_consumed += 2;
+            continue;
+        } else if (strstr((*argv)[0], "--vector-type=") == (*argv)[0]) {
+            char * s = (*argv)[0] + strlen("--vector-type=");
+            err = mtxvector_type_parse(
+                &args->vector_type, NULL, NULL, s, "");
+            if (err) {
+                program_options_free(args);
+                return EINVAL;
+            }
+            num_arguments_consumed++;
+            continue;
+        }
+
         if (strcmp((*argv)[0], "-z") == 0 ||
             strcmp((*argv)[0], "--gzip") == 0 ||
             strcmp((*argv)[0], "--gunzip") == 0 ||
@@ -253,7 +289,6 @@ static int parse_program_options(
             continue;
         }
 
-        /* Parse number of repeats. */
         if (strcmp((*argv)[0], "--repeat") == 0) {
             if (*argc < 2) {
                 program_options_free(args);
@@ -293,14 +328,46 @@ static int parse_program_options(
         /* If requested, print program help text. */
         if (strcmp((*argv)[0], "-h") == 0 || strcmp((*argv)[0], "--help") == 0) {
             program_options_free(args);
+#ifdef LIBMTX_HAVE_MPI
+            int rank;
+            err = MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+            if (err) {
+                char mpierrstr[MPI_MAX_ERROR_STRING];
+                int mpierrstrlen;
+                MPI_Error_string(err, mpierrstr, &mpierrstrlen);
+                fprintf(stderr, "%s: MPI_Comm_rank failed with %s\n",
+                        program_invocation_short_name, mpierrstr);
+                MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
+            }
+            if (rank == 0)
+                program_options_print_help(stdout);
+            MPI_Finalize();
+#else
             program_options_print_help(stdout);
+#endif
             exit(EXIT_SUCCESS);
         }
 
         /* If requested, print program version information. */
         if (strcmp((*argv)[0], "--version") == 0) {
             program_options_free(args);
+#ifdef LIBMTX_HAVE_MPI
+            int rank;
+            err = MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+            if (err) {
+                char mpierrstr[MPI_MAX_ERROR_STRING];
+                int mpierrstrlen;
+                MPI_Error_string(err, mpierrstr, &mpierrstrlen);
+                fprintf(stderr, "%s: MPI_Comm_rank failed with %s\n",
+                        program_invocation_short_name, mpierrstr);
+                MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
+            }
+            if (rank == 0)
+                program_options_print_version(stdout);
+            MPI_Finalize();
+#else
             program_options_print_version(stdout);
+#endif
             exit(EXIT_SUCCESS);
         }
 
@@ -350,7 +417,23 @@ static int parse_program_options(
 
     if (num_positional_arguments_consumed < 2) {
         program_options_free(args);
+#ifdef LIBMTX_HAVE_MPI
+        int rank;
+        err = MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+        if (err) {
+            char mpierrstr[MPI_MAX_ERROR_STRING];
+            int mpierrstrlen;
+            MPI_Error_string(err, mpierrstr, &mpierrstrlen);
+            fprintf(stderr, "%s: MPI_Comm_rank failed with %s\n",
+                    program_invocation_short_name, mpierrstr);
+            MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
+        }
+        if (rank == 0)
+            program_options_print_usage(stdout);
+        MPI_Finalize();
+#else
         program_options_print_usage(stdout);
+#endif
         exit(EXIT_FAILURE);
     }
 
@@ -369,6 +452,149 @@ static double timespec_duration(
         (t1.tv_nsec - t0.tv_nsec) * 1e-9;
 }
 
+#ifdef LIBMTX_HAVE_MPI
+/**
+ * `distvector_axpy()' converts Matrix Market files to vectors of the
+ * given type, adds two vectors and prints the result to standard
+ * output.
+ */
+static int distvector_axpy(
+    double alpha,
+    struct mtxdistfile * mtxdistfilex,
+    struct mtxdistfile * mtxdistfiley,
+    enum mtxvector_type vector_type,
+    const char * format,
+    int repeat,
+    int verbose,
+    FILE * diagf,
+    bool quiet,
+    MPI_Comm comm,
+    int comm_size,
+    int rank,
+    int root,
+    struct mtxmpierror * mpierror)
+{
+    int err;
+    struct timespec t0, t1;
+    enum mtx_precision precision = mtxdistfilex->precision;
+
+    /* 1. Convert Matrix Market files to vectors. */
+    if (verbose > 0) {
+        fprintf(diagf, "mtxdistvector_from_mtxdistfile: ");
+        fflush(diagf);
+        clock_gettime(CLOCK_MONOTONIC, &t0);
+    }
+    struct mtxdistvector x;
+    err = mtxdistvector_from_mtxdistfile(
+        &x, mtxdistfilex, vector_type, comm, mpierror);
+    if (err) {
+        if (verbose > 0)
+            fprintf(diagf, "\n");
+        return err;
+    }
+    if (verbose > 0) {
+        clock_gettime(CLOCK_MONOTONIC, &t1);
+        fprintf(diagf, "%'.6f seconds\n",
+                timespec_duration(t0, t1));
+    }
+
+    if (verbose > 0) {
+        fprintf(diagf, "mtxdistvector_from_mtxdistfile: ");
+        fflush(diagf);
+        clock_gettime(CLOCK_MONOTONIC, &t0);
+    }
+    struct mtxdistvector y;
+    err = mtxdistvector_from_mtxdistfile(
+        &y, mtxdistfiley, vector_type, comm, mpierror);
+    if (err) {
+        if (verbose > 0)
+            fprintf(diagf, "\n");
+        mtxdistvector_free(&x);
+        return err;
+    }
+    if (verbose > 0) {
+        clock_gettime(CLOCK_MONOTONIC, &t1);
+        fprintf(diagf, "%'.6f seconds\n",
+                timespec_duration(t0, t1));
+    }
+
+    /* 2. Add the vectors. */
+    if (precision == mtx_single) {
+        for (int i = 0; i < repeat; i++) {
+            if (verbose > 0) {
+                fprintf(diagf, "mtxdistvector_saxpy: ");
+                fflush(diagf);
+                clock_gettime(CLOCK_MONOTONIC, &t0);
+            }
+            err = mtxdistvector_saxpy(alpha, &x, &y, mpierror);
+            if (err) {
+                if (verbose > 0)
+                    fprintf(diagf, "\n");
+                mtxdistvector_free(&y);
+                mtxdistvector_free(&x);
+                return err;
+            }
+            if (verbose > 0) {
+                clock_gettime(CLOCK_MONOTONIC, &t1);
+                fprintf(diagf, "%'.6f seconds\n",
+                        timespec_duration(t0, t1));
+            }
+        }
+    } else if (precision == mtx_double) {
+        for (int i = 0; i < repeat; i++) {
+            if (verbose > 0) {
+                fprintf(diagf, "mtxdistvector_daxpy: ");
+                fflush(diagf);
+                clock_gettime(CLOCK_MONOTONIC, &t0);
+            }
+            err = mtxdistvector_daxpy(alpha, &x, &y, mpierror);
+            if (err) {
+                if (verbose > 0)
+                    fprintf(diagf, "\n");
+                mtxdistvector_free(&y);
+                mtxdistvector_free(&x);
+                return err;
+            }
+            if (verbose > 0) {
+                clock_gettime(CLOCK_MONOTONIC, &t1);
+                fprintf(diagf, "%'.6f seconds\n",
+                        timespec_duration(t0, t1));
+            }
+        }
+    } else {
+        mtxdistvector_free(&y);
+        mtxdistvector_free(&x);
+        return MTX_ERR_INVALID_PRECISION;
+    }
+
+    if (!quiet) {
+        if (verbose > 0) {
+            fprintf(diagf, "mtxdistvector_fwrite_shared: ");
+            fflush(diagf);
+            clock_gettime(CLOCK_MONOTONIC, &t0);
+        }
+        int64_t bytes_written = 0;
+        err = mtxdistvector_fwrite_shared(
+            &y, stdout, format, &bytes_written, mpierror);
+        if (err) {
+            if (verbose > 0)
+                fprintf(diagf, "\n");
+            mtxdistvector_free(&x);
+            return MTX_ERR_MPI_COLLECTIVE;
+        }
+        if (verbose > 0) {
+            clock_gettime(CLOCK_MONOTONIC, &t1);
+            fprintf(diagf, "%'.6f seconds (%'.1f MB/s)\n",
+                    timespec_duration(t0, t1),
+                    1.0e-6 * bytes_written / timespec_duration(t0, t1));
+        }
+    }
+
+    mtxdistvector_free(&y);
+    mtxdistvector_free(&x);
+    return MTX_SUCCESS;
+}
+
 /**
  * `main()`.
  */
@@ -377,6 +603,393 @@ int main(int argc, char *argv[])
     int err;
     struct timespec t0, t1;
     FILE * diagf = stderr;
+    setlocale(LC_ALL, "");
+
+    /* 1. Initialise MPI. */
+    const MPI_Comm comm = MPI_COMM_WORLD;
+    const int root = 0;
+    int mpierr;
+    char mpierrstr[MPI_MAX_ERROR_STRING];
+    int mpierrstrlen;
+    struct mtxmpierror mpierror;
+    mpierr = MPI_Init(&argc, &argv);
+    if (mpierr) {
+        MPI_Error_string(mpierr, mpierrstr, &mpierrstrlen);
+        fprintf(stderr, "%s: MPI_Init failed with %s\n",
+                program_invocation_short_name, mpierrstr);
+        MPI_Finalize();
+        return EXIT_FAILURE;
+    }
+    int comm_size;
+    mpierr = MPI_Comm_size(comm, &comm_size);
+    if (mpierr) {
+        MPI_Error_string(mpierr, mpierrstr, &mpierrstrlen);
+        fprintf(stderr, "%s: MPI_Comm_size failed with %s\n",
+                program_invocation_short_name, mpierrstr);
+        MPI_Abort(comm, EXIT_FAILURE);
+    }
+    int rank;
+    mpierr = MPI_Comm_rank(comm, &rank);
+    if (mpierr) {
+        MPI_Error_string(mpierr, mpierrstr, &mpierrstrlen);
+        fprintf(stderr, "%s: MPI_Comm_rank failed with %s\n",
+                program_invocation_short_name, mpierrstr);
+        MPI_Abort(comm, EXIT_FAILURE);
+    }
+    err = mtxmpierror_alloc(&mpierror, comm);
+    if (err)
+        MPI_Abort(comm, EXIT_FAILURE);
+
+    /* 2. Parse program options. */
+    struct program_options args;
+    int argc_copy = argc;
+    char ** argv_copy = argv;
+    err = parse_program_options(&argc_copy, &argv_copy, &args);
+    if (err) {
+        if (rank == root) {
+            fprintf(stderr, "%s: %s %s\n", program_invocation_short_name,
+                    strerror(err), argv_copy[0]);
+        }
+        mtxmpierror_free(&mpierror);
+        MPI_Finalize();
+        return EXIT_FAILURE;
+    }
+    if (rank != root)
+        args.verbose = false;
+
+    /* 3. Read the ‘x’ vector from a Matrix Market file. */
+    if (args.verbose > 0) {
+        fprintf(diagf, "mtxdistfile_read: ");
+        fflush(diagf);
+        clock_gettime(CLOCK_MONOTONIC, &t0);
+    }
+
+    /* TODO: Make row partitioning configurable, see mtxpartition.c */
+    const enum mtx_partition_type row_partition_type = mtx_block;
+
+    struct mtxdistfile mtxdistfilex;
+    int lines_read;
+    int64_t bytes_read;
+    err = mtxdistfile_read(
+        &mtxdistfilex, args.precision,
+        args.x_path ? args.x_path : "",
+        &lines_read, &bytes_read, 0, NULL,
+        comm, &mpierror);
+    if (err) {
+        if (args.verbose > 0)
+            fprintf(diagf, "\n");
+        if (rank == root && lines_read >= 0) {
+            fprintf(stderr, "%s: %s:%d: %s\n",
+                    program_invocation_short_name,
+                    args.x_path, lines_read+1,
+                    err == MTX_ERR_MPI_COLLECTIVE
+                    ? mtxmpierror_description(&mpierror)
+                    : mtx_strerror(err));
+        } else if (rank == root) {
+            fprintf(stderr, "%s: %s: %s\n",
+                    program_invocation_short_name,
+                    args.x_path,
+                    err == MTX_ERR_MPI_COLLECTIVE
+                    ? mtxmpierror_description(&mpierror)
+                    : mtx_strerror(err));
+        }
+        program_options_free(&args);
+        mtxmpierror_free(&mpierror);
+        MPI_Finalize();
+        return EXIT_FAILURE;
+    }
+
+    if (args.verbose > 0) {
+        clock_gettime(CLOCK_MONOTONIC, &t1);
+        fprintf(diagf, "%'.6f seconds (%'.1f MB/s)\n",
+                timespec_duration(t0, t1),
+                1.0e-6 * bytes_read / timespec_duration(t0, t1));
+    }
+
+    /* 4. Read the ‘y’ vector from a Matrix Market file, or use a
+     * vector of all zeros. */
+    struct mtxdistfile mtxdistfiley;
+    if (args.y_path) {
+        if (args.verbose > 0) {
+            fprintf(diagf, "mtxdistfile_read: ");
+            fflush(diagf);
+            clock_gettime(CLOCK_MONOTONIC, &t0);
+        }
+
+        int lines_read;
+        int64_t bytes_read;
+        err = mtxdistfile_read(
+            &mtxdistfiley, args.precision, args.y_path,
+            &lines_read, &bytes_read, 0, NULL,
+            comm, &mpierror);
+        if (err) {
+            if (args.verbose > 0)
+                fprintf(diagf, "\n");
+            if (rank == root && lines_read >= 0) {
+                fprintf(stderr, "%s: %s:%d: %s\n",
+                        program_invocation_short_name,
+                        args.y_path, lines_read+1,
+                        err == MTX_ERR_MPI_COLLECTIVE
+                        ? mtxmpierror_description(&mpierror)
+                        : mtx_strerror(err));
+            } else if (rank == root) {
+                fprintf(stderr, "%s: %s: %s\n",
+                        program_invocation_short_name,
+                        args.y_path,
+                        err == MTX_ERR_MPI_COLLECTIVE
+                        ? mtxmpierror_description(&mpierror)
+                        : mtx_strerror(err));
+            }
+            mtxdistfile_free(&mtxdistfilex);
+            program_options_free(&args);
+            mtxmpierror_free(&mpierror);
+            MPI_Finalize();
+            return EXIT_FAILURE;
+        }
+
+        if (args.verbose > 0) {
+            clock_gettime(CLOCK_MONOTONIC, &t1);
+            fprintf(diagf, "%'.6f seconds (%'.1f MB/s)\n",
+                    timespec_duration(t0, t1),
+                    1.0e-6 * bytes_read / timespec_duration(t0, t1));
+        }
+    } else {
+        err = mtxdistfile_alloc_copy(&mtxdistfiley, &mtxdistfilex, &mpierror);
+        if (err) {
+            if (rank == root) {
+                fprintf(stderr, "%s: %s\n",
+                        program_invocation_short_name,
+                        err == MTX_ERR_MPI_COLLECTIVE
+                        ? mtxmpierror_description(&mpierror)
+                        : mtx_strerror(err));
+            }
+            mtxdistfile_free(&mtxdistfilex);
+            program_options_free(&args);
+            mtxmpierror_free(&mpierror);
+            MPI_Finalize();
+            return EXIT_FAILURE;
+        }
+
+        err = mtxdistfile_set_constant_real_single(&mtxdistfiley, 0.0f, &mpierror);
+        if (err) {
+            if (rank == root) {
+                fprintf(stderr, "%s: %s\n",
+                        program_invocation_short_name,
+                        err == MTX_ERR_MPI_COLLECTIVE
+                        ? mtxmpierror_description(&mpierror)
+                        : mtx_strerror(err));
+            }
+            mtxdistfile_free(&mtxdistfiley);
+            mtxdistfile_free(&mtxdistfilex);
+            program_options_free(&args);
+            mtxmpierror_free(&mpierror);
+            MPI_Finalize();
+            return EXIT_FAILURE;
+        }
+    }
+
+    /* 5. Add the vectors. */
+    if (mtxdistfilex.header.object == mtxfile_matrix) {
+        /* TODO: Add matrices. */
+        if (rank == root) {
+            fprintf(stderr, "%s: %s\n",
+                    program_invocation_short_name,
+                    strerror(ENOTSUP));
+        }
+        mtxdistfile_free(&mtxdistfiley);
+        mtxdistfile_free(&mtxdistfilex);
+        program_options_free(&args);
+        mtxmpierror_free(&mpierror);
+        MPI_Finalize();
+        return EXIT_FAILURE;
+
+    } else if (mtxdistfilex.header.object == mtxfile_vector) {
+        err = distvector_axpy(
+            args.alpha, &mtxdistfilex, &mtxdistfiley, args.vector_type, args.format,
+            args.repeat, args.verbose, diagf, args.quiet,
+            comm, comm_size, rank, root, &mpierror);
+        if (err) {
+            if (rank == root) {
+                fprintf(stderr, "%s: %s\n",
+                        program_invocation_short_name,
+                        err == MTX_ERR_MPI_COLLECTIVE
+                        ? mtxmpierror_description(&mpierror)
+                        : mtx_strerror(err));
+            }
+            mtxdistfile_free(&mtxdistfiley);
+            mtxdistfile_free(&mtxdistfilex);
+            program_options_free(&args);
+            mtxmpierror_free(&mpierror);
+            MPI_Finalize();
+            return EXIT_FAILURE;
+        }
+
+    } else {
+        if (rank == root) {
+            fprintf(stderr, "%s: %s\n",
+                    program_invocation_short_name,
+                    mtx_strerror(MTX_ERR_INVALID_MTX_OBJECT));
+        }
+        mtxdistfile_free(&mtxdistfiley);
+        mtxdistfile_free(&mtxdistfilex);
+        program_options_free(&args);
+        mtxmpierror_free(&mpierror);
+        MPI_Finalize();
+        return EXIT_FAILURE;
+    }
+
+    /* 5. Clean up. */
+    mtxdistfile_free(&mtxdistfiley);
+    mtxdistfile_free(&mtxdistfilex);
+    program_options_free(&args);
+    mtxmpierror_free(&mpierror);
+    MPI_Finalize();
+    return EXIT_SUCCESS;
+}
+#else
+/**
+ * `vector_axpy()' converts Matrix Market files to vectors of the
+ * given type, adds two vectors and prints the result to standard
+ * output.
+ */
+static int vector_axpy(
+    double alpha,
+    struct mtxfile * mtxfilex,
+    struct mtxfile * mtxfiley,
+    enum mtxvector_type vector_type,
+    const char * format,
+    int repeat,
+    int verbose,
+    FILE * diagf,
+    bool quiet)
+{
+    int err;
+    struct timespec t0, t1;
+    enum mtx_precision precision = mtxfilex->precision;
+
+    /* 1. Convert Matrix Market files to vectors. */
+    if (verbose > 0) {
+        fprintf(diagf, "mtxvector_from_mtxfile: ");
+        fflush(diagf);
+        clock_gettime(CLOCK_MONOTONIC, &t0);
+    }
+    struct mtxvector x;
+    err = mtxvector_from_mtxfile(&x, mtxfilex, vector_type);
+    if (err) {
+        if (verbose > 0)
+            fprintf(diagf, "\n");
+        return err;
+    }
+    if (verbose > 0) {
+        clock_gettime(CLOCK_MONOTONIC, &t1);
+        fprintf(diagf, "%'.6f seconds\n",
+                timespec_duration(t0, t1));
+    }
+
+    if (verbose > 0) {
+        fprintf(diagf, "mtxvector_from_mtxfile: ");
+        fflush(diagf);
+        clock_gettime(CLOCK_MONOTONIC, &t0);
+    }
+    struct mtxvector y;
+    err = mtxvector_from_mtxfile(&y, mtxfiley, vector_type);
+    if (err) {
+        if (verbose > 0)
+            fprintf(diagf, "\n");
+        return err;
+    }
+    if (verbose > 0) {
+        clock_gettime(CLOCK_MONOTONIC, &t1);
+        fprintf(diagf, "%'.6f seconds\n",
+                timespec_duration(t0, t1));
+    }
+
+    /* 2. Add the vectors. */
+    if (precision == mtx_single) {
+        for (int i = 0; i < repeat; i++) {
+            if (verbose > 0) {
+                fprintf(diagf, "mtxvector_saxpy: ");
+                fflush(diagf);
+                clock_gettime(CLOCK_MONOTONIC, &t0);
+            }
+            err = mtxvector_saxpy(alpha, &x, &y);
+            if (err) {
+                if (verbose > 0)
+                    fprintf(diagf, "\n");
+                mtxvector_free(&y);
+                mtxvector_free(&x);
+                return err;
+            }
+            if (verbose > 0) {
+                clock_gettime(CLOCK_MONOTONIC, &t1);
+                fprintf(diagf, "%'.6f seconds\n",
+                        timespec_duration(t0, t1));
+            }
+        }
+    } else if (precision == mtx_double) {
+        for (int i = 0; i < repeat; i++) {
+            if (verbose > 0) {
+                fprintf(diagf, "mtxvector_daxpy: ");
+                fflush(diagf);
+                clock_gettime(CLOCK_MONOTONIC, &t0);
+            }
+            err = mtxvector_daxpy(alpha, &x, &y);
+            if (err) {
+                if (verbose > 0)
+                    fprintf(diagf, "\n");
+                mtxvector_free(&y);
+                mtxvector_free(&x);
+                return err;
+            }
+            if (verbose > 0) {
+                clock_gettime(CLOCK_MONOTONIC, &t1);
+                fprintf(diagf, "%'.6f seconds\n",
+                        timespec_duration(t0, t1));
+            }
+        }
+    } else {
+        mtxvector_free(&y);
+        mtxvector_free(&x);
+        return MTX_ERR_INVALID_PRECISION;
+    }
+
+    if (!quiet) {
+        if (verbose > 0) {
+            fprintf(diagf, "mtxvector_fwrite: ");
+            fflush(diagf);
+            clock_gettime(CLOCK_MONOTONIC, &t0);
+        }
+        int64_t bytes_written = 0;
+        err = mtxvector_fwrite(
+            &y, stdout, format, &bytes_written);
+        if (err) {
+            if (verbose > 0)
+                fprintf(diagf, "\n");
+            mtxvector_free(&x);
+            return err;
+        }
+        if (verbose > 0) {
+            clock_gettime(CLOCK_MONOTONIC, &t1);
+            fprintf(diagf, "%'.6f seconds (%'.1f MB/s)\n",
+                    timespec_duration(t0, t1),
+                    1.0e-6 * bytes_written / timespec_duration(t0, t1));
+        }
+    }
+
+    mtxvector_free(&y);
+    mtxvector_free(&x);
+    return MTX_SUCCESS;
+}
+
+/**
+ * `main()`.
+ */
+int main(int argc, char *argv[])
+{
+    int err;
+    struct timespec t0, t1;
+    FILE * diagf = stderr;
+    setlocale(LC_ALL, "");
 
     /* 1. Parse program options. */
     struct program_options args;
@@ -389,19 +1002,29 @@ int main(int argc, char *argv[])
         return EXIT_FAILURE;
     }
 
-    /* 2. Read the `x' vector from a Matrix Market file. */
-    struct mtx x;
+    /* 2. Read the ‘x’ vector from a Matrix Market file. */
     if (args.verbose > 0) {
-        fprintf(diagf, "mtx_read: ");
+        fprintf(diagf, "mtxfile_read: ");
         fflush(diagf);
         clock_gettime(CLOCK_MONOTONIC, &t0);
     }
 
-    int line_number, column_number;
-    err = mtx_read(
-        &x, args.precision, args.x_path ? args.x_path : "", args.gzip,
-        &line_number, &column_number);
-    if (err && (line_number == -1 && column_number == -1)) {
+    struct mtxfile mtxfilex;
+    int lines_read;
+    int64_t bytes_read;
+    err = mtxfile_read(
+        &mtxfilex, args.precision, args.x_path ? args.x_path : "", args.gzip,
+        &lines_read, &bytes_read);
+    if (err && lines_read >= 0) {
+        if (args.verbose > 0)
+            fprintf(diagf, "\n");
+        fprintf(stderr, "%s: %s:%d: %s\n",
+                program_invocation_short_name,
+                args.x_path, lines_read+1,
+                mtx_strerror(err));
+        program_options_free(&args);
+        return EXIT_FAILURE;
+    } else if (err) {
         if (args.verbose > 0)
             fprintf(diagf, "\n");
         fprintf(stderr, "%s: %s: %s\n",
@@ -409,210 +1032,117 @@ int main(int argc, char *argv[])
                 args.x_path, mtx_strerror(err));
         program_options_free(&args);
         return EXIT_FAILURE;
-    } else if (err) {
-        if (args.verbose > 0)
-            fprintf(diagf, "\n");
-        fprintf(stderr, "%s: %s:%d:%d: %s\n",
-                program_invocation_short_name,
-                args.x_path, line_number, column_number,
-                mtx_strerror(err));
-        program_options_free(&args);
-        return EXIT_FAILURE;
     }
 
     if (args.verbose > 0) {
         clock_gettime(CLOCK_MONOTONIC, &t1);
-        fprintf(diagf, "%.6f seconds\n",
-                timespec_duration(t0, t1));
+        fprintf(diagf, "%'.6f seconds (%'.1f MB/s)\n",
+                timespec_duration(t0, t1),
+                1.0e-6 * bytes_read / timespec_duration(t0, t1));
     }
 
-    /* 3. Read the vector `y' from a Matrix Market file, or use a
-     * vector of all zeros. */
-    struct mtx y;
+    /* 3. Read the ‘y’ vector from a Matrix Market file, or use a
+     * vector of zeros. */
+    struct mtxfile mtxfiley;
     if (args.y_path) {
-        if (args.verbose) {
-            fprintf(diagf, "mtx_read: ");
+        if (args.verbose > 0) {
+            fprintf(diagf, "mtxfile_read: ");
             fflush(diagf);
             clock_gettime(CLOCK_MONOTONIC, &t0);
         }
 
-        int line_number, column_number;
-        err = mtx_read(
-            &y, args.precision, args.y_path ? args.y_path : "", args.gzip,
-            &line_number, &column_number);
-        if (err && (line_number == -1 && column_number == -1)) {
+        int lines_read;
+        int64_t bytes_read;
+        err = mtxfile_read(
+            &mtxfiley, args.precision, args.y_path, args.gzip,
+            &lines_read, &bytes_read);
+        if (err) {
             if (args.verbose > 0)
                 fprintf(diagf, "\n");
-            fprintf(stderr, "%s: %s: %s\n",
-                    program_invocation_short_name,
-                    args.y_path, mtx_strerror(err));
-            mtx_free(&x);
-            program_options_free(&args);
-            return EXIT_FAILURE;
-        } else if (err) {
-            if (args.verbose > 0)
-                fprintf(diagf, "\n");
-            fprintf(stderr, "%s: %s:%d:%d: %s\n",
-                    program_invocation_short_name,
-                    args.y_path, line_number, column_number,
-                    mtx_strerror(err));
-            mtx_free(&x);
+            if (lines_read >= 0) {
+                fprintf(stderr, "%s: %s:%d: %s\n",
+                        program_invocation_short_name,
+                        args.y_path, lines_read+1,
+                        mtx_strerror(err));
+            } else {
+                fprintf(stderr, "%s: %s: %s\n",
+                        program_invocation_short_name,
+                        args.y_path,
+                        mtx_strerror(err));
+            }
+            mtxfile_free(&mtxfilex);
             program_options_free(&args);
             return EXIT_FAILURE;
         }
 
         if (args.verbose > 0) {
             clock_gettime(CLOCK_MONOTONIC, &t1);
-            fprintf(diagf, "%.6f seconds\n",
-                    timespec_duration(t0, t1));
+            fprintf(diagf, "%'.6f seconds (%'.1f MB/s)\n",
+                    timespec_duration(t0, t1),
+                    1.0e-6 * bytes_read / timespec_duration(t0, t1));
         }
     } else {
-        /* Create a copy of the `x' vector. */
-        err = mtx_copy_alloc(&y, &x);
+        err = mtxfile_alloc_copy(&mtxfiley, &mtxfilex);
         if (err) {
             fprintf(stderr, "%s: %s\n",
                     program_invocation_short_name,
                     mtx_strerror(err));
-            mtx_free(&x);
+            mtxfile_free(&mtxfilex);
             program_options_free(&args);
             return EXIT_FAILURE;
         }
 
-        /* Set the values of `y' to zero. */
-        err = mtx_set_zero(&y);
+        err = mtxfile_set_constant_real_single(&mtxfiley, 0.0f);
         if (err) {
             fprintf(stderr, "%s: %s\n",
                     program_invocation_short_name,
                     mtx_strerror(err));
-            mtx_free(&y);
-            mtx_free(&x);
+            mtxfile_free(&mtxfiley);
+            mtxfile_free(&mtxfilex);
             program_options_free(&args);
             return EXIT_FAILURE;
         }
     }
 
-    /* 5. Add the two vectors. */
-    for (int i = 0; i < args.repeat; i++) {
-        if (x.field == mtx_real) {
-            if (args.precision == mtx_single) {
-                if (args.verbose > 0) {
-                    fprintf(diagf, "mtx_saxpy: ");
-                    fflush(diagf);
-                    clock_gettime(CLOCK_MONOTONIC, &t0);
-                }
-                err = mtx_saxpy(args.alpha, &x, &y);
-                if (err) {
-                    if (args.verbose > 0)
-                        fprintf(diagf, "\n");
-                    fprintf(stderr, "%s: %s\n",
-                            program_invocation_short_name,
-                            mtx_strerror(err));
-                    mtx_free(&y);
-                    mtx_free(&x);
-                    program_options_free(&args);
-                    return EXIT_FAILURE;
-                }
-                if (args.verbose > 0) {
-                    clock_gettime(CLOCK_MONOTONIC, &t1);
-                    fprintf(diagf, "%.6f seconds\n",
-                            timespec_duration(t0, t1));
-                }
-            } else if (args.precision == mtx_double) {
-                if (args.verbose > 0) {
-                    fprintf(diagf, "mtx_daxpy: ");
-                    fflush(diagf);
-                    clock_gettime(CLOCK_MONOTONIC, &t0);
-                }
-                err = mtx_daxpy(args.alpha, &x, &y);
-                if (err) {
-                    if (args.verbose > 0)
-                        fprintf(diagf, "\n");
-                    fprintf(stderr, "%s: %s\n",
-                            program_invocation_short_name,
-                            mtx_strerror(err));
-                    mtx_free(&y);
-                    mtx_free(&x);
-                    program_options_free(&args);
-                    return EXIT_FAILURE;
-                }
-                if (args.verbose > 0) {
-                    clock_gettime(CLOCK_MONOTONIC, &t1);
-                    fprintf(diagf, "%.6f seconds\n",
-                            timespec_duration(t0, t1));
-                }
-            } else {
-                fprintf(stderr, "%s: %s\n",
-                        program_invocation_short_name,
-                        mtx_strerror(MTX_ERR_INVALID_PRECISION));
-                mtx_free(&x);
-                program_options_free(&args);
-                return EXIT_FAILURE;
-            }
-        } else if (x.field == mtx_complex ||
-                   x.field == mtx_integer)
-        {
-            fprintf(stderr, "%s: %s\n",
-                    program_invocation_short_name,
-                    strerror(ENOTSUP));
-            mtx_free(&x);
-            program_options_free(&args);
-            return EXIT_FAILURE;
-        } else {
-            fprintf(stderr, "%s: %s\n",
-                    program_invocation_short_name,
-                    mtx_strerror(MTX_ERR_INVALID_MTX_FIELD));
-            mtx_free(&x);
-            program_options_free(&args);
-            return EXIT_FAILURE;
-        }
-    }
+    /* 3. Add the vectors. */
+    if (mtxfilex.header.object == mtxfile_matrix) {
+        /* TODO: Add matrices. */
+        fprintf(stderr, "%s: %s\n",
+                program_invocation_short_name,
+                strerror(ENOTSUP));
+        mtxfile_free(&mtxfiley);
+        mtxfile_free(&mtxfilex);
+        program_options_free(&args);
+        return EXIT_FAILURE;
 
-    /* 6. Write the result vector to standard output. */
-    if (!args.quiet) {
-        if (args.verbose > 0) {
-            fprintf(diagf, "mtx_fwrite: ");
-            fflush(diagf);
-            clock_gettime(CLOCK_MONOTONIC, &t0);
-        }
-
-        err = mtx_add_comment_line_printf(
-            &y, "%% This file was generated by %s %s\n",
-            program_name, program_version);
+    } else if (mtxfilex.header.object == mtxfile_vector) {
+        err = vector_axpy(
+            args.alpha, &mtxfilex, &mtxfiley, args.vector_type, args.format,
+            args.repeat, args.verbose, diagf, args.quiet);
         if (err) {
-            if (args.verbose > 0)
-                fprintf(diagf, "\n");
             fprintf(stderr, "%s: %s\n",
                     program_invocation_short_name,
                     mtx_strerror(err));
-            mtx_free(&y);
-            mtx_free(&x);
+            mtxfile_free(&mtxfiley);
+            mtxfile_free(&mtxfilex);
             program_options_free(&args);
             return EXIT_FAILURE;
         }
 
-        err = mtx_fwrite(&y, stdout, args.format);
-        if (err) {
-            if (args.verbose > 0)
-                fprintf(diagf, "\n");
-            fprintf(stderr, "%s: %s\n",
-                    program_invocation_short_name,
-                    mtx_strerror(err));
-            mtx_free(&y);
-            mtx_free(&x);
-            program_options_free(&args);
-            return EXIT_FAILURE;
-        }
-
-        if (args.verbose > 0) {
-            clock_gettime(CLOCK_MONOTONIC, &t1);
-            fprintf(diagf, "%.6f seconds\n", timespec_duration(t0, t1));
-            fflush(diagf);
-        }
+    } else {
+        fprintf(stderr, "%s: %s\n",
+                program_invocation_short_name,
+                mtx_strerror(MTX_ERR_INVALID_MTX_OBJECT));
+        mtxfile_free(&mtxfiley);
+        mtxfile_free(&mtxfilex);
+        program_options_free(&args);
+        return EXIT_FAILURE;
     }
 
-    /* 5. Clean up. */
-    mtx_free(&y);
-    mtx_free(&x);
+    /* 4. Clean up. */
+    mtxfile_free(&mtxfiley);
+    mtxfile_free(&mtxfilex);
     program_options_free(&args);
     return EXIT_SUCCESS;
 }
+#endif

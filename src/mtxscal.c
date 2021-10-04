@@ -816,7 +816,7 @@ static int vector_scal(
             fflush(diagf);
             clock_gettime(CLOCK_MONOTONIC, &t0);
         }
-        int64_t bytes_written;
+        int64_t bytes_written = 0;
         err = mtxvector_fwrite(
             &x, stdout, format, &bytes_written);
         if (err) {

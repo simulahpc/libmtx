@@ -1044,7 +1044,7 @@ int main(int argc, char *argv[])
         }
 
         /* Write the part to a file. */
-        int64_t bytes_written;
+        int64_t bytes_written = 0;
         err = mtxdistfile_write(
             &dst, output_path, args.gzip, args.format, &bytes_written,
             false, &mpierror);
@@ -1221,7 +1221,7 @@ int main(int argc, char *argv[])
             clock_gettime(CLOCK_MONOTONIC, &t0);
         }
 
-        int64_t bytes_written;
+        int64_t bytes_written = 0;
         err = mtxdistfile_write_shared(
             &mtxdistfile_parts, args.partition_output_path,
             args.gzip, NULL, &bytes_written, &mpierror);
@@ -1556,7 +1556,7 @@ int main(int argc, char *argv[])
             }
 
             /* Write the part to a file. */
-            int64_t bytes_written;
+            int64_t bytes_written = 0;
             err = mtxfile_write(
                 &mtxfile_p, output_path, args.gzip, args.format, &bytes_written);
             if (err) {
@@ -1709,7 +1709,7 @@ int main(int argc, char *argv[])
             clock_gettime(CLOCK_MONOTONIC, &t0);
         }
 
-        int64_t bytes_written;
+        int64_t bytes_written = 0;
         err = mtxfile_write(
             &mtxfile_parts, args.partition_output_path,
             args.gzip, args.format, &bytes_written);
