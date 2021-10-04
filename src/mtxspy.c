@@ -557,12 +557,39 @@ static int parse_program_options(
     return 0;
 }
 
+static void draw_sparsity_pattern_point(
+    int width,
+    int height,
+    unsigned char * imgbuf,
+    int num_rows,
+    int num_columns,
+    int i,
+    int j,
+    unsigned char r,
+    unsigned char g,
+    unsigned char b)
+{
+    double x = (((double) i + 0.5) / (double) num_columns) * (double) width;
+    double y = (((double) j + 0.5) / (double) num_rows) * (double) width;
+    int left = (int) floor(x);
+    int right = (int) ceil(x);
+    int top = (int) floor(y);
+    int bottom = (int) ceil(y);
+    for (int u = left; u < right; u++) {
+        for (int v = top; v < bottom; v++) {
+            imgbuf[(v*width+u)*3+0] = r;
+            imgbuf[(v*width+u)*3+1] = g;
+            imgbuf[(v*width+u)*3+2] = b;
+        }
+    }
+}
+
 /**
  * `draw_sparsity_pattern_binary()' renders the sparsity pattern of a
  * matrix to a 2D array of RGB values.
  */
 static int draw_sparsity_pattern(
-    const struct mtx * mtx,
+    const struct mtxfile * mtxfile,
     int fgcolor,
     int bgcolor,
     int max_width,
@@ -575,13 +602,17 @@ static int draw_sparsity_pattern(
     unsigned char ** out_imgbuf,
     unsigned char *** out_row_pointers)
 {
-    if (mtx->object != mtx_matrix)
+    if (mtxfile->header.object != mtxfile_matrix)
         return MTX_ERR_INVALID_MTX_OBJECT;
-    if (mtx->format != mtx_coordinate)
+    if (mtxfile->header.format != mtxfile_coordinate)
         return MTX_ERR_INVALID_MTX_FORMAT;
 
-    int width = mtx->num_columns < max_width ? mtx->num_columns : max_width;
-    int height = mtx->num_rows < max_height ? mtx->num_rows : max_height;
+    int num_rows = mtxfile->size.num_rows;
+    int num_columns = mtxfile->size.num_columns;
+    int64_t num_nonzeros = mtxfile->size.num_nonzeros;
+
+    int width = num_columns < max_width ? num_columns : max_width;
+    int height = num_rows < max_height ? num_rows : max_height;
     int pixel_size = 3 * sizeof(unsigned char);
     int bit_depth = CHAR_BIT;
     int color_type = PNG_COLOR_TYPE_RGB;
@@ -612,51 +643,39 @@ static int draw_sparsity_pattern(
     unsigned char fg_green = ((fgcolor >> 8) & 0xFF);
     unsigned char fg_blue = fgcolor & 0xFF;
 
-    const struct mtx_matrix_coordinate_data * mtxstorage =
-        &mtx->storage.matrix_coordinate;
-    if (mtxstorage->field == mtx_real) {
-        if (mtxstorage->precision == mtx_single) {
-            const struct mtx_matrix_coordinate_real_single * data =
-                mtxstorage->data.real_single;
-            for (int64_t k = 0; k < mtxstorage->size; k++) {
-                int i = data[k].i-1;
-                int j = data[k].j-1;
-                double x = (((double) i + 0.5) /
-                            (double) mtxstorage->num_columns) * (double) width;
-                double y = (((double) j + 0.5) /
-                            (double) mtxstorage->num_rows) * (double) width;
-                int left = (int) floor(x);
-                int right = (int) ceil(x);
-                int top = (int) floor(y);
-                int bottom = (int) ceil(y);
-                for (int r = left; r < right; r++) {
-                    for (int s = top; s < bottom; s++) {
-                        imgbuf[(s*width+r)*3+0] = fg_red;
-                        imgbuf[(s*width+r)*3+1] = fg_green;
-                        imgbuf[(s*width+r)*3+2] = fg_blue;
-                    }
+    if (mtxfile->header.field == mtxfile_real) {
+        if (mtxfile->precision == mtx_single) {
+            const struct mtxfile_matrix_coordinate_real_single * data =
+                mtxfile->data.matrix_coordinate_real_single;
+            for (int64_t k = 0; k < num_nonzeros; k++) {
+                draw_sparsity_pattern_point(
+                    width, height, imgbuf, num_rows, num_columns,
+                    data[k].i-1, data[k].j-1, fg_red, fg_green, fg_blue);
+            }
+            if (mtxfile->header.symmetry == mtxfile_symmetric ||
+                mtxfile->header.symmetry == mtxfile_skew_symmetric)
+            {
+                for (int64_t k = 0; k < num_nonzeros; k++) {
+                    draw_sparsity_pattern_point(
+                        width, height, imgbuf, num_rows, num_columns,
+                        data[k].j-1, data[k].i-1, fg_red, fg_green, fg_blue);
                 }
             }
-        } else if (mtxstorage->precision == mtx_double) {
-            const struct mtx_matrix_coordinate_real_double * data =
-                mtxstorage->data.real_double;
-            for (int64_t k = 0; k < mtxstorage->size; k++) {
-                int i = data[k].i-1;
-                int j = data[k].j-1;
-                double x = (((double) i + 0.5) /
-                            (double) mtxstorage->num_columns) * (double) width;
-                double y = (((double) j + 0.5) /
-                            (double) mtxstorage->num_rows) * (double) width;
-                int left = (int) floor(x);
-                int right = (int) ceil(x);
-                int top = (int) floor(y);
-                int bottom = (int) ceil(y);
-                for (int r = left; r < right; r++) {
-                    for (int s = top; s < bottom; s++) {
-                        imgbuf[(s*width+r)*3+0] = fg_red;
-                        imgbuf[(s*width+r)*3+1] = fg_green;
-                        imgbuf[(s*width+r)*3+2] = fg_blue;
-                    }
+        } else if (mtxfile->precision == mtx_double) {
+            const struct mtxfile_matrix_coordinate_real_double * data =
+                mtxfile->data.matrix_coordinate_real_double;
+            for (int64_t k = 0; k < num_nonzeros; k++) {
+                draw_sparsity_pattern_point(
+                    width, height, imgbuf, num_rows, num_columns,
+                    data[k].i-1, data[k].j-1, fg_red, fg_green, fg_blue);
+            }
+            if (mtxfile->header.symmetry == mtxfile_symmetric ||
+                mtxfile->header.symmetry == mtxfile_skew_symmetric)
+            {
+                for (int64_t k = 0; k < num_nonzeros; k++) {
+                    draw_sparsity_pattern_point(
+                        width, height, imgbuf, num_rows, num_columns,
+                        data[k].j-1, data[k].i-1, fg_red, fg_green, fg_blue);
                 }
             }
         } else {
@@ -664,27 +683,41 @@ static int draw_sparsity_pattern(
             free(imgbuf);
             return MTX_ERR_INVALID_PRECISION;
         }
-    } else if (mtxstorage->field == mtx_complex) {
-        if (mtxstorage->precision == mtx_single) {
-            const struct mtx_matrix_coordinate_complex_single * data =
-                mtxstorage->data.complex_single;
-            for (int64_t k = 0; k < mtxstorage->size; k++) {
-                int i = data[k].i-1;
-                int j = data[k].j-1;
-                double x = (((double) i + 0.5) /
-                            (double) mtxstorage->num_columns) * (double) width;
-                double y = (((double) j + 0.5) /
-                            (double) mtxstorage->num_rows) * (double) width;
-                int left = (int) floor(x);
-                int right = (int) ceil(x);
-                int top = (int) floor(y);
-                int bottom = (int) ceil(y);
-                for (int r = left; r < right; r++) {
-                    for (int s = top; s < bottom; s++) {
-                        imgbuf[(s*width+r)*3+0] = fg_red;
-                        imgbuf[(s*width+r)*3+1] = fg_green;
-                        imgbuf[(s*width+r)*3+2] = fg_blue;
-                    }
+    } else if (mtxfile->header.field == mtxfile_complex) {
+        if (mtxfile->precision == mtx_single) {
+            const struct mtxfile_matrix_coordinate_complex_single * data =
+                mtxfile->data.matrix_coordinate_complex_single;
+            for (int64_t k = 0; k < num_nonzeros; k++) {
+                draw_sparsity_pattern_point(
+                    width, height, imgbuf, num_rows, num_columns,
+                    data[k].i-1, data[k].j-1, fg_red, fg_green, fg_blue);
+            }
+            if (mtxfile->header.symmetry == mtxfile_symmetric ||
+                mtxfile->header.symmetry == mtxfile_skew_symmetric ||
+                mtxfile->header.symmetry == mtxfile_hermitian)
+            {
+                for (int64_t k = 0; k < num_nonzeros; k++) {
+                    draw_sparsity_pattern_point(
+                        width, height, imgbuf, num_rows, num_columns,
+                        data[k].j-1, data[k].i-1, fg_red, fg_green, fg_blue);
+                }
+            }
+        } else if (mtxfile->precision == mtx_double) {
+            const struct mtxfile_matrix_coordinate_complex_double * data =
+                mtxfile->data.matrix_coordinate_complex_double;
+            for (int64_t k = 0; k < num_nonzeros; k++) {
+                draw_sparsity_pattern_point(
+                    width, height, imgbuf, num_rows, num_columns,
+                    data[k].i-1, data[k].j-1, fg_red, fg_green, fg_blue);
+            }
+            if (mtxfile->header.symmetry == mtxfile_symmetric ||
+                mtxfile->header.symmetry == mtxfile_skew_symmetric ||
+                mtxfile->header.symmetry == mtxfile_hermitian)
+            {
+                for (int64_t k = 0; k < num_nonzeros; k++) {
+                    draw_sparsity_pattern_point(
+                        width, height, imgbuf, num_rows, num_columns,
+                        data[k].j-1, data[k].i-1, fg_red, fg_green, fg_blue);
                 }
             }
         } else {
@@ -692,27 +725,39 @@ static int draw_sparsity_pattern(
             free(imgbuf);
             return MTX_ERR_INVALID_PRECISION;
         }
-    } else if (mtxstorage->field == mtx_integer) {
-        if (mtxstorage->precision == mtx_single) {
-            const struct mtx_matrix_coordinate_integer_single * data =
-                mtxstorage->data.integer_single;
-            for (int64_t k = 0; k < mtxstorage->size; k++) {
-                int i = data[k].i-1;
-                int j = data[k].j-1;
-                double x = (((double) i + 0.5) /
-                            (double) mtxstorage->num_columns) * (double) width;
-                double y = (((double) j + 0.5) /
-                            (double) mtxstorage->num_rows) * (double) width;
-                int left = (int) floor(x);
-                int right = (int) ceil(x);
-                int top = (int) floor(y);
-                int bottom = (int) ceil(y);
-                for (int r = left; r < right; r++) {
-                    for (int s = top; s < bottom; s++) {
-                        imgbuf[(s*width+r)*3+0] = fg_red;
-                        imgbuf[(s*width+r)*3+1] = fg_green;
-                        imgbuf[(s*width+r)*3+2] = fg_blue;
-                    }
+    } else if (mtxfile->header.field == mtxfile_integer) {
+        if (mtxfile->precision == mtx_single) {
+            const struct mtxfile_matrix_coordinate_integer_single * data =
+                mtxfile->data.matrix_coordinate_integer_single;
+            for (int64_t k = 0; k < num_nonzeros; k++) {
+                draw_sparsity_pattern_point(
+                    width, height, imgbuf, num_rows, num_columns,
+                    data[k].i-1, data[k].j-1, fg_red, fg_green, fg_blue);
+            }
+            if (mtxfile->header.symmetry == mtxfile_symmetric ||
+                mtxfile->header.symmetry == mtxfile_skew_symmetric)
+            {
+                for (int64_t k = 0; k < num_nonzeros; k++) {
+                    draw_sparsity_pattern_point(
+                        width, height, imgbuf, num_rows, num_columns,
+                        data[k].j-1, data[k].i-1, fg_red, fg_green, fg_blue);
+                }
+            }
+        } else if (mtxfile->precision == mtx_double) {
+            const struct mtxfile_matrix_coordinate_integer_double * data =
+                mtxfile->data.matrix_coordinate_integer_double;
+            for (int64_t k = 0; k < num_nonzeros; k++) {
+                draw_sparsity_pattern_point(
+                    width, height, imgbuf, num_rows, num_columns,
+                    data[k].i-1, data[k].j-1, fg_red, fg_green, fg_blue);
+            }
+            if (mtxfile->header.symmetry == mtxfile_symmetric ||
+                mtxfile->header.symmetry == mtxfile_skew_symmetric)
+            {
+                for (int64_t k = 0; k < num_nonzeros; k++) {
+                    draw_sparsity_pattern_point(
+                        width, height, imgbuf, num_rows, num_columns,
+                        data[k].j-1, data[k].i-1, fg_red, fg_green, fg_blue);
                 }
             }
         } else {
@@ -720,26 +765,21 @@ static int draw_sparsity_pattern(
             free(imgbuf);
             return MTX_ERR_INVALID_PRECISION;
         }
-    } else if (mtxstorage->field == mtx_pattern) {
-        const struct mtx_matrix_coordinate_pattern * data =
-            mtxstorage->data.pattern;
-        for (int64_t k = 0; k < mtxstorage->size; k++) {
-            int i = data[k].i-1;
-            int j = data[k].j-1;
-            double x = (((double) i + 0.5) /
-                        (double) mtxstorage->num_columns) * (double) width;
-            double y = (((double) j + 0.5) /
-                        (double) mtxstorage->num_rows) * (double) width;
-            int left = (int) floor(x);
-            int right = (int) ceil(x);
-            int top = (int) floor(y);
-            int bottom = (int) ceil(y);
-            for (int r = left; r < right; r++) {
-                for (int s = top; s < bottom; s++) {
-                    imgbuf[(s*width+r)*3+0] = fg_red;
-                    imgbuf[(s*width+r)*3+1] = fg_green;
-                    imgbuf[(s*width+r)*3+2] = fg_blue;
-                }
+    } else if (mtxfile->header.field == mtxfile_pattern) {
+        const struct mtxfile_matrix_coordinate_pattern * data =
+            mtxfile->data.matrix_coordinate_pattern;
+        for (int64_t k = 0; k < num_nonzeros; k++) {
+            draw_sparsity_pattern_point(
+                width, height, imgbuf, num_rows, num_columns,
+                data[k].i-1, data[k].j-1, fg_red, fg_green, fg_blue);
+        }
+        if (mtxfile->header.symmetry == mtxfile_symmetric ||
+            mtxfile->header.symmetry == mtxfile_skew_symmetric)
+        {
+            for (int64_t k = 0; k < num_nonzeros; k++) {
+                draw_sparsity_pattern_point(
+                    width, height, imgbuf, num_rows, num_columns,
+                    data[k].j-1, data[k].i-1, fg_red, fg_green, fg_blue);
             }
         }
     } else {
@@ -963,19 +1003,29 @@ int main(int argc, char *argv[])
         return EXIT_FAILURE;
     }
 
-    /* 1. Read a Matrix Market file. */
-    struct mtx mtx;
+    /* 2. Read a Matrix Market file. */
     if (args.verbose > 0) {
-        fprintf(diagf, "mtx_read: ");
+        fprintf(diagf, "mtxfile_read: ");
         fflush(diagf);
         clock_gettime(CLOCK_MONOTONIC, &t0);
     }
 
-    int line_number, column_number;
-    err = mtx_read(
-        &mtx, args.precision, args.mtx_path, args.gzip,
-        &line_number, &column_number);
-    if (err && (line_number == -1 && column_number == -1)) {
+    struct mtxfile mtxfile;
+    int lines_read;
+    int64_t bytes_read;
+    err = mtxfile_read(
+        &mtxfile, args.precision, args.mtx_path, args.gzip,
+        &lines_read, &bytes_read);
+    if (err && lines_read >= 0) {
+        if (args.verbose > 0)
+            fprintf(diagf, "\n");
+        fprintf(stderr, "%s: %s:%d: %s\n",
+                program_invocation_short_name,
+                args.mtx_path, lines_read+1,
+                mtx_strerror(err));
+        program_options_free(&args);
+        return EXIT_FAILURE;
+    } else if (err) {
         if (args.verbose > 0)
             fprintf(diagf, "\n");
         fprintf(stderr, "%s: %s: %s\n",
@@ -983,33 +1033,16 @@ int main(int argc, char *argv[])
                 args.mtx_path, mtx_strerror(err));
         program_options_free(&args);
         return EXIT_FAILURE;
-    } else if (err) {
-        if (args.verbose > 0)
-            fprintf(diagf, "\n");
-        fprintf(stderr, "%s: %s:%d:%d: %s\n",
-                program_invocation_short_name,
-                args.mtx_path, line_number, column_number,
-                mtx_strerror(err));
-        program_options_free(&args);
-        return EXIT_FAILURE;
     }
 
     if (args.verbose > 0) {
         clock_gettime(CLOCK_MONOTONIC, &t1);
-        fprintf(diagf, "%.6f seconds "
-                "%s object %s format %s field %s symmetry "
-                "%d rows %d columns %"PRId64" nonzeros\n",
+        fprintf(diagf, "%'.6f seconds (%'.1f MB/s)\n",
                 timespec_duration(t0, t1),
-                mtx_object_str(mtx.object),
-                mtx_format_str(mtx.format),
-                mtx_field_str(mtx.field),
-                mtx_symmetry_str(mtx.symmetry),
-                mtx.num_rows,
-                mtx.num_columns,
-                mtx.num_nonzeros);
+                1.0e-6 * bytes_read / timespec_duration(t0, t1));
     }
 
-    /* 2. Draw the matrix sparsity pattern. */
+    /* 3. Draw the matrix sparsity pattern. */
     if (args.verbose > 0) {
         fprintf(diagf, "mtx_matrix_spy: ");
         fflush(diagf);
@@ -1024,7 +1057,7 @@ int main(int argc, char *argv[])
     unsigned char * imgbuf;
     unsigned char ** row_pointers;
     err = draw_sparsity_pattern(
-        &mtx, args.fgcolor, args.bgcolor,
+        &mtxfile, args.fgcolor, args.bgcolor,
         args.max_width, args.max_height,
         &width, &height, &bit_depth,
         &pixel_size, &color_type,
@@ -1034,17 +1067,17 @@ int main(int argc, char *argv[])
             fprintf(diagf, "\n");
         fprintf(stderr, "%s: %s",
                 program_invocation_short_name, mtx_strerror(err));
-        mtx_free(&mtx);
+        mtxfile_free(&mtxfile);
         program_options_free(&args);
         return EXIT_FAILURE;
     }
 
     if (args.verbose > 0) {
         clock_gettime(CLOCK_MONOTONIC, &t1);
-        fprintf(diagf, "%.6f seconds\n", timespec_duration(t0, t1));
+        fprintf(diagf, "%'.6f seconds\n", timespec_duration(t0, t1));
     }
 
-    mtx_free(&mtx);
+    mtxfile_free(&mtxfile);
 
     /* 3. Write the PNG image to file. */
     if (args.png_output_path) {
@@ -1093,7 +1126,7 @@ int main(int argc, char *argv[])
 
         if (args.verbose > 0) {
             clock_gettime(CLOCK_MONOTONIC, &t1);
-            fprintf(diagf, "%.6f seconds\n", timespec_duration(t0, t1));
+            fprintf(diagf, "%'.6f seconds\n", timespec_duration(t0, t1));
             fflush(diagf);
         }
     } else {
