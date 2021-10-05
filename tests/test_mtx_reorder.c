@@ -561,7 +561,6 @@ int main(int argc, char * argv[])
     TEST_RUN(test_mtx_permute_matrix_array_real_single);
     TEST_RUN(test_mtx_permute_matrix_coordinate_real_single);
     TEST_RUN(test_mtx_permute_matrix_coordinate_pattern);
-    TEST_RUN(test_mtx_matrix_reorder_rcm_coordinate_real_single);
     TEST_SUITE_END();
     return (TEST_SUITE_STATUS == TEST_SUCCESS) ?
         EXIT_SUCCESS : EXIT_FAILURE;

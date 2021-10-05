@@ -828,6 +828,92 @@ int mtxfile_permute(
     const int * row_permutation,
     const int * column_permutation);
 
+/**
+ * `mtxfile_ordering` is used to enumerate different kinds of
+ * orderings for matrices in Matrix Market format.
+ */
+enum mtxfile_ordering
+{
+    mtxfile_unordered,  /* general, unordered matrix */
+    mtxfile_rcm,        /* Reverse Cuthill-McKee ordering */
+};
+
+/**
+ * `mtxfile_ordering_str()` is a string representing the ordering
+ * of a matrix in Matix Market format.
+ */
+const char * mtxfile_ordering_str(
+    enum mtxfile_ordering ordering);
+
+/**
+ * `mtxfile_reorder_rcm()` reorders the rows of a sparse matrix
+ * according to the Reverse Cuthill-McKee algorithm.
+ *
+ * For a square matrix, the Cuthill-McKee algorithm is carried out on
+ * the adjacency matrix of the symmetrisation ‘A+A'’, where ‘A'’
+ * denotes the transpose of ‘A’.  For a rectangular matrix, the
+ * Cuthill-McKee algorithm is carried out on a bipartite graph formed
+ * by the matrix rows and columns.  The adjacency matrix ‘B’ of the
+ * bipartite graph is square and symmetric and takes the form of a
+ * 2-by-2 block matrix where ‘A’ is placed in the upper right corner
+ * and ‘A'’ is placed in the lower left corner:
+ *
+ *     ⎡  0   A ⎤
+ * B = ⎢        ⎥.
+ *     ⎣  A'  0 ⎦
+ *
+ *
+ * ‘starting_vertex’ is an integer which can be used to designate a
+ * starting vertex for the Cuthill-McKee algorithm.  Alternatively,
+ * ‘starting_vertex’ may be set to ‘0’, in which case a starting row
+ * is chosen automatically by selecting a pseudo-peripheral vertex.
+ *
+ * In the case of a square matrix, the starting vertex must be in the
+ * range ‘[1,M]’, where ‘M’ is the number of rows (and columns) of the
+ * matrix.  Otherwise, if the matrix is rectangular, a starting vertex
+ * in the range ‘[1,M]’ selects a vertex corresponding to a row of the
+ * matrix, whereas a starting vertex in the range ‘[M+1,M+N]’, where
+ * ‘N’ is the number of matrix columns, selects a vertex corresponding
+ * to a column of the matrix.
+ *
+ * If successful, this function returns ‘MTX_SUCCESS’, and the rows
+ * and columns of ‘mtxfile’ have been reordered according to the
+ * Reverse Cuthill-McKee algorithm. If ‘rowperm’ is not ‘NULL’, then
+ * it must point to an array that is large enough to hold one ‘int’
+ * for each row of the matrix. In this case, the array is used to
+ * store the permutation for reordering the matrix rows. Similarly,
+ * ‘colperm’ is used to store the permutation for reordering the
+ * matrix columns.
+ */
+int mtxfile_reorder_rcm(
+    struct mtxfile * mtxfile,
+    int * rowperm,
+    int * colperm,
+    int starting_row);
+
+/**
+ * `mtxfile_reorder()` reorders the rows and columns of a matrix
+ * according to the specified algorithm.
+ *
+ * Some algorithms may pose certain requirements on the matrix. For
+ * example, the Reverse Cuthill-McKee ordering requires a matrix to be
+ * square and in coordinate format.
+ *
+ * If successful, this function returns ‘MTX_SUCCESS’, and the rows
+ * and columns of ‘mtxfile’ have been reordered according to the
+ * specified method. If ‘rowperm’ is not ‘NULL’, then it must point to
+ * an array that is large enough to hold one ‘int’ for each row of the
+ * matrix. In this case, the array is used to store the permutation
+ * for reordering the matrix rows. Similarly, ‘colperm’ is used to
+ * store the permutation for reordering the matrix columns.
+ */
+int mtxfile_reorder(
+    struct mtxfile * mtxfile,
+    enum mtxfile_ordering ordering,
+    int * rowperm,
+    int * colperm,
+    int rcm_starting_vertex);
+
 /*
  * MPI functions
  */

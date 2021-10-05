@@ -30,6 +30,7 @@
 #include <libmtx/mtxfile/header.h>
 #include <libmtx/mtxfile/mtxfile.h>
 #include <libmtx/mtxfile/size.h>
+#include <libmtx/util/cuthill_mckee.h>
 
 #ifdef LIBMTX_HAVE_MPI
 #include <mpi.h>
@@ -2011,6 +2012,255 @@ int mtxfile_permute(
         mtxfile->size.num_columns, column_permutation);
     if (err)
         return err;
+    return MTX_SUCCESS;
+}
+
+/**
+ * `mtxfile_ordering_str()` is a string representing the ordering
+ * of a matrix in Matix Market format.
+ */
+const char * mtxfile_ordering_str(
+    enum mtxfile_ordering ordering)
+{
+    switch (ordering) {
+    case mtxfile_unordered: return "unordered";
+    case mtxfile_rcm: return "rcm";
+    default: return mtx_strerror(MTX_ERR_INVALID_ORDERING);
+    }
+}
+
+/**
+ * `mtxfile_reorder_rcm()` reorders the rows of a sparse matrix
+ * according to the Reverse Cuthill-McKee algorithm.
+ *
+ * For a square matrix, the Cuthill-McKee algorithm is carried out on
+ * the adjacency matrix of the symmetrisation ‘A+A'’, where ‘A'’
+ * denotes the transpose of ‘A’.  For a rectangular matrix, the
+ * Cuthill-McKee algorithm is carried out on a bipartite graph formed
+ * by the matrix rows and columns.  The adjacency matrix ‘B’ of the
+ * bipartite graph is square and symmetric and takes the form of a
+ * 2-by-2 block matrix where ‘A’ is placed in the upper right corner
+ * and ‘A'’ is placed in the lower left corner:
+ *
+ *     ⎡  0   A ⎤
+ * B = ⎢        ⎥.
+ *     ⎣  A'  0 ⎦
+ *
+ *
+ * ‘starting_vertex’ is an integer which can be used to designate a
+ * starting vertex for the Cuthill-McKee algorithm.  Alternatively,
+ * ‘starting_vertex’ may be set to ‘0’, in which case a starting row
+ * is chosen automatically by selecting a pseudo-peripheral vertex.
+ *
+ * In the case of a square matrix, the starting vertex must be in the
+ * range ‘[1,M]’, where ‘M’ is the number of rows (and columns) of the
+ * matrix.  Otherwise, if the matrix is rectangular, a starting vertex
+ * in the range ‘[1,M]’ selects a vertex corresponding to a row of the
+ * matrix, whereas a starting vertex in the range ‘[M+1,M+N]’, where
+ * ‘N’ is the number of matrix columns, selects a vertex corresponding
+ * to a column of the matrix.
+ *
+ * If successful, this function returns ‘MTX_SUCCESS’, and the rows
+ * and columns of ‘mtxfile’ have been reordered according to the
+ * Reverse Cuthill-McKee algorithm. If ‘rowperm’ is not ‘NULL’, then
+ * it must point to an array that is large enough to hold one ‘int’
+ * for each row of the matrix. In this case, the array is used to
+ * store the permutation for reordering the matrix rows. Similarly,
+ * ‘colperm’ is used to store the permutation for reordering the
+ * matrix columns.
+ */
+int mtxfile_reorder_rcm(
+    struct mtxfile * mtxfile,
+    int * rowperm,
+    int * colperm,
+    int starting_vertex)
+{
+    int err;
+    int num_rows = mtxfile->size.num_rows;
+    int num_columns = mtxfile->size.num_columns;
+    int64_t num_nonzeros = mtxfile->size.num_nonzeros;
+    bool square = num_rows == num_columns;
+    int num_vertices = square ? num_rows : num_rows + num_columns;
+
+    if (mtxfile->header.object != mtxfile_matrix)
+        return MTX_ERR_INCOMPATIBLE_MTX_OBJECT;
+    if (mtxfile->header.format != mtxfile_coordinate)
+        return MTX_ERR_INCOMPATIBLE_MTX_OBJECT;
+    if (starting_vertex < 0 || starting_vertex > num_vertices)
+        return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+
+    /* 1. Obtain row pointers and column indices */
+    int64_t * rowptr = malloc(
+        (num_rows+1)*sizeof(int64_t) + num_nonzeros*sizeof(int));
+    if (!rowptr)
+        return MTX_ERR_ERRNO;
+    int * colidx = (int *) (&rowptr[num_rows+1]);
+    err = mtxfile_data_rowptr(
+        &mtxfile->data, mtxfile->header.object, mtxfile->header.format,
+        mtxfile->header.field, mtxfile->precision, num_rows, num_nonzeros,
+        rowptr, colidx);
+    if (err) {
+        free(rowptr);
+        return err;
+    }
+
+    /* 2. Obtain column pointers and row indices, which is equivalent
+     * to row pointers and column indices of the transposed matrix. */
+    int64_t * colptr = malloc(
+        (num_columns+1)*sizeof(int64_t) + num_nonzeros*sizeof(int));
+    if (!colptr) {
+        free(rowptr);
+        return MTX_ERR_ERRNO;
+    }
+    int * rowidx = (int *) (&colptr[num_columns+1]);
+    err = mtxfile_data_colptr(
+        &mtxfile->data, mtxfile->header.object, mtxfile->header.format,
+        mtxfile->header.field, mtxfile->precision, num_columns, num_nonzeros,
+        colptr, rowidx);
+    if (err) {
+        free(colptr);
+        free(rowptr);
+        return err;
+    }
+
+    /* 3. Allocate storage for vertex ordering */
+    int * vertex_order = malloc(num_vertices * sizeof(int));
+    if (!vertex_order) {
+        free(colptr);
+        free(rowptr);
+        return MTX_ERR_ERRNO;
+    }
+
+    /* 4. Compute the Cuthill-McKee ordering */
+    err = cuthill_mckee(
+        num_rows, num_columns, rowptr, colidx, colptr, rowidx,
+        starting_vertex-1, num_vertices, vertex_order);
+    if (err) {
+        free(vertex_order);
+        free(colptr);
+        free(rowptr);
+        return err;
+    }
+
+    free(colptr);
+    free(rowptr);
+
+    /* Add one to shift from 0-based to 1-based indexing. */
+    for (int i = 0; i < num_vertices; i++)
+        vertex_order[i]++;
+
+    /* 5. Reverse the ordering. */
+    for (int i = 0; i < num_vertices/2; i++) {
+        int tmp = vertex_order[i];
+        vertex_order[i] = vertex_order[num_vertices-i-1];
+        vertex_order[num_vertices-i-1] = tmp;
+    }
+
+    bool alloc_rowperm = !rowperm;
+    if (alloc_rowperm) {
+        rowperm = malloc(num_rows * sizeof(int));
+        if (!rowperm) {
+            free(vertex_order);
+            return MTX_ERR_ERRNO;
+        }
+    }
+    bool alloc_colperm = !square && !colperm;
+    if (alloc_colperm) {
+        colperm = malloc(num_columns * sizeof(int));
+        if (!colperm) {
+            if (alloc_rowperm)
+                free(rowperm);
+            free(vertex_order);
+            return MTX_ERR_ERRNO;
+        }
+    }
+
+    if (square) {
+        for (int i = 0; i < num_vertices; i++)
+            rowperm[vertex_order[i]-1] = i+1;
+        if (colperm) {
+            for (int i = 0; i < num_vertices; i++)
+                colperm[i] = rowperm[i];
+        }
+    } else {
+        int * row_order = malloc((num_rows + num_columns) * sizeof(int));
+        if (!row_order) {
+            if (alloc_colperm)
+                free(colperm);
+            if (alloc_rowperm)
+                free(rowperm);
+            free(vertex_order);
+            return MTX_ERR_ERRNO;
+        }
+        int * col_order = &row_order[num_rows];
+
+        int k = 0;
+        int l = 0;
+        for (int i = 0; i < num_vertices; i++) {
+            if (vertex_order[i] <= num_rows) {
+                row_order[k] = vertex_order[i];
+                k++;
+            } else {
+                col_order[l] = vertex_order[i]-num_rows;
+                l++;
+            }
+        }
+
+        for (int i = 0; i < num_rows; i++)
+            rowperm[row_order[i]-1] = i+1;
+        for (int i = 0; i < num_columns; i++)
+            colperm[col_order[i]-1] = i+1;
+        free(row_order);
+    }
+
+    /* 7. Permute the matrix. */
+    err = mtxfile_permute(mtxfile, rowperm, colperm);
+    if (err) {
+        if (alloc_colperm)
+            free(colperm);
+        if (alloc_rowperm)
+            free(rowperm);
+        free(vertex_order);
+        return err;
+    }
+
+    if (alloc_colperm)
+        free(colperm);
+    if (alloc_rowperm)
+        free(rowperm);
+    free(vertex_order);
+    return MTX_SUCCESS;
+}
+
+/**
+ * `mtxfile_reorder()` reorders the rows and columns of a matrix
+ * according to the specified algorithm.
+ *
+ * Some algorithms may pose certain requirements on the matrix. For
+ * example, the Reverse Cuthill-McKee ordering requires a matrix to be
+ * square and in coordinate format.
+ *
+ * If successful, this function returns ‘MTX_SUCCESS’, and the rows
+ * and columns of ‘mtxfile’ have been reordered according to the
+ * specified method. If ‘rowperm’ is not ‘NULL’, then it must point to
+ * an array that is large enough to hold one ‘int’ for each row of the
+ * matrix. In this case, the array is used to store the permutation
+ * for reordering the matrix rows. Similarly, ‘colperm’ is used to
+ * store the permutation for reordering the matrix columns.
+ */
+int mtxfile_reorder(
+    struct mtxfile * mtxfile,
+    enum mtxfile_ordering ordering,
+    int * rowperm,
+    int * colperm,
+    int rcm_starting_vertex)
+{
+    int err;
+    if (ordering == mtxfile_rcm) {
+        return mtxfile_reorder_rcm(mtxfile, rowperm, colperm, rcm_starting_vertex);
+    } else {
+        return MTX_ERR_INVALID_ORDERING;
+    }
     return MTX_SUCCESS;
 }
 

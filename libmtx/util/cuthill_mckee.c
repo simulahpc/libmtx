@@ -72,8 +72,11 @@ static int minimum_degree_vertex(
  */
 static int rooted_level_structure(
     int num_rows,
-    const int64_t * row_ptr,
-    const int * column_indices,
+    int num_columns,
+    const int64_t * rowptr,
+    const int * colidx,
+    const int64_t * colptr,
+    const int * rowidx,
     const int * vertex_degrees,
     int root_vertex,
     int * out_num_levels,
@@ -82,7 +85,8 @@ static int rooted_level_structure(
     int ** out_vertex_in_set)
 {
     int err;
-    int num_vertices = num_rows;
+    bool square = num_rows == num_columns;
+    int num_vertices = square ? num_rows : num_rows + num_columns;
 
     /* Reuse arrays that were passed in as function arguments. */
     int * vertices_per_level_ptr = *out_vertices_per_level_ptr;
@@ -152,7 +156,7 @@ static int rooted_level_structure(
 
     /* 1. Loop over the levels of the structure. */
     int num_levels = 1;
-    for (; num_levels < num_vertices; num_levels++) {
+    while (vertices_per_level_ptr[num_levels] < num_vertices) {
 
         /* 2. Loop over vertices that belong to the previous level. */
         vertices_per_level_ptr[num_levels+1] = vertices_per_level_ptr[num_levels];
@@ -161,13 +165,55 @@ static int rooted_level_structure(
              i++)
         {
             int vertex = vertices_per_level[i];
+            int adjacent_vertices_ptr = vertices_per_level_ptr[num_levels+1];
 
             /* 3. Loop over adjacent vertices. */
-            int adjacent_vertices_ptr = vertices_per_level_ptr[num_levels+1];
-            for (int k = row_ptr[vertex]; k < row_ptr[vertex+1]; k++) {
+            int64_t rowstart = (square || vertex < num_rows) ? rowptr[vertex] : 0;
+            int64_t rowend = square || vertex < num_rows ? rowptr[vertex+1] : 0;
+            for (int k = rowstart; k < rowend; k++) {
                 /* Subtract one to shift from 1-based column indices
                  * to 0-based numbering of vertices. */
-                int adjacent_vertex = column_indices[k]-1;
+                int adjacent_vertex = colidx[k]-1;
+                if (!square)
+                    adjacent_vertex += num_rows;
+
+                if (!vertex_in_set[adjacent_vertex]) {
+
+                    /*
+                     * Now, we have found a vertex that is adjacent to
+                     * a vertex in the current level, but which does
+                     * not belong to the rooted level structure
+                     * itself.
+                     *
+                     * Next, use an insertion sort to insert the new
+                     * vertex into the list of vertices that are
+                     * adjacent to the vertex in the current level,
+                     * which is sorted according to degree.
+                     */
+
+                    vertex_in_set[adjacent_vertex] = 1;
+                    int adjacent_vertex_degree = vertex_degrees[adjacent_vertex];
+                    int j = vertices_per_level_ptr[num_levels+1] - 1;
+                    while (j >= adjacent_vertices_ptr &&
+                           (vertex_degrees[vertices_per_level[j]] <
+                            adjacent_vertex_degree))
+                    {
+                        vertices_per_level[j+1] = vertices_per_level[j];
+                        j--;
+                    }
+                    vertices_per_level[j+1] = adjacent_vertex;
+                    vertices_per_level_ptr[num_levels+1]++;
+                }
+            }
+
+            int64_t colstart = square ? colptr[vertex]
+                : (vertex >= num_rows ? colptr[vertex-num_rows] : 0);
+            int64_t colend = square ? colptr[vertex+1]
+                : (vertex >= num_rows ? colptr[vertex+1-num_rows] : 0);
+            for (int k = colstart; k < colend; k++) {
+                /* Subtract one to shift from 1-based column indices
+                 * to 0-based numbering of vertices. */
+                int adjacent_vertex = rowidx[k]-1;
 
                 if (!vertex_in_set[adjacent_vertex]) {
 
@@ -199,10 +245,24 @@ static int rooted_level_structure(
             }
         }
 
-        /* Stop if no new vertices were added. */
+        /* If no new vertices were found, then select a new root
+         * vertex among those that have not been visited yet. */
         if (vertices_per_level_ptr[num_levels] ==
             vertices_per_level_ptr[num_levels+1])
-            break;
+        {
+            int root_vertex = 0;
+            for (int i = 0; i < num_vertices; i++) {
+                if (!vertex_in_set[i]) {
+                    root_vertex = i;
+                    break;
+                }
+            }
+            vertex_in_set[root_vertex] = 1;
+            vertices_per_level[vertices_per_level_ptr[num_levels+1]] = root_vertex;
+            vertices_per_level_ptr[num_levels+1]++;
+        }
+
+        num_levels++;
     }
 
     *out_num_levels = num_levels;
@@ -218,8 +278,11 @@ static int rooted_level_structure(
  */
 static int find_pseudoperipheral_vertex(
     int num_rows,
-    const int64_t * row_ptr,
-    const int * column_indices,
+    int num_columns,
+    const int64_t * rowptr,
+    const int * colidx,
+    const int64_t * colptr,
+    const int * rowidx,
     const int * vertex_degrees,
     int starting_vertex,
     int * out_pseudoperipheral_vertex,
@@ -229,7 +292,8 @@ static int find_pseudoperipheral_vertex(
     int ** out_vertex_in_set)
 {
     int err;
-    int num_vertices = num_rows;
+    bool square = num_rows == num_columns;
+    int num_vertices = square ? num_rows : num_rows + num_columns;
 
     /* Reuse arrays that were passed in as function arguments. */
     int * vertices_per_level_ptr = *out_vertices_per_level_ptr;
@@ -299,7 +363,8 @@ static int find_pseudoperipheral_vertex(
 
         /* 3. Construct the rooted level structure for the current vertex. */
         err = rooted_level_structure(
-            num_rows, row_ptr, column_indices, vertex_degrees,
+            num_rows, num_columns, rowptr, colidx, colptr, rowidx,
+            vertex_degrees,
             vertex,
             &num_vertex_levels,
             &vertices_per_level_ptr,
@@ -344,22 +409,48 @@ static int find_pseudoperipheral_vertex(
  * `cuthill_mckee()' uses the Cuthill-McKee algorithm to compute a
  * reordering of the vertices of an undirected graph.
  *
+ * The undirected graph is described in terms of a symmetric adjacency
+ * matrix in compressed sparse row (CSR) and compressed sparse column
+ * (CSC) format.  The former consists of ‘num_rows+1’ row pointers,
+ * ‘rowptr’, and ‘size’ column indices, ‘colidx’, whereas the latter
+ * consists of ‘num_columns+1’ column pointers, ‘colptr’, and ‘size’
+ * row indices, ‘rowidx’.  Note that the matrix given in CSC format is
+ * equivalent to its transpose in CSR format.  Also, note that row and
+ * column indices use 1-based indexing.
+ *
  * On success, the array `vertex_order' will contain the new ordering
  * of the vertices (i.e., the rows of the matrix).  Therefore, it must
  * hold enough storage for at least `num_rows' values of type `int'.
  */
 int cuthill_mckee(
     int num_rows,
-    const int64_t * row_ptr,
-    const int * column_indices,
-    const int * vertex_degrees,
+    int num_columns,
+    const int64_t * rowptr,
+    const int * colidx,
+    const int64_t * colptr,
+    const int * rowidx,
     int starting_vertex,
     int size,
     int * vertex_order)
 {
     int err;
-    if (size < num_rows)
+    bool square = num_rows == num_columns;
+    int num_vertices = square ? num_rows : num_rows + num_columns;
+    if (size < num_vertices)
         return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+
+    int * vertex_degrees = malloc(num_vertices * sizeof(int));
+    if (!vertex_degrees)
+        return MTX_ERR_ERRNO;
+    if (square) {
+        for (int i = 0; i < num_rows; i++)
+            vertex_degrees[i] = rowptr[i+1] - rowptr[i] + colptr[i+1] - colptr[i];
+    } else {
+        for (int i = 0; i < num_rows; i++)
+            vertex_degrees[i] = rowptr[i+1] - rowptr[i];
+        for (int j = 0; j < num_columns; j++)
+            vertex_degrees[num_rows+j] = colptr[j+1] - colptr[j];
+    }
 
     if (starting_vertex == -1) {
 
@@ -381,7 +472,8 @@ int cuthill_mckee(
         int * vertices_per_level = vertex_order;
         int * vertex_in_set = NULL;
         err = find_pseudoperipheral_vertex(
-            num_rows, row_ptr, column_indices,
+            num_rows, num_columns,
+            rowptr, colidx, colptr, rowidx,
             vertex_degrees,
             starting_vertex,
             &pseudoperipheral_vertex,
@@ -389,23 +481,29 @@ int cuthill_mckee(
             &vertices_per_level_ptr,
             &vertices_per_level,
             &vertex_in_set);
-        if (err)
+        if (err) {
+            free(vertex_degrees);
             return err;
+        }
 
         starting_vertex = pseudoperipheral_vertex;
         err = rooted_level_structure(
-            num_rows, row_ptr, column_indices,
+            num_rows, num_columns,
+            rowptr, colidx, colptr, rowidx,
             vertex_degrees,
             starting_vertex,
             &num_levels,
             &vertices_per_level_ptr,
             &vertices_per_level,
             &vertex_in_set);
-        if (err)
+        if (err) {
+            free(vertex_degrees);
             return err;
+        }
 
         free(vertex_in_set);
         free(vertices_per_level_ptr);
+        free(vertex_degrees);
         return MTX_SUCCESS;
 
     } else {
@@ -420,20 +518,22 @@ int cuthill_mckee(
         int * vertices_per_level = vertex_order;
         int * vertex_in_set = NULL;
         err = rooted_level_structure(
-            num_rows, row_ptr, column_indices,
+            num_rows, num_columns,
+            rowptr, colidx, colptr, rowidx,
             vertex_degrees,
             starting_vertex,
             &num_levels,
             &vertices_per_level_ptr,
             &vertices_per_level,
             &vertex_in_set);
-        if (err)
+        if (err) {
+            free(vertex_degrees);
             return err;
+        }
 
         free(vertex_in_set);
         free(vertices_per_level_ptr);
+        free(vertex_degrees);
         return MTX_SUCCESS;
     }
-
-    return MTX_SUCCESS;
 }

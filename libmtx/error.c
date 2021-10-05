@@ -128,6 +128,8 @@ const char * mtx_strerror(
         return "incompatible size";
     case MTX_ERR_INCOMPATIBLE_VECTOR_TYPE:
         return "incompatible vector type";
+    case MTX_ERR_INVALID_ORDERING:
+        return "invalid ordering";
     default:
         return "unknown error";
     }

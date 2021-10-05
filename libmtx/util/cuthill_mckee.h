@@ -31,15 +31,26 @@
  * `cuthill_mckee()' uses the Cuthill-McKee algorithm to compute a
  * reordering of the vertices of an undirected graph.
  *
+ * The undirected graph is described in terms of a symmetric adjacency
+ * matrix in compressed sparse row (CSR) and compressed sparse column
+ * (CSC) format.  The former consists of ‘num_rows+1’ row pointers,
+ * ‘rowptr’, and ‘size’ column indices, ‘colidx’, whereas the latter
+ * consists of ‘num_columns+1’ column pointers, ‘colptr’, and ‘size’
+ * row indices, ‘rowidx’.  Note that the matrix given in CSC format is
+ * equivalent to its transpose in CSR format.  Also, note that row and
+ * column indices use 1-based indexing.
+ *
  * On success, the array `vertex_order' will contain the new ordering
  * of the vertices (i.e., the rows of the matrix).  Therefore, it must
  * hold enough storage for at least `num_rows' values of type `int'.
  */
 int cuthill_mckee(
     int num_rows,
-    const int64_t * row_ptr,
-    const int * column_indices,
-    const int * vertex_degrees,
+    int num_columns,
+    const int64_t * rowptr,
+    const int * colidx,
+    const int64_t * colptr,
+    const int * rowidx,
     int starting_vertex,
     int size,
     int * vertex_order);

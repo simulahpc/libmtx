@@ -251,7 +251,7 @@ int mtx_matrix_coordinate_data_reorder_rcm(
     /* 2. Allocate storage for and extract column indices. */
     int * column_indices = malloc(mtxdata->size * sizeof(int));
     if (!column_indices) {
-        free(column_indices);
+        free(row_ptr);
         return MTX_ERR_ERRNO;
     }
     err = mtx_matrix_coordinate_data_column_indices(
@@ -262,28 +262,45 @@ int mtx_matrix_coordinate_data_reorder_rcm(
         return err;
     }
 
-    /* 3. Allocate storage for and compute vertex degrees. */
-    int * vertex_degrees = malloc(mtxdata->num_rows * sizeof(int));
-    if (!vertex_degrees) {
+    /* 1b. Allocate storage for and compute column pointers. */
+    int64_t * col_ptr = malloc((mtxdata->num_columns+1) * sizeof(int64_t));
+    if (!col_ptr) {
         free(column_indices);
         free(row_ptr);
         return MTX_ERR_ERRNO;
     }
-    err = mtx_matrix_coordinate_data_diagonals_per_row(
-        mtxdata, mtxdata->num_rows, vertex_degrees);
+    err = mtx_matrix_coordinate_data_column_ptr(
+        mtxdata, mtxdata->num_columns+1, col_ptr);
     if (err) {
-        free(vertex_degrees);
+        free(col_ptr);
         free(column_indices);
         free(row_ptr);
         return err;
     }
-    for (int i = 0; i < mtxdata->num_rows; i++)
-        vertex_degrees[i] += row_ptr[i+1] - row_ptr[i];
 
-    /* 4. Allocate storage for the vertex ordering. */
+    /* 2b. Allocate storage for and extract row indices. */
+    int * row_indices = malloc(mtxdata->size * sizeof(int));
+    if (!row_indices) {
+        free(col_ptr);
+        free(column_indices);
+        free(row_ptr);
+        return MTX_ERR_ERRNO;
+    }
+    err = mtx_matrix_coordinate_data_row_indices(
+        mtxdata, mtxdata->size, column_indices);
+    if (err) {
+        free(row_indices);
+        free(col_ptr);
+        free(column_indices);
+        free(row_ptr);
+        return err;
+    }
+
+    /* 3. Allocate storage for the vertex ordering. */
     int * vertex_order = malloc(mtxdata->num_rows * sizeof(int));
     if (!vertex_order) {
-        free(vertex_degrees);
+        free(row_indices);
+        free(col_ptr);
         free(column_indices);
         free(row_ptr);
         return MTX_ERR_ERRNO;
@@ -291,17 +308,19 @@ int mtx_matrix_coordinate_data_reorder_rcm(
 
     /* 5. Compute the Cuthill-McKee ordering. */
     err = cuthill_mckee(
-        mtxdata->num_rows, row_ptr, column_indices, vertex_degrees,
-        starting_row-1, mtxdata->num_rows, vertex_order);
+        mtxdata->num_rows, mtxdata->num_columns, row_ptr, column_indices,
+        col_ptr, row_indices, starting_row-1, mtxdata->num_rows, vertex_order);
     if (err) {
         free(vertex_order);
-        free(vertex_degrees);
+        free(row_indices);
+        free(col_ptr);
         free(column_indices);
         free(row_ptr);
         return err;
     }
 
-    free(vertex_degrees);
+    free(row_indices);
+    free(col_ptr);
     free(column_indices);
     free(row_ptr);
 
@@ -317,7 +336,7 @@ int mtx_matrix_coordinate_data_reorder_rcm(
     }
 
     int * permutation = malloc(mtxdata->num_rows * sizeof(int));
-    if (err) {
+    if (!permutation) {
         free(vertex_order);
         return err;
     }

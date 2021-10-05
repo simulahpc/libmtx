@@ -697,6 +697,71 @@ int mtxfile_data_copy_gather(
     const int64_t * srcdispls);
 
 /*
+ * Extracting row/column pointers and indices
+ */
+
+/**
+ * `mtxfile_data_rowptr()' computes row pointers for a matrix in
+ * coordinate format.
+ *
+ * ‘rowptr’ must point to an array containing enough storage for
+ * ‘num_rows+1’ values of type ‘int64_t’.
+ *
+ * ‘colidx’ may be ‘NULL’, in which case it is ignored. Otherwise, it
+ * must point to an array containing enough storage for ‘size’ values
+ * of type ‘int’.  On successful completion, this array will contain
+ * the column indices of the nonzero matrix entries arranged in row
+ * major order.  The ‘i’-th entry of ‘rowptr’ is the location in the
+ * ‘colidx’ array of the first nonzero that belongs to the ‘i+1’-th
+ * row of the matrix, for ‘i=0,1,...,num_rows-1’.  The final entry of
+ * ‘rowptr’ indicates the position one place beyond the last nonzero.
+ *
+ * The matrix data is not required to be sorted in any particular
+ * order.
+ */
+int mtxfile_data_rowptr(
+    const union mtxfile_data * data,
+    enum mtxfile_object object,
+    enum mtxfile_format format,
+    enum mtxfile_field field,
+    enum mtx_precision precision,
+    int num_rows,
+    int64_t size,
+    int64_t * rowptr,
+    int * colidx);
+
+/**
+ * `mtxfile_data_colptr()' computes column pointers for a matrix in
+ * coordinate format.
+ *
+ * ‘colptr’ must point to an array containing enough storage for
+ * ‘num_columns+1’ values of type ‘int64_t’.
+ *
+ * ‘colidx’ may be ‘NULL’, in which case it is ignored. Otherwise, it
+ * must point to an array containing enough storage for ‘size’ values
+ * of type ‘int’.  On successful completion, this array will contain
+ * the column indices of the nonzero matrix entries arranged in column
+ * major order.  The ‘i’-th entry of ‘colptr’ is the location in the
+ * ‘colidx’ array of the first nonzero that belongs to the ‘i+1’-th
+ * column of the matrix, for ‘i=0,1,...,num_columns-1’.  The final
+ * entry of ‘colptr’ indicates the position one place beyond the last
+ * nonzero.
+ *
+ * The matrix data is not required to be sorted in any particular
+ * order.
+ */
+int mtxfile_data_colptr(
+    const union mtxfile_data * data,
+    enum mtxfile_object object,
+    enum mtxfile_format format,
+    enum mtxfile_field field,
+    enum mtx_precision precision,
+    int num_columns,
+    int64_t size,
+    int64_t * colptr,
+    int * rowidx);
+
+/*
  * Modifying values
  */
 
@@ -969,20 +1034,6 @@ int mtxfile_data_sort_column_major(
     int num_rows,
     int num_columns,
     int64_t size);
-
-/**
- * `mtxfile_data_sort_by_key()' sorts data lines according to the
- * given keys using a stable, in-place insertion sort algorihtm.
- */
-int mtxfile_data_sort_by_key(
-    union mtxfile_data * data,
-    enum mtxfile_object object,
-    enum mtxfile_format format,
-    enum mtxfile_field field,
-    enum mtx_precision precision,
-    int64_t size,
-    int64_t offset,
-    int * keys);
 
 /*
  * Partitioning

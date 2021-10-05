@@ -569,8 +569,8 @@ static void draw_sparsity_pattern_point(
     unsigned char g,
     unsigned char b)
 {
-    double x = (((double) i + 0.5) / (double) num_columns) * (double) width;
-    double y = (((double) j + 0.5) / (double) num_rows) * (double) width;
+    double x = (((double) j + 0.5) / (double) num_columns) * (double) width;
+    double y = (((double) i + 0.5) / (double) num_rows) * (double) height;
     int left = (int) floor(x);
     int right = (int) ceil(x);
     int top = (int) floor(y);
@@ -610,9 +610,30 @@ static int draw_sparsity_pattern(
     int num_rows = mtxfile->size.num_rows;
     int num_columns = mtxfile->size.num_columns;
     int64_t num_nonzeros = mtxfile->size.num_nonzeros;
+    int width;
+    int height;
+    if (num_rows < max_height && num_columns < max_width) {
+        height = num_rows;
+        width = num_columns;
+    } else if (num_rows < max_height) {
+        height = num_rows;
+        width = max_width;
+    } else if (num_columns < max_width) {
+        height = max_height;
+        width = num_columns;
+    } else {
+        if (num_rows == num_columns) {
+            height = max_height;
+            width = max_width;
+        } else if (num_rows > num_columns) {
+            height = max_height;
+            width = (max_height*num_columns) / num_rows;
+        } else {
+            height = (max_width*num_rows) / num_columns;
+            width = max_width;
+        }
+    }
 
-    int width = num_columns < max_width ? num_columns : max_width;
-    int height = num_rows < max_height ? num_rows : max_height;
     int pixel_size = 3 * sizeof(unsigned char);
     int bit_depth = CHAR_BIT;
     int color_type = PNG_COLOR_TYPE_RGB;
