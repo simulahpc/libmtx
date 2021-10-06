@@ -27,11 +27,6 @@
 #include <libmtx/vector/vector.h>
 #include <libmtx/mtxfile/mtxfile.h>
 #include <libmtx/mtx/precision.h>
-#include <libmtx/util/partition.h>
-
-#ifdef LIBMTX_HAVE_MPI
-#include <mpi.h>
-#endif
 
 #ifdef LIBMTX_HAVE_LIBZ
 #include <zlib.h>
@@ -42,6 +37,10 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <string.h>
+
+/*
+ * Vector types
+ */
 
 /**
  * `mtxvector_type_str()' is a string representing the vector type.
@@ -554,7 +553,23 @@ int mtxvector_gzread(
     int * lines_read,
     int64_t * bytes_read,
     size_t line_max,
-    char * linebuf);
+    char * linebuf)
+{
+    int err;
+    struct mtxfile mtxfile;
+    err = mtxfile_gzread(
+        &mtxfile, precision, f, lines_read, bytes_read, line_max, linebuf);
+    if (err)
+        return err;
+
+    err = mtxvector_from_mtxfile(vector, &mtxfile, type);
+    if (err) {
+        mtxfile_free(&mtxfile);
+        return err;
+    }
+    mtxfile_free(&mtxfile);
+    return MTX_SUCCESS;
+}
 #endif
 
 /**
@@ -582,7 +597,22 @@ int mtxvector_write(
     const char * path,
     bool gzip,
     const char * format,
-    int64_t * bytes_written);
+    int64_t * bytes_written)
+{
+    int err;
+    struct mtxfile mtxfile;
+    err = mtxvector_to_mtxfile(vector, &mtxfile);
+    if (err)
+        return err;
+    err = mtxfile_write(
+        &mtxfile, path, gzip, format, bytes_written);
+    if (err) {
+        mtxfile_free(&mtxfile);
+        return err;
+    }
+    mtxfile_free(&mtxfile);
+    return MTX_SUCCESS;
+}
 
 /**
  * `mtxvector_fwrite()' writes a vector to a stream.
@@ -651,7 +681,23 @@ int mtxvector_gzwrite(
     const struct mtxvector * vector,
     gzFile f,
     const char * format,
-    int64_t * bytes_written);
+    int64_t * bytes_written)
+{
+    int err;
+    struct mtxfile mtxfile;
+    err = mtxvector_to_mtxfile(vector, &mtxfile);
+    if (err)
+        return err;
+
+    err = mtxfile_gzwrite(
+        &mtxfile, f, format, bytes_written);
+    if (err) {
+        mtxfile_free(&mtxfile);
+        return err;
+    }
+    mtxfile_free(&mtxfile);
+    return MTX_SUCCESS;
+}
 #endif
 
 /*
@@ -664,14 +710,36 @@ int mtxvector_gzwrite(
  */
 int mtxvector_swap(
     struct mtxvector * x,
-    struct mtxvector * y);
+    struct mtxvector * y)
+{
+    if (x->type == mtxvector_array) {
+        return mtxvector_array_swap(
+            &x->storage.array, &y->storage.array);
+    } else if (x->type == mtxvector_coordinate) {
+        return mtxvector_coordinate_swap(
+            &x->storage.coordinate, &y->storage.coordinate);
+    } else {
+        return MTX_ERR_INVALID_VECTOR_TYPE;
+    }
+}
 
 /**
  * `mtxvector_copy()' copies values of a vector, `y = x'.
  */
 int mtxvector_copy(
     struct mtxvector * y,
-    const struct mtxvector * x);
+    const struct mtxvector * x)
+{
+    if (x->type == mtxvector_array) {
+        return mtxvector_array_copy(
+            &y->storage.array, &x->storage.array);
+    } else if (x->type == mtxvector_coordinate) {
+        return mtxvector_coordinate_copy(
+            &y->storage.coordinate, &x->storage.coordinate);
+    } else {
+        return MTX_ERR_INVALID_VECTOR_TYPE;
+    }
+}
 
 /**
  * `mtxvector_sscal()' scales a vector by a single precision floating
@@ -965,110 +1033,57 @@ int mtxvector_dnrm2(
 
 /**
  * `mtxvector_sasum()' computes the sum of absolute values (1-norm) of
- * a vector in single precision floating point.
+ * a vector in single precision floating point.  If the vector is
+ * complex-valued, then the sum of the absolute values of the real and
+ * imaginaty parts is computed.
  */
 int mtxvector_sasum(
     const struct mtxvector * x,
-    float * asum);
+    float * asum)
+{
+    if (x->type == mtxvector_array) {
+        return mtxvector_array_sasum(&x->storage.array, asum);
+    } else if (x->type == mtxvector_coordinate) {
+        return mtxvector_coordinate_sasum(&x->storage.coordinate, asum);
+    } else {
+        return MTX_ERR_INVALID_VECTOR_TYPE;
+    }
+}
 
 /**
  * `mtxvector_dasum()' computes the sum of absolute values (1-norm) of
- * a vector in double precision floating point.
+ * a vector in double precision floating point.  If the vector is
+ * complex-valued, then the sum of the absolute values of the real and
+ * imaginaty parts is computed.
  */
 int mtxvector_dasum(
     const struct mtxvector * x,
-    double * asum);
+    double * asum)
+{
+    if (x->type == mtxvector_array) {
+        return mtxvector_array_dasum(&x->storage.array, asum);
+    } else if (x->type == mtxvector_coordinate) {
+        return mtxvector_coordinate_dasum(&x->storage.coordinate, asum);
+    } else {
+        return MTX_ERR_INVALID_VECTOR_TYPE;
+    }
+}
 
 /**
- * `mtxvector_smax()' finds the index of the first element having the
- * maximum absolute value.
+ * `mtxvector_iamax()' finds the index of the first element having the
+ * maximum absolute value.  If the vector is complex-valued, then the
+ * index points to the first element having the maximum sum of the
+ * absolute values of the real and imaginary parts.
  */
-int mtxvector_imax(
+int mtxvector_iamax(
     const struct mtxvector * x,
-    int * max);
-
-/*
- * Partitioning
- */
-
-/**
- * `mtxvector_partition_rows()' partitions and reorders data lines of
- * a vector according to the given row partitioning.
- *
- * The array `data_lines_per_part_ptr' must contain at least enough
- * storage for `row_partition->num_parts+1' values of type `int64_t'.
- * If successful, the `p'-th value of `data_lines_per_part_ptr' is an
- * offset to the first data line belonging to the `p'-th part of the
- * partition, while the final value of the array points to one place
- * beyond the final data line.
- *
- * If it is not `NULL', the array `row_parts' must contain enough
- * storage to hold one `int' for each data line. (The number of data
- * lines is obtained by calling `mtxvector_size_num_data_lines()'). On
- * a successful return, the `k'-th entry in the array specifies the
- * part number that was assigned to the `k'-th data line.
- */
-int mtxvector_partition_rows(
-    struct mtxvector * vector,
-    const struct mtx_partition * row_partition,
-    int64_t * data_lines_per_part_ptr,
-    int * row_parts);
-
-/**
- * `mtxvector_init_from_row_partition()' creates a vector from a
- * subset of the rows of another vector.
- *
- * The array `data_lines_per_part_ptr' should have been obtained
- * previously by calling `mtxvector_partition_rows'.
- */
-int mtxvector_init_from_row_partition(
-    struct mtxvector * dst,
-    const struct mtxvector * src,
-    const struct mtx_partition * row_partition,
-    int64_t * data_lines_per_part_ptr,
-    int part);
-
-/*
- * MPI functions
- */
-
-#ifdef LIBMTX_HAVE_MPI
-/**
- * `mtxvector_send()' sends a vector to another MPI process.
- *
- * This is analogous to `MPI_Send()' and requires the receiving
- * process to perform a matching call to `mtxvector_recv()'.
- */
-int mtxvector_send(
-    const struct mtxvector * vector,
-    int dest,
-    int tag,
-    MPI_Comm comm,
-    struct mtxmpierror * mpierror);
-
-/**
- * `mtxvector_recv()' receives a vector from another MPI process.
- *
- * This is analogous to `MPI_Recv()' and requires the sending process
- * to perform a matching call to `mtxvector_send()'.
- */
-int mtxvector_recv(
-    struct mtxvector * vector,
-    int source,
-    int tag,
-    MPI_Comm comm,
-    struct mtxmpierror * mpierror);
-
-/**
- * `mtxvector_bcast()' broadcasts a vector from an MPI root process to
- * other processes in a communicator.
- *
- * This is analogous to `MPI_Bcast()' and requires every process in
- * the communicator to perform matching calls to `mtxvector_bcast()'.
- */
-int mtxvector_bcast(
-    struct mtxvector * vector,
-    int root,
-    MPI_Comm comm,
-    struct mtxmpierror * mpierror);
-#endif
+    int * iamax)
+{
+    if (x->type == mtxvector_array) {
+        return mtxvector_array_iamax(&x->storage.array, iamax);
+    } else if (x->type == mtxvector_coordinate) {
+        return mtxvector_coordinate_iamax(&x->storage.coordinate, iamax);
+    } else {
+        return MTX_ERR_INVALID_VECTOR_TYPE;
+    }
+}

@@ -34,10 +34,6 @@
 #include <cblas.h>
 #endif
 
-#ifdef LIBMTX_HAVE_MPI
-#include <mpi.h>
-#endif
-
 #ifdef LIBMTX_HAVE_LIBZ
 #include <zlib.h>
 #endif
@@ -374,11 +370,191 @@ int mtxvector_array_to_mtxfile(
  */
 
 /**
- * `mtxvector_array_copy()' copies values of a vector, `y = x'.
+ * `mtxvector_array_swap()' swaps values of two vectors,
+ * simultaneously performing ‘y <- x’ and ‘x <- y’.
+ *
+ * The vectors ‘x’ and ‘y’ must have the same field, precision and
+ * size.
+ */
+int mtxvector_array_swap(
+    struct mtxvector_array * x,
+    struct mtxvector_array * y)
+{
+    if (x->field != y->field)
+        return MTX_ERR_INCOMPATIBLE_FIELD;
+    if (x->precision != y->precision)
+        return MTX_ERR_INCOMPATIBLE_PRECISION;
+    if (x->size != y->size)
+        return MTX_ERR_INCOMPATIBLE_SIZE;
+    if (x->field == mtx_field_real) {
+        if (x->precision == mtx_single) {
+            float * xdata = x->data.real_single;
+            float * ydata = y->data.real_single;
+#ifdef LIBMTX_HAVE_BLAS
+            cblas_sswap(x->size, xdata, 1, ydata, 1);
+#else
+            for (int64_t k = 0; k < x->size; k++) {
+                float z = ydata[k];
+                ydata[k] = xdata[k];
+                xdata[k] = z;
+            }
+#endif
+        } else if (x->precision == mtx_double) {
+            double * xdata = x->data.real_double;
+            double * ydata = y->data.real_double;
+#ifdef LIBMTX_HAVE_BLAS
+            cblas_dswap(x->size, xdata, 1, ydata, 1);
+#else
+            for (int64_t k = 0; k < x->size; k++) {
+                double z = ydata[k];
+                ydata[k] = xdata[k];
+                xdata[k] = z;
+            }
+#endif
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else if (x->field == mtx_field_complex) {
+        if (x->precision == mtx_single) {
+            float (* xdata)[2] = x->data.complex_single;
+            float (* ydata)[2] = y->data.complex_single;
+#ifdef LIBMTX_HAVE_BLAS
+            cblas_cswap(x->size, xdata, 1, ydata, 1);
+#else
+            for (int64_t k = 0; k < x->size; k++) {
+                float z[2] = {ydata[k][0], ydata[k][1]};
+                ydata[k][0] = xdata[k][0];
+                ydata[k][1] = xdata[k][1];
+                xdata[k][0] = z[0];
+                xdata[k][1] = z[1];
+            }
+#endif
+        } else if (x->precision == mtx_double) {
+            double (* xdata)[2] = x->data.complex_double;
+            double (* ydata)[2] = y->data.complex_double;
+#ifdef LIBMTX_HAVE_BLAS
+            cblas_zswap(x->size, xdata, 1, ydata, 1);
+#else
+            for (int64_t k = 0; k < x->size; k++) {
+                double z[2] = {ydata[k][0], ydata[k][1]};
+                ydata[k][0] = xdata[k][0];
+                ydata[k][1] = xdata[k][1];
+                xdata[k][0] = z[0];
+                xdata[k][1] = z[1];
+            }
+#endif
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else if (x->field == mtx_field_integer) {
+        if (x->precision == mtx_single) {
+            int32_t * xdata = x->data.integer_single;
+            int32_t * ydata = y->data.integer_single;
+            for (int64_t k = 0; k < x->size; k++) {
+                int32_t z = ydata[k];
+                ydata[k] = xdata[k];
+                xdata[k] = z;
+            }
+        } else if (x->precision == mtx_double) {
+            int64_t * xdata = x->data.integer_double;
+            int64_t * ydata = y->data.integer_double;
+            for (int64_t k = 0; k < x->size; k++) {
+                int64_t z = ydata[k];
+                ydata[k] = xdata[k];
+                xdata[k] = z;
+            }
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else {
+        return MTX_ERR_INVALID_FIELD;
+    }
+    return MTX_SUCCESS;
+}
+
+/**
+ * `mtxvector_array_copy()' copies values of a vector, ‘y = x’.
+ *
+ * The vectors ‘x’ and ‘y’ must have the same field, precision and
+ * size.
  */
 int mtxvector_array_copy(
     struct mtxvector_array * y,
-    const struct mtxvector_array * x);
+    const struct mtxvector_array * x)
+{
+    if (x->field != y->field)
+        return MTX_ERR_INCOMPATIBLE_FIELD;
+    if (x->precision != y->precision)
+        return MTX_ERR_INCOMPATIBLE_PRECISION;
+    if (x->size != y->size)
+        return MTX_ERR_INCOMPATIBLE_SIZE;
+    if (x->field == mtx_field_real) {
+        if (x->precision == mtx_single) {
+            const float * xdata = x->data.real_single;
+            float * ydata = y->data.real_single;
+#ifdef LIBMTX_HAVE_BLAS
+            cblas_scopy(x->size, xdata, 1, ydata, 1);
+#else
+            for (int64_t k = 0; k < x->size; k++)
+                ydata[k] = xdata[k];
+#endif
+        } else if (x->precision == mtx_double) {
+            const double * xdata = x->data.real_double;
+            double * ydata = y->data.real_double;
+#ifdef LIBMTX_HAVE_BLAS
+            cblas_dcopy(x->size, xdata, 1, ydata, 1);
+#else
+            for (int64_t k = 0; k < x->size; k++)
+                ydata[k] = xdata[k];
+#endif
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else if (x->field == mtx_field_complex) {
+        if (x->precision == mtx_single) {
+            const float (* xdata)[2] = x->data.complex_single;
+            float (* ydata)[2] = y->data.complex_single;
+#ifdef LIBMTX_HAVE_BLAS
+            cblas_ccopy(x->size, xdata, 1, ydata, 1);
+#else
+            for (int64_t k = 0; k < x->size; k++) {
+                ydata[k][0] = xdata[k][0];
+                ydata[k][1] = xdata[k][1];
+            }
+#endif
+        } else if (x->precision == mtx_double) {
+            const double (* xdata)[2] = x->data.complex_double;
+            double (* ydata)[2] = y->data.complex_double;
+#ifdef LIBMTX_HAVE_BLAS
+            cblas_zcopy(x->size, xdata, 1, ydata, 1);
+#else
+            for (int64_t k = 0; k < x->size; k++) {
+                ydata[k][0] = xdata[k][0];
+                ydata[k][1] = xdata[k][1];
+            }
+#endif
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else if (x->field == mtx_field_integer) {
+        if (x->precision == mtx_single) {
+            const int32_t * xdata = x->data.integer_single;
+            int32_t * ydata = y->data.integer_single;
+            for (int64_t k = 0; k < x->size; k++)
+                ydata[k] = xdata[k];
+        } else if (x->precision == mtx_double) {
+            const int64_t * xdata = x->data.integer_double;
+            int64_t * ydata = y->data.integer_double;
+            for (int64_t k = 0; k < x->size; k++)
+                ydata[k] = xdata[k];
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else {
+        return MTX_ERR_INVALID_FIELD;
+    }
+    return MTX_SUCCESS;
+}
 
 /**
  * `mtxvector_array_sscal()' scales a vector by a single precision floating
@@ -1155,8 +1331,8 @@ int mtxvector_array_zdotc(
 }
 
 /**
- * `mtxvector_array_snrm2()' computes the Euclidean norm of a vector in
- * single precision floating point.
+ * `mtxvector_array_snrm2()' computes the Euclidean norm of a vector
+ * in single precision floating point.
  */
 int mtxvector_array_snrm2(
     const struct mtxvector_array * x,
@@ -1207,6 +1383,22 @@ int mtxvector_array_snrm2(
                 *nrm2 += xdata[k][0]*xdata[k][0] + xdata[k][1]*xdata[k][1];
             *nrm2 = sqrtf(*nrm2);
 #endif
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else if (x->field == mtx_field_integer) {
+        if (x->precision == mtx_single) {
+            const int32_t * xdata = x->data.integer_single;
+            *nrm2 = 0;
+            for (int64_t k = 0; k < x->size; k++)
+                *nrm2 += xdata[k]*xdata[k];
+            *nrm2 = sqrtf(*nrm2);
+        } else if (x->precision == mtx_double) {
+            const int64_t * xdata = x->data.integer_double;
+            *nrm2 = 0;
+            for (int64_t k = 0; k < x->size; k++)
+                *nrm2 += xdata[k]*xdata[k];
+            *nrm2 = sqrtf(*nrm2);
         } else {
             return MTX_ERR_INVALID_PRECISION;
         }
@@ -1272,55 +1464,277 @@ int mtxvector_array_dnrm2(
         } else {
             return MTX_ERR_INVALID_PRECISION;
         }
+    } else if (x->field == mtx_field_integer) {
+        if (x->precision == mtx_single) {
+            const int32_t * xdata = x->data.integer_single;
+            *nrm2 = 0;
+            for (int64_t k = 0; k < x->size; k++)
+                *nrm2 += xdata[k]*xdata[k];
+            *nrm2 = sqrt(*nrm2);
+        } else if (x->precision == mtx_double) {
+            const int64_t * xdata = x->data.integer_double;
+            *nrm2 = 0;
+            for (int64_t k = 0; k < x->size; k++)
+                *nrm2 += xdata[k]*xdata[k];
+            *nrm2 = sqrt(*nrm2);
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
     } else {
         return MTX_ERR_INVALID_FIELD;
     }
     return MTX_SUCCESS;
 }
 
-/*
- * MPI functions
- */
-
-#ifdef LIBMTX_HAVE_MPI
 /**
- * `mtxvector_array_send()' sends a vector to another MPI process.
- *
- * This is analogous to `MPI_Send()' and requires the receiving
- * process to perform a matching call to `mtxvector_array_recv()'.
+ * `mtxvector_array_sasum()' computes the sum of absolute values
+ * (1-norm) of a vector in single precision floating point.  If the
+ * vector is complex-valued, then the sum of the absolute values of
+ * the real and imaginaty parts is computed.
  */
-int mtxvector_array_send(
-    const struct mtxvector_array * vector,
-    int dest,
-    int tag,
-    MPI_Comm comm,
-    struct mtxmpierror * mpierror);
-
-/**
- * `mtxvector_array_recv()' receives a vector from another MPI
- * process.
- *
- * This is analogous to `MPI_Recv()' and requires the sending process
- * to perform a matching call to `mtxvector_array_send()'.
- */
-int mtxvector_array_recv(
-    struct mtxvector_array * vector,
-    int source,
-    int tag,
-    MPI_Comm comm,
-    struct mtxmpierror * mpierror);
-
-/**
- * `mtxvector_array_bcast()' broadcasts a vector from an MPI root
- * process to other processes in a communicator.
- *
- * This is analogous to `MPI_Bcast()' and requires every process in
- * the communicator to perform matching calls to
- * `mtxvector_array_bcast()'.
- */
-int mtxvector_array_bcast(
-    struct mtxvector_array * vector,
-    int root,
-    MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+int mtxvector_array_sasum(
+    const struct mtxvector_array * x,
+    float * asum)
+{
+    if (x->field == mtx_field_real) {
+        if (x->precision == mtx_single) {
+            const float * xdata = x->data.real_single;
+#ifdef LIBMTX_HAVE_BLAS
+            *asum = cblas_sasum(x->size, xdata, 1);
+#else
+            *asum = 0;
+            for (int64_t k = 0; k < x->size; k++)
+                *asum += fabsf(xdata[k]);
 #endif
+        } else if (x->precision == mtx_double) {
+            const double * xdata = x->data.real_double;
+#ifdef LIBMTX_HAVE_BLAS
+            *asum = cblas_dasum(x->size, xdata, 1);
+#else
+            *asum = 0;
+            for (int64_t k = 0; k < x->size; k++)
+                *asum += fabs(xdata[k]);
+#endif
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else if (x->field == mtx_field_complex) {
+        if (x->precision == mtx_single) {
+            const float (* xdata)[2] = x->data.complex_single;
+#ifdef LIBMTX_HAVE_BLAS
+            *asum = cblas_scasum(x->size, xdata, 1);
+#else
+            *asum = 0;
+            for (int64_t k = 0; k < x->size; k++)
+                *asum += fabsf(xdata[k][0]) + fabsf(xdata[k][1]);
+#endif
+        } else if (x->precision == mtx_double) {
+            const double (* xdata)[2] = x->data.complex_double;
+#ifdef LIBMTX_HAVE_BLAS
+            *asum = cblas_dzasum(x->size, xdata, 1);
+#else
+            *asum = 0;
+            for (int64_t k = 0; k < x->size; k++)
+                *asum += fabs(xdata[k][0]) + fabs(xdata[k][1]);
+#endif
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else if (x->field == mtx_field_integer) {
+        if (x->precision == mtx_single) {
+            const int32_t * xdata = x->data.integer_single;
+            *asum = 0;
+            for (int64_t k = 0; k < x->size; k++)
+                *asum += abs(xdata[k]);
+        } else if (x->precision == mtx_double) {
+            const int64_t * xdata = x->data.integer_double;
+            *asum = 0;
+            for (int64_t k = 0; k < x->size; k++)
+                *asum += llabs(xdata[k]);
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else {
+        return MTX_ERR_INVALID_FIELD;
+    }
+    return MTX_SUCCESS;
+}
+
+/**
+ * `mtxvector_array_dasum()' computes the sum of absolute values
+ * (1-norm) of a vector in double precision floating point.  If the
+ * vector is complex-valued, then the sum of the absolute values of
+ * the real and imaginaty parts is computed.
+ */
+int mtxvector_array_dasum(
+    const struct mtxvector_array * x,
+    double * asum)
+{
+    if (x->field == mtx_field_real) {
+        if (x->precision == mtx_single) {
+            const float * xdata = x->data.real_single;
+#ifdef LIBMTX_HAVE_BLAS
+            *asum = cblas_sasum(x->size, xdata, 1);
+#else
+            *asum = 0;
+            for (int64_t k = 0; k < x->size; k++)
+                *asum += fabsf(xdata[k]);
+#endif
+        } else if (x->precision == mtx_double) {
+            const double * xdata = x->data.real_double;
+#ifdef LIBMTX_HAVE_BLAS
+            *asum = cblas_dasum(x->size, xdata, 1);
+#else
+            *asum = 0;
+            for (int64_t k = 0; k < x->size; k++)
+                *asum += fabs(xdata[k]);
+#endif
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else if (x->field == mtx_field_complex) {
+        if (x->precision == mtx_single) {
+            const float (* xdata)[2] = x->data.complex_single;
+#ifdef LIBMTX_HAVE_BLAS
+            *asum = cblas_scasum(x->size, xdata, 1);
+#else
+            *asum = 0;
+            for (int64_t k = 0; k < x->size; k++)
+                *asum += fabsf(xdata[k][0]) + fabsf(xdata[k][1]);
+#endif
+        } else if (x->precision == mtx_double) {
+            const double (* xdata)[2] = x->data.complex_double;
+#ifdef LIBMTX_HAVE_BLAS
+            *asum = cblas_dzasum(x->size, xdata, 1);
+#else
+            *asum = 0;
+            for (int64_t k = 0; k < x->size; k++)
+                *asum += fabs(xdata[k][0]) + fabs(xdata[k][1]);
+#endif
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else if (x->field == mtx_field_integer) {
+        if (x->precision == mtx_single) {
+            const int32_t * xdata = x->data.integer_single;
+            *asum = 0;
+            for (int64_t k = 0; k < x->size; k++)
+                *asum += abs(xdata[k]);
+        } else if (x->precision == mtx_double) {
+            const int64_t * xdata = x->data.integer_double;
+            *asum = 0;
+            for (int64_t k = 0; k < x->size; k++)
+                *asum += llabs(xdata[k]);
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else {
+        return MTX_ERR_INVALID_FIELD;
+    }
+    return MTX_SUCCESS;
+}
+
+/**
+ * `mtxvector_array_iamax()' finds the index of the first element
+ * having the maximum absolute value.  If the vector is
+ * complex-valued, then the index points to the first element having
+ * the maximum sum of the absolute values of the real and imaginary
+ * parts.
+ */
+int mtxvector_array_iamax(
+    const struct mtxvector_array * x,
+    int * iamax)
+{
+    if (x->field == mtx_field_real) {
+        if (x->precision == mtx_single) {
+            const float * xdata = x->data.real_single;
+#ifdef LIBMTX_HAVE_BLAS
+            *iamax = cblas_isamax(x->size, xdata, 1);
+#else
+            *iamax = 0;
+            float max = x->size > 0 ? fabsf(xdata[0]) : 0;
+            for (int64_t k = 1; k < x->size; k++) {
+                if (max < fabsf(xdata[k])) {
+                    max = fabsf(xdata[k]);
+                    *iamax = k;
+                }
+            }
+#endif
+        } else if (x->precision == mtx_double) {
+            const double * xdata = x->data.real_double;
+#ifdef LIBMTX_HAVE_BLAS
+            *iamax = cblas_idamax(x->size, xdata, 1);
+#else
+            *iamax = 0;
+            double max = x->size > 0 ? fabs(xdata[0]) : 0;
+            for (int64_t k = 1; k < x->size; k++) {
+                if (max < fabs(xdata[k])) {
+                    max = fabs(xdata[k]);
+                    *iamax = k;
+                }
+            }
+#endif
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else if (x->field == mtx_field_complex) {
+        if (x->precision == mtx_single) {
+            const float (* xdata)[2] = x->data.complex_single;
+#ifdef LIBMTX_HAVE_BLAS
+            *iamax = cblas_icamax(x->size, xdata, 1);
+#else
+            *iamax = 0;
+            float max = x->size > 0 ? fabsf(xdata[0][0]) + fabsf(xdata[0][1]) : 0;
+            for (int64_t k = 1; k < x->size; k++) {
+                if (max < fabsf(xdata[k][0]) + fabsf(xdata[k][1])) {
+                    max = fabsf(xdata[k][0]) + fabsf(xdata[k][1]);
+                    *iamax = k;
+                }
+            }
+#endif
+        } else if (x->precision == mtx_double) {
+            const double (* xdata)[2] = x->data.complex_double;
+#ifdef LIBMTX_HAVE_BLAS
+            *iamax = cblas_izamax(x->size, xdata, 1);
+#else
+            *iamax = 0;
+            double max = x->size > 0 ? fabs(xdata[0][0]) + fabs(xdata[0][1]) : 0;
+            for (int64_t k = 1; k < x->size; k++) {
+                if (max < fabs(xdata[k][0]) + fabs(xdata[k][1])) {
+                    max = fabs(xdata[k][0]) + fabs(xdata[k][1]);
+                    *iamax = k;
+                }
+            }
+#endif
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else if (x->field == mtx_field_integer) {
+        if (x->precision == mtx_single) {
+            const int32_t * xdata = x->data.integer_single;
+            *iamax = 0;
+            int32_t max = x->size > 0 ? abs(xdata[0]) : 0;
+            for (int64_t k = 1; k < x->size; k++) {
+                if (max < abs(xdata[k])) {
+                    max = abs(xdata[k]);
+                    *iamax = k;
+                }
+            }
+        } else if (x->precision == mtx_double) {
+            const int64_t * xdata = x->data.integer_double;
+            *iamax = 0;
+            int64_t max = x->size > 0 ? llabs(xdata[0]) : 0;
+            for (int64_t k = 1; k < x->size; k++) {
+                if (max < llabs(xdata[k])) {
+                    max = llabs(xdata[k]);
+                    *iamax = k;
+                }
+            }
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else {
+        return MTX_ERR_INVALID_FIELD;
+    }
+    return MTX_SUCCESS;
+}

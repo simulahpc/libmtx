@@ -199,23 +199,37 @@ int mtxvector_array_to_mtxfile(
  */
 
 /**
- * `mtxvector_array_copy()' copies values of a vector, `y = x'.
+ * `mtxvector_array_swap()' swaps values of two vectors,
+ * simultaneously performing ‘y <- x’ and ‘x <- y’.
+ *
+ * The vectors ‘x’ and ‘y’ must have the same field, precision and
+ * size.
+ */
+int mtxvector_array_swap(
+    struct mtxvector_array * x,
+    struct mtxvector_array * y);
+
+/**
+ * `mtxvector_array_copy()' copies values of a vector, ‘y = x’.
+ *
+ * The vectors ‘x’ and ‘y’ must have the same field, precision and
+ * size.
  */
 int mtxvector_array_copy(
     struct mtxvector_array * y,
     const struct mtxvector_array * x);
 
 /**
- * `mtxvector_array_sscal()' scales a vector by a single precision floating
- * point scalar, `x = a*x'.
+ * `mtxvector_array_sscal()' scales a vector by a single precision
+ * floating point scalar, `x = a*x'.
  */
 int mtxvector_array_sscal(
     float a,
     struct mtxvector_array * x);
 
 /**
- * `mtxvector_array_dscal()' scales a vector by a double precision floating
- * point scalar, `x = a*x'.
+ * `mtxvector_array_dscal()' scales a vector by a double precision
+ * floating point scalar, `x = a*x'.
  */
 int mtxvector_array_dscal(
     double a,
@@ -359,51 +373,35 @@ int mtxvector_array_dnrm2(
     const struct mtxvector_array * x,
     double * nrm2);
 
-/*
- * MPI functions
- */
-
-#ifdef LIBMTX_HAVE_MPI
 /**
- * `mtxvector_array_send()' sends a vector to another MPI process.
- *
- * This is analogous to `MPI_Send()' and requires the receiving
- * process to perform a matching call to `mtxvector_array_recv()'.
+ * `mtxvector_array_sasum()' computes the sum of absolute values
+ * (1-norm) of a vector in single precision floating point.  If the
+ * vector is complex-valued, then the sum of the absolute values of
+ * the real and imaginaty parts is computed.
  */
-int mtxvector_array_send(
-    const struct mtxvector_array * vector,
-    int dest,
-    int tag,
-    MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+int mtxvector_array_sasum(
+    const struct mtxvector_array * x,
+    float * asum);
 
 /**
- * `mtxvector_array_recv()' receives a vector from another MPI
- * process.
- *
- * This is analogous to `MPI_Recv()' and requires the sending process
- * to perform a matching call to `mtxvector_array_send()'.
+ * `mtxvector_array_dasum()' computes the sum of absolute values
+ * (1-norm) of a vector in double precision floating point.  If the
+ * vector is complex-valued, then the sum of the absolute values of
+ * the real and imaginaty parts is computed.
  */
-int mtxvector_array_recv(
-    struct mtxvector_array * vector,
-    int source,
-    int tag,
-    MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+int mtxvector_array_dasum(
+    const struct mtxvector_array * x,
+    double * asum);
 
 /**
- * `mtxvector_array_bcast()' broadcasts a vector from an MPI root
- * process to other processes in a communicator.
- *
- * This is analogous to `MPI_Bcast()' and requires every process in
- * the communicator to perform matching calls to
- * `mtxvector_array_bcast()'.
+ * `mtxvector_array_iamax()' finds the index of the first element
+ * having the maximum absolute value.  If the vector is
+ * complex-valued, then the index points to the first element having
+ * the maximum sum of the absolute values of the real and imaginary
+ * parts.
  */
-int mtxvector_array_bcast(
-    struct mtxvector_array * vector,
-    int root,
-    MPI_Comm comm,
-    struct mtxmpierror * mpierror);
-#endif
+int mtxvector_array_iamax(
+    const struct mtxvector_array * x,
+    int * iamax);
 
 #endif

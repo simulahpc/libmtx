@@ -19,7 +19,7 @@
  * Authors: James D. Trotter <james@simula.no>
  * Last modified: 2021-09-20
  *
- * Unit tests for Matrix Market files.
+ * Unit tests for vectors.
  */
 
 #include "test.h"
@@ -1387,6 +1387,306 @@ int test_mtxvector_nrm2(void)
 }
 
 /**
+ * `test_mtxvector_asum()' tests computing the sum of absolute values
+ * of vectors.
+ */
+int test_mtxvector_asum(void)
+{
+    int err;
+
+    /*
+     * Array formats
+     */
+
+    {
+        struct mtxvector x;
+        float data[] = {-1.0f, 1.0f, 1.0f, 2.0f, 3.0f};
+        int size = sizeof(data) / sizeof(*data);
+        err = mtxvector_init_array_real_single(&x, size, data);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        float sasum;
+        err = mtxvector_sasum(&x, &sasum);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        TEST_ASSERT_EQ(8.0f, sasum);
+        double dasum;
+        err = mtxvector_dasum(&x, &dasum);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        TEST_ASSERT_EQ(8.0, dasum);
+        mtxvector_free(&x);
+    }
+
+    {
+        struct mtxvector x;
+        double data[] = {-1.0, 1.0, 1.0, 2.0, 3.0};
+        int size = sizeof(data) / sizeof(*data);
+        err = mtxvector_init_array_real_double(&x, size, data);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        float sasum;
+        err = mtxvector_sasum(&x, &sasum);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        TEST_ASSERT_EQ(8.0f, sasum);
+        double dasum;
+        err = mtxvector_dasum(&x, &dasum);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        TEST_ASSERT_EQ(8.0, dasum);
+        mtxvector_free(&x);
+    }
+
+    {
+        struct mtxvector x;
+        float data[][2] = {{-1.0f,-1.0f}, {1.0f,2.0f}, {3.0f,0.0f}};
+        int size = sizeof(data) / sizeof(*data);
+        err = mtxvector_init_array_complex_single(&x, size, data);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        float sasum;
+        err = mtxvector_sasum(&x, &sasum);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        TEST_ASSERT_EQ(8.0f, sasum);
+        double dasum;
+        err = mtxvector_dasum(&x, &dasum);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        TEST_ASSERT_EQ(8.0, dasum);
+        mtxvector_free(&x);
+    }
+
+    {
+        struct mtxvector x;
+        double data[][2] = {{-1.0,-1.0}, {1.0,2.0}, {3.0,0.0}};
+        int size = sizeof(data) / sizeof(*data);
+        err = mtxvector_init_array_complex_double(&x, size, data);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        float sasum;
+        err = mtxvector_sasum(&x, &sasum);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        TEST_ASSERT_EQ(8.0f, sasum);
+        double dasum;
+        err = mtxvector_dasum(&x, &dasum);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        TEST_ASSERT_EQ(8.0, dasum);
+        mtxvector_free(&x);
+    }
+
+    /*
+     * Coordinate formats
+     */
+
+    {
+        struct mtxvector x;
+        int size = 12;
+        int indices[] = {0, 3, 5, 6, 9};
+        float data[] = {-1.0f, 1.0f, 1.0f, 2.0f, 3.0f};
+        int num_nonzeros = sizeof(data) / sizeof(*data);
+        err = mtxvector_init_coordinate_real_single(
+            &x, size, num_nonzeros, indices, data);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        float sasum;
+        err = mtxvector_sasum(&x, &sasum);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        TEST_ASSERT_EQ(8.0f, sasum);
+        double dasum;
+        err = mtxvector_dasum(&x, &dasum);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        TEST_ASSERT_EQ(8.0, dasum);
+        mtxvector_free(&x);
+    }
+
+    {
+        struct mtxvector x;
+        int size = 12;
+        int indices[] = {0, 3, 5, 6, 9};
+        double data[] = {-1.0, 1.0, 1.0, 2.0, 3.0};
+        int num_nonzeros = sizeof(data) / sizeof(*data);
+        err = mtxvector_init_coordinate_real_double(
+            &x, size, num_nonzeros, indices, data);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        float sasum;
+        err = mtxvector_sasum(&x, &sasum);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        TEST_ASSERT_EQ(8.0f, sasum);
+        double dasum;
+        err = mtxvector_dasum(&x, &dasum);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        TEST_ASSERT_EQ(8.0, dasum);
+        mtxvector_free(&x);
+    }
+
+    {
+        struct mtxvector x;
+        int size = 12;
+        int indices[] = {0, 3, 5, 6, 9};
+        float data[][2] = {{-1.0f,-1.0f}, {1.0f,2.0f}, {3.0f,0.0f}};
+        int64_t num_nonzeros = sizeof(data) / sizeof(*data);
+        err = mtxvector_init_coordinate_complex_single(
+            &x, size, num_nonzeros, indices, data);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        float sasum;
+        err = mtxvector_sasum(&x, &sasum);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        TEST_ASSERT_EQ(8.0f, sasum);
+        double dasum;
+        err = mtxvector_dasum(&x, &dasum);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        TEST_ASSERT_EQ(8.0, dasum);
+        mtxvector_free(&x);
+    }
+
+    {
+        struct mtxvector x;
+        int size = 12;
+        int indices[] = {0, 3, 5, 6, 9};
+        double data[][2] = {{-1.0,-1.0}, {1.0,2.0}, {3.0,0.0}};
+        int64_t num_nonzeros = sizeof(data) / sizeof(*data);
+        err = mtxvector_init_coordinate_complex_double(
+            &x, size, num_nonzeros, indices, data);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        float sasum;
+        err = mtxvector_sasum(&x, &sasum);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        TEST_ASSERT_EQ(8.0f, sasum);
+        double dasum;
+        err = mtxvector_dasum(&x, &dasum);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        TEST_ASSERT_EQ(8.0, dasum);
+        mtxvector_free(&x);
+    }
+    return TEST_SUCCESS;
+}
+
+/**
+ * `test_mtxvector_iamax()' tests computing the sum of absolute values
+ * of vectors.
+ */
+int test_mtxvector_iamax(void)
+{
+    int err;
+
+    /*
+     * Array formats
+     */
+
+    {
+        struct mtxvector x;
+        float data[] = {-1.0f, 1.0f, 3.0f, 2.0f, 3.0f};
+        int size = sizeof(data) / sizeof(*data);
+        err = mtxvector_init_array_real_single(&x, size, data);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        int iamax;
+        err = mtxvector_iamax(&x, &iamax);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        TEST_ASSERT_EQ(2, iamax);
+        mtxvector_free(&x);
+    }
+
+    {
+        struct mtxvector x;
+        double data[] = {-1.0, 1.0, 3.0, 2.0, 3.0};
+        int size = sizeof(data) / sizeof(*data);
+        err = mtxvector_init_array_real_double(&x, size, data);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        int iamax;
+        err = mtxvector_iamax(&x, &iamax);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        TEST_ASSERT_EQ(2, iamax);
+        mtxvector_free(&x);
+    }
+
+    {
+        struct mtxvector x;
+        float data[][2] = {{-1.0f,-1.0f}, {1.0f,2.0f}, {3.0f,0.0f}};
+        int size = sizeof(data) / sizeof(*data);
+        err = mtxvector_init_array_complex_single(&x, size, data);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        int iamax;
+        err = mtxvector_iamax(&x, &iamax);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        TEST_ASSERT_EQ(1, iamax);
+        mtxvector_free(&x);
+    }
+
+    {
+        struct mtxvector x;
+        double data[][2] = {{-1.0,-1.0}, {1.0,2.0}, {3.0,0.0}};
+        int size = sizeof(data) / sizeof(*data);
+        err = mtxvector_init_array_complex_double(&x, size, data);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        int iamax;
+        err = mtxvector_iamax(&x, &iamax);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        TEST_ASSERT_EQ(1, iamax);
+        mtxvector_free(&x);
+    }
+
+    /*
+     * Coordinate formats
+     */
+
+    {
+        struct mtxvector x;
+        int size = 12;
+        int indices[] = {0, 3, 5, 6, 9};
+        float data[] = {-1.0f, 1.0f, 3.0f, 2.0f, 3.0f};
+        int num_nonzeros = sizeof(data) / sizeof(*data);
+        err = mtxvector_init_coordinate_real_single(
+            &x, size, num_nonzeros, indices, data);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        int iamax;
+        err = mtxvector_iamax(&x, &iamax);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        TEST_ASSERT_EQ(2, iamax);
+        mtxvector_free(&x);
+    }
+
+    {
+        struct mtxvector x;
+        int size = 12;
+        int indices[] = {0, 3, 5, 6, 9};
+        double data[] = {-1.0, 1.0, 3.0, 2.0, 3.0};
+        int num_nonzeros = sizeof(data) / sizeof(*data);
+        err = mtxvector_init_coordinate_real_double(
+            &x, size, num_nonzeros, indices, data);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        int iamax;
+        err = mtxvector_iamax(&x, &iamax);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        TEST_ASSERT_EQ(2, iamax);
+        mtxvector_free(&x);
+    }
+
+    {
+        struct mtxvector x;
+        int size = 12;
+        int indices[] = {0, 3, 5, 6, 9};
+        float data[][2] = {{-1.0f,-1.0f}, {1.0f,2.0f}, {3.0f,0.0f}};
+        int64_t num_nonzeros = sizeof(data) / sizeof(*data);
+        err = mtxvector_init_coordinate_complex_single(
+            &x, size, num_nonzeros, indices, data);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        int iamax;
+        err = mtxvector_iamax(&x, &iamax);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        TEST_ASSERT_EQ(1, iamax);
+        mtxvector_free(&x);
+    }
+
+    {
+        struct mtxvector x;
+        int size = 12;
+        int indices[] = {0, 3, 5, 6, 9};
+        double data[][2] = {{-1.0,-1.0}, {1.0,2.0}, {3.0,0.0}};
+        int64_t num_nonzeros = sizeof(data) / sizeof(*data);
+        err = mtxvector_init_coordinate_complex_double(
+            &x, size, num_nonzeros, indices, data);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        int iamax;
+        err = mtxvector_iamax(&x, &iamax);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        TEST_ASSERT_EQ(1, iamax);
+        mtxvector_free(&x);
+    }
+    return TEST_SUCCESS;
+}
+
+/**
  * `test_mtxvector_scal()' tests scaling vectors by a constant.
  */
 int test_mtxvector_scal(void)
@@ -2003,6 +2303,8 @@ int main(int argc, char * argv[])
     TEST_RUN(test_mtxvector_to_mtxfile);
     TEST_RUN(test_mtxvector_dot);
     TEST_RUN(test_mtxvector_nrm2);
+    TEST_RUN(test_mtxvector_asum);
+    TEST_RUN(test_mtxvector_iamax);
     TEST_RUN(test_mtxvector_scal);
     TEST_RUN(test_mtxvector_axpy);
     TEST_SUITE_END();

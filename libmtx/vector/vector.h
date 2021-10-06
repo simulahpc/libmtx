@@ -16,7 +16,7 @@
  * along with libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-09-18
+ * Last modified: 2021-10-06
  *
  * Data structures for vectors.
  */
@@ -28,13 +28,8 @@
 
 #include <libmtx/mtx/precision.h>
 #include <libmtx/util/field.h>
-#include <libmtx/util/partition.h>
 #include <libmtx/vector/vector_array.h>
 #include <libmtx/vector/vector_coordinate.h>
-
-#ifdef LIBMTX_HAVE_MPI
-#include <mpi.h>
-#endif
 
 #ifdef LIBMTX_HAVE_LIBZ
 #include <zlib.h>
@@ -45,7 +40,9 @@
 #include <stddef.h>
 #include <stdio.h>
 
-struct mtxmpierror;
+/*
+ * Vector types
+ */
 
 /**
  * `mtxvector_type' is used to enumerate different vector formats.
@@ -90,6 +87,10 @@ int mtxvector_type_parse(
     const char ** endptr,
     const char * s,
     const char * valid_delimiters);
+
+/*
+ * Abstract vector data structure
+ */
 
 /**
  * `mtxvector' represents a vector with various options available for
@@ -499,7 +500,7 @@ int mtxvector_gzwrite(
 
 /**
  * `mtxvector_swap()' swaps values of two vectors, simultaneously
- * performing ‘y <- x’ and ‘x = y’.
+ * performing ‘y <- x’ and ‘x <- y’.
  */
 int mtxvector_swap(
     struct mtxvector * x,
@@ -638,7 +639,9 @@ int mtxvector_dnrm2(
 
 /**
  * `mtxvector_sasum()' computes the sum of absolute values (1-norm) of
- * a vector in single precision floating point.
+ * a vector in single precision floating point.  If the vector is
+ * complex-valued, then the sum of the absolute values of the real and
+ * imaginaty parts is computed.
  */
 int mtxvector_sasum(
     const struct mtxvector * x,
@@ -646,104 +649,22 @@ int mtxvector_sasum(
 
 /**
  * `mtxvector_dasum()' computes the sum of absolute values (1-norm) of
- * a vector in double precision floating point.
+ * a vector in double precision floating point.  If the vector is
+ * complex-valued, then the sum of the absolute values of the real and
+ * imaginaty parts is computed.
  */
 int mtxvector_dasum(
     const struct mtxvector * x,
     double * asum);
 
 /**
- * `mtxvector_imax()' finds the index of the first element having the
- * maximum absolute value.
+ * `mtxvector_iamax()' finds the index of the first element having the
+ * maximum absolute value.  If the vector is complex-valued, then the
+ * index points to the first element having the maximum sum of the
+ * absolute values of the real and imaginary parts.
  */
-int mtxvector_imax(
+int mtxvector_iamax(
     const struct mtxvector * x,
-    int * max);
-
-/*
- * Partitioning
- */
-
-/**
- * `mtxvector_partition_rows()' partitions and reorders data lines of
- * a vector according to the given row partitioning.
- *
- * The array `data_lines_per_part_ptr' must contain at least enough
- * storage for `row_partition->num_parts+1' values of type `int64_t'.
- * If successful, the `p'-th value of `data_lines_per_part_ptr' is an
- * offset to the first data line belonging to the `p'-th part of the
- * partition, while the final value of the array points to one place
- * beyond the final data line.
- *
- * If it is not `NULL', the array `row_parts' must contain enough
- * storage to hold one `int' for each data line. (The number of data
- * lines is obtained by calling `mtxvector_size_num_data_lines()'). On
- * a successful return, the `k'-th entry in the array specifies the
- * part number that was assigned to the `k'-th data line.
- */
-int mtxvector_partition_rows(
-    struct mtxvector * vector,
-    const struct mtx_partition * row_partition,
-    int64_t * data_lines_per_part_ptr,
-    int * row_parts);
-
-/**
- * `mtxvector_init_from_row_partition()' creates a vector from a
- * subset of the rows of another vector.
- *
- * The array `data_lines_per_part_ptr' should have been obtained
- * previously by calling `mtxvector_partition_rows'.
- */
-int mtxvector_init_from_row_partition(
-    struct mtxvector * dst,
-    const struct mtxvector * src,
-    const struct mtx_partition * row_partition,
-    int64_t * data_lines_per_part_ptr,
-    int part);
-
-/*
- * MPI functions
- */
-
-#ifdef LIBMTX_HAVE_MPI
-/**
- * `mtxvector_send()' sends a vector to another MPI process.
- *
- * This is analogous to `MPI_Send()' and requires the receiving
- * process to perform a matching call to `mtxvector_recv()'.
- */
-int mtxvector_send(
-    const struct mtxvector * vector,
-    int dest,
-    int tag,
-    MPI_Comm comm,
-    struct mtxmpierror * mpierror);
-
-/**
- * `mtxvector_recv()' receives a vector from another MPI process.
- *
- * This is analogous to `MPI_Recv()' and requires the sending process
- * to perform a matching call to `mtxvector_send()'.
- */
-int mtxvector_recv(
-    struct mtxvector * vector,
-    int source,
-    int tag,
-    MPI_Comm comm,
-    struct mtxmpierror * mpierror);
-
-/**
- * `mtxvector_bcast()' broadcasts a vector from an MPI root process to
- * other processes in a communicator.
- *
- * This is analogous to `MPI_Bcast()' and requires every process in
- * the communicator to perform matching calls to `mtxvector_bcast()'.
- */
-int mtxvector_bcast(
-    struct mtxvector * vector,
-    int root,
-    MPI_Comm comm,
-    struct mtxmpierror * mpierror);
-#endif
+    int * iamax);
 
 #endif

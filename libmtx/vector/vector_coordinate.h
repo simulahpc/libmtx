@@ -28,11 +28,6 @@
 
 #include <libmtx/mtx/precision.h>
 #include <libmtx/util/field.h>
-#include <libmtx/util/partition.h>
-
-#ifdef LIBMTX_HAVE_MPI
-#include <mpi.h>
-#endif
 
 #ifdef LIBMTX_HAVE_LIBZ
 #include <zlib.h>
@@ -42,9 +37,6 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdio.h>
-
-struct mtxmpierror;
-struct mtx_partition;
 
 /**
  * `mtxvector_coordinate' represents a vector in coordinate format.
@@ -240,31 +232,47 @@ int mtxvector_coordinate_to_mtxfile(
  */
 
 /**
+ * `mtxvector_coordinate_swap()' swaps values of two vectors,
+ * simultaneously performing ‘y <- x’ and ‘x <- y’.
+ *
+ * The vectors ‘x’ and ‘y’ must have the same field, precision, size
+ * and number of nonzeros.  Furthermore, it is assumed that the
+ * locations of the nonzeros is the same for both vectors.
+ */
+int mtxvector_coordinate_swap(
+    struct mtxvector_coordinate * x,
+    struct mtxvector_coordinate * y);
+
+/**
  * `mtxvector_coordinate_copy()' copies values of a vector, ‘y = x’.
+ *
+ * The vectors ‘x’ and ‘y’ must have the same field, precision, size
+ * and number of nonzeros.  Furthermore, it is assumed that the
+ * locations of the nonzeros is the same for both vectors.
  */
 int mtxvector_coordinate_copy(
     struct mtxvector_coordinate * y,
     const struct mtxvector_coordinate * x);
 
 /**
- * `mtxvector_coordinate_sscal()' scales a vector by a single precision floating
- * point scalar, ‘x = a*x’.
+ * `mtxvector_coordinate_sscal()' scales a vector by a single
+ * precision floating point scalar, ‘x = a*x’.
  */
 int mtxvector_coordinate_sscal(
     float a,
     struct mtxvector_coordinate * x);
 
 /**
- * `mtxvector_coordinate_dscal()' scales a vector by a double precision floating
- * point scalar, ‘x = a*x’.
+ * `mtxvector_coordinate_dscal()' scales a vector by a double
+ * precision floating point scalar, ‘x = a*x’.
  */
 int mtxvector_coordinate_dscal(
     double a,
     struct mtxvector_coordinate * x);
 
 /**
- * `mtxvector_coordinate_saxpy()' adds a vector to another vector multiplied by a
- * single precision floating point value, ‘y = a*x + y’.
+ * `mtxvector_coordinate_saxpy()' adds a vector to another vector
+ * multiplied by a single precision floating point value, ‘y = a*x+y’.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision, size
  * and number of nonzeros.  Furthermore, it is assumed that the
@@ -276,8 +284,8 @@ int mtxvector_coordinate_saxpy(
     struct mtxvector_coordinate * y);
 
 /**
- * `mtxvector_coordinate_daxpy()' adds a vector to another vector multiplied by a
- * double precision floating point value, ‘y = a*x + y’.
+ * `mtxvector_coordinate_daxpy()' adds a vector to another vector
+ * multiplied by a double precision floating point value, ‘y = a*x+y’.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision, size
  * and number of nonzeros.  Furthermore, it is assumed that the
@@ -289,8 +297,8 @@ int mtxvector_coordinate_daxpy(
     struct mtxvector_coordinate * y);
 
 /**
- * `mtxvector_coordinate_saypx()' multiplies a vector by a single precision
- * floating point scalar and adds another vector, ‘y = a*y + x’.
+ * `mtxvector_coordinate_saypx()' multiplies a vector by a single
+ * precision floating point scalar and adds another vector, ‘y=a*y+x’.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision, size
  * and number of nonzeros.  Furthermore, it is assumed that the
@@ -302,8 +310,8 @@ int mtxvector_coordinate_saypx(
     const struct mtxvector_coordinate * x);
 
 /**
- * `mtxvector_coordinate_daypx()' multiplies a vector by a double precision
- * floating point scalar and adds another vector, ‘y = a*y + x’.
+ * `mtxvector_coordinate_daypx()' multiplies a vector by a double
+ * precision floating point scalar and adds another vector, ‘y=a*y+x’.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision, size
  * and number of nonzeros.  Furthermore, it is assumed that the
@@ -315,8 +323,8 @@ int mtxvector_coordinate_daypx(
     const struct mtxvector_coordinate * x);
 
 /**
- * `mtxvector_coordinate_sdot()' computes the Euclidean dot product of two
- * vectors in single precision floating point.
+ * `mtxvector_coordinate_sdot()' computes the Euclidean dot product of
+ * two vectors in single precision floating point.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision, size
  * and number of nonzeros.  Furthermore, it is assumed that the
@@ -328,8 +336,8 @@ int mtxvector_coordinate_sdot(
     float * dot);
 
 /**
- * `mtxvector_coordinate_ddot()' computes the Euclidean dot product of two
- * vectors in double precision floating point.
+ * `mtxvector_coordinate_ddot()' computes the Euclidean dot product of
+ * two vectors in double precision floating point.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision, size
  * and number of nonzeros.  Furthermore, it is assumed that the
@@ -397,139 +405,49 @@ int mtxvector_coordinate_zdotc(
     double (* dot)[2]);
 
 /**
- * `mtxvector_coordinate_snrm2()' computes the Euclidean norm of a vector in
- * single precision floating point.
+ * `mtxvector_coordinate_snrm2()' computes the Euclidean norm of a
+ * vector in single precision floating point.
  */
 int mtxvector_coordinate_snrm2(
     const struct mtxvector_coordinate * x,
     float * nrm2);
 
 /**
- * `mtxvector_coordinate_dnrm2()' computes the Euclidean norm of a vector in
- * double precision floating point.
+ * `mtxvector_coordinate_dnrm2()' computes the Euclidean norm of a
+ * vector in double precision floating point.
  */
 int mtxvector_coordinate_dnrm2(
     const struct mtxvector_coordinate * x,
     double * nrm2);
 
-/*
- * MPI functions
- */
-
-#ifdef LIBMTX_HAVE_MPI
 /**
- * `mtxvector_coordinate_send()' sends a vector to another MPI
- * process.
- *
- * This is analogous to `MPI_Send()' and requires the receiving
- * process to perform a matching call to
- * `mtxvector_coordinate_recv()'.
+ * `mtxvector_coordinate_sasum()' computes the sum of absolute values
+ * (1-norm) of a vector in single precision floating point.  If the
+ * vector is complex-valued, then the sum of the absolute values of
+ * the real and imaginaty parts is computed.
  */
-int mtxvector_coordinate_send(
-    const struct mtxvector_coordinate * vector,
-    int dest,
-    int tag,
-    MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+int mtxvector_coordinate_sasum(
+    const struct mtxvector_coordinate * x,
+    float * asum);
 
 /**
- * `mtxvector_coordinate_recv()' receives a vector from another MPI
- * process.
- *
- * This is analogous to `MPI_Recv()' and requires the sending process
- * to perform a matching call to `mtxvector_coordinate_send()'.
+ * `mtxvector_coordinate_dasum()' computes the sum of absolute values
+ * (1-norm) of a vector in double precision floating point.  If the
+ * vector is complex-valued, then the sum of the absolute values of
+ * the real and imaginaty parts is computed.
  */
-int mtxvector_coordinate_recv(
-    struct mtxvector_coordinate * vector,
-    int source,
-    int tag,
-    MPI_Comm comm,
-    struct mtxmpierror * mpierror);
-
+int mtxvector_coordinate_dasum(
+    const struct mtxvector_coordinate * x,
+    double * asum);
 /**
- * `mtxvector_coordinate_bcast()' broadcasts a vector from an MPI root
- * process to other processes in a communicator.
- *
- * This is analogous to `MPI_Bcast()' and requires every process in
- * the communicator to perform matching calls to
- * `mtxvector_coordinate_bcast()'.
+ * `mtxvector_coordinate_iamax()' finds the index of the first element
+ * having the maximum absolute value.  If the vector is
+ * complex-valued, then the index points to the first element having
+ * the maximum sum of the absolute values of the real and imaginary
+ * parts.
  */
-int mtxvector_coordinate_bcast(
-    struct mtxvector_coordinate * vector,
-    int root,
-    MPI_Comm comm,
-    struct mtxmpierror * mpierror);
-
-/**
- * `mtxvector_coordinate_scatterv()' scatters a vector from an MPI
- * root process to other processes in a communicator.
- *
- * This is analogous to `MPI_Scatterv()' and requires every process in
- * the communicator to perform matching calls to
- * `mtxvector_coordinate_scatterv()'.
- *
- * For a matrix in `array' format, entire rows are scattered, which
- * means that the send and receive counts must be multiples of the
- * number of matrix columns.
- */
-int mtxvector_coordinate_scatterv(
-    const struct mtxvector_coordinate * sendmtxvector,
-    int * sendcounts,
-    int * displs,
-    struct mtxvector_coordinate * recvmtxvector,
-    int recvcount,
-    int root,
-    MPI_Comm comm,
-    struct mtxmpierror * mpierror);
-
-/**
- * `mtxvector_coordinate_distribute_rows()' partitions and distributes
- * rows of a vector from an MPI root process to other processes in a
- * communicator.
- *
- * This function performs collective communication and therefore
- * requires every process in the communicator to perform matching
- * calls to `mtxvector_coordinate_distribute_rows()'.
- *
- * `row_partition' must be a partitioning of the rows of the matrix or
- * vector represented by `src'.
- */
-int mtxvector_coordinate_distribute_rows(
-    struct mtxvector_coordinate * dst,
-    struct mtxvector_coordinate * src,
-    const struct mtx_partition * row_partition,
-    int root,
-    MPI_Comm comm,
-    struct mtxmpierror * mpierror);
-
-/**
- * `mtxvector_coordinate_fread_distribute_rows()' reads a vector from
- * a stream and distributes the rows of the underlying matrix or
- * vector among MPI processes in a communicator.
- *
- * `precision' is used to determine the precision to use for storing
- * the values of matrix or vector entries.
- *
- * If an error code is returned, then `lines_read' and `bytes_read'
- * are used to return the line number and byte at which the error was
- * encountered during the parsing of the vector.
- *
- * For a matrix or vector in array format, `bufsize' must be at least
- * large enough to fit one row per MPI process in the communicator.
- */
-int mtxvector_coordinate_fread_distribute_rows(
-    struct mtxvector_coordinate * vector,
-    FILE * f,
-    int * lines_read,
-    int64_t * bytes_read,
-    size_t line_max,
-    char * linebuf,
-    enum mtx_precision precision,
-    enum mtx_partition_type row_partition_type,
-    size_t bufsize,
-    int root,
-    MPI_Comm comm,
-    struct mtxmpierror * mpierror);
-#endif
+int mtxvector_coordinate_iamax(
+    const struct mtxvector_coordinate * x,
+    int * iamax);
 
 #endif

@@ -709,69 +709,55 @@ static int vector_nrm2(
     }
 
     /* 2. Compute the Euclidean norm. */
-    if (mtxfile->header.field == mtx_real ||
-        mtxfile->header.field == mtx_complex)
-    {
-        if (precision == mtx_single) {
-            if (verbose > 0) {
-                fprintf(diagf, "mtxvector_snrm2: ");
-                fflush(diagf);
-                clock_gettime(CLOCK_MONOTONIC, &t0);
-            }
-            float nrm2 = 0.0f;
-            err = mtxvector_snrm2(&x, &nrm2);
-            if (err) {
-                if (verbose > 0)
-                    fprintf(diagf, "\n");
-                mtxvector_free(&x);
-                return err;
-            }
-            if (verbose > 0) {
-                clock_gettime(CLOCK_MONOTONIC, &t1);
-                fprintf(diagf, "%'.6f seconds\n",
-                        timespec_duration(t0, t1));
-            }
-            if (!quiet) {
-                fprintf(stdout, format ? format : "%f", nrm2);
-                fputc('\n', stdout);
-            }
-        } else if (precision == mtx_double) {
-            if (verbose > 0) {
-                fprintf(diagf, "mtxvector_dnrm2: ");
-                fflush(diagf);
-                clock_gettime(CLOCK_MONOTONIC, &t0);
-            }
-            double nrm2 = 0.0;
-            err = mtxvector_dnrm2(&x, &nrm2);
-            if (err) {
-                if (verbose > 0)
-                    fprintf(diagf, "\n");
-                mtxvector_free(&x);
-                return err;
-            }
-            if (verbose > 0) {
-                clock_gettime(CLOCK_MONOTONIC, &t1);
-                fprintf(diagf, "%'.6f seconds\n",
-                        timespec_duration(t0, t1));
-            }
-            if (!quiet) {
-                fprintf(stdout, format ? format : "%f", nrm2);
-                fputc('\n', stdout);
-            }
-        } else {
-            mtxvector_free(&x);
-            return MTX_ERR_INVALID_PRECISION;
+    if (precision == mtx_single) {
+        if (verbose > 0) {
+            fprintf(diagf, "mtxvector_snrm2: ");
+            fflush(diagf);
+            clock_gettime(CLOCK_MONOTONIC, &t0);
         }
-
-    } else if (mtxfile->header.field == mtx_integer ||
-               mtxfile->header.field == mtx_pattern)
-    {
-        mtxvector_free(&x);
-        errno = ENOTSUP;
-        return MTX_ERR_ERRNO;
+        float nrm2 = 0.0f;
+        err = mtxvector_snrm2(&x, &nrm2);
+        if (err) {
+            if (verbose > 0)
+                fprintf(diagf, "\n");
+            mtxvector_free(&x);
+            return err;
+        }
+        if (verbose > 0) {
+            clock_gettime(CLOCK_MONOTONIC, &t1);
+            fprintf(diagf, "%'.6f seconds\n",
+                    timespec_duration(t0, t1));
+        }
+        if (!quiet) {
+            fprintf(stdout, format ? format : "%f", nrm2);
+            fputc('\n', stdout);
+        }
+    } else if (precision == mtx_double) {
+        if (verbose > 0) {
+            fprintf(diagf, "mtxvector_dnrm2: ");
+            fflush(diagf);
+            clock_gettime(CLOCK_MONOTONIC, &t0);
+        }
+        double nrm2 = 0.0;
+        err = mtxvector_dnrm2(&x, &nrm2);
+        if (err) {
+            if (verbose > 0)
+                fprintf(diagf, "\n");
+            mtxvector_free(&x);
+            return err;
+        }
+        if (verbose > 0) {
+            clock_gettime(CLOCK_MONOTONIC, &t1);
+            fprintf(diagf, "%'.6f seconds\n",
+                    timespec_duration(t0, t1));
+        }
+        if (!quiet) {
+            fprintf(stdout, format ? format : "%f", nrm2);
+            fputc('\n', stdout);
+        }
     } else {
         mtxvector_free(&x);
-        return MTX_ERR_INVALID_MTX_FIELD;
+        return MTX_ERR_INVALID_PRECISION;
     }
 
     mtxvector_free(&x);
