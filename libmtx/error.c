@@ -130,6 +130,10 @@ const char * mtx_strerror(
         return "incompatible vector type";
     case MTX_ERR_INVALID_ORDERING:
         return "invalid ordering";
+    case MTX_ERR_INVALID_MATRIX_TYPE:
+        return "invalid matrix type";
+    case MTX_ERR_INCOMPATIBLE_MATRIX_TYPE:
+        return "incompatible matrix type";
     default:
         return "unknown error";
     }

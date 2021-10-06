@@ -79,6 +79,8 @@ enum mtx_error
     MTX_ERR_INCOMPATIBLE_SIZE = -38,        /* incompatible size */
     MTX_ERR_INCOMPATIBLE_VECTOR_TYPE = -39, /* incompatible vector type */
     MTX_ERR_INVALID_ORDERING = -40,         /* invalid ordering */
+    MTX_ERR_INVALID_MATRIX_TYPE = -41,      /* invalid matrix type */
+    MTX_ERR_INCOMPATIBLE_MATRIX_TYPE = -42, /* incompatible matrix type */
 };
 
 /**

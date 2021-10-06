@@ -58,6 +58,9 @@ libmtx_la_SOURCES = \
 	libmtx/matrix/coordinate/mpi.c \
 	libmtx/matrix/coordinate/reorder.c \
 	libmtx/matrix/coordinate/sort.c \
+	libmtx/matrix/matrix.c \
+	libmtx/matrix/matrix_array.c \
+	libmtx/matrix/matrix_coordinate.c \
 	libmtx/mtx/assembly.c \
 	libmtx/mtx/blas.c \
 	libmtx/mtx/cg.c \
@@ -71,23 +74,23 @@ libmtx_la_SOURCES = \
 	libmtx/mtx/submatrix.c \
 	libmtx/mtx/transpose.c \
 	libmtx/mtx/triangle.c \
-	libmtx/mtxfile/header.c \
 	libmtx/mtxfile/comments.c \
+	libmtx/mtxfile/data.c \
+	libmtx/mtxfile/header.c \
 	libmtx/mtxfile/mtxdistfile.c \
 	libmtx/mtxfile/mtxfile.c \
 	libmtx/mtxfile/size.c \
-	libmtx/mtxfile/data.c \
 	libmtx/util/cuthill_mckee.c \
 	libmtx/util/cuthill_mckee.h \
+	libmtx/util/distpartition.c \
+	libmtx/util/field.c \
 	libmtx/util/format.c \
 	libmtx/util/format.h \
-	libmtx/util/field.c \
 	libmtx/util/index_set.c \
 	libmtx/util/io.c \
 	libmtx/util/io.h \
 	libmtx/util/parse.c \
 	libmtx/util/parse.h \
-	libmtx/util/distpartition.c \
 	libmtx/util/partition.c \
 	libmtx/vector/array.c \
 	libmtx/vector/array/blas.c \
@@ -98,8 +101,8 @@ libmtx_la_SOURCES = \
 	libmtx/vector/coordinate/data.c \
 	libmtx/vector/coordinate/io.c \
 	libmtx/vector/coordinate/reorder.c \
-	libmtx/vector/vector.c \
 	libmtx/vector/distvector.c \
+	libmtx/vector/vector.c \
 	libmtx/vector/vector_array.c \
 	libmtx/vector/vector_coordinate.c \
 	libmtx/version.c
@@ -121,6 +124,9 @@ nobase_include_HEADERS = \
 	libmtx/matrix/coordinate/mpi.h \
 	libmtx/matrix/coordinate/reorder.h \
 	libmtx/matrix/coordinate/sort.h \
+	libmtx/matrix/matrix.h \
+	libmtx/matrix/matrix_array.h \
+	libmtx/matrix/matrix_coordinate.h \
 	libmtx/mtx/assembly.h \
 	libmtx/mtx/blas.h \
 	libmtx/mtx/cg.h \
@@ -134,20 +140,16 @@ nobase_include_HEADERS = \
 	libmtx/mtx/submatrix.h \
 	libmtx/mtx/transpose.h \
 	libmtx/mtx/triangle.h \
-	libmtx/mtxfile/header.h \
 	libmtx/mtxfile/comments.h \
+	libmtx/mtxfile/data.h \
+	libmtx/mtxfile/header.h \
 	libmtx/mtxfile/mtxdistfile.h \
 	libmtx/mtxfile/mtxfile.h \
 	libmtx/mtxfile/size.h \
-	libmtx/mtxfile/data.h \
+	libmtx/util/distpartition.h \
 	libmtx/util/field.h \
 	libmtx/util/index_set.h \
-	libmtx/util/distpartition.h \
 	libmtx/util/partition.h \
-	libmtx/vector/vector.h \
-	libmtx/vector/distvector.h \
-	libmtx/vector/vector_array.h \
-	libmtx/vector/vector_coordinate.h \
 	libmtx/vector/array.h \
 	libmtx/vector/array/blas.h \
 	libmtx/vector/array/data.h \
@@ -157,6 +159,10 @@ nobase_include_HEADERS = \
 	libmtx/vector/coordinate/data.h \
 	libmtx/vector/coordinate/io.h \
 	libmtx/vector/coordinate/reorder.h \
+	libmtx/vector/distvector.h \
+	libmtx/vector/vector.h \
+	libmtx/vector/vector_array.h \
+	libmtx/vector/vector_coordinate.h \
 	libmtx/version.h
 
 # Header files that will not be distributed
@@ -259,6 +265,7 @@ check_PROGRAMS = \
 	tests/test_mtx_sort \
 	tests/test_mtx_transpose \
 	tests/test_mtxfile \
+	tests/test_mtxmatrix \
 	tests/test_mtxvector \
 	tests/test_parse \
 	tests/test_submatrix \
@@ -273,6 +280,9 @@ tests_test_mtx_SOURCES = tests/test_mtx.c tests/test.h
 tests_test_mtxfile_CPPFLAGS = $(MPICPPFLAGS)
 tests_test_mtxfile_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
 tests_test_mtxfile_SOURCES = tests/test_mtxfile.c tests/test.h
+tests_test_mtxmatrix_CPPFLAGS = $(MPICPPFLAGS)
+tests_test_mtxmatrix_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
+tests_test_mtxmatrix_SOURCES = tests/test_mtxmatrix.c tests/test.h
 tests_test_mtxvector_CPPFLAGS = $(MPICPPFLAGS)
 tests_test_mtxvector_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
 tests_test_mtxvector_SOURCES = tests/test_mtxvector.c tests/test.h
@@ -326,6 +336,7 @@ TESTS = \
 	tests/test_mtx_sort \
 	tests/test_mtx_transpose \
 	tests/test_mtxfile \
+	tests/test_mtxmatrix \
 	tests/test_mtxvector \
 	tests/test_parse \
 	tests/test_submatrix \
