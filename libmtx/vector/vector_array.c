@@ -568,7 +568,7 @@ int mtxvector_array_sscal(
         if (x->precision == mtx_single) {
             float * xdata = x->data.real_single;
 #ifdef LIBMTX_HAVE_BLAS
-            cblas_sscal(x->size, xdata, 1);
+            cblas_sscal(x->size, a, xdata, 1);
 #else
             for (int64_t k = 0; k < x->size; k++)
                 xdata[k] *= a;
@@ -576,7 +576,7 @@ int mtxvector_array_sscal(
         } else if (x->precision == mtx_double) {
             double * xdata = x->data.real_double;
 #ifdef LIBMTX_HAVE_BLAS
-            cblas_dscal(x->size, xdata, 1);
+            cblas_dscal(x->size, a, xdata, 1);
 #else
             for (int64_t k = 0; k < x->size; k++)
                 xdata[k] *= a;
@@ -588,7 +588,7 @@ int mtxvector_array_sscal(
         if (x->precision == mtx_single) {
             float (* xdata)[2] = x->data.complex_single;
 #ifdef LIBMTX_HAVE_BLAS
-            cblas_sscal(2*x->size, xdata, 1);
+            cblas_sscal(2*x->size, a, (float *) xdata, 1);
 #else
             for (int64_t k = 0; k < x->size; k++) {
                 xdata[k][0] *= a;
@@ -598,13 +598,25 @@ int mtxvector_array_sscal(
         } else if (x->precision == mtx_double) {
             double (* xdata)[2] = x->data.complex_double;
 #ifdef LIBMTX_HAVE_BLAS
-            cblas_dscal(2*x->size, xdata, 1);
+            cblas_dscal(2*x->size, a, (double *) xdata, 1);
 #else
             for (int64_t k = 0; k < x->size; k++) {
                 xdata[k][0] *= a;
                 xdata[k][1] *= a;
             }
 #endif
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else if (x->field == mtx_field_integer) {
+        if (x->precision == mtx_single) {
+            int32_t * xdata = x->data.integer_single;
+            for (int64_t k = 0; k < x->size; k++)
+                xdata[k] *= a;
+        } else if (x->precision == mtx_double) {
+            int64_t * xdata = x->data.integer_double;
+            for (int64_t k = 0; k < x->size; k++)
+                xdata[k] *= a;
         } else {
             return MTX_ERR_INVALID_PRECISION;
         }
@@ -626,7 +638,7 @@ int mtxvector_array_dscal(
         if (x->precision == mtx_single) {
             float * xdata = x->data.real_single;
 #ifdef LIBMTX_HAVE_BLAS
-            cblas_sscal(x->size, xdata, 1);
+            cblas_sscal(x->size, a, xdata, 1);
 #else
             for (int64_t k = 0; k < x->size; k++)
                 xdata[k] *= a;
@@ -634,7 +646,7 @@ int mtxvector_array_dscal(
         } else if (x->precision == mtx_double) {
             double * xdata = x->data.real_double;
 #ifdef LIBMTX_HAVE_BLAS
-            cblas_dscal(x->size, xdata, 1);
+            cblas_dscal(x->size, a, xdata, 1);
 #else
             for (int64_t k = 0; k < x->size; k++)
                 xdata[k] *= a;
@@ -646,7 +658,7 @@ int mtxvector_array_dscal(
         if (x->precision == mtx_single) {
             float (* xdata)[2] = x->data.complex_single;
 #ifdef LIBMTX_HAVE_BLAS
-            cblas_sscal(2*x->size, xdata, 1);
+            cblas_sscal(2*x->size, a, (float *) xdata, 1);
 #else
             for (int64_t k = 0; k < x->size; k++) {
                 xdata[k][0] *= a;
@@ -656,13 +668,25 @@ int mtxvector_array_dscal(
         } else if (x->precision == mtx_double) {
             double (* xdata)[2] = x->data.complex_double;
 #ifdef LIBMTX_HAVE_BLAS
-            cblas_dscal(2*x->size, xdata, 1);
+            cblas_dscal(2*x->size, a, (double *) xdata, 1);
 #else
             for (int64_t k = 0; k < x->size; k++) {
                 xdata[k][0] *= a;
                 xdata[k][1] *= a;
             }
 #endif
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else if (x->field == mtx_field_integer) {
+        if (x->precision == mtx_single) {
+            int32_t * xdata = x->data.integer_single;
+            for (int64_t k = 0; k < x->size; k++)
+                xdata[k] *= a;
+        } else if (x->precision == mtx_double) {
+            int64_t * xdata = x->data.integer_double;
+            for (int64_t k = 0; k < x->size; k++)
+                xdata[k] *= a;
         } else {
             return MTX_ERR_INVALID_PRECISION;
         }
@@ -704,7 +728,7 @@ int mtxvector_array_saxpy(
             const double * xdata = x->data.real_double;
             double * ydata = y->data.real_double;
 #ifdef LIBMTX_HAVE_BLAS
-            *axpy = cblas_daxpy(x->size, a, xdata, 1, ydata, 1);
+            cblas_daxpy(x->size, a, xdata, 1, ydata, 1);
 #else
             for (int64_t k = 0; k < x->size; k++)
                 ydata[k] += a*xdata[k];
@@ -717,7 +741,7 @@ int mtxvector_array_saxpy(
             const float (* xdata)[2] = x->data.complex_single;
             float (* ydata)[2] = y->data.complex_single;
 #ifdef LIBMTX_HAVE_BLAS
-            cblas_saxpy(2*x->size, a, xdata, 1, ydata, 1);
+            cblas_saxpy(2*x->size, a, (const float *) xdata, 1, (float *) ydata, 1);
 #else
             for (int64_t k = 0; k < x->size; k++) {
                 ydata[k][0] += a*xdata[k][0];
@@ -728,7 +752,7 @@ int mtxvector_array_saxpy(
             const double (* xdata)[2] = x->data.complex_double;
             double (* ydata)[2] = y->data.complex_double;
 #ifdef LIBMTX_HAVE_BLAS
-            *axpy = cblas_daxpy(2*x->size, a, xdata, 1, ydata, 1);
+            cblas_daxpy(2*x->size, a, (const double *) xdata, 1, (double *) ydata, 1);
 #else
             for (int64_t k = 0; k < x->size; k++) {
                 ydata[k][0] += a*xdata[k][0];
@@ -791,7 +815,7 @@ int mtxvector_array_daxpy(
             const double * xdata = x->data.real_double;
             double * ydata = y->data.real_double;
 #ifdef LIBMTX_HAVE_BLAS
-            *axpy = cblas_daxpy(x->size, a, xdata, 1, ydata, 1);
+            cblas_daxpy(x->size, a, xdata, 1, ydata, 1);
 #else
             for (int64_t k = 0; k < x->size; k++)
                 ydata[k] += a*xdata[k];
@@ -804,7 +828,7 @@ int mtxvector_array_daxpy(
             const float (* xdata)[2] = x->data.complex_single;
             float (* ydata)[2] = y->data.complex_single;
 #ifdef LIBMTX_HAVE_BLAS
-            cblas_saxpy(2*x->size, a, xdata, 1, ydata, 1);
+            cblas_saxpy(2*x->size, a, (const float *) xdata, 1, (float *) ydata, 1);
 #else
             for (int64_t k = 0; k < x->size; k++) {
                 ydata[k][0] += a*xdata[k][0];
@@ -815,7 +839,7 @@ int mtxvector_array_daxpy(
             const double (* xdata)[2] = x->data.complex_double;
             double (* ydata)[2] = y->data.complex_double;
 #ifdef LIBMTX_HAVE_BLAS
-            *axpy = cblas_daxpy(2*x->size, a, xdata, 1, ydata, 1);
+            cblas_daxpy(2*x->size, a, (const double *) xdata, 1, (double *) ydata, 1);
 #else
             for (int64_t k = 0; k < x->size; k++) {
                 ydata[k][0] += a*xdata[k][0];
@@ -1152,7 +1176,10 @@ int mtxvector_array_cdotu(
             const double (* xdata)[2] = x->data.complex_double;
             const double (* ydata)[2] = y->data.complex_double;
 #ifdef LIBMTX_HAVE_BLAS
-            cblas_zdotu_sub(x->size, xdata, 1, ydata, 1, dot);
+            double tmp[2];
+            cblas_zdotu_sub(x->size, xdata, 1, ydata, 1, tmp);
+            (*dot)[0] = tmp[0];
+            (*dot)[1] = tmp[1];
 #else
             (*dot)[0] = (*dot)[1] = 0;
             for (int64_t k = 0; k < x->size; k++) {
@@ -1194,7 +1221,10 @@ int mtxvector_array_zdotu(
             const float (* xdata)[2] = x->data.complex_single;
             const float (* ydata)[2] = y->data.complex_single;
 #ifdef LIBMTX_HAVE_BLAS
-            cblas_cdotu_sub(x->size, xdata, 1, ydata, 1, dot);
+            float tmp[2];
+            cblas_cdotu_sub(x->size, xdata, 1, ydata, 1, tmp);
+            (*dot)[0] = tmp[0];
+            (*dot)[1] = tmp[1];
 #else
             (*dot)[0] = (*dot)[1] = 0;
             for (int64_t k = 0; k < x->size; k++) {
@@ -1259,7 +1289,10 @@ int mtxvector_array_cdotc(
             const double (* xdata)[2] = x->data.complex_double;
             const double (* ydata)[2] = y->data.complex_double;
 #ifdef LIBMTX_HAVE_BLAS
-            cblas_zdotc_sub(x->size, xdata, 1, ydata, 1, dot);
+            double tmp[2];
+            cblas_zdotc_sub(x->size, xdata, 1, ydata, 1, tmp);
+            (*dot)[0] = tmp[0];
+            (*dot)[1] = tmp[1];
 #else
             (*dot)[0] = (*dot)[1] = 0;
             for (int64_t k = 0; k < x->size; k++) {
@@ -1300,7 +1333,10 @@ int mtxvector_array_zdotc(
             const float (* xdata)[2] = x->data.complex_single;
             const float (* ydata)[2] = y->data.complex_single;
 #ifdef LIBMTX_HAVE_BLAS
-            cblas_cdotc_sub(x->size, xdata, 1, ydata, 1, dot);
+            float tmp[2];
+            cblas_cdotc_sub(x->size, xdata, 1, ydata, 1, tmp);
+            (*dot)[0] = tmp[0];
+            (*dot)[1] = tmp[1];
 #else
             (*dot)[0] = (*dot)[1] = 0;
             for (int64_t k = 0; k < x->size; k++) {
@@ -1420,7 +1456,7 @@ int mtxvector_array_dnrm2(
         if (x->precision == mtx_single) {
             const float * xdata = x->data.real_single;
 #ifdef LIBMTX_HAVE_BLAS
-            *nrm2 = cblas_dnrm2(x->size, xdata, 1);
+            *nrm2 = cblas_snrm2(x->size, xdata, 1);
 #else
             *nrm2 = 0;
             for (int64_t k = 0; k < x->size; k++)

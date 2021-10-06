@@ -748,7 +748,7 @@ int mtxvector_coordinate_sscal(
         if (x->precision == mtx_single) {
             float * xdata = x->data.real_single;
 #ifdef LIBMTX_HAVE_BLAS
-            cblas_sscal(x->num_nonzeros, xdata, 1);
+            cblas_sscal(x->num_nonzeros, a, xdata, 1);
 #else
             for (int64_t k = 0; k < x->num_nonzeros; k++)
                 xdata[k] *= a;
@@ -756,7 +756,7 @@ int mtxvector_coordinate_sscal(
         } else if (x->precision == mtx_double) {
             double * xdata = x->data.real_double;
 #ifdef LIBMTX_HAVE_BLAS
-            cblas_dscal(x->num_nonzeros, xdata, 1);
+            cblas_dscal(x->num_nonzeros, a, xdata, 1);
 #else
             for (int64_t k = 0; k < x->num_nonzeros; k++)
                 xdata[k] *= a;
@@ -768,7 +768,7 @@ int mtxvector_coordinate_sscal(
         if (x->precision == mtx_single) {
             float (* xdata)[2] = x->data.complex_single;
 #ifdef LIBMTX_HAVE_BLAS
-            cblas_sscal(2*x->num_nonzeros, xdata, 1);
+            cblas_sscal(2*x->num_nonzeros, a, (float *) xdata, 1);
 #else
             for (int64_t k = 0; k < x->num_nonzeros; k++) {
                 xdata[k][0] *= a;
@@ -778,7 +778,7 @@ int mtxvector_coordinate_sscal(
         } else if (x->precision == mtx_double) {
             double (* xdata)[2] = x->data.complex_double;
 #ifdef LIBMTX_HAVE_BLAS
-            cblas_dscal(2*x->num_nonzeros, xdata, 1);
+            cblas_dscal(2*x->num_nonzeros, a, (double *) xdata, 1);
 #else
             for (int64_t k = 0; k < x->num_nonzeros; k++) {
                 xdata[k][0] *= a;
@@ -788,6 +788,20 @@ int mtxvector_coordinate_sscal(
         } else {
             return MTX_ERR_INVALID_PRECISION;
         }
+    } else if (x->field == mtx_field_integer) {
+        if (x->precision == mtx_single) {
+            int32_t * xdata = x->data.integer_single;
+            for (int64_t k = 0; k < x->num_nonzeros; k++)
+                xdata[k] *= a;
+        } else if (x->precision == mtx_double) {
+            int64_t * xdata = x->data.integer_double;
+            for (int64_t k = 0; k < x->num_nonzeros; k++)
+                xdata[k] *= a;
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else if (x->field == mtx_field_pattern) {
+        /* Nothing to be done. */
     } else {
         return MTX_ERR_INVALID_FIELD;
     }
@@ -806,7 +820,7 @@ int mtxvector_coordinate_dscal(
         if (x->precision == mtx_single) {
             float * xdata = x->data.real_single;
 #ifdef LIBMTX_HAVE_BLAS
-            cblas_sscal(x->num_nonzeros, xdata, 1);
+            cblas_sscal(x->num_nonzeros, a, xdata, 1);
 #else
             for (int64_t k = 0; k < x->num_nonzeros; k++)
                 xdata[k] *= a;
@@ -814,7 +828,7 @@ int mtxvector_coordinate_dscal(
         } else if (x->precision == mtx_double) {
             double * xdata = x->data.real_double;
 #ifdef LIBMTX_HAVE_BLAS
-            cblas_dscal(x->num_nonzeros, xdata, 1);
+            cblas_dscal(x->num_nonzeros, a, xdata, 1);
 #else
             for (int64_t k = 0; k < x->num_nonzeros; k++)
                 xdata[k] *= a;
@@ -826,7 +840,7 @@ int mtxvector_coordinate_dscal(
         if (x->precision == mtx_single) {
             float (* xdata)[2] = x->data.complex_single;
 #ifdef LIBMTX_HAVE_BLAS
-            cblas_sscal(2*x->num_nonzeros, xdata, 1);
+            cblas_sscal(2*x->num_nonzeros, a, (float *) xdata, 1);
 #else
             for (int64_t k = 0; k < x->num_nonzeros; k++) {
                 xdata[k][0] *= a;
@@ -836,7 +850,7 @@ int mtxvector_coordinate_dscal(
         } else if (x->precision == mtx_double) {
             double (* xdata)[2] = x->data.complex_double;
 #ifdef LIBMTX_HAVE_BLAS
-            cblas_dscal(2*x->num_nonzeros, xdata, 1);
+            cblas_dscal(2*x->num_nonzeros, a, (double *) xdata, 1);
 #else
             for (int64_t k = 0; k < x->num_nonzeros; k++) {
                 xdata[k][0] *= a;
@@ -846,6 +860,20 @@ int mtxvector_coordinate_dscal(
         } else {
             return MTX_ERR_INVALID_PRECISION;
         }
+    } else if (x->field == mtx_field_integer) {
+        if (x->precision == mtx_single) {
+            int32_t * xdata = x->data.integer_single;
+            for (int64_t k = 0; k < x->num_nonzeros; k++)
+                xdata[k] *= a;
+        } else if (x->precision == mtx_double) {
+            int64_t * xdata = x->data.integer_double;
+            for (int64_t k = 0; k < x->num_nonzeros; k++)
+                xdata[k] *= a;
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else if (x->field == mtx_field_pattern) {
+        /* Nothing to be done. */
     } else {
         return MTX_ERR_INVALID_FIELD;
     }
@@ -885,7 +913,7 @@ int mtxvector_coordinate_saxpy(
             const double * xdata = x->data.real_double;
             double * ydata = y->data.real_double;
 #ifdef LIBMTX_HAVE_BLAS
-            *axpy = cblas_daxpy(x->num_nonzeros, a, xdata, 1, ydata, 1);
+            cblas_daxpy(x->num_nonzeros, a, xdata, 1, ydata, 1);
 #else
             for (int64_t k = 0; k < x->num_nonzeros; k++)
                 ydata[k] += a*xdata[k];
@@ -898,7 +926,7 @@ int mtxvector_coordinate_saxpy(
             const float (* xdata)[2] = x->data.complex_single;
             float (* ydata)[2] = y->data.complex_single;
 #ifdef LIBMTX_HAVE_BLAS
-            cblas_saxpy(2*x->num_nonzeros, a, xdata, 1, ydata, 1);
+            cblas_saxpy(2*x->num_nonzeros, a, (const float *) xdata, 1, (float *) ydata, 1);
 #else
             for (int64_t k = 0; k < x->num_nonzeros; k++) {
                 ydata[k][0] += a*xdata[k][0];
@@ -909,7 +937,7 @@ int mtxvector_coordinate_saxpy(
             const double (* xdata)[2] = x->data.complex_double;
             double (* ydata)[2] = y->data.complex_double;
 #ifdef LIBMTX_HAVE_BLAS
-            *axpy = cblas_daxpy(2*x->num_nonzeros, a, xdata, 1, ydata, 1);
+            cblas_daxpy(2*x->num_nonzeros, a, (const double *) xdata, 1, (double *) ydata, 1);
 #else
             for (int64_t k = 0; k < x->num_nonzeros; k++) {
                 ydata[k][0] += a*xdata[k][0];
@@ -933,6 +961,8 @@ int mtxvector_coordinate_saxpy(
         } else {
             return MTX_ERR_INVALID_PRECISION;
         }
+    } else if (x->field == mtx_field_pattern) {
+        /* Nothing to be done. */
     } else {
         return MTX_ERR_INVALID_FIELD;
     }
@@ -972,7 +1002,7 @@ int mtxvector_coordinate_daxpy(
             const double * xdata = x->data.real_double;
             double * ydata = y->data.real_double;
 #ifdef LIBMTX_HAVE_BLAS
-            *axpy = cblas_daxpy(x->num_nonzeros, a, xdata, 1, ydata, 1);
+            cblas_daxpy(x->num_nonzeros, a, xdata, 1, ydata, 1);
 #else
             for (int64_t k = 0; k < x->num_nonzeros; k++)
                 ydata[k] += a*xdata[k];
@@ -985,7 +1015,7 @@ int mtxvector_coordinate_daxpy(
             const float (* xdata)[2] = x->data.complex_single;
             float (* ydata)[2] = y->data.complex_single;
 #ifdef LIBMTX_HAVE_BLAS
-            cblas_saxpy(2*x->num_nonzeros, a, xdata, 1, ydata, 1);
+            cblas_saxpy(2*x->num_nonzeros, a, (const float *) xdata, 1, (float *) ydata, 1);
 #else
             for (int64_t k = 0; k < x->num_nonzeros; k++) {
                 ydata[k][0] += a*xdata[k][0];
@@ -996,7 +1026,7 @@ int mtxvector_coordinate_daxpy(
             const double (* xdata)[2] = x->data.complex_double;
             double (* ydata)[2] = y->data.complex_double;
 #ifdef LIBMTX_HAVE_BLAS
-            *axpy = cblas_daxpy(2*x->num_nonzeros, a, xdata, 1, ydata, 1);
+            cblas_daxpy(2*x->num_nonzeros, a, (const double *) xdata, 1, (double *) ydata, 1);
 #else
             for (int64_t k = 0; k < x->num_nonzeros; k++) {
                 ydata[k][0] += a*xdata[k][0];
@@ -1006,7 +1036,6 @@ int mtxvector_coordinate_daxpy(
         } else {
             return MTX_ERR_INVALID_PRECISION;
         }
-
     } else if (x->field == mtx_field_integer) {
         if (x->precision == mtx_single) {
             const int32_t * xdata = x->data.integer_single;
@@ -1021,6 +1050,8 @@ int mtxvector_coordinate_daxpy(
         } else {
             return MTX_ERR_INVALID_PRECISION;
         }
+    } else if (x->field == mtx_field_pattern) {
+        /* Nothing to be done. */
     } else {
         return MTX_ERR_INVALID_FIELD;
     }
@@ -1078,7 +1109,6 @@ int mtxvector_coordinate_saypx(
         } else {
             return MTX_ERR_INVALID_PRECISION;
         }
-
     } else if (x->field == mtx_field_integer) {
         if (x->precision == mtx_single) {
             const int32_t * xdata = x->data.integer_single;
@@ -1093,6 +1123,8 @@ int mtxvector_coordinate_saypx(
         } else {
             return MTX_ERR_INVALID_PRECISION;
         }
+    } else if (x->field == mtx_field_pattern) {
+        /* Nothing to be done. */
     } else {
         return MTX_ERR_INVALID_FIELD;
     }
@@ -1150,7 +1182,6 @@ int mtxvector_coordinate_daypx(
         } else {
             return MTX_ERR_INVALID_PRECISION;
         }
-
     } else if (x->field == mtx_field_integer) {
         if (x->precision == mtx_single) {
             const int32_t * xdata = x->data.integer_single;
@@ -1165,6 +1196,8 @@ int mtxvector_coordinate_daypx(
         } else {
             return MTX_ERR_INVALID_PRECISION;
         }
+    } else if (x->field == mtx_field_pattern) {
+        /* Nothing to be done. */
     } else {
         return MTX_ERR_INVALID_FIELD;
     }
@@ -1342,7 +1375,10 @@ int mtxvector_coordinate_cdotu(
             const double (* xdata)[2] = x->data.complex_double;
             const double (* ydata)[2] = y->data.complex_double;
 #ifdef LIBMTX_HAVE_BLAS
-            cblas_zdotu_sub(x->num_nonzeros, xdata, 1, ydata, 1, dot);
+            double tmp[2];
+            cblas_zdotu_sub(x->num_nonzeros, xdata, 1, ydata, 1, tmp);
+            (*dot)[0] = tmp[0];
+            (*dot)[1] = tmp[1];
 #else
             (*dot)[0] = (*dot)[1] = 0;
             for (int64_t k = 0; k < x->num_nonzeros; k++) {
@@ -1385,7 +1421,10 @@ int mtxvector_coordinate_zdotu(
             const float (* xdata)[2] = x->data.complex_single;
             const float (* ydata)[2] = y->data.complex_single;
 #ifdef LIBMTX_HAVE_BLAS
-            cblas_cdotu_sub(x->num_nonzeros, xdata, 1, ydata, 1, dot);
+            float tmp[2];
+            cblas_cdotu_sub(x->num_nonzeros, xdata, 1, ydata, 1, tmp);
+            (*dot)[0] = tmp[0];
+            (*dot)[1] = tmp[1];
 #else
             (*dot)[0] = (*dot)[1] = 0;
             for (int64_t k = 0; k < x->num_nonzeros; k++) {
@@ -1452,7 +1491,10 @@ int mtxvector_coordinate_cdotc(
             const double (* xdata)[2] = x->data.complex_double;
             const double (* ydata)[2] = y->data.complex_double;
 #ifdef LIBMTX_HAVE_BLAS
-            cblas_zdotc_sub(x->num_nonzeros, xdata, 1, ydata, 1, dot);
+            double tmp[2];
+            cblas_zdotc_sub(x->num_nonzeros, xdata, 1, ydata, 1, tmp);
+            (*dot)[0] = tmp[0];
+            (*dot)[1] = tmp[1];
 #else
             (*dot)[0] = (*dot)[1] = 0;
             for (int64_t k = 0; k < x->num_nonzeros; k++) {
@@ -1495,7 +1537,10 @@ int mtxvector_coordinate_zdotc(
             const float (* xdata)[2] = x->data.complex_single;
             const float (* ydata)[2] = y->data.complex_single;
 #ifdef LIBMTX_HAVE_BLAS
-            cblas_cdotc_sub(x->num_nonzeros, xdata, 1, ydata, 1, dot);
+            float tmp[2];
+            cblas_cdotc_sub(x->num_nonzeros, xdata, 1, ydata, 1, tmp);
+            (*dot)[0] = tmp[0];
+            (*dot)[1] = tmp[1];
 #else
             (*dot)[0] = (*dot)[1] = 0;
             for (int64_t k = 0; k < x->num_nonzeros; k++) {
