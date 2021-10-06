@@ -38,6 +38,7 @@
 #ifdef LIBMTX_HAVE_MPI
 #include <mpi.h>
 
+#include <unistd.h>
 #include <errno.h>
 
 #include <stdbool.h>
