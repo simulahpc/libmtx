@@ -31,10 +31,6 @@
 #include <libmtx/matrix/matrix_array.h>
 #include <libmtx/matrix/matrix_coordinate.h>
 
-#ifdef LIBMTX_HAVE_MPI
-#include <mpi.h>
-#endif
-
 #ifdef LIBMTX_HAVE_LIBZ
 #include <zlib.h>
 #endif
@@ -44,8 +40,11 @@
 #include <stddef.h>
 #include <stdio.h>
 
-struct mtxmpierror;
 struct mtxfile;
+
+/*
+ * Matrix types
+ */
 
 /**
  * `mtxmatrix_type' is used to enumerate different matrix formats.
@@ -91,6 +90,10 @@ int mtxmatrix_type_parse(
     const char * s,
     const char * valid_delimiters);
 
+/*
+ * Abstract matrix data structure
+ */
+
 /**
  * `mtxmatrix' represents a matrix with various options available for
  * the underlying storage and implementation of matrix operations.
@@ -98,7 +101,7 @@ int mtxmatrix_type_parse(
 struct mtxmatrix
 {
     /**
-     * `format' is the matrix format: `array' or `coordinate'.
+     * `format' is the matrix format: ‘array’ or ‘coordinate’.
      */
     enum mtxmatrix_type type;
 

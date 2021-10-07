@@ -39,6 +39,10 @@
 #include <stdio.h>
 #include <string.h>
 
+/*
+ * Matrix types
+ */
+
 /**
  * `mtxmatrix_type_str()' is a string representing the matrix type.
  */
@@ -499,10 +503,10 @@ int mtxmatrix_read(
 {
     int err;
     struct mtxfile mtxfile;
-    err = mtxfile_read(&mtxfile, precision, path, gzip, lines_read, bytes_read);
+    err = mtxfile_read(
+        &mtxfile, precision, path, gzip, lines_read, bytes_read);
     if (err)
         return err;
-
     err = mtxmatrix_from_mtxfile(matrix, &mtxfile, type);
     if (err) {
         mtxfile_free(&mtxfile);
@@ -545,7 +549,6 @@ int mtxmatrix_fread(
         &mtxfile, precision, f, lines_read, bytes_read, line_max, linebuf);
     if (err)
         return err;
-
     err = mtxmatrix_from_mtxfile(matrix, &mtxfile, type);
     if (err) {
         mtxfile_free(&mtxfile);
@@ -580,7 +583,22 @@ int mtxmatrix_gzread(
     int * lines_read,
     int64_t * bytes_read,
     size_t line_max,
-    char * linebuf);
+    char * linebuf)
+{
+    int err;
+    struct mtxfile mtxfile;
+    err = mtxfile_gzread(
+        &mtxfile, precision, f, lines_read, bytes_read, line_max, linebuf);
+    if (err)
+        return err;
+    err = mtxmatrix_from_mtxfile(matrix, &mtxfile, type);
+    if (err) {
+        mtxfile_free(&mtxfile);
+        return err;
+    }
+    mtxfile_free(&mtxfile);
+    return MTX_SUCCESS;
+}
 #endif
 
 /**
@@ -608,7 +626,22 @@ int mtxmatrix_write(
     const char * path,
     bool gzip,
     const char * format,
-    int64_t * bytes_written);
+    int64_t * bytes_written)
+{
+    int err;
+    struct mtxfile mtxfile;
+    err = mtxmatrix_to_mtxfile(matrix, &mtxfile);
+    if (err)
+        return err;
+    err = mtxfile_write(
+        &mtxfile, path, gzip, format, bytes_written);
+    if (err) {
+        mtxfile_free(&mtxfile);
+        return err;
+    }
+    mtxfile_free(&mtxfile);
+    return MTX_SUCCESS;
+}
 
 /**
  * `mtxmatrix_fwrite()' writes a matrix to a stream.
@@ -641,7 +674,6 @@ int mtxmatrix_fwrite(
     err = mtxmatrix_to_mtxfile(matrix, &mtxfile);
     if (err)
         return err;
-
     err = mtxfile_fwrite(
         &mtxfile, f, format, bytes_written);
     if (err) {
@@ -677,5 +709,20 @@ int mtxmatrix_gzwrite(
     const struct mtxmatrix * matrix,
     gzFile f,
     const char * format,
-    int64_t * bytes_written);
+    int64_t * bytes_written)
+{
+    int err;
+    struct mtxfile mtxfile;
+    err = mtxmatrix_to_mtxfile(matrix, &mtxfile);
+    if (err)
+        return err;
+    err = mtxfile_gzwrite(
+        &mtxfile, f, format, bytes_written);
+    if (err) {
+        mtxfile_free(&mtxfile);
+        return err;
+    }
+    mtxfile_free(&mtxfile);
+    return MTX_SUCCESS;
+}
 #endif
