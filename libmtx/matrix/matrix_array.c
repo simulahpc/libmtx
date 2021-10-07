@@ -28,6 +28,8 @@
 #include <libmtx/mtxfile/mtxfile.h>
 #include <libmtx/util/field.h>
 #include <libmtx/matrix/matrix_array.h>
+#include <libmtx/vector/vector.h>
+#include <libmtx/vector/vector_array.h>
 
 #ifdef LIBMTX_HAVE_BLAS
 #include <cblas.h>
@@ -393,4 +395,887 @@ int mtxmatrix_array_to_mtxfile(
     } else {
         return MTX_ERR_INVALID_FIELD;
     }
+}
+
+/*
+ * Level 2 BLAS operations (matrix-vector)
+ */
+
+/**
+ * ‘mtxmatrix_array_sgemv()’ multiplies a matrix ‘A’ or its transpose
+ * ‘A'’ by a real scalar ‘alpha’ (‘α’) and a vector ‘x’, before adding
+ * the result to another vector ‘y’ multiplied by another real scalar
+ * ‘beta’ (‘β’). That is, ‘y = α*A*x + β*y’ or ‘y = α*A'*x + β*y’.
+ *
+ * The scalars ‘alpha’ and ‘beta’ are given as single precision
+ * floating point numbers.
+ *
+ * The vectors ‘x’ and ‘y’ must be of ‘array’ type, and they must have
+ * the same field and precision as the matrix ‘A’. Moreover, if
+ * ‘trans’ is ‘mtx_notrans’, then the size of ‘x’ must equal the
+ * number of columns of ‘A’ and the size of ‘y’ must equal the number
+ * of rows of ‘A’. if ‘trans’ is ‘mtx_trans’ or ‘mtx_conjtrans’, then
+ * the size of ‘x’ must equal the number of rows of ‘A’ and the
+ * size of ‘y’ must equal the number of columns of ‘A’.
+ */
+int mtxmatrix_array_sgemv(
+    enum mtx_trans_type trans,
+    float alpha,
+    const struct mtxmatrix_array * A,
+    const struct mtxvector * x,
+    float beta,
+    struct mtxvector * y)
+{
+    if (x->type != mtxvector_array || y->type != mtxvector_array)
+        return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
+    const struct mtxvector_array * x_ = &x->storage.array;
+    struct mtxvector_array * y_ = &y->storage.array;
+    if (x_->field != A->field || y_->field != A->field)
+        return MTX_ERR_INCOMPATIBLE_FIELD;
+    if (x_->precision != A->precision || y_->precision != A->precision)
+        return MTX_ERR_INCOMPATIBLE_PRECISION;
+    if (trans == mtx_notrans) {
+        if (A->num_rows != y_->size || A->num_columns != x_->size)
+            return MTX_ERR_INCOMPATIBLE_SIZE;
+    } else if (trans == mtx_trans || trans == mtx_conjtrans) {
+        if (A->num_columns != y_->size || A->num_rows != x_->size)
+            return MTX_ERR_INCOMPATIBLE_SIZE;
+    }
+
+    if (A->field == mtx_field_real) {
+        if (A->precision == mtx_single) {
+            const float * Adata = A->data.real_single;
+            const float * xdata = x_->data.real_single;
+            float * ydata = y_->data.real_single;
+#ifdef LIBMTX_HAVE_BLAS
+            CBLAS_TRANSPOSE transA = (trans == mtx_notrans) ? CblasNoTrans : CblasTrans;
+            cblas_sgemv(
+                CblasRowMajor, transA, A->num_rows, A->num_columns,
+                alpha, Adata, A->num_columns, xdata, 1, beta, ydata, 1);
+#else
+            if (trans == mtx_notrans) {
+                for (int i = 0; i < A->num_rows; i++) {
+                    float z = 0;
+                    for (int j = 0; j < A->num_columns; j++)
+                        z += Adata[i*A->num_columns+j]*xdata[j];
+                    ydata[i] = alpha*z + beta*ydata[i];
+                }
+            } else if (trans == mtx_trans || trans == mtx_conjtrans) {
+                for (int j = 0; j < A->num_columns; j++) {
+                    float z = 0;
+                    for (int i = 0; i < A->num_rows; i++)
+                        z += Adata[i*A->num_columns+j]*xdata[i];
+                    ydata[j] = alpha*z + beta*ydata[j];
+                }
+            } else {
+                return MTX_ERR_INVALID_TRANS_TYPE;
+            }
+#endif
+        } else if (A->precision == mtx_double) {
+            const double * Adata = A->data.real_double;
+            const double * xdata = x_->data.real_double;
+            double * ydata = y_->data.real_double;
+#ifdef LIBMTX_HAVE_BLAS
+            CBLAS_TRANSPOSE transA = (trans == mtx_notrans) ? CblasNoTrans : CblasTrans;
+            cblas_dgemv(
+                CblasRowMajor, transA, A->num_rows, A->num_columns,
+                alpha, Adata, A->num_columns, xdata, 1, beta, ydata, 1);
+#else
+            if (trans == mtx_notrans) {
+                for (int i = 0; i < A->num_rows; i++) {
+                    double z = 0;
+                    for (int j = 0; j < A->num_columns; j++)
+                        z += Adata[i*A->num_columns+j]*xdata[j];
+                    ydata[i] = alpha*z + beta*ydata[i];
+                }
+            } else if (trans == mtx_trans || trans == mtx_conjtrans) {
+                for (int j = 0; j < A->num_columns; j++) {
+                    double z = 0;
+                    for (int i = 0; i < A->num_rows; i++)
+                        z += Adata[i*A->num_columns+j]*xdata[i];
+                    ydata[j] = alpha*z + beta*ydata[j];
+                }
+            } else {
+                return MTX_ERR_INVALID_TRANS_TYPE;
+            }
+#endif
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else if (A->field == mtx_field_complex) {
+        if (A->precision == mtx_single) {
+            const float (* Adata)[2] = A->data.complex_single;
+            const float (* xdata)[2] = x_->data.complex_single;
+            float (* ydata)[2] = y_->data.complex_single;
+#ifdef LIBMTX_HAVE_BLAS
+            CBLAS_TRANSPOSE transA = (trans == mtx_notrans) ? CblasNoTrans
+                : ((trans == mtx_trans) ? CblasTrans : CblasConjTrans);
+            const float calpha[2] = {alpha, 0};
+            const float cbeta[2] = {beta, 0};
+            cblas_cgemv(
+                CblasRowMajor, transA, A->num_rows, A->num_columns,
+                calpha, (const float *) Adata, A->num_columns,
+                (const float *) xdata, 1, cbeta, (float *) ydata, 1);
+#else
+            if (trans == mtx_notrans) {
+                for (int i = 0; i < A->num_rows; i++) {
+                    float z[2] = {0, 0};
+                    for (int j = 0; j < A->num_columns; j++) {
+                        z[0] += Adata[i*A->num_columns+j][0]*xdata[j][0] -
+                            Adata[i*A->num_columns+j][1]*xdata[j][1];
+                        z[1] += Adata[i*A->num_columns+j][0]*xdata[j][1] +
+                            Adata[i*A->num_columns+j][1]*xdata[j][0];
+                    }
+                    ydata[i][0] = alpha*z[0] + beta*ydata[i][0];
+                    ydata[i][1] = alpha*z[1] + beta*ydata[i][1];
+                }
+            } else if (trans == mtx_trans) {
+                for (int j = 0; j < A->num_columns; j++) {
+                    float z[2] = {0, 0};
+                    for (int i = 0; i < A->num_rows; i++) {
+                        z[0] += Adata[i*A->num_columns+j][0]*xdata[i][0] -
+                            Adata[i*A->num_columns+j][1]*xdata[i][1];
+                        z[1] += Adata[i*A->num_columns+j][0]*xdata[i][1] +
+                            Adata[i*A->num_columns+j][1]*xdata[i][0];
+                    }
+                    ydata[j][0] = alpha*z[0] + beta*ydata[j][0];
+                    ydata[j][1] = alpha*z[1] + beta*ydata[j][1];
+                }
+            } else if (trans == mtx_conjtrans) {
+                for (int j = 0; j < A->num_columns; j++) {
+                    float z[2] = {0, 0};
+                    for (int i = 0; i < A->num_rows; i++) {
+                        z[0] += Adata[i*A->num_columns+j][0]*xdata[i][0] +
+                            Adata[i*A->num_columns+j][1]*xdata[i][1];
+                        z[1] += Adata[i*A->num_columns+j][0]*xdata[i][1] -
+                            Adata[i*A->num_columns+j][1]*xdata[i][0];
+                    }
+                    ydata[j][0] = alpha*z[0] + beta*ydata[j][0];
+                    ydata[j][1] = alpha*z[1] + beta*ydata[j][1];
+                }
+            } else {
+                return MTX_ERR_INVALID_TRANS_TYPE;
+            }
+#endif
+        } else if (A->precision == mtx_double) {
+            const double (* Adata)[2] = A->data.complex_double;
+            const double (* xdata)[2] = x_->data.complex_double;
+            double (* ydata)[2] = y_->data.complex_double;
+#ifdef LIBMTX_HAVE_BLAS
+            CBLAS_TRANSPOSE transA = (trans == mtx_notrans) ? CblasNoTrans
+                : ((trans == mtx_trans) ? CblasTrans : CblasConjTrans);
+            const double zalpha[2] = {alpha, 0};
+            const double zbeta[2] = {beta, 0};
+            cblas_zgemv(
+                CblasRowMajor, transA, A->num_rows, A->num_columns,
+                zalpha, (const double *) Adata, A->num_columns,
+                (const double *) xdata, 1, zbeta, (double *) ydata, 1);
+#else
+            if (trans == mtx_notrans) {
+                for (int i = 0; i < A->num_rows; i++) {
+                    double z[2] = {0, 0};
+                    for (int j = 0; j < A->num_columns; j++) {
+                        z[0] += Adata[i*A->num_columns+j][0]*xdata[j][0] -
+                            Adata[i*A->num_columns+j][1]*xdata[j][1];
+                        z[1] += Adata[i*A->num_columns+j][0]*xdata[j][1] +
+                            Adata[i*A->num_columns+j][1]*xdata[j][0];
+                    }
+                    ydata[i][0] = alpha*z[0] + beta*ydata[i][0];
+                    ydata[i][1] = alpha*z[1] + beta*ydata[i][1];
+                }
+            } else if (trans == mtx_trans) {
+                for (int j = 0; j < A->num_columns; j++) {
+                    double z[2] = {0, 0};
+                    for (int i = 0; i < A->num_rows; i++) {
+                        z[0] += Adata[i*A->num_columns+j][0]*xdata[i][0] -
+                            Adata[i*A->num_columns+j][1]*xdata[i][1];
+                        z[1] += Adata[i*A->num_columns+j][0]*xdata[i][1] +
+                            Adata[i*A->num_columns+j][1]*xdata[i][0];
+                    }
+                    ydata[j][0] = alpha*z[0] + beta*ydata[j][0];
+                    ydata[j][1] = alpha*z[1] + beta*ydata[j][1];
+                }
+            } else if (trans == mtx_conjtrans) {
+                for (int j = 0; j < A->num_columns; j++) {
+                    double z[2] = {0, 0};
+                    for (int i = 0; i < A->num_rows; i++) {
+                        z[0] += Adata[i*A->num_columns+j][0]*xdata[i][0] +
+                            Adata[i*A->num_columns+j][1]*xdata[i][1];
+                        z[1] += Adata[i*A->num_columns+j][0]*xdata[i][1] -
+                            Adata[i*A->num_columns+j][1]*xdata[i][0];
+                    }
+                    ydata[j][0] = alpha*z[0] + beta*ydata[j][0];
+                    ydata[j][1] = alpha*z[1] + beta*ydata[j][1];
+                }
+            } else {
+                return MTX_ERR_INVALID_TRANS_TYPE;
+            }
+#endif
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else if (A->field == mtx_field_integer) {
+        if (A->precision == mtx_single) {
+            const int32_t * Adata = A->data.integer_single;
+            const int32_t * xdata = x_->data.integer_single;
+            int32_t * ydata = y_->data.integer_single;
+            if (trans == mtx_notrans) {
+                for (int i = 0; i < A->num_rows; i++) {
+                    int32_t z = 0;
+                    for (int j = 0; j < A->num_columns; j++)
+                        z += Adata[i*A->num_columns+j]*xdata[j];
+                    ydata[i] = alpha*z + beta*ydata[i];
+                }
+            } else if (trans == mtx_trans || trans == mtx_conjtrans) {
+                for (int j = 0; j < A->num_columns; j++) {
+                    int32_t z = 0;
+                    for (int i = 0; i < A->num_rows; i++)
+                        z += Adata[i*A->num_columns+j]*xdata[i];
+                    ydata[j] = alpha*z + beta*ydata[j];
+                }
+            } else {
+                return MTX_ERR_INVALID_TRANS_TYPE;
+            }
+        } else if (A->precision == mtx_double) {
+            const int64_t * Adata = A->data.integer_double;
+            const int64_t * xdata = x_->data.integer_double;
+            int64_t * ydata = y_->data.integer_double;
+            if (trans == mtx_notrans) {
+                for (int i = 0; i < A->num_rows; i++) {
+                    int64_t z = 0;
+                    for (int j = 0; j < A->num_columns; j++)
+                        z += Adata[i*A->num_columns+j]*xdata[j];
+                    ydata[i] = alpha*z + beta*ydata[i];
+                }
+            } else if (trans == mtx_trans || trans == mtx_conjtrans) {
+                for (int j = 0; j < A->num_columns; j++) {
+                    int64_t z = 0;
+                    for (int i = 0; i < A->num_rows; i++)
+                        z += Adata[i*A->num_columns+j]*xdata[i];
+                    ydata[j] = alpha*z + beta*ydata[j];
+                }
+            } else {
+                return MTX_ERR_INVALID_TRANS_TYPE;
+            }
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else {
+        return MTX_ERR_INVALID_FIELD;
+    }
+    return MTX_SUCCESS;
+}
+
+/**
+ * ‘mtxmatrix_array_dgemv()’ multiplies a matrix ‘A’ or its transpose
+ * ‘A'’ by a real scalar ‘alpha’ (‘α’) and a vector ‘x’, before adding
+ * the result to another vector ‘y’ multiplied by another scalar real
+ * ‘beta’ (‘β’).  That is, ‘y = α*A*x + β*y’ or ‘y = α*A'*x + β*y’.
+ *
+ * The scalars ‘alpha’ and ‘beta’ are given as double precision
+ * floating point numbers.
+ *
+ * The vectors ‘x’ and ‘y’ must be of ‘array’ type, and they must have
+ * the same field and precision as the matrix ‘A’. Moreover, if
+ * ‘trans’ is ‘mtx_notrans’, then the size of ‘x’ must equal the
+ * number of columns of ‘A’ and the size of ‘y’ must equal the number
+ * of rows of ‘A’. if ‘trans’ is ‘mtx_trans’ or ‘mtx_conjtrans’, then
+ * the size of ‘x’ must equal the number of rows of ‘A’ and the
+ * size of ‘y’ must equal the number of columns of ‘A’.
+ */
+int mtxmatrix_array_dgemv(
+    enum mtx_trans_type trans,
+    double alpha,
+    const struct mtxmatrix_array * A,
+    const struct mtxvector * x,
+    double beta,
+    struct mtxvector * y)
+{
+    if (x->type != mtxvector_array || y->type != mtxvector_array)
+        return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
+
+    const struct mtxvector_array * x_ = &x->storage.array;
+    struct mtxvector_array * y_ = &y->storage.array;
+    if (A->num_rows != y_->size ||
+        A->num_columns != x_->size)
+        return MTX_ERR_INCOMPATIBLE_SIZE;
+    if (x_->field != A->field || y_->field != A->field)
+        return MTX_ERR_INCOMPATIBLE_FIELD;
+    if (x_->precision != A->precision || y_->precision != A->precision)
+        return MTX_ERR_INCOMPATIBLE_PRECISION;
+
+    if (A->field == mtx_field_real) {
+        if (A->precision == mtx_single) {
+            const float * Adata = A->data.real_single;
+            const float * xdata = x_->data.real_single;
+            float * ydata = y_->data.real_single;
+#ifdef LIBMTX_HAVE_BLAS
+            CBLAS_TRANSPOSE transA = (trans == mtx_notrans) ? CblasNoTrans : CblasTrans;
+            cblas_sgemv(
+                CblasRowMajor, transA, A->num_rows, A->num_columns,
+                alpha, Adata, A->num_columns, xdata, 1, beta, ydata, 1);
+#else
+            if (trans == mtx_notrans) {
+                for (int i = 0; i < A->num_rows; i++) {
+                    float z = 0;
+                    for (int j = 0; j < A->num_columns; j++)
+                        z += Adata[i*A->num_columns+j]*xdata[j];
+                    ydata[i] = alpha*z + beta*ydata[i];
+                }
+            } else if (trans == mtx_trans || trans == mtx_conjtrans) {
+                for (int j = 0; j < A->num_columns; j++) {
+                    float z = 0;
+                    for (int i = 0; i < A->num_rows; i++)
+                        z += Adata[i*A->num_columns+j]*xdata[i];
+                    ydata[j] = alpha*z + beta*ydata[j];
+                }
+            } else {
+                return MTX_ERR_INVALID_TRANS_TYPE;
+            }
+#endif
+        } else if (A->precision == mtx_double) {
+            const double * Adata = A->data.real_double;
+            const double * xdata = x_->data.real_double;
+            double * ydata = y_->data.real_double;
+#ifdef LIBMTX_HAVE_BLAS
+            CBLAS_TRANSPOSE transA = (trans == mtx_notrans) ? CblasNoTrans : CblasTrans;
+            cblas_dgemv(
+                CblasRowMajor, transA, A->num_rows, A->num_columns,
+                alpha, Adata, A->num_columns, xdata, 1, beta, ydata, 1);
+#else
+            if (trans == mtx_notrans) {
+                for (int i = 0; i < A->num_rows; i++) {
+                    double z = 0;
+                    for (int j = 0; j < A->num_columns; j++)
+                        z += Adata[i*A->num_columns+j]*xdata[j];
+                    ydata[i] = alpha*z + beta*ydata[i];
+                }
+            } else if (trans == mtx_trans || trans == mtx_conjtrans) {
+                for (int j = 0; j < A->num_columns; j++) {
+                    double z = 0;
+                    for (int i = 0; i < A->num_rows; i++)
+                        z += Adata[i*A->num_columns+j]*xdata[i];
+                    ydata[j] = alpha*z + beta*ydata[j];
+                }
+            } else {
+                return MTX_ERR_INVALID_TRANS_TYPE;
+            }
+#endif
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else if (A->field == mtx_field_complex) {
+        if (A->precision == mtx_single) {
+            const float (* Adata)[2] = A->data.complex_single;
+            const float (* xdata)[2] = x_->data.complex_single;
+            float (* ydata)[2] = y_->data.complex_single;
+#ifdef LIBMTX_HAVE_BLAS
+            CBLAS_TRANSPOSE transA = (trans == mtx_notrans) ? CblasNoTrans
+                : ((trans == mtx_trans) ? CblasTrans : CblasConjTrans);
+            const float calpha[2] = {alpha, 0};
+            const float cbeta[2] = {beta, 0};
+            cblas_cgemv(
+                CblasRowMajor, transA, A->num_rows, A->num_columns,
+                calpha, (const float *) Adata, A->num_columns,
+                (const float *) xdata, 1, cbeta, (float *) ydata, 1);
+#else
+            if (trans == mtx_notrans) {
+                for (int i = 0; i < A->num_rows; i++) {
+                    float z[2] = {0, 0};
+                    for (int j = 0; j < A->num_columns; j++) {
+                        z[0] += Adata[i*A->num_columns+j][0]*xdata[j][0] -
+                            Adata[i*A->num_columns+j][1]*xdata[j][1];
+                        z[1] += Adata[i*A->num_columns+j][0]*xdata[j][1] +
+                            Adata[i*A->num_columns+j][1]*xdata[j][0];
+                    }
+                    ydata[i][0] = alpha*z[0] + beta*ydata[i][0];
+                    ydata[i][1] = alpha*z[1] + beta*ydata[i][1];
+                }
+            } else if (trans == mtx_trans) {
+                for (int j = 0; j < A->num_columns; j++) {
+                    float z[2] = {0, 0};
+                    for (int i = 0; i < A->num_rows; i++) {
+                        z[0] += Adata[i*A->num_columns+j][0]*xdata[i][0] -
+                            Adata[i*A->num_columns+j][1]*xdata[i][1];
+                        z[1] += Adata[i*A->num_columns+j][0]*xdata[i][1] +
+                            Adata[i*A->num_columns+j][1]*xdata[i][0];
+                    }
+                    ydata[j][0] = alpha*z[0] + beta*ydata[j][0];
+                    ydata[j][1] = alpha*z[1] + beta*ydata[j][1];
+                }
+            } else if (trans == mtx_conjtrans) {
+                for (int j = 0; j < A->num_columns; j++) {
+                    float z[2] = {0, 0};
+                    for (int i = 0; i < A->num_rows; i++) {
+                        z[0] += Adata[i*A->num_columns+j][0]*xdata[i][0] +
+                            Adata[i*A->num_columns+j][1]*xdata[i][1];
+                        z[1] += Adata[i*A->num_columns+j][0]*xdata[i][1] -
+                            Adata[i*A->num_columns+j][1]*xdata[i][0];
+                    }
+                    ydata[j][0] = alpha*z[0] + beta*ydata[j][0];
+                    ydata[j][1] = alpha*z[1] + beta*ydata[j][1];
+                }
+            } else {
+                return MTX_ERR_INVALID_TRANS_TYPE;
+            }
+#endif
+        } else if (A->precision == mtx_double) {
+            const double (* Adata)[2] = A->data.complex_double;
+            const double (* xdata)[2] = x_->data.complex_double;
+            double (* ydata)[2] = y_->data.complex_double;
+#ifdef LIBMTX_HAVE_BLAS
+            CBLAS_TRANSPOSE transA = (trans == mtx_notrans) ? CblasNoTrans
+                : ((trans == mtx_trans) ? CblasTrans : CblasConjTrans);
+            const double zalpha[2] = {alpha, 0};
+            const double zbeta[2] = {beta, 0};
+            cblas_zgemv(
+                CblasRowMajor, transA, A->num_rows, A->num_columns,
+                zalpha, (const double *) Adata, A->num_columns,
+                (const double *) xdata, 1, zbeta, (double *) ydata, 1);
+#else
+            if (trans == mtx_notrans) {
+                for (int i = 0; i < A->num_rows; i++) {
+                    double z[2] = {0, 0};
+                    for (int j = 0; j < A->num_columns; j++) {
+                        z[0] += Adata[i*A->num_columns+j][0]*xdata[j][0] -
+                            Adata[i*A->num_columns+j][1]*xdata[j][1];
+                        z[1] += Adata[i*A->num_columns+j][0]*xdata[j][1] +
+                            Adata[i*A->num_columns+j][1]*xdata[j][0];
+                    }
+                    ydata[i][0] = alpha*z[0] + beta*ydata[i][0];
+                    ydata[i][1] = alpha*z[1] + beta*ydata[i][1];
+                }
+            } else if (trans == mtx_trans) {
+                for (int j = 0; j < A->num_columns; j++) {
+                    double z[2] = {0, 0};
+                    for (int i = 0; i < A->num_rows; i++) {
+                        z[0] += Adata[i*A->num_columns+j][0]*xdata[i][0] -
+                            Adata[i*A->num_columns+j][1]*xdata[i][1];
+                        z[1] += Adata[i*A->num_columns+j][0]*xdata[i][1] +
+                            Adata[i*A->num_columns+j][1]*xdata[i][0];
+                    }
+                    ydata[j][0] = alpha*z[0] + beta*ydata[j][0];
+                    ydata[j][1] = alpha*z[1] + beta*ydata[j][1];
+                }
+            } else if (trans == mtx_conjtrans) {
+                for (int j = 0; j < A->num_columns; j++) {
+                    double z[2] = {0, 0};
+                    for (int i = 0; i < A->num_rows; i++) {
+                        z[0] += Adata[i*A->num_columns+j][0]*xdata[i][0] +
+                            Adata[i*A->num_columns+j][1]*xdata[i][1];
+                        z[1] += Adata[i*A->num_columns+j][0]*xdata[i][1] -
+                            Adata[i*A->num_columns+j][1]*xdata[i][0];
+                    }
+                    ydata[j][0] = alpha*z[0] + beta*ydata[j][0];
+                    ydata[j][1] = alpha*z[1] + beta*ydata[j][1];
+                }
+            } else {
+                return MTX_ERR_INVALID_TRANS_TYPE;
+            }
+#endif
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else if (A->field == mtx_field_integer) {
+        if (A->precision == mtx_single) {
+            const int32_t * Adata = A->data.integer_single;
+            const int32_t * xdata = x_->data.integer_single;
+            int32_t * ydata = y_->data.integer_single;
+            if (trans == mtx_notrans) {
+                for (int i = 0; i < A->num_rows; i++) {
+                    int32_t z = 0;
+                    for (int j = 0; j < A->num_columns; j++)
+                        z += Adata[i*A->num_columns+j]*xdata[j];
+                    ydata[i] = alpha*z + beta*ydata[i];
+                }
+            } else if (trans == mtx_trans || trans == mtx_conjtrans) {
+                for (int j = 0; j < A->num_columns; j++) {
+                    int32_t z = 0;
+                    for (int i = 0; i < A->num_rows; i++)
+                        z += Adata[i*A->num_columns+j]*xdata[i];
+                    ydata[j] = alpha*z + beta*ydata[j];
+                }
+            } else {
+                return MTX_ERR_INVALID_TRANS_TYPE;
+            }
+        } else if (A->precision == mtx_double) {
+            const int64_t * Adata = A->data.integer_double;
+            const int64_t * xdata = x_->data.integer_double;
+            int64_t * ydata = y_->data.integer_double;
+            if (trans == mtx_notrans) {
+                for (int i = 0; i < A->num_rows; i++) {
+                    int64_t z = 0;
+                    for (int j = 0; j < A->num_columns; j++)
+                        z += Adata[i*A->num_columns+j]*xdata[j];
+                    ydata[i] = alpha*z + beta*ydata[i];
+                }
+            } else if (trans == mtx_trans || trans == mtx_conjtrans) {
+                for (int j = 0; j < A->num_columns; j++) {
+                    int64_t z = 0;
+                    for (int i = 0; i < A->num_rows; i++)
+                        z += Adata[i*A->num_columns+j]*xdata[i];
+                    ydata[j] = alpha*z + beta*ydata[j];
+                }
+            } else {
+                return MTX_ERR_INVALID_TRANS_TYPE;
+            }
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else {
+        return MTX_ERR_INVALID_FIELD;
+    }
+    return MTX_SUCCESS;
+}
+
+/**
+ * ‘mtxmatrix_array_cgemv()’ multiplies a complex-valued matrix ‘A’,
+ * its transpose ‘A'’ or its conjugate transpose ‘Aᴴ’ by a complex
+ * scalar ‘alpha’ (‘α’) and a vector ‘x’, before adding the result to
+ * another vector ‘y’ multiplied by another complex scalar ‘beta’
+ * (‘β’).  That is, ‘y = α*A*x + β*y’, ‘y = α*A'*x + β*y’ or ‘y =
+ * α*Aᴴ*x + β*y’.
+ *
+ * The scalars ‘alpha’ and ‘beta’ are given as single precision
+ * floating point numbers.
+ *
+ * The vectors ‘x’ and ‘y’ must be of ‘array’ type, and they must have
+ * the same field and precision as the matrix ‘A’. Moreover, if
+ * ‘trans’ is ‘mtx_notrans’, then the size of ‘x’ must equal the
+ * number of columns of ‘A’ and the size of ‘y’ must equal the number
+ * of rows of ‘A’. if ‘trans’ is ‘mtx_trans’ or ‘mtx_conjtrans’, then
+ * the size of ‘x’ must equal the number of rows of ‘A’ and the
+ * size of ‘y’ must equal the number of columns of ‘A’.
+ */
+int mtxmatrix_array_cgemv(
+    enum mtx_trans_type trans,
+    float alpha[2],
+    const struct mtxmatrix_array * A,
+    const struct mtxvector * x,
+    float beta[2],
+    struct mtxvector * y)
+{
+    if (x->type != mtxvector_array || y->type != mtxvector_array)
+        return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
+    const struct mtxvector_array * x_ = &x->storage.array;
+    struct mtxvector_array * y_ = &y->storage.array;
+    if (x_->field != A->field || y_->field != A->field)
+        return MTX_ERR_INCOMPATIBLE_FIELD;
+    if (x_->precision != A->precision || y_->precision != A->precision)
+        return MTX_ERR_INCOMPATIBLE_PRECISION;
+    if (trans == mtx_notrans) {
+        if (A->num_rows != y_->size || A->num_columns != x_->size)
+            return MTX_ERR_INCOMPATIBLE_SIZE;
+    } else if (trans == mtx_trans || trans == mtx_conjtrans) {
+        if (A->num_columns != y_->size || A->num_rows != x_->size)
+            return MTX_ERR_INCOMPATIBLE_SIZE;
+    }
+
+    if (A->field != mtx_field_complex)
+        return MTX_ERR_INCOMPATIBLE_FIELD;
+
+    if (A->precision == mtx_single) {
+        const float (* Adata)[2] = A->data.complex_single;
+        const float (* xdata)[2] = x_->data.complex_single;
+        float (* ydata)[2] = y_->data.complex_single;
+#ifdef LIBMTX_HAVE_BLAS
+        CBLAS_TRANSPOSE transA = (trans == mtx_notrans) ? CblasNoTrans
+            : ((trans == mtx_trans) ? CblasTrans : CblasConjTrans);
+        cblas_cgemv(
+            CblasRowMajor, transA, A->num_rows, A->num_columns,
+            alpha, (const float *) Adata, A->num_columns,
+            (const float *) xdata, 1, beta, (float *) ydata, 1);
+#else
+        if (trans == mtx_notrans) {
+            for (int i = 0; i < A->num_rows; i++) {
+                float z[2] = {0, 0};
+                for (int j = 0; j < A->num_columns; j++) {
+                    z[0] += Adata[i*A->num_columns+j][0]*xdata[j][0] -
+                        Adata[i*A->num_columns+j][1]*xdata[j][1];
+                    z[1] += Adata[i*A->num_columns+j][0]*xdata[j][1] +
+                        Adata[i*A->num_columns+j][1]*xdata[j][0];
+                }
+                float yold[2] = {ydata[i][0], ydata[i][1]};
+                ydata[i][0] = alpha[0]*z[0] - alpha[1]*z[1]
+                    + beta[0]*yold[0] - beta[1]*yold[1];
+                ydata[i][1] = alpha[0]*z[1] + alpha[1]*z[0]
+                    + beta[0]*yold[1] + beta[1]*yold[0];
+            }
+        } else if (trans == mtx_trans) {
+            for (int j = 0; j < A->num_columns; j++) {
+                float z[2] = {0, 0};
+                for (int i = 0; i < A->num_rows; i++) {
+                    z[0] += Adata[i*A->num_columns+j][0]*xdata[i][0] -
+                        Adata[i*A->num_columns+j][1]*xdata[i][1];
+                    z[1] += Adata[i*A->num_columns+j][0]*xdata[i][1] +
+                        Adata[i*A->num_columns+j][1]*xdata[i][0];
+                }
+                float yold[2] = {ydata[j][0], ydata[j][1]};
+                ydata[j][0] = alpha[0]*z[0] - alpha[1]*z[1]
+                    + beta[0]*yold[0] - beta[1]*yold[1];
+                ydata[j][1] = alpha[0]*z[1] + alpha[1]*z[0]
+                    + beta[0]*yold[1] + beta[1]*yold[0];
+            }
+        } else if (trans == mtx_conjtrans) {
+            for (int j = 0; j < A->num_columns; j++) {
+                float z[2] = {0, 0};
+                for (int i = 0; i < A->num_rows; i++) {
+                    z[0] += Adata[i*A->num_columns+j][0]*xdata[i][0] +
+                        Adata[i*A->num_columns+j][1]*xdata[i][1];
+                    z[1] += Adata[i*A->num_columns+j][0]*xdata[i][1] -
+                        Adata[i*A->num_columns+j][1]*xdata[i][0];
+                }
+                float yold[2] = {ydata[j][0], ydata[j][1]};
+                ydata[j][0] = alpha[0]*z[0] - alpha[1]*z[1]
+                    + beta[0]*yold[0] - beta[1]*yold[1];
+                ydata[j][1] = alpha[0]*z[1] + alpha[1]*z[0]
+                    + beta[0]*yold[1] + beta[1]*yold[0];
+            }
+        } else {
+            return MTX_ERR_INVALID_TRANS_TYPE;
+        }
+#endif
+    } else if (A->precision == mtx_double) {
+        const double (* Adata)[2] = A->data.complex_double;
+        const double (* xdata)[2] = x_->data.complex_double;
+        double (* ydata)[2] = y_->data.complex_double;
+#ifdef LIBMTX_HAVE_BLAS
+        CBLAS_TRANSPOSE transA = (trans == mtx_notrans) ? CblasNoTrans
+            : ((trans == mtx_trans) ? CblasTrans : CblasConjTrans);
+        const double zalpha[2] = {alpha[0], alpha[1]};
+        const double zbeta[2] = {beta[0], beta[1]};
+        cblas_zgemv(
+            CblasRowMajor, transA, A->num_rows, A->num_columns,
+            zalpha, (const double *) Adata, A->num_columns,
+            (const double *) xdata, 1, zbeta, (double *) ydata, 1);
+#else
+        if (trans == mtx_notrans) {
+            for (int i = 0; i < A->num_rows; i++) {
+                double z[2] = {0, 0};
+                for (int j = 0; j < A->num_columns; j++) {
+                    z[0] += Adata[i*A->num_columns+j][0]*xdata[j][0] -
+                        Adata[i*A->num_columns+j][1]*xdata[j][1];
+                    z[1] += Adata[i*A->num_columns+j][0]*xdata[j][1] +
+                        Adata[i*A->num_columns+j][1]*xdata[j][0];
+                }
+                double yold[2] = {ydata[i][0], ydata[i][1]};
+                ydata[i][0] = alpha[0]*z[0] - alpha[1]*z[1]
+                    + beta[0]*yold[0] - beta[1]*yold[1];
+                ydata[i][1] = alpha[0]*z[1] + alpha[1]*z[0]
+                    + beta[0]*yold[1] + beta[1]*yold[0];
+            }
+        } else if (trans == mtx_trans) {
+            for (int j = 0; j < A->num_columns; j++) {
+                double z[2] = {0, 0};
+                for (int i = 0; i < A->num_rows; i++) {
+                    z[0] += Adata[i*A->num_columns+j][0]*xdata[i][0] -
+                        Adata[i*A->num_columns+j][1]*xdata[i][1];
+                    z[1] += Adata[i*A->num_columns+j][0]*xdata[i][1] +
+                        Adata[i*A->num_columns+j][1]*xdata[i][0];
+                }
+                double yold[2] = {ydata[j][0], ydata[j][1]};
+                ydata[j][0] = alpha[0]*z[0] - alpha[1]*z[1]
+                    + beta[0]*yold[0] - beta[1]*yold[1];
+                ydata[j][1] = alpha[0]*z[1] + alpha[1]*z[0]
+                    + beta[0]*yold[1] + beta[1]*yold[0];
+            }
+        } else if (trans == mtx_conjtrans) {
+            for (int j = 0; j < A->num_columns; j++) {
+                double z[2] = {0, 0};
+                for (int i = 0; i < A->num_rows; i++) {
+                    z[0] += Adata[i*A->num_columns+j][0]*xdata[i][0] +
+                        Adata[i*A->num_columns+j][1]*xdata[i][1];
+                    z[1] += Adata[i*A->num_columns+j][0]*xdata[i][1] -
+                        Adata[i*A->num_columns+j][1]*xdata[i][0];
+                }
+                double yold[2] = {ydata[j][0], ydata[j][1]};
+                ydata[j][0] = alpha[0]*z[0] - alpha[1]*z[1]
+                    + beta[0]*yold[0] - beta[1]*yold[1];
+                ydata[j][1] = alpha[0]*z[1] + alpha[1]*z[0]
+                    + beta[0]*yold[1] + beta[1]*yold[0];
+            }
+        } else {
+            return MTX_ERR_INVALID_TRANS_TYPE;
+        }
+#endif
+    } else {
+        return MTX_ERR_INVALID_PRECISION;
+    }
+    return MTX_SUCCESS;
+}
+
+/**
+ * ‘mtxmatrix_array_zgemv()’ multiplies a complex-valued matrix ‘A’,
+ * its transpose ‘A'’ or its conjugate transpose ‘Aᴴ’ by a complex
+ * scalar ‘alpha’ (‘α’) and a vector ‘x’, before adding the result to
+ * another vector ‘y’ multiplied by another complex scalar ‘beta’
+ * (‘β’).  That is, ‘y = α*A*x + β*y’, ‘y = α*A'*x + β*y’ or ‘y =
+ * α*Aᴴ*x + β*y’.
+ *
+ * The scalars ‘alpha’ and ‘beta’ are given as double precision
+ * floating point numbers.
+ *
+ * The vectors ‘x’ and ‘y’ must be of ‘array’ type, and they must have
+ * the same field and precision as the matrix ‘A’. Moreover, if
+ * ‘trans’ is ‘mtx_notrans’, then the size of ‘x’ must equal the
+ * number of columns of ‘A’ and the size of ‘y’ must equal the number
+ * of rows of ‘A’. if ‘trans’ is ‘mtx_trans’ or ‘mtx_conjtrans’, then
+ * the size of ‘x’ must equal the number of rows of ‘A’ and the
+ * size of ‘y’ must equal the number of columns of ‘A’.
+ */
+int mtxmatrix_array_zgemv(
+    enum mtx_trans_type trans,
+    double alpha[2],
+    const struct mtxmatrix_array * A,
+    const struct mtxvector * x,
+    double beta[2],
+    struct mtxvector * y)
+{
+    if (x->type != mtxvector_array || y->type != mtxvector_array)
+        return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
+    const struct mtxvector_array * x_ = &x->storage.array;
+    struct mtxvector_array * y_ = &y->storage.array;
+    if (x_->field != A->field || y_->field != A->field)
+        return MTX_ERR_INCOMPATIBLE_FIELD;
+    if (x_->precision != A->precision || y_->precision != A->precision)
+        return MTX_ERR_INCOMPATIBLE_PRECISION;
+    if (trans == mtx_notrans) {
+        if (A->num_rows != y_->size || A->num_columns != x_->size)
+            return MTX_ERR_INCOMPATIBLE_SIZE;
+    } else if (trans == mtx_trans || trans == mtx_conjtrans) {
+        if (A->num_columns != y_->size || A->num_rows != x_->size)
+            return MTX_ERR_INCOMPATIBLE_SIZE;
+    }
+
+    if (A->field != mtx_field_complex)
+        return MTX_ERR_INCOMPATIBLE_FIELD;
+
+    if (A->precision == mtx_single) {
+        const float (* Adata)[2] = A->data.complex_single;
+        const float (* xdata)[2] = x_->data.complex_single;
+        float (* ydata)[2] = y_->data.complex_single;
+#ifdef LIBMTX_HAVE_BLAS
+        CBLAS_TRANSPOSE transA = (trans == mtx_notrans) ? CblasNoTrans
+            : ((trans == mtx_trans) ? CblasTrans : CblasConjTrans);
+        const float calpha[2] = {alpha[0], alpha[1]};
+        const float cbeta[2] = {beta[0], beta[1]};
+        cblas_cgemv(
+            CblasRowMajor, transA, A->num_rows, A->num_columns,
+            calpha, (const float *) Adata, A->num_columns,
+            (const float *) xdata, 1, cbeta, (float *) ydata, 1);
+#else
+        if (trans == mtx_notrans) {
+            for (int i = 0; i < A->num_rows; i++) {
+                float z[2] = {0, 0};
+                for (int j = 0; j < A->num_columns; j++) {
+                    z[0] += Adata[i*A->num_columns+j][0]*xdata[j][0] -
+                        Adata[i*A->num_columns+j][1]*xdata[j][1];
+                    z[1] += Adata[i*A->num_columns+j][0]*xdata[j][1] +
+                        Adata[i*A->num_columns+j][1]*xdata[j][0];
+                }
+                float yold[2] = {ydata[i][0], ydata[i][1]};
+                ydata[i][0] = alpha[0]*z[0] - alpha[1]*z[1]
+                    + beta[0]*yold[0] - beta[1]*yold[1];
+                ydata[i][1] = alpha[0]*z[1] + alpha[1]*z[0]
+                    + beta[0]*yold[1] + beta[1]*yold[0];
+            }
+        } else if (trans == mtx_trans) {
+            for (int j = 0; j < A->num_columns; j++) {
+                float z[2] = {0, 0};
+                for (int i = 0; i < A->num_rows; i++) {
+                    z[0] += Adata[i*A->num_columns+j][0]*xdata[i][0] -
+                        Adata[i*A->num_columns+j][1]*xdata[i][1];
+                    z[1] += Adata[i*A->num_columns+j][0]*xdata[i][1] +
+                        Adata[i*A->num_columns+j][1]*xdata[i][0];
+                }
+                float yold[2] = {ydata[j][0], ydata[j][1]};
+                ydata[j][0] = alpha[0]*z[0] - alpha[1]*z[1]
+                    + beta[0]*yold[0] - beta[1]*yold[1];
+                ydata[j][1] = alpha[0]*z[1] + alpha[1]*z[0]
+                    + beta[0]*yold[1] + beta[1]*yold[0];
+            }
+        } else if (trans == mtx_conjtrans) {
+            for (int j = 0; j < A->num_columns; j++) {
+                float z[2] = {0, 0};
+                for (int i = 0; i < A->num_rows; i++) {
+                    z[0] += Adata[i*A->num_columns+j][0]*xdata[i][0] +
+                        Adata[i*A->num_columns+j][1]*xdata[i][1];
+                    z[1] += Adata[i*A->num_columns+j][0]*xdata[i][1] -
+                        Adata[i*A->num_columns+j][1]*xdata[i][0];
+                }
+                float yold[2] = {ydata[j][0], ydata[j][1]};
+                ydata[j][0] = alpha[0]*z[0] - alpha[1]*z[1]
+                    + beta[0]*yold[0] - beta[1]*yold[1];
+                ydata[j][1] = alpha[0]*z[1] + alpha[1]*z[0]
+                    + beta[0]*yold[1] + beta[1]*yold[0];
+            }
+        } else {
+            return MTX_ERR_INVALID_TRANS_TYPE;
+        }
+#endif
+    } else if (A->precision == mtx_double) {
+        const double (* Adata)[2] = A->data.complex_double;
+        const double (* xdata)[2] = x_->data.complex_double;
+        double (* ydata)[2] = y_->data.complex_double;
+#ifdef LIBMTX_HAVE_BLAS
+        CBLAS_TRANSPOSE transA = (trans == mtx_notrans) ? CblasNoTrans
+            : ((trans == mtx_trans) ? CblasTrans : CblasConjTrans);
+        cblas_zgemv(
+            CblasRowMajor, transA, A->num_rows, A->num_columns,
+            alpha, (const double *) Adata, A->num_columns,
+            (const double *) xdata, 1, beta, (double *) ydata, 1);
+#else
+        if (trans == mtx_notrans) {
+            for (int i = 0; i < A->num_rows; i++) {
+                double z[2] = {0, 0};
+                for (int j = 0; j < A->num_columns; j++) {
+                    z[0] += Adata[i*A->num_columns+j][0]*xdata[j][0] -
+                        Adata[i*A->num_columns+j][1]*xdata[j][1];
+                    z[1] += Adata[i*A->num_columns+j][0]*xdata[j][1] +
+                        Adata[i*A->num_columns+j][1]*xdata[j][0];
+                }
+                double yold[2] = {ydata[i][0], ydata[i][1]};
+                ydata[i][0] = alpha[0]*z[0] - alpha[1]*z[1]
+                    + beta[0]*yold[0] - beta[1]*yold[1];
+                ydata[i][1] = alpha[0]*z[1] + alpha[1]*z[0]
+                    + beta[0]*yold[1] + beta[1]*yold[0];
+            }
+        } else if (trans == mtx_trans) {
+            for (int j = 0; j < A->num_columns; j++) {
+                double z[2] = {0, 0};
+                for (int i = 0; i < A->num_rows; i++) {
+                    z[0] += Adata[i*A->num_columns+j][0]*xdata[i][0] -
+                        Adata[i*A->num_columns+j][1]*xdata[i][1];
+                    z[1] += Adata[i*A->num_columns+j][0]*xdata[i][1] +
+                        Adata[i*A->num_columns+j][1]*xdata[i][0];
+                }
+                double yold[2] = {ydata[j][0], ydata[j][1]};
+                ydata[j][0] = alpha[0]*z[0] - alpha[1]*z[1]
+                    + beta[0]*yold[0] - beta[1]*yold[1];
+                ydata[j][1] = alpha[0]*z[1] + alpha[1]*z[0]
+                    + beta[0]*yold[1] + beta[1]*yold[0];
+            }
+        } else if (trans == mtx_conjtrans) {
+            for (int j = 0; j < A->num_columns; j++) {
+                double z[2] = {0, 0};
+                for (int i = 0; i < A->num_rows; i++) {
+                    z[0] += Adata[i*A->num_columns+j][0]*xdata[i][0] +
+                        Adata[i*A->num_columns+j][1]*xdata[i][1];
+                    z[1] += Adata[i*A->num_columns+j][0]*xdata[i][1] -
+                        Adata[i*A->num_columns+j][1]*xdata[i][0];
+                }
+                double yold[2] = {ydata[j][0], ydata[j][1]};
+                ydata[j][0] = alpha[0]*z[0] - alpha[1]*z[1]
+                    + beta[0]*yold[0] - beta[1]*yold[1];
+                ydata[j][1] = alpha[0]*z[1] + alpha[1]*z[0]
+                    + beta[0]*yold[1] + beta[1]*yold[0];
+            }
+        } else {
+            return MTX_ERR_INVALID_TRANS_TYPE;
+        }
+#endif
+    } else {
+        return MTX_ERR_INVALID_PRECISION;
+    }
+    return MTX_SUCCESS;
 }

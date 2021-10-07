@@ -726,3 +726,121 @@ int mtxmatrix_gzwrite(
     return MTX_SUCCESS;
 }
 #endif
+
+/*
+ * Level 2 BLAS operations
+ */
+
+/**
+ * ‘mtxmatrix_sgemv()’ multiplies a matrix ‘A’ or its transpose ‘A'’
+ * by a real scalar ‘alpha’ (‘α’) and a vector ‘x’, before adding the
+ * result to another vector ‘y’ multiplied by another real scalar
+ * ‘beta’ (‘β’). That is, ‘y = α*A*x + β*y’ or ‘y = α*A'*x + β*y’.
+ *
+ * The scalars ‘alpha’ and ‘beta’ are given as single precision
+ * floating point numbers.
+ */
+int mtxmatrix_sgemv(
+    enum mtx_trans_type trans,
+    float alpha,
+    const struct mtxmatrix * A,
+    const struct mtxvector * x,
+    float beta,
+    struct mtxvector * y)
+{
+    if (A->type == mtxmatrix_array) {
+        return mtxmatrix_array_sgemv(
+            trans, alpha, &A->storage.array, x, beta, y);
+    } else if (A->type == mtxmatrix_coordinate) {
+        return mtxmatrix_coordinate_sgemv(
+            trans, alpha, &A->storage.coordinate, x, beta, y);
+    } else {
+        return MTX_ERR_INVALID_MATRIX_TYPE;
+    }
+}
+
+/**
+ * ‘mtxmatrix_dgemv()’ multiplies a matrix ‘A’ or its transpose ‘A'’
+ * by a real scalar ‘alpha’ (‘α’) and a vector ‘x’, before adding the
+ * result to another vector ‘y’ multiplied by another scalar real
+ * ‘beta’ (‘β’).  That is, ‘y = α*A*x + β*y’ or ‘y = α*A'*x + β*y’.
+ *
+ * The scalars ‘alpha’ and ‘beta’ are given as double precision
+ * floating point numbers.
+ */
+int mtxmatrix_dgemv(
+    enum mtx_trans_type trans,
+    double alpha,
+    const struct mtxmatrix * A,
+    const struct mtxvector * x,
+    double beta,
+    struct mtxvector * y)
+{
+    if (A->type == mtxmatrix_array) {
+        return mtxmatrix_array_dgemv(
+            trans, alpha, &A->storage.array, x, beta, y);
+    } else if (A->type == mtxmatrix_coordinate) {
+        return mtxmatrix_coordinate_dgemv(
+            trans, alpha, &A->storage.coordinate, x, beta, y);
+    } else {
+        return MTX_ERR_INVALID_MATRIX_TYPE;
+    }
+}
+
+/**
+ * ‘mtxmatrix_cgemv()’ multiplies a complex-valued matrix ‘A’, its
+ * transpose ‘A'’ or its conjugate transpose ‘Aᴴ’ by a complex scalar
+ * ‘alpha’ (‘α’) and a vector ‘x’, before adding the result to another
+ * vector ‘y’ multiplied by another complex scalar ‘beta’ (‘β’).  That
+ * is, ‘y = α*A*x + β*y’, ‘y = α*A'*x + β*y’ or ‘y = α*Aᴴ*x + β*y’.
+ *
+ * The scalars ‘alpha’ and ‘beta’ are given as single precision
+ * floating point numbers.
+ */
+int mtxmatrix_cgemv(
+    enum mtx_trans_type trans,
+    float alpha[2],
+    const struct mtxmatrix * A,
+    const struct mtxvector * x,
+    float beta[2],
+    struct mtxvector * y)
+{
+    if (A->type == mtxmatrix_array) {
+        return mtxmatrix_array_cgemv(
+            trans, alpha, &A->storage.array, x, beta, y);
+    } else if (A->type == mtxmatrix_coordinate) {
+        return mtxmatrix_coordinate_cgemv(
+            trans, alpha, &A->storage.coordinate, x, beta, y);
+    } else {
+        return MTX_ERR_INVALID_MATRIX_TYPE;
+    }
+}
+
+/**
+ * ‘mtxmatrix_zgemv()’ multiplies a complex-valued matrix ‘A’, its
+ * transpose ‘A'’ or its conjugate transpose ‘Aᴴ’ by a complex scalar
+ * ‘alpha’ (‘α’) and a vector ‘x’, before adding the result to another
+ * vector ‘y’ multiplied by another complex scalar ‘beta’ (‘β’).  That
+ * is, ‘y = α*A*x + β*y’, ‘y = α*A'*x + β*y’ or ‘y = α*Aᴴ*x + β*y’.
+ *
+ * The scalars ‘alpha’ and ‘beta’ are given as double precision
+ * floating point numbers.
+ */
+int mtxmatrix_zgemv(
+    enum mtx_trans_type trans,
+    double alpha[2],
+    const struct mtxmatrix * A,
+    const struct mtxvector * x,
+    double beta[2],
+    struct mtxvector * y)
+{
+    if (A->type == mtxmatrix_array) {
+        return mtxmatrix_array_zgemv(
+            trans, alpha, &A->storage.array, x, beta, y);
+    } else if (A->type == mtxmatrix_coordinate) {
+        return mtxmatrix_coordinate_zgemv(
+            trans, alpha, &A->storage.coordinate, x, beta, y);
+    } else {
+        return MTX_ERR_INVALID_MATRIX_TYPE;
+    }
+}

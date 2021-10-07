@@ -28,6 +28,7 @@
 
 #include <libmtx/mtx/precision.h>
 #include <libmtx/util/field.h>
+#include <libmtx/util/transpose.h>
 
 #include <stdarg.h>
 #include <stdbool.h>
@@ -35,6 +36,7 @@
 #include <stdio.h>
 
 struct mtxfile;
+struct mtxvector;
 
 /**
  * `mtxmatrix_array' represents a matrix in array format.
@@ -200,5 +202,113 @@ int mtxmatrix_array_from_mtxfile(
 int mtxmatrix_array_to_mtxfile(
     const struct mtxmatrix_array * matrix,
     struct mtxfile * mtxfile);
+
+/*
+ * Level 2 BLAS operations (matrix-vector)
+ */
+
+/**
+ * ‘mtxmatrix_array_sgemv()’ multiplies a matrix ‘A’ or its transpose
+ * ‘A'’ by a real scalar ‘alpha’ (‘α’) and a vector ‘x’, before adding
+ * the result to another vector ‘y’ multiplied by another real scalar
+ * ‘beta’ (‘β’). That is, ‘y = α*A*x + β*y’ or ‘y = α*A'*x + β*y’.
+ *
+ * The scalars ‘alpha’ and ‘beta’ are given as single precision
+ * floating point numbers.
+ *
+ * The vectors ‘x’ and ‘y’ must be of ‘array’ type, and they must have
+ * the same field and precision as the matrix ‘A’. Moreover, if
+ * ‘trans’ is ‘mtx_notrans’, then the size of ‘x’ must equal the
+ * number of columns of ‘A’ and the size of ‘y’ must equal the number
+ * of rows of ‘A’. if ‘trans’ is ‘mtx_trans’ or ‘mtx_conjtrans’, then
+ * the size of ‘x’ must equal the number of rows of ‘A’ and the
+ * size of ‘y’ must equal the number of columns of ‘A’.
+ */
+int mtxmatrix_array_sgemv(
+    enum mtx_trans_type trans,
+    float alpha,
+    const struct mtxmatrix_array * A,
+    const struct mtxvector * x,
+    float beta,
+    struct mtxvector * y);
+
+/**
+ * ‘mtxmatrix_array_dgemv()’ multiplies a matrix ‘A’ or its transpose
+ * ‘A'’ by a real scalar ‘alpha’ (‘α’) and a vector ‘x’, before adding
+ * the result to another vector ‘y’ multiplied by another scalar real
+ * ‘beta’ (‘β’).  That is, ‘y = α*A*x + β*y’ or ‘y = α*A'*x + β*y’.
+ *
+ * The scalars ‘alpha’ and ‘beta’ are given as double precision
+ * floating point numbers.
+ *
+ * The vectors ‘x’ and ‘y’ must be of ‘array’ type, and they must have
+ * the same field and precision as the matrix ‘A’. Moreover, if
+ * ‘trans’ is ‘mtx_notrans’, then the size of ‘x’ must equal the
+ * number of columns of ‘A’ and the size of ‘y’ must equal the number
+ * of rows of ‘A’. if ‘trans’ is ‘mtx_trans’ or ‘mtx_conjtrans’, then
+ * the size of ‘x’ must equal the number of rows of ‘A’ and the
+ * size of ‘y’ must equal the number of columns of ‘A’.
+ */
+int mtxmatrix_array_dgemv(
+    enum mtx_trans_type trans,
+    double alpha,
+    const struct mtxmatrix_array * A,
+    const struct mtxvector * x,
+    double beta,
+    struct mtxvector * y);
+
+/**
+ * ‘mtxmatrix_array_cgemv()’ multiplies a complex-valued matrix ‘A’,
+ * its transpose ‘A'’ or its conjugate transpose ‘Aᴴ’ by a complex
+ * scalar ‘alpha’ (‘α’) and a vector ‘x’, before adding the result to
+ * another vector ‘y’ multiplied by another complex scalar ‘beta’
+ * (‘β’).  That is, ‘y = α*A*x + β*y’, ‘y = α*A'*x + β*y’ or ‘y =
+ * α*Aᴴ*x + β*y’.
+ *
+ * The scalars ‘alpha’ and ‘beta’ are given as single precision
+ * floating point numbers.
+ *
+ * The vectors ‘x’ and ‘y’ must be of ‘array’ type, and they must have
+ * the same field and precision as the matrix ‘A’. Moreover, if
+ * ‘trans’ is ‘mtx_notrans’, then the size of ‘x’ must equal the
+ * number of columns of ‘A’ and the size of ‘y’ must equal the number
+ * of rows of ‘A’. if ‘trans’ is ‘mtx_trans’ or ‘mtx_conjtrans’, then
+ * the size of ‘x’ must equal the number of rows of ‘A’ and the
+ * size of ‘y’ must equal the number of columns of ‘A’.
+ */
+int mtxmatrix_array_cgemv(
+    enum mtx_trans_type trans,
+    float alpha[2],
+    const struct mtxmatrix_array * A,
+    const struct mtxvector * x,
+    float beta[2],
+    struct mtxvector * y);
+
+/**
+ * ‘mtxmatrix_array_zgemv()’ multiplies a complex-valued matrix ‘A’,
+ * its transpose ‘A'’ or its conjugate transpose ‘Aᴴ’ by a complex
+ * scalar ‘alpha’ (‘α’) and a vector ‘x’, before adding the result to
+ * another vector ‘y’ multiplied by another complex scalar ‘beta’
+ * (‘β’).  That is, ‘y = α*A*x + β*y’, ‘y = α*A'*x + β*y’ or ‘y =
+ * α*Aᴴ*x + β*y’.
+ *
+ * The scalars ‘alpha’ and ‘beta’ are given as double precision
+ * floating point numbers.
+ *
+ * The vectors ‘x’ and ‘y’ must be of ‘array’ type, and they must have
+ * the same field and precision as the matrix ‘A’. Moreover, if
+ * ‘trans’ is ‘mtx_notrans’, then the size of ‘x’ must equal the
+ * number of columns of ‘A’ and the size of ‘y’ must equal the number
+ * of rows of ‘A’. if ‘trans’ is ‘mtx_trans’ or ‘mtx_conjtrans’, then
+ * the size of ‘x’ must equal the number of rows of ‘A’ and the
+ * size of ‘y’ must equal the number of columns of ‘A’.
+ */
+int mtxmatrix_array_zgemv(
+    enum mtx_trans_type trans,
+    double alpha[2],
+    const struct mtxmatrix_array * A,
+    const struct mtxvector * x,
+    double beta[2],
+    struct mtxvector * y);
 
 #endif

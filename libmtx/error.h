@@ -81,6 +81,7 @@ enum mtx_error
     MTX_ERR_INVALID_ORDERING = -40,         /* invalid ordering */
     MTX_ERR_INVALID_MATRIX_TYPE = -41,      /* invalid matrix type */
     MTX_ERR_INCOMPATIBLE_MATRIX_TYPE = -42, /* incompatible matrix type */
+    MTX_ERR_INVALID_TRANS_TYPE = -43,       /* invalid transpose type */
 };
 
 /**
