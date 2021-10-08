@@ -83,7 +83,12 @@ void mtxvector_coordinate_free(
  */
 int mtxvector_coordinate_alloc_copy(
     struct mtxvector_coordinate * dst,
-    const struct mtxvector_coordinate * src);
+    const struct mtxvector_coordinate * src)
+{
+    return mtxvector_coordinate_alloc(
+        dst, src->field, src->precision, src->size, src->num_nonzeros);
+}
+
 
 /**
  * `mtxvector_coordinate_init_copy()' allocates a copy of a vector and

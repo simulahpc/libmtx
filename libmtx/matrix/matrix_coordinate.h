@@ -266,6 +266,14 @@ int mtxmatrix_coordinate_to_mtxfile(
  *
  * The scalars ‘alpha’ and ‘beta’ are given as single precision
  * floating point numbers.
+ *
+ * The vectors ‘x’ and ‘y’ must be of ‘array’ type, and they must have
+ * the same field and precision as the matrix ‘A’. Moreover, if
+ * ‘trans’ is ‘mtx_notrans’, then the size of ‘x’ must equal the
+ * number of columns of ‘A’ and the size of ‘y’ must equal the number
+ * of rows of ‘A’. if ‘trans’ is ‘mtx_trans’ or ‘mtx_conjtrans’, then
+ * the size of ‘x’ must equal the number of rows of ‘A’ and the size
+ * of ‘y’ must equal the number of columns of ‘A’.
  */
 int mtxmatrix_coordinate_sgemv(
     enum mtx_trans_type trans,

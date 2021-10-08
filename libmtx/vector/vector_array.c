@@ -83,7 +83,10 @@ void mtxvector_array_free(
  */
 int mtxvector_array_alloc_copy(
     struct mtxvector_array * dst,
-    const struct mtxvector_array * src);
+    const struct mtxvector_array * src)
+{
+    return mtxvector_array_alloc(dst, src->field, src->precision, src->size);
+}
 
 /**
  * `mtxvector_array_init_copy()' allocates a copy of a vector and also
