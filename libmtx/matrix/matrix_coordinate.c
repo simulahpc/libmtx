@@ -379,8 +379,152 @@ int mtxmatrix_coordinate_init_pattern(
 }
 
 /*
+ * Row and column vectors
+ */
+
+/**
+ * `mtxmatrix_coordinate_alloc_row_vector()' allocates a row vector
+ * for a given matrix, where a row vector is a vector whose length
+ * equal to a single row of the matrix.
+ */
+int mtxmatrix_coordinate_alloc_row_vector(
+    const struct mtxmatrix_coordinate * matrix,
+    struct mtxvector * vector,
+    enum mtxvector_type vector_type)
+{
+    if (vector_type == mtxvector_auto)
+        vector_type = mtxvector_array;
+
+    if (vector_type == mtxvector_array) {
+        return mtxvector_alloc_array(
+            vector, matrix->field, matrix->precision, matrix->num_columns);
+    } else if (vector_type == mtxvector_coordinate) {
+        /* TODO: Here we may wish to only allocate a vector with one
+         * nonzero for each column of the matrix that contains a
+         * nonzero entry. */
+        return mtxvector_alloc_coordinate(
+            vector, matrix->field, matrix->precision,
+            matrix->num_columns, matrix->num_columns);
+    } else {
+        return MTX_ERR_INVALID_VECTOR_TYPE;
+    }
+}
+
+/**
+ * `mtxmatrix_coordinate_alloc_column_vector()' allocates a column
+ * vector for a given matrix, where a column vector is a vector whose
+ * length equal to a single column of the matrix.
+ */
+int mtxmatrix_coordinate_alloc_column_vector(
+    const struct mtxmatrix_coordinate * matrix,
+    struct mtxvector * vector,
+    enum mtxvector_type vector_type)
+{
+    if (vector_type == mtxvector_auto)
+        vector_type = mtxvector_array;
+
+    if (vector_type == mtxvector_array) {
+        return mtxvector_alloc_array(
+            vector, matrix->field, matrix->precision, matrix->num_rows);
+    } else if (vector_type == mtxvector_coordinate) {
+        /* TODO: Here we may wish to only allocate a vector with one
+         * nonzero for each row of the matrix that contains a nonzero
+         * entry. */
+        return mtxvector_alloc_coordinate(
+            vector, matrix->field, matrix->precision,
+            matrix->num_rows, matrix->num_rows);
+    } else {
+        return MTX_ERR_INVALID_VECTOR_TYPE;
+    }
+}
+
+/*
  * Convert to and from Matrix Market format
  */
+
+/**
+ * `mtxfile_num_offdiagonal_data_lines()' counts the number of data
+ * lines that are not on the main diagonal of a matrix in the Matrix
+ * Market format.
+ */
+static int mtxfile_num_offdiagonal_data_lines(
+    const struct mtxfile * mtxfile,
+    int64_t * num_offdiagonal_data_lines)
+{
+    int err;
+    if (mtxfile->header.object != mtxfile_matrix)
+        return MTX_ERR_INCOMPATIBLE_MTX_OBJECT;
+    if (mtxfile->header.format != mtxfile_coordinate)
+        return MTX_ERR_INCOMPATIBLE_MTX_FORMAT;
+
+    int64_t num_nonzeros = mtxfile->size.num_nonzeros;
+    *num_offdiagonal_data_lines = 0;
+    if (mtxfile->header.field == mtxfile_real) {
+        if (mtxfile->precision == mtx_single) {
+            const struct mtxfile_matrix_coordinate_real_single * data =
+                mtxfile->data.matrix_coordinate_real_single;
+            for (int64_t k = 0; k < num_nonzeros; k++) {
+                if (data[k].i != data[k].j)
+                    (*num_offdiagonal_data_lines)++;
+            }
+        } else if (mtxfile->precision == mtx_double) {
+            const struct mtxfile_matrix_coordinate_real_double * data =
+                mtxfile->data.matrix_coordinate_real_double;
+            for (int64_t k = 0; k < num_nonzeros; k++) {
+                if (data[k].i != data[k].j)
+                    (*num_offdiagonal_data_lines)++;
+            }
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else if (mtxfile->header.field == mtxfile_complex) {
+        if (mtxfile->precision == mtx_single) {
+            const struct mtxfile_matrix_coordinate_complex_single * data =
+                mtxfile->data.matrix_coordinate_complex_single;
+            for (int64_t k = 0; k < num_nonzeros; k++) {
+                if (data[k].i != data[k].j)
+                    (*num_offdiagonal_data_lines)++;
+            }
+        } else if (mtxfile->precision == mtx_double) {
+            const struct mtxfile_matrix_coordinate_complex_double * data =
+                mtxfile->data.matrix_coordinate_complex_double;
+            for (int64_t k = 0; k < num_nonzeros; k++) {
+                if (data[k].i != data[k].j)
+                    (*num_offdiagonal_data_lines)++;
+            }
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else if (mtxfile->header.field == mtxfile_integer) {
+        if (mtxfile->precision == mtx_single) {
+            const struct mtxfile_matrix_coordinate_integer_single * data =
+                mtxfile->data.matrix_coordinate_integer_single;
+            for (int64_t k = 0; k < num_nonzeros; k++) {
+                if (data[k].i != data[k].j)
+                    (*num_offdiagonal_data_lines)++;
+            }
+        } else if (mtxfile->precision == mtx_double) {
+            const struct mtxfile_matrix_coordinate_integer_double * data =
+                mtxfile->data.matrix_coordinate_integer_double;
+            for (int64_t k = 0; k < num_nonzeros; k++) {
+                if (data[k].i != data[k].j)
+                    (*num_offdiagonal_data_lines)++;
+            }
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else if (mtxfile->header.field == mtxfile_pattern) {
+        const struct mtxfile_matrix_coordinate_pattern * data =
+            mtxfile->data.matrix_coordinate_pattern;
+        for (int64_t k = 0; k < num_nonzeros; k++) {
+            if (data[k].i != data[k].j)
+                (*num_offdiagonal_data_lines)++;
+        }
+    } else {
+        return MTX_ERR_INVALID_MTX_FIELD;
+    }
+    return MTX_SUCCESS;
+}
 
 /**
  * `mtxmatrix_coordinate_from_mtxfile()' converts a matrix in Matrix
@@ -398,19 +542,27 @@ int mtxmatrix_coordinate_from_mtxfile(
     if (mtxfile->header.format != mtxfile_coordinate)
         return MTX_ERR_INCOMPATIBLE_MTX_FORMAT;
 
-    /* TODO: If needed, we could convert from a symmetric
-     * representation. */
-    if (mtxfile->header.symmetry != mtxfile_general)
-        return MTX_ERR_INCOMPATIBLE_MTX_SYMMETRY;
-
     int num_rows = mtxfile->size.num_rows;
     int num_columns = mtxfile->size.num_columns;
     int64_t num_nonzeros = mtxfile->size.num_nonzeros;
 
+    /* For a symmetric, skew-symmetric or Hermitian matrix, we add
+     * additional nonzeros to represent both the upper and lower
+     * triangular (or trapezoidal) part of the matrix explicitly. */
+    int64_t num_sym_nonzeros = 0;
+    if (mtxfile->header.symmetry == mtxfile_symmetric ||
+        mtxfile->header.symmetry == mtxfile_skew_symmetric ||
+        mtxfile->header.symmetry == mtxfile_hermitian)
+    {
+        err = mtxfile_num_offdiagonal_data_lines(mtxfile, &num_sym_nonzeros);
+        if (err)
+            return err;
+    }
+
     if (mtxfile->header.field == mtxfile_real) {
         err = mtxmatrix_coordinate_alloc(
             matrix, mtx_field_real, mtxfile->precision,
-            num_rows, num_columns, num_nonzeros);
+            num_rows, num_columns, num_nonzeros + num_sym_nonzeros);
         if (err)
             return err;
         if (mtxfile->precision == mtx_single) {
@@ -421,6 +573,27 @@ int mtxmatrix_coordinate_from_mtxfile(
                 matrix->colidx[k] = data[k].j-1;
                 matrix->data.real_single[k] = data[k].a;
             }
+            if (mtxfile->header.symmetry == mtxfile_symmetric ||
+                mtxfile->header.symmetry == mtxfile_hermitian)
+            {
+                for (int64_t k = 0, l = num_nonzeros; k < num_nonzeros; k++) {
+                    if (data[k].i != data[k].j) {
+                        matrix->rowidx[l] = data[k].j-1;
+                        matrix->colidx[l] = data[k].i-1;
+                        matrix->data.real_single[l] = data[k].a;
+                        l++;
+                    }
+                }
+            } else if (mtxfile->header.symmetry == mtxfile_skew_symmetric) {
+                for (int64_t k = 0, l = num_nonzeros; k < num_nonzeros; k++) {
+                    if (data[k].i != data[k].j) {
+                        matrix->rowidx[l] = data[k].j-1;
+                        matrix->colidx[l] = data[k].i-1;
+                        matrix->data.real_single[l] = -data[k].a;
+                        l++;
+                    }
+                }
+            }
         } else if (mtxfile->precision == mtx_double) {
             const struct mtxfile_matrix_coordinate_real_double * data =
                 mtxfile->data.matrix_coordinate_real_double;
@@ -429,13 +602,34 @@ int mtxmatrix_coordinate_from_mtxfile(
                 matrix->colidx[k] = data[k].j-1;
                 matrix->data.real_double[k] = data[k].a;
             }
+            if (mtxfile->header.symmetry == mtxfile_symmetric ||
+                mtxfile->header.symmetry == mtxfile_hermitian)
+            {
+                for (int64_t k = 0, l = num_nonzeros; k < num_nonzeros; k++) {
+                    if (data[k].i != data[k].j) {
+                        matrix->rowidx[l] = data[k].j-1;
+                        matrix->colidx[l] = data[k].i-1;
+                        matrix->data.real_double[l] = data[k].a;
+                        l++;
+                    }
+                }
+            } else if (mtxfile->header.symmetry == mtxfile_skew_symmetric) {
+                for (int64_t k = 0, l = num_nonzeros; k < num_nonzeros; k++) {
+                    if (data[k].i != data[k].j) {
+                        matrix->rowidx[l] = data[k].j-1;
+                        matrix->colidx[l] = data[k].i-1;
+                        matrix->data.real_double[l] = -data[k].a;
+                        l++;
+                    }
+                }
+            }
         } else {
             return MTX_ERR_INVALID_PRECISION;
         }
     } else if (mtxfile->header.field == mtxfile_complex) {
         err = mtxmatrix_coordinate_alloc(
             matrix, mtx_field_complex, mtxfile->precision,
-            num_rows, num_columns, num_nonzeros);
+            num_rows, num_columns, num_nonzeros + num_sym_nonzeros);
         if (err)
             return err;
         if (mtxfile->precision == mtx_single) {
@@ -446,6 +640,37 @@ int mtxmatrix_coordinate_from_mtxfile(
                 matrix->colidx[k] = data[k].j-1;
                 matrix->data.complex_single[k][0] = data[k].a[0];
                 matrix->data.complex_single[k][1] = data[k].a[1];
+            }
+            if (mtxfile->header.symmetry == mtxfile_symmetric) {
+                for (int64_t k = 0, l = num_nonzeros; k < num_nonzeros; k++) {
+                    if (data[k].i != data[k].j) {
+                        matrix->rowidx[l] = data[k].j-1;
+                        matrix->colidx[l] = data[k].i-1;
+                        matrix->data.complex_single[l][0] = data[k].a[0];
+                        matrix->data.complex_single[l][1] = data[k].a[1];
+                        l++;
+                    }
+                }
+            } else if (mtxfile->header.symmetry == mtxfile_skew_symmetric) {
+                for (int64_t k = 0, l = num_nonzeros; k < num_nonzeros; k++) {
+                    if (data[k].i != data[k].j) {
+                        matrix->rowidx[l] = data[k].j-1;
+                        matrix->colidx[l] = data[k].i-1;
+                        matrix->data.complex_single[l][0] = -data[k].a[0];
+                        matrix->data.complex_single[l][1] = -data[k].a[1];
+                        l++;
+                    }
+                }
+            } else if (mtxfile->header.symmetry == mtxfile_hermitian) {
+                for (int64_t k = 0, l = num_nonzeros; k < num_nonzeros; k++) {
+                    if (data[k].i != data[k].j) {
+                        matrix->rowidx[l] = data[k].j-1;
+                        matrix->colidx[l] = data[k].i-1;
+                        matrix->data.complex_single[l][0] = data[k].a[0];
+                        matrix->data.complex_single[l][1] = -data[k].a[1];
+                        l++;
+                    }
+                }
             }
         } else if (mtxfile->precision == mtx_double) {
             const struct mtxfile_matrix_coordinate_complex_double * data =
@@ -462,7 +687,7 @@ int mtxmatrix_coordinate_from_mtxfile(
     } else if (mtxfile->header.field == mtxfile_integer) {
         err = mtxmatrix_coordinate_alloc(
             matrix, mtx_field_integer, mtxfile->precision,
-            num_rows, num_columns, num_nonzeros);
+            num_rows, num_columns, num_nonzeros + num_sym_nonzeros);
         if (err)
             return err;
         if (mtxfile->precision == mtx_single) {
@@ -473,6 +698,27 @@ int mtxmatrix_coordinate_from_mtxfile(
                 matrix->colidx[k] = data[k].j-1;
                 matrix->data.integer_single[k] = data[k].a;
             }
+            if (mtxfile->header.symmetry == mtxfile_symmetric ||
+                mtxfile->header.symmetry == mtxfile_hermitian)
+            {
+                for (int64_t k = 0, l = num_nonzeros; k < num_nonzeros; k++) {
+                    if (data[k].i != data[k].j) {
+                        matrix->rowidx[l] = data[k].j-1;
+                        matrix->colidx[l] = data[k].i-1;
+                        matrix->data.integer_single[l] = data[k].a;
+                        l++;
+                    }
+                }
+            } else if (mtxfile->header.symmetry == mtxfile_skew_symmetric) {
+                for (int64_t k = 0, l = num_nonzeros; k < num_nonzeros; k++) {
+                    if (data[k].i != data[k].j) {
+                        matrix->rowidx[l] = data[k].j-1;
+                        matrix->colidx[l] = data[k].i-1;
+                        matrix->data.integer_single[l] = -data[k].a;
+                        l++;
+                    }
+                }
+            }
         } else if (mtxfile->precision == mtx_double) {
             const struct mtxfile_matrix_coordinate_integer_double * data =
                 mtxfile->data.matrix_coordinate_integer_double;
@@ -481,13 +727,34 @@ int mtxmatrix_coordinate_from_mtxfile(
                 matrix->colidx[k] = data[k].j-1;
                 matrix->data.integer_double[k] = data[k].a;
             }
+            if (mtxfile->header.symmetry == mtxfile_symmetric ||
+                mtxfile->header.symmetry == mtxfile_hermitian)
+            {
+                for (int64_t k = 0, l = num_nonzeros; k < num_nonzeros; k++) {
+                    if (data[k].i != data[k].j) {
+                        matrix->rowidx[l] = data[k].j-1;
+                        matrix->colidx[l] = data[k].i-1;
+                        matrix->data.integer_double[l] = data[k].a;
+                        l++;
+                    }
+                }
+            } else if (mtxfile->header.symmetry == mtxfile_skew_symmetric) {
+                for (int64_t k = 0, l = num_nonzeros; k < num_nonzeros; k++) {
+                    if (data[k].i != data[k].j) {
+                        matrix->rowidx[l] = data[k].j-1;
+                        matrix->colidx[l] = data[k].i-1;
+                        matrix->data.integer_double[l] = -data[k].a;
+                        l++;
+                    }
+                }
+            }
         } else {
             return MTX_ERR_INVALID_PRECISION;
         }
     } else if (mtxfile->header.field == mtxfile_pattern) {
         err = mtxmatrix_coordinate_alloc(
             matrix, mtx_field_pattern, mtx_single,
-            num_rows, num_columns, num_nonzeros);
+            num_rows, num_columns, num_nonzeros + num_sym_nonzeros);
         if (err)
             return err;
         const struct mtxfile_matrix_coordinate_pattern * data =
@@ -495,6 +762,18 @@ int mtxmatrix_coordinate_from_mtxfile(
         for (int64_t k = 0; k < num_nonzeros; k++) {
             matrix->rowidx[k] = data[k].i-1;
             matrix->colidx[k] = data[k].j-1;
+        }
+        if (mtxfile->header.symmetry == mtxfile_symmetric ||
+            mtxfile->header.symmetry == mtxfile_skew_symmetric ||
+            mtxfile->header.symmetry == mtxfile_hermitian)
+        {
+            for (int64_t k = 0, l = num_nonzeros; k < num_nonzeros; k++) {
+                if (data[k].i != data[k].j) {
+                    matrix->rowidx[l] = data[k].j-1;
+                    matrix->colidx[l] = data[k].i-1;
+                    l++;
+                }
+            }
         }
     } else {
         return MTX_ERR_INVALID_MTX_FIELD;
