@@ -208,9 +208,9 @@ int test_mtxvector_from_mtxfile(void)
         TEST_ASSERT_EQ(mtx_single, x_->precision);
         TEST_ASSERT_EQ(4, x_->size);
         TEST_ASSERT_EQ(3, x_->num_nonzeros);
-        TEST_ASSERT_EQ(x_->indices[0], 1);
-        TEST_ASSERT_EQ(x_->indices[1], 2);
-        TEST_ASSERT_EQ(x_->indices[2], 4);
+        TEST_ASSERT_EQ(x_->indices[0], 0);
+        TEST_ASSERT_EQ(x_->indices[1], 1);
+        TEST_ASSERT_EQ(x_->indices[2], 3);
         TEST_ASSERT_EQ(x_->data.real_single[0], 1.0f);
         TEST_ASSERT_EQ(x_->data.real_single[1], 2.0f);
         TEST_ASSERT_EQ(x_->data.real_single[2], 4.0f);
@@ -236,9 +236,9 @@ int test_mtxvector_from_mtxfile(void)
         TEST_ASSERT_EQ(mtx_double, x_->precision);
         TEST_ASSERT_EQ(4, x_->size);
         TEST_ASSERT_EQ(3, x_->num_nonzeros);
-        TEST_ASSERT_EQ(x_->indices[0], 1);
-        TEST_ASSERT_EQ(x_->indices[1], 2);
-        TEST_ASSERT_EQ(x_->indices[2], 4);
+        TEST_ASSERT_EQ(x_->indices[0], 0);
+        TEST_ASSERT_EQ(x_->indices[1], 1);
+        TEST_ASSERT_EQ(x_->indices[2], 3);
         TEST_ASSERT_EQ(x_->data.real_double[0], 1.0);
         TEST_ASSERT_EQ(x_->data.real_double[1], 2.0);
         TEST_ASSERT_EQ(x_->data.real_double[2], 4.0);
@@ -264,9 +264,9 @@ int test_mtxvector_from_mtxfile(void)
         TEST_ASSERT_EQ(mtx_single, x_->precision);
         TEST_ASSERT_EQ(4, x_->size);
         TEST_ASSERT_EQ(3, x_->num_nonzeros);
-        TEST_ASSERT_EQ(x_->indices[0], 1);
-        TEST_ASSERT_EQ(x_->indices[1], 2);
-        TEST_ASSERT_EQ(x_->indices[2], 4);
+        TEST_ASSERT_EQ(x_->indices[0], 0);
+        TEST_ASSERT_EQ(x_->indices[1], 1);
+        TEST_ASSERT_EQ(x_->indices[2], 3);
         TEST_ASSERT_EQ(x_->data.complex_single[0][0], 1.0f);
         TEST_ASSERT_EQ(x_->data.complex_single[0][1], -1.0f);
         TEST_ASSERT_EQ(x_->data.complex_single[1][0], 2.0f);
@@ -295,9 +295,9 @@ int test_mtxvector_from_mtxfile(void)
         TEST_ASSERT_EQ(mtx_double, x_->precision);
         TEST_ASSERT_EQ(4, x_->size);
         TEST_ASSERT_EQ(3, x_->num_nonzeros);
-        TEST_ASSERT_EQ(x_->indices[0], 1);
-        TEST_ASSERT_EQ(x_->indices[1], 2);
-        TEST_ASSERT_EQ(x_->indices[2], 4);
+        TEST_ASSERT_EQ(x_->indices[0], 0);
+        TEST_ASSERT_EQ(x_->indices[1], 1);
+        TEST_ASSERT_EQ(x_->indices[2], 3);
         TEST_ASSERT_EQ(x_->data.complex_double[0][0], 1.0);
         TEST_ASSERT_EQ(x_->data.complex_double[0][1], -1.0);
         TEST_ASSERT_EQ(x_->data.complex_double[1][0], 2.0);
@@ -326,9 +326,9 @@ int test_mtxvector_from_mtxfile(void)
         TEST_ASSERT_EQ(mtx_single, x_->precision);
         TEST_ASSERT_EQ(4, x_->size);
         TEST_ASSERT_EQ(3, x_->num_nonzeros);
-        TEST_ASSERT_EQ(x_->indices[0], 1);
-        TEST_ASSERT_EQ(x_->indices[1], 2);
-        TEST_ASSERT_EQ(x_->indices[2], 4);
+        TEST_ASSERT_EQ(x_->indices[0], 0);
+        TEST_ASSERT_EQ(x_->indices[1], 1);
+        TEST_ASSERT_EQ(x_->indices[2], 3);
         TEST_ASSERT_EQ(x_->data.integer_single[0], 1);
         TEST_ASSERT_EQ(x_->data.integer_single[1], 2);
         TEST_ASSERT_EQ(x_->data.integer_single[2], 4);
@@ -354,9 +354,9 @@ int test_mtxvector_from_mtxfile(void)
         TEST_ASSERT_EQ(mtx_double, x_->precision);
         TEST_ASSERT_EQ(4, x_->size);
         TEST_ASSERT_EQ(3, x_->num_nonzeros);
-        TEST_ASSERT_EQ(x_->indices[0], 1);
-        TEST_ASSERT_EQ(x_->indices[1], 2);
-        TEST_ASSERT_EQ(x_->indices[2], 4);
+        TEST_ASSERT_EQ(x_->indices[0], 0);
+        TEST_ASSERT_EQ(x_->indices[1], 1);
+        TEST_ASSERT_EQ(x_->indices[2], 3);
         TEST_ASSERT_EQ(x_->data.integer_double[0], 1);
         TEST_ASSERT_EQ(x_->data.integer_double[1], 2);
         TEST_ASSERT_EQ(x_->data.integer_double[2], 4);
@@ -380,9 +380,9 @@ int test_mtxvector_from_mtxfile(void)
         TEST_ASSERT_EQ(mtx_field_pattern, x_->field);
         TEST_ASSERT_EQ(4, x_->size);
         TEST_ASSERT_EQ(3, x_->num_nonzeros);
-        TEST_ASSERT_EQ(x_->indices[0], 1);
-        TEST_ASSERT_EQ(x_->indices[1], 2);
-        TEST_ASSERT_EQ(x_->indices[2], 4);
+        TEST_ASSERT_EQ(x_->indices[0], 0);
+        TEST_ASSERT_EQ(x_->indices[1], 1);
+        TEST_ASSERT_EQ(x_->indices[2], 3);
         mtxvector_free(&x);
         mtxfile_free(&mtxfile);
     }
@@ -575,7 +575,7 @@ int test_mtxvector_to_mtxfile(void)
         const struct mtxfile_vector_coordinate_real_single * data =
             mtxfile.data.vector_coordinate_real_single;
         for (int64_t k = 0; k < nnz; k++) {
-            TEST_ASSERT_EQ(idx[k], data[k].i);
+            TEST_ASSERT_EQ(idx[k]+1, data[k].i);
             TEST_ASSERT_EQ(xdata[k], data[k].a);
         }
         mtxfile_free(&mtxfile);
@@ -605,7 +605,7 @@ int test_mtxvector_to_mtxfile(void)
         const struct mtxfile_vector_coordinate_real_double * data =
             mtxfile.data.vector_coordinate_real_double;
         for (int64_t k = 0; k < nnz; k++) {
-            TEST_ASSERT_EQ(idx[k], data[k].i);
+            TEST_ASSERT_EQ(idx[k]+1, data[k].i);
             TEST_ASSERT_EQ(xdata[k], data[k].a);
         }
         mtxfile_free(&mtxfile);
@@ -635,7 +635,7 @@ int test_mtxvector_to_mtxfile(void)
         const struct mtxfile_vector_coordinate_complex_single * data =
             mtxfile.data.vector_coordinate_complex_single;
         for (int64_t k = 0; k < nnz; k++) {
-            TEST_ASSERT_EQ(idx[k], data[k].i);
+            TEST_ASSERT_EQ(idx[k]+1, data[k].i);
             TEST_ASSERT_EQ(xdata[k][0], data[k].a[0]);
             TEST_ASSERT_EQ(xdata[k][1], data[k].a[1]);
         }
@@ -666,7 +666,7 @@ int test_mtxvector_to_mtxfile(void)
         const struct mtxfile_vector_coordinate_complex_double * data =
             mtxfile.data.vector_coordinate_complex_double;
         for (int64_t k = 0; k < nnz; k++) {
-            TEST_ASSERT_EQ(idx[k], data[k].i);
+            TEST_ASSERT_EQ(idx[k]+1, data[k].i);
             TEST_ASSERT_EQ(xdata[k][0], data[k].a[0]);
             TEST_ASSERT_EQ(xdata[k][1], data[k].a[1]);
         }
@@ -697,7 +697,7 @@ int test_mtxvector_to_mtxfile(void)
         const struct mtxfile_vector_coordinate_integer_single * data =
             mtxfile.data.vector_coordinate_integer_single;
         for (int64_t k = 0; k < nnz; k++) {
-            TEST_ASSERT_EQ(idx[k], data[k].i);
+            TEST_ASSERT_EQ(idx[k]+1, data[k].i);
             TEST_ASSERT_EQ(xdata[k], data[k].a);
         }
         mtxfile_free(&mtxfile);
@@ -727,7 +727,7 @@ int test_mtxvector_to_mtxfile(void)
         const struct mtxfile_vector_coordinate_integer_double * data =
             mtxfile.data.vector_coordinate_integer_double;
         for (int64_t k = 0; k < nnz; k++) {
-            TEST_ASSERT_EQ(idx[k], data[k].i);
+            TEST_ASSERT_EQ(idx[k]+1, data[k].i);
             TEST_ASSERT_EQ(xdata[k], data[k].a);
         }
         mtxfile_free(&mtxfile);

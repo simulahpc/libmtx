@@ -67,7 +67,8 @@ struct mtxvector_coordinate
 
     /**
      * `indices' is an array containing the locations of nonzero
-     * vector entries.
+     * vector entries.  Note that indices are 0-based, unlike the
+     * Matrix Market format, where indices are 1-based.
      */
     int * indices;
 

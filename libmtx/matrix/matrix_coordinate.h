@@ -72,13 +72,15 @@ struct mtxmatrix_coordinate
 
     /**
      * `rowidx' is an array containing the row indices of nonzero
-     * matrix entries.
+     * matrix entries.  Note that row indices are 0-based, unlike the
+     * Matrix Market format, where indices are 1-based.
      */
     int * rowidx;
 
     /**
      * `colidx' is an array containing the column indices of nonzero
-     * matrix entries.
+     * matrix entries.  Note that column indices are 0-based, unlike
+     * the Matrix Market format, where indices are 1-based.
      */
     int * colidx;
 

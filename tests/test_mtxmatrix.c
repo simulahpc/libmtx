@@ -263,10 +263,10 @@ int test_mtxmatrix_from_mtxfile(void)
         TEST_ASSERT_EQ(3, x_->num_rows);
         TEST_ASSERT_EQ(3, x_->num_columns);
         TEST_ASSERT_EQ(4, x_->num_nonzeros);
-        TEST_ASSERT_EQ(x_->rowidx[0], 1); TEST_ASSERT_EQ(x_->colidx[0], 1);
-        TEST_ASSERT_EQ(x_->rowidx[1], 1); TEST_ASSERT_EQ(x_->colidx[1], 3);
-        TEST_ASSERT_EQ(x_->rowidx[2], 2); TEST_ASSERT_EQ(x_->colidx[2], 1);
-        TEST_ASSERT_EQ(x_->rowidx[3], 3); TEST_ASSERT_EQ(x_->colidx[3], 3);
+        TEST_ASSERT_EQ(x_->rowidx[0], 0); TEST_ASSERT_EQ(x_->colidx[0], 0);
+        TEST_ASSERT_EQ(x_->rowidx[1], 0); TEST_ASSERT_EQ(x_->colidx[1], 2);
+        TEST_ASSERT_EQ(x_->rowidx[2], 1); TEST_ASSERT_EQ(x_->colidx[2], 0);
+        TEST_ASSERT_EQ(x_->rowidx[3], 2); TEST_ASSERT_EQ(x_->colidx[3], 2);
         TEST_ASSERT_EQ(x_->data.real_single[0], 1.0f);
         TEST_ASSERT_EQ(x_->data.real_single[1], 3.0f);
         TEST_ASSERT_EQ(x_->data.real_single[2], 4.0f);
@@ -295,10 +295,10 @@ int test_mtxmatrix_from_mtxfile(void)
         TEST_ASSERT_EQ(3, x_->num_rows);
         TEST_ASSERT_EQ(3, x_->num_columns);
         TEST_ASSERT_EQ(4, x_->num_nonzeros);
-        TEST_ASSERT_EQ(x_->rowidx[0], 1); TEST_ASSERT_EQ(x_->colidx[0], 1);
-        TEST_ASSERT_EQ(x_->rowidx[1], 1); TEST_ASSERT_EQ(x_->colidx[1], 3);
-        TEST_ASSERT_EQ(x_->rowidx[2], 2); TEST_ASSERT_EQ(x_->colidx[2], 1);
-        TEST_ASSERT_EQ(x_->rowidx[3], 3); TEST_ASSERT_EQ(x_->colidx[3], 3);
+        TEST_ASSERT_EQ(x_->rowidx[0], 0); TEST_ASSERT_EQ(x_->colidx[0], 0);
+        TEST_ASSERT_EQ(x_->rowidx[1], 0); TEST_ASSERT_EQ(x_->colidx[1], 2);
+        TEST_ASSERT_EQ(x_->rowidx[2], 1); TEST_ASSERT_EQ(x_->colidx[2], 0);
+        TEST_ASSERT_EQ(x_->rowidx[3], 2); TEST_ASSERT_EQ(x_->colidx[3], 2);
         TEST_ASSERT_EQ(x_->data.real_double[0], 1.0);
         TEST_ASSERT_EQ(x_->data.real_double[1], 3.0);
         TEST_ASSERT_EQ(x_->data.real_double[2], 4.0);
@@ -328,10 +328,10 @@ int test_mtxmatrix_from_mtxfile(void)
         TEST_ASSERT_EQ(3, x_->num_rows);
         TEST_ASSERT_EQ(3, x_->num_columns);
         TEST_ASSERT_EQ(4, x_->num_nonzeros);
-        TEST_ASSERT_EQ(x_->rowidx[0], 1); TEST_ASSERT_EQ(x_->colidx[0], 1);
-        TEST_ASSERT_EQ(x_->rowidx[1], 1); TEST_ASSERT_EQ(x_->colidx[1], 3);
-        TEST_ASSERT_EQ(x_->rowidx[2], 2); TEST_ASSERT_EQ(x_->colidx[2], 1);
-        TEST_ASSERT_EQ(x_->rowidx[3], 3); TEST_ASSERT_EQ(x_->colidx[3], 3);
+        TEST_ASSERT_EQ(x_->rowidx[0], 0); TEST_ASSERT_EQ(x_->colidx[0], 0);
+        TEST_ASSERT_EQ(x_->rowidx[1], 0); TEST_ASSERT_EQ(x_->colidx[1], 2);
+        TEST_ASSERT_EQ(x_->rowidx[2], 1); TEST_ASSERT_EQ(x_->colidx[2], 0);
+        TEST_ASSERT_EQ(x_->rowidx[3], 2); TEST_ASSERT_EQ(x_->colidx[3], 2);
         TEST_ASSERT_EQ(x_->data.complex_single[0][0], 1.0f);
         TEST_ASSERT_EQ(x_->data.complex_single[0][1],-1.0f);
         TEST_ASSERT_EQ(x_->data.complex_single[1][0], 3.0f);
@@ -365,10 +365,10 @@ int test_mtxmatrix_from_mtxfile(void)
         TEST_ASSERT_EQ(3, x_->num_rows);
         TEST_ASSERT_EQ(3, x_->num_columns);
         TEST_ASSERT_EQ(4, x_->num_nonzeros);
-        TEST_ASSERT_EQ(x_->rowidx[0], 1); TEST_ASSERT_EQ(x_->colidx[0], 1);
-        TEST_ASSERT_EQ(x_->rowidx[1], 1); TEST_ASSERT_EQ(x_->colidx[1], 3);
-        TEST_ASSERT_EQ(x_->rowidx[2], 2); TEST_ASSERT_EQ(x_->colidx[2], 1);
-        TEST_ASSERT_EQ(x_->rowidx[3], 3); TEST_ASSERT_EQ(x_->colidx[3], 3);
+        TEST_ASSERT_EQ(x_->rowidx[0], 0); TEST_ASSERT_EQ(x_->colidx[0], 0);
+        TEST_ASSERT_EQ(x_->rowidx[1], 0); TEST_ASSERT_EQ(x_->colidx[1], 2);
+        TEST_ASSERT_EQ(x_->rowidx[2], 1); TEST_ASSERT_EQ(x_->colidx[2], 0);
+        TEST_ASSERT_EQ(x_->rowidx[3], 2); TEST_ASSERT_EQ(x_->colidx[3], 2);
         TEST_ASSERT_EQ(x_->data.complex_double[0][0], 1.0);
         TEST_ASSERT_EQ(x_->data.complex_double[0][1],-1.0);
         TEST_ASSERT_EQ(x_->data.complex_double[1][0], 3.0);
@@ -401,10 +401,10 @@ int test_mtxmatrix_from_mtxfile(void)
         TEST_ASSERT_EQ(3, x_->num_rows);
         TEST_ASSERT_EQ(3, x_->num_columns);
         TEST_ASSERT_EQ(4, x_->num_nonzeros);
-        TEST_ASSERT_EQ(x_->rowidx[0], 1); TEST_ASSERT_EQ(x_->colidx[0], 1);
-        TEST_ASSERT_EQ(x_->rowidx[1], 1); TEST_ASSERT_EQ(x_->colidx[1], 3);
-        TEST_ASSERT_EQ(x_->rowidx[2], 2); TEST_ASSERT_EQ(x_->colidx[2], 1);
-        TEST_ASSERT_EQ(x_->rowidx[3], 3); TEST_ASSERT_EQ(x_->colidx[3], 3);
+        TEST_ASSERT_EQ(x_->rowidx[0], 0); TEST_ASSERT_EQ(x_->colidx[0], 0);
+        TEST_ASSERT_EQ(x_->rowidx[1], 0); TEST_ASSERT_EQ(x_->colidx[1], 2);
+        TEST_ASSERT_EQ(x_->rowidx[2], 1); TEST_ASSERT_EQ(x_->colidx[2], 0);
+        TEST_ASSERT_EQ(x_->rowidx[3], 2); TEST_ASSERT_EQ(x_->colidx[3], 2);
         TEST_ASSERT_EQ(x_->data.integer_single[0], 1);
         TEST_ASSERT_EQ(x_->data.integer_single[1], 3);
         TEST_ASSERT_EQ(x_->data.integer_single[2], 4);
@@ -433,10 +433,10 @@ int test_mtxmatrix_from_mtxfile(void)
         TEST_ASSERT_EQ(3, x_->num_rows);
         TEST_ASSERT_EQ(3, x_->num_columns);
         TEST_ASSERT_EQ(4, x_->num_nonzeros);
-        TEST_ASSERT_EQ(x_->rowidx[0], 1); TEST_ASSERT_EQ(x_->colidx[0], 1);
-        TEST_ASSERT_EQ(x_->rowidx[1], 1); TEST_ASSERT_EQ(x_->colidx[1], 3);
-        TEST_ASSERT_EQ(x_->rowidx[2], 2); TEST_ASSERT_EQ(x_->colidx[2], 1);
-        TEST_ASSERT_EQ(x_->rowidx[3], 3); TEST_ASSERT_EQ(x_->colidx[3], 3);
+        TEST_ASSERT_EQ(x_->rowidx[0], 0); TEST_ASSERT_EQ(x_->colidx[0], 0);
+        TEST_ASSERT_EQ(x_->rowidx[1], 0); TEST_ASSERT_EQ(x_->colidx[1], 2);
+        TEST_ASSERT_EQ(x_->rowidx[2], 1); TEST_ASSERT_EQ(x_->colidx[2], 0);
+        TEST_ASSERT_EQ(x_->rowidx[3], 2); TEST_ASSERT_EQ(x_->colidx[3], 2);
         TEST_ASSERT_EQ(x_->data.integer_double[0], 1);
         TEST_ASSERT_EQ(x_->data.integer_double[1], 3);
         TEST_ASSERT_EQ(x_->data.integer_double[2], 4);
@@ -464,10 +464,10 @@ int test_mtxmatrix_from_mtxfile(void)
         TEST_ASSERT_EQ(3, x_->num_rows);
         TEST_ASSERT_EQ(3, x_->num_columns);
         TEST_ASSERT_EQ(4, x_->num_nonzeros);
-        TEST_ASSERT_EQ(x_->rowidx[0], 1); TEST_ASSERT_EQ(x_->colidx[0], 1);
-        TEST_ASSERT_EQ(x_->rowidx[1], 1); TEST_ASSERT_EQ(x_->colidx[1], 3);
-        TEST_ASSERT_EQ(x_->rowidx[2], 2); TEST_ASSERT_EQ(x_->colidx[2], 1);
-        TEST_ASSERT_EQ(x_->rowidx[3], 3); TEST_ASSERT_EQ(x_->colidx[3], 3);
+        TEST_ASSERT_EQ(x_->rowidx[0], 0); TEST_ASSERT_EQ(x_->colidx[0], 0);
+        TEST_ASSERT_EQ(x_->rowidx[1], 0); TEST_ASSERT_EQ(x_->colidx[1], 2);
+        TEST_ASSERT_EQ(x_->rowidx[2], 1); TEST_ASSERT_EQ(x_->colidx[2], 0);
+        TEST_ASSERT_EQ(x_->rowidx[3], 2); TEST_ASSERT_EQ(x_->colidx[3], 2);
         mtxmatrix_free(&x);
         mtxfile_free(&mtxfile);
     }
@@ -675,8 +675,8 @@ int test_mtxmatrix_to_mtxfile(void)
         const struct mtxfile_matrix_coordinate_real_single * data =
             mtxfile.data.matrix_coordinate_real_single;
         for (int64_t k = 0; k < nnz; k++) {
-            TEST_ASSERT_EQ(rowidx[k], data[k].i);
-            TEST_ASSERT_EQ(colidx[k], data[k].j);
+            TEST_ASSERT_EQ(rowidx[k]+1, data[k].i);
+            TEST_ASSERT_EQ(colidx[k]+1, data[k].j);
             TEST_ASSERT_EQ(Adata[k], data[k].a);
         }
         mtxfile_free(&mtxfile);
@@ -708,8 +708,8 @@ int test_mtxmatrix_to_mtxfile(void)
         const struct mtxfile_matrix_coordinate_real_double * data =
             mtxfile.data.matrix_coordinate_real_double;
         for (int64_t k = 0; k < nnz; k++) {
-            TEST_ASSERT_EQ(rowidx[k], data[k].i);
-            TEST_ASSERT_EQ(colidx[k], data[k].j);
+            TEST_ASSERT_EQ(rowidx[k]+1, data[k].i);
+            TEST_ASSERT_EQ(colidx[k]+1, data[k].j);
             TEST_ASSERT_EQ(Adata[k], data[k].a);
         }
         mtxfile_free(&mtxfile);
@@ -741,8 +741,8 @@ int test_mtxmatrix_to_mtxfile(void)
         const struct mtxfile_matrix_coordinate_complex_single * data =
             mtxfile.data.matrix_coordinate_complex_single;
         for (int64_t k = 0; k < nnz; k++) {
-            TEST_ASSERT_EQ(rowidx[k], data[k].i);
-            TEST_ASSERT_EQ(colidx[k], data[k].j);
+            TEST_ASSERT_EQ(rowidx[k]+1, data[k].i);
+            TEST_ASSERT_EQ(colidx[k]+1, data[k].j);
             TEST_ASSERT_EQ(Adata[k][0], data[k].a[0]);
             TEST_ASSERT_EQ(Adata[k][1], data[k].a[1]);
         }
@@ -775,8 +775,8 @@ int test_mtxmatrix_to_mtxfile(void)
         const struct mtxfile_matrix_coordinate_complex_double * data =
             mtxfile.data.matrix_coordinate_complex_double;
         for (int64_t k = 0; k < nnz; k++) {
-            TEST_ASSERT_EQ(rowidx[k], data[k].i);
-            TEST_ASSERT_EQ(colidx[k], data[k].j);
+            TEST_ASSERT_EQ(rowidx[k]+1, data[k].i);
+            TEST_ASSERT_EQ(colidx[k]+1, data[k].j);
             TEST_ASSERT_EQ(Adata[k][0], data[k].a[0]);
             TEST_ASSERT_EQ(Adata[k][1], data[k].a[1]);
         }
@@ -809,8 +809,8 @@ int test_mtxmatrix_to_mtxfile(void)
         const struct mtxfile_matrix_coordinate_integer_single * data =
             mtxfile.data.matrix_coordinate_integer_single;
         for (int64_t k = 0; k < nnz; k++) {
-            TEST_ASSERT_EQ(rowidx[k], data[k].i);
-            TEST_ASSERT_EQ(colidx[k], data[k].j);
+            TEST_ASSERT_EQ(rowidx[k]+1, data[k].i);
+            TEST_ASSERT_EQ(colidx[k]+1, data[k].j);
             TEST_ASSERT_EQ(Adata[k], data[k].a);
         }
         mtxfile_free(&mtxfile);
@@ -842,8 +842,8 @@ int test_mtxmatrix_to_mtxfile(void)
         const struct mtxfile_matrix_coordinate_integer_double * data =
             mtxfile.data.matrix_coordinate_integer_double;
         for (int64_t k = 0; k < nnz; k++) {
-            TEST_ASSERT_EQ(rowidx[k], data[k].i);
-            TEST_ASSERT_EQ(colidx[k], data[k].j);
+            TEST_ASSERT_EQ(rowidx[k]+1, data[k].i);
+            TEST_ASSERT_EQ(colidx[k]+1, data[k].j);
             TEST_ASSERT_EQ(Adata[k], data[k].a);
         }
         mtxfile_free(&mtxfile);
@@ -873,8 +873,8 @@ int test_mtxmatrix_to_mtxfile(void)
         const struct mtxfile_matrix_coordinate_pattern * data =
             mtxfile.data.matrix_coordinate_pattern;
         for (int64_t k = 0; k < nnz; k++) {
-            TEST_ASSERT_EQ(rowidx[k], data[k].i);
-            TEST_ASSERT_EQ(colidx[k], data[k].j);
+            TEST_ASSERT_EQ(rowidx[k]+1, data[k].i);
+            TEST_ASSERT_EQ(colidx[k]+1, data[k].j);
         }
         mtxfile_free(&mtxfile);
         mtxmatrix_free(&A);

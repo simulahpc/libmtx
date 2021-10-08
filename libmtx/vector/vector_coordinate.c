@@ -376,14 +376,14 @@ int mtxvector_coordinate_from_mtxfile(
             const struct mtxfile_vector_coordinate_real_single * data =
                 mtxfile->data.vector_coordinate_real_single;
             for (int64_t k = 0; k < num_nonzeros; k++) {
-                vector->indices[k] = data[k].i;
+                vector->indices[k] = data[k].i-1;
                 vector->data.real_single[k] = data[k].a;
             }
         } else if (mtxfile->precision == mtx_double) {
             const struct mtxfile_vector_coordinate_real_double * data =
                 mtxfile->data.vector_coordinate_real_double;
             for (int64_t k = 0; k < num_nonzeros; k++) {
-                vector->indices[k] = data[k].i;
+                vector->indices[k] = data[k].i-1;
                 vector->data.real_double[k] = data[k].a;
             }
         } else {
@@ -398,7 +398,7 @@ int mtxvector_coordinate_from_mtxfile(
             const struct mtxfile_vector_coordinate_complex_single * data =
                 mtxfile->data.vector_coordinate_complex_single;
             for (int64_t k = 0; k < num_nonzeros; k++) {
-                vector->indices[k] = data[k].i;
+                vector->indices[k] = data[k].i-1;
                 vector->data.complex_single[k][0] = data[k].a[0];
                 vector->data.complex_single[k][1] = data[k].a[1];
             }
@@ -406,7 +406,7 @@ int mtxvector_coordinate_from_mtxfile(
             const struct mtxfile_vector_coordinate_complex_double * data =
                 mtxfile->data.vector_coordinate_complex_double;
             for (int64_t k = 0; k < num_nonzeros; k++) {
-                vector->indices[k] = data[k].i;
+                vector->indices[k] = data[k].i-1;
                 vector->data.complex_double[k][0] = data[k].a[0];
                 vector->data.complex_double[k][1] = data[k].a[1];
             }
@@ -422,14 +422,14 @@ int mtxvector_coordinate_from_mtxfile(
             const struct mtxfile_vector_coordinate_integer_single * data =
                 mtxfile->data.vector_coordinate_integer_single;
             for (int64_t k = 0; k < num_nonzeros; k++) {
-                vector->indices[k] = data[k].i;
+                vector->indices[k] = data[k].i-1;
                 vector->data.integer_single[k] = data[k].a;
             }
         } else if (mtxfile->precision == mtx_double) {
             const struct mtxfile_vector_coordinate_integer_double * data =
                 mtxfile->data.vector_coordinate_integer_double;
             for (int64_t k = 0; k < num_nonzeros; k++) {
-                vector->indices[k] = data[k].i;
+                vector->indices[k] = data[k].i-1;
                 vector->data.integer_double[k] = data[k].a;
             }
         } else {
@@ -443,7 +443,7 @@ int mtxvector_coordinate_from_mtxfile(
         const struct mtxfile_vector_coordinate_pattern * data =
             mtxfile->data.vector_coordinate_pattern;
         for (int64_t k = 0; k < num_nonzeros; k++)
-            vector->indices[k] = data[k].i;
+            vector->indices[k] = data[k].i-1;
     } else {
         return MTX_ERR_INVALID_MTX_FIELD;
     }
@@ -469,14 +469,14 @@ int mtxvector_coordinate_to_mtxfile(
             struct mtxfile_vector_coordinate_real_single * data =
                 mtxfile->data.vector_coordinate_real_single;
             for (int64_t k = 0; k < vector->num_nonzeros; k++) {
-                data[k].i = vector->indices[k];
+                data[k].i = vector->indices[k]+1;
                 data[k].a = vector->data.real_single[k];
             }
         } else if (vector->precision == mtx_double) {
             struct mtxfile_vector_coordinate_real_double * data =
                 mtxfile->data.vector_coordinate_real_double;
             for (int64_t k = 0; k < vector->num_nonzeros; k++) {
-                data[k].i = vector->indices[k];
+                data[k].i = vector->indices[k]+1;
                 data[k].a = vector->data.real_double[k];
             }
         } else {
@@ -492,7 +492,7 @@ int mtxvector_coordinate_to_mtxfile(
             struct mtxfile_vector_coordinate_complex_single * data =
                 mtxfile->data.vector_coordinate_complex_single;
             for (int64_t k = 0; k < vector->num_nonzeros; k++) {
-                data[k].i = vector->indices[k];
+                data[k].i = vector->indices[k]+1;
                 data[k].a[0] = vector->data.complex_single[k][0];
                 data[k].a[1] = vector->data.complex_single[k][1];
             }
@@ -500,7 +500,7 @@ int mtxvector_coordinate_to_mtxfile(
             struct mtxfile_vector_coordinate_complex_double * data =
                 mtxfile->data.vector_coordinate_complex_double;
             for (int64_t k = 0; k < vector->num_nonzeros; k++) {
-                data[k].i = vector->indices[k];
+                data[k].i = vector->indices[k]+1;
                 data[k].a[0] = vector->data.complex_double[k][0];
                 data[k].a[1] = vector->data.complex_double[k][1];
             }
@@ -517,14 +517,14 @@ int mtxvector_coordinate_to_mtxfile(
             struct mtxfile_vector_coordinate_integer_single * data =
                 mtxfile->data.vector_coordinate_integer_single;
             for (int64_t k = 0; k < vector->num_nonzeros; k++) {
-                data[k].i = vector->indices[k];
+                data[k].i = vector->indices[k]+1;
                 data[k].a = vector->data.integer_single[k];
             }
         } else if (vector->precision == mtx_double) {
             struct mtxfile_vector_coordinate_integer_double * data =
                 mtxfile->data.vector_coordinate_integer_double;
             for (int64_t k = 0; k < vector->num_nonzeros; k++) {
-                data[k].i = vector->indices[k];
+                data[k].i = vector->indices[k]+1;
                 data[k].a = vector->data.integer_double[k];
             }
         } else {
@@ -539,7 +539,7 @@ int mtxvector_coordinate_to_mtxfile(
         struct mtxfile_vector_coordinate_pattern * data =
             mtxfile->data.vector_coordinate_pattern;
         for (int64_t k = 0; k < vector->num_nonzeros; k++)
-            data[k].i = vector->indices[k];
+            data[k].i = vector->indices[k]+1;
     } else {
         return MTX_ERR_INVALID_FIELD;
     }
