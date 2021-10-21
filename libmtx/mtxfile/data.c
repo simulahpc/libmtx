@@ -44,6 +44,7 @@
 #include <errno.h>
 #include <unistd.h>
 
+#include <inttypes.h>
 #include <locale.h>
 #include <stdarg.h>
 #include <stdbool.h>
@@ -2793,7 +2794,7 @@ int mtxfile_data_fwrite(
                 }
             } else if (precision == mtx_double) {
                 for (int64_t k = 0; k < size; k++) {
-                    ret = fprintf(f, fmt ? fmt : "%d", data->array_integer_double[k]);
+                    ret = fprintf(f, fmt ? fmt : "%"PRId64, data->array_integer_double[k]);
                     if (ret < 0) { err = MTX_ERR_ERRNO; goto fwrite_exit; }
                     if (bytes_written) *bytes_written += ret;
                     ret = fputc('\n', f);
@@ -2928,7 +2929,7 @@ int mtxfile_data_fwrite(
                         if (ret < 0) { err = MTX_ERR_ERRNO; goto fwrite_exit; }
                         if (bytes_written) *bytes_written += ret;
                         ret = fprintf(
-                            f, fmt ? fmt : "%d",
+                            f, fmt ? fmt : "%"PRId64,
                             data->matrix_coordinate_integer_double[k].a);
                         if (ret < 0) { err = MTX_ERR_ERRNO; goto fwrite_exit; }
                         if (bytes_written) *bytes_written += ret;
@@ -3060,7 +3061,7 @@ int mtxfile_data_fwrite(
                         if (ret < 0) { err = MTX_ERR_ERRNO; goto fwrite_exit; }
                         if (bytes_written) *bytes_written += ret;
                         ret = fprintf(
-                            f, fmt ? fmt : "%d",
+                            f, fmt ? fmt : "%"PRId64,
                             data->vector_coordinate_integer_double[k].a);
                         if (ret < 0) { err = MTX_ERR_ERRNO; goto fwrite_exit; }
                         if (bytes_written) *bytes_written += ret;
