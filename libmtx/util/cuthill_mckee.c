@@ -170,7 +170,7 @@ static int rooted_level_structure(
             /* 3. Loop over adjacent vertices. */
             int64_t rowstart = (square || vertex < num_rows) ? rowptr[vertex] : 0;
             int64_t rowend = square || vertex < num_rows ? rowptr[vertex+1] : 0;
-            for (int k = rowstart; k < rowend; k++) {
+            for (int64_t k = rowstart; k < rowend; k++) {
                 /* Subtract one to shift from 1-based column indices
                  * to 0-based numbering of vertices. */
                 int adjacent_vertex = colidx[k]-1;
@@ -210,7 +210,7 @@ static int rooted_level_structure(
                 : (vertex >= num_rows ? colptr[vertex-num_rows] : 0);
             int64_t colend = square ? colptr[vertex+1]
                 : (vertex >= num_rows ? colptr[vertex+1-num_rows] : 0);
-            for (int k = colstart; k < colend; k++) {
+            for (int64_t k = colstart; k < colend; k++) {
                 /* Subtract one to shift from 1-based column indices
                  * to 0-based numbering of vertices. */
                 int adjacent_vertex = rowidx[k]-1;
