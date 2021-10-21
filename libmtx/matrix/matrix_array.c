@@ -502,7 +502,7 @@ int mtxmatrix_array_sgemv(
             const float * xdata = x_->data.real_single;
             float * ydata = y_->data.real_single;
 #ifdef LIBMTX_HAVE_BLAS
-            CBLAS_TRANSPOSE transA = (trans == mtx_notrans) ? CblasNoTrans : CblasTrans;
+            enum CBLAS_TRANSPOSE transA = (trans == mtx_notrans) ? CblasNoTrans : CblasTrans;
             cblas_sgemv(
                 CblasRowMajor, transA, A->num_rows, A->num_columns,
                 alpha, Adata, A->num_columns, xdata, 1, beta, ydata, 1);
@@ -530,7 +530,7 @@ int mtxmatrix_array_sgemv(
             const double * xdata = x_->data.real_double;
             double * ydata = y_->data.real_double;
 #ifdef LIBMTX_HAVE_BLAS
-            CBLAS_TRANSPOSE transA = (trans == mtx_notrans) ? CblasNoTrans : CblasTrans;
+            enum CBLAS_TRANSPOSE transA = (trans == mtx_notrans) ? CblasNoTrans : CblasTrans;
             cblas_dgemv(
                 CblasRowMajor, transA, A->num_rows, A->num_columns,
                 alpha, Adata, A->num_columns, xdata, 1, beta, ydata, 1);
@@ -562,7 +562,7 @@ int mtxmatrix_array_sgemv(
             const float (* xdata)[2] = x_->data.complex_single;
             float (* ydata)[2] = y_->data.complex_single;
 #ifdef LIBMTX_HAVE_BLAS
-            CBLAS_TRANSPOSE transA = (trans == mtx_notrans) ? CblasNoTrans
+            enum CBLAS_TRANSPOSE transA = (trans == mtx_notrans) ? CblasNoTrans
                 : ((trans == mtx_trans) ? CblasTrans : CblasConjTrans);
             const float calpha[2] = {alpha, 0};
             const float cbeta[2] = {beta, 0};
@@ -616,7 +616,7 @@ int mtxmatrix_array_sgemv(
             const double (* xdata)[2] = x_->data.complex_double;
             double (* ydata)[2] = y_->data.complex_double;
 #ifdef LIBMTX_HAVE_BLAS
-            CBLAS_TRANSPOSE transA = (trans == mtx_notrans) ? CblasNoTrans
+            enum CBLAS_TRANSPOSE transA = (trans == mtx_notrans) ? CblasNoTrans
                 : ((trans == mtx_trans) ? CblasTrans : CblasConjTrans);
             const double zalpha[2] = {alpha, 0};
             const double zbeta[2] = {beta, 0};
@@ -764,7 +764,7 @@ int mtxmatrix_array_dgemv(
             const float * xdata = x_->data.real_single;
             float * ydata = y_->data.real_single;
 #ifdef LIBMTX_HAVE_BLAS
-            CBLAS_TRANSPOSE transA = (trans == mtx_notrans) ? CblasNoTrans : CblasTrans;
+            enum CBLAS_TRANSPOSE transA = (trans == mtx_notrans) ? CblasNoTrans : CblasTrans;
             cblas_sgemv(
                 CblasRowMajor, transA, A->num_rows, A->num_columns,
                 alpha, Adata, A->num_columns, xdata, 1, beta, ydata, 1);
@@ -792,7 +792,7 @@ int mtxmatrix_array_dgemv(
             const double * xdata = x_->data.real_double;
             double * ydata = y_->data.real_double;
 #ifdef LIBMTX_HAVE_BLAS
-            CBLAS_TRANSPOSE transA = (trans == mtx_notrans) ? CblasNoTrans : CblasTrans;
+            enum CBLAS_TRANSPOSE transA = (trans == mtx_notrans) ? CblasNoTrans : CblasTrans;
             cblas_dgemv(
                 CblasRowMajor, transA, A->num_rows, A->num_columns,
                 alpha, Adata, A->num_columns, xdata, 1, beta, ydata, 1);
@@ -824,7 +824,7 @@ int mtxmatrix_array_dgemv(
             const float (* xdata)[2] = x_->data.complex_single;
             float (* ydata)[2] = y_->data.complex_single;
 #ifdef LIBMTX_HAVE_BLAS
-            CBLAS_TRANSPOSE transA = (trans == mtx_notrans) ? CblasNoTrans
+            enum CBLAS_TRANSPOSE transA = (trans == mtx_notrans) ? CblasNoTrans
                 : ((trans == mtx_trans) ? CblasTrans : CblasConjTrans);
             const float calpha[2] = {alpha, 0};
             const float cbeta[2] = {beta, 0};
@@ -878,7 +878,7 @@ int mtxmatrix_array_dgemv(
             const double (* xdata)[2] = x_->data.complex_double;
             double (* ydata)[2] = y_->data.complex_double;
 #ifdef LIBMTX_HAVE_BLAS
-            CBLAS_TRANSPOSE transA = (trans == mtx_notrans) ? CblasNoTrans
+            enum CBLAS_TRANSPOSE transA = (trans == mtx_notrans) ? CblasNoTrans
                 : ((trans == mtx_trans) ? CblasTrans : CblasConjTrans);
             const double zalpha[2] = {alpha, 0};
             const double zbeta[2] = {beta, 0};
@@ -1033,7 +1033,7 @@ int mtxmatrix_array_cgemv(
         const float (* xdata)[2] = x_->data.complex_single;
         float (* ydata)[2] = y_->data.complex_single;
 #ifdef LIBMTX_HAVE_BLAS
-        CBLAS_TRANSPOSE transA = (trans == mtx_notrans) ? CblasNoTrans
+        enum CBLAS_TRANSPOSE transA = (trans == mtx_notrans) ? CblasNoTrans
             : ((trans == mtx_trans) ? CblasTrans : CblasConjTrans);
         cblas_cgemv(
             CblasRowMajor, transA, A->num_rows, A->num_columns,
@@ -1094,7 +1094,7 @@ int mtxmatrix_array_cgemv(
         const double (* xdata)[2] = x_->data.complex_double;
         double (* ydata)[2] = y_->data.complex_double;
 #ifdef LIBMTX_HAVE_BLAS
-        CBLAS_TRANSPOSE transA = (trans == mtx_notrans) ? CblasNoTrans
+        enum CBLAS_TRANSPOSE transA = (trans == mtx_notrans) ? CblasNoTrans
             : ((trans == mtx_trans) ? CblasTrans : CblasConjTrans);
         const double zalpha[2] = {alpha[0], alpha[1]};
         const double zbeta[2] = {beta[0], beta[1]};
@@ -1209,7 +1209,7 @@ int mtxmatrix_array_zgemv(
         const float (* xdata)[2] = x_->data.complex_single;
         float (* ydata)[2] = y_->data.complex_single;
 #ifdef LIBMTX_HAVE_BLAS
-        CBLAS_TRANSPOSE transA = (trans == mtx_notrans) ? CblasNoTrans
+        enum CBLAS_TRANSPOSE transA = (trans == mtx_notrans) ? CblasNoTrans
             : ((trans == mtx_trans) ? CblasTrans : CblasConjTrans);
         const float calpha[2] = {alpha[0], alpha[1]};
         const float cbeta[2] = {beta[0], beta[1]};
@@ -1272,7 +1272,7 @@ int mtxmatrix_array_zgemv(
         const double (* xdata)[2] = x_->data.complex_double;
         double (* ydata)[2] = y_->data.complex_double;
 #ifdef LIBMTX_HAVE_BLAS
-        CBLAS_TRANSPOSE transA = (trans == mtx_notrans) ? CblasNoTrans
+        enum CBLAS_TRANSPOSE transA = (trans == mtx_notrans) ? CblasNoTrans
             : ((trans == mtx_trans) ? CblasTrans : CblasConjTrans);
         cblas_zgemv(
             CblasRowMajor, transA, A->num_rows, A->num_columns,
