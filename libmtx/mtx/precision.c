@@ -17,12 +17,16 @@
  * <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-08-16
+ * Last modified: 2021-10-08
  *
  * Precision of data types used to store matrices and vectors.
  */
 
+#include <libmtx/error.h>
 #include <libmtx/mtx/precision.h>
+
+#include <stddef.h>
+#include <string.h>
 
 /**
  * `mtx_precision_str()' is a string representing the given precision
@@ -34,6 +38,56 @@ const char * mtx_precision_str(
     switch (precision) {
     case mtx_single: return "single";
     case mtx_double: return "double";
-    default: return "unknown";
+    default: return mtx_strerror(MTX_ERR_INVALID_PRECISION);
     }
+}
+
+/**
+ * `mtx_precision_parse()' parses a string to obtain one of the
+ * precision types of `enum mtx_precision'.
+ *
+ * `valid_delimiters' is either `NULL', in which case it is ignored,
+ * or it is a string of characters considered to be valid delimiters
+ * for the parsed string.  That is, if there are any remaining,
+ * non-NULL characters after parsing, then then the next character is
+ * searched for in `valid_delimiters'.  If the character is found,
+ * then the parsing succeeds and the final delimiter character is
+ * consumed by the parser. Otherwise, the parsing fails with an error.
+ *
+ * If `endptr' is not `NULL', then the address stored in `endptr'
+ * points to the first character beyond the characters that were
+ * consumed during parsing.
+ *
+ * On success, `mtx_precision_parse()' returns `MTX_SUCCESS' and
+ * `precision' is set according to the parsed string and `bytes_read'
+ * is set to the number of bytes that were consumed by the parser.
+ * Otherwise, an error code is returned.
+ */
+int mtx_precision_parse(
+    enum mtx_precision * precision,
+    int64_t * bytes_read,
+    const char ** endptr,
+    const char * s,
+    const char * valid_delimiters)
+{
+    const char * t = s;
+    if (strncmp("single", t, strlen("single")) == 0) {
+        t += strlen("single");
+        *precision = mtx_single;
+    } else if (strncmp("double", t, strlen("double")) == 0) {
+        t += strlen("double");
+        *precision = mtx_double;
+    } else {
+        return MTX_ERR_INVALID_PRECISION;
+    }
+    if (valid_delimiters && *t != '\0') {
+        if (!strchr(valid_delimiters, *t))
+            return MTX_ERR_INVALID_PRECISION;
+        t++;
+    }
+    if (bytes_read)
+        *bytes_read += t-s;
+    if (endptr)
+        *endptr = t;
+    return MTX_SUCCESS;
 }

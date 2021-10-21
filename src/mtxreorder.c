@@ -30,7 +30,6 @@
 
 #include <errno.h>
 
-#include <assert.h>
 #include <inttypes.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -186,11 +185,8 @@ static int parse_program_options(
                 return EINVAL;
             }
             char * s = (*argv)[1];
-            if (strcmp(s, "single") == 0) {
-                args->precision = mtx_single;
-            } else if (strcmp(s, "double") == 0) {
-                args->precision = mtx_double;
-            } else {
+            err = mtx_precision_parse(&args->precision, NULL, NULL, s, "");
+            if (err) {
                 program_options_free(args);
                 return EINVAL;
             }
@@ -198,11 +194,8 @@ static int parse_program_options(
             continue;
         } else if (strstr((*argv)[0], "--precision=") == (*argv)[0]) {
             char * s = (*argv)[0] + strlen("--precision=");
-            if (strcmp(s, "single") == 0) {
-                args->precision = mtx_single;
-            } else if (strcmp(s, "double") == 0) {
-                args->precision = mtx_double;
-            } else {
+            err = mtx_precision_parse(&args->precision, NULL, NULL, s, "");
+            if (err) {
                 program_options_free(args);
                 return EINVAL;
             }
