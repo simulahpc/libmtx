@@ -306,6 +306,62 @@ int mtxvector_init_coordinate_pattern(
     const int * indices);
 
 /*
+ * Modifying values
+ */
+
+/**
+ * `mtxvector_set_constant_real_single()' sets every (nonzero) value
+ * of a vector equal to a constant, single precision floating point
+ * number.
+ */
+int mtxvector_set_constant_real_single(
+    struct mtxvector * mtxvector,
+    float a);
+
+/**
+ * `mtxvector_set_constant_real_double()' sets every (nonzero) value
+ * of a vector equal to a constant, double precision floating point
+ * number.
+ */
+int mtxvector_set_constant_real_double(
+    struct mtxvector * mtxvector,
+    double a);
+
+/**
+ * `mtxvector_set_constant_complex_single()' sets every (nonzero)
+ * value of a vector equal to a constant, single precision floating
+ * point complex number.
+ */
+int mtxvector_set_constant_complex_single(
+    struct mtxvector * mtxvector,
+    float a[2]);
+
+/**
+ * `mtxvector_set_constant_complex_double()' sets every (nonzero)
+ * value of a vector equal to a constant, double precision floating
+ * point complex number.
+ */
+int mtxvector_set_constant_complex_double(
+    struct mtxvector * mtxvector,
+    double a[2]);
+
+/**
+ * `mtxvector_set_constant_integer_single()' sets every (nonzero)
+ * value of a vector equal to a constant integer.
+ */
+int mtxvector_set_constant_integer_single(
+    struct mtxvector * mtxvector,
+    int32_t a);
+
+/**
+ * `mtxvector_set_constant_integer_double()' sets every (nonzero)
+ * value of a vector equal to a constant integer.
+ */
+int mtxvector_set_constant_integer_double(
+    struct mtxvector * mtxvector,
+    int64_t a);
+
+/*
  * Convert to and from Matrix Market format
  */
 
@@ -335,7 +391,7 @@ int mtxvector_to_mtxfile(
  * file may optionally be compressed by gzip.
  *
  * The `precision' argument specifies which precision to use for
- * storing matrix or vector values.
+ * storing vector values.
  *
  * The `type' argument specifies which format to use for representing
  * the vector.  If `type' is `mtxvector_auto', then the underlying
@@ -363,7 +419,7 @@ int mtxvector_read(
  * format.
  *
  * `precision' is used to determine the precision to use for storing
- * the values of matrix or vector entries.
+ * the values of vector entries.
  *
  * The `type' argument specifies which format to use for representing
  * the vector.  If `type' is `mtxvector_auto', then the underlying
@@ -390,7 +446,7 @@ int mtxvector_fread(
  * `mtxvector_gzread()' reads a vector from a gzip-compressed stream.
  *
  * `precision' is used to determine the precision to use for storing
- * the values of matrix or vector entries.
+ * the values of vector entries.
  *
  * The `type' argument specifies which format to use for representing
  * the vector.  If `type' is `mtxvector_auto', then the underlying

@@ -29,6 +29,7 @@
 #include <libmtx/mtx/precision.h>
 #include <libmtx/util/field.h>
 #include <libmtx/util/transpose.h>
+#include <libmtx/vector/vector.h>
 
 #include <stdarg.h>
 #include <stdbool.h>
@@ -236,6 +237,30 @@ int mtxmatrix_coordinate_init_pattern(
     const int * colidx);
 
 /*
+ * Row and column vectors
+ */
+
+/**
+ * `mtxmatrix_coordinate_alloc_row_vector()' allocates a row vector
+ * for a given matrix, where a row vector is a vector whose length
+ * equal to a single row of the matrix.
+ */
+int mtxmatrix_coordinate_alloc_row_vector(
+    const struct mtxmatrix_coordinate * matrix,
+    struct mtxvector * vector,
+    enum mtxvector_type vector_type);
+
+/**
+ * `mtxmatrix_coordinate_alloc_column_vector()' allocates a column
+ * vector for a given matrix, where a column vector is a vector whose
+ * length equal to a single column of the matrix.
+ */
+int mtxmatrix_coordinate_alloc_column_vector(
+    const struct mtxmatrix_coordinate * matrix,
+    struct mtxvector * vector,
+    enum mtxvector_type vector_type);
+
+/*
  * Convert to and from Matrix Market format
  */
 
@@ -269,13 +294,18 @@ int mtxmatrix_coordinate_to_mtxfile(
  * The scalars ‘alpha’ and ‘beta’ are given as single precision
  * floating point numbers.
  *
- * The vectors ‘x’ and ‘y’ must be of ‘array’ type, and they must have
- * the same field and precision as the matrix ‘A’. Moreover, if
- * ‘trans’ is ‘mtx_notrans’, then the size of ‘x’ must equal the
- * number of columns of ‘A’ and the size of ‘y’ must equal the number
- * of rows of ‘A’. if ‘trans’ is ‘mtx_trans’ or ‘mtx_conjtrans’, then
- * the size of ‘x’ must equal the number of rows of ‘A’ and the size
- * of ‘y’ must equal the number of columns of ‘A’.
+ * The vectors ‘x’ and ‘y’ must be of ‘array’ type, and they must both
+ * have the same field and precision.  If the field of the matrix ‘A’
+ * is ‘real’, ‘integer’ or ‘complex’, then the vectors must have the
+ * same field.  Otherwise, if the matrix field is ‘pattern’, then ‘x’
+ * and ‘y’ are allowed to be ‘real’, ‘integer’ or ‘complex’, but they
+ * must both have the same field.
+ *
+ * Moreover, if ‘trans’ is ‘mtx_notrans’, then the size of ‘x’ must
+ * equal the number of columns of ‘A’ and the size of ‘y’ must equal
+ * the number of rows of ‘A’. if ‘trans’ is ‘mtx_trans’ or
+ * ‘mtx_conjtrans’, then the size of ‘x’ must equal the number of rows
+ * of ‘A’ and the size of ‘y’ must equal the number of columns of ‘A’.
  */
 int mtxmatrix_coordinate_sgemv(
     enum mtx_trans_type trans,
@@ -294,6 +324,19 @@ int mtxmatrix_coordinate_sgemv(
  *
  * The scalars ‘alpha’ and ‘beta’ are given as double precision
  * floating point numbers.
+ *
+ * The vectors ‘x’ and ‘y’ must be of ‘array’ type, and they must both
+ * have the same field and precision.  If the field of the matrix ‘A’
+ * is ‘real’, ‘integer’ or ‘complex’, then the vectors must have the
+ * same field.  Otherwise, if the matrix field is ‘pattern’, then ‘x’
+ * and ‘y’ are allowed to be ‘real’, ‘integer’ or ‘complex’, but they
+ * must both have the same field.
+ *
+ * Moreover, if ‘trans’ is ‘mtx_notrans’, then the size of ‘x’ must
+ * equal the number of columns of ‘A’ and the size of ‘y’ must equal
+ * the number of rows of ‘A’. if ‘trans’ is ‘mtx_trans’ or
+ * ‘mtx_conjtrans’, then the size of ‘x’ must equal the number of rows
+ * of ‘A’ and the size of ‘y’ must equal the number of columns of ‘A’.
  */
 int mtxmatrix_coordinate_dgemv(
     enum mtx_trans_type trans,
@@ -313,6 +356,15 @@ int mtxmatrix_coordinate_dgemv(
  *
  * The scalars ‘alpha’ and ‘beta’ are given as single precision
  * floating point numbers.
+ *
+ * The vectors ‘x’ and ‘y’ must be of ‘array’ type, and they must both
+ * have the same field and precision as the matrix ‘A’.
+ *
+ * Moreover, if ‘trans’ is ‘mtx_notrans’, then the size of ‘x’ must
+ * equal the number of columns of ‘A’ and the size of ‘y’ must equal
+ * the number of rows of ‘A’. if ‘trans’ is ‘mtx_trans’ or
+ * ‘mtx_conjtrans’, then the size of ‘x’ must equal the number of rows
+ * of ‘A’ and the size of ‘y’ must equal the number of columns of ‘A’.
  */
 int mtxmatrix_coordinate_cgemv(
     enum mtx_trans_type trans,
@@ -332,6 +384,15 @@ int mtxmatrix_coordinate_cgemv(
  *
  * The scalars ‘alpha’ and ‘beta’ are given as double precision
  * floating point numbers.
+ *
+ * The vectors ‘x’ and ‘y’ must be of ‘array’ type, and they must both
+ * have the same field and precision as the matrix ‘A’.
+ *
+ * Moreover, if ‘trans’ is ‘mtx_notrans’, then the size of ‘x’ must
+ * equal the number of columns of ‘A’ and the size of ‘y’ must equal
+ * the number of rows of ‘A’. if ‘trans’ is ‘mtx_trans’ or
+ * ‘mtx_conjtrans’, then the size of ‘x’ must equal the number of rows
+ * of ‘A’ and the size of ‘y’ must equal the number of columns of ‘A’.
  */
 int mtxmatrix_coordinate_zgemv(
     enum mtx_trans_type trans,

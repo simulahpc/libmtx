@@ -34,6 +34,7 @@ const char * mtx_field_str_(
     enum mtx_field_ field)
 {
     switch (field) {
+    case mtx_field_auto: return "auto";
     case mtx_field_real: return "real";
     case mtx_field_complex: return "complex";
     case mtx_field_integer: return "integer";
@@ -71,7 +72,10 @@ int mtx_field_parse(
     const char * valid_delimiters)
 {
     const char * t = s;
-    if (strncmp("real", t, strlen("real")) == 0) {
+    if (strncmp("auto", t, strlen("auto")) == 0) {
+        t += strlen("auto");
+        *field = mtx_field_auto;
+    } else if (strncmp("real", t, strlen("real")) == 0) {
         t += strlen("real");
         *field = mtx_field_real;
     } else if (strncmp("complex", t, strlen("complex")) == 0) {
@@ -84,11 +88,11 @@ int mtx_field_parse(
         t += strlen("pattern");
         *field = mtx_field_pattern;
     } else {
-        return MTX_ERR_INVALID_MTX_FIELD;
+        return MTX_ERR_INVALID_FIELD;
     }
     if (valid_delimiters && *t != '\0') {
         if (!strchr(valid_delimiters, *t))
-            return MTX_ERR_INVALID_MTX_FIELD;
+            return MTX_ERR_INVALID_FIELD;
         t++;
     }
     if (bytes_read)

@@ -345,6 +345,270 @@ int mtxvector_coordinate_init_pattern(
 }
 
 /*
+ * Modifying values
+ */
+
+/**
+ * `mtxvector_coordinate_set_constant_real_single()' sets every
+ * nonzero value of a vector equal to a constant, single precision
+ * floating point number.
+ */
+int mtxvector_coordinate_set_constant_real_single(
+    struct mtxvector_coordinate * vector,
+    float a)
+{
+    if (vector->field == mtx_field_real) {
+        if (vector->precision == mtx_single) {
+            for (int k = 0; k < vector->num_nonzeros; k++)
+                vector->data.real_single[k] = a;
+        } else if (vector->precision == mtx_double) {
+            for (int k = 0; k < vector->num_nonzeros; k++)
+                vector->data.real_double[k] = a;
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else if (vector->field == mtx_field_complex) {
+        if (vector->precision == mtx_single) {
+            for (int k = 0; k < vector->num_nonzeros; k++) {
+                vector->data.complex_single[k][0] = a;
+                vector->data.complex_single[k][1] = 0;
+            }
+        } else if (vector->precision == mtx_double) {
+            for (int k = 0; k < vector->num_nonzeros; k++) {
+                vector->data.complex_double[k][0] = a;
+                vector->data.complex_double[k][1] = 0;
+            }
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else if (vector->field == mtx_field_integer) {
+        if (vector->precision == mtx_single) {
+            for (int k = 0; k < vector->num_nonzeros; k++)
+                vector->data.integer_single[k] = a;
+        } else if (vector->precision == mtx_double) {
+            for (int k = 0; k < vector->num_nonzeros; k++)
+                vector->data.integer_double[k] = a;
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else {
+        return MTX_ERR_INVALID_FIELD;
+    }
+    return MTX_SUCCESS;
+}
+
+/**
+ * `mtxvector_coordinate_set_constant_real_double()' sets every
+ * nonzero value of a vector equal to a constant, double precision
+ * floating point number.
+ */
+int mtxvector_coordinate_set_constant_real_double(
+    struct mtxvector_coordinate * vector,
+    double a)
+{
+    if (vector->field == mtx_field_real) {
+        if (vector->precision == mtx_single) {
+            for (int k = 0; k < vector->num_nonzeros; k++)
+                vector->data.real_single[k] = a;
+        } else if (vector->precision == mtx_double) {
+            for (int k = 0; k < vector->num_nonzeros; k++)
+                vector->data.real_double[k] = a;
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else if (vector->field == mtx_field_complex) {
+        if (vector->precision == mtx_single) {
+            for (int k = 0; k < vector->num_nonzeros; k++) {
+                vector->data.complex_single[k][0] = a;
+                vector->data.complex_single[k][1] = 0;
+            }
+        } else if (vector->precision == mtx_double) {
+            for (int k = 0; k < vector->num_nonzeros; k++) {
+                vector->data.complex_double[k][0] = a;
+                vector->data.complex_double[k][1] = 0;
+            }
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else if (vector->field == mtx_field_integer) {
+        if (vector->precision == mtx_single) {
+            for (int k = 0; k < vector->num_nonzeros; k++)
+                vector->data.integer_single[k] = a;
+        } else if (vector->precision == mtx_double) {
+            for (int k = 0; k < vector->num_nonzeros; k++)
+                vector->data.integer_double[k] = a;
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else {
+        return MTX_ERR_INVALID_FIELD;
+    }
+    return MTX_SUCCESS;
+}
+
+/**
+ * `mtxvector_coordinate_set_constant_complex_single()' sets every
+ * nonzero value of a vector equal to a constant, single precision
+ * floating point complex number.
+ */
+int mtxvector_coordinate_set_constant_complex_single(
+    struct mtxvector_coordinate * vector,
+    float a[2])
+{
+    if (vector->field == mtx_field_real ||
+        vector->field == mtx_field_integer)
+    {
+        return MTX_ERR_INCOMPATIBLE_FIELD;
+    } else if (vector->field == mtx_field_complex) {
+        if (vector->precision == mtx_single) {
+            for (int k = 0; k < vector->num_nonzeros; k++) {
+                vector->data.complex_single[k][0] = a[0];
+                vector->data.complex_single[k][1] = a[1];
+            }
+        } else if (vector->precision == mtx_double) {
+            for (int k = 0; k < vector->num_nonzeros; k++) {
+                vector->data.complex_double[k][0] = a[0];
+                vector->data.complex_double[k][1] = a[1];
+            }
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else {
+        return MTX_ERR_INVALID_FIELD;
+    }
+    return MTX_SUCCESS;
+}
+
+/**
+ * `mtxvector_coordinate_set_constant_complex_double()' sets every
+ * nonzero value of a vector equal to a constant, double precision
+ * floating point complex number.
+ */
+int mtxvector_coordinate_set_constant_complex_double(
+    struct mtxvector_coordinate * vector,
+    double a[2])
+{
+    if (vector->field == mtx_field_real ||
+        vector->field == mtx_field_integer)
+    {
+        return MTX_ERR_INCOMPATIBLE_FIELD;
+    } else if (vector->field == mtx_field_complex) {
+        if (vector->precision == mtx_single) {
+            for (int k = 0; k < vector->num_nonzeros; k++) {
+                vector->data.complex_single[k][0] = a[0];
+                vector->data.complex_single[k][1] = a[1];
+            }
+        } else if (vector->precision == mtx_double) {
+            for (int k = 0; k < vector->num_nonzeros; k++) {
+                vector->data.complex_double[k][0] = a[0];
+                vector->data.complex_double[k][1] = a[1];
+            }
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else {
+        return MTX_ERR_INVALID_FIELD;
+    }
+    return MTX_SUCCESS;
+}
+
+/**
+ * `mtxvector_coordinate_set_constant_integer_single()' sets every
+ * nonzero value of a vector equal to a constant integer.
+ */
+int mtxvector_coordinate_set_constant_integer_single(
+    struct mtxvector_coordinate * vector,
+    int32_t a)
+{
+    if (vector->field == mtx_field_real) {
+        if (vector->precision == mtx_single) {
+            for (int k = 0; k < vector->num_nonzeros; k++)
+                vector->data.real_single[k] = a;
+        } else if (vector->precision == mtx_double) {
+            for (int k = 0; k < vector->num_nonzeros; k++)
+                vector->data.real_double[k] = a;
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else if (vector->field == mtx_field_complex) {
+        if (vector->precision == mtx_single) {
+            for (int k = 0; k < vector->num_nonzeros; k++) {
+                vector->data.complex_single[k][0] = a;
+                vector->data.complex_single[k][1] = 0;
+            }
+        } else if (vector->precision == mtx_double) {
+            for (int k = 0; k < vector->num_nonzeros; k++) {
+                vector->data.complex_double[k][0] = a;
+                vector->data.complex_double[k][1] = 0;
+            }
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else if (vector->field == mtx_field_integer) {
+        if (vector->precision == mtx_single) {
+            for (int k = 0; k < vector->num_nonzeros; k++)
+                vector->data.integer_single[k] = a;
+        } else if (vector->precision == mtx_double) {
+            for (int k = 0; k < vector->num_nonzeros; k++)
+                vector->data.integer_double[k] = a;
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else {
+        return MTX_ERR_INVALID_FIELD;
+    }
+    return MTX_SUCCESS;
+}
+
+/**
+ * `mtxvector_coordinate_set_constant_integer_double()' sets every
+ * nonzero value of a vector equal to a constant integer.
+ */
+int mtxvector_coordinate_set_constant_integer_double(
+    struct mtxvector_coordinate * vector,
+    int64_t a)
+{
+    if (vector->field == mtx_field_real) {
+        if (vector->precision == mtx_single) {
+            for (int k = 0; k < vector->num_nonzeros; k++)
+                vector->data.real_single[k] = a;
+        } else if (vector->precision == mtx_double) {
+            for (int k = 0; k < vector->num_nonzeros; k++)
+                vector->data.real_double[k] = a;
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else if (vector->field == mtx_field_complex) {
+        if (vector->precision == mtx_single) {
+            for (int k = 0; k < vector->num_nonzeros; k++) {
+                vector->data.complex_single[k][0] = a;
+                vector->data.complex_single[k][1] = 0;
+            }
+        } else if (vector->precision == mtx_double) {
+            for (int k = 0; k < vector->num_nonzeros; k++) {
+                vector->data.complex_double[k][0] = a;
+                vector->data.complex_double[k][1] = 0;
+            }
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else if (vector->field == mtx_field_integer) {
+        if (vector->precision == mtx_single) {
+            for (int k = 0; k < vector->num_nonzeros; k++)
+                vector->data.integer_single[k] = a;
+        } else if (vector->precision == mtx_double) {
+            for (int k = 0; k < vector->num_nonzeros; k++)
+                vector->data.integer_double[k] = a;
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else {
+        return MTX_ERR_INVALID_FIELD;
+    }
+    return MTX_SUCCESS;
+}
+
+/*
  * Convert to and from Matrix Market format
  */
 

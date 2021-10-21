@@ -209,6 +209,62 @@ int mtxvector_coordinate_init_pattern(
     const int * indices);
 
 /*
+ * Modifying values
+ */
+
+/**
+ * `mtxvector_coordinate_set_constant_real_single()' sets every
+ * nonzero value of a vector equal to a constant, single precision
+ * floating point number.
+ */
+int mtxvector_coordinate_set_constant_real_single(
+    struct mtxvector_coordinate * vector,
+    float a);
+
+/**
+ * `mtxvector_coordinate_set_constant_real_double()' sets every
+ * nonzero value of a vector equal to a constant, double precision
+ * floating point number.
+ */
+int mtxvector_coordinate_set_constant_real_double(
+    struct mtxvector_coordinate * vector,
+    double a);
+
+/**
+ * `mtxvector_coordinate_set_constant_complex_single()' sets every
+ * nonzero value of a vector equal to a constant, single precision
+ * floating point complex number.
+ */
+int mtxvector_coordinate_set_constant_complex_single(
+    struct mtxvector_coordinate * vector,
+    float a[2]);
+
+/**
+ * `mtxvector_coordinate_set_constant_complex_double()' sets every
+ * nonzero value of a vector equal to a constant, double precision
+ * floating point complex number.
+ */
+int mtxvector_coordinate_set_constant_complex_double(
+    struct mtxvector_coordinate * vector,
+    double a[2]);
+
+/**
+ * `mtxvector_coordinate_set_constant_integer_single()' sets every
+ * nonzero value of a vector equal to a constant integer.
+ */
+int mtxvector_coordinate_set_constant_integer_single(
+    struct mtxvector_coordinate * vector,
+    int32_t a);
+
+/**
+ * `mtxvector_coordinate_set_constant_integer_double()' sets every
+ * nonzero value of a vector equal to a constant integer.
+ */
+int mtxvector_coordinate_set_constant_integer_double(
+    struct mtxvector_coordinate * vector,
+    int64_t a);
+
+/*
  * Convert to and from Matrix Market format
  */
 

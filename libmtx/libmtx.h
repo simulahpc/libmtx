@@ -28,10 +28,11 @@
 #include <libmtx/libmtx-config.h>
 
 #include <libmtx/error.h>
-#include <libmtx/mtxfile/mtxfile.h>
-#include <libmtx/mtxfile/mtxdistfile.h>
 #include <libmtx/matrix/array.h>
 #include <libmtx/matrix/coordinate.h>
+#include <libmtx/matrix/matrix.h>
+#include <libmtx/matrix/matrix_array.h>
+#include <libmtx/matrix/matrix_coordinate.h>
 #include <libmtx/mtx/assembly.h>
 #include <libmtx/mtx/blas.h>
 #include <libmtx/mtx/cg.h>
@@ -45,6 +46,8 @@
 #include <libmtx/mtx/submatrix.h>
 #include <libmtx/mtx/transpose.h>
 #include <libmtx/mtx/triangle.h>
+#include <libmtx/mtxfile/mtxdistfile.h>
+#include <libmtx/mtxfile/mtxfile.h>
 #include <libmtx/util/field.h>
 #include <libmtx/util/index_set.h>
 #include <libmtx/util/partition.h>
@@ -52,6 +55,8 @@
 #include <libmtx/vector/coordinate.h>
 #include <libmtx/vector/distvector.h>
 #include <libmtx/vector/vector.h>
+#include <libmtx/vector/vector_array.h>
+#include <libmtx/vector/vector_coordinate.h>
 #include <libmtx/version.h>
 
 #endif

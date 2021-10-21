@@ -29,6 +29,7 @@
 #include <libmtx/mtx/precision.h>
 #include <libmtx/util/field.h>
 #include <libmtx/util/transpose.h>
+#include <libmtx/vector/vector.h>
 
 #include <stdarg.h>
 #include <stdbool.h>
@@ -182,6 +183,30 @@ int mtxmatrix_array_init_integer_double(
     int num_rows,
     int num_columns,
     const int64_t * data);
+
+/*
+ * Row and column vectors
+ */
+
+/**
+ * `mtxmatrix_array_alloc_row_vector()' allocates a row vector for a
+ * given matrix, where a row vector is a vector whose length equal to
+ * a single row of the matrix.
+ */
+int mtxmatrix_array_alloc_row_vector(
+    const struct mtxmatrix_array * matrix,
+    struct mtxvector * vector,
+    enum mtxvector_type vector_type);
+
+/**
+ * `mtxmatrix_array_alloc_column_vector()' allocates a column vector
+ * for a given matrix, where a column vector is a vector whose length
+ * equal to a single column of the matrix.
+ */
+int mtxmatrix_array_alloc_column_vector(
+    const struct mtxmatrix_array * matrix,
+    struct mtxvector * vector,
+    enum mtxvector_type vector_type);
 
 /*
  * Convert to and from Matrix Market format

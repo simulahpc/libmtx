@@ -144,6 +144,52 @@ int mtxmatrix_init_copy(
     const struct mtxmatrix * src);
 
 /*
+ * Row and columns vectors
+ */
+
+/**
+ * `mtxmatrix_alloc_row_vector()' allocates a row vector for a given
+ * matrix, where a row vector is a vector whose length equal to a
+ * single row of the matrix.
+ */
+int mtxmatrix_alloc_row_vector(
+    const struct mtxmatrix * matrix,
+    struct mtxvector * vector,
+    enum mtxvector_type vector_type)
+{
+    if (matrix->type == mtxmatrix_array) {
+        return mtxmatrix_array_alloc_row_vector(
+            &matrix->storage.array, vector, vector_type);
+    } else if (matrix->type == mtxmatrix_coordinate) {
+        return mtxmatrix_coordinate_alloc_row_vector(
+            &matrix->storage.coordinate, vector, vector_type);
+    } else {
+        return MTX_ERR_INVALID_MATRIX_TYPE;
+    }
+}
+
+/**
+ * `mtxmatrix_alloc_column_vector()' allocates a column vector for a
+ * given matrix, where a column vector is a vector whose length equal
+ * to a single column of the matrix.
+ */
+int mtxmatrix_alloc_column_vector(
+    const struct mtxmatrix * matrix,
+    struct mtxvector * vector,
+    enum mtxvector_type vector_type)
+{
+    if (matrix->type == mtxmatrix_array) {
+        return mtxmatrix_array_alloc_column_vector(
+            &matrix->storage.array, vector, vector_type);
+    } else if (matrix->type == mtxmatrix_coordinate) {
+        return mtxmatrix_coordinate_alloc_column_vector(
+            &matrix->storage.coordinate, vector, vector_type);
+    } else {
+        return MTX_ERR_INVALID_MATRIX_TYPE;
+    }
+}
+
+/*
  * Matrix array formats
  */
 

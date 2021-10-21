@@ -538,12 +538,29 @@ int mtxfile_set_constant_complex_single(
     float a[2]);
 
 /**
+ * `mtxfile_set_constant_complex_double()' sets every (nonzero) value
+ * of a matrix or vector equal to a constant, double precision
+ * floating point complex number.
+ */
+int mtxfile_set_constant_complex_double(
+    struct mtxfile * mtxfile,
+    double a[2]);
+
+/**
  * `mtxfile_set_constant_integer_single()' sets every (nonzero) value
  * of a matrix or vector equal to a constant integer.
  */
 int mtxfile_set_constant_integer_single(
     struct mtxfile * mtxfile,
     int32_t a);
+
+/**
+ * `mtxfile_set_constant_integer_double()' sets every (nonzero) value
+ * of a matrix or vector equal to a constant integer.
+ */
+int mtxfile_set_constant_integer_double(
+    struct mtxfile * mtxfile,
+    int64_t a);
 
 /*
  * I/O functions

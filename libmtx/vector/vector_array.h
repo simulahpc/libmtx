@@ -175,6 +175,60 @@ int mtxvector_array_init_integer_double(
     const int64_t * data);
 
 /*
+ * Modifying values
+ */
+
+/**
+ * `mtxvector_array_set_constant_real_single()' sets every value of a
+ * vector equal to a constant, single precision floating point number.
+ */
+int mtxvector_array_set_constant_real_single(
+    struct mtxvector_array * vector,
+    float a);
+
+/**
+ * `mtxvector_array_set_constant_real_double()' sets every value of a
+ * vector equal to a constant, double precision floating point number.
+ */
+int mtxvector_array_set_constant_real_double(
+    struct mtxvector_array * vector,
+    double a);
+
+/**
+ * `mtxvector_array_set_constant_complex_single()' sets every value of
+ * a vector equal to a constant, single precision floating point
+ * complex number.
+ */
+int mtxvector_array_set_constant_complex_single(
+    struct mtxvector_array * vector,
+    float a[2]);
+
+/**
+ * `mtxvector_array_set_constant_complex_double()' sets every value of
+ * a vector equal to a constant, double precision floating point
+ * complex number.
+ */
+int mtxvector_array_set_constant_complex_double(
+    struct mtxvector_array * vector,
+    double a[2]);
+
+/**
+ * `mtxvector_array_set_constant_integer_single()' sets every value of
+ * a vector equal to a constant integer.
+ */
+int mtxvector_array_set_constant_integer_single(
+    struct mtxvector_array * vector,
+    int32_t a);
+
+/**
+ * `mtxvector_array_set_constant_integer_double()' sets every value of
+ * a vector equal to a constant integer.
+ */
+int mtxvector_array_set_constant_integer_double(
+    struct mtxvector_array * vector,
+    int64_t a);
+
+/*
  * Convert to and from Matrix Market format
  */
 

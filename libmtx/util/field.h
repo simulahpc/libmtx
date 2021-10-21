@@ -32,6 +32,7 @@
  */
 enum mtx_field_
 {
+    mtx_field_auto,    /* automatic selection of field */
     mtx_field_real,    /* real, floating-point coefficients */
     mtx_field_complex, /* complex, floating point coefficients */
     mtx_field_integer, /* integer coefficients */

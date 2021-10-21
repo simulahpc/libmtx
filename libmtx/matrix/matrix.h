@@ -31,6 +31,7 @@
 #include <libmtx/util/transpose.h>
 #include <libmtx/matrix/matrix_array.h>
 #include <libmtx/matrix/matrix_coordinate.h>
+#include <libmtx/vector/vector.h>
 
 #ifdef LIBMTX_HAVE_LIBZ
 #include <zlib.h>
@@ -145,7 +146,7 @@ int mtxmatrix_init_copy(
     const struct mtxmatrix * src);
 
 /*
- * Matrix array formats
+ * Matrix initialisation for array formats
  */
 
 /**
@@ -330,6 +331,30 @@ int mtxmatrix_init_coordinate_pattern(
     int64_t num_nonzeros,
     const int * rowidx,
     const int * colidx);
+
+/*
+ * Row and column vectors
+ */
+
+/**
+ * `mtxmatrix_alloc_row_vector()' allocates a row vector for a given
+ * matrix, where a row vector is a vector whose length equal to a
+ * single row of the matrix.
+ */
+int mtxmatrix_alloc_row_vector(
+    const struct mtxmatrix * matrix,
+    struct mtxvector * vector,
+    enum mtxvector_type vector_type);
+
+/**
+ * `mtxmatrix_alloc_column_vector()' allocates a column vector for a
+ * given matrix, where a column vector is a vector whose length equal
+ * to a single column of the matrix.
+ */
+int mtxmatrix_alloc_column_vector(
+    const struct mtxmatrix * matrix,
+    struct mtxvector * vector,
+    enum mtxvector_type vector_type);
 
 /*
  * Convert to and from Matrix Market format

@@ -22,8 +22,8 @@
  * Sparse matrices in Matrix Market format.
  */
 
-#ifndef LIBMTX_MATRIX_COORDINATE_H
-#define LIBMTX_MATRIX_COORDINATE_H
+#ifndef LIBMTX_MATRIX_COORDINATE_H_
+#define LIBMTX_MATRIX_COORDINATE_H_
 
 #include <libmtx/mtx/assembly.h>
 #include <libmtx/mtx/header.h>

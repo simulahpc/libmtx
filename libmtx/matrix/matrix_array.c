@@ -284,6 +284,60 @@ int mtxmatrix_array_init_integer_double(
 }
 
 /*
+ * Row and column vectors
+ */
+
+/**
+ * `mtxmatrix_array_alloc_row_vector()' allocates a row vector for a
+ * given matrix, where a row vector is a vector whose length equal to
+ * a single row of the matrix.
+ */
+int mtxmatrix_array_alloc_row_vector(
+    const struct mtxmatrix_array * matrix,
+    struct mtxvector * vector,
+    enum mtxvector_type vector_type)
+{
+    if (vector_type == mtxvector_auto)
+        vector_type = mtxvector_array;
+
+    if (vector_type == mtxvector_array) {
+        return mtxvector_alloc_array(
+            vector, matrix->field, matrix->precision, matrix->num_columns);
+    } else if (vector_type == mtxvector_coordinate) {
+        return mtxvector_alloc_coordinate(
+            vector, matrix->field, matrix->precision,
+            matrix->num_columns, matrix->num_columns);
+    } else {
+        return MTX_ERR_INVALID_VECTOR_TYPE;
+    }
+}
+
+/**
+ * `mtxmatrix_array_alloc_column_vector()' allocates a column vector
+ * for a given matrix, where a column vector is a vector whose length
+ * equal to a single column of the matrix.
+ */
+int mtxmatrix_array_alloc_column_vector(
+    const struct mtxmatrix_array * matrix,
+    struct mtxvector * vector,
+    enum mtxvector_type vector_type)
+{
+    if (vector_type == mtxvector_auto)
+        vector_type = mtxvector_array;
+
+    if (vector_type == mtxvector_array) {
+        return mtxvector_alloc_array(
+            vector, matrix->field, matrix->precision, matrix->num_rows);
+    } else if (vector_type == mtxvector_coordinate) {
+        return mtxvector_alloc_coordinate(
+            vector, matrix->field, matrix->precision,
+            matrix->num_rows, matrix->num_rows);
+    } else {
+        return MTX_ERR_INVALID_VECTOR_TYPE;
+    }
+}
+
+/*
  * Convert to and from Matrix Market format
  */
 

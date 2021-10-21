@@ -384,6 +384,73 @@ int mtxvector_init_coordinate_pattern(
 }
 
 /*
+ * Modifying values
+ */
+
+/**
+ * `mtxvector_set_constant_real_single()' sets every (nonzero) value
+ * of a vector equal to a constant, single precision floating point
+ * number.
+ */
+int mtxvector_set_constant_real_single(
+    struct mtxvector * vector,
+    float a)
+{
+    if (vector->type == mtxvector_array) {
+        return mtxvector_array_set_constant_real_single(
+            &vector->storage.array, a);
+    } else if (vector->type == mtxvector_coordinate) {
+        return mtxvector_coordinate_set_constant_real_single(
+            &vector->storage.coordinate, a);
+    } else {
+        return MTX_ERR_INVALID_VECTOR_TYPE;
+    }
+}
+
+/**
+ * `mtxvector_set_constant_real_double()' sets every (nonzero) value
+ * of a vector equal to a constant, double precision floating point
+ * number.
+ */
+int mtxvector_set_constant_real_double(
+    struct mtxvector * mtxvector,
+    double a);
+
+/**
+ * `mtxvector_set_constant_complex_single()' sets every (nonzero)
+ * value of a vector equal to a constant, single precision floating
+ * point complex number.
+ */
+int mtxvector_set_constant_complex_single(
+    struct mtxvector * mtxvector,
+    float a[2]);
+
+/**
+ * `mtxvector_set_constant_complex_double()' sets every (nonzero)
+ * value of a vector equal to a constant, double precision floating
+ * point complex number.
+ */
+int mtxvector_set_constant_complex_double(
+    struct mtxvector * mtxvector,
+    double a[2]);
+
+/**
+ * `mtxvector_set_constant_integer_single()' sets every (nonzero)
+ * value of a vector equal to a constant integer.
+ */
+int mtxvector_set_constant_integer_single(
+    struct mtxvector * mtxvector,
+    int32_t a);
+
+/**
+ * `mtxvector_set_constant_integer_double()' sets every (nonzero)
+ * value of a vector equal to a constant integer.
+ */
+int mtxvector_set_constant_integer_double(
+    struct mtxvector * mtxvector,
+    int64_t a);
+
+/*
  * Convert to and from Matrix Market format
  */
 
