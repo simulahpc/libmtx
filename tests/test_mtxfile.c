@@ -34,6 +34,8 @@
 
 #include <errno.h>
 #include <unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 
 #include <stdint.h>
 #include <stdio.h>
@@ -1988,7 +1990,6 @@ int test_mtxfile_fwrite(void)
         TEST_ASSERT_STREQ_MSG(
             expected, buf, "\nexpected: %s\nactual: %s\n",
             expected, buf);
-        fclose(f);
     }
 
     {
@@ -2011,7 +2012,6 @@ int test_mtxfile_fwrite(void)
         TEST_ASSERT_STREQ_MSG(
             expected, buf, "\nexpected: %s\nactual: %s\n",
             expected, buf);
-        fclose(f);
     }
 
     /*
@@ -2048,7 +2048,6 @@ int test_mtxfile_fwrite(void)
         TEST_ASSERT_STREQ_MSG(
             expected, buf, "\nexpected: %s\nactual: %s\n",
             expected, buf);
-        fclose(f);
     }
 
     /*
@@ -2082,7 +2081,6 @@ int test_mtxfile_fwrite(void)
         TEST_ASSERT_STREQ_MSG(
             expected, buf, "\nexpected: %s\nactual: %s\n",
             expected, buf);
-        fclose(f);
     }
     return TEST_SUCCESS;
 }
@@ -2974,6 +2972,7 @@ int test_mtxfile_partition(void)
         err = mtx_partition_part(&partition, &p, 4);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(0, p);
+        mtx_partition_free(&partition);
     }
     {
         int size = 5;
@@ -3003,6 +3002,7 @@ int test_mtxfile_partition(void)
         err = mtx_partition_part(&partition, &p, 4);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(1, p);
+        mtx_partition_free(&partition);
     }
     {
         int size = 5;
@@ -3033,6 +3033,7 @@ int test_mtxfile_partition(void)
         err = mtx_partition_part(&partition, &p, 4);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(2, p);
+        mtx_partition_free(&partition);
     }
     {
         int size = 5;
@@ -3064,6 +3065,7 @@ int test_mtxfile_partition(void)
         err = mtx_partition_part(&partition, &p, 4);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(3, p);
+        mtx_partition_free(&partition);
     }
     {
         int size = 5;
@@ -3096,6 +3098,7 @@ int test_mtxfile_partition(void)
         err = mtx_partition_part(&partition, &p, 4);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(4, p);
+        mtx_partition_free(&partition);
     }
     {
         int size = 5;
@@ -3129,6 +3132,7 @@ int test_mtxfile_partition(void)
         err = mtx_partition_part(&partition, &p, 4);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(4, p);
+        mtx_partition_free(&partition);
     }
 
     /* Cyclic partitioning */
@@ -3159,6 +3163,7 @@ int test_mtxfile_partition(void)
         err = mtx_partition_part(&partition, &p, 4);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(0, p);
+        mtx_partition_free(&partition);
     }
     {
         int size = 5;
@@ -3188,6 +3193,7 @@ int test_mtxfile_partition(void)
         err = mtx_partition_part(&partition, &p, 4);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(0, p);
+        mtx_partition_free(&partition);
     }
     {
         int size = 5;
@@ -3218,6 +3224,7 @@ int test_mtxfile_partition(void)
         err = mtx_partition_part(&partition, &p, 4);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(1, p);
+        mtx_partition_free(&partition);
     }
     {
         int size = 5;
@@ -3249,6 +3256,7 @@ int test_mtxfile_partition(void)
         err = mtx_partition_part(&partition, &p, 4);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(0, p);
+        mtx_partition_free(&partition);
     }
     {
         int size = 5;
@@ -3281,6 +3289,7 @@ int test_mtxfile_partition(void)
         err = mtx_partition_part(&partition, &p, 4);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(4, p);
+        mtx_partition_free(&partition);
     }
     {
         int size = 5;
@@ -3314,6 +3323,7 @@ int test_mtxfile_partition(void)
         err = mtx_partition_part(&partition, &p, 4);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(4, p);
+        mtx_partition_free(&partition);
     }
 
     /*
@@ -3406,6 +3416,7 @@ int test_mtxfile_partition(void)
         TEST_ASSERT_EQ(9.0, data1[2]);
         mtxfile_free(&dst[0]);
         mtxfile_free(&dst[1]);
+        mtx_partition_free(&row_partition);
         mtxfile_free(&src);
     }
 
@@ -3495,6 +3506,7 @@ int test_mtxfile_partition(void)
         TEST_ASSERT_EQ(6, data1[2]);
         mtxfile_free(&dst[0]);
         mtxfile_free(&dst[1]);
+        mtx_partition_free(&row_partition);
         mtxfile_free(&src);
     }
 
@@ -3592,6 +3604,7 @@ int test_mtxfile_partition(void)
         mtxfile_free(&dst[0]);
         mtxfile_free(&dst[1]);
         mtxfile_free(&dst[2]);
+        mtx_partition_free(&row_partition);
         mtxfile_free(&src);
     }
 
@@ -3676,6 +3689,7 @@ int test_mtxfile_partition(void)
         TEST_ASSERT_EQ(3.0, data1[1].a);
         mtxfile_free(&dst[0]);
         mtxfile_free(&dst[1]);
+        mtx_partition_free(&row_partition);
         mtxfile_free(&src);
     }
     return TEST_SUCCESS;

@@ -2998,6 +2998,7 @@ int test_mtxmatrix_gemv_coordinate(void)
             TEST_ASSERT_EQ(y_->data.real_single[1], 10.0f);
             TEST_ASSERT_EQ(y_->data.real_single[2],  8.0f);
             mtxvector_free(&y);
+            mtxvector_free(&x);
         }
         {
             double xdata[] = {3, 2, 1}, ydata[] = {1, 0, 2};
@@ -3016,6 +3017,7 @@ int test_mtxmatrix_gemv_coordinate(void)
             TEST_ASSERT_EQ(y_->data.real_double[1], 10.0);
             TEST_ASSERT_EQ(y_->data.real_double[2],  8.0);
             mtxvector_free(&y);
+            mtxvector_free(&x);
         }
         {
             int32_t xdata[] = {3, 2, 1}, ydata[] = {1, 0, 2};
@@ -3034,6 +3036,7 @@ int test_mtxmatrix_gemv_coordinate(void)
             TEST_ASSERT_EQ(y_->data.integer_single[1], 10);
             TEST_ASSERT_EQ(y_->data.integer_single[2],  8);
             mtxvector_free(&y);
+            mtxvector_free(&x);
         }
         {
             int32_t xdata[] = {3, 2, 1}, ydata[] = {1, 0, 2};
@@ -3052,6 +3055,7 @@ int test_mtxmatrix_gemv_coordinate(void)
             TEST_ASSERT_EQ(y_->data.integer_single[1],  4);
             TEST_ASSERT_EQ(y_->data.integer_single[2], 14);
             mtxvector_free(&y);
+            mtxvector_free(&x);
         }
         {
             int32_t xdata[] = {3, 2, 1}, ydata[] = {1, 0, 2};
@@ -3070,6 +3074,7 @@ int test_mtxmatrix_gemv_coordinate(void)
             TEST_ASSERT_EQ(y_->data.integer_single[1], 10);
             TEST_ASSERT_EQ(y_->data.integer_single[2],  8);
             mtxvector_free(&y);
+            mtxvector_free(&x);
         }
         {
             int32_t xdata[] = {3, 2, 1}, ydata[] = {1, 0, 2};
@@ -3088,8 +3093,8 @@ int test_mtxmatrix_gemv_coordinate(void)
             TEST_ASSERT_EQ(y_->data.integer_single[1],  4);
             TEST_ASSERT_EQ(y_->data.integer_single[2], 14);
             mtxvector_free(&y);
+            mtxvector_free(&x);
         }
-        mtxvector_free(&x);
         mtxmatrix_free(&A);
     }
 
