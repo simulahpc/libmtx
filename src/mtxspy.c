@@ -30,7 +30,6 @@
 
 #include <errno.h>
 
-#include <assert.h>
 #include <inttypes.h>
 #include <math.h>
 #include <stdbool.h>
@@ -577,9 +576,10 @@ static void draw_sparsity_pattern_point(
     int bottom = (int) ceil(y);
     for (int u = left; u < right; u++) {
         for (int v = top; v < bottom; v++) {
-            imgbuf[(v*width+u)*3+0] = r;
-            imgbuf[(v*width+u)*3+1] = g;
-            imgbuf[(v*width+u)*3+2] = b;
+            int64_t w = (int64_t) v * (int64_t) width + (int64_t) u;
+            imgbuf[w*3+0] = r;
+            imgbuf[w*3+1] = g;
+            imgbuf[w*3+2] = b;
         }
     }
 }
@@ -627,9 +627,9 @@ static int draw_sparsity_pattern(
             width = max_width;
         } else if (num_rows > num_columns) {
             height = max_height;
-            width = (max_height*num_columns) / num_rows;
+            width = ((int64_t) max_height * (int64_t) num_columns) / num_rows;
         } else {
-            height = (max_width*num_rows) / num_columns;
+            height = ((int64_t) max_width * (int64_t) num_rows) / num_columns;
             width = max_width;
         }
     }
@@ -637,7 +637,8 @@ static int draw_sparsity_pattern(
     int pixel_size = 3 * sizeof(unsigned char);
     int bit_depth = CHAR_BIT;
     int color_type = PNG_COLOR_TYPE_RGB;
-    unsigned char * imgbuf = malloc(width * height * pixel_size);
+    int64_t imgbufsize = (int64_t) width * (int64_t) height * (int64_t) pixel_size;
+    unsigned char * imgbuf = malloc(imgbufsize);
     if (!imgbuf)
         return MTX_ERR_ERRNO;
 
@@ -646,9 +647,10 @@ static int draw_sparsity_pattern(
     unsigned char bg_blue = bgcolor & 0xFF;
     for (int i = 0; i < height; i++) {
         for (int j = 0; j < width; j++) {
-            imgbuf[(i*width+j)*3+0] = bg_red;
-            imgbuf[(i*width+j)*3+1] = bg_green;
-            imgbuf[(i*width+j)*3+2] = bg_blue;
+            int64_t k = (int64_t) i * (int64_t) width + (int64_t) j;
+            imgbuf[k*3+0] = bg_red;
+            imgbuf[k*3+1] = bg_green;
+            imgbuf[k*3+2] = bg_blue;
         }
     }
 
@@ -658,7 +660,7 @@ static int draw_sparsity_pattern(
         return MTX_ERR_ERRNO;
     }
     for (int i = 0; i < height; i++)
-        row_pointers[i] = imgbuf + i * width * pixel_size;
+        row_pointers[i] = imgbuf + (int64_t) i * (int64_t) width * (int64_t) pixel_size;
 
     unsigned char fg_red = ((fgcolor >> 16) & 0xFF);
     unsigned char fg_green = ((fgcolor >> 8) & 0xFF);
