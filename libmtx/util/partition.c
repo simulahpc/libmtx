@@ -252,7 +252,11 @@ int mtx_partition_init_block_cyclic(
     struct mtx_partition * partition,
     int64_t size,
     int num_parts,
-    int block_size);
+    int block_size)
+{
+    errno = ENOTSUP;
+    return MTX_ERR_ERRNO;
+}
 
 /**
  * `mtx_partition_init_unstructured()' initialises an unstructured

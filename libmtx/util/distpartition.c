@@ -33,6 +33,8 @@
 #include <mpi.h>
 #endif
 
+#include <errno.h>
+
 #include <stdint.h>
 
 #ifdef LIBMTX_HAVE_MPI
@@ -208,7 +210,11 @@ int mtxdistpartition_init_block_cyclic(
     int num_parts,
     int block_size,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxmpierror * mpierror)
+{
+    errno = ENOTSUP;
+    return MTX_ERR_ERRNO;
+}
 
 /**
  * `mtxdistpartition_init_unstructured()' initialises a distributed,
@@ -220,7 +226,11 @@ int mtxdistpartition_init_unstructured(
     int num_parts,
     const int * parts,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxmpierror * mpierror)
+{
+    errno = ENOTSUP;
+    return MTX_ERR_ERRNO;
+}
 
 /*
  * I/O functions
