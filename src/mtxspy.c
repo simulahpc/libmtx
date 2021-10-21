@@ -597,9 +597,9 @@ static int draw_sparsity_pattern(
     unsigned char *** out_row_pointers)
 {
     if (mtxfile->header.object != mtxfile_matrix)
-        return MTX_ERR_INVALID_MTX_OBJECT;
+        return MTX_ERR_INCOMPATIBLE_MTX_OBJECT;
     if (mtxfile->header.format != mtxfile_coordinate)
-        return MTX_ERR_INVALID_MTX_FORMAT;
+        return MTX_ERR_INCOMPATIBLE_MTX_FORMAT;
 
     int num_rows = mtxfile->size.num_rows;
     int num_columns = mtxfile->size.num_columns;
@@ -1082,7 +1082,7 @@ int main(int argc, char *argv[])
     if (err) {
         if (args.verbose > 0)
             fprintf(diagf, "\n");
-        fprintf(stderr, "%s: %s",
+        fprintf(stderr, "%s: %s\n",
                 program_invocation_short_name, mtx_strerror(err));
         mtxfile_free(&mtxfile);
         program_options_free(&args);
