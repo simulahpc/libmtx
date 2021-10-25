@@ -137,6 +137,7 @@ static int rooted_level_structure(
     /* Clear the array that is used to test set membership. */
     for (int i = 0; i < num_vertices; i++)
         vertex_in_set[i] = 0;
+    int min_vertex_not_in_set = 0;
 
     /* Handle empty graphs. */
     if (num_vertices == 0) {
@@ -251,12 +252,13 @@ static int rooted_level_structure(
             vertices_per_level_ptr[num_levels+1])
         {
             int root_vertex = 0;
-            for (int i = 0; i < num_vertices; i++) {
+            for (int i = min_vertex_not_in_set; i < num_vertices; i++) {
                 if (!vertex_in_set[i]) {
                     root_vertex = i;
                     break;
                 }
             }
+            min_vertex_not_in_set = root_vertex+1;
             vertex_in_set[root_vertex] = 1;
             vertices_per_level[vertices_per_level_ptr[num_levels+1]] = root_vertex;
             vertices_per_level_ptr[num_levels+1]++;
