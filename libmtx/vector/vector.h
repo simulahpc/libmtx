@@ -475,10 +475,10 @@ int mtxvector_gzread(
  *
  * If `path' is `-', then standard output is used.
  *
- * If `format' is `NULL', then the format specifier '%d' is used to
- * print integers and '%f' is used to print floating point
- * numbers. Otherwise, the given format string is used when printing
- * numerical values.
+ * If ‘fmt’ is ‘NULL’, then the format specifier ‘%g’ is used to print
+ * floating point numbers with with enough digits to ensure correct
+ * round-trip conversion from decimal text and back.  Otherwise, the
+ * given format string is used to print numerical values.
  *
  * The format string follows the conventions of `printf'. If the field
  * is `real', `double' or `complex', then the format specifiers '%e',
@@ -493,16 +493,16 @@ int mtxvector_write(
     const struct mtxvector * vector,
     const char * path,
     bool gzip,
-    const char * format,
+    const char * fmt,
     int64_t * bytes_written);
 
 /**
  * `mtxvector_fwrite()' writes a vector to a stream.
  *
- * If `format' is `NULL', then the format specifier '%d' is used to
- * print integers and '%f' is used to print floating point
- * numbers. Otherwise, the given format string is used when printing
- * numerical values.
+ * If ‘fmt’ is ‘NULL’, then the format specifier ‘%g’ is used to print
+ * floating point numbers with with enough digits to ensure correct
+ * round-trip conversion from decimal text and back.  Otherwise, the
+ * given format string is used to print numerical values.
  *
  * The format string follows the conventions of `printf'. If the field
  * is `real', `double' or `complex', then the format specifiers '%e',
@@ -519,17 +519,17 @@ int mtxvector_write(
 int mtxvector_fwrite(
     const struct mtxvector * vector,
     FILE * f,
-    const char * format,
+    const char * fmt,
     int64_t * bytes_written);
 
 #ifdef LIBMTX_HAVE_LIBZ
 /**
  * `mtxvector_gzwrite()' writes a vector to a gzip-compressed stream.
  *
- * If `format' is `NULL', then the format specifier '%d' is used to
- * print integers and '%f' is used to print floating point
- * numbers. Otherwise, the given format string is used when printing
- * numerical values.
+ * If ‘fmt’ is ‘NULL’, then the format specifier ‘%g’ is used to print
+ * floating point numbers with with enough digits to ensure correct
+ * round-trip conversion from decimal text and back.  Otherwise, the
+ * given format string is used to print numerical values.
  *
  * The format string follows the conventions of `printf'. If the field
  * is `real', `double' or `complex', then the format specifiers '%e',
@@ -546,7 +546,7 @@ int mtxvector_fwrite(
 int mtxvector_gzwrite(
     const struct mtxvector * vector,
     gzFile f,
-    const char * format,
+    const char * fmt,
     int64_t * bytes_written);
 #endif
 

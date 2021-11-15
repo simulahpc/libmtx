@@ -713,10 +713,10 @@ int mtxdistfile_fread(
  *
  * If `path' is `-', then standard output is used.
  *
- * If `format' is `NULL', then the format specifier '%d' is used to
- * print integers and '%f' is used to print floating point
- * numbers. Otherwise, the given format string is used when printing
- * numerical values.
+ * If ‘fmt’ is ‘NULL’, then the format specifier ‘%g’ is used to print
+ * floating point numbers with with enough digits to ensure correct
+ * round-trip conversion from decimal text and back.  Otherwise, the
+ * given format string is used to print numerical values.
  *
  * The format string follows the conventions of `printf'. If the field
  * is `real', `double' or `complex', then the format specifiers '%e',
@@ -735,7 +735,7 @@ int mtxdistfile_write_shared(
     const struct mtxdistfile * mtxdistfile,
     const char * path,
     bool gzip,
-    const char * format,
+    const char * fmt,
     int64_t * bytes_written,
     struct mtxmpierror * mpierror);
 
@@ -745,10 +745,10 @@ int mtxdistfile_write_shared(
  *
  * If `path' is `-', then standard output is used.
  *
- * If `format' is `NULL', then the format specifier '%d' is used to
- * print integers and '%f' is used to print floating point
- * numbers. Otherwise, the given format string is used when printing
- * numerical values.
+ * If ‘fmt’ is ‘NULL’, then the format specifier ‘%g’ is used to print
+ * floating point numbers with with enough digits to ensure correct
+ * round-trip conversion from decimal text and back.  Otherwise, the
+ * given format string is used to print numerical values.
  *
  * The format string follows the conventions of `printf'. If the field
  * is `real', `double' or `complex', then the format specifiers '%e',
@@ -767,7 +767,7 @@ int mtxdistfile_write(
     const struct mtxdistfile * mtxdistfile,
     const char * path,
     bool gzip,
-    const char * format,
+    const char * fmt,
     int64_t * bytes_written,
     bool sequential,
     struct mtxmpierror * mpierror);
@@ -776,10 +776,10 @@ int mtxdistfile_write(
  * `mtxdistfile_fwrite()' writes a distributed Matrix Market file to
  * the specified stream on each process.
  *
- * If `format' is `NULL', then the format specifier '%d' is used to
- * print integers and '%f' is used to print floating point
- * numbers. Otherwise, the given format string is used when printing
- * numerical values.
+ * If ‘fmt’ is ‘NULL’, then the format specifier ‘%g’ is used to print
+ * floating point numbers with with enough digits to ensure correct
+ * round-trip conversion from decimal text and back.  Otherwise, the
+ * given format string is used to print numerical values.
  *
  * The format string follows the conventions of `printf'. If the field
  * is `real', `double' or `complex', then the format specifiers '%e',
@@ -806,7 +806,7 @@ int mtxdistfile_write(
 int mtxdistfile_fwrite(
     const struct mtxdistfile * mtxdistfile,
     FILE * f,
-    const char * format,
+    const char * fmt,
     int64_t * bytes_written,
     bool sequential,
     struct mtxmpierror * mpierror);
@@ -816,10 +816,10 @@ int mtxdistfile_fwrite(
  * file to a single stream that is shared by every process in the
  * communicator.
  *
- * If `format' is `NULL', then the format specifier '%d' is used to
- * print integers and '%f' is used to print floating point
- * numbers. Otherwise, the given format string is used when printing
- * numerical values.
+ * If ‘fmt’ is ‘NULL’, then the format specifier ‘%g’ is used to print
+ * floating point numbers with with enough digits to ensure correct
+ * round-trip conversion from decimal text and back.  Otherwise, the
+ * given format string is used to print numerical values.
  *
  * The format string follows the conventions of `printf'. If the field
  * is `real', `double' or `complex', then the format specifiers '%e',
@@ -840,7 +840,7 @@ int mtxdistfile_fwrite(
 int mtxdistfile_fwrite_shared(
     const struct mtxdistfile * mtxdistfile,
     FILE * f,
-    const char * format,
+    const char * fmt,
     int64_t * bytes_written,
     struct mtxmpierror * mpierror);
 

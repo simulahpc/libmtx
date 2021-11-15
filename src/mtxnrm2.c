@@ -36,6 +36,7 @@
 
 #include <errno.h>
 
+#include <float.h>
 #include <inttypes.h>
 #include <locale.h>
 #include <stdbool.h>
@@ -462,7 +463,7 @@ static int distvector_nrm2(
                     timespec_duration(t0, t1));
         }
         if (!quiet) {
-            fprintf(stdout, format ? format : "%f", nrm2);
+            fprintf(stdout, format ? format : "%.*g", FLT_DIG, nrm2);
             fputc('\n', stdout);
         }
     } else if (precision == mtx_double) {
@@ -485,7 +486,7 @@ static int distvector_nrm2(
                     timespec_duration(t0, t1));
         }
         if (!quiet) {
-            fprintf(stdout, format ? format : "%f", nrm2);
+            fprintf(stdout, format ? format : "%.*g", DBL_DIG, nrm2);
             fputc('\n', stdout);
         }
     } else {
@@ -723,7 +724,7 @@ static int vector_nrm2(
                     timespec_duration(t0, t1));
         }
         if (!quiet) {
-            fprintf(stdout, format ? format : "%f", nrm2);
+            fprintf(stdout, format ? format : "%.*g", FLT_DIG, nrm2);
             fputc('\n', stdout);
         }
     } else if (precision == mtx_double) {
@@ -746,7 +747,7 @@ static int vector_nrm2(
                     timespec_duration(t0, t1));
         }
         if (!quiet) {
-            fprintf(stdout, format ? format : "%f", nrm2);
+            fprintf(stdout, format ? format : "%.*g", DBL_DIG, nrm2);
             fputc('\n', stdout);
         }
     } else {

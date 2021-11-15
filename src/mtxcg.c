@@ -769,23 +769,23 @@ int main(int argc, char *argv[])
                     if (err == MTX_SUCCESS) {
                         fprintf(
                             diagf, "%.6f seconds - converged after %d iterations, "
-                            "residual 2-norm %g, right-hand side 2-norm %g, "
-                            "relative residual %g, "
-                            "absolute tolerance %g, relative tolerance %g\n",
+                            "residual 2-norm %.*g, right-hand side 2-norm %.*g, "
+                            "relative residual %.*g, "
+                            "absolute tolerance %.*g, relative tolerance %.*g\n",
                             timespec_duration(t0, t1),
-                            num_iterations, r_nrm2, b_nrm2,
-                            fabs(b_nrm2) > FLT_EPSILON ? r_nrm2 / b_nrm2 : INFINITY,
-                            args.atol, args.rtol);
+                            num_iterations, FLT_DIG, r_nrm2,FLT_DIG, b_nrm2,
+                            FLT_DIG, fabs(b_nrm2) > FLT_EPSILON ? r_nrm2 / b_nrm2 : INFINITY,
+                            DBL_DIG, args.atol, DBL_DIG, args.rtol);
                     } else if (err == MTX_ERR_NOT_CONVERGED) {
                         fprintf(
                             diagf, "%.6f seconds - not converged after %d iterations, "
-                            "residual 2-norm %g, right-hand side 2-norm %g, "
-                            "relative residual %g, "
-                            "absolute tolerance %g, relative tolerance %g%s\n",
+                            "residual 2-norm %.*g, right-hand side 2-norm %.*g, "
+                            "relative residual %.*g, "
+                            "absolute tolerance %.*g, relative tolerance %.*g%s\n",
                             timespec_duration(t0, t1),
-                            num_iterations, r_nrm2, b_nrm2,
-                            fabs(b_nrm2) > FLT_EPSILON ? r_nrm2 / b_nrm2 : INFINITY,
-                            args.atol, args.rtol,
+                            num_iterations, FLT_DIG, r_nrm2, FLT_DIG, b_nrm2,
+                            FLT_DIG, fabs(b_nrm2) > FLT_EPSILON ? r_nrm2 / b_nrm2 : INFINITY,
+                            DBL_DIG, args.atol, DBL_DIG, args.rtol,
                             next_restart == num_iterations_in_current_round ?
                             ", restarting" : "");
                     }
@@ -851,23 +851,23 @@ int main(int argc, char *argv[])
                     if (err == MTX_SUCCESS) {
                         fprintf(
                             diagf, "%.6f seconds - converged after %d iterations, "
-                            "residual 2-norm %g, right-hand side 2-norm %g, "
-                            "relative residual %g, "
-                            "absolute tolerance %g, relative tolerance %g\n",
+                            "residual 2-norm %.*g, right-hand side 2-norm %.*g, "
+                            "relative residual %.*g, "
+                            "absolute tolerance %.*g, relative tolerance %.*g\n",
                             timespec_duration(t0, t1),
-                            num_iterations, r_nrm2, b_nrm2,
-                            fabs(b_nrm2) > DBL_EPSILON ? r_nrm2 / b_nrm2 : INFINITY,
-                            args.atol, args.rtol);
+                            num_iterations, DBL_DIG, r_nrm2, DBL_DIG, b_nrm2,
+                            DBL_DIG, fabs(b_nrm2) > DBL_EPSILON ? r_nrm2 / b_nrm2 : INFINITY,
+                            DBL_DIG, args.atol, DBL_DIG, args.rtol);
                     } else if (err == MTX_ERR_NOT_CONVERGED) {
                         fprintf(
                             diagf, "%.6f seconds - not converged after %d iterations, "
-                            "residual 2-norm %g, right-hand side 2-norm %g, "
-                            "relative residual %g, "
-                            "absolute tolerance %g, relative tolerance %g%s\n",
+                            "residual 2-norm %.*g, right-hand side 2-norm %.*g, "
+                            "relative residual %.*g, "
+                            "absolute tolerance %.*g, relative tolerance %.*g%s\n",
                             timespec_duration(t0, t1),
-                            num_iterations, r_nrm2, b_nrm2,
-                            fabs(b_nrm2) > DBL_EPSILON ? r_nrm2 / b_nrm2 : INFINITY,
-                            args.atol, args.rtol,
+                            num_iterations, DBL_DIG, r_nrm2, DBL_DIG, b_nrm2,
+                            DBL_DIG, fabs(b_nrm2) > DBL_EPSILON ? r_nrm2 / b_nrm2 : INFINITY,
+                            DBL_DIG, args.atol, DBL_DIG, args.rtol,
                             next_restart == num_iterations_in_current_round ?
                             ", restarting" : "");
                     }

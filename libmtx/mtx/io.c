@@ -46,6 +46,7 @@
 #include <errno.h>
 #include <unistd.h>
 
+#include <float.h>
 #include <inttypes.h>
 #include <limits.h>
 #include <math.h>
@@ -121,10 +122,10 @@ int mtx_read(
  *
  * If `path' is `-', then standard output is used.
  *
- * If `format' is `NULL', then the format specifier '%d' is used to
- * print integers and '%f' is used to print floating point
- * numbers. Otherwise, the given format string is used when printing
- * numerical values.
+ * If ‘fmt’ is ‘NULL’, then the format specifier ‘%g’ is used to print
+ * floating point numbers with with enough digits to ensure correct
+ * round-trip conversion from decimal text and back.  Otherwise, the
+ * given format string is used to print numerical values.
  *
  * The format string follows the conventions of `printf'. If the field
  * is `real', `double' or `complex', then the format specifiers '%e',
@@ -139,7 +140,7 @@ int mtx_write(
     const struct mtx * mtx,
     const char * path,
     bool gzip,
-    const char * format)
+    const char * fmt)
 {
     int err;
     if (!gzip) {
@@ -150,7 +151,7 @@ int mtx_write(
             return MTX_ERR_ERRNO;
         }
 
-        err = mtx_fwrite(mtx, f, format);
+        err = mtx_fwrite(mtx, f, fmt);
         if (err)
             return err;
         fclose(f);
@@ -163,7 +164,7 @@ int mtx_write(
             return MTX_ERR_ERRNO;
         }
 
-        err = mtx_gzwrite(mtx, f, format);
+        err = mtx_gzwrite(mtx, f, fmt);
         if (err)
             return err;
         gzclose(f);
@@ -1058,10 +1059,10 @@ static int validate_format_string(
  * `write_matrix()` writes a matrix to a stream in Matrix Market
  * format.
  *
- * If `format' is `NULL', then the format specifier '%d' is used to
- * print integers and '%f' is used to print floating point
- * numbers. Otherwise, the given format string is used when printing
- * numerical values.
+ * If ‘fmt’ is ‘NULL’, then the format specifier ‘%g’ is used to print
+ * floating point numbers with with enough digits to ensure correct
+ * round-trip conversion from decimal text and back.  Otherwise, the
+ * given format string is used to print numerical values.
  *
  * The format string follows the conventions of `printf'. If the field
  * is `real', `double' or `complex', then the format specifiers '%e',
@@ -1075,15 +1076,15 @@ static int validate_format_string(
 static int write_matrix(
     const struct mtx * matrix,
     const struct stream * stream,
-    const char * format)
+    const char * fmt)
 {
     int err;
     if (matrix->object != mtx_matrix)
         return MTX_ERR_INVALID_MTX_OBJECT;
 
     /* Parse and validate the format string. */
-    if (format) {
-        err = validate_format_string(format, matrix->field);
+    if (fmt) {
+        err = validate_format_string(fmt, matrix->field);
         if (err)
             return err;
     }
@@ -1122,7 +1123,7 @@ static int write_matrix(
                 const float * a = matrix_array->data.real_single;
                 for (int i = 0; i < matrix_array->num_rows; i++) {
                     for (int j = 0; j < matrix_array->num_columns; j++) {
-                        stream_printf(stream, format ? format : "%f",
+                        stream_printf(stream, fmt ? fmt : "%.*g", FLT_DIG,
                                       a[i*matrix_array->num_columns+j]);
                         stream_putc('\n', stream);
                     }
@@ -1131,7 +1132,7 @@ static int write_matrix(
                 const double * a = matrix_array->data.real_double;
                 for (int i = 0; i < matrix_array->num_rows; i++) {
                     for (int j = 0; j < matrix_array->num_columns; j++) {
-                        stream_printf(stream, format ? format : "%f",
+                        stream_printf(stream, fmt ? fmt : "%.*g", DBL_DIG,
                                       a[i*matrix_array->num_columns+j]);
                         stream_putc('\n', stream);
                     }
@@ -1144,10 +1145,10 @@ static int write_matrix(
                 const float (* a)[2] = matrix_array->data.complex_single;
                 for (int i = 0; i < matrix_array->num_rows; i++) {
                     for (int j = 0; j < matrix_array->num_columns; j++) {
-                        stream_printf(stream, format ? format : "%f",
+                        stream_printf(stream, fmt ? fmt : "%.*g", FLT_DIG,
                                       a[i*matrix_array->num_columns+j][0]);
                         stream_putc(' ', stream);
-                        stream_printf(stream, format ? format : "%f",
+                        stream_printf(stream, fmt ? fmt : "%.*g", FLT_DIG,
                                       a[i*matrix_array->num_columns+j][1]);
                         stream_putc('\n', stream);
                     }
@@ -1160,7 +1161,7 @@ static int write_matrix(
                 const int32_t * a = matrix_array->data.integer_single;
                 for (int i = 0; i < matrix_array->num_rows; i++) {
                     for (int j = 0; j < matrix_array->num_columns; j++) {
-                        stream_printf(stream, format ? format : "%d",
+                        stream_printf(stream, fmt ? fmt : "%d",
                                       a[i*matrix_array->num_columns+j]);
                         stream_putc('\n', stream);
                     }
@@ -1181,7 +1182,7 @@ static int write_matrix(
                     matrix_coordinate->data.real_single;
                 for (int64_t k = 0; k < matrix_coordinate->size; k++) {
                     stream_printf(stream, "%d %d ", a[k].i, a[k].j);
-                    stream_printf(stream, format ? format : "%f", a[k].a);
+                    stream_printf(stream, fmt ? fmt : "%.*g", FLT_DIG, a[k].a);
                     stream_putc('\n', stream);
                 }
             } else if (matrix_coordinate->precision == mtx_double) {
@@ -1189,7 +1190,7 @@ static int write_matrix(
                     matrix_coordinate->data.real_double;
                 for (int64_t k = 0; k < matrix_coordinate->size; k++) {
                     stream_printf(stream, "%d %d ", a[k].i, a[k].j);
-                    stream_printf(stream, format ? format : "%f", a[k].a);
+                    stream_printf(stream, fmt ? fmt : "%.*g", DBL_DIG, a[k].a);
                     stream_putc('\n', stream);
                 }
             } else {
@@ -1201,9 +1202,9 @@ static int write_matrix(
                     matrix_coordinate->data.complex_single;
                 for (int64_t k = 0; k < matrix_coordinate->size; k++) {
                     stream_printf(stream, "%d %d ", a[k].i, a[k].j);
-                    stream_printf(stream, format ? format : "%f", a[k].a[0]);
+                    stream_printf(stream, fmt ? fmt : "%.*g", FLT_DIG, a[k].a[0]);
                     stream_putc(' ', stream);
-                    stream_printf(stream, format ? format : "%f", a[k].a[1]);
+                    stream_printf(stream, fmt ? fmt : "%.*g", FLT_DIG, a[k].a[1]);
                     stream_putc('\n', stream);
                 }
             } else {
@@ -1215,7 +1216,7 @@ static int write_matrix(
                     matrix_coordinate->data.integer_single;
                 for (int64_t k = 0; k < matrix_coordinate->size; k++) {
                     stream_printf(stream, "%d %d ", a[k].i, a[k].j);
-                    stream_printf(stream, format ? format : "%d", a[k].a);
+                    stream_printf(stream, fmt ? fmt : "%d", a[k].a);
                     stream_putc('\n', stream);
                 }
             } else {
@@ -1242,10 +1243,10 @@ static int write_matrix(
  * `write_vector()` writes a vector to a stream in the Matrix Market
  * format.
  *
- * If `format' is `NULL', then the format specifier '%d' is used to
- * print integers and '%f' is used to print floating point
- * numbers. Otherwise, the given format string is used when printing
- * numerical values.
+ * If ‘fmt’ is ‘NULL’, then the format specifier ‘%g’ is used to print
+ * floating point numbers with with enough digits to ensure correct
+ * round-trip conversion from decimal text and back.  Otherwise, the
+ * given format string is used to print numerical values.
  *
  * The format string follows the conventions of `printf'. If the field
  * is `real', `double' or `complex', then the format specifiers '%e',
@@ -1259,15 +1260,15 @@ static int write_matrix(
 static int write_vector(
     const struct mtx * vector,
     const struct stream * stream,
-    const char * format)
+    const char * fmt)
 {
     int err;
     if (vector->object != mtx_vector)
         return MTX_ERR_INVALID_MTX_OBJECT;
 
     /* Parse and validate the format string. */
-    if (format) {
-        err = validate_format_string(format, vector->field);
+    if (fmt) {
+        err = validate_format_string(fmt, vector->field);
         if (err)
             return err;
     }
@@ -1303,13 +1304,13 @@ static int write_vector(
             if (vector_array->precision == mtx_single) {
                 const float * a = vector_array->data.real_single;
                 for (int64_t k = 0; k < vector_array->size; k++) {
-                    stream_printf(stream, format ? format : "%f", a[k]);
+                    stream_printf(stream, fmt ? fmt : "%.*g", FLT_DIG, a[k]);
                     stream_putc('\n', stream);
                 }
             } else if (vector_array->precision == mtx_double) {
                 const double * a = vector_array->data.real_double;
                 for (int64_t k = 0; k < vector_array->size; k++) {
-                    stream_printf(stream, format ? format : "%f", a[k]);
+                    stream_printf(stream, fmt ? fmt : "%.*g", DBL_DIG, a[k]);
                     stream_putc('\n', stream);
                 }
             } else {
@@ -1319,9 +1320,9 @@ static int write_vector(
             if (vector_array->precision == mtx_single) {
                 const float (* a)[2] = vector_array->data.complex_single;
                 for (int64_t k = 0; k < vector_array->size; k++) {
-                    stream_printf(stream, format ? format : "%f", a[k][0]);
+                    stream_printf(stream, fmt ? fmt : "%.*g", FLT_DIG, a[k][0]);
                     stream_putc(' ', stream);
-                    stream_printf(stream, format ? format : "%f", a[k][1]);
+                    stream_printf(stream, fmt ? fmt : "%.*g", FLT_DIG, a[k][1]);
                     stream_putc('\n', stream);
                 }
             } else {
@@ -1331,7 +1332,7 @@ static int write_vector(
             if (vector_array->precision == mtx_single) {
                 const int32_t * a = vector_array->data.integer_single;
                 for (int64_t k = 0; k < vector_array->size; k++) {
-                    stream_printf(stream, format ? format : "%d", a[k]);
+                    stream_printf(stream, fmt ? fmt : "%d", a[k]);
                     stream_putc('\n', stream);
                 }
             } else {
@@ -1350,7 +1351,7 @@ static int write_vector(
                     vector_coordinate->data.real_single;
                 for (int64_t k = 0; k < vector_coordinate->size; k++) {
                     stream_printf(stream, "%d ", a[k].i);
-                    stream_printf(stream, format ? format : "%f", a[k].a);
+                    stream_printf(stream, fmt ? fmt : "%.*g", FLT_DIG, a[k].a);
                     stream_putc('\n', stream);
                 }
             } else if (vector_coordinate->precision == mtx_double) {
@@ -1358,7 +1359,7 @@ static int write_vector(
                     vector_coordinate->data.real_double;
                 for (int64_t k = 0; k < vector_coordinate->size; k++) {
                     stream_printf(stream, "%d ", a[k].i);
-                    stream_printf(stream, format ? format : "%f", a[k].a);
+                    stream_printf(stream, fmt ? fmt : "%.*g", DBL_DIG, a[k].a);
                     stream_putc('\n', stream);
                 }
             } else {
@@ -1370,9 +1371,9 @@ static int write_vector(
                     vector_coordinate->data.complex_single;
                 for (int64_t k = 0; k < vector_coordinate->size; k++) {
                     stream_printf(stream, "%d ", a[k].i);
-                    stream_printf(stream, format ? format : "%f", a[k].a[0]);
+                    stream_printf(stream, fmt ? fmt : "%.*g", FLT_DIG, a[k].a[0]);
                     stream_putc(' ', stream);
-                    stream_printf(stream, format ? format : "%f", a[k].a[1]);
+                    stream_printf(stream, fmt ? fmt : "%.*g", FLT_DIG, a[k].a[1]);
                     stream_putc('\n', stream);
                 }
             } else {
@@ -1384,7 +1385,7 @@ static int write_vector(
                     vector_coordinate->data.integer_single;
                 for (int64_t k = 0; k < vector_coordinate->size; k++) {
                     stream_printf(stream, "%d ", a[k].i);
-                    stream_printf(stream, format ? format : "%d", a[k].a);
+                    stream_printf(stream, fmt ? fmt : "%d", a[k].a);
                     stream_putc('\n', stream);
                 }
             } else {
@@ -1431,10 +1432,10 @@ static int write_mtx(
  * `mtx_fwrite()` writes a matrix to a stream in the Matrix Market
  * format.
  *
- * If `format' is `NULL', then the format specifier '%d' is used to
- * print integers and '%f' is used to print floating point
- * numbers. Otherwise, the given format string is used when printing
- * numerical values.
+ * If ‘fmt’ is ‘NULL’, then the format specifier ‘%g’ is used to print
+ * floating point numbers with with enough digits to ensure correct
+ * round-trip conversion from decimal text and back.  Otherwise, the
+ * given format string is used to print numerical values.
  *
  * The format string follows the conventions of `printf'. If the field
  * is `real', `double' or `complex', then the format specifiers '%e',
@@ -1448,12 +1449,12 @@ static int write_mtx(
 int mtx_fwrite(
     const struct mtx * mtx,
     FILE * f,
-    const char * format)
+    const char * fmt)
 {
     struct stream * stream = stream_init_stdio(f);
     if (!stream)
         return MTX_ERR_ERRNO;
-    int err = write_mtx(mtx, stream, format);
+    int err = write_mtx(mtx, stream, fmt);
     free(stream);
     return err;
 }
@@ -1463,10 +1464,10 @@ int mtx_fwrite(
  * `mtx_gzwrite()` writes a matrix or vector to a gzip-compressed
  * stream in Matrix Market format.
  *
- * If `format' is `NULL', then the format specifier '%d' is used to
- * print integers and '%f' is used to print floating point
- * numbers. Otherwise, the given format string is used when printing
- * numerical values.
+ * If ‘fmt’ is ‘NULL’, then the format specifier ‘%g’ is used to print
+ * floating point numbers with with enough digits to ensure correct
+ * round-trip conversion from decimal text and back.  Otherwise, the
+ * given format string is used to print numerical values.
  *
  * The format string follows the conventions of `printf'. If the field
  * is `real', `double' or `complex', then the format specifiers '%e',
@@ -1480,12 +1481,12 @@ int mtx_fwrite(
 int mtx_gzwrite(
     const struct mtx * mtx,
     gzFile f,
-    const char * format)
+    const char * fmt)
 {
     struct stream * stream = stream_init_gz(f);
     if (!stream)
         return MTX_ERR_ERRNO;
-    int err = write_mtx(mtx, stream, format);
+    int err = write_mtx(mtx, stream, fmt);
     free(stream);
     return err;
 }

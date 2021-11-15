@@ -417,9 +417,10 @@ Filter the file through gzip
 
 @item --format=FORMAT
 Format string for outputting numerical values.  For real, double and
-complex values, the format specifiers '%e', '%E', '%f', '%F', '%g' or
-'%G' may be used, whereas '%d' must be used for integers. Flags, field
-width and precision can optionally be specified, e.g., "%+3.1f".
+complex values, the format specifiers @samp{%e}, @samp{%E}, @samp{%f},
+@samp{%F}, @samp{%g} or @samp{%G} may be used, whereas @samp{%d} must
+be used for integers. Flags, field width and precision can optionally
+be specified, e.g., @samp{%+3.1f}.
 
 @item --rowperm-path=FILE
 Path for outputting row permuation as a dense vector in Matrix Market

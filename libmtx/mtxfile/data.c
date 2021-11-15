@@ -44,6 +44,7 @@
 #include <errno.h>
 #include <unistd.h>
 
+#include <float.h>
 #include <inttypes.h>
 #include <locale.h>
 #include <stdarg.h>
@@ -2672,10 +2673,10 @@ static int validate_format_string(
  * `mtxfile_data_fwrite()' writes data lines of a Matrix Market file
  * to a stream.
  *
- * If `fmt' is `NULL', then the format specifier '%d' is used to print
- * integers and '%f' is used to print floating point
- * numbers. Otherwise, the given format string is used when printing
- * numerical values.
+ * If ‘fmt’ is ‘NULL’, then the format specifier ‘%g’ is used to print
+ * floating point numbers with with enough digits to ensure correct
+ * round-trip conversion from decimal text and back.  Otherwise, the
+ * given format string is used to print numerical values.
  *
  * The format string follows the conventions of `printf'. If the field
  * is `real', `double' or `complex', then the format specifiers '%e',
@@ -2725,7 +2726,7 @@ int mtxfile_data_fwrite(
         if (field == mtxfile_real) {
             if (precision == mtx_single) {
                 for (int64_t k = 0; k < size; k++) {
-                    ret = fprintf(f, fmt ? fmt : "%f", data->array_real_single[k]);
+                    ret = fprintf(f, fmt ? fmt : "%.*g", FLT_DIG, data->array_real_single[k]);
                     if (ret < 0) { err = MTX_ERR_ERRNO; goto fwrite_exit; }
                     if (bytes_written) *bytes_written += ret;
                     ret = fputc('\n', f);
@@ -2734,7 +2735,7 @@ int mtxfile_data_fwrite(
                 }
             } else if (precision == mtx_double) {
                 for (int64_t k = 0; k < size; k++) {
-                    ret = fprintf(f, fmt ? fmt : "%f", data->array_real_double[k]);
+                    ret = fprintf(f, fmt ? fmt : "%.*g", DBL_DIG, data->array_real_double[k]);
                     if (ret < 0) { err = MTX_ERR_ERRNO; goto fwrite_exit; }
                     if (bytes_written) *bytes_written += ret;
                     ret = fputc('\n', f);
@@ -2748,14 +2749,14 @@ int mtxfile_data_fwrite(
             if (precision == mtx_single) {
                 for (int64_t k = 0; k < size; k++) {
                     ret = fprintf(
-                        f, fmt ? fmt : "%f", data->array_complex_single[k][0]);
+                        f, fmt ? fmt : "%.*g", FLT_DIG, data->array_complex_single[k][0]);
                     if (ret < 0) { err = MTX_ERR_ERRNO; goto fwrite_exit; }
                     if (bytes_written) *bytes_written += ret;
                     ret = fputc(' ', f);
                     if (ret == EOF) { err = MTX_ERR_ERRNO; goto fwrite_exit; }
                     if (bytes_written) (*bytes_written)++;
                     ret = fprintf(
-                        f, fmt ? fmt : "%f", data->array_complex_single[k][1]);
+                        f, fmt ? fmt : "%.*g", FLT_DIG, data->array_complex_single[k][1]);
                     if (ret < 0) { err = MTX_ERR_ERRNO; goto fwrite_exit; }
                     if (bytes_written) *bytes_written += ret;
                     ret = fputc('\n', f);
@@ -2765,14 +2766,14 @@ int mtxfile_data_fwrite(
             } else if (precision == mtx_double) {
                 for (int64_t k = 0; k < size; k++) {
                     ret = fprintf(
-                        f, fmt ? fmt : "%f", data->array_complex_double[k][0]);
+                        f, fmt ? fmt : "%.*g", DBL_DIG, data->array_complex_double[k][0]);
                     if (ret < 0) { err = MTX_ERR_ERRNO; goto fwrite_exit; }
                     if (bytes_written) *bytes_written += ret;
                     ret = fputc(' ', f);
                     if (ret == EOF) { err = MTX_ERR_ERRNO; goto fwrite_exit; }
                     if (bytes_written) (*bytes_written)++;
                     ret = fprintf(
-                        f, fmt ? fmt : "%f", data->array_complex_double[k][1]);
+                        f, fmt ? fmt : "%.*g", DBL_DIG, data->array_complex_double[k][1]);
                     if (ret < 0) { err = MTX_ERR_ERRNO; goto fwrite_exit; }
                     if (bytes_written) *bytes_written += ret;
                     ret = fputc('\n', f);
@@ -2820,7 +2821,7 @@ int mtxfile_data_fwrite(
                         if (ret < 0) { err = MTX_ERR_ERRNO; goto fwrite_exit; }
                         if (bytes_written) *bytes_written += ret;
                         ret = fprintf(
-                            f, fmt ? fmt : "%f",
+                            f, fmt ? fmt : "%.*g", FLT_DIG,
                             data->matrix_coordinate_real_single[k].a);
                         if (ret < 0) { err = MTX_ERR_ERRNO; goto fwrite_exit; }
                         if (bytes_written) *bytes_written += ret;
@@ -2837,7 +2838,7 @@ int mtxfile_data_fwrite(
                         if (ret < 0) { err = MTX_ERR_ERRNO; goto fwrite_exit; }
                         if (bytes_written) *bytes_written += ret;
                         ret = fprintf(
-                            f, fmt ? fmt : "%f",
+                            f, fmt ? fmt : "%.*g", DBL_DIG,
                             data->matrix_coordinate_real_double[k].a);
                         if (ret < 0) { err = MTX_ERR_ERRNO; goto fwrite_exit; }
                         if (bytes_written) *bytes_written += ret;
@@ -2858,7 +2859,7 @@ int mtxfile_data_fwrite(
                         if (ret < 0) { err = MTX_ERR_ERRNO; goto fwrite_exit; }
                         if (bytes_written) *bytes_written += ret;
                         ret = fprintf(
-                            f, fmt ? fmt : "%f",
+                            f, fmt ? fmt : "%.*g", FLT_DIG,
                             data->matrix_coordinate_complex_single[k].a[0]);
                         if (ret < 0) { err = MTX_ERR_ERRNO; goto fwrite_exit; }
                         if (bytes_written) *bytes_written += ret;
@@ -2866,7 +2867,7 @@ int mtxfile_data_fwrite(
                         if (ret == EOF) { err = MTX_ERR_ERRNO; goto fwrite_exit; }
                         if (bytes_written) (*bytes_written)++;
                         ret = fprintf(
-                            f, fmt ? fmt : "%f",
+                            f, fmt ? fmt : "%.*g", FLT_DIG,
                             data->matrix_coordinate_complex_single[k].a[1]);
                         if (ret < 0) { err = MTX_ERR_ERRNO; goto fwrite_exit; }
                         if (bytes_written) *bytes_written += ret;
@@ -2883,7 +2884,7 @@ int mtxfile_data_fwrite(
                         if (ret < 0) { err = MTX_ERR_ERRNO; goto fwrite_exit; }
                         if (bytes_written) *bytes_written += ret;
                         ret = fprintf(
-                            f, fmt ? fmt : "%f",
+                            f, fmt ? fmt : "%.*g", DBL_DIG,
                             data->matrix_coordinate_complex_double[k].a[0]);
                         if (ret < 0) { err = MTX_ERR_ERRNO; goto fwrite_exit; }
                         if (bytes_written) *bytes_written += ret;
@@ -2891,7 +2892,7 @@ int mtxfile_data_fwrite(
                         if (ret == EOF) { err = MTX_ERR_ERRNO; goto fwrite_exit; }
                         if (bytes_written) (*bytes_written)++;
                         ret = fprintf(
-                            f, fmt ? fmt : "%f",
+                            f, fmt ? fmt : "%.*g", DBL_DIG,
                             data->matrix_coordinate_complex_double[k].a[1]);
                         if (ret < 0) { err = MTX_ERR_ERRNO; goto fwrite_exit; }
                         if (bytes_written) *bytes_written += ret;
@@ -2962,7 +2963,7 @@ int mtxfile_data_fwrite(
                         if (ret < 0) { err = MTX_ERR_ERRNO; goto fwrite_exit; }
                         if (bytes_written) *bytes_written += ret;
                         ret = fprintf(
-                            f, fmt ? fmt : "%f",
+                            f, fmt ? fmt : "%.*g", FLT_DIG,
                             data->vector_coordinate_real_single[k].a);
                         if (ret < 0) { err = MTX_ERR_ERRNO; goto fwrite_exit; }
                         if (bytes_written) *bytes_written += ret;
@@ -2977,7 +2978,7 @@ int mtxfile_data_fwrite(
                         if (ret < 0) { err = MTX_ERR_ERRNO; goto fwrite_exit; }
                         if (bytes_written) *bytes_written += ret;
                         ret = fprintf(
-                            f, fmt ? fmt : "%f",
+                            f, fmt ? fmt : "%.*g", DBL_DIG,
                             data->vector_coordinate_real_double[k].a);
                         if (ret < 0) { err = MTX_ERR_ERRNO; goto fwrite_exit; }
                         if (bytes_written) *bytes_written += ret;
@@ -2996,7 +2997,7 @@ int mtxfile_data_fwrite(
                         if (ret < 0) { err = MTX_ERR_ERRNO; goto fwrite_exit; }
                         if (bytes_written) *bytes_written += ret;
                         ret = fprintf(
-                            f, fmt ? fmt : "%f",
+                            f, fmt ? fmt : "%.*g", FLT_DIG,
                             data->vector_coordinate_complex_single[k].a[0]);
                         if (ret < 0) { err = MTX_ERR_ERRNO; goto fwrite_exit; }
                         if (bytes_written) *bytes_written += ret;
@@ -3004,7 +3005,7 @@ int mtxfile_data_fwrite(
                         if (ret == EOF) { err = MTX_ERR_ERRNO; goto fwrite_exit; }
                         if (bytes_written) (*bytes_written)++;
                         ret = fprintf(
-                            f, fmt ? fmt : "%f",
+                            f, fmt ? fmt : "%.*g", FLT_DIG,
                             data->vector_coordinate_complex_single[k].a[1]);
                         if (ret < 0) { err = MTX_ERR_ERRNO; goto fwrite_exit; }
                         if (bytes_written) *bytes_written += ret;
@@ -3019,7 +3020,7 @@ int mtxfile_data_fwrite(
                         if (ret < 0) { err = MTX_ERR_ERRNO; goto fwrite_exit; }
                         if (bytes_written) *bytes_written += ret;
                         ret = fprintf(
-                            f, fmt ? fmt : "%f",
+                            f, fmt ? fmt : "%.*g", DBL_DIG,
                             data->vector_coordinate_complex_double[k].a[0]);
                         if (ret < 0) { err = MTX_ERR_ERRNO; goto fwrite_exit; }
                         if (bytes_written) *bytes_written += ret;
@@ -3027,7 +3028,7 @@ int mtxfile_data_fwrite(
                         if (ret == EOF) { err = MTX_ERR_ERRNO; goto fwrite_exit; }
                         if (bytes_written) (*bytes_written)++;
                         ret = fprintf(
-                            f, fmt ? fmt : "%f",
+                            f, fmt ? fmt : "%.*g", DBL_DIG,
                             data->vector_coordinate_complex_double[k].a[1]);
                         if (ret < 0) { err = MTX_ERR_ERRNO; goto fwrite_exit; }
                         if (bytes_written) *bytes_written += ret;
@@ -3102,10 +3103,10 @@ fwrite_exit:
  * `mtxfile_data_gzwrite()' writes data lines of a Matrix Market file
  * to a gzip-compressed stream.
  *
- * If `fmt' is `NULL', then the format specifier '%d' is used to print
- * integers and '%f' is used to print floating point
- * numbers. Otherwise, the given format string is used when printing
- * numerical values.
+ * If ‘fmt’ is ‘NULL’, then the format specifier ‘%g’ is used to print
+ * floating point numbers with with enough digits to ensure correct
+ * round-trip conversion from decimal text and back.  Otherwise, the
+ * given format string is used to print numerical values.
  *
  * The format string follows the conventions of `printf'. If the field
  * is `real', `double' or `complex', then the format specifiers '%e',
@@ -3155,7 +3156,7 @@ int mtxfile_data_gzwrite(
         if (field == mtxfile_real) {
             if (precision == mtx_single) {
                 for (int64_t k = 0; k < size; k++) {
-                    ret = gzprintf(f, fmt ? fmt : "%f", data->array_real_single[k]);
+                    ret = gzprintf(f, fmt ? fmt : "%.*g", FLT_DIG, data->array_real_single[k]);
                     if (ret < 0) { err = MTX_ERR_ERRNO; goto gzwrite_exit; }
                     if (bytes_written) *bytes_written += ret;
                     ret = gzputc(f, '\n');
@@ -3164,7 +3165,7 @@ int mtxfile_data_gzwrite(
                 }
             } else if (precision == mtx_double) {
                 for (int64_t k = 0; k < size; k++) {
-                    ret = gzprintf(f, fmt ? fmt : "%f", data->array_real_double[k]);
+                    ret = gzprintf(f, fmt ? fmt : "%.*g", DBL_DIG, data->array_real_double[k]);
                     if (ret < 0) { err = MTX_ERR_ERRNO; goto gzwrite_exit; }
                     if (bytes_written) *bytes_written += ret;
                     ret = gzputc(f, '\n');
@@ -3178,14 +3179,14 @@ int mtxfile_data_gzwrite(
             if (precision == mtx_single) {
                 for (int64_t k = 0; k < size; k++) {
                     ret = gzprintf(
-                        f, fmt ? fmt : "%f", data->array_complex_single[k][0]);
+                        f, fmt ? fmt : "%.*g", FLT_DIG, data->array_complex_single[k][0]);
                     if (ret < 0) { err = MTX_ERR_ERRNO; goto gzwrite_exit; }
                     if (bytes_written) *bytes_written += ret;
                     ret = gzputc(f, ' ');
                     if (ret == EOF) { err = MTX_ERR_ERRNO; goto gzwrite_exit; }
                     if (bytes_written) (*bytes_written)++;
                     ret = gzprintf(
-                        f, fmt ? fmt : "%f", data->array_complex_single[k][1]);
+                        f, fmt ? fmt : "%.*g", FLT_DIG, data->array_complex_single[k][1]);
                     if (ret < 0) { err = MTX_ERR_ERRNO; goto gzwrite_exit; }
                     if (bytes_written) *bytes_written += ret;
                     ret = gzputc(f, '\n');
@@ -3195,14 +3196,14 @@ int mtxfile_data_gzwrite(
             } else if (precision == mtx_double) {
                 for (int64_t k = 0; k < size; k++) {
                     ret = gzprintf(
-                        f, fmt ? fmt : "%f", data->array_complex_double[k][0]);
+                        f, fmt ? fmt : "%.*g", DBL_DIG, data->array_complex_double[k][0]);
                     if (ret < 0) { err = MTX_ERR_ERRNO; goto gzwrite_exit; }
                     if (bytes_written) *bytes_written += ret;
                     ret = gzputc(f, ' ');
                     if (ret == EOF) { err = MTX_ERR_ERRNO; goto gzwrite_exit; }
                     if (bytes_written) (*bytes_written)++;
                     ret = gzprintf(
-                        f, fmt ? fmt : "%f", data->array_complex_double[k][1]);
+                        f, fmt ? fmt : "%.*g", DBL_DIG, data->array_complex_double[k][1]);
                     if (ret < 0) { err = MTX_ERR_ERRNO; goto gzwrite_exit; }
                     if (bytes_written) *bytes_written += ret;
                     ret = gzputc(f, '\n');
@@ -3250,7 +3251,7 @@ int mtxfile_data_gzwrite(
                         if (ret < 0) { err = MTX_ERR_ERRNO; goto gzwrite_exit; }
                         if (bytes_written) *bytes_written += ret;
                         ret = gzprintf(
-                            f, fmt ? fmt : "%f",
+                            f, fmt ? fmt : "%.*g", FLT_DIG,
                             data->matrix_coordinate_real_single[k].a);
                         if (ret < 0) { err = MTX_ERR_ERRNO; goto gzwrite_exit; }
                         if (bytes_written) *bytes_written += ret;
@@ -3267,7 +3268,7 @@ int mtxfile_data_gzwrite(
                         if (ret < 0) { err = MTX_ERR_ERRNO; goto gzwrite_exit; }
                         if (bytes_written) *bytes_written += ret;
                         ret = gzprintf(
-                            f, fmt ? fmt : "%f",
+                            f, fmt ? fmt : "%.*g", DBL_DIG,
                             data->matrix_coordinate_real_double[k].a);
                         if (ret < 0) { err = MTX_ERR_ERRNO; goto gzwrite_exit; }
                         if (bytes_written) *bytes_written += ret;
@@ -3288,7 +3289,7 @@ int mtxfile_data_gzwrite(
                         if (ret < 0) { err = MTX_ERR_ERRNO; goto gzwrite_exit; }
                         if (bytes_written) *bytes_written += ret;
                         ret = gzprintf(
-                            f, fmt ? fmt : "%f",
+                            f, fmt ? fmt : "%.*g", FLT_DIG,
                             data->matrix_coordinate_complex_single[k].a[0]);
                         if (ret < 0) { err = MTX_ERR_ERRNO; goto gzwrite_exit; }
                         if (bytes_written) *bytes_written += ret;
@@ -3296,7 +3297,7 @@ int mtxfile_data_gzwrite(
                         if (ret == EOF) { err = MTX_ERR_ERRNO; goto gzwrite_exit; }
                         if (bytes_written) (*bytes_written)++;
                         ret = gzprintf(
-                            f, fmt ? fmt : "%f",
+                            f, fmt ? fmt : "%.*g", FLT_DIG,
                             data->matrix_coordinate_complex_single[k].a[1]);
                         if (ret < 0) { err = MTX_ERR_ERRNO; goto gzwrite_exit; }
                         if (bytes_written) *bytes_written += ret;
@@ -3313,7 +3314,7 @@ int mtxfile_data_gzwrite(
                         if (ret < 0) { err = MTX_ERR_ERRNO; goto gzwrite_exit; }
                         if (bytes_written) *bytes_written += ret;
                         ret = gzprintf(
-                            f, fmt ? fmt : "%f",
+                            f, fmt ? fmt : "%.*g", DBL_DIG,
                             data->matrix_coordinate_complex_double[k].a[0]);
                         if (ret < 0) { err = MTX_ERR_ERRNO; goto gzwrite_exit; }
                         if (bytes_written) *bytes_written += ret;
@@ -3321,7 +3322,7 @@ int mtxfile_data_gzwrite(
                         if (ret == EOF) { err = MTX_ERR_ERRNO; goto gzwrite_exit; }
                         if (bytes_written) (*bytes_written)++;
                         ret = gzprintf(
-                            f, fmt ? fmt : "%f",
+                            f, fmt ? fmt : "%.*g", DBL_DIG,
                             data->matrix_coordinate_complex_double[k].a[1]);
                         if (ret < 0) { err = MTX_ERR_ERRNO; goto gzwrite_exit; }
                         if (bytes_written) *bytes_written += ret;
@@ -3392,7 +3393,7 @@ int mtxfile_data_gzwrite(
                         if (ret < 0) { err = MTX_ERR_ERRNO; goto gzwrite_exit; }
                         if (bytes_written) *bytes_written += ret;
                         ret = gzprintf(
-                            f, fmt ? fmt : "%f",
+                            f, fmt ? fmt : "%.*g", FLT_DIG,
                             data->vector_coordinate_real_single[k].a);
                         if (ret < 0) { err = MTX_ERR_ERRNO; goto gzwrite_exit; }
                         if (bytes_written) *bytes_written += ret;
@@ -3407,7 +3408,7 @@ int mtxfile_data_gzwrite(
                         if (ret < 0) { err = MTX_ERR_ERRNO; goto gzwrite_exit; }
                         if (bytes_written) *bytes_written += ret;
                         ret = gzprintf(
-                            f, fmt ? fmt : "%f",
+                            f, fmt ? fmt : "%.*g", DBL_DIG,
                             data->vector_coordinate_real_double[k].a);
                         if (ret < 0) { err = MTX_ERR_ERRNO; goto gzwrite_exit; }
                         if (bytes_written) *bytes_written += ret;
@@ -3426,12 +3427,12 @@ int mtxfile_data_gzwrite(
                         if (ret < 0) { err = MTX_ERR_ERRNO; goto gzwrite_exit; }
                         if (bytes_written) *bytes_written += ret;
                         ret = gzprintf(
-                            f, fmt ? fmt : "%f",
+                            f, fmt ? fmt : "%.*g", FLT_DIG,
                             data->vector_coordinate_complex_single[k].a[0]);
                         if (ret < 0) { err = MTX_ERR_ERRNO; goto gzwrite_exit; }
                         if (bytes_written) *bytes_written += ret;
                         ret = gzprintf(
-                            f, fmt ? fmt : "%f",
+                            f, fmt ? fmt : "%.*g", FLT_DIG,
                             data->vector_coordinate_complex_single[k].a[1]);
                         if (ret < 0) { err = MTX_ERR_ERRNO; goto gzwrite_exit; }
                         if (bytes_written) *bytes_written += ret;
@@ -3446,12 +3447,12 @@ int mtxfile_data_gzwrite(
                         if (ret < 0) { err = MTX_ERR_ERRNO; goto gzwrite_exit; }
                         if (bytes_written) *bytes_written += ret;
                         ret = gzprintf(
-                            f, fmt ? fmt : "%f",
+                            f, fmt ? fmt : "%.*g", DBL_DIG,
                             data->vector_coordinate_complex_double[k].a[0]);
                         if (ret < 0) { err = MTX_ERR_ERRNO; goto gzwrite_exit; }
                         if (bytes_written) *bytes_written += ret;
                         ret = gzprintf(
-                            f, fmt ? fmt : "%f",
+                            f, fmt ? fmt : "%.*g", DBL_DIG,
                             data->vector_coordinate_complex_double[k].a[1]);
                         if (ret < 0) { err = MTX_ERR_ERRNO; goto gzwrite_exit; }
                         if (bytes_written) *bytes_written += ret;

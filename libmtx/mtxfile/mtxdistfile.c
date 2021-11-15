@@ -1706,10 +1706,10 @@ int mtxdistfile_fread(
  *
  * If `path' is `-', then standard output is used.
  *
- * If `format' is `NULL', then the format specifier '%d' is used to
- * print integers and '%f' is used to print floating point
- * numbers. Otherwise, the given format string is used when printing
- * numerical values.
+ * If ‘fmt’ is ‘NULL’, then the format specifier ‘%g’ is used to print
+ * floating point numbers with with enough digits to ensure correct
+ * round-trip conversion from decimal text and back.  Otherwise, the
+ * given format string is used to print numerical values.
  *
  * The format string follows the conventions of `printf'. If the field
  * is `real', `double' or `complex', then the format specifiers '%e',
@@ -1728,7 +1728,7 @@ int mtxdistfile_write(
     const struct mtxdistfile * mtxdistfile,
     const char * path,
     bool gzip,
-    const char * format,
+    const char * fmt,
     int64_t * bytes_written,
     bool sequential,
     struct mtxmpierror * mpierror)
@@ -1749,7 +1749,7 @@ int mtxdistfile_write(
             return MTX_ERR_ERRNO;
         }
         err = mtxdistfile_fwrite(
-            mtxdistfile, f, format, bytes_written, sequential, mpierror);
+            mtxdistfile, f, fmt, bytes_written, sequential, mpierror);
         if (err) {
             fclose(f);
             return err;
@@ -1769,10 +1769,10 @@ int mtxdistfile_write(
  *
  * If `path' is `-', then standard output is used.
  *
- * If `format' is `NULL', then the format specifier '%d' is used to
- * print integers and '%f' is used to print floating point
- * numbers. Otherwise, the given format string is used when printing
- * numerical values.
+ * If ‘fmt’ is ‘NULL’, then the format specifier ‘%g’ is used to print
+ * floating point numbers with with enough digits to ensure correct
+ * round-trip conversion from decimal text and back.  Otherwise, the
+ * given format string is used to print numerical values.
  *
  * The format string follows the conventions of `printf'. If the field
  * is `real', `double' or `complex', then the format specifiers '%e',
@@ -1791,7 +1791,7 @@ int mtxdistfile_write_shared(
     const struct mtxdistfile * mtxdistfile,
     const char * path,
     bool gzip,
-    const char * format,
+    const char * fmt,
     int64_t * bytes_written,
     struct mtxmpierror * mpierror)
 {
@@ -1812,7 +1812,7 @@ int mtxdistfile_write_shared(
             return MTX_ERR_ERRNO;
         }
         err = mtxdistfile_fwrite_shared(
-            mtxdistfile, f, format, bytes_written, mpierror);
+            mtxdistfile, f, fmt, bytes_written, mpierror);
         if (err) {
             fclose(f);
             return err;
@@ -1828,7 +1828,7 @@ int mtxdistfile_write_shared(
 static int mtxdistfile_fwrite_mtxfile(
     const struct mtxdistfile * mtxdistfile,
     FILE * f,
-    const char * format,
+    const char * fmt,
     int64_t * bytes_written)
 {
     int err;
@@ -1855,7 +1855,7 @@ static int mtxdistfile_fwrite_mtxfile(
     err = mtxfile_data_fwrite(
         &mtxfile->data, mtxfile->header.object, mtxfile->header.format,
         mtxfile->header.field, mtxfile->precision, num_data_lines,
-        f, format, bytes_written);
+        f, fmt, bytes_written);
     if (err)
         return err;
     return MTX_SUCCESS;
@@ -1865,10 +1865,10 @@ static int mtxdistfile_fwrite_mtxfile(
  * `mtxdistfile_fwrite()' writes a distributed Matrix Market file to
  * the specified stream on each process.
  *
- * If `format' is `NULL', then the format specifier '%d' is used to
- * print integers and '%f' is used to print floating point
- * numbers. Otherwise, the given format string is used when printing
- * numerical values.
+ * If ‘fmt’ is ‘NULL’, then the format specifier ‘%g’ is used to print
+ * floating point numbers with with enough digits to ensure correct
+ * round-trip conversion from decimal text and back.  Otherwise, the
+ * given format string is used to print numerical values.
  *
  * The format string follows the conventions of `printf'. If the field
  * is `real', `double' or `complex', then the format specifiers '%e',
@@ -1895,7 +1895,7 @@ static int mtxdistfile_fwrite_mtxfile(
 int mtxdistfile_fwrite(
     const struct mtxdistfile * mtxdistfile,
     FILE * f,
-    const char * format,
+    const char * fmt,
     int64_t * bytes_written,
     bool sequential,
     struct mtxmpierror * mpierror)
@@ -1904,14 +1904,14 @@ int mtxdistfile_fwrite(
     if (sequential) {
         for (int p = 0; p < mtxdistfile->comm_size; p++) {
             err = (mtxdistfile->rank == p)
-                ? mtxdistfile_fwrite_mtxfile(mtxdistfile, f, format, bytes_written)
+                ? mtxdistfile_fwrite_mtxfile(mtxdistfile, f, fmt, bytes_written)
                 : MTX_SUCCESS;
             if (mtxmpierror_allreduce(mpierror, err))
                 return MTX_ERR_MPI_COLLECTIVE;
             MPI_Barrier(mtxdistfile->comm);
         }
     } else {
-        err = mtxdistfile_fwrite_mtxfile(mtxdistfile, f, format, bytes_written);
+        err = mtxdistfile_fwrite_mtxfile(mtxdistfile, f, fmt, bytes_written);
         if (mtxmpierror_allreduce(mpierror, err))
             return MTX_ERR_MPI_COLLECTIVE;
     }
@@ -1923,10 +1923,10 @@ int mtxdistfile_fwrite(
  * file to a single stream that is shared by every process in the
  * communicator.
  *
- * If `format' is `NULL', then the format specifier '%d' is used to
- * print integers and '%f' is used to print floating point
- * numbers. Otherwise, the given format string is used when printing
- * numerical values.
+ * If ‘fmt’ is ‘NULL’, then the format specifier ‘%g’ is used to print
+ * floating point numbers with with enough digits to ensure correct
+ * round-trip conversion from decimal text and back.  Otherwise, the
+ * given format string is used to print numerical values.
  *
  * The format string follows the conventions of `printf'. If the field
  * is `real', `double' or `complex', then the format specifiers '%e',
@@ -1947,7 +1947,7 @@ int mtxdistfile_fwrite(
 int mtxdistfile_fwrite_shared(
     const struct mtxdistfile * mtxdistfile,
     FILE * f,
-    const char * format,
+    const char * fmt,
     int64_t * bytes_written,
     struct mtxmpierror * mpierror)
 {
@@ -1981,7 +1981,7 @@ int mtxdistfile_fwrite_shared(
         err = (rank == p) ? mtxfile_data_fwrite(
             &mtxfile->data, mtxfile->header.object, mtxfile->header.format,
             mtxfile->header.field, mtxfile->precision, num_data_lines,
-            f, format, bytes_written)
+            f, fmt, bytes_written)
             : MTX_SUCCESS;
         if (mtxmpierror_allreduce(mpierror, err))
             return MTX_ERR_MPI_COLLECTIVE;

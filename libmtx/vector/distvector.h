@@ -419,10 +419,10 @@ int mtxdistvector_gzread(
  *
  * If ‘path’ is ‘-’, then standard output is used.
  *
- * If ‘format’ is ‘NULL’, then the format specifier '%d' is used to
- * print integers and '%f' is used to print floating point
- * numbers. Otherwise, the given format string is used when printing
- * numerical values.
+ * If ‘fmt’ is ‘NULL’, then the format specifier ‘%g’ is used to print
+ * floating point numbers with with enough digits to ensure correct
+ * round-trip conversion from decimal text and back.  Otherwise, the
+ * given format string is used to print numerical values.
  *
  * The format string follows the conventions of ‘printf’. If the field
  * is ‘real’, ‘double’ or ‘complex’, then the format specifiers '%e',
@@ -437,16 +437,16 @@ int mtxdistvector_write(
     const struct mtxdistvector * distvector,
     const char * path,
     bool gzip,
-    const char * format,
+    const char * fmt,
     int64_t * bytes_written);
 
 /**
  * ‘mtxdistvector_fwrite()’ writes a vector to a stream.
  *
- * If ‘format’ is ‘NULL’, then the format specifier '%d' is used to
- * print integers and '%f' is used to print floating point
- * numbers. Otherwise, the given format string is used when printing
- * numerical values.
+ * If ‘fmt’ is ‘NULL’, then the format specifier ‘%g’ is used to print
+ * floating point numbers with with enough digits to ensure correct
+ * round-trip conversion from decimal text and back.  Otherwise, the
+ * given format string is used to print numerical values.
  *
  * The format string follows the conventions of ‘printf’. If the field
  * is ‘real’, ‘double’ or ‘complex’, then the format specifiers '%e',
@@ -463,7 +463,7 @@ int mtxdistvector_write(
 int mtxdistvector_fwrite(
     const struct mtxdistvector * distvector,
     FILE * f,
-    const char * format,
+    const char * fmt,
     int64_t * bytes_written);
 
 /**
@@ -471,10 +471,10 @@ int mtxdistvector_fwrite(
  * Matrix Market file to a single stream that is shared by every
  * process in the communicator.
  *
- * If `format' is `NULL', then the format specifier '%d' is used to
- * print integers and '%f' is used to print floating point
- * numbers. Otherwise, the given format string is used when printing
- * numerical values.
+ * If ‘fmt’ is ‘NULL’, then the format specifier ‘%g’ is used to print
+ * floating point numbers with with enough digits to ensure correct
+ * round-trip conversion from decimal text and back.  Otherwise, the
+ * given format string is used to print numerical values.
  *
  * The format string follows the conventions of `printf'. If the field
  * is `real', `double' or `complex', then the format specifiers '%e',
@@ -495,7 +495,7 @@ int mtxdistvector_fwrite(
 int mtxdistvector_fwrite_shared(
     const struct mtxdistvector * mtxdistvector,
     FILE * f,
-    const char * format,
+    const char * fmt,
     int64_t * bytes_written,
     struct mtxmpierror * mpierror);
 
@@ -504,10 +504,10 @@ int mtxdistvector_fwrite_shared(
  * ‘mtxdistvector_gzwrite()’ writes a vector to a gzip-compressed
  * stream.
  *
- * If ‘format’ is ‘NULL’, then the format specifier '%d' is used to
- * print integers and '%f' is used to print floating point
- * numbers. Otherwise, the given format string is used when printing
- * numerical values.
+ * If ‘fmt’ is ‘NULL’, then the format specifier ‘%g’ is used to print
+ * floating point numbers with with enough digits to ensure correct
+ * round-trip conversion from decimal text and back.  Otherwise, the
+ * given format string is used to print numerical values.
  *
  * The format string follows the conventions of ‘printf’. If the field
  * is ‘real’, ‘double’ or ‘complex’, then the format specifiers '%e',
@@ -524,7 +524,7 @@ int mtxdistvector_fwrite_shared(
 int mtxdistvector_gzwrite(
     const struct mtxdistvector * distvector,
     gzFile f,
-    const char * format,
+    const char * fmt,
     int64_t * bytes_written);
 #endif
 

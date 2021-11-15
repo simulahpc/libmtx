@@ -653,10 +653,10 @@ int mtxmatrix_gzread(
  *
  * If `path' is `-', then standard output is used.
  *
- * If `format' is `NULL', then the format specifier '%d' is used to
- * print integers and '%f' is used to print floating point
- * numbers. Otherwise, the given format string is used when printing
- * numerical values.
+ * If ‘fmt’ is ‘NULL’, then the format specifier ‘%g’ is used to print
+ * floating point numbers with with enough digits to ensure correct
+ * round-trip conversion from decimal text and back.  Otherwise, the
+ * given format string is used to print numerical values.
  *
  * The format string follows the conventions of `printf'. If the field
  * is `real', `double' or `complex', then the format specifiers '%e',
@@ -671,7 +671,7 @@ int mtxmatrix_write(
     const struct mtxmatrix * matrix,
     const char * path,
     bool gzip,
-    const char * format,
+    const char * fmt,
     int64_t * bytes_written)
 {
     int err;
@@ -680,7 +680,7 @@ int mtxmatrix_write(
     if (err)
         return err;
     err = mtxfile_write(
-        &mtxfile, path, gzip, format, bytes_written);
+        &mtxfile, path, gzip, fmt, bytes_written);
     if (err) {
         mtxfile_free(&mtxfile);
         return err;
@@ -692,10 +692,10 @@ int mtxmatrix_write(
 /**
  * `mtxmatrix_fwrite()' writes a matrix to a stream.
  *
- * If `format' is `NULL', then the format specifier '%d' is used to
- * print integers and '%f' is used to print floating point
- * numbers. Otherwise, the given format string is used when printing
- * numerical values.
+ * If ‘fmt’ is ‘NULL’, then the format specifier ‘%g’ is used to print
+ * floating point numbers with with enough digits to ensure correct
+ * round-trip conversion from decimal text and back.  Otherwise, the
+ * given format string is used to print numerical values.
  *
  * The format string follows the conventions of `printf'. If the field
  * is `real', `double' or `complex', then the format specifiers '%e',
@@ -712,7 +712,7 @@ int mtxmatrix_write(
 int mtxmatrix_fwrite(
     const struct mtxmatrix * matrix,
     FILE * f,
-    const char * format,
+    const char * fmt,
     int64_t * bytes_written)
 {
     int err;
@@ -721,7 +721,7 @@ int mtxmatrix_fwrite(
     if (err)
         return err;
     err = mtxfile_fwrite(
-        &mtxfile, f, format, bytes_written);
+        &mtxfile, f, fmt, bytes_written);
     if (err) {
         mtxfile_free(&mtxfile);
         return err;
@@ -734,10 +734,10 @@ int mtxmatrix_fwrite(
 /**
  * `mtxmatrix_gzwrite()' writes a matrix to a gzip-compressed stream.
  *
- * If `format' is `NULL', then the format specifier '%d' is used to
- * print integers and '%f' is used to print floating point
- * numbers. Otherwise, the given format string is used when printing
- * numerical values.
+ * If ‘fmt’ is ‘NULL’, then the format specifier ‘%g’ is used to print
+ * floating point numbers with with enough digits to ensure correct
+ * round-trip conversion from decimal text and back.  Otherwise, the
+ * given format string is used to print numerical values.
  *
  * The format string follows the conventions of `printf'. If the field
  * is `real', `double' or `complex', then the format specifiers '%e',
@@ -754,7 +754,7 @@ int mtxmatrix_fwrite(
 int mtxmatrix_gzwrite(
     const struct mtxmatrix * matrix,
     gzFile f,
-    const char * format,
+    const char * fmt,
     int64_t * bytes_written)
 {
     int err;
@@ -763,7 +763,7 @@ int mtxmatrix_gzwrite(
     if (err)
         return err;
     err = mtxfile_gzwrite(
-        &mtxfile, f, format, bytes_written);
+        &mtxfile, f, fmt, bytes_written);
     if (err) {
         mtxfile_free(&mtxfile);
         return err;

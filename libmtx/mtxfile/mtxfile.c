@@ -1511,10 +1511,10 @@ int mtxfile_gzread(
  *
  * If `path' is `-', then standard output is used.
  *
- * If `format' is `NULL', then the format specifier '%d' is used to
- * print integers and '%f' is used to print floating point
- * numbers. Otherwise, the given format string is used when printing
- * numerical values.
+ * If ‘fmt’ is ‘NULL’, then the format specifier ‘%g’ is used to print
+ * floating point numbers with with enough digits to ensure correct
+ * round-trip conversion from decimal text and back.  Otherwise, the
+ * given format string is used to print numerical values.
  *
  * The format string follows the conventions of `printf'. If the field
  * is `real', `double' or `complex', then the format specifiers '%e',
@@ -1529,7 +1529,7 @@ int mtxfile_write(
     const struct mtxfile * mtxfile,
     const char * path,
     bool gzip,
-    const char * format,
+    const char * fmt,
     int64_t * bytes_written)
 {
     int err;
@@ -1548,7 +1548,7 @@ int mtxfile_write(
         } else if ((f = fopen(path, "w")) == NULL) {
             return MTX_ERR_ERRNO;
         }
-        err = mtxfile_fwrite(mtxfile, f, format, bytes_written);
+        err = mtxfile_fwrite(mtxfile, f, fmt, bytes_written);
         if (err) {
             fclose(f);
             return err;
@@ -1568,7 +1568,7 @@ int mtxfile_write(
         } else if ((f = gzopen(path, "w")) == NULL) {
             return MTX_ERR_ERRNO;
         }
-        err = mtxfile_gzwrite(mtxfile, f, format, bytes_written);
+        err = mtxfile_gzwrite(mtxfile, f, fmt, bytes_written);
         if (err) {
             gzclose(f);
             return err;
@@ -1585,10 +1585,10 @@ int mtxfile_write(
 /**
  * `mtxfile_fwrite()' writes a Matrix Market file to a stream.
  *
- * If `format' is `NULL', then the format specifier '%d' is used to
- * print integers and '%f' is used to print floating point
- * numbers. Otherwise, the given format string is used when printing
- * numerical values.
+ * If ‘fmt’ is ‘NULL’, then the format specifier ‘%g’ is used to print
+ * floating point numbers with with enough digits to ensure correct
+ * round-trip conversion from decimal text and back.  Otherwise, the
+ * given format string is used to print numerical values.
  *
  * The format string follows the conventions of `printf'. If the field
  * is `real', `double' or `complex', then the format specifiers '%e',
@@ -1605,7 +1605,7 @@ int mtxfile_write(
 int mtxfile_fwrite(
     const struct mtxfile * mtxfile,
     FILE * f,
-    const char * format,
+    const char * fmt,
     int64_t * bytes_written)
 {
     int err;
@@ -1628,7 +1628,7 @@ int mtxfile_fwrite(
     err = mtxfile_data_fwrite(
         &mtxfile->data, mtxfile->header.object, mtxfile->header.format,
         mtxfile->header.field, mtxfile->precision, num_data_lines,
-        f, format, bytes_written);
+        f, fmt, bytes_written);
     if (err)
         return err;
     return MTX_SUCCESS;
@@ -1639,10 +1639,10 @@ int mtxfile_fwrite(
  * `mtxfile_gzwrite()' writes a Matrix Market file to a
  * gzip-compressed stream.
  *
- * If `format' is `NULL', then the format specifier '%d' is used to
- * print integers and '%f' is used to print floating point
- * numbers. Otherwise, the given format string is used when printing
- * numerical values.
+ * If ‘fmt’ is ‘NULL’, then the format specifier ‘%g’ is used to print
+ * floating point numbers with with enough digits to ensure correct
+ * round-trip conversion from decimal text and back.  Otherwise, the
+ * given format string is used to print numerical values.
  *
  * The format string follows the conventions of `printf'. If the field
  * is `real', `double' or `complex', then the format specifiers '%e',
@@ -1659,7 +1659,7 @@ int mtxfile_fwrite(
 int mtxfile_gzwrite(
     const struct mtxfile * mtxfile,
     gzFile f,
-    const char * format,
+    const char * fmt,
     int64_t * bytes_written)
 {
     int err;
@@ -1682,7 +1682,7 @@ int mtxfile_gzwrite(
     err = mtxfile_data_gzwrite(
         &mtxfile->data, mtxfile->header.object, mtxfile->header.format,
         mtxfile->header.field, mtxfile->precision, num_data_lines,
-        f, format, bytes_written);
+        f, fmt, bytes_written);
     if (err)
         return err;
     return MTX_SUCCESS;

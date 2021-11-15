@@ -36,6 +36,7 @@
 
 #include <errno.h>
 
+#include <float.h>
 #include <inttypes.h>
 #include <locale.h>
 #include <stdbool.h>
@@ -497,9 +498,9 @@ static int distvector_dot(
                         timespec_duration(t0, t1));
             }
             if (!quiet) {
-                fprintf(stdout, format ? format : "%f", dot[0]);
+                fprintf(stdout, format ? format : "%.*g", FLT_DIG, dot[0]);
                 fputc(' ', stdout);
-                fprintf(stdout, format ? format : "%f", dot[1]);
+                fprintf(stdout, format ? format : "%.*g", FLT_DIG, dot[1]);
                 fputc('\n', stdout);
             }
         } else if (precision == mtx_double) {
@@ -523,9 +524,9 @@ static int distvector_dot(
                         timespec_duration(t0, t1));
             }
             if (!quiet) {
-                fprintf(stdout, format ? format : "%f", dot[0]);
+                fprintf(stdout, format ? format : "%.*g", DBL_DIG, dot[0]);
                 fputc(' ', stdout);
-                fprintf(stdout, format ? format : "%f", dot[1]);
+                fprintf(stdout, format ? format : "%.*g", DBL_DIG, dot[1]);
                 fputc('\n', stdout);
             }
         } else {
@@ -555,7 +556,7 @@ static int distvector_dot(
                         timespec_duration(t0, t1));
             }
             if (!quiet) {
-                fprintf(stdout, format ? format : "%f", dot);
+                fprintf(stdout, format ? format : "%.*g", FLT_DIG, dot);
                 fputc('\n', stdout);
             }
         } else if (precision == mtx_double) {
@@ -579,7 +580,7 @@ static int distvector_dot(
                         timespec_duration(t0, t1));
             }
             if (!quiet) {
-                fprintf(stdout, format ? format : "%f", dot);
+                fprintf(stdout, format ? format : "%.*g", DBL_DIG, dot);
                 fputc('\n', stdout);
             }
         } else {
@@ -926,9 +927,9 @@ static int vector_dot(
                         timespec_duration(t0, t1));
             }
             if (!quiet) {
-                fprintf(stdout, format ? format : "%f", dot[0]);
+                fprintf(stdout, format ? format : "%.*g", FLT_DIG, dot[0]);
                 fputc(' ', stdout);
-                fprintf(stdout, format ? format : "%f", dot[1]);
+                fprintf(stdout, format ? format : "%.*g", FLT_DIG, dot[1]);
                 fputc('\n', stdout);
             }
         } else if (precision == mtx_double) {
@@ -952,9 +953,9 @@ static int vector_dot(
                         timespec_duration(t0, t1));
             }
             if (!quiet) {
-                fprintf(stdout, format ? format : "%f", dot[0]);
+                fprintf(stdout, format ? format : "%.*g", DBL_DIG, dot[0]);
                 fputc(' ', stdout);
-                fprintf(stdout, format ? format : "%f", dot[1]);
+                fprintf(stdout, format ? format : "%.*g", DBL_DIG, dot[1]);
                 fputc('\n', stdout);
             }
         } else {
@@ -984,7 +985,7 @@ static int vector_dot(
                         timespec_duration(t0, t1));
             }
             if (!quiet) {
-                fprintf(stdout, format ? format : "%f", dot);
+                fprintf(stdout, format ? format : "%.*g", FLT_DIG, dot);
                 fputc('\n', stdout);
             }
         } else if (precision == mtx_double) {
@@ -1008,7 +1009,7 @@ static int vector_dot(
                         timespec_duration(t0, t1));
             }
             if (!quiet) {
-                fprintf(stdout, format ? format : "%f", dot);
+                fprintf(stdout, format ? format : "%.*g", DBL_DIG, dot);
                 fputc('\n', stdout);
             }
         } else {

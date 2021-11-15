@@ -908,10 +908,10 @@ int mtxfile_gzread_data(
  * `mtxfile_data_fwrite()' writes data lines of a Matrix Market file
  * to a stream.
  *
- * If `fmt' is `NULL', then the format specifier '%d' is used to print
- * integers and '%f' is used to print floating point
- * numbers. Otherwise, the given format string is used when printing
- * numerical values.
+ * If ‘fmt’ is ‘NULL’, then the format specifier ‘%g’ is used to print
+ * floating point numbers with with enough digits to ensure correct
+ * round-trip conversion from decimal text and back.  Otherwise, the
+ * given format string is used to print numerical values.
  *
  * The format string follows the conventions of `printf'. If the field
  * is `real', `double' or `complex', then the format specifiers '%e',
@@ -945,10 +945,10 @@ int mtxfile_data_fwrite(
  * `mtxfile_data_gzwrite()' writes data lines of a Matrix Market file
  * to a gzip-compressed stream.
  *
- * If `fmt' is `NULL', then the format specifier '%d' is used to print
- * integers and '%f' is used to print floating point
- * numbers. Otherwise, the given format string is used when printing
- * numerical values.
+ * If ‘fmt’ is ‘NULL’, then the format specifier ‘%g’ is used to print
+ * floating point numbers with with enough digits to ensure correct
+ * round-trip conversion from decimal text and back.  Otherwise, the
+ * given format string is used to print numerical values.
  *
  * The format string follows the conventions of `printf'. If the field
  * is `real', `double' or `complex', then the format specifiers '%e',

@@ -250,7 +250,7 @@ int mtxvector_distributed_gzread(
  * If `path' is `-', then standard output is used.
  *
  * If `format' is `NULL', then the format specifier '%d' is used to
- * print integers and '%f' is used to print floating point
+ * print integers and '%g' is used to print floating point
  * numbers. Otherwise, the given format string is used when printing
  * numerical values.
  *
@@ -274,7 +274,7 @@ int mtxvector_distributed_write(
  * `mtxvector_distributed_fwrite()' writes a vector to a stream.
  *
  * If `format' is `NULL', then the format specifier '%d' is used to
- * print integers and '%f' is used to print floating point
+ * print integers and '%g' is used to print floating point
  * numbers. Otherwise, the given format string is used when printing
  * numerical values.
  *
@@ -302,7 +302,7 @@ int mtxvector_distributed_fwrite(
  * gzip-compressed stream.
  *
  * If `format' is `NULL', then the format specifier '%d' is used to
- * print integers and '%f' is used to print floating point
+ * print integers and '%g' is used to print floating point
  * numbers. Otherwise, the given format string is used when printing
  * numerical values.
  *

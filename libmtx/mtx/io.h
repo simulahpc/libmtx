@@ -66,10 +66,10 @@ int mtx_read(
  *
  * If `path' is `-', then standard output is used.
  *
- * If `format' is `NULL', then the format specifier '%d' is used to
- * print integers and '%f' is used to print floating point
- * numbers. Otherwise, the given format string is used when printing
- * numerical values.
+ * If ‘fmt’ is ‘NULL’, then the format specifier ‘%g’ is used to print
+ * floating point numbers with with enough digits to ensure correct
+ * round-trip conversion from decimal text and back.  Otherwise, the
+ * given format string is used to print numerical values.
  *
  * The format string follows the conventions of `printf'. If the field
  * is `real', `double' or `complex', then the format specifiers '%e',
@@ -84,7 +84,7 @@ int mtx_write(
     const struct mtx * mtx,
     const char * path,
     bool gzip,
-    const char * format);
+    const char * fmt);
 
 /**
  * `mtx_fread()` reads an object (matrix or vector) from a stream in
@@ -108,10 +108,10 @@ int mtx_fread(
  * `mtx_fwrite()` writes an object (matrix or vector) to a stream in
  * Matrix Market format.
  *
- * If `format' is `NULL', then the format specifier '%d' is used to
- * print integers and '%f' is used to print floating point
- * numbers. Otherwise, the given format string is used when printing
- * numerical values.
+ * If ‘fmt’ is ‘NULL’, then the format specifier ‘%g’ is used to print
+ * floating point numbers with with enough digits to ensure correct
+ * round-trip conversion from decimal text and back.  Otherwise, the
+ * given format string is used to print numerical values.
  *
  * The format string follows the conventions of `printf'. If the field
  * is `real', `double' or `complex', then the format specifiers '%e',
@@ -125,7 +125,7 @@ int mtx_fread(
 int mtx_fwrite(
     const struct mtx * mtx,
     FILE * f,
-    const char * format);
+    const char * fmt);
 
 #ifdef LIBMTX_HAVE_LIBZ
 /**
@@ -150,10 +150,10 @@ int mtx_gzread(
  * `mtx_gzwrite()` writes a matrix or vector to a gzip-compressed
  * stream in Matrix Market format.
  *
- * If `format' is `NULL', then the format specifier '%d' is used to
- * print integers and '%f' is used to print floating point
- * numbers. Otherwise, the given format string is used when printing
- * numerical values.
+ * If ‘fmt’ is ‘NULL’, then the format specifier ‘%g’ is used to print
+ * floating point numbers with with enough digits to ensure correct
+ * round-trip conversion from decimal text and back.  Otherwise, the
+ * given format string is used to print numerical values.
  *
  * The format string follows the conventions of `printf'. If the field
  * is `real', `double' or `complex', then the format specifiers '%e',
@@ -167,7 +167,7 @@ int mtx_gzread(
 int mtx_gzwrite(
     const struct mtx * mtx,
     gzFile f,
-    const char * format);
+    const char * fmt);
 #endif
 
 #endif
