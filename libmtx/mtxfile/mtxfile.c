@@ -2073,6 +2073,7 @@ int mtxfile_reorder_rcm(
     struct mtxfile * mtxfile,
     int * rowperm,
     int * colperm,
+    bool permute,
     int * starting_vertex)
 {
     int err;
@@ -2214,14 +2215,16 @@ int mtxfile_reorder_rcm(
     }
 
     /* 7. Permute the matrix. */
-    err = mtxfile_permute(mtxfile, rowperm, colperm);
-    if (err) {
-        if (alloc_colperm)
-            free(colperm);
-        if (alloc_rowperm)
-            free(rowperm);
-        free(vertex_order);
-        return err;
+    if (permute) {
+        err = mtxfile_permute(mtxfile, rowperm, colperm);
+        if (err) {
+            if (alloc_colperm)
+                free(colperm);
+            if (alloc_rowperm)
+                free(rowperm);
+            free(vertex_order);
+            return err;
+        }
     }
 
     if (alloc_colperm)
@@ -2249,11 +2252,13 @@ int mtxfile_reorder(
     enum mtxfile_ordering ordering,
     int * rowperm,
     int * colperm,
+    bool permute,
     int * rcm_starting_vertex)
 {
     int err;
     if (ordering == mtxfile_rcm) {
-        return mtxfile_reorder_rcm(mtxfile, rowperm, colperm, rcm_starting_vertex);
+        return mtxfile_reorder_rcm(
+            mtxfile, rowperm, colperm, permute, rcm_starting_vertex);
     } else {
         return MTX_ERR_INVALID_ORDERING;
     }

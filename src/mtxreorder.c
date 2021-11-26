@@ -515,7 +515,7 @@ int main(int argc, char *argv[])
     int rcm_starting_vertex = args.rcm_starting_vertex;
     err = mtxfile_reorder(
         &mtxfile, args.ordering, rowperm, colperm,
-        &rcm_starting_vertex);
+        !args.quiet, &rcm_starting_vertex);
     if (err) {
         if (args.verbose > 0)
             fprintf(diagf, "\n");

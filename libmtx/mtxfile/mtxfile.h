@@ -906,6 +906,7 @@ int mtxfile_reorder_rcm(
     struct mtxfile * mtxfile,
     int * rowperm,
     int * colperm,
+    bool permute,
     int * starting_vertex);
 
 /**
@@ -925,6 +926,7 @@ int mtxfile_reorder(
     enum mtxfile_ordering ordering,
     int * rowperm,
     int * colperm,
+    bool permute,
     int * rcm_starting_vertex);
 
 /*
