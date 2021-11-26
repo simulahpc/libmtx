@@ -879,11 +879,11 @@ const char * mtxfile_ordering_str(
  * B = ⎢        ⎥.
  *     ⎣  A'  0 ⎦
  *
- *
- * ‘starting_vertex’ is an integer which can be used to designate a
- * starting vertex for the Cuthill-McKee algorithm.  Alternatively,
- * ‘starting_vertex’ may be set to ‘0’, in which case a starting row
- * is chosen automatically by selecting a pseudo-peripheral vertex.
+ * ‘starting_vertex’ is a pointer to an integer which can be used to
+ * designate a starting vertex for the Cuthill-McKee algorithm.
+ * Alternatively, setting the starting_vertex to zero causes a
+ * starting vertex to be chosen automatically by selecting a
+ * pseudo-peripheral vertex.
  *
  * In the case of a square matrix, the starting vertex must be in the
  * range ‘[1,M]’, where ‘M’ is the number of rows (and columns) of the
@@ -906,15 +906,11 @@ int mtxfile_reorder_rcm(
     struct mtxfile * mtxfile,
     int * rowperm,
     int * colperm,
-    int starting_row);
+    int * starting_vertex);
 
 /**
  * `mtxfile_reorder()` reorders the rows and columns of a matrix
  * according to the specified algorithm.
- *
- * Some algorithms may pose certain requirements on the matrix. For
- * example, the Reverse Cuthill-McKee ordering requires a matrix to be
- * square and in coordinate format.
  *
  * If successful, this function returns ‘MTX_SUCCESS’, and the rows
  * and columns of ‘mtxfile’ have been reordered according to the
@@ -929,7 +925,7 @@ int mtxfile_reorder(
     enum mtxfile_ordering ordering,
     int * rowperm,
     int * colperm,
-    int rcm_starting_vertex);
+    int * rcm_starting_vertex);
 
 /*
  * MPI functions

@@ -307,9 +307,10 @@ int mtx_matrix_coordinate_data_reorder_rcm(
     }
 
     /* 5. Compute the Cuthill-McKee ordering. */
+    starting_row -= 1;
     err = cuthill_mckee(
         mtxdata->num_rows, mtxdata->num_columns, row_ptr, column_indices,
-        col_ptr, row_indices, starting_row-1, mtxdata->num_rows, vertex_order);
+        col_ptr, row_indices, &starting_row, mtxdata->num_rows, vertex_order);
     if (err) {
         free(vertex_order);
         free(row_indices);

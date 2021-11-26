@@ -4098,7 +4098,7 @@ int test_mtxfile_reorder_rcm(void)
         int starting_vertex = 1;
         int rowperm[5] = {};
         int colperm[5] = {};
-        err = mtxfile_reorder_rcm(&mtxfile, rowperm, colperm, starting_vertex);
+        err = mtxfile_reorder_rcm(&mtxfile, rowperm, colperm, &starting_vertex);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(5, rowperm[0]);
         TEST_ASSERT_EQ(3, rowperm[1]);
@@ -4164,7 +4164,7 @@ int test_mtxfile_reorder_rcm(void)
         int starting_vertex = 1;
         int rowperm[5] = {};
         int colperm[5] = {};
-        err = mtxfile_reorder_rcm(&mtxfile, rowperm, colperm, starting_vertex);
+        err = mtxfile_reorder_rcm(&mtxfile, rowperm, colperm, &starting_vertex);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(5, rowperm[0]);
         TEST_ASSERT_EQ(3, rowperm[1]);
@@ -4218,7 +4218,7 @@ int test_mtxfile_reorder_rcm(void)
         int starting_vertex = 1;
         int rowperm[5] = {};
         int colperm[5] = {};
-        err = mtxfile_reorder_rcm(&mtxfile, rowperm, colperm, starting_vertex);
+        err = mtxfile_reorder_rcm(&mtxfile, rowperm, colperm, &starting_vertex);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(5, rowperm[0]);
         TEST_ASSERT_EQ(4, rowperm[1]);
@@ -4269,7 +4269,7 @@ int test_mtxfile_reorder_rcm(void)
         int starting_vertex = 1;
         int rowperm[3] = {};
         int colperm[2] = {};
-        err = mtxfile_reorder_rcm(&mtxfile, rowperm, colperm, starting_vertex);
+        err = mtxfile_reorder_rcm(&mtxfile, rowperm, colperm, &starting_vertex);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(3, rowperm[0]);
         TEST_ASSERT_EQ(2, rowperm[1]);
