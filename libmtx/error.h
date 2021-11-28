@@ -78,10 +78,11 @@ enum mtx_error
     MTX_ERR_INCOMPATIBLE_PRECISION = -37,   /* incompatible precision */
     MTX_ERR_INCOMPATIBLE_SIZE = -38,        /* incompatible size */
     MTX_ERR_INCOMPATIBLE_VECTOR_TYPE = -39, /* incompatible vector type */
-    MTX_ERR_INVALID_ORDERING = -40,         /* invalid ordering */
-    MTX_ERR_INVALID_MATRIX_TYPE = -41,      /* invalid matrix type */
-    MTX_ERR_INCOMPATIBLE_MATRIX_TYPE = -42, /* incompatible matrix type */
-    MTX_ERR_INVALID_TRANS_TYPE = -43,       /* invalid transpose type */
+    MTX_ERR_INVALID_SORTING = -41,          /* invalid sorting */
+    MTX_ERR_INVALID_ORDERING = -42,         /* invalid ordering */
+    MTX_ERR_INVALID_MATRIX_TYPE = -43,      /* invalid matrix type */
+    MTX_ERR_INCOMPATIBLE_MATRIX_TYPE = -44, /* incompatible matrix type */
+    MTX_ERR_INVALID_TRANS_TYPE = -45,       /* invalid transpose type */
 };
 
 /**

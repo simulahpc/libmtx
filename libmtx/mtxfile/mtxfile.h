@@ -732,21 +732,76 @@ int mtxfile_conjugate_transpose(
  */
 
 /**
- * `mtxfile_sorting' is used to enumerate different ways of sorting
+ * ‘mtxfile_sorting’ is used to enumerate different ways of sorting
  * Matrix Market files.
  */
 enum mtxfile_sorting
 {
-    mtxfile_row_major,      /* row major ordering */
-    mtxfile_column_major,   /* column major ordering */
+    mtxfile_unsorted,            /* unsorted (default ordering) */
+    mtxfile_sorting_permutation, /* user-defined sorting permutation */
+    mtxfile_row_major,           /* row major ordering */
+    mtxfile_column_major,        /* column major ordering */
 };
 
 /**
- * `mtxfile_sort()' sorts a Matrix Market file in a given order.
+ * ‘mtxfile_sorting_str()’ is a string representing the sorting of a
+ * matrix or vector in Matix Market format.
+ */
+const char * mtxfile_sorting_str(
+    enum mtxfile_sorting sorting);
+
+/**
+ * ‘mtxfile_parse_sorting()’ parses a string containing the ‘sorting’
+ * of a Matrix Market file format header.
+ *
+ * ‘valid_delimiters’ is either ‘NULL’, in which case it is ignored,
+ * or it is a string of characters considered to be valid delimiters
+ * for the parsed string.  That is, if there are any remaining,
+ * non-NULL characters after parsing, then then the next character is
+ * searched for in ‘valid_delimiters’.  If the character is found,
+ * then the parsing succeeds and the final delimiter character is
+ * consumed by the parser. Otherwise, the parsing fails with an error.
+ *
+ * If ‘endptr’ is not ‘NULL’, then the address stored in ‘endptr’
+ * points to the first character beyond the characters that were
+ * consumed during parsing.
+ *
+ * On success, ‘mtxfile_parse_sorting()’ returns ‘MTX_SUCCESS’ and
+ * ‘sorting’ is set according to the parsed string and ‘bytes_read’ is
+ * set to the number of bytes that were consumed by the parser.
+ * Otherwise, an error code is returned.
+ */
+int mtxfile_parse_sorting(
+    enum mtxfile_sorting * sorting,
+    int64_t * bytes_read,
+    const char ** endptr,
+    const char * s,
+    const char * valid_delimiters);
+
+/**
+ * ‘mtxfile_sort()’ sorts a Matrix Market file in a given order.
+ *
+ * The sorting order is determined by ‘sorting’. If the sorting order
+ * is ‘mtxfile_unsorted’, nothing is done. If the sorting order is
+ * ‘mtxfile_sorting_permutation’, then ‘perm’ must point to an array
+ * of ‘size’ integers that specify the sorting permutation. Note that
+ * the sorting permutation uses 1-based indexing.
+ *
+ * For a vector or matrix in coordinate format, the nonzero values are
+ * sorted in the specified order. For Matrix Market files in array
+ * format, this operation does nothing.
+ *
+ * ‘size’ is the number of vector or matrix nonzeros to sort.
+ *
+ * ‘perm’ is ignored if it is ‘NULL’. Otherwise, it must point to an
+ * array of ‘size’ 64-bit integers, and it is used to store the
+ * permutation of the vector or matrix nonzeros.
  */
 int mtxfile_sort(
     struct mtxfile * mtx,
-    enum mtxfile_sorting sorting);
+    enum mtxfile_sorting sorting,
+    int64_t size,
+    int64_t * perm);
 
 /*
  * Partitioning

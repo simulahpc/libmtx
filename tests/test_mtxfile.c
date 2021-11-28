@@ -2599,7 +2599,7 @@ int test_mtxfile_sort(void)
         err = mtxfile_init_matrix_array_real_double(
             &mtx, mtxfile_general, num_rows, num_columns, srcdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
-        err = mtxfile_sort(&mtx, mtxfile_column_major);
+        err = mtxfile_sort(&mtx, mtxfile_column_major, num_nonzeros, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(mtxfile_matrix, mtx.header.object);
         TEST_ASSERT_EQ(mtxfile_array, mtx.header.format);
@@ -2631,7 +2631,7 @@ int test_mtxfile_sort(void)
         err = mtxfile_init_matrix_array_real_double(
             &mtx, mtxfile_general, num_rows, num_columns, srcdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
-        err = mtxfile_sort(&mtx, mtxfile_column_major);
+        err = mtxfile_sort(&mtx, mtxfile_column_major, num_nonzeros, NULL);
         TEST_ASSERT_EQ_MSG(MTX_ERR_ERRNO, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(ENOTSUP, errno);
         mtxfile_free(&mtx);
@@ -2645,7 +2645,7 @@ int test_mtxfile_sort(void)
         err = mtxfile_init_vector_array_real_double(
             &mtx, num_rows, srcdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
-        err = mtxfile_sort(&mtx, mtxfile_column_major);
+        err = mtxfile_sort(&mtx, mtxfile_column_major, num_nonzeros, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(mtxfile_vector, mtx.header.object);
         TEST_ASSERT_EQ(mtxfile_array, mtx.header.format);
@@ -2681,7 +2681,7 @@ int test_mtxfile_sort(void)
         err = mtxfile_init_matrix_coordinate_real_single(
             &mtx, mtxfile_general, num_rows, num_columns, num_nonzeros, srcdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
-        err = mtxfile_sort(&mtx, mtxfile_row_major);
+        err = mtxfile_sort(&mtx, mtxfile_row_major, num_nonzeros, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(mtxfile_matrix, mtx.header.object);
         TEST_ASSERT_EQ(mtxfile_coordinate, mtx.header.format);
@@ -2723,7 +2723,7 @@ int test_mtxfile_sort(void)
         err = mtxfile_init_matrix_coordinate_real_double(
             &mtx, mtxfile_general, num_rows, num_columns, num_nonzeros, srcdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
-        err = mtxfile_sort(&mtx, mtxfile_row_major);
+        err = mtxfile_sort(&mtx, mtxfile_row_major, num_nonzeros, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(mtxfile_matrix, mtx.header.object);
         TEST_ASSERT_EQ(mtxfile_coordinate, mtx.header.format);
@@ -2765,7 +2765,7 @@ int test_mtxfile_sort(void)
         err = mtxfile_init_matrix_coordinate_real_double(
             &mtx, mtxfile_general, num_rows, num_columns, num_nonzeros, srcdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
-        err = mtxfile_sort(&mtx, mtxfile_column_major);
+        err = mtxfile_sort(&mtx, mtxfile_column_major, num_nonzeros, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(mtxfile_matrix, mtx.header.object);
         TEST_ASSERT_EQ(mtxfile_coordinate, mtx.header.format);
@@ -2807,7 +2807,7 @@ int test_mtxfile_sort(void)
         err = mtxfile_init_matrix_coordinate_complex_single(
             &mtx, mtxfile_general, num_rows, num_columns, num_nonzeros, srcdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
-        err = mtxfile_sort(&mtx, mtxfile_row_major);
+        err = mtxfile_sort(&mtx, mtxfile_row_major, num_nonzeros, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(mtxfile_matrix, mtx.header.object);
         TEST_ASSERT_EQ(mtxfile_coordinate, mtx.header.format);
@@ -2849,7 +2849,7 @@ int test_mtxfile_sort(void)
         err = mtxfile_init_matrix_coordinate_integer_single(
             &mtx, mtxfile_general, num_rows, num_columns, num_nonzeros, srcdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
-        err = mtxfile_sort(&mtx, mtxfile_column_major);
+        err = mtxfile_sort(&mtx, mtxfile_column_major, num_nonzeros, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(mtxfile_matrix, mtx.header.object);
         TEST_ASSERT_EQ(mtxfile_coordinate, mtx.header.format);
@@ -2889,7 +2889,7 @@ int test_mtxfile_sort(void)
         err = mtxfile_init_vector_coordinate_integer_single(
             &mtx, num_rows, num_nonzeros, srcdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
-        err = mtxfile_sort(&mtx, mtxfile_row_major);
+        err = mtxfile_sort(&mtx, mtxfile_row_major, num_nonzeros, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(mtxfile_vector, mtx.header.object);
         TEST_ASSERT_EQ(mtxfile_coordinate, mtx.header.format);
@@ -2916,7 +2916,7 @@ int test_mtxfile_sort(void)
         err = mtxfile_init_vector_coordinate_integer_single(
             &mtx, num_rows, num_nonzeros, srcdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
-        err = mtxfile_sort(&mtx, mtxfile_column_major);
+        err = mtxfile_sort(&mtx, mtxfile_column_major, num_nonzeros, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(mtxfile_vector, mtx.header.object);
         TEST_ASSERT_EQ(mtxfile_coordinate, mtx.header.format);
@@ -3988,7 +3988,7 @@ int test_mtxfile_permute(void)
         const int permutation[] = {2,6,4,3,7,9,8,5,1};
         err = mtxfile_permute(&mtx, permutation, permutation);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
-        err = mtxfile_sort(&mtx, mtxfile_row_major);
+        err = mtxfile_sort(&mtx, mtxfile_row_major, num_nonzeros, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(mtxfile_matrix, mtx.header.object);
         TEST_ASSERT_EQ(mtxfile_coordinate, mtx.header.format);

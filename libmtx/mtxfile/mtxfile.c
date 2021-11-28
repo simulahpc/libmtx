@@ -1734,27 +1734,130 @@ int mtxfile_conjugate_transpose(
  */
 
 /**
- * `mtxfile_sort()' sorts a Matrix Market file in a given order.
+ * `mtxfile_sorting_str()` is a string representing the sorting of a
+ * matrix or vector in Matix Market format.
+ */
+const char * mtxfile_sorting_str(
+    enum mtxfile_sorting sorting)
+{
+    switch (sorting) {
+    case mtxfile_unsorted: return "unsorted";
+    case mtxfile_sorting_permutation: return "permute";
+    case mtxfile_row_major: return "row-major";
+    case mtxfile_column_major: return "column-major";
+    default: return mtx_strerror(MTX_ERR_INVALID_SORTING);
+    }
+}
+
+/**
+ * ‘mtxfile_parse_sorting()’ parses a string containing the ‘sorting’
+ * of a Matrix Market file format header.
+ *
+ * ‘valid_delimiters’ is either ‘NULL’, in which case it is ignored,
+ * or it is a string of characters considered to be valid delimiters
+ * for the parsed string.  That is, if there are any remaining,
+ * non-NULL characters after parsing, then then the next character is
+ * searched for in ‘valid_delimiters’.  If the character is found,
+ * then the parsing succeeds and the final delimiter character is
+ * consumed by the parser. Otherwise, the parsing fails with an error.
+ *
+ * If ‘endptr’ is not ‘NULL’, then the address stored in ‘endptr’
+ * points to the first character beyond the characters that were
+ * consumed during parsing.
+ *
+ * On success, ‘mtxfile_parse_sorting()’ returns ‘MTX_SUCCESS’ and
+ * ‘sorting’ is set according to the parsed string and ‘bytes_read’ is
+ * set to the number of bytes that were consumed by the parser.
+ * Otherwise, an error code is returned.
+ */
+int mtxfile_parse_sorting(
+    enum mtxfile_sorting * sorting,
+    int64_t * bytes_read,
+    const char ** endptr,
+    const char * s,
+    const char * valid_delimiters)
+{
+    const char * t = s;
+    if (strncmp("unsorted", t, strlen("unsorted")) == 0) {
+        t += strlen("unsorted");
+        *sorting = mtxfile_unsorted;
+    } else if (strncmp("permute", t, strlen("permute")) == 0) {
+        t += strlen("permute");
+        *sorting = mtxfile_sorting_permutation;
+    } else if (strncmp("row-major", t, strlen("row-major")) == 0) {
+        t += strlen("row-major");
+        *sorting = mtxfile_row_major;
+    } else if (strncmp("column-major", t, strlen("column-major")) == 0) {
+        t += strlen("column-major");
+        *sorting = mtxfile_column_major;
+    } else {
+        return MTX_ERR_INVALID_SORTING;
+    }
+    if (valid_delimiters && *t != '\0') {
+        if (!strchr(valid_delimiters, *t))
+            return MTX_ERR_INVALID_SORTING;
+        t++;
+    }
+    if (bytes_read)
+        *bytes_read += t-s;
+    if (endptr)
+        *endptr = t;
+    return MTX_SUCCESS;
+}
+
+/**
+ * ‘mtxfile_sort()’ sorts a Matrix Market file in a given order.
+ *
+ * The sorting order is determined by ‘sorting’. If the sorting order
+ * is ‘mtxfile_unsorted’, nothing is done. If the sorting order is
+ * ‘mtxfile_sorting_permutation’, then ‘perm’ must point to an array
+ * of ‘size’ integers that specify the sorting permutation. Note that
+ * the sorting permutation uses 1-based indexing.
+ *
+ * For a vector or matrix in coordinate format, the nonzero values are
+ * sorted in the specified order. For Matrix Market files in array
+ * format, this operation does nothing.
+ *
+ * ‘size’ is the number of vector or matrix nonzeros to sort.
+ *
+ * ‘perm’ is ignored if it is ‘NULL’. Otherwise, it must point to an
+ * array of ‘size’ 64-bit integers, and it is used to store the
+ * permutation of the vector or matrix nonzeros.
  */
 int mtxfile_sort(
     struct mtxfile * mtxfile,
-    enum mtxfile_sorting sorting)
+    enum mtxfile_sorting sorting,
+    int64_t size,
+    int64_t * perm)
 {
     int64_t num_data_lines;
     int err = mtxfile_size_num_data_lines(&mtxfile->size, &num_data_lines);
     if (err)
         return err;
+    if (size < 0 || size > num_data_lines)
+        return MTX_ERR_INDEX_OUT_OF_BOUNDS;
 
-    if (sorting == mtxfile_row_major) {
+    if (sorting == mtxfile_unsorted) {
+        if (!perm)
+            return MTX_SUCCESS;
+        for (int64_t k = 0; k < size; k++)
+            perm[k] = k+1;
+        return MTX_SUCCESS;
+    } else if (sorting == mtxfile_sorting_permutation) {
+        return mtxfile_data_sort_permute(
+            &mtxfile->data, mtxfile->header.object, mtxfile->header.format,
+            mtxfile->header.field, mtxfile->precision, mtxfile->size.num_rows,
+            mtxfile->size.num_columns, size, perm);
+    } else if (sorting == mtxfile_row_major) {
         return mtxfile_data_sort_row_major(
             &mtxfile->data, mtxfile->header.object, mtxfile->header.format,
             mtxfile->header.field, mtxfile->precision, mtxfile->size.num_rows,
-            mtxfile->size.num_columns, num_data_lines);
+            mtxfile->size.num_columns, size, perm);
     } else if (sorting == mtxfile_column_major) {
         return mtxfile_data_sort_column_major(
             &mtxfile->data, mtxfile->header.object, mtxfile->header.format,
             mtxfile->header.field, mtxfile->precision, mtxfile->size.num_rows,
-            mtxfile->size.num_columns, num_data_lines);
+            mtxfile->size.num_columns, size, perm);
     } else {
         return MTX_ERR_INVALID_MTX_SORTING;
     }

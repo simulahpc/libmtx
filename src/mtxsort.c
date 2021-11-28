@@ -57,6 +57,7 @@ struct program_options
     enum mtx_precision precision;
     bool gzip;
     char * format;
+    char * perm_path;
     enum mtxfile_sorting sorting;
     int verbose;
     bool quiet;
@@ -72,6 +73,7 @@ static int program_options_init(
     args->precision = mtx_double;
     args->gzip = false;
     args->format = NULL;
+    args->perm_path = NULL;
     args->sorting = mtxfile_row_major;
     args->verbose = 0;
     args->quiet = false;
@@ -89,6 +91,8 @@ static void program_options_free(
         free(args->mtx_path);
     if (args->format)
         free(args->format);
+    if (args->perm_path)
+        free(args->perm_path);
 }
 
 /**
@@ -110,7 +114,11 @@ static void program_options_print_help(
     fprintf(f, "\t\t\t'%%e', '%%E', '%%f', '%%F', '%%g' or '%%G' may be used,\n");
     fprintf(f, "\t\t\twhereas '%%d' must be used for integers. Flags, field width\n");
     fprintf(f, "\t\t\tand precision can optionally be specified, e.g., \"%%+3.1f\".\n");
-    fprintf(f, "  --sorting=SORTING\torder to use when sorting: row-major or column-major (default: row-major).\n");
+    fprintf(f, "  --sorting=SORTING\tsorting order: unsorted, permute, row-major or\n");
+    fprintf(f, "\t\t\tcolumn-major (default: row-major)\n");
+    fprintf(f, "  --perm-path=FILE\tPath to output the sorting permutation,\n");
+    fprintf(f, "\t\t\tunless the sorting order is ‘permute’, in which case\n");
+    fprintf(f, "\t\t\tthe given path is used to read the sorting permutation.\n");
     fprintf(f, "  -q, --quiet\t\tdo not print Matrix Market output\n");
     fprintf(f, "  -v, --verbose\t\tbe more verbose\n");
     fprintf(f, "\n");
@@ -220,30 +228,51 @@ static int parse_program_options(
             continue;
         }
 
+        /* Parse output path for permutation. */
+        if (strcmp((*argv)[0], "--perm-path") == 0) {
+            if (*argc < 2) {
+                program_options_free(args);
+                return EINVAL;
+            }
+            if (args->perm_path)
+                free(args->perm_path);
+            args->perm_path = strdup((*argv)[1]);
+            if (!args->perm_path) {
+                program_options_free(args);
+                return errno;
+            }
+            num_arguments_consumed += 2;
+            continue;
+        } else if (strstr((*argv)[0], "--perm-path=") == (*argv)[0]) {
+            if (args->perm_path)
+                free(args->perm_path);
+            args->perm_path =
+                strdup((*argv)[0] + strlen("--perm-path="));
+            if (!args->perm_path) {
+                program_options_free(args);
+                return errno;
+            }
+            num_arguments_consumed++;
+            continue;
+        }
+
         /* Parse sorting order. */
         if (strcmp((*argv)[0], "--sorting") == 0) {
             if (*argc < 2) {
                 program_options_free(args);
                 return EINVAL;
             }
-            char * s = (*argv)[1];
-            if (strcmp(s, "row-major") == 0) {
-                args->sorting = mtxfile_row_major;
-            } else if (strcmp(s, "column-major") == 0) {
-                args->sorting = mtxfile_column_major;
-            } else {
+            err = mtxfile_parse_sorting(&args->sorting, NULL, NULL, (*argv)[1], NULL);
+            if (err) {
                 program_options_free(args);
                 return EINVAL;
             }
             num_arguments_consumed += 2;
             continue;
         } else if (strstr((*argv)[0], "--sorting=") == (*argv)[0]) {
-            char * s = (*argv)[0] + strlen("--sorting=");
-            if (strcmp(s, "row-major") == 0) {
-                args->sorting = mtxfile_row_major;
-            } else if (strcmp(s, "column-major") == 0) {
-                args->sorting = mtxfile_column_major;
-            } else {
+            err = mtxfile_parse_sorting(
+                &args->sorting, NULL, NULL, (*argv)[0] + strlen("--sorting="), NULL);
+            if (err) {
                 program_options_free(args);
                 return EINVAL;
             }
@@ -344,6 +373,12 @@ int main(int argc, char *argv[])
         program_options_free(&args);
         return EXIT_FAILURE;
     }
+    if (args.sorting == mtxfile_sorting_permutation && !args.perm_path) {
+        fprintf(stderr, "%s: Please specify a sorting permutation with "
+                "‘--perm-path=FILE’\n", program_invocation_short_name);
+        program_options_free(&args);
+        return EXIT_FAILURE;
+    }
 
     /* 2. Read a Matrix Market file. */
     if (args.verbose > 0) {
@@ -382,19 +417,117 @@ int main(int argc, char *argv[])
         fprintf(diagf, "%'.6f seconds (%'.1f MB/s)\n",
                 timespec_duration(t0, t1),
                 1.0e-6 * bytes_read / timespec_duration(t0, t1));
-        fprintf(diagf, "mtxfile_sort: ");
-        fflush(diagf);
-        clock_gettime(CLOCK_MONOTONIC, &t0);
     }
 
-    /* 3. Sort the Matrix Market file. */
-    err = mtxfile_sort(&mtxfile, args.sorting);
+    int64_t size;
+    err = mtxfile_size_num_data_lines(&mtxfile.size, &size);
     if (err) {
         if (args.verbose > 0)
             fprintf(diagf, "\n");
         fprintf(stderr, "%s: %s\n",
                 program_invocation_short_name,
                 mtx_strerror(err));
+        mtxfile_free(&mtxfile);
+        program_options_free(&args);
+        return EXIT_FAILURE;
+    }
+
+    /* 2. Read the sorting permutation from a Matrix Market file, if
+     * needed. Otherwise, allocate storage for outputting the sorting
+     * permutation. */
+    int64_t * perm = NULL;
+    if (args.sorting == mtxfile_sorting_permutation) {
+        if (args.verbose > 0) {
+            fprintf(diagf, "mtxfile_read: ");
+            fflush(diagf);
+            clock_gettime(CLOCK_MONOTONIC, &t0);
+        }
+
+        struct mtxfile perm_mtxfile;
+        int lines_read;
+        int64_t bytes_read;
+        err = mtxfile_read(
+            &perm_mtxfile, mtx_double, args.perm_path, false,
+            &lines_read, &bytes_read);
+        if (err && lines_read >= 0) {
+            if (args.verbose > 0)
+                fprintf(diagf, "\n");
+            fprintf(stderr, "%s: %s:%d: %s\n",
+                    program_invocation_short_name,
+                    args.perm_path, lines_read+1,
+                    mtx_strerror(err));
+            mtxfile_free(&mtxfile);
+            program_options_free(&args);
+            return EXIT_FAILURE;
+        } else if (err) {
+            if (args.verbose > 0)
+                fprintf(diagf, "\n");
+            fprintf(stderr, "%s: %s: %s\n",
+                    program_invocation_short_name,
+                    args.perm_path, mtx_strerror(err));
+            mtxfile_free(&mtxfile);
+            program_options_free(&args);
+            return EXIT_FAILURE;
+        }
+
+        if (args.verbose > 0) {
+            clock_gettime(CLOCK_MONOTONIC, &t1);
+            fprintf(diagf, "%'.6f seconds (%'.1f MB/s)\n",
+                    timespec_duration(t0, t1),
+                    1.0e-6 * bytes_read / timespec_duration(t0, t1));
+        }
+
+        err = MTX_SUCCESS;
+        if (perm_mtxfile.header.object != mtxfile_vector)
+            err = MTX_ERR_INCOMPATIBLE_MTX_OBJECT;
+        else if (perm_mtxfile.header.format != mtxfile_array)
+            err = MTX_ERR_INCOMPATIBLE_MTX_FORMAT;
+        else if (perm_mtxfile.header.field != mtxfile_integer)
+            err = MTX_ERR_INCOMPATIBLE_MTX_FIELD;
+        else if (perm_mtxfile.size.num_rows != size)
+            err = MTX_ERR_INCOMPATIBLE_MTX_SIZE;
+        if (err) {
+            if (args.verbose > 0)
+                fprintf(diagf, "\n");
+            fprintf(stderr, "%s: %s\n",
+                    program_invocation_short_name, strerror(errno));
+            mtxfile_free(&perm_mtxfile);
+            mtxfile_free(&mtxfile);
+            program_options_free(&args);
+            return EXIT_FAILURE;
+        }
+
+        perm = perm_mtxfile.data.array_integer_double;
+        perm_mtxfile.data.array_integer_double = NULL;
+        mtxfile_free(&perm_mtxfile);
+    } else if (args.perm_path) {
+        perm = malloc(size * sizeof(int64_t));
+        if (!perm) {
+            if (args.verbose > 0)
+                fprintf(diagf, "\n");
+            fprintf(stderr, "%s: %s\n",
+                    program_invocation_short_name, strerror(errno));
+            mtxfile_free(&mtxfile);
+            program_options_free(&args);
+            return EXIT_FAILURE;
+        }
+    }
+
+    if (args.verbose > 0) {
+        fprintf(diagf, "mtxfile_sort: ");
+        fflush(diagf);
+        clock_gettime(CLOCK_MONOTONIC, &t0);
+    }
+
+    /* 3. Sort the Matrix Market file. */
+    err = mtxfile_sort(&mtxfile, args.sorting, size, perm);
+    if (err) {
+        if (args.verbose > 0)
+            fprintf(diagf, "\n");
+        fprintf(stderr, "%s: %s\n",
+                program_invocation_short_name,
+                mtx_strerror(err));
+        free(perm);
         mtxfile_free(&mtxfile);
         program_options_free(&args);
         return EXIT_FAILURE;
@@ -415,14 +548,16 @@ int main(int argc, char *argv[])
         }
 
         err = mtxfile_comments_printf(
-            &mtxfile.comments, "%% This file was generated by %s %s\n",
-            program_name, program_version);
+            &mtxfile.comments,
+            "%% This file was generated by %s %s (%s)\n",
+            program_name, program_version, mtxfile_sorting_str(args.sorting));
         if (err) {
             if (args.verbose > 0)
                 fprintf(diagf, "\n");
             fprintf(stderr, "%s: %s\n",
                     program_invocation_short_name,
                     mtx_strerror(err));
+            free(perm);
             mtxfile_free(&mtxfile);
             program_options_free(&args);
             return EXIT_FAILURE;
@@ -436,6 +571,7 @@ int main(int argc, char *argv[])
             fprintf(stderr, "%s: %s\n",
                     program_invocation_short_name,
                     mtx_strerror(err));
+            free(perm);
             mtxfile_free(&mtxfile);
             program_options_free(&args);
             return EXIT_FAILURE;
@@ -450,7 +586,73 @@ int main(int argc, char *argv[])
         }
     }
 
+    /* Write the permutation to a Matrix Market file. */
+    if (args.sorting != mtxfile_sorting_permutation && args.perm_path) {
+        struct mtxfile perm_mtxfile;
+        err = mtxfile_init_vector_array_integer_double(
+            &perm_mtxfile, size, perm);
+        if (err) {
+            fprintf(stderr, "%s: %s\n",
+                    program_invocation_short_name,
+                    mtx_strerror(err));
+            free(perm);
+            mtxfile_free(&mtxfile);
+            program_options_free(&args);
+            return EXIT_FAILURE;
+        }
+
+        if (args.verbose > 0) {
+            fprintf(diagf, "mtxfile_write: ");
+            fflush(diagf);
+            clock_gettime(CLOCK_MONOTONIC, &t0);
+        }
+
+        err = mtxfile_comments_printf(
+            &perm_mtxfile.comments,
+            "%% This file was generated by %s %s (%s)\n",
+            program_name, program_version, mtxfile_sorting_str(args.sorting));
+        if (err) {
+            if (args.verbose > 0)
+                fprintf(diagf, "\n");
+            fprintf(stderr, "%s: %s\n",
+                    program_invocation_short_name,
+                    mtx_strerror(err));
+            mtxfile_free(&perm_mtxfile);
+            free(perm);
+            mtxfile_free(&mtxfile);
+            program_options_free(&args);
+            return EXIT_FAILURE;
+        }
+
+        int64_t bytes_written = 0;
+        err = mtxfile_write(
+            &perm_mtxfile, args.perm_path, false, NULL, &bytes_written);
+        if (err) {
+            if (args.verbose > 0)
+                fprintf(diagf, "\n");
+            fprintf(stderr, "%s: %s\n",
+                    program_invocation_short_name,
+                    mtx_strerror(err));
+            mtxfile_free(&perm_mtxfile);
+            free(perm);
+            mtxfile_free(&mtxfile);
+            program_options_free(&args);
+            return EXIT_FAILURE;
+        }
+
+        if (args.verbose > 0) {
+            clock_gettime(CLOCK_MONOTONIC, &t1);
+            fprintf(diagf, "%'.6f seconds (%'.1f MB/s)\n",
+                    timespec_duration(t0, t1),
+                    1.0e-6 * bytes_written / timespec_duration(t0, t1));
+            fflush(diagf);
+        }
+
+        mtxfile_free(&perm_mtxfile);
+    }
+
     /* 5. Clean up. */
+    free(perm);
     mtxfile_free(&mtxfile);
     program_options_free(&args);
     return EXIT_SUCCESS;
