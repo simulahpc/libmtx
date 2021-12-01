@@ -62,6 +62,21 @@ AC_F77_LIBRARY_LDFLAGS
 AM_PROG_AR
 LT_INIT
 
+dnl Check for x86 features
+AC_CHECK_HEADERS([immintrin.h])
+AC_ARG_ENABLE(bmi2,
+  AS_HELP_STRING([--disable-bmi2], [disable use of x86 BMI2 instructions]))
+AS_IF([test "x$enable_bmi2" != "xno"], [
+  AX_GCC_X86_CPU_SUPPORTS(bmi2,
+    [AC_DEFINE(LIBMTX_USE_BMI2, 1, [Define to use x86 BMI2 instructions.])
+     X86_FEATURE_CFLAGS="$X86_FEATURE_CFLAGS -mbmi2"],
+    [if test x"$enable_bmi2" = xyes; then
+      AC_MSG_FAILURE([BMI2 not supported.])
+     fi])
+  ])
+AC_SUBST([X86_FEATURE_CFLAGS])
+CFLAGS="$CFLAGS $X86_FEATURE_CFLAGS"
+
 dnl Check for C math library
 AC_SEARCH_LIBS([floor], [m])
 
@@ -82,7 +97,7 @@ dnl Check for MPI
 AC_ARG_WITH(mpi,
   [AS_HELP_STRING(
     [--with-mpi],
-    [compile with MPI support. Default: auto])],,
+    [compile with MPI support [default: auto]])],,
   [with_mpi=auto])
 mpi_found=no
 if test x"$with_mpi" != xno; then

@@ -1745,6 +1745,7 @@ const char * mtxfile_sorting_str(
     case mtxfile_sorting_permutation: return "permute";
     case mtxfile_row_major: return "row-major";
     case mtxfile_column_major: return "column-major";
+    case mtxfile_morton: return "morton";
     default: return mtx_strerror(MTX_ERR_INVALID_SORTING);
     }
 }
@@ -1790,6 +1791,9 @@ int mtxfile_parse_sorting(
     } else if (strncmp("column-major", t, strlen("column-major")) == 0) {
         t += strlen("column-major");
         *sorting = mtxfile_column_major;
+    } else if (strncmp("morton", t, strlen("morton")) == 0) {
+        t += strlen("morton");
+        *sorting = mtxfile_morton;
     } else {
         return MTX_ERR_INVALID_SORTING;
     }
@@ -1855,6 +1859,11 @@ int mtxfile_sort(
             mtxfile->size.num_columns, size, perm);
     } else if (sorting == mtxfile_column_major) {
         return mtxfile_data_sort_column_major(
+            &mtxfile->data, mtxfile->header.object, mtxfile->header.format,
+            mtxfile->header.field, mtxfile->precision, mtxfile->size.num_rows,
+            mtxfile->size.num_columns, size, perm);
+    } else if (sorting == mtxfile_morton) {
+        return mtxfile_data_sort_morton(
             &mtxfile->data, mtxfile->header.object, mtxfile->header.format,
             mtxfile->header.field, mtxfile->precision, mtxfile->size.num_rows,
             mtxfile->size.num_columns, size, perm);

@@ -1052,6 +1052,23 @@ int mtxfile_data_sort_column_major(
     int64_t size,
     int64_t * perm);
 
+/**
+ * `mtxfile_data_sort_morton()' sorts data lines of a Matrix Market
+ * file in Morton order, also known as Z-order.
+ *
+ * This operation is only supported for matrices in coordinate format.
+ */
+int mtxfile_data_sort_morton(
+    union mtxfile_data * data,
+    enum mtxfile_object object,
+    enum mtxfile_format format,
+    enum mtxfile_field field,
+    enum mtx_precision precision,
+    int num_rows,
+    int num_columns,
+    int64_t size,
+    int64_t * perm);
+
 /*
  * Partitioning
  */

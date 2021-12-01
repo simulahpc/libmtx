@@ -21,6 +21,8 @@
  * Matrix Market data lines.
  */
 
+#include "config.h"
+
 #include <libmtx/libmtx-config.h>
 
 #include <libmtx/error.h>
@@ -40,6 +42,21 @@
 
 #ifdef LIBMTX_HAVE_LIBZ
 #include <zlib.h>
+#endif
+
+#if defined(HAVE_IMMINTRIN_H) && defined(HAVE_BMI2_INSTRUCTIONS) && defined(LIBMTX_USE_BMI2)
+#include <immintrin.h>
+#else
+static inline uint32_t _pdep_u32(uint32_t val, uint32_t mask)
+{
+    uint32_t res = 0;
+    for (uint32_t bb = 1; mask; bb += bb) {
+        if (val & bb)
+            res |= mask & -mask;
+        mask &= mask - 1;
+    }
+    return res;
+}
 #endif
 
 #include <errno.h>
@@ -4435,6 +4452,165 @@ int mtxfile_data_sort_column_major(
                 data, field, precision, num_rows, num_columns, size, perm);
         } else if (object == mtxfile_vector) {
             /* Row and column major order are the same for vectors. */
+            return mtxfile_data_sort_vector_coordinate_row_major(
+                data, field, precision, size, perm);
+        } else {
+            return MTX_ERR_INVALID_MTX_OBJECT;
+        }
+    } else {
+        return MTX_ERR_INVALID_MTX_FORMAT;
+    }
+    return MTX_SUCCESS;
+}
+
+static inline uint64_t xy_to_morton(uint32_t x, uint32_t y)
+{
+    return _pdep_u32(x, 0x55555555) | _pdep_u32(y, 0xaaaaaaaa);
+}
+
+static int mtxfile_data_sort_matrix_coordinate_morton(
+    union mtxfile_data * data,
+    enum mtxfile_field field,
+    enum mtx_precision precision,
+    int num_rows,
+    int num_columns,
+    int64_t size,
+    int64_t * sorting_permutation)
+{
+    int err;
+
+    /* 1. Allocate storage for and extract sorting keys. */
+    int64_t * keys = malloc(size * sizeof(int64_t));
+    if (!keys)
+        return MTX_ERR_ERRNO;
+
+    if (field == mtxfile_real) {
+        if (precision == mtx_single) {
+            const struct mtxfile_matrix_coordinate_real_single * src =
+                data->matrix_coordinate_real_single;
+            for (int64_t k = 0; k < size; k++)
+                keys[k] = xy_to_morton(src[k].j-1, src[k].i-1);
+        } else if (precision == mtx_double) {
+            const struct mtxfile_matrix_coordinate_real_double * src =
+                data->matrix_coordinate_real_double;
+            for (int64_t k = 0; k < size; k++)
+                keys[k] = xy_to_morton(src[k].j-1, src[k].i-1);
+        } else {
+            free(keys);
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else if (field == mtxfile_complex) {
+        if (precision == mtx_single) {
+            const struct mtxfile_matrix_coordinate_complex_single * src =
+                data->matrix_coordinate_complex_single;
+            for (int64_t k = 0; k < size; k++)
+                keys[k] = xy_to_morton(src[k].j-1, src[k].i-1);
+        } else if (precision == mtx_double) {
+            const struct mtxfile_matrix_coordinate_complex_double * src =
+                data->matrix_coordinate_complex_double;
+            for (int64_t k = 0; k < size; k++)
+                keys[k] = xy_to_morton(src[k].j-1, src[k].i-1);
+        } else {
+            free(keys);
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else if (field == mtxfile_integer) {
+        if (precision == mtx_single) {
+            const struct mtxfile_matrix_coordinate_integer_single * src =
+                data->matrix_coordinate_integer_single;
+            for (int64_t k = 0; k < size; k++)
+                keys[k] = xy_to_morton(src[k].j-1, src[k].i-1);
+        } else if (precision == mtx_double) {
+            const struct mtxfile_matrix_coordinate_integer_double * src =
+                data->matrix_coordinate_integer_double;
+            for (int64_t k = 0; k < size; k++)
+                keys[k] = xy_to_morton(src[k].j-1, src[k].i-1);
+        } else {
+            free(keys);
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else if (field == mtxfile_pattern) {
+        const struct mtxfile_matrix_coordinate_pattern * src =
+            data->matrix_coordinate_pattern;
+        for (int64_t k = 0; k < size; k++)
+            keys[k] = xy_to_morton(src[k].j-1, src[k].i-1);
+    } else {
+        free(keys);
+        return MTX_ERR_INVALID_MTX_FIELD;
+    }
+
+    /* 2. Sort the keys and obtain a sorting permutation. */
+    bool alloc_sorting_permutation = !sorting_permutation;
+    if (alloc_sorting_permutation) {
+        sorting_permutation = malloc(size * sizeof(int64_t));
+        if (!sorting_permutation) {
+            free(keys);
+            return MTX_ERR_ERRNO;
+        }
+    }
+    err = radix_sort_uint64(size, keys, sorting_permutation);
+    if (err) {
+        if (alloc_sorting_permutation)
+            free(sorting_permutation);
+        free(keys);
+        return err;
+    }
+    free(keys);
+
+    /* Adjust from 0-based to 1-based indexing. */
+    for (int64_t i = 0; i < size; i++)
+        sorting_permutation[i]++;
+
+    /* 3. Sort nonzeros according to the sorting permutation. */
+    err = mtxfile_data_sort_permute(
+        data, mtxfile_matrix, mtxfile_coordinate, field, precision,
+        num_rows, num_columns, size, sorting_permutation);
+    if (err) {
+        if (alloc_sorting_permutation)
+            free(sorting_permutation);
+        return err;
+    }
+    if (alloc_sorting_permutation)
+        free(sorting_permutation);
+    return MTX_SUCCESS;
+}
+
+/**
+ * `mtxfile_data_sort_morton()' sorts data lines of a Matrix Market
+ * file in Morton order, also known as Z-order.
+ *
+ * This operation is only supported for matrices in coordinate format.
+ */
+int mtxfile_data_sort_morton(
+    union mtxfile_data * data,
+    enum mtxfile_object object,
+    enum mtxfile_format format,
+    enum mtxfile_field field,
+    enum mtx_precision precision,
+    int num_rows,
+    int num_columns,
+    int64_t size,
+    int64_t * perm)
+{
+    if (format == mtxfile_array) {
+        if (object == mtxfile_matrix) {
+            errno = ENOTSUP;
+            return MTX_ERR_ERRNO;
+        } else if (object == mtxfile_vector) {
+            if (perm) {
+                for (int64_t k = 0; k < size; k++)
+                    perm[k] = k+1;
+            }
+            return MTX_SUCCESS;
+        } else {
+            return MTX_ERR_INVALID_MTX_OBJECT;
+        }
+    } else if (format == mtxfile_coordinate) {
+        if (object == mtxfile_matrix) {
+            return mtxfile_data_sort_matrix_coordinate_morton(
+                data, field, precision, num_rows, num_columns, size, perm);
+        } else if (object == mtxfile_vector) {
+            /* This is the same as row/column major order for vectors. */
             return mtxfile_data_sort_vector_coordinate_row_major(
                 data, field, precision, size, perm);
         } else {

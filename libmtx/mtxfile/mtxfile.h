@@ -741,6 +741,7 @@ enum mtxfile_sorting
     mtxfile_sorting_permutation, /* user-defined sorting permutation */
     mtxfile_row_major,           /* row major ordering */
     mtxfile_column_major,        /* column major ordering */
+    mtxfile_morton,              /* Morton (Z-order curve) ordering */
 };
 
 /**
