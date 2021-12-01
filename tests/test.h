@@ -152,6 +152,24 @@
         return TEST_FAILURE;                            \
     }
 
+#define TEST_ASSERT_LE(expected, actual)                \
+    if (!((expected) <= (actual))) {                    \
+        fprintf(stdout, "FAIL:%s:%s:%d: "               \
+                "Assertion failed: %s <= %s\n",         \
+                __FUNCTION__, __FILE__, __LINE__,       \
+                #expected, #actual);                    \
+        return TEST_FAILURE;                            \
+    }
+
+#define TEST_ASSERT_LE_MSG(expected, actual, msg, ...)  \
+    if (!((expected) <= (actual))) {                    \
+        fprintf(stdout, "FAIL:%s:%s:%d: "               \
+                "Assertion failed: %s <= %s ("msg")\n", \
+                __FUNCTION__, __FILE__, __LINE__,       \
+                #expected, #actual, ##__VA_ARGS__);     \
+        return TEST_FAILURE;                            \
+    }
+
 /*
  * Test assertions for strings.
  */

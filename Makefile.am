@@ -92,6 +92,8 @@ libmtx_la_SOURCES = \
 	libmtx/util/parse.c \
 	libmtx/util/parse.h \
 	libmtx/util/partition.c \
+	libmtx/util/sort.c \
+	libmtx/util/sort.h \
 	libmtx/vector/array.c \
 	libmtx/vector/array/blas.c \
 	libmtx/vector/array/data.c \
@@ -268,6 +270,7 @@ check_PROGRAMS = \
 	tests/test_mtxmatrix \
 	tests/test_mtxvector \
 	tests/test_parse \
+	tests/test_sort \
 	tests/test_submatrix \
 	tests/test_vector
 
@@ -310,12 +313,15 @@ tests_test_mtx_sort_SOURCES = tests/test_mtx_sort.c tests/test.h
 tests_test_mtx_transpose_CPPFLAGS = $(MPICPPFLAGS)
 tests_test_mtx_transpose_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
 tests_test_mtx_transpose_SOURCES = tests/test_mtx_transpose.c tests/test.h
-tests_test_parse_CPPFLAGS = $(MPICPPFLAGS)
-tests_test_parse_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
-tests_test_parse_SOURCES = tests/test_parse.c tests/test.h
 tests_test_format_CPPFLAGS = $(MPICPPFLAGS)
 tests_test_format_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
 tests_test_format_SOURCES = tests/test_format.c tests/test.h
+tests_test_parse_CPPFLAGS = $(MPICPPFLAGS)
+tests_test_parse_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
+tests_test_parse_SOURCES = tests/test_parse.c tests/test.h
+tests_test_sort_CPPFLAGS = $(MPICPPFLAGS)
+tests_test_sort_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
+tests_test_sort_SOURCES = tests/test_sort.c tests/test.h
 tests_test_submatrix_CPPFLAGS = $(MPICPPFLAGS)
 tests_test_submatrix_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
 tests_test_submatrix_SOURCES = tests/test_submatrix.c tests/test.h
@@ -339,6 +345,7 @@ TESTS = \
 	tests/test_mtxmatrix \
 	tests/test_mtxvector \
 	tests/test_parse \
+	tests/test_sort \
 	tests/test_submatrix \
 	tests/test_vector
 
