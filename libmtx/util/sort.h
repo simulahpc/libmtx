@@ -109,11 +109,6 @@ int counting_sort_uint16(
  * ‘radix_sort_uint32()’ sorts an array of 32-bit unsigned integers in
  * ascending order using a radix sort algorithm.
  *
- * Note that the keys are internally converted from host to network
- * byte order before sorting to guarantee that the sorting is the same
- * regardless of endianness. The keys are converted back to host order
- * before the function returns.
- *
  * The number of keys to sort is given by ‘size’, and the unsorted,
  * integer keys are given in the array ‘keys’. On success, the same
  * array will contain the keys in sorted order.
@@ -133,11 +128,6 @@ int radix_sort_uint32(
 /**
  * ‘radix_sort_uint64()’ sorts an array of 64-bit unsigned integers in
  * ascending order using a radix sort algorithm.
- *
- * Note that the keys are internally converted from host to network
- * byte order before sorting to guarantee that the sorting is the same
- * regardless of endianness. The keys are converted back to host order
- * before the function returns.
  *
  * The number of keys to sort is given by ‘size’, and the unsorted,
  * integer keys are given in the array ‘keys’. On success, the same
