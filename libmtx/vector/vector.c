@@ -814,12 +814,13 @@ int mtxvector_copy(
  */
 int mtxvector_sscal(
     float a,
-    struct mtxvector * x)
+    struct mtxvector * x,
+    int64_t * num_flops)
 {
     if (x->type == mtxvector_array) {
-        return mtxvector_array_sscal(a, &x->storage.array);
+        return mtxvector_array_sscal(a, &x->storage.array, num_flops);
     } else if (x->type == mtxvector_coordinate) {
-        return mtxvector_coordinate_sscal(a, &x->storage.coordinate);
+        return mtxvector_coordinate_sscal(a, &x->storage.coordinate, num_flops);
     } else {
         return MTX_ERR_INVALID_VECTOR_TYPE;
     }
@@ -831,12 +832,13 @@ int mtxvector_sscal(
  */
 int mtxvector_dscal(
     double a,
-    struct mtxvector * x)
+    struct mtxvector * x,
+    int64_t * num_flops)
 {
     if (x->type == mtxvector_array) {
-        return mtxvector_array_dscal(a, &x->storage.array);
+        return mtxvector_array_dscal(a, &x->storage.array, num_flops);
     } else if (x->type == mtxvector_coordinate) {
-        return mtxvector_coordinate_dscal(a, &x->storage.coordinate);
+        return mtxvector_coordinate_dscal(a, &x->storage.coordinate, num_flops);
     } else {
         return MTX_ERR_INVALID_VECTOR_TYPE;
     }
@@ -849,16 +851,17 @@ int mtxvector_dscal(
 int mtxvector_saxpy(
     float a,
     const struct mtxvector * x,
-    struct mtxvector * y)
+    struct mtxvector * y,
+    int64_t * num_flops)
 {
     if (x->type != y->type)
         return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
     if (x->type == mtxvector_array) {
         return mtxvector_array_saxpy(
-            a, &x->storage.array, &y->storage.array);
+            a, &x->storage.array, &y->storage.array, num_flops);
     } else if (x->type == mtxvector_coordinate) {
         return mtxvector_coordinate_saxpy(
-            a, &x->storage.coordinate, &y->storage.coordinate);
+            a, &x->storage.coordinate, &y->storage.coordinate, num_flops);
     } else {
         return MTX_ERR_INVALID_VECTOR_TYPE;
     }
@@ -871,16 +874,17 @@ int mtxvector_saxpy(
 int mtxvector_daxpy(
     double a,
     const struct mtxvector * x,
-    struct mtxvector * y)
+    struct mtxvector * y,
+    int64_t * num_flops)
 {
     if (x->type != y->type)
         return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
     if (x->type == mtxvector_array) {
         return mtxvector_array_daxpy(
-            a, &x->storage.array, &y->storage.array);
+            a, &x->storage.array, &y->storage.array, num_flops);
     } else if (x->type == mtxvector_coordinate) {
         return mtxvector_coordinate_daxpy(
-            a, &x->storage.coordinate, &y->storage.coordinate);
+            a, &x->storage.coordinate, &y->storage.coordinate, num_flops);
     } else {
         return MTX_ERR_INVALID_VECTOR_TYPE;
     }
@@ -893,16 +897,17 @@ int mtxvector_daxpy(
 int mtxvector_saypx(
     float a,
     struct mtxvector * y,
-    const struct mtxvector * x)
+    const struct mtxvector * x,
+    int64_t * num_flops)
 {
     if (x->type != y->type)
         return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
     if (x->type == mtxvector_array) {
         return mtxvector_array_saypx(
-            a, &y->storage.array, &x->storage.array);
+            a, &y->storage.array, &x->storage.array, num_flops);
     } else if (x->type == mtxvector_coordinate) {
         return mtxvector_coordinate_saypx(
-            a, &y->storage.coordinate, &x->storage.coordinate);
+            a, &y->storage.coordinate, &x->storage.coordinate, num_flops);
     } else {
         return MTX_ERR_INVALID_VECTOR_TYPE;
     }
@@ -915,16 +920,17 @@ int mtxvector_saypx(
 int mtxvector_daypx(
     double a,
     struct mtxvector * y,
-    const struct mtxvector * x)
+    const struct mtxvector * x,
+    int64_t * num_flops)
 {
     if (x->type != y->type)
         return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
     if (x->type == mtxvector_array) {
         return mtxvector_array_daypx(
-            a, &y->storage.array, &x->storage.array);
+            a, &y->storage.array, &x->storage.array, num_flops);
     } else if (x->type == mtxvector_coordinate) {
         return mtxvector_coordinate_daypx(
-            a, &y->storage.coordinate, &x->storage.coordinate);
+            a, &y->storage.coordinate, &x->storage.coordinate, num_flops);
     } else {
         return MTX_ERR_INVALID_VECTOR_TYPE;
     }
@@ -937,16 +943,17 @@ int mtxvector_daypx(
 int mtxvector_sdot(
     const struct mtxvector * x,
     const struct mtxvector * y,
-    float * dot)
+    float * dot,
+    int64_t * num_flops)
 {
     if (x->type != y->type)
         return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
     if (x->type == mtxvector_array) {
         return mtxvector_array_sdot(
-            &x->storage.array, &y->storage.array, dot);
+            &x->storage.array, &y->storage.array, dot, num_flops);
     } else if (x->type == mtxvector_coordinate) {
         return mtxvector_coordinate_sdot(
-            &x->storage.coordinate, &y->storage.coordinate, dot);
+            &x->storage.coordinate, &y->storage.coordinate, dot, num_flops);
     } else {
         return MTX_ERR_INVALID_VECTOR_TYPE;
     }
@@ -959,16 +966,17 @@ int mtxvector_sdot(
 int mtxvector_ddot(
     const struct mtxvector * x,
     const struct mtxvector * y,
-    double * dot)
+    double * dot,
+    int64_t * num_flops)
 {
     if (x->type != y->type)
         return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
     if (x->type == mtxvector_array) {
         return mtxvector_array_ddot(
-            &x->storage.array, &y->storage.array, dot);
+            &x->storage.array, &y->storage.array, dot, num_flops);
     } else if (x->type == mtxvector_coordinate) {
         return mtxvector_coordinate_ddot(
-            &x->storage.coordinate, &y->storage.coordinate, dot);
+            &x->storage.coordinate, &y->storage.coordinate, dot, num_flops);
     } else {
         return MTX_ERR_INVALID_VECTOR_TYPE;
     }
@@ -982,16 +990,17 @@ int mtxvector_ddot(
 int mtxvector_cdotu(
     const struct mtxvector * x,
     const struct mtxvector * y,
-    float (* dot)[2])
+    float (* dot)[2],
+    int64_t * num_flops)
 {
     if (x->type != y->type)
         return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
     if (x->type == mtxvector_array) {
         return mtxvector_array_cdotu(
-            &x->storage.array, &y->storage.array, dot);
+            &x->storage.array, &y->storage.array, dot, num_flops);
     } else if (x->type == mtxvector_coordinate) {
         return mtxvector_coordinate_cdotu(
-            &x->storage.coordinate, &y->storage.coordinate, dot);
+            &x->storage.coordinate, &y->storage.coordinate, dot, num_flops);
     } else {
         return MTX_ERR_INVALID_VECTOR_TYPE;
     }
@@ -1005,16 +1014,17 @@ int mtxvector_cdotu(
 int mtxvector_zdotu(
     const struct mtxvector * x,
     const struct mtxvector * y,
-    double (* dot)[2])
+    double (* dot)[2],
+    int64_t * num_flops)
 {
     if (x->type != y->type)
         return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
     if (x->type == mtxvector_array) {
         return mtxvector_array_zdotu(
-            &x->storage.array, &y->storage.array, dot);
+            &x->storage.array, &y->storage.array, dot, num_flops);
     } else if (x->type == mtxvector_coordinate) {
         return mtxvector_coordinate_zdotu(
-            &x->storage.coordinate, &y->storage.coordinate, dot);
+            &x->storage.coordinate, &y->storage.coordinate, dot, num_flops);
     } else {
         return MTX_ERR_INVALID_VECTOR_TYPE;
     }
@@ -1027,16 +1037,17 @@ int mtxvector_zdotu(
 int mtxvector_cdotc(
     const struct mtxvector * x,
     const struct mtxvector * y,
-    float (* dot)[2])
+    float (* dot)[2],
+    int64_t * num_flops)
 {
     if (x->type != y->type)
         return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
     if (x->type == mtxvector_array) {
         return mtxvector_array_cdotc(
-            &x->storage.array, &y->storage.array, dot);
+            &x->storage.array, &y->storage.array, dot, num_flops);
     } else if (x->type == mtxvector_coordinate) {
         return mtxvector_coordinate_cdotc(
-            &x->storage.coordinate, &y->storage.coordinate, dot);
+            &x->storage.coordinate, &y->storage.coordinate, dot, num_flops);
     } else {
         return MTX_ERR_INVALID_VECTOR_TYPE;
     }
@@ -1049,16 +1060,17 @@ int mtxvector_cdotc(
 int mtxvector_zdotc(
     const struct mtxvector * x,
     const struct mtxvector * y,
-    double (* dot)[2])
+    double (* dot)[2],
+    int64_t * num_flops)
 {
     if (x->type != y->type)
         return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
     if (x->type == mtxvector_array) {
         return mtxvector_array_zdotc(
-            &x->storage.array, &y->storage.array, dot);
+            &x->storage.array, &y->storage.array, dot, num_flops);
     } else if (x->type == mtxvector_coordinate) {
         return mtxvector_coordinate_zdotc(
-            &x->storage.coordinate, &y->storage.coordinate, dot);
+            &x->storage.coordinate, &y->storage.coordinate, dot, num_flops);
     } else {
         return MTX_ERR_INVALID_VECTOR_TYPE;
     }
@@ -1070,12 +1082,13 @@ int mtxvector_zdotc(
  */
 int mtxvector_snrm2(
     const struct mtxvector * x,
-    float * nrm2)
+    float * nrm2,
+    int64_t * num_flops)
 {
     if (x->type == mtxvector_array) {
-        return mtxvector_array_snrm2(&x->storage.array, nrm2);
+        return mtxvector_array_snrm2(&x->storage.array, nrm2, num_flops);
     } else if (x->type == mtxvector_coordinate) {
-        return mtxvector_coordinate_snrm2(&x->storage.coordinate, nrm2);
+        return mtxvector_coordinate_snrm2(&x->storage.coordinate, nrm2, num_flops);
     } else {
         return MTX_ERR_INVALID_VECTOR_TYPE;
     }
@@ -1087,12 +1100,13 @@ int mtxvector_snrm2(
  */
 int mtxvector_dnrm2(
     const struct mtxvector * x,
-    double * nrm2)
+    double * nrm2,
+    int64_t * num_flops)
 {
     if (x->type == mtxvector_array) {
-        return mtxvector_array_dnrm2(&x->storage.array, nrm2);
+        return mtxvector_array_dnrm2(&x->storage.array, nrm2, num_flops);
     } else if (x->type == mtxvector_coordinate) {
-        return mtxvector_coordinate_dnrm2(&x->storage.coordinate, nrm2);
+        return mtxvector_coordinate_dnrm2(&x->storage.coordinate, nrm2, num_flops);
     } else {
         return MTX_ERR_INVALID_VECTOR_TYPE;
     }
@@ -1106,12 +1120,13 @@ int mtxvector_dnrm2(
  */
 int mtxvector_sasum(
     const struct mtxvector * x,
-    float * asum)
+    float * asum,
+    int64_t * num_flops)
 {
     if (x->type == mtxvector_array) {
-        return mtxvector_array_sasum(&x->storage.array, asum);
+        return mtxvector_array_sasum(&x->storage.array, asum, num_flops);
     } else if (x->type == mtxvector_coordinate) {
-        return mtxvector_coordinate_sasum(&x->storage.coordinate, asum);
+        return mtxvector_coordinate_sasum(&x->storage.coordinate, asum, num_flops);
     } else {
         return MTX_ERR_INVALID_VECTOR_TYPE;
     }
@@ -1125,12 +1140,13 @@ int mtxvector_sasum(
  */
 int mtxvector_dasum(
     const struct mtxvector * x,
-    double * asum)
+    double * asum,
+    int64_t * num_flops)
 {
     if (x->type == mtxvector_array) {
-        return mtxvector_array_dasum(&x->storage.array, asum);
+        return mtxvector_array_dasum(&x->storage.array, asum, num_flops);
     } else if (x->type == mtxvector_coordinate) {
-        return mtxvector_coordinate_dasum(&x->storage.coordinate, asum);
+        return mtxvector_coordinate_dasum(&x->storage.coordinate, asum, num_flops);
     } else {
         return MTX_ERR_INVALID_VECTOR_TYPE;
     }

@@ -359,27 +359,27 @@ int test_mtxdistvector_dot(void)
         err = mtxdistvector_init_array_real_single(&y, size, ydata, comm, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         float sdot;
-        err = mtxdistvector_sdot(&x, &y, &sdot, &mpierror);
+        err = mtxdistvector_sdot(&x, &y, &sdot, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(9.0f, sdot);
         double ddot;
-        err = mtxdistvector_ddot(&x, &y, &ddot, &mpierror);
+        err = mtxdistvector_ddot(&x, &y, &ddot, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(9.0, ddot);
         float cdotu[2];
-        err = mtxdistvector_cdotu(&x, &y, &cdotu, &mpierror);
+        err = mtxdistvector_cdotu(&x, &y, &cdotu, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(9.0f, cdotu[0]); TEST_ASSERT_EQ(0.0f, cdotu[1]);
         float cdotc[2];
-        err = mtxdistvector_cdotc(&x, &y, &cdotc, &mpierror);
+        err = mtxdistvector_cdotc(&x, &y, &cdotc, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(9.0f, cdotc[0]); TEST_ASSERT_EQ(0.0f, cdotc[1]);
         double zdotu[2];
-        err = mtxdistvector_zdotu(&x, &y, &zdotu, &mpierror);
+        err = mtxdistvector_zdotu(&x, &y, &zdotu, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(9.0, zdotu[0]); TEST_ASSERT_EQ(0.0, zdotu[1]);
         double zdotc[2];
-        err = mtxdistvector_zdotc(&x, &y, &zdotc, &mpierror);
+        err = mtxdistvector_zdotc(&x, &y, &zdotc, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(9.0, zdotc[0]); TEST_ASSERT_EQ(0.0, zdotc[1]);
         mtxdistvector_free(&y);
@@ -401,27 +401,27 @@ int test_mtxdistvector_dot(void)
         err = mtxdistvector_init_array_real_double(&y, size, ydata, comm, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         float sdot;
-        err = mtxdistvector_sdot(&x, &y, &sdot, &mpierror);
+        err = mtxdistvector_sdot(&x, &y, &sdot, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(9.0f, sdot);
         double ddot;
-        err = mtxdistvector_ddot(&x, &y, &ddot, &mpierror);
+        err = mtxdistvector_ddot(&x, &y, &ddot, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(9.0, ddot);
         float cdotu[2];
-        err = mtxdistvector_cdotu(&x, &y, &cdotu, &mpierror);
+        err = mtxdistvector_cdotu(&x, &y, &cdotu, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(9.0f, cdotu[0]); TEST_ASSERT_EQ(0.0f, cdotu[1]);
         float cdotc[2];
-        err = mtxdistvector_cdotc(&x, &y, &cdotc, &mpierror);
+        err = mtxdistvector_cdotc(&x, &y, &cdotc, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(9.0f, cdotc[0]); TEST_ASSERT_EQ(0.0f, cdotc[1]);
         double zdotu[2];
-        err = mtxdistvector_zdotu(&x, &y, &zdotu, &mpierror);
+        err = mtxdistvector_zdotu(&x, &y, &zdotu, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(9.0, zdotu[0]); TEST_ASSERT_EQ(0.0, zdotu[1]);
         double zdotc[2];
-        err = mtxdistvector_zdotc(&x, &y, &zdotc, &mpierror);
+        err = mtxdistvector_zdotc(&x, &y, &zdotc, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(9.0, zdotc[0]); TEST_ASSERT_EQ(0.0, zdotc[1]);
         mtxdistvector_free(&y);
@@ -443,25 +443,25 @@ int test_mtxdistvector_dot(void)
         err = mtxdistvector_init_array_complex_single(&y, size, ydata, comm, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         float sdot;
-        err = mtxdistvector_sdot(&x, &y, &sdot, &mpierror);
+        err = mtxdistvector_sdot(&x, &y, &sdot, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_ERR_MPI_COLLECTIVE, err, "%s", mtx_strerror(err));
         double ddot;
-        err = mtxdistvector_ddot(&x, &y, &ddot, &mpierror);
+        err = mtxdistvector_ddot(&x, &y, &ddot, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_ERR_MPI_COLLECTIVE, err, "%s", mtx_strerror(err));
         float cdotu[2];
-        err = mtxdistvector_cdotu(&x, &y, &cdotu, &mpierror);
+        err = mtxdistvector_cdotu(&x, &y, &cdotu, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(5.0f, cdotu[0]); TEST_ASSERT_EQ(7.0f, cdotu[1]);
         float cdotc[2];
-        err = mtxdistvector_cdotc(&x, &y, &cdotc, &mpierror);
+        err = mtxdistvector_cdotc(&x, &y, &cdotc, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(9.0f, cdotc[0]); TEST_ASSERT_EQ(-3.0f, cdotc[1]);
         double zdotu[2];
-        err = mtxdistvector_zdotu(&x, &y, &zdotu, &mpierror);
+        err = mtxdistvector_zdotu(&x, &y, &zdotu, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(5.0, zdotu[0]); TEST_ASSERT_EQ(7.0, zdotu[1]);
         double zdotc[2];
-        err = mtxdistvector_zdotc(&x, &y, &zdotc, &mpierror);
+        err = mtxdistvector_zdotc(&x, &y, &zdotc, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(9.0, zdotc[0]); TEST_ASSERT_EQ(-3.0, zdotc[1]);
         mtxdistvector_free(&y);
@@ -483,25 +483,25 @@ int test_mtxdistvector_dot(void)
         err = mtxdistvector_init_array_complex_double(&y, size, ydata, comm, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         float sdot;
-        err = mtxdistvector_sdot(&x, &y, &sdot, &mpierror);
+        err = mtxdistvector_sdot(&x, &y, &sdot, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_ERR_MPI_COLLECTIVE, err, "%s", mtx_strerror(err));
         double ddot;
-        err = mtxdistvector_ddot(&x, &y, &ddot, &mpierror);
+        err = mtxdistvector_ddot(&x, &y, &ddot, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_ERR_MPI_COLLECTIVE, err, "%s", mtx_strerror(err));
         float cdotu[2];
-        err = mtxdistvector_cdotu(&x, &y, &cdotu, &mpierror);
+        err = mtxdistvector_cdotu(&x, &y, &cdotu, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(5.0f, cdotu[0]); TEST_ASSERT_EQ(7.0f, cdotu[1]);
         float cdotc[2];
-        err = mtxdistvector_cdotc(&x, &y, &cdotc, &mpierror);
+        err = mtxdistvector_cdotc(&x, &y, &cdotc, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(9.0f, cdotc[0]); TEST_ASSERT_EQ(-3.0f, cdotc[1]);
         double zdotu[2];
-        err = mtxdistvector_zdotu(&x, &y, &zdotu, &mpierror);
+        err = mtxdistvector_zdotu(&x, &y, &zdotu, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(5.0, zdotu[0]); TEST_ASSERT_EQ(7.0, zdotu[1]);
         double zdotc[2];
-        err = mtxdistvector_zdotc(&x, &y, &zdotc, &mpierror);
+        err = mtxdistvector_zdotc(&x, &y, &zdotc, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(9.0, zdotc[0]); TEST_ASSERT_EQ(-3.0, zdotc[1]);
         mtxdistvector_free(&y);
@@ -523,27 +523,27 @@ int test_mtxdistvector_dot(void)
         err = mtxdistvector_init_array_integer_single(&y, size, ydata, comm, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         float sdot;
-        err = mtxdistvector_sdot(&x, &y, &sdot, &mpierror);
+        err = mtxdistvector_sdot(&x, &y, &sdot, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(9.0f, sdot);
         double ddot;
-        err = mtxdistvector_ddot(&x, &y, &ddot, &mpierror);
+        err = mtxdistvector_ddot(&x, &y, &ddot, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(9.0, ddot);
         float cdotu[2];
-        err = mtxdistvector_cdotu(&x, &y, &cdotu, &mpierror);
+        err = mtxdistvector_cdotu(&x, &y, &cdotu, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(9.0f, cdotu[0]); TEST_ASSERT_EQ(0.0f, cdotu[1]);
         float cdotc[2];
-        err = mtxdistvector_cdotc(&x, &y, &cdotc, &mpierror);
+        err = mtxdistvector_cdotc(&x, &y, &cdotc, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(9.0f, cdotc[0]); TEST_ASSERT_EQ(0.0f, cdotc[1]);
         double zdotu[2];
-        err = mtxdistvector_zdotu(&x, &y, &zdotu, &mpierror);
+        err = mtxdistvector_zdotu(&x, &y, &zdotu, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(9.0, zdotu[0]); TEST_ASSERT_EQ(0.0, zdotu[1]);
         double zdotc[2];
-        err = mtxdistvector_zdotc(&x, &y, &zdotc, &mpierror);
+        err = mtxdistvector_zdotc(&x, &y, &zdotc, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(9.0, zdotc[0]); TEST_ASSERT_EQ(0.0, zdotc[1]);
         mtxdistvector_free(&y);
@@ -565,27 +565,27 @@ int test_mtxdistvector_dot(void)
         err = mtxdistvector_init_array_integer_double(&y, size, ydata, comm, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         float sdot;
-        err = mtxdistvector_sdot(&x, &y, &sdot, &mpierror);
+        err = mtxdistvector_sdot(&x, &y, &sdot, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(9.0f, sdot);
         double ddot;
-        err = mtxdistvector_ddot(&x, &y, &ddot, &mpierror);
+        err = mtxdistvector_ddot(&x, &y, &ddot, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(9.0, ddot);
         float cdotu[2];
-        err = mtxdistvector_cdotu(&x, &y, &cdotu, &mpierror);
+        err = mtxdistvector_cdotu(&x, &y, &cdotu, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(9.0f, cdotu[0]); TEST_ASSERT_EQ(0.0f, cdotu[1]);
         float cdotc[2];
-        err = mtxdistvector_cdotc(&x, &y, &cdotc, &mpierror);
+        err = mtxdistvector_cdotc(&x, &y, &cdotc, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(9.0f, cdotc[0]); TEST_ASSERT_EQ(0.0f, cdotc[1]);
         double zdotu[2];
-        err = mtxdistvector_zdotu(&x, &y, &zdotu, &mpierror);
+        err = mtxdistvector_zdotu(&x, &y, &zdotu, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(9.0, zdotu[0]); TEST_ASSERT_EQ(0.0, zdotu[1]);
         double zdotc[2];
-        err = mtxdistvector_zdotc(&x, &y, &zdotc, &mpierror);
+        err = mtxdistvector_zdotc(&x, &y, &zdotc, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(9.0, zdotc[0]); TEST_ASSERT_EQ(0.0, zdotc[1]);
         mtxdistvector_free(&y);
@@ -617,27 +617,27 @@ int test_mtxdistvector_dot(void)
             &y, size, nnz, idx, ydata, comm, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         float sdot;
-        err = mtxdistvector_sdot(&x, &y, &sdot, &mpierror);
+        err = mtxdistvector_sdot(&x, &y, &sdot, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(9.0f, sdot);
         double ddot;
-        err = mtxdistvector_ddot(&x, &y, &ddot, &mpierror);
+        err = mtxdistvector_ddot(&x, &y, &ddot, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(9.0, ddot);
         float cdotu[2];
-        err = mtxdistvector_cdotu(&x, &y, &cdotu, &mpierror);
+        err = mtxdistvector_cdotu(&x, &y, &cdotu, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(9.0f, cdotu[0]); TEST_ASSERT_EQ(0.0f, cdotu[1]);
         float cdotc[2];
-        err = mtxdistvector_cdotc(&x, &y, &cdotc, &mpierror);
+        err = mtxdistvector_cdotc(&x, &y, &cdotc, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(9.0f, cdotc[0]); TEST_ASSERT_EQ(0.0f, cdotc[1]);
         double zdotu[2];
-        err = mtxdistvector_zdotu(&x, &y, &zdotu, &mpierror);
+        err = mtxdistvector_zdotu(&x, &y, &zdotu, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(9.0, zdotu[0]); TEST_ASSERT_EQ(0.0, zdotu[1]);
         double zdotc[2];
-        err = mtxdistvector_zdotc(&x, &y, &zdotc, &mpierror);
+        err = mtxdistvector_zdotc(&x, &y, &zdotc, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(9.0, zdotc[0]); TEST_ASSERT_EQ(0.0, zdotc[1]);
         mtxdistvector_free(&y);
@@ -665,27 +665,27 @@ int test_mtxdistvector_dot(void)
             &y, size, nnz, idx, ydata, comm, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         float sdot;
-        err = mtxdistvector_sdot(&x, &y, &sdot, &mpierror);
+        err = mtxdistvector_sdot(&x, &y, &sdot, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(9.0f, sdot);
         double ddot;
-        err = mtxdistvector_ddot(&x, &y, &ddot, &mpierror);
+        err = mtxdistvector_ddot(&x, &y, &ddot, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(9.0, ddot);
         float cdotu[2];
-        err = mtxdistvector_cdotu(&x, &y, &cdotu, &mpierror);
+        err = mtxdistvector_cdotu(&x, &y, &cdotu, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(9.0f, cdotu[0]); TEST_ASSERT_EQ(0.0f, cdotu[1]);
         float cdotc[2];
-        err = mtxdistvector_cdotc(&x, &y, &cdotc, &mpierror);
+        err = mtxdistvector_cdotc(&x, &y, &cdotc, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(9.0f, cdotc[0]); TEST_ASSERT_EQ(0.0f, cdotc[1]);
         double zdotu[2];
-        err = mtxdistvector_zdotu(&x, &y, &zdotu, &mpierror);
+        err = mtxdistvector_zdotu(&x, &y, &zdotu, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(9.0, zdotu[0]); TEST_ASSERT_EQ(0.0, zdotu[1]);
         double zdotc[2];
-        err = mtxdistvector_zdotc(&x, &y, &zdotc, &mpierror);
+        err = mtxdistvector_zdotc(&x, &y, &zdotc, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(9.0, zdotc[0]); TEST_ASSERT_EQ(0.0, zdotc[1]);
         mtxdistvector_free(&y);
@@ -713,25 +713,25 @@ int test_mtxdistvector_dot(void)
             &y, size, nnz, idx, ydata, comm, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         float sdot;
-        err = mtxdistvector_sdot(&x, &y, &sdot, &mpierror);
+        err = mtxdistvector_sdot(&x, &y, &sdot, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_ERR_MPI_COLLECTIVE, err, "%s", mtx_strerror(err));
         double ddot;
-        err = mtxdistvector_ddot(&x, &y, &ddot, &mpierror);
+        err = mtxdistvector_ddot(&x, &y, &ddot, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_ERR_MPI_COLLECTIVE, err, "%s", mtx_strerror(err));
         float cdotu[2];
-        err = mtxdistvector_cdotu(&x, &y, &cdotu, &mpierror);
+        err = mtxdistvector_cdotu(&x, &y, &cdotu, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(5.0f, cdotu[0]); TEST_ASSERT_EQ(7.0f, cdotu[1]);
         float cdotc[2];
-        err = mtxdistvector_cdotc(&x, &y, &cdotc, &mpierror);
+        err = mtxdistvector_cdotc(&x, &y, &cdotc, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(9.0f, cdotc[0]); TEST_ASSERT_EQ(-3.0f, cdotc[1]);
         double zdotu[2];
-        err = mtxdistvector_zdotu(&x, &y, &zdotu, &mpierror);
+        err = mtxdistvector_zdotu(&x, &y, &zdotu, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(5.0, zdotu[0]); TEST_ASSERT_EQ(7.0, zdotu[1]);
         double zdotc[2];
-        err = mtxdistvector_zdotc(&x, &y, &zdotc, &mpierror);
+        err = mtxdistvector_zdotc(&x, &y, &zdotc, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(9.0, zdotc[0]); TEST_ASSERT_EQ(-3.0, zdotc[1]);
         mtxdistvector_free(&y);
@@ -759,25 +759,25 @@ int test_mtxdistvector_dot(void)
             &y, size, nnz, idx, ydata, comm, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         float sdot;
-        err = mtxdistvector_sdot(&x, &y, &sdot, &mpierror);
+        err = mtxdistvector_sdot(&x, &y, &sdot, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_ERR_MPI_COLLECTIVE, err, "%s", mtx_strerror(err));
         double ddot;
-        err = mtxdistvector_ddot(&x, &y, &ddot, &mpierror);
+        err = mtxdistvector_ddot(&x, &y, &ddot, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_ERR_MPI_COLLECTIVE, err, "%s", mtx_strerror(err));
         float cdotu[2];
-        err = mtxdistvector_cdotu(&x, &y, &cdotu, &mpierror);
+        err = mtxdistvector_cdotu(&x, &y, &cdotu, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(5.0f, cdotu[0]); TEST_ASSERT_EQ(7.0f, cdotu[1]);
         float cdotc[2];
-        err = mtxdistvector_cdotc(&x, &y, &cdotc, &mpierror);
+        err = mtxdistvector_cdotc(&x, &y, &cdotc, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(9.0f, cdotc[0]); TEST_ASSERT_EQ(-3.0f, cdotc[1]);
         double zdotu[2];
-        err = mtxdistvector_zdotu(&x, &y, &zdotu, &mpierror);
+        err = mtxdistvector_zdotu(&x, &y, &zdotu, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(5.0, zdotu[0]); TEST_ASSERT_EQ(7.0, zdotu[1]);
         double zdotc[2];
-        err = mtxdistvector_zdotc(&x, &y, &zdotc, &mpierror);
+        err = mtxdistvector_zdotc(&x, &y, &zdotc, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(9.0, zdotc[0]); TEST_ASSERT_EQ(-3.0, zdotc[1]);
         mtxdistvector_free(&y);
@@ -805,27 +805,27 @@ int test_mtxdistvector_dot(void)
             &y, size, nnz, idx, ydata, comm, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         float sdot;
-        err = mtxdistvector_sdot(&x, &y, &sdot, &mpierror);
+        err = mtxdistvector_sdot(&x, &y, &sdot, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(9.0f, sdot);
         double ddot;
-        err = mtxdistvector_ddot(&x, &y, &ddot, &mpierror);
+        err = mtxdistvector_ddot(&x, &y, &ddot, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(9.0, ddot);
         float cdotu[2];
-        err = mtxdistvector_cdotu(&x, &y, &cdotu, &mpierror);
+        err = mtxdistvector_cdotu(&x, &y, &cdotu, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(9.0f, cdotu[0]); TEST_ASSERT_EQ(0.0f, cdotu[1]);
         float cdotc[2];
-        err = mtxdistvector_cdotc(&x, &y, &cdotc, &mpierror);
+        err = mtxdistvector_cdotc(&x, &y, &cdotc, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(9.0f, cdotc[0]); TEST_ASSERT_EQ(0.0f, cdotc[1]);
         double zdotu[2];
-        err = mtxdistvector_zdotu(&x, &y, &zdotu, &mpierror);
+        err = mtxdistvector_zdotu(&x, &y, &zdotu, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(9.0, zdotu[0]); TEST_ASSERT_EQ(0.0, zdotu[1]);
         double zdotc[2];
-        err = mtxdistvector_zdotc(&x, &y, &zdotc, &mpierror);
+        err = mtxdistvector_zdotc(&x, &y, &zdotc, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(9.0, zdotc[0]); TEST_ASSERT_EQ(0.0, zdotc[1]);
         mtxdistvector_free(&y);
@@ -853,27 +853,27 @@ int test_mtxdistvector_dot(void)
             &y, size, nnz, idx, ydata, comm, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         float sdot;
-        err = mtxdistvector_sdot(&x, &y, &sdot, &mpierror);
+        err = mtxdistvector_sdot(&x, &y, &sdot, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(9.0f, sdot);
         double ddot;
-        err = mtxdistvector_ddot(&x, &y, &ddot, &mpierror);
+        err = mtxdistvector_ddot(&x, &y, &ddot, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(9.0, ddot);
         float cdotu[2];
-        err = mtxdistvector_cdotu(&x, &y, &cdotu, &mpierror);
+        err = mtxdistvector_cdotu(&x, &y, &cdotu, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(9.0f, cdotu[0]); TEST_ASSERT_EQ(0.0f, cdotu[1]);
         float cdotc[2];
-        err = mtxdistvector_cdotc(&x, &y, &cdotc, &mpierror);
+        err = mtxdistvector_cdotc(&x, &y, &cdotc, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(9.0f, cdotc[0]); TEST_ASSERT_EQ(0.0f, cdotc[1]);
         double zdotu[2];
-        err = mtxdistvector_zdotu(&x, &y, &zdotu, &mpierror);
+        err = mtxdistvector_zdotu(&x, &y, &zdotu, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(9.0, zdotu[0]); TEST_ASSERT_EQ(0.0, zdotu[1]);
         double zdotc[2];
-        err = mtxdistvector_zdotc(&x, &y, &zdotc, &mpierror);
+        err = mtxdistvector_zdotc(&x, &y, &zdotc, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(9.0, zdotc[0]); TEST_ASSERT_EQ(0.0, zdotc[1]);
         mtxdistvector_free(&y);
@@ -933,11 +933,11 @@ int test_mtxdistvector_nrm2(void)
         err = mtxdistvector_init_array_real_single(&x, size, data, comm, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         float snrm2;
-        err = mtxdistvector_snrm2(&x, &snrm2, &mpierror);
+        err = mtxdistvector_snrm2(&x, &snrm2, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ_MSG(4.0f, snrm2, "snrm2=%f", snrm2);
         double dnrm2;
-        err = mtxdistvector_dnrm2(&x, &dnrm2, &mpierror);
+        err = mtxdistvector_dnrm2(&x, &dnrm2, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(4.0, dnrm2);
         mtxdistvector_free(&x);
@@ -952,11 +952,11 @@ int test_mtxdistvector_nrm2(void)
         err = mtxdistvector_init_array_real_double(&x, size, data, comm, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         float snrm2;
-        err = mtxdistvector_snrm2(&x, &snrm2, &mpierror);
+        err = mtxdistvector_snrm2(&x, &snrm2, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(4.0f, snrm2);
         double dnrm2;
-        err = mtxdistvector_dnrm2(&x, &dnrm2, &mpierror);
+        err = mtxdistvector_dnrm2(&x, &dnrm2, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(4.0, dnrm2);
         mtxdistvector_free(&x);
@@ -971,11 +971,11 @@ int test_mtxdistvector_nrm2(void)
         err = mtxdistvector_init_array_complex_single(&x, size, data, comm, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         float snrm2;
-        err = mtxdistvector_snrm2(&x, &snrm2, &mpierror);
+        err = mtxdistvector_snrm2(&x, &snrm2, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(4.0f, snrm2);
         double dnrm2;
-        err = mtxdistvector_dnrm2(&x, &dnrm2, &mpierror);
+        err = mtxdistvector_dnrm2(&x, &dnrm2, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(4.0, dnrm2);
         mtxdistvector_free(&x);
@@ -990,11 +990,11 @@ int test_mtxdistvector_nrm2(void)
         err = mtxdistvector_init_array_complex_double(&x, size, data, comm, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         float snrm2;
-        err = mtxdistvector_snrm2(&x, &snrm2, &mpierror);
+        err = mtxdistvector_snrm2(&x, &snrm2, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(4.0f, snrm2);
         double dnrm2;
-        err = mtxdistvector_dnrm2(&x, &dnrm2, &mpierror);
+        err = mtxdistvector_dnrm2(&x, &dnrm2, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(4.0, dnrm2);
         mtxdistvector_free(&x);
@@ -1009,11 +1009,11 @@ int test_mtxdistvector_nrm2(void)
         err = mtxdistvector_init_array_integer_single(&x, size, data, comm, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         float snrm2;
-        err = mtxdistvector_snrm2(&x, &snrm2, &mpierror);
+        err = mtxdistvector_snrm2(&x, &snrm2, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(4.0f, snrm2);
         double dnrm2;
-        err = mtxdistvector_dnrm2(&x, &dnrm2, &mpierror);
+        err = mtxdistvector_dnrm2(&x, &dnrm2, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(4.0, dnrm2);
         mtxdistvector_free(&x);
@@ -1028,11 +1028,11 @@ int test_mtxdistvector_nrm2(void)
         err = mtxdistvector_init_array_integer_double(&x, size, data, comm, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         float snrm2;
-        err = mtxdistvector_snrm2(&x, &snrm2, &mpierror);
+        err = mtxdistvector_snrm2(&x, &snrm2, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(4.0f, snrm2);
         double dnrm2;
-        err = mtxdistvector_dnrm2(&x, &dnrm2, &mpierror);
+        err = mtxdistvector_dnrm2(&x, &dnrm2, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(4.0, dnrm2);
         mtxdistvector_free(&x);
@@ -1056,11 +1056,11 @@ int test_mtxdistvector_nrm2(void)
             &x, size, num_nonzeros, indices, data, comm, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         float snrm2;
-        err = mtxdistvector_snrm2(&x, &snrm2, &mpierror);
+        err = mtxdistvector_snrm2(&x, &snrm2, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(4.0f, snrm2);
         double dnrm2;
-        err = mtxdistvector_dnrm2(&x, &dnrm2, &mpierror);
+        err = mtxdistvector_dnrm2(&x, &dnrm2, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(4.0, dnrm2);
         mtxdistvector_free(&x);
@@ -1080,11 +1080,11 @@ int test_mtxdistvector_nrm2(void)
             &x, size, num_nonzeros, indices, data, comm, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         float snrm2;
-        err = mtxdistvector_snrm2(&x, &snrm2, &mpierror);
+        err = mtxdistvector_snrm2(&x, &snrm2, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(4.0f, snrm2);
         double dnrm2;
-        err = mtxdistvector_dnrm2(&x, &dnrm2, &mpierror);
+        err = mtxdistvector_dnrm2(&x, &dnrm2, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(4.0, dnrm2);
         mtxdistvector_free(&x);
@@ -1104,11 +1104,11 @@ int test_mtxdistvector_nrm2(void)
             &x, size, num_nonzeros, indices, data, comm, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         float snrm2;
-        err = mtxdistvector_snrm2(&x, &snrm2, &mpierror);
+        err = mtxdistvector_snrm2(&x, &snrm2, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(4.0f, snrm2);
         double dnrm2;
-        err = mtxdistvector_dnrm2(&x, &dnrm2, &mpierror);
+        err = mtxdistvector_dnrm2(&x, &dnrm2, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(4.0, dnrm2);
         mtxdistvector_free(&x);
@@ -1128,11 +1128,11 @@ int test_mtxdistvector_nrm2(void)
             &x, size, num_nonzeros, indices, data, comm, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         float snrm2;
-        err = mtxdistvector_snrm2(&x, &snrm2, &mpierror);
+        err = mtxdistvector_snrm2(&x, &snrm2, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(4.0f, snrm2);
         double dnrm2;
-        err = mtxdistvector_dnrm2(&x, &dnrm2, &mpierror);
+        err = mtxdistvector_dnrm2(&x, &dnrm2, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(4.0, dnrm2);
         mtxdistvector_free(&x);
@@ -1152,11 +1152,11 @@ int test_mtxdistvector_nrm2(void)
             &x, size, num_nonzeros, indices, data, comm, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         float snrm2;
-        err = mtxdistvector_snrm2(&x, &snrm2, &mpierror);
+        err = mtxdistvector_snrm2(&x, &snrm2, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(4.0f, snrm2);
         double dnrm2;
-        err = mtxdistvector_dnrm2(&x, &dnrm2, &mpierror);
+        err = mtxdistvector_dnrm2(&x, &dnrm2, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(4.0, dnrm2);
         mtxdistvector_free(&x);
@@ -1176,11 +1176,11 @@ int test_mtxdistvector_nrm2(void)
             &x, size, num_nonzeros, indices, data, comm, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         float snrm2;
-        err = mtxdistvector_snrm2(&x, &snrm2, &mpierror);
+        err = mtxdistvector_snrm2(&x, &snrm2, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(4.0f, snrm2);
         double dnrm2;
-        err = mtxdistvector_dnrm2(&x, &dnrm2, &mpierror);
+        err = mtxdistvector_dnrm2(&x, &dnrm2, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(4.0, dnrm2);
         mtxdistvector_free(&x);
@@ -1197,11 +1197,11 @@ int test_mtxdistvector_nrm2(void)
             &x, size, num_nonzeros, indices, comm, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         float snrm2;
-        err = mtxdistvector_snrm2(&x, &snrm2, &mpierror);
+        err = mtxdistvector_snrm2(&x, &snrm2, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(4.0f, snrm2);
         double dnrm2;
-        err = mtxdistvector_dnrm2(&x, &dnrm2, &mpierror);
+        err = mtxdistvector_dnrm2(&x, &dnrm2, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         TEST_ASSERT_EQ(4.0, dnrm2);
         mtxdistvector_free(&x);
@@ -1258,7 +1258,7 @@ int test_mtxdistvector_scal(void)
         int size = (rank == 0) ? 2 : 3;
         err = mtxdistvector_init_array_real_single(&x, size, data, comm, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
-        err = mtxdistvector_sscal(2.0f, &x, &mpierror);
+        err = mtxdistvector_sscal(2.0f, &x, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         if (rank == 0) {
             TEST_ASSERT_EQ(2.0f, x.interior.storage.array.data.real_single[0]);
@@ -1268,7 +1268,7 @@ int test_mtxdistvector_scal(void)
             TEST_ASSERT_EQ(4.0f, x.interior.storage.array.data.real_single[1]);
             TEST_ASSERT_EQ(6.0f, x.interior.storage.array.data.real_single[2]);
         }
-        err = mtxdistvector_dscal(2.0, &x, &mpierror);
+        err = mtxdistvector_dscal(2.0, &x, NULL, &mpierror);
         if (rank == 0) {
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
             TEST_ASSERT_EQ(4.0f, x.interior.storage.array.data.real_single[0]);
@@ -1289,7 +1289,7 @@ int test_mtxdistvector_scal(void)
         int size = (rank == 0) ? 2 : 3;
         err = mtxdistvector_init_array_real_double(&x, size, data, comm, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
-        err = mtxdistvector_sscal(2.0f, &x, &mpierror);
+        err = mtxdistvector_sscal(2.0f, &x, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         if (rank == 0) {
             TEST_ASSERT_EQ(2.0, x.interior.storage.array.data.real_double[0]);
@@ -1299,7 +1299,7 @@ int test_mtxdistvector_scal(void)
             TEST_ASSERT_EQ(4.0, x.interior.storage.array.data.real_double[1]);
             TEST_ASSERT_EQ(6.0, x.interior.storage.array.data.real_double[2]);
         }
-        err = mtxdistvector_dscal(2.0, &x, &mpierror);
+        err = mtxdistvector_dscal(2.0, &x, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         if (rank == 0) {
             TEST_ASSERT_EQ(4.0, x.interior.storage.array.data.real_double[0]);
@@ -1320,7 +1320,7 @@ int test_mtxdistvector_scal(void)
         int size = (rank == 0) ? 1 : 2;
         err = mtxdistvector_init_array_complex_single(&x, size, data, comm, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
-        err = mtxdistvector_sscal(2.0f, &x, &mpierror);
+        err = mtxdistvector_sscal(2.0f, &x, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         if (rank == 0) {
             TEST_ASSERT_EQ(2.0f, x.interior.storage.array.data.complex_single[0][0]);
@@ -1331,7 +1331,7 @@ int test_mtxdistvector_scal(void)
             TEST_ASSERT_EQ(6.0f, x.interior.storage.array.data.complex_single[1][0]);
             TEST_ASSERT_EQ(0.0f, x.interior.storage.array.data.complex_single[1][1]);
         }
-        err = mtxdistvector_dscal(2.0, &x, &mpierror);
+        err = mtxdistvector_dscal(2.0, &x, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         if (rank == 0) {
             TEST_ASSERT_EQ(4.0f, x.interior.storage.array.data.complex_single[0][0]);
@@ -1353,7 +1353,7 @@ int test_mtxdistvector_scal(void)
         int size = (rank == 0) ? 1 : 2;
         err = mtxdistvector_init_array_complex_double(&x, size, data, comm, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
-        err = mtxdistvector_sscal(2.0f, &x, &mpierror);
+        err = mtxdistvector_sscal(2.0f, &x, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         if (rank == 0) {
             TEST_ASSERT_EQ(2.0, x.interior.storage.array.data.complex_double[0][0]);
@@ -1364,7 +1364,7 @@ int test_mtxdistvector_scal(void)
             TEST_ASSERT_EQ(6.0, x.interior.storage.array.data.complex_double[1][0]);
             TEST_ASSERT_EQ(0.0, x.interior.storage.array.data.complex_double[1][1]);
         }
-        err = mtxdistvector_dscal(2.0, &x, &mpierror);
+        err = mtxdistvector_dscal(2.0, &x, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         if (rank == 0) {
             TEST_ASSERT_EQ(4.0, x.interior.storage.array.data.complex_double[0][0]);
@@ -1395,7 +1395,7 @@ int test_mtxdistvector_scal(void)
         err = mtxdistvector_init_coordinate_real_single(
             &x, size, num_nonzeros, indices, data, comm, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
-        err = mtxdistvector_sscal(2.0f, &x, &mpierror);
+        err = mtxdistvector_sscal(2.0f, &x, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         if (rank == 0) {
             TEST_ASSERT_EQ(2.0f, x.interior.storage.coordinate.data.real_single[0]);
@@ -1405,7 +1405,7 @@ int test_mtxdistvector_scal(void)
             TEST_ASSERT_EQ(4.0f, x.interior.storage.coordinate.data.real_single[1]);
             TEST_ASSERT_EQ(6.0f, x.interior.storage.coordinate.data.real_single[2]);
         }
-        err = mtxdistvector_dscal(2.0, &x, &mpierror);
+        err = mtxdistvector_dscal(2.0, &x, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         if (rank == 0) {
             TEST_ASSERT_EQ(4.0f, x.interior.storage.coordinate.data.real_single[0]);
@@ -1431,7 +1431,7 @@ int test_mtxdistvector_scal(void)
         err = mtxdistvector_init_coordinate_real_double(
             &x, size, num_nonzeros, indices, data, comm, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
-        err = mtxdistvector_sscal(2.0f, &x, &mpierror);
+        err = mtxdistvector_sscal(2.0f, &x, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         if (rank == 0) {
             TEST_ASSERT_EQ(2.0f, x.interior.storage.coordinate.data.real_double[0]);
@@ -1441,7 +1441,7 @@ int test_mtxdistvector_scal(void)
             TEST_ASSERT_EQ(4.0f, x.interior.storage.coordinate.data.real_double[1]);
             TEST_ASSERT_EQ(6.0f, x.interior.storage.coordinate.data.real_double[2]);
         }
-        err = mtxdistvector_dscal(2.0, &x, &mpierror);
+        err = mtxdistvector_dscal(2.0, &x, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         if (rank == 0) {
             TEST_ASSERT_EQ(4.0f, x.interior.storage.coordinate.data.real_double[0]);
@@ -1467,7 +1467,7 @@ int test_mtxdistvector_scal(void)
         err = mtxdistvector_init_coordinate_complex_single(
             &x, size, num_nonzeros, indices, data, comm, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
-        err = mtxdistvector_sscal(2.0f, &x, &mpierror);
+        err = mtxdistvector_sscal(2.0f, &x, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         if (rank == 0) {
             TEST_ASSERT_EQ(2.0f, x.interior.storage.coordinate.data.complex_single[0][0]);
@@ -1478,7 +1478,7 @@ int test_mtxdistvector_scal(void)
             TEST_ASSERT_EQ(6.0f, x.interior.storage.coordinate.data.complex_single[1][0]);
             TEST_ASSERT_EQ(0.0f, x.interior.storage.coordinate.data.complex_single[1][1]);
         }
-        err = mtxdistvector_dscal(2.0, &x, &mpierror);
+        err = mtxdistvector_dscal(2.0, &x, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         if (rank == 0) {
             TEST_ASSERT_EQ(4.0f, x.interior.storage.coordinate.data.complex_single[0][0]);
@@ -1505,7 +1505,7 @@ int test_mtxdistvector_scal(void)
         err = mtxdistvector_init_coordinate_complex_double(
             &x, size, num_nonzeros, indices, data, comm, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
-        err = mtxdistvector_sscal(2.0f, &x, &mpierror);
+        err = mtxdistvector_sscal(2.0f, &x, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         if (rank == 0) {
             TEST_ASSERT_EQ(2.0f, x.interior.storage.coordinate.data.complex_double[0][0]);
@@ -1516,7 +1516,7 @@ int test_mtxdistvector_scal(void)
             TEST_ASSERT_EQ(6.0f, x.interior.storage.coordinate.data.complex_double[1][0]);
             TEST_ASSERT_EQ(0.0f, x.interior.storage.coordinate.data.complex_double[1][1]);
         }
-        err = mtxdistvector_dscal(2.0, &x, &mpierror);
+        err = mtxdistvector_dscal(2.0, &x, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         if (rank == 0) {
             TEST_ASSERT_EQ(4.0f, x.interior.storage.coordinate.data.complex_double[0][0]);
@@ -1588,7 +1588,7 @@ int test_mtxdistvector_axpy(void)
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         err = mtxdistvector_init_array_real_single(&y, size, ydata, comm, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
-        err = mtxdistvector_saxpy(2.0f, &x, &y, &mpierror);
+        err = mtxdistvector_saxpy(2.0f, &x, &y, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         if (rank == 0) {
             TEST_ASSERT_EQ(4.0f, y.interior.storage.array.data.real_single[0]);
@@ -1598,7 +1598,7 @@ int test_mtxdistvector_axpy(void)
             TEST_ASSERT_EQ(6.0f, y.interior.storage.array.data.real_single[1]);
             TEST_ASSERT_EQ(7.0f, y.interior.storage.array.data.real_single[2]);
         }
-        err = mtxdistvector_daxpy(2.0, &x, &y, &mpierror);
+        err = mtxdistvector_daxpy(2.0, &x, &y, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         if (rank == 0) {
             TEST_ASSERT_EQ(6.0f, y.interior.storage.array.data.real_single[0]);
@@ -1608,7 +1608,7 @@ int test_mtxdistvector_axpy(void)
             TEST_ASSERT_EQ(10.0f, y.interior.storage.array.data.real_single[1]);
             TEST_ASSERT_EQ(13.0f, y.interior.storage.array.data.real_single[2]);
         }
-        err = mtxdistvector_saypx(2.0f, &y, &x, &mpierror);
+        err = mtxdistvector_saypx(2.0f, &y, &x, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         if (rank == 0) {
             TEST_ASSERT_EQ(13.0f, y.interior.storage.array.data.real_single[0]);
@@ -1618,7 +1618,7 @@ int test_mtxdistvector_axpy(void)
             TEST_ASSERT_EQ(22.0f, y.interior.storage.array.data.real_single[1]);
             TEST_ASSERT_EQ(29.0f, y.interior.storage.array.data.real_single[2]);
         }
-        err = mtxdistvector_daypx(2.0, &y, &x, &mpierror);
+        err = mtxdistvector_daypx(2.0, &y, &x, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         if (rank == 0) {
             TEST_ASSERT_EQ(27.0f, y.interior.storage.array.data.real_single[0]);
@@ -1646,7 +1646,7 @@ int test_mtxdistvector_axpy(void)
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         err = mtxdistvector_init_array_real_double(&y, size, ydata, comm, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
-        err = mtxdistvector_saxpy(2.0f, &x, &y, &mpierror);
+        err = mtxdistvector_saxpy(2.0f, &x, &y, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         if (rank == 0) {
             TEST_ASSERT_EQ(4.0, y.interior.storage.array.data.real_double[0]);
@@ -1656,7 +1656,7 @@ int test_mtxdistvector_axpy(void)
             TEST_ASSERT_EQ(6.0, y.interior.storage.array.data.real_double[1]);
             TEST_ASSERT_EQ(7.0, y.interior.storage.array.data.real_double[2]);
         }
-        err = mtxdistvector_daxpy(2.0, &x, &y, &mpierror);
+        err = mtxdistvector_daxpy(2.0, &x, &y, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         if (rank == 0) {
             TEST_ASSERT_EQ(6.0, y.interior.storage.array.data.real_double[0]);
@@ -1666,7 +1666,7 @@ int test_mtxdistvector_axpy(void)
             TEST_ASSERT_EQ(10.0, y.interior.storage.array.data.real_double[1]);
             TEST_ASSERT_EQ(13.0, y.interior.storage.array.data.real_double[2]);
         }
-        err = mtxdistvector_saypx(2.0f, &y, &x, &mpierror);
+        err = mtxdistvector_saypx(2.0f, &y, &x, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         if (rank == 0) {
             TEST_ASSERT_EQ(13.0, y.interior.storage.array.data.real_double[0]);
@@ -1676,7 +1676,7 @@ int test_mtxdistvector_axpy(void)
             TEST_ASSERT_EQ(22.0, y.interior.storage.array.data.real_double[1]);
             TEST_ASSERT_EQ(29.0, y.interior.storage.array.data.real_double[2]);
         }
-        err = mtxdistvector_daypx(2.0, &y, &x, &mpierror);
+        err = mtxdistvector_daypx(2.0, &y, &x, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         if (rank == 0) {
             TEST_ASSERT_EQ(27.0, y.interior.storage.array.data.real_double[0]);
@@ -1704,7 +1704,7 @@ int test_mtxdistvector_axpy(void)
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         err = mtxdistvector_init_array_complex_single(&y, size, ydata, comm, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
-        err = mtxdistvector_saxpy(2.0f, &x, &y, &mpierror);
+        err = mtxdistvector_saxpy(2.0f, &x, &y, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         if (rank == 0) {
             TEST_ASSERT_EQ(4.0f, y.interior.storage.array.data.complex_single[0][0]);
@@ -1715,7 +1715,7 @@ int test_mtxdistvector_axpy(void)
             TEST_ASSERT_EQ(7.0f, y.interior.storage.array.data.complex_single[1][0]);
             TEST_ASSERT_EQ(0.0f, y.interior.storage.array.data.complex_single[1][1]);
         }
-        err = mtxdistvector_daxpy(2.0, &x, &y, &mpierror);
+        err = mtxdistvector_daxpy(2.0, &x, &y, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         if (rank == 0) {
             TEST_ASSERT_EQ(6.0f, y.interior.storage.array.data.complex_single[0][0]);
@@ -1726,7 +1726,7 @@ int test_mtxdistvector_axpy(void)
             TEST_ASSERT_EQ(13.0f, y.interior.storage.array.data.complex_single[1][0]);
             TEST_ASSERT_EQ(0.0f, y.interior.storage.array.data.complex_single[1][1]);
         }
-        err = mtxdistvector_saypx(2.0f, &y, &x, &mpierror);
+        err = mtxdistvector_saypx(2.0f, &y, &x, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         if (rank == 0) {
             TEST_ASSERT_EQ(13.0f, y.interior.storage.array.data.complex_single[0][0]);
@@ -1737,7 +1737,7 @@ int test_mtxdistvector_axpy(void)
             TEST_ASSERT_EQ(29.0f, y.interior.storage.array.data.complex_single[1][0]);
             TEST_ASSERT_EQ(0.0f, y.interior.storage.array.data.complex_single[1][1]);
         }
-        err = mtxdistvector_daypx(2.0, &y, &x, &mpierror);
+        err = mtxdistvector_daypx(2.0, &y, &x, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         if (rank == 0) {
             TEST_ASSERT_EQ(27.0f, y.interior.storage.array.data.complex_single[0][0]);
@@ -1766,7 +1766,7 @@ int test_mtxdistvector_axpy(void)
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         err = mtxdistvector_init_array_complex_double(&y, size, ydata, comm, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
-        err = mtxdistvector_saxpy(2.0f, &x, &y, &mpierror);
+        err = mtxdistvector_saxpy(2.0f, &x, &y, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         if (rank == 0) {
             TEST_ASSERT_EQ(4.0, y.interior.storage.array.data.complex_double[0][0]);
@@ -1777,7 +1777,7 @@ int test_mtxdistvector_axpy(void)
             TEST_ASSERT_EQ(7.0, y.interior.storage.array.data.complex_double[1][0]);
             TEST_ASSERT_EQ(0.0, y.interior.storage.array.data.complex_double[1][1]);
         }
-        err = mtxdistvector_daxpy(2.0, &x, &y, &mpierror);
+        err = mtxdistvector_daxpy(2.0, &x, &y, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         if (rank == 0) {
             TEST_ASSERT_EQ(6.0, y.interior.storage.array.data.complex_double[0][0]);
@@ -1788,7 +1788,7 @@ int test_mtxdistvector_axpy(void)
             TEST_ASSERT_EQ(13.0, y.interior.storage.array.data.complex_double[1][0]);
             TEST_ASSERT_EQ(0.0, y.interior.storage.array.data.complex_double[1][1]);
         }
-        err = mtxdistvector_saypx(2.0f, &y, &x, &mpierror);
+        err = mtxdistvector_saypx(2.0f, &y, &x, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         if (rank == 0) {
             TEST_ASSERT_EQ(13.0, y.interior.storage.array.data.complex_double[0][0]);
@@ -1799,7 +1799,7 @@ int test_mtxdistvector_axpy(void)
             TEST_ASSERT_EQ(29.0, y.interior.storage.array.data.complex_double[1][0]);
             TEST_ASSERT_EQ(0.0, y.interior.storage.array.data.complex_double[1][1]);
         }
-        err = mtxdistvector_daypx(2.0, &y, &x, &mpierror);
+        err = mtxdistvector_daypx(2.0, &y, &x, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         if (rank == 0) {
             TEST_ASSERT_EQ(27.0, y.interior.storage.array.data.complex_double[0][0]);
@@ -1838,7 +1838,7 @@ int test_mtxdistvector_axpy(void)
         err = mtxdistvector_init_coordinate_real_single(
             &y, size, nnz, idx, ydata, comm, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
-        err = mtxdistvector_saxpy(2.0f, &x, &y, &mpierror);
+        err = mtxdistvector_saxpy(2.0f, &x, &y, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         if (rank == 0) {
             TEST_ASSERT_EQ(4.0f, y.interior.storage.coordinate.data.real_single[0]);
@@ -1848,7 +1848,7 @@ int test_mtxdistvector_axpy(void)
             TEST_ASSERT_EQ(6.0f, y.interior.storage.coordinate.data.real_single[1]);
             TEST_ASSERT_EQ(7.0f, y.interior.storage.coordinate.data.real_single[2]);
         }
-        err = mtxdistvector_daxpy(2.0, &x, &y, &mpierror);
+        err = mtxdistvector_daxpy(2.0, &x, &y, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         if (rank == 0) {
             TEST_ASSERT_EQ(6.0f, y.interior.storage.coordinate.data.real_single[0]);
@@ -1858,7 +1858,7 @@ int test_mtxdistvector_axpy(void)
             TEST_ASSERT_EQ(10.0f, y.interior.storage.coordinate.data.real_single[1]);
             TEST_ASSERT_EQ(13.0f, y.interior.storage.coordinate.data.real_single[2]);
         }
-        err = mtxdistvector_saypx(2.0f, &y, &x, &mpierror);
+        err = mtxdistvector_saypx(2.0f, &y, &x, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         if (rank == 0) {
             TEST_ASSERT_EQ(13.0f, y.interior.storage.coordinate.data.real_single[0]);
@@ -1868,7 +1868,7 @@ int test_mtxdistvector_axpy(void)
             TEST_ASSERT_EQ(22.0f, y.interior.storage.coordinate.data.real_single[1]);
             TEST_ASSERT_EQ(29.0f, y.interior.storage.coordinate.data.real_single[2]);
         }
-        err = mtxdistvector_daypx(2.0, &y, &x, &mpierror);
+        err = mtxdistvector_daypx(2.0, &y, &x, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         if (rank == 0) {
             TEST_ASSERT_EQ(27.0f, y.interior.storage.coordinate.data.real_single[0]);
@@ -1902,7 +1902,7 @@ int test_mtxdistvector_axpy(void)
         err = mtxdistvector_init_coordinate_real_double(
             &y, size, nnz, idx, ydata, comm, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
-        err = mtxdistvector_saxpy(2.0f, &x, &y, &mpierror);
+        err = mtxdistvector_saxpy(2.0f, &x, &y, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         if (rank == 0) {
             TEST_ASSERT_EQ(4.0, y.interior.storage.coordinate.data.real_double[0]);
@@ -1912,7 +1912,7 @@ int test_mtxdistvector_axpy(void)
             TEST_ASSERT_EQ(6.0, y.interior.storage.coordinate.data.real_double[1]);
             TEST_ASSERT_EQ(7.0, y.interior.storage.coordinate.data.real_double[2]);
         }
-        err = mtxdistvector_daxpy(2.0, &x, &y, &mpierror);
+        err = mtxdistvector_daxpy(2.0, &x, &y, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         if (rank == 0) {
             TEST_ASSERT_EQ(6.0, y.interior.storage.coordinate.data.real_double[0]);
@@ -1922,7 +1922,7 @@ int test_mtxdistvector_axpy(void)
             TEST_ASSERT_EQ(10.0, y.interior.storage.coordinate.data.real_double[1]);
             TEST_ASSERT_EQ(13.0, y.interior.storage.coordinate.data.real_double[2]);
         }
-        err = mtxdistvector_saypx(2.0f, &y, &x, &mpierror);
+        err = mtxdistvector_saypx(2.0f, &y, &x, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         if (rank == 0) {
             TEST_ASSERT_EQ(13.0, y.interior.storage.coordinate.data.real_double[0]);
@@ -1932,7 +1932,7 @@ int test_mtxdistvector_axpy(void)
             TEST_ASSERT_EQ(22.0, y.interior.storage.coordinate.data.real_double[1]);
             TEST_ASSERT_EQ(29.0, y.interior.storage.coordinate.data.real_double[2]);
         }
-        err = mtxdistvector_daypx(2.0, &y, &x, &mpierror);
+        err = mtxdistvector_daypx(2.0, &y, &x, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         if (rank == 0) {
             TEST_ASSERT_EQ(27.0, y.interior.storage.coordinate.data.real_double[0]);
@@ -1966,7 +1966,7 @@ int test_mtxdistvector_axpy(void)
         err = mtxdistvector_init_coordinate_complex_single(
             &y, size, nnz, idx, ydata, comm, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
-        err = mtxdistvector_saxpy(2.0f, &x, &y, &mpierror);
+        err = mtxdistvector_saxpy(2.0f, &x, &y, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         if (rank == 0) {
             TEST_ASSERT_EQ(4.0f, y.interior.storage.coordinate.data.complex_single[0][0]);
@@ -1977,7 +1977,7 @@ int test_mtxdistvector_axpy(void)
             TEST_ASSERT_EQ(7.0f, y.interior.storage.coordinate.data.complex_single[1][0]);
             TEST_ASSERT_EQ(0.0f, y.interior.storage.coordinate.data.complex_single[1][1]);
         }
-        err = mtxdistvector_daxpy(2.0, &x, &y, &mpierror);
+        err = mtxdistvector_daxpy(2.0, &x, &y, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         if (rank == 0) {
             TEST_ASSERT_EQ(6.0f, y.interior.storage.coordinate.data.complex_single[0][0]);
@@ -1988,7 +1988,7 @@ int test_mtxdistvector_axpy(void)
             TEST_ASSERT_EQ(13.0f, y.interior.storage.coordinate.data.complex_single[1][0]);
             TEST_ASSERT_EQ(0.0f, y.interior.storage.coordinate.data.complex_single[1][1]);
         }
-        err = mtxdistvector_saypx(2.0f, &y, &x, &mpierror);
+        err = mtxdistvector_saypx(2.0f, &y, &x, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         if (rank == 0) {
             TEST_ASSERT_EQ(13.0f, y.interior.storage.coordinate.data.complex_single[0][0]);
@@ -1999,7 +1999,7 @@ int test_mtxdistvector_axpy(void)
             TEST_ASSERT_EQ(29.0f, y.interior.storage.coordinate.data.complex_single[1][0]);
             TEST_ASSERT_EQ(0.0f, y.interior.storage.coordinate.data.complex_single[1][1]);
         }
-        err = mtxdistvector_daypx(2.0, &y, &x, &mpierror);
+        err = mtxdistvector_daypx(2.0, &y, &x, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         if (rank == 0) {
             TEST_ASSERT_EQ(27.0f, y.interior.storage.coordinate.data.complex_single[0][0]);
@@ -2034,7 +2034,7 @@ int test_mtxdistvector_axpy(void)
         err = mtxdistvector_init_coordinate_complex_double(
             &y, size, nnz, idx, ydata, comm, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
-        err = mtxdistvector_saxpy(2.0f, &x, &y, &mpierror);
+        err = mtxdistvector_saxpy(2.0f, &x, &y, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         if (rank == 0) {
             TEST_ASSERT_EQ(4.0, y.interior.storage.coordinate.data.complex_double[0][0]);
@@ -2045,7 +2045,7 @@ int test_mtxdistvector_axpy(void)
             TEST_ASSERT_EQ(7.0, y.interior.storage.coordinate.data.complex_double[1][0]);
             TEST_ASSERT_EQ(0.0, y.interior.storage.coordinate.data.complex_double[1][1]);
         }
-        err = mtxdistvector_daxpy(2.0, &x, &y, &mpierror);
+        err = mtxdistvector_daxpy(2.0, &x, &y, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         if (rank == 0) {
             TEST_ASSERT_EQ(6.0, y.interior.storage.coordinate.data.complex_double[0][0]);
@@ -2056,7 +2056,7 @@ int test_mtxdistvector_axpy(void)
             TEST_ASSERT_EQ(13.0, y.interior.storage.coordinate.data.complex_double[1][0]);
             TEST_ASSERT_EQ(0.0, y.interior.storage.coordinate.data.complex_double[1][1]);
         }
-        err = mtxdistvector_saypx(2.0f, &y, &x, &mpierror);
+        err = mtxdistvector_saypx(2.0f, &y, &x, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         if (rank == 0) {
             TEST_ASSERT_EQ(13.0, y.interior.storage.coordinate.data.complex_double[0][0]);
@@ -2067,7 +2067,7 @@ int test_mtxdistvector_axpy(void)
             TEST_ASSERT_EQ(29.0, y.interior.storage.coordinate.data.complex_double[1][0]);
             TEST_ASSERT_EQ(0.0, y.interior.storage.coordinate.data.complex_double[1][1]);
         }
-        err = mtxdistvector_daypx(2.0, &y, &x, &mpierror);
+        err = mtxdistvector_daypx(2.0, &y, &x, NULL, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         if (rank == 0) {
             TEST_ASSERT_EQ(27.0, y.interior.storage.coordinate.data.complex_double[0][0]);

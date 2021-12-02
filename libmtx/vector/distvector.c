@@ -855,10 +855,11 @@ int mtxdistvector_copy(
 int mtxdistvector_sscal(
     float a,
     struct mtxdistvector * x,
+    int64_t * num_flops,
     struct mtxmpierror * mpierror)
 {
     int err;
-    err = mtxvector_sscal(a, &x->interior);
+    err = mtxvector_sscal(a, &x->interior, num_flops);
     if (mtxmpierror_allreduce(mpierror, err))
         return MTX_ERR_MPI_COLLECTIVE;
     return MTX_SUCCESS;
@@ -871,10 +872,11 @@ int mtxdistvector_sscal(
 int mtxdistvector_dscal(
     double a,
     struct mtxdistvector * x,
+    int64_t * num_flops,
     struct mtxmpierror * mpierror)
 {
     int err;
-    err = mtxvector_dscal(a, &x->interior);
+    err = mtxvector_dscal(a, &x->interior, num_flops);
     if (mtxmpierror_allreduce(mpierror, err))
         return MTX_ERR_MPI_COLLECTIVE;
     return MTX_SUCCESS;
@@ -888,10 +890,11 @@ int mtxdistvector_saxpy(
     float a,
     const struct mtxdistvector * x,
     struct mtxdistvector * y,
+    int64_t * num_flops,
     struct mtxmpierror * mpierror)
 {
     int err;
-    err = mtxvector_saxpy(a, &x->interior, &y->interior);
+    err = mtxvector_saxpy(a, &x->interior, &y->interior, num_flops);
     if (mtxmpierror_allreduce(mpierror, err))
         return MTX_ERR_MPI_COLLECTIVE;
     return MTX_SUCCESS;
@@ -905,10 +908,11 @@ int mtxdistvector_daxpy(
     double a,
     const struct mtxdistvector * x,
     struct mtxdistvector * y,
+    int64_t * num_flops,
     struct mtxmpierror * mpierror)
 {
     int err;
-    err = mtxvector_daxpy(a, &x->interior, &y->interior);
+    err = mtxvector_daxpy(a, &x->interior, &y->interior, num_flops);
     if (mtxmpierror_allreduce(mpierror, err))
         return MTX_ERR_MPI_COLLECTIVE;
     return MTX_SUCCESS;
@@ -922,10 +926,11 @@ int mtxdistvector_saypx(
     float a,
     struct mtxdistvector * y,
     const struct mtxdistvector * x,
+    int64_t * num_flops,
     struct mtxmpierror * mpierror)
 {
     int err;
-    err = mtxvector_saypx(a, &y->interior, &x->interior);
+    err = mtxvector_saypx(a, &y->interior, &x->interior, num_flops);
     if (mtxmpierror_allreduce(mpierror, err))
         return MTX_ERR_MPI_COLLECTIVE;
     return MTX_SUCCESS;
@@ -939,10 +944,11 @@ int mtxdistvector_daypx(
     double a,
     struct mtxdistvector * y,
     const struct mtxdistvector * x,
+    int64_t * num_flops,
     struct mtxmpierror * mpierror)
 {
     int err;
-    err = mtxvector_daypx(a, &y->interior, &x->interior);
+    err = mtxvector_daypx(a, &y->interior, &x->interior, num_flops);
     if (mtxmpierror_allreduce(mpierror, err))
         return MTX_ERR_MPI_COLLECTIVE;
     return MTX_SUCCESS;
@@ -956,11 +962,12 @@ int mtxdistvector_sdot(
     const struct mtxdistvector * x,
     const struct mtxdistvector * y,
     float * dot,
+    int64_t * num_flops,
     struct mtxmpierror * mpierror)
 {
     int err;
     float dotp;
-    err = mtxvector_sdot(&x->interior, &y->interior, &dotp);
+    err = mtxvector_sdot(&x->interior, &y->interior, &dotp, num_flops);
     if (mtxmpierror_allreduce(mpierror, err))
         return MTX_ERR_MPI_COLLECTIVE;
     mpierror->mpierrcode = MPI_Allreduce(
@@ -979,11 +986,12 @@ int mtxdistvector_ddot(
     const struct mtxdistvector * x,
     const struct mtxdistvector * y,
     double * dot,
+    int64_t * num_flops,
     struct mtxmpierror * mpierror)
 {
     int err;
     double dotp;
-    err = mtxvector_ddot(&x->interior, &y->interior, &dotp);
+    err = mtxvector_ddot(&x->interior, &y->interior, &dotp, num_flops);
     if (mtxmpierror_allreduce(mpierror, err))
         return MTX_ERR_MPI_COLLECTIVE;
     mpierror->mpierrcode = MPI_Allreduce(
@@ -1003,11 +1011,12 @@ int mtxdistvector_cdotu(
     const struct mtxdistvector * x,
     const struct mtxdistvector * y,
     float (* dot)[2],
+    int64_t * num_flops,
     struct mtxmpierror * mpierror)
 {
     int err;
     float dotp[2];
-    err = mtxvector_cdotu(&x->interior, &y->interior, &dotp);
+    err = mtxvector_cdotu(&x->interior, &y->interior, &dotp, num_flops);
     if (mtxmpierror_allreduce(mpierror, err))
         return MTX_ERR_MPI_COLLECTIVE;
     mpierror->mpierrcode = MPI_Allreduce(
@@ -1027,11 +1036,12 @@ int mtxdistvector_zdotu(
     const struct mtxdistvector * x,
     const struct mtxdistvector * y,
     double (* dot)[2],
+    int64_t * num_flops,
     struct mtxmpierror * mpierror)
 {
     int err;
     double dotp[2];
-    err = mtxvector_zdotu(&x->interior, &y->interior, &dotp);
+    err = mtxvector_zdotu(&x->interior, &y->interior, &dotp, num_flops);
     if (mtxmpierror_allreduce(mpierror, err))
         return MTX_ERR_MPI_COLLECTIVE;
     mpierror->mpierrcode = MPI_Allreduce(
@@ -1050,11 +1060,12 @@ int mtxdistvector_cdotc(
     const struct mtxdistvector * x,
     const struct mtxdistvector * y,
     float (* dot)[2],
+    int64_t * num_flops,
     struct mtxmpierror * mpierror)
 {
     int err;
     float dotp[2];
-    err = mtxvector_cdotc(&x->interior, &y->interior, &dotp);
+    err = mtxvector_cdotc(&x->interior, &y->interior, &dotp, num_flops);
     if (mtxmpierror_allreduce(mpierror, err))
         return MTX_ERR_MPI_COLLECTIVE;
     mpierror->mpierrcode = MPI_Allreduce(
@@ -1073,11 +1084,12 @@ int mtxdistvector_zdotc(
     const struct mtxdistvector * x,
     const struct mtxdistvector * y,
     double (* dot)[2],
+    int64_t * num_flops,
     struct mtxmpierror * mpierror)
 {
     int err;
     double dotp[2];
-    err = mtxvector_zdotc(&x->interior, &y->interior, &dotp);
+    err = mtxvector_zdotc(&x->interior, &y->interior, &dotp, num_flops);
     if (mtxmpierror_allreduce(mpierror, err))
         return MTX_ERR_MPI_COLLECTIVE;
     mpierror->mpierrcode = MPI_Allreduce(
@@ -1095,11 +1107,12 @@ int mtxdistvector_zdotc(
 int mtxdistvector_snrm2(
     const struct mtxdistvector * x,
     float * nrm2,
+    int64_t * num_flops,
     struct mtxmpierror * mpierror)
 {
     int err;
     float dot[2];
-    err = mtxvector_cdotc(&x->interior, &x->interior, &dot);
+    err = mtxvector_cdotc(&x->interior, &x->interior, &dot, num_flops);
     if (mtxmpierror_allreduce(mpierror, err))
         return MTX_ERR_MPI_COLLECTIVE;
     mpierror->mpierrcode = MPI_Allreduce(
@@ -1118,10 +1131,11 @@ int mtxdistvector_snrm2(
 int mtxdistvector_dnrm2(
     const struct mtxdistvector * x,
     double * nrm2,
+    int64_t * num_flops,
     struct mtxmpierror * mpierror)
 {
     double dot[2];
-    int err = mtxvector_zdotc(&x->interior, &x->interior, &dot);
+    int err = mtxvector_zdotc(&x->interior, &x->interior, &dot, num_flops);
     if (mtxmpierror_allreduce(mpierror, err))
         return MTX_ERR_MPI_COLLECTIVE;
     mpierror->mpierrcode = MPI_Allreduce(
@@ -1140,6 +1154,7 @@ int mtxdistvector_dnrm2(
 int mtxdistvector_sasum(
     const struct mtxdistvector * x,
     float * asum,
+    int64_t * num_flops,
     struct mtxmpierror * mpierror);
 
 /**
@@ -1149,6 +1164,7 @@ int mtxdistvector_sasum(
 int mtxdistvector_dasum(
     const struct mtxdistvector * x,
     double * asum,
+    int64_t * num_flops,
     struct mtxmpierror * mpierror);
 
 /**

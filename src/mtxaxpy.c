@@ -520,7 +520,8 @@ static int distvector_axpy(
                 fflush(diagf);
                 clock_gettime(CLOCK_MONOTONIC, &t0);
             }
-            err = mtxdistvector_saxpy(alpha, &x, &y, mpierror);
+            int64_t num_flops = 0;
+            err = mtxdistvector_saxpy(alpha, &x, &y, &num_flops, mpierror);
             if (err) {
                 if (verbose > 0)
                     fprintf(diagf, "\n");
@@ -528,10 +529,22 @@ static int distvector_axpy(
                 mtxdistvector_free(&x);
                 return err;
             }
+            clock_gettime(CLOCK_MONOTONIC, &t1);
+            err = MPI_Reduce(
+                rank == root ? MPI_IN_PLACE : &num_flops,
+                &num_flops, 1, MPI_INT64_T, MPI_SUM, root, comm);
+            if (err) {
+                char mpierrstr[MPI_MAX_ERROR_STRING];
+                int mpierrstrlen;
+                MPI_Error_string(err, mpierrstr, &mpierrstrlen);
+                fprintf(stderr, "%s: MPI_Reduce failed with %s\n",
+                        program_invocation_short_name, mpierrstr);
+                MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
+            }
             if (verbose > 0) {
-                clock_gettime(CLOCK_MONOTONIC, &t1);
-                fprintf(diagf, "%'.6f seconds\n",
-                        timespec_duration(t0, t1));
+                fprintf(diagf, "%'.6f seconds (%'.3f Gflop/s)\n",
+                        timespec_duration(t0, t1),
+                        1.0e-9 * num_flops / timespec_duration(t0, t1));
             }
         }
     } else if (precision == mtx_double) {
@@ -541,7 +554,8 @@ static int distvector_axpy(
                 fflush(diagf);
                 clock_gettime(CLOCK_MONOTONIC, &t0);
             }
-            err = mtxdistvector_daxpy(alpha, &x, &y, mpierror);
+            int64_t num_flops = 0;
+            err = mtxdistvector_daxpy(alpha, &x, &y, &num_flops, mpierror);
             if (err) {
                 if (verbose > 0)
                     fprintf(diagf, "\n");
@@ -549,10 +563,22 @@ static int distvector_axpy(
                 mtxdistvector_free(&x);
                 return err;
             }
+            clock_gettime(CLOCK_MONOTONIC, &t1);
+            err = MPI_Reduce(
+                rank == root ? MPI_IN_PLACE : &num_flops,
+                &num_flops, 1, MPI_INT64_T, MPI_SUM, root, comm);
+            if (err) {
+                char mpierrstr[MPI_MAX_ERROR_STRING];
+                int mpierrstrlen;
+                MPI_Error_string(err, mpierrstr, &mpierrstrlen);
+                fprintf(stderr, "%s: MPI_Reduce failed with %s\n",
+                        program_invocation_short_name, mpierrstr);
+                MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
+            }
             if (verbose > 0) {
-                clock_gettime(CLOCK_MONOTONIC, &t1);
-                fprintf(diagf, "%'.6f seconds\n",
-                        timespec_duration(t0, t1));
+                fprintf(diagf, "%'.6f seconds (%'.3f Gflop/s)\n",
+                        timespec_duration(t0, t1),
+                        1.0e-9 * num_flops / timespec_duration(t0, t1));
             }
         }
     } else {
@@ -907,7 +933,8 @@ static int vector_axpy(
                 fflush(diagf);
                 clock_gettime(CLOCK_MONOTONIC, &t0);
             }
-            err = mtxvector_saxpy(alpha, &x, &y);
+            int64_t num_flops = 0;
+            err = mtxvector_saxpy(alpha, &x, &y, &num_flops);
             if (err) {
                 if (verbose > 0)
                     fprintf(diagf, "\n");
@@ -917,8 +944,9 @@ static int vector_axpy(
             }
             if (verbose > 0) {
                 clock_gettime(CLOCK_MONOTONIC, &t1);
-                fprintf(diagf, "%'.6f seconds\n",
-                        timespec_duration(t0, t1));
+                fprintf(diagf, "%'.6f seconds (%'.3f Gflop/s)\n",
+                        timespec_duration(t0, t1),
+                        1.0e-9 * num_flops / timespec_duration(t0, t1));
             }
         }
     } else if (precision == mtx_double) {
@@ -928,7 +956,8 @@ static int vector_axpy(
                 fflush(diagf);
                 clock_gettime(CLOCK_MONOTONIC, &t0);
             }
-            err = mtxvector_daxpy(alpha, &x, &y);
+            int64_t num_flops = 0;
+            err = mtxvector_daxpy(alpha, &x, &y, &num_flops);
             if (err) {
                 if (verbose > 0)
                     fprintf(diagf, "\n");
@@ -938,8 +967,9 @@ static int vector_axpy(
             }
             if (verbose > 0) {
                 clock_gettime(CLOCK_MONOTONIC, &t1);
-                fprintf(diagf, "%'.6f seconds\n",
-                        timespec_duration(t0, t1));
+                fprintf(diagf, "%'.6f seconds (%'.3f Gflop/s)\n",
+                        timespec_duration(t0, t1),
+                        1.0e-9 * num_flops / timespec_duration(t0, t1));
             }
         }
     } else {

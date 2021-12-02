@@ -279,7 +279,8 @@ int mtxvector_array_copy(
  */
 int mtxvector_array_sscal(
     float a,
-    struct mtxvector_array * x);
+    struct mtxvector_array * x,
+    int64_t * num_flops);
 
 /**
  * `mtxvector_array_dscal()' scales a vector by a double precision
@@ -287,7 +288,8 @@ int mtxvector_array_sscal(
  */
 int mtxvector_array_dscal(
     double a,
-    struct mtxvector_array * x);
+    struct mtxvector_array * x,
+    int64_t * num_flops);
 
 /**
  * `mtxvector_array_saxpy()' adds a vector to another one multiplied
@@ -299,7 +301,8 @@ int mtxvector_array_dscal(
 int mtxvector_array_saxpy(
     float a,
     const struct mtxvector_array * x,
-    struct mtxvector_array * y);
+    struct mtxvector_array * y,
+    int64_t * num_flops);
 
 /**
  * `mtxvector_array_daxpy()' adds a vector to another one multiplied
@@ -311,7 +314,8 @@ int mtxvector_array_saxpy(
 int mtxvector_array_daxpy(
     double a,
     const struct mtxvector_array * x,
-    struct mtxvector_array * y);
+    struct mtxvector_array * y,
+    int64_t * num_flops);
 
 /**
  * `mtxvector_array_saypx()' multiplies a vector by a single precision
@@ -323,7 +327,8 @@ int mtxvector_array_daxpy(
 int mtxvector_array_saypx(
     float a,
     struct mtxvector_array * y,
-    const struct mtxvector_array * x);
+    const struct mtxvector_array * x,
+    int64_t * num_flops);
 
 /**
  * `mtxvector_array_daypx()' multiplies a vector by a double precision
@@ -335,7 +340,8 @@ int mtxvector_array_saypx(
 int mtxvector_array_daypx(
     double a,
     struct mtxvector_array * y,
-    const struct mtxvector_array * x);
+    const struct mtxvector_array * x,
+    int64_t * num_flops);
 
 /**
  * `mtxvector_array_sdot()' computes the Euclidean dot product of two
@@ -347,7 +353,8 @@ int mtxvector_array_daypx(
 int mtxvector_array_sdot(
     const struct mtxvector_array * x,
     const struct mtxvector_array * y,
-    float * dot);
+    float * dot,
+    int64_t * num_flops);
 
 /**
  * `mtxvector_array_ddot()' computes the Euclidean dot product of two
@@ -359,7 +366,8 @@ int mtxvector_array_sdot(
 int mtxvector_array_ddot(
     const struct mtxvector_array * x,
     const struct mtxvector_array * y,
-    double * dot);
+    double * dot,
+    int64_t * num_flops);
 
 /**
  * `mtxvector_array_cdotu()' computes the product of the transpose of
@@ -372,7 +380,8 @@ int mtxvector_array_ddot(
 int mtxvector_array_cdotu(
     const struct mtxvector_array * x,
     const struct mtxvector_array * y,
-    float (* dot)[2]);
+    float (* dot)[2],
+    int64_t * num_flops);
 
 /**
  * `mtxvector_array_zdotu()' computes the product of the transpose of
@@ -385,7 +394,8 @@ int mtxvector_array_cdotu(
 int mtxvector_array_zdotu(
     const struct mtxvector_array * x,
     const struct mtxvector_array * y,
-    double (* dot)[2]);
+    double (* dot)[2],
+    int64_t * num_flops);
 
 /**
  * `mtxvector_array_cdotc()' computes the Euclidean dot product of two
@@ -397,7 +407,8 @@ int mtxvector_array_zdotu(
 int mtxvector_array_cdotc(
     const struct mtxvector_array * x,
     const struct mtxvector_array * y,
-    float (* dot)[2]);
+    float (* dot)[2],
+    int64_t * num_flops);
 
 /**
  * `mtxvector_array_zdotc()' computes the Euclidean dot product of two
@@ -409,7 +420,8 @@ int mtxvector_array_cdotc(
 int mtxvector_array_zdotc(
     const struct mtxvector_array * x,
     const struct mtxvector_array * y,
-    double (* dot)[2]);
+    double (* dot)[2],
+    int64_t * num_flops);
 
 /**
  * `mtxvector_array_snrm2()' computes the Euclidean norm of a vector in
@@ -417,7 +429,8 @@ int mtxvector_array_zdotc(
  */
 int mtxvector_array_snrm2(
     const struct mtxvector_array * x,
-    float * nrm2);
+    float * nrm2,
+    int64_t * num_flops);
 
 /**
  * `mtxvector_array_dnrm2()' computes the Euclidean norm of a vector in
@@ -425,7 +438,8 @@ int mtxvector_array_snrm2(
  */
 int mtxvector_array_dnrm2(
     const struct mtxvector_array * x,
-    double * nrm2);
+    double * nrm2,
+    int64_t * num_flops);
 
 /**
  * `mtxvector_array_sasum()' computes the sum of absolute values
@@ -435,7 +449,8 @@ int mtxvector_array_dnrm2(
  */
 int mtxvector_array_sasum(
     const struct mtxvector_array * x,
-    float * asum);
+    float * asum,
+    int64_t * num_flops);
 
 /**
  * `mtxvector_array_dasum()' computes the sum of absolute values
@@ -445,7 +460,8 @@ int mtxvector_array_sasum(
  */
 int mtxvector_array_dasum(
     const struct mtxvector_array * x,
-    double * asum);
+    double * asum,
+    int64_t * num_flops);
 
 /**
  * `mtxvector_array_iamax()' finds the index of the first element

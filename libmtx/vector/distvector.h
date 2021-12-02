@@ -556,6 +556,7 @@ int mtxdistvector_copy(
 int mtxdistvector_sscal(
     float a,
     struct mtxdistvector * x,
+    int64_t * num_flops,
     struct mtxmpierror * mpierror);
 
 /**
@@ -565,6 +566,7 @@ int mtxdistvector_sscal(
 int mtxdistvector_dscal(
     double a,
     struct mtxdistvector * x,
+    int64_t * num_flops,
     struct mtxmpierror * mpierror);
 
 /**
@@ -575,6 +577,7 @@ int mtxdistvector_saxpy(
     float a,
     const struct mtxdistvector * x,
     struct mtxdistvector * y,
+    int64_t * num_flops,
     struct mtxmpierror * mpierror);
 
 /**
@@ -585,6 +588,7 @@ int mtxdistvector_daxpy(
     double a,
     const struct mtxdistvector * x,
     struct mtxdistvector * y,
+    int64_t * num_flops,
     struct mtxmpierror * mpierror);
 
 /**
@@ -595,6 +599,7 @@ int mtxdistvector_saypx(
     float a,
     struct mtxdistvector * y,
     const struct mtxdistvector * x,
+    int64_t * num_flops,
     struct mtxmpierror * mpierror);
 
 /**
@@ -605,6 +610,7 @@ int mtxdistvector_daypx(
     double a,
     struct mtxdistvector * y,
     const struct mtxdistvector * x,
+    int64_t * num_flops,
     struct mtxmpierror * mpierror);
 
 /**
@@ -615,6 +621,7 @@ int mtxdistvector_sdot(
     const struct mtxdistvector * x,
     const struct mtxdistvector * y,
     float * dot,
+    int64_t * num_flops,
     struct mtxmpierror * mpierror);
 
 /**
@@ -625,6 +632,7 @@ int mtxdistvector_ddot(
     const struct mtxdistvector * x,
     const struct mtxdistvector * y,
     double * dot,
+    int64_t * num_flops,
     struct mtxmpierror * mpierror);
 
 /**
@@ -636,6 +644,7 @@ int mtxdistvector_cdotu(
     const struct mtxdistvector * x,
     const struct mtxdistvector * y,
     float (* dot)[2],
+    int64_t * num_flops,
     struct mtxmpierror * mpierror);
 
 /**
@@ -647,6 +656,7 @@ int mtxdistvector_zdotu(
     const struct mtxdistvector * x,
     const struct mtxdistvector * y,
     double (* dot)[2],
+    int64_t * num_flops,
     struct mtxmpierror * mpierror);
 
 /**
@@ -657,6 +667,7 @@ int mtxdistvector_cdotc(
     const struct mtxdistvector * x,
     const struct mtxdistvector * y,
     float (* dot)[2],
+    int64_t * num_flops,
     struct mtxmpierror * mpierror);
 
 /**
@@ -667,6 +678,7 @@ int mtxdistvector_zdotc(
     const struct mtxdistvector * x,
     const struct mtxdistvector * y,
     double (* dot)[2],
+    int64_t * num_flops,
     struct mtxmpierror * mpierror);
 
 /**
@@ -676,6 +688,7 @@ int mtxdistvector_zdotc(
 int mtxdistvector_snrm2(
     const struct mtxdistvector * x,
     float * nrm2,
+    int64_t * num_flops,
     struct mtxmpierror * mpierror);
 
 /**
@@ -685,6 +698,7 @@ int mtxdistvector_snrm2(
 int mtxdistvector_dnrm2(
     const struct mtxdistvector * x,
     double * nrm2,
+    int64_t * num_flops,
     struct mtxmpierror * mpierror);
 
 /**
@@ -694,6 +708,7 @@ int mtxdistvector_dnrm2(
 int mtxdistvector_sasum(
     const struct mtxdistvector * x,
     float * asum,
+    int64_t * num_flops,
     struct mtxmpierror * mpierror);
 
 /**
@@ -703,6 +718,7 @@ int mtxdistvector_sasum(
 int mtxdistvector_dasum(
     const struct mtxdistvector * x,
     double * asum,
+    int64_t * num_flops,
     struct mtxmpierror * mpierror);
 
 /**

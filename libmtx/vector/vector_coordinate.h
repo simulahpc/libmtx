@@ -317,7 +317,8 @@ int mtxvector_coordinate_copy(
  */
 int mtxvector_coordinate_sscal(
     float a,
-    struct mtxvector_coordinate * x);
+    struct mtxvector_coordinate * x,
+    int64_t * num_flops);
 
 /**
  * `mtxvector_coordinate_dscal()' scales a vector by a double
@@ -325,7 +326,8 @@ int mtxvector_coordinate_sscal(
  */
 int mtxvector_coordinate_dscal(
     double a,
-    struct mtxvector_coordinate * x);
+    struct mtxvector_coordinate * x,
+    int64_t * num_flops);
 
 /**
  * `mtxvector_coordinate_saxpy()' adds a vector to another vector
@@ -338,7 +340,8 @@ int mtxvector_coordinate_dscal(
 int mtxvector_coordinate_saxpy(
     float a,
     const struct mtxvector_coordinate * x,
-    struct mtxvector_coordinate * y);
+    struct mtxvector_coordinate * y,
+    int64_t * num_flops);
 
 /**
  * `mtxvector_coordinate_daxpy()' adds a vector to another vector
@@ -351,7 +354,8 @@ int mtxvector_coordinate_saxpy(
 int mtxvector_coordinate_daxpy(
     double a,
     const struct mtxvector_coordinate * x,
-    struct mtxvector_coordinate * y);
+    struct mtxvector_coordinate * y,
+    int64_t * num_flops);
 
 /**
  * `mtxvector_coordinate_saypx()' multiplies a vector by a single
@@ -364,7 +368,8 @@ int mtxvector_coordinate_daxpy(
 int mtxvector_coordinate_saypx(
     float a,
     struct mtxvector_coordinate * y,
-    const struct mtxvector_coordinate * x);
+    const struct mtxvector_coordinate * x,
+    int64_t * num_flops);
 
 /**
  * `mtxvector_coordinate_daypx()' multiplies a vector by a double
@@ -377,7 +382,8 @@ int mtxvector_coordinate_saypx(
 int mtxvector_coordinate_daypx(
     double a,
     struct mtxvector_coordinate * y,
-    const struct mtxvector_coordinate * x);
+    const struct mtxvector_coordinate * x,
+    int64_t * num_flops);
 
 /**
  * `mtxvector_coordinate_sdot()' computes the Euclidean dot product of
@@ -390,7 +396,8 @@ int mtxvector_coordinate_daypx(
 int mtxvector_coordinate_sdot(
     const struct mtxvector_coordinate * x,
     const struct mtxvector_coordinate * y,
-    float * dot);
+    float * dot,
+    int64_t * num_flops);
 
 /**
  * `mtxvector_coordinate_ddot()' computes the Euclidean dot product of
@@ -403,7 +410,8 @@ int mtxvector_coordinate_sdot(
 int mtxvector_coordinate_ddot(
     const struct mtxvector_coordinate * x,
     const struct mtxvector_coordinate * y,
-    double * dot);
+    double * dot,
+    int64_t * num_flops);
 
 /**
  * `mtxvector_coordinate_cdotu()' computes the product of the
@@ -417,7 +425,8 @@ int mtxvector_coordinate_ddot(
 int mtxvector_coordinate_cdotu(
     const struct mtxvector_coordinate * x,
     const struct mtxvector_coordinate * y,
-    float (* dot)[2]);
+    float (* dot)[2],
+    int64_t * num_flops);
 
 /**
  * `mtxvector_coordinate_zdotu()' computes the product of the
@@ -431,7 +440,8 @@ int mtxvector_coordinate_cdotu(
 int mtxvector_coordinate_zdotu(
     const struct mtxvector_coordinate * x,
     const struct mtxvector_coordinate * y,
-    double (* dot)[2]);
+    double (* dot)[2],
+    int64_t * num_flops);
 
 /**
  * `mtxvector_coordinate_cdotc()' computes the Euclidean dot product
@@ -445,7 +455,8 @@ int mtxvector_coordinate_zdotu(
 int mtxvector_coordinate_cdotc(
     const struct mtxvector_coordinate * x,
     const struct mtxvector_coordinate * y,
-    float (* dot)[2]);
+    float (* dot)[2],
+    int64_t * num_flops);
 
 /**
  * `mtxvector_coordinate_zdotc()' computes the Euclidean dot product
@@ -459,7 +470,8 @@ int mtxvector_coordinate_cdotc(
 int mtxvector_coordinate_zdotc(
     const struct mtxvector_coordinate * x,
     const struct mtxvector_coordinate * y,
-    double (* dot)[2]);
+    double (* dot)[2],
+    int64_t * num_flops);
 
 /**
  * `mtxvector_coordinate_snrm2()' computes the Euclidean norm of a
@@ -467,7 +479,8 @@ int mtxvector_coordinate_zdotc(
  */
 int mtxvector_coordinate_snrm2(
     const struct mtxvector_coordinate * x,
-    float * nrm2);
+    float * nrm2,
+    int64_t * num_flops);
 
 /**
  * `mtxvector_coordinate_dnrm2()' computes the Euclidean norm of a
@@ -475,7 +488,8 @@ int mtxvector_coordinate_snrm2(
  */
 int mtxvector_coordinate_dnrm2(
     const struct mtxvector_coordinate * x,
-    double * nrm2);
+    double * nrm2,
+    int64_t * num_flops);
 
 /**
  * `mtxvector_coordinate_sasum()' computes the sum of absolute values
@@ -485,7 +499,8 @@ int mtxvector_coordinate_dnrm2(
  */
 int mtxvector_coordinate_sasum(
     const struct mtxvector_coordinate * x,
-    float * asum);
+    float * asum,
+    int64_t * num_flops);
 
 /**
  * `mtxvector_coordinate_dasum()' computes the sum of absolute values
@@ -495,7 +510,8 @@ int mtxvector_coordinate_sasum(
  */
 int mtxvector_coordinate_dasum(
     const struct mtxvector_coordinate * x,
-    double * asum);
+    double * asum,
+    int64_t * num_flops);
 /**
  * `mtxvector_coordinate_iamax()' finds the index of the first element
  * having the maximum absolute value.  If the vector is

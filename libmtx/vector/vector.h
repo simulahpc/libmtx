@@ -575,7 +575,8 @@ int mtxvector_copy(
  */
 int mtxvector_sscal(
     float a,
-    struct mtxvector * x);
+    struct mtxvector * x,
+    int64_t * num_flops);
 
 /**
  * `mtxvector_dscal()' scales a vector by a double precision floating
@@ -583,7 +584,8 @@ int mtxvector_sscal(
  */
 int mtxvector_dscal(
     double a,
-    struct mtxvector * x);
+    struct mtxvector * x,
+    int64_t * num_flops);
 
 /**
  * `mtxvector_saxpy()' adds a vector to another vector multiplied by a
@@ -592,7 +594,8 @@ int mtxvector_dscal(
 int mtxvector_saxpy(
     float a,
     const struct mtxvector * x,
-    struct mtxvector * y);
+    struct mtxvector * y,
+    int64_t * num_flops);
 
 /**
  * `mtxvector_daxpy()' adds a vector to another vector multiplied by a
@@ -601,7 +604,8 @@ int mtxvector_saxpy(
 int mtxvector_daxpy(
     double a,
     const struct mtxvector * x,
-    struct mtxvector * y);
+    struct mtxvector * y,
+    int64_t * num_flops);
 
 /**
  * `mtxvector_saypx()' multiplies a vector by a single precision
@@ -610,7 +614,8 @@ int mtxvector_daxpy(
 int mtxvector_saypx(
     float a,
     struct mtxvector * y,
-    const struct mtxvector * x);
+    const struct mtxvector * x,
+    int64_t * num_flops);
 
 /**
  * `mtxvector_daypx()' multiplies a vector by a double precision
@@ -619,7 +624,8 @@ int mtxvector_saypx(
 int mtxvector_daypx(
     double a,
     struct mtxvector * y,
-    const struct mtxvector * x);
+    const struct mtxvector * x,
+    int64_t * num_flops);
 
 /**
  * `mtxvector_sdot()' computes the Euclidean dot product of two
@@ -628,7 +634,8 @@ int mtxvector_daypx(
 int mtxvector_sdot(
     const struct mtxvector * x,
     const struct mtxvector * y,
-    float * dot);
+    float * dot,
+    int64_t * num_flops);
 
 /**
  * `mtxvector_ddot()' computes the Euclidean dot product of two
@@ -637,7 +644,8 @@ int mtxvector_sdot(
 int mtxvector_ddot(
     const struct mtxvector * x,
     const struct mtxvector * y,
-    double * dot);
+    double * dot,
+    int64_t * num_flops);
 
 /**
  * `mtxvector_cdotu()' computes the product of the transpose of a
@@ -647,7 +655,8 @@ int mtxvector_ddot(
 int mtxvector_cdotu(
     const struct mtxvector * x,
     const struct mtxvector * y,
-    float (* dot)[2]);
+    float (* dot)[2],
+    int64_t * num_flops);
 
 /**
  * `mtxvector_zdotu()' computes the product of the transpose of a
@@ -657,7 +666,8 @@ int mtxvector_cdotu(
 int mtxvector_zdotu(
     const struct mtxvector * x,
     const struct mtxvector * y,
-    double (* dot)[2]);
+    double (* dot)[2],
+    int64_t * num_flops);
 
 /**
  * `mtxvector_cdotc()' computes the Euclidean dot product of two
@@ -666,7 +676,8 @@ int mtxvector_zdotu(
 int mtxvector_cdotc(
     const struct mtxvector * x,
     const struct mtxvector * y,
-    float (* dot)[2]);
+    float (* dot)[2],
+    int64_t * num_flops);
 
 /**
  * `mtxvector_zdotc()' computes the Euclidean dot product of two
@@ -675,7 +686,8 @@ int mtxvector_cdotc(
 int mtxvector_zdotc(
     const struct mtxvector * x,
     const struct mtxvector * y,
-    double (* dot)[2]);
+    double (* dot)[2],
+    int64_t * num_flops);
 
 /**
  * `mtxvector_snrm2()' computes the Euclidean norm of a vector in
@@ -683,7 +695,8 @@ int mtxvector_zdotc(
  */
 int mtxvector_snrm2(
     const struct mtxvector * x,
-    float * nrm2);
+    float * nrm2,
+    int64_t * num_flops);
 
 /**
  * `mtxvector_dnrm2()' computes the Euclidean norm of a vector in
@@ -691,7 +704,8 @@ int mtxvector_snrm2(
  */
 int mtxvector_dnrm2(
     const struct mtxvector * x,
-    double * nrm2);
+    double * nrm2,
+    int64_t * num_flops);
 
 /**
  * `mtxvector_sasum()' computes the sum of absolute values (1-norm) of
@@ -701,7 +715,8 @@ int mtxvector_dnrm2(
  */
 int mtxvector_sasum(
     const struct mtxvector * x,
-    float * asum);
+    float * asum,
+    int64_t * num_flops);
 
 /**
  * `mtxvector_dasum()' computes the sum of absolute values (1-norm) of
@@ -711,7 +726,8 @@ int mtxvector_sasum(
  */
 int mtxvector_dasum(
     const struct mtxvector * x,
-    double * asum);
+    double * asum,
+    int64_t * num_flops);
 
 /**
  * `mtxvector_iamax()' finds the index of the first element having the
