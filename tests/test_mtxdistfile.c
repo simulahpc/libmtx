@@ -1092,8 +1092,7 @@ int test_mtxdistfile_fwrite(void)
         err = mtxdistfile_fwrite(
             &mtxdistfile, f, "%.1f", &bytes_written, false, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
-        fclose(f);
-        mtxdistfile_free(&mtxdistfile);
+        fflush(f);
         if (rank == 0) {
             char expected[] =
                 "%%MatrixMarket matrix array real general\n"
@@ -1113,6 +1112,7 @@ int test_mtxdistfile_fwrite(void)
                 expected, buf);
         }
         fclose(f);
+        mtxdistfile_free(&mtxdistfile);
     }
 
     {
@@ -1130,8 +1130,7 @@ int test_mtxdistfile_fwrite(void)
         err = mtxdistfile_fwrite(
             &mtxdistfile, f, "%.1f", &bytes_written, false, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
-        fclose(f);
-        mtxdistfile_free(&mtxdistfile);
+        fflush(f);
         if (rank == 0) {
             char expected[] =
                 "%%MatrixMarket vector array real general\n"
@@ -1150,6 +1149,7 @@ int test_mtxdistfile_fwrite(void)
                 expected, buf);
         }
         fclose(f);
+        mtxdistfile_free(&mtxdistfile);
     }
 
     /*
@@ -1176,8 +1176,7 @@ int test_mtxdistfile_fwrite(void)
         err = mtxdistfile_fwrite(
             &mtxdistfile, f, "%.1f", &bytes_written, false, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
-        fclose(f);
-        mtxdistfile_free(&mtxdistfile);
+        fflush(f);
         if (rank == 0) {
             char expected[] =
                 "%%MatrixMarket matrix coordinate real general\n"
@@ -1196,6 +1195,7 @@ int test_mtxdistfile_fwrite(void)
                 expected, buf);
         }
         fclose(f);
+        mtxdistfile_free(&mtxdistfile);
     }
 
     /*
@@ -1221,8 +1221,7 @@ int test_mtxdistfile_fwrite(void)
         err = mtxdistfile_fwrite(
             &mtxdistfile, f, "%.1f", &bytes_written, false, &mpierror);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
-        fclose(f);
-        mtxdistfile_free(&mtxdistfile);
+        fflush(f);
         if (rank == 0) {
             char expected[] =
                 "%%MatrixMarket vector coordinate real general\n"
@@ -1241,6 +1240,7 @@ int test_mtxdistfile_fwrite(void)
                 expected, buf);
         }
         fclose(f);
+        mtxdistfile_free(&mtxdistfile);
     }
     mtxmpierror_free(&mpierror);
     return TEST_SUCCESS;
