@@ -34,7 +34,10 @@ EXTRA_DIST = \
 	README \
 	autogen.sh \
 	manual/texinfo.css \
-	tests/test_mtx_mpi_parallel
+	tests/test_distsort_parallel \
+	tests/test_mtx_mpi_parallel \
+	tests/test_mtxdistfile_parallel \
+	tests/test_mtxdistvector_parallel
 
 # Matrix Market library
 lib_LTLIBRARIES = libmtx.la
@@ -352,10 +355,16 @@ TESTS = \
 # MPI unit tests
 if HAVE_MPI
 check_PROGRAMS += \
+	tests/test_distsort \
 	tests/test_mtx_mpi \
 	tests/test_mtxdistfile \
 	tests/test_mtxdistvector \
 	tests/test_mtxfile_mpi
+
+tests_test_distsort_CPPFLAGS = $(MPICPPFLAGS)
+tests_test_distsort_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
+tests_test_distsort_SOURCES = tests/test_distsort.c tests/test.h
+tests/test_distsort_parallel: tests/test_distsort
 
 tests_test_mtx_mpi_CPPFLAGS = $(MPICPPFLAGS)
 tests_test_mtx_mpi_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
@@ -378,6 +387,7 @@ tests_test_mtxdistvector_SOURCES = tests/test_mtxdistvector.c tests/test.h
 tests/test_mtxdistvector_parallel: tests/test_mtxdistvector
 
 TESTS += \
+	tests/test_distsort_parallel \
 	tests/test_mtx_mpi_parallel \
 	tests/test_mtxfile_mpi_parallel \
 	tests/test_mtxdistfile_parallel \

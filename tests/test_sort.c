@@ -29,6 +29,7 @@
 
 #include <errno.h>
 
+#include <inttypes.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -102,7 +103,7 @@ static double timespec_duration(
 }
 
 /* A simple, linear congruential random number generator. */
-uint64_t rand_uint64(void)
+static uint64_t rand_uint64(void)
 {
     static uint64_t i = 1;
     return (i = (164603309694725029ull * i) % 14738995463583502973ull);
@@ -165,7 +166,7 @@ int test_radix_sort(void)
         err = radix_sort_uint32(size, keys, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         for (int i = 1; i < size; i++)
-            TEST_ASSERT_LE_MSG(keys[i-1], keys[i], "i=%d, keys[i-1]=%u, keys[i]=%u",
+            TEST_ASSERT_LE_MSG(keys[i-1], keys[i], "i=%d, keys[i-1]=%"PRIu32", keys[i]=%"PRIu32"",
                                i, keys[i-1], keys[i]);
     }
 
@@ -248,7 +249,7 @@ int test_radix_sort(void)
         err = radix_sort_uint64(size, keys, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         for (int i = 1; i < size; i++)
-            TEST_ASSERT_LE_MSG(keys[i-1], keys[i], "i=%d, keys[i-1]=%u, keys[i]=%u",
+            TEST_ASSERT_LE_MSG(keys[i-1], keys[i], "i=%d, keys[i-1]=%"PRIu64", keys[i]=%"PRIu64"",
                                i, keys[i-1], keys[i]);
     }
 
@@ -258,7 +259,7 @@ int test_radix_sort(void)
         uint64_t * keys = malloc(size * sizeof(uint64_t));
         TEST_ASSERT_NEQ_MSG(NULL, keys, "%s", strerror(errno));
         for (int i = 0; i < size; i++)
-            keys[i] = rand_uint64() % UINT64_MAX;
+            keys[i] = rand_uint64();
         int64_t * sorting_permutation = malloc(size * sizeof(int64_t));
         TEST_ASSERT_NEQ_MSG(NULL, sorting_permutation, "%s", strerror(errno));
 
