@@ -845,6 +845,37 @@ int mtxdistfile_fwrite_shared(
     struct mtxmpierror * mpierror);
 
 /*
+ * Sorting
+ */
+
+/**
+ * ‘mtxdistfile_sort()’ sorts a distributed Matrix Market file in a
+ * given order.
+ *
+ * The sorting order is determined by ‘sorting’. If the sorting order
+ * is ‘mtxfile_unsorted’, nothing is done. If the sorting order is
+ * ‘mtxfile_sorting_permutation’, then ‘perm’ must point to an array
+ * of ‘size’ integers that specify the sorting permutation. Note that
+ * the sorting permutation uses 1-based indexing.
+ *
+ * For a vector or matrix in coordinate format, the nonzero values are
+ * sorted in the specified order. For Matrix Market files in array
+ * format, this operation does nothing.
+ *
+ * ‘size’ is the number of vector or matrix nonzeros to sort.
+ *
+ * ‘perm’ is ignored if it is ‘NULL’. Otherwise, it must point to an
+ * array of ‘size’ 64-bit integers, and it is used to store the
+ * permutation of the vector or matrix nonzeros.
+ */
+int mtxdistfile_sort(
+    struct mtxdistfile * mtxdistfile,
+    enum mtxfile_sorting sorting,
+    int64_t size,
+    int64_t * perm,
+    struct mtxmpierror * mpierror);
+
+/*
  * Partitioning
  */
 
