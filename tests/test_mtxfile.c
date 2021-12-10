@@ -2623,6 +2623,38 @@ int test_mtxfile_sort(void)
     }
 
     {
+        int num_rows = 3;
+        int num_columns = 3;
+        const double srcdata[] = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0};
+        int64_t num_nonzeros = sizeof(srcdata) / sizeof(*srcdata);
+        struct mtxfile mtx;
+        err = mtxfile_init_matrix_array_real_double(
+            &mtx, mtxfile_general, num_rows, num_columns, srcdata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        err = mtxfile_sort(&mtx, mtxfile_morton, num_nonzeros, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        TEST_ASSERT_EQ(mtxfile_matrix, mtx.header.object);
+        TEST_ASSERT_EQ(mtxfile_array, mtx.header.format);
+        TEST_ASSERT_EQ(mtxfile_real, mtx.header.field);
+        TEST_ASSERT_EQ(mtxfile_general, mtx.header.symmetry);
+        TEST_ASSERT_EQ(mtx_double, mtx.precision);
+        TEST_ASSERT_EQ(3, mtx.size.num_rows);
+        TEST_ASSERT_EQ(3, mtx.size.num_columns);
+        TEST_ASSERT_EQ(-1, mtx.size.num_nonzeros);
+        const double * data = mtx.data.array_real_double;
+        TEST_ASSERT_EQ(1.0, data[0]);
+        TEST_ASSERT_EQ(2.0, data[1]);
+        TEST_ASSERT_EQ(4.0, data[2]);
+        TEST_ASSERT_EQ(5.0, data[3]);
+        TEST_ASSERT_EQ(3.0, data[4]);
+        TEST_ASSERT_EQ(6.0, data[5]);
+        TEST_ASSERT_EQ(7.0, data[6]);
+        TEST_ASSERT_EQ(8.0, data[7]);
+        TEST_ASSERT_EQ(9.0, data[8]);
+        mtxfile_free(&mtx);
+    }
+
+    {
         int num_rows = 2;
         int num_columns = 3;
         const double srcdata[] = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0};
@@ -2632,8 +2664,22 @@ int test_mtxfile_sort(void)
             &mtx, mtxfile_general, num_rows, num_columns, srcdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
         err = mtxfile_sort(&mtx, mtxfile_column_major, num_nonzeros, NULL);
-        TEST_ASSERT_EQ_MSG(MTX_ERR_ERRNO, err, "%s", mtx_strerror(err));
-        TEST_ASSERT_EQ(ENOTSUP, errno);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        TEST_ASSERT_EQ(mtxfile_matrix, mtx.header.object);
+        TEST_ASSERT_EQ(mtxfile_array, mtx.header.format);
+        TEST_ASSERT_EQ(mtxfile_real, mtx.header.field);
+        TEST_ASSERT_EQ(mtxfile_general, mtx.header.symmetry);
+        TEST_ASSERT_EQ(mtx_double, mtx.precision);
+        TEST_ASSERT_EQ(2, mtx.size.num_rows);
+        TEST_ASSERT_EQ(3, mtx.size.num_columns);
+        TEST_ASSERT_EQ(-1, mtx.size.num_nonzeros);
+        const double * data = mtx.data.array_real_double;
+        TEST_ASSERT_EQ(1.0, data[0]);
+        TEST_ASSERT_EQ(4.0, data[1]);
+        TEST_ASSERT_EQ(2.0, data[2]);
+        TEST_ASSERT_EQ(5.0, data[3]);
+        TEST_ASSERT_EQ(3.0, data[4]);
+        TEST_ASSERT_EQ(6.0, data[5]);
         mtxfile_free(&mtx);
     }
 

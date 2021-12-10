@@ -1001,6 +1001,46 @@ int mtxfile_data_transpose(
  */
 
 /**
+ * ‘mtxfile_data_sortkey_row_major()’ provides an array of keys that
+ * can be used to sort the data lines of the given Matrix Market file
+ * in row major order.
+ *
+ * The array ‘keys’ must contain enough storage for an array of ‘size’
+ * values of type ‘int64_t’.  If successful, the ‘k’-th value of
+ * ‘keys’ is the sorting key for the ‘k’-th data line.
+ */
+int mtxfile_data_sortkey_row_major(
+    union mtxfile_data * data,
+    enum mtxfile_object object,
+    enum mtxfile_format format,
+    enum mtxfile_field field,
+    enum mtx_precision precision,
+    int num_rows,
+    int num_columns,
+    int64_t size,
+    int64_t * keys);
+
+/**
+ * ‘mtxfile_data_sortkey_column_major()’ provides an array of keys
+ * that can be used to sort the data lines of the given Matrix Market
+ * file in column major order.
+ *
+ * The array ‘keys’ must contain enough storage for an array of ‘size’
+ * values of type ‘int64_t’.  If successful, the ‘k’-th value of
+ * ‘keys’ is the sorting key for the ‘k’-th data line.
+ */
+int mtxfile_data_sortkey_column_major(
+    union mtxfile_data * data,
+    enum mtxfile_object object,
+    enum mtxfile_format format,
+    enum mtxfile_field field,
+    enum mtx_precision precision,
+    int num_rows,
+    int num_columns,
+    int64_t size,
+    int64_t * keys);
+
+/**
  * `mtxfile_data_sort_permute()' sorts data lines of a Matrix Market
  * file according to a given sorting permutation.
  */
@@ -1016,8 +1056,11 @@ int mtxfile_data_sort_permute(
     int64_t * perm);
 
 /**
- * `mtxfile_data_sort_row_major()' sorts data lines of a Matrix Market
+ * ‘mtxfile_data_sort_row_major()’ sorts data lines of a Matrix Market
  * file in row major order.
+ *
+ * Matrices and vectors in ‘array’ format are already in row major
+ * order, which means that nothing is done in this case. Otherwise,
  */
 int mtxfile_data_sort_row_major(
     union mtxfile_data * data,
@@ -1031,15 +1074,11 @@ int mtxfile_data_sort_row_major(
     int64_t * perm);
 
 /**
- * `mtxfile_data_sort_column_major()' sorts data lines of a Matrix
+ * ‘mtxfile_data_sort_column_major()’ sorts data lines of a Matrix
  * Market file in column major order.
  *
- * This operation is not supported for non-square matrices in array
- * format, since they are always stored in row major order.  In this
- * case, one might want to transpose the matrix, which will rearrange
- * the elements to correspond with a column major ordering of the
- * original matrix, but the dimensions of the matrix are also
- * exchanged.
+ * Matrices and vectors in ‘array’ format are already in column major
+ * order, which means that nothing is done in this case. Otherwise,
  */
 int mtxfile_data_sort_column_major(
     union mtxfile_data * data,
