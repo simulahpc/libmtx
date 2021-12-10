@@ -883,8 +883,9 @@ int mtxfile_init_from_row_partition(
  */
 
 /**
- * `mtxfile_permute()' permutes the elements of a matrix or vector in
- * Matrix Market format based on given row and column permutations.
+ * ‘mtxfile_reorder_dims()’ reorders the rows of a vector or the rows
+ *  and columns of a matrix in Matrix Market format based on given row
+ *  and column permutations.
  *
  * The array ‘row_permutation’ should be a permutation of the integers
  * ‘1,2,...,M’, where ‘M’ is the number of rows in the matrix or
@@ -896,7 +897,7 @@ int mtxfile_init_from_row_partition(
  * column ‘column_permutation[j-1]’ in the original matrix, for
  * ‘i=1,2,...,M’ and ‘j=1,2,...,N’.
  */
-int mtxfile_permute(
+int mtxfile_reorder_dims(
     struct mtxfile * mtxfile,
     const int * row_permutation,
     const int * column_permutation);
