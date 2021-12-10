@@ -26,9 +26,9 @@
 #ifdef LIBMTX_HAVE_MPI
 #include <libmtx/error.h>
 #include <libmtx/mtx/precision.h>
-#include <libmtx/mtxfile/mtxdistfile.h>
-#include <libmtx/mtxfile/mtxfile.h>
+#include <libmtx/mtxdistfile/mtxdistfile.h>
 #include <libmtx/mtxfile/header.h>
+#include <libmtx/mtxfile/mtxfile.h>
 #include <libmtx/mtxfile/size.h>
 #include <libmtx/util/field.h>
 #include <libmtx/util/partition.h>

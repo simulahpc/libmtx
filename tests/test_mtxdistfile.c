@@ -26,8 +26,8 @@
 #include <libmtx/libmtx-config.h>
 
 #include <libmtx/error.h>
+#include <libmtx/mtxdistfile/mtxdistfile.h>
 #include <libmtx/util/partition.h>
-#include <libmtx/mtxfile/mtxdistfile.h>
 
 #include <mpi.h>
 

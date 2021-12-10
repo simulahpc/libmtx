@@ -26,10 +26,10 @@
 
 #include <libmtx/error.h>
 #include <libmtx/mtx/precision.h>
+#include <libmtx/mtxdistfile/mtxdistfile.h>
 #include <libmtx/mtxfile/comments.h>
 #include <libmtx/mtxfile/data.h>
 #include <libmtx/mtxfile/header.h>
-#include <libmtx/mtxfile/mtxdistfile.h>
 #include <libmtx/mtxfile/mtxfile.h>
 #include <libmtx/mtxfile/size.h>
 #include <libmtx/util/distpartition.h>

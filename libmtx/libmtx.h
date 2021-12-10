@@ -46,7 +46,7 @@
 #include <libmtx/mtx/submatrix.h>
 #include <libmtx/mtx/transpose.h>
 #include <libmtx/mtx/triangle.h>
-#include <libmtx/mtxfile/mtxdistfile.h>
+#include <libmtx/mtxdistfile/mtxdistfile.h>
 #include <libmtx/mtxfile/mtxfile.h>
 #include <libmtx/util/field.h>
 #include <libmtx/util/index_set.h>

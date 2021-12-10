@@ -22,8 +22,8 @@
  * for inter-process communication.
  */
 
-#ifndef LIBMTX_MTXFILE_MTXDISTFILE_H
-#define LIBMTX_MTXFILE_MTXDISTFILE_H
+#ifndef LIBMTX_MTXDISTFILE_MTXDISTFILE_H
+#define LIBMTX_MTXDISTFILE_MTXDISTFILE_H
 
 #include <libmtx/libmtx-config.h>
 
