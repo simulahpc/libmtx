@@ -1848,7 +1848,7 @@ int mtxfile_sort(
             perm[k] = k+1;
         return MTX_SUCCESS;
     } else if (sorting == mtxfile_sorting_permutation) {
-        return mtxfile_data_sort_permute(
+        return mtxfile_data_permute(
             &mtxfile->data, mtxfile->header.object, mtxfile->header.format,
             mtxfile->header.field, mtxfile->precision, mtxfile->size.num_rows,
             mtxfile->size.num_columns, size, perm);

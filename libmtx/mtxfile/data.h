@@ -1001,6 +1001,21 @@ int mtxfile_data_transpose(
  */
 
 /**
+ * ‘mtxfile_data_permute()’ permutes the order of data lines in a
+ * Matrix Market file according to a given permutation.
+ */
+int mtxfile_data_permute(
+    union mtxfile_data * data,
+    enum mtxfile_object object,
+    enum mtxfile_format format,
+    enum mtxfile_field field,
+    enum mtx_precision precision,
+    int num_rows,
+    int num_columns,
+    int64_t size,
+    int64_t * perm);
+
+/**
  * ‘mtxfile_data_sortkey_row_major()’ provides an array of keys that
  * can be used to sort the data lines of the given Matrix Market file
  * in row major order.
@@ -1039,21 +1054,6 @@ int mtxfile_data_sortkey_column_major(
     int num_columns,
     int64_t size,
     int64_t * keys);
-
-/**
- * `mtxfile_data_sort_permute()' sorts data lines of a Matrix Market
- * file according to a given sorting permutation.
- */
-int mtxfile_data_sort_permute(
-    union mtxfile_data * data,
-    enum mtxfile_object object,
-    enum mtxfile_format format,
-    enum mtxfile_field field,
-    enum mtx_precision precision,
-    int num_rows,
-    int num_columns,
-    int64_t size,
-    int64_t * perm);
 
 /**
  * ‘mtxfile_data_sort_row_major()’ sorts data lines of a Matrix Market
