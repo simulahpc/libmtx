@@ -95,7 +95,7 @@ int mtxfile_alloc(
         return err;
     }
 
-    err = mtxfile_data_alloc(
+    err = mtxfiledata_alloc(
         &mtxfile->data, mtxfile->header.object, mtxfile->header.format,
         mtxfile->header.field, mtxfile->precision, num_data_lines);
     if (err) {
@@ -111,7 +111,7 @@ int mtxfile_alloc(
 void mtxfile_free(
     struct mtxfile * mtxfile)
 {
-    mtxfile_data_free(
+    mtxfiledata_free(
         &mtxfile->data,
         mtxfile->header.object,
         mtxfile->header.format,
@@ -150,7 +150,7 @@ int mtxfile_alloc_copy(
         return err;
     }
 
-    err = mtxfile_data_alloc(
+    err = mtxfiledata_alloc(
         &dst->data, dst->header.object, dst->header.format,
         dst->header.field, dst->precision, num_data_lines);
     if (err) {
@@ -178,7 +178,7 @@ int mtxfile_init_copy(
         mtxfile_comments_free(&dst->comments);
         return err;
     }
-    err = mtxfile_data_copy(
+    err = mtxfiledata_copy(
         &dst->data, &src->data,
         src->header.object, src->header.format,
         src->header.field, src->precision,
@@ -244,40 +244,40 @@ int mtxfile_cat(
     if (num_data_lines_dst + num_data_lines_src != num_data_lines)
         return MTX_ERR_INDEX_OUT_OF_BOUNDS;
 
-    union mtxfile_data data;
-    err = mtxfile_data_alloc(
+    union mtxfiledata data;
+    err = mtxfiledata_alloc(
         &data, dst->header.object, dst->header.format,
         dst->header.field, dst->precision, num_data_lines);
     if (err)
         return err;
 
-    err = mtxfile_data_copy(
+    err = mtxfiledata_copy(
         &data, &dst->data,
         dst->header.object, dst->header.format,
         dst->header.field, dst->precision,
         num_data_lines_dst, 0, 0);
     if (err) {
-        mtxfile_data_free(
+        mtxfiledata_free(
             &data, dst->header.object, dst->header.format,
             dst->header.field, dst->precision);
         return err;
     }
 
-    err = mtxfile_data_copy(
+    err = mtxfiledata_copy(
         &data, &src->data,
         dst->header.object, dst->header.format,
         dst->header.field, dst->precision,
         num_data_lines_src, num_data_lines_dst, 0);
     if (err) {
-        mtxfile_data_free(
+        mtxfiledata_free(
             &data, dst->header.object, dst->header.format,
             dst->header.field, dst->precision);
         return err;
     }
 
-    union mtxfile_data olddata = dst->data;
+    union mtxfiledata olddata = dst->data;
     dst->data = data;
-    mtxfile_data_free(
+    mtxfiledata_free(
         &olddata, dst->header.object, dst->header.format,
         dst->header.field, dst->precision);
     return MTX_SUCCESS;
@@ -346,8 +346,8 @@ int mtxfile_catn(
     if (err)
         return err;
 
-    union mtxfile_data data;
-    err = mtxfile_data_alloc(
+    union mtxfiledata data;
+    err = mtxfiledata_alloc(
         &data, dst->header.object, dst->header.format,
         dst->header.field, dst->precision, num_data_lines);
     if (err)
@@ -355,13 +355,13 @@ int mtxfile_catn(
 
     int64_t dstoffset = 0;
     int64_t srcoffset = 0;
-    err = mtxfile_data_copy(
+    err = mtxfiledata_copy(
         &data, &dst->data,
         dst->header.object, dst->header.format,
         dst->header.field, dst->precision,
         num_data_lines_dst, 0, 0);
     if (err) {
-        mtxfile_data_free(
+        mtxfiledata_free(
             &data, dst->header.object, dst->header.format,
             dst->header.field, dst->precision);
         return err;
@@ -375,13 +375,13 @@ int mtxfile_catn(
         if (err)
             return err;
 
-        err = mtxfile_data_copy(
+        err = mtxfiledata_copy(
             &data, &src->data,
             dst->header.object, dst->header.format,
             dst->header.field, dst->precision,
             num_data_lines_src, dstoffset, 0);
         if (err) {
-            mtxfile_data_free(
+            mtxfiledata_free(
                 &data, dst->header.object, dst->header.format,
                 dst->header.field, dst->precision);
             return err;
@@ -389,9 +389,9 @@ int mtxfile_catn(
         dstoffset += num_data_lines_src;
     }
 
-    union mtxfile_data olddata = dst->data;
+    union mtxfiledata olddata = dst->data;
     dst->data = data;
-    mtxfile_data_free(
+    mtxfiledata_free(
         &olddata, dst->header.object, dst->header.format,
         dst->header.field, dst->precision);
     return MTX_SUCCESS;
@@ -442,7 +442,7 @@ int mtxfile_alloc_matrix_array(
     if (err)
         return err;
 
-    err = mtxfile_data_alloc(
+    err = mtxfiledata_alloc(
         &mtxfile->data,
         mtxfile->header.object,
         mtxfile->header.format,
@@ -644,7 +644,7 @@ int mtxfile_alloc_vector_array(
     mtxfile->size.num_columns = -1;
     mtxfile->size.num_nonzeros = -1;
     mtxfile->precision = precision;
-    err = mtxfile_data_alloc(
+    err = mtxfiledata_alloc(
         &mtxfile->data, mtxfile->header.object, mtxfile->header.format,
         mtxfile->header.field, mtxfile->precision, num_rows);
     if (err) {
@@ -800,7 +800,7 @@ int mtxfile_alloc_matrix_coordinate(
     mtxfile->size.num_nonzeros = num_nonzeros;
     mtxfile->precision = precision;
 
-    err = mtxfile_data_alloc(
+    err = mtxfiledata_alloc(
         &mtxfile->data,
         mtxfile->header.object,
         mtxfile->header.format,
@@ -1007,7 +1007,7 @@ int mtxfile_alloc_vector_coordinate(
     mtxfile->size.num_nonzeros = num_nonzeros;
     mtxfile->precision = precision;
 
-    err = mtxfile_data_alloc(
+    err = mtxfiledata_alloc(
         &mtxfile->data,
         mtxfile->header.object,
         mtxfile->header.format,
@@ -1175,7 +1175,7 @@ int mtxfile_set_constant_real_single(
     err = mtxfile_size_num_data_lines(&mtxfile->size, &num_data_lines);
     if (err)
         return err;
-    return mtxfile_data_set_constant_real_single(
+    return mtxfiledata_set_constant_real_single(
         &mtxfile->data, mtxfile->header.object, mtxfile->header.format,
         mtxfile->header.field, mtxfile->precision,
         num_data_lines, 0, a);
@@ -1360,7 +1360,7 @@ int mtxfile_fread(
         return err;
     }
 
-    err = mtxfile_data_alloc(
+    err = mtxfiledata_alloc(
         &mtxfile->data,
         mtxfile->header.object,
         mtxfile->header.format,
@@ -1383,7 +1383,7 @@ int mtxfile_fread(
         mtxfile->size.num_columns,
         num_data_lines, 0);
     if (err) {
-        mtxfile_data_free(
+        mtxfiledata_free(
             &mtxfile->data, mtxfile->header.object,
             mtxfile->header.format, mtxfile->header.field,
             precision);
@@ -1465,7 +1465,7 @@ int mtxfile_gzread(
         return err;
     }
 
-    err = mtxfile_data_alloc(
+    err = mtxfiledata_alloc(
         &mtxfile->data,
         mtxfile->header.object,
         mtxfile->header.format,
@@ -1488,7 +1488,7 @@ int mtxfile_gzread(
         mtxfile->size.num_columns,
         num_data_lines, 0);
     if (err) {
-        mtxfile_data_free(
+        mtxfiledata_free(
             &mtxfile->data, mtxfile->header.object,
             mtxfile->header.format, mtxfile->header.field,
             precision);
@@ -1625,7 +1625,7 @@ int mtxfile_fwrite(
         &mtxfile->size, &num_data_lines);
     if (err)
         return err;
-    err = mtxfile_data_fwrite(
+    err = mtxfiledata_fwrite(
         &mtxfile->data, mtxfile->header.object, mtxfile->header.format,
         mtxfile->header.field, mtxfile->precision, num_data_lines,
         f, fmt, bytes_written);
@@ -1679,7 +1679,7 @@ int mtxfile_gzwrite(
         &mtxfile->size, &num_data_lines);
     if (err)
         return err;
-    err = mtxfile_data_gzwrite(
+    err = mtxfiledata_gzwrite(
         &mtxfile->data, mtxfile->header.object, mtxfile->header.format,
         mtxfile->header.field, mtxfile->precision, num_data_lines,
         f, fmt, bytes_written);
@@ -1705,7 +1705,7 @@ int mtxfile_transpose(
         err = mtxfile_size_num_data_lines(&mtxfile->size, &num_data_lines);
         if (err)
             return err;
-        err = mtxfile_data_transpose(
+        err = mtxfiledata_transpose(
             &mtxfile->data, mtxfile->header.object, mtxfile->header.format,
             mtxfile->header.field, mtxfile->precision, mtxfile->size.num_rows,
             mtxfile->size.num_columns, num_data_lines);
@@ -1848,22 +1848,22 @@ int mtxfile_sort(
             perm[k] = k+1;
         return MTX_SUCCESS;
     } else if (sorting == mtxfile_sorting_permutation) {
-        return mtxfile_data_permute(
+        return mtxfiledata_permute(
             &mtxfile->data, mtxfile->header.object, mtxfile->header.format,
             mtxfile->header.field, mtxfile->precision, mtxfile->size.num_rows,
             mtxfile->size.num_columns, size, perm);
     } else if (sorting == mtxfile_row_major) {
-        return mtxfile_data_sort_row_major(
+        return mtxfiledata_sort_row_major(
             &mtxfile->data, mtxfile->header.object, mtxfile->header.format,
             mtxfile->header.field, mtxfile->precision, mtxfile->size.num_rows,
             mtxfile->size.num_columns, size, perm);
     } else if (sorting == mtxfile_column_major) {
-        return mtxfile_data_sort_column_major(
+        return mtxfiledata_sort_column_major(
             &mtxfile->data, mtxfile->header.object, mtxfile->header.format,
             mtxfile->header.field, mtxfile->precision, mtxfile->size.num_rows,
             mtxfile->size.num_columns, size, perm);
     } else if (sorting == mtxfile_morton) {
-        return mtxfile_data_sort_morton(
+        return mtxfiledata_sort_morton(
             &mtxfile->data, mtxfile->header.object, mtxfile->header.format,
             mtxfile->header.field, mtxfile->precision, mtxfile->size.num_rows,
             mtxfile->size.num_columns, size, perm);
@@ -1924,7 +1924,7 @@ int mtxfile_init_from_partition(
         }
 
         const int64_t * srcdispls = &data_lines_per_part[data_lines_per_part_ptr[p]];
-        err = mtxfile_data_copy_gather(
+        err = mtxfiledata_copy_gather(
             &dst[p].data, &src->data,
             dst[p].header.object, dst[p].header.format,
             dst[p].header.field, dst[p].precision,
@@ -1976,7 +1976,7 @@ int mtxfile_partition_rows(
         if (!part_per_data_line)
             return MTX_ERR_ERRNO;
     }
-    err = mtxfile_data_partition_rows(
+    err = mtxfiledata_partition_rows(
         &mtxfile->data, mtxfile->header.object, mtxfile->header.format,
         mtxfile->header.field, mtxfile->precision,
         mtxfile->size.num_rows, mtxfile->size.num_columns,
@@ -2066,7 +2066,7 @@ int mtxfile_init_from_row_partition(
         return MTX_ERR_ERRNO;
     }
 
-    err = mtxfile_data_alloc(
+    err = mtxfiledata_alloc(
         &dst->data,
         dst->header.object,
         dst->header.format,
@@ -2076,7 +2076,7 @@ int mtxfile_init_from_row_partition(
         mtxfile_comments_free(&dst->comments);
         return err;
     }
-    err = mtxfile_data_copy(
+    err = mtxfiledata_copy(
         &dst->data, &src->data,
         src->header.object, src->header.format,
         src->header.field, src->precision,
@@ -2118,7 +2118,7 @@ int mtxfile_reorder_dims(
         &mtxfile->size, &num_data_lines);
     if (err)
         return err;
-    err = mtxfile_data_reorder(
+    err = mtxfiledata_reorder(
         &mtxfile->data, mtxfile->header.object, mtxfile->header.format,
         mtxfile->header.field, mtxfile->precision, num_data_lines, 0,
         mtxfile->size.num_rows, row_permutation,
@@ -2209,7 +2209,7 @@ int mtxfile_reorder_rcm(
     if (!rowptr)
         return MTX_ERR_ERRNO;
     int * colidx = (int *) (&rowptr[num_rows+1]);
-    err = mtxfile_data_rowptr(
+    err = mtxfiledata_rowptr(
         &mtxfile->data, mtxfile->header.object, mtxfile->header.format,
         mtxfile->header.field, mtxfile->precision, num_rows, num_nonzeros,
         rowptr, colidx);
@@ -2227,7 +2227,7 @@ int mtxfile_reorder_rcm(
         return MTX_ERR_ERRNO;
     }
     int * rowidx = (int *) (&colptr[num_columns+1]);
-    err = mtxfile_data_colptr(
+    err = mtxfiledata_colptr(
         &mtxfile->data, mtxfile->header.object, mtxfile->header.format,
         mtxfile->header.field, mtxfile->precision, num_columns, num_nonzeros,
         colptr, rowidx);
@@ -2417,7 +2417,7 @@ int mtxfile_send(
     if (err)
         return err;
 
-    err = mtxfile_data_send(
+    err = mtxfiledata_send(
         &mtxfile->data,
         mtxfile->header.object,
         mtxfile->header.format,
@@ -2471,7 +2471,7 @@ int mtxfile_recv(
         return err;
     }
 
-    err = mtxfile_data_alloc(
+    err = mtxfiledata_alloc(
         &mtxfile->data,
         mtxfile->header.object,
         mtxfile->header.format,
@@ -2482,7 +2482,7 @@ int mtxfile_recv(
         return err;
     }
 
-    err = mtxfile_data_recv(
+    err = mtxfiledata_recv(
         &mtxfile->data,
         mtxfile->header.object,
         mtxfile->header.format,
@@ -2491,7 +2491,7 @@ int mtxfile_recv(
         num_data_lines, 0,
         source, tag, comm, mpierror);
     if (err) {
-        mtxfile_data_free(
+        mtxfiledata_free(
             &mtxfile->data, mtxfile->header.object, mtxfile->header.format,
             mtxfile->header.field, mtxfile->precision);
         mtxfile_comments_free(&mtxfile->comments);
@@ -2551,7 +2551,7 @@ int mtxfile_bcast(
     }
 
     if (rank != root) {
-        err = mtxfile_data_alloc(
+        err = mtxfiledata_alloc(
             &mtxfile->data,
             mtxfile->header.object,
             mtxfile->header.format,
@@ -2564,7 +2564,7 @@ int mtxfile_bcast(
         return MTX_ERR_MPI_COLLECTIVE;
     }
 
-    err = mtxfile_data_bcast(
+    err = mtxfiledata_bcast(
         &mtxfile->data,
         mtxfile->header.object,
         mtxfile->header.format,
@@ -2574,7 +2574,7 @@ int mtxfile_bcast(
         root, comm, mpierror);
     if (err) {
         if (rank != root) {
-            mtxfile_data_free(
+            mtxfiledata_free(
                 &mtxfile->data, mtxfile->header.object, mtxfile->header.format,
                 mtxfile->header.field, mtxfile->precision);
             mtxfile_comments_free(&mtxfile->comments);
@@ -2850,7 +2850,7 @@ int mtxfile_scatterv(
         return MTX_ERR_MPI_COLLECTIVE;
     }
 
-    err = mtxfile_data_alloc(
+    err = mtxfiledata_alloc(
         &recvmtxfile->data,
         recvmtxfile->header.object,
         recvmtxfile->header.format,
@@ -2862,7 +2862,7 @@ int mtxfile_scatterv(
         return MTX_ERR_MPI_COLLECTIVE;
     }
 
-    err = mtxfile_data_scatterv(
+    err = mtxfiledata_scatterv(
         &sendmtxfile->data,
         recvmtxfile->header.object, recvmtxfile->header.format,
         recvmtxfile->header.field, recvmtxfile->precision,
@@ -2870,7 +2870,7 @@ int mtxfile_scatterv(
         &recvmtxfile->data, 0, recvcount,
         root, comm, mpierror);
     if (err) {
-        mtxfile_data_free(
+        mtxfiledata_free(
             &recvmtxfile->data, recvmtxfile->header.object, recvmtxfile->header.format,
             recvmtxfile->header.field, recvmtxfile->precision);
         mtxfile_comments_free(&recvmtxfile->comments);

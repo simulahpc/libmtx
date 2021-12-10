@@ -78,7 +78,7 @@ struct mtxfile
     /**
      * `data' contains the data lines of the Matrix Market file.
      */
-    union mtxfile_data data;
+    union mtxfiledata data;
 };
 
 /*

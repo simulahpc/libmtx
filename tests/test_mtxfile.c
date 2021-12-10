@@ -872,13 +872,13 @@ int test_mtxfile_fread_data(void)
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         int lines_read = 0;
         int64_t bytes_read = 0;
-        union mtxfile_data data;
+        union mtxfiledata data;
         enum mtxfile_object object = mtxfile_matrix;
         enum mtxfile_format format = mtxfile_array;
         enum mtxfile_field field = mtxfile_real;
         enum mtx_precision precision = mtx_single;
         size_t size = 2;
-        err = mtxfile_data_alloc(&data, object, format, field, precision, size);
+        err = mtxfiledata_alloc(&data, object, format, field, precision, size);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
         err = mtxfile_fread_data(
             &data, f, &lines_read, &bytes_read, 0, NULL,
@@ -888,7 +888,7 @@ int test_mtxfile_fread_data(void)
         TEST_ASSERT_EQ(size, lines_read);
         TEST_ASSERT_EQ(data.array_real_single[0], 1.5f);
         TEST_ASSERT_EQ(data.array_real_single[1], 1.6f);
-        mtxfile_data_free(&data, object, format, field, precision);
+        mtxfiledata_free(&data, object, format, field, precision);
         fclose(f);
     }
 
@@ -899,13 +899,13 @@ int test_mtxfile_fread_data(void)
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         int lines_read = 0;
         int64_t bytes_read = 0;
-        union mtxfile_data data;
+        union mtxfiledata data;
         enum mtxfile_object object = mtxfile_matrix;
         enum mtxfile_format format = mtxfile_array;
         enum mtxfile_field field = mtxfile_real;
         enum mtx_precision precision = mtx_double;
         size_t size = 2;
-        err = mtxfile_data_alloc(&data, object, format, field, precision, size);
+        err = mtxfiledata_alloc(&data, object, format, field, precision, size);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
         err = mtxfile_fread_data(
             &data, f, &lines_read, &bytes_read, 0, NULL,
@@ -915,7 +915,7 @@ int test_mtxfile_fread_data(void)
         TEST_ASSERT_EQ(size, lines_read);
         TEST_ASSERT_EQ(data.array_real_double[0], 1.5);
         TEST_ASSERT_EQ(data.array_real_double[1], 1.6);
-        mtxfile_data_free(&data, object, format, field, precision);
+        mtxfiledata_free(&data, object, format, field, precision);
         fclose(f);
     }
 
@@ -926,13 +926,13 @@ int test_mtxfile_fread_data(void)
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         int lines_read = 0;
         int64_t bytes_read = 0;
-        union mtxfile_data data;
+        union mtxfiledata data;
         enum mtxfile_object object = mtxfile_matrix;
         enum mtxfile_format format = mtxfile_array;
         enum mtxfile_field field = mtxfile_complex;
         enum mtx_precision precision = mtx_single;
         size_t size = 2;
-        err = mtxfile_data_alloc(&data, object, format, field, precision, size);
+        err = mtxfiledata_alloc(&data, object, format, field, precision, size);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
         err = mtxfile_fread_data(
             &data, f, &lines_read, &bytes_read, 0, NULL,
@@ -944,7 +944,7 @@ int test_mtxfile_fread_data(void)
         TEST_ASSERT_EQ(data.array_complex_single[0][1], 2.1f);
         TEST_ASSERT_EQ(data.array_complex_single[1][0], 1.6f);
         TEST_ASSERT_EQ(data.array_complex_single[1][1], 2.2f);
-        mtxfile_data_free(&data, object, format, field, precision);
+        mtxfiledata_free(&data, object, format, field, precision);
         fclose(f);
     }
 
@@ -955,13 +955,13 @@ int test_mtxfile_fread_data(void)
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         int lines_read = 0;
         int64_t bytes_read = 0;
-        union mtxfile_data data;
+        union mtxfiledata data;
         enum mtxfile_object object = mtxfile_matrix;
         enum mtxfile_format format = mtxfile_array;
         enum mtxfile_field field = mtxfile_complex;
         enum mtx_precision precision = mtx_double;
         size_t size = 2;
-        err = mtxfile_data_alloc(&data, object, format, field, precision, size);
+        err = mtxfiledata_alloc(&data, object, format, field, precision, size);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
         err = mtxfile_fread_data(
             &data, f, &lines_read, &bytes_read, 0, NULL,
@@ -973,7 +973,7 @@ int test_mtxfile_fread_data(void)
         TEST_ASSERT_EQ(data.array_complex_double[0][1], 2.1);
         TEST_ASSERT_EQ(data.array_complex_double[1][0], 1.6);
         TEST_ASSERT_EQ(data.array_complex_double[1][1], 2.2);
-        mtxfile_data_free(&data, object, format, field, precision);
+        mtxfiledata_free(&data, object, format, field, precision);
         fclose(f);
     }
 
@@ -984,13 +984,13 @@ int test_mtxfile_fread_data(void)
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         int lines_read = 0;
         int64_t bytes_read = 0;
-        union mtxfile_data data;
+        union mtxfiledata data;
         enum mtxfile_object object = mtxfile_matrix;
         enum mtxfile_format format = mtxfile_array;
         enum mtxfile_field field = mtxfile_integer;
         enum mtx_precision precision = mtx_single;
         size_t size = 2;
-        err = mtxfile_data_alloc(&data, object, format, field, precision, size);
+        err = mtxfiledata_alloc(&data, object, format, field, precision, size);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
         err = mtxfile_fread_data(
             &data, f, &lines_read, &bytes_read, 0, NULL,
@@ -1000,7 +1000,7 @@ int test_mtxfile_fread_data(void)
         TEST_ASSERT_EQ(size, lines_read);
         TEST_ASSERT_EQ(data.array_integer_single[0], 2);
         TEST_ASSERT_EQ(data.array_integer_single[1], 3);
-        mtxfile_data_free(&data, object, format, field, precision);
+        mtxfiledata_free(&data, object, format, field, precision);
         fclose(f);
     }
 
@@ -1011,13 +1011,13 @@ int test_mtxfile_fread_data(void)
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         int lines_read = 0;
         int64_t bytes_read = 0;
-        union mtxfile_data data;
+        union mtxfiledata data;
         enum mtxfile_object object = mtxfile_matrix;
         enum mtxfile_format format = mtxfile_array;
         enum mtxfile_field field = mtxfile_integer;
         enum mtx_precision precision = mtx_double;
         size_t size = 2;
-        err = mtxfile_data_alloc(&data, object, format, field, precision, size);
+        err = mtxfiledata_alloc(&data, object, format, field, precision, size);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
         err = mtxfile_fread_data(
             &data, f, &lines_read, &bytes_read, 0, NULL,
@@ -1027,7 +1027,7 @@ int test_mtxfile_fread_data(void)
         TEST_ASSERT_EQ(size, lines_read);
         TEST_ASSERT_EQ(data.array_integer_double[0], 2);
         TEST_ASSERT_EQ(data.array_integer_double[1], 3);
-        mtxfile_data_free(&data, object, format, field, precision);
+        mtxfiledata_free(&data, object, format, field, precision);
         fclose(f);
     }
 
@@ -1042,13 +1042,13 @@ int test_mtxfile_fread_data(void)
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         int lines_read = 0;
         int64_t bytes_read = 0;
-        union mtxfile_data data;
+        union mtxfiledata data;
         enum mtxfile_object object = mtxfile_matrix;
         enum mtxfile_format format = mtxfile_coordinate;
         enum mtxfile_field field = mtxfile_real;
         enum mtx_precision precision = mtx_single;
         size_t size = 2;
-        err = mtxfile_data_alloc(&data, object, format, field, precision, size);
+        err = mtxfiledata_alloc(&data, object, format, field, precision, size);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
         err = mtxfile_fread_data(
             &data, f, &lines_read, &bytes_read, 0, NULL,
@@ -1062,7 +1062,7 @@ int test_mtxfile_fread_data(void)
         TEST_ASSERT_EQ(data.matrix_coordinate_real_single[1].i, 2);
         TEST_ASSERT_EQ(data.matrix_coordinate_real_single[1].j, 3);
         TEST_ASSERT_EQ(data.matrix_coordinate_real_single[1].a, 1.5f);
-        mtxfile_data_free(&data, object, format, field, precision);
+        mtxfiledata_free(&data, object, format, field, precision);
         fclose(f);
     }
 
@@ -1073,13 +1073,13 @@ int test_mtxfile_fread_data(void)
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         int lines_read = 0;
         int64_t bytes_read = 0;
-        union mtxfile_data data;
+        union mtxfiledata data;
         enum mtxfile_object object = mtxfile_matrix;
         enum mtxfile_format format = mtxfile_coordinate;
         enum mtxfile_field field = mtxfile_real;
         enum mtx_precision precision = mtx_double;
         size_t size = 2;
-        err = mtxfile_data_alloc(&data, object, format, field, precision, size);
+        err = mtxfiledata_alloc(&data, object, format, field, precision, size);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
         err = mtxfile_fread_data(
             &data, f, &lines_read, &bytes_read, 0, NULL,
@@ -1093,7 +1093,7 @@ int test_mtxfile_fread_data(void)
         TEST_ASSERT_EQ(data.matrix_coordinate_real_double[1].i, 2);
         TEST_ASSERT_EQ(data.matrix_coordinate_real_double[1].j, 3);
         TEST_ASSERT_EQ(data.matrix_coordinate_real_double[1].a, 1.5f);
-        mtxfile_data_free(&data, object, format, field, precision);
+        mtxfiledata_free(&data, object, format, field, precision);
         fclose(f);
     }
 
@@ -1104,13 +1104,13 @@ int test_mtxfile_fread_data(void)
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         int lines_read = 0;
         int64_t bytes_read = 0;
-        union mtxfile_data data;
+        union mtxfiledata data;
         enum mtxfile_object object = mtxfile_matrix;
         enum mtxfile_format format = mtxfile_coordinate;
         enum mtxfile_field field = mtxfile_complex;
         enum mtx_precision precision = mtx_single;
         size_t size = 2;
-        err = mtxfile_data_alloc(&data, object, format, field, precision, size);
+        err = mtxfiledata_alloc(&data, object, format, field, precision, size);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
         err = mtxfile_fread_data(
             &data, f, &lines_read, &bytes_read, 0, NULL,
@@ -1126,7 +1126,7 @@ int test_mtxfile_fread_data(void)
         TEST_ASSERT_EQ(data.matrix_coordinate_complex_single[1].j, 3);
         TEST_ASSERT_EQ(data.matrix_coordinate_complex_single[1].a[0], -1.5f);
         TEST_ASSERT_EQ(data.matrix_coordinate_complex_single[1].a[1], -2.1f);
-        mtxfile_data_free(&data, object, format, field, precision);
+        mtxfiledata_free(&data, object, format, field, precision);
         fclose(f);
     }
 
@@ -1137,13 +1137,13 @@ int test_mtxfile_fread_data(void)
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         int lines_read = 0;
         int64_t bytes_read = 0;
-        union mtxfile_data data;
+        union mtxfiledata data;
         enum mtxfile_object object = mtxfile_matrix;
         enum mtxfile_format format = mtxfile_coordinate;
         enum mtxfile_field field = mtxfile_complex;
         enum mtx_precision precision = mtx_double;
         size_t size = 2;
-        err = mtxfile_data_alloc(&data, object, format, field, precision, size);
+        err = mtxfiledata_alloc(&data, object, format, field, precision, size);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
         err = mtxfile_fread_data(
             &data, f, &lines_read, &bytes_read, 0, NULL,
@@ -1159,7 +1159,7 @@ int test_mtxfile_fread_data(void)
         TEST_ASSERT_EQ(data.matrix_coordinate_complex_double[1].j, 3);
         TEST_ASSERT_EQ(data.matrix_coordinate_complex_double[1].a[0], -1.5);
         TEST_ASSERT_EQ(data.matrix_coordinate_complex_double[1].a[1], -2.1);
-        mtxfile_data_free(&data, object, format, field, precision);
+        mtxfiledata_free(&data, object, format, field, precision);
         fclose(f);
     }
 
@@ -1170,13 +1170,13 @@ int test_mtxfile_fread_data(void)
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         int lines_read = 0;
         int64_t bytes_read = 0;
-        union mtxfile_data data;
+        union mtxfiledata data;
         enum mtxfile_object object = mtxfile_matrix;
         enum mtxfile_format format = mtxfile_coordinate;
         enum mtxfile_field field = mtxfile_integer;
         enum mtx_precision precision = mtx_single;
         size_t size = 2;
-        err = mtxfile_data_alloc(&data, object, format, field, precision, size);
+        err = mtxfiledata_alloc(&data, object, format, field, precision, size);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
         err = mtxfile_fread_data(
             &data, f, &lines_read, &bytes_read, 0, NULL,
@@ -1190,7 +1190,7 @@ int test_mtxfile_fread_data(void)
         TEST_ASSERT_EQ(data.matrix_coordinate_integer_single[1].i, 2);
         TEST_ASSERT_EQ(data.matrix_coordinate_integer_single[1].j, 3);
         TEST_ASSERT_EQ(data.matrix_coordinate_integer_single[1].a, 4);
-        mtxfile_data_free(&data, object, format, field, precision);
+        mtxfiledata_free(&data, object, format, field, precision);
         fclose(f);
     }
 
@@ -1201,13 +1201,13 @@ int test_mtxfile_fread_data(void)
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         int lines_read = 0;
         int64_t bytes_read = 0;
-        union mtxfile_data data;
+        union mtxfiledata data;
         enum mtxfile_object object = mtxfile_matrix;
         enum mtxfile_format format = mtxfile_coordinate;
         enum mtxfile_field field = mtxfile_integer;
         enum mtx_precision precision = mtx_double;
         size_t size = 2;
-        err = mtxfile_data_alloc(&data, object, format, field, precision, size);
+        err = mtxfiledata_alloc(&data, object, format, field, precision, size);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
         err = mtxfile_fread_data(
             &data, f, &lines_read, &bytes_read, 0, NULL,
@@ -1221,7 +1221,7 @@ int test_mtxfile_fread_data(void)
         TEST_ASSERT_EQ(data.matrix_coordinate_integer_double[1].i, 2);
         TEST_ASSERT_EQ(data.matrix_coordinate_integer_double[1].j, 3);
         TEST_ASSERT_EQ(data.matrix_coordinate_integer_double[1].a, 4);
-        mtxfile_data_free(&data, object, format, field, precision);
+        mtxfiledata_free(&data, object, format, field, precision);
         fclose(f);
     }
 
@@ -1232,13 +1232,13 @@ int test_mtxfile_fread_data(void)
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         int lines_read = 0;
         int64_t bytes_read = 0;
-        union mtxfile_data data;
+        union mtxfiledata data;
         enum mtxfile_object object = mtxfile_matrix;
         enum mtxfile_format format = mtxfile_coordinate;
         enum mtxfile_field field = mtxfile_pattern;
         enum mtx_precision precision = mtx_single;
         size_t size = 2;
-        err = mtxfile_data_alloc(&data, object, format, field, precision, size);
+        err = mtxfiledata_alloc(&data, object, format, field, precision, size);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
         err = mtxfile_fread_data(
             &data, f, &lines_read, &bytes_read, 0, NULL,
@@ -1250,7 +1250,7 @@ int test_mtxfile_fread_data(void)
         TEST_ASSERT_EQ(data.matrix_coordinate_pattern[0].j, 2);
         TEST_ASSERT_EQ(data.matrix_coordinate_pattern[1].i, 2);
         TEST_ASSERT_EQ(data.matrix_coordinate_pattern[1].j, 3);
-        mtxfile_data_free(&data, object, format, field, precision);
+        mtxfiledata_free(&data, object, format, field, precision);
         fclose(f);
     }
 
@@ -1265,13 +1265,13 @@ int test_mtxfile_fread_data(void)
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         int lines_read = 0;
         int64_t bytes_read = 0;
-        union mtxfile_data data;
+        union mtxfiledata data;
         enum mtxfile_object object = mtxfile_vector;
         enum mtxfile_format format = mtxfile_coordinate;
         enum mtxfile_field field = mtxfile_real;
         enum mtx_precision precision = mtx_single;
         size_t size = 2;
-        err = mtxfile_data_alloc(&data, object, format, field, precision, size);
+        err = mtxfiledata_alloc(&data, object, format, field, precision, size);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
         err = mtxfile_fread_data(
             &data, f, &lines_read, &bytes_read, 0, NULL,
@@ -1283,7 +1283,7 @@ int test_mtxfile_fread_data(void)
         TEST_ASSERT_EQ(data.vector_coordinate_real_single[0].a, 1.5f);
         TEST_ASSERT_EQ(data.vector_coordinate_real_single[1].i, 4);
         TEST_ASSERT_EQ(data.vector_coordinate_real_single[1].a, 1.6f);
-        mtxfile_data_free(&data, object, format, field, precision);
+        mtxfiledata_free(&data, object, format, field, precision);
         fclose(f);
     }
 
@@ -1294,13 +1294,13 @@ int test_mtxfile_fread_data(void)
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         int lines_read = 0;
         int64_t bytes_read = 0;
-        union mtxfile_data data;
+        union mtxfiledata data;
         enum mtxfile_object object = mtxfile_vector;
         enum mtxfile_format format = mtxfile_coordinate;
         enum mtxfile_field field = mtxfile_real;
         enum mtx_precision precision = mtx_double;
         size_t size = 2;
-        err = mtxfile_data_alloc(&data, object, format, field, precision, size);
+        err = mtxfiledata_alloc(&data, object, format, field, precision, size);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
         err = mtxfile_fread_data(
             &data, f, &lines_read, &bytes_read, 0, NULL,
@@ -1312,7 +1312,7 @@ int test_mtxfile_fread_data(void)
         TEST_ASSERT_EQ(data.vector_coordinate_real_double[0].a, 1.5);
         TEST_ASSERT_EQ(data.vector_coordinate_real_double[1].i, 4);
         TEST_ASSERT_EQ(data.vector_coordinate_real_double[1].a, 1.6);
-        mtxfile_data_free(&data, object, format, field, precision);
+        mtxfiledata_free(&data, object, format, field, precision);
         fclose(f);
     }
 
@@ -1323,13 +1323,13 @@ int test_mtxfile_fread_data(void)
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         int lines_read = 0;
         int64_t bytes_read = 0;
-        union mtxfile_data data;
+        union mtxfiledata data;
         enum mtxfile_object object = mtxfile_vector;
         enum mtxfile_format format = mtxfile_coordinate;
         enum mtxfile_field field = mtxfile_complex;
         enum mtx_precision precision = mtx_single;
         size_t size = 2;
-        err = mtxfile_data_alloc(&data, object, format, field, precision, size);
+        err = mtxfiledata_alloc(&data, object, format, field, precision, size);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
         err = mtxfile_fread_data(
             &data, f, &lines_read, &bytes_read, 0, NULL,
@@ -1343,7 +1343,7 @@ int test_mtxfile_fread_data(void)
         TEST_ASSERT_EQ(data.vector_coordinate_complex_single[1].i, 4);
         TEST_ASSERT_EQ(data.vector_coordinate_complex_single[1].a[0], 1.6f);
         TEST_ASSERT_EQ(data.vector_coordinate_complex_single[1].a[1], 2.2f);
-        mtxfile_data_free(&data, object, format, field, precision);
+        mtxfiledata_free(&data, object, format, field, precision);
         fclose(f);
     }
 
@@ -1354,13 +1354,13 @@ int test_mtxfile_fread_data(void)
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         int lines_read = 0;
         int64_t bytes_read = 0;
-        union mtxfile_data data;
+        union mtxfiledata data;
         enum mtxfile_object object = mtxfile_vector;
         enum mtxfile_format format = mtxfile_coordinate;
         enum mtxfile_field field = mtxfile_complex;
         enum mtx_precision precision = mtx_double;
         size_t size = 2;
-        err = mtxfile_data_alloc(&data, object, format, field, precision, size);
+        err = mtxfiledata_alloc(&data, object, format, field, precision, size);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
         err = mtxfile_fread_data(
             &data, f, &lines_read, &bytes_read, 0, NULL,
@@ -1374,7 +1374,7 @@ int test_mtxfile_fread_data(void)
         TEST_ASSERT_EQ(data.vector_coordinate_complex_double[1].i, 4);
         TEST_ASSERT_EQ(data.vector_coordinate_complex_double[1].a[0], 1.6);
         TEST_ASSERT_EQ(data.vector_coordinate_complex_double[1].a[1], 2.2);
-        mtxfile_data_free(&data, object, format, field, precision);
+        mtxfiledata_free(&data, object, format, field, precision);
         fclose(f);
     }
 
@@ -1385,13 +1385,13 @@ int test_mtxfile_fread_data(void)
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         int lines_read = 0;
         int64_t bytes_read = 0;
-        union mtxfile_data data;
+        union mtxfiledata data;
         enum mtxfile_object object = mtxfile_vector;
         enum mtxfile_format format = mtxfile_coordinate;
         enum mtxfile_field field = mtxfile_integer;
         enum mtx_precision precision = mtx_single;
         size_t size = 2;
-        err = mtxfile_data_alloc(&data, object, format, field, precision, size);
+        err = mtxfiledata_alloc(&data, object, format, field, precision, size);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
         err = mtxfile_fread_data(
             &data, f, &lines_read, &bytes_read, 0, NULL,
@@ -1403,7 +1403,7 @@ int test_mtxfile_fread_data(void)
         TEST_ASSERT_EQ(data.vector_coordinate_integer_single[0].a, 4);
         TEST_ASSERT_EQ(data.vector_coordinate_integer_single[1].i, 4);
         TEST_ASSERT_EQ(data.vector_coordinate_integer_single[1].a, 1);
-        mtxfile_data_free(&data, object, format, field, precision);
+        mtxfiledata_free(&data, object, format, field, precision);
         fclose(f);
     }
 
@@ -1414,13 +1414,13 @@ int test_mtxfile_fread_data(void)
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         int lines_read = 0;
         int64_t bytes_read = 0;
-        union mtxfile_data data;
+        union mtxfiledata data;
         enum mtxfile_object object = mtxfile_vector;
         enum mtxfile_format format = mtxfile_coordinate;
         enum mtxfile_field field = mtxfile_integer;
         enum mtx_precision precision = mtx_double;
         size_t size = 2;
-        err = mtxfile_data_alloc(&data, object, format, field, precision, size);
+        err = mtxfiledata_alloc(&data, object, format, field, precision, size);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
         err = mtxfile_fread_data(
             &data, f, &lines_read, &bytes_read, 0, NULL,
@@ -1432,7 +1432,7 @@ int test_mtxfile_fread_data(void)
         TEST_ASSERT_EQ(data.vector_coordinate_integer_double[0].a, 4);
         TEST_ASSERT_EQ(data.vector_coordinate_integer_double[1].i, 4);
         TEST_ASSERT_EQ(data.vector_coordinate_integer_double[1].a, 1);
-        mtxfile_data_free(&data, object, format, field, precision);
+        mtxfiledata_free(&data, object, format, field, precision);
         fclose(f);
     }
 
@@ -1443,13 +1443,13 @@ int test_mtxfile_fread_data(void)
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         int lines_read = 0;
         int64_t bytes_read = 0;
-        union mtxfile_data data;
+        union mtxfiledata data;
         enum mtxfile_object object = mtxfile_vector;
         enum mtxfile_format format = mtxfile_coordinate;
         enum mtxfile_field field = mtxfile_pattern;
         enum mtx_precision precision = mtx_single;
         size_t size = 2;
-        err = mtxfile_data_alloc(&data, object, format, field, precision, size);
+        err = mtxfiledata_alloc(&data, object, format, field, precision, size);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
         err = mtxfile_fread_data(
             &data, f, &lines_read, &bytes_read, 0, NULL,
@@ -1459,7 +1459,7 @@ int test_mtxfile_fread_data(void)
         TEST_ASSERT_EQ(size, lines_read);
         TEST_ASSERT_EQ(data.vector_coordinate_pattern[0].i, 3);
         TEST_ASSERT_EQ(data.vector_coordinate_pattern[1].i, 4);
-        mtxfile_data_free(&data, object, format, field, precision);
+        mtxfiledata_free(&data, object, format, field, precision);
         fclose(f);
     }
 

@@ -73,18 +73,18 @@ static inline uint32_t _pdep_u32(uint32_t val, uint32_t mask)
 #include <string.h>
 
 /**
- * `mtxfile_data_size_per_element()' calculates the size of each
+ * `mtxfiledata_size_per_element()' calculates the size of each
  * element in an array of Matrix Market data corresponding to the
  * given `object', `format', `field' and `precision'.
  */
-int mtxfile_data_size_per_element(
+int mtxfiledata_size_per_element(
     size_t * size,
     enum mtxfile_object object,
     enum mtxfile_format format,
     enum mtxfile_field field,
     enum mtx_precision precision)
 {
-    union mtxfile_data data;
+    union mtxfiledata data;
     if (format == mtxfile_array) {
         if (field == mtxfile_real) {
             if (precision == mtx_single) {
@@ -1066,11 +1066,11 @@ int mtxfile_parse_data_vector_coordinate_pattern(
  */
 
 /**
- * `mtxfile_data_alloc()' allocates storage for a given number of data
+ * `mtxfiledata_alloc()' allocates storage for a given number of data
  * lines for a given type of matrix or vector.
  */
-int mtxfile_data_alloc(
-    union mtxfile_data * data,
+int mtxfiledata_alloc(
+    union mtxfiledata * data,
     enum mtxfile_object object,
     enum mtxfile_format format,
     enum mtxfile_field field,
@@ -1199,10 +1199,10 @@ int mtxfile_data_alloc(
 }
 
 /**
- * `mtxfile_data_free()' frees allocaed storage for data lines.
+ * `mtxfiledata_free()' frees allocaed storage for data lines.
  */
-int mtxfile_data_free(
-    union mtxfile_data * data,
+int mtxfiledata_free(
+    union mtxfiledata * data,
     enum mtxfile_object object,
     enum mtxfile_format format,
     enum mtxfile_field field,
@@ -1310,11 +1310,11 @@ int mtxfile_data_free(
 }
 
 /**
- * `mtxfile_data_copy()' copies data lines.
+ * `mtxfiledata_copy()' copies data lines.
  */
-int mtxfile_data_copy(
-    union mtxfile_data * dst,
-    const union mtxfile_data * src,
+int mtxfiledata_copy(
+    union mtxfiledata * dst,
+    const union mtxfiledata * src,
     enum mtxfile_object object,
     enum mtxfile_format format,
     enum mtxfile_field field,
@@ -1464,12 +1464,12 @@ int mtxfile_data_copy(
 }
 
 /**
- * ‘mtxfile_data_copy_gather()’ performs an irregular copying (gather)
+ * ‘mtxfiledata_copy_gather()’ performs an irregular copying (gather)
  * of data lines from specified locations to a contiguous array.
  */
-int mtxfile_data_copy_gather(
-    union mtxfile_data * dst,
-    const union mtxfile_data * src,
+int mtxfiledata_copy_gather(
+    union mtxfiledata * dst,
+    const union mtxfiledata * src,
     enum mtxfile_object object,
     enum mtxfile_format format,
     enum mtxfile_field field,
@@ -1646,7 +1646,7 @@ int mtxfile_data_copy_gather(
  */
 
 /**
- * `mtxfile_data_rowptr()' computes row pointers for a matrix in
+ * `mtxfiledata_rowptr()' computes row pointers for a matrix in
  * coordinate format.
  *
  * ‘rowptr’ must point to an array containing enough storage for
@@ -1664,8 +1664,8 @@ int mtxfile_data_copy_gather(
  * The matrix data is not required to be sorted in any particular
  * order.
  */
-int mtxfile_data_rowptr(
-    const union mtxfile_data * data,
+int mtxfiledata_rowptr(
+    const union mtxfiledata * data,
     enum mtxfile_object object,
     enum mtxfile_format format,
     enum mtxfile_field field,
@@ -1860,7 +1860,7 @@ int mtxfile_data_rowptr(
 }
 
 /**
- * `mtxfile_data_colptr()' computes column pointers for a matrix in
+ * `mtxfiledata_colptr()' computes column pointers for a matrix in
  * coordinate format.
  *
  * ‘colptr’ must point to an array containing enough storage for
@@ -1879,8 +1879,8 @@ int mtxfile_data_rowptr(
  * The matrix data is not required to be sorted in any particular
  * order.
  */
-int mtxfile_data_colptr(
-    const union mtxfile_data * data,
+int mtxfiledata_colptr(
+    const union mtxfiledata * data,
     enum mtxfile_object object,
     enum mtxfile_format format,
     enum mtxfile_field field,
@@ -2079,12 +2079,12 @@ int mtxfile_data_colptr(
  */
 
 /**
- * `mtxfile_data_set_constant_real_single()' sets every (nonzero)
+ * `mtxfiledata_set_constant_real_single()' sets every (nonzero)
  * value of a matrix or vector equal to a constant, single precision
  * floating point number.
  */
-int mtxfile_data_set_constant_real_single(
-    union mtxfile_data * data,
+int mtxfiledata_set_constant_real_single(
+    union mtxfiledata * data,
     enum mtxfile_object object,
     enum mtxfile_format format,
     enum mtxfile_field field,
@@ -2223,12 +2223,12 @@ int mtxfile_data_set_constant_real_single(
 }
 
 /**
- * `mtxfile_data_set_constant_real_double()' sets every (nonzero)
+ * `mtxfiledata_set_constant_real_double()' sets every (nonzero)
  * value of a matrix or vector equal to a constant, double precision
  * floating point number.
  */
-int mtxfile_data_set_constant_real_double(
-    union mtxfile_data * data,
+int mtxfiledata_set_constant_real_double(
+    union mtxfiledata * data,
     enum mtxfile_object object,
     enum mtxfile_format format,
     enum mtxfile_field field,
@@ -2238,12 +2238,12 @@ int mtxfile_data_set_constant_real_double(
     double a);
 
 /**
- * `mtxfile_data_set_constant_complex_single()' sets every (nonzero)
+ * `mtxfiledata_set_constant_complex_single()' sets every (nonzero)
  * value of a matrix or vector equal to a constant, single precision
  * floating point complex number.
  */
-int mtxfile_data_set_constant_complex_single(
-    union mtxfile_data * data,
+int mtxfiledata_set_constant_complex_single(
+    union mtxfiledata * data,
     enum mtxfile_object object,
     enum mtxfile_format format,
     enum mtxfile_field field,
@@ -2253,11 +2253,11 @@ int mtxfile_data_set_constant_complex_single(
     float a[2]);
 
 /**
- * `mtxfile_data_set_constant_integer_single()' sets every (nonzero)
+ * `mtxfiledata_set_constant_integer_single()' sets every (nonzero)
  * value of a matrix or vector equal to a constant integer.
  */
-int mtxfile_data_set_constant_integer_single(
-    union mtxfile_data * data,
+int mtxfiledata_set_constant_integer_single(
+    union mtxfiledata * data,
     enum mtxfile_object object,
     enum mtxfile_format format,
     enum mtxfile_field field,
@@ -2271,7 +2271,7 @@ int mtxfile_data_set_constant_integer_single(
  */
 
 static int mtxfile_parse_data(
-    union mtxfile_data * data,
+    union mtxfiledata * data,
     int64_t * bytes_read,
     const char ** endptr,
     const char * s,
@@ -2465,7 +2465,7 @@ static int freadline(
  * do not affect parsing.
  */
 int mtxfile_fread_data(
-    union mtxfile_data * data,
+    union mtxfiledata * data,
     FILE * f,
     int * lines_read,
     int64_t * bytes_read,
@@ -2578,7 +2578,7 @@ static int gzreadline(
  * do not affect parsing.
  */
 int mtxfile_gzread_data(
-    union mtxfile_data * data,
+    union mtxfiledata * data,
     gzFile f,
     int * lines_read,
     int64_t * bytes_read,
@@ -2688,7 +2688,7 @@ static int validate_format_string(
 }
 
 /**
- * `mtxfile_data_fwrite()' writes data lines of a Matrix Market file
+ * `mtxfiledata_fwrite()' writes data lines of a Matrix Market file
  * to a stream.
  *
  * If ‘fmt’ is ‘NULL’, then the format specifier ‘%g’ is used to print
@@ -2712,8 +2712,8 @@ static int validate_format_string(
  * locale-specific settings, such as the type of decimal point, do not
  * affect output.
  */
-int mtxfile_data_fwrite(
-    const union mtxfile_data * data,
+int mtxfiledata_fwrite(
+    const union mtxfiledata * data,
     enum mtxfile_object object,
     enum mtxfile_format format,
     enum mtxfile_field field,
@@ -3118,7 +3118,7 @@ fwrite_exit:
 
 #ifdef LIBMTX_HAVE_LIBZ
 /**
- * `mtxfile_data_gzwrite()' writes data lines of a Matrix Market file
+ * `mtxfiledata_gzwrite()' writes data lines of a Matrix Market file
  * to a gzip-compressed stream.
  *
  * If ‘fmt’ is ‘NULL’, then the format specifier ‘%g’ is used to print
@@ -3142,8 +3142,8 @@ fwrite_exit:
  * locale-specific settings, such as the type of decimal point, do not
  * affect output.
  */
-int mtxfile_data_gzwrite(
-    const union mtxfile_data * data,
+int mtxfiledata_gzwrite(
+    const union mtxfiledata * data,
     enum mtxfile_object object,
     enum mtxfile_format format,
     enum mtxfile_field field,
@@ -3546,11 +3546,11 @@ gzwrite_exit:
  */
 
 /**
- * `mtxfile_data_transpose()' tranposes the data lines of a Matrix
+ * `mtxfiledata_transpose()' tranposes the data lines of a Matrix
  * Market file.
  */
-int mtxfile_data_transpose(
-    union mtxfile_data * data,
+int mtxfiledata_transpose(
+    union mtxfiledata * data,
     enum mtxfile_object object,
     enum mtxfile_format format,
     enum mtxfile_field field,
@@ -3628,14 +3628,14 @@ int mtxfile_data_transpose(
             }
 
         } else if (format == mtxfile_array) {
-            union mtxfile_data copy;
-            err = mtxfile_data_alloc(&copy, object, format, field, precision, size);
+            union mtxfiledata copy;
+            err = mtxfiledata_alloc(&copy, object, format, field, precision, size);
             if (err)
                 return err;
-            err = mtxfile_data_copy(
+            err = mtxfiledata_copy(
                 &copy, data, object, format, field, precision, size, 0, 0);
             if (err) {
-                mtxfile_data_free(&copy, object, format, field, precision);
+                mtxfiledata_free(&copy, object, format, field, precision);
                 return err;
             }
 
@@ -3714,7 +3714,7 @@ int mtxfile_data_transpose(
                 return MTX_ERR_INVALID_MTX_FIELD;
             }
 
-            mtxfile_data_free(&copy, object, format, field, precision);
+            mtxfiledata_free(&copy, object, format, field, precision);
         } else {
             return MTX_ERR_INVALID_MTX_FORMAT;
         }
@@ -3732,11 +3732,11 @@ int mtxfile_data_transpose(
  */
 
 /**
- * ‘mtxfile_data_permute()’ permutes the order of data lines in a
+ * ‘mtxfiledata_permute()’ permutes the order of data lines in a
  * Matrix Market file according to a given permutation.
  */
-int mtxfile_data_permute(
-    union mtxfile_data * data,
+int mtxfiledata_permute(
+    union mtxfiledata * data,
     enum mtxfile_object object,
     enum mtxfile_format format,
     enum mtxfile_field field,
@@ -3753,16 +3753,16 @@ int mtxfile_data_permute(
     }
 
     /* 1. Copy the original, unsorted data. */
-    union mtxfile_data srcdata;
-    err = mtxfile_data_alloc(
+    union mtxfiledata srcdata;
+    err = mtxfiledata_alloc(
         &srcdata, object, format, field, precision, size);
     if (err)
         return err;
-    err = mtxfile_data_copy(
+    err = mtxfiledata_copy(
         &srcdata, data, object, format, field, precision,
         size, 0, 0);
     if (err) {
-        mtxfile_data_free(&srcdata, object, format, field, precision);
+        mtxfiledata_free(&srcdata, object, format, field, precision);
         return err;
     }
 
@@ -3780,7 +3780,7 @@ int mtxfile_data_permute(
                 for (int64_t k = 0; k < size; k++)
                     dst[perm[k]-1] = src[k];
             } else {
-                mtxfile_data_free(&srcdata, object, format, field, precision);
+                mtxfiledata_free(&srcdata, object, format, field, precision);
                 return MTX_ERR_INVALID_PRECISION;
             }
         } else if (field == mtxfile_complex) {
@@ -3799,7 +3799,7 @@ int mtxfile_data_permute(
                     dst[perm[k]-1][1] = src[k][1];
                 }
             } else {
-                mtxfile_data_free(&srcdata, object, format, field, precision);
+                mtxfiledata_free(&srcdata, object, format, field, precision);
                 return MTX_ERR_INVALID_PRECISION;
             }
         } else if (field == mtxfile_integer) {
@@ -3814,11 +3814,11 @@ int mtxfile_data_permute(
                 for (int64_t k = 0; k < size; k++)
                     dst[perm[k]-1] = src[k];
             } else {
-                mtxfile_data_free(&srcdata, object, format, field, precision);
+                mtxfiledata_free(&srcdata, object, format, field, precision);
                 return MTX_ERR_INVALID_PRECISION;
             }
         } else {
-            mtxfile_data_free(&srcdata, object, format, field, precision);
+            mtxfiledata_free(&srcdata, object, format, field, precision);
             return MTX_ERR_INVALID_MTX_FIELD;
         }
     } else if (format == mtxfile_coordinate) {
@@ -3839,7 +3839,7 @@ int mtxfile_data_permute(
                     for (int64_t k = 0; k < size; k++)
                         dst[perm[k]-1] = src[k];
                 } else {
-                    mtxfile_data_free(&srcdata, object, format, field, precision);
+                    mtxfiledata_free(&srcdata, object, format, field, precision);
                     return MTX_ERR_INVALID_PRECISION;
                 }
             } else if (field == mtxfile_complex) {
@@ -3858,7 +3858,7 @@ int mtxfile_data_permute(
                     for (int64_t k = 0; k < size; k++)
                         dst[perm[k]-1] = src[k];
                 } else {
-                    mtxfile_data_free(&srcdata, object, format, field, precision);
+                    mtxfiledata_free(&srcdata, object, format, field, precision);
                     return MTX_ERR_INVALID_PRECISION;
                 }
             } else if (field == mtxfile_integer) {
@@ -3877,7 +3877,7 @@ int mtxfile_data_permute(
                     for (int64_t k = 0; k < size; k++)
                         dst[perm[k]-1] = src[k];
                 } else {
-                    mtxfile_data_free(&srcdata, object, format, field, precision);
+                    mtxfiledata_free(&srcdata, object, format, field, precision);
                     return MTX_ERR_INVALID_PRECISION;
                 }
             } else if (field == mtxfile_pattern) {
@@ -3888,7 +3888,7 @@ int mtxfile_data_permute(
                 for (int64_t k = 0; k < size; k++)
                     dst[perm[k]-1] = src[k];
             } else {
-                mtxfile_data_free(&srcdata, object, format, field, precision);
+                mtxfiledata_free(&srcdata, object, format, field, precision);
                 return MTX_ERR_INVALID_MTX_FIELD;
             }
         } else if (object == mtxfile_vector) {
@@ -3908,7 +3908,7 @@ int mtxfile_data_permute(
                     for (int64_t k = 0; k < size; k++)
                         dst[perm[k]-1] = src[k];
                 } else {
-                    mtxfile_data_free(&srcdata, object, format, field, precision);
+                    mtxfiledata_free(&srcdata, object, format, field, precision);
                     return MTX_ERR_INVALID_PRECISION;
                 }
             } else if (field == mtxfile_complex) {
@@ -3927,7 +3927,7 @@ int mtxfile_data_permute(
                     for (int64_t k = 0; k < size; k++)
                         dst[perm[k]-1] = src[k];
                 } else {
-                    mtxfile_data_free(&srcdata, object, format, field, precision);
+                    mtxfiledata_free(&srcdata, object, format, field, precision);
                     return MTX_ERR_INVALID_PRECISION;
                 }
             } else if (field == mtxfile_integer) {
@@ -3946,7 +3946,7 @@ int mtxfile_data_permute(
                     for (int64_t k = 0; k < size; k++)
                         dst[perm[k]-1] = src[k];
                 } else {
-                    mtxfile_data_free(&srcdata, object, format, field, precision);
+                    mtxfiledata_free(&srcdata, object, format, field, precision);
                     return MTX_ERR_INVALID_PRECISION;
                 }
             } else if (field == mtxfile_pattern) {
@@ -3957,23 +3957,23 @@ int mtxfile_data_permute(
                 for (int64_t k = 0; k < size; k++)
                     dst[perm[k]-1] = src[k];
             } else {
-                mtxfile_data_free(&srcdata, object, format, field, precision);
+                mtxfiledata_free(&srcdata, object, format, field, precision);
                 return MTX_ERR_INVALID_MTX_FIELD;
             }
         } else {
-            mtxfile_data_free(&srcdata, object, format, field, precision);
+            mtxfiledata_free(&srcdata, object, format, field, precision);
             return MTX_ERR_INVALID_MTX_OBJECT;
         }
     } else {
-        mtxfile_data_free(&srcdata, object, format, field, precision);
+        mtxfiledata_free(&srcdata, object, format, field, precision);
         return MTX_ERR_INVALID_MTX_FORMAT;
     }
-    mtxfile_data_free(&srcdata, object, format, field, precision);
+    mtxfiledata_free(&srcdata, object, format, field, precision);
     return MTX_SUCCESS;
 }
 
 /**
- * ‘mtxfile_data_sortkey_row_major()’ provides an array of keys that
+ * ‘mtxfiledata_sortkey_row_major()’ provides an array of keys that
  * can be used to sort the data lines of the given Matrix Market file
  * in row major order.
  *
@@ -3981,8 +3981,8 @@ int mtxfile_data_permute(
  * values of type ‘int64_t’.  If successful, the ‘k’-th value of
  * ‘keys’ is the sorting key for the ‘k’-th data line.
  */
-int mtxfile_data_sortkey_row_major(
-    union mtxfile_data * data,
+int mtxfiledata_sortkey_row_major(
+    union mtxfiledata * data,
     enum mtxfile_object object,
     enum mtxfile_format format,
     enum mtxfile_field field,
@@ -4123,7 +4123,7 @@ int mtxfile_data_sortkey_row_major(
 }
 
 /**
- * ‘mtxfile_data_sortkey_column_major()’ provides an array of keys
+ * ‘mtxfiledata_sortkey_column_major()’ provides an array of keys
  * that can be used to sort the data lines of the given Matrix Market
  * file in column major order.
  *
@@ -4131,8 +4131,8 @@ int mtxfile_data_sortkey_row_major(
  * values of type ‘int64_t’.  If successful, the ‘k’-th value of
  * ‘keys’ is the sorting key for the ‘k’-th data line.
  */
-int mtxfile_data_sortkey_column_major(
-    union mtxfile_data * data,
+int mtxfiledata_sortkey_column_major(
+    union mtxfiledata * data,
     enum mtxfile_object object,
     enum mtxfile_format format,
     enum mtxfile_field field,
@@ -4208,7 +4208,7 @@ int mtxfile_data_sortkey_column_major(
         }
     } else if (object == mtxfile_vector) {
         /* For vectors, column major is the same as row major. */
-        return mtxfile_data_sortkey_row_major(
+        return mtxfiledata_sortkey_row_major(
             data, object, format, field, precision,
             num_rows, num_columns, size, keys);
     } else {
@@ -4223,7 +4223,7 @@ static inline uint64_t xy_to_morton(uint32_t x, uint32_t y)
 }
 
 /**
- * ‘mtxfile_data_sortkey_morton()’ provides an array of keys that can
+ * ‘mtxfiledata_sortkey_morton()’ provides an array of keys that can
  * be used to sort the data lines of the given Matrix Market file in
  * Morton order (Z-order).
  *
@@ -4231,8 +4231,8 @@ static inline uint64_t xy_to_morton(uint32_t x, uint32_t y)
  * values of type ‘int64_t’.  If successful, the ‘k’-th value of
  * ‘keys’ is the sorting key for the ‘k’-th data line.
  */
-int mtxfile_data_sortkey_morton(
-    union mtxfile_data * data,
+int mtxfiledata_sortkey_morton(
+    union mtxfiledata * data,
     enum mtxfile_object object,
     enum mtxfile_format format,
     enum mtxfile_field field,
@@ -4308,7 +4308,7 @@ int mtxfile_data_sortkey_morton(
         }
     } else if (object == mtxfile_vector) {
         /* For vectors, Morton order is the same as row major. */
-        return mtxfile_data_sortkey_row_major(
+        return mtxfiledata_sortkey_row_major(
             data, object, format, field, precision,
             num_rows, num_columns, size, keys);
     } else {
@@ -4317,8 +4317,8 @@ int mtxfile_data_sortkey_morton(
     return MTX_SUCCESS;
 }
 
-static int mtxfile_data_sort_keys(
-    union mtxfile_data * data,
+static int mtxfiledata_sort_keys(
+    union mtxfiledata * data,
     enum mtxfile_object object,
     enum mtxfile_format format,
     enum mtxfile_field field,
@@ -4350,7 +4350,7 @@ static int mtxfile_data_sort_keys(
         sorting_permutation[i]++;
 
     /* 2. Sort nonzeros according to the sorting permutation. */
-    err = mtxfile_data_permute(
+    err = mtxfiledata_permute(
         data, object, format, field, precision,
         num_rows, num_columns, size, sorting_permutation);
     if (err) {
@@ -4364,14 +4364,14 @@ static int mtxfile_data_sort_keys(
 }
 
 /**
- * ‘mtxfile_data_sort_row_major()’ sorts data lines of a Matrix Market
+ * ‘mtxfiledata_sort_row_major()’ sorts data lines of a Matrix Market
  * file in row major order.
  *
  * Matrices and vectors in ‘array’ format are already in row major
  * order, which means that nothing is done in this case. Otherwise,
  */
-int mtxfile_data_sort_row_major(
-    union mtxfile_data * data,
+int mtxfiledata_sort_row_major(
+    union mtxfiledata * data,
     enum mtxfile_object object,
     enum mtxfile_format format,
     enum mtxfile_field field,
@@ -4392,14 +4392,14 @@ int mtxfile_data_sort_row_major(
         int64_t * keys = malloc(size * sizeof(int64_t));
         if (!keys)
             return MTX_ERR_ERRNO;
-        err = mtxfile_data_sortkey_row_major(
+        err = mtxfiledata_sortkey_row_major(
             data, object, format, field, precision,
             num_rows, num_columns, size, keys);
         if (err) {
             free(keys);
             return err;
         }
-        err = mtxfile_data_sort_keys(
+        err = mtxfiledata_sort_keys(
             data, object, format, field, precision,
             num_rows, num_columns, size,
             keys, sorting_permutation);
@@ -4415,14 +4415,14 @@ int mtxfile_data_sort_row_major(
 }
 
 /**
- * ‘mtxfile_data_sort_column_major()’ sorts data lines of a Matrix
+ * ‘mtxfiledata_sort_column_major()’ sorts data lines of a Matrix
  * Market file in column major order.
  *
  * Matrices and vectors in ‘array’ format are already in column major
  * order, which means that nothing is done in this case. Otherwise,
  */
-int mtxfile_data_sort_column_major(
-    union mtxfile_data * data,
+int mtxfiledata_sort_column_major(
+    union mtxfiledata * data,
     enum mtxfile_object object,
     enum mtxfile_format format,
     enum mtxfile_field field,
@@ -4438,7 +4438,7 @@ int mtxfile_data_sort_column_major(
     if (!keys)
         return MTX_ERR_ERRNO;
 
-    err = mtxfile_data_sortkey_column_major(
+    err = mtxfiledata_sortkey_column_major(
         data, object, format, field, precision,
         num_rows, num_columns, size, keys);
     if (err) {
@@ -4446,7 +4446,7 @@ int mtxfile_data_sort_column_major(
         return err;
     }
 
-    err = mtxfile_data_sort_keys(
+    err = mtxfiledata_sort_keys(
         data, object, format, field, precision,
         num_rows, num_columns, size,
         keys, sorting_permutation);
@@ -4459,13 +4459,13 @@ int mtxfile_data_sort_column_major(
 }
 
 /**
- * `mtxfile_data_sort_morton()' sorts data lines of a Matrix Market
+ * `mtxfiledata_sort_morton()' sorts data lines of a Matrix Market
  * file in Morton order, also known as Z-order.
  *
  * This operation is only supported for matrices in coordinate format.
  */
-int mtxfile_data_sort_morton(
-    union mtxfile_data * data,
+int mtxfiledata_sort_morton(
+    union mtxfiledata * data,
     enum mtxfile_object object,
     enum mtxfile_format format,
     enum mtxfile_field field,
@@ -4482,7 +4482,7 @@ int mtxfile_data_sort_morton(
     if (!keys)
         return MTX_ERR_ERRNO;
 
-    err = mtxfile_data_sortkey_morton(
+    err = mtxfiledata_sortkey_morton(
         data, object, format, field, precision,
         num_rows, num_columns, size, keys);
     if (err) {
@@ -4490,7 +4490,7 @@ int mtxfile_data_sort_morton(
         return err;
     }
 
-    err = mtxfile_data_sort_keys(
+    err = mtxfiledata_sort_keys(
         data, object, format, field, precision,
         num_rows, num_columns, size,
         keys, sorting_permutation);
@@ -4507,7 +4507,7 @@ int mtxfile_data_sort_morton(
  */
 
 /**
- * `mtxfile_data_sort_by_part()' sorts data lines according to a given
+ * `mtxfiledata_sort_by_part()' sorts data lines according to a given
  * partitioning using a stable counting sort algorihtm.
  *
  * The array `parts_per_data_line' must contain `size' integers with
@@ -4519,8 +4519,8 @@ int mtxfile_data_sort_morton(
  * `int64_t'. On a successful return, the array will contain offsets
  * to the first data line belonging to each part.
  */
-int mtxfile_data_sort_by_part(
-    union mtxfile_data * data,
+int mtxfiledata_sort_by_part(
+    union mtxfiledata * data,
     enum mtxfile_object object,
     enum mtxfile_format format,
     enum mtxfile_field field,
@@ -4534,15 +4534,15 @@ int mtxfile_data_sort_by_part(
     int err;
 
     /* Create a temporary copy of the data lines to be sorted. */
-    union mtxfile_data original;
-    err = mtxfile_data_alloc(
+    union mtxfiledata original;
+    err = mtxfiledata_alloc(
         &original, object, format, field, precision, size);
     if (err)
         return err;
-    err = mtxfile_data_copy(
+    err = mtxfiledata_copy(
         &original, data, object, format, field, precision, size, 0, offset);
     if (err) {
-        mtxfile_data_free(&original, object, format, field, precision);
+        mtxfiledata_free(&original, object, format, field, precision);
         return err;
     }
 
@@ -4552,7 +4552,7 @@ int mtxfile_data_sort_by_part(
     if (alloc_data_lines_per_part_ptr) {
         data_lines_per_part_ptr = malloc((num_parts+1) * sizeof(int64_t));
         if (!data_lines_per_part_ptr) {
-            mtxfile_data_free(&original, object, format, field, precision);
+            mtxfiledata_free(&original, object, format, field, precision);
             return err;
         }
     }
@@ -4571,7 +4571,7 @@ int mtxfile_data_sort_by_part(
     for (int64_t l = 0; l < size; l++) {
         int part = parts_per_data_line[l];
         int dstidx = data_lines_per_part_ptr[part];
-        err = mtxfile_data_copy(
+        err = mtxfiledata_copy(
             data, &original, object, format, field, precision, 1, dstidx, l);
         data_lines_per_part_ptr[part]++;
     }
@@ -4584,12 +4584,12 @@ int mtxfile_data_sort_by_part(
             data_lines_per_part_ptr[p] = data_lines_per_part_ptr[p-1];
         data_lines_per_part_ptr[0] = 0;
     }
-    mtxfile_data_free(&original, object, format, field, precision);
+    mtxfiledata_free(&original, object, format, field, precision);
     return MTX_SUCCESS;
 }
 
 /**
- * `mtxfile_data_partition_rows()' partitions data lines according to
+ * `mtxfiledata_partition_rows()' partitions data lines according to
  * a given row partitioning.
  *
  * The array `row_parts' must contain enough storage for an array of
@@ -4597,8 +4597,8 @@ int mtxfile_data_sort_by_part(
  * `row_parts' is equal to the part to which the `k'-th data line
  * belongs.
  */
-int mtxfile_data_partition_rows(
-    const union mtxfile_data * data,
+int mtxfiledata_partition_rows(
+    const union mtxfiledata * data,
     enum mtxfile_object object,
     enum mtxfile_format format,
     enum mtxfile_field field,
@@ -4790,7 +4790,7 @@ int mtxfile_data_partition_rows(
  */
 
 /**
- * ‘mtxfile_data_reorder()’ reorders the elements of a matrix or
+ * ‘mtxfiledata_reorder()’ reorders the elements of a matrix or
  * vector in Matrix Market format based on given row and column
  * permutations.
  *
@@ -4802,8 +4802,8 @@ int mtxfile_data_partition_rows(
  * ‘colperm[j-1]’ in the original matrix, for ‘i=1,2,...,num_rows’ and
  * ‘j=1,2,...,num_columns’.
  */
-int mtxfile_data_reorder(
-    const union mtxfile_data * data,
+int mtxfiledata_reorder(
+    const union mtxfiledata * data,
     enum mtxfile_object object,
     enum mtxfile_format format,
     enum mtxfile_field field,
@@ -4818,15 +4818,15 @@ int mtxfile_data_reorder(
     int err;
     if (format == mtxfile_array) {
         /* Create a temporary copy of the data to be permuted. */
-        union mtxfile_data original;
-        err = mtxfile_data_alloc(
+        union mtxfiledata original;
+        err = mtxfiledata_alloc(
             &original, object, format, field, precision, size);
         if (err)
             return err;
-        err = mtxfile_data_copy(
+        err = mtxfiledata_copy(
             &original, data, object, format, field, precision, size, 0, offset);
         if (err) {
-            mtxfile_data_free(&original, object, format, field, precision);
+            mtxfiledata_free(&original, object, format, field, precision);
             return err;
         }
 
@@ -4889,7 +4889,7 @@ int mtxfile_data_reorder(
                         }
                     }
                 } else {
-                    mtxfile_data_free(&original, object, format, field, precision);
+                    mtxfiledata_free(&original, object, format, field, precision);
                     return MTX_ERR_INVALID_PRECISION;
                 }
             } else if (field == mtxfile_complex) {
@@ -4956,7 +4956,7 @@ int mtxfile_data_reorder(
                         }
                     }
                 } else {
-                    mtxfile_data_free(&original, object, format, field, precision);
+                    mtxfiledata_free(&original, object, format, field, precision);
                     return MTX_ERR_INVALID_PRECISION;
                 }
             } else if (field == mtxfile_integer) {
@@ -5017,11 +5017,11 @@ int mtxfile_data_reorder(
                         }
                     }
                 } else {
-                    mtxfile_data_free(&original, object, format, field, precision);
+                    mtxfiledata_free(&original, object, format, field, precision);
                     return MTX_ERR_INVALID_PRECISION;
                 }
             } else {
-                mtxfile_data_free(&original, object, format, field, precision);
+                mtxfiledata_free(&original, object, format, field, precision);
                 return MTX_ERR_INVALID_MTX_FIELD;
             }
 
@@ -5042,7 +5042,7 @@ int mtxfile_data_reorder(
                             dst[i] = src[rowperm[i]-1];
                     }
                 } else {
-                    mtxfile_data_free(&original, object, format, field, precision);
+                    mtxfiledata_free(&original, object, format, field, precision);
                     return MTX_ERR_INVALID_PRECISION;
                 }
             } else if (field == mtxfile_complex) {
@@ -5065,7 +5065,7 @@ int mtxfile_data_reorder(
                         }
                     }
                 } else {
-                    mtxfile_data_free(&original, object, format, field, precision);
+                    mtxfiledata_free(&original, object, format, field, precision);
                     return MTX_ERR_INVALID_PRECISION;
                 }
             } else if (field == mtxfile_integer) {
@@ -5084,18 +5084,18 @@ int mtxfile_data_reorder(
                             dst[i] = src[rowperm[i]-1];
                     }
                 } else {
-                    mtxfile_data_free(&original, object, format, field, precision);
+                    mtxfiledata_free(&original, object, format, field, precision);
                     return MTX_ERR_INVALID_PRECISION;
                 }
             } else {
-                mtxfile_data_free(&original, object, format, field, precision);
+                mtxfiledata_free(&original, object, format, field, precision);
                 return MTX_ERR_INVALID_MTX_FIELD;
             }
         } else {
-            mtxfile_data_free(&original, object, format, field, precision);
+            mtxfiledata_free(&original, object, format, field, precision);
             return MTX_ERR_INVALID_MTX_OBJECT;
         }
-        mtxfile_data_free(&original, object, format, field, precision);
+        mtxfiledata_free(&original, object, format, field, precision);
 
     } else if (format == mtxfile_coordinate) {
         if (object == mtxfile_matrix) {
@@ -5340,8 +5340,8 @@ static int mtxfile_array_complex_datatype(
     return MTX_SUCCESS;
 }
 
-static int mtxfile_data_send_array(
-    const union mtxfile_data * data,
+static int mtxfiledata_send_array(
+    const union mtxfiledata * data,
     enum mtxfile_field field,
     enum mtx_precision precision,
     int64_t size,
@@ -5660,8 +5660,8 @@ static int mtxfile_coordinate_datatype(
     return MTX_SUCCESS;
 }
 
-static int mtxfile_data_send_coordinate(
-    const union mtxfile_data * data,
+static int mtxfiledata_send_coordinate(
+    const union mtxfiledata * data,
     enum mtxfile_object object,
     enum mtxfile_field field,
     enum mtx_precision precision,
@@ -5803,14 +5803,14 @@ static int mtxfile_data_send_coordinate(
 }
 
 /**
- * `mtxfile_data_send()' sends Matrix Market data lines to another MPI
+ * `mtxfiledata_send()' sends Matrix Market data lines to another MPI
  * process.
  *
  * This is analogous to `MPI_Send()' and requires the receiving
- * process to perform a matching call to `mtxfile_data_recv()'.
+ * process to perform a matching call to `mtxfiledata_recv()'.
  */
-int mtxfile_data_send(
-    const union mtxfile_data * data,
+int mtxfiledata_send(
+    const union mtxfiledata * data,
     enum mtxfile_object object,
     enum mtxfile_format format,
     enum mtxfile_field field,
@@ -5823,11 +5823,11 @@ int mtxfile_data_send(
     struct mtxmpierror * mpierror)
 {
     if (format == mtxfile_array) {
-        return mtxfile_data_send_array(
+        return mtxfiledata_send_array(
             data, field, precision, size, offset,
             dest, tag, comm, &mpierror->err);
     } else if (format == mtxfile_coordinate) {
-        return mtxfile_data_send_coordinate(
+        return mtxfiledata_send_coordinate(
             data, object, field, precision, size, offset,
             dest, tag, comm, &mpierror->err);
     } else {
@@ -5836,8 +5836,8 @@ int mtxfile_data_send(
     return MTX_SUCCESS;
 }
 
-static int mtxfile_data_recv_array(
-    const union mtxfile_data * data,
+static int mtxfiledata_recv_array(
+    const union mtxfiledata * data,
     enum mtxfile_field field,
     enum mtx_precision precision,
     int64_t size,
@@ -5917,8 +5917,8 @@ static int mtxfile_data_recv_array(
     return MTX_SUCCESS;
 }
 
-static int mtxfile_data_recv_coordinate(
-    const union mtxfile_data * data,
+static int mtxfiledata_recv_coordinate(
+    const union mtxfiledata * data,
     enum mtxfile_object object,
     enum mtxfile_field field,
     enum mtx_precision precision,
@@ -6060,14 +6060,14 @@ static int mtxfile_data_recv_coordinate(
 }
 
 /**
- * `mtxfile_data_recv()' receives Matrix Market data lines from
+ * `mtxfiledata_recv()' receives Matrix Market data lines from
  * another MPI process.
  *
  * This is analogous to `MPI_Recv()' and requires the sending process
- * to perform a matching call to `mtxfile_data_send()'.
+ * to perform a matching call to `mtxfiledata_send()'.
  */
-int mtxfile_data_recv(
-    union mtxfile_data * data,
+int mtxfiledata_recv(
+    union mtxfiledata * data,
     enum mtxfile_object object,
     enum mtxfile_format format,
     enum mtxfile_field field,
@@ -6080,11 +6080,11 @@ int mtxfile_data_recv(
     struct mtxmpierror * mpierror)
 {
     if (format == mtxfile_array) {
-        return mtxfile_data_recv_array(
+        return mtxfiledata_recv_array(
             data, field, precision, size, offset,
             source, tag, comm, &mpierror->err);
     } else if (format == mtxfile_coordinate) {
-        return mtxfile_data_recv_coordinate(
+        return mtxfiledata_recv_coordinate(
             data, object, field, precision, size, offset,
             source, tag, comm, &mpierror->err);
     } else {
@@ -6093,8 +6093,8 @@ int mtxfile_data_recv(
     return MTX_SUCCESS;
 }
 
-static int mtxfile_data_bcast_array(
-    const union mtxfile_data * data,
+static int mtxfiledata_bcast_array(
+    const union mtxfiledata * data,
     enum mtxfile_field field,
     enum mtx_precision precision,
     int64_t size,
@@ -6161,8 +6161,8 @@ static int mtxfile_data_bcast_array(
     return MTX_SUCCESS;
 }
 
-static int mtxfile_data_bcast_coordinate(
-    const union mtxfile_data * data,
+static int mtxfiledata_bcast_coordinate(
+    const union mtxfiledata * data,
     enum mtxfile_object object,
     enum mtxfile_field field,
     enum mtx_precision precision,
@@ -6303,15 +6303,15 @@ static int mtxfile_data_bcast_coordinate(
 }
 
 /**
- * `mtxfile_data_bcast()' broadcasts Matrix Market data lines from an
+ * `mtxfiledata_bcast()' broadcasts Matrix Market data lines from an
  * MPI root process to other processes in a communicator.
  *
  * This is analogous to `MPI_Bcast()' and requires every process in
  * the communicator to perform matching calls to
- * `mtxfile_data_bcast()'.
+ * `mtxfiledata_bcast()'.
  */
-int mtxfile_data_bcast(
-    union mtxfile_data * data,
+int mtxfiledata_bcast(
+    union mtxfiledata * data,
     enum mtxfile_object object,
     enum mtxfile_format format,
     enum mtxfile_field field,
@@ -6323,11 +6323,11 @@ int mtxfile_data_bcast(
     struct mtxmpierror * mpierror)
 {
     if (format == mtxfile_array) {
-        return mtxfile_data_bcast_array(
+        return mtxfiledata_bcast_array(
             data, field, precision, size, offset,
             root, comm, &mpierror->err);
     } else if (format == mtxfile_coordinate) {
-        return mtxfile_data_bcast_coordinate(
+        return mtxfiledata_bcast_coordinate(
             data, object, field, precision, size, offset,
             root, comm, &mpierror->err);
     } else {
@@ -6336,13 +6336,13 @@ int mtxfile_data_bcast(
     return MTX_SUCCESS;
 }
 
-static int mtxfile_data_gatherv_array(
-    const union mtxfile_data * sendbuf,
+static int mtxfiledata_gatherv_array(
+    const union mtxfiledata * sendbuf,
     enum mtxfile_field field,
     enum mtx_precision precision,
     int64_t sendoffset,
     int sendcount,
-    union mtxfile_data * recvbuf,
+    union mtxfiledata * recvbuf,
     int64_t recvoffset,
     const int * recvcounts,
     const int * recvdispls,
@@ -6420,14 +6420,14 @@ static int mtxfile_data_gatherv_array(
     return MTX_SUCCESS;
 }
 
-static int mtxfile_data_gatherv_coordinate(
-    const union mtxfile_data * sendbuf,
+static int mtxfiledata_gatherv_coordinate(
+    const union mtxfiledata * sendbuf,
     enum mtxfile_object object,
     enum mtxfile_field field,
     enum mtx_precision precision,
     int64_t sendoffset,
     int sendcount,
-    union mtxfile_data * recvbuf,
+    union mtxfiledata * recvbuf,
     int64_t recvoffset,
     const int * recvcounts,
     const int * recvdispls,
@@ -6594,22 +6594,22 @@ static int mtxfile_data_gatherv_coordinate(
 }
 
 /**
- * `mtxfile_data_gatherv()' gathers Matrix Market data lines onto an
+ * `mtxfiledata_gatherv()' gathers Matrix Market data lines onto an
  * MPI root process from other processes in a communicator.
  *
  * This is analogous to `MPI_Gatherv()' and requires every process in
  * the communicator to perform matching calls to
- * `mtxfile_data_gatherv()'.
+ * `mtxfiledata_gatherv()'.
  */
-int mtxfile_data_gatherv(
-    const union mtxfile_data * sendbuf,
+int mtxfiledata_gatherv(
+    const union mtxfiledata * sendbuf,
     enum mtxfile_object object,
     enum mtxfile_format format,
     enum mtxfile_field field,
     enum mtx_precision precision,
     int64_t sendoffset,
     int sendcount,
-    union mtxfile_data * recvbuf,
+    union mtxfiledata * recvbuf,
     int64_t recvoffset,
     const int * recvcounts,
     const int * recvdispls,
@@ -6618,12 +6618,12 @@ int mtxfile_data_gatherv(
     struct mtxmpierror * mpierror)
 {
     if (format == mtxfile_array) {
-        return mtxfile_data_gatherv_array(
+        return mtxfiledata_gatherv_array(
             sendbuf, field, precision, sendoffset, sendcount,
             recvbuf, recvoffset, recvcounts, recvdispls,
             root, comm, &mpierror->err);
     } else if (format == mtxfile_coordinate) {
-        return mtxfile_data_gatherv_coordinate(
+        return mtxfiledata_gatherv_coordinate(
             sendbuf, object, field, precision, sendoffset, sendcount,
             recvbuf, recvoffset, recvcounts, recvdispls,
             root, comm, &mpierror->err);
@@ -6633,14 +6633,14 @@ int mtxfile_data_gatherv(
     return MTX_SUCCESS;
 }
 
-static int mtxfile_data_scatterv_array(
-    const union mtxfile_data * sendbuf,
+static int mtxfiledata_scatterv_array(
+    const union mtxfiledata * sendbuf,
     enum mtxfile_field field,
     enum mtx_precision precision,
     int64_t sendoffset,
     const int * sendcounts,
     const int * displs,
-    union mtxfile_data * recvbuf,
+    union mtxfiledata * recvbuf,
     int64_t recvoffset,
     int recvcount,
     int root,
@@ -6717,15 +6717,15 @@ static int mtxfile_data_scatterv_array(
     return MTX_SUCCESS;
 }
 
-static int mtxfile_data_scatterv_coordinate(
-    const union mtxfile_data * sendbuf,
+static int mtxfiledata_scatterv_coordinate(
+    const union mtxfiledata * sendbuf,
     enum mtxfile_object object,
     enum mtxfile_field field,
     enum mtx_precision precision,
     int64_t sendoffset,
     const int * sendcounts,
     const int * displs,
-    union mtxfile_data * recvbuf,
+    union mtxfiledata * recvbuf,
     int64_t recvoffset,
     int recvcount,
     int root,
@@ -6891,15 +6891,15 @@ static int mtxfile_data_scatterv_coordinate(
 }
 
 /**
- * `mtxfile_data_scatterv()' scatters Matrix Market data lines from an
+ * `mtxfiledata_scatterv()' scatters Matrix Market data lines from an
  * MPI root process to other processes in a communicator.
  *
  * This is analogous to `MPI_Scatterv()' and requires every process in
  * the communicator to perform matching calls to
- * `mtxfile_data_scatterv()'.
+ * `mtxfiledata_scatterv()'.
  */
-int mtxfile_data_scatterv(
-    const union mtxfile_data * sendbuf,
+int mtxfiledata_scatterv(
+    const union mtxfiledata * sendbuf,
     enum mtxfile_object object,
     enum mtxfile_format format,
     enum mtxfile_field field,
@@ -6907,7 +6907,7 @@ int mtxfile_data_scatterv(
     int64_t sendoffset,
     const int * sendcounts,
     const int * displs,
-    union mtxfile_data * recvbuf,
+    union mtxfiledata * recvbuf,
     int64_t recvoffset,
     int recvcount,
     int root,
@@ -6915,11 +6915,11 @@ int mtxfile_data_scatterv(
     struct mtxmpierror * mpierror)
 {
     if (format == mtxfile_array) {
-        return mtxfile_data_scatterv_array(
+        return mtxfiledata_scatterv_array(
             sendbuf, field, precision, sendoffset, sendcounts, displs,
             recvbuf, recvoffset, recvcount, root, comm, &mpierror->err);
     } else if (format == mtxfile_coordinate) {
-        return mtxfile_data_scatterv_coordinate(
+        return mtxfiledata_scatterv_coordinate(
             sendbuf, object, field, precision, sendoffset, sendcounts, displs,
             recvbuf, recvoffset, recvcount, root, comm, &mpierror->err);
     } else {
@@ -6928,14 +6928,14 @@ int mtxfile_data_scatterv(
     return MTX_SUCCESS;
 }
 
-static int mtxfile_data_alltoallv_array(
-    const union mtxfile_data * sendbuf,
+static int mtxfiledata_alltoallv_array(
+    const union mtxfiledata * sendbuf,
     enum mtxfile_field field,
     enum mtx_precision precision,
     int64_t sendoffset,
     const int * sendcounts,
     const int * senddispls,
-    union mtxfile_data * recvbuf,
+    union mtxfiledata * recvbuf,
     int64_t recvoffset,
     const int * recvcounts,
     const int * recvdispls,
@@ -7012,15 +7012,15 @@ static int mtxfile_data_alltoallv_array(
     return MTX_SUCCESS;
 }
 
-static int mtxfile_data_alltoallv_coordinate(
-    const union mtxfile_data * sendbuf,
+static int mtxfiledata_alltoallv_coordinate(
+    const union mtxfiledata * sendbuf,
     enum mtxfile_object object,
     enum mtxfile_field field,
     enum mtx_precision precision,
     int64_t sendoffset,
     const int * sendcounts,
     const int * senddispls,
-    union mtxfile_data * recvbuf,
+    union mtxfiledata * recvbuf,
     int64_t recvoffset,
     const int * recvcounts,
     const int * recvdispls,
@@ -7186,15 +7186,15 @@ static int mtxfile_data_alltoallv_coordinate(
 }
 
 /**
- * `mtxfile_data_alltoallv()' performs an all-to-all exchange of
+ * `mtxfiledata_alltoallv()' performs an all-to-all exchange of
  * Matrix Market data lines between MPI processes in a communicator.
  *
  * This is analogous to `MPI_Alltoallv()' and requires every process
  * in the communicator to perform matching calls to
- * `mtxfile_data_alltoallv()'.
+ * `mtxfiledata_alltoallv()'.
  */
-int mtxfile_data_alltoallv(
-    const union mtxfile_data * sendbuf,
+int mtxfiledata_alltoallv(
+    const union mtxfiledata * sendbuf,
     enum mtxfile_object object,
     enum mtxfile_format format,
     enum mtxfile_field field,
@@ -7202,7 +7202,7 @@ int mtxfile_data_alltoallv(
     int64_t sendoffset,
     const int * sendcounts,
     const int * senddispls,
-    union mtxfile_data * recvbuf,
+    union mtxfiledata * recvbuf,
     int64_t recvoffset,
     const int * recvcounts,
     const int * recvdispls,
@@ -7210,12 +7210,12 @@ int mtxfile_data_alltoallv(
     struct mtxmpierror * mpierror)
 {
     if (format == mtxfile_array) {
-        return mtxfile_data_alltoallv_array(
+        return mtxfiledata_alltoallv_array(
             sendbuf, field, precision, sendoffset, sendcounts, senddispls,
             recvbuf, recvoffset, recvcounts, recvdispls,
             comm, &mpierror->err);
     } else if (format == mtxfile_coordinate) {
-        return mtxfile_data_alltoallv_coordinate(
+        return mtxfiledata_alltoallv_coordinate(
             sendbuf, object, field, precision, sendoffset, sendcounts, senddispls,
             recvbuf, recvoffset, recvcounts, recvdispls,
             comm, &mpierror->err);

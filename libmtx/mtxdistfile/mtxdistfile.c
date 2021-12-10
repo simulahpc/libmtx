@@ -1852,7 +1852,7 @@ static int mtxdistfile_fwrite_mtxfile(
         &mtxfile->size, &num_data_lines);
     if (err)
         return err;
-    err = mtxfile_data_fwrite(
+    err = mtxfiledata_fwrite(
         &mtxfile->data, mtxfile->header.object, mtxfile->header.format,
         mtxfile->header.field, mtxfile->precision, num_data_lines,
         f, fmt, bytes_written);
@@ -1978,7 +1978,7 @@ int mtxdistfile_fwrite_shared(
             &mtxfile->size, &num_data_lines) : MTX_SUCCESS;
         if (mtxmpierror_allreduce(mpierror, err))
             return MTX_ERR_MPI_COLLECTIVE;
-        err = (rank == p) ? mtxfile_data_fwrite(
+        err = (rank == p) ? mtxfiledata_fwrite(
             &mtxfile->data, mtxfile->header.object, mtxfile->header.format,
             mtxfile->header.field, mtxfile->precision, num_data_lines,
             f, fmt, bytes_written)

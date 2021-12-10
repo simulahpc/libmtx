@@ -224,10 +224,10 @@ struct mtxfile_vector_coordinate_pattern
  */
 
 /**
- * `mtxfile_data' represents an array of data lines from a Matrix
+ * `mtxfiledata' represents an array of data lines from a Matrix
  * Market file.
  */
-union mtxfile_data
+union mtxfiledata
 {
     /* Array formats */
     float * array_real_single;
@@ -257,11 +257,11 @@ union mtxfile_data
 };
 
 /**
- * `mtxfile_data_size_per_element()' calculates the size of each
+ * `mtxfiledata_size_per_element()' calculates the size of each
  * element in an array of Matrix Market data corresponding to the
  * given `object', `format', `field' and `precision'.
  */
-int mtxfile_data_size_per_element(
+int mtxfiledata_size_per_element(
     size_t * size_per_element,
     enum mtxfile_object object,
     enum mtxfile_format format,
@@ -646,11 +646,11 @@ int mtxfile_parse_data_vector_coordinate_pattern(
  */
 
 /**
- * `mtxfile_data_alloc()' allocates storage for a given number of data
+ * `mtxfiledata_alloc()' allocates storage for a given number of data
  * lines for a given type of matrix or vector.
  */
-int mtxfile_data_alloc(
-    union mtxfile_data * data,
+int mtxfiledata_alloc(
+    union mtxfiledata * data,
     enum mtxfile_object object,
     enum mtxfile_format format,
     enum mtxfile_field field,
@@ -658,21 +658,21 @@ int mtxfile_data_alloc(
     int64_t size);
 
 /**
- * `mtxfile_data_free()' frees allocaed storage for data lines.
+ * `mtxfiledata_free()' frees allocaed storage for data lines.
  */
-int mtxfile_data_free(
-    union mtxfile_data * data,
+int mtxfiledata_free(
+    union mtxfiledata * data,
     enum mtxfile_object object,
     enum mtxfile_format format,
     enum mtxfile_field field,
     enum mtx_precision precision);
 
 /**
- * `mtxfile_data_copy()' copies data lines.
+ * `mtxfiledata_copy()' copies data lines.
  */
-int mtxfile_data_copy(
-    union mtxfile_data * dst,
-    const union mtxfile_data * src,
+int mtxfiledata_copy(
+    union mtxfiledata * dst,
+    const union mtxfiledata * src,
     enum mtxfile_object object,
     enum mtxfile_format format,
     enum mtxfile_field field,
@@ -682,12 +682,12 @@ int mtxfile_data_copy(
     int64_t src_offset);
 
 /**
- * ‘mtxfile_data_copy_gather()’ performs an irregular copying (gather)
+ * ‘mtxfiledata_copy_gather()’ performs an irregular copying (gather)
  * of data lines from specified locations to a contiguous array.
  */
-int mtxfile_data_copy_gather(
-    union mtxfile_data * dst,
-    const union mtxfile_data * src,
+int mtxfiledata_copy_gather(
+    union mtxfiledata * dst,
+    const union mtxfiledata * src,
     enum mtxfile_object object,
     enum mtxfile_format format,
     enum mtxfile_field field,
@@ -701,7 +701,7 @@ int mtxfile_data_copy_gather(
  */
 
 /**
- * `mtxfile_data_rowptr()' computes row pointers for a matrix in
+ * `mtxfiledata_rowptr()' computes row pointers for a matrix in
  * coordinate format.
  *
  * ‘rowptr’ must point to an array containing enough storage for
@@ -719,8 +719,8 @@ int mtxfile_data_copy_gather(
  * The matrix data is not required to be sorted in any particular
  * order.
  */
-int mtxfile_data_rowptr(
-    const union mtxfile_data * data,
+int mtxfiledata_rowptr(
+    const union mtxfiledata * data,
     enum mtxfile_object object,
     enum mtxfile_format format,
     enum mtxfile_field field,
@@ -731,7 +731,7 @@ int mtxfile_data_rowptr(
     int * colidx);
 
 /**
- * `mtxfile_data_colptr()' computes column pointers for a matrix in
+ * `mtxfiledata_colptr()' computes column pointers for a matrix in
  * coordinate format.
  *
  * ‘colptr’ must point to an array containing enough storage for
@@ -750,8 +750,8 @@ int mtxfile_data_rowptr(
  * The matrix data is not required to be sorted in any particular
  * order.
  */
-int mtxfile_data_colptr(
-    const union mtxfile_data * data,
+int mtxfiledata_colptr(
+    const union mtxfiledata * data,
     enum mtxfile_object object,
     enum mtxfile_format format,
     enum mtxfile_field field,
@@ -766,12 +766,12 @@ int mtxfile_data_colptr(
  */
 
 /**
- * `mtxfile_data_set_constant_real_single()' sets every (nonzero)
+ * `mtxfiledata_set_constant_real_single()' sets every (nonzero)
  * value of a matrix or vector equal to a constant, single precision
  * floating point number.
  */
-int mtxfile_data_set_constant_real_single(
-    union mtxfile_data * data,
+int mtxfiledata_set_constant_real_single(
+    union mtxfiledata * data,
     enum mtxfile_object object,
     enum mtxfile_format format,
     enum mtxfile_field field,
@@ -781,12 +781,12 @@ int mtxfile_data_set_constant_real_single(
     float a);
 
 /**
- * `mtxfile_data_set_constant_real_double()' sets every (nonzero)
+ * `mtxfiledata_set_constant_real_double()' sets every (nonzero)
  * value of a matrix or vector equal to a constant, double precision
  * floating point number.
  */
-int mtxfile_data_set_constant_real_double(
-    union mtxfile_data * data,
+int mtxfiledata_set_constant_real_double(
+    union mtxfiledata * data,
     enum mtxfile_object object,
     enum mtxfile_format format,
     enum mtxfile_field field,
@@ -796,12 +796,12 @@ int mtxfile_data_set_constant_real_double(
     double a);
 
 /**
- * `mtxfile_data_set_constant_complex_single()' sets every (nonzero)
+ * `mtxfiledata_set_constant_complex_single()' sets every (nonzero)
  * value of a matrix or vector equal to a constant, single precision
  * floating point complex number.
  */
-int mtxfile_data_set_constant_complex_single(
-    union mtxfile_data * data,
+int mtxfiledata_set_constant_complex_single(
+    union mtxfiledata * data,
     enum mtxfile_object object,
     enum mtxfile_format format,
     enum mtxfile_field field,
@@ -811,11 +811,11 @@ int mtxfile_data_set_constant_complex_single(
     float a[2]);
 
 /**
- * `mtxfile_data_set_constant_integer_single()' sets every (nonzero)
+ * `mtxfiledata_set_constant_integer_single()' sets every (nonzero)
  * value of a matrix or vector equal to a constant integer.
  */
-int mtxfile_data_set_constant_integer_single(
-    union mtxfile_data * data,
+int mtxfiledata_set_constant_integer_single(
+    union mtxfiledata * data,
     enum mtxfile_object object,
     enum mtxfile_format format,
     enum mtxfile_field field,
@@ -850,7 +850,7 @@ int mtxfile_data_set_constant_integer_single(
  * do not affect parsing.
  */
 int mtxfile_fread_data(
-    union mtxfile_data * data,
+    union mtxfiledata * data,
     FILE * f,
     int * lines_read,
     int64_t * bytes_read,
@@ -888,7 +888,7 @@ int mtxfile_fread_data(
  * do not affect parsing.
  */
 int mtxfile_gzread_data(
-    union mtxfile_data * data,
+    union mtxfiledata * data,
     gzFile f,
     int * lines_read,
     int64_t * bytes_read,
@@ -905,7 +905,7 @@ int mtxfile_gzread_data(
 #endif
 
 /**
- * `mtxfile_data_fwrite()' writes data lines of a Matrix Market file
+ * `mtxfiledata_fwrite()' writes data lines of a Matrix Market file
  * to a stream.
  *
  * If ‘fmt’ is ‘NULL’, then the format specifier ‘%g’ is used to print
@@ -929,8 +929,8 @@ int mtxfile_gzread_data(
  * locale-specific settings, such as the type of decimal point, do not
  * affect output.
  */
-int mtxfile_data_fwrite(
-    const union mtxfile_data * data,
+int mtxfiledata_fwrite(
+    const union mtxfiledata * data,
     enum mtxfile_object object,
     enum mtxfile_format format,
     enum mtxfile_field field,
@@ -942,7 +942,7 @@ int mtxfile_data_fwrite(
 
 #ifdef LIBMTX_HAVE_LIBZ
 /**
- * `mtxfile_data_gzwrite()' writes data lines of a Matrix Market file
+ * `mtxfiledata_gzwrite()' writes data lines of a Matrix Market file
  * to a gzip-compressed stream.
  *
  * If ‘fmt’ is ‘NULL’, then the format specifier ‘%g’ is used to print
@@ -966,8 +966,8 @@ int mtxfile_data_fwrite(
  * locale-specific settings, such as the type of decimal point, do not
  * affect output.
  */
-int mtxfile_data_gzwrite(
-    const union mtxfile_data * data,
+int mtxfiledata_gzwrite(
+    const union mtxfiledata * data,
     enum mtxfile_object object,
     enum mtxfile_format format,
     enum mtxfile_field field,
@@ -983,11 +983,11 @@ int mtxfile_data_gzwrite(
  */
 
 /**
- * `mtxfile_data_transpose()' tranposes the data lines of a Matrix
+ * `mtxfiledata_transpose()' tranposes the data lines of a Matrix
  * Market file.
  */
-int mtxfile_data_transpose(
-    union mtxfile_data * data,
+int mtxfiledata_transpose(
+    union mtxfiledata * data,
     enum mtxfile_object object,
     enum mtxfile_format format,
     enum mtxfile_field field,
@@ -1001,11 +1001,11 @@ int mtxfile_data_transpose(
  */
 
 /**
- * ‘mtxfile_data_permute()’ permutes the order of data lines in a
+ * ‘mtxfiledata_permute()’ permutes the order of data lines in a
  * Matrix Market file according to a given permutation.
  */
-int mtxfile_data_permute(
-    union mtxfile_data * data,
+int mtxfiledata_permute(
+    union mtxfiledata * data,
     enum mtxfile_object object,
     enum mtxfile_format format,
     enum mtxfile_field field,
@@ -1016,7 +1016,7 @@ int mtxfile_data_permute(
     int64_t * perm);
 
 /**
- * ‘mtxfile_data_sortkey_row_major()’ provides an array of keys that
+ * ‘mtxfiledata_sortkey_row_major()’ provides an array of keys that
  * can be used to sort the data lines of the given Matrix Market file
  * in row major order.
  *
@@ -1024,8 +1024,8 @@ int mtxfile_data_permute(
  * values of type ‘int64_t’.  If successful, the ‘k’-th value of
  * ‘keys’ is the sorting key for the ‘k’-th data line.
  */
-int mtxfile_data_sortkey_row_major(
-    union mtxfile_data * data,
+int mtxfiledata_sortkey_row_major(
+    union mtxfiledata * data,
     enum mtxfile_object object,
     enum mtxfile_format format,
     enum mtxfile_field field,
@@ -1036,7 +1036,7 @@ int mtxfile_data_sortkey_row_major(
     int64_t * keys);
 
 /**
- * ‘mtxfile_data_sortkey_column_major()’ provides an array of keys
+ * ‘mtxfiledata_sortkey_column_major()’ provides an array of keys
  * that can be used to sort the data lines of the given Matrix Market
  * file in column major order.
  *
@@ -1044,8 +1044,8 @@ int mtxfile_data_sortkey_row_major(
  * values of type ‘int64_t’.  If successful, the ‘k’-th value of
  * ‘keys’ is the sorting key for the ‘k’-th data line.
  */
-int mtxfile_data_sortkey_column_major(
-    union mtxfile_data * data,
+int mtxfiledata_sortkey_column_major(
+    union mtxfiledata * data,
     enum mtxfile_object object,
     enum mtxfile_format format,
     enum mtxfile_field field,
@@ -1056,14 +1056,14 @@ int mtxfile_data_sortkey_column_major(
     int64_t * keys);
 
 /**
- * ‘mtxfile_data_sort_row_major()’ sorts data lines of a Matrix Market
+ * ‘mtxfiledata_sort_row_major()’ sorts data lines of a Matrix Market
  * file in row major order.
  *
  * Matrices and vectors in ‘array’ format are already in row major
  * order, which means that nothing is done in this case. Otherwise,
  */
-int mtxfile_data_sort_row_major(
-    union mtxfile_data * data,
+int mtxfiledata_sort_row_major(
+    union mtxfiledata * data,
     enum mtxfile_object object,
     enum mtxfile_format format,
     enum mtxfile_field field,
@@ -1074,14 +1074,14 @@ int mtxfile_data_sort_row_major(
     int64_t * perm);
 
 /**
- * ‘mtxfile_data_sort_column_major()’ sorts data lines of a Matrix
+ * ‘mtxfiledata_sort_column_major()’ sorts data lines of a Matrix
  * Market file in column major order.
  *
  * Matrices and vectors in ‘array’ format are already in column major
  * order, which means that nothing is done in this case. Otherwise,
  */
-int mtxfile_data_sort_column_major(
-    union mtxfile_data * data,
+int mtxfiledata_sort_column_major(
+    union mtxfiledata * data,
     enum mtxfile_object object,
     enum mtxfile_format format,
     enum mtxfile_field field,
@@ -1092,13 +1092,13 @@ int mtxfile_data_sort_column_major(
     int64_t * perm);
 
 /**
- * `mtxfile_data_sort_morton()' sorts data lines of a Matrix Market
+ * `mtxfiledata_sort_morton()' sorts data lines of a Matrix Market
  * file in Morton order, also known as Z-order.
  *
  * This operation is only supported for matrices in coordinate format.
  */
-int mtxfile_data_sort_morton(
-    union mtxfile_data * data,
+int mtxfiledata_sort_morton(
+    union mtxfiledata * data,
     enum mtxfile_object object,
     enum mtxfile_format format,
     enum mtxfile_field field,
@@ -1113,7 +1113,7 @@ int mtxfile_data_sort_morton(
  */
 
 /**
- * `mtxfile_data_sort_by_part()' sorts data lines according to a given
+ * `mtxfiledata_sort_by_part()' sorts data lines according to a given
  * partitioning using a stable counting sort algorihtm.
  *
  * The array `parts_per_data_line' must contain `size' integers with
@@ -1125,8 +1125,8 @@ int mtxfile_data_sort_morton(
  * `int64_t'. On a successful return, the array will contain offsets
  * to the first data line belonging to each part.
  */
-int mtxfile_data_sort_by_part(
-    union mtxfile_data * data,
+int mtxfiledata_sort_by_part(
+    union mtxfiledata * data,
     enum mtxfile_object object,
     enum mtxfile_format format,
     enum mtxfile_field field,
@@ -1138,7 +1138,7 @@ int mtxfile_data_sort_by_part(
     int64_t * data_lines_per_part_ptr);
 
 /**
- * `mtxfile_data_partition_rows()' partitions data lines according to
+ * `mtxfiledata_partition_rows()' partitions data lines according to
  * a given row partitioning.
  *
  * The array `row_parts' must contain enough storage for an array of
@@ -1146,8 +1146,8 @@ int mtxfile_data_sort_by_part(
  * `row_parts' is equal to the part to which the `k'-th data line
  * belongs.
  */
-int mtxfile_data_partition_rows(
-    const union mtxfile_data * data,
+int mtxfiledata_partition_rows(
+    const union mtxfiledata * data,
     enum mtxfile_object object,
     enum mtxfile_format format,
     enum mtxfile_field field,
@@ -1160,7 +1160,7 @@ int mtxfile_data_partition_rows(
     int * row_parts);
 
 /**
- * `mtxfile_data_partition_columns()' partitions data lines according
+ * `mtxfiledata_partition_columns()' partitions data lines according
  * to a given column partitioning.
  *
  * The array `column_parts' must contain enough storage for an array
@@ -1168,8 +1168,8 @@ int mtxfile_data_partition_rows(
  * `column_parts' is equal to the part to which the `k'-th data line
  * belongs.
  */
-int mtxfile_data_partition_columns(
-    const union mtxfile_data * data,
+int mtxfiledata_partition_columns(
+    const union mtxfiledata * data,
     enum mtxfile_object object,
     enum mtxfile_format format,
     enum mtxfile_field field,
@@ -1186,7 +1186,7 @@ int mtxfile_data_partition_columns(
  */
 
 /**
- * ‘mtxfile_data_reorder()’ reorders the elements of a matrix or
+ * ‘mtxfiledata_reorder()’ reorders the elements of a matrix or
  * vector in Matrix Market format based on given row and column
  * permutations.
  *
@@ -1198,8 +1198,8 @@ int mtxfile_data_partition_columns(
  * ‘colperm[j-1]’ in the original matrix, for ‘i=1,2,...,num_rows’ and
  * ‘j=1,2,...,num_columns’.
  */
-int mtxfile_data_reorder(
-    const union mtxfile_data * data,
+int mtxfiledata_reorder(
+    const union mtxfiledata * data,
     enum mtxfile_object object,
     enum mtxfile_format format,
     enum mtxfile_field field,
@@ -1217,14 +1217,14 @@ int mtxfile_data_reorder(
 
 #ifdef LIBMTX_HAVE_MPI
 /**
- * `mtxfile_data_send()' sends Matrix Market data lines to another MPI
+ * `mtxfiledata_send()' sends Matrix Market data lines to another MPI
  * process.
  *
  * This is analogous to `MPI_Send()' and requires the receiving
- * process to perform a matching call to `mtxfile_data_recv()'.
+ * process to perform a matching call to `mtxfiledata_recv()'.
  */
-int mtxfile_data_send(
-    const union mtxfile_data * data,
+int mtxfiledata_send(
+    const union mtxfiledata * data,
     enum mtxfile_object object,
     enum mtxfile_format format,
     enum mtxfile_field field,
@@ -1237,14 +1237,14 @@ int mtxfile_data_send(
     struct mtxmpierror * mpierror);
 
 /**
- * `mtxfile_data_recv()' receives Matrix Market data lines from
+ * `mtxfiledata_recv()' receives Matrix Market data lines from
  * another MPI process.
  *
  * This is analogous to `MPI_Recv()' and requires the sending process
- * to perform a matching call to `mtxfile_data_send()'.
+ * to perform a matching call to `mtxfiledata_send()'.
  */
-int mtxfile_data_recv(
-    union mtxfile_data * data,
+int mtxfiledata_recv(
+    union mtxfiledata * data,
     enum mtxfile_object object,
     enum mtxfile_format format,
     enum mtxfile_field field,
@@ -1257,15 +1257,15 @@ int mtxfile_data_recv(
     struct mtxmpierror * mpierror);
 
 /**
- * `mtxfile_data_bcast()' broadcasts Matrix Market data lines from an
+ * `mtxfiledata_bcast()' broadcasts Matrix Market data lines from an
  * MPI root process to other processes in a communicator.
  *
  * This is analogous to `MPI_Bcast()' and requires every process in
  * the communicator to perform matching calls to
- * `mtxfile_data_bcast()'.
+ * `mtxfiledata_bcast()'.
  */
-int mtxfile_data_bcast(
-    union mtxfile_data * data,
+int mtxfiledata_bcast(
+    union mtxfiledata * data,
     enum mtxfile_object object,
     enum mtxfile_format format,
     enum mtxfile_field field,
@@ -1277,22 +1277,22 @@ int mtxfile_data_bcast(
     struct mtxmpierror * mpierror);
 
 /**
- * `mtxfile_data_gatherv()' gathers Matrix Market data lines onto an
+ * `mtxfiledata_gatherv()' gathers Matrix Market data lines onto an
  * MPI root process from other processes in a communicator.
  *
  * This is analogous to `MPI_Gatherv()' and requires every process in
  * the communicator to perform matching calls to
- * `mtxfile_data_gatherv()'.
+ * `mtxfiledata_gatherv()'.
  */
-int mtxfile_data_gatherv(
-    const union mtxfile_data * sendbuf,
+int mtxfiledata_gatherv(
+    const union mtxfiledata * sendbuf,
     enum mtxfile_object object,
     enum mtxfile_format format,
     enum mtxfile_field field,
     enum mtx_precision precision,
     int64_t sendoffset,
     int sendcount,
-    union mtxfile_data * recvbuf,
+    union mtxfiledata * recvbuf,
     int64_t recvoffset,
     const int * recvcounts,
     const int * recvdispls,
@@ -1301,15 +1301,15 @@ int mtxfile_data_gatherv(
     struct mtxmpierror * mpierror);
 
 /**
- * `mtxfile_data_scatterv()' scatters Matrix Market data lines from an
+ * `mtxfiledata_scatterv()' scatters Matrix Market data lines from an
  * MPI root process to other processes in a communicator.
  *
  * This is analogous to `MPI_Scatterv()' and requires every process in
  * the communicator to perform matching calls to
- * `mtxfile_data_scatterv()'.
+ * `mtxfiledata_scatterv()'.
  */
-int mtxfile_data_scatterv(
-    const union mtxfile_data * sendbuf,
+int mtxfiledata_scatterv(
+    const union mtxfiledata * sendbuf,
     enum mtxfile_object object,
     enum mtxfile_format format,
     enum mtxfile_field field,
@@ -1317,7 +1317,7 @@ int mtxfile_data_scatterv(
     int64_t sendoffset,
     const int * sendcounts,
     const int * displs,
-    union mtxfile_data * recvbuf,
+    union mtxfiledata * recvbuf,
     int64_t recvoffset,
     int recvcount,
     int root,
@@ -1325,15 +1325,15 @@ int mtxfile_data_scatterv(
     struct mtxmpierror * mpierror);
 
 /**
- * `mtxfile_data_alltoallv()' performs an all-to-all exchange of
+ * `mtxfiledata_alltoallv()' performs an all-to-all exchange of
  * Matrix Market data lines between MPI processes in a communicator.
  *
  * This is analogous to `MPI_Alltoallv()' and requires every process
  * in the communicator to perform matching calls to
- * `mtxfile_data_alltoallv()'.
+ * `mtxfiledata_alltoallv()'.
  */
-int mtxfile_data_alltoallv(
-    const union mtxfile_data * sendbuf,
+int mtxfiledata_alltoallv(
+    const union mtxfiledata * sendbuf,
     enum mtxfile_object object,
     enum mtxfile_format format,
     enum mtxfile_field field,
@@ -1341,7 +1341,7 @@ int mtxfile_data_alltoallv(
     int64_t sendoffset,
     const int * sendcounts,
     const int * senddispls,
-    union mtxfile_data * recvbuf,
+    union mtxfiledata * recvbuf,
     int64_t recvoffset,
     const int * recvcounts,
     const int * recvdispls,
