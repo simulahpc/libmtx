@@ -927,7 +927,7 @@ int distradix_sort_uint32(
         MPI_Win window;
         mpierror->mpierrcode = MPI_Win_create(
             sorting_permutation, size * sizeof(int64_t),
-            sizeof(int64_t), MPI_INFO_NULL, MPI_COMM_WORLD, &window);
+            sizeof(int64_t), MPI_INFO_NULL, comm, &window);
         err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
         if (mtxmpierror_allreduce(mpierror, err)) {
             free(global_offsets);
@@ -1317,7 +1317,7 @@ int distradix_sort_uint64(
         MPI_Win window;
         mpierror->mpierrcode = MPI_Win_create(
             sorting_permutation, size * sizeof(int64_t),
-            sizeof(int64_t), MPI_INFO_NULL, MPI_COMM_WORLD, &window);
+            sizeof(int64_t), MPI_INFO_NULL, comm, &window);
         err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
         if (mtxmpierror_allreduce(mpierror, err)) {
             free(global_offsets);
