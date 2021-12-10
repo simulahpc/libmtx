@@ -1186,7 +1186,7 @@ int mtxfile_data_partition_columns(
  */
 
 /**
- * `mtxfile_data_permute()' permutes the elements of a matrix or
+ * ‘mtxfile_data_reorder()’ reorders the elements of a matrix or
  * vector in Matrix Market format based on given row and column
  * permutations.
  *
@@ -1198,7 +1198,7 @@ int mtxfile_data_partition_columns(
  * ‘colperm[j-1]’ in the original matrix, for ‘i=1,2,...,num_rows’ and
  * ‘j=1,2,...,num_columns’.
  */
-int mtxfile_data_permute(
+int mtxfile_data_reorder(
     const union mtxfile_data * data,
     enum mtxfile_object object,
     enum mtxfile_format format,

@@ -2117,7 +2117,7 @@ int mtxfile_permute(
         &mtxfile->size, &num_data_lines);
     if (err)
         return err;
-    err = mtxfile_data_permute(
+    err = mtxfile_data_reorder(
         &mtxfile->data, mtxfile->header.object, mtxfile->header.format,
         mtxfile->header.field, mtxfile->precision, num_data_lines, 0,
         mtxfile->size.num_rows, row_permutation,
