@@ -26,6 +26,7 @@
 
 #include <libmtx/error.h>
 #include <libmtx/mtx/precision.h>
+#include <libmtx/mtxdistfile/data.h>
 #include <libmtx/mtxdistfile/mtxdistfile.h>
 #include <libmtx/mtxfile/comments.h>
 #include <libmtx/mtxfile/data.h>
@@ -2032,7 +2033,54 @@ int mtxdistfile_sort(
     int64_t * perm,
     struct mtxmpierror * mpierror)
 {
+    int err;
+    struct mtxfile * mtxfile = &mtxdistfile->mtxfile;
+    MPI_Comm comm = mtxdistfile->comm;
 
+    int64_t num_data_lines;
+    err = mtxfile_size_num_data_lines(&mtxfile->size, &num_data_lines);
+    if (mtxmpierror_allreduce(mpierror, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+    err = size < 0 || size > num_data_lines
+        ? MTX_ERR_INDEX_OUT_OF_BOUNDS : MTX_SUCCESS;
+    if (mtxmpierror_allreduce(mpierror, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+
+    if (sorting == mtxfile_unsorted) {
+        if (!perm)
+            return MTX_SUCCESS;
+        int64_t global_offset = 0;
+        mpierror->mpierrcode = MPI_Exscan(
+            &size, &global_offset, 1, MPI_INT64_T, MPI_SUM, comm);
+        err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+        if (mtxmpierror_allreduce(mpierror, err))
+            return MTX_ERR_MPI_COLLECTIVE;
+        for (int64_t k = 0; k < size; k++)
+            perm[k] = global_offset+k+1;
+        return MTX_SUCCESS;
+    } else if (sorting == mtxfile_sorting_permutation) {
+        return mtxdistfiledata_permute(
+            &mtxfile->data, mtxfile->header.object, mtxfile->header.format,
+            mtxfile->header.field, mtxfile->precision, mtxfile->size.num_rows,
+            mtxfile->size.num_columns, size, perm, comm, mpierror);
+    } else if (sorting == mtxfile_row_major) {
+        return mtxdistfiledata_sort_row_major(
+            &mtxfile->data, mtxfile->header.object, mtxfile->header.format,
+            mtxfile->header.field, mtxfile->precision, mtxfile->size.num_rows,
+            mtxfile->size.num_columns, size, perm, comm, mpierror);
+    } else if (sorting == mtxfile_column_major) {
+        return mtxdistfiledata_sort_column_major(
+            &mtxfile->data, mtxfile->header.object, mtxfile->header.format,
+            mtxfile->header.field, mtxfile->precision, mtxfile->size.num_rows,
+            mtxfile->size.num_columns, size, perm, comm, mpierror);
+    } else if (sorting == mtxfile_morton) {
+        return mtxdistfiledata_sort_morton(
+            &mtxfile->data, mtxfile->header.object, mtxfile->header.format,
+            mtxfile->header.field, mtxfile->precision, mtxfile->size.num_rows,
+            mtxfile->size.num_columns, size, perm, comm, mpierror);
+    } else {
+        return MTX_ERR_INVALID_MTX_SORTING;
+    }
     return MTX_SUCCESS;
 }
 

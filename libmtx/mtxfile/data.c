@@ -73,82 +73,166 @@ static inline uint32_t _pdep_u32(uint32_t val, uint32_t mask)
 #include <string.h>
 
 /**
- * `mtxfiledata_size_per_element()' calculates the size of each
- * element in an array of Matrix Market data corresponding to the
- * given `object', `format', `field' and `precision'.
+ * ‘mtxfiledata_dataptr()’ returns a pointer to the ‘k’-th data
+ * line. This is done by using the correct member of the underlying
+ * ‘mtxfiledata’ union containing the data lines.
  */
-int mtxfiledata_size_per_element(
-    size_t * size,
+int mtxfiledata_dataptr(
+    const union mtxfiledata * data,
     enum mtxfile_object object,
     enum mtxfile_format format,
     enum mtxfile_field field,
-    enum mtx_precision precision)
+    enum mtx_precision precision,
+    void ** p,
+    int64_t k)
 {
-    union mtxfiledata data;
     if (format == mtxfile_array) {
         if (field == mtxfile_real) {
             if (precision == mtx_single) {
-                *size = sizeof(*data.array_real_single);
+                *p = &data->array_real_single[k];
             } else if (precision == mtx_double) {
-                *size = sizeof(*data.array_real_double);
+                *p = &data->array_real_double[k];
             } else { return MTX_ERR_INVALID_PRECISION; }
         } else if (field == mtxfile_complex) {
             if (precision == mtx_single) {
-                *size = sizeof(*data.array_complex_single);
+                *p = &data->array_complex_single[k];
             } else if (precision == mtx_double) {
-                *size = sizeof(*data.array_complex_double);
+                *p = &data->array_complex_double[k];
             } else { return MTX_ERR_INVALID_PRECISION; }
         } else if (field == mtxfile_integer) {
             if (precision == mtx_single) {
-                *size = sizeof(*data.array_integer_single);
+                *p = &data->array_integer_single[k];
             } else if (precision == mtx_double) {
-                *size = sizeof(*data.array_integer_double);
+                *p = &data->array_integer_double[k];
             } else { return MTX_ERR_INVALID_PRECISION; }
         } else { return MTX_ERR_INVALID_MTX_FIELD; }
     } else if (format == mtxfile_coordinate) {
         if (object == mtxfile_matrix) {
             if (field == mtxfile_real) {
                 if (precision == mtx_single) {
-                    *size = sizeof(*data.matrix_coordinate_real_single);
+                    *p = &data->matrix_coordinate_real_single[k];
                 } else if (precision == mtx_double) {
-                    *size = sizeof(*data.matrix_coordinate_real_double);
+                    *p = &data->matrix_coordinate_real_double[k];
                 } else { return MTX_ERR_INVALID_PRECISION; }
             } else if (field == mtxfile_complex) {
                 if (precision == mtx_single) {
-                    *size = sizeof(*data.matrix_coordinate_complex_single);
+                    *p = &data->matrix_coordinate_complex_single[k];
                 } else if (precision == mtx_double) {
-                    *size = sizeof(*data.matrix_coordinate_complex_double);
+                    *p = &data->matrix_coordinate_complex_double[k];
                 } else { return MTX_ERR_INVALID_PRECISION; }
             } else if (field == mtxfile_integer) {
                 if (precision == mtx_single) {
-                    *size = sizeof(*data.matrix_coordinate_integer_single);
+                    *p = &data->matrix_coordinate_integer_single[k];
                 } else if (precision == mtx_double) {
-                    *size = sizeof(*data.matrix_coordinate_integer_double);
+                    *p = &data->matrix_coordinate_integer_double[k];
                 } else { return MTX_ERR_INVALID_PRECISION; }
             } else if (field == mtxfile_pattern) {
-                *size = sizeof(*data.matrix_coordinate_pattern);
+                *p = &data->matrix_coordinate_pattern[k];
             } else { return MTX_ERR_INVALID_MTX_FIELD; }
         } else if (object == mtxfile_vector) {
             if (field == mtxfile_real) {
                 if (precision == mtx_single) {
-                    *size = sizeof(*data.vector_coordinate_real_single);
+                    *p = &data->vector_coordinate_real_single[k];
                 } else if (precision == mtx_double) {
-                    *size = sizeof(*data.vector_coordinate_real_double);
+                    *p = &data->vector_coordinate_real_double[k];
                 } else { return MTX_ERR_INVALID_PRECISION; }
             } else if (field == mtxfile_complex) {
                 if (precision == mtx_single) {
-                    *size = sizeof(*data.vector_coordinate_complex_single);
+                    *p = &data->vector_coordinate_complex_single[k];
                 } else if (precision == mtx_double) {
-                    *size = sizeof(*data.vector_coordinate_complex_double);
+                    *p = &data->vector_coordinate_complex_double[k];
                 } else { return MTX_ERR_INVALID_PRECISION; }
             } else if (field == mtxfile_integer) {
                 if (precision == mtx_single) {
-                    *size = sizeof(*data.vector_coordinate_integer_single);
+                    *p = &data->vector_coordinate_integer_single[k];
                 } else if (precision == mtx_double) {
-                    *size = sizeof(*data.vector_coordinate_integer_double);
+                    *p = &data->vector_coordinate_integer_double[k];
                 } else { return MTX_ERR_INVALID_PRECISION; }
             } else if (field == mtxfile_pattern) {
-                *size = sizeof(*data.vector_coordinate_pattern);
+                *p = &data->vector_coordinate_pattern[k];
+            } else { return MTX_ERR_INVALID_MTX_FIELD; }
+        } else { return MTX_ERR_INVALID_MTX_OBJECT; }
+    } else { return MTX_ERR_INVALID_MTX_FORMAT; }
+    return MTX_SUCCESS;
+}
+
+/**
+ * `mtxfiledata_size_per_element()' calculates the size of each
+ * element in an array of Matrix Market data corresponding to the
+ * given `object', `format', `field' and `precision'.
+ */
+int mtxfiledata_size_per_element(
+    const union mtxfiledata * data,
+    enum mtxfile_object object,
+    enum mtxfile_format format,
+    enum mtxfile_field field,
+    enum mtx_precision precision,
+    size_t * size)
+{
+    if (format == mtxfile_array) {
+        if (field == mtxfile_real) {
+            if (precision == mtx_single) {
+                *size = sizeof(*data->array_real_single);
+            } else if (precision == mtx_double) {
+                *size = sizeof(*data->array_real_double);
+            } else { return MTX_ERR_INVALID_PRECISION; }
+        } else if (field == mtxfile_complex) {
+            if (precision == mtx_single) {
+                *size = sizeof(*data->array_complex_single);
+            } else if (precision == mtx_double) {
+                *size = sizeof(*data->array_complex_double);
+            } else { return MTX_ERR_INVALID_PRECISION; }
+        } else if (field == mtxfile_integer) {
+            if (precision == mtx_single) {
+                *size = sizeof(*data->array_integer_single);
+            } else if (precision == mtx_double) {
+                *size = sizeof(*data->array_integer_double);
+            } else { return MTX_ERR_INVALID_PRECISION; }
+        } else { return MTX_ERR_INVALID_MTX_FIELD; }
+    } else if (format == mtxfile_coordinate) {
+        if (object == mtxfile_matrix) {
+            if (field == mtxfile_real) {
+                if (precision == mtx_single) {
+                    *size = sizeof(*data->matrix_coordinate_real_single);
+                } else if (precision == mtx_double) {
+                    *size = sizeof(*data->matrix_coordinate_real_double);
+                } else { return MTX_ERR_INVALID_PRECISION; }
+            } else if (field == mtxfile_complex) {
+                if (precision == mtx_single) {
+                    *size = sizeof(*data->matrix_coordinate_complex_single);
+                } else if (precision == mtx_double) {
+                    *size = sizeof(*data->matrix_coordinate_complex_double);
+                } else { return MTX_ERR_INVALID_PRECISION; }
+            } else if (field == mtxfile_integer) {
+                if (precision == mtx_single) {
+                    *size = sizeof(*data->matrix_coordinate_integer_single);
+                } else if (precision == mtx_double) {
+                    *size = sizeof(*data->matrix_coordinate_integer_double);
+                } else { return MTX_ERR_INVALID_PRECISION; }
+            } else if (field == mtxfile_pattern) {
+                *size = sizeof(*data->matrix_coordinate_pattern);
+            } else { return MTX_ERR_INVALID_MTX_FIELD; }
+        } else if (object == mtxfile_vector) {
+            if (field == mtxfile_real) {
+                if (precision == mtx_single) {
+                    *size = sizeof(*data->vector_coordinate_real_single);
+                } else if (precision == mtx_double) {
+                    *size = sizeof(*data->vector_coordinate_real_double);
+                } else { return MTX_ERR_INVALID_PRECISION; }
+            } else if (field == mtxfile_complex) {
+                if (precision == mtx_single) {
+                    *size = sizeof(*data->vector_coordinate_complex_single);
+                } else if (precision == mtx_double) {
+                    *size = sizeof(*data->vector_coordinate_complex_double);
+                } else { return MTX_ERR_INVALID_PRECISION; }
+            } else if (field == mtxfile_integer) {
+                if (precision == mtx_single) {
+                    *size = sizeof(*data->vector_coordinate_integer_single);
+                } else if (precision == mtx_double) {
+                    *size = sizeof(*data->vector_coordinate_integer_double);
+                } else { return MTX_ERR_INVALID_PRECISION; }
+            } else if (field == mtxfile_pattern) {
+                *size = sizeof(*data->vector_coordinate_pattern);
             } else { return MTX_ERR_INVALID_MTX_FIELD; }
         } else { return MTX_ERR_INVALID_MTX_OBJECT; }
     } else { return MTX_ERR_INVALID_MTX_FORMAT; }
@@ -5299,6 +5383,303 @@ int mtxfiledata_reorder(
  */
 
 #ifdef LIBMTX_HAVE_MPI
+/**
+ * ‘mtxfiledata_mpi_datatype()’ creates a custom MPI data type for
+ * sending or receiving data lines.
+ *
+ * The user is responsible for calling ‘MPI_Type_free()’ on the
+ * returned datatype.
+ */
+int mtxfiledata_mpi_datatype(
+    const union mtxfiledata * data,
+    enum mtxfile_object object,
+    enum mtxfile_format format,
+    enum mtxfile_field field,
+    enum mtx_precision precision,
+    MPI_Datatype * datatype,
+    int * mpierrcode)
+{
+    int num_elements;
+    int block_lengths[3];
+    MPI_Datatype element_types[3];
+    MPI_Aint element_offsets[3];
+    if (format == mtxfile_array) {
+        if (field == mtxfile_real) {
+            if (precision == mtx_single) {
+                num_elements = 1;
+                element_types[0] = MPI_FLOAT;
+                block_lengths[0] = 1;
+                element_offsets[0] = 0;
+            } else if (precision == mtx_double) {
+                num_elements = 1;
+                element_types[0] = MPI_DOUBLE;
+                block_lengths[0] = 1;
+                element_offsets[0] = 0;
+            } else {
+                return MTX_ERR_INVALID_PRECISION;
+            }
+        } else if (field == mtxfile_complex) {
+            if (precision == mtx_single) {
+                num_elements = 1;
+                element_types[0] = MPI_FLOAT;
+                block_lengths[0] = 2;
+                element_offsets[0] = 0;
+            } else if (precision == mtx_double) {
+                num_elements = 1;
+                element_types[0] = MPI_DOUBLE;
+                block_lengths[0] = 1;
+                element_offsets[0] = 0;
+            } else {
+                return MTX_ERR_INVALID_PRECISION;
+            }
+        } else if (field == mtxfile_integer) {
+            if (precision == mtx_single) {
+                num_elements = 1;
+                element_types[0] = MPI_INT32_T;
+                block_lengths[0] = 1;
+                element_offsets[0] = 0;
+            } else if (precision == mtx_double) {
+                num_elements = 1;
+                element_types[0] = MPI_INT64_T;
+                block_lengths[0] = 1;
+                element_offsets[0] = 0;
+            } else {
+                return MTX_ERR_INVALID_PRECISION;
+            }
+        } else {
+            return MTX_ERR_INVALID_MTX_FIELD;
+        }
+    } else if (format == mtxfile_coordinate) {
+        if (object == mtxfile_matrix) {
+            if (field == mtxfile_real) {
+                if (precision == mtx_single) {
+                    num_elements = 3;
+                    element_types[0] = MPI_INT;
+                    block_lengths[0] = 1;
+                    element_offsets[0] =
+                        offsetof(struct mtxfile_matrix_coordinate_real_single, i);
+                    element_types[1] = MPI_INT;
+                    block_lengths[1] = 1;
+                    element_offsets[1] =
+                        offsetof(struct mtxfile_matrix_coordinate_real_single, j);
+                    element_types[2] = MPI_FLOAT;
+                    block_lengths[2] = 1;
+                    element_offsets[2] =
+                        offsetof(struct mtxfile_matrix_coordinate_real_single, a);
+                } else if (precision == mtx_double) {
+                    num_elements = 3;
+                    element_types[0] = MPI_INT;
+                    block_lengths[0] = 1;
+                    element_offsets[0] =
+                        offsetof(struct mtxfile_matrix_coordinate_real_double, i);
+                    element_types[1] = MPI_INT;
+                    block_lengths[1] = 1;
+                    element_offsets[1] =
+                        offsetof(struct mtxfile_matrix_coordinate_real_double, j);
+                    element_types[2] = MPI_DOUBLE;
+                    block_lengths[2] = 1;
+                    element_offsets[2] =
+                        offsetof(struct mtxfile_matrix_coordinate_real_double, a);
+                } else {
+                    return MTX_ERR_INVALID_PRECISION;
+                }
+            } else if (field == mtxfile_complex) {
+                if (precision == mtx_single) {
+                    num_elements = 3;
+                    element_types[0] = MPI_INT;
+                    block_lengths[0] = 1;
+                    element_offsets[0] =
+                        offsetof(struct mtxfile_matrix_coordinate_complex_single, i);
+                    element_types[1] = MPI_INT;
+                    block_lengths[1] = 1;
+                    element_offsets[1] =
+                        offsetof(struct mtxfile_matrix_coordinate_complex_single, j);
+                    element_types[2] = MPI_FLOAT;
+                    block_lengths[2] = 2;
+                    element_offsets[2] =
+                        offsetof(struct mtxfile_matrix_coordinate_complex_single, a);
+                } else if (precision == mtx_double) {
+                    num_elements = 3;
+                    element_types[0] = MPI_INT;
+                    block_lengths[0] = 1;
+                    element_offsets[0] =
+                        offsetof(struct mtxfile_matrix_coordinate_complex_double, i);
+                    element_types[1] = MPI_INT;
+                    block_lengths[1] = 1;
+                    element_offsets[1] =
+                        offsetof(struct mtxfile_matrix_coordinate_complex_double, j);
+                    element_types[2] = MPI_DOUBLE;
+                    block_lengths[2] = 2;
+                    element_offsets[2] =
+                        offsetof(struct mtxfile_matrix_coordinate_complex_double, a);
+                } else {
+                    return MTX_ERR_INVALID_PRECISION;
+                }
+            } else if (field == mtxfile_integer) {
+                if (precision == mtx_single) {
+                    num_elements = 3;
+                    element_types[0] = MPI_INT;
+                    block_lengths[0] = 1;
+                    element_offsets[0] =
+                        offsetof(struct mtxfile_matrix_coordinate_integer_single, i);
+                    element_types[1] = MPI_INT;
+                    block_lengths[1] = 1;
+                    element_offsets[1] =
+                        offsetof(struct mtxfile_matrix_coordinate_integer_single, j);
+                    element_types[2] = MPI_INT32_T;
+                    block_lengths[2] = 1;
+                    element_offsets[2] =
+                        offsetof(struct mtxfile_matrix_coordinate_integer_single, a);
+                } else if (precision == mtx_double) {
+                    num_elements = 3;
+                    element_types[0] = MPI_INT;
+                    block_lengths[0] = 1;
+                    element_offsets[0] =
+                        offsetof(struct mtxfile_matrix_coordinate_integer_double, i);
+                    element_types[1] = MPI_INT;
+                    block_lengths[1] = 1;
+                    element_offsets[1] =
+                        offsetof(struct mtxfile_matrix_coordinate_integer_double, j);
+                    element_types[2] = MPI_INT64_T;
+                    block_lengths[2] = 1;
+                    element_offsets[2] =
+                        offsetof(struct mtxfile_matrix_coordinate_integer_double, a);
+                } else {
+                    return MTX_ERR_INVALID_PRECISION;
+                }
+            } else if (field == mtxfile_pattern) {
+                num_elements = 2;
+                element_types[0] = MPI_INT;
+                block_lengths[0] = 1;
+                element_offsets[0] =
+                    offsetof(struct mtxfile_matrix_coordinate_pattern, i);
+                element_types[1] = MPI_INT;
+                block_lengths[1] = 1;
+                element_offsets[1] =
+                    offsetof(struct mtxfile_matrix_coordinate_pattern, j);
+            } else {
+                return MTX_ERR_INVALID_MTX_FIELD;
+            }
+        } else if (object == mtxfile_vector) {
+            if (field == mtxfile_real) {
+                if (precision == mtx_single) {
+                    num_elements = 2;
+                    element_types[0] = MPI_INT;
+                    block_lengths[0] = 1;
+                    element_offsets[0] =
+                        offsetof(struct mtxfile_vector_coordinate_real_single, i);
+                    element_types[1] = MPI_FLOAT;
+                    block_lengths[1] = 1;
+                    element_offsets[1] =
+                        offsetof(struct mtxfile_vector_coordinate_real_single, a);
+                } else if (precision == mtx_double) {
+                    num_elements = 2;
+                    element_types[0] = MPI_INT;
+                    block_lengths[0] = 1;
+                    element_offsets[0] =
+                        offsetof(struct mtxfile_vector_coordinate_real_double, i);
+                    element_types[1] = MPI_DOUBLE;
+                    block_lengths[1] = 1;
+                    element_offsets[1] =
+                        offsetof(struct mtxfile_vector_coordinate_real_double, a);
+                } else {
+                    return MTX_ERR_INVALID_PRECISION;
+                }
+            } else if (field == mtxfile_complex) {
+                if (precision == mtx_single) {
+                    num_elements = 2;
+                    element_types[0] = MPI_INT;
+                    block_lengths[0] = 1;
+                    element_offsets[0] =
+                        offsetof(struct mtxfile_vector_coordinate_complex_single, i);
+                    element_types[1] = MPI_FLOAT;
+                    block_lengths[1] = 2;
+                    element_offsets[1] =
+                        offsetof(struct mtxfile_vector_coordinate_complex_single, a);
+                } else if (precision == mtx_double) {
+                    num_elements = 2;
+                    element_types[0] = MPI_INT;
+                    block_lengths[0] = 1;
+                    element_offsets[0] =
+                        offsetof(struct mtxfile_vector_coordinate_complex_double, i);
+                    element_types[1] = MPI_DOUBLE;
+                    block_lengths[1] = 2;
+                    element_offsets[1] =
+                        offsetof(struct mtxfile_vector_coordinate_complex_double, a);
+                } else {
+                    return MTX_ERR_INVALID_PRECISION;
+                }
+            } else if (field == mtxfile_integer) {
+                if (precision == mtx_single) {
+                    num_elements = 2;
+                    element_types[0] = MPI_INT;
+                    block_lengths[0] = 1;
+                    element_offsets[0] =
+                        offsetof(struct mtxfile_vector_coordinate_integer_single, i);
+                    element_types[1] = MPI_INT32_T;
+                    block_lengths[1] = 1;
+                    element_offsets[1] =
+                        offsetof(struct mtxfile_vector_coordinate_integer_single, a);
+                } else if (precision == mtx_double) {
+                    num_elements = 2;
+                    element_types[0] = MPI_INT;
+                    block_lengths[0] = 1;
+                    element_offsets[0] =
+                        offsetof(struct mtxfile_vector_coordinate_integer_double, i);
+                    element_types[1] = MPI_INT64_T;
+                    block_lengths[1] = 1;
+                    element_offsets[1] =
+                        offsetof(struct mtxfile_vector_coordinate_integer_double, a);
+                } else {
+                    return MTX_ERR_INVALID_PRECISION;
+                }
+            } else if (field == mtxfile_pattern) {
+                num_elements = 1;
+                element_types[0] = MPI_INT;
+                block_lengths[0] = 1;
+                element_offsets[0] =
+                    offsetof(struct mtxfile_vector_coordinate_pattern, i);
+            } else {
+                return MTX_ERR_INVALID_MTX_FIELD;
+            }
+        } else {
+            return MTX_ERR_INVALID_MTX_OBJECT;
+        }
+    } else {
+        return MTX_ERR_INVALID_MTX_FORMAT;
+    }
+
+    /* Create an MPI data type for receiving nonzero data. */
+    MPI_Datatype tmp_datatype;
+    *mpierrcode = MPI_Type_create_struct(
+        num_elements, block_lengths, element_offsets,
+        element_types, &tmp_datatype);
+    if (*mpierrcode)
+        return MTX_ERR_MPI;
+
+    /* Enable sending an array of the custom data type. */
+    MPI_Aint lb, extent;
+    *mpierrcode = MPI_Type_get_extent(tmp_datatype, &lb, &extent);
+    if (*mpierrcode) {
+        MPI_Type_free(&tmp_datatype);
+        return MTX_ERR_MPI;
+    }
+    *mpierrcode = MPI_Type_create_resized(tmp_datatype, lb, extent, datatype);
+    if (*mpierrcode) {
+        MPI_Type_free(&tmp_datatype);
+        return MTX_ERR_MPI;
+    }
+    *mpierrcode = MPI_Type_commit(datatype);
+    if (*mpierrcode) {
+        MPI_Type_free(datatype);
+        MPI_Type_free(&tmp_datatype);
+        return MTX_ERR_MPI;
+    }
+
+    MPI_Type_free(&tmp_datatype);
+    return MTX_SUCCESS;
+}
+
 static int mtxfile_array_complex_datatype(
     MPI_Datatype * datatype,
     enum mtx_precision precision,

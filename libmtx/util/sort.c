@@ -608,7 +608,7 @@ int distradix_sort_uint32(
         if (mtxmpierror_allreduce(mpierror, err)) {
             free(bucketptrs);
             free(extra_keys);
-            return MTX_ERR_ERRNO;
+            return MTX_ERR_MPI_COLLECTIVE;
         }
     }
 
@@ -619,7 +619,7 @@ int distradix_sort_uint32(
             free(extra_sorting_permutation);
         free(bucketptrs);
         free(extra_keys);
-        return MTX_ERR_ERRNO;
+        return MTX_ERR_MPI_COLLECTIVE;
     }
     int * sendcounts = &sendrecvbufs[0*comm_size];
     int * senddisps  = &sendrecvbufs[1*comm_size];
@@ -1094,7 +1094,7 @@ int distradix_sort_uint64(
         if (mtxmpierror_allreduce(mpierror, err)) {
             free(bucketptrs);
             free(extra_keys);
-            return MTX_ERR_ERRNO;
+            return MTX_ERR_MPI_COLLECTIVE;
         }
     }
 
@@ -1105,7 +1105,7 @@ int distradix_sort_uint64(
             free(extra_sorting_permutation);
         free(bucketptrs);
         free(extra_keys);
-        return MTX_ERR_ERRNO;
+        return MTX_ERR_MPI_COLLECTIVE;
     }
     int * sendcounts = &sendrecvbufs[0*comm_size];
     int * senddisps  = &sendrecvbufs[1*comm_size];

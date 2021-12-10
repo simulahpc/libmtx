@@ -257,16 +257,31 @@ union mtxfiledata
 };
 
 /**
+ * ‘mtxfiledata_dataptr()’ returns a pointer to the ‘k’-th data
+ * line. This is done by using the correct member of the underlying
+ * ‘mtxfiledata’ union containing the data lines.
+ */
+int mtxfiledata_dataptr(
+    const union mtxfiledata * data,
+    enum mtxfile_object object,
+    enum mtxfile_format format,
+    enum mtxfile_field field,
+    enum mtx_precision precision,
+    void ** p,
+    int64_t k);
+
+/**
  * `mtxfiledata_size_per_element()' calculates the size of each
  * element in an array of Matrix Market data corresponding to the
  * given `object', `format', `field' and `precision'.
  */
 int mtxfiledata_size_per_element(
-    size_t * size_per_element,
+    const union mtxfiledata * data,
     enum mtxfile_object object,
     enum mtxfile_format format,
     enum mtxfile_field field,
-    enum mtx_precision precision);
+    enum mtx_precision precision,
+    size_t * size_per_element);
 
 /*
  * Array formats
@@ -1216,6 +1231,22 @@ int mtxfiledata_reorder(
  */
 
 #ifdef LIBMTX_HAVE_MPI
+/**
+ * ‘mtxfiledata_mpi_datatype()’ creates a custom MPI data type for
+ * sending or receiving data lines.
+ *
+ * The user is responsible for calling ‘MPI_Type_free()’ on the
+ * returned datatype.
+ */
+int mtxfiledata_mpi_datatype(
+    const union mtxfiledata * data,
+    enum mtxfile_object object,
+    enum mtxfile_format format,
+    enum mtxfile_field field,
+    enum mtx_precision precision,
+    MPI_Datatype * datatype,
+    int * mpierrcode);
+
 /**
  * `mtxfiledata_send()' sends Matrix Market data lines to another MPI
  * process.
