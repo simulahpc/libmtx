@@ -1595,7 +1595,7 @@ int mtxdistfile_fread(
 
         /* Read the next set of data lines on the root process. */
         err = (rank == root) ?
-            mtxfile_fread_data(
+            mtxfiledata_fread(
                 &mtxdistfile->mtxfile.data,
                 f, lines_read, bytes_read, line_max, linebuf,
                 mtxdistfile->mtxfile.header.object, mtxdistfile->mtxfile.header.format,
@@ -1663,7 +1663,7 @@ int mtxdistfile_fread(
     }
 
     err = (rank == root) ?
-        mtxfile_fread_data(
+        mtxfiledata_fread(
             &mtxdistfile->mtxfile.data,
             f, lines_read, bytes_read, line_max, linebuf,
             mtxdistfile->mtxfile.header.object, mtxdistfile->mtxfile.header.format,

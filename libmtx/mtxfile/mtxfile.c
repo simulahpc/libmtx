@@ -1373,7 +1373,7 @@ int mtxfile_fread(
         return err;
     }
 
-    err = mtxfile_fread_data(
+    err = mtxfiledata_fread(
         &mtxfile->data, f, lines_read, bytes_read, line_max, linebuf,
         mtxfile->header.object,
         mtxfile->header.format,
@@ -1478,7 +1478,7 @@ int mtxfile_gzread(
         return err;
     }
 
-    err = mtxfile_gzread_data(
+    err = mtxfiledata_gzread(
         &mtxfile->data, f, lines_read, bytes_read, line_max, linebuf,
         mtxfile->header.object,
         mtxfile->header.format,

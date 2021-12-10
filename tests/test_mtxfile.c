@@ -237,9 +237,9 @@ int test_mtxfile_parse_size(void)
 }
 
 /**
- * `test_mtxfile_parse_data()` tests parsing Matrix Market data lines.
+ * `test_mtxfiledata_parse()` tests parsing Matrix Market data lines.
  */
-int test_mtxfile_parse_data(void)
+int test_mtxfiledata_parse(void)
 {
     /*
      * Array formats
@@ -250,7 +250,7 @@ int test_mtxfile_parse_data(void)
         int64_t bytes_read = 0;
         const char * endptr;
         float data;
-        int err = mtxfile_parse_data_array_real_single(
+        int err = mtxfiledata_parse_array_real_single(
             &data, &bytes_read, &endptr, line);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
         TEST_ASSERT_EQ(data, 1.5);
@@ -263,7 +263,7 @@ int test_mtxfile_parse_data(void)
         int64_t bytes_read = 0;
         const char * endptr;
         double data;
-        int err = mtxfile_parse_data_array_real_double(
+        int err = mtxfiledata_parse_array_real_double(
             &data, &bytes_read, &endptr, line);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
         TEST_ASSERT_EQ(data, 1.5);
@@ -276,7 +276,7 @@ int test_mtxfile_parse_data(void)
         int64_t bytes_read = 0;
         const char * endptr;
         float data[2];
-        int err = mtxfile_parse_data_array_complex_single(
+        int err = mtxfiledata_parse_array_complex_single(
             &data, &bytes_read, &endptr, line);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
         TEST_ASSERT_EQ(data[0], 1.5f);
@@ -290,7 +290,7 @@ int test_mtxfile_parse_data(void)
         int64_t bytes_read = 0;
         const char * endptr;
         double data[2];
-        int err = mtxfile_parse_data_array_complex_double(
+        int err = mtxfiledata_parse_array_complex_double(
             &data, &bytes_read, &endptr, line);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
         TEST_ASSERT_EQ(data[0], 1.5);
@@ -304,7 +304,7 @@ int test_mtxfile_parse_data(void)
         int64_t bytes_read = 0;
         const char * endptr;
         int32_t data;
-        int err = mtxfile_parse_data_array_integer_single(
+        int err = mtxfiledata_parse_array_integer_single(
             &data, &bytes_read, &endptr, line);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
         TEST_ASSERT_EQ(data, 2);
@@ -317,7 +317,7 @@ int test_mtxfile_parse_data(void)
         int64_t bytes_read = 0;
         const char * endptr;
         int64_t data;
-        int err = mtxfile_parse_data_array_integer_double(
+        int err = mtxfiledata_parse_array_integer_double(
             &data, &bytes_read, &endptr, line);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
         TEST_ASSERT_EQ(data, 2);
@@ -334,7 +334,7 @@ int test_mtxfile_parse_data(void)
         int64_t bytes_read = 0;
         const char * endptr;
         struct mtxfile_matrix_coordinate_real_single data;
-        int err = mtxfile_parse_data_matrix_coordinate_real_single(
+        int err = mtxfiledata_parse_matrix_coordinate_real_single(
             &data, &bytes_read, &endptr, line, 4, 4);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
         TEST_ASSERT_EQ(data.i, 3);
@@ -349,7 +349,7 @@ int test_mtxfile_parse_data(void)
         int64_t bytes_read = 0;
         const char * endptr;
         struct mtxfile_matrix_coordinate_real_double data;
-        int err = mtxfile_parse_data_matrix_coordinate_real_double(
+        int err = mtxfiledata_parse_matrix_coordinate_real_double(
             &data, &bytes_read, &endptr, line, 4, 4);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
         TEST_ASSERT_EQ(data.i, 3);
@@ -364,7 +364,7 @@ int test_mtxfile_parse_data(void)
         int64_t bytes_read = 0;
         const char * endptr;
         struct mtxfile_matrix_coordinate_complex_single data;
-        int err = mtxfile_parse_data_matrix_coordinate_complex_single(
+        int err = mtxfiledata_parse_matrix_coordinate_complex_single(
             &data, &bytes_read, &endptr, line, 4, 4);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
         TEST_ASSERT_EQ(data.i, 3);
@@ -379,7 +379,7 @@ int test_mtxfile_parse_data(void)
         int64_t bytes_read = 0;
         const char * endptr;
         struct mtxfile_matrix_coordinate_complex_double data;
-        int err = mtxfile_parse_data_matrix_coordinate_complex_double(
+        int err = mtxfiledata_parse_matrix_coordinate_complex_double(
             &data, &bytes_read, &endptr, line, 4, 4);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
         TEST_ASSERT_EQ(data.i, 3);
@@ -394,7 +394,7 @@ int test_mtxfile_parse_data(void)
         int64_t bytes_read = 0;
         const char * endptr;
         struct mtxfile_matrix_coordinate_integer_single data;
-        int err = mtxfile_parse_data_matrix_coordinate_integer_single(
+        int err = mtxfiledata_parse_matrix_coordinate_integer_single(
             &data, &bytes_read, &endptr, line, 4, 4);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
         TEST_ASSERT_EQ(data.i, 3);
@@ -409,7 +409,7 @@ int test_mtxfile_parse_data(void)
         int64_t bytes_read = 0;
         const char * endptr;
         struct mtxfile_matrix_coordinate_integer_double data;
-        int err = mtxfile_parse_data_matrix_coordinate_integer_double(
+        int err = mtxfiledata_parse_matrix_coordinate_integer_double(
             &data, &bytes_read, &endptr, line, 4, 4);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
         TEST_ASSERT_EQ(data.i, 3);
@@ -424,7 +424,7 @@ int test_mtxfile_parse_data(void)
         int64_t bytes_read = 0;
         const char * endptr;
         struct mtxfile_matrix_coordinate_pattern data;
-        int err = mtxfile_parse_data_matrix_coordinate_pattern(
+        int err = mtxfiledata_parse_matrix_coordinate_pattern(
             &data, &bytes_read, &endptr, line, 4, 4);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
         TEST_ASSERT_EQ(data.i, 3);
@@ -442,7 +442,7 @@ int test_mtxfile_parse_data(void)
         int64_t bytes_read = 0;
         const char * endptr;
         struct mtxfile_vector_coordinate_real_single data;
-        int err = mtxfile_parse_data_vector_coordinate_real_single(
+        int err = mtxfiledata_parse_vector_coordinate_real_single(
             &data, &bytes_read, &endptr, line, 4);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
         TEST_ASSERT_EQ(data.i, 3);
@@ -456,7 +456,7 @@ int test_mtxfile_parse_data(void)
         int64_t bytes_read = 0;
         const char * endptr;
         struct mtxfile_vector_coordinate_real_double data;
-        int err = mtxfile_parse_data_vector_coordinate_real_double(
+        int err = mtxfiledata_parse_vector_coordinate_real_double(
             &data, &bytes_read, &endptr, line, 4);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
         TEST_ASSERT_EQ(data.i, 3);
@@ -470,7 +470,7 @@ int test_mtxfile_parse_data(void)
         int64_t bytes_read = 0;
         const char * endptr;
         struct mtxfile_vector_coordinate_complex_single data;
-        int err = mtxfile_parse_data_vector_coordinate_complex_single(
+        int err = mtxfiledata_parse_vector_coordinate_complex_single(
             &data, &bytes_read, &endptr, line, 4);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
         TEST_ASSERT_EQ(data.i, 3);
@@ -484,7 +484,7 @@ int test_mtxfile_parse_data(void)
         int64_t bytes_read = 0;
         const char * endptr;
         struct mtxfile_vector_coordinate_complex_double data;
-        int err = mtxfile_parse_data_vector_coordinate_complex_double(
+        int err = mtxfiledata_parse_vector_coordinate_complex_double(
             &data, &bytes_read, &endptr, line, 4);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
         TEST_ASSERT_EQ(data.i, 3);
@@ -498,7 +498,7 @@ int test_mtxfile_parse_data(void)
         int64_t bytes_read = 0;
         const char * endptr;
         struct mtxfile_vector_coordinate_integer_single data;
-        int err = mtxfile_parse_data_vector_coordinate_integer_single(
+        int err = mtxfiledata_parse_vector_coordinate_integer_single(
             &data, &bytes_read, &endptr, line, 4);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
         TEST_ASSERT_EQ(data.i, 3);
@@ -512,7 +512,7 @@ int test_mtxfile_parse_data(void)
         int64_t bytes_read = 0;
         const char * endptr;
         struct mtxfile_vector_coordinate_integer_double data;
-        int err = mtxfile_parse_data_vector_coordinate_integer_double(
+        int err = mtxfiledata_parse_vector_coordinate_integer_double(
             &data, &bytes_read, &endptr, line, 4);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
         TEST_ASSERT_EQ(data.i, 3);
@@ -526,7 +526,7 @@ int test_mtxfile_parse_data(void)
         int64_t bytes_read = 0;
         const char * endptr;
         struct mtxfile_vector_coordinate_pattern data;
-        int err = mtxfile_parse_data_vector_coordinate_pattern(
+        int err = mtxfiledata_parse_vector_coordinate_pattern(
             &data, &bytes_read, &endptr, line, 4);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
         TEST_ASSERT_EQ(data.i, 3);
@@ -856,10 +856,10 @@ int test_mtxfile_fread_size(void)
 }
 
 /**
- * `test_mtxfile_fread_data()` tests reading Matrix Market data lines
+ * `test_mtxfiledata_fread()` tests reading Matrix Market data lines
  * from a stream.
  */
-int test_mtxfile_fread_data(void)
+int test_mtxfiledata_fread(void)
 {
     /*
      * Array formats
@@ -880,7 +880,7 @@ int test_mtxfile_fread_data(void)
         size_t size = 2;
         err = mtxfiledata_alloc(&data, object, format, field, precision, size);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
-        err = mtxfile_fread_data(
+        err = mtxfiledata_fread(
             &data, f, &lines_read, &bytes_read, 0, NULL,
             object, format, field, precision, -1, -1, size, 0);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
@@ -907,7 +907,7 @@ int test_mtxfile_fread_data(void)
         size_t size = 2;
         err = mtxfiledata_alloc(&data, object, format, field, precision, size);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
-        err = mtxfile_fread_data(
+        err = mtxfiledata_fread(
             &data, f, &lines_read, &bytes_read, 0, NULL,
             object, format, field, precision, -1, -1, size, 0);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
@@ -934,7 +934,7 @@ int test_mtxfile_fread_data(void)
         size_t size = 2;
         err = mtxfiledata_alloc(&data, object, format, field, precision, size);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
-        err = mtxfile_fread_data(
+        err = mtxfiledata_fread(
             &data, f, &lines_read, &bytes_read, 0, NULL,
             object, format, field, precision, -1, -1, size, 0);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
@@ -963,7 +963,7 @@ int test_mtxfile_fread_data(void)
         size_t size = 2;
         err = mtxfiledata_alloc(&data, object, format, field, precision, size);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
-        err = mtxfile_fread_data(
+        err = mtxfiledata_fread(
             &data, f, &lines_read, &bytes_read, 0, NULL,
             object, format, field, precision, -1, -1, size, 0);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
@@ -992,7 +992,7 @@ int test_mtxfile_fread_data(void)
         size_t size = 2;
         err = mtxfiledata_alloc(&data, object, format, field, precision, size);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
-        err = mtxfile_fread_data(
+        err = mtxfiledata_fread(
             &data, f, &lines_read, &bytes_read, 0, NULL,
             object, format, field, precision, -1, -1, size, 0);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
@@ -1019,7 +1019,7 @@ int test_mtxfile_fread_data(void)
         size_t size = 2;
         err = mtxfiledata_alloc(&data, object, format, field, precision, size);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
-        err = mtxfile_fread_data(
+        err = mtxfiledata_fread(
             &data, f, &lines_read, &bytes_read, 0, NULL,
             object, format, field, precision, -1, -1, size, 0);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
@@ -1050,7 +1050,7 @@ int test_mtxfile_fread_data(void)
         size_t size = 2;
         err = mtxfiledata_alloc(&data, object, format, field, precision, size);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
-        err = mtxfile_fread_data(
+        err = mtxfiledata_fread(
             &data, f, &lines_read, &bytes_read, 0, NULL,
             object, format, field, precision, 4, 4, size, 0);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
@@ -1081,7 +1081,7 @@ int test_mtxfile_fread_data(void)
         size_t size = 2;
         err = mtxfiledata_alloc(&data, object, format, field, precision, size);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
-        err = mtxfile_fread_data(
+        err = mtxfiledata_fread(
             &data, f, &lines_read, &bytes_read, 0, NULL,
             object, format, field, precision, 4, 4, size, 0);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
@@ -1112,7 +1112,7 @@ int test_mtxfile_fread_data(void)
         size_t size = 2;
         err = mtxfiledata_alloc(&data, object, format, field, precision, size);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
-        err = mtxfile_fread_data(
+        err = mtxfiledata_fread(
             &data, f, &lines_read, &bytes_read, 0, NULL,
             object, format, field, precision, 4, 4, size, 0);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
@@ -1145,7 +1145,7 @@ int test_mtxfile_fread_data(void)
         size_t size = 2;
         err = mtxfiledata_alloc(&data, object, format, field, precision, size);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
-        err = mtxfile_fread_data(
+        err = mtxfiledata_fread(
             &data, f, &lines_read, &bytes_read, 0, NULL,
             object, format, field, precision, 4, 4, size, 0);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
@@ -1178,7 +1178,7 @@ int test_mtxfile_fread_data(void)
         size_t size = 2;
         err = mtxfiledata_alloc(&data, object, format, field, precision, size);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
-        err = mtxfile_fread_data(
+        err = mtxfiledata_fread(
             &data, f, &lines_read, &bytes_read, 0, NULL,
             object, format, field, precision, 4, 4, size, 0);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
@@ -1209,7 +1209,7 @@ int test_mtxfile_fread_data(void)
         size_t size = 2;
         err = mtxfiledata_alloc(&data, object, format, field, precision, size);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
-        err = mtxfile_fread_data(
+        err = mtxfiledata_fread(
             &data, f, &lines_read, &bytes_read, 0, NULL,
             object, format, field, precision, 4, 4, size, 0);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
@@ -1240,7 +1240,7 @@ int test_mtxfile_fread_data(void)
         size_t size = 2;
         err = mtxfiledata_alloc(&data, object, format, field, precision, size);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
-        err = mtxfile_fread_data(
+        err = mtxfiledata_fread(
             &data, f, &lines_read, &bytes_read, 0, NULL,
             object, format, field, precision, 4, 4, size, 0);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
@@ -1273,7 +1273,7 @@ int test_mtxfile_fread_data(void)
         size_t size = 2;
         err = mtxfiledata_alloc(&data, object, format, field, precision, size);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
-        err = mtxfile_fread_data(
+        err = mtxfiledata_fread(
             &data, f, &lines_read, &bytes_read, 0, NULL,
             object, format, field, precision, 4, -1, size, 0);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
@@ -1302,7 +1302,7 @@ int test_mtxfile_fread_data(void)
         size_t size = 2;
         err = mtxfiledata_alloc(&data, object, format, field, precision, size);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
-        err = mtxfile_fread_data(
+        err = mtxfiledata_fread(
             &data, f, &lines_read, &bytes_read, 0, NULL,
             object, format, field, precision, 4, -1, size, 0);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
@@ -1331,7 +1331,7 @@ int test_mtxfile_fread_data(void)
         size_t size = 2;
         err = mtxfiledata_alloc(&data, object, format, field, precision, size);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
-        err = mtxfile_fread_data(
+        err = mtxfiledata_fread(
             &data, f, &lines_read, &bytes_read, 0, NULL,
             object, format, field, precision, 4, -1, size, 0);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
@@ -1362,7 +1362,7 @@ int test_mtxfile_fread_data(void)
         size_t size = 2;
         err = mtxfiledata_alloc(&data, object, format, field, precision, size);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
-        err = mtxfile_fread_data(
+        err = mtxfiledata_fread(
             &data, f, &lines_read, &bytes_read, 0, NULL,
             object, format, field, precision, 4, -1, size, 0);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
@@ -1393,7 +1393,7 @@ int test_mtxfile_fread_data(void)
         size_t size = 2;
         err = mtxfiledata_alloc(&data, object, format, field, precision, size);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
-        err = mtxfile_fread_data(
+        err = mtxfiledata_fread(
             &data, f, &lines_read, &bytes_read, 0, NULL,
             object, format, field, precision, 4, -1, size, 0);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
@@ -1422,7 +1422,7 @@ int test_mtxfile_fread_data(void)
         size_t size = 2;
         err = mtxfiledata_alloc(&data, object, format, field, precision, size);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
-        err = mtxfile_fread_data(
+        err = mtxfiledata_fread(
             &data, f, &lines_read, &bytes_read, 0, NULL,
             object, format, field, precision, 4, -1, size, 0);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
@@ -1451,7 +1451,7 @@ int test_mtxfile_fread_data(void)
         size_t size = 2;
         err = mtxfiledata_alloc(&data, object, format, field, precision, size);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
-        err = mtxfile_fread_data(
+        err = mtxfiledata_fread(
             &data, f, &lines_read, &bytes_read, 0, NULL,
             object, format, field, precision, 4, -1, size, 0);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
@@ -4354,11 +4354,11 @@ int main(int argc, char * argv[])
     TEST_SUITE_BEGIN("Running tests for Matrix Market files\n");
     TEST_RUN(test_mtxfile_parse_header);
     TEST_RUN(test_mtxfile_parse_size);
-    TEST_RUN(test_mtxfile_parse_data);
+    TEST_RUN(test_mtxfiledata_parse);
     TEST_RUN(test_mtxfile_fread_header);
     TEST_RUN(test_mtxfile_fread_comments);
     TEST_RUN(test_mtxfile_fread_size);
-    TEST_RUN(test_mtxfile_fread_data);
+    TEST_RUN(test_mtxfiledata_fread);
     TEST_RUN(test_mtxfile_fread);
     TEST_RUN(test_mtxfile_fwrite);
 #ifdef LIBMTX_HAVE_LIBZ

@@ -273,7 +273,7 @@ int mtxfiledata_size_per_element(
  */
 
 /**
- * `mtxfile_parse_data_array_real_single()' parses a string containing
+ * `mtxfiledata_parse_array_real_single()' parses a string containing
  * a data line for a Matrix Market file in array format with real
  * values.
  *
@@ -283,14 +283,14 @@ int mtxfiledata_size_per_element(
  * to the first character beyond the characters that were consumed
  * during parsing.
  */
-int mtxfile_parse_data_array_real_single(
+int mtxfiledata_parse_array_real_single(
     float * data,
     int64_t * bytes_read,
     const char ** endptr,
     const char * s);
 
 /**
- * `mtxfile_parse_data_array_real_double()' parses a string containing
+ * `mtxfiledata_parse_array_real_double()' parses a string containing
  * a data line for a Matrix Market file in array format with real
  * values.
  *
@@ -300,14 +300,14 @@ int mtxfile_parse_data_array_real_single(
  * to the first character beyond the characters that were consumed
  * during parsing.
  */
-int mtxfile_parse_data_array_real_double(
+int mtxfiledata_parse_array_real_double(
     double * data,
     int64_t * bytes_read,
     const char ** endptr,
     const char * s);
 
 /**
- * `mtxfile_parse_data_array_complex_single()' parses a string
+ * `mtxfiledata_parse_array_complex_single()' parses a string
  * containing a data line for a Matrix Market file in array format
  * with complex values.
  *
@@ -317,14 +317,14 @@ int mtxfile_parse_data_array_real_double(
  * to the first character beyond the characters that were consumed
  * during parsing.
  */
-int mtxfile_parse_data_array_complex_single(
+int mtxfiledata_parse_array_complex_single(
     float (* data)[2],
     int64_t * bytes_read,
     const char ** endptr,
     const char * s);
 
 /**
- * `mtxfile_parse_data_array_complex_double()' parses a string
+ * `mtxfiledata_parse_array_complex_double()' parses a string
  * containing a data line for a Matrix Market file in array format
  * with complex values.
  *
@@ -334,14 +334,14 @@ int mtxfile_parse_data_array_complex_single(
  * to the first character beyond the characters that were consumed
  * during parsing.
  */
-int mtxfile_parse_data_array_complex_double(
+int mtxfiledata_parse_array_complex_double(
     double (* data)[2],
     int64_t * bytes_read,
     const char ** endptr,
     const char * s);
 
 /**
- * `mtxfile_parse_data_array_integer_single()' parses a string
+ * `mtxfiledata_parse_array_integer_single()' parses a string
  * containing a data line for a Matrix Market file in array format
  * with integer values.
  *
@@ -351,14 +351,14 @@ int mtxfile_parse_data_array_complex_double(
  * to the first character beyond the characters that were consumed
  * during parsing.
  */
-int mtxfile_parse_data_array_integer_single(
+int mtxfiledata_parse_array_integer_single(
     int32_t * data,
     int64_t * bytes_read,
     const char ** endptr,
     const char * s);
 
 /**
- * `mtxfile_parse_data_array_integer_double()' parses a string
+ * `mtxfiledata_parse_array_integer_double()' parses a string
  * containing a data line for a Matrix Market file in array format
  * with integer values.
  *
@@ -368,7 +368,7 @@ int mtxfile_parse_data_array_integer_single(
  * to the first character beyond the characters that were consumed
  * during parsing.
  */
-int mtxfile_parse_data_array_integer_double(
+int mtxfiledata_parse_array_integer_double(
     int64_t * data,
     int64_t * bytes_read,
     const char ** endptr,
@@ -379,7 +379,7 @@ int mtxfile_parse_data_array_integer_double(
  */
 
 /**
- * `mtxfile_parse_data_matrix_coordinate_real_single()' parses a
+ * `mtxfiledata_parse_matrix_coordinate_real_single()' parses a
  * string containing a data line for a Matrix Market file in matrix
  * coordinate format with real values.
  *
@@ -389,7 +389,7 @@ int mtxfile_parse_data_array_integer_double(
  * to the first character beyond the characters that were consumed
  * during parsing.
  */
-int mtxfile_parse_data_matrix_coordinate_real_single(
+int mtxfiledata_parse_matrix_coordinate_real_single(
     struct mtxfile_matrix_coordinate_real_single * data,
     int64_t * bytes_read,
     const char ** endptr,
@@ -398,7 +398,7 @@ int mtxfile_parse_data_matrix_coordinate_real_single(
     int num_columns);
 
 /**
- * `mtxfile_parse_data_matrix_coordinate_real_double()' parses a
+ * `mtxfiledata_parse_matrix_coordinate_real_double()' parses a
  * string containing a data line for a Matrix Market file in matrix
  * coordinate format with real values.
  *
@@ -408,7 +408,7 @@ int mtxfile_parse_data_matrix_coordinate_real_single(
  * to the first character beyond the characters that were consumed
  * during parsing.
  */
-int mtxfile_parse_data_matrix_coordinate_real_double(
+int mtxfiledata_parse_matrix_coordinate_real_double(
     struct mtxfile_matrix_coordinate_real_double * data,
     int64_t * bytes_read,
     const char ** endptr,
@@ -417,7 +417,7 @@ int mtxfile_parse_data_matrix_coordinate_real_double(
     int num_columns);
 
 /**
- * `mtxfile_parse_data_matrix_coordinate_complex_single()' parses a
+ * `mtxfiledata_parse_matrix_coordinate_complex_single()' parses a
  * string containing a data line for a Matrix Market file in matrix
  * coordinate format with complex values.
  *
@@ -427,7 +427,7 @@ int mtxfile_parse_data_matrix_coordinate_real_double(
  * to the first character beyond the characters that were consumed
  * during parsing.
  */
-int mtxfile_parse_data_matrix_coordinate_complex_single(
+int mtxfiledata_parse_matrix_coordinate_complex_single(
     struct mtxfile_matrix_coordinate_complex_single * data,
     int64_t * bytes_read,
     const char ** endptr,
@@ -436,7 +436,7 @@ int mtxfile_parse_data_matrix_coordinate_complex_single(
     int num_columns);
 
 /**
- * `mtxfile_parse_data_matrix_coordinate_complex_double()' parses a
+ * `mtxfiledata_parse_matrix_coordinate_complex_double()' parses a
  * string containing a data line for a Matrix Market file in matrix
  * coordinate format with complex values.
  *
@@ -446,7 +446,7 @@ int mtxfile_parse_data_matrix_coordinate_complex_single(
  * to the first character beyond the characters that were consumed
  * during parsing.
  */
-int mtxfile_parse_data_matrix_coordinate_complex_double(
+int mtxfiledata_parse_matrix_coordinate_complex_double(
     struct mtxfile_matrix_coordinate_complex_double * data,
     int64_t * bytes_read,
     const char ** endptr,
@@ -455,7 +455,7 @@ int mtxfile_parse_data_matrix_coordinate_complex_double(
     int num_columns);
 
 /**
- * `mtxfile_parse_data_matrix_coordinate_integer_single()' parses a
+ * `mtxfiledata_parse_matrix_coordinate_integer_single()' parses a
  * string containing a data line for a Matrix Market file in matrix
  * coordinate format with integer values.
  *
@@ -465,7 +465,7 @@ int mtxfile_parse_data_matrix_coordinate_complex_double(
  * to the first character beyond the characters that were consumed
  * during parsing.
  */
-int mtxfile_parse_data_matrix_coordinate_integer_single(
+int mtxfiledata_parse_matrix_coordinate_integer_single(
     struct mtxfile_matrix_coordinate_integer_single * data,
     int64_t * bytes_read,
     const char ** endptr,
@@ -474,7 +474,7 @@ int mtxfile_parse_data_matrix_coordinate_integer_single(
     int num_columns);
 
 /**
- * `mtxfile_parse_data_matrix_coordinate_integer_double()' parses a
+ * `mtxfiledata_parse_matrix_coordinate_integer_double()' parses a
  * string containing a data line for a Matrix Market file in matrix
  * coordinate format with integer values.
  *
@@ -484,7 +484,7 @@ int mtxfile_parse_data_matrix_coordinate_integer_single(
  * to the first character beyond the characters that were consumed
  * during parsing.
  */
-int mtxfile_parse_data_matrix_coordinate_integer_double(
+int mtxfiledata_parse_matrix_coordinate_integer_double(
     struct mtxfile_matrix_coordinate_integer_double * data,
     int64_t * bytes_read,
     const char ** endptr,
@@ -493,7 +493,7 @@ int mtxfile_parse_data_matrix_coordinate_integer_double(
     int num_columns);
 
 /**
- * `mtxfile_parse_data_matrix_coordinate_pattern()' parses a string
+ * `mtxfiledata_parse_matrix_coordinate_pattern()' parses a string
  * containing a data line for a Matrix Market file in matrix
  * coordinate format with pattern (boolean) values.
  *
@@ -503,7 +503,7 @@ int mtxfile_parse_data_matrix_coordinate_integer_double(
  * to the first character beyond the characters that were consumed
  * during parsing.
  */
-int mtxfile_parse_data_matrix_coordinate_pattern(
+int mtxfiledata_parse_matrix_coordinate_pattern(
     struct mtxfile_matrix_coordinate_pattern * data,
     int64_t * bytes_read,
     const char ** endptr,
@@ -516,7 +516,7 @@ int mtxfile_parse_data_matrix_coordinate_pattern(
  */
 
 /**
- * `mtxfile_parse_data_vector_coordinate_real_single()' parses a
+ * `mtxfiledata_parse_vector_coordinate_real_single()' parses a
  * string containing a data line for a Matrix Market file in vector
  * coordinate format with real values.
  *
@@ -526,7 +526,7 @@ int mtxfile_parse_data_matrix_coordinate_pattern(
  * to the first character beyond the characters that were consumed
  * during parsing.
  */
-int mtxfile_parse_data_vector_coordinate_real_single(
+int mtxfiledata_parse_vector_coordinate_real_single(
     struct mtxfile_vector_coordinate_real_single * data,
     int64_t * bytes_read,
     const char ** endptr,
@@ -534,7 +534,7 @@ int mtxfile_parse_data_vector_coordinate_real_single(
     int num_rows);
 
 /**
- * `mtxfile_parse_data_vector_coordinate_real_double()' parses a
+ * `mtxfiledata_parse_vector_coordinate_real_double()' parses a
  * string containing a data line for a Matrix Market file in vector
  * coordinate format with real values.
  *
@@ -544,7 +544,7 @@ int mtxfile_parse_data_vector_coordinate_real_single(
  * to the first character beyond the characters that were consumed
  * during parsing.
  */
-int mtxfile_parse_data_vector_coordinate_real_double(
+int mtxfiledata_parse_vector_coordinate_real_double(
     struct mtxfile_vector_coordinate_real_double * data,
     int64_t * bytes_read,
     const char ** endptr,
@@ -552,7 +552,7 @@ int mtxfile_parse_data_vector_coordinate_real_double(
     int num_rows);
 
 /**
- * `mtxfile_parse_data_vector_coordinate_complex_single()' parses a
+ * `mtxfiledata_parse_vector_coordinate_complex_single()' parses a
  * string containing a data line for a Matrix Market file in vector
  * coordinate format with complex values.
  *
@@ -562,7 +562,7 @@ int mtxfile_parse_data_vector_coordinate_real_double(
  * to the first character beyond the characters that were consumed
  * during parsing.
  */
-int mtxfile_parse_data_vector_coordinate_complex_single(
+int mtxfiledata_parse_vector_coordinate_complex_single(
     struct mtxfile_vector_coordinate_complex_single * data,
     int64_t * bytes_read,
     const char ** endptr,
@@ -570,7 +570,7 @@ int mtxfile_parse_data_vector_coordinate_complex_single(
     int num_rows);
 
 /**
- * `mtxfile_parse_data_vector_coordinate_complex_double()' parses a
+ * `mtxfiledata_parse_vector_coordinate_complex_double()' parses a
  * string containing a data line for a Matrix Market file in vector
  * coordinate format with complex values.
  *
@@ -580,7 +580,7 @@ int mtxfile_parse_data_vector_coordinate_complex_single(
  * to the first character beyond the characters that were consumed
  * during parsing.
  */
-int mtxfile_parse_data_vector_coordinate_complex_double(
+int mtxfiledata_parse_vector_coordinate_complex_double(
     struct mtxfile_vector_coordinate_complex_double * data,
     int64_t * bytes_read,
     const char ** endptr,
@@ -588,7 +588,7 @@ int mtxfile_parse_data_vector_coordinate_complex_double(
     int num_rows);
 
 /**
- * `mtxfile_parse_data_vector_coordinate_integer_single()' parses a
+ * `mtxfiledata_parse_vector_coordinate_integer_single()' parses a
  * string containing a data line for a Matrix Market file in vector
  * coordinate format with integer values.
  *
@@ -598,7 +598,7 @@ int mtxfile_parse_data_vector_coordinate_complex_double(
  * to the first character beyond the characters that were consumed
  * during parsing.
  */
-int mtxfile_parse_data_vector_coordinate_integer_single(
+int mtxfiledata_parse_vector_coordinate_integer_single(
     struct mtxfile_vector_coordinate_integer_single * data,
     int64_t * bytes_read,
     const char ** endptr,
@@ -606,7 +606,7 @@ int mtxfile_parse_data_vector_coordinate_integer_single(
     int num_rows);
 
 /**
- * `mtxfile_parse_data_vector_coordinate_integer_double()' parses a
+ * `mtxfiledata_parse_vector_coordinate_integer_double()' parses a
  * string containing a data line for a Matrix Market file in vector
  * coordinate format with integer values.
  *
@@ -616,7 +616,7 @@ int mtxfile_parse_data_vector_coordinate_integer_single(
  * to the first character beyond the characters that were consumed
  * during parsing.
  */
-int mtxfile_parse_data_vector_coordinate_integer_double(
+int mtxfiledata_parse_vector_coordinate_integer_double(
     struct mtxfile_vector_coordinate_integer_double * data,
     int64_t * bytes_read,
     const char ** endptr,
@@ -624,7 +624,7 @@ int mtxfile_parse_data_vector_coordinate_integer_double(
     int num_rows);
 
 /**
- * `mtxfile_parse_data_vector_coordinate_pattern()' parses a string
+ * `mtxfiledata_parse_vector_coordinate_pattern()' parses a string
  * containing a data line for a Matrix Market file in vector
  * coordinate format with pattern (boolean) values.
  *
@@ -634,7 +634,7 @@ int mtxfile_parse_data_vector_coordinate_integer_double(
  * to the first character beyond the characters that were consumed
  * during parsing.
  */
-int mtxfile_parse_data_vector_coordinate_pattern(
+int mtxfiledata_parse_vector_coordinate_pattern(
     struct mtxfile_vector_coordinate_pattern * data,
     int64_t * bytes_read,
     const char ** endptr,
@@ -829,7 +829,7 @@ int mtxfiledata_set_constant_integer_single(
  */
 
 /**
- * `mtxfile_fread_data()' reads Matrix Market data lines from a
+ * `mtxfiledata_fread()' reads Matrix Market data lines from a
  * stream.
  *
  * Storage for the corresponding array of the `data' union, according
@@ -849,7 +849,7 @@ int mtxfiledata_set_constant_integer_single(
  * that locale-specific settings, such as the type of decimal point,
  * do not affect parsing.
  */
-int mtxfile_fread_data(
+int mtxfiledata_fread(
     union mtxfiledata * data,
     FILE * f,
     int * lines_read,
@@ -867,7 +867,7 @@ int mtxfile_fread_data(
 
 #ifdef LIBMTX_HAVE_LIBZ
 /**
- * `mtxfile_gzread_data()' reads Matrix Market data lines from a
+ * `mtxfiledata_gzread()' reads Matrix Market data lines from a
  * gzip-compressed stream.
  *
  * Storage for the corresponding array of the `data' union, according
@@ -887,7 +887,7 @@ int mtxfile_fread_data(
  * that locale-specific settings, such as the type of decimal point,
  * do not affect parsing.
  */
-int mtxfile_gzread_data(
+int mtxfiledata_gzread(
     union mtxfiledata * data,
     gzFile f,
     int * lines_read,
