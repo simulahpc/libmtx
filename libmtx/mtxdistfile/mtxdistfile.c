@@ -606,7 +606,23 @@ int mtxdistfile_init_vector_array_complex_single(
     int num_rows,
     const float (* data)[2],
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxmpierror * mpierror)
+{
+    int err;
+    err = mtxdistfile_alloc_vector_array(
+        mtxdistfile, mtxfile_complex, mtx_single, num_rows, comm, mpierror);
+    if (err)
+        return err;
+    struct mtxfile * mtxfile = &mtxdistfile->mtxfile;
+    int64_t num_data_lines;
+    err = mtxfile_size_num_data_lines(&mtxfile->size, &num_data_lines);
+    if (err) {
+        mtxdistfile_free(mtxdistfile);
+        return err;
+    }
+    memcpy(mtxfile->data.array_complex_single, data, num_data_lines * sizeof(*data));
+    return MTX_SUCCESS;
+}
 
 /**
  * `mtxdistfile_init_vector_array_complex_double()' allocates and
@@ -618,7 +634,23 @@ int mtxdistfile_init_vector_array_complex_double(
     int num_rows,
     const double (* data)[2],
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxmpierror * mpierror)
+{
+    int err;
+    err = mtxdistfile_alloc_vector_array(
+        mtxdistfile, mtxfile_complex, mtx_double, num_rows, comm, mpierror);
+    if (err)
+        return err;
+    struct mtxfile * mtxfile = &mtxdistfile->mtxfile;
+    int64_t num_data_lines;
+    err = mtxfile_size_num_data_lines(&mtxfile->size, &num_data_lines);
+    if (err) {
+        mtxdistfile_free(mtxdistfile);
+        return err;
+    }
+    memcpy(mtxfile->data.array_complex_double, data, num_data_lines * sizeof(*data));
+    return MTX_SUCCESS;
+}
 
 /**
  * `mtxdistfile_init_vector_array_integer_single()' allocates and
@@ -658,7 +690,23 @@ int mtxdistfile_init_vector_array_integer_double(
     int num_rows,
     const int64_t * data,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxmpierror * mpierror)
+{
+    int err;
+    err = mtxdistfile_alloc_vector_array(
+        mtxdistfile, mtxfile_integer, mtx_double, num_rows, comm, mpierror);
+    if (err)
+        return err;
+    struct mtxfile * mtxfile = &mtxdistfile->mtxfile;
+    int64_t num_data_lines;
+    err = mtxfile_size_num_data_lines(&mtxfile->size, &num_data_lines);
+    if (err) {
+        mtxdistfile_free(mtxdistfile);
+        return err;
+    }
+    memcpy(mtxfile->data.array_integer_double, data, num_data_lines * sizeof(*data));
+    return MTX_SUCCESS;
+}
 
 /*
  * Matrix coordinate formats
