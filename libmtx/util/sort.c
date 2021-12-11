@@ -969,6 +969,7 @@ int distradix_sort_uint32(
         }
 #endif
 
+        err = MTX_SUCCESS;
         for (int64_t j = 0; j < size; j++) {
             int64_t destidx = global_offset + j;
             int64_t srcidx = extra_sorting_permutation[j];
@@ -985,20 +986,19 @@ int distradix_sort_uint32(
                 mpierror->mpierrcode = MPI_Put(
                     &destidx, 1, MPI_INT64_T, p,
                     srcidx-global_offsets[p], 1, MPI_INT64_T, window);
-                if (mtxmpierror_allreduce(mpierror, err)) {
-                    free(global_offsets);
-                    free(extra_sorting_permutation);
-                    return MTX_ERR_MPI_COLLECTIVE;
-                }
+                err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+                if (err)
+                    break;
             } else {
                 sorting_permutation[srcidx-global_offset] = destidx;
             }
         }
-
         MPI_Win_fence(0, window);
         MPI_Win_free(&window);
         free(global_offsets);
         free(extra_sorting_permutation);
+        if (mtxmpierror_allreduce(mpierror, err))
+            return MTX_ERR_MPI_COLLECTIVE;
 
 #ifdef DEBUG_DISTRADIXSORT
         for (int p = 0; p < comm_size; p++) {
@@ -1330,6 +1330,7 @@ int distradix_sort_uint64(
          * Use one-sided MPI communication to write the remote values
          * for inverting the sorting permutation.
          */
+        err = MTX_SUCCESS;
         for (int64_t j = 0; j < size; j++) {
             int64_t destidx = global_offset + j;
             int64_t srcidx = extra_sorting_permutation[j];
@@ -1342,20 +1343,19 @@ int distradix_sort_uint64(
                 mpierror->mpierrcode = MPI_Put(
                     &destidx, 1, MPI_INT64_T, p,
                     srcidx-global_offsets[p], 1, MPI_INT64_T, window);
-                if (mtxmpierror_allreduce(mpierror, err)) {
-                    free(global_offsets);
-                    free(extra_sorting_permutation);
-                    return MTX_ERR_MPI_COLLECTIVE;
-                }
+                err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+                if (err)
+                    break;
             } else {
                 sorting_permutation[srcidx-global_offset] = destidx;
             }
         }
-
         MPI_Win_fence(0, window);
         MPI_Win_free(&window);
         free(global_offsets);
         free(extra_sorting_permutation);
+        if (mtxmpierror_allreduce(mpierror, err))
+            return MTX_ERR_MPI_COLLECTIVE;
     }
 
     return MTX_SUCCESS;
