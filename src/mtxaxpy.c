@@ -595,7 +595,7 @@ static int distvector_axpy(
         }
         int64_t bytes_written = 0;
         err = mtxdistvector_fwrite_shared(
-            &y, stdout, format, &bytes_written, mpierror);
+            &y, stdout, format, &bytes_written, root, mpierror);
         if (err) {
             if (verbose > 0)
                 fprintf(diagf, "\n");

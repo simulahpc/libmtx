@@ -770,6 +770,10 @@ int mtxdistvector_fwrite(
  * If it is not `NULL', then the number of bytes written to the stream
  * is returned in `bytes_written'.
  *
+ * Note that only the specified ‘root’ process will print anything to
+ * the stream. Other processes will therefore send their part of the
+ * distributed Matrix Market file to the root process for printing.
+ *
  * This function performs collective communication and therefore
  * requires every process in the communicator to perform matching
  * calls to the function.
@@ -779,6 +783,7 @@ int mtxdistvector_fwrite_shared(
     FILE * f,
     const char * fmt,
     int64_t * bytes_written,
+    int root,
     struct mtxmpierror * mpierror)
 {
     int err;
@@ -789,7 +794,7 @@ int mtxdistvector_fwrite_shared(
         return err;
 
     err = mtxdistfile_fwrite_shared(
-        &mtxdistfile, f, fmt, bytes_written, mpierror);
+        &mtxdistfile, f, fmt, bytes_written, root, mpierror);
     if (err) {
         mtxdistfile_free(&mtxdistfile);
         return err;

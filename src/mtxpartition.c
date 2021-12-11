@@ -1218,7 +1218,7 @@ int main(int argc, char *argv[])
         int64_t bytes_written = 0;
         err = mtxdistfile_write_shared(
             &mtxdistfile_parts, args.partition_output_path,
-            args.gzip, NULL, &bytes_written, &mpierror);
+            args.gzip, NULL, &bytes_written, root, &mpierror);
         if (err) {
             if (args.verbose > 0)
                 fprintf(diagf, "\n");

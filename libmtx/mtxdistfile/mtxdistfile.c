@@ -1784,6 +1784,10 @@ int mtxdistfile_write(
  * width and precision (e.g., "%*.*f"), as well as length modifiers
  * (e.g., "%Lf") are not allowed.
  *
+ * Note that only the specified ‘root’ process will print anything to
+ * the stream. Other processes will therefore send their part of the
+ * distributed Matrix Market file to the root process for printing.
+ *
  * This function performs collective communication and therefore
  * requires every process in the communicator to perform matching
  * calls to the function.
@@ -1794,6 +1798,7 @@ int mtxdistfile_write_shared(
     bool gzip,
     const char * fmt,
     int64_t * bytes_written,
+    int root,
     struct mtxmpierror * mpierror)
 {
     int err;
@@ -1813,7 +1818,7 @@ int mtxdistfile_write_shared(
             return MTX_ERR_ERRNO;
         }
         err = mtxdistfile_fwrite_shared(
-            mtxdistfile, f, fmt, bytes_written, mpierror);
+            mtxdistfile, f, fmt, bytes_written, root, mpierror);
         if (err) {
             fclose(f);
             return err;
@@ -1941,6 +1946,10 @@ int mtxdistfile_fwrite(
  * If it is not `NULL', then the number of bytes written to the stream
  * is returned in `bytes_written'.
  *
+ * Note that only the specified ‘root’ process will print anything to
+ * the stream. Other processes will therefore send their part of the
+ * distributed Matrix Market file to the root process for printing.
+ *
  * This function performs collective communication and therefore
  * requires every process in the communicator to perform matching
  * calls to the function.
@@ -1950,9 +1959,11 @@ int mtxdistfile_fwrite_shared(
     FILE * f,
     const char * fmt,
     int64_t * bytes_written,
+    int root,
     struct mtxmpierror * mpierror)
 {
     int err;
+    MPI_Comm comm = mtxdistfile->comm;
     int rank = mtxdistfile->rank;
     err = (rank == 0) ? mtxfile_header_fwrite(&mtxdistfile->header, f, bytes_written)
         : MTX_SUCCESS;
@@ -1969,26 +1980,41 @@ int mtxdistfile_fwrite_shared(
         : MTX_SUCCESS;
     if (mtxmpierror_allreduce(mpierror, err))
         return MTX_ERR_MPI_COLLECTIVE;
-    fflush(f);
-    MPI_Barrier(mtxdistfile->comm);
 
     for (int p = 0; p < mtxdistfile->comm_size; p++) {
         const struct mtxfile * mtxfile = &mtxdistfile->mtxfile;
         int64_t num_data_lines;
-        err = (rank == p) ? mtxfile_size_num_data_lines(
-            &mtxfile->size, &num_data_lines) : MTX_SUCCESS;
+
+        err = MTX_SUCCESS;
+        if (rank == root && p == root) {
+            err = mtxfile_size_num_data_lines(&mtxfile->size, &num_data_lines);
+            if (!err) {
+                err = mtxfiledata_fwrite(
+                    &mtxfile->data, mtxfile->header.object, mtxfile->header.format,
+                    mtxfile->header.field, mtxfile->precision, num_data_lines,
+                    f, fmt, bytes_written);
+            }
+        } else if (rank == root && p != root) {
+            struct mtxfile recvmtxfile;
+            err = mtxfile_recv(&recvmtxfile, p, 0, comm, mpierror);
+            if (!err) {
+                err =  mtxfile_size_num_data_lines(
+                    &recvmtxfile.size, &num_data_lines);
+                if (!err) {
+                    err = mtxfiledata_fwrite(
+                        &recvmtxfile.data, recvmtxfile.header.object, recvmtxfile.header.format,
+                        recvmtxfile.header.field, recvmtxfile.precision, num_data_lines,
+                        f, fmt, bytes_written);
+                }
+                mtxfile_free(&recvmtxfile);
+            }
+        } else if (rank == p) {
+            err = mtxfile_send(mtxfile, root, 0, comm, mpierror);
+        }
         if (mtxmpierror_allreduce(mpierror, err))
             return MTX_ERR_MPI_COLLECTIVE;
-        err = (rank == p) ? mtxfiledata_fwrite(
-            &mtxfile->data, mtxfile->header.object, mtxfile->header.format,
-            mtxfile->header.field, mtxfile->precision, num_data_lines,
-            f, fmt, bytes_written)
-            : MTX_SUCCESS;
-        if (mtxmpierror_allreduce(mpierror, err))
-            return MTX_ERR_MPI_COLLECTIVE;
-        fflush(f);
-        MPI_Barrier(mtxdistfile->comm);
     }
+    fflush(f);
 
     if (bytes_written) {
         int64_t bytes_written_per_process = *bytes_written;

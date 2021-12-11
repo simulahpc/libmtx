@@ -561,7 +561,7 @@ static int distvector_scal(
         }
         int64_t bytes_written = 0;
         err = mtxdistvector_fwrite_shared(
-            &x, stdout, format, &bytes_written, mpierror);
+            &x, stdout, format, &bytes_written, root, mpierror);
         if (err) {
             if (verbose > 0)
                 fprintf(diagf, "\n");
