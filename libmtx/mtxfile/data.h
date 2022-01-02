@@ -1071,6 +1071,26 @@ int mtxfiledata_sortkey_column_major(
     int64_t * keys);
 
 /**
+ * ‘mtxfiledata_sortkey_morton()’ provides an array of keys that can
+ * be used to sort the data lines of the given Matrix Market file in
+ * Morton order (Z-order).
+ *
+ * The array ‘keys’ must contain enough storage for an array of ‘size’
+ * values of type ‘int64_t’.  If successful, the ‘k’-th value of
+ * ‘keys’ is the sorting key for the ‘k’-th data line.
+ */
+int mtxfiledata_sortkey_morton(
+    union mtxfiledata * data,
+    enum mtxfile_object object,
+    enum mtxfile_format format,
+    enum mtxfile_field field,
+    enum mtx_precision precision,
+    int num_rows,
+    int num_columns,
+    int64_t size,
+    int64_t * keys);
+
+/**
  * ‘mtxfiledata_sort_row_major()’ sorts data lines of a Matrix Market
  * file in row major order.
  *

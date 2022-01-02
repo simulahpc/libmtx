@@ -400,16 +400,46 @@ int mtxdistfiledata_sort_column_major(
     struct mtxmpierror * mpierror)
 {
     int err;
+
+    int rank;
+    mpierror->mpierrcode = MPI_Comm_rank(comm, &rank);
+    err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxmpierror_allreduce(mpierror, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+    int comm_size;
+    mpierror->mpierrcode = MPI_Comm_size(comm, &comm_size);
+    err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxmpierror_allreduce(mpierror, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+    int64_t rowoffset = num_rows;
+    mpierror->mpierrcode = MPI_Exscan(
+        MPI_IN_PLACE, &rowoffset, 1, MPI_INT64_T, MPI_SUM, comm);
+    err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxmpierror_allreduce(mpierror, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+    if (rank == 0)
+        rowoffset = 0;
+
     int64_t * keys = malloc(size * sizeof(int64_t));
     err = !keys ? MTX_ERR_ERRNO : MTX_SUCCESS;
     if (mtxmpierror_allreduce(mpierror, err))
         return MTX_ERR_MPI_COLLECTIVE;
-    err = mtxfiledata_sortkey_column_major(
-        data, object, format, field, precision,
-        num_rows, num_columns, size, keys);
-    if (mtxmpierror_allreduce(mpierror, err)) {
-        free(keys);
-        return MTX_ERR_MPI_COLLECTIVE;
+
+    if (format == mtxfile_array) {
+        for (int i = 0; i < num_rows; i++) {
+            for (int j = 0; j < num_columns; j++) {
+                int64_t k = i * (int64_t) num_columns + (int64_t) j;
+                keys[k] = ((uint64_t) j << 32) | (i + rowoffset);
+            }
+        }
+    } else {
+        err = mtxfiledata_sortkey_column_major(
+            data, object, format, field, precision,
+            num_rows, num_columns, size, keys);
+        if (mtxmpierror_allreduce(mpierror, err)) {
+            free(keys);
+            return MTX_ERR_MPI_COLLECTIVE;
+        }
     }
 
     err = mtxdistfiledata_sort_keys(

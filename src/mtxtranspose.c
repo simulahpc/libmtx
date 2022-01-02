@@ -16,7 +16,7 @@
  * along with libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-09-09
+ * Last modified: 2021-12-30
  *
  * Transpose a matrix in Matrix Market format.
  */
@@ -24,6 +24,10 @@
 #include <libmtx/libmtx.h>
 
 #include "../libmtx/util/parse.h"
+
+#ifdef LIBMTX_HAVE_MPI
+#include <mpi.h>
+#endif
 
 #include <errno.h>
 
@@ -231,14 +235,46 @@ static int parse_program_options(
         /* If requested, print program help text. */
         if (strcmp((*argv)[0], "-h") == 0 || strcmp((*argv)[0], "--help") == 0) {
             program_options_free(args);
+#ifdef LIBMTX_HAVE_MPI
+            int rank;
+            err = MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+            if (err) {
+                char mpierrstr[MPI_MAX_ERROR_STRING];
+                int mpierrstrlen;
+                MPI_Error_string(err, mpierrstr, &mpierrstrlen);
+                fprintf(stderr, "%s: MPI_Comm_rank failed with %s\n",
+                        program_invocation_short_name, mpierrstr);
+                MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
+            }
+            if (rank == 0)
+                program_options_print_help(stdout);
+            MPI_Finalize();
+#else
             program_options_print_help(stdout);
+#endif
             exit(EXIT_SUCCESS);
         }
 
         /* If requested, print program version information. */
         if (strcmp((*argv)[0], "--version") == 0) {
             program_options_free(args);
+#ifdef LIBMTX_HAVE_MPI
+            int rank;
+            err = MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+            if (err) {
+                char mpierrstr[MPI_MAX_ERROR_STRING];
+                int mpierrstrlen;
+                MPI_Error_string(err, mpierrstr, &mpierrstrlen);
+                fprintf(stderr, "%s: MPI_Comm_rank failed with %s\n",
+                        program_invocation_short_name, mpierrstr);
+                MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
+            }
+            if (rank == 0)
+                program_options_print_version(stdout);
+            MPI_Finalize();
+#else
             program_options_print_version(stdout);
+#endif
             exit(EXIT_SUCCESS);
         }
 
@@ -283,6 +319,253 @@ static double timespec_duration(
         (t1.tv_nsec - t0.tv_nsec) * 1e-9;
 }
 
+#ifdef LIBMTX_HAVE_MPI
+/**
+ * `main()`.
+ */
+int main(int argc, char *argv[])
+{
+    int err;
+    struct timespec t0, t1;
+    FILE * diagf = stderr;
+    setlocale(LC_ALL, "");
+
+    /* 1. Initialise MPI. */
+    const MPI_Comm comm = MPI_COMM_WORLD;
+    const int root = 0;
+    int mpierr;
+    char mpierrstr[MPI_MAX_ERROR_STRING];
+    int mpierrstrlen;
+    struct mtxmpierror mpierror;
+    mpierr = MPI_Init(&argc, &argv);
+    if (mpierr) {
+        MPI_Error_string(mpierr, mpierrstr, &mpierrstrlen);
+        fprintf(stderr, "%s: MPI_Init failed with %s\n",
+                program_invocation_short_name, mpierrstr);
+        MPI_Finalize();
+        return EXIT_FAILURE;
+    }
+    int comm_size;
+    mpierr = MPI_Comm_size(comm, &comm_size);
+    if (mpierr) {
+        MPI_Error_string(mpierr, mpierrstr, &mpierrstrlen);
+        fprintf(stderr, "%s: MPI_Comm_size failed with %s\n",
+                program_invocation_short_name, mpierrstr);
+        MPI_Abort(comm, EXIT_FAILURE);
+    }
+    int rank;
+    mpierr = MPI_Comm_rank(comm, &rank);
+    if (mpierr) {
+        MPI_Error_string(mpierr, mpierrstr, &mpierrstrlen);
+        fprintf(stderr, "%s: MPI_Comm_rank failed with %s\n",
+                program_invocation_short_name, mpierrstr);
+        MPI_Abort(comm, EXIT_FAILURE);
+    }
+    err = mtxmpierror_alloc(&mpierror, comm);
+    if (err)
+        MPI_Abort(comm, EXIT_FAILURE);
+
+    /* 2. Parse program options. */
+    struct program_options args;
+    int argc_copy = argc;
+    char ** argv_copy = argv;
+    err = parse_program_options(&argc_copy, &argv_copy, &args);
+    if (err) {
+        if (rank == root) {
+            fprintf(stderr, "%s: %s %s\n", program_invocation_short_name,
+                    strerror(err), argv_copy[0]);
+        }
+        mtxmpierror_free(&mpierror);
+        MPI_Finalize();
+        return EXIT_FAILURE;
+    }
+    if (rank != root)
+        args.verbose = false;
+
+    if (!args.mtx_path) {
+        if (rank == root)
+            fprintf(stderr, "%s: Please specify a Matrix Market file\n",
+                    program_invocation_short_name);
+        program_options_free(&args);
+        mtxmpierror_free(&mpierror);
+        MPI_Finalize();
+        return EXIT_FAILURE;
+    }
+
+    /* 2. Read a Matrix Market file. */
+    if (args.verbose > 0) {
+        fprintf(diagf, "mtxfile_read: ");
+        fflush(diagf);
+        clock_gettime(CLOCK_MONOTONIC, &t0);
+    }
+
+    struct mtxdistfile mtxdistfile;
+    int lines_read;
+    int64_t bytes_read;
+    err = mtxdistfile_read(
+        &mtxdistfile, args.precision, args.mtx_path,
+        &lines_read, &bytes_read, 0, NULL,
+        comm, &mpierror);
+    if (err) {
+        if (args.verbose > 0)
+            fprintf(diagf, "\n");
+        if (rank == root && lines_read >= 0) {
+            fprintf(stderr, "%s: %s:%d: %s\n",
+                    program_invocation_short_name,
+                    args.mtx_path, lines_read+1,
+                    err == MTX_ERR_MPI_COLLECTIVE
+                    ? mtxmpierror_description(&mpierror)
+                    : mtx_strerror(err));
+        } else if (rank == root) {
+            fprintf(stderr, "%s: %s: %s\n",
+                    program_invocation_short_name,
+                    args.mtx_path,
+                    err == MTX_ERR_MPI_COLLECTIVE
+                    ? mtxmpierror_description(&mpierror)
+                    : mtx_strerror(err));
+        }
+        program_options_free(&args);
+        mtxmpierror_free(&mpierror);
+        MPI_Finalize();
+        return EXIT_FAILURE;
+    }
+
+    if (args.verbose > 0) {
+        clock_gettime(CLOCK_MONOTONIC, &t1);
+        fprintf(diagf, "%'.6f seconds (%'.1f MB/s)\n",
+                timespec_duration(t0, t1),
+                1.0e-6 * bytes_read / timespec_duration(t0, t1));
+    }
+
+    int64_t size;
+    err = mtxfile_size_num_data_lines(
+        &mtxdistfile.mtxfile.size, &size);
+    if (mtxmpierror_allreduce(&mpierror, err)) {
+        if (rank == root) {
+            fprintf(stderr, "%s: %s\n",
+                    program_invocation_short_name,
+                    err == MTX_ERR_MPI_COLLECTIVE
+                    ? mtxmpierror_description(&mpierror)
+                    : mtx_strerror(err));
+        }
+        mtxdistfile_free(&mtxdistfile);
+        program_options_free(&args);
+        mtxmpierror_free(&mpierror);
+        MPI_Finalize();
+        return EXIT_FAILURE;
+    }
+
+    int64_t total_size;
+    mpierror.mpierrcode = MPI_Allreduce(
+        &size, &total_size, 1, MPI_INT64_T, MPI_SUM, comm);
+    err = mpierror.mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxmpierror_allreduce(&mpierror, err)) {
+        if (rank == root) {
+            fprintf(stderr, "%s: %s\n",
+                    program_invocation_short_name,
+                    err == MTX_ERR_MPI_COLLECTIVE
+                    ? mtxmpierror_description(&mpierror)
+                    : mtx_strerror(err));
+        }
+        mtxdistfile_free(&mtxdistfile);
+        program_options_free(&args);
+        mtxmpierror_free(&mpierror);
+        MPI_Finalize();
+        return EXIT_FAILURE;
+    }
+
+    if (args.verbose > 0) {
+        fprintf(diagf, "mtxdistfile_transpose: ");
+        fflush(diagf);
+        clock_gettime(CLOCK_MONOTONIC, &t0);
+    }
+
+    /* 3. Transpose the distributed Matrix Market file. */
+    err = mtxdistfile_transpose(&mtxdistfile, &mpierror);
+    if (err) {
+        if (args.verbose > 0)
+            fprintf(diagf, "\n");
+        if (rank == root) {
+            fprintf(stderr, "%s: %s\n",
+                    program_invocation_short_name,
+                    err == MTX_ERR_MPI_COLLECTIVE
+                    ? mtxmpierror_description(&mpierror)
+                    : mtx_strerror(err));
+        }
+        mtxdistfile_free(&mtxdistfile);
+        program_options_free(&args);
+        mtxmpierror_free(&mpierror);
+        MPI_Finalize();
+        return EXIT_FAILURE;
+    }
+
+    if (args.verbose > 0) {
+        clock_gettime(CLOCK_MONOTONIC, &t1);
+        fprintf(diagf, "%'.6f seconds (%'.1f Mlines/s)\n",
+                timespec_duration(t0, t1),
+                1.0e-6 * total_size / timespec_duration(t0, t1));
+    }
+
+    /* 4. Write the sorted Matrix Market object to standard output. */
+    if (!args.quiet) {
+        if (args.verbose > 0) {
+            fprintf(diagf, "mtxdistfile_fwrite_shared: ");
+            fflush(diagf);
+            clock_gettime(CLOCK_MONOTONIC, &t0);
+        }
+
+        err = mtxfile_comments_printf(
+            &mtxdistfile.comments,
+            "%% This file was generated by %s %s\n",
+            program_name, program_version);
+        if (err) {
+            if (args.verbose > 0)
+                fprintf(diagf, "\n");
+            fprintf(stderr, "%s: %s\n",
+                    program_invocation_short_name,
+                    mtx_strerror(err));
+            mtxdistfile_free(&mtxdistfile);
+            program_options_free(&args);
+            mtxmpierror_free(&mpierror);
+            MPI_Finalize();
+            return EXIT_FAILURE;
+        }
+
+        int64_t bytes_written = 0;
+        err = mtxdistfile_fwrite_shared(
+            &mtxdistfile, stdout, args.format, &bytes_written, root, &mpierror);
+        if (err) {
+            if (rank == root) {
+                fprintf(stderr, "%s: %s\n",
+                        program_invocation_short_name,
+                        err == MTX_ERR_MPI_COLLECTIVE
+                        ? mtxmpierror_description(&mpierror)
+                        : mtx_strerror(err));
+            }
+            mtxdistfile_free(&mtxdistfile);
+            program_options_free(&args);
+            mtxmpierror_free(&mpierror);
+            MPI_Finalize();
+            return EXIT_FAILURE;
+        }
+
+        if (args.verbose > 0) {
+            clock_gettime(CLOCK_MONOTONIC, &t1);
+            fprintf(diagf, "%'.6f seconds (%'.1f MB/s)\n",
+                    timespec_duration(t0, t1),
+                    1.0e-6 * bytes_written / timespec_duration(t0, t1));
+            fflush(diagf);
+        }
+    }
+
+    /* 5. Clean up. */
+    mtxdistfile_free(&mtxdistfile);
+    program_options_free(&args);
+    mtxmpierror_free(&mpierror);
+    MPI_Finalize();
+    return EXIT_SUCCESS;
+}
+#else
 /**
  * `main()`.
  */
@@ -420,3 +703,4 @@ int main(int argc, char *argv[])
     program_options_free(&args);
     return EXIT_SUCCESS;
 }
+#endif

@@ -855,6 +855,26 @@ int mtxdistfile_fwrite_shared(
     struct mtxmpierror * mpierror);
 
 /*
+ * Transpose and conjugate transpose.
+ */
+
+/**
+ * ‘mtxdistfile_transpose()’ tranposes a distributed Matrix Market
+ * file.
+ */
+int mtxdistfile_transpose(
+    struct mtxdistfile * mtxdistfile,
+    struct mtxmpierror * mpierror);
+
+/**
+ * ‘mtxdistfile_conjugate_transpose()’ tranposes and complex
+ * conjugates a distributed Matrix Market file.
+ */
+int mtxdistfile_conjugate_transpose(
+    struct mtxdistfile * mtxdistfile,
+    struct mtxmpierror * mpierror);
+
+/*
  * Sorting
  */
 

@@ -2077,6 +2077,50 @@ int mtxdistfile_fwrite_shared(
 }
 
 /*
+ * Transpose and conjugate transpose.
+ */
+
+/**
+ * ‘mtxdistfile_transpose()’ tranposes a distributed Matrix Market
+ * file.
+ */
+int mtxdistfile_transpose(
+    struct mtxdistfile * mtxdistfile,
+    struct mtxmpierror * mpierror)
+{
+    int err;
+    struct mtxfile * mtxfile = &mtxdistfile->mtxfile;
+    MPI_Comm comm = mtxdistfile->comm;
+    if (mtxdistfile->header.object == mtxfile_matrix) {
+        if (mtxdistfile->header.format == mtxfile_array) {
+            int64_t size;
+            err = mtxfile_size_num_data_lines(
+                &mtxfile->size, &size);
+            if (err)
+                return err;
+            return mtxdistfile_sort(
+                mtxdistfile, mtxfile_column_major,
+                size, NULL, mpierror);
+        } else if (mtxdistfile->header.format == mtxfile_coordinate) {
+            return mtxfile_transpose(mtxfile);
+        } else {
+            return MTX_ERR_INVALID_MTX_FORMAT;
+        }
+    } else if (mtxdistfile->header.object != mtxfile_vector) {
+        return MTX_ERR_INVALID_MTX_OBJECT;
+    }
+    return MTX_SUCCESS;
+}
+
+/**
+ * ‘mtxdistfile_conjugate_transpose()’ tranposes and complex
+ * conjugates a distributed Matrix Market file.
+ */
+int mtxdistfile_conjugate_transpose(
+    struct mtxdistfile * mtxfile,
+    struct mtxmpierror * mpierror);
+
+/*
  * Sorting
  */
 
