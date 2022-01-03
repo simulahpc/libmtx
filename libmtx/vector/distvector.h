@@ -69,6 +69,12 @@ struct mtxdistvector
      */
     int rank;
 
+    /**
+     * ‘partition’ is a distributed data structure containing
+     * information about the partitioning of the vector elements.
+     */
+    struct mtxdistpartition partition;
+
     struct mtxvector interior;
 
     struct mtxvector_coordinate interior_halo;

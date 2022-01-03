@@ -1,32 +1,38 @@
 /* This file is part of libmtx.
  *
- * Copyright (C) 2021 James D. Trotter
+ * Copyright (C) 2022 James D. Trotter
  *
- * libmtx is free software: you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 3 of the
- * License, or (at your option) any later version.
+ * libmtx is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * libmtx is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * libmtx is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with libmtx.  If not, see
- * <https://www.gnu.org/licenses/>.
+ * along with libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-10-08
+ * Last modified: 2022-01-03
  *
  * Multiply a general, unsymmetric matrix with a vector.
  *
- * ‘y := alpha*A*x + beta*y’.
+ * ‘y := alpha*A*x + beta*y’,
+ *
+ * where ‘A’ is a matrix, ‘x’ and ‘y’ are vectors and ‘alpha’ and
+ * ‘beta’ are scalar constants.
  */
 
 #include <libmtx/libmtx.h>
 
 #include "../libmtx/util/parse.h"
+
+#ifdef LIBMTX_HAVE_MPI
+#include <mpi.h>
+#endif
 
 #include <errno.h>
 
@@ -42,7 +48,7 @@
 const char * program_name = "mtxgemv";
 const char * program_version = "0.1.0";
 const char * program_copyright =
-    "Copyright (C) 2021 James D. Trotter";
+    "Copyright (C) 2022 James D. Trotter";
 const char * program_license =
     "License GPLv3+: GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html>\n"
     "This is free software: you are free to change and redistribute it.\n"
@@ -130,9 +136,9 @@ static void program_options_print_help(
     fprintf(f, "\n");
     fprintf(f, " Multiply a general, unsymmetric matrix with a vector.\n");
     fprintf(f, "\n");
-    fprintf(f, " The operation performed is `y := alpha*A*x + beta*y',\n");
-    fprintf(f, " where `A' is a matrix, `x' and `y' are vectors, and\n");
-    fprintf(f, " `alpha' and `beta' are scalar, floating-point values.\n");
+    fprintf(f, " The operation performed is ‘y := alpha*A*x + beta*y’,\n");
+    fprintf(f, " where ‘A’ is a matrix, ‘x’ and ‘y’ are vectors, and\n");
+    fprintf(f, " ‘alpha’ and ‘beta’ are scalar, floating-point values.\n");
     fprintf(f, "\n");
     fprintf(f, " Positional arguments are:\n");
     fprintf(f, "  alpha\tScalar floating-point value.\n");
@@ -144,8 +150,8 @@ static void program_options_print_help(
     fprintf(f, "   \tIf omitted, then a vector of zeros is used.\n");
     fprintf(f, "\n");
     fprintf(f, " Other options are:\n");
-    fprintf(f, "  --precision=PRECISION\tprecision used to represent matrix\n");
-    fprintf(f, "\t\t\tvector values: single or double. (default: double)\n");
+    fprintf(f, "  --precision=PRECISION\tprecision used to represent matrix or\n");
+    fprintf(f, "\t\t\tvector values: ‘single’ or ‘double’. (default: ‘double’)\n");
     fprintf(f, "  --matrix-type=TYPE\tformat for representing matrices:\n");
     fprintf(f, "\t\t\t‘auto’, ‘array’ or ‘coordinate’. (default: ‘auto’)\n");
     fprintf(f, "  --vector-type=TYPE\tformat for representing vectors:\n");
@@ -159,7 +165,7 @@ static void program_options_print_help(
     fprintf(f, "\t\t\t'%%e', '%%E', '%%f', '%%F', '%%g' or '%%G' may be used,\n");
     fprintf(f, "\t\t\twhereas '%%d' must be used for integers. Flags, field width\n");
     fprintf(f, "\t\t\tand precision can optionally be specified, e.g., \"%%+3.1f\".\n");
-    fprintf(f, "  --repeat=N\t\trepeat matrix-vector multiplication N times\n");
+    fprintf(f, "  --repeat=N\t\trepeat the calculation N times\n");
     fprintf(f, "  -q, --quiet\t\tdo not print Matrix Market output\n");
     fprintf(f, "  -v, --verbose\t\tbe more verbose\n");
     fprintf(f, "\n");
@@ -386,14 +392,46 @@ static int parse_program_options(
         /* If requested, print program help text. */
         if (strcmp((*argv)[0], "-h") == 0 || strcmp((*argv)[0], "--help") == 0) {
             program_options_free(args);
+#ifdef LIBMTX_HAVE_MPI
+            int rank;
+            err = MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+            if (err) {
+                char mpierrstr[MPI_MAX_ERROR_STRING];
+                int mpierrstrlen;
+                MPI_Error_string(err, mpierrstr, &mpierrstrlen);
+                fprintf(stderr, "%s: MPI_Comm_rank failed with %s\n",
+                        program_invocation_short_name, mpierrstr);
+                MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
+            }
+            if (rank == 0)
+                program_options_print_help(stdout);
+            MPI_Finalize();
+#else
             program_options_print_help(stdout);
+#endif
             exit(EXIT_SUCCESS);
         }
 
         /* If requested, print program version information. */
         if (strcmp((*argv)[0], "--version") == 0) {
             program_options_free(args);
+#ifdef LIBMTX_HAVE_MPI
+            int rank;
+            err = MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+            if (err) {
+                char mpierrstr[MPI_MAX_ERROR_STRING];
+                int mpierrstrlen;
+                MPI_Error_string(err, mpierrstr, &mpierrstrlen);
+                fprintf(stderr, "%s: MPI_Comm_rank failed with %s\n",
+                        program_invocation_short_name, mpierrstr);
+                MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
+            }
+            if (rank == 0)
+                program_options_print_version(stdout);
+            MPI_Finalize();
+#else
             program_options_print_version(stdout);
+#endif
             exit(EXIT_SUCCESS);
         }
 
@@ -401,6 +439,14 @@ static int parse_program_options(
         if (strcmp((*argv)[0], "--") == 0) {
             (*argc)--; (*argv)++;
             break;
+        }
+
+        /* Unrecognised option. */
+        if (strlen((*argv)[0]) > 1 && (*argv)[0][0] == '-' &&
+            ((*argv)[0][1] < '0' || (*argv)[0][1] > '9'))
+        {
+            program_options_free(args);
+            return EINVAL;
         }
 
         /*
@@ -447,7 +493,23 @@ static int parse_program_options(
 
     if (num_positional_arguments_consumed < 2) {
         program_options_free(args);
+#ifdef LIBMTX_HAVE_MPI
+        int rank;
+        err = MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+        if (err) {
+            char mpierrstr[MPI_MAX_ERROR_STRING];
+            int mpierrstrlen;
+            MPI_Error_string(err, mpierrstr, &mpierrstrlen);
+            fprintf(stderr, "%s: MPI_Comm_rank failed with %s\n",
+                    program_invocation_short_name, mpierrstr);
+            MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
+        }
+        if (rank == 0)
+            program_options_print_usage(stdout);
+        MPI_Finalize();
+#else
         program_options_print_usage(stdout);
+#endif
         exit(EXIT_FAILURE);
     }
 
@@ -466,6 +528,418 @@ static double timespec_duration(
         (t1.tv_nsec - t0.tv_nsec) * 1e-9;
 }
 
+#ifdef LIBMTX_HAVE_MPI
+/**
+ * `gemv()' computes matrix-vector products and prints the result to
+ * standard output.
+ */
+static int gemv(
+    double alpha,
+    const struct mtxmatrix * A,
+    const struct mtxvector * x,
+    double beta,
+    struct mtxvector * y,
+    enum mtx_precision precision,
+    enum mtx_trans_type trans,
+    const char * format,
+    int repeat,
+    int verbose,
+    FILE * diagf,
+    bool quiet)
+{
+    int err;
+    struct timespec t0, t1;
+
+    if (precision == mtx_single) {
+        for (int i = 0; i < repeat; i++) {
+            if (verbose > 0) {
+                fprintf(diagf, "mtxmatrix_sgemv: ");
+                fflush(diagf);
+                clock_gettime(CLOCK_MONOTONIC, &t0);
+            }
+            err = mtxmatrix_sgemv(trans, alpha, A, x, beta, y);
+            if (err) {
+                if (verbose > 0)
+                    fprintf(diagf, "\n");
+                return err;
+            }
+            if (verbose > 0) {
+                clock_gettime(CLOCK_MONOTONIC, &t1);
+                fprintf(diagf, "%'.6f seconds\n",
+                        timespec_duration(t0, t1));
+            }
+        }
+    } else if (precision == mtx_double) {
+        for (int i = 0; i < repeat; i++) {
+            if (verbose > 0) {
+                fprintf(diagf, "mtxmatrix_dgemv: ");
+                fflush(diagf);
+                clock_gettime(CLOCK_MONOTONIC, &t0);
+            }
+            err = mtxmatrix_dgemv(trans, alpha, A, x, beta, y);
+            if (err) {
+                if (verbose > 0)
+                    fprintf(diagf, "\n");
+                return err;
+            }
+            if (verbose > 0) {
+                clock_gettime(CLOCK_MONOTONIC, &t1);
+                fprintf(diagf, "%'.6f seconds\n",
+                        timespec_duration(t0, t1));
+            }
+        }
+    } else {
+        return MTX_ERR_INVALID_PRECISION;
+    }
+
+    if (!quiet) {
+        if (verbose > 0) {
+            fprintf(diagf, "mtxvector_fwrite: ");
+            fflush(diagf);
+            clock_gettime(CLOCK_MONOTONIC, &t0);
+        }
+        int64_t bytes_written = 0;
+        err = mtxvector_fwrite(
+            y, stdout, format, &bytes_written);
+        if (err) {
+            if (verbose > 0)
+                fprintf(diagf, "\n");
+            return err;
+        }
+        if (verbose > 0) {
+            clock_gettime(CLOCK_MONOTONIC, &t1);
+            fprintf(diagf, "%'.6f seconds (%'.1f MB/s)\n",
+                    timespec_duration(t0, t1),
+                    1.0e-6 * bytes_written / timespec_duration(t0, t1));
+        }
+    }
+
+    return MTX_SUCCESS;
+}
+
+/**
+ * `main()`.
+ */
+int main(int argc, char *argv[])
+{
+    int err;
+    struct timespec t0, t1;
+    FILE * diagf = stderr;
+    setlocale(LC_ALL, "");
+
+    /* 1. Initialise MPI. */
+    const MPI_Comm comm = MPI_COMM_WORLD;
+    const int root = 0;
+    int mpierr;
+    char mpierrstr[MPI_MAX_ERROR_STRING];
+    int mpierrstrlen;
+    struct mtxmpierror mpierror;
+    mpierr = MPI_Init(&argc, &argv);
+    if (mpierr) {
+        MPI_Error_string(mpierr, mpierrstr, &mpierrstrlen);
+        fprintf(stderr, "%s: MPI_Init failed with %s\n",
+                program_invocation_short_name, mpierrstr);
+        MPI_Finalize();
+        return EXIT_FAILURE;
+    }
+    int comm_size;
+    mpierr = MPI_Comm_size(comm, &comm_size);
+    if (mpierr) {
+        MPI_Error_string(mpierr, mpierrstr, &mpierrstrlen);
+        fprintf(stderr, "%s: MPI_Comm_size failed with %s\n",
+                program_invocation_short_name, mpierrstr);
+        MPI_Abort(comm, EXIT_FAILURE);
+    }
+    int rank;
+    mpierr = MPI_Comm_rank(comm, &rank);
+    if (mpierr) {
+        MPI_Error_string(mpierr, mpierrstr, &mpierrstrlen);
+        fprintf(stderr, "%s: MPI_Comm_rank failed with %s\n",
+                program_invocation_short_name, mpierrstr);
+        MPI_Abort(comm, EXIT_FAILURE);
+    }
+    err = mtxmpierror_alloc(&mpierror, comm, &mpierr);
+    if (err) {
+        fprintf(stderr, "%s: %s\n",
+                program_invocation_short_name,
+                mtx_strerror_mpi(err, mpierr, mpierrstr));
+        MPI_Finalize();
+        return EXIT_FAILURE;
+    }
+
+    /* 2. Parse program options. */
+    struct program_options args;
+    int argc_copy = argc;
+    char ** argv_copy = argv;
+    err = parse_program_options(&argc_copy, &argv_copy, &args);
+    if (err) {
+        fprintf(stderr, "%s: %s %s\n", program_invocation_short_name,
+                strerror(err), argv_copy[0]);
+        mtxmpierror_free(&mpierror);
+        MPI_Finalize();
+        return EXIT_FAILURE;
+    }
+
+    /* 2. Read the matrix from a Matrix Market file. */
+    if (args.verbose > 0) {
+        fprintf(diagf, "mtxmatrix_read: ");
+        fflush(diagf);
+        clock_gettime(CLOCK_MONOTONIC, &t0);
+    }
+
+    struct mtxmatrix A;
+    int lines_read;
+    int64_t bytes_read;
+    err = mtxmatrix_read(
+        &A, args.precision, args.matrix_type,
+        args.A_path ? args.A_path : "", args.gzip,
+        &lines_read, &bytes_read);
+    if (err && lines_read >= 0) {
+        if (args.verbose > 0)
+            fprintf(diagf, "\n");
+        fprintf(stderr, "%s: %s:%d: %s\n",
+                program_invocation_short_name,
+                args.A_path, lines_read+1,
+                mtx_strerror(err));
+        program_options_free(&args);
+        mtxmpierror_free(&mpierror);
+        MPI_Finalize();
+        return EXIT_FAILURE;
+    } else if (err) {
+        if (args.verbose > 0)
+            fprintf(diagf, "\n");
+        fprintf(stderr, "%s: %s: %s\n",
+                program_invocation_short_name,
+                args.A_path, mtx_strerror(err));
+        program_options_free(&args);
+        mtxmpierror_free(&mpierror);
+        MPI_Finalize();
+        return EXIT_FAILURE;
+    }
+
+    if (args.verbose > 0) {
+        clock_gettime(CLOCK_MONOTONIC, &t1);
+        fprintf(diagf, "%'.6f seconds (%'.1f MB/s)\n",
+                timespec_duration(t0, t1),
+                1.0e-6 * bytes_read / timespec_duration(t0, t1));
+    }
+
+    /* 3. Read the vector ‘x’ from a Matrix Market file, or use a
+     * vector of all ones. */
+    struct mtxvector x;
+    if (args.x_path && strlen(args.x_path) > 0) {
+        if (args.verbose) {
+            fprintf(diagf, "mtxvector_read: ");
+            fflush(diagf);
+            clock_gettime(CLOCK_MONOTONIC, &t0);
+        }
+
+        int lines_read;
+        int64_t bytes_read;
+        err = mtxvector_read(
+            &x, args.precision, args.vector_type,
+            args.x_path ? args.x_path : "", args.gzip,
+            &lines_read, &bytes_read);
+        if (err && lines_read >= 0) {
+            if (args.verbose > 0)
+                fprintf(diagf, "\n");
+            fprintf(stderr, "%s: %s:%d: %s\n",
+                    program_invocation_short_name,
+                    args.x_path, lines_read+1,
+                    mtx_strerror(err));
+            mtxmatrix_free(&A);
+            program_options_free(&args);
+            mtxmpierror_free(&mpierror);
+            MPI_Finalize();
+            return EXIT_FAILURE;
+        } else if (err) {
+            if (args.verbose > 0)
+                fprintf(diagf, "\n");
+            fprintf(stderr, "%s: %s: %s\n",
+                    program_invocation_short_name,
+                    args.x_path, mtx_strerror(err));
+            mtxmatrix_free(&A);
+            program_options_free(&args);
+            mtxmpierror_free(&mpierror);
+            MPI_Finalize();
+            return EXIT_FAILURE;
+        }
+        if (args.verbose > 0) {
+            clock_gettime(CLOCK_MONOTONIC, &t1);
+            fprintf(diagf, "%'.6f seconds (%'.1f MB/s)\n",
+                    timespec_duration(t0, t1),
+                    1.0e-6 * bytes_read / timespec_duration(t0, t1));
+        }
+    } else {
+        if (A.type == mtxmatrix_coordinate &&
+            A.storage.coordinate.field == mtx_field_pattern)
+        {
+            err = mtxvector_alloc_array(
+                &x, args.vector_field, args.precision,
+                A.storage.coordinate.num_columns);
+            if (err) {
+                fprintf(stderr, "%s: %s\n",
+                        program_invocation_short_name,
+                        mtx_strerror(err));
+                mtxmatrix_free(&A);
+                program_options_free(&args);
+                mtxmpierror_free(&mpierror);
+                MPI_Finalize();
+                return EXIT_FAILURE;
+            }
+        } else {
+            err = mtxmatrix_alloc_row_vector(&A, &x, args.vector_type);
+            if (err) {
+                fprintf(stderr, "%s: %s\n",
+                        program_invocation_short_name,
+                        mtx_strerror(err));
+                mtxmatrix_free(&A);
+                program_options_free(&args);
+                mtxmpierror_free(&mpierror);
+                MPI_Finalize();
+                return EXIT_FAILURE;
+            }
+        }
+
+        err = mtxvector_set_constant_real_single(&x, 1.0f);
+        if (err) {
+            fprintf(stderr, "%s: %s\n",
+                    program_invocation_short_name,
+                    mtx_strerror(err));
+            mtxvector_free(&x);
+            mtxmatrix_free(&A);
+            program_options_free(&args);
+            mtxmpierror_free(&mpierror);
+            MPI_Finalize();
+            return EXIT_FAILURE;
+        }
+    }
+
+    /* 4. Read the vector ‘y’ from a Matrix Market file, or use a
+     * vector of all zeros. */
+    struct mtxvector y;
+    if (args.y_path) {
+        if (args.verbose) {
+            fprintf(diagf, "mtxvector_read: ");
+            fflush(diagf);
+            clock_gettime(CLOCK_MONOTONIC, &t0);
+        }
+        int lines_read;
+        int64_t bytes_read;
+        err = mtxvector_read(
+            &y, args.precision, args.vector_type,
+            args.y_path ? args.y_path : "", args.gzip,
+            &lines_read, &bytes_read);
+        if (err && lines_read >= 0) {
+            if (args.verbose > 0)
+                fprintf(diagf, "\n");
+            fprintf(stderr, "%s: %s:%d: %s\n",
+                    program_invocation_short_name,
+                    args.y_path, lines_read+1,
+                    mtx_strerror(err));
+            mtxvector_free(&x);
+            mtxmatrix_free(&A);
+            program_options_free(&args);
+            mtxmpierror_free(&mpierror);
+            MPI_Finalize();
+            return EXIT_FAILURE;
+        } else if (err) {
+            if (args.verbose > 0)
+                fprintf(diagf, "\n");
+            fprintf(stderr, "%s: %s: %s\n",
+                    program_invocation_short_name,
+                    args.y_path, mtx_strerror(err));
+            mtxvector_free(&x);
+            mtxmatrix_free(&A);
+            program_options_free(&args);
+            mtxmpierror_free(&mpierror);
+            MPI_Finalize();
+            return EXIT_FAILURE;
+        }
+        if (args.verbose > 0) {
+            clock_gettime(CLOCK_MONOTONIC, &t1);
+            fprintf(diagf, "%'.6f seconds (%'.1f MB/s)\n",
+                    timespec_duration(t0, t1),
+                    1.0e-6 * bytes_read / timespec_duration(t0, t1));
+        }
+    } else {
+        if (A.type == mtxmatrix_coordinate &&
+            A.storage.coordinate.field == mtx_field_pattern)
+        {
+            err = mtxvector_alloc_array(
+                &y, args.vector_field, args.precision,
+                A.storage.coordinate.num_rows);
+            if (err) {
+                fprintf(stderr, "%s: %s\n",
+                        program_invocation_short_name,
+                        mtx_strerror(err));
+                mtxvector_free(&x);
+                mtxmatrix_free(&A);
+                program_options_free(&args);
+                mtxmpierror_free(&mpierror);
+                MPI_Finalize();
+                return EXIT_FAILURE;
+            }
+        } else {
+            err = mtxmatrix_alloc_column_vector(&A, &y, args.vector_type);
+            if (err) {
+                fprintf(stderr, "%s: %s\n",
+                        program_invocation_short_name,
+                        mtx_strerror(err));
+                mtxvector_free(&x);
+                mtxmatrix_free(&A);
+                program_options_free(&args);
+                mtxmpierror_free(&mpierror);
+                MPI_Finalize();
+                return EXIT_FAILURE;
+            }
+        }
+
+        err = mtxvector_set_constant_real_single(&y, 0.0f);
+        if (err) {
+            fprintf(stderr, "%s: %s\n",
+                    program_invocation_short_name,
+                    mtx_strerror(err));
+            mtxvector_free(&y);
+            mtxvector_free(&x);
+            mtxmatrix_free(&A);
+            program_options_free(&args);
+            mtxmpierror_free(&mpierror);
+            MPI_Finalize();
+            return EXIT_FAILURE;
+        }
+    }
+
+    /* TODO: Allow the user to select transpose or conjugate
+     * transpose matrix-vector multiplication. */
+    enum mtx_trans_type trans = mtx_notrans;
+
+    /* 5. Compute matrix-vector multiplication. */
+    err = gemv(args.alpha, &A, &x, args.beta, &y, args.precision, trans,
+               args.format, args.repeat, args.verbose, diagf, args.quiet);
+    if (err) {
+        fprintf(stderr, "%s: %s\n",
+                program_invocation_short_name,
+                mtx_strerror(err));
+        mtxvector_free(&y);
+        mtxvector_free(&x);
+        mtxmatrix_free(&A);
+        program_options_free(&args);
+        mtxmpierror_free(&mpierror);
+        MPI_Finalize();
+        return EXIT_FAILURE;
+    }
+
+    /* 7. Clean up. */
+    mtxvector_free(&y);
+    mtxvector_free(&x);
+    mtxmatrix_free(&A);
+    program_options_free(&args);
+    mtxmpierror_free(&mpierror);
+    MPI_Finalize();
+    return EXIT_SUCCESS;
+}
+#else
 /**
  * `gemv()' computes matrix-vector products and prints the result to
  * standard output.
@@ -806,3 +1280,4 @@ int main(int argc, char *argv[])
     program_options_free(&args);
     return EXIT_SUCCESS;
 }
+#endif
