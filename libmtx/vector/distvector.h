@@ -1,6 +1,6 @@
 /* This file is part of libmtx.
  *
- * Copyright (C) 2021 James D. Trotter
+ * Copyright (C) 2022 James D. Trotter
  *
  * libmtx is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by
@@ -16,20 +16,19 @@
  * along with libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-09-30
+ * Last modified: 2022-01-03
  *
  * Data structures for distributed vectors.
  */
 
-#ifndef LIBMTX_VECTOR_DISTRIBUTED_H
-#define LIBMTX_VECTOR_DISTRIBUTED_H
+#ifndef LIBMTX_VECTOR_DISTVECTOR_H
+#define LIBMTX_VECTOR_DISTVECTOR_H
 
 #include <libmtx/libmtx-config.h>
 
 #ifdef LIBMTX_HAVE_MPI
 #include <libmtx/mtx/precision.h>
 #include <libmtx/util/field.h>
-#include <libmtx/util/partition.h>
 #include <libmtx/vector/vector.h>
 
 #include <mpi.h>
@@ -46,7 +45,6 @@
 struct mtxfile;
 struct mtxdistfile;
 struct mtxmpierror;
-struct mtx_partition;
 
 /**
  * ‘mtxdistvector’ represents a vector in distributed format.

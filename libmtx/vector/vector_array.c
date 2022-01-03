@@ -27,7 +27,6 @@
 #include <libmtx/mtx/precision.h>
 #include <libmtx/mtxfile/mtxfile.h>
 #include <libmtx/util/field.h>
-#include <libmtx/util/partition.h>
 #include <libmtx/vector/vector_array.h>
 
 #ifdef LIBMTX_HAVE_BLAS

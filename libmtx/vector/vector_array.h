@@ -28,11 +28,6 @@
 
 #include <libmtx/mtx/precision.h>
 #include <libmtx/util/field.h>
-#include <libmtx/util/partition.h>
-
-#ifdef LIBMTX_HAVE_MPI
-#include <mpi.h>
-#endif
 
 #ifdef LIBMTX_HAVE_LIBZ
 #include <zlib.h>
@@ -44,8 +39,6 @@
 #include <stdio.h>
 
 struct mtxfile;
-struct mtxmpierror;
-struct mtx_partition;
 
 /**
  * `mtxvector_array' represents a vector in array format.
