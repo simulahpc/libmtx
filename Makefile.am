@@ -1,22 +1,23 @@
 # This file is part of libmtx.
 #
-# Copyright (C) 2022 James D. Trotter
+# Copyright (C) 2021 James D. Trotter
 #
-# libmtx is free software: you can redistribute it and/or modify it
-# under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# libmtx is free software: you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
 #
-# libmtx is distributed in the hope that it will be useful, but
-# WITHOUT ANY WARRANTY; without even the implied warranty of
+# libmtx is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 # General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with libmtx.  If not, see <https://www.gnu.org/licenses/>.
+# along with libmtx.  If not, see
+# <https://www.gnu.org/licenses/>.
 #
 # Authors: James D. Trotter <james@simula.no>
-# Last modified: 2022-01-03
+# Last modified: 2021-08-16
 #
 # Makefile for the top-level directory of libmtx.
 #
@@ -36,7 +37,6 @@ EXTRA_DIST = \
 	tests/test_distsort_parallel \
 	tests/test_mtx_mpi_parallel \
 	tests/test_mtxdistfile_parallel \
-	tests/test_mtxdistmatrix_parallel \
 	tests/test_mtxdistvector_parallel
 
 # Matrix Market library
@@ -61,7 +61,6 @@ libmtx_la_SOURCES = \
 	libmtx/matrix/coordinate/mpi.c \
 	libmtx/matrix/coordinate/reorder.c \
 	libmtx/matrix/coordinate/sort.c \
-	libmtx/matrix/distmatrix.c \
 	libmtx/matrix/matrix.c \
 	libmtx/matrix/matrix_array.c \
 	libmtx/matrix/matrix_coordinate.c \
@@ -131,7 +130,6 @@ nobase_include_HEADERS = \
 	libmtx/matrix/coordinate/mpi.h \
 	libmtx/matrix/coordinate/reorder.h \
 	libmtx/matrix/coordinate/sort.h \
-	libmtx/matrix/distmatrix.h \
 	libmtx/matrix/matrix.h \
 	libmtx/matrix/matrix_array.h \
 	libmtx/matrix/matrix_coordinate.h \
@@ -362,7 +360,6 @@ check_PROGRAMS += \
 	tests/test_distsort \
 	tests/test_mtx_mpi \
 	tests/test_mtxdistfile \
-	tests/test_mtxdistmatrix \
 	tests/test_mtxdistvector \
 	tests/test_mtxfile_mpi
 
@@ -386,11 +383,6 @@ tests_test_mtxdistfile_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LI
 tests_test_mtxdistfile_SOURCES = tests/test_mtxdistfile.c tests/test.h
 tests/test_mtxdistfile_parallel: tests/test_mtxdistfile
 
-tests_test_mtxdistmatrix_CPPFLAGS = $(MPICPPFLAGS)
-tests_test_mtxdistmatrix_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
-tests_test_mtxdistmatrix_SOURCES = tests/test_mtxdistmatrix.c tests/test.h
-tests/test_mtxdistmatrix_parallel: tests/test_mtxdistmatrix
-
 tests_test_mtxdistvector_CPPFLAGS = $(MPICPPFLAGS)
 tests_test_mtxdistvector_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
 tests_test_mtxdistvector_SOURCES = tests/test_mtxdistvector.c tests/test.h
@@ -401,7 +393,6 @@ TESTS += \
 	tests/test_mtx_mpi_parallel \
 	tests/test_mtxfile_mpi_parallel \
 	tests/test_mtxdistfile_parallel \
-	tests/test_mtxdistmatrix_parallel
 	tests/test_mtxdistvector_parallel
 endif
 
