@@ -1,6 +1,6 @@
 /* This file is part of libmtx.
  *
- * Copyright (C) 2021 James D. Trotter
+ * Copyright (C) 2022 James D. Trotter
  *
  * libmtx is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
  * along with libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-12-30
+ * Last modified: 2022-01-03
  *
  * Transpose a matrix in Matrix Market format.
  */
@@ -43,7 +43,7 @@
 const char * program_name = "mtxtranspose";
 const char * program_version = "0.1.0";
 const char * program_copyright =
-    "Copyright (C) 2021 James D. Trotter";
+    "Copyright (C) 2022 James D. Trotter";
 const char * program_license =
     "License GPLv3+: GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html>\n"
     "This is free software: you are free to change and redistribute it.\n"
@@ -361,9 +361,14 @@ int main(int argc, char *argv[])
                 program_invocation_short_name, mpierrstr);
         MPI_Abort(comm, EXIT_FAILURE);
     }
-    err = mtxmpierror_alloc(&mpierror, comm);
-    if (err)
-        MPI_Abort(comm, EXIT_FAILURE);
+    err = mtxmpierror_alloc(&mpierror, comm, &mpierr);
+    if (err) {
+        fprintf(stderr, "%s: %s\n",
+                program_invocation_short_name,
+                mtx_strerror_mpi(err, mpierr, mpierrstr));
+        MPI_Finalize();
+        return EXIT_FAILURE;
+    }
 
     /* 2. Parse program options. */
     struct program_options args;

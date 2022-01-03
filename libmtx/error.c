@@ -1,23 +1,22 @@
 /* This file is part of libmtx.
  *
- * Copyright (C) 2021 James D. Trotter
+ * Copyright (C) 2022 James D. Trotter
  *
- * libmtx is free software: you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 3 of the
- * License, or (at your option) any later version.
+ * libmtx is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * libmtx is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * libmtx is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with libmtx.  If not, see
- * <https://www.gnu.org/licenses/>.
+ * along with libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-08-09
+ * Last modified: 2022-01-03
  *
  * Error handling.
  */
@@ -187,22 +186,27 @@ const char * mtx_strerror_mpi(
  */
 int mtxmpierror_alloc(
     struct mtxmpierror * mpierror,
-    MPI_Comm comm)
+    MPI_Comm comm,
+    int * mpierrcode)
 {
     int err;
     int comm_size;
     err = MPI_Comm_size(comm, &comm_size);
-    if (err)
-        MPI_Abort(comm, EXIT_FAILURE);
+    if (err) {
+        if (mpierrcode) *mpierrcode = err;
+        return MTX_ERR_MPI;
+    }
 
     int rank;
     err = MPI_Comm_rank(comm, &rank);
-    if (err)
-        MPI_Abort(comm, EXIT_FAILURE);
+    if (err) {
+        if (mpierrcode) *mpierrcode = err;
+        return MTX_ERR_MPI;
+    }
 
     int (* buf)[3] = malloc(3*comm_size * sizeof(int));
     if (!buf)
-        MPI_Abort(comm, EXIT_FAILURE);
+        return MTX_ERR_ERRNO;
 
     mpierror->comm = comm;
     mpierror->comm_size = comm_size;

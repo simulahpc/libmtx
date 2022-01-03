@@ -1,6 +1,6 @@
 /* This file is part of libmtx.
  *
- * Copyright (C) 2021 James D. Trotter
+ * Copyright (C) 2022 James D. Trotter
  *
  * libmtx is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
  * along with libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-09-22
+ * Last modified: 2022-01-03
  *
  * Unit tests for distributed Matrix Market files.
  */
@@ -70,7 +70,7 @@ int test_mtxdistfile_from_mtxfile(void)
         TEST_FAIL_MSG("Expected exactly two MPI processes");
 
     struct mtxmpierror mpierror;
-    err = mtxmpierror_alloc(&mpierror, comm);
+    err = mtxmpierror_alloc(&mpierror, comm, NULL);
     if (err)
         MPI_Abort(comm, EXIT_FAILURE);
 
@@ -326,7 +326,7 @@ int test_mtxdistfile_fread(void)
         TEST_FAIL_MSG("Expected exactly two MPI processes");
 
     struct mtxmpierror mpierror;
-    err = mtxmpierror_alloc(&mpierror, comm);
+    err = mtxmpierror_alloc(&mpierror, comm, NULL);
     if (err)
         MPI_Abort(comm, EXIT_FAILURE);
 
@@ -1067,7 +1067,7 @@ int test_mtxdistfile_fwrite(void)
         TEST_FAIL_MSG("Expected exactly two MPI processes");
 
     struct mtxmpierror mpierror;
-    err = mtxmpierror_alloc(&mpierror, comm);
+    err = mtxmpierror_alloc(&mpierror, comm, NULL);
     if (err)
         MPI_Abort(comm, EXIT_FAILURE);
 
@@ -1278,7 +1278,7 @@ int test_mtxdistfile_partition_rows(void)
         TEST_FAIL_MSG("Expected exactly two MPI processes");
 
     struct mtxmpierror mpierror;
-    err = mtxmpierror_alloc(&mpierror, comm);
+    err = mtxmpierror_alloc(&mpierror, comm, NULL);
     if (err)
         MPI_Abort(comm, EXIT_FAILURE);
 
@@ -1644,7 +1644,7 @@ int test_mtxdistfile_transpose(void)
         TEST_FAIL_MSG("Expected exactly two MPI processes");
 
     struct mtxmpierror mpierror;
-    err = mtxmpierror_alloc(&mpierror, comm);
+    err = mtxmpierror_alloc(&mpierror, comm, NULL);
     if (err)
         MPI_Abort(comm, EXIT_FAILURE);
 
@@ -1792,7 +1792,7 @@ int test_mtxdistfile_sort(void)
         TEST_FAIL_MSG("Expected exactly two MPI processes");
 
     struct mtxmpierror mpierror;
-    err = mtxmpierror_alloc(&mpierror, comm);
+    err = mtxmpierror_alloc(&mpierror, comm, NULL);
     if (err)
         MPI_Abort(comm, EXIT_FAILURE);
 
