@@ -41,12 +41,11 @@ struct mtxmpierror;
  */
 enum mtx_index_set_type
 {
-    mtx_index_set_interval, /* contiguous interval of integers */
-    mtx_index_set_strided,  /* set of integers separated by a
-                             * stride */
-    mtx_index_set_block_strided,  /* fixed-size sets of integers
-                                   * separated by a stride */
-    mtx_index_set_discrete, /* discrete index set given by an array */
+    mtx_index_set_interval,      /* contiguous interval of integers */
+    mtx_index_set_strided,       /* integers separated by a stride */
+    mtx_index_set_block_strided, /* fixed-size sets of integers
+                                  * separated by a stride */
+    mtx_index_set_discrete,      /* discrete index set given by an array */
 };
 
 /**

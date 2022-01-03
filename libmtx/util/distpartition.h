@@ -1,6 +1,6 @@
 /* This file is part of libmtx.
  *
- * Copyright (C) 2021 James D. Trotter
+ * Copyright (C) 2022 James D. Trotter
  *
  * libmtx is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
  * along with libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-09-19
+ * Last modified: 2022-01-03
  *
  * Data types and functions for partitioning finite sets in
  * distributed memory.
@@ -44,10 +44,22 @@
 struct mtxdistpartition
 {
     /**
-     * `comm' is an MPI communicator for processes among which the
+     * ‘comm’ is an MPI communicator for processes among which the
      * partition is distributed.
      */
     MPI_Comm comm;
+
+    /**
+     * ‘comm_size’ is the size of the MPI communicator.  This is equal
+     * to the number of parts of the row partitioning of the matrix or
+     * vector.
+     */
+    int comm_size;
+
+    /**
+     * ‘rank’ is the rank of the current process.
+     */
+    int rank;
 
     /**
      * `type' is the type of partitioning.
