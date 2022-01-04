@@ -1297,14 +1297,21 @@ int mtxfile_read(
 }
 
 /**
- * `mtxfile_fread()' reads a Matrix Market file from a stream.
+ * ‘mtxfile_fread()’ reads a Matrix Market file from a stream.
  *
- * `precision' is used to determine the precision to use for storing
+ * ‘precision’ is used to determine the precision to use for storing
  * the values of matrix or vector entries.
  *
- * If an error code is returned, then `lines_read' and `bytes_read'
+ * If an error code is returned, then ‘lines_read’ and ‘bytes_read’
  * are used to return the line number and byte at which the error was
  * encountered during the parsing of the Matrix Market file.
+ *
+ * If ‘linebuf’ is not ‘NULL’, then it must point to an array that can
+ * hold at least ‘line_max’ values of type ‘char’. This buffer is used
+ * for reading lines from the stream. Otherwise, if ‘linebuf’ is
+ * ‘NULL’, then a temporary buffer is allocated and used, and the
+ * maximum line length is determined by calling ‘sysconf()’ with
+ * ‘_SC_LINE_MAX’.
  */
 int mtxfile_fread(
     struct mtxfile * mtxfile,

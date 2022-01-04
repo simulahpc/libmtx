@@ -236,35 +236,35 @@ int mtxfile_parse_symmetry(
  */
 
 /**
- * `mtxfile_header' represents the header line of a Matrix Market
+ * ‘mtxfile_header’ represents the header line of a Matrix Market
  * file.
  */
 struct mtxfile_header
 {
     /**
-     * `object' is the type of Matrix Market object: `matrix' or
-     * `vector'.
+     * ‘object’ is the type of Matrix Market object: ‘matrix’ or
+     * ‘vector’.
      */
     enum mtxfile_object object;
 
     /**
-     * `format' is the matrix format: `coordinate' or `array'.
+     * ‘format’ is the matrix format: ‘coordinate’ or ‘array’.
      */
     enum mtxfile_format format;
 
     /**
-     * `field' is the matrix field: `real', `complex', `integer' or
-     * `pattern'.
+     * ‘field’ is the matrix field: ‘real’, ‘complex’, ‘integer’ or
+     * ‘pattern’.
      */
     enum mtxfile_field field;
 
     /**
-     * `symmetry' is the matrix symmetry: `general', `symmetric',
-     * `skew-symmetric', or `hermitian'.
+     * ‘symmetry’ is the matrix symmetry: ‘general’, ‘symmetric’,
+     * ‘skew-symmetric’, or ‘hermitian’.
      *
-     * Note that if `symmetry' is `symmetric', `skew-symmetric' or
-     * `hermitian', then the matrix must be square, so that `num_rows'
-     * is equal to `num_columns'.
+     * Note that if ‘symmetry’ is ‘symmetric’, ‘skew-symmetric’ or
+     * ‘hermitian’, then the matrix must be square, so that ‘num_rows’
+     * is equal to ‘num_columns’.
      */
     enum mtxfile_symmetry symmetry;
 };

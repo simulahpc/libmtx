@@ -1452,6 +1452,13 @@ int mtxdistfile_read(
  * are used to return the line number and byte at which the error was
  * encountered during the parsing of the Matrix Market file.
  *
+ * If ‘linebuf’ is not ‘NULL’, then it must point to an array that can
+ * hold at least ‘line_max’ values of type ‘char’. This buffer is used
+ * for reading lines from the stream. Otherwise, if ‘linebuf’ is
+ * ‘NULL’, then a temporary buffer is allocated and used, and the
+ * maximum line length is determined by calling ‘sysconf()’ with
+ * ‘_SC_LINE_MAX’.
+ *
  * Only a single root process will read from the specified stream.
  * The data is partitioned into equal-sized parts for each process.
  * For matrices and vectors in coordinate format, the total number of

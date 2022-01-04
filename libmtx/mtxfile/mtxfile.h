@@ -1,6 +1,6 @@
 /* This file is part of libmtx.
  *
- * Copyright (C) 2021 James D. Trotter
+ * Copyright (C) 2022 James D. Trotter
  *
  * libmtx is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
  * along with libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-09-01
+ * Last modified: 2021-01-04
  *
  * Matrix Market files.
  */
@@ -50,33 +50,33 @@ struct mtxmpierror;
 struct mtx_partition;
 
 /**
- * `mtxfile' represents a file in the Matrix Market file format.
+ * ‘mtxfile’ represents a file in the Matrix Market file format.
  */
 struct mtxfile
 {
     /**
-     * `header' is the Matrix Market file header.
+     * ‘header’ is the Matrix Market file header.
      */
     struct mtxfile_header header;
 
     /**
-     * `comments' is the Matrix Market comment lines.
+     * ‘comments’ is the Matrix Market comment lines.
      */
     struct mtxfile_comments comments;
 
     /**
-     * `size' is the Matrix Market size line.
+     * ‘size’ is the Matrix Market size line.
      */
     struct mtxfile_size size;
 
     /**
-     * `precision' is the precision used to store the values of the
+     * ‘precision’ is the precision used to store the values of the
      * Matrix Market data lines.
      */
     enum mtx_precision precision;
 
     /**
-     * `data' contains the data lines of the Matrix Market file.
+     * ‘data’ contains the data lines of the Matrix Market file.
      */
     union mtxfiledata data;
 };
@@ -588,14 +588,21 @@ int mtxfile_read(
     int64_t * bytes_read);
 
 /**
- * `mtxfile_fread()' reads a Matrix Market file from a stream.
+ * ‘mtxfile_fread()’ reads a Matrix Market file from a stream.
  *
- * `precision' is used to determine the precision to use for storing
+ * ‘precision’ is used to determine the precision to use for storing
  * the values of matrix or vector entries.
  *
- * If an error code is returned, then `lines_read' and `bytes_read'
+ * If an error code is returned, then ‘lines_read’ and ‘bytes_read’
  * are used to return the line number and byte at which the error was
  * encountered during the parsing of the Matrix Market file.
+ *
+ * If ‘linebuf’ is not ‘NULL’, then it must point to an array that can
+ * hold at least ‘line_max’ values of type ‘char’. This buffer is used
+ * for reading lines from the stream. Otherwise, if ‘linebuf’ is
+ * ‘NULL’, then a temporary buffer is allocated and used, and the
+ * maximum line length is determined by calling ‘sysconf()’ with
+ * ‘_SC_LINE_MAX’.
  */
 int mtxfile_fread(
     struct mtxfile * mtxfile,
