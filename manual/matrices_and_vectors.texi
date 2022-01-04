@@ -1,22 +1,21 @@
 @c This file is part of libmtx.
-@c Copyright (C) 2021 James D. Trotter
+@c Copyright (C) 2022 James D. Trotter
 @c
-@c libmtx is free software: you can redistribute it and/or
-@c modify it under the terms of the GNU General Public License as
-@c published by the Free Software Foundation, either version 3 of the
-@c License, or (at your option) any later version.
+@c libmtx is free software: you can redistribute it and/or modify it
+@c under the terms of the GNU General Public License as published by
+@c the Free Software Foundation, either version 3 of the License, or
+@c (at your option) any later version.
 @c
-@c libmtx is distributed in the hope that it will be useful,
-@c but WITHOUT ANY WARRANTY; without even the implied warranty of
+@c libmtx is distributed in the hope that it will be useful, but
+@c WITHOUT ANY WARRANTY; without even the implied warranty of
 @c MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 @c General Public License for more details.
 @c
 @c You should have received a copy of the GNU General Public License
-@c along with libmtx.  If not, see
-@c <https://www.gnu.org/licenses/>.
+@c along with libmtx.  If not, see <https://www.gnu.org/licenses/>.
 @c
 @c Authors: James D. Trotter <james@simula.no>
-@c Last modified: 2021-08-09
+@c Last modified: 2022-01-04
 @c
 @c libmtx User Guide: Matrix Market objects.
 
@@ -25,12 +24,13 @@
 
 This chapter provides a detailed explanation of how to work with
 matrices and vectors using the libmtx C library.  For now, we are
-concerned with matrices and vectors that belong locally to a single
-machine or node.  For matrices and vectors that are distributed among
-multiple nodes, see @ref{Distributed matrices and vectors}.
+concerned with matrices and vectors on a single, shared-memory machine
+or node.  For matrices and vectors that are distributed across
+multiple processes using MPI, see @ref{Distributed matrices and
+vectors}.
 
 For any user-facing types and functions, the library uses the
-convention of prefixing their names with @code{mtx_}. This makes it
+convention of prefixing their names with @code{mtx}. This makes it
 easier to avoid possible name clashes with other code when using
 libmtx.
 
@@ -49,20 +49,20 @@ libmtx.
 Functions in the libmtx C library generally return a status code that
 either indicates success (represented by the status code
 @code{MTX_SUCCESS}) or a specific error.  Valid error codes correspond
-to values of the type @code{enum mtx_error}, which is defined in the
+to values of the type @code{enum mtxerror}, which is defined in the
 file @file{libmtx/error.h} along with some error handling
 functions.
 
-@findex mtx_strerror
-The function @code{mtx_strerror} can be used to give a string
+@findex mtxstrerror
+The function @code{mtxstrerror} can be used to give a string
 containing a description of a given error code.
 @example
-@code{const char * mtx_strerror(int err);}
+@code{const char * mtxstrerror(int err);}
 @end example
 Here, the integer @code{err} should correspond to one of the error
-codes from the @code{mtx_error} enum type.
+codes from the @code{mtxerror} enum type.
 
-@code{mtx_strerror} is typically used as shown in the example below.
+@code{mtxstrerror} is typically used as shown in the example below.
 @example
 @code{  FILE * f = fopen("test.mtx", "r");
 
@@ -71,7 +71,7 @@ codes from the @code{mtx_error} enum type.
   int err = mtx_fread(&mtx, f, &line, &column);
   if (err) @{
       fprintf(stderr, "Error: test.mtx:%d:%d: %s\n",
-              line, column, mtx_strerror(err));
+              line, column, mtxstrerror(err));
       fclose(f);
   @}}
 @end example

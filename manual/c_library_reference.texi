@@ -53,12 +53,12 @@ library.
 @};}
 @end example
 
-@findex mtx_strerror
-@findex mtx_strerror_mpi
+@findex mtxstrerror
+@findex mtxstrerrormpi
 @example
-@code{const char * mtx_strerror(int err);
+@code{const char * mtxstrerror(int err);
 
-const char * mtx_strerror_mpi(
+const char * mtxstrerrormpi(
     int err,
     int mpierrcode,
     char * mpierrstr);}

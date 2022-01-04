@@ -47,7 +47,7 @@ int test_mtx_alloc_vector_array_real_single(void)
     int size = sizeof(data) / sizeof(*data);
     err = mtx_alloc_vector_array(
         &mtx, mtx_real, mtx_single, num_comment_lines, comment_lines, size);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
     TEST_ASSERT_EQ(mtx_vector, mtx.object);
     TEST_ASSERT_EQ(mtx_array, mtx.format);
     TEST_ASSERT_EQ(mtx_real, mtx.field);
@@ -83,7 +83,7 @@ int test_mtx_init_vector_array_real_single(void)
     int size = sizeof(data) / sizeof(*data);
     err = mtx_init_vector_array_real_single(
         &mtx, num_comment_lines, comment_lines, size, data);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
     TEST_ASSERT_EQ(mtx_vector, mtx.object);
     TEST_ASSERT_EQ(mtx_array, mtx.format);
     TEST_ASSERT_EQ(mtx_real, mtx.field);
@@ -121,7 +121,7 @@ int test_mtx_init_vector_array_real_double(void)
     int size = sizeof(data) / sizeof(*data);
     err = mtx_init_vector_array_real_double(
         &mtx, num_comment_lines, comment_lines, size, data);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
     TEST_ASSERT_EQ(mtx_vector, mtx.object);
     TEST_ASSERT_EQ(mtx_array, mtx.format);
     TEST_ASSERT_EQ(mtx_real, mtx.field);
@@ -157,7 +157,7 @@ int test_mtx_init_vector_array_complex_single(void)
     int size = sizeof(data) / sizeof(*data);
     err = mtx_init_vector_array_complex_single(
         &mtx, num_comment_lines, comment_lines, size, data);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
     TEST_ASSERT_EQ(mtx_vector, mtx.object);
     TEST_ASSERT_EQ(mtx_array, mtx.format);
     TEST_ASSERT_EQ(mtx_complex, mtx.field);
@@ -192,7 +192,7 @@ int test_mtx_init_vector_array_integer_single(void)
     int size = sizeof(data) / sizeof(*data);
     err = mtx_init_vector_array_integer_single(
         &mtx, num_comment_lines, comment_lines, size, data);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
     TEST_ASSERT_EQ(mtx_vector, mtx.object);
     TEST_ASSERT_EQ(mtx_array, mtx.format);
     TEST_ASSERT_EQ(mtx_integer, mtx.field);
@@ -230,7 +230,7 @@ int test_mtx_alloc_vector_coordinate_real_single(void)
         &mtx, mtx_real, mtx_single,
         num_comment_lines, comment_lines,
         num_rows, size);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
     TEST_ASSERT_EQ(mtx_vector, mtx.object);
     TEST_ASSERT_EQ(mtx_coordinate, mtx.format);
     TEST_ASSERT_EQ(mtx_real, mtx.field);
@@ -273,7 +273,7 @@ int test_mtx_init_vector_coordinate_real_single(void)
     err = mtx_init_vector_coordinate_real_single(
         &mtx, mtx_unsorted, mtx_unassembled,
         num_comment_lines, comment_lines, num_rows, size, data);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
     TEST_ASSERT_EQ(mtx_vector, mtx.object);
     TEST_ASSERT_EQ(mtx_coordinate, mtx.format);
     TEST_ASSERT_EQ(mtx_real, mtx.field);
@@ -317,7 +317,7 @@ int test_mtx_init_vector_coordinate_real_double(void)
     err = mtx_init_vector_coordinate_real_double(
         &mtx, mtx_unsorted, mtx_unassembled,
         num_comment_lines, comment_lines, num_rows, size, data);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
     TEST_ASSERT_EQ(mtx_vector, mtx.object);
     TEST_ASSERT_EQ(mtx_coordinate, mtx.format);
     TEST_ASSERT_EQ(mtx_real, mtx.field);
@@ -360,7 +360,7 @@ int test_mtx_init_vector_coordinate_complex_single(void)
     err = mtx_init_vector_coordinate_complex_single(
         &mtx, mtx_unsorted, mtx_unassembled,
         num_comment_lines, comment_lines, num_rows, size, data);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
     TEST_ASSERT_EQ(mtx_vector, mtx.object);
     TEST_ASSERT_EQ(mtx_coordinate, mtx.format);
     TEST_ASSERT_EQ(mtx_complex, mtx.field);
@@ -404,7 +404,7 @@ int test_mtx_init_vector_coordinate_integer_single(void)
     err = mtx_init_vector_coordinate_integer_single(
         &mtx, mtx_unsorted, mtx_unassembled,
         num_comment_lines, comment_lines, num_rows, size, data);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
     TEST_ASSERT_EQ(mtx_vector, mtx.object);
     TEST_ASSERT_EQ(mtx_coordinate, mtx.format);
     TEST_ASSERT_EQ(mtx_integer, mtx.field);
@@ -447,7 +447,7 @@ int test_mtx_init_vector_coordinate_pattern(void)
     err = mtx_init_vector_coordinate_pattern(
         &mtx, mtx_unsorted, mtx_unassembled,
         num_comment_lines, comment_lines, num_rows, size, data);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
     TEST_ASSERT_EQ(mtx_vector, mtx.object);
     TEST_ASSERT_EQ(mtx_coordinate, mtx.format);
     TEST_ASSERT_EQ(mtx_pattern, mtx.field);

@@ -53,7 +53,7 @@ const char * mtxmatrix_type_str(
     case mtxmatrix_auto: return "auto";
     case mtxmatrix_array: return "array";
     case mtxmatrix_coordinate: return "coordinate";
-    default: return mtx_strerror(MTX_ERR_INVALID_MATRIX_TYPE);
+    default: return mtxstrerror(MTX_ERR_INVALID_MATRIX_TYPE);
     }
 }
 

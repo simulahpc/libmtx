@@ -1,22 +1,21 @@
 @c This file is part of libmtx.
-@c Copyright (C) 2021 James D. Trotter
+@c Copyright (C) 2022 James D. Trotter
 @c
-@c libmtx is free software: you can redistribute it and/or
-@c modify it under the terms of the GNU General Public License as
-@c published by the Free Software Foundation, either version 3 of the
-@c License, or (at your option) any later version.
+@c libmtx is free software: you can redistribute it and/or modify it
+@c under the terms of the GNU General Public License as published by
+@c the Free Software Foundation, either version 3 of the License, or
+@c (at your option) any later version.
 @c
-@c libmtx is distributed in the hope that it will be useful,
-@c but WITHOUT ANY WARRANTY; without even the implied warranty of
+@c libmtx is distributed in the hope that it will be useful, but
+@c WITHOUT ANY WARRANTY; without even the implied warranty of
 @c MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 @c General Public License for more details.
 @c
 @c You should have received a copy of the GNU General Public License
-@c along with libmtx.  If not, see
-@c <https://www.gnu.org/licenses/>.
+@c along with libmtx.  If not, see <https://www.gnu.org/licenses/>.
 @c
 @c Authors: James D. Trotter <james@simula.no>
-@c Last modified: 2021-06-18
+@c Last modified: 2022-01-04
 @c
 @c libmtx User Guide: Matrix Market file format.
 
@@ -98,20 +97,19 @@ sparse or dense form.
 @cindex array
 @cindex coordinate
 @item @code{@var{format}}
-      is @code{array} if the matrix (or vector) is dense, or
-      @code{coordinate} if it is sparse.
+      is @code{array} if the data is stored in a dense format, or
+      @code{coordinate} if it is stored in a sparse format.
 
 @cindex Matrix Market format @subentry field
 @cindex Matrix Market @subentry field
 @cindex real
-@cindex double
 @cindex complex
 @cindex integer
 @cindex pattern
 @item @code{@var{field}}
       indicates the field to which the matrix (or vector) values
       belong, and may be one of the following: @code{real},
-      @code{double}, @code{complex}, @code{integer} or @code{pattern}.
+      @code{complex}, @code{integer} or @code{pattern}.
 
 @cindex Matrix Market format @subentry symmetry
 @cindex Matrix Market @subentry symmetry
@@ -129,32 +127,28 @@ sparse or dense form.
 @cindex Matrix Market format @subentry field
 @cindex Matrix Market @subentry field
 @cindex real
-@cindex double
 @cindex complex
 @cindex integer
 @cindex pattern
 The @code{@var{field}} value of the header is used as follows:
 @itemize
-@item For real-valued matrices (or vectors),
-values are stored as decimal numbers. @code{@var{field}} is either
-@code{real} or @code{double} and values should be represented in
-single- or double-precision floating-point, respectively.
+@item For real-valued matrices or vectors,
+@code{@var{field}} is @code{real}, and values are stored as decimal
+numbers.
 
-@item For complex matrices (or vectors),
-values are stored as pairs of decimal numbers, comprising the real and
-imaginary parts of a complex number. @code{@var{field}} is
-@code{complex}, and values should be represented in pairs of
-single-precision floating-point numbers.
+@item For complex matrices or vectors,
+@code{@var{field}} is @code{complex}, and values are stored as pairs
+of decimal numbers, comprising the real and imaginary parts of a
+complex number.
 
-@item For integer-valued matrices (or vectors),
-values are stored as integers. @code{@var{field}} is @code{integer},
-and values should be represented as 32-bit integers.
+@item For integer-valued matrices or vectors,
+@code{@var{field}} is @code{integer}, and values are stored as
+integers.
 
-@item For binary-valued sparse matrices (or vectors),
-no values are stored for nonzero matrix (or vector) entries. Only the
-locations of nonzeros are stored. @code{@var{field}} is
-@code{pattern}, and only the locations of nonzero matrix (or vector)
-entries should be represented.
+@item For binary-valued sparse matrices or vectors,
+@code{@var{field}} is @code{pattern}. No values are stored for nonzero
+matrix or vector entries. Instead, only the locations of nonzeros are
+stored.
 @end itemize
 
 @cindex Matrix Market format @subentry symmetry
@@ -320,19 +314,18 @@ described in the following.
 
 @cindex dense matrix
 @cindex dense vector
-A dense matrix or vector with real or integer values, that is, when
+A dense matrix or vector with real or integer values (that is,
 @code{@var{format}} is @code{array} and @code{@var{field}} is
-@code{real}, @code{double} or @code{integer}, has data lines on the
-form
+@code{real} or @code{integer}), has data lines on the form
 @example
 @code{@var{a}}
 @end example
 @noindent
-where @code{@var{a}} is a decimal number in the case of @code{real} or
-@code{double}, and an integer otherwise.
+where @code{@var{a}} is a decimal number if @code{@var{field}} is
+@code{real}, or an integer if @code{@var{field}} is @code{integer}.
 
-Otherwise, if @code{@var{field}} is @code{complex}, then the data
-lines are on the form
+Otherwise, if @code{@var{format}} is @code{array} and
+@code{@var{field}} is @code{complex}, then data lines are on the form
 @example
 @code{@var{a} @var{b}}
 @end example
@@ -342,15 +335,15 @@ the real and imaginary parts of the complex number,
 unit.
 
 @cindex sparse matrix
-A sparse matrix, that is, when @code{@var{object}} is @code{matrix}
-and @code{@var{format}} is @code{coordinate}, has data lines on one of
+A sparse matrix, (that is, @code{@var{object}} is @code{matrix} and
+@code{@var{format}} is @code{coordinate}), has data lines on one of
 three different forms depending on the @code{@var{field}} value. Note
 that indexing of sparse matrix and vector entries is 1-based.
 
 @itemize
 @item
-If @code{@var{field}} is @code{real}, @code{double} or @code{integer},
-then data lines are written as:
+If @code{@var{field}} is @code{real} or @code{integer}, then data
+lines are written as:
 @example
 @code{@var{i} @var{j} @var{a}}
 @end example
@@ -379,15 +372,15 @@ denoting the row and column index of a nonzero entry.
 @end itemize
 
 @cindex sparse vector
-For a sparse vector, that is, when @code{@var{object}} is
-@code{vector} and @code{@var{format}} is @code{coordinate}, the data
-lines are similar to those of a sparse matrix, but the column index is
+For a sparse vector, (that is, @code{@var{object}} is @code{vector}
+and @code{@var{format}} is @code{coordinate}), the data lines are
+similar to those of a sparse matrix, but the column index is
 omitted. More specifically, data lines are on one of three different
 forms depending on the @code{@var{field}} value.
 @itemize
 @item
-If @code{@var{field}} is @code{real}, @code{double} or @code{integer},
-then data lines are written as:
+If @code{@var{field}} is @code{real} or @code{integer}, then data
+lines are written as:
 @example
 @code{@var{i} @var{a}}
 @end example

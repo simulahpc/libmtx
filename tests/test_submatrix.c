@@ -61,7 +61,7 @@ int test_mtx_matrix_submatrix_coordinate_real_general(void)
         mtx_nontriangular, mtx_unsorted, mtx_unassembled,
         num_comment_lines, comment_lines,
         num_rows, num_columns, size, data);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
     /* Extract a submatrix. */
     struct mtx_index_set rows;
@@ -70,7 +70,7 @@ int test_mtx_matrix_submatrix_coordinate_real_general(void)
     mtx_index_set_init_interval(&columns, 1, 5);
     struct mtx submtx;
     err = mtx_matrix_submatrix(&submtx, &mtx, &rows, &columns);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
     TEST_ASSERT_EQ(mtx_matrix, submtx.object);
     TEST_ASSERT_EQ(mtx_coordinate, submtx.format);
     TEST_ASSERT_EQ(mtx_real, submtx.field);

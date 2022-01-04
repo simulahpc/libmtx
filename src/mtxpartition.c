@@ -665,7 +665,7 @@ int main(int argc, char *argv[])
     if (err) {
         fprintf(stderr, "%s: %s\n",
                 program_invocation_short_name,
-                mtx_strerror_mpi(err, mpierr, mpierrstr));
+                mtxstrerrormpi(err, mpierr, mpierrstr));
         MPI_Finalize();
         return EXIT_FAILURE;
     }
@@ -744,14 +744,14 @@ int main(int argc, char *argv[])
                     args.mtx_path, lines_read+1,
                     err == MTX_ERR_MPI_COLLECTIVE
                     ? mtxmpierror_description(&mpierror)
-                    : mtx_strerror(err));
+                    : mtxstrerror(err));
         } else if (rank == root) {
             fprintf(stderr, "%s: %s: %s\n",
                     program_invocation_short_name,
                     args.mtx_path,
                     err == MTX_ERR_MPI_COLLECTIVE
                     ? mtxmpierror_description(&mpierror)
-                    : mtx_strerror(err));
+                    : mtxstrerror(err));
         }
         program_options_free(&args);
         mtxmpierror_free(&mpierror);
@@ -932,7 +932,7 @@ int main(int argc, char *argv[])
                     program_invocation_short_name,
                     err == MTX_ERR_MPI_COLLECTIVE
                     ? mtxmpierror_description(&mpierror)
-                    : mtx_strerror(err));
+                    : mtxstrerror(err));
         }
         free(data_lines_per_part);
         free(data_lines_per_part_ptr);
@@ -968,7 +968,7 @@ int main(int argc, char *argv[])
                     program_invocation_short_name,
                     err == MTX_ERR_MPI_COLLECTIVE
                     ? mtxmpierror_description(&mpierror)
-                    : mtx_strerror(err));
+                    : mtxstrerror(err));
         }
         free(data_lines_per_part);
         free(data_lines_per_part_ptr);
@@ -1054,7 +1054,7 @@ int main(int argc, char *argv[])
                         program_invocation_short_name,
                         err == MTX_ERR_MPI_COLLECTIVE
                         ? mtxmpierror_description(&mpierror)
-                        : mtx_strerror(err));
+                        : mtxstrerror(err));
             }
             free(output_path);
             mtxdistfile_free(&dst);
@@ -1177,7 +1177,7 @@ int main(int argc, char *argv[])
                         program_invocation_short_name,
                         err == MTX_ERR_MPI_COLLECTIVE
                         ? mtxmpierror_description(&mpierror)
-                        : mtx_strerror(err));
+                        : mtxstrerror(err));
             }
             mtxdistfile_free(&dst);
             free(data_lines_per_part);
@@ -1231,7 +1231,7 @@ int main(int argc, char *argv[])
                         program_invocation_short_name,
                         err == MTX_ERR_MPI_COLLECTIVE
                         ? mtxmpierror_description(&mpierror)
-                        : mtx_strerror(err));
+                        : mtxstrerror(err));
             }
             mtxdistfile_free(&mtxdistfile_parts);
             mtxdistfile_free(&dst);
@@ -1321,7 +1321,7 @@ int main(int argc, char *argv[])
         fprintf(stderr, "%s: %s:%d: %s\n",
                 program_invocation_short_name,
                 args.mtx_path, lines_read+1,
-                mtx_strerror(err));
+                mtxstrerror(err));
         program_options_free(&args);
         return EXIT_FAILURE;
     } else if (err) {
@@ -1329,7 +1329,7 @@ int main(int argc, char *argv[])
             fprintf(diagf, "\n");
         fprintf(stderr, "%s: %s: %s\n",
                 program_invocation_short_name,
-                args.mtx_path, mtx_strerror(err));
+                args.mtx_path, mtxstrerror(err));
         program_options_free(&args);
         return EXIT_FAILURE;
     }
@@ -1361,7 +1361,7 @@ int main(int argc, char *argv[])
             fprintf(stderr, "%s: %s:%d: %s\n",
                     program_invocation_short_name,
                     args.row_partition_path, lines_read+1,
-                    mtx_strerror(err));
+                    mtxstrerror(err));
             mtxfile_free(&mtxfile);
             program_options_free(&args);
             return EXIT_FAILURE;
@@ -1370,7 +1370,7 @@ int main(int argc, char *argv[])
                 fprintf(diagf, "\n");
             fprintf(stderr, "%s: %s: %s\n",
                     program_invocation_short_name,
-                    args.row_partition_path, mtx_strerror(err));
+                    args.row_partition_path, mtxstrerror(err));
             mtxfile_free(&mtxfile);
             program_options_free(&args);
             return EXIT_FAILURE;
@@ -1398,7 +1398,7 @@ int main(int argc, char *argv[])
             if (args.verbose > 0)
                 fprintf(diagf, "\n");
             fprintf(stderr, "%s: %s\n",
-                    program_invocation_short_name, mtx_strerror(err));
+                    program_invocation_short_name, mtxstrerror(err));
             mtxfile_free(&mtxfile);
             program_options_free(&args);
             return EXIT_FAILURE;
@@ -1416,7 +1416,7 @@ int main(int argc, char *argv[])
     if (err) {
         if (args.verbose > 0)
             fprintf(diagf, "\n");
-        fprintf(stderr, "%s: %s\n", program_invocation_short_name, mtx_strerror(err));
+        fprintf(stderr, "%s: %s\n", program_invocation_short_name, mtxstrerror(err));
         mtx_partition_free(&row_partition);
         mtxfile_free(&mtxfile);
         program_options_free(&args);
@@ -1470,7 +1470,7 @@ int main(int argc, char *argv[])
     if (err) {
         if (args.verbose > 0)
             fprintf(diagf, "\n");
-        fprintf(stderr, "%s: %s\n", program_invocation_short_name, mtx_strerror(err));
+        fprintf(stderr, "%s: %s\n", program_invocation_short_name, mtxstrerror(err));
         free(data_lines_per_part);
         free(data_lines_per_part_ptr);
         free(part_per_data_line);
@@ -1498,7 +1498,7 @@ int main(int argc, char *argv[])
                     fprintf(diagf, "\n");
                 fprintf(stderr, "%s: %s\n",
                         program_invocation_short_name,
-                        mtx_strerror(err));
+                        mtxstrerror(err));
                 free(data_lines_per_part);
                 free(data_lines_per_part_ptr);
                 free(part_per_data_line);
@@ -1516,7 +1516,7 @@ int main(int argc, char *argv[])
                     fprintf(diagf, "\n");
                 fprintf(stderr, "%s: %s\n",
                         program_invocation_short_name,
-                        mtx_strerror(err));
+                        mtxstrerror(err));
                 mtxfile_free(&mtxfile_p);
                 free(data_lines_per_part);
                 free(data_lines_per_part_ptr);
@@ -1562,7 +1562,7 @@ int main(int argc, char *argv[])
                     fprintf(diagf, "\n");
                 fprintf(stderr, "%s: %s\n",
                         program_invocation_short_name,
-                        mtx_strerror(err));
+                        mtxstrerror(err));
                 free(output_path);
                 mtxfile_free(&mtxfile_p);
                 free(data_lines_per_part);
@@ -1605,7 +1605,7 @@ int main(int argc, char *argv[])
             fprintf(stderr, "%s: %s: %s\n",
                     program_invocation_short_name,
                     args.row_partition_output_path,
-                    mtx_strerror(err));
+                    mtxstrerror(err));
             free(data_lines_per_part);
             free(data_lines_per_part_ptr);
             free(part_per_data_line);
@@ -1642,7 +1642,7 @@ int main(int argc, char *argv[])
             fprintf(stderr, "%s: %s: %s\n",
                     program_invocation_short_name,
                     args.rowperm_output_path,
-                    mtx_strerror(err));
+                    mtxstrerror(err));
             free(data_lines_per_part);
             free(data_lines_per_part_ptr);
             free(part_per_data_line);
@@ -1672,7 +1672,7 @@ int main(int argc, char *argv[])
                 fprintf(diagf, "\n");
             fprintf(stderr, "%s: %s\n",
                     program_invocation_short_name,
-                    mtx_strerror(err));
+                    mtxstrerror(err));
             free(data_lines_per_part);
             free(data_lines_per_part_ptr);
             free(part_per_data_line);
@@ -1690,7 +1690,7 @@ int main(int argc, char *argv[])
                 fprintf(diagf, "\n");
             fprintf(stderr, "%s: %s\n",
                     program_invocation_short_name,
-                    mtx_strerror(err));
+                    mtxstrerror(err));
             mtxfile_free(&mtxfile_parts);
             free(data_lines_per_part);
             free(data_lines_per_part_ptr);
@@ -1716,7 +1716,7 @@ int main(int argc, char *argv[])
                 fprintf(diagf, "\n");
             fprintf(stderr, "%s: %s\n",
                     program_invocation_short_name,
-                    mtx_strerror(err));
+                    mtxstrerror(err));
             mtxfile_free(&mtxfile_parts);
             free(data_lines_per_part);
             free(data_lines_per_part_ptr);

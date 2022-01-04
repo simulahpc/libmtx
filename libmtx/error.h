@@ -86,28 +86,28 @@ enum mtxerror
 };
 
 /**
- * ‘mtx_strerror()’ is a string describing an error code.
+ * ‘mtxstrerror()’ is a string describing an error code.
  *
  * The error code ‘err’ must correspond to one of the error codes
  * defined in the ‘mtxerror’ enum type.
  *
- * If ‘err’ is ‘MTX_ERR_ERRNO’, then ‘mtx_strerror()’ will use the
+ * If ‘err’ is ‘MTX_ERR_ERRNO’, then ‘mtxstrerror()’ will use the
  * current value of ‘errno’ to obtain a description of the error.
  *
- * If ‘err’ may be ‘MTX_ERR_MPI’, then ‘mtx_strerror_mpi()’ should be
+ * If ‘err’ may be ‘MTX_ERR_MPI’, then ‘mtxstrerrormpi()’ should be
  * used instead.
  */
-const char * mtx_strerror(int err);
+const char * mtxstrerror(int err);
 
 /**
- * ‘mtx_strerror_mpi()’ is a string describing an error code.
+ * ‘mtxstrerrormpi()’ is a string describing an error code.
  *
  * The error code ‘err’ must correspond to one of the error codes
  * defined in the ‘mtxerror’ enum type.
  *
- * ‘mtx_strerror_mpi()’ should be used in cases where ‘err’ may be
+ * ‘mtxstrerrormpi()’ should be used in cases where ‘err’ may be
  * ‘MTX_ERR_MPI’, because it provides a more specific error
- * description than ‘mtx_strerror()’.
+ * description than ‘mtxstrerror()’.
  *
  * If ‘err’ is ‘MTX_ERR_MPI’, then the argument ‘mpierrcode’ should be
  * set to the error code that was returned from the MPI function call
@@ -116,10 +116,10 @@ const char * mtx_strerror(int err);
  * this case, ‘MPI_Error_string’ will be used to obtain a description
  * of the error.
  *
- * Otherwise, ‘mtx_strerror_mpi()’ returns the same error description
- * as ‘mtx_strerror()’ for error codes other than ‘MTX_ERR_MPI’.
+ * Otherwise, ‘mtxstrerrormpi()’ returns the same error description
+ * as ‘mtxstrerror()’ for error codes other than ‘MTX_ERR_MPI’.
  */
-const char * mtx_strerror_mpi(
+const char * mtxstrerrormpi(
     int err,
     int mpierrcode,
     char * mpierrstr);

@@ -1746,7 +1746,7 @@ const char * mtxfile_sorting_str(
     case mtxfile_row_major: return "row-major";
     case mtxfile_column_major: return "column-major";
     case mtxfile_morton: return "morton";
-    default: return mtx_strerror(MTX_ERR_INVALID_SORTING);
+    default: return mtxstrerror(MTX_ERR_INVALID_SORTING);
     }
 }
 
@@ -2138,7 +2138,7 @@ const char * mtxfile_ordering_str(
     switch (ordering) {
     case mtxfile_unordered: return "unordered";
     case mtxfile_rcm: return "rcm";
-    default: return mtx_strerror(MTX_ERR_INVALID_ORDERING);
+    default: return mtxstrerror(MTX_ERR_INVALID_ORDERING);
     }
 }
 

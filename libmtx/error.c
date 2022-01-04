@@ -36,18 +36,18 @@
 #include <string.h>
 
 /**
- * ‘mtx_strerror()’ is a string describing an error code.
+ * ‘mtxstrerror()’ is a string describing an error code.
  *
  * The error code ‘err’ must correspond to one of the error codes
  * defined in the ‘mtxerror’ enum type.
  *
- * If ‘err’ is ‘MTX_ERR_ERRNO’, then ‘mtx_strerror()’ will use the
+ * If ‘err’ is ‘MTX_ERR_ERRNO’, then ‘mtxstrerror()’ will use the
  * current value of ‘errno’ to obtain a description of the error.
  *
- * If ‘err’ may be ‘MTX_ERR_MPI’, then ‘mtx_strerror_mpi()’ should be
+ * If ‘err’ may be ‘MTX_ERR_MPI’, then ‘mtxstrerrormpi()’ should be
  * used instead.
  */
-const char * mtx_strerror(
+const char * mtxstrerror(
     int err)
 {
     switch (err) {
@@ -143,14 +143,14 @@ const char * mtx_strerror(
 }
 
 /**
- * ‘mtx_strerror_mpi()’ is a string describing an error code.
+ * ‘mtxstrerrormpi()’ is a string describing an error code.
  *
  * The error code ‘err’ must correspond to one of the error codes
  * defined in the ‘mtxerror’ enum type.
  *
- * ‘mtx_strerror_mpi()’ should be used in cases where ‘err’ may be
+ * ‘mtxstrerrormpi()’ should be used in cases where ‘err’ may be
  * ‘MTX_ERR_MPI’, because it provides a more specific error description
- * than ‘mtx_strerror()’.
+ * than ‘mtxstrerror()’.
  *
  * If ‘err’ is ‘MTX_ERR_MPI’, then the argument ‘mpierrcode’ should be
  * set to the error code that was returned from the MPI function call
@@ -159,10 +159,10 @@ const char * mtx_strerror(
  * this case, ‘MPI_Error_string’ will be used to obtain a description
  * of the error.
  *
- * Otherwise, ‘mtx_strerror_mpi()’ returns the same error description
- * as ‘mtx_strerror()’ for error codes other than ‘MTX_ERR_MPI’.
+ * Otherwise, ‘mtxstrerrormpi()’ returns the same error description
+ * as ‘mtxstrerror()’ for error codes other than ‘MTX_ERR_MPI’.
  */
-const char * mtx_strerror_mpi(
+const char * mtxstrerrormpi(
     int err,
     int mpierrcode,
     char * mpierrstr)
@@ -176,9 +176,9 @@ const char * mtx_strerror_mpi(
         return "unknown MPI error";
 #endif
     } else {
-        return mtx_strerror(err);
+        return mtxstrerror(err);
     }
-    return mtx_strerror(err);
+    return mtxstrerror(err);
 }
 
 #ifdef LIBMTX_HAVE_MPI
@@ -243,13 +243,13 @@ char * mtxmpierror_description(
             comm_err = MTX_ERR_MPI_COLLECTIVE;
     }
     if (comm_err == MTX_SUCCESS)
-        return strdup(mtx_strerror(MTX_SUCCESS));
+        return strdup(mtxstrerror(MTX_SUCCESS));
 
     const char * format_header = "%s";
     const char * format_err_first = ": rank %d - %s";
     const char * format_err = ", rank %d - %s";
 
-    int len = snprintf(NULL, 0, format_header, mtx_strerror(MTX_ERR_MPI_COLLECTIVE));
+    int len = snprintf(NULL, 0, format_header, mtxstrerror(MTX_ERR_MPI_COLLECTIVE));
     int num_errors = 0;
     for (int p = 0; p < mpierror->comm_size; p++) {
         if (mpierror->buf[p][1]) {
@@ -258,7 +258,7 @@ char * mtxmpierror_description(
             len += snprintf(
                 NULL, 0, num_errors == 0 ? format_err_first : format_err,
                 mpierror->buf[p][0],
-                mtx_strerror_mpi(
+                mtxstrerrormpi(
                     mpierror->buf[p][1], mpierror->mpierrcode, mpierrstr));
             num_errors++;
         }
@@ -268,7 +268,7 @@ char * mtxmpierror_description(
     if (!description)
         return NULL;
 
-    int newlen = snprintf(description, len, format_header, mtx_strerror(comm_err));
+    int newlen = snprintf(description, len, format_header, mtxstrerror(comm_err));
     num_errors = 0;
     for (int p = 0; p < mpierror->comm_size; p++) {
         if (mpierror->buf[p][1]) {
@@ -278,7 +278,7 @@ char * mtxmpierror_description(
                 &description[newlen], len-newlen+1,
                 num_errors == 0 ? format_err_first : format_err,
                 mpierror->buf[p][0],
-                mtx_strerror_mpi(
+                mtxstrerrormpi(
                     mpierror->buf[p][1], mpierror->mpierrcode, mpierrstr));
             num_errors++;
         }

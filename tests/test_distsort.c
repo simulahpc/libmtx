@@ -112,7 +112,7 @@ int test_distradix_sort(void)
             MTX_SUCCESS, err, "%s",
             err == MTX_ERR_MPI_COLLECTIVE
             ? mtxmpierror_description(&mpierror)
-            : mtx_strerror(err));
+            : mtxstrerror(err));
         if (rank == 0) {
             TEST_ASSERT_EQ(  0, keys[0]);
             TEST_ASSERT_EQ(  1, keys[1]);
@@ -140,7 +140,7 @@ int test_distradix_sort(void)
             MTX_SUCCESS, err, "%s",
             err == MTX_ERR_MPI_COLLECTIVE
             ? mtxmpierror_description(&mpierror)
-            : mtx_strerror(err));
+            : mtxstrerror(err));
         if (rank == 0) {
             TEST_ASSERT_EQ( 1352, keys[0]);
             TEST_ASSERT_EQ(24732, keys[1]);
@@ -168,7 +168,7 @@ int test_distradix_sort(void)
             MTX_SUCCESS, err, "%s",
             err == MTX_ERR_MPI_COLLECTIVE
             ? mtxmpierror_description(&mpierror)
-            : mtx_strerror(err));
+            : mtxstrerror(err));
         for (int i = 1; i < size; i++)
             TEST_ASSERT_LE_MSG(keys[i-1], keys[i], "i=%d, keys[i-1]=%"PRIu32", keys[i]=%"PRIu32"",
                                i, keys[i-1], keys[i]);
@@ -176,13 +176,13 @@ int test_distradix_sort(void)
         if (rank == 0) {
             uint32_t key;
             err = MPI_Recv(&key, 1, MPI_UINT32_T, 1, 0, comm, MPI_STATUS_IGNORE);
-            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_LE_MSG(
                 keys[size-1], key, "keys[%lld]=%"PRIu32", keys[%lld]=%"PRIu32"",
                 size-1, keys[size-1], size, key);
         } else if (rank == 1) {
             err = MPI_Send(&keys[0], 1, MPI_UINT32_T, 0, 0, comm);
-            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         }
     }
 
@@ -208,7 +208,7 @@ int test_distradix_sort(void)
             MTX_SUCCESS, err, "%s",
             err == MTX_ERR_MPI_COLLECTIVE
             ? mtxmpierror_description(&mpierror)
-            : mtx_strerror(err));
+            : mtxstrerror(err));
 
         MPI_Barrier(comm);
         clock_gettime(CLOCK_MONOTONIC, &t1);
@@ -238,7 +238,7 @@ int test_distradix_sort(void)
             MTX_SUCCESS, err, "%s",
             err == MTX_ERR_MPI_COLLECTIVE
             ? mtxmpierror_description(&mpierror)
-            : mtx_strerror(err));
+            : mtxstrerror(err));
         if (rank == 0) {
             TEST_ASSERT_EQ(  0, keys[0]);
             TEST_ASSERT_EQ(  1, keys[1]);
@@ -266,7 +266,7 @@ int test_distradix_sort(void)
             MTX_SUCCESS, err, "%s",
             err == MTX_ERR_MPI_COLLECTIVE
             ? mtxmpierror_description(&mpierror)
-            : mtx_strerror(err));
+            : mtxstrerror(err));
         if (rank == 0) {
             TEST_ASSERT_EQ( 1352, keys[0]);
             TEST_ASSERT_EQ(24732, keys[1]);
@@ -293,7 +293,7 @@ int test_distradix_sort(void)
             MTX_SUCCESS, err, "%s",
             err == MTX_ERR_MPI_COLLECTIVE
             ? mtxmpierror_description(&mpierror)
-            : mtx_strerror(err));
+            : mtxstrerror(err));
         for (int i = 1; i < size; i++)
             TEST_ASSERT_LE_MSG(keys[i-1], keys[i], "i=%d, keys[i-1]=%"PRIu64", keys[i]=%"PRIu64"",
                                i, keys[i-1], keys[i]);
@@ -301,13 +301,13 @@ int test_distradix_sort(void)
         if (rank == 0) {
             uint64_t key;
             err = MPI_Recv(&key, 1, MPI_UINT64_T, 1, 0, comm, MPI_STATUS_IGNORE);
-            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_LE_MSG(
                 keys[size-1], key, "keys[%lld]=%"PRIu64", keys[%lld]=%"PRIu64"",
                 size-1, keys[size-1], size, key);
         } else if (rank == 1) {
             err = MPI_Send(&keys[0], 1, MPI_UINT64_T, 0, 0, comm);
-            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         }
     }
 
@@ -332,7 +332,7 @@ int test_distradix_sort(void)
             MTX_SUCCESS, err, "%s",
             err == MTX_ERR_MPI_COLLECTIVE
             ? mtxmpierror_description(&mpierror)
-            : mtx_strerror(err));
+            : mtxstrerror(err));
 
         MPI_Barrier(comm);
         clock_gettime(CLOCK_MONOTONIC, &t1);

@@ -47,10 +47,10 @@ int test_mtx_sscal_vector_array_real_single(void)
     float data[] = {1.0f, 2.0f, 3.0f};
     size_t size = sizeof(data) / sizeof(*data);
     err = mtx_init_vector_array_real_single(&x, 0, NULL, size, data);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
     float a = 2.0f;
     err = mtx_sscal(a, &x);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
     const struct mtx_vector_array_data * vector_array =
         &x.storage.vector_array;
@@ -77,10 +77,10 @@ int test_mtx_dscal_vector_array_real_double(void)
     double data[] = {1.0, 2.0, 3.0};
     size_t size = sizeof(data) / sizeof(*data);
     err = mtx_init_vector_array_real_double(&x, 0, NULL, size, data);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
     double a = 2.0;
     err = mtx_dscal(a, &x);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
     const struct mtx_vector_array_data * vector_array =
         &x.storage.vector_array;
@@ -106,12 +106,12 @@ int test_mtx_saxpy_vector_array_real_single(void)
     float data[] = {1.0f, 2.0f, 3.0f};
     size_t size = sizeof(data) / sizeof(*data);
     err = mtx_init_vector_array_real_single(&x, 0, NULL, size, data);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
     err = mtx_init_vector_array_real_single(&y, 0, NULL, size, data);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
     float a = 2.0f;
     err = mtx_saxpy(a, &x, &y);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
     const struct mtx_vector_array_data * vector_array =
         &y.storage.vector_array;
@@ -138,12 +138,12 @@ int test_mtx_daxpy_vector_array_real_double(void)
     double data[] = {1.0, 2.0, 3.0};
     size_t size = sizeof(data) / sizeof(*data);
     err = mtx_init_vector_array_real_double(&x, 0, NULL, size, data);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
     err = mtx_init_vector_array_real_double(&y, 0, NULL, size, data);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
     double a = 2.0;
     err = mtx_daxpy(a, &x, &y);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
     const struct mtx_vector_array_data * vector_array =
         &y.storage.vector_array;
@@ -170,12 +170,12 @@ int test_mtx_sdot_vector_array_real_single(void)
     float data[] = {1.0f, 2.0f, 3.0f};
     size_t size = sizeof(data) / sizeof(*data);
     err = mtx_init_vector_array_real_single(&x, 0, NULL, size, data);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
     err = mtx_init_vector_array_real_single(&y, 0, NULL, size, data);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
     float dot;
     err = mtx_sdot(&x, &y, &dot);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
     TEST_ASSERT_EQ(14.0f, dot);
     mtx_free(&y);
     mtx_free(&x);
@@ -193,12 +193,12 @@ int test_mtx_ddot_vector_array_real_double(void)
     double data[] = {1.0, 2.0, 3.0};
     size_t size = sizeof(data) / sizeof(*data);
     err = mtx_init_vector_array_real_double(&x, 0, NULL, size, data);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
     err = mtx_init_vector_array_real_double(&y, 0, NULL, size, data);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
     double dot;
     err = mtx_ddot(&x, &y, &dot);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
     TEST_ASSERT_EQ(14.0, dot);
     mtx_free(&y);
     mtx_free(&x);
@@ -216,10 +216,10 @@ int test_mtx_snrm2_vector_array_real_single(void)
     float data[] = {1.0f, 1.0f, 1.0f, 2.0f, 3.0f};
     size_t size = sizeof(data) / sizeof(*data);
     err = mtx_init_vector_array_real_single(&x, 0, NULL, size, data);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
     float nrm2;
     err = mtx_snrm2(&x, &nrm2);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
     TEST_ASSERT_EQ(4.0f, nrm2);
     mtx_free(&x);
     return TEST_SUCCESS;
@@ -236,10 +236,10 @@ int test_mtx_dnrm2_vector_array_real_double(void)
     double data[] = {1.0, 1.0, 1.0, 2.0, 3.0};
     size_t size = sizeof(data) / sizeof(*data);
     err = mtx_init_vector_array_real_double(&x, 0, NULL, size, data);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
     double nrm2;
     err = mtx_dnrm2(&x, &nrm2);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
     TEST_ASSERT_EQ(4.0, nrm2);
     mtx_free(&x);
     return TEST_SUCCESS;
@@ -263,25 +263,25 @@ int test_mtx_sgemv_array_real_single(void)
     err = mtx_init_matrix_array_real_single(
         &A, mtx_general, mtx_nontriangular, mtx_row_major,
         0, NULL, num_rows, num_columns, size, A_data);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
     /* Create vectors */
     struct mtx x;
     float xdata[] = {3.0f, 2.0f};
     err = mtx_init_vector_array_real_single(
         &x, 0, NULL, sizeof(xdata)/sizeof(*xdata), xdata);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
     struct mtx y;
     float ydata[] = {1.0f, 0.0f};
     err = mtx_init_vector_array_real_single(
         &y, 0, NULL, sizeof(ydata)/sizeof(*ydata), ydata);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
     /* Multiply */
     float alpha = 2.0f;
     float beta = 3.0f;
     err = mtx_sgemv(alpha, &A, &x, beta, &y);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
     const struct mtx_vector_array_data * vector_array =
         &y.storage.vector_array;
@@ -315,25 +315,25 @@ int test_mtx_dgemv_array_real_double(void)
     err = mtx_init_matrix_array_real_double(
         &A, mtx_general, mtx_nontriangular, mtx_row_major,
         0, NULL, num_rows, num_columns, size, A_data);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
     /* Create vectors */
     struct mtx x;
     double xdata[] = {3.0, 2.0};
     err = mtx_init_vector_array_real_double(
         &x, 0, NULL, sizeof(xdata)/sizeof(*xdata), xdata);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
     struct mtx y;
     double ydata[] = {1.0, 0.0};
     err = mtx_init_vector_array_real_double(
         &y, 0, NULL, sizeof(ydata)/sizeof(*ydata), ydata);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
     /* Multiply */
     double alpha = 2.0;
     double beta = 3.0;
     err = mtx_dgemv(alpha, &A, &x, beta, &y);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
     const struct mtx_vector_array_data * vector_array =
         &y.storage.vector_array;
@@ -372,25 +372,25 @@ int test_mtx_sgemv_coordinate_real_single(void)
         &A, mtx_general, mtx_nontriangular, mtx_unsorted, mtx_unassembled,
         num_comment_lines, comment_lines,
         num_rows, num_columns, size, Adata);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
     /* Create vectors */
     struct mtx x;
     float xdata[] = {3.0f, 2.0f};
     err = mtx_init_vector_array_real_single(
         &x, 0, NULL, sizeof(xdata)/sizeof(*xdata), xdata);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
     struct mtx y;
     float ydata[] = {1.0f, 0.0f};
     err = mtx_init_vector_array_real_single(
         &y, 0, NULL, sizeof(ydata)/sizeof(*ydata), ydata);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
     /* Multiply */
     float alpha = 2.0f;
     float beta = 1.0f;
     err = mtx_sgemv(alpha, &A, &x, beta, &y);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
     const struct mtx_vector_array_data * vector_array =
         &y.storage.vector_array;

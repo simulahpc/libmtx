@@ -64,12 +64,12 @@ int test_mtx_sort_matrix_coordinate_real_single(void)
         mtx_unsorted, mtx_unassembled,
         num_comment_lines, comment_lines,
         num_rows, num_columns, size, data);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
     /* Sort the nonzeros and verify the results. */
     enum mtx_sorting sorting = mtx_row_major;
     err = mtx_sort(&mtx, sorting);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
     TEST_ASSERT_EQ(mtx_matrix, mtx.object);
     TEST_ASSERT_EQ(mtx_coordinate, mtx.format);
     TEST_ASSERT_EQ(mtx_real, mtx.field);
@@ -132,12 +132,12 @@ int test_mtx_sort_matrix_coordinate_real_double(void)
         mtx_unsorted, mtx_unassembled,
         num_comment_lines, comment_lines,
         num_rows, num_columns, size, data);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
     /* Sort the nonzeros and verify the results. */
     enum mtx_sorting sorting = mtx_row_major;
     err = mtx_sort(&mtx, sorting);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
     TEST_ASSERT_EQ(mtx_matrix, mtx.object);
     TEST_ASSERT_EQ(mtx_coordinate, mtx.format);
     TEST_ASSERT_EQ(mtx_real, mtx.field);
@@ -201,12 +201,12 @@ int test_mtx_sort_matrix_coordinate_real_double_column_major(void)
         mtx_unsorted, mtx_unassembled,
         num_comment_lines, comment_lines,
         num_rows, num_columns, size, data);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
     /* Sort the nonzeros and verify the results. */
     enum mtx_sorting sorting = mtx_column_major;
     err = mtx_sort(&mtx, sorting);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
     TEST_ASSERT_EQ(mtx_matrix, mtx.object);
     TEST_ASSERT_EQ(mtx_coordinate, mtx.format);
     TEST_ASSERT_EQ(mtx_real, mtx.field);
@@ -270,12 +270,12 @@ int test_mtx_sort_matrix_coordinate_complex_single(void)
         mtx_unsorted, mtx_unassembled,
         num_comment_lines, comment_lines,
         num_rows, num_columns, size, data);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
     /* Sort the nonzeros and verify the results. */
     enum mtx_sorting sorting = mtx_row_major;
     err = mtx_sort(&mtx, sorting);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
     TEST_ASSERT_EQ(mtx_matrix, mtx.object);
     TEST_ASSERT_EQ(mtx_coordinate, mtx.format);
     TEST_ASSERT_EQ(mtx_complex, mtx.field);
@@ -339,12 +339,12 @@ int test_mtx_sort_matrix_coordinate_integer_single(void)
         mtx_unsorted, mtx_unassembled,
         num_comment_lines, comment_lines,
         num_rows, num_columns, size, data);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
     /* Sort the nonzeros and verify the results. */
     enum mtx_sorting sorting = mtx_row_major;
     err = mtx_sort(&mtx, sorting);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
     TEST_ASSERT_EQ(mtx_matrix, mtx.object);
     TEST_ASSERT_EQ(mtx_coordinate, mtx.format);
     TEST_ASSERT_EQ(mtx_integer, mtx.field);
@@ -408,12 +408,12 @@ int test_mtx_sort_matrix_coordinate_pattern(void)
         mtx_unsorted, mtx_unassembled,
         num_comment_lines, comment_lines,
         num_rows, num_columns, size, data);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
     /* Sort the nonzeros and verify the results. */
     enum mtx_sorting sorting = mtx_row_major;
     err = mtx_sort(&mtx, sorting);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
     TEST_ASSERT_EQ(mtx_matrix, mtx.object);
     TEST_ASSERT_EQ(mtx_coordinate, mtx.format);
     TEST_ASSERT_EQ(mtx_pattern, mtx.field);

@@ -1038,7 +1038,7 @@ int main(int argc, char *argv[])
         fprintf(stderr, "%s: %s:%d: %s\n",
                 program_invocation_short_name,
                 args.mtx_path, lines_read+1,
-                mtx_strerror(err));
+                mtxstrerror(err));
         program_options_free(&args);
         return EXIT_FAILURE;
     } else if (err) {
@@ -1046,7 +1046,7 @@ int main(int argc, char *argv[])
             fprintf(diagf, "\n");
         fprintf(stderr, "%s: %s: %s\n",
                 program_invocation_short_name,
-                args.mtx_path, mtx_strerror(err));
+                args.mtx_path, mtxstrerror(err));
         program_options_free(&args);
         return EXIT_FAILURE;
     }
@@ -1082,7 +1082,7 @@ int main(int argc, char *argv[])
         if (args.verbose > 0)
             fprintf(diagf, "\n");
         fprintf(stderr, "%s: %s\n",
-                program_invocation_short_name, mtx_strerror(err));
+                program_invocation_short_name, mtxstrerror(err));
         mtxfile_free(&mtxfile);
         program_options_free(&args);
         return EXIT_FAILURE;

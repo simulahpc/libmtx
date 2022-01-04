@@ -624,7 +624,7 @@ int main(int argc, char *argv[])
     if (err) {
         fprintf(stderr, "%s: %s\n",
                 program_invocation_short_name,
-                mtx_strerror_mpi(err, mpierr, mpierrstr));
+                mtxstrerrormpi(err, mpierr, mpierrstr));
         MPI_Finalize();
         return EXIT_FAILURE;
     }
@@ -673,14 +673,14 @@ int main(int argc, char *argv[])
                     args.x_path, lines_read+1,
                     err == MTX_ERR_MPI_COLLECTIVE
                     ? mtxmpierror_description(&mpierror)
-                    : mtx_strerror(err));
+                    : mtxstrerror(err));
         } else if (rank == root) {
             fprintf(stderr, "%s: %s: %s\n",
                     program_invocation_short_name,
                     args.x_path,
                     err == MTX_ERR_MPI_COLLECTIVE
                     ? mtxmpierror_description(&mpierror)
-                    : mtx_strerror(err));
+                    : mtxstrerror(err));
         }
         program_options_free(&args);
         mtxmpierror_free(&mpierror);
@@ -720,7 +720,7 @@ int main(int argc, char *argv[])
                         program_invocation_short_name,
                         err == MTX_ERR_MPI_COLLECTIVE
                         ? mtxmpierror_description(&mpierror)
-                        : mtx_strerror(err));
+                        : mtxstrerror(err));
             }
             mtxdistfile_free(&mtxdistfile);
             program_options_free(&args);
@@ -733,7 +733,7 @@ int main(int argc, char *argv[])
         if (rank == root) {
             fprintf(stderr, "%s: %s\n",
                     program_invocation_short_name,
-                    mtx_strerror(MTX_ERR_INVALID_MTX_OBJECT));
+                    mtxstrerror(MTX_ERR_INVALID_MTX_OBJECT));
         }
         mtxdistfile_free(&mtxdistfile);
         program_options_free(&args);
@@ -907,7 +907,7 @@ int main(int argc, char *argv[])
         fprintf(stderr, "%s: %s:%d: %s\n",
                 program_invocation_short_name,
                 args.x_path, lines_read+1,
-                mtx_strerror(err));
+                mtxstrerror(err));
         program_options_free(&args);
         return EXIT_FAILURE;
     } else if (err) {
@@ -915,7 +915,7 @@ int main(int argc, char *argv[])
             fprintf(diagf, "\n");
         fprintf(stderr, "%s: %s: %s\n",
                 program_invocation_short_name,
-                args.x_path, mtx_strerror(err));
+                args.x_path, mtxstrerror(err));
         program_options_free(&args);
         return EXIT_FAILURE;
     }
@@ -944,7 +944,7 @@ int main(int argc, char *argv[])
         if (err) {
             fprintf(stderr, "%s: %s\n",
                     program_invocation_short_name,
-                    mtx_strerror(err));
+                    mtxstrerror(err));
             mtxfile_free(&mtxfile);
             program_options_free(&args);
             return EXIT_FAILURE;
@@ -953,7 +953,7 @@ int main(int argc, char *argv[])
     } else {
         fprintf(stderr, "%s: %s\n",
                 program_invocation_short_name,
-                mtx_strerror(MTX_ERR_INVALID_MTX_OBJECT));
+                mtxstrerror(MTX_ERR_INVALID_MTX_OBJECT));
         mtxfile_free(&mtxfile);
         program_options_free(&args);
         return EXIT_FAILURE;

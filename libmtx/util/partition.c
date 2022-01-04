@@ -47,7 +47,7 @@ const char * mtx_partition_type_str(
     case mtx_cyclic: return "cyclic";
     case mtx_block_cyclic: return "block-cyclic";
     case mtx_unstructured: return "unstructured";
-    default: return mtx_strerror(MTX_ERR_INVALID_PARTITION_TYPE);
+    default: return mtxstrerror(MTX_ERR_INVALID_PARTITION_TYPE);
     }
 }
 

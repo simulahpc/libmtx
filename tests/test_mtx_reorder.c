@@ -55,7 +55,7 @@ int test_mtx_permute_vector_array_real_single(void)
     int size = sizeof(data) / sizeof(*data);
     err = mtx_init_vector_array_real_single(
         &mtx, num_comment_lines, comment_lines, size, data);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
     const int permutation[] = {2, 1, 3};
     err = mtx_permute(&mtx, permutation, permutation);
@@ -126,12 +126,12 @@ int test_mtx_permute_matrix_array_real_single(void)
             &mtx, mtx_general, mtx_nontriangular, mtx_row_major,
             num_comment_lines, comment_lines,
             num_rows, num_columns, size, data);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
         const int row_permutation[] = {2, 1, 3};
         const int * column_permutation = NULL;
         err = mtx_permute(&mtx, row_permutation, column_permutation);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
         const struct mtx_matrix_array_data * matrix_array =
             &mtx.storage.matrix_array;
@@ -165,12 +165,12 @@ int test_mtx_permute_matrix_array_real_single(void)
             &mtx, mtx_general, mtx_nontriangular, mtx_row_major,
             num_comment_lines, comment_lines,
             num_rows, num_columns, size, data);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
         const int * row_permutation = NULL;
         const int column_permutation[] = {2, 1, 3};
         err = mtx_permute(&mtx, row_permutation, column_permutation);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
         const struct mtx_matrix_array_data * matrix_array =
             &mtx.storage.matrix_array;
@@ -204,12 +204,12 @@ int test_mtx_permute_matrix_array_real_single(void)
             &mtx, mtx_general, mtx_nontriangular, mtx_row_major,
             num_comment_lines, comment_lines,
             num_rows, num_columns, size, data);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
         const int row_permutation[] = {2, 1, 3};
         const int column_permutation[] = {2, 1, 3};
         err = mtx_permute(&mtx, row_permutation, column_permutation);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
         const struct mtx_matrix_array_data * matrix_array =
             &mtx.storage.matrix_array;
@@ -257,12 +257,12 @@ int test_mtx_permute_matrix_coordinate_real_single(void)
             mtx_unsorted, mtx_unassembled,
             num_comment_lines, comment_lines,
             num_rows, num_columns, size, data);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
         const int row_permutation[] = {2, 1, 4, 3};
         const int * column_permutation = NULL;
         err = mtx_permute(&mtx, row_permutation, column_permutation);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
         const struct mtx_matrix_coordinate_data * matrix_coordinate =
             &mtx.storage.matrix_coordinate;
@@ -305,12 +305,12 @@ int test_mtx_permute_matrix_coordinate_real_single(void)
             mtx_unsorted, mtx_unassembled,
             num_comment_lines, comment_lines,
             num_rows, num_columns, size, data);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
         const int * row_permutation = NULL;
         const int column_permutation[] = {2, 1, 4, 3};
         err = mtx_permute(&mtx, row_permutation, column_permutation);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
         const struct mtx_matrix_coordinate_data * matrix_coordinate =
             &mtx.storage.matrix_coordinate;
@@ -353,12 +353,12 @@ int test_mtx_permute_matrix_coordinate_real_single(void)
             mtx_unsorted, mtx_unassembled,
             num_comment_lines, comment_lines,
             num_rows, num_columns, size, data);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
         const int row_permutation[] = {2, 1, 4, 3};
         const int column_permutation[] = {2, 1, 4, 3};
         err = mtx_permute(&mtx, row_permutation, column_permutation);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
         const struct mtx_matrix_coordinate_data * matrix_coordinate =
             &mtx.storage.matrix_coordinate;
@@ -420,13 +420,13 @@ int test_mtx_permute_matrix_coordinate_pattern(void)
         mtx_unsorted, mtx_unassembled,
         num_comment_lines, comment_lines,
         num_rows, num_columns, size, data);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
     const int row_permutation[] = {2,6,4,3,7,9,8,5,1};
     err = mtx_permute(&mtx, row_permutation, row_permutation);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
     err = mtx_sort(&mtx, mtx_row_major);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
     const struct mtx_matrix_coordinate_data * matrix_coordinate =
         &mtx.storage.matrix_coordinate;
@@ -495,13 +495,13 @@ int test_mtx_matrix_reorder_rcm_coordinate_real_single(void)
         mtx_row_major, mtx_unassembled,
         num_comment_lines, comment_lines,
         num_rows, num_columns, size, data);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
     /* Reorder the matrix and verify the results. */
     int starting_row = 1;
     int * permutation;
     err = mtx_matrix_reorder_rcm(&mtx, &permutation, starting_row);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
     TEST_ASSERT_EQ(5, permutation[0]);
     TEST_ASSERT_EQ(3, permutation[1]);

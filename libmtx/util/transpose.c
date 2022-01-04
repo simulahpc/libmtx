@@ -37,7 +37,7 @@ const char * mtx_trans_type_str_(
     case mtx_notrans: return "notrans";
     case mtx_trans: return "trans";
     case mtx_conjtrans: return "conjtrans";
-    default: return mtx_strerror(MTX_ERR_INVALID_TRANS_TYPE);
+    default: return mtxstrerror(MTX_ERR_INVALID_TRANS_TYPE);
     }
 }
 

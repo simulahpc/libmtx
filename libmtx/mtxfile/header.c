@@ -56,7 +56,7 @@ const char * mtxfile_object_str(
     switch (object) {
     case mtxfile_matrix: return "matrix";
     case mtxfile_vector: return "vector";
-    default: return mtx_strerror(MTX_ERR_INVALID_MTX_OBJECT);
+    default: return mtxstrerror(MTX_ERR_INVALID_MTX_OBJECT);
     }
 }
 
@@ -120,7 +120,7 @@ const char * mtxfile_format_str(
     switch (format) {
     case mtxfile_array: return "array";
     case mtxfile_coordinate: return "coordinate";
-    default: return mtx_strerror(MTX_ERR_INVALID_MTX_FORMAT);
+    default: return mtxstrerror(MTX_ERR_INVALID_MTX_FORMAT);
     }
 }
 
@@ -186,7 +186,7 @@ const char * mtxfile_field_str(
     case mtxfile_complex: return "complex";
     case mtxfile_integer: return "integer";
     case mtxfile_pattern: return "pattern";
-    default: return mtx_strerror(MTX_ERR_INVALID_MTX_FIELD);
+    default: return mtxstrerror(MTX_ERR_INVALID_MTX_FIELD);
     }
 }
 
@@ -258,7 +258,7 @@ const char * mtxfile_symmetry_str(
     case mtxfile_symmetric: return "symmetric";
     case mtxfile_skew_symmetric: return "skew-symmetric";
     case mtxfile_hermitian: return "hermitian";
-    default: return mtx_strerror(MTX_ERR_INVALID_MTX_SYMMETRY);
+    default: return mtxstrerror(MTX_ERR_INVALID_MTX_SYMMETRY);
     }
 }
 

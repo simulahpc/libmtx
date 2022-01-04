@@ -49,7 +49,7 @@ const char * mtx_index_set_type_str(
     case mtx_index_set_strided: return "strided";
     case mtx_index_set_block_strided: return "block-strided";
     case mtx_index_set_discrete: return "discrete";
-    default: return mtx_strerror(MTX_ERR_INVALID_INDEX_SET_TYPE);
+    default: return mtxstrerror(MTX_ERR_INVALID_INDEX_SET_TYPE);
     }
 }
 

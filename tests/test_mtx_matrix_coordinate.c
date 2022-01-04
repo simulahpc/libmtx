@@ -57,7 +57,7 @@ int test_mtx_init_matrix_coordinate_real_single_general(void)
         mtx_unsorted, mtx_unassembled,
         num_comment_lines, comment_lines,
         num_rows, num_columns, size, data);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
     TEST_ASSERT_EQ(mtx_matrix, mtx.object);
     TEST_ASSERT_EQ(mtx_coordinate, mtx.format);
     TEST_ASSERT_EQ(mtx_real, mtx.field);
@@ -121,7 +121,7 @@ int test_mtx_init_matrix_coordinate_real_single_symmetric(void)
         mtx_unsorted, mtx_unassembled,
         num_comment_lines, comment_lines,
         num_rows, num_columns, size, data);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
     TEST_ASSERT_EQ(mtx_matrix, mtx.object);
     TEST_ASSERT_EQ(mtx_coordinate, mtx.format);
     TEST_ASSERT_EQ(mtx_real, mtx.field);
@@ -181,7 +181,7 @@ int test_mtx_init_matrix_coordinate_real_double_general(void)
         mtx_unsorted, mtx_unassembled,
         num_comment_lines, comment_lines,
         num_rows, num_columns, size, data);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
     TEST_ASSERT_EQ(mtx_matrix, mtx.object);
     TEST_ASSERT_EQ(mtx_coordinate, mtx.format);
     TEST_ASSERT_EQ(mtx_real, mtx.field);
@@ -241,7 +241,7 @@ int test_mtx_init_matrix_coordinate_complex_single_general(void)
         mtx_unsorted, mtx_unassembled,
         num_comment_lines, comment_lines,
         num_rows, num_columns, size, data);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
     TEST_ASSERT_EQ(mtx_matrix, mtx.object);
     TEST_ASSERT_EQ(mtx_coordinate, mtx.format);
     TEST_ASSERT_EQ(mtx_complex, mtx.field);
@@ -301,7 +301,7 @@ int test_mtx_init_matrix_coordinate_integer_single_general(void)
         mtx_unsorted, mtx_unassembled,
         num_comment_lines, comment_lines,
         num_rows, num_columns, size, data);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
     TEST_ASSERT_EQ(mtx_matrix, mtx.object);
     TEST_ASSERT_EQ(mtx_coordinate, mtx.format);
     TEST_ASSERT_EQ(mtx_integer, mtx.field);
@@ -361,7 +361,7 @@ int test_mtx_init_matrix_coordinate_pattern_general(void)
         mtx_unsorted, mtx_unassembled,
         num_comment_lines, comment_lines,
         num_rows, num_columns, size, data);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
     TEST_ASSERT_EQ(mtx_matrix, mtx.object);
     TEST_ASSERT_EQ(mtx_coordinate, mtx.format);
     TEST_ASSERT_EQ(mtx_pattern, mtx.field);
@@ -415,14 +415,14 @@ int test_mtx_matrix_coordinate_data_row_ptr_real_single(void)
         mtx_unsorted, mtx_unassembled,
         num_comment_lines, comment_lines,
         num_rows, num_columns, size, data);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
     const struct mtx_matrix_coordinate_data * matrix_coordinate =
         &mtx.storage.matrix_coordinate;
     int64_t row_ptr[5] = {};
     err = mtx_matrix_coordinate_data_row_ptr(
         matrix_coordinate, sizeof(row_ptr) / sizeof(*row_ptr), row_ptr);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
     TEST_ASSERT_EQ(0, row_ptr[0]);
     TEST_ASSERT_EQ(2, row_ptr[1]);
     TEST_ASSERT_EQ(3, row_ptr[2]);
@@ -457,13 +457,13 @@ int test_mtx_matrix_coordinate_data_size_per_row(void)
         mtx_unsorted, mtx_unassembled,
         num_comment_lines, comment_lines,
         num_rows, num_columns, size, data);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
     /* Compute and check the size of each row. */
     int size_per_row[4];
     err = mtx_matrix_coordinate_data_size_per_row(
         &mtx.storage.matrix_coordinate, num_rows, size_per_row);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
     TEST_ASSERT_EQ(2, size_per_row[0]);
     TEST_ASSERT_EQ(1, size_per_row[1]);
     TEST_ASSERT_EQ(1, size_per_row[2]);

@@ -200,17 +200,17 @@ a given integer @code{n} belongs to the index set.
 @section MPI error handling
 
 @cindex MPI errors
-@findex mtx_strerror_mpi
+@findex mtxstrerrormpi
 In addition to the error handling routines described @ref{Error
 handling}, libmtx provides some additional error handling
 functionality when working with MPI and distributed matrices and
 vectors.  That is, if libmtx is built with MPI support enabled, then
 there are some functions in libmtx that may fail due to MPI errors.
 In these cases, some additional information is needed to provide
-helpful error descriptions, and the function @code{mtx_strerror_mpi}
+helpful error descriptions, and the function @code{mtxstrerrormpi}
 should be used.
 @example
-@code{const char * mtx_strerror_mpi(
+@code{const char * mtxstrerrormpi(
     int err,
     int mpierrcode,
     char * mpierrstr);}
@@ -226,7 +226,7 @@ If @code{err} is @code{MTX_ERR_MPI}, then the argument
 @code{mpierrcode} should be set to the error code that was returned
 from the MPI function call that failed. In addition, the argument
 @code{mpierrstr} must be a char array whose length is at least equal
-to @code{MPI_MAX_ERROR_STRING}. Internally, @code{mtx_strerror_mpi}
+to @code{MPI_MAX_ERROR_STRING}. Internally, @code{mtxstrerrormpi}
 uses @code{MPI_Error_string} to obtain a description of the error.
 
 
@@ -275,11 +275,11 @@ used to communicate Matrix Market objects represented by the
 @subsection MPI errors
 
 @cindex MPI errors
-@findex mtx_strerror_mpi
+@findex mtxstrerrormpi
 In the event of an MPI-related error, then the above functions return
 @code{MTX_ERR_MPI} and the argument @code{mpierrcode} is set to a
 specific MPI error code. @code{mpierrcode} can then be used with the
-function @code{mtx_strerror_mpi}, as described in @ref{Error handling}.
+function @code{mtxstrerrormpi}, as described in @ref{Error handling}.
 
 
 @node send receive broadcast

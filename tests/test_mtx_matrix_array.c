@@ -53,7 +53,7 @@ int test_mtx_init_matrix_array_real_single(void)
         mtx_nontriangular, mtx_row_major,
         num_comment_lines, comment_lines,
         num_rows, num_columns, size, data);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
     TEST_ASSERT_EQ(mtx_matrix, mtx.object);
     TEST_ASSERT_EQ(mtx_array, mtx.format);
     TEST_ASSERT_EQ(mtx_real, mtx.field);
@@ -103,7 +103,7 @@ int test_mtx_init_matrix_array_real_single_symmetric(void)
         mtx_lower_triangular, mtx_row_major,
         num_comment_lines, comment_lines,
         num_rows, num_columns, size, data);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
     TEST_ASSERT_EQ(mtx_matrix, mtx.object);
     TEST_ASSERT_EQ(mtx_array, mtx.format);
     TEST_ASSERT_EQ(mtx_real, mtx.field);
@@ -150,7 +150,7 @@ int test_mtx_init_matrix_array_real_single_skew_symmetric(void)
         mtx_strict_lower_triangular, mtx_row_major,
         num_comment_lines, comment_lines,
         num_rows, num_columns, size, data);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
     TEST_ASSERT_EQ(mtx_matrix, mtx.object);
     TEST_ASSERT_EQ(mtx_array, mtx.format);
     TEST_ASSERT_EQ(mtx_real, mtx.field);
@@ -196,7 +196,7 @@ int test_mtx_init_matrix_array_real_double(void)
         &mtx, mtx_general, mtx_nontriangular, mtx_row_major,
         num_comment_lines, comment_lines,
         num_rows, num_columns, size, data);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
     TEST_ASSERT_EQ(mtx_matrix, mtx.object);
     TEST_ASSERT_EQ(mtx_array, mtx.format);
     TEST_ASSERT_EQ(mtx_real, mtx.field);
@@ -243,7 +243,7 @@ int test_mtx_init_matrix_array_complex_single(void)
         &mtx, mtx_general, mtx_nontriangular, mtx_row_major,
         num_comment_lines, comment_lines,
         num_rows, num_columns, size, data);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
     TEST_ASSERT_EQ(mtx_matrix, mtx.object);
     TEST_ASSERT_EQ(mtx_array, mtx.format);
     TEST_ASSERT_EQ(mtx_complex, mtx.field);
@@ -290,7 +290,7 @@ int test_mtx_init_matrix_array_integer_single(void)
         &mtx, mtx_general, mtx_nontriangular, mtx_row_major,
         num_comment_lines, comment_lines,
         num_rows, num_columns, size, data);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
     TEST_ASSERT_EQ(mtx_matrix, mtx.object);
     TEST_ASSERT_EQ(mtx_array, mtx.format);
     TEST_ASSERT_EQ(mtx_integer, mtx.field);
@@ -336,10 +336,10 @@ int test_mtx_set_zero_matrix_array_real_single(void)
         &mtx, mtx_general, mtx_nontriangular, mtx_row_major,
         num_comment_lines, comment_lines,
         num_rows, num_columns, size, data);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
     err = mtx_set_zero(&mtx);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
     const struct mtx_matrix_array_data * matrix_array =
         &mtx.storage.matrix_array;
     TEST_ASSERT_EQ(mtx_real, matrix_array->field);

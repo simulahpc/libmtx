@@ -89,7 +89,7 @@ int test_mtx_mpi_sendrecv(void)
             mtx_unsorted, mtx_unassembled,
             num_comment_lines, comment_lines,
             num_rows, num_columns, size, data);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
     }
 
     /* Send the matrix from the root process to another process. */
@@ -101,11 +101,11 @@ int test_mtx_mpi_sendrecv(void)
             if (err)
                 mtx_free(&srcmtx);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s",
-                               mtx_strerror_mpi(err, mpierrcode, mpierrstr));
+                               mtxstrerrormpi(err, mpierrcode, mpierrstr));
         } else if (rank == 1) {
             err = mtx_recv(&destmtx, 0, 0, comm, &mpierrcode);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s",
-                               mtx_strerror_mpi(err, mpierrcode, mpierrstr));
+                               mtxstrerrormpi(err, mpierrcode, mpierrstr));
         }
     } else {
         mtx_free(&srcmtx);
@@ -203,7 +203,7 @@ int test_mtx_mpi_bcast(void)
             mtx_unsorted, mtx_unassembled,
             num_comment_lines, comment_lines,
             num_rows, num_columns, size, data);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
     }
 
     /* Send the matrix from the root process to another process. */
@@ -217,7 +217,7 @@ int test_mtx_mpi_bcast(void)
     if (err)
         mtx_free(&mtx);
     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s",
-                       mtx_strerror_mpi(err, mpierrcode, mpierrstr));
+                       mtxstrerrormpi(err, mpierrcode, mpierrstr));
 
     /* Check the received matrix. */
     TEST_ASSERT_EQ(mtx_matrix, mtx.object);
@@ -319,7 +319,7 @@ int test_mtx_matrix_coordinate_gather(void)
         mtx_unsorted, mtx_assembled,
         num_comment_lines, comment_lines,
         num_rows, num_columns, size, data);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
     /* Gather the distributed sparse matrix onto the root process. */
     int root = 0;
@@ -327,7 +327,7 @@ int test_mtx_matrix_coordinate_gather(void)
     err = mtx_matrix_coordinate_gather(
         &dstmtx, &srcmtx, comm, root, &mpierr);
     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s",
-                       mtx_strerror_mpi(err, mpierr, mpierrstr));
+                       mtxstrerrormpi(err, mpierr, mpierrstr));
     mtx_free(&srcmtx);
 
     /* Check the gathered matrix on the MPI root process. */
@@ -420,7 +420,7 @@ int test_mtx_matrix_coordinate_scatter(void)
             mtx_unsorted, mtx_unassembled,
             num_comment_lines, comment_lines,
             num_rows, num_columns, size, data);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
     }
 
     /* Determine the rows and columns owned by the current process. */
@@ -459,7 +459,7 @@ int test_mtx_matrix_coordinate_scatter(void)
     err = mtx_matrix_coordinate_scatter(
         &dstmtx, &srcmtx, rows, columns, comm, root, &mpierr);
     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s",
-                       mtx_strerror_mpi(err, mpierr, mpierrstr));
+                       mtxstrerrormpi(err, mpierr, mpierrstr));
     if (rank == root)
         mtx_free(&srcmtx);
 

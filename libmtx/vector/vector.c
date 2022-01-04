@@ -52,7 +52,7 @@ const char * mtxvector_type_str(
     case mtxvector_auto: return "auto";
     case mtxvector_array: return "array";
     case mtxvector_coordinate: return "coordinate";
-    default: return mtx_strerror(MTX_ERR_INVALID_VECTOR_TYPE);
+    default: return mtxstrerror(MTX_ERR_INVALID_VECTOR_TYPE);
     }
 }
 

@@ -39,7 +39,7 @@ const char * mtx_field_str_(
     case mtx_field_complex: return "complex";
     case mtx_field_integer: return "integer";
     case mtx_field_pattern: return "pattern";
-    default: return mtx_strerror(MTX_ERR_INVALID_FIELD);
+    default: return mtxstrerror(MTX_ERR_INVALID_FIELD);
     }
 }
 

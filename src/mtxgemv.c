@@ -595,7 +595,7 @@ int main(int argc, char *argv[])
         fprintf(stderr, "%s: %s:%d: %s\n",
                 program_invocation_short_name,
                 args.A_path, lines_read+1,
-                mtx_strerror(err));
+                mtxstrerror(err));
         program_options_free(&args);
         return EXIT_FAILURE;
     } else if (err) {
@@ -603,7 +603,7 @@ int main(int argc, char *argv[])
             fprintf(diagf, "\n");
         fprintf(stderr, "%s: %s: %s\n",
                 program_invocation_short_name,
-                args.A_path, mtx_strerror(err));
+                args.A_path, mtxstrerror(err));
         program_options_free(&args);
         return EXIT_FAILURE;
     }
@@ -637,7 +637,7 @@ int main(int argc, char *argv[])
             fprintf(stderr, "%s: %s:%d: %s\n",
                     program_invocation_short_name,
                     args.x_path, lines_read+1,
-                    mtx_strerror(err));
+                    mtxstrerror(err));
             mtxmatrix_free(&A);
             program_options_free(&args);
             return EXIT_FAILURE;
@@ -646,7 +646,7 @@ int main(int argc, char *argv[])
                 fprintf(diagf, "\n");
             fprintf(stderr, "%s: %s: %s\n",
                     program_invocation_short_name,
-                    args.x_path, mtx_strerror(err));
+                    args.x_path, mtxstrerror(err));
             mtxmatrix_free(&A);
             program_options_free(&args);
             return EXIT_FAILURE;
@@ -667,7 +667,7 @@ int main(int argc, char *argv[])
             if (err) {
                 fprintf(stderr, "%s: %s\n",
                         program_invocation_short_name,
-                        mtx_strerror(err));
+                        mtxstrerror(err));
                 mtxmatrix_free(&A);
                 program_options_free(&args);
                 return EXIT_FAILURE;
@@ -677,7 +677,7 @@ int main(int argc, char *argv[])
             if (err) {
                 fprintf(stderr, "%s: %s\n",
                         program_invocation_short_name,
-                        mtx_strerror(err));
+                        mtxstrerror(err));
                 mtxmatrix_free(&A);
                 program_options_free(&args);
                 return EXIT_FAILURE;
@@ -688,7 +688,7 @@ int main(int argc, char *argv[])
         if (err) {
             fprintf(stderr, "%s: %s\n",
                     program_invocation_short_name,
-                    mtx_strerror(err));
+                    mtxstrerror(err));
             mtxvector_free(&x);
             mtxmatrix_free(&A);
             program_options_free(&args);
@@ -717,7 +717,7 @@ int main(int argc, char *argv[])
             fprintf(stderr, "%s: %s:%d: %s\n",
                     program_invocation_short_name,
                     args.y_path, lines_read+1,
-                    mtx_strerror(err));
+                    mtxstrerror(err));
             mtxvector_free(&x);
             mtxmatrix_free(&A);
             program_options_free(&args);
@@ -727,7 +727,7 @@ int main(int argc, char *argv[])
                 fprintf(diagf, "\n");
             fprintf(stderr, "%s: %s: %s\n",
                     program_invocation_short_name,
-                    args.y_path, mtx_strerror(err));
+                    args.y_path, mtxstrerror(err));
             mtxvector_free(&x);
             mtxmatrix_free(&A);
             program_options_free(&args);
@@ -749,7 +749,7 @@ int main(int argc, char *argv[])
             if (err) {
                 fprintf(stderr, "%s: %s\n",
                         program_invocation_short_name,
-                        mtx_strerror(err));
+                        mtxstrerror(err));
                 mtxvector_free(&x);
                 mtxmatrix_free(&A);
                 program_options_free(&args);
@@ -760,7 +760,7 @@ int main(int argc, char *argv[])
             if (err) {
                 fprintf(stderr, "%s: %s\n",
                         program_invocation_short_name,
-                        mtx_strerror(err));
+                        mtxstrerror(err));
                 mtxvector_free(&x);
                 mtxmatrix_free(&A);
                 program_options_free(&args);
@@ -772,7 +772,7 @@ int main(int argc, char *argv[])
         if (err) {
             fprintf(stderr, "%s: %s\n",
                     program_invocation_short_name,
-                    mtx_strerror(err));
+                    mtxstrerror(err));
             mtxvector_free(&y);
             mtxvector_free(&x);
             mtxmatrix_free(&A);
@@ -791,7 +791,7 @@ int main(int argc, char *argv[])
     if (err) {
         fprintf(stderr, "%s: %s\n",
                 program_invocation_short_name,
-                mtx_strerror(err));
+                mtxstrerror(err));
         mtxvector_free(&y);
         mtxvector_free(&x);
         mtxmatrix_free(&A);

@@ -57,9 +57,9 @@ int test_mtx_transpose_matrix_coordinate_real_single_general(void)
         &mtx, mtx_general, mtx_nontriangular, mtx_unsorted, mtx_unassembled,
         num_comment_lines, comment_lines,
         num_rows, num_columns, size, data);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
     err = mtx_transpose(&mtx);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
     TEST_ASSERT_EQ(mtx_matrix, mtx.object);
     TEST_ASSERT_EQ(mtx_coordinate, mtx.format);
     TEST_ASSERT_EQ(mtx_real, mtx.field);
@@ -118,9 +118,9 @@ int test_mtx_transpose_matrix_coordinate_real_single_symmetric(void)
         &mtx, mtx_symmetric, mtx_nontriangular, mtx_unsorted, mtx_unassembled,
         num_comment_lines, comment_lines,
         num_rows, num_columns, size, data);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
     err = mtx_transpose(&mtx);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
     TEST_ASSERT_EQ(mtx_matrix, mtx.object);
     TEST_ASSERT_EQ(mtx_coordinate, mtx.format);
     TEST_ASSERT_EQ(mtx_real, mtx.field);
@@ -177,9 +177,9 @@ int test_mtx_transpose_matrix_coordinate_real_double_general(void)
         &mtx, mtx_general, mtx_nontriangular, mtx_unsorted, mtx_unassembled,
         num_comment_lines, comment_lines,
         num_rows, num_columns, size, data);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
     err = mtx_transpose(&mtx);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
     TEST_ASSERT_EQ(mtx_matrix, mtx.object);
     TEST_ASSERT_EQ(mtx_coordinate, mtx.format);
     TEST_ASSERT_EQ(mtx_real, mtx.field);
@@ -238,9 +238,9 @@ int test_mtx_transpose_matrix_coordinate_complex_single_general(void)
         &mtx, mtx_general, mtx_nontriangular, mtx_unsorted, mtx_unassembled,
         num_comment_lines, comment_lines,
         num_rows, num_columns, size, data);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
     err = mtx_transpose(&mtx);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
     TEST_ASSERT_EQ(mtx_matrix, mtx.object);
     TEST_ASSERT_EQ(mtx_coordinate, mtx.format);
     TEST_ASSERT_EQ(mtx_complex, mtx.field);
@@ -299,9 +299,9 @@ int test_mtx_transpose_matrix_coordinate_integer_single_general(void)
         &mtx, mtx_general, mtx_nontriangular, mtx_unsorted, mtx_unassembled,
         num_comment_lines, comment_lines,
         num_rows, num_columns, size, data);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
     err = mtx_transpose(&mtx);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
     TEST_ASSERT_EQ(mtx_matrix, mtx.object);
     TEST_ASSERT_EQ(mtx_coordinate, mtx.format);
     TEST_ASSERT_EQ(mtx_integer, mtx.field);
@@ -360,9 +360,9 @@ int test_mtx_transpose_matrix_coordinate_pattern_general(void)
         &mtx, mtx_general, mtx_nontriangular, mtx_unsorted, mtx_unassembled,
         num_comment_lines, comment_lines,
         num_rows, num_columns, size, data);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
     err = mtx_transpose(&mtx);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
     TEST_ASSERT_EQ(mtx_matrix, mtx.object);
     TEST_ASSERT_EQ(mtx_coordinate, mtx.format);
     TEST_ASSERT_EQ(mtx_pattern, mtx.field);

@@ -179,7 +179,7 @@ int test_mtx_fread_header(void)
         TEST_ASSERT_EQ_MSG(
             MTX_ERR_INVALID_MTX_HEADER, err,
             "%d:%d: %s", line_number, column_number,
-            mtx_strerror(err));
+            mtxstrerror(err));
         if (!err)
             mtx_free(&mtx);
         fclose(f);
@@ -197,7 +197,7 @@ int test_mtx_fread_header(void)
         TEST_ASSERT_EQ_MSG(
             MTX_ERR_INVALID_MTX_HEADER, err,
             "%d:%d: %s", line_number, column_number,
-            mtx_strerror(err));
+            mtxstrerror(err));
         if (!err)
             mtx_free(&mtx);
         fclose(f);
@@ -223,7 +223,7 @@ int test_mtx_fread_header(void)
         TEST_ASSERT_NEQ_MSG(
             MTX_ERR_LINE_TOO_LONG, err,
             "%d:%d: %s", line_number, column_number,
-            mtx_strerror(err));
+            mtxstrerror(err));
         if (!err)
             mtx_free(&mtx);
         fclose(f);
@@ -247,7 +247,7 @@ int test_mtx_fread_header(void)
         TEST_ASSERT_EQ_MSG(
             MTX_ERR_LINE_TOO_LONG, err,
             "%d:%d: %s", line_number, column_number,
-            mtx_strerror(err));
+            mtxstrerror(err));
         if (!err)
             mtx_free(&mtx);
         fclose(f);
@@ -266,7 +266,7 @@ int test_mtx_fread_header(void)
         TEST_ASSERT_EQ_MSG(
             MTX_ERR_INVALID_MTX_OBJECT, err,
             "%d:%d: %s", line_number, column_number,
-            mtx_strerror(err));
+            mtxstrerror(err));
         if (!err)
             mtx_free(&mtx);
         fclose(f);
@@ -284,7 +284,7 @@ int test_mtx_fread_header(void)
         TEST_ASSERT_EQ_MSG(
             MTX_ERR_INVALID_MTX_FORMAT, err,
             "%d:%d: %s", line_number, column_number,
-            mtx_strerror(err));
+            mtxstrerror(err));
         if (!err)
             mtx_free(&mtx);
         fclose(f);
@@ -303,7 +303,7 @@ int test_mtx_fread_header(void)
         TEST_ASSERT_EQ_MSG(
             MTX_ERR_INVALID_MTX_FIELD, err,
             "%d:%d: %s", line_number, column_number,
-            mtx_strerror(err));
+            mtxstrerror(err));
         if (!err)
             mtx_free(&mtx);
         fclose(f);
@@ -322,7 +322,7 @@ int test_mtx_fread_header(void)
         TEST_ASSERT_EQ_MSG(
             MTX_ERR_INVALID_MTX_SYMMETRY, err,
             "%d:%d: %s", line_number, column_number,
-            mtx_strerror(err));
+            mtxstrerror(err));
         if (!err)
             mtx_free(&mtx);
         fclose(f);
@@ -342,7 +342,7 @@ int test_mtx_fread_header(void)
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err,
             "%d:%d: %s", line_number, column_number,
-            mtx_strerror(err));
+            mtxstrerror(err));
         TEST_ASSERT_EQ(mtx_matrix, mtx.object);
         TEST_ASSERT_EQ(mtx_coordinate, mtx.format);
         TEST_ASSERT_EQ(mtx_real, mtx.field);
@@ -375,7 +375,7 @@ int test_mtx_fread_comment_lines(void)
     TEST_ASSERT_EQ_MSG(
         MTX_SUCCESS, err,
         "%d:%d: %s", line_number, column_number,
-        mtx_strerror(err));
+        mtxstrerror(err));
     TEST_ASSERT_EQ(2, mtx.num_comment_lines);
     TEST_ASSERT_STREQ("% First comment line\n", mtx.comment_lines[0]);
     TEST_ASSERT_STREQ("% Second comment line\n", mtx.comment_lines[1]);
@@ -405,7 +405,7 @@ int test_mtx_fread_matrix_size_line(void)
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err,
             "%d:%d: %s", line_number, column_number,
-            mtx_strerror(err));
+            mtxstrerror(err));
         TEST_ASSERT_EQ(0, mtx.num_rows);
         TEST_ASSERT_EQ(0, mtx.num_columns);
         TEST_ASSERT_EQ(-1, mtx.num_nonzeros);
@@ -428,7 +428,7 @@ int test_mtx_fread_matrix_size_line(void)
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err,
             "%d:%d: %s", line_number, column_number,
-            mtx_strerror(err));
+            mtxstrerror(err));
         TEST_ASSERT_EQ(0, mtx.num_rows);
         TEST_ASSERT_EQ(0, mtx.num_columns);
         TEST_ASSERT_EQ(0, mtx.num_nonzeros);
@@ -450,7 +450,7 @@ int test_mtx_fread_matrix_size_line(void)
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err,
             "%d:%d: %s", line_number, column_number,
-            mtx_strerror(err));
+            mtxstrerror(err));
         TEST_ASSERT_EQ(0, mtx.num_rows);
         TEST_ASSERT_EQ(-1, mtx.num_columns);
         TEST_ASSERT_EQ(-1, mtx.num_nonzeros);
@@ -472,7 +472,7 @@ int test_mtx_fread_matrix_size_line(void)
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err,
             "%d:%d: %s", line_number, column_number,
-            mtx_strerror(err));
+            mtxstrerror(err));
         TEST_ASSERT_EQ(0, mtx.num_rows);
         TEST_ASSERT_EQ(-1, mtx.num_columns);
         TEST_ASSERT_EQ(0, mtx.num_nonzeros);
@@ -502,7 +502,7 @@ int test_mtx_fread_matrix_array_real_single(void)
     TEST_ASSERT_EQ_MSG(
         MTX_SUCCESS, err,
         "%d:%d: %s", line_number, column_number,
-        mtx_strerror(err));
+        mtxstrerror(err));
     TEST_ASSERT_EQ(2, mtx.num_rows);
     TEST_ASSERT_EQ(2, mtx.num_columns);
     TEST_ASSERT_EQ(-1, mtx.num_nonzeros);
@@ -543,7 +543,7 @@ int test_mtx_fread_matrix_array_real_double(void)
     TEST_ASSERT_EQ_MSG(
         MTX_SUCCESS, err,
         "%d:%d: %s", line_number, column_number,
-        mtx_strerror(err));
+        mtxstrerror(err));
     TEST_ASSERT_EQ(2, mtx.num_rows);
     TEST_ASSERT_EQ(2, mtx.num_columns);
     TEST_ASSERT_EQ(-1, mtx.num_nonzeros);
@@ -584,7 +584,7 @@ int test_mtx_fread_matrix_array_complex_single(void)
     TEST_ASSERT_EQ_MSG(
         MTX_SUCCESS, err,
         "%d:%d: %s", line_number, column_number,
-        mtx_strerror(err));
+        mtxstrerror(err));
     TEST_ASSERT_EQ(2, mtx.num_rows);
     TEST_ASSERT_EQ(2, mtx.num_columns);
     TEST_ASSERT_EQ(-1, mtx.num_nonzeros);
@@ -625,7 +625,7 @@ int test_mtx_fread_matrix_array_integer_single(void)
     TEST_ASSERT_EQ_MSG(
         MTX_SUCCESS, err,
         "%d:%d: %s", line_number, column_number,
-        mtx_strerror(err));
+        mtxstrerror(err));
     TEST_ASSERT_EQ(2, mtx.num_rows);
     TEST_ASSERT_EQ(2, mtx.num_columns);
     TEST_ASSERT_EQ(-1, mtx.num_nonzeros);
@@ -669,7 +669,7 @@ int test_mtx_fread_matrix_coordinate_real_single(void)
     TEST_ASSERT_EQ_MSG(
         MTX_SUCCESS, err,
         "%d:%d: %s", line_number, column_number,
-        mtx_strerror(err));
+        mtxstrerror(err));
     TEST_ASSERT_EQ(3, mtx.num_rows);
     TEST_ASSERT_EQ(3, mtx.num_columns);
     TEST_ASSERT_EQ(4, mtx.num_nonzeros);
@@ -716,7 +716,7 @@ int test_mtx_fread_matrix_coordinate_real_double(void)
     TEST_ASSERT_EQ_MSG(
         MTX_SUCCESS, err,
         "%d:%d: %s", line_number, column_number,
-        mtx_strerror(err));
+        mtxstrerror(err));
     TEST_ASSERT_EQ(3, mtx.num_rows);
     TEST_ASSERT_EQ(3, mtx.num_columns);
     TEST_ASSERT_EQ(4, mtx.num_nonzeros);
@@ -764,7 +764,7 @@ int test_mtx_fread_matrix_coordinate_complex_single(void)
     TEST_ASSERT_EQ_MSG(
         MTX_SUCCESS, err,
         "%d:%d: %s", line_number, column_number,
-        mtx_strerror(err));
+        mtxstrerror(err));
     TEST_ASSERT_EQ(3, mtx.num_rows);
     TEST_ASSERT_EQ(3, mtx.num_columns);
     TEST_ASSERT_EQ(4, mtx.num_nonzeros);
@@ -816,7 +816,7 @@ int test_mtx_fread_matrix_coordinate_integer_single(void)
     TEST_ASSERT_EQ_MSG(
         MTX_SUCCESS, err,
         "%d:%d: %s", line_number, column_number,
-        mtx_strerror(err));
+        mtxstrerror(err));
     TEST_ASSERT_EQ(3, mtx.num_rows);
     TEST_ASSERT_EQ(3, mtx.num_columns);
     TEST_ASSERT_EQ(4, mtx.num_nonzeros);
@@ -863,7 +863,7 @@ int test_mtx_fread_matrix_coordinate_pattern(void)
     TEST_ASSERT_EQ_MSG(
         MTX_SUCCESS, err,
         "%d:%d: %s", line_number, column_number,
-        mtx_strerror(err));
+        mtxstrerror(err));
     TEST_ASSERT_EQ(3, mtx.num_rows);
     TEST_ASSERT_EQ(3, mtx.num_columns);
     TEST_ASSERT_EQ(4, mtx.num_nonzeros);
@@ -906,7 +906,7 @@ int test_mtx_fread_vector_array_real_single(void)
     TEST_ASSERT_EQ_MSG(
         MTX_SUCCESS, err,
         "%d:%d: %s", line_number, column_number,
-        mtx_strerror(err));
+        mtxstrerror(err));
     TEST_ASSERT_EQ(mtx_vector, mtx.object);
     TEST_ASSERT_EQ(mtx_array, mtx.format);
     TEST_ASSERT_EQ(mtx_real, mtx.field);
@@ -950,7 +950,7 @@ int test_mtx_fread_vector_coordinate_real_single(void)
     TEST_ASSERT_EQ_MSG(
         MTX_SUCCESS, err,
         "%d:%d: %s", line_number, column_number,
-        mtx_strerror(err));
+        mtxstrerror(err));
     TEST_ASSERT_EQ(8, mtx.num_rows);
     TEST_ASSERT_EQ(-1, mtx.num_columns);
     TEST_ASSERT_EQ(4, mtx.num_nonzeros);
@@ -997,13 +997,13 @@ int test_mtx_fwrite_matrix_coordinate_real_single(void)
         &mtx, mtx_general, mtx_nontriangular, mtx_unsorted, mtx_unassembled,
         num_comment_lines, comment_lines,
         num_rows, num_columns, size, data);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
     /* Write the matrix to file and verify the contents. */
     char mtxfile[1024] = {};
     FILE * f = fmemopen(mtxfile, sizeof(mtxfile), "w");
     err = mtx_fwrite(&mtx, f, "%.1f");
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
     fclose(f);
     mtx_free(&mtx);
     char expected_mtxfile[] =
@@ -1077,7 +1077,7 @@ int test_mtx_gzread_matrix_coordinate_real_single(void)
     TEST_ASSERT_EQ_MSG(
         MTX_SUCCESS, err,
         "%d:%d: %s", line_number, column_number,
-        mtx_strerror(err));
+        mtxstrerror(err));
     TEST_ASSERT_EQ(3, mtx.num_rows);
     TEST_ASSERT_EQ(3, mtx.num_columns);
     TEST_ASSERT_EQ(4, mtx.num_nonzeros);
@@ -1126,7 +1126,7 @@ int test_mtx_gzwrite_matrix_coordinate_real_single(void)
         &mtx, mtx_general, mtx_nontriangular, mtx_unsorted, mtx_unassembled,
         num_comment_lines, comment_lines,
         num_rows, num_columns, size, data);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
     /*
      * Write the matrix to file and verify the contents.
@@ -1156,7 +1156,7 @@ int test_mtx_gzwrite_matrix_coordinate_real_single(void)
             fprintf(stdout, "FAIL:%s:%s:%d: "
                     "Assertion failed: MTX_SUCCESS != %d (%s)\n",
                     __FUNCTION__, __FILE__, __LINE__,
-                    err, mtx_strerror(err));
+                    err, mtxstrerror(err));
             gzclose(gz_f);
             mtx_free(&mtx);
             exit(EXIT_FAILURE);
@@ -1232,13 +1232,13 @@ int test_mtx_fwrite_vector_array_real_single(void)
     const float data[] = {1.0f,2.0f,3.0f,4.0f};
     err = mtx_init_vector_array_real_single(
         &mtx, num_comment_lines, comment_lines, size, data);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
     /* Write the vector to file and verify the contents. */
     char mtxfile[1024] = {};
     FILE * f = fmemopen(mtxfile, sizeof(mtxfile), "w");
     err = mtx_fwrite(&mtx, f, "%.1f");
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
     fclose(f);
     mtx_free(&mtx);
     char expected_mtxfile[] =
@@ -1277,13 +1277,13 @@ int test_mtx_fwrite_vector_coordinate_real_single(void)
         &mtx, mtx_unsorted, mtx_unassembled,
         num_comment_lines, comment_lines,
         num_rows, size, data);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
     /* Write the vector to file and verify the contents. */
     char mtxfile[1024] = {};
     FILE * f = fmemopen(mtxfile, sizeof(mtxfile), "w");
     err = mtx_fwrite(&mtx, f, "%.1f");
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
     fclose(f);
     mtx_free(&mtx);
     char expected_mtxfile[] =

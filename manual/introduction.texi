@@ -1,22 +1,21 @@
 @c This file is part of libmtx.
-@c Copyright (C) 2021 James D. Trotter
+@c Copyright (C) 2022 James D. Trotter
 @c
-@c libmtx is free software: you can redistribute it and/or
-@c modify it under the terms of the GNU General Public License as
-@c published by the Free Software Foundation, either version 3 of the
-@c License, or (at your option) any later version.
+@c libmtx is free software: you can redistribute it and/or modify it
+@c under the terms of the GNU General Public License as published by
+@c the Free Software Foundation, either version 3 of the License, or
+@c (at your option) any later version.
 @c
-@c libmtx is distributed in the hope that it will be useful,
-@c but WITHOUT ANY WARRANTY; without even the implied warranty of
+@c libmtx is distributed in the hope that it will be useful, but
+@c WITHOUT ANY WARRANTY; without even the implied warranty of
 @c MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 @c General Public License for more details.
 @c
 @c You should have received a copy of the GNU General Public License
-@c along with libmtx.  If not, see
-@c <https://www.gnu.org/licenses/>.
+@c along with libmtx.  If not, see <https://www.gnu.org/licenses/>.
 @c
 @c Authors: James D. Trotter <james@simula.no>
-@c Last modified: 2021-08-06
+@c Last modified: 2022-01-04
 @c
 @c libmtx User Guide: Introduction to libmtx.
 
@@ -76,8 +75,8 @@ To familiarise yourself with the Matrix Market file format, read
 yourself, you should read @ref{Installing libmtx}.  If you want to
 learn how to use the libmtx C library to work with matrices and
 vectors, refer to @ref{Matrices and vectors}.  If you are working in a
-distributed-memory setting want to work with distributed matrices and
-vectors, see @ref{Distributed matrices and vectors}.  If, on the other
-hand, you would like to get an overview of the command-line programs
-for working with Matrix Market files that are included in libmtx, then
-you should read @ref{Commands}.
+distributed-memory setting and would like to use distributed matrices
+and vectors, see @ref{Distributed matrices and vectors}.  If you would
+like to get an overview of the command-line programs for working with
+Matrix Market files that are included in libmtx, then you should read
+@ref{Commands}.

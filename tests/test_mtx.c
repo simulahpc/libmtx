@@ -65,12 +65,12 @@ int test_mtx_copy_init(void)
         mtx_unsorted, mtx_unassembled,
         num_comment_lines, comment_lines,
         num_rows, num_columns, size, data);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
     /* Make a copy and verify the copied contents. */
     struct mtx destmtx;
     err = mtx_copy_init(&destmtx, &srcmtx);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
     TEST_ASSERT_EQ(mtx_matrix, destmtx.object);
     TEST_ASSERT_EQ(mtx_coordinate, destmtx.format);
     TEST_ASSERT_EQ(mtx_real, destmtx.field);
@@ -164,9 +164,9 @@ int test_mtx_set_comment_lines(void)
         const char * comment_lines[] = {"% first comment\n"};
         int err = mtx_set_comment_lines(
             &mtx, num_comment_lines, comment_lines);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtx_add_comment_line(&mtx, "% second comment\n");
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_STREQ("% first comment\n", mtx.comment_lines[0]);
         TEST_ASSERT_STREQ("% second comment\n", mtx.comment_lines[1]);
         for (int i = 0; i < mtx.num_comment_lines; i++)
@@ -180,7 +180,7 @@ int test_mtx_set_comment_lines(void)
         mtx.comment_lines = NULL;
         int err = mtx_add_comment_line_printf(
             &mtx, "%% %d%s %s\n", 1, "st", "comment");
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_STREQ_MSG(
             "% 1st comment\n", mtx.comment_lines[0], "%s", mtx.comment_lines[0]);
         for (int i = 0; i < mtx.num_comment_lines; i++)
@@ -211,10 +211,10 @@ int test_mtx_set_zero_matrix_coordinate_real_single(void)
         mtx_unsorted, mtx_unassembled,
         num_comment_lines, comment_lines,
         num_rows, num_columns, size, data);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
     err = mtx_set_zero(&mtx);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
     const struct mtx_matrix_coordinate_data * matrix_coordinate =
         &mtx.storage.matrix_coordinate;
     TEST_ASSERT_EQ(mtx_real, matrix_coordinate->field);
@@ -245,10 +245,10 @@ int test_mtx_set_zero_vector_array_real_single(void)
     int size = sizeof(data) / sizeof(*data);
     err = mtx_init_vector_array_real_single(
         &mtx, num_comment_lines, comment_lines, size, data);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
     err = mtx_set_zero(&mtx);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
     const struct mtx_vector_array_data * vector_array =
         &mtx.storage.vector_array;
     TEST_ASSERT_EQ(mtx_real, vector_array->field);
@@ -280,10 +280,10 @@ int test_mtx_set_zero_vector_coordinate_real_single(void)
     err = mtx_init_vector_coordinate_real_single(
         &mtx, mtx_unsorted, mtx_unassembled,
         num_comment_lines, comment_lines, num_rows, size, data);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
     err = mtx_set_zero(&mtx);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
     const struct mtx_vector_coordinate_data * vector_coordinate =
         &mtx.storage.vector_coordinate;
     TEST_ASSERT_EQ(mtx_real, vector_coordinate->field);

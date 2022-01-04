@@ -57,20 +57,20 @@ int test_mtx_dcg_array_real_double(void)
     err = mtx_init_matrix_array_real_double(
         &A, mtx_general, mtx_nontriangular, mtx_row_major,
         0, NULL, num_rows, num_columns, size, A_data);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
     /* Create right-hand side and solution vectors */
     struct mtx b;
     double bdata[] = {1.0, 0.0};
     err = mtx_init_vector_array_real_double(
         &b, 0, NULL, sizeof(bdata)/sizeof(*bdata), bdata);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
     struct mtx x;
     double xdata[] = {0.0, 0.0};
     err = mtx_init_vector_array_real_double(
         &x, 0, NULL, sizeof(xdata)/sizeof(*xdata), xdata);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
     /* Solve */
     double atol = 1e-15;
@@ -84,7 +84,7 @@ int test_mtx_dcg_array_real_double(void)
         atol, rtol,
         max_iterations, &num_iterations,
         &b_nrm2, &r_nrm2, NULL);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
     const struct mtx_vector_array_data * vector_array =
         &x.storage.vector_array;
@@ -138,7 +138,7 @@ int test_mtx_dcg_poisson_array_real_double(void)
     err = mtx_init_matrix_array_real_double(
         &A, mtx_general, mtx_nontriangular, mtx_row_major,
         0, NULL, num_rows, num_columns, size, A_data);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
     /* Create right-hand side and solution vectors */
     struct mtx b;
@@ -148,13 +148,13 @@ int test_mtx_dcg_poisson_array_real_double(void)
 
     err = mtx_init_vector_array_real_double(
         &b, 0, NULL, sizeof(bdata)/sizeof(*bdata), bdata);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
     struct mtx x;
     double xdata[N-1] = {};
     err = mtx_init_vector_array_real_double(
         &x, 0, NULL, sizeof(xdata)/sizeof(*xdata), xdata);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
     /* Solve */
     double atol = 1e-15;
@@ -168,7 +168,7 @@ int test_mtx_dcg_poisson_array_real_double(void)
         atol, rtol,
         max_iterations, &num_iterations,
         &b_nrm2, &r_nrm2, NULL);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
     const struct mtx_vector_array_data * vector_array =
         &x.storage.vector_array;
@@ -224,20 +224,20 @@ int test_mtx_dcg_coordinate_real_double(void)
     err = mtx_init_matrix_coordinate_real_double(
         &A, mtx_general, mtx_nontriangular, mtx_row_major, mtx_unassembled,
         0, NULL, num_rows, num_columns, size, A_data);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
     /* Create right-hand side and solution vectors */
     struct mtx b;
     double bdata[] = {1.0, 0.0};
     err = mtx_init_vector_array_real_double(
         &b, 0, NULL, sizeof(bdata)/sizeof(*bdata), bdata);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
     struct mtx x;
     double xdata[] = {0.0, 0.0};
     err = mtx_init_vector_array_real_double(
         &x, 0, NULL, sizeof(xdata)/sizeof(*xdata), xdata);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
     /* Solve */
     double atol = 1e-15;
@@ -251,7 +251,7 @@ int test_mtx_dcg_coordinate_real_double(void)
         atol, rtol,
         max_iterations, &num_iterations,
         &b_nrm2, &r_nrm2, NULL);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
     const struct mtx_vector_array_data * vector_array =
         &x.storage.vector_array;
@@ -305,7 +305,7 @@ int test_mtx_dcg_poisson_coordinate_real_double(void)
     err = mtx_init_matrix_coordinate_real_double(
         &A, mtx_general, mtx_nontriangular, mtx_row_major, mtx_assembled,
         0, NULL, num_rows, num_columns, size, A_data);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
     /* Create right-hand side and solution vectors */
     struct mtx b;
@@ -315,13 +315,13 @@ int test_mtx_dcg_poisson_coordinate_real_double(void)
 
     err = mtx_init_vector_array_real_double(
         &b, 0, NULL, sizeof(bdata)/sizeof(*bdata), bdata);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
     struct mtx x;
     double xdata[N-1] = {};
     err = mtx_init_vector_array_real_double(
         &x, 0, NULL, sizeof(xdata)/sizeof(*xdata), xdata);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
     /* Solve */
     double atol = 1e-15;
@@ -335,7 +335,7 @@ int test_mtx_dcg_poisson_coordinate_real_double(void)
         atol, rtol,
         max_iterations, &num_iterations,
         &b_nrm2, &r_nrm2, NULL);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtx_strerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
     const struct mtx_vector_array_data * vector_array =
         &x.storage.vector_array;

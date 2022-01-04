@@ -453,7 +453,7 @@ int main(int argc, char *argv[])
         fprintf(stderr, "%s: %s:%d: %s\n",
                 program_invocation_short_name,
                 args.mtx_path, lines_read+1,
-                mtx_strerror(err));
+                mtxstrerror(err));
         program_options_free(&args);
         return EXIT_FAILURE;
     } else if (err) {
@@ -461,7 +461,7 @@ int main(int argc, char *argv[])
             fprintf(diagf, "\n");
         fprintf(stderr, "%s: %s: %s\n",
                 program_invocation_short_name,
-                args.mtx_path, mtx_strerror(err));
+                args.mtx_path, mtxstrerror(err));
         program_options_free(&args);
         return EXIT_FAILURE;
     }
@@ -490,7 +490,7 @@ int main(int argc, char *argv[])
             fprintf(diagf, "\n");
         fprintf(stderr, "%s: %s\n",
                 program_invocation_short_name,
-                mtx_strerror(err));
+                mtxstrerror(err));
         mtxfile_free(&mtxfile);
         program_options_free(&args);
         return EXIT_FAILURE;
@@ -504,7 +504,7 @@ int main(int argc, char *argv[])
             fprintf(diagf, "\n");
         fprintf(stderr, "%s: %s\n",
                 program_invocation_short_name,
-                mtx_strerror(MTX_ERR_ERRNO));
+                mtxstrerror(MTX_ERR_ERRNO));
         mtxfile_free(&mtxfile);
         program_options_free(&args);
         return EXIT_FAILURE;
@@ -520,7 +520,7 @@ int main(int argc, char *argv[])
             fprintf(diagf, "\n");
         fprintf(stderr, "%s: %s\n",
                 program_invocation_short_name,
-                mtx_strerror(err));
+                mtxstrerror(err));
         free(rowperm);
         mtxfile_free(&mtxfile);
         program_options_free(&args);
@@ -555,7 +555,7 @@ int main(int argc, char *argv[])
                 fprintf(diagf, "\n");
             fprintf(stderr, "%s: %s\n",
                     program_invocation_short_name,
-                    mtx_strerror(err));
+                    mtxstrerror(err));
             free(rowperm);
             mtxfile_free(&mtxfile);
             program_options_free(&args);
@@ -569,7 +569,7 @@ int main(int argc, char *argv[])
                 fprintf(diagf, "\n");
             fprintf(stderr, "%s: %s\n",
                     program_invocation_short_name,
-                    mtx_strerror(err));
+                    mtxstrerror(err));
             free(rowperm);
             mtxfile_free(&mtxfile);
             program_options_free(&args);
@@ -593,7 +593,7 @@ int main(int argc, char *argv[])
         if (err) {
             fprintf(stderr, "%s: %s\n",
                     program_invocation_short_name,
-                    mtx_strerror(err));
+                    mtxstrerror(err));
             free(rowperm);
             mtxfile_free(&mtxfile);
             program_options_free(&args);
@@ -620,7 +620,7 @@ int main(int argc, char *argv[])
                 fprintf(diagf, "\n");
             fprintf(stderr, "%s: %s\n",
                     program_invocation_short_name,
-                    mtx_strerror(err));
+                    mtxstrerror(err));
             mtxfile_free(&rowperm_mtxfile);
             free(rowperm);
             mtxfile_free(&mtxfile);
@@ -636,7 +636,7 @@ int main(int argc, char *argv[])
                 fprintf(diagf, "\n");
             fprintf(stderr, "%s: %s\n",
                     program_invocation_short_name,
-                    mtx_strerror(err));
+                    mtxstrerror(err));
             mtxfile_free(&rowperm_mtxfile);
             free(rowperm);
             mtxfile_free(&mtxfile);
@@ -663,7 +663,7 @@ int main(int argc, char *argv[])
         if (err) {
             fprintf(stderr, "%s: %s\n",
                     program_invocation_short_name,
-                    mtx_strerror(err));
+                    mtxstrerror(err));
             free(rowperm);
             mtxfile_free(&mtxfile);
             program_options_free(&args);
@@ -690,7 +690,7 @@ int main(int argc, char *argv[])
                 fprintf(diagf, "\n");
             fprintf(stderr, "%s: %s\n",
                     program_invocation_short_name,
-                    mtx_strerror(err));
+                    mtxstrerror(err));
             mtxfile_free(&colperm_mtxfile);
             free(rowperm);
             mtxfile_free(&mtxfile);
@@ -706,7 +706,7 @@ int main(int argc, char *argv[])
                 fprintf(diagf, "\n");
             fprintf(stderr, "%s: %s\n",
                     program_invocation_short_name,
-                    mtx_strerror(err));
+                    mtxstrerror(err));
             mtxfile_free(&colperm_mtxfile);
             free(rowperm);
             mtxfile_free(&mtxfile);

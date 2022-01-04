@@ -38,7 +38,7 @@ const char * mtx_precision_str(
     switch (precision) {
     case mtx_single: return "single";
     case mtx_double: return "double";
-    default: return mtx_strerror(MTX_ERR_INVALID_PRECISION);
+    default: return mtxstrerror(MTX_ERR_INVALID_PRECISION);
     }
 }
 
