@@ -29,11 +29,11 @@
 #include <string.h>
 
 /**
- * `mtx_precision_str()' is a string representing the given precision
+ * `mtxprecision_str()' is a string representing the given precision
  * type.
  */
-const char * mtx_precision_str(
-    enum mtx_precision precision)
+const char * mtxprecision_str(
+    enum mtxprecision precision)
 {
     switch (precision) {
     case mtx_single: return "single";
@@ -43,8 +43,8 @@ const char * mtx_precision_str(
 }
 
 /**
- * `mtx_precision_parse()' parses a string to obtain one of the
- * precision types of `enum mtx_precision'.
+ * `mtxprecision_parse()' parses a string to obtain one of the
+ * precision types of `enum mtxprecision'.
  *
  * `valid_delimiters' is either `NULL', in which case it is ignored,
  * or it is a string of characters considered to be valid delimiters
@@ -58,13 +58,13 @@ const char * mtx_precision_str(
  * points to the first character beyond the characters that were
  * consumed during parsing.
  *
- * On success, `mtx_precision_parse()' returns `MTX_SUCCESS' and
+ * On success, `mtxprecision_parse()' returns `MTX_SUCCESS' and
  * `precision' is set according to the parsed string and `bytes_read'
  * is set to the number of bytes that were consumed by the parser.
  * Otherwise, an error code is returned.
  */
-int mtx_precision_parse(
-    enum mtx_precision * precision,
+int mtxprecision_parse(
+    enum mtxprecision * precision,
     int64_t * bytes_read,
     const char ** endptr,
     const char * s,

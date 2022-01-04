@@ -86,7 +86,7 @@ int mtxvector_distributed_copy(
 int mtxvector_distributed_alloc(
     struct mtxvector_distributed * vector,
     enum mtx_field_ field,
-    enum mtx_precision precision,
+    enum mtxprecision precision,
     int size,
     int64_t num_nonzeros);
 
@@ -195,7 +195,7 @@ int mtxvector_distributed_to_mtxfile(
  */
 int mtxvector_distributed_read(
     struct mtxvector_distributed * vector,
-    enum mtx_precision precision,
+    enum mtxprecision precision,
     const char * path,
     bool gzip,
     int * lines_read,
@@ -214,7 +214,7 @@ int mtxvector_distributed_read(
  */
 int mtxvector_distributed_fread(
     struct mtxvector_distributed * vector,
-    enum mtx_precision precision,
+    enum mtxprecision precision,
     FILE * f,
     int * lines_read,
     int64_t * bytes_read,
@@ -235,7 +235,7 @@ int mtxvector_distributed_fread(
  */
 int mtxvector_distributed_gzread(
     struct mtxvector_distributed * vector,
-    enum mtx_precision precision,
+    enum mtxprecision precision,
     gzFile f,
     int * lines_read,
     int64_t * bytes_read,
@@ -477,7 +477,7 @@ int mtxvector_distributed_fread_distribute_rows(
     int64_t * bytes_read,
     size_t line_max,
     char * linebuf,
-    enum mtx_precision precision,
+    enum mtxprecision precision,
     enum mtx_partition_type row_partition_type,
     size_t bufsize,
     int root,

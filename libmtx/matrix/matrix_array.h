@@ -53,7 +53,7 @@ struct mtxmatrix_array
     /**
      * `precision' is the precision used to store values.
      */
-    enum mtx_precision precision;
+    enum mtxprecision precision;
 
     /**
      * `num_rows' is the number of matrix rows.
@@ -94,7 +94,7 @@ struct mtxmatrix_array
 int mtxmatrix_array_alloc(
     struct mtxmatrix_array * matrix,
     enum mtx_field_ field,
-    enum mtx_precision precision,
+    enum mtxprecision precision,
     int num_rows,
     int num_columns);
 

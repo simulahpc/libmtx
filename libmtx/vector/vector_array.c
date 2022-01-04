@@ -105,7 +105,7 @@ int mtxvector_array_init_copy(
 int mtxvector_array_alloc(
     struct mtxvector_array * vector,
     enum mtx_field_ field,
-    enum mtx_precision precision,
+    enum mtxprecision precision,
     int size)
 {
     if (field == mtx_field_real) {

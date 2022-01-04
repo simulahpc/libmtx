@@ -69,7 +69,7 @@
  */
 int mtx_read(
     struct mtx * mtx,
-    enum mtx_precision precision,
+    enum mtxprecision precision,
     const char * path,
     bool gzip,
     int * line_number,
@@ -786,7 +786,7 @@ static int read_data_vector_coordinate(
 static int read_mtx(
     struct mtx_header * header,
     struct mtx * mtx,
-    enum mtx_precision precision,
+    enum mtxprecision precision,
     const struct stream * stream,
     int * line_number,
     int * column_number)
@@ -972,7 +972,7 @@ static int read_mtx(
  */
 int mtx_fread(
     struct mtx * mtx,
-    enum mtx_precision precision,
+    enum mtxprecision precision,
     FILE * f,
     int * line_number,
     int * column_number)
@@ -1002,7 +1002,7 @@ int mtx_fread(
  */
 int mtx_gzread(
     struct mtx * mtx,
-    enum mtx_precision precision,
+    enum mtxprecision precision,
     gzFile f,
     int * line_number,
     int * column_number)

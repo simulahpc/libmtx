@@ -876,7 +876,7 @@ int test_mtxfiledata_fread(void)
         enum mtxfile_object object = mtxfile_matrix;
         enum mtxfile_format format = mtxfile_array;
         enum mtxfile_field field = mtxfile_real;
-        enum mtx_precision precision = mtx_single;
+        enum mtxprecision precision = mtx_single;
         size_t size = 2;
         err = mtxfiledata_alloc(&data, object, format, field, precision, size);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
@@ -903,7 +903,7 @@ int test_mtxfiledata_fread(void)
         enum mtxfile_object object = mtxfile_matrix;
         enum mtxfile_format format = mtxfile_array;
         enum mtxfile_field field = mtxfile_real;
-        enum mtx_precision precision = mtx_double;
+        enum mtxprecision precision = mtx_double;
         size_t size = 2;
         err = mtxfiledata_alloc(&data, object, format, field, precision, size);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
@@ -930,7 +930,7 @@ int test_mtxfiledata_fread(void)
         enum mtxfile_object object = mtxfile_matrix;
         enum mtxfile_format format = mtxfile_array;
         enum mtxfile_field field = mtxfile_complex;
-        enum mtx_precision precision = mtx_single;
+        enum mtxprecision precision = mtx_single;
         size_t size = 2;
         err = mtxfiledata_alloc(&data, object, format, field, precision, size);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
@@ -959,7 +959,7 @@ int test_mtxfiledata_fread(void)
         enum mtxfile_object object = mtxfile_matrix;
         enum mtxfile_format format = mtxfile_array;
         enum mtxfile_field field = mtxfile_complex;
-        enum mtx_precision precision = mtx_double;
+        enum mtxprecision precision = mtx_double;
         size_t size = 2;
         err = mtxfiledata_alloc(&data, object, format, field, precision, size);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
@@ -988,7 +988,7 @@ int test_mtxfiledata_fread(void)
         enum mtxfile_object object = mtxfile_matrix;
         enum mtxfile_format format = mtxfile_array;
         enum mtxfile_field field = mtxfile_integer;
-        enum mtx_precision precision = mtx_single;
+        enum mtxprecision precision = mtx_single;
         size_t size = 2;
         err = mtxfiledata_alloc(&data, object, format, field, precision, size);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
@@ -1015,7 +1015,7 @@ int test_mtxfiledata_fread(void)
         enum mtxfile_object object = mtxfile_matrix;
         enum mtxfile_format format = mtxfile_array;
         enum mtxfile_field field = mtxfile_integer;
-        enum mtx_precision precision = mtx_double;
+        enum mtxprecision precision = mtx_double;
         size_t size = 2;
         err = mtxfiledata_alloc(&data, object, format, field, precision, size);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
@@ -1046,7 +1046,7 @@ int test_mtxfiledata_fread(void)
         enum mtxfile_object object = mtxfile_matrix;
         enum mtxfile_format format = mtxfile_coordinate;
         enum mtxfile_field field = mtxfile_real;
-        enum mtx_precision precision = mtx_single;
+        enum mtxprecision precision = mtx_single;
         size_t size = 2;
         err = mtxfiledata_alloc(&data, object, format, field, precision, size);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
@@ -1077,7 +1077,7 @@ int test_mtxfiledata_fread(void)
         enum mtxfile_object object = mtxfile_matrix;
         enum mtxfile_format format = mtxfile_coordinate;
         enum mtxfile_field field = mtxfile_real;
-        enum mtx_precision precision = mtx_double;
+        enum mtxprecision precision = mtx_double;
         size_t size = 2;
         err = mtxfiledata_alloc(&data, object, format, field, precision, size);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
@@ -1108,7 +1108,7 @@ int test_mtxfiledata_fread(void)
         enum mtxfile_object object = mtxfile_matrix;
         enum mtxfile_format format = mtxfile_coordinate;
         enum mtxfile_field field = mtxfile_complex;
-        enum mtx_precision precision = mtx_single;
+        enum mtxprecision precision = mtx_single;
         size_t size = 2;
         err = mtxfiledata_alloc(&data, object, format, field, precision, size);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
@@ -1141,7 +1141,7 @@ int test_mtxfiledata_fread(void)
         enum mtxfile_object object = mtxfile_matrix;
         enum mtxfile_format format = mtxfile_coordinate;
         enum mtxfile_field field = mtxfile_complex;
-        enum mtx_precision precision = mtx_double;
+        enum mtxprecision precision = mtx_double;
         size_t size = 2;
         err = mtxfiledata_alloc(&data, object, format, field, precision, size);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
@@ -1174,7 +1174,7 @@ int test_mtxfiledata_fread(void)
         enum mtxfile_object object = mtxfile_matrix;
         enum mtxfile_format format = mtxfile_coordinate;
         enum mtxfile_field field = mtxfile_integer;
-        enum mtx_precision precision = mtx_single;
+        enum mtxprecision precision = mtx_single;
         size_t size = 2;
         err = mtxfiledata_alloc(&data, object, format, field, precision, size);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
@@ -1205,7 +1205,7 @@ int test_mtxfiledata_fread(void)
         enum mtxfile_object object = mtxfile_matrix;
         enum mtxfile_format format = mtxfile_coordinate;
         enum mtxfile_field field = mtxfile_integer;
-        enum mtx_precision precision = mtx_double;
+        enum mtxprecision precision = mtx_double;
         size_t size = 2;
         err = mtxfiledata_alloc(&data, object, format, field, precision, size);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
@@ -1236,7 +1236,7 @@ int test_mtxfiledata_fread(void)
         enum mtxfile_object object = mtxfile_matrix;
         enum mtxfile_format format = mtxfile_coordinate;
         enum mtxfile_field field = mtxfile_pattern;
-        enum mtx_precision precision = mtx_single;
+        enum mtxprecision precision = mtx_single;
         size_t size = 2;
         err = mtxfiledata_alloc(&data, object, format, field, precision, size);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
@@ -1269,7 +1269,7 @@ int test_mtxfiledata_fread(void)
         enum mtxfile_object object = mtxfile_vector;
         enum mtxfile_format format = mtxfile_coordinate;
         enum mtxfile_field field = mtxfile_real;
-        enum mtx_precision precision = mtx_single;
+        enum mtxprecision precision = mtx_single;
         size_t size = 2;
         err = mtxfiledata_alloc(&data, object, format, field, precision, size);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
@@ -1298,7 +1298,7 @@ int test_mtxfiledata_fread(void)
         enum mtxfile_object object = mtxfile_vector;
         enum mtxfile_format format = mtxfile_coordinate;
         enum mtxfile_field field = mtxfile_real;
-        enum mtx_precision precision = mtx_double;
+        enum mtxprecision precision = mtx_double;
         size_t size = 2;
         err = mtxfiledata_alloc(&data, object, format, field, precision, size);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
@@ -1327,7 +1327,7 @@ int test_mtxfiledata_fread(void)
         enum mtxfile_object object = mtxfile_vector;
         enum mtxfile_format format = mtxfile_coordinate;
         enum mtxfile_field field = mtxfile_complex;
-        enum mtx_precision precision = mtx_single;
+        enum mtxprecision precision = mtx_single;
         size_t size = 2;
         err = mtxfiledata_alloc(&data, object, format, field, precision, size);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
@@ -1358,7 +1358,7 @@ int test_mtxfiledata_fread(void)
         enum mtxfile_object object = mtxfile_vector;
         enum mtxfile_format format = mtxfile_coordinate;
         enum mtxfile_field field = mtxfile_complex;
-        enum mtx_precision precision = mtx_double;
+        enum mtxprecision precision = mtx_double;
         size_t size = 2;
         err = mtxfiledata_alloc(&data, object, format, field, precision, size);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
@@ -1389,7 +1389,7 @@ int test_mtxfiledata_fread(void)
         enum mtxfile_object object = mtxfile_vector;
         enum mtxfile_format format = mtxfile_coordinate;
         enum mtxfile_field field = mtxfile_integer;
-        enum mtx_precision precision = mtx_single;
+        enum mtxprecision precision = mtx_single;
         size_t size = 2;
         err = mtxfiledata_alloc(&data, object, format, field, precision, size);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
@@ -1418,7 +1418,7 @@ int test_mtxfiledata_fread(void)
         enum mtxfile_object object = mtxfile_vector;
         enum mtxfile_format format = mtxfile_coordinate;
         enum mtxfile_field field = mtxfile_integer;
-        enum mtx_precision precision = mtx_double;
+        enum mtxprecision precision = mtx_double;
         size_t size = 2;
         err = mtxfiledata_alloc(&data, object, format, field, precision, size);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
@@ -1447,7 +1447,7 @@ int test_mtxfiledata_fread(void)
         enum mtxfile_object object = mtxfile_vector;
         enum mtxfile_format format = mtxfile_coordinate;
         enum mtxfile_field field = mtxfile_pattern;
-        enum mtx_precision precision = mtx_single;
+        enum mtxprecision precision = mtx_single;
         size_t size = 2;
         err = mtxfiledata_alloc(&data, object, format, field, precision, size);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
@@ -1487,7 +1487,7 @@ int test_mtxfile_fread(void)
         int lines_read = 0;
         int64_t bytes_read = 0;
         struct mtxfile mtxfile;
-        enum mtx_precision precision = mtx_single;
+        enum mtxprecision precision = mtx_single;
         err = mtxfile_fread(
             &mtxfile, precision, f, &lines_read, &bytes_read, 0, NULL);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
@@ -1518,7 +1518,7 @@ int test_mtxfile_fread(void)
         int lines_read = 0;
         int64_t bytes_read = 0;
         struct mtxfile mtxfile;
-        enum mtx_precision precision = mtx_double;
+        enum mtxprecision precision = mtx_double;
         err = mtxfile_fread(
             &mtxfile, precision, f, &lines_read, &bytes_read, 0, NULL);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
@@ -1549,7 +1549,7 @@ int test_mtxfile_fread(void)
         int lines_read = 0;
         int64_t bytes_read = 0;
         struct mtxfile mtxfile;
-        enum mtx_precision precision = mtx_single;
+        enum mtxprecision precision = mtx_single;
         err = mtxfile_fread(
             &mtxfile, precision, f, &lines_read, &bytes_read, 0, NULL);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
@@ -1582,7 +1582,7 @@ int test_mtxfile_fread(void)
         int lines_read = 0;
         int64_t bytes_read = 0;
         struct mtxfile mtxfile;
-        enum mtx_precision precision = mtx_double;
+        enum mtxprecision precision = mtx_double;
         err = mtxfile_fread(
             &mtxfile, precision, f, &lines_read, &bytes_read, 0, NULL);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
@@ -1615,7 +1615,7 @@ int test_mtxfile_fread(void)
         int lines_read = 0;
         int64_t bytes_read = 0;
         struct mtxfile mtxfile;
-        enum mtx_precision precision = mtx_single;
+        enum mtxprecision precision = mtx_single;
         err = mtxfile_fread(
             &mtxfile, precision, f, &lines_read, &bytes_read, 0, NULL);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
@@ -1646,7 +1646,7 @@ int test_mtxfile_fread(void)
         int lines_read = 0;
         int64_t bytes_read = 0;
         struct mtxfile mtxfile;
-        enum mtx_precision precision = mtx_double;
+        enum mtxprecision precision = mtx_double;
         err = mtxfile_fread(
             &mtxfile, precision, f, &lines_read, &bytes_read, 0, NULL);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
@@ -1681,7 +1681,7 @@ int test_mtxfile_fread(void)
         int lines_read = 0;
         int64_t bytes_read = 0;
         struct mtxfile mtxfile;
-        enum mtx_precision precision = mtx_single;
+        enum mtxprecision precision = mtx_single;
         err = mtxfile_fread(
             &mtxfile, precision, f, &lines_read, &bytes_read, 0, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%d: %s",lines_read+1,mtxstrerror(err));
@@ -1717,7 +1717,7 @@ int test_mtxfile_fread(void)
         int lines_read = 0;
         int64_t bytes_read = 0;
         struct mtxfile mtxfile;
-        enum mtx_precision precision = mtx_double;
+        enum mtxprecision precision = mtx_double;
         err = mtxfile_fread(
             &mtxfile, precision, f, &lines_read, &bytes_read, 0, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%d: %s",lines_read+1,mtxstrerror(err));
@@ -1754,7 +1754,7 @@ int test_mtxfile_fread(void)
         int lines_read = 0;
         int64_t bytes_read = 0;
         struct mtxfile mtxfile;
-        enum mtx_precision precision = mtx_single;
+        enum mtxprecision precision = mtx_single;
         err = mtxfile_fread(
             &mtxfile, precision, f, &lines_read, &bytes_read, 0, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%d: %s",lines_read+1,mtxstrerror(err));
@@ -1789,7 +1789,7 @@ int test_mtxfile_fread(void)
         int lines_read = 0;
         int64_t bytes_read = 0;
         struct mtxfile mtxfile;
-        enum mtx_precision precision = mtx_single;
+        enum mtxprecision precision = mtx_single;
         err = mtxfile_fread(
             &mtxfile, precision, f, &lines_read, &bytes_read, 0, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%d: %s",lines_read+1,mtxstrerror(err));
@@ -1826,7 +1826,7 @@ int test_mtxfile_fread(void)
         int lines_read = 0;
         int64_t bytes_read = 0;
         struct mtxfile mtxfile;
-        enum mtx_precision precision = mtx_single;
+        enum mtxprecision precision = mtx_single;
         err = mtxfile_fread(
             &mtxfile, precision, f, &lines_read, &bytes_read, 0, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%d: %s",lines_read+1,mtxstrerror(err));
@@ -1860,7 +1860,7 @@ int test_mtxfile_fread(void)
         int lines_read = 0;
         int64_t bytes_read = 0;
         struct mtxfile mtxfile;
-        enum mtx_precision precision = mtx_double;
+        enum mtxprecision precision = mtx_double;
         err = mtxfile_fread(
             &mtxfile, precision, f, &lines_read, &bytes_read, 0, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%d: %s",lines_read+1,mtxstrerror(err));
@@ -1896,7 +1896,7 @@ int test_mtxfile_fread(void)
         int lines_read = 0;
         int64_t bytes_read = 0;
         struct mtxfile mtxfile;
-        enum mtx_precision precision = mtx_single;
+        enum mtxprecision precision = mtx_single;
         err = mtxfile_fread(
             &mtxfile, precision, f, &lines_read, &bytes_read, 0, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%d: %s",lines_read+1,mtxstrerror(err));
@@ -1930,7 +1930,7 @@ int test_mtxfile_fread(void)
         int lines_read = 0;
         int64_t bytes_read = 0;
         struct mtxfile mtxfile;
-        enum mtx_precision precision = mtx_single;
+        enum mtxprecision precision = mtx_single;
         err = mtxfile_fread(
             &mtxfile, precision, f, &lines_read, &bytes_read, 0, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%d: %s",lines_read+1,mtxstrerror(err));
@@ -2148,7 +2148,7 @@ int test_mtxfile_gzread(void)
     int lines_read = 0;
     int64_t bytes_read = 0;
     struct mtxfile mtxfile;
-    enum mtx_precision precision = mtx_single;
+    enum mtxprecision precision = mtx_single;
     err = mtxfile_gzread(
         &mtxfile, precision, gz_f, &lines_read, &bytes_read, 0, NULL);
     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%d: %s",lines_read+1,mtxstrerror(err));

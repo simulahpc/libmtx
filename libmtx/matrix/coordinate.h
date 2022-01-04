@@ -54,7 +54,7 @@ struct mtx_matrix_coordinate_pattern;
 int mtx_alloc_matrix_coordinate(
     struct mtx * mtx,
     enum mtx_field field,
-    enum mtx_precision precision,
+    enum mtxprecision precision,
     enum mtx_symmetry symmetry,
     int num_comment_lines,
     const char ** comment_lines,

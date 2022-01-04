@@ -102,7 +102,7 @@ int mtxmatrix_array_init_copy(
 int mtxmatrix_array_alloc(
     struct mtxmatrix_array * matrix,
     enum mtx_field_ field,
-    enum mtx_precision precision,
+    enum mtxprecision precision,
     int num_rows,
     int num_columns)
 {

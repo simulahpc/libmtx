@@ -42,7 +42,7 @@
 int mtx_alloc_vector_coordinate(
     struct mtx * mtx,
     enum mtx_field field,
-    enum mtx_precision precision,
+    enum mtxprecision precision,
     int num_comment_lines,
     const char ** comment_lines,
     int num_rows,

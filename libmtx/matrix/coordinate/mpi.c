@@ -42,7 +42,7 @@
  */
 static int mtx_matrix_coordinate_datatype(
     enum mtx_field field,
-    enum mtx_precision precision,
+    enum mtxprecision precision,
     MPI_Datatype * datatype,
     int * mpierrcode)
 {
@@ -303,7 +303,7 @@ int mtx_matrix_coordinate_recv(
 {
     int err;
     enum mtx_field field;
-    enum mtx_precision precision;
+    enum mtxprecision precision;
     enum mtx_symmetry symmetry;
     enum mtx_triangle triangle;
     enum mtx_sorting sorting;
@@ -485,7 +485,7 @@ int mtx_matrix_coordinate_bcast(
         return MTX_ERR_MPI;
 
     enum mtx_field field;
-    enum mtx_precision precision;
+    enum mtxprecision precision;
     enum mtx_symmetry symmetry;
     enum mtx_triangle triangle;
     enum mtx_sorting sorting;

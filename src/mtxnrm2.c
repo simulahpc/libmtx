@@ -63,7 +63,7 @@ struct program_options
 {
     char * x_path;
     char * format;
-    enum mtx_precision precision;
+    enum mtxprecision precision;
     enum mtxvector_type vector_type;
     bool gzip;
     int num_parts;
@@ -209,7 +209,7 @@ static int parse_program_options(
                 return EINVAL;
             }
             char * s = (*argv)[1];
-            err = mtx_precision_parse(&args->precision, NULL, NULL, s, "");
+            err = mtxprecision_parse(&args->precision, NULL, NULL, s, "");
             if (err) {
                 program_options_free(args);
                 return EINVAL;
@@ -218,7 +218,7 @@ static int parse_program_options(
             continue;
         } else if (strstr((*argv)[0], "--precision=") == (*argv)[0]) {
             char * s = (*argv)[0] + strlen("--precision=");
-            err = mtx_precision_parse(&args->precision, NULL, NULL, s, "");
+            err = mtxprecision_parse(&args->precision, NULL, NULL, s, "");
             if (err) {
                 program_options_free(args);
                 return EINVAL;
@@ -510,7 +510,7 @@ static int distvector_nrm2(
 {
     int err;
     struct timespec t0, t1;
-    enum mtx_precision precision = mtxdistfile->precision;
+    enum mtxprecision precision = mtxdistfile->precision;
 
     /* 1. Convert Matrix Market file to a vector. */
     if (verbose > 0) {
@@ -897,7 +897,7 @@ static int vector_nrm2(
 {
     int err;
     struct timespec t0, t1;
-    enum mtx_precision precision = mtxfile->precision;
+    enum mtxprecision precision = mtxfile->precision;
 
     /* 1. Convert Matrix Market file to a vector. */
     if (verbose > 0) {

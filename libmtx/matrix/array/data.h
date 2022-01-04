@@ -48,7 +48,7 @@ struct mtx_matrix_array_data
      * `precision' is the precision associated with the matrix values:
      * `single' or `double'.
      */
-    enum mtx_precision precision;
+    enum mtxprecision precision;
 
     /**
      * `symmetry' is the matrix symmetry: `general', `symmetric',
@@ -200,7 +200,7 @@ void mtx_matrix_array_data_free(
 int mtx_matrix_array_data_alloc(
     struct mtx_matrix_array_data * mtxdata,
     enum mtx_field field,
-    enum mtx_precision precision,
+    enum mtxprecision precision,
     enum mtx_symmetry symmetry,
     enum mtx_triangle triangle,
     int num_rows,

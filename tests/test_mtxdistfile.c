@@ -344,7 +344,7 @@ int test_mtxdistfile_fread(void)
         int lines_read = 0;
         int64_t bytes_read = 0;
         struct mtxdistfile mtxdistfile;
-        enum mtx_precision precision = mtx_single;
+        enum mtxprecision precision = mtx_single;
         err = mtxdistfile_fread(
             &mtxdistfile, precision,
             f, &lines_read, &bytes_read, 0, NULL,
@@ -392,7 +392,7 @@ int test_mtxdistfile_fread(void)
         int lines_read = 0;
         int64_t bytes_read = 0;
         struct mtxdistfile mtxdistfile;
-        enum mtx_precision precision = mtx_double;
+        enum mtxprecision precision = mtx_double;
         err = mtxdistfile_fread(
             &mtxdistfile, precision,
             f, &lines_read, &bytes_read, 0, NULL, comm, &mpierror);
@@ -439,7 +439,7 @@ int test_mtxdistfile_fread(void)
         int lines_read = 0;
         int64_t bytes_read = 0;
         struct mtxdistfile mtxdistfile;
-        enum mtx_precision precision = mtx_single;
+        enum mtxprecision precision = mtx_single;
         err = mtxdistfile_fread(
             &mtxdistfile, precision,
             f, &lines_read, &bytes_read, 0, NULL, comm, &mpierror);
@@ -488,7 +488,7 @@ int test_mtxdistfile_fread(void)
         int lines_read = 0;
         int64_t bytes_read = 0;
         struct mtxdistfile mtxdistfile;
-        enum mtx_precision precision = mtx_double;
+        enum mtxprecision precision = mtx_double;
         err = mtxdistfile_fread(
             &mtxdistfile, precision,
             f, &lines_read, &bytes_read, 0, NULL, comm, &mpierror);
@@ -537,7 +537,7 @@ int test_mtxdistfile_fread(void)
         int lines_read = 0;
         int64_t bytes_read = 0;
         struct mtxdistfile mtxdistfile;
-        enum mtx_precision precision = mtx_single;
+        enum mtxprecision precision = mtx_single;
         err = mtxdistfile_fread(
             &mtxdistfile, precision,
             f, &lines_read, &bytes_read, 0, NULL, comm, &mpierror);
@@ -584,7 +584,7 @@ int test_mtxdistfile_fread(void)
         int lines_read = 0;
         int64_t bytes_read = 0;
         struct mtxdistfile mtxdistfile;
-        enum mtx_precision precision = mtx_double;
+        enum mtxprecision precision = mtx_double;
         err = mtxdistfile_fread(
             &mtxdistfile, precision,
             f, &lines_read, &bytes_read, 0, NULL, comm, &mpierror);
@@ -634,7 +634,7 @@ int test_mtxdistfile_fread(void)
         int lines_read = 0;
         int64_t bytes_read = 0;
         struct mtxdistfile mtxdistfile;
-        enum mtx_precision precision = mtx_single;
+        enum mtxprecision precision = mtx_single;
         err = mtxdistfile_fread(
             &mtxdistfile, precision,
             f, &lines_read, &bytes_read, 0, NULL, comm, &mpierror);
@@ -686,7 +686,7 @@ int test_mtxdistfile_fread(void)
         int lines_read = 0;
         int64_t bytes_read = 0;
         struct mtxdistfile mtxdistfile;
-        enum mtx_precision precision = mtx_double;
+        enum mtxprecision precision = mtx_double;
         err = mtxdistfile_fread(
             &mtxdistfile, precision,
             f, &lines_read, &bytes_read, 0, NULL, comm, &mpierror);
@@ -739,7 +739,7 @@ int test_mtxdistfile_fread(void)
         int lines_read = 0;
         int64_t bytes_read = 0;
         struct mtxdistfile mtxdistfile;
-        enum mtx_precision precision = mtx_single;
+        enum mtxprecision precision = mtx_single;
         err = mtxdistfile_fread(
             &mtxdistfile, precision,
             f, &lines_read, &bytes_read, 0, NULL, comm, &mpierror);
@@ -790,7 +790,7 @@ int test_mtxdistfile_fread(void)
         int lines_read = 0;
         int64_t bytes_read = 0;
         struct mtxdistfile mtxdistfile;
-        enum mtx_precision precision = mtx_single;
+        enum mtxprecision precision = mtx_single;
         err = mtxdistfile_fread(
             &mtxdistfile, precision,
             f, &lines_read, &bytes_read, 0, NULL, comm, &mpierror);
@@ -842,7 +842,7 @@ int test_mtxdistfile_fread(void)
         int lines_read = 0;
         int64_t bytes_read = 0;
         struct mtxdistfile mtxdistfile;
-        enum mtx_precision precision = mtx_single;
+        enum mtxprecision precision = mtx_single;
         err = mtxdistfile_fread(
             &mtxdistfile, precision,
             f, &lines_read, &bytes_read, 0, NULL, comm, &mpierror);
@@ -892,7 +892,7 @@ int test_mtxdistfile_fread(void)
         int lines_read = 0;
         int64_t bytes_read = 0;
         struct mtxdistfile mtxdistfile;
-        enum mtx_precision precision = mtx_double;
+        enum mtxprecision precision = mtx_double;
         err = mtxdistfile_fread(
             &mtxdistfile, precision,
             f, &lines_read, &bytes_read, 0, NULL, comm, &mpierror);
@@ -944,7 +944,7 @@ int test_mtxdistfile_fread(void)
         int lines_read = 0;
         int64_t bytes_read = 0;
         struct mtxdistfile mtxdistfile;
-        enum mtx_precision precision = mtx_single;
+        enum mtxprecision precision = mtx_single;
         err = mtxdistfile_fread(
             &mtxdistfile, precision,
             f, &lines_read, &bytes_read, 0, NULL, comm, &mpierror);
@@ -994,7 +994,7 @@ int test_mtxdistfile_fread(void)
         int lines_read = 0;
         int64_t bytes_read = 0;
         struct mtxdistfile mtxdistfile;
-        enum mtx_precision precision = mtx_single;
+        enum mtxprecision precision = mtx_single;
         err = mtxdistfile_fread(
             &mtxdistfile, precision,
             f, &lines_read, &bytes_read, 0, NULL, comm, &mpierror);

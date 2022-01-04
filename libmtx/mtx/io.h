@@ -54,7 +54,7 @@ struct mtx;
  */
 int mtx_read(
     struct mtx * mtx,
-    enum mtx_precision precision,
+    enum mtxprecision precision,
     const char * path,
     bool gzip,
     int * line_number,
@@ -99,7 +99,7 @@ int mtx_write(
  */
 int mtx_fread(
     struct mtx * mtx,
-    enum mtx_precision precision,
+    enum mtxprecision precision,
     FILE * f,
     int * line_number,
     int * column_number);
@@ -141,7 +141,7 @@ int mtx_fwrite(
  */
 int mtx_gzread(
     struct mtx * mtx,
-    enum mtx_precision precision,
+    enum mtxprecision precision,
     gzFile f,
     int * line_number,
     int * column_number);

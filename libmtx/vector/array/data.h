@@ -46,7 +46,7 @@ struct mtx_vector_array_data
      * `precision' is the precision associated with the vector values:
      * `single' or `double'.
      */
-    enum mtx_precision precision;
+    enum mtxprecision precision;
 
     /**
      * `num_rows' is the number of rows in the vector.
@@ -100,7 +100,7 @@ void mtx_vector_array_data_free(
 int mtx_vector_array_data_alloc(
     struct mtx_vector_array_data * mtxdata,
     enum mtx_field field,
-    enum mtx_precision precision,
+    enum mtxprecision precision,
     int64_t size);
 
 /*

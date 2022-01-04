@@ -54,7 +54,7 @@ const char * program_invocation_short_name;
 struct program_options
 {
     char * mtx_path;
-    enum mtx_precision precision;
+    enum mtxprecision precision;
     bool gzip;
     char * format;
     char * rowperm_path;
@@ -184,7 +184,7 @@ static int parse_program_options(
                 return EINVAL;
             }
             char * s = (*argv)[1];
-            err = mtx_precision_parse(&args->precision, NULL, NULL, s, "");
+            err = mtxprecision_parse(&args->precision, NULL, NULL, s, "");
             if (err) {
                 program_options_free(args);
                 return EINVAL;
@@ -193,7 +193,7 @@ static int parse_program_options(
             continue;
         } else if (strstr((*argv)[0], "--precision=") == (*argv)[0]) {
             char * s = (*argv)[0] + strlen("--precision=");
-            err = mtx_precision_parse(&args->precision, NULL, NULL, s, "");
+            err = mtxprecision_parse(&args->precision, NULL, NULL, s, "");
             if (err) {
                 program_options_free(args);
                 return EINVAL;

@@ -52,7 +52,7 @@ struct mtxvector_coordinate
     /**
      * `precision' is the precision used to store values.
      */
-    enum mtx_precision precision;
+    enum mtxprecision precision;
 
     /**
      * `size' is the number of vector elements.
@@ -122,7 +122,7 @@ int mtxvector_coordinate_init_copy(
 int mtxvector_coordinate_alloc(
     struct mtxvector_coordinate * vector,
     enum mtx_field_ field,
-    enum mtx_precision precision,
+    enum mtxprecision precision,
     int size,
     int64_t num_nonzeros);
 

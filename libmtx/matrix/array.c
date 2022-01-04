@@ -56,7 +56,7 @@
 int mtx_alloc_matrix_array(
     struct mtx * mtx,
     enum mtx_field field,
-    enum mtx_precision precision,
+    enum mtxprecision precision,
     enum mtx_symmetry symmetry,
     enum mtx_triangle triangle,
     enum mtx_sorting sorting,

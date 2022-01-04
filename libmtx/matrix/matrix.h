@@ -155,7 +155,7 @@ int mtxmatrix_init_copy(
 int mtxmatrix_alloc_array(
     struct mtxmatrix * matrix,
     enum mtx_field_ field,
-    enum mtx_precision precision,
+    enum mtxprecision precision,
     int num_rows,
     int num_columns);
 
@@ -230,7 +230,7 @@ int mtxmatrix_init_array_integer_double(
 int mtxmatrix_alloc_coordinate(
     struct mtxmatrix * matrix,
     enum mtx_field_ field,
-    enum mtx_precision precision,
+    enum mtxprecision precision,
     int num_rows,
     int num_columns,
     int64_t num_nonzeros);
@@ -402,7 +402,7 @@ int mtxmatrix_to_mtxfile(
  */
 int mtxmatrix_read(
     struct mtxmatrix * matrix,
-    enum mtx_precision precision,
+    enum mtxprecision precision,
     enum mtxmatrix_type type,
     const char * path,
     bool gzip,
@@ -428,7 +428,7 @@ int mtxmatrix_read(
  */
 int mtxmatrix_fread(
     struct mtxmatrix * matrix,
-    enum mtx_precision precision,
+    enum mtxprecision precision,
     enum mtxmatrix_type type,
     FILE * f,
     int * lines_read,
@@ -455,7 +455,7 @@ int mtxmatrix_fread(
  */
 int mtxmatrix_gzread(
     struct mtxmatrix * matrix,
-    enum mtx_precision precision,
+    enum mtxprecision precision,
     enum mtxmatrix_type type,
     gzFile f,
     int * lines_read,

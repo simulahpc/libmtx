@@ -53,7 +53,7 @@ struct mtxmatrix_coordinate
     /**
      * `precision' is the precision used to store values.
      */
-    enum mtx_precision precision;
+    enum mtxprecision precision;
 
     /**
      * `num_rows' is the number of matrix rows.
@@ -135,7 +135,7 @@ int mtxmatrix_coordinate_init_copy(
 int mtxmatrix_coordinate_alloc(
     struct mtxmatrix_coordinate * matrix,
     enum mtx_field_ field,
-    enum mtx_precision precision,
+    enum mtxprecision precision,
     int num_rows,
     int num_columns,
     int64_t num_nonzeros);

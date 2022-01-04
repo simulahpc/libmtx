@@ -809,7 +809,7 @@ int mtx_matrix_coordinate_gather(
         num_nonzeros += tmpmtxs[p].num_nonzeros;
 
     /* Get the precision. */
-    enum mtx_precision precision;
+    enum mtxprecision precision;
     if (comm_size > 0)
         precision = tmpmtxs[0].storage.matrix_coordinate.precision;
     for (int p = 1; p < comm_size; p++) {

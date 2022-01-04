@@ -93,7 +93,7 @@ struct mtxdistfile
      * `precision' is the precision used to store the values of the
      * Matrix Market data lines.
      */
-    enum mtx_precision precision;
+    enum mtxprecision precision;
 
     /**
      * `mtxfile' is the part of the Matrix Market file owned by the
@@ -158,7 +158,7 @@ int mtxdistfile_alloc_matrix_array(
     struct mtxdistfile * mtxdistfile,
     enum mtxfile_field field,
     enum mtxfile_symmetry symmetry,
-    enum mtx_precision precision,
+    enum mtxprecision precision,
     int num_rows,
     int num_columns,
     MPI_Comm comm,
@@ -258,7 +258,7 @@ int mtxdistfile_init_matrix_array_integer_double(
 int mtxdistfile_alloc_vector_array(
     struct mtxdistfile * mtxdistfile,
     enum mtxfile_field field,
-    enum mtx_precision precision,
+    enum mtxprecision precision,
     int num_rows,
     MPI_Comm comm,
     struct mtxmpierror * mpierror);
@@ -346,7 +346,7 @@ int mtxdistfile_alloc_matrix_coordinate(
     struct mtxdistfile * mtxdistfile,
     enum mtxfile_field field,
     enum mtxfile_symmetry symmetry,
-    enum mtx_precision precision,
+    enum mtxprecision precision,
     int num_rows,
     int num_columns,
     int64_t num_nonzeros,
@@ -469,7 +469,7 @@ int mtxdistfile_init_matrix_coordinate_pattern(
 int mtxdistfile_alloc_vector_coordinate(
     struct mtxdistfile * mtxdistfile,
     enum mtxfile_field field,
-    enum mtx_precision precision,
+    enum mtxprecision precision,
     int num_rows,
     int64_t num_nonzeros,
     MPI_Comm comm,
@@ -662,7 +662,7 @@ int mtxdistfile_from_mtxfile(
  */
 int mtxdistfile_read(
     struct mtxdistfile * mtxdistfile,
-    enum mtx_precision precision,
+    enum mtxprecision precision,
     const char * path,
     int * lines_read,
     int64_t * bytes_read,
@@ -706,7 +706,7 @@ int mtxdistfile_read(
  */
 int mtxdistfile_fread(
     struct mtxdistfile * mtxdistfile,
-    enum mtx_precision precision,
+    enum mtxprecision precision,
     FILE * f,
     int * lines_read,
     int64_t * bytes_read,

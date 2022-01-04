@@ -65,7 +65,7 @@ int mtxfile_alloc(
     const struct mtxfileheader * header,
     const struct mtxfilecomments * comments,
     const struct mtxfilesize * size,
-    enum mtx_precision precision)
+    enum mtxprecision precision)
 {
     int err;
     err = mtxfileheader_copy(&mtxfile->header, header);
@@ -408,7 +408,7 @@ int mtxfile_alloc_matrix_array(
     struct mtxfile * mtxfile,
     enum mtxfile_field field,
     enum mtxfile_symmetry symmetry,
-    enum mtx_precision precision,
+    enum mtxprecision precision,
     int num_rows,
     int num_columns)
 {
@@ -624,7 +624,7 @@ int mtxfile_init_matrix_array_integer_double(
 int mtxfile_alloc_vector_array(
     struct mtxfile * mtxfile,
     enum mtxfile_field field,
-    enum mtx_precision precision,
+    enum mtxprecision precision,
     int num_rows)
 {
     int err;
@@ -770,7 +770,7 @@ int mtxfile_alloc_matrix_coordinate(
     struct mtxfile * mtxfile,
     enum mtxfile_field field,
     enum mtxfile_symmetry symmetry,
-    enum mtx_precision precision,
+    enum mtxprecision precision,
     int num_rows,
     int num_columns,
     int64_t num_nonzeros)
@@ -983,7 +983,7 @@ int mtxfile_init_matrix_coordinate_pattern(
 int mtxfile_alloc_vector_coordinate(
     struct mtxfile * mtxfile,
     enum mtxfile_field field,
-    enum mtx_precision precision,
+    enum mtxprecision precision,
     int num_rows,
     int64_t num_nonzeros)
 {
@@ -1235,7 +1235,7 @@ int mtxfile_set_constant_integer_single(
  */
 int mtxfile_read(
     struct mtxfile * mtxfile,
-    enum mtx_precision precision,
+    enum mtxprecision precision,
     const char * path,
     bool gzip,
     int * lines_read,
@@ -1315,7 +1315,7 @@ int mtxfile_read(
  */
 int mtxfile_fread(
     struct mtxfile * mtxfile,
-    enum mtx_precision precision,
+    enum mtxprecision precision,
     FILE * f,
     int * lines_read,
     int64_t * bytes_read,
@@ -1420,7 +1420,7 @@ int mtxfile_fread(
  */
 int mtxfile_gzread(
     struct mtxfile * mtxfile,
-    enum mtx_precision precision,
+    enum mtxprecision precision,
     gzFile f,
     int * lines_read,
     int64_t * bytes_read,

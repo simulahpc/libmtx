@@ -70,7 +70,7 @@ void mtx_vector_coordinate_data_free(
 int mtx_vector_coordinate_data_alloc(
     struct mtx_vector_coordinate_data * mtxdata,
     enum mtx_field field,
-    enum mtx_precision precision,
+    enum mtxprecision precision,
     enum mtx_sorting sorting,
     enum mtx_assembly assembly,
     int num_rows,

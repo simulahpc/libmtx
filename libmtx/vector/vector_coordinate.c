@@ -109,7 +109,7 @@ int mtxvector_coordinate_init_copy(
 int mtxvector_coordinate_alloc(
     struct mtxvector_coordinate * vector,
     enum mtx_field_ field,
-    enum mtx_precision precision,
+    enum mtxprecision precision,
     int size,
     int64_t num_nonzeros)
 {

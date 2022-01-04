@@ -61,7 +61,7 @@ struct program_options
     char * x_path;
     char * y_path;
     char * format;
-    enum mtx_precision precision;
+    enum mtxprecision precision;
     enum mtxmatrix_type matrix_type;
     enum mtxvector_type vector_type;
     enum mtx_field_ vector_field;
@@ -220,7 +220,7 @@ static int parse_program_options(
                 return EINVAL;
             }
             char * s = (*argv)[1];
-            err = mtx_precision_parse(&args->precision, NULL, NULL, s, "");
+            err = mtxprecision_parse(&args->precision, NULL, NULL, s, "");
             if (err) {
                 program_options_free(args);
                 return EINVAL;
@@ -229,7 +229,7 @@ static int parse_program_options(
             continue;
         } else if (strstr((*argv)[0], "--precision=") == (*argv)[0]) {
             char * s = (*argv)[0] + strlen("--precision=");
-            err = mtx_precision_parse(&args->precision, NULL, NULL, s, "");
+            err = mtxprecision_parse(&args->precision, NULL, NULL, s, "");
             if (err) {
                 program_options_free(args);
                 return EINVAL;
@@ -476,7 +476,7 @@ static int gemv(
     const struct mtxvector * x,
     double beta,
     struct mtxvector * y,
-    enum mtx_precision precision,
+    enum mtxprecision precision,
     enum mtx_trans_type trans,
     const char * format,
     int repeat,

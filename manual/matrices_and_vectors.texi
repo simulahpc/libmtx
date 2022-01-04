@@ -115,13 +115,15 @@ The definition of the @code{mtxfile} struct is shown below.
     struct mtxfileheader header;
     struct mtxfilecomments comments;
     struct mtxfilesize size;
-    enum mtx_precision precision;
+    enum mtxprecision precision;
     union mtxfiledata data;
 @};}
 @end example
 
 Roughly speaking, the @code{mtxfile} struct consists of four parts:
-header information, comment lines, size information, and data.
+header information, comment lines, size information, and data. In
+addition, the @code{precision} struct member describes the precision
+used to store matrix or vector values.
 
 The following sections provide detailed explanations of the
 @code{mtxfile} struct members.
@@ -132,7 +134,6 @@ The following sections provide detailed explanations of the
 
 The @code{mtxfileheader} data type is used to represent the header
 line of a Matrix Market file.
-
 @example
 @code{
 struct mtxfileheader
@@ -195,7 +196,7 @@ useful to know whether a matrix is sorted or not, which can be used to
 improve the efficiency of some computations.
 
 The enum types for this extra header information are
-@c code{mtx_precision},
+@c code{mtxprecision},
 @code{mtx_triangle}, @code{mtx_sorting}, @code{mtx_ordering} and
 @code{mtx_assembly}.
 
@@ -205,9 +206,9 @@ The enum types for this extra header information are
 @c @cindex double precision
 @c @cindex quad precision
 @c @cindex arbitrary precision
-@c @tindex mtx_precision
+@c @tindex mtxprecision
 @c @example
-@c @code{enum mtx_precision @{
+@c @code{enum mtxprecision @{
 @c     mtx_half,             /* Half (16-bit) precision */
 @c     mtx_single,           /* Single (32-bit) precision */
 @c     mtx_double,           /* Double (64-bit) precision */

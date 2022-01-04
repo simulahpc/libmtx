@@ -150,7 +150,7 @@ int mtxvector_init_copy(
 int mtxvector_alloc_array(
     struct mtxvector * vector,
     enum mtx_field_ field,
-    enum mtx_precision precision,
+    enum mtxprecision precision,
     int num_rows);
 
 /**
@@ -218,7 +218,7 @@ int mtxvector_init_array_integer_double(
 int mtxvector_alloc_coordinate(
     struct mtxvector * vector,
     enum mtx_field_ field,
-    enum mtx_precision precision,
+    enum mtxprecision precision,
     int num_rows,
     int64_t num_nonzeros);
 
@@ -407,7 +407,7 @@ int mtxvector_to_mtxfile(
  */
 int mtxvector_read(
     struct mtxvector * vector,
-    enum mtx_precision precision,
+    enum mtxprecision precision,
     enum mtxvector_type type,
     const char * path,
     bool gzip,
@@ -433,7 +433,7 @@ int mtxvector_read(
  */
 int mtxvector_fread(
     struct mtxvector * vector,
-    enum mtx_precision precision,
+    enum mtxprecision precision,
     enum mtxvector_type type,
     FILE * f,
     int * lines_read,
@@ -460,7 +460,7 @@ int mtxvector_fread(
  */
 int mtxvector_gzread(
     struct mtxvector * vector,
-    enum mtx_precision precision,
+    enum mtxprecision precision,
     enum mtxvector_type type,
     gzFile f,
     int * lines_read,

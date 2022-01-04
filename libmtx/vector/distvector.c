@@ -111,7 +111,7 @@ static int mtxdistvector_init_comm(
 int mtxdistvector_alloc_array(
     struct mtxdistvector * distvector,
     enum mtx_field_ field,
-    enum mtx_precision precision,
+    enum mtxprecision precision,
     int size,
     MPI_Comm comm,
     struct mtxmpierror * mpierror)
@@ -276,7 +276,7 @@ int mtxdistvector_init_array_integer_double(
 int mtxdistvector_alloc_coordinate(
     struct mtxdistvector * distvector,
     enum mtx_field_ field,
-    enum mtx_precision precision,
+    enum mtxprecision precision,
     int size,
     int64_t num_nonzeros,
     MPI_Comm comm,
@@ -647,7 +647,7 @@ int mtxdistvector_to_mtxdistfile(
  */
 int mtxdistvector_read(
     struct mtxdistvector * distvector,
-    enum mtx_precision precision,
+    enum mtxprecision precision,
     const char * path,
     bool gzip,
     int * lines_read,
@@ -666,7 +666,7 @@ int mtxdistvector_read(
  */
 int mtxdistvector_fread(
     struct mtxdistvector * distvector,
-    enum mtx_precision precision,
+    enum mtxprecision precision,
     FILE * f,
     int * lines_read,
     int64_t * bytes_read,
@@ -687,7 +687,7 @@ int mtxdistvector_fread(
  */
 int mtxdistvector_gzread(
     struct mtxdistvector * distvector,
-    enum mtx_precision precision,
+    enum mtxprecision precision,
     gzFile f,
     int * lines_read,
     int64_t * bytes_read,

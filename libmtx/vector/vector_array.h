@@ -54,7 +54,7 @@ struct mtxvector_array
     /**
      * `precision' is the precision used to store values.
      */
-    enum mtx_precision precision;
+    enum mtxprecision precision;
 
     /**
      * `size' is the number of vector elements.
@@ -110,7 +110,7 @@ int mtxvector_array_init_copy(
 int mtxvector_array_alloc(
     struct mtxvector_array * vector,
     enum mtx_field_ field,
-    enum mtx_precision precision,
+    enum mtxprecision precision,
     int size);
 
 /**

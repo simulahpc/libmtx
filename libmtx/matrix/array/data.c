@@ -196,7 +196,7 @@ static int mtx_matrix_array_data_size(
 int mtx_matrix_array_data_alloc(
     struct mtx_matrix_array_data * mtxdata,
     enum mtx_field field,
-    enum mtx_precision precision,
+    enum mtxprecision precision,
     enum mtx_symmetry symmetry,
     enum mtx_triangle triangle,
     int num_rows,

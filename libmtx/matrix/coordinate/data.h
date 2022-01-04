@@ -138,7 +138,7 @@ struct mtx_matrix_coordinate_data
      * `precision' is the precision associated with the matrix values:
      * `single' or `double'.
      */
-    enum mtx_precision precision;
+    enum mtxprecision precision;
 
     /**
      * `symmetry' is the matrix symmetry: `general', `symmetric',
@@ -257,7 +257,7 @@ void mtx_matrix_coordinate_data_free(
 int mtx_matrix_coordinate_data_alloc(
     struct mtx_matrix_coordinate_data * mtxdata,
     enum mtx_field field,
-    enum mtx_precision precision,
+    enum mtxprecision precision,
     int num_rows,
     int num_columns,
     int64_t size);

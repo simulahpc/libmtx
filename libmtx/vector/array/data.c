@@ -66,7 +66,7 @@ void mtx_vector_array_data_free(
 int mtx_vector_array_data_alloc(
     struct mtx_vector_array_data * mtxdata,
     enum mtx_field field,
-    enum mtx_precision precision,
+    enum mtxprecision precision,
     int64_t size)
 {
     if (field == mtx_real) {
