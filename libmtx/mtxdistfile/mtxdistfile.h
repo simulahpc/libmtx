@@ -1,6 +1,6 @@
 /* This file is part of libmtx.
  *
- * Copyright (C) 2021 James D. Trotter
+ * Copyright (C) 2022 James D. Trotter
  *
  * libmtx is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
  * along with libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-09-22
+ * Last modified: 2022-01-04
  *
  * Matrix Market files distributed among multiple processes with MPI
  * for inter-process communication.
@@ -128,8 +128,9 @@ void mtxdistfile_free(
     struct mtxdistfile * mtxdistfile);
 
 /**
- * `mtxdistfile_alloc_copy()' allocates storage for a copy of a Matrix
- * Market file without initialising the underlying values.
+ * `mtxdistfile_alloc_copy()' allocates storage for a copy of a
+ * distributed Matrix Market file without initialising the underlying
+ * values.
  */
 int mtxdistfile_alloc_copy(
     struct mtxdistfile * dst,
@@ -137,7 +138,8 @@ int mtxdistfile_alloc_copy(
     struct mtxmpierror * mpierror);
 
 /**
- * `mtxdistfile_init_copy()' creates a copy of a Matrix Market file.
+ * `mtxdistfile_init_copy()' creates a copy of a distributed Matrix
+ * Market file.
  */
 int mtxdistfile_init_copy(
     struct mtxdistfile * dst,
