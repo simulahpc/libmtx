@@ -66,6 +66,9 @@ struct program_options
     enum mtx_precision precision;
     enum mtxvector_type vector_type;
     bool gzip;
+    int num_parts;
+    enum mtx_partition_type partition;
+    char * partition_path;
     int verbose;
     bool quiet;
 };
@@ -81,6 +84,9 @@ static int program_options_init(
     args->precision = mtx_double;
     args->vector_type = mtxvector_auto;
     args->gzip = false;
+    args->num_parts = 1;
+    args->partition = mtx_block;
+    args->partition_path = NULL;
     args->quiet = false;
     args->verbose = 0;
     return 0;
@@ -97,6 +103,8 @@ static void program_options_free(
         free(args->x_path);
     if(args->format)
         free(args->format);
+    if (args->partition_path)
+        free(args->partition_path);
 }
 
 /**
@@ -135,6 +143,12 @@ static void program_options_print_help(
     fprintf(f, "\t\t\t'%%e', '%%E', '%%f', '%%F', '%%g' or '%%G' may be used,\n");
     fprintf(f, "\t\t\twhereas '%%d' must be used for integers. Flags, field width\n");
     fprintf(f, "\t\t\tand precision can optionally be specified, e.g., \"%%+3.1f\".\n");
+    fprintf(f, "  --parts=N\t\tnumber of parts to use for partitioning\n");
+    fprintf(f, "  --partition=TYPE\tmethod of partitioning vector: ‘block’, ‘cyclic’,\n");
+    fprintf(f, "\t\t\t‘block-cyclic’, ‘singleton’ or ‘unstructured’.\n");
+    fprintf(f, "\t\t\t(default: ‘block’)\n");
+    fprintf(f, "  --partition-path=FILE\tpath to Matrix Market file for reading partition\n");
+    fprintf(f, "\t\t\twhen the partition is ‘unstructured’.\n");
     fprintf(f, "  -q, --quiet\t\tdo not print Matrix Market output\n");
     fprintf(f, "  -v, --verbose\t\tbe more verbose\n");
     fprintf(f, "\n");
@@ -264,6 +278,84 @@ static int parse_program_options(
         } else if (strstr((*argv)[0], "--format=") == (*argv)[0]) {
             args->format = strdup((*argv)[0] + strlen("--format="));
             if (!args->format) {
+                program_options_free(args);
+                return errno;
+            }
+            num_arguments_consumed++;
+            continue;
+        }
+
+        /* Parse partitioning options. */
+        if (strcmp((*argv)[0], "--parts") == 0) {
+            if (*argc < 2) {
+                program_options_free(args);
+                return EINVAL;
+            }
+            err = parse_int32((*argv)[1], NULL, &args->num_parts, NULL);
+            if (err) {
+                program_options_free(args);
+                return err;
+            }
+            num_arguments_consumed += 2;
+            continue;
+        } else if (strstr((*argv)[0], "--parts=") == (*argv)[0]) {
+            err = parse_int32(
+                (*argv)[0] + strlen("--parts="), NULL,
+                &args->num_parts, NULL);
+            if (err) {
+                program_options_free(args);
+                return err;
+            }
+            num_arguments_consumed++;
+            continue;
+        }
+
+        if (strcmp((*argv)[0], "--partition") == 0) {
+            if (*argc < 2) {
+                program_options_free(args);
+                return EINVAL;
+            }
+            char * s = (*argv)[1];
+            err = mtx_parse_partition_type(
+                &args->partition, NULL, NULL, s, "");
+            if (err) {
+                program_options_free(args);
+                return EINVAL;
+            }
+            num_arguments_consumed += 2;
+            continue;
+        } else if (strstr((*argv)[0], "--partition=") == (*argv)[0]) {
+            char * s = (*argv)[0] + strlen("--partition=");
+            err = mtx_parse_partition_type(
+                &args->partition, NULL, NULL, s, "");
+            if (err) {
+                program_options_free(args);
+                return EINVAL;
+            }
+            num_arguments_consumed++;
+            continue;
+        }
+
+        if (strcmp((*argv)[0], "--partition-path") == 0) {
+            if (*argc < 2) {
+                program_options_free(args);
+                return EINVAL;
+            }
+            if (args->partition_path)
+                free(args->partition_path);
+            args->partition_path = strdup((*argv)[1]);
+            if (!args->partition_path) {
+                program_options_free(args);
+                return errno;
+            }
+            num_arguments_consumed += 2;
+            continue;
+        } else if (strstr((*argv)[0], "--partition-path=") == (*argv)[0]) {
+            if (args->partition_path)
+                free(args->partition_path);
+            args->partition_path =
+                strdup((*argv)[0] + strlen("--partition-path="));
+            if (!args->partition_path) {
                 program_options_free(args);
                 return errno;
             }
@@ -404,6 +496,7 @@ static double timespec_duration(
  */
 static int distvector_nrm2(
     struct mtxdistfile * mtxdistfile,
+    const struct mtx_partition * partition,
     enum mtxvector_type vector_type,
     const char * format,
     int verbose,
@@ -590,6 +683,29 @@ int main(int argc, char *argv[])
         args.verbose = false;
         args.quiet = true;
     }
+    if (args.partition == mtx_unstructured && !args.partition_path) {
+        if (rank == root) {
+            fprintf(stderr, "%s: Please specify a Matrix Market file "
+                    "with --partition-path\n",
+                    program_invocation_short_name);
+        }
+        program_options_free(&args);
+        mtxmpierror_free(&mpierror);
+        MPI_Finalize();
+        return EXIT_FAILURE;
+    }
+    if (comm_size < args.num_parts) {
+        if (rank == root) {
+            fprintf(stderr, "%s: The number of MPI processes (%d) must "
+                    "equal or exceed the number of parts in the partition (%d).\n",
+                    program_invocation_short_name,
+                    comm_size, args.num_parts);
+        }
+        program_options_free(&args);
+        mtxmpierror_free(&mpierror);
+        MPI_Finalize();
+        return EXIT_FAILURE;
+    }
 
     /* 3. Read the `x' vector from a Matrix Market file. */
     if (args.verbose > 0) {
@@ -597,9 +713,6 @@ int main(int argc, char *argv[])
         fflush(diagf);
         clock_gettime(CLOCK_MONOTONIC, &t0);
     }
-
-    /* TODO: Make row partitioning configurable, see mtxpartition.c */
-    const enum mtx_partition_type row_partition_type = mtx_block;
 
     struct mtxdistfile mtxdistfile;
     int lines_read;
@@ -640,6 +753,80 @@ int main(int argc, char *argv[])
                 1.0e-6 * bytes_read / timespec_duration(t0, t1));
     }
 
+    /* 3. Partition the vector. */
+    struct mtx_partition partition;
+    if (args.partition == mtx_unstructured) {
+        if (args.verbose > 0) {
+            fprintf(diagf, "mtx_partition_read_parts: ");
+            fflush(diagf);
+            clock_gettime(CLOCK_MONOTONIC, &t0);
+        }
+
+        int lines_read = 0;
+        int64_t bytes_read = 0;
+        err = mtx_partition_read_parts(
+            &partition, args.num_parts, args.partition_path,
+            &lines_read, &bytes_read);
+        if (mtxmpierror_allreduce(&mpierror, err)) {
+            if (args.verbose > 0)
+                fprintf(diagf, "\n");
+            if (rank == root && lines_read >= 0) {
+                fprintf(stderr, "%s: %s:%d: %s\n",
+                        program_invocation_short_name,
+                        args.partition_path, lines_read+1,
+                        mtxmpierror_description(&mpierror));
+            } else if (rank == root) {
+                fprintf(stderr, "%s: %s: %s\n",
+                        program_invocation_short_name,
+                        args.partition_path, mtxmpierror_description(&mpierror));
+            }
+            mtxdistfile_free(&mtxdistfile);
+            program_options_free(&args);
+            mtxmpierror_free(&mpierror);
+            MPI_Finalize();
+            return EXIT_FAILURE;
+        }
+
+        if (args.verbose > 0) {
+            clock_gettime(CLOCK_MONOTONIC, &t1);
+            fprintf(diagf, "%'.6f seconds (%'.1f MB/s)\n",
+                    timespec_duration(t0, t1),
+                    1.0e-6 * bytes_read / timespec_duration(t0, t1));
+            fflush(diagf);
+        }
+
+    } else {
+        if (args.verbose > 0) {
+            fprintf(diagf, "mtx_partition_init: ");
+            fflush(diagf);
+            clock_gettime(CLOCK_MONOTONIC, &t0);
+        }
+
+        err = mtx_partition_init(
+            &partition, args.partition,
+            mtxdistfile.size.num_rows, args.num_parts, 0, NULL);
+        if (mtxmpierror_allreduce(&mpierror, err)) {
+            if (args.verbose > 0)
+                fprintf(diagf, "\n");
+            if (rank == root) {
+                fprintf(stderr, "%s: %s\n",
+                        program_invocation_short_name,
+                        mtxmpierror_description(&mpierror));
+            }
+            mtxdistfile_free(&mtxdistfile);
+            program_options_free(&args);
+            mtxmpierror_free(&mpierror);
+            MPI_Finalize();
+            return EXIT_FAILURE;
+        }
+
+        if (args.verbose > 0) {
+            clock_gettime(CLOCK_MONOTONIC, &t1);
+            fprintf(diagf, "%'.6f seconds\n", timespec_duration(t0, t1));
+            fflush(diagf);
+        }
+    }
+
     /* 4. Compute the Euclidean norm. */
     if (mtxdistfile.header.object == mtxfile_matrix) {
         /* TODO: Compute the Frobenius norm of the matrix. */
@@ -656,8 +843,8 @@ int main(int argc, char *argv[])
 
     } else if (mtxdistfile.header.object == mtxfile_vector) {
         err = distvector_nrm2(
-            &mtxdistfile, args.vector_type, args.format,
-            args.verbose, diagf, args.quiet,
+            &mtxdistfile, &partition, args.vector_type,
+            args.format, args.verbose, diagf, args.quiet,
             comm, comm_size, rank, root, &mpierror);
         if (err) {
             if (rank == root) {
