@@ -85,7 +85,7 @@ int test_mtxfile_sendrecv(void)
         err = mtxfile_init_matrix_coordinate_real_single(
             &srcmtx, mtxfile_general, num_rows, num_columns, num_nonzeros, data);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxfile_comments_write(&srcmtx.comments, "% A comment line\n");
+        err = mtxfilecomments_write(&srcmtx.comments, "% A comment line\n");
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
     }
 
@@ -188,7 +188,7 @@ int test_mtxfile_bcast(void)
         err = mtxfile_init_matrix_coordinate_real_double(
             &mtx, mtxfile_general, num_rows, num_columns, num_nonzeros, srcdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxfile_comments_write(&mtx.comments, "% A comment line\n");
+        err = mtxfilecomments_write(&mtx.comments, "% A comment line\n");
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
     }
 

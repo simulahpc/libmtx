@@ -36,7 +36,7 @@ libmtx.
 
 @menu
 * Error handling:: How to handle errors when working with the libmtx C library.
-* Matrix Market data types:: Basic data types for representing Matrix Market objects.
+* Matrix Market files:: Basic data structure for representing Matrix Market objects.
 * Creating matrices and vectors:: Functions for creating matrices and vectors.
 * Reading and writing Matrix Market files:: Functions for reading from and writing to files in Matrix Market format.
 * Transposing sorting and reordering:: Transposing, sorting and reordering matrices and vectors.
@@ -64,84 +64,85 @@ codes from the @code{mtxerror} enum type.
 
 @code{mtxstrerror} is typically used as shown in the example below.
 @example
-@code{  FILE * f = fopen("test.mtx", "r");
+@code{FILE * f = fopen("test.mtx", "r");
 
-  struct mtx mtx;
-  int line, column;
-  int err = mtx_fread(&mtx, f, &line, &column);
-  if (err) @{
-      fprintf(stderr, "Error: test.mtx:%d:%d: %s\n",
-              line, column, mtxstrerror(err));
-      fclose(f);
-  @}}
+struct mtxfile mtx;
+int lines_read;
+int err = mtxfile_fread(
+    &mtx, mtx_double, f,
+    &lines_read, NULL, 0, NULL);
+if (err) @{
+    fprintf(stderr, "Error: test.mtx:%d: %s\n",
+            lines_read, mtxstrerror(err));
+    fclose(f);
+@}}
 @end example
-If @code{mtx_fread} returns @code{MTX_ERR_INVALID_MTX_OBJECT}, for
+If @code{mtxfile_fread} returns @code{MTX_ERR_INVALID_MTX_OBJECT}, for
 example, then the following message will be printed:
 @example
-@code{Error: test.mtx:1:1: invalid Matrix Market object}
+@code{Error: test.mtx:1: invalid Matrix Market object}
 @end example
 
 
-@node Matrix Market data types
-@section Matrix Market data types
+@node Matrix Market files
+@section Matrix Market files
 
 This section describes the basic data types used to represent objects
 in the Matrix Market file format.
 
-@tindex struct mtx
-@tindex mtx
-The file @file{libmtx/mtx/mtx.h} defines the @code{struct mtx} type.
-The main purpose of @code{struct mtx} is to describe objects in the
-Matrix Market format.  However, this single, abstract data type is
-used throughout libmtx to represent both matrices and vectors with
-different underlying storage formats.  The two most important formats
-are those used in Matrix Market files, namely the array format, which
-is used for dense matrices and vectors, and the coordinate format,
-which is used for sparse matrices and vectors.  In addition, libmtx
-defines a few other, advanced storage formats that are suitable for
-sparse matrices with a particular structure.
+@tindex struct mtxfile
+@tindex mtxfile
+The file @file{libmtx/mtxfile/mtxfile.h} defines the @code{struct
+mtxfile} type.  The main purpose of @code{struct mtxfile} is to
+represent objects in Matrix Market format, including dense and sparse
+matrices and vectors with real, complex, integer or binary values. In
+addition to @code{struct mtxfile}, libmtx also implements other data
+structures to represent matrices and vectors with different underlying
+storage formats.
+@c These are described in @ref{...}.
 
-The definition of the @code{mtx} struct is shown below.
+The @code{mtxfile} struct is very close to the ASCII representation of
+a Matrix Market file.  However, instead of ASCII strings, the header
+values are converted to appropriate enum types.  The object size and
+row and column indices are represented as 32-bit integers. Finally,
+depending on the underlying field and desired precision, the matrix or
+vector values are converted to 32- or 64-bit floating point numbers or
+integers.
+
+The definition of the @code{mtxfile} struct is shown below.
 @example
-@code{struct mtx @{
-  /* Header */
-  enum mtx_object object;
-  enum mtx_format format;
-  enum mtx_field field;
-  enum mtx_symmetry symmetry;
-
-  /* Extra header info */
-@c  enum mtx_precision precision;
-  enum mtx_triangle triangle;
-  enum mtx_sorting sorting;
-  enum mtx_ordering ordering;
-  enum mtx_assembly assembly;
-
-  /* Comments */
-  int num_comment_lines;
-  char ** comment_lines;
-
-  /* Size */
-  int num_rows;
-  int num_columns;
-  int64_t num_nonzeros;
-  int64_t size;
-  int64_t nonzero_size;
-
-  /* Data */
-  void * data;
+@code{struct mtxfile @{
+    struct mtxfileheader header;
+    struct mtxfilecomments comments;
+    struct mtxfilesize size;
+    enum mtx_precision precision;
+    union mtxfiledata data;
 @};}
 @end example
 
-Roughly speaking, the @code{mtx} struct consists of four parts:
+Roughly speaking, the @code{mtxfile} struct consists of four parts:
 header information, comment lines, size information, and data.
 
-The following sections provide a detailed explanation of the
-@code{mtx} struct members and their data types.
+The following sections provide detailed explanations of the
+@code{mtxfile} struct members.
 
 
-@node Header types
-@subsection Header types
+@node Header
+@subsection Header
+
+The @code{mtxfileheader} data type is used to represent the header
+line of a Matrix Market file.
+
+@example
+@code{
+struct mtxfileheader
+@{
+    enum mtxfile_object object;
+    enum mtxfile_format format;
+    enum mtxfile_field field;
+    enum mtxfile_symmetry symmetry;
+@};}
+@end example
 
 @tindex mtx_object
 @tindex mtx_format
@@ -640,9 +641,9 @@ Comment lines are copied from the provided @code{comment_lines} array.
 Furthermore, @code{mtx->data} is a newly allocated array of length
 @code{size}, where each array element is now of the type @code{struct
 mtx_vector_coordinate_real}, which was defined in @ref{Matrix Market
-data types}.  In addition, the number of rows of the sparse vector
-must be provided explicitly, since it will typically not match the
-number of entries in the @code{data} array.
+files}.  In addition, the number of rows of the sparse vector must be
+provided explicitly, since it will typically not match the number of
+entries in the @code{data} array.
 
 @findex mtx_init_vector_coordinate_real
 If the vector data is already available in the form of an array of
@@ -688,7 +689,7 @@ vectors with @code{double}, @code{complex}, @code{integer} or
 as above, except that the type of the @code{data} argument or the
 @code{mtx->data} struct member will instead be @code{struct
 mtx_vector_coordinate_@var{field}}, where @code{@var{field}} is any of
-the above-mentioned fields.  See @ref{Matrix Market data types} for
+the above-mentioned fields.  See @ref{Matrix Market files} for
 the definitions of the struct data types for each field.
 
 

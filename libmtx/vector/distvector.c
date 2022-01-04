@@ -510,7 +510,7 @@ int mtxdistvector_from_mtxfile(
 
     /* 3. Partition and redistribute the Matrix Market file. */
     int64_t num_data_lines;
-    err = mtxfile_size_num_data_lines(&src.mtxfile.size, &num_data_lines);
+    err = mtxfilesize_num_data_lines(&src.mtxfile.size, &num_data_lines);
     if (mtxmpierror_allreduce(mpierror, err)) {
         mtx_partition_free(&row_partition);
         mtxdistfile_free(&src);

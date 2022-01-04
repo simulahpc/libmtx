@@ -60,7 +60,7 @@
 void mtxdistfile_free(
     struct mtxdistfile * mtxdistfile)
 {
-    mtxfile_comments_free(&mtxdistfile->comments);
+    mtxfilecomments_free(&mtxdistfile->comments);
     mtxfile_free(&mtxdistfile->mtxfile);
 }
 
@@ -94,13 +94,13 @@ int mtxdistfile_init(
     mtxdistfile->comm_size = comm_size;
     mtxdistfile->rank = rank;
 
-    struct mtxfile_header * headers = malloc(
-        comm_size * sizeof(struct mtxfile_header));
+    struct mtxfileheader * headers = malloc(
+        comm_size * sizeof(struct mtxfileheader));
     err = !headers ? MTX_ERR_ERRNO : MTX_SUCCESS;
     if (mtxmpierror_allreduce(mpierror, err))
         return MTX_ERR_MPI_COLLECTIVE;
-    struct mtxfile_size * sizes = malloc(
-        comm_size * sizeof(struct mtxfile_size));
+    struct mtxfilesize * sizes = malloc(
+        comm_size * sizeof(struct mtxfilesize));
     err = !sizes ? MTX_ERR_ERRNO : MTX_SUCCESS;
     if (mtxmpierror_allreduce(mpierror, err)) {
         free(headers);
@@ -115,14 +115,14 @@ int mtxdistfile_init(
     }
 
     /* Gather headers, size lines and precisions. */
-    err = mtxfile_header_allgather(&mtxfile->header, headers, comm, mpierror);
+    err = mtxfileheader_allgather(&mtxfile->header, headers, comm, mpierror);
     if (err) {
         free(precisions);
         free(sizes);
         free(headers);
         return err;
     }
-    err = mtxfile_size_allgather(&mtxfile->size, sizes, comm, mpierror);
+    err = mtxfilesize_allgather(&mtxfile->size, sizes, comm, mpierror);
     if (err) {
         free(precisions);
         free(sizes);
@@ -167,7 +167,7 @@ int mtxdistfile_init(
         return err;
     }
 
-    err = mtxfile_header_copy(&mtxdistfile->header, &headers[0]);
+    err = mtxfileheader_copy(&mtxdistfile->header, &headers[0]);
     if (mtxmpierror_allreduce(mpierror, err)) {
         free(precisions);
         free(sizes);
@@ -178,7 +178,7 @@ int mtxdistfile_init(
     mtxdistfile->precision = precisions[0];
     free(precisions);
 
-    err = mtxfile_comments_init(&mtxdistfile->comments);
+    err = mtxfilecomments_init(&mtxdistfile->comments);
     if (mtxmpierror_allreduce(mpierror, err)) {
         free(sizes);
         return MTX_ERR_MPI_COLLECTIVE;
@@ -196,7 +196,7 @@ int mtxdistfile_init(
             num_rows += sizes[p].num_rows;
         }
         if (err) {
-            mtxfile_comments_free(&mtxdistfile->comments);
+            mtxfilecomments_free(&mtxdistfile->comments);
             free(sizes);
             return err;
         }
@@ -215,7 +215,7 @@ int mtxdistfile_init(
             num_nonzeros += sizes[p].num_nonzeros;
         }
         if (err) {
-            mtxfile_comments_free(&mtxdistfile->comments);
+            mtxfilecomments_free(&mtxdistfile->comments);
             free(sizes);
             return err;
         }
@@ -223,7 +223,7 @@ int mtxdistfile_init(
         mtxdistfile->size.num_columns = sizes[0].num_columns;
         mtxdistfile->size.num_nonzeros = num_nonzeros;
     } else {
-        mtxfile_comments_free(&mtxdistfile->comments);
+        mtxfilecomments_free(&mtxdistfile->comments);
         free(sizes);
         return MTX_ERR_INVALID_MTX_FORMAT;
     }
@@ -231,7 +231,7 @@ int mtxdistfile_init(
 
     err = mtxfile_init_copy(&mtxdistfile->mtxfile, mtxfile);
     if (mtxmpierror_allreduce(mpierror, err)) {
-        mtxfile_comments_free(&mtxdistfile->comments);
+        mtxfilecomments_free(&mtxdistfile->comments);
         return MTX_ERR_MPI_COLLECTIVE;
     }
     return MTX_SUCCESS;
@@ -250,21 +250,21 @@ int mtxdistfile_alloc_copy(
     dst->comm = src->comm;
     dst->comm_size = src->comm_size;
     dst->rank = src->rank;
-    err = mtxfile_header_copy(&dst->header, &src->header);
+    err = mtxfileheader_copy(&dst->header, &src->header);
     if (mtxmpierror_allreduce(mpierror, err))
         return MTX_ERR_MPI_COLLECTIVE;
-    err = mtxfile_comments_copy(&dst->comments, &src->comments);
+    err = mtxfilecomments_copy(&dst->comments, &src->comments);
     if (mtxmpierror_allreduce(mpierror, err))
         return MTX_ERR_MPI_COLLECTIVE;
-    err = mtxfile_size_copy(&dst->size, &src->size);
+    err = mtxfilesize_copy(&dst->size, &src->size);
     if (mtxmpierror_allreduce(mpierror, err)) {
-        mtxfile_comments_free(&dst->comments);
+        mtxfilecomments_free(&dst->comments);
         return MTX_ERR_MPI_COLLECTIVE;
     }
     dst->precision = src->precision;
     err = mtxfile_alloc_copy(&dst->mtxfile, &src->mtxfile);
     if (mtxmpierror_allreduce(mpierror, err)) {
-        mtxfile_comments_free(&dst->comments);
+        mtxfilecomments_free(&dst->comments);
         return MTX_ERR_MPI_COLLECTIVE;
     }
     return MTX_SUCCESS;
@@ -346,7 +346,7 @@ int mtxdistfile_alloc_matrix_array(
     mtxdistfile->header.format = mtxfile_array;
     mtxdistfile->header.field = field;
     mtxdistfile->header.symmetry = symmetry;
-    mtxfile_comments_init(&mtxdistfile->comments);
+    mtxfilecomments_init(&mtxdistfile->comments);
     mpierror->mpierrcode = MPI_Allreduce(
         &num_rows, &mtxdistfile->size.num_rows, 1, MPI_INT, MPI_SUM, comm);
     err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
@@ -385,7 +385,7 @@ int mtxdistfile_init_matrix_array_real_single(
         return err;
     struct mtxfile * mtxfile = &mtxdistfile->mtxfile;
     int64_t num_data_lines;
-    err = mtxfile_size_num_data_lines(&mtxfile->size, &num_data_lines);
+    err = mtxfilesize_num_data_lines(&mtxfile->size, &num_data_lines);
     if (err) {
         mtxdistfile_free(mtxdistfile);
         return err;
@@ -416,7 +416,7 @@ int mtxdistfile_init_matrix_array_real_double(
         return err;
     struct mtxfile * mtxfile = &mtxdistfile->mtxfile;
     int64_t num_data_lines;
-    err = mtxfile_size_num_data_lines(&mtxfile->size, &num_data_lines);
+    err = mtxfilesize_num_data_lines(&mtxfile->size, &num_data_lines);
     if (err) {
         mtxdistfile_free(mtxdistfile);
         return err;
@@ -524,7 +524,7 @@ int mtxdistfile_alloc_vector_array(
     mtxdistfile->header.format = mtxfile_array;
     mtxdistfile->header.field = field;
     mtxdistfile->header.symmetry = mtxfile_general;
-    mtxfile_comments_init(&mtxdistfile->comments);
+    mtxfilecomments_init(&mtxdistfile->comments);
     mpierror->mpierrcode = MPI_Allreduce(
         &num_rows, &mtxdistfile->size.num_rows, 1, MPI_INT, MPI_SUM, comm);
     err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
@@ -560,7 +560,7 @@ int mtxdistfile_init_vector_array_real_single(
         return err;
     struct mtxfile * mtxfile = &mtxdistfile->mtxfile;
     int64_t num_data_lines;
-    err = mtxfile_size_num_data_lines(&mtxfile->size, &num_data_lines);
+    err = mtxfilesize_num_data_lines(&mtxfile->size, &num_data_lines);
     if (err) {
         mtxdistfile_free(mtxdistfile);
         return err;
@@ -587,7 +587,7 @@ int mtxdistfile_init_vector_array_real_double(
         return err;
     struct mtxfile * mtxfile = &mtxdistfile->mtxfile;
     int64_t num_data_lines;
-    err = mtxfile_size_num_data_lines(&mtxfile->size, &num_data_lines);
+    err = mtxfilesize_num_data_lines(&mtxfile->size, &num_data_lines);
     if (err) {
         mtxdistfile_free(mtxdistfile);
         return err;
@@ -615,7 +615,7 @@ int mtxdistfile_init_vector_array_complex_single(
         return err;
     struct mtxfile * mtxfile = &mtxdistfile->mtxfile;
     int64_t num_data_lines;
-    err = mtxfile_size_num_data_lines(&mtxfile->size, &num_data_lines);
+    err = mtxfilesize_num_data_lines(&mtxfile->size, &num_data_lines);
     if (err) {
         mtxdistfile_free(mtxdistfile);
         return err;
@@ -643,7 +643,7 @@ int mtxdistfile_init_vector_array_complex_double(
         return err;
     struct mtxfile * mtxfile = &mtxdistfile->mtxfile;
     int64_t num_data_lines;
-    err = mtxfile_size_num_data_lines(&mtxfile->size, &num_data_lines);
+    err = mtxfilesize_num_data_lines(&mtxfile->size, &num_data_lines);
     if (err) {
         mtxdistfile_free(mtxdistfile);
         return err;
@@ -671,7 +671,7 @@ int mtxdistfile_init_vector_array_integer_single(
         return err;
     struct mtxfile * mtxfile = &mtxdistfile->mtxfile;
     int64_t num_data_lines;
-    err = mtxfile_size_num_data_lines(&mtxfile->size, &num_data_lines);
+    err = mtxfilesize_num_data_lines(&mtxfile->size, &num_data_lines);
     if (err) {
         mtxdistfile_free(mtxdistfile);
         return err;
@@ -699,7 +699,7 @@ int mtxdistfile_init_vector_array_integer_double(
         return err;
     struct mtxfile * mtxfile = &mtxdistfile->mtxfile;
     int64_t num_data_lines;
-    err = mtxfile_size_num_data_lines(&mtxfile->size, &num_data_lines);
+    err = mtxfilesize_num_data_lines(&mtxfile->size, &num_data_lines);
     if (err) {
         mtxdistfile_free(mtxdistfile);
         return err;
@@ -795,7 +795,7 @@ int mtxdistfile_alloc_matrix_coordinate(
     mtxdistfile->header.format = mtxfile_coordinate;
     mtxdistfile->header.field = field;
     mtxdistfile->header.symmetry = symmetry;
-    mtxfile_comments_init(&mtxdistfile->comments);
+    mtxfilecomments_init(&mtxdistfile->comments);
     mtxdistfile->size.num_rows = num_rows;
     mtxdistfile->size.num_columns = num_columns;
     mpierror->mpierrcode = MPI_Allreduce(
@@ -851,7 +851,7 @@ int mtxdistfile_init_matrix_coordinate_real_double(
         return err;
     struct mtxfile * mtxfile = &mtxdistfile->mtxfile;
     int64_t num_data_lines;
-    err = mtxfile_size_num_data_lines(&mtxfile->size, &num_data_lines);
+    err = mtxfilesize_num_data_lines(&mtxfile->size, &num_data_lines);
     if (err) {
         mtxdistfile_free(mtxdistfile);
         return err;
@@ -999,7 +999,7 @@ int mtxdistfile_alloc_vector_coordinate(
     mtxdistfile->header.format = mtxfile_coordinate;
     mtxdistfile->header.field = field;
     mtxdistfile->header.symmetry = mtxfile_general;
-    mtxfile_comments_init(&mtxdistfile->comments);
+    mtxfilecomments_init(&mtxdistfile->comments);
     mtxdistfile->size.num_rows = num_rows;
     mtxdistfile->size.num_columns = -1;
     mpierror->mpierrcode = MPI_Allreduce(
@@ -1050,7 +1050,7 @@ int mtxdistfile_init_vector_coordinate_real_double(
         return err;
     struct mtxfile * mtxfile = &mtxdistfile->mtxfile;
     int64_t num_data_lines;
-    err = mtxfile_size_num_data_lines(&mtxfile->size, &num_data_lines);
+    err = mtxfilesize_num_data_lines(&mtxfile->size, &num_data_lines);
     if (err) {
         mtxdistfile_free(mtxdistfile);
         return err;
@@ -1230,32 +1230,32 @@ int mtxdistfile_from_mtxfile(
     dst->rank = rank;
 
     /* Broadcast the header, comments, size line and precision. */
-    err = (rank == root) ? mtxfile_header_copy(
+    err = (rank == root) ? mtxfileheader_copy(
         &dst->header, &src->header) : MTX_SUCCESS;
     if (mtxmpierror_allreduce(mpierror, err))
         return MTX_ERR_MPI_COLLECTIVE;
-    err = mtxfile_header_bcast(&dst->header, root, comm, mpierror);
+    err = mtxfileheader_bcast(&dst->header, root, comm, mpierror);
     if (err)
         return err;
-    err = (rank == root) ? mtxfile_comments_copy(
+    err = (rank == root) ? mtxfilecomments_copy(
         &dst->comments, &src->comments) : MTX_SUCCESS;
     if (mtxmpierror_allreduce(mpierror, err))
         return MTX_ERR_MPI_COLLECTIVE;
-    err = mtxfile_comments_bcast(&dst->comments, root, comm, mpierror);
+    err = mtxfilecomments_bcast(&dst->comments, root, comm, mpierror);
     if (err) {
         if (rank == root)
-            mtxfile_comments_free(&dst->comments);
+            mtxfilecomments_free(&dst->comments);
         return err;
     }
-    err = (rank == root) ? mtxfile_size_copy(
+    err = (rank == root) ? mtxfilesize_copy(
         &dst->size, &src->size) : MTX_SUCCESS;
     if (mtxmpierror_allreduce(mpierror, err)) {
-        mtxfile_comments_free(&dst->comments);
+        mtxfilecomments_free(&dst->comments);
         return MTX_ERR_MPI_COLLECTIVE;
     }
-    err = mtxfile_size_bcast(&dst->size, root, comm, mpierror);
+    err = mtxfilesize_bcast(&dst->size, root, comm, mpierror);
     if (err) {
-        mtxfile_comments_free(&dst->comments);
+        mtxfilecomments_free(&dst->comments);
         return err;
     }
     if (rank == root)
@@ -1264,7 +1264,7 @@ int mtxdistfile_from_mtxfile(
         &dst->precision, 1, MPI_INT, root, comm);
     err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
     if (mtxmpierror_allreduce(mpierror, err)) {
-        mtxfile_comments_free(&dst->comments);
+        mtxfilecomments_free(&dst->comments);
         return MTX_ERR_MPI_COLLECTIVE;
     }
 
@@ -1272,7 +1272,7 @@ int mtxdistfile_from_mtxfile(
         malloc((2*comm_size+1) * sizeof(int)) : NULL;
     err = (rank == root && !sendcounts) ? MTX_ERR_ERRNO : MTX_SUCCESS;
     if (mtxmpierror_allreduce(mpierror, err)) {
-        mtxfile_comments_free(&dst->comments);
+        mtxfilecomments_free(&dst->comments);
         return MTX_ERR_MPI_COLLECTIVE;
     }
     int * displs = (rank == root) ? &sendcounts[comm_size] : NULL;
@@ -1317,7 +1317,7 @@ int mtxdistfile_from_mtxfile(
     if (mtxmpierror_allreduce(mpierror, err)) {
         if (rank == root)
             free(sendcounts);
-        mtxfile_comments_free(&dst->comments);
+        mtxfilecomments_free(&dst->comments);
         return MTX_ERR_MPI_COLLECTIVE;
     }
 
@@ -1328,7 +1328,7 @@ int mtxdistfile_from_mtxfile(
     if (mtxmpierror_allreduce(mpierror, err)) {
         if (rank == root)
             free(sendcounts);
-        mtxfile_comments_free(&dst->comments);
+        mtxfilecomments_free(&dst->comments);
         return MTX_ERR_MPI_COLLECTIVE;
     }
 
@@ -1338,7 +1338,7 @@ int mtxdistfile_from_mtxfile(
     if (err) {
         if (rank == root)
             free(sendcounts);
-        mtxfile_comments_free(&dst->comments);
+        mtxfilecomments_free(&dst->comments);
         return err;
     }
 
@@ -1522,7 +1522,7 @@ int mtxdistfile_fread(
             free(linebuf);
         return MTX_ERR_MPI_COLLECTIVE;
     }
-    err = mtxfile_header_bcast(&mtxdistfile->header, root, comm, mpierror);
+    err = mtxfileheader_bcast(&mtxdistfile->header, root, comm, mpierror);
     if (err) {
         if (free_linebuf)
             free(linebuf);
@@ -1538,7 +1538,7 @@ int mtxdistfile_fread(
             free(linebuf);
         return MTX_ERR_MPI_COLLECTIVE;
     }
-    err = mtxfile_comments_bcast(&mtxdistfile->comments, root, comm, mpierror);
+    err = mtxfilecomments_bcast(&mtxdistfile->comments, root, comm, mpierror);
     if (err) {
         if (free_linebuf)
             free(linebuf);
@@ -1551,14 +1551,14 @@ int mtxdistfile_fread(
         mtxdistfile->header.object, mtxdistfile->header.format)
         : MTX_SUCCESS;
     if (mtxmpierror_allreduce(mpierror, err)) {
-        mtxfile_comments_free(&mtxdistfile->comments);
+        mtxfilecomments_free(&mtxdistfile->comments);
         if (free_linebuf)
             free(linebuf);
         return MTX_ERR_MPI_COLLECTIVE;
     }
-    err = mtxfile_size_bcast(&mtxdistfile->size, root, comm, mpierror);
+    err = mtxfilesize_bcast(&mtxdistfile->size, root, comm, mpierror);
     if (err) {
-        mtxfile_comments_free(&mtxdistfile->comments);
+        mtxfilecomments_free(&mtxdistfile->comments);
         if (free_linebuf)
             free(linebuf);
         return err;
@@ -1569,11 +1569,11 @@ int mtxdistfile_fread(
      * For matrices and vectors in coordinate format, the total number
      * of data lines is evenly distributed among processes. Otherwise,
      * the number of rows is evenly distributed among processes. */
-    struct mtxfile_size * sizes = (rank == root) ?
-        malloc(comm_size * sizeof(struct mtxfile_size)) : NULL;
+    struct mtxfilesize * sizes = (rank == root) ?
+        malloc(comm_size * sizeof(struct mtxfilesize)) : NULL;
     err = (rank == root && !sizes) ? MTX_ERR_ERRNO : MTX_SUCCESS;
     if (mtxmpierror_allreduce(mpierror, err)) {
-        mtxfile_comments_free(&mtxdistfile->comments);
+        mtxfilecomments_free(&mtxdistfile->comments);
         if (free_linebuf)
             free(linebuf);
         return MTX_ERR_MPI_COLLECTIVE;
@@ -1598,7 +1598,7 @@ int mtxdistfile_fread(
     if (mtxmpierror_allreduce(mpierror, err)) {
         if (rank == root)
             free(sizes);
-        mtxfile_comments_free(&mtxdistfile->comments);
+        mtxfilecomments_free(&mtxdistfile->comments);
         if (free_linebuf)
             free(linebuf);
         return MTX_ERR_MPI_COLLECTIVE;
@@ -1612,7 +1612,7 @@ int mtxdistfile_fread(
     if (mtxmpierror_allreduce(mpierror, err)) {
         if (rank == root)
             free(sizes);
-        mtxfile_comments_free(&mtxdistfile->comments);
+        mtxfilecomments_free(&mtxdistfile->comments);
         if (free_linebuf)
             free(linebuf);
         return MTX_ERR_MPI_COLLECTIVE;
@@ -1622,28 +1622,28 @@ int mtxdistfile_fread(
      * owning process. */
     for (int p = 0; p < comm_size-1; p++) {
         err = (rank == root)
-            ? mtxfile_size_copy(&mtxdistfile->mtxfile.size, &sizes[p])
+            ? mtxfilesize_copy(&mtxdistfile->mtxfile.size, &sizes[p])
             : MTX_SUCCESS;
         if (mtxmpierror_allreduce(mpierror, err)) {
             if (rank == root || rank < p)
                 mtxfile_free(&mtxdistfile->mtxfile);
             if (rank == root)
                 free(sizes);
-            mtxfile_comments_free(&mtxdistfile->comments);
+            mtxfilecomments_free(&mtxdistfile->comments);
             if (free_linebuf)
                 free(linebuf);
             return MTX_ERR_MPI_COLLECTIVE;
         }
 
         int64_t num_data_lines;
-        err = (rank == root) ? mtxfile_size_num_data_lines(
+        err = (rank == root) ? mtxfilesize_num_data_lines(
             &mtxdistfile->mtxfile.size, &num_data_lines) : MTX_SUCCESS;
         if (mtxmpierror_allreduce(mpierror, err)) {
             if (rank == root || rank < p)
                 mtxfile_free(&mtxdistfile->mtxfile);
             if (rank == root)
                 free(sizes);
-            mtxfile_comments_free(&mtxdistfile->comments);
+            mtxfilecomments_free(&mtxdistfile->comments);
             if (free_linebuf)
                 free(linebuf);
             return MTX_ERR_MPI_COLLECTIVE;
@@ -1665,7 +1665,7 @@ int mtxdistfile_fread(
                 mtxfile_free(&mtxdistfile->mtxfile);
             if (rank == root)
                 free(sizes);
-            mtxfile_comments_free(&mtxdistfile->comments);
+            mtxfilecomments_free(&mtxdistfile->comments);
             if (free_linebuf)
                 free(linebuf);
             return MTX_ERR_MPI_COLLECTIVE;
@@ -1684,7 +1684,7 @@ int mtxdistfile_fread(
                 mtxfile_free(&mtxdistfile->mtxfile);
             if (rank == root)
                 free(sizes);
-            mtxfile_comments_free(&mtxdistfile->comments);
+            mtxfilecomments_free(&mtxdistfile->comments);
             if (free_linebuf)
                 free(linebuf);
             return MTX_ERR_MPI_COLLECTIVE;
@@ -1693,26 +1693,26 @@ int mtxdistfile_fread(
 
     /* Read the final set of data lines on the root process. */
     err = (rank == root)
-        ? mtxfile_size_copy(&mtxdistfile->mtxfile.size, &sizes[comm_size-1])
+        ? mtxfilesize_copy(&mtxdistfile->mtxfile.size, &sizes[comm_size-1])
         : MTX_SUCCESS;
     if (mtxmpierror_allreduce(mpierror, err)) {
         mtxfile_free(&mtxdistfile->mtxfile);
         if (rank == root)
             free(sizes);
-        mtxfile_comments_free(&mtxdistfile->comments);
+        mtxfilecomments_free(&mtxdistfile->comments);
         if (free_linebuf)
             free(linebuf);
         return MTX_ERR_MPI_COLLECTIVE;
     }
 
     int64_t num_data_lines;
-    err = (rank == root) ? mtxfile_size_num_data_lines(
+    err = (rank == root) ? mtxfilesize_num_data_lines(
         &mtxdistfile->mtxfile.size, &num_data_lines) : MTX_SUCCESS;
     if (mtxmpierror_allreduce(mpierror, err)) {
         mtxfile_free(&mtxdistfile->mtxfile);
         if (rank == root)
             free(sizes);
-        mtxfile_comments_free(&mtxdistfile->comments);
+        mtxfilecomments_free(&mtxdistfile->comments);
         if (free_linebuf)
             free(linebuf);
         return MTX_ERR_MPI_COLLECTIVE;
@@ -1731,7 +1731,7 @@ int mtxdistfile_fread(
         mtxfile_free(&mtxdistfile->mtxfile);
         if (rank == root)
             free(sizes);
-        mtxfile_comments_free(&mtxdistfile->comments);
+        mtxfilecomments_free(&mtxdistfile->comments);
         if (free_linebuf)
             free(linebuf);
         return MTX_ERR_MPI_COLLECTIVE;
@@ -1894,22 +1894,22 @@ static int mtxdistfile_fwrite_mtxfile(
 {
     int err;
     const struct mtxfile * mtxfile = &mtxdistfile->mtxfile;
-    err = mtxfile_header_fwrite(&mtxfile->header, f, bytes_written);
+    err = mtxfileheader_fwrite(&mtxfile->header, f, bytes_written);
     if (err)
         return err;
-    err = mtxfile_comments_fputs(&mtxdistfile->comments, f, bytes_written);
+    err = mtxfilecomments_fputs(&mtxdistfile->comments, f, bytes_written);
     if (err)
         return err;
-    err = mtxfile_comments_fputs(&mtxfile->comments, f, bytes_written);
+    err = mtxfilecomments_fputs(&mtxfile->comments, f, bytes_written);
     if (err)
         return err;
-    err = mtxfile_size_fwrite(
+    err = mtxfilesize_fwrite(
         &mtxfile->size, mtxfile->header.object, mtxfile->header.format,
         f, bytes_written);
     if (err)
         return err;
     int64_t num_data_lines;
-    err = mtxfile_size_num_data_lines(
+    err = mtxfilesize_num_data_lines(
         &mtxfile->size, &num_data_lines);
     if (err)
         return err;
@@ -2020,16 +2020,16 @@ int mtxdistfile_fwrite_shared(
     int err;
     MPI_Comm comm = mtxdistfile->comm;
     int rank = mtxdistfile->rank;
-    err = (rank == 0) ? mtxfile_header_fwrite(&mtxdistfile->header, f, bytes_written)
+    err = (rank == 0) ? mtxfileheader_fwrite(&mtxdistfile->header, f, bytes_written)
         : MTX_SUCCESS;
     if (mtxmpierror_allreduce(mpierror, err))
         return MTX_ERR_MPI_COLLECTIVE;
-    err = (rank == 0) ? mtxfile_comments_fputs(
+    err = (rank == 0) ? mtxfilecomments_fputs(
         &mtxdistfile->comments, f, bytes_written)
         : MTX_SUCCESS;
     if (mtxmpierror_allreduce(mpierror, err))
         return MTX_ERR_MPI_COLLECTIVE;
-    err = (rank == 0) ? mtxfile_size_fwrite(
+    err = (rank == 0) ? mtxfilesize_fwrite(
         &mtxdistfile->size, mtxdistfile->header.object, mtxdistfile->header.format,
         f, bytes_written)
         : MTX_SUCCESS;
@@ -2042,7 +2042,7 @@ int mtxdistfile_fwrite_shared(
 
         err = MTX_SUCCESS;
         if (rank == root && p == root) {
-            err = mtxfile_size_num_data_lines(&mtxfile->size, &num_data_lines);
+            err = mtxfilesize_num_data_lines(&mtxfile->size, &num_data_lines);
             if (!err) {
                 err = mtxfiledata_fwrite(
                     &mtxfile->data, mtxfile->header.object, mtxfile->header.format,
@@ -2053,7 +2053,7 @@ int mtxdistfile_fwrite_shared(
             struct mtxfile recvmtxfile;
             err = mtxfile_recv(&recvmtxfile, p, 0, comm, mpierror);
             if (!err) {
-                err =  mtxfile_size_num_data_lines(
+                err =  mtxfilesize_num_data_lines(
                     &recvmtxfile.size, &num_data_lines);
                 if (!err) {
                     err = mtxfiledata_fwrite(
@@ -2101,7 +2101,7 @@ int mtxdistfile_transpose(
     if (mtxdistfile->header.object == mtxfile_matrix) {
         if (mtxdistfile->header.format == mtxfile_array) {
             int64_t size;
-            err = mtxfile_size_num_data_lines(
+            err = mtxfilesize_num_data_lines(
                 &mtxfile->size, &size);
             if (err)
                 return err;
@@ -2163,7 +2163,7 @@ int mtxdistfile_sort(
     MPI_Comm comm = mtxdistfile->comm;
 
     int64_t num_data_lines;
-    err = mtxfile_size_num_data_lines(&mtxfile->size, &num_data_lines);
+    err = mtxfilesize_num_data_lines(&mtxfile->size, &num_data_lines);
     if (mtxmpierror_allreduce(mpierror, err))
         return MTX_ERR_MPI_COLLECTIVE;
     err = size < 0 || size > num_data_lines
@@ -2265,7 +2265,7 @@ int mtxdistfile_init_from_partition(
     /* Send empty files to any remaining processes, if there are more
      * processes than parts in the partitioning. */
     for (int p = num_parts; p < src->comm_size; p++) {
-        struct mtxfile_size size;
+        struct mtxfilesize size;
         if (src->size.num_nonzeros >= 0) {
             size.num_rows = src->size.num_rows;
             size.num_columns = src->size.num_columns;
@@ -2333,7 +2333,7 @@ int mtxdistfile_init_from_partition(
         return err;
     }
     mtxfile_free(&dstmtxfile);
-    err = mtxfile_comments_copy(&dst->comments, &src->comments);
+    err = mtxfilecomments_copy(&dst->comments, &src->comments);
     if (err) {
         mtxdistfile_free(dst);
         return err;
@@ -2349,7 +2349,7 @@ int mtxdistfile_init_from_partition(
  * If it is not ‘NULL’, the array ‘part_per_data_line’ must contain
  * enough storage to hold one ‘int’ for each data line held by the
  * current process. (The number of data lines is obtained from
- * ‘mtxfile_size_num_data_lines()’). On a successful return, the ‘k’th
+ * ‘mtxfilesize_num_data_lines()’). On a successful return, the ‘k’th
  * entry in the array specifies the part number that was assigned to
  * the ‘k’th data line of ‘src’.
  *
@@ -2391,7 +2391,7 @@ int mtxdistfile_partition_rows(
     }
 
     int64_t size;
-    err = mtxfile_size_num_data_lines(&mtxdistfile->mtxfile.size, &size);
+    err = mtxfilesize_num_data_lines(&mtxdistfile->mtxfile.size, &size);
     if (mtxmpierror_allreduce(mpierror, err))
         return MTX_ERR_MPI_COLLECTIVE;
 

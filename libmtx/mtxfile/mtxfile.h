@@ -57,17 +57,17 @@ struct mtxfile
     /**
      * ‘header’ is the Matrix Market file header.
      */
-    struct mtxfile_header header;
+    struct mtxfileheader header;
 
     /**
      * ‘comments’ is the Matrix Market comment lines.
      */
-    struct mtxfile_comments comments;
+    struct mtxfilecomments comments;
 
     /**
      * ‘size’ is the Matrix Market size line.
      */
-    struct mtxfile_size size;
+    struct mtxfilesize size;
 
     /**
      * ‘precision’ is the precision used to store the values of the
@@ -93,9 +93,9 @@ struct mtxfile
  */
 int mtxfile_alloc(
     struct mtxfile * mtxfile,
-    const struct mtxfile_header * header,
-    const struct mtxfile_comments * comments,
-    const struct mtxfile_size * size,
+    const struct mtxfileheader * header,
+    const struct mtxfilecomments * comments,
+    const struct mtxfilesize * size,
     enum mtx_precision precision);
 
 /**
@@ -846,7 +846,7 @@ int mtxfile_init_from_partition(
  *
  * If it is not ‘NULL’, the array ‘part_per_data_line’ must contain
  * enough storage to hold one ‘int’ for each data line. (The number of
- * data lines is obtained from ‘mtxfile_size_num_data_lines()’). On a
+ * data lines is obtained from ‘mtxfilesize_num_data_lines()’). On a
  * successful return, the ‘k’th entry in the array specifies the part
  * number that was assigned to the ‘k’th data line of ‘src’.
  *

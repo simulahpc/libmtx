@@ -48,7 +48,7 @@
 int test_mtxfile_parse_header(void)
 {
     {
-        struct mtxfile_header header;
+        struct mtxfileheader header;
         const char line[] = "";
         int64_t bytes_read = 0;
         const char * endptr;
@@ -59,7 +59,7 @@ int test_mtxfile_parse_header(void)
     }
 
     {
-        struct mtxfile_header header;
+        struct mtxfileheader header;
         const char line[] = "%MatrixMarket";
         int64_t bytes_read = 0;
         const char * endptr;
@@ -70,7 +70,7 @@ int test_mtxfile_parse_header(void)
     }
 
     {
-        struct mtxfile_header header;
+        struct mtxfileheader header;
         const char line[] = "%MatrixMarketasdf";
         int64_t bytes_read = 0;
         const char * endptr;
@@ -81,7 +81,7 @@ int test_mtxfile_parse_header(void)
     }
 
     {
-        struct mtxfile_header header;
+        struct mtxfileheader header;
         const char line[] = "%%MatrixMarket invalid_object";
         int64_t bytes_read = 0;
         const char * endptr;
@@ -92,7 +92,7 @@ int test_mtxfile_parse_header(void)
     }
 
     {
-        struct mtxfile_header header;
+        struct mtxfileheader header;
         const char line[] = "%%MatrixMarket matrix invalid_format";
         int64_t bytes_read = 0;
         const char * endptr;
@@ -103,7 +103,7 @@ int test_mtxfile_parse_header(void)
     }
 
     {
-        struct mtxfile_header header;
+        struct mtxfileheader header;
         const char line[] = "%%MatrixMarket matrix coordinate invalid_field";
         int64_t bytes_read = 0;
         const char * endptr;
@@ -114,7 +114,7 @@ int test_mtxfile_parse_header(void)
     }
 
     {
-        struct mtxfile_header header;
+        struct mtxfileheader header;
         const char line[] = "%%MatrixMarket matrix coordinate real invalid_symmetry";
         int64_t bytes_read = 0;
         const char * endptr;
@@ -125,7 +125,7 @@ int test_mtxfile_parse_header(void)
     }
 
     {
-        struct mtxfile_header header;
+        struct mtxfileheader header;
         const char line[] = "%%MatrixMarket matrix coordinate real general";
         int64_t bytes_read = 0;
         const char * endptr;
@@ -141,7 +141,7 @@ int test_mtxfile_parse_header(void)
     }
 
     {
-        struct mtxfile_header header;
+        struct mtxfileheader header;
         const char line[] = "%%MatrixMarket matrix coordinate real general\n";
         int64_t bytes_read = 0;
         const char * endptr;
@@ -164,7 +164,7 @@ int test_mtxfile_parse_header(void)
 int test_mtxfile_parse_size(void)
 {
     {
-        struct mtxfile_size size;
+        struct mtxfilesize size;
         const char line[] = "";
         int64_t bytes_read = 0;
         const char * endptr;
@@ -175,7 +175,7 @@ int test_mtxfile_parse_size(void)
     }
 
     {
-        struct mtxfile_size size;
+        struct mtxfilesize size;
         const char line[] = "8 10\n";
         int64_t bytes_read = 0;
         const char * endptr;
@@ -190,7 +190,7 @@ int test_mtxfile_parse_size(void)
     }
 
     {
-        struct mtxfile_size size;
+        struct mtxfilesize size;
         const char line[] = "8 10 20\n";
         int64_t bytes_read = 0;
         const char * endptr;
@@ -205,7 +205,7 @@ int test_mtxfile_parse_size(void)
     }
 
     {
-        struct mtxfile_size size;
+        struct mtxfilesize size;
         const char line[] = "10\n";
         int64_t bytes_read = 0;
         const char * endptr;
@@ -220,7 +220,7 @@ int test_mtxfile_parse_size(void)
     }
 
     {
-        struct mtxfile_size size;
+        struct mtxfilesize size;
         const char line[] = "10 8\n";
         int64_t bytes_read = 0;
         const char * endptr;
@@ -548,7 +548,7 @@ int test_mtxfile_fread_header(void)
         char mtxfile[] = "";
         FILE * f = fmemopen(mtxfile, sizeof(mtxfile), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
-        struct mtxfile_header header;
+        struct mtxfileheader header;
         int lines_read = 0;
         int64_t bytes_read = 0;
         err = mtxfile_fread_header(&header, f, &lines_read, &bytes_read, 0, NULL);
@@ -564,7 +564,7 @@ int test_mtxfile_fread_header(void)
         char mtxfile[] = "%MatrixMarket\n";
         FILE * f = fmemopen(mtxfile, sizeof(mtxfile), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
-        struct mtxfile_header header;
+        struct mtxfileheader header;
         int lines_read = 0;
         int64_t bytes_read = 0;
         err = mtxfile_fread_header(&header, f, &lines_read, &bytes_read, 0, NULL);
@@ -588,7 +588,7 @@ int test_mtxfile_fread_header(void)
         mtxfile[line_max] = '\0';
         FILE * f = fmemopen(mtxfile, strlen(mtxfile), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
-        struct mtxfile_header header;
+        struct mtxfileheader header;
         int lines_read = 0;
         int64_t bytes_read = 0;
         err = mtxfile_fread_header(&header, f, &lines_read, &bytes_read, 0, NULL);
@@ -610,7 +610,7 @@ int test_mtxfile_fread_header(void)
         mtxfile[line_max+1] = '\0';
         FILE * f = fmemopen(mtxfile, strlen(mtxfile), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
-        struct mtxfile_header header;
+        struct mtxfileheader header;
         int lines_read = 0;
         int64_t bytes_read = 0;
         err = mtxfile_fread_header(&header, f, &lines_read, &bytes_read, 0, NULL);
@@ -627,7 +627,7 @@ int test_mtxfile_fread_header(void)
         char mtxfile[] = "%%MatrixMarket invalid_object";
         FILE * f = fmemopen(mtxfile, sizeof(mtxfile), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
-        struct mtxfile_header header;
+        struct mtxfileheader header;
         int lines_read = 0;
         int64_t bytes_read = 0;
         err = mtxfile_fread_header(&header, f, &lines_read, &bytes_read, 0, NULL);
@@ -643,7 +643,7 @@ int test_mtxfile_fread_header(void)
         char mtxfile[] = "%%MatrixMarket matrix invalid_format";
         FILE * f = fmemopen(mtxfile, sizeof(mtxfile), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
-        struct mtxfile_header header;
+        struct mtxfileheader header;
         int lines_read = 0;
         int64_t bytes_read = 0;
         err = mtxfile_fread_header(&header, f, &lines_read, &bytes_read, 0, NULL);
@@ -660,7 +660,7 @@ int test_mtxfile_fread_header(void)
             "%%MatrixMarket matrix coordinate invalid_field";
         FILE * f = fmemopen(mtxfile, sizeof(mtxfile), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
-        struct mtxfile_header header;
+        struct mtxfileheader header;
         int lines_read = 0;
         int64_t bytes_read = 0;
         err = mtxfile_fread_header(&header, f, &lines_read, &bytes_read, 0, NULL);
@@ -677,7 +677,7 @@ int test_mtxfile_fread_header(void)
             "%%MatrixMarket matrix coordinate real invalid_symmetry";
         FILE * f = fmemopen(mtxfile, sizeof(mtxfile), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
-        struct mtxfile_header header;
+        struct mtxfileheader header;
         int lines_read = 0;
         int64_t bytes_read = 0;
         err = mtxfile_fread_header(&header, f, &lines_read, &bytes_read, 0, NULL);
@@ -694,7 +694,7 @@ int test_mtxfile_fread_header(void)
             "%%MatrixMarket matrix coordinate real general\n";
         FILE * f = fmemopen(mtxfile, sizeof(mtxfile), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
-        struct mtxfile_header header;
+        struct mtxfileheader header;
         int lines_read = 0;
         int64_t bytes_read = 0;
         err = mtxfile_fread_header(&header, f, &lines_read, &bytes_read, 0, NULL);
@@ -720,7 +720,7 @@ int test_mtxfile_fread_comments(void)
         char mtxfile[] = "Does not begin with '%'";
         FILE * f = fmemopen(mtxfile, sizeof(mtxfile), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
-        struct mtxfile_comments comments;
+        struct mtxfilecomments comments;
         int lines_read = 0;
         int64_t bytes_read = 0;
         err = mtxfile_fread_comments(&comments, f, &lines_read, &bytes_read, 0, NULL);
@@ -728,7 +728,7 @@ int test_mtxfile_fread_comments(void)
         TEST_ASSERT_EQ(0, lines_read);
         TEST_ASSERT_EQ(0, bytes_read);
         TEST_ASSERT_EQ(NULL, comments.root);
-        mtxfile_comments_free(&comments);
+        mtxfilecomments_free(&comments);
         fclose(f);
     }
 
@@ -737,7 +737,7 @@ int test_mtxfile_fread_comments(void)
         char mtxfile[] = "% Does not end with '\\n'";
         FILE * f = fmemopen(mtxfile, sizeof(mtxfile), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
-        struct mtxfile_comments comments;
+        struct mtxfilecomments comments;
         int lines_read = 0;
         int64_t bytes_read = 0;
         err = mtxfile_fread_comments(&comments, f, &lines_read, &bytes_read, 0, NULL);
@@ -752,7 +752,7 @@ int test_mtxfile_fread_comments(void)
             "% Second comment line\n";
         FILE * f = fmemopen(mtxfile, sizeof(mtxfile), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
-        struct mtxfile_comments comments;
+        struct mtxfilecomments comments;
         int lines_read = 0;
         int64_t bytes_read = 0;
         err = mtxfile_fread_comments(&comments, f, &lines_read, &bytes_read, 0, NULL);
@@ -765,7 +765,7 @@ int test_mtxfile_fread_comments(void)
         TEST_ASSERT_NEQ(NULL, comments.root->next);
         TEST_ASSERT_STREQ(
             "% Second comment line\n", comments.root->next->comment_line);
-        mtxfile_comments_free(&comments);
+        mtxfilecomments_free(&comments);
         fclose(f);
     }
     return TEST_SUCCESS;
@@ -782,7 +782,7 @@ int test_mtxfile_fread_size(void)
         char mtxfile[] = "8 10\n";
         FILE * f = fmemopen(mtxfile, sizeof(mtxfile), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
-        struct mtxfile_size size;
+        struct mtxfilesize size;
         int lines_read = 0;
         int64_t bytes_read = 0;
         err = mtxfile_fread_size(
@@ -801,7 +801,7 @@ int test_mtxfile_fread_size(void)
         char mtxfile[] = "10 8 16\n";
         FILE * f = fmemopen(mtxfile, sizeof(mtxfile), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
-        struct mtxfile_size size;
+        struct mtxfilesize size;
         int lines_read = 0;
         int64_t bytes_read = 0;
         err = mtxfile_fread_size(
@@ -820,7 +820,7 @@ int test_mtxfile_fread_size(void)
         char mtxfile[] = "4\n";
         FILE * f = fmemopen(mtxfile, sizeof(mtxfile), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
-        struct mtxfile_size size;
+        struct mtxfilesize size;
         int lines_read = 0;
         int64_t bytes_read = 0;
         err = mtxfile_fread_size(
@@ -839,7 +839,7 @@ int test_mtxfile_fread_size(void)
         char mtxfile[] = "15 4\n";
         FILE * f = fmemopen(mtxfile, sizeof(mtxfile), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
-        struct mtxfile_size size;
+        struct mtxfilesize size;
         int lines_read = 0;
         int64_t bytes_read = 0;
         err = mtxfile_fread_size(

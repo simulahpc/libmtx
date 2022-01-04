@@ -364,7 +364,7 @@ static int mtxfile_parse_identifier(
  * input is not a valid Matrix Market header.
  */
 int mtxfile_parse_header(
-    struct mtxfile_header * header,
+    struct mtxfileheader * header,
     int64_t * bytes_read,
     const char ** endptr,
     const char * s)
@@ -394,11 +394,11 @@ int mtxfile_parse_header(
 }
 
 /**
- * `mtxfile_header_copy()' copies a Matrix Market header.
+ * `mtxfileheader_copy()' copies a Matrix Market header.
  */
-int mtxfile_header_copy(
-    struct mtxfile_header * dst,
-    const struct mtxfile_header * src)
+int mtxfileheader_copy(
+    struct mtxfileheader * dst,
+    const struct mtxfileheader * src)
 {
     dst->object = src->object;
     dst->format = src->format;
@@ -435,7 +435,7 @@ static int freadline(
  * encountered during the parsing of the Matrix Market file.
  */
 int mtxfile_fread_header(
-    struct mtxfile_header * header,
+    struct mtxfileheader * header,
     FILE * f,
     int * lines_read,
     int64_t * bytes_read,
@@ -498,7 +498,7 @@ static int gzreadline(
  * encountered during the parsing of the Matrix Market file.
  */
 int mtxfile_gzread_header(
-    struct mtxfile_header * header,
+    struct mtxfileheader * header,
     gzFile f,
     int * lines_read,
     int64_t * bytes_read,
@@ -534,14 +534,14 @@ int mtxfile_gzread_header(
 #endif
 
 /**
- * `mtxfile_header_fwrite()' writes the header line of a Matrix Market
+ * `mtxfileheader_fwrite()' writes the header line of a Matrix Market
  * file to a stream.
  *
  * If it is not `NULL', then the number of bytes written to the stream
  * is returned in `bytes_written'.
  */
-int mtxfile_header_fwrite(
-    const struct mtxfile_header * header,
+int mtxfileheader_fwrite(
+    const struct mtxfileheader * header,
     FILE * f,
     int64_t * bytes_written)
 {
@@ -560,14 +560,14 @@ int mtxfile_header_fwrite(
 
 #ifdef LIBMTX_HAVE_LIBZ
 /**
- * `mtxfile_header_gzwrite()' writes the header line of a Matrix
+ * `mtxfileheader_gzwrite()' writes the header line of a Matrix
  * Market file to a gzip-compressed stream.
  *
  * If it is not `NULL', then the number of bytes written to the stream
  * is returned in `bytes_written'.
  */
-int mtxfile_header_gzwrite(
-    const struct mtxfile_header * header,
+int mtxfileheader_gzwrite(
+    const struct mtxfileheader * header,
     gzFile f,
     int64_t * bytes_written)
 {
@@ -591,13 +591,13 @@ int mtxfile_header_gzwrite(
 
 #ifdef LIBMTX_HAVE_MPI
 /**
- * `mtxfile_header_datatype()' creates a custom MPI data type for
+ * `mtxfileheader_datatype()' creates a custom MPI data type for
  * sending or receiving Matrix Market headers.
  *
  * The user is responsible for calling `MPI_Type_free()' on the
  * returned datatype.
  */
-static int mtxfile_header_datatype(
+static int mtxfileheader_datatype(
     MPI_Datatype * datatype,
     int * mpierrcode)
 {
@@ -635,14 +635,14 @@ static int mtxfile_header_datatype(
 }
 
 /**
- * `mtxfile_header_send()' sends a Matrix Market header to another MPI
+ * `mtxfileheader_send()' sends a Matrix Market header to another MPI
  * process.
  *
  * This is analogous to `MPI_Send()' and requires the receiving
- * process to perform a matching call to `mtxfile_header_recv()'.
+ * process to perform a matching call to `mtxfileheader_recv()'.
  */
-int mtxfile_header_send(
-    const struct mtxfile_header * header,
+int mtxfileheader_send(
+    const struct mtxfileheader * header,
     int dest,
     int tag,
     MPI_Comm comm,
@@ -668,14 +668,14 @@ int mtxfile_header_send(
 }
 
 /**
- * `mtxfile_header_recv()' receives a Matrix Market header from
+ * `mtxfileheader_recv()' receives a Matrix Market header from
  * another MPI process.
  *
  * This is analogous to `MPI_Recv()' and requires the sending process
- * to perform a matching call to `mtxfile_header_send()'.
+ * to perform a matching call to `mtxfileheader_send()'.
  */
-int mtxfile_header_recv(
-    struct mtxfile_header * header,
+int mtxfileheader_recv(
+    struct mtxfileheader * header,
     int source,
     int tag,
     MPI_Comm comm,
@@ -701,15 +701,15 @@ int mtxfile_header_recv(
 }
 
 /**
- * `mtxfile_header_bcast()' broadcasts a Matrix Market header from an
+ * `mtxfileheader_bcast()' broadcasts a Matrix Market header from an
  * MPI root process to other processes in a communicator.
  *
  * This is analogous to `MPI_Bcast()' and requires every process in
  * the communicator to perform matching calls to
- * `mtxfile_header_bcast()'.
+ * `mtxfileheader_bcast()'.
  */
-int mtxfile_header_bcast(
-    struct mtxfile_header * header,
+int mtxfileheader_bcast(
+    struct mtxfileheader * header,
     int root,
     MPI_Comm comm,
     struct mtxmpierror * mpierror)
@@ -735,23 +735,23 @@ int mtxfile_header_bcast(
 }
 
 /**
- * `mtxfile_header_gather()' gathers Matrix Market headers onto an MPI
+ * `mtxfileheader_gather()' gathers Matrix Market headers onto an MPI
  * root process from other processes in a communicator.
  *
  * This is analogous to `MPI_Gather()' and requires every process in
  * the communicator to perform matching calls to
- * `mtxfile_header_gather()'.
+ * `mtxfileheader_gather()'.
  */
-int mtxfile_header_gather(
-    const struct mtxfile_header * sendheader,
-    struct mtxfile_header * recvheaders,
+int mtxfileheader_gather(
+    const struct mtxfileheader * sendheader,
+    struct mtxfileheader * recvheaders,
     int root,
     MPI_Comm comm,
     struct mtxmpierror * mpierror)
 {
     int err;
     MPI_Datatype headertype;
-    err = mtxfile_header_datatype(&headertype, &mpierror->mpierrcode);
+    err = mtxfileheader_datatype(&headertype, &mpierror->mpierrcode);
     if (mtxmpierror_allreduce(mpierror, err))
         return MTX_ERR_MPI_COLLECTIVE;
     mpierror->mpierrcode = MPI_Gather(
@@ -764,21 +764,21 @@ int mtxfile_header_gather(
 }
 
 /**
- * `mtxfile_header_allgather()' gathers Matrix Market headers onto
+ * `mtxfileheader_allgather()' gathers Matrix Market headers onto
  * every MPI process from other processes in a communicator.
  *
  * This is analogous to `MPI_Allgather()' and requires every process
  * in the communicator to perform matching calls to this function.
  */
-int mtxfile_header_allgather(
-    const struct mtxfile_header * sendheader,
-    struct mtxfile_header * recvheaders,
+int mtxfileheader_allgather(
+    const struct mtxfileheader * sendheader,
+    struct mtxfileheader * recvheaders,
     MPI_Comm comm,
     struct mtxmpierror * mpierror)
 {
     int err;
     MPI_Datatype headertype;
-    err = mtxfile_header_datatype(&headertype, &mpierror->mpierrcode);
+    err = mtxfileheader_datatype(&headertype, &mpierror->mpierrcode);
     if (mtxmpierror_allreduce(mpierror, err))
         return MTX_ERR_MPI_COLLECTIVE;
     mpierror->mpierrcode = MPI_Allgather(

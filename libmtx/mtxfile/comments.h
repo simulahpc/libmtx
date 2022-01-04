@@ -65,55 +65,55 @@ void mtxfile_comment_free(
     struct mtxfile_comment * comment);
 
 /**
- * `mtxfile_comments' represents a section of comment lines from a
+ * `mtxfilecomments' represents a section of comment lines from a
  * Matrix Market file, stored as a doubly linked list of comment
  * lines.
  */
-struct mtxfile_comments
+struct mtxfilecomments
 {
     struct mtxfile_comment * root;
 };
 
 /**
- * `mtxfile_comments_init()' initialises an empty list of comment lines.
+ * `mtxfilecomments_init()' initialises an empty list of comment lines.
  */
-int mtxfile_comments_init(
-    struct mtxfile_comments * comments);
+int mtxfilecomments_init(
+    struct mtxfilecomments * comments);
 
 /**
- * `mtxfile_comments_copy()' copies a list of comment lines.
+ * `mtxfilecomments_copy()' copies a list of comment lines.
  */
-int mtxfile_comments_copy(
-    struct mtxfile_comments * dst,
-    const struct mtxfile_comments * src);
+int mtxfilecomments_copy(
+    struct mtxfilecomments * dst,
+    const struct mtxfilecomments * src);
 
 /**
- * `mtxfile_comments_cat()' concatenates a list of comment lines to
+ * `mtxfilecomments_cat()' concatenates a list of comment lines to
  * another list of comment lines.
  */
-int mtxfile_comments_cat(
-    struct mtxfile_comments * dst,
-    const struct mtxfile_comments * src);
+int mtxfilecomments_cat(
+    struct mtxfilecomments * dst,
+    const struct mtxfilecomments * src);
 
 /**
- * `mtxfile_comments_free()' frees storage used for comment lines.
+ * `mtxfilecomments_free()' frees storage used for comment lines.
  */
-void mtxfile_comments_free(
-    struct mtxfile_comments * comment);
+void mtxfilecomments_free(
+    struct mtxfilecomments * comment);
 
 /**
- * `mtxfile_comments_write()' appends a comment line to a list of
+ * `mtxfilecomments_write()' appends a comment line to a list of
  * comment lines.
  *
  * the comment line must begin with '%' and end with a newline
  * character, '\n'.
  */
-int mtxfile_comments_write(
-    struct mtxfile_comments * comment,
+int mtxfilecomments_write(
+    struct mtxfilecomments * comment,
     const char * comment_line);
 
 /**
- * `mtxfile_comments_printf()' appends a comment line to a list of
+ * `mtxfilecomments_printf()' appends a comment line to a list of
  * comment lines using a printf-like syntax.
  *
  * Note that because `format' is a printf-style format string, where
@@ -122,8 +122,8 @@ int mtxfile_comments_write(
  * a comment line.  The `format' string must also end with a newline
  * character, '\n'.
  */
-int mtxfile_comments_printf(
-    struct mtxfile_comments * comment,
+int mtxfilecomments_printf(
+    struct mtxfilecomments * comment,
     const char * format, ...);
 
 /*
@@ -139,7 +139,7 @@ int mtxfile_comments_printf(
  * encountered during the parsing of the Matrix Market file.
  */
 int mtxfile_fread_comments(
-    struct mtxfile_comments * comments,
+    struct mtxfilecomments * comments,
     FILE * f,
     int * lines_read,
     int64_t * bytes_read,
@@ -156,7 +156,7 @@ int mtxfile_fread_comments(
  * encountered during the parsing of the Matrix Market file.
  */
 int mtxfile_gzread_comments(
-    struct mtxfile_comments * comments,
+    struct mtxfilecomments * comments,
     gzFile f,
     int * lines_read,
     int64_t * bytes_read,
@@ -165,21 +165,21 @@ int mtxfile_gzread_comments(
 #endif
 
 /**
- * `mtxfile_comments_fputs()' write Matrix Market comment lines to a
+ * `mtxfilecomments_fputs()' write Matrix Market comment lines to a
  * stream.
  */
-int mtxfile_comments_fputs(
-    const struct mtxfile_comments * comments,
+int mtxfilecomments_fputs(
+    const struct mtxfilecomments * comments,
     FILE * f,
     int64_t * bytes_written);
 
 #ifdef LIBMTX_HAVE_LIBZ
 /**
- * `mtxfile_comments_gzputs()' write Matrix Market comment lines to a
+ * `mtxfilecomments_gzputs()' write Matrix Market comment lines to a
  * gzip-compressed stream.
  */
-int mtxfile_comments_gzputs(
-    const struct mtxfile_comments * comments,
+int mtxfilecomments_gzputs(
+    const struct mtxfilecomments * comments,
     gzFile f,
     int64_t * bytes_written);
 #endif
@@ -190,72 +190,72 @@ int mtxfile_comments_gzputs(
 
 #ifdef LIBMTX_HAVE_MPI
 /**
- * `mtxfile_comments_send()' sends Matrix Market comment lines to
+ * `mtxfilecomments_send()' sends Matrix Market comment lines to
  * another MPI process.
  *
  * This is analogous to `MPI_Send()' and requires the receiving
- * process to perform a matching call to `mtxfile_comments_recv()'.
+ * process to perform a matching call to `mtxfilecomments_recv()'.
  */
-int mtxfile_comments_send(
-    const struct mtxfile_comments * comments,
+int mtxfilecomments_send(
+    const struct mtxfilecomments * comments,
     int dest,
     int tag,
     MPI_Comm comm,
     struct mtxmpierror * mpierror);
 
 /**
- * `mtxfile_comments_recv()' receives Matrix Market comment lines from
+ * `mtxfilecomments_recv()' receives Matrix Market comment lines from
  * another MPI process.
  *
  * This is analogous to `MPI_Recv()' and requires the sending process
- * to perform a matching call to `mtxfile_comments_send()'.
+ * to perform a matching call to `mtxfilecomments_send()'.
  */
-int mtxfile_comments_recv(
-    struct mtxfile_comments * comments,
+int mtxfilecomments_recv(
+    struct mtxfilecomments * comments,
     int source,
     int tag,
     MPI_Comm comm,
     struct mtxmpierror * mpierror);
 
 /**
- * `mtxfile_comments_bcast()' broadcasts Matrix Market comment lines
+ * `mtxfilecomments_bcast()' broadcasts Matrix Market comment lines
  * from an MPI root process to other processes in a communicator.
  *
  * This is analogous to `MPI_Bcast()' and requires every process in
  * the communicator to perform matching calls to
- * `mtxfile_comments_bcast()'.
+ * `mtxfilecomments_bcast()'.
  */
-int mtxfile_comments_bcast(
-    struct mtxfile_comments * comments,
+int mtxfilecomments_bcast(
+    struct mtxfilecomments * comments,
     int root,
     MPI_Comm comm,
     struct mtxmpierror * mpierror);
 
 /**
- * `mtxfile_comments_gather()' gathers Matrix Market comments onto an
+ * `mtxfilecomments_gather()' gathers Matrix Market comments onto an
  * MPI root process from other processes in a communicator.
  *
  * This is analogous to `MPI_Gather()' and requires every process in
  * the communicator to perform matching calls to
- * `mtxfile_comments_gather()'.
+ * `mtxfilecomments_gather()'.
  */
-int mtxfile_comments_gather(
-    const struct mtxfile_comments * sendcomments,
-    struct mtxfile_comments * recvcomments,
+int mtxfilecomments_gather(
+    const struct mtxfilecomments * sendcomments,
+    struct mtxfilecomments * recvcomments,
     int root,
     MPI_Comm comm,
     struct mtxmpierror * mpierror);
 
 /**
- * `mtxfile_comments_allgather()' gathers Matrix Market comment lines
+ * `mtxfilecomments_allgather()' gathers Matrix Market comment lines
  * onto every MPI process from other processes in a communicator.
  *
  * This is analogous to `MPI_Allgather()' and requires every process
  * in the communicator to perform matching calls to this function.
  */
-int mtxfile_comments_allgather(
-    const struct mtxfile_comments * sendcomments,
-    struct mtxfile_comments * recvcomments,
+int mtxfilecomments_allgather(
+    const struct mtxfilecomments * sendcomments,
+    struct mtxfilecomments * recvcomments,
     MPI_Comm comm,
     struct mtxmpierror * mpierror);
 #endif

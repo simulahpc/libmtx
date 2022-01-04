@@ -43,9 +43,9 @@
 struct mtxmpierror;
 
 /**
- * `mtxfile_size' represents a size line of a Matrix Market file.
+ * `mtxfilesize' represents a size line of a Matrix Market file.
  */
-struct mtxfile_size
+struct mtxfilesize
 {
     /**
      * `num_rows' is the number of rows in the matrix or vector.
@@ -84,7 +84,7 @@ struct mtxfile_size
  * appropriate error code is returned.
  */
 int mtxfile_parse_size(
-    struct mtxfile_size * size,
+    struct mtxfilesize * size,
     int64_t * bytes_read,
     const char ** endptr,
     const char * s,
@@ -92,28 +92,28 @@ int mtxfile_parse_size(
     enum mtxfile_format format);
 
 /**
- * `mtxfile_size_copy()' copies a size line.
+ * `mtxfilesize_copy()' copies a size line.
  */
-int mtxfile_size_copy(
-    struct mtxfile_size * dst,
-    const struct mtxfile_size * src);
+int mtxfilesize_copy(
+    struct mtxfilesize * dst,
+    const struct mtxfilesize * src);
 
 /**
- * `mtxfile_size_cat()' updates a size line to match with the
+ * `mtxfilesize_cat()' updates a size line to match with the
  * concatenation of two Matrix Market files.
  */
-int mtxfile_size_cat(
-    struct mtxfile_size * dst,
-    const struct mtxfile_size * src,
+int mtxfilesize_cat(
+    struct mtxfilesize * dst,
+    const struct mtxfilesize * src,
     enum mtxfile_object object,
     enum mtxfile_format format);
 
 /**
- * `mtxfile_size_num_data_lines()' computes the number of data lines
+ * `mtxfilesize_num_data_lines()' computes the number of data lines
  * that are required in a Matrix Market file with the given size line.
  */
-int mtxfile_size_num_data_lines(
-    const struct mtxfile_size * size,
+int mtxfilesize_num_data_lines(
+    const struct mtxfilesize * size,
     int64_t * num_data_lines);
 
 /*
@@ -129,7 +129,7 @@ int mtxfile_size_num_data_lines(
  * encountered during the parsing of the Matrix Market file.
  */
 int mtxfile_fread_size(
-    struct mtxfile_size * size,
+    struct mtxfilesize * size,
     FILE * f,
     int * lines_read,
     int64_t * bytes_read,
@@ -148,7 +148,7 @@ int mtxfile_fread_size(
  * encountered during the parsing of the Matrix Market file.
  */
 int mtxfile_gzread_size(
-    struct mtxfile_size * size,
+    struct mtxfilesize * size,
     gzFile f,
     int * lines_read,
     int64_t * bytes_read,
@@ -159,14 +159,14 @@ int mtxfile_gzread_size(
 #endif
 
 /**
- * `mtxfile_size_fwrite()' writes the size line of a Matrix Market
+ * `mtxfilesize_fwrite()' writes the size line of a Matrix Market
  * file to a stream.
  *
  * If it is not `NULL', then the number of bytes written to the stream
  * is returned in `bytes_written'.
  */
-int mtxfile_size_fwrite(
-    const struct mtxfile_size * size,
+int mtxfilesize_fwrite(
+    const struct mtxfilesize * size,
     enum mtxfile_object object,
     enum mtxfile_format format,
     FILE * f,
@@ -174,14 +174,14 @@ int mtxfile_size_fwrite(
 
 #ifdef LIBMTX_HAVE_LIBZ
 /**
- * `mtxfile_size_gzwrite()' writes the size line of a Matrix Market
+ * `mtxfilesize_gzwrite()' writes the size line of a Matrix Market
  * file to a gzip-compressed stream.
  *
  * If it is not `NULL', then the number of bytes written to the stream
  * is returned in `bytes_written'.
  */
-int mtxfile_size_gzwrite(
-    const struct mtxfile_size * size,
+int mtxfilesize_gzwrite(
+    const struct mtxfilesize * size,
     enum mtxfile_object object,
     enum mtxfile_format format,
     gzFile f,
@@ -193,11 +193,11 @@ int mtxfile_size_gzwrite(
  */
 
 /**
- * `mtxfile_size_transpose()' tranposes the size line of a Matrix
+ * `mtxfilesize_transpose()' tranposes the size line of a Matrix
  * Market file.
  */
-int mtxfile_size_transpose(
-    struct mtxfile_size * size);
+int mtxfilesize_transpose(
+    struct mtxfilesize * size);
 
 /*
  * MPI functions
@@ -205,86 +205,86 @@ int mtxfile_size_transpose(
 
 #ifdef LIBMTX_HAVE_MPI
 /**
- * `mtxfile_size_send()' sends a Matrix Market size line to another
+ * `mtxfilesize_send()' sends a Matrix Market size line to another
  * MPI process.
  *
  * This is analogous to `MPI_Send()' and requires the receiving
- * process to perform a matching call to `mtxfile_size_recv()'.
+ * process to perform a matching call to `mtxfilesize_recv()'.
  */
-int mtxfile_size_send(
-    const struct mtxfile_size * size,
+int mtxfilesize_send(
+    const struct mtxfilesize * size,
     int dest,
     int tag,
     MPI_Comm comm,
     struct mtxmpierror * mpierror);
 
 /**
- * `mtxfile_size_recv()' receives a Matrix Market size line from
+ * `mtxfilesize_recv()' receives a Matrix Market size line from
  * another MPI process.
  *
  * This is analogous to `MPI_Recv()' and requires the sending process
- * to perform a matching call to `mtxfile_size_send()'.
+ * to perform a matching call to `mtxfilesize_send()'.
  */
-int mtxfile_size_recv(
-    struct mtxfile_size * size,
+int mtxfilesize_recv(
+    struct mtxfilesize * size,
     int source,
     int tag,
     MPI_Comm comm,
     struct mtxmpierror * mpierror);
 
 /**
- * `mtxfile_size_bcast()' broadcasts a Matrix Market size line from an
+ * `mtxfilesize_bcast()' broadcasts a Matrix Market size line from an
  * MPI root process to other processes in a communicator.
  *
  * This is analogous to `MPI_Bcast()' and requires every process in
  * the communicator to perform matching calls to
- * `mtxfile_size_bcast()'.
+ * `mtxfilesize_bcast()'.
  */
-int mtxfile_size_bcast(
-    struct mtxfile_size * size,
+int mtxfilesize_bcast(
+    struct mtxfilesize * size,
     int root,
     MPI_Comm comm,
     struct mtxmpierror * mpierror);
 
 /**
- * `mtxfile_size_gather()' gathers Matrix Market size lines onto an
+ * `mtxfilesize_gather()' gathers Matrix Market size lines onto an
  * MPI root process from other processes in a communicator.
  *
  * This is analogous to `MPI_Gather()' and requires every process in
  * the communicator to perform matching calls to
- * `mtxfile_size_gather()'.
+ * `mtxfilesize_gather()'.
  */
-int mtxfile_size_gather(
-    const struct mtxfile_size * sendsize,
-    struct mtxfile_size * recvsizes,
+int mtxfilesize_gather(
+    const struct mtxfilesize * sendsize,
+    struct mtxfilesize * recvsizes,
     int root,
     MPI_Comm comm,
     struct mtxmpierror * mpierror);
 
 /**
- * `mtxfile_size_allgather()' gathers Matrix Market size lines onto
+ * `mtxfilesize_allgather()' gathers Matrix Market size lines onto
  * every MPI process from other processes in a communicator.
  *
  * This is analogous to `MPI_Allgather()' and requires every process
  * in the communicator to perform matching calls to this function.
  */
-int mtxfile_size_allgather(
-    const struct mtxfile_size * sendsize,
-    struct mtxfile_size * recvsizes,
+int mtxfilesize_allgather(
+    const struct mtxfilesize * sendsize,
+    struct mtxfilesize * recvsizes,
     MPI_Comm comm,
     struct mtxmpierror * mpierror);
 
 /**
- * `mtxfile_size_scatterv()' scatters a Matrix Market size line from
+ * `mtxfilesize_scatterv()' scatters a Matrix Market size line from
  * an MPI root process to other processes in a communicator.
  *
  * This is analogous to `MPI_Scatterv()' and requires every process in
  * the communicator to perform matching calls to
- * `mtxfile_size_scatterv()'.
+ * `mtxfilesize_scatterv()'.
  */
-int mtxfile_size_scatterv(
-    const struct mtxfile_size * sendsize,
-    struct mtxfile_size * recvsize,
+int mtxfilesize_scatterv(
+    const struct mtxfilesize * sendsize,
+    struct mtxfilesize * recvsize,
     enum mtxfile_object object,
     enum mtxfile_format format,
     int recvcount,

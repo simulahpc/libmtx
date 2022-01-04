@@ -77,17 +77,17 @@ struct mtxdistfile
     /**
      * `header' is the Matrix Market file header.
      */
-    struct mtxfile_header header;
+    struct mtxfileheader header;
 
     /**
      * `comments' is the Matrix Market comment lines.
      */
-    struct mtxfile_comments comments;
+    struct mtxfilecomments comments;
 
     /**
      * `size' is the Matrix Market size line.
      */
-    struct mtxfile_size size;
+    struct mtxfilesize size;
 
     /**
      * `precision' is the precision used to store the values of the
@@ -955,7 +955,7 @@ int mtxdistfile_init_from_partition(
  * If it is not ‘NULL’, the array ‘part_per_data_line’ must contain
  * enough storage to hold one ‘int’ for each data line held by the
  * current process. (The number of data lines is obtained from
- * ‘mtxfile_size_num_data_lines()’). On a successful return, the ‘k’th
+ * ‘mtxfilesize_num_data_lines()’). On a successful return, the ‘k’th
  * entry in the array specifies the part number that was assigned to
  * the ‘k’th data line of ‘src’.
  *
