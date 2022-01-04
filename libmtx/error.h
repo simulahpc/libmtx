@@ -16,7 +16,7 @@
  * along with libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-01-03
+ * Last modified: 2022-01-04
  *
  * Error handling.
  */
@@ -29,14 +29,14 @@
 #endif
 
 /**
- * `mtx_error' is a type for enumerating different error codes that
- * are used for error handling.
+ * ‘mtxerror’ is a type for enumerating different error codes that are
+ * used for error handling.
  *
- * There are error codes for errors based on `errno', MPI errors, as
+ * There are error codes for errors based on ‘errno’, MPI errors, as
  * well as errors that may arise during parsing of files in the Matrix
  * Market format.
  */
-enum mtx_error
+enum mtxerror
 {
     MTX_SUCCESS = 0,                        /* no error */
     MTX_ERR_ERRNO = -1,                     /* error code provided by errno */
@@ -77,6 +77,7 @@ enum mtx_error
     MTX_ERR_INCOMPATIBLE_PRECISION = -37,   /* incompatible precision */
     MTX_ERR_INCOMPATIBLE_SIZE = -38,        /* incompatible size */
     MTX_ERR_INCOMPATIBLE_VECTOR_TYPE = -39, /* incompatible vector type */
+    MTX_ERR_INCOMPATIBLE_PARTITION = -40,   /* incompatible partition */
     MTX_ERR_INVALID_SORTING = -41,          /* invalid sorting */
     MTX_ERR_INVALID_ORDERING = -42,         /* invalid ordering */
     MTX_ERR_INVALID_MATRIX_TYPE = -43,      /* invalid matrix type */
@@ -85,38 +86,38 @@ enum mtx_error
 };
 
 /**
- * `mtx_strerror()' is a string describing an error code.
+ * ‘mtx_strerror()’ is a string describing an error code.
  *
- * The error code `err' must correspond to one of the error codes
- * defined in the `mtx_error' enum type.
+ * The error code ‘err’ must correspond to one of the error codes
+ * defined in the ‘mtxerror’ enum type.
  *
- * If `err' is `MTX_ERR_ERRNO', then `mtx_strerror()' will use the
- * current value of `errno' to obtain a description of the error.
+ * If ‘err’ is ‘MTX_ERR_ERRNO’, then ‘mtx_strerror()’ will use the
+ * current value of ‘errno’ to obtain a description of the error.
  *
- * If `err' may be `MTX_ERR_MPI', then `mtx_strerror_mpi()' should be
+ * If ‘err’ may be ‘MTX_ERR_MPI’, then ‘mtx_strerror_mpi()’ should be
  * used instead.
  */
 const char * mtx_strerror(int err);
 
 /**
- * `mtx_strerror_mpi()' is a string describing an error code.
+ * ‘mtx_strerror_mpi()’ is a string describing an error code.
  *
- * The error code `err' must correspond to one of the error codes
- * defined in the `mtx_error' enum type.
+ * The error code ‘err’ must correspond to one of the error codes
+ * defined in the ‘mtxerror’ enum type.
  *
- * `mtx_strerror_mpi()' should be used in cases where `err' may be
- * `MTX_ERR_MPI', because it provides a more specific error
- * description than `mtx_strerror()'.
+ * ‘mtx_strerror_mpi()’ should be used in cases where ‘err’ may be
+ * ‘MTX_ERR_MPI’, because it provides a more specific error
+ * description than ‘mtx_strerror()’.
  *
- * If `err' is `MTX_ERR_MPI', then the argument `mpierrcode' should be
+ * If ‘err’ is ‘MTX_ERR_MPI’, then the argument ‘mpierrcode’ should be
  * set to the error code that was returned from the MPI function call
- * that failed. In addition, the argument `mpierrstr' must be a char
- * array whose length is at least equal to `MPI_MAX_ERROR_STRING'. In
- * this case, `MPI_Error_string' will be used to obtain a description
+ * that failed. In addition, the argument ‘mpierrstr’ must be a char
+ * array whose length is at least equal to ‘MPI_MAX_ERROR_STRING’. In
+ * this case, ‘MPI_Error_string’ will be used to obtain a description
  * of the error.
  *
- * Otherwise, `mtx_strerror_mpi()' returns the same error description
- * as `mtx_strerror()' for error codes other than `MTX_ERR_MPI'.
+ * Otherwise, ‘mtx_strerror_mpi()’ returns the same error description
+ * as ‘mtx_strerror()’ for error codes other than ‘MTX_ERR_MPI’.
  */
 const char * mtx_strerror_mpi(
     int err,
@@ -125,11 +126,11 @@ const char * mtx_strerror_mpi(
 
 #ifdef LIBMTX_HAVE_MPI
 /**
- * `mtxmpierror' is used for error handling when using MPI.
+ * ‘mtxmpierror’ is used for error handling when using MPI.
  *
- * In particular, `mtxmpierror' can be used to perform collective
+ * In particular, ‘mtxmpierror’ can be used to perform collective
  * error handling in situations where one or more processes encounter
- * an error, see `mtxmpierror_allreduce'.
+ * an error, see ‘mtxmpierror_allreduce’.
  */
 struct mtxmpierror
 {
@@ -142,8 +143,8 @@ struct mtxmpierror
 };
 
 /**
- * `mtxmpierror_alloc()' allocates storage needed for the MPI error
- * handling data structure `mtxmpierror'.
+ * ‘mtxmpierror_alloc()’ allocates storage needed for the MPI error
+ * handling data structure ‘mtxmpierror’.
  */
 int mtxmpierror_alloc(
     struct mtxmpierror * mpierror,
@@ -151,42 +152,42 @@ int mtxmpierror_alloc(
     int * mpierrcode);
 
 /**
- * `mtxmpierror_free()' frees storage held by `struct mtxmpierror'.
+ * ‘mtxmpierror_free()’ frees storage held by ‘struct mtxmpierror’.
  */
 void mtxmpierror_free(
     struct mtxmpierror * mpierror);
 
 /**
- * `mtxmpierror_description()' returns a string describing an MPI
+ * ‘mtxmpierror_description()’ returns a string describing an MPI
  * error.
  *
  * The caller is responsible for freeing the storage required for the
- * string that is returned by calling `free()'.
+ * string that is returned by calling ‘free()’.
  */
 char * mtxmpierror_description(
     struct mtxmpierror * mpierror);
 
 /**
- * `mtxmpierror_allreduce()' performs a collective reduction on error
+ * ‘mtxmpierror_allreduce()’ performs a collective reduction on error
  * codes provided by each MPI process in a communicator.
  *
  * This is a collective operations that must be performed by every
- * process in the communicator of the MPI error struct `mpierror'.
+ * process in the communicator of the MPI error struct ‘mpierror’.
  *
  * Each process gathers the error code and rank of every other
  * process.  If the error code of each and every process is
- * `MTX_SUCCESS', then `mtxmpierror_allreduce()' returns
- * `MTX_SUCCESS'. Otherwise, `MTX_ERR_MPI_COLLECTIVE' is returned.
- * Moreover, the `buf' member of `mpierror' will contain the rank and
+ * ‘MTX_SUCCESS’, then ‘mtxmpierror_allreduce()’ returns
+ * ‘MTX_SUCCESS’. Otherwise, ‘MTX_ERR_MPI_COLLECTIVE’ is returned.
+ * Moreover, the ‘buf’ member of ‘mpierror’ will contain the rank and
  * error code of each process.
  *
- * If the error code `err' is `MTX_ERR_MPI_COLLECTIVE', then it is
+ * If the error code ‘err’ is ‘MTX_ERR_MPI_COLLECTIVE’, then it is
  * assumed that a reduction has already been performed, and
- * `mtxmpierror_allreduce()' returns immediately with
- * `MTX_ERR_MPI_COLLETIVE'.  As a result, if any process calls
- * `mtxmpierror_allreduce()' with `err' set to
- * `MTX_ERR_MPI_COLLETIVE', then every other process in the
- * communicator must also set `err' to `MTX_ERR_MPI_COLLECTIVE', or
+ * ‘mtxmpierror_allreduce()’ returns immediately with
+ * ‘MTX_ERR_MPI_COLLETIVE’.  As a result, if any process calls
+ * ‘mtxmpierror_allreduce()’ with ‘err’ set to
+ * ‘MTX_ERR_MPI_COLLETIVE’, then every other process in the
+ * communicator must also set ‘err’ to ‘MTX_ERR_MPI_COLLECTIVE’, or
  * else the program may hang indefinitely.
  *
  * Example usage:
