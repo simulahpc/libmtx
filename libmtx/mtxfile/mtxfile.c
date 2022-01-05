@@ -1345,7 +1345,7 @@ int mtxfile_fread(
             return MTX_ERR_ERRNO;
     }
 
-    err = mtxfile_fread_header(
+    err = mtxfileheader_fread(
         &mtxfile->header, f, lines_read, bytes_read, line_max, linebuf);
     if (err) {
         if (free_linebuf)
@@ -1450,7 +1450,7 @@ int mtxfile_gzread(
             return MTX_ERR_ERRNO;
     }
 
-    err = mtxfile_gzread_header(
+    err = mtxfileheader_gzread(
         &mtxfile->header, f, lines_read, bytes_read, line_max, linebuf);
     if (err) {
         if (free_linebuf)

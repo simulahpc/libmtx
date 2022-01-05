@@ -350,20 +350,20 @@ static int mtxfile_parse_identifier(
 }
 
 /**
- * ‘mtxfile_parse_header()’ parses a string containing the header line
+ * ‘mtxfileheader_parse()’ parses a string containing the header line
  * for a file in Matrix Market format.
  *
  * If ‘endptr’ is not ‘NULL’, then the address stored in ‘endptr’
  * points to the first character beyond the characters that were
  * consumed during parsing.
  *
- * On success, ‘mtxfile_parse_header()’ returns ‘MTX_SUCCESS’ and the
+ * On success, ‘mtxfileheader_parse()’ returns ‘MTX_SUCCESS’ and the
  * ‘object’, ‘format’, ‘field’ and ‘symmetry’ fields of the header
  * will be set according to the contents of the parsed Matrix Market
  * header.  Otherwise, an appropriate error code is returned if the
  * input is not a valid Matrix Market header.
  */
-int mtxfile_parse_header(
+int mtxfileheader_parse(
     struct mtxfileheader * header,
     int64_t * bytes_read,
     const char ** endptr,
@@ -427,14 +427,14 @@ static int freadline(
 }
 
 /**
- * ‘mtxfile_fread_header()‘ reads a Matrix Market header from a
+ * ‘mtxfileheader_fread()’ reads a Matrix Market header from a
  * stream.
  *
  * If an error code is returned, then ‘lines_read’ and ‘bytes_read’
  * are used to return the line number and byte at which the error was
  * encountered during the parsing of the Matrix Market file.
  */
-int mtxfile_fread_header(
+int mtxfileheader_fread(
     struct mtxfileheader * header,
     FILE * f,
     int * lines_read,
@@ -456,7 +456,7 @@ int mtxfile_fread_header(
             free(linebuf);
         return err;
     }
-    err = mtxfile_parse_header(header, bytes_read, NULL, linebuf);
+    err = mtxfileheader_parse(header, bytes_read, NULL, linebuf);
     if (err) {
         if (free_linebuf)
             free(linebuf);
@@ -490,14 +490,14 @@ static int gzreadline(
 }
 
 /**
- * ‘mtxfile_gzread_header()‘ reads a Matrix Market header from a
+ * ‘mtxfileheader_gzread()’ reads a Matrix Market header from a
  * gzip-compressed stream.
  *
  * If an error code is returned, then ‘lines_read’ and ‘bytes_read’
  * are used to return the line number and byte at which the error was
  * encountered during the parsing of the Matrix Market file.
  */
-int mtxfile_gzread_header(
+int mtxfileheader_gzread(
     struct mtxfileheader * header,
     gzFile f,
     int * lines_read,
@@ -519,7 +519,7 @@ int mtxfile_gzread_header(
             free(linebuf);
         return err;
     }
-    err = mtxfile_parse_header(header, bytes_read, NULL, linebuf);
+    err = mtxfileheader_parse(header, bytes_read, NULL, linebuf);
     if (err) {
         if (free_linebuf)
             free(linebuf);

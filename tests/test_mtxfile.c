@@ -43,16 +43,16 @@
 #include <string.h>
 
 /**
- * `test_mtxfile_parse_header()` tests parsing Matrix Market headers.
+ * `test_mtxfileheader_parse()` tests parsing Matrix Market headers.
  */
-int test_mtxfile_parse_header(void)
+int test_mtxfileheader_parse(void)
 {
     {
         struct mtxfileheader header;
         const char line[] = "";
         int64_t bytes_read = 0;
         const char * endptr;
-        int err = mtxfile_parse_header(
+        int err = mtxfileheader_parse(
             &header, &bytes_read, &endptr, line);
         TEST_ASSERT_EQ(MTX_ERR_INVALID_MTX_HEADER, err);
         TEST_ASSERT_EQ(0, bytes_read);
@@ -63,7 +63,7 @@ int test_mtxfile_parse_header(void)
         const char line[] = "%MatrixMarket";
         int64_t bytes_read = 0;
         const char * endptr;
-        int err = mtxfile_parse_header(
+        int err = mtxfileheader_parse(
             &header, &bytes_read, &endptr, line);
         TEST_ASSERT_EQ(MTX_ERR_INVALID_MTX_HEADER, err);
         TEST_ASSERT_EQ(0, bytes_read);
@@ -74,7 +74,7 @@ int test_mtxfile_parse_header(void)
         const char line[] = "%MatrixMarketasdf";
         int64_t bytes_read = 0;
         const char * endptr;
-        int err = mtxfile_parse_header(
+        int err = mtxfileheader_parse(
             &header, &bytes_read, &endptr, line);
         TEST_ASSERT_EQ(MTX_ERR_INVALID_MTX_HEADER, err);
         TEST_ASSERT_EQ(0, bytes_read);
@@ -85,7 +85,7 @@ int test_mtxfile_parse_header(void)
         const char line[] = "%%MatrixMarket invalid_object";
         int64_t bytes_read = 0;
         const char * endptr;
-        int err = mtxfile_parse_header(
+        int err = mtxfileheader_parse(
             &header, &bytes_read, &endptr, line);
         TEST_ASSERT_EQ(MTX_ERR_INVALID_MTX_OBJECT, err);
         TEST_ASSERT_EQ(15, bytes_read);
@@ -96,7 +96,7 @@ int test_mtxfile_parse_header(void)
         const char line[] = "%%MatrixMarket matrix invalid_format";
         int64_t bytes_read = 0;
         const char * endptr;
-        int err = mtxfile_parse_header(
+        int err = mtxfileheader_parse(
             &header, &bytes_read, &endptr, line);
         TEST_ASSERT_EQ(MTX_ERR_INVALID_MTX_FORMAT, err);
         TEST_ASSERT_EQ(22, bytes_read);
@@ -107,7 +107,7 @@ int test_mtxfile_parse_header(void)
         const char line[] = "%%MatrixMarket matrix coordinate invalid_field";
         int64_t bytes_read = 0;
         const char * endptr;
-        int err = mtxfile_parse_header(
+        int err = mtxfileheader_parse(
             &header, &bytes_read, &endptr, line);
         TEST_ASSERT_EQ(MTX_ERR_INVALID_MTX_FIELD, err);
         TEST_ASSERT_EQ(33, bytes_read);
@@ -118,7 +118,7 @@ int test_mtxfile_parse_header(void)
         const char line[] = "%%MatrixMarket matrix coordinate real invalid_symmetry";
         int64_t bytes_read = 0;
         const char * endptr;
-        int err = mtxfile_parse_header(
+        int err = mtxfileheader_parse(
             &header, &bytes_read, &endptr, line);
         TEST_ASSERT_EQ(MTX_ERR_INVALID_MTX_SYMMETRY, err);
         TEST_ASSERT_EQ(38, bytes_read);
@@ -129,7 +129,7 @@ int test_mtxfile_parse_header(void)
         const char line[] = "%%MatrixMarket matrix coordinate real general";
         int64_t bytes_read = 0;
         const char * endptr;
-        int err = mtxfile_parse_header(
+        int err = mtxfileheader_parse(
             &header, &bytes_read, &endptr, line);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
         TEST_ASSERT_EQ(mtxfile_matrix, header.object);
@@ -145,7 +145,7 @@ int test_mtxfile_parse_header(void)
         const char line[] = "%%MatrixMarket matrix coordinate real general\n";
         int64_t bytes_read = 0;
         const char * endptr;
-        int err = mtxfile_parse_header(
+        int err = mtxfileheader_parse(
             &header, &bytes_read, &endptr, line);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
         TEST_ASSERT_EQ(mtxfile_matrix, header.object);
@@ -538,9 +538,9 @@ int test_mtxfiledata_parse(void)
 }
 
 /**
- * `test_mtxfile_fread_header()` tests reading Matrix Market headers.
+ * `test_mtxfileheader_fread()` tests reading Matrix Market headers.
  */
-int test_mtxfile_fread_header(void)
+int test_mtxfileheader_fread(void)
 {
     {
         /* Empty file. */
@@ -551,7 +551,7 @@ int test_mtxfile_fread_header(void)
         struct mtxfileheader header;
         int lines_read = 0;
         int64_t bytes_read = 0;
-        err = mtxfile_fread_header(&header, f, &lines_read, &bytes_read, 0, NULL);
+        err = mtxfileheader_fread(&header, f, &lines_read, &bytes_read, 0, NULL);
         TEST_ASSERT_EQ_MSG(
             MTX_ERR_INVALID_MTX_HEADER, err, "%d: %s", lines_read+1,
             mtxstrerror(err));
@@ -567,7 +567,7 @@ int test_mtxfile_fread_header(void)
         struct mtxfileheader header;
         int lines_read = 0;
         int64_t bytes_read = 0;
-        err = mtxfile_fread_header(&header, f, &lines_read, &bytes_read, 0, NULL);
+        err = mtxfileheader_fread(&header, f, &lines_read, &bytes_read, 0, NULL);
         TEST_ASSERT_EQ_MSG(
             MTX_ERR_INVALID_MTX_HEADER, err, "%d: %s", lines_read+1,
             mtxstrerror(err));
@@ -591,7 +591,7 @@ int test_mtxfile_fread_header(void)
         struct mtxfileheader header;
         int lines_read = 0;
         int64_t bytes_read = 0;
-        err = mtxfile_fread_header(&header, f, &lines_read, &bytes_read, 0, NULL);
+        err = mtxfileheader_fread(&header, f, &lines_read, &bytes_read, 0, NULL);
         TEST_ASSERT_NEQ_MSG(
             MTX_ERR_LINE_TOO_LONG, err, "%d: %s", lines_read+1,
             mtxstrerror(err));
@@ -613,7 +613,7 @@ int test_mtxfile_fread_header(void)
         struct mtxfileheader header;
         int lines_read = 0;
         int64_t bytes_read = 0;
-        err = mtxfile_fread_header(&header, f, &lines_read, &bytes_read, 0, NULL);
+        err = mtxfileheader_fread(&header, f, &lines_read, &bytes_read, 0, NULL);
         TEST_ASSERT_EQ_MSG(
             MTX_ERR_LINE_TOO_LONG, err, "%d: %s", lines_read+1,
             mtxstrerror(err));
@@ -630,7 +630,7 @@ int test_mtxfile_fread_header(void)
         struct mtxfileheader header;
         int lines_read = 0;
         int64_t bytes_read = 0;
-        err = mtxfile_fread_header(&header, f, &lines_read, &bytes_read, 0, NULL);
+        err = mtxfileheader_fread(&header, f, &lines_read, &bytes_read, 0, NULL);
         TEST_ASSERT_EQ_MSG(
             MTX_ERR_INVALID_MTX_OBJECT, err, "%d: %s", lines_read+1,
             mtxstrerror(err));
@@ -646,7 +646,7 @@ int test_mtxfile_fread_header(void)
         struct mtxfileheader header;
         int lines_read = 0;
         int64_t bytes_read = 0;
-        err = mtxfile_fread_header(&header, f, &lines_read, &bytes_read, 0, NULL);
+        err = mtxfileheader_fread(&header, f, &lines_read, &bytes_read, 0, NULL);
         TEST_ASSERT_EQ_MSG(
             MTX_ERR_INVALID_MTX_FORMAT, err, "%d: %s", lines_read+1,
             mtxstrerror(err));
@@ -663,7 +663,7 @@ int test_mtxfile_fread_header(void)
         struct mtxfileheader header;
         int lines_read = 0;
         int64_t bytes_read = 0;
-        err = mtxfile_fread_header(&header, f, &lines_read, &bytes_read, 0, NULL);
+        err = mtxfileheader_fread(&header, f, &lines_read, &bytes_read, 0, NULL);
         TEST_ASSERT_EQ_MSG(
             MTX_ERR_INVALID_MTX_FIELD, err, "%d: %s", lines_read+1,
             mtxstrerror(err));
@@ -680,7 +680,7 @@ int test_mtxfile_fread_header(void)
         struct mtxfileheader header;
         int lines_read = 0;
         int64_t bytes_read = 0;
-        err = mtxfile_fread_header(&header, f, &lines_read, &bytes_read, 0, NULL);
+        err = mtxfileheader_fread(&header, f, &lines_read, &bytes_read, 0, NULL);
         TEST_ASSERT_EQ_MSG(
             MTX_ERR_INVALID_MTX_SYMMETRY, err, "%d: %s", lines_read+1,
             mtxstrerror(err));
@@ -697,7 +697,7 @@ int test_mtxfile_fread_header(void)
         struct mtxfileheader header;
         int lines_read = 0;
         int64_t bytes_read = 0;
-        err = mtxfile_fread_header(&header, f, &lines_read, &bytes_read, 0, NULL);
+        err = mtxfileheader_fread(&header, f, &lines_read, &bytes_read, 0, NULL);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%d: %s", lines_read+1, mtxstrerror(err));
         TEST_ASSERT_EQ(mtxfile_matrix, header.object);
@@ -4352,10 +4352,10 @@ int test_mtxfile_reorder_rcm(void)
 int main(int argc, char * argv[])
 {
     TEST_SUITE_BEGIN("Running tests for Matrix Market files\n");
-    TEST_RUN(test_mtxfile_parse_header);
+    TEST_RUN(test_mtxfileheader_parse);
     TEST_RUN(test_mtxfilesize_parse);
     TEST_RUN(test_mtxfiledata_parse);
-    TEST_RUN(test_mtxfile_fread_header);
+    TEST_RUN(test_mtxfileheader_fread);
     TEST_RUN(test_mtxfile_fread_comments);
     TEST_RUN(test_mtxfilesize_fread);
     TEST_RUN(test_mtxfiledata_fread);

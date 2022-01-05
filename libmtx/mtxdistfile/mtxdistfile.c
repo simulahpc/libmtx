@@ -1524,7 +1524,7 @@ int mtxdistfile_fread(
         return MTX_ERR_MPI_COLLECTIVE;
 
     /* Read the header on the root process and broadcast to others. */
-    err = (rank == root) ? mtxfile_fread_header(
+    err = (rank == root) ? mtxfileheader_fread(
         &mtxdistfile->header, f, lines_read, bytes_read, line_max, linebuf)
         : MTX_SUCCESS;
     if (mtxmpierror_allreduce(mpierror, err)) {
