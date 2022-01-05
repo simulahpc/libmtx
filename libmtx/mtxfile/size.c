@@ -1,6 +1,6 @@
 /* This file is part of libmtx.
  *
- * Copyright (C) 2021 James D. Trotter
+ * Copyright (C) 2022 James D. Trotter
  *
  * libmtx is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
  * along with libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-09-01
+ * Last modified: 2022-01-05
  *
  * Matrix Market size lines.
  */
@@ -49,10 +49,10 @@
 #include <string.h>
 
 /**
- * `mtxfile_parse_size_matrix_array()' parse a size line from a Matrix
+ * ‘mtxfilesize_parse_matrix_array()’ parse a size line from a Matrix
  * Market file for a matrix in array format.
  */
-static int mtxfile_parse_size_matrix_array(
+static int mtxfilesize_parse_matrix_array(
     struct mtxfilesize * size,
     int64_t * bytes_read,
     const char ** endptr,
@@ -83,10 +83,10 @@ static int mtxfile_parse_size_matrix_array(
 }
 
 /**
- * `mtxfile_parse_size_matrix_coordinate()' parse a size line from a
+ * ‘mtxfilesize_parse_matrix_coordinate()’ parse a size line from a
  * Matrix Market file for a matrix in coordinate format.
  */
-static int mtxfile_parse_size_matrix_coordinate(
+static int mtxfilesize_parse_matrix_coordinate(
     struct mtxfilesize * size,
     int64_t * bytes_read,
     const char ** endptr,
@@ -123,10 +123,10 @@ static int mtxfile_parse_size_matrix_coordinate(
 }
 
 /**
- * `mtxfile_parse_size_vector_array()` parse a size line from a Matrix
+ * ‘mtxfilesize_parse_vector_array()‘ parse a size line from a Matrix
  * Market file for a vector in array format.
  */
-int mtxfile_parse_size_vector_array(
+int mtxfilesize_parse_vector_array(
     struct mtxfilesize * size,
     int64_t * bytes_read,
     const char ** endptr,
@@ -151,10 +151,10 @@ int mtxfile_parse_size_vector_array(
 }
 
 /**
- * `mtxfile_parse_size_vector_coordinate()` parses a size line from a
+ * ‘mtxfilesize_parse_vector_coordinate()‘ parses a size line from a
  * Matrix Market file for a vector in coordinate format.
  */
-int mtxfile_parse_size_vector_coordinate(
+int mtxfilesize_parse_vector_coordinate(
     struct mtxfilesize * size,
     int64_t * bytes_read,
     const char ** endptr,
@@ -185,18 +185,18 @@ int mtxfile_parse_size_vector_coordinate(
 }
 
 /**
- * `mtxfile_parse_size()' parses a string containing the size line for
+ * ‘mtxfilesize_parse()’ parses a string containing the size line for
  * a file in Matrix Market format.
  *
- * If `endptr' is not `NULL', then the address stored in `endptr'
+ * If ‘endptr’ is not ‘NULL’, then the address stored in ‘endptr’
  * points to the first character beyond the characters that were
  * consumed during parsing.
  *
- * On success, `mtxfile_parse_size()' returns `MTX_SUCCESS' and the
- * fields of `size' will be set accordingly.  Otherwise, an
+ * On success, ‘mtxfilesize_parse()’ returns ‘MTX_SUCCESS’ and the
+ * fields of ‘size’ will be set accordingly.  Otherwise, an
  * appropriate error code is returned.
  */
-int mtxfile_parse_size(
+int mtxfilesize_parse(
     struct mtxfilesize * size,
     int64_t * bytes_read,
     const char ** endptr,
@@ -206,20 +206,20 @@ int mtxfile_parse_size(
 {
     if (object == mtxfile_matrix) {
         if (format == mtxfile_array) {
-            return mtxfile_parse_size_matrix_array(
+            return mtxfilesize_parse_matrix_array(
                 size, bytes_read, endptr, s);
         } else if (format == mtxfile_coordinate) {
-            return mtxfile_parse_size_matrix_coordinate(
+            return mtxfilesize_parse_matrix_coordinate(
                 size, bytes_read, endptr, s);
         } else {
             return MTX_ERR_INVALID_MTX_FORMAT;
         }
     } else if (object == mtxfile_vector) {
         if (format == mtxfile_array) {
-            return mtxfile_parse_size_vector_array(
+            return mtxfilesize_parse_vector_array(
                 size, bytes_read, endptr, s);
         } else if (format == mtxfile_coordinate) {
-            return mtxfile_parse_size_vector_coordinate(
+            return mtxfilesize_parse_vector_coordinate(
                 size, bytes_read, endptr, s);
         } else {
             return MTX_ERR_INVALID_MTX_FORMAT;
@@ -230,7 +230,7 @@ int mtxfile_parse_size(
 }
 
 /**
- * `mtxfilesize_copy()' copies a size line.
+ * ‘mtxfilesize_copy()’ copies a size line.
  */
 int mtxfilesize_copy(
     struct mtxfilesize * dst,
@@ -243,7 +243,7 @@ int mtxfilesize_copy(
 }
 
 /**
- * `mtxfilesize_cat()' updates a size line to match with the
+ * ‘mtxfilesize_cat()’ updates a size line to match with the
  * concatenation of two Matrix Market files.
  */
 int mtxfilesize_cat(
@@ -275,7 +275,7 @@ int mtxfilesize_cat(
 }
 
 /**
- * `mtxfilesize_num_data_lines()' computes the number of data lines
+ * ‘mtxfilesize_num_data_lines()’ computes the number of data lines
  * that are required in a Matrix Market file with the given size line.
  */
 int mtxfilesize_num_data_lines(
@@ -298,7 +298,7 @@ int mtxfilesize_num_data_lines(
 }
 
 /**
- * `freadline()' reads a single line from a stream.
+ * ‘freadline()’ reads a single line from a stream.
  */
 static int freadline(
     char * linebuf,
@@ -317,14 +317,14 @@ static int freadline(
 }
 
 /**
- * `mtxfile_fread_size()` reads a Matrix Market size line from a
+ * ‘mtxfilesize_fread()‘ reads a Matrix Market size line from a
  * stream.
  *
- * If an error code is returned, then `lines_read' and `bytes_read'
+ * If an error code is returned, then ‘lines_read’ and ‘bytes_read’
  * are used to return the line number and byte at which the error was
  * encountered during the parsing of the Matrix Market file.
  */
-int mtxfile_fread_size(
+int mtxfilesize_fread(
     struct mtxfilesize * size,
     FILE * f,
     int * lines_read,
@@ -350,7 +350,7 @@ int mtxfile_fread_size(
         return err;
     }
 
-    err = mtxfile_parse_size(
+    err = mtxfilesize_parse(
         size, bytes_read, NULL, linebuf, object, format);
     if (err) {
         if (free_linebuf)
@@ -367,7 +367,7 @@ int mtxfile_fread_size(
 
 #ifdef LIBMTX_HAVE_LIBZ
 /**
- * `gzreadline()' reads a single line from a gzip-compressed stream.
+ * ‘gzreadline()’ reads a single line from a gzip-compressed stream.
  */
 static int gzreadline(
     char * linebuf,
@@ -386,14 +386,14 @@ static int gzreadline(
 }
 
 /**
- * `mtxfile_gzread_size()` reads a Matrix Market size line from a
+ * ‘mtxfilesize_gzread()‘ reads a Matrix Market size line from a
  * gzip-compressed stream.
  *
- * If an error code is returned, then `lines_read' and `bytes_read'
+ * If an error code is returned, then ‘lines_read’ and ‘bytes_read’
  * are used to return the line number and byte at which the error was
  * encountered during the parsing of the Matrix Market file.
  */
-int mtxfile_gzread_size(
+int mtxfilesize_gzread(
     struct mtxfilesize * size,
     gzFile f,
     int * lines_read,
@@ -419,7 +419,7 @@ int mtxfile_gzread_size(
         return err;
     }
 
-    err = mtxfile_parse_size(
+    err = mtxfilesize_parse(
         size, bytes_read, NULL, linebuf, object, format);
     if (err) {
         if (free_linebuf)
@@ -436,11 +436,11 @@ int mtxfile_gzread_size(
 #endif
 
 /**
- * `mtxfilesize_fwrite()' writes the size line of a Matrix Market
+ * ‘mtxfilesize_fwrite()’ writes the size line of a Matrix Market
  * file to a stream.
  *
- * If it is not `NULL', then the number of bytes written to the stream
- * is returned in `bytes_written'.
+ * If it is not ‘NULL’, then the number of bytes written to the stream
+ * is returned in ‘bytes_written’.
  */
 int mtxfilesize_fwrite(
     const struct mtxfilesize * size,
@@ -480,11 +480,11 @@ int mtxfilesize_fwrite(
 
 #ifdef LIBMTX_HAVE_LIBZ
 /**
- * `mtxfilesize_gzwrite()' writes the size line of a Matrix Market
+ * ‘mtxfilesize_gzwrite()’ writes the size line of a Matrix Market
  * file to a gzip-compressed stream.
  *
- * If it is not `NULL', then the number of bytes written to the stream
- * is returned in `bytes_written'.
+ * If it is not ‘NULL’, then the number of bytes written to the stream
+ * is returned in ‘bytes_written’.
  */
 int mtxfilesize_gzwrite(
     const struct mtxfilesize * size,
@@ -528,7 +528,7 @@ int mtxfilesize_gzwrite(
  */
 
 /**
- * `mtxfilesize_transpose()' tranposes the size line of a Matrix
+ * ‘mtxfilesize_transpose()’ tranposes the size line of a Matrix
  * Market file.
  */
 int mtxfilesize_transpose(
@@ -546,10 +546,10 @@ int mtxfilesize_transpose(
 
 #ifdef LIBMTX_HAVE_MPI
 /**
- * `mtxfilesize_datatype()' creates a custom MPI data type for
+ * ‘mtxfilesize_datatype()’ creates a custom MPI data type for
  * sending or receiving Matrix Market size lines.
  *
- * The user is responsible for calling `MPI_Type_free()' on the
+ * The user is responsible for calling ‘MPI_Type_free()’ on the
  * returned datatype.
  */
 static int mtxfilesize_datatype(
@@ -591,11 +591,11 @@ static int mtxfilesize_datatype(
 }
 
 /**
- * `mtxfilesize_send()' sends a Matrix Market size line to another
+ * ‘mtxfilesize_send()’ sends a Matrix Market size line to another
  * MPI process.
  *
- * This is analogous to `MPI_Send()' and requires the receiving
- * process to perform a matching call to `mtxfilesize_recv()'.
+ * This is analogous to ‘MPI_Send()’ and requires the receiving
+ * process to perform a matching call to ‘mtxfilesize_recv()’.
  */
 int mtxfilesize_send(
     const struct mtxfilesize * size,
@@ -620,11 +620,11 @@ int mtxfilesize_send(
 }
 
 /**
- * `mtxfilesize_recv()' receives a Matrix Market size line from
+ * ‘mtxfilesize_recv()’ receives a Matrix Market size line from
  * another MPI process.
  *
- * This is analogous to `MPI_Recv()' and requires the sending process
- * to perform a matching call to `mtxfilesize_send()'.
+ * This is analogous to ‘MPI_Recv()’ and requires the sending process
+ * to perform a matching call to ‘mtxfilesize_send()’.
  */
 int mtxfilesize_recv(
     struct mtxfilesize * size,
@@ -649,12 +649,12 @@ int mtxfilesize_recv(
 }
 
 /**
- * `mtxfilesize_bcast()' broadcasts a Matrix Market size line from an
+ * ‘mtxfilesize_bcast()’ broadcasts a Matrix Market size line from an
  * MPI root process to other processes in a communicator.
  *
- * This is analogous to `MPI_Bcast()' and requires every process in
+ * This is analogous to ‘MPI_Bcast()’ and requires every process in
  * the communicator to perform matching calls to
- * `mtxfilesize_bcast()'.
+ * ‘mtxfilesize_bcast()’.
  */
 int mtxfilesize_bcast(
     struct mtxfilesize * size,
@@ -679,12 +679,12 @@ int mtxfilesize_bcast(
 }
 
 /**
- * `mtxfilesize_gather()' gathers Matrix Market size lines onto an
+ * ‘mtxfilesize_gather()’ gathers Matrix Market size lines onto an
  * MPI root process from other processes in a communicator.
  *
- * This is analogous to `MPI_Gather()' and requires every process in
+ * This is analogous to ‘MPI_Gather()’ and requires every process in
  * the communicator to perform matching calls to
- * `mtxfilesize_gather()'.
+ * ‘mtxfilesize_gather()’.
  */
 int mtxfilesize_gather(
     const struct mtxfilesize * sendsize,
@@ -708,10 +708,10 @@ int mtxfilesize_gather(
 }
 
 /**
- * `mtxfilesize_allgather()' gathers Matrix Market size lines onto
+ * ‘mtxfilesize_allgather()’ gathers Matrix Market size lines onto
  * every MPI process from other processes in a communicator.
  *
- * This is analogous to `MPI_Allgather()' and requires every process
+ * This is analogous to ‘MPI_Allgather()’ and requires every process
  * in the communicator to perform matching calls to this function.
  */
 int mtxfilesize_allgather(
@@ -735,12 +735,12 @@ int mtxfilesize_allgather(
 }
 
 /**
- * `mtxfilesize_scatterv()' scatters a Matrix Market size line from
+ * ‘mtxfilesize_scatterv()’ scatters a Matrix Market size line from
  * an MPI root process to other processes in a communicator.
  *
- * This is analogous to `MPI_Scatterv()' and requires every process in
+ * This is analogous to ‘MPI_Scatterv()’ and requires every process in
  * the communicator to perform matching calls to
- * `mtxfilesize_scatterv()'.
+ * ‘mtxfilesize_scatterv()’.
  */
 int mtxfilesize_scatterv(
     const struct mtxfilesize * sendsize,

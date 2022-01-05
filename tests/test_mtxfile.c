@@ -159,16 +159,16 @@ int test_mtxfile_parse_header(void)
 }
 
 /**
- * `test_mtxfile_parse_size()` tests parsing Matrix Market size lines.
+ * `test_mtxfilesize_parse()` tests parsing Matrix Market size lines.
  */
-int test_mtxfile_parse_size(void)
+int test_mtxfilesize_parse(void)
 {
     {
         struct mtxfilesize size;
         const char line[] = "";
         int64_t bytes_read = 0;
         const char * endptr;
-        int err = mtxfile_parse_size(
+        int err = mtxfilesize_parse(
             &size, &bytes_read, &endptr, line, mtxfile_matrix, mtxfile_array);
         TEST_ASSERT_EQ(MTX_ERR_INVALID_MTX_SIZE, err);
         TEST_ASSERT_EQ(0, bytes_read);
@@ -179,7 +179,7 @@ int test_mtxfile_parse_size(void)
         const char line[] = "8 10\n";
         int64_t bytes_read = 0;
         const char * endptr;
-        int err = mtxfile_parse_size(
+        int err = mtxfilesize_parse(
             &size, &bytes_read, &endptr, line, mtxfile_matrix, mtxfile_array);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
         TEST_ASSERT_EQ(size.num_rows, 8);
@@ -194,7 +194,7 @@ int test_mtxfile_parse_size(void)
         const char line[] = "8 10 20\n";
         int64_t bytes_read = 0;
         const char * endptr;
-        int err = mtxfile_parse_size(
+        int err = mtxfilesize_parse(
             &size, &bytes_read, &endptr, line, mtxfile_matrix, mtxfile_coordinate);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
         TEST_ASSERT_EQ(size.num_rows, 8);
@@ -209,7 +209,7 @@ int test_mtxfile_parse_size(void)
         const char line[] = "10\n";
         int64_t bytes_read = 0;
         const char * endptr;
-        int err = mtxfile_parse_size(
+        int err = mtxfilesize_parse(
             &size, &bytes_read, &endptr, line, mtxfile_vector, mtxfile_array);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
         TEST_ASSERT_EQ(size.num_rows, 10);
@@ -224,7 +224,7 @@ int test_mtxfile_parse_size(void)
         const char line[] = "10 8\n";
         int64_t bytes_read = 0;
         const char * endptr;
-        int err = mtxfile_parse_size(
+        int err = mtxfilesize_parse(
             &size, &bytes_read, &endptr, line, mtxfile_vector, mtxfile_coordinate);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
         TEST_ASSERT_EQ(size.num_rows, 10);
@@ -772,10 +772,10 @@ int test_mtxfile_fread_comments(void)
 }
 
 /**
- * `test_mtxfile_fread_size()` tests parsing the size line in Matrix
+ * `test_mtxfilesize_fread()` tests parsing the size line in Matrix
  * Market files.
  */
-int test_mtxfile_fread_size(void)
+int test_mtxfilesize_fread(void)
 {
     {
         int err;
@@ -785,7 +785,7 @@ int test_mtxfile_fread_size(void)
         struct mtxfilesize size;
         int lines_read = 0;
         int64_t bytes_read = 0;
-        err = mtxfile_fread_size(
+        err = mtxfilesize_fread(
             &size, f, &lines_read, &bytes_read, 0, NULL,
             mtxfile_matrix, mtxfile_array);
         TEST_ASSERT_EQ_MSG(
@@ -804,7 +804,7 @@ int test_mtxfile_fread_size(void)
         struct mtxfilesize size;
         int lines_read = 0;
         int64_t bytes_read = 0;
-        err = mtxfile_fread_size(
+        err = mtxfilesize_fread(
             &size, f, &lines_read, &bytes_read, 0, NULL,
             mtxfile_matrix, mtxfile_coordinate);
         TEST_ASSERT_EQ_MSG(
@@ -823,7 +823,7 @@ int test_mtxfile_fread_size(void)
         struct mtxfilesize size;
         int lines_read = 0;
         int64_t bytes_read = 0;
-        err = mtxfile_fread_size(
+        err = mtxfilesize_fread(
             &size, f, &lines_read, &bytes_read, 0, NULL,
             mtxfile_vector, mtxfile_array);
         TEST_ASSERT_EQ_MSG(
@@ -842,7 +842,7 @@ int test_mtxfile_fread_size(void)
         struct mtxfilesize size;
         int lines_read = 0;
         int64_t bytes_read = 0;
-        err = mtxfile_fread_size(
+        err = mtxfilesize_fread(
             &size, f, &lines_read, &bytes_read, 0, NULL,
             mtxfile_vector, mtxfile_coordinate);
         TEST_ASSERT_EQ_MSG(
@@ -4353,11 +4353,11 @@ int main(int argc, char * argv[])
 {
     TEST_SUITE_BEGIN("Running tests for Matrix Market files\n");
     TEST_RUN(test_mtxfile_parse_header);
-    TEST_RUN(test_mtxfile_parse_size);
+    TEST_RUN(test_mtxfilesize_parse);
     TEST_RUN(test_mtxfiledata_parse);
     TEST_RUN(test_mtxfile_fread_header);
     TEST_RUN(test_mtxfile_fread_comments);
-    TEST_RUN(test_mtxfile_fread_size);
+    TEST_RUN(test_mtxfilesize_fread);
     TEST_RUN(test_mtxfiledata_fread);
     TEST_RUN(test_mtxfile_fread);
     TEST_RUN(test_mtxfile_fwrite);

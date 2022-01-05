@@ -1546,7 +1546,7 @@ int mtxdistfile_fread(
     }
 
     /* Read the size line on the root process and broadcast to others. */
-    err = (rank == root) ? mtxfile_fread_size(
+    err = (rank == root) ? mtxfilesize_fread(
         &mtxdistfile->size, f, lines_read, bytes_read, line_max, linebuf,
         mtxdistfile->header.object, mtxdistfile->header.format)
         : MTX_SUCCESS;

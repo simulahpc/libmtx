@@ -204,7 +204,7 @@ must begin with the character @samp{@code{%}}.
 @node Size
 @subsection Size
 The size information in @code{struct mtxfilesize} includes the number
-of rows, columns and nonzeros.
+of rows, columns and nonzeros in the underlying matrix or vector.
 @example
 @code{struct mtxfilesize @{
     int num_rows;
@@ -221,9 +221,28 @@ vector elements, whereas @code{num_columns} is not used and is
 therefore set to @code{-1}.
 
 For matrices and vectors in coordinate format, @code{num_nonzeros} is
-the number of entries explicitly stored in the @code{data} array.
-Otherwise, for matrices and vectors in array format,
+the number of entries explicitly stored in the data section of the
+Matrix Market file. For matrices and vectors in array format,
 @code{num_nonzeros} is not used and is therefore set to @code{-1}.
+
+Given a valid @code{struct mtxfilesize}, the number of lines in the
+data section of a Matrix Market file can be obtained by calling
+@code{mtxfilesize_num_data_lines}.
+@example
+@code{int mtxfilesize_num_data_lines(
+    const struct mtxfilesize * size,
+    int64_t * num_data_lines);}
+@end example
+Briefly explained, @code{num_data_lines} will contain the number of
+data lines in data section of a Matrix Market file with a size line
+given by @code{size}, which is
+@itemize
+@item @code{num_nonzeros}, if @code{num_nonzeros} is non-negative, or
+@item @code{num_rows*num_columns}, if @code{num_rows} and @code{num_columns} are both non-negative, or
+@item @code{num_rows}, if @code{num_rows} is non-negative.
+@end itemize
+
+@c What about symmetric, skew-symmetric and Hermitian matrices in array format?
 
 @c @code{num_nonzeros} is either @code{-1} or it is equal to the total
 @c number of nonzeros in the matrix, including any nonzeros that are not
