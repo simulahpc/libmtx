@@ -1876,7 +1876,7 @@ int test_mtxdistfile_sort(void)
             ? ((int64_t[3]) {3, 4, 1})
             : ((int64_t[2]) {2, 5});
         err = mtxdistfile_sort(
-            &src, mtxfile_sorting_permutation, num_nonzeros, perm, &mpierror);
+            &src, mtxfile_permutation, num_nonzeros, perm, &mpierror);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s",
             err == MTX_ERR_MPI_COLLECTIVE

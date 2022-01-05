@@ -893,7 +893,7 @@ int mtxdistfile_conjugate_transpose(
  *
  * The sorting order is determined by ‘sorting’. If the sorting order
  * is ‘mtxfile_unsorted’, nothing is done. If the sorting order is
- * ‘mtxfile_sorting_permutation’, then ‘perm’ must point to an array
+ * ‘mtxfile_permutation’, then ‘perm’ must point to an array
  * of ‘size’ integers that specify the sorting permutation. Note that
  * the sorting permutation uses 1-based indexing.
  *
@@ -909,7 +909,7 @@ int mtxdistfile_conjugate_transpose(
  */
 int mtxdistfile_sort(
     struct mtxdistfile * mtxdistfile,
-    enum mtxfile_sorting sorting,
+    enum mtxfilesorting sorting,
     int64_t size,
     int64_t * perm,
     struct mtxmpierror * mpierror);

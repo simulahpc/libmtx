@@ -1756,15 +1756,15 @@ int mtxfile_conjugate_transpose(
  */
 
 /**
- * `mtxfile_sorting_str()` is a string representing the sorting of a
+ * `mtxfilesorting_str()` is a string representing the sorting of a
  * matrix or vector in Matix Market format.
  */
-const char * mtxfile_sorting_str(
-    enum mtxfile_sorting sorting)
+const char * mtxfilesorting_str(
+    enum mtxfilesorting sorting)
 {
     switch (sorting) {
     case mtxfile_unsorted: return "unsorted";
-    case mtxfile_sorting_permutation: return "permute";
+    case mtxfile_permutation: return "permute";
     case mtxfile_row_major: return "row-major";
     case mtxfile_column_major: return "column-major";
     case mtxfile_morton: return "morton";
@@ -1773,7 +1773,7 @@ const char * mtxfile_sorting_str(
 }
 
 /**
- * ‘mtxfile_parse_sorting()’ parses a string containing the ‘sorting’
+ * ‘mtxfilesorting_parse()’ parses a string containing the ‘sorting’
  * of a Matrix Market file format header.
  *
  * ‘valid_delimiters’ is either ‘NULL’, in which case it is ignored,
@@ -1788,13 +1788,13 @@ const char * mtxfile_sorting_str(
  * points to the first character beyond the characters that were
  * consumed during parsing.
  *
- * On success, ‘mtxfile_parse_sorting()’ returns ‘MTX_SUCCESS’ and
+ * On success, ‘mtxfilesorting_parse()’ returns ‘MTX_SUCCESS’ and
  * ‘sorting’ is set according to the parsed string and ‘bytes_read’ is
  * set to the number of bytes that were consumed by the parser.
  * Otherwise, an error code is returned.
  */
-int mtxfile_parse_sorting(
-    enum mtxfile_sorting * sorting,
+int mtxfilesorting_parse(
+    enum mtxfilesorting * sorting,
     int64_t * bytes_read,
     const char ** endptr,
     const char * s,
@@ -1806,7 +1806,7 @@ int mtxfile_parse_sorting(
         *sorting = mtxfile_unsorted;
     } else if (strncmp("permute", t, strlen("permute")) == 0) {
         t += strlen("permute");
-        *sorting = mtxfile_sorting_permutation;
+        *sorting = mtxfile_permutation;
     } else if (strncmp("row-major", t, strlen("row-major")) == 0) {
         t += strlen("row-major");
         *sorting = mtxfile_row_major;
@@ -1836,7 +1836,7 @@ int mtxfile_parse_sorting(
  *
  * The sorting order is determined by ‘sorting’. If the sorting order
  * is ‘mtxfile_unsorted’, nothing is done. If the sorting order is
- * ‘mtxfile_sorting_permutation’, then ‘perm’ must point to an array
+ * ‘mtxfile_permutation’, then ‘perm’ must point to an array
  * of ‘size’ integers that specify the sorting permutation. Note that
  * the sorting permutation uses 1-based indexing.
  *
@@ -1852,7 +1852,7 @@ int mtxfile_parse_sorting(
  */
 int mtxfile_sort(
     struct mtxfile * mtxfile,
-    enum mtxfile_sorting sorting,
+    enum mtxfilesorting sorting,
     int64_t size,
     int64_t * perm)
 {
@@ -1870,7 +1870,7 @@ int mtxfile_sort(
         for (int64_t k = 0; k < size; k++)
             perm[k] = k+1;
         return MTX_SUCCESS;
-    } else if (sorting == mtxfile_sorting_permutation) {
+    } else if (sorting == mtxfile_permutation) {
         return mtxfiledata_permute(
             &mtxfile->data, mtxfile->header.object, mtxfile->header.format,
             mtxfile->header.field, mtxfile->precision, mtxfile->size.num_rows,
@@ -2117,9 +2117,9 @@ int mtxfile_init_from_row_partition(
  */
 
 /**
- * ‘mtxfile_reorder_dims()’ reorders the rows of a vector or the rows
- *  and columns of a matrix in Matrix Market format based on given row
- *  and column permutations.
+ * ‘mtxfile_permute()’ reorders the rows of a vector or the rows and
+ *  columns of a matrix in Matrix Market format based on given row and
+ *  column permutations.
  *
  * The array ‘row_permutation’ should be a permutation of the integers
  * ‘1,2,...,M’, where ‘M’ is the number of rows in the matrix or
@@ -2131,7 +2131,7 @@ int mtxfile_init_from_row_partition(
  * column ‘column_permutation[j-1]’ in the original matrix, for
  * ‘i=1,2,...,M’ and ‘j=1,2,...,N’.
  */
-int mtxfile_reorder_dims(
+int mtxfile_permute(
     struct mtxfile * mtxfile,
     const int * row_permutation,
     const int * column_permutation)
@@ -2153,17 +2153,67 @@ int mtxfile_reorder_dims(
 }
 
 /**
- * `mtxfile_ordering_str()` is a string representing the ordering
+ * `mtxfileordering_str()` is a string representing the ordering
  * of a matrix in Matix Market format.
  */
-const char * mtxfile_ordering_str(
-    enum mtxfile_ordering ordering)
+const char * mtxfileordering_str(
+    enum mtxfileordering ordering)
 {
     switch (ordering) {
     case mtxfile_unordered: return "unordered";
     case mtxfile_rcm: return "rcm";
     default: return mtxstrerror(MTX_ERR_INVALID_ORDERING);
     }
+}
+
+/**
+ * ‘mtxfileordering_parse()’ parses a string corresponding to a value
+ *  of the enum type ‘mtxfileordering’.
+ *
+ * ‘valid_delimiters’ is either ‘NULL’, in which case it is ignored,
+ * or it is a string of characters considered to be valid delimiters
+ * for the parsed string.  That is, if there are any remaining,
+ * non-NULL characters after parsing, then then the next character is
+ * searched for in ‘valid_delimiters’.  If the character is found,
+ * then the parsing succeeds and the final delimiter character is
+ * consumed by the parser. Otherwise, the parsing fails with an error.
+ *
+ * If ‘endptr’ is not ‘NULL’, then the address stored in ‘endptr’
+ * points to the first character beyond the characters that were
+ * consumed during parsing.
+ *
+ * On success, ‘mtxfileordering_parse()’ returns ‘MTX_SUCCESS’ and
+ * ‘ordering’ is set according to the parsed string and ‘bytes_read’
+ * is set to the number of bytes that were consumed by the parser.
+ * Otherwise, an error code is returned.
+ */
+int mtxfileordering_parse(
+    enum mtxfileordering * ordering,
+    int64_t * bytes_read,
+    const char ** endptr,
+    const char * s,
+    const char * valid_delimiters)
+{
+    const char * t = s;
+    if (strncmp("unordered", t, strlen("unordered")) == 0) {
+        t += strlen("unordered");
+        *ordering = mtxfile_unordered;
+    } else if (strncmp("rcm", t, strlen("rcm")) == 0) {
+        t += strlen("rcm");
+        *ordering = mtxfile_permutation;
+    } else {
+        return MTX_ERR_INVALID_ORDERING;
+    }
+    if (valid_delimiters && *t != '\0') {
+        if (!strchr(valid_delimiters, *t))
+            return MTX_ERR_INVALID_ORDERING;
+        t++;
+    }
+    if (bytes_read)
+        *bytes_read += t-s;
+    if (endptr)
+        *endptr = t;
+    return MTX_SUCCESS;
 }
 
 /**
@@ -2353,7 +2403,7 @@ int mtxfile_reorder_rcm(
 
     /* 7. Permute the matrix. */
     if (permute) {
-        err = mtxfile_reorder_dims(mtxfile, rowperm, colperm);
+        err = mtxfile_permute(mtxfile, rowperm, colperm);
         if (err) {
             if (alloc_colperm)
                 free(colperm);
@@ -2386,7 +2436,7 @@ int mtxfile_reorder_rcm(
  */
 int mtxfile_reorder(
     struct mtxfile * mtxfile,
-    enum mtxfile_ordering ordering,
+    enum mtxfileordering ordering,
     int * rowperm,
     int * colperm,
     bool permute,

@@ -785,10 +785,12 @@ integer values is created and initialised with the function
 @node Setting matrix and vector values
 @subsection Setting matrix and vector values
 
-@findex mtx_set_constant_real
-@findex mtx_set_constant_double
-@findex mtx_set_constant_complex
-@findex mtx_set_constant_integer
+@findex mtxfile_set_constant_real_single
+@findex mtxfile_set_constant_real_double
+@findex mtxfile_set_constant_complex_single
+@findex mtxfile_set_constant_complex_double
+@findex mtxfile_set_constant_integer_single
+@findex mtxfile_set_constant_integer_double
 For convenience, the functions
 @code{mtxfile_set_constant_@var{field}_@var{precision}} are provided
 to initialise the values of a matrix or vector to a constant, where
@@ -812,151 +814,159 @@ matrices and vectors, as well as transposing matrices and reordering
 the rows and columns of sparse matrices.
 
 
-@node Transposing
-@subsection Transposing
+@node Transpose and conjugate transpose
+@subsection Transpose and conjugate transpose
 
 @cindex transpose
-@findex mtx_matrix_transpose
-The function @code{mtx_matrix_transpose} can be used to transpose a
-square matrix represented by a @code{struct mtx} object.
+@findex mtxfile_transpose
+The function @code{mtxfile_transpose} can be used to transpose a
+matrix.
 @example
-@code{int mtx_matrix_transpose(
-    struct mtx * mtx);}
+@code{int mtxfile_transpose(struct mtxfile * mtxfile);}
 @end example
-The matrix is transposed in-place. This currently only works for
-matrices where @code{format} is @code{mtx_coordinate} and
-@code{symmetry} is either @code{mtx_general} or @code{mtx_symmetric}.
+If @code{mtxfile} is a vector, nothing is done.
+
+@c The function @code{mtxfile_conjugate_transpose} can be used to
+@c transpose and complex conjugate a matrix.
+@c @example
+@c @code{int mtxfile_conjugate_transpose(struct mtxfile * mtxfile);}
+@c @end example
+@c If @code{mtxfile} is a complex vector, the values are complex
+@c conjugated. Otherwise, nothing is done.
+
+@c The function @code{mtxfile_conjugate} can be used to complex conjugate
+@c a matrix or vector.
+@c @example
+@c @code{int mtxfile_conjugate(struct mtxfile * mtxfile);}
+@c @end example
+@c If @code{mtxfile} is a complex vector, the values are complex
+@c conjugated. Otherwise, nothing is done.
 
 
-@node Sorting
-@subsection Sorting
+@node Sort
+@subsection Sort
 
-@cindex sorting
-@findex mtx_sort
-Sometimes, it is convenient to sort the nonzeros of a sparse matrix or
-vector in the coordinate format. This can be achieved with the
-function @code{mtx_sort}:
+@cindex sort
+@findex mtxfile_sort
+Sometimes, it is useful to sort the values of a matrix or vector in
+some particular order. For this purpose, the enum type
+@code{mtxfilesorting} is used to enumerate different ways of sorting
+Matrix Market files.
 @example
-@code{int mtx_sort(
-    struct mtx * mtx,
-    struct mtx_sorting sorting);}
-@end example
-If successful, @code{mtx_sort} returns @code{MTX_SUCCESS}, and
-@code{mtx} will have its nonzeros sorted according to the order
-specified by @code{sorting}. If @code{mtx->format} is @code{mtx_array},
-then @code{mtx_sort} does nothing.
-
-@cindex sorting
-@cindex row major
-@cindex column major
-@tindex mtx_sorting
-The enum type @code{mtx_sorting} is used to enumerate different ways
-of sorting matrix entries.
-@example
-@code{enum mtx_sorting @{
-    mtx_unsorted,       /* unsorted matrix nonzeros */
-    mtx_row_major,      /* row major ordering */
-    mtx_column_major,   /* column major ordering */
+@code{enum mtxfilesorting @{
+    mtxfile_unsorted,      /* unsorted (default ordering) */
+    mtxfile_row_major,     /* row major ordering */
+    mtxfile_column_major,  /* column major ordering */
+    mtxfile_morton,        /* Morton (Z-order curve) ordering */
+    mtxfile_permutation,   /* user-defined sorting permutation */
 @};}
 @end example
-For matrices and vectors in array format (i.e., dense matrices or
-vectors), the default is to assume that they are sorted in row major
-order (@code{mtx_row_major}).  Otherwise, matrices and vectors are
-generally unsorted (@code{mtx_unsorted}).
+Matrices and vectors in array format are assumed to be sorted in row
+major order (@code{mtxfile_row_major}). Matrices and vectors in
+coordinate format, on the other hand, are generally unsorted
+(@code{mtxfile_unsorted}).
+
+To sort a matrix or vector, use the function @code{mtxfile_sort}:
+@example
+@code{int mtxfile_sort(
+    struct mtxfile * mtxfile,
+    struct mtxfilesorting sorting);}
+@end example
+If successful, @code{mtxfile_sort} returns @code{MTX_SUCCESS}, and the
+values of @code{mtxfile} will be sorted in the order specified by
+@code{sorting}.
 
 
-@node Permuting
-@subsection Permuting
+@node Reorder
+@subsection Reorder
 
-@cindex reordering
-@cindex permutation
+@cindex reorder
 There are a number of commonly used schemes for reordering the rows
-and columns of sparse matrices with the goal of reducing fill-in that
-occurs during the factorisation stage of sparse direct solvers or
-improving the performance of operations such as sparse matrix-vector
+and columns of sparse matrices. The goal can be to reduce fill-in that
+occurs during the factorisation stage of sparse direct solvers or to
+improve the performance of operations such as sparse matrix-vector
 multiplication.
 
-@findex mtx_permute
-The function @code{mtx_permute} can be used to permute the rows and/or
-columns of a matrix or vector.
+@cindex permute
+@findex mtxfile_permute
+The function @code{mtxfile_permute} can be used to permute the rows of
+a vector or the rows and columns of a matrix based on given row and
+column permutations.
 @example
-@code{int mtx_permute_matrix(
-    struct mtx * mtx,
-    const int * row_permutation,
-    const int * column_permutation);}
+@code{int mtxfile_permute(
+    struct mtxfile * mtxfile,
+    const int * rowperm,
+    const int * colperm);}
 @end example
-The permutation used to reorder the rows is specified through the
-array @code{row_permutation}, whose length is @code{mtx->num_rows} and
-should be a permutation of the integers
-@code{1,2,...,mtx->num_rows}. Similarly, @code{column_permutation} is
-used to reorder the columns based on a permutation of
-@code{1,2,...,mtx->num_columns}. If @code{row_permutation} or
-@code{column_permutation} is @samp{NULL}, then no permutation is
-applied to the rows or columns, respectively.
-
-
-@node Reordering
-@subsection Reordering
+The array @code{rowperm} is used to reorder the rows of a matrix or
+vector, and the array @code{colperm} is used to reorder the columns of
+a matrix. Therefore, @code{rowperm} must be a permutation of the
+integers @code{1,2,...,@var{M}}, where @code{@var{M}} is the number of
+rows in the matrix or vector. If @code{mtxfile} is a matrix, then the
+array @code{colperm} must be a permutation of the integers
+@code{1,2,...,@var{N}}, where @code{@var{N}} is the number of columns
+in the matrix. If @code{mtxfile} is a vector, then @code{colperm} is
+ignored. If successful, the element belonging to row @code{i} and
+column @code{j} in the permuted matrix will be equal to the element in
+row @code{rowperm[i-1]} and column @code{colperm[j-1]} of the original
+matrix, for @code{i=1,2,...,@var{M}} and @code{j=1,2,...,@var{N}}.
 
 @cindex ordering
-@cindex reordering
-@cindex unordered
 @cindex Reverse Cuthill-McKee
 @cindex RCM
-@tindex mtx_ordering
-The enum type @code{mtx_ordering} is used to enumerate different
-orderings or permutations of the rows and columns of a
-matrix. Reordering a sparse matrix is typically done to improve
-performance, for example, through reduced fill-in for matrix
-factorisations or better data locality.
+@tindex mtxfileordering
+In addition to permuting a matrix or vector, libmtx also provides
+functions to obtain row and column permutations for certain orderings.
+The enum type @code{mtxfileordering} is used to enumerate different
+orderings for the rows and columns of a matrix.
 @example
-@code{enum mtx_ordering @{
-    mtx_unordered,      /* general, unordered matrix */
-    mtx_rcm,            /* Reverse Cuthill-McKee ordering */
+@code{enum mtxfileordering @{
+    mtxfile_unordered,  /* general, unordered matrix */
+    mtxfile_rcm,        /* Reverse Cuthill-McKee ordering */
 @};}
 @end example
-Matrices are generally assumed to be unordered.  See @ref{Transposing
-sorting and reordering} for more on reordering matrices and vectors.
 
 @findex mtx_matrix_reorder
-The function @code{mtx_matrix_reorder} reorders the rows and columns
-of a matrix according to the specified algorithm.
+The function @code{mtxfile_reorder} reorders the rows and columns of a
+matrix according to the specified ordering method.
 @example
-@code{int mtx_matrix_reorder(
-    struct mtx * mtx,
-    int ** row_permutation,
-    int ** column_permutation,
-    enum mtx_ordering ordering,
-    int rcm_starting_vertex)}
+@code{int mtxfile_reorder(
+    struct mtxfile * mtxfile,
+    enum mtxfileordering ordering,
+    int * rowperm,
+    int * colperm,
+    bool permute,
+    int * rcm_starting_vertex);}
 @end example
+If successful, @code{mtxfile_reorder} returns @code{MTX_SUCCESS}, and
+the rows and columns of @code{mtxfile} have been reordered according
+to the specified method. If @code{rowperm} is not @samp{NULL}, then it
+must point to an array whose length equals or exceeds the number of
+rows in the matrix. In this case, the array is used to store the
+permutation for reordering the matrix rows. Similarly, @code{colperm}
+may be used to store the permutation for reordering the matrix
+columns.
 
-Some algorithms may pose certain requirements on the matrix. For
-example, the Reverse Cuthill-McKee ordering requires a matrix to be
-square and in coordinate format.
+In some cases, only the row and column permutations are needed, and
+the permutations should not be applied to @code{mtxfile}.  Therefore,
+the computed permutations are only applied if @code{permute} is
+@samp{true}.
 
-If successful, @code{mtx_matrix_reorder} returns @code{MTX_SUCCESS}, and the
-rows and columns of mtx have been reordered. If @code{row_permutation} is
-not @samp{NULL} and the rows of a matrix were indeed reordered, then
-@code{row_permutation} is set to point to a newly allocated array
-containing the row permutation.  Furthermore, if @code{column_permutation}
-is not @samp{NULL}, then @code{column_permutation} may be set to point to an
-array containing the column permutation. However, this is only done if
-the columns were also reordered and the permutation is not
-symmetric. That is, if the row and column permutations are the same,
-then only @code{row_permutation} is set and @code{*column_permutation} is set to
-@samp{NULL}.
-
-If either of the @code{row_permutation} or @code{column_permutation} pointers
-are set, then the user is responsible for calling @code{free} to free the
-underlying storage.
+Finally, if @code{ordering} is @samp{mtxfile_rcm}, then
+@code{rcm_starting_vertex} can be used to specify a starting vertex
+for the Reverse Cuthill-McKee algorithm. Moreover, if the starting
+vertex is set to @samp{0}, then a starting vertex is chosen
+automatically, and @code{rcm_starting_vertex} will be used to return
+the chosen starting vertex.
 
 
 @node Reverse Cuthill-McKee (RCM)
 @subsection Reverse Cuthill-McKee (RCM)
 @findex mtx_matrix_reorder_rcm
-The function @code{mtx_matrix_reorder_rcm} can be used to reorder the
-rows and columns of a symmetric sparse matrix according to the Reverse
-Cuthill-McKee algorithm (@pxref{E. Cuthill and J. McKee (1969)}).
+If @code{mtxfile_reorder} is called with @code{ordering} set to
+@samp{mtxfile_rcm}, then the rows and columns of a matrix are
+reordered according to the Reverse Cuthill-McKee algorithm
+(@pxref{E. Cuthill and J. McKee (1969)}).
 
 The RCM algorithm considers the matrix as the adjacency matrix of an
 undirected graph. The vertices of the graph, which correspond to rows
@@ -964,24 +974,32 @@ and column of the matrix, are ordered by choosing a starting vertex
 and then traversing the graph in a breadth-first search, where the
 vertices at each level are ordered ascendingly by degree. In the end,
 after traversing the entire graph, the obtained ordering is reversed.
-@example
-@code{int mtx_matrix_reorder_rcm(
-    struct mtx * mtx,
-    int ** permutation,
-    int starting_vertex);}
-@end example
-If successful, @code{mtx_matrix_reorder_rcm} returns
-@code{MTX_SUCCESS}, and the rows and columns of @code{mtx} have been
-reordered according to the Reverse Cuthill-McKee algorithm. If
-@code{permutation} is not @samp{NULL}, then the underlying pointer is
-set to point to a newly allocated array containing the permutation
-used to reorder the rows and columns of @code{mtx}.
 
-Note that the sparse matrix must be square and already sorted in row
-major order (see @code{mtx_sort}). It is assumed that the matrix
-sparsity pattern is symmetric. Also, note that if the graph consists
-of multiple connected components, then only the component to which the
-starting vertex belongs is reordered.
+For a square matrix, the Cuthill-McKee algorithm is carried out on the
+adjacency matrix of the symmetrisation @code{A+A'}, where @code{A'}
+denotes the transpose of @code{A}. For a rectangular matrix, the
+Cuthill-McKee algorithm is carried out on a bipartite graph formed by
+the matrix rows and columns. The adjacency matrix @code{B} of the
+bipartite graph is square and symmetric and takes the form of a 2-by-2
+block matrix where @code{A} is placed in the upper right corner and
+@code{A'} is placed in the lower left corner:
+@example
+@code{    | 0   A |
+B = |       |.
+    | A'  0 |}
+@end example
+
+A starting vertex may either be chosen explicitly by the
+user. Otherwise, the starting vertx is chosen automatically by
+selecting a pseudo-peripheral vertex. In the case of a square matrix,
+the starting vertex must be in the range @code{[1,@var{M}]}, where
+@code{@var{M}} is the number of rows (and columns) of the
+matrix. Otherwise, if the matrix is rectangular, a starting vertex in
+the range @code{[1,@var{M}]} selects a vertex corresponding to a row
+of the matrix, whereas a starting vertex in the range
+@code{[@var{M}+1,@var{M}+@var{N}]}, where @code{@var{N}} is the number
+of matrix columns, selects a vertex corresponding to a column of the
+matrix.
 
 
 @node Basic linear algebra operations

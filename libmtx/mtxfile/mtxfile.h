@@ -754,28 +754,28 @@ int mtxfile_conjugate_transpose(
  */
 
 /**
- * ‘mtxfile_sorting’ is used to enumerate different ways of sorting
+ * ‘mtxfilesorting’ is used to enumerate different ways of sorting
  * Matrix Market files.
  */
-enum mtxfile_sorting
+enum mtxfilesorting
 {
     mtxfile_unsorted,            /* unsorted (default ordering) */
-    mtxfile_sorting_permutation, /* user-defined sorting permutation */
+    mtxfile_permutation,         /* user-defined sorting permutation */
     mtxfile_row_major,           /* row major ordering */
     mtxfile_column_major,        /* column major ordering */
     mtxfile_morton,              /* Morton (Z-order curve) ordering */
 };
 
 /**
- * ‘mtxfile_sorting_str()’ is a string representing the sorting of a
- * matrix or vector in Matix Market format.
+ * ‘mtxfilesorting_str()’ is a string representing the sorting of a
+ * matrix or vector in Matrix Market format.
  */
-const char * mtxfile_sorting_str(
-    enum mtxfile_sorting sorting);
+const char * mtxfilesorting_str(
+    enum mtxfilesorting sorting);
 
 /**
- * ‘mtxfile_parse_sorting()’ parses a string containing the ‘sorting’
- * of a Matrix Market file format header.
+ * ‘mtxfilesorting_parse()’ parses a string corresponding to a value
+ * of the enum type ‘mtxfilesorting’.
  *
  * ‘valid_delimiters’ is either ‘NULL’, in which case it is ignored,
  * or it is a string of characters considered to be valid delimiters
@@ -789,13 +789,13 @@ const char * mtxfile_sorting_str(
  * points to the first character beyond the characters that were
  * consumed during parsing.
  *
- * On success, ‘mtxfile_parse_sorting()’ returns ‘MTX_SUCCESS’ and
+ * On success, ‘mtxfilesorting_parse()’ returns ‘MTX_SUCCESS’ and
  * ‘sorting’ is set according to the parsed string and ‘bytes_read’ is
  * set to the number of bytes that were consumed by the parser.
  * Otherwise, an error code is returned.
  */
-int mtxfile_parse_sorting(
-    enum mtxfile_sorting * sorting,
+int mtxfilesorting_parse(
+    enum mtxfilesorting * sorting,
     int64_t * bytes_read,
     const char ** endptr,
     const char * s,
@@ -806,9 +806,9 @@ int mtxfile_parse_sorting(
  *
  * The sorting order is determined by ‘sorting’. If the sorting order
  * is ‘mtxfile_unsorted’, nothing is done. If the sorting order is
- * ‘mtxfile_sorting_permutation’, then ‘perm’ must point to an array
- * of ‘size’ integers that specify the sorting permutation. Note that
- * the sorting permutation uses 1-based indexing.
+ * ‘mtxfile_permutation’, then ‘perm’ must point to an array of ‘size’
+ * integers that specify the sorting permutation. Note that the
+ * sorting permutation uses 1-based indexing.
  *
  * For a vector or matrix in coordinate format, the nonzero values are
  * sorted in the specified order. For Matrix Market files in array
@@ -822,7 +822,7 @@ int mtxfile_parse_sorting(
  */
 int mtxfile_sort(
     struct mtxfile * mtx,
-    enum mtxfile_sorting sorting,
+    enum mtxfilesorting sorting,
     int64_t size,
     int64_t * perm);
 
@@ -905,9 +905,9 @@ int mtxfile_init_from_row_partition(
  */
 
 /**
- * ‘mtxfile_reorder_dims()’ reorders the rows of a vector or the rows
- *  and columns of a matrix in Matrix Market format based on given row
- *  and column permutations.
+ * ‘mtxfile_permute()’ reorders the rows of a vector or the rows and
+ *  columns of a matrix in Matrix Market format based on given row and
+ *  column permutations.
  *
  * The array ‘row_permutation’ should be a permutation of the integers
  * ‘1,2,...,M’, where ‘M’ is the number of rows in the matrix or
@@ -919,27 +919,55 @@ int mtxfile_init_from_row_partition(
  * column ‘column_permutation[j-1]’ in the original matrix, for
  * ‘i=1,2,...,M’ and ‘j=1,2,...,N’.
  */
-int mtxfile_reorder_dims(
+int mtxfile_permute(
     struct mtxfile * mtxfile,
     const int * row_permutation,
     const int * column_permutation);
 
 /**
- * ‘mtxfile_ordering’ is used to enumerate different kinds of
- * orderings for matrices in Matrix Market format.
+ * ‘mtxfileordering’ is used to enumerate different kinds of orderings
+ * for matrices in Matrix Market format.
  */
-enum mtxfile_ordering
+enum mtxfileordering
 {
     mtxfile_unordered,  /* general, unordered matrix */
     mtxfile_rcm,        /* Reverse Cuthill-McKee ordering */
 };
 
 /**
- * ‘mtxfile_ordering_str()’ is a string representing the ordering
- * of a matrix in Matix Market format.
+ * ‘mtxfileordering_str()’ is a string representing the ordering of a
+ *  Matrix Market file.
  */
-const char * mtxfile_ordering_str(
-    enum mtxfile_ordering ordering);
+const char * mtxfileordering_str(
+    enum mtxfileordering ordering);
+
+/**
+ * ‘mtxfileordering_parse()’ parses a string corresponding to a value
+ *  of the enum type ‘mtxfileordering’.
+ *
+ * ‘valid_delimiters’ is either ‘NULL’, in which case it is ignored,
+ * or it is a string of characters considered to be valid delimiters
+ * for the parsed string.  That is, if there are any remaining,
+ * non-NULL characters after parsing, then then the next character is
+ * searched for in ‘valid_delimiters’.  If the character is found,
+ * then the parsing succeeds and the final delimiter character is
+ * consumed by the parser. Otherwise, the parsing fails with an error.
+ *
+ * If ‘endptr’ is not ‘NULL’, then the address stored in ‘endptr’
+ * points to the first character beyond the characters that were
+ * consumed during parsing.
+ *
+ * On success, ‘mtxfileordering_parse()’ returns ‘MTX_SUCCESS’ and
+ * ‘ordering’ is set according to the parsed string and ‘bytes_read’
+ * is set to the number of bytes that were consumed by the parser.
+ * Otherwise, an error code is returned.
+ */
+int mtxfileordering_parse(
+    enum mtxfileordering * ordering,
+    int64_t * bytes_read,
+    const char ** endptr,
+    const char * s,
+    const char * valid_delimiters);
 
 /**
  * ‘mtxfile_reorder_rcm()’ reorders the rows of a sparse matrix
@@ -952,7 +980,7 @@ const char * mtxfile_ordering_str(
  * by the matrix rows and columns.  The adjacency matrix ‘B’ of the
  * bipartite graph is square and symmetric and takes the form of a
  * 2-by-2 block matrix where ‘A’ is placed in the upper right corner
- * and ‘A’’ is placed in the lower left corner:
+ * and ‘A'’ is placed in the lower left corner:
  *
  *     ⎡  0   A ⎤
  * B = ⎢        ⎥.
@@ -1002,7 +1030,7 @@ int mtxfile_reorder_rcm(
  */
 int mtxfile_reorder(
     struct mtxfile * mtxfile,
-    enum mtxfile_ordering ordering,
+    enum mtxfileordering ordering,
     int * rowperm,
     int * colperm,
     bool permute,

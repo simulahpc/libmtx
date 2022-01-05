@@ -3742,10 +3742,10 @@ int test_mtxfile_partition(void)
 }
 
 /**
- * `test_mtxfile_reorder_dims()' tests permuting rows and columns of
+ * `test_mtxfile_permute()' tests permuting rows and columns of
  * matrices and vectors in Matrix Market format.
  */
-int test_mtxfile_reorder_dims(void)
+int test_mtxfile_permute(void)
 {
     int err;
 
@@ -3763,7 +3763,7 @@ int test_mtxfile_reorder_dims(void)
             &mtx, mtxfile_general, num_rows, num_columns, srcdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         const int permutation[] = {2, 1, 3};
-        err = mtxfile_reorder_dims(&mtx, permutation, NULL);
+        err = mtxfile_permute(&mtx, permutation, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(mtxfile_matrix, mtx.header.object);
         TEST_ASSERT_EQ(mtxfile_array, mtx.header.format);
@@ -3796,7 +3796,7 @@ int test_mtxfile_reorder_dims(void)
             &mtx, mtxfile_general, num_rows, num_columns, srcdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         const int permutation[] = {2, 1, 3};
-        err = mtxfile_reorder_dims(&mtx, NULL, permutation);
+        err = mtxfile_permute(&mtx, NULL, permutation);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(mtxfile_matrix, mtx.header.object);
         TEST_ASSERT_EQ(mtxfile_array, mtx.header.format);
@@ -3829,7 +3829,7 @@ int test_mtxfile_reorder_dims(void)
             &mtx, mtxfile_general, num_rows, num_columns, srcdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         const int permutation[] = {2, 1, 3};
-        err = mtxfile_reorder_dims(&mtx, permutation, permutation);
+        err = mtxfile_permute(&mtx, permutation, permutation);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(mtxfile_matrix, mtx.header.object);
         TEST_ASSERT_EQ(mtxfile_array, mtx.header.format);
@@ -3861,7 +3861,7 @@ int test_mtxfile_reorder_dims(void)
             &mtx, num_rows, srcdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         const int permutation[] = {2, 1, 3};
-        err = mtxfile_reorder_dims(&mtx, permutation, NULL);
+        err = mtxfile_permute(&mtx, permutation, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(mtxfile_vector, mtx.header.object);
         TEST_ASSERT_EQ(mtxfile_array, mtx.header.format);
@@ -3896,7 +3896,7 @@ int test_mtxfile_reorder_dims(void)
             &mtx, mtxfile_general, num_rows, num_columns, num_nonzeros, srcdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         const int permutation[] = {2, 1, 4, 3};
-        err = mtxfile_reorder_dims(&mtx, permutation, NULL);
+        err = mtxfile_permute(&mtx, permutation, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(mtxfile_matrix, mtx.header.object);
         TEST_ASSERT_EQ(mtxfile_coordinate, mtx.header.format);
@@ -3937,7 +3937,7 @@ int test_mtxfile_reorder_dims(void)
             &mtx, mtxfile_general, num_rows, num_columns, num_nonzeros, srcdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         const int permutation[] = {2, 1, 4, 3};
-        err = mtxfile_reorder_dims(&mtx, NULL, permutation);
+        err = mtxfile_permute(&mtx, NULL, permutation);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(mtxfile_matrix, mtx.header.object);
         TEST_ASSERT_EQ(mtxfile_coordinate, mtx.header.format);
@@ -3978,7 +3978,7 @@ int test_mtxfile_reorder_dims(void)
             &mtx, mtxfile_general, num_rows, num_columns, num_nonzeros, srcdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         const int permutation[] = {2, 1, 4, 3};
-        err = mtxfile_reorder_dims(&mtx, permutation, permutation);
+        err = mtxfile_permute(&mtx, permutation, permutation);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(mtxfile_matrix, mtx.header.object);
         TEST_ASSERT_EQ(mtxfile_coordinate, mtx.header.format);
@@ -4032,7 +4032,7 @@ int test_mtxfile_reorder_dims(void)
             &mtx, mtxfile_general, num_rows, num_columns, num_nonzeros, srcdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         const int permutation[] = {2,6,4,3,7,9,8,5,1};
-        err = mtxfile_reorder_dims(&mtx, permutation, permutation);
+        err = mtxfile_permute(&mtx, permutation, permutation);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxfile_sort(&mtx, mtxfile_row_major, num_nonzeros, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
@@ -4087,7 +4087,7 @@ int test_mtxfile_reorder_dims(void)
             &mtx, num_rows, num_nonzeros, srcdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         const int permutation[] = {2, 1, 4, 3};
-        err = mtxfile_reorder_dims(&mtx, permutation, permutation);
+        err = mtxfile_permute(&mtx, permutation, permutation);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(mtxfile_vector, mtx.header.object);
         TEST_ASSERT_EQ(mtxfile_coordinate, mtx.header.format);
@@ -4369,7 +4369,7 @@ int main(int argc, char * argv[])
     TEST_RUN(test_mtxfile_transpose);
     TEST_RUN(test_mtxfile_sort);
     TEST_RUN(test_mtxfile_partition);
-    TEST_RUN(test_mtxfile_reorder_dims);
+    TEST_RUN(test_mtxfile_permute);
     TEST_RUN(test_mtxfile_reorder_rcm);
     TEST_SUITE_END();
     return (TEST_SUITE_STATUS == TEST_SUCCESS) ?
