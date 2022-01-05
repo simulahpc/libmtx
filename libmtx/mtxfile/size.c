@@ -276,18 +276,45 @@ int mtxfilesize_cat(
 
 /**
  * ‘mtxfilesize_num_data_lines()’ computes the number of data lines
- * that are required in a Matrix Market file with the given size line.
+ * that are required in a Matrix Market file with the given size line
+ * and symmetry.
  */
 int mtxfilesize_num_data_lines(
     const struct mtxfilesize * size,
+    enum mtxfilesymmetry symmetry,
     int64_t * num_data_lines)
 {
     if (size->num_nonzeros >= 0) {
         *num_data_lines = size->num_nonzeros;
     } else if (size->num_rows >= 0 && size->num_columns >= 0) {
-        if (__builtin_mul_overflow(size->num_rows, size->num_columns, num_data_lines)) {
-            errno = EOVERFLOW;
-            return MTX_ERR_ERRNO;
+        if (symmetry == mtxfile_general) {
+            if (__builtin_mul_overflow(
+                    size->num_rows, size->num_columns, num_data_lines))
+            {
+                errno = EOVERFLOW;
+                return MTX_ERR_ERRNO;
+            }
+        } else if (size->num_rows == size->num_columns &&
+                   (symmetry == mtxfile_symmetric ||
+                    symmetry == mtxfile_hermitian))
+        {
+            if (__builtin_mul_overflow(
+                    size->num_rows, (size->num_rows+1), num_data_lines))
+            {
+                errno = EOVERFLOW;
+                return MTX_ERR_ERRNO;
+            }
+        } else if (size->num_rows == size->num_columns &&
+                   symmetry == mtxfile_skew_symmetric)
+        {
+            if (__builtin_mul_overflow(
+                    size->num_rows, (size->num_rows-1), num_data_lines))
+            {
+                errno = EOVERFLOW;
+                return MTX_ERR_ERRNO;
+            }
+        } else {
+            return MTX_ERR_INVALID_MTX_SYMMETRY;
         }
     } else if (size->num_rows >= 0) {
         *num_data_lines = size->num_rows;

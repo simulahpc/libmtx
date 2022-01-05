@@ -517,7 +517,7 @@ int main(int argc, char *argv[])
 
     int64_t size;
     err = mtxfilesize_num_data_lines(
-        &mtxdistfile.mtxfile.size, &size);
+        &mtxdistfile.mtxfile.size, mtxdistfile.mtxfile.header.symmetry, &size);
     if (mtxmpierror_allreduce(&mpierror, err)) {
         if (args.verbose > 0)
             fprintf(diagf, "\n");
@@ -909,7 +909,8 @@ int main(int argc, char *argv[])
     }
 
     int64_t size;
-    err = mtxfilesize_num_data_lines(&mtxfile.size, &size);
+    err = mtxfilesize_num_data_lines(
+        &mtxfile.size, mtxfile.header.symmetry, &size);
     if (err) {
         if (args.verbose > 0)
             fprintf(diagf, "\n");

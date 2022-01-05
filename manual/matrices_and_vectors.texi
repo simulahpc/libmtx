@@ -231,14 +231,17 @@ data section of a Matrix Market file can be obtained by calling
 @example
 @code{int mtxfilesize_num_data_lines(
     const struct mtxfilesize * size,
+    enum mtxfile_symmetry symmetry,
     int64_t * num_data_lines);}
 @end example
 Briefly explained, @code{num_data_lines} will contain the number of
-data lines in data section of a Matrix Market file with a size line
-given by @code{size}, which is
+data lines in data section of a Matrix Market file with the given size
+line and symmetry. More specifically, @code{num_data_lines} is set to
 @itemize
 @item @code{num_nonzeros}, if @code{num_nonzeros} is non-negative, or
-@item @code{num_rows*num_columns}, if @code{num_rows} and @code{num_columns} are both non-negative, or
+@item @code{num_rows*num_columns}, if @code{num_rows} and @code{num_columns} are both non-negative and @code{symmetry} is @code{mtxfile_general}, or
+@item @code{num_rows*(num_rows+1)/2}, if @code{num_rows} is non-negative and equal to @code{num_columns}, and @code{symmetry} is @code{mtxfile_symmetric} or @code{mtxfile_hermitian}, or
+@item @code{num_rows*(num_rows-1)/2}, if @code{num_rows} is non-negative and equal to @code{num_columns}, and @code{symmetry} is @code{mtxfile_skew_symmetric}, or
 @item @code{num_rows}, if @code{num_rows} is non-negative.
 @end itemize
 

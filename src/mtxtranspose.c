@@ -444,7 +444,7 @@ int main(int argc, char *argv[])
 
     int64_t size;
     err = mtxfilesize_num_data_lines(
-        &mtxdistfile.mtxfile.size, &size);
+        &mtxdistfile.mtxfile.size, mtxdistfile.mtxfile.header.symmetry, &size);
     if (mtxmpierror_allreduce(&mpierror, err)) {
         if (rank == root) {
             fprintf(stderr, "%s: %s\n",

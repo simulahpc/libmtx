@@ -110,10 +110,12 @@ int mtxfilesize_cat(
 
 /**
  * ‘mtxfilesize_num_data_lines()’ computes the number of data lines
- * that are required in a Matrix Market file with the given size line.
+ * that are required in a Matrix Market file with the given size line
+ * and symmetry.
  */
 int mtxfilesize_num_data_lines(
     const struct mtxfilesize * size,
+    enum mtxfilesymmetry symmetry,
     int64_t * num_data_lines);
 
 /*
