@@ -245,67 +245,18 @@ line and symmetry. More specifically, @code{num_data_lines} is set to
 @item @code{num_rows}, if @code{num_rows} is non-negative.
 @end itemize
 
-@c What about symmetric, skew-symmetric and Hermitian matrices in array format?
-
-@c @code{num_nonzeros} is either @code{-1} or it is equal to the total
-@c number of nonzeros in the matrix, including any nonzeros that are not
-@c explicitly stored due to symmetry.  Note that @code{num_nonzeros} is
-@c generally different from @code{size} for symmetric, Hermitian or
-@c skew-symmetric matrices.  Moreover, even for general, unsymmetric
-@c sparse matrices, @code{size} may not be equal @code{num_nonzeros}, if
-@c there are multiple entries corresponding to a single matrix element.
-@c Both @code{size} and @code{num_nonzeros} depend on the matrix format
-@c and symmetry as described below.
-
-@c @itemize
-
-@c @item
-@c If @code{format} is @code{mtx_array} and @code{symmetry} is
-@c @code{mtx_general}, then @code{size} and @code{num_nonzeros} are equal
-@c to @code{num_rows*num_columns}.
-
-@c @item
-@c If @code{format} is @code{mtx_array}, @code{symmetry} is
-@c @code{mtx_symmetric} or @code{mtx_hermitian} and @code{triangle} is
-@c @code{mtx_lower_triangular}, then @code{size} is the number of nonzero
-@c entries on or below the main diagonal, which is equal to
-@c @code{num_rows*(num_rows+1)/2} if @code{num_rows <= num_columns} or
-@c @code{num_columns*(num_columns+1)/2+(num_rows-num_columns)*num_columns}
-@c otherwise.  If @code{triangle} is @code{mtx_upper_triangular}, then
-@c @code{size} is instead the number of nonzero entries on or above the
-@c main diagonal, which is equal to @code{num_columns*(num_columns+1)/2}
-@c if @code{num_columns <= num_rows} or
-@c @code{num_rows*(num_rows+1)/2+(num_columns-num_rows)*num_rows}
-@c otherwise.
-
-@c @item
-@c If @code{symmetry} is @code{mtx_skew_symmetric}, then @code{size} is
-@c the number of nonzero entries below the main diagonal. If @code{format} is
-@c @code{mtx_array}, then @code{size} is equal to
-@c @code{num_rows*(num_columns-1)/2}, where @code{num_rows} is equal to
-@c @code{num_columns} due to skew-symmetry.
-
-@c If @code{format} is @code{mtx_array}, @code{symmetry} is
-@c @code{mtx_skew_symmetric} and @code{triangle} is
-@c @code{mtx_lower_triangular}, then @code{size} is the number of nonzero
-@c entries below the main diagonal, which is equal to
-@c @code{num_rows*(num_rows-1)/2} if @code{num_rows <= num_columns} or
-@c @code{num_columns*(num_columns-1)/2+(num_rows-num_columns)*num_columns}
-@c otherwise.  If @code{triangle} is @code{mtx_upper_triangular}, then
-@c @code{size} is instead the number of nonzero entries on or above the
-@c main diagonal, which is equal to @code{num_columns*(num_columns-1)/2}
-@c if @code{num_columns <= num_rows} or
-@c @code{num_rows*(num_rows-1)/2+(num_columns-num_rows)*num_rows}
-@c otherwise.
-
-@c @end itemize
-
-@c Finally, @code{nonzero_size} is the size (in bytes) of each nonzero
-@c stored in the @code{data} array.
-
 
 @node Precision
 @subsection Precision
+The Matrix Market file format stores matrix or vector values as
+integers or decimal numbers in ASCII text. The format is thus quite
+flexible, since it does not prescribe any limits or fixed precision on
+the values that are stored.
+
+In practice, however, it is more convenient to convert matrix and
+vector values to integer or floating point types. The
+@code{mtxprecision} enum type can be used to choose between single
+(32-bit) and double (64-bit) precision at runtime.
 
 @cindex precision
 @c @cindex half precision
@@ -330,100 +281,188 @@ line and symmetry. More specifically, @code{num_data_lines} is set to
 @node Data
 @subsection Data
 
-Nonzero matrix or vector entries are stored in the array @code{data},
-whose type depends on the values of @code{object}, @code{format} and
-@code{field}, as described below.
-@c The type of @code{data} also depends on @code{precision}.
-
-First, consider the case where @code{format} is @code{mtx_array}. If
-@code{field} is @code{mtx_real}, @code{mtx_double} or @code{mtx_integer},
-then @code{data} is an array of @code{size} values of type
-@code{float}, @code{double} or @code{int}, respectively. Otherwise, if
-@code{field} is @code{mtx_complex}, then @code{data} is an array of
-@code{2*size} values of type @code{float}. (Note that the combination
-of a matrix or vector with the @code{mtx_array} format and the
-@code{mtx_pattern} field is not currently supported, though, in
-principle, it could be implemented in the form of a bitmap.)
-
-@cindex sparse matrix
-@tindex mtx_matrix_coordinate_real
-@tindex mtx_matrix_coordinate_double
-@tindex mtx_matrix_coordinate_complex
-@tindex mtx_matrix_coordinate_integer
-@tindex mtx_matrix_coordinate_pattern
-@tindex mtx_vector_coordinate_real
-@tindex mtx_vector_coordinate_double
-@tindex mtx_vector_coordinate_complex
-@tindex mtx_vector_coordinate_integer
-@tindex mtx_vector_coordinate_pattern
-Second, if @code{format} is @code{mtx_coordinate}, then @code{data} is
-an array of @code{size} values of type @code{struct
-mtx_@var{object}_coordinate_@var{field}}. Here @code{@var{object}} is
-@code{matrix} or @code{vector}, corresponding to the @code{object}
-member of the @code{mtx} struct. Similarly, @code{@var{field}} is
-either @code{real}, @code{double}, @code{complex}, @code{integer} or
-@code{pattern}, corresponding to the @code{field} member of the
-@code{mtx} struct.
-
-The file @file{libmtx/matrix/coordinate.h} contains definitions
-of data types for representing nonzero values of sparse matrices in
-coordinate format. For matrices with different fields, the data types
-are shown below:
+Matrix or vector values are stored in an array whose type depends on
+the object, format and field of the Matrix Market file, as well as the
+chosen precision.  The appropriate array can therefore be accessed
+through the @code{mtxfiledata} union type, which is shown below.
+Furthermore, as explained in @ref{Size}, the length of the array
+corresponds to the number of data lines in the Matrix Market file.
+The length thus depends on the size and symmetry of the Matrix Market
+object, and is obtained by calling @code{mtxfilesize_num_data_lines}.
 @example
-@code{struct mtx_matrix_coordinate_real @{
-    int i, j; /* row and column index */
-    float a;  /* nonzero value */
-@};
+@code{union mtxfiledata @{
+    /* Array formats */
+    float * array_real_single;
+    double * array_real_double;
+    float (* array_complex_single)[2];
+    double (* array_complex_double)[2];
+    int32_t * array_integer_single;
+    int64_t * array_integer_double;
 
-struct mtx_matrix_coordinate_double @{
-    int i, j; /* row and column index */
-    double a; /* nonzero value */
-@};
+    /* Matrix coordinate formats */
+    struct mtxfile_matrix_coordinate_real_single *
+        matrix_coordinate_real_single;
+    struct mtxfile_matrix_coordinate_real_double *
+        matrix_coordinate_real_double;
+    struct mtxfile_matrix_coordinate_complex_single *
+        matrix_coordinate_complex_single;
+    struct mtxfile_matrix_coordinate_complex_double *
+        matrix_coordinate_complex_double;
+    struct mtxfile_matrix_coordinate_integer_single *
+        matrix_coordinate_integer_single;
+    struct mtxfile_matrix_coordinate_integer_double *
+        matrix_coordinate_integer_double;
+    struct mtxfile_matrix_coordinate_pattern *
+        matrix_coordinate_pattern;
 
-struct mtx_matrix_coordinate_complex @{
-    int i, j;     /* row and column index */
-    float a, b;   /* real and imaginary parts of nonzero value */
-@};
-
-struct mtx_matrix_coordinate_integer @{
-    int i, j; /* row and column index */
-    int a;    /* nonzero value */
-@};
-
-struct mtx_matrix_coordinate_pattern @{
-    int i, j; /* row and column index */
+    /* Vector coordinate formats */
+    struct mtxfile_vector_coordinate_real_single *
+        vector_coordinate_real_single;
+    struct mtxfile_vector_coordinate_real_double *
+        vector_coordinate_real_double;
+    struct mtxfile_vector_coordinate_complex_single *
+        vector_coordinate_complex_single;
+    struct mtxfile_vector_coordinate_complex_double *
+        vector_coordinate_complex_double;
+    struct mtxfile_vector_coordinate_integer_single *
+        vector_coordinate_integer_single;
+    struct mtxfile_vector_coordinate_integer_double *
+        vector_coordinate_integer_double;
+    struct mtxfile_vector_coordinate_pattern *
+        vector_coordinate_pattern;
 @};}
 @end example
 
-The corresponding data types for sparse vectors are defined in the
-file @file{libmtx/vector/coordinate.h}. These data types are
-almost identical to the ones used for sparse matrices, except that the
-column index is omitted:
+@cindex array format
+For a matrix or vector in array format, values are stored in the union
+member @code{array_@var{field}_@var{precision}}, which is an array of
+type
+@itemize
+@item @code{float} or @code{double} if @code{field} is @code{mtxfile_real} and @code{precision} is @code{mtx_single} or @code{mtx_double}, respectively, or
+@item @code{float (*)[2]}, @code{double (*)[2]} if @code{field} is @code{mtxfile_complex} and @code{precision} is @code{mtx_single} or @code{mtx_double}, respectively, or
+@item @code{int32_t} or @code{int64_t} if @code{field} is @code{mtxfile_integer} and @code{precision} is @code{mtx_single} or @code{mtx_double}, respectively.
+@end itemize
+Note that the type used for complex values, e.g., @code{float (*)[2]},
+denotes a pointer to an array of size @code{2}. Thus, complex values
+are accessed using two-dimensional array indexing, e.g.,
+@code{array_complex_single[i][j]}. The first index, @code{i},
+indicates the position in array of complex vector or matrix values,
+while the second index, @code{j}, is @code{0} for the real part and
+@code{1} for the imaginary part of the complex number. Also, note that
+matrices or vectors in array format may not have @code{field} set to
+@code{mtxfile_pattern}.
+
+@cindex coordinate format
+@tindex mtxfile_matrix_coordinate_real_single
+@tindex mtxfile_matrix_coordinate_real_double
+@tindex mtxfile_matrix_coordinate_complex_single
+@tindex mtxfile_matrix_coordinate_complex_double
+@tindex mtxfile_matrix_coordinate_integer_single
+@tindex mtxfile_matrix_coordinate_integer_double
+@tindex mtxfile_matrix_coordinate_pattern
+For a matrix in coordinate format, values are stored in the union
+member @code{matrix_coordinate_@var{field}_@var{precision}}, which is
+an array of type @code{struct
+mtxfile_matrix_@var{field}_@var{precision}}, where @code{@var{field}}
+is the field associated with the matrix and @code{@var{precision}} is
+the chosen precision. The struct data types for each combination of
+field and precision are shown below.
 @example
-@code{struct mtx_vector_coordinate_real @{
-    int i;    /* row index */
-    float a;  /* nonzero value */
+@code{struct mtxfile_matrix_coordinate_real_single @{
+    int i, j;    /* row and column index */
+    float a;     /* nonzero value */
 @};
 
-struct mtx_vector_coordinate_double @{
-    int i;    /* row index */
-    double a; /* nonzero value */
+struct mtxfile_matrix_coordinate_real_double @{
+    int i, j;    /* row and column index */
+    double a;    /* nonzero value */
 @};
 
-struct mtx_vector_coordinate_complex @{
-    int i;        /* row index */
-    float a, b;   /* real and imaginary parts of nonzero value */
+struct mtxfile_matrix_coordinate_complex_single @{
+    int i, j;    /* row and column index */
+    float a[2];  /* real and imaginary parts of nonzero value */
 @};
 
-struct mtx_vector_coordinate_integer @{
-    int i;    /* row index */
-    int a;    /* nonzero value */
+struct mtxfile_matrix_coordinate_complex_double @{
+    int i, j;    /* row and column index */
+    double a[2]; /* real and imaginary parts of nonzero value */
 @};
 
-struct mtx_vector_coordinate_pattern @{
-    int i; /* row index */
+struct mtxfile_matrix_coordinate_integer_single @{
+    int i, j;    /* row and column index */
+    int32_t a;   /* nonzero value */
+@};
+
+struct mtxfile_matrix_coordinate_integer_double @{
+    int i, j;    /* row and column index */
+    int64_t a;   /* nonzero value */
+@};
+
+struct mtxfile_matrix_coordinate_pattern @{
+    int i, j;    /* row and column index */
 @};}
 @end example
+Note that there is no precision associated with matrices whose
+@code{field} is @code{mtxfile_pattern}. Instead, the presence of a
+nonzero value with row index @code{i} and column index @code{j}
+indicates that the matrix has a value of @code{1} at position
+@code{(i,j)}.
+
+@tindex mtxfile_vector_coordinate_real_single
+@tindex mtxfile_vector_coordinate_real_double
+@tindex mtxfile_vector_coordinate_complex_single
+@tindex mtxfile_vector_coordinate_complex_double
+@tindex mtxfile_vector_coordinate_integer_single
+@tindex mtxfile_vector_coordinate_integer_double
+@tindex mtxfile_vector_coordinate_pattern
+Vectors in coordinate format are treated similarly to matrices, except
+that the column index is omitted. More specifically, vector values are
+stored in the union member
+@code{vector_coordinate_@var{field}_@var{precision}}, which is an
+array of type @code{struct
+mtxfile_vector_@var{field}_@var{precision}}, where @code{@var{field}}
+is the field associated with the vector and @code{@var{precision}} is
+the chosen precision. The struct data types for each combination of
+field and precision are shown below.
+@example
+@code{struct mtxfile_vector_coordinate_real_single @{
+    int i;       /* row index */
+    float a;     /* nonzero value */
+@};
+
+struct mtxfile_vector_coordinate_real_double @{
+    int i;       /* row index */
+    double a;    /* nonzero value */
+@};
+
+struct mtxfile_vector_coordinate_complex_single @{
+    int i;       /* row index */
+    float a[2];  /* real and imaginary parts of nonzero value */
+@};
+
+struct mtxfile_vector_coordinate_complex_double @{
+    int i;       /* row index */
+    double a[2]; /* real and imaginary parts of nonzero value */
+@};
+
+struct mtxfile_vector_coordinate_integer_single @{
+    int i;       /* row index */
+    int32_t a;   /* nonzero value */
+@};
+
+struct mtxfile_vector_coordinate_integer_double @{
+    int i;       /* row index */
+    int64_t a;   /* nonzero value */
+@};
+
+struct mtxfile_vector_coordinate_pattern @{
+    int i;       /* row index */
+@};}
+@end example
+Note that there is no precision associated with vectors whose
+@code{field} is @code{mtxfile_pattern}. Instead, the presence of a
+nonzero value with index @code{i} indicates that the vector has a
+value of @code{1} at position @code{i}.
 
 
 @node Creating matrices and vectors
