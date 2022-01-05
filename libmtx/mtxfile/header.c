@@ -1,6 +1,6 @@
 /* This file is part of libmtx.
  *
- * Copyright (C) 2021 James D. Trotter
+ * Copyright (C) 2022 James D. Trotter
  *
  * libmtx is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
  * along with libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-09-01
+ * Last modified: 2022-01-04
  *
  * Matrix Market file headers.
  */
@@ -47,7 +47,7 @@
  */
 
 /**
- * `mtxfileobject_str()' is a string representing the Matrix Market
+ * ‘mtxfileobject_str()’ is a string representing the Matrix Market
  * object type.
  */
 const char * mtxfileobject_str(
@@ -61,27 +61,27 @@ const char * mtxfileobject_str(
 }
 
 /**
- * `mtxfile_parse_object()' parses a string containing the `object' of
+ * ‘mtxfileobject_parse()’ parses a string containing the ‘object’ of
  * a Matrix Market file format header.
  *
- * `valid_delimiters' is either `NULL', in which case it is ignored,
+ * ‘valid_delimiters’ is either ‘NULL’, in which case it is ignored,
  * or it is a string of characters considered to be valid delimiters
  * for the parsed string.  That is, if there are any remaining,
  * non-NULL characters after parsing, then then the next character is
- * searched for in `valid_delimiters'.  If the character is found,
+ * searched for in ‘valid_delimiters’.  If the character is found,
  * then the parsing succeeds and the final delimiter character is
  * consumed by the parser. Otherwise, the parsing fails with an error.
  *
- * If `endptr' is not `NULL', then the address stored in `endptr'
+ * If ‘endptr’ is not ‘NULL’, then the address stored in ‘endptr’
  * points to the first character beyond the characters that were
  * consumed during parsing.
  *
- * On success, `mtxfile_parse_object()' returns `MTX_SUCCESS' and
- * `object' is set according to the parsed string and `bytes_read' is
+ * On success, ‘mtxfileobject_parse()’ returns ‘MTX_SUCCESS’ and
+ * ‘object’ is set according to the parsed string and ‘bytes_read’ is
  * set to the number of bytes that were consumed by the parser.
  * Otherwise, an error code is returned.
  */
-int mtxfile_parse_object(
+int mtxfileobject_parse(
     enum mtxfileobject * object,
     int64_t * bytes_read,
     const char ** endptr,
@@ -111,7 +111,7 @@ int mtxfile_parse_object(
 }
 
 /**
- * `mtxfileformat_str()' is a string representing the Matrix Market
+ * ‘mtxfileformat_str()’ is a string representing the Matrix Market
  * format type.
  */
 const char * mtxfileformat_str(
@@ -125,27 +125,27 @@ const char * mtxfileformat_str(
 }
 
 /**
- * `mtxfile_parse_format()' parses a string containing the `format' of
+ * ‘mtxfileformat_parse()’ parses a string containing the ‘format’ of
  * a Matrix Market file format header.
  *
- * `valid_delimiters' is either `NULL', in which case it is ignored,
+ * ‘valid_delimiters’ is either ‘NULL’, in which case it is ignored,
  * or it is a string of characters considered to be valid delimiters
  * for the parsed string.  That is, if there are any remaining,
  * non-NULL characters after parsing, then then the next character is
- * searched for in `valid_delimiters'.  If the character is found,
+ * searched for in ‘valid_delimiters’.  If the character is found,
  * then the parsing succeeds and the final delimiter character is
  * consumed by the parser. Otherwise, the parsing fails with an error.
  *
- * If `endptr' is not `NULL', then the address stored in `endptr'
+ * If ‘endptr’ is not ‘NULL’, then the address stored in ‘endptr’
  * points to the first character beyond the characters that were
  * consumed during parsing.
  *
- * On success, `mtxfile_parse_format()' returns `MTX_SUCCESS' and
- * `format' is set according to the parsed string and `bytes_read' is
+ * On success, ‘mtxfileformat_parse()’ returns ‘MTX_SUCCESS’ and
+ * ‘format’ is set according to the parsed string and ‘bytes_read’ is
  * set to the number of bytes that were consumed by the parser.
  * Otherwise, an error code is returned.
  */
-int mtxfile_parse_format(
+int mtxfileformat_parse(
     enum mtxfileformat * format,
     int64_t * bytes_read,
     const char ** endptr,
@@ -175,7 +175,7 @@ int mtxfile_parse_format(
 }
 
 /**
- * `mtxfilefield_str()' is a string representing the Matrix Market
+ * ‘mtxfilefield_str()’ is a string representing the Matrix Market
  * field type.
  */
 const char * mtxfilefield_str(
@@ -191,27 +191,27 @@ const char * mtxfilefield_str(
 }
 
 /**
- * `mtxfile_parse_field()' parses a string containing the `field' of a
+ * ‘mtxfilefield_parse()’ parses a string containing the ‘field’ of a
  * Matrix Market file format header.
  *
- * `valid_delimiters' is either `NULL', in which case it is ignored,
+ * ‘valid_delimiters’ is either ‘NULL’, in which case it is ignored,
  * or it is a string of characters considered to be valid delimiters
  * for the parsed string.  That is, if there are any remaining,
  * non-NULL characters after parsing, then then the next character is
- * searched for in `valid_delimiters'.  If the character is found,
+ * searched for in ‘valid_delimiters’.  If the character is found,
  * then the parsing succeeds and the final delimiter character is
  * consumed by the parser. Otherwise, the parsing fails with an error.
  *
- * If `endptr' is not `NULL', then the address stored in `endptr'
+ * If ‘endptr’ is not ‘NULL’, then the address stored in ‘endptr’
  * points to the first character beyond the characters that were
  * consumed during parsing.
  *
- * On success, `mtxfile_parse_field()' returns `MTX_SUCCESS' and
- * `field' is set according to the parsed string and `bytes_read' is
+ * On success, ‘mtxfilefield_parse()’ returns ‘MTX_SUCCESS’ and
+ * ‘field’ is set according to the parsed string and ‘bytes_read’ is
  * set to the number of bytes that were consumed by the parser.
  * Otherwise, an error code is returned.
  */
-int mtxfile_parse_field(
+int mtxfilefield_parse(
     enum mtxfilefield * field,
     int64_t * bytes_read,
     const char ** endptr,
@@ -247,7 +247,7 @@ int mtxfile_parse_field(
 }
 
 /**
- * `mtxfilesymmetry_str()' is a string representing the Matrix Market
+ * ‘mtxfilesymmetry_str()’ is a string representing the Matrix Market
  * symmetry type.
  */
 const char * mtxfilesymmetry_str(
@@ -263,27 +263,27 @@ const char * mtxfilesymmetry_str(
 }
 
 /**
- * `mtxfile_parse_symmetry()' parses a string containing the
- * `symmetry' of a Matrix Market file format header.
+ * ‘mtxfilesymmetry_parse()’ parses a string containing the
+ * ‘symmetry’ of a Matrix Market file format header.
  *
- * `valid_delimiters' is either `NULL', in which case it is ignored,
+ * ‘valid_delimiters’ is either ‘NULL’, in which case it is ignored,
  * or it is a string of characters considered to be valid delimiters
  * for the parsed string.  That is, if there are any remaining,
  * non-NULL characters after parsing, then then the next character is
- * searched for in `valid_delimiters'.  If the character is found,
+ * searched for in ‘valid_delimiters’.  If the character is found,
  * then the parsing succeeds and the final delimiter character is
  * consumed by the parser. Otherwise, the parsing fails with an error.
  *
- * If `endptr' is not `NULL', then the address stored in `endptr'
+ * If ‘endptr’ is not ‘NULL’, then the address stored in ‘endptr’
  * points to the first character beyond the characters that were
  * consumed during parsing.
  *
- * On success, `mtxfile_parse_symmetry()' returns `MTX_SUCCESS' and
- * `symmetry' is set according to the parsed string and `bytes_read'
+ * On success, ‘mtxfilesymmetry_parse()’ returns ‘MTX_SUCCESS’ and
+ * ‘symmetry’ is set according to the parsed string and ‘bytes_read’
  * is set to the number of bytes that were consumed by the parser.
  * Otherwise, an error code is returned.
  */
-int mtxfile_parse_symmetry(
+int mtxfilesymmetry_parse(
     enum mtxfilesymmetry * symmetry,
     int64_t * bytes_read,
     const char ** endptr,
@@ -350,15 +350,15 @@ static int mtxfile_parse_identifier(
 }
 
 /**
- * `mtxfile_parse_header()' parses a string containing the header line
+ * ‘mtxfile_parse_header()’ parses a string containing the header line
  * for a file in Matrix Market format.
  *
- * If `endptr' is not `NULL', then the address stored in `endptr'
+ * If ‘endptr’ is not ‘NULL’, then the address stored in ‘endptr’
  * points to the first character beyond the characters that were
  * consumed during parsing.
  *
- * On success, `mtxfile_parse_header()' returns `MTX_SUCCESS' and the
- * `object', `format', `field' and `symmetry' fields of the header
+ * On success, ‘mtxfile_parse_header()’ returns ‘MTX_SUCCESS’ and the
+ * ‘object’, ‘format’, ‘field’ and ‘symmetry’ fields of the header
  * will be set according to the contents of the parsed Matrix Market
  * header.  Otherwise, an appropriate error code is returned if the
  * input is not a valid Matrix Market header.
@@ -376,16 +376,16 @@ int mtxfile_parse_header(
     err = mtxfile_parse_identifier(bytes_read, &t, t, " ");
     if (err)
         return err;
-    err = mtxfile_parse_object(&header->object, bytes_read, &t, t, " ");
+    err = mtxfileobject_parse(&header->object, bytes_read, &t, t, " ");
     if (err)
         return err;
-    err = mtxfile_parse_format(&header->format, bytes_read, &t, t, " ");
+    err = mtxfileformat_parse(&header->format, bytes_read, &t, t, " ");
     if (err)
         return err;
-    err = mtxfile_parse_field(&header->field, bytes_read, &t, t, " ");
+    err = mtxfilefield_parse(&header->field, bytes_read, &t, t, " ");
     if (err)
         return err;
-    err = mtxfile_parse_symmetry(&header->symmetry, bytes_read, &t, t, "\n");
+    err = mtxfilesymmetry_parse(&header->symmetry, bytes_read, &t, t, "\n");
     if (err)
         return err;
     if (endptr)
@@ -394,7 +394,7 @@ int mtxfile_parse_header(
 }
 
 /**
- * `mtxfileheader_copy()' copies a Matrix Market header.
+ * ‘mtxfileheader_copy()’ copies a Matrix Market header.
  */
 int mtxfileheader_copy(
     struct mtxfileheader * dst,
@@ -408,7 +408,7 @@ int mtxfileheader_copy(
 }
 
 /**
- * `freadline()' reads a single line from a stream.
+ * ‘freadline()’ reads a single line from a stream.
  */
 static int freadline(
     char * linebuf,
@@ -427,10 +427,10 @@ static int freadline(
 }
 
 /**
- * `mtxfile_fread_header()` reads a Matrix Market header from a
+ * ‘mtxfile_fread_header()‘ reads a Matrix Market header from a
  * stream.
  *
- * If an error code is returned, then `lines_read' and `bytes_read'
+ * If an error code is returned, then ‘lines_read’ and ‘bytes_read’
  * are used to return the line number and byte at which the error was
  * encountered during the parsing of the Matrix Market file.
  */
@@ -471,7 +471,7 @@ int mtxfile_fread_header(
 
 #ifdef LIBMTX_HAVE_LIBZ
 /**
- * `gzreadline()' reads a single line from a gzip-compressed stream.
+ * ‘gzreadline()’ reads a single line from a gzip-compressed stream.
  */
 static int gzreadline(
     char * linebuf,
@@ -490,10 +490,10 @@ static int gzreadline(
 }
 
 /**
- * `mtxfile_gzread_header()` reads a Matrix Market header from a
+ * ‘mtxfile_gzread_header()‘ reads a Matrix Market header from a
  * gzip-compressed stream.
  *
- * If an error code is returned, then `lines_read' and `bytes_read'
+ * If an error code is returned, then ‘lines_read’ and ‘bytes_read’
  * are used to return the line number and byte at which the error was
  * encountered during the parsing of the Matrix Market file.
  */
@@ -534,11 +534,11 @@ int mtxfile_gzread_header(
 #endif
 
 /**
- * `mtxfileheader_fwrite()' writes the header line of a Matrix Market
+ * ‘mtxfileheader_fwrite()’ writes the header line of a Matrix Market
  * file to a stream.
  *
- * If it is not `NULL', then the number of bytes written to the stream
- * is returned in `bytes_written'.
+ * If it is not ‘NULL’, then the number of bytes written to the stream
+ * is returned in ‘bytes_written’.
  */
 int mtxfileheader_fwrite(
     const struct mtxfileheader * header,
@@ -560,11 +560,11 @@ int mtxfileheader_fwrite(
 
 #ifdef LIBMTX_HAVE_LIBZ
 /**
- * `mtxfileheader_gzwrite()' writes the header line of a Matrix
+ * ‘mtxfileheader_gzwrite()’ writes the header line of a Matrix
  * Market file to a gzip-compressed stream.
  *
- * If it is not `NULL', then the number of bytes written to the stream
- * is returned in `bytes_written'.
+ * If it is not ‘NULL’, then the number of bytes written to the stream
+ * is returned in ‘bytes_written’.
  */
 int mtxfileheader_gzwrite(
     const struct mtxfileheader * header,
@@ -591,10 +591,10 @@ int mtxfileheader_gzwrite(
 
 #ifdef LIBMTX_HAVE_MPI
 /**
- * `mtxfileheader_datatype()' creates a custom MPI data type for
+ * ‘mtxfileheader_datatype()’ creates a custom MPI data type for
  * sending or receiving Matrix Market headers.
  *
- * The user is responsible for calling `MPI_Type_free()' on the
+ * The user is responsible for calling ‘MPI_Type_free()’ on the
  * returned datatype.
  */
 static int mtxfileheader_datatype(
@@ -635,11 +635,11 @@ static int mtxfileheader_datatype(
 }
 
 /**
- * `mtxfileheader_send()' sends a Matrix Market header to another MPI
+ * ‘mtxfileheader_send()’ sends a Matrix Market header to another MPI
  * process.
  *
- * This is analogous to `MPI_Send()' and requires the receiving
- * process to perform a matching call to `mtxfileheader_recv()'.
+ * This is analogous to ‘MPI_Send()’ and requires the receiving
+ * process to perform a matching call to ‘mtxfileheader_recv()’.
  */
 int mtxfileheader_send(
     const struct mtxfileheader * header,
@@ -668,11 +668,11 @@ int mtxfileheader_send(
 }
 
 /**
- * `mtxfileheader_recv()' receives a Matrix Market header from
+ * ‘mtxfileheader_recv()’ receives a Matrix Market header from
  * another MPI process.
  *
- * This is analogous to `MPI_Recv()' and requires the sending process
- * to perform a matching call to `mtxfileheader_send()'.
+ * This is analogous to ‘MPI_Recv()’ and requires the sending process
+ * to perform a matching call to ‘mtxfileheader_send()’.
  */
 int mtxfileheader_recv(
     struct mtxfileheader * header,
@@ -701,12 +701,12 @@ int mtxfileheader_recv(
 }
 
 /**
- * `mtxfileheader_bcast()' broadcasts a Matrix Market header from an
+ * ‘mtxfileheader_bcast()’ broadcasts a Matrix Market header from an
  * MPI root process to other processes in a communicator.
  *
- * This is analogous to `MPI_Bcast()' and requires every process in
+ * This is analogous to ‘MPI_Bcast()’ and requires every process in
  * the communicator to perform matching calls to
- * `mtxfileheader_bcast()'.
+ * ‘mtxfileheader_bcast()’.
  */
 int mtxfileheader_bcast(
     struct mtxfileheader * header,
@@ -735,12 +735,12 @@ int mtxfileheader_bcast(
 }
 
 /**
- * `mtxfileheader_gather()' gathers Matrix Market headers onto an MPI
+ * ‘mtxfileheader_gather()’ gathers Matrix Market headers onto an MPI
  * root process from other processes in a communicator.
  *
- * This is analogous to `MPI_Gather()' and requires every process in
+ * This is analogous to ‘MPI_Gather()’ and requires every process in
  * the communicator to perform matching calls to
- * `mtxfileheader_gather()'.
+ * ‘mtxfileheader_gather()’.
  */
 int mtxfileheader_gather(
     const struct mtxfileheader * sendheader,
@@ -764,10 +764,10 @@ int mtxfileheader_gather(
 }
 
 /**
- * `mtxfileheader_allgather()' gathers Matrix Market headers onto
+ * ‘mtxfileheader_allgather()’ gathers Matrix Market headers onto
  * every MPI process from other processes in a communicator.
  *
- * This is analogous to `MPI_Allgather()' and requires every process
+ * This is analogous to ‘MPI_Allgather()’ and requires every process
  * in the communicator to perform matching calls to this function.
  */
 int mtxfileheader_allgather(

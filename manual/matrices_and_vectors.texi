@@ -121,7 +121,7 @@ The definition of the @code{mtxfile} struct is shown below.
 @end example
 
 Roughly speaking, the @code{mtxfile} struct consists of four parts:
-header information, comment lines, size information, and data. In
+header information, comment lines, size information and data. In
 addition, the @code{precision} struct member describes the precision
 used to store matrix or vector values.
 
@@ -181,90 +181,105 @@ enum mtxfilesymmetry @{
 
 @node Comments
 @subsection Comments
-Comments are stored in the array @code{comment_lines}, whose length is
-equal to @code{num_comment_lines}.  Each entry in the array (e.g.,
-@code{comment_lines[i]}, where @code{i=0,1,...,num_comment_lines-1})
-is a non-empty, null-terminated string that must begin with the
-character @samp{@code{%}}.
+Comment lines are stored in a doubly linked list data structure,
+@code{struct mtxfilecomments}.
+@example
+@code{struct mtxfilecomments @{
+    struct mtxfilecomment * root;
+@};}
+@end example
+Each comment line in a list is represented with @code{struct
+mtxfilecomment}.
+@example
+@code{struct mtxfilecomment @{
+    struct mtxfilecomment * prev;
+    struct mtxfilecomment * next;
+    char * comment_line;
+@};}
+@end example
+Here, @code{comment_line} is a non-empty, null-terminated string that
+must begin with the character @samp{@code{%}}.
 
 
-@node Size information
-@subsection Size information
-The size information in @code{struct mtx} includes @code{num_rows},
-@code{num_columns} and @code{num_nonzeros}, which represent the number
-of rows, column and nonzeros, respectively. In addition, @code{size}
-is the number of entries explicitly stored in the @code{data}
-array.
+@node Size
+@subsection Size
+The size information in @code{struct mtxfilesize} includes the number
+of rows, columns and nonzeros.
+@example
+@code{struct mtxfilesize @{
+    int num_rows;
+    int num_columns;
+    int64_t num_nonzeros;
+@};}
+@end example
 
-Vectors are represented as row vectors by default, so that
-@code{num_rows} is equal to the number of elements and
-@code{num_columns} is not used, so it is set equal to @code{-1}.
-Conversely, column vectors have @code{num_columns} set equal to the
-number of elements and @code{num_rows} is set to @code{-1}.
+In the case of a matrix, @code{num_rows} and @code{num_columns} are
+non-negative integers representing the number of rows and columns in
+the matrix, respectively. By convention, vectors are represented as
+column vectors. As a result, @code{num_rows} is equal to the number of
+vector elements, whereas @code{num_columns} is not used and is
+therefore set to @code{-1}.
 
-For vectors in the array format, @code{num_nonzeros} and @code{size}
-are equal, and they both represent the number of vector elements.
-Otherwise, for vectors in coordinate format, @code{size} is the number
-of entries stored in the @code{data} array, whereas
-@code{num_nonzeros} is either @code{-1} or equal to the number of
-vector elements that are nonzero.  (Recall that a given vector element
-may have multiple entries in the @code{data} array.)
+For matrices and vectors in coordinate format, @code{num_nonzeros} is
+the number of entries explicitly stored in the @code{data} array.
+Otherwise, for matrices and vectors in array format,
+@code{num_nonzeros} is not used and is therefore set to @code{-1}.
 
-In the case of a matrix, @code{num_nonzeros} is either @code{-1} or it
-is equal to the total number of nonzeros in the matrix, including any
-nonzeros that are not explicitly stored due to symmetry.  Note that
-@code{num_nonzeros} is generally different from @code{size} for
-symmetric, Hermitian or skew-symmetric matrices.  Moreover, even for
-general, unsymmetric sparse matrices, @code{size} may not be equal
-@code{num_nonzeros}, if there are multiple entries corresponding to a
-single matrix element.  Both @code{size} and @code{num_nonzeros}
-depend on the matrix format and symmetry as described below.
+@c @code{num_nonzeros} is either @code{-1} or it is equal to the total
+@c number of nonzeros in the matrix, including any nonzeros that are not
+@c explicitly stored due to symmetry.  Note that @code{num_nonzeros} is
+@c generally different from @code{size} for symmetric, Hermitian or
+@c skew-symmetric matrices.  Moreover, even for general, unsymmetric
+@c sparse matrices, @code{size} may not be equal @code{num_nonzeros}, if
+@c there are multiple entries corresponding to a single matrix element.
+@c Both @code{size} and @code{num_nonzeros} depend on the matrix format
+@c and symmetry as described below.
 
-@itemize
+@c @itemize
 
-@item
-If @code{format} is @code{mtx_array} and @code{symmetry} is
-@code{mtx_general}, then @code{size} and @code{num_nonzeros} are equal
-to @code{num_rows*num_columns}.
+@c @item
+@c If @code{format} is @code{mtx_array} and @code{symmetry} is
+@c @code{mtx_general}, then @code{size} and @code{num_nonzeros} are equal
+@c to @code{num_rows*num_columns}.
 
-@item
-If @code{format} is @code{mtx_array}, @code{symmetry} is
-@code{mtx_symmetric} or @code{mtx_hermitian} and @code{triangle} is
-@code{mtx_lower_triangular}, then @code{size} is the number of nonzero
-entries on or below the main diagonal, which is equal to
-@code{num_rows*(num_rows+1)/2} if @code{num_rows <= num_columns} or
-@code{num_columns*(num_columns+1)/2+(num_rows-num_columns)*num_columns}
-otherwise.  If @code{triangle} is @code{mtx_upper_triangular}, then
-@code{size} is instead the number of nonzero entries on or above the
-main diagonal, which is equal to @code{num_columns*(num_columns+1)/2}
-if @code{num_columns <= num_rows} or
-@code{num_rows*(num_rows+1)/2+(num_columns-num_rows)*num_rows}
-otherwise.
+@c @item
+@c If @code{format} is @code{mtx_array}, @code{symmetry} is
+@c @code{mtx_symmetric} or @code{mtx_hermitian} and @code{triangle} is
+@c @code{mtx_lower_triangular}, then @code{size} is the number of nonzero
+@c entries on or below the main diagonal, which is equal to
+@c @code{num_rows*(num_rows+1)/2} if @code{num_rows <= num_columns} or
+@c @code{num_columns*(num_columns+1)/2+(num_rows-num_columns)*num_columns}
+@c otherwise.  If @code{triangle} is @code{mtx_upper_triangular}, then
+@c @code{size} is instead the number of nonzero entries on or above the
+@c main diagonal, which is equal to @code{num_columns*(num_columns+1)/2}
+@c if @code{num_columns <= num_rows} or
+@c @code{num_rows*(num_rows+1)/2+(num_columns-num_rows)*num_rows}
+@c otherwise.
 
-@item
-If @code{symmetry} is @code{mtx_skew_symmetric}, then @code{size} is
-the number of nonzero entries below the main diagonal. If @code{format} is
-@code{mtx_array}, then @code{size} is equal to
-@code{num_rows*(num_columns-1)/2}, where @code{num_rows} is equal to
-@code{num_columns} due to skew-symmetry.
+@c @item
+@c If @code{symmetry} is @code{mtx_skew_symmetric}, then @code{size} is
+@c the number of nonzero entries below the main diagonal. If @code{format} is
+@c @code{mtx_array}, then @code{size} is equal to
+@c @code{num_rows*(num_columns-1)/2}, where @code{num_rows} is equal to
+@c @code{num_columns} due to skew-symmetry.
 
-If @code{format} is @code{mtx_array}, @code{symmetry} is
-@code{mtx_skew_symmetric} and @code{triangle} is
-@code{mtx_lower_triangular}, then @code{size} is the number of nonzero
-entries below the main diagonal, which is equal to
-@code{num_rows*(num_rows-1)/2} if @code{num_rows <= num_columns} or
-@code{num_columns*(num_columns-1)/2+(num_rows-num_columns)*num_columns}
-otherwise.  If @code{triangle} is @code{mtx_upper_triangular}, then
-@code{size} is instead the number of nonzero entries on or above the
-main diagonal, which is equal to @code{num_columns*(num_columns-1)/2}
-if @code{num_columns <= num_rows} or
-@code{num_rows*(num_rows-1)/2+(num_columns-num_rows)*num_rows}
-otherwise.
+@c If @code{format} is @code{mtx_array}, @code{symmetry} is
+@c @code{mtx_skew_symmetric} and @code{triangle} is
+@c @code{mtx_lower_triangular}, then @code{size} is the number of nonzero
+@c entries below the main diagonal, which is equal to
+@c @code{num_rows*(num_rows-1)/2} if @code{num_rows <= num_columns} or
+@c @code{num_columns*(num_columns-1)/2+(num_rows-num_columns)*num_columns}
+@c otherwise.  If @code{triangle} is @code{mtx_upper_triangular}, then
+@c @code{size} is instead the number of nonzero entries on or above the
+@c main diagonal, which is equal to @code{num_columns*(num_columns-1)/2}
+@c if @code{num_columns <= num_rows} or
+@c @code{num_rows*(num_rows-1)/2+(num_columns-num_rows)*num_rows}
+@c otherwise.
 
-@end itemize
+@c @end itemize
 
-Finally, @code{nonzero_size} is the size (in bytes) of each nonzero
-stored in the @code{data} array.
+@c Finally, @code{nonzero_size} is the size (in bytes) of each nonzero
+@c stored in the @code{data} array.
 
 
 @node Precision
@@ -647,7 +662,7 @@ case of an unsymmetric matrix, the array @code{data} must contain at
 least @code{num_rows*num_columns} values of type @code{float}.
 Otherwise, the allocated size of the array @code{mtx->data} depends on
 @code{num_rows}, @code{num_columns}, @code{symmetry} and
-@code{triangle}, as described in @ref{Size information}.
+@code{triangle}, as described in @ref{Size}.
 
 If the values of the matrix elements are already on hand, then a
 matrix can be allocated and populated at once by calling
@@ -668,8 +683,7 @@ The arguments are the same as for @code{mtx_alloc_matrix_array_real},
 except for the array @code{data}, which is now used for copying the
 value of each matrix entry to @code{mtx->data}.  The minimum size of
 the @code{data} array depends on @code{num_rows}, @code{num_columns},
-@code{symmetry} and @code{triangle}, as described in @ref{Size
-information}.
+@code{symmetry} and @code{triangle}, as described in @ref{Size}.
 
 @findex mtx_alloc_matrix_array_double
 @findex mtx_alloc_matrix_array_complex
