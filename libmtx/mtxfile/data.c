@@ -79,9 +79,9 @@ static inline uint32_t _pdep_u32(uint32_t val, uint32_t mask)
  */
 int mtxfiledata_dataptr(
     const union mtxfiledata * data,
-    enum mtxfile_object object,
-    enum mtxfile_format format,
-    enum mtxfile_field field,
+    enum mtxfileobject object,
+    enum mtxfileformat format,
+    enum mtxfilefield field,
     enum mtxprecision precision,
     void ** p,
     int64_t k)
@@ -163,9 +163,9 @@ int mtxfiledata_dataptr(
  */
 int mtxfiledata_size_per_element(
     const union mtxfiledata * data,
-    enum mtxfile_object object,
-    enum mtxfile_format format,
-    enum mtxfile_field field,
+    enum mtxfileobject object,
+    enum mtxfileformat format,
+    enum mtxfilefield field,
     enum mtxprecision precision,
     size_t * size)
 {
@@ -1155,9 +1155,9 @@ int mtxfiledata_parse_vector_coordinate_pattern(
  */
 int mtxfiledata_alloc(
     union mtxfiledata * data,
-    enum mtxfile_object object,
-    enum mtxfile_format format,
-    enum mtxfile_field field,
+    enum mtxfileobject object,
+    enum mtxfileformat format,
+    enum mtxfilefield field,
     enum mtxprecision precision,
     int64_t size)
 {
@@ -1287,9 +1287,9 @@ int mtxfiledata_alloc(
  */
 int mtxfiledata_free(
     union mtxfiledata * data,
-    enum mtxfile_object object,
-    enum mtxfile_format format,
-    enum mtxfile_field field,
+    enum mtxfileobject object,
+    enum mtxfileformat format,
+    enum mtxfilefield field,
     enum mtxprecision precision)
 {
     if (format == mtxfile_array) {
@@ -1399,9 +1399,9 @@ int mtxfiledata_free(
 int mtxfiledata_copy(
     union mtxfiledata * dst,
     const union mtxfiledata * src,
-    enum mtxfile_object object,
-    enum mtxfile_format format,
-    enum mtxfile_field field,
+    enum mtxfileobject object,
+    enum mtxfileformat format,
+    enum mtxfilefield field,
     enum mtxprecision precision,
     int64_t size,
     int64_t dst_offset,
@@ -1554,9 +1554,9 @@ int mtxfiledata_copy(
 int mtxfiledata_copy_gather(
     union mtxfiledata * dst,
     const union mtxfiledata * src,
-    enum mtxfile_object object,
-    enum mtxfile_format format,
-    enum mtxfile_field field,
+    enum mtxfileobject object,
+    enum mtxfileformat format,
+    enum mtxfilefield field,
     enum mtxprecision precision,
     int64_t size,
     int64_t dstoffset,
@@ -1750,9 +1750,9 @@ int mtxfiledata_copy_gather(
  */
 int mtxfiledata_rowptr(
     const union mtxfiledata * data,
-    enum mtxfile_object object,
-    enum mtxfile_format format,
-    enum mtxfile_field field,
+    enum mtxfileobject object,
+    enum mtxfileformat format,
+    enum mtxfilefield field,
     enum mtxprecision precision,
     int num_rows,
     int64_t size,
@@ -1965,9 +1965,9 @@ int mtxfiledata_rowptr(
  */
 int mtxfiledata_colptr(
     const union mtxfiledata * data,
-    enum mtxfile_object object,
-    enum mtxfile_format format,
-    enum mtxfile_field field,
+    enum mtxfileobject object,
+    enum mtxfileformat format,
+    enum mtxfilefield field,
     enum mtxprecision precision,
     int num_columns,
     int64_t size,
@@ -2169,9 +2169,9 @@ int mtxfiledata_colptr(
  */
 int mtxfiledata_set_constant_real_single(
     union mtxfiledata * data,
-    enum mtxfile_object object,
-    enum mtxfile_format format,
-    enum mtxfile_field field,
+    enum mtxfileobject object,
+    enum mtxfileformat format,
+    enum mtxfilefield field,
     enum mtxprecision precision,
     int64_t size,
     int64_t offset,
@@ -2313,9 +2313,9 @@ int mtxfiledata_set_constant_real_single(
  */
 int mtxfiledata_set_constant_real_double(
     union mtxfiledata * data,
-    enum mtxfile_object object,
-    enum mtxfile_format format,
-    enum mtxfile_field field,
+    enum mtxfileobject object,
+    enum mtxfileformat format,
+    enum mtxfilefield field,
     enum mtxprecision precision,
     int64_t size,
     int64_t offset,
@@ -2328,9 +2328,9 @@ int mtxfiledata_set_constant_real_double(
  */
 int mtxfiledata_set_constant_complex_single(
     union mtxfiledata * data,
-    enum mtxfile_object object,
-    enum mtxfile_format format,
-    enum mtxfile_field field,
+    enum mtxfileobject object,
+    enum mtxfileformat format,
+    enum mtxfilefield field,
     enum mtxprecision precision,
     int64_t size,
     int64_t offset,
@@ -2342,9 +2342,9 @@ int mtxfiledata_set_constant_complex_single(
  */
 int mtxfiledata_set_constant_integer_single(
     union mtxfiledata * data,
-    enum mtxfile_object object,
-    enum mtxfile_format format,
-    enum mtxfile_field field,
+    enum mtxfileobject object,
+    enum mtxfileformat format,
+    enum mtxfilefield field,
     enum mtxprecision precision,
     int64_t size,
     int64_t offset,
@@ -2359,9 +2359,9 @@ static int mtxfiledata_parse(
     int64_t * bytes_read,
     const char ** endptr,
     const char * s,
-    enum mtxfile_object object,
-    enum mtxfile_format format,
-    enum mtxfile_field field,
+    enum mtxfileobject object,
+    enum mtxfileformat format,
+    enum mtxfilefield field,
     enum mtxprecision precision,
     int num_rows,
     int num_columns,
@@ -2555,9 +2555,9 @@ int mtxfiledata_fread(
     int64_t * bytes_read,
     size_t line_max,
     char * linebuf,
-    enum mtxfile_object object,
-    enum mtxfile_format format,
-    enum mtxfile_field field,
+    enum mtxfileobject object,
+    enum mtxfileformat format,
+    enum mtxfilefield field,
     enum mtxprecision precision,
     int num_rows,
     int num_columns,
@@ -2668,9 +2668,9 @@ int mtxfiledata_gzread(
     int64_t * bytes_read,
     size_t line_max,
     char * linebuf,
-    enum mtxfile_object object,
-    enum mtxfile_format format,
-    enum mtxfile_field field,
+    enum mtxfileobject object,
+    enum mtxfileformat format,
+    enum mtxfilefield field,
     enum mtxprecision precision,
     int num_rows,
     int num_columns,
@@ -2740,7 +2740,7 @@ int mtxfiledata_gzread(
  */
 static int validate_format_string(
     const char * format_str,
-    enum mtxfile_field field)
+    enum mtxfilefield field)
 {
     struct format_specifier format;
     const char * endptr;
@@ -2798,9 +2798,9 @@ static int validate_format_string(
  */
 int mtxfiledata_fwrite(
     const union mtxfiledata * data,
-    enum mtxfile_object object,
-    enum mtxfile_format format,
-    enum mtxfile_field field,
+    enum mtxfileobject object,
+    enum mtxfileformat format,
+    enum mtxfilefield field,
     enum mtxprecision precision,
     int64_t size,
     FILE * f,
@@ -3228,9 +3228,9 @@ fwrite_exit:
  */
 int mtxfiledata_gzwrite(
     const union mtxfiledata * data,
-    enum mtxfile_object object,
-    enum mtxfile_format format,
-    enum mtxfile_field field,
+    enum mtxfileobject object,
+    enum mtxfileformat format,
+    enum mtxfilefield field,
     enum mtxprecision precision,
     int64_t size,
     gzFile f,
@@ -3635,9 +3635,9 @@ gzwrite_exit:
  */
 int mtxfiledata_transpose(
     union mtxfiledata * data,
-    enum mtxfile_object object,
-    enum mtxfile_format format,
-    enum mtxfile_field field,
+    enum mtxfileobject object,
+    enum mtxfileformat format,
+    enum mtxfilefield field,
     enum mtxprecision precision,
     int num_rows,
     int num_columns,
@@ -3821,9 +3821,9 @@ int mtxfiledata_transpose(
  */
 int mtxfiledata_permute(
     union mtxfiledata * data,
-    enum mtxfile_object object,
-    enum mtxfile_format format,
-    enum mtxfile_field field,
+    enum mtxfileobject object,
+    enum mtxfileformat format,
+    enum mtxfilefield field,
     enum mtxprecision precision,
     int num_rows,
     int num_columns,
@@ -4067,9 +4067,9 @@ int mtxfiledata_permute(
  */
 int mtxfiledata_sortkey_row_major(
     union mtxfiledata * data,
-    enum mtxfile_object object,
-    enum mtxfile_format format,
-    enum mtxfile_field field,
+    enum mtxfileobject object,
+    enum mtxfileformat format,
+    enum mtxfilefield field,
     enum mtxprecision precision,
     int num_rows,
     int num_columns,
@@ -4217,9 +4217,9 @@ int mtxfiledata_sortkey_row_major(
  */
 int mtxfiledata_sortkey_column_major(
     union mtxfiledata * data,
-    enum mtxfile_object object,
-    enum mtxfile_format format,
-    enum mtxfile_field field,
+    enum mtxfileobject object,
+    enum mtxfileformat format,
+    enum mtxfilefield field,
     enum mtxprecision precision,
     int num_rows,
     int num_columns,
@@ -4317,9 +4317,9 @@ static inline uint64_t xy_to_morton(uint32_t x, uint32_t y)
  */
 int mtxfiledata_sortkey_morton(
     union mtxfiledata * data,
-    enum mtxfile_object object,
-    enum mtxfile_format format,
-    enum mtxfile_field field,
+    enum mtxfileobject object,
+    enum mtxfileformat format,
+    enum mtxfilefield field,
     enum mtxprecision precision,
     int num_rows,
     int num_columns,
@@ -4403,9 +4403,9 @@ int mtxfiledata_sortkey_morton(
 
 static int mtxfiledata_sort_keys(
     union mtxfiledata * data,
-    enum mtxfile_object object,
-    enum mtxfile_format format,
-    enum mtxfile_field field,
+    enum mtxfileobject object,
+    enum mtxfileformat format,
+    enum mtxfilefield field,
     enum mtxprecision precision,
     int num_rows,
     int num_columns,
@@ -4456,9 +4456,9 @@ static int mtxfiledata_sort_keys(
  */
 int mtxfiledata_sort_row_major(
     union mtxfiledata * data,
-    enum mtxfile_object object,
-    enum mtxfile_format format,
-    enum mtxfile_field field,
+    enum mtxfileobject object,
+    enum mtxfileformat format,
+    enum mtxfilefield field,
     enum mtxprecision precision,
     int num_rows,
     int num_columns,
@@ -4507,9 +4507,9 @@ int mtxfiledata_sort_row_major(
  */
 int mtxfiledata_sort_column_major(
     union mtxfiledata * data,
-    enum mtxfile_object object,
-    enum mtxfile_format format,
-    enum mtxfile_field field,
+    enum mtxfileobject object,
+    enum mtxfileformat format,
+    enum mtxfilefield field,
     enum mtxprecision precision,
     int num_rows,
     int num_columns,
@@ -4550,9 +4550,9 @@ int mtxfiledata_sort_column_major(
  */
 int mtxfiledata_sort_morton(
     union mtxfiledata * data,
-    enum mtxfile_object object,
-    enum mtxfile_format format,
-    enum mtxfile_field field,
+    enum mtxfileobject object,
+    enum mtxfileformat format,
+    enum mtxfilefield field,
     enum mtxprecision precision,
     int num_rows,
     int num_columns,
@@ -4605,9 +4605,9 @@ int mtxfiledata_sort_morton(
  */
 int mtxfiledata_sort_by_part(
     union mtxfiledata * data,
-    enum mtxfile_object object,
-    enum mtxfile_format format,
-    enum mtxfile_field field,
+    enum mtxfileobject object,
+    enum mtxfileformat format,
+    enum mtxfilefield field,
     enum mtxprecision precision,
     int64_t size,
     int64_t offset,
@@ -4682,9 +4682,9 @@ int mtxfiledata_sort_by_part(
  */
 int mtxfiledata_partition_rows(
     const union mtxfiledata * data,
-    enum mtxfile_object object,
-    enum mtxfile_format format,
-    enum mtxfile_field field,
+    enum mtxfileobject object,
+    enum mtxfileformat format,
+    enum mtxfilefield field,
     enum mtxprecision precision,
     int num_rows,
     int num_columns,
@@ -4890,9 +4890,9 @@ int mtxfiledata_partition_rows(
  */
 int mtxfiledata_reorder(
     const union mtxfiledata * data,
-    enum mtxfile_object object,
-    enum mtxfile_format format,
-    enum mtxfile_field field,
+    enum mtxfileobject object,
+    enum mtxfileformat format,
+    enum mtxfilefield field,
     enum mtxprecision precision,
     int64_t size,
     int64_t offset,
@@ -5394,9 +5394,9 @@ int mtxfiledata_reorder(
  */
 int mtxfiledata_mpi_datatype(
     const union mtxfiledata * data,
-    enum mtxfile_object object,
-    enum mtxfile_format format,
-    enum mtxfile_field field,
+    enum mtxfileobject object,
+    enum mtxfileformat format,
+    enum mtxfilefield field,
     enum mtxprecision precision,
     MPI_Datatype * datatype,
     int * mpierrcode)
@@ -5725,7 +5725,7 @@ static int mtxfile_array_complex_datatype(
 
 static int mtxfiledata_send_array(
     const union mtxfiledata * data,
-    enum mtxfile_field field,
+    enum mtxfilefield field,
     enum mtxprecision precision,
     int64_t size,
     int64_t offset,
@@ -5806,8 +5806,8 @@ static int mtxfiledata_send_array(
  * returned datatype.
  */
 static int mtxfile_coordinate_datatype(
-    enum mtxfile_object object,
-    enum mtxfile_field field,
+    enum mtxfileobject object,
+    enum mtxfilefield field,
     enum mtxprecision precision,
     MPI_Datatype * datatype,
     int * mpierrcode)
@@ -6045,8 +6045,8 @@ static int mtxfile_coordinate_datatype(
 
 static int mtxfiledata_send_coordinate(
     const union mtxfiledata * data,
-    enum mtxfile_object object,
-    enum mtxfile_field field,
+    enum mtxfileobject object,
+    enum mtxfilefield field,
     enum mtxprecision precision,
     int64_t size,
     int64_t offset,
@@ -6194,9 +6194,9 @@ static int mtxfiledata_send_coordinate(
  */
 int mtxfiledata_send(
     const union mtxfiledata * data,
-    enum mtxfile_object object,
-    enum mtxfile_format format,
-    enum mtxfile_field field,
+    enum mtxfileobject object,
+    enum mtxfileformat format,
+    enum mtxfilefield field,
     enum mtxprecision precision,
     int64_t size,
     int64_t offset,
@@ -6221,7 +6221,7 @@ int mtxfiledata_send(
 
 static int mtxfiledata_recv_array(
     const union mtxfiledata * data,
-    enum mtxfile_field field,
+    enum mtxfilefield field,
     enum mtxprecision precision,
     int64_t size,
     int64_t offset,
@@ -6302,8 +6302,8 @@ static int mtxfiledata_recv_array(
 
 static int mtxfiledata_recv_coordinate(
     const union mtxfiledata * data,
-    enum mtxfile_object object,
-    enum mtxfile_field field,
+    enum mtxfileobject object,
+    enum mtxfilefield field,
     enum mtxprecision precision,
     int64_t size,
     int64_t offset,
@@ -6451,9 +6451,9 @@ static int mtxfiledata_recv_coordinate(
  */
 int mtxfiledata_recv(
     union mtxfiledata * data,
-    enum mtxfile_object object,
-    enum mtxfile_format format,
-    enum mtxfile_field field,
+    enum mtxfileobject object,
+    enum mtxfileformat format,
+    enum mtxfilefield field,
     enum mtxprecision precision,
     int64_t size,
     int64_t offset,
@@ -6478,7 +6478,7 @@ int mtxfiledata_recv(
 
 static int mtxfiledata_bcast_array(
     const union mtxfiledata * data,
-    enum mtxfile_field field,
+    enum mtxfilefield field,
     enum mtxprecision precision,
     int64_t size,
     int64_t offset,
@@ -6546,8 +6546,8 @@ static int mtxfiledata_bcast_array(
 
 static int mtxfiledata_bcast_coordinate(
     const union mtxfiledata * data,
-    enum mtxfile_object object,
-    enum mtxfile_field field,
+    enum mtxfileobject object,
+    enum mtxfilefield field,
     enum mtxprecision precision,
     int64_t size,
     int64_t offset,
@@ -6695,9 +6695,9 @@ static int mtxfiledata_bcast_coordinate(
  */
 int mtxfiledata_bcast(
     union mtxfiledata * data,
-    enum mtxfile_object object,
-    enum mtxfile_format format,
-    enum mtxfile_field field,
+    enum mtxfileobject object,
+    enum mtxfileformat format,
+    enum mtxfilefield field,
     enum mtxprecision precision,
     int64_t size,
     int64_t offset,
@@ -6721,7 +6721,7 @@ int mtxfiledata_bcast(
 
 static int mtxfiledata_gatherv_array(
     const union mtxfiledata * sendbuf,
-    enum mtxfile_field field,
+    enum mtxfilefield field,
     enum mtxprecision precision,
     int64_t sendoffset,
     int sendcount,
@@ -6805,8 +6805,8 @@ static int mtxfiledata_gatherv_array(
 
 static int mtxfiledata_gatherv_coordinate(
     const union mtxfiledata * sendbuf,
-    enum mtxfile_object object,
-    enum mtxfile_field field,
+    enum mtxfileobject object,
+    enum mtxfilefield field,
     enum mtxprecision precision,
     int64_t sendoffset,
     int sendcount,
@@ -6986,9 +6986,9 @@ static int mtxfiledata_gatherv_coordinate(
  */
 int mtxfiledata_gatherv(
     const union mtxfiledata * sendbuf,
-    enum mtxfile_object object,
-    enum mtxfile_format format,
-    enum mtxfile_field field,
+    enum mtxfileobject object,
+    enum mtxfileformat format,
+    enum mtxfilefield field,
     enum mtxprecision precision,
     int64_t sendoffset,
     int sendcount,
@@ -7018,7 +7018,7 @@ int mtxfiledata_gatherv(
 
 static int mtxfiledata_scatterv_array(
     const union mtxfiledata * sendbuf,
-    enum mtxfile_field field,
+    enum mtxfilefield field,
     enum mtxprecision precision,
     int64_t sendoffset,
     const int * sendcounts,
@@ -7102,8 +7102,8 @@ static int mtxfiledata_scatterv_array(
 
 static int mtxfiledata_scatterv_coordinate(
     const union mtxfiledata * sendbuf,
-    enum mtxfile_object object,
-    enum mtxfile_field field,
+    enum mtxfileobject object,
+    enum mtxfilefield field,
     enum mtxprecision precision,
     int64_t sendoffset,
     const int * sendcounts,
@@ -7283,9 +7283,9 @@ static int mtxfiledata_scatterv_coordinate(
  */
 int mtxfiledata_scatterv(
     const union mtxfiledata * sendbuf,
-    enum mtxfile_object object,
-    enum mtxfile_format format,
-    enum mtxfile_field field,
+    enum mtxfileobject object,
+    enum mtxfileformat format,
+    enum mtxfilefield field,
     enum mtxprecision precision,
     int64_t sendoffset,
     const int * sendcounts,
@@ -7313,7 +7313,7 @@ int mtxfiledata_scatterv(
 
 static int mtxfiledata_alltoallv_array(
     const union mtxfiledata * sendbuf,
-    enum mtxfile_field field,
+    enum mtxfilefield field,
     enum mtxprecision precision,
     int64_t sendoffset,
     const int * sendcounts,
@@ -7397,8 +7397,8 @@ static int mtxfiledata_alltoallv_array(
 
 static int mtxfiledata_alltoallv_coordinate(
     const union mtxfiledata * sendbuf,
-    enum mtxfile_object object,
-    enum mtxfile_field field,
+    enum mtxfileobject object,
+    enum mtxfilefield field,
     enum mtxprecision precision,
     int64_t sendoffset,
     const int * sendcounts,
@@ -7578,9 +7578,9 @@ static int mtxfiledata_alltoallv_coordinate(
  */
 int mtxfiledata_alltoallv(
     const union mtxfiledata * sendbuf,
-    enum mtxfile_object object,
-    enum mtxfile_format format,
-    enum mtxfile_field field,
+    enum mtxfileobject object,
+    enum mtxfileformat format,
+    enum mtxfilefield field,
     enum mtxprecision precision,
     int64_t sendoffset,
     const int * sendcounts,

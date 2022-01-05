@@ -1,6 +1,6 @@
 /* This file is part of libmtx.
  *
- * Copyright (C) 2021 James D. Trotter
+ * Copyright (C) 2022 James D. Trotter
  *
  * libmtx is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
  * along with libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-09-01
+ * Last modified: 2022-01-04
  *
  * Matrix Market comment lines.
  */
@@ -41,28 +41,28 @@
 struct mtxmpierror;
 
 /**
- * `mtxfile_comment' represents a single comment line of a Matrix
+ * `mtxfilecomment' represents a single comment line of a Matrix
  * Market file as a node in a doubly linked list of comment lines.
  */
-struct mtxfile_comment
+struct mtxfilecomment
 {
-    struct mtxfile_comment * prev;
-    struct mtxfile_comment * next;
+    struct mtxfilecomment * prev;
+    struct mtxfilecomment * next;
     char * comment_line;
 };
 
 /**
- * `mtxfile_comment_init()' initialises a comment line.
+ * `mtxfilecomment_init()' initialises a comment line.
  */
-int mtxfile_comment_init(
-    struct mtxfile_comment * comment,
+int mtxfilecomment_init(
+    struct mtxfilecomment * comment,
     const char * comment_line);
 
 /**
- * `mtxfile_comment_free()' frees storage used for a comment line.
+ * `mtxfilecomment_free()' frees storage used for a comment line.
  */
-void mtxfile_comment_free(
-    struct mtxfile_comment * comment);
+void mtxfilecomment_free(
+    struct mtxfilecomment * comment);
 
 /**
  * `mtxfilecomments' represents a section of comment lines from a
@@ -71,7 +71,7 @@ void mtxfile_comment_free(
  */
 struct mtxfilecomments
 {
-    struct mtxfile_comment * root;
+    struct mtxfilecomment * root;
 };
 
 /**

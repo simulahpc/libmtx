@@ -44,42 +44,42 @@ struct mtxmpierror;
  */
 
 /**
- * `mtxfile_object' is used to enumerate different kinds of Matrix
+ * `mtxfileobject' is used to enumerate different kinds of Matrix
  * Market objects.
  */
-enum mtxfile_object
+enum mtxfileobject
 {
     mtxfile_matrix,
     mtxfile_vector
 };
 
 /**
- * `mtxfile_format' is used to enumerate different kinds of Matrix
+ * `mtxfileformat' is used to enumerate different kinds of Matrix
  * Market formats.
  */
-enum mtxfile_format
+enum mtxfileformat
 {
     mtxfile_array,     /* array format for dense matrices and vectors */
     mtxfile_coordinate /* coordinate format for sparse matrices and vectors */
 };
 
 /**
- * `mtxfile_field' is used to enumerate different kinds of fields for
+ * `mtxfilefield' is used to enumerate different kinds of fields for
  * matrix values in Matrix Market files.
  */
-enum mtxfile_field
+enum mtxfilefield
 {
-    mtxfile_real,    /* real, floating-point coefficients */
+    mtxfile_real,    /* real, floating point coefficients */
     mtxfile_complex, /* complex, floating point coefficients */
     mtxfile_integer, /* integer coefficients */
     mtxfile_pattern  /* boolean coefficients (sparsity pattern) */
 };
 
 /**
- * `mtxfile_symmetry' is used to enumerate different kinds of symmetry
+ * `mtxfilesymmetry' is used to enumerate different kinds of symmetry
  * for matrices in Matrix Market format.
  */
-enum mtxfile_symmetry
+enum mtxfilesymmetry
 {
     mtxfile_general,        /* general, non-symmetric matrix */
     mtxfile_symmetric,      /* symmetric matrix */
@@ -92,11 +92,11 @@ enum mtxfile_symmetry
  */
 
 /**
- * `mtxfile_object_str()' is a string representing the Matrix Market
+ * `mtxfileobject_str()' is a string representing the Matrix Market
  * object type.
  */
-const char * mtxfile_object_str(
-    enum mtxfile_object object);
+const char * mtxfileobject_str(
+    enum mtxfileobject object);
 
 /**
  * `mtxfile_parse_object()' parses a string containing the `object' of
@@ -120,18 +120,18 @@ const char * mtxfile_object_str(
  * Otherwise, an error code is returned.
  */
 int mtxfile_parse_object(
-    enum mtxfile_object * object,
+    enum mtxfileobject * object,
     int64_t * bytes_read,
     const char ** endptr,
     const char * s,
     const char * valid_delimiters);
 
 /**
- * `mtxfile_format_str()' is a string representing the Matrix Market
+ * `mtxfileformat_str()' is a string representing the Matrix Market
  * format type.
  */
-const char * mtxfile_format_str(
-    enum mtxfile_format format);
+const char * mtxfileformat_str(
+    enum mtxfileformat format);
 
 /**
  * `mtxfile_parse_format()' parses a string containing the `format' of
@@ -155,18 +155,18 @@ const char * mtxfile_format_str(
  * Otherwise, an error code is returned.
  */
 int mtxfile_parse_format(
-    enum mtxfile_format * format,
+    enum mtxfileformat * format,
     int64_t * bytes_read,
     const char ** endptr,
     const char * s,
     const char * valid_delimiters);
 
 /**
- * `mtxfile_field_str()' is a string representing the Matrix Market
+ * `mtxfilefield_str()' is a string representing the Matrix Market
  * field type.
  */
-const char * mtxfile_field_str(
-    enum mtxfile_field field);
+const char * mtxfilefield_str(
+    enum mtxfilefield field);
 
 /**
  * `mtxfile_parse_field()' parses a string containing the `field' of a
@@ -190,18 +190,18 @@ const char * mtxfile_field_str(
  * Otherwise, an error code is returned.
  */
 int mtxfile_parse_field(
-    enum mtxfile_field * field,
+    enum mtxfilefield * field,
     int64_t * bytes_read,
     const char ** endptr,
     const char * s,
     const char * valid_delimiters);
 
 /**
- * `mtxfile_symmetry_str()' is a string representing the Matrix Market
+ * `mtxfilesymmetry_str()' is a string representing the Matrix Market
  * symmetry type.
  */
-const char * mtxfile_symmetry_str(
-    enum mtxfile_symmetry symmetry);
+const char * mtxfilesymmetry_str(
+    enum mtxfilesymmetry symmetry);
 
 /**
  * `mtxfile_parse_symmetry()' parses a string containing the
@@ -225,7 +225,7 @@ const char * mtxfile_symmetry_str(
  * Otherwise, an error code is returned.
  */
 int mtxfile_parse_symmetry(
-    enum mtxfile_symmetry * symmetry,
+    enum mtxfilesymmetry * symmetry,
     int64_t * bytes_read,
     const char ** endptr,
     const char * s,
@@ -245,18 +245,18 @@ struct mtxfileheader
      * ‘object’ is the type of Matrix Market object: ‘matrix’ or
      * ‘vector’.
      */
-    enum mtxfile_object object;
+    enum mtxfileobject object;
 
     /**
      * ‘format’ is the matrix format: ‘coordinate’ or ‘array’.
      */
-    enum mtxfile_format format;
+    enum mtxfileformat format;
 
     /**
      * ‘field’ is the matrix field: ‘real’, ‘complex’, ‘integer’ or
      * ‘pattern’.
      */
-    enum mtxfile_field field;
+    enum mtxfilefield field;
 
     /**
      * ‘symmetry’ is the matrix symmetry: ‘general’, ‘symmetric’,
@@ -266,7 +266,7 @@ struct mtxfileheader
      * ‘hermitian’, then the matrix must be square, so that ‘num_rows’
      * is equal to ‘num_columns’.
      */
-    enum mtxfile_symmetry symmetry;
+    enum mtxfilesymmetry symmetry;
 };
 
 /**

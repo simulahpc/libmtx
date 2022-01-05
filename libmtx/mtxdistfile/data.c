@@ -62,9 +62,9 @@
  */
 int mtxdistfiledata_permute(
     union mtxfiledata * data,
-    enum mtxfile_object object,
-    enum mtxfile_format format,
-    enum mtxfile_field field,
+    enum mtxfileobject object,
+    enum mtxfileformat format,
+    enum mtxfilefield field,
     enum mtxprecision precision,
     int num_rows,
     int num_columns,
@@ -272,9 +272,9 @@ int mtxdistfiledata_permute(
 
 static int mtxdistfiledata_sort_keys(
     union mtxfiledata * data,
-    enum mtxfile_object object,
-    enum mtxfile_format format,
-    enum mtxfile_field field,
+    enum mtxfileobject object,
+    enum mtxfileformat format,
+    enum mtxfilefield field,
     enum mtxprecision precision,
     int num_rows,
     int num_columns,
@@ -330,9 +330,9 @@ static int mtxdistfiledata_sort_keys(
  */
 int mtxdistfiledata_sort_row_major(
     union mtxfiledata * data,
-    enum mtxfile_object object,
-    enum mtxfile_format format,
-    enum mtxfile_field field,
+    enum mtxfileobject object,
+    enum mtxfileformat format,
+    enum mtxfilefield field,
     enum mtxprecision precision,
     int num_rows,
     int num_columns,
@@ -388,9 +388,9 @@ int mtxdistfiledata_sort_row_major(
  */
 int mtxdistfiledata_sort_column_major(
     union mtxfiledata * data,
-    enum mtxfile_object object,
-    enum mtxfile_format format,
-    enum mtxfile_field field,
+    enum mtxfileobject object,
+    enum mtxfileformat format,
+    enum mtxfilefield field,
     enum mtxprecision precision,
     int num_rows,
     int num_columns,
@@ -460,9 +460,9 @@ int mtxdistfiledata_sort_column_major(
  */
 int mtxdistfiledata_sort_morton(
     union mtxfiledata * data,
-    enum mtxfile_object object,
-    enum mtxfile_format format,
-    enum mtxfile_field field,
+    enum mtxfileobject object,
+    enum mtxfileformat format,
+    enum mtxfilefield field,
     enum mtxprecision precision,
     int num_rows,
     int num_columns,

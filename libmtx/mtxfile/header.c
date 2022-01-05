@@ -47,11 +47,11 @@
  */
 
 /**
- * `mtxfile_object_str()' is a string representing the Matrix Market
+ * `mtxfileobject_str()' is a string representing the Matrix Market
  * object type.
  */
-const char * mtxfile_object_str(
-    enum mtxfile_object object)
+const char * mtxfileobject_str(
+    enum mtxfileobject object)
 {
     switch (object) {
     case mtxfile_matrix: return "matrix";
@@ -82,7 +82,7 @@ const char * mtxfile_object_str(
  * Otherwise, an error code is returned.
  */
 int mtxfile_parse_object(
-    enum mtxfile_object * object,
+    enum mtxfileobject * object,
     int64_t * bytes_read,
     const char ** endptr,
     const char * s,
@@ -111,11 +111,11 @@ int mtxfile_parse_object(
 }
 
 /**
- * `mtxfile_format_str()' is a string representing the Matrix Market
+ * `mtxfileformat_str()' is a string representing the Matrix Market
  * format type.
  */
-const char * mtxfile_format_str(
-    enum mtxfile_format format)
+const char * mtxfileformat_str(
+    enum mtxfileformat format)
 {
     switch (format) {
     case mtxfile_array: return "array";
@@ -146,7 +146,7 @@ const char * mtxfile_format_str(
  * Otherwise, an error code is returned.
  */
 int mtxfile_parse_format(
-    enum mtxfile_format * format,
+    enum mtxfileformat * format,
     int64_t * bytes_read,
     const char ** endptr,
     const char * s,
@@ -175,11 +175,11 @@ int mtxfile_parse_format(
 }
 
 /**
- * `mtxfile_field_str()' is a string representing the Matrix Market
+ * `mtxfilefield_str()' is a string representing the Matrix Market
  * field type.
  */
-const char * mtxfile_field_str(
-    enum mtxfile_field field)
+const char * mtxfilefield_str(
+    enum mtxfilefield field)
 {
     switch (field) {
     case mtxfile_real: return "real";
@@ -212,7 +212,7 @@ const char * mtxfile_field_str(
  * Otherwise, an error code is returned.
  */
 int mtxfile_parse_field(
-    enum mtxfile_field * field,
+    enum mtxfilefield * field,
     int64_t * bytes_read,
     const char ** endptr,
     const char * s,
@@ -247,11 +247,11 @@ int mtxfile_parse_field(
 }
 
 /**
- * `mtxfile_symmetry_str()' is a string representing the Matrix Market
+ * `mtxfilesymmetry_str()' is a string representing the Matrix Market
  * symmetry type.
  */
-const char * mtxfile_symmetry_str(
-    enum mtxfile_symmetry symmetry)
+const char * mtxfilesymmetry_str(
+    enum mtxfilesymmetry symmetry)
 {
     switch (symmetry) {
     case mtxfile_general: return "general";
@@ -284,7 +284,7 @@ const char * mtxfile_symmetry_str(
  * Otherwise, an error code is returned.
  */
 int mtxfile_parse_symmetry(
-    enum mtxfile_symmetry * symmetry,
+    enum mtxfilesymmetry * symmetry,
     int64_t * bytes_read,
     const char ** endptr,
     const char * s,
@@ -547,10 +547,10 @@ int mtxfileheader_fwrite(
 {
     int ret = fprintf(
         f, "%%%%MatrixMarket %s %s %s %s\n",
-        mtxfile_object_str(header->object),
-        mtxfile_format_str(header->format),
-        mtxfile_field_str(header->field),
-        mtxfile_symmetry_str(header->symmetry));
+        mtxfileobject_str(header->object),
+        mtxfileformat_str(header->format),
+        mtxfilefield_str(header->field),
+        mtxfilesymmetry_str(header->symmetry));
     if (ret < 0)
         return MTX_ERR_ERRNO;
     if (bytes_written)
@@ -573,10 +573,10 @@ int mtxfileheader_gzwrite(
 {
     int ret = gzprintf(
         f, "%%%%MatrixMarket %s %s %s %s\n",
-        mtxfile_object_str(header->object),
-        mtxfile_format_str(header->format),
-        mtxfile_field_str(header->field),
-        mtxfile_symmetry_str(header->symmetry));
+        mtxfileobject_str(header->object),
+        mtxfileformat_str(header->format),
+        mtxfilefield_str(header->field),
+        mtxfilesymmetry_str(header->symmetry));
     if (ret < 0)
         return MTX_ERR_ERRNO;
     if (bytes_written)

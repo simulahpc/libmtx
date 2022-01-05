@@ -44,7 +44,7 @@
 #include <string.h>
 
 /**
- * `mtxfile_comment_validate()' validates a comment line.
+ * `mtxfilecomment_validate()' validates a comment line.
  *
  * A comment line must be a non-empty, null-terminated string,
  * beginning with '%' and ending with '\n'.  Moreover, no other
@@ -54,7 +54,7 @@
  * If the comment line is valid, then `MTX_SUCCESS' is
  * returned. Otherwise, `MTX_ERR_INVALID_MTX_COMMENT' is returned.
  */
-static int mtxfile_comment_validate(
+static int mtxfilecomment_validate(
     const char * comment_line)
 {
     int n = strlen(comment_line);
@@ -66,13 +66,13 @@ static int mtxfile_comment_validate(
 }
 
 /**
- * `mtxfile_comment_init()' initialises a comment line.
+ * `mtxfilecomment_init()' initialises a comment line.
  */
-int mtxfile_comment_init(
-    struct mtxfile_comment * comment,
+int mtxfilecomment_init(
+    struct mtxfilecomment * comment,
     const char * comment_line)
 {
-    int err = mtxfile_comment_validate(comment_line);
+    int err = mtxfilecomment_validate(comment_line);
     if (err)
         return err;
 
@@ -105,7 +105,7 @@ int mtxfilecomments_copy(
     if (err)
         return err;
 
-    const struct mtxfile_comment * node = src->root;
+    const struct mtxfilecomment * node = src->root;
     while (node) {
         err = mtxfilecomments_write(dst, node->comment_line);
         if (err) {
@@ -125,7 +125,7 @@ int mtxfilecomments_cat(
     struct mtxfilecomments * dst,
     const struct mtxfilecomments * src)
 {
-    const struct mtxfile_comment * node = src->root;
+    const struct mtxfilecomment * node = src->root;
     while (node) {
         int err = mtxfilecomments_write(dst, node->comment_line);
         if (err)
@@ -136,10 +136,10 @@ int mtxfilecomments_cat(
 }
 
 /**
- * `mtxfile_comment_free()' frees storage used for a comment line.
+ * `mtxfilecomment_free()' frees storage used for a comment line.
  */
-void mtxfile_comment_free(
-    struct mtxfile_comment * comment)
+void mtxfilecomment_free(
+    struct mtxfilecomment * comment)
 {
     free(comment->comment_line);
 }
@@ -152,12 +152,12 @@ void mtxfilecomments_free(
 {
     if (!comments->root)
         return;
-    struct mtxfile_comment * node = comments->root;
+    struct mtxfilecomment * node = comments->root;
     while (node->next)
         node = node->next;
     while (node) {
-        struct mtxfile_comment * prev = node->prev;
-        mtxfile_comment_free(node);
+        struct mtxfilecomment * prev = node->prev;
+        mtxfilecomment_free(node);
         free(node);
         node = prev;
     }
@@ -167,10 +167,10 @@ static int mtxfilecomments_push_back(
     struct mtxfilecomments * comments,
     const char * comment_line)
 {
-    struct mtxfile_comment * comment = malloc(sizeof(struct mtxfile_comment));
+    struct mtxfilecomment * comment = malloc(sizeof(struct mtxfilecomment));
     if (!comment)
         return MTX_ERR_ERRNO;
-    int err = mtxfile_comment_init(comment, comment_line);
+    int err = mtxfilecomment_init(comment, comment_line);
     if (err) {
         free(comment);
         return err;
@@ -179,7 +179,7 @@ static int mtxfilecomments_push_back(
     if (comments->root == NULL) {
         comments->root = comment;
     } else {
-        struct mtxfile_comment * tail = comments->root;
+        struct mtxfilecomment * tail = comments->root;
         while (tail->next)
             tail = tail->next;
         comment->prev = tail;
@@ -424,7 +424,7 @@ int mtxfilecomments_fputs(
     FILE * f,
     int64_t * bytes_written)
 {
-    const struct mtxfile_comment * node = comments->root;
+    const struct mtxfilecomment * node = comments->root;
     while (node) {
         if (fputs(node->comment_line, f) == EOF)
             return MTX_ERR_ERRNO;
@@ -445,7 +445,7 @@ int mtxfilecomments_gzputs(
     gzFile f,
     int64_t * bytes_written)
 {
-    const struct mtxfile_comment * node = comments->root;
+    const struct mtxfilecomment * node = comments->root;
     while (node) {
         if (gzputs(f, node->comment_line) == EOF)
             return MTX_ERR_ERRNO;
@@ -478,7 +478,7 @@ int mtxfilecomments_send(
 {
     int err;
     int num_comments = 0;
-    const struct mtxfile_comment * node;
+    const struct mtxfilecomment * node;
     for (node = comments->root; node; node = node->next)
         num_comments++;
 
@@ -581,7 +581,7 @@ int mtxfilecomments_bcast(
     int num_comments;
     if (rank == root) {
         num_comments = 0;
-        const struct mtxfile_comment * node;
+        const struct mtxfilecomment * node;
         for (node = comments->root; node; node = node->next)
             num_comments++;
     }
@@ -590,7 +590,7 @@ int mtxfilecomments_bcast(
     if (mtxmpierror_allreduce(mpierror, err))
         return MTX_ERR_MPI_COLLECTIVE;
 
-    const struct mtxfile_comment * node;
+    const struct mtxfilecomment * node;
     if (rank == root)
         node = comments->root;
     else

@@ -135,172 +135,48 @@ The following sections provide detailed explanations of the
 The @code{mtxfileheader} data type is used to represent the header
 line of a Matrix Market file.
 @example
-@code{
-struct mtxfileheader
-@{
-    enum mtxfile_object object;
-    enum mtxfile_format format;
-    enum mtxfile_field field;
-    enum mtxfile_symmetry symmetry;
+@code{struct mtxfileheader @{
+    enum mtxfileobject object;
+    enum mtxfileformat format;
+    enum mtxfilefield field;
+    enum mtxfilesymmetry symmetry;
 @};}
 @end example
 
-@tindex mtx_object
-@tindex mtx_format
-@tindex mtx_field
-@tindex mtx_symmetry
-The four enum types, @code{mtx_object}, @code{mtx_format},
-@code{mtx_field} and @code{mtx_symmetry} are used to represent values
+@tindex mtxfileobject
+@tindex mtxfileformat
+@tindex mtxfilefield
+@tindex mtxfilesymmetry
+The four enum types, @code{mtxfileobject}, @code{mtxfileformat},
+@code{mtxfilefield} and @code{mtxfilesymmetry} are used to represent values
 that appear in the Matrix Market header (see @ref{Header line}).  The
 meaning of the values associated with these types is described in
 detail in @ref{Matrix Market file format}.
 @example
-@code{enum mtx_object @{
-    mtx_matrix,
-    mtx_vector
+@code{enum mtxfileobject @{
+    mtxfile_matrix,
+    mtxfile_vector
 @};
 
-enum mtx_format @{
-    mtx_array,     /* array of dense matrix values */
-    mtx_coordinate /* coordinate format of sparse matrix values */
+enum mtxfileformat @{
+    mtxfile_array,     /* dense matrix or vector */
+    mtxfile_coordinate /* sparse matrix or vector */
 @};
 
-enum mtx_field @{
-    mtx_real,    /* single-precision floating point coefficients */
-    mtx_double,  /* double-precision floating point coefficients */
-    mtx_complex, /* single-precision floating point complex
-                  * coefficients */
-    mtx_integer, /* integer coefficients */
-    mtx_pattern  /* boolean coefficients (sparsity pattern) */
+enum mtxfilefield @{
+    mtxfile_real,    /* real, floating point coefficients */
+    mtxfile_complex, /* complex, floating point coefficients */
+    mtxfile_integer, /* integer coefficients */
+    mtxfile_pattern  /* boolean coefficients (sparsity pattern) */
 @};
 
-enum mtx_symmetry @{
-    mtx_general,        /* general, non-symmetric matrix */
-    mtx_symmetric,      /* symmetric matrix */
-    mtx_skew_symmetric, /* skew-symmetric matrix */
-    mtx_hermitian       /* Hermitian matrix */
+enum mtxfilesymmetry @{
+    mtxfile_general,        /* general, non-symmetric matrix */
+    mtxfile_symmetric,      /* symmetric matrix */
+    mtxfile_skew_symmetric, /* skew-symmetric matrix */
+    mtxfile_hermitian       /* Hermitian matrix */
 @};}
 @end example
-
-
-@node Additional header types
-@subsection Additional header types
-
-For the sake of convenience, libmtx also defines some additional enum
-types that are not stored explicitly as part of the Matrix Market
-format.  This extra information can sometimes be provided by the user
-(or by libmtx) to keep track of various facts concerning the
-underlying matrix or vector.  These facts may not always be stated
-explicitly in the Matrix Market file itself.  For example, it is often
-useful to know whether a matrix is sorted or not, which can be used to
-improve the efficiency of some computations.
-
-The enum types for this extra header information are
-@c code{mtxprecision},
-@code{mtx_triangle}, @code{mtx_sorting}, @code{mtx_ordering} and
-@code{mtx_assembly}.
-
-@c @cindex precision
-@c @cindex half precision
-@c @cindex single precision
-@c @cindex double precision
-@c @cindex quad precision
-@c @cindex arbitrary precision
-@c @tindex mtxprecision
-@c @example
-@c @code{enum mtxprecision @{
-@c     mtx_half,             /* Half (16-bit) precision */
-@c     mtx_single,           /* Single (32-bit) precision */
-@c     mtx_double,           /* Double (64-bit) precision */
-@c     mtx_quadruple,        /* Double (64-bit) precision */
-@c     mtx_arbitrary,        /* Arbitrary precision */
-@c @};}
-@c @end example
-@c Arbitrary precision support is based on GNU GMP for integers and GNU
-@c MPFR for floating point numbers.
-
-@cindex triangular matrix
-@cindex lower triangular matrix
-@cindex upper triangular matrix
-@tindex mtx_triangle
-The enum type @code{mtx_triangle} is used to describe whether or not
-the matrix entries stored for a particular matrix belong to the upper
-or lower triangular part of the matrix, or both.  Note that the term
-triangular is still used for non-square matrices, even though the term
-trapezoidal would be more accurate.
-@example
-@code{enum mtx_triangle @{
-    mtx_nontriangular,    /* nonzero above, below or on main diagonal */
-    mtx_lower_triangular, /* zero above main diagonal */
-    mtx_upper_triangular, /* zero below main diagonal */
-    mtx_diagonal,         /* zero above and below main diagonal */
-@};}
-@end example
-For matrices in array format (i.e., dense matrices) that are
-symmetric, Hermitian or skew-symmetric‚ the default is to assume that
-the lower triangular part is stored (@code{mtx_lower_triangular}).
-Otherwise, the matrix is assumed to be non-triangular
-(@code{mtx_nontriangular}).
-
-@cindex sorting
-@cindex row major
-@cindex column major
-@tindex mtx_sorting
-The enum type @code{mtx_sorting} is used to enumerate different ways
-of sorting matrix entries.
-@example
-@code{enum mtx_sorting @{
-    mtx_unsorted,       /* unsorted matrix nonzeros */
-    mtx_row_major,      /* row major ordering */
-    mtx_column_major,   /* column major ordering */
-@};}
-@end example
-For matrices and vectors in array format (i.e., dense matrices or
-vectors), the default is to assume that they are sorted in row major
-order (@code{mtx_row_major}).  Otherwise, matrices and vectors are
-generally unsorted (@code{mtx_unsorted}).
-
-@cindex ordering
-@cindex reordering
-@cindex unordered
-@cindex Reverse Cuthill-McKee
-@cindex RCM
-@tindex mtx_ordering
-The enum type @code{mtx_ordering} is used to enumerate different
-orderings or permutations of the rows and columns of a
-matrix. Reordering a sparse matrix is typically done to improve
-performance, for example, through reduced fill-in for matrix
-factorisations or better data locality.
-@example
-@code{enum mtx_ordering @{
-    mtx_unordered,      /* general, unordered matrix */
-    mtx_rcm,            /* Reverse Cuthill-McKee ordering */
-@};}
-@end example
-Matrices are generally assumed to be unordered.  See @ref{Transposing
-sorting and reordering} for more on reordering matrices and vectors.
-
-@cindex assembly
-@tindex mtx_assembly
-@tindex mtx_assembled
-@tindex mtx_unassembled
-The enum type @code{mtx_assembly} is used to indicate whether or not a
-sparse matrix can contain more than one value for a given row and
-column index.  In other words, an unassembled matrix often contains
-several entries associated with a single location in the matrix.  Many
-sparse matrix operations will only produce correct results whenever
-these duplicate matrix entries have been added together first, a
-procedure generally referred to as @dfn{assembly}.  An assembled
-matrix may only contain a single, unique value for each nonzero matrix
-location.
-@example
-@code{enum mtx_assembly @{
-    mtx_unassembled, /* unassembled; duplicate nonzeros allowed. */
-    mtx_assembled,   /* assembled; duplicate nonzeros not allowed. */
-@};}
-@end example
-In general, it is assumed that matrices are not assembled
-(@code{mtx_unassembled}) and duplicate entries may be present.
 
 
 @node Comments
@@ -389,6 +265,29 @@ otherwise.
 
 Finally, @code{nonzero_size} is the size (in bytes) of each nonzero
 stored in the @code{data} array.
+
+
+@node Precision
+@subsection Precision
+
+@cindex precision
+@c @cindex half precision
+@cindex single precision
+@cindex double precision
+@c @cindex quad precision
+@c @cindex arbitrary precision
+@tindex mtxprecision
+@example
+@code{enum mtxprecision @{
+@c    mtx_half,             /* Half (16-bit) precision */
+    mtx_single,           /* Single (32-bit) precision */
+    mtx_double,           /* Double (64-bit) precision */
+@c    mtx_quadruple,        /* Double (64-bit) precision */
+@c    mtx_arbitrary,        /* Arbitrary precision */
+@};}
+@end example
+@c Arbitrary precision support is based on GNU GMP for integers and GNU
+@c MPFR for floating point numbers.
 
 
 @node Data
@@ -1083,6 +982,24 @@ If successful, @code{mtx_sort} returns @code{MTX_SUCCESS}, and
 specified by @code{sorting}. If @code{mtx->format} is @code{mtx_array},
 then @code{mtx_sort} does nothing.
 
+@cindex sorting
+@cindex row major
+@cindex column major
+@tindex mtx_sorting
+The enum type @code{mtx_sorting} is used to enumerate different ways
+of sorting matrix entries.
+@example
+@code{enum mtx_sorting @{
+    mtx_unsorted,       /* unsorted matrix nonzeros */
+    mtx_row_major,      /* row major ordering */
+    mtx_column_major,   /* column major ordering */
+@};}
+@end example
+For matrices and vectors in array format (i.e., dense matrices or
+vectors), the default is to assume that they are sorted in row major
+order (@code{mtx_row_major}).  Otherwise, matrices and vectors are
+generally unsorted (@code{mtx_unsorted}).
+
 
 @node Permuting
 @subsection Permuting
@@ -1116,6 +1033,26 @@ applied to the rows or columns, respectively.
 
 @node Reordering
 @subsection Reordering
+
+@cindex ordering
+@cindex reordering
+@cindex unordered
+@cindex Reverse Cuthill-McKee
+@cindex RCM
+@tindex mtx_ordering
+The enum type @code{mtx_ordering} is used to enumerate different
+orderings or permutations of the rows and columns of a
+matrix. Reordering a sparse matrix is typically done to improve
+performance, for example, through reduced fill-in for matrix
+factorisations or better data locality.
+@example
+@code{enum mtx_ordering @{
+    mtx_unordered,      /* general, unordered matrix */
+    mtx_rcm,            /* Reverse Cuthill-McKee ordering */
+@};}
+@end example
+Matrices are generally assumed to be unordered.  See @ref{Transposing
+sorting and reordering} for more on reordering matrices and vectors.
 
 @findex mtx_matrix_reorder
 The function @code{mtx_matrix_reorder} reorders the rows and columns
@@ -1273,3 +1210,72 @@ int mtx_dgemv(
 @c @itemize
 @c @item @code{gemm} --- matrix-matrix multiply
 @c @end itemize
+
+
+
+
+
+
+
+
+@c @node Additional header types
+@c @subsection Additional header types
+
+@c For the sake of convenience, libmtx also defines some additional enum
+@c types that are not stored explicitly as part of the Matrix Market
+@c format.  This extra information can sometimes be provided by the user
+@c (or by libmtx) to keep track of various facts concerning the
+@c underlying matrix or vector.  These facts may not always be stated
+@c explicitly in the Matrix Market file itself.  For example, it is often
+@c useful to know whether a matrix is sorted or not, which can be used to
+@c improve the efficiency of some computations.
+
+@c The enum types for this extra header information are
+@c @c code{mtxprecision},
+@c @code{mtx_triangle}, @code{mtx_sorting}, @code{mtx_ordering} and
+@c @code{mtx_assembly}.
+
+@c @cindex triangular matrix
+@c @cindex lower triangular matrix
+@c @cindex upper triangular matrix
+@c @tindex mtx_triangle
+@c The enum type @code{mtx_triangle} is used to describe whether or not
+@c the matrix entries stored for a particular matrix belong to the upper
+@c or lower triangular part of the matrix, or both.  Note that the term
+@c triangular is still used for non-square matrices, even though the term
+@c trapezoidal would be more accurate.
+@c @example
+@c @code{enum mtx_triangle @{
+@c     mtx_nontriangular,    /* nonzero above, below or on main diagonal */
+@c     mtx_lower_triangular, /* zero above main diagonal */
+@c     mtx_upper_triangular, /* zero below main diagonal */
+@c     mtx_diagonal,         /* zero above and below main diagonal */
+@c @};}
+@c @end example
+@c For matrices in array format (i.e., dense matrices) that are
+@c symmetric, Hermitian or skew-symmetric‚ the default is to assume that
+@c the lower triangular part is stored (@code{mtx_lower_triangular}).
+@c Otherwise, the matrix is assumed to be non-triangular
+@c (@code{mtx_nontriangular}).
+
+@c @cindex assembly
+@c @tindex mtx_assembly
+@c @tindex mtx_assembled
+@c @tindex mtx_unassembled
+@c The enum type @code{mtx_assembly} is used to indicate whether or not a
+@c sparse matrix can contain more than one value for a given row and
+@c column index.  In other words, an unassembled matrix often contains
+@c several entries associated with a single location in the matrix.  Many
+@c sparse matrix operations will only produce correct results whenever
+@c these duplicate matrix entries have been added together first, a
+@c procedure generally referred to as @dfn{assembly}.  An assembled
+@c matrix may only contain a single, unique value for each nonzero matrix
+@c location.
+@c @example
+@c @code{enum mtx_assembly @{
+@c     mtx_unassembled, /* unassembled; duplicate nonzeros allowed. */
+@c     mtx_assembled,   /* assembled; duplicate nonzeros not allowed. */
+@c @};}
+@c @end example
+@c In general, it is assumed that matrices are not assembled
+@c (@code{mtx_unassembled}) and duplicate entries may be present.

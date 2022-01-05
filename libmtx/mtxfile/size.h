@@ -88,8 +88,8 @@ int mtxfile_parse_size(
     int64_t * bytes_read,
     const char ** endptr,
     const char * s,
-    enum mtxfile_object object,
-    enum mtxfile_format format);
+    enum mtxfileobject object,
+    enum mtxfileformat format);
 
 /**
  * `mtxfilesize_copy()' copies a size line.
@@ -105,8 +105,8 @@ int mtxfilesize_copy(
 int mtxfilesize_cat(
     struct mtxfilesize * dst,
     const struct mtxfilesize * src,
-    enum mtxfile_object object,
-    enum mtxfile_format format);
+    enum mtxfileobject object,
+    enum mtxfileformat format);
 
 /**
  * `mtxfilesize_num_data_lines()' computes the number of data lines
@@ -135,8 +135,8 @@ int mtxfile_fread_size(
     int64_t * bytes_read,
     size_t line_max,
     char * linebuf,
-    enum mtxfile_object object,
-    enum mtxfile_format format);
+    enum mtxfileobject object,
+    enum mtxfileformat format);
 
 #ifdef LIBMTX_HAVE_LIBZ
 /**
@@ -154,8 +154,8 @@ int mtxfile_gzread_size(
     int64_t * bytes_read,
     size_t line_max,
     char * linebuf,
-    enum mtxfile_object object,
-    enum mtxfile_format format);
+    enum mtxfileobject object,
+    enum mtxfileformat format);
 #endif
 
 /**
@@ -167,8 +167,8 @@ int mtxfile_gzread_size(
  */
 int mtxfilesize_fwrite(
     const struct mtxfilesize * size,
-    enum mtxfile_object object,
-    enum mtxfile_format format,
+    enum mtxfileobject object,
+    enum mtxfileformat format,
     FILE * f,
     int64_t * bytes_written);
 
@@ -182,8 +182,8 @@ int mtxfilesize_fwrite(
  */
 int mtxfilesize_gzwrite(
     const struct mtxfilesize * size,
-    enum mtxfile_object object,
-    enum mtxfile_format format,
+    enum mtxfileobject object,
+    enum mtxfileformat format,
     gzFile f,
     int64_t * bytes_written);
 #endif
@@ -285,8 +285,8 @@ int mtxfilesize_allgather(
 int mtxfilesize_scatterv(
     const struct mtxfilesize * sendsize,
     struct mtxfilesize * recvsize,
-    enum mtxfile_object object,
-    enum mtxfile_format format,
+    enum mtxfileobject object,
+    enum mtxfileformat format,
     int recvcount,
     int root,
     MPI_Comm comm,

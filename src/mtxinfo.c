@@ -313,10 +313,10 @@ int main(int argc, char *argv[])
 
     /* 3. Print some info about the Matrix Market file. */
     fprintf(stdout, "%s\n", args.mtx_path);
-    fprintf(stdout, "object: %s\n", mtxfile_object_str(mtxfile.header.object));
-    fprintf(stdout, "format: %s\n", mtxfile_format_str(mtxfile.header.format));
-    fprintf(stdout, "field: %s\n", mtxfile_field_str(mtxfile.header.field));
-    fprintf(stdout, "symmetry: %s\n", mtxfile_symmetry_str(mtxfile.header.symmetry));
+    fprintf(stdout, "object: %s\n", mtxfileobject_str(mtxfile.header.object));
+    fprintf(stdout, "format: %s\n", mtxfileformat_str(mtxfile.header.format));
+    fprintf(stdout, "field: %s\n", mtxfilefield_str(mtxfile.header.field));
+    fprintf(stdout, "symmetry: %s\n", mtxfilesymmetry_str(mtxfile.header.symmetry));
     fprintf(stdout, "rows: %'d\n", mtxfile.size.num_rows);
     fprintf(stdout, "columns: %'d\n", mtxfile.size.num_columns);
     fprintf(stdout, "nonzeros: %'"PRId64"\n", mtxfile.size.num_nonzeros);

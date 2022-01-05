@@ -288,8 +288,8 @@ int mtxdistfile_init_copy(
  */
 int mtxdistfile_alloc_matrix_array(
     struct mtxdistfile * mtxdistfile,
-    enum mtxfile_field field,
-    enum mtxfile_symmetry symmetry,
+    enum mtxfilefield field,
+    enum mtxfilesymmetry symmetry,
     enum mtxprecision precision,
     int num_rows,
     int num_columns,
@@ -370,7 +370,7 @@ int mtxdistfile_alloc_matrix_array(
  */
 int mtxdistfile_init_matrix_array_real_single(
     struct mtxdistfile * mtxdistfile,
-    enum mtxfile_symmetry symmetry,
+    enum mtxfilesymmetry symmetry,
     int num_rows,
     int num_columns,
     const float * data,
@@ -401,7 +401,7 @@ int mtxdistfile_init_matrix_array_real_single(
  */
 int mtxdistfile_init_matrix_array_real_double(
     struct mtxdistfile * mtxdistfile,
-    enum mtxfile_symmetry symmetry,
+    enum mtxfilesymmetry symmetry,
     int num_rows,
     int num_columns,
     const double * data,
@@ -432,7 +432,7 @@ int mtxdistfile_init_matrix_array_real_double(
  */
 int mtxdistfile_init_matrix_array_complex_single(
     struct mtxdistfile * mtxdistfile,
-    enum mtxfile_symmetry symmetry,
+    enum mtxfilesymmetry symmetry,
     int num_rows,
     int num_columns,
     const float (* data)[2],
@@ -446,7 +446,7 @@ int mtxdistfile_init_matrix_array_complex_single(
  */
 int mtxdistfile_init_matrix_array_complex_double(
     struct mtxdistfile * mtxdistfile,
-    enum mtxfile_symmetry symmetry,
+    enum mtxfilesymmetry symmetry,
     int num_rows,
     int num_columns,
     const double (* data)[2],
@@ -460,7 +460,7 @@ int mtxdistfile_init_matrix_array_complex_double(
  */
 int mtxdistfile_init_matrix_array_integer_single(
     struct mtxdistfile * mtxdistfile,
-    enum mtxfile_symmetry symmetry,
+    enum mtxfilesymmetry symmetry,
     int num_rows,
     int num_columns,
     const int32_t * data,
@@ -474,7 +474,7 @@ int mtxdistfile_init_matrix_array_integer_single(
  */
 int mtxdistfile_init_matrix_array_integer_double(
     struct mtxdistfile * mtxdistfile,
-    enum mtxfile_symmetry symmetry,
+    enum mtxfilesymmetry symmetry,
     int num_rows,
     int num_columns,
     const int64_t * data,
@@ -491,7 +491,7 @@ int mtxdistfile_init_matrix_array_integer_double(
  */
 int mtxdistfile_alloc_vector_array(
     struct mtxdistfile * mtxdistfile,
-    enum mtxfile_field field,
+    enum mtxfilefield field,
     enum mtxprecision precision,
     int num_rows,
     MPI_Comm comm,
@@ -718,8 +718,8 @@ int mtxdistfile_init_vector_array_integer_double(
  */
 int mtxdistfile_alloc_matrix_coordinate(
     struct mtxdistfile * mtxdistfile,
-    enum mtxfile_field field,
-    enum mtxfile_symmetry symmetry,
+    enum mtxfilefield field,
+    enum mtxfilesymmetry symmetry,
     enum mtxprecision precision,
     int num_rows,
     int num_columns,
@@ -820,7 +820,7 @@ int mtxdistfile_alloc_matrix_coordinate(
  */
 int mtxdistfile_init_matrix_coordinate_real_single(
     struct mtxdistfile * mtxdistfile,
-    enum mtxfile_symmetry symmetry,
+    enum mtxfilesymmetry symmetry,
     int num_rows,
     int num_columns,
     int64_t num_nonzeros,
@@ -835,7 +835,7 @@ int mtxdistfile_init_matrix_coordinate_real_single(
  */
 int mtxdistfile_init_matrix_coordinate_real_double(
     struct mtxdistfile * mtxdistfile,
-    enum mtxfile_symmetry symmetry,
+    enum mtxfilesymmetry symmetry,
     int num_rows,
     int num_columns,
     int64_t num_nonzeros,
@@ -868,7 +868,7 @@ int mtxdistfile_init_matrix_coordinate_real_double(
  */
 int mtxdistfile_init_matrix_coordinate_complex_single(
     struct mtxdistfile * mtxdistfile,
-    enum mtxfile_symmetry symmetry,
+    enum mtxfilesymmetry symmetry,
     int num_rows,
     int num_columns,
     int64_t num_nonzeros,
@@ -883,7 +883,7 @@ int mtxdistfile_init_matrix_coordinate_complex_single(
  */
 int mtxdistfile_init_matrix_coordinate_complex_double(
     struct mtxdistfile * mtxdistfile,
-    enum mtxfile_symmetry symmetry,
+    enum mtxfilesymmetry symmetry,
     int num_rows,
     int num_columns,
     int64_t num_nonzeros,
@@ -898,7 +898,7 @@ int mtxdistfile_init_matrix_coordinate_complex_double(
  */
 int mtxdistfile_init_matrix_coordinate_integer_single(
     struct mtxdistfile * mtxdistfile,
-    enum mtxfile_symmetry symmetry,
+    enum mtxfilesymmetry symmetry,
     int num_rows,
     int num_columns,
     int64_t num_nonzeros,
@@ -913,7 +913,7 @@ int mtxdistfile_init_matrix_coordinate_integer_single(
  */
 int mtxdistfile_init_matrix_coordinate_integer_double(
     struct mtxdistfile * mtxdistfile,
-    enum mtxfile_symmetry symmetry,
+    enum mtxfilesymmetry symmetry,
     int num_rows,
     int num_columns,
     int64_t num_nonzeros,
@@ -928,7 +928,7 @@ int mtxdistfile_init_matrix_coordinate_integer_double(
  */
 int mtxdistfile_init_matrix_coordinate_pattern(
     struct mtxdistfile * mtxdistfile,
-    enum mtxfile_symmetry symmetry,
+    enum mtxfilesymmetry symmetry,
     int num_rows,
     int num_columns,
     int64_t num_nonzeros,
@@ -946,7 +946,7 @@ int mtxdistfile_init_matrix_coordinate_pattern(
  */
 int mtxdistfile_alloc_vector_coordinate(
     struct mtxdistfile * mtxdistfile,
-    enum mtxfile_field field,
+    enum mtxfilefield field,
     enum mtxprecision precision,
     int num_rows,
     int64_t num_nonzeros,
