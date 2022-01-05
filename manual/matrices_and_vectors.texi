@@ -38,7 +38,7 @@ libmtx.
 * Error handling:: How to handle errors when working with the libmtx C library.
 * Matrix Market files:: Basic data structure for representing Matrix Market objects.
 * Reading and writing Matrix Market files:: Functions for reading from and writing to files in Matrix Market format.
-* Creating matrices and vectors:: Functions for creating matrices and vectors.
+* Creating Matrix Market files:: Functions for creating matrices and vectors in Matrix Market format.
 * Transposing sorting and reordering:: Transposing, sorting and reordering matrices and vectors.
 * Basic linear algebra operations:: Basic linear algebra
 @end menu
@@ -600,462 +600,208 @@ The file is written as a gzip-compressed stream if @code{gzip} is
 then the standard output stream is used.
 
 
-@node Creating matrices and vectors
-@section Creating matrices and vectors
-
-A number of functions are provided to construct matrices and vectors
-in the Matrix Market format, represented by objects of type
-@code{struct mtx}.  These functions encompass both vectors and
-matrices in the array (i.e., dense) storage format, as well as
-coordinate (i.e., sparse) format.
+@node Creating Matrix Market files
+@section Creating Matrix Market files
 
 @cindex matrix allocation
-@cindex matrix creation
 @cindex vector allocation
-@cindex vector creation
-For convenience, libmtx provides @emph{allocation} functions for
-allocating matrices and vectors when the size is known, but the values
-of the matrix or vector entries are not given.  In this case, storage
-is allocated for data, but initialising the data is left to the user.
-(See, for example, @ref{Setting matrix and vector values}.)  In
-addition, libmtx provides @emph{creation} functions, where the matrix
-or vector entries are provided by the user to be copied to the newly
-allocated storage.
+This section covers a number of functions that are provided to
+construct matrices and vectors in Matrix Market format.
 
-@findex mtx_free
-Finally, it is important to note that the matrix and vector allocation
-and creation routines will allocate their own storage for matrix or
-vector data.  As a result, once the user is finished with an object of
-type @code{struct mtx}, it is important to free any allocated storage
-by calling @code{mtx_free}:
+@findex mtxfile_free
+But first, it must be noted that routines for constructing matrices
+and vectors will allocate their own storage for matrix or vector
+data. As a result, once the user is finished with an object of type
+@code{struct mtxfile}, it is important to free any allocated storage
+by calling @code{mtxfile_free}:
 @example
-@code{void mtx_free(struct mtx * mtx);}
+@code{void mtxfile_free(struct mtxfile * mtxfile);}
 @end example
 
-The following subsections describe the various matrix and vector
-allocation and creation functions.
+In the following subsections, we describe functions for allocating
+matrices and vectors when the size is known, but the values of the
+matrix or vector entries are not given. In this case, storage is
+allocated for data, but initialising the data is left to the
+user. (See, for example, @ref{Setting matrix and vector values}.)  In
+addition, libmtx provides functions for when both the size and the
+matrix or vector entries are provided directly by the user. In this
+case, storage is allocated and the provided data is copied to the
+newly allocated storage.
 
-@node Creating dense vectors
-@subsection Creating dense vectors
-
-@cindex dense vector
-The file @file{libmtx/vector/array.h} defines functions for
-constructing dense vectors in array format.  For example, a dense
-vector of real, single-precision floating point values is created with
-the function:
-@findex mtx_init_vector_array_real
+The function @code{mtxfile_alloc} can be used to allocate storage for
+a Matrix Market file with specified header line, comment lines, size
+line and precision.
 @example
-@code{int mtx_init_vector_array_real(
-    struct mtx * mtx,
-    int num_comment_lines,
-    const char ** comment_lines,
-    int size,
-    const float * data);}
+@code{int mtxfile_alloc(
+    struct mtxfile * mtxfile,
+    const struct mtxfileheader * header,
+    const struct mtxfilecomments * comments,
+    const struct mtxfilesize * size,
+    enum mtxprecision precision);}
 @end example
-Like most functions provided by libmtx,
-@code{mtx_init_vector_array_real} returns @code{MTX_SUCCESS} if it is
-successful.  In this case, the @code{mtx} argument points to the newly
-constructed vector, whose comment lines and nonzero data have been
-copied from the @code{comment_lines} and @code{data} arguments,
-respectively.  Note that @code{comment_lines} must be an array whose
-length is at least equal to @code{num_comment_lines}, containing
-non-empty, null-terminated strings beginning with @samp{@code{%}}.
-Also, @code{data} must be an array whose length is at least equal to
-@code{size}.  If, for some reason, a call to
-@code{mtx_init_vector_array_real} fails, then an error code is
-returned, which may be handled as described in @ref{Error handling}.
+The underlying matrix or vector values are not initialised, and it is
+therefore up to the user to initialise them.
 
-There are similar functions for other fields, which differ only in the
-type of the @code{data} argument.
-@findex mtx_init_vector_array_double
-@findex mtx_init_vector_array_complex
-@findex mtx_init_vector_array_integer
+To allocate storage for a copy of an existing Matrix Market file, the
+function @code{mtxfile_alloc_copy} may be used.
 @example
-@code{int mtx_init_vector_array_double(
-    struct mtx * mtx,
-    int num_comment_lines,
-    const char ** comment_lines,
-    int size,
-    const double * data);
+@code{int mtxfile_alloc_copy(
+    struct mtxfile * dst,
+    const struct mtxfile * src);}
+@end example
+Although storage is allocated for the underlying matrix or vector
+values, the data is not initialised. It is therefore up to the user to
+initialise the matrix or vector values.
 
-int mtx_init_vector_array_complex(
-    struct mtx * mtx,
-    int num_comment_lines,
-    const char ** comment_lines,
-    int size,
-    const float * data);
-
-int mtx_init_vector_array_integer(
-    struct mtx * mtx,
-    int num_comment_lines,
-    const char ** comment_lines,
-    int size,
-    const int * data);}
+If, on the other hand, an exact copy of an existing Matrix Market file
+is needed, including the matrix or vector values, then the function
+@code{mtxfile_init_copy} can be used.
+@example
+@code{int mtxfile_init_copy(
+    struct mtxfile * dst,
+    const struct mtxfile * src);}
 @end example
 
-@findex mtx_alloc_vector_array_real
-If, for some reason, one does not wish to set the values of a vector
-when constructing it, then it is possible to instead allocate a vector
-without providing the values, for example, by using
-@code{mtx_alloc_vector_array_real}:
+@node Creating Matrix Market files in array format
+@subsection Creating Matrix Market files in array format
+The functions @code{mtxfile_alloc_matrix_array} and
+@code{mtxfile_alloc_vector_array} can be used to allocate storage for
+matrices and vectors in array format.
+
 @example
-@code{int mtx_alloc_vector_array_real(
-    struct mtx * mtx,
-    int num_comment_lines,
-    const char ** comment_lines,
-    int size);}
-@end example
-On success, @code{mtx} points to a newly constructed vector, whose
-header and size information has been initialised appropriately, and
-the comment lines have been copied from
-@code{comment_lines}. Moreover, @code{mtx->data} is a newly allocated
-@code{float} array of length @code{size}.  Note that the values of
-@code{mtx->data} remain uninitialised, and it is up to the user to
-initialise these values correctly before they are used.  (See, for
-example, @ref{Setting matrix and vector values}.)
-
-Naturally, there are analogous functions with the same signature for
-vectors with @code{double}, @code{complex} and @code{integer} fields.
-
-
-@node Creating sparse vectors
-@subsection Creating sparse vectors
-
-@cindex sparse vector
-The file @file{libmtx/vector/coordinate.h} defines functions for
-constructing sparse vectors in coordinate format.  On the whole,
-sparse vectors are allocated and created in a similar manner to dense
-vectors, but some additional arguments must be provided.
-
-@findex mtx_alloc_vector_coordinate_real
-For example, to allocate a sparse vector of real, single-precision
-floating point values without initialising the associated nonzero
-entries, the function @code{mtx_alloc_vector_coordinate_real} may be
-used:
-@example
-@code{int mtx_alloc_vector_coordinate_real(
-    struct mtx * mtx,
-    int num_comment_lines,
-    const char ** comment_lines,
+@code{int mtxfile_alloc_matrix_array(
+    struct mtxfile * mtxfile,
+    enum mtxfilefield field,
+    enum mtxfilesymmetry symmetry,
+    enum mtxprecision precision,
     int num_rows,
-    int size);}
+    int num_columns);
+
+int mtxfile_alloc_vector_array(
+    struct mtxfile * mtxfile,
+    enum mtxfilefield field,
+    enum mtxprecision precision,
+    int num_rows);}
 @end example
-If the call is successful, @code{mtx} points to a newly constructed
-vector.  The @code{object}, @code{format} and @code{field} member
-variables are set to @code{mtx_vector}, @code{mtx_coordinate} and
-@code{mtx_real}, respectively.  Moreover, @code{sorting},
-@code{ordering} and @code{assembly} are set to @code{mtx_unsorted},
-@code{mtx_unordered} and @code{mtx_unassembled}.  (Note that
-@code{symmetry} and @code{triangle} are not used for vectors.)
-Comment lines are copied from the provided @code{comment_lines} array.
+The field and precision must be specified, and storage is allocated
+appropriately. (For matrices, the symmetry must also be specified.)
+The matrix or vector values are not initialised, and it is therefore
+up to the user to initialise them.
 
-Furthermore, @code{mtx->data} is a newly allocated array of length
-@code{size}, where each array element is now of the type @code{struct
-mtx_vector_coordinate_real}, which was defined in @ref{Matrix Market
-files}.  In addition, the number of rows of the sparse vector must be
-provided explicitly, since it will typically not match the number of
-entries in the @code{data} array.
+If the matrix or vector values are already known, the functions
+@code{mtxfile_init_@var{object}_array_@var{field}_@var{precision}} can
+be used, where @code{@var{object}}, @code{@var{field}} and
+@code{@var{precision}} are the appropriate object type (i.e.,
+@samp{matrix} or @samp{vector}), field (i.e., @samp{real},
+@samp{complex} or @samp{integer}) and precision (i.e., @samp{single}
+or @samp{double}). For example, a matrix in array format with real,
+double precision floating point coefficients is initialised with
+@code{mtxfile_init_matrix_array_real_double}:
 
-@findex mtx_init_vector_coordinate_real
-If the vector data is already available in the form of an array of
-elements of type @code{struct mtx_vector_coordinate_real}, then a
-sparse vector may instead be created with the function
-@code{mtx_init_vector_coordinate_real}:
 @example
-@code{int mtx_init_vector_coordinate_real(
-    struct mtx * mtx,
-    enum mtx_sorting sorting,
-    enum mtx_ordering ordering,
-    enum mtx_assembly assembly,
-    int num_comment_lines,
-    const char ** comment_lines,
-    int num_rows,
-    int size,
-    const struct mtx_vector_coordinate_real * data);}
-@end example
-As before, if everything goes well, @code{MTX_SUCCESS} is returned and
-@code{mtx} points to a newly constructed vector.  Its comment lines
-and nonzero data have now been copied from the @code{comment_lines}
-and @code{data} arguments, respectively.  Here, @code{data} must be an
-array whose length is at least equal to @code{size}, where the type of
-each array element is @code{struct mtx_vector_coordinate_real}.  The
-number of rows of the sparse vector is provided explicitly, since it
-will typically not match the number of entries in the @code{data}
-array.  Further, @code{sorting}, @code{ordering} and @code{assembly}
-may be prescribed if these are known.  Otherwise, default values of
-@code{mtx_unsorted}, @code{mtx_unordered} and @code{mtx_unassembled}
-should be used.
-
-@findex mtx_init_vector_coordinate_double
-@findex mtx_init_vector_coordinate_complex
-@findex mtx_init_vector_coordinate_integer
-@findex mtx_init_vector_coordinate_pattern
-@findex mtx_alloc_vector_coordinate_double
-@findex mtx_alloc_vector_coordinate_complex
-@findex mtx_alloc_vector_coordinate_integer
-@findex mtx_alloc_vector_coordinate_pattern
-There are analogous functions for allocating and creating sparse
-vectors with @code{double}, @code{complex}, @code{integer} or
-@code{pattern} fields.  The signatures of these functions are the same
-as above, except that the type of the @code{data} argument or the
-@code{mtx->data} struct member will instead be @code{struct
-mtx_vector_coordinate_@var{field}}, where @code{@var{field}} is any of
-the above-mentioned fields.  See @ref{Matrix Market files} for
-the definitions of the struct data types for each field.
-
-
-@node Creating dense matrices
-@subsection Creating dense matrices
-
-@findex mtx_init_matrix_array_real
-The file @file{libmtx/matrix/array.h} defines functions for
-constructing dense matrices.  Roughly speaking, these functions
-imitate the ones for allocating and initialising dense vectors in
-array format, but there are a few additional arguments that must be
-provided in the case of matrices.
-
-For example, a dense matrix with real, single precision floating point
-coefficients is allocated with the function
-@code{mtx_alloc_matrix_array_real}:
-@example
-@code{int mtx_alloc_matrix_array_real(
-    struct mtx * mtx,
-    enum mtx_symmetry symmetry,
-    enum mtx_triangle triangle,
-    enum mtx_sorting sorting,
-    int num_comment_lines,
-    const char ** comment_lines,
-    int num_rows,
-    int num_columns);}
-@end example
-Here, @code{mtx} must be a pointer to a @code{struct mtx} object,
-which, on the successful completion of
-@code{mtx_alloc_matrix_array_real}, will contain a newly constructed
-dense matrix in array format.
-
-The @code{symmetry} argument is used to specify symmetry properties of
-the matrix.  If @code{symmetry} is @code{mtx_symmetric},
-@code{mtx_skew_symmetric} or @code{mtx_hermitian}, then
-@code{triangle} must be either @code{mtx_lower_triangular} or
-@code{mtx_upper_triangular} to indicate which triangle of the matrix
-is stored in @code{data}.  Otherwise, if @code{symmetry} is
-@code{mtx_general}, then @code{triangle} must be
-@code{mtx_nontriangular}.
-
-Further, @code{sorting} is either @code{mtx_row_major} for a row major
-ordering of the matrix entries, or @code{mtx_column_major} otherwise.
-
-Comment lines are handled in the same way as for creating vectors in
-array or coordinate format.  That is, @code{comment_lines} is an array
-of length @code{num_comment_lines}, consisting of non-empty,
-null-terminated strings beginning with @samp{@code{%}}, which will be
-copied when constructing the matrix.
-
-Finally, the number of rows and columns of the matrix is prescribed by
-@code{num_rows} and @code{num_columns}.  These are used to allocated
-storage for matrix entries, which is held by @code{mtx->data}.  In the
-case of an unsymmetric matrix, the array @code{data} must contain at
-least @code{num_rows*num_columns} values of type @code{float}.
-Otherwise, the allocated size of the array @code{mtx->data} depends on
-@code{num_rows}, @code{num_columns}, @code{symmetry} and
-@code{triangle}, as described in @ref{Size}.
-
-If the values of the matrix elements are already on hand, then a
-matrix can be allocated and populated at once by calling
-@code{mtx_init_matrix_array_real}:
-@example
-@code{int mtx_init_matrix_array_real(
-    struct mtx * mtx,
-    enum mtx_symmetry symmetry,
-    enum mtx_triangle triangle,
-    enum mtx_sorting sorting,
-    int num_comment_lines,
-    const char ** comment_lines,
+@code{int mtxfile_init_matrix_array_real_double(
+    struct mtxfile * mtxfile,
+    enum mtxfilesymmetry symmetry,
     int num_rows,
     int num_columns,
-    const float * data);}
+    const double * data);}
 @end example
-The arguments are the same as for @code{mtx_alloc_matrix_array_real},
-except for the array @code{data}, which is now used for copying the
-value of each matrix entry to @code{mtx->data}.  The minimum size of
-the @code{data} array depends on @code{num_rows}, @code{num_columns},
-@code{symmetry} and @code{triangle}, as described in @ref{Size}.
-
-@findex mtx_alloc_matrix_array_double
-@findex mtx_alloc_matrix_array_complex
-@findex mtx_alloc_matrix_array_integer
-@findex mtx_init_matrix_array_double
-@findex mtx_init_matrix_array_complex
-@findex mtx_init_matrix_array_integer
-Similar allocation and initialisation functions are provided for
-@code{double}, @code{complex} and @code{integer} matrices, where the
-type of the @code{data} argument is modified accordingly.
-
-
-@node Creating sparse matrices
-@subsection Creating sparse matrices
-
-@cindex sparse matrix
-@findex mtx_init_matrix_coordinate_real
-The file @file{libmtx/matrix/coordinate.h} defines functions for
-constructing sparse matrices in coordinate format.  Although this is
-mostly similar to creating dense matrices, there are a few additional
-arguments that must be given.  Also, in the case where data is
-provided, then it is given as an array of structs that depends on the
-matrix field.
-
-To allocate a sparse matrix in coordinate format with real,
-single-precision floating point coefficients, the function
-@code{mtx_alloc_matrix_coordinate_real} is used:
+Similarly, a vector in array format with 32-bit integer values is
+initialised with @code{mtxfile_init_vector_array_integer_single}:
 @example
-@code{int mtx_alloc_matrix_coordinate_real(
-    struct mtx * mtx,
-    enum mtx_symmetry symmetry,
-    int num_comment_lines,
-    const char ** comment_lines,
+@code{int mtxfile_init_vector_array_integer_single(
+    struct mtxfile * mtxfile,
+    int num_rows,
+    const int32_t * data);}
+@end example
+
+
+@node Creating Matrix Market files in coordinate format
+@subsection Creating Matrix Market files in coordinate format
+
+To allocate storage for a matrix in coordinate format, the function
+@code{mtxfile_alloc_matrix_coordinate} is used.
+@example
+@code{int mtxfile_alloc_matrix_coordinate(
+    struct mtxfile * mtxfile,
+    enum mtxfilefield field,
+    enum mtxfilesymmetry symmetry,
+    enum mtxprecision precision,
     int num_rows,
     int num_columns,
-    int64_t size);}
+    int64_t num_nonzeros);}
 @end example
-On success, a newly constructed matrix will be stored in @code{mtx},
-which will have @code{object}, @code{format} and @code{field} set to
-@code{mtx_matrix}, @code{mtx_coordinate} and @code{mtx_real},
-respectively.  The symmetry of the matrix is specified with
-@code{symmetry}.  By default, the values of the additional header
-information, @code{triangle}, @code{sorting}, @code{ordering} and
-@code{assembly}, are set to @code{mtx_nontriangular},
-@code{mtx_unsorted}, @code{mtx_unordered} and @code{mtx_unassembled}.
-These can, of course, be changed by the user, if the matrix is known
-to possess some additional properties or structure.
+The field, symmetry and precision must be specified, along with the
+matrix dimensions and the number of nonzero matrix entries to allocate
+storage for.
 
-As with the other matrix and vector creation routines,
-@code{comment_lines} is an array of @code{num_comment_lines}
-null-terminated strings beginning with @samp{@code{%}}.  These strings
-will be copied to the newly constructed matrix.
-
-The size of the matrix is specified with @code{num_rows} and
-@code{num_columns}.  The number of explicitly stored matrix entries is
-given by @code{size}, which is used to allocate storage for the array
-@code{mtx->data}.  That is, @code{mtx->data} will point to an array of
-@code{size} values of type @code{struct mtx_matrix_coordinate_real}.
-
-@tindex mtx_matrix_coordinate_real
-Recall that the different data types for matrices in coordinate format
-depend on the @var{@code{field}} value of the Matrix Market header, as
-described in @ref{Data}.  Recall that, in the above case, where
-@var{@code{field}} is @code{real}, the appropriate data type is:
+Similarly, a vector in coordinate format can be allocated with
+@code{mtxfile_alloc_vector_coordinate}.
 @example
-@code{struct mtx_matrix_coordinate_real @{
-    int i, j; /* row and column index */
-    float a;  /* nonzero value */
-@};}
+@code{int mtxfile_alloc_vector_coordinate(
+    struct mtxfile * mtxfile,
+    enum mtxfilefield field,
+    enum mtxprecision precision,
+    int num_rows,
+    int64_t num_nonzeros);}
 @end example
+The field and precision must be given, along with the number of rows
+in the vector and the number of nonzero vector entries to allocate
+storage for.
 
-To allocate and initialise a sparse matrix in coordinate format with
-real, single-precision floating point coefficients, the function
-@code{mtx_init_matrix_coordinate_real} is used:
+To allocate a matrix or vector and at the same time initialise the
+nonzero matrix entries, the function
+@code{mtxfile_init_@var{object}_coordinate_@var{field}_@var{precision}}
+can be used, where @code{@var{object}}, @code{@var{field}} and
+@code{@var{precision}} are the desired object (i.e., @samp{matrix} or
+@samp{vector}), field (i.e., @samp{real}, @samp{complex},
+@samp{integer} or @samp{pattern}) and precision (i.e., @samp{single}
+or @samp{double}).  For example, a matrix in coordinate format with
+real, double precision floating point coefficients is allocated with
+@code{mtxfile_init_matrix_coordinate_real_double}:
 @example
-@code{int mtx_init_matrix_coordinate_real(
-    struct mtx * mtx,
-    enum mtx_symmetry symmetry,
-    enum mtx_triangle triangle,
-    enum mtx_sorting sorting,
-    enum mtx_ordering ordering,
-    enum mtx_assembly assembly,
-    int num_comment_lines,
-    const char ** comment_lines,
+@code{int mtxfile_init_matrix_coordinate_real_double(
+    struct mtxfile * mtxfile,
+    enum mtxfilesymmetry symmetry,
     int num_rows,
     int num_columns,
-    int64_t size,
-    const struct mtx_matrix_coordinate_real * data);}
+    int64_t num_nonzeros,
+    const struct mtxfile_matrix_coordinate_real_double * data);}
 @end example
-This works in the same way as the allocation function above, but the
-difference is that the matrix entries are copied from the array
-@code{data} to the newly allocated array @code{mtx->data}.
+The matrix values are copied from the @code{data} array.
 
-Also, the fields that make up the additional header information are
-provided by the arguments @code{triangle}, @code{sorting},
-@code{ordering} and @code{assembly}.  Unless the matrix is known to
-possess some particular structure, these values should normally be set
-to @code{mtx_nontriangular}, @code{mtx_unsorted}, @code{mtx_unordered}
-and @code{mtx_unassembled}.
-
-@findex mtx_alloc_matrix_coordinate_double
-@findex mtx_alloc_matrix_coordinate_complex
-@findex mtx_alloc_matrix_coordinate_integer
-@findex mtx_alloc_matrix_coordinate_pattern
-@findex mtx_init_matrix_coordinate_double
-@findex mtx_init_matrix_coordinate_complex
-@findex mtx_init_matrix_coordinate_integer
-@findex mtx_init_matrix_coordinate_pattern
-Sparse coordinate matrices can also be created for other fields,
-(@code{double}, @code{complex}, @code{integer} or @code{pattern}) by
-using analogous functions, where the type of the @code{data} argument
-is adjusted to match the appropriate field.
+To give another example, a vector in coordinate format with 32-bit
+integer values is created and initialised with the function
+@code{mtxfile_init_matrix_coordinate_integer_single}:
+@example
+@code{int mtxfile_init_vector_coordinate_integer_single(
+    struct mtxfile * mtxfile,
+    int num_rows,
+    int64_t num_nonzeros,
+    const struct mtxfile_vector_coordinate_integer_single * data);}
+@end example
 
 
 @node Setting matrix and vector values
 @subsection Setting matrix and vector values
 
-@findex mtx_set_zero
-The function @code{mtx_set_zero} can be used to set all of the values
-associated with the entries of a matrix or vector to zero:
-@example
-@code{int mtx_set_zero(struct mtx * mtx);}
-@end example
-
 @findex mtx_set_constant_real
 @findex mtx_set_constant_double
 @findex mtx_set_constant_complex
 @findex mtx_set_constant_integer
-Depending on the field, there are several functions that may be used
-to set all (nonzero) values associated of a matrix or vector to some
-given, constant value:
+For convenience, the functions
+@code{mtxfile_set_constant_@var{field}_@var{precision}} are provided
+to initialise the values of a matrix or vector to a constant, where
+@code{@var{field}} and @code{@var{precision}} match the field and
+precision of the specified @code{mtxfile} struct.
 @example
-@code{int mtx_set_constant_real(struct mtx * mtx, float a);
-int mtx_set_constant_double(struct mtx * mtx, double a);
-int mtx_set_constant_complex(struct mtx * mtx, float a, float b);
-int mtx_set_constant_integer(struct mtx * mtx, int a);}
+@code{int mtxfile_set_constant_real_single(struct mtxfile *, float a);
+int mtxfile_set_constant_real_double(struct mtxfile *, double a);
+int mtxfile_set_constant_complex_single(struct mtxfile *, float a[2]);
+int mtxfile_set_constant_complex_double(struct mtxfile *, double a[2]);
+int mtxfile_set_constant_integer_single(struct mtxfile *, int32_t a);
+int mtxfile_set_constant_integer_double(struct mtxfile *, int64_t a);}
 @end example
-
-
-@node Copying matrices and vectors
-@subsection Copying matrices and vectors
-
-@cindex copying matrices
-@cindex copying vectors
-The function @code{mtx_copy} can be used to make a copy of an
-existing matrix or vector:
-@findex mtx_copy
-@example
-@code{int mtx_copy(
-    struct mtx * destmtx,
-    const struct mtx * srcmtx);}
-@end example
-
-
-@node Extracting submatrices
-@subsection Extracting submatrices
-
-@cindex submatrix
-@findex mtx_matrix_submatrix
-The function @code{mtx_matrix_submatrix} can be used to obtain a
-submatrix of a @code{struct mtx} object, which consists of the nonzero
-entries from a given set of rows and columns.
-@example
-@code{int mtx_matrix_submatrix(
-    const struct mtx * mtx,
-    const struct mtx_index_set * rows,
-    const struct mtx_index_set * columns,
-    struct mtx * submatrix);}
-@end example
-Note that @code{mtx_matrix_submatrix} currently only works for
-@code{struct mtx} objects where @code{format} is
-@code{mtx_coordinate}.
-
-The @code{rows} and @code{columns} arguments are index sets, as
-described in @ref{Index sets}.  These are used to determine which rows
-and columns to include in the submatrix.
 
 
 @node Transposing sorting and reordering
