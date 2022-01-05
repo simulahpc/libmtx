@@ -67,7 +67,7 @@ int mtx_read(
  * If `path' is `-', then standard output is used.
  *
  * If ‘fmt’ is ‘NULL’, then the format specifier ‘%g’ is used to print
- * floating point numbers with with enough digits to ensure correct
+ * floating point numbers with enough digits to ensure correct
  * round-trip conversion from decimal text and back.  Otherwise, the
  * given format string is used to print numerical values.
  *
@@ -109,7 +109,7 @@ int mtx_fread(
  * Matrix Market format.
  *
  * If ‘fmt’ is ‘NULL’, then the format specifier ‘%g’ is used to print
- * floating point numbers with with enough digits to ensure correct
+ * floating point numbers with enough digits to ensure correct
  * round-trip conversion from decimal text and back.  Otherwise, the
  * given format string is used to print numerical values.
  *
@@ -151,7 +151,7 @@ int mtx_gzread(
  * stream in Matrix Market format.
  *
  * If ‘fmt’ is ‘NULL’, then the format specifier ‘%g’ is used to print
- * floating point numbers with with enough digits to ensure correct
+ * floating point numbers with enough digits to ensure correct
  * round-trip conversion from decimal text and back.  Otherwise, the
  * given format string is used to print numerical values.
  *

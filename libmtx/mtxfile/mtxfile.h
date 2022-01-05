@@ -16,7 +16,7 @@
  * along with libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-01-04
+ * Last modified: 2022-01-04
  *
  * Matrix Market files.
  */
@@ -86,7 +86,7 @@ struct mtxfile
  */
 
 /**
- * `mtxfile_alloc()' allocates storage for a Matrix Market file with
+ * ‘mtxfile_alloc()’ allocates storage for a Matrix Market file with
  * the given header line, comment lines and size line.
  *
  * ‘comments’ may be ‘NULL’, in which case it is ignored.
@@ -99,13 +99,13 @@ int mtxfile_alloc(
     enum mtxprecision precision);
 
 /**
- * `mtxfile_free()' frees storage allocated for a Matrix Market file.
+ * ‘mtxfile_free()’ frees storage allocated for a Matrix Market file.
  */
 void mtxfile_free(
     struct mtxfile * mtxfile);
 
 /**
- * `mtxfile_alloc_copy()' allocates storage for a copy of a Matrix
+ * ‘mtxfile_alloc_copy()’ allocates storage for a copy of a Matrix
  * Market file without initialising the underlying values.
  */
 int mtxfile_alloc_copy(
@@ -113,14 +113,14 @@ int mtxfile_alloc_copy(
     const struct mtxfile * src);
 
 /**
- * `mtxfile_init_copy()' creates a copy of a Matrix Market file.
+ * ‘mtxfile_init_copy()’ creates a copy of a Matrix Market file.
  */
 int mtxfile_init_copy(
     struct mtxfile * dst,
     const struct mtxfile * src);
 
 /**
- * `mtxfile_cat()' concatenates two Matrix Market files.
+ * ‘mtxfile_cat()’ concatenates two Matrix Market files.
  *
  * The files must have identical header lines. Furthermore, for
  * matrices in array format, both matrices must have the same number
@@ -137,7 +137,7 @@ int mtxfile_cat(
     bool skip_comments);
 
 /**
- * `mtxfile_catn()' concatenates multiple Matrix Market files.
+ * ‘mtxfile_catn()’ concatenates multiple Matrix Market files.
  *
  * The files must have identical header lines. Furthermore, for
  * matrices in array format, all matrices must have the same number of
@@ -159,7 +159,7 @@ int mtxfile_catn(
  */
 
 /**
- * `mtxfile_alloc_matrix_array()' allocates a matrix in array format.
+ * ‘mtxfile_alloc_matrix_array()’ allocates a matrix in array format.
  */
 int mtxfile_alloc_matrix_array(
     struct mtxfile * mtxfile,
@@ -170,7 +170,7 @@ int mtxfile_alloc_matrix_array(
     int num_columns);
 
 /**
- * `mtxfile_init_matrix_array_real_single()' allocates and initialises
+ * ‘mtxfile_init_matrix_array_real_single()’ allocates and initialises
  * a matrix in array format with real, single precision coefficients.
  */
 int mtxfile_init_matrix_array_real_single(
@@ -181,7 +181,7 @@ int mtxfile_init_matrix_array_real_single(
     const float * data);
 
 /**
- * `mtxfile_init_matrix_array_real_double()' allocates and initialises
+ * ‘mtxfile_init_matrix_array_real_double()’ allocates and initialises
  * a matrix in array format with real, double precision coefficients.
  */
 int mtxfile_init_matrix_array_real_double(
@@ -192,7 +192,7 @@ int mtxfile_init_matrix_array_real_double(
     const double * data);
 
 /**
- * `mtxfile_init_matrix_array_complex_single()' allocates and
+ * ‘mtxfile_init_matrix_array_complex_single()’ allocates and
  * initialises a matrix in array format with complex, single precision
  * coefficients.
  */
@@ -204,7 +204,7 @@ int mtxfile_init_matrix_array_complex_single(
     const float (* data)[2]);
 
 /**
- * `mtxfile_init_matrix_array_complex_double()' allocates and
+ * ‘mtxfile_init_matrix_array_complex_double()’ allocates and
  * initialises a matrix in array format with complex, double precision
  * coefficients.
  */
@@ -216,7 +216,7 @@ int mtxfile_init_matrix_array_complex_double(
     const double (* data)[2]);
 
 /**
- * `mtxfile_init_matrix_array_integer_single()' allocates and
+ * ‘mtxfile_init_matrix_array_integer_single()’ allocates and
  * initialises a matrix in array format with integer, single precision
  * coefficients.
  */
@@ -228,7 +228,7 @@ int mtxfile_init_matrix_array_integer_single(
     const int32_t * data);
 
 /**
- * `mtxfile_init_matrix_array_integer_double()' allocates and
+ * ‘mtxfile_init_matrix_array_integer_double()’ allocates and
  * initialises a matrix in array format with integer, double precision
  * coefficients.
  */
@@ -244,7 +244,7 @@ int mtxfile_init_matrix_array_integer_double(
  */
 
 /**
- * `mtxfile_alloc_vector_array()' allocates a vector in array format.
+ * ‘mtxfile_alloc_vector_array()’ allocates a vector in array format.
  */
 int mtxfile_alloc_vector_array(
     struct mtxfile * mtxfile,
@@ -253,7 +253,7 @@ int mtxfile_alloc_vector_array(
     int num_rows);
 
 /**
- * `mtxfile_init_vector_array_real_single()' allocates and initialises
+ * ‘mtxfile_init_vector_array_real_single()’ allocates and initialises
  * a vector in array format with real, single precision coefficients.
  */
 int mtxfile_init_vector_array_real_single(
@@ -262,7 +262,7 @@ int mtxfile_init_vector_array_real_single(
     const float * data);
 
 /**
- * `mtxfile_init_vector_array_real_double()' allocates and initialises
+ * ‘mtxfile_init_vector_array_real_double()’ allocates and initialises
  * a vector in array format with real, double precision coefficients.
  */
 int mtxfile_init_vector_array_real_double(
@@ -271,7 +271,7 @@ int mtxfile_init_vector_array_real_double(
     const double * data);
 
 /**
- * `mtxfile_init_vector_array_complex_single()' allocates and
+ * ‘mtxfile_init_vector_array_complex_single()’ allocates and
  * initialises a vector in array format with complex, single precision
  * coefficients.
  */
@@ -281,7 +281,7 @@ int mtxfile_init_vector_array_complex_single(
     const float (* data)[2]);
 
 /**
- * `mtxfile_init_vector_array_complex_double()' allocates and
+ * ‘mtxfile_init_vector_array_complex_double()’ allocates and
  * initialises a vector in array format with complex, double precision
  * coefficients.
  */
@@ -291,7 +291,7 @@ int mtxfile_init_vector_array_complex_double(
     const double (* data)[2]);
 
 /**
- * `mtxfile_init_vector_array_integer_single()' allocates and
+ * ‘mtxfile_init_vector_array_integer_single()’ allocates and
  * initialises a vector in array format with integer, single precision
  * coefficients.
  */
@@ -301,7 +301,7 @@ int mtxfile_init_vector_array_integer_single(
     const int32_t * data);
 
 /**
- * `mtxfile_init_vector_array_integer_double()' allocates and
+ * ‘mtxfile_init_vector_array_integer_double()’ allocates and
  * initialises a vector in array format with integer, double precision
  * coefficients.
  */
@@ -315,7 +315,7 @@ int mtxfile_init_vector_array_integer_double(
  */
 
 /**
- * `mtxfile_alloc_matrix_coordinate()' allocates a matrix in
+ * ‘mtxfile_alloc_matrix_coordinate()’ allocates a matrix in
  * coordinate format.
  */
 int mtxfile_alloc_matrix_coordinate(
@@ -328,7 +328,7 @@ int mtxfile_alloc_matrix_coordinate(
     int64_t num_nonzeros);
 
 /**
- * `mtxfile_init_matrix_coordinate_real_single()' allocates and initialises
+ * ‘mtxfile_init_matrix_coordinate_real_single()’ allocates and initialises
  * a matrix in coordinate format with real, single precision coefficients.
  */
 int mtxfile_init_matrix_coordinate_real_single(
@@ -340,7 +340,7 @@ int mtxfile_init_matrix_coordinate_real_single(
     const struct mtxfile_matrix_coordinate_real_single * data);
 
 /**
- * `mtxfile_init_matrix_coordinate_real_double()' allocates and initialises
+ * ‘mtxfile_init_matrix_coordinate_real_double()’ allocates and initialises
  * a matrix in coordinate format with real, double precision coefficients.
  */
 int mtxfile_init_matrix_coordinate_real_double(
@@ -352,7 +352,7 @@ int mtxfile_init_matrix_coordinate_real_double(
     const struct mtxfile_matrix_coordinate_real_double * data);
 
 /**
- * `mtxfile_init_matrix_coordinate_complex_single()' allocates and
+ * ‘mtxfile_init_matrix_coordinate_complex_single()’ allocates and
  * initialises a matrix in coordinate format with complex, single precision
  * coefficients.
  */
@@ -365,7 +365,7 @@ int mtxfile_init_matrix_coordinate_complex_single(
     const struct mtxfile_matrix_coordinate_complex_single * data);
 
 /**
- * `mtxfile_init_matrix_coordinate_complex_double()' allocates and
+ * ‘mtxfile_init_matrix_coordinate_complex_double()’ allocates and
  * initialises a matrix in coordinate format with complex, double precision
  * coefficients.
  */
@@ -378,7 +378,7 @@ int mtxfile_init_matrix_coordinate_complex_double(
     const struct mtxfile_matrix_coordinate_complex_double * data);
 
 /**
- * `mtxfile_init_matrix_coordinate_integer_single()' allocates and
+ * ‘mtxfile_init_matrix_coordinate_integer_single()’ allocates and
  * initialises a matrix in coordinate format with integer, single precision
  * coefficients.
  */
@@ -391,7 +391,7 @@ int mtxfile_init_matrix_coordinate_integer_single(
     const struct mtxfile_matrix_coordinate_integer_single * data);
 
 /**
- * `mtxfile_init_matrix_coordinate_integer_double()' allocates and
+ * ‘mtxfile_init_matrix_coordinate_integer_double()’ allocates and
  * initialises a matrix in coordinate format with integer, double precision
  * coefficients.
  */
@@ -404,7 +404,7 @@ int mtxfile_init_matrix_coordinate_integer_double(
     const struct mtxfile_matrix_coordinate_integer_double * data);
 
 /**
- * `mtxfile_init_matrix_coordinate_pattern()' allocates and
+ * ‘mtxfile_init_matrix_coordinate_pattern()’ allocates and
  * initialises a matrix in coordinate format with boolean (pattern)
  * coefficients.
  */
@@ -421,7 +421,7 @@ int mtxfile_init_matrix_coordinate_pattern(
  */
 
 /**
- * `mtxfile_alloc_vector_coordinate()' allocates a vector in
+ * ‘mtxfile_alloc_vector_coordinate()’ allocates a vector in
  * coordinate format.
  */
 int mtxfile_alloc_vector_coordinate(
@@ -432,7 +432,7 @@ int mtxfile_alloc_vector_coordinate(
     int64_t num_nonzeros);
 
 /**
- * `mtxfile_init_vector_coordinate_real_single()' allocates and initialises
+ * ‘mtxfile_init_vector_coordinate_real_single()’ allocates and initialises
  * a vector in coordinate format with real, single precision coefficients.
  */
 int mtxfile_init_vector_coordinate_real_single(
@@ -442,7 +442,7 @@ int mtxfile_init_vector_coordinate_real_single(
     const struct mtxfile_vector_coordinate_real_single * data);
 
 /**
- * `mtxfile_init_vector_coordinate_real_double()' allocates and initialises
+ * ‘mtxfile_init_vector_coordinate_real_double()’ allocates and initialises
  * a vector in coordinate format with real, double precision coefficients.
  */
 int mtxfile_init_vector_coordinate_real_double(
@@ -452,7 +452,7 @@ int mtxfile_init_vector_coordinate_real_double(
     const struct mtxfile_vector_coordinate_real_double * data);
 
 /**
- * `mtxfile_init_vector_coordinate_complex_single()' allocates and
+ * ‘mtxfile_init_vector_coordinate_complex_single()’ allocates and
  * initialises a vector in coordinate format with complex, single precision
  * coefficients.
  */
@@ -463,7 +463,7 @@ int mtxfile_init_vector_coordinate_complex_single(
     const struct mtxfile_vector_coordinate_complex_single * data);
 
 /**
- * `mtxfile_init_vector_coordinate_complex_double()' allocates and
+ * ‘mtxfile_init_vector_coordinate_complex_double()’ allocates and
  * initialises a vector in coordinate format with complex, double precision
  * coefficients.
  */
@@ -474,7 +474,7 @@ int mtxfile_init_vector_coordinate_complex_double(
     const struct mtxfile_vector_coordinate_complex_double * data);
 
 /**
- * `mtxfile_init_vector_coordinate_integer_single()' allocates and
+ * ‘mtxfile_init_vector_coordinate_integer_single()’ allocates and
  * initialises a vector in coordinate format with integer, single precision
  * coefficients.
  */
@@ -485,7 +485,7 @@ int mtxfile_init_vector_coordinate_integer_single(
     const struct mtxfile_vector_coordinate_integer_single * data);
 
 /**
- * `mtxfile_init_vector_coordinate_integer_double()' allocates and
+ * ‘mtxfile_init_vector_coordinate_integer_double()’ allocates and
  * initialises a vector in coordinate format with integer, double precision
  * coefficients.
  */
@@ -496,7 +496,7 @@ int mtxfile_init_vector_coordinate_integer_double(
     const struct mtxfile_vector_coordinate_integer_double * data);
 
 /**
- * `mtxfile_init_vector_coordinate_pattern()' allocates and
+ * ‘mtxfile_init_vector_coordinate_pattern()’ allocates and
  * initialises a vector in coordinate format with boolean (pattern)
  * precision coefficients.
  */
@@ -511,7 +511,7 @@ int mtxfile_init_vector_coordinate_pattern(
  */
 
 /**
- * `mtxfile_set_constant_real_single()' sets every (nonzero) value of
+ * ‘mtxfile_set_constant_real_single()’ sets every (nonzero) value of
  * a matrix or vector equal to a constant, single precision floating
  * point number.
  */
@@ -520,7 +520,7 @@ int mtxfile_set_constant_real_single(
     float a);
 
 /**
- * `mtxfile_set_constant_real_double()' sets every (nonzero) value of
+ * ‘mtxfile_set_constant_real_double()’ sets every (nonzero) value of
  * a matrix or vector equal to a constant, double precision floating
  * point number.
  */
@@ -529,7 +529,7 @@ int mtxfile_set_constant_real_double(
     double a);
 
 /**
- * `mtxfile_set_constant_complex_single()' sets every (nonzero) value
+ * ‘mtxfile_set_constant_complex_single()’ sets every (nonzero) value
  * of a matrix or vector equal to a constant, single precision
  * floating point complex number.
  */
@@ -538,7 +538,7 @@ int mtxfile_set_constant_complex_single(
     float a[2]);
 
 /**
- * `mtxfile_set_constant_complex_double()' sets every (nonzero) value
+ * ‘mtxfile_set_constant_complex_double()’ sets every (nonzero) value
  * of a matrix or vector equal to a constant, double precision
  * floating point complex number.
  */
@@ -547,7 +547,7 @@ int mtxfile_set_constant_complex_double(
     double a[2]);
 
 /**
- * `mtxfile_set_constant_integer_single()' sets every (nonzero) value
+ * ‘mtxfile_set_constant_integer_single()’ sets every (nonzero) value
  * of a matrix or vector equal to a constant integer.
  */
 int mtxfile_set_constant_integer_single(
@@ -555,7 +555,7 @@ int mtxfile_set_constant_integer_single(
     int32_t a);
 
 /**
- * `mtxfile_set_constant_integer_double()' sets every (nonzero) value
+ * ‘mtxfile_set_constant_integer_double()’ sets every (nonzero) value
  * of a matrix or vector equal to a constant integer.
  */
 int mtxfile_set_constant_integer_double(
@@ -567,15 +567,15 @@ int mtxfile_set_constant_integer_double(
  */
 
 /**
- * `mtxfile_read()' reads a Matrix Market file from the given path.
+ * ‘mtxfile_read()’ reads a Matrix Market file from the given path.
  * The file may optionally be compressed by gzip.
  *
- * The `precision' argument specifies which precision to use for
+ * The ‘precision’ argument specifies which precision to use for
  * storing matrix or vector values.
  *
- * If `path' is `-', then standard input is used.
+ * If ‘path’ is ‘-’, then standard input is used.
  *
- * If an error code is returned, then `lines_read' and `bytes_read'
+ * If an error code is returned, then ‘lines_read’ and ‘bytes_read’
  * are used to return the line number and byte at which the error was
  * encountered during the parsing of the Matrix Market file.
  */
@@ -615,13 +615,13 @@ int mtxfile_fread(
 
 #ifdef LIBMTX_HAVE_LIBZ
 /**
- * `mtxfile_gzread()' reads a Matrix Market file from a
+ * ‘mtxfile_gzread()’ reads a Matrix Market file from a
  * gzip-compressed stream.
  *
- * `precision' is used to determine the precision to use for storing
+ * ‘precision’ is used to determine the precision to use for storing
  * the values of matrix or vector entries.
  *
- * If an error code is returned, then `lines_read' and `bytes_read'
+ * If an error code is returned, then ‘lines_read’ and ‘bytes_read’
  * are used to return the line number and byte at which the error was
  * encountered during the parsing of the Matrix Market file.
  */
@@ -636,24 +636,29 @@ int mtxfile_gzread(
 #endif
 
 /**
- * `mtxfile_write()' writes a Matrix Market file to the given path.
+ * ‘mtxfile_write()’ writes a Matrix Market file to the given path.
  * The file may optionally be compressed by gzip.
  *
- * If `path' is `-', then standard output is used.
+ * If ‘path’ is ‘-’, then standard output is used.
  *
  * If ‘fmt’ is ‘NULL’, then the format specifier ‘%g’ is used to print
- * floating point numbers with with enough digits to ensure correct
+ * floating point numbers with enough digits to ensure correct
  * round-trip conversion from decimal text and back.  Otherwise, the
  * given format string is used to print numerical values.
  *
- * The format string follows the conventions of `printf'. If the field
- * is `real', `double' or `complex', then the format specifiers '%e',
- * '%E', '%f', '%F', '%g' or '%G' may be used. If the field is
- * `integer', then the format specifier must be '%d'. The format
- * string is ignored if the field is `pattern'. Field width and
- * precision may be specified (e.g., "%3.1f"), but variable field
- * width and precision (e.g., "%*.*f"), as well as length modifiers
- * (e.g., "%Lf") are not allowed.
+ * The format string ‘fmt’ follows the conventions of ‘printf’. If the
+ * field of ‘mtxfile’ is ‘mtxfile_real’ or ‘mtxfile_complex’, then the
+ * format specifiers '%e', '%E', '%f', '%F', '%g' or '%G' may be
+ * used. If the field is ‘mtxfile_integer’, then the format specifier
+ * must be '%d'. The format string is ignored if the field is
+ * ‘mtxfile_pattern’. Field width and precision may be specified
+ * (e.g., "%3.1f"), but variable field width and precision (e.g.,
+ * "%*.*f"), as well as length modifiers (e.g., "%Lf") are not
+ * allowed.
+ *
+ * The locale is temporarily changed to "C" to ensure that
+ * locale-specific settings, such as the type of decimal point, do not
+ * affect output.
  */
 int mtxfile_write(
     const struct mtxfile * mtxfile,
@@ -663,24 +668,29 @@ int mtxfile_write(
     int64_t * bytes_written);
 
 /**
- * `mtxfile_fwrite()' writes a Matrix Market file to a stream.
+ * ‘mtxfile_fwrite()’ writes a Matrix Market file to a stream.
  *
  * If ‘fmt’ is ‘NULL’, then the format specifier ‘%g’ is used to print
- * floating point numbers with with enough digits to ensure correct
+ * floating point numbers with enough digits to ensure correct
  * round-trip conversion from decimal text and back.  Otherwise, the
  * given format string is used to print numerical values.
  *
- * The format string follows the conventions of `printf'. If the field
- * is `real', `double' or `complex', then the format specifiers '%e',
- * '%E', '%f', '%F', '%g' or '%G' may be used. If the field is
- * `integer', then the format specifier must be '%d'. The format
- * string is ignored if the field is `pattern'. Field width and
- * precision may be specified (e.g., "%3.1f"), but variable field
- * width and precision (e.g., "%*.*f"), as well as length modifiers
- * (e.g., "%Lf") are not allowed.
+ * The format string ‘fmt’ follows the conventions of ‘printf’. If the
+ * field of ‘mtxfile’ is ‘mtxfile_real’ or ‘mtxfile_complex’, then the
+ * format specifiers '%e', '%E', '%f', '%F', '%g' or '%G' may be
+ * used. If the field is ‘mtxfile_integer’, then the format specifier
+ * must be '%d'. The format string is ignored if the field is
+ * ‘mtxfile_pattern’. Field width and precision may be specified
+ * (e.g., "%3.1f"), but variable field width and precision (e.g.,
+ * "%*.*f"), as well as length modifiers (e.g., "%Lf") are not
+ * allowed.
  *
- * If it is not `NULL', then the number of bytes written to the stream
- * is returned in `bytes_written'.
+ * If it is not ‘NULL’, then the number of bytes written to the stream
+ * is returned in ‘bytes_written’.
+ *
+ * The locale is temporarily changed to "C" to ensure that
+ * locale-specific settings, such as the type of decimal point, do not
+ * affect output.
  */
 int mtxfile_fwrite(
     const struct mtxfile * mtxfile,
@@ -690,25 +700,30 @@ int mtxfile_fwrite(
 
 #ifdef LIBMTX_HAVE_LIBZ
 /**
- * `mtxfile_gzwrite()' writes a Matrix Market file to a
+ * ‘mtxfile_gzwrite()’ writes a Matrix Market file to a
  * gzip-compressed stream.
  *
  * If ‘fmt’ is ‘NULL’, then the format specifier ‘%g’ is used to print
- * floating point numbers with with enough digits to ensure correct
+ * floating point numbers with enough digits to ensure correct
  * round-trip conversion from decimal text and back.  Otherwise, the
  * given format string is used to print numerical values.
  *
- * The format string follows the conventions of `printf'. If the field
- * is `real', `double' or `complex', then the format specifiers '%e',
- * '%E', '%f', '%F', '%g' or '%G' may be used. If the field is
- * `integer', then the format specifier must be '%d'. The format
- * string is ignored if the field is `pattern'. Field width and
- * precision may be specified (e.g., "%3.1f"), but variable field
- * width and precision (e.g., "%*.*f"), as well as length modifiers
- * (e.g., "%Lf") are not allowed.
+ * The format string ‘fmt’ follows the conventions of ‘printf’. If the
+ * field of ‘mtxfile’ is ‘mtxfile_real’ or ‘mtxfile_complex’, then the
+ * format specifiers '%e', '%E', '%f', '%F', '%g' or '%G' may be
+ * used. If the field is ‘mtxfile_integer’, then the format specifier
+ * must be '%d'. The format string is ignored if the field is
+ * ‘mtxfile_pattern’. Field width and precision may be specified
+ * (e.g., "%3.1f"), but variable field width and precision (e.g.,
+ * "%*.*f"), as well as length modifiers (e.g., "%Lf") are not
+ * allowed.
  *
- * If it is not `NULL', then the number of bytes written to the stream
- * is returned in `bytes_written'.
+ * If it is not ‘NULL’, then the number of bytes written to the stream
+ * is returned in ‘bytes_written’.
+ *
+ * The locale is temporarily changed to "C" to ensure that
+ * locale-specific settings, such as the type of decimal point, do not
+ * affect output.
  */
 int mtxfile_gzwrite(
     const struct mtxfile * mtxfile,
@@ -722,13 +737,13 @@ int mtxfile_gzwrite(
  */
 
 /**
- * `mtxfile_transpose()' tranposes a Matrix Market file.
+ * ‘mtxfile_transpose()’ tranposes a Matrix Market file.
  */
 int mtxfile_transpose(
     struct mtxfile * mtxfile);
 
 /**
- * `mtxfile_conjugate_transpose()' tranposes and complex conjugates a
+ * ‘mtxfile_conjugate_transpose()’ tranposes and complex conjugates a
  * Matrix Market file.
  */
 int mtxfile_conjugate_transpose(
@@ -872,11 +887,11 @@ int mtxfile_partition_rows(
     int64_t * data_lines_per_part);
 
 /**
- * `mtxfile_init_from_row_partition()' creates a Matrix Market file
+ * ‘mtxfile_init_from_row_partition()’ creates a Matrix Market file
  * from a subset of the rows of another Matrix Market file.
  *
- * The array `data_lines_per_part_ptr' should have been obtained
- * previously by calling `mtxfile_partition_rows'.
+ * The array ‘data_lines_per_part_ptr’ should have been obtained
+ * previously by calling ‘mtxfile_partition_rows’.
  */
 int mtxfile_init_from_row_partition(
     struct mtxfile * dst,
@@ -910,7 +925,7 @@ int mtxfile_reorder_dims(
     const int * column_permutation);
 
 /**
- * `mtxfile_ordering` is used to enumerate different kinds of
+ * ‘mtxfile_ordering’ is used to enumerate different kinds of
  * orderings for matrices in Matrix Market format.
  */
 enum mtxfile_ordering
@@ -920,14 +935,14 @@ enum mtxfile_ordering
 };
 
 /**
- * `mtxfile_ordering_str()` is a string representing the ordering
+ * ‘mtxfile_ordering_str()’ is a string representing the ordering
  * of a matrix in Matix Market format.
  */
 const char * mtxfile_ordering_str(
     enum mtxfile_ordering ordering);
 
 /**
- * `mtxfile_reorder_rcm()` reorders the rows of a sparse matrix
+ * ‘mtxfile_reorder_rcm()’ reorders the rows of a sparse matrix
  * according to the Reverse Cuthill-McKee algorithm.
  *
  * For a square matrix, the Cuthill-McKee algorithm is carried out on
@@ -937,7 +952,7 @@ const char * mtxfile_ordering_str(
  * by the matrix rows and columns.  The adjacency matrix ‘B’ of the
  * bipartite graph is square and symmetric and takes the form of a
  * 2-by-2 block matrix where ‘A’ is placed in the upper right corner
- * and ‘A'’ is placed in the lower left corner:
+ * and ‘A’’ is placed in the lower left corner:
  *
  *     ⎡  0   A ⎤
  * B = ⎢        ⎥.
@@ -974,7 +989,7 @@ int mtxfile_reorder_rcm(
     int * starting_vertex);
 
 /**
- * `mtxfile_reorder()` reorders the rows and columns of a matrix
+ * ‘mtxfile_reorder()’ reorders the rows and columns of a matrix
  * according to the specified algorithm.
  *
  * If successful, this function returns ‘MTX_SUCCESS’, and the rows
@@ -999,10 +1014,10 @@ int mtxfile_reorder(
 
 #ifdef LIBMTX_HAVE_MPI
 /**
- * `mtxfile_send()' sends a Matrix Market file to another MPI process.
+ * ‘mtxfile_send()’ sends a Matrix Market file to another MPI process.
  *
- * This is analogous to `MPI_Send()' and requires the receiving
- * process to perform a matching call to `mtxfile_recv()'.
+ * This is analogous to ‘MPI_Send()’ and requires the receiving
+ * process to perform a matching call to ‘mtxfile_recv()’.
  */
 int mtxfile_send(
     const struct mtxfile * mtxfile,
@@ -1012,11 +1027,11 @@ int mtxfile_send(
     struct mtxmpierror * mpierror);
 
 /**
- * `mtxfile_recv()' receives a Matrix Market file from another MPI
+ * ‘mtxfile_recv()’ receives a Matrix Market file from another MPI
  * process.
  *
- * This is analogous to `MPI_Recv()' and requires the sending process
- * to perform a matching call to `mtxfile_send()'.
+ * This is analogous to ‘MPI_Recv()’ and requires the sending process
+ * to perform a matching call to ‘mtxfile_send()’.
  */
 int mtxfile_recv(
     struct mtxfile * mtxfile,
@@ -1026,11 +1041,11 @@ int mtxfile_recv(
     struct mtxmpierror * mpierror);
 
 /**
- * `mtxfile_bcast()' broadcasts a Matrix Market file from an MPI root
+ * ‘mtxfile_bcast()’ broadcasts a Matrix Market file from an MPI root
  * process to other processes in a communicator.
  *
- * This is analogous to `MPI_Bcast()' and requires every process in
- * the communicator to perform matching calls to `mtxfile_bcast()'.
+ * This is analogous to ‘MPI_Bcast()’ and requires every process in
+ * the communicator to perform matching calls to ‘mtxfile_bcast()’.
  */
 int mtxfile_bcast(
     struct mtxfile * mtxfile,
@@ -1039,11 +1054,11 @@ int mtxfile_bcast(
     struct mtxmpierror * mpierror);
 
 /**
- * `mtxfile_gather()' gathers Matrix Market files onto an MPI root
+ * ‘mtxfile_gather()’ gathers Matrix Market files onto an MPI root
  * process from other processes in a communicator.
  *
- * This is analogous to `MPI_Gather()' and requires every process in
- * the communicator to perform matching calls to `mtxfile_gather()'.
+ * This is analogous to ‘MPI_Gather()’ and requires every process in
+ * the communicator to perform matching calls to ‘mtxfile_gather()’.
  */
 int mtxfile_gather(
     const struct mtxfile * sendmtxfile,
@@ -1053,12 +1068,12 @@ int mtxfile_gather(
     struct mtxmpierror * mpierror);
 
 /**
- * `mtxfile_allgather()' gathers Matrix Market files onto every MPI
+ * ‘mtxfile_allgather()’ gathers Matrix Market files onto every MPI
  * process from other processes in a communicator.
  *
- * This is analogous to `MPI_Allgather()' and requires every process
+ * This is analogous to ‘MPI_Allgather()’ and requires every process
  * in the communicator to perform matching calls to
- * `mtxfile_allgather()'.
+ * ‘mtxfile_allgather()’.
  */
 int mtxfile_allgather(
     const struct mtxfile * sendmtxfile,
@@ -1067,11 +1082,11 @@ int mtxfile_allgather(
     struct mtxmpierror * mpierror);
 
 /**
- * `mtxfile_scatter()' scatters Matrix Market files from an MPI root
+ * ‘mtxfile_scatter()’ scatters Matrix Market files from an MPI root
  * process to other processes in a communicator.
  *
- * This is analogous to `MPI_Scatter()' and requires every process in
- * the communicator to perform matching calls to `mtxfile_scatter()'.
+ * This is analogous to ‘MPI_Scatter()’ and requires every process in
+ * the communicator to perform matching calls to ‘mtxfile_scatter()’.
  */
 int mtxfile_scatter(
     const struct mtxfile * sendmtxfiles,
@@ -1081,11 +1096,11 @@ int mtxfile_scatter(
     struct mtxmpierror * mpierror);
 
 /**
- * `mtxfile_alltoall()' performs an all-to-all exchange of Matrix
+ * ‘mtxfile_alltoall()’ performs an all-to-all exchange of Matrix
  * Market files between MPI process in a communicator.
  *
- * This is analogous to `MPI_Alltoall()' and requires every process in
- * the communicator to perform matching calls to `mtxfile_alltoall()'.
+ * This is analogous to ‘MPI_Alltoall()’ and requires every process in
+ * the communicator to perform matching calls to ‘mtxfile_alltoall()’.
  */
 int mtxfile_alltoall(
     const struct mtxfile * sendmtxfiles,
@@ -1094,13 +1109,13 @@ int mtxfile_alltoall(
     struct mtxmpierror * mpierror);
 
 /**
- * `mtxfile_scatterv()' scatters a Matrix Market file from an MPI root
+ * ‘mtxfile_scatterv()’ scatters a Matrix Market file from an MPI root
  * process to other processes in a communicator.
  *
- * This is analogous to `MPI_Scatterv()' and requires every process in
- * the communicator to perform matching calls to `mtxfile_scatterv()'.
+ * This is analogous to ‘MPI_Scatterv()’ and requires every process in
+ * the communicator to perform matching calls to ‘mtxfile_scatterv()’.
  *
- * For a matrix in `array' format, entire rows are scattered, which
+ * For a matrix in ‘array’ format, entire rows are scattered, which
  * means that the send and receive counts must be multiples of the
  * number of matrix columns.
  */

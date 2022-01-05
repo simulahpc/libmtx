@@ -471,7 +471,7 @@ int mtxmatrix_gzread(
  * If `path' is `-', then standard output is used.
  *
  * If ‘fmt’ is ‘NULL’, then the format specifier ‘%g’ is used to print
- * floating point numbers with with enough digits to ensure correct
+ * floating point numbers with enough digits to ensure correct
  * round-trip conversion from decimal text and back.  Otherwise, the
  * given format string is used to print numerical values.
  *
@@ -495,7 +495,7 @@ int mtxmatrix_write(
  * `mtxmatrix_fwrite()' writes a matrix to a stream.
  *
  * If ‘fmt’ is ‘NULL’, then the format specifier ‘%g’ is used to print
- * floating point numbers with with enough digits to ensure correct
+ * floating point numbers with enough digits to ensure correct
  * round-trip conversion from decimal text and back.  Otherwise, the
  * given format string is used to print numerical values.
  *
@@ -522,7 +522,7 @@ int mtxmatrix_fwrite(
  * `mtxmatrix_gzwrite()' writes a matrix to a gzip-compressed stream.
  *
  * If ‘fmt’ is ‘NULL’, then the format specifier ‘%g’ is used to print
- * floating point numbers with with enough digits to ensure correct
+ * floating point numbers with enough digits to ensure correct
  * round-trip conversion from decimal text and back.  Otherwise, the
  * given format string is used to print numerical values.
  *

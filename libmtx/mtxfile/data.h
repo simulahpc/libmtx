@@ -924,18 +924,19 @@ int mtxfiledata_gzread(
  * to a stream.
  *
  * If ‘fmt’ is ‘NULL’, then the format specifier ‘%g’ is used to print
- * floating point numbers with with enough digits to ensure correct
+ * floating point numbers with enough digits to ensure correct
  * round-trip conversion from decimal text and back.  Otherwise, the
  * given format string is used to print numerical values.
  *
- * The format string follows the conventions of `printf'. If the field
- * is `real', `double' or `complex', then the format specifiers '%e',
- * '%E', '%f', '%F', '%g' or '%G' may be used. If the field is
- * `integer', then the format specifier must be '%d'. The format
- * string is ignored if the field is `pattern'. Field width and
- * precision may be specified (e.g., "%3.1f"), but variable field
- * width and precision (e.g., "%*.*f"), as well as length modifiers
- * (e.g., "%Lf") are not allowed.
+ * The format string ‘fmt’ follows the conventions of ‘printf’. If
+ * ‘field’ is ‘mtxfile_real’ or ‘mtxfile_complex’, then the format
+ * specifiers '%e', '%E', '%f', '%F', '%g' or '%G' may be used. If
+ * ‘field’ is ‘mtxfile_integer’, then the format specifier must be
+ * '%d'. The format string is ignored if ‘field’ is
+ * ‘mtxfile_pattern’. Field width and precision may be specified
+ * (e.g., "%3.1f"), but variable field width and precision (e.g.,
+ * "%*.*f"), as well as length modifiers (e.g., "%Lf") are not
+ * allowed.
  *
  * If it is not `NULL', then the number of bytes written to the stream
  * is returned in `bytes_written'.
@@ -961,18 +962,19 @@ int mtxfiledata_fwrite(
  * to a gzip-compressed stream.
  *
  * If ‘fmt’ is ‘NULL’, then the format specifier ‘%g’ is used to print
- * floating point numbers with with enough digits to ensure correct
+ * floating point numbers with enough digits to ensure correct
  * round-trip conversion from decimal text and back.  Otherwise, the
  * given format string is used to print numerical values.
  *
- * The format string follows the conventions of `printf'. If the field
- * is `real', `double' or `complex', then the format specifiers '%e',
- * '%E', '%f', '%F', '%g' or '%G' may be used. If the field is
- * `integer', then the format specifier must be '%d'. The format
- * string is ignored if the field is `pattern'. Field width and
- * precision may be specified (e.g., "%3.1f"), but variable field
- * width and precision (e.g., "%*.*f"), as well as length modifiers
- * (e.g., "%Lf") are not allowed.
+ * The format string ‘fmt’ follows the conventions of ‘printf’. If
+ * ‘field’ is ‘mtxfile_real’ or ‘mtxfile_complex’, then the format
+ * specifiers '%e', '%E', '%f', '%F', '%g' or '%G' may be used. If
+ * ‘field’ is ‘mtxfile_integer’, then the format specifier must be
+ * '%d'. The format string is ignored if ‘field’ is
+ * ‘mtxfile_pattern’. Field width and precision may be specified
+ * (e.g., "%3.1f"), but variable field width and precision (e.g.,
+ * "%*.*f"), as well as length modifiers (e.g., "%Lf") are not
+ * allowed.
  *
  * If it is not `NULL', then the number of bytes written to the stream
  * is returned in `bytes_written'.

@@ -37,8 +37,8 @@ libmtx.
 @menu
 * Error handling:: How to handle errors when working with the libmtx C library.
 * Matrix Market files:: Basic data structure for representing Matrix Market objects.
-* Creating matrices and vectors:: Functions for creating matrices and vectors.
 * Reading and writing Matrix Market files:: Functions for reading from and writing to files in Matrix Market format.
+* Creating matrices and vectors:: Functions for creating matrices and vectors.
 * Transposing sorting and reordering:: Transposing, sorting and reordering matrices and vectors.
 * Basic linear algebra operations:: Basic linear algebra
 @end menu
@@ -238,10 +238,10 @@ Briefly explained, @code{num_data_lines} will contain the number of
 data lines in data section of a Matrix Market file with the given size
 line and symmetry. More specifically, @code{num_data_lines} is set to
 @itemize
-@item @code{num_nonzeros}, if @code{num_nonzeros} is non-negative, or
-@item @code{num_rows*num_columns}, if @code{num_rows} and @code{num_columns} are both non-negative and @code{symmetry} is @code{mtxfile_general}, or
-@item @code{num_rows*(num_rows+1)/2}, if @code{num_rows} is non-negative and equal to @code{num_columns}, and @code{symmetry} is @code{mtxfile_symmetric} or @code{mtxfile_hermitian}, or
-@item @code{num_rows*(num_rows-1)/2}, if @code{num_rows} is non-negative and equal to @code{num_columns}, and @code{symmetry} is @code{mtxfile_skew_symmetric}, or
+@item @code{num_nonzeros}, if @code{num_nonzeros} is non-negative; or
+@item @code{num_rows*num_columns}, if @code{num_rows} and @code{num_columns} are both non-negative and @code{symmetry} is @samp{mtxfile_general}; or
+@item @code{num_rows*(num_rows+1)/2}, if @code{num_rows} is non-negative and equal to @code{num_columns}, and @code{symmetry} is @samp{mtxfile_symmetric} or @samp{mtxfile_hermitian}; or
+@item @code{num_rows*(num_rows-1)/2}, if @code{num_rows} is non-negative and equal to @code{num_columns}, and @code{symmetry} is @samp{mtxfile_skew_symmetric}; or
 @item @code{num_rows}, if @code{num_rows} is non-negative.
 @end itemize
 
@@ -338,9 +338,9 @@ For a matrix or vector in array format, values are stored in the union
 member @code{array_@var{field}_@var{precision}}, which is an array of
 type
 @itemize
-@item @code{float} or @code{double} if @code{field} is @code{mtxfile_real} and @code{precision} is @code{mtx_single} or @code{mtx_double}, respectively, or
-@item @code{float (*)[2]}, @code{double (*)[2]} if @code{field} is @code{mtxfile_complex} and @code{precision} is @code{mtx_single} or @code{mtx_double}, respectively, or
-@item @code{int32_t} or @code{int64_t} if @code{field} is @code{mtxfile_integer} and @code{precision} is @code{mtx_single} or @code{mtx_double}, respectively.
+@item @code{float} or @code{double} if @code{field} is @samp{mtxfile_real} and @code{precision} is @samp{mtx_single} or @samp{mtx_double}, respectively; or
+@item @code{float (*)[2]} or @code{double (*)[2]} if @code{field} is @samp{mtxfile_complex} and @code{precision} is @samp{mtx_single} or @samp{mtx_double}, respectively; or
+@item @code{int32_t} or @code{int64_t} if @code{field} is @samp{mtxfile_integer} and @code{precision} is @samp{mtx_single} or @samp{mtx_double}, respectively.
 @end itemize
 Note that the type used for complex values, e.g., @code{float (*)[2]},
 denotes a pointer to an array of size @code{2}. Thus, complex values
@@ -350,7 +350,7 @@ indicates the position in array of complex vector or matrix values,
 while the second index, @code{j}, is @code{0} for the real part and
 @code{1} for the imaginary part of the complex number. Also, note that
 matrices or vectors in array format may not have @code{field} set to
-@code{mtxfile_pattern}.
+@samp{mtxfile_pattern}.
 
 @cindex coordinate format
 @tindex mtxfile_matrix_coordinate_real_single
@@ -403,7 +403,7 @@ struct mtxfile_matrix_coordinate_pattern @{
 @};}
 @end example
 Note that there is no precision associated with matrices whose
-@code{field} is @code{mtxfile_pattern}. Instead, the presence of a
+@code{field} is @samp{mtxfile_pattern}. Instead, the presence of a
 nonzero value with row index @code{i} and column index @code{j}
 indicates that the matrix has a value of @code{1} at position
 @code{(i,j)}.
@@ -460,9 +460,144 @@ struct mtxfile_vector_coordinate_pattern @{
 @};}
 @end example
 Note that there is no precision associated with vectors whose
-@code{field} is @code{mtxfile_pattern}. Instead, the presence of a
+@code{field} is @samp{mtxfile_pattern}. Instead, the presence of a
 nonzero value with index @code{i} indicates that the vector has a
 value of @code{1} at position @code{i}.
+
+
+@node Reading and writing Matrix Market files
+@section Reading and writing Matrix Market files
+In most cases, matrices and vectors are obtained by reading from a
+file in Matrix Market format. These files are typically named with a
+@file{.mtx} extension, so we refer to them here as @file{mtx} files.
+This section describes how to use libmtx to read or write matrices and
+vectors to and from files in Matrix Market format.
+
+@subsection Reading Matrix Market files
+@findex mtxfile_fread
+To read an @file{mtx} file from a @code{FILE} stream, use the
+function @code{mtxfile_fread}:
+@example
+@code{int mtxfile_fread(
+    struct mtxfile * mtxfile,
+    enum mtxprecision precision,
+    FILE * f,
+    int * lines_read,
+    int64_t * bytes_read,
+    size_t line_max,
+    char * linebuf);}
+@end example
+If successful, @code{MTX_SUCCESS} is returned, and @code{mtxfile} will
+contain the matrix or vector. The user is responsible for calling
+@code{mtxfile_free} to free any storage allocated by
+@code{mtxfile_fread}. Otherwise, if @code{mtxfile_fread} fails, an
+error code is returned and @code{lines_read} and @code{bytes_read} are
+used to indicate the line number and byte of the Matrix Market file at
+which the error was encountered. @code{lines_read} and
+@code{bytes_read} are ignored if they are set to @samp{NULL}.
+
+Moreover, @code{precision} is used to choose the precision for storing
+the values of matrix or vector entries, as described in
+@ref{Precision}. If @code{linebuf} is not @samp{NULL}, then it must
+point to an array that can hold a null-terminated string whose length
+(including the terminating null-character) is at most @code{line_max}.
+This buffer is used for reading lines from the stream. Otherwise, if
+@code{linebuf} is @samp{NULL}, then a temporary buffer is allocated
+and used, and the maximum line length is determined by calling
+@code{sysconf()} with @code{_SC_LINE_MAX}.
+
+@findex mtxfile_gzread
+If libmtx is built with zlib support, then @code{mtxfile_gzread} can
+be used to read gzip-compressed @file{mtx} files.
+@example
+@code{int mtxfile_gzread(
+    struct mtxfile * mtxfile,
+    enum mtxprecision precision,
+    gzFile f,
+    int * lines_read,
+    int64_t * bytes_read,
+    size_t line_max,
+    char * linebuf);}
+@end example
+
+@findex mtxfile_read
+For convenience, the function @code{mtxfile_read} can be used to read
+an @file{mtx} file from a given path.
+@example
+@code{int mtxfile_read(
+    struct mtxfile * mtxfile,
+    enum mtxprecision precision,
+    const char * path,
+    bool gzip,
+    int * lines_read,
+    int64_t * bytes_read);}
+@end example
+The file is assumed to be gzip-compressed if @code{gzip} is
+@samp{true}, and uncompressed otherwise. If @code{path} is @samp{-},
+then the standard input stream is used.
+
+@subsection Writing Matrix Market files
+@findex mtxfile_fwrite
+To write an @file{mtx} file to a @code{FILE} stream, use the
+function @code{mtxfile_fwrite}:
+@example
+@code{int mtxfile_fwrite(
+    const struct mtxfile * mtxfile,
+    FILE * f,
+    const char * fmt,
+    int64_t * bytes_written);}
+@end example
+If successful, @code{MTX_SUCCESS} is returned, and the matrix or
+vector was written to the @code{FILE} stream. Moreover, if it is not
+@samp{NULL}, then the number of bytes written to the stream is
+returned in @code{bytes_written}.
+
+The @code{fmt} argument may optionally be used to specify a format
+string for outputting of numerical values. If @code{fmt} is
+@samp{NULL}, then the format specifier @samp{%g} is used to print
+floating point numbers with enough digits to ensure correct round-trip
+conversion from decimal text and back. Otherwise, the given format
+string is used to print numerical values. The format string follows
+the conventions of @code{printf}. If the field of @code{mtxfile} is
+@samp{mtxfile_real} or @samp{mtxfile_complex}, then the format
+specifiers @samp{%e}, @samp{%E}, @samp{%f}, @samp{%F}, @samp{%g} or
+@samp{%G} may be used. If the field is @samp{mtxfile_integer}, then
+the format specifier must be @samp{%d}. The format string is ignored
+if the field is @samp{mtxfile_pattern}. Field width and precision may
+be specified (e.g., @samp{%3.1f}), but variable field width and
+precision (e.g., @samp{%*.*f}), as well as length modifiers (e.g.,
+@samp{%Lf}) are not allowed.
+
+Note that the locale is temporarily changed to "C" to ensure that
+locale-specific settings, such as the type of decimal point, do not
+affect output.
+
+
+@findex mtxfile_gzwrite
+If libmtx is built with zlib support, then @code{mtxfile_gzwrite} can
+be used to write gzip-compressed @file{mtx} files.
+@example
+@code{int mtxfile_gzwrite(
+    const struct mtxfile * mtxfile,
+    gzFile f,
+    const char * fmt,
+    int64_t * bytes_written);}
+@end example
+
+@findex mtxfile_write
+For convenience, the function @code{mtxfile_write} can be used to write
+an @file{mtx} file to a given path.
+@example
+@code{int mtxfile_write(
+    const struct mtxfile * mtxfile,
+    const char * path,
+    bool gzip,
+    const char * fmt,
+    int64_t * bytes_written);}
+@end example
+The file is written as a gzip-compressed stream if @code{gzip} is
+@samp{true}, and uncompressed otherwise. If @code{path} is @samp{-},
+then the standard output stream is used.
 
 
 @node Creating matrices and vectors
@@ -923,98 +1058,6 @@ described in @ref{Index sets}.  These are used to determine which rows
 and columns to include in the submatrix.
 
 
-@node Reading and writing Matrix Market files
-@section Reading and writing Matrix Market files
-The file @file{libmtx/mtx/io.h} defines functions for reading
-from and writing to files in Matrix Market format. These files are
-typically named with a @file{.mtx} extension, so we refer to them here
-as @file{mtx} files.
-
-@findex mtx_fread
-To read an @file{mtx} file from a @code{FILE} stream, use the
-function:
-@example
-@code{int mtx_fread(
-    struct mtx * mtx,
-    FILE * f,
-    int * line_number,
-    int * column_number);}
-@end example
-If successful, @code{MTX_SUCCESS} is returned, and @code{mtx} will
-contain the matrix or vector represented by the @code{FILE}
-stream. The user is responsible for calling @code{mtx_free} to free
-any storage that may have been allocated by @code{mtx_fread}.
-Otherwise, if @code{mtx_fread} fails, then it will return an error
-code, and @code{line_number} and @code{column_number} will indicate
-the location in the Matrix Market file at which an error was
-encountered.
-
-@findex mtx_fwrite
-To write an @file{mtx} file to a @code{FILE} stream, use the function:
-@example
-@code{int mtx_fwrite(
-    const struct mtx * mtx,
-    FILE * f,
-    const char * format);}
-@end example
-If successful, @code{MTX_SUCCESS} is returned, and @code{mtx} is
-written to the stream @code{f}.
-
-If @code{format} is @code{NULL}, then the format specifier @samp{%d}
-is used to print integers and @samp{%g} is used to print floating
-point numbers. Otherwise, the given format string is used when
-printing numerical values.
-
-The format string follows the conventions of @code{printf}. If the
-field is @samp{real}, @samp{double} or @samp{complex}, then the format
-specifiers @samp{%e}, @samp{%E}, @samp{%f}, @samp{%F}, @samp{%g} or
-@samp{%G} may be used. If the field is @samp{integer}, then the format
-specifier must be @samp{%d}. The format string is ignored if the field
-is @samp{pattern}. Flags, field width and precision may be specified
-(e.g., @samp{%+3.1f}), but variable field width and precision (e.g.,
-@samp{%*.*f}), as well as length modifiers (e.g., @samp{%Lf}) are not
-allowed.
-
-@findex mtx_gzread
-@findex mtx_gzwrite
-If libmtx is built with zlib support, then the functions
-@code{mtx_gzread} and @code{mtx_gzwrite} can be used to read or
-write gzip-compressed @file{mtx} files. The function signatures are the
-similar @code{mtx_fread} and @code{mtx_fwrite}:
-@example
-@code{int mtx_gzread(
-    struct mtx * mtx,
-    gzFile f,
-    int * line_number,
-    int * column_number);
-
-int mtx_gzwrite(
-    const struct mtx * mtx,
-    gzFile f,
-    const char * format);}
-@end example
-
-@findex mtx_read
-@findex mtx_write
-Additionally, for convenience, the following functions are provided to
-read and write a @code{struct mtx} object to a file specified by a
-given path. The file may optionally be compressed using gzip.
-@example
-@code{int mtx_read(
-    struct mtx * mtx,
-    const char * path,
-    bool gzip,
-    int * line_number,
-    int * column_number);
-
-int mtx_write(
-    const struct mtx * mtx,
-    const char * path,
-    bool gzip,
-    const char * format);}
-@end example
-
-
 @node Transposing sorting and reordering
 @section Transposing, sorting and reordering
 
@@ -1102,7 +1145,7 @@ should be a permutation of the integers
 @code{1,2,...,mtx->num_rows}. Similarly, @code{column_permutation} is
 used to reorder the columns based on a permutation of
 @code{1,2,...,mtx->num_columns}. If @code{row_permutation} or
-@code{column_permutation} is @code{NULL}, then no permutation is
+@code{column_permutation} is @samp{NULL}, then no permutation is
 applied to the rows or columns, respectively.
 
 
@@ -1147,15 +1190,15 @@ square and in coordinate format.
 
 If successful, @code{mtx_matrix_reorder} returns @code{MTX_SUCCESS}, and the
 rows and columns of mtx have been reordered. If @code{row_permutation} is
-not @code{NULL} and the rows of a matrix were indeed reordered, then
+not @samp{NULL} and the rows of a matrix were indeed reordered, then
 @code{row_permutation} is set to point to a newly allocated array
 containing the row permutation.  Furthermore, if @code{column_permutation}
-is not @code{NULL}, then @code{column_permutation} may be set to point to an
+is not @samp{NULL}, then @code{column_permutation} may be set to point to an
 array containing the column permutation. However, this is only done if
 the columns were also reordered and the permutation is not
 symmetric. That is, if the row and column permutations are the same,
 then only @code{row_permutation} is set and @code{*column_permutation} is set to
-@code{NULL}.
+@samp{NULL}.
 
 If either of the @code{row_permutation} or @code{column_permutation} pointers
 are set, then the user is responsible for calling @code{free} to free the
@@ -1184,7 +1227,7 @@ after traversing the entire graph, the obtained ordering is reversed.
 If successful, @code{mtx_matrix_reorder_rcm} returns
 @code{MTX_SUCCESS}, and the rows and columns of @code{mtx} have been
 reordered according to the Reverse Cuthill-McKee algorithm. If
-@code{permutation} is not @code{NULL}, then the underlying pointer is
+@code{permutation} is not @samp{NULL}, then the underlying pointer is
 set to point to a newly allocated array containing the permutation
 used to reorder the rows and columns of @code{mtx}.
 

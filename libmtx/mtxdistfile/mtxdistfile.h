@@ -723,7 +723,7 @@ int mtxdistfile_fread(
  * If `path' is `-', then standard output is used.
  *
  * If ‘fmt’ is ‘NULL’, then the format specifier ‘%g’ is used to print
- * floating point numbers with with enough digits to ensure correct
+ * floating point numbers with enough digits to ensure correct
  * round-trip conversion from decimal text and back.  Otherwise, the
  * given format string is used to print numerical values.
  *
@@ -760,7 +760,7 @@ int mtxdistfile_write_shared(
  * If `path' is `-', then standard output is used.
  *
  * If ‘fmt’ is ‘NULL’, then the format specifier ‘%g’ is used to print
- * floating point numbers with with enough digits to ensure correct
+ * floating point numbers with enough digits to ensure correct
  * round-trip conversion from decimal text and back.  Otherwise, the
  * given format string is used to print numerical values.
  *
@@ -791,7 +791,7 @@ int mtxdistfile_write(
  * the specified stream on each process.
  *
  * If ‘fmt’ is ‘NULL’, then the format specifier ‘%g’ is used to print
- * floating point numbers with with enough digits to ensure correct
+ * floating point numbers with enough digits to ensure correct
  * round-trip conversion from decimal text and back.  Otherwise, the
  * given format string is used to print numerical values.
  *
@@ -831,7 +831,7 @@ int mtxdistfile_fwrite(
  * communicator.
  *
  * If ‘fmt’ is ‘NULL’, then the format specifier ‘%g’ is used to print
- * floating point numbers with with enough digits to ensure correct
+ * floating point numbers with enough digits to ensure correct
  * round-trip conversion from decimal text and back.  Otherwise, the
  * given format string is used to print numerical values.
  *
