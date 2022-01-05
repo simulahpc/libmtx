@@ -961,7 +961,7 @@ the chosen starting vertex.
 
 
 @node Reverse Cuthill-McKee (RCM)
-@subsection Reverse Cuthill-McKee (RCM)
+@subsubsection Reverse Cuthill-McKee (RCM)
 @findex mtx_matrix_reorder_rcm
 If @code{mtxfile_reorder} is called with @code{ordering} set to
 @samp{mtxfile_rcm}, then the rows and columns of a matrix are
