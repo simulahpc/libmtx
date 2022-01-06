@@ -46,7 +46,7 @@ libmtx.
 @section Error handling
 Functions in the libmtx C library generally return a status code that
 either indicates success (represented by the status code
-@code{MTX_SUCCESS}) or a specific error.  Valid error codes correspond
+@samp{MTX_SUCCESS}) or a specific error.  Valid error codes correspond
 to values of the type @code{enum mtxerror}, which is defined in the
 file @file{libmtx/error.h} along with some error handling
 functions.
@@ -75,7 +75,7 @@ if (err) @{
     fclose(f);
 @}}
 @end example
-If @code{mtxfile_fread} returns @code{MTX_ERR_INVALID_MTX_OBJECT}, for
+If @code{mtxfile_fread} returns @samp{MTX_ERR_INVALID_MTX_OBJECT}, for
 example, then the following message will be printed:
 @example
 @code{Error: test.mtx:1: invalid Matrix Market object}
@@ -485,7 +485,7 @@ function @code{mtxfile_fread}:
     size_t line_max,
     char * linebuf);}
 @end example
-If successful, @code{MTX_SUCCESS} is returned, and @code{mtxfile} will
+If successful, @samp{MTX_SUCCESS} is returned, and @code{mtxfile} will
 contain the matrix or vector. The user is responsible for calling
 @code{mtxfile_free} to free any storage allocated by
 @code{mtxfile_fread}. Otherwise, if @code{mtxfile_fread} fails, an
@@ -545,7 +545,7 @@ function @code{mtxfile_fwrite}:
     const char * fmt,
     int64_t * bytes_written);}
 @end example
-If successful, @code{MTX_SUCCESS} is returned, and the matrix or
+If successful, @samp{MTX_SUCCESS} is returned, and the matrix or
 vector was written to the @code{FILE} stream. Moreover, if it is not
 @samp{NULL}, then the number of bytes written to the stream is
 returned in @code{bytes_written}.
@@ -870,7 +870,7 @@ To sort a matrix or vector, use the function @code{mtxfile_sort}:
     struct mtxfile * mtxfile,
     struct mtxfilesorting sorting);}
 @end example
-If successful, @code{mtxfile_sort} returns @code{MTX_SUCCESS}, and the
+If successful, @code{mtxfile_sort} returns @samp{MTX_SUCCESS}, and the
 values of @code{mtxfile} will be sorted in the order specified by
 @code{sorting}.
 
@@ -936,7 +936,7 @@ matrix according to the specified ordering method.
     bool permute,
     int * rcm_starting_vertex);}
 @end example
-If successful, @code{mtxfile_reorder} returns @code{MTX_SUCCESS}, and
+If successful, @code{mtxfile_reorder} returns @samp{MTX_SUCCESS}, and
 the rows and columns of @code{mtxfile} have been reordered according
 to the specified method. If @code{rowperm} is not @samp{NULL}, then it
 must point to an array whose length equals or exceeds the number of

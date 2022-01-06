@@ -27,9 +27,9 @@ This chapter is provided as a reference for the libmtx C
 library.
 
 @section Error handling
-@tindex mtx_error
+@tindex mtxerror
 @example
-@code{enum mtx_error
+@code{enum mtxerror
 @{
   MTX_SUCCESS = 0,                        /* no error */
   MTX_ERR_ERRNO = -1,                     /* error code given by errno */

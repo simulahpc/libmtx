@@ -1,6 +1,6 @@
 # This file is part of libmtx.
 #
-# Copyright (C) 2021 James D. Trotter
+# Copyright (C) 2022 James D. Trotter
 #
 # libmtx is free software: you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -17,7 +17,7 @@
 # <https://www.gnu.org/licenses/>.
 #
 # Authors: James D. Trotter <james@simula.no>
-# Last modified: 2021-08-16
+# Last modified: 2022-01-06
 #
 # Makefile for the top-level directory of libmtx.
 #
@@ -405,6 +405,7 @@ manual_libmtx_TEXINFOS = \
 	manual/matrix_market_file_format.texi \
 	manual/matrix_market_files.texi \
 	manual/matrices_and_vectors.texi \
+	manual/distributed_matrix_market_files.texi \
 	manual/distributed_matrices_and_vectors.texi \
 	manual/commands.texi \
 	manual/c_library_reference.texi \

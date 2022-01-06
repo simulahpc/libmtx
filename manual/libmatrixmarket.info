@@ -762,7 +762,7 @@ File: libmtx.info,  Node: Error handling,  Next: Reading and writing Matrix Mark
 Functions in the libmtx C library generally return a status
 code that either indicates success (represented by the status code
 'MTX_SUCCESS') or a specific error.  Possible error codes are:
-     enum mtx_error
+     enum mtxerror
      {
        MTX_SUCCESS = 0,                    /* no error */
        MTX_ERR_ERRNO = -1,                 /* error code provided by errno */
@@ -785,7 +785,7 @@ code that either indicates success (represented by the status code
 description of a given error code.
      const char * mtxstrerror(int err);
    Here, the integer 'err' should correspond to one of the error codes
-from the 'mtx_error' enum type.
+from the 'mtxerror' enum type.
 
    'mtxstrerror' is typically used as shown in the example below.
 
@@ -810,7 +810,7 @@ error descriptions, and the function 'mtxstrerrormpi' should be used.
          int mpierrcode,
          char * mpierrstr);
    The error code 'err' is an integer corresponding to one of the error
-codes from the 'mtx_error' enum type.  The arguments 'mpierrcode' and
+codes from the 'mtxerror' enum type.  The arguments 'mpierrcode' and
 'mpierrstr' are only used if 'err' is 'MTX_ERR_MPI'.
 
    If 'err' is 'MTX_ERR_MPI', then the argument 'mpierrcode' should be
@@ -1548,7 +1548,7 @@ library.
 7.1 Error handling
 ==================
 
-     enum mtx_error
+     enum mtxerror
      {
        MTX_SUCCESS = 0,                    /* no error */
        MTX_ERR_ERRNO = -1,                 /* error code provided by errno */
@@ -2838,7 +2838,7 @@ Data type index
 * mtx_assembly:                          Additional header types.
                                                               (line  31)
 * mtx_assembly <1>:                      C library reference. (line  70)
-* mtx_error:                             C library reference. (line  12)
+* mtxerror:                             C library reference. (line  12)
 * mtx_field:                             Header types.        (line   6)
 * mtx_field <1>:                         C library reference. (line  41)
 * mtx_format:                            Header types.        (line   6)

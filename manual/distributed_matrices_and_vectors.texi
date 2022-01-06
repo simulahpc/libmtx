@@ -30,7 +30,6 @@ build libmtx with MPI support.
 
 @menu
 * Data types:: Basic data types for representing distributed matrices and vectors.
-* MPI error handling:: How to handle errors when working with MPI and distributed matrices and vectors.
 * Creating distributed matrices and vectors:: Functions for creating distributed matrices and vectors.
 * Reading and writing distributed Matrix Market files:: Functions for reading from and writing to files in Matrix Market format.
 * Communicating matrices and vectors:: Message-passing functions for Matrix Market objects
@@ -194,40 +193,6 @@ a given integer @code{n} belongs to the index set.
 @code{bool mtx_index_set_contains(
     const struct mtx_index_set * index_set, int n);}
 @end example
-
-
-@node MPI error handling
-@section MPI error handling
-
-@cindex MPI errors
-@findex mtxstrerrormpi
-In addition to the error handling routines described @ref{Error
-handling}, libmtx provides some additional error handling
-functionality when working with MPI and distributed matrices and
-vectors.  That is, if libmtx is built with MPI support enabled, then
-there are some functions in libmtx that may fail due to MPI errors.
-In these cases, some additional information is needed to provide
-helpful error descriptions, and the function @code{mtxstrerrormpi}
-should be used.
-@example
-@code{const char * mtxstrerrormpi(
-    int err,
-    int mpierrcode,
-    char * mpierrstr);}
-@end example
-The error code @code{err} is an integer corresponding to one of the
-error codes from the @code{mtx_error} enum type. The arguments
-@code{mpierrcode} and @code{mpierrstr} are only used if @code{err} is
-@code{MTX_ERR_MPI}.
-
-@findex MPI_Error_string
-@cindex @code{MPI_MAX_ERROR_STRING}
-If @code{err} is @code{MTX_ERR_MPI}, then the argument
-@code{mpierrcode} should be set to the error code that was returned
-from the MPI function call that failed. In addition, the argument
-@code{mpierrstr} must be a char array whose length is at least equal
-to @code{MPI_MAX_ERROR_STRING}. Internally, @code{mtxstrerrormpi}
-uses @code{MPI_Error_string} to obtain a description of the error.
 
 
 @node Creating distributed matrices and vectors
