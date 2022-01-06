@@ -16,7 +16,7 @@
  * along with libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-01-03
+ * Last modified: 2022-01-06
  *
  * Multiply a vector by a scalar and add it to another vector.
  *
@@ -623,6 +623,13 @@ int main(int argc, char *argv[])
     struct timespec t0, t1;
     FILE * diagf = stderr;
     setlocale(LC_ALL, "");
+
+    /* Set program invocation name. */
+    program_invocation_name = argv[0];
+    program_invocation_short_name = (
+        strrchr(program_invocation_name, '/')
+        ? strrchr(program_invocation_name, '/') + 1
+        : program_invocation_name);
 
     /* 1. Initialise MPI. */
     const MPI_Comm comm = MPI_COMM_WORLD;
