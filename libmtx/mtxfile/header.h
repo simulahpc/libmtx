@@ -37,7 +37,7 @@
 #include <stddef.h>
 #include <stdio.h>
 
-struct mtxmpierror;
+struct mtxdisterror;
 
 /*
  * Matrix Market header data types.
@@ -373,7 +373,7 @@ int mtxfileheader_send(
     int dest,
     int tag,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * ‘mtxfileheader_recv()’ receives a Matrix Market header from
@@ -387,7 +387,7 @@ int mtxfileheader_recv(
     int source,
     int tag,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * ‘mtxfileheader_bcast()’ broadcasts a Matrix Market header from an
@@ -401,7 +401,7 @@ int mtxfileheader_bcast(
     struct mtxfileheader * header,
     int root,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * ‘mtxfileheader_gather()’ gathers Matrix Market headers onto an MPI
@@ -416,7 +416,7 @@ int mtxfileheader_gather(
     struct mtxfileheader * recvheaders,
     int root,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * ‘mtxfileheader_allgather()’ gathers Matrix Market headers onto
@@ -429,7 +429,7 @@ int mtxfileheader_allgather(
     const struct mtxfileheader * sendheader,
     struct mtxfileheader * recvheaders,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 #endif
 
 #endif

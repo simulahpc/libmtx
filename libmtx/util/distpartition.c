@@ -66,28 +66,28 @@ int mtxdistpartition_init(
     const int * parts,
     MPI_Comm comm,
     int root,
-    struct mtxmpierror * mpierror)
+    struct mtxdisterror * disterr)
 {
     int err;
     if (type == mtx_singleton) {
         err = mtxdistpartition_init_singleton(
-            partition, size, comm, root, mpierror);
+            partition, size, comm, root, disterr);
     } else if (type == mtx_block) {
         err = mtxdistpartition_init_block(
-            partition, size, num_parts, comm, mpierror);
+            partition, size, num_parts, comm, disterr);
     } else if (type == mtx_cyclic) {
         err = mtxdistpartition_init_cyclic(
-            partition, size, num_parts, comm, mpierror);
+            partition, size, num_parts, comm, disterr);
     } else if (type == mtx_block_cyclic) {
         err = mtxdistpartition_init_block_cyclic(
-            partition, size, num_parts, block_size, comm, mpierror);
+            partition, size, num_parts, block_size, comm, disterr);
     } else if (type == mtx_unstructured) {
         err = mtxdistpartition_init_unstructured(
-            partition, size, num_parts, parts, comm, mpierror);
+            partition, size, num_parts, parts, comm, disterr);
     } else {
         err = MTX_ERR_INVALID_PARTITION_TYPE;
     }
-    if (mtxmpierror_allreduce(mpierror, err))
+    if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
     return MTX_SUCCESS;
 }
@@ -102,13 +102,13 @@ int mtxdistpartition_init_singleton(
     int64_t size,
     MPI_Comm comm,
     int root,
-    struct mtxmpierror * mpierror)
+    struct mtxdisterror * disterr)
 {
     int err;
     int rank;
-    mpierror->mpierrcode = MPI_Comm_rank(comm, &rank);
-    err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
-    if (mtxmpierror_allreduce(mpierror, err))
+    disterr->mpierrcode = MPI_Comm_rank(comm, &rank);
+    err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
     partition->comm = comm;
     partition->type = mtx_singleton;
@@ -117,7 +117,7 @@ int mtxdistpartition_init_singleton(
     err = mtx_index_set_init_interval(
         &partition->index_set, 0,
         rank == root ? size : 0);
-    if (mtxmpierror_allreduce(mpierror, err))
+    if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
     return MTX_SUCCESS;
 }
@@ -131,21 +131,21 @@ int mtxdistpartition_init_block(
     int64_t size,
     int num_parts,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror)
+    struct mtxdisterror * disterr)
 {
     int err;
     int comm_size;
-    mpierror->mpierrcode = MPI_Comm_size(comm, &comm_size);
-    err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
-    if (mtxmpierror_allreduce(mpierror, err))
+    disterr->mpierrcode = MPI_Comm_size(comm, &comm_size);
+    err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
     err = comm_size < num_parts ? MTX_ERR_INDEX_OUT_OF_BOUNDS : MTX_SUCCESS;
-    if (mtxmpierror_allreduce(mpierror, err))
+    if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
     int rank;
-    mpierror->mpierrcode = MPI_Comm_rank(comm, &rank);
-    err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
-    if (mtxmpierror_allreduce(mpierror, err))
+    disterr->mpierrcode = MPI_Comm_rank(comm, &rank);
+    err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
     partition->comm = comm;
     partition->type = mtx_block;
@@ -157,7 +157,7 @@ int mtxdistpartition_init_block(
         a += size / num_parts + (p < (size % num_parts) ? 1 : 0);
     int64_t b = a + size / num_parts + (rank < (size % num_parts) ? 1 : 0);
     err = mtx_index_set_init_interval(&partition->index_set, a, b);
-    if (mtxmpierror_allreduce(mpierror, err))
+    if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
     return MTX_SUCCESS;
 }
@@ -171,21 +171,21 @@ int mtxdistpartition_init_cyclic(
     int64_t size,
     int num_parts,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror)
+    struct mtxdisterror * disterr)
 {
     int err;
     int comm_size;
-    mpierror->mpierrcode = MPI_Comm_size(comm, &comm_size);
-    err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
-    if (mtxmpierror_allreduce(mpierror, err))
+    disterr->mpierrcode = MPI_Comm_size(comm, &comm_size);
+    err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
     err = comm_size < num_parts ? MTX_ERR_INDEX_OUT_OF_BOUNDS : MTX_SUCCESS;
-    if (mtxmpierror_allreduce(mpierror, err))
+    if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
     int rank;
-    mpierror->mpierrcode = MPI_Comm_rank(comm, &rank);
-    err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
-    if (mtxmpierror_allreduce(mpierror, err))
+    disterr->mpierrcode = MPI_Comm_rank(comm, &rank);
+    err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
     partition->comm = comm;
     partition->type = mtx_cyclic;
@@ -195,7 +195,7 @@ int mtxdistpartition_init_cyclic(
     int64_t part_size = size / num_parts + (rank < (size % num_parts) ? 1 : 0);
     err = mtx_index_set_init_strided(
         &partition->index_set, rank, part_size, num_parts);
-    if (mtxmpierror_allreduce(mpierror, err))
+    if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
     return MTX_SUCCESS;
 }
@@ -210,7 +210,7 @@ int mtxdistpartition_init_block_cyclic(
     int num_parts,
     int block_size,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror)
+    struct mtxdisterror * disterr)
 {
     errno = ENOTSUP;
     return MTX_ERR_ERRNO;
@@ -226,7 +226,7 @@ int mtxdistpartition_init_unstructured(
     int num_parts,
     const int * parts,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror)
+    struct mtxdisterror * disterr)
 {
     errno = ENOTSUP;
     return MTX_ERR_ERRNO;

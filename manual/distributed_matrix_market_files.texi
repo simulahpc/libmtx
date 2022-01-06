@@ -77,15 +77,15 @@ The example below shows how @code{mtxstrerrormpi} is typically used.
 @example
 @code{int err, mpierr;
 char mpierrstr[MPI_MAX_ERROR_STRING];
-struct mtxmpierror mpierror;
-err = mtxmpierror_alloc(&mpierror, comm, &mpierr);
+struct mtxdisterror disterr;
+err = mtxdisterror_alloc(&disterr, comm, &mpierr);
 if (err) @{
     fprintf(stderr, "error: %s\n",
             mtxstrerrormpi(err, mpierr, mpierrstr));
     MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
 @}}
 @end example
-If @code{mtxmpierror_alloc} returns @samp{MTX_ERR_MPI} and
+If @code{mtxdisterror_alloc} returns @samp{MTX_ERR_MPI} and
 @code{mpierr} is @samp{MPI_ERR_COMM}, then the following message will
 be printed:
 @example

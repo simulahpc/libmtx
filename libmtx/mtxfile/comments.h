@@ -38,7 +38,7 @@
 #include <stddef.h>
 #include <stdio.h>
 
-struct mtxmpierror;
+struct mtxdisterror;
 
 /**
  * `mtxfilecomment' represents a single comment line of a Matrix
@@ -201,7 +201,7 @@ int mtxfilecomments_send(
     int dest,
     int tag,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * `mtxfilecomments_recv()' receives Matrix Market comment lines from
@@ -215,7 +215,7 @@ int mtxfilecomments_recv(
     int source,
     int tag,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * `mtxfilecomments_bcast()' broadcasts Matrix Market comment lines
@@ -229,7 +229,7 @@ int mtxfilecomments_bcast(
     struct mtxfilecomments * comments,
     int root,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * `mtxfilecomments_gather()' gathers Matrix Market comments onto an
@@ -244,7 +244,7 @@ int mtxfilecomments_gather(
     struct mtxfilecomments * recvcomments,
     int root,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * `mtxfilecomments_allgather()' gathers Matrix Market comment lines
@@ -257,7 +257,7 @@ int mtxfilecomments_allgather(
     const struct mtxfilecomments * sendcomments,
     struct mtxfilecomments * recvcomments,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 #endif
 
 #endif

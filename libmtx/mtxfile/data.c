@@ -6203,16 +6203,16 @@ int mtxfiledata_send(
     int dest,
     int tag,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror)
+    struct mtxdisterror * disterr)
 {
     if (format == mtxfile_array) {
         return mtxfiledata_send_array(
             data, field, precision, size, offset,
-            dest, tag, comm, &mpierror->err);
+            dest, tag, comm, &disterr->err);
     } else if (format == mtxfile_coordinate) {
         return mtxfiledata_send_coordinate(
             data, object, field, precision, size, offset,
-            dest, tag, comm, &mpierror->err);
+            dest, tag, comm, &disterr->err);
     } else {
         return MTX_ERR_INVALID_MTX_FORMAT;
     }
@@ -6460,16 +6460,16 @@ int mtxfiledata_recv(
     int source,
     int tag,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror)
+    struct mtxdisterror * disterr)
 {
     if (format == mtxfile_array) {
         return mtxfiledata_recv_array(
             data, field, precision, size, offset,
-            source, tag, comm, &mpierror->err);
+            source, tag, comm, &disterr->err);
     } else if (format == mtxfile_coordinate) {
         return mtxfiledata_recv_coordinate(
             data, object, field, precision, size, offset,
-            source, tag, comm, &mpierror->err);
+            source, tag, comm, &disterr->err);
     } else {
         return MTX_ERR_INVALID_MTX_FORMAT;
     }
@@ -6703,16 +6703,16 @@ int mtxfiledata_bcast(
     int64_t offset,
     int root,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror)
+    struct mtxdisterror * disterr)
 {
     if (format == mtxfile_array) {
         return mtxfiledata_bcast_array(
             data, field, precision, size, offset,
-            root, comm, &mpierror->err);
+            root, comm, &disterr->err);
     } else if (format == mtxfile_coordinate) {
         return mtxfiledata_bcast_coordinate(
             data, object, field, precision, size, offset,
-            root, comm, &mpierror->err);
+            root, comm, &disterr->err);
     } else {
         return MTX_ERR_INVALID_MTX_FORMAT;
     }
@@ -6998,18 +6998,18 @@ int mtxfiledata_gatherv(
     const int * recvdispls,
     int root,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror)
+    struct mtxdisterror * disterr)
 {
     if (format == mtxfile_array) {
         return mtxfiledata_gatherv_array(
             sendbuf, field, precision, sendoffset, sendcount,
             recvbuf, recvoffset, recvcounts, recvdispls,
-            root, comm, &mpierror->err);
+            root, comm, &disterr->err);
     } else if (format == mtxfile_coordinate) {
         return mtxfiledata_gatherv_coordinate(
             sendbuf, object, field, precision, sendoffset, sendcount,
             recvbuf, recvoffset, recvcounts, recvdispls,
-            root, comm, &mpierror->err);
+            root, comm, &disterr->err);
     } else {
         return MTX_ERR_INVALID_MTX_FORMAT;
     }
@@ -7295,16 +7295,16 @@ int mtxfiledata_scatterv(
     int recvcount,
     int root,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror)
+    struct mtxdisterror * disterr)
 {
     if (format == mtxfile_array) {
         return mtxfiledata_scatterv_array(
             sendbuf, field, precision, sendoffset, sendcounts, displs,
-            recvbuf, recvoffset, recvcount, root, comm, &mpierror->err);
+            recvbuf, recvoffset, recvcount, root, comm, &disterr->err);
     } else if (format == mtxfile_coordinate) {
         return mtxfiledata_scatterv_coordinate(
             sendbuf, object, field, precision, sendoffset, sendcounts, displs,
-            recvbuf, recvoffset, recvcount, root, comm, &mpierror->err);
+            recvbuf, recvoffset, recvcount, root, comm, &disterr->err);
     } else {
         return MTX_ERR_INVALID_MTX_FORMAT;
     }
@@ -7590,18 +7590,18 @@ int mtxfiledata_alltoallv(
     const int * recvcounts,
     const int * recvdispls,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror)
+    struct mtxdisterror * disterr)
 {
     if (format == mtxfile_array) {
         return mtxfiledata_alltoallv_array(
             sendbuf, field, precision, sendoffset, sendcounts, senddispls,
             recvbuf, recvoffset, recvcounts, recvdispls,
-            comm, &mpierror->err);
+            comm, &disterr->err);
     } else if (format == mtxfile_coordinate) {
         return mtxfiledata_alltoallv_coordinate(
             sendbuf, object, field, precision, sendoffset, sendcounts, senddispls,
             recvbuf, recvoffset, recvcounts, recvdispls,
-            comm, &mpierror->err);
+            comm, &disterr->err);
     } else {
         return MTX_ERR_INVALID_MTX_FORMAT;
     }

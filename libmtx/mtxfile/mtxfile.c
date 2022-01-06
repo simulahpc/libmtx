@@ -2468,21 +2468,21 @@ int mtxfile_send(
     int dest,
     int tag,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror)
+    struct mtxdisterror * disterr)
 {
     int err;
-    err = mtxfileheader_send(&mtxfile->header, dest, tag, comm, mpierror);
+    err = mtxfileheader_send(&mtxfile->header, dest, tag, comm, disterr);
     if (err)
         return err;
-    err = mtxfilecomments_send(&mtxfile->comments, dest, tag, comm, mpierror);
+    err = mtxfilecomments_send(&mtxfile->comments, dest, tag, comm, disterr);
     if (err)
         return err;
-    err = mtxfilesize_send(&mtxfile->size, dest, tag, comm, mpierror);
+    err = mtxfilesize_send(&mtxfile->size, dest, tag, comm, disterr);
     if (err)
         return err;
-    mpierror->mpierrcode = MPI_Send(
+    disterr->mpierrcode = MPI_Send(
         &mtxfile->precision, 1, MPI_INT, dest, tag, comm);
-    if (mpierror->mpierrcode)
+    if (disterr->mpierrcode)
         return MTX_ERR_MPI;
 
     int64_t num_data_lines;
@@ -2498,7 +2498,7 @@ int mtxfile_send(
         mtxfile->header.field,
         mtxfile->precision,
         num_data_lines, 0,
-        dest, tag, comm, mpierror);
+        dest, tag, comm, disterr);
     if (err)
         return err;
     return MTX_SUCCESS;
@@ -2516,23 +2516,23 @@ int mtxfile_recv(
     int source,
     int tag,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror)
+    struct mtxdisterror * disterr)
 {
     int err;
-    err = mtxfileheader_recv(&mtxfile->header, source, tag, comm, mpierror);
+    err = mtxfileheader_recv(&mtxfile->header, source, tag, comm, disterr);
     if (err)
         return err;
-    err = mtxfilecomments_recv(&mtxfile->comments, source, tag, comm, mpierror);
+    err = mtxfilecomments_recv(&mtxfile->comments, source, tag, comm, disterr);
     if (err)
         return err;
-    err = mtxfilesize_recv(&mtxfile->size, source, tag, comm, mpierror);
+    err = mtxfilesize_recv(&mtxfile->size, source, tag, comm, disterr);
     if (err) {
         mtxfilecomments_free(&mtxfile->comments);
         return err;
     }
-    mpierror->mpierrcode = MPI_Recv(
+    disterr->mpierrcode = MPI_Recv(
         &mtxfile->precision, 1, MPI_INT, source, tag, comm, MPI_STATUS_IGNORE);
-    if (mpierror->mpierrcode) {
+    if (disterr->mpierrcode) {
         mtxfilecomments_free(&mtxfile->comments);
         return MTX_ERR_MPI;
     }
@@ -2563,7 +2563,7 @@ int mtxfile_recv(
         mtxfile->header.field,
         mtxfile->precision,
         num_data_lines, 0,
-        source, tag, comm, mpierror);
+        source, tag, comm, disterr);
     if (err) {
         mtxfiledata_free(
             &mtxfile->data, mtxfile->header.object, mtxfile->header.format,
@@ -2585,31 +2585,31 @@ int mtxfile_bcast(
     struct mtxfile * mtxfile,
     int root,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror)
+    struct mtxdisterror * disterr)
 {
     int err;
     int rank;
-    mpierror->mpierrcode = MPI_Comm_rank(comm, &rank);
-    err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
-    if (mtxmpierror_allreduce(mpierror, err))
+    disterr->mpierrcode = MPI_Comm_rank(comm, &rank);
+    err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
 
-    err = mtxfileheader_bcast(&mtxfile->header, root, comm, mpierror);
+    err = mtxfileheader_bcast(&mtxfile->header, root, comm, disterr);
     if (err)
         return err;
-    err = mtxfilecomments_bcast(&mtxfile->comments, root, comm, mpierror);
+    err = mtxfilecomments_bcast(&mtxfile->comments, root, comm, disterr);
     if (err)
         return err;
-    err = mtxfilesize_bcast(&mtxfile->size, root, comm, mpierror);
+    err = mtxfilesize_bcast(&mtxfile->size, root, comm, disterr);
     if (err) {
         if (rank != root)
             mtxfilecomments_free(&mtxfile->comments);
         return err;
     }
-    mpierror->mpierrcode = MPI_Bcast(
+    disterr->mpierrcode = MPI_Bcast(
         &mtxfile->precision, 1, MPI_INT, root, comm);
-    err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
-    if (mtxmpierror_allreduce(mpierror, err)) {
+    err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err)) {
         if (rank != root)
             mtxfilecomments_free(&mtxfile->comments);
         return MTX_ERR_MPI_COLLECTIVE;
@@ -2618,7 +2618,7 @@ int mtxfile_bcast(
     int64_t num_data_lines;
     err = mtxfilesize_num_data_lines(
         &mtxfile->size, mtxfile->header.symmetry, &num_data_lines);
-    if (mtxmpierror_allreduce(mpierror, err)) {
+    if (mtxdisterror_allreduce(disterr, err)) {
         if (rank != root)
             mtxfilecomments_free(&mtxfile->comments);
         return MTX_ERR_MPI_COLLECTIVE;
@@ -2632,7 +2632,7 @@ int mtxfile_bcast(
             mtxfile->header.field,
             mtxfile->precision, num_data_lines);
     }
-    if (mtxmpierror_allreduce(mpierror, err)) {
+    if (mtxdisterror_allreduce(disterr, err)) {
         if (rank != root)
             mtxfilecomments_free(&mtxfile->comments);
         return MTX_ERR_MPI_COLLECTIVE;
@@ -2645,7 +2645,7 @@ int mtxfile_bcast(
         mtxfile->header.field,
         mtxfile->precision,
         num_data_lines, 0,
-        root, comm, mpierror);
+        root, comm, disterr);
     if (err) {
         if (rank != root) {
             mtxfiledata_free(
@@ -2670,26 +2670,26 @@ int mtxfile_gather(
     struct mtxfile * recvmtxfiles,
     int root,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror)
+    struct mtxdisterror * disterr)
 {
     int err;
     int comm_size;
-    mpierror->mpierrcode = MPI_Comm_size(comm, &comm_size);
-    err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
-    if (mtxmpierror_allreduce(mpierror, err))
+    disterr->mpierrcode = MPI_Comm_size(comm, &comm_size);
+    err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
     int rank;
-    mpierror->mpierrcode = MPI_Comm_rank(comm, &rank);
-    err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
-    if (mtxmpierror_allreduce(mpierror, err))
+    disterr->mpierrcode = MPI_Comm_rank(comm, &rank);
+    err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
 
     for (int p = 0; p < comm_size; p++) {
         /* Send to the root process */
         err = (rank != root && rank == p)
-            ? mtxfile_send(sendmtxfile, root, 0, comm, mpierror)
+            ? mtxfile_send(sendmtxfile, root, 0, comm, disterr)
             : MTX_SUCCESS;
-        if (mtxmpierror_allreduce(mpierror, err)) {
+        if (mtxdisterror_allreduce(disterr, err)) {
             if (rank == root) {
                 for (int q = p-1; q >= 0; q--)
                     mtxfile_free(&recvmtxfiles[q]);
@@ -2699,9 +2699,9 @@ int mtxfile_gather(
 
         /* Receive on the root process */
         err = (rank == root && p != root)
-            ? mtxfile_recv(&recvmtxfiles[p], p, 0, comm, mpierror)
+            ? mtxfile_recv(&recvmtxfiles[p], p, 0, comm, disterr)
             : MTX_SUCCESS;
-        if (mtxmpierror_allreduce(mpierror, err)) {
+        if (mtxdisterror_allreduce(disterr, err)) {
             if (rank == root) {
                 for (int q = p-1; q >= 0; q--)
                     mtxfile_free(&recvmtxfiles[q]);
@@ -2712,7 +2712,7 @@ int mtxfile_gather(
         /* Perform a copy on the root process */
         err = (rank == root && p == root)
             ? mtxfile_init_copy(&recvmtxfiles[p], sendmtxfile) : MTX_SUCCESS;
-        if (mtxmpierror_allreduce(mpierror, err)) {
+        if (mtxdisterror_allreduce(disterr, err)) {
             if (rank == root) {
                 for (int q = p-1; q >= 0; q--)
                     mtxfile_free(&recvmtxfiles[q]);
@@ -2735,21 +2735,21 @@ int mtxfile_allgather(
     const struct mtxfile * sendmtxfile,
     struct mtxfile * recvmtxfiles,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror)
+    struct mtxdisterror * disterr)
 {
     int err;
     int comm_size;
-    mpierror->mpierrcode = MPI_Comm_size(comm, &comm_size);
-    err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
-    if (mtxmpierror_allreduce(mpierror, err))
+    disterr->mpierrcode = MPI_Comm_size(comm, &comm_size);
+    err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
     int rank;
-    mpierror->mpierrcode = MPI_Comm_rank(comm, &rank);
-    err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
-    if (mtxmpierror_allreduce(mpierror, err))
+    disterr->mpierrcode = MPI_Comm_rank(comm, &rank);
+    err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
     for (int p = 0; p < comm_size; p++) {
-        err = mtxfile_gather(sendmtxfile, recvmtxfiles, p, comm, mpierror);
+        err = mtxfile_gather(sendmtxfile, recvmtxfiles, p, comm, disterr);
         if (err)
             return err;
     }
@@ -2768,34 +2768,34 @@ int mtxfile_scatter(
     struct mtxfile * recvmtxfile,
     int root,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror)
+    struct mtxdisterror * disterr)
 {
     int err;
     int comm_size;
-    mpierror->mpierrcode = MPI_Comm_size(comm, &comm_size);
-    err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
-    if (mtxmpierror_allreduce(mpierror, err))
+    disterr->mpierrcode = MPI_Comm_size(comm, &comm_size);
+    err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
     int rank;
-    mpierror->mpierrcode = MPI_Comm_rank(comm, &rank);
-    err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
-    if (mtxmpierror_allreduce(mpierror, err))
+    disterr->mpierrcode = MPI_Comm_rank(comm, &rank);
+    err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
 
     for (int p = 0; p < comm_size; p++) {
         if (rank == root && p != root) {
             /* Send from the root process */
-            err = mtxfile_send(&sendmtxfiles[p], p, 0, comm, mpierror);
+            err = mtxfile_send(&sendmtxfiles[p], p, 0, comm, disterr);
         } else if (rank != root && rank == p) {
             /* Receive from the root process */
-            err = mtxfile_recv(recvmtxfile, root, 0, comm, mpierror);
+            err = mtxfile_recv(recvmtxfile, root, 0, comm, disterr);
         } else if (rank == root && p == root) {
             /* Perform a copy on the root process */
             err = mtxfile_init_copy(recvmtxfile, &sendmtxfiles[p]);
         } else {
             err = MTX_SUCCESS;
         }
-        if (mtxmpierror_allreduce(mpierror, err)) {
+        if (mtxdisterror_allreduce(disterr, err)) {
             if (rank < p)
                 mtxfile_free(recvmtxfile);
             return MTX_ERR_MPI_COLLECTIVE;
@@ -2815,21 +2815,21 @@ int mtxfile_alltoall(
     const struct mtxfile * sendmtxfiles,
     struct mtxfile * recvmtxfiles,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror)
+    struct mtxdisterror * disterr)
 {
     int err;
     int comm_size;
-    mpierror->mpierrcode = MPI_Comm_size(comm, &comm_size);
-    err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
-    if (mtxmpierror_allreduce(mpierror, err))
+    disterr->mpierrcode = MPI_Comm_size(comm, &comm_size);
+    err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
     int rank;
-    mpierror->mpierrcode = MPI_Comm_rank(comm, &rank);
-    err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
-    if (mtxmpierror_allreduce(mpierror, err))
+    disterr->mpierrcode = MPI_Comm_rank(comm, &rank);
+    err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
     for (int p = 0; p < comm_size; p++) {
-        err = mtxfile_scatter(sendmtxfiles, &recvmtxfiles[p], p, comm, mpierror);
+        err = mtxfile_scatter(sendmtxfiles, &recvmtxfiles[p], p, comm, disterr);
         if (err) {
             for (int q = p-1; q >= 0; q--)
                 mtxfile_free(&recvmtxfiles[q]);
@@ -2854,41 +2854,41 @@ int mtxfile_scatterv(
     int recvcount,
     int root,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror)
+    struct mtxdisterror * disterr)
 {
     int err;
     int comm_size;
-    mpierror->mpierrcode = MPI_Comm_size(comm, &comm_size);
-    err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
-    if (mtxmpierror_allreduce(mpierror, err))
+    disterr->mpierrcode = MPI_Comm_size(comm, &comm_size);
+    err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
 
     int rank;
-    mpierror->mpierrcode = MPI_Comm_rank(comm, &rank);
-    err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
-    if (mtxmpierror_allreduce(mpierror, err))
+    disterr->mpierrcode = MPI_Comm_rank(comm, &rank);
+    err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
 
     err = (rank == root)
         ? mtxfileheader_copy(&recvmtxfile->header, &sendmtxfile->header)
         : MTX_SUCCESS;
-    if (mtxmpierror_allreduce(mpierror, err))
+    if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
-    err = mtxfileheader_bcast(&recvmtxfile->header, root, comm, mpierror);
+    err = mtxfileheader_bcast(&recvmtxfile->header, root, comm, disterr);
     if (err)
         return err;
 
     err = (rank == root)
         ? mtxfilecomments_init(&recvmtxfile->comments)
         : MTX_SUCCESS;
-    if (mtxmpierror_allreduce(mpierror, err))
+    if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
     err = (rank == root)
         ? mtxfilecomments_copy(&recvmtxfile->comments, &sendmtxfile->comments)
         : MTX_SUCCESS;
-    if (mtxmpierror_allreduce(mpierror, err))
+    if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
-    err = mtxfilecomments_bcast(&recvmtxfile->comments, root, comm, mpierror);
+    err = mtxfilecomments_bcast(&recvmtxfile->comments, root, comm, disterr);
     if (err) {
         mtxfilecomments_free(&recvmtxfile->comments);
         return err;
@@ -2897,17 +2897,17 @@ int mtxfile_scatterv(
     err = mtxfilesize_scatterv(
         &sendmtxfile->size, &recvmtxfile->size,
         recvmtxfile->header.object, recvmtxfile->header.format,
-        recvcount, root, comm, mpierror);
+        recvcount, root, comm, disterr);
     if (err) {
         mtxfilecomments_free(&recvmtxfile->comments);
         return err;
     }
 
     recvmtxfile->precision = sendmtxfile->precision;
-    mpierror->mpierrcode = MPI_Bcast(
+    disterr->mpierrcode = MPI_Bcast(
         &recvmtxfile->precision, 1, MPI_INT, root, comm);
-    err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
-    if (mtxmpierror_allreduce(mpierror, err)) {
+    err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err)) {
         mtxfilecomments_free(&recvmtxfile->comments);
         return MTX_ERR_MPI_COLLECTIVE;
     }
@@ -2915,12 +2915,12 @@ int mtxfile_scatterv(
     int64_t num_data_lines;
     err = mtxfilesize_num_data_lines(
         &recvmtxfile->size, recvmtxfile->header.symmetry, &num_data_lines);
-    if (mtxmpierror_allreduce(mpierror, err)) {
+    if (mtxdisterror_allreduce(disterr, err)) {
         mtxfilecomments_free(&recvmtxfile->comments);
         return MTX_ERR_MPI_COLLECTIVE;
     }
     err = recvcount != num_data_lines ? MTX_ERR_INDEX_OUT_OF_BOUNDS : MTX_SUCCESS;
-    if (mtxmpierror_allreduce(mpierror, err)) {
+    if (mtxdisterror_allreduce(disterr, err)) {
         mtxfilecomments_free(&recvmtxfile->comments);
         return MTX_ERR_MPI_COLLECTIVE;
     }
@@ -2932,7 +2932,7 @@ int mtxfile_scatterv(
         recvmtxfile->header.field,
         recvmtxfile->precision,
         recvcount);
-    if (mtxmpierror_allreduce(mpierror, err)) {
+    if (mtxdisterror_allreduce(disterr, err)) {
         mtxfilecomments_free(&recvmtxfile->comments);
         return MTX_ERR_MPI_COLLECTIVE;
     }
@@ -2943,7 +2943,7 @@ int mtxfile_scatterv(
         recvmtxfile->header.field, recvmtxfile->precision,
         0, sendcounts, displs,
         &recvmtxfile->data, 0, recvcount,
-        root, comm, mpierror);
+        root, comm, disterr);
     if (err) {
         mtxfiledata_free(
             &recvmtxfile->data, recvmtxfile->header.object, recvmtxfile->header.format,

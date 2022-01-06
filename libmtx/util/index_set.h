@@ -34,7 +34,7 @@
 #include <stdint.h>
 #include <stdio.h>
 
-struct mtxmpierror;
+struct mtxdisterror;
 
 /**
  * `mtx_index_set_type' enumerates different kinds of index sets.
@@ -248,7 +248,7 @@ int mtx_index_set_send(
     int dest,
     int tag,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * `mtx_index_set_recv()' receives an index set from another MPI
@@ -262,7 +262,7 @@ int mtx_index_set_recv(
     int source,
     int tag,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 #endif
 
 #endif

@@ -33,7 +33,7 @@
 
 #include <stdint.h>
 
-struct mtxmpierror;
+struct mtxdisterror;
 
 /**
  * ‘counting_sort_uint8()’ sorts an array of 8-bit integer keys using
@@ -176,7 +176,7 @@ int distradix_sort_uint32(
     uint32_t * keys,
     int64_t * sorting_permutation,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * ‘distradix_sort_uint64()’ sorts a distributed array of 64-bit
@@ -200,7 +200,7 @@ int distradix_sort_uint64(
     uint64_t * keys,
     int64_t * sorting_permutation,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 #endif
 
 #endif

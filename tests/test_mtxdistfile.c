@@ -69,8 +69,8 @@ int test_mtxdistfile_from_mtxfile(void)
     if (comm_size != 2)
         TEST_FAIL_MSG("Expected exactly two MPI processes");
 
-    struct mtxmpierror mpierror;
-    err = mtxmpierror_alloc(&mpierror, comm, NULL);
+    struct mtxdisterror disterr;
+    err = mtxdisterror_alloc(&disterr, comm, NULL);
     if (err)
         MPI_Abort(comm, EXIT_FAILURE);
 
@@ -90,11 +90,11 @@ int test_mtxdistfile_from_mtxfile(void)
 
         struct mtxdistfile mtxdistfile;
         err = mtxdistfile_from_mtxfile(
-            &mtxdistfile, &srcmtxfile, comm, root, &mpierror);
+            &mtxdistfile, &srcmtxfile, comm, root, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s",
             err == MTX_ERR_MPI_COLLECTIVE
-            ? mtxmpierror_description(&mpierror)
+            ? mtxdisterror_description(&disterr)
             : mtxstrerror(err));
         TEST_ASSERT_EQ(mtxfile_matrix, mtxdistfile.header.object);
         TEST_ASSERT_EQ(mtxfile_array, mtxdistfile.header.format);
@@ -140,11 +140,11 @@ int test_mtxdistfile_from_mtxfile(void)
 
         struct mtxdistfile mtxdistfile;
         err = mtxdistfile_from_mtxfile(
-            &mtxdistfile, &srcmtxfile, comm, root, &mpierror);
+            &mtxdistfile, &srcmtxfile, comm, root, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s",
             err == MTX_ERR_MPI_COLLECTIVE
-            ? mtxmpierror_description(&mpierror)
+            ? mtxdisterror_description(&disterr)
             : mtxstrerror(err));
         TEST_ASSERT_EQ(mtxfile_vector, mtxdistfile.header.object);
         TEST_ASSERT_EQ(mtxfile_array, mtxdistfile.header.format);
@@ -196,11 +196,11 @@ int test_mtxdistfile_from_mtxfile(void)
 
         struct mtxdistfile mtxdistfile;
         err = mtxdistfile_from_mtxfile(
-            &mtxdistfile, &srcmtxfile, comm, root, &mpierror);
+            &mtxdistfile, &srcmtxfile, comm, root, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s",
             err == MTX_ERR_MPI_COLLECTIVE
-            ? mtxmpierror_description(&mpierror)
+            ? mtxdisterror_description(&disterr)
             : mtxstrerror(err));
         TEST_ASSERT_EQ(mtxfile_matrix, mtxdistfile.header.object);
         TEST_ASSERT_EQ(mtxfile_coordinate, mtxdistfile.header.format);
@@ -253,11 +253,11 @@ int test_mtxdistfile_from_mtxfile(void)
 
         struct mtxdistfile mtxdistfile;
         err = mtxdistfile_from_mtxfile(
-            &mtxdistfile, &srcmtxfile, comm, root, &mpierror);
+            &mtxdistfile, &srcmtxfile, comm, root, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s",
             err == MTX_ERR_MPI_COLLECTIVE
-            ? mtxmpierror_description(&mpierror)
+            ? mtxdisterror_description(&disterr)
             : mtxstrerror(err));
         TEST_ASSERT_EQ(mtxfile_vector, mtxdistfile.header.object);
         TEST_ASSERT_EQ(mtxfile_coordinate, mtxdistfile.header.format);
@@ -290,7 +290,7 @@ int test_mtxdistfile_from_mtxfile(void)
         mtxfile_free(&srcmtxfile);
     }
 
-    mtxmpierror_free(&mpierror);
+    mtxdisterror_free(&disterr);
     return TEST_SUCCESS;
 }
 
@@ -325,8 +325,8 @@ int test_mtxdistfile_fread(void)
     if (comm_size != 2)
         TEST_FAIL_MSG("Expected exactly two MPI processes");
 
-    struct mtxmpierror mpierror;
-    err = mtxmpierror_alloc(&mpierror, comm, NULL);
+    struct mtxdisterror disterr;
+    err = mtxdisterror_alloc(&disterr, comm, NULL);
     if (err)
         MPI_Abort(comm, EXIT_FAILURE);
 
@@ -348,11 +348,11 @@ int test_mtxdistfile_fread(void)
         err = mtxdistfile_fread(
             &mtxdistfile, precision,
             f, &lines_read, &bytes_read, 0, NULL,
-            comm, &mpierror);
+            comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s",
             err == MTX_ERR_MPI_COLLECTIVE
-            ? mtxmpierror_description(&mpierror)
+            ? mtxdisterror_description(&disterr)
             : mtxstrerror(err));
         TEST_ASSERT_EQ(strlen(s), bytes_read);
         TEST_ASSERT_EQ(5, lines_read);
@@ -395,11 +395,11 @@ int test_mtxdistfile_fread(void)
         enum mtxprecision precision = mtx_double;
         err = mtxdistfile_fread(
             &mtxdistfile, precision,
-            f, &lines_read, &bytes_read, 0, NULL, comm, &mpierror);
+            f, &lines_read, &bytes_read, 0, NULL, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s",
             err == MTX_ERR_MPI_COLLECTIVE
-            ? mtxmpierror_description(&mpierror)
+            ? mtxdisterror_description(&disterr)
             : mtxstrerror(err));
         TEST_ASSERT_EQ(strlen(s), bytes_read);
         TEST_ASSERT_EQ(5, lines_read);
@@ -442,11 +442,11 @@ int test_mtxdistfile_fread(void)
         enum mtxprecision precision = mtx_single;
         err = mtxdistfile_fread(
             &mtxdistfile, precision,
-            f, &lines_read, &bytes_read, 0, NULL, comm, &mpierror);
+            f, &lines_read, &bytes_read, 0, NULL, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s",
             err == MTX_ERR_MPI_COLLECTIVE
-            ? mtxmpierror_description(&mpierror)
+            ? mtxdisterror_description(&disterr)
             : mtxstrerror(err));
         TEST_ASSERT_EQ(strlen(s), bytes_read);
         TEST_ASSERT_EQ(5, lines_read);
@@ -491,11 +491,11 @@ int test_mtxdistfile_fread(void)
         enum mtxprecision precision = mtx_double;
         err = mtxdistfile_fread(
             &mtxdistfile, precision,
-            f, &lines_read, &bytes_read, 0, NULL, comm, &mpierror);
+            f, &lines_read, &bytes_read, 0, NULL, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s",
             err == MTX_ERR_MPI_COLLECTIVE
-            ? mtxmpierror_description(&mpierror)
+            ? mtxdisterror_description(&disterr)
             : mtxstrerror(err));
         TEST_ASSERT_EQ(strlen(s), bytes_read);
         TEST_ASSERT_EQ(5, lines_read);
@@ -540,11 +540,11 @@ int test_mtxdistfile_fread(void)
         enum mtxprecision precision = mtx_single;
         err = mtxdistfile_fread(
             &mtxdistfile, precision,
-            f, &lines_read, &bytes_read, 0, NULL, comm, &mpierror);
+            f, &lines_read, &bytes_read, 0, NULL, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s",
             err == MTX_ERR_MPI_COLLECTIVE
-            ? mtxmpierror_description(&mpierror)
+            ? mtxdisterror_description(&disterr)
             : mtxstrerror(err));
         TEST_ASSERT_EQ(strlen(s), bytes_read);
         TEST_ASSERT_EQ(5, lines_read);
@@ -587,11 +587,11 @@ int test_mtxdistfile_fread(void)
         enum mtxprecision precision = mtx_double;
         err = mtxdistfile_fread(
             &mtxdistfile, precision,
-            f, &lines_read, &bytes_read, 0, NULL, comm, &mpierror);
+            f, &lines_read, &bytes_read, 0, NULL, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s",
             err == MTX_ERR_MPI_COLLECTIVE
-            ? mtxmpierror_description(&mpierror)
+            ? mtxdisterror_description(&disterr)
             : mtxstrerror(err));
         TEST_ASSERT_EQ(strlen(s), bytes_read);
         TEST_ASSERT_EQ(5, lines_read);
@@ -637,11 +637,11 @@ int test_mtxdistfile_fread(void)
         enum mtxprecision precision = mtx_single;
         err = mtxdistfile_fread(
             &mtxdistfile, precision,
-            f, &lines_read, &bytes_read, 0, NULL, comm, &mpierror);
+            f, &lines_read, &bytes_read, 0, NULL, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s",
             err == MTX_ERR_MPI_COLLECTIVE
-            ? mtxmpierror_description(&mpierror)
+            ? mtxdisterror_description(&disterr)
             : mtxstrerror(err));
         TEST_ASSERT_EQ(strlen(s), bytes_read);
         TEST_ASSERT_EQ(5, lines_read);
@@ -689,11 +689,11 @@ int test_mtxdistfile_fread(void)
         enum mtxprecision precision = mtx_double;
         err = mtxdistfile_fread(
             &mtxdistfile, precision,
-            f, &lines_read, &bytes_read, 0, NULL, comm, &mpierror);
+            f, &lines_read, &bytes_read, 0, NULL, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s",
             err == MTX_ERR_MPI_COLLECTIVE
-            ? mtxmpierror_description(&mpierror)
+            ? mtxdisterror_description(&disterr)
             : mtxstrerror(err));
         TEST_ASSERT_EQ(strlen(s), bytes_read);
         TEST_ASSERT_EQ(5, lines_read);
@@ -742,11 +742,11 @@ int test_mtxdistfile_fread(void)
         enum mtxprecision precision = mtx_single;
         err = mtxdistfile_fread(
             &mtxdistfile, precision,
-            f, &lines_read, &bytes_read, 0, NULL, comm, &mpierror);
+            f, &lines_read, &bytes_read, 0, NULL, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s",
             err == MTX_ERR_MPI_COLLECTIVE
-            ? mtxmpierror_description(&mpierror)
+            ? mtxdisterror_description(&disterr)
             : mtxstrerror(err));
         TEST_ASSERT_EQ(strlen(s), bytes_read);
         TEST_ASSERT_EQ(5, lines_read);
@@ -793,11 +793,11 @@ int test_mtxdistfile_fread(void)
         enum mtxprecision precision = mtx_single;
         err = mtxdistfile_fread(
             &mtxdistfile, precision,
-            f, &lines_read, &bytes_read, 0, NULL, comm, &mpierror);
+            f, &lines_read, &bytes_read, 0, NULL, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s",
             err == MTX_ERR_MPI_COLLECTIVE
-            ? mtxmpierror_description(&mpierror)
+            ? mtxdisterror_description(&disterr)
             : mtxstrerror(err));
         TEST_ASSERT_EQ(strlen(s), bytes_read);
         TEST_ASSERT_EQ(5, lines_read);
@@ -845,11 +845,11 @@ int test_mtxdistfile_fread(void)
         enum mtxprecision precision = mtx_single;
         err = mtxdistfile_fread(
             &mtxdistfile, precision,
-            f, &lines_read, &bytes_read, 0, NULL, comm, &mpierror);
+            f, &lines_read, &bytes_read, 0, NULL, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s",
             err == MTX_ERR_MPI_COLLECTIVE
-            ? mtxmpierror_description(&mpierror)
+            ? mtxdisterror_description(&disterr)
             : mtxstrerror(err));
         TEST_ASSERT_EQ(strlen(s), bytes_read);
         TEST_ASSERT_EQ(5, lines_read);
@@ -895,11 +895,11 @@ int test_mtxdistfile_fread(void)
         enum mtxprecision precision = mtx_double;
         err = mtxdistfile_fread(
             &mtxdistfile, precision,
-            f, &lines_read, &bytes_read, 0, NULL, comm, &mpierror);
+            f, &lines_read, &bytes_read, 0, NULL, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s",
             err == MTX_ERR_MPI_COLLECTIVE
-            ? mtxmpierror_description(&mpierror)
+            ? mtxdisterror_description(&disterr)
             : mtxstrerror(err));
         TEST_ASSERT_EQ(strlen(s), bytes_read);
         TEST_ASSERT_EQ(5, lines_read);
@@ -947,11 +947,11 @@ int test_mtxdistfile_fread(void)
         enum mtxprecision precision = mtx_single;
         err = mtxdistfile_fread(
             &mtxdistfile, precision,
-            f, &lines_read, &bytes_read, 0, NULL, comm, &mpierror);
+            f, &lines_read, &bytes_read, 0, NULL, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s",
             err == MTX_ERR_MPI_COLLECTIVE
-            ? mtxmpierror_description(&mpierror)
+            ? mtxdisterror_description(&disterr)
             : mtxstrerror(err));
         TEST_ASSERT_EQ(strlen(s), bytes_read);
         TEST_ASSERT_EQ(5, lines_read);
@@ -997,11 +997,11 @@ int test_mtxdistfile_fread(void)
         enum mtxprecision precision = mtx_single;
         err = mtxdistfile_fread(
             &mtxdistfile, precision,
-            f, &lines_read, &bytes_read, 0, NULL, comm, &mpierror);
+            f, &lines_read, &bytes_read, 0, NULL, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s",
             err == MTX_ERR_MPI_COLLECTIVE
-            ? mtxmpierror_description(&mpierror)
+            ? mtxdisterror_description(&disterr)
             : mtxstrerror(err));
         TEST_ASSERT_EQ(strlen(s), bytes_read);
         TEST_ASSERT_EQ(5, lines_read);
@@ -1031,7 +1031,7 @@ int test_mtxdistfile_fread(void)
         fclose(f);
     }
 
-    mtxmpierror_free(&mpierror);
+    mtxdisterror_free(&disterr);
     return TEST_SUCCESS;
 }
 
@@ -1066,8 +1066,8 @@ int test_mtxdistfile_fwrite(void)
     if (comm_size != 2)
         TEST_FAIL_MSG("Expected exactly two MPI processes");
 
-    struct mtxmpierror mpierror;
-    err = mtxmpierror_alloc(&mpierror, comm, NULL);
+    struct mtxdisterror disterr;
+    err = mtxdisterror_alloc(&disterr, comm, NULL);
     if (err)
         MPI_Abort(comm, EXIT_FAILURE);
 
@@ -1084,13 +1084,13 @@ int test_mtxdistfile_fwrite(void)
         struct mtxdistfile mtxdistfile;
         err = mtxdistfile_init_matrix_array_real_double(
             &mtxdistfile, mtxfile_general, num_rows, num_columns, srcdata,
-            comm, &mpierror);
+            comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         char buf[1024] = {};
         FILE * f = fmemopen(buf, sizeof(buf), "w");
         int64_t bytes_written;
         err = mtxdistfile_fwrite(
-            &mtxdistfile, f, "%.1f", &bytes_written, false, &mpierror);
+            &mtxdistfile, f, "%.1f", &bytes_written, false, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         fflush(f);
         if (rank == 0) {
@@ -1122,13 +1122,13 @@ int test_mtxdistfile_fwrite(void)
             : ((const double[3]) {3.0, 4.0, 5.0});
         struct mtxdistfile mtxdistfile;
         err = mtxdistfile_init_vector_array_real_double(
-            &mtxdistfile, num_rows, srcdata, comm, &mpierror);
+            &mtxdistfile, num_rows, srcdata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         char buf[1024] = {};
         FILE * f = fmemopen(buf, sizeof(buf), "w");
         int64_t bytes_written;
         err = mtxdistfile_fwrite(
-            &mtxdistfile, f, "%.1f", &bytes_written, false, &mpierror);
+            &mtxdistfile, f, "%.1f", &bytes_written, false, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         fflush(f);
         if (rank == 0) {
@@ -1168,13 +1168,13 @@ int test_mtxdistfile_fwrite(void)
         struct mtxdistfile mtxdistfile;
         err = mtxdistfile_init_matrix_coordinate_real_double(
             &mtxdistfile, mtxfile_general, num_rows, num_columns, num_nonzeros, srcdata,
-            comm, &mpierror);
+            comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         char buf[1024] = {};
         FILE * f = fmemopen(buf, sizeof(buf), "w");
         int64_t bytes_written;
         err = mtxdistfile_fwrite(
-            &mtxdistfile, f, "%.1f", &bytes_written, false, &mpierror);
+            &mtxdistfile, f, "%.1f", &bytes_written, false, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         fflush(f);
         if (rank == 0) {
@@ -1213,13 +1213,13 @@ int test_mtxdistfile_fwrite(void)
         struct mtxdistfile mtxdistfile;
         err = mtxdistfile_init_vector_coordinate_real_double(
             &mtxdistfile, num_rows, num_nonzeros, srcdata,
-            comm, &mpierror);
+            comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         char buf[1024] = {};
         FILE * f = fmemopen(buf, sizeof(buf), "w");
         int64_t bytes_written;
         err = mtxdistfile_fwrite(
-            &mtxdistfile, f, "%.1f", &bytes_written, false, &mpierror);
+            &mtxdistfile, f, "%.1f", &bytes_written, false, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         fflush(f);
         if (rank == 0) {
@@ -1242,7 +1242,7 @@ int test_mtxdistfile_fwrite(void)
         fclose(f);
         mtxdistfile_free(&mtxdistfile);
     }
-    mtxmpierror_free(&mpierror);
+    mtxdisterror_free(&disterr);
     return TEST_SUCCESS;
 }
 
@@ -1277,8 +1277,8 @@ int test_mtxdistfile_partition_rows(void)
     if (comm_size != 2)
         TEST_FAIL_MSG("Expected exactly two MPI processes");
 
-    struct mtxmpierror mpierror;
-    err = mtxmpierror_alloc(&mpierror, comm, NULL);
+    struct mtxdisterror disterr;
+    err = mtxdisterror_alloc(&disterr, comm, NULL);
     if (err)
         MPI_Abort(comm, EXIT_FAILURE);
 
@@ -1295,7 +1295,7 @@ int test_mtxdistfile_partition_rows(void)
         struct mtxdistfile src;
         err = mtxdistfile_init_matrix_array_real_double(
             &src, mtxfile_general, num_rows, num_columns, srcdata,
-            comm, &mpierror);
+            comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
         int num_parts = 2;
@@ -1316,11 +1316,11 @@ int test_mtxdistfile_partition_rows(void)
         int64_t data_lines_per_part[6] = {};
         err = mtxdistfile_partition_rows(
             &src, &row_partition, part_per_data_line,
-            data_lines_per_part_ptr, data_lines_per_part, &mpierror);
+            data_lines_per_part_ptr, data_lines_per_part, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s",
             err == MTX_ERR_MPI_COLLECTIVE
-            ? mtxmpierror_description(&mpierror)
+            ? mtxdisterror_description(&disterr)
             : mtxstrerror(err));
         if (rank == 0) {
             TEST_ASSERT_EQ(0, part_per_data_line[0]);
@@ -1353,11 +1353,11 @@ int test_mtxdistfile_partition_rows(void)
         struct mtxdistfile dst;
         err = mtxdistfile_init_from_partition(
             &dst, &src, row_partition.num_parts,
-            data_lines_per_part_ptr, data_lines_per_part, &mpierror);
+            data_lines_per_part_ptr, data_lines_per_part, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s",
             err == MTX_ERR_MPI_COLLECTIVE
-            ? mtxmpierror_description(&mpierror)
+            ? mtxdisterror_description(&disterr)
             : mtxstrerror(err));
 
         TEST_ASSERT_EQ(mtxfile_matrix, dst.header.object);
@@ -1402,7 +1402,7 @@ int test_mtxdistfile_partition_rows(void)
             : ((const double[6]) {3.0, 4.0, 5.0, 6.0, 7.0, 8.0});
         struct mtxdistfile src;
         err = mtxdistfile_init_vector_array_real_double(
-            &src, num_rows, srcdata, comm, &mpierror);
+            &src, num_rows, srcdata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
         int num_parts = 2;
@@ -1423,11 +1423,11 @@ int test_mtxdistfile_partition_rows(void)
         int64_t data_lines_per_part[6] = {};
         err = mtxdistfile_partition_rows(
             &src, &row_partition, part_per_data_line,
-            data_lines_per_part_ptr, data_lines_per_part, &mpierror);
+            data_lines_per_part_ptr, data_lines_per_part, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s",
             err == MTX_ERR_MPI_COLLECTIVE
-            ? mtxmpierror_description(&mpierror)
+            ? mtxdisterror_description(&disterr)
             : mtxstrerror(err));
         if (rank == 0) {
             TEST_ASSERT_EQ(0, part_per_data_line[0]);
@@ -1458,11 +1458,11 @@ int test_mtxdistfile_partition_rows(void)
         struct mtxdistfile dst;
         err = mtxdistfile_init_from_partition(
             &dst, &src, row_partition.num_parts,
-            data_lines_per_part_ptr, data_lines_per_part, &mpierror);
+            data_lines_per_part_ptr, data_lines_per_part, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s",
             err == MTX_ERR_MPI_COLLECTIVE
-            ? mtxmpierror_description(&mpierror)
+            ? mtxdisterror_description(&disterr)
             : mtxstrerror(err));
 
         TEST_ASSERT_EQ(mtxfile_vector, dst.header.object);
@@ -1515,7 +1515,7 @@ int test_mtxdistfile_partition_rows(void)
         struct mtxdistfile src;
         err = mtxdistfile_init_matrix_coordinate_real_double(
             &src, mtxfile_general, num_rows, num_columns, num_nonzeros, srcdata,
-            comm, &mpierror);
+            comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
         int num_parts = 2;
@@ -1536,11 +1536,11 @@ int test_mtxdistfile_partition_rows(void)
         int64_t data_lines_per_part[3] = {};
         err = mtxdistfile_partition_rows(
             &src, &row_partition, part_per_data_line,
-            data_lines_per_part_ptr, data_lines_per_part, &mpierror);
+            data_lines_per_part_ptr, data_lines_per_part, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s",
             err == MTX_ERR_MPI_COLLECTIVE
-            ? mtxmpierror_description(&mpierror)
+            ? mtxdisterror_description(&disterr)
             : mtxstrerror(err));
         if (rank == 0) {
             TEST_ASSERT_EQ(1, part_per_data_line[0]);
@@ -1565,11 +1565,11 @@ int test_mtxdistfile_partition_rows(void)
         struct mtxdistfile dst;
         err = mtxdistfile_init_from_partition(
             &dst, &src, row_partition.num_parts,
-            data_lines_per_part_ptr, data_lines_per_part, &mpierror);
+            data_lines_per_part_ptr, data_lines_per_part, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s",
             err == MTX_ERR_MPI_COLLECTIVE
-            ? mtxmpierror_description(&mpierror)
+            ? mtxdisterror_description(&disterr)
             : mtxstrerror(err));
 
         TEST_ASSERT_EQ(mtxfile_matrix, dst.header.object);
@@ -1608,7 +1608,7 @@ int test_mtxdistfile_partition_rows(void)
         mtxdistfile_free(&dst);
         mtxdistfile_free(&src);
     }
-    mtxmpierror_free(&mpierror);
+    mtxdisterror_free(&disterr);
     return TEST_SUCCESS;
 }
 
@@ -1643,8 +1643,8 @@ int test_mtxdistfile_transpose(void)
     if (comm_size != 2)
         TEST_FAIL_MSG("Expected exactly two MPI processes");
 
-    struct mtxmpierror mpierror;
-    err = mtxmpierror_alloc(&mpierror, comm, NULL);
+    struct mtxdisterror disterr;
+    err = mtxdisterror_alloc(&disterr, comm, NULL);
     if (err)
         MPI_Abort(comm, EXIT_FAILURE);
 
@@ -1662,14 +1662,14 @@ int test_mtxdistfile_transpose(void)
         struct mtxdistfile src;
         err = mtxdistfile_init_matrix_array_real_double(
             &src, mtxfile_general, num_rows, num_columns, srcdata,
-            comm, &mpierror);
+            comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
-        err = mtxdistfile_transpose(&src, &mpierror);
+        err = mtxdistfile_transpose(&src, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s",
             err == MTX_ERR_MPI_COLLECTIVE
-            ? mtxmpierror_description(&mpierror)
+            ? mtxdisterror_description(&disterr)
             : mtxstrerror(err));
 
         const struct mtxfile * mtxfile = &src.mtxfile;
@@ -1720,14 +1720,14 @@ int test_mtxdistfile_transpose(void)
         struct mtxdistfile src;
         err = mtxdistfile_init_matrix_coordinate_real_double(
             &src, mtxfile_general, num_rows, num_columns, num_nonzeros, srcdata,
-            comm, &mpierror);
+            comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
-        err = mtxdistfile_transpose(&src, &mpierror);
+        err = mtxdistfile_transpose(&src, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s",
             err == MTX_ERR_MPI_COLLECTIVE
-            ? mtxmpierror_description(&mpierror)
+            ? mtxdisterror_description(&disterr)
             : mtxstrerror(err));
 
         const struct mtxfile * mtxfile = &src.mtxfile;
@@ -1757,7 +1757,7 @@ int test_mtxdistfile_transpose(void)
         mtxdistfile_free(&src);
     }
 
-    mtxmpierror_free(&mpierror);
+    mtxdisterror_free(&disterr);
     return TEST_SUCCESS;
 }
 
@@ -1791,8 +1791,8 @@ int test_mtxdistfile_sort(void)
     if (comm_size != 2)
         TEST_FAIL_MSG("Expected exactly two MPI processes");
 
-    struct mtxmpierror mpierror;
-    err = mtxmpierror_alloc(&mpierror, comm, NULL);
+    struct mtxdisterror disterr;
+    err = mtxdisterror_alloc(&disterr, comm, NULL);
     if (err)
         MPI_Abort(comm, EXIT_FAILURE);
 
@@ -1810,15 +1810,15 @@ int test_mtxdistfile_sort(void)
         struct mtxdistfile src;
         err = mtxdistfile_init_matrix_array_real_double(
             &src, mtxfile_general, num_rows, num_columns, srcdata,
-            comm, &mpierror);
+            comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
         err = mtxdistfile_sort(
-            &src, mtxfile_column_major, num_nonzeros, NULL, &mpierror);
+            &src, mtxfile_column_major, num_nonzeros, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s",
             err == MTX_ERR_MPI_COLLECTIVE
-            ? mtxmpierror_description(&mpierror)
+            ? mtxdisterror_description(&disterr)
             : mtxstrerror(err));
 
         const struct mtxfile * mtxfile = &src.mtxfile;
@@ -1869,18 +1869,18 @@ int test_mtxdistfile_sort(void)
         struct mtxdistfile src;
         err = mtxdistfile_init_matrix_coordinate_real_double(
             &src, mtxfile_general, num_rows, num_columns, num_nonzeros, srcdata,
-            comm, &mpierror);
+            comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
         int64_t * perm = (rank == 0)
             ? ((int64_t[3]) {3, 4, 1})
             : ((int64_t[2]) {2, 5});
         err = mtxdistfile_sort(
-            &src, mtxfile_permutation, num_nonzeros, perm, &mpierror);
+            &src, mtxfile_permutation, num_nonzeros, perm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s",
             err == MTX_ERR_MPI_COLLECTIVE
-            ? mtxmpierror_description(&mpierror)
+            ? mtxdisterror_description(&disterr)
             : mtxstrerror(err));
 
         const struct mtxfile * mtxfile = &src.mtxfile;
@@ -1922,15 +1922,15 @@ int test_mtxdistfile_sort(void)
         struct mtxdistfile src;
         err = mtxdistfile_init_matrix_coordinate_real_double(
             &src, mtxfile_general, num_rows, num_columns, num_nonzeros, srcdata,
-            comm, &mpierror);
+            comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
         err = mtxdistfile_sort(
-            &src, mtxfile_row_major, num_nonzeros, NULL, &mpierror);
+            &src, mtxfile_row_major, num_nonzeros, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s",
             err == MTX_ERR_MPI_COLLECTIVE
-            ? mtxmpierror_description(&mpierror)
+            ? mtxdisterror_description(&disterr)
             : mtxstrerror(err));
 
         const struct mtxfile * mtxfile = &src.mtxfile;
@@ -1972,15 +1972,15 @@ int test_mtxdistfile_sort(void)
         struct mtxdistfile src;
         err = mtxdistfile_init_matrix_coordinate_real_double(
             &src, mtxfile_general, num_rows, num_columns, num_nonzeros, srcdata,
-            comm, &mpierror);
+            comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
         err = mtxdistfile_sort(
-            &src, mtxfile_column_major, num_nonzeros, NULL, &mpierror);
+            &src, mtxfile_column_major, num_nonzeros, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s",
             err == MTX_ERR_MPI_COLLECTIVE
-            ? mtxmpierror_description(&mpierror)
+            ? mtxdisterror_description(&disterr)
             : mtxstrerror(err));
 
         const struct mtxfile * mtxfile = &src.mtxfile;
@@ -2022,15 +2022,15 @@ int test_mtxdistfile_sort(void)
         struct mtxdistfile src;
         err = mtxdistfile_init_matrix_coordinate_real_double(
             &src, mtxfile_general, num_rows, num_columns, num_nonzeros, srcdata,
-            comm, &mpierror);
+            comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
         err = mtxdistfile_sort(
-            &src, mtxfile_morton, num_nonzeros, NULL, &mpierror);
+            &src, mtxfile_morton, num_nonzeros, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s",
             err == MTX_ERR_MPI_COLLECTIVE
-            ? mtxmpierror_description(&mpierror)
+            ? mtxdisterror_description(&disterr)
             : mtxstrerror(err));
 
         const struct mtxfile * mtxfile = &src.mtxfile;
@@ -2059,7 +2059,7 @@ int test_mtxdistfile_sort(void)
         }
         mtxdistfile_free(&src);
     }
-    mtxmpierror_free(&mpierror);
+    mtxdisterror_free(&disterr);
     return TEST_SUCCESS;
 }
 

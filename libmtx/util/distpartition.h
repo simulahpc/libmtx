@@ -109,7 +109,7 @@ int mtxdistpartition_init(
     const int * parts,
     MPI_Comm comm,
     int root,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * `mtxdistpartition_init_singleton()' initialises a distributed
@@ -121,7 +121,7 @@ int mtxdistpartition_init_singleton(
     int64_t size,
     MPI_Comm comm,
     int root,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * `mtxdistpartition_init_block()' initialises a distributed block
@@ -132,7 +132,7 @@ int mtxdistpartition_init_block(
     int64_t size,
     int num_parts,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * `mtxdistpartition_init_cyclic()' initialises a distributed cyclic
@@ -143,7 +143,7 @@ int mtxdistpartition_init_cyclic(
     int64_t size,
     int num_parts,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * `mtxdistpartition_init_block_cyclic()' initialises a distributed
@@ -155,7 +155,7 @@ int mtxdistpartition_init_block_cyclic(
     int num_parts,
     int block_size,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * `mtxdistpartition_init_unstructured()' initialises a distributed,
@@ -167,7 +167,7 @@ int mtxdistpartition_init_unstructured(
     int num_parts,
     const int * parts,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /*
  * I/O functions

@@ -629,19 +629,19 @@ int mtxfilesize_send(
     int dest,
     int tag,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror)
+    struct mtxdisterror * disterr)
 {
-    mpierror->err = MPI_Send(
+    disterr->err = MPI_Send(
         &size->num_rows, 1, MPI_INT32_T, dest, tag, comm);
-    if (mpierror->err)
+    if (disterr->err)
         return MTX_ERR_MPI;
-    mpierror->err = MPI_Send(
+    disterr->err = MPI_Send(
         &size->num_columns, 1, MPI_INT32_T, dest, tag, comm);
-    if (mpierror->err)
+    if (disterr->err)
         return MTX_ERR_MPI;
-    mpierror->err = MPI_Send(
+    disterr->err = MPI_Send(
         &size->num_nonzeros, 1, MPI_INT64_T, dest, tag, comm);
-    if (mpierror->err)
+    if (disterr->err)
         return MTX_ERR_MPI;
     return MTX_SUCCESS;
 }
@@ -658,19 +658,19 @@ int mtxfilesize_recv(
     int source,
     int tag,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror)
+    struct mtxdisterror * disterr)
 {
-    mpierror->err = MPI_Recv(
+    disterr->err = MPI_Recv(
         &size->num_rows, 1, MPI_INT32_T, source, tag, comm, MPI_STATUS_IGNORE);
-    if (mpierror->err)
+    if (disterr->err)
         return MTX_ERR_MPI;
-    mpierror->err = MPI_Recv(
+    disterr->err = MPI_Recv(
         &size->num_columns, 1, MPI_INT32_T, source, tag, comm, MPI_STATUS_IGNORE);
-    if (mpierror->err)
+    if (disterr->err)
         return MTX_ERR_MPI;
-    mpierror->err = MPI_Recv(
+    disterr->err = MPI_Recv(
         &size->num_nonzeros, 1, MPI_INT64_T, source, tag, comm, MPI_STATUS_IGNORE);
-    if (mpierror->err)
+    if (disterr->err)
         return MTX_ERR_MPI;
     return MTX_SUCCESS;
 }
@@ -687,20 +687,20 @@ int mtxfilesize_bcast(
     struct mtxfilesize * size,
     int root,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror)
+    struct mtxdisterror * disterr)
 {
     int err;
     err = MPI_Bcast(
         &size->num_rows, 1, MPI_INT32_T, root, comm);
-    if (mtxmpierror_allreduce(mpierror, err))
+    if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
     err = MPI_Bcast(
         &size->num_columns, 1, MPI_INT32_T, root, comm);
-    if (mtxmpierror_allreduce(mpierror, err))
+    if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
     err = MPI_Bcast(
         &size->num_nonzeros, 1, MPI_INT64_T, root, comm);
-    if (mtxmpierror_allreduce(mpierror, err))
+    if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
     return MTX_SUCCESS;
 }
@@ -718,17 +718,17 @@ int mtxfilesize_gather(
     struct mtxfilesize * recvsizes,
     int root,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror)
+    struct mtxdisterror * disterr)
 {
     int err;
     MPI_Datatype sizetype;
-    err = mtxfilesize_datatype(&sizetype, &mpierror->mpierrcode);
-    if (mtxmpierror_allreduce(mpierror, err))
+    err = mtxfilesize_datatype(&sizetype, &disterr->mpierrcode);
+    if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
-    mpierror->mpierrcode = MPI_Gather(
+    disterr->mpierrcode = MPI_Gather(
         sendsize, 1, sizetype, recvsizes, 1, sizetype, root, comm);
-    err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
-    if (mtxmpierror_allreduce(mpierror, err))
+    err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
     MPI_Type_free(&sizetype);
     return MTX_SUCCESS;
@@ -745,17 +745,17 @@ int mtxfilesize_allgather(
     const struct mtxfilesize * sendsize,
     struct mtxfilesize * recvsizes,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror)
+    struct mtxdisterror * disterr)
 {
     int err;
     MPI_Datatype sizetype;
-    err = mtxfilesize_datatype(&sizetype, &mpierror->mpierrcode);
-    if (mtxmpierror_allreduce(mpierror, err))
+    err = mtxfilesize_datatype(&sizetype, &disterr->mpierrcode);
+    if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
-    mpierror->mpierrcode = MPI_Allgather(
+    disterr->mpierrcode = MPI_Allgather(
         sendsize, 1, sizetype, recvsizes, 1, sizetype, comm);
-    err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
-    if (mtxmpierror_allreduce(mpierror, err))
+    err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
     MPI_Type_free(&sizetype);
     return MTX_SUCCESS;
@@ -777,23 +777,23 @@ int mtxfilesize_scatterv(
     int recvcount,
     int root,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror)
+    struct mtxdisterror * disterr)
 {
     int err;
     if (format == mtxfile_array) {
         if (object == mtxfile_matrix) {
             int rank;
             err = MPI_Comm_rank(comm, &rank);
-            if (mtxmpierror_allreduce(mpierror, err))
+            if (mtxdisterror_allreduce(disterr, err))
                 return MTX_ERR_MPI_COLLECTIVE;
             if (rank == root)
                 recvsize->num_columns = sendsize->num_columns;
             err = MPI_Bcast(&recvsize->num_columns, 1, MPI_INT32_T, root, comm);
-            if (mtxmpierror_allreduce(mpierror, err))
+            if (mtxdisterror_allreduce(disterr, err))
                 return MTX_ERR_MPI_COLLECTIVE;
             err = (recvsize->num_columns == 0)
                 ? MTX_ERR_INVALID_MTX_SIZE : MTX_SUCCESS;
-            if (mtxmpierror_allreduce(mpierror, err))
+            if (mtxdisterror_allreduce(disterr, err))
                 return MTX_ERR_MPI_COLLECTIVE;
             recvsize->num_rows =
                 (recvcount + recvsize->num_columns-1) / recvsize->num_columns;
@@ -809,17 +809,17 @@ int mtxfilesize_scatterv(
     } else if (format == mtxfile_coordinate) {
         int rank;
         err = MPI_Comm_rank(comm, &rank);
-        if (mtxmpierror_allreduce(mpierror, err))
+        if (mtxdisterror_allreduce(disterr, err))
             return MTX_ERR_MPI_COLLECTIVE;
         if (rank == root)
             recvsize->num_rows = sendsize->num_rows;
         err = MPI_Bcast(&recvsize->num_rows, 1, MPI_INT32_T, root, comm);
-        if (mtxmpierror_allreduce(mpierror, err))
+        if (mtxdisterror_allreduce(disterr, err))
             return MTX_ERR_MPI_COLLECTIVE;
         if (rank == root)
             recvsize->num_columns = sendsize->num_columns;
         err = MPI_Bcast(&recvsize->num_columns, 1, MPI_INT32_T, root, comm);
-        if (mtxmpierror_allreduce(mpierror, err))
+        if (mtxdisterror_allreduce(disterr, err))
             return MTX_ERR_MPI_COLLECTIVE;
         recvsize->num_nonzeros = recvcount;
     } else {

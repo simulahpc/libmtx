@@ -40,7 +40,7 @@
 #include <stddef.h>
 #include <stdio.h>
 
-struct mtxmpierror;
+struct mtxdisterror;
 
 /**
  * ‘mtxfilesize’ represents a size line of a Matrix Market file.
@@ -218,7 +218,7 @@ int mtxfilesize_send(
     int dest,
     int tag,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * ‘mtxfilesize_recv()’ receives a Matrix Market size line from
@@ -232,7 +232,7 @@ int mtxfilesize_recv(
     int source,
     int tag,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * ‘mtxfilesize_bcast()’ broadcasts a Matrix Market size line from an
@@ -246,7 +246,7 @@ int mtxfilesize_bcast(
     struct mtxfilesize * size,
     int root,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * ‘mtxfilesize_gather()’ gathers Matrix Market size lines onto an
@@ -261,7 +261,7 @@ int mtxfilesize_gather(
     struct mtxfilesize * recvsizes,
     int root,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * ‘mtxfilesize_allgather()’ gathers Matrix Market size lines onto
@@ -274,7 +274,7 @@ int mtxfilesize_allgather(
     const struct mtxfilesize * sendsize,
     struct mtxfilesize * recvsizes,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * ‘mtxfilesize_scatterv()’ scatters a Matrix Market size line from
@@ -292,7 +292,7 @@ int mtxfilesize_scatterv(
     int recvcount,
     int root,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 #endif
 
 #endif

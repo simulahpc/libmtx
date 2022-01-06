@@ -45,7 +45,7 @@
 #include <stdint.h>
 #include <stdio.h>
 
-struct mtxmpierror;
+struct mtxdisterror;
 struct mtx_partition;
 
 #ifdef LIBMTX_HAVE_MPI
@@ -118,7 +118,7 @@ int mtxdistfile_init(
     struct mtxdistfile * mtxdistfile,
     const struct mtxfile * mtxfile,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * `mtxdistfile_free()' frees storage allocated for a distributed
@@ -135,7 +135,7 @@ void mtxdistfile_free(
 int mtxdistfile_alloc_copy(
     struct mtxdistfile * dst,
     const struct mtxdistfile * src,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * `mtxdistfile_init_copy()' creates a copy of a distributed Matrix
@@ -144,7 +144,7 @@ int mtxdistfile_alloc_copy(
 int mtxdistfile_init_copy(
     struct mtxdistfile * dst,
     const struct mtxdistfile * src,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /*
  * Matrix array formats
@@ -162,7 +162,7 @@ int mtxdistfile_alloc_matrix_array(
     int num_rows,
     int num_columns,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * `mtxdistfile_init_matrix_array_real_single()' allocates and
@@ -176,7 +176,7 @@ int mtxdistfile_init_matrix_array_real_single(
     int num_columns,
     const float * data,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * `mtxdistfile_init_matrix_array_real_double()' allocates and initialises
@@ -189,7 +189,7 @@ int mtxdistfile_init_matrix_array_real_double(
     int num_columns,
     const double * data,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * `mtxdistfile_init_matrix_array_complex_single()' allocates and
@@ -203,7 +203,7 @@ int mtxdistfile_init_matrix_array_complex_single(
     int num_columns,
     const float (* data)[2],
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * `mtxdistfile_init_matrix_array_complex_double()' allocates and
@@ -217,7 +217,7 @@ int mtxdistfile_init_matrix_array_complex_double(
     int num_columns,
     const double (* data)[2],
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * `mtxdistfile_init_matrix_array_integer_single()' allocates and
@@ -231,7 +231,7 @@ int mtxdistfile_init_matrix_array_integer_single(
     int num_columns,
     const int32_t * data,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * `mtxdistfile_init_matrix_array_integer_double()' allocates and
@@ -245,7 +245,7 @@ int mtxdistfile_init_matrix_array_integer_double(
     int num_columns,
     const int64_t * data,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /*
  * Vector array formats
@@ -261,7 +261,7 @@ int mtxdistfile_alloc_vector_array(
     enum mtxprecision precision,
     int num_rows,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * `mtxdistfile_init_vector_array_real_single()' allocates and
@@ -273,7 +273,7 @@ int mtxdistfile_init_vector_array_real_single(
     int num_rows,
     const float * data,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * `mtxdistfile_init_vector_array_real_double()' allocates and initialises
@@ -284,7 +284,7 @@ int mtxdistfile_init_vector_array_real_double(
     int num_rows,
     const double * data,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * `mtxdistfile_init_vector_array_complex_single()' allocates and
@@ -296,7 +296,7 @@ int mtxdistfile_init_vector_array_complex_single(
     int num_rows,
     const float (* data)[2],
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * `mtxdistfile_init_vector_array_complex_double()' allocates and
@@ -308,7 +308,7 @@ int mtxdistfile_init_vector_array_complex_double(
     int num_rows,
     const double (* data)[2],
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * `mtxdistfile_init_vector_array_integer_single()' allocates and
@@ -320,7 +320,7 @@ int mtxdistfile_init_vector_array_integer_single(
     int num_rows,
     const int32_t * data,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * `mtxdistfile_init_vector_array_integer_double()' allocates and
@@ -332,7 +332,7 @@ int mtxdistfile_init_vector_array_integer_double(
     int num_rows,
     const int64_t * data,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /*
  * Matrix coordinate formats
@@ -351,7 +351,7 @@ int mtxdistfile_alloc_matrix_coordinate(
     int num_columns,
     int64_t num_nonzeros,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * `mtxdistfile_init_matrix_coordinate_real_single()' allocates and
@@ -366,7 +366,7 @@ int mtxdistfile_init_matrix_coordinate_real_single(
     int64_t num_nonzeros,
     const struct mtxfile_matrix_coordinate_real_single * data,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * `mtxdistfile_init_matrix_coordinate_real_double()' allocates and
@@ -381,7 +381,7 @@ int mtxdistfile_init_matrix_coordinate_real_double(
     int64_t num_nonzeros,
     const struct mtxfile_matrix_coordinate_real_double * data,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * `mtxdistfile_init_matrix_coordinate_complex_single()' allocates and
@@ -396,7 +396,7 @@ int mtxdistfile_init_matrix_coordinate_complex_single(
     int64_t num_nonzeros,
     const struct mtxfile_matrix_coordinate_complex_single * data,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * `mtxdistfile_init_matrix_coordinate_complex_double()' allocates and
@@ -411,7 +411,7 @@ int mtxdistfile_init_matrix_coordinate_complex_double(
     int64_t num_nonzeros,
     const struct mtxfile_matrix_coordinate_complex_double * data,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * `mtxdistfile_init_matrix_coordinate_integer_single()' allocates and
@@ -426,7 +426,7 @@ int mtxdistfile_init_matrix_coordinate_integer_single(
     int64_t num_nonzeros,
     const struct mtxfile_matrix_coordinate_integer_single * data,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * `mtxdistfile_init_matrix_coordinate_integer_double()' allocates and
@@ -441,7 +441,7 @@ int mtxdistfile_init_matrix_coordinate_integer_double(
     int64_t num_nonzeros,
     const struct mtxfile_matrix_coordinate_integer_double * data,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * `mtxdistfile_init_matrix_coordinate_pattern()' allocates and
@@ -456,7 +456,7 @@ int mtxdistfile_init_matrix_coordinate_pattern(
     int64_t num_nonzeros,
     const struct mtxfile_matrix_coordinate_pattern * data,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /*
  * Vector coordinate formats
@@ -473,7 +473,7 @@ int mtxdistfile_alloc_vector_coordinate(
     int num_rows,
     int64_t num_nonzeros,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * `mtxdistfile_init_vector_coordinate_real_single()' allocates and
@@ -486,7 +486,7 @@ int mtxdistfile_init_vector_coordinate_real_single(
     int64_t num_nonzeros,
     const struct mtxfile_vector_coordinate_real_single * data,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * `mtxdistfile_init_vector_coordinate_real_double()' allocates and
@@ -499,7 +499,7 @@ int mtxdistfile_init_vector_coordinate_real_double(
     int64_t num_nonzeros,
     const struct mtxfile_vector_coordinate_real_double * data,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * `mtxdistfile_init_vector_coordinate_complex_single()' allocates and
@@ -512,7 +512,7 @@ int mtxdistfile_init_vector_coordinate_complex_single(
     int64_t num_nonzeros,
     const struct mtxfile_vector_coordinate_complex_single * data,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * `mtxdistfile_init_vector_coordinate_complex_double()' allocates and
@@ -525,7 +525,7 @@ int mtxdistfile_init_vector_coordinate_complex_double(
     int64_t num_nonzeros,
     const struct mtxfile_vector_coordinate_complex_double * data,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * `mtxdistfile_init_vector_coordinate_integer_single()' allocates and
@@ -538,7 +538,7 @@ int mtxdistfile_init_vector_coordinate_integer_single(
     int64_t num_nonzeros,
     const struct mtxfile_vector_coordinate_integer_single * data,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * `mtxdistfile_init_vector_coordinate_integer_double()' allocates and
@@ -551,7 +551,7 @@ int mtxdistfile_init_vector_coordinate_integer_double(
     int64_t num_nonzeros,
     const struct mtxfile_vector_coordinate_integer_double * data,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * `mtxdistfile_init_vector_coordinate_pattern()' allocates and
@@ -564,7 +564,7 @@ int mtxdistfile_init_vector_coordinate_pattern(
     int64_t num_nonzeros,
     const struct mtxfile_vector_coordinate_pattern * data,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /*
  * Modifying values
@@ -578,7 +578,7 @@ int mtxdistfile_init_vector_coordinate_pattern(
 int mtxdistfile_set_constant_real_single(
     struct mtxdistfile * mtxdistfile,
     float a,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * `mtxdistfile_set_constant_real_double()' sets every (nonzero) value
@@ -588,7 +588,7 @@ int mtxdistfile_set_constant_real_single(
 int mtxdistfile_set_constant_real_double(
     struct mtxdistfile * mtxdistfile,
     double a,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * `mtxdistfile_set_constant_complex_single()' sets every (nonzero)
@@ -598,7 +598,7 @@ int mtxdistfile_set_constant_real_double(
 int mtxdistfile_set_constant_complex_single(
     struct mtxdistfile * mtxdistfile,
     float a[2],
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * `mtxdistfile_set_constant_integer_single()' sets every (nonzero)
@@ -607,7 +607,7 @@ int mtxdistfile_set_constant_complex_single(
 int mtxdistfile_set_constant_integer_single(
     struct mtxdistfile * mtxdistfile,
     int32_t a,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /*
  * Convert to and from (non-distributed) Matrix Market format
@@ -628,7 +628,7 @@ int mtxdistfile_from_mtxfile(
     const struct mtxfile * src,
     MPI_Comm comm,
     int root,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /*
  * I/O functions
@@ -669,7 +669,7 @@ int mtxdistfile_read(
     size_t line_max,
     char * linebuf,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * `mtxdistfile_fread()' reads a Matrix Market file from a stream and
@@ -713,7 +713,7 @@ int mtxdistfile_fread(
     size_t line_max,
     char * linebuf,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * `mtxdistfile_write_shared()' writes a distributed Matrix Market
@@ -751,7 +751,7 @@ int mtxdistfile_write_shared(
     const char * fmt,
     int64_t * bytes_written,
     int root,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * `mtxdistfile_write()' writes a distributed Matrix Market file to
@@ -784,7 +784,7 @@ int mtxdistfile_write(
     const char * fmt,
     int64_t * bytes_written,
     bool sequential,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * `mtxdistfile_fwrite()' writes a distributed Matrix Market file to
@@ -823,7 +823,7 @@ int mtxdistfile_fwrite(
     const char * fmt,
     int64_t * bytes_written,
     bool sequential,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * `mtxdistfile_fwrite_shared()' writes a distributed Matrix Market
@@ -861,7 +861,7 @@ int mtxdistfile_fwrite_shared(
     const char * fmt,
     int64_t * bytes_written,
     int root,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /*
  * Transpose and conjugate transpose.
@@ -873,7 +873,7 @@ int mtxdistfile_fwrite_shared(
  */
 int mtxdistfile_transpose(
     struct mtxdistfile * mtxdistfile,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * ‘mtxdistfile_conjugate_transpose()’ tranposes and complex
@@ -881,7 +881,7 @@ int mtxdistfile_transpose(
  */
 int mtxdistfile_conjugate_transpose(
     struct mtxdistfile * mtxdistfile,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /*
  * Sorting
@@ -912,7 +912,7 @@ int mtxdistfile_sort(
     enum mtxfilesorting sorting,
     int64_t size,
     int64_t * perm,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /*
  * Partitioning
@@ -945,7 +945,7 @@ int mtxdistfile_init_from_partition(
     int num_parts,
     const int64_t * data_lines_per_part_ptr,
     const int64_t * data_lines_per_part,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * ‘mtxdistfile_partition_rows()’ partitions data lines of a
@@ -977,7 +977,7 @@ int mtxdistfile_partition_rows(
     int * part_per_data_line,
     int64_t * data_lines_per_part_ptr,
     int64_t * data_lines_per_part,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 #endif
 
 #endif

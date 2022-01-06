@@ -183,11 +183,11 @@ const char * mtxstrerrormpi(
 
 #ifdef LIBMTX_HAVE_MPI
 /**
- * ‘mtxmpierror_alloc()’ allocates storage needed for the MPI error
- * handling data structure ‘mtxmpierror’.
+ * ‘mtxdisterror_alloc()’ allocates storage needed for the MPI error
+ * handling data structure ‘mtxdisterror’.
  */
-int mtxmpierror_alloc(
-    struct mtxmpierror * mpierror,
+int mtxdisterror_alloc(
+    struct mtxdisterror * disterr,
     MPI_Comm comm,
     int * mpierrcode)
 {
@@ -210,36 +210,36 @@ int mtxmpierror_alloc(
     if (!buf)
         return MTX_ERR_ERRNO;
 
-    mpierror->comm = comm;
-    mpierror->comm_size = comm_size;
-    mpierror->rank = rank;
-    mpierror->buf = buf;
+    disterr->comm = comm;
+    disterr->comm_size = comm_size;
+    disterr->rank = rank;
+    disterr->buf = buf;
     return MTX_SUCCESS;
 }
 
 /**
- * ‘mtxmpierror_free()’ frees storage held by ‘struct mtxmpierror’.
+ * ‘mtxdisterror_free()’ frees storage held by ‘struct mtxdisterror’.
  */
-void mtxmpierror_free(
-    struct mtxmpierror * mpierror)
+void mtxdisterror_free(
+    struct mtxdisterror * disterr)
 {
-    free(mpierror->buf);
+    free(disterr->buf);
 }
 
 /**
- * ‘mtxmpierror_description()’ returns a string describing an MPI
+ * ‘mtxdisterror_description()’ returns a string describing an MPI
  * error.
  *
  * The caller is responsible for freeing the storage required for the
  * string that is returned by calling ‘free()’.
  */
-char * mtxmpierror_description(
-    struct mtxmpierror * mpierror)
+char * mtxdisterror_description(
+    struct mtxdisterror * disterr)
 {
     char mpierrstr[MPI_MAX_ERROR_STRING];
     int comm_err = MTX_SUCCESS;
-    for (int p = 0; p < mpierror->comm_size; p++) {
-        if (mpierror->buf[p][1])
+    for (int p = 0; p < disterr->comm_size; p++) {
+        if (disterr->buf[p][1])
             comm_err = MTX_ERR_MPI_COLLECTIVE;
     }
     if (comm_err == MTX_SUCCESS)
@@ -251,15 +251,15 @@ char * mtxmpierror_description(
 
     int len = snprintf(NULL, 0, format_header, mtxstrerror(MTX_ERR_MPI_COLLECTIVE));
     int num_errors = 0;
-    for (int p = 0; p < mpierror->comm_size; p++) {
-        if (mpierror->buf[p][1]) {
-            if (mpierror->buf[p][1] == MTX_ERR_ERRNO)
-                errno = mpierror->buf[p][2];
+    for (int p = 0; p < disterr->comm_size; p++) {
+        if (disterr->buf[p][1]) {
+            if (disterr->buf[p][1] == MTX_ERR_ERRNO)
+                errno = disterr->buf[p][2];
             len += snprintf(
                 NULL, 0, num_errors == 0 ? format_err_first : format_err,
-                mpierror->buf[p][0],
+                disterr->buf[p][0],
                 mtxstrerrormpi(
-                    mpierror->buf[p][1], mpierror->mpierrcode, mpierrstr));
+                    disterr->buf[p][1], disterr->mpierrcode, mpierrstr));
             num_errors++;
         }
     }
@@ -270,16 +270,16 @@ char * mtxmpierror_description(
 
     int newlen = snprintf(description, len, format_header, mtxstrerror(comm_err));
     num_errors = 0;
-    for (int p = 0; p < mpierror->comm_size; p++) {
-        if (mpierror->buf[p][1]) {
-            if (mpierror->buf[p][1] == MTX_ERR_ERRNO)
-                errno = mpierror->buf[p][2];
+    for (int p = 0; p < disterr->comm_size; p++) {
+        if (disterr->buf[p][1]) {
+            if (disterr->buf[p][1] == MTX_ERR_ERRNO)
+                errno = disterr->buf[p][2];
             newlen += snprintf(
                 &description[newlen], len-newlen+1,
                 num_errors == 0 ? format_err_first : format_err,
-                mpierror->buf[p][0],
+                disterr->buf[p][0],
                 mtxstrerrormpi(
-                    mpierror->buf[p][1], mpierror->mpierrcode, mpierrstr));
+                    disterr->buf[p][1], disterr->mpierrcode, mpierrstr));
             num_errors++;
         }
     }
@@ -288,24 +288,24 @@ char * mtxmpierror_description(
 }
 
 /**
- * ‘mtxmpierror_allreduce()’ performs a collective reduction on error
+ * ‘mtxdisterror_allreduce()’ performs a collective reduction on error
  * codes provided by each MPI process in a communicator.
  *
  * This is a collective operations that must be performed by every
- * process in the communicator of the MPI error struct ‘mpierror’.
+ * process in the communicator of the MPI error struct ‘disterr’.
  *
  * Each process gathers the error code and rank of every other
  * process.  If the error code of each and every process is
- * ‘MTX_SUCCESS’, then ‘mtxmpierror_allreduce()’ returns
+ * ‘MTX_SUCCESS’, then ‘mtxdisterror_allreduce()’ returns
  * ‘MTX_SUCCESS’. Otherwise, ‘MTX_ERR_MPI_COLLECTIVE’ is returned.
- * Moreover, the ‘buf’ member of ‘mpierror’ will contain the rank and
+ * Moreover, the ‘buf’ member of ‘disterr’ will contain the rank and
  * error code of each process.
  *
  * If the error code ‘err’ is ‘MTX_ERR_MPI_COLLECTIVE’, then it is
  * assumed that a reduction has already been performed, and
- * ‘mtxmpierror_allreduce()’ returns immediately with
+ * ‘mtxdisterror_allreduce()’ returns immediately with
  * ‘MTX_ERR_MPI_COLLECTIVE’.  As a result, if any process calls
- * ‘mtxmpierror_allreduce()’ with ‘err’ set to
+ * ‘mtxdisterror_allreduce()’ with ‘err’ set to
  * ‘MTX_ERR_MPI_COLLECTIVE’, then every other process in the
  * communicator must also set ‘err’ to ‘MTX_ERR_MPI_COLLECTIVE’, or
  * else the program may hang indefinitely.
@@ -314,8 +314,8 @@ char * mtxmpierror_description(
  *
  *     int err;
  *     MPI_Comm comm = MPI_COMM_WORLD;
- *     struct mtx_mpierror mpierror;
- *     err = mtxmpierror_alloc(&mpierror, comm);
+ *     struct mtx_disterr disterr;
+ *     err = mtxdisterror_alloc(&disterr, comm);
  *     if (err)
  *         MPI_Abort(comm, EXIT_FAILURE);
  *
@@ -325,28 +325,28 @@ char * mtxmpierror_description(
  *     // then we can exit gracefully.
  *     int comm_err, rank;
  *     err = MPI_Comm_rank(comm, &rank);
- *     comm_err = mtxmpierror_allreduce(mpierror, err);
+ *     comm_err = mtxdisterror_allreduce(disterr, err);
  *     if (comm_err)
  *         return comm_err;
  *
  *     ...
  *
  */
-int mtxmpierror_allreduce(
-    struct mtxmpierror * mpierror,
+int mtxdisterror_allreduce(
+    struct mtxdisterror * disterr,
     int err)
 {
     if (err == MTX_ERR_MPI_COLLECTIVE)
         return err;
 
-    int buf[3] = { mpierror->rank, err, errno };
+    int buf[3] = { disterr->rank, err, errno };
     int mpierr = MPI_Allgather(
-        &buf, 3, MPI_INT, mpierror->buf, 3, MPI_INT,
-        mpierror->comm);
+        &buf, 3, MPI_INT, disterr->buf, 3, MPI_INT,
+        disterr->comm);
     if (mpierr)
-        MPI_Abort(mpierror->comm, EXIT_FAILURE);
-    for (int p = 0; p < mpierror->comm_size; p++) {
-        if (mpierror->buf[p][1])
+        MPI_Abort(disterr->comm, EXIT_FAILURE);
+    for (int p = 0; p < disterr->comm_size; p++) {
+        if (disterr->buf[p][1])
             return MTX_ERR_MPI_COLLECTIVE;
     }
     return MTX_SUCCESS;

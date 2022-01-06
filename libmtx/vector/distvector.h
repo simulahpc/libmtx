@@ -44,7 +44,7 @@
 
 struct mtxfile;
 struct mtxdistfile;
-struct mtxmpierror;
+struct mtxdisterror;
 
 /**
  * ‘mtxdistvector’ represents a vector in distributed format.
@@ -115,7 +115,7 @@ int mtxdistvector_alloc_array(
     enum mtxprecision precision,
     int size,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * ‘mtxdistvector_init_array_real_single()’ allocates and initialises
@@ -127,7 +127,7 @@ int mtxdistvector_init_array_real_single(
     int size,
     const float * data,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * ‘mtxdistvector_init_array_real_double()’ allocates and initialises
@@ -139,7 +139,7 @@ int mtxdistvector_init_array_real_double(
     int size,
     const double * data,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * ‘mtxdistvector_init_array_complex_single()’ allocates and
@@ -151,7 +151,7 @@ int mtxdistvector_init_array_complex_single(
     int size,
     const float (* data)[2],
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * ‘mtxdistvector_init_array_complex_double()’ allocates and
@@ -163,7 +163,7 @@ int mtxdistvector_init_array_complex_double(
     int size,
     const double (* data)[2],
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * ‘mtxdistvector_init_array_integer_single()’ allocates and
@@ -175,7 +175,7 @@ int mtxdistvector_init_array_integer_single(
     int size,
     const int32_t * data,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * ‘mtxdistvector_init_array_integer_double()’ allocates and
@@ -187,7 +187,7 @@ int mtxdistvector_init_array_integer_double(
     int size,
     const int64_t * data,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /*
  * Distributed vectors in coordinate format
@@ -204,7 +204,7 @@ int mtxdistvector_alloc_coordinate(
     int size,
     int64_t num_nonzeros,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * ‘mtxdistvector_init_coordinate_real_single()’ allocates and
@@ -218,7 +218,7 @@ int mtxdistvector_init_coordinate_real_single(
     const int * indices,
     const float * data,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * ‘mtxdistvector_init_coordinate_real_double()’ allocates and
@@ -232,7 +232,7 @@ int mtxdistvector_init_coordinate_real_double(
     const int * indices,
     const double * data,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * ‘mtxdistvector_init_coordinate_complex_single()’ allocates and
@@ -246,7 +246,7 @@ int mtxdistvector_init_coordinate_complex_single(
     const int * indices,
     const float (* data)[2],
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * ‘mtxdistvector_init_coordinate_complex_double()’ allocates and
@@ -260,7 +260,7 @@ int mtxdistvector_init_coordinate_complex_double(
     const int * indices,
     const double (* data)[2],
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * ‘mtxdistvector_init_coordinate_integer_single()’ allocates and
@@ -274,7 +274,7 @@ int mtxdistvector_init_coordinate_integer_single(
     const int * indices,
     const int32_t * data,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * ‘mtxdistvector_init_coordinate_integer_double()’ allocates and
@@ -288,7 +288,7 @@ int mtxdistvector_init_coordinate_integer_double(
     const int * indices,
     const int64_t * data,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * ‘mtxdistvector_init_coordinate_pattern()’ allocates and initialises
@@ -301,7 +301,7 @@ int mtxdistvector_init_coordinate_pattern(
     int64_t num_nonzeros,
     const int * indices,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /*
  * Convert to and from Matrix Market format
@@ -317,7 +317,7 @@ int mtxdistvector_from_mtxfile(
     enum mtxvectortype vector_type,
     MPI_Comm comm,
     int root,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * ‘mtxdistvector_from_mtxdistfile()’ converts a vector in distributed
@@ -333,7 +333,7 @@ int mtxdistvector_from_mtxdistfile(
     const struct mtxdistfile * mtxdistfile,
     enum mtxvectortype vector_type,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * ‘mtxdistvector_to_mtxdistfile()’ converts a distributed vector to a
@@ -342,7 +342,7 @@ int mtxdistvector_from_mtxdistfile(
 int mtxdistvector_to_mtxdistfile(
     const struct mtxdistvector * distvector,
     struct mtxdistfile * mtxdistfile,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /*
  * I/O functions
@@ -500,7 +500,7 @@ int mtxdistvector_fwrite_shared(
     const char * fmt,
     int64_t * bytes_written,
     int root,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 #ifdef LIBMTX_HAVE_LIBZ
 /**
@@ -542,7 +542,7 @@ int mtxdistvector_gzwrite(
 int mtxdistvector_swap(
     struct mtxdistvector * x,
     struct mtxdistvector * y,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * `mtxdistvector_copy()' copies values of a vector, ‘y = x’.
@@ -550,7 +550,7 @@ int mtxdistvector_swap(
 int mtxdistvector_copy(
     struct mtxdistvector * y,
     const struct mtxdistvector * x,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * `mtxdistvector_sscal()' scales a vector by a single precision
@@ -560,7 +560,7 @@ int mtxdistvector_sscal(
     float a,
     struct mtxdistvector * x,
     int64_t * num_flops,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * `mtxdistvector_dscal()' scales a vector by a double precision
@@ -570,7 +570,7 @@ int mtxdistvector_dscal(
     double a,
     struct mtxdistvector * x,
     int64_t * num_flops,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * `mtxdistvector_saxpy()' adds a vector to another vector multiplied
@@ -581,7 +581,7 @@ int mtxdistvector_saxpy(
     const struct mtxdistvector * x,
     struct mtxdistvector * y,
     int64_t * num_flops,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * `mtxdistvector_daxpy()' adds a vector to another vector multiplied
@@ -592,7 +592,7 @@ int mtxdistvector_daxpy(
     const struct mtxdistvector * x,
     struct mtxdistvector * y,
     int64_t * num_flops,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * `mtxdistvector_saypx()' multiplies a vector by a single precision
@@ -603,7 +603,7 @@ int mtxdistvector_saypx(
     struct mtxdistvector * y,
     const struct mtxdistvector * x,
     int64_t * num_flops,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * `mtxdistvector_daypx()' multiplies a vector by a double precision
@@ -614,7 +614,7 @@ int mtxdistvector_daypx(
     struct mtxdistvector * y,
     const struct mtxdistvector * x,
     int64_t * num_flops,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * `mtxdistvector_sdot()' computes the Euclidean dot product of two
@@ -625,7 +625,7 @@ int mtxdistvector_sdot(
     const struct mtxdistvector * y,
     float * dot,
     int64_t * num_flops,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * `mtxdistvector_ddot()' computes the Euclidean dot product of two
@@ -636,7 +636,7 @@ int mtxdistvector_ddot(
     const struct mtxdistvector * y,
     double * dot,
     int64_t * num_flops,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * `mtxdistvector_cdotu()' computes the product of the transpose of a
@@ -648,7 +648,7 @@ int mtxdistvector_cdotu(
     const struct mtxdistvector * y,
     float (* dot)[2],
     int64_t * num_flops,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * `mtxdistvector_zdotu()' computes the product of the transpose of a
@@ -660,7 +660,7 @@ int mtxdistvector_zdotu(
     const struct mtxdistvector * y,
     double (* dot)[2],
     int64_t * num_flops,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * `mtxdistvector_cdotc()' computes the Euclidean dot product of two
@@ -671,7 +671,7 @@ int mtxdistvector_cdotc(
     const struct mtxdistvector * y,
     float (* dot)[2],
     int64_t * num_flops,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * `mtxdistvector_zdotc()' computes the Euclidean dot product of two
@@ -682,7 +682,7 @@ int mtxdistvector_zdotc(
     const struct mtxdistvector * y,
     double (* dot)[2],
     int64_t * num_flops,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * `mtxdistvector_snrm2()' computes the Euclidean norm of a vector in
@@ -692,7 +692,7 @@ int mtxdistvector_snrm2(
     const struct mtxdistvector * x,
     float * nrm2,
     int64_t * num_flops,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * `mtxdistvector_dnrm2()' computes the Euclidean norm of a vector in
@@ -702,7 +702,7 @@ int mtxdistvector_dnrm2(
     const struct mtxdistvector * x,
     double * nrm2,
     int64_t * num_flops,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * `mtxdistvector_sasum()' computes the sum of absolute values
@@ -712,7 +712,7 @@ int mtxdistvector_sasum(
     const struct mtxdistvector * x,
     float * asum,
     int64_t * num_flops,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * `mtxdistvector_dasum()' computes the sum of absolute values
@@ -722,7 +722,7 @@ int mtxdistvector_dasum(
     const struct mtxdistvector * x,
     double * asum,
     int64_t * num_flops,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * `mtxdistvector_imax()' finds the index of the first element having
@@ -731,7 +731,7 @@ int mtxdistvector_dasum(
 int mtxdistvector_imax(
     const struct mtxdistvector * x,
     int * max,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 #endif
 
 #endif

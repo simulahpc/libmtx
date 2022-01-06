@@ -35,7 +35,7 @@
 #include <stdarg.h>
 #include <stddef.h>
 
-struct mtxmpierror;
+struct mtxdisterror;
 struct mtx_partition;
 union mtxfiledata;
 
@@ -63,7 +63,7 @@ int mtxdistfiledata_permute(
     int64_t size,
     int64_t * perm,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * ‘mtxdistfiledata_sort_row_major()’ sorts data lines of a
@@ -83,7 +83,7 @@ int mtxdistfiledata_sort_row_major(
     int64_t size,
     int64_t * sorting_permutation,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * ‘mtxdistfiledata_sort_column_major()’ sorts data lines of a
@@ -100,7 +100,7 @@ int mtxdistfiledata_sort_column_major(
     int64_t size,
     int64_t * sorting_permutation,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * ‘mtxdistfiledata_sort_morton()’ sorts data lines of a distributed
@@ -117,7 +117,7 @@ int mtxdistfiledata_sort_morton(
     int64_t size,
     int64_t * sorting_permutation,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 #endif
 
 #endif

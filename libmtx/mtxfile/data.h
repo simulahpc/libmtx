@@ -41,7 +41,7 @@
 #include <stddef.h>
 #include <stdio.h>
 
-struct mtxmpierror;
+struct mtxdisterror;
 struct mtx_partition;
 
 /*
@@ -1286,7 +1286,7 @@ int mtxfiledata_send(
     int dest,
     int tag,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * `mtxfiledata_recv()' receives Matrix Market data lines from
@@ -1306,7 +1306,7 @@ int mtxfiledata_recv(
     int source,
     int tag,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * `mtxfiledata_bcast()' broadcasts Matrix Market data lines from an
@@ -1326,7 +1326,7 @@ int mtxfiledata_bcast(
     int64_t offset,
     int root,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * `mtxfiledata_gatherv()' gathers Matrix Market data lines onto an
@@ -1350,7 +1350,7 @@ int mtxfiledata_gatherv(
     const int * recvdispls,
     int root,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * `mtxfiledata_scatterv()' scatters Matrix Market data lines from an
@@ -1374,7 +1374,7 @@ int mtxfiledata_scatterv(
     int recvcount,
     int root,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * `mtxfiledata_alltoallv()' performs an all-to-all exchange of
@@ -1398,7 +1398,7 @@ int mtxfiledata_alltoallv(
     const int * recvcounts,
     const int * recvdispls,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 #endif
 
 #endif

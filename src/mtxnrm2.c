@@ -506,7 +506,7 @@ static int distvector_nrm2(
     int comm_size,
     int rank,
     int root,
-    struct mtxmpierror * mpierror)
+    struct mtxdisterror * disterr)
 {
     int err;
     struct timespec t0, t1;
@@ -521,7 +521,7 @@ static int distvector_nrm2(
 
     struct mtxdistvector x;
     err = mtxdistvector_from_mtxdistfile(
-        &x, mtxdistfile, vector_type, comm, mpierror);
+        &x, mtxdistfile, vector_type, comm, disterr);
     if (err) {
         if (verbose > 0)
             fprintf(diagf, "\n");
@@ -543,7 +543,7 @@ static int distvector_nrm2(
         }
         float nrm2 = 0.0f;
         int64_t num_flops = 0;
-        err = mtxdistvector_snrm2(&x, &nrm2, &num_flops, mpierror);
+        err = mtxdistvector_snrm2(&x, &nrm2, &num_flops, disterr);
         if (err) {
             if (verbose > 0)
                 fprintf(diagf, "\n");
@@ -579,7 +579,7 @@ static int distvector_nrm2(
         }
         double nrm2 = 0.0;
         int64_t num_flops = 0;
-        err = mtxdistvector_dnrm2(&x, &nrm2, &num_flops, mpierror);
+        err = mtxdistvector_dnrm2(&x, &nrm2, &num_flops, disterr);
         if (err) {
             if (verbose > 0)
                 fprintf(diagf, "\n");
@@ -638,7 +638,7 @@ int main(int argc, char *argv[])
     int mpierr;
     char mpierrstr[MPI_MAX_ERROR_STRING];
     int mpierrstrlen;
-    struct mtxmpierror mpierror;
+    struct mtxdisterror disterr;
     mpierr = MPI_Init(&argc, &argv);
     if (mpierr) {
         MPI_Error_string(mpierr, mpierrstr, &mpierrstrlen);
@@ -663,7 +663,7 @@ int main(int argc, char *argv[])
                 program_invocation_short_name, mpierrstr);
         MPI_Abort(comm, EXIT_FAILURE);
     }
-    err = mtxmpierror_alloc(&mpierror, comm, &mpierr);
+    err = mtxdisterror_alloc(&disterr, comm, &mpierr);
     if (err) {
         fprintf(stderr, "%s: %s\n",
                 program_invocation_short_name,
@@ -682,7 +682,7 @@ int main(int argc, char *argv[])
             fprintf(stderr, "%s: %s %s\n", program_invocation_short_name,
                     strerror(err), argv_copy[0]);
         }
-        mtxmpierror_free(&mpierror);
+        mtxdisterror_free(&disterr);
         MPI_Finalize();
         return EXIT_FAILURE;
     }
@@ -697,7 +697,7 @@ int main(int argc, char *argv[])
                     program_invocation_short_name);
         }
         program_options_free(&args);
-        mtxmpierror_free(&mpierror);
+        mtxdisterror_free(&disterr);
         MPI_Finalize();
         return EXIT_FAILURE;
     }
@@ -709,7 +709,7 @@ int main(int argc, char *argv[])
                     comm_size, args.num_parts);
         }
         program_options_free(&args);
-        mtxmpierror_free(&mpierror);
+        mtxdisterror_free(&disterr);
         MPI_Finalize();
         return EXIT_FAILURE;
     }
@@ -728,7 +728,7 @@ int main(int argc, char *argv[])
         &mtxdistfile, args.precision,
         args.x_path ? args.x_path : "",
         &lines_read, &bytes_read, 0, NULL,
-        comm, &mpierror);
+        comm, &disterr);
     if (err) {
         if (args.verbose > 0)
             fprintf(diagf, "\n");
@@ -737,18 +737,18 @@ int main(int argc, char *argv[])
                     program_invocation_short_name,
                     args.x_path, lines_read+1,
                     err == MTX_ERR_MPI_COLLECTIVE
-                    ? mtxmpierror_description(&mpierror)
+                    ? mtxdisterror_description(&disterr)
                     : mtxstrerror(err));
         } else if (rank == root) {
             fprintf(stderr, "%s: %s: %s\n",
                     program_invocation_short_name,
                     args.x_path,
                     err == MTX_ERR_MPI_COLLECTIVE
-                    ? mtxmpierror_description(&mpierror)
+                    ? mtxdisterror_description(&disterr)
                     : mtxstrerror(err));
         }
         program_options_free(&args);
-        mtxmpierror_free(&mpierror);
+        mtxdisterror_free(&disterr);
         MPI_Finalize();
         return EXIT_FAILURE;
     }
@@ -774,22 +774,22 @@ int main(int argc, char *argv[])
         err = mtx_partition_read_parts(
             &partition, args.num_parts, args.partition_path,
             &lines_read, &bytes_read);
-        if (mtxmpierror_allreduce(&mpierror, err)) {
+        if (mtxdisterror_allreduce(&disterr, err)) {
             if (args.verbose > 0)
                 fprintf(diagf, "\n");
             if (rank == root && lines_read >= 0) {
                 fprintf(stderr, "%s: %s:%d: %s\n",
                         program_invocation_short_name,
                         args.partition_path, lines_read+1,
-                        mtxmpierror_description(&mpierror));
+                        mtxdisterror_description(&disterr));
             } else if (rank == root) {
                 fprintf(stderr, "%s: %s: %s\n",
                         program_invocation_short_name,
-                        args.partition_path, mtxmpierror_description(&mpierror));
+                        args.partition_path, mtxdisterror_description(&disterr));
             }
             mtxdistfile_free(&mtxdistfile);
             program_options_free(&args);
-            mtxmpierror_free(&mpierror);
+            mtxdisterror_free(&disterr);
             MPI_Finalize();
             return EXIT_FAILURE;
         }
@@ -812,17 +812,17 @@ int main(int argc, char *argv[])
         err = mtx_partition_init(
             &partition, args.partition,
             mtxdistfile.size.num_rows, args.num_parts, 0, NULL);
-        if (mtxmpierror_allreduce(&mpierror, err)) {
+        if (mtxdisterror_allreduce(&disterr, err)) {
             if (args.verbose > 0)
                 fprintf(diagf, "\n");
             if (rank == root) {
                 fprintf(stderr, "%s: %s\n",
                         program_invocation_short_name,
-                        mtxmpierror_description(&mpierror));
+                        mtxdisterror_description(&disterr));
             }
             mtxdistfile_free(&mtxdistfile);
             program_options_free(&args);
-            mtxmpierror_free(&mpierror);
+            mtxdisterror_free(&disterr);
             MPI_Finalize();
             return EXIT_FAILURE;
         }
@@ -844,7 +844,7 @@ int main(int argc, char *argv[])
         }
         mtxdistfile_free(&mtxdistfile);
         program_options_free(&args);
-        mtxmpierror_free(&mpierror);
+        mtxdisterror_free(&disterr);
         MPI_Finalize();
         return EXIT_FAILURE;
 
@@ -852,18 +852,18 @@ int main(int argc, char *argv[])
         err = distvector_nrm2(
             &mtxdistfile, &partition, args.vector_type,
             args.format, args.verbose, diagf, args.quiet,
-            comm, comm_size, rank, root, &mpierror);
+            comm, comm_size, rank, root, &disterr);
         if (err) {
             if (rank == root) {
                 fprintf(stderr, "%s: %s\n",
                         program_invocation_short_name,
                         err == MTX_ERR_MPI_COLLECTIVE
-                        ? mtxmpierror_description(&mpierror)
+                        ? mtxdisterror_description(&disterr)
                         : mtxstrerror(err));
             }
             mtxdistfile_free(&mtxdistfile);
             program_options_free(&args);
-            mtxmpierror_free(&mpierror);
+            mtxdisterror_free(&disterr);
             MPI_Finalize();
             return EXIT_FAILURE;
         }
@@ -876,7 +876,7 @@ int main(int argc, char *argv[])
         }
         mtxdistfile_free(&mtxdistfile);
         program_options_free(&args);
-        mtxmpierror_free(&mpierror);
+        mtxdisterror_free(&disterr);
         MPI_Finalize();
         return EXIT_FAILURE;
     }
@@ -884,7 +884,7 @@ int main(int argc, char *argv[])
     /* 5. Clean up. */
     mtxdistfile_free(&mtxdistfile);
     program_options_free(&args);
-    mtxmpierror_free(&mpierror);
+    mtxdisterror_free(&disterr);
     MPI_Finalize();
     return EXIT_SUCCESS;
 }

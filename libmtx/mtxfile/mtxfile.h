@@ -46,7 +46,7 @@
 #include <stddef.h>
 #include <stdio.h>
 
-struct mtxmpierror;
+struct mtxdisterror;
 struct mtx_partition;
 
 /**
@@ -1052,7 +1052,7 @@ int mtxfile_send(
     int dest,
     int tag,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * ‘mtxfile_recv()’ receives a Matrix Market file from another MPI
@@ -1066,7 +1066,7 @@ int mtxfile_recv(
     int source,
     int tag,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * ‘mtxfile_bcast()’ broadcasts a Matrix Market file from an MPI root
@@ -1079,7 +1079,7 @@ int mtxfile_bcast(
     struct mtxfile * mtxfile,
     int root,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * ‘mtxfile_gather()’ gathers Matrix Market files onto an MPI root
@@ -1093,7 +1093,7 @@ int mtxfile_gather(
     struct mtxfile * recvmtxfiles,
     int root,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * ‘mtxfile_allgather()’ gathers Matrix Market files onto every MPI
@@ -1107,7 +1107,7 @@ int mtxfile_allgather(
     const struct mtxfile * sendmtxfile,
     struct mtxfile * recvmtxfiles,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * ‘mtxfile_scatter()’ scatters Matrix Market files from an MPI root
@@ -1121,7 +1121,7 @@ int mtxfile_scatter(
     struct mtxfile * recvmtxfile,
     int root,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * ‘mtxfile_alltoall()’ performs an all-to-all exchange of Matrix
@@ -1134,7 +1134,7 @@ int mtxfile_alltoall(
     const struct mtxfile * sendmtxfiles,
     struct mtxfile * recvmtxfiles,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * ‘mtxfile_scatterv()’ scatters a Matrix Market file from an MPI root
@@ -1155,7 +1155,7 @@ int mtxfile_scatterv(
     int recvcount,
     int root,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 #endif
 
 #endif

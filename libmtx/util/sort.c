@@ -552,7 +552,7 @@ int distradix_sort_uint32(
     uint32_t * keys,
     int64_t * sorting_permutation,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror)
+    struct mtxdisterror * disterr)
 {
     int err;
 
@@ -560,42 +560,42 @@ int distradix_sort_uint32(
      * on each process. */
     if (size > INT_MAX) errno = ERANGE;
     err = size > INT_MAX ? MTX_ERR_ERRNO : MTX_SUCCESS;
-    if (mtxmpierror_allreduce(mpierror, err))
+    if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
 
     int comm_size;
-    mpierror->mpierrcode = MPI_Comm_size(comm, &comm_size);
-    err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
-    if (mtxmpierror_allreduce(mpierror, err))
+    disterr->mpierrcode = MPI_Comm_size(comm, &comm_size);
+    err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
     int rank;
-    mpierror->mpierrcode = MPI_Comm_rank(comm, &rank);
-    err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
-    if (mtxmpierror_allreduce(mpierror, err))
+    disterr->mpierrcode = MPI_Comm_rank(comm, &rank);
+    err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
 
     int64_t total_size;
-    mpierror->mpierrcode = MPI_Allreduce(
+    disterr->mpierrcode = MPI_Allreduce(
         &size, &total_size, 1, MPI_INT64_T, MPI_SUM, comm);
-    err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
-    if (mtxmpierror_allreduce(mpierror, err))
+    err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
 
     int64_t global_offset = 0;
-    mpierror->mpierrcode = MPI_Exscan(
+    disterr->mpierrcode = MPI_Exscan(
         &size, &global_offset, 1, MPI_INT64_T, MPI_SUM, comm);
-    err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
-    if (mtxmpierror_allreduce(mpierror, err))
+    err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
 
     uint32_t * extra_keys = malloc(size * sizeof(uint32_t));
     err = !extra_keys ? MTX_ERR_ERRNO : MTX_SUCCESS;
-    if (mtxmpierror_allreduce(mpierror, err))
+    if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
 
     int64_t * bucketptrs = malloc(comm_size * 257 * sizeof(int64_t));
     err = !bucketptrs ? MTX_ERR_ERRNO : MTX_SUCCESS;
-    if (mtxmpierror_allreduce(mpierror, err)) {
+    if (mtxdisterror_allreduce(disterr, err)) {
         free(extra_keys);
         return MTX_ERR_MPI_COLLECTIVE;
     }
@@ -605,7 +605,7 @@ int distradix_sort_uint32(
     if (sorting_permutation) {
         extra_sorting_permutation = malloc(size * sizeof(int64_t));
         err = !extra_sorting_permutation ? MTX_ERR_ERRNO : MTX_SUCCESS;
-        if (mtxmpierror_allreduce(mpierror, err)) {
+        if (mtxdisterror_allreduce(disterr, err)) {
             free(bucketptrs);
             free(extra_keys);
             return MTX_ERR_MPI_COLLECTIVE;
@@ -614,7 +614,7 @@ int distradix_sort_uint32(
 
     int * sendrecvbufs = malloc(comm_size * 5 * sizeof(int));
     err = !sendrecvbufs ? MTX_ERR_ERRNO : MTX_SUCCESS;
-    if (mtxmpierror_allreduce(mpierror, err)) {
+    if (mtxdisterror_allreduce(disterr, err)) {
         if (extra_sorting_permutation)
             free(extra_sorting_permutation);
         free(bucketptrs);
@@ -704,10 +704,10 @@ int distradix_sort_uint32(
 #endif
 
         /* 5. Gather all the bucket pointers onto every process. */
-        mpierror->mpierrcode = MPI_Allgather(
+        disterr->mpierrcode = MPI_Allgather(
             MPI_IN_PLACE, 0, MPI_DATATYPE_NULL, bucketptrs, 257, MPI_INT64_T, comm);
-        err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
-        if (mtxmpierror_allreduce(mpierror, err)) {
+        err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+        if (mtxdisterror_allreduce(disterr, err)) {
             free(sendrecvbufs);
             if (sorting_permutation)
                 free(extra_sorting_permutation);
@@ -772,7 +772,7 @@ int distradix_sort_uint32(
             if (sizes[q] == 0 && q == comm_size-1)
                 break;
         }
-        if (mtxmpierror_allreduce(mpierror, err)) {
+        if (mtxdisterror_allreduce(disterr, err)) {
             free(sendrecvbufs);
             if (sorting_permutation)
                 free(extra_sorting_permutation);
@@ -805,11 +805,11 @@ int distradix_sort_uint32(
 #endif
 
         /* 6. Redistribute keys among processes. */
-        mpierror->mpierrcode = MPI_Alltoallv(
+        disterr->mpierrcode = MPI_Alltoallv(
             extra_keys, sendcounts, senddisps, MPI_INT32_T,
             keys, recvcounts, recvdisps, MPI_INT32_T, comm);
-        err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
-        if (mtxmpierror_allreduce(mpierror, err)) {
+        err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+        if (mtxdisterror_allreduce(disterr, err)) {
             free(sendrecvbufs);
             if (sorting_permutation)
                 free(extra_sorting_permutation);
@@ -820,11 +820,11 @@ int distradix_sort_uint32(
 
         /* Also, redistribute the sorting permutation. */
         if (sorting_permutation) {
-            mpierror->mpierrcode = MPI_Alltoallv(
+            disterr->mpierrcode = MPI_Alltoallv(
                 extra_sorting_permutation, sendcounts, senddisps, MPI_INT64_T,
                 sorting_permutation, recvcounts, recvdisps, MPI_INT64_T, comm);
-            err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
-            if (mtxmpierror_allreduce(mpierror, err)) {
+            err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+            if (mtxdisterror_allreduce(disterr, err)) {
                 free(sendrecvbufs);
                 if (sorting_permutation)
                     free(extra_sorting_permutation);
@@ -908,16 +908,16 @@ int distradix_sort_uint32(
     if (sorting_permutation) {
         int64_t * global_offsets = malloc((comm_size+1) * sizeof(int64_t));
         err = !global_offsets ? MTX_ERR_ERRNO : MTX_SUCCESS;
-        if (mtxmpierror_allreduce(mpierror, err)) {
+        if (mtxdisterror_allreduce(disterr, err)) {
             free(extra_sorting_permutation);
             return MTX_ERR_MPI_COLLECTIVE;
         }
 
         global_offsets[rank] = global_offset;
-        mpierror->mpierrcode = MPI_Allgather(
+        disterr->mpierrcode = MPI_Allgather(
             MPI_IN_PLACE, 0, MPI_DATATYPE_NULL, global_offsets, 1, MPI_INT64_T, comm);
-        err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
-        if (mtxmpierror_allreduce(mpierror, err)) {
+        err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+        if (mtxdisterror_allreduce(disterr, err)) {
             free(global_offsets);
             free(extra_sorting_permutation);
             return MTX_ERR_MPI_COLLECTIVE;
@@ -925,11 +925,11 @@ int distradix_sort_uint32(
         global_offsets[comm_size] = total_size;
 
         MPI_Win window;
-        mpierror->mpierrcode = MPI_Win_create(
+        disterr->mpierrcode = MPI_Win_create(
             sorting_permutation, size * sizeof(int64_t),
             sizeof(int64_t), MPI_INFO_NULL, comm, &window);
-        err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
-        if (mtxmpierror_allreduce(mpierror, err)) {
+        err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+        if (mtxdisterror_allreduce(disterr, err)) {
             free(global_offsets);
             free(extra_sorting_permutation);
             return MTX_ERR_MPI_COLLECTIVE;
@@ -983,10 +983,10 @@ int distradix_sort_uint32(
                     rank, destidx, p, srcidx-global_offsets[p], srcidx, p, global_offsets[p]);
 #endif
             if (p != rank) {
-                mpierror->mpierrcode = MPI_Put(
+                disterr->mpierrcode = MPI_Put(
                     &destidx, 1, MPI_INT64_T, p,
                     srcidx-global_offsets[p], 1, MPI_INT64_T, window);
-                err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+                err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
                 if (err)
                     break;
             } else {
@@ -997,7 +997,7 @@ int distradix_sort_uint32(
         MPI_Win_free(&window);
         free(global_offsets);
         free(extra_sorting_permutation);
-        if (mtxmpierror_allreduce(mpierror, err))
+        if (mtxdisterror_allreduce(disterr, err))
             return MTX_ERR_MPI_COLLECTIVE;
 
 #ifdef DEBUG_DISTRADIXSORT
@@ -1038,7 +1038,7 @@ int distradix_sort_uint64(
     uint64_t * keys,
     int64_t * sorting_permutation,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror)
+    struct mtxdisterror * disterr)
 {
     int err;
 
@@ -1046,42 +1046,42 @@ int distradix_sort_uint64(
      * on each process. */
     if (size > INT_MAX) errno = ERANGE;
     err = size > INT_MAX ? MTX_ERR_ERRNO : MTX_SUCCESS;
-    if (mtxmpierror_allreduce(mpierror, err))
+    if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
 
     int comm_size;
-    mpierror->mpierrcode = MPI_Comm_size(comm, &comm_size);
-    err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
-    if (mtxmpierror_allreduce(mpierror, err))
+    disterr->mpierrcode = MPI_Comm_size(comm, &comm_size);
+    err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
     int rank;
-    mpierror->mpierrcode = MPI_Comm_rank(comm, &rank);
-    err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
-    if (mtxmpierror_allreduce(mpierror, err))
+    disterr->mpierrcode = MPI_Comm_rank(comm, &rank);
+    err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
 
     int64_t total_size;
-    mpierror->mpierrcode = MPI_Allreduce(
+    disterr->mpierrcode = MPI_Allreduce(
         &size, &total_size, 1, MPI_INT64_T, MPI_SUM, comm);
-    err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
-    if (mtxmpierror_allreduce(mpierror, err))
+    err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
 
     int64_t global_offset = 0;
-    mpierror->mpierrcode = MPI_Exscan(
+    disterr->mpierrcode = MPI_Exscan(
         &size, &global_offset, 1, MPI_INT64_T, MPI_SUM, comm);
-    err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
-    if (mtxmpierror_allreduce(mpierror, err))
+    err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
 
     uint64_t * extra_keys = malloc(size * sizeof(uint64_t));
     err = !extra_keys ? MTX_ERR_ERRNO : MTX_SUCCESS;
-    if (mtxmpierror_allreduce(mpierror, err))
+    if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
 
     int64_t * bucketptrs = malloc(comm_size * 257 * sizeof(int64_t));
     err = !bucketptrs ? MTX_ERR_ERRNO : MTX_SUCCESS;
-    if (mtxmpierror_allreduce(mpierror, err)) {
+    if (mtxdisterror_allreduce(disterr, err)) {
         free(extra_keys);
         return MTX_ERR_MPI_COLLECTIVE;
     }
@@ -1091,7 +1091,7 @@ int distradix_sort_uint64(
     if (sorting_permutation) {
         extra_sorting_permutation = malloc(size * sizeof(int64_t));
         err = !extra_sorting_permutation ? MTX_ERR_ERRNO : MTX_SUCCESS;
-        if (mtxmpierror_allreduce(mpierror, err)) {
+        if (mtxdisterror_allreduce(disterr, err)) {
             free(bucketptrs);
             free(extra_keys);
             return MTX_ERR_MPI_COLLECTIVE;
@@ -1100,7 +1100,7 @@ int distradix_sort_uint64(
 
     int * sendrecvbufs = malloc(comm_size * 5 * sizeof(int));
     err = !sendrecvbufs ? MTX_ERR_ERRNO : MTX_SUCCESS;
-    if (mtxmpierror_allreduce(mpierror, err)) {
+    if (mtxdisterror_allreduce(disterr, err)) {
         if (extra_sorting_permutation)
             free(extra_sorting_permutation);
         free(bucketptrs);
@@ -1151,10 +1151,10 @@ int distradix_sort_uint64(
         bucketptr[0] = 0;
 
         /* 5. Gather all the bucket pointers onto every process. */
-        mpierror->mpierrcode = MPI_Allgather(
+        disterr->mpierrcode = MPI_Allgather(
             MPI_IN_PLACE, 0, MPI_DATATYPE_NULL, bucketptrs, 257, MPI_INT64_T, comm);
-        err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
-        if (mtxmpierror_allreduce(mpierror, err)) {
+        err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+        if (mtxdisterror_allreduce(disterr, err)) {
             free(sendrecvbufs);
             if (sorting_permutation)
                 free(extra_sorting_permutation);
@@ -1208,7 +1208,7 @@ int distradix_sort_uint64(
             if (sizes[q] == 0 && q == comm_size-1)
                 break;
         }
-        if (mtxmpierror_allreduce(mpierror, err)) {
+        if (mtxdisterror_allreduce(disterr, err)) {
             free(sendrecvbufs);
             if (sorting_permutation)
                 free(extra_sorting_permutation);
@@ -1225,11 +1225,11 @@ int distradix_sort_uint64(
         }
 
         /* 6. Redistribute keys among processes. */
-        mpierror->mpierrcode = MPI_Alltoallv(
+        disterr->mpierrcode = MPI_Alltoallv(
             extra_keys, sendcounts, senddisps, MPI_INT64_T,
             keys, recvcounts, recvdisps, MPI_INT64_T, comm);
-        err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
-        if (mtxmpierror_allreduce(mpierror, err)) {
+        err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+        if (mtxdisterror_allreduce(disterr, err)) {
             free(sendrecvbufs);
             if (sorting_permutation)
                 free(extra_sorting_permutation);
@@ -1240,11 +1240,11 @@ int distradix_sort_uint64(
 
         /* Also, redistribute the sorting permutation. */
         if (sorting_permutation) {
-            mpierror->mpierrcode = MPI_Alltoallv(
+            disterr->mpierrcode = MPI_Alltoallv(
                 extra_sorting_permutation, sendcounts, senddisps, MPI_INT64_T,
                 sorting_permutation, recvcounts, recvdisps, MPI_INT64_T, comm);
-            err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
-            if (mtxmpierror_allreduce(mpierror, err)) {
+            err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+            if (mtxdisterror_allreduce(disterr, err)) {
                 free(sendrecvbufs);
                 if (sorting_permutation)
                     free(extra_sorting_permutation);
@@ -1298,16 +1298,16 @@ int distradix_sort_uint64(
     if (sorting_permutation) {
         int64_t * global_offsets = malloc((comm_size+1) * sizeof(int64_t));
         err = !global_offsets ? MTX_ERR_ERRNO : MTX_SUCCESS;
-        if (mtxmpierror_allreduce(mpierror, err)) {
+        if (mtxdisterror_allreduce(disterr, err)) {
             free(extra_sorting_permutation);
             return MTX_ERR_MPI_COLLECTIVE;
         }
 
         global_offsets[rank] = global_offset;
-        mpierror->mpierrcode = MPI_Allgather(
+        disterr->mpierrcode = MPI_Allgather(
             MPI_IN_PLACE, 0, MPI_DATATYPE_NULL, global_offsets, 1, MPI_INT64_T, comm);
-        err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
-        if (mtxmpierror_allreduce(mpierror, err)) {
+        err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+        if (mtxdisterror_allreduce(disterr, err)) {
             free(global_offsets);
             free(extra_sorting_permutation);
             return MTX_ERR_MPI_COLLECTIVE;
@@ -1315,11 +1315,11 @@ int distradix_sort_uint64(
         global_offsets[comm_size] = total_size;
 
         MPI_Win window;
-        mpierror->mpierrcode = MPI_Win_create(
+        disterr->mpierrcode = MPI_Win_create(
             sorting_permutation, size * sizeof(int64_t),
             sizeof(int64_t), MPI_INFO_NULL, comm, &window);
-        err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
-        if (mtxmpierror_allreduce(mpierror, err)) {
+        err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+        if (mtxdisterror_allreduce(disterr, err)) {
             free(global_offsets);
             free(extra_sorting_permutation);
             return MTX_ERR_MPI_COLLECTIVE;
@@ -1340,10 +1340,10 @@ int distradix_sort_uint64(
                 p++;
 
             if (p != rank) {
-                mpierror->mpierrcode = MPI_Put(
+                disterr->mpierrcode = MPI_Put(
                     &destidx, 1, MPI_INT64_T, p,
                     srcidx-global_offsets[p], 1, MPI_INT64_T, window);
-                err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+                err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
                 if (err)
                     break;
             } else {
@@ -1354,7 +1354,7 @@ int distradix_sort_uint64(
         MPI_Win_free(&window);
         free(global_offsets);
         free(extra_sorting_permutation);
-        if (mtxmpierror_allreduce(mpierror, err))
+        if (mtxdisterror_allreduce(disterr, err))
             return MTX_ERR_MPI_COLLECTIVE;
     }
 

@@ -91,8 +91,8 @@ int test_distradix_sort(void)
     if (comm_size != 2)
         TEST_FAIL_MSG("Expected exactly two MPI processes");
 
-    struct mtxmpierror mpierror;
-    err = mtxmpierror_alloc(&mpierror, comm, NULL);
+    struct mtxdisterror disterr;
+    err = mtxdisterror_alloc(&disterr, comm, NULL);
     if (err)
         MPI_Abort(comm, EXIT_FAILURE);
 
@@ -107,11 +107,11 @@ int test_distradix_sort(void)
             ? ((uint32_t[3]) {0,255,30})
             : ((uint32_t[2]) {1,2});
         int64_t permutation[5];
-        err = distradix_sort_uint32(size, keys, permutation, comm, &mpierror);
+        err = distradix_sort_uint32(size, keys, permutation, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s",
             err == MTX_ERR_MPI_COLLECTIVE
-            ? mtxmpierror_description(&mpierror)
+            ? mtxdisterror_description(&disterr)
             : mtxstrerror(err));
         if (rank == 0) {
             TEST_ASSERT_EQ(  0, keys[0]);
@@ -135,11 +135,11 @@ int test_distradix_sort(void)
             ? ((uint32_t[3]) {25820, 24732, 1352})
             : ((uint32_t[2]) {34041, 38784});
         int64_t permutation[5];
-        err = distradix_sort_uint32(size, keys, permutation, comm, &mpierror);
+        err = distradix_sort_uint32(size, keys, permutation, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s",
             err == MTX_ERR_MPI_COLLECTIVE
-            ? mtxmpierror_description(&mpierror)
+            ? mtxdisterror_description(&disterr)
             : mtxstrerror(err));
         if (rank == 0) {
             TEST_ASSERT_EQ( 1352, keys[0]);
@@ -163,11 +163,11 @@ int test_distradix_sort(void)
         srand(415);
         for (int i = 0; i < size; i++)
             keys[i] = rand() % UINT32_MAX;
-        err = distradix_sort_uint32(size, keys, NULL, comm, &mpierror);
+        err = distradix_sort_uint32(size, keys, NULL, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s",
             err == MTX_ERR_MPI_COLLECTIVE
-            ? mtxmpierror_description(&mpierror)
+            ? mtxdisterror_description(&disterr)
             : mtxstrerror(err));
         for (int i = 1; i < size; i++)
             TEST_ASSERT_LE_MSG(keys[i-1], keys[i], "i=%d, keys[i-1]=%"PRIu32", keys[i]=%"PRIu32"",
@@ -203,11 +203,11 @@ int test_distradix_sort(void)
         fflush(stderr);
         clock_gettime(CLOCK_MONOTONIC, &t0);
 
-        err = distradix_sort_uint32(size, keys, NULL, comm, &mpierror);
+        err = distradix_sort_uint32(size, keys, NULL, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s",
             err == MTX_ERR_MPI_COLLECTIVE
-            ? mtxmpierror_description(&mpierror)
+            ? mtxdisterror_description(&disterr)
             : mtxstrerror(err));
 
         MPI_Barrier(comm);
@@ -233,11 +233,11 @@ int test_distradix_sort(void)
             ? ((uint64_t[3]) {0,255,30})
             : ((uint64_t[2]) {1,2});
         int64_t permutation[5];
-        err = distradix_sort_uint64(size, keys, permutation, comm, &mpierror);
+        err = distradix_sort_uint64(size, keys, permutation, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s",
             err == MTX_ERR_MPI_COLLECTIVE
-            ? mtxmpierror_description(&mpierror)
+            ? mtxdisterror_description(&disterr)
             : mtxstrerror(err));
         if (rank == 0) {
             TEST_ASSERT_EQ(  0, keys[0]);
@@ -261,11 +261,11 @@ int test_distradix_sort(void)
             ? ((uint64_t[3]) {25820, 24732, 1352})
             : ((uint64_t[2]) {34041, 38784});
         int64_t permutation[5];
-        err = distradix_sort_uint64(size, keys, permutation, comm, &mpierror);
+        err = distradix_sort_uint64(size, keys, permutation, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s",
             err == MTX_ERR_MPI_COLLECTIVE
-            ? mtxmpierror_description(&mpierror)
+            ? mtxdisterror_description(&disterr)
             : mtxstrerror(err));
         if (rank == 0) {
             TEST_ASSERT_EQ( 1352, keys[0]);
@@ -288,11 +288,11 @@ int test_distradix_sort(void)
         uint64_t keys[100];
         for (int i = 0; i < size; i++)
             keys[i] = rand_uint64();
-        err = distradix_sort_uint64(size, keys, NULL, comm, &mpierror);
+        err = distradix_sort_uint64(size, keys, NULL, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s",
             err == MTX_ERR_MPI_COLLECTIVE
-            ? mtxmpierror_description(&mpierror)
+            ? mtxdisterror_description(&disterr)
             : mtxstrerror(err));
         for (int i = 1; i < size; i++)
             TEST_ASSERT_LE_MSG(keys[i-1], keys[i], "i=%d, keys[i-1]=%"PRIu64", keys[i]=%"PRIu64"",
@@ -327,11 +327,11 @@ int test_distradix_sort(void)
         fflush(stderr);
         clock_gettime(CLOCK_MONOTONIC, &t0);
 
-        err = distradix_sort_uint64(size, keys, NULL, comm, &mpierror);
+        err = distradix_sort_uint64(size, keys, NULL, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s",
             err == MTX_ERR_MPI_COLLECTIVE
-            ? mtxmpierror_description(&mpierror)
+            ? mtxdisterror_description(&disterr)
             : mtxstrerror(err));
 
         MPI_Barrier(comm);
@@ -346,7 +346,7 @@ int test_distradix_sort(void)
         free(keys);
     }
 
-    mtxmpierror_free(&mpierror);
+    mtxdisterror_free(&disterr);
     return TEST_SUCCESS;
 }
 

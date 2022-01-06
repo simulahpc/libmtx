@@ -71,7 +71,7 @@ int mtxdistfiledata_permute(
     int64_t size,
     int64_t * perm,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror)
+    struct mtxdisterror * disterr)
 {
     int err;
 
@@ -79,55 +79,55 @@ int mtxdistfiledata_permute(
      * on each process due to the use of ‘MPI_Alltoallv’. */
     if (size > INT_MAX) errno = ERANGE;
     err = size > INT_MAX ? MTX_ERR_ERRNO : MTX_SUCCESS;
-    if (mtxmpierror_allreduce(mpierror, err))
+    if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
 
     size_t element_size;
     err = mtxfiledata_size_per_element(
         data, object, format, field, precision, &element_size);
-    if (mtxmpierror_allreduce(mpierror, err))
+    if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
     void * baseptr;
     err = mtxfiledata_dataptr(
         data, object, format, field, precision, &baseptr, 0);
-    if (mtxmpierror_allreduce(mpierror, err))
+    if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
 
     int comm_size;
-    mpierror->mpierrcode = MPI_Comm_size(comm, &comm_size);
-    err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
-    if (mtxmpierror_allreduce(mpierror, err))
+    disterr->mpierrcode = MPI_Comm_size(comm, &comm_size);
+    err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
     int rank;
-    mpierror->mpierrcode = MPI_Comm_rank(comm, &rank);
-    err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
-    if (mtxmpierror_allreduce(mpierror, err))
+    disterr->mpierrcode = MPI_Comm_rank(comm, &rank);
+    err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
 
     /* 1. Compute the total number of distributed data lines. */
     int64_t total_size;
-    mpierror->mpierrcode = MPI_Allreduce(
+    disterr->mpierrcode = MPI_Allreduce(
         &size, &total_size, 1, MPI_INT64_T, MPI_SUM, comm);
-    err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
-    if (mtxmpierror_allreduce(mpierror, err))
+    err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
 
     /* Compute the offsets to the first data line of each process. */
     int64_t global_offset = 0;
-    mpierror->mpierrcode = MPI_Exscan(
+    disterr->mpierrcode = MPI_Exscan(
         &size, &global_offset, 1, MPI_INT64_T, MPI_SUM, comm);
-    err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
-    if (mtxmpierror_allreduce(mpierror, err))
+    err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
     int64_t * global_offsets = malloc((comm_size+1) * sizeof(int64_t));
     err = !global_offsets ? MTX_ERR_ERRNO : MTX_SUCCESS;
-    if (mtxmpierror_allreduce(mpierror, err))
+    if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
     global_offsets[rank] = global_offset;
-    mpierror->mpierrcode = MPI_Allgather(
+    disterr->mpierrcode = MPI_Allgather(
         MPI_IN_PLACE, 0, MPI_DATATYPE_NULL, global_offsets, 1, MPI_INT64_T, comm);
-    err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
-    if (mtxmpierror_allreduce(mpierror, err)) {
+    err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err)) {
         free(global_offsets);
         return MTX_ERR_MPI_COLLECTIVE;
     }
@@ -141,7 +141,7 @@ int mtxdistfiledata_permute(
             break;
         }
     }
-    if (mtxmpierror_allreduce(mpierror, err)) {
+    if (mtxdisterror_allreduce(disterr, err)) {
         free(global_offsets);
         return MTX_ERR_MPI_COLLECTIVE;
     }
@@ -149,7 +149,7 @@ int mtxdistfiledata_permute(
     /* 2. Count the number of data lines to send to each process. */
     int * sendcounts = malloc(4*comm_size * sizeof(int));
     err = !sendcounts ? MTX_ERR_ERRNO : MTX_SUCCESS;
-    if (mtxmpierror_allreduce(mpierror, err)) {
+    if (mtxdisterror_allreduce(disterr, err)) {
         free(global_offsets);
         return MTX_ERR_MPI_COLLECTIVE;
     }
@@ -172,7 +172,7 @@ int mtxdistfiledata_permute(
 
     int64_t * srcdispls = malloc(size * sizeof(int64_t));
     err = !srcdispls ? MTX_ERR_ERRNO : MTX_SUCCESS;
-    if (mtxmpierror_allreduce(mpierror, err)) {
+    if (mtxdisterror_allreduce(disterr, err)) {
         free(sendcounts);
         free(global_offsets);
         return MTX_ERR_MPI_COLLECTIVE;
@@ -180,7 +180,7 @@ int mtxdistfiledata_permute(
 
     int64_t * sendperm = malloc(size * sizeof(int64_t));
     err = !sendperm ? MTX_ERR_ERRNO : MTX_SUCCESS;
-    if (mtxmpierror_allreduce(mpierror, err)) {
+    if (mtxdisterror_allreduce(disterr, err)) {
         free(srcdispls);
         free(sendcounts);
         free(global_offsets);
@@ -204,7 +204,7 @@ int mtxdistfiledata_permute(
     union mtxfiledata senddata;
     err = mtxfiledata_alloc(
         &senddata, object, format, field, precision, size);
-    if (mtxmpierror_allreduce(mpierror, err)) {
+    if (mtxdisterror_allreduce(disterr, err)) {
         free(sendperm);
         free(srcdispls);
         free(sendcounts);
@@ -213,7 +213,7 @@ int mtxdistfiledata_permute(
     err = mtxfiledata_copy_gather(
         &senddata, data, object, format, field, precision,
         size, 0, srcdispls);
-    if (mtxmpierror_allreduce(mpierror, err)) {
+    if (mtxdisterror_allreduce(disterr, err)) {
         free(sendperm);
         free(srcdispls);
         free(sendcounts);
@@ -222,10 +222,10 @@ int mtxdistfiledata_permute(
     free(srcdispls);
 
     /* 4. Obtain ‘recvcounts’ from other processes. */
-    mpierror->mpierrcode = MPI_Alltoall(
+    disterr->mpierrcode = MPI_Alltoall(
         sendcounts, 1, MPI_INT, recvcounts, 1, MPI_INT, comm);
-    err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
-    if (mtxmpierror_allreduce(mpierror, err)) {
+    err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err)) {
         free(sendperm);
         free(sendcounts);
         return MTX_ERR_MPI_COLLECTIVE;
@@ -238,18 +238,18 @@ int mtxdistfiledata_permute(
     err = mtxfiledata_alltoallv(
         &senddata, object, format, field, precision,
         0, sendcounts, senddispls,
-        data, 0, recvcounts, recvdispls, comm, mpierror);
+        data, 0, recvcounts, recvdispls, comm, disterr);
     if (err) {
         free(sendperm);
         free(sendcounts);
         return err;
     }
 
-    mpierror->mpierrcode = MPI_Alltoallv(
+    disterr->mpierrcode = MPI_Alltoallv(
         sendperm, sendcounts, senddispls, MPI_INT64_T,
         perm, recvcounts, recvdispls, MPI_INT64_T, comm);
-    err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
-    if (mtxmpierror_allreduce(mpierror, err)) {
+    err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err)) {
         free(sendperm);
         free(sendcounts);
         return MTX_ERR_MPI_COLLECTIVE;
@@ -262,7 +262,7 @@ int mtxdistfiledata_permute(
     err = mtxfiledata_permute(
         data, object, format, field, precision,
         num_rows, num_columns, size, perm);
-    if (mtxmpierror_allreduce(mpierror, err)) {
+    if (mtxdisterror_allreduce(disterr, err)) {
         free(sendperm);
         return MTX_ERR_MPI_COLLECTIVE;
     }
@@ -282,7 +282,7 @@ static int mtxdistfiledata_sort_keys(
     int64_t * keys,
     int64_t * sorting_permutation,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror)
+    struct mtxdisterror * disterr)
 {
     int err;
 
@@ -291,11 +291,11 @@ static int mtxdistfiledata_sort_keys(
     if (alloc_sorting_permutation) {
         sorting_permutation = malloc(size * sizeof(int64_t));
         err = !sorting_permutation ? MTX_ERR_ERRNO : MTX_SUCCESS;
-        if (mtxmpierror_allreduce(mpierror, err))
+        if (mtxdisterror_allreduce(disterr, err))
             return MTX_ERR_MPI_COLLECTIVE;
     }
     err = distradix_sort_uint64(
-        size, keys, sorting_permutation, comm, mpierror);
+        size, keys, sorting_permutation, comm, disterr);
     if (err) {
         if (alloc_sorting_permutation)
             free(sorting_permutation);
@@ -310,7 +310,7 @@ static int mtxdistfiledata_sort_keys(
     err = mtxdistfiledata_permute(
         data, object, format, field, precision,
         num_rows, num_columns, size, sorting_permutation,
-        comm, mpierror);
+        comm, disterr);
     if (err) {
         if (alloc_sorting_permutation)
             free(sorting_permutation);
@@ -339,16 +339,16 @@ int mtxdistfiledata_sort_row_major(
     int64_t size,
     int64_t * sorting_permutation,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror)
+    struct mtxdisterror * disterr)
 {
     int err;
     if (format == mtxfile_array) {
         if (sorting_permutation) {
             int64_t global_offset = 0;
-            mpierror->mpierrcode = MPI_Exscan(
+            disterr->mpierrcode = MPI_Exscan(
                 &size, &global_offset, 1, MPI_INT64_T, MPI_SUM, comm);
-            err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
-            if (mtxmpierror_allreduce(mpierror, err))
+            err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+            if (mtxdisterror_allreduce(disterr, err))
                 return MTX_ERR_MPI_COLLECTIVE;
             for (int64_t k = 0; k < size; k++)
                 sorting_permutation[k] = global_offset+k+1;
@@ -357,12 +357,12 @@ int mtxdistfiledata_sort_row_major(
     } else if (format == mtxfile_coordinate) {
         int64_t * keys = malloc(size * sizeof(int64_t));
         err = !keys ? MTX_ERR_ERRNO : MTX_SUCCESS;
-        if (mtxmpierror_allreduce(mpierror, err))
+        if (mtxdisterror_allreduce(disterr, err))
             return MTX_ERR_MPI_COLLECTIVE;
         err = mtxfiledata_sortkey_row_major(
             data, object, format, field, precision,
             num_rows, num_columns, size, keys);
-        if (mtxmpierror_allreduce(mpierror, err)) {
+        if (mtxdisterror_allreduce(disterr, err)) {
             free(keys);
             return MTX_ERR_MPI_COLLECTIVE;
         }
@@ -370,7 +370,7 @@ int mtxdistfiledata_sort_row_major(
         err = mtxdistfiledata_sort_keys(
             data, object, format, field, precision,
             num_rows, num_columns, size,
-            keys, sorting_permutation, comm, mpierror);
+            keys, sorting_permutation, comm, disterr);
         if (err) {
             free(keys);
             return err;
@@ -397,32 +397,32 @@ int mtxdistfiledata_sort_column_major(
     int64_t size,
     int64_t * sorting_permutation,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror)
+    struct mtxdisterror * disterr)
 {
     int err;
 
     int rank;
-    mpierror->mpierrcode = MPI_Comm_rank(comm, &rank);
-    err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
-    if (mtxmpierror_allreduce(mpierror, err))
+    disterr->mpierrcode = MPI_Comm_rank(comm, &rank);
+    err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
     int comm_size;
-    mpierror->mpierrcode = MPI_Comm_size(comm, &comm_size);
-    err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
-    if (mtxmpierror_allreduce(mpierror, err))
+    disterr->mpierrcode = MPI_Comm_size(comm, &comm_size);
+    err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
     int64_t rowoffset = num_rows;
-    mpierror->mpierrcode = MPI_Exscan(
+    disterr->mpierrcode = MPI_Exscan(
         MPI_IN_PLACE, &rowoffset, 1, MPI_INT64_T, MPI_SUM, comm);
-    err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
-    if (mtxmpierror_allreduce(mpierror, err))
+    err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
     if (rank == 0)
         rowoffset = 0;
 
     int64_t * keys = malloc(size * sizeof(int64_t));
     err = !keys ? MTX_ERR_ERRNO : MTX_SUCCESS;
-    if (mtxmpierror_allreduce(mpierror, err))
+    if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
 
     if (format == mtxfile_array) {
@@ -436,7 +436,7 @@ int mtxdistfiledata_sort_column_major(
         err = mtxfiledata_sortkey_column_major(
             data, object, format, field, precision,
             num_rows, num_columns, size, keys);
-        if (mtxmpierror_allreduce(mpierror, err)) {
+        if (mtxdisterror_allreduce(disterr, err)) {
             free(keys);
             return MTX_ERR_MPI_COLLECTIVE;
         }
@@ -445,7 +445,7 @@ int mtxdistfiledata_sort_column_major(
     err = mtxdistfiledata_sort_keys(
         data, object, format, field, precision,
         num_rows, num_columns, size,
-        keys, sorting_permutation, comm, mpierror);
+        keys, sorting_permutation, comm, disterr);
     if (err) {
         free(keys);
         return err;
@@ -469,17 +469,17 @@ int mtxdistfiledata_sort_morton(
     int64_t size,
     int64_t * sorting_permutation,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror)
+    struct mtxdisterror * disterr)
 {
     int err;
     int64_t * keys = malloc(size * sizeof(int64_t));
     err = !keys ? MTX_ERR_ERRNO : MTX_SUCCESS;
-    if (mtxmpierror_allreduce(mpierror, err))
+    if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
     err = mtxfiledata_sortkey_morton(
         data, object, format, field, precision,
         num_rows, num_columns, size, keys);
-    if (mtxmpierror_allreduce(mpierror, err)) {
+    if (mtxdisterror_allreduce(disterr, err)) {
         free(keys);
         return MTX_ERR_MPI_COLLECTIVE;
     }
@@ -487,7 +487,7 @@ int mtxdistfiledata_sort_morton(
     err = mtxdistfiledata_sort_keys(
         data, object, format, field, precision,
         num_rows, num_columns, size,
-        keys, sorting_permutation, comm, mpierror);
+        keys, sorting_permutation, comm, disterr);
     if (err) {
         free(keys);
         return err;

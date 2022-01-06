@@ -42,7 +42,7 @@
 #include <stddef.h>
 #include <stdio.h>
 
-struct mtxmpierror;
+struct mtxdisterror;
 struct mtx_partition;
 
 /**
@@ -383,7 +383,7 @@ int mtxvector_distributed_send(
     int dest,
     int tag,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * `mtxvector_distributed_recv()' receives a vector from another MPI
@@ -397,7 +397,7 @@ int mtxvector_distributed_recv(
     int source,
     int tag,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * `mtxvector_distributed_bcast()' broadcasts a vector from an MPI
@@ -411,7 +411,7 @@ int mtxvector_distributed_bcast(
     struct mtxvector_distributed * vector,
     int root,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * `mtxvector_distributed_scatterv()' scatters a vector from an MPI
@@ -433,7 +433,7 @@ int mtxvector_distributed_scatterv(
     int recvcount,
     int root,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * `mtxvector_distributed_distribute_rows()' partitions and
@@ -453,7 +453,7 @@ int mtxvector_distributed_distribute_rows(
     const struct mtx_partition * row_partition,
     int root,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 
 /**
  * `mtxvector_distributed_fread_distribute_rows()' reads a vector from
@@ -482,7 +482,7 @@ int mtxvector_distributed_fread_distribute_rows(
     size_t bufsize,
     int root,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror);
+    struct mtxdisterror * disterr);
 #endif
 
 #endif

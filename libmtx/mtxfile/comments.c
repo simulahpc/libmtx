@@ -474,7 +474,7 @@ int mtxfilecomments_send(
     int dest,
     int tag,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror)
+    struct mtxdisterror * disterr)
 {
     int err;
     int num_comments = 0;
@@ -482,17 +482,17 @@ int mtxfilecomments_send(
     for (node = comments->root; node; node = node->next)
         num_comments++;
 
-    mpierror->err = MPI_Send(&num_comments, 1, MPI_INT, dest, tag, comm);
-    if (mpierror->err)
+    disterr->err = MPI_Send(&num_comments, 1, MPI_INT, dest, tag, comm);
+    if (disterr->err)
         return MTX_ERR_MPI;
 
     for (node = comments->root; node; node = node->next) {
         int len = strlen(node->comment_line);
-        mpierror->err = MPI_Send(&len, 1, MPI_INT, dest, tag, comm);
-        if (mpierror->err)
+        disterr->err = MPI_Send(&len, 1, MPI_INT, dest, tag, comm);
+        if (disterr->err)
             return MTX_ERR_MPI;
-        mpierror->err = MPI_Send(node->comment_line, len, MPI_CHAR, dest, tag, comm);
-        if (mpierror->err)
+        disterr->err = MPI_Send(node->comment_line, len, MPI_CHAR, dest, tag, comm);
+        if (disterr->err)
             return MTX_ERR_MPI;
     }
     return MTX_SUCCESS;
@@ -510,7 +510,7 @@ int mtxfilecomments_recv(
     int source,
     int tag,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror)
+    struct mtxdisterror * disterr)
 {
     int err;
     err = mtxfilecomments_init(comments);
@@ -518,16 +518,16 @@ int mtxfilecomments_recv(
         return err;
 
     int num_comments;
-    mpierror->err = MPI_Recv(
+    disterr->err = MPI_Recv(
         &num_comments, 1, MPI_INT, source, tag, comm, MPI_STATUS_IGNORE);
-    if (mpierror->err)
+    if (disterr->err)
         return MTX_ERR_MPI;
 
     for (int i = 0; i < num_comments; i++) {
         int len;
-        mpierror->err = MPI_Recv(
+        disterr->err = MPI_Recv(
             &len, 1, MPI_INT, source, tag, comm, MPI_STATUS_IGNORE);
-        if (mpierror->err) {
+        if (disterr->err) {
             mtxfilecomments_free(comments);
             return MTX_ERR_MPI;
         }
@@ -538,9 +538,9 @@ int mtxfilecomments_recv(
             return MTX_ERR_ERRNO;
         }
 
-        mpierror->err = MPI_Recv(
+        disterr->err = MPI_Recv(
             comment_line, len, MPI_CHAR, source, tag, comm, MPI_STATUS_IGNORE);
-        if (mpierror->err) {
+        if (disterr->err) {
             free(comment_line);
             mtxfilecomments_free(comments);
             return MTX_ERR_MPI;
@@ -570,12 +570,12 @@ int mtxfilecomments_bcast(
     struct mtxfilecomments * comments,
     int root,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror)
+    struct mtxdisterror * disterr)
 {
     int err;
     int rank;
     err = MPI_Comm_rank(comm, &rank);
-    if (mtxmpierror_allreduce(mpierror, err))
+    if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
 
     int num_comments;
@@ -587,7 +587,7 @@ int mtxfilecomments_bcast(
     }
 
     err = MPI_Bcast(&num_comments, 1, MPI_INT, root, comm);
-    if (mtxmpierror_allreduce(mpierror, err))
+    if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
 
     const struct mtxfilecomment * node;
@@ -602,7 +602,7 @@ int mtxfilecomments_bcast(
             len = strlen(node->comment_line);
 
         err = MPI_Bcast(&len, 1, MPI_INT, root, comm);
-        if (mtxmpierror_allreduce(mpierror, err)) {
+        if (mtxdisterror_allreduce(disterr, err)) {
             mtxfilecomments_free(comments);
             return MTX_ERR_MPI_COLLECTIVE;
         }
@@ -614,7 +614,7 @@ int mtxfilecomments_bcast(
             comment_line = malloc((len+1) * sizeof(char));
 
         err = !comment_line ? MTX_ERR_ERRNO : MTX_SUCCESS;
-        if (mtxmpierror_allreduce(mpierror, err)) {
+        if (mtxdisterror_allreduce(disterr, err)) {
             if (rank != root && comment_line)
                 free(comment_line);
             if (rank != root)
@@ -623,7 +623,7 @@ int mtxfilecomments_bcast(
         }
 
         err = MPI_Bcast(comment_line, len, MPI_CHAR, root, comm);
-        if (mtxmpierror_allreduce(mpierror, err)) {
+        if (mtxdisterror_allreduce(disterr, err)) {
             if (rank != root) {
                 free(comment_line);
                 mtxfilecomments_free(comments);
@@ -634,7 +634,7 @@ int mtxfilecomments_bcast(
 
         if (rank != root)
             err = mtxfilecomments_write(comments, comment_line);
-        if (mtxmpierror_allreduce(mpierror, err)) {
+        if (mtxdisterror_allreduce(disterr, err)) {
             if (rank != root) {
                 free(comment_line);
                 mtxfilecomments_free(comments);
@@ -663,26 +663,26 @@ int mtxfilecomments_gather(
     struct mtxfilecomments * recvcomments,
     int root,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror)
+    struct mtxdisterror * disterr)
 {
     int err;
     int comm_size;
-    mpierror->mpierrcode = MPI_Comm_size(comm, &comm_size);
-    err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
-    if (mtxmpierror_allreduce(mpierror, err))
+    disterr->mpierrcode = MPI_Comm_size(comm, &comm_size);
+    err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
     int rank;
-    mpierror->mpierrcode = MPI_Comm_rank(comm, &rank);
-    err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
-    if (mtxmpierror_allreduce(mpierror, err))
+    disterr->mpierrcode = MPI_Comm_rank(comm, &rank);
+    err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
 
     for (int p = 0; p < comm_size; p++) {
         /* Send to the root process */
         err = (rank != root && rank == p)
-            ? mtxfilecomments_send(sendcomments, root, 0, comm, mpierror)
+            ? mtxfilecomments_send(sendcomments, root, 0, comm, disterr)
             : MTX_SUCCESS;
-        if (mtxmpierror_allreduce(mpierror, err)) {
+        if (mtxdisterror_allreduce(disterr, err)) {
             if (rank == root) {
                 for (int q = p-1; q >= 0; q--)
                     mtxfilecomments_free(&recvcomments[q]);
@@ -692,9 +692,9 @@ int mtxfilecomments_gather(
 
         /* Receive on the root process */
         err = (rank == root && p != root)
-            ? mtxfilecomments_recv(&recvcomments[p], p, 0, comm, mpierror)
+            ? mtxfilecomments_recv(&recvcomments[p], p, 0, comm, disterr)
             : MTX_SUCCESS;
-        if (mtxmpierror_allreduce(mpierror, err)) {
+        if (mtxdisterror_allreduce(disterr, err)) {
             if (rank == root) {
                 for (int q = p-1; q >= 0; q--)
                     mtxfilecomments_free(&recvcomments[q]);
@@ -705,7 +705,7 @@ int mtxfilecomments_gather(
         /* Perform a copy on the root process */
         err = (rank == root && p == root)
             ? mtxfilecomments_copy(&recvcomments[p], sendcomments) : MTX_SUCCESS;
-        if (mtxmpierror_allreduce(mpierror, err)) {
+        if (mtxdisterror_allreduce(disterr, err)) {
             if (rank == root) {
                 for (int q = p-1; q >= 0; q--)
                     mtxfilecomments_free(&recvcomments[q]);
@@ -727,21 +727,21 @@ int mtxfilecomments_allgather(
     const struct mtxfilecomments * sendcomments,
     struct mtxfilecomments * recvcomments,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror)
+    struct mtxdisterror * disterr)
 {
     int err;
     int comm_size;
-    mpierror->mpierrcode = MPI_Comm_size(comm, &comm_size);
-    err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
-    if (mtxmpierror_allreduce(mpierror, err))
+    disterr->mpierrcode = MPI_Comm_size(comm, &comm_size);
+    err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
     int rank;
-    mpierror->mpierrcode = MPI_Comm_rank(comm, &rank);
-    err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
-    if (mtxmpierror_allreduce(mpierror, err))
+    disterr->mpierrcode = MPI_Comm_rank(comm, &rank);
+    err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
     for (int p = 0; p < comm_size; p++) {
-        err = mtxfilecomments_gather(sendcomments, recvcomments, p, comm, mpierror);
+        err = mtxfilecomments_gather(sendcomments, recvcomments, p, comm, disterr);
         if (err)
             return err;
     }

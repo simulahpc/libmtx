@@ -646,23 +646,23 @@ int mtxfileheader_send(
     int dest,
     int tag,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror)
+    struct mtxdisterror * disterr)
 {
-    mpierror->err = MPI_Send(
+    disterr->err = MPI_Send(
         &header->object, 1, MPI_INT, dest, tag, comm);
-    if (mpierror->err)
+    if (disterr->err)
         return MTX_ERR_MPI;
-    mpierror->err = MPI_Send(
+    disterr->err = MPI_Send(
         &header->format, 1, MPI_INT, dest, tag, comm);
-    if (mpierror->err)
+    if (disterr->err)
         return MTX_ERR_MPI;
-    mpierror->err = MPI_Send(
+    disterr->err = MPI_Send(
         &header->field, 1, MPI_INT, dest, tag, comm);
-    if (mpierror->err)
+    if (disterr->err)
         return MTX_ERR_MPI;
-    mpierror->err = MPI_Send(
+    disterr->err = MPI_Send(
         &header->symmetry, 1, MPI_INT, dest, tag, comm);
-    if (mpierror->err)
+    if (disterr->err)
         return MTX_ERR_MPI;
     return MTX_SUCCESS;
 }
@@ -679,23 +679,23 @@ int mtxfileheader_recv(
     int source,
     int tag,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror)
+    struct mtxdisterror * disterr)
 {
-    mpierror->err = MPI_Recv(
+    disterr->err = MPI_Recv(
         &header->object, 1, MPI_INT, source, tag, comm, MPI_STATUS_IGNORE);
-    if (mpierror->err)
+    if (disterr->err)
         return MTX_ERR_MPI;
-    mpierror->err = MPI_Recv(
+    disterr->err = MPI_Recv(
         &header->format, 1, MPI_INT, source, tag, comm, MPI_STATUS_IGNORE);
-    if (mpierror->err)
+    if (disterr->err)
         return MTX_ERR_MPI;
-    mpierror->err = MPI_Recv(
+    disterr->err = MPI_Recv(
         &header->field, 1, MPI_INT, source, tag, comm, MPI_STATUS_IGNORE);
-    if (mpierror->err)
+    if (disterr->err)
         return MTX_ERR_MPI;
-    mpierror->err = MPI_Recv(
+    disterr->err = MPI_Recv(
         &header->symmetry, 1, MPI_INT, source, tag, comm, MPI_STATUS_IGNORE);
-    if (mpierror->err)
+    if (disterr->err)
         return MTX_ERR_MPI;
     return MTX_SUCCESS;
 }
@@ -712,24 +712,24 @@ int mtxfileheader_bcast(
     struct mtxfileheader * header,
     int root,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror)
+    struct mtxdisterror * disterr)
 {
     int err;
     err = MPI_Bcast(
         &header->object, 1, MPI_INT, root, comm);
-    if (mtxmpierror_allreduce(mpierror, err))
+    if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
     err = MPI_Bcast(
         &header->format, 1, MPI_INT, root, comm);
-    if (mtxmpierror_allreduce(mpierror, err))
+    if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
     err = MPI_Bcast(
         &header->field, 1, MPI_INT, root, comm);
-    if (mtxmpierror_allreduce(mpierror, err))
+    if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
     err = MPI_Bcast(
         &header->symmetry, 1, MPI_INT, root, comm);
-    if (mtxmpierror_allreduce(mpierror, err))
+    if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
     return MTX_SUCCESS;
 }
@@ -747,17 +747,17 @@ int mtxfileheader_gather(
     struct mtxfileheader * recvheaders,
     int root,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror)
+    struct mtxdisterror * disterr)
 {
     int err;
     MPI_Datatype headertype;
-    err = mtxfileheader_datatype(&headertype, &mpierror->mpierrcode);
-    if (mtxmpierror_allreduce(mpierror, err))
+    err = mtxfileheader_datatype(&headertype, &disterr->mpierrcode);
+    if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
-    mpierror->mpierrcode = MPI_Gather(
+    disterr->mpierrcode = MPI_Gather(
         sendheader, 1, headertype, recvheaders, 1, headertype, root, comm);
-    err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
-    if (mtxmpierror_allreduce(mpierror, err))
+    err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
     MPI_Type_free(&headertype);
     return MTX_SUCCESS;
@@ -774,17 +774,17 @@ int mtxfileheader_allgather(
     const struct mtxfileheader * sendheader,
     struct mtxfileheader * recvheaders,
     MPI_Comm comm,
-    struct mtxmpierror * mpierror)
+    struct mtxdisterror * disterr)
 {
     int err;
     MPI_Datatype headertype;
-    err = mtxfileheader_datatype(&headertype, &mpierror->mpierrcode);
-    if (mtxmpierror_allreduce(mpierror, err))
+    err = mtxfileheader_datatype(&headertype, &disterr->mpierrcode);
+    if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
-    mpierror->mpierrcode = MPI_Allgather(
+    disterr->mpierrcode = MPI_Allgather(
         sendheader, 1, headertype, recvheaders, 1, headertype, comm);
-    err = mpierror->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
-    if (mtxmpierror_allreduce(mpierror, err))
+    err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
     MPI_Type_free(&headertype);
     return MTX_SUCCESS;

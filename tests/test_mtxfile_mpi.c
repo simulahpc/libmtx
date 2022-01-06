@@ -90,20 +90,20 @@ int test_mtxfile_sendrecv(void)
     }
 
     /* Send the matrix from the root process to another process. */
-    struct mtxmpierror mpierror;
-    err = mtxmpierror_alloc(&mpierror, comm, NULL);
+    struct mtxdisterror disterr;
+    err = mtxdisterror_alloc(&disterr, comm, NULL);
     if (err)
         MPI_Abort(comm, EXIT_FAILURE);
 
     struct mtxfile destmtx;
     if (comm_size > 1) {
         if (rank == 0) {
-            err = mtxfile_send(&srcmtx, 1, 0, comm, &mpierror);
+            err = mtxfile_send(&srcmtx, 1, 0, comm, &disterr);
             if (err)
                 mtxfile_free(&srcmtx);
             TEST_ASSERT_EQ(MTX_SUCCESS, err);
         } else if (rank == 1) {
-            err = mtxfile_recv(&destmtx, 0, 0, comm, &mpierror);
+            err = mtxfile_recv(&destmtx, 0, 0, comm, &disterr);
             TEST_ASSERT_EQ(MTX_SUCCESS, err);
         }
     } else {
@@ -193,15 +193,15 @@ int test_mtxfile_bcast(void)
     }
 
     /* Broadcast the matrix from the root process. */
-    struct mtxmpierror mpierror;
-    err = mtxmpierror_alloc(&mpierror, comm, NULL);
+    struct mtxdisterror disterr;
+    err = mtxdisterror_alloc(&disterr, comm, NULL);
     if (err)
         MPI_Abort(comm, EXIT_FAILURE);
     if (comm_size < 2) {
         mtxfile_free(&mtx);
         TEST_FAIL_MSG("Expected at least two MPI processes");
     }
-    err = mtxfile_bcast(&mtx, 0, comm, &mpierror);
+    err = mtxfile_bcast(&mtx, 0, comm, &disterr);
     if (err)
         mtxfile_free(&mtx);
     TEST_ASSERT_EQ(MTX_SUCCESS, err);
@@ -268,8 +268,8 @@ int test_mtxfile_gather(void)
         MPI_Abort(comm, EXIT_FAILURE);
     }
 
-    struct mtxmpierror mpierror;
-    err = mtxmpierror_alloc(&mpierror, comm, NULL);
+    struct mtxdisterror disterr;
+    err = mtxdisterror_alloc(&disterr, comm, NULL);
     if (err)
         MPI_Abort(comm, EXIT_FAILURE);
 
@@ -290,11 +290,11 @@ int test_mtxfile_gather(void)
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
         struct mtxfile dstmtxs[2];
-        err = mtxfile_gather(&srcmtx, dstmtxs, root, comm, &mpierror);
+        err = mtxfile_gather(&srcmtx, dstmtxs, root, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s",
             err == MTX_ERR_MPI_COLLECTIVE
-            ? mtxmpierror_description(&mpierror)
+            ? mtxdisterror_description(&disterr)
             : mtxstrerror(err));
         if (rank == root) {
             TEST_ASSERT_EQ(mtxfile_matrix, dstmtxs[0].header.object);
@@ -341,11 +341,11 @@ int test_mtxfile_gather(void)
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
         struct mtxfile dstmtxs[2];
-        err = mtxfile_gather(&srcmtx, dstmtxs, root, comm, &mpierror);
+        err = mtxfile_gather(&srcmtx, dstmtxs, root, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s",
             err == MTX_ERR_MPI_COLLECTIVE
-            ? mtxmpierror_description(&mpierror)
+            ? mtxdisterror_description(&disterr)
             : mtxstrerror(err));
         if (rank == root) {
             TEST_ASSERT_EQ(mtxfile_vector, dstmtxs[0].header.object);
@@ -396,11 +396,11 @@ int test_mtxfile_gather(void)
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
         struct mtxfile dstmtxs[2];
-        err = mtxfile_gather(&srcmtx, dstmtxs, root, comm, &mpierror);
+        err = mtxfile_gather(&srcmtx, dstmtxs, root, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s",
             err == MTX_ERR_MPI_COLLECTIVE
-            ? mtxmpierror_description(&mpierror)
+            ? mtxdisterror_description(&disterr)
             : mtxstrerror(err));
         if (rank == root) {
             TEST_ASSERT_EQ(mtxfile_matrix, dstmtxs[0].header.object);
@@ -474,8 +474,8 @@ int test_mtxfile_allgather(void)
         MPI_Abort(comm, EXIT_FAILURE);
     }
 
-    struct mtxmpierror mpierror;
-    err = mtxmpierror_alloc(&mpierror, comm, NULL);
+    struct mtxdisterror disterr;
+    err = mtxdisterror_alloc(&disterr, comm, NULL);
     if (err)
         MPI_Abort(comm, EXIT_FAILURE);
 
@@ -496,11 +496,11 @@ int test_mtxfile_allgather(void)
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
         struct mtxfile dstmtxs[2];
-        err = mtxfile_allgather(&srcmtx, dstmtxs, comm, &mpierror);
+        err = mtxfile_allgather(&srcmtx, dstmtxs, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s",
             err == MTX_ERR_MPI_COLLECTIVE
-            ? mtxmpierror_description(&mpierror)
+            ? mtxdisterror_description(&disterr)
             : mtxstrerror(err));
         TEST_ASSERT_EQ(mtxfile_matrix, dstmtxs[0].header.object);
         TEST_ASSERT_EQ(mtxfile_array, dstmtxs[0].header.format);
@@ -545,11 +545,11 @@ int test_mtxfile_allgather(void)
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
         struct mtxfile dstmtxs[2];
-        err = mtxfile_allgather(&srcmtx, dstmtxs, comm, &mpierror);
+        err = mtxfile_allgather(&srcmtx, dstmtxs, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s",
             err == MTX_ERR_MPI_COLLECTIVE
-            ? mtxmpierror_description(&mpierror)
+            ? mtxdisterror_description(&disterr)
             : mtxstrerror(err));
         TEST_ASSERT_EQ(mtxfile_vector, dstmtxs[0].header.object);
         TEST_ASSERT_EQ(mtxfile_array, dstmtxs[0].header.format);
@@ -598,11 +598,11 @@ int test_mtxfile_allgather(void)
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
         struct mtxfile dstmtxs[2];
-        err = mtxfile_allgather(&srcmtx, dstmtxs, comm, &mpierror);
+        err = mtxfile_allgather(&srcmtx, dstmtxs, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s",
             err == MTX_ERR_MPI_COLLECTIVE
-            ? mtxmpierror_description(&mpierror)
+            ? mtxdisterror_description(&disterr)
             : mtxstrerror(err));
         TEST_ASSERT_EQ(mtxfile_matrix, dstmtxs[0].header.object);
         TEST_ASSERT_EQ(mtxfile_coordinate, dstmtxs[0].header.format);
@@ -674,8 +674,8 @@ int test_mtxfile_scatter(void)
         MPI_Abort(comm, EXIT_FAILURE);
     }
 
-    struct mtxmpierror mpierror;
-    err = mtxmpierror_alloc(&mpierror, comm, NULL);
+    struct mtxdisterror disterr;
+    err = mtxdisterror_alloc(&disterr, comm, NULL);
     if (err)
         MPI_Abort(comm, EXIT_FAILURE);
 
@@ -698,11 +698,11 @@ int test_mtxfile_scatter(void)
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
         struct mtxfile dstmtx;
-        err = mtxfile_scatter(srcmtxs, &dstmtx, root, comm, &mpierror);
+        err = mtxfile_scatter(srcmtxs, &dstmtx, root, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s",
             err == MTX_ERR_MPI_COLLECTIVE
-            ? mtxmpierror_description(&mpierror)
+            ? mtxdisterror_description(&disterr)
             : mtxstrerror(err));
         TEST_ASSERT_EQ(mtxfile_matrix, dstmtx.header.object);
         TEST_ASSERT_EQ(mtxfile_array, dstmtx.header.format);
@@ -753,11 +753,11 @@ int test_mtxfile_scatter(void)
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
         struct mtxfile dstmtx;
-        err = mtxfile_scatter(srcmtxs, &dstmtx, root, comm, &mpierror);
+        err = mtxfile_scatter(srcmtxs, &dstmtx, root, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s",
             err == MTX_ERR_MPI_COLLECTIVE
-            ? mtxmpierror_description(&mpierror)
+            ? mtxdisterror_description(&disterr)
             : mtxstrerror(err));
         TEST_ASSERT_EQ(mtxfile_matrix, dstmtx.header.object);
         TEST_ASSERT_EQ(mtxfile_coordinate, dstmtx.header.format);
@@ -821,8 +821,8 @@ int test_mtxfile_alltoall(void)
         MPI_Abort(comm, EXIT_FAILURE);
     }
 
-    struct mtxmpierror mpierror;
-    err = mtxmpierror_alloc(&mpierror, comm, NULL);
+    struct mtxdisterror disterr;
+    err = mtxdisterror_alloc(&disterr, comm, NULL);
     if (err)
         MPI_Abort(comm, EXIT_FAILURE);
 
@@ -849,11 +849,11 @@ int test_mtxfile_alltoall(void)
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
         struct mtxfile dstmtxs[2];
-        err = mtxfile_alltoall(srcmtxs, dstmtxs, comm, &mpierror);
+        err = mtxfile_alltoall(srcmtxs, dstmtxs, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s",
             err == MTX_ERR_MPI_COLLECTIVE
-            ? mtxmpierror_description(&mpierror)
+            ? mtxdisterror_description(&disterr)
             : mtxstrerror(err));
 
         TEST_ASSERT_EQ(mtxfile_matrix, dstmtxs[0].header.object);
@@ -927,11 +927,11 @@ int test_mtxfile_alltoall(void)
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
         struct mtxfile dstmtxs[2];
-        err = mtxfile_alltoall(srcmtxs, dstmtxs, comm, &mpierror);
+        err = mtxfile_alltoall(srcmtxs, dstmtxs, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s",
             err == MTX_ERR_MPI_COLLECTIVE
-            ? mtxmpierror_description(&mpierror)
+            ? mtxdisterror_description(&disterr)
             : mtxstrerror(err));
 
         TEST_ASSERT_EQ(mtxfile_matrix, dstmtxs[0].header.object);
@@ -1028,8 +1028,8 @@ int test_mtxfile_scatterv(void)
         MPI_Abort(comm, EXIT_FAILURE);
     }
 
-    struct mtxmpierror mpierror;
-    err = mtxmpierror_alloc(&mpierror, comm, NULL);
+    struct mtxdisterror disterr;
+    err = mtxdisterror_alloc(&disterr, comm, NULL);
     if (err)
         MPI_Abort(comm, EXIT_FAILURE);
 
@@ -1056,11 +1056,11 @@ int test_mtxfile_scatterv(void)
         int recvcount = rank == root ? 3 : 6;
         err = mtxfile_scatterv(
             &srcmtx, sendcounts, displs, &dstmtx, recvcount,
-            root, comm, &mpierror);
+            root, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s",
             err == MTX_ERR_MPI_COLLECTIVE
-            ? mtxmpierror_description(&mpierror)
+            ? mtxdisterror_description(&disterr)
             : mtxstrerror(err));
         TEST_ASSERT_EQ(mtxfile_matrix, dstmtx.header.object);
         TEST_ASSERT_EQ(mtxfile_array, dstmtx.header.format);
@@ -1105,11 +1105,11 @@ int test_mtxfile_scatterv(void)
         int recvcount = rank == root ? 1 : 3;
         err = mtxfile_scatterv(
             &srcmtx, sendcounts, displs, &dstmtx, recvcount,
-            root, comm, &mpierror);
+            root, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s",
             err == MTX_ERR_MPI_COLLECTIVE
-            ? mtxmpierror_description(&mpierror)
+            ? mtxdisterror_description(&disterr)
             : mtxstrerror(err));
         TEST_ASSERT_EQ(mtxfile_vector, dstmtx.header.object);
         TEST_ASSERT_EQ(mtxfile_array, dstmtx.header.format);
@@ -1156,11 +1156,11 @@ int test_mtxfile_scatterv(void)
         int recvcount = rank == root ? 1 : 3;
         err = mtxfile_scatterv(
             &srcmtx, sendcounts, displs, &dstmtx, recvcount,
-            root, comm, &mpierror);
+            root, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s",
             err == MTX_ERR_MPI_COLLECTIVE
-            ? mtxmpierror_description(&mpierror)
+            ? mtxdisterror_description(&disterr)
             : mtxstrerror(err));
         TEST_ASSERT_EQ(mtxfile_matrix, dstmtx.header.object);
         TEST_ASSERT_EQ(mtxfile_coordinate, dstmtx.header.format);
