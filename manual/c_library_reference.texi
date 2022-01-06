@@ -54,11 +54,11 @@ library.
 @end example
 
 @findex mtxstrerror
-@findex mtxstrerrormpi
+@findex mtxdiststrerror
 @example
 @code{const char * mtxstrerror(int err);
 
-const char * mtxstrerrormpi(
+const char * mtxdiststrerror(
     int err,
     int mpierrcode,
     char * mpierrstr);}

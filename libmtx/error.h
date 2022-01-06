@@ -94,18 +94,18 @@ enum mtxerror
  * If ‘err’ is ‘MTX_ERR_ERRNO’, then ‘mtxstrerror()’ will use the
  * current value of ‘errno’ to obtain a description of the error.
  *
- * If ‘err’ may be ‘MTX_ERR_MPI’, then ‘mtxstrerrormpi()’ should be
+ * If ‘err’ may be ‘MTX_ERR_MPI’, then ‘mtxdiststrerror()’ should be
  * used instead.
  */
 const char * mtxstrerror(int err);
 
 /**
- * ‘mtxstrerrormpi()’ is a string describing an error code.
+ * ‘mtxdiststrerror()’ is a string describing an error code.
  *
  * The error code ‘err’ must correspond to one of the error codes
  * defined in the ‘mtxerror’ enum type.
  *
- * ‘mtxstrerrormpi()’ should be used in cases where ‘err’ may be
+ * ‘mtxdiststrerror()’ should be used in cases where ‘err’ may be
  * ‘MTX_ERR_MPI’, because it provides a more specific error
  * description than ‘mtxstrerror()’.
  *
@@ -116,10 +116,10 @@ const char * mtxstrerror(int err);
  * this case, ‘MPI_Error_string’ will be used to obtain a description
  * of the error.
  *
- * Otherwise, ‘mtxstrerrormpi()’ returns the same error description
+ * Otherwise, ‘mtxdiststrerror()’ returns the same error description
  * as ‘mtxstrerror()’ for error codes other than ‘MTX_ERR_MPI’.
  */
-const char * mtxstrerrormpi(
+const char * mtxdiststrerror(
     int err,
     int mpierrcode,
     char * mpierrstr);
@@ -140,6 +140,7 @@ struct mtxdisterror
     int err;
     int mpierrcode;
     int (* buf)[3];
+    char * description;
 };
 
 /**
@@ -161,8 +162,9 @@ void mtxdisterror_free(
  * ‘mtxdisterror_description()’ returns a string describing an MPI
  * error.
  *
- * The caller is responsible for freeing the storage required for the
- * string that is returned by calling ‘free()’.
+ * Note that if ‘mtxdisterror_description()’ is called more than once,
+ * the pointer that was returned from the previous call will no longer
+ * be valid and using it will result in a use-after-free error.
  */
 char * mtxdisterror_description(
     struct mtxdisterror * disterr);

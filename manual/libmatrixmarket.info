@@ -804,8 +804,8 @@ from the 'mtxerror' enum type.
    If libmtx is built with MPI support enabled, then there are
 some functions in libmtx that may fail due to MPI errors.  In
 these cases, some additional information is needed to provide helpful
-error descriptions, and the function 'mtxstrerrormpi' should be used.
-     const char * mtxstrerrormpi(
+error descriptions, and the function 'mtxdiststrerror' should be used.
+     const char * mtxdiststrerror(
          int err,
          int mpierrcode,
          char * mpierrstr);
@@ -817,7 +817,7 @@ codes from the 'mtxerror' enum type.  The arguments 'mpierrcode' and
 set to the error code that was returned from the MPI function call that
 failed.  In addition, the argument 'mpierrstr' must be a char array
 whose length is at least equal to 'MPI_MAX_ERROR_STRING'.  Internally,
-'mtxstrerrormpi' uses 'MPI_Error_string' to obtain a description of
+'mtxdiststrerror' uses 'MPI_Error_string' to obtain a description of
 the error.
 
 
@@ -1195,7 +1195,7 @@ File: libmtx.info,  Node: MPI errors,  Next: send receive broadcast,  Up: Commun
 In the event of an MPI-related error, then the above functions return
 'MTX_ERR_MPI' and the argument 'mpierrcode' is set to a specific MPI
 error code.  'mpierrcode' can then be used with the function
-'mtxstrerrormpi', as described in *note Error handling::.
+'mtxdiststrerror', as described in *note Error handling::.
 
 
 File: libmtx.info,  Node: send receive broadcast,  Next: Index sets,  Prev: MPI errors,  Up: Communicating matrices and vectors
@@ -1569,7 +1569,7 @@ library.
 
      const char * mtxstrerror(int err);
 
-     const char * mtxstrerrormpi(
+     const char * mtxdiststrerror(
          int err,
          int mpierrcode,
          char * mpierrstr);
@@ -2811,9 +2811,9 @@ Function index
 * mtx_sscal <1>:                         C library reference. (line 382)
 * mtxstrerror:                          Error handling.      (line  28)
 * mtxstrerror <1>:                      C library reference. (line  31)
-* mtxstrerrormpi:                      Error handling.      (line  48)
-* mtxstrerrormpi <1>:                  MPI errors.          (line   6)
-* mtxstrerrormpi <2>:                  C library reference. (line  31)
+* mtxdiststrerror:                      Error handling.      (line  48)
+* mtxdiststrerror <1>:                  MPI errors.          (line   6)
+* mtxdiststrerror <2>:                  C library reference. (line  31)
 * mtx_fwrite:                             Reading and writing Matrix Market files.
                                                               (line  24)
 * mtx_fwrite <1>:                         C library reference. (line 194)

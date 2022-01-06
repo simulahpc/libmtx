@@ -240,11 +240,11 @@ used to communicate Matrix Market objects represented by the
 @subsection MPI errors
 
 @cindex MPI errors
-@findex mtxstrerrormpi
+@findex mtxdiststrerror
 In the event of an MPI-related error, then the above functions return
 @code{MTX_ERR_MPI} and the argument @code{mpierrcode} is set to a
 specific MPI error code. @code{mpierrcode} can then be used with the
-function @code{mtxstrerrormpi}, as described in @ref{Error handling}.
+function @code{mtxdiststrerror}, as described in @ref{Error handling}.
 
 
 @node send receive broadcast

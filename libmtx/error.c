@@ -44,7 +44,7 @@
  * If ‘err’ is ‘MTX_ERR_ERRNO’, then ‘mtxstrerror()’ will use the
  * current value of ‘errno’ to obtain a description of the error.
  *
- * If ‘err’ may be ‘MTX_ERR_MPI’, then ‘mtxstrerrormpi()’ should be
+ * If ‘err’ may be ‘MTX_ERR_MPI’, then ‘mtxdiststrerror()’ should be
  * used instead.
  */
 const char * mtxstrerror(
@@ -143,12 +143,12 @@ const char * mtxstrerror(
 }
 
 /**
- * ‘mtxstrerrormpi()’ is a string describing an error code.
+ * ‘mtxdiststrerror()’ is a string describing an error code.
  *
  * The error code ‘err’ must correspond to one of the error codes
  * defined in the ‘mtxerror’ enum type.
  *
- * ‘mtxstrerrormpi()’ should be used in cases where ‘err’ may be
+ * ‘mtxdiststrerror()’ should be used in cases where ‘err’ may be
  * ‘MTX_ERR_MPI’, because it provides a more specific error description
  * than ‘mtxstrerror()’.
  *
@@ -159,10 +159,10 @@ const char * mtxstrerror(
  * this case, ‘MPI_Error_string’ will be used to obtain a description
  * of the error.
  *
- * Otherwise, ‘mtxstrerrormpi()’ returns the same error description
+ * Otherwise, ‘mtxdiststrerror()’ returns the same error description
  * as ‘mtxstrerror()’ for error codes other than ‘MTX_ERR_MPI’.
  */
-const char * mtxstrerrormpi(
+const char * mtxdiststrerror(
     int err,
     int mpierrcode,
     char * mpierrstr)
@@ -214,6 +214,7 @@ int mtxdisterror_alloc(
     disterr->comm_size = comm_size;
     disterr->rank = rank;
     disterr->buf = buf;
+    disterr->description = NULL;
     return MTX_SUCCESS;
 }
 
@@ -223,27 +224,35 @@ int mtxdisterror_alloc(
 void mtxdisterror_free(
     struct mtxdisterror * disterr)
 {
+    if (disterr->description)
+        free(disterr->description);
     free(disterr->buf);
 }
 
 /**
- * ‘mtxdisterror_description()’ returns a string describing an MPI
- * error.
+ * ‘mtxdisterror_description()’ returns a string describing an error
+ * that occured during a distributed computation with MPI.
  *
- * The caller is responsible for freeing the storage required for the
- * string that is returned by calling ‘free()’.
+ * Note that if ‘mtxdisterror_description()’ is called more than once,
+ * the pointer that was returned from the previous call will no longer
+ * be valid and using it will result in a use-after-free error.
  */
 char * mtxdisterror_description(
     struct mtxdisterror * disterr)
 {
+    if (disterr->description)
+        free(disterr->description);
+
     char mpierrstr[MPI_MAX_ERROR_STRING];
     int comm_err = MTX_SUCCESS;
     for (int p = 0; p < disterr->comm_size; p++) {
         if (disterr->buf[p][1])
             comm_err = MTX_ERR_MPI_COLLECTIVE;
     }
-    if (comm_err == MTX_SUCCESS)
-        return strdup(mtxstrerror(MTX_SUCCESS));
+    if (comm_err == MTX_SUCCESS) {
+        disterr->description = strdup(mtxstrerror(MTX_SUCCESS));
+        return disterr->description;
+    }
 
     const char * format_header = "%s";
     const char * format_err_first = ": rank %d - %s";
@@ -258,33 +267,33 @@ char * mtxdisterror_description(
             len += snprintf(
                 NULL, 0, num_errors == 0 ? format_err_first : format_err,
                 disterr->buf[p][0],
-                mtxstrerrormpi(
+                mtxdiststrerror(
                     disterr->buf[p][1], disterr->mpierrcode, mpierrstr));
             num_errors++;
         }
     }
 
-    char * description = malloc(len+1);
-    if (!description)
+    disterr->description = malloc(len+1);
+    if (!disterr->description)
         return NULL;
 
-    int newlen = snprintf(description, len, format_header, mtxstrerror(comm_err));
+    int newlen = snprintf(disterr->description, len, format_header, mtxstrerror(comm_err));
     num_errors = 0;
     for (int p = 0; p < disterr->comm_size; p++) {
         if (disterr->buf[p][1]) {
             if (disterr->buf[p][1] == MTX_ERR_ERRNO)
                 errno = disterr->buf[p][2];
             newlen += snprintf(
-                &description[newlen], len-newlen+1,
+                &disterr->description[newlen], len-newlen+1,
                 num_errors == 0 ? format_err_first : format_err,
                 disterr->buf[p][0],
-                mtxstrerrormpi(
+                mtxdiststrerror(
                     disterr->buf[p][1], disterr->mpierrcode, mpierrstr));
             num_errors++;
         }
     }
-    description[len] = '\0';
-    return description;
+    disterr->description[len] = '\0';
+    return disterr->description;
 }
 
 /**
@@ -314,7 +323,7 @@ char * mtxdisterror_description(
  *
  *     int err;
  *     MPI_Comm comm = MPI_COMM_WORLD;
- *     struct mtx_disterr disterr;
+ *     struct mtxdisterror disterr;
  *     err = mtxdisterror_alloc(&disterr, comm);
  *     if (err)
  *         MPI_Abort(comm, EXIT_FAILURE);
@@ -325,7 +334,7 @@ char * mtxdisterror_description(
  *     // then we can exit gracefully.
  *     int comm_err, rank;
  *     err = MPI_Comm_rank(comm, &rank);
- *     comm_err = mtxdisterror_allreduce(disterr, err);
+ *     comm_err = mtxdisterror_allreduce(&disterr, err);
  *     if (comm_err)
  *         return comm_err;
  *

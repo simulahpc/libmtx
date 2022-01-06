@@ -101,11 +101,11 @@ int test_mtx_mpi_sendrecv(void)
             if (err)
                 mtx_free(&srcmtx);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s",
-                               mtxstrerrormpi(err, mpierrcode, mpierrstr));
+                               mtxdiststrerror(err, mpierrcode, mpierrstr));
         } else if (rank == 1) {
             err = mtx_recv(&destmtx, 0, 0, comm, &mpierrcode);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s",
-                               mtxstrerrormpi(err, mpierrcode, mpierrstr));
+                               mtxdiststrerror(err, mpierrcode, mpierrstr));
         }
     } else {
         mtx_free(&srcmtx);
@@ -217,7 +217,7 @@ int test_mtx_mpi_bcast(void)
     if (err)
         mtx_free(&mtx);
     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s",
-                       mtxstrerrormpi(err, mpierrcode, mpierrstr));
+                       mtxdiststrerror(err, mpierrcode, mpierrstr));
 
     /* Check the received matrix. */
     TEST_ASSERT_EQ(mtx_matrix, mtx.object);
@@ -327,7 +327,7 @@ int test_mtx_matrix_coordinate_gather(void)
     err = mtx_matrix_coordinate_gather(
         &dstmtx, &srcmtx, comm, root, &mpierr);
     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s",
-                       mtxstrerrormpi(err, mpierr, mpierrstr));
+                       mtxdiststrerror(err, mpierr, mpierrstr));
     mtx_free(&srcmtx);
 
     /* Check the gathered matrix on the MPI root process. */
@@ -459,7 +459,7 @@ int test_mtx_matrix_coordinate_scatter(void)
     err = mtx_matrix_coordinate_scatter(
         &dstmtx, &srcmtx, rows, columns, comm, root, &mpierr);
     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s",
-                       mtxstrerrormpi(err, mpierr, mpierrstr));
+                       mtxdiststrerror(err, mpierr, mpierrstr));
     if (rank == root)
         mtx_free(&srcmtx);
 

@@ -32,7 +32,7 @@ For most user-facing types and functions that relate to distributed
 computing, libmtx uses the convention of prefixing their names with
 @code{mtxdist}. This makes it easier to avoid possible name clashes
 with other code when using libmtx, and also to distinguish parts of a
-program that relies on distributed computing from those parts that are
+program that rely on distributed computing from those parts that are
 not distributed.
 
 @menu
@@ -48,15 +48,23 @@ not distributed.
 @section Error handling
 
 @cindex MPI errors
-@findex mtxstrerrormpi
+@findex mtxdiststrerror
 In addition to the error handling routines described @ref{Error
 handling}, libmtx provides some additional error handling
-functionality when working with MPI and distributed data. For example,
-some functions may fail due to MPI errors. In these cases, some
-additional information is needed to provide helpful error
-descriptions, and the function @code{mtxstrerrormpi} should be used.
+functionality when working with MPI and distributed data. First, some
+MPI functions return error codes on failure, which should be handled
+correctly. Second, whenever multiple processes are involved, there are
+cases where only one or a few of those processes may encounter
+errors. These errors must be handled appropriately to ensure accurate
+reporting and that the program exits in a graceful manner instead of
+hanging.
+
+@subsection MPI errors
+Some functions in libmtx may fail due to MPI errors. In these cases,
+some additional information is needed to provide helpful error
+descriptions, and the function @code{mtxdiststrerror} should be used.
 @example
-@code{const char * mtxstrerrormpi(
+@code{const char * mtxdiststrerror(
     int err, int mpierrcode, char * mpierrstr);}
 @end example
 The error code @code{err} is an integer corresponding to one of the
@@ -70,26 +78,112 @@ If @code{err} is @code{MTX_ERR_MPI}, then the argument
 @code{mpierrcode} should be set to the error code that was returned
 from the MPI function call that failed. In addition, the argument
 @code{mpierrstr} must be a char array whose length is at least equal
-to @code{MPI_MAX_ERROR_STRING}. Internally, @code{mtxstrerrormpi}
+to @code{MPI_MAX_ERROR_STRING}. Internally, @code{mtxdiststrerror}
 uses @code{MPI_Error_string} to obtain a description of the error.
 
-The example below shows how @code{mtxstrerrormpi} is typically used.
+The example below shows how @code{mtxdiststrerror} is typically used.
 @example
 @code{int err, mpierr;
 char mpierrstr[MPI_MAX_ERROR_STRING];
 struct mtxdisterror disterr;
-err = mtxdisterror_alloc(&disterr, comm, &mpierr);
+err = mtxdisterror_alloc(&disterr, MPI_COMM_WORLD, &mpierr);
 if (err) @{
     fprintf(stderr, "error: %s\n",
-            mtxstrerrormpi(err, mpierr, mpierrstr));
+            mtxdiststrerror(err, mpierr, mpierrstr));
     MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
 @}}
 @end example
 If @code{mtxdisterror_alloc} returns @samp{MTX_ERR_MPI} and
-@code{mpierr} is @samp{MPI_ERR_COMM}, then the following message will
-be printed:
+@code{mpierr} is set to @samp{MPI_ERR_COMM}, then the following
+message will be printed:
 @example
 @code{error: MPI_ERR_COMM: invalid communicator}
+@end example
+
+
+@subsection Distributed error handling
+To more easily handle errors in cases where one or more processes may
+fail, libmtx uses the data type @code{struct mtxdisterror}. Most of
+the functions in libmtx that involve distributed computing take an
+additional argument of type @code{struct mtxdisterror} to provide
+robust error handling in these cases.
+
+To use @code{struct mtxdisterror}, one must first allocate storage
+using @code{mtxdisterror_alloc}.
+@example
+@code{int mtxdisterror_alloc(
+    struct mtxdisterror * disterr,
+    MPI_Comm comm,
+    int * mpierrcode);}
+@end example
+An example of this was already shown in the previous section.
+
+Note that the storage allocated for @code{mtxdisterror} should be
+freed by calling @code{mtxdisterror_free}.
+@example
+@code{void mtxdisterror_free(struct mtxdisterror * disterr);}
+@end example
+
+If an error occurs, then a description of the error can be obtained by
+calling @code{mtxdisterror_description}.
+@example
+@code{char * mtxdisterror_description(struct mtxdisterror * disterr);}
+@end example
+Note that if @code{mtxdisterror_description} is called more than once,
+the pointer that was returned from the previous call will no longer be
+valid and using it will result in a use-after-free error.
+
+Finally, the function @code{mtxdisterror_allreduce} can be used to
+communicate error status among multiple processes.
+@example
+@code{int mtxdisterror_allreduce(struct mtxdisterror * disterr, int err);}
+@end example
+More specifically, @code{mtxdisterror_allreduce} performs a collective
+reduction on error codes provided by each MPI process in the
+communicator used by @code{disterr}. This is the same MPI communicator
+that was provided as the @code{comm} argument to
+@code{mtxdisterror_alloc}.
+
+Because @code{mtxdisterror_allreduce} is a collective operation, it
+must be performed by every process in the communicator of
+@code{disterr}. Otherwise, the program may hang indefinitely.
+
+Each process gathers the error code and rank of every other process.
+If the error code of each and every process is @samp{MTX_SUCCESS},
+then @code{mtxdisterror_allreduce} returns
+@samp{MTX_SUCCESS}. Otherwise, @samp{MTX_ERR_MPI_COLLECTIVE} is
+returned.  Moreover, the rank and error code of each process is stored
+in @code{disterr}.
+
+If the error code @code{err} is @samp{MTX_ERR_MPI_COLLECTIVE}, then it
+is assumed that a reduction has already been performed, and
+@code{mtxdisterror_allreduce} returns immediately with
+@samp{MTX_ERR_MPI_COLLETIVE}. As a result, if any process calls
+@code{mtxdisterror_allreduce} with @code{err} set to
+@samp{MTX_ERR_MPI_COLLETIVE}, then every other process in the
+communicator must also set @code{err} to
+@samp{MTX_ERR_MPI_COLLECTIVE}, or else the program may hang
+indefinitely.
+
+The following example shows how @code{mtxdisterror_allreduce} is used.
+@example
+@code{int err;
+struct mtxdisterror disterr;
+err = mtxdisterror_alloc(&disterr, MPI_COMM_WORLD);
+if (err)
+    MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
+
+// Get the MPI rank of the current process.
+// Perform an all-reduction on the error code from
+// MPI_Comm_rank, so that if any process fails,
+// then we can exit gracefully.
+int comm_err, rank;
+err = MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+comm_err = mtxdisterror_allreduce(&disterr, err);
+if (comm_err)
+    return comm_err;
+
+...}
 @end example
 
 
@@ -297,11 +391,11 @@ be printed:
 @c @subsection MPI errors
 
 @c @cindex MPI errors
-@c @findex mtxstrerrormpi
+@c @findex mtxdiststrerror
 @c In the event of an MPI-related error, then the above functions return
 @c @code{MTX_ERR_MPI} and the argument @code{mpierrcode} is set to a
 @c specific MPI error code. @code{mpierrcode} can then be used with the
-@c function @code{mtxstrerrormpi}, as described in @ref{Error handling}.
+@c function @code{mtxdiststrerror}, as described in @ref{Error handling}.
 
 
 @c @node send receive broadcast

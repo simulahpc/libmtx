@@ -672,7 +672,7 @@ int main(int argc, char *argv[])
     if (err) {
         fprintf(stderr, "%s: %s\n",
                 program_invocation_short_name,
-                mtxstrerrormpi(err, mpierr, mpierrstr));
+                mtxdiststrerror(err, mpierr, mpierrstr));
         MPI_Finalize();
         return EXIT_FAILURE;
     }
