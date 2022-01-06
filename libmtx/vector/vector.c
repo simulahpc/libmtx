@@ -43,10 +43,10 @@
  */
 
 /**
- * `mtxvector_type_str()' is a string representing the vector type.
+ * `mtxvectortype_str()' is a string representing the vector type.
  */
-const char * mtxvector_type_str(
-    enum mtxvector_type type)
+const char * mtxvectortype_str(
+    enum mtxvectortype type)
 {
     switch (type) {
     case mtxvector_auto: return "auto";
@@ -57,8 +57,8 @@ const char * mtxvector_type_str(
 }
 
 /**
- * `mtxvector_type_parse()' parses a string to obtain one of the
- * vector types of `enum mtxvector_type'.
+ * `mtxvectortype_parse()' parses a string to obtain one of the
+ * vector types of `enum mtxvectortype'.
  *
  * `valid_delimiters' is either `NULL', in which case it is ignored,
  * or it is a string of characters considered to be valid delimiters
@@ -72,13 +72,13 @@ const char * mtxvector_type_str(
  * points to the first character beyond the characters that were
  * consumed during parsing.
  *
- * On success, `mtxvector_type_parse()' returns `MTX_SUCCESS' and
+ * On success, `mtxvectortype_parse()' returns `MTX_SUCCESS' and
  * `vector_type' is set according to the parsed string and
  * `bytes_read' is set to the number of bytes that were consumed by
  * the parser.  Otherwise, an error code is returned.
  */
-int mtxvector_type_parse(
-    enum mtxvector_type * vector_type,
+int mtxvectortype_parse(
+    enum mtxvectortype * vector_type,
     int64_t * bytes_read,
     const char ** endptr,
     const char * s,
@@ -461,7 +461,7 @@ int mtxvector_set_constant_integer_double(
 int mtxvector_from_mtxfile(
     struct mtxvector * vector,
     const struct mtxfile * mtxfile,
-    enum mtxvector_type type)
+    enum mtxvectortype type)
 {
     if (type == mtxvector_auto) {
         if (mtxfile->header.format == mtxfile_array) {
@@ -531,7 +531,7 @@ int mtxvector_to_mtxfile(
 int mtxvector_read(
     struct mtxvector * vector,
     enum mtxprecision precision,
-    enum mtxvector_type type,
+    enum mtxvectortype type,
     const char * path,
     bool gzip,
     int * lines_read,
@@ -572,7 +572,7 @@ int mtxvector_read(
 int mtxvector_fread(
     struct mtxvector * vector,
     enum mtxprecision precision,
-    enum mtxvector_type type,
+    enum mtxvectortype type,
     FILE * f,
     int * lines_read,
     int64_t * bytes_read,
@@ -615,7 +615,7 @@ int mtxvector_fread(
 int mtxvector_gzread(
     struct mtxvector * vector,
     enum mtxprecision precision,
-    enum mtxvector_type type,
+    enum mtxvectortype type,
     gzFile f,
     int * lines_read,
     int64_t * bytes_read,
@@ -1116,7 +1116,7 @@ int mtxvector_dnrm2(
  * `mtxvector_sasum()' computes the sum of absolute values (1-norm) of
  * a vector in single precision floating point.  If the vector is
  * complex-valued, then the sum of the absolute values of the real and
- * imaginaty parts is computed.
+ * imaginary parts is computed.
  */
 int mtxvector_sasum(
     const struct mtxvector * x,
@@ -1136,7 +1136,7 @@ int mtxvector_sasum(
  * `mtxvector_dasum()' computes the sum of absolute values (1-norm) of
  * a vector in double precision floating point.  If the vector is
  * complex-valued, then the sum of the absolute values of the real and
- * imaginaty parts is computed.
+ * imaginary parts is computed.
  */
 int mtxvector_dasum(
     const struct mtxvector * x,

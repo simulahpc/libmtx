@@ -1,6 +1,6 @@
 /* This file is part of libmtx.
  *
- * Copyright (C) 2021 James D. Trotter
+ * Copyright (C) 2022 James D. Trotter
  *
  * libmtx is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
  * along with libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-10-06
+ * Last modified: 2022-01-06
  *
  * Data structures for vectors.
  */
@@ -45,9 +45,9 @@
  */
 
 /**
- * `mtxvector_type' is used to enumerate different vector formats.
+ * ‘mtxvectortype’ is used to enumerate different vector formats.
  */
-enum mtxvector_type
+enum mtxvectortype
 {
     mtxvector_auto,       /* automatic selection of vector type */
     mtxvector_array,      /* array format for dense vectors */
@@ -55,34 +55,34 @@ enum mtxvector_type
 };
 
 /**
- * `mtxvector_type_str()' is a string representing the vector type.
+ * ‘mtxvectortype_str()’ is a string representing the vector type.
  */
-const char * mtxvector_type_str(
-    enum mtxvector_type type);
+const char * mtxvectortype_str(
+    enum mtxvectortype type);
 
 /**
- * `mtxvector_type_parse()' parses a string to obtain one of the
- * vector types of `enum mtxvector_type'.
+ * ‘mtxvectortype_parse()’ parses a string to obtain one of the
+ * vector types of ‘enum mtxvectortype’.
  *
- * `valid_delimiters' is either `NULL', in which case it is ignored,
+ * ‘valid_delimiters’ is either ‘NULL’, in which case it is ignored,
  * or it is a string of characters considered to be valid delimiters
  * for the parsed string.  That is, if there are any remaining,
  * non-NULL characters after parsing, then then the next character is
- * searched for in `valid_delimiters'.  If the character is found,
+ * searched for in ‘valid_delimiters’.  If the character is found,
  * then the parsing succeeds and the final delimiter character is
  * consumed by the parser. Otherwise, the parsing fails with an error.
  *
- * If `endptr' is not `NULL', then the address stored in `endptr'
+ * If ‘endptr’ is not ‘NULL’, then the address stored in ‘endptr’
  * points to the first character beyond the characters that were
  * consumed during parsing.
  *
- * On success, `mtxvector_type_parse()' returns `MTX_SUCCESS' and
- * `vector_type' is set according to the parsed string and
- * `bytes_read' is set to the number of bytes that were consumed by
+ * On success, ‘mtxvectortype_parse()’ returns ‘MTX_SUCCESS’ and
+ * ‘vector_type’ is set according to the parsed string and
+ * ‘bytes_read’ is set to the number of bytes that were consumed by
  * the parser.  Otherwise, an error code is returned.
  */
-int mtxvector_type_parse(
-    enum mtxvector_type * vector_type,
+int mtxvectortype_parse(
+    enum mtxvectortype * vector_type,
     int64_t * bytes_read,
     const char ** endptr,
     const char * s,
@@ -93,18 +93,18 @@ int mtxvector_type_parse(
  */
 
 /**
- * `mtxvector' represents a vector with various options available for
+ * ‘mtxvector’ represents a vector with various options available for
  * the underlying storage and implementation of vector operations.
  */
 struct mtxvector
 {
     /**
-     * `format' is the vector format: `array' or `coordinate'.
+     * ‘format’ is the vector format: ‘array’ or ‘coordinate’.
      */
-    enum mtxvector_type type;
+    enum mtxvectortype type;
 
     /**
-     * `vector' is a union of different data types for the underlying
+     * ‘storage’ is a union of different data types for the underlying
      * storage of the vector.
      */
     union
@@ -119,13 +119,13 @@ struct mtxvector
  */
 
 /**
- * `mtxvector_free()' frees storage allocated for a vector.
+ * ‘mtxvector_free()’ frees storage allocated for a vector.
  */
 void mtxvector_free(
     struct mtxvector * vector);
 
 /**
- * `mtxvector_alloc_copy()' allocates a copy of a vector without
+ * ‘mtxvector_alloc_copy()’ allocates a copy of a vector without
  * initialising the values.
  */
 int mtxvector_alloc_copy(
@@ -133,7 +133,7 @@ int mtxvector_alloc_copy(
     const struct mtxvector * src);
 
 /**
- * `mtxvector_init_copy()' allocates a copy of a vector and also
+ * ‘mtxvector_init_copy()’ allocates a copy of a vector and also
  * copies the values.
  */
 int mtxvector_init_copy(
@@ -145,7 +145,7 @@ int mtxvector_init_copy(
  */
 
 /**
- * `mtxvector_alloc_array()' allocates a vector in array format.
+ * ‘mtxvector_alloc_array()’ allocates a vector in array format.
  */
 int mtxvector_alloc_array(
     struct mtxvector * vector,
@@ -154,7 +154,7 @@ int mtxvector_alloc_array(
     int num_rows);
 
 /**
- * `mtxvector_init_array_real_single()' allocates and initialises a
+ * ‘mtxvector_init_array_real_single()’ allocates and initialises a
  * vector in array format with real, single precision coefficients.
  */
 int mtxvector_init_array_real_single(
@@ -163,7 +163,7 @@ int mtxvector_init_array_real_single(
     const float * data);
 
 /**
- * `mtxvector_init_array_real_double()' allocates and initialises a
+ * ‘mtxvector_init_array_real_double()’ allocates and initialises a
  * vector in array format with real, double precision coefficients.
  */
 int mtxvector_init_array_real_double(
@@ -172,7 +172,7 @@ int mtxvector_init_array_real_double(
     const double * data);
 
 /**
- * `mtxvector_init_array_complex_single()' allocates and initialises a
+ * ‘mtxvector_init_array_complex_single()’ allocates and initialises a
  * vector in array format with complex, single precision coefficients.
  */
 int mtxvector_init_array_complex_single(
@@ -181,7 +181,7 @@ int mtxvector_init_array_complex_single(
     const float (* data)[2]);
 
 /**
- * `mtxvector_init_array_complex_double()' allocates and initialises a
+ * ‘mtxvector_init_array_complex_double()’ allocates and initialises a
  * vector in array format with complex, double precision coefficients.
  */
 int mtxvector_init_array_complex_double(
@@ -190,7 +190,7 @@ int mtxvector_init_array_complex_double(
     const double (* data)[2]);
 
 /**
- * `mtxvector_init_array_integer_single()' allocates and initialises a
+ * ‘mtxvector_init_array_integer_single()’ allocates and initialises a
  * vector in array format with integer, single precision coefficients.
  */
 int mtxvector_init_array_integer_single(
@@ -199,7 +199,7 @@ int mtxvector_init_array_integer_single(
     const int32_t * data);
 
 /**
- * `mtxvector_init_array_integer_double()' allocates and initialises a
+ * ‘mtxvector_init_array_integer_double()’ allocates and initialises a
  * vector in array format with integer, double precision coefficients.
  */
 int mtxvector_init_array_integer_double(
@@ -212,7 +212,7 @@ int mtxvector_init_array_integer_double(
  */
 
 /**
- * `mtxvector_alloc_coordinate()' allocates a vector in
+ * ‘mtxvector_alloc_coordinate()’ allocates a vector in
  * coordinate format.
  */
 int mtxvector_alloc_coordinate(
@@ -223,7 +223,7 @@ int mtxvector_alloc_coordinate(
     int64_t num_nonzeros);
 
 /**
- * `mtxvector_init_coordinate_real_single()' allocates and initialises
+ * ‘mtxvector_init_coordinate_real_single()’ allocates and initialises
  * a vector in coordinate format with real, single precision
  * coefficients.
  */
@@ -235,7 +235,7 @@ int mtxvector_init_coordinate_real_single(
     const float * values);
 
 /**
- * `mtxvector_init_coordinate_real_double()' allocates and initialises
+ * ‘mtxvector_init_coordinate_real_double()’ allocates and initialises
  * a vector in coordinate format with real, double precision
  * coefficients.
  */
@@ -247,7 +247,7 @@ int mtxvector_init_coordinate_real_double(
     const double * values);
 
 /**
- * `mtxvector_init_coordinate_complex_single()' allocates and
+ * ‘mtxvector_init_coordinate_complex_single()’ allocates and
  * initialises a vector in coordinate format with complex, single
  * precision coefficients.
  */
@@ -259,7 +259,7 @@ int mtxvector_init_coordinate_complex_single(
     const float (* values)[2]);
 
 /**
- * `mtxvector_init_coordinate_complex_double()' allocates and
+ * ‘mtxvector_init_coordinate_complex_double()’ allocates and
  * initialises a vector in coordinate format with complex, double
  * precision coefficients.
  */
@@ -271,7 +271,7 @@ int mtxvector_init_coordinate_complex_double(
     const double (* values)[2]);
 
 /**
- * `mtxvector_init_coordinate_integer_single()' allocates and
+ * ‘mtxvector_init_coordinate_integer_single()’ allocates and
  * initialises a vector in coordinate format with integer, single
  * precision coefficients.
  */
@@ -283,7 +283,7 @@ int mtxvector_init_coordinate_integer_single(
     const int32_t * values);
 
 /**
- * `mtxvector_init_coordinate_integer_double()' allocates and
+ * ‘mtxvector_init_coordinate_integer_double()’ allocates and
  * initialises a vector in coordinate format with integer, double
  * precision coefficients.
  */
@@ -295,7 +295,7 @@ int mtxvector_init_coordinate_integer_double(
     const int64_t * values);
 
 /**
- * `mtxvector_init_coordinate_pattern()' allocates and initialises a
+ * ‘mtxvector_init_coordinate_pattern()’ allocates and initialises a
  * vector in coordinate format with integer, double precision
  * coefficients.
  */
@@ -310,7 +310,7 @@ int mtxvector_init_coordinate_pattern(
  */
 
 /**
- * `mtxvector_set_constant_real_single()' sets every (nonzero) value
+ * ‘mtxvector_set_constant_real_single()’ sets every (nonzero) value
  * of a vector equal to a constant, single precision floating point
  * number.
  */
@@ -319,7 +319,7 @@ int mtxvector_set_constant_real_single(
     float a);
 
 /**
- * `mtxvector_set_constant_real_double()' sets every (nonzero) value
+ * ‘mtxvector_set_constant_real_double()’ sets every (nonzero) value
  * of a vector equal to a constant, double precision floating point
  * number.
  */
@@ -328,7 +328,7 @@ int mtxvector_set_constant_real_double(
     double a);
 
 /**
- * `mtxvector_set_constant_complex_single()' sets every (nonzero)
+ * ‘mtxvector_set_constant_complex_single()’ sets every (nonzero)
  * value of a vector equal to a constant, single precision floating
  * point complex number.
  */
@@ -337,7 +337,7 @@ int mtxvector_set_constant_complex_single(
     float a[2]);
 
 /**
- * `mtxvector_set_constant_complex_double()' sets every (nonzero)
+ * ‘mtxvector_set_constant_complex_double()’ sets every (nonzero)
  * value of a vector equal to a constant, double precision floating
  * point complex number.
  */
@@ -346,7 +346,7 @@ int mtxvector_set_constant_complex_double(
     double a[2]);
 
 /**
- * `mtxvector_set_constant_integer_single()' sets every (nonzero)
+ * ‘mtxvector_set_constant_integer_single()’ sets every (nonzero)
  * value of a vector equal to a constant integer.
  */
 int mtxvector_set_constant_integer_single(
@@ -354,7 +354,7 @@ int mtxvector_set_constant_integer_single(
     int32_t a);
 
 /**
- * `mtxvector_set_constant_integer_double()' sets every (nonzero)
+ * ‘mtxvector_set_constant_integer_double()’ sets every (nonzero)
  * value of a vector equal to a constant integer.
  */
 int mtxvector_set_constant_integer_double(
@@ -366,16 +366,16 @@ int mtxvector_set_constant_integer_double(
  */
 
 /**
- * `mtxvector_from_mtxfile()' converts a vector in Matrix Market
+ * ‘mtxvector_from_mtxfile()’ converts a vector in Matrix Market
  * format to a vector.
  */
 int mtxvector_from_mtxfile(
     struct mtxvector * vector,
     const struct mtxfile * mtxfile,
-    enum mtxvector_type type);
+    enum mtxvectortype type);
 
 /**
- * `mtxvector_to_mtxfile()' converts a vector to a vector in Matrix
+ * ‘mtxvector_to_mtxfile()’ converts a vector to a vector in Matrix
  * Market format.
  */
 int mtxvector_to_mtxfile(
@@ -387,54 +387,54 @@ int mtxvector_to_mtxfile(
  */
 
 /**
- * `mtxvector_read()' reads a vector from a Matrix Market file.  The
+ * ‘mtxvector_read()’ reads a vector from a Matrix Market file.  The
  * file may optionally be compressed by gzip.
  *
- * The `precision' argument specifies which precision to use for
+ * The ‘precision’ argument specifies which precision to use for
  * storing vector values.
  *
- * The `type' argument specifies which format to use for representing
- * the vector.  If `type' is `mtxvector_auto', then the underlying
+ * The ‘type’ argument specifies which format to use for representing
+ * the vector.  If ‘type’ is ‘mtxvector_auto’, then the underlying
  * vector is stored in array format or coordinate format according to
  * the format of the Matrix Market file.  Otherwise, an attempt is
  * made to convert the vector to the desired type.
  *
- * If `path' is `-', then standard input is used.
+ * If ‘path’ is ‘-’, then standard input is used.
  *
- * If an error code is returned, then `lines_read' and `bytes_read'
+ * If an error code is returned, then ‘lines_read’ and ‘bytes_read’
  * are used to return the line number and byte at which the error was
  * encountered during the parsing of the vector.
  */
 int mtxvector_read(
     struct mtxvector * vector,
     enum mtxprecision precision,
-    enum mtxvector_type type,
+    enum mtxvectortype type,
     const char * path,
     bool gzip,
     int * lines_read,
     int64_t * bytes_read);
 
 /**
- * `mtxvector_fread()' reads a vector from a stream in Matrix Market
+ * ‘mtxvector_fread()’ reads a vector from a stream in Matrix Market
  * format.
  *
- * `precision' is used to determine the precision to use for storing
+ * ‘precision’ is used to determine the precision to use for storing
  * the values of vector entries.
  *
- * The `type' argument specifies which format to use for representing
- * the vector.  If `type' is `mtxvector_auto', then the underlying
+ * The ‘type’ argument specifies which format to use for representing
+ * the vector.  If ‘type’ is ‘mtxvector_auto’, then the underlying
  * vector is stored in array format or coordinate format according to
  * the format of the Matrix Market file.  Otherwise, an attempt is
  * made to convert the vector to the desired type.
  *
- * If an error code is returned, then `lines_read' and `bytes_read'
+ * If an error code is returned, then ‘lines_read’ and ‘bytes_read’
  * are used to return the line number and byte at which the error was
  * encountered during the parsing of the vector.
  */
 int mtxvector_fread(
     struct mtxvector * vector,
     enum mtxprecision precision,
-    enum mtxvector_type type,
+    enum mtxvectortype type,
     FILE * f,
     int * lines_read,
     int64_t * bytes_read,
@@ -443,25 +443,25 @@ int mtxvector_fread(
 
 #ifdef LIBMTX_HAVE_LIBZ
 /**
- * `mtxvector_gzread()' reads a vector from a gzip-compressed stream.
+ * ‘mtxvector_gzread()’ reads a vector from a gzip-compressed stream.
  *
- * `precision' is used to determine the precision to use for storing
+ * ‘precision’ is used to determine the precision to use for storing
  * the values of vector entries.
  *
- * The `type' argument specifies which format to use for representing
- * the vector.  If `type' is `mtxvector_auto', then the underlying
+ * The ‘type’ argument specifies which format to use for representing
+ * the vector.  If ‘type’ is ‘mtxvector_auto’, then the underlying
  * vector is stored in array format or coordinate format according to
  * the format of the Matrix Market file.  Otherwise, an attempt is
  * made to convert the vector to the desired type.
  *
- * If an error code is returned, then `lines_read' and `bytes_read'
+ * If an error code is returned, then ‘lines_read’ and ‘bytes_read’
  * are used to return the line number and byte at which the error was
  * encountered during the parsing of the vector.
  */
 int mtxvector_gzread(
     struct mtxvector * vector,
     enum mtxprecision precision,
-    enum mtxvector_type type,
+    enum mtxvectortype type,
     gzFile f,
     int * lines_read,
     int64_t * bytes_read,
@@ -470,24 +470,24 @@ int mtxvector_gzread(
 #endif
 
 /**
- * `mtxvector_write()' writes a vector to a Matrix Market file. The
+ * ‘mtxvector_write()’ writes a vector to a Matrix Market file. The
  * file may optionally be compressed by gzip.
  *
- * If `path' is `-', then standard output is used.
+ * If ‘path’ is ‘-’, then standard output is used.
  *
  * If ‘fmt’ is ‘NULL’, then the format specifier ‘%g’ is used to print
  * floating point numbers with enough digits to ensure correct
  * round-trip conversion from decimal text and back.  Otherwise, the
  * given format string is used to print numerical values.
  *
- * The format string follows the conventions of `printf'. If the field
- * is `real', `double' or `complex', then the format specifiers '%e',
- * '%E', '%f', '%F', '%g' or '%G' may be used. If the field is
- * `integer', then the format specifier must be '%d'. The format
- * string is ignored if the field is `pattern'. Field width and
- * precision may be specified (e.g., "%3.1f"), but variable field
- * width and precision (e.g., "%*.*f"), as well as length modifiers
- * (e.g., "%Lf") are not allowed.
+ * The format string follows the conventions of ‘printf’. If the field
+ * is ‘real’ or ‘complex’, then the format specifiers '%e', '%E',
+ * '%f', '%F', '%g' or '%G' may be used. If the field is ‘integer’,
+ * then the format specifier must be '%d'. The format string is
+ * ignored if the field is ‘pattern’. Field width and precision may be
+ * specified (e.g., "%3.1f"), but variable field width and precision
+ * (e.g., "%*.*f"), as well as length modifiers (e.g., "%Lf") are not
+ * allowed.
  */
 int mtxvector_write(
     const struct mtxvector * vector,
@@ -497,24 +497,24 @@ int mtxvector_write(
     int64_t * bytes_written);
 
 /**
- * `mtxvector_fwrite()' writes a vector to a stream.
+ * ‘mtxvector_fwrite()’ writes a vector to a stream.
  *
  * If ‘fmt’ is ‘NULL’, then the format specifier ‘%g’ is used to print
  * floating point numbers with enough digits to ensure correct
  * round-trip conversion from decimal text and back.  Otherwise, the
  * given format string is used to print numerical values.
  *
- * The format string follows the conventions of `printf'. If the field
- * is `real', `double' or `complex', then the format specifiers '%e',
+ * The format string follows the conventions of ‘printf’. If the field
+ * is ‘real’ or ‘complex’, then the format specifiers '%e',
  * '%E', '%f', '%F', '%g' or '%G' may be used. If the field is
- * `integer', then the format specifier must be '%d'. The format
- * string is ignored if the field is `pattern'. Field width and
+ * ‘integer’, then the format specifier must be '%d'. The format
+ * string is ignored if the field is ‘pattern’. Field width and
  * precision may be specified (e.g., "%3.1f"), but variable field
  * width and precision (e.g., "%*.*f"), as well as length modifiers
  * (e.g., "%Lf") are not allowed.
  *
- * If it is not `NULL', then the number of bytes written to the stream
- * is returned in `bytes_written'.
+ * If it is not ‘NULL’, then the number of bytes written to the stream
+ * is returned in ‘bytes_written’.
  */
 int mtxvector_fwrite(
     const struct mtxvector * vector,
@@ -524,24 +524,24 @@ int mtxvector_fwrite(
 
 #ifdef LIBMTX_HAVE_LIBZ
 /**
- * `mtxvector_gzwrite()' writes a vector to a gzip-compressed stream.
+ * ‘mtxvector_gzwrite()’ writes a vector to a gzip-compressed stream.
  *
  * If ‘fmt’ is ‘NULL’, then the format specifier ‘%g’ is used to print
  * floating point numbers with enough digits to ensure correct
  * round-trip conversion from decimal text and back.  Otherwise, the
  * given format string is used to print numerical values.
  *
- * The format string follows the conventions of `printf'. If the field
- * is `real', `double' or `complex', then the format specifiers '%e',
+ * The format string follows the conventions of ‘printf’. If the field
+ * is ‘real’ or ‘complex’, then the format specifiers '%e',
  * '%E', '%f', '%F', '%g' or '%G' may be used. If the field is
- * `integer', then the format specifier must be '%d'. The format
- * string is ignored if the field is `pattern'. Field width and
+ * ‘integer’, then the format specifier must be '%d'. The format
+ * string is ignored if the field is ‘pattern’. Field width and
  * precision may be specified (e.g., "%3.1f"), but variable field
  * width and precision (e.g., "%*.*f"), as well as length modifiers
  * (e.g., "%Lf") are not allowed.
  *
- * If it is not `NULL', then the number of bytes written to the stream
- * is returned in `bytes_written'.
+ * If it is not ‘NULL’, then the number of bytes written to the stream
+ * is returned in ‘bytes_written’.
  */
 int mtxvector_gzwrite(
     const struct mtxvector * vector,
@@ -555,7 +555,7 @@ int mtxvector_gzwrite(
  */
 
 /**
- * `mtxvector_swap()' swaps values of two vectors, simultaneously
+ * ‘mtxvector_swap()’ swaps values of two vectors, simultaneously
  * performing ‘y <- x’ and ‘x <- y’.
  */
 int mtxvector_swap(
@@ -563,14 +563,14 @@ int mtxvector_swap(
     struct mtxvector * y);
 
 /**
- * `mtxvector_copy()' copies values of a vector, ‘y = x’.
+ * ‘mtxvector_copy()’ copies values of a vector, ‘y = x’.
  */
 int mtxvector_copy(
     struct mtxvector * y,
     const struct mtxvector * x);
 
 /**
- * `mtxvector_sscal()' scales a vector by a single precision floating
+ * ‘mtxvector_sscal()’ scales a vector by a single precision floating
  * point scalar, ‘x = a*x’.
  */
 int mtxvector_sscal(
@@ -579,7 +579,7 @@ int mtxvector_sscal(
     int64_t * num_flops);
 
 /**
- * `mtxvector_dscal()' scales a vector by a double precision floating
+ * ‘mtxvector_dscal()’ scales a vector by a double precision floating
  * point scalar, ‘x = a*x’.
  */
 int mtxvector_dscal(
@@ -588,7 +588,7 @@ int mtxvector_dscal(
     int64_t * num_flops);
 
 /**
- * `mtxvector_saxpy()' adds a vector to another vector multiplied by a
+ * ‘mtxvector_saxpy()’ adds a vector to another vector multiplied by a
  * single precision floating point value, ‘y = a*x + y’.
  */
 int mtxvector_saxpy(
@@ -598,7 +598,7 @@ int mtxvector_saxpy(
     int64_t * num_flops);
 
 /**
- * `mtxvector_daxpy()' adds a vector to another vector multiplied by a
+ * ‘mtxvector_daxpy()’ adds a vector to another vector multiplied by a
  * double precision floating point value, ‘y = a*x + y’.
  */
 int mtxvector_daxpy(
@@ -608,7 +608,7 @@ int mtxvector_daxpy(
     int64_t * num_flops);
 
 /**
- * `mtxvector_saypx()' multiplies a vector by a single precision
+ * ‘mtxvector_saypx()’ multiplies a vector by a single precision
  * floating point scalar and adds another vector, ‘y = a*y + x’.
  */
 int mtxvector_saypx(
@@ -618,7 +618,7 @@ int mtxvector_saypx(
     int64_t * num_flops);
 
 /**
- * `mtxvector_daypx()' multiplies a vector by a double precision
+ * ‘mtxvector_daypx()’ multiplies a vector by a double precision
  * floating point scalar and adds another vector, ‘y = a*y + x’.
  */
 int mtxvector_daypx(
@@ -628,7 +628,7 @@ int mtxvector_daypx(
     int64_t * num_flops);
 
 /**
- * `mtxvector_sdot()' computes the Euclidean dot product of two
+ * ‘mtxvector_sdot()’ computes the Euclidean dot product of two
  * vectors in single precision floating point.
  */
 int mtxvector_sdot(
@@ -638,7 +638,7 @@ int mtxvector_sdot(
     int64_t * num_flops);
 
 /**
- * `mtxvector_ddot()' computes the Euclidean dot product of two
+ * ‘mtxvector_ddot()’ computes the Euclidean dot product of two
  * vectors in double precision floating point.
  */
 int mtxvector_ddot(
@@ -648,7 +648,7 @@ int mtxvector_ddot(
     int64_t * num_flops);
 
 /**
- * `mtxvector_cdotu()' computes the product of the transpose of a
+ * ‘mtxvector_cdotu()’ computes the product of the transpose of a
  * complex row vector with another complex row vector in single
  * precision floating point, ‘dot := x^T*y’.
  */
@@ -659,7 +659,7 @@ int mtxvector_cdotu(
     int64_t * num_flops);
 
 /**
- * `mtxvector_zdotu()' computes the product of the transpose of a
+ * ‘mtxvector_zdotu()’ computes the product of the transpose of a
  * complex row vector with another complex row vector in double
  * precision floating point, ‘dot := x^T*y’.
  */
@@ -670,7 +670,7 @@ int mtxvector_zdotu(
     int64_t * num_flops);
 
 /**
- * `mtxvector_cdotc()' computes the Euclidean dot product of two
+ * ‘mtxvector_cdotc()’ computes the Euclidean dot product of two
  * complex vectors in single precision floating point, ‘dot := x^H*y’.
  */
 int mtxvector_cdotc(
@@ -680,7 +680,7 @@ int mtxvector_cdotc(
     int64_t * num_flops);
 
 /**
- * `mtxvector_zdotc()' computes the Euclidean dot product of two
+ * ‘mtxvector_zdotc()’ computes the Euclidean dot product of two
  * complex vectors in double precision floating point, ‘dot := x^H*y’.
  */
 int mtxvector_zdotc(
@@ -690,7 +690,7 @@ int mtxvector_zdotc(
     int64_t * num_flops);
 
 /**
- * `mtxvector_snrm2()' computes the Euclidean norm of a vector in
+ * ‘mtxvector_snrm2()’ computes the Euclidean norm of a vector in
  * single precision floating point.
  */
 int mtxvector_snrm2(
@@ -699,7 +699,7 @@ int mtxvector_snrm2(
     int64_t * num_flops);
 
 /**
- * `mtxvector_dnrm2()' computes the Euclidean norm of a vector in
+ * ‘mtxvector_dnrm2()’ computes the Euclidean norm of a vector in
  * double precision floating point.
  */
 int mtxvector_dnrm2(
@@ -708,10 +708,10 @@ int mtxvector_dnrm2(
     int64_t * num_flops);
 
 /**
- * `mtxvector_sasum()' computes the sum of absolute values (1-norm) of
+ * ‘mtxvector_sasum()’ computes the sum of absolute values (1-norm) of
  * a vector in single precision floating point.  If the vector is
  * complex-valued, then the sum of the absolute values of the real and
- * imaginaty parts is computed.
+ * imaginary parts is computed.
  */
 int mtxvector_sasum(
     const struct mtxvector * x,
@@ -719,10 +719,10 @@ int mtxvector_sasum(
     int64_t * num_flops);
 
 /**
- * `mtxvector_dasum()' computes the sum of absolute values (1-norm) of
+ * ‘mtxvector_dasum()’ computes the sum of absolute values (1-norm) of
  * a vector in double precision floating point.  If the vector is
  * complex-valued, then the sum of the absolute values of the real and
- * imaginaty parts is computed.
+ * imaginary parts is computed.
  */
 int mtxvector_dasum(
     const struct mtxvector * x,
@@ -730,7 +730,7 @@ int mtxvector_dasum(
     int64_t * num_flops);
 
 /**
- * `mtxvector_iamax()' finds the index of the first element having the
+ * ‘mtxvector_iamax()’ finds the index of the first element having the
  * maximum absolute value.  If the vector is complex-valued, then the
  * index points to the first element having the maximum sum of the
  * absolute values of the real and imaginary parts.

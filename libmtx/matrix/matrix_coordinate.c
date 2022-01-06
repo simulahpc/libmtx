@@ -390,7 +390,7 @@ int mtxmatrix_coordinate_init_pattern(
 int mtxmatrix_coordinate_alloc_row_vector(
     const struct mtxmatrix_coordinate * matrix,
     struct mtxvector * vector,
-    enum mtxvector_type vector_type)
+    enum mtxvectortype vector_type)
 {
     if (vector_type == mtxvector_auto)
         vector_type = mtxvector_array;
@@ -418,7 +418,7 @@ int mtxmatrix_coordinate_alloc_row_vector(
 int mtxmatrix_coordinate_alloc_column_vector(
     const struct mtxmatrix_coordinate * matrix,
     struct mtxvector * vector,
-    enum mtxvector_type vector_type)
+    enum mtxvectortype vector_type)
 {
     if (vector_type == mtxvector_auto)
         vector_type = mtxvector_array;

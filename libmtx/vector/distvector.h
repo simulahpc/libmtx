@@ -314,7 +314,7 @@ int mtxdistvector_init_coordinate_pattern(
 int mtxdistvector_from_mtxfile(
     struct mtxdistvector * distvector,
     const struct mtxfile * mtxfile,
-    enum mtxvector_type vector_type,
+    enum mtxvectortype vector_type,
     MPI_Comm comm,
     int root,
     struct mtxmpierror * mpierror);
@@ -331,7 +331,7 @@ int mtxdistvector_from_mtxfile(
 int mtxdistvector_from_mtxdistfile(
     struct mtxdistvector * distvector,
     const struct mtxdistfile * mtxdistfile,
-    enum mtxvector_type vector_type,
+    enum mtxvectortype vector_type,
     MPI_Comm comm,
     struct mtxmpierror * mpierror);
 

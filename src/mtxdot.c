@@ -65,7 +65,7 @@ struct program_options
     char * y_path;
     char * format;
     enum mtxprecision precision;
-    enum mtxvector_type vector_type;
+    enum mtxvectortype vector_type;
     bool gzip;
     int verbose;
     bool quiet;
@@ -227,7 +227,7 @@ static int parse_program_options(
                 return EINVAL;
             }
             char * s = (*argv)[1];
-            err = mtxvector_type_parse(
+            err = mtxvectortype_parse(
                 &args->vector_type, NULL, NULL, s, "");
             if (err) {
                 program_options_free(args);
@@ -237,7 +237,7 @@ static int parse_program_options(
             continue;
         } else if (strstr((*argv)[0], "--vector-type=") == (*argv)[0]) {
             char * s = (*argv)[0] + strlen("--vector-type=");
-            err = mtxvector_type_parse(
+            err = mtxvectortype_parse(
                 &args->vector_type, NULL, NULL, s, "");
             if (err) {
                 program_options_free(args);
@@ -419,7 +419,7 @@ static double timespec_duration(
 static int distvector_dot(
     struct mtxdistfile * mtxdistfilex,
     struct mtxdistfile * mtxdistfiley,
-    enum mtxvector_type vector_type,
+    enum mtxvectortype vector_type,
     const char * format,
     int verbose,
     FILE * diagf,
@@ -913,7 +913,7 @@ int main(int argc, char *argv[])
 static int vector_dot(
     struct mtxfile * mtxfilex,
     struct mtxfile * mtxfiley,
-    enum mtxvector_type vector_type,
+    enum mtxvectortype vector_type,
     const char * format,
     int verbose,
     FILE * diagf,

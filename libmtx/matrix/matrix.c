@@ -1,6 +1,6 @@
 /* This file is part of libmtx.
  *
- * Copyright (C) 2021 James D. Trotter
+ * Copyright (C) 2022 James D. Trotter
  *
  * libmtx is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
  * along with libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-10-05
+ * Last modified: 2022-01-06
  *
  * Data structures for matrices.
  */
@@ -44,10 +44,10 @@
  */
 
 /**
- * `mtxmatrix_type_str()' is a string representing the matrix type.
+ * ‘mtxmatrixtype_str()’ is a string representing the matrix type.
  */
-const char * mtxmatrix_type_str(
-    enum mtxmatrix_type type)
+const char * mtxmatrixtype_str(
+    enum mtxmatrixtype type)
 {
     switch (type) {
     case mtxmatrix_auto: return "auto";
@@ -58,28 +58,28 @@ const char * mtxmatrix_type_str(
 }
 
 /**
- * `mtxmatrix_type_parse()' parses a string to obtain one of the
- * matrix types of `enum mtxmatrix_type'.
+ * ‘mtxmatrixtype_parse()’ parses a string to obtain one of the
+ * matrix types of ‘enum mtxmatrixtype’.
  *
- * `valid_delimiters' is either `NULL', in which case it is ignored,
+ * ‘valid_delimiters’ is either ‘NULL’, in which case it is ignored,
  * or it is a string of characters considered to be valid delimiters
  * for the parsed string.  That is, if there are any remaining,
  * non-NULL characters after parsing, then then the next character is
- * searched for in `valid_delimiters'.  If the character is found,
+ * searched for in ‘valid_delimiters’.  If the character is found,
  * then the parsing succeeds and the final delimiter character is
  * consumed by the parser. Otherwise, the parsing fails with an error.
  *
- * If `endptr' is not `NULL', then the address stored in `endptr'
+ * If ‘endptr’ is not ‘NULL’, then the address stored in ‘endptr’
  * points to the first character beyond the characters that were
  * consumed during parsing.
  *
- * On success, `mtxmatrix_type_parse()' returns `MTX_SUCCESS' and
- * `matrix_type' is set according to the parsed string and
- * `bytes_read' is set to the number of bytes that were consumed by
+ * On success, ‘mtxmatrixtype_parse()’ returns ‘MTX_SUCCESS’ and
+ * ‘matrix_type’ is set according to the parsed string and
+ * ‘bytes_read’ is set to the number of bytes that were consumed by
  * the parser.  Otherwise, an error code is returned.
  */
-int mtxmatrix_type_parse(
-    enum mtxmatrix_type * matrix_type,
+int mtxmatrixtype_parse(
+    enum mtxmatrixtype * matrix_type,
     int64_t * bytes_read,
     const char ** endptr,
     const char * s,
@@ -115,7 +115,7 @@ int mtxmatrix_type_parse(
  */
 
 /**
- * `mtxmatrix_free()' frees storage allocated for a matrix.
+ * ‘mtxmatrix_free()’ frees storage allocated for a matrix.
  */
 void mtxmatrix_free(
     struct mtxmatrix * matrix)
@@ -128,7 +128,7 @@ void mtxmatrix_free(
 }
 
 /**
- * `mtxmatrix_alloc_copy()' allocates a copy of a matrix without
+ * ‘mtxmatrix_alloc_copy()’ allocates a copy of a matrix without
  * initialising the values.
  */
 int mtxmatrix_alloc_copy(
@@ -136,7 +136,7 @@ int mtxmatrix_alloc_copy(
     const struct mtxmatrix * src);
 
 /**
- * `mtxmatrix_init_copy()' allocates a copy of a matrix and also
+ * ‘mtxmatrix_init_copy()’ allocates a copy of a matrix and also
  * copies the values.
  */
 int mtxmatrix_init_copy(
@@ -148,14 +148,14 @@ int mtxmatrix_init_copy(
  */
 
 /**
- * `mtxmatrix_alloc_row_vector()' allocates a row vector for a given
+ * ‘mtxmatrix_alloc_row_vector()’ allocates a row vector for a given
  * matrix, where a row vector is a vector whose length equal to a
  * single row of the matrix.
  */
 int mtxmatrix_alloc_row_vector(
     const struct mtxmatrix * matrix,
     struct mtxvector * vector,
-    enum mtxvector_type vector_type)
+    enum mtxvectortype vector_type)
 {
     if (matrix->type == mtxmatrix_array) {
         return mtxmatrix_array_alloc_row_vector(
@@ -169,14 +169,14 @@ int mtxmatrix_alloc_row_vector(
 }
 
 /**
- * `mtxmatrix_alloc_column_vector()' allocates a column vector for a
+ * ‘mtxmatrix_alloc_column_vector()’ allocates a column vector for a
  * given matrix, where a column vector is a vector whose length equal
  * to a single column of the matrix.
  */
 int mtxmatrix_alloc_column_vector(
     const struct mtxmatrix * matrix,
     struct mtxvector * vector,
-    enum mtxvector_type vector_type)
+    enum mtxvectortype vector_type)
 {
     if (matrix->type == mtxmatrix_array) {
         return mtxmatrix_array_alloc_column_vector(
@@ -194,7 +194,7 @@ int mtxmatrix_alloc_column_vector(
  */
 
 /**
- * `mtxmatrix_alloc_array()' allocates a matrix in array
+ * ‘mtxmatrix_alloc_array()’ allocates a matrix in array
  * format.
  */
 int mtxmatrix_alloc_array(
@@ -210,7 +210,7 @@ int mtxmatrix_alloc_array(
 }
 
 /**
- * `mtxmatrix_init_array_real_single()' allocates and initialises a
+ * ‘mtxmatrix_init_array_real_single()’ allocates and initialises a
  * matrix in array format with real, single precision coefficients.
  */
 int mtxmatrix_init_array_real_single(
@@ -225,7 +225,7 @@ int mtxmatrix_init_array_real_single(
 }
 
 /**
- * `mtxmatrix_init_array_real_double()' allocates and initialises a
+ * ‘mtxmatrix_init_array_real_double()’ allocates and initialises a
  * matrix in array format with real, double precision coefficients.
  */
 int mtxmatrix_init_array_real_double(
@@ -240,7 +240,7 @@ int mtxmatrix_init_array_real_double(
 }
 
 /**
- * `mtxmatrix_init_array_complex_single()' allocates and initialises a
+ * ‘mtxmatrix_init_array_complex_single()’ allocates and initialises a
  * matrix in array format with complex, single precision coefficients.
  */
 int mtxmatrix_init_array_complex_single(
@@ -255,7 +255,7 @@ int mtxmatrix_init_array_complex_single(
 }
 
 /**
- * `mtxmatrix_init_array_complex_double()' allocates and initialises a
+ * ‘mtxmatrix_init_array_complex_double()’ allocates and initialises a
  * matrix in array format with complex, double precision coefficients.
  */
 int mtxmatrix_init_array_complex_double(
@@ -270,7 +270,7 @@ int mtxmatrix_init_array_complex_double(
 }
 
 /**
- * `mtxmatrix_init_array_integer_single()' allocates and initialises a
+ * ‘mtxmatrix_init_array_integer_single()’ allocates and initialises a
  * matrix in array format with integer, single precision coefficients.
  */
 int mtxmatrix_init_array_integer_single(
@@ -285,7 +285,7 @@ int mtxmatrix_init_array_integer_single(
 }
 
 /**
- * `mtxmatrix_init_array_integer_double()' allocates and initialises a
+ * ‘mtxmatrix_init_array_integer_double()’ allocates and initialises a
  * matrix in array format with integer, double precision coefficients.
  */
 int mtxmatrix_init_array_integer_double(
@@ -304,7 +304,7 @@ int mtxmatrix_init_array_integer_double(
  */
 
 /**
- * `mtxmatrix_alloc_coordinate()' allocates a matrix in
+ * ‘mtxmatrix_alloc_coordinate()’ allocates a matrix in
  * coordinate format.
  */
 int mtxmatrix_alloc_coordinate(
@@ -322,7 +322,7 @@ int mtxmatrix_alloc_coordinate(
 }
 
 /**
- * `mtxmatrix_init_coordinate_real_single()' allocates and initialises
+ * ‘mtxmatrix_init_coordinate_real_single()’ allocates and initialises
  * a matrix in coordinate format with real, single precision
  * coefficients.
  */
@@ -342,7 +342,7 @@ int mtxmatrix_init_coordinate_real_single(
 }
 
 /**
- * `mtxmatrix_init_coordinate_real_double()' allocates and initialises
+ * ‘mtxmatrix_init_coordinate_real_double()’ allocates and initialises
  * a matrix in coordinate format with real, double precision
  * coefficients.
  */
@@ -362,7 +362,7 @@ int mtxmatrix_init_coordinate_real_double(
 }
 
 /**
- * `mtxmatrix_init_coordinate_complex_single()' allocates and
+ * ‘mtxmatrix_init_coordinate_complex_single()’ allocates and
  * initialises a matrix in coordinate format with complex, single
  * precision coefficients.
  */
@@ -382,7 +382,7 @@ int mtxmatrix_init_coordinate_complex_single(
 }
 
 /**
- * `mtxmatrix_init_coordinate_complex_double()' allocates and
+ * ‘mtxmatrix_init_coordinate_complex_double()’ allocates and
  * initialises a matrix in coordinate format with complex, double
  * precision coefficients.
  */
@@ -402,7 +402,7 @@ int mtxmatrix_init_coordinate_complex_double(
 }
 
 /**
- * `mtxmatrix_init_coordinate_integer_single()' allocates and
+ * ‘mtxmatrix_init_coordinate_integer_single()’ allocates and
  * initialises a matrix in coordinate format with integer, single
  * precision coefficients.
  */
@@ -422,7 +422,7 @@ int mtxmatrix_init_coordinate_integer_single(
 }
 
 /**
- * `mtxmatrix_init_coordinate_integer_double()' allocates and
+ * ‘mtxmatrix_init_coordinate_integer_double()’ allocates and
  * initialises a matrix in coordinate format with integer, double
  * precision coefficients.
  */
@@ -442,7 +442,7 @@ int mtxmatrix_init_coordinate_integer_double(
 }
 
 /**
- * `mtxmatrix_init_coordinate_pattern()' allocates and initialises a
+ * ‘mtxmatrix_init_coordinate_pattern()’ allocates and initialises a
  * matrix in coordinate format with integer, double precision
  * coefficients.
  */
@@ -465,13 +465,13 @@ int mtxmatrix_init_coordinate_pattern(
  */
 
 /**
- * `mtxmatrix_from_mtxfile()' converts a matrix in Matrix Market
+ * ‘mtxmatrix_from_mtxfile()’ converts a matrix in Matrix Market
  * format to a matrix.
  */
 int mtxmatrix_from_mtxfile(
     struct mtxmatrix * matrix,
     const struct mtxfile * mtxfile,
-    enum mtxmatrix_type type)
+    enum mtxmatrixtype type)
 {
     if (type == mtxmatrix_auto) {
         if (mtxfile->header.format == mtxfile_array) {
@@ -497,7 +497,7 @@ int mtxmatrix_from_mtxfile(
 }
 
 /**
- * `mtxmatrix_to_mtxfile()' converts a matrix to a matrix in Matrix
+ * ‘mtxmatrix_to_mtxfile()’ converts a matrix to a matrix in Matrix
  * Market format.
  */
 int mtxmatrix_to_mtxfile(
@@ -520,28 +520,28 @@ int mtxmatrix_to_mtxfile(
  */
 
 /**
- * `mtxmatrix_read()' reads a matrix from a Matrix Market file.  The
+ * ‘mtxmatrix_read()’ reads a matrix from a Matrix Market file.  The
  * file may optionally be compressed by gzip.
  *
- * The `precision' argument specifies which precision to use for
+ * The ‘precision’ argument specifies which precision to use for
  * storing matrix or matrix values.
  *
- * The `type' argument specifies which format to use for representing
- * the matrix.  If `type' is `mtxmatrix_auto', then the underlying
+ * The ‘type’ argument specifies which format to use for representing
+ * the matrix.  If ‘type’ is ‘mtxmatrix_auto’, then the underlying
  * matrix is stored in array format or coordinate format according to
  * the format of the Matrix Market file.  Otherwise, an attempt is
  * made to convert the matrix to the desired type.
  *
- * If `path' is `-', then standard input is used.
+ * If ‘path’ is ‘-’, then standard input is used.
  *
- * If an error code is returned, then `lines_read' and `bytes_read'
+ * If an error code is returned, then ‘lines_read’ and ‘bytes_read’
  * are used to return the line number and byte at which the error was
  * encountered during the parsing of the matrix.
  */
 int mtxmatrix_read(
     struct mtxmatrix * matrix,
     enum mtxprecision precision,
-    enum mtxmatrix_type type,
+    enum mtxmatrixtype type,
     const char * path,
     bool gzip,
     int * lines_read,
@@ -563,26 +563,26 @@ int mtxmatrix_read(
 }
 
 /**
- * `mtxmatrix_fread()' reads a matrix from a stream in Matrix Market
+ * ‘mtxmatrix_fread()’ reads a matrix from a stream in Matrix Market
  * format.
  *
- * `precision' is used to determine the precision to use for storing
+ * ‘precision’ is used to determine the precision to use for storing
  * the values of matrix or matrix entries.
  *
- * The `type' argument specifies which format to use for representing
- * the matrix.  If `type' is `mtxmatrix_auto', then the underlying
+ * The ‘type’ argument specifies which format to use for representing
+ * the matrix.  If ‘type’ is ‘mtxmatrix_auto’, then the underlying
  * matrix is stored in array format or coordinate format according to
  * the format of the Matrix Market file.  Otherwise, an attempt is
  * made to convert the matrix to the desired type.
  *
- * If an error code is returned, then `lines_read' and `bytes_read'
+ * If an error code is returned, then ‘lines_read’ and ‘bytes_read’
  * are used to return the line number and byte at which the error was
  * encountered during the parsing of the matrix.
  */
 int mtxmatrix_fread(
     struct mtxmatrix * matrix,
     enum mtxprecision precision,
-    enum mtxmatrix_type type,
+    enum mtxmatrixtype type,
     FILE * f,
     int * lines_read,
     int64_t * bytes_read,
@@ -606,25 +606,25 @@ int mtxmatrix_fread(
 
 #ifdef LIBMTX_HAVE_LIBZ
 /**
- * `mtxmatrix_gzread()' reads a matrix from a gzip-compressed stream.
+ * ‘mtxmatrix_gzread()’ reads a matrix from a gzip-compressed stream.
  *
- * `precision' is used to determine the precision to use for storing
+ * ‘precision’ is used to determine the precision to use for storing
  * the values of matrix or matrix entries.
  *
- * The `type' argument specifies which format to use for representing
- * the matrix.  If `type' is `mtxmatrix_auto', then the underlying
+ * The ‘type’ argument specifies which format to use for representing
+ * the matrix.  If ‘type’ is ‘mtxmatrix_auto’, then the underlying
  * matrix is stored in array format or coordinate format according to
  * the format of the Matrix Market file.  Otherwise, an attempt is
  * made to convert the matrix to the desired type.
  *
- * If an error code is returned, then `lines_read' and `bytes_read'
+ * If an error code is returned, then ‘lines_read’ and ‘bytes_read’
  * are used to return the line number and byte at which the error was
  * encountered during the parsing of the matrix.
  */
 int mtxmatrix_gzread(
     struct mtxmatrix * matrix,
     enum mtxprecision precision,
-    enum mtxmatrix_type type,
+    enum mtxmatrixtype type,
     gzFile f,
     int * lines_read,
     int64_t * bytes_read,
@@ -648,24 +648,24 @@ int mtxmatrix_gzread(
 #endif
 
 /**
- * `mtxmatrix_write()' writes a matrix to a Matrix Market file. The
+ * ‘mtxmatrix_write()’ writes a matrix to a Matrix Market file. The
  * file may optionally be compressed by gzip.
  *
- * If `path' is `-', then standard output is used.
+ * If ‘path’ is ‘-’, then standard output is used.
  *
  * If ‘fmt’ is ‘NULL’, then the format specifier ‘%g’ is used to print
  * floating point numbers with enough digits to ensure correct
  * round-trip conversion from decimal text and back.  Otherwise, the
  * given format string is used to print numerical values.
  *
- * The format string follows the conventions of `printf'. If the field
- * is `real', `double' or `complex', then the format specifiers '%e',
- * '%E', '%f', '%F', '%g' or '%G' may be used. If the field is
- * `integer', then the format specifier must be '%d'. The format
- * string is ignored if the field is `pattern'. Field width and
- * precision may be specified (e.g., "%3.1f"), but variable field
- * width and precision (e.g., "%*.*f"), as well as length modifiers
- * (e.g., "%Lf") are not allowed.
+ * The format string follows the conventions of ‘printf’. If the field
+ * is ‘real’ or ‘complex’, then the format specifiers '%e', '%E',
+ * '%f', '%F', '%g' or '%G' may be used. If the field is ‘integer’,
+ * then the format specifier must be '%d'. The format string is
+ * ignored if the field is ‘pattern’. Field width and precision may be
+ * specified (e.g., "%3.1f"), but variable field width and precision
+ * (e.g., "%*.*f"), as well as length modifiers (e.g., "%Lf") are not
+ * allowed.
  */
 int mtxmatrix_write(
     const struct mtxmatrix * matrix,
@@ -690,24 +690,24 @@ int mtxmatrix_write(
 }
 
 /**
- * `mtxmatrix_fwrite()' writes a matrix to a stream.
+ * ‘mtxmatrix_fwrite()’ writes a matrix to a stream.
  *
  * If ‘fmt’ is ‘NULL’, then the format specifier ‘%g’ is used to print
  * floating point numbers with enough digits to ensure correct
  * round-trip conversion from decimal text and back.  Otherwise, the
  * given format string is used to print numerical values.
  *
- * The format string follows the conventions of `printf'. If the field
- * is `real', `double' or `complex', then the format specifiers '%e',
- * '%E', '%f', '%F', '%g' or '%G' may be used. If the field is
- * `integer', then the format specifier must be '%d'. The format
- * string is ignored if the field is `pattern'. Field width and
- * precision may be specified (e.g., "%3.1f"), but variable field
- * width and precision (e.g., "%*.*f"), as well as length modifiers
- * (e.g., "%Lf") are not allowed.
+ * The format string follows the conventions of ‘printf’. If the field
+ * is ‘real’ or ‘complex’, then the format specifiers '%e', '%E',
+ * '%f', '%F', '%g' or '%G' may be used. If the field is ‘integer’,
+ * then the format specifier must be '%d'. The format string is
+ * ignored if the field is ‘pattern’. Field width and precision may be
+ * specified (e.g., "%3.1f"), but variable field width and precision
+ * (e.g., "%*.*f"), as well as length modifiers (e.g., "%Lf") are not
+ * allowed.
  *
- * If it is not `NULL', then the number of bytes written to the stream
- * is returned in `bytes_written'.
+ * If it is not ‘NULL’, then the number of bytes written to the stream
+ * is returned in ‘bytes_written’.
  */
 int mtxmatrix_fwrite(
     const struct mtxmatrix * matrix,
@@ -732,24 +732,24 @@ int mtxmatrix_fwrite(
 
 #ifdef LIBMTX_HAVE_LIBZ
 /**
- * `mtxmatrix_gzwrite()' writes a matrix to a gzip-compressed stream.
+ * ‘mtxmatrix_gzwrite()’ writes a matrix to a gzip-compressed stream.
  *
  * If ‘fmt’ is ‘NULL’, then the format specifier ‘%g’ is used to print
  * floating point numbers with enough digits to ensure correct
  * round-trip conversion from decimal text and back.  Otherwise, the
  * given format string is used to print numerical values.
  *
- * The format string follows the conventions of `printf'. If the field
- * is `real', `double' or `complex', then the format specifiers '%e',
- * '%E', '%f', '%F', '%g' or '%G' may be used. If the field is
- * `integer', then the format specifier must be '%d'. The format
- * string is ignored if the field is `pattern'. Field width and
- * precision may be specified (e.g., "%3.1f"), but variable field
- * width and precision (e.g., "%*.*f"), as well as length modifiers
- * (e.g., "%Lf") are not allowed.
+ * The format string follows the conventions of ‘printf’. If the field
+ * is ‘real’ or ‘complex’, then the format specifiers '%e', '%E',
+ * '%f', '%F', '%g' or '%G' may be used. If the field is ‘integer’,
+ * then the format specifier must be '%d'. The format string is
+ * ignored if the field is ‘pattern’. Field width and precision may be
+ * specified (e.g., "%3.1f"), but variable field width and precision
+ * (e.g., "%*.*f"), as well as length modifiers (e.g., "%Lf") are not
+ * allowed.
  *
- * If it is not `NULL', then the number of bytes written to the stream
- * is returned in `bytes_written'.
+ * If it is not ‘NULL’, then the number of bytes written to the stream
+ * is returned in ‘bytes_written’.
  */
 int mtxmatrix_gzwrite(
     const struct mtxmatrix * matrix,
@@ -772,6 +772,199 @@ int mtxmatrix_gzwrite(
     return MTX_SUCCESS;
 }
 #endif
+
+/*
+ * Level 1 BLAS operations
+ */
+
+/**
+ * ‘mtxmatrix_swap()’ swaps values of two matrices, simultaneously
+ * performing ‘Y <- X’ and ‘X <- Y’.
+ */
+int mtxmatrix_swap(
+    struct mtxmatrix * X,
+    struct mtxmatrix * Y);
+
+/**
+ * ‘mtxmatrix_copy()’ copies values of a matrix, ‘Y = X’.
+ */
+int mtxmatrix_copy(
+    struct mtxmatrix * Y,
+    const struct mtxmatrix * X);
+
+/**
+ * ‘mtxmatrix_sscal()’ scales a matrix by a single precision floating
+ * point scalar, ‘X = a*X’.
+ */
+int mtxmatrix_sscal(
+    float a,
+    struct mtxmatrix * X,
+    int64_t * num_flops);
+
+/**
+ * ‘mtxmatrix_dscal()’ scales a matrix by a double precision floating
+ * point scalar, ‘X = a*X’.
+ */
+int mtxmatrix_dscal(
+    double a,
+    struct mtxmatrix * X,
+    int64_t * num_flops);
+
+/**
+ * ‘mtxmatrix_saxpy()’ adds a matrix to another matrix multiplied by a
+ * single precision floating point value, ‘Y = a*X + Y’.
+ */
+int mtxmatrix_saxpy(
+    float a,
+    const struct mtxmatrix * X,
+    struct mtxmatrix * Y,
+    int64_t * num_flops);
+
+/**
+ * ‘mtxmatrix_daxpy()’ adds a matrix to another matrix multiplied by a
+ * double precision floating point value, ‘Y = a*X + Y’.
+ */
+int mtxmatrix_daxpy(
+    double a,
+    const struct mtxmatrix * X,
+    struct mtxmatrix * Y,
+    int64_t * num_flops);
+
+/**
+ * ‘mtxmatrix_saypx()’ multiplies a matrix by a single precision
+ * floating point scalar and adds another matrix, ‘Y = a*Y + X’.
+ */
+int mtxmatrix_saypx(
+    float a,
+    struct mtxmatrix * Y,
+    const struct mtxmatrix * X,
+    int64_t * num_flops);
+
+/**
+ * ‘mtxmatrix_daypx()’ multiplies a matrix by a double precision
+ * floating point scalar and adds another matrix, ‘Y = a*Y + X’.
+ */
+int mtxmatrix_daypx(
+    double a,
+    struct mtxmatrix * Y,
+    const struct mtxmatrix * X,
+    int64_t * num_flops);
+
+/**
+ * ‘mtxmatrix_sdot()’ computes the Frobenius dot product of two
+ * matrices in single precision floating point.
+ */
+int mtxmatrix_sdot(
+    const struct mtxmatrix * X,
+    const struct mtxmatrix * Y,
+    float * dot,
+    int64_t * num_flops);
+
+/**
+ * ‘mtxmatrix_ddot()’ computes the Frobenius dot product of two
+ * matrices in double precision floating point.
+ */
+int mtxmatrix_ddot(
+    const struct mtxmatrix * X,
+    const struct mtxmatrix * Y,
+    double * dot,
+    int64_t * num_flops);
+
+/**
+ * ‘mtxmatrix_cdotu()’ computes the product of the dot product of the
+ * vectorisation of a complex matrix with the vectorisation of another
+ * complex matrix in single precision floating point, ‘dot :=
+ * vec(X)^T*vec(Y)’, where ‘vec(X)’ is the vectorisation of ‘X’.
+ */
+int mtxmatrix_cdotu(
+    const struct mtxmatrix * X,
+    const struct mtxmatrix * Y,
+    float (* dot)[2],
+    int64_t * num_flops);
+
+/**
+ * ‘mtxmatrix_zdotu()’ computes the product of the dot product of the
+ * vectorisation of a complex matrix with the vectorisation of another
+ * complex matrix in double precision floating point, ‘dot :=
+ * vec(X)^T*vec(Y)’, where ‘vec(X)’ is the vectorisation of ‘X’.
+ */
+int mtxmatrix_zdotu(
+    const struct mtxmatrix * X,
+    const struct mtxmatrix * Y,
+    double (* dot)[2],
+    int64_t * num_flops);
+
+/**
+ * ‘mtxmatrix_cdotc()’ computes the Frobenius dot product of two
+ * complex matrices in single precision floating point, ‘dot :=
+ * vec(X)^H*vec(Y)’, where ‘vec(X)’ is the vectorisation of ‘X’.
+ */
+int mtxmatrix_cdotc(
+    const struct mtxmatrix * X,
+    const struct mtxmatrix * Y,
+    float (* dot)[2],
+    int64_t * num_flops);
+
+/**
+ * ‘mtxmatrix_zdotc()’ computes the Frobenius dot product of two
+ * complex matrices in double precision floating point, ‘dot :=
+ * vec(X)^H*vec(Y)’, where ‘vec(X)’ is the vectorisation of ‘X’.
+ */
+int mtxmatrix_zdotc(
+    const struct mtxmatrix * X,
+    const struct mtxmatrix * Y,
+    double (* dot)[2],
+    int64_t * num_flops);
+
+/**
+ * ‘mtxmatrix_snrm2()’ computes the Frobenius norm of a matrix in
+ * single precision floating point.
+ */
+int mtxmatrix_snrm2(
+    const struct mtxmatrix * X,
+    float * nrm2,
+    int64_t * num_flops);
+
+/**
+ * ‘mtxmatrix_dnrm2()’ computes the Frobenius norm of a matrix in
+ * double precision floating point.
+ */
+int mtxmatrix_dnrm2(
+    const struct mtxmatrix * X,
+    double * nrm2,
+    int64_t * num_flops);
+
+/**
+ * ‘mtxmatrix_sasum()’ computes the sum of absolute values (1-norm) of
+ * a matrix in single precision floating point.  If the matrix is
+ * complex-valued, then the sum of the absolute values of the real and
+ * imaginary parts is computed.
+ */
+int mtxmatrix_sasum(
+    const struct mtxmatrix * X,
+    float * asum,
+    int64_t * num_flops);
+
+/**
+ * ‘mtxmatrix_dasum()’ computes the sum of absolute values (1-norm) of
+ * a matrix in double precision floating point.  If the matrix is
+ * complex-valued, then the sum of the absolute values of the real and
+ * imaginary parts is computed.
+ */
+int mtxmatrix_dasum(
+    const struct mtxmatrix * X,
+    double * asum,
+    int64_t * num_flops);
+
+/**
+ * ‘mtxmatrix_iamax()’ finds the index of the first element having the
+ * maximum absolute value.  If the matrix is complex-valued, then the
+ * index points to the first element having the maximum sum of the
+ * absolute values of the real and imaginary parts.
+ */
+int mtxmatrix_iamax(
+    const struct mtxmatrix * X,
+    int * iamax);
 
 /*
  * Level 2 BLAS operations

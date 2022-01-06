@@ -196,7 +196,7 @@ int mtxmatrix_array_init_integer_double(
 int mtxmatrix_array_alloc_row_vector(
     const struct mtxmatrix_array * matrix,
     struct mtxvector * vector,
-    enum mtxvector_type vector_type);
+    enum mtxvectortype vector_type);
 
 /**
  * `mtxmatrix_array_alloc_column_vector()' allocates a column vector
@@ -206,7 +206,7 @@ int mtxmatrix_array_alloc_row_vector(
 int mtxmatrix_array_alloc_column_vector(
     const struct mtxmatrix_array * matrix,
     struct mtxvector * vector,
-    enum mtxvector_type vector_type);
+    enum mtxvectortype vector_type);
 
 /*
  * Convert to and from Matrix Market format

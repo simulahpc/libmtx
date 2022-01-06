@@ -248,7 +248,7 @@ int mtxmatrix_coordinate_init_pattern(
 int mtxmatrix_coordinate_alloc_row_vector(
     const struct mtxmatrix_coordinate * matrix,
     struct mtxvector * vector,
-    enum mtxvector_type vector_type);
+    enum mtxvectortype vector_type);
 
 /**
  * `mtxmatrix_coordinate_alloc_column_vector()' allocates a column
@@ -258,7 +258,7 @@ int mtxmatrix_coordinate_alloc_row_vector(
 int mtxmatrix_coordinate_alloc_column_vector(
     const struct mtxmatrix_coordinate * matrix,
     struct mtxvector * vector,
-    enum mtxvector_type vector_type);
+    enum mtxvectortype vector_type);
 
 /*
  * Convert to and from Matrix Market format

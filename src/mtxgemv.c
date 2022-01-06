@@ -62,8 +62,8 @@ struct program_options
     char * y_path;
     char * format;
     enum mtxprecision precision;
-    enum mtxmatrix_type matrix_type;
-    enum mtxvector_type vector_type;
+    enum mtxmatrixtype matrix_type;
+    enum mtxvectortype vector_type;
     enum mtx_field_ vector_field;
     bool gzip;
     int repeat;
@@ -244,7 +244,7 @@ static int parse_program_options(
                 return EINVAL;
             }
             char * s = (*argv)[1];
-            err = mtxmatrix_type_parse(
+            err = mtxmatrixtype_parse(
                 &args->matrix_type, NULL, NULL, s, "");
             if (err) {
                 program_options_free(args);
@@ -254,7 +254,7 @@ static int parse_program_options(
             continue;
         } else if (strstr((*argv)[0], "--matrix-type=") == (*argv)[0]) {
             char * s = (*argv)[0] + strlen("--matrix-type=");
-            err = mtxmatrix_type_parse(
+            err = mtxmatrixtype_parse(
                 &args->matrix_type, NULL, NULL, s, "");
             if (err) {
                 program_options_free(args);
@@ -270,7 +270,7 @@ static int parse_program_options(
                 return EINVAL;
             }
             char * s = (*argv)[1];
-            err = mtxvector_type_parse(
+            err = mtxvectortype_parse(
                 &args->vector_type, NULL, NULL, s, "");
             if (err) {
                 program_options_free(args);
@@ -280,7 +280,7 @@ static int parse_program_options(
             continue;
         } else if (strstr((*argv)[0], "--vector-type=") == (*argv)[0]) {
             char * s = (*argv)[0] + strlen("--vector-type=");
-            err = mtxvector_type_parse(
+            err = mtxvectortype_parse(
                 &args->vector_type, NULL, NULL, s, "");
             if (err) {
                 program_options_free(args);

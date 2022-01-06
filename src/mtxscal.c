@@ -64,7 +64,7 @@ struct program_options
     char * x_path;
     char * format;
     enum mtxprecision precision;
-    enum mtxvector_type vector_type;
+    enum mtxvectortype vector_type;
     bool gzip;
     int repeat;
     int verbose;
@@ -224,7 +224,7 @@ static int parse_program_options(
                 return EINVAL;
             }
             char * s = (*argv)[1];
-            err = mtxvector_type_parse(
+            err = mtxvectortype_parse(
                 &args->vector_type, NULL, NULL, s, "");
             if (err) {
                 program_options_free(args);
@@ -234,7 +234,7 @@ static int parse_program_options(
             continue;
         } else if (strstr((*argv)[0], "--vector-type=") == (*argv)[0]) {
             char * s = (*argv)[0] + strlen("--vector-type=");
-            err = mtxvector_type_parse(
+            err = mtxvectortype_parse(
                 &args->vector_type, NULL, NULL, s, "");
             if (err) {
                 program_options_free(args);
@@ -442,7 +442,7 @@ static double timespec_duration(
 static int distvector_scal(
     double alpha,
     struct mtxdistfile * mtxdistfile,
-    enum mtxvector_type vector_type,
+    enum mtxvectortype vector_type,
     const char * format,
     int repeat,
     int verbose,
@@ -758,7 +758,7 @@ int main(int argc, char *argv[])
 static int vector_scal(
     double alpha,
     struct mtxfile * mtxfile,
-    enum mtxvector_type vector_type,
+    enum mtxvectortype vector_type,
     const char * format,
     int repeat,
     int verbose,

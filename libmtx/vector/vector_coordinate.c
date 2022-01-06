@@ -2081,7 +2081,7 @@ int mtxvector_coordinate_dnrm2(
  * `mtxvector_coordinate_sasum()' computes the sum of absolute values
  * (1-norm) of a vector in single precision floating point.  If the
  * vector is complex-valued, then the sum of the absolute values of
- * the real and imaginaty parts is computed.
+ * the real and imaginary parts is computed.
  */
 int mtxvector_coordinate_sasum(
     const struct mtxvector_coordinate * x,
@@ -2164,7 +2164,7 @@ int mtxvector_coordinate_sasum(
  * `mtxvector_coordinate_dasum()' computes the sum of absolute values
  * (1-norm) of a vector in double precision floating point.  If the
  * vector is complex-valued, then the sum of the absolute values of
- * the real and imaginaty parts is computed.
+ * the real and imaginary parts is computed.
  */
 int mtxvector_coordinate_dasum(
     const struct mtxvector_coordinate * x,

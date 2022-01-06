@@ -1865,7 +1865,7 @@ int mtxvector_array_dnrm2(
  * `mtxvector_array_sasum()' computes the sum of absolute values
  * (1-norm) of a vector in single precision floating point.  If the
  * vector is complex-valued, then the sum of the absolute values of
- * the real and imaginaty parts is computed.
+ * the real and imaginary parts is computed.
  */
 int mtxvector_array_sasum(
     const struct mtxvector_array * x,
@@ -1946,7 +1946,7 @@ int mtxvector_array_sasum(
  * `mtxvector_array_dasum()' computes the sum of absolute values
  * (1-norm) of a vector in double precision floating point.  If the
  * vector is complex-valued, then the sum of the absolute values of
- * the real and imaginaty parts is computed.
+ * the real and imaginary parts is computed.
  */
 int mtxvector_array_dasum(
     const struct mtxvector_array * x,

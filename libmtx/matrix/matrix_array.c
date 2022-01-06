@@ -295,7 +295,7 @@ int mtxmatrix_array_init_integer_double(
 int mtxmatrix_array_alloc_row_vector(
     const struct mtxmatrix_array * matrix,
     struct mtxvector * vector,
-    enum mtxvector_type vector_type)
+    enum mtxvectortype vector_type)
 {
     if (vector_type == mtxvector_auto)
         vector_type = mtxvector_array;
@@ -320,7 +320,7 @@ int mtxmatrix_array_alloc_row_vector(
 int mtxmatrix_array_alloc_column_vector(
     const struct mtxmatrix_array * matrix,
     struct mtxvector * vector,
-    enum mtxvector_type vector_type)
+    enum mtxvectortype vector_type)
 {
     if (vector_type == mtxvector_auto)
         vector_type = mtxvector_array;

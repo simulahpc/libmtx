@@ -64,7 +64,7 @@ struct program_options
     char * x_path;
     char * format;
     enum mtxprecision precision;
-    enum mtxvector_type vector_type;
+    enum mtxvectortype vector_type;
     bool gzip;
     int num_parts;
     enum mtx_partition_type partition;
@@ -233,7 +233,7 @@ static int parse_program_options(
                 return EINVAL;
             }
             char * s = (*argv)[1];
-            err = mtxvector_type_parse(
+            err = mtxvectortype_parse(
                 &args->vector_type, NULL, NULL, s, "");
             if (err) {
                 program_options_free(args);
@@ -243,7 +243,7 @@ static int parse_program_options(
             continue;
         } else if (strstr((*argv)[0], "--vector-type=") == (*argv)[0]) {
             char * s = (*argv)[0] + strlen("--vector-type=");
-            err = mtxvector_type_parse(
+            err = mtxvectortype_parse(
                 &args->vector_type, NULL, NULL, s, "");
             if (err) {
                 program_options_free(args);
@@ -497,7 +497,7 @@ static double timespec_duration(
 static int distvector_nrm2(
     struct mtxdistfile * mtxdistfile,
     const struct mtx_partition * partition,
-    enum mtxvector_type vector_type,
+    enum mtxvectortype vector_type,
     const char * format,
     int verbose,
     FILE * diagf,
@@ -889,7 +889,7 @@ int main(int argc, char *argv[])
  */
 static int vector_nrm2(
     struct mtxfile * mtxfile,
-    enum mtxvector_type vector_type,
+    enum mtxvectortype vector_type,
     const char * format,
     int verbose,
     FILE * diagf,

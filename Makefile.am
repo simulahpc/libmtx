@@ -403,6 +403,7 @@ manual_libmtx_TEXINFOS = \
 	manual/installing.texi \
 	manual/reporting_bugs.texi \
 	manual/matrix_market_file_format.texi \
+	manual/matrix_market_files.texi \
 	manual/matrices_and_vectors.texi \
 	manual/distributed_matrices_and_vectors.texi \
 	manual/commands.texi \
