@@ -15,7 +15,7 @@
 @c along with libmtx.  If not, see <https://www.gnu.org/licenses/>.
 @c
 @c Authors: James D. Trotter <james@simula.no>
-@c Last modified: 2022-01-06
+@c Last modified: 2022-01-07
 @c
 @c libmtx User Guide: Distributed Matrix Market files.
 
@@ -36,33 +36,34 @@ program that rely on distributed computing from those parts that are
 not distributed.
 
 @menu
-* Error handling: MPI error handling.  How to handle errors when using libmtx for distributed computing.
-@c * Data types:: Basic data types for representing distributed matrices and vectors.
-@c * MPI error handling:: How to handle errors when working with MPI and distributed matrices and vectors.
-@c * Creating distributed matrices and vectors:: Functions for creating distributed matrices and vectors.
-@c * Reading and writing distributed Matrix Market files:: Functions for reading from and writing to files in Matrix Market format.
-@c * Communicating matrices and vectors:: Message-passing functions for Matrix Market objects
+* Error handling: Error handling for distributed Matrix Market files.  How to handle errors when using libmtx for distributed computing.
+* Data structures: Distributed Matrix Market files: data structures. Basic data structures for representing distributed @file{mtx} files.
+* Creating distributed Matrix Market files:: How to create distributed @file{mtx} files.
+* Modifying values: Distributed Matrix Market files: modifying values. Functions for changing matrix or vector values.
+* Converting to and from distributed Matrix Market files:: Functions for converting to and from distributed @file{mtx} files
+* Reading and writing distributed Matrix Market files:: Functions for reading from and writing to files in Matrix Market format.
+* Transposing, sorting and reordering: Distributed Matrix Market files: transposing@comma{} sorting and reordering. Functions for transposing, sorting and reordering distributed @file{mtx} files.
 @end menu
 
-@node MPI error handling
+@node Error handling for distributed Matrix Market files
 @section Error handling
-
-@cindex MPI errors
-@findex mtxdiststrerror
-In addition to the error handling routines described @ref{Error
+@cindex error handling
+In addition to the error handling routines described in @ref{Error
 handling}, libmtx provides some additional error handling
 functionality when working with MPI and distributed data. First, some
-MPI functions return error codes on failure, which should be handled
-correctly. Second, whenever multiple processes are involved, there are
-cases where only one or a few of those processes may encounter
-errors. These errors must be handled appropriately to ensure accurate
-reporting and that the program exits in a graceful manner instead of
-hanging.
+MPI functions may return an error code on failure, which should be
+handled correctly. Second, whenever multiple processes are involved,
+there are cases where only one or a few of those processes may
+encounter errors. These errors must be handled appropriately to ensure
+accurate reporting and that the program exits in a graceful manner
+instead of hanging indefinitely.
 
 @subsection MPI errors
+@findex mtxdiststrerror
 Some functions in libmtx may fail due to MPI errors. In these cases,
 some additional information is needed to provide helpful error
-descriptions, and the function @code{mtxdiststrerror} should be used.
+descriptions, and the function @code{mtxdiststrerror} should be used
+(instead of @code{mtxstrerror}).
 @example
 @code{const char * mtxdiststrerror(
     int err, int mpierrcode, char * mpierrstr);}
@@ -70,11 +71,11 @@ descriptions, and the function @code{mtxdiststrerror} should be used.
 The error code @code{err} is an integer corresponding to one of the
 error codes from the @code{mtxerror} enum type. The arguments
 @code{mpierrcode} and @code{mpierrstr} are only used if @code{err} is
-@code{MTX_ERR_MPI}.
+@samp{MTX_ERR_MPI}.
 
 @findex MPI_Error_string
 @cindex @code{MPI_MAX_ERROR_STRING}
-If @code{err} is @code{MTX_ERR_MPI}, then the argument
+If @code{err} is @samp{MTX_ERR_MPI}, then the argument
 @code{mpierrcode} should be set to the error code that was returned
 from the MPI function call that failed. In addition, the argument
 @code{mpierrstr} must be a char array whose length is at least equal
@@ -102,12 +103,14 @@ message will be printed:
 
 
 @subsection Distributed error handling
+@tindex struct mtxdisterror
 To more easily handle errors in cases where one or more processes may
 fail, libmtx uses the data type @code{struct mtxdisterror}. Most of
 the functions in libmtx that involve distributed computing take an
 additional argument of type @code{struct mtxdisterror} to provide
 robust error handling in these cases.
 
+@findex mtxdisterror_alloc
 To use @code{struct mtxdisterror}, one must first allocate storage
 using @code{mtxdisterror_alloc}.
 @example
@@ -118,12 +121,14 @@ using @code{mtxdisterror_alloc}.
 @end example
 An example of this was already shown in the previous section.
 
+@findex mtxdisterror_free
 Note that the storage allocated for @code{mtxdisterror} should be
 freed by calling @code{mtxdisterror_free}.
 @example
 @code{void mtxdisterror_free(struct mtxdisterror * disterr);}
 @end example
 
+@findex mtxdisterror_description
 If an error occurs, then a description of the error can be obtained by
 calling @code{mtxdisterror_description}.
 @example
@@ -133,6 +138,7 @@ Note that if @code{mtxdisterror_description} is called more than once,
 the pointer that was returned from the previous call will no longer be
 valid and using it will result in a use-after-free error.
 
+@findex mtxdisterror_allreduce
 Finally, the function @code{mtxdisterror_allreduce} can be used to
 communicate error status among multiple processes.
 @example
@@ -187,8 +193,582 @@ if (comm_err)
 @end example
 
 
-@c @node Data types
-@c @section Data types
+@node Distributed Matrix Market files: data structures
+@section Data structures
+@tindex struct mtxdistfile
+The file @file{libmtx/mtxdistfile/mtxdistfile.h} defines the type
+@code{struct mtxdistfile}, which is used to represent a Matrix Market
+file distributed among one or more MPI processes. The definition of
+the @code{mtxdistfile} struct is shown below.
+@example
+@code{struct mtxdistfile @{
+    MPI_Comm comm;
+    int comm_size;
+    int rank;
+    struct mtxfileheader header;
+    struct mtxfilecomments comments;
+    struct mtxfilesize size;
+    enum mtxprecision precision;
+    struct mtxfile mtxfile;
+@};}
+@end example
+The first three struct members contain some information about the
+group of processes sharing the distributed Matrix Market file,
+including their MPI communicator (@code{comm}), the number of
+processes (@code{comm_size}) and the rank of the current process
+(@code{rank}). Thereafter, follow the header line, comments, size line
+and the chosen precision, all of which must be identical on every
+process in the communicator. Finally, @code{mtxfile} represents the
+part of the Matrix Market file that resides on the current process.
+
+@node Creating distributed Matrix Market files
+@section Creating distributed Matrix Market files
+Constructing distributed Matrix Market files works in much the same
+way as the non-distributed case, which was described in @ref{Creating
+Matrix Market files}.
+
+If the needed data has already been distributed, then
+@code{mtxdistfile_init} can be used to create a distributed Matrix
+Market file from Matrix Market files residing on each process in a
+communicator.
+
+This function performs collective communication and therefore requires
+every process in the communicator to perform matching calls to the
+function. The communicator must be the same one that was used to
+allocate @code{disterr}.
+@example
+@code{int mtxdistfile_init(
+    struct mtxdistfile * mtxdistfile,
+    const struct mtxfile * mtxfile,
+    MPI_Comm comm,
+    struct mtxdisterror * disterr);}
+@end example
+
+The function @code{mtxdistfile_free} frees storage allocated for a
+distributed Matrix Market file.
+@example
+@code{void mtxdistfile_free(struct mtxdistfile * mtxdistfile);}
+@end example
+
+@example
+@code{
+/**
+ * ‘mtxdistfile_alloc_copy()’ allocates storage for a copy of a
+ * distributed Matrix Market file without initialising the underlying
+ * values.
+ */
+int mtxdistfile_alloc_copy(
+    struct mtxdistfile * dst,
+    const struct mtxdistfile * src,
+    struct mtxdisterror * disterr);
+
+/**
+ * ‘mtxdistfile_init_copy()’ creates a copy of a distributed Matrix
+ * Market file.
+ */
+int mtxdistfile_init_copy(
+    struct mtxdistfile * dst,
+    const struct mtxdistfile * src,
+    struct mtxdisterror * disterr);}
+@end example
+
+In addition, there are functions for allocating storage for and
+initialising distributed matrices and vector in array and coordinate
+format.
+@example
+@code{/**
+ * ‘mtxdistfile_alloc_matrix_array()’ allocates a distributed matrix
+ * in array format.
+ */
+int mtxdistfile_alloc_matrix_array(
+    struct mtxdistfile * mtxdistfile,
+    enum mtxfilefield field,
+    enum mtxfilesymmetry symmetry,
+    enum mtxprecision precision,
+    int num_rows,
+    int num_columns,
+    MPI_Comm comm,
+    struct mtxdisterror * disterr);
+
+/**
+ * ‘mtxdistfile_init_matrix_array_real_single()’ allocates and
+ * initialises a distributed matrix in array format with real, single
+ * precision coefficients.
+ */
+int mtxdistfile_init_matrix_array_real_single(
+    struct mtxdistfile * mtxdistfile,
+    enum mtxfilesymmetry symmetry,
+    int num_rows,
+    int num_columns,
+    const float * data,
+    MPI_Comm comm,
+    struct mtxdisterror * disterr);
+
+/**
+ * ‘mtxdistfile_init_matrix_array_real_double()’ allocates and initialises
+ * a matrix in array format with real, double precision coefficients.
+ */
+int mtxdistfile_init_matrix_array_real_double(
+    struct mtxdistfile * mtxdistfile,
+    enum mtxfilesymmetry symmetry,
+    int num_rows,
+    int num_columns,
+    const double * data,
+    MPI_Comm comm,
+    struct mtxdisterror * disterr);
+
+/**
+ * ‘mtxdistfile_init_matrix_array_complex_single()’ allocates and
+ * initialises a distributed matrix in array format with complex,
+ * single precision coefficients.
+ */
+int mtxdistfile_init_matrix_array_complex_single(
+    struct mtxdistfile * mtxdistfile,
+    enum mtxfilesymmetry symmetry,
+    int num_rows,
+    int num_columns,
+    const float (* data)[2],
+    MPI_Comm comm,
+    struct mtxdisterror * disterr);
+
+/**
+ * ‘mtxdistfile_init_matrix_array_complex_double()’ allocates and
+ * initialises a matrix in array format with complex, double precision
+ * coefficients.
+ */
+int mtxdistfile_init_matrix_array_complex_double(
+    struct mtxdistfile * mtxdistfile,
+    enum mtxfilesymmetry symmetry,
+    int num_rows,
+    int num_columns,
+    const double (* data)[2],
+    MPI_Comm comm,
+    struct mtxdisterror * disterr);
+
+/**
+ * ‘mtxdistfile_init_matrix_array_integer_single()’ allocates and
+ * initialises a distributed matrix in array format with integer,
+ * single precision coefficients.
+ */
+int mtxdistfile_init_matrix_array_integer_single(
+    struct mtxdistfile * mtxdistfile,
+    enum mtxfilesymmetry symmetry,
+    int num_rows,
+    int num_columns,
+    const int32_t * data,
+    MPI_Comm comm,
+    struct mtxdisterror * disterr);
+
+/**
+ * ‘mtxdistfile_init_matrix_array_integer_double()’ allocates and
+ * initialises a matrix in array format with integer, double precision
+ * coefficients.
+ */
+int mtxdistfile_init_matrix_array_integer_double(
+    struct mtxdistfile * mtxdistfile,
+    enum mtxfilesymmetry symmetry,
+    int num_rows,
+    int num_columns,
+    const int64_t * data,
+    MPI_Comm comm,
+    struct mtxdisterror * disterr);
+
+/*
+ * Vector array formats
+ */
+
+/**
+ * ‘mtxdistfile_alloc_vector_array()’ allocates a distributed vector
+ * in array format.
+ */
+int mtxdistfile_alloc_vector_array(
+    struct mtxdistfile * mtxdistfile,
+    enum mtxfilefield field,
+    enum mtxprecision precision,
+    int num_rows,
+    MPI_Comm comm,
+    struct mtxdisterror * disterr);
+
+/**
+ * ‘mtxdistfile_init_vector_array_real_single()’ allocates and
+ * initialises a distributed vector in array format with real, single
+ * precision coefficients.
+ */
+int mtxdistfile_init_vector_array_real_single(
+    struct mtxdistfile * mtxdistfile,
+    int num_rows,
+    const float * data,
+    MPI_Comm comm,
+    struct mtxdisterror * disterr);
+
+/**
+ * ‘mtxdistfile_init_vector_array_real_double()’ allocates and initialises
+ * a vector in array format with real, double precision coefficients.
+ */
+int mtxdistfile_init_vector_array_real_double(
+    struct mtxdistfile * mtxdistfile,
+    int num_rows,
+    const double * data,
+    MPI_Comm comm,
+    struct mtxdisterror * disterr);
+
+/**
+ * ‘mtxdistfile_init_vector_array_complex_single()’ allocates and
+ * initialises a distributed vector in array format with complex,
+ * single precision coefficients.
+ */
+int mtxdistfile_init_vector_array_complex_single(
+    struct mtxdistfile * mtxdistfile,
+    int num_rows,
+    const float (* data)[2],
+    MPI_Comm comm,
+    struct mtxdisterror * disterr);
+
+/**
+ * ‘mtxdistfile_init_vector_array_complex_double()’ allocates and
+ * initialises a vector in array format with complex, double precision
+ * coefficients.
+ */
+int mtxdistfile_init_vector_array_complex_double(
+    struct mtxdistfile * mtxdistfile,
+    int num_rows,
+    const double (* data)[2],
+    MPI_Comm comm,
+    struct mtxdisterror * disterr);
+
+/**
+ * ‘mtxdistfile_init_vector_array_integer_single()’ allocates and
+ * initialises a distributed vector in array format with integer,
+ * single precision coefficients.
+ */
+int mtxdistfile_init_vector_array_integer_single(
+    struct mtxdistfile * mtxdistfile,
+    int num_rows,
+    const int32_t * data,
+    MPI_Comm comm,
+    struct mtxdisterror * disterr);
+
+/**
+ * ‘mtxdistfile_init_vector_array_integer_double()’ allocates and
+ * initialises a vector in array format with integer, double precision
+ * coefficients.
+ */
+int mtxdistfile_init_vector_array_integer_double(
+    struct mtxdistfile * mtxdistfile,
+    int num_rows,
+    const int64_t * data,
+    MPI_Comm comm,
+    struct mtxdisterror * disterr);
+
+/*
+ * Matrix coordinate formats
+ */
+
+/**
+ * ‘mtxdistfile_alloc_matrix_coordinate()’ allocates a distributed
+ * matrix in coordinate format.
+ */
+int mtxdistfile_alloc_matrix_coordinate(
+    struct mtxdistfile * mtxdistfile,
+    enum mtxfilefield field,
+    enum mtxfilesymmetry symmetry,
+    enum mtxprecision precision,
+    int num_rows,
+    int num_columns,
+    int64_t num_nonzeros,
+    MPI_Comm comm,
+    struct mtxdisterror * disterr);
+
+/**
+ * ‘mtxdistfile_init_matrix_coordinate_real_single()’ allocates and
+ * initialises a distributed matrix in coordinate format with real,
+ * single precision coefficients.
+ */
+int mtxdistfile_init_matrix_coordinate_real_single(
+    struct mtxdistfile * mtxdistfile,
+    enum mtxfilesymmetry symmetry,
+    int num_rows,
+    int num_columns,
+    int64_t num_nonzeros,
+    const struct mtxfile_matrix_coordinate_real_single * data,
+    MPI_Comm comm,
+    struct mtxdisterror * disterr);
+
+/**
+ * ‘mtxdistfile_init_matrix_coordinate_real_double()’ allocates and
+ * initialises a matrix in coordinate format with real, double
+ * precision coefficients.
+ */
+int mtxdistfile_init_matrix_coordinate_real_double(
+    struct mtxdistfile * mtxdistfile,
+    enum mtxfilesymmetry symmetry,
+    int num_rows,
+    int num_columns,
+    int64_t num_nonzeros,
+    const struct mtxfile_matrix_coordinate_real_double * data,
+    MPI_Comm comm,
+    struct mtxdisterror * disterr);
+
+/**
+ * ‘mtxdistfile_init_matrix_coordinate_complex_single()’ allocates and
+ * initialises a distributed matrix in coordinate format with complex,
+ * single precision coefficients.
+ */
+int mtxdistfile_init_matrix_coordinate_complex_single(
+    struct mtxdistfile * mtxdistfile,
+    enum mtxfilesymmetry symmetry,
+    int num_rows,
+    int num_columns,
+    int64_t num_nonzeros,
+    const struct mtxfile_matrix_coordinate_complex_single * data,
+    MPI_Comm comm,
+    struct mtxdisterror * disterr);
+
+/**
+ * ‘mtxdistfile_init_matrix_coordinate_complex_double()’ allocates and
+ * initialises a matrix in coordinate format with complex, double
+ * precision coefficients.
+ */
+int mtxdistfile_init_matrix_coordinate_complex_double(
+    struct mtxdistfile * mtxdistfile,
+    enum mtxfilesymmetry symmetry,
+    int num_rows,
+    int num_columns,
+    int64_t num_nonzeros,
+    const struct mtxfile_matrix_coordinate_complex_double * data,
+    MPI_Comm comm,
+    struct mtxdisterror * disterr);
+
+/**
+ * ‘mtxdistfile_init_matrix_coordinate_integer_single()’ allocates and
+ * initialises a distributed matrix in coordinate format with integer,
+ * single precision coefficients.
+ */
+int mtxdistfile_init_matrix_coordinate_integer_single(
+    struct mtxdistfile * mtxdistfile,
+    enum mtxfilesymmetry symmetry,
+    int num_rows,
+    int num_columns,
+    int64_t num_nonzeros,
+    const struct mtxfile_matrix_coordinate_integer_single * data,
+    MPI_Comm comm,
+    struct mtxdisterror * disterr);
+
+/**
+ * ‘mtxdistfile_init_matrix_coordinate_integer_double()’ allocates and
+ * initialises a matrix in coordinate format with integer, double
+ * precision coefficients.
+ */
+int mtxdistfile_init_matrix_coordinate_integer_double(
+    struct mtxdistfile * mtxdistfile,
+    enum mtxfilesymmetry symmetry,
+    int num_rows,
+    int num_columns,
+    int64_t num_nonzeros,
+    const struct mtxfile_matrix_coordinate_integer_double * data,
+    MPI_Comm comm,
+    struct mtxdisterror * disterr);
+
+/**
+ * ‘mtxdistfile_init_matrix_coordinate_pattern()’ allocates and
+ * initialises a matrix in coordinate format with boolean (pattern)
+ * precision coefficients.
+ */
+int mtxdistfile_init_matrix_coordinate_pattern(
+    struct mtxdistfile * mtxdistfile,
+    enum mtxfilesymmetry symmetry,
+    int num_rows,
+    int num_columns,
+    int64_t num_nonzeros,
+    const struct mtxfile_matrix_coordinate_pattern * data,
+    MPI_Comm comm,
+    struct mtxdisterror * disterr);
+
+/*
+ * Vector coordinate formats
+ */
+
+/**
+ * ‘mtxdistfile_alloc_vector_coordinate()’ allocates a distributed
+ * vector in coordinate format.
+ */
+int mtxdistfile_alloc_vector_coordinate(
+    struct mtxdistfile * mtxdistfile,
+    enum mtxfilefield field,
+    enum mtxprecision precision,
+    int num_rows,
+    int64_t num_nonzeros,
+    MPI_Comm comm,
+    struct mtxdisterror * disterr);
+
+/**
+ * ‘mtxdistfile_init_vector_coordinate_real_single()’ allocates and
+ * initialises a distributed vector in coordinate format with real,
+ * single precision coefficients.
+ */
+int mtxdistfile_init_vector_coordinate_real_single(
+    struct mtxdistfile * mtxdistfile,
+    int num_rows,
+    int64_t num_nonzeros,
+    const struct mtxfile_vector_coordinate_real_single * data,
+    MPI_Comm comm,
+    struct mtxdisterror * disterr);
+
+/**
+ * ‘mtxdistfile_init_vector_coordinate_real_double()’ allocates and
+ * initialises a vector in coordinate format with real, double
+ * precision coefficients.
+ */
+int mtxdistfile_init_vector_coordinate_real_double(
+    struct mtxdistfile * mtxdistfile,
+    int num_rows,
+    int64_t num_nonzeros,
+    const struct mtxfile_vector_coordinate_real_double * data,
+    MPI_Comm comm,
+    struct mtxdisterror * disterr);
+
+/**
+ * ‘mtxdistfile_init_vector_coordinate_complex_single()’ allocates and
+ * initialises a distributed vector in coordinate format with complex,
+ * single precision coefficients.
+ */
+int mtxdistfile_init_vector_coordinate_complex_single(
+    struct mtxdistfile * mtxdistfile,
+    int num_rows,
+    int64_t num_nonzeros,
+    const struct mtxfile_vector_coordinate_complex_single * data,
+    MPI_Comm comm,
+    struct mtxdisterror * disterr);
+
+/**
+ * ‘mtxdistfile_init_vector_coordinate_complex_double()’ allocates and
+ * initialises a vector in coordinate format with complex, double
+ * precision coefficients.
+ */
+int mtxdistfile_init_vector_coordinate_complex_double(
+    struct mtxdistfile * mtxdistfile,
+    int num_rows,
+    int64_t num_nonzeros,
+    const struct mtxfile_vector_coordinate_complex_double * data,
+    MPI_Comm comm,
+    struct mtxdisterror * disterr);
+
+/**
+ * ‘mtxdistfile_init_vector_coordinate_integer_single()’ allocates and
+ * initialises a distributed vector in coordinate format with integer,
+ * single precision coefficients.
+ */
+int mtxdistfile_init_vector_coordinate_integer_single(
+    struct mtxdistfile * mtxdistfile,
+    int num_rows,
+    int64_t num_nonzeros,
+    const struct mtxfile_vector_coordinate_integer_single * data,
+    MPI_Comm comm,
+    struct mtxdisterror * disterr);
+
+/**
+ * ‘mtxdistfile_init_vector_coordinate_integer_double()’ allocates and
+ * initialises a vector in coordinate format with integer, double
+ * precision coefficients.
+ */
+int mtxdistfile_init_vector_coordinate_integer_double(
+    struct mtxdistfile * mtxdistfile,
+    int num_rows,
+    int64_t num_nonzeros,
+    const struct mtxfile_vector_coordinate_integer_double * data,
+    MPI_Comm comm,
+    struct mtxdisterror * disterr);
+
+/**
+ * ‘mtxdistfile_init_vector_coordinate_pattern()’ allocates and
+ * initialises a vector in coordinate format with boolean (pattern)
+ * precision coefficients.
+ */
+int mtxdistfile_init_vector_coordinate_pattern(
+    struct mtxdistfile * mtxdistfile,
+    int num_rows,
+    int64_t num_nonzeros,
+    const struct mtxfile_vector_coordinate_pattern * data,
+    MPI_Comm comm,
+    struct mtxdisterror * disterr);}
+@end example
+
+
+@node Distributed Matrix Market files: modifying values
+@section Modifying values
+@findex mtxdistfile_set_constant_real_single
+@findex mtxdistfile_set_constant_real_double
+@findex mtxdistfile_set_constant_complex_single
+@findex mtxdistfile_set_constant_complex_double
+@findex mtxdistfile_set_constant_integer_single
+@findex mtxdistfile_set_constant_integer_double
+@code{mtxdistfile_set_constant_real_single} sets every (nonzero) value
+of a distributed Matrix Market file equal to a constant, single
+precision floating point number.
+@example
+@code{int mtxdistfile_set_constant_real_single(
+    struct mtxdistfile * mtxdistfile,
+    float a,
+    struct mtxdisterror * disterr);
+
+int mtxdistfile_set_constant_real_double(
+    struct mtxdistfile * mtxdistfile,
+    double a,
+    struct mtxdisterror * disterr);
+
+int mtxdistfile_set_constant_complex_single(
+    struct mtxdistfile * mtxdistfile,
+    float a[2],
+    struct mtxdisterror * disterr);
+
+int mtxdistfile_set_constant_complex_double(
+    struct mtxdistfile * mtxdistfile,
+    float a[2],
+    struct mtxdisterror * disterr);
+
+int mtxdistfile_set_constant_integer_single(
+    struct mtxdistfile * mtxdistfile,
+    int32_t a,
+    struct mtxdisterror * disterr);
+
+int mtxdistfile_set_constant_integer_double(
+    struct mtxdistfile * mtxdistfile,
+    int32_t a,
+    struct mtxdisterror * disterr);}
+@end example
+
+@node Converting to and from distributed Matrix Market files
+@section Converting to and from distributed Matrix Market files
+This section describes how to convert a Matrix Market file that
+resides on a single process to a Matrix Market file that is
+distributed among multiple processes.
+
+@findex mtxdistfile_from_mtxfile
+@code{mtxdistfile_from_mtxfile} creates a distributed Matrix Market
+file from a Matrix Market file stored on a single root process by
+distributing the data of the underlying matrix or vector among
+processes in a communicator.
+@example
+@code{int mtxdistfile_from_mtxfile(
+    struct mtxdistfile * dst,
+    const struct mtxfile * src,
+    MPI_Comm comm,
+    int root,
+    struct mtxdisterror * disterr);}
+@end example
+This function performs collective communication and therefore requires
+every process in the communicator to perform matching calls to this
+function.
+
+
+@node Reading and writing distributed Matrix Market files
+@section Reading and writing distributed Matrix Market files
+
+
+@node Distributed Matrix Market files: transposing@comma{} sorting and reordering
+@section Transposing, sorting and reordering
+
+
 
 @c This section describes the basic data types used to represent
 @c distributed matrices and vectors.

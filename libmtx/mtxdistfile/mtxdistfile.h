@@ -16,7 +16,7 @@
  * along with libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-01-04
+ * Last modified: 2022-01-07
  *
  * Matrix Market files distributed among multiple processes with MPI
  * for inter-process communication.
@@ -50,53 +50,53 @@ struct mtx_partition;
 
 #ifdef LIBMTX_HAVE_MPI
 /**
- * `mtxdistfile' represents a file in the Matrix Market file format
+ * ‘mtxdistfile’ represents a file in the Matrix Market file format
  * distributed among multiple processes, where MPI is used for
  * communicating between processes.
  */
 struct mtxdistfile
 {
     /**
-     * `comm' is an MPI communicator for processes among which the
+     * ‘comm’ is an MPI communicator for processes among which the
      * Matrix Market file is distributed.
      */
     MPI_Comm comm;
 
     /**
-     * `comm_size' is the size of the MPI communicator.  This is equal
+     * ‘comm_size’ is the size of the MPI communicator.  This is equal
      * to the number of parts of the row partitioning of the matrix or
      * vector.
      */
     int comm_size;
 
     /**
-     * `rank' is the rank of the current process.
+     * ‘rank’ is the rank of the current process.
      */
     int rank;
 
     /**
-     * `header' is the Matrix Market file header.
+     * ‘header’ is the Matrix Market file header.
      */
     struct mtxfileheader header;
 
     /**
-     * `comments' is the Matrix Market comment lines.
+     * ‘comments’ is the Matrix Market comment lines.
      */
     struct mtxfilecomments comments;
 
     /**
-     * `size' is the Matrix Market size line.
+     * ‘size’ is the Matrix Market size line.
      */
     struct mtxfilesize size;
 
     /**
-     * `precision' is the precision used to store the values of the
+     * ‘precision’ is the precision used to store the values of the
      * Matrix Market data lines.
      */
     enum mtxprecision precision;
 
     /**
-     * `mtxfile' is the part of the Matrix Market file owned by the
+     * ‘mtxfile’ is the part of the Matrix Market file owned by the
      * current process.
      */
     struct mtxfile mtxfile;
@@ -107,7 +107,7 @@ struct mtxdistfile
  */
 
 /**
- * `mtxdistfile_init()' creates a distributed Matrix Market file from
+ * ‘mtxdistfile_init()’ creates a distributed Matrix Market file from
  * Matrix Market files on each process in a communicator.
  *
  * This function performs collective communication and therefore
@@ -121,14 +121,14 @@ int mtxdistfile_init(
     struct mtxdisterror * disterr);
 
 /**
- * `mtxdistfile_free()' frees storage allocated for a distributed
+ * ‘mtxdistfile_free()’ frees storage allocated for a distributed
  * Matrix Market file.
  */
 void mtxdistfile_free(
     struct mtxdistfile * mtxdistfile);
 
 /**
- * `mtxdistfile_alloc_copy()' allocates storage for a copy of a
+ * ‘mtxdistfile_alloc_copy()’ allocates storage for a copy of a
  * distributed Matrix Market file without initialising the underlying
  * values.
  */
@@ -138,7 +138,7 @@ int mtxdistfile_alloc_copy(
     struct mtxdisterror * disterr);
 
 /**
- * `mtxdistfile_init_copy()' creates a copy of a distributed Matrix
+ * ‘mtxdistfile_init_copy()’ creates a copy of a distributed Matrix
  * Market file.
  */
 int mtxdistfile_init_copy(
@@ -151,7 +151,7 @@ int mtxdistfile_init_copy(
  */
 
 /**
- * `mtxdistfile_alloc_matrix_array()' allocates a distributed matrix
+ * ‘mtxdistfile_alloc_matrix_array()’ allocates a distributed matrix
  * in array format.
  */
 int mtxdistfile_alloc_matrix_array(
@@ -165,7 +165,7 @@ int mtxdistfile_alloc_matrix_array(
     struct mtxdisterror * disterr);
 
 /**
- * `mtxdistfile_init_matrix_array_real_single()' allocates and
+ * ‘mtxdistfile_init_matrix_array_real_single()’ allocates and
  * initialises a distributed matrix in array format with real, single
  * precision coefficients.
  */
@@ -179,7 +179,7 @@ int mtxdistfile_init_matrix_array_real_single(
     struct mtxdisterror * disterr);
 
 /**
- * `mtxdistfile_init_matrix_array_real_double()' allocates and initialises
+ * ‘mtxdistfile_init_matrix_array_real_double()’ allocates and initialises
  * a matrix in array format with real, double precision coefficients.
  */
 int mtxdistfile_init_matrix_array_real_double(
@@ -192,7 +192,7 @@ int mtxdistfile_init_matrix_array_real_double(
     struct mtxdisterror * disterr);
 
 /**
- * `mtxdistfile_init_matrix_array_complex_single()' allocates and
+ * ‘mtxdistfile_init_matrix_array_complex_single()’ allocates and
  * initialises a distributed matrix in array format with complex,
  * single precision coefficients.
  */
@@ -206,7 +206,7 @@ int mtxdistfile_init_matrix_array_complex_single(
     struct mtxdisterror * disterr);
 
 /**
- * `mtxdistfile_init_matrix_array_complex_double()' allocates and
+ * ‘mtxdistfile_init_matrix_array_complex_double()’ allocates and
  * initialises a matrix in array format with complex, double precision
  * coefficients.
  */
@@ -220,7 +220,7 @@ int mtxdistfile_init_matrix_array_complex_double(
     struct mtxdisterror * disterr);
 
 /**
- * `mtxdistfile_init_matrix_array_integer_single()' allocates and
+ * ‘mtxdistfile_init_matrix_array_integer_single()’ allocates and
  * initialises a distributed matrix in array format with integer,
  * single precision coefficients.
  */
@@ -234,7 +234,7 @@ int mtxdistfile_init_matrix_array_integer_single(
     struct mtxdisterror * disterr);
 
 /**
- * `mtxdistfile_init_matrix_array_integer_double()' allocates and
+ * ‘mtxdistfile_init_matrix_array_integer_double()’ allocates and
  * initialises a matrix in array format with integer, double precision
  * coefficients.
  */
@@ -252,7 +252,7 @@ int mtxdistfile_init_matrix_array_integer_double(
  */
 
 /**
- * `mtxdistfile_alloc_vector_array()' allocates a distributed vector
+ * ‘mtxdistfile_alloc_vector_array()’ allocates a distributed vector
  * in array format.
  */
 int mtxdistfile_alloc_vector_array(
@@ -264,7 +264,7 @@ int mtxdistfile_alloc_vector_array(
     struct mtxdisterror * disterr);
 
 /**
- * `mtxdistfile_init_vector_array_real_single()' allocates and
+ * ‘mtxdistfile_init_vector_array_real_single()’ allocates and
  * initialises a distributed vector in array format with real, single
  * precision coefficients.
  */
@@ -276,7 +276,7 @@ int mtxdistfile_init_vector_array_real_single(
     struct mtxdisterror * disterr);
 
 /**
- * `mtxdistfile_init_vector_array_real_double()' allocates and initialises
+ * ‘mtxdistfile_init_vector_array_real_double()’ allocates and initialises
  * a vector in array format with real, double precision coefficients.
  */
 int mtxdistfile_init_vector_array_real_double(
@@ -287,7 +287,7 @@ int mtxdistfile_init_vector_array_real_double(
     struct mtxdisterror * disterr);
 
 /**
- * `mtxdistfile_init_vector_array_complex_single()' allocates and
+ * ‘mtxdistfile_init_vector_array_complex_single()’ allocates and
  * initialises a distributed vector in array format with complex,
  * single precision coefficients.
  */
@@ -299,7 +299,7 @@ int mtxdistfile_init_vector_array_complex_single(
     struct mtxdisterror * disterr);
 
 /**
- * `mtxdistfile_init_vector_array_complex_double()' allocates and
+ * ‘mtxdistfile_init_vector_array_complex_double()’ allocates and
  * initialises a vector in array format with complex, double precision
  * coefficients.
  */
@@ -311,7 +311,7 @@ int mtxdistfile_init_vector_array_complex_double(
     struct mtxdisterror * disterr);
 
 /**
- * `mtxdistfile_init_vector_array_integer_single()' allocates and
+ * ‘mtxdistfile_init_vector_array_integer_single()’ allocates and
  * initialises a distributed vector in array format with integer,
  * single precision coefficients.
  */
@@ -323,7 +323,7 @@ int mtxdistfile_init_vector_array_integer_single(
     struct mtxdisterror * disterr);
 
 /**
- * `mtxdistfile_init_vector_array_integer_double()' allocates and
+ * ‘mtxdistfile_init_vector_array_integer_double()’ allocates and
  * initialises a vector in array format with integer, double precision
  * coefficients.
  */
@@ -339,7 +339,7 @@ int mtxdistfile_init_vector_array_integer_double(
  */
 
 /**
- * `mtxdistfile_alloc_matrix_coordinate()' allocates a distributed
+ * ‘mtxdistfile_alloc_matrix_coordinate()’ allocates a distributed
  * matrix in coordinate format.
  */
 int mtxdistfile_alloc_matrix_coordinate(
@@ -354,7 +354,7 @@ int mtxdistfile_alloc_matrix_coordinate(
     struct mtxdisterror * disterr);
 
 /**
- * `mtxdistfile_init_matrix_coordinate_real_single()' allocates and
+ * ‘mtxdistfile_init_matrix_coordinate_real_single()’ allocates and
  * initialises a distributed matrix in coordinate format with real,
  * single precision coefficients.
  */
@@ -369,7 +369,7 @@ int mtxdistfile_init_matrix_coordinate_real_single(
     struct mtxdisterror * disterr);
 
 /**
- * `mtxdistfile_init_matrix_coordinate_real_double()' allocates and
+ * ‘mtxdistfile_init_matrix_coordinate_real_double()’ allocates and
  * initialises a matrix in coordinate format with real, double
  * precision coefficients.
  */
@@ -384,7 +384,7 @@ int mtxdistfile_init_matrix_coordinate_real_double(
     struct mtxdisterror * disterr);
 
 /**
- * `mtxdistfile_init_matrix_coordinate_complex_single()' allocates and
+ * ‘mtxdistfile_init_matrix_coordinate_complex_single()’ allocates and
  * initialises a distributed matrix in coordinate format with complex,
  * single precision coefficients.
  */
@@ -399,7 +399,7 @@ int mtxdistfile_init_matrix_coordinate_complex_single(
     struct mtxdisterror * disterr);
 
 /**
- * `mtxdistfile_init_matrix_coordinate_complex_double()' allocates and
+ * ‘mtxdistfile_init_matrix_coordinate_complex_double()’ allocates and
  * initialises a matrix in coordinate format with complex, double
  * precision coefficients.
  */
@@ -414,7 +414,7 @@ int mtxdistfile_init_matrix_coordinate_complex_double(
     struct mtxdisterror * disterr);
 
 /**
- * `mtxdistfile_init_matrix_coordinate_integer_single()' allocates and
+ * ‘mtxdistfile_init_matrix_coordinate_integer_single()’ allocates and
  * initialises a distributed matrix in coordinate format with integer,
  * single precision coefficients.
  */
@@ -429,7 +429,7 @@ int mtxdistfile_init_matrix_coordinate_integer_single(
     struct mtxdisterror * disterr);
 
 /**
- * `mtxdistfile_init_matrix_coordinate_integer_double()' allocates and
+ * ‘mtxdistfile_init_matrix_coordinate_integer_double()’ allocates and
  * initialises a matrix in coordinate format with integer, double
  * precision coefficients.
  */
@@ -444,7 +444,7 @@ int mtxdistfile_init_matrix_coordinate_integer_double(
     struct mtxdisterror * disterr);
 
 /**
- * `mtxdistfile_init_matrix_coordinate_pattern()' allocates and
+ * ‘mtxdistfile_init_matrix_coordinate_pattern()’ allocates and
  * initialises a matrix in coordinate format with boolean (pattern)
  * precision coefficients.
  */
@@ -463,7 +463,7 @@ int mtxdistfile_init_matrix_coordinate_pattern(
  */
 
 /**
- * `mtxdistfile_alloc_vector_coordinate()' allocates a distributed
+ * ‘mtxdistfile_alloc_vector_coordinate()’ allocates a distributed
  * vector in coordinate format.
  */
 int mtxdistfile_alloc_vector_coordinate(
@@ -476,7 +476,7 @@ int mtxdistfile_alloc_vector_coordinate(
     struct mtxdisterror * disterr);
 
 /**
- * `mtxdistfile_init_vector_coordinate_real_single()' allocates and
+ * ‘mtxdistfile_init_vector_coordinate_real_single()’ allocates and
  * initialises a distributed vector in coordinate format with real,
  * single precision coefficients.
  */
@@ -489,7 +489,7 @@ int mtxdistfile_init_vector_coordinate_real_single(
     struct mtxdisterror * disterr);
 
 /**
- * `mtxdistfile_init_vector_coordinate_real_double()' allocates and
+ * ‘mtxdistfile_init_vector_coordinate_real_double()’ allocates and
  * initialises a vector in coordinate format with real, double
  * precision coefficients.
  */
@@ -502,7 +502,7 @@ int mtxdistfile_init_vector_coordinate_real_double(
     struct mtxdisterror * disterr);
 
 /**
- * `mtxdistfile_init_vector_coordinate_complex_single()' allocates and
+ * ‘mtxdistfile_init_vector_coordinate_complex_single()’ allocates and
  * initialises a distributed vector in coordinate format with complex,
  * single precision coefficients.
  */
@@ -515,7 +515,7 @@ int mtxdistfile_init_vector_coordinate_complex_single(
     struct mtxdisterror * disterr);
 
 /**
- * `mtxdistfile_init_vector_coordinate_complex_double()' allocates and
+ * ‘mtxdistfile_init_vector_coordinate_complex_double()’ allocates and
  * initialises a vector in coordinate format with complex, double
  * precision coefficients.
  */
@@ -528,7 +528,7 @@ int mtxdistfile_init_vector_coordinate_complex_double(
     struct mtxdisterror * disterr);
 
 /**
- * `mtxdistfile_init_vector_coordinate_integer_single()' allocates and
+ * ‘mtxdistfile_init_vector_coordinate_integer_single()’ allocates and
  * initialises a distributed vector in coordinate format with integer,
  * single precision coefficients.
  */
@@ -541,7 +541,7 @@ int mtxdistfile_init_vector_coordinate_integer_single(
     struct mtxdisterror * disterr);
 
 /**
- * `mtxdistfile_init_vector_coordinate_integer_double()' allocates and
+ * ‘mtxdistfile_init_vector_coordinate_integer_double()’ allocates and
  * initialises a vector in coordinate format with integer, double
  * precision coefficients.
  */
@@ -554,7 +554,7 @@ int mtxdistfile_init_vector_coordinate_integer_double(
     struct mtxdisterror * disterr);
 
 /**
- * `mtxdistfile_init_vector_coordinate_pattern()' allocates and
+ * ‘mtxdistfile_init_vector_coordinate_pattern()’ allocates and
  * initialises a vector in coordinate format with boolean (pattern)
  * precision coefficients.
  */
@@ -571,7 +571,7 @@ int mtxdistfile_init_vector_coordinate_pattern(
  */
 
 /**
- * `mtxdistfile_set_constant_real_single()' sets every (nonzero) value
+ * ‘mtxdistfile_set_constant_real_single()’ sets every (nonzero) value
  * of a matrix or vector equal to a constant, single precision
  * floating point number.
  */
@@ -581,7 +581,7 @@ int mtxdistfile_set_constant_real_single(
     struct mtxdisterror * disterr);
 
 /**
- * `mtxdistfile_set_constant_real_double()' sets every (nonzero) value
+ * ‘mtxdistfile_set_constant_real_double()’ sets every (nonzero) value
  * of a matrix or vector equal to a constant, double precision
  * floating point number.
  */
@@ -591,7 +591,7 @@ int mtxdistfile_set_constant_real_double(
     struct mtxdisterror * disterr);
 
 /**
- * `mtxdistfile_set_constant_complex_single()' sets every (nonzero)
+ * ‘mtxdistfile_set_constant_complex_single()’ sets every (nonzero)
  * value of a matrix or vector equal to a constant, single precision
  * floating point complex number.
  */
@@ -601,7 +601,7 @@ int mtxdistfile_set_constant_complex_single(
     struct mtxdisterror * disterr);
 
 /**
- * `mtxdistfile_set_constant_integer_single()' sets every (nonzero)
+ * ‘mtxdistfile_set_constant_integer_single()’ sets every (nonzero)
  * value of a matrix or vector equal to a constant integer.
  */
 int mtxdistfile_set_constant_integer_single(
@@ -614,7 +614,7 @@ int mtxdistfile_set_constant_integer_single(
  */
 
 /**
- * `mtxdistfile_from_mtxfile()' creates a distributed Matrix Market
+ * ‘mtxdistfile_from_mtxfile()’ creates a distributed Matrix Market
  * file from a Matrix Market file stored on a single root process by
  * distributing the data of the underlying matrix or vector among
  * processes in a communicator.
@@ -635,13 +635,13 @@ int mtxdistfile_from_mtxfile(
  */
 
 /**
- * `mtxdistfile_read()' reads a Matrix Market file from the given path
+ * ‘mtxdistfile_read()’ reads a Matrix Market file from the given path
  * and distributes the data among MPI processes in a communicator.
  *
- * `precision' is used to determine the precision to use for storing
+ * ‘precision’ is used to determine the precision to use for storing
  * the values of matrix or vector entries.
  *
- * If an error code is returned, then `lines_read' and `bytes_read'
+ * If an error code is returned, then ‘lines_read’ and ‘bytes_read’
  * are used to return the line number and byte at which the error was
  * encountered during the parsing of the Matrix Market file.
  *
@@ -672,13 +672,13 @@ int mtxdistfile_read(
     struct mtxdisterror * disterr);
 
 /**
- * `mtxdistfile_fread()' reads a Matrix Market file from a stream and
+ * ‘mtxdistfile_fread()’ reads a Matrix Market file from a stream and
  * distributes the data among MPI processes in a communicator.
  *
- * `precision' is used to determine the precision to use for storing
+ * ‘precision’ is used to determine the precision to use for storing
  * the values of matrix or vector entries.
  *
- * If an error code is returned, then `lines_read' and `bytes_read'
+ * If an error code is returned, then ‘lines_read’ and ‘bytes_read’
  * are used to return the line number and byte at which the error was
  * encountered during the parsing of the Matrix Market file.
  *
@@ -716,25 +716,25 @@ int mtxdistfile_fread(
     struct mtxdisterror * disterr);
 
 /**
- * `mtxdistfile_write_shared()' writes a distributed Matrix Market
+ * ‘mtxdistfile_write_shared()’ writes a distributed Matrix Market
  * file to a single file that is shared by all processes in the
  * communicator.  The file may optionally be compressed by gzip.
  *
- * If `path' is `-', then standard output is used.
+ * If ‘path’ is ‘-’, then standard output is used.
  *
  * If ‘fmt’ is ‘NULL’, then the format specifier ‘%g’ is used to print
  * floating point numbers with enough digits to ensure correct
  * round-trip conversion from decimal text and back.  Otherwise, the
  * given format string is used to print numerical values.
  *
- * The format string follows the conventions of `printf'. If the field
- * is `real', `double' or `complex', then the format specifiers '%e',
- * '%E', '%f', '%F', '%g' or '%G' may be used. If the field is
- * `integer', then the format specifier must be '%d'. The format
- * string is ignored if the field is `pattern'. Field width and
- * precision may be specified (e.g., "%3.1f"), but variable field
- * width and precision (e.g., "%*.*f"), as well as length modifiers
- * (e.g., "%Lf") are not allowed.
+ * The format string follows the conventions of ‘printf’. If the field
+ * is ‘real’ or ‘complex’, then the format specifiers '%e', '%E',
+ * '%f', '%F', '%g' or '%G' may be used. If the field is ‘integer’,
+ * then the format specifier must be '%d'. The format string is
+ * ignored if the field is ‘pattern’. Field width and precision may be
+ * specified (e.g., "%3.1f"), but variable field width and precision
+ * (e.g., "%*.*f"), as well as length modifiers (e.g., "%Lf") are not
+ * allowed.
  *
  * Note that only the specified ‘root’ process will print anything to
  * the stream. Other processes will therefore send their part of the
@@ -754,24 +754,24 @@ int mtxdistfile_write_shared(
     struct mtxdisterror * disterr);
 
 /**
- * `mtxdistfile_write()' writes a distributed Matrix Market file to
+ * ‘mtxdistfile_write()’ writes a distributed Matrix Market file to
  * the given path.  The file may optionally be compressed by gzip.
  *
- * If `path' is `-', then standard output is used.
+ * If ‘path’ is ‘-’, then standard output is used.
  *
  * If ‘fmt’ is ‘NULL’, then the format specifier ‘%g’ is used to print
  * floating point numbers with enough digits to ensure correct
  * round-trip conversion from decimal text and back.  Otherwise, the
  * given format string is used to print numerical values.
  *
- * The format string follows the conventions of `printf'. If the field
- * is `real', `double' or `complex', then the format specifiers '%e',
- * '%E', '%f', '%F', '%g' or '%G' may be used. If the field is
- * `integer', then the format specifier must be '%d'. The format
- * string is ignored if the field is `pattern'. Field width and
- * precision may be specified (e.g., "%3.1f"), but variable field
- * width and precision (e.g., "%*.*f"), as well as length modifiers
- * (e.g., "%Lf") are not allowed.
+ * The format string follows the conventions of ‘printf’. If the field
+ * is ‘real’ or ‘complex’, then the format specifiers '%e', '%E',
+ * '%f', '%F', '%g' or '%G' may be used. If the field is ‘integer’,
+ * then the format specifier must be '%d'. The format string is
+ * ignored if the field is ‘pattern’. Field width and precision may be
+ * specified (e.g., "%3.1f"), but variable field width and precision
+ * (e.g., "%*.*f"), as well as length modifiers (e.g., "%Lf") are not
+ * allowed.
  *
  * This function performs collective communication and therefore
  * requires every process in the communicator to perform matching
@@ -787,7 +787,7 @@ int mtxdistfile_write(
     struct mtxdisterror * disterr);
 
 /**
- * `mtxdistfile_fwrite()' writes a distributed Matrix Market file to
+ * ‘mtxdistfile_fwrite()’ writes a distributed Matrix Market file to
  * the specified stream on each process.
  *
  * If ‘fmt’ is ‘NULL’, then the format specifier ‘%g’ is used to print
@@ -795,19 +795,19 @@ int mtxdistfile_write(
  * round-trip conversion from decimal text and back.  Otherwise, the
  * given format string is used to print numerical values.
  *
- * The format string follows the conventions of `printf'. If the field
- * is `real', `double' or `complex', then the format specifiers '%e',
- * '%E', '%f', '%F', '%g' or '%G' may be used. If the field is
- * `integer', then the format specifier must be '%d'. The format
- * string is ignored if the field is `pattern'. Field width and
- * precision may be specified (e.g., "%3.1f"), but variable field
- * width and precision (e.g., "%*.*f"), as well as length modifiers
- * (e.g., "%Lf") are not allowed.
+ * The format string follows the conventions of ‘printf’. If the field
+ * is ‘real’ or ‘complex’, then the format specifiers '%e', '%E',
+ * '%f', '%F', '%g' or '%G' may be used. If the field is ‘integer’,
+ * then the format specifier must be '%d'. The format string is
+ * ignored if the field is ‘pattern’. Field width and precision may be
+ * specified (e.g., "%3.1f"), but variable field width and precision
+ * (e.g., "%*.*f"), as well as length modifiers (e.g., "%Lf") are not
+ * allowed.
  *
- * If it is not `NULL', then the number of bytes written to the stream
- * is returned in `bytes_written'.
+ * If it is not ‘NULL’, then the number of bytes written to the stream
+ * is returned in ‘bytes_written’.
  *
- * If `sequential' is true, then output is performed in sequence by
+ * If ‘sequential’ is true, then output is performed in sequence by
  * MPI processes in the communicator.  This is useful, for example,
  * when writing to a common stream, such as standard output.  In this
  * case, we want to ensure that the processes write their data in the
@@ -826,7 +826,7 @@ int mtxdistfile_fwrite(
     struct mtxdisterror * disterr);
 
 /**
- * `mtxdistfile_fwrite_shared()' writes a distributed Matrix Market
+ * ‘mtxdistfile_fwrite_shared()’ writes a distributed Matrix Market
  * file to a single stream that is shared by every process in the
  * communicator.
  *
@@ -835,17 +835,17 @@ int mtxdistfile_fwrite(
  * round-trip conversion from decimal text and back.  Otherwise, the
  * given format string is used to print numerical values.
  *
- * The format string follows the conventions of `printf'. If the field
- * is `real', `double' or `complex', then the format specifiers '%e',
- * '%E', '%f', '%F', '%g' or '%G' may be used. If the field is
- * `integer', then the format specifier must be '%d'. The format
- * string is ignored if the field is `pattern'. Field width and
- * precision may be specified (e.g., "%3.1f"), but variable field
- * width and precision (e.g., "%*.*f"), as well as length modifiers
- * (e.g., "%Lf") are not allowed.
+ * The format string follows the conventions of ‘printf’. If the field
+ * is ‘real’ or ‘complex’, then the format specifiers '%e', '%E',
+ * '%f', '%F', '%g' or '%G' may be used. If the field is ‘integer’,
+ * then the format specifier must be '%d'. The format string is
+ * ignored if the field is ‘pattern’. Field width and precision may be
+ * specified (e.g., "%3.1f"), but variable field width and precision
+ * (e.g., "%*.*f"), as well as length modifiers (e.g., "%Lf") are not
+ * allowed.
  *
- * If it is not `NULL', then the number of bytes written to the stream
- * is returned in `bytes_written'.
+ * If it is not ‘NULL’, then the number of bytes written to the stream
+ * is returned in ‘bytes_written’.
  *
  * Note that only the specified ‘root’ process will print anything to
  * the stream. Other processes will therefore send their part of the

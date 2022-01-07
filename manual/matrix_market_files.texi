@@ -15,7 +15,7 @@
 @c along with libmtx.  If not, see <https://www.gnu.org/licenses/>.
 @c
 @c Authors: James D. Trotter <james@simula.no>
-@c Last modified: 2022-01-05
+@c Last modified: 2022-01-07
 @c
 @c libmtx User Guide: Matrix Market files.
 
@@ -26,7 +26,7 @@ This chapter provides a detailed explanation of how to work with
 Matrix Market files using the libmtx C library.  For now, we are
 concerned with Matrix Market files on a single, shared-memory machine
 or node.  For files that are distributed across multiple processes
-using MPI, see @ref{Distributed matrices and vectors}.
+using MPI, see @ref{Distributed Matrix Market files}.
 
 For any user-facing types and functions, the library uses the
 convention of prefixing their names with @code{mtx}. This makes it
@@ -35,15 +35,18 @@ libmtx.
 
 @menu
 * Error handling:: How to handle errors when working with the libmtx C library.
-* Matrix Market files: Matrix Market files - data structures. Basic data structure for representing Matrix Market objects.
-* Reading and writing Matrix Market files:: Functions for reading from and writing to files in Matrix Market format.
-* Creating Matrix Market files:: Functions for creating matrices and vectors in Matrix Market format.
-* Transposing sorting and reordering:: Transposing, sorting and reordering matrices and vectors.
+* Data structures: Matrix Market files - data structures. Basic data structures for representing objects in Matrix Market format.
+* Reading and writing Matrix Market files:: How to read from and write to files in Matrix Market format.
+* Creating Matrix Market files:: How to create matrices and vectors in Matrix Market format.
+* Transposing sorting and reordering:: How to transpose, sort and reorder matrices and vectors.
+* Communicating Matrix Market files:: How to communicate Matrix Market files between processes.
 @end menu
 
 
 @node Error handling
 @section Error handling
+
+@cindex error handling
 Functions in the libmtx C library generally return a status code that
 either indicates success (represented by the status code
 @samp{MTX_SUCCESS}) or a specific error.  Valid error codes correspond
@@ -998,3 +1001,116 @@ of the matrix, whereas a starting vertex in the range
 @code{[@var{M}+1,@var{M}+@var{N}]}, where @code{@var{N}} is the number
 of matrix columns, selects a vertex corresponding to a column of the
 matrix.
+
+
+@node Communicating Matrix Market files
+@section Communicating Matrix Market files
+If libmtx is built with MPI support, then some additional
+functionality becomes available to allow sending and receiving Matrix
+Market files between MPI processes. Note that these functions rely on
+the error handling functionality described in @ref{Error handling for
+distributed Matrix Market files}.
+
+The most basic functions for communicating @file{mtx} files are
+@code{mtxfile_send} and @code{mtxfile_recv}. The former sends a Matrix
+Market file to another MPI process, whereas the latter receives a
+Matrix Market file from another MPI process.
+@example
+@code{int mtxfile_send(
+    const struct mtxfile * mtxfile,
+    int dest, int tag, MPI_Comm comm,
+    struct mtxdisterror * disterr);
+
+int mtxfile_recv(
+    struct mtxfile * mtxfile,
+    int source, int tag, MPI_Comm comm,
+    struct mtxdisterror * disterr);}
+@end example
+These functions are analogous to @code{MPI_Send} and
+@code{MPI_Recv}. Thus, a call to @code{mtxfile_send} requires the
+receiving process (@code{dest}) to perform a matching call to
+@code{mtxfile_recv}. Similarly, @code{mtxfile_recv} requires the
+sending process (@code{source}) to perform a matching call to
+@code{mtxfile_send}.
+
+Note that the MPI communicator @code{comm} must be the same MPI
+communicator that was passed to @code{mtxdisterror_alloc} to create
+@code{disterr}. This applies to all of the functions in this section.
+
+The function @code{mtxfile_bcast} broadcasts a Matrix Market file from an MPI root
+process to other processes in a communicator.
+@example
+@code{int mtxfile_bcast(
+    struct mtxfile * mtxfile,
+    int root, MPI_Comm comm,
+    struct mtxdisterror * disterr);}
+@end example
+This function is analogous to @code{MPI_Bcast} and therefore requires
+every process in a communicator to perform matching calls to
+@code{mtxfile_bcast}.
+
+There are also a number of other functions that mirror the
+functionality of @code{MPI_Gather}, @code{MPI_Allgather},
+@code{MPI_Scatter} and @code{MPI_Alltoall}. These functions are all
+collective and therefore require every process in a communicator to
+perform matching calls to the relevant function.
+
+The following is a brief description of each function:
+@itemize
+@item @code{mtxfile_gather}
+gathers Matrix Market files onto an MPI root process from other
+processes in a communicator.
+@item @code{mtxfile_allgather}
+gathers Matrix Market files onto every MPI process from other
+processes in a communicator.
+@item @code{mtxfile_scatter}
+scatters Matrix Market files from an MPI root process to other
+processes in a communicator.
+@item @code{mtxfile_alltoall}
+performs an all-to-all exchange of Matrix Market files between MPI
+process in a communicator.
+@end itemize
+@example
+@code{
+int mtxfile_gather(
+    const struct mtxfile * sendmtxfile,
+    struct mtxfile * recvmtxfiles,
+    int root, MPI_Comm comm,
+    struct mtxdisterror * disterr);
+
+int mtxfile_allgather(
+    const struct mtxfile * sendmtxfile,
+    struct mtxfile * recvmtxfiles,
+    MPI_Comm comm,
+    struct mtxdisterror * disterr);
+
+int mtxfile_scatter(
+    const struct mtxfile * sendmtxfiles,
+    struct mtxfile * recvmtxfile,
+    int root, MPI_Comm comm,
+    struct mtxdisterror * disterr);}
+
+int mtxfile_alltoall(
+    const struct mtxfile * sendmtxfiles,
+    struct mtxfile * recvmtxfiles,
+    MPI_Comm comm,
+    struct mtxdisterror * disterr);
+@end example
+
+@code{mtxfile_scatterv} scatters a Matrix Market file from an MPI root
+process to other processes in a communicator, while allowing different
+amounts of data lines or values to be sent to each process.
+@example
+@code{
+int mtxfile_scatterv(
+    const struct mtxfile * sendmtxfile,
+    const int * sendcounts,
+    const int * displs,
+    struct mtxfile * recvmtxfile,
+    int recvcount,
+    int root, MPI_Comm comm,
+    struct mtxdisterror * disterr);}
+@end example
+Note that for a matrix in array format, entire rows are scattered,
+which means that the send and receive counts must be multiples of the
+number of matrix columns.

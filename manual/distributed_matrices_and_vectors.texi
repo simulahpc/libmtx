@@ -1,5 +1,5 @@
 @c This file is part of libmtx.
-@c Copyright (C) 2021 James D. Trotter
+@c Copyright (C) 2022 James D. Trotter
 @c
 @c libmtx is free software: you can redistribute it and/or
 @c modify it under the terms of the GNU General Public License as
@@ -16,7 +16,7 @@
 @c <https://www.gnu.org/licenses/>.
 @c
 @c Authors: James D. Trotter <james@simula.no>
-@c Last modified: 2021-08-09
+@c Last modified: 2022-01-07
 @c
 @c libmtx User Guide: Matrix Market objects.
 
@@ -31,7 +31,7 @@ build libmtx with MPI support.
 @menu
 * Data types:: Basic data types for representing distributed matrices and vectors.
 * Creating distributed matrices and vectors:: Functions for creating distributed matrices and vectors.
-* Reading and writing distributed Matrix Market files:: Functions for reading from and writing to files in Matrix Market format.
+@c * Reading and writing distributed Matrix Market files:: Functions for reading from and writing to files in Matrix Market format.
 * Communicating matrices and vectors:: Message-passing functions for Matrix Market objects
 @end menu
 
@@ -224,8 +224,8 @@ are finished with the matrix or vector:
 @subsection Creating distributed matrices
 
 
-@node Reading and writing distributed Matrix Market files
-@section Reading and writing distributed Matrix Market files
+@c @node Reading and writing distributed Matrix Market files
+@c @section Reading and writing distributed Matrix Market files
 
 
 @node Communicating matrices and vectors
