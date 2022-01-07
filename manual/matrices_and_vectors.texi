@@ -309,7 +309,7 @@ The following Level 1 BLAS operations are supported:
 @cindex vector addition
 @cindex Euclidean inner product
 @cindex Euclidean norm
-@cindex Sum of absolute values
+@cindex sum of absolute values
 @itemize
 @item @code{swap} --- swap two vectors, @code{y <- x} and @code{x <- y}
 @item @code{copy} --- copy a vector, @code{y = x}
@@ -742,7 +742,7 @@ The following Level 1 BLAS operations are supported:
 @cindex matrix addition
 @cindex Frobenius inner product
 @cindex Frobenius norm
-@cindex Sum of absolute values
+@cindex sum of absolute values
 @itemize
 @item @code{swap} --- swap two matrices, @code{Y <- X} and @code{X <- Y}
 @item @code{copy} --- copy a matrix, @code{Y = X}

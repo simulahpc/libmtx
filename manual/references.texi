@@ -30,6 +30,15 @@ Market exchange formats: Initial design}. Technical Report NISTIR
 5935, National Institute of Standards and Technology, Gaithersburg,
 MD, USA, December 1996.
 
+@item @anchor{W. Gropp@comma{} E. Lusk and R. Thakur (1999)}
+William Gropp, Ewing Lusk and Rajeev Thakur. @cite{Using MPI-2:
+Advanced Features of the Message-Passing Interface}, MIT Press,
+1999. ISBN 978-0-262-57133-3.
+
+@item @anchor{HDF5}
+The HDF Group. @cite{Hierarchical data format version 5},
+1997--2022. @url{http://www.hdfgroup.org/HDF5}.
+
 @item @anchor{National Institute of Standards and Technology [NIST] (2007)}
 National Institute of Standards and Technology (NIST). @cite{Matrix
 Market}. Mathematical and Computational Sciences Division, Information

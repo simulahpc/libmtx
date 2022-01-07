@@ -239,11 +239,20 @@ Briefly explained, @code{num_data_lines} will contain the number of
 data lines in data section of a Matrix Market file with the given size
 line and symmetry. More specifically, @code{num_data_lines} is set to
 @itemize
-@item @code{num_nonzeros}, if @code{num_nonzeros} is non-negative; or
-@item @code{num_rows*num_columns}, if @code{num_rows} and @code{num_columns} are both non-negative and @code{symmetry} is @samp{mtxfile_general}; or
-@item @code{num_rows*(num_rows+1)/2}, if @code{num_rows} is non-negative and equal to @code{num_columns}, and @code{symmetry} is @samp{mtxfile_symmetric} or @samp{mtxfile_hermitian}; or
-@item @code{num_rows*(num_rows-1)/2}, if @code{num_rows} is non-negative and equal to @code{num_columns}, and @code{symmetry} is @samp{mtxfile_skew_symmetric}; or
-@item @code{num_rows}, if @code{num_rows} is non-negative.
+@item @code{num_nonzeros},
+if @code{num_nonzeros} is non-negative; or
+@item @code{num_rows*num_columns},
+if @code{num_rows} and @code{num_columns} are both non-negative and
+@code{symmetry} is @samp{mtxfile_general}; or
+@item @code{num_rows*(num_rows+1)/2},
+if @code{num_rows} is non-negative and equal to @code{num_columns},
+and @code{symmetry} is @samp{mtxfile_symmetric} or
+@samp{mtxfile_hermitian}; or
+@item @code{num_rows*(num_rows-1)/2},
+if @code{num_rows} is non-negative and equal to @code{num_columns},
+and @code{symmetry} is @samp{mtxfile_skew_symmetric}; or
+@item @code{num_rows},
+if @code{num_rows} is non-negative.
 @end itemize
 
 
@@ -255,7 +264,7 @@ flexible, since it does not prescribe any limits or fixed precision on
 the values that are stored.
 
 In practice, however, it is more convenient to convert matrix and
-vector values to integer or floating point types. The
+vector values to fixed-precision integer or floating point types. The
 @code{mtxprecision} enum type can be used to choose between single
 (32-bit) and double (64-bit) precision at runtime.
 
@@ -268,11 +277,11 @@ vector values to integer or floating point types. The
 @tindex mtxprecision
 @example
 @code{enum mtxprecision @{
-@c    mtx_half,             /* Half (16-bit) precision */
-    mtx_single,           /* Single (32-bit) precision */
-    mtx_double,           /* Double (64-bit) precision */
-@c    mtx_quadruple,        /* Double (64-bit) precision */
-@c    mtx_arbitrary,        /* Arbitrary precision */
+@c    mtx_half,         /* Half (16-bit) precision */
+    mtx_single,       /* Single (32-bit) precision */
+    mtx_double,       /* Double (64-bit) precision */
+@c    mtx_quadruple,    /* Quadruple (128-bit) precision */
+@c    mtx_arbitrary,    /* Arbitrary precision */
 @};}
 @end example
 @c Arbitrary precision support is based on GNU GMP for integers and GNU
@@ -474,6 +483,7 @@ file in Matrix Market format. These files are typically named with a
 This section describes how to use libmtx to read or write matrices and
 vectors to and from files in Matrix Market format.
 
+@node Reading Matrix Market files
 @subsection Reading Matrix Market files
 @findex mtxfile_fread
 To read an @file{mtx} file from a @code{FILE} stream, use the
@@ -541,6 +551,7 @@ The file is assumed to be gzip-compressed if @code{gzip} is
 @samp{true}, and uncompressed otherwise. If @code{path} is @samp{-},
 then the standard input stream is used.
 
+@node Writing Matrix Market files
 @subsection Writing Matrix Market files
 @findex mtxfile_fwrite
 To write an @file{mtx} file to a @code{FILE} stream, use the

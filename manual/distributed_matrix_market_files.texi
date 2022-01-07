@@ -524,11 +524,46 @@ This section explains how to read from and write to files in the
 Matrix Market format whenever data is distributed among multiple MPI
 processes.
 
+@cindex collective I/O
+@cindex distributed I/O
+@cindex parallel I/O
+@cindex file-per-process
+@cindex shared file
+In the case of reading or writing a distributed matrix or vector in
+Matrix Market format, there are essentially two options. The first
+option is the @dfn{file-per-process} model, where each process reads
+or writes its part of the matrix or vector to or from its own
+file. The second option is the @dfn{shared file} model, where
+processes send or receive their data to or from a single root process,
+and the root process reads or writes everything from or to a single
+file.
+
+Each of the I/O models mentioned above have advantages and
+disadvantages. The file-per-process model allows processes to write
+their data in parallel, and may therefore be much faster. However,
+when a large number of MPI processes are involved, there will also be
+a large number of files. This may not only be more difficult to manage
+than a single file, but also results in significant overhead due to
+the file system's handling of metadata associated with each file. The
+shared file model, on the other hand, produces only a single file.
+This can be much simpler to deal with and there is no overhead
+associated with metadata beyond that one file. Unfortunately, the I/O
+performance can be severely limiting due to the fact that only a
+single process is responsible for reading from or writing to the file.
+
+@cindex MPI-IO
+@cindex HDF5
+Note that when using a very large number of MPI processes and very
+large files, a high-performance I/O library such as MPI-IO
+(@ref{W. Gropp@comma{} E. Lusk and R. Thakur (1999)}) or HDF5
+(@ref{HDF5}) may be a better alternative. However, this is not
+currently supported in libmtx.
+
 @subsection Reading Matrix Market files
 @findex mtxdistfile_fread
 To read an @file{mtx} file from a @code{FILE} stream, partition the
-data and distribute it among MPI processes in a communicator, use
-@code{mtxdistfile_fread}:
+data and distribute it among MPI processes in a communicator based on
+the shared file model, use @code{mtxdistfile_fread}:
 @example
 @code{int mtxdistfile_fread(
     struct mtxdistfile * mtxdistfile,
@@ -540,8 +575,9 @@ data and distribute it among MPI processes in a communicator, use
     struct mtxdisterror * disterr);}
 @end example
 For the most part, @code{mtxdistfile_fread} works just like
-@code{mtxfile_fread}. If successful, @samp{MTX_SUCCESS} is returned,
-and @code{mtxdistfile} will contain the distributed Matrix Market
+@code{mtxfile_fread} (see @ref{Reading and writing Matrix Market
+files}). If successful, @samp{MTX_SUCCESS} is returned, and
+@code{mtxdistfile} will contain the distributed Matrix Market
 file. The user is responsible for calling @code{mtxdistfile_free} to
 free any storage allocated by @code{mtxdistfile_fread}. If
 @code{mtxdistfile_fread} fails, an error code is returned and
@@ -582,8 +618,9 @@ function.
 @cindex gzip compression
 @findex mtxdistfile_gzread
 If libmtx is built with zlib support, then @code{mtxdistfile_gzread}
-can be used to read gzip-compressed @file{mtx} files, partition the
-data and distribute it among MPI processes in a communicator.
+can be used to read gzip-compressed @file{mtx} files. The data is
+partitioned and distributed among MPI processes in the same way as
+with @code{mtxdistfile_fread}.
 @example
 @code{int mtxdistfile_gzread(
     struct mtxdistfile * mtxdistfile,
@@ -604,7 +641,9 @@ read an @file{mtx} file from a given path.
     enum mtxprecision precision,
     const char * path,
     bool gzip,
-    int * lines_read, int64_t * bytes_read);}
+    int * lines_read, int64_t * bytes_read,
+    MPI_Comm comm,
+    struct mtxdisterror * disterr);}
 @end example
 The file is assumed to be gzip-compressed if @code{gzip} is
 @samp{true}, and uncompressed otherwise. If @code{path} is @samp{-},
@@ -612,64 +651,115 @@ then the standard input stream is used.
 
 @subsection Writing Matrix Market files
 @findex mtxdistfile_fwrite
-To write an @file{mtx} file to a @code{FILE} stream, use the
-function @code{mtxdistfile_fwrite}:
+To write a distributed @file{mtx} file to a @code{FILE} stream using
+the file-per-process model, use @code{mtxdistfile_fwrite}:
 @example
 @code{int mtxdistfile_fwrite(
     const struct mtxdistfile * mtxdistfile,
     FILE * f,
     const char * fmt,
-    int64_t * bytes_written);}
+    int64_t * bytes_written,
+    bool sequential,
+    struct mtxdisterror * disterr);}
 @end example
-If successful, @samp{MTX_SUCCESS} is returned, and the matrix or
-vector was written to the @code{FILE} stream. Moreover, if it is not
-@samp{NULL}, then the number of bytes written to the stream is
-returned in @code{bytes_written}.
+Here, @code{f} should point to a different stream on every process.
+The processes involved are those from the MPI communicator
+@code{mtxdistfile->comm}. If successful, @samp{MTX_SUCCESS} is
+returned, and each process wrote its part of the matrix or vector to
+its stream. Moreover, if it is not @samp{NULL}, then the number of
+bytes written to the stream by the current process is returned in
+@code{bytes_written}.
 
 The @code{fmt} argument may optionally be used to specify a format
-string for outputting of numerical values. If @code{fmt} is
-@samp{NULL}, then the format specifier @samp{%g} is used to print
-floating point numbers with enough digits to ensure correct round-trip
-conversion from decimal text and back. Otherwise, the given format
-string is used to print numerical values. The format string follows
-the conventions of @code{printf}. If the field of @code{mtxdistfile} is
-@samp{mtxdistfile_real} or @samp{mtxdistfile_complex}, then the format
-specifiers @samp{%e}, @samp{%E}, @samp{%f}, @samp{%F}, @samp{%g} or
-@samp{%G} may be used. If the field is @samp{mtxdistfile_integer}, then
-the format specifier must be @samp{%d}. The format string is ignored
-if the field is @samp{mtxdistfile_pattern}. Field width and precision may
-be specified (e.g., @samp{%3.1f}), but variable field width and
-precision (e.g., @samp{%*.*f}), as well as length modifiers (e.g.,
-@samp{%Lf}) are not allowed.
+string for outputting of numerical values, in the same way as with
+@code{mtxfile_write} (see @ref{Writing Matrix Market files}).
 
-Note that the locale is temporarily changed to "C" to ensure that
-locale-specific settings, such as the type of decimal point, do not
-affect output.
+If @code{sequential} is @samp{true}, then output is performed in
+sequence by MPI processes in the communicator. (A barrier is used
+between outputting each part of the Matrix Market file.)  This can
+sometimes be useful for debugging, to make it more likely that
+processes write their data in order without interfering with each
+other. However, there is no guarantee that the output will appear in
+the correct order when writing to a shared stream (e.g., standard
+output). Therefore, if a guaranteed correct order of output is needed,
+@code{mtxdistfile_fwrite_shared} should be used instead.
+
+@findex mtxdistfile_fwrite_shared
+The function @code{mtxdistfile_fwrite_shared} uses a shared file model
+to write a distributed matrix or vector to a single stream shared by
+every process in a communicator. This method is based on a shared file
+model.
+@example
+@code{int mtxdistfile_fwrite_shared(
+    const struct mtxdistfile * mtxdistfile,
+    FILE * f,
+    const char * fmt,
+    int64_t * bytes_written,
+    int root,
+    struct mtxdisterror * disterr);}
+@end example
+If @code{bytes_written} is not @samp{NULL}, then it is used to return
+the total number of bytes written to the stream for all parts of the
+distributed matrix or vector.
+
+Note that only the specified @code{root} process will write anything
+to the stream. Other processes therefore send their part of the
+distributed Matrix Market file to the root process for writing.
+
+This function performs collective communication and therefore
+requires every process in the communicator to perform matching
+calls to the function.
 
 
 @findex mtxdistfile_gzwrite
-If libmtx is built with zlib support, then @code{mtxdistfile_gzwrite} can
-be used to write gzip-compressed @file{mtx} files.
+@findex mtxdistfile_gzwrite_shared
+If libmtx is built with zlib support, then @code{mtxdistfile_gzwrite}
+and @code{mtxdistfile_gzwrite_shared} can be used to write
+gzip-compressed @file{mtx} files using the file-per-process and shared
+file models, respectively.
 @example
-@code{int mtxdistfile_gzwrite(
+@code{int mtxdistfile_fwrite(
     const struct mtxdistfile * mtxdistfile,
     gzFile f,
     const char * fmt,
-    int64_t * bytes_written);}
+    int64_t * bytes_written,
+    bool sequential,
+    struct mtxdisterror * disterr);
+
+int mtxdistfile_fwrite_shared(
+    const struct mtxdistfile * mtxdistfile,
+    gzFile f,
+    const char * fmt,
+    int64_t * bytes_written,
+    int root,
+    struct mtxdisterror * disterr);}
 @end example
 
 @findex mtxdistfile_write
-For convenience, the function @code{mtxdistfile_write} can be used to write
-an @file{mtx} file to a given path.
+@findex mtxdistfile_write_shared
+For convenience, the functions @code{mtxdistfile_write} and
+@code{mtxdistfile_write_shared} can be used to write a distributed
+@file{mtx} file to given paths.
 @example
 @code{int mtxdistfile_write(
     const struct mtxdistfile * mtxdistfile,
     const char * path,
     bool gzip,
     const char * fmt,
-    int64_t * bytes_written);}
+    int64_t * bytes_written,
+    bool sequential,
+    struct mtxdisterror * disterr);
+
+int mtxdistfile_write_shared(
+    const struct mtxdistfile * mtxdistfile,
+    const char * path,
+    bool gzip,
+    const char * fmt,
+    int64_t * bytes_written,
+    int root,
+    struct mtxdisterror * disterr);}
 @end example
-The file is written as a gzip-compressed stream if @code{gzip} is
+The files are written as gzip-compressed streams if @code{gzip} is
 @samp{true}, and uncompressed otherwise. If @code{path} is @samp{-},
 then the standard output stream is used.
 

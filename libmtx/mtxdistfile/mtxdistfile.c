@@ -2330,7 +2330,7 @@ static int mtxdistfile_fwrite_mtxfile(
  * If it is not ‘NULL’, then the number of bytes written to the stream
  * is returned in ‘bytes_written’.
  *
- * If ‘sequential’ is true, then output is performed in sequence by
+ * If ‘sequential’ is ‘true’, then output is performed in sequence by
  * MPI processes in the communicator.  This is useful, for example,
  * when writing to a common stream, such as standard output.  In this
  * case, we want to ensure that the processes write their data in the
