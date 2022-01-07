@@ -41,7 +41,7 @@ not distributed.
 * Creating distributed Matrix Market files:: How to create distributed @file{mtx} files.
 * Converting to and from distributed Matrix Market files:: Functions for converting to and from distributed @file{mtx} files
 * Reading and writing distributed Matrix Market files:: Functions for reading from and writing to files in Matrix Market format.
-* Transposing, sorting and reordering: Distributed Matrix Market files: transposing@comma{} sorting and reordering. Functions for transposing, sorting and reordering distributed @file{mtx} files.
+* Transposing, sorting and reordering: Transposing@comma{} sorting and reordering distributed Matrix Market files. Functions for transposing, sorting and reordering distributed @file{mtx} files.
 @end menu
 
 
@@ -496,20 +496,18 @@ resides on a single process to a Matrix Market file that is
 distributed among multiple processes.
 
 @findex mtxdistfile_from_mtxfile
-@code{mtxdistfile_from_mtxfile} creates a distributed Matrix Market
-file from a Matrix Market file stored on a single root process by
-distributing the data of the underlying matrix or vector among
-processes in a communicator.
+The function @code{mtxdistfile_from_mtxfile} takes a Matrix Market
+file stored on a single root process and partitions and distributes
+the underlying matrix or vector among processes in a communicator.
 @example
 @code{int mtxdistfile_from_mtxfile(
     struct mtxdistfile * dst,
     const struct mtxfile * src,
-    MPI_Comm comm,
-    int root,
+    MPI_Comm comm, int root,
     struct mtxdisterror * disterr);}
 @end example
 This function performs collective communication and therefore requires
-every process in the communicator to perform matching calls to this
+every process in the communicator to perform matching calls to the
 function.
 
 
@@ -517,7 +515,7 @@ function.
 @section Reading and writing distributed Matrix Market files
 
 
-@node Distributed Matrix Market files: transposing@comma{} sorting and reordering
+@node Transposing@comma{} sorting and reordering distributed Matrix Market files
 @section Transposing, sorting and reordering
 
 
