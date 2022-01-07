@@ -33,11 +33,14 @@
 #include <libmtx/mtxfile/header.h>
 #include <libmtx/mtxfile/mtxfile.h>
 #include <libmtx/mtxfile/size.h>
-#include <libmtx/util/distpartition.h>
 #include <libmtx/util/partition.h>
 
 #ifdef LIBMTX_HAVE_MPI
 #include <mpi.h>
+#endif
+
+#ifdef LIBMTX_HAVE_LIBZ
+#include <zlib.h>
 #endif
 
 #include <stdbool.h>
@@ -636,10 +639,16 @@ int mtxdistfile_from_mtxfile(
 
 /**
  * ‘mtxdistfile_read()’ reads a Matrix Market file from the given path
- * and distributes the data among MPI processes in a communicator.
+ * and distributes the data among MPI processes in a communicator. The
+ * file may optionally be compressed by gzip.
  *
- * ‘precision’ is used to determine the precision to use for storing
- * the values of matrix or vector entries.
+ * The ‘precision’ argument specifies which precision to use for
+ * storing matrix or vector values.
+ *
+ * If ‘path’ is ‘-’, then standard input is used.
+ *
+ * The file is assumed to be gzip-compressed if ‘gzip’ is ‘true’, and
+ * uncompressed otherwise.
  *
  * If an error code is returned, then ‘lines_read’ and ‘bytes_read’
  * are used to return the line number and byte at which the error was
@@ -664,6 +673,49 @@ int mtxdistfile_read(
     struct mtxdistfile * mtxdistfile,
     enum mtxprecision precision,
     const char * path,
+    bool gzip,
+    int * lines_read,
+    int64_t * bytes_read,
+    MPI_Comm comm,
+    struct mtxdisterror * disterr);
+
+/**
+ * ‘mtxdistfile_fread()’ reads a Matrix Market file from a stream and
+ * distributes the data among MPI processes in a communicator.
+ *
+ * ‘precision’ is used to determine the precision to use for storing
+ * the values of matrix or vector entries.
+ *
+ * If an error code is returned, then ‘lines_read’ and ‘bytes_read’
+ * are used to return the line number and byte at which the error was
+ * encountered during the parsing of the Matrix Market file.
+ *
+ * If ‘linebuf’ is not ‘NULL’, then it must point to an array that can
+ * hold at least ‘line_max’ values of type ‘char’. This buffer is used
+ * for reading lines from the stream. Otherwise, if ‘linebuf’ is
+ * ‘NULL’, then a temporary buffer is allocated and used, and the
+ * maximum line length is determined by calling ‘sysconf()’ with
+ * ‘_SC_LINE_MAX’.
+ *
+ * Only a single root process will read from the specified stream.
+ * The data is partitioned into equal-sized parts for each process.
+ * For matrices and vectors in coordinate format, the total number of
+ * data lines is evenly distributed among processes. Otherwise, the
+ * rows are evenly distributed among processes.
+ *
+ * The file is read one part at a time, which is then sent to the
+ * owning process. This avoids reading the entire file into the memory
+ * of the root process at once, which would severely limit the size of
+ * files that could be read.
+ *
+ * This function performs collective communication and therefore
+ * requires every process in the communicator to perform matching
+ * calls to the function.
+ */
+int mtxdistfile_fread(
+    struct mtxdistfile * mtxdistfile,
+    enum mtxprecision precision,
+    FILE * f,
     int * lines_read,
     int64_t * bytes_read,
     size_t line_max,
@@ -714,6 +766,53 @@ int mtxdistfile_fread(
     char * linebuf,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
+
+#ifdef LIBMTX_HAVE_LIBZ
+/**
+ * ‘mtxdistfile_gzread()’ reads a Matrix Market file from a
+ * gzip-compressed stream and distributes the data among MPI processes
+ * in a communicator.
+ *
+ * ‘precision’ is used to determine the precision to use for storing
+ * the values of matrix or vector entries.
+ *
+ * If an error code is returned, then ‘lines_read’ and ‘bytes_read’
+ * are used to return the line number and byte at which the error was
+ * encountered during the parsing of the Matrix Market file.
+ *
+ * If ‘linebuf’ is not ‘NULL’, then it must point to an array that can
+ * hold at least ‘line_max’ values of type ‘char’. This buffer is used
+ * for reading lines from the stream. Otherwise, if ‘linebuf’ is
+ * ‘NULL’, then a temporary buffer is allocated and used, and the
+ * maximum line length is determined by calling ‘sysconf()’ with
+ * ‘_SC_LINE_MAX’.
+ *
+ * Only a single root process will read from the specified stream.
+ * The data is partitioned into equal-sized parts for each process.
+ * For matrices and vectors in coordinate format, the total number of
+ * data lines is evenly distributed among processes. Otherwise, the
+ * rows are evenly distributed among processes.
+ *
+ * The file is read one part at a time, which is then sent to the
+ * owning process. This avoids reading the entire file into the memory
+ * of the root process at once, which would severely limit the size of
+ * files that could be read.
+ *
+ * This function performs collective communication and therefore
+ * requires every process in the communicator to perform matching
+ * calls to the function.
+ */
+int mtxdistfile_gzread(
+    struct mtxdistfile * mtxdistfile,
+    enum mtxprecision precision,
+    gzFile f,
+    int * lines_read,
+    int64_t * bytes_read,
+    size_t line_max,
+    char * linebuf,
+    MPI_Comm comm,
+    struct mtxdisterror * disterr);
+#endif
 
 /**
  * ‘mtxdistfile_write_shared()’ writes a distributed Matrix Market

@@ -41,7 +41,7 @@ not distributed.
 * Creating distributed Matrix Market files:: How to create distributed @file{mtx} files.
 * Converting to and from distributed Matrix Market files:: Functions for converting to and from distributed @file{mtx} files
 * Reading and writing distributed Matrix Market files:: Functions for reading from and writing to files in Matrix Market format.
-* Transposing, sorting and reordering: Transposing@comma{} sorting and reordering distributed Matrix Market files. Functions for transposing, sorting and reordering distributed @file{mtx} files.
+* Transposing, sorting and reordering: Other operations on distributed Matrix Market files. Functions for transposing, sorting and reordering distributed @file{mtx} files.
 @end menu
 
 
@@ -510,12 +510,171 @@ This function performs collective communication and therefore requires
 every process in the communicator to perform matching calls to the
 function.
 
+The Matrix Market file @code{src} is distributed by first broadcasting
+the header line and precision from the root process to the other
+processes. Next, the number of matrix or vector elements to send to
+each process is determined. For matrices in array format, the rows are
+evenly distributed among the processes. In all other cases, the total
+number of data lines is evenly distributed among the processes.
+
 
 @node Reading and writing distributed Matrix Market files
 @section Reading and writing distributed Matrix Market files
+This section explains how to read from and write to files in the
+Matrix Market format whenever data is distributed among multiple MPI
+processes.
+
+@subsection Reading Matrix Market files
+@findex mtxdistfile_fread
+To read an @file{mtx} file from a @code{FILE} stream, partition the
+data and distribute it among MPI processes in a communicator, use
+@code{mtxdistfile_fread}:
+@example
+@code{int mtxdistfile_fread(
+    struct mtxdistfile * mtxdistfile,
+    enum mtxprecision precision,
+    FILE * f,
+    int * lines_read, int64_t * bytes_read,
+    size_t line_max, char * linebuf,
+    MPI_Comm comm,
+    struct mtxdisterror * disterr);}
+@end example
+For the most part, @code{mtxdistfile_fread} works just like
+@code{mtxfile_fread}. If successful, @samp{MTX_SUCCESS} is returned,
+and @code{mtxdistfile} will contain the distributed Matrix Market
+file. The user is responsible for calling @code{mtxdistfile_free} to
+free any storage allocated by @code{mtxdistfile_fread}. If
+@code{mtxdistfile_fread} fails, an error code is returned and
+@code{lines_read} and @code{bytes_read} are used to indicate the line
+number and byte of the Matrix Market file where an error was
+encountered. @code{lines_read} and @code{bytes_read} are ignored if
+they are set to @samp{NULL}.
+
+@cindex sysconf
+@cindex _SC_LINE_MAX
+Moreover, @code{precision} is used to choose the precision for storing
+the values of matrix or vector entries, as described in
+@ref{Precision}. If @code{linebuf} is not @samp{NULL}, then it must
+point to an array that can hold a null-terminated string whose length
+(including the terminating null-character) is at most @code{line_max}.
+This buffer is used for reading lines from the stream. Otherwise, if
+@code{linebuf} is @samp{NULL}, then a temporary buffer is allocated
+and used, and the maximum line length is determined by calling
+@code{sysconf()} with @code{_SC_LINE_MAX}.
+
+Only a single root process will read from the specified stream. The
+data is partitioned into equal-sized parts for each process. For
+matrices and vectors in coordinate format, the total number of data
+lines is evenly distributed among processes. Otherwise, the rows are
+evenly distributed among processes.
+
+The file is read one part at a time, which is then sent to the owning
+process. This avoids reading the entire file into the memory of the
+root process at once, which would severely limit the size of files
+that could be read.
+
+This function performs collective communication and therefore requires
+every process in the communicator to perform matching calls to the
+function.
 
 
-@node Transposing@comma{} sorting and reordering distributed Matrix Market files
+@cindex zlib
+@cindex gzip compression
+@findex mtxdistfile_gzread
+If libmtx is built with zlib support, then @code{mtxdistfile_gzread}
+can be used to read gzip-compressed @file{mtx} files, partition the
+data and distribute it among MPI processes in a communicator.
+@example
+@code{int mtxdistfile_gzread(
+    struct mtxdistfile * mtxdistfile,
+    enum mtxprecision precision,
+    gzFile f,
+    int * lines_read, int64_t * bytes_read,
+    size_t line_max, char * linebuf,
+    MPI_Comm comm,
+    struct mtxdisterror * disterr);}
+@end example
+
+@findex mtxdistfile_read
+For convenience, the function @code{mtxdistfile_read} can be used to
+read an @file{mtx} file from a given path.
+@example
+@code{int mtxdistfile_read(
+    struct mtxdistfile * mtxdistfile,
+    enum mtxprecision precision,
+    const char * path,
+    bool gzip,
+    int * lines_read, int64_t * bytes_read);}
+@end example
+The file is assumed to be gzip-compressed if @code{gzip} is
+@samp{true}, and uncompressed otherwise. If @code{path} is @samp{-},
+then the standard input stream is used.
+
+@subsection Writing Matrix Market files
+@findex mtxdistfile_fwrite
+To write an @file{mtx} file to a @code{FILE} stream, use the
+function @code{mtxdistfile_fwrite}:
+@example
+@code{int mtxdistfile_fwrite(
+    const struct mtxdistfile * mtxdistfile,
+    FILE * f,
+    const char * fmt,
+    int64_t * bytes_written);}
+@end example
+If successful, @samp{MTX_SUCCESS} is returned, and the matrix or
+vector was written to the @code{FILE} stream. Moreover, if it is not
+@samp{NULL}, then the number of bytes written to the stream is
+returned in @code{bytes_written}.
+
+The @code{fmt} argument may optionally be used to specify a format
+string for outputting of numerical values. If @code{fmt} is
+@samp{NULL}, then the format specifier @samp{%g} is used to print
+floating point numbers with enough digits to ensure correct round-trip
+conversion from decimal text and back. Otherwise, the given format
+string is used to print numerical values. The format string follows
+the conventions of @code{printf}. If the field of @code{mtxdistfile} is
+@samp{mtxdistfile_real} or @samp{mtxdistfile_complex}, then the format
+specifiers @samp{%e}, @samp{%E}, @samp{%f}, @samp{%F}, @samp{%g} or
+@samp{%G} may be used. If the field is @samp{mtxdistfile_integer}, then
+the format specifier must be @samp{%d}. The format string is ignored
+if the field is @samp{mtxdistfile_pattern}. Field width and precision may
+be specified (e.g., @samp{%3.1f}), but variable field width and
+precision (e.g., @samp{%*.*f}), as well as length modifiers (e.g.,
+@samp{%Lf}) are not allowed.
+
+Note that the locale is temporarily changed to "C" to ensure that
+locale-specific settings, such as the type of decimal point, do not
+affect output.
+
+
+@findex mtxdistfile_gzwrite
+If libmtx is built with zlib support, then @code{mtxdistfile_gzwrite} can
+be used to write gzip-compressed @file{mtx} files.
+@example
+@code{int mtxdistfile_gzwrite(
+    const struct mtxdistfile * mtxdistfile,
+    gzFile f,
+    const char * fmt,
+    int64_t * bytes_written);}
+@end example
+
+@findex mtxdistfile_write
+For convenience, the function @code{mtxdistfile_write} can be used to write
+an @file{mtx} file to a given path.
+@example
+@code{int mtxdistfile_write(
+    const struct mtxdistfile * mtxdistfile,
+    const char * path,
+    bool gzip,
+    const char * fmt,
+    int64_t * bytes_written);}
+@end example
+The file is written as a gzip-compressed stream if @code{gzip} is
+@samp{true}, and uncompressed otherwise. If @code{path} is @samp{-},
+then the standard output stream is used.
+
+
+@node Other operations on distributed Matrix Market files
 @section Transposing, sorting and reordering
 
 

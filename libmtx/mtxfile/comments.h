@@ -34,6 +34,7 @@
 #include <zlib.h>
 #endif
 
+#include <inttypes.h>
 #include <stdarg.h>
 #include <stddef.h>
 #include <stdio.h>

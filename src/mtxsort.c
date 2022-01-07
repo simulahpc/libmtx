@@ -16,7 +16,7 @@
  * along with libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-01-06
+ * Last modified: 2022-01-07
  *
  * Sort a Matrix Market file, for example, in row- or column-major
  * order.
@@ -479,7 +479,7 @@ int main(int argc, char *argv[])
 
     /* 2. Read a Matrix Market file. */
     if (args.verbose > 0) {
-        fprintf(diagf, "mtxfile_read: ");
+        fprintf(diagf, "mtxdistfile_read: ");
         fflush(diagf);
         clock_gettime(CLOCK_MONOTONIC, &t0);
     }
@@ -488,8 +488,9 @@ int main(int argc, char *argv[])
     int lines_read;
     int64_t bytes_read;
     err = mtxdistfile_read(
-        &mtxdistfile, args.precision, args.mtx_path,
-        &lines_read, &bytes_read, 0, NULL,
+        &mtxdistfile, args.precision,
+        args.mtx_path, args.gzip,
+        &lines_read, &bytes_read,
         comm, &disterr);
     if (err) {
         if (args.verbose > 0)
@@ -578,8 +579,9 @@ int main(int argc, char *argv[])
         int lines_read;
         int64_t bytes_read;
         err = mtxdistfile_read(
-            &perm_mtxdistfile, mtx_double, args.perm_path,
-            &lines_read, &bytes_read, 0, NULL, comm, &disterr);
+            &perm_mtxdistfile, mtx_double,
+            args.perm_path, args.gzip,
+            &lines_read, &bytes_read, comm, &disterr);
         if (err) {
             if (args.verbose > 0)
                 fprintf(diagf, "\n");
@@ -887,7 +889,8 @@ int main(int argc, char *argv[])
     int lines_read;
     int64_t bytes_read;
     err = mtxfile_read(
-        &mtxfile, args.precision, args.mtx_path, args.gzip,
+        &mtxfile, args.precision,
+        args.mtx_path, args.gzip,
         &lines_read, &bytes_read);
     if (err && lines_read >= 0) {
         if (args.verbose > 0)
@@ -944,7 +947,8 @@ int main(int argc, char *argv[])
         int lines_read;
         int64_t bytes_read;
         err = mtxfile_read(
-            &perm_mtxfile, mtx_double, args.perm_path, false,
+            &perm_mtxfile, mtx_double,
+            args.perm_path, false,
             &lines_read, &bytes_read);
         if (err && lines_read >= 0) {
             if (args.verbose > 0)

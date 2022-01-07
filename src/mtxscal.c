@@ -16,7 +16,7 @@
  * along with libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-01-06
+ * Last modified: 2022-01-07
  *
  * Scale a vector by a constant.
  *
@@ -668,8 +668,8 @@ int main(int argc, char *argv[])
     int64_t bytes_read;
     err = mtxdistfile_read(
         &mtxdistfile, args.precision,
-        args.x_path ? args.x_path : "",
-        &lines_read, &bytes_read, 0, NULL,
+        args.x_path ? args.x_path : "", args.gzip,
+        &lines_read, &bytes_read,
         comm, &disterr);
     if (err) {
         if (args.verbose > 0)
@@ -906,7 +906,8 @@ int main(int argc, char *argv[])
     int lines_read;
     int64_t bytes_read;
     err = mtxfile_read(
-        &mtxfile, args.precision, args.x_path ? args.x_path : "", args.gzip,
+        &mtxfile, args.precision,
+        args.x_path ? args.x_path : "", args.gzip,
         &lines_read, &bytes_read);
     if (err && lines_read >= 0) {
         if (args.verbose > 0)

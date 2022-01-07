@@ -16,7 +16,7 @@
  * along with libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-01-06
+ * Last modified: 2022-01-07
  *
  * Multiply a vector by a scalar and add it to another vector.
  *
@@ -703,8 +703,8 @@ int main(int argc, char *argv[])
     int64_t bytes_read;
     err = mtxdistfile_read(
         &mtxdistfilex, args.precision,
-        args.x_path ? args.x_path : "",
-        &lines_read, &bytes_read, 0, NULL,
+        args.x_path ? args.x_path : "", args.gzip,
+        &lines_read, &bytes_read,
         comm, &disterr);
     if (err) {
         if (args.verbose > 0)
@@ -750,8 +750,9 @@ int main(int argc, char *argv[])
         int lines_read;
         int64_t bytes_read;
         err = mtxdistfile_read(
-            &mtxdistfiley, args.precision, args.y_path,
-            &lines_read, &bytes_read, 0, NULL,
+            &mtxdistfiley, args.precision,
+            args.y_path, args.gzip,
+            &lines_read, &bytes_read,
             comm, &disterr);
         if (err) {
             if (args.verbose > 0)
@@ -1049,7 +1050,8 @@ int main(int argc, char *argv[])
     int lines_read;
     int64_t bytes_read;
     err = mtxfile_read(
-        &mtxfilex, args.precision, args.x_path ? args.x_path : "", args.gzip,
+        &mtxfilex, args.precision,
+        args.x_path ? args.x_path : "", args.gzip,
         &lines_read, &bytes_read);
     if (err && lines_read >= 0) {
         if (args.verbose > 0)
@@ -1090,7 +1092,8 @@ int main(int argc, char *argv[])
         int lines_read;
         int64_t bytes_read;
         err = mtxfile_read(
-            &mtxfiley, args.precision, args.y_path, args.gzip,
+            &mtxfiley, args.precision,
+            args.y_path, args.gzip,
             &lines_read, &bytes_read);
         if (err) {
             if (args.verbose > 0)

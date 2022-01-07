@@ -1363,10 +1363,16 @@ int mtxdistfile_from_mtxfile(
 
 /**
  * ‘mtxdistfile_read()’ reads a Matrix Market file from the given path
- * and distributes the data among MPI processes in a communicator.
+ * and distributes the data among MPI processes in a communicator. The
+ * file may optionally be compressed by gzip.
  *
- * ‘precision’ is used to determine the precision to use for storing
- * the values of matrix or vector entries.
+ * The ‘precision’ argument specifies which precision to use for
+ * storing matrix or vector values.
+ *
+ * If ‘path’ is ‘-’, then standard input is used.
+ *
+ * The file is assumed to be gzip-compressed if ‘gzip’ is ‘true’, and
+ * uncompressed otherwise.
  *
  * If an error code is returned, then ‘lines_read’ and ‘bytes_read’
  * are used to return the line number and byte at which the error was
@@ -1391,10 +1397,9 @@ int mtxdistfile_read(
     struct mtxdistfile * mtxdistfile,
     enum mtxprecision precision,
     const char * path,
+    bool gzip,
     int * lines_read,
     int64_t * bytes_read,
-    size_t line_max,
-    char * linebuf,
     MPI_Comm comm,
     struct mtxdisterror * disterr)
 {
@@ -1416,38 +1421,80 @@ int mtxdistfile_read(
         return MTX_ERR_MPI_COLLECTIVE;
     int root = comm_size-1;
 
-    FILE * f;
-    if (rank == root && strcmp(path, "-") == 0) {
-        int fd = dup(STDIN_FILENO);
-        if (fd == -1) {
+    if (!gzip) {
+        FILE * f;
+        if (rank == root && strcmp(path, "-") == 0) {
+            int fd = dup(STDIN_FILENO);
+            if (fd == -1) {
+                err = MTX_ERR_ERRNO;
+            } else if ((f = fdopen(fd, "r")) == NULL) {
+                int olderrno = errno;
+                close(fd);
+                errno = olderrno;
+                err = MTX_ERR_ERRNO;
+            } else {
+                err = MTX_SUCCESS;
+            }
+        } else if (rank == root && ((f = fopen(path, "r")) == NULL)) {
             err = MTX_ERR_ERRNO;
-        } else if ((f = fdopen(fd, "r")) == NULL) {
-            int olderrno = errno;
-            close(fd);
-            errno = olderrno;
-            err = MTX_ERR_ERRNO;
+        } else {
+            err = MTX_SUCCESS;
         }
-        err = MTX_SUCCESS;
-    } else if (rank == root && ((f = fopen(path, "r")) == NULL)) {
-        err = MTX_ERR_ERRNO;
-    } else {
-        err = MTX_SUCCESS;
-    }
-    if (mtxdisterror_allreduce(disterr, err))
-        return MTX_ERR_MPI_COLLECTIVE;
+        if (mtxdisterror_allreduce(disterr, err))
+            return MTX_ERR_MPI_COLLECTIVE;
 
-    if (lines_read)
-        *lines_read = 0;
-    err = mtxdistfile_fread(
-        mtxdistfile, precision, f, lines_read, bytes_read, line_max, linebuf,
-        comm, disterr);
-    if (err) {
+        if (lines_read)
+            *lines_read = 0;
+        err = mtxdistfile_fread(
+            mtxdistfile, precision, f, lines_read, bytes_read, 0, NULL,
+            comm, disterr);
+        if (err) {
+            if (rank == root)
+                fclose(f);
+            return err;
+        }
         if (rank == root)
             fclose(f);
-        return err;
+    } else {
+#ifdef LIBMTX_HAVE_LIBZ
+        gzFile f;
+        if (rank == root && strcmp(path, "-") == 0) {
+            int fd = dup(STDIN_FILENO);
+            if (fd == -1)
+                err = MTX_ERR_ERRNO;
+            if ((f = gzdopen(fd, "r")) == NULL) {
+                int olderrno = errno;
+                close(fd);
+                errno = olderrno;
+                err = MTX_ERR_ERRNO;
+            } else {
+                err = MTX_SUCCESS;
+            }
+        } else if (rank == root && (f = gzopen(path, "r")) == NULL) {
+            err = MTX_ERR_ERRNO;
+        } else {
+            err = MTX_SUCCESS;
+        }
+        if (mtxdisterror_allreduce(disterr, err))
+            return MTX_ERR_MPI_COLLECTIVE;
+
+        if (lines_read)
+            *lines_read = 0;
+        err = mtxdistfile_gzread(
+            mtxdistfile, precision, f,
+            lines_read, bytes_read, 0, NULL,
+            comm, disterr);
+        if (err) {
+            if (rank == root)
+                gzclose(f);
+            return err;
+        }
+        if (rank == root)
+            gzclose(f);
+#else
+        return MTX_ERR_ZLIB_NOT_SUPPORTED;
+#endif
     }
-    if (rank == root)
-        fclose(f);
     return MTX_SUCCESS;
 }
 
@@ -1768,6 +1815,326 @@ int mtxdistfile_fread(
     return MTX_SUCCESS;
 }
 
+#ifdef LIBMTX_HAVE_LIBZ
+/**
+ * ‘mtxdistfile_gzread()’ reads a Matrix Market file from a
+ * gzip-compressed stream and distributes the data among MPI processes
+ * in a communicator.
+ *
+ * ‘precision’ is used to determine the precision to use for storing
+ * the values of matrix or vector entries.
+ *
+ * If an error code is returned, then ‘lines_read’ and ‘bytes_read’
+ * are used to return the line number and byte at which the error was
+ * encountered during the parsing of the Matrix Market file.
+ *
+ * If ‘linebuf’ is not ‘NULL’, then it must point to an array that can
+ * hold at least ‘line_max’ values of type ‘char’. This buffer is used
+ * for reading lines from the stream. Otherwise, if ‘linebuf’ is
+ * ‘NULL’, then a temporary buffer is allocated and used, and the
+ * maximum line length is determined by calling ‘sysconf()’ with
+ * ‘_SC_LINE_MAX’.
+ *
+ * Only a single root process will read from the specified stream.
+ * The data is partitioned into equal-sized parts for each process.
+ * For matrices and vectors in coordinate format, the total number of
+ * data lines is evenly distributed among processes. Otherwise, the
+ * rows are evenly distributed among processes.
+ *
+ * The file is read one part at a time, which is then sent to the
+ * owning process. This avoids reading the entire file into the memory
+ * of the root process at once, which would severely limit the size of
+ * files that could be read.
+ *
+ * This function performs collective communication and therefore
+ * requires every process in the communicator to perform matching
+ * calls to the function.
+ */
+int mtxdistfile_gzread(
+    struct mtxdistfile * mtxdistfile,
+    enum mtxprecision precision,
+    gzFile f,
+    int * lines_read,
+    int64_t * bytes_read,
+    size_t line_max,
+    char * linebuf,
+    MPI_Comm comm,
+    struct mtxdisterror * disterr)
+{
+    int err;
+    int comm_size;
+    disterr->mpierrcode = MPI_Comm_size(comm, &comm_size);
+    err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+    int rank;
+    disterr->mpierrcode = MPI_Comm_rank(comm, &rank);
+    err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+    int root = comm_size-1;
+    if (comm_size <= 0)
+        return MTX_SUCCESS;
+
+    mtxdistfile->comm = comm;
+    mtxdistfile->comm_size = comm_size;
+    mtxdistfile->rank = rank;
+
+    bool free_linebuf = (rank == root) && !linebuf;
+    if (rank == root && !linebuf) {
+        line_max = sysconf(_SC_LINE_MAX);
+        linebuf = malloc(line_max+1);
+    }
+    err = (rank == root && !linebuf) ? MTX_ERR_ERRNO : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+
+    /* Read the header on the root process and broadcast to others. */
+    err = (rank == root) ? mtxfileheader_gzread(
+        &mtxdistfile->header, f, lines_read, bytes_read, line_max, linebuf)
+        : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err)) {
+        if (free_linebuf)
+            free(linebuf);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+    err = mtxfileheader_bcast(&mtxdistfile->header, root, comm, disterr);
+    if (err) {
+        if (free_linebuf)
+            free(linebuf);
+        return err;
+    }
+
+    /* Read comments on the root process and broadcast to others. */
+    err = (rank == root) ? mtxfile_gzread_comments(
+        &mtxdistfile->comments, f, lines_read, bytes_read, line_max, linebuf)
+        : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err)) {
+        if (free_linebuf)
+            free(linebuf);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+    err = mtxfilecomments_bcast(&mtxdistfile->comments, root, comm, disterr);
+    if (err) {
+        if (free_linebuf)
+            free(linebuf);
+        return err;
+    }
+
+    /* Read the size line on the root process and broadcast to others. */
+    err = (rank == root) ? mtxfilesize_gzread(
+        &mtxdistfile->size, f, lines_read, bytes_read, line_max, linebuf,
+        mtxdistfile->header.object, mtxdistfile->header.format)
+        : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err)) {
+        mtxfilecomments_free(&mtxdistfile->comments);
+        if (free_linebuf)
+            free(linebuf);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+    err = mtxfilesize_bcast(&mtxdistfile->size, root, comm, disterr);
+    if (err) {
+        mtxfilecomments_free(&mtxdistfile->comments);
+        if (free_linebuf)
+            free(linebuf);
+        return err;
+    }
+    mtxdistfile->precision = precision;
+
+    /* Partition the data into equal-sized blocks for each process.
+     * For matrices and vectors in coordinate format, the total number
+     * of data lines is evenly distributed among processes. Otherwise,
+     * the number of rows is evenly distributed among processes. */
+    struct mtxfilesize * sizes = (rank == root) ?
+        malloc(comm_size * sizeof(struct mtxfilesize)) : NULL;
+    err = (rank == root && !sizes) ? MTX_ERR_ERRNO : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err)) {
+        mtxfilecomments_free(&mtxdistfile->comments);
+        if (free_linebuf)
+            free(linebuf);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+    if (rank == root) {
+        if (mtxdistfile->size.num_nonzeros >= 0) {
+            int64_t N = mtxdistfile->size.num_nonzeros;
+            for (int p = 0; p < comm_size; p++) {
+                sizes[p].num_rows = mtxdistfile->size.num_rows;
+                sizes[p].num_columns = mtxdistfile->size.num_columns;
+                sizes[p].num_nonzeros = N / comm_size + (p < (N % comm_size) ? 1 : 0);
+            }
+        } else {
+            int64_t N = mtxdistfile->size.num_rows;
+            for (int p = 0; p < comm_size; p++) {
+                sizes[p].num_rows = (N / comm_size + (p < (N % comm_size) ? 1 : 0));
+                sizes[p].num_columns = mtxdistfile->size.num_columns;
+                sizes[p].num_nonzeros = mtxdistfile->size.num_nonzeros;
+            }
+        }
+    }
+    if (mtxdisterror_allreduce(disterr, err)) {
+        if (rank == root)
+            free(sizes);
+        mtxfilecomments_free(&mtxdistfile->comments);
+        if (free_linebuf)
+            free(linebuf);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+
+    /* Allocate storage for a Matrix Market file on the root process. */
+    err = (rank == root) ? mtxfile_alloc(
+        &mtxdistfile->mtxfile, &mtxdistfile->header, NULL,
+        &sizes[0], mtxdistfile->precision)
+        : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err)) {
+        if (rank == root)
+            free(sizes);
+        mtxfilecomments_free(&mtxdistfile->comments);
+        if (free_linebuf)
+            free(linebuf);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+
+    /* Read each part of the Matrix Market file and send it to the
+     * owning process. */
+    for (int p = 0; p < comm_size-1; p++) {
+        err = (rank == root)
+            ? mtxfilesize_copy(&mtxdistfile->mtxfile.size, &sizes[p])
+            : MTX_SUCCESS;
+        if (mtxdisterror_allreduce(disterr, err)) {
+            if (rank == root || rank < p)
+                mtxfile_free(&mtxdistfile->mtxfile);
+            if (rank == root)
+                free(sizes);
+            mtxfilecomments_free(&mtxdistfile->comments);
+            if (free_linebuf)
+                free(linebuf);
+            return MTX_ERR_MPI_COLLECTIVE;
+        }
+
+        int64_t num_data_lines;
+        err = (rank == root) ? mtxfilesize_num_data_lines(
+            &mtxdistfile->mtxfile.size, mtxdistfile->mtxfile.header.symmetry,
+            &num_data_lines) : MTX_SUCCESS;
+        if (mtxdisterror_allreduce(disterr, err)) {
+            if (rank == root || rank < p)
+                mtxfile_free(&mtxdistfile->mtxfile);
+            if (rank == root)
+                free(sizes);
+            mtxfilecomments_free(&mtxdistfile->comments);
+            if (free_linebuf)
+                free(linebuf);
+            return MTX_ERR_MPI_COLLECTIVE;
+        }
+
+        /* Read the next set of data lines on the root process. */
+        err = (rank == root) ?
+            mtxfiledata_gzread(
+                &mtxdistfile->mtxfile.data,
+                f, lines_read, bytes_read, line_max, linebuf,
+                mtxdistfile->mtxfile.header.object, mtxdistfile->mtxfile.header.format,
+                mtxdistfile->mtxfile.header.field, mtxdistfile->mtxfile.precision,
+                mtxdistfile->mtxfile.size.num_rows,
+                mtxdistfile->mtxfile.size.num_columns,
+                num_data_lines, 0)
+            : MTX_SUCCESS;
+        if (mtxdisterror_allreduce(disterr, err)) {
+            if (rank == root || rank < p)
+                mtxfile_free(&mtxdistfile->mtxfile);
+            if (rank == root)
+                free(sizes);
+            mtxfilecomments_free(&mtxdistfile->comments);
+            if (free_linebuf)
+                free(linebuf);
+            return MTX_ERR_MPI_COLLECTIVE;
+        }
+
+        /* Send to the owning process. */
+        if (rank == root) {
+            err = mtxfile_send(&mtxdistfile->mtxfile, p, 0, comm, disterr);
+        } else if (rank == p) {
+            err = mtxfile_recv(&mtxdistfile->mtxfile, root, 0, comm, disterr);
+        } else {
+            err = MTX_SUCCESS;
+        }
+        if (mtxdisterror_allreduce(disterr, err)) {
+            if (rank == root || rank < p)
+                mtxfile_free(&mtxdistfile->mtxfile);
+            if (rank == root)
+                free(sizes);
+            mtxfilecomments_free(&mtxdistfile->comments);
+            if (free_linebuf)
+                free(linebuf);
+            return MTX_ERR_MPI_COLLECTIVE;
+        }
+    }
+
+    /* Read the final set of data lines on the root process. */
+    err = (rank == root)
+        ? mtxfilesize_copy(&mtxdistfile->mtxfile.size, &sizes[comm_size-1])
+        : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err)) {
+        mtxfile_free(&mtxdistfile->mtxfile);
+        if (rank == root)
+            free(sizes);
+        mtxfilecomments_free(&mtxdistfile->comments);
+        if (free_linebuf)
+            free(linebuf);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+
+    int64_t num_data_lines;
+    err = (rank == root) ? mtxfilesize_num_data_lines(
+        &mtxdistfile->mtxfile.size, mtxdistfile->mtxfile.header.symmetry, &num_data_lines)
+        : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err)) {
+        mtxfile_free(&mtxdistfile->mtxfile);
+        if (rank == root)
+            free(sizes);
+        mtxfilecomments_free(&mtxdistfile->comments);
+        if (free_linebuf)
+            free(linebuf);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+
+    err = (rank == root) ?
+        mtxfiledata_gzread(
+            &mtxdistfile->mtxfile.data,
+            f, lines_read, bytes_read, line_max, linebuf,
+            mtxdistfile->mtxfile.header.object, mtxdistfile->mtxfile.header.format,
+            mtxdistfile->mtxfile.header.field, mtxdistfile->mtxfile.precision,
+            mtxdistfile->mtxfile.size.num_rows, mtxdistfile->mtxfile.size.num_columns,
+            num_data_lines, 0)
+        : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err)) {
+        mtxfile_free(&mtxdistfile->mtxfile);
+        if (rank == root)
+            free(sizes);
+        mtxfilecomments_free(&mtxdistfile->comments);
+        if (free_linebuf)
+            free(linebuf);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+    if (rank == root)
+        free(sizes);
+    if (free_linebuf)
+        free(linebuf);
+
+    disterr->mpierrcode = MPI_Bcast(lines_read, 1, MPI_INT, root, comm);
+    err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err)) {
+        mtxdistfile_free(mtxdistfile);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+    disterr->mpierrcode = MPI_Bcast(bytes_read, 1, MPI_INT64_T, root, comm);
+    err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err)) {
+        mtxdistfile_free(mtxdistfile);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+    return MTX_SUCCESS;
+}
+#endif
+
 /**
  * ‘mtxdistfile_write()’ writes a distributed Matrix Market file to
  * the given path.  The file may optionally be compressed by gzip.
@@ -1824,8 +2191,12 @@ int mtxdistfile_write(
         }
         fclose(f);
     } else {
+#ifdef LIBMTX_HAVE_LIBZ
         errno = ENOTSUP;
         return MTX_ERR_ERRNO;
+#else
+        return MTX_ERR_ZLIB_NOT_SUPPORTED;
+#endif
     }
     return MTX_SUCCESS;
 }
@@ -1892,8 +2263,12 @@ int mtxdistfile_write_shared(
         }
         fclose(f);
     } else {
+#ifdef LIBMTX_HAVE_LIBZ
         errno = ENOTSUP;
         return MTX_ERR_ERRNO;
+#else
+        return MTX_ERR_ZLIB_NOT_SUPPORTED;
+#endif
     }
     return MTX_SUCCESS;
 }

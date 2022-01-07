@@ -55,6 +55,14 @@ const char * mtxstrerror(
         return "success";
     case MTX_ERR_ERRNO:
         return strerror(errno);
+    case MTX_ERR_MPI_NOT_SUPPORTED:
+        return "MPI not supported; please rebuild with MPI support";
+    case MTX_ERR_ZLIB_NOT_SUPPORTED:
+        return "zlib not supported; please rebuild with zlib support";
+    case MTX_ERR_BLAS_NOT_SUPPORTED:
+        return "BLAS not supported; please rebuild with BLAS support";
+    case MTX_ERR_LIBPNG_NOT_SUPPORTED:
+        return "libpng not supported; please rebuild with libpng support";
     case MTX_ERR_MPI:
         return "MPI error";
     case MTX_ERR_MPI_COLLECTIVE:

@@ -497,6 +497,8 @@ used to indicate the line number and byte of the Matrix Market file at
 which the error was encountered. @code{lines_read} and
 @code{bytes_read} are ignored if they are set to @samp{NULL}.
 
+@cindex sysconf
+@cindex _SC_LINE_MAX
 Moreover, @code{precision} is used to choose the precision for storing
 the values of matrix or vector entries, as described in
 @ref{Precision}. If @code{linebuf} is not @samp{NULL}, then it must

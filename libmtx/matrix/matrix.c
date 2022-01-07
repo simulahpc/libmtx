@@ -534,6 +534,9 @@ int mtxmatrix_to_mtxfile(
  *
  * If ‘path’ is ‘-’, then standard input is used.
  *
+ * The file is assumed to be gzip-compressed if ‘gzip’ is ‘true’, and
+ * uncompressed otherwise.
+ *
  * If an error code is returned, then ‘lines_read’ and ‘bytes_read’
  * are used to return the line number and byte at which the error was
  * encountered during the parsing of the matrix.

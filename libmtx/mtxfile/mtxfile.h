@@ -575,6 +575,9 @@ int mtxfile_set_constant_integer_double(
  *
  * If ‘path’ is ‘-’, then standard input is used.
  *
+ * The file is assumed to be gzip-compressed if ‘gzip’ is ‘true’, and
+ * uncompressed otherwise.
+ *
  * If an error code is returned, then ‘lines_read’ and ‘bytes_read’
  * are used to return the line number and byte at which the error was
  * encountered during the parsing of the Matrix Market file.
@@ -624,6 +627,13 @@ int mtxfile_fread(
  * If an error code is returned, then ‘lines_read’ and ‘bytes_read’
  * are used to return the line number and byte at which the error was
  * encountered during the parsing of the Matrix Market file.
+ *
+ * If ‘linebuf’ is not ‘NULL’, then it must point to an array that can
+ * hold at least ‘line_max’ values of type ‘char’. This buffer is used
+ * for reading lines from the stream. Otherwise, if ‘linebuf’ is
+ * ‘NULL’, then a temporary buffer is allocated and used, and the
+ * maximum line length is determined by calling ‘sysconf()’ with
+ * ‘_SC_LINE_MAX’.
  */
 int mtxfile_gzread(
     struct mtxfile * mtxfile,

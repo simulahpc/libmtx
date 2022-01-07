@@ -38,51 +38,55 @@
  */
 enum mtxerror
 {
-    MTX_SUCCESS = 0,                        /* no error */
-    MTX_ERR_ERRNO = -1,                     /* error code provided by errno */
-    MTX_ERR_MPI = -2,                       /* MPI error */
-    MTX_ERR_MPI_COLLECTIVE = -3,            /* MPI collective error */
-    MTX_ERR_MPI_NOT_INITIALIZED = -4,       /* MPI not initialized */
-    MTX_ERR_EOF = -5,                       /* unexpected end-of-file */
-    MTX_ERR_LINE_TOO_LONG = -6,             /* line exceeds maximum length */
-    MTX_ERR_INVALID_MTX_HEADER = -7,        /* invalid Matrix Market header */
-    MTX_ERR_INVALID_MTX_OBJECT = -8,        /* invalid Matrix Market object */
-    MTX_ERR_INVALID_MTX_FORMAT = -9,        /* invalid Matrix Market format */
-    MTX_ERR_INVALID_MTX_FIELD = -10,        /* invalid Matrix Market field */
-    MTX_ERR_INVALID_MTX_SYMMETRY = -11,     /* invalid Matrix Market symmetry */
-    MTX_ERR_INVALID_MTX_TRIANGLE = -12,     /* invalid Matrix Market triangle */
-    MTX_ERR_INVALID_MTX_SORTING = -13,      /* invalid Matrix Market sorting */
-    MTX_ERR_INVALID_MTX_ORDERING = -14,     /* invalid Matrix Market ordering */
-    MTX_ERR_INVALID_MTX_ASSEMBLY = -15,     /* invalid Matrix Market assembly */
-    MTX_ERR_INVALID_MTX_COMMENT = -16,      /* invalid Matrix Market comment line */
-    MTX_ERR_INVALID_MTX_SIZE = -17,         /* invalid Matrix Market size info */
-    MTX_ERR_INVALID_MTX_DATA = -18,         /* invalid Matrix Market data */
-    MTX_ERR_INVALID_PRECISION = -19,        /* invalid precision */
-    MTX_ERR_INVALID_INDEX_SET_TYPE = -20,   /* invalid index set type */
-    MTX_ERR_INVALID_PARTITION_TYPE = -22,   /* invalid partition type */
-    MTX_ERR_INVALID_STREAM_TYPE = -23,      /* invalid stream type */
-    MTX_ERR_INVALID_FORMAT_SPECIFIER = -24, /* invalid format specifier */
-    MTX_ERR_INDEX_OUT_OF_BOUNDS = -25,      /* index out of bounds */
-    MTX_ERR_NO_BUFFER_SPACE = -26,          /* not enough space in buffer */
-    MTX_ERR_NOT_CONVERGED = -27,            /* iterative method did not converge */
-    MTX_ERR_INVALID_PATH_FORMAT = -28,      /* invalid path format */
-    MTX_ERR_INVALID_FIELD = -29,            /* invalid field */
-    MTX_ERR_INVALID_VECTOR_TYPE = -30,      /* invalid vector type */
-    MTX_ERR_INCOMPATIBLE_MTX_OBJECT = -31,  /* incompatible Matrix Market object */
-    MTX_ERR_INCOMPATIBLE_MTX_FORMAT = -32,  /* incompatible Matrix Market format */
-    MTX_ERR_INCOMPATIBLE_MTX_FIELD = -33,   /* incompatible Matrix Market field */
-    MTX_ERR_INCOMPATIBLE_MTX_SYMMETRY = -34,/* incompatible Matrix Market symmetry */
-    MTX_ERR_INCOMPATIBLE_MTX_SIZE = -35,    /* incompatible Matrix Market size */
-    MTX_ERR_INCOMPATIBLE_FIELD = -36,       /* incompatible field */
-    MTX_ERR_INCOMPATIBLE_PRECISION = -37,   /* incompatible precision */
-    MTX_ERR_INCOMPATIBLE_SIZE = -38,        /* incompatible size */
-    MTX_ERR_INCOMPATIBLE_VECTOR_TYPE = -39, /* incompatible vector type */
-    MTX_ERR_INCOMPATIBLE_PARTITION = -40,   /* incompatible partition */
-    MTX_ERR_INVALID_SORTING = -41,          /* invalid sorting */
-    MTX_ERR_INVALID_ORDERING = -42,         /* invalid ordering */
-    MTX_ERR_INVALID_MATRIX_TYPE = -43,      /* invalid matrix type */
-    MTX_ERR_INCOMPATIBLE_MATRIX_TYPE = -44, /* incompatible matrix type */
-    MTX_ERR_INVALID_TRANS_TYPE = -45,       /* invalid transpose type */
+    MTX_SUCCESS = 0,                  /* no error */
+    MTX_ERR_ERRNO,                    /* error code provided by errno */
+    MTX_ERR_MPI_NOT_SUPPORTED,        /* MPI not supported */
+    MTX_ERR_ZLIB_NOT_SUPPORTED,       /* zlib not supported */
+    MTX_ERR_BLAS_NOT_SUPPORTED,       /* BLAS not supported */
+    MTX_ERR_LIBPNG_NOT_SUPPORTED,     /* libpng not supported */
+    MTX_ERR_MPI,                      /* MPI error */
+    MTX_ERR_MPI_COLLECTIVE,           /* MPI collective error */
+    MTX_ERR_MPI_NOT_INITIALIZED,      /* MPI not initialized */
+    MTX_ERR_EOF,                      /* unexpected end-of-file */
+    MTX_ERR_LINE_TOO_LONG,            /* line exceeds maximum length */
+    MTX_ERR_INVALID_MTX_HEADER,       /* invalid Matrix Market header */
+    MTX_ERR_INVALID_MTX_OBJECT,       /* invalid Matrix Market object */
+    MTX_ERR_INVALID_MTX_FORMAT,       /* invalid Matrix Market format */
+    MTX_ERR_INVALID_MTX_FIELD,        /* invalid Matrix Market field */
+    MTX_ERR_INVALID_MTX_SYMMETRY,     /* invalid Matrix Market symmetry */
+    MTX_ERR_INVALID_MTX_TRIANGLE,     /* invalid Matrix Market triangle */
+    MTX_ERR_INVALID_MTX_SORTING,      /* invalid Matrix Market sorting */
+    MTX_ERR_INVALID_MTX_ORDERING,     /* invalid Matrix Market ordering */
+    MTX_ERR_INVALID_MTX_ASSEMBLY,     /* invalid Matrix Market assembly */
+    MTX_ERR_INVALID_MTX_COMMENT,      /* invalid Matrix Market comment line */
+    MTX_ERR_INVALID_MTX_SIZE,         /* invalid Matrix Market size info */
+    MTX_ERR_INVALID_MTX_DATA,         /* invalid Matrix Market data */
+    MTX_ERR_INVALID_PRECISION,        /* invalid precision */
+    MTX_ERR_INVALID_INDEX_SET_TYPE,   /* invalid index set type */
+    MTX_ERR_INVALID_PARTITION_TYPE,   /* invalid partition type */
+    MTX_ERR_INVALID_STREAM_TYPE,      /* invalid stream type */
+    MTX_ERR_INVALID_FORMAT_SPECIFIER, /* invalid format specifier */
+    MTX_ERR_INDEX_OUT_OF_BOUNDS,      /* index out of bounds */
+    MTX_ERR_NO_BUFFER_SPACE,          /* not enough space in buffer */
+    MTX_ERR_NOT_CONVERGED,            /* iterative method did not converge */
+    MTX_ERR_INVALID_PATH_FORMAT,      /* invalid path format */
+    MTX_ERR_INVALID_FIELD,            /* invalid field */
+    MTX_ERR_INVALID_VECTOR_TYPE,      /* invalid vector type */
+    MTX_ERR_INCOMPATIBLE_MTX_OBJECT,  /* incompatible Matrix Market object */
+    MTX_ERR_INCOMPATIBLE_MTX_FORMAT,  /* incompatible Matrix Market format */
+    MTX_ERR_INCOMPATIBLE_MTX_FIELD,   /* incompatible Matrix Market field */
+    MTX_ERR_INCOMPATIBLE_MTX_SYMMETRY,/* incompatible Matrix Market symmetry */
+    MTX_ERR_INCOMPATIBLE_MTX_SIZE,    /* incompatible Matrix Market size */
+    MTX_ERR_INCOMPATIBLE_FIELD,       /* incompatible field */
+    MTX_ERR_INCOMPATIBLE_PRECISION,   /* incompatible precision */
+    MTX_ERR_INCOMPATIBLE_SIZE,        /* incompatible size */
+    MTX_ERR_INCOMPATIBLE_VECTOR_TYPE, /* incompatible vector type */
+    MTX_ERR_INCOMPATIBLE_PARTITION,   /* incompatible partition */
+    MTX_ERR_INVALID_SORTING,          /* invalid sorting */
+    MTX_ERR_INVALID_ORDERING,         /* invalid ordering */
+    MTX_ERR_INVALID_MATRIX_TYPE,      /* invalid matrix type */
+    MTX_ERR_INCOMPATIBLE_MATRIX_TYPE, /* incompatible matrix type */
+    MTX_ERR_INVALID_TRANS_TYPE,       /* invalid transpose type */
 };
 
 /**
