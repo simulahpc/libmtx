@@ -559,7 +559,8 @@ large files, a high-performance I/O library such as MPI-IO
 (@ref{HDF5}) may be a better alternative. However, this is not
 currently supported in libmtx.
 
-@subsection Reading Matrix Market files
+@node Reading distributed Matrix Market files
+@subsection Reading distributed Matrix Market files
 @findex mtxdistfile_fread
 To read an @file{mtx} file from a @code{FILE} stream, partition the
 data and distribute it among MPI processes in a communicator based on
@@ -649,7 +650,8 @@ The file is assumed to be gzip-compressed if @code{gzip} is
 @samp{true}, and uncompressed otherwise. If @code{path} is @samp{-},
 then the standard input stream is used.
 
-@subsection Writing Matrix Market files
+@node Writing distributed Matrix Market files
+@subsection Writing distributed Matrix Market files
 @findex mtxdistfile_fwrite
 To write a distributed @file{mtx} file to a @code{FILE} stream using
 the file-per-process model, use @code{mtxdistfile_fwrite}:
