@@ -288,6 +288,7 @@ int mtxvector_gzwrite(
 
 @node Vectors: Level 1 BLAS
 @subsection Level 1 BLAS
+@cindex BLAS
 The libmtx C library implements a subset of the Basic Linear Algebra
 Subprograms (BLAS) routines. For dense operations, libmtx can use
 optimised, third-party BLAS libraries, such as OpenBLAS

@@ -184,7 +184,7 @@ int mtxdistfile_init(
         return MTX_ERR_MPI_COLLECTIVE;
     }
 
-    /* Calcalute the size of the distributed Matrix Market file. */
+    /* Calculate the size of the distributed Matrix Market file. */
     if (mtxdistfile->header.format == mtxfile_array) {
         int64_t num_rows = sizes[0].num_rows;
         err = MTX_SUCCESS;

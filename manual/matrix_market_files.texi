@@ -507,6 +507,8 @@ This buffer is used for reading lines from the stream. Otherwise, if
 and used, and the maximum line length is determined by calling
 @code{sysconf()} with @code{_SC_LINE_MAX}.
 
+@cindex zlib
+@cindex gzip compression
 @findex mtxfile_gzread
 If libmtx is built with zlib support, then @code{mtxfile_gzread} can
 be used to read gzip-compressed @file{mtx} files.
@@ -629,6 +631,7 @@ matrix or vector entries are provided directly by the user. In this
 case, storage is allocated and the provided data is copied to the
 newly allocated storage.
 
+@findex mtxfile_alloc
 The function @code{mtxfile_alloc} can be used to allocate storage for
 a Matrix Market file with specified header line, comment lines, size
 line and precision.
@@ -643,6 +646,7 @@ line and precision.
 The underlying matrix or vector values are not initialised, and it is
 therefore up to the user to initialise them.
 
+@findex mtxfile_alloc_copy
 To allocate storage for a copy of an existing Matrix Market file, the
 function @code{mtxfile_alloc_copy} may be used.
 @example
@@ -654,6 +658,7 @@ Although storage is allocated for the underlying matrix or vector
 values, the data is not initialised. It is therefore up to the user to
 initialise the matrix or vector values.
 
+@findex mtxfile_init_copy
 If, on the other hand, an exact copy of an existing Matrix Market file
 is needed, including the matrix or vector values, then the function
 @code{mtxfile_init_copy} can be used.
@@ -665,18 +670,18 @@ is needed, including the matrix or vector values, then the function
 
 @node Creating Matrix Market files in array format
 @subsection Creating Matrix Market files in array format
+@findex mtxfile_alloc_matrix_array
+@findex mtxfile_alloc_vector_array
 The functions @code{mtxfile_alloc_matrix_array} and
 @code{mtxfile_alloc_vector_array} can be used to allocate storage for
 matrices and vectors in array format.
-
 @example
 @code{int mtxfile_alloc_matrix_array(
     struct mtxfile * mtxfile,
     enum mtxfilefield field,
     enum mtxfilesymmetry symmetry,
     enum mtxprecision precision,
-    int num_rows,
-    int num_columns);
+    int num_rows, int num_columns);
 
 int mtxfile_alloc_vector_array(
     struct mtxfile * mtxfile,
@@ -689,6 +694,20 @@ appropriately. (For matrices, the symmetry must also be specified.)
 The matrix or vector values are not initialised, and it is therefore
 up to the user to initialise them.
 
+@findex mtxfile_init_matrix_array_real_single
+@findex mtxfile_init_matrix_array_real_double
+@findex mtxfile_init_matrix_array_complex_single
+@findex mtxfile_init_matrix_array_complex_double
+@findex mtxfile_init_matrix_array_integer_single
+@findex mtxfile_init_matrix_array_integer_double
+@findex mtxfile_init_matrix_array_pattern
+@findex mtxfile_init_vector_array_real_single
+@findex mtxfile_init_vector_array_real_double
+@findex mtxfile_init_vector_array_complex_single
+@findex mtxfile_init_vector_array_complex_double
+@findex mtxfile_init_vector_array_integer_single
+@findex mtxfile_init_vector_array_integer_double
+@findex mtxfile_init_vector_array_pattern
 If the matrix or vector values are already known, the functions
 @code{mtxfile_init_@var{object}_array_@var{field}_@var{precision}} can
 be used, where @code{@var{object}}, @code{@var{field}} and
@@ -698,13 +717,11 @@ be used, where @code{@var{object}}, @code{@var{field}} and
 or @samp{double}). For example, a matrix in array format with real,
 double precision floating point coefficients is initialised with
 @code{mtxfile_init_matrix_array_real_double}:
-
 @example
 @code{int mtxfile_init_matrix_array_real_double(
     struct mtxfile * mtxfile,
     enum mtxfilesymmetry symmetry,
-    int num_rows,
-    int num_columns,
+    int num_rows, int num_columns,
     const double * data);}
 @end example
 Similarly, a vector in array format with 32-bit integer values is
@@ -716,10 +733,9 @@ initialised with @code{mtxfile_init_vector_array_integer_single}:
     const int32_t * data);}
 @end example
 
-
 @node Creating Matrix Market files in coordinate format
 @subsection Creating Matrix Market files in coordinate format
-
+@findex mtxfile_alloc_matrix_coordinate
 To allocate storage for a matrix in coordinate format, the function
 @code{mtxfile_alloc_matrix_coordinate} is used.
 @example
@@ -728,14 +744,13 @@ To allocate storage for a matrix in coordinate format, the function
     enum mtxfilefield field,
     enum mtxfilesymmetry symmetry,
     enum mtxprecision precision,
-    int num_rows,
-    int num_columns,
-    int64_t num_nonzeros);}
+    int num_rows, int num_columns, int64_t num_nonzeros);}
 @end example
 The field, symmetry and precision must be specified, along with the
 matrix dimensions and the number of nonzero matrix entries to allocate
 storage for.
 
+@findex mtxfile_alloc_vector_coordinate
 Similarly, a vector in coordinate format can be allocated with
 @code{mtxfile_alloc_vector_coordinate}.
 @example
@@ -743,13 +758,26 @@ Similarly, a vector in coordinate format can be allocated with
     struct mtxfile * mtxfile,
     enum mtxfilefield field,
     enum mtxprecision precision,
-    int num_rows,
-    int64_t num_nonzeros);}
+    int num_rows, int64_t num_nonzeros);}
 @end example
 The field and precision must be given, along with the number of rows
 in the vector and the number of nonzero vector entries to allocate
 storage for.
 
+@findex mtxfile_init_matrix_coordinate_real_single
+@findex mtxfile_init_matrix_coordinate_real_double
+@findex mtxfile_init_matrix_coordinate_complex_single
+@findex mtxfile_init_matrix_coordinate_complex_double
+@findex mtxfile_init_matrix_coordinate_integer_single
+@findex mtxfile_init_matrix_coordinate_integer_double
+@findex mtxfile_init_matrix_coordinate_pattern
+@findex mtxfile_init_vector_coordinate_real_single
+@findex mtxfile_init_vector_coordinate_real_double
+@findex mtxfile_init_vector_coordinate_complex_single
+@findex mtxfile_init_vector_coordinate_complex_double
+@findex mtxfile_init_vector_coordinate_integer_single
+@findex mtxfile_init_vector_coordinate_integer_double
+@findex mtxfile_init_vector_coordinate_pattern
 To allocate a matrix or vector and at the same time initialise the
 nonzero matrix entries, the function
 @code{mtxfile_init_@var{object}_coordinate_@var{field}_@var{precision}}
@@ -764,9 +792,7 @@ real, double precision floating point coefficients is allocated with
 @code{int mtxfile_init_matrix_coordinate_real_double(
     struct mtxfile * mtxfile,
     enum mtxfilesymmetry symmetry,
-    int num_rows,
-    int num_columns,
-    int64_t num_nonzeros,
+    int num_rows, int num_columns, int64_t num_nonzeros,
     const struct mtxfile_matrix_coordinate_real_double * data);}
 @end example
 The matrix values are copied from the @code{data} array.
@@ -777,15 +803,13 @@ integer values is created and initialised with the function
 @example
 @code{int mtxfile_init_vector_coordinate_integer_single(
     struct mtxfile * mtxfile,
-    int num_rows,
-    int64_t num_nonzeros,
+    int num_rows, int64_t num_nonzeros,
     const struct mtxfile_vector_coordinate_integer_single * data);}
 @end example
 
 
 @node Setting matrix and vector values
 @subsection Setting matrix and vector values
-
 @findex mtxfile_set_constant_real_single
 @findex mtxfile_set_constant_real_double
 @findex mtxfile_set_constant_complex_single
@@ -809,15 +833,12 @@ int mtxfile_set_constant_integer_double(struct mtxfile *, int64_t a);}
 
 @node Transposing sorting and reordering
 @section Transposing, sorting and reordering
-
 This section describes operations related to sorting and permuting
 matrices and vectors, as well as transposing matrices and reordering
 the rows and columns of sparse matrices.
 
-
 @node Transpose and conjugate transpose
 @subsection Transpose and conjugate transpose
-
 @cindex transpose
 @findex mtxfile_transpose
 The function @code{mtxfile_transpose} can be used to transpose a
@@ -846,9 +867,8 @@ If @code{mtxfile} is a vector, nothing is done.
 
 @node Sort
 @subsection Sort
-
 @cindex sort
-@findex mtxfile_sort
+@tindex mtxfilesorting
 Sometimes, it is useful to sort the values of a matrix or vector in
 some particular order. For this purpose, the enum type
 @code{mtxfilesorting} is used to enumerate different ways of sorting
@@ -867,6 +887,7 @@ major order (@code{mtxfile_row_major}). Matrices and vectors in
 coordinate format, on the other hand, are generally unsorted
 (@code{mtxfile_unsorted}).
 
+@findex mtxfile_sort
 To sort a matrix or vector, use the function @code{mtxfile_sort}:
 @example
 @code{int mtxfile_sort(
@@ -880,7 +901,6 @@ values of @code{mtxfile} will be sorted in the order specified by
 
 @node Reorder
 @subsection Reorder
-
 @cindex reorder
 There are a number of commonly used schemes for reordering the rows
 and columns of sparse matrices. The goal can be to reduce fill-in that
@@ -913,8 +933,6 @@ row @code{rowperm[i-1]} and column @code{colperm[j-1]} of the original
 matrix, for @code{i=1,2,...,@var{M}} and @code{j=1,2,...,@var{N}}.
 
 @cindex ordering
-@cindex Reverse Cuthill-McKee
-@cindex RCM
 @tindex mtxfileordering
 In addition to permuting a matrix or vector, libmtx also provides
 functions to obtain row and column permutations for certain orderings.
@@ -927,7 +945,7 @@ orderings for the rows and columns of a matrix.
 @};}
 @end example
 
-@findex mtx_matrix_reorder
+@findex mtxfile_reorder
 The function @code{mtxfile_reorder} reorders the rows and columns of a
 matrix according to the specified ordering method.
 @example
@@ -963,7 +981,8 @@ the chosen starting vertex.
 
 @node Reverse Cuthill-McKee (RCM)
 @subsubsection Reverse Cuthill-McKee (RCM)
-@findex mtx_matrix_reorder_rcm
+@cindex Cuthill-McKee
+@cindex Reverse Cuthill-McKee (RCM)
 If @code{mtxfile_reorder} is called with @code{ordering} set to
 @samp{mtxfile_rcm}, then the rows and columns of a matrix are
 reordered according to the Reverse Cuthill-McKee algorithm
@@ -1005,6 +1024,7 @@ matrix.
 
 @node Communicating Matrix Market files
 @section Communicating Matrix Market files
+@cindex MPI
 If libmtx is built with MPI support, then some additional
 functionality becomes available to allow sending and receiving Matrix
 Market files between MPI processes. Note that these functions rely on
