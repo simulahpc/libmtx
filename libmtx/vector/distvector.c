@@ -498,7 +498,7 @@ int mtxdistvector_from_mtxfile(
 
     /* 2. Partition the rows of the vector. */
     struct mtx_partition row_partition;
-    enum mtx_partition_type partition_type = mtx_block;
+    enum mtxpartitioning partition_type = mtx_block;
     int num_parts = distvector->comm_size;
     err = mtx_partition_init(
         &row_partition, partition_type,

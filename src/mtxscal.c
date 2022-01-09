@@ -661,7 +661,7 @@ int main(int argc, char *argv[])
     }
 
     /* TODO: Make row partitioning configurable, see mtxpartition.c */
-    const enum mtx_partition_type row_partition_type = mtx_block;
+    const enum mtxpartitioning row_partition_type = mtx_block;
 
     struct mtxdistfile mtxdistfile;
     int lines_read;

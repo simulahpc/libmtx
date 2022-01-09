@@ -67,7 +67,7 @@ struct program_options
     enum mtxvectortype vector_type;
     bool gzip;
     int num_parts;
-    enum mtx_partition_type partition;
+    enum mtxpartitioning partition;
     char * partition_path;
     int verbose;
     bool quiet;

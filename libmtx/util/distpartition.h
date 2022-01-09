@@ -64,7 +64,7 @@ struct mtxdistpartition
     /**
      * `type' is the type of partitioning.
      */
-    enum mtx_partition_type type;
+    enum mtxpartitioning type;
 
     /**
      * `size' is the number of elements in the partitioned set.
@@ -102,7 +102,7 @@ void mtxdistpartition_free(
  */
 int mtxdistpartition_init(
     struct mtxdistpartition * partition,
-    enum mtx_partition_type type,
+    enum mtxpartitioning type,
     int64_t size,
     int num_parts,
     int block_size,

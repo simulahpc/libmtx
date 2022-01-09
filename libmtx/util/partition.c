@@ -1,6 +1,6 @@
 /* This file is part of libmtx.
  *
- * Copyright (C) 2021 James D. Trotter
+ * Copyright (C) 2022 James D. Trotter
  *
  * libmtx is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
  * along with libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-09-18
+ * Last modified: 2022-01-09
  *
  * Data types and functions for partitioning finite sets.
  */
@@ -35,11 +35,11 @@
 #include <string.h>
 
 /**
- * `mtx_partition_type_str()' is a string representing the partition
+ * ‘mtxpartitioning_str()’ is a string representing the partition
  * type.
  */
-const char * mtx_partition_type_str(
-    enum mtx_partition_type type)
+const char * mtxpartitioning_str(
+    enum mtxpartitioning type)
 {
     switch (type) {
     case mtx_singleton: return "singleton";
@@ -52,28 +52,28 @@ const char * mtx_partition_type_str(
 }
 
 /**
- * `mtx_parse_partition_type()' parses a string to obtain one of the
- * partition types of `enum mtx_partition_type'.
+ * ‘mtx_parse_partition_type()’ parses a string to obtain one of the
+ * partition types of ‘enum mtxpartitioning’.
  *
- * `valid_delimiters' is either `NULL', in which case it is ignored,
+ * ‘valid_delimiters’ is either ‘NULL’, in which case it is ignored,
  * or it is a string of characters considered to be valid delimiters
  * for the parsed string.  That is, if there are any remaining,
  * non-NULL characters after parsing, then then the next character is
- * searched for in `valid_delimiters'.  If the character is found,
+ * searched for in ‘valid_delimiters’.  If the character is found,
  * then the parsing succeeds and the final delimiter character is
  * consumed by the parser. Otherwise, the parsing fails with an error.
  *
- * If `endptr' is not `NULL', then the address stored in `endptr'
+ * If ‘endptr’ is not ‘NULL’, then the address stored in ‘endptr’
  * points to the first character beyond the characters that were
  * consumed during parsing.
  *
- * On success, `mtx_parse_partition_type()' returns `MTX_SUCCESS' and
- * `partition_type' is set according to the parsed string and
- * `bytes_read' is set to the number of bytes that were consumed by
+ * On success, ‘mtx_parse_partition_type()’ returns ‘MTX_SUCCESS’ and
+ * ‘partition_type’ is set according to the parsed string and
+ * ‘bytes_read’ is set to the number of bytes that were consumed by
  * the parser.  Otherwise, an error code is returned.
  */
 int mtx_parse_partition_type(
-    enum mtx_partition_type * partition_type,
+    enum mtxpartitioning * partition_type,
     int64_t * bytes_read,
     const char ** endptr,
     const char * s,
@@ -111,7 +111,7 @@ int mtx_parse_partition_type(
 }
 
 /**
- * `mtx_partition_free()' frees resources associated with a
+ * ‘mtx_partition_free()’ frees resources associated with a
  * partitioning.
  */
 void mtx_partition_free(
@@ -124,11 +124,11 @@ void mtx_partition_free(
 }
 
 /**
- * `mtx_partition_init()' initialises a partitioning of a finite set.
+ * ‘mtx_partition_init()’ initialises a partitioning of a finite set.
  */
 int mtx_partition_init(
     struct mtx_partition * partition,
-    enum mtx_partition_type type,
+    enum mtxpartitioning type,
     int64_t size,
     int num_parts,
     int block_size,
@@ -152,7 +152,7 @@ int mtx_partition_init(
 }
 
 /**
- * `mtx_partition_init_singleton()' initialises a finite set that is
+ * ‘mtx_partition_init_singleton()’ initialises a finite set that is
  * not partitioned.
  */
 int mtx_partition_init_singleton(
@@ -176,7 +176,7 @@ int mtx_partition_init_singleton(
 }
 
 /**
- * `mtx_partition_init_block()' initialises a block partitioning of a
+ * ‘mtx_partition_init_block()’ initialises a block partitioning of a
  * finite set.
  */
 int mtx_partition_init_block(
@@ -211,7 +211,7 @@ int mtx_partition_init_block(
 }
 
 /**
- * `mtx_partition_init_cyclic()' initialises a cyclic partitioning of
+ * ‘mtx_partition_init_cyclic()’ initialises a cyclic partitioning of
  * a finite set.
  */
 int mtx_partition_init_cyclic(
@@ -245,7 +245,7 @@ int mtx_partition_init_cyclic(
 }
 
 /**
- * `mtx_partition_init_block_cyclic()' initialises a block-cyclic
+ * ‘mtx_partition_init_block_cyclic()’ initialises a block-cyclic
  * partitioning of a finite set.
  */
 int mtx_partition_init_block_cyclic(
@@ -259,7 +259,7 @@ int mtx_partition_init_block_cyclic(
 }
 
 /**
- * `mtx_partition_init_unstructured()' initialises an unstructured
+ * ‘mtx_partition_init_unstructured()’ initialises an unstructured
  * partitioning of a finite set.
  */
 int mtx_partition_init_unstructured(
@@ -339,7 +339,7 @@ int mtx_partition_init_unstructured(
 }
 
 /**
- * `mtx_partition_part()' determines which part of a partition that a
+ * ‘mtx_partition_part()’ determines which part of a partition that a
  * given element belongs to.
  */
 int mtx_partition_part(
@@ -377,14 +377,14 @@ int mtx_partition_part(
  */
 
 /**
- * `mtx_partition_read_parts()' reads the part numbers assigned to
+ * ‘mtx_partition_read_parts()’ reads the part numbers assigned to
  * each element of a partitioned set from the given path.  The path
  * must be to a Matrix Market file in the form of an integer vector in
  * array format.
  *
- * If `path' is `-', then standard input is used.
+ * If ‘path’ is ‘-’, then standard input is used.
  *
- * If an error code is returned, then `lines_read' and `bytes_read'
+ * If an error code is returned, then ‘lines_read’ and ‘bytes_read’
  * are used to return the line number and byte at which the error was
  * encountered during the parsing of the Matrix Market file.
  */
@@ -423,12 +423,12 @@ int mtx_partition_read_parts(
 }
 
 /**
- * `mtx_partition_fread_parts()' reads the part numbers assigned to
+ * ‘mtx_partition_fread_parts()’ reads the part numbers assigned to
  * each element of a partitioned set from a stream formatted as a
  * Matrix Market file.  The Matrix Market file must be in the form of
  * an integer vector in array format.
  *
- * If an error code is returned, then `lines_read' and `bytes_read'
+ * If an error code is returned, then ‘lines_read’ and ‘bytes_read’
  * are used to return the line number and byte at which the error was
  * encountered during the parsing of the Matrix Market file.
  */
@@ -471,12 +471,12 @@ int mtx_partition_fread_parts(
 }
 
 /**
- * `mtx_partition_fread_indices()' reads the global indices of
+ * ‘mtx_partition_fread_indices()’ reads the global indices of
  * elements belonging to a given part of a partitioned set from a
  * stream formatted as a Matrix Market file.  The Matrix Market file
  * must be in the form of an integer vector in array format.
  *
- * If an error code is returned, then `lines_read' and `bytes_read'
+ * If an error code is returned, then ‘lines_read’ and ‘bytes_read’
  * are used to return the line number and byte at which the error was
  * encountered during the parsing of the Matrix Market file.
  */
@@ -490,18 +490,18 @@ int mtx_partition_fread_indices(
     char * linebuf);
 
 /**
- * `mtx_partition_write_parts()' writes the part numbers assigned to
+ * ‘mtx_partition_write_parts()’ writes the part numbers assigned to
  * each element of a partitioned set to the given path.  The file is
  * written as a Matrix Market file in the form of an integer vector in
  * array format.
  *
- * If `path' is `-', then standard output is used.
+ * If ‘path’ is ‘-’, then standard output is used.
  *
- * If `format' is not `NULL', then the given format string is used
+ * If ‘format’ is not ‘NULL’, then the given format string is used
  * when printing numerical values.  The format specifier must be '%d',
  * and a fixed field width may optionally be specified (e.g., "%3d"),
  * but variable field width (e.g., "%*d"), as well as length modifiers
- * (e.g., "%ld") are not allowed.  If `format' is `NULL', then the
+ * (e.g., "%ld") are not allowed.  If ‘format’ is ‘NULL’, then the
  * format specifier '%d' is used.
  */
 int mtx_partition_write_parts(
@@ -535,20 +535,20 @@ int mtx_partition_write_parts(
 }
 
 /**
- * `mtx_partition_fwrite_parts()' writes the part numbers assigned to
+ * ‘mtx_partition_fwrite_parts()’ writes the part numbers assigned to
  * each element of a partitioned set to a stream formatted as a Matrix
  * Market file.  The Matrix Market file is written in the form of an
  * integer vector in array format.
  *
- * If `format' is not `NULL', then the given format string is used
+ * If ‘format’ is not ‘NULL’, then the given format string is used
  * when printing numerical values.  The format specifier must be '%d',
  * and a fixed field width may optionally be specified (e.g., "%3d"),
  * but variable field width (e.g., "%*d"), as well as length modifiers
- * (e.g., "%ld") are not allowed.  If `format' is `NULL', then the
+ * (e.g., "%ld") are not allowed.  If ‘format’ is ‘NULL’, then the
  * format specifier '%d' is used.
  *
- * If it is not `NULL', then the number of bytes written to the stream
- * is returned in `bytes_written'.
+ * If it is not ‘NULL’, then the number of bytes written to the stream
+ * is returned in ‘bytes_written’.
  */
 int mtx_partition_fwrite_parts(
     const struct mtx_partition * partition,
@@ -603,24 +603,24 @@ int mtx_partition_fwrite_parts(
 }
 
 /**
- * `mtx_partition_write_permutation()' writes the permutation of a
+ * ‘mtx_partition_write_permutation()’ writes the permutation of a
  * given part of a partitioned set to the given path.  The permutation
  * is represented by an array of global indices of the elements
  * belonging to the given part prior to partitioning.  The file is
  * written as a Matrix Market file in the form of an integer vector in
  * array format.
  *
- * If `path' is `-', then standard output is used.
+ * If ‘path’ is ‘-’, then standard output is used.
  *
- * If `format' is not `NULL', then the given format string is used
+ * If ‘format’ is not ‘NULL’, then the given format string is used
  * when printing numerical values.  The format specifier must be '%d',
  * and a fixed field width may optionally be specified (e.g., "%3d"),
  * but variable field width (e.g., "%*d"), as well as length modifiers
- * (e.g., "%ld") are not allowed.  If `format' is `NULL', then the
+ * (e.g., "%ld") are not allowed.  If ‘format’ is ‘NULL’, then the
  * format specifier '%d' is used.
  *
- * If it is not `NULL', then the number of bytes written to the stream
- * is returned in `bytes_written'.
+ * If it is not ‘NULL’, then the number of bytes written to the stream
+ * is returned in ‘bytes_written’.
  */
 int mtx_partition_write_permutation(
     const struct mtx_partition * partition,
@@ -636,7 +636,7 @@ int mtx_partition_write_permutation(
 }
 
 /**
- * `num_places()` is the number of digits or places in a given
+ * ‘num_places()‘ is the number of digits or places in a given
  * non-negative integer.
  */
 static int num_places(int n, int * places)
@@ -653,8 +653,8 @@ static int num_places(int n, int * places)
 }
 
 /**
- * `format_path()` formats a path by replacing any occurence of '%p'
- * in `pathfmt' with the number `part'.
+ * ‘format_path()‘ formats a path by replacing any occurence of '%p'
+ * in ‘pathfmt’ with the number ‘part’.
  */
 static int format_path(
     const char * pathfmt,
@@ -717,25 +717,25 @@ static int format_path(
 }
 
 /**
- * `mtx_partition_write_permutations()' writes the permutations for
+ * ‘mtx_partition_write_permutations()’ writes the permutations for
  * each part of a partitioned set to the given path.  The permutation
  * is represented by an array of global indices of the elements
  * belonging each part prior to partitioning.  The file for each part
  * is written as a Matrix Market file in the form of an integer vector
  * in array format.
  *
- * Each occurrence of '%p' in `pathfmt' is replaced by the number of
+ * Each occurrence of '%p' in ‘pathfmt’ is replaced by the number of
  * each part number.
  *
- * If `format' is not `NULL', then the given format string is used
+ * If ‘format’ is not ‘NULL’, then the given format string is used
  * when printing numerical values.  The format specifier must be '%d',
  * and a fixed field width may optionally be specified (e.g., "%3d"),
  * but variable field width (e.g., "%*d"), as well as length modifiers
- * (e.g., "%ld") are not allowed.  If `format' is `NULL', then the
+ * (e.g., "%ld") are not allowed.  If ‘format’ is ‘NULL’, then the
  * format specifier '%d' is used.
  *
- * If it is not `NULL', then the number of bytes written to the stream
- * is returned in `bytes_written'.
+ * If it is not ‘NULL’, then the number of bytes written to the stream
+ * is returned in ‘bytes_written’.
  */
 int mtx_partition_write_permutations(
     const struct mtx_partition * partition,
@@ -761,22 +761,22 @@ int mtx_partition_write_permutations(
 }
 
 /**
- * `mtx_partition_write_permutation()' writes the permutation of a
+ * ‘mtx_partition_write_permutation()’ writes the permutation of a
  * given part of a partitioned set to a stream as a Matrix Market
  * file.  The permutation is represented by an array of global indices
  * of the elements belonging to the given part prior to partitioning.
  * The file is written as a Matrix Market file in the form of an
  * integer vector in array format.
  *
- * If `format' is not `NULL', then the given format string is used
+ * If ‘format’ is not ‘NULL’, then the given format string is used
  * when printing numerical values.  The format specifier must be '%d',
  * and a fixed field width may optionally be specified (e.g., "%3d"),
  * but variable field width (e.g., "%*d"), as well as length modifiers
- * (e.g., "%ld") are not allowed.  If `format' is `NULL', then the
+ * (e.g., "%ld") are not allowed.  If ‘format’ is ‘NULL’, then the
  * format specifier '%d' is used.
  *
- * If it is not `NULL', then the number of bytes written to the stream
- * is returned in `bytes_written'.
+ * If it is not ‘NULL’, then the number of bytes written to the stream
+ * is returned in ‘bytes_written’.
  */
 int mtx_partition_fwrite_permutation(
     const struct mtx_partition * partition,

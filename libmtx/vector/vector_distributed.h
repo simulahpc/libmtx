@@ -478,7 +478,7 @@ int mtxvector_distributed_fread_distribute_rows(
     size_t line_max,
     char * linebuf,
     enum mtxprecision precision,
-    enum mtx_partition_type row_partition_type,
+    enum mtxpartitioning row_partition_type,
     size_t bufsize,
     int root,
     MPI_Comm comm,

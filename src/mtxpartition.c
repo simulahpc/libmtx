@@ -63,7 +63,7 @@ struct program_options
     char * mtx_output_path;
     char * format;
     int num_row_parts;
-    enum mtx_partition_type row_partition;
+    enum mtxpartitioning row_partition;
     char * rowperm_output_path;
     char * row_partition_path;
     char * row_partition_output_path;
