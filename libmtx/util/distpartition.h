@@ -158,10 +158,10 @@ int mtxdistpartition_init_block_cyclic(
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxdistpartition_init_unstructured()’ initialises a distributed,
- * unstructured partitioning of a finite set.
+ * ‘mtxdistpartition_init_partition()’ initialises a distributed,
+ * partition partitioning of a finite set.
  */
-int mtxdistpartition_init_unstructured(
+int mtxdistpartition_init_partition(
     struct mtxdistpartition * partition,
     int64_t size,
     int num_parts,

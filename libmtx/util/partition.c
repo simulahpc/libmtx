@@ -46,7 +46,7 @@ const char * mtxpartitioning_str(
     case mtx_block: return "block";
     case mtx_cyclic: return "cyclic";
     case mtx_block_cyclic: return "block-cyclic";
-    case mtx_unstructured: return "unstructured";
+    case mtx_partition: return "partition";
     default: return mtxstrerror(MTX_ERR_INVALID_PARTITION_TYPE);
     }
 }
@@ -92,9 +92,9 @@ int mtxpartitioning_parse(
     } else if (strncmp("block-cyclic", t, strlen("block-cyclic")) == 0) {
         t += strlen("block-cyclic");
         *partition_type = mtx_block_cyclic;
-    } else if (strncmp("unstructured", t, strlen("unstructured")) == 0) {
-        t += strlen("unstructured");
-        *partition_type = mtx_unstructured;
+    } else if (strncmp("partition", t, strlen("partition")) == 0) {
+        t += strlen("partition");
+        *partition_type = mtx_partition;
     } else {
         return MTX_ERR_INVALID_PARTITION_TYPE;
     }
@@ -143,8 +143,8 @@ int mtxpartition_init(
     } else if (type == mtx_block_cyclic) {
         return mtxpartition_init_block_cyclic(
             partition, size, num_parts, block_size);
-    } else if (type == mtx_unstructured) {
-        return mtxpartition_init_unstructured(
+    } else if (type == mtx_partition) {
+        return mtxpartition_init_partition(
             partition, size, num_parts, parts);
     } else {
         return MTX_ERR_INVALID_PARTITION_TYPE;
@@ -259,10 +259,10 @@ int mtxpartition_init_block_cyclic(
 }
 
 /**
- * ‘mtxpartition_init_unstructured()’ initialises an unstructured
+ * ‘mtxpartition_init_partition()’ initialises an partition
  * partitioning of a finite set.
  */
-int mtxpartition_init_unstructured(
+int mtxpartition_init_partition(
     struct mtxpartition * partition,
     int64_t size,
     int num_parts,
@@ -273,7 +273,7 @@ int mtxpartition_init_unstructured(
         if (parts[i] < 0 || parts[i] >= num_parts)
             return MTX_ERR_INDEX_OUT_OF_BOUNDS;
     }
-    partition->type = mtx_unstructured;
+    partition->type = mtx_partition;
     partition->size = size;
     partition->num_parts = num_parts;
     partition->index_sets = malloc(num_parts * sizeof(struct mtxidxset));
@@ -364,7 +364,7 @@ int mtxpartition_part(
         /* TODO: Not implemented. */
         errno = ENOTSUP;
         return MTX_ERR_ERRNO;
-    } else if (partition->type == mtx_unstructured) {
+    } else if (partition->type == mtx_partition) {
         *p = partition->parts[n];
     } else {
         return MTX_ERR_INVALID_PARTITION_TYPE;
@@ -459,7 +459,7 @@ int mtxpartition_fread_parts(
         return MTX_ERR_INVALID_MTX_FIELD;
     }
 
-    err = mtxpartition_init_unstructured(
+    err = mtxpartition_init_partition(
         partition, mtxfile.size.num_rows, num_parts,
         mtxfile.data.array_integer_single);
     if (err) {
@@ -585,7 +585,7 @@ int mtxpartition_fwrite_parts(
         mtxfile_free(&mtxfile);
         errno = ENOTSUP;
         return MTX_ERR_ERRNO;
-    } else if (partition->type == mtx_unstructured) {
+    } else if (partition->type == mtx_partition) {
         for (int64_t i = 0; i < partition->size; i++)
             parts[i] = partition->parts[i];
     } else {

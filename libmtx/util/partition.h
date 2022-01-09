@@ -37,7 +37,7 @@ enum mtxpartitioning
     mtx_block,        /* contiguous, fixed-size blocks */
     mtx_cyclic,       /* cyclic partition */
     mtx_block_cyclic, /* cyclic partition of fixed-size blocks. */
-    mtx_unstructured, /* unstructured partition */
+    mtx_partition,    /* general partition */
 };
 
 /**
@@ -105,7 +105,7 @@ struct mtxpartition
     /**
      * ‘parts’ is an array containing the part number assigned to each
      * element in the partitioned set, if ‘type’ is
-     * ‘mtx_unstructured’.  Otherwise, this value is not used.
+     * ‘mtx_partition’.  Otherwise, this value is not used.
      */
     int * parts;
 };
@@ -166,10 +166,10 @@ int mtxpartition_init_block_cyclic(
     int block_size);
 
 /**
- * ‘mtxpartition_init_unstructured()’ initialises an unstructured
+ * ‘mtxpartition_init_partition()’ initialises an partition
  * partitioning of a finite set.
  */
-int mtxpartition_init_unstructured(
+int mtxpartition_init_partition(
     struct mtxpartition * partition,
     int64_t size,
     int num_parts,

@@ -145,10 +145,10 @@ static void program_options_print_help(
     fprintf(f, "\t\t\tand precision can optionally be specified, e.g., \"%%+3.1f\".\n");
     fprintf(f, "  --parts=N\t\tnumber of parts to use for partitioning\n");
     fprintf(f, "  --partition=TYPE\tmethod of partitioning vector: ‘block’, ‘cyclic’,\n");
-    fprintf(f, "\t\t\t‘block-cyclic’, ‘singleton’ or ‘unstructured’.\n");
+    fprintf(f, "\t\t\t‘block-cyclic’, ‘singleton’ or ‘partition’.\n");
     fprintf(f, "\t\t\t(default: ‘block’)\n");
     fprintf(f, "  --partition-path=FILE\tpath to Matrix Market file for reading partition\n");
-    fprintf(f, "\t\t\twhen the partition is ‘unstructured’.\n");
+    fprintf(f, "\t\t\twhen the partition is ‘partition’.\n");
     fprintf(f, "  -q, --quiet\t\tdo not print Matrix Market output\n");
     fprintf(f, "  -v, --verbose\t\tbe more verbose\n");
     fprintf(f, "\n");
@@ -690,7 +690,7 @@ int main(int argc, char *argv[])
         args.verbose = false;
         args.quiet = true;
     }
-    if (args.partition == mtx_unstructured && !args.partition_path) {
+    if (args.partition == mtx_partition && !args.partition_path) {
         if (rank == root) {
             fprintf(stderr, "%s: Please specify a Matrix Market file "
                     "with --partition-path\n",
@@ -762,7 +762,7 @@ int main(int argc, char *argv[])
 
     /* 3. Partition the vector. */
     struct mtxpartition partition;
-    if (args.partition == mtx_unstructured) {
+    if (args.partition == mtx_partition) {
         if (args.verbose > 0) {
             fprintf(diagf, "mtxpartition_read_parts: ");
             fflush(diagf);

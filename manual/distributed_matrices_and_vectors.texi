@@ -143,19 +143,30 @@ a given integer @code{n} belongs to the index set.
 
 @node Distributed partitions
 @subsection Distributed partitions
+@cindex partitioning
+@tindex enum mtxpartitioning
+There are different kinds of partitionings, which may be represented
+by using the type @code{enum mtxpartitioning}.
+@example
+@code{enum mtxpartitioning @{
+    mtx_singleton,    /* singleton partition with only one component */
+    mtx_block,        /* contiguous, fixed-size blocks */
+    mtx_cyclic,       /* cyclic partition */
+    mtx_block_cyclic, /* cyclic partition of fixed-size blocks. */
+    mtx_partition,    /* general partition */
+@};}
+@end example
 
+@cindex distributed partitioning
+@tindex struct mtxdistpartition
 A partitioning of a set that is distributed among multiple processes
 is represented by @code{struct mtxdistpartition}.
 @example
-@code{struct mtxdistpartition
-@{
+@code{struct mtxdistpartition @{
     MPI_Comm comm;
     int comm_size;
     int rank;
 
-    /**
-     * ‘type’ is the type of partitioning.
-     */
     enum mtxpartitioning type;
 
     /**
@@ -176,6 +187,8 @@ is represented by @code{struct mtxdistpartition}.
     struct mtxidxset index_set;
 @};}
 @end example
+
+
 
 
 @node Distributed vectors

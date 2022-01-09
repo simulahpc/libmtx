@@ -145,11 +145,11 @@ static void program_options_print_help(
     fprintf(f, "\t\t\t\tpart numbers assigned to each matrix or vector entry.\n");
     fprintf(f, "  --row-parts=N\t\tnumber of parts to use when partitioning rows.\n");
     fprintf(f, "  --row-partition=TYPE\tmethod of partitioning matrix or vector rows:\n");
-    fprintf(f, "\t\t\t‘block’, ‘cyclic’, ‘block-cyclic’, ‘singleton’ or ‘unstructured’.\n");
+    fprintf(f, "\t\t\t‘block’, ‘cyclic’, ‘block-cyclic’, ‘singleton’ or ‘partition’.\n");
     fprintf(f, "\t\t\t(default: ‘block’)\n");
     fprintf(f, "  --row-partition-path=FILE\t"
             "path to Matrix Market file for reading row partition\n");
-    fprintf(f, "\t\t\t\twhen the row partition is ‘unstructured’.\n");
+    fprintf(f, "\t\t\t\twhen the row partition is ‘partition’.\n");
     fprintf(f, "  --row-partition-output-path=FILE\t"
             "path to Matrix Market file for writing row partition\n");
     fprintf(f, "  -v, --verbose\t\tbe more verbose\n");
@@ -703,7 +703,7 @@ int main(int argc, char *argv[])
         MPI_Finalize();
         return EXIT_FAILURE;
     }
-    if (args.row_partition == mtx_unstructured && !args.row_partition_path) {
+    if (args.row_partition == mtx_partition && !args.row_partition_path) {
         if (rank == root) {
             fprintf(stderr, "%s: Please specify a Matrix Market file "
                     "with --row-partition-path\n",
@@ -775,7 +775,7 @@ int main(int argc, char *argv[])
 
     /* 3. Partition the rows of the matrix or vector. */
     struct mtxpartition row_partition;
-    if (args.row_partition == mtx_unstructured) {
+    if (args.row_partition == mtx_partition) {
         if (args.verbose > 0) {
             fprintf(diagf, "mtxpartition_read_parts: ");
             fflush(diagf);
@@ -1089,7 +1089,7 @@ int main(int argc, char *argv[])
 
     /* 5. Write a Matrix Market file containing the part numbers
      * assigned to each row of the matrix or vector. */
-    if (args.row_partition != mtx_unstructured && args.row_partition_output_path) {
+    if (args.row_partition != mtx_partition && args.row_partition_output_path) {
         if (args.verbose > 0) {
             fprintf(diagf, "mtxpartition_write_parts: ");
             fflush(diagf);
@@ -1302,7 +1302,7 @@ int main(int argc, char *argv[])
         program_options_free(&args);
         return EXIT_FAILURE;
     }
-    if (args.row_partition == mtx_unstructured && !args.row_partition_path) {
+    if (args.row_partition == mtx_partition && !args.row_partition_path) {
         fprintf(stderr, "%s: Please specify a Matrix Market file "
                 "with --row-partition-path\n",
                 program_invocation_short_name);
@@ -1352,7 +1352,7 @@ int main(int argc, char *argv[])
 
     /* 3. Partition the rows of the matrix or vector. */
     struct mtxpartition row_partition;
-    if (args.row_partition == mtx_unstructured) {
+    if (args.row_partition == mtx_partition) {
         if (args.verbose > 0) {
             fprintf(diagf, "mtxpartition_read_parts: ");
             fflush(diagf);
@@ -1599,7 +1599,7 @@ int main(int argc, char *argv[])
 
     /* 5. Write a Matrix Market file containing the part numbers
      * assigned to each row of the matrix or vector. */
-    if (args.row_partition != mtx_unstructured && args.row_partition_output_path) {
+    if (args.row_partition != mtx_partition && args.row_partition_output_path) {
         if (args.verbose > 0) {
             fprintf(diagf, "mtxpartition_write_parts: ");
             fflush(diagf);

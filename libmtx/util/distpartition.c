@@ -81,8 +81,8 @@ int mtxdistpartition_init(
     } else if (type == mtx_block_cyclic) {
         err = mtxdistpartition_init_block_cyclic(
             partition, size, num_parts, block_size, comm, disterr);
-    } else if (type == mtx_unstructured) {
-        err = mtxdistpartition_init_unstructured(
+    } else if (type == mtx_partition) {
+        err = mtxdistpartition_init_partition(
             partition, size, num_parts, parts, comm, disterr);
     } else {
         err = MTX_ERR_INVALID_PARTITION_TYPE;
@@ -217,10 +217,10 @@ int mtxdistpartition_init_block_cyclic(
 }
 
 /**
- * ‘mtxdistpartition_init_unstructured()’ initialises a distributed,
- * unstructured partitioning of a finite set.
+ * ‘mtxdistpartition_init_partition()’ initialises a distributed,
+ * partition partitioning of a finite set.
  */
-int mtxdistpartition_init_unstructured(
+int mtxdistpartition_init_partition(
     struct mtxdistpartition * partition,
     int64_t size,
     int num_parts,
