@@ -36,12 +36,20 @@ program that rely on distributed computing from those parts that are
 not distributed.
 
 @menu
-* Error handling: Error handling for distributed Matrix Market files.  How to handle errors when using libmtx for distributed computing.
-* Data structures: Data structures for distributed Matrix Market files. Basic data structures for representing distributed @file{mtx} files.
-* Creating distributed Matrix Market files:: How to create distributed @file{mtx} files.
-* Converting to and from distributed Matrix Market files:: Functions for converting to and from distributed @file{mtx} files
-* Reading and writing distributed Matrix Market files:: Functions for reading from and writing to files in Matrix Market format.
-* Transposing, sorting and reordering: Other operations on distributed Matrix Market files. Functions for transposing, sorting and reordering distributed @file{mtx} files.
+* Error handling: Error handling for distributed Matrix Market files.
+  How to handle errors when using libmtx for distributed computing.
+* Data structures: Data structures for distributed Matrix Market files.
+  Basic data structures for representing distributed @file{mtx} files.
+* Creating distributed Matrix Market files::
+  How to create distributed @file{mtx} files.
+* Converting to and from distributed Matrix Market files::
+  Functions for converting to and from distributed @file{mtx} files
+* Reading and writing distributed Matrix Market files::
+  Functions for reading from and writing to files in Matrix Market
+  format.
+* Transposing, sorting and reordering: Other operations on distributed Matrix Market files.
+  Functions for transposing, sorting and reordering distributed
+  @file{mtx} files.
 @end menu
 
 

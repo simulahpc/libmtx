@@ -1,156 +1,40 @@
 @c This file is part of libmtx.
 @c Copyright (C) 2022 James D. Trotter
 @c
-@c libmtx is free software: you can redistribute it and/or
-@c modify it under the terms of the GNU General Public License as
-@c published by the Free Software Foundation, either version 3 of the
-@c License, or (at your option) any later version.
+@c libmtx is free software: you can redistribute it and/or modify it
+@c under the terms of the GNU General Public License as published by
+@c the Free Software Foundation, either version 3 of the License, or
+@c (at your option) any later version.
 @c
-@c libmtx is distributed in the hope that it will be useful,
-@c but WITHOUT ANY WARRANTY; without even the implied warranty of
+@c libmtx is distributed in the hope that it will be useful, but
+@c WITHOUT ANY WARRANTY; without even the implied warranty of
 @c MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 @c General Public License for more details.
 @c
 @c You should have received a copy of the GNU General Public License
-@c along with libmtx.  If not, see
-@c <https://www.gnu.org/licenses/>.
+@c along with libmtx.  If not, see <https://www.gnu.org/licenses/>.
 @c
 @c Authors: James D. Trotter <james@simula.no>
-@c Last modified: 2022-01-07
+@c Last modified: 2022-01-09
 @c
-@c libmtx User Guide: Matrix Market objects.
+@c libmtx User Guide: Distributed matrices and vectors.
 
 @node Distributed matrices and vectors
 @chapter Distributed matrices and vectors
-
-This chapter describes how to use distributed matrices and vectors
-with the libmtx C library.  The distributed-memory computing features
-in libmtx are implemented using MPI, and, therefore, you will need to
-build libmtx with MPI support.
+This chapter describes how to distribute matrices and vectors across
+multiple processes, and how to perform various linear algebra
+operations on distributed matrices and vectors. The distributed-memory
+computing features in libmtx are implemented using MPI, and,
+therefore, you will need to build libmtx with MPI support.
 
 @menu
-* Data types:: Basic data types for representing distributed matrices and vectors.
-* Creating distributed matrices and vectors:: Functions for creating distributed matrices and vectors.
-@c * Reading and writing distributed Matrix Market files:: Functions for reading from and writing to files in Matrix Market format.
-* Communicating matrices and vectors:: Message-passing functions for Matrix Market objects
+* Partitioning:: Partitioning distributed matrices and vectors.
+* Distributed vectors:: Data structures for distributed vectors.
+* Distributed matrices:: Data structures for distributed matrices.
 @end menu
 
-
-@node Data types
-@section Data types
-
-This section describes the basic data types used to represent
-distributed matrices and vectors.
-
-@tindex struct mtxdist
-@tindex mtxdist
-The file @file{libmtx/mtxdist.h} defines the @code{struct
-mtxdist} type, which is used to represent distributed objects in the
-Matrix Market format. The definition of the @code{mtxdist} struct is shown
-below.
-@example
-@code{struct mtxdist @{
-  /* Data distribution */
-  MPI_Comm comm;
-  enum mtx_distribution row_distribution;
-  enum mtx_distribution column_distribution;
-  int64_t num_global_rows;
-  int64_t num_global_columns;
-  int num_block_rows;
-  int num_block_columns;
-  int block_row_size;
-  int block_column_size;
-  int block_row;
-  int block_column;
-  int64_t * global_rows;
-  int64_t * global_columns;
-
-  /* Matrix Market object */
-  struct mtx * mtx;
-@};}
-@end example
-
-The @code{mtxdist} struct contains information about how the
-underlying matrix or vector is distributed among processes.  It also
-contains a member of type @code{struct mtx}, which, on a given MPI
-process, represents the underlying, local matrix of the current
-process.
-
-
-The following sections provide a detailed explanation of the
-@code{mtxdist} struct members and their data types.
-
-
-@node Data distribution
-@subsection Data distribution
-
-@cindex data distribution
-@cindex distributed matrix
-@cindex distributed vector
-@cindex block distribution
-@cindex cyclic distribution
-@cindex block-cyclic distribution
-@cindex discrete distribution
-@tindex mtx_distribution
-It is often necessary to distribute large matrices and vectors across
-multiple processes, both for the purpose of performing computations in
-parallel and also to use multiple nodes, thereby increasing the total
-amount of available memory.  To facilitate such data distribution,
-some additional information is stored in the @code{mtx} struct.
-
-First, we define the additional enum type @code{mtx_distribution},
-which describes different methods for distributing a one-dimensional
-data structure, such as a vector, among multiple processes.  Matrices
-are distributed by independently specifying the distributions of the
-rows and columns.
-@example
-@code{enum mtx_distribution @{
-    mtx_private,           /* owned by a single process */
-    mtx_replicated,        /* replicated across every process */
-    mtx_block,             /* block distribution */
-    mtx_cyclic,            /* cyclic distribution */
-    mtx_block_cyclic,      /* block-cyclic distribution */
-    mtx_discrete,          /* discrete distribution */
-@};}
-@end example
-By default, matrices and vectors are not distributed
-(@code{mtx_private}).  That is, the entries of a vector and the rows
-and columns of a matrix are owned by a single process.
-
-For a distributed vector, @code{mtx_block} is used when the vector is
-partitioned into contiguous blocks of roughly equal size and one block
-is assigned to each process.  In contrast, @code{mtx_cyclic} assigns
-consecutive entries of the vector to successive processes.  By
-generalising the block and cyclic distributions,
-@code{mtx_block_cyclic} assigns consecutive, fixed-size blocks to
-successive processes.  Finally, @code{mtx_discrete} allows an
-arbitrary assignment of global vector entries to processes.
-
-
-@cindex cover
-@cindex partition
-@tindex mtx_partitioning
-The enum type @code{mtx_partitioning}, is used to describe whether the
-rows and columns of a distributed matrix or vector form a partition or
-merely a cover of the rows and columns of a global matrix or
-vector. In the case of a partition, each matrix or vector entry is
-owned by a single MPI process. In the case of a cover, different MPI
-processes are allowed to store values associated with the same matrix
-or vector entry.
-@example
-@code{enum mtx_partitioning @{
-    mtx_partition,   /* matrix/vector entries are owned
-                         * by a single MPI process. */
-    mtx_cover,       /* matrix/vector entries may be owned
-                         * by multiple MPI processes. */
-@};}
-@end example
-Note that some algorithms may only work with a partitioned matrix and
-might produce incorrect results in the case of a covering. Thus, it
-may be necessary to first perform a reduction to combine values
-associated with matrix or vector entries that are distributed across
-multiple MPI processes.
-
+@node Partitioning
+@section Partitioning
 
 @node Index sets
 @subsection Index sets
@@ -194,139 +78,264 @@ a given integer @code{n} belongs to the index set.
     const struct mtx_index_set * index_set, int n);}
 @end example
 
-
-@node Creating distributed matrices and vectors
-@section Creating distributed matrices and vectors
-A number of functions are provided to more conveniently construct
-distributed matrices and vectors. These are described in the following
-subsections.
+@node Distributed partitions
+@subsection Distributed partitions
 
 
-@node mtxdist_free
-@subsection mtxdist_free
 
-@findex mtxdist_free
-Since a distributed matrix or vector represented by a @code{struct
-mtxdist} allocates some storage for its data, the user is required to
-free the allocated storage by calling @code{mtxdist_free} when they
-are finished with the matrix or vector:
+@node Distributed vectors
+@section Distributed vectors
+@cindex distributed vector
+@tindex struct mtxdistvector
+The file @file{libmtx/distvector/distvector.h} defines the type
+@code{struct mtxdistvector}. This data type builds on top of
+@code{struct mtxvector} (see @ref{Vectors}) to offer different options
+for the underlying storage and implementation of vector operations.
 @example
-@code{void mtxdist_free(
-    struct mtxdist * mtxdist);}
+@code{struct mtxdistvector @{
+    MPI_Comm comm;
+    int comm_size;
+    int rank;
+    struct mtxvector interior;
+@};}
 @end example
+Similar to @code{mtxdistfile} (see @ref{Data structures for
+distributed Matrix Market files}), The first three struct members of
+@code{mtxdistvector} contain information about the group of processes
+sharing the distributed vector. This includes their MPI communicator
+(@code{comm}), the number of processes (@code{comm_size}) and the rank
+of the current process (@code{rank}). The vector, @code{interior},
+stores the part of the distributed vector that resides on the current
+process.
 
 
-@node Creating distributed vectors
-@subsection Creating distributed vectors
+@node Halo exchange
+@subsection Halo exchange
+@cindex halo exchange
+Some linear algebra operations involving distributed vectors will
+require communication between MPI processes. This is particularly the
+case for matrix-vector multiplication. This kind of communication is
+commonly implemented through a @dfn{halo exchange}. This section
+describes data structures for representing vector halos, and how to
+perform halo exchanges.
 
 
-@node Creating distributed matrices
-@subsection Creating distributed matrices
-
-
-@c @node Reading and writing distributed Matrix Market files
-@c @section Reading and writing distributed Matrix Market files
-
-
-@node Communicating matrices and vectors
-@section Communicating matrices and vectors
-
-The file @file{libmtx/mtx/mpi.h} defines functions that can be
-used to communicate Matrix Market objects represented by the
-@code{mtx} struct between MPI processes.
-
-
-@node MPI errors
-@subsection MPI errors
-
-@cindex MPI errors
-@findex mtxdiststrerror
-In the event of an MPI-related error, then the above functions return
-@code{MTX_ERR_MPI} and the argument @code{mpierrcode} is set to a
-specific MPI error code. @code{mpierrcode} can then be used with the
-function @code{mtxdiststrerror}, as described in @ref{Error handling}.
-
-
-@node send receive broadcast
-@subsection Send, receive and broadcast
-
-The basic functions for communicating @code{struct mtx} objects are:
+@node Distributed matrices
+@section Distributed matrices
+@cindex distributed matrix
+@tindex struct mtxdistmatrix
+The file @file{libmtx/distmatrix/distmatrix.h} defines the type
+@code{struct mtxdistmatrix}. This data type builds on top of
+@code{struct mtxmatrix} (see @ref{Matrices}) to offer different options
+for the underlying storage and implementation of matrix operations.
 @example
-@code{int mtx_send(
-    const struct mtx * mtx,
-    int dest,
-    int tag,
-    MPI_Comm comm,
-    int * mpierrcode);
-
-int mtx_recv(
-    struct mtx * mtx,
-    int source,
-    int tag,
-    MPI_Comm comm,
-    int * mpierrcode);
-
-int mtx_bcast(
-    struct mtx * mtx,
-    int root,
-    MPI_Comm comm,
-    int * mpierrcode);}
+@code{struct mtxdistmatrix @{
+    MPI_Comm comm;
+    int comm_size;
+    int rank;
+    struct mtxmatrix interior;
+@};}
 @end example
-These functions are analogous to @code{MPI_Send}, @code{MPI_Recv} and
-@code{MPI_Bcast}.
+Similar to @code{mtxdistfile} (see @ref{Data structures for
+distributed Matrix Market files}), The first three struct members of
+@code{mtxdistmatrix} contain information about the group of processes
+sharing the distributed matrix. This includes their MPI communicator
+(@code{comm}), the number of processes (@code{comm_size}) and the rank
+of the current process (@code{rank}). The matrix, @code{interior},
+stores the part of the distributed matrix that resides on the current
+process.
 
 
-@subsection Gather and scatter
-@cindex gather
-@findex mtx_matrix_coordinate_gather
-Suppose each process in a group of MPI processes posesses some part of
-a distributed sparse (coordinate) matrix. Then the function
-@code{mtx_matrix_coordinate_gather} can be used to gather the
-matrices from each MPI process to form a single matrix on one of the
-MPI processes, which is designated as the root process.
-@example
-@code{int mtx_matrix_coordinate_gather(
-    struct mtx * dstmtx,
-    const struct mtx * srcmtx,
-    enum mtx_partitioning partitioning,
-    MPI_Comm comm,
-    int root,
-    int * mpierrcode);}
-@end example
-Here, @code{dstmtx} is the gathered matrix on the root process,
-whereas @code{srcmtx} is the part of the matrix owned by each MPI
-process. The MPI communicator is given by @code{comm}, and the integer
-@code{root} is the rank of the MPI root process onto which the matrix
-is gathered. The MPI process with rank equal to @code{root} must
-belong to the MPI communicator @code{comm}.
 
-If each of the matrices to gather data from is in an assembled state,
-that is, @code{assembly} is @code{mtx_assembled}, and
-@code{partitioning} is equal to @code{mtx_partition}, then the final,
-gathered matrix is considered to be in an assembled state. Otherwise,
-the gathered matrix is unassembled.
+@c @menu
+@c * Data types:: Basic data types for representing distributed matrices and vectors.
+@c * Creating distributed matrices and vectors:: Functions for creating distributed matrices and vectors.
+@c @end menu
 
 
-@cindex scatter
-@findex mtx_matrix_coordinate_scatter
-Conversely, a sparse matrix can also be distributed from a single MPI
-root process to a group of MPI processes using
-@code{mtx_matrix_coordinate_scatter}.
-@example
-@code{int mtx_matrix_coordinate_scatter(
-    struct mtx * dstmtx,
-    const struct mtx * srcmtx,
-    const struct mtx_index_set * rows,
-    const struct mtx_index_set * columns,
-    MPI_Comm comm,
-    int root,
-    int * mpierrcode);}
-@end example
-Here, @code{srcmtx} is the original matrix on the MPI root process,
-whereas, on each MPI process, @code{dstmtx} is the part of the matrix
-owned by the current MPI process. Furthermore, @code{rows} and
-@code{columns} are index sets that determine the global rows and
-columns that will be scattered to the current MPI process. The matrix
-is distributed among MPI processes belonging to the communicator
-@code{comm}, and the @code{root} argument is the MPI rank of the root
-process which owns @code{dstmtx}.
+@c @node Data types
+@c @section Data types
+
+@c This section describes the basic data types used to represent
+@c distributed matrices and vectors.
+
+@c @tindex struct mtxdist
+@c @tindex mtxdist
+@c The file @file{libmtx/mtxdist.h} defines the @code{struct
+@c mtxdist} type, which is used to represent distributed objects in the
+@c Matrix Market format. The definition of the @code{mtxdist} struct is shown
+@c below.
+@c @example
+@c @code{struct mtxdist @{
+@c   /* Data distribution */
+@c   MPI_Comm comm;
+@c   enum mtx_distribution row_distribution;
+@c   enum mtx_distribution column_distribution;
+@c   int64_t num_global_rows;
+@c   int64_t num_global_columns;
+@c   int num_block_rows;
+@c   int num_block_columns;
+@c   int block_row_size;
+@c   int block_column_size;
+@c   int block_row;
+@c   int block_column;
+@c   int64_t * global_rows;
+@c   int64_t * global_columns;
+
+@c   /* Matrix Market object */
+@c   struct mtx * mtx;
+@c @};}
+@c @end example
+
+@c The @code{mtxdist} struct contains information about how the
+@c underlying matrix or vector is distributed among processes.  It also
+@c contains a member of type @code{struct mtx}, which, on a given MPI
+@c process, represents the underlying, local matrix of the current
+@c process.
+
+
+@c The following sections provide a detailed explanation of the
+@c @code{mtxdist} struct members and their data types.
+
+
+@c @node Data distribution
+@c @subsection Data distribution
+
+@c @cindex data distribution
+@c @cindex distributed matrix
+@c @cindex distributed vector
+@c @cindex block distribution
+@c @cindex cyclic distribution
+@c @cindex block-cyclic distribution
+@c @cindex discrete distribution
+@c @tindex mtx_distribution
+@c It is often necessary to distribute large matrices and vectors across
+@c multiple processes, both for the purpose of performing computations in
+@c parallel and also to use multiple nodes, thereby increasing the total
+@c amount of available memory.  To facilitate such data distribution,
+@c some additional information is stored in the @code{mtx} struct.
+
+@c First, we define the additional enum type @code{mtx_distribution},
+@c which describes different methods for distributing a one-dimensional
+@c data structure, such as a vector, among multiple processes.  Matrices
+@c are distributed by independently specifying the distributions of the
+@c rows and columns.
+@c @example
+@c @code{enum mtx_distribution @{
+@c     mtx_private,           /* owned by a single process */
+@c     mtx_replicated,        /* replicated across every process */
+@c     mtx_block,             /* block distribution */
+@c     mtx_cyclic,            /* cyclic distribution */
+@c     mtx_block_cyclic,      /* block-cyclic distribution */
+@c     mtx_discrete,          /* discrete distribution */
+@c @};}
+@c @end example
+@c By default, matrices and vectors are not distributed
+@c (@code{mtx_private}).  That is, the entries of a vector and the rows
+@c and columns of a matrix are owned by a single process.
+
+@c For a distributed vector, @code{mtx_block} is used when the vector is
+@c partitioned into contiguous blocks of roughly equal size and one block
+@c is assigned to each process.  In contrast, @code{mtx_cyclic} assigns
+@c consecutive entries of the vector to successive processes.  By
+@c generalising the block and cyclic distributions,
+@c @code{mtx_block_cyclic} assigns consecutive, fixed-size blocks to
+@c successive processes.  Finally, @code{mtx_discrete} allows an
+@c arbitrary assignment of global vector entries to processes.
+
+
+@c @cindex cover
+@c @cindex partition
+@c @tindex mtx_partitioning
+@c The enum type @code{mtx_partitioning}, is used to describe whether the
+@c rows and columns of a distributed matrix or vector form a partition or
+@c merely a cover of the rows and columns of a global matrix or
+@c vector. In the case of a partition, each matrix or vector entry is
+@c owned by a single MPI process. In the case of a cover, different MPI
+@c processes are allowed to store values associated with the same matrix
+@c or vector entry.
+@c @example
+@c @code{enum mtx_partitioning @{
+@c     mtx_partition,   /* matrix/vector entries are owned
+@c                          * by a single MPI process. */
+@c     mtx_cover,       /* matrix/vector entries may be owned
+@c                          * by multiple MPI processes. */
+@c @};}
+@c @end example
+@c Note that some algorithms may only work with a partitioned matrix and
+@c might produce incorrect results in the case of a covering. Thus, it
+@c may be necessary to first perform a reduction to combine values
+@c associated with matrix or vector entries that are distributed across
+@c multiple MPI processes.
+
+
+@c @node Index sets
+@c @subsection Index sets
+
+@c @cindex Index set
+@c An @dfn{index set} is a set of integers, typically used to represent a
+@c subset of the rows of a vector or the rows or columns of a
+@c matrix. Index sets are used, for example, when specifying submatrices
+@c of a matrix, or for partitioning and distributing matrices and vectors
+@c among multiple processes.
+
+@c @tindex struct mtx_index_set
+@c @tindex enum mtx_index_set_type
+@c The file @file{libmtx/util/index_set.h} defines data types for index
+@c sets, including @code{struct mtx_index_set}. There are different types
+@c of index sets, which may be distinguished by the enum type
+@c @code{mtx_index_set_type}.
+@c @itemize
+@c @item @code{mtx_index_set_interval}
+@c represents an index set of contiguous integers from a half-open
+@c interval @code{[a,b)}.
+
+@c @item @code{mtx_index_set_array}
+@c represents a discrete index set, which is not necessarily contiguous,
+@c as an array of integers.
+
+@c @end itemize
+
+@c An index set representing a half-open interval @code{[a,b)} can be
+@c created with @code{mtx_index_set_init_interval}.
+@c @findex mtx_index_set_init_interval
+@c @example
+@c @code{int mtx_index_set_init_interval(
+@c     struct mtx_index_set * index_set, int a, int b);}
+@c @end example
+@c Then, the function @code{mtx_index_set_contains} can be used to test if
+@c a given integer @code{n} belongs to the index set.
+@c @findex mtx_index_set_contains
+@c @example
+@c @code{bool mtx_index_set_contains(
+@c     const struct mtx_index_set * index_set, int n);}
+@c @end example
+
+
+@c @node Creating distributed matrices and vectors
+@c @section Creating distributed matrices and vectors
+@c A number of functions are provided to more conveniently construct
+@c distributed matrices and vectors. These are described in the following
+@c subsections.
+
+
+@c @node mtxdist_free
+@c @subsection mtxdist_free
+
+@c @findex mtxdist_free
+@c Since a distributed matrix or vector represented by a @code{struct
+@c mtxdist} allocates some storage for its data, the user is required to
+@c free the allocated storage by calling @code{mtxdist_free} when they
+@c are finished with the matrix or vector:
+@c @example
+@c @code{void mtxdist_free(
+@c     struct mtxdist * mtxdist);}
+@c @end example
+
+
+@c @node Creating distributed vectors
+@c @subsection Creating distributed vectors
+
+
+@c @node Creating distributed matrices
+@c @subsection Creating distributed matrices

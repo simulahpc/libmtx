@@ -47,7 +47,8 @@ struct mtxdistfile;
 struct mtxdisterror;
 
 /**
- * ‘mtxdistvector’ represents a vector in distributed format.
+ * ‘mtxdistvector’ represents a vector distributed across multiple
+ * processes.
  */
 struct mtxdistvector
 {

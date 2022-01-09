@@ -70,17 +70,18 @@ Texts.  A copy of the license is included in the section entitled
 @end iftex
 
 @menu
-* Copying:: libmtx Copying Conditions (GPLv3).
+* Copying:: Copying Conditions (GPLv3).
 * Introduction to libmtx:: Brief introduction to libmtx.
 * Installing libmtx:: How to configure and compile libmtx.
 * Reporting Bugs:: How to usefully report bugs.
 * Matrix Market file format:: Description of the Matrix Market format.
 * Matrix Market files:: Working with Matrix Market files.
 * Matrices and vectors:: Working with matrices and vectors.
-* Distributed Matrix Market files:: Distributing Matrix Market files across multiple processes.
-* Distributed matrices and vectors:: Working with matrices and vectors in distributed memory.
+* Distributed Matrix Market files:: Distributing Matrix Market files
+  across multiple processes.
+* Distributed matrices and vectors:: Distributing matrices and vectors
+  across multiple processes.
 * Commands:: Command-line tools for Matrix Market files.
-@c * C library reference:: Reference for the C library data types and functions.
 
 * References:: List of useful references.
 * GNU Free Documentation License:: Copying and sharing this documentation.
@@ -92,7 +93,7 @@ Texts.  A copy of the license is included in the section entitled
 
 
 @node Copying
-@unnumbered libmtx Copying Conditions
+@unnumbered Copying Conditions
 
 libmtx is free software: you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
