@@ -64,10 +64,10 @@ int test_mtx_matrix_submatrix_coordinate_real_general(void)
     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
     /* Extract a submatrix. */
-    struct mtx_index_set rows;
-    mtx_index_set_init_interval(&rows, 1, 3);
-    struct mtx_index_set columns;
-    mtx_index_set_init_interval(&columns, 1, 5);
+    struct mtxidxset rows;
+    mtxidxset_init_interval(&rows, 1, 3);
+    struct mtxidxset columns;
+    mtxidxset_init_interval(&columns, 1, 5);
     struct mtx submtx;
     err = mtx_matrix_submatrix(&submtx, &mtx, &rows, &columns);
     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));

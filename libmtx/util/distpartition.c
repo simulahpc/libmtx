@@ -45,7 +45,7 @@
 void mtxdistpartition_free(
     struct mtxdistpartition * partition)
 {
-    mtx_index_set_free(&partition->index_set);
+    mtxidxset_free(&partition->index_set);
 }
 
 /**
@@ -114,7 +114,7 @@ int mtxdistpartition_init_singleton(
     partition->type = mtx_singleton;
     partition->size = size;
     partition->num_parts = 1;
-    err = mtx_index_set_init_interval(
+    err = mtxidxset_init_interval(
         &partition->index_set, 0,
         rank == root ? size : 0);
     if (mtxdisterror_allreduce(disterr, err))
@@ -156,7 +156,7 @@ int mtxdistpartition_init_block(
     for (int p = 0; p < rank; p++)
         a += size / num_parts + (p < (size % num_parts) ? 1 : 0);
     int64_t b = a + size / num_parts + (rank < (size % num_parts) ? 1 : 0);
-    err = mtx_index_set_init_interval(&partition->index_set, a, b);
+    err = mtxidxset_init_interval(&partition->index_set, a, b);
     if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
     return MTX_SUCCESS;
@@ -193,7 +193,7 @@ int mtxdistpartition_init_cyclic(
     partition->num_parts = num_parts;
 
     int64_t part_size = size / num_parts + (rank < (size % num_parts) ? 1 : 0);
-    err = mtx_index_set_init_strided(
+    err = mtxidxset_init_strided(
         &partition->index_set, rank, part_size, num_parts);
     if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;

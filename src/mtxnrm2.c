@@ -316,7 +316,7 @@ static int parse_program_options(
                 return EINVAL;
             }
             char * s = (*argv)[1];
-            err = mtx_parse_partition_type(
+            err = mtxpartitioning_parse(
                 &args->partition, NULL, NULL, s, "");
             if (err) {
                 program_options_free(args);
@@ -326,7 +326,7 @@ static int parse_program_options(
             continue;
         } else if (strstr((*argv)[0], "--partition=") == (*argv)[0]) {
             char * s = (*argv)[0] + strlen("--partition=");
-            err = mtx_parse_partition_type(
+            err = mtxpartitioning_parse(
                 &args->partition, NULL, NULL, s, "");
             if (err) {
                 program_options_free(args);

@@ -81,7 +81,7 @@ struct mtxdistpartition
      * ‘index_set’ is an index set that describes the elements of the
      * partitioned set belonging to the current process.
      */
-    struct mtx_index_set index_set;
+    struct mtxidxset index_set;
 };
 
 /**

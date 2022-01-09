@@ -424,30 +424,30 @@ int test_mtx_matrix_coordinate_scatter(void)
     }
 
     /* Determine the rows and columns owned by the current process. */
-    struct mtx_index_set rows[2];
-    struct mtx_index_set columns[2];
+    struct mtxidxset rows[2];
+    struct mtxidxset columns[2];
     if (comm_size == 1) {
-        err = mtx_index_set_init_interval(&rows[0], 0, num_rows+1);
+        err = mtxidxset_init_interval(&rows[0], 0, num_rows+1);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
-        err = mtx_index_set_init_interval(&columns[0], 0, num_columns+1);
+        err = mtxidxset_init_interval(&columns[0], 0, num_columns+1);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
     } else if (comm_size == 2) {
         {
             int rank = 0;
             int start_row = 1+rank*((num_rows+(comm_size-1))/comm_size);
             int end_row = 1+(rank+1)*((num_rows+(comm_size-1))/comm_size);
-            err = mtx_index_set_init_interval(&rows[0], start_row, end_row);
+            err = mtxidxset_init_interval(&rows[0], start_row, end_row);
             TEST_ASSERT_EQ(MTX_SUCCESS, err);
-            err = mtx_index_set_init_interval(&columns[0], 0, num_columns+1);
+            err = mtxidxset_init_interval(&columns[0], 0, num_columns+1);
             TEST_ASSERT_EQ(MTX_SUCCESS, err);
         }
         {
             int rank = 1;
             int start_row = 1+rank*((num_rows+(comm_size-1))/comm_size);
             int end_row = 1+(rank+1)*((num_rows+(comm_size-1))/comm_size);
-            err = mtx_index_set_init_interval(&rows[1], start_row, end_row);
+            err = mtxidxset_init_interval(&rows[1], start_row, end_row);
             TEST_ASSERT_EQ(MTX_SUCCESS, err);
-            err = mtx_index_set_init_interval(&columns[1], 0, num_columns+1);
+            err = mtxidxset_init_interval(&columns[1], 0, num_columns+1);
             TEST_ASSERT_EQ(MTX_SUCCESS, err);
         }
     } else {

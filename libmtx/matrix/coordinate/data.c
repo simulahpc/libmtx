@@ -1149,8 +1149,8 @@ int mtx_matrix_coordinate_data_transpose(
 int mtx_matrix_coordinate_data_submatrix(
     struct mtx_matrix_coordinate_data * submtx,
     const struct mtx_matrix_coordinate_data * mtx,
-    const struct mtx_index_set * rows,
-    const struct mtx_index_set * columns)
+    const struct mtxidxset * rows,
+    const struct mtxidxset * columns)
 {
     int err;
 
@@ -1161,8 +1161,8 @@ int mtx_matrix_coordinate_data_submatrix(
             const struct mtx_matrix_coordinate_real_single * src =
                 mtx->data.real_single;
             for (int k = 0; k < mtx->size; k++) {
-                bool has_row = mtx_index_set_contains(rows, src[k].i);
-                bool has_column = mtx_index_set_contains(columns, src[k].j);
+                bool has_row = mtxidxset_contains(rows, src[k].i);
+                bool has_column = mtxidxset_contains(columns, src[k].j);
                 if (has_row && has_column)
                     num_nonzeros++;
             }
@@ -1194,8 +1194,8 @@ int mtx_matrix_coordinate_data_submatrix(
                 submtx->data.real_single;
             int64_t l = 0;
             for (int k = 0; k < mtx->size; k++) {
-                bool has_row = mtx_index_set_contains(rows, src[k].i);
-                bool has_column = mtx_index_set_contains(columns, src[k].j);
+                bool has_row = mtxidxset_contains(rows, src[k].i);
+                bool has_column = mtxidxset_contains(columns, src[k].j);
                 if (has_row && has_column) {
                     dst[l] = src[k];
                     l++;

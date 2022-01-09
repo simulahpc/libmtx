@@ -93,8 +93,8 @@ int mtx_matrix_coordinate_gather(
 int mtx_matrix_coordinate_scatter(
     struct mtx * dstmtx,
     const struct mtx * srcmtx,
-    const struct mtx_index_set * row_sets,
-    const struct mtx_index_set * column_sets,
+    const struct mtxidxset * row_sets,
+    const struct mtxidxset * column_sets,
     MPI_Comm comm,
     int root,
     int * mpierrcode);

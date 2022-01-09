@@ -26,7 +26,7 @@
 #define LIBMTX_MTX_MATRIX_COORDINATE_REORDER_H
 
 struct mtx_matrix_coordinate_data;
-struct mtx_index_set;
+struct mtxidxset;
 
 /**
  * `mtx_matrix_coordinate_data_permute()' permutes the elements of a
@@ -84,7 +84,7 @@ int mtx_matrix_coordinate_data_reorder_rcm(
 int mtx_matrix_coordinate_data_submatrix(
     struct mtx_matrix_coordinate_data * submatrix,
     const struct mtx_matrix_coordinate_data * mtx,
-    const struct mtx_index_set * rows,
-    const struct mtx_index_set * columns);
+    const struct mtxidxset * rows,
+    const struct mtxidxset * columns);
 
 #endif

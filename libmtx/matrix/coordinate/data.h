@@ -33,7 +33,7 @@
 
 #include <stdint.h>
 
-struct mtx_index_set;
+struct mtxidxset;
 
 /*
  * Data types for coordinate matrix values.
@@ -548,8 +548,8 @@ int mtx_matrix_coordinate_data_row_indices(
 int mtx_matrix_coordinate_data_submatrix(
     struct mtx_matrix_coordinate_data * submtx,
     const struct mtx_matrix_coordinate_data * mtx,
-    const struct mtx_index_set * rows,
-    const struct mtx_index_set * columns);
+    const struct mtxidxset * rows,
+    const struct mtxidxset * columns);
 
 /**
  * `mtx_matrix_coordinate_data_transpose()' transposes a coordinate

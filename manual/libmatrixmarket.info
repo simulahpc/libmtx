@@ -1060,8 +1060,8 @@ of a 'struct mtx' object, which consists of the nonzero entries from a
 given set of rows and columns.
      int mtx_matrix_submatrix(
          const struct mtx * mtx,
-         const struct mtx_index_set * rows,
-         const struct mtx_index_set * columns,
+         const struct mtxidxset * rows,
+         const struct mtxidxset * columns,
          struct mtx * submatrix);
    Note that 'mtx_matrix_submatrix' currently only works for 'struct
 mtx' objects where 'format' is 'mtx_coordinate'.
@@ -1239,23 +1239,23 @@ matrix, or for partitioning and distributing matrices and vectors among
 multiple processes.
 
    The file 'libmtx/util/index_set.h' defines data types for index
-sets, including 'struct mtx_index_set'.  There are different types of
+sets, including 'struct mtxidxset'.  There are different types of
 index sets, which may be distinguished by the enum type
-'mtx_index_set_type'.
-   * 'mtx_index_set_interval' represents an index set of contiguous
+'mtxidxsettype'.
+   * 'mtxidxset_interval' represents an index set of contiguous
      integers from a half-open interval '[a,b)'.
 
-   * 'mtx_index_set_array' represents a discrete index set, which is not
+   * 'mtxidxset_array' represents a discrete index set, which is not
      necessarily contiguous, as an array of integers.
 
    An index set representing a half-open interval '[a,b)' can be created
-with 'mtx_index_set_init_interval'.
-     int mtx_index_set_init_interval(
-         struct mtx_index_set * index_set, int a, int b);
-   Then, the function 'mtx_index_set_contains' can be used to test if a
+with 'mtxidxset_init_interval'.
+     int mtxidxset_init_interval(
+         struct mtxidxset * index_set, int a, int b);
+   Then, the function 'mtxidxset_contains' can be used to test if a
 given integer 'n' belongs to the index set.
-     bool mtx_index_set_contains(
-         const struct mtx_index_set * index_set, int n);
+     bool mtxidxset_contains(
+         const struct mtxidxset * index_set, int n);
 
 5.7.4 Gather and scatter
 ------------------------
@@ -1289,8 +1289,8 @@ root process to a group of MPI processes using
      int mtx_matrix_coordinate_scatter(
          struct mtx * dstmtx,
          const struct mtx * srcmtx,
-         const struct mtx_index_set * rows,
-         const struct mtx_index_set * columns,
+         const struct mtxidxset * rows,
+         const struct mtxidxset * columns,
          MPI_Comm comm,
          int root,
          int * mpierrcode);
@@ -1908,8 +1908,8 @@ library.
 
      int mtx_matrix_submatrix(
          const struct mtx * mtx,
-         const struct mtx_index_set * rows,
-         const struct mtx_index_set * columns,
+         const struct mtxidxset * rows,
+         const struct mtxidxset * columns,
          struct mtx * submatrix);
 
 7.6 BLAS
@@ -2005,11 +2005,11 @@ library.
 7.7.2 Index sets
 ----------------
 
-     int mtx_index_set_init_interval(
-         struct mtx_index_set * index_set, int a, int b);
+     int mtxidxset_init_interval(
+         struct mtxidxset * index_set, int a, int b);
 
-     bool mtx_index_set_contains(
-         const struct mtx_index_set * index_set, int n);
+     bool mtxidxset_contains(
+         const struct mtxidxset * index_set, int n);
 
 7.7.3 Scatter and gather
 ------------------------
@@ -2025,8 +2025,8 @@ library.
      int mtx_matrix_coordinate_scatter(
          struct mtx * dstmtx,
          const struct mtx * srcmtx,
-         const struct mtx_index_set * row_sets,
-         const struct mtx_index_set * column_sets,
+         const struct mtxidxset * row_sets,
+         const struct mtxidxset * column_sets,
          MPI_Comm comm,
          int root,
          int * mpierrcode);
@@ -2737,9 +2737,9 @@ Function index
 * mtx_gzwrite:                           Reading and writing Matrix Market files.
                                                               (line  40)
 * mtx_gzwrite <1>:                       C library reference. (line 194)
-* mtx_index_set_contains:                Index sets.          (line  27)
-* mtx_index_set_init_interval:           Index sets.          (line  23)
-* mtx_index_set_init_interval <1>:       C library reference. (line 469)
+* mtxidxset_contains:                Index sets.          (line  27)
+* mtxidxset_init_interval:           Index sets.          (line  23)
+* mtxidxset_init_interval <1>:       C library reference. (line 469)
 * mtx_init_matrix_array_complex:         Creating dense matrices.
                                                               (line  30)
 * mtx_init_matrix_array_complex <1>:     C library reference. (line 289)
@@ -2827,8 +2827,8 @@ Data type index
  [index ]
 * Menu:
 
-* enum mtx_index_set_type:               Index sets.          (line  12)
-* enum mtx_index_set_type <1>:           C library reference. (line 469)
+* enum mtxidxsettype:               Index sets.          (line  12)
+* enum mtxidxsettype <1>:           C library reference. (line 469)
 * mtx:                                   Matrix Market data types.
                                                               (line   9)
 * mtx <1>:                               C library reference. (line 154)
@@ -2884,8 +2884,8 @@ Data type index
 * struct mtx:                            Matrix Market data types.
                                                               (line   9)
 * struct mtx <1>:                        C library reference. (line 154)
-* struct mtx_index_set:                  Index sets.          (line  12)
-* struct mtx_index_set <1>:              C library reference. (line 469)
+* struct mtxidxset:                  Index sets.          (line  12)
+* struct mtxidxset <1>:              C library reference. (line 469)
 
 
 File: libmtx.info,  Node: Program index,  Prev: Data type index,  Up: Top

@@ -1,23 +1,22 @@
 /* This file is part of libmtx.
  *
- * Copyright (C) 2021 James D. Trotter
+ * Copyright (C) 2022 James D. Trotter
  *
- * libmtx is free software: you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 3 of the
- * License, or (at your option) any later version.
+ * libmtx is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * libmtx is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * libmtx is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with libmtx.  If not, see
- * <https://www.gnu.org/licenses/>.
+ * along with libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-08-09
+ * Last modified: 2022-01-09
  *
  * Index sets.
  */
@@ -38,41 +37,41 @@
 #include <string.h>
 
 /**
- * `mtx_index_set_type_str()' is a string representing the index set
+ * ‘mtxidxsettype_str()’ is a string representing the index set
  * type.
  */
-const char * mtx_index_set_type_str(
-    enum mtx_index_set_type index_set_type)
+const char * mtxidxsettype_str(
+    enum mtxidxsettype index_set_type)
 {
     switch (index_set_type) {
-    case mtx_index_set_interval: return "interval";
-    case mtx_index_set_strided: return "strided";
-    case mtx_index_set_block_strided: return "block-strided";
-    case mtx_index_set_discrete: return "discrete";
+    case mtxidxset_interval: return "interval";
+    case mtxidxset_strided: return "strided";
+    case mtxidxset_blockstrided: return "block-strided";
+    case mtxidxset_array: return "array";
     default: return mtxstrerror(MTX_ERR_INVALID_INDEX_SET_TYPE);
     }
 }
 
 /**
- * `mtx_index_set_free()' frees resources associated with an index
+ * ‘mtxidxset_free()’ frees resources associated with an index
  * set.
  */
-void mtx_index_set_free(
-    struct mtx_index_set * index_set)
+void mtxidxset_free(
+    struct mtxidxset * index_set)
 {
     free(index_set->indices);
 }
 
 /**
- * `mtx_index_set_init_interval()' creates an index set of contiguous
+ * ‘mtxidxset_init_interval()’ creates an index set of contiguous
  * integers from an interval [a,b).
  */
-int mtx_index_set_init_interval(
-    struct mtx_index_set * index_set,
+int mtxidxset_init_interval(
+    struct mtxidxset * index_set,
     int64_t a,
     int64_t b)
 {
-    index_set->type = mtx_index_set_interval;
+    index_set->type = mtxidxset_interval;
     index_set->size = b - a;
     index_set->offset = a;
     index_set->stride = 0;
@@ -82,18 +81,18 @@ int mtx_index_set_init_interval(
 }
 
 /**
- * `mtx_index_set_init_strided()' creates an index set of strided
+ * ‘mtxidxset_init_strided()’ creates an index set of strided
  * integers from an interval:
  *
- *   `offset,offset+stride,offset+2*stride,...,offset+(size-1)*stride'.
+ *   ‘offset,offset+stride,offset+2*stride,...,offset+(size-1)*stride’.
  */
-int mtx_index_set_init_strided(
-    struct mtx_index_set * index_set,
+int mtxidxset_init_strided(
+    struct mtxidxset * index_set,
     int64_t offset,
     int64_t size,
     int stride)
 {
-    index_set->type = mtx_index_set_strided;
+    index_set->type = mtxidxset_strided;
     index_set->size = size;
     index_set->offset = offset;
     index_set->stride = stride;
@@ -103,17 +102,17 @@ int mtx_index_set_init_strided(
 }
 
 /**
- * `mtx_index_set_init_block_strided()' creates an index set of
+ * ‘mtxidxset_init_blockstrided()’ creates an index set of
  * fixed-size blocks separated by a stride:
  */
-int mtx_index_set_init_block_strided(
-    struct mtx_index_set * index_set,
+int mtxidxset_init_blockstrided(
+    struct mtxidxset * index_set,
     int64_t offset,
     int64_t size,
     int stride,
     int block_size)
 {
-    index_set->type = mtx_index_set_strided;
+    index_set->type = mtxidxset_strided;
     index_set->size = size;
     index_set->offset = offset;
     index_set->stride = stride;
@@ -123,15 +122,15 @@ int mtx_index_set_init_block_strided(
 }
 
 /**
- * `mtx_index_set_init_discrete()' creates an index set of discrete
- * integer values given by an array.
+ * ‘mtxidxset_init_array()’ creates an index set of integer values
+ * given by an array.
  */
-int mtx_index_set_init_discrete(
-    struct mtx_index_set * index_set,
+int mtxidxset_init_array(
+    struct mtxidxset * index_set,
     int64_t size,
     const int64_t * indices)
 {
-    index_set->type = mtx_index_set_discrete;
+    index_set->type = mtxidxset_array;
     index_set->size = size;
     index_set->offset = 0;
     index_set->stride = 0;
@@ -145,23 +144,23 @@ int mtx_index_set_init_discrete(
 }
 
 /**
- * `mtx_index_set_contains()` returns `true' if the given integer is
- * contained in the index set and `false' otherwise.
+ * ‘mtxidxset_contains()‘ returns ‘true’ if the given integer is
+ * contained in the index set and ‘false’ otherwise.
  */
-bool mtx_index_set_contains(
-    const struct mtx_index_set * index_set,
+bool mtxidxset_contains(
+    const struct mtxidxset * index_set,
     int64_t n)
 {
-    if (index_set->type == mtx_index_set_interval) {
+    if (index_set->type == mtxidxset_interval) {
         return (n >= index_set->offset) && (n < index_set->offset + index_set->size);
-    } else if (index_set->type == mtx_index_set_strided) {
+    } else if (index_set->type == mtxidxset_strided) {
         return (n >= index_set->offset)
             && (n < index_set->stride * index_set->size)
             && ((n - index_set->offset) % index_set->stride == 0);
-    } else if (index_set->type == mtx_index_set_block_strided) {
+    } else if (index_set->type == mtxidxset_blockstrided) {
         /* TODO: Not implemented. */
         return false;
-    } else if (index_set->type == mtx_index_set_discrete) {
+    } else if (index_set->type == mtxidxset_array) {
         for (int64_t i = 0; i < index_set->size; i++) {
             if (index_set->indices[i] == n)
                 return true;
@@ -173,18 +172,18 @@ bool mtx_index_set_contains(
 }
 
 /**
- * `mtx_index_set_read()' reads an index set from the given path as a
+ * ‘mtxidxset_read()’ reads an index set from the given path as a
  * Matrix Market file in the form of an integer vector in array
  * format.
  *
- * If `path' is `-', then standard input is used.
+ * If ‘path’ is ‘-’, then standard input is used.
  *
- * If an error code is returned, then `lines_read' and `bytes_read'
+ * If an error code is returned, then ‘lines_read’ and ‘bytes_read’
  * are used to return the line number and byte at which the error was
  * encountered during the parsing of the Matrix Market file.
  */
-int mtx_index_set_read(
-    struct mtx_index_set * index_set,
+int mtxidxset_read(
+    struct mtxidxset * index_set,
     const char * path,
     int * lines_read,
     int64_t * bytes_read)
@@ -206,7 +205,7 @@ int mtx_index_set_read(
         return MTX_ERR_ERRNO;
     }
     *lines_read = 0;
-    err = mtx_index_set_fread(
+    err = mtxidxset_fread(
         index_set, f, lines_read, bytes_read, 0, NULL);
     if (err) {
         fclose(f);
@@ -217,16 +216,15 @@ int mtx_index_set_read(
 }
 
 /**
- * `mtx_index_set_fread()' reads an index set from a stream as a
- * Matrix Market file in the form of an integer vector in array
- * format.
+ * ‘mtxidxset_fread()’ reads an index set from a stream as a Matrix
+ * Market file in the form of an integer vector in array format.
  *
- * If an error code is returned, then `lines_read' and `bytes_read'
+ * If an error code is returned, then ‘lines_read’ and ‘bytes_read’
  * are used to return the line number and byte at which the error was
  * encountered during the parsing of the Matrix Market file.
  */
-int mtx_index_set_fread(
-    struct mtx_index_set * index_set,
+int mtxidxset_fread(
+    struct mtxidxset * index_set,
     FILE * f,
     int * lines_read,
     int64_t * bytes_read,
@@ -251,7 +249,7 @@ int mtx_index_set_fread(
         return MTX_ERR_INVALID_MTX_FIELD;
     }
 
-    err = mtx_index_set_init_discrete(
+    err = mtxidxset_init_array(
         index_set, mtxfile.size.num_rows, mtxfile.data.array_integer_double);
     if (err) {
         mtxfile_free(&mtxfile);
@@ -262,21 +260,21 @@ int mtx_index_set_fread(
 }
 
 /**
- * `mtx_index_set_write()' writes an index set to the given path as a
+ * ‘mtxidxset_write()’ writes an index set to the given path as a
  * Matrix Market file in the form of an integer vector in array
  * format.
  *
- * If `path' is `-', then standard output is used.
+ * If ‘path’ is ‘-’, then standard output is used.
  *
- * If `format' is not `NULL', then the given format string is used
+ * If ‘format’ is not ‘NULL’, then the given format string is used
  * when printing numerical values.  The format specifier must be '%d',
  * and a fixed field width may optionally be specified (e.g., "%3d"),
  * but variable field width (e.g., "%*d"), as well as length modifiers
- * (e.g., "%ld") are not allowed.  If `format' is `NULL', then the
+ * (e.g., "%ld") are not allowed.  If ‘format’ is ‘NULL’, then the
  * format specifier '%d' is used.
  */
-int mtx_index_set_write(
-    const struct mtx_index_set * index_set,
+int mtxidxset_write(
+    const struct mtxidxset * index_set,
     const char * path,
     const char * format,
     int64_t * bytes_written)
@@ -296,7 +294,7 @@ int mtx_index_set_write(
     } else if ((f = fopen(path, "w")) == NULL) {
         return MTX_ERR_ERRNO;
     }
-    err = mtx_index_set_fwrite(index_set, f, format, bytes_written);
+    err = mtxidxset_fwrite(index_set, f, format, bytes_written);
     if (err) {
         fclose(f);
         return err;
@@ -306,22 +304,22 @@ int mtx_index_set_write(
 }
 
 /**
- * `mtx_index_set_fwrite()' writes an index set to a stream as a
+ * ‘mtxidxset_fwrite()’ writes an index set to a stream as a
  * Matrix Market file in the form of an integer vector in array
  * format.
  *
- * If `format' is not `NULL', then the given format string is used
+ * If ‘format’ is not ‘NULL’, then the given format string is used
  * when printing numerical values.  The format specifier must be '%d',
  * and a fixed field width may optionally be specified (e.g., "%3d"),
  * but variable field width (e.g., "%*d"), as well as length modifiers
- * (e.g., "%ld") are not allowed.  If `format' is `NULL', then the
+ * (e.g., "%ld") are not allowed.  If ‘format’ is ‘NULL’, then the
  * format specifier '%d' is used.
  *
- * If it is not `NULL', then the number of bytes written to the stream
- * is returned in `bytes_written'.
+ * If it is not ‘NULL’, then the number of bytes written to the stream
+ * is returned in ‘bytes_written’.
  */
-int mtx_index_set_fwrite(
-    const struct mtx_index_set * index_set,
+int mtxidxset_fwrite(
+    const struct mtxidxset * index_set,
     FILE * f,
     const char * format,
     int64_t * bytes_written)
@@ -334,17 +332,17 @@ int mtx_index_set_fwrite(
         return err;
 
     int64_t * indices = mtxfile.data.array_integer_double;
-    if (index_set->type == mtx_index_set_interval) {
+    if (index_set->type == mtxidxset_interval) {
         for (int64_t i = 0; i < index_set->size; i++)
             indices[i] = index_set->offset + i;
-    } else if (index_set->type == mtx_index_set_strided) {
+    } else if (index_set->type == mtxidxset_strided) {
         for (int64_t i = 0; i < index_set->size; i++)
             indices[i] = index_set->offset + i * index_set->stride;
-    } else if (index_set->type == mtx_index_set_block_strided) {
+    } else if (index_set->type == mtxidxset_blockstrided) {
         mtxfile_free(&mtxfile);
         errno = ENOTSUP;
         return MTX_ERR_ERRNO;
-    } else if (index_set->type == mtx_index_set_discrete) {
+    } else if (index_set->type == mtxidxset_array) {
         for (int64_t i = 0; i < index_set->size; i++)
             indices[i] = index_set->indices[i];
     } else {
@@ -367,13 +365,13 @@ int mtx_index_set_fwrite(
 
 #ifdef LIBMTX_HAVE_MPI
 /**
- * `mtx_index_set_send()' sends an index set to another MPI process.
+ * ‘mtxidxset_send()’ sends an index set to another MPI process.
  *
- * This is analogous to `MPI_Send()' and requires the receiving
- * process to perform a matching call to `mtx_index_set_recv()'.
+ * This is analogous to ‘MPI_Send()’ and requires the receiving
+ * process to perform a matching call to ‘mtxidxset_recv()’.
  */
-int mtx_index_set_send(
-    const struct mtx_index_set * index_set,
+int mtxidxset_send(
+    const struct mtxidxset * index_set,
     int dest,
     int tag,
     MPI_Comm comm,
@@ -399,7 +397,7 @@ int mtx_index_set_send(
         &index_set->block_size, 1, MPI_INT, dest, tag, comm);
     if (disterr->err)
         return MTX_ERR_MPI;
-    if (index_set->type == mtx_index_set_discrete) {
+    if (index_set->type == mtxidxset_array) {
         disterr->err = MPI_Send(
             &index_set->indices, index_set->size, MPI_INT64_T, dest, tag, comm);
         if (disterr->err)
@@ -409,14 +407,14 @@ int mtx_index_set_send(
 }
 
 /**
- * `mtx_index_set_recv()' receives an index set from another MPI
+ * ‘mtxidxset_recv()’ receives an index set from another MPI
  * process.
  *
- * This is analogous to `MPI_Recv()' and requires the sending process
- * to perform a matching call to `mtx_index_set_send()'.
+ * This is analogous to ‘MPI_Recv()’ and requires the sending process
+ * to perform a matching call to ‘mtxidxset_send()’.
  */
-int mtx_index_set_recv(
-    struct mtx_index_set * index_set,
+int mtxidxset_recv(
+    struct mtxidxset * index_set,
     int source,
     int tag,
     MPI_Comm comm,
@@ -442,7 +440,7 @@ int mtx_index_set_recv(
         &index_set->block_size, 1, MPI_INT, source, tag, comm, MPI_STATUS_IGNORE);
     if (disterr->err)
         return MTX_ERR_MPI;
-    if (index_set->type == mtx_index_set_discrete) {
+    if (index_set->type == mtxidxset_array) {
         index_set->indices = malloc(index_set->size * sizeof(int64_t));
         if (!index_set->indices)
             return MTX_ERR_ERRNO;

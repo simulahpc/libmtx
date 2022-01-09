@@ -34,7 +34,7 @@ struct mtx;
 int mtx_matrix_submatrix(
     struct mtx * submtx,
     const struct mtx * mtx,
-    const struct mtx_index_set * rows,
-    const struct mtx_index_set * columns);
+    const struct mtxidxset * rows,
+    const struct mtxidxset * columns);
 
 #endif

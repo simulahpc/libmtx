@@ -33,7 +33,7 @@
  */
 enum mtxpartitioning
 {
-    mtx_singleton,    /* trivial partition */
+    mtx_singleton,    /* singleton partition with only one component */
     mtx_block,        /* contiguous, fixed-size blocks */
     mtx_cyclic,       /* cyclic partition */
     mtx_block_cyclic, /* cyclic partition of fixed-size blocks. */
@@ -48,7 +48,7 @@ const char * mtxpartitioning_str(
     enum mtxpartitioning type);
 
 /**
- * ‘mtx_parse_partition_type()’ parses a string to obtain one of the
+ * ‘mtxpartitioning_parse()’ parses a string to obtain one of the
  * partition types of ‘enum mtxpartitioning’.
  *
  * ‘valid_delimiters’ is either ‘NULL’, in which case it is ignored,
@@ -63,12 +63,12 @@ const char * mtxpartitioning_str(
  * points to the first character beyond the characters that were
  * consumed during parsing.
  *
- * On success, ‘mtx_parse_partition_type()’ returns ‘MTX_SUCCESS’ and
+ * On success, ‘mtxpartitioning_parse()’ returns ‘MTX_SUCCESS’ and
  * ‘partition_type’ is set according to the parsed string and
  * ‘bytes_read’ is set to the number of bytes that were consumed by
  * the parser.  Otherwise, an error code is returned.
  */
-int mtx_parse_partition_type(
+int mtxpartitioning_parse(
     enum mtxpartitioning * partition_type,
     int64_t * bytes_read,
     const char ** endptr,
@@ -100,7 +100,7 @@ struct mtxpartition
      * where the pth index set describes the elements of the
      * partitioned set belonging to the pth part of the partition.
      */
-    struct mtx_index_set * index_sets;
+    struct mtxidxset * index_sets;
 
     /**
      * ‘parts’ is an array containing the part number assigned to each

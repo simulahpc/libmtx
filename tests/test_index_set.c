@@ -36,17 +36,17 @@
  */
 int test_index_set_interval(void)
 {
-    struct mtx_index_set index_set;
-    TEST_ASSERT_EQ(MTX_SUCCESS, mtx_index_set_init_interval(&index_set, 0, 4));
+    struct mtxidxset index_set;
+    TEST_ASSERT_EQ(MTX_SUCCESS, mtxidxset_init_interval(&index_set, 0, 4));
     int size;
     TEST_ASSERT_EQ(4, index_set.size);
-    TEST_ASSERT(mtx_index_set_contains(&index_set, 0));
-    TEST_ASSERT(mtx_index_set_contains(&index_set, 1));
-    TEST_ASSERT(mtx_index_set_contains(&index_set, 2));
-    TEST_ASSERT(mtx_index_set_contains(&index_set, 3));
-    TEST_ASSERT_FALSE(mtx_index_set_contains(&index_set, 4));
-    TEST_ASSERT_FALSE(mtx_index_set_contains(&index_set, -1));
-    mtx_index_set_free(&index_set);
+    TEST_ASSERT(mtxidxset_contains(&index_set, 0));
+    TEST_ASSERT(mtxidxset_contains(&index_set, 1));
+    TEST_ASSERT(mtxidxset_contains(&index_set, 2));
+    TEST_ASSERT(mtxidxset_contains(&index_set, 3));
+    TEST_ASSERT_FALSE(mtxidxset_contains(&index_set, 4));
+    TEST_ASSERT_FALSE(mtxidxset_contains(&index_set, -1));
+    mtxidxset_free(&index_set);
     return TEST_SUCCESS;
 }
 
