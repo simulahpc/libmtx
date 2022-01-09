@@ -143,7 +143,7 @@ format, use @code{mtxvector_init_array_complex_double}.
 @code{int mtxvector_init_array_complex_double(
     struct mtxvector * vector,
     int num_rows,
-    const double (* data)[2]);}}
+    const double (* data)[2]);}
 @end example
 The vector entries are provided by the array @code{data}, which must
 contain @code{num_rows*num_columns} values.
@@ -156,7 +156,7 @@ To create a double precision, complex vector in coordinate format, use
     int num_rows,
     int64_t num_nonzeros,
     const int * idx,
-    const double (* values)[2]);
+    const double (* values)[2]);}
 @end example
 The arguments @code{idx} and @code{values} are arrays of length
 @code{num_nonzeros}. For each nonzero value
@@ -594,7 +594,7 @@ format, use @code{mtxmatrix_init_array_complex_double}.
     struct mtxmatrix * matrix,
     int num_rows,
     int num_columns,
-    const double (* data)[2]);}}
+    const double (* data)[2]);}
 @end example
 The matrix entries are provided by the array @code{data}, which must
 contain @code{num_rows*num_columns} values.
@@ -609,7 +609,7 @@ To create a double precision, complex matrix in coordinate format, use
     int64_t num_nonzeros,
     const int * rowidx,
     const int * colidx,
-    const double (* values)[2]);
+    const double (* values)[2]);}
 @end example
 The arguments @code{rowidx}, @code{colidx} and @code{values} are
 arrays of length @code{num_nonzeros}. For each nonzero value
@@ -964,8 +964,12 @@ vectors. This section describes level 2 BLAS operations for
 
 The following Level 2 BLAS operations are supported:
 @itemize
-@item @code{sgemv}, @code{dgemv} --- general, real matrix-vector multiplication, @code{y = α*A*x + β*y} or @code{y = α*A'*x + β*y}
-@item @code{cgemv}, @code{zgemv} --- general, complex matrix-vector multiplication, @code{y = α*A*x + β*y}, @code{y = α*A'*x + β*y} or  @code{y = α*A^H*x + β*y}
+@item @code{sgemv}, @code{dgemv} ---
+general, real matrix-vector multiplication, @code{y = α*A*x + β*y} or
+@code{y = α*A'*x + β*y}
+@item @code{cgemv}, @code{zgemv} ---
+general, complex matrix-vector multiplication, @code{y = α*A*x + β*y},
+@code{y = α*A'*x + β*y} or @code{y = α*A^H*x + β*y}
 @end itemize
 
 The function @code{mtxmatrix_sgemv} multiplies a matrix @code{A} or
@@ -977,20 +981,22 @@ the scalars @code{alpha} and @code{beta} are given as single precision
 floating point numbers.
 @example
 @code{int mtxmatrix_sgemv(
-    enum mtx_trans_type trans,
+    enum mtxtransposition trans,
     float alpha,
     const struct mtxmatrix * A,
     const struct mtxvector * x,
     float beta,
     struct mtxvector * y);}
 @end example
+If @code{trans} is @samp{mtx_notrans}, the matrix @code{A} is used. If
+@code{trans} is @samp{mtx_trans}, then @code{A'} is used instead.
 
 The function @code{mtxmatrix_dgemv} performs the same operation as
 @code{mtxmatrix_sgemv}, except that the scalars @code{alpha} and
 @code{beta} are now given as double precision floating point numbers.
 @example
 @code{int mtxmatrix_dgemv(
-    enum mtx_trans_type trans,
+    enum mtxtransposition trans,
     double alpha,
     const struct mtxmatrix * A,
     const struct mtxvector * x,
@@ -1001,10 +1007,12 @@ The function @code{mtxmatrix_dgemv} performs the same operation as
 There are also two analogous routines, @code{mtxmatrix_cgemv} and
 @code{mtxmatrix_zgemv} for the cases where @code{alpha} and
 @code{beta} are given as complex numbers in single and double
-precision floating point, respectively. These functions can also be used to multiply with the conjugate transpose @samp{A^H}, if @code{trans} is @samp{}.
+precision floating point, respectively. These functions can also be
+used to multiply with the conjugate transpose @samp{A^H}, if
+@code{trans} is @samp{mtx_conjtrans}.
 @example
 @code{int mtxmatrix_cgemv(
-    enum mtx_trans_type trans,
+    enum mtxtransposition trans,
     float alpha[2],
     const struct mtxmatrix * A,
     const struct mtxvector * x,
@@ -1012,7 +1020,7 @@ precision floating point, respectively. These functions can also be used to mult
     struct mtxvector * y);
 
 int mtxmatrix_zgemv(
-    enum mtx_trans_type trans,
+    enum mtxtransposition trans,
     double alpha[2],
     const struct mtxmatrix * A,
     const struct mtxvector * x,

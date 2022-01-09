@@ -913,7 +913,7 @@ int mtxmatrix_coordinate_to_mtxfile(
  * of ‘A’ and the size of ‘y’ must equal the number of columns of ‘A’.
  */
 int mtxmatrix_coordinate_sgemv(
-    enum mtx_trans_type trans,
+    enum mtxtransposition trans,
     float alpha,
     const struct mtxmatrix_coordinate * A,
     const struct mtxvector * x,
@@ -1988,7 +1988,7 @@ int mtxmatrix_coordinate_sgemv(
  * of ‘A’ and the size of ‘y’ must equal the number of columns of ‘A’.
  */
 int mtxmatrix_coordinate_dgemv(
-    enum mtx_trans_type trans,
+    enum mtxtransposition trans,
     double alpha,
     const struct mtxmatrix_coordinate * A,
     const struct mtxvector * x,
@@ -3060,7 +3060,7 @@ int mtxmatrix_coordinate_dgemv(
  * size of ‘y’ must equal the number of columns of ‘A’.
  */
 int mtxmatrix_coordinate_cgemv(
-    enum mtx_trans_type trans,
+    enum mtxtransposition trans,
     float alpha[2],
     const struct mtxmatrix_coordinate * A,
     const struct mtxvector * x,
@@ -3390,7 +3390,7 @@ int mtxmatrix_coordinate_cgemv(
  * of ‘y’ must equal the number of columns of ‘A’.
  */
 int mtxmatrix_coordinate_zgemv(
-    enum mtx_trans_type trans,
+    enum mtxtransposition trans,
     double alpha[2],
     const struct mtxmatrix_coordinate * A,
     const struct mtxvector * x,

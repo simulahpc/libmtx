@@ -477,7 +477,7 @@ static int gemv(
     double beta,
     struct mtxvector * y,
     enum mtxprecision precision,
-    enum mtx_trans_type trans,
+    enum mtxtransposition trans,
     const char * format,
     int repeat,
     int verbose,
@@ -783,7 +783,7 @@ int main(int argc, char *argv[])
 
     /* TODO: Allow the user to select transpose or conjugate
      * transpose matrix-vector multiplication. */
-    enum mtx_trans_type trans = mtx_notrans;
+    enum mtxtransposition trans = mtx_notrans;
 
     /* 5. Compute matrix-vector multiplication. */
     err = gemv(args.alpha, &A, &x, args.beta, &y, args.precision, trans,

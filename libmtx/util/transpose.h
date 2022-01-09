@@ -1,6 +1,6 @@
 /* This file is part of libmtx.
  *
- * Copyright (C) 2021 James D. Trotter
+ * Copyright (C) 2022 James D. Trotter
  *
  * libmtx is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
  * along with libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-10-07
+ * Last modified: 2022-01-09
  *
  * Different ways of transposing matrices and vectors.
  */
@@ -27,10 +27,10 @@
 #include <stdint.h>
 
 /**
- * `mtx_trans_type' is used to enumerate different ways of transposing
+ * ‘mtxtransposition’ is used to enumerate different ways of transposing
  * matrices and vectors.
  */
-enum mtx_trans_type
+enum mtxtransposition
 {
     mtx_notrans,    /* non-transposed */
     mtx_trans,      /* transpose */
@@ -38,34 +38,34 @@ enum mtx_trans_type
 };
 
 /**
- * `mtx_trans_type_str()' is a string representing the transpose type.
+ * ‘mtxtransposition_str()’ is a string representing the transpose type.
  */
-const char * mtx_trans_type_str_(
-    enum mtx_trans_type transpose);
+const char * mtxtransposition_str_(
+    enum mtxtransposition transpose);
 
 /**
- * `mtx_trans_type_parse()' parses a string to obtain one of the
- * transpose types of `enum mtx_trans_type'.
+ * ‘mtxtransposition_parse()’ parses a string to obtain one of the
+ * transpose types of ‘enum mtxtransposition’.
  *
- * `valid_delimiters' is either `NULL', in which case it is ignored,
+ * ‘valid_delimiters’ is either ‘NULL’, in which case it is ignored,
  * or it is a string of characters considered to be valid delimiters
  * for the parsed string.  That is, if there are any remaining,
  * non-NULL characters after parsing, then then the next character is
- * searched for in `valid_delimiters'.  If the character is found,
+ * searched for in ‘valid_delimiters’.  If the character is found,
  * then the parsing succeeds and the final delimiter character is
  * consumed by the parser. Otherwise, the parsing fails with an error.
  *
- * If `endptr' is not `NULL', then the address stored in `endptr'
+ * If ‘endptr’ is not ‘NULL’, then the address stored in ‘endptr’
  * points to the first character beyond the characters that were
  * consumed during parsing.
  *
- * On success, `mtx_trans_type_parse()' returns `MTX_SUCCESS' and
- * `transpose' is set according to the parsed string and `bytes_read'
+ * On success, ‘mtxtransposition_parse()’ returns ‘MTX_SUCCESS’ and
+ * ‘transpose’ is set according to the parsed string and ‘bytes_read’
  * is set to the number of bytes that were consumed by the parser.
  * Otherwise, an error code is returned.
  */
-int mtx_trans_type_parse(
-    enum mtx_trans_type * transpose,
+int mtxtransposition_parse(
+    enum mtxtransposition * transpose,
     int64_t * bytes_read,
     const char ** endptr,
     const char * s,

@@ -755,7 +755,7 @@ int mtxmatrix_iamax(
  * floating point numbers.
  */
 int mtxmatrix_sgemv(
-    enum mtx_trans_type trans,
+    enum mtxtransposition trans,
     float alpha,
     const struct mtxmatrix * A,
     const struct mtxvector * x,
@@ -772,7 +772,7 @@ int mtxmatrix_sgemv(
  * floating point numbers.
  */
 int mtxmatrix_dgemv(
-    enum mtx_trans_type trans,
+    enum mtxtransposition trans,
     double alpha,
     const struct mtxmatrix * A,
     const struct mtxvector * x,
@@ -790,7 +790,7 @@ int mtxmatrix_dgemv(
  * floating point numbers.
  */
 int mtxmatrix_cgemv(
-    enum mtx_trans_type trans,
+    enum mtxtransposition trans,
     float alpha[2],
     const struct mtxmatrix * A,
     const struct mtxvector * x,
@@ -808,7 +808,7 @@ int mtxmatrix_cgemv(
  * floating point numbers.
  */
 int mtxmatrix_zgemv(
-    enum mtx_trans_type trans,
+    enum mtxtransposition trans,
     double alpha[2],
     const struct mtxmatrix * A,
     const struct mtxvector * x,

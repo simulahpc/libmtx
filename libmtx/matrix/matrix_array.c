@@ -473,7 +473,7 @@ int mtxmatrix_array_to_mtxfile(
  * size of ‘y’ must equal the number of columns of ‘A’.
  */
 int mtxmatrix_array_sgemv(
-    enum mtx_trans_type trans,
+    enum mtxtransposition trans,
     float alpha,
     const struct mtxmatrix_array * A,
     const struct mtxvector * x,
@@ -738,7 +738,7 @@ int mtxmatrix_array_sgemv(
  * size of ‘y’ must equal the number of columns of ‘A’.
  */
 int mtxmatrix_array_dgemv(
-    enum mtx_trans_type trans,
+    enum mtxtransposition trans,
     double alpha,
     const struct mtxmatrix_array * A,
     const struct mtxvector * x,
@@ -1002,7 +1002,7 @@ int mtxmatrix_array_dgemv(
  * size of ‘y’ must equal the number of columns of ‘A’.
  */
 int mtxmatrix_array_cgemv(
-    enum mtx_trans_type trans,
+    enum mtxtransposition trans,
     float alpha[2],
     const struct mtxmatrix_array * A,
     const struct mtxvector * x,
@@ -1178,7 +1178,7 @@ int mtxmatrix_array_cgemv(
  * size of ‘y’ must equal the number of columns of ‘A’.
  */
 int mtxmatrix_array_zgemv(
-    enum mtx_trans_type trans,
+    enum mtxtransposition trans,
     double alpha[2],
     const struct mtxmatrix_array * A,
     const struct mtxvector * x,
