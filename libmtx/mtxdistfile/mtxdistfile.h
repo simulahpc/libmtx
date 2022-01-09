@@ -49,7 +49,7 @@
 #include <stdio.h>
 
 struct mtxdisterror;
-struct mtx_partition;
+struct mtxpartition;
 
 #ifdef LIBMTX_HAVE_MPI
 /**
@@ -1072,7 +1072,7 @@ int mtxdistfile_init_from_partition(
  */
 int mtxdistfile_partition_rows(
     const struct mtxdistfile * mtxdistfile,
-    const struct mtx_partition * row_partition,
+    const struct mtxpartition * row_partition,
     int * part_per_data_line,
     int64_t * data_lines_per_part_ptr,
     int64_t * data_lines_per_part,

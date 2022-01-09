@@ -735,14 +735,14 @@ for each nonzero matrix entry.
          mtx_assembled,   /* assembled; duplicate nonzeros not allowed. */
      };
 
-   The enum type 'mtx_partitioning', is used to describe whether the
+   The enum type 'mtxpartitioning', is used to describe whether the
 rows and columns of a distributed matrix or vector form a partition or
 merely a cover of the rows and columns of a global matrix or vector.  In
 the case of a partition, each matrix or vector entry is owned by a
 single MPI process.  In the case of a cover, different MPI processes are
 allowed to store values associated with the same matrix or vector entry.
-     enum mtx_partitioning {
-         mtx_partition,   /* matrix/vector entries are owned
+     enum mtxpartitioning {
+         mtxpartition,   /* matrix/vector entries are owned
                               * by a single MPI process. */
          mtx_cover,       /* matrix/vector entries may be owned
                               * by multiple MPI processes. */
@@ -1268,7 +1268,7 @@ which is designated as the root process.
      int mtx_matrix_coordinate_gather(
          struct mtx * dstmtx,
          const struct mtx * srcmtx,
-         enum mtx_partitioning partitioning,
+         enum mtxpartitioning partitioning,
          MPI_Comm comm,
          int root,
          int * mpierrcode);
@@ -1280,7 +1280,7 @@ with rank equal to 'root' must belong to the MPI communicator 'comm'.
 
    If each of the matrices to gather data from is in an assembled state,
 that is, 'assembly' is 'mtx_assembled', and 'partitioning' is equal to
-'mtx_partition', then the final, gathered matrix is considered to be in
+'mtxpartition', then the final, gathered matrix is considered to be in
 an assembled state.  Otherwise, the gathered matrix is unassembled.
 
    Conversely, a sparse matrix can also be distributed from a single MPI
@@ -1622,8 +1622,8 @@ library.
          mtx_assembled,   /* assembled; duplicate nonzeros not allowed. */
      };
 
-     enum mtx_partitioning {
-         mtx_partition,   /* matrix/vector entries are owned
+     enum mtxpartitioning {
+         mtxpartition,   /* matrix/vector entries are owned
                            * by a single MPI process. */
          mtx_cover,       /* matrix/vector entries may be shared
                            * by multiple MPI processes. */
@@ -2017,7 +2017,7 @@ library.
      int mtx_matrix_coordinate_gather(
          struct mtx * dstmtx,
          const struct mtx * srcmtx,
-         enum mtx_partitioning partitioning,
+         enum mtxpartitioning partitioning,
          MPI_Comm comm,
          int root,
          int * mpierrcode);
@@ -2860,9 +2860,9 @@ Data type index
 * mtx_ordering:                          Additional header types.
                                                               (line  22)
 * mtx_ordering <1>:                      C library reference. (line  70)
-* mtx_partitioning:                      Additional header types.
+* mtxpartitioning:                      Additional header types.
                                                               (line  44)
-* mtx_partitioning <1>:                  C library reference. (line  70)
+* mtxpartitioning <1>:                  C library reference. (line  70)
 * mtx_sorting:                           Additional header types.
                                                               (line  11)
 * mtx_sorting <1>:                       C library reference. (line  70)

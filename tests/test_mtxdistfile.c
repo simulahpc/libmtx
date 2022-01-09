@@ -1300,8 +1300,8 @@ int test_mtxdistfile_partition_rows(void)
 
         int num_parts = 2;
         enum mtxpartitioning row_partition_type = mtx_cyclic;
-        struct mtx_partition row_partition;
-        err = mtx_partition_init(
+        struct mtxpartition row_partition;
+        err = mtxpartition_init(
             &row_partition, row_partition_type,
             src.size.num_rows, num_parts, 0, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
@@ -1407,8 +1407,8 @@ int test_mtxdistfile_partition_rows(void)
 
         int num_parts = 2;
         enum mtxpartitioning row_partition_type = mtx_block;
-        struct mtx_partition row_partition;
-        err = mtx_partition_init(
+        struct mtxpartition row_partition;
+        err = mtxpartition_init(
             &row_partition, row_partition_type,
             src.size.num_rows, num_parts, 0, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
@@ -1520,8 +1520,8 @@ int test_mtxdistfile_partition_rows(void)
 
         int num_parts = 2;
         enum mtxpartitioning row_partition_type = mtx_block;
-        struct mtx_partition row_partition;
-        err = mtx_partition_init(
+        struct mtxpartition row_partition;
+        err = mtxpartition_init(
             &row_partition, row_partition_type,
             src.size.num_rows, num_parts, 0, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));

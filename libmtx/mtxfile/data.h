@@ -42,7 +42,7 @@
 #include <stdio.h>
 
 struct mtxdisterror;
-struct mtx_partition;
+struct mtxpartition;
 
 /*
  * Matrix coordinate formats
@@ -1192,7 +1192,7 @@ int mtxfiledata_partition_rows(
     int num_columns,
     int64_t size,
     int64_t offset,
-    const struct mtx_partition * partition,
+    const struct mtxpartition * partition,
     int * rowparts);
 
 /**
@@ -1214,7 +1214,7 @@ int mtxfiledata_partition_columns(
     int num_columns,
     int64_t size,
     int64_t offset,
-    const struct mtx_partition * column_partition,
+    const struct mtxpartition * column_partition,
     int * column_parts);
 
 /*

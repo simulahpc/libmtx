@@ -246,8 +246,8 @@ process.
 
 @c @cindex cover
 @c @cindex partition
-@c @tindex mtx_partitioning
-@c The enum type @code{mtx_partitioning}, is used to describe whether the
+@c @tindex mtxpartitioning
+@c The enum type @code{mtxpartitioning}, is used to describe whether the
 @c rows and columns of a distributed matrix or vector form a partition or
 @c merely a cover of the rows and columns of a global matrix or
 @c vector. In the case of a partition, each matrix or vector entry is
@@ -255,8 +255,8 @@ process.
 @c processes are allowed to store values associated with the same matrix
 @c or vector entry.
 @c @example
-@c @code{enum mtx_partitioning @{
-@c     mtx_partition,   /* matrix/vector entries are owned
+@c @code{enum mtxpartitioning @{
+@c     mtxpartition,   /* matrix/vector entries are owned
 @c                          * by a single MPI process. */
 @c     mtx_cover,       /* matrix/vector entries may be owned
 @c                          * by multiple MPI processes. */

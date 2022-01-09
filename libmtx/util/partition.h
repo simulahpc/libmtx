@@ -76,9 +76,9 @@ int mtx_parse_partition_type(
     const char * valid_delimiters);
 
 /**
- * ‘mtx_partition’ represents a partitioning of a finite set.
+ * ‘mtxpartition’ represents a partitioning of a finite set.
  */
-struct mtx_partition
+struct mtxpartition
 {
     /**
      * ‘type’ is the type of partitioning.
@@ -111,17 +111,17 @@ struct mtx_partition
 };
 
 /**
- * ‘mtx_partition_free()’ frees resources associated with a
+ * ‘mtxpartition_free()’ frees resources associated with a
  * partitioning.
  */
-void mtx_partition_free(
-    struct mtx_partition * partition);
+void mtxpartition_free(
+    struct mtxpartition * partition);
 
 /**
- * ‘mtx_partition_init()’ initialises a partitioning of a finite set.
+ * ‘mtxpartition_init()’ initialises a partitioning of a finite set.
  */
-int mtx_partition_init(
-    struct mtx_partition * partition,
+int mtxpartition_init(
+    struct mtxpartition * partition,
     enum mtxpartitioning type,
     int64_t size,
     int num_parts,
@@ -129,58 +129,58 @@ int mtx_partition_init(
     const int * parts);
 
 /**
- * ‘mtx_partition_init_singleton()’ initialises a singleton partition
+ * ‘mtxpartition_init_singleton()’ initialises a singleton partition
  * of a finite set.  That is, a partition with only one part, also
  * called the trivial partition.
  */
-int mtx_partition_init_singleton(
-    struct mtx_partition * partition,
+int mtxpartition_init_singleton(
+    struct mtxpartition * partition,
     int64_t size);
 
 /**
- * ‘mtx_partition_init_block()’ initialises a block partitioning of a
+ * ‘mtxpartition_init_block()’ initialises a block partitioning of a
  * finite set.
  */
-int mtx_partition_init_block(
-    struct mtx_partition * partition,
+int mtxpartition_init_block(
+    struct mtxpartition * partition,
     int64_t size,
     int num_parts);
 
 /**
- * ‘mtx_partition_init_cyclic()’ initialises a cyclic partitioning of
+ * ‘mtxpartition_init_cyclic()’ initialises a cyclic partitioning of
  * a finite set.
  */
-int mtx_partition_init_cyclic(
-    struct mtx_partition * partition,
+int mtxpartition_init_cyclic(
+    struct mtxpartition * partition,
     int64_t size,
     int num_parts);
 
 /**
- * ‘mtx_partition_init_block_cyclic()’ initialises a block-cyclic
+ * ‘mtxpartition_init_block_cyclic()’ initialises a block-cyclic
  * partitioning of a finite set.
  */
-int mtx_partition_init_block_cyclic(
-    struct mtx_partition * partition,
+int mtxpartition_init_block_cyclic(
+    struct mtxpartition * partition,
     int64_t size,
     int num_parts,
     int block_size);
 
 /**
- * ‘mtx_partition_init_unstructured()’ initialises an unstructured
+ * ‘mtxpartition_init_unstructured()’ initialises an unstructured
  * partitioning of a finite set.
  */
-int mtx_partition_init_unstructured(
-    struct mtx_partition * partition,
+int mtxpartition_init_unstructured(
+    struct mtxpartition * partition,
     int64_t size,
     int num_parts,
     const int * parts);
 
 /**
- * ‘mtx_partition_part()’ determines which part of a partition that a
+ * ‘mtxpartition_part()’ determines which part of a partition that a
  * given element belongs to.
  */
-int mtx_partition_part(
-    const struct mtx_partition * partition,
+int mtxpartition_part(
+    const struct mtxpartition * partition,
     int * p,
     int64_t n);
 
@@ -205,7 +205,7 @@ int mtx_partition_part(
  */
 
 /**
- * ‘mtx_partition_read_parts()’ reads the part numbers assigned to
+ * ‘mtxpartition_read_parts()’ reads the part numbers assigned to
  * each element of a partitioned set from the given path.  The path
  * must be to a Matrix Market file in the form of an integer vector in
  * array format.
@@ -216,15 +216,15 @@ int mtx_partition_part(
  * are used to return the line number and byte at which the error was
  * encountered during the parsing of the Matrix Market file.
  */
-int mtx_partition_read_parts(
-    struct mtx_partition * partition,
+int mtxpartition_read_parts(
+    struct mtxpartition * partition,
     int num_parts,
     const char * path,
     int * lines_read,
     int64_t * bytes_read);
 
 /**
- * ‘mtx_partition_fread_parts()’ reads the part numbers assigned to
+ * ‘mtxpartition_fread_parts()’ reads the part numbers assigned to
  * each element of a partitioned set from a stream formatted as a
  * Matrix Market file.  The Matrix Market file must be in the form of
  * an integer vector in array format.
@@ -233,8 +233,8 @@ int mtx_partition_read_parts(
  * are used to return the line number and byte at which the error was
  * encountered during the parsing of the Matrix Market file.
  */
-int mtx_partition_fread_parts(
-    struct mtx_partition * partition,
+int mtxpartition_fread_parts(
+    struct mtxpartition * partition,
     int num_parts,
     FILE * f,
     int * lines_read,
@@ -243,7 +243,7 @@ int mtx_partition_fread_parts(
     char * linebuf);
 
 /**
- * ‘mtx_partition_fread_indices()’ reads the global indices of
+ * ‘mtxpartition_fread_indices()’ reads the global indices of
  * elements belonging to a given part of a partitioned set from a
  * stream formatted as a Matrix Market file.  The Matrix Market file
  * must be in the form of an integer vector in array format.
@@ -252,8 +252,8 @@ int mtx_partition_fread_parts(
  * are used to return the line number and byte at which the error was
  * encountered during the parsing of the Matrix Market file.
  */
-int mtx_partition_fread_indices(
-    struct mtx_partition * partition,
+int mtxpartition_fread_indices(
+    struct mtxpartition * partition,
     int part,
     FILE * f,
     int * lines_read,
@@ -262,7 +262,7 @@ int mtx_partition_fread_indices(
     char * linebuf);
 
 /**
- * ‘mtx_partition_write_parts()’ writes the part numbers assigned to
+ * ‘mtxpartition_write_parts()’ writes the part numbers assigned to
  * each element of a partitioned set to the given path.  The file is
  * written as a Matrix Market file in the form of an integer vector in
  * array format.
@@ -279,14 +279,14 @@ int mtx_partition_fread_indices(
  * If it is not ‘NULL’, then the number of bytes written to the stream
  * is returned in ‘bytes_written’.
  */
-int mtx_partition_write_parts(
-    const struct mtx_partition * partition,
+int mtxpartition_write_parts(
+    const struct mtxpartition * partition,
     const char * path,
     const char * format,
     int64_t * bytes_written);
 
 /**
- * ‘mtx_partition_fwrite_parts()’ writes the part numbers assigned to
+ * ‘mtxpartition_fwrite_parts()’ writes the part numbers assigned to
  * each element of a partitioned set to a stream formatted as a Matrix
  * Market file.  The Matrix Market file is written in the form of an
  * integer vector in array format.
@@ -301,14 +301,14 @@ int mtx_partition_write_parts(
  * If it is not ‘NULL’, then the number of bytes written to the stream
  * is returned in ‘bytes_written’.
  */
-int mtx_partition_fwrite_parts(
-    const struct mtx_partition * partition,
+int mtxpartition_fwrite_parts(
+    const struct mtxpartition * partition,
     FILE * f,
     const char * format,
     int64_t * bytes_written);
 
 /**
- * ‘mtx_partition_write_permutation()’ writes the permutation of a
+ * ‘mtxpartition_write_permutation()’ writes the permutation of a
  * given part of a partitioned set to the given path.  The permutation
  * is represented by an array of global indices of the elements
  * belonging to the given part prior to partitioning.  The file is
@@ -327,15 +327,15 @@ int mtx_partition_fwrite_parts(
  * If it is not ‘NULL’, then the number of bytes written to the stream
  * is returned in ‘bytes_written’.
  */
-int mtx_partition_write_permutation(
-    const struct mtx_partition * partition,
+int mtxpartition_write_permutation(
+    const struct mtxpartition * partition,
     int part,
     const char * path,
     const char * format,
     int64_t * bytes_written);
 
 /**
- * ‘mtx_partition_write_permutations()’ writes the permutations for
+ * ‘mtxpartition_write_permutations()’ writes the permutations for
  * each part of a partitioned set to the given path.  The permutation
  * is represented by an array of global indices of the elements
  * belonging each part prior to partitioning.  The file for each part
@@ -355,14 +355,14 @@ int mtx_partition_write_permutation(
  * If it is not ‘NULL’, then the number of bytes written to the stream
  * is returned in ‘bytes_written’.
  */
-int mtx_partition_write_permutations(
-    const struct mtx_partition * partition,
+int mtxpartition_write_permutations(
+    const struct mtxpartition * partition,
     const char * pathfmt,
     const char * format,
     int64_t * bytes_written);
 
 /**
- * ‘mtx_partition_write_permutation()’ writes the permutation of a
+ * ‘mtxpartition_write_permutation()’ writes the permutation of a
  * given part of a partitioned set to a stream as a Matrix Market
  * file.  The permutation is represented by an array of global indices
  * of the elements belonging to the given part prior to partitioning.
@@ -379,8 +379,8 @@ int mtx_partition_write_permutations(
  * If it is not ‘NULL’, then the number of bytes written to the stream
  * is returned in ‘bytes_written’.
  */
-int mtx_partition_fwrite_permutation(
-    const struct mtx_partition * partition,
+int mtxpartition_fwrite_permutation(
+    const struct mtxpartition * partition,
     int part,
     FILE * f,
     const char * format,

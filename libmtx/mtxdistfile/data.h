@@ -36,7 +36,7 @@
 #include <stddef.h>
 
 struct mtxdisterror;
-struct mtx_partition;
+struct mtxpartition;
 union mtxfiledata;
 
 /*

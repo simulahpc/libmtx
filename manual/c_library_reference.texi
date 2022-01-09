@@ -108,7 +108,7 @@ enum mtx_symmetry @{
 @tindex mtx_assembly
 @tindex mtx_assembled
 @tindex mtx_unassembled
-@tindex mtx_partitioning
+@tindex mtxpartitioning
 @example
 @code{enum mtx_triangle @{
     mtx_nontriangular,    /* nonzero above, below or on main diagonal */
@@ -133,8 +133,8 @@ enum mtx_assembly @{
     mtx_assembled,   /* assembled; duplicate nonzeros not allowed. */
 @};
 
-enum mtx_partitioning @{
-    mtx_partition,   /* matrix/vector entries are owned
+enum mtxpartitioning @{
+    mtxpartition,   /* matrix/vector entries are owned
                       * by a single MPI process. */
     mtx_cover,       /* matrix/vector entries may be shared
                       * by multiple MPI processes. */
@@ -678,7 +678,7 @@ bool mtx_index_set_contains(
 @code{int mtx_matrix_coordinate_gather(
     struct mtx * dstmtx,
     const struct mtx * srcmtx,
-    enum mtx_partitioning partitioning,
+    enum mtxpartitioning partitioning,
     MPI_Comm comm,
     int root,
     int * mpierrcode);

@@ -43,7 +43,7 @@
 #include <stdio.h>
 
 struct mtxdisterror;
-struct mtx_partition;
+struct mtxpartition;
 
 /**
  * `mtxvector_distributed' represents a vector in distributed format.
@@ -51,7 +51,7 @@ struct mtx_partition;
 struct mtxvector_distributed
 {
     MPI_Comm comm;
-    struct mtx_partition partition;
+    struct mtxpartition partition;
     struct mtxvector_array interior;
     struct mtxvector_array interior_halo;
     struct mtxvector_coordinate exterior_halo;
@@ -348,7 +348,7 @@ int mtxvector_distributed_gzwrite(
  */
 int mtxvector_distributed_partition_rows(
     struct mtxvector_distributed * vector,
-    const struct mtx_partition * row_partition,
+    const struct mtxpartition * row_partition,
     int64_t * data_lines_per_part_ptr,
     int * row_parts);
 
@@ -362,7 +362,7 @@ int mtxvector_distributed_partition_rows(
 int mtxvector_distributed_init_from_row_partition(
     struct mtxvector_distributed * dst,
     const struct mtxvector_distributed * src,
-    const struct mtx_partition * row_partition,
+    const struct mtxpartition * row_partition,
     int64_t * data_lines_per_part_ptr,
     int part);
 
@@ -450,7 +450,7 @@ int mtxvector_distributed_scatterv(
 int mtxvector_distributed_distribute_rows(
     struct mtxvector_distributed * dst,
     struct mtxvector_distributed * src,
-    const struct mtx_partition * row_partition,
+    const struct mtxpartition * row_partition,
     int root,
     MPI_Comm comm,
     struct mtxdisterror * disterr);

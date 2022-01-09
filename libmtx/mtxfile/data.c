@@ -4690,7 +4690,7 @@ int mtxfiledata_partition_rows(
     int num_columns,
     int64_t size,
     int64_t offset,
-    const struct mtx_partition * partition,
+    const struct mtxpartition * partition,
     int * rowparts)
 {
     int err;
@@ -4702,7 +4702,7 @@ int mtxfiledata_partition_rows(
             for (int64_t l = 0; l < size; l++) {
                 int64_t k = offset + l;
                 int i = k / num_columns;
-                err = mtx_partition_part(partition, &rowparts[l], i);
+                err = mtxpartition_part(partition, &rowparts[l], i);
                 if (err)
                     return err;
             }
@@ -4710,7 +4710,7 @@ int mtxfiledata_partition_rows(
             for (int64_t l = 0; l < size; l++) {
                 int64_t k = offset + l;
                 int i = k;
-                err = mtx_partition_part(partition, &rowparts[l], i);
+                err = mtxpartition_part(partition, &rowparts[l], i);
                 if (err)
                     return err;
             }
@@ -4724,7 +4724,7 @@ int mtxfiledata_partition_rows(
                     for (int64_t l = 0; l < size; l++) {
                         int64_t k = offset + l;
                         int i = data->matrix_coordinate_real_single[k].i-1;
-                        err = mtx_partition_part(partition, &rowparts[l], i);
+                        err = mtxpartition_part(partition, &rowparts[l], i);
                         if (err)
                             return err;
                     }
@@ -4732,7 +4732,7 @@ int mtxfiledata_partition_rows(
                     for (int64_t l = 0; l < size; l++) {
                         int64_t k = offset + l;
                         int i = data->matrix_coordinate_real_double[k].i-1;
-                        err = mtx_partition_part(partition, &rowparts[l], i);
+                        err = mtxpartition_part(partition, &rowparts[l], i);
                         if (err)
                             return err;
                     }
@@ -4744,7 +4744,7 @@ int mtxfiledata_partition_rows(
                     for (int64_t l = 0; l < size; l++) {
                         int64_t k = offset + l;
                         int i = data->matrix_coordinate_complex_single[k].i-1;
-                        err = mtx_partition_part(partition, &rowparts[l], i);
+                        err = mtxpartition_part(partition, &rowparts[l], i);
                         if (err)
                             return err;
                     }
@@ -4752,7 +4752,7 @@ int mtxfiledata_partition_rows(
                     for (int64_t l = 0; l < size; l++) {
                         int64_t k = offset + l;
                         int i = data->matrix_coordinate_complex_double[k].i-1;
-                        err = mtx_partition_part(partition, &rowparts[l], i);
+                        err = mtxpartition_part(partition, &rowparts[l], i);
                         if (err)
                             return err;
                     }
@@ -4764,7 +4764,7 @@ int mtxfiledata_partition_rows(
                     for (int64_t l = 0; l < size; l++) {
                         int64_t k = offset + l;
                         int i = data->matrix_coordinate_integer_single[k].i-1;
-                        err = mtx_partition_part(partition, &rowparts[l], i);
+                        err = mtxpartition_part(partition, &rowparts[l], i);
                         if (err)
                             return err;
                     }
@@ -4772,7 +4772,7 @@ int mtxfiledata_partition_rows(
                     for (int64_t l = 0; l < size; l++) {
                         int64_t k = offset + l;
                         int i = data->matrix_coordinate_integer_double[k].i-1;
-                        err = mtx_partition_part(partition, &rowparts[l], i);
+                        err = mtxpartition_part(partition, &rowparts[l], i);
                         if (err)
                             return err;
                     }
@@ -4783,7 +4783,7 @@ int mtxfiledata_partition_rows(
                 for (int64_t l = 0; l < size; l++) {
                     int64_t k = offset + l;
                     int i = data->matrix_coordinate_pattern[k].i-1;
-                    err = mtx_partition_part(partition, &rowparts[l], i);
+                    err = mtxpartition_part(partition, &rowparts[l], i);
                     if (err)
                         return err;
                 }
@@ -4796,7 +4796,7 @@ int mtxfiledata_partition_rows(
                     for (int64_t l = 0; l < size; l++) {
                         int64_t k = offset + l;
                         int i = data->vector_coordinate_real_single[k].i-1;
-                        err = mtx_partition_part(partition, &rowparts[l], i);
+                        err = mtxpartition_part(partition, &rowparts[l], i);
                         if (err)
                             return err;
                     }
@@ -4804,7 +4804,7 @@ int mtxfiledata_partition_rows(
                     for (int64_t l = 0; l < size; l++) {
                         int64_t k = offset + l;
                         int i = data->vector_coordinate_real_double[k].i-1;
-                        err = mtx_partition_part(partition, &rowparts[l], i);
+                        err = mtxpartition_part(partition, &rowparts[l], i);
                         if (err)
                             return err;
                     }
@@ -4816,7 +4816,7 @@ int mtxfiledata_partition_rows(
                     for (int64_t l = 0; l < size; l++) {
                         int64_t k = offset + l;
                         int i = data->vector_coordinate_complex_single[k].i-1;
-                        err = mtx_partition_part(partition, &rowparts[l], i);
+                        err = mtxpartition_part(partition, &rowparts[l], i);
                         if (err)
                             return err;
                     }
@@ -4824,7 +4824,7 @@ int mtxfiledata_partition_rows(
                     for (int64_t l = 0; l < size; l++) {
                         int64_t k = offset + l;
                         int i = data->vector_coordinate_complex_double[k].i-1;
-                        err = mtx_partition_part(partition, &rowparts[l], i);
+                        err = mtxpartition_part(partition, &rowparts[l], i);
                         if (err)
                             return err;
                     }
@@ -4836,7 +4836,7 @@ int mtxfiledata_partition_rows(
                     for (int64_t l = 0; l < size; l++) {
                         int64_t k = offset + l;
                         int i = data->vector_coordinate_integer_single[k].i-1;
-                        err = mtx_partition_part(partition, &rowparts[l], i);
+                        err = mtxpartition_part(partition, &rowparts[l], i);
                         if (err)
                             return err;
                     }
@@ -4844,7 +4844,7 @@ int mtxfiledata_partition_rows(
                     for (int64_t l = 0; l < size; l++) {
                         int64_t k = offset + l;
                         int i = data->vector_coordinate_integer_double[k].i-1;
-                        err = mtx_partition_part(partition, &rowparts[l], i);
+                        err = mtxpartition_part(partition, &rowparts[l], i);
                         if (err)
                             return err;
                     }
@@ -4855,7 +4855,7 @@ int mtxfiledata_partition_rows(
                 for (int64_t l = 0; l < size; l++) {
                     int64_t k = offset + l;
                     int i = data->vector_coordinate_pattern[k].i-1;
-                    err = mtx_partition_part(partition, &rowparts[l], i);
+                    err = mtxpartition_part(partition, &rowparts[l], i);
                     if (err)
                         return err;
                 }

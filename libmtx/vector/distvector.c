@@ -497,10 +497,10 @@ int mtxdistvector_from_mtxfile(
         return err;
 
     /* 2. Partition the rows of the vector. */
-    struct mtx_partition row_partition;
+    struct mtxpartition row_partition;
     enum mtxpartitioning partition_type = mtx_block;
     int num_parts = distvector->comm_size;
-    err = mtx_partition_init(
+    err = mtxpartition_init(
         &row_partition, partition_type,
         src.size.num_rows, num_parts, 0, NULL);
     if (mtxdisterror_allreduce(disterr, err)) {
@@ -513,14 +513,14 @@ int mtxdistvector_from_mtxfile(
     err = mtxfilesize_num_data_lines(
         &src.mtxfile.size, src.mtxfile.header.symmetry, &num_data_lines);
     if (mtxdisterror_allreduce(disterr, err)) {
-        mtx_partition_free(&row_partition);
+        mtxpartition_free(&row_partition);
         mtxdistfile_free(&src);
         return MTX_ERR_MPI_COLLECTIVE;
     }
     int * part_per_data_line = malloc(num_data_lines * sizeof(int));
     err = !part_per_data_line ? MTX_ERR_ERRNO : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err)) {
-        mtx_partition_free(&row_partition);
+        mtxpartition_free(&row_partition);
         mtxdistfile_free(&src);
         return MTX_ERR_MPI_COLLECTIVE;
     }
@@ -528,7 +528,7 @@ int mtxdistvector_from_mtxfile(
     err = !data_lines_per_part_ptr ? MTX_ERR_ERRNO : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err)) {
         free(part_per_data_line);
-        mtx_partition_free(&row_partition);
+        mtxpartition_free(&row_partition);
         mtxdistfile_free(&src);
         return MTX_ERR_MPI_COLLECTIVE;
     }
@@ -537,7 +537,7 @@ int mtxdistvector_from_mtxfile(
     if (mtxdisterror_allreduce(disterr, err)) {
         free(data_lines_per_part_ptr);
         free(part_per_data_line);
-        mtx_partition_free(&row_partition);
+        mtxpartition_free(&row_partition);
         mtxdistfile_free(&src);
         return MTX_ERR_MPI_COLLECTIVE;
     }
@@ -548,7 +548,7 @@ int mtxdistvector_from_mtxfile(
         free(data_lines_per_part);
         free(data_lines_per_part_ptr);
         free(part_per_data_line);
-        mtx_partition_free(&row_partition);
+        mtxpartition_free(&row_partition);
         mtxdistfile_free(&src);
         return err;
     }
@@ -560,7 +560,7 @@ int mtxdistvector_from_mtxfile(
         free(data_lines_per_part);
         free(data_lines_per_part_ptr);
         free(part_per_data_line);
-        mtx_partition_free(&row_partition);
+        mtxpartition_free(&row_partition);
         mtxdistfile_free(&src);
         return err;
     }
@@ -574,11 +574,11 @@ int mtxdistvector_from_mtxfile(
         &distvector->interior, &dst.mtxfile, vector_type);
     if (mtxdisterror_allreduce(disterr, err)) {
         mtxdistfile_free(&dst);
-        mtx_partition_free(&row_partition);
+        mtxpartition_free(&row_partition);
         return MTX_ERR_MPI_COLLECTIVE;
     }
     mtxdistfile_free(&dst);
-    mtx_partition_free(&row_partition);
+    mtxpartition_free(&row_partition);
     return MTX_SUCCESS;
 }
 

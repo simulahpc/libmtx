@@ -1998,7 +1998,7 @@ int mtxfile_partition_rows(
     const struct mtxfile * mtxfile,
     int64_t size,
     int64_t offset,
-    const struct mtx_partition * row_partition,
+    const struct mtxpartition * row_partition,
     int * part_per_data_line,
     int64_t * data_lines_per_part_ptr,
     int64_t * data_lines_per_part)
@@ -2059,7 +2059,7 @@ int mtxfile_partition_rows(
 int mtxfile_init_from_row_partition(
     struct mtxfile * dst,
     const struct mtxfile * src,
-    const struct mtx_partition * row_partition,
+    const struct mtxpartition * row_partition,
     int64_t * data_lines_per_part_ptr,
     int part)
 {

@@ -774,17 +774,17 @@ int main(int argc, char *argv[])
     }
 
     /* 3. Partition the rows of the matrix or vector. */
-    struct mtx_partition row_partition;
+    struct mtxpartition row_partition;
     if (args.row_partition == mtx_unstructured) {
         if (args.verbose > 0) {
-            fprintf(diagf, "mtx_partition_read_parts: ");
+            fprintf(diagf, "mtxpartition_read_parts: ");
             fflush(diagf);
             clock_gettime(CLOCK_MONOTONIC, &t0);
         }
 
         int lines_read = 0;
         int64_t bytes_read = 0;
-        err = mtx_partition_read_parts(
+        err = mtxpartition_read_parts(
             &row_partition, args.num_row_parts, args.row_partition_path,
             &lines_read, &bytes_read);
         if (mtxdisterror_allreduce(&disterr, err)) {
@@ -817,12 +817,12 @@ int main(int argc, char *argv[])
 
     } else {
         if (args.verbose > 0) {
-            fprintf(diagf, "mtx_partition_init: ");
+            fprintf(diagf, "mtxpartition_init: ");
             fflush(diagf);
             clock_gettime(CLOCK_MONOTONIC, &t0);
         }
 
-        err = mtx_partition_init(
+        err = mtxpartition_init(
             &row_partition, args.row_partition,
             src.size.num_rows, args.num_row_parts, 0, NULL);
         if (mtxdisterror_allreduce(&disterr, err)) {
@@ -858,7 +858,7 @@ int main(int argc, char *argv[])
                     program_invocation_short_name,
                     mtxdisterror_description(&disterr));
         }
-        mtx_partition_free(&row_partition);
+        mtxpartition_free(&row_partition);
         mtxdistfile_free(&src);
         program_options_free(&args);
         mtxdisterror_free(&disterr);
@@ -875,7 +875,7 @@ int main(int argc, char *argv[])
                     program_invocation_short_name,
                     mtxdisterror_description(&disterr));
         }
-        mtx_partition_free(&row_partition);
+        mtxpartition_free(&row_partition);
         mtxdistfile_free(&src);
         program_options_free(&args);
         mtxdisterror_free(&disterr);
@@ -894,7 +894,7 @@ int main(int argc, char *argv[])
                     mtxdisterror_description(&disterr));
         }
         free(part_per_data_line);
-        mtx_partition_free(&row_partition);
+        mtxpartition_free(&row_partition);
         mtxdistfile_free(&src);
         program_options_free(&args);
         mtxdisterror_free(&disterr);
@@ -914,7 +914,7 @@ int main(int argc, char *argv[])
         }
         free(data_lines_per_part_ptr);
         free(part_per_data_line);
-        mtx_partition_free(&row_partition);
+        mtxpartition_free(&row_partition);
         mtxdistfile_free(&src);
         program_options_free(&args);
         mtxdisterror_free(&disterr);
@@ -945,7 +945,7 @@ int main(int argc, char *argv[])
         free(data_lines_per_part);
         free(data_lines_per_part_ptr);
         free(part_per_data_line);
-        mtx_partition_free(&row_partition);
+        mtxpartition_free(&row_partition);
         mtxdistfile_free(&src);
         program_options_free(&args);
         mtxdisterror_free(&disterr);
@@ -981,7 +981,7 @@ int main(int argc, char *argv[])
         free(data_lines_per_part);
         free(data_lines_per_part_ptr);
         free(part_per_data_line);
-        mtx_partition_free(&row_partition);
+        mtxpartition_free(&row_partition);
         mtxdistfile_free(&src);
         program_options_free(&args);
         mtxdisterror_free(&disterr);
@@ -1012,7 +1012,7 @@ int main(int argc, char *argv[])
             free(data_lines_per_part);
             free(data_lines_per_part_ptr);
             free(part_per_data_line);
-            mtx_partition_free(&row_partition);
+            mtxpartition_free(&row_partition);
             program_options_free(&args);
             mtxdisterror_free(&disterr);
             MPI_Finalize();
@@ -1036,7 +1036,7 @@ int main(int argc, char *argv[])
             free(data_lines_per_part);
             free(data_lines_per_part_ptr);
             free(part_per_data_line);
-            mtx_partition_free(&row_partition);
+            mtxpartition_free(&row_partition);
             program_options_free(&args);
             mtxdisterror_free(&disterr);
             MPI_Finalize();
@@ -1069,7 +1069,7 @@ int main(int argc, char *argv[])
             free(data_lines_per_part);
             free(data_lines_per_part_ptr);
             free(part_per_data_line);
-            mtx_partition_free(&row_partition);
+            mtxpartition_free(&row_partition);
             program_options_free(&args);
             mtxdisterror_free(&disterr);
             MPI_Finalize();
@@ -1091,13 +1091,13 @@ int main(int argc, char *argv[])
      * assigned to each row of the matrix or vector. */
     if (args.row_partition != mtx_unstructured && args.row_partition_output_path) {
         if (args.verbose > 0) {
-            fprintf(diagf, "mtx_partition_write_parts: ");
+            fprintf(diagf, "mtxpartition_write_parts: ");
             fflush(diagf);
             clock_gettime(CLOCK_MONOTONIC, &t0);
         }
 
         int64_t bytes_written = 0;
-        err = (rank == root) ? mtx_partition_write_parts(
+        err = (rank == root) ? mtxpartition_write_parts(
             &row_partition, args.row_partition_output_path, "%d", &bytes_written)
             : MTX_SUCCESS;
         if (mtxdisterror_allreduce(&disterr, err)) {
@@ -1113,7 +1113,7 @@ int main(int argc, char *argv[])
             free(data_lines_per_part);
             free(data_lines_per_part_ptr);
             free(part_per_data_line);
-            mtx_partition_free(&row_partition);
+            mtxpartition_free(&row_partition);
             program_options_free(&args);
             mtxdisterror_free(&disterr);
             MPI_Finalize();
@@ -1133,13 +1133,13 @@ int main(int argc, char *argv[])
      * assigned to each row of the matrix or vector. */
     if (args.rowperm_output_path) {
         if (args.verbose > 0) {
-            fprintf(diagf, "mtx_partition_write_permutations: ");
+            fprintf(diagf, "mtxpartition_write_permutations: ");
             fflush(diagf);
             clock_gettime(CLOCK_MONOTONIC, &t0);
         }
 
         int64_t bytes_written = 0;
-        err = (rank == root) ? mtx_partition_write_permutations(
+        err = (rank == root) ? mtxpartition_write_permutations(
             &row_partition, args.rowperm_output_path, NULL, &bytes_written)
             : MTX_SUCCESS;
         if (mtxdisterror_allreduce(&disterr, err)) {
@@ -1155,7 +1155,7 @@ int main(int argc, char *argv[])
             free(data_lines_per_part);
             free(data_lines_per_part_ptr);
             free(part_per_data_line);
-            mtx_partition_free(&row_partition);
+            mtxpartition_free(&row_partition);
             program_options_free(&args);
             mtxdisterror_free(&disterr);
             MPI_Finalize();
@@ -1191,7 +1191,7 @@ int main(int argc, char *argv[])
             free(data_lines_per_part);
             free(data_lines_per_part_ptr);
             free(part_per_data_line);
-            mtx_partition_free(&row_partition);
+            mtxpartition_free(&row_partition);
             program_options_free(&args);
             mtxdisterror_free(&disterr);
             MPI_Finalize();
@@ -1214,7 +1214,7 @@ int main(int argc, char *argv[])
             free(data_lines_per_part);
             free(data_lines_per_part_ptr);
             free(part_per_data_line);
-            mtx_partition_free(&row_partition);
+            mtxpartition_free(&row_partition);
             program_options_free(&args);
             mtxdisterror_free(&disterr);
             MPI_Finalize();
@@ -1246,7 +1246,7 @@ int main(int argc, char *argv[])
             free(data_lines_per_part);
             free(data_lines_per_part_ptr);
             free(part_per_data_line);
-            mtx_partition_free(&row_partition);
+            mtxpartition_free(&row_partition);
             program_options_free(&args);
             mtxdisterror_free(&disterr);
             MPI_Finalize();
@@ -1269,7 +1269,7 @@ int main(int argc, char *argv[])
     free(data_lines_per_part);
     free(data_lines_per_part_ptr);
     free(part_per_data_line);
-    mtx_partition_free(&row_partition);
+    mtxpartition_free(&row_partition);
     program_options_free(&args);
     mtxdisterror_free(&disterr);
     MPI_Finalize();
@@ -1351,17 +1351,17 @@ int main(int argc, char *argv[])
     }
 
     /* 3. Partition the rows of the matrix or vector. */
-    struct mtx_partition row_partition;
+    struct mtxpartition row_partition;
     if (args.row_partition == mtx_unstructured) {
         if (args.verbose > 0) {
-            fprintf(diagf, "mtx_partition_read_parts: ");
+            fprintf(diagf, "mtxpartition_read_parts: ");
             fflush(diagf);
             clock_gettime(CLOCK_MONOTONIC, &t0);
         }
 
         int lines_read = 0;
         int64_t bytes_read = 0;
-        err = mtx_partition_read_parts(
+        err = mtxpartition_read_parts(
             &row_partition, args.num_row_parts, args.row_partition_path,
             &lines_read, &bytes_read);
         if (err && lines_read >= 0) {
@@ -1395,12 +1395,12 @@ int main(int argc, char *argv[])
 
     } else {
         if (args.verbose > 0) {
-            fprintf(diagf, "mtx_partition_init: ");
+            fprintf(diagf, "mtxpartition_init: ");
             fflush(diagf);
             clock_gettime(CLOCK_MONOTONIC, &t0);
         }
 
-        err = mtx_partition_init(
+        err = mtxpartition_init(
             &row_partition, args.row_partition,
             mtxfile.size.num_rows, args.num_row_parts, 0, NULL);
         if (err) {
@@ -1427,7 +1427,7 @@ int main(int argc, char *argv[])
         if (args.verbose > 0)
             fprintf(diagf, "\n");
         fprintf(stderr, "%s: %s\n", program_invocation_short_name, mtxstrerror(err));
-        mtx_partition_free(&row_partition);
+        mtxpartition_free(&row_partition);
         mtxfile_free(&mtxfile);
         program_options_free(&args);
         return EXIT_FAILURE;
@@ -1437,7 +1437,7 @@ int main(int argc, char *argv[])
         if (args.verbose > 0)
             fprintf(diagf, "\n");
         fprintf(stderr, "%s: %s\n", program_invocation_short_name, strerror(errno));
-        mtx_partition_free(&row_partition);
+        mtxpartition_free(&row_partition);
         mtxfile_free(&mtxfile);
         program_options_free(&args);
         return EXIT_FAILURE;
@@ -1449,7 +1449,7 @@ int main(int argc, char *argv[])
             fprintf(diagf, "\n");
         fprintf(stderr, "%s: %s\n", program_invocation_short_name, strerror(errno));
         free(part_per_data_line);
-        mtx_partition_free(&row_partition);
+        mtxpartition_free(&row_partition);
         mtxfile_free(&mtxfile);
         program_options_free(&args);
         return EXIT_FAILURE;
@@ -1462,7 +1462,7 @@ int main(int argc, char *argv[])
         fprintf(stderr, "%s: %s\n", program_invocation_short_name, strerror(errno));
         free(data_lines_per_part_ptr);
         free(part_per_data_line);
-        mtx_partition_free(&row_partition);
+        mtxpartition_free(&row_partition);
         mtxfile_free(&mtxfile);
         program_options_free(&args);
         return EXIT_FAILURE;
@@ -1484,7 +1484,7 @@ int main(int argc, char *argv[])
         free(data_lines_per_part);
         free(data_lines_per_part_ptr);
         free(part_per_data_line);
-        mtx_partition_free(&row_partition);
+        mtxpartition_free(&row_partition);
         mtxfile_free(&mtxfile);
         program_options_free(&args);
         return EXIT_FAILURE;
@@ -1512,7 +1512,7 @@ int main(int argc, char *argv[])
                 free(data_lines_per_part);
                 free(data_lines_per_part_ptr);
                 free(part_per_data_line);
-                mtx_partition_free(&row_partition);
+                mtxpartition_free(&row_partition);
                 mtxfile_free(&mtxfile);
                 program_options_free(&args);
                 return EXIT_FAILURE;
@@ -1531,7 +1531,7 @@ int main(int argc, char *argv[])
                 free(data_lines_per_part);
                 free(data_lines_per_part_ptr);
                 free(part_per_data_line);
-                mtx_partition_free(&row_partition);
+                mtxpartition_free(&row_partition);
                 mtxfile_free(&mtxfile);
                 program_options_free(&args);
                 return EXIT_FAILURE;
@@ -1551,7 +1551,7 @@ int main(int argc, char *argv[])
                 free(data_lines_per_part);
                 free(data_lines_per_part_ptr);
                 free(part_per_data_line);
-                mtx_partition_free(&row_partition);
+                mtxpartition_free(&row_partition);
                 mtxfile_free(&mtxfile);
                 program_options_free(&args);
                 return EXIT_FAILURE;
@@ -1578,7 +1578,7 @@ int main(int argc, char *argv[])
                 free(data_lines_per_part);
                 free(data_lines_per_part_ptr);
                 free(part_per_data_line);
-                mtx_partition_free(&row_partition);
+                mtxpartition_free(&row_partition);
                 mtxfile_free(&mtxfile);
                 program_options_free(&args);
                 return EXIT_FAILURE;
@@ -1601,13 +1601,13 @@ int main(int argc, char *argv[])
      * assigned to each row of the matrix or vector. */
     if (args.row_partition != mtx_unstructured && args.row_partition_output_path) {
         if (args.verbose > 0) {
-            fprintf(diagf, "mtx_partition_write_parts: ");
+            fprintf(diagf, "mtxpartition_write_parts: ");
             fflush(diagf);
             clock_gettime(CLOCK_MONOTONIC, &t0);
         }
 
         int64_t bytes_written = 0;
-        err = mtx_partition_write_parts(
+        err = mtxpartition_write_parts(
             &row_partition, args.row_partition_output_path, "%d", &bytes_written);
         if (err) {
             if (args.verbose > 0)
@@ -1619,7 +1619,7 @@ int main(int argc, char *argv[])
             free(data_lines_per_part);
             free(data_lines_per_part_ptr);
             free(part_per_data_line);
-            mtx_partition_free(&row_partition);
+            mtxpartition_free(&row_partition);
             mtxfile_free(&mtxfile);
             program_options_free(&args);
             return EXIT_FAILURE;
@@ -1638,13 +1638,13 @@ int main(int argc, char *argv[])
      * assigned to each row of the matrix or vector. */
     if (args.rowperm_output_path) {
         if (args.verbose > 0) {
-            fprintf(diagf, "mtx_partition_write_permutations: ");
+            fprintf(diagf, "mtxpartition_write_permutations: ");
             fflush(diagf);
             clock_gettime(CLOCK_MONOTONIC, &t0);
         }
 
         int64_t bytes_written = 0;
-        err = mtx_partition_write_permutations(
+        err = mtxpartition_write_permutations(
             &row_partition, args.rowperm_output_path, NULL, &bytes_written);
         if (err) {
             if (args.verbose > 0)
@@ -1656,7 +1656,7 @@ int main(int argc, char *argv[])
             free(data_lines_per_part);
             free(data_lines_per_part_ptr);
             free(part_per_data_line);
-            mtx_partition_free(&row_partition);
+            mtxpartition_free(&row_partition);
             mtxfile_free(&mtxfile);
             program_options_free(&args);
             return EXIT_FAILURE;
@@ -1686,7 +1686,7 @@ int main(int argc, char *argv[])
             free(data_lines_per_part);
             free(data_lines_per_part_ptr);
             free(part_per_data_line);
-            mtx_partition_free(&row_partition);
+            mtxpartition_free(&row_partition);
             mtxfile_free(&mtxfile);
             program_options_free(&args);
             return EXIT_FAILURE;
@@ -1705,7 +1705,7 @@ int main(int argc, char *argv[])
             free(data_lines_per_part);
             free(data_lines_per_part_ptr);
             free(part_per_data_line);
-            mtx_partition_free(&row_partition);
+            mtxpartition_free(&row_partition);
             mtxfile_free(&mtxfile);
             program_options_free(&args);
             return EXIT_FAILURE;
@@ -1731,7 +1731,7 @@ int main(int argc, char *argv[])
             free(data_lines_per_part);
             free(data_lines_per_part_ptr);
             free(part_per_data_line);
-            mtx_partition_free(&row_partition);
+            mtxpartition_free(&row_partition);
             mtxfile_free(&mtxfile);
             program_options_free(&args);
             return EXIT_FAILURE;
@@ -1752,7 +1752,7 @@ int main(int argc, char *argv[])
     free(data_lines_per_part);
     free(data_lines_per_part_ptr);
     free(part_per_data_line);
-    mtx_partition_free(&row_partition);
+    mtxpartition_free(&row_partition);
     mtxfile_free(&mtxfile);
     program_options_free(&args);
     return EXIT_SUCCESS;

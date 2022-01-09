@@ -496,7 +496,7 @@ static double timespec_duration(
  */
 static int distvector_nrm2(
     struct mtxdistfile * mtxdistfile,
-    const struct mtx_partition * partition,
+    const struct mtxpartition * partition,
     enum mtxvectortype vector_type,
     const char * format,
     int verbose,
@@ -761,17 +761,17 @@ int main(int argc, char *argv[])
     }
 
     /* 3. Partition the vector. */
-    struct mtx_partition partition;
+    struct mtxpartition partition;
     if (args.partition == mtx_unstructured) {
         if (args.verbose > 0) {
-            fprintf(diagf, "mtx_partition_read_parts: ");
+            fprintf(diagf, "mtxpartition_read_parts: ");
             fflush(diagf);
             clock_gettime(CLOCK_MONOTONIC, &t0);
         }
 
         int lines_read = 0;
         int64_t bytes_read = 0;
-        err = mtx_partition_read_parts(
+        err = mtxpartition_read_parts(
             &partition, args.num_parts, args.partition_path,
             &lines_read, &bytes_read);
         if (mtxdisterror_allreduce(&disterr, err)) {
@@ -804,12 +804,12 @@ int main(int argc, char *argv[])
 
     } else {
         if (args.verbose > 0) {
-            fprintf(diagf, "mtx_partition_init: ");
+            fprintf(diagf, "mtxpartition_init: ");
             fflush(diagf);
             clock_gettime(CLOCK_MONOTONIC, &t0);
         }
 
-        err = mtx_partition_init(
+        err = mtxpartition_init(
             &partition, args.partition,
             mtxdistfile.size.num_rows, args.num_parts, 0, NULL);
         if (mtxdisterror_allreduce(&disterr, err)) {
