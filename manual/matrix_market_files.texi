@@ -909,7 +909,7 @@ To sort a matrix or vector, use the function @code{mtxfile_sort}:
 @end example
 If successful, @code{mtxfile_sort} returns @samp{MTX_SUCCESS}, and the
 values of @code{mtxfile} will be sorted in the order specified by
-@code{sorting}.
+@code{sorting}. The underlying sorting algorithm is a radix sort.
 
 
 @node Reorder
