@@ -135,22 +135,38 @@ be done by calling
 @code{@var{type}}, @code{@var{field}} and @code{@var{precision}}
 denote the vector type (i.e., @samp{array} or @samp{coordinate}),
 field (i.e., @samp{real}, @samp{complex} or @samp{integer}) and
-precision (i.e., @samp{single} or @samp{double}) of the vector.
+precision (i.e., @samp{single} or @samp{double}).
 
-For example, to create a double precision, complex vector in array or coordinate format, @code{mtxvector_init_array_complex_double} or @code{mtxvector_init_coordinate_complex_double} are used, respectively.
+For example, to create a double precision, complex vector in array
+format, use @code{mtxvector_init_array_complex_double}.
 @example
 @code{int mtxvector_init_array_complex_double(
     struct mtxvector * vector,
     int num_rows,
-    const double (* data)[2]);}
+    const double (* data)[2]);}}
+@end example
+The vector entries are provided by the array @code{data}, which must
+contain @code{num_rows*num_columns} values.
 
-int mtxvector_init_coordinate_complex_double(
+To create a double precision, complex vector in coordinate format, use
+@code{mtxvector_init_coordinate_complex_double}.
+@example
+@code{int mtxvector_init_coordinate_complex_double(
     struct mtxvector * vector,
     int num_rows,
     int64_t num_nonzeros,
-    const int * indices,
+    const int * idx,
     const double (* values)[2]);
 @end example
+The arguments @code{idx} and @code{values} are arrays of length
+@code{num_nonzeros}. For each nonzero value
+@code{k=0,1,...,num_nonzeros-1}, @code{idx[k]} is an index in the
+range @code{[0,num_rows)}.
+
+Note that duplicate entries are allowed, but this may cause some
+operations (e.g., @code{mtxvector_dot}, @code{mtxvector_nrm2})) to
+produce incorrect results.
+
 
 @node Modifying vector values
 @subsection Modifying values
@@ -545,13 +561,15 @@ format, the functions @code{mtxmatrix_alloc_array} or
     struct mtxmatrix * matrix,
     enum mtx_field_ field,
     enum mtxprecision precision,
-    int num_rows);
+    int num_rows,
+    int num_columns);
 
 int mtxmatrix_alloc_coordinate(
     struct mtxmatrix * matrix,
     enum mtx_field_ field,
     enum mtxprecision precision,
     int num_rows,
+    int num_columns,
     int64_t num_nonzeros);}
 @end example
 In both cases, the desired field and precision must be specified, as
@@ -569,20 +587,40 @@ denote the matrix type (i.e., @samp{array} or @samp{coordinate}),
 field (i.e., @samp{real}, @samp{complex} or @samp{integer}) and
 precision (i.e., @samp{single} or @samp{double}) of the matrix.
 
-For example, to create a double precision, complex matrix in array or coordinate format, @code{mtxmatrix_init_array_complex_double} or @code{mtxmatrix_init_coordinate_complex_double} are used, respectively.
+For example, to create a double precision, complex matrix in array
+format, use @code{mtxmatrix_init_array_complex_double}.
 @example
 @code{int mtxmatrix_init_array_complex_double(
     struct mtxmatrix * matrix,
     int num_rows,
-    const double (* data)[2]);}
+    int num_columns,
+    const double (* data)[2]);}}
+@end example
+The matrix entries are provided by the array @code{data}, which must
+contain @code{num_rows*num_columns} values.
 
-int mtxmatrix_init_coordinate_complex_double(
+To create a double precision, complex matrix in coordinate format, use
+@code{mtxmatrix_init_coordinate_complex_double}.
+@example
+@code{int mtxmatrix_init_coordinate_complex_double(
     struct mtxmatrix * matrix,
     int num_rows,
+    int num_columns,
     int64_t num_nonzeros,
-    const int * indices,
+    const int * rowidx,
+    const int * colidx,
     const double (* values)[2]);
 @end example
+The arguments @code{rowidx}, @code{colidx} and @code{values} are
+arrays of length @code{num_nonzeros}. For each nonzero value
+@code{k=0,1,...,num_nonzeros-1}, @code{rowidx[k]} is a row index in
+the range @code{[0,num_rows)}, whereas @code{colidx[k]} is a column
+index in the range @code{[0,num_columns)}.
+
+Note that duplicate entries are allowed, but this may cause some
+operations (e.g., @code{mtxmatrix_dot}, @code{mtxmatrix_nrm2},
+@code{mtxmatrix_sgemv}) to produce incorrect results.
+
 
 @node Modifying matrix values
 @subsection Modifying values
