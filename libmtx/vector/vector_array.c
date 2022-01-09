@@ -1,6 +1,6 @@
 /* This file is part of libmtx.
  *
- * Copyright (C) 2021 James D. Trotter
+ * Copyright (C) 2022 James D. Trotter
  *
  * libmtx is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
  * along with libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-09-20
+ * Last modified: 2022-01-09
  *
  * Data structures for vectors in array format.
  */
@@ -50,7 +50,7 @@
  */
 
 /**
- * `mtxvector_array_free()' frees storage allocated for a vector.
+ * ‘mtxvector_array_free()’ frees storage allocated for a vector.
  */
 void mtxvector_array_free(
     struct mtxvector_array * vector)
@@ -77,7 +77,7 @@ void mtxvector_array_free(
 }
 
 /**
- * `mtxvector_array_alloc_copy()' allocates a copy of a vector without
+ * ‘mtxvector_array_alloc_copy()’ allocates a copy of a vector without
  * initialising the values.
  */
 int mtxvector_array_alloc_copy(
@@ -88,7 +88,7 @@ int mtxvector_array_alloc_copy(
 }
 
 /**
- * `mtxvector_array_init_copy()' allocates a copy of a vector and also
+ * ‘mtxvector_array_init_copy()’ allocates a copy of a vector and also
  * copies the values.
  */
 int mtxvector_array_init_copy(
@@ -100,7 +100,7 @@ int mtxvector_array_init_copy(
  */
 
 /**
- * `mtxvector_array_alloc()' allocates a vector in array format.
+ * ‘mtxvector_array_alloc()’ allocates a vector in array format.
  */
 int mtxvector_array_alloc(
     struct mtxvector_array * vector,
@@ -160,7 +160,7 @@ int mtxvector_array_alloc(
 }
 
 /**
- * `mtxvector_array_init_real_single()' allocates and initialises a
+ * ‘mtxvector_array_init_real_single()’ allocates and initialises a
  * vector in array format with real, single precision coefficients.
  */
 int mtxvector_array_init_real_single(
@@ -177,7 +177,7 @@ int mtxvector_array_init_real_single(
 }
 
 /**
- * `mtxvector_array_init_real_double()' allocates and initialises a
+ * ‘mtxvector_array_init_real_double()’ allocates and initialises a
  * vector in array format with real, double precision coefficients.
  */
 int mtxvector_array_init_real_double(
@@ -194,7 +194,7 @@ int mtxvector_array_init_real_double(
 }
 
 /**
- * `mtxvector_array_init_complex_single()' allocates and initialises a
+ * ‘mtxvector_array_init_complex_single()’ allocates and initialises a
  * vector in array format with complex, single precision coefficients.
  */
 int mtxvector_array_init_complex_single(
@@ -213,7 +213,7 @@ int mtxvector_array_init_complex_single(
 }
 
 /**
- * `mtxvector_array_init_complex_double()' allocates and initialises a
+ * ‘mtxvector_array_init_complex_double()’ allocates and initialises a
  * vector in array format with complex, double precision coefficients.
  */
 int mtxvector_array_init_complex_double(
@@ -232,7 +232,7 @@ int mtxvector_array_init_complex_double(
 }
 
 /**
- * `mtxvector_array_init_integer_single()' allocates and initialises a
+ * ‘mtxvector_array_init_integer_single()’ allocates and initialises a
  * vector in array format with integer, single precision coefficients.
  */
 int mtxvector_array_init_integer_single(
@@ -249,7 +249,7 @@ int mtxvector_array_init_integer_single(
 }
 
 /**
- * `mtxvector_array_init_integer_double()' allocates and initialises a
+ * ‘mtxvector_array_init_integer_double()’ allocates and initialises a
  * vector in array format with integer, double precision coefficients.
  */
 int mtxvector_array_init_integer_double(
@@ -270,7 +270,7 @@ int mtxvector_array_init_integer_double(
  */
 
 /**
- * `mtxvector_array_set_constant_real_single()' sets every value of a
+ * ‘mtxvector_array_set_constant_real_single()’ sets every value of a
  * vector equal to a constant, single precision floating point number.
  */
 int mtxvector_array_set_constant_real_single(
@@ -318,7 +318,7 @@ int mtxvector_array_set_constant_real_single(
 }
 
 /**
- * `mtxvector_array_set_constant_real_double()' sets every value of a
+ * ‘mtxvector_array_set_constant_real_double()’ sets every value of a
  * vector equal to a constant, double precision floating point number.
  */
 int mtxvector_array_set_constant_real_double(
@@ -366,7 +366,7 @@ int mtxvector_array_set_constant_real_double(
 }
 
 /**
- * `mtxvector_array_set_constant_complex_single()' sets every value of
+ * ‘mtxvector_array_set_constant_complex_single()’ sets every value of
  * a vector equal to a constant, single precision floating point
  * complex number.
  */
@@ -399,7 +399,7 @@ int mtxvector_array_set_constant_complex_single(
 }
 
 /**
- * `mtxvector_array_set_constant_complex_double()' sets every value of
+ * ‘mtxvector_array_set_constant_complex_double()’ sets every value of
  * a vector equal to a constant, double precision floating point
  * complex number.
  */
@@ -432,7 +432,7 @@ int mtxvector_array_set_constant_complex_double(
 }
 
 /**
- * `mtxvector_array_set_constant_integer_single()' sets every value of
+ * ‘mtxvector_array_set_constant_integer_single()’ sets every value of
  * a vector equal to a constant integer.
  */
 int mtxvector_array_set_constant_integer_single(
@@ -480,7 +480,7 @@ int mtxvector_array_set_constant_integer_single(
 }
 
 /**
- * `mtxvector_array_set_constant_integer_double()' sets every value of
+ * ‘mtxvector_array_set_constant_integer_double()’ sets every value of
  * a vector equal to a constant integer.
  */
 int mtxvector_array_set_constant_integer_double(
@@ -532,7 +532,7 @@ int mtxvector_array_set_constant_integer_double(
  */
 
 /**
- * `mtxvector_array_from_mtxfile()' converts a vector in Matrix Market
+ * ‘mtxvector_array_from_mtxfile()’ converts a vector in Matrix Market
  * format to a vector.
  */
 int mtxvector_array_from_mtxfile(
@@ -585,7 +585,7 @@ int mtxvector_array_from_mtxfile(
 }
 
 /**
- * `mtxvector_array_to_mtxfile()' converts a vector to a vector in
+ * ‘mtxvector_array_to_mtxfile()’ converts a vector to a vector in
  * Matrix Market format.
  */
 int mtxvector_array_to_mtxfile(
@@ -634,7 +634,7 @@ int mtxvector_array_to_mtxfile(
  */
 
 /**
- * `mtxvector_array_swap()' swaps values of two vectors,
+ * ‘mtxvector_array_swap()’ swaps values of two vectors,
  * simultaneously performing ‘y <- x’ and ‘x <- y’.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
@@ -737,7 +737,7 @@ int mtxvector_array_swap(
 }
 
 /**
- * `mtxvector_array_copy()' copies values of a vector, ‘y = x’.
+ * ‘mtxvector_array_copy()’ copies values of a vector, ‘y = x’.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
  * size.
@@ -821,8 +821,8 @@ int mtxvector_array_copy(
 }
 
 /**
- * `mtxvector_array_sscal()' scales a vector by a single precision floating
- * point scalar, `x = a*x'.
+ * ‘mtxvector_array_sscal()’ scales a vector by a single precision floating
+ * point scalar, ‘x = a*x’.
  */
 int mtxvector_array_sscal(
     float a,
@@ -898,8 +898,8 @@ int mtxvector_array_sscal(
 }
 
 /**
- * `mtxvector_array_dscal()' scales a vector by a double precision floating
- * point scalar, `x = a*x'.
+ * ‘mtxvector_array_dscal()’ scales a vector by a double precision floating
+ * point scalar, ‘x = a*x’.
  */
 int mtxvector_array_dscal(
     double a,
@@ -975,7 +975,7 @@ int mtxvector_array_dscal(
 }
 
 /**
- * `mtxvector_array_saxpy()' adds a vector to another one multiplied
+ * ‘mtxvector_array_saxpy()’ adds a vector to another one multiplied
  * by a single precision floating point value, ‘y = a*x + y’.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
@@ -1068,7 +1068,7 @@ int mtxvector_array_saxpy(
 }
 
 /**
- * `mtxvector_array_daxpy()' adds a vector to another one multiplied
+ * ‘mtxvector_array_daxpy()’ adds a vector to another one multiplied
  * by a double precision floating point value, ‘y = a*x + y’.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
@@ -1161,7 +1161,7 @@ int mtxvector_array_daxpy(
 }
 
 /**
- * `mtxvector_array_saypx()' multiplies a vector by a single precision
+ * ‘mtxvector_array_saypx()’ multiplies a vector by a single precision
  * floating point scalar and adds another vector, ‘y = a*y + x’.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
@@ -1238,7 +1238,7 @@ int mtxvector_array_saypx(
 }
 
 /**
- * `mtxvector_array_daypx()' multiplies a vector by a double precision
+ * ‘mtxvector_array_daypx()’ multiplies a vector by a double precision
  * floating point scalar and adds another vector, ‘y = a*y + x’.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
@@ -1316,7 +1316,7 @@ int mtxvector_array_daypx(
 }
 
 /**
- * `mtxvector_array_sdot()' computes the Euclidean dot product of two
+ * ‘mtxvector_array_sdot()’ computes the Euclidean dot product of two
  * vectors in single precision floating point.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
@@ -1385,7 +1385,7 @@ int mtxvector_array_sdot(
 }
 
 /**
- * `mtxvector_array_ddot()' computes the Euclidean dot product of two
+ * ‘mtxvector_array_ddot()’ computes the Euclidean dot product of two
  * vectors in double precision floating point.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
@@ -1454,7 +1454,7 @@ int mtxvector_array_ddot(
 }
 
 /**
- * `mtxvector_array_cdotu()' computes the product of the transpose of
+ * ‘mtxvector_array_cdotu()’ computes the product of the transpose of
  * a complex row vector with another complex row vector in single
  * precision floating point, ‘dot := x^T*y’.
  *
@@ -1514,7 +1514,7 @@ int mtxvector_array_cdotu(
 }
 
 /**
- * `mtxvector_array_zdotu()' computes the product of the transpose of
+ * ‘mtxvector_array_zdotu()’ computes the product of the transpose of
  * a complex row vector with another complex row vector in double
  * precision floating point, ‘dot := x^T*y’.
  *
@@ -1574,7 +1574,7 @@ int mtxvector_array_zdotu(
 }
 
 /**
- * `mtxvector_array_cdotc()' computes the Euclidean dot product of two
+ * ‘mtxvector_array_cdotc()’ computes the Euclidean dot product of two
  * complex vectors in single precision floating point, ‘dot := x^H*y’.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
@@ -1633,7 +1633,7 @@ int mtxvector_array_cdotc(
 }
 
 /**
- * `mtxvector_array_zdotc()' computes the Euclidean dot product of two
+ * ‘mtxvector_array_zdotc()’ computes the Euclidean dot product of two
  * complex vectors in double precision floating point, ‘dot := x^H*y’.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
@@ -1692,7 +1692,7 @@ int mtxvector_array_zdotc(
 }
 
 /**
- * `mtxvector_array_snrm2()' computes the Euclidean norm of a vector
+ * ‘mtxvector_array_snrm2()’ computes the Euclidean norm of a vector
  * in single precision floating point.
  */
 int mtxvector_array_snrm2(
@@ -1777,7 +1777,7 @@ int mtxvector_array_snrm2(
 }
 
 /**
- * `mtxvector_array_dnrm2()' computes the Euclidean norm of a vector
+ * ‘mtxvector_array_dnrm2()’ computes the Euclidean norm of a vector
  * in double precision floating point.
  */
 int mtxvector_array_dnrm2(
@@ -1862,7 +1862,7 @@ int mtxvector_array_dnrm2(
 }
 
 /**
- * `mtxvector_array_sasum()' computes the sum of absolute values
+ * ‘mtxvector_array_sasum()’ computes the sum of absolute values
  * (1-norm) of a vector in single precision floating point.  If the
  * vector is complex-valued, then the sum of the absolute values of
  * the real and imaginary parts is computed.
@@ -1943,7 +1943,7 @@ int mtxvector_array_sasum(
 }
 
 /**
- * `mtxvector_array_dasum()' computes the sum of absolute values
+ * ‘mtxvector_array_dasum()’ computes the sum of absolute values
  * (1-norm) of a vector in double precision floating point.  If the
  * vector is complex-valued, then the sum of the absolute values of
  * the real and imaginary parts is computed.
@@ -2024,7 +2024,7 @@ int mtxvector_array_dasum(
 }
 
 /**
- * `mtxvector_array_iamax()' finds the index of the first element
+ * ‘mtxvector_array_iamax()’ finds the index of the first element
  * having the maximum absolute value.  If the vector is
  * complex-valued, then the index points to the first element having
  * the maximum sum of the absolute values of the real and imaginary

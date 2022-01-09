@@ -1,6 +1,6 @@
 /* This file is part of libmtx.
  *
- * Copyright (C) 2021 James D. Trotter
+ * Copyright (C) 2022 James D. Trotter
  *
  * libmtx is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
  * along with libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-09-20
+ * Last modified: 2022-01-09
  *
  * Data structures for vectors in coordinate format.
  */
@@ -50,7 +50,7 @@
  */
 
 /**
- * `mtxvector_coordinate_free()' frees storage allocated for a vector.
+ * ‘mtxvector_coordinate_free()’ frees storage allocated for a vector.
  */
 void mtxvector_coordinate_free(
     struct mtxvector_coordinate * vector)
@@ -78,7 +78,7 @@ void mtxvector_coordinate_free(
 }
 
 /**
- * `mtxvector_coordinate_alloc_copy()' allocates a copy of a vector
+ * ‘mtxvector_coordinate_alloc_copy()’ allocates a copy of a vector
  * without initialising the values.
  */
 int mtxvector_coordinate_alloc_copy(
@@ -91,7 +91,7 @@ int mtxvector_coordinate_alloc_copy(
 
 
 /**
- * `mtxvector_coordinate_init_copy()' allocates a copy of a vector and
+ * ‘mtxvector_coordinate_init_copy()’ allocates a copy of a vector and
  * also copies the values.
  */
 int mtxvector_coordinate_init_copy(
@@ -103,7 +103,7 @@ int mtxvector_coordinate_init_copy(
  */
 
 /**
- * `mtxvector_coordinate_alloc()' allocates a vector in coordinate
+ * ‘mtxvector_coordinate_alloc()’ allocates a vector in coordinate
  * format.
  */
 int mtxvector_coordinate_alloc(
@@ -186,7 +186,7 @@ int mtxvector_coordinate_alloc(
 }
 
 /**
- * `mtxvector_coordinate_init_real_single()' allocates and initialises
+ * ‘mtxvector_coordinate_init_real_single()’ allocates and initialises
  * a vector in coordinate format with real, single precision
  * coefficients.
  */
@@ -197,7 +197,12 @@ int mtxvector_coordinate_init_real_single(
     const int * indices,
     const float * data)
 {
-    int err = mtxvector_coordinate_alloc(
+    int err;
+    for (int64_t k = 0; k < num_nonzeros; k++) {
+        if (indices[k] < 0 || indices[k] >= size)
+            return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+    }
+    err = mtxvector_coordinate_alloc(
         vector, mtx_field_real, mtx_single, size, num_nonzeros);
     if (err)
         return err;
@@ -209,7 +214,7 @@ int mtxvector_coordinate_init_real_single(
 }
 
 /**
- * `mtxvector_coordinate_init_real_double()' allocates and initialises
+ * ‘mtxvector_coordinate_init_real_double()’ allocates and initialises
  * a vector in coordinate format with real, double precision
  * coefficients.
  */
@@ -220,7 +225,12 @@ int mtxvector_coordinate_init_real_double(
     const int * indices,
     const double * data)
 {
-    int err = mtxvector_coordinate_alloc(
+    int err;
+    for (int64_t k = 0; k < num_nonzeros; k++) {
+        if (indices[k] < 0 || indices[k] >= size)
+            return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+    }
+    err = mtxvector_coordinate_alloc(
         vector, mtx_field_real, mtx_double, size, num_nonzeros);
     if (err)
         return err;
@@ -232,7 +242,7 @@ int mtxvector_coordinate_init_real_double(
 }
 
 /**
- * `mtxvector_coordinate_init_complex_single()' allocates and
+ * ‘mtxvector_coordinate_init_complex_single()’ allocates and
  * initialises a vector in coordinate format with complex, single
  * precision coefficients.
  */
@@ -243,7 +253,12 @@ int mtxvector_coordinate_init_complex_single(
     const int * indices,
     const float (* data)[2])
 {
-    int err = mtxvector_coordinate_alloc(
+    int err;
+    for (int64_t k = 0; k < num_nonzeros; k++) {
+        if (indices[k] < 0 || indices[k] >= size)
+            return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+    }
+    err = mtxvector_coordinate_alloc(
         vector, mtx_field_complex, mtx_single, size, num_nonzeros);
     if (err)
         return err;
@@ -256,7 +271,7 @@ int mtxvector_coordinate_init_complex_single(
 }
 
 /**
- * `mtxvector_coordinate_init_complex_double()' allocates and
+ * ‘mtxvector_coordinate_init_complex_double()’ allocates and
  * initialises a vector in coordinate format with complex, double
  * precision coefficients.
  */
@@ -267,7 +282,12 @@ int mtxvector_coordinate_init_complex_double(
     const int * indices,
     const double (* data)[2])
 {
-    int err = mtxvector_coordinate_alloc(
+    int err;
+    for (int64_t k = 0; k < num_nonzeros; k++) {
+        if (indices[k] < 0 || indices[k] >= size)
+            return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+    }
+    err = mtxvector_coordinate_alloc(
         vector, mtx_field_complex, mtx_double, size, num_nonzeros);
     if (err)
         return err;
@@ -280,7 +300,7 @@ int mtxvector_coordinate_init_complex_double(
 }
 
 /**
- * `mtxvector_coordinate_init_integer_single()' allocates and
+ * ‘mtxvector_coordinate_init_integer_single()’ allocates and
  * initialises a vector in coordinate format with integer, single
  * precision coefficients.
  */
@@ -291,7 +311,12 @@ int mtxvector_coordinate_init_integer_single(
     const int * indices,
     const int32_t * data)
 {
-    int err = mtxvector_coordinate_alloc(
+    int err;
+    for (int64_t k = 0; k < num_nonzeros; k++) {
+        if (indices[k] < 0 || indices[k] >= size)
+            return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+    }
+    err = mtxvector_coordinate_alloc(
         vector, mtx_field_integer, mtx_single, size, num_nonzeros);
     if (err)
         return err;
@@ -303,7 +328,7 @@ int mtxvector_coordinate_init_integer_single(
 }
 
 /**
- * `mtxvector_coordinate_init_integer_double()' allocates and
+ * ‘mtxvector_coordinate_init_integer_double()’ allocates and
  * initialises a vector in coordinate format with integer, double
  * precision coefficients.
  */
@@ -314,7 +339,12 @@ int mtxvector_coordinate_init_integer_double(
     const int * indices,
     const int64_t * data)
 {
-    int err = mtxvector_coordinate_alloc(
+    int err;
+    for (int64_t k = 0; k < num_nonzeros; k++) {
+        if (indices[k] < 0 || indices[k] >= size)
+            return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+    }
+    err = mtxvector_coordinate_alloc(
         vector, mtx_field_integer, mtx_double, size, num_nonzeros);
     if (err)
         return err;
@@ -326,7 +356,7 @@ int mtxvector_coordinate_init_integer_double(
 }
 
 /**
- * `mtxvector_coordinate_init_pattern()' allocates and initialises a
+ * ‘mtxvector_coordinate_init_pattern()’ allocates and initialises a
  * vector in coordinate format with boolean coefficients.
  */
 int mtxvector_coordinate_init_pattern(
@@ -335,7 +365,12 @@ int mtxvector_coordinate_init_pattern(
     int64_t num_nonzeros,
     const int * indices)
 {
-    int err = mtxvector_coordinate_alloc(
+    int err;
+    for (int64_t k = 0; k < num_nonzeros; k++) {
+        if (indices[k] < 0 || indices[k] >= size)
+            return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+    }
+    err = mtxvector_coordinate_alloc(
         vector, mtx_field_pattern, mtx_single, size, num_nonzeros);
     if (err)
         return err;
@@ -349,7 +384,7 @@ int mtxvector_coordinate_init_pattern(
  */
 
 /**
- * `mtxvector_coordinate_set_constant_real_single()' sets every
+ * ‘mtxvector_coordinate_set_constant_real_single()’ sets every
  * nonzero value of a vector equal to a constant, single precision
  * floating point number.
  */
@@ -398,7 +433,7 @@ int mtxvector_coordinate_set_constant_real_single(
 }
 
 /**
- * `mtxvector_coordinate_set_constant_real_double()' sets every
+ * ‘mtxvector_coordinate_set_constant_real_double()’ sets every
  * nonzero value of a vector equal to a constant, double precision
  * floating point number.
  */
@@ -447,7 +482,7 @@ int mtxvector_coordinate_set_constant_real_double(
 }
 
 /**
- * `mtxvector_coordinate_set_constant_complex_single()' sets every
+ * ‘mtxvector_coordinate_set_constant_complex_single()’ sets every
  * nonzero value of a vector equal to a constant, single precision
  * floating point complex number.
  */
@@ -480,7 +515,7 @@ int mtxvector_coordinate_set_constant_complex_single(
 }
 
 /**
- * `mtxvector_coordinate_set_constant_complex_double()' sets every
+ * ‘mtxvector_coordinate_set_constant_complex_double()’ sets every
  * nonzero value of a vector equal to a constant, double precision
  * floating point complex number.
  */
@@ -513,7 +548,7 @@ int mtxvector_coordinate_set_constant_complex_double(
 }
 
 /**
- * `mtxvector_coordinate_set_constant_integer_single()' sets every
+ * ‘mtxvector_coordinate_set_constant_integer_single()’ sets every
  * nonzero value of a vector equal to a constant integer.
  */
 int mtxvector_coordinate_set_constant_integer_single(
@@ -561,7 +596,7 @@ int mtxvector_coordinate_set_constant_integer_single(
 }
 
 /**
- * `mtxvector_coordinate_set_constant_integer_double()' sets every
+ * ‘mtxvector_coordinate_set_constant_integer_double()’ sets every
  * nonzero value of a vector equal to a constant integer.
  */
 int mtxvector_coordinate_set_constant_integer_double(
@@ -613,7 +648,7 @@ int mtxvector_coordinate_set_constant_integer_double(
  */
 
 /**
- * `mtxvector_coordinate_from_mtxfile()' converts a vector in Matrix
+ * ‘mtxvector_coordinate_from_mtxfile()’ converts a vector in Matrix
  * Market format to a vector.
  */
 int mtxvector_coordinate_from_mtxfile(
@@ -711,11 +746,19 @@ int mtxvector_coordinate_from_mtxfile(
     } else {
         return MTX_ERR_INVALID_MTX_FIELD;
     }
+    for (int64_t k = 0; k < num_nonzeros; k++) {
+        if (vector->indices[k] < 0 ||
+            vector->indices[k] >= size)
+        {
+            mtxvector_coordinate_free(vector);
+            return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+        }
+    }
     return MTX_SUCCESS;
 }
 
 /**
- * `mtxvector_coordinate_to_mtxfile()' converts a vector to a vector
+ * ‘mtxvector_coordinate_to_mtxfile()’ converts a vector to a vector
  * in Matrix Market format.
  */
 int mtxvector_coordinate_to_mtxfile(
@@ -815,7 +858,7 @@ int mtxvector_coordinate_to_mtxfile(
  */
 
 /**
- * `mtxvector_coordinate_swap()' swaps values of two vectors,
+ * ‘mtxvector_coordinate_swap()’ swaps values of two vectors,
  * simultaneously performing ‘y <- x’ and ‘x <- y’.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision, size
@@ -919,7 +962,7 @@ int mtxvector_coordinate_swap(
 }
 
 /**
- * `mtxvector_coordinate_copy()' copies values of a vector, ‘y = x’.
+ * ‘mtxvector_coordinate_copy()’ copies values of a vector, ‘y = x’.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision, size
  * and number of nonzeros.  Furthermore, it is assumed that the
@@ -1006,7 +1049,7 @@ int mtxvector_coordinate_copy(
 }
 
 /**
- * `mtxvector_coordinate_sscal()' scales a vector by a single
+ * ‘mtxvector_coordinate_sscal()’ scales a vector by a single
  * precision floating point scalar, ‘x = a*x’.
  */
 int mtxvector_coordinate_sscal(
@@ -1085,7 +1128,7 @@ int mtxvector_coordinate_sscal(
 }
 
 /**
- * `mtxvector_coordinate_dscal()' scales a vector by a double
+ * ‘mtxvector_coordinate_dscal()’ scales a vector by a double
  * precision floating point scalar, ‘x = a*x’.
  */
 int mtxvector_coordinate_dscal(
@@ -1164,7 +1207,7 @@ int mtxvector_coordinate_dscal(
 }
 
 /**
- * `mtxvector_coordinate_saxpy()' adds a vector to another one
+ * ‘mtxvector_coordinate_saxpy()’ adds a vector to another one
  * multiplied by a single precision floating point value, ‘y=a*x+y’.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision, size
@@ -1260,7 +1303,7 @@ int mtxvector_coordinate_saxpy(
 }
 
 /**
- * `mtxvector_coordinate_daxpy()' adds a vector to another vector
+ * ‘mtxvector_coordinate_daxpy()’ adds a vector to another vector
  * multiplied by a double precision floating point value, ‘y = a*x+y’.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision, size
@@ -1356,7 +1399,7 @@ int mtxvector_coordinate_daxpy(
 }
 
 /**
- * `mtxvector_coordinate_saypx()' multiplies a vector by a single
+ * ‘mtxvector_coordinate_saypx()’ multiplies a vector by a single
  * precision floating point scalar and adds another vector, ‘y=a*y+x’.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision, size
@@ -1436,7 +1479,7 @@ int mtxvector_coordinate_saypx(
 }
 
 /**
- * `mtxvector_coordinate_daypx()' multiplies a vector by a double
+ * ‘mtxvector_coordinate_daypx()’ multiplies a vector by a double
  * precision floating point scalar and adds another vector, ‘y=a*y+x’.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision, size
@@ -1516,7 +1559,7 @@ int mtxvector_coordinate_daypx(
 }
 
 /**
- * `mtxvector_coordinate_sdot()' computes the Euclidean dot product of
+ * ‘mtxvector_coordinate_sdot()’ computes the Euclidean dot product of
  * two vectors in single precision floating point.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision, size
@@ -1588,7 +1631,7 @@ int mtxvector_coordinate_sdot(
 }
 
 /**
- * `mtxvector_coordinate_ddot()' computes the Euclidean dot product of
+ * ‘mtxvector_coordinate_ddot()’ computes the Euclidean dot product of
  * two vectors in double precision floating point.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision, size
@@ -1660,7 +1703,7 @@ int mtxvector_coordinate_ddot(
 }
 
 /**
- * `mtxvector_coordinate_cdotu()' computes the product of the
+ * ‘mtxvector_coordinate_cdotu()’ computes the product of the
  * transpose of a complex row vector with another complex row vector
  * in single precision floating point, ‘dot := x^T*y’.
  *
@@ -1721,7 +1764,7 @@ int mtxvector_coordinate_cdotu(
 }
 
 /**
- * `mtxvector_coordinate_zdotu()' computes the product of the
+ * ‘mtxvector_coordinate_zdotu()’ computes the product of the
  * transpose of a complex row vector with another complex row vector
  * in double precision floating point, ‘dot := x^T*y’.
  *
@@ -1782,7 +1825,7 @@ int mtxvector_coordinate_zdotu(
 }
 
 /**
- * `mtxvector_coordinate_cdotc()' computes the Euclidean dot product
+ * ‘mtxvector_coordinate_cdotc()’ computes the Euclidean dot product
  * of two complex vectors in single precision floating point, ‘dot :=
  * x^H*y’.
  *
@@ -1843,7 +1886,7 @@ int mtxvector_coordinate_cdotc(
 }
 
 /**
- * `mtxvector_coordinate_zdotc()' computes the Euclidean dot product
+ * ‘mtxvector_coordinate_zdotc()’ computes the Euclidean dot product
  * of two complex vectors in double precision floating point, ‘dot :=
  * x^H*y’.
  *
@@ -1904,7 +1947,7 @@ int mtxvector_coordinate_zdotc(
 }
 
 /**
- * `mtxvector_coordinate_snrm2()' computes the Euclidean norm of a
+ * ‘mtxvector_coordinate_snrm2()’ computes the Euclidean norm of a
  * vector in single precision floating point.
  */
 int mtxvector_coordinate_snrm2(
@@ -1991,7 +2034,7 @@ int mtxvector_coordinate_snrm2(
 }
 
 /**
- * `mtxvector_coordinate_dnrm2()' computes the Euclidean norm of a
+ * ‘mtxvector_coordinate_dnrm2()’ computes the Euclidean norm of a
  * vector in double precision floating point.
  */
 int mtxvector_coordinate_dnrm2(
@@ -2078,7 +2121,7 @@ int mtxvector_coordinate_dnrm2(
 }
 
 /**
- * `mtxvector_coordinate_sasum()' computes the sum of absolute values
+ * ‘mtxvector_coordinate_sasum()’ computes the sum of absolute values
  * (1-norm) of a vector in single precision floating point.  If the
  * vector is complex-valued, then the sum of the absolute values of
  * the real and imaginary parts is computed.
@@ -2161,7 +2204,7 @@ int mtxvector_coordinate_sasum(
 }
 
 /**
- * `mtxvector_coordinate_dasum()' computes the sum of absolute values
+ * ‘mtxvector_coordinate_dasum()’ computes the sum of absolute values
  * (1-norm) of a vector in double precision floating point.  If the
  * vector is complex-valued, then the sum of the absolute values of
  * the real and imaginary parts is computed.
@@ -2244,7 +2287,7 @@ int mtxvector_coordinate_dasum(
 }
 
 /**
- * `mtxvector_coordinate_iamax()' finds the index of the first element
+ * ‘mtxvector_coordinate_iamax()’ finds the index of the first element
  * having the maximum absolute value.  If the vector is
  * complex-valued, then the index points to the first element having
  * the maximum sum of the absolute values of the real and imaginary
