@@ -638,7 +638,7 @@ int mtxdistfile_from_mtxfile(
  */
 
 /**
- * ‘mtxdistfile_read()’ reads a Matrix Market file from the given path
+ * ‘mtxdistfile_read_shared()’ reads a Matrix Market file from the given path
  * and distributes the data among MPI processes in a communicator. The
  * file may optionally be compressed by gzip.
  *
@@ -669,7 +669,7 @@ int mtxdistfile_from_mtxfile(
  * requires every process in the communicator to perform matching
  * calls to the function.
  */
-int mtxdistfile_read(
+int mtxdistfile_read_shared(
     struct mtxdistfile * mtxdistfile,
     enum mtxprecision precision,
     const char * path,
@@ -680,7 +680,7 @@ int mtxdistfile_read(
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxdistfile_fread()’ reads a Matrix Market file from a stream and
+ * ‘mtxdistfile_fread_shared()’ reads a Matrix Market file from a stream and
  * distributes the data among MPI processes in a communicator.
  *
  * ‘precision’ is used to determine the precision to use for storing
@@ -712,7 +712,7 @@ int mtxdistfile_read(
  * requires every process in the communicator to perform matching
  * calls to the function.
  */
-int mtxdistfile_fread(
+int mtxdistfile_fread_shared(
     struct mtxdistfile * mtxdistfile,
     enum mtxprecision precision,
     FILE * f,
@@ -724,7 +724,7 @@ int mtxdistfile_fread(
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxdistfile_fread()’ reads a Matrix Market file from a stream and
+ * ‘mtxdistfile_fread_shared()’ reads a Matrix Market file from a stream and
  * distributes the data among MPI processes in a communicator.
  *
  * ‘precision’ is used to determine the precision to use for storing
@@ -756,7 +756,7 @@ int mtxdistfile_fread(
  * requires every process in the communicator to perform matching
  * calls to the function.
  */
-int mtxdistfile_fread(
+int mtxdistfile_fread_shared(
     struct mtxdistfile * mtxdistfile,
     enum mtxprecision precision,
     FILE * f,
@@ -769,7 +769,7 @@ int mtxdistfile_fread(
 
 #ifdef LIBMTX_HAVE_LIBZ
 /**
- * ‘mtxdistfile_gzread()’ reads a Matrix Market file from a
+ * ‘mtxdistfile_gzread_shared()’ reads a Matrix Market file from a
  * gzip-compressed stream and distributes the data among MPI processes
  * in a communicator.
  *
@@ -802,7 +802,7 @@ int mtxdistfile_fread(
  * requires every process in the communicator to perform matching
  * calls to the function.
  */
-int mtxdistfile_gzread(
+int mtxdistfile_gzread_shared(
     struct mtxdistfile * mtxdistfile,
     enum mtxprecision precision,
     gzFile f,

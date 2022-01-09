@@ -80,7 +80,7 @@ Texts.  A copy of the license is included in the section entitled
 * Distributed Matrix Market files:: Distributing Matrix Market files across multiple processes.
 * Distributed matrices and vectors:: Working with matrices and vectors in distributed memory.
 * Commands:: Command-line tools for Matrix Market files.
-* C library reference:: Reference for the C library data types and functions.
+@c * C library reference:: Reference for the C library data types and functions.
 
 * References:: List of useful references.
 * GNU Free Documentation License:: Copying and sharing this documentation.
@@ -117,7 +117,7 @@ along with libmtx.  If not, see <https://www.gnu.org/licenses/>.
 @include distributed_matrix_market_files.texi
 @include distributed_matrices_and_vectors.texi
 @include commands.texi
-@include c_library_reference.texi
+@c @include c_library_reference.texi
 @include references.texi
 
 @node GNU Free Documentation License

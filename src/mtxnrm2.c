@@ -716,7 +716,7 @@ int main(int argc, char *argv[])
 
     /* 3. Read the `x' vector from a Matrix Market file. */
     if (args.verbose > 0) {
-        fprintf(diagf, "mtxdistfile_read: ");
+        fprintf(diagf, "mtxdistfile_read_shared: ");
         fflush(diagf);
         clock_gettime(CLOCK_MONOTONIC, &t0);
     }
@@ -724,7 +724,7 @@ int main(int argc, char *argv[])
     struct mtxdistfile mtxdistfile;
     int lines_read;
     int64_t bytes_read;
-    err = mtxdistfile_read(
+    err = mtxdistfile_read_shared(
         &mtxdistfile, args.precision,
         args.x_path ? args.x_path : "", args.gzip,
         &lines_read, &bytes_read,

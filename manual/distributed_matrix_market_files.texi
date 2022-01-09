@@ -531,25 +531,25 @@ processes.
 @cindex shared file
 In the case of reading or writing a distributed matrix or vector in
 Matrix Market format, there are essentially two options. The first
-option is the @dfn{file-per-process} model, where each process reads
-or writes its part of the matrix or vector to or from its own
-file. The second option is the @dfn{shared file} model, where
-processes send or receive their data to or from a single root process,
-and the root process reads or writes everything from or to a single
-file.
+option is the @dfn{file-per-process} model, where each process uses
+its own file to read or write its part of the matrix or vector. The
+second option is the @dfn{shared file} model, where processes send or
+receive their data to or from a single root process, and the root
+process uses a single, shared file to read or write data.
 
 Each of the I/O models mentioned above have advantages and
-disadvantages. The file-per-process model allows processes to write
-their data in parallel, and may therefore be much faster. However,
-when a large number of MPI processes are involved, there will also be
-a large number of files. This may not only be more difficult to manage
-than a single file, but also results in significant overhead due to
-the file system's handling of metadata associated with each file. The
-shared file model, on the other hand, produces only a single file.
-This can be much simpler to deal with and there is no overhead
-associated with metadata beyond that one file. Unfortunately, the I/O
-performance can be severely limiting due to the fact that only a
-single process is responsible for reading from or writing to the file.
+disadvantages. The file-per-process model allows processes to read or
+write their data in parallel, and may therefore be much
+faster. However, when a large number of MPI processes are involved,
+there will also be many files. It is often more difficult for the user
+to manage multiple files. Furthermore, it also results in significant
+overhead due to the file system's handling of metadata associated with
+each file. The shared file model, on the other hand, produces only a
+single file.  This can be much simpler to deal with and there is no
+overhead associated with metadata beyond that one file. Unfortunately,
+the I/O performance can be severely limiting due to the fact that only
+a single process is responsible for reading from or writing to the
+file.
 
 @cindex MPI-IO
 @cindex HDF5
@@ -561,12 +561,12 @@ currently supported in libmtx.
 
 @node Reading distributed Matrix Market files
 @subsection Reading distributed Matrix Market files
-@findex mtxdistfile_fread
+@findex mtxdistfile_fread_shared
 To read an @file{mtx} file from a @code{FILE} stream, partition the
 data and distribute it among MPI processes in a communicator based on
-the shared file model, use @code{mtxdistfile_fread}:
+the shared file model, use @code{mtxdistfile_fread_shared}:
 @example
-@code{int mtxdistfile_fread(
+@code{int mtxdistfile_fread_shared(
     struct mtxdistfile * mtxdistfile,
     enum mtxprecision precision,
     FILE * f,
@@ -575,13 +575,13 @@ the shared file model, use @code{mtxdistfile_fread}:
     MPI_Comm comm,
     struct mtxdisterror * disterr);}
 @end example
-For the most part, @code{mtxdistfile_fread} works just like
+For the most part, @code{mtxdistfile_fread_shared} works just like
 @code{mtxfile_fread} (see @ref{Reading and writing Matrix Market
 files}). If successful, @samp{MTX_SUCCESS} is returned, and
 @code{mtxdistfile} will contain the distributed Matrix Market
 file. The user is responsible for calling @code{mtxdistfile_free} to
-free any storage allocated by @code{mtxdistfile_fread}. If
-@code{mtxdistfile_fread} fails, an error code is returned and
+free any storage allocated by @code{mtxdistfile_fread_shared}. If
+@code{mtxdistfile_fread_shared} fails, an error code is returned and
 @code{lines_read} and @code{bytes_read} are used to indicate the line
 number and byte of the Matrix Market file where an error was
 encountered. @code{lines_read} and @code{bytes_read} are ignored if
@@ -617,13 +617,13 @@ function.
 
 @cindex zlib
 @cindex gzip compression
-@findex mtxdistfile_gzread
-If libmtx is built with zlib support, then @code{mtxdistfile_gzread}
+@findex mtxdistfile_gzread_shared
+If libmtx is built with zlib support, then @code{mtxdistfile_gzread_shared}
 can be used to read gzip-compressed @file{mtx} files. The data is
 partitioned and distributed among MPI processes in the same way as
-with @code{mtxdistfile_fread}.
+with @code{mtxdistfile_fread_shared}.
 @example
-@code{int mtxdistfile_gzread(
+@code{int mtxdistfile_gzread_shared(
     struct mtxdistfile * mtxdistfile,
     enum mtxprecision precision,
     gzFile f,
@@ -633,11 +633,11 @@ with @code{mtxdistfile_fread}.
     struct mtxdisterror * disterr);}
 @end example
 
-@findex mtxdistfile_read
-For convenience, the function @code{mtxdistfile_read} can be used to
+@findex mtxdistfile_read_shared
+For convenience, the function @code{mtxdistfile_read_shared} can be used to
 read an @file{mtx} file from a given path.
 @example
-@code{int mtxdistfile_read(
+@code{int mtxdistfile_read_shared(
     struct mtxdistfile * mtxdistfile,
     enum mtxprecision precision,
     const char * path,
@@ -668,12 +668,12 @@ Here, @code{f} should point to a different stream on every process.
 The processes involved are those from the MPI communicator
 @code{mtxdistfile->comm}. If successful, @samp{MTX_SUCCESS} is
 returned, and each process wrote its part of the matrix or vector to
-its stream. Moreover, if it is not @samp{NULL}, then the number of
-bytes written to the stream by the current process is returned in
-@code{bytes_written}.
+its stream. Moreover, if @code{bytes_written} is not @samp{NULL}, then
+it is used to return the number of bytes written to the stream by the
+current process.
 
 The @code{fmt} argument may optionally be used to specify a format
-string for outputting of numerical values, in the same way as with
+string for outputting numerical values, in the same way as with
 @code{mtxfile_write} (see @ref{Writing Matrix Market files}).
 
 If @code{sequential} is @samp{true}, then output is performed in
@@ -689,8 +689,7 @@ output). Therefore, if a guaranteed correct order of output is needed,
 @findex mtxdistfile_fwrite_shared
 The function @code{mtxdistfile_fwrite_shared} uses a shared file model
 to write a distributed matrix or vector to a single stream shared by
-every process in a communicator. This method is based on a shared file
-model.
+every process in a communicator.
 @example
 @code{int mtxdistfile_fwrite_shared(
     const struct mtxdistfile * mtxdistfile,
@@ -761,6 +760,10 @@ int mtxdistfile_write_shared(
     int root,
     struct mtxdisterror * disterr);}
 @end example
+In the case of @code{mtxdistfile_write}, @code{path} must be a unique
+path for each process, whereas for @code{mtxdistfile_write_shared},
+the @code{path} argument is only used on the root process.
+
 The files are written as gzip-compressed streams if @code{gzip} is
 @samp{true}, and uncompressed otherwise. If @code{path} is @samp{-},
 then the standard output stream is used.
@@ -768,7 +771,57 @@ then the standard output stream is used.
 
 @node Other operations on distributed Matrix Market files
 @section Transposing, sorting and reordering
+This section describes various operations that can be performed on
+distributed Matrix Market files, such as transposing matrices, as well
+as sorting and permuting matrices and vectors.
 
+@node Transpose and conjugate transpose distributed Matrix Market files
+@subsection Transpose and conjugate transpose
+@cindex transpose
+@findex mtxdistfile_transpose
+The function @code{mtxdistfile_transpose} can be used to transpose a
+distributed matrix.
+@example
+@code{int mtxdistfile_transpose(
+    struct mtxdistfile * mtxdistfile,
+    struct mtxdisterror * disterr);}
+@end example
+If @code{mtxdistfile} is a vector, nothing is done.
+
+The function @code{mtxdistfile_conjugate_transpose} can be used to
+transpose and complex conjugate a distributed matrix.
+@example
+@code{int mtxdistfile_conjugate_transpose(
+    struct mtxdistfile * mtxdistfile,
+    struct mtxdisterror * disterr);}
+@end example
+If @code{mtxdistfile} is a complex vector, the values are complex
+conjugated. Otherwise, nothing is done.
+
+@c The function @code{mtxdistfile_conjugate} can be used to complex conjugate
+@c a matrix or vector.
+@c @example
+@c @code{int mtxdistfile_conjugate(struct mtxdistfile * mtxdistfile);}
+@c @end example
+@c If @code{mtxdistfile} is a complex vector, the values are complex
+@c conjugated. Otherwise, nothing is done.
+
+
+@node Sort distributed Matrix Market files
+@subsection Sort
+@cindex sort
+@cindex distributed sort
+@findex mtxdistfile_sort
+To sort a distributed matrix or vector, use the function
+@code{mtxdistfile_sort}:
+@example
+@code{int mtxdistfile_sort(
+    struct mtxdistfile * mtxdistfile,
+    struct mtxfilesorting sorting);}
+@end example
+If successful, @code{mtxdistfile_sort} returns @samp{MTX_SUCCESS}, and
+the values of @code{mtxdistfile} will be sorted in the order specified
+by @code{sorting}.
 
 
 @c This section describes the basic data types used to represent

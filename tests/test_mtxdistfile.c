@@ -295,10 +295,10 @@ int test_mtxdistfile_from_mtxfile(void)
 }
 
 /**
- * `test_mtxdistfile_fread()` tests reading Matrix Market files from a
+ * `test_mtxdistfile_fread_shared()` tests reading Matrix Market files from a
  * stream and distributing them among MPI processes.
  */
-int test_mtxdistfile_fread(void)
+int test_mtxdistfile_fread_shared(void)
 {
     int err;
     char mpierrstr[MPI_MAX_ERROR_STRING];
@@ -345,7 +345,7 @@ int test_mtxdistfile_fread(void)
         int64_t bytes_read = 0;
         struct mtxdistfile mtxdistfile;
         enum mtxprecision precision = mtx_single;
-        err = mtxdistfile_fread(
+        err = mtxdistfile_fread_shared(
             &mtxdistfile, precision,
             f, &lines_read, &bytes_read, 0, NULL,
             comm, &disterr);
@@ -393,7 +393,7 @@ int test_mtxdistfile_fread(void)
         int64_t bytes_read = 0;
         struct mtxdistfile mtxdistfile;
         enum mtxprecision precision = mtx_double;
-        err = mtxdistfile_fread(
+        err = mtxdistfile_fread_shared(
             &mtxdistfile, precision,
             f, &lines_read, &bytes_read, 0, NULL, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
@@ -440,7 +440,7 @@ int test_mtxdistfile_fread(void)
         int64_t bytes_read = 0;
         struct mtxdistfile mtxdistfile;
         enum mtxprecision precision = mtx_single;
-        err = mtxdistfile_fread(
+        err = mtxdistfile_fread_shared(
             &mtxdistfile, precision,
             f, &lines_read, &bytes_read, 0, NULL, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
@@ -489,7 +489,7 @@ int test_mtxdistfile_fread(void)
         int64_t bytes_read = 0;
         struct mtxdistfile mtxdistfile;
         enum mtxprecision precision = mtx_double;
-        err = mtxdistfile_fread(
+        err = mtxdistfile_fread_shared(
             &mtxdistfile, precision,
             f, &lines_read, &bytes_read, 0, NULL, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
@@ -538,7 +538,7 @@ int test_mtxdistfile_fread(void)
         int64_t bytes_read = 0;
         struct mtxdistfile mtxdistfile;
         enum mtxprecision precision = mtx_single;
-        err = mtxdistfile_fread(
+        err = mtxdistfile_fread_shared(
             &mtxdistfile, precision,
             f, &lines_read, &bytes_read, 0, NULL, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
@@ -585,7 +585,7 @@ int test_mtxdistfile_fread(void)
         int64_t bytes_read = 0;
         struct mtxdistfile mtxdistfile;
         enum mtxprecision precision = mtx_double;
-        err = mtxdistfile_fread(
+        err = mtxdistfile_fread_shared(
             &mtxdistfile, precision,
             f, &lines_read, &bytes_read, 0, NULL, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
@@ -635,7 +635,7 @@ int test_mtxdistfile_fread(void)
         int64_t bytes_read = 0;
         struct mtxdistfile mtxdistfile;
         enum mtxprecision precision = mtx_single;
-        err = mtxdistfile_fread(
+        err = mtxdistfile_fread_shared(
             &mtxdistfile, precision,
             f, &lines_read, &bytes_read, 0, NULL, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
@@ -687,7 +687,7 @@ int test_mtxdistfile_fread(void)
         int64_t bytes_read = 0;
         struct mtxdistfile mtxdistfile;
         enum mtxprecision precision = mtx_double;
-        err = mtxdistfile_fread(
+        err = mtxdistfile_fread_shared(
             &mtxdistfile, precision,
             f, &lines_read, &bytes_read, 0, NULL, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
@@ -740,7 +740,7 @@ int test_mtxdistfile_fread(void)
         int64_t bytes_read = 0;
         struct mtxdistfile mtxdistfile;
         enum mtxprecision precision = mtx_single;
-        err = mtxdistfile_fread(
+        err = mtxdistfile_fread_shared(
             &mtxdistfile, precision,
             f, &lines_read, &bytes_read, 0, NULL, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
@@ -791,7 +791,7 @@ int test_mtxdistfile_fread(void)
         int64_t bytes_read = 0;
         struct mtxdistfile mtxdistfile;
         enum mtxprecision precision = mtx_single;
-        err = mtxdistfile_fread(
+        err = mtxdistfile_fread_shared(
             &mtxdistfile, precision,
             f, &lines_read, &bytes_read, 0, NULL, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
@@ -843,7 +843,7 @@ int test_mtxdistfile_fread(void)
         int64_t bytes_read = 0;
         struct mtxdistfile mtxdistfile;
         enum mtxprecision precision = mtx_single;
-        err = mtxdistfile_fread(
+        err = mtxdistfile_fread_shared(
             &mtxdistfile, precision,
             f, &lines_read, &bytes_read, 0, NULL, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
@@ -893,7 +893,7 @@ int test_mtxdistfile_fread(void)
         int64_t bytes_read = 0;
         struct mtxdistfile mtxdistfile;
         enum mtxprecision precision = mtx_double;
-        err = mtxdistfile_fread(
+        err = mtxdistfile_fread_shared(
             &mtxdistfile, precision,
             f, &lines_read, &bytes_read, 0, NULL, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
@@ -945,7 +945,7 @@ int test_mtxdistfile_fread(void)
         int64_t bytes_read = 0;
         struct mtxdistfile mtxdistfile;
         enum mtxprecision precision = mtx_single;
-        err = mtxdistfile_fread(
+        err = mtxdistfile_fread_shared(
             &mtxdistfile, precision,
             f, &lines_read, &bytes_read, 0, NULL, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
@@ -995,7 +995,7 @@ int test_mtxdistfile_fread(void)
         int64_t bytes_read = 0;
         struct mtxdistfile mtxdistfile;
         enum mtxprecision precision = mtx_single;
-        err = mtxdistfile_fread(
+        err = mtxdistfile_fread_shared(
             &mtxdistfile, precision,
             f, &lines_read, &bytes_read, 0, NULL, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
@@ -2086,7 +2086,7 @@ int main(int argc, char * argv[])
     /* 2. Run test suite. */
     TEST_SUITE_BEGIN("Running tests for distributed Matrix Market files\n");
     TEST_RUN(test_mtxdistfile_from_mtxfile);
-    TEST_RUN(test_mtxdistfile_fread);
+    TEST_RUN(test_mtxdistfile_fread_shared);
     TEST_RUN(test_mtxdistfile_fwrite);
     TEST_RUN(test_mtxdistfile_partition_rows);
     TEST_RUN(test_mtxdistfile_transpose);
