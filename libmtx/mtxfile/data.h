@@ -716,6 +716,29 @@ int mtxfiledata_copy_gather(
  */
 
 /**
+ * ‘mtxfiledata_rowcolidx()’ extracts row and/or column indices for a
+ * matrix or vector in Matrix Market format.
+ *
+ * ‘rowidx’ may be ‘NULL’, in which case it is ignored. Otherwise, it
+ * must point to an array containing enough storage for ‘size’ values
+ * of type ‘int’.  If successful, this array will contain the row
+ * index of each data line. Similarly, ‘colidx’ may be ‘NULL’, or it
+ * must point to an array of the same size, which will be used to
+ * store the column index of each data line.
+ */
+int mtxfiledata_rowcolidx(
+    const union mtxfiledata * data,
+    enum mtxfileobject object,
+    enum mtxfileformat format,
+    enum mtxfilefield field,
+    enum mtxprecision precision,
+    int num_rows,
+    int num_columns,
+    int64_t size,
+    int * rowidx,
+    int * colidx);
+
+/**
  * `mtxfiledata_rowptr()' computes row pointers for a matrix in
  * coordinate format.
  *
