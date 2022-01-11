@@ -221,6 +221,32 @@ int mtxpartition_assign(
     const int * elements,
     int * parts);
 
+/**
+ * ‘mtxpartition_globalidx()’ translates from a local numbering of
+ * elements within a given part to a global numbering of elements in
+ * the partitioned set.
+ *
+ * The argument ‘part’ denotes the part of the partition for which the
+ * local element numbers are given.
+ *
+ * The arrays ‘localelem’ and ‘globalelem’ must be of length equal to
+ * ‘size’. The former is used to specify the local element numbers
+ * within the specified part, and must therefore contain values in the
+ * range ‘0, 1, ..., partition->part_sizes[part]-1’. If successful,
+ * the array ‘globalelem’ will contain the global numbers
+ * corresponding to each of the local element numbers in ‘localelem’.
+ *
+ * If needed, ‘localelem’ and ‘globalelem’ are allowed to point to the
+ * same underlying array. The values of ‘localelem’ will then be
+ * overwritten by the global element numbers.
+ */
+int mtxpartition_globalidx(
+    const struct mtxpartition * partition,
+    int part,
+    int64_t size,
+    const int * localelem,
+    int * globalelem);
+
 /*
  * I/O functions
  *

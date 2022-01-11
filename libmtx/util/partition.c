@@ -419,6 +419,75 @@ int mtxpartition_assign(
     return MTX_SUCCESS;
 }
 
+/**
+ * ‘mtxpartition_globalidx()’ translates from a local numbering of
+ * elements within a given part to a global numbering of elements in
+ * the partitioned set.
+ *
+ * The argument ‘part’ denotes the part of the partition for which the
+ * local element numbers are given.
+ *
+ * The arrays ‘localelem’ and ‘globalelem’ must be of length equal to
+ * ‘size’. The former is used to specify the local element numbers
+ * within the specified part, and must therefore contain values in the
+ * range ‘0, 1, ..., partition->part_sizes[part]-1’. If successful,
+ * the array ‘globalelem’ will contain the global numbers
+ * corresponding to each of the local element numbers in ‘localelem’.
+ *
+ * If needed, ‘localelem’ and ‘globalelem’ are allowed to point to the
+ * same underlying array. The values of ‘localelem’ will then be
+ * overwritten by the global element numbers.
+ */
+int mtxpartition_globalidx(
+    const struct mtxpartition * partition,
+    int part,
+    int64_t size,
+    const int * localelem,
+    int * globalelem)
+{
+    if (part < 0 || part >= partition->num_parts)
+        return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+
+    if (partition->type == mtx_singleton) {
+        for (int64_t k = 0; k < size; k++) {
+            if (localelem[k] < 0 || localelem[k] >= partition->part_sizes[part])
+                return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            globalelem[k] = localelem[k];
+        }
+
+    } else if (partition->type == mtx_block) {
+        for (int64_t k = 0; k < size; k++) {
+            if (localelem[k] < 0 || localelem[k] >= partition->part_sizes[part])
+                return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            globalelem[k] = partition->parts_ptr[part] + localelem[k];
+        }
+
+    } else if (partition->type == mtx_cyclic) {
+        for (int64_t k = 0; k < size; k++) {
+            if (localelem[k] < 0 || localelem[k] >= partition->part_sizes[part])
+                return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            globalelem[k] = part + partition->num_parts * localelem[k];
+        }
+
+    } else if (partition->type == mtx_block_cyclic) {
+        /* TODO: Not implemented. */
+        errno = ENOTSUP;
+        return MTX_ERR_ERRNO;
+
+    } else if (partition->type == mtx_partition) {
+        for (int64_t k = 0; k < size; k++) {
+            if (localelem[k] < 0 || localelem[k] >= partition->part_sizes[part])
+                return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            int64_t offset = partition->parts_ptr[part];
+            globalelem[k] = partition->elements_per_part[offset + localelem[k]];
+        }
+
+    } else {
+        return MTX_ERR_INVALID_PARTITION_TYPE;
+    }
+    return MTX_SUCCESS;
+}
+
 /*
  * I/O functions
  */
