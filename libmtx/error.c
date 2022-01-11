@@ -145,6 +145,8 @@ const char * mtxstrerror(
         return "incompatible matrix type";
     case MTX_ERR_INVALID_TRANS_TYPE:
         return "invalid transpose type";
+    case MTX_ERR_INVALID_PROCESS_GRID:
+        return "invalid process grid";
     default:
         return "unknown error";
     }
