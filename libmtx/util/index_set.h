@@ -136,10 +136,10 @@ int mtxidxset_init_blockstrided(
     int block_size);
 
 /**
- * ‘mtxidxset_init_discrete()’ creates an index set of discrete
- * integer values given by an array.
+ * ‘mtxidxset_init_array()’ creates an index set of discrete integer
+ * values given by an array.
  */
-int mtxidxset_init_discrete(
+int mtxidxset_init_array(
     struct mtxidxset * index_set,
     int64_t size,
     const int64_t * indices);

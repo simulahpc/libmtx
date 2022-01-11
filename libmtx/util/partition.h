@@ -24,9 +24,12 @@
 #ifndef LIBMTX_UTIL_PARTITION_H
 #define LIBMTX_UTIL_PARTITION_H
 
-#include <libmtx/util/index_set.h>
-
 #include <stdint.h>
+#include <stdio.h>
+
+/*
+ * Types of partitioning
+ */
 
 /**
  * ‘mtxpartitioning’ enumerates different kinds of partitionings.
@@ -37,7 +40,7 @@ enum mtxpartitioning
     mtx_block,        /* contiguous, fixed-size blocks */
     mtx_cyclic,       /* cyclic partition */
     mtx_block_cyclic, /* cyclic partition of fixed-size blocks. */
-    mtx_partition,    /* general partition */
+    mtx_partition,    /* general, user-defined partition */
 };
 
 /**
@@ -75,6 +78,10 @@ int mtxpartitioning_parse(
     const char * s,
     const char * valid_delimiters);
 
+/*
+ * Partitions of finite sets
+ */
+
 /**
  * ‘mtxpartition’ represents a partitioning of a finite set.
  */
@@ -96,18 +103,37 @@ struct mtxpartition
     int num_parts;
 
     /**
-     * ‘index_sets’ is an array containing an index set for each part,
-     * where the pth index set describes the elements of the
-     * partitioned set belonging to the pth part of the partition.
+     * ‘part_sizes’ is an array containing the number of elements in
+     * each part of the partition.
      */
-    struct mtxidxset * index_sets;
+    int64_t * part_sizes;
 
     /**
-     * ‘parts’ is an array containing the part number assigned to each
-     * element in the partitioned set, if ‘type’ is
-     * ‘mtx_partition’.  Otherwise, this value is not used.
+     * ‘parts_ptr’ is an array of length ‘num_parts+1’, containing
+     * offsets to the first elements of each part in the partition.
+     */
+    int64_t * parts_ptr;
+
+    /**
+     * ‘parts’ is an array is an array of length ‘size’, if ‘type’ is
+     * ‘mtx_partition’, containing the part number assigned to each
+     * element in the partitioned set.
+     *
+     * If ‘type’ is not ‘mtx_partition’, then ‘parts’ is set to ‘NULL’
+     * and is not used.
      */
     int * parts;
+
+    /**
+     * ‘elements_per_part’ is an array of length ‘size’, if ‘type’ is
+     * ‘mtx_partition’. The elements belonging to the ‘p’th part are
+     * given by ‘elements_per_part[i]’, for ‘i’ in ‘parts_ptr[p],
+     * parts_ptr[p]+1, ..., parts_ptr[p+1]-1’.
+     *
+     * If ‘type’ is not ‘mtx_partition’, then ‘elements_per_part’ is
+     * set to ‘NULL’ and is not used.
+     */
+    int64_t * elements_per_part;
 };
 
 /**
@@ -125,6 +151,7 @@ int mtxpartition_init(
     enum mtxpartitioning type,
     int64_t size,
     int num_parts,
+    const int64_t * part_sizes,
     int block_size,
     const int * parts);
 
@@ -144,7 +171,8 @@ int mtxpartition_init_singleton(
 int mtxpartition_init_block(
     struct mtxpartition * partition,
     int64_t size,
-    int num_parts);
+    int num_parts,
+    const int64_t * part_sizes);
 
 /**
  * ‘mtxpartition_init_cyclic()’ initialises a cyclic partitioning of
@@ -166,7 +194,7 @@ int mtxpartition_init_block_cyclic(
     int block_size);
 
 /**
- * ‘mtxpartition_init_partition()’ initialises an partition
+ * ‘mtxpartition_init_partition()’ initialises a user-defined
  * partitioning of a finite set.
  */
 int mtxpartition_init_partition(
@@ -176,13 +204,22 @@ int mtxpartition_init_partition(
     const int * parts);
 
 /**
- * ‘mtxpartition_part()’ determines which part of a partition that a
- * given element belongs to.
+ * ‘mtxpartition_assign()’ assigns part numbers to elements of an
+ * array according to the partitioning.
+ *
+ * The arrays ‘elements’ and ‘parts’ must both contain enough storage
+ * for ‘size’ values of type ‘int’. If successful, ‘parts’ will
+ * contain the part numbers of each element in the ‘elements’ array.
+ *
+ * If needed, ‘elements’ and ‘parts’ are allowed to point to the same
+ * underlying array. The values of ‘elements’ will then be overwritten
+ * by the assigned part numbers.
  */
-int mtxpartition_part(
+int mtxpartition_assign(
     const struct mtxpartition * partition,
-    int * p,
-    int64_t n);
+    int64_t size,
+    const int * elements,
+    int * parts);
 
 /*
  * I/O functions
@@ -303,85 +340,6 @@ int mtxpartition_write_parts(
  */
 int mtxpartition_fwrite_parts(
     const struct mtxpartition * partition,
-    FILE * f,
-    const char * format,
-    int64_t * bytes_written);
-
-/**
- * ‘mtxpartition_write_permutation()’ writes the permutation of a
- * given part of a partitioned set to the given path.  The permutation
- * is represented by an array of global indices of the elements
- * belonging to the given part prior to partitioning.  The file is
- * written as a Matrix Market file in the form of an integer vector in
- * array format.
- *
- * If ‘path’ is ‘-’, then standard output is used.
- *
- * If ‘format’ is not ‘NULL’, then the given format string is used
- * when printing numerical values.  The format specifier must be '%d',
- * and a fixed field width may optionally be specified (e.g., "%3d"),
- * but variable field width (e.g., "%*d"), as well as length modifiers
- * (e.g., "%ld") are not allowed.  If ‘format’ is ‘NULL’, then the
- * format specifier '%d' is used.
- *
- * If it is not ‘NULL’, then the number of bytes written to the stream
- * is returned in ‘bytes_written’.
- */
-int mtxpartition_write_permutation(
-    const struct mtxpartition * partition,
-    int part,
-    const char * path,
-    const char * format,
-    int64_t * bytes_written);
-
-/**
- * ‘mtxpartition_write_permutations()’ writes the permutations for
- * each part of a partitioned set to the given path.  The permutation
- * is represented by an array of global indices of the elements
- * belonging each part prior to partitioning.  The file for each part
- * is written as a Matrix Market file in the form of an integer vector
- * in array format.
- *
- * Each occurrence of '%p' in ‘pathfmt’ is replaced by the number of
- * each part number.
- *
- * If ‘format’ is not ‘NULL’, then the given format string is used
- * when printing numerical values.  The format specifier must be '%d',
- * and a fixed field width may optionally be specified (e.g., "%3d"),
- * but variable field width (e.g., "%*d"), as well as length modifiers
- * (e.g., "%ld") are not allowed.  If ‘format’ is ‘NULL’, then the
- * format specifier '%d' is used.
- *
- * If it is not ‘NULL’, then the number of bytes written to the stream
- * is returned in ‘bytes_written’.
- */
-int mtxpartition_write_permutations(
-    const struct mtxpartition * partition,
-    const char * pathfmt,
-    const char * format,
-    int64_t * bytes_written);
-
-/**
- * ‘mtxpartition_write_permutation()’ writes the permutation of a
- * given part of a partitioned set to a stream as a Matrix Market
- * file.  The permutation is represented by an array of global indices
- * of the elements belonging to the given part prior to partitioning.
- * The file is written as a Matrix Market file in the form of an
- * integer vector in array format.
- *
- * If ‘format’ is not ‘NULL’, then the given format string is used
- * when printing numerical values.  The format specifier must be '%d',
- * and a fixed field width may optionally be specified (e.g., "%3d"),
- * but variable field width (e.g., "%*d"), as well as length modifiers
- * (e.g., "%ld") are not allowed.  If ‘format’ is ‘NULL’, then the
- * format specifier '%d' is used.
- *
- * If it is not ‘NULL’, then the number of bytes written to the stream
- * is returned in ‘bytes_written’.
- */
-int mtxpartition_fwrite_permutation(
-    const struct mtxpartition * partition,
-    int part,
     FILE * f,
     const char * format,
     int64_t * bytes_written);

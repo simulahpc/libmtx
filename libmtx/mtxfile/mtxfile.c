@@ -1911,215 +1911,161 @@ int mtxfile_sort(
  */
 
 /**
- * ‘mtxfile_init_from_partition()’ creates Matrix Market files for
- * each part of a partitioning of another Matrix Market file.
+ * ‘mtxfile_partition()’ partitions a Matrix Market file according to
+ * the given row and column partitions.
  *
- * ‘dst’ must point to an array of type ‘struct mtxfile’ whose length
- * is equal to the number of parts in the partitioning, num_parts’.
- * The ‘p’th entry in the array will be a Matrix Market file
- * containing the ‘p’th part of the original Matrix Market file,
- * ‘src’, according to the partitioning given by ‘row_partition’.
+ * The partitions ‘rowpart’ or ‘colpart’ are allowed to be ‘NULL’, in
+ * which case a trivial, singleton partition is used for the rows or
+ * columns, respectively.
  *
- * The ‘p’th value of ‘data_lines_per_part_ptr’ must be an offset to
- * the first data line belonging to the ‘p’th part of the partition,
- * while the final value of the array points to one place beyond the
- * final data line.  Moreover for each part ‘p’ of the partitioning,
- * the entries from ‘data_lines_per_part[p]’ up to, but not including,
- * ‘data_lines_per_part[p+1]’, are the indices of the data lines in
- * ‘src’ that are assigned to the ‘p’th part of the partitioning.
+ * Otherwise, ‘rowpart’ and ‘colpart’ must partition the rows and
+ * columns of the matrix or vector ‘src’, respectively. That is,
+ * ‘rowpart->size’ must be equal to ‘src->size.num_rows’, and
+ * ‘colpart->size’ must be equal to ‘src->size.num_columns’.
+ *
+ * The argument ‘dsts’ is an array that must have enough storage for
+ * ‘P*Q’ values of type ‘struct mtxfile’, where ‘P’ is the number of
+ * row parts, ‘rowpart->num_parts’, and ‘Q’ is the number of column
+ * parts, ‘colpart->num_parts’. Note that the ‘r’th part corresponds
+ * to a row part ‘p’ and column part ‘q’, such that ‘r=p*Q+q’. Thus,
+ * the ‘r’th entry of ‘dsts’ is the submatrix corresponding to the
+ * ‘p’th row and ‘q’th column of the 2D partitioning.
+ *
+ * The user is responsible for freeing storage allocated for each
+ * Matrix Market file in the ‘dsts’ array.
  */
-int mtxfile_init_from_partition(
-    struct mtxfile * dst,
+int mtxfile_partition(
     const struct mtxfile * src,
-    int num_parts,
-    const int64_t * data_lines_per_part_ptr,
-    const int64_t * data_lines_per_part)
+    struct mtxfile * dsts,
+    const struct mtxpartition * rowpart,
+    const struct mtxpartition * colpart)
 {
     int err;
-    for (int p = 0; p < num_parts; p++) {
-        struct mtxfilesize size;
-        size.num_rows = src->size.num_rows;
-        size.num_columns = src->size.num_columns;
-        size.num_nonzeros = src->size.num_nonzeros;
-        int64_t N = data_lines_per_part_ptr[p+1] - data_lines_per_part_ptr[p];
-        if (src->size.num_nonzeros >= 0) {
-            size.num_nonzeros = N;
-        } else if (src->size.num_columns > 0) {
-            size.num_rows = (N + src->size.num_columns-1) / src->size.num_columns;
-        } else if (src->size.num_rows >= 0) {
-            size.num_rows = N;
-        }
+    int num_row_parts = rowpart ? rowpart->num_parts : 1;
+    int num_col_parts = colpart ? colpart->num_parts : 1;
+    if (rowpart && rowpart->size != src->size.num_rows)
+        return MTX_ERR_INCOMPATIBLE_PARTITION;
+    if (colpart && colpart->size != src->size.num_columns)
+        return MTX_ERR_INCOMPATIBLE_PARTITION;
 
-        err = mtxfile_alloc(
-            &dst[p], &src->header, &src->comments, &size, src->precision);
-        if (err) {
-            mtxfilecomments_free(&dst[p].comments);
-            return err;
-        }
+    int64_t num_data_lines;
+    err = mtxfilesize_num_data_lines(
+        &src->size, src->header.symmetry, &num_data_lines);
+    if (err)
+        return err;
 
-        const int64_t * srcdispls = &data_lines_per_part[data_lines_per_part_ptr[p]];
-        err = mtxfiledata_copy_gather(
-            &dst[p].data, &src->data,
-            dst[p].header.object, dst[p].header.format,
-            dst[p].header.field, dst[p].precision,
-            N, 0, srcdispls);
-        if (err) {
-            for (int q = p; q >= 0; q--)
-                mtxfile_free(&dst[q]);
-            return err;
-        }
-    }
-    return MTX_SUCCESS;
-}
+    int * part_per_data_line = malloc(num_data_lines * sizeof(int));
+    if (!part_per_data_line)
+        return MTX_ERR_ERRNO;
 
-/**
- * ‘mtxfile_partition_rows()’ partitions data lines of a Matrix Market
- * file according to the given row partitioning.
- *
- * If it is not ‘NULL’, the array ‘part_per_data_line’ must contain
- * enough storage to hold one ‘int’ for each data line. (The number of
- * data lines is obtained from ‘mtxfilesize_num_data_lines()’). On a
- * successful return, the ‘k’th entry in the array specifies the part
- * number that was assigned to the ‘k’th data line of ‘src’.
- *
- * The array ‘data_lines_per_part_ptr’ must contain at least enough
- * storage for ‘row_partition->num_parts+1’ values of type ‘int64_t’.
- * If successful, the ‘p’th value of ‘data_lines_per_part_ptr’ is an
- * offset to the first data line belonging to the ‘p’th part of the
- * partition, while the final value of the array points to one place
- * beyond the final data line.  Moreover ‘data_lines_per_part’ must
- * contain enough storage to hold one ‘int64_t’ for each data line.
- * For each part ‘p’ of the partitioning, the entries from
- * ‘data_lines_per_part[p]’ up to, but not including,
- * ‘data_lines_per_part[p+1]’, are the indices of the data lines in
- * ‘src’ that are assigned to the ‘p’th part of the partitioning.
- */
-int mtxfile_partition_rows(
-    const struct mtxfile * mtxfile,
-    int64_t size,
-    int64_t offset,
-    const struct mtxpartition * row_partition,
-    int * part_per_data_line,
-    int64_t * data_lines_per_part_ptr,
-    int64_t * data_lines_per_part)
-{
-    int err;
-    bool alloc_part_per_data_line = !part_per_data_line;
-    if (alloc_part_per_data_line) {
-        part_per_data_line = malloc(size * sizeof(int));
-        if (!part_per_data_line)
-            return MTX_ERR_ERRNO;
-    }
-    err = mtxfiledata_partition_rows(
-        &mtxfile->data, mtxfile->header.object, mtxfile->header.format,
-        mtxfile->header.field, mtxfile->precision,
-        mtxfile->size.num_rows, mtxfile->size.num_columns,
-        size, offset, row_partition,
-        part_per_data_line);
+    /* 1. Assign each data line to its row and column part */
+    err = mtxfiledata_partition(
+        &src->data, src->header.object, src->header.format,
+        src->header.field, src->precision,
+        src->size.num_rows, src->size.num_columns, num_data_lines,
+        rowpart, colpart, part_per_data_line);
     if (err) {
-        if (alloc_part_per_data_line)
-            free(part_per_data_line);
+        free(part_per_data_line);
         return err;
     }
 
-    for (int p = 0; p <= row_partition->num_parts; p++)
+    /* 2. Create index arrays of data lines belonging to each part */
+    int num_parts = num_row_parts * num_col_parts;
+    int64_t * data_lines_per_part_ptr = malloc((num_parts+1) * sizeof(int64_t));
+    if (!data_lines_per_part_ptr) {
+        free(part_per_data_line);
+        return MTX_ERR_ERRNO;
+    }
+    int64_t * data_lines_per_part = malloc(num_data_lines * sizeof(int64_t));
+    if (!data_lines_per_part) {
+        free(data_lines_per_part_ptr);
+        free(part_per_data_line);
+        return MTX_ERR_ERRNO;
+    }
+
+    for (int p = 0; p <= num_parts; p++)
         data_lines_per_part_ptr[p] = 0;
-    for (int64_t k = 0; k < size; k++) {
+    for (int64_t k = 0; k < num_data_lines; k++) {
         int part = part_per_data_line[k];
         data_lines_per_part_ptr[part+1]++;
     }
-    for (int p = 0; p < row_partition->num_parts; p++) {
+    for (int p = 0; p < num_parts; p++) {
         data_lines_per_part_ptr[p+1] +=
             data_lines_per_part_ptr[p];
     }
-    for (int64_t k = 0; k < size; k++) {
+    for (int64_t k = 0; k < num_data_lines; k++) {
         int part = part_per_data_line[k];
         int64_t l = data_lines_per_part_ptr[part];
         data_lines_per_part[l] = k;
         data_lines_per_part_ptr[part]++;
     }
-    for (int p = row_partition->num_parts-1; p >= 0; p--) {
+    for (int p = num_parts-1; p >= 0; p--) {
         data_lines_per_part_ptr[p+1] =
             data_lines_per_part_ptr[p];
     }
     data_lines_per_part_ptr[0] = 0;
+    free(part_per_data_line);
 
-    if (alloc_part_per_data_line)
-        free(part_per_data_line);
-    return MTX_SUCCESS;
-}
+    /* 3. Create a submatrix for each part of the partition */
+    for (int p = 0; p < num_row_parts; p++) {
+        for (int q = 0; q < num_col_parts; q++) {
+            int r = p * num_col_parts + q;
+            int64_t N = data_lines_per_part_ptr[r+1] - data_lines_per_part_ptr[r];
 
-/**
- * ‘mtxfile_init_from_row_partition()’ creates a Matrix Market file
- * from a subset of the rows of another Matrix Market file.
- *
- * The array ‘data_lines_per_part_ptr’ should have been obtained
- * previously by calling ‘mtxfile_partition_rows’.
- */
-int mtxfile_init_from_row_partition(
-    struct mtxfile * dst,
-    const struct mtxfile * src,
-    const struct mtxpartition * row_partition,
-    int64_t * data_lines_per_part_ptr,
-    int part)
-{
-    int err;
-    err = mtxfileheader_copy(&dst->header, &src->header);
-    if (err)
-        return err;
-    err = mtxfilecomments_copy(&dst->comments, &src->comments);
-    if (err)
-        return err;
-    err = mtxfilesize_copy(&dst->size, &src->size);
-    if (err) {
-        mtxfilecomments_free(&dst->comments);
-        return err;
-    }
-    dst->precision = src->precision;
+            struct mtxfilesize size;
+            if (src->size.num_nonzeros >= 0) {
+                size.num_rows = src->size.num_rows;
+                size.num_columns = src->size.num_columns;
+                size.num_nonzeros = N;
+            } else if (src->size.num_columns > 0) {
+                size.num_rows = rowpart
+                    ? rowpart->part_sizes[p] : src->size.num_rows;
+                size.num_columns = colpart
+                    ? colpart->part_sizes[q] : src->size.num_columns;
+                size.num_nonzeros = -1;
+            } else if (src->size.num_rows >= 0) {
+                size.num_rows = rowpart
+                    ? rowpart->part_sizes[p] : src->size.num_rows;
+                size.num_columns = -1;
+                size.num_nonzeros = -1;
+            } else {
+                for (int s = r-1; s >= 0; s--)
+                    mtxfile_free(&dsts[s]);
+                free(data_lines_per_part);
+                free(data_lines_per_part_ptr);
+                return MTX_ERR_INVALID_MTX_SIZE;
+            }
 
-    if (dst->header.format == mtxfile_array) {
-        dst->size.num_rows = row_partition->index_sets[part].size;
-    } else if (dst->header.format == mtxfile_coordinate) {
-        dst->size.num_nonzeros =
-            data_lines_per_part_ptr[part+1] - data_lines_per_part_ptr[part];
-    } else {
-        mtxfilecomments_free(&dst->comments);
-        return MTX_ERR_INVALID_MTX_FORMAT;
+            err = mtxfile_alloc(
+                &dsts[r], &src->header, &src->comments,
+                &size, src->precision);
+            if (err) {
+                for (int s = r-1; s >= 0; s--)
+                    mtxfile_free(&dsts[s]);
+                free(data_lines_per_part);
+                free(data_lines_per_part_ptr);
+                return err;
+            }
+
+            const int64_t * srcdispls =
+                &data_lines_per_part[data_lines_per_part_ptr[r]];
+            err = mtxfiledata_copy_gather(
+                &dsts[r].data, &src->data,
+                dsts[r].header.object, dsts[r].header.format,
+                dsts[r].header.field, dsts[r].precision,
+                N, 0, srcdispls);
+            if (err) {
+                for (int s = r; s >= 0; s--)
+                    mtxfile_free(&dsts[s]);
+                free(data_lines_per_part);
+                free(data_lines_per_part_ptr);
+                return err;
+            }
+        }
     }
 
-    int64_t num_data_lines;
-    err = mtxfilesize_num_data_lines(
-        &dst->size, dst->header.symmetry, &num_data_lines);
-    if (err) {
-        mtxfilecomments_free(&dst->comments);
-        return err;
-    }
-    if (num_data_lines != data_lines_per_part_ptr[part+1]-data_lines_per_part_ptr[part])
-    {
-        mtxfilecomments_free(&dst->comments);
-        errno = EINVAL;
-        return MTX_ERR_ERRNO;
-    }
-
-    err = mtxfiledata_alloc(
-        &dst->data,
-        dst->header.object,
-        dst->header.format,
-        dst->header.field,
-        dst->precision, num_data_lines);
-    if (err) {
-        mtxfilecomments_free(&dst->comments);
-        return err;
-    }
-    err = mtxfiledata_copy(
-        &dst->data, &src->data,
-        src->header.object, src->header.format,
-        src->header.field, src->precision,
-        num_data_lines, 0, data_lines_per_part_ptr[part]);
-    if (err) {
-        mtxfile_free(dst);
-        return err;
-    }
+    free(data_lines_per_part);
+    free(data_lines_per_part_ptr);
     return MTX_SUCCESS;
 }
 

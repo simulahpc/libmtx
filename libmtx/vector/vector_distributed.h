@@ -329,42 +329,7 @@ int mtxvector_distributed_gzwrite(
  * Partitioning
  */
 
-/**
- * `mtxvector_distributed_partition_rows()' partitions and reorders
- * data lines of a vector according to the given row partitioning.
- *
- * The array `data_lines_per_part_ptr' must contain at least enough
- * storage for `row_partition->num_parts+1' values of type `int64_t'.
- * If successful, the `p'-th value of `data_lines_per_part_ptr' is an
- * offset to the first data line belonging to the `p'-th part of the
- * partition, while the final value of the array points to one place
- * beyond the final data line.
- *
- * If it is not `NULL', the array `row_parts' must contain enough
- * storage to hold one `int' for each data line. (The number of data
- * lines is obtained by calling `mtxvector_size_num_data_lines()'). On
- * a successful return, the `k'-th entry in the array specifies the
- * part number that was assigned to the `k'-th data line.
- */
-int mtxvector_distributed_partition_rows(
-    struct mtxvector_distributed * vector,
-    const struct mtxpartition * row_partition,
-    int64_t * data_lines_per_part_ptr,
-    int * row_parts);
-
-/**
- * `mtxvector_distributed_init_from_row_partition()' creates a vector
- * from a subset of the rows of another vector.
- *
- * The array `data_lines_per_part_ptr' should have been obtained
- * previously by calling `mtxvector_distributed_partition_rows'.
- */
-int mtxvector_distributed_init_from_row_partition(
-    struct mtxvector_distributed * dst,
-    const struct mtxvector_distributed * src,
-    const struct mtxpartition * row_partition,
-    int64_t * data_lines_per_part_ptr,
-    int part);
+/* ... */
 
 /*
  * MPI functions

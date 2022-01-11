@@ -16,7 +16,7 @@
  * along with libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-01-07
+ * Last modified: 2022-01-11
  *
  * Matrix Market files distributed among multiple processes with MPI
  * for inter-process communication.
@@ -2603,6 +2603,37 @@ int mtxdistfile_sort(
  */
 
 /**
+ * ‘mtxdistfile_partition()’ partitions and redistributes the entries
+ * of a distributed Matrix Market file according to the given row and
+ * column partitions.
+ *
+ * The partitions ‘rowpart’ or ‘colpart’ are allowed to be ‘NULL’, in
+ * which case a trivial, singleton partition is used for the rows or
+ * columns, respectively.
+ *
+ * Otherwise, ‘rowpart’ and ‘colpart’ must partition the rows and
+ * columns of the matrix or vector ‘src’, respectively. That is,
+ * ‘rowpart->size’ must be equal to ‘src->size.num_rows’, and
+ * ‘colpart->size’ must be equal to ‘src->size.num_columns’.
+ *
+ * The distributed Matrix Market file ‘dst’ is used to store the
+ * results of the partitioning and redistribution. The user is
+ * responsible for calling ‘mtxdistfile_free’ to free storage
+ * allocated for ‘dst’.
+ */
+int mtxdistfile_partition(
+    const struct mtxdistfile * src,
+    struct mtxdistfile * dsts,
+    const struct mtxpartition * rowpart,
+    const struct mtxpartition * colpart,
+    struct mtxdisterror * disterr)
+{
+    errno = ENOTSUP;
+    return MTX_ERR_ERRNO;
+}
+
+#if 0
+/**
  * ‘mtxdistfile_init_from_partition()’ creates a distributed Matrix
  * Market file from a partitioning of another distributed Matrix
  * Market file.
@@ -2792,4 +2823,6 @@ int mtxdistfile_partition_rows(
         return MTX_ERR_MPI_COLLECTIVE;
     return MTX_SUCCESS;
 }
+#endif
+
 #endif

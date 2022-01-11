@@ -34,6 +34,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+/*
+ * Types of partitioning
+ */
+
 /**
  * ‘mtxpartitioning_str()’ is a string representing the partition
  * type.
@@ -110,6 +114,10 @@ int mtxpartitioning_parse(
     return MTX_SUCCESS;
 }
 
+/*
+ * Partitions of finite sets
+ */
+
 /**
  * ‘mtxpartition_free()’ frees resources associated with a
  * partitioning.
@@ -117,10 +125,10 @@ int mtxpartitioning_parse(
 void mtxpartition_free(
     struct mtxpartition * partition)
 {
+    free(partition->elements_per_part);
     free(partition->parts);
-    for (int p = 0; p < partition->num_parts; p++)
-        mtxidxset_free(&partition->index_sets[p]);
-    free(partition->index_sets);
+    free(partition->parts_ptr);
+    free(partition->part_sizes);
 }
 
 /**
@@ -131,13 +139,14 @@ int mtxpartition_init(
     enum mtxpartitioning type,
     int64_t size,
     int num_parts,
+    const int64_t * part_sizes,
     int block_size,
     const int * parts)
 {
-    if (type == mtx_singleton) {
+    if (type == mtx_singleton && num_parts == 1) {
         return mtxpartition_init_singleton(partition, size);
     } else if (type == mtx_block) {
-        return mtxpartition_init_block(partition, size, num_parts);
+        return mtxpartition_init_block(partition, size, num_parts, part_sizes);
     } else if (type == mtx_cyclic) {
         return mtxpartition_init_cyclic(partition, size, num_parts);
     } else if (type == mtx_block_cyclic) {
@@ -162,16 +171,19 @@ int mtxpartition_init_singleton(
     partition->type = mtx_singleton;
     partition->size = size;
     partition->num_parts = 1;
-    partition->index_sets = malloc(
-        partition->num_parts * sizeof(struct mtxidxset));
-    if (!partition->index_sets)
+    partition->part_sizes = malloc(partition->num_parts * sizeof(int64_t));
+    if (!partition->part_sizes)
         return MTX_ERR_ERRNO;
-    int err = mtxidxset_init_interval(&partition->index_sets[0], 0, size);
-    if (err) {
-        free(partition->index_sets);
-        return err;
+    partition->part_sizes[0] = size;
+    partition->parts_ptr = malloc((partition->num_parts+1) * sizeof(int64_t));
+    if (!partition->parts_ptr) {
+        free(partition->part_sizes);
+        return MTX_ERR_ERRNO;
     }
+    partition->parts_ptr[0] = 0;
+    partition->parts_ptr[1] = size;
     partition->parts = NULL;
+    partition->elements_per_part = NULL;
     return MTX_SUCCESS;
 }
 
@@ -182,7 +194,8 @@ int mtxpartition_init_singleton(
 int mtxpartition_init_block(
     struct mtxpartition * partition,
     int64_t size,
-    int num_parts)
+    int num_parts,
+    const int64_t * part_sizes)
 {
     int err;
     if (num_parts <= 0)
@@ -191,22 +204,31 @@ int mtxpartition_init_block(
     partition->type = mtx_block;
     partition->size = size;
     partition->num_parts = num_parts;
-    partition->index_sets = malloc(num_parts * sizeof(struct mtxidxset));
-    if (!partition->index_sets)
+    partition->part_sizes = malloc(partition->num_parts * sizeof(int64_t));
+    if (!partition->part_sizes)
         return MTX_ERR_ERRNO;
-    int64_t a = 0;
-    for (int p = 0; p < num_parts; p++) {
-        int64_t b = a + (size / num_parts + (p < (size % num_parts) ? 1 : 0));
-        err = mtxidxset_init_interval(&partition->index_sets[p], a, b);
-        a = b;
-        if (err) {
-            for (int q = p-1; q > 0; q--)
-                mtxidxset_free(&partition->index_sets[q]);
-            free(partition->index_sets);
-            return err;
+    if (part_sizes) {
+        for (int p = 0; p < num_parts; p++)
+            partition->part_sizes[p] = part_sizes[p];
+    } else {
+        for (int p = 0; p < num_parts; p++) {
+            partition->part_sizes[p] =
+                (size / num_parts + (p < (size % num_parts) ? 1 : 0));
         }
     }
+
+    partition->parts_ptr = malloc((partition->num_parts+1) * sizeof(int64_t));
+    if (!partition->parts_ptr) {
+        free(partition->part_sizes);
+        return MTX_ERR_ERRNO;
+    }
+    partition->parts_ptr[0] = 0;
+    for (int p = 0; p < num_parts; p++) {
+        partition->parts_ptr[p+1] =
+            partition->parts_ptr[p] + partition->part_sizes[p];
+    }
     partition->parts = NULL;
+    partition->elements_per_part = NULL;
     return MTX_SUCCESS;
 }
 
@@ -226,21 +248,26 @@ int mtxpartition_init_cyclic(
     partition->type = mtx_cyclic;
     partition->size = size;
     partition->num_parts = num_parts;
-    partition->index_sets = malloc(num_parts * sizeof(struct mtxidxset));
-    if (!partition->index_sets)
+    partition->part_sizes = malloc(partition->num_parts * sizeof(int64_t));
+    if (!partition->part_sizes)
         return MTX_ERR_ERRNO;
     for (int p = 0; p < num_parts; p++) {
-        int64_t part_size = size / num_parts + (p < (size % num_parts) ? 1 : 0);
-        err = mtxidxset_init_strided(
-            &partition->index_sets[p], p, part_size, num_parts);
-        if (err) {
-            for (int q = p-1; q > 0; q--)
-                mtxidxset_free(&partition->index_sets[q]);
-            free(partition->index_sets);
-            return err;
-        }
+        partition->part_sizes[p] =
+            (size / num_parts + (p < (size % num_parts) ? 1 : 0));
+    }
+
+    partition->parts_ptr = malloc((partition->num_parts+1) * sizeof(int64_t));
+    if (!partition->parts_ptr) {
+        free(partition->part_sizes);
+        return MTX_ERR_ERRNO;
+    }
+    partition->parts_ptr[0] = 0;
+    for (int p = 0; p < num_parts; p++) {
+        partition->parts_ptr[p+1] =
+            partition->parts_ptr[p] + partition->part_sizes[p];
     }
     partition->parts = NULL;
+    partition->elements_per_part = NULL;
     return MTX_SUCCESS;
 }
 
@@ -259,7 +286,7 @@ int mtxpartition_init_block_cyclic(
 }
 
 /**
- * ‘mtxpartition_init_partition()’ initialises an partition
+ * ‘mtxpartition_init_partition()’ initialises a user-defined
  * partitioning of a finite set.
  */
 int mtxpartition_init_partition(
@@ -269,103 +296,123 @@ int mtxpartition_init_partition(
     const int * parts)
 {
     int err;
+    if (num_parts <= 0)
+        return MTX_ERR_INDEX_OUT_OF_BOUNDS;
     for (int64_t i = 0; i < size; i++) {
         if (parts[i] < 0 || parts[i] >= num_parts)
             return MTX_ERR_INDEX_OUT_OF_BOUNDS;
     }
+
     partition->type = mtx_partition;
     partition->size = size;
     partition->num_parts = num_parts;
-    partition->index_sets = malloc(num_parts * sizeof(struct mtxidxset));
-    if (!partition->index_sets)
+    partition->part_sizes = malloc(partition->num_parts * sizeof(int64_t));
+    if (!partition->part_sizes)
         return MTX_ERR_ERRNO;
 
-    int64_t * size_per_part = malloc(num_parts * sizeof(int64_t));
-    if (!size_per_part) {
-        free(partition->index_sets);
-        return MTX_ERR_ERRNO;
-    }
     for (int p = 0; p < num_parts; p++)
-        size_per_part[p] = 0;
-    for (int64_t i = 0; i < size; i++) {
-        int p = parts[i];
-        size_per_part[p]++;
-    }
+        partition->part_sizes[p] = 0;
+    for (int64_t k = 0; k < size; k++)
+        partition->part_sizes[parts[k]]++;
 
+    partition->parts_ptr = malloc((partition->num_parts+1) * sizeof(int64_t));
+    if (!partition->parts_ptr) {
+        free(partition->part_sizes);
+        return MTX_ERR_ERRNO;
+    }
+    partition->parts_ptr[0] = 0;
     for (int p = 0; p < num_parts; p++) {
-        int64_t * indices = malloc(size_per_part[p] * sizeof(int64_t));
-        if (!indices) {
-            for (int q = p-1; q > 0; q--)
-                mtxidxset_free(&partition->index_sets[q]);
-            free(partition->index_sets);
-            free(size_per_part);
-            return MTX_ERR_ERRNO;
-        }
-
-        int64_t k = 0;
-        for (int64_t i = 0; i < size; i++) {
-            if (parts[i] == p) {
-                indices[k] = i;
-                k++;
-            }
-        }
-
-        err = mtxidxset_init_discrete(
-            &partition->index_sets[p], size_per_part[p], indices);
-        if (err) {
-            free(indices);
-            for (int q = p-1; q > 0; q--)
-                mtxidxset_free(&partition->index_sets[q]);
-            free(partition->index_sets);
-            free(size_per_part);
-            return err;
-        }
-        free(indices);
+        partition->parts_ptr[p+1] =
+            partition->parts_ptr[p] + partition->part_sizes[p];
     }
 
-    partition->parts = malloc(size * sizeof(int));
+    partition->parts = malloc(partition->size * sizeof(int64_t));
     if (!partition->parts) {
-        for (int p = 0; p < num_parts; p++)
-            mtxidxset_free(&partition->index_sets[p]);
-        free(partition->index_sets);
-        free(size_per_part);
+        free(partition->parts_ptr);
+        free(partition->part_sizes);
         return MTX_ERR_ERRNO;
     }
     for (int64_t i = 0; i < size; i++)
         partition->parts[i] = parts[i];
 
-    free(size_per_part);
+    partition->elements_per_part = malloc(partition->size * sizeof(int64_t));
+    if (!partition->elements_per_part) {
+        free(partition->parts);
+        free(partition->parts_ptr);
+        free(partition->part_sizes);
+        return MTX_ERR_ERRNO;
+    }
+    for (int64_t i = 0; i < size; i++) {
+        int p = parts[i];
+        partition->elements_per_part[
+            partition->parts_ptr[p]] = i;
+        partition->parts_ptr[p]++;
+    }
+    partition->parts_ptr[0] = 0;
+    for (int p = 0; p < num_parts; p++) {
+        partition->parts_ptr[p+1] =
+            partition->parts_ptr[p] + partition->part_sizes[p];
+    }
     return MTX_SUCCESS;
 }
 
 /**
- * ‘mtxpartition_part()’ determines which part of a partition that a
- * given element belongs to.
+ * ‘mtxpartition_assign()’ assigns part numbers to elements of an
+ * array according to the partitioning.
+ *
+ * The arrays ‘elements’ and ‘parts’ must both contain enough storage
+ * for ‘size’ values of type ‘int’. If successful, ‘parts’ will
+ * contain the part numbers of each element in the ‘elements’ array.
+ *
+ * If needed, ‘elements’ and ‘parts’ are allowed to point to the same
+ * underlying array. The values of ‘elements’ will then be overwritten
+ * by the assigned part numbers.
  */
-int mtxpartition_part(
+int mtxpartition_assign(
     const struct mtxpartition * partition,
-    int * p,
-    int64_t n)
+    int64_t size,
+    const int * elements,
+    int * parts)
 {
-    if (n >= partition->size)
-        return MTX_ERR_INDEX_OUT_OF_BOUNDS;
-
     if (partition->type == mtx_singleton) {
-        *p = 0;
+        for (int64_t k = 0; k < size; k++) {
+            if (elements[k] < 0 || elements[k] >= partition->size)
+                return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            parts[k] = 0;
+        }
+
     } else if (partition->type == mtx_block) {
         int64_t size_per_part = partition->size / partition->num_parts;
         int64_t remainder = partition->size % partition->num_parts;
-        *p = n / (size_per_part+1);
-        if (*p >= remainder)
-            *p = remainder + (n - remainder * (size_per_part+1)) / size_per_part;
+        for (int64_t k = 0; k < size; k++) {
+            if (elements[k] < 0 || elements[k] >= partition->size)
+                return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            int64_t n = elements[k];
+            parts[k] = n / (size_per_part+1);
+            if (parts[k] >= remainder)
+                parts[k] = remainder +
+                    (n - remainder * (size_per_part+1)) / size_per_part;
+        }
+
     } else if (partition->type == mtx_cyclic) {
-        *p = n % partition->num_parts;
+        for (int64_t k = 0; k < size; k++) {
+            if (elements[k] < 0 || elements[k] >= partition->size)
+                return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            parts[k] = elements[k] % partition->num_parts;
+        }
+
     } else if (partition->type == mtx_block_cyclic) {
         /* TODO: Not implemented. */
         errno = ENOTSUP;
         return MTX_ERR_ERRNO;
+
     } else if (partition->type == mtx_partition) {
-        *p = partition->parts[n];
+        for (int64_t k = 0; k < size; k++) {
+            if (elements[k] < 0 || elements[k] >= partition->size)
+                return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            parts[k] = partition->parts[elements[k]];
+        }
+
     } else {
         return MTX_ERR_INVALID_PARTITION_TYPE;
     }
@@ -600,193 +647,4 @@ int mtxpartition_fwrite_parts(
     }
     mtxfile_free(&mtxfile);
     return MTX_SUCCESS;
-}
-
-/**
- * ‘mtxpartition_write_permutation()’ writes the permutation of a
- * given part of a partitioned set to the given path.  The permutation
- * is represented by an array of global indices of the elements
- * belonging to the given part prior to partitioning.  The file is
- * written as a Matrix Market file in the form of an integer vector in
- * array format.
- *
- * If ‘path’ is ‘-’, then standard output is used.
- *
- * If ‘format’ is not ‘NULL’, then the given format string is used
- * when printing numerical values.  The format specifier must be '%d',
- * and a fixed field width may optionally be specified (e.g., "%3d"),
- * but variable field width (e.g., "%*d"), as well as length modifiers
- * (e.g., "%ld") are not allowed.  If ‘format’ is ‘NULL’, then the
- * format specifier '%d' is used.
- *
- * If it is not ‘NULL’, then the number of bytes written to the stream
- * is returned in ‘bytes_written’.
- */
-int mtxpartition_write_permutation(
-    const struct mtxpartition * partition,
-    int part,
-    const char * path,
-    const char * format,
-    int64_t * bytes_written)
-{
-    if (part < 0 || part >= partition->num_parts)
-        return MTX_ERR_INDEX_OUT_OF_BOUNDS;
-    return mtxidxset_write(
-        &partition->index_sets[part], path, format, bytes_written);
-}
-
-/**
- * ‘num_places()‘ is the number of digits or places in a given
- * non-negative integer.
- */
-static int num_places(int n, int * places)
-{
-    int r = 1;
-    if (n < 0)
-        return MTX_ERR_INDEX_OUT_OF_BOUNDS;
-    while (n > 9) {
-        n /= 10;
-        r++;
-    }
-    *places = r;
-    return 0;
-}
-
-/**
- * ‘format_path()‘ formats a path by replacing any occurence of '%p'
- * in ‘pathfmt’ with the number ‘part’.
- */
-static int format_path(
-    const char * pathfmt,
-    char ** output_path,
-    int part,
-    int comm_size)
-{
-    int err;
-    int part_places;
-    err = num_places(comm_size, &part_places);
-    if (err)
-        return err;
-
-    /* Count the number of occurences of '%p' in the format string. */
-    int count = 0;
-    const char * needle = "%p";
-    const int needle_len = strlen(needle);
-    const int pathfmt_len = strlen(pathfmt);
-
-    const char * src = pathfmt;
-    const char * next;
-    while ((next = strstr(src, needle))) {
-        count++;
-        src = next + needle_len;
-        assert(src < pathfmt + pathfmt_len);
-    }
-    if (count < 1)
-        return MTX_ERR_INVALID_PATH_FORMAT;
-
-    /* Allocate storage for the path. */
-    int path_len = pathfmt_len + (part_places-needle_len)*count;
-    char * path = malloc(path_len+1);
-    if (!path)
-        return errno;
-    path[path_len] = '\0';
-
-    src = pathfmt;
-    char * dest = path;
-    while ((next = strstr(src, needle))) {
-        /* Copy the format string up until the needle, '%p'. */
-        while (src < next && dest <= path + path_len)
-            *dest++ = *src++;
-        src += needle_len;
-
-        /* Replace '%p' with the number of the current part. */
-        assert(dest + part_places <= path + path_len);
-        int len = snprintf(dest, part_places+1, "%0*d", part_places, part);
-        assert(len == part_places);
-        dest += part_places;
-    }
-
-    /* Copy the remainder of the format string. */
-    while (*src != '\0' && dest <= path + path_len)
-        *dest++ = *src++;
-    assert(dest == path + path_len);
-    *dest = '\0';
-
-    *output_path = path;
-    return MTX_SUCCESS;
-}
-
-/**
- * ‘mtxpartition_write_permutations()’ writes the permutations for
- * each part of a partitioned set to the given path.  The permutation
- * is represented by an array of global indices of the elements
- * belonging each part prior to partitioning.  The file for each part
- * is written as a Matrix Market file in the form of an integer vector
- * in array format.
- *
- * Each occurrence of '%p' in ‘pathfmt’ is replaced by the number of
- * each part number.
- *
- * If ‘format’ is not ‘NULL’, then the given format string is used
- * when printing numerical values.  The format specifier must be '%d',
- * and a fixed field width may optionally be specified (e.g., "%3d"),
- * but variable field width (e.g., "%*d"), as well as length modifiers
- * (e.g., "%ld") are not allowed.  If ‘format’ is ‘NULL’, then the
- * format specifier '%d' is used.
- *
- * If it is not ‘NULL’, then the number of bytes written to the stream
- * is returned in ‘bytes_written’.
- */
-int mtxpartition_write_permutations(
-    const struct mtxpartition * partition,
-    const char * pathfmt,
-    const char * format,
-    int64_t * bytes_written)
-{
-    int err;
-    for (int p = 0; p < partition->num_parts; p++) {
-        char * path;
-        err = format_path(pathfmt, &path, p, partition->num_parts);
-        if (err)
-            return err;
-        err = mtxpartition_write_permutation(
-            partition, p, path, format, bytes_written);
-        if (err) {
-            free(path);
-            return err;
-        }
-        free(path);
-    }
-    return MTX_SUCCESS;
-}
-
-/**
- * ‘mtxpartition_write_permutation()’ writes the permutation of a
- * given part of a partitioned set to a stream as a Matrix Market
- * file.  The permutation is represented by an array of global indices
- * of the elements belonging to the given part prior to partitioning.
- * The file is written as a Matrix Market file in the form of an
- * integer vector in array format.
- *
- * If ‘format’ is not ‘NULL’, then the given format string is used
- * when printing numerical values.  The format specifier must be '%d',
- * and a fixed field width may optionally be specified (e.g., "%3d"),
- * but variable field width (e.g., "%*d"), as well as length modifiers
- * (e.g., "%ld") are not allowed.  If ‘format’ is ‘NULL’, then the
- * format specifier '%d' is used.
- *
- * If it is not ‘NULL’, then the number of bytes written to the stream
- * is returned in ‘bytes_written’.
- */
-int mtxpartition_fwrite_permutation(
-    const struct mtxpartition * partition,
-    int part,
-    FILE * f,
-    const char * format,
-    int64_t * bytes_written)
-{
-    if (part < 0 || part >= partition->num_parts)
-        return MTX_ERR_INDEX_OUT_OF_BOUNDS;
-    return mtxidxset_fwrite(
-        &partition->index_sets[part], f, format, bytes_written);
 }

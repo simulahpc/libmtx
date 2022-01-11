@@ -35,10 +35,10 @@ libmtx.
 
 @menu
 * Error handling:: How to handle errors when working with the libmtx C library.
-* Data structures: Matrix Market files - data structures. Basic data structures for representing objects in Matrix Market format.
+* Data structures: Data structures for Matrix Market files. Basic data structures for representing objects in Matrix Market format.
 * Reading and writing Matrix Market files:: How to read from and write to files in Matrix Market format.
 * Creating Matrix Market files:: How to create matrices and vectors in Matrix Market format.
-* Transposing sorting and reordering:: How to transpose, sort and reorder matrices and vectors.
+* Transposing, sorting, partitioning and reordering: Other operations on Matrix Market files. How to transpose, sort, partition and reorder matrices and vectors.
 * Communicating Matrix Market files:: How to communicate Matrix Market files between processes.
 @end menu
 
@@ -85,7 +85,7 @@ example, then the following message will be printed:
 @end example
 
 
-@node Matrix Market files - data structures
+@node Data structures for Matrix Market files
 @section Data structures
 
 This section describes the basic data types used to represent objects
@@ -844,14 +844,14 @@ int mtxfile_set_constant_integer_double(struct mtxfile *, int64_t a);}
 @end example
 
 
-@node Transposing sorting and reordering
-@section Transposing, sorting and reordering
-This section describes operations related to sorting and permuting
-matrices and vectors, as well as transposing matrices and reordering
+@node Other operations on Matrix Market files
+@section Transposing, sorting, partitioning and reordering
+This section describes operations related to transposing, sorting,
+permuting and partitioning matrices and vectors, as well as reordering
 the rows and columns of sparse matrices.
 
-@node Transpose and conjugate transpose
-@subsection Transpose and conjugate transpose
+@node Transpose
+@subsection Transpose
 @cindex transpose
 @findex mtxfile_transpose
 The function @code{mtxfile_transpose} can be used to transpose a
@@ -905,11 +905,146 @@ To sort a matrix or vector, use the function @code{mtxfile_sort}:
 @example
 @code{int mtxfile_sort(
     struct mtxfile * mtxfile,
-    struct mtxfilesorting sorting);}
+    enum mtxfilesorting sorting);}
 @end example
 If successful, @code{mtxfile_sort} returns @samp{MTX_SUCCESS}, and the
 values of @code{mtxfile} will be sorted in the order specified by
 @code{sorting}. The underlying sorting algorithm is a radix sort.
+
+
+@node Partition
+@subsection Partition
+@cindex partition
+@tindex mtxpartitioning
+Partitioning is needed, for example, when distributing a matrix or
+vector among multiple processes (see @ref{Distributed matrices and
+vectors}).
+
+The file @code{libmtx/util/partition.h} defines the type @code{enum
+mtxpartitioning}, which is used to represent different ways of
+partitioning a finite set (e.g., the rows or columns of a matrix). The
+values of this enum type are described below. We follow the convention
+of using the integers 0, 1, ..., @var{N} − 1 to label the elements of
+a finite set of size @var{N} that is to be partitioned. Moreover, we
+use @var{P} to denote the number of parts in the partition, and the
+set @var{P}@sub{@var{i}} denotes the @var{i}th part.
+
+@cindex singleton partition
+@cindex block partition
+@cindex cyclic partition
+@cindex block-cyclic partition
+@cindex user-defined partition
+@itemize
+@item @code{mtx_singleton}
+is a singleton partition with only one non-empty component. That is,
+@var{P} = 1 and @var{P}@sub{0} = @{0, 1, ..., @var{N} − 1@}.
+
+@item @code{mtx_block}
+is a partitioning into contiguous blocks of varying size. Let
+@var{N}@sub{@var{i}} denote the number of elements in the @var{i}th
+part, @var{P}@sub{@var{i}}. Furthermore, let @var{S}@sub{@var{i}}
+denote the number of elements that precede the @var{i}th part. In
+other words, @var{S}@sub{0} = 0, @var{S}@sub{1} = @var{N}@sub{0},
+@var{S}@sub{2} = @var{N}@sub{0} @math{+} @var{N}@sub{1}, and so
+on. The @var{i}th part, @var{P}@sub{@var{i}} is empty if
+@var{N}@sub{@var{i}} is zero. Otherwise, it is made up of the elements
+@{@var{S}@sub{@var{i}}, @var{S}@sub{@var{i}} @math{+} 1, ...,
+@var{S}@sub{@var{i}} @math{+} @var{N}@sub{@var{i}} − 1@}.
+
+@item @code{mtx_cyclic}
+is a cyclic partitioning, where the @var{i}th part,
+@var{P}@sub{@var{i}}, is made up of the elements @{@var{i}, @var{i}
+@math{+} @var{P}, @var{i} @math{+} 2@var{P}, ..., @var{i} @math{+}
+(@var{N}@sub{@var{i}} − 1)@var{P}@}. To find the number of elements in
+each part, @var{N}@sub{@var{i}}, we divide the total number of
+elements @var{N} by the number of parts @var{P}. More specifically,
+@var{N} = @var{q}@var{P} @math{+} @var{r}, where @var{q} is the
+largest integer no greater than @var{N}/@var{P} and @var{r} is the
+remainder of the division.  Then, @var{N}@sub{@var{i}} =
+@var{q} @math{+} 1 if @var{i} is less than @var{r}, and
+@var{N}@sub{@var{i}} = @var{q} otherwise.
+
+@item @code{mtx_block_cyclic}
+is cyclic partitioning of fixed-size blocks. If the size of each block
+is denoted by @var{M}, then the @var{j}th block, @var{B}@sub{@var{j}},
+is made up of the elements @{@var{j}@var{M}, @var{j}@var{M} @math{+}
+1, ..., @var{j}@var{M} @math{+} @var{M} − 1@}. The blocks
+@var{B}@sub{@var{j}} are then assigned in a cyclic fashion to the
+parts @var{P}@sub{@var{i}}.
+
+@item @code{mtx_partition}
+is a general, user-defined partitioning, where each part,
+@var{P}@sub{@var{i}}, is given in the form of an array of length
+@var{N}@sub{@var{i}} consisting of unique elements
+@code{P@sub{@var{i}}[0], P@sub{@var{i}}[1], ...,
+P@sub{@var{i}}[@var{N}@sub{@var{i}}-1]}. Every element
+@code{0,1,...,@var{N}-1} should belong to exactly one array
+@code{P@sub{@var{i}}} to ensure that parts are pairwise disjoint and
+cover the entire set.
+@end itemize
+
+@tindex struct mtxpart
+@tindex struct mtxpartition
+The type @code{struct mtxpart}, is used to represent one part of a
+partition, and @code{struct mtxpartition} is used represent a
+collection of parts, forming a partition of a finite set based on one
+of the methods described above.
+@example
+@code{struct mtxpart @{
+    enum mtxpartitioning type;
+    int64_t size;
+    int num_parts;
+    int part;
+    int64_t part_size;
+    int64_t * elements;
+@};}
+@end example
+The @code{type} member describes the type of partitioning
+used. @code{size} and @code{num_parts} are the size of the partitioned
+set and the number of parts, respectively. @code{part} and
+@code{part_size} is the index of the current part and the number of
+elements in the current part.
+
+@example
+@code{struct mtxpartition @{
+    enum mtxpartitioning type;
+    int64_t size;
+    int num_parts;
+    struct mtxpart * parts;
+@};}
+@end example
+
+
+@findex mtxfile_partition
+If a row and column partition is given, the function
+@code{mtxfile_partition} can be used to partition a Matrix Market file
+into parts.
+@example
+@code{int mtxfile_partition(
+    const struct mtxfile * src,
+    struct mtxfile * dsts,
+    const struct mtxpartition * rowpart,
+    const struct mtxpartition * colpart);}
+@end example
+The partitions @code{rowpart} and @code{colpart} are allowed to be
+@code{NULL}, in which case a trivial, singleton partition is used for
+the rows and columns, respectively. Otherwise, @code{rowpart} and
+@code{colpart} must partition the rows and columns, respectively, of
+the matrix or vector @code{src}. That is, @code{rowpart->size} must be
+equal to @code{src->size.num_rows}, and @code{colpart->size} must be
+equal to @code{src->size.num_columns}.
+
+The argument @code{dsts} is an array that must have enough storage for
+@samp{P*Q} values of type @code{struct mtxfile}, where @code{P} is the
+number of row parts, @code{rowpart->num_parts}, and @code{Q} is the
+number of column parts, @code{colpart->num_parts}. Note that the
+@code{r}th part corresponds to a row part @code{p} and column part
+@code{q}, such that @code{r=p*Q+q}. Thus, the @code{r}th entry of
+@code{dsts} is the submatrix corresponding to the @code{p}th row and
+@code{q}th column of the 2D partitioning.
+
+Note that the user is responsible for freeing storage allocated for
+each Matrix Market file in the @code{dsts} array.
 
 
 @node Reorder

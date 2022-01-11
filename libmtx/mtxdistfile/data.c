@@ -39,7 +39,6 @@
 
 #ifdef LIBMTX_HAVE_MPI
 #include <mpi.h>
-#endif
 
 #include <errno.h>
 
@@ -496,5 +495,6 @@ int mtxdistfiledata_sort_morton(
     free(keys);
     return MTX_SUCCESS;
 }
+#endif
 
 #endif

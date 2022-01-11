@@ -722,9 +722,15 @@ int mtxfiledata_copy_gather(
  * ‘rowidx’ may be ‘NULL’, in which case it is ignored. Otherwise, it
  * must point to an array containing enough storage for ‘size’ values
  * of type ‘int’.  If successful, this array will contain the row
- * index of each data line. Similarly, ‘colidx’ may be ‘NULL’, or it
- * must point to an array of the same size, which will be used to
- * store the column index of each data line.
+ * index of each data line.
+ *
+ * Similarly, ‘colidx’ may be ‘NULL’, or it must point to an array of
+ * the same size, which will be used to store the column index of each
+ * data line.
+ *
+ * Note that indexing is 1-based, meaning that rows are numbered
+ * ‘1,2,...,num_rows’, whereas columns are numbered
+ * ‘1,2,...,num_columns’.
  */
 int mtxfiledata_rowcolidx(
     const union mtxfiledata * data,
@@ -1173,39 +1179,18 @@ int mtxfiledata_sort_morton(
  */
 
 /**
- * `mtxfiledata_sort_by_part()' sorts data lines according to a given
- * partitioning using a stable counting sort algorihtm.
+ * ‘mtxfiledata_partition()’ partitions data lines according to given
+ * row and column partitions.
  *
- * The array `parts_per_data_line' must contain `size' integers with
- * values in the range `[0,num_parts-1]', specifying which part of the
- * partition that each data line belongs to.
+ * The arrays ‘parts’ and must contain enough storage for ‘size’
+ * values of type ‘int’. If successful, ‘parts’ contains the part
+ * numbers of each data line in the partitioning.
  *
- * If it is not `NULL', the array `data_lines_per_part_ptr' must
- * contain enough storage for `num_parts+1' values of type
- * `int64_t'. On a successful return, the array will contain offsets
- * to the first data line belonging to each part.
+ * The partitions ‘rowpart’ or ‘colpart’ are allowed to be ‘NULL’, in
+ * which case a trivial, singleton partition is used for the rows or
+ * columns, respectively.
  */
-int mtxfiledata_sort_by_part(
-    union mtxfiledata * data,
-    enum mtxfileobject object,
-    enum mtxfileformat format,
-    enum mtxfilefield field,
-    enum mtxprecision precision,
-    int64_t size,
-    int64_t offset,
-    int num_parts,
-    int * parts_per_data_line,
-    int64_t * data_lines_per_part_ptr);
-
-/**
- * ‘mtxfiledata_partition_rows()’ partitions data lines according to a
- * given row partitioning.
- *
- * The arrays ‘rowparts’ and must contain enough storage for ‘size’
- * values of type ‘int’. If successful, ‘rowparts’ contains the part
- * numbers of each data line in the row partitioning.
- */
-int mtxfiledata_partition_rows(
+int mtxfiledata_partition(
     const union mtxfiledata * data,
     enum mtxfileobject object,
     enum mtxfileformat format,
@@ -1214,31 +1199,9 @@ int mtxfiledata_partition_rows(
     int num_rows,
     int num_columns,
     int64_t size,
-    int64_t offset,
-    const struct mtxpartition * partition,
-    int * rowparts);
-
-/**
- * `mtxfiledata_partition_columns()' partitions data lines according
- * to a given column partitioning.
- *
- * The array `column_parts' must contain enough storage for an array
- * of `size' values of type `int'.  If successful, the `k'-th value of
- * `column_parts' is equal to the part to which the `k'-th data line
- * belongs.
- */
-int mtxfiledata_partition_columns(
-    const union mtxfiledata * data,
-    enum mtxfileobject object,
-    enum mtxfileformat format,
-    enum mtxfilefield field,
-    enum mtxprecision precision,
-    int num_rows,
-    int num_columns,
-    int64_t size,
-    int64_t offset,
-    const struct mtxpartition * column_partition,
-    int * column_parts);
+    const struct mtxpartition * rowpart,
+    const struct mtxpartition * colpart,
+    int * parts);
 
 /*
  * Reordering

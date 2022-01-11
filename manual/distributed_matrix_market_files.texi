@@ -47,9 +47,8 @@ not distributed.
 * Reading and writing distributed Matrix Market files::
   Functions for reading from and writing to files in Matrix Market
   format.
-* Transposing, sorting and reordering: Other operations on distributed Matrix Market files.
-  Functions for transposing, sorting and reordering distributed
-  @file{mtx} files.
+* Transposing and sorting: Other operations on distributed Matrix Market files.
+  How to transpose and sort distributed @file{mtx} files.
 @end menu
 
 
@@ -778,13 +777,13 @@ then the standard output stream is used.
 
 
 @node Other operations on distributed Matrix Market files
-@section Transposing, sorting and reordering
+@section Transposing and sorting
 This section describes various operations that can be performed on
 distributed Matrix Market files, such as transposing matrices, as well
-as sorting and permuting matrices and vectors.
+as sorting matrices and vectors.
 
-@node Transpose and conjugate transpose distributed Matrix Market files
-@subsection Transpose and conjugate transpose
+@node Transpose distributed Matrix Market files
+@subsection Transpose
 @cindex transpose
 @findex mtxdistfile_transpose
 The function @code{mtxdistfile_transpose} can be used to transpose a
@@ -796,15 +795,15 @@ distributed matrix.
 @end example
 If @code{mtxdistfile} is a vector, nothing is done.
 
-The function @code{mtxdistfile_conjugate_transpose} can be used to
-transpose and complex conjugate a distributed matrix.
-@example
-@code{int mtxdistfile_conjugate_transpose(
-    struct mtxdistfile * mtxdistfile,
-    struct mtxdisterror * disterr);}
-@end example
-If @code{mtxdistfile} is a complex vector, the values are complex
-conjugated. Otherwise, nothing is done.
+@c The function @code{mtxdistfile_conjugate_transpose} can be used to
+@c transpose and complex conjugate a distributed matrix.
+@c @example
+@c @code{int mtxdistfile_conjugate_transpose(
+@c     struct mtxdistfile * mtxdistfile,
+@c     struct mtxdisterror * disterr);}
+@c @end example
+@c If @code{mtxdistfile} is a complex vector, the values are complex
+@c conjugated. Otherwise, nothing is done.
 
 @c The function @code{mtxdistfile_conjugate} can be used to complex conjugate
 @c a matrix or vector.
@@ -825,7 +824,7 @@ To sort a distributed matrix or vector, use the function
 @example
 @code{int mtxdistfile_sort(
     struct mtxdistfile * mtxdistfile,
-    struct mtxfilesorting sorting);}
+    enum mtxfilesorting sorting);}
 @end example
 If successful, @code{mtxdistfile_sort} returns @samp{MTX_SUCCESS}, and
 the values of @code{mtxdistfile} will be sorted in the order specified

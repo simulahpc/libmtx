@@ -47,7 +47,6 @@
 #include <stdio.h>
 
 struct mtxdisterror;
-struct mtxpartition;
 
 /**
  * ‘mtxfile’ represents a file in the Matrix Market file format.
@@ -841,74 +840,34 @@ int mtxfile_sort(
  */
 
 /**
- * ‘mtxfile_init_from_partition()’ creates Matrix Market files for
- * each part of a partitioning of another Matrix Market file.
+ * ‘mtxfile_partition()’ partitions a Matrix Market file according to
+ * the given row and column partitions.
  *
- * ‘dst’ must point to an array of type ‘struct mtxfile’ whose length
- * is equal to the number of parts in the partitioning, num_parts’.
- * The ‘p’th entry in the array will be a Matrix Market file
- * containing the ‘p’th part of the original Matrix Market file,
- * ‘src’, according to the partitioning given by ‘row_partition’.
+ * The partitions ‘rowpart’ or ‘colpart’ are allowed to be ‘NULL’, in
+ * which case a trivial, singleton partition is used for the rows or
+ * columns, respectively.
  *
- * The ‘p’th value of ‘data_lines_per_part_ptr’ must be an offset to
- * the first data line belonging to the ‘p’th part of the partition,
- * while the final value of the array points to one place beyond the
- * final data line.  Moreover for each part ‘p’ of the partitioning,
- * the entries from ‘data_lines_per_part[p]’ up to, but not including,
- * ‘data_lines_per_part[p+1]’, are the indices of the data lines in
- * ‘src’ that are assigned to the ‘p’th part of the partitioning.
+ * Otherwise, ‘rowpart’ and ‘colpart’ must partition the rows and
+ * columns of the matrix or vector ‘src’, respectively. That is,
+ * ‘rowpart->size’ must be equal to ‘src->size.num_rows’, and
+ * ‘colpart->size’ must be equal to ‘src->size.num_columns’.
+ *
+ * The argument ‘dsts’ is an array that must have enough storage for
+ * ‘P*Q’ values of type ‘struct mtxfile’, where ‘P’ is the number of
+ * row parts, ‘rowpart->num_parts’, and ‘Q’ is the number of column
+ * parts, ‘colpart->num_parts’. Note that the ‘r’th part corresponds
+ * to a row part ‘p’ and column part ‘q’, such that ‘r=p*Q+q’. Thus,
+ * the ‘r’th entry of ‘dsts’ is the submatrix corresponding to the
+ * ‘p’th row and ‘q’th column of the 2D partitioning.
+ *
+ * The user is responsible for freeing storage allocated for each
+ * Matrix Market file in the ‘dsts’ array.
  */
-int mtxfile_init_from_partition(
-    struct mtxfile * dst,
+int mtxfile_partition(
     const struct mtxfile * src,
-    int num_parts,
-    const int64_t * data_lines_per_part_ptr,
-    const int64_t * data_lines_per_part);
-
-/**
- * ‘mtxfile_partition_rows()’ partitions data lines of a Matrix Market
- * file according to the given row partitioning.
- *
- * If it is not ‘NULL’, the array ‘part_per_data_line’ must contain
- * enough storage to hold one ‘int’ for each data line. (The number of
- * data lines is obtained from ‘mtxfilesize_num_data_lines()’). On a
- * successful return, the ‘k’th entry in the array specifies the part
- * number that was assigned to the ‘k’th data line of ‘src’.
- *
- * The array ‘data_lines_per_part_ptr’ must contain at least enough
- * storage for ‘row_partition->num_parts+1’ values of type ‘int64_t’.
- * If successful, the ‘p’th value of ‘data_lines_per_part_ptr’ is an
- * offset to the first data line belonging to the ‘p’th part of the
- * partition, while the final value of the array points to one place
- * beyond the final data line.  Moreover ‘data_lines_per_part’ must
- * contain enough storage to hold one ‘int64_t’ for each data line.
- * For each part ‘p’ of the partitioning, the entries from
- * ‘data_lines_per_part[p]’ up to, but not including,
- * ‘data_lines_per_part[p+1]’, are the indices of the data lines in
- * ‘src’ that are assigned to the ‘p’th part of the partitioning.
- */
-int mtxfile_partition_rows(
-    const struct mtxfile * mtxfile,
-    int64_t size,
-    int64_t offset,
-    const struct mtxpartition * row_partition,
-    int * part_per_data_line,
-    int64_t * data_lines_per_part_ptr,
-    int64_t * data_lines_per_part);
-
-/**
- * ‘mtxfile_init_from_row_partition()’ creates a Matrix Market file
- * from a subset of the rows of another Matrix Market file.
- *
- * The array ‘data_lines_per_part_ptr’ should have been obtained
- * previously by calling ‘mtxfile_partition_rows’.
- */
-int mtxfile_init_from_row_partition(
-    struct mtxfile * dst,
-    const struct mtxfile * src,
-    const struct mtxpartition * row_partition,
-    int64_t * data_lines_per_part_ptr,
-    int part);
+    struct mtxfile * dsts,
+    const struct mtxpartition * rowpart,
+    const struct mtxpartition * colpart);
 
 /*
  * Reordering
