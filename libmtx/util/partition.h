@@ -156,6 +156,13 @@ int mtxpartition_init(
     const int * parts);
 
 /**
+ * ‘mtxpartition_init_copy()’ creates a copy of a partitioning.
+ */
+int mtxpartition_init_copy(
+    struct mtxpartition * dst,
+    const struct mtxpartition * src);
+
+/**
  * ‘mtxpartition_init_singleton()’ initialises a singleton partition
  * of a finite set.  That is, a partition with only one part, also
  * called the trivial partition.

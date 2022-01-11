@@ -16,7 +16,7 @@
  * along with libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-01-09
+ * Last modified: 2022-01-11
  *
  * Data types and functions for partitioning finite sets.
  */
@@ -158,6 +158,56 @@ int mtxpartition_init(
     } else {
         return MTX_ERR_INVALID_PARTITION_TYPE;
     }
+}
+
+/**
+ * ‘mtxpartition_init_copy()’ creates a copy of a partitioning.
+ */
+int mtxpartition_init_copy(
+    struct mtxpartition * dst,
+    const struct mtxpartition * src)
+{
+    dst->type = src->type;
+    dst->size = src->size;
+    dst->num_parts = src->num_parts;
+    dst->part_sizes = malloc(dst->num_parts * sizeof(int64_t));
+    if (!dst->part_sizes)
+        return MTX_ERR_ERRNO;
+    for (int p = 0; p < dst->num_parts; p++)
+        dst->part_sizes[p] = src->part_sizes[p];
+    dst->parts_ptr = malloc((dst->num_parts+1) * sizeof(int64_t));
+    if (!dst->parts_ptr) {
+        free(dst->part_sizes);
+        return MTX_ERR_ERRNO;
+    }
+    for (int p = 0; p < dst->num_parts; p++)
+        dst->parts_ptr[p] = src->parts_ptr[p];
+    if (src->parts) {
+        dst->parts = malloc(dst->size * sizeof(int64_t));
+        if (!dst->parts) {
+            free(dst->parts_ptr);
+            free(dst->part_sizes);
+            return MTX_ERR_ERRNO;
+        }
+        for (int64_t i = 0; i < dst->size; i++)
+            dst->parts[i] = src->parts[i];
+    } else {
+        dst->parts = NULL;
+    }
+    if (src->elements_per_part) {
+        dst->elements_per_part = malloc(dst->size * sizeof(int64_t));
+        if (!dst->elements_per_part) {
+            free(dst->parts);
+            free(dst->parts_ptr);
+            free(dst->part_sizes);
+            return MTX_ERR_ERRNO;
+        }
+        for (int64_t i = 0; i < dst->size; i++)
+            dst->elements_per_part[i] = src->elements_per_part[i];
+    } else {
+        dst->elements_per_part = NULL;
+    }
+    return MTX_SUCCESS;
 }
 
 /**
