@@ -139,7 +139,7 @@ int mtxpartition_init(
     enum mtxpartitioning type,
     int64_t size,
     int num_parts,
-    const int64_t * part_sizes,
+    const int * part_sizes,
     int block_size,
     const int * parts)
 {
@@ -170,7 +170,7 @@ int mtxpartition_init_copy(
     dst->type = src->type;
     dst->size = src->size;
     dst->num_parts = src->num_parts;
-    dst->part_sizes = malloc(dst->num_parts * sizeof(int64_t));
+    dst->part_sizes = malloc(dst->num_parts * sizeof(int));
     if (!dst->part_sizes)
         return MTX_ERR_ERRNO;
     for (int p = 0; p < dst->num_parts; p++)
@@ -218,10 +218,14 @@ int mtxpartition_init_singleton(
     struct mtxpartition * partition,
     int64_t size)
 {
+    if (size > INT_MAX) {
+        errno = ERANGE;
+        return MTX_ERR_ERRNO;
+    }
     partition->type = mtx_singleton;
     partition->size = size;
     partition->num_parts = 1;
-    partition->part_sizes = malloc(partition->num_parts * sizeof(int64_t));
+    partition->part_sizes = malloc(partition->num_parts * sizeof(int));
     if (!partition->part_sizes)
         return MTX_ERR_ERRNO;
     partition->part_sizes[0] = size;
@@ -239,22 +243,32 @@ int mtxpartition_init_singleton(
 
 /**
  * ‘mtxpartition_init_block()’ initialises a block partitioning of a
- * finite set.
+ * finite set. Each block is made up of a contiguous set of elements,
+ * but blocks may vary in size.
+ *
+ * If ‘part_sizes’ is ‘NULL’, then the elements are divided into
+ * blocks of equal size. Otherwise, ‘part_sizes’ must point to an
+ * array of length ‘num_parts’ containing the number of elements in
+ * each part. Moreover, the sum of the entries in ‘part_sizes’ must be
+ * equal to ‘size’.
  */
 int mtxpartition_init_block(
     struct mtxpartition * partition,
     int64_t size,
     int num_parts,
-    const int64_t * part_sizes)
+    const int * part_sizes)
 {
     int err;
     if (num_parts <= 0)
         return MTX_ERR_INDEX_OUT_OF_BOUNDS;
-
+    if (size / num_parts >= INT_MAX) {
+        errno = ERANGE;
+        return MTX_ERR_ERRNO;
+    }
     partition->type = mtx_block;
     partition->size = size;
     partition->num_parts = num_parts;
-    partition->part_sizes = malloc(partition->num_parts * sizeof(int64_t));
+    partition->part_sizes = malloc(partition->num_parts * sizeof(int));
     if (!partition->part_sizes)
         return MTX_ERR_ERRNO;
     if (part_sizes) {
@@ -277,6 +291,11 @@ int mtxpartition_init_block(
         partition->parts_ptr[p+1] =
             partition->parts_ptr[p] + partition->part_sizes[p];
     }
+    if (partition->parts_ptr[num_parts] != size) {
+        free(partition->parts_ptr);
+        free(partition->part_sizes);
+        return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+    }
     partition->parts = NULL;
     partition->elements_per_part = NULL;
     return MTX_SUCCESS;
@@ -294,11 +313,15 @@ int mtxpartition_init_cyclic(
     int err;
     if (num_parts <= 0)
         return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+    if (size / num_parts >= INT_MAX) {
+        errno = ERANGE;
+        return MTX_ERR_ERRNO;
+    }
 
     partition->type = mtx_cyclic;
     partition->size = size;
     partition->num_parts = num_parts;
-    partition->part_sizes = malloc(partition->num_parts * sizeof(int64_t));
+    partition->part_sizes = malloc(partition->num_parts * sizeof(int));
     if (!partition->part_sizes)
         return MTX_ERR_ERRNO;
     for (int p = 0; p < num_parts; p++) {
@@ -356,7 +379,7 @@ int mtxpartition_init_partition(
     partition->type = mtx_partition;
     partition->size = size;
     partition->num_parts = num_parts;
-    partition->part_sizes = malloc(partition->num_parts * sizeof(int64_t));
+    partition->part_sizes = malloc(partition->num_parts * sizeof(int));
     if (!partition->part_sizes)
         return MTX_ERR_ERRNO;
 

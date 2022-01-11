@@ -106,7 +106,7 @@ struct mtxpartition
      * ‘part_sizes’ is an array containing the number of elements in
      * each part of the partition.
      */
-    int64_t * part_sizes;
+    int * part_sizes;
 
     /**
      * ‘parts_ptr’ is an array of length ‘num_parts+1’, containing
@@ -151,7 +151,7 @@ int mtxpartition_init(
     enum mtxpartitioning type,
     int64_t size,
     int num_parts,
-    const int64_t * part_sizes,
+    const int * part_sizes,
     int block_size,
     const int * parts);
 
@@ -173,13 +173,20 @@ int mtxpartition_init_singleton(
 
 /**
  * ‘mtxpartition_init_block()’ initialises a block partitioning of a
- * finite set.
+ * finite set. Each block is made up of a contiguous set of elements,
+ * but blocks may vary in size.
+ *
+ * If ‘part_sizes’ is ‘NULL’, then the elements are divided into
+ * blocks of equal size. Otherwise, ‘part_sizes’ must point to an
+ * array of length ‘num_parts’ containing the number of elements in
+ * each part. Moreover, the sum of the entries in ‘part_sizes’ must be
+ * equal to ‘size’.
  */
 int mtxpartition_init_block(
     struct mtxpartition * partition,
     int64_t size,
     int num_parts,
-    const int64_t * part_sizes);
+    const int * part_sizes);
 
 /**
  * ‘mtxpartition_init_cyclic()’ initialises a cyclic partitioning of
