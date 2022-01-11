@@ -697,6 +697,8 @@ int main(int argc, char *argv[])
 
     /* TODO: Make row partitioning configurable, see mtxpartition.c */
     const enum mtxpartitioning row_partition_type = mtx_block;
+    int num_proc_rows = comm_size;
+    int num_proc_cols = 1;
 
     struct mtxdistfile mtxdistfilex;
     int lines_read;
@@ -705,7 +707,7 @@ int main(int argc, char *argv[])
         &mtxdistfilex, args.precision,
         args.x_path ? args.x_path : "", args.gzip,
         &lines_read, &bytes_read,
-        comm, &disterr);
+        NULL, NULL, comm, num_proc_rows, num_proc_cols, &disterr);
     if (err) {
         if (args.verbose > 0)
             fprintf(diagf, "\n");
@@ -753,7 +755,7 @@ int main(int argc, char *argv[])
             &mtxdistfiley, args.precision,
             args.y_path, args.gzip,
             &lines_read, &bytes_read,
-            comm, &disterr);
+            NULL, NULL, comm, num_proc_rows, num_proc_cols, &disterr);
         if (err) {
             if (args.verbose > 0)
                 fprintf(diagf, "\n");

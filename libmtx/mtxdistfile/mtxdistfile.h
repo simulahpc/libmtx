@@ -33,6 +33,7 @@
 #include <libmtx/mtxfile/header.h>
 #include <libmtx/mtxfile/mtxfile.h>
 #include <libmtx/mtxfile/size.h>
+#include <libmtx/util/partition.h>
 
 #ifdef LIBMTX_HAVE_MPI
 #include <mpi.h>
@@ -48,13 +49,15 @@
 #include <stdio.h>
 
 struct mtxdisterror;
-struct mtxpartition;
 
 #ifdef LIBMTX_HAVE_MPI
 /**
  * ‘mtxdistfile’ represents a file in the Matrix Market file format
  * distributed among multiple processes, where MPI is used for
  * communicating between processes.
+ *
+ * The processes involved are arranged in a logically two-dimensional
+ * process grid.
  */
 struct mtxdistfile
 {
@@ -75,6 +78,34 @@ struct mtxdistfile
      * ‘rank’ is the rank of the current process.
      */
     int rank;
+
+    /**
+     * ‘num_proc_rows’ is the number of rows in the two-dimensional
+     * process grid.
+     */
+    int num_proc_rows;
+
+    /**
+     * ‘num_proc_cols’ is the number of columns in the two-dimensional
+     * process grid.
+     */
+    int num_proc_cols;
+
+    /**
+     * ‘rowpart’ is a partition of the rows of the distributed matrix
+     * or vector. Thus, ‘rowpart->num_parts’ must be no greater than
+     * ‘num_proc_rows’, and ‘rowpart->size’ must be equal to
+     * ‘src->size.num_rows’.
+     */
+    struct mtxpartition rowpart;
+
+    /**
+     * ‘colpart’ is a partition of the columns of the distributed
+     * matrix or vector. Thus, ‘colpart->num_parts’ must be no greater
+     * than ‘num_proc_cols’, and ‘colpart->size’ must be equal to
+     * ‘src->size.num_columns’.
+     */
+    struct mtxpartition colpart;
 
     /**
      * ‘header’ is the Matrix Market file header.
@@ -107,20 +138,6 @@ struct mtxdistfile
 /*
  * Memory management
  */
-
-/**
- * ‘mtxdistfile_init()’ creates a distributed Matrix Market file from
- * Matrix Market files on each process in a communicator.
- *
- * This function performs collective communication and therefore
- * requires every process in the communicator to perform matching
- * calls to the function.
- */
-int mtxdistfile_init(
-    struct mtxdistfile * mtxdistfile,
-    const struct mtxfile * mtxfile,
-    MPI_Comm comm,
-    struct mtxdisterror * disterr);
 
 /**
  * ‘mtxdistfile_free()’ frees storage allocated for a distributed
@@ -161,9 +178,13 @@ int mtxdistfile_alloc_matrix_array(
     enum mtxfilefield field,
     enum mtxfilesymmetry symmetry,
     enum mtxprecision precision,
-    int num_rows,
-    int num_columns,
+    int num_local_rows,
+    int num_local_columns,
+    const struct mtxpartition * rowpart,
+    const struct mtxpartition * colpart,
     MPI_Comm comm,
+    int num_proc_rows,
+    int num_proc_cols,
     struct mtxdisterror * disterr);
 
 /**
@@ -177,7 +198,11 @@ int mtxdistfile_init_matrix_array_real_single(
     int num_rows,
     int num_columns,
     const float * data,
+    const struct mtxpartition * rowpart,
+    const struct mtxpartition * colpart,
     MPI_Comm comm,
+    int num_proc_rows,
+    int num_proc_cols,
     struct mtxdisterror * disterr);
 
 /**
@@ -187,10 +212,14 @@ int mtxdistfile_init_matrix_array_real_single(
 int mtxdistfile_init_matrix_array_real_double(
     struct mtxdistfile * mtxdistfile,
     enum mtxfilesymmetry symmetry,
-    int num_rows,
-    int num_columns,
+    int num_local_rows,
+    int num_local_columns,
     const double * data,
+    const struct mtxpartition * rowpart,
+    const struct mtxpartition * colpart,
     MPI_Comm comm,
+    int num_proc_rows,
+    int num_proc_cols,
     struct mtxdisterror * disterr);
 
 /**
@@ -205,6 +234,8 @@ int mtxdistfile_init_matrix_array_complex_single(
     int num_columns,
     const float (* data)[2],
     MPI_Comm comm,
+    int num_proc_rows,
+    int num_proc_cols,
     struct mtxdisterror * disterr);
 
 /**
@@ -219,6 +250,8 @@ int mtxdistfile_init_matrix_array_complex_double(
     int num_columns,
     const double (* data)[2],
     MPI_Comm comm,
+    int num_proc_rows,
+    int num_proc_cols,
     struct mtxdisterror * disterr);
 
 /**
@@ -233,6 +266,8 @@ int mtxdistfile_init_matrix_array_integer_single(
     int num_columns,
     const int32_t * data,
     MPI_Comm comm,
+    int num_proc_rows,
+    int num_proc_cols,
     struct mtxdisterror * disterr);
 
 /**
@@ -247,6 +282,8 @@ int mtxdistfile_init_matrix_array_integer_double(
     int num_columns,
     const int64_t * data,
     MPI_Comm comm,
+    int num_proc_rows,
+    int num_proc_cols,
     struct mtxdisterror * disterr);
 
 /*
@@ -628,7 +665,11 @@ int mtxdistfile_set_constant_integer_single(
 int mtxdistfile_from_mtxfile(
     struct mtxdistfile * dst,
     const struct mtxfile * src,
+    const struct mtxpartition * rowpart,
+    const struct mtxpartition * colpart,
     MPI_Comm comm,
+    int num_proc_rows,
+    int num_proc_cols,
     int root,
     struct mtxdisterror * disterr);
 
@@ -675,7 +716,11 @@ int mtxdistfile_read_shared(
     bool gzip,
     int * lines_read,
     int64_t * bytes_read,
+    const struct mtxpartition * rowpart,
+    const struct mtxpartition * colpart,
     MPI_Comm comm,
+    int num_proc_rows,
+    int num_proc_cols,
     struct mtxdisterror * disterr);
 
 /**
@@ -719,51 +764,11 @@ int mtxdistfile_fread_shared(
     int64_t * bytes_read,
     size_t line_max,
     char * linebuf,
+    const struct mtxpartition * rowpart,
+    const struct mtxpartition * colpart,
     MPI_Comm comm,
-    struct mtxdisterror * disterr);
-
-/**
- * ‘mtxdistfile_fread_shared()’ reads a Matrix Market file from a stream and
- * distributes the data among MPI processes in a communicator.
- *
- * ‘precision’ is used to determine the precision to use for storing
- * the values of matrix or vector entries.
- *
- * If an error code is returned, then ‘lines_read’ and ‘bytes_read’
- * are used to return the line number and byte at which the error was
- * encountered during the parsing of the Matrix Market file.
- *
- * If ‘linebuf’ is not ‘NULL’, then it must point to an array that can
- * hold at least ‘line_max’ values of type ‘char’. This buffer is used
- * for reading lines from the stream. Otherwise, if ‘linebuf’ is
- * ‘NULL’, then a temporary buffer is allocated and used, and the
- * maximum line length is determined by calling ‘sysconf()’ with
- * ‘_SC_LINE_MAX’.
- *
- * Only a single root process will read from the specified stream.
- * The data is partitioned into equal-sized parts for each process.
- * For matrices and vectors in coordinate format, the total number of
- * data lines is evenly distributed among processes. Otherwise, the
- * rows are evenly distributed among processes.
- *
- * The file is read one part at a time, which is then sent to the
- * owning process. This avoids reading the entire file into the memory
- * of the root process at once, which would severely limit the size of
- * files that could be read.
- *
- * This function performs collective communication and therefore
- * requires every process in the communicator to perform matching
- * calls to the function.
- */
-int mtxdistfile_fread_shared(
-    struct mtxdistfile * mtxdistfile,
-    enum mtxprecision precision,
-    FILE * f,
-    int * lines_read,
-    int64_t * bytes_read,
-    size_t line_max,
-    char * linebuf,
-    MPI_Comm comm,
+    int num_proc_rows,
+    int num_proc_cols,
     struct mtxdisterror * disterr);
 
 #ifdef LIBMTX_HAVE_LIBZ
@@ -1037,7 +1042,7 @@ int mtxdistfile_sort(
  */
 int mtxdistfile_partition(
     const struct mtxdistfile * src,
-    struct mtxdistfile * dsts,
+    struct mtxdistfile * dst,
     const struct mtxpartition * rowpart,
     const struct mtxpartition * colpart,
     struct mtxdisterror * disterr);

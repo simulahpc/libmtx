@@ -484,6 +484,8 @@ int main(int argc, char *argv[])
         clock_gettime(CLOCK_MONOTONIC, &t0);
     }
 
+    int num_proc_rows = comm_size;
+    int num_proc_cols = 1;
     struct mtxdistfile mtxdistfile;
     int lines_read;
     int64_t bytes_read;
@@ -491,7 +493,7 @@ int main(int argc, char *argv[])
         &mtxdistfile, args.precision,
         args.mtx_path, args.gzip,
         &lines_read, &bytes_read,
-        comm, &disterr);
+        NULL, NULL, comm, num_proc_rows, num_proc_cols, &disterr);
     if (err) {
         if (args.verbose > 0)
             fprintf(diagf, "\n");
@@ -581,7 +583,8 @@ int main(int argc, char *argv[])
         err = mtxdistfile_read_shared(
             &perm_mtxdistfile, mtx_double,
             args.perm_path, args.gzip,
-            &lines_read, &bytes_read, comm, &disterr);
+            &lines_read, &bytes_read,
+            NULL, NULL, comm, num_proc_rows, num_proc_cols, &disterr);
         if (err) {
             if (args.verbose > 0)
                 fprintf(diagf, "\n");

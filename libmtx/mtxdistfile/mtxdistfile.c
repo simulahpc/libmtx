@@ -33,7 +33,6 @@
 #include <libmtx/mtxfile/header.h>
 #include <libmtx/mtxfile/mtxfile.h>
 #include <libmtx/mtxfile/size.h>
-#include <libmtx/util/distpartition.h>
 #include <libmtx/util/partition.h>
 
 #ifdef LIBMTX_HAVE_MPI
@@ -60,181 +59,10 @@
 void mtxdistfile_free(
     struct mtxdistfile * mtxdistfile)
 {
-    mtxfilecomments_free(&mtxdistfile->comments);
     mtxfile_free(&mtxdistfile->mtxfile);
-}
-
-/**
- * ‘mtxdistfile_init()’ creates a distributed Matrix Market file from
- * Matrix Market files on each process in a communicator.
- *
- * This function performs collective communication and therefore
- * requires every process in the communicator to perform matching
- * calls to the function.
- */
-int mtxdistfile_init(
-    struct mtxdistfile * mtxdistfile,
-    const struct mtxfile * mtxfile,
-    MPI_Comm comm,
-    struct mtxdisterror * disterr)
-{
-    int err;
-    int comm_size;
-    disterr->mpierrcode = MPI_Comm_size(comm, &comm_size);
-    err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
-    if (mtxdisterror_allreduce(disterr, err))
-        return MTX_ERR_MPI_COLLECTIVE;
-    int rank;
-    disterr->mpierrcode = MPI_Comm_rank(comm, &rank);
-    err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
-    if (mtxdisterror_allreduce(disterr, err))
-        return MTX_ERR_MPI_COLLECTIVE;
-
-    mtxdistfile->comm = comm;
-    mtxdistfile->comm_size = comm_size;
-    mtxdistfile->rank = rank;
-
-    struct mtxfileheader * headers = malloc(
-        comm_size * sizeof(struct mtxfileheader));
-    err = !headers ? MTX_ERR_ERRNO : MTX_SUCCESS;
-    if (mtxdisterror_allreduce(disterr, err))
-        return MTX_ERR_MPI_COLLECTIVE;
-    struct mtxfilesize * sizes = malloc(
-        comm_size * sizeof(struct mtxfilesize));
-    err = !sizes ? MTX_ERR_ERRNO : MTX_SUCCESS;
-    if (mtxdisterror_allreduce(disterr, err)) {
-        free(headers);
-        return MTX_ERR_MPI_COLLECTIVE;
-    }
-    enum mtxprecision * precisions = malloc(comm_size * sizeof(enum mtxprecision));
-    err = !precisions ? MTX_ERR_ERRNO : MTX_SUCCESS;
-    if (mtxdisterror_allreduce(disterr, err)) {
-        free(sizes);
-        free(headers);
-        return MTX_ERR_MPI_COLLECTIVE;
-    }
-
-    /* Gather headers, size lines and precisions. */
-    err = mtxfileheader_allgather(&mtxfile->header, headers, comm, disterr);
-    if (err) {
-        free(precisions);
-        free(sizes);
-        free(headers);
-        return err;
-    }
-    err = mtxfilesize_allgather(&mtxfile->size, sizes, comm, disterr);
-    if (err) {
-        free(precisions);
-        free(sizes);
-        free(headers);
-        return err;
-    }
-    disterr->mpierrcode = MPI_Allgather(
-        &mtxfile->precision, 1, MPI_INT, precisions, 1, MPI_INT, comm);
-    err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
-    if (mtxdisterror_allreduce(disterr, err)) {
-        free(precisions);
-        free(sizes);
-        free(headers);
-        return MTX_ERR_MPI_COLLECTIVE;
-    }
-
-    /* Check that the headers and precision are the same for all of
-     * the underlying Matrix Market files. */
-    err = MTX_SUCCESS;
-    for (int p = 1; p < comm_size; p++) {
-        if (headers[p].object != headers[0].object) {
-            err = MTX_ERR_INCOMPATIBLE_MTX_OBJECT;
-            break;
-        } else if (headers[p].format != headers[0].format) {
-            err = MTX_ERR_INCOMPATIBLE_MTX_FORMAT;
-            break;
-        } else if (headers[p].field != headers[0].field) {
-            err = MTX_ERR_INCOMPATIBLE_MTX_FIELD;
-            break;
-        } else if (headers[p].symmetry != headers[0].symmetry) {
-            err = MTX_ERR_INCOMPATIBLE_MTX_SYMMETRY;
-            break;
-        } else if (precisions[p] != precisions[0]) {
-            err = MTX_ERR_INCOMPATIBLE_PRECISION;
-            break;
-        }
-    }
-    if (err) {
-        free(precisions);
-        free(sizes);
-        free(headers);
-        return err;
-    }
-
-    err = mtxfileheader_copy(&mtxdistfile->header, &headers[0]);
-    if (mtxdisterror_allreduce(disterr, err)) {
-        free(precisions);
-        free(sizes);
-        free(headers);
-        return MTX_ERR_MPI_COLLECTIVE;
-    }
-    free(headers);
-    mtxdistfile->precision = precisions[0];
-    free(precisions);
-
-    err = mtxfilecomments_init(&mtxdistfile->comments);
-    if (mtxdisterror_allreduce(disterr, err)) {
-        free(sizes);
-        return MTX_ERR_MPI_COLLECTIVE;
-    }
-
-    /* Calculate the size of the distributed Matrix Market file. */
-    if (mtxdistfile->header.format == mtxfile_array) {
-        int64_t num_rows = sizes[0].num_rows;
-        err = MTX_SUCCESS;
-        for (int p = 1; p < comm_size; p++) {
-            if (sizes[p].num_columns != sizes[0].num_columns) {
-                err = MTX_ERR_INCOMPATIBLE_MTX_SIZE;
-                break;
-            }
-            num_rows += sizes[p].num_rows;
-        }
-        if (err) {
-            mtxfilecomments_free(&mtxdistfile->comments);
-            free(sizes);
-            return err;
-        }
-        mtxdistfile->size.num_rows = num_rows;
-        mtxdistfile->size.num_columns = sizes[0].num_columns;
-        mtxdistfile->size.num_nonzeros = sizes[0].num_nonzeros;
-    } else if (mtxdistfile->header.format == mtxfile_coordinate) {
-        int64_t num_nonzeros = sizes[0].num_nonzeros;
-        err = MTX_SUCCESS;
-        for (int p = 1; p < comm_size; p++) {
-            if (sizes[p].num_rows != sizes[0].num_rows ||
-                sizes[p].num_columns != sizes[0].num_columns) {
-                err = MTX_ERR_INCOMPATIBLE_MTX_SIZE;
-                break;
-            }
-            num_nonzeros += sizes[p].num_nonzeros;
-        }
-        if (err) {
-            mtxfilecomments_free(&mtxdistfile->comments);
-            free(sizes);
-            return err;
-        }
-        mtxdistfile->size.num_rows = sizes[0].num_rows;
-        mtxdistfile->size.num_columns = sizes[0].num_columns;
-        mtxdistfile->size.num_nonzeros = num_nonzeros;
-    } else {
-        mtxfilecomments_free(&mtxdistfile->comments);
-        free(sizes);
-        return MTX_ERR_INVALID_MTX_FORMAT;
-    }
-    free(sizes);
-
-    err = mtxfile_init_copy(&mtxdistfile->mtxfile, mtxfile);
-    if (mtxdisterror_allreduce(disterr, err)) {
-        mtxfilecomments_free(&mtxdistfile->comments);
-        return MTX_ERR_MPI_COLLECTIVE;
-    }
-    return MTX_SUCCESS;
+    mtxfilecomments_free(&mtxdistfile->comments);
+    mtxpartition_free(&mtxdistfile->colpart);
+    mtxpartition_free(&mtxdistfile->rowpart);
 }
 
 /**
@@ -250,20 +78,40 @@ int mtxdistfile_alloc_copy(
     dst->comm = src->comm;
     dst->comm_size = src->comm_size;
     dst->rank = src->rank;
+    dst->num_proc_rows = src->num_proc_rows;
+    dst->num_proc_cols = src->num_proc_cols;
+    err = mtxpartition_init_copy(&dst->rowpart, &src->rowpart);
+    if (mtxdisterror_allreduce(disterr, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+    err = mtxpartition_init_copy(&dst->colpart, &src->colpart);
+    if (mtxdisterror_allreduce(disterr, err)) {
+        mtxpartition_free(&dst->rowpart);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
     err = mtxfileheader_copy(&dst->header, &src->header);
-    if (mtxdisterror_allreduce(disterr, err))
+    if (mtxdisterror_allreduce(disterr, err)) {
+        mtxpartition_free(&dst->colpart);
+        mtxpartition_free(&dst->rowpart);
         return MTX_ERR_MPI_COLLECTIVE;
+    }
     err = mtxfilecomments_copy(&dst->comments, &src->comments);
-    if (mtxdisterror_allreduce(disterr, err))
+    if (mtxdisterror_allreduce(disterr, err)) {
+        mtxpartition_free(&dst->colpart);
+        mtxpartition_free(&dst->rowpart);
         return MTX_ERR_MPI_COLLECTIVE;
+    }
     err = mtxfilesize_copy(&dst->size, &src->size);
     if (mtxdisterror_allreduce(disterr, err)) {
+        mtxpartition_free(&dst->colpart);
+        mtxpartition_free(&dst->rowpart);
         mtxfilecomments_free(&dst->comments);
         return MTX_ERR_MPI_COLLECTIVE;
     }
     dst->precision = src->precision;
     err = mtxfile_alloc_copy(&dst->mtxfile, &src->mtxfile);
     if (mtxdisterror_allreduce(disterr, err)) {
+        mtxpartition_free(&dst->colpart);
+        mtxpartition_free(&dst->rowpart);
         mtxfilecomments_free(&dst->comments);
         return MTX_ERR_MPI_COLLECTIVE;
     }
@@ -291,9 +139,13 @@ int mtxdistfile_alloc_matrix_array(
     enum mtxfilefield field,
     enum mtxfilesymmetry symmetry,
     enum mtxprecision precision,
-    int num_rows,
-    int num_columns,
+    int num_local_rows,
+    int num_local_columns,
+    const struct mtxpartition * rowpart,
+    const struct mtxpartition * colpart,
     MPI_Comm comm,
+    int num_proc_rows,
+    int num_proc_cols,
     struct mtxdisterror * disterr)
 {
     int err;
@@ -321,45 +173,160 @@ int mtxdistfile_alloc_matrix_array(
     if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
 
-    /* Check that all processes request the same number of columns. */
-    int * num_columns_per_process = malloc(comm_size * sizeof(int));
-    err = !num_columns_per_process ? MTX_ERR_ERRNO : MTX_SUCCESS;
-    if (mtxdisterror_allreduce(disterr, err))
-        return MTX_ERR_MPI_COLLECTIVE;
-    disterr->mpierrcode = MPI_Allgather(
-        &num_columns, 1, MPI_INT, num_columns_per_process, 1, MPI_INT, comm);
+    int num_procs = num_proc_rows * num_proc_cols;
+    if (num_procs > comm_size)
+        return MTX_ERR_INVALID_PROCESS_GRID;
+    int proc_row = rank / num_proc_cols;
+    int proc_col = rank % num_proc_cols;
+
+    /* Compute the total number of rows and columns */
+    int num_rows;
+    disterr->mpierrcode = MPI_Allreduce(
+        &num_local_rows, &num_rows, 1, MPI_INT, MPI_SUM, comm);
     err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
-    for (int p = 0; p < comm_size; p++) {
-        if (num_columns != num_columns_per_process[p]) {
-            free(num_columns_per_process);
-            return MTX_ERR_INCOMPATIBLE_MTX_SIZE;
+    int num_columns;
+    disterr->mpierrcode = MPI_Allreduce(
+        &num_local_columns, &num_columns, 1, MPI_INT, MPI_SUM, comm);
+    err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+
+    /* Check that row and column partitions are compatible */
+    err = MTX_SUCCESS;
+    if (rowpart &&
+        (rowpart->size != num_rows ||
+         rowpart->num_parts >= num_proc_rows ||
+         num_local_rows != rowpart->part_sizes[proc_row]))
+        err = MTX_ERR_INCOMPATIBLE_PARTITION;
+    if (colpart &&
+        (colpart->size != num_columns ||
+         colpart->num_parts >= num_proc_cols ||
+         num_local_columns != colpart->part_sizes[proc_col]))
+        err = MTX_ERR_INCOMPATIBLE_PARTITION;
+    if (mtxdisterror_allreduce(disterr, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+
+    int * num_rows_per_process = NULL;
+    if (!rowpart) {
+        /* Check that all processes in the same row request the same
+         * number of rows in the matrix or vector. */
+        num_rows_per_process = malloc(comm_size * sizeof(int));
+        err = !num_rows_per_process ? MTX_ERR_ERRNO : MTX_SUCCESS;
+        if (mtxdisterror_allreduce(disterr, err))
+            return MTX_ERR_MPI_COLLECTIVE;
+        disterr->mpierrcode = MPI_Allgather(
+            &num_local_rows, 1, MPI_INT,
+            num_rows_per_process, 1, MPI_INT, comm);
+        err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+        if (mtxdisterror_allreduce(disterr, err)) {
+            free(num_rows_per_process);
+            return MTX_ERR_MPI_COLLECTIVE;
+        }
+        err = MTX_SUCCESS;
+        if (rank < num_procs) {
+            int p = proc_row;
+            for (int q = 0; q < num_proc_cols; q++) {
+                int r = p * num_proc_cols + q;
+                if (num_local_rows != num_rows_per_process[r])
+                    err = MTX_ERR_INCOMPATIBLE_MTX_SIZE;
+            }
+        }
+        if (mtxdisterror_allreduce(disterr, err)) {
+            free(num_rows_per_process);
+            return MTX_ERR_MPI_COLLECTIVE;
         }
     }
-    free(num_columns_per_process);
+
+    int * num_columns_per_process = NULL;
+    if (!colpart) {
+        /* Check that all processes in the same column request the same
+         * number of columns in the matrix or vector. */
+        num_columns_per_process = malloc(comm_size * sizeof(int));
+        err = !num_columns_per_process ? MTX_ERR_ERRNO : MTX_SUCCESS;
+        if (mtxdisterror_allreduce(disterr, err)) {
+            free(num_rows_per_process);
+            return MTX_ERR_MPI_COLLECTIVE;
+        }
+        disterr->mpierrcode = MPI_Allgather(
+            &num_local_columns, 1, MPI_INT,
+            num_columns_per_process, 1, MPI_INT, comm);
+        err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+        if (mtxdisterror_allreduce(disterr, err)) {
+            free(num_columns_per_process);
+            free(num_rows_per_process);
+            return MTX_ERR_MPI_COLLECTIVE;
+        }
+        err = MTX_SUCCESS;
+        if (rank < num_procs) {
+            int q = proc_col;
+            for (int p = 0; p < num_proc_rows; p++) {
+                int r = p * num_proc_cols + q;
+                if (num_local_columns != num_columns_per_process[r])
+                    err = MTX_ERR_INCOMPATIBLE_MTX_SIZE;
+            }
+        }
+        if (mtxdisterror_allreduce(disterr, err)) {
+            free(num_columns_per_process);
+            free(num_rows_per_process);
+            return MTX_ERR_MPI_COLLECTIVE;
+        }
+    }
 
     mtxdistfile->comm = comm;
     mtxdistfile->comm_size = comm_size;
     mtxdistfile->rank = rank;
+    mtxdistfile->num_proc_rows = num_proc_rows;
+    mtxdistfile->num_proc_cols = num_proc_cols;
+    if (rowpart) {
+        err = mtxpartition_init_copy(&mtxdistfile->rowpart, rowpart);
+        if (mtxdisterror_allreduce(disterr, err))
+            return MTX_ERR_MPI_COLLECTIVE;
+    } else {
+        err = mtxpartition_init_block(
+            &mtxdistfile->rowpart, num_rows, num_proc_rows,
+            num_rows_per_process);
+        if (mtxdisterror_allreduce(disterr, err)) {
+            free(num_rows_per_process);
+            return MTX_ERR_MPI_COLLECTIVE;
+        }
+        free(num_rows_per_process);
+    }
+    if (colpart) {
+        err = mtxpartition_init_copy(&mtxdistfile->colpart, colpart);
+        if (mtxdisterror_allreduce(disterr, err)) {
+            mtxpartition_free(&mtxdistfile->rowpart);
+            return MTX_ERR_MPI_COLLECTIVE;
+        }
+    } else {
+        err = mtxpartition_init_block(
+            &mtxdistfile->colpart, num_columns, num_proc_cols,
+            num_columns_per_process);
+        if (mtxdisterror_allreduce(disterr, err)) {
+            mtxpartition_free(&mtxdistfile->rowpart);
+            free(num_columns_per_process);
+            return MTX_ERR_MPI_COLLECTIVE;
+        }
+        free(num_columns_per_process);
+    }
     mtxdistfile->header.object = mtxfile_matrix;
     mtxdistfile->header.format = mtxfile_array;
     mtxdistfile->header.field = field;
     mtxdistfile->header.symmetry = symmetry;
     mtxfilecomments_init(&mtxdistfile->comments);
-    disterr->mpierrcode = MPI_Allreduce(
-        &num_rows, &mtxdistfile->size.num_rows, 1, MPI_INT, MPI_SUM, comm);
-    err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
-    if (mtxdisterror_allreduce(disterr, err))
-        return MTX_ERR_MPI_COLLECTIVE;
+    mtxdistfile->size.num_rows = num_rows;
     mtxdistfile->size.num_columns = num_columns;
     mtxdistfile->size.num_nonzeros = -1;
     mtxdistfile->precision = precision;
-
     err = mtxfile_alloc_matrix_array(
-        &mtxdistfile->mtxfile, field, symmetry, precision, num_rows, num_columns);
-    if (mtxdisterror_allreduce(disterr, err))
+        &mtxdistfile->mtxfile, field, symmetry, precision,
+        num_local_rows, num_local_columns);
+    if (mtxdisterror_allreduce(disterr, err)) {
+        mtxpartition_free(&mtxdistfile->colpart);
+        mtxpartition_free(&mtxdistfile->rowpart);
         return MTX_ERR_MPI_COLLECTIVE;
+    }
     return MTX_SUCCESS;
 }
 
@@ -371,16 +338,21 @@ int mtxdistfile_alloc_matrix_array(
 int mtxdistfile_init_matrix_array_real_single(
     struct mtxdistfile * mtxdistfile,
     enum mtxfilesymmetry symmetry,
-    int num_rows,
-    int num_columns,
+    int num_local_rows,
+    int num_local_columns,
     const float * data,
+    const struct mtxpartition * rowpart,
+    const struct mtxpartition * colpart,
     MPI_Comm comm,
+    int num_proc_rows,
+    int num_proc_cols,
     struct mtxdisterror * disterr)
 {
     int err;
     err = mtxdistfile_alloc_matrix_array(
-        mtxdistfile, mtxfile_real, symmetry, mtx_single, num_rows, num_columns,
-        comm, disterr);
+        mtxdistfile, mtxfile_real, symmetry, mtx_single,
+        num_local_rows, num_local_columns, rowpart, colpart,
+        comm, num_proc_rows, num_proc_cols, disterr);
     if (err)
         return err;
     struct mtxfile * mtxfile = &mtxdistfile->mtxfile;
@@ -403,16 +375,21 @@ int mtxdistfile_init_matrix_array_real_single(
 int mtxdistfile_init_matrix_array_real_double(
     struct mtxdistfile * mtxdistfile,
     enum mtxfilesymmetry symmetry,
-    int num_rows,
-    int num_columns,
+    int num_local_rows,
+    int num_local_columns,
     const double * data,
+    const struct mtxpartition * rowpart,
+    const struct mtxpartition * colpart,
     MPI_Comm comm,
+    int num_proc_rows,
+    int num_proc_cols,
     struct mtxdisterror * disterr)
 {
     int err;
     err = mtxdistfile_alloc_matrix_array(
-        mtxdistfile, mtxfile_real, symmetry, mtx_double, num_rows, num_columns,
-        comm, disterr);
+        mtxdistfile, mtxfile_real, symmetry, mtx_double,
+        num_local_rows, num_local_columns, rowpart, colpart,
+        comm, num_proc_rows, num_proc_cols, disterr);
     if (err)
         return err;
     struct mtxfile * mtxfile = &mtxdistfile->mtxfile;
@@ -439,6 +416,8 @@ int mtxdistfile_init_matrix_array_complex_single(
     int num_columns,
     const float (* data)[2],
     MPI_Comm comm,
+    int num_proc_rows,
+    int num_proc_cols,
     struct mtxdisterror * disterr);
 
 /**
@@ -453,6 +432,8 @@ int mtxdistfile_init_matrix_array_complex_double(
     int num_columns,
     const double (* data)[2],
     MPI_Comm comm,
+    int num_proc_rows,
+    int num_proc_cols,
     struct mtxdisterror * disterr);
 
 /**
@@ -467,6 +448,8 @@ int mtxdistfile_init_matrix_array_integer_single(
     int num_columns,
     const int32_t * data,
     MPI_Comm comm,
+    int num_proc_rows,
+    int num_proc_cols,
     struct mtxdisterror * disterr);
 
 /**
@@ -481,6 +464,8 @@ int mtxdistfile_init_matrix_array_integer_double(
     int num_columns,
     const int64_t * data,
     MPI_Comm comm,
+    int num_proc_rows,
+    int num_proc_cols,
     struct mtxdisterror * disterr);
 
 /*
@@ -1219,7 +1204,11 @@ int mtxdistfile_set_constant_integer_single(
 int mtxdistfile_from_mtxfile(
     struct mtxdistfile * dst,
     const struct mtxfile * src,
+    const struct mtxpartition * rowpart,
+    const struct mtxpartition * colpart,
     MPI_Comm comm,
+    int num_proc_rows,
+    int num_proc_cols,
     int root,
     struct mtxdisterror * disterr)
 {
@@ -1238,34 +1227,76 @@ int mtxdistfile_from_mtxfile(
     dst->comm = comm;
     dst->comm_size = comm_size;
     dst->rank = rank;
+    dst->num_proc_rows = num_proc_rows;
+    dst->num_proc_cols = num_proc_cols;
+    if (rowpart) {
+        err = mtxpartition_init_copy(&dst->rowpart, rowpart);
+        if (mtxdisterror_allreduce(disterr, err))
+            return MTX_ERR_MPI_COLLECTIVE;
+    } else {
+        err = mtxpartition_init_block(
+            &dst->rowpart, src->size.num_rows, num_proc_rows, NULL);
+        if (mtxdisterror_allreduce(disterr, err))
+            return MTX_ERR_MPI_COLLECTIVE;
+    }
+    if (colpart) {
+        err = mtxpartition_init_copy(&dst->colpart, colpart);
+        if (mtxdisterror_allreduce(disterr, err)) {
+            mtxpartition_free(&dst->rowpart);
+            return MTX_ERR_MPI_COLLECTIVE;
+        }
+    } else {
+        err = mtxpartition_init_block(
+            &dst->colpart, src->size.num_columns, num_proc_cols, NULL);
+        if (mtxdisterror_allreduce(disterr, err)) {
+            fprintf(stderr, "%s:%d\n", __FILE__, __LINE__);
+            mtxpartition_free(&dst->rowpart);
+            return MTX_ERR_MPI_COLLECTIVE;
+        }
+    }
 
     /* Broadcast the header, comments, size line and precision. */
     err = (rank == root) ? mtxfileheader_copy(
         &dst->header, &src->header) : MTX_SUCCESS;
-    if (mtxdisterror_allreduce(disterr, err))
+    if (mtxdisterror_allreduce(disterr, err)) {
+        mtxpartition_free(&dst->colpart);
+        mtxpartition_free(&dst->rowpart);
         return MTX_ERR_MPI_COLLECTIVE;
+    }
     err = mtxfileheader_bcast(&dst->header, root, comm, disterr);
-    if (err)
+    if (err) {
+        mtxpartition_free(&dst->colpart);
+        mtxpartition_free(&dst->rowpart);
         return err;
+    }
     err = (rank == root) ? mtxfilecomments_copy(
         &dst->comments, &src->comments) : MTX_SUCCESS;
-    if (mtxdisterror_allreduce(disterr, err))
+    if (mtxdisterror_allreduce(disterr, err)) {
+        mtxpartition_free(&dst->colpart);
+        mtxpartition_free(&dst->rowpart);
         return MTX_ERR_MPI_COLLECTIVE;
+    }
     err = mtxfilecomments_bcast(&dst->comments, root, comm, disterr);
     if (err) {
         if (rank == root)
             mtxfilecomments_free(&dst->comments);
+        mtxpartition_free(&dst->colpart);
+        mtxpartition_free(&dst->rowpart);
         return err;
     }
     err = (rank == root) ? mtxfilesize_copy(
         &dst->size, &src->size) : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err)) {
         mtxfilecomments_free(&dst->comments);
+        mtxpartition_free(&dst->colpart);
+        mtxpartition_free(&dst->rowpart);
         return MTX_ERR_MPI_COLLECTIVE;
     }
     err = mtxfilesize_bcast(&dst->size, root, comm, disterr);
     if (err) {
         mtxfilecomments_free(&dst->comments);
+        mtxpartition_free(&dst->colpart);
+        mtxpartition_free(&dst->rowpart);
         return err;
     }
     if (rank == root)
@@ -1275,6 +1306,8 @@ int mtxdistfile_from_mtxfile(
     err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err)) {
         mtxfilecomments_free(&dst->comments);
+        mtxpartition_free(&dst->colpart);
+        mtxpartition_free(&dst->rowpart);
         return MTX_ERR_MPI_COLLECTIVE;
     }
 
@@ -1283,6 +1316,8 @@ int mtxdistfile_from_mtxfile(
     err = (rank == root && !sendcounts) ? MTX_ERR_ERRNO : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err)) {
         mtxfilecomments_free(&dst->comments);
+        mtxpartition_free(&dst->colpart);
+        mtxpartition_free(&dst->rowpart);
         return MTX_ERR_MPI_COLLECTIVE;
     }
     int * displs = (rank == root) ? &sendcounts[comm_size] : NULL;
@@ -1328,6 +1363,8 @@ int mtxdistfile_from_mtxfile(
         if (rank == root)
             free(sendcounts);
         mtxfilecomments_free(&dst->comments);
+        mtxpartition_free(&dst->colpart);
+        mtxpartition_free(&dst->rowpart);
         return MTX_ERR_MPI_COLLECTIVE;
     }
 
@@ -1339,6 +1376,8 @@ int mtxdistfile_from_mtxfile(
         if (rank == root)
             free(sendcounts);
         mtxfilecomments_free(&dst->comments);
+        mtxpartition_free(&dst->colpart);
+        mtxpartition_free(&dst->rowpart);
         return MTX_ERR_MPI_COLLECTIVE;
     }
 
@@ -1349,6 +1388,8 @@ int mtxdistfile_from_mtxfile(
         if (rank == root)
             free(sendcounts);
         mtxfilecomments_free(&dst->comments);
+        mtxpartition_free(&dst->colpart);
+        mtxpartition_free(&dst->rowpart);
         return err;
     }
 
@@ -1400,7 +1441,11 @@ int mtxdistfile_read_shared(
     bool gzip,
     int * lines_read,
     int64_t * bytes_read,
+    const struct mtxpartition * rowpart,
+    const struct mtxpartition * colpart,
     MPI_Comm comm,
+    int num_proc_rows,
+    int num_proc_cols,
     struct mtxdisterror * disterr)
 {
     int err;
@@ -1447,7 +1492,7 @@ int mtxdistfile_read_shared(
             *lines_read = 0;
         err = mtxdistfile_fread_shared(
             mtxdistfile, precision, f, lines_read, bytes_read, 0, NULL,
-            comm, disterr);
+            rowpart, colpart, comm, num_proc_rows, num_proc_cols, disterr);
         if (err) {
             if (rank == root)
                 fclose(f);
@@ -1539,7 +1584,11 @@ int mtxdistfile_fread_shared(
     int64_t * bytes_read,
     size_t line_max,
     char * linebuf,
+    const struct mtxpartition * rowpart,
+    const struct mtxpartition * colpart,
     MPI_Comm comm,
+    int num_proc_rows,
+    int num_proc_cols,
     struct mtxdisterror * disterr)
 {
     int err;
@@ -2623,11 +2672,56 @@ int mtxdistfile_sort(
  */
 int mtxdistfile_partition(
     const struct mtxdistfile * src,
-    struct mtxdistfile * dsts,
+    struct mtxdistfile * dst,
     const struct mtxpartition * rowpart,
     const struct mtxpartition * colpart,
     struct mtxdisterror * disterr)
 {
+    int err;
+    int comm_size = src->comm_size;
+    int rank = src->rank;
+    int num_row_parts = rowpart ? rowpart->num_parts : 1;
+    int num_col_parts = colpart ? colpart->num_parts : 1;
+    int num_parts = num_row_parts * num_col_parts;
+    err = (rowpart && rowpart->size != src->size.num_rows)
+        ? MTX_ERR_INCOMPATIBLE_PARTITION : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+    err = (colpart && colpart->size != src->size.num_columns)
+        ? MTX_ERR_INCOMPATIBLE_PARTITION : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+    err = (num_parts > src->comm_size)
+        ? MTX_ERR_INDEX_OUT_OF_BOUNDS : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+
+    /* Allocate storage for sending/receiving Matrix Market files. */
+    struct mtxfile * recvmtxfiles = malloc(comm_size * sizeof(struct mtxfile));
+    err = !recvmtxfiles ? MTX_ERR_ERRNO : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+    struct mtxfile * sendmtxfiles = malloc(comm_size * sizeof(struct mtxfile));
+    err = !sendmtxfiles ? MTX_ERR_ERRNO : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err)) {
+        free(recvmtxfiles);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+
+    /* 1. Partition the Matrix Market file on each process. */
+    err = mtxfile_partition(
+        &src->mtxfile, sendmtxfiles, rowpart, colpart);
+    if (mtxdisterror_allreduce(disterr, err)) {
+        free(sendmtxfiles);
+        free(recvmtxfiles);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+
+    for (int r = 0; r < num_parts; r++)
+        mtxfile_free(&sendmtxfiles[r]);
+    free(sendmtxfiles);
+    free(recvmtxfiles);
+
     errno = ENOTSUP;
     return MTX_ERR_ERRNO;
 }
