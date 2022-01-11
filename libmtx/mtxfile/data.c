@@ -4904,9 +4904,9 @@ int mtxfiledata_sort_morton(
  * ‘mtxfiledata_partition()’ partitions data lines according to given
  * row and column partitions.
  *
- * The arrays ‘parts’ and must contain enough storage for ‘size’
- * values of type ‘int’. If successful, ‘parts’ contains the part
- * numbers of each data line in the partitioning.
+ * The array ‘parts’ must contain enough storage for ‘size’ values of
+ * type ‘int’. If successful, ‘parts’ will contain the part number of
+ * each data line in the partitioning.
  *
  * The partitions ‘rowpart’ or ‘colpart’ are allowed to be ‘NULL’, in
  * which case a trivial, singleton partition is used for the rows or
