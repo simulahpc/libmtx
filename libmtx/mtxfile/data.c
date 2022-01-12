@@ -2473,7 +2473,7 @@ int mtxfiledata_colptr(
  */
 
 /**
- * `mtxfiledata_set_constant_real_single()' sets every (nonzero)
+ * ‘mtxfiledata_set_constant_real_single()’ sets every (nonzero)
  * value of a matrix or vector equal to a constant, single precision
  * floating point number.
  */
@@ -2525,7 +2525,6 @@ int mtxfiledata_set_constant_real_single(
         } else {
             return MTX_ERR_INVALID_MTX_FIELD;
         }
-
     } else if (format == mtxfile_coordinate) {
         if (object == mtxfile_matrix) {
             if (field == mtxfile_real) {
@@ -2617,7 +2616,7 @@ int mtxfiledata_set_constant_real_single(
 }
 
 /**
- * `mtxfiledata_set_constant_real_double()' sets every (nonzero)
+ * ‘mtxfiledata_set_constant_real_double()’ sets every (nonzero)
  * value of a matrix or vector equal to a constant, double precision
  * floating point number.
  */
@@ -2629,10 +2628,138 @@ int mtxfiledata_set_constant_real_double(
     enum mtxprecision precision,
     int64_t size,
     int64_t offset,
-    double a);
+    double a)
+{
+    if (format == mtxfile_array) {
+        if (field == mtxfile_real) {
+            if (precision == mtx_single) {
+                for (int64_t k = 0; k < size; k++)
+                    data->array_real_single[offset+k] = a;
+            } else if (precision == mtx_double) {
+                for (int64_t k = 0; k < size; k++)
+                    data->array_real_double[offset+k] = a;
+            } else {
+                return MTX_ERR_INVALID_PRECISION;
+            }
+        } else if (field == mtxfile_complex) {
+            if (precision == mtx_single) {
+                for (int64_t k = 0; k < size; k++) {
+                    data->array_complex_single[offset+k][0] = a;
+                    data->array_complex_single[offset+k][1] = 0;
+                }
+            } else if (precision == mtx_double) {
+                for (int64_t k = 0; k < size; k++) {
+                    data->array_complex_double[offset+k][0] = a;
+                    data->array_complex_double[offset+k][1] = 0;
+                }
+            } else {
+                return MTX_ERR_INVALID_PRECISION;
+            }
+        } else if (field == mtxfile_integer) {
+            if (precision == mtx_single) {
+                for (int64_t k = 0; k < size; k++)
+                    data->array_integer_single[offset+k] = a;
+            } else if (precision == mtx_double) {
+                for (int64_t k = 0; k < size; k++)
+                    data->array_integer_double[offset+k] = a;
+            } else {
+                return MTX_ERR_INVALID_PRECISION;
+            }
+        } else {
+            return MTX_ERR_INVALID_MTX_FIELD;
+        }
+    } else if (format == mtxfile_coordinate) {
+        if (object == mtxfile_matrix) {
+            if (field == mtxfile_real) {
+                if (precision == mtx_single) {
+                    for (int64_t k = 0; k < size; k++)
+                        data->matrix_coordinate_real_single[offset+k].a = a;
+                } else if (precision == mtx_double) {
+                    for (int64_t k = 0; k < size; k++)
+                        data->matrix_coordinate_real_double[offset+k].a = a;
+                } else {
+                    return MTX_ERR_INVALID_PRECISION;
+                }
+            } else if (field == mtxfile_complex) {
+                if (precision == mtx_single) {
+                    for (int64_t k = 0; k < size; k++) {
+                        data->matrix_coordinate_complex_single[offset+k].a[0] = a;
+                        data->matrix_coordinate_complex_single[offset+k].a[1] = 0;
+                    }
+                } else if (precision == mtx_double) {
+                    for (int64_t k = 0; k < size; k++) {
+                        data->matrix_coordinate_complex_double[offset+k].a[0] = a;
+                        data->matrix_coordinate_complex_double[offset+k].a[1] = 0;
+                    }
+                } else {
+                    return MTX_ERR_INVALID_PRECISION;
+                }
+            } else if (field == mtxfile_integer) {
+                if (precision == mtx_single) {
+                    for (int64_t k = 0; k < size; k++)
+                        data->matrix_coordinate_integer_single[offset+k].a = a;
+                } else if (precision == mtx_double) {
+                    for (int64_t k = 0; k < size; k++)
+                        data->matrix_coordinate_integer_double[offset+k].a = a;
+                } else {
+                    return MTX_ERR_INVALID_PRECISION;
+                }
+            } else if (field == mtxfile_pattern) {
+                return MTX_ERR_INCOMPATIBLE_FIELD;
+            } else {
+                return MTX_ERR_INVALID_MTX_FIELD;
+            }
+        } else if (object == mtxfile_vector) {
+            if (field == mtxfile_real) {
+                if (precision == mtx_single) {
+                    for (int64_t k = 0; k < size; k++)
+                        data->vector_coordinate_real_single[offset+k].a = a;
+                } else if (precision == mtx_double) {
+                    for (int64_t k = 0; k < size; k++)
+                        data->vector_coordinate_real_double[offset+k].a = a;
+                } else {
+                    return MTX_ERR_INVALID_PRECISION;
+                }
+            } else if (field == mtxfile_complex) {
+                if (precision == mtx_single) {
+                    for (int64_t k = 0; k < size; k++) {
+                        data->vector_coordinate_complex_single[offset+k].a[0] = a;
+                        data->vector_coordinate_complex_single[offset+k].a[1] = 0;
+                    }
+                } else if (precision == mtx_double) {
+                    for (int64_t k = 0; k < size; k++) {
+                        data->vector_coordinate_complex_double[offset+k].a[0] = a;
+                        data->vector_coordinate_complex_double[offset+k].a[1] = 0;
+                    }
+                } else {
+                    return MTX_ERR_INVALID_PRECISION;
+                }
+            } else if (field == mtxfile_integer) {
+                if (precision == mtx_single) {
+                    for (int64_t k = 0; k < size; k++)
+                        data->vector_coordinate_integer_single[offset+k].a = a;
+                } else if (precision == mtx_double) {
+                    for (int64_t k = 0; k < size; k++)
+                        data->vector_coordinate_integer_double[offset+k].a = a;
+                } else {
+                    return MTX_ERR_INVALID_PRECISION;
+                }
+            } else if (field == mtxfile_pattern) {
+                return MTX_ERR_INCOMPATIBLE_FIELD;
+            } else {
+                return MTX_ERR_INVALID_MTX_FIELD;
+            }
+        } else {
+            return MTX_ERR_INVALID_MTX_OBJECT;
+        }
+    } else {
+        return MTX_ERR_INVALID_MTX_FORMAT;
+    }
+    return MTX_SUCCESS;
+}
 
 /**
- * `mtxfiledata_set_constant_complex_single()' sets every (nonzero)
+ * ‘mtxfiledata_set_constant_complex_single()’ sets every (nonzero)
  * value of a matrix or vector equal to a constant, single precision
  * floating point complex number.
  */
@@ -2644,11 +2771,178 @@ int mtxfiledata_set_constant_complex_single(
     enum mtxprecision precision,
     int64_t size,
     int64_t offset,
-    float a[2]);
+    float a[2])
+{
+    if (format == mtxfile_array) {
+        if (field == mtxfile_real || field == mtxfile_integer) {
+            return MTX_ERR_INCOMPATIBLE_FIELD;
+        } else if (field == mtxfile_complex) {
+            if (precision == mtx_single) {
+                for (int64_t k = 0; k < size; k++) {
+                    data->array_complex_single[offset+k][0] = a[0];
+                    data->array_complex_single[offset+k][1] = a[1];
+                }
+            } else if (precision == mtx_double) {
+                for (int64_t k = 0; k < size; k++) {
+                    data->array_complex_double[offset+k][0] = a[0];
+                    data->array_complex_double[offset+k][1] = a[1];
+                }
+            } else {
+                return MTX_ERR_INVALID_PRECISION;
+            }
+        } else {
+            return MTX_ERR_INVALID_MTX_FIELD;
+        }
+    } else if (format == mtxfile_coordinate) {
+        if (object == mtxfile_matrix) {
+            if (field == mtxfile_real ||
+                field == mtxfile_integer ||
+                field == mtxfile_pattern)
+            {
+                return MTX_ERR_INCOMPATIBLE_FIELD;
+            } else if (field == mtxfile_complex) {
+                if (precision == mtx_single) {
+                    for (int64_t k = 0; k < size; k++) {
+                        data->matrix_coordinate_complex_single[offset+k].a[0] = a[0];
+                        data->matrix_coordinate_complex_single[offset+k].a[1] = a[1];
+                    }
+                } else if (precision == mtx_double) {
+                    for (int64_t k = 0; k < size; k++) {
+                        data->matrix_coordinate_complex_double[offset+k].a[0] = a[0];
+                        data->matrix_coordinate_complex_double[offset+k].a[1] = a[1];
+                    }
+                } else {
+                    return MTX_ERR_INVALID_PRECISION;
+                }
+            } else {
+                return MTX_ERR_INVALID_MTX_FIELD;
+            }
+        } else if (object == mtxfile_vector) {
+            if (field == mtxfile_real ||
+                field == mtxfile_integer ||
+                field == mtxfile_pattern)
+            {
+                return MTX_ERR_INCOMPATIBLE_FIELD;
+            } else if (field == mtxfile_complex) {
+                if (precision == mtx_single) {
+                    for (int64_t k = 0; k < size; k++) {
+                        data->vector_coordinate_complex_single[offset+k].a[0] = a[0];
+                        data->vector_coordinate_complex_single[offset+k].a[1] = a[1];
+                    }
+                } else if (precision == mtx_double) {
+                    for (int64_t k = 0; k < size; k++) {
+                        data->vector_coordinate_complex_double[offset+k].a[0] = a[0];
+                        data->vector_coordinate_complex_double[offset+k].a[1] = a[1];
+                    }
+                } else {
+                    return MTX_ERR_INVALID_PRECISION;
+                }
+            } else {
+                return MTX_ERR_INVALID_MTX_FIELD;
+            }
+        } else {
+            return MTX_ERR_INVALID_MTX_OBJECT;
+        }
+    } else {
+        return MTX_ERR_INVALID_MTX_FORMAT;
+    }
+    return MTX_SUCCESS;
+}
 
 /**
- * `mtxfiledata_set_constant_integer_single()' sets every (nonzero)
- * value of a matrix or vector equal to a constant integer.
+ * ‘mtxfiledata_set_constant_complex_double()’ sets every (nonzero)
+ * value of a matrix or vector equal to a constant, double precision
+ * floating point complex number.
+ */
+int mtxfiledata_set_constant_complex_double(
+    union mtxfiledata * data,
+    enum mtxfileobject object,
+    enum mtxfileformat format,
+    enum mtxfilefield field,
+    enum mtxprecision precision,
+    int64_t size,
+    int64_t offset,
+    double a[2])
+{
+    if (format == mtxfile_array) {
+        if (field == mtxfile_real || field == mtxfile_integer) {
+            return MTX_ERR_INCOMPATIBLE_FIELD;
+        } else if (field == mtxfile_complex) {
+            if (precision == mtx_single) {
+                for (int64_t k = 0; k < size; k++) {
+                    data->array_complex_single[offset+k][0] = a[0];
+                    data->array_complex_single[offset+k][1] = a[1];
+                }
+            } else if (precision == mtx_double) {
+                for (int64_t k = 0; k < size; k++) {
+                    data->array_complex_double[offset+k][0] = a[0];
+                    data->array_complex_double[offset+k][1] = a[1];
+                }
+            } else {
+                return MTX_ERR_INVALID_PRECISION;
+            }
+        } else {
+            return MTX_ERR_INVALID_MTX_FIELD;
+        }
+    } else if (format == mtxfile_coordinate) {
+        if (object == mtxfile_matrix) {
+            if (field == mtxfile_real ||
+                field == mtxfile_integer ||
+                field == mtxfile_pattern)
+            {
+                return MTX_ERR_INCOMPATIBLE_FIELD;
+            } else if (field == mtxfile_complex) {
+                if (precision == mtx_single) {
+                    for (int64_t k = 0; k < size; k++) {
+                        data->matrix_coordinate_complex_single[offset+k].a[0] = a[0];
+                        data->matrix_coordinate_complex_single[offset+k].a[1] = a[1];
+                    }
+                } else if (precision == mtx_double) {
+                    for (int64_t k = 0; k < size; k++) {
+                        data->matrix_coordinate_complex_double[offset+k].a[0] = a[0];
+                        data->matrix_coordinate_complex_double[offset+k].a[1] = a[1];
+                    }
+                } else {
+                    return MTX_ERR_INVALID_PRECISION;
+                }
+            } else {
+                return MTX_ERR_INVALID_MTX_FIELD;
+            }
+        } else if (object == mtxfile_vector) {
+            if (field == mtxfile_real ||
+                field == mtxfile_integer ||
+                field == mtxfile_pattern)
+            {
+                return MTX_ERR_INCOMPATIBLE_FIELD;
+            } else if (field == mtxfile_complex) {
+                if (precision == mtx_single) {
+                    for (int64_t k = 0; k < size; k++) {
+                        data->vector_coordinate_complex_single[offset+k].a[0] = a[0];
+                        data->vector_coordinate_complex_single[offset+k].a[1] = a[1];
+                    }
+                } else if (precision == mtx_double) {
+                    for (int64_t k = 0; k < size; k++) {
+                        data->vector_coordinate_complex_double[offset+k].a[0] = a[0];
+                        data->vector_coordinate_complex_double[offset+k].a[1] = a[1];
+                    }
+                } else {
+                    return MTX_ERR_INVALID_PRECISION;
+                }
+            } else {
+                return MTX_ERR_INVALID_MTX_FIELD;
+            }
+        } else {
+            return MTX_ERR_INVALID_MTX_OBJECT;
+        }
+    } else {
+        return MTX_ERR_INVALID_MTX_FORMAT;
+    }
+    return MTX_SUCCESS;
+}
+
+/**
+ * ‘mtxfiledata_set_constant_integer_single()’ sets every (nonzero)
+ * value of a matrix or vector equal to a constant, 32-bit integer.
  */
 int mtxfiledata_set_constant_integer_single(
     union mtxfiledata * data,
@@ -2658,7 +2952,277 @@ int mtxfiledata_set_constant_integer_single(
     enum mtxprecision precision,
     int64_t size,
     int64_t offset,
-    int32_t a);
+    int32_t a)
+{
+    if (format == mtxfile_array) {
+        if (field == mtxfile_real) {
+            if (precision == mtx_single) {
+                for (int64_t k = 0; k < size; k++)
+                    data->array_real_single[offset+k] = a;
+            } else if (precision == mtx_double) {
+                for (int64_t k = 0; k < size; k++)
+                    data->array_real_double[offset+k] = a;
+            } else {
+                return MTX_ERR_INVALID_PRECISION;
+            }
+        } else if (field == mtxfile_complex) {
+            if (precision == mtx_single) {
+                for (int64_t k = 0; k < size; k++) {
+                    data->array_complex_single[offset+k][0] = a;
+                    data->array_complex_single[offset+k][1] = 0;
+                }
+            } else if (precision == mtx_double) {
+                for (int64_t k = 0; k < size; k++) {
+                    data->array_complex_double[offset+k][0] = a;
+                    data->array_complex_double[offset+k][1] = 0;
+                }
+            } else {
+                return MTX_ERR_INVALID_PRECISION;
+            }
+        } else if (field == mtxfile_integer) {
+            if (precision == mtx_single) {
+                for (int64_t k = 0; k < size; k++)
+                    data->array_integer_single[offset+k] = a;
+            } else if (precision == mtx_double) {
+                for (int64_t k = 0; k < size; k++)
+                    data->array_integer_double[offset+k] = a;
+            } else {
+                return MTX_ERR_INVALID_PRECISION;
+            }
+        } else {
+            return MTX_ERR_INVALID_MTX_FIELD;
+        }
+    } else if (format == mtxfile_coordinate) {
+        if (object == mtxfile_matrix) {
+            if (field == mtxfile_real) {
+                if (precision == mtx_single) {
+                    for (int64_t k = 0; k < size; k++)
+                        data->matrix_coordinate_real_single[offset+k].a = a;
+                } else if (precision == mtx_double) {
+                    for (int64_t k = 0; k < size; k++)
+                        data->matrix_coordinate_real_double[offset+k].a = a;
+                } else {
+                    return MTX_ERR_INVALID_PRECISION;
+                }
+            } else if (field == mtxfile_complex) {
+                if (precision == mtx_single) {
+                    for (int64_t k = 0; k < size; k++) {
+                        data->matrix_coordinate_complex_single[offset+k].a[0] = a;
+                        data->matrix_coordinate_complex_single[offset+k].a[1] = 0;
+                    }
+                } else if (precision == mtx_double) {
+                    for (int64_t k = 0; k < size; k++) {
+                        data->matrix_coordinate_complex_double[offset+k].a[0] = a;
+                        data->matrix_coordinate_complex_double[offset+k].a[1] = 0;
+                    }
+                } else {
+                    return MTX_ERR_INVALID_PRECISION;
+                }
+            } else if (field == mtxfile_integer) {
+                if (precision == mtx_single) {
+                    for (int64_t k = 0; k < size; k++)
+                        data->matrix_coordinate_integer_single[offset+k].a = a;
+                } else if (precision == mtx_double) {
+                    for (int64_t k = 0; k < size; k++)
+                        data->matrix_coordinate_integer_double[offset+k].a = a;
+                } else {
+                    return MTX_ERR_INVALID_PRECISION;
+                }
+            } else if (field == mtxfile_pattern) {
+                return MTX_ERR_INCOMPATIBLE_FIELD;
+            } else {
+                return MTX_ERR_INVALID_MTX_FIELD;
+            }
+        } else if (object == mtxfile_vector) {
+            if (field == mtxfile_real) {
+                if (precision == mtx_single) {
+                    for (int64_t k = 0; k < size; k++)
+                        data->vector_coordinate_real_single[offset+k].a = a;
+                } else if (precision == mtx_double) {
+                    for (int64_t k = 0; k < size; k++)
+                        data->vector_coordinate_real_double[offset+k].a = a;
+                } else {
+                    return MTX_ERR_INVALID_PRECISION;
+                }
+            } else if (field == mtxfile_complex) {
+                if (precision == mtx_single) {
+                    for (int64_t k = 0; k < size; k++) {
+                        data->vector_coordinate_complex_single[offset+k].a[0] = a;
+                        data->vector_coordinate_complex_single[offset+k].a[1] = 0;
+                    }
+                } else if (precision == mtx_double) {
+                    for (int64_t k = 0; k < size; k++) {
+                        data->vector_coordinate_complex_double[offset+k].a[0] = a;
+                        data->vector_coordinate_complex_double[offset+k].a[1] = 0;
+                    }
+                } else {
+                    return MTX_ERR_INVALID_PRECISION;
+                }
+            } else if (field == mtxfile_integer) {
+                if (precision == mtx_single) {
+                    for (int64_t k = 0; k < size; k++)
+                        data->vector_coordinate_integer_single[offset+k].a = a;
+                } else if (precision == mtx_double) {
+                    for (int64_t k = 0; k < size; k++)
+                        data->vector_coordinate_integer_double[offset+k].a = a;
+                } else {
+                    return MTX_ERR_INVALID_PRECISION;
+                }
+            } else if (field == mtxfile_pattern) {
+                return MTX_ERR_INCOMPATIBLE_FIELD;
+            } else {
+                return MTX_ERR_INVALID_MTX_FIELD;
+            }
+        } else {
+            return MTX_ERR_INVALID_MTX_OBJECT;
+        }
+    } else {
+        return MTX_ERR_INVALID_MTX_FORMAT;
+    }
+    return MTX_SUCCESS;
+}
+
+/**
+ * ‘mtxfiledata_set_constant_integer_double()’ sets every (nonzero)
+ * value of a matrix or vector equal to a constant, 64-bit integer.
+ */
+int mtxfiledata_set_constant_integer_double(
+    union mtxfiledata * data,
+    enum mtxfileobject object,
+    enum mtxfileformat format,
+    enum mtxfilefield field,
+    enum mtxprecision precision,
+    int64_t size,
+    int64_t offset,
+    int64_t a)
+{
+    if (format == mtxfile_array) {
+        if (field == mtxfile_real) {
+            if (precision == mtx_single) {
+                for (int64_t k = 0; k < size; k++)
+                    data->array_real_single[offset+k] = a;
+            } else if (precision == mtx_double) {
+                for (int64_t k = 0; k < size; k++)
+                    data->array_real_double[offset+k] = a;
+            } else {
+                return MTX_ERR_INVALID_PRECISION;
+            }
+        } else if (field == mtxfile_complex) {
+            if (precision == mtx_single) {
+                for (int64_t k = 0; k < size; k++) {
+                    data->array_complex_single[offset+k][0] = a;
+                    data->array_complex_single[offset+k][1] = 0;
+                }
+            } else if (precision == mtx_double) {
+                for (int64_t k = 0; k < size; k++) {
+                    data->array_complex_double[offset+k][0] = a;
+                    data->array_complex_double[offset+k][1] = 0;
+                }
+            } else {
+                return MTX_ERR_INVALID_PRECISION;
+            }
+        } else if (field == mtxfile_integer) {
+            if (precision == mtx_single) {
+                for (int64_t k = 0; k < size; k++)
+                    data->array_integer_single[offset+k] = a;
+            } else if (precision == mtx_double) {
+                for (int64_t k = 0; k < size; k++)
+                    data->array_integer_double[offset+k] = a;
+            } else {
+                return MTX_ERR_INVALID_PRECISION;
+            }
+        } else {
+            return MTX_ERR_INVALID_MTX_FIELD;
+        }
+    } else if (format == mtxfile_coordinate) {
+        if (object == mtxfile_matrix) {
+            if (field == mtxfile_real) {
+                if (precision == mtx_single) {
+                    for (int64_t k = 0; k < size; k++)
+                        data->matrix_coordinate_real_single[offset+k].a = a;
+                } else if (precision == mtx_double) {
+                    for (int64_t k = 0; k < size; k++)
+                        data->matrix_coordinate_real_double[offset+k].a = a;
+                } else {
+                    return MTX_ERR_INVALID_PRECISION;
+                }
+            } else if (field == mtxfile_complex) {
+                if (precision == mtx_single) {
+                    for (int64_t k = 0; k < size; k++) {
+                        data->matrix_coordinate_complex_single[offset+k].a[0] = a;
+                        data->matrix_coordinate_complex_single[offset+k].a[1] = 0;
+                    }
+                } else if (precision == mtx_double) {
+                    for (int64_t k = 0; k < size; k++) {
+                        data->matrix_coordinate_complex_double[offset+k].a[0] = a;
+                        data->matrix_coordinate_complex_double[offset+k].a[1] = 0;
+                    }
+                } else {
+                    return MTX_ERR_INVALID_PRECISION;
+                }
+            } else if (field == mtxfile_integer) {
+                if (precision == mtx_single) {
+                    for (int64_t k = 0; k < size; k++)
+                        data->matrix_coordinate_integer_single[offset+k].a = a;
+                } else if (precision == mtx_double) {
+                    for (int64_t k = 0; k < size; k++)
+                        data->matrix_coordinate_integer_double[offset+k].a = a;
+                } else {
+                    return MTX_ERR_INVALID_PRECISION;
+                }
+            } else if (field == mtxfile_pattern) {
+                return MTX_ERR_INCOMPATIBLE_FIELD;
+            } else {
+                return MTX_ERR_INVALID_MTX_FIELD;
+            }
+        } else if (object == mtxfile_vector) {
+            if (field == mtxfile_real) {
+                if (precision == mtx_single) {
+                    for (int64_t k = 0; k < size; k++)
+                        data->vector_coordinate_real_single[offset+k].a = a;
+                } else if (precision == mtx_double) {
+                    for (int64_t k = 0; k < size; k++)
+                        data->vector_coordinate_real_double[offset+k].a = a;
+                } else {
+                    return MTX_ERR_INVALID_PRECISION;
+                }
+            } else if (field == mtxfile_complex) {
+                if (precision == mtx_single) {
+                    for (int64_t k = 0; k < size; k++) {
+                        data->vector_coordinate_complex_single[offset+k].a[0] = a;
+                        data->vector_coordinate_complex_single[offset+k].a[1] = 0;
+                    }
+                } else if (precision == mtx_double) {
+                    for (int64_t k = 0; k < size; k++) {
+                        data->vector_coordinate_complex_double[offset+k].a[0] = a;
+                        data->vector_coordinate_complex_double[offset+k].a[1] = 0;
+                    }
+                } else {
+                    return MTX_ERR_INVALID_PRECISION;
+                }
+            } else if (field == mtxfile_integer) {
+                if (precision == mtx_single) {
+                    for (int64_t k = 0; k < size; k++)
+                        data->vector_coordinate_integer_single[offset+k].a = a;
+                } else if (precision == mtx_double) {
+                    for (int64_t k = 0; k < size; k++)
+                        data->vector_coordinate_integer_double[offset+k].a = a;
+                } else {
+                    return MTX_ERR_INVALID_PRECISION;
+                }
+            } else if (field == mtxfile_pattern) {
+                return MTX_ERR_INCOMPATIBLE_FIELD;
+            } else {
+                return MTX_ERR_INVALID_MTX_FIELD;
+            }
+        } else {
+            return MTX_ERR_INVALID_MTX_OBJECT;
+        }
+    } else {
+        return MTX_ERR_INVALID_MTX_FORMAT;
+    }
+    return MTX_SUCCESS;
+}
 
 /*
  * I/O functions
@@ -4052,6 +4616,7 @@ int mtxfiledata_transpose(
                         }
                     }
                 } else {
+                    mtxfiledata_free(&copy, object, format, field, precision);
                     return MTX_ERR_INVALID_PRECISION;
                 }
             } else if (field == mtxfile_complex) {
@@ -4078,6 +4643,7 @@ int mtxfiledata_transpose(
                         }
                     }
                 } else {
+                    mtxfiledata_free(&copy, object, format, field, precision);
                     return MTX_ERR_INVALID_PRECISION;
                 }
             } else if (field == mtxfile_integer) {
@@ -4102,9 +4668,11 @@ int mtxfiledata_transpose(
                         }
                     }
                 } else {
+                    mtxfiledata_free(&copy, object, format, field, precision);
                     return MTX_ERR_INVALID_PRECISION;
                 }
             } else {
+                mtxfiledata_free(&copy, object, format, field, precision);
                 return MTX_ERR_INVALID_MTX_FIELD;
             }
 

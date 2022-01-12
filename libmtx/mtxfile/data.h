@@ -810,7 +810,7 @@ int mtxfiledata_colptr(
  */
 
 /**
- * `mtxfiledata_set_constant_real_single()' sets every (nonzero)
+ * ‘mtxfiledata_set_constant_real_single()’ sets every (nonzero)
  * value of a matrix or vector equal to a constant, single precision
  * floating point number.
  */
@@ -825,7 +825,7 @@ int mtxfiledata_set_constant_real_single(
     float a);
 
 /**
- * `mtxfiledata_set_constant_real_double()' sets every (nonzero)
+ * ‘mtxfiledata_set_constant_real_double()’ sets every (nonzero)
  * value of a matrix or vector equal to a constant, double precision
  * floating point number.
  */
@@ -840,7 +840,7 @@ int mtxfiledata_set_constant_real_double(
     double a);
 
 /**
- * `mtxfiledata_set_constant_complex_single()' sets every (nonzero)
+ * ‘mtxfiledata_set_constant_complex_single()’ sets every (nonzero)
  * value of a matrix or vector equal to a constant, single precision
  * floating point complex number.
  */
@@ -855,8 +855,23 @@ int mtxfiledata_set_constant_complex_single(
     float a[2]);
 
 /**
- * `mtxfiledata_set_constant_integer_single()' sets every (nonzero)
- * value of a matrix or vector equal to a constant integer.
+ * ‘mtxfiledata_set_constant_complex_double()’ sets every (nonzero)
+ * value of a matrix or vector equal to a constant, double precision
+ * floating point complex number.
+ */
+int mtxfiledata_set_constant_complex_double(
+    union mtxfiledata * data,
+    enum mtxfileobject object,
+    enum mtxfileformat format,
+    enum mtxfilefield field,
+    enum mtxprecision precision,
+    int64_t size,
+    int64_t offset,
+    double a[2]);
+
+/**
+ * ‘mtxfiledata_set_constant_integer_single()’ sets every (nonzero)
+ * value of a matrix or vector equal to a constant, 32-bit integer.
  */
 int mtxfiledata_set_constant_integer_single(
     union mtxfiledata * data,
@@ -867,6 +882,20 @@ int mtxfiledata_set_constant_integer_single(
     int64_t size,
     int64_t offset,
     int32_t a);
+
+/**
+ * ‘mtxfiledata_set_constant_integer_double()’ sets every (nonzero)
+ * value of a matrix or vector equal to a constant, 64-bit integer.
+ */
+int mtxfiledata_set_constant_integer_double(
+    union mtxfiledata * data,
+    enum mtxfileobject object,
+    enum mtxfileformat format,
+    enum mtxfilefield field,
+    enum mtxprecision precision,
+    int64_t size,
+    int64_t offset,
+    int64_t a);
 
 /*
  * I/O functions
