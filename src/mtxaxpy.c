@@ -16,7 +16,7 @@
  * along with libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-01-07
+ * Last modified: 2022-01-14
  *
  * Multiply a vector by a scalar and add it to another vector.
  *
@@ -112,7 +112,7 @@ static void program_options_free(
 static void program_options_print_usage(
     FILE * f)
 {
-    fprintf(f, "Usage: %s [OPTION..] alpha x [y]\n", program_name);
+    fprintf(f, "Usage: %s [OPTION..] [alpha] x [y]\n", program_name);
 }
 
 /**
@@ -129,7 +129,7 @@ static void program_options_print_help(
     fprintf(f, " where ‘x’ and ‘y’ are vectors and ‘alpha’ is a scalar constant.\n");
     fprintf(f, "\n");
     fprintf(f, " Positional arguments are:\n");
-    fprintf(f, "  alpha\tConstant scalar value.\n");
+    fprintf(f, "  alpha\tOptional constant scalar, defaults to 1.0.\n");
     fprintf(f, "  x\tPath to Matrix Market file for the vector x.\n");
     fprintf(f, "  y\tOptional path to Matrix Market file for the vector y.\n");
     fprintf(f, "   \tIf omitted, then a vector of ones is used.\n");
@@ -171,19 +171,21 @@ static void program_options_print_version(
  * `parse_program_options()` parses program options.
  */
 static int parse_program_options(
-    int * argc,
-    char *** argv,
-    struct program_options * args)
+    int argc,
+    char ** argv,
+    struct program_options * args,
+    int * nargs)
 {
     int err;
+    *nargs = 0;
 
     /* Set program invocation name. */
-    program_invocation_name = (*argv)[0];
+    program_invocation_name = argv[0];
     program_invocation_short_name = (
         strrchr(program_invocation_name, '/')
         ? strrchr(program_invocation_name, '/') + 1
         : program_invocation_name);
-    (*argc)--; (*argv)++;
+    (*nargs)++; argv++;
 
     /* Set default program options. */
     err = program_options_init(args);
@@ -191,135 +193,132 @@ static int parse_program_options(
         return err;
 
     /* Parse program options. */
-    int num_arguments_consumed = 0;
     int num_positional_arguments_consumed = 0;
-    while (*argc > 0) {
-        *argc -= num_arguments_consumed;
-        *argv += num_arguments_consumed;
-        num_arguments_consumed = 0;
-        if (*argc <= 0)
-            break;
-
-        if (strcmp((*argv)[0], "--precision") == 0) {
-            if (*argc < 2) {
+    while (*nargs < argc) {
+        if (strcmp(argv[0], "--precision") == 0) {
+            if (argc - *nargs < 2) {
                 program_options_free(args);
                 return EINVAL;
             }
-            char * s = (*argv)[1];
+            (*nargs)++; argv++;
+            char * s = argv[0];
             err = mtxprecision_parse(&args->precision, NULL, NULL, s, "");
             if (err) {
                 program_options_free(args);
                 return EINVAL;
             }
-            num_arguments_consumed += 2;
+            (*nargs)++; argv++;
             continue;
-        } else if (strstr((*argv)[0], "--precision=") == (*argv)[0]) {
-            char * s = (*argv)[0] + strlen("--precision=");
+        } else if (strstr(argv[0], "--precision=") == argv[0]) {
+            char * s = argv[0] + strlen("--precision=");
             err = mtxprecision_parse(&args->precision, NULL, NULL, s, "");
             if (err) {
                 program_options_free(args);
                 return EINVAL;
             }
-            num_arguments_consumed++;
+            (*nargs)++; argv++;
             continue;
         }
 
-        if (strcmp((*argv)[0], "--vector-type") == 0) {
-            if (*argc < 2) {
+        if (strcmp(argv[0], "--vector-type") == 0) {
+            if (argc - *nargs < 2) {
                 program_options_free(args);
                 return EINVAL;
             }
-            char * s = (*argv)[1];
+            (*nargs)++; argv++;
+            char * s = argv[0];
             err = mtxvectortype_parse(
                 &args->vector_type, NULL, NULL, s, "");
             if (err) {
                 program_options_free(args);
                 return EINVAL;
             }
-            num_arguments_consumed += 2;
+            (*nargs)++; argv++;
             continue;
-        } else if (strstr((*argv)[0], "--vector-type=") == (*argv)[0]) {
-            char * s = (*argv)[0] + strlen("--vector-type=");
+        } else if (strstr(argv[0], "--vector-type=") == argv[0]) {
+            char * s = argv[0] + strlen("--vector-type=");
             err = mtxvectortype_parse(
                 &args->vector_type, NULL, NULL, s, "");
             if (err) {
                 program_options_free(args);
                 return EINVAL;
             }
-            num_arguments_consumed++;
+            (*nargs)++; argv++;
             continue;
         }
 
-        if (strcmp((*argv)[0], "-z") == 0 ||
-            strcmp((*argv)[0], "--gzip") == 0 ||
-            strcmp((*argv)[0], "--gunzip") == 0 ||
-            strcmp((*argv)[0], "--ungzip") == 0)
+        if (strcmp(argv[0], "-z") == 0 ||
+            strcmp(argv[0], "--gzip") == 0 ||
+            strcmp(argv[0], "--gunzip") == 0 ||
+            strcmp(argv[0], "--ungzip") == 0)
         {
             args->gzip = true;
-            num_arguments_consumed++;
+            (*nargs)++; argv++;
             continue;
         }
 
-        if (strcmp((*argv)[0], "--format") == 0) {
-            if (*argc < 2) {
+        if (strcmp(argv[0], "--format") == 0) {
+            if (argc - *nargs < 2) {
                 program_options_free(args);
                 return EINVAL;
             }
-            args->format = strdup((*argv)[1]);
+            (*nargs)++; argv++;
+            args->format = strdup(argv[0]);
             if (!args->format) {
                 program_options_free(args);
                 return errno;
             }
-            num_arguments_consumed += 2;
+            (*nargs)++; argv++;
             continue;
-        } else if (strstr((*argv)[0], "--format=") == (*argv)[0]) {
-            args->format = strdup((*argv)[0] + strlen("--format="));
+        } else if (strstr(argv[0], "--format=") == argv[0]) {
+            args->format = strdup(argv[0] + strlen("--format="));
             if (!args->format) {
                 program_options_free(args);
                 return errno;
             }
-            num_arguments_consumed++;
+            (*nargs)++; argv++;
             continue;
         }
 
-        if (strcmp((*argv)[0], "--repeat") == 0) {
-            if (*argc < 2) {
+        if (strcmp(argv[0], "--repeat") == 0) {
+            if (argc - *nargs < 2) {
                 program_options_free(args);
                 return EINVAL;
             }
-            err = parse_int32((*argv)[1], NULL, &args->repeat, NULL);
+            (*nargs)++; argv++;
+            err = parse_int32(argv[0], NULL, &args->repeat, NULL);
             if (err) {
                 program_options_free(args);
                 return err;
             }
-            num_arguments_consumed += 2;
+            (*nargs)++; argv++;
             continue;
-        } else if (strstr((*argv)[0], "--repeat=") == (*argv)[0]) {
+        } else if (strstr(argv[0], "--repeat=") == argv[0]) {
             err = parse_int32(
-                (*argv)[0] + strlen("--repeat="), NULL,
+                argv[0] + strlen("--repeat="), NULL,
                 &args->repeat, NULL);
             if (err) {
                 program_options_free(args);
                 return err;
             }
-            num_arguments_consumed++;
+            (*nargs)++; argv++;
             continue;
         }
 
-        if (strcmp((*argv)[0], "-q") == 0 || strcmp((*argv)[0], "--quiet") == 0) {
+        if (strcmp(argv[0], "-q") == 0 || strcmp(argv[0], "--quiet") == 0) {
             args->quiet = true;
-            num_arguments_consumed++;
+            (*nargs)++; argv++;
             continue;
         }
 
-        if (strcmp((*argv)[0], "-v") == 0 || strcmp((*argv)[0], "--verbose") == 0) {
+        if (strcmp(argv[0], "-v") == 0 || strcmp(argv[0], "--verbose") == 0) {
             args->verbose++;
-            num_arguments_consumed++;
+            (*nargs)++; argv++;
             continue;
         }
 
         /* If requested, print program help text. */
-        if (strcmp((*argv)[0], "-h") == 0 || strcmp((*argv)[0], "--help") == 0) {
+        if (strcmp(argv[0], "-h") == 0 || strcmp(argv[0], "--help") == 0) {
             program_options_free(args);
 #ifdef LIBMTX_HAVE_MPI
             int rank;
@@ -342,7 +341,7 @@ static int parse_program_options(
         }
 
         /* If requested, print program version information. */
-        if (strcmp((*argv)[0], "--version") == 0) {
+        if (strcmp(argv[0], "--version") == 0) {
             program_options_free(args);
 #ifdef LIBMTX_HAVE_MPI
             int rank;
@@ -365,14 +364,14 @@ static int parse_program_options(
         }
 
         /* Stop parsing options after '--'.  */
-        if (strcmp((*argv)[0], "--") == 0) {
-            (*argc)--; (*argv)++;
+        if (strcmp(argv[0], "--") == 0) {
+            argc--; argv++;
             break;
         }
 
         /* Unrecognised option. */
-        if (strlen((*argv)[0]) > 1 && (*argv)[0][0] == '-' &&
-            ((*argv)[0][1] < '0' || (*argv)[0][1] > '9'))
+        if (strlen(argv[0]) > 1 && argv[0][0] == '-' &&
+            ((argv[0][1] < '0' || argv[0][1] > '9') && argv[0][1] != '.'))
         {
             program_options_free(args);
             return EINVAL;
@@ -382,19 +381,26 @@ static int parse_program_options(
          * Parse positional arguments.
          */
         if (num_positional_arguments_consumed == 0) {
-            err = parse_double((*argv)[0], NULL, &args->alpha, NULL);
-            if (err) {
-                program_options_free(args);
-                return err;
-            }
-        } else if (num_positional_arguments_consumed == 1) {
-            args->x_path = strdup((*argv)[0]);
+            args->x_path = strdup(argv[0]);
             if (!args->x_path) {
                 program_options_free(args);
                 return errno;
             }
+        } else if (num_positional_arguments_consumed == 1) {
+            char * x_path = strdup(argv[0]);
+            if (!x_path) {
+                program_options_free(args);
+                return errno;
+            }
+            argv[0] = strdup(args->x_path);
+            err = parse_double(argv[0], NULL, &args->alpha, NULL);
+            if (err) {
+                program_options_free(args);
+                return err;
+            }
+            args->x_path = x_path;
         } else if (num_positional_arguments_consumed == 2) {
-            args->y_path = strdup((*argv)[0]);
+            args->y_path = strdup(argv[0]);
             if (!args->y_path) {
                 program_options_free(args);
                 return errno;
@@ -405,10 +411,10 @@ static int parse_program_options(
         }
 
         num_positional_arguments_consumed++;
-        num_arguments_consumed++;
+        (*nargs)++; argv++;
     }
 
-    if (num_positional_arguments_consumed < 2) {
+    if (num_positional_arguments_consumed < 1) {
         program_options_free(args);
 #ifdef LIBMTX_HAVE_MPI
         int rank;
@@ -673,13 +679,12 @@ int main(int argc, char *argv[])
 
     /* 2. Parse program options. */
     struct program_options args;
-    int argc_copy = argc;
-    char ** argv_copy = argv;
-    err = parse_program_options(&argc_copy, &argv_copy, &args);
+    int nargs;
+    err = parse_program_options(argc, argv, &args, &nargs);
     if (err) {
         if (rank == root) {
             fprintf(stderr, "%s: %s %s\n", program_invocation_short_name,
-                    strerror(err), argv_copy[0]);
+                    strerror(err), argv[nargs]);
         }
         mtxdisterror_free(&disterr);
         MPI_Finalize();
@@ -1030,12 +1035,11 @@ int main(int argc, char *argv[])
 
     /* 1. Parse program options. */
     struct program_options args;
-    int argc_copy = argc;
-    char ** argv_copy = argv;
-    err = parse_program_options(&argc_copy, &argv_copy, &args);
+    int nargs;
+    err = parse_program_options(argc, argv, &args, &nargs);
     if (err) {
-        fprintf(stderr, "%s: %s %s\n", program_invocation_short_name,
-                strerror(err), argv_copy[0]);
+        fprintf(stderr, "%s: %s ‘%s’\n", program_invocation_short_name,
+                strerror(err), argv[nargs]);
         return EXIT_FAILURE;
     }
 
