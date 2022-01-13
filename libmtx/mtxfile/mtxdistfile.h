@@ -1067,8 +1067,8 @@ int mtxdistfile_sort(
  * ‘colpart->size’ must be equal to ‘src->size.num_columns’.
  *
  * The argument ‘dsts’ is an array that must have enough storage for
- * ‘P*Q’ values of type ‘struct mtxfile’, where ‘P’ is the number of
- * row parts, ‘rowpart->num_parts’, and ‘Q’ is the number of column
+ * ‘P*Q’ values of type ‘struct mtxdistfile’, where ‘P’ is the number
+ * of row parts, ‘rowpart->num_parts’, and ‘Q’ is the number of column
  * parts, ‘colpart->num_parts’. Note that the ‘r’th part corresponds
  * to a row part ‘p’ and column part ‘q’, such that ‘r=p*Q+q’. Thus,
  * the ‘r’th entry of ‘dsts’ is the submatrix corresponding to the
