@@ -77,7 +77,7 @@ libmtx_la_SOURCES = \
 	libmtx/mtx/submatrix.c \
 	libmtx/mtx/transpose.c \
 	libmtx/mtx/triangle.c \
-	libmtx/mtxdistfile/mtxdistfile.c \
+	libmtx/mtxfile/mtxdistfile.c \
 	libmtx/mtxfile/comments.c \
 	libmtx/mtxfile/data.c \
 	libmtx/mtxfile/header.c \
@@ -145,7 +145,7 @@ nobase_include_HEADERS = \
 	libmtx/mtx/submatrix.h \
 	libmtx/mtx/transpose.h \
 	libmtx/mtx/triangle.h \
-	libmtx/mtxdistfile/mtxdistfile.h \
+	libmtx/mtxfile/mtxdistfile.h \
 	libmtx/mtxfile/comments.h \
 	libmtx/mtxfile/data.h \
 	libmtx/mtxfile/header.h \

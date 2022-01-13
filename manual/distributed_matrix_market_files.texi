@@ -203,7 +203,7 @@ if (comm_err)
 @node Data structures for distributed Matrix Market files
 @section Data structures
 @tindex struct mtxdistfile
-The file @file{libmtx/mtxdistfile/mtxdistfile.h} defines the type
+The file @file{libmtx/mtxfile/mtxdistfile.h} defines the type
 @code{struct mtxdistfile}, which is used to represent a Matrix Market
 file distributed among one or more MPI processes. Conceptually,
 processes are arranged as a one-dimensional linear array. Furthermore,
