@@ -336,7 +336,7 @@ int test_mtxdistfile_fread_shared(void)
             : mtxstrerror(err));
         TEST_ASSERT_EQ_MSG(
             strlen(s), bytes_read,
-            "read %"PRId64" of %"PRId64" bytes", bytes_read, strlen(s));
+            "read %"PRId64" of %zu bytes", bytes_read, strlen(s));
         TEST_ASSERT_EQ(5, lines_read);
         TEST_ASSERT_EQ(mtxfile_matrix, mtxdistfile.header.object);
         TEST_ASSERT_EQ(mtxfile_array, mtxdistfile.header.format);
@@ -379,7 +379,7 @@ int test_mtxdistfile_fread_shared(void)
             : mtxstrerror(err));
         TEST_ASSERT_EQ_MSG(
             strlen(s), bytes_read,
-            "read %"PRId64" of %"PRId64" bytes", bytes_read, strlen(s));
+            "read %"PRId64" of %zu bytes", bytes_read, strlen(s));
         TEST_ASSERT_EQ(5, lines_read);
         TEST_ASSERT_EQ(mtxfile_matrix, mtxdistfile.header.object);
         TEST_ASSERT_EQ(mtxfile_array, mtxdistfile.header.format);
@@ -422,7 +422,7 @@ int test_mtxdistfile_fread_shared(void)
             : mtxstrerror(err));
         TEST_ASSERT_EQ_MSG(
             strlen(s), bytes_read,
-            "read %"PRId64" of %"PRId64" bytes", bytes_read, strlen(s));
+            "read %"PRId64" of %zu bytes", bytes_read, strlen(s));
         TEST_ASSERT_EQ(5, lines_read);
         TEST_ASSERT_EQ(mtxfile_matrix, mtxdistfile.header.object);
         TEST_ASSERT_EQ(mtxfile_array, mtxdistfile.header.format);
@@ -467,7 +467,7 @@ int test_mtxdistfile_fread_shared(void)
             : mtxstrerror(err));
         TEST_ASSERT_EQ_MSG(
             strlen(s), bytes_read,
-            "read %"PRId64" of %"PRId64" bytes", bytes_read, strlen(s));
+            "read %"PRId64" of %zu bytes", bytes_read, strlen(s));
         TEST_ASSERT_EQ(5, lines_read);
         TEST_ASSERT_EQ(mtxfile_matrix, mtxdistfile.header.object);
         TEST_ASSERT_EQ(mtxfile_array, mtxdistfile.header.format);
@@ -512,7 +512,7 @@ int test_mtxdistfile_fread_shared(void)
             : mtxstrerror(err));
         TEST_ASSERT_EQ_MSG(
             strlen(s), bytes_read,
-            "read %"PRId64" of %"PRId64" bytes", bytes_read, strlen(s));
+            "read %"PRId64" of %zu bytes", bytes_read, strlen(s));
         TEST_ASSERT_EQ(5, lines_read);
         TEST_ASSERT_EQ(mtxfile_matrix, mtxdistfile.header.object);
         TEST_ASSERT_EQ(mtxfile_array, mtxdistfile.header.format);
@@ -555,7 +555,7 @@ int test_mtxdistfile_fread_shared(void)
             : mtxstrerror(err));
         TEST_ASSERT_EQ_MSG(
             strlen(s), bytes_read,
-            "read %"PRId64" of %"PRId64" bytes", bytes_read, strlen(s));
+            "read %"PRId64" of %zu bytes", bytes_read, strlen(s));
         TEST_ASSERT_EQ(5, lines_read);
         TEST_ASSERT_EQ(mtxfile_matrix, mtxdistfile.header.object);
         TEST_ASSERT_EQ(mtxfile_array, mtxdistfile.header.format);
@@ -601,7 +601,7 @@ int test_mtxdistfile_fread_shared(void)
             : mtxstrerror(err));
         TEST_ASSERT_EQ_MSG(
             strlen(s), bytes_read,
-            "read %"PRId64" of %"PRId64" bytes", bytes_read, strlen(s));
+            "read %"PRId64" of %zu bytes", bytes_read, strlen(s));
         TEST_ASSERT_EQ(5, lines_read);
         TEST_ASSERT_EQ(mtxfile_matrix, mtxdistfile.header.object);
         TEST_ASSERT_EQ(mtxfile_coordinate, mtxdistfile.header.format);
@@ -649,7 +649,7 @@ int test_mtxdistfile_fread_shared(void)
             : mtxstrerror(err));
         TEST_ASSERT_EQ_MSG(
             strlen(s), bytes_read,
-            "read %"PRId64" of %"PRId64" bytes", bytes_read, strlen(s));
+            "read %"PRId64" of %zu bytes", bytes_read, strlen(s));
         TEST_ASSERT_EQ(5, lines_read);
         TEST_ASSERT_EQ(mtxfile_matrix, mtxdistfile.header.object);
         TEST_ASSERT_EQ(mtxfile_coordinate, mtxdistfile.header.format);
@@ -698,7 +698,7 @@ int test_mtxdistfile_fread_shared(void)
             : mtxstrerror(err));
         TEST_ASSERT_EQ_MSG(
             strlen(s), bytes_read,
-            "read %"PRId64" of %"PRId64" bytes", bytes_read, strlen(s));
+            "read %"PRId64" of %zu bytes", bytes_read, strlen(s));
         TEST_ASSERT_EQ(5, lines_read);
         TEST_ASSERT_EQ(mtxfile_matrix, mtxdistfile.header.object);
         TEST_ASSERT_EQ(mtxfile_coordinate, mtxdistfile.header.format);
@@ -745,7 +745,7 @@ int test_mtxdistfile_fread_shared(void)
             : mtxstrerror(err));
         TEST_ASSERT_EQ_MSG(
             strlen(s), bytes_read,
-            "read %"PRId64" of %"PRId64" bytes", bytes_read, strlen(s));
+            "read %"PRId64" of %zu bytes", bytes_read, strlen(s));
         TEST_ASSERT_EQ(5, lines_read);
         TEST_ASSERT_EQ(mtxfile_matrix, mtxdistfile.header.object);
         TEST_ASSERT_EQ(mtxfile_coordinate, mtxdistfile.header.format);
@@ -793,7 +793,7 @@ int test_mtxdistfile_fread_shared(void)
             : mtxstrerror(err));
         TEST_ASSERT_EQ_MSG(
             strlen(s), bytes_read,
-            "read %"PRId64" of %"PRId64" bytes", bytes_read, strlen(s));
+            "read %"PRId64" of %zu bytes", bytes_read, strlen(s));
         TEST_ASSERT_EQ(5, lines_read);
         TEST_ASSERT_EQ(mtxfile_vector, mtxdistfile.header.object);
         TEST_ASSERT_EQ(mtxfile_coordinate, mtxdistfile.header.format);
@@ -839,7 +839,7 @@ int test_mtxdistfile_fread_shared(void)
             : mtxstrerror(err));
         TEST_ASSERT_EQ_MSG(
             strlen(s), bytes_read,
-            "read %"PRId64" of %"PRId64" bytes", bytes_read, strlen(s));
+            "read %"PRId64" of %zu bytes", bytes_read, strlen(s));
         TEST_ASSERT_EQ(5, lines_read);
         TEST_ASSERT_EQ(mtxfile_vector, mtxdistfile.header.object);
         TEST_ASSERT_EQ(mtxfile_coordinate, mtxdistfile.header.format);
@@ -887,7 +887,7 @@ int test_mtxdistfile_fread_shared(void)
             : mtxstrerror(err));
         TEST_ASSERT_EQ_MSG(
             strlen(s), bytes_read,
-            "read %"PRId64" of %"PRId64" bytes", bytes_read, strlen(s));
+            "read %"PRId64" of %zu bytes", bytes_read, strlen(s));
         TEST_ASSERT_EQ(5, lines_read);
         TEST_ASSERT_EQ(mtxfile_vector, mtxdistfile.header.object);
         TEST_ASSERT_EQ(mtxfile_coordinate, mtxdistfile.header.format);
@@ -933,7 +933,7 @@ int test_mtxdistfile_fread_shared(void)
             : mtxstrerror(err));
         TEST_ASSERT_EQ_MSG(
             strlen(s), bytes_read,
-            "read %"PRId64" of %"PRId64" bytes", bytes_read, strlen(s));
+            "read %"PRId64" of %zu bytes", bytes_read, strlen(s));
         TEST_ASSERT_EQ(5, lines_read);
         TEST_ASSERT_EQ(mtxfile_vector, mtxdistfile.header.object);
         TEST_ASSERT_EQ(mtxfile_coordinate, mtxdistfile.header.format);
