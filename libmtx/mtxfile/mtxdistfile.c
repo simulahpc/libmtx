@@ -2157,10 +2157,12 @@ int mtxdistfile_write_shared(
         err = mtxdistfile_fwrite_shared(
             mtxdistfile, f, fmt, bytes_written, root, disterr);
         if (err) {
-            fclose(f);
+            if (rank == root)
+                fclose(f);
             return err;
         }
-        fclose(f);
+        if (rank == root)
+            fclose(f);
     } else {
 #ifdef LIBMTX_HAVE_LIBZ
         errno = ENOTSUP;
