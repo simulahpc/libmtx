@@ -36,11 +36,11 @@
  */
 enum mtxpartitioning
 {
-    mtx_singleton,    /* singleton partition with only one component */
-    mtx_block,        /* contiguous, fixed-size blocks */
-    mtx_cyclic,       /* cyclic partition */
-    mtx_block_cyclic, /* cyclic partition of fixed-size blocks. */
-    mtx_partition,    /* general, user-defined partition */
+    mtx_singleton,         /* singleton partition with only one component */
+    mtx_block,             /* contiguous, fixed-size blocks */
+    mtx_cyclic,            /* cyclic partition */
+    mtx_block_cyclic,      /* cyclic partition of fixed-size blocks */
+    mtx_custom_partition,  /* general, user-defined partition */
 };
 
 /**
@@ -116,21 +116,21 @@ struct mtxpartition
 
     /**
      * ‘parts’ is an array is an array of length ‘size’, if ‘type’ is
-     * ‘mtx_partition’, containing the part number assigned to each
+     * ‘mtx_custom_partition’, containing the part number assigned to each
      * element in the partitioned set.
      *
-     * If ‘type’ is not ‘mtx_partition’, then ‘parts’ is set to ‘NULL’
+     * If ‘type’ is not ‘mtx_custom_partition’, then ‘parts’ is set to ‘NULL’
      * and is not used.
      */
     int * parts;
 
     /**
      * ‘elements_per_part’ is an array of length ‘size’, if ‘type’ is
-     * ‘mtx_partition’. The elements belonging to the ‘p’th part are
+     * ‘mtx_custom_partition’. The elements belonging to the ‘p’th part are
      * given by ‘elements_per_part[i]’, for ‘i’ in ‘parts_ptr[p],
      * parts_ptr[p]+1, ..., parts_ptr[p+1]-1’.
      *
-     * If ‘type’ is not ‘mtx_partition’, then ‘elements_per_part’ is
+     * If ‘type’ is not ‘mtx_custom_partition’, then ‘elements_per_part’ is
      * set to ‘NULL’ and is not used.
      */
     int64_t * elements_per_part;

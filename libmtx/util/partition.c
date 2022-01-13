@@ -50,7 +50,7 @@ const char * mtxpartitioning_str(
     case mtx_block: return "block";
     case mtx_cyclic: return "cyclic";
     case mtx_block_cyclic: return "block-cyclic";
-    case mtx_partition: return "partition";
+    case mtx_custom_partition: return "custom";
     default: return mtxstrerror(MTX_ERR_INVALID_PARTITION_TYPE);
     }
 }
@@ -96,9 +96,9 @@ int mtxpartitioning_parse(
     } else if (strncmp("block-cyclic", t, strlen("block-cyclic")) == 0) {
         t += strlen("block-cyclic");
         *partition_type = mtx_block_cyclic;
-    } else if (strncmp("partition", t, strlen("partition")) == 0) {
-        t += strlen("partition");
-        *partition_type = mtx_partition;
+    } else if (strncmp("custom", t, strlen("custom")) == 0) {
+        t += strlen("custom");
+        *partition_type = mtx_custom_partition;
     } else {
         return MTX_ERR_INVALID_PARTITION_TYPE;
     }
@@ -152,7 +152,7 @@ int mtxpartition_init(
     } else if (type == mtx_block_cyclic) {
         return mtxpartition_init_block_cyclic(
             partition, size, num_parts, block_size);
-    } else if (type == mtx_partition) {
+    } else if (type == mtx_custom_partition) {
         return mtxpartition_init_partition(
             partition, size, num_parts, parts);
     } else {
@@ -376,7 +376,7 @@ int mtxpartition_init_partition(
             return MTX_ERR_INDEX_OUT_OF_BOUNDS;
     }
 
-    partition->type = mtx_partition;
+    partition->type = mtx_custom_partition;
     partition->size = size;
     partition->num_parts = num_parts;
     partition->part_sizes = malloc(partition->num_parts * sizeof(int64_t));
@@ -475,7 +475,7 @@ int mtxpartition_assign(
         errno = ENOTSUP;
         return MTX_ERR_ERRNO;
 
-    } else if (partition->type == mtx_partition) {
+    } else if (partition->type == mtx_custom_partition) {
         for (int64_t k = 0; k < size; k++) {
             if (elements[k] < 0 || elements[k] >= partition->size)
                 return MTX_ERR_INDEX_OUT_OF_BOUNDS;
@@ -543,7 +543,7 @@ int mtxpartition_globalidx(
         errno = ENOTSUP;
         return MTX_ERR_ERRNO;
 
-    } else if (partition->type == mtx_partition) {
+    } else if (partition->type == mtx_custom_partition) {
         for (int64_t k = 0; k < size; k++) {
             if (localelem[k] < 0 || localelem[k] >= partition->part_sizes[part])
                 return MTX_ERR_INDEX_OUT_OF_BOUNDS;
@@ -615,7 +615,7 @@ int mtxpartition_localidx(
         errno = ENOTSUP;
         return MTX_ERR_ERRNO;
 
-    } else if (partition->type == mtx_partition) {
+    } else if (partition->type == mtx_custom_partition) {
         for (int64_t k = 0; k < size; k++) {
             bool found = false;
             for (int64_t l = 0; l < partition->part_sizes[part]; l++) {
@@ -848,7 +848,7 @@ int mtxpartition_fwrite_parts(
         mtxfile_free(&mtxfile);
         errno = ENOTSUP;
         return MTX_ERR_ERRNO;
-    } else if (partition->type == mtx_partition) {
+    } else if (partition->type == mtx_custom_partition) {
         for (int64_t i = 0; i < partition->size; i++)
             parts[i] = partition->parts[i];
     } else {

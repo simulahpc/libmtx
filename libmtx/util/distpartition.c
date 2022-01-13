@@ -81,7 +81,7 @@ int mtxdistpartition_init(
     } else if (type == mtx_block_cyclic) {
         err = mtxdistpartition_init_block_cyclic(
             partition, size, num_parts, block_size, comm, disterr);
-    } else if (type == mtx_partition) {
+    } else if (type == mtx_custom_partition) {
         err = mtxdistpartition_init_partition(
             partition, size, num_parts, parts, comm, disterr);
     } else {

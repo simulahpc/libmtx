@@ -149,11 +149,11 @@ There are different kinds of partitionings, which may be represented
 by using the type @code{enum mtxpartitioning}.
 @example
 @code{enum mtxpartitioning @{
-    mtx_singleton,    /* singleton partition with only one component */
-    mtx_block,        /* contiguous, fixed-size blocks */
-    mtx_cyclic,       /* cyclic partition */
-    mtx_block_cyclic, /* cyclic partition of fixed-size blocks. */
-    mtx_partition,    /* general partition */
+    mtx_singleton,         /* singleton partition with only one component */
+    mtx_block,             /* contiguous, fixed-size blocks */
+    mtx_cyclic,            /* cyclic partition */
+    mtx_block_cyclic,      /* cyclic partition of fixed-size blocks */
+    mtx_custom_partition,  /* general, user-defined partition */
 @};}
 @end example
 

@@ -972,7 +972,7 @@ is made up of the elements @{@var{j}@var{M}, @var{j}@var{M} @math{+}
 @var{B}@sub{@var{j}} are then assigned in a cyclic fashion to the
 parts @var{P}@sub{@var{i}}.
 
-@item @code{mtx_partition}
+@item @code{mtx_custom_partition}
 is a general, user-defined partitioning, where each part,
 @var{P}@sub{@var{i}}, is given in the form of an array of length
 @var{N}@sub{@var{i}} consisting of unique elements
