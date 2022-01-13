@@ -29,7 +29,7 @@
 #include <errno.h>
 #include <unistd.h>
 
-#include <assert.h>
+#include <limits.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>

@@ -41,6 +41,7 @@
 #include <unistd.h>
 #include <errno.h>
 
+#include <limits.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -2603,7 +2604,7 @@ static int mtxdistfile_sort_permutation(
 static int mtxdistfile_sort_keys(
     struct mtxdistfile * mtxdistfile,
     int64_t size,
-    int64_t * keys,
+    uint64_t * keys,
     int64_t * perm,
     struct mtxdisterror * disterr)
 {
@@ -2697,7 +2698,7 @@ int mtxdistfile_sort(
         return mtxdistfile_sort_permutation(
             mtxdistfile, perm, disterr);
     } else if (sorting == mtxfile_row_major) {
-        int64_t * keys = malloc(local_size * sizeof(int64_t));
+        uint64_t * keys = malloc(local_size * sizeof(uint64_t));
         err = !keys ? MTX_ERR_ERRNO : MTX_SUCCESS;
         if (mtxdisterror_allreduce(disterr, err))
             return MTX_ERR_MPI_COLLECTIVE;
@@ -2720,7 +2721,7 @@ int mtxdistfile_sort(
         free(keys);
 
     } else if (sorting == mtxfile_column_major) {
-        int64_t * keys = malloc(local_size * sizeof(int64_t));
+        uint64_t * keys = malloc(local_size * sizeof(uint64_t));
         err = !keys ? MTX_ERR_ERRNO : MTX_SUCCESS;
         if (mtxdisterror_allreduce(disterr, err))
             return MTX_ERR_MPI_COLLECTIVE;
@@ -2743,7 +2744,7 @@ int mtxdistfile_sort(
         free(keys);
 
     } else if (sorting == mtxfile_morton) {
-        int64_t * keys = malloc(local_size * sizeof(int64_t));
+        uint64_t * keys = malloc(local_size * sizeof(uint64_t));
         err = !keys ? MTX_ERR_ERRNO : MTX_SUCCESS;
         if (mtxdisterror_allreduce(disterr, err))
             return MTX_ERR_MPI_COLLECTIVE;

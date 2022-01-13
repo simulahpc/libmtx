@@ -5002,7 +5002,7 @@ int mtxfiledata_sortkey_row_major(
     int num_columns,
     int64_t offset,
     int64_t size,
-    int64_t * keys)
+    uint64_t * keys)
 {
     int err;
 
@@ -5161,7 +5161,7 @@ int mtxfiledata_sortkey_column_major(
     int num_columns,
     int64_t offset,
     int64_t size,
-    int64_t * keys)
+    uint64_t * keys)
 {
     int err;
 
@@ -5268,7 +5268,7 @@ int mtxfiledata_sortkey_morton(
     int num_columns,
     int64_t offset,
     int64_t size,
-    int64_t * keys)
+    uint64_t * keys)
 {
     int err;
 
@@ -5355,7 +5355,7 @@ static int mtxfiledata_sort_keys(
     int num_rows,
     int num_columns,
     int64_t size,
-    int64_t * keys,
+    uint64_t * keys,
     int64_t * sorting_permutation)
 {
     int err;
@@ -5418,7 +5418,7 @@ int mtxfiledata_sort_row_major(
         }
         return MTX_SUCCESS;
     } else if (format == mtxfile_coordinate) {
-        int64_t * keys = malloc(size * sizeof(int64_t));
+        uint64_t * keys = malloc(size * sizeof(uint64_t));
         if (!keys)
             return MTX_ERR_ERRNO;
         err = mtxfiledata_sortkey_row_major(
@@ -5463,7 +5463,7 @@ int mtxfiledata_sort_column_major(
 {
     int err;
 
-    int64_t * keys = malloc(size * sizeof(int64_t));
+    uint64_t * keys = malloc(size * sizeof(uint64_t));
     if (!keys)
         return MTX_ERR_ERRNO;
 
@@ -5507,7 +5507,7 @@ int mtxfiledata_sort_morton(
     int err;
 
     /* 1. Allocate storage for and extract the sorting keys. */
-    int64_t * keys = malloc(size * sizeof(int64_t));
+    uint64_t * keys = malloc(size * sizeof(uint64_t));
     if (!keys)
         return MTX_ERR_ERRNO;
 

@@ -2157,7 +2157,7 @@ int mtxfileordering_parse(
         *ordering = mtxfile_unordered;
     } else if (strncmp("rcm", t, strlen("rcm")) == 0) {
         t += strlen("rcm");
-        *ordering = mtxfile_permutation;
+        *ordering = mtxfile_rcm;
     } else {
         return MTX_ERR_INVALID_ORDERING;
     }

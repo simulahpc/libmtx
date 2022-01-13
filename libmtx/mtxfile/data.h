@@ -1124,7 +1124,7 @@ int mtxfiledata_sortkey_row_major(
     int num_columns,
     int64_t offset,
     int64_t size,
-    int64_t * keys);
+    uint64_t * keys);
 
 /**
  * ‘mtxfiledata_sortkey_column_major()’ provides an array of keys that
@@ -1150,7 +1150,7 @@ int mtxfiledata_sortkey_column_major(
     int num_columns,
     int64_t offset,
     int64_t size,
-    int64_t * keys);
+    uint64_t * keys);
 
 /**
  * ‘mtxfiledata_sortkey_morton()’ provides an array of keys that can
@@ -1176,7 +1176,7 @@ int mtxfiledata_sortkey_morton(
     int num_columns,
     int64_t offset,
     int64_t size,
-    int64_t * keys);
+    uint64_t * keys);
 
 /**
  * ‘mtxfiledata_sort_row_major()’ sorts data lines of a Matrix Market
