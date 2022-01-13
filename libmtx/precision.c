@@ -23,7 +23,7 @@
  */
 
 #include <libmtx/error.h>
-#include <libmtx/mtx/precision.h>
+#include <libmtx/precision.h>
 
 #include <stddef.h>
 #include <string.h>

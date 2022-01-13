@@ -40,7 +40,7 @@
 #include <libmtx/mtx/io.h>
 #include <libmtx/mtx/mpi.h>
 #include <libmtx/mtx/mtx.h>
-#include <libmtx/mtx/precision.h>
+#include <libmtx/precision.h>
 #include <libmtx/mtx/reorder.h>
 #include <libmtx/mtx/sort.h>
 #include <libmtx/mtx/submatrix.h>

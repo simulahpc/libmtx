@@ -27,7 +27,7 @@
 #include <libmtx/libmtx-config.h>
 
 #include <libmtx/mtxfile/header.h>
-#include <libmtx/mtx/precision.h>
+#include <libmtx/precision.h>
 
 #ifdef LIBMTX_HAVE_MPI
 #include <mpi.h>

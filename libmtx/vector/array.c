@@ -27,7 +27,7 @@
 #include <libmtx/error.h>
 #include <libmtx/mtx/header.h>
 #include <libmtx/mtx/mtx.h>
-#include <libmtx/mtx/precision.h>
+#include <libmtx/precision.h>
 
 #include <errno.h>
 

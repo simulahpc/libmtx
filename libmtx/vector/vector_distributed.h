@@ -27,7 +27,7 @@
 #include <libmtx/libmtx-config.h>
 
 #ifdef LIBMTX_HAVE_MPI
-#include <libmtx/mtx/precision.h>
+#include <libmtx/precision.h>
 #include <libmtx/util/field.h>
 #include <libmtx/util/partition.h>
 

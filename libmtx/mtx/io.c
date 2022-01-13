@@ -30,7 +30,7 @@
 #include <libmtx/matrix/coordinate/io.h>
 #include <libmtx/mtx/io.h>
 #include <libmtx/mtx/mtx.h>
-#include <libmtx/mtx/precision.h>
+#include <libmtx/precision.h>
 #include <libmtx/vector/array.h>
 #include <libmtx/vector/coordinate.h>
 #include <libmtx/vector/coordinate/io.h>

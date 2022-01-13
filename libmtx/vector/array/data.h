@@ -26,7 +26,7 @@
 #define LIBMTX_VECTOR_ARRAY_DATA_H
 
 #include <libmtx/mtx/header.h>
-#include <libmtx/mtx/precision.h>
+#include <libmtx/precision.h>
 
 #include <stdint.h>
 

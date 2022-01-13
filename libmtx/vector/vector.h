@@ -26,7 +26,7 @@
 
 #include <libmtx/libmtx-config.h>
 
-#include <libmtx/mtx/precision.h>
+#include <libmtx/precision.h>
 #include <libmtx/util/field.h>
 #include <libmtx/vector/vector_array.h>
 #include <libmtx/vector/vector_coordinate.h>

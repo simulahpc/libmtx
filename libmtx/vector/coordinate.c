@@ -27,7 +27,7 @@
 #include <libmtx/mtx/assembly.h>
 #include <libmtx/error.h>
 #include <libmtx/mtx/mtx.h>
-#include <libmtx/mtx/precision.h>
+#include <libmtx/precision.h>
 #include <libmtx/mtx/reorder.h>
 #include <libmtx/mtx/sort.h>
 

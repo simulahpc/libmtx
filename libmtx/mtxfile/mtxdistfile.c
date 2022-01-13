@@ -25,7 +25,7 @@
 #include <libmtx/libmtx-config.h>
 
 #include <libmtx/error.h>
-#include <libmtx/mtx/precision.h>
+#include <libmtx/precision.h>
 #include <libmtx/mtxfile/mtxdistfile.h>
 #include <libmtx/mtxfile/comments.h>
 #include <libmtx/mtxfile/data.h>

@@ -71,7 +71,7 @@ libmtx_la_SOURCES = \
 	libmtx/mtx/io.c \
 	libmtx/mtx/mpi.c \
 	libmtx/mtx/mtx.c \
-	libmtx/mtx/precision.c \
+	libmtx/precision.c \
 	libmtx/mtx/reorder.c \
 	libmtx/mtx/sort.c \
 	libmtx/mtx/submatrix.c \
@@ -139,7 +139,7 @@ nobase_include_HEADERS = \
 	libmtx/mtx/io.h \
 	libmtx/mtx/mpi.h \
 	libmtx/mtx/mtx.h \
-	libmtx/mtx/precision.h \
+	libmtx/precision.h \
 	libmtx/mtx/reorder.h \
 	libmtx/mtx/sort.h \
 	libmtx/mtx/submatrix.h \
