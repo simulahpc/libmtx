@@ -139,7 +139,7 @@ int mtxpartition_init(
     enum mtxpartitioning type,
     int64_t size,
     int num_parts,
-    const int * part_sizes,
+    const int64_t * part_sizes,
     int block_size,
     const int * parts)
 {
@@ -161,16 +161,16 @@ int mtxpartition_init(
 }
 
 /**
- * ‘mtxpartition_init_copy()’ creates a copy of a partitioning.
+ * ‘mtxpartition_copy()’ creates a copy of a partitioning.
  */
-int mtxpartition_init_copy(
+int mtxpartition_copy(
     struct mtxpartition * dst,
     const struct mtxpartition * src)
 {
     dst->type = src->type;
     dst->size = src->size;
     dst->num_parts = src->num_parts;
-    dst->part_sizes = malloc(dst->num_parts * sizeof(int));
+    dst->part_sizes = malloc(dst->num_parts * sizeof(int64_t));
     if (!dst->part_sizes)
         return MTX_ERR_ERRNO;
     for (int p = 0; p < dst->num_parts; p++)
@@ -180,7 +180,7 @@ int mtxpartition_init_copy(
         free(dst->part_sizes);
         return MTX_ERR_ERRNO;
     }
-    for (int p = 0; p < dst->num_parts; p++)
+    for (int p = 0; p <= dst->num_parts; p++)
         dst->parts_ptr[p] = src->parts_ptr[p];
     if (src->parts) {
         dst->parts = malloc(dst->size * sizeof(int64_t));
@@ -225,7 +225,7 @@ int mtxpartition_init_singleton(
     partition->type = mtx_singleton;
     partition->size = size;
     partition->num_parts = 1;
-    partition->part_sizes = malloc(partition->num_parts * sizeof(int));
+    partition->part_sizes = malloc(partition->num_parts * sizeof(int64_t));
     if (!partition->part_sizes)
         return MTX_ERR_ERRNO;
     partition->part_sizes[0] = size;
@@ -256,7 +256,7 @@ int mtxpartition_init_block(
     struct mtxpartition * partition,
     int64_t size,
     int num_parts,
-    const int * part_sizes)
+    const int64_t * part_sizes)
 {
     int err;
     if (num_parts <= 0)
@@ -268,7 +268,7 @@ int mtxpartition_init_block(
     partition->type = mtx_block;
     partition->size = size;
     partition->num_parts = num_parts;
-    partition->part_sizes = malloc(partition->num_parts * sizeof(int));
+    partition->part_sizes = malloc(partition->num_parts * sizeof(int64_t));
     if (!partition->part_sizes)
         return MTX_ERR_ERRNO;
     if (part_sizes) {
@@ -321,7 +321,7 @@ int mtxpartition_init_cyclic(
     partition->type = mtx_cyclic;
     partition->size = size;
     partition->num_parts = num_parts;
-    partition->part_sizes = malloc(partition->num_parts * sizeof(int));
+    partition->part_sizes = malloc(partition->num_parts * sizeof(int64_t));
     if (!partition->part_sizes)
         return MTX_ERR_ERRNO;
     for (int p = 0; p < num_parts; p++) {
@@ -379,7 +379,7 @@ int mtxpartition_init_partition(
     partition->type = mtx_partition;
     partition->size = size;
     partition->num_parts = num_parts;
-    partition->part_sizes = malloc(partition->num_parts * sizeof(int));
+    partition->part_sizes = malloc(partition->num_parts * sizeof(int64_t));
     if (!partition->part_sizes)
         return MTX_ERR_ERRNO;
 
@@ -436,15 +436,11 @@ int mtxpartition_init_partition(
  * The arrays ‘elements’ and ‘parts’ must both contain enough storage
  * for ‘size’ values of type ‘int’. If successful, ‘parts’ will
  * contain the part numbers of each element in the ‘elements’ array.
- *
- * If needed, ‘elements’ and ‘parts’ are allowed to point to the same
- * underlying array. The values of ‘elements’ will then be overwritten
- * by the assigned part numbers.
  */
 int mtxpartition_assign(
     const struct mtxpartition * partition,
     int64_t size,
-    const int * elements,
+    const int64_t * elements,
     int * parts)
 {
     if (partition->type == mtx_singleton) {
@@ -515,8 +511,8 @@ int mtxpartition_globalidx(
     const struct mtxpartition * partition,
     int part,
     int64_t size,
-    const int * localelem,
-    int * globalelem)
+    const int64_t * localelem,
+    int64_t * globalelem)
 {
     if (part < 0 || part >= partition->num_parts)
         return MTX_ERR_INDEX_OUT_OF_BOUNDS;
@@ -553,6 +549,84 @@ int mtxpartition_globalidx(
                 return MTX_ERR_INDEX_OUT_OF_BOUNDS;
             int64_t offset = partition->parts_ptr[part];
             globalelem[k] = partition->elements_per_part[offset + localelem[k]];
+        }
+
+    } else {
+        return MTX_ERR_INVALID_PARTITION_TYPE;
+    }
+    return MTX_SUCCESS;
+}
+
+/**
+ * ‘mtxpartition_localidx()’ translates from a global numbering of
+ * elements in the partitioned set to a local numbering of elements
+ * within a given part.
+ *
+ * The argument ‘part’ denotes the part of the partition for which the
+ * local element numbers are obtained.
+ *
+ * The arrays ‘globalelem’ and ‘localelem’ must be of length equal to
+ * ‘size’. The former is used to specify the global element numbers of
+ * elements belonging to the specified part. 
+ *
+ * If successful, the array ‘localelem’ will contain local element
+ * numbers in the range ‘0, 1, ..., partition->part_sizes[part]-1’
+ * that were obtained by translating from the global element numbers
+ * in ‘globalelem’.
+ *
+ * If needed, ‘globalelem’ and ‘localelem’ are allowed to point to the
+ * same underlying array. The values of ‘globalelem’ will then be
+ * overwritten by the local element numbers.
+ */
+int mtxpartition_localidx(
+    const struct mtxpartition * partition,
+    int part,
+    int64_t size,
+    const int64_t * globalelem,
+    int64_t * localelem)
+{
+    if (part < 0 || part >= partition->num_parts)
+        return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+
+    if (partition->type == mtx_singleton) {
+        for (int64_t k = 0; k < size; k++) {
+            if (globalelem[k] < 0 || globalelem[k] >= partition->part_sizes[part])
+                return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            localelem[k] = globalelem[k];
+        }
+
+    } else if (partition->type == mtx_block) {
+        for (int64_t k = 0; k < size; k++) {
+            if (globalelem[k] < partition->parts_ptr[part] ||
+                globalelem[k] >= partition->parts_ptr[part+1])
+                return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            localelem[k] = globalelem[k] - partition->parts_ptr[part];
+        }
+
+    } else if (partition->type == mtx_cyclic) {
+        for (int64_t k = 0; k < size; k++) {
+            if (globalelem[k] % partition->num_parts != part)
+                return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            localelem[k] = (globalelem[k] - part) / partition->num_parts;
+        }
+
+    } else if (partition->type == mtx_block_cyclic) {
+        /* TODO: Not implemented. */
+        errno = ENOTSUP;
+        return MTX_ERR_ERRNO;
+
+    } else if (partition->type == mtx_partition) {
+        for (int64_t k = 0; k < size; k++) {
+            bool found = false;
+            for (int64_t l = 0; l < partition->part_sizes[part]; l++) {
+                if (partition->elements_per_part[l] == globalelem[k]) {
+                    localelem[k] = l;
+                    found = true;
+                    break;
+                }
+            }
+            if (!found)
+                return MTX_ERR_INDEX_OUT_OF_BOUNDS;
         }
 
     } else {

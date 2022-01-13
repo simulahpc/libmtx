@@ -567,6 +567,7 @@ int mtxdistvector_from_mtxdistfile(
     MPI_Comm comm,
     struct mtxdisterror * disterr)
 {
+#if 0
     int err;
     if (mtxdistfile->header.object != mtxfile_vector)
         return MTX_ERR_INCOMPATIBLE_MTX_OBJECT;
@@ -578,6 +579,10 @@ int mtxdistvector_from_mtxdistfile(
     if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
     return MTX_SUCCESS;
+#else
+    errno = ENOTSUP;
+    return MTX_ERR_ERRNO;
+#endif
 }
 
 /**
@@ -589,6 +594,7 @@ int mtxdistvector_to_mtxdistfile(
     struct mtxdistfile * mtxdistfile,
     struct mtxdisterror * disterr)
 {
+#if 0
     int err;
     struct mtxfile mtxfile;
     err = mtxvector_to_mtxfile(&distvector->interior, &mtxfile);
@@ -601,6 +607,10 @@ int mtxdistvector_to_mtxdistfile(
     }
     mtxfile_free(&mtxfile);
     return MTX_SUCCESS;
+#else
+    errno = ENOTSUP;
+    return MTX_ERR_ERRNO;
+#endif
 }
 
 /*

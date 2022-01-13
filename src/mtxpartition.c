@@ -673,7 +673,7 @@ int main(int argc, char *argv[])
         &src, args.precision,
         args.mtx_path ? args.mtx_path : "", args.gzip,
         &lines_read, &bytes_read,
-        comm, &disterr);
+        comm, root, &disterr);
     if (err) {
         if (args.verbose > 0)
             fprintf(diagf, "\n");
@@ -856,14 +856,14 @@ int main(int argc, char *argv[])
         }
 
         if (args.verbose > 0) {
-            fprintf(diagf, "mtxdistfile_write: ");
+            fprintf(diagf, "mtxdistfile_write_shared: ");
             fflush(diagf);
             clock_gettime(CLOCK_MONOTONIC, &t0);
         }
 
         /* Write the part to a file. */
         int64_t bytes_written = 0;
-        err = mtxdistfile_write(
+        err = mtxdistfile_write_shared(
             &dst, output_path, args.gzip, args.format, &bytes_written,
             false, &disterr);
         if (err) {

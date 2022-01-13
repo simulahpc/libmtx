@@ -139,6 +139,7 @@ int test_mtxfile_sendrecv(void)
     } else if (rank == 0) {
         mtxfile_free(&srcmtx);
     }
+    mtxdisterror_free(&disterr);
     return TEST_SUCCESS;
 }
 
@@ -230,6 +231,7 @@ int test_mtxfile_bcast(void)
     TEST_ASSERT_EQ(  4, data[3].i); TEST_ASSERT_EQ(   4, data[3].j);
     TEST_ASSERT_EQ(4.0, data[3].a);
     mtxfile_free(&mtx);
+    mtxdisterror_free(&disterr);
     return TEST_SUCCESS;
 }
 
@@ -436,6 +438,7 @@ int test_mtxfile_gather(void)
         }
         mtxfile_free(&srcmtx);
     }
+    mtxdisterror_free(&disterr);
     return TEST_SUCCESS;
 }
 
@@ -636,6 +639,7 @@ int test_mtxfile_allgather(void)
         mtxfile_free(&dstmtxs[1]);
         mtxfile_free(&srcmtx);
     }
+    mtxdisterror_free(&disterr);
     return TEST_SUCCESS;
 }
 
@@ -784,6 +788,7 @@ int test_mtxfile_scatter(void)
         mtxfile_free(&srcmtxs[0]);
         mtxfile_free(&srcmtxs[1]);
     }
+    mtxdisterror_free(&disterr);
     return TEST_SUCCESS;
 }
 
@@ -989,6 +994,7 @@ int test_mtxfile_alltoall(void)
         mtxfile_free(&srcmtxs[0]);
         mtxfile_free(&srcmtxs[1]);
     }
+    mtxdisterror_free(&disterr);
     return TEST_SUCCESS;
 }
 
@@ -1190,6 +1196,7 @@ int test_mtxfile_scatterv(void)
             mtxfile_free(&srcmtx);
     }
 
+    mtxdisterror_free(&disterr);
     return TEST_SUCCESS;
 }
 

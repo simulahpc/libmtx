@@ -16,7 +16,7 @@
  * along with libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-01-11
+ * Last modified: 2022-01-12
  *
  * Matrix Market files distributed among multiple processes with MPI
  * for inter-process communication.
@@ -55,6 +55,10 @@ struct mtxpartition;
  * ‘mtxdistfile’ represents a file in the Matrix Market file format
  * distributed among multiple processes, where MPI is used for
  * communicating between processes.
+ *
+ * Processes are arranged as a one-dimensional linear array, and data
+ * lines of the underlying Matrix Market file are distributed among
+ * processes according to a specified partitioning.
  */
 struct mtxdistfile
 {
@@ -75,6 +79,12 @@ struct mtxdistfile
      * ‘rank’ is the rank of the current process.
      */
     int rank;
+
+    /**
+     * ‘partition’ is a partitioning of the data lines in the
+     * underlying Matrix Market file.
+     */
+    struct mtxpartition partition;
 
     /**
      * ‘header’ is the Matrix Market file header.
@@ -98,10 +108,10 @@ struct mtxdistfile
     enum mtxprecision precision;
 
     /**
-     * ‘mtxfile’ is the part of the Matrix Market file owned by the
-     * current process.
+     * ‘data’ contains the data lines of the Matrix Market file that
+     * are owned by the current process.
      */
-    struct mtxfile mtxfile;
+    union mtxfiledata data;
 };
 
 /*
@@ -109,16 +119,31 @@ struct mtxdistfile
  */
 
 /**
- * ‘mtxdistfile_init()’ creates a distributed Matrix Market file from
- * Matrix Market files on each process in a communicator.
+ * ‘mtxdistfile_alloc()’ allocates storage for a distributed Matrix
+ * Market file with the given header line, comment lines, size line
+ * and precision.
  *
- * This function performs collective communication and therefore
- * requires every process in the communicator to perform matching
- * calls to the function.
+ * ‘comments’ may be ‘NULL’, in which case it is ignored.
+ *
+ * ‘partition’ must be a partitioning of a finite set whose size
+ * equals the number of data lines in the underlying Matrix Market
+ * file (i.e., ‘size->num_nonzeros’ if ‘header->format’ is
+ * ‘mtxfile_coordinate’, or ‘size->num_rows*size->num_columns’ or
+ * ‘size->num_rows’ if ‘header->format’ is ‘mtxfile_array’ and
+ * ‘header->object’ is ‘mtxfile_matrix’ or ‘mtxfile_vector’,
+ * respectively). Also, the number of parts in the partition is at
+ * most the number of MPI processes in the communicator ‘comm’.
+ *
+ * ‘comm’ must be the same MPI communicator that was used to create
+ * ‘disterr’.
  */
-int mtxdistfile_init(
+int mtxdistfile_alloc(
     struct mtxdistfile * mtxdistfile,
-    const struct mtxfile * mtxfile,
+    const struct mtxfileheader * header,
+    const struct mtxfilecomments * comments,
+    const struct mtxfilesize * size,
+    enum mtxprecision precision,
+    const struct mtxpartition * partition,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
@@ -163,6 +188,7 @@ int mtxdistfile_alloc_matrix_array(
     enum mtxprecision precision,
     int num_rows,
     int num_columns,
+    const struct mtxpartition * partition,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
@@ -177,6 +203,7 @@ int mtxdistfile_init_matrix_array_real_single(
     int num_rows,
     int num_columns,
     const float * data,
+    const struct mtxpartition * partition,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
@@ -190,6 +217,7 @@ int mtxdistfile_init_matrix_array_real_double(
     int num_rows,
     int num_columns,
     const double * data,
+    const struct mtxpartition * partition,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
@@ -204,6 +232,7 @@ int mtxdistfile_init_matrix_array_complex_single(
     int num_rows,
     int num_columns,
     const float (* data)[2],
+    const struct mtxpartition * partition,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
@@ -218,6 +247,7 @@ int mtxdistfile_init_matrix_array_complex_double(
     int num_rows,
     int num_columns,
     const double (* data)[2],
+    const struct mtxpartition * partition,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
@@ -232,6 +262,7 @@ int mtxdistfile_init_matrix_array_integer_single(
     int num_rows,
     int num_columns,
     const int32_t * data,
+    const struct mtxpartition * partition,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
@@ -246,6 +277,7 @@ int mtxdistfile_init_matrix_array_integer_double(
     int num_rows,
     int num_columns,
     const int64_t * data,
+    const struct mtxpartition * partition,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
@@ -262,6 +294,7 @@ int mtxdistfile_alloc_vector_array(
     enum mtxfilefield field,
     enum mtxprecision precision,
     int num_rows,
+    const struct mtxpartition * partition,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
@@ -274,17 +307,20 @@ int mtxdistfile_init_vector_array_real_single(
     struct mtxdistfile * mtxdistfile,
     int num_rows,
     const float * data,
+    const struct mtxpartition * partition,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxdistfile_init_vector_array_real_double()’ allocates and initialises
- * a vector in array format with real, double precision coefficients.
+ * ‘mtxdistfile_init_vector_array_real_double()’ allocates and
+ * initialises a vector in array format with real, double precision
+ * coefficients.
  */
 int mtxdistfile_init_vector_array_real_double(
     struct mtxdistfile * mtxdistfile,
     int num_rows,
     const double * data,
+    const struct mtxpartition * partition,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
@@ -297,6 +333,7 @@ int mtxdistfile_init_vector_array_complex_single(
     struct mtxdistfile * mtxdistfile,
     int num_rows,
     const float (* data)[2],
+    const struct mtxpartition * partition,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
@@ -309,6 +346,7 @@ int mtxdistfile_init_vector_array_complex_double(
     struct mtxdistfile * mtxdistfile,
     int num_rows,
     const double (* data)[2],
+    const struct mtxpartition * partition,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
@@ -321,6 +359,7 @@ int mtxdistfile_init_vector_array_integer_single(
     struct mtxdistfile * mtxdistfile,
     int num_rows,
     const int32_t * data,
+    const struct mtxpartition * partition,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
@@ -333,6 +372,7 @@ int mtxdistfile_init_vector_array_integer_double(
     struct mtxdistfile * mtxdistfile,
     int num_rows,
     const int64_t * data,
+    const struct mtxpartition * partition,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
@@ -352,6 +392,7 @@ int mtxdistfile_alloc_matrix_coordinate(
     int num_rows,
     int num_columns,
     int64_t num_nonzeros,
+    const struct mtxpartition * partition,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
@@ -367,6 +408,7 @@ int mtxdistfile_init_matrix_coordinate_real_single(
     int num_columns,
     int64_t num_nonzeros,
     const struct mtxfile_matrix_coordinate_real_single * data,
+    const struct mtxpartition * partition,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
@@ -382,6 +424,7 @@ int mtxdistfile_init_matrix_coordinate_real_double(
     int num_columns,
     int64_t num_nonzeros,
     const struct mtxfile_matrix_coordinate_real_double * data,
+    const struct mtxpartition * partition,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
@@ -397,6 +440,7 @@ int mtxdistfile_init_matrix_coordinate_complex_single(
     int num_columns,
     int64_t num_nonzeros,
     const struct mtxfile_matrix_coordinate_complex_single * data,
+    const struct mtxpartition * partition,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
@@ -412,6 +456,7 @@ int mtxdistfile_init_matrix_coordinate_complex_double(
     int num_columns,
     int64_t num_nonzeros,
     const struct mtxfile_matrix_coordinate_complex_double * data,
+    const struct mtxpartition * partition,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
@@ -427,6 +472,7 @@ int mtxdistfile_init_matrix_coordinate_integer_single(
     int num_columns,
     int64_t num_nonzeros,
     const struct mtxfile_matrix_coordinate_integer_single * data,
+    const struct mtxpartition * partition,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
@@ -442,6 +488,7 @@ int mtxdistfile_init_matrix_coordinate_integer_double(
     int num_columns,
     int64_t num_nonzeros,
     const struct mtxfile_matrix_coordinate_integer_double * data,
+    const struct mtxpartition * partition,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
@@ -457,6 +504,7 @@ int mtxdistfile_init_matrix_coordinate_pattern(
     int num_columns,
     int64_t num_nonzeros,
     const struct mtxfile_matrix_coordinate_pattern * data,
+    const struct mtxpartition * partition,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
@@ -474,6 +522,7 @@ int mtxdistfile_alloc_vector_coordinate(
     enum mtxprecision precision,
     int num_rows,
     int64_t num_nonzeros,
+    const struct mtxpartition * partition,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
@@ -487,6 +536,7 @@ int mtxdistfile_init_vector_coordinate_real_single(
     int num_rows,
     int64_t num_nonzeros,
     const struct mtxfile_vector_coordinate_real_single * data,
+    const struct mtxpartition * partition,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
@@ -500,6 +550,7 @@ int mtxdistfile_init_vector_coordinate_real_double(
     int num_rows,
     int64_t num_nonzeros,
     const struct mtxfile_vector_coordinate_real_double * data,
+    const struct mtxpartition * partition,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
@@ -513,6 +564,7 @@ int mtxdistfile_init_vector_coordinate_complex_single(
     int num_rows,
     int64_t num_nonzeros,
     const struct mtxfile_vector_coordinate_complex_single * data,
+    const struct mtxpartition * partition,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
@@ -526,6 +578,7 @@ int mtxdistfile_init_vector_coordinate_complex_double(
     int num_rows,
     int64_t num_nonzeros,
     const struct mtxfile_vector_coordinate_complex_double * data,
+    const struct mtxpartition * partition,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
@@ -539,6 +592,7 @@ int mtxdistfile_init_vector_coordinate_integer_single(
     int num_rows,
     int64_t num_nonzeros,
     const struct mtxfile_vector_coordinate_integer_single * data,
+    const struct mtxpartition * partition,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
@@ -552,6 +606,7 @@ int mtxdistfile_init_vector_coordinate_integer_double(
     int num_rows,
     int64_t num_nonzeros,
     const struct mtxfile_vector_coordinate_integer_double * data,
+    const struct mtxpartition * partition,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
@@ -565,6 +620,7 @@ int mtxdistfile_init_vector_coordinate_pattern(
     int num_rows,
     int64_t num_nonzeros,
     const struct mtxfile_vector_coordinate_pattern * data,
+    const struct mtxpartition * partition,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
@@ -603,12 +659,31 @@ int mtxdistfile_set_constant_complex_single(
     struct mtxdisterror * disterr);
 
 /**
+ * ‘mtxdistfile_set_constant_complex_double()’ sets every (nonzero)
+ * value of a matrix or vector equal to a constant, double precision
+ * floating point complex number.
+ */
+int mtxdistfile_set_constant_complex_double(
+    struct mtxdistfile * mtxdistfile,
+    double a[2],
+    struct mtxdisterror * disterr);
+
+/**
  * ‘mtxdistfile_set_constant_integer_single()’ sets every (nonzero)
- * value of a matrix or vector equal to a constant integer.
+ * value of a matrix or vector equal to a constant, 32-bit integer.
  */
 int mtxdistfile_set_constant_integer_single(
     struct mtxdistfile * mtxdistfile,
     int32_t a,
+    struct mtxdisterror * disterr);
+
+/**
+ * ‘mtxdistfile_set_constant_integer_double()’ sets every (nonzero)
+ * value of a matrix or vector equal to a constant, 64-bit integer.
+ */
+int mtxdistfile_set_constant_integer_double(
+    struct mtxdistfile * mtxdistfile,
+    int64_t a,
     struct mtxdisterror * disterr);
 
 /*
@@ -676,6 +751,7 @@ int mtxdistfile_read_shared(
     int * lines_read,
     int64_t * bytes_read,
     MPI_Comm comm,
+    int root,
     struct mtxdisterror * disterr);
 
 /**
@@ -720,50 +796,7 @@ int mtxdistfile_fread_shared(
     size_t line_max,
     char * linebuf,
     MPI_Comm comm,
-    struct mtxdisterror * disterr);
-
-/**
- * ‘mtxdistfile_fread_shared()’ reads a Matrix Market file from a stream and
- * distributes the data among MPI processes in a communicator.
- *
- * ‘precision’ is used to determine the precision to use for storing
- * the values of matrix or vector entries.
- *
- * If an error code is returned, then ‘lines_read’ and ‘bytes_read’
- * are used to return the line number and byte at which the error was
- * encountered during the parsing of the Matrix Market file.
- *
- * If ‘linebuf’ is not ‘NULL’, then it must point to an array that can
- * hold at least ‘line_max’ values of type ‘char’. This buffer is used
- * for reading lines from the stream. Otherwise, if ‘linebuf’ is
- * ‘NULL’, then a temporary buffer is allocated and used, and the
- * maximum line length is determined by calling ‘sysconf()’ with
- * ‘_SC_LINE_MAX’.
- *
- * Only a single root process will read from the specified stream.
- * The data is partitioned into equal-sized parts for each process.
- * For matrices and vectors in coordinate format, the total number of
- * data lines is evenly distributed among processes. Otherwise, the
- * rows are evenly distributed among processes.
- *
- * The file is read one part at a time, which is then sent to the
- * owning process. This avoids reading the entire file into the memory
- * of the root process at once, which would severely limit the size of
- * files that could be read.
- *
- * This function performs collective communication and therefore
- * requires every process in the communicator to perform matching
- * calls to the function.
- */
-int mtxdistfile_fread_shared(
-    struct mtxdistfile * mtxdistfile,
-    enum mtxprecision precision,
-    FILE * f,
-    int * lines_read,
-    int64_t * bytes_read,
-    size_t line_max,
-    char * linebuf,
-    MPI_Comm comm,
+    int root,
     struct mtxdisterror * disterr);
 
 #ifdef LIBMTX_HAVE_LIBZ
@@ -810,6 +843,7 @@ int mtxdistfile_gzread_shared(
     size_t line_max,
     char * linebuf,
     MPI_Comm comm,
+    int root,
     struct mtxdisterror * disterr);
 #endif
 
@@ -882,6 +916,7 @@ int mtxdistfile_write(
     const char * fmt,
     int64_t * bytes_written,
     bool sequential,
+    int root,
     struct mtxdisterror * disterr);
 
 /**
@@ -921,6 +956,7 @@ int mtxdistfile_fwrite(
     const char * fmt,
     int64_t * bytes_written,
     bool sequential,
+    int root,
     struct mtxdisterror * disterr);
 
 /**
@@ -1030,10 +1066,16 @@ int mtxdistfile_sort(
  * ‘rowpart->size’ must be equal to ‘src->size.num_rows’, and
  * ‘colpart->size’ must be equal to ‘src->size.num_columns’.
  *
- * The distributed Matrix Market file ‘dst’ is used to store the
- * results of the partitioning and redistribution. The user is
- * responsible for calling ‘mtxdistfile_free’ to free storage
- * allocated for ‘dst’.
+ * The argument ‘dsts’ is an array that must have enough storage for
+ * ‘P*Q’ values of type ‘struct mtxfile’, where ‘P’ is the number of
+ * row parts, ‘rowpart->num_parts’, and ‘Q’ is the number of column
+ * parts, ‘colpart->num_parts’. Note that the ‘r’th part corresponds
+ * to a row part ‘p’ and column part ‘q’, such that ‘r=p*Q+q’. Thus,
+ * the ‘r’th entry of ‘dsts’ is the submatrix corresponding to the
+ * ‘p’th row and ‘q’th column of the 2D partitioning.
+ *
+ * The user is responsible for freeing storage allocated for each
+ * Matrix Market file in the ‘dsts’ array.
  */
 int mtxdistfile_partition(
     const struct mtxdistfile * src,
@@ -1041,69 +1083,6 @@ int mtxdistfile_partition(
     const struct mtxpartition * rowpart,
     const struct mtxpartition * colpart,
     struct mtxdisterror * disterr);
-
-#if 0
-/**
- * ‘mtxdistfile_init_from_partition()’ creates a distributed Matrix
- * Market file from a partitioning of another distributed Matrix
- * Market file.
- *
- * On each process, a partitioning can be obtained from
- * ‘mtxdistfile_partition_rows()’. This provides the arrays
- * ‘data_lines_per_part_ptr’ and ‘data_lines_per_part’, which together
- * describe the size of each part and the indices to its data lines on
- * the current process. The number of parts in the partitioning must
- * be less than or equal to the number of processes in the MPI
- * communicator.
- *
- * The ‘p’th value of ‘data_lines_per_part_ptr’ must be an offset to
- * the first data line belonging to the ‘p’th part of the partition,
- * while the final value of the array points to one place beyond the
- * final data line.  Moreover for each part ‘p’ of the partitioning,
- * the entries from ‘data_lines_per_part[p]’ up to, but not including,
- * ‘data_lines_per_part[p+1]’, are the indices of the data lines in
- * ‘src’ that are assigned to the ‘p’th part of the partitioning.
- */
-int mtxdistfile_init_from_partition(
-    struct mtxdistfile * dst,
-    const struct mtxdistfile * src,
-    int num_parts,
-    const int64_t * data_lines_per_part_ptr,
-    const int64_t * data_lines_per_part,
-    struct mtxdisterror * disterr);
-
-/**
- * ‘mtxdistfile_partition_rows()’ partitions data lines of a
- * distributed Matrix Market file according to the given row
- * partitioning.
- *
- * If it is not ‘NULL’, the array ‘part_per_data_line’ must contain
- * enough storage to hold one ‘int’ for each data line held by the
- * current process. (The number of data lines is obtained from
- * ‘mtxfilesize_num_data_lines()’). On a successful return, the ‘k’th
- * entry in the array specifies the part number that was assigned to
- * the ‘k’th data line of ‘src’.
- *
- * The array ‘data_lines_per_part_ptr’ must contain at least enough
- * storage for ‘row_partition->num_parts+1’ values of type ‘int64_t’.
- * If successful, the ‘p’th value of ‘data_lines_per_part_ptr’ is an
- * offset to the first data line belonging to the ‘p’th part of the
- * partition, while the final value of the array points to one place
- * beyond the final data line.  Moreover ‘data_lines_per_part’ must
- * contain enough storage to hold one ‘int64_t’ for each data line.
- * For each part ‘p’ of the partitioning, the entries from
- * ‘data_lines_per_part[p]’ up to, but not including,
- * ‘data_lines_per_part[p+1]’, are the indices of the data lines in
- * ‘src’ that are assigned to the ‘p’th part of the partitioning.
- */
-int mtxdistfile_partition_rows(
-    const struct mtxdistfile * mtxdistfile,
-    const struct mtxpartition * row_partition,
-    int * part_per_data_line,
-    int64_t * data_lines_per_part_ptr,
-    int64_t * data_lines_per_part,
-    struct mtxdisterror * disterr);
-#endif
 #endif
 
 #endif

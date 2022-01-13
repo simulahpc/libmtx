@@ -205,65 +205,83 @@ if (comm_err)
 @tindex struct mtxdistfile
 The file @file{libmtx/mtxdistfile/mtxdistfile.h} defines the type
 @code{struct mtxdistfile}, which is used to represent a Matrix Market
-file distributed among one or more MPI processes. The definition of
-the @code{mtxdistfile} struct is shown below.
+file distributed among one or more MPI processes. Conceptually,
+processes are arranged as a one-dimensional linear array. Furthermore,
+the data is also arranged as a one-dimensional linear array, which is
+then distributed among the processes of the communicator
+@code{comm}. The definition of the @code{mtxdistfile} struct is shown
+below.
 @example
 @code{struct mtxdistfile @{
     MPI_Comm comm;
     int comm_size;
     int rank;
+    struct mtxpartition partition;
     struct mtxfileheader header;
     struct mtxfilecomments comments;
     struct mtxfilesize size;
     enum mtxprecision precision;
-    struct mtxfile mtxfile;
+    union mtxfiledata data;
 @};}
 @end example
 The first three struct members contain some information about the
 group of processes sharing the distributed Matrix Market file,
 including their MPI communicator (@code{comm}), the number of
 processes (@code{comm_size}) and the rank of the current process
-(@code{rank}). Thereafter, follow the header line, comments, size line
-and the chosen precision, all of which must be identical on every
-process in the communicator. Finally, @code{mtxfile} represents the
-part of the Matrix Market file that resides on the current process.
+(@code{rank}).
+
+Next, the struct member @code{partition} defines a partitioning of all
+the data lines in the underlying Matrix Market file. This is used to
+determine which parts of the Matrix Market file belong to which
+processes in the communicator.
+
+Thereafter, follows the header line, comments, size line and the
+chosen precision, all of which must be identical on every process in
+the communicator. The final struct member, @code{data}, is used to
+store those data lines of the Matrix Market file that reside on the
+current process.
 
 @node Creating distributed Matrix Market files
 @section Creating distributed Matrix Market files
+@findex mtxdistfile_free
 Constructing distributed Matrix Market files works in much the same
 way as the non-distributed case, which was described in @ref{Creating
-Matrix Market files}.
-
-@findex mtxdistfile_init
-If the needed data has already been distributed, then
-@code{mtxdistfile_init} can be used to create a distributed Matrix
-Market file from Matrix Market files residing on each process in a
-communicator.
-@example
-@code{int mtxdistfile_init(
-    struct mtxdistfile * mtxdistfile,
-    const struct mtxfile * mtxfile,
-    MPI_Comm comm,
-    struct mtxdisterror * disterr);}
-@end example
-This function performs collective communication and therefore requires
-every process in the communicator to perform matching calls to the
-function. The communicator must be the same one that was used to
-allocate @code{disterr}.
-
-Furthermore, the Matrix Market files on each process must have the
-same header line (i.e., object, format, field and symmetry) and
-precision. In addition, the number of columns must be the same for
-every process in the case of a matrix or vector in array format,
-whereas both the number of rows and columns must be the same for every
-process in the case of a matrix or vector in coordinate format.
-
-@findex mtxdistfile_free
-The function @code{mtxdistfile_free} frees storage allocated for a
-distributed Matrix Market file.
+Matrix Market files}. First of all, @code{mtxdistfile_free} is used to
+free storage that is allocated when creating a distributed Matrix
+Market file.
 @example
 @code{void mtxdistfile_free(struct mtxdistfile * mtxdistfile);}
 @end example
+
+@findex mtxdistfile_alloc
+To allocate storage for a distributed Matrix Market file with the
+given header line, comment lines, size line and precision, use
+@code{mtxdistfile_alloc}.
+@example
+@code{int mtxdistfile_alloc(
+    struct mtxdistfile * mtxdistfile,
+    const struct mtxfileheader * header,
+    const struct mtxfilecomments * comments,
+    const struct mtxfilesize * size,
+    enum mtxprecision precision,
+    const struct mtxpartition * partition,
+    MPI_Comm comm,
+    struct mtxdisterror * disterr);}
+@end example
+@code{comments} may be @samp{NULL}, in which case it is ignored.
+
+@code{partition} must be a partitioning of a finite set whose size
+equals the number of data lines in the underlying Matrix Market file
+(i.e., @code{size->num_nonzeros} if @code{header->format} is
+@samp{mtxfile_coordinate}, or @code{size->num_rows*size->num_columns}
+or @code{size->num_rows} if @code{header->format} is
+@samp{mtxfile_array} and @code{header->object} is
+@samp{mtxfile_matrix} or @samp{mtxfile_vector}, respectively). Also,
+the number of parts in the partition is at most the number of MPI
+processes in the communicator @code{comm}.
+
+Finally, @code{comm} must be the same MPI communicator that was used
+to create @code{disterr}.
 
 @findex mtxdistfile_alloc_copy
 @findex mtxdistfile_init_copy

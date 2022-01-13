@@ -491,7 +491,7 @@ int main(int argc, char *argv[])
         &mtxdistfile, args.precision,
         args.mtx_path, args.gzip,
         &lines_read, &bytes_read,
-        comm, &disterr);
+        comm, root, &disterr);
     if (err) {
         if (args.verbose > 0)
             fprintf(diagf, "\n");
@@ -525,28 +525,7 @@ int main(int argc, char *argv[])
 
     int64_t size;
     err = mtxfilesize_num_data_lines(
-        &mtxdistfile.mtxfile.size, mtxdistfile.mtxfile.header.symmetry, &size);
-    if (mtxdisterror_allreduce(&disterr, err)) {
-        if (args.verbose > 0)
-            fprintf(diagf, "\n");
-        if (rank == root) {
-            fprintf(stderr, "%s: %s\n",
-                    program_invocation_short_name,
-                    err == MTX_ERR_MPI_COLLECTIVE
-                    ? mtxdisterror_description(&disterr)
-                    : mtxstrerror(err));
-        }
-        mtxdistfile_free(&mtxdistfile);
-        program_options_free(&args);
-        mtxdisterror_free(&disterr);
-        MPI_Finalize();
-        return EXIT_FAILURE;
-    }
-
-    int64_t total_size;
-    disterr.mpierrcode = MPI_Allreduce(
-        &size, &total_size, 1, MPI_INT64_T, MPI_SUM, comm);
-    err = disterr.mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+        &mtxdistfile.size, mtxdistfile.header.symmetry, &size);
     if (mtxdisterror_allreduce(&disterr, err)) {
         if (args.verbose > 0)
             fprintf(diagf, "\n");
@@ -581,7 +560,8 @@ int main(int argc, char *argv[])
         err = mtxdistfile_read_shared(
             &perm_mtxdistfile, mtx_double,
             args.perm_path, args.gzip,
-            &lines_read, &bytes_read, comm, &disterr);
+            &lines_read, &bytes_read,
+            comm, root, &disterr);
         if (err) {
             if (args.verbose > 0)
                 fprintf(diagf, "\n");
@@ -621,7 +601,10 @@ int main(int argc, char *argv[])
             err = MTX_ERR_INCOMPATIBLE_MTX_FORMAT;
         else if (perm_mtxdistfile.header.field != mtxfile_integer)
             err = MTX_ERR_INCOMPATIBLE_MTX_FIELD;
-        else if (perm_mtxdistfile.mtxfile.size.num_rows != size)
+        else if (perm_mtxdistfile.partition.size != size)
+            err = MTX_ERR_INCOMPATIBLE_MTX_SIZE;
+        else if (perm_mtxdistfile.partition.part_sizes[rank] !=
+                 mtxdistfile.partition.size)
             err = MTX_ERR_INCOMPATIBLE_MTX_SIZE;
         if (mtxdisterror_allreduce(&disterr, err)) {
             if (args.verbose > 0)
@@ -641,8 +624,8 @@ int main(int argc, char *argv[])
             return EXIT_FAILURE;
         }
 
-        perm = perm_mtxdistfile.mtxfile.data.array_integer_double;
-        perm_mtxdistfile.mtxfile.data.array_integer_double = NULL;
+        perm = perm_mtxdistfile.data.array_integer_double;
+        perm_mtxdistfile.data.array_integer_double = NULL;
         mtxdistfile_free(&perm_mtxdistfile);
     } else if (args.perm_path) {
         perm = malloc(size * sizeof(int64_t));
@@ -696,7 +679,7 @@ int main(int argc, char *argv[])
         clock_gettime(CLOCK_MONOTONIC, &t1);
         fprintf(diagf, "%'.6f seconds (%'.1f Mlines/s)\n",
                 timespec_duration(t0, t1),
-                1.0e-6 * total_size / timespec_duration(t0, t1));
+                1.0e-6 * size / timespec_duration(t0, t1));
     }
 
     /* 4. Write the sorted Matrix Market object to standard output. */
@@ -757,7 +740,8 @@ int main(int argc, char *argv[])
     if (args.sorting != mtxfile_permutation && args.perm_path) {
         struct mtxdistfile perm_mtxdistfile;
         err = mtxdistfile_init_vector_array_integer_double(
-            &perm_mtxdistfile, size, perm, comm, &disterr);
+            &perm_mtxdistfile, size, perm,
+            &mtxdistfile.partition, comm, &disterr);
         if (err) {
             if (rank == root) {
                 fprintf(stderr, "%s: %s\n",

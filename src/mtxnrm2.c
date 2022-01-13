@@ -728,7 +728,7 @@ int main(int argc, char *argv[])
         &mtxdistfile, args.precision,
         args.x_path ? args.x_path : "", args.gzip,
         &lines_read, &bytes_read,
-        comm, &disterr);
+        comm, root, &disterr);
     if (err) {
         if (args.verbose > 0)
             fprintf(diagf, "\n");

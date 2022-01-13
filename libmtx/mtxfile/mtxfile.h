@@ -86,7 +86,7 @@ struct mtxfile
 
 /**
  * ‘mtxfile_alloc()’ allocates storage for a Matrix Market file with
- * the given header line, comment lines and size line.
+ * the given header line, comment lines, size line and precision.
  *
  * ‘comments’ may be ‘NULL’, in which case it is ignored.
  */

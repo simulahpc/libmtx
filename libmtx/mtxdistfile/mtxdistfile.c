@@ -16,7 +16,7 @@
  * along with libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-01-11
+ * Last modified: 2022-01-12
  *
  * Matrix Market files distributed among multiple processes with MPI
  * for inter-process communication.
@@ -26,15 +26,14 @@
 
 #include <libmtx/error.h>
 #include <libmtx/mtx/precision.h>
-#include <libmtx/mtxdistfile/data.h>
 #include <libmtx/mtxdistfile/mtxdistfile.h>
 #include <libmtx/mtxfile/comments.h>
 #include <libmtx/mtxfile/data.h>
 #include <libmtx/mtxfile/header.h>
 #include <libmtx/mtxfile/mtxfile.h>
 #include <libmtx/mtxfile/size.h>
-#include <libmtx/util/distpartition.h>
 #include <libmtx/util/partition.h>
+#include <libmtx/util/sort.h>
 
 #ifdef LIBMTX_HAVE_MPI
 #include <mpi.h>
@@ -60,25 +59,46 @@
 void mtxdistfile_free(
     struct mtxdistfile * mtxdistfile)
 {
+    mtxfiledata_free(
+        &mtxdistfile->data,
+        mtxdistfile->header.object,
+        mtxdistfile->header.format,
+        mtxdistfile->header.field,
+        mtxdistfile->precision);
     mtxfilecomments_free(&mtxdistfile->comments);
-    mtxfile_free(&mtxdistfile->mtxfile);
+    mtxpartition_free(&mtxdistfile->partition);
 }
 
 /**
- * ‘mtxdistfile_init()’ creates a distributed Matrix Market file from
- * Matrix Market files on each process in a communicator.
+ * ‘mtxdistfile_alloc()’ allocates storage for a distributed Matrix
+ * Market file with the given header line, comment lines, size line
+ * and precision.
  *
- * This function performs collective communication and therefore
- * requires every process in the communicator to perform matching
- * calls to the function.
+ * ‘comments’ may be ‘NULL’, in which case it is ignored.
+ *
+ * ‘partition’ must be a partitioning of a finite set whose size
+ * equals the number of data lines in the underlying Matrix Market
+ * file (i.e., ‘size->num_nonzeros’ if ‘header->format’ is
+ * ‘mtxfile_coordinate’, or ‘size->num_rows*size->num_columns’ or
+ * ‘size->num_rows’ if ‘header->format’ is ‘mtxfile_array’ and
+ * ‘header->object’ is ‘mtxfile_matrix’ or ‘mtxfile_vector’,
+ * respectively). Also, the number of parts in the partition is at
+ * most the number of MPI processes in the communicator ‘comm’.
+ *
+ * ‘comm’ must be the same MPI communicator that was used to create
+ * ‘disterr’.
  */
-int mtxdistfile_init(
+int mtxdistfile_alloc(
     struct mtxdistfile * mtxdistfile,
-    const struct mtxfile * mtxfile,
+    const struct mtxfileheader * header,
+    const struct mtxfilecomments * comments,
+    const struct mtxfilesize * size,
+    enum mtxprecision precision,
+    const struct mtxpartition * partition,
     MPI_Comm comm,
     struct mtxdisterror * disterr)
 {
-    int err;
+    int err = MTX_SUCCESS;
     int comm_size;
     disterr->mpierrcode = MPI_Comm_size(comm, &comm_size);
     err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
@@ -90,149 +110,60 @@ int mtxdistfile_init(
     if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
 
+    /* Check that the partition is compatible */
+    int64_t num_data_lines;
+    err = mtxfilesize_num_data_lines(
+        size, header->symmetry, &num_data_lines);
+    if (mtxdisterror_allreduce(disterr, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+    if (partition->num_parts > comm_size ||
+        partition->size != num_data_lines)
+        err = MTX_ERR_INCOMPATIBLE_PARTITION;
+    if (mtxdisterror_allreduce(disterr, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+
     mtxdistfile->comm = comm;
     mtxdistfile->comm_size = comm_size;
     mtxdistfile->rank = rank;
 
-    struct mtxfileheader * headers = malloc(
-        comm_size * sizeof(struct mtxfileheader));
-    err = !headers ? MTX_ERR_ERRNO : MTX_SUCCESS;
+    err = mtxpartition_copy(&mtxdistfile->partition, partition);
     if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
-    struct mtxfilesize * sizes = malloc(
-        comm_size * sizeof(struct mtxfilesize));
-    err = !sizes ? MTX_ERR_ERRNO : MTX_SUCCESS;
+
+    err = mtxfileheader_copy(&mtxdistfile->header, header);
     if (mtxdisterror_allreduce(disterr, err)) {
-        free(headers);
+        mtxpartition_free(&mtxdistfile->partition);
         return MTX_ERR_MPI_COLLECTIVE;
     }
-    enum mtxprecision * precisions = malloc(comm_size * sizeof(enum mtxprecision));
-    err = !precisions ? MTX_ERR_ERRNO : MTX_SUCCESS;
-    if (mtxdisterror_allreduce(disterr, err)) {
-        free(sizes);
-        free(headers);
-        return MTX_ERR_MPI_COLLECTIVE;
-    }
-
-    /* Gather headers, size lines and precisions. */
-    err = mtxfileheader_allgather(&mtxfile->header, headers, comm, disterr);
-    if (err) {
-        free(precisions);
-        free(sizes);
-        free(headers);
-        return err;
-    }
-    err = mtxfilesize_allgather(&mtxfile->size, sizes, comm, disterr);
-    if (err) {
-        free(precisions);
-        free(sizes);
-        free(headers);
-        return err;
-    }
-    disterr->mpierrcode = MPI_Allgather(
-        &mtxfile->precision, 1, MPI_INT, precisions, 1, MPI_INT, comm);
-    err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
-    if (mtxdisterror_allreduce(disterr, err)) {
-        free(precisions);
-        free(sizes);
-        free(headers);
-        return MTX_ERR_MPI_COLLECTIVE;
-    }
-
-    /* Check that the headers and precision are the same for all of
-     * the underlying Matrix Market files. */
-    err = MTX_SUCCESS;
-    for (int p = 1; p < comm_size; p++) {
-        if (headers[p].object != headers[0].object) {
-            err = MTX_ERR_INCOMPATIBLE_MTX_OBJECT;
-            break;
-        } else if (headers[p].format != headers[0].format) {
-            err = MTX_ERR_INCOMPATIBLE_MTX_FORMAT;
-            break;
-        } else if (headers[p].field != headers[0].field) {
-            err = MTX_ERR_INCOMPATIBLE_MTX_FIELD;
-            break;
-        } else if (headers[p].symmetry != headers[0].symmetry) {
-            err = MTX_ERR_INCOMPATIBLE_MTX_SYMMETRY;
-            break;
-        } else if (precisions[p] != precisions[0]) {
-            err = MTX_ERR_INCOMPATIBLE_PRECISION;
-            break;
+    if (comments) {
+        err = mtxfilecomments_copy(&mtxdistfile->comments, comments);
+        if (mtxdisterror_allreduce(disterr, err)) {
+            mtxpartition_free(&mtxdistfile->partition);
+            return MTX_ERR_MPI_COLLECTIVE;
         }
-    }
-    if (err) {
-        free(precisions);
-        free(sizes);
-        free(headers);
-        return err;
-    }
-
-    err = mtxfileheader_copy(&mtxdistfile->header, &headers[0]);
-    if (mtxdisterror_allreduce(disterr, err)) {
-        free(precisions);
-        free(sizes);
-        free(headers);
-        return MTX_ERR_MPI_COLLECTIVE;
-    }
-    free(headers);
-    mtxdistfile->precision = precisions[0];
-    free(precisions);
-
-    err = mtxfilecomments_init(&mtxdistfile->comments);
-    if (mtxdisterror_allreduce(disterr, err)) {
-        free(sizes);
-        return MTX_ERR_MPI_COLLECTIVE;
-    }
-
-    /* Calculate the size of the distributed Matrix Market file. */
-    if (mtxdistfile->header.format == mtxfile_array) {
-        int64_t num_rows = sizes[0].num_rows;
-        err = MTX_SUCCESS;
-        for (int p = 1; p < comm_size; p++) {
-            if (sizes[p].num_columns != sizes[0].num_columns) {
-                err = MTX_ERR_INCOMPATIBLE_MTX_SIZE;
-                break;
-            }
-            num_rows += sizes[p].num_rows;
-        }
-        if (err) {
-            mtxfilecomments_free(&mtxdistfile->comments);
-            free(sizes);
-            return err;
-        }
-        mtxdistfile->size.num_rows = num_rows;
-        mtxdistfile->size.num_columns = sizes[0].num_columns;
-        mtxdistfile->size.num_nonzeros = sizes[0].num_nonzeros;
-    } else if (mtxdistfile->header.format == mtxfile_coordinate) {
-        int64_t num_nonzeros = sizes[0].num_nonzeros;
-        err = MTX_SUCCESS;
-        for (int p = 1; p < comm_size; p++) {
-            if (sizes[p].num_rows != sizes[0].num_rows ||
-                sizes[p].num_columns != sizes[0].num_columns) {
-                err = MTX_ERR_INCOMPATIBLE_MTX_SIZE;
-                break;
-            }
-            num_nonzeros += sizes[p].num_nonzeros;
-        }
-        if (err) {
-            mtxfilecomments_free(&mtxdistfile->comments);
-            free(sizes);
-            return err;
-        }
-        mtxdistfile->size.num_rows = sizes[0].num_rows;
-        mtxdistfile->size.num_columns = sizes[0].num_columns;
-        mtxdistfile->size.num_nonzeros = num_nonzeros;
     } else {
-        mtxfilecomments_free(&mtxdistfile->comments);
-        free(sizes);
-        return MTX_ERR_INVALID_MTX_FORMAT;
+        err = mtxfilecomments_init(&mtxdistfile->comments);
+        if (mtxdisterror_allreduce(disterr, err)) {
+            mtxpartition_free(&mtxdistfile->partition);
+            return MTX_ERR_MPI_COLLECTIVE;
+        }
     }
-    free(sizes);
-
-    err = mtxfile_init_copy(&mtxdistfile->mtxfile, mtxfile);
+    err = mtxfilesize_copy(&mtxdistfile->size, size);
     if (mtxdisterror_allreduce(disterr, err)) {
         mtxfilecomments_free(&mtxdistfile->comments);
+        mtxpartition_free(&mtxdistfile->partition);
         return MTX_ERR_MPI_COLLECTIVE;
+    }
+    mtxdistfile->precision = precision;
+
+    int num_local_data_lines = partition->part_sizes[rank];
+    err = mtxfiledata_alloc(
+        &mtxdistfile->data, mtxdistfile->header.object, mtxdistfile->header.format,
+        mtxdistfile->header.field, mtxdistfile->precision, num_local_data_lines);
+    if (mtxdisterror_allreduce(disterr, err)) {
+        mtxfilecomments_free(&mtxdistfile->comments);
+        mtxpartition_free(&mtxdistfile->partition);
+        return err;
     }
     return MTX_SUCCESS;
 }
@@ -250,22 +181,35 @@ int mtxdistfile_alloc_copy(
     dst->comm = src->comm;
     dst->comm_size = src->comm_size;
     dst->rank = src->rank;
+    err = mtxpartition_copy(&dst->partition, &src->partition);
+    if (mtxdisterror_allreduce(disterr, err))
+        return MTX_ERR_MPI_COLLECTIVE;
     err = mtxfileheader_copy(&dst->header, &src->header);
-    if (mtxdisterror_allreduce(disterr, err))
+    if (mtxdisterror_allreduce(disterr, err)) {
+        mtxpartition_free(&dst->partition);
         return MTX_ERR_MPI_COLLECTIVE;
+    }
     err = mtxfilecomments_copy(&dst->comments, &src->comments);
-    if (mtxdisterror_allreduce(disterr, err))
+    if (mtxdisterror_allreduce(disterr, err)) {
+        mtxpartition_free(&dst->partition);
         return MTX_ERR_MPI_COLLECTIVE;
+    }
     err = mtxfilesize_copy(&dst->size, &src->size);
     if (mtxdisterror_allreduce(disterr, err)) {
         mtxfilecomments_free(&dst->comments);
+        mtxpartition_free(&dst->partition);
         return MTX_ERR_MPI_COLLECTIVE;
     }
     dst->precision = src->precision;
-    err = mtxfile_alloc_copy(&dst->mtxfile, &src->mtxfile);
+
+    int num_local_data_lines = dst->partition.part_sizes[dst->rank];
+    err = mtxfiledata_alloc(
+        &dst->data, dst->header.object, dst->header.format,
+        dst->header.field, dst->precision, num_local_data_lines);
     if (mtxdisterror_allreduce(disterr, err)) {
         mtxfilecomments_free(&dst->comments);
-        return MTX_ERR_MPI_COLLECTIVE;
+        mtxpartition_free(&dst->partition);
+        return err;
     }
     return MTX_SUCCESS;
 }
@@ -293,6 +237,7 @@ int mtxdistfile_alloc_matrix_array(
     enum mtxprecision precision,
     int num_rows,
     int num_columns,
+    const struct mtxpartition * partition,
     MPI_Comm comm,
     struct mtxdisterror * disterr)
 {
@@ -321,45 +266,52 @@ int mtxdistfile_alloc_matrix_array(
     if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
 
-    /* Check that all processes request the same number of columns. */
-    int * num_columns_per_process = malloc(comm_size * sizeof(int));
-    err = !num_columns_per_process ? MTX_ERR_ERRNO : MTX_SUCCESS;
-    if (mtxdisterror_allreduce(disterr, err))
-        return MTX_ERR_MPI_COLLECTIVE;
-    disterr->mpierrcode = MPI_Allgather(
-        &num_columns, 1, MPI_INT, num_columns_per_process, 1, MPI_INT, comm);
-    err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
-    if (mtxdisterror_allreduce(disterr, err))
-        return MTX_ERR_MPI_COLLECTIVE;
-    for (int p = 0; p < comm_size; p++) {
-        if (num_columns != num_columns_per_process[p]) {
-            free(num_columns_per_process);
-            return MTX_ERR_INCOMPATIBLE_MTX_SIZE;
-        }
-    }
-    free(num_columns_per_process);
-
     mtxdistfile->comm = comm;
     mtxdistfile->comm_size = comm_size;
     mtxdistfile->rank = rank;
+    err = mtxpartition_copy(&mtxdistfile->partition, partition);
+    if (mtxdisterror_allreduce(disterr, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+
     mtxdistfile->header.object = mtxfile_matrix;
     mtxdistfile->header.format = mtxfile_array;
     mtxdistfile->header.field = field;
     mtxdistfile->header.symmetry = symmetry;
     mtxfilecomments_init(&mtxdistfile->comments);
-    disterr->mpierrcode = MPI_Allreduce(
-        &num_rows, &mtxdistfile->size.num_rows, 1, MPI_INT, MPI_SUM, comm);
-    err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
-    if (mtxdisterror_allreduce(disterr, err))
-        return MTX_ERR_MPI_COLLECTIVE;
+    mtxdistfile->size.num_rows = num_rows;
     mtxdistfile->size.num_columns = num_columns;
     mtxdistfile->size.num_nonzeros = -1;
+
+    /* Check that the partition is compatible */
+    int64_t num_data_lines;
+    err = mtxfilesize_num_data_lines(
+        &mtxdistfile->size, symmetry, &num_data_lines);
+    if (mtxdisterror_allreduce(disterr, err)) {
+        mtxfilecomments_free(&mtxdistfile->comments);
+        mtxpartition_free(&mtxdistfile->partition);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+    if (partition->num_parts > comm_size ||
+        partition->size != num_data_lines)
+        err = MTX_ERR_INCOMPATIBLE_PARTITION;
+    if (mtxdisterror_allreduce(disterr, err)) {
+        mtxfilecomments_free(&mtxdistfile->comments);
+        mtxpartition_free(&mtxdistfile->partition);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+
     mtxdistfile->precision = precision;
 
-    err = mtxfile_alloc_matrix_array(
-        &mtxdistfile->mtxfile, field, symmetry, precision, num_rows, num_columns);
-    if (mtxdisterror_allreduce(disterr, err))
-        return MTX_ERR_MPI_COLLECTIVE;
+    int num_local_data_lines =
+        mtxdistfile->partition.part_sizes[mtxdistfile->rank];
+    err = mtxfiledata_alloc(
+        &mtxdistfile->data, mtxdistfile->header.object, mtxdistfile->header.format,
+        mtxdistfile->header.field, mtxdistfile->precision, num_local_data_lines);
+    if (mtxdisterror_allreduce(disterr, err)) {
+        mtxfilecomments_free(&mtxdistfile->comments);
+        mtxpartition_free(&mtxdistfile->partition);
+        return err;
+    }
     return MTX_SUCCESS;
 }
 
@@ -374,24 +326,20 @@ int mtxdistfile_init_matrix_array_real_single(
     int num_rows,
     int num_columns,
     const float * data,
+    const struct mtxpartition * partition,
     MPI_Comm comm,
     struct mtxdisterror * disterr)
 {
     int err;
     err = mtxdistfile_alloc_matrix_array(
         mtxdistfile, mtxfile_real, symmetry, mtx_single, num_rows, num_columns,
-        comm, disterr);
+        partition, comm, disterr);
     if (err)
         return err;
-    struct mtxfile * mtxfile = &mtxdistfile->mtxfile;
-    int64_t num_data_lines;
-    err = mtxfilesize_num_data_lines(
-        &mtxfile->size, mtxfile->header.symmetry, &num_data_lines);
-    if (err) {
-        mtxdistfile_free(mtxdistfile);
-        return err;
-    }
-    memcpy(mtxfile->data.array_real_single, data, num_data_lines * sizeof(*data));
+    int num_local_data_lines =
+        mtxdistfile->partition.part_sizes[mtxdistfile->rank];
+    memcpy(mtxdistfile->data.array_real_single, data,
+           num_local_data_lines * sizeof(*data));
     return MTX_SUCCESS;
 }
 
@@ -406,24 +354,20 @@ int mtxdistfile_init_matrix_array_real_double(
     int num_rows,
     int num_columns,
     const double * data,
+    const struct mtxpartition * partition,
     MPI_Comm comm,
     struct mtxdisterror * disterr)
 {
     int err;
     err = mtxdistfile_alloc_matrix_array(
         mtxdistfile, mtxfile_real, symmetry, mtx_double, num_rows, num_columns,
-        comm, disterr);
+        partition, comm, disterr);
     if (err)
         return err;
-    struct mtxfile * mtxfile = &mtxdistfile->mtxfile;
-    int64_t num_data_lines;
-    err = mtxfilesize_num_data_lines(
-        &mtxfile->size, mtxfile->header.symmetry, &num_data_lines);
-    if (err) {
-        mtxdistfile_free(mtxdistfile);
-        return err;
-    }
-    memcpy(mtxfile->data.array_real_double, data, num_data_lines * sizeof(*data));
+    int num_local_data_lines =
+        mtxdistfile->partition.part_sizes[mtxdistfile->rank];
+    memcpy(mtxdistfile->data.array_real_double, data,
+           num_local_data_lines * sizeof(*data));
     return MTX_SUCCESS;
 }
 
@@ -438,6 +382,7 @@ int mtxdistfile_init_matrix_array_complex_single(
     int num_rows,
     int num_columns,
     const float (* data)[2],
+    const struct mtxpartition * partition,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
@@ -452,6 +397,7 @@ int mtxdistfile_init_matrix_array_complex_double(
     int num_rows,
     int num_columns,
     const double (* data)[2],
+    const struct mtxpartition * partition,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
@@ -466,6 +412,7 @@ int mtxdistfile_init_matrix_array_integer_single(
     int num_rows,
     int num_columns,
     const int32_t * data,
+    const struct mtxpartition * partition,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
@@ -480,6 +427,7 @@ int mtxdistfile_init_matrix_array_integer_double(
     int num_rows,
     int num_columns,
     const int64_t * data,
+    const struct mtxpartition * partition,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
@@ -496,6 +444,7 @@ int mtxdistfile_alloc_vector_array(
     enum mtxfilefield field,
     enum mtxprecision precision,
     int num_rows,
+    const struct mtxpartition * partition,
     MPI_Comm comm,
     struct mtxdisterror * disterr)
 {
@@ -522,24 +471,49 @@ int mtxdistfile_alloc_vector_array(
     mtxdistfile->comm = comm;
     mtxdistfile->comm_size = comm_size;
     mtxdistfile->rank = rank;
+    err = mtxpartition_copy(&mtxdistfile->partition, partition);
+    if (mtxdisterror_allreduce(disterr, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+
     mtxdistfile->header.object = mtxfile_vector;
     mtxdistfile->header.format = mtxfile_array;
     mtxdistfile->header.field = field;
     mtxdistfile->header.symmetry = mtxfile_general;
     mtxfilecomments_init(&mtxdistfile->comments);
-    disterr->mpierrcode = MPI_Allreduce(
-        &num_rows, &mtxdistfile->size.num_rows, 1, MPI_INT, MPI_SUM, comm);
-    err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
-    if (mtxdisterror_allreduce(disterr, err))
-        return MTX_ERR_MPI_COLLECTIVE;
+    mtxdistfile->size.num_rows = num_rows;
     mtxdistfile->size.num_columns = -1;
     mtxdistfile->size.num_nonzeros = -1;
+
+    /* Check that the partition is compatible */
+    int64_t num_data_lines;
+    err = mtxfilesize_num_data_lines(
+        &mtxdistfile->size, mtxfile_general, &num_data_lines);
+    if (mtxdisterror_allreduce(disterr, err)) {
+        mtxfilecomments_free(&mtxdistfile->comments);
+        mtxpartition_free(&mtxdistfile->partition);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+    if (partition->num_parts > comm_size ||
+        partition->size != num_data_lines)
+        err = MTX_ERR_INCOMPATIBLE_PARTITION;
+    if (mtxdisterror_allreduce(disterr, err)) {
+        mtxfilecomments_free(&mtxdistfile->comments);
+        mtxpartition_free(&mtxdistfile->partition);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+
     mtxdistfile->precision = precision;
 
-    err = mtxfile_alloc_vector_array(
-        &mtxdistfile->mtxfile, field, precision, num_rows);
-    if (mtxdisterror_allreduce(disterr, err))
-        return MTX_ERR_MPI_COLLECTIVE;
+    int num_local_data_lines =
+        mtxdistfile->partition.part_sizes[mtxdistfile->rank];
+    err = mtxfiledata_alloc(
+        &mtxdistfile->data, mtxdistfile->header.object, mtxdistfile->header.format,
+        mtxdistfile->header.field, mtxdistfile->precision, num_local_data_lines);
+    if (mtxdisterror_allreduce(disterr, err)) {
+        mtxfilecomments_free(&mtxdistfile->comments);
+        mtxpartition_free(&mtxdistfile->partition);
+        return err;
+    }
     return MTX_SUCCESS;
 }
 
@@ -552,23 +526,20 @@ int mtxdistfile_init_vector_array_real_single(
     struct mtxdistfile * mtxdistfile,
     int num_rows,
     const float * data,
+    const struct mtxpartition * partition,
     MPI_Comm comm,
     struct mtxdisterror * disterr)
 {
     int err;
     err = mtxdistfile_alloc_vector_array(
-        mtxdistfile, mtxfile_real, mtx_single, num_rows, comm, disterr);
+        mtxdistfile, mtxfile_real, mtx_single, num_rows,
+        partition, comm, disterr);
     if (err)
         return err;
-    struct mtxfile * mtxfile = &mtxdistfile->mtxfile;
-    int64_t num_data_lines;
-    err = mtxfilesize_num_data_lines(
-        &mtxfile->size, mtxfile->header.symmetry, &num_data_lines);
-    if (err) {
-        mtxdistfile_free(mtxdistfile);
-        return err;
-    }
-    memcpy(mtxfile->data.array_real_single, data, num_data_lines * sizeof(*data));
+    int num_local_data_lines =
+        mtxdistfile->partition.part_sizes[mtxdistfile->rank];
+    memcpy(mtxdistfile->data.array_real_single, data,
+           num_local_data_lines * sizeof(*data));
     return MTX_SUCCESS;
 }
 
@@ -580,23 +551,20 @@ int mtxdistfile_init_vector_array_real_double(
     struct mtxdistfile * mtxdistfile,
     int num_rows,
     const double * data,
+    const struct mtxpartition * partition,
     MPI_Comm comm,
     struct mtxdisterror * disterr)
 {
     int err;
     err = mtxdistfile_alloc_vector_array(
-        mtxdistfile, mtxfile_real, mtx_double, num_rows, comm, disterr);
+        mtxdistfile, mtxfile_real, mtx_double, num_rows,
+        partition, comm, disterr);
     if (err)
         return err;
-    struct mtxfile * mtxfile = &mtxdistfile->mtxfile;
-    int64_t num_data_lines;
-    err = mtxfilesize_num_data_lines(
-        &mtxfile->size, mtxfile->header.symmetry, &num_data_lines);
-    if (err) {
-        mtxdistfile_free(mtxdistfile);
-        return err;
-    }
-    memcpy(mtxfile->data.array_real_double, data, num_data_lines * sizeof(*data));
+    int num_local_data_lines =
+        mtxdistfile->partition.part_sizes[mtxdistfile->rank];
+    memcpy(mtxdistfile->data.array_real_double, data,
+           num_local_data_lines * sizeof(*data));
     return MTX_SUCCESS;
 }
 
@@ -609,23 +577,20 @@ int mtxdistfile_init_vector_array_complex_single(
     struct mtxdistfile * mtxdistfile,
     int num_rows,
     const float (* data)[2],
+    const struct mtxpartition * partition,
     MPI_Comm comm,
     struct mtxdisterror * disterr)
 {
     int err;
     err = mtxdistfile_alloc_vector_array(
-        mtxdistfile, mtxfile_complex, mtx_single, num_rows, comm, disterr);
+        mtxdistfile, mtxfile_complex, mtx_single, num_rows,
+        partition, comm, disterr);
     if (err)
         return err;
-    struct mtxfile * mtxfile = &mtxdistfile->mtxfile;
-    int64_t num_data_lines;
-    err = mtxfilesize_num_data_lines(
-        &mtxfile->size, mtxfile->header.symmetry, &num_data_lines);
-    if (err) {
-        mtxdistfile_free(mtxdistfile);
-        return err;
-    }
-    memcpy(mtxfile->data.array_complex_single, data, num_data_lines * sizeof(*data));
+    int num_local_data_lines =
+        mtxdistfile->partition.part_sizes[mtxdistfile->rank];
+    memcpy(mtxdistfile->data.array_complex_single, data,
+           num_local_data_lines * sizeof(*data));
     return MTX_SUCCESS;
 }
 
@@ -638,23 +603,20 @@ int mtxdistfile_init_vector_array_complex_double(
     struct mtxdistfile * mtxdistfile,
     int num_rows,
     const double (* data)[2],
+    const struct mtxpartition * partition,
     MPI_Comm comm,
     struct mtxdisterror * disterr)
 {
     int err;
     err = mtxdistfile_alloc_vector_array(
-        mtxdistfile, mtxfile_complex, mtx_double, num_rows, comm, disterr);
+        mtxdistfile, mtxfile_complex, mtx_double, num_rows,
+        partition, comm, disterr);
     if (err)
         return err;
-    struct mtxfile * mtxfile = &mtxdistfile->mtxfile;
-    int64_t num_data_lines;
-    err = mtxfilesize_num_data_lines(
-        &mtxfile->size, mtxfile->header.symmetry, &num_data_lines);
-    if (err) {
-        mtxdistfile_free(mtxdistfile);
-        return err;
-    }
-    memcpy(mtxfile->data.array_complex_double, data, num_data_lines * sizeof(*data));
+    int num_local_data_lines =
+        mtxdistfile->partition.part_sizes[mtxdistfile->rank];
+    memcpy(mtxdistfile->data.array_complex_double, data,
+           num_local_data_lines * sizeof(*data));
     return MTX_SUCCESS;
 }
 
@@ -667,23 +629,20 @@ int mtxdistfile_init_vector_array_integer_single(
     struct mtxdistfile * mtxdistfile,
     int num_rows,
     const int32_t * data,
+    const struct mtxpartition * partition,
     MPI_Comm comm,
     struct mtxdisterror * disterr)
 {
     int err;
     err = mtxdistfile_alloc_vector_array(
-        mtxdistfile, mtxfile_integer, mtx_single, num_rows, comm, disterr);
+        mtxdistfile, mtxfile_integer, mtx_single, num_rows,
+        partition, comm, disterr);
     if (err)
         return err;
-    struct mtxfile * mtxfile = &mtxdistfile->mtxfile;
-    int64_t num_data_lines;
-    err = mtxfilesize_num_data_lines(
-        &mtxfile->size, mtxfile->header.symmetry, &num_data_lines);
-    if (err) {
-        mtxdistfile_free(mtxdistfile);
-        return err;
-    }
-    memcpy(mtxfile->data.array_integer_single, data, num_data_lines * sizeof(*data));
+    int num_local_data_lines =
+        mtxdistfile->partition.part_sizes[mtxdistfile->rank];
+    memcpy(mtxdistfile->data.array_integer_single, data,
+           num_local_data_lines * sizeof(*data));
     return MTX_SUCCESS;
 }
 
@@ -696,23 +655,20 @@ int mtxdistfile_init_vector_array_integer_double(
     struct mtxdistfile * mtxdistfile,
     int num_rows,
     const int64_t * data,
+    const struct mtxpartition * partition,
     MPI_Comm comm,
     struct mtxdisterror * disterr)
 {
     int err;
     err = mtxdistfile_alloc_vector_array(
-        mtxdistfile, mtxfile_integer, mtx_double, num_rows, comm, disterr);
+        mtxdistfile, mtxfile_integer, mtx_double, num_rows,
+        partition, comm, disterr);
     if (err)
         return err;
-    struct mtxfile * mtxfile = &mtxdistfile->mtxfile;
-    int64_t num_data_lines;
-    err = mtxfilesize_num_data_lines(
-        &mtxfile->size, mtxfile->header.symmetry, &num_data_lines);
-    if (err) {
-        mtxdistfile_free(mtxdistfile);
-        return err;
-    }
-    memcpy(mtxfile->data.array_integer_double, data, num_data_lines * sizeof(*data));
+    int num_local_data_lines =
+        mtxdistfile->partition.part_sizes[mtxdistfile->rank];
+    memcpy(mtxdistfile->data.array_integer_double, data,
+           num_local_data_lines * sizeof(*data));
     return MTX_SUCCESS;
 }
 
@@ -732,6 +688,7 @@ int mtxdistfile_alloc_matrix_coordinate(
     int num_rows,
     int num_columns,
     int64_t num_nonzeros,
+    const struct mtxpartition * partition,
     MPI_Comm comm,
     struct mtxdisterror * disterr)
 {
@@ -761,44 +718,19 @@ int mtxdistfile_alloc_matrix_coordinate(
     if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
 
-    /* Check that all processes specify the same number of rows and columns. */
-    int * num_rows_per_process = malloc(comm_size * sizeof(int));
-    err = !num_rows_per_process ? MTX_ERR_ERRNO : MTX_SUCCESS;
+    if (partition->num_parts > comm_size ||
+        partition->size != num_nonzeros)
+        err = MTX_ERR_INCOMPATIBLE_PARTITION;
     if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
-    disterr->mpierrcode = MPI_Allgather(
-        &num_rows, 1, MPI_INT, num_rows_per_process, 1, MPI_INT, comm);
-    err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
-    if (mtxdisterror_allreduce(disterr, err))
-        return MTX_ERR_MPI_COLLECTIVE;
-    for (int p = 0; p < comm_size; p++) {
-        if (num_rows != num_rows_per_process[p]) {
-            free(num_rows_per_process);
-            return MTX_ERR_INCOMPATIBLE_MTX_SIZE;
-        }
-    }
-    free(num_rows_per_process);
-
-    int * num_columns_per_process = malloc(comm_size * sizeof(int));
-    err = !num_columns_per_process ? MTX_ERR_ERRNO : MTX_SUCCESS;
-    if (mtxdisterror_allreduce(disterr, err))
-        return MTX_ERR_MPI_COLLECTIVE;
-    disterr->mpierrcode = MPI_Allgather(
-        &num_columns, 1, MPI_INT, num_columns_per_process, 1, MPI_INT, comm);
-    err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
-    if (mtxdisterror_allreduce(disterr, err))
-        return MTX_ERR_MPI_COLLECTIVE;
-    for (int p = 0; p < comm_size; p++) {
-        if (num_columns != num_columns_per_process[p]) {
-            free(num_columns_per_process);
-            return MTX_ERR_INCOMPATIBLE_MTX_SIZE;
-        }
-    }
-    free(num_columns_per_process);
 
     mtxdistfile->comm = comm;
     mtxdistfile->comm_size = comm_size;
     mtxdistfile->rank = rank;
+    err = mtxpartition_copy(&mtxdistfile->partition, partition);
+    if (mtxdisterror_allreduce(disterr, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+
     mtxdistfile->header.object = mtxfile_matrix;
     mtxdistfile->header.format = mtxfile_coordinate;
     mtxdistfile->header.field = field;
@@ -806,18 +738,19 @@ int mtxdistfile_alloc_matrix_coordinate(
     mtxfilecomments_init(&mtxdistfile->comments);
     mtxdistfile->size.num_rows = num_rows;
     mtxdistfile->size.num_columns = num_columns;
-    disterr->mpierrcode = MPI_Allreduce(
-        &num_nonzeros, &mtxdistfile->size.num_nonzeros, 1, MPI_INT64_T, MPI_SUM, comm);
-    err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
-    if (mtxdisterror_allreduce(disterr, err))
-        return MTX_ERR_MPI_COLLECTIVE;
+    mtxdistfile->size.num_nonzeros = num_nonzeros;
     mtxdistfile->precision = precision;
 
-    err = mtxfile_alloc_matrix_coordinate(
-        &mtxdistfile->mtxfile, field, symmetry, precision,
-        num_rows, num_columns, num_nonzeros);
-    if (mtxdisterror_allreduce(disterr, err))
-        return MTX_ERR_MPI_COLLECTIVE;
+    int num_local_data_lines =
+        mtxdistfile->partition.part_sizes[mtxdistfile->rank];
+    err = mtxfiledata_alloc(
+        &mtxdistfile->data, mtxdistfile->header.object, mtxdistfile->header.format,
+        mtxdistfile->header.field, mtxdistfile->precision, num_local_data_lines);
+    if (mtxdisterror_allreduce(disterr, err)) {
+        mtxfilecomments_free(&mtxdistfile->comments);
+        mtxpartition_free(&mtxdistfile->partition);
+        return err;
+    }
     return MTX_SUCCESS;
 }
 
@@ -833,8 +766,23 @@ int mtxdistfile_init_matrix_coordinate_real_single(
     int num_columns,
     int64_t num_nonzeros,
     const struct mtxfile_matrix_coordinate_real_single * data,
+    const struct mtxpartition * partition,
     MPI_Comm comm,
-    struct mtxdisterror * disterr);
+    struct mtxdisterror * disterr)
+{
+    int err;
+    err = mtxdistfile_alloc_matrix_coordinate(
+        mtxdistfile, mtxfile_real, symmetry, mtx_single,
+        num_rows, num_columns, num_nonzeros,
+        partition, comm, disterr);
+    if (err)
+        return err;
+    int num_local_data_lines =
+        mtxdistfile->partition.part_sizes[mtxdistfile->rank];
+    memcpy(mtxdistfile->data.matrix_coordinate_real_single, data,
+           num_local_data_lines * sizeof(*data));
+    return MTX_SUCCESS;
+}
 
 /**
  * ‘mtxdistfile_init_matrix_coordinate_real_double()’ allocates and
@@ -848,25 +796,21 @@ int mtxdistfile_init_matrix_coordinate_real_double(
     int num_columns,
     int64_t num_nonzeros,
     const struct mtxfile_matrix_coordinate_real_double * data,
+    const struct mtxpartition * partition,
     MPI_Comm comm,
     struct mtxdisterror * disterr)
 {
     int err;
     err = mtxdistfile_alloc_matrix_coordinate(
         mtxdistfile, mtxfile_real, symmetry, mtx_double,
-        num_rows, num_columns, num_nonzeros, comm, disterr);
+        num_rows, num_columns, num_nonzeros,
+        partition, comm, disterr);
     if (err)
         return err;
-    struct mtxfile * mtxfile = &mtxdistfile->mtxfile;
-    int64_t num_data_lines;
-    err = mtxfilesize_num_data_lines(
-        &mtxfile->size, mtxfile->header.symmetry, &num_data_lines);
-    if (err) {
-        mtxdistfile_free(mtxdistfile);
-        return err;
-    }
-    memcpy(mtxfile->data.matrix_coordinate_real_double, data,
-           num_data_lines * sizeof(*data));
+    int num_local_data_lines =
+        mtxdistfile->partition.part_sizes[mtxdistfile->rank];
+    memcpy(mtxdistfile->data.matrix_coordinate_real_double, data,
+           num_local_data_lines * sizeof(*data));
     return MTX_SUCCESS;
 }
 
@@ -882,6 +826,7 @@ int mtxdistfile_init_matrix_coordinate_complex_single(
     int num_columns,
     int64_t num_nonzeros,
     const struct mtxfile_matrix_coordinate_complex_single * data,
+    const struct mtxpartition * partition,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
@@ -897,6 +842,7 @@ int mtxdistfile_init_matrix_coordinate_complex_double(
     int num_columns,
     int64_t num_nonzeros,
     const struct mtxfile_matrix_coordinate_complex_double * data,
+    const struct mtxpartition * partition,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
@@ -912,6 +858,7 @@ int mtxdistfile_init_matrix_coordinate_integer_single(
     int num_columns,
     int64_t num_nonzeros,
     const struct mtxfile_matrix_coordinate_integer_single * data,
+    const struct mtxpartition * partition,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
@@ -927,6 +874,7 @@ int mtxdistfile_init_matrix_coordinate_integer_double(
     int num_columns,
     int64_t num_nonzeros,
     const struct mtxfile_matrix_coordinate_integer_double * data,
+    const struct mtxpartition * partition,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
@@ -942,6 +890,7 @@ int mtxdistfile_init_matrix_coordinate_pattern(
     int num_columns,
     int64_t num_nonzeros,
     const struct mtxfile_matrix_coordinate_pattern * data,
+    const struct mtxpartition * partition,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
@@ -959,6 +908,7 @@ int mtxdistfile_alloc_vector_coordinate(
     enum mtxprecision precision,
     int num_rows,
     int64_t num_nonzeros,
+    const struct mtxpartition * partition,
     MPI_Comm comm,
     struct mtxdisterror * disterr)
 {
@@ -983,27 +933,19 @@ int mtxdistfile_alloc_vector_coordinate(
     if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
 
-    /* Check that all processes specify the same number of rows. */
-    int * num_rows_per_process = malloc(comm_size * sizeof(int));
-    err = !num_rows_per_process ? MTX_ERR_ERRNO : MTX_SUCCESS;
+    if (partition->num_parts > comm_size ||
+        partition->size != num_nonzeros)
+        err = MTX_ERR_INCOMPATIBLE_PARTITION;
     if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
-    disterr->mpierrcode = MPI_Allgather(
-        &num_rows, 1, MPI_INT, num_rows_per_process, 1, MPI_INT, comm);
-    err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
-    if (mtxdisterror_allreduce(disterr, err))
-        return MTX_ERR_MPI_COLLECTIVE;
-    for (int p = 0; p < comm_size; p++) {
-        if (num_rows != num_rows_per_process[p]) {
-            free(num_rows_per_process);
-            return MTX_ERR_INCOMPATIBLE_MTX_SIZE;
-        }
-    }
-    free(num_rows_per_process);
 
     mtxdistfile->comm = comm;
     mtxdistfile->comm_size = comm_size;
     mtxdistfile->rank = rank;
+    err = mtxpartition_copy(&mtxdistfile->partition, partition);
+    if (mtxdisterror_allreduce(disterr, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+
     mtxdistfile->header.object = mtxfile_vector;
     mtxdistfile->header.format = mtxfile_coordinate;
     mtxdistfile->header.field = field;
@@ -1011,17 +953,19 @@ int mtxdistfile_alloc_vector_coordinate(
     mtxfilecomments_init(&mtxdistfile->comments);
     mtxdistfile->size.num_rows = num_rows;
     mtxdistfile->size.num_columns = -1;
-    disterr->mpierrcode = MPI_Allreduce(
-        &num_nonzeros, &mtxdistfile->size.num_nonzeros, 1, MPI_INT64_T, MPI_SUM, comm);
-    err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
-    if (mtxdisterror_allreduce(disterr, err))
-        return MTX_ERR_MPI_COLLECTIVE;
+    mtxdistfile->size.num_nonzeros = num_nonzeros;
     mtxdistfile->precision = precision;
 
-    err = mtxfile_alloc_vector_coordinate(
-        &mtxdistfile->mtxfile, field, precision, num_rows, num_nonzeros);
-    if (mtxdisterror_allreduce(disterr, err))
-        return MTX_ERR_MPI_COLLECTIVE;
+    int num_local_data_lines =
+        mtxdistfile->partition.part_sizes[mtxdistfile->rank];
+    err = mtxfiledata_alloc(
+        &mtxdistfile->data, mtxdistfile->header.object, mtxdistfile->header.format,
+        mtxdistfile->header.field, mtxdistfile->precision, num_local_data_lines);
+    if (mtxdisterror_allreduce(disterr, err)) {
+        mtxfilecomments_free(&mtxdistfile->comments);
+        mtxpartition_free(&mtxdistfile->partition);
+        return err;
+    }
     return MTX_SUCCESS;
 }
 
@@ -1035,8 +979,22 @@ int mtxdistfile_init_vector_coordinate_real_single(
     int num_rows,
     int64_t num_nonzeros,
     const struct mtxfile_vector_coordinate_real_single * data,
+    const struct mtxpartition * partition,
     MPI_Comm comm,
-    struct mtxdisterror * disterr);
+    struct mtxdisterror * disterr)
+{
+    int err;
+    err = mtxdistfile_alloc_vector_coordinate(
+        mtxdistfile, mtxfile_real, mtx_single,
+        num_rows, num_nonzeros, partition, comm, disterr);
+    if (err)
+        return err;
+    int num_local_data_lines =
+        mtxdistfile->partition.part_sizes[mtxdistfile->rank];
+    memcpy(mtxdistfile->data.vector_coordinate_real_single, data,
+           num_local_data_lines * sizeof(*data));
+    return MTX_SUCCESS;
+}
 
 /**
  * ‘mtxdistfile_init_vector_coordinate_real_double()’ allocates and
@@ -1048,25 +1006,20 @@ int mtxdistfile_init_vector_coordinate_real_double(
     int num_rows,
     int64_t num_nonzeros,
     const struct mtxfile_vector_coordinate_real_double * data,
+    const struct mtxpartition * partition,
     MPI_Comm comm,
     struct mtxdisterror * disterr)
 {
     int err;
     err = mtxdistfile_alloc_vector_coordinate(
         mtxdistfile, mtxfile_real, mtx_double,
-        num_rows, num_nonzeros, comm, disterr);
+        num_rows, num_nonzeros, partition, comm, disterr);
     if (err)
         return err;
-    struct mtxfile * mtxfile = &mtxdistfile->mtxfile;
-    int64_t num_data_lines;
-    err = mtxfilesize_num_data_lines(
-        &mtxfile->size, mtxfile->header.symmetry, &num_data_lines);
-    if (err) {
-        mtxdistfile_free(mtxdistfile);
-        return err;
-    }
-    memcpy(mtxfile->data.vector_coordinate_real_double, data,
-           num_data_lines * sizeof(*data));
+    int num_local_data_lines =
+        mtxdistfile->partition.part_sizes[mtxdistfile->rank];
+    memcpy(mtxdistfile->data.vector_coordinate_real_double, data,
+           num_local_data_lines * sizeof(*data));
     return MTX_SUCCESS;
 }
 
@@ -1080,6 +1033,7 @@ int mtxdistfile_init_vector_coordinate_complex_single(
     int num_rows,
     int64_t num_nonzeros,
     const struct mtxfile_vector_coordinate_complex_single * data,
+    const struct mtxpartition * partition,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
@@ -1093,6 +1047,7 @@ int mtxdistfile_init_vector_coordinate_complex_double(
     int num_rows,
     int64_t num_nonzeros,
     const struct mtxfile_vector_coordinate_complex_double * data,
+    const struct mtxpartition * partition,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
@@ -1106,6 +1061,7 @@ int mtxdistfile_init_vector_coordinate_integer_single(
     int num_rows,
     int64_t num_nonzeros,
     const struct mtxfile_vector_coordinate_integer_single * data,
+    const struct mtxpartition * partition,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
@@ -1119,6 +1075,7 @@ int mtxdistfile_init_vector_coordinate_integer_double(
     int num_rows,
     int64_t num_nonzeros,
     const struct mtxfile_vector_coordinate_integer_double * data,
+    const struct mtxpartition * partition,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
@@ -1132,6 +1089,7 @@ int mtxdistfile_init_vector_coordinate_pattern(
     int num_rows,
     int64_t num_nonzeros,
     const struct mtxfile_vector_coordinate_pattern * data,
+    const struct mtxpartition * partition,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
@@ -1149,7 +1107,12 @@ int mtxdistfile_set_constant_real_single(
     float a,
     struct mtxdisterror * disterr)
 {
-    int err = mtxfile_set_constant_real_single(&mtxdistfile->mtxfile, a);
+    int num_local_data_lines =
+        mtxdistfile->partition.part_sizes[mtxdistfile->rank];
+    int err = mtxfiledata_set_constant_real_single(
+        &mtxdistfile->data, mtxdistfile->header.object,
+        mtxdistfile->header.format, mtxdistfile->header.field,
+        mtxdistfile->precision, num_local_data_lines, 0, a);
     if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
     return MTX_SUCCESS;
@@ -1165,7 +1128,12 @@ int mtxdistfile_set_constant_real_double(
     double a,
     struct mtxdisterror * disterr)
 {
-    int err = mtxfile_set_constant_real_double(&mtxdistfile->mtxfile, a);
+    int num_local_data_lines =
+        mtxdistfile->partition.part_sizes[mtxdistfile->rank];
+    int err = mtxfiledata_set_constant_real_double(
+        &mtxdistfile->data, mtxdistfile->header.object,
+        mtxdistfile->header.format, mtxdistfile->header.field,
+        mtxdistfile->precision, num_local_data_lines, 0, a);
     if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
     return MTX_SUCCESS;
@@ -1181,7 +1149,33 @@ int mtxdistfile_set_constant_complex_single(
     float a[2],
     struct mtxdisterror * disterr)
 {
-    int err = mtxfile_set_constant_complex_single(&mtxdistfile->mtxfile, a);
+    int num_local_data_lines =
+        mtxdistfile->partition.part_sizes[mtxdistfile->rank];
+    int err = mtxfiledata_set_constant_complex_single(
+        &mtxdistfile->data, mtxdistfile->header.object,
+        mtxdistfile->header.format, mtxdistfile->header.field,
+        mtxdistfile->precision, num_local_data_lines, 0, a);
+    if (mtxdisterror_allreduce(disterr, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+    return MTX_SUCCESS;
+}
+
+/**
+ * ‘mtxdistfile_set_constant_complex_double()’ sets every (nonzero)
+ * value of a matrix or vector equal to a constant, double precision
+ * floating point complex number.
+ */
+int mtxdistfile_set_constant_complex_double(
+    struct mtxdistfile * mtxdistfile,
+    double a[2],
+    struct mtxdisterror * disterr)
+{
+    int num_local_data_lines =
+        mtxdistfile->partition.part_sizes[mtxdistfile->rank];
+    int err = mtxfiledata_set_constant_complex_double(
+        &mtxdistfile->data, mtxdistfile->header.object,
+        mtxdistfile->header.format, mtxdistfile->header.field,
+        mtxdistfile->precision, num_local_data_lines, 0, a);
     if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
     return MTX_SUCCESS;
@@ -1189,14 +1183,39 @@ int mtxdistfile_set_constant_complex_single(
 
 /**
  * ‘mtxdistfile_set_constant_integer_single()’ sets every (nonzero)
- * value of a matrix or vector equal to a constant integer.
+ * value of a matrix or vector equal to a constant, 32-bit integer.
  */
 int mtxdistfile_set_constant_integer_single(
     struct mtxdistfile * mtxdistfile,
     int32_t a,
     struct mtxdisterror * disterr)
 {
-    int err = mtxfile_set_constant_integer_single(&mtxdistfile->mtxfile, a);
+    int num_local_data_lines =
+        mtxdistfile->partition.part_sizes[mtxdistfile->rank];
+    int err = mtxfiledata_set_constant_integer_single(
+        &mtxdistfile->data, mtxdistfile->header.object,
+        mtxdistfile->header.format, mtxdistfile->header.field,
+        mtxdistfile->precision, num_local_data_lines, 0, a);
+    if (mtxdisterror_allreduce(disterr, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+    return MTX_SUCCESS;
+}
+
+/**
+ * ‘mtxdistfile_set_constant_integer_double()’ sets every (nonzero)
+ * value of a matrix or vector equal to a constant, 64-bit integer.
+ */
+int mtxdistfile_set_constant_integer_double(
+    struct mtxdistfile * mtxdistfile,
+    int64_t a,
+    struct mtxdisterror * disterr)
+{
+    int num_local_data_lines =
+        mtxdistfile->partition.part_sizes[mtxdistfile->rank];
+    int err = mtxfiledata_set_constant_integer_double(
+        &mtxdistfile->data, mtxdistfile->header.object,
+        mtxdistfile->header.format, mtxdistfile->header.field,
+        mtxdistfile->precision, num_local_data_lines, 0, a);
     if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
     return MTX_SUCCESS;
@@ -1234,6 +1253,8 @@ int mtxdistfile_from_mtxfile(
     err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
+    if (root < 0 || root > comm_size)
+        return MTX_ERR_INDEX_OUT_OF_BOUNDS;
 
     dst->comm = comm;
     dst->comm_size = comm_size;
@@ -1278,82 +1299,105 @@ int mtxdistfile_from_mtxfile(
         return MTX_ERR_MPI_COLLECTIVE;
     }
 
-    int * sendcounts = (rank == root) ?
-        malloc((2*comm_size+1) * sizeof(int)) : NULL;
-    err = (rank == root && !sendcounts) ? MTX_ERR_ERRNO : MTX_SUCCESS;
+    /* Partition the data lines into equal-sized blocks. */
+    int64_t num_data_lines;
+    err = mtxfilesize_num_data_lines(
+        &dst->size, dst->header.symmetry, &num_data_lines);
     if (mtxdisterror_allreduce(disterr, err)) {
         mtxfilecomments_free(&dst->comments);
         return MTX_ERR_MPI_COLLECTIVE;
     }
-    int * displs = (rank == root) ? &sendcounts[comm_size] : NULL;
+    err = mtxpartition_init_block(
+        &dst->partition, num_data_lines, comm_size, NULL);
+    if (mtxdisterror_allreduce(disterr, err)) {
+        mtxfilecomments_free(&dst->comments);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
 
-    /* Find the number of data lines to send and offsets for each
-     * part. Note for matrices in array format, we evenly distribute
-     * the number of rows, whereas in all other cases we evenly
-     * distribute the total number of data lines. */
-    err = MTX_SUCCESS;
+    /* Find the offset to the first data line to send to each part. */
+    int recvcount = dst->partition.part_sizes[rank];
+    int * sendcounts = (rank == root) ?
+        malloc(comm_size * sizeof(int)) : NULL;
+    err = (rank == root && !sendcounts) ? MTX_ERR_ERRNO : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err)) {
+        mtxpartition_free(&dst->partition);
+        mtxfilecomments_free(&dst->comments);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
     if (rank == root) {
-        int64_t size;
-        if (src->size.num_nonzeros >= 0) {
-            size = src->size.num_nonzeros;
-            displs[0] = 0;
-            for (int p = 0; p < comm_size; p++) {
-                displs[p+1] = displs[p] +
-                    size / comm_size + (p < (size % comm_size) ? 1 : 0);
-                sendcounts[p] = displs[p+1] - displs[p];
+        for (int p = 0; p < comm_size; p++) {
+            if (dst->partition.part_sizes[p] > INT_MAX) {
+                errno = ERANGE;
+                err = MTX_ERR_ERRNO;
+                break;
             }
-        } else if (src->size.num_rows >= 0 && src->size.num_columns >= 0) {
-            int64_t num_rows = src->size.num_rows;
-            int64_t num_columns = src->size.num_columns;
-            displs[0] = 0;
-            for (int p = 0; p < comm_size; p++) {
-                displs[p+1] = displs[p] +
-                    (num_rows / comm_size + (p < (num_rows % comm_size) ? 1 : 0)) *
-                    num_columns;
-                sendcounts[p] = displs[p+1] - displs[p];
-            }
-        } else if (src->size.num_rows >= 0) {
-            size = src->size.num_rows;
-            displs[0] = 0;
-            for (int p = 0; p < comm_size; p++) {
-                displs[p+1] = displs[p] +
-                    size / comm_size + (p < (size % comm_size) ? 1 : 0);
-                sendcounts[p] = displs[p+1] - displs[p];
-            }
-        } else {
-            err = MTX_ERR_INVALID_MTX_SIZE;
+            sendcounts[p] = dst->partition.part_sizes[p];
         }
     }
     if (mtxdisterror_allreduce(disterr, err)) {
-        if (rank == root)
-            free(sendcounts);
+        if (rank == root) free(sendcounts);
+        mtxpartition_free(&dst->partition);
         mtxfilecomments_free(&dst->comments);
         return MTX_ERR_MPI_COLLECTIVE;
     }
 
-    int recvcount;
-    disterr->mpierrcode = MPI_Scatter(
-        sendcounts, 1, MPI_INT, &recvcount, 1, MPI_INT, root, comm);
-    err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    int * displs = (rank == root) ?
+        malloc((comm_size+1) * sizeof(int)) : NULL;
+    err = (rank == root && !displs) ? MTX_ERR_ERRNO : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err)) {
-        if (rank == root)
-            free(sendcounts);
+        if (rank == root) free(sendcounts);
+        mtxpartition_free(&dst->partition);
+        mtxfilecomments_free(&dst->comments);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+    if (rank == root) {
+        for (int p = 0; p < comm_size; p++) {
+            if (dst->partition.parts_ptr[p] > INT_MAX) {
+                errno = ERANGE;
+                err = MTX_ERR_ERRNO;
+                break;
+            }
+            displs[p] = dst->partition.parts_ptr[p];
+        }
+    }
+    if (mtxdisterror_allreduce(disterr, err)) {
+        if (rank == root) free(displs);
+        if (rank == root) free(sendcounts);
+        mtxpartition_free(&dst->partition);
         mtxfilecomments_free(&dst->comments);
         return MTX_ERR_MPI_COLLECTIVE;
     }
 
-    /* Scatter the Matrix Market file. */
-    err = mtxfile_scatterv(
-        src, sendcounts, displs, &dst->mtxfile, recvcount, root, comm, disterr);
-    if (err) {
-        if (rank == root)
-            free(sendcounts);
+    err = mtxfiledata_alloc(
+        &dst->data, dst->header.object, dst->header.format,
+        dst->header.field, dst->precision, recvcount);
+    if (mtxdisterror_allreduce(disterr, err)) {
+        if (rank == root) free(displs);
+        if (rank == root) free(sendcounts);
         mtxfilecomments_free(&dst->comments);
+        mtxpartition_free(&dst->partition);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+
+    /* Scatter the data lines of the Matrix Market file. */
+    err = mtxfiledata_scatterv(
+        &src->data, dst->header.object, dst->header.format,
+        dst->header.field, dst->precision,
+        0, sendcounts, displs, &dst->data, 0, recvcount,
+        root, comm, disterr);
+    if (err) {
+        mtxfiledata_free(
+            &dst->data, dst->header.object, dst->header.format,
+            dst->header.field, dst->precision);
+        if (rank == root) free(displs);
+        if (rank == root) free(sendcounts);
+        mtxfilecomments_free(&dst->comments);
+        mtxpartition_free(&dst->partition);
         return err;
     }
 
-    if (rank == root)
-        free(sendcounts);
+    if (rank == root) free(displs);
+    if (rank == root) free(sendcounts);
     return MTX_SUCCESS;
 }
 
@@ -1401,6 +1445,7 @@ int mtxdistfile_read_shared(
     int * lines_read,
     int64_t * bytes_read,
     MPI_Comm comm,
+    int root,
     struct mtxdisterror * disterr)
 {
     int err;
@@ -1419,7 +1464,8 @@ int mtxdistfile_read_shared(
     err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
-    int root = comm_size-1;
+    if (root < 0 || root > comm_size)
+        return MTX_ERR_INDEX_OUT_OF_BOUNDS;
 
     if (!gzip) {
         FILE * f;
@@ -1447,7 +1493,7 @@ int mtxdistfile_read_shared(
             *lines_read = 0;
         err = mtxdistfile_fread_shared(
             mtxdistfile, precision, f, lines_read, bytes_read, 0, NULL,
-            comm, disterr);
+            comm, root, disterr);
         if (err) {
             if (rank == root)
                 fclose(f);
@@ -1483,7 +1529,7 @@ int mtxdistfile_read_shared(
         err = mtxdistfile_gzread_shared(
             mtxdistfile, precision, f,
             lines_read, bytes_read, 0, NULL,
-            comm, disterr);
+            comm, root, disterr);
         if (err) {
             if (rank == root)
                 gzclose(f);
@@ -1540,6 +1586,7 @@ int mtxdistfile_fread_shared(
     size_t line_max,
     char * linebuf,
     MPI_Comm comm,
+    int root,
     struct mtxdisterror * disterr)
 {
     int err;
@@ -1553,9 +1600,8 @@ int mtxdistfile_fread_shared(
     err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
-    int root = comm_size-1;
-    if (comm_size <= 0)
-        return MTX_SUCCESS;
+    if (root < 0 || root > comm_size)
+        return MTX_ERR_INDEX_OUT_OF_BOUNDS;
 
     mtxdistfile->comm = comm;
     mtxdistfile->comm_size = comm_size;
@@ -1622,53 +1668,53 @@ int mtxdistfile_fread_shared(
     }
     mtxdistfile->precision = precision;
 
-    /* Partition the data into equal-sized blocks for each process.
-     * For matrices and vectors in coordinate format, the total number
-     * of data lines is evenly distributed among processes. Otherwise,
-     * the number of rows is evenly distributed among processes. */
-    struct mtxfilesize * sizes = (rank == root) ?
-        malloc(comm_size * sizeof(struct mtxfilesize)) : NULL;
-    err = (rank == root && !sizes) ? MTX_ERR_ERRNO : MTX_SUCCESS;
+    /* Partition the data lines into equal-sized blocks. */
+    int64_t num_data_lines;
+    err = mtxfilesize_num_data_lines(
+        &mtxdistfile->size, mtxdistfile->header.symmetry, &num_data_lines);
     if (mtxdisterror_allreduce(disterr, err)) {
         mtxfilecomments_free(&mtxdistfile->comments);
         if (free_linebuf)
             free(linebuf);
         return MTX_ERR_MPI_COLLECTIVE;
     }
-    if (rank == root) {
-        if (mtxdistfile->size.num_nonzeros >= 0) {
-            int64_t N = mtxdistfile->size.num_nonzeros;
-            for (int p = 0; p < comm_size; p++) {
-                sizes[p].num_rows = mtxdistfile->size.num_rows;
-                sizes[p].num_columns = mtxdistfile->size.num_columns;
-                sizes[p].num_nonzeros = N / comm_size + (p < (N % comm_size) ? 1 : 0);
-            }
-        } else {
-            int64_t N = mtxdistfile->size.num_rows;
-            for (int p = 0; p < comm_size; p++) {
-                sizes[p].num_rows = (N / comm_size + (p < (N % comm_size) ? 1 : 0));
-                sizes[p].num_columns = mtxdistfile->size.num_columns;
-                sizes[p].num_nonzeros = mtxdistfile->size.num_nonzeros;
-            }
-        }
-    }
+    err = mtxpartition_init_block(
+        &mtxdistfile->partition, num_data_lines, comm_size, NULL);
     if (mtxdisterror_allreduce(disterr, err)) {
-        if (rank == root)
-            free(sizes);
         mtxfilecomments_free(&mtxdistfile->comments);
         if (free_linebuf)
             free(linebuf);
         return MTX_ERR_MPI_COLLECTIVE;
     }
 
-    /* Allocate storage for a Matrix Market file on the root process. */
-    err = (rank == root) ? mtxfile_alloc(
-        &mtxdistfile->mtxfile, &mtxdistfile->header, NULL,
-        &sizes[0], mtxdistfile->precision)
+    /* Allocate storage for data on each process */
+    err = mtxfiledata_alloc(
+        &mtxdistfile->data, mtxdistfile->header.object, mtxdistfile->header.format,
+        mtxdistfile->header.field, mtxdistfile->precision,
+        mtxdistfile->partition.part_sizes[rank]);
+    if (mtxdisterror_allreduce(disterr, err)) {
+        mtxpartition_free(&mtxdistfile->partition);
+        mtxfilecomments_free(&mtxdistfile->comments);
+        if (free_linebuf)
+            free(linebuf);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+
+    /* Allocate temporary storage on the root process for reading data
+     * lines. */
+    int64_t max_part_size = 0;
+    for (int p = 0; p < mtxdistfile->partition.num_parts; p++) {
+        if (p != root && max_part_size < mtxdistfile->partition.part_sizes[p])
+            max_part_size = mtxdistfile->partition.part_sizes[p];
+    }
+    union mtxfiledata data;
+    err = (rank == root) ?
+        mtxfiledata_alloc(
+            &data, mtxdistfile->header.object, mtxdistfile->header.format,
+            mtxdistfile->header.field, mtxdistfile->precision, max_part_size)
         : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err)) {
-        if (rank == root)
-            free(sizes);
+        mtxpartition_free(&mtxdistfile->partition);
         mtxfilecomments_free(&mtxdistfile->comments);
         if (free_linebuf)
             free(linebuf);
@@ -1677,52 +1723,34 @@ int mtxdistfile_fread_shared(
 
     /* Read each part of the Matrix Market file and send it to the
      * owning process. */
-    for (int p = 0; p < comm_size-1; p++) {
-        err = (rank == root)
-            ? mtxfilesize_copy(&mtxdistfile->mtxfile.size, &sizes[p])
+    for (int p = 0; p < comm_size; p++) {
+        int64_t num_data_lines =
+            mtxdistfile->partition.part_sizes[p];
+
+        /* On the root process, read data lines directly into their
+         * final location. Otherwise, read data into temporary storage
+         * before sending it to the owning process. */
+        err = (rank == root) ? mtxfiledata_fread(
+            (p == root) ? &mtxdistfile->data : &data,
+            f, lines_read, bytes_read, line_max, linebuf,
+            mtxdistfile->header.object, mtxdistfile->header.format,
+            mtxdistfile->header.field, mtxdistfile->precision,
+            mtxdistfile->size.num_rows,
+            mtxdistfile->size.num_columns,
+            num_data_lines, 0)
             : MTX_SUCCESS;
         if (mtxdisterror_allreduce(disterr, err)) {
-            if (rank == root || rank < p)
-                mtxfile_free(&mtxdistfile->mtxfile);
-            if (rank == root)
-                free(sizes);
-            mtxfilecomments_free(&mtxdistfile->comments);
-            if (free_linebuf)
-                free(linebuf);
-            return MTX_ERR_MPI_COLLECTIVE;
-        }
-
-        int64_t num_data_lines;
-        err = (rank == root) ? mtxfilesize_num_data_lines(
-            &mtxdistfile->mtxfile.size, mtxdistfile->mtxfile.header.symmetry,
-            &num_data_lines) : MTX_SUCCESS;
-        if (mtxdisterror_allreduce(disterr, err)) {
-            if (rank == root || rank < p)
-                mtxfile_free(&mtxdistfile->mtxfile);
-            if (rank == root)
-                free(sizes);
-            mtxfilecomments_free(&mtxdistfile->comments);
-            if (free_linebuf)
-                free(linebuf);
-            return MTX_ERR_MPI_COLLECTIVE;
-        }
-
-        /* Read the next set of data lines on the root process. */
-        err = (rank == root) ?
-            mtxfiledata_fread(
-                &mtxdistfile->mtxfile.data,
-                f, lines_read, bytes_read, line_max, linebuf,
-                mtxdistfile->mtxfile.header.object, mtxdistfile->mtxfile.header.format,
-                mtxdistfile->mtxfile.header.field, mtxdistfile->mtxfile.precision,
-                mtxdistfile->mtxfile.size.num_rows,
-                mtxdistfile->mtxfile.size.num_columns,
-                num_data_lines, 0)
-            : MTX_SUCCESS;
-        if (mtxdisterror_allreduce(disterr, err)) {
-            if (rank == root || rank < p)
-                mtxfile_free(&mtxdistfile->mtxfile);
-            if (rank == root)
-                free(sizes);
+            if (rank == root) {
+                mtxfiledata_free(
+                    &data,
+                    mtxdistfile->header.object, mtxdistfile->header.format,
+                    mtxdistfile->header.field, mtxdistfile->precision);
+            }
+            mtxfiledata_free(
+                &mtxdistfile->data,
+                mtxdistfile->header.object, mtxdistfile->header.format,
+                mtxdistfile->header.field, mtxdistfile->precision);
+            mtxpartition_free(&mtxdistfile->partition);
             mtxfilecomments_free(&mtxdistfile->comments);
             if (free_linebuf)
                 free(linebuf);
@@ -1730,18 +1758,33 @@ int mtxdistfile_fread_shared(
         }
 
         /* Send to the owning process. */
-        if (rank == root) {
-            err = mtxfile_send(&mtxdistfile->mtxfile, p, 0, comm, disterr);
-        } else if (rank == p) {
-            err = mtxfile_recv(&mtxdistfile->mtxfile, root, 0, comm, disterr);
+        if (p != root && rank == root) {
+            err = mtxfiledata_send(
+                &data,
+                mtxdistfile->header.object, mtxdistfile->header.format,
+                mtxdistfile->header.field, mtxdistfile->precision,
+                num_data_lines, 0, p, 0, comm, disterr);
+        } else if (p != root && rank == p) {
+            err = mtxfiledata_recv(
+                &mtxdistfile->data,
+                mtxdistfile->header.object, mtxdistfile->header.format,
+                mtxdistfile->header.field, mtxdistfile->precision,
+                num_data_lines, 0, root, 0, comm, disterr);
         } else {
             err = MTX_SUCCESS;
         }
         if (mtxdisterror_allreduce(disterr, err)) {
-            if (rank == root || rank < p)
-                mtxfile_free(&mtxdistfile->mtxfile);
-            if (rank == root)
-                free(sizes);
+            if (rank == root) {
+                mtxfiledata_free(
+                    &data,
+                    mtxdistfile->header.object, mtxdistfile->header.format,
+                    mtxdistfile->header.field, mtxdistfile->precision);
+            }
+            mtxfiledata_free(
+                &mtxdistfile->data,
+                mtxdistfile->header.object, mtxdistfile->header.format,
+                mtxdistfile->header.field, mtxdistfile->precision);
+            mtxpartition_free(&mtxdistfile->partition);
             mtxfilecomments_free(&mtxdistfile->comments);
             if (free_linebuf)
                 free(linebuf);
@@ -1749,54 +1792,12 @@ int mtxdistfile_fread_shared(
         }
     }
 
-    /* Read the final set of data lines on the root process. */
-    err = (rank == root)
-        ? mtxfilesize_copy(&mtxdistfile->mtxfile.size, &sizes[comm_size-1])
-        : MTX_SUCCESS;
-    if (mtxdisterror_allreduce(disterr, err)) {
-        mtxfile_free(&mtxdistfile->mtxfile);
-        if (rank == root)
-            free(sizes);
-        mtxfilecomments_free(&mtxdistfile->comments);
-        if (free_linebuf)
-            free(linebuf);
-        return MTX_ERR_MPI_COLLECTIVE;
+    if (rank == root) {
+        mtxfiledata_free(
+            &data,
+            mtxdistfile->header.object, mtxdistfile->header.format,
+            mtxdistfile->header.field, mtxdistfile->precision);
     }
-
-    int64_t num_data_lines;
-    err = (rank == root) ? mtxfilesize_num_data_lines(
-        &mtxdistfile->mtxfile.size, mtxdistfile->mtxfile.header.symmetry, &num_data_lines)
-        : MTX_SUCCESS;
-    if (mtxdisterror_allreduce(disterr, err)) {
-        mtxfile_free(&mtxdistfile->mtxfile);
-        if (rank == root)
-            free(sizes);
-        mtxfilecomments_free(&mtxdistfile->comments);
-        if (free_linebuf)
-            free(linebuf);
-        return MTX_ERR_MPI_COLLECTIVE;
-    }
-
-    err = (rank == root) ?
-        mtxfiledata_fread(
-            &mtxdistfile->mtxfile.data,
-            f, lines_read, bytes_read, line_max, linebuf,
-            mtxdistfile->mtxfile.header.object, mtxdistfile->mtxfile.header.format,
-            mtxdistfile->mtxfile.header.field, mtxdistfile->mtxfile.precision,
-            mtxdistfile->mtxfile.size.num_rows, mtxdistfile->mtxfile.size.num_columns,
-            num_data_lines, 0)
-        : MTX_SUCCESS;
-    if (mtxdisterror_allreduce(disterr, err)) {
-        mtxfile_free(&mtxdistfile->mtxfile);
-        if (rank == root)
-            free(sizes);
-        mtxfilecomments_free(&mtxdistfile->comments);
-        if (free_linebuf)
-            free(linebuf);
-        return MTX_ERR_MPI_COLLECTIVE;
-    }
-    if (rank == root)
-        free(sizes);
     if (free_linebuf)
         free(linebuf);
 
@@ -1859,6 +1860,7 @@ int mtxdistfile_gzread_shared(
     size_t line_max,
     char * linebuf,
     MPI_Comm comm,
+    int root,
     struct mtxdisterror * disterr)
 {
     int err;
@@ -1872,9 +1874,8 @@ int mtxdistfile_gzread_shared(
     err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
-    int root = comm_size-1;
-    if (comm_size <= 0)
-        return MTX_SUCCESS;
+    if (root < 0 || root > comm_size)
+        return MTX_ERR_INDEX_OUT_OF_BOUNDS;
 
     mtxdistfile->comm = comm;
     mtxdistfile->comm_size = comm_size;
@@ -1941,53 +1942,53 @@ int mtxdistfile_gzread_shared(
     }
     mtxdistfile->precision = precision;
 
-    /* Partition the data into equal-sized blocks for each process.
-     * For matrices and vectors in coordinate format, the total number
-     * of data lines is evenly distributed among processes. Otherwise,
-     * the number of rows is evenly distributed among processes. */
-    struct mtxfilesize * sizes = (rank == root) ?
-        malloc(comm_size * sizeof(struct mtxfilesize)) : NULL;
-    err = (rank == root && !sizes) ? MTX_ERR_ERRNO : MTX_SUCCESS;
+    /* Partition the data lines into equal-sized blocks. */
+    int64_t num_data_lines;
+    err = mtxfilesize_num_data_lines(
+        &mtxdistfile->size, mtxdistfile->header.symmetry, &num_data_lines);
     if (mtxdisterror_allreduce(disterr, err)) {
         mtxfilecomments_free(&mtxdistfile->comments);
         if (free_linebuf)
             free(linebuf);
         return MTX_ERR_MPI_COLLECTIVE;
     }
-    if (rank == root) {
-        if (mtxdistfile->size.num_nonzeros >= 0) {
-            int64_t N = mtxdistfile->size.num_nonzeros;
-            for (int p = 0; p < comm_size; p++) {
-                sizes[p].num_rows = mtxdistfile->size.num_rows;
-                sizes[p].num_columns = mtxdistfile->size.num_columns;
-                sizes[p].num_nonzeros = N / comm_size + (p < (N % comm_size) ? 1 : 0);
-            }
-        } else {
-            int64_t N = mtxdistfile->size.num_rows;
-            for (int p = 0; p < comm_size; p++) {
-                sizes[p].num_rows = (N / comm_size + (p < (N % comm_size) ? 1 : 0));
-                sizes[p].num_columns = mtxdistfile->size.num_columns;
-                sizes[p].num_nonzeros = mtxdistfile->size.num_nonzeros;
-            }
-        }
-    }
+    err = mtxpartition_init_block(
+        &mtxdistfile->partition, num_data_lines, comm_size, NULL);
     if (mtxdisterror_allreduce(disterr, err)) {
-        if (rank == root)
-            free(sizes);
         mtxfilecomments_free(&mtxdistfile->comments);
         if (free_linebuf)
             free(linebuf);
         return MTX_ERR_MPI_COLLECTIVE;
     }
 
-    /* Allocate storage for a Matrix Market file on the root process. */
-    err = (rank == root) ? mtxfile_alloc(
-        &mtxdistfile->mtxfile, &mtxdistfile->header, NULL,
-        &sizes[0], mtxdistfile->precision)
+    /* Allocate storage for data on each process */
+    err = mtxfiledata_alloc(
+        &mtxdistfile->data, mtxdistfile->header.object, mtxdistfile->header.format,
+        mtxdistfile->header.field, mtxdistfile->precision,
+        mtxdistfile->partition.part_sizes[rank]);
+    if (mtxdisterror_allreduce(disterr, err)) {
+        mtxpartition_free(&mtxdistfile->partition);
+        mtxfilecomments_free(&mtxdistfile->comments);
+        if (free_linebuf)
+            free(linebuf);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+
+    /* Allocate temporary storage on the root process for reading data
+     * lines. */
+    int64_t max_part_size = 0;
+    for (int p = 0; p < mtxdistfile->partition.num_parts; p++) {
+        if (p != root && max_part_size < mtxdistfile->partition.part_sizes[p])
+            max_part_size = mtxdistfile->partition.part_sizes[p];
+    }
+    union mtxfiledata data;
+    err = (rank == root) ?
+        mtxfiledata_alloc(
+            &data, mtxdistfile->header.object, mtxdistfile->header.format,
+            mtxdistfile->header.field, mtxdistfile->precision, max_part_size)
         : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err)) {
-        if (rank == root)
-            free(sizes);
+        mtxpartition_free(&mtxdistfile->partition);
         mtxfilecomments_free(&mtxdistfile->comments);
         if (free_linebuf)
             free(linebuf);
@@ -1996,52 +1997,34 @@ int mtxdistfile_gzread_shared(
 
     /* Read each part of the Matrix Market file and send it to the
      * owning process. */
-    for (int p = 0; p < comm_size-1; p++) {
-        err = (rank == root)
-            ? mtxfilesize_copy(&mtxdistfile->mtxfile.size, &sizes[p])
+    for (int p = 0; p < comm_size; p++) {
+        int64_t num_data_lines =
+            mtxdistfile->partition.part_sizes[p];
+
+        /* On the root process, read data lines directly into their
+         * final location. Otherwise, read data into temporary storage
+         * before sending it to the owning process. */
+        err = (rank == root) ? mtxfiledata_gzread(
+            (p == root) ? &mtxdistfile->data : &data,
+            f, lines_read, bytes_read, line_max, linebuf,
+            mtxdistfile->header.object, mtxdistfile->header.format,
+            mtxdistfile->header.field, mtxdistfile->precision,
+            mtxdistfile->size.num_rows,
+            mtxdistfile->size.num_columns,
+            num_data_lines, 0)
             : MTX_SUCCESS;
         if (mtxdisterror_allreduce(disterr, err)) {
-            if (rank == root || rank < p)
-                mtxfile_free(&mtxdistfile->mtxfile);
-            if (rank == root)
-                free(sizes);
-            mtxfilecomments_free(&mtxdistfile->comments);
-            if (free_linebuf)
-                free(linebuf);
-            return MTX_ERR_MPI_COLLECTIVE;
-        }
-
-        int64_t num_data_lines;
-        err = (rank == root) ? mtxfilesize_num_data_lines(
-            &mtxdistfile->mtxfile.size, mtxdistfile->mtxfile.header.symmetry,
-            &num_data_lines) : MTX_SUCCESS;
-        if (mtxdisterror_allreduce(disterr, err)) {
-            if (rank == root || rank < p)
-                mtxfile_free(&mtxdistfile->mtxfile);
-            if (rank == root)
-                free(sizes);
-            mtxfilecomments_free(&mtxdistfile->comments);
-            if (free_linebuf)
-                free(linebuf);
-            return MTX_ERR_MPI_COLLECTIVE;
-        }
-
-        /* Read the next set of data lines on the root process. */
-        err = (rank == root) ?
-            mtxfiledata_gzread(
-                &mtxdistfile->mtxfile.data,
-                f, lines_read, bytes_read, line_max, linebuf,
-                mtxdistfile->mtxfile.header.object, mtxdistfile->mtxfile.header.format,
-                mtxdistfile->mtxfile.header.field, mtxdistfile->mtxfile.precision,
-                mtxdistfile->mtxfile.size.num_rows,
-                mtxdistfile->mtxfile.size.num_columns,
-                num_data_lines, 0)
-            : MTX_SUCCESS;
-        if (mtxdisterror_allreduce(disterr, err)) {
-            if (rank == root || rank < p)
-                mtxfile_free(&mtxdistfile->mtxfile);
-            if (rank == root)
-                free(sizes);
+            if (rank == root) {
+                mtxfiledata_free(
+                    &data,
+                    mtxdistfile->header.object, mtxdistfile->header.format,
+                    mtxdistfile->header.field, mtxdistfile->precision);
+            }
+            mtxfiledata_free(
+                &mtxdistfile->data,
+                mtxdistfile->header.object, mtxdistfile->header.format,
+                mtxdistfile->header.field, mtxdistfile->precision);
+            mtxpartition_free(&mtxdistfile->partition);
             mtxfilecomments_free(&mtxdistfile->comments);
             if (free_linebuf)
                 free(linebuf);
@@ -2049,18 +2032,33 @@ int mtxdistfile_gzread_shared(
         }
 
         /* Send to the owning process. */
-        if (rank == root) {
-            err = mtxfile_send(&mtxdistfile->mtxfile, p, 0, comm, disterr);
-        } else if (rank == p) {
-            err = mtxfile_recv(&mtxdistfile->mtxfile, root, 0, comm, disterr);
+        if (p != root && rank == root) {
+            err = mtxfiledata_send(
+                &data,
+                mtxdistfile->header.object, mtxdistfile->header.format,
+                mtxdistfile->header.field, mtxdistfile->precision,
+                num_data_lines, 0, p, 0, comm, disterr);
+        } else if (p != root && rank == p) {
+            err = mtxfiledata_recv(
+                &mtxdistfile->data,
+                mtxdistfile->header.object, mtxdistfile->header.format,
+                mtxdistfile->header.field, mtxdistfile->precision,
+                num_data_lines, 0, root, 0, comm, disterr);
         } else {
             err = MTX_SUCCESS;
         }
         if (mtxdisterror_allreduce(disterr, err)) {
-            if (rank == root || rank < p)
-                mtxfile_free(&mtxdistfile->mtxfile);
-            if (rank == root)
-                free(sizes);
+            if (rank == root) {
+                mtxfiledata_free(
+                    &data,
+                    mtxdistfile->header.object, mtxdistfile->header.format,
+                    mtxdistfile->header.field, mtxdistfile->precision);
+            }
+            mtxfiledata_free(
+                &mtxdistfile->data,
+                mtxdistfile->header.object, mtxdistfile->header.format,
+                mtxdistfile->header.field, mtxdistfile->precision);
+            mtxpartition_free(&mtxdistfile->partition);
             mtxfilecomments_free(&mtxdistfile->comments);
             if (free_linebuf)
                 free(linebuf);
@@ -2068,54 +2066,12 @@ int mtxdistfile_gzread_shared(
         }
     }
 
-    /* Read the final set of data lines on the root process. */
-    err = (rank == root)
-        ? mtxfilesize_copy(&mtxdistfile->mtxfile.size, &sizes[comm_size-1])
-        : MTX_SUCCESS;
-    if (mtxdisterror_allreduce(disterr, err)) {
-        mtxfile_free(&mtxdistfile->mtxfile);
-        if (rank == root)
-            free(sizes);
-        mtxfilecomments_free(&mtxdistfile->comments);
-        if (free_linebuf)
-            free(linebuf);
-        return MTX_ERR_MPI_COLLECTIVE;
+    if (rank == root) {
+        mtxfiledata_free(
+            &data,
+            mtxdistfile->header.object, mtxdistfile->header.format,
+            mtxdistfile->header.field, mtxdistfile->precision);
     }
-
-    int64_t num_data_lines;
-    err = (rank == root) ? mtxfilesize_num_data_lines(
-        &mtxdistfile->mtxfile.size, mtxdistfile->mtxfile.header.symmetry, &num_data_lines)
-        : MTX_SUCCESS;
-    if (mtxdisterror_allreduce(disterr, err)) {
-        mtxfile_free(&mtxdistfile->mtxfile);
-        if (rank == root)
-            free(sizes);
-        mtxfilecomments_free(&mtxdistfile->comments);
-        if (free_linebuf)
-            free(linebuf);
-        return MTX_ERR_MPI_COLLECTIVE;
-    }
-
-    err = (rank == root) ?
-        mtxfiledata_gzread(
-            &mtxdistfile->mtxfile.data,
-            f, lines_read, bytes_read, line_max, linebuf,
-            mtxdistfile->mtxfile.header.object, mtxdistfile->mtxfile.header.format,
-            mtxdistfile->mtxfile.header.field, mtxdistfile->mtxfile.precision,
-            mtxdistfile->mtxfile.size.num_rows, mtxdistfile->mtxfile.size.num_columns,
-            num_data_lines, 0)
-        : MTX_SUCCESS;
-    if (mtxdisterror_allreduce(disterr, err)) {
-        mtxfile_free(&mtxdistfile->mtxfile);
-        if (rank == root)
-            free(sizes);
-        mtxfilecomments_free(&mtxdistfile->comments);
-        if (free_linebuf)
-            free(linebuf);
-        return MTX_ERR_MPI_COLLECTIVE;
-    }
-    if (rank == root)
-        free(sizes);
     if (free_linebuf)
         free(linebuf);
 
@@ -2134,72 +2090,6 @@ int mtxdistfile_gzread_shared(
     return MTX_SUCCESS;
 }
 #endif
-
-/**
- * ‘mtxdistfile_write()’ writes a distributed Matrix Market file to
- * the given path.  The file may optionally be compressed by gzip.
- *
- * If ‘path’ is ‘-’, then standard output is used.
- *
- * If ‘fmt’ is ‘NULL’, then the format specifier ‘%g’ is used to print
- * floating point numbers with enough digits to ensure correct
- * round-trip conversion from decimal text and back.  Otherwise, the
- * given format string is used to print numerical values.
- *
- * The format string follows the conventions of ‘printf’. If the field
- * is ‘real’ or ‘complex’, then the format specifiers '%e', '%E',
- * '%f', '%F', '%g' or '%G' may be used. If the field is ‘integer’,
- * then the format specifier must be '%d'. The format string is
- * ignored if the field is ‘pattern’. Field width and precision may be
- * specified (e.g., "%3.1f"), but variable field width and precision
- * (e.g., "%*.*f"), as well as length modifiers (e.g., "%Lf") are not
- * allowed.
- *
- * This function performs collective communication and therefore
- * requires every process in the communicator to perform matching
- * calls to the function.
- */
-int mtxdistfile_write(
-    const struct mtxdistfile * mtxdistfile,
-    const char * path,
-    bool gzip,
-    const char * fmt,
-    int64_t * bytes_written,
-    bool sequential,
-    struct mtxdisterror * disterr)
-{
-    int err;
-    *bytes_written = 0;
-    if (!gzip) {
-        FILE * f;
-        if (strcmp(path, "-") == 0) {
-            int fd = dup(STDOUT_FILENO);
-            if (fd == -1)
-                return MTX_ERR_ERRNO;
-            if ((f = fdopen(fd, "w")) == NULL) {
-                close(fd);
-                return MTX_ERR_ERRNO;
-            }
-        } else if ((f = fopen(path, "w")) == NULL) {
-            return MTX_ERR_ERRNO;
-        }
-        err = mtxdistfile_fwrite(
-            mtxdistfile, f, fmt, bytes_written, sequential, disterr);
-        if (err) {
-            fclose(f);
-            return err;
-        }
-        fclose(f);
-    } else {
-#ifdef LIBMTX_HAVE_LIBZ
-        errno = ENOTSUP;
-        return MTX_ERR_ERRNO;
-#else
-        return MTX_ERR_ZLIB_NOT_SUPPORTED;
-#endif
-    }
-    return MTX_SUCCESS;
-}
 
 /**
  * ‘mtxdistfile_write_shared()’ writes a distributed Matrix Market
@@ -2240,21 +2130,29 @@ int mtxdistfile_write_shared(
     struct mtxdisterror * disterr)
 {
     int err;
-    const char * mode = mtxdistfile->rank == 0 ? "w" : "a";
+    int rank = mtxdistfile->rank;
+    if (root < 0 || root > mtxdistfile->comm_size)
+        return MTX_ERR_INDEX_OUT_OF_BOUNDS;
     *bytes_written = 0;
     if (!gzip) {
         FILE * f;
-        if (strcmp(path, "-") == 0) {
+        if (rank == root && strcmp(path, "-") == 0) {
             int fd = dup(STDOUT_FILENO);
             if (fd == -1)
-                return MTX_ERR_ERRNO;
-            if ((f = fdopen(fd, mode)) == NULL) {
+                err = MTX_ERR_ERRNO;
+            if ((f = fdopen(fd, "w")) == NULL) {
+                int olderrno = errno;
                 close(fd);
-                return MTX_ERR_ERRNO;
+                errno = olderrno;
+                err = MTX_ERR_ERRNO;
             }
-        } else if ((f = fopen(path, mode)) == NULL) {
-            return MTX_ERR_ERRNO;
+        } else if (rank == root && (f = fopen(path, "w")) == NULL) {
+            err = MTX_ERR_ERRNO;
+        } else {
+            err = MTX_SUCCESS;
         }
+        if (mtxdisterror_allreduce(disterr, err))
+            return MTX_ERR_MPI_COLLECTIVE;
         err = mtxdistfile_fwrite_shared(
             mtxdistfile, f, fmt, bytes_written, root, disterr);
         if (err) {
@@ -2269,99 +2167,6 @@ int mtxdistfile_write_shared(
 #else
         return MTX_ERR_ZLIB_NOT_SUPPORTED;
 #endif
-    }
-    return MTX_SUCCESS;
-}
-
-static int mtxdistfile_fwrite_mtxfile(
-    const struct mtxdistfile * mtxdistfile,
-    FILE * f,
-    const char * fmt,
-    int64_t * bytes_written)
-{
-    int err;
-    const struct mtxfile * mtxfile = &mtxdistfile->mtxfile;
-    err = mtxfileheader_fwrite(&mtxfile->header, f, bytes_written);
-    if (err)
-        return err;
-    err = mtxfilecomments_fputs(&mtxdistfile->comments, f, bytes_written);
-    if (err)
-        return err;
-    err = mtxfilecomments_fputs(&mtxfile->comments, f, bytes_written);
-    if (err)
-        return err;
-    err = mtxfilesize_fwrite(
-        &mtxfile->size, mtxfile->header.object, mtxfile->header.format,
-        f, bytes_written);
-    if (err)
-        return err;
-    int64_t num_data_lines;
-    err = mtxfilesize_num_data_lines(
-        &mtxfile->size, mtxfile->header.symmetry, &num_data_lines);
-    if (err)
-        return err;
-    err = mtxfiledata_fwrite(
-        &mtxfile->data, mtxfile->header.object, mtxfile->header.format,
-        mtxfile->header.field, mtxfile->precision, num_data_lines,
-        f, fmt, bytes_written);
-    if (err)
-        return err;
-    return MTX_SUCCESS;
-}
-
-/**
- * ‘mtxdistfile_fwrite()’ writes a distributed Matrix Market file to
- * the specified stream on each process.
- *
- * If ‘fmt’ is ‘NULL’, then the format specifier ‘%g’ is used to print
- * floating point numbers with enough digits to ensure correct
- * round-trip conversion from decimal text and back.  Otherwise, the
- * given format string is used to print numerical values.
- *
- * The format string follows the conventions of ‘printf’. If the field
- * is ‘real’ or ‘complex’, then the format specifiers '%e', '%E',
- * '%f', '%F', '%g' or '%G' may be used. If the field is ‘integer’,
- * then the format specifier must be '%d'. The format string is
- * ignored if the field is ‘pattern’. Field width and precision may be
- * specified (e.g., "%3.1f"), but variable field width and precision
- * (e.g., "%*.*f"), as well as length modifiers (e.g., "%Lf") are not
- * allowed.
- *
- * If it is not ‘NULL’, then the number of bytes written to the stream
- * is returned in ‘bytes_written’.
- *
- * If ‘sequential’ is ‘true’, then output is performed in sequence by
- * MPI processes in the communicator.  This is useful, for example,
- * when writing to a common stream, such as standard output.  In this
- * case, we want to ensure that the processes write their data in the
- * correct order without interfering with each other.
- *
- * This function performs collective communication and therefore
- * requires every process in the communicator to perform matching
- * calls to the function.
- */
-int mtxdistfile_fwrite(
-    const struct mtxdistfile * mtxdistfile,
-    FILE * f,
-    const char * fmt,
-    int64_t * bytes_written,
-    bool sequential,
-    struct mtxdisterror * disterr)
-{
-    int err;
-    if (sequential) {
-        for (int p = 0; p < mtxdistfile->comm_size; p++) {
-            err = (mtxdistfile->rank == p)
-                ? mtxdistfile_fwrite_mtxfile(mtxdistfile, f, fmt, bytes_written)
-                : MTX_SUCCESS;
-            if (mtxdisterror_allreduce(disterr, err))
-                return MTX_ERR_MPI_COLLECTIVE;
-            MPI_Barrier(mtxdistfile->comm);
-        }
-    } else {
-        err = mtxdistfile_fwrite_mtxfile(mtxdistfile, f, fmt, bytes_written);
-        if (mtxdisterror_allreduce(disterr, err))
-            return MTX_ERR_MPI_COLLECTIVE;
     }
     return MTX_SUCCESS;
 }
@@ -2406,58 +2211,102 @@ int mtxdistfile_fwrite_shared(
 {
     int err;
     MPI_Comm comm = mtxdistfile->comm;
+    int comm_size = mtxdistfile->comm_size;
     int rank = mtxdistfile->rank;
-    err = (rank == 0) ? mtxfileheader_fwrite(&mtxdistfile->header, f, bytes_written)
+    if (root < 0 || root > comm_size)
+        return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+
+    err = (rank == root) ? mtxfileheader_fwrite(
+        &mtxdistfile->header, f, bytes_written)
         : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
-    err = (rank == 0) ? mtxfilecomments_fputs(
+    err = (rank == root) ? mtxfilecomments_fputs(
         &mtxdistfile->comments, f, bytes_written)
         : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
-    err = (rank == 0) ? mtxfilesize_fwrite(
-        &mtxdistfile->size, mtxdistfile->header.object, mtxdistfile->header.format,
+    err = (rank == root) ? mtxfilesize_fwrite(
+        &mtxdistfile->size, mtxdistfile->header.object,
+        mtxdistfile->header.format,
         f, bytes_written)
         : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
 
-    for (int p = 0; p < mtxdistfile->comm_size; p++) {
-        const struct mtxfile * mtxfile = &mtxdistfile->mtxfile;
-        int64_t num_data_lines;
-
-        err = MTX_SUCCESS;
-        if (rank == root && p == root) {
-            err = mtxfilesize_num_data_lines(
-                &mtxfile->size, mtxfile->header.symmetry, &num_data_lines);
-            if (!err) {
-                err = mtxfiledata_fwrite(
-                    &mtxfile->data, mtxfile->header.object, mtxfile->header.format,
-                    mtxfile->header.field, mtxfile->precision, num_data_lines,
-                    f, fmt, bytes_written);
-            }
-        } else if (rank == root && p != root) {
-            struct mtxfile recvmtxfile;
-            err = mtxfile_recv(&recvmtxfile, p, 0, comm, disterr);
-            if (!err) {
-                err =  mtxfilesize_num_data_lines(
-                    &recvmtxfile.size, recvmtxfile.header.symmetry, &num_data_lines);
-                if (!err) {
-                    err = mtxfiledata_fwrite(
-                        &recvmtxfile.data, recvmtxfile.header.object, recvmtxfile.header.format,
-                        recvmtxfile.header.field, recvmtxfile.precision, num_data_lines,
-                        f, fmt, bytes_written);
-                }
-                mtxfile_free(&recvmtxfile);
-            }
-        } else if (rank == p) {
-            err = mtxfile_send(mtxfile, root, 0, comm, disterr);
-        }
-        if (mtxdisterror_allreduce(disterr, err))
-            return MTX_ERR_MPI_COLLECTIVE;
+    /* Allocate temporary storage on the root process for receiving
+     * data lines. */
+    int64_t max_part_size = 0;
+    for (int p = 0; p < mtxdistfile->partition.num_parts; p++) {
+        if (p != root && max_part_size < mtxdistfile->partition.part_sizes[p])
+            max_part_size = mtxdistfile->partition.part_sizes[p];
     }
-    fflush(f);
+    union mtxfiledata data;
+    err = (rank == root) ?
+        mtxfiledata_alloc(
+            &data, mtxdistfile->header.object, mtxdistfile->header.format,
+            mtxdistfile->header.field, mtxdistfile->precision, max_part_size)
+        : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+
+    for (int p = 0; p < comm_size; p++) {
+        int64_t num_data_lines =
+            mtxdistfile->partition.part_sizes[p];
+
+        /* Send to the root process. */
+        if (p != root && rank == root) {
+            err = mtxfiledata_recv(
+                &data,
+                mtxdistfile->header.object, mtxdistfile->header.format,
+                mtxdistfile->header.field, mtxdistfile->precision,
+                num_data_lines, 0, p, 0, comm, disterr);
+        } else if (p != root && rank == p) {
+            err = mtxfiledata_send(
+                &mtxdistfile->data,
+                mtxdistfile->header.object, mtxdistfile->header.format,
+                mtxdistfile->header.field, mtxdistfile->precision,
+                num_data_lines, 0, root, 0, comm, disterr);
+        } else {
+            err = MTX_SUCCESS;
+        }
+        if (mtxdisterror_allreduce(disterr, err)) {
+            if (rank == root) {
+                mtxfiledata_free(
+                    &data,
+                    mtxdistfile->header.object, mtxdistfile->header.format,
+                    mtxdistfile->header.field, mtxdistfile->precision);
+            }
+            return MTX_ERR_MPI_COLLECTIVE;
+        }
+
+        /* On the root process, write data lines directly from their
+         * current location. Otherwise, write data from the temporary
+         * storage that was used to receive from the owning
+         * process. */
+        err = (rank == root) ? mtxfiledata_fwrite(
+            (p == root) ? &mtxdistfile->data : &data,
+            mtxdistfile->header.object, mtxdistfile->header.format,
+            mtxdistfile->header.field, mtxdistfile->precision,
+            num_data_lines, f, fmt, bytes_written)
+            : MTX_SUCCESS;
+        if (mtxdisterror_allreduce(disterr, err)) {
+            if (rank == root) {
+                mtxfiledata_free(
+                    &data,
+                    mtxdistfile->header.object, mtxdistfile->header.format,
+                    mtxdistfile->header.field, mtxdistfile->precision);
+            }
+            return MTX_ERR_MPI_COLLECTIVE;
+        }
+    }
+
+    if (rank == root) {
+        mtxfiledata_free(
+            &data,
+            mtxdistfile->header.object, mtxdistfile->header.format,
+            mtxdistfile->header.field, mtxdistfile->precision);
+    }
 
     if (bytes_written) {
         int64_t bytes_written_per_process = *bytes_written;
@@ -2484,23 +2333,34 @@ int mtxdistfile_transpose(
     struct mtxdisterror * disterr)
 {
     int err;
-    struct mtxfile * mtxfile = &mtxdistfile->mtxfile;
-    MPI_Comm comm = mtxdistfile->comm;
+    int rank = mtxdistfile->rank;
+    int64_t local_size = rank < mtxdistfile->partition.num_parts
+        ? mtxdistfile->partition.part_sizes[rank] : 0;
+
     if (mtxdistfile->header.object == mtxfile_matrix) {
         if (mtxdistfile->header.format == mtxfile_array) {
-            int64_t size;
-            err = mtxfilesize_num_data_lines(
-                &mtxfile->size, mtxfile->header.symmetry, &size);
+            err = mtxdistfile_sort(
+                mtxdistfile, mtxfile_column_major,
+                mtxdistfile->partition.size, NULL, disterr);
             if (err)
                 return err;
-            return mtxdistfile_sort(
-                mtxdistfile, mtxfile_column_major,
-                size, NULL, disterr);
         } else if (mtxdistfile->header.format == mtxfile_coordinate) {
-            return mtxfile_transpose(mtxfile);
+            err = mtxfiledata_transpose(
+                &mtxdistfile->data,
+                mtxdistfile->header.object, mtxdistfile->header.format,
+                mtxdistfile->header.field, mtxdistfile->precision,
+                mtxdistfile->size.num_rows, mtxdistfile->size.num_columns,
+                local_size);
+            if (mtxdisterror_allreduce(disterr, err))
+                return MTX_ERR_MPI_COLLECTIVE;
         } else {
             return MTX_ERR_INVALID_MTX_FORMAT;
         }
+        err = mtxfilesize_transpose(&mtxdistfile->size);
+        if (mtxdisterror_allreduce(disterr, err))
+            return MTX_ERR_MPI_COLLECTIVE;
+    } else if (mtxdistfile->header.object == mtxfile_vector) {
+        return MTX_SUCCESS;
     } else if (mtxdistfile->header.object != mtxfile_vector) {
         return MTX_ERR_INVALID_MTX_OBJECT;
     }
@@ -2520,14 +2380,278 @@ int mtxdistfile_conjugate_transpose(
  */
 
 /**
+ * ‘mtxdistfile_sort_permutation()’ globally permutes the order of
+ * data lines in a distributed Matrix Market file according to a given
+ * permutation. The data lines are redistributed among the
+ * participating processes, if necessary.
+ *
+ * The array ‘perm’ must be an array of length at least equal to the
+ * number of data lines residing on the current MPI process (i.e.,
+ * ‘mtxdistfile->partition.part_sizes[p]’, where ‘p’ is the rank of
+ * the current process). This array represents a permutation used to
+ * map data lines held by the current process to their new global
+ * indices. The permutation must use 0-based indexing.
+ */
+static int mtxdistfile_sort_permutation(
+    struct mtxdistfile * mtxdistfile,
+    int64_t * perm,
+    struct mtxdisterror * disterr)
+{
+    int err = MTX_SUCCESS;
+    MPI_Comm comm = mtxdistfile->comm;
+    int comm_size = mtxdistfile->comm_size;
+    int rank = mtxdistfile->rank;
+    int64_t size = mtxdistfile->partition.size;
+    int64_t local_size = rank < mtxdistfile->partition.num_parts
+        ? mtxdistfile->partition.part_sizes[rank] : 0;
+
+    /* The current implementation can only sort at most ‘INT_MAX’ keys
+     * on each process due to the use of ‘MPI_Alltoallv’. */
+    if (local_size > INT_MAX) errno = ERANGE;
+    err = local_size > INT_MAX ? MTX_ERR_ERRNO : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+
+    size_t element_size;
+    err = mtxfiledata_size_per_element(
+        &mtxdistfile->data,
+        mtxdistfile->header.object, mtxdistfile->header.format,
+        mtxdistfile->header.field, mtxdistfile->precision,
+        &element_size);
+    if (mtxdisterror_allreduce(disterr, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+    void * baseptr;
+    err = mtxfiledata_dataptr(
+        &mtxdistfile->data,
+        mtxdistfile->header.object, mtxdistfile->header.format,
+        mtxdistfile->header.field, mtxdistfile->precision,
+        &baseptr, 0);
+    if (mtxdisterror_allreduce(disterr, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+
+    /* 1. Compute the part to which each element belongs. This
+     * requires briefly switching from 1-based to 0-based indexing. */
+    int * parts = malloc(local_size * sizeof(int));
+    err = !parts ? MTX_ERR_ERRNO : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+
+    for (int64_t k = 0; k < local_size; k++)
+        perm[k]--;
+    err = mtxpartition_assign(
+        &mtxdistfile->partition, local_size, perm, parts);
+    if (mtxdisterror_allreduce(disterr, err)) {
+        free(parts);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+
+    /* 2. Count the number of data lines to send to each process. */
+    int * sendcounts = malloc(4*comm_size * sizeof(int));
+    err = !sendcounts ? MTX_ERR_ERRNO : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err)) {
+        free(parts);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+    int * senddispls = &sendcounts[comm_size];
+    int * recvcounts = &senddispls[comm_size];
+    int * recvdispls = &recvcounts[comm_size];
+
+    for (int p = 0; p < comm_size; p++)
+        sendcounts[p] = 0;
+    for (int64_t k = 0; k < local_size; k++)
+        sendcounts[parts[k]]++;
+    senddispls[0] = 0;
+    for (int p = 1; p < comm_size; p++)
+        senddispls[p] = senddispls[p-1] + sendcounts[p-1];
+
+    int64_t * srcdispls = malloc(local_size * sizeof(int64_t));
+    err = !srcdispls ? MTX_ERR_ERRNO : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err)) {
+        free(sendcounts);
+        free(parts);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+    int64_t * sendperm = malloc(local_size * sizeof(int64_t));
+    err = !sendperm ? MTX_ERR_ERRNO : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err)) {
+        free(srcdispls);
+        free(sendcounts);
+        free(parts);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+
+    /* 3. Copy data to the send buffer. */
+    for (int p = 0; p < comm_size; p++)
+        sendcounts[p] = 0;
+    for (int64_t k = 0; k < local_size; k++) {
+        int64_t destidx = perm[k]-1;
+        int p = parts[k];
+        srcdispls[senddispls[p]+sendcounts[p]] = k;
+        sendperm[senddispls[p]+sendcounts[p]] = perm[k];
+        sendcounts[p]++;
+    }
+    free(parts);
+
+    union mtxfiledata senddata;
+    err = mtxfiledata_alloc(
+        &senddata,
+        mtxdistfile->header.object, mtxdistfile->header.format,
+        mtxdistfile->header.field, mtxdistfile->precision, local_size);
+    if (mtxdisterror_allreduce(disterr, err)) {
+        free(sendperm);
+        free(srcdispls);
+        free(sendcounts);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+    err = mtxfiledata_copy_gather(
+        &senddata, &mtxdistfile->data,
+        mtxdistfile->header.object, mtxdistfile->header.format,
+        mtxdistfile->header.field, mtxdistfile->precision,
+        local_size, 0, srcdispls);
+    if (mtxdisterror_allreduce(disterr, err)) {
+        mtxfiledata_free(
+            &senddata, mtxdistfile->header.object, mtxdistfile->header.format,
+            mtxdistfile->header.field, mtxdistfile->precision);
+        free(sendperm);
+        free(srcdispls);
+        free(sendcounts);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+    free(srcdispls);
+
+    /* 4. Obtain ‘recvcounts’ from other processes. */
+    disterr->mpierrcode = MPI_Alltoall(
+        sendcounts, 1, MPI_INT, recvcounts, 1, MPI_INT, comm);
+    err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err)) {
+        mtxfiledata_free(
+            &senddata, mtxdistfile->header.object, mtxdistfile->header.format,
+            mtxdistfile->header.field, mtxdistfile->precision);
+        free(sendperm);
+        free(sendcounts);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+    recvdispls[0] = 0;
+    for (int p = 1; p < comm_size; p++)
+        recvdispls[p] = recvdispls[p-1] + recvcounts[p-1];
+
+    /* 5. Exchange the data between processes. */
+    err = mtxfiledata_alltoallv(
+        &senddata,
+        mtxdistfile->header.object, mtxdistfile->header.format,
+        mtxdistfile->header.field, mtxdistfile->precision,
+        0, sendcounts, senddispls,
+        &mtxdistfile->data, 0, recvcounts, recvdispls,
+        comm, disterr);
+    if (err) {
+        mtxfiledata_free(
+            &senddata, mtxdistfile->header.object, mtxdistfile->header.format,
+            mtxdistfile->header.field, mtxdistfile->precision);
+        free(sendperm);
+        free(sendcounts);
+        return err;
+    }
+    mtxfiledata_free(
+        &senddata, mtxdistfile->header.object, mtxdistfile->header.format,
+        mtxdistfile->header.field, mtxdistfile->precision);
+
+    disterr->mpierrcode = MPI_Alltoallv(
+        sendperm, sendcounts, senddispls, MPI_INT64_T,
+        perm, recvcounts, recvdispls, MPI_INT64_T, comm);
+    err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err)) {
+        free(sendperm);
+        free(sendcounts);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+    free(sendperm);
+    free(sendcounts);
+
+    /* 6. Permute the received data lines. */
+    err = mtxpartition_localidx(
+        &mtxdistfile->partition, rank, local_size, perm, perm);
+    if (mtxdisterror_allreduce(disterr, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+    for (int64_t k = 0; k < local_size; k++)
+        perm[k]++;
+    err = mtxfiledata_permute(
+        &mtxdistfile->data,
+        mtxdistfile->header.object, mtxdistfile->header.format,
+        mtxdistfile->header.field, mtxdistfile->precision,
+        mtxdistfile->size.num_rows, mtxdistfile->size.num_columns,
+        local_size, perm);
+    if (mtxdisterror_allreduce(disterr, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+    return MTX_SUCCESS;
+}
+
+/**
+ * ‘mtxdistfile_sort_keys()’ sorts a distributed Matrix Market file
+ * according to the given keys. The data lines are redistributed among
+ * the participating processes, if necessary.
+ *
+ * The array ‘keys’ must be an array of length at least equal to the
+ * number of data lines residing on the current MPI process (i.e.,
+ * ‘mtxdistfile->partition.part_sizes[p]’, where ‘p’ is the rank of
+ * the current process). This array contains 64-bit integer keys that
+ * are used to determine the sorting order.
+ *
+ * ‘perm’ is ignored if it is ‘NULL’. Otherwise, it must point to an
+ * array of ‘size’ 64-bit integers, and it is used to store the
+ * permutation of the vector or matrix nonzeros.
+ */
+static int mtxdistfile_sort_keys(
+    struct mtxdistfile * mtxdistfile,
+    int64_t size,
+    int64_t * keys,
+    int64_t * perm,
+    struct mtxdisterror * disterr)
+{
+    int err;
+    MPI_Comm comm = mtxdistfile->comm;
+
+    /* 1. Sort the keys and obtain a sorting permutation. */
+    bool alloc_perm = !perm;
+    if (alloc_perm) {
+        perm = malloc(size * sizeof(int64_t));
+        err = !perm ? MTX_ERR_ERRNO : MTX_SUCCESS;
+        if (mtxdisterror_allreduce(disterr, err))
+            return MTX_ERR_MPI_COLLECTIVE;
+    }
+    err = distradix_sort_uint64(
+        size, keys, perm, comm, disterr);
+    if (err) {
+        if (alloc_perm)
+            free(perm);
+        return err;
+    }
+
+    /* Switch from 0- to 1-based indexing. */
+    for (int64_t k = 0; k < size; k++)
+        perm[k]++;
+
+    /* 2. Sort nonzeros according to the sorting permutation. */
+    err = mtxdistfile_sort_permutation(
+        mtxdistfile, perm, disterr);
+    if (err) {
+        if (alloc_perm)
+            free(perm);
+        return err;
+    }
+    if (alloc_perm)
+        free(perm);
+    return MTX_SUCCESS;
+}
+
+/**
  * ‘mtxdistfile_sort()’ sorts a distributed Matrix Market file in a
  * given order.
  *
  * The sorting order is determined by ‘sorting’. If the sorting order
  * is ‘mtxfile_unsorted’, nothing is done. If the sorting order is
- * ‘mtxfile_permutation’, then ‘perm’ must point to an array
- * of ‘size’ integers that specify the sorting permutation. Note that
- * the sorting permutation uses 1-based indexing.
+ * ‘mtxfile_permutation’, then ‘perm’ must point to an array of ‘size’
+ * integers that specify the sorting permutation. Note that the
+ * sorting permutation uses 1-based indexing.
  *
  * For a vector or matrix in coordinate format, the nonzero values are
  * sorted in the specified order. For Matrix Market files in array
@@ -2542,56 +2666,105 @@ int mtxdistfile_conjugate_transpose(
 int mtxdistfile_sort(
     struct mtxdistfile * mtxdistfile,
     enum mtxfilesorting sorting,
-    int64_t size,
+    int64_t permsize,
     int64_t * perm,
     struct mtxdisterror * disterr)
 {
     int err;
-    struct mtxfile * mtxfile = &mtxdistfile->mtxfile;
     MPI_Comm comm = mtxdistfile->comm;
+    int comm_size = mtxdistfile->comm_size;
+    int rank = mtxdistfile->rank;
 
-    int64_t num_data_lines;
-    err = mtxfilesize_num_data_lines(
-        &mtxfile->size, mtxfile->header.symmetry, &num_data_lines);
-    if (mtxdisterror_allreduce(disterr, err))
-        return MTX_ERR_MPI_COLLECTIVE;
-    err = size < 0 || size > num_data_lines
-        ? MTX_ERR_INDEX_OUT_OF_BOUNDS : MTX_SUCCESS;
-    if (mtxdisterror_allreduce(disterr, err))
-        return MTX_ERR_MPI_COLLECTIVE;
+    int64_t size = mtxdistfile->partition.size;
+    int local_size = rank < mtxdistfile->partition.num_parts
+        ? mtxdistfile->partition.part_sizes[rank] : 0;
+    int64_t offset = rank < mtxdistfile->partition.num_parts
+        ? mtxdistfile->partition.parts_ptr[rank] : 0;
 
     if (sorting == mtxfile_unsorted) {
         if (!perm)
             return MTX_SUCCESS;
-        int64_t global_offset = 0;
-        disterr->mpierrcode = MPI_Exscan(
-            &size, &global_offset, 1, MPI_INT64_T, MPI_SUM, comm);
-        err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+
+        err = (permsize < local_size)
+            ? MTX_ERR_INDEX_OUT_OF_BOUNDS : MTX_SUCCESS;
         if (mtxdisterror_allreduce(disterr, err))
             return MTX_ERR_MPI_COLLECTIVE;
-        for (int64_t k = 0; k < size; k++)
+        int64_t global_offset = mtxdistfile->partition.parts_ptr[rank];
+        for (int64_t k = 0; k < local_size; k++)
             perm[k] = global_offset+k+1;
         return MTX_SUCCESS;
     } else if (sorting == mtxfile_permutation) {
-        return mtxdistfiledata_permute(
-            &mtxfile->data, mtxfile->header.object, mtxfile->header.format,
-            mtxfile->header.field, mtxfile->precision, mtxfile->size.num_rows,
-            mtxfile->size.num_columns, size, perm, comm, disterr);
+        return mtxdistfile_sort_permutation(
+            mtxdistfile, perm, disterr);
     } else if (sorting == mtxfile_row_major) {
-        return mtxdistfiledata_sort_row_major(
-            &mtxfile->data, mtxfile->header.object, mtxfile->header.format,
-            mtxfile->header.field, mtxfile->precision, mtxfile->size.num_rows,
-            mtxfile->size.num_columns, size, perm, comm, disterr);
+        int64_t * keys = malloc(local_size * sizeof(int64_t));
+        err = !keys ? MTX_ERR_ERRNO : MTX_SUCCESS;
+        if (mtxdisterror_allreduce(disterr, err))
+            return MTX_ERR_MPI_COLLECTIVE;
+        err = mtxfiledata_sortkey_row_major(
+            &mtxdistfile->data,
+            mtxdistfile->header.object, mtxdistfile->header.format,
+            mtxdistfile->header.field, mtxdistfile->precision,
+            mtxdistfile->size.num_rows, mtxdistfile->size.num_columns,
+            offset, local_size, keys);
+        if (mtxdisterror_allreduce(disterr, err)) {
+            free(keys);
+            return MTX_ERR_MPI_COLLECTIVE;
+        }
+        err = mtxdistfile_sort_keys(
+            mtxdistfile, local_size, keys, perm, disterr);
+        if (err) {
+            free(keys);
+            return err;
+        }
+        free(keys);
+
     } else if (sorting == mtxfile_column_major) {
-        return mtxdistfiledata_sort_column_major(
-            &mtxfile->data, mtxfile->header.object, mtxfile->header.format,
-            mtxfile->header.field, mtxfile->precision, mtxfile->size.num_rows,
-            mtxfile->size.num_columns, size, perm, comm, disterr);
+        int64_t * keys = malloc(local_size * sizeof(int64_t));
+        err = !keys ? MTX_ERR_ERRNO : MTX_SUCCESS;
+        if (mtxdisterror_allreduce(disterr, err))
+            return MTX_ERR_MPI_COLLECTIVE;
+        err = mtxfiledata_sortkey_column_major(
+            &mtxdistfile->data,
+            mtxdistfile->header.object, mtxdistfile->header.format,
+            mtxdistfile->header.field, mtxdistfile->precision,
+            mtxdistfile->size.num_rows, mtxdistfile->size.num_columns,
+            offset, local_size, keys);
+        if (mtxdisterror_allreduce(disterr, err)) {
+            free(keys);
+            return MTX_ERR_MPI_COLLECTIVE;
+        }
+        err = mtxdistfile_sort_keys(
+            mtxdistfile, local_size, keys, perm, disterr);
+        if (err) {
+            free(keys);
+            return err;
+        }
+        free(keys);
+
     } else if (sorting == mtxfile_morton) {
-        return mtxdistfiledata_sort_morton(
-            &mtxfile->data, mtxfile->header.object, mtxfile->header.format,
-            mtxfile->header.field, mtxfile->precision, mtxfile->size.num_rows,
-            mtxfile->size.num_columns, size, perm, comm, disterr);
+        int64_t * keys = malloc(local_size * sizeof(int64_t));
+        err = !keys ? MTX_ERR_ERRNO : MTX_SUCCESS;
+        if (mtxdisterror_allreduce(disterr, err))
+            return MTX_ERR_MPI_COLLECTIVE;
+        err = mtxfiledata_sortkey_morton(
+            &mtxdistfile->data,
+            mtxdistfile->header.object, mtxdistfile->header.format,
+            mtxdistfile->header.field, mtxdistfile->precision,
+            mtxdistfile->size.num_rows, mtxdistfile->size.num_columns,
+            offset, local_size, keys);
+        if (mtxdisterror_allreduce(disterr, err)) {
+            free(keys);
+            return MTX_ERR_MPI_COLLECTIVE;
+        }
+        err = mtxdistfile_sort_keys(
+            mtxdistfile, local_size, keys, perm, disterr);
+        if (err) {
+            free(keys);
+            return err;
+        }
+        free(keys);
+
     } else {
         return MTX_ERR_INVALID_MTX_SORTING;
     }
@@ -2616,10 +2789,16 @@ int mtxdistfile_sort(
  * ‘rowpart->size’ must be equal to ‘src->size.num_rows’, and
  * ‘colpart->size’ must be equal to ‘src->size.num_columns’.
  *
- * The distributed Matrix Market file ‘dst’ is used to store the
- * results of the partitioning and redistribution. The user is
- * responsible for calling ‘mtxdistfile_free’ to free storage
- * allocated for ‘dst’.
+ * The argument ‘dsts’ is an array that must have enough storage for
+ * ‘P*Q’ values of type ‘struct mtxfile’, where ‘P’ is the number of
+ * row parts, ‘rowpart->num_parts’, and ‘Q’ is the number of column
+ * parts, ‘colpart->num_parts’. Note that the ‘r’th part corresponds
+ * to a row part ‘p’ and column part ‘q’, such that ‘r=p*Q+q’. Thus,
+ * the ‘r’th entry of ‘dsts’ is the submatrix corresponding to the
+ * ‘p’th row and ‘q’th column of the 2D partitioning.
+ *
+ * The user is responsible for freeing storage allocated for each
+ * Matrix Market file in the ‘dsts’ array.
  */
 int mtxdistfile_partition(
     const struct mtxdistfile * src,
@@ -2628,201 +2807,184 @@ int mtxdistfile_partition(
     const struct mtxpartition * colpart,
     struct mtxdisterror * disterr)
 {
-    errno = ENOTSUP;
-    return MTX_ERR_ERRNO;
-}
-
-#if 0
-/**
- * ‘mtxdistfile_init_from_partition()’ creates a distributed Matrix
- * Market file from a partitioning of another distributed Matrix
- * Market file.
- *
- * On each process, a partitioning can be obtained from
- * ‘mtxdistfile_partition_rows()’. This provides the arrays
- * ‘data_lines_per_part_ptr’ and ‘data_lines_per_part’, which together
- * describe the size of each part and the indices to its data lines on
- * the current process. The number of parts in the partitioning must
- * be less than or equal to the number of processes in the MPI
- * communicator.
- *
- * The ‘p’th value of ‘data_lines_per_part_ptr’ must be an offset to
- * the first data line belonging to the ‘p’th part of the partition,
- * while the final value of the array points to one place beyond the
- * final data line.  Moreover for each part ‘p’ of the partitioning,
- * the entries from ‘data_lines_per_part[p]’ up to, but not including,
- * ‘data_lines_per_part[p+1]’, are the indices of the data lines in
- * ‘src’ that are assigned to the ‘p’th part of the partitioning.
- */
-int mtxdistfile_init_from_partition(
-    struct mtxdistfile * dst,
-    const struct mtxdistfile * src,
-    int num_parts,
-    const int64_t * data_lines_per_part_ptr,
-    const int64_t * data_lines_per_part,
-    struct mtxdisterror * disterr)
-{
     int err;
-    if (num_parts > src->comm_size)
-        return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+    int comm_size = src->comm_size;
+    int rank = src->rank;
+    int num_row_parts = rowpart ? rowpart->num_parts : 1;
+    int num_col_parts = colpart ? colpart->num_parts : 1;
+    if (rowpart && rowpart->size != src->size.num_rows)
+        return MTX_ERR_INCOMPATIBLE_PARTITION;
+    if (colpart && colpart->size != src->size.num_columns)
+        return MTX_ERR_INCOMPATIBLE_PARTITION;
 
-    /* Allocate storage for sending/receiving Matrix Market files. */
-    struct mtxfile * mtxfiles = malloc(2*src->comm_size * sizeof(struct mtxfile));
-    err = !mtxfiles ? MTX_ERR_ERRNO : MTX_SUCCESS;
+    int local_size = rank < src->partition.num_parts
+        ? src->partition.part_sizes[rank] : 0;
+    int64_t offset = rank < src->partition.num_parts
+        ? src->partition.parts_ptr[rank] : 0;
+    int * part_per_data_line = malloc(local_size * sizeof(int));
+    err = !part_per_data_line ? MTX_ERR_ERRNO : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
-    struct mtxfile * sendmtxfiles = &mtxfiles[0];
-    struct mtxfile * recvmtxfiles = &mtxfiles[src->comm_size];
 
-    err = mtxfile_init_from_partition(
-        sendmtxfiles, &src->mtxfile, num_parts,
-        data_lines_per_part_ptr, data_lines_per_part);
+    /* 1. Assign each data line to its row and column part */
+    err = mtxfiledata_partition(
+        &src->data, src->header.object, src->header.format,
+        src->header.field, src->precision,
+        src->size.num_rows, src->size.num_columns,
+        offset, local_size, rowpart, colpart, part_per_data_line);
     if (mtxdisterror_allreduce(disterr, err)) {
-        free(mtxfiles);
+        free(part_per_data_line);
         return MTX_ERR_MPI_COLLECTIVE;
     }
 
-    /* Send empty files to any remaining processes, if there are more
-     * processes than parts in the partitioning. */
-    for (int p = num_parts; p < src->comm_size; p++) {
-        struct mtxfilesize size;
-        if (src->size.num_nonzeros >= 0) {
-            size.num_rows = src->size.num_rows;
-            size.num_columns = src->size.num_columns;
-            size.num_nonzeros = 0;
-        } else {
-            size.num_rows = 0;
-            size.num_columns = src->size.num_columns;
-            size.num_nonzeros = src->size.num_nonzeros;
+    /* 2. Create index arrays of data lines belonging to each part */
+    int num_parts = num_row_parts * num_col_parts;
+    int64_t * data_lines_per_part_ptr = malloc((num_parts+1) * sizeof(int64_t));
+    err = !data_lines_per_part_ptr ? MTX_ERR_ERRNO : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err)) {
+        free(part_per_data_line);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+    int64_t * data_lines_per_part = malloc(local_size * sizeof(int64_t));
+    err = !data_lines_per_part ? MTX_ERR_ERRNO : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err)) {
+        free(data_lines_per_part_ptr);
+        free(part_per_data_line);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+
+    for (int p = 0; p <= num_parts; p++)
+        data_lines_per_part_ptr[p] = 0;
+    for (int64_t k = 0; k < local_size; k++) {
+        int part = part_per_data_line[k];
+        data_lines_per_part_ptr[part+1]++;
+    }
+    for (int p = 0; p < num_parts; p++) {
+        data_lines_per_part_ptr[p+1] +=
+            data_lines_per_part_ptr[p];
+    }
+    for (int64_t k = 0; k < local_size; k++) {
+        int part = part_per_data_line[k];
+        int64_t l = data_lines_per_part_ptr[part];
+        data_lines_per_part[l] = k;
+        data_lines_per_part_ptr[part]++;
+    }
+    for (int p = num_parts-1; p >= 0; p--) {
+        data_lines_per_part_ptr[p+1] =
+            data_lines_per_part_ptr[p];
+    }
+    data_lines_per_part_ptr[0] = 0;
+    free(part_per_data_line);
+
+    int64_t * local_part_sizes = malloc(src->comm_size * sizeof(int64_t));
+    err = !local_part_sizes ? MTX_ERR_ERRNO : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err)) {
+        free(data_lines_per_part);
+        free(data_lines_per_part_ptr);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+
+    /* 3. Create a submatrix for each part of the partition */
+    for (int p = 0; p < num_row_parts; p++) {
+        for (int q = 0; q < num_col_parts; q++) {
+            int r = p * num_col_parts + q;
+            int64_t local_part_size = data_lines_per_part_ptr[r+1] -
+                data_lines_per_part_ptr[r];
+
+            /* Gather the number of nonzeros in each part */
+            disterr->mpierrcode = MPI_Allgather(
+                &local_part_size, 1, MPI_INT64_T,
+                local_part_sizes, 1, MPI_INT64_T, src->comm);
+            err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+            if (mtxdisterror_allreduce(disterr, err)) {
+                for (int s = r-1; s >= 0; s--)
+                    mtxdistfile_free(&dsts[s]);
+                free(local_part_sizes);
+                free(data_lines_per_part);
+                free(data_lines_per_part_ptr);
+                return MTX_ERR_MPI_COLLECTIVE;
+            }
+            int64_t N = 0;
+            for (int p = 0; p < src->comm_size; p++)
+                N += local_part_sizes[p];
+
+            struct mtxfilesize size;
+            if (src->size.num_nonzeros >= 0) {
+                size.num_rows = src->size.num_rows;
+                size.num_columns = src->size.num_columns;
+                size.num_nonzeros = N;
+            } else if (src->size.num_columns > 0) {
+                size.num_rows = rowpart
+                    ? rowpart->part_sizes[p] : src->size.num_rows;
+                size.num_columns = colpart
+                    ? colpart->part_sizes[q] : src->size.num_columns;
+                size.num_nonzeros = -1;
+            } else if (src->size.num_rows >= 0) {
+                size.num_rows = rowpart
+                    ? rowpart->part_sizes[p] : src->size.num_rows;
+                size.num_columns = -1;
+                size.num_nonzeros = -1;
+            } else {
+                err = MTX_ERR_INVALID_MTX_SIZE;
+            }
+            if (mtxdisterror_allreduce(disterr, err)) {
+                for (int s = r-1; s >= 0; s--)
+                    mtxdistfile_free(&dsts[s]);
+                free(local_part_sizes);
+                free(data_lines_per_part);
+                free(data_lines_per_part_ptr);
+                return MTX_ERR_MPI_COLLECTIVE;
+            }
+
+            struct mtxpartition partition;
+            err = mtxpartition_init_block(
+                &partition, N, src->partition.num_parts, local_part_sizes);
+            if (mtxdisterror_allreduce(disterr, err)) {
+                for (int s = r-1; s >= 0; s--)
+                    mtxdistfile_free(&dsts[s]);
+                free(local_part_sizes);
+                free(data_lines_per_part);
+                free(data_lines_per_part_ptr);
+                return MTX_ERR_MPI_COLLECTIVE;
+            }
+
+            err = mtxdistfile_alloc(
+                &dsts[r], &src->header, &src->comments,
+                &size, src->precision, &partition,
+                src->comm, disterr);
+            if (mtxdisterror_allreduce(disterr, err)) {
+                mtxpartition_free(&partition);
+                for (int s = r-1; s >= 0; s--)
+                    mtxdistfile_free(&dsts[s]);
+                free(local_part_sizes);
+                free(data_lines_per_part);
+                free(data_lines_per_part_ptr);
+                return MTX_ERR_MPI_COLLECTIVE;
+            }
+            mtxpartition_free(&partition);
+
+            const int64_t * srcdispls =
+                &data_lines_per_part[data_lines_per_part_ptr[r]];
+            err = mtxfiledata_copy_gather(
+                &dsts[r].data, &src->data,
+                dsts[r].header.object, dsts[r].header.format,
+                dsts[r].header.field, dsts[r].precision,
+                local_part_size, 0, srcdispls);
+            if (mtxdisterror_allreduce(disterr, err)) {
+                for (int s = r; s >= 0; s--)
+                    mtxdistfile_free(&dsts[s]);
+                free(local_part_sizes);
+                free(data_lines_per_part);
+                free(data_lines_per_part_ptr);
+                return MTX_ERR_MPI_COLLECTIVE;
+            }
         }
-        err = mtxfile_alloc(
-            &sendmtxfiles[p],
-            &src->mtxfile.header,
-            &src->mtxfile.comments,
-            &size, src->mtxfile.precision);
-        if (mtxdisterror_allreduce(disterr, err)) {
-            for (int q = p-1; q >= 0; q--)
-                mtxfile_free(&sendmtxfiles[q]);
-            free(mtxfiles);
-            return MTX_ERR_MPI_COLLECTIVE;
-        }
     }
 
-    /* Exchange Matrix Market files among processes. */
-    err = mtxfile_alltoall(sendmtxfiles, recvmtxfiles, src->comm, disterr);
-    if (err) {
-        for (int p = 0; p < src->comm_size; p++)
-            mtxfile_free(&sendmtxfiles[p]);
-        free(mtxfiles);
-        return MTX_ERR_MPI_COLLECTIVE;
-    }
-
-    /* Concatenate the files that were received. */
-    struct mtxfile dstmtxfile;
-    err = mtxfile_init_copy(&dstmtxfile, &recvmtxfiles[0]);
-    if (mtxdisterror_allreduce(disterr, err)) {
-        for (int p = 0; p < src->comm_size; p++)
-            mtxfile_free(&recvmtxfiles[p]);
-        for (int p = 0; p < src->comm_size; p++)
-            mtxfile_free(&sendmtxfiles[p]);
-        free(mtxfiles);
-        return MTX_ERR_MPI_COLLECTIVE;
-    }
-
-    err = mtxfile_catn(
-        &dstmtxfile, src->comm_size-1, &recvmtxfiles[1], false);
-    if (mtxdisterror_allreduce(disterr, err)) {
-        mtxfile_free(&dstmtxfile);
-        for (int p = 0; p < src->comm_size; p++)
-            mtxfile_free(&recvmtxfiles[p]);
-        for (int p = 0; p < src->comm_size; p++)
-            mtxfile_free(&sendmtxfiles[p]);
-        free(mtxfiles);
-        return MTX_ERR_MPI_COLLECTIVE;
-    }
-    for (int p = 0; p < src->comm_size; p++)
-        mtxfile_free(&recvmtxfiles[p]);
-    for (int p = 0; p < src->comm_size; p++)
-        mtxfile_free(&sendmtxfiles[p]);
-    free(mtxfiles);
-
-    /* Create the final, distributed Matrix Market file. */
-    err = mtxdistfile_init(dst, &dstmtxfile, src->comm, disterr);
-    if (err) {
-        mtxfile_free(&dstmtxfile);
-        return err;
-    }
-    mtxfile_free(&dstmtxfile);
-    err = mtxfilecomments_copy(&dst->comments, &src->comments);
-    if (err) {
-        mtxdistfile_free(dst);
-        return err;
-    }
+    free(local_part_sizes);
+    free(data_lines_per_part);
+    free(data_lines_per_part_ptr);
     return MTX_SUCCESS;
 }
-
-/**
- * ‘mtxdistfile_partition_rows()’ partitions data lines of a
- * distributed Matrix Market file according to the given row
- * partitioning.
- *
- * If it is not ‘NULL’, the array ‘part_per_data_line’ must contain
- * enough storage to hold one ‘int’ for each data line held by the
- * current process. (The number of data lines is obtained from
- * ‘mtxfilesize_num_data_lines()’). On a successful return, the ‘k’th
- * entry in the array specifies the part number that was assigned to
- * the ‘k’th data line of ‘src’.
- *
- * The array ‘data_lines_per_part_ptr’ must contain at least enough
- * storage for ‘row_partition->num_parts+1’ values of type ‘int64_t’.
- * If successful, the ‘p’th value of ‘data_lines_per_part_ptr’ is an
- * offset to the first data line belonging to the ‘p’th part of the
- * partition, while the final value of the array points to one place
- * beyond the final data line.  Moreover ‘data_lines_per_part’ must
- * contain enough storage to hold one ‘int64_t’ for each data line.
- * For each part ‘p’ of the partitioning, the entries from
- * ‘data_lines_per_part[p]’ up to, but not including,
- * ‘data_lines_per_part[p+1]’, are the indices of the data lines in
- * ‘src’ that are assigned to the ‘p’th part of the partitioning.
- */
-int mtxdistfile_partition_rows(
-    const struct mtxdistfile * mtxdistfile,
-    const struct mtxpartition * row_partition,
-    int * part_per_data_line,
-    int64_t * data_lines_per_part_ptr,
-    int64_t * data_lines_per_part,
-    struct mtxdisterror * disterr)
-{
-    int err;
-
-    /* For matrices or vectors in array format, compute the offset to
-     * the first element of the part of the matrix or vector owned by
-     * the current process. */
-    int64_t offset = 0;
-    if (mtxdistfile->header.format == mtxfile_array) {
-        int64_t num_rows = mtxdistfile->mtxfile.size.num_rows;
-        disterr->mpierrcode = MPI_Exscan(
-            &num_rows, &offset, 1, MPI_INT64_T, MPI_SUM, mtxdistfile->comm);
-        err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
-        if (mtxdisterror_allreduce(disterr, err))
-            return MTX_ERR_MPI_COLLECTIVE;
-        if (mtxdistfile->mtxfile.size.num_columns >= 0)
-            offset *= mtxdistfile->mtxfile.size.num_columns;
-    }
-
-    int64_t size;
-    err = mtxfilesize_num_data_lines(
-        &mtxdistfile->mtxfile.size, mtxdistfile->mtxfile.header.symmetry, &size);
-    if (mtxdisterror_allreduce(disterr, err))
-        return MTX_ERR_MPI_COLLECTIVE;
-
-    err = mtxfile_partition_rows(
-        &mtxdistfile->mtxfile, size, offset, row_partition, part_per_data_line,
-        data_lines_per_part_ptr, data_lines_per_part);
-    if (mtxdisterror_allreduce(disterr, err))
-        return MTX_ERR_MPI_COLLECTIVE;
-    return MTX_SUCCESS;
-}
-#endif
 
 #endif

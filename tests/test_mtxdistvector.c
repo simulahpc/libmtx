@@ -16,7 +16,7 @@
  * along with libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-01-03
+ * Last modified: 2022-01-12
  *
  * Unit tests for distributed Matrix Market files.
  */
@@ -207,14 +207,27 @@ int test_mtxdistvector_from_mtxdistfile(void)
      */
 
     {
-        int num_rows = (rank == 0) ? 2 : 6;
+        int num_rows = 8;
         const double * srcdata = (rank == 0)
             ? ((const double[2]) {1.0, 2.0})
             : ((const double[6]) {3.0, 4.0, 5.0, 6.0, 7.0, 8.0});
+
+        int num_parts = comm_size;
+        int64_t part_sizes[] = {2,6};
+        struct mtxpartition partition;
+        err = mtxpartition_init_block(
+            &partition, num_rows, num_parts, part_sizes);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+
         struct mtxdistfile src;
         err = mtxdistfile_init_vector_array_real_double(
-            &src, num_rows, srcdata, comm, &disterr);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            &src, num_rows, srcdata, &partition, comm, &disterr);
+        TEST_ASSERT_EQ_MSG(
+            MTX_SUCCESS, err, "%s",
+            err == MTX_ERR_MPI_COLLECTIVE
+            ? mtxdisterror_description(&disterr)
+            : mtxstrerror(err));
+        mtxpartition_free(&partition);
 
         struct mtxdistvector mtxdistvector;
         err = mtxdistvector_from_mtxdistfile(
@@ -256,11 +269,24 @@ int test_mtxdistvector_from_mtxdistfile(void)
                 {{1,1.0}, {2,2.0}})
             : ((const struct mtxfile_vector_coordinate_real_double[6])
                 {{3,3.0}, {4,4.0}, {5,5.0}, {6,6.0}, {7,7.0}, {8,8.0}});
-        int64_t num_nonzeros = (rank == 0) ? 2 : 6;
+        int64_t num_nonzeros = 8;
+
+        int num_parts = comm_size;
+        int64_t part_sizes[] = {2,6};
+        struct mtxpartition partition;
+        err = mtxpartition_init_block(
+            &partition, num_nonzeros, num_parts, part_sizes);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        mtxpartition_free(&partition);
+
         struct mtxdistfile src;
         err = mtxdistfile_init_vector_coordinate_real_double(
-            &src, num_rows, num_nonzeros, srcdata, comm, &disterr);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            &src, num_rows, num_nonzeros, srcdata, &partition, comm, &disterr);
+        TEST_ASSERT_EQ_MSG(
+            MTX_SUCCESS, err, "%s",
+            err == MTX_ERR_MPI_COLLECTIVE
+            ? mtxdisterror_description(&disterr)
+            : mtxstrerror(err));
 
         struct mtxdistvector mtxdistvector;
         err = mtxdistvector_from_mtxdistfile(

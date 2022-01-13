@@ -106,7 +106,7 @@ struct mtxpartition
      * ‘part_sizes’ is an array containing the number of elements in
      * each part of the partition.
      */
-    int * part_sizes;
+    int64_t * part_sizes;
 
     /**
      * ‘parts_ptr’ is an array of length ‘num_parts+1’, containing
@@ -151,14 +151,14 @@ int mtxpartition_init(
     enum mtxpartitioning type,
     int64_t size,
     int num_parts,
-    const int * part_sizes,
+    const int64_t * part_sizes,
     int block_size,
     const int * parts);
 
 /**
- * ‘mtxpartition_init_copy()’ creates a copy of a partitioning.
+ * ‘mtxpartition_copy()’ creates a copy of a partitioning.
  */
-int mtxpartition_init_copy(
+int mtxpartition_copy(
     struct mtxpartition * dst,
     const struct mtxpartition * src);
 
@@ -186,7 +186,7 @@ int mtxpartition_init_block(
     struct mtxpartition * partition,
     int64_t size,
     int num_parts,
-    const int * part_sizes);
+    const int64_t * part_sizes);
 
 /**
  * ‘mtxpartition_init_cyclic()’ initialises a cyclic partitioning of
@@ -224,15 +224,11 @@ int mtxpartition_init_partition(
  * The arrays ‘elements’ and ‘parts’ must both contain enough storage
  * for ‘size’ values of type ‘int’. If successful, ‘parts’ will
  * contain the part numbers of each element in the ‘elements’ array.
- *
- * If needed, ‘elements’ and ‘parts’ are allowed to point to the same
- * underlying array. The values of ‘elements’ will then be overwritten
- * by the assigned part numbers.
  */
 int mtxpartition_assign(
     const struct mtxpartition * partition,
     int64_t size,
-    const int * elements,
+    const int64_t * elements,
     int * parts);
 
 /**
@@ -249,17 +245,37 @@ int mtxpartition_assign(
  * range ‘0, 1, ..., partition->part_sizes[part]-1’. If successful,
  * the array ‘globalelem’ will contain the global numbers
  * corresponding to each of the local element numbers in ‘localelem’.
- *
- * If needed, ‘localelem’ and ‘globalelem’ are allowed to point to the
- * same underlying array. The values of ‘localelem’ will then be
- * overwritten by the global element numbers.
  */
 int mtxpartition_globalidx(
     const struct mtxpartition * partition,
     int part,
     int64_t size,
-    const int * localelem,
-    int * globalelem);
+    const int64_t * localelem,
+    int64_t * globalelem);
+
+/**
+ * ‘mtxpartition_localidx()’ translates from a global numbering of
+ * elements in the partitioned set to a local numbering of elements
+ * within a given part.
+ *
+ * The argument ‘part’ denotes the part of the partition for which the
+ * local element numbers are obtained.
+ *
+ * The arrays ‘globalelem’ and ‘localelem’ must be of length equal to
+ * ‘size’. The former is used to specify the global element numbers of
+ * elements belonging to the specified part. 
+ *
+ * If successful, the array ‘localelem’ will contain local element
+ * numbers in the range ‘0, 1, ..., partition->part_sizes[part]-1’
+ * that were obtained by translating from the global element numbers
+ * in ‘globalelem’.
+ */
+int mtxpartition_localidx(
+    const struct mtxpartition * partition,
+    int part,
+    int64_t size,
+    const int64_t * globalelem,
+    int64_t * localelem);
 
 /*
  * I/O functions

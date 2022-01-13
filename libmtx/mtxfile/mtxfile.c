@@ -1735,7 +1735,7 @@ int mtxfile_transpose(
     if (mtxfile->header.object == mtxfile_matrix) {
         int64_t num_data_lines;
         err = mtxfilesize_num_data_lines(
-        &mtxfile->size, mtxfile->header.symmetry, &num_data_lines);
+            &mtxfile->size, mtxfile->header.symmetry, &num_data_lines);
         if (err)
             return err;
         err = mtxfiledata_transpose(
@@ -1962,8 +1962,8 @@ int mtxfile_partition(
     err = mtxfiledata_partition(
         &src->data, src->header.object, src->header.format,
         src->header.field, src->precision,
-        src->size.num_rows, src->size.num_columns, num_data_lines,
-        rowpart, colpart, part_per_data_line);
+        src->size.num_rows, src->size.num_columns,
+        0, num_data_lines, rowpart, colpart, part_per_data_line);
     if (err) {
         free(part_per_data_line);
         return err;

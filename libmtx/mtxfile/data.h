@@ -731,6 +731,11 @@ int mtxfiledata_copy_gather(
  * Note that indexing is 1-based, meaning that rows are numbered
  * ‘1,2,...,num_rows’, whereas columns are numbered
  * ‘1,2,...,num_columns’.
+ *
+ * If ‘format’ is ‘mtxfile_array’, then a non-negative ‘offset’ value
+ * can be used to obtain row and column indices for matrix or vector
+ * entries starting from the specified offset, instead of beginning
+ * with the first entry of the matrix or vector.
  */
 int mtxfiledata_rowcolidx(
     const union mtxfiledata * data,
@@ -740,6 +745,7 @@ int mtxfiledata_rowcolidx(
     enum mtxprecision precision,
     int num_rows,
     int num_columns,
+    int64_t offset,
     int64_t size,
     int * rowidx,
     int * colidx);
@@ -1078,6 +1084,10 @@ int mtxfiledata_transpose(
 /**
  * ‘mtxfiledata_permute()’ permutes the order of data lines in a
  * Matrix Market file according to a given permutation.
+ *
+ * The array ‘perm’ should be a permutation of the integers
+ * ‘1,2,...,N’, where ‘N’ is the number of data lines in the matrix or
+ * vector.
  */
 int mtxfiledata_permute(
     union mtxfiledata * data,
@@ -1098,6 +1108,11 @@ int mtxfiledata_permute(
  * The array ‘keys’ must contain enough storage for an array of ‘size’
  * values of type ‘int64_t’.  If successful, the ‘k’-th value of
  * ‘keys’ is the sorting key for the ‘k’-th data line.
+ *
+ * If ‘format’ is ‘mtxfile_array’, then a non-negative ‘offset’ value
+ * can be used to obtain sorting keys for matrix or vector entries
+ * starting from the specified offset, instead of beginning with the
+ * first entry of the matrix or vector.
  */
 int mtxfiledata_sortkey_row_major(
     union mtxfiledata * data,
@@ -1107,17 +1122,23 @@ int mtxfiledata_sortkey_row_major(
     enum mtxprecision precision,
     int num_rows,
     int num_columns,
+    int64_t offset,
     int64_t size,
     int64_t * keys);
 
 /**
- * ‘mtxfiledata_sortkey_column_major()’ provides an array of keys
- * that can be used to sort the data lines of the given Matrix Market
- * file in column major order.
+ * ‘mtxfiledata_sortkey_column_major()’ provides an array of keys that
+ * can be used to sort the data lines of the given Matrix Market file
+ * in column major order.
  *
  * The array ‘keys’ must contain enough storage for an array of ‘size’
  * values of type ‘int64_t’.  If successful, the ‘k’-th value of
  * ‘keys’ is the sorting key for the ‘k’-th data line.
+ *
+ * If ‘format’ is ‘mtxfile_array’, then a non-negative ‘offset’ value
+ * can be used to obtain sorting keys for matrix or vector entries
+ * starting from the specified offset, instead of beginning with the
+ * first entry of the matrix or vector.
  */
 int mtxfiledata_sortkey_column_major(
     union mtxfiledata * data,
@@ -1127,6 +1148,7 @@ int mtxfiledata_sortkey_column_major(
     enum mtxprecision precision,
     int num_rows,
     int num_columns,
+    int64_t offset,
     int64_t size,
     int64_t * keys);
 
@@ -1138,6 +1160,11 @@ int mtxfiledata_sortkey_column_major(
  * The array ‘keys’ must contain enough storage for an array of ‘size’
  * values of type ‘int64_t’.  If successful, the ‘k’-th value of
  * ‘keys’ is the sorting key for the ‘k’-th data line.
+ *
+ * If ‘format’ is ‘mtxfile_array’, then a non-negative ‘offset’ value
+ * can be used to obtain sorting keys for matrix or vector entries
+ * starting from the specified offset, instead of beginning with the
+ * first entry of the matrix or vector.
  */
 int mtxfiledata_sortkey_morton(
     union mtxfiledata * data,
@@ -1147,6 +1174,7 @@ int mtxfiledata_sortkey_morton(
     enum mtxprecision precision,
     int num_rows,
     int num_columns,
+    int64_t offset,
     int64_t size,
     int64_t * keys);
 
@@ -1218,6 +1246,11 @@ int mtxfiledata_sort_morton(
  * The partitions ‘rowpart’ or ‘colpart’ are allowed to be ‘NULL’, in
  * which case a trivial, singleton partition is used for the rows or
  * columns, respectively.
+ *
+ * If ‘format’ is ‘mtxfile_array’, then a non-negative ‘offset’ value
+ * can be used to partition matrix or vector entries starting from the
+ * specified offset, instead of beginning with the first entry of the
+ * matrix or vector.
  */
 int mtxfiledata_partition(
     const union mtxfiledata * data,
@@ -1227,6 +1260,7 @@ int mtxfiledata_partition(
     enum mtxprecision precision,
     int num_rows,
     int num_columns,
+    int64_t offset,
     int64_t size,
     const struct mtxpartition * rowpart,
     const struct mtxpartition * colpart,

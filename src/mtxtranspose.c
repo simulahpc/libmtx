@@ -418,7 +418,7 @@ int main(int argc, char *argv[])
         &mtxdistfile, args.precision,
         args.mtx_path, args.gzip,
         &lines_read, &bytes_read,
-        comm, &disterr);
+        comm, root, &disterr);
     if (err) {
         if (args.verbose > 0)
             fprintf(diagf, "\n");
@@ -452,26 +452,7 @@ int main(int argc, char *argv[])
 
     int64_t size;
     err = mtxfilesize_num_data_lines(
-        &mtxdistfile.mtxfile.size, mtxdistfile.mtxfile.header.symmetry, &size);
-    if (mtxdisterror_allreduce(&disterr, err)) {
-        if (rank == root) {
-            fprintf(stderr, "%s: %s\n",
-                    program_invocation_short_name,
-                    err == MTX_ERR_MPI_COLLECTIVE
-                    ? mtxdisterror_description(&disterr)
-                    : mtxstrerror(err));
-        }
-        mtxdistfile_free(&mtxdistfile);
-        program_options_free(&args);
-        mtxdisterror_free(&disterr);
-        MPI_Finalize();
-        return EXIT_FAILURE;
-    }
-
-    int64_t total_size;
-    disterr.mpierrcode = MPI_Allreduce(
-        &size, &total_size, 1, MPI_INT64_T, MPI_SUM, comm);
-    err = disterr.mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+        &mtxdistfile.size, mtxdistfile.header.symmetry, &size);
     if (mtxdisterror_allreduce(&disterr, err)) {
         if (rank == root) {
             fprintf(stderr, "%s: %s\n",
@@ -516,7 +497,7 @@ int main(int argc, char *argv[])
         clock_gettime(CLOCK_MONOTONIC, &t1);
         fprintf(diagf, "%'.6f seconds (%'.1f Mlines/s)\n",
                 timespec_duration(t0, t1),
-                1.0e-6 * total_size / timespec_duration(t0, t1));
+                1.0e-6 * size / timespec_duration(t0, t1));
     }
 
     /* 4. Write the sorted Matrix Market object to standard output. */
