@@ -823,14 +823,65 @@ int mtxfilesorting_parse(
  * sorted in the specified order. For Matrix Market files in array
  * format, this operation does nothing.
  *
- * ‘size’ is the number of vector or matrix nonzeros to sort.
- *
  * ‘perm’ is ignored if it is ‘NULL’. Otherwise, it must point to an
- * array of ‘size’ 64-bit integers, and it is used to store the
- * permutation of the vector or matrix nonzeros.
+ * array of length ‘size’, which is used to store the permutation of
+ * the Matrix Market entries. ‘size’ must therefore be at least equal
+ * to the number of data lines in the Matrix Market file ‘mtxfile’.
  */
 int mtxfile_sort(
-    struct mtxfile * mtx,
+    struct mtxfile * mtxfile,
+    enum mtxfilesorting sorting,
+    int64_t size,
+    int64_t * perm);
+
+/**
+ * ‘mtxfile_compact()’ compacts a Matrix Market file in coordinate
+ * format by merging adjacent, duplicate entries.
+ *
+ * For a matrix or vector in array format, this does nothing.
+ *
+ * The number of nonzero matrix or vector entries,
+ * ‘mtxfile->size.num_nonzeros’, is updated to reflect entries that
+ * were removed as a result of compacting. However, the underlying
+ * storage is not changed or reallocated. This may result in large
+ * amounts of unused memory, if a large number of entries were
+ * removed. If necessary, it is possible to allocate new storage, copy
+ * the compacted data, and, finally, free the old storage.
+ *
+ * If ‘perm’ is not ‘NULL’, then it must point to an array of length
+ * ‘size’. The ‘i’th entry of ‘perm’ is used to store the index of the
+ * corresponding data line in the compacted array that the ‘i’th data
+ * line was moved to or merged with. Note that the indexing is
+ * 1-based.
+ */
+int mtxfile_compact(
+    struct mtxfile * mtxfile,
+    int64_t size,
+    int64_t * perm);
+
+/**
+ * ‘mtxfile_assemble()’ assembles a Matrix Market file in coordinate
+ * format by merging duplicate entries. The file may optionally be
+ * sorted at the same time.
+ *
+ * For a matrix or vector in array format, this does nothing.
+ *
+ * The number of nonzero matrix or vector entries,
+ * ‘mtxfile->size.num_nonzeros’, is updated to reflect entries that
+ * were removed as a result of compacting. However, the underlying
+ * storage is not changed or reallocated. This may result in large
+ * amounts of unused memory, if a large number of entries were
+ * removed. If necessary, it is possible to allocate new storage, copy
+ * the compacted data, and, finally, free the old storage.
+ *
+ * If ‘perm’ is not ‘NULL’, then it must point to an array of length
+ * ‘size’. The ‘i’th entry of ‘perm’ is used to store the index of the
+ * corresponding data line in the sorted and compacted array that the
+ * ‘i’th data line was moved to or merged with. Note that the indexing
+ * is 1-based.
+ */
+int mtxfile_assemble(
+    struct mtxfile * mtxfile,
     enum mtxfilesorting sorting,
     int64_t size,
     int64_t * perm);

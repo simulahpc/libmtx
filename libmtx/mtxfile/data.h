@@ -16,7 +16,7 @@
  * along with libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-01-04
+ * Last modified: 2022-01-14
  *
  * Matrix Market data lines.
  */
@@ -1230,6 +1230,39 @@ int mtxfiledata_sort_morton(
     int num_columns,
     int64_t size,
     int64_t * perm);
+
+/**
+ * ‘mtxfiledata_compact()’ compacts a Matrix Market file in coordinate
+ * format by merging adjacent, duplicate data lines.
+ *
+ * For a matrix or vector in array format, this does nothing.
+ *
+ * The number of nonzero matrix or vector entries after compaction is
+ * returned in ‘outsize’. This can be used to determine the number of
+ * entries that were removed as a result of compacting. However, note
+ * that the underlying storage for the Matrix Market data is not
+ * changed or reallocated. This may result in large amounts of unused
+ * memory, if a large number of entries were removed. If necessary, it
+ * is possible to allocate new storage, copy the compacted data, and,
+ * finally, free the old storage.
+ *
+ * If ‘perm’ is not ‘NULL’, then it must point to an array of length
+ * ‘size’. The ‘i’th entry of ‘perm’ is used to store the index of the
+ * corresponding data line in the compacted array that the ‘i’th data
+ * line was moved to or merged with. Note that the indexing is
+ * 1-based.
+ */
+int mtxfiledata_compact(
+    union mtxfiledata * data,
+    enum mtxfileobject object,
+    enum mtxfileformat format,
+    enum mtxfilefield field,
+    enum mtxprecision precision,
+    int num_rows,
+    int num_columns,
+    int64_t size,
+    int64_t * perm,
+    int64_t * outsize);
 
 /*
  * Partitioning

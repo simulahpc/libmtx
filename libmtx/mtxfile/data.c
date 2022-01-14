@@ -5531,6 +5531,360 @@ int mtxfiledata_sort_morton(
     return MTX_SUCCESS;
 }
 
+/**
+ * ‘mtxfiledata_compact()’ compacts a Matrix Market file in coordinate
+ * format by merging adjacent, duplicate data lines.
+ *
+ * For a matrix or vector in array format, this does nothing.
+ *
+ * The number of nonzero matrix or vector entries after compaction is
+ * returned in ‘outsize’. This can be used to determine the number of
+ * entries that were removed as a result of compacting. However, note
+ * that the underlying storage for the Matrix Market data is not
+ * changed or reallocated. This may result in large amounts of unused
+ * memory, if a large number of entries were removed. If necessary, it
+ * is possible to allocate new storage, copy the compacted data, and,
+ * finally, free the old storage.
+ *
+ * If ‘perm’ is not ‘NULL’, then it must point to an array of length
+ * ‘size’. The ‘i’th entry of ‘perm’ is used to store the index of the
+ * corresponding data line in the compacted array that the ‘i’th data
+ * line was moved to or merged with. Note that the indexing is
+ * 1-based.
+ */
+int mtxfiledata_compact(
+    union mtxfiledata * data,
+    enum mtxfileobject object,
+    enum mtxfileformat format,
+    enum mtxfilefield field,
+    enum mtxprecision precision,
+    int num_rows,
+    int num_columns,
+    int64_t size,
+    int64_t * perm,
+    int64_t * outsize)
+{
+    if (object == mtxfile_matrix) {
+        if (format == mtxfile_array) {
+            *outsize = size;
+            if (perm) {
+                for (int64_t k = 0; k < size; k++)
+                    perm[k] = k+1;
+            }
+            return MTX_SUCCESS;
+        } else if (format == mtxfile_coordinate) {
+            if (field == mtxfile_real) {
+                if (precision == mtx_single) {
+                    if (perm && size > 0) perm[0] = 0;
+                    int64_t l = 0;
+                    for (int64_t k = 1; k < size; k++) {
+                        int ip = data->matrix_coordinate_real_single[l].i;
+                        int jp = data->matrix_coordinate_real_single[l].j;
+                        int i = data->matrix_coordinate_real_single[k].i;
+                        int j = data->matrix_coordinate_real_single[k].j;
+                        if (i == ip && j == jp) {
+                            data->matrix_coordinate_real_single[l].a +=
+                                data->matrix_coordinate_real_single[k].a;
+                        } else {
+                            l++;
+                            data->matrix_coordinate_real_single[l].i = i;
+                            data->matrix_coordinate_real_single[l].j = j;
+                            data->matrix_coordinate_real_single[l].a =
+                                data->matrix_coordinate_real_single[k].a;
+                        }
+                        if (perm) perm[k] = l+1;
+                    }
+                    *outsize = size > 0 ? l+1 : 0;
+                } else if (precision == mtx_double) {
+                    if (perm && size > 0) perm[0] = 0;
+                    int64_t l = 0;
+                    for (int64_t k = 1; k < size; k++) {
+                        int ip = data->matrix_coordinate_real_double[l].i;
+                        int jp = data->matrix_coordinate_real_double[l].j;
+                        int i = data->matrix_coordinate_real_double[k].i;
+                        int j = data->matrix_coordinate_real_double[k].j;
+                        if (i == ip && j == jp) {
+                            data->matrix_coordinate_real_double[l].a +=
+                                data->matrix_coordinate_real_double[k].a;
+                        } else {
+                            l++;
+                            data->matrix_coordinate_real_double[l].i = i;
+                            data->matrix_coordinate_real_double[l].j = j;
+                            data->matrix_coordinate_real_double[l].a =
+                                data->matrix_coordinate_real_double[k].a;
+                        }
+                        if (perm) perm[k] = l+1;
+                    }
+                    *outsize = size > 0 ? l+1 : 0;
+                } else { return MTX_ERR_INVALID_PRECISION; }
+            } else if (field == mtxfile_complex) {
+                if (precision == mtx_single) {
+                    if (perm && size > 0) perm[0] = 0;
+                    int64_t l = 0;
+                    for (int64_t k = 1; k < size; k++) {
+                        int ip = data->matrix_coordinate_complex_single[l].i;
+                        int jp = data->matrix_coordinate_complex_single[l].j;
+                        int i = data->matrix_coordinate_complex_single[k].i;
+                        int j = data->matrix_coordinate_complex_single[k].j;
+                        if (i == ip && j == jp) {
+                            data->matrix_coordinate_complex_single[l].a[0] +=
+                                data->matrix_coordinate_complex_single[k].a[0];
+                            data->matrix_coordinate_complex_single[l].a[1] +=
+                                data->matrix_coordinate_complex_single[k].a[1];
+                        } else {
+                            l++;
+                            data->matrix_coordinate_complex_single[l].i = i;
+                            data->matrix_coordinate_complex_single[l].j = j;
+                            data->matrix_coordinate_complex_single[l].a[0] =
+                                data->matrix_coordinate_complex_single[k].a[0];
+                            data->matrix_coordinate_complex_single[l].a[1] =
+                                data->matrix_coordinate_complex_single[k].a[1];
+                        }
+                        if (perm) perm[k] = l+1;
+                    }
+                    *outsize = size > 0 ? l+1 : 0;
+                } else if (precision == mtx_double) {
+                    if (perm && size > 0) perm[0] = 0;
+                    int64_t l = 0;
+                    for (int64_t k = 1; k < size; k++) {
+                        int ip = data->matrix_coordinate_complex_double[l].i;
+                        int jp = data->matrix_coordinate_complex_double[l].j;
+                        int i = data->matrix_coordinate_complex_double[k].i;
+                        int j = data->matrix_coordinate_complex_double[k].j;
+                        if (i == ip && j == jp) {
+                            data->matrix_coordinate_complex_double[l].a[0] +=
+                                data->matrix_coordinate_complex_double[k].a[0];
+                            data->matrix_coordinate_complex_double[l].a[1] +=
+                                data->matrix_coordinate_complex_double[k].a[1];
+                        } else {
+                            l++;
+                            data->matrix_coordinate_complex_double[l].i = i;
+                            data->matrix_coordinate_complex_double[l].j = j;
+                            data->matrix_coordinate_complex_double[l].a[0] =
+                                data->matrix_coordinate_complex_double[k].a[0];
+                            data->matrix_coordinate_complex_double[l].a[1] =
+                                data->matrix_coordinate_complex_double[k].a[1];
+                        }
+                        if (perm) perm[k] = l+1;
+                    }
+                    *outsize = size > 0 ? l+1 : 0;
+                } else { return MTX_ERR_INVALID_PRECISION; }
+            } else if (field == mtxfile_integer) {
+                if (precision == mtx_single) {
+                    if (perm && size > 0) perm[0] = 0;
+                    int64_t l = 0;
+                    for (int64_t k = 1; k < size; k++) {
+                        int ip = data->matrix_coordinate_integer_single[l].i;
+                        int jp = data->matrix_coordinate_integer_single[l].j;
+                        int i = data->matrix_coordinate_integer_single[k].i;
+                        int j = data->matrix_coordinate_integer_single[k].j;
+                        if (i == ip && j == jp) {
+                            data->matrix_coordinate_integer_single[l].a +=
+                                data->matrix_coordinate_integer_single[k].a;
+                        } else {
+                            l++;
+                            data->matrix_coordinate_integer_single[l].i = i;
+                            data->matrix_coordinate_integer_single[l].j = j;
+                            data->matrix_coordinate_integer_single[l].a =
+                                data->matrix_coordinate_integer_single[k].a;
+                        }
+                        if (perm) perm[k] = l+1;
+                    }
+                    *outsize = size > 0 ? l+1 : 0;
+                } else if (precision == mtx_double) {
+                    if (perm && size > 0) perm[0] = 0;
+                    int64_t l = 0;
+                    for (int64_t k = 1; k < size; k++) {
+                        int ip = data->matrix_coordinate_integer_double[l].i;
+                        int jp = data->matrix_coordinate_integer_double[l].j;
+                        int i = data->matrix_coordinate_integer_double[k].i;
+                        int j = data->matrix_coordinate_integer_double[k].j;
+                        if (i == ip && j == jp) {
+                            data->matrix_coordinate_integer_double[l].a +=
+                                data->matrix_coordinate_integer_double[k].a;
+                        } else {
+                            l++;
+                            data->matrix_coordinate_integer_double[l].i = i;
+                            data->matrix_coordinate_integer_double[l].j = j;
+                            data->matrix_coordinate_integer_double[l].a =
+                                data->matrix_coordinate_integer_double[k].a;
+                        }
+                        if (perm) perm[k] = l+1;
+                    }
+                    *outsize = size > 0 ? l+1 : 0;
+                } else { return MTX_ERR_INVALID_PRECISION; }
+            } else if (field == mtxfile_pattern) {
+                if (perm && size > 0) perm[0] = 0;
+                int64_t l = 0;
+                for (int64_t k = 1; k < size; k++) {
+                    int ip = data->matrix_coordinate_pattern[l].i;
+                    int jp = data->matrix_coordinate_pattern[l].j;
+                    int i = data->matrix_coordinate_pattern[k].i;
+                    int j = data->matrix_coordinate_pattern[k].j;
+                    if (i == ip && j == jp) {
+                        /* Nothing to be done */
+                    } else {
+                        l++;
+                        data->matrix_coordinate_pattern[l].i = i;
+                        data->matrix_coordinate_pattern[l].j = j;
+                    }
+                    if (perm) perm[k] = l+1;
+                }
+                *outsize = size > 0 ? l+1 : 0;
+            } else { return MTX_ERR_INVALID_MTX_FIELD; }
+        } else { return MTX_ERR_INVALID_MTX_FORMAT; }
+    } else if (object == mtxfile_vector) {
+        if (format == mtxfile_array) {
+            *outsize = size;
+            if (perm) {
+                for (int64_t k = 0; k < size; k++)
+                    perm[k] = k+1;
+            }
+            return MTX_SUCCESS;
+        } else if (format == mtxfile_coordinate) {
+            if (field == mtxfile_real) {
+                if (precision == mtx_single) {
+                    if (perm && size > 0) perm[0] = 0;
+                    int64_t l = 0;
+                    for (int64_t k = 1; k < size; k++) {
+                        int ip = data->vector_coordinate_real_single[l].i;
+                        int i = data->vector_coordinate_real_single[k].i;
+                        if (i == ip) {
+                            data->vector_coordinate_real_single[l].a +=
+                                data->vector_coordinate_real_single[k].a;
+                        } else {
+                            l++;
+                            data->vector_coordinate_real_single[l].i = i;
+                            data->vector_coordinate_real_single[l].a =
+                                data->vector_coordinate_real_single[k].a;
+                        }
+                        if (perm) perm[k] = l+1;
+                    }
+                    *outsize = size > 0 ? l+1 : 0;
+                } else if (precision == mtx_double) {
+                    if (perm && size > 0) perm[0] = 0;
+                    int64_t l = 0;
+                    for (int64_t k = 1; k < size; k++) {
+                        int ip = data->vector_coordinate_real_double[l].i;
+                        int i = data->vector_coordinate_real_double[k].i;
+                        if (i == ip) {
+                            data->vector_coordinate_real_double[l].a +=
+                                data->vector_coordinate_real_double[k].a;
+                        } else {
+                            l++;
+                            data->vector_coordinate_real_double[l].i = i;
+                            data->vector_coordinate_real_double[l].a =
+                                data->vector_coordinate_real_double[k].a;
+                        }
+                        if (perm) perm[k] = l+1;
+                    }
+                    *outsize = size > 0 ? l+1 : 0;
+                } else { return MTX_ERR_INVALID_PRECISION; }
+            } else if (field == mtxfile_complex) {
+                if (precision == mtx_single) {
+                    if (perm && size > 0) perm[0] = 0;
+                    int64_t l = 0;
+                    for (int64_t k = 1; k < size; k++) {
+                        int ip = data->vector_coordinate_complex_single[l].i;
+                        int i = data->vector_coordinate_complex_single[k].i;
+                        if (i == ip) {
+                            data->vector_coordinate_complex_single[l].a[0] +=
+                                data->vector_coordinate_complex_single[k].a[0];
+                            data->vector_coordinate_complex_single[l].a[1] +=
+                                data->vector_coordinate_complex_single[k].a[1];
+                        } else {
+                            l++;
+                            data->vector_coordinate_complex_single[l].i = i;
+                            data->vector_coordinate_complex_single[l].a[0] =
+                                data->vector_coordinate_complex_single[k].a[0];
+                            data->vector_coordinate_complex_single[l].a[1] =
+                                data->vector_coordinate_complex_single[k].a[1];
+                        }
+                        if (perm) perm[k] = l+1;
+                    }
+                    *outsize = size > 0 ? l+1 : 0;
+                } else if (precision == mtx_double) {
+                    if (perm && size > 0) perm[0] = 0;
+                    int64_t l = 0;
+                    for (int64_t k = 1; k < size; k++) {
+                        int ip = data->vector_coordinate_complex_double[l].i;
+                        int i = data->vector_coordinate_complex_double[k].i;
+                        if (i == ip) {
+                            data->vector_coordinate_complex_double[l].a[0] +=
+                                data->vector_coordinate_complex_double[k].a[0];
+                            data->vector_coordinate_complex_double[l].a[1] +=
+                                data->vector_coordinate_complex_double[k].a[1];
+                        } else {
+                            l++;
+                            data->vector_coordinate_complex_double[l].i = i;
+                            data->vector_coordinate_complex_double[l].a[0] =
+                                data->vector_coordinate_complex_double[k].a[0];
+                            data->vector_coordinate_complex_double[l].a[1] =
+                                data->vector_coordinate_complex_double[k].a[1];
+                        }
+                        if (perm) perm[k] = l+1;
+                    }
+                    *outsize = size > 0 ? l+1 : 0;
+                } else { return MTX_ERR_INVALID_PRECISION; }
+            } else if (field == mtxfile_integer) {
+                if (precision == mtx_single) {
+                    if (perm && size > 0) perm[0] = 0;
+                    int64_t l = 0;
+                    for (int64_t k = 1; k < size; k++) {
+                        int ip = data->vector_coordinate_integer_single[l].i;
+                        int i = data->vector_coordinate_integer_single[k].i;
+                        if (i == ip) {
+                            data->vector_coordinate_integer_single[l].a +=
+                                data->vector_coordinate_integer_single[k].a;
+                        } else {
+                            l++;
+                            data->vector_coordinate_integer_single[l].i = i;
+                            data->vector_coordinate_integer_single[l].a =
+                                data->vector_coordinate_integer_single[k].a;
+                        }
+                        if (perm) perm[k] = l+1;
+                    }
+                    *outsize = size > 0 ? l+1 : 0;
+                } else if (precision == mtx_double) {
+                    if (perm && size > 0) perm[0] = 0;
+                    int64_t l = 0;
+                    for (int64_t k = 1; k < size; k++) {
+                        int ip = data->vector_coordinate_integer_double[l].i;
+                        int i = data->vector_coordinate_integer_double[k].i;
+                        if (i == ip) {
+                            data->vector_coordinate_integer_double[l].a +=
+                                data->vector_coordinate_integer_double[k].a;
+                        } else {
+                            l++;
+                            data->vector_coordinate_integer_double[l].i = i;
+                            data->vector_coordinate_integer_double[l].a =
+                                data->vector_coordinate_integer_double[k].a;
+                        }
+                        if (perm) perm[k] = l+1;
+                    }
+                    *outsize = size > 0 ? l+1 : 0;
+                } else { return MTX_ERR_INVALID_PRECISION; }
+            } else if (field == mtxfile_pattern) {
+                if (perm && size > 0) perm[0] = 0;
+                int64_t l = 0;
+                for (int64_t k = 1; k < size; k++) {
+                    int ip = data->vector_coordinate_pattern[l].i;
+                    int i = data->vector_coordinate_pattern[k].i;
+                    if (i == ip) {
+                        /* Nothing to be done */
+                    } else {
+                        l++;
+                        data->vector_coordinate_pattern[l].i = i;
+                    }
+                    if (perm) perm[k] = l+1;
+                }
+                *outsize = size > 0 ? l+1 : 0;
+            } else { return MTX_ERR_INVALID_MTX_FIELD; }
+        } else { return MTX_ERR_INVALID_MTX_FORMAT; }
+    } else { return MTX_ERR_INVALID_MTX_OBJECT; }
+    return MTX_SUCCESS;
+}
+
 /*
  * Partitioning
  */

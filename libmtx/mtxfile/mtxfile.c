@@ -1847,19 +1847,18 @@ int mtxfilesorting_parse(
  *
  * The sorting order is determined by ‘sorting’. If the sorting order
  * is ‘mtxfile_unsorted’, nothing is done. If the sorting order is
- * ‘mtxfile_permutation’, then ‘perm’ must point to an array
- * of ‘size’ integers that specify the sorting permutation. Note that
- * the sorting permutation uses 1-based indexing.
+ * ‘mtxfile_permutation’, then ‘perm’ must point to an array of ‘size’
+ * integers that specify the sorting permutation. Note that the
+ * sorting permutation uses 1-based indexing.
  *
  * For a vector or matrix in coordinate format, the nonzero values are
  * sorted in the specified order. For Matrix Market files in array
  * format, this operation does nothing.
  *
- * ‘size’ is the number of vector or matrix nonzeros to sort.
- *
  * ‘perm’ is ignored if it is ‘NULL’. Otherwise, it must point to an
- * array of ‘size’ 64-bit integers, and it is used to store the
- * permutation of the vector or matrix nonzeros.
+ * array of length ‘size’, which is used to store the permutation of
+ * the Matrix Market entries. ‘size’ must therefore be at least equal
+ * to the number of data lines in the Matrix Market file ‘mtx’.
  */
 int mtxfile_sort(
     struct mtxfile * mtxfile,
@@ -1872,38 +1871,128 @@ int mtxfile_sort(
         &mtxfile->size, mtxfile->header.symmetry, &num_data_lines);
     if (err)
         return err;
-    if (size < 0 || size > num_data_lines)
+    if (perm && (size < 0 || size > num_data_lines))
         return MTX_ERR_INDEX_OUT_OF_BOUNDS;
 
     if (sorting == mtxfile_unsorted) {
         if (!perm)
             return MTX_SUCCESS;
-        for (int64_t k = 0; k < size; k++)
+        for (int64_t k = 0; k < num_data_lines; k++)
             perm[k] = k+1;
         return MTX_SUCCESS;
     } else if (sorting == mtxfile_permutation) {
         return mtxfiledata_permute(
             &mtxfile->data, mtxfile->header.object, mtxfile->header.format,
             mtxfile->header.field, mtxfile->precision, mtxfile->size.num_rows,
-            mtxfile->size.num_columns, size, perm);
+            mtxfile->size.num_columns, num_data_lines, perm);
     } else if (sorting == mtxfile_row_major) {
         return mtxfiledata_sort_row_major(
             &mtxfile->data, mtxfile->header.object, mtxfile->header.format,
             mtxfile->header.field, mtxfile->precision, mtxfile->size.num_rows,
-            mtxfile->size.num_columns, size, perm);
+            mtxfile->size.num_columns, num_data_lines, perm);
     } else if (sorting == mtxfile_column_major) {
         return mtxfiledata_sort_column_major(
             &mtxfile->data, mtxfile->header.object, mtxfile->header.format,
             mtxfile->header.field, mtxfile->precision, mtxfile->size.num_rows,
-            mtxfile->size.num_columns, size, perm);
+            mtxfile->size.num_columns, num_data_lines, perm);
     } else if (sorting == mtxfile_morton) {
         return mtxfiledata_sort_morton(
             &mtxfile->data, mtxfile->header.object, mtxfile->header.format,
             mtxfile->header.field, mtxfile->precision, mtxfile->size.num_rows,
-            mtxfile->size.num_columns, size, perm);
+            mtxfile->size.num_columns, num_data_lines, perm);
     } else {
         return MTX_ERR_INVALID_MTX_SORTING;
     }
+}
+
+/**
+ * ‘mtxfile_compact()’ compacts a Matrix Market file in coordinate
+ * format by merging adjacent, duplicate entries.
+ *
+ * For a matrix or vector in array format, this does nothing.
+ *
+ * The number of nonzero matrix or vector entries,
+ * ‘mtxfile->size.num_nonzeros’, is updated to reflect entries that
+ * were removed as a result of compacting. However, the underlying
+ * storage is not changed or reallocated. This may result in large
+ * amounts of unused memory, if a large number of entries were
+ * removed. If necessary, it is possible to allocate new storage, copy
+ * the compacted data, and, finally, free the old storage.
+ *
+ * If ‘perm’ is not ‘NULL’, then it must point to an array of length
+ * ‘size’. The ‘i’th entry of ‘perm’ is used to store the index of the
+ * corresponding data line in the compacted array that the ‘i’th data
+ * line was moved to or merged with. Note that the indexing is
+ * 1-based.
+ */
+int mtxfile_compact(
+    struct mtxfile * mtxfile,
+    int64_t size,
+    int64_t * perm)
+{
+    int err;
+    if (mtxfile->header.format == mtxfile_array)
+        return MTX_SUCCESS;
+    int64_t num_data_lines = mtxfile->size.num_nonzeros;
+    if (perm && (size < 0 || size > num_data_lines))
+        return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+    int64_t outsize;
+    err = mtxfiledata_compact(
+        &mtxfile->data, mtxfile->header.object, mtxfile->header.format,
+        mtxfile->header.field, mtxfile->precision, mtxfile->size.num_rows,
+        mtxfile->size.num_columns, mtxfile->size.num_nonzeros, perm,
+        &outsize);
+    if (err)
+        return err;
+    mtxfile->size.num_nonzeros = outsize;
+    return MTX_SUCCESS;
+}
+
+/**
+ * ‘mtxfile_assemble()’ assembles a Matrix Market file in coordinate
+ * format by merging duplicate entries. The file may optionally be
+ * sorted at the same time.
+ *
+ * For a matrix or vector in array format, this does nothing.
+ *
+ * The number of nonzero matrix or vector entries,
+ * ‘mtxfile->size.num_nonzeros’, is updated to reflect entries that
+ * were removed as a result of compacting. However, the underlying
+ * storage is not changed or reallocated. This may result in large
+ * amounts of unused memory, if a large number of entries were
+ * removed. If necessary, it is possible to allocate new storage, copy
+ * the compacted data, and, finally, free the old storage.
+ *
+ * If ‘perm’ is not ‘NULL’, then it must point to an array of length
+ * ‘size’. The ‘i’th entry of ‘perm’ is used to store the index of the
+ * corresponding data line in the sorted and compacted array that the
+ * ‘i’th data line was moved to or merged with. Note that the indexing
+ * is 1-based.
+ */
+int mtxfile_assemble(
+    struct mtxfile * mtxfile,
+    enum mtxfilesorting sorting,
+    int64_t size,
+    int64_t * perm)
+{
+    int err;
+    if (sorting == mtxfile_unsorted) {
+        /* TODO: It may be desirable to perform assembly to remove
+         * duplicates without otherwise changing the original order of
+         * the data lines. To do this, we should first sort, for
+         * example, in row major order, to obtain a sorting
+         * permutation. Then perform the compaction by accessing the
+         * data indirectly through the sorting permutation. */
+        errno = ENOTSUP;
+        return MTX_ERR_ERRNO;
+    }
+    err = mtxfile_sort(mtxfile, sorting, size, perm);
+    if (err)
+        return err;
+    err = mtxfile_compact(mtxfile, size, perm);
+    if (err)
+        return err;
+    return MTX_SUCCESS;
 }
 
 /*
