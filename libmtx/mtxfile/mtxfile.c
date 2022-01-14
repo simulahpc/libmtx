@@ -16,7 +16,7 @@
  * along with libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-01-07
+ * Last modified: 2022-01-14
  *
  * Matrix Market files.
  */
@@ -30,6 +30,7 @@
 #include <libmtx/mtxfile/header.h>
 #include <libmtx/mtxfile/mtxfile.h>
 #include <libmtx/mtxfile/size.h>
+#include <libmtx/util/partition.h>
 #include <libmtx/util/cuthill_mckee.h>
 
 #ifdef LIBMTX_HAVE_MPI

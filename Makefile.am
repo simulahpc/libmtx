@@ -2,22 +2,21 @@
 #
 # Copyright (C) 2022 James D. Trotter
 #
-# libmtx is free software: you can redistribute it and/or
-# modify it under the terms of the GNU General Public License as
-# published by the Free Software Foundation, either version 3 of the
-# License, or (at your option) any later version.
+# libmtx is free software: you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 #
-# libmtx is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# libmtx is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 # General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with libmtx.  If not, see
-# <https://www.gnu.org/licenses/>.
+# along with libmtx.  If not, see <https://www.gnu.org/licenses/>.
 #
 # Authors: James D. Trotter <james@simula.no>
-# Last modified: 2022-01-06
+# Last modified: 2022-01-14
 #
 # Makefile for the top-level directory of libmtx.
 #
@@ -404,7 +403,6 @@ info_TEXINFOS = manual/libmtx.texi
 manual_libmtx_TEXINFOS = \
 	manual/introduction.texi \
 	manual/installing.texi \
-	manual/reporting_bugs.texi \
 	manual/matrix_market_file_format.texi \
 	manual/matrix_market_files.texi \
 	manual/matrices_and_vectors.texi \

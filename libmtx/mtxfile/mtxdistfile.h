@@ -33,6 +33,7 @@
 #include <libmtx/mtxfile/header.h>
 #include <libmtx/mtxfile/mtxfile.h>
 #include <libmtx/mtxfile/size.h>
+#include <libmtx/util/partition.h>
 
 #ifdef LIBMTX_HAVE_MPI
 #include <mpi.h>

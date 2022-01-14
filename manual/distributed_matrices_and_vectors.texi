@@ -15,7 +15,7 @@
 @c along with libmtx.  If not, see <https://www.gnu.org/licenses/>.
 @c
 @c Authors: James D. Trotter <james@simula.no>
-@c Last modified: 2022-01-09
+@c Last modified: 2022-01-14
 @c
 @c libmtx User Guide: Distributed matrices and vectors.
 
@@ -28,182 +28,28 @@ computing features in libmtx are implemented using MPI, and,
 therefore, you will need to build libmtx with MPI support.
 
 @menu
-* Partitioning:: Partitioning distributed matrices and vectors.
 * Distributed vectors:: Data structures for distributed vectors.
 * Distributed matrices:: Data structures for distributed matrices.
 @end menu
-
-
-@node Partitioning
-@section Partitioning
-@cindex partitioning
-Distributed matrices and vectors are created by partitioning their
-rows and columns to establish which matrix and vector elements are
-owned by each process. After partitioning, the matrix and vector
-elements are distributed to the processes that own them.
-
-@cindex index set
-@cindex distributed partition
-This section covers @dfn{index sets} and @dfn{distributed partitions},
-which are key concepts needed for partitioning and distributing
-matrices and vectors.
-
-@node Index sets
-@subsection Index sets
-
-@cindex Index set
-An @dfn{index set} is a set of integers, typically used to represent a
-subset of the rows of a vector or the rows or columns of a
-matrix. Index sets are used, for example, when specifying submatrices
-of a matrix, or for partitioning and distributing matrices and vectors
-among multiple processes.
-
-@tindex struct mtxidxset
-@tindex enum mtxidxsettype
-The file @file{libmtx/util/index_set.h} defines the data types
-@code{enum mtxidxsettype} and @code{struct mtxidxset}. The latter is
-used to represent an index set, whereas the former is needed to
-enumerate different kinds of index sets.
-@example
-@code{enum mtxidxsettype @{
-    mtxidxset_interval,      /* contiguous interval of integers */
-    mtxidxset_strided,       /* integers separated by a stride */
-    mtxidxset_blockstrided,  /* fixed-size sets of integers
-                              * separated by a stride */
-    mtxidxset_array,         /* index set given by an array */
-@};}
-@end example
-As shown above, there are four main kinds of index sets.
-
-@itemize
-@item @samp{mtxidxset_interval}
-is a contiguous set of integers from a half-open interval
-@code{[a,b)}.
-
-@item @samp{mtxidxset_strided}
-is a set of @code{N} integers, @code{@{a,a+r,a+2*r,...,a+(N-1)*r@}},
-defined by a starting integer @code{a} and a fixed stride @code{r}.
-
-@item @samp{mtxidxset_blockstrided}
-is a set of @code{N} blocks of integers, @code{@{a,a+1,...,a+(M-1),
-a+M*r,a+M*r+1,...,a+M*r+(M-1)), a+2*M*r,a+2*M*r+1,...,a+2*M*r+(M-1)),
-..., a+(N-1)*M*r,a+(N-1)*M*r+1,...,a+(N-1)*M*r+(M-1))@}}.  Here, each
-block is of size @code{M}, the starting integer is @code{a}, and the
-stride is @code{r}.
-
-@item @samp{mtxidxset_array}
-represents an index set defined by an array of integers,
-@code{a[0],a[1],...,a[N-1]}.
-@end itemize
-
-The @code{mtxidxset} struct is defined as follows.
-@example
-@code{struct mtxidxset @{
-    enum mtxidxsettype type;
-    int64_t size;
-    int64_t offset;
-    int stride;
-    int block_size;
-    int64_t * indices;
-@};}
-@end example
-@code{type} is the type of index set, and @code{size} is the number of
-elements in the index set. @code{offset} is an offset to the first
-element of the indexed set, if @code{type} is
-@samp{mtxidxset_interval}, @samp{mtxidxset_strided} or
-@samp{mtxidxset_blockstrided}. Otherwise, this @code{offset} is not
-used.
-
-@code{stride} is a stride between elements of the indexed set, if
-@code{type} is @samp{mtxidxset_strided} or
-@samp{mtxidxset_blockstrided}. Otherwise, this value is not used.
-
-@code{block_size} is the size of each block, if @code{type} is
-@samp{mtxidxset_blockstrided}.  Otherwise, this value is not used.
-
-@code{indices} is an array containing the indices of the index set, if
-@code{type} is @samp{mtxidxset_array}.  Otherwise, this value is not
-used.
-
-
-An index set representing a half-open interval @code{[a,b)} can be
-created with @code{mtxidxset_init_interval}.
-@findex mtxidxset_init_interval
-@example
-@code{int mtxidxset_init_interval(
-    struct mtxidxset * index_set, int a, int b);}
-@end example
-Then, the function @code{mtxidxset_contains} can be used to test if
-a given integer @code{n} belongs to the index set.
-@findex mtxidxset_contains
-@example
-@code{bool mtxidxset_contains(
-    const struct mtxidxset * index_set, int n);}
-@end example
-
-@node Distributed partitions
-@subsection Distributed partitions
-@cindex partitioning
-@tindex enum mtxpartitioning
-There are different kinds of partitionings, which may be represented
-by using the type @code{enum mtxpartitioning}.
-@example
-@code{enum mtxpartitioning @{
-    mtx_singleton,         /* singleton partition with only one component */
-    mtx_block,             /* contiguous, fixed-size blocks */
-    mtx_cyclic,            /* cyclic partition */
-    mtx_block_cyclic,      /* cyclic partition of fixed-size blocks */
-    mtx_custom_partition,  /* general, user-defined partition */
-@};}
-@end example
-
-@cindex distributed partitioning
-@tindex struct mtxdistpartition
-A partitioning of a set that is distributed among multiple processes
-is represented by @code{struct mtxdistpartition}.
-@example
-@code{struct mtxdistpartition @{
-    MPI_Comm comm;
-    int comm_size;
-    int rank;
-
-    enum mtxpartitioning type;
-
-    /**
-     * ‘size’ is the number of elements in the partitioned set.
-     */
-    int64_t size;
-
-    /**
-     * ‘num_parts’ is the number of parts in the partition, which must
-     * be equal to the size of the MPI communicator.
-     */
-    int num_parts;
-
-    /**
-     * ‘index_set’ is an index set that describes the elements of the
-     * partitioned set belonging to the current process.
-     */
-    struct mtxidxset index_set;
-@};}
-@end example
-
-
 
 
 @node Distributed vectors
 @section Distributed vectors
 @cindex distributed vector
 @tindex struct mtxdistvector
-The file @file{libmtx/distvector/distvector.h} defines the type
+The file @file{libmtx/vector/distvector.h} defines the type
 @code{struct mtxdistvector}. This data type builds on top of
-@code{struct mtxvector} (see @ref{Vectors}) to offer different options
-for the underlying storage and implementation of vector operations.
+@code{struct mtxvector} (see @ref{Vectors}) to provide different
+options for the underlying storage and implementation of vector
+operations.
+
+The definition of @code{struct mtxdistvector} is shown below.
 @example
 @code{struct mtxdistvector @{
     MPI_Comm comm;
     int comm_size;
     int rank;
+    struct mtxpartition partition;
     struct mtxvector interior;
 @};}
 @end example
@@ -212,9 +58,12 @@ distributed Matrix Market files}), The first three struct members of
 @code{mtxdistvector} contain information about the group of processes
 sharing the distributed vector. This includes their MPI communicator
 (@code{comm}), the number of processes (@code{comm_size}) and the rank
-of the current process (@code{rank}). The vector, @code{interior},
-stores the part of the distributed vector that resides on the current
-process.
+of the current process (@code{rank}). Also, @code{partition} defines a
+partitioning of the vector elements. This is used to determine which
+parts of the vector belongs to which process.
+
+The final struct member, @code{interior}, stores the part of the
+distributed vector that resides on the current process.
 
 
 @node Halo exchange

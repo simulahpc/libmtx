@@ -16,7 +16,7 @@
  * along with libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-01-11
+ * Last modified: 2022-01-14
  *
  * Data types and functions for partitioning finite sets.
  */
@@ -24,7 +24,6 @@
 #include <libmtx/error.h>
 #include <libmtx/mtxfile/mtxfile.h>
 #include <libmtx/util/partition.h>
-#include <libmtx/util/index_set.h>
 
 #include <errno.h>
 #include <unistd.h>

@@ -83,19 +83,26 @@ vector storage formats.
 @subsection Creating vectors
 This section covers functions that are provided to construct vectors.
 
+@cindex free
+@findex mtxvector_free
 The function @code{mtxvector_free} is used to free storage allocated
 for a vector.
 @example
 @code{void mtxvector_free(struct mtxvector * vector);}
 @end example
 
-To create a copy of an existing vector, use the function @code{mtxvector_init_copy}.
+@cindex copy
+@findex mtxvector_init_copy
+To create a copy of an existing vector, use the function
+@code{mtxvector_init_copy}.
 @example
 @code{int mtxvector_init_copy(
     struct mtxvector * dst,
     const struct mtxvector * src);}
 @end example
 
+@cindex copy
+@findex mtxvector_alloc_copy
 If storage for a copy of an existing vector is needed, but the vector
 values should not be copied or initialised, use the function
 @code{mtxvector_alloc_copy}.
@@ -105,6 +112,11 @@ values should not be copied or initialised, use the function
     const struct mtxvector * src);}
 @end example
 
+@cindex allocate
+@cindex array format
+@cindex coordinate format
+@findex mtxvector_alloc_array
+@findex mtxvector_alloc_coordinate
 To allocate storage for a vector in @emph{array} or @emph{coordinate}
 format, the functions @code{mtxvector_alloc_array} or
 @code{mtxvector_alloc_coordinate} may be used.
@@ -128,6 +140,7 @@ also necessary to specify the number of nonzero vector elements. Note
 that the vector values are not initialised, and so it is up to the
 user to initialise them.
 
+@findex mtxvector_init_@var{type}_@var{field}_@var{precision}
 If the vector values are already known, then there are also functions
 for allocating a vector and initialising the values directly. This can
 be done by calling
@@ -137,6 +150,7 @@ denote the vector type (i.e., @samp{array} or @samp{coordinate}),
 field (i.e., @samp{real}, @samp{complex} or @samp{integer}) and
 precision (i.e., @samp{single} or @samp{double}).
 
+@findex mtxvector_init_array_complex_double
 For example, to create a double precision, complex vector in array
 format, use @code{mtxvector_init_array_complex_double}.
 @example
@@ -148,6 +162,7 @@ format, use @code{mtxvector_init_array_complex_double}.
 The vector entries are provided by the array @code{data}, which must
 contain @code{num_rows*num_columns} values.
 
+@findex mtxvector_init_coordinate_complex_double
 To create a double precision, complex vector in coordinate format, use
 @code{mtxvector_init_coordinate_complex_double}.
 @example
@@ -170,12 +185,19 @@ produce incorrect results.
 
 @node Modifying vector values
 @subsection Modifying values
+@findex mtxvector_set_constant_@var{field}_@var{precision}
 The functions
 @code{mtxvector_set_constant_@var{field}_@var{precision}} can be used
 to set every (nonzero) value of a vector equal to a constant scalar,
 where @code{@var{field}} and @code{@var{precision}} should match the
 field (i.e., @samp{real}, @samp{complex} or @samp{integer}) and
 precision (i.e., @samp{single} or @samp{double}) of @code{mtxvector}.
+@findex mtxvector_set_constant_real_single
+@findex mtxvector_set_constant_real_double
+@findex mtxvector_set_constant_complex_single
+@findex mtxvector_set_constant_complex_double
+@findex mtxvector_set_constant_integer_single
+@findex mtxvector_set_constant_integer_double
 @example
 @code{int mtxvector_set_constant_real_single(
     struct mtxvector *, float a);
@@ -195,7 +217,7 @@ storage is accessed through the appropriate member of the
 @code{storage} union in the @code{mtxvector} struct.
 
 
-@node Vectors - converting to and from Matrix Market format
+@node Converting vectors to and from Matrix Market format
 @subsection Converting to and from Matrix Market format
 In many cases, a vector may already be available in Matrix Market
 format. However, for reasons involving both performance and
@@ -203,6 +225,7 @@ convenience, it is often a good idea to convert the data from Matrix
 Market format to a more suitable representation before carrying out
 computations.
 
+@findex mtxvector_from_mtxfile
 To convert a vector in Matrix Market format to @code{struct
 mtxvector}, the function @code{mtxvector_from_mtxfile} can be used.
 @example
@@ -219,6 +242,7 @@ used if @code{mtxfile} is a vector in array format, and
 @samp{mtxvector_coordinate} is used if @code{mtxfile} is a vector in
 coordinate format.
 
+@findex mtxvector_to_mtxfile
 Conversely, having peformed the necessary computations, it is
 sometimes useful to convert a vector back to Matrix Market format.
 For example, to make it easier to output the vector to a file. To
@@ -241,6 +265,9 @@ more easily read a vector from a file in Matrix Market format and
 convert it to a desired vector representation. These functions are
 based on the functions described in @ref{Reading and writing Matrix
 Market files}.
+@findex mtxvector_read
+@findex mtxvector_fread
+@findex mtxvector_gzead
 @example
 @code{int mtxvector_read(
     struct mtxvector * vector,
@@ -277,6 +304,9 @@ then the underlying vector is stored in array format or coordinate
 format according to the format of the Matrix Market file. Otherwise,
 an attempt is made to convert the vector to the desired type.
 
+@findex mtxvector_write
+@findex mtxvector_fwrite
+@findex mtxvector_gzwrite
 Similarly, the functions @code{mtxvector_write},
 @code{mtxvector_fwrite} and @code{mtxvector_gzwrite} are provided to
 write a vector to a file in Matrix Market format.
@@ -337,6 +367,8 @@ The following Level 1 BLAS operations are supported:
 @item @code{iamax} --- find element with largest absolute value
 @end itemize
 
+@findex mtxvector_swap
+@findex mtxvector_copy
 The function @code{mtxvector_swap} swaps the values of two vectors,
 whereas @code{mtxvector_copy} copies the values from one vector to
 another.
@@ -345,6 +377,8 @@ another.
 int mtxvector_copy(struct mtxvector * y, const struct mtxvector * x);}
 @end example
 
+@findex mtxvector_sscal
+@findex mtxvector_dscal
 The functions @code{mtxvector_sscal} and @code{mtxvector_dscal} are
 used to scale a vector @code{x} by a floating point constant @code{a}
 in single or double precision, respectively. That is, @code{x = a*x}.
@@ -364,6 +398,8 @@ argument @code{num_flops}, which can be used to obtain the number of
 floating point operations that were carried out. If @code{num_flops}
 is @samp{NULL}, then it is ignored.
 
+@findex mtxvector_saxpy
+@findex mtxvector_daxpy
 The functions @code{mtxvector_saxpy} and @code{mtxvector_daxpy} add a
 vector to another vector multiplied by a single or double precision
 floating point value, @code{y = a*x + y}.
@@ -381,6 +417,8 @@ int mtxvector_daxpy(
     int64_t * num_flops);}
 @end example
 
+@findex mtxvector_saypx
+@findex mtxvector_daypx
 Similarly, @code{mtxvector_saypx} and @code{mtxvector_daypx} multiply
 a vector by a single or double precision floating point scalar before
 adding the result to another vector, @code{y = a*y + x}.
@@ -398,6 +436,8 @@ int mtxvector_daypx(
     int64_t * num_flops);}
 @end example
 
+@findex mtxvector_sdot
+@findex mtxvector_ddot
 The functions @code{mtxvector_sdot} and @code{mtxvector_ddot} compute
 the Euclidean dot product of two real- or integer-valued vectors.
 @example
@@ -414,6 +454,10 @@ int mtxvector_ddot(
     int64_t * num_flops);}
 @end example
 
+@findex mtxvector_cdotu
+@findex mtxvector_zdotu
+@findex mtxvector_cdotc
+@findex mtxvector_zdotc
 For complex vectors, the functions @code{mtxvector_cdotu} and
 @code{mtxvector_zdotu} are used to compute the product of the
 transpose of a complex row vector with another complex row vector,
@@ -447,6 +491,8 @@ int mtxvector_zdotc(
     int64_t * num_flops);}
 @end example
 
+@findex mtxvector_snrm2
+@findex mtxvector_dnrm2
 The functions @code{mtxvector_snrm2} and @code{mtxvector_dnrm2}
 compute the Euclidean norm of a vector. in single and double precision
 floating point, respectively.
@@ -462,6 +508,8 @@ int mtxvector_dnrm2(
     int64_t * num_flops);}
 @end example
 
+@findex mtxvector_sasum
+@findex mtxvector_dasum
 The functions @code{mtxvector_sasum} and @code{mtxvector_dasum}
 compute the sum of absolute values, or 1-norm, of a vector. in single
 and double precision floating point, respectively. If the vector is
@@ -479,6 +527,7 @@ int mtxvector_dasum(
     int64_t * num_flops);}
 @end example
 
+@findex mtxvector_iamax
 The function @code{mtxvector_iamax} finds the index of the first
 element having the largest absolute value among all the vector
 elements. If the vector is complex-valued, then the index points to
@@ -489,8 +538,6 @@ real and imaginary parts.
     const struct mtxvector * x,
     int * iamax);}
 @end example
-
-
 
 
 @node Matrices

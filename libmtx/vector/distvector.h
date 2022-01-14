@@ -16,7 +16,7 @@
  * along with libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-01-03
+ * Last modified: 2022-01-14
  *
  * Data structures for distributed vectors.
  */
@@ -45,10 +45,15 @@
 struct mtxfile;
 struct mtxdistfile;
 struct mtxdisterror;
+struct mtxpartition;
 
 /**
- * ‘mtxdistvector’ represents a vector distributed across multiple
- * processes.
+ * ‘mtxdistvector’ is a vector distributed across multiple processes,
+ * where MPI is used for communicating between processes.
+ *
+ * Processes are arranged as a one-dimensional linear array, and
+ * vector elements are distributed among processes according to a
+ * specified partitioning.
  */
 struct mtxdistvector
 {
@@ -69,6 +74,12 @@ struct mtxdistvector
      * ‘rank’ is the rank of the current process.
      */
     int rank;
+
+    /**
+     * ‘partition’ is a partitioning of the data lines in the
+     * underlying Matrix Market file.
+     */
+    struct mtxpartition partition;
 
     struct mtxvector interior;
 

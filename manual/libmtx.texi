@@ -16,7 +16,7 @@
 @c along with libmtx.  If not, see <https://www.gnu.org/licenses/>.
 @c
 @c Authors: James D. Trotter <james@simula.no>
-@c Last modified: 2022-01-06
+@c Last modified: 2022-01-14
 @c
 @c libmtx User Guide.
 
@@ -73,7 +73,6 @@ Texts.  A copy of the license is included in the section entitled
 * Copying:: Copying Conditions (GPLv3).
 * Introduction to libmtx:: Brief introduction to libmtx.
 * Installing libmtx:: How to configure and compile libmtx.
-* Reporting Bugs:: How to usefully report bugs.
 * Matrix Market file format:: Description of the Matrix Market format.
 * Matrix Market files:: Working with Matrix Market files.
 * Matrices and vectors:: Working with matrices and vectors.
@@ -111,7 +110,6 @@ along with libmtx.  If not, see <https://www.gnu.org/licenses/>.
 
 @include introduction.texi
 @include installing.texi
-@include reporting_bugs.texi
 @include matrix_market_file_format.texi
 @include matrix_market_files.texi
 @include matrices_and_vectors.texi

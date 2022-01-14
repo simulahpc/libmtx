@@ -272,9 +272,9 @@ given header line, comment lines, size line and precision, use
 
 @code{partition} must be a partitioning of a finite set whose size
 equals the number of data lines in the underlying Matrix Market file
-(i.e., @code{size->num_nonzeros} if @code{header->format} is
-@samp{mtxfile_coordinate}, or @code{size->num_rows*size->num_columns}
-or @code{size->num_rows} if @code{header->format} is
+(i.e., @samp{size->num_nonzeros} if @code{header->format} is
+@samp{mtxfile_coordinate}, or @samp{size->num_rows*size->num_columns}
+or @samp{size->num_rows} if @code{header->format} is
 @samp{mtxfile_array} and @code{header->object} is
 @samp{mtxfile_matrix} or @samp{mtxfile_vector}, respectively). Also,
 the number of parts in the partition is at most the number of MPI

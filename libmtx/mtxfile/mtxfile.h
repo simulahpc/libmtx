@@ -31,7 +31,6 @@
 #include <libmtx/mtxfile/data.h>
 #include <libmtx/mtxfile/header.h>
 #include <libmtx/mtxfile/size.h>
-#include <libmtx/util/partition.h>
 
 #ifdef LIBMTX_HAVE_MPI
 #include <mpi.h>
@@ -47,6 +46,7 @@
 #include <stdio.h>
 
 struct mtxdisterror;
+struct mtxpartition;
 
 /**
  * ‘mtxfile’ represents a file in the Matrix Market file format.

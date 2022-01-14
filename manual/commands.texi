@@ -23,15 +23,17 @@
 @node Commands
 @chapter Commands
 
-This section contains a list of command-line programs provided by
-libmtx for working with Matrix Market files.
+This chapter decribes a collection of command-line programs that are
+provided by libmtx for working with Matrix Market files.
 
 @table @command
-
+@cindex vector addition
 @pindex mtxaxpy
 @item mtxaxpy
 adds two vectors.
 
+@cindex dot product
+@cindex Euclidean inner product
 @pindex mtxdot
 @item mtxdot
 computes the dot product of two vectors.
@@ -51,16 +53,19 @@ multiplies a general, unsymmetric matrix by a vector.
 reads a Matrix Market file, validates the contents and displays some
 high-level information about the Matrix Market object.
 
+@cindex Euclidean norm
 @pindex mtxnrm2
 @item mtxnrm2
 computes the Euclidean norm of a vector.
 
+@cindex reorder
 @pindex mtxreorder
 @item mtxreorder
 reorders the nonzeros of a sparse matrix, for example, using the
 Reverse Cuthill-McKee (RCM) ordering (@pxref{E. Cuthill and J. McKee
 (1969)}).
 
+@cindex vector scaling
 @pindex mtxscal
 @item mtxscal
 scales a vector by a scalar.
@@ -70,11 +75,13 @@ scales a vector by a scalar.
 distributes a Matrix Market file among MPI processes and stores the
 resulting distributed Matrix Market file for each process.
 
+@cindex sort
 @pindex mtxsort
 @item mtxsort
 sorts the entries of a dense or sparse matrix, for example, in row- or
 column-major order.
 
+@cindex sparsity pattern
 @pindex mtxspy
 @item mtxspy
 draws an image of a matrix sparsity pattern and writes it to a PNG
@@ -102,21 +109,22 @@ sections.
 
 @node @command{mtxaxpy}
 @section @command{mtxaxpy}
+@cindex vector addition
 @pindex mtxaxpy
-
 The command @command{mtxaxpy} is used to add two vectors. The result
 is written to standard output in the form of a Matrix Market file
 representing the result vector. More specifically, the calculation
 carried out is @samp{@var{y} := @var{alpha}*@var{x} + @var{y}}.
 
 @example
-@code{mtxaxpy [OPTION..] @var{alpha} @var{x} [@var{y}]}
+@code{mtxaxpy [OPTION..] [@var{alpha}] @var{x} [@var{y}]}
 @end example
 
 The positional arguments are:
 @table @option
 @item @var{alpha}
-The scalar floating-point value @option{@var{alpha}}.
+The scalar floating-point value @option{@var{alpha}}. If this argument
+is omitted, then @option{@var{alpha}} defaults to @samp{1.0}.
 
 @item @var{x}
 Path to a Matrix Market file containing the vector
@@ -576,7 +584,7 @@ Print diagnostics to standard error.
 @node @command{mtxspy}
 @section @command{mtxspy}
 @pindex mtxspy
-
+@cindex libpng
 The command @command{mtxspy} draws an image of the sparsity pattern of
 a matrix, saving it to a PNG file.  This command is only available if
 libmtx is compiled with libpng support.

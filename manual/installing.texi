@@ -1,22 +1,21 @@
 @c This file is part of libmtx.
-@c Copyright (C) 2021 James D. Trotter
+@c Copyright (C) 2022 James D. Trotter
 @c
-@c libmtx is free software: you can redistribute it and/or
-@c modify it under the terms of the GNU General Public License as
-@c published by the Free Software Foundation, either version 3 of the
-@c License, or (at your option) any later version.
+@c libmtx is free software: you can redistribute it and/or modify it
+@c under the terms of the GNU General Public License as published by
+@c the Free Software Foundation, either version 3 of the License, or
+@c (at your option) any later version.
 @c
-@c libmtx is distributed in the hope that it will be useful,
-@c but WITHOUT ANY WARRANTY; without even the implied warranty of
+@c libmtx is distributed in the hope that it will be useful, but
+@c WITHOUT ANY WARRANTY; without even the implied warranty of
 @c MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 @c General Public License for more details.
 @c
 @c You should have received a copy of the GNU General Public License
-@c along with libmtx.  If not, see
-@c <https://www.gnu.org/licenses/>.
+@c along with libmtx.  If not, see <https://www.gnu.org/licenses/>.
 @c
 @c Authors: James D. Trotter <james@simula.no>
-@c Last modified: 2021-08-06
+@c Last modified: 2022-01-14
 @c
 @c libmtx User Guide: Installing libmtx.
 
@@ -24,8 +23,8 @@
 @chapter Installing libmtx
 
 @cindex installing
-libmtx uses GNU Autotools, which means that a basic build on
-a UNIX-like system can be done by running the commands
+libmtx uses GNU Autotools, which means that a basic build on a
+UNIX-like system can be done by running the commands
 @example
 @code{./configure
 make}
@@ -40,31 +39,70 @@ Finally, install the programs and library with
 @end example
 
 If you experience problems, please report them to
-@email{james@@simula.no}. See @ref{Reporting Bugs} for information on
+@email{james@@simula.no}. See @ref{Reporting bugs} for information on
 what to include in a bug report.
+
+@menu
+* Optional dependencies:: Other software that may be used by libmtx.
+* Reporting bugs:: How to usefully report bugs.
+@end menu
 
 @node Optional dependencies
 @section Optional dependencies
 
-@cindex MPI
-@cindex BLAS
-@cindex zlib
-@cindex libpng
 Some features of libmtx are optional and will only be available if
 some of the following dependencies are provided:
 @itemize
+@cindex MPI
 @item @emph{MPI}
 is needed for distributed-memory parallel matrices and vectors.
 
+@cindex BLAS
 @item @emph{BLAS}
 is needed for various linear algebra operations. Different
 implementations may be used, such as the netlib reference BLAS,
 OpenBLAS, BLIS, and so on.
 
+@cindex zlib
 @item @emph{zlib} (@indicateurl{https://www.zlib.net/})
 is needed for reading and writing gzip-compressed Matrix Market files.
 
+@cindex libpng
 @item @emph{libpng} (@indicateurl{http://www.libpng.org/pub/png/libpng.html})
 is needed for writing PNG images of matrix sparsity patterns.
-
 @end itemize
+
+
+@node Reporting bugs
+@section Reporting bugs
+
+@cindex bug reporting
+@cindex problems
+@cindex reporting bugs
+
+To report bugs, suggest enhancements or otherwise discuss
+libmtx, please send electronic mail to
+@email{james@@simula.no}.
+
+@cindex checklist for bug reports
+For bug reports, please include enough information for the maintainers
+to reproduce the problem.  Generally speaking, that means:
+
+@itemize @bullet
+@item The version numbers of libmtx (which you can find by running
+      @w{@samp{mtxinfo --version}}) and any other program(s) or
+      manual(s) involved.
+@item Hardware and operating system names and versions.
+@item The contents of any input files necessary to reproduce the bug.
+@item The expected behavior and/or output.
+@item A description of the problem and samples of any erroneous output.
+@item Options you gave to @command{configure} other than specifying
+      installation directories.
+@item Anything else that you think would be helpful.
+@end itemize
+
+When in doubt whether something is needed or not, include it. It's
+better to include too much than to leave out something important.
+
+@c @cindex patches, contributing
+@c Patches are welcome. Please follow the existing coding style.
