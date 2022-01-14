@@ -112,16 +112,22 @@ int mtxdistvector_alloc_array(
     struct mtxdistvector * distvector,
     enum mtxfield field,
     enum mtxprecision precision,
-    int size,
+    int num_rows,
+    const struct mtxpartition * partition,
     MPI_Comm comm,
     struct mtxdisterror * disterr)
 {
-    int err;
-    err = mtxdistvector_init_comm(distvector, comm, disterr);
-    if (err)
-        return err;
+    int err = mtxdistvector_init_comm(distvector, comm, disterr);
+    if (err) return err;
+    if (partition->num_parts > distvector->comm_size || partition->size != num_rows)
+        err = MTX_ERR_INCOMPATIBLE_PARTITION;
+    if (mtxdisterror_allreduce(disterr, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+    err = mtxpartition_copy(&distvector->partition, partition);
+    if (mtxdisterror_allreduce(disterr, err))
+        return MTX_ERR_MPI_COLLECTIVE;
     err = mtxvector_alloc_array(
-        &distvector->interior, field, precision, size);
+        &distvector->interior, field, precision, num_rows);
     if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
     return MTX_SUCCESS;
@@ -134,19 +140,23 @@ int mtxdistvector_alloc_array(
  */
 int mtxdistvector_init_array_real_single(
     struct mtxdistvector * distvector,
-    int size,
+    int num_rows,
     const float * data,
+    const struct mtxpartition * partition,
     MPI_Comm comm,
     struct mtxdisterror * disterr)
 {
-    int err;
-    err = mtxdistvector_init_comm(distvector, comm, disterr);
-    if (err)
-        return err;
+    int err = mtxdistvector_init_comm(distvector, comm, disterr);
+    if (err) return err;
+    if (partition->num_parts > distvector->comm_size || partition->size != num_rows)
+        err = MTX_ERR_INCOMPATIBLE_PARTITION;
+    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+    err = mtxpartition_copy(&distvector->partition, partition);
+    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+    int64_t local_size = partition->part_sizes[distvector->rank];
     err = mtxvector_init_array_real_single(
-        &distvector->interior, size, data);
-    if (mtxdisterror_allreduce(disterr, err))
-        return MTX_ERR_MPI_COLLECTIVE;
+        &distvector->interior, local_size, data);
+    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     return MTX_SUCCESS;
 }
 
@@ -157,19 +167,23 @@ int mtxdistvector_init_array_real_single(
  */
 int mtxdistvector_init_array_real_double(
     struct mtxdistvector * distvector,
-    int size,
+    int num_rows,
     const double * data,
+    const struct mtxpartition * partition,
     MPI_Comm comm,
     struct mtxdisterror * disterr)
 {
-    int err;
-    err = mtxdistvector_init_comm(distvector, comm, disterr);
-    if (err)
-        return err;
+    int err = mtxdistvector_init_comm(distvector, comm, disterr);
+    if (err) return err;
+    if (partition->num_parts > distvector->comm_size || partition->size != num_rows)
+        err = MTX_ERR_INCOMPATIBLE_PARTITION;
+    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+    err = mtxpartition_copy(&distvector->partition, partition);
+    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+    int64_t local_size = partition->part_sizes[distvector->rank];
     err = mtxvector_init_array_real_double(
-        &distvector->interior, size, data);
-    if (mtxdisterror_allreduce(disterr, err))
-        return MTX_ERR_MPI_COLLECTIVE;
+        &distvector->interior, local_size, data);
+    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     return MTX_SUCCESS;
 }
 
@@ -180,19 +194,23 @@ int mtxdistvector_init_array_real_double(
  */
 int mtxdistvector_init_array_complex_single(
     struct mtxdistvector * distvector,
-    int size,
+    int num_rows,
     const float (* data)[2],
+    const struct mtxpartition * partition,
     MPI_Comm comm,
     struct mtxdisterror * disterr)
 {
-    int err;
-    err = mtxdistvector_init_comm(distvector, comm, disterr);
-    if (err)
-        return err;
+    int err = mtxdistvector_init_comm(distvector, comm, disterr);
+    if (err) return err;
+    if (partition->num_parts > distvector->comm_size || partition->size != num_rows)
+        err = MTX_ERR_INCOMPATIBLE_PARTITION;
+    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+    err = mtxpartition_copy(&distvector->partition, partition);
+    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+    int64_t local_size = partition->part_sizes[distvector->rank];
     err = mtxvector_init_array_complex_single(
-        &distvector->interior, size, data);
-    if (mtxdisterror_allreduce(disterr, err))
-        return MTX_ERR_MPI_COLLECTIVE;
+        &distvector->interior, local_size, data);
+    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     return MTX_SUCCESS;
 }
 
@@ -203,19 +221,23 @@ int mtxdistvector_init_array_complex_single(
  */
 int mtxdistvector_init_array_complex_double(
     struct mtxdistvector * distvector,
-    int size,
+    int num_rows,
     const double (* data)[2],
+    const struct mtxpartition * partition,
     MPI_Comm comm,
     struct mtxdisterror * disterr)
 {
-    int err;
-    err = mtxdistvector_init_comm(distvector, comm, disterr);
-    if (err)
-        return err;
+    int err = mtxdistvector_init_comm(distvector, comm, disterr);
+    if (err) return err;
+    if (partition->num_parts > distvector->comm_size || partition->size != num_rows)
+        err = MTX_ERR_INCOMPATIBLE_PARTITION;
+    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+    err = mtxpartition_copy(&distvector->partition, partition);
+    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+    int64_t local_size = partition->part_sizes[distvector->rank];
     err = mtxvector_init_array_complex_double(
-        &distvector->interior, size, data);
-    if (mtxdisterror_allreduce(disterr, err))
-        return MTX_ERR_MPI_COLLECTIVE;
+        &distvector->interior, local_size, data);
+    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     return MTX_SUCCESS;
 }
 
@@ -226,19 +248,23 @@ int mtxdistvector_init_array_complex_double(
  */
 int mtxdistvector_init_array_integer_single(
     struct mtxdistvector * distvector,
-    int size,
+    int num_rows,
     const int32_t * data,
+    const struct mtxpartition * partition,
     MPI_Comm comm,
     struct mtxdisterror * disterr)
 {
-    int err;
-    err = mtxdistvector_init_comm(distvector, comm, disterr);
-    if (err)
-        return err;
+    int err = mtxdistvector_init_comm(distvector, comm, disterr);
+    if (err) return err;
+    if (partition->num_parts > distvector->comm_size || partition->size != num_rows)
+        err = MTX_ERR_INCOMPATIBLE_PARTITION;
+    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+    err = mtxpartition_copy(&distvector->partition, partition);
+    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+    int64_t local_size = partition->part_sizes[distvector->rank];
     err = mtxvector_init_array_integer_single(
-        &distvector->interior, size, data);
-    if (mtxdisterror_allreduce(disterr, err))
-        return MTX_ERR_MPI_COLLECTIVE;
+        &distvector->interior, local_size, data);
+    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     return MTX_SUCCESS;
 }
 
@@ -249,19 +275,23 @@ int mtxdistvector_init_array_integer_single(
  */
 int mtxdistvector_init_array_integer_double(
     struct mtxdistvector * distvector,
-    int size,
+    int num_rows,
     const int64_t * data,
+    const struct mtxpartition * partition,
     MPI_Comm comm,
     struct mtxdisterror * disterr)
 {
-    int err;
-    err = mtxdistvector_init_comm(distvector, comm, disterr);
-    if (err)
-        return err;
+    int err = mtxdistvector_init_comm(distvector, comm, disterr);
+    if (err) return err;
+    if (partition->num_parts > distvector->comm_size || partition->size != num_rows)
+        err = MTX_ERR_INCOMPATIBLE_PARTITION;
+    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+    err = mtxpartition_copy(&distvector->partition, partition);
+    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+    int64_t local_size = partition->part_sizes[distvector->rank];
     err = mtxvector_init_array_integer_double(
-        &distvector->interior, size, data);
-    if (mtxdisterror_allreduce(disterr, err))
-        return MTX_ERR_MPI_COLLECTIVE;
+        &distvector->interior, local_size, data);
+    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     return MTX_SUCCESS;
 }
 
@@ -277,7 +307,7 @@ int mtxdistvector_alloc_coordinate(
     struct mtxdistvector * distvector,
     enum mtxfield field,
     enum mtxprecision precision,
-    int size,
+    int num_rows,
     int64_t num_nonzeros,
     MPI_Comm comm,
     struct mtxdisterror * disterr)
@@ -287,7 +317,7 @@ int mtxdistvector_alloc_coordinate(
     if (err)
         return err;
     err = mtxvector_alloc_coordinate(
-        &distvector->interior, field, precision, size, num_nonzeros);
+        &distvector->interior, field, precision, num_rows, num_nonzeros);
     if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
     return MTX_SUCCESS;
@@ -300,7 +330,7 @@ int mtxdistvector_alloc_coordinate(
  */
 int mtxdistvector_init_coordinate_real_single(
     struct mtxdistvector * distvector,
-    int size,
+    int num_rows,
     int64_t num_nonzeros,
     const int * indices,
     const float * data,
@@ -312,7 +342,7 @@ int mtxdistvector_init_coordinate_real_single(
     if (err)
         return err;
     err = mtxvector_init_coordinate_real_single(
-        &distvector->interior, size, num_nonzeros, indices, data);
+        &distvector->interior, num_rows, num_nonzeros, indices, data);
     if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
     return MTX_SUCCESS;
@@ -325,7 +355,7 @@ int mtxdistvector_init_coordinate_real_single(
  */
 int mtxdistvector_init_coordinate_real_double(
     struct mtxdistvector * distvector,
-    int size,
+    int num_rows,
     int64_t num_nonzeros,
     const int * indices,
     const double * data,
@@ -337,7 +367,7 @@ int mtxdistvector_init_coordinate_real_double(
     if (err)
         return err;
     err = mtxvector_init_coordinate_real_double(
-        &distvector->interior, size, num_nonzeros, indices, data);
+        &distvector->interior, num_rows, num_nonzeros, indices, data);
     if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
     return MTX_SUCCESS;
@@ -350,7 +380,7 @@ int mtxdistvector_init_coordinate_real_double(
  */
 int mtxdistvector_init_coordinate_complex_single(
     struct mtxdistvector * distvector,
-    int size,
+    int num_rows,
     int64_t num_nonzeros,
     const int * indices,
     const float (* data)[2],
@@ -362,7 +392,7 @@ int mtxdistvector_init_coordinate_complex_single(
     if (err)
         return err;
     err = mtxvector_init_coordinate_complex_single(
-        &distvector->interior, size, num_nonzeros, indices, data);
+        &distvector->interior, num_rows, num_nonzeros, indices, data);
     if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
     return MTX_SUCCESS;
@@ -375,7 +405,7 @@ int mtxdistvector_init_coordinate_complex_single(
  */
 int mtxdistvector_init_coordinate_complex_double(
     struct mtxdistvector * distvector,
-    int size,
+    int num_rows,
     int64_t num_nonzeros,
     const int * indices,
     const double (* data)[2],
@@ -387,7 +417,7 @@ int mtxdistvector_init_coordinate_complex_double(
     if (err)
         return err;
     err = mtxvector_init_coordinate_complex_double(
-        &distvector->interior, size, num_nonzeros, indices, data);
+        &distvector->interior, num_rows, num_nonzeros, indices, data);
     if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
     return MTX_SUCCESS;
@@ -400,7 +430,7 @@ int mtxdistvector_init_coordinate_complex_double(
  */
 int mtxdistvector_init_coordinate_integer_single(
     struct mtxdistvector * distvector,
-    int size,
+    int num_rows,
     int64_t num_nonzeros,
     const int * indices,
     const int32_t * data,
@@ -412,7 +442,7 @@ int mtxdistvector_init_coordinate_integer_single(
     if (err)
         return err;
     err = mtxvector_init_coordinate_integer_single(
-        &distvector->interior, size, num_nonzeros, indices, data);
+        &distvector->interior, num_rows, num_nonzeros, indices, data);
     if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
     return MTX_SUCCESS;
@@ -425,7 +455,7 @@ int mtxdistvector_init_coordinate_integer_single(
  */
 int mtxdistvector_init_coordinate_integer_double(
     struct mtxdistvector * distvector,
-    int size,
+    int num_rows,
     int64_t num_nonzeros,
     const int * indices,
     const int64_t * data,
@@ -437,7 +467,7 @@ int mtxdistvector_init_coordinate_integer_double(
     if (err)
         return err;
     err = mtxvector_init_coordinate_integer_double(
-        &distvector->interior, size, num_nonzeros, indices, data);
+        &distvector->interior, num_rows, num_nonzeros, indices, data);
     if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
     return MTX_SUCCESS;
@@ -450,7 +480,7 @@ int mtxdistvector_init_coordinate_integer_double(
  */
 int mtxdistvector_init_coordinate_pattern(
     struct mtxdistvector * distvector,
-    int size,
+    int num_rows,
     int64_t num_nonzeros,
     const int * indices,
     MPI_Comm comm,
@@ -461,7 +491,7 @@ int mtxdistvector_init_coordinate_pattern(
     if (err)
         return err;
     err = mtxvector_init_coordinate_pattern(
-        &distvector->interior, size, num_nonzeros, indices);
+        &distvector->interior, num_rows, num_nonzeros, indices);
     if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
     return MTX_SUCCESS;

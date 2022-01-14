@@ -125,7 +125,8 @@ int mtxdistvector_alloc_array(
     struct mtxdistvector * distvector,
     enum mtxfield field,
     enum mtxprecision precision,
-    int size,
+    int num_rows,
+    const struct mtxpartition * partition,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
@@ -136,8 +137,9 @@ int mtxdistvector_alloc_array(
  */
 int mtxdistvector_init_array_real_single(
     struct mtxdistvector * distvector,
-    int size,
+    int num_rows,
     const float * data,
+    const struct mtxpartition * partition,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
@@ -148,8 +150,9 @@ int mtxdistvector_init_array_real_single(
  */
 int mtxdistvector_init_array_real_double(
     struct mtxdistvector * distvector,
-    int size,
+    int num_rows,
     const double * data,
+    const struct mtxpartition * partition,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
@@ -160,8 +163,9 @@ int mtxdistvector_init_array_real_double(
  */
 int mtxdistvector_init_array_complex_single(
     struct mtxdistvector * distvector,
-    int size,
+    int num_rows,
     const float (* data)[2],
+    const struct mtxpartition * partition,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
@@ -172,8 +176,9 @@ int mtxdistvector_init_array_complex_single(
  */
 int mtxdistvector_init_array_complex_double(
     struct mtxdistvector * distvector,
-    int size,
+    int num_rows,
     const double (* data)[2],
+    const struct mtxpartition * partition,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
@@ -184,8 +189,9 @@ int mtxdistvector_init_array_complex_double(
  */
 int mtxdistvector_init_array_integer_single(
     struct mtxdistvector * distvector,
-    int size,
+    int num_rows,
     const int32_t * data,
+    const struct mtxpartition * partition,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
@@ -196,8 +202,9 @@ int mtxdistvector_init_array_integer_single(
  */
 int mtxdistvector_init_array_integer_double(
     struct mtxdistvector * distvector,
-    int size,
+    int num_rows,
     const int64_t * data,
+    const struct mtxpartition * partition,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
@@ -213,7 +220,7 @@ int mtxdistvector_alloc_coordinate(
     struct mtxdistvector * distvector,
     enum mtxfield field,
     enum mtxprecision precision,
-    int size,
+    int num_rows,
     int64_t num_nonzeros,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
@@ -225,7 +232,7 @@ int mtxdistvector_alloc_coordinate(
  */
 int mtxdistvector_init_coordinate_real_single(
     struct mtxdistvector * distvector,
-    int size,
+    int num_rows,
     int64_t num_nonzeros,
     const int * indices,
     const float * data,
@@ -239,7 +246,7 @@ int mtxdistvector_init_coordinate_real_single(
  */
 int mtxdistvector_init_coordinate_real_double(
     struct mtxdistvector * distvector,
-    int size,
+    int num_rows,
     int64_t num_nonzeros,
     const int * indices,
     const double * data,
@@ -253,7 +260,7 @@ int mtxdistvector_init_coordinate_real_double(
  */
 int mtxdistvector_init_coordinate_complex_single(
     struct mtxdistvector * distvector,
-    int size,
+    int num_rows,
     int64_t num_nonzeros,
     const int * indices,
     const float (* data)[2],
@@ -267,7 +274,7 @@ int mtxdistvector_init_coordinate_complex_single(
  */
 int mtxdistvector_init_coordinate_complex_double(
     struct mtxdistvector * distvector,
-    int size,
+    int num_rows,
     int64_t num_nonzeros,
     const int * indices,
     const double (* data)[2],
@@ -281,7 +288,7 @@ int mtxdistvector_init_coordinate_complex_double(
  */
 int mtxdistvector_init_coordinate_integer_single(
     struct mtxdistvector * distvector,
-    int size,
+    int num_rows,
     int64_t num_nonzeros,
     const int * indices,
     const int32_t * data,
@@ -295,7 +302,7 @@ int mtxdistvector_init_coordinate_integer_single(
  */
 int mtxdistvector_init_coordinate_integer_double(
     struct mtxdistvector * distvector,
-    int size,
+    int num_rows,
     int64_t num_nonzeros,
     const int * indices,
     const int64_t * data,
@@ -309,7 +316,7 @@ int mtxdistvector_init_coordinate_integer_double(
  */
 int mtxdistvector_init_coordinate_pattern(
     struct mtxdistvector * distvector,
-    int size,
+    int num_rows,
     int64_t num_nonzeros,
     const int * indices,
     MPI_Comm comm,

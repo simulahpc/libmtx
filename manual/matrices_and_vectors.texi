@@ -160,7 +160,7 @@ format, use @code{mtxvector_init_array_complex_double}.
     const double (* data)[2]);}
 @end example
 The vector entries are provided by the array @code{data}, which must
-contain @code{num_rows*num_columns} values.
+contain @code{num_rows} values.
 
 @findex mtxvector_init_coordinate_complex_double
 To create a double precision, complex vector in coordinate format, use
@@ -696,7 +696,7 @@ storage is accessed through the appropriate member of the
 @code{storage} union in the @code{mtxmatrix} struct.
 
 
-@node Matrices - converting to and from Matrix Market format
+@node Converting matrices to and from Matrix Market format
 @subsection Converting to and from Matrix Market format
 In many cases, a matrix may already be available in Matrix Market
 format. However, for reasons involving both performance and

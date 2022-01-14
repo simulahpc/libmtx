@@ -316,6 +316,7 @@ matrices and vectors in array format.
     enum mtxfilesymmetry symmetry,
     enum mtxprecision precision,
     int num_rows, int num_columns,
+    const struct mtxpartition * partition,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
@@ -324,6 +325,7 @@ int mtxdistfile_alloc_vector_array(
     enum mtxfilefield field,
     enum mtxprecision precision,
     int num_rows,
+    const struct mtxpartition * partition,
     MPI_Comm comm,
     struct mtxdisterror * disterr);}
 @end example
@@ -342,20 +344,7 @@ The above functions allocate storage, but they do not initialise the
 underlying matrix or vector values. It is therefore up to the user to
 initialise these values.
 
-@findex mtxdistfile_init_matrix_array_real_single
-@findex mtxdistfile_init_matrix_array_real_double
-@findex mtxdistfile_init_matrix_array_complex_single
-@findex mtxdistfile_init_matrix_array_complex_double
-@findex mtxdistfile_init_matrix_array_integer_single
-@findex mtxdistfile_init_matrix_array_integer_double
-@findex mtxdistfile_init_matrix_array_pattern
-@findex mtxdistfile_init_vector_array_real_single
-@findex mtxdistfile_init_vector_array_real_double
-@findex mtxdistfile_init_vector_array_complex_single
-@findex mtxdistfile_init_vector_array_complex_double
-@findex mtxdistfile_init_vector_array_integer_single
-@findex mtxdistfile_init_vector_array_integer_double
-@findex mtxdistfile_init_vector_array_pattern
+@findex mtxdistfile_init_@var{object}_array_@var{field}_@var{precision}
 If the matrix or vector values are already known, then the functions
 @code{mtxdistfile_init_@var{object}_array_@var{field}_@var{precision}}
 can be used to allocate storage and initialise values. Here
@@ -372,6 +361,7 @@ shown below.
     enum mtxfilesymmetry symmetry,
     int num_rows, int num_columns,
     const float * data,
+    const struct mtxpartition * partition,
     MPI_Comm comm,
     struct mtxdisterror * disterr);}
 @end example
@@ -382,6 +372,7 @@ The corresponding function for a vector is
     struct mtxdistfile * mtxdistfile,
     int num_rows,
     const float * data,
+    const struct mtxpartition * partition,
     MPI_Comm comm,
     struct mtxdisterror * disterr);}
 @end example
@@ -402,6 +393,7 @@ distributed matrices and vectors in coordinate format.
     enum mtxfilesymmetry symmetry,
     enum mtxprecision precision,
     int num_rows, int num_columns, int64_t num_nonzeros,
+    const struct mtxpartition * partition,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
@@ -410,6 +402,7 @@ int mtxdistfile_alloc_vector_coordinate(
     enum mtxfilefield field,
     enum mtxprecision precision,
     int num_rows, int64_t num_nonzeros,
+    const struct mtxpartition * partition,
     MPI_Comm comm,
     struct mtxdisterror * disterr);}
 @end example
@@ -424,20 +417,7 @@ matrix or vector entries that will reside on the current process. The
 total number of matrix or vector entries in the distributed matrix is
 obtained by adding together the number of entries on each process.
 
-@findex mtxdistfile_init_matrix_coordinate_real_single
-@findex mtxdistfile_init_matrix_coordinate_real_double
-@findex mtxdistfile_init_matrix_coordinate_complex_single
-@findex mtxdistfile_init_matrix_coordinate_complex_double
-@findex mtxdistfile_init_matrix_coordinate_integer_single
-@findex mtxdistfile_init_matrix_coordinate_integer_double
-@findex mtxdistfile_init_matrix_coordinate_pattern
-@findex mtxdistfile_init_vector_coordinate_real_single
-@findex mtxdistfile_init_vector_coordinate_real_double
-@findex mtxdistfile_init_vector_coordinate_complex_single
-@findex mtxdistfile_init_vector_coordinate_complex_double
-@findex mtxdistfile_init_vector_coordinate_integer_single
-@findex mtxdistfile_init_vector_coordinate_integer_double
-@findex mtxdistfile_init_vector_coordinate_pattern
+@findex mtxdistfile_init_@var{object}_coordinate_@var{field}_@var{precision}
 The above functions allocate storage, but they do not initialise the
 underlying matrix or vector values. It is therefore up to the user to
 initialise these values. Alternatively, if the matrix or vector values
@@ -458,6 +438,7 @@ used, as shown below.
     enum mtxfilesymmetry symmetry,
     int num_rows, int num_columns, int64_t num_nonzeros,
     const struct mtxfile_matrix_coordinate_real_single * data,
+    const struct mtxpartition * partition,
     MPI_Comm comm,
     struct mtxdisterror * disterr);}
 @end example
@@ -468,6 +449,7 @@ In the case of a vector, the corresponding function is
     struct mtxdistfile * mtxdistfile,
     int num_rows, int64_t num_nonzeros,
     const struct mtxfile_vector_coordinate_real_single * data,
+    const struct mtxpartition * partition,
     MPI_Comm comm,
     struct mtxdisterror * disterr);}
 @end example
@@ -475,12 +457,7 @@ In the case of a vector, the corresponding function is
 
 @node Setting matrix or vector values for distributed Matrix Market files
 @subsection Setting matrix or vector values
-@findex mtxdistfile_set_constant_real_single
-@findex mtxdistfile_set_constant_real_double
-@findex mtxdistfile_set_constant_complex_single
-@findex mtxdistfile_set_constant_complex_double
-@findex mtxdistfile_set_constant_integer_single
-@findex mtxdistfile_set_constant_integer_double
+@findex mtxdistfile_set_constant_@var{field}_@var{precision}
 For convenience, the functions
 @code{mtxdistfile_set_constant_@var{field}_@var{precision}} are
 provided to initialise every value of a distributed matrix or vector

@@ -66,6 +66,209 @@ The final struct member, @code{interior}, stores the part of the
 distributed vector that resides on the current process.
 
 
+@node Creating distributed vectors
+@subsection Creating distributed vectors
+@cindex free
+@findex mtxdistvector_free
+This section describes how to create distributed vectors. But first,
+the function @code{mtxdistvector_free} is used to free storage allocated
+for a distributed vector.
+@example
+@code{void mtxdistvector_free(struct mtxdistvector * distvector);}
+@end example
+
+@cindex copy
+@findex mtxdistvector_init_copy
+To create a copy of an existing distributed vector, use the function
+@code{mtxdistvector_init_copy}.
+@example
+@code{int mtxdistvector_init_copy(
+    struct mtxdistvector * dst,
+    const struct mtxdistvector * src);}
+@end example
+
+@cindex copy
+@findex mtxdistvector_alloc_copy
+If storage for a copy of an existing distributed vector is needed, but
+the vector values should not be copied or initialised, use the
+function @code{mtxdistvector_alloc_copy}.
+@example
+@code{int mtxdistvector_alloc_copy(
+    struct mtxdistvector * dst,
+    const struct mtxdistvector * src);}
+@end example
+
+@cindex allocate
+@cindex array format
+@cindex coordinate format
+@findex mtxdistvector_alloc_array
+@findex mtxdistvector_alloc_coordinate
+To allocate storage for a distributed vector in @emph{array} or
+@emph{coordinate} format, the functions
+@code{mtxdistvector_alloc_array} or
+@code{mtxdistvector_alloc_coordinate} may be used.
+@example
+@code{int mtxdistvector_alloc_array(
+    struct mtxdistvector * vector,
+    enum mtxfield field,
+    enum mtxprecision precision,
+    int num_rows,
+    const struct mtxpartition * partition,
+    MPI_Comm comm,
+    struct mtxdisterror * disterr);
+
+int mtxdistvector_alloc_coordinate(
+    struct mtxdistvector * vector,
+    enum mtxfield field,
+    enum mtxprecision precision,
+    int num_rows,
+    int64_t num_nonzeros,
+    const struct mtxpartition * partition,
+    MPI_Comm comm,
+    struct mtxdisterror * disterr);}
+@end example
+In both cases, the desired field and precision must be specified, as
+well as the number of rows in the entire, global vector
+(@code{num_rows}). For a vector in coordinate format, it is also
+necessary to specify the number of nonzero vector elements
+(@code{num_nonzeros}) that will reside @emph{on the current process}.
+Note that the vector values are not initialised, and so it is up to
+the user to initialise them.
+
+@code{partition} must be a partitioning of the rows of the global
+vector, which means that @code{partition->size} must be equal to
+@samp{num_rows}. Also, the number of parts in the partition is at most
+the number of MPI processes in the communicator @code{comm}.
+
+@findex mtxdistvector_init_@var{type}_@var{field}_@var{precision}
+If the vector values are already known, then there are also functions
+for allocating a distributed vector and initialising the values
+directly. This is done by calling
+@code{mtxdistvector_init_@var{type}_@var{field}_@var{precision}},
+where @code{@var{type}}, @code{@var{field}} and @code{@var{precision}}
+denote the vector type (i.e., @samp{array} or @samp{coordinate}),
+field (i.e., @samp{real}, @samp{complex} or @samp{integer}) and
+precision (i.e., @samp{single} or @samp{double}).
+
+@findex mtxdistvector_init_array_complex_double
+For example, to create a double precision, complex vector in array
+format, use @code{mtxdistvector_init_array_complex_double}.
+@example
+@code{int mtxdistvector_init_array_complex_double(
+    struct mtxdistvector * distvector,
+    int num_rows,
+    const double (* data)[2],
+    const struct mtxpartition * partition,
+    MPI_Comm comm,
+    struct mtxdisterror * disterr);}
+@end example
+Each process provides its local vector entries in the array
+@code{data}. The length of the @code{data} array must be at least
+@samp{partition->part_sizes[rank]}, where @samp{rank} is the rank of
+the current process. (Note that if @samp{rank} is greater than or
+equal to @samp{partition->num_parts}, the @code{data} array is not
+accessed on that process and may be set to @samp{NULL}.)
+
+@findex mtxdistvector_init_coordinate_complex_double
+To create a double precision, complex vector in coordinate format, use
+@code{mtxdistvector_init_coordinate_complex_double}.
+@example
+@code{int mtxdistvector_init_coordinate_complex_double(
+    struct mtxdistvector * vector,
+    int num_rows,
+    int64_t num_nonzeros,
+    const int * idx,
+    const double (* values)[2],
+    const struct mtxpartition * partition,
+    MPI_Comm comm,
+    struct mtxdisterror * disterr);}
+@end example
+The arguments @code{idx} and @code{values} are arrays of length
+@code{num_nonzeros}. For each nonzero value
+@code{k=0,1,...,num_nonzeros-1}, @code{idx[k]} is an index in the
+range @samp{[0,N)}, where @samp{N} is the size of the part owned by
+the current process, (i.e., @samp{partition->part_sizes[rank]}, where
+@samp{rank} is the rank of the current process).
+
+Note that duplicate entries are allowed, but this may cause some
+operations (e.g., @code{mtxdistvector_dot}, @code{mtxdistvector_nrm2})) to
+produce incorrect results.
+
+
+@node Modifying values of distributed vectors
+@subsection Modifying values
+@findex mtxdistvector_set_constant_@var{field}_@var{precision}
+The functions
+@code{mtxdistvector_set_constant_@var{field}_@var{precision}} can be used
+to set every (nonzero) value of a vector equal to a constant scalar,
+where @code{@var{field}} and @code{@var{precision}} should match the
+field (i.e., @samp{real}, @samp{complex} or @samp{integer}) and
+precision (i.e., @samp{single} or @samp{double}) of @code{mtxdistvector}.
+@findex mtxdistvector_set_constant_real_single
+@findex mtxdistvector_set_constant_real_double
+@findex mtxdistvector_set_constant_complex_single
+@findex mtxdistvector_set_constant_complex_double
+@findex mtxdistvector_set_constant_integer_single
+@findex mtxdistvector_set_constant_integer_double
+@example
+@code{int mtxdistvector_set_constant_real_single(
+    struct mtxdistvector *, float a);
+int mtxdistvector_set_constant_real_double(
+    struct mtxdistvector *, double a);
+int mtxdistvector_set_constant_complex_single(
+    struct mtxdistvector *, float a[2]);
+int mtxdistvector_set_constant_complex_double(
+    struct mtxdistvector *, double a[2]);
+int mtxdistvector_set_constant_integer_single(
+    struct mtxdistvector *, int32_t a);
+int mtxdistvector_set_constant_integer_double(
+    struct mtxdistvector *, int64_t a);}
+@end example
+To access or modify individual vector elements, the underlying vector
+storage is accessed through the appropriate member of the
+@code{storage} union in the @code{mtxdistvector} struct.
+
+
+@node Converting distributed vectors to and from Matrix Market format
+@subsection Converting to and from Matrix Market format
+In many cases, a vector may already be available in Matrix Market
+format. However, for reasons involving both performance and
+convenience, it is often a good idea to convert the data from Matrix
+Market format to a more suitable representation before carrying out
+computations.
+
+@findex mtxdistvector_from_mtxfile
+To convert a vector in Matrix Market format to @code{struct
+mtxdistvector}, the function @code{mtxdistvector_from_mtxfile} can be used.
+@example
+@code{int mtxdistvector_from_mtxfile(
+    struct mtxdistvector * mtxdistvector,
+    const struct mtxfile * mtxfile,
+    enum mtxvectortype type);}
+@end example
+The user may use the @code{type} argument to specify a desired storage
+format or implementation for @code{mtxdistvector}. If @code{type} is
+@samp{mtxdistvector_auto}, then the type of @code{mtxdistvector} is chosen to
+match the type of @code{mtxfile}. That is, @samp{mtxdistvector_array} is
+used if @code{mtxfile} is a vector in array format, and
+@samp{mtxdistvector_coordinate} is used if @code{mtxfile} is a vector in
+coordinate format.
+
+@findex mtxdistvector_to_mtxfile
+Conversely, having peformed the necessary computations, it is
+sometimes useful to convert a vector back to Matrix Market format.
+For example, to make it easier to output the vector to a file. To
+convert @code{struct mtxdistvector} to a vector in Matrix Market format,
+the function @code{mtxdistvector_to_mtxfile} can be used.
+@example
+@code{int mtxdistvector_to_mtxfile(
+    const struct mtxdistvector * mtxdistvector,
+    struct mtxfile * mtxfile);}
+@end example
+The resulting Matrix Market file may be a vector in array or
+coordinate format, depending on the type of @code{mtxdistvector}.
+
+
 @node Halo exchange
 @subsection Halo exchange
 @cindex halo exchange
