@@ -153,7 +153,7 @@ int mtxpartition_init(
         return mtxpartition_init_block_cyclic(
             partition, size, num_parts, block_size);
     } else if (type == mtx_custom_partition) {
-        return mtxpartition_init_partition(
+        return mtxpartition_init_custom(
             partition, size, num_parts, parts);
     } else {
         return MTX_ERR_INVALID_PARTITION_TYPE;
@@ -359,10 +359,10 @@ int mtxpartition_init_block_cyclic(
 }
 
 /**
- * ‘mtxpartition_init_partition()’ initialises a user-defined
+ * ‘mtxpartition_init_custom()’ initialises a user-defined
  * partitioning of a finite set.
  */
-int mtxpartition_init_partition(
+int mtxpartition_init_custom(
     struct mtxpartition * partition,
     int64_t size,
     int num_parts,

@@ -15,7 +15,7 @@
 @c along with libmtx.  If not, see <https://www.gnu.org/licenses/>.
 @c
 @c Authors: James D. Trotter <james@simula.no>
-@c Last modified: 2022-01-07
+@c Last modified: 2022-01-14
 @c
 @c libmtx User Guide: Matrix Market files.
 
@@ -38,7 +38,7 @@ libmtx.
 * Data structures: Data structures for Matrix Market files. Basic data structures for representing objects in Matrix Market format.
 * Reading and writing Matrix Market files:: How to read from and write to files in Matrix Market format.
 * Creating Matrix Market files:: How to create matrices and vectors in Matrix Market format.
-* Transposing, sorting, partitioning and reordering: Other operations on Matrix Market files. How to transpose, sort, partition and reorder matrices and vectors.
+* Other operations on Matrix Market files:: How to transpose, sort, partition and reorder matrices and vectors.
 * Communicating Matrix Market files:: How to communicate Matrix Market files between processes.
 @end menu
 
@@ -845,10 +845,11 @@ int mtxfile_set_constant_integer_double(struct mtxfile *, int64_t a);}
 
 
 @node Other operations on Matrix Market files
-@section Transposing, sorting, partitioning and reordering
-This section describes operations related to transposing, sorting,
-permuting and partitioning matrices and vectors, as well as reordering
-the rows and columns of sparse matrices.
+@section Other operations on Matrix Market files
+This section describes various operations that may be performed on
+Matrix Market files, including transposing, sorting, permuting and
+partitioning matrices and vectors, as well as reordering the rows and
+columns of sparse matrices.
 
 @node Transpose
 @subsection Transpose
@@ -946,7 +947,7 @@ part, @var{P}@sub{@var{i}}. Furthermore, let @var{S}@sub{@var{i}}
 denote the number of elements that precede the @var{i}th part. In
 other words, @var{S}@sub{0} = 0, @var{S}@sub{1} = @var{N}@sub{0},
 @var{S}@sub{2} = @var{N}@sub{0} @math{+} @var{N}@sub{1}, and so
-on. The @var{i}th part, @var{P}@sub{@var{i}} is empty if
+on. The @var{i}th part, @var{P}@sub{@var{i}}, is empty if
 @var{N}@sub{@var{i}} is zero. Otherwise, it is made up of the elements
 @{@var{S}@sub{@var{i}}, @var{S}@sub{@var{i}} @math{+} 1, ...,
 @var{S}@sub{@var{i}} @math{+} @var{N}@sub{@var{i}} − 1@}.
@@ -983,35 +984,97 @@ P@sub{@var{i}}[@var{N}@sub{@var{i}}-1]}. Every element
 cover the entire set.
 @end itemize
 
-@tindex struct mtxpart
 @tindex struct mtxpartition
-The type @code{struct mtxpart}, is used to represent one part of a
-partition, and @code{struct mtxpartition} is used represent a
-collection of parts, forming a partition of a finite set based on one
-of the methods described above.
-@example
-@code{struct mtxpart @{
-    enum mtxpartitioning type;
-    int64_t size;
-    int num_parts;
-    int part;
-    int64_t part_size;
-    int64_t * elements;
-@};}
-@end example
-The @code{type} member describes the type of partitioning
-used. @code{size} and @code{num_parts} are the size of the partitioned
-set and the number of parts, respectively. @code{part} and
-@code{part_size} is the index of the current part and the number of
-elements in the current part.
-
+The type @code{struct mtxpartition} is used represent a partitioning
+of a finite set based on one of the methods described above.
 @example
 @code{struct mtxpartition @{
     enum mtxpartitioning type;
     int64_t size;
     int num_parts;
-    struct mtxpart * parts;
+    int64_t * part_sizes;
+    int64_t * parts_ptr;
+    int * parts;
+    int64_t * elements_per_part;
 @};}
+@end example
+The @code{type} member describes the type of partitioning
+used. @code{size} and @code{num_parts} are the size of the partitioned
+set and the number of parts, respectively. @code{part_sizes} is an
+array of length @code{num_parts}, which specifies the number of
+elements in each part of the partition.  @code{parts_ptr} is an array
+of length @samp{num_parts+1}, such that, if the elements of the
+partition are ordered by their assigned parts, then
+@code{parts_ptr[p]} is an offset to the first element of the
+@code{p}th part.
+
+The pointers @code{parts} and @code{elements_per_part} are both
+@samp{NULL}, unless @code{type} is
+@samp{mtx_custom_partition}. However, if @code{type} is
+@samp{mtx_custom_partition}, then @code{parts} and
+@code{elements_per_part} point to arrays of length @code{size}. The
+former contains the part number assigned to each element in the
+partitioned set, whereas the latter specifies the elements belonging
+to each part. That is, the elements belonging to the @code{p}th part
+are given by @code{elements_per_part[i]}, for @code{i} in
+@code{parts_ptr[p], parts_ptr[p]+1, ..., parts_ptr[p+1]-1}.
+
+@findex mtxpartition_init_singleton
+@findex mtxpartition_init_block
+@findex mtxpartition_init_block_cyclic
+@findex mtxpartition_init_cyclic
+@findex mtxpartition_init_custom
+Several functions are provided to create partitions corresponding to
+the different types described above.
+@example
+@code{int mtxpartition_init_singleton(
+    struct mtxpartition * partition,
+    int64_t size);
+
+int mtxpartition_init_block(
+    struct mtxpartition * partition,
+    int64_t size,
+    int num_parts,
+    const int64_t * part_sizes);
+
+int mtxpartition_init_cyclic(
+    struct mtxpartition * partition,
+    int64_t size,
+    int num_parts);
+
+int mtxpartition_init_block_cyclic(
+    struct mtxpartition * partition,
+    int64_t size,
+    int num_parts,
+    int block_size);
+
+int mtxpartition_init_custom(
+    struct mtxpartition * partition,
+    int64_t size,
+    int num_parts,
+    const int * parts);}
+@end example
+@findex mtxpartition_init
+For convenience, the function @code{mtxpartition_init} is also
+provided to create a partition when the type is given by @code{enum
+mtxpartitioning}.
+@example
+@code{int mtxpartition_init(
+    struct mtxpartition * partition,
+    enum mtxpartitioning type,
+    int64_t size,
+    int num_parts,
+    const int64_t * part_sizes,
+    int block_size,
+    const int * parts);}
+@end example
+
+@findex mtxpartition_free
+Note that resources that were allocated when creating a partition with
+any of the above functions must be freed by calling
+@code{mtxpartition_free}.
+@example
+@code{void mtxpartition_free(struct mtxpartition * partition);}
 @end example
 
 
@@ -1027,19 +1090,19 @@ into parts.
     const struct mtxpartition * colpart);}
 @end example
 The partitions @code{rowpart} and @code{colpart} are allowed to be
-@code{NULL}, in which case a trivial, singleton partition is used for
+@samp{NULL}, in which case a trivial, singleton partition is used for
 the rows and columns, respectively. Otherwise, @code{rowpart} and
 @code{colpart} must partition the rows and columns, respectively, of
-the matrix or vector @code{src}. That is, @code{rowpart->size} must be
-equal to @code{src->size.num_rows}, and @code{colpart->size} must be
-equal to @code{src->size.num_columns}.
+the matrix or vector @code{src}. That is, @samp{rowpart->size} must be
+equal to @samp{src->size.num_rows}, and @samp{colpart->size} must be
+equal to @samp{src->size.num_columns}.
 
 The argument @code{dsts} is an array that must have enough storage for
-@samp{P*Q} values of type @code{struct mtxfile}, where @code{P} is the
-number of row parts, @code{rowpart->num_parts}, and @code{Q} is the
-number of column parts, @code{colpart->num_parts}. Note that the
+@samp{P*Q} values of type @code{struct mtxfile}, where @samp{P} is the
+number of row parts (@samp{rowpart->num_parts}), and @samp{Q} is the
+number of column parts (@samp{colpart->num_parts}). Note that the
 @code{r}th part corresponds to a row part @code{p} and column part
-@code{q}, such that @code{r=p*Q+q}. Thus, the @code{r}th entry of
+@code{q}, such that @samp{r=p*Q+q}. Thus, the @code{r}th entry of
 @code{dsts} is the submatrix corresponding to the @code{p}th row and
 @code{q}th column of the 2D partitioning.
 

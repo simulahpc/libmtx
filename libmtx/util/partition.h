@@ -115,9 +115,9 @@ struct mtxpartition
     int64_t * parts_ptr;
 
     /**
-     * ‘parts’ is an array is an array of length ‘size’, if ‘type’ is
-     * ‘mtx_custom_partition’, containing the part number assigned to each
-     * element in the partitioned set.
+     * ‘parts’ is an array of length ‘size’, if ‘type’ is
+     * ‘mtx_custom_partition’, containing the part number assigned to
+     * each element in the partitioned set.
      *
      * If ‘type’ is not ‘mtx_custom_partition’, then ‘parts’ is set to ‘NULL’
      * and is not used.
@@ -208,10 +208,10 @@ int mtxpartition_init_block_cyclic(
     int block_size);
 
 /**
- * ‘mtxpartition_init_partition()’ initialises a user-defined
+ * ‘mtxpartition_init_custom()’ initialises a user-defined
  * partitioning of a finite set.
  */
-int mtxpartition_init_partition(
+int mtxpartition_init_custom(
     struct mtxpartition * partition,
     int64_t size,
     int num_parts,
