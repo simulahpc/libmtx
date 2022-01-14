@@ -3,7 +3,7 @@ collection of utility programs for working with objects in the Matrix
 Market file format, including vectors, dense matrices and sparse
 matrices.
 
-  Copyright (C) 2021 James D. Trotter
+  Copyright (C) 2022 James D. Trotter
 
   Copying and distribution of this file, with or without modification,
   are permitted in any medium without royalty provided the copyright
