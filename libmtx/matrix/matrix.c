@@ -199,7 +199,7 @@ int mtxmatrix_alloc_column_vector(
  */
 int mtxmatrix_alloc_array(
     struct mtxmatrix * matrix,
-    enum mtx_field_ field,
+    enum mtxfield field,
     enum mtxprecision precision,
     int num_rows,
     int num_columns)
@@ -309,7 +309,7 @@ int mtxmatrix_init_array_integer_double(
  */
 int mtxmatrix_alloc_coordinate(
     struct mtxmatrix * matrix,
-    enum mtx_field_ field,
+    enum mtxfield field,
     enum mtxprecision precision,
     int num_rows,
     int num_columns,

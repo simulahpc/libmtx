@@ -28,7 +28,7 @@
 
 #ifdef LIBMTX_HAVE_MPI
 #include <libmtx/precision.h>
-#include <libmtx/util/field.h>
+#include <libmtx/field.h>
 #include <libmtx/vector/vector.h>
 
 #include <mpi.h>
@@ -123,7 +123,7 @@ int mtxdistvector_init_copy(
  */
 int mtxdistvector_alloc_array(
     struct mtxdistvector * distvector,
-    enum mtx_field_ field,
+    enum mtxfield field,
     enum mtxprecision precision,
     int size,
     MPI_Comm comm,
@@ -211,7 +211,7 @@ int mtxdistvector_init_array_integer_double(
  */
 int mtxdistvector_alloc_coordinate(
     struct mtxdistvector * distvector,
-    enum mtx_field_ field,
+    enum mtxfield field,
     enum mtxprecision precision,
     int size,
     int64_t num_nonzeros,

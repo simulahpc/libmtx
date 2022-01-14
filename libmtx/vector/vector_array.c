@@ -26,7 +26,7 @@
 #include <libmtx/error.h>
 #include <libmtx/precision.h>
 #include <libmtx/mtxfile/mtxfile.h>
-#include <libmtx/util/field.h>
+#include <libmtx/field.h>
 #include <libmtx/vector/vector_array.h>
 
 #ifdef LIBMTX_HAVE_BLAS
@@ -104,7 +104,7 @@ int mtxvector_array_init_copy(
  */
 int mtxvector_array_alloc(
     struct mtxvector_array * vector,
-    enum mtx_field_ field,
+    enum mtxfield field,
     enum mtxprecision precision,
     int size)
 {

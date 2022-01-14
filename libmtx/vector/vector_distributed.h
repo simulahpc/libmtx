@@ -28,7 +28,7 @@
 
 #ifdef LIBMTX_HAVE_MPI
 #include <libmtx/precision.h>
-#include <libmtx/util/field.h>
+#include <libmtx/field.h>
 #include <libmtx/util/partition.h>
 
 #include <mpi.h>
@@ -85,7 +85,7 @@ int mtxvector_distributed_copy(
  */
 int mtxvector_distributed_alloc(
     struct mtxvector_distributed * vector,
-    enum mtx_field_ field,
+    enum mtxfield field,
     enum mtxprecision precision,
     int size,
     int64_t num_nonzeros);

@@ -48,7 +48,7 @@
 #include <libmtx/mtx/triangle.h>
 #include <libmtx/mtxfile/mtxdistfile.h>
 #include <libmtx/mtxfile/mtxfile.h>
-#include <libmtx/util/field.h>
+#include <libmtx/field.h>
 #include <libmtx/util/index_set.h>
 #include <libmtx/util/partition.h>
 #include <libmtx/vector/array.h>

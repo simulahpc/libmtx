@@ -30,7 +30,7 @@
 #include <libmtx/mtxfile/header.h>
 #include <libmtx/mtxfile/mtxfile.h>
 #include <libmtx/mtxfile/size.h>
-#include <libmtx/util/field.h>
+#include <libmtx/field.h>
 #include <libmtx/util/partition.h>
 #include <libmtx/vector/distvector.h>
 #include <libmtx/vector/vector.h>
@@ -110,7 +110,7 @@ static int mtxdistvector_init_comm(
  */
 int mtxdistvector_alloc_array(
     struct mtxdistvector * distvector,
-    enum mtx_field_ field,
+    enum mtxfield field,
     enum mtxprecision precision,
     int size,
     MPI_Comm comm,
@@ -275,7 +275,7 @@ int mtxdistvector_init_array_integer_double(
  */
 int mtxdistvector_alloc_coordinate(
     struct mtxdistvector * distvector,
-    enum mtx_field_ field,
+    enum mtxfield field,
     enum mtxprecision precision,
     int size,
     int64_t num_nonzeros,
@@ -567,13 +567,13 @@ int mtxdistvector_from_mtxdistfile(
     MPI_Comm comm,
     struct mtxdisterror * disterr)
 {
-#if 0
     int err;
     if (mtxdistfile->header.object != mtxfile_vector)
         return MTX_ERR_INCOMPATIBLE_MTX_OBJECT;
     err = mtxdistvector_init_comm(distvector, comm, disterr);
     if (err)
         return err;
+#if 0
     err = mtxvector_from_mtxfile(
         &distvector->interior, &mtxdistfile->mtxfile, vector_type);
     if (mtxdisterror_allreduce(disterr, err))

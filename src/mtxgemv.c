@@ -64,7 +64,7 @@ struct program_options
     enum mtxprecision precision;
     enum mtxmatrixtype matrix_type;
     enum mtxvectortype vector_type;
-    enum mtx_field_ vector_field;
+    enum mtxfield vector_field;
     bool gzip;
     int repeat;
     int verbose;
@@ -296,7 +296,7 @@ static int parse_program_options(
                 return EINVAL;
             }
             char * s = (*argv)[1];
-            err = mtx_field_parse(&args->vector_field, NULL, NULL, s, "");
+            err = mtxfield_parse(&args->vector_field, NULL, NULL, s, "");
             if (err) {
                 program_options_free(args);
                 return EINVAL;
@@ -305,7 +305,7 @@ static int parse_program_options(
             continue;
         } else if (strstr((*argv)[0], "--vector-field=") == (*argv)[0]) {
             char * s = (*argv)[0] + strlen("--vector-field=");
-            err = mtx_field_parse(&args->vector_field, NULL, NULL, s, "");
+            err = mtxfield_parse(&args->vector_field, NULL, NULL, s, "");
             if (err) {
                 program_options_free(args);
                 return EINVAL;

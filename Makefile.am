@@ -47,6 +47,7 @@ libmtx_la_LIBADD = $(BLAS_LIBS) $(MPILDFLAGS)
 # Source files
 libmtx_la_SOURCES = \
 	libmtx/error.c \
+	libmtx/field.c \
 	libmtx/matrix/array.c \
 	libmtx/matrix/array/blas.c \
 	libmtx/matrix/array/data.c \
@@ -70,22 +71,21 @@ libmtx_la_SOURCES = \
 	libmtx/mtx/io.c \
 	libmtx/mtx/mpi.c \
 	libmtx/mtx/mtx.c \
-	libmtx/precision.c \
 	libmtx/mtx/reorder.c \
 	libmtx/mtx/sort.c \
 	libmtx/mtx/submatrix.c \
 	libmtx/mtx/transpose.c \
 	libmtx/mtx/triangle.c \
-	libmtx/mtxfile/mtxdistfile.c \
 	libmtx/mtxfile/comments.c \
 	libmtx/mtxfile/data.c \
 	libmtx/mtxfile/header.c \
+	libmtx/mtxfile/mtxdistfile.c \
 	libmtx/mtxfile/mtxfile.c \
 	libmtx/mtxfile/size.c \
+	libmtx/precision.c \
 	libmtx/util/cuthill_mckee.c \
 	libmtx/util/cuthill_mckee.h \
 	libmtx/util/distpartition.c \
-	libmtx/util/field.c \
 	libmtx/util/format.c \
 	libmtx/util/format.h \
 	libmtx/util/index_set.c \
@@ -114,6 +114,7 @@ libmtx_la_SOURCES = \
 # Header files
 nobase_include_HEADERS = \
 	libmtx/error.h \
+	libmtx/field.h \
 	libmtx/libmtx.h \
 	libmtx/matrix/array.h \
 	libmtx/matrix/array/blas.h \
@@ -138,20 +139,19 @@ nobase_include_HEADERS = \
 	libmtx/mtx/io.h \
 	libmtx/mtx/mpi.h \
 	libmtx/mtx/mtx.h \
-	libmtx/precision.h \
 	libmtx/mtx/reorder.h \
 	libmtx/mtx/sort.h \
 	libmtx/mtx/submatrix.h \
 	libmtx/mtx/transpose.h \
 	libmtx/mtx/triangle.h \
-	libmtx/mtxfile/mtxdistfile.h \
 	libmtx/mtxfile/comments.h \
 	libmtx/mtxfile/data.h \
 	libmtx/mtxfile/header.h \
+	libmtx/mtxfile/mtxdistfile.h \
 	libmtx/mtxfile/mtxfile.h \
 	libmtx/mtxfile/size.h \
+	libmtx/precision.h \
 	libmtx/util/distpartition.h \
-	libmtx/util/field.h \
 	libmtx/util/index_set.h \
 	libmtx/util/partition.h \
 	libmtx/vector/array.h \

@@ -27,7 +27,7 @@
 #include <libmtx/libmtx-config.h>
 
 #include <libmtx/precision.h>
-#include <libmtx/util/field.h>
+#include <libmtx/field.h>
 #include <libmtx/util/transpose.h>
 #include <libmtx/matrix/matrix_array.h>
 #include <libmtx/matrix/matrix_coordinate.h>
@@ -154,7 +154,7 @@ int mtxmatrix_init_copy(
  */
 int mtxmatrix_alloc_array(
     struct mtxmatrix * matrix,
-    enum mtx_field_ field,
+    enum mtxfield field,
     enum mtxprecision precision,
     int num_rows,
     int num_columns);
@@ -229,7 +229,7 @@ int mtxmatrix_init_array_integer_double(
  */
 int mtxmatrix_alloc_coordinate(
     struct mtxmatrix * matrix,
-    enum mtx_field_ field,
+    enum mtxfield field,
     enum mtxprecision precision,
     int num_rows,
     int num_columns,

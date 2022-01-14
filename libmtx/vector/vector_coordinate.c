@@ -26,7 +26,7 @@
 #include <libmtx/error.h>
 #include <libmtx/precision.h>
 #include <libmtx/mtxfile/mtxfile.h>
-#include <libmtx/util/field.h>
+#include <libmtx/field.h>
 #include <libmtx/vector/vector_coordinate.h>
 
 #ifdef LIBMTX_HAVE_BLAS
@@ -108,7 +108,7 @@ int mtxvector_coordinate_init_copy(
  */
 int mtxvector_coordinate_alloc(
     struct mtxvector_coordinate * vector,
-    enum mtx_field_ field,
+    enum mtxfield field,
     enum mtxprecision precision,
     int size,
     int64_t num_nonzeros)

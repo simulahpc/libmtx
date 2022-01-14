@@ -27,7 +27,7 @@
 #include <libmtx/libmtx-config.h>
 
 #include <libmtx/precision.h>
-#include <libmtx/util/field.h>
+#include <libmtx/field.h>
 
 #ifdef LIBMTX_HAVE_LIBZ
 #include <zlib.h>
@@ -49,7 +49,7 @@ struct mtxvector_array
      * ‘field’ is the vector field: ‘real’, ‘complex’, ‘integer’ or
      * ‘pattern’.
      */
-    enum mtx_field_ field;
+    enum mtxfield field;
 
     /**
      * ‘precision’ is the precision used to store values.
@@ -109,7 +109,7 @@ int mtxvector_array_init_copy(
  */
 int mtxvector_array_alloc(
     struct mtxvector_array * vector,
-    enum mtx_field_ field,
+    enum mtxfield field,
     enum mtxprecision precision,
     int size);
 

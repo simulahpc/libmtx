@@ -27,7 +27,7 @@
 #include <libmtx/libmtx-config.h>
 
 #include <libmtx/precision.h>
-#include <libmtx/util/field.h>
+#include <libmtx/field.h>
 #include <libmtx/vector/vector_array.h>
 #include <libmtx/vector/vector_coordinate.h>
 
@@ -149,7 +149,7 @@ int mtxvector_init_copy(
  */
 int mtxvector_alloc_array(
     struct mtxvector * vector,
-    enum mtx_field_ field,
+    enum mtxfield field,
     enum mtxprecision precision,
     int num_rows);
 
@@ -217,7 +217,7 @@ int mtxvector_init_array_integer_double(
  */
 int mtxvector_alloc_coordinate(
     struct mtxvector * vector,
-    enum mtx_field_ field,
+    enum mtxfield field,
     enum mtxprecision precision,
     int num_rows,
     int64_t num_nonzeros);
