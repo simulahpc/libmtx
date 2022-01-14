@@ -722,7 +722,7 @@ int mtxpartition_fread_parts(
         return MTX_ERR_INVALID_MTX_FIELD;
     }
 
-    err = mtxpartition_init_partition(
+    err = mtxpartition_init_custom(
         partition, mtxfile.size.num_rows, num_parts,
         mtxfile.data.array_integer_single);
     if (err) {
