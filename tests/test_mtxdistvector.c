@@ -224,20 +224,16 @@ int test_mtxdistvector_from_mtxdistfile(void)
         err = mtxdistfile_init_vector_array_real_double(
             &src, num_rows, srcdata, &partition, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
-            MTX_SUCCESS, err, "%s",
-            err == MTX_ERR_MPI_COLLECTIVE
-            ? mtxdisterror_description(&disterr)
-            : mtxstrerror(err));
+            MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
+            ? mtxdisterror_description(&disterr) : mtxstrerror(err));
         mtxpartition_free(&partition);
 
         struct mtxdistvector mtxdistvector;
         err = mtxdistvector_from_mtxdistfile(
             &mtxdistvector, &src, mtxvector_auto, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
-            MTX_SUCCESS, err, "%s",
-            err == MTX_ERR_MPI_COLLECTIVE
-            ? mtxdisterror_description(&disterr)
-            : mtxstrerror(err));
+            MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
+            ? mtxdisterror_description(&disterr) : mtxstrerror(err));
         TEST_ASSERT_EQ(mtxvector_array, mtxdistvector.interior.type);
         const struct mtxvector_array * interior =
             &mtxdistvector.interior.storage.array;
@@ -769,23 +765,30 @@ int test_mtxdistvector_dot(void)
         int size = 12;
         int nnz = (rank == 0) ? 2 : 3;
         const int * idx = (rank == 0)
-            ? ((const int[2]) {1, 3})
-            : ((const int[3]) {5, 7, 9});
-        struct mtxdistvector x;
+            ? ((const int[2]) {1,3})
+            : ((const int[3]) {0,2,4});
         const float * xdata = (rank == 0)
             ? ((const float[2]) {1.0f, 1.0f})
             : ((const float[3]) {1.0f, 2.0f, 3.0f});
-        err = mtxdistvector_init_coordinate_real_single(
-            &x, size, nnz, idx, xdata, comm, &disterr);
-        TEST_ASSERT_EQ_MSG(
-            MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
-            ? mtxdisterror_description(&disterr) : mtxstrerror(err));
-        struct mtxdistvector y;
         const float * ydata = (rank == 0)
             ? ((const float[2]) {3.0f, 2.0f})
             : ((const float[3]) {1.0f, 0.0f, 1.0f});
+
+        const int num_parts = comm_size;
+        int64_t part_sizes[] = {5,7};
+        struct mtxpartition partition;
+        err = mtxpartition_init_block(&partition, size, num_parts, part_sizes);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+
+        struct mtxdistvector x;
         err = mtxdistvector_init_coordinate_real_single(
-            &y, size, nnz, idx, ydata, comm, &disterr);
+            &x, size, nnz, idx, xdata, &partition, comm, &disterr);
+        TEST_ASSERT_EQ_MSG(
+            MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
+            ? mtxdisterror_description(&disterr) : mtxstrerror(err));
+        struct mtxdistvector y;
+        err = mtxdistvector_init_coordinate_real_single(
+            &y, size, nnz, idx, ydata, &partition, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
@@ -833,23 +836,30 @@ int test_mtxdistvector_dot(void)
         int size = 12;
         int nnz = (rank == 0) ? 2 : 3;
         const int * idx = (rank == 0)
-            ? ((const int[2]) {1, 3})
-            : ((const int[3]) {5, 7, 9});
-        struct mtxdistvector x;
+            ? ((const int[2]) {1,3})
+            : ((const int[3]) {0,1,4});
         const double * xdata = (rank == 0)
             ? ((const double[2]) {1.0f, 1.0f})
             : ((const double[3]) {1.0f, 2.0f, 3.0f});
-        err = mtxdistvector_init_coordinate_real_double(
-            &x, size, nnz, idx, xdata, comm, &disterr);
-        TEST_ASSERT_EQ_MSG(
-            MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
-            ? mtxdisterror_description(&disterr) : mtxstrerror(err));
-        struct mtxdistvector y;
         const double * ydata = (rank == 0)
             ? ((const double[2]) {3.0f, 2.0f})
             : ((const double[3]) {1.0f, 0.0f, 1.0f});
+
+        const int num_parts = comm_size;
+        int64_t part_sizes[] = {5,7};
+        struct mtxpartition partition;
+        err = mtxpartition_init_block(&partition, size, num_parts, part_sizes);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+
+        struct mtxdistvector x;
         err = mtxdistvector_init_coordinate_real_double(
-            &y, size, nnz, idx, ydata, comm, &disterr);
+            &x, size, nnz, idx, xdata, &partition, comm, &disterr);
+        TEST_ASSERT_EQ_MSG(
+            MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
+            ? mtxdisterror_description(&disterr) : mtxstrerror(err));
+        struct mtxdistvector y;
+        err = mtxdistvector_init_coordinate_real_double(
+            &y, size, nnz, idx, ydata, &partition, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
@@ -899,21 +909,28 @@ int test_mtxdistvector_dot(void)
         const int * idx = (rank == 0)
             ? ((const int[1]) {1})
             : ((const int[2]) {3, 5});
-        struct mtxdistvector x;
         const float (* xdata)[2] = (rank == 0)
             ? ((const float[1][2]) {{1.0f, 1.0f}})
             : ((const float[2][2]) {{1.0f, 2.0f}, {3.0f, 0.0f}});
+        const float (* ydata)[2] = (rank == 0)
+            ? ((const float[1][2]) {{3.0f, 2.0f}})
+            : ((const float[2][2]) {{1.0f, 0.0f}, {1.0f, 0.0f}});
+
+        const int num_parts = comm_size;
+        int64_t part_sizes[] = {5,7};
+        struct mtxpartition partition;
+        err = mtxpartition_init_block(&partition, size, num_parts, part_sizes);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+
+        struct mtxdistvector x;
         err = mtxdistvector_init_coordinate_complex_single(
-            &x, size, nnz, idx, xdata, comm, &disterr);
+            &x, size, nnz, idx, xdata, &partition, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
         struct mtxdistvector y;
-        const float (* ydata)[2] = (rank == 0)
-            ? ((const float[1][2]) {{3.0f, 2.0f}})
-            : ((const float[2][2]) {{1.0f, 0.0f}, {1.0f, 0.0f}});
         err = mtxdistvector_init_coordinate_complex_single(
-            &y, size, nnz, idx, ydata, comm, &disterr);
+            &y, size, nnz, idx, ydata, &partition, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
@@ -957,21 +974,28 @@ int test_mtxdistvector_dot(void)
         const int * idx = (rank == 0)
             ? ((const int[1]) {1})
             : ((const int[2]) {3, 5});
-        struct mtxdistvector x;
         const double (* xdata)[2] = (rank == 0)
             ? ((const double[1][2]) {{1.0f, 1.0f}})
             : ((const double[2][2]) {{1.0f, 2.0f}, {3.0f, 0.0f}});
+        const double (* ydata)[2] = (rank == 0)
+            ? ((const double[1][2]) {{3.0f, 2.0f}})
+            : ((const double[2][2]) {{1.0f, 0.0f}, {1.0f, 0.0f}});
+
+        const int num_parts = comm_size;
+        int64_t part_sizes[] = {5,7};
+        struct mtxpartition partition;
+        err = mtxpartition_init_block(&partition, size, num_parts, part_sizes);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+
+        struct mtxdistvector x;
         err = mtxdistvector_init_coordinate_complex_double(
-            &x, size, nnz, idx, xdata, comm, &disterr);
+            &x, size, nnz, idx, xdata, &partition, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
         struct mtxdistvector y;
-        const double (* ydata)[2] = (rank == 0)
-            ? ((const double[1][2]) {{3.0f, 2.0f}})
-            : ((const double[2][2]) {{1.0f, 0.0f}, {1.0f, 0.0f}});
         err = mtxdistvector_init_coordinate_complex_double(
-            &y, size, nnz, idx, ydata, comm, &disterr);
+            &y, size, nnz, idx, ydata, &partition, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
@@ -1013,23 +1037,30 @@ int test_mtxdistvector_dot(void)
         int size = 12;
         int nnz = (rank == 0) ? 2 : 3;
         const int * idx = (rank == 0)
-            ? ((const int[2]) {1, 3})
-            : ((const int[3]) {5, 7, 9});
-        struct mtxdistvector x;
+            ? ((const int[2]) {1,3})
+            : ((const int[3]) {0,1,4});
         const int32_t * xdata = (rank == 0)
             ? ((const int32_t[2]) {1.0f, 1.0f})
             : ((const int32_t[3]) {1.0f, 2.0f, 3.0f});
+        const int32_t * ydata = (rank == 0)
+            ? ((const int32_t[2]) {3.0f, 2.0f})
+            : ((const int32_t[3]) {1.0f, 0.0f, 1.0f});
+
+        const int num_parts = comm_size;
+        int64_t part_sizes[] = {5,7};
+        struct mtxpartition partition;
+        err = mtxpartition_init_block(&partition, size, num_parts, part_sizes);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+
+        struct mtxdistvector x;
         err = mtxdistvector_init_coordinate_integer_single(
-            &x, size, nnz, idx, xdata, comm, &disterr);
+            &x, size, nnz, idx, xdata, &partition, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
         struct mtxdistvector y;
-        const int32_t * ydata = (rank == 0)
-            ? ((const int32_t[2]) {3.0f, 2.0f})
-            : ((const int32_t[3]) {1.0f, 0.0f, 1.0f});
         err = mtxdistvector_init_coordinate_integer_single(
-            &y, size, nnz, idx, ydata, comm, &disterr);
+            &y, size, nnz, idx, ydata, &partition, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
@@ -1077,23 +1108,30 @@ int test_mtxdistvector_dot(void)
         int size = 12;
         int nnz = (rank == 0) ? 2 : 3;
         const int * idx = (rank == 0)
-            ? ((const int[2]) {1, 3})
-            : ((const int[3]) {5, 7, 9});
-        struct mtxdistvector x;
+            ? ((const int[2]) {1,3})
+            : ((const int[3]) {0,1,4});
         const int64_t * xdata = (rank == 0)
             ? ((const int64_t[2]) {1.0f, 1.0f})
             : ((const int64_t[3]) {1.0f, 2.0f, 3.0f});
+        const int64_t * ydata = (rank == 0)
+            ? ((const int64_t[2]) {3.0f, 2.0f})
+            : ((const int64_t[3]) {1.0f, 0.0f, 1.0f});
+
+        const int num_parts = comm_size;
+        int64_t part_sizes[] = {5,7};
+        struct mtxpartition partition;
+        err = mtxpartition_init_block(&partition, size, num_parts, part_sizes);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+
+        struct mtxdistvector x;
         err = mtxdistvector_init_coordinate_integer_double(
-            &x, size, nnz, idx, xdata, comm, &disterr);
+            &x, size, nnz, idx, xdata, &partition, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
         struct mtxdistvector y;
-        const int64_t * ydata = (rank == 0)
-            ? ((const int64_t[2]) {3.0f, 2.0f})
-            : ((const int64_t[3]) {1.0f, 0.0f, 1.0f});
         err = mtxdistvector_init_coordinate_integer_double(
-            &y, size, nnz, idx, ydata, comm, &disterr);
+            &y, size, nnz, idx, ydata, &partition, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
@@ -1141,7 +1179,6 @@ int test_mtxdistvector_dot(void)
     return TEST_SUCCESS;
 }
 
-#if 0
 /**
  * `test_mtxdistvector_nrm2()' tests computing the Euclidean norm of
  * vectors.
@@ -1385,17 +1422,24 @@ int test_mtxdistvector_nrm2(void)
      */
 
     {
-        struct mtxdistvector x;
         int size = 12;
         const int * indices = (rank == 0)
             ? ((const int[2]) {0,3})
-            : ((const int[3]) {5,6,9});
+            : ((const int[3]) {0,1,4});
         const float * data = (rank == 0)
             ? ((const float[2]) {1.0f,1.0f})
             : ((const float[3]) {1.0f,2.0f,3.0f});
         size_t num_nonzeros = (rank == 0) ? 2 : 3;
+
+        const int num_parts = comm_size;
+        int64_t part_sizes[] = {5,7};
+        struct mtxpartition partition;
+        err = mtxpartition_init_block(&partition, size, num_parts, part_sizes);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+
+        struct mtxdistvector x;
         err = mtxdistvector_init_coordinate_real_single(
-            &x, size, num_nonzeros, indices, data, comm, &disterr);
+            &x, size, num_nonzeros, indices, data, &partition, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
@@ -1415,17 +1459,24 @@ int test_mtxdistvector_nrm2(void)
     }
 
     {
-        struct mtxdistvector x;
         int size = 12;
         const int * indices = (rank == 0)
             ? ((const int[2]) {0,3})
-            : ((const int[3]) {5,6,9});
+            : ((const int[3]) {0,1,4});
         const double * data = (rank == 0)
             ? ((const double[2]) {1.0,1.0})
             : ((const double[3]) {1.0,2.0,3.0});
         size_t num_nonzeros = (rank == 0) ? 2 : 3;
+
+        const int num_parts = comm_size;
+        int64_t part_sizes[] = {5,7};
+        struct mtxpartition partition;
+        err = mtxpartition_init_block(&partition, size, num_parts, part_sizes);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+
+        struct mtxdistvector x;
         err = mtxdistvector_init_coordinate_real_double(
-            &x, size, num_nonzeros, indices, data, comm, &disterr);
+            &x, size, num_nonzeros, indices, data, &partition, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
@@ -1445,17 +1496,24 @@ int test_mtxdistvector_nrm2(void)
     }
 
     {
-        struct mtxdistvector x;
         int size = 12;
         const int * indices = (rank == 0)
             ? ((const int[1]) {0})
-            : ((const int[2]) {5,9});
+            : ((const int[2]) {0,4});
         const float (* data)[2] = (rank == 0)
             ? ((const float[1][2]) {{1.0f,1.0f}})
             : ((const float[2][2]) {{1.0f,2.0f}, {3.0f,0.0f}});
         size_t num_nonzeros = (rank == 0) ? 1 : 2;
+
+        const int num_parts = comm_size;
+        int64_t part_sizes[] = {5,7};
+        struct mtxpartition partition;
+        err = mtxpartition_init_block(&partition, size, num_parts, part_sizes);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+
+        struct mtxdistvector x;
         err = mtxdistvector_init_coordinate_complex_single(
-            &x, size, num_nonzeros, indices, data, comm, &disterr);
+            &x, size, num_nonzeros, indices, data, &partition, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
@@ -1475,17 +1533,24 @@ int test_mtxdistvector_nrm2(void)
     }
 
     {
-        struct mtxdistvector x;
         int size = 12;
         const int * indices = (rank == 0)
             ? ((const int[1]) {0})
-            : ((const int[2]) {5,9});
+            : ((const int[2]) {0,4});
         const double (* data)[2] = (rank == 0)
             ? ((const double[1][2]) {{1.0,1.0}})
             : ((const double[2][2]) {{1.0,2.0}, {3.0,0.0}});
         size_t num_nonzeros = (rank == 0) ? 1 : 2;
+
+        const int num_parts = comm_size;
+        int64_t part_sizes[] = {5,7};
+        struct mtxpartition partition;
+        err = mtxpartition_init_block(&partition, size, num_parts, part_sizes);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+
+        struct mtxdistvector x;
         err = mtxdistvector_init_coordinate_complex_double(
-            &x, size, num_nonzeros, indices, data, comm, &disterr);
+            &x, size, num_nonzeros, indices, data, &partition, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
@@ -1505,17 +1570,24 @@ int test_mtxdistvector_nrm2(void)
     }
 
     {
-        struct mtxdistvector x;
         int size = 12;
         const int * indices = (rank == 0)
             ? ((const int[2]) {0,3})
-            : ((const int[3]) {5,6,9});
+            : ((const int[3]) {0,1,4});
         const int32_t * data = (rank == 0)
             ? ((const int32_t[2]) {1,1})
             : ((const int32_t[3]) {1,2,3});
         size_t num_nonzeros = (rank == 0) ? 2 : 3;
+
+        const int num_parts = comm_size;
+        int64_t part_sizes[] = {5,7};
+        struct mtxpartition partition;
+        err = mtxpartition_init_block(&partition, size, num_parts, part_sizes);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+
+        struct mtxdistvector x;
         err = mtxdistvector_init_coordinate_integer_single(
-            &x, size, num_nonzeros, indices, data, comm, &disterr);
+            &x, size, num_nonzeros, indices, data, &partition, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
@@ -1535,17 +1607,24 @@ int test_mtxdistvector_nrm2(void)
     }
 
     {
-        struct mtxdistvector x;
         int size = 12;
         const int * indices = (rank == 0)
             ? ((const int[2]) {0,3})
-            : ((const int[3]) {5,6,9});
+            : ((const int[3]) {0,1,4});
         const int64_t * data = (rank == 0)
             ? ((const int64_t[2]) {1,1})
             : ((const int64_t[3]) {1,2,3});
         size_t num_nonzeros = (rank == 0) ? 2 : 3;
+
+        const int num_parts = comm_size;
+        int64_t part_sizes[] = {5,7};
+        struct mtxpartition partition;
+        err = mtxpartition_init_block(&partition, size, num_parts, part_sizes);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+
+        struct mtxdistvector x;
         err = mtxdistvector_init_coordinate_integer_double(
-            &x, size, num_nonzeros, indices, data, comm, &disterr);
+            &x, size, num_nonzeros, indices, data, &partition, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
@@ -1565,14 +1644,21 @@ int test_mtxdistvector_nrm2(void)
     }
 
     {
-        struct mtxdistvector x;
         int size = 24;
         const int * indices = (rank == 0)
             ? ((const int[7]) {0,2,3,4,5,6,7})
-            : ((const int[9]) {9,10,11,13,14,17,20,21,23});
+            : ((const int[9]) {0,1,2,4,5,8,11,12,14});
         size_t num_nonzeros = (rank == 0) ? 7 : 9;
+
+        const int num_parts = comm_size;
+        int64_t part_sizes[] = {9,15};
+        struct mtxpartition partition;
+        err = mtxpartition_init_block(&partition, size, num_parts, part_sizes);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+
+        struct mtxdistvector x;
         err = mtxdistvector_init_coordinate_pattern(
-            &x, size, num_nonzeros, indices, comm, &disterr);
+            &x, size, num_nonzeros, indices, &partition, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
@@ -1823,17 +1909,24 @@ int test_mtxdistvector_scal(void)
      */
 
     {
-        struct mtxdistvector x;
         int size = 12;
         const int * indices = (rank == 0)
             ? ((const int[2]) {0,3})
-            : ((const int[3]) {5,6,9});
+            : ((const int[3]) {0,1,4});
         const float * data = (rank == 0)
             ? ((const float[2]) {1.0f,1.0f})
             : ((const float[3]) {1.0f,2.0f,3.0f});
         size_t num_nonzeros = (rank == 0) ? 2 : 3;
+
+        const int num_parts = comm_size;
+        int64_t part_sizes[] = {5,7};
+        struct mtxpartition partition;
+        err = mtxpartition_init_block(&partition, size, num_parts, part_sizes);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+
+        struct mtxdistvector x;
         err = mtxdistvector_init_coordinate_real_single(
-            &x, size, num_nonzeros, indices, data, comm, &disterr);
+            &x, size, num_nonzeros, indices, data, &partition, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
@@ -1865,17 +1958,24 @@ int test_mtxdistvector_scal(void)
     }
 
     {
-        struct mtxdistvector x;
         int size = 12;
         const int * indices = (rank == 0)
             ? ((const int[2]) {0,3})
-            : ((const int[3]) {5,6,9});
+            : ((const int[3]) {0,1,4});
         const double * data = (rank == 0)
             ? ((const double[2]) {1.0,1.0})
             : ((const double[3]) {1.0,2.0,3.0});
         size_t num_nonzeros = (rank == 0) ? 2 : 3;
+
+        const int num_parts = comm_size;
+        int64_t part_sizes[] = {5,7};
+        struct mtxpartition partition;
+        err = mtxpartition_init_block(&partition, size, num_parts, part_sizes);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+
+        struct mtxdistvector x;
         err = mtxdistvector_init_coordinate_real_double(
-            &x, size, num_nonzeros, indices, data, comm, &disterr);
+            &x, size, num_nonzeros, indices, data, &partition, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
@@ -1907,17 +2007,24 @@ int test_mtxdistvector_scal(void)
     }
 
     {
-        struct mtxdistvector x;
         int size = 12;
         const int * indices = (rank == 0)
             ? ((const int[1]) {0})
-            : ((const int[2]) {5,9});
+            : ((const int[2]) {0,4});
         const float (* data)[2] = (rank == 0)
             ? ((const float[1][2]) {{1.0f,1.0f}})
             : ((const float[2][2]) {{1.0f,2.0f}, {3.0f,0.0f}});
         size_t num_nonzeros = (rank == 0) ? 1 : 2;
+
+        const int num_parts = comm_size;
+        int64_t part_sizes[] = {5,7};
+        struct mtxpartition partition;
+        err = mtxpartition_init_block(&partition, size, num_parts, part_sizes);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+
+        struct mtxdistvector x;
         err = mtxdistvector_init_coordinate_complex_single(
-            &x, size, num_nonzeros, indices, data, comm, &disterr);
+            &x, size, num_nonzeros, indices, data, &partition, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
@@ -1951,17 +2058,24 @@ int test_mtxdistvector_scal(void)
     }
 
     {
-        struct mtxdistvector x;
         int size = 12;
         const int * indices = (rank == 0)
             ? ((const int[1]) {0})
-            : ((const int[2]) {5,9});
+            : ((const int[2]) {0,4});
         const double (* data)[2] = (rank == 0)
             ? ((const double[1][2]) {{1.0,1.0}})
             : ((const double[2][2]) {{1.0,2.0}, {3.0,0.0}});
         size_t num_nonzeros = (rank == 0) ? 1 : 2;
+
+        const int num_parts = comm_size;
+        int64_t part_sizes[] = {5,7};
+        struct mtxpartition partition;
+        err = mtxpartition_init_block(&partition, size, num_parts, part_sizes);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+
+        struct mtxdistvector x;
         err = mtxdistvector_init_coordinate_complex_double(
-            &x, size, num_nonzeros, indices, data, comm, &disterr);
+            &x, size, num_nonzeros, indices, data, &partition, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
@@ -2372,21 +2486,28 @@ int test_mtxdistvector_axpy(void)
         int size = 12;
         int nnz = (rank == 0) ? 2 : 3;
         const int * idx = (rank == 0)
-            ? ((const int[2]) {1, 3})
-            : ((const int[3]) {5, 7, 9});
+            ? ((const int[2]) {1,3})
+            : ((const int[3]) {0,1,4});
         const float * xdata = (rank == 0)
             ? ((const float[2]) {1.0f, 1.0f})
             : ((const float[3]) {1.0f, 2.0f, 3.0f});
         const float * ydata = (rank == 0)
             ? ((const float[2]) {2.0f, 1.0f})
             : ((const float[3]) {0.0f, 2.0f, 1.0f});
+
+        const int num_parts = comm_size;
+        int64_t part_sizes[] = {5,7};
+        struct mtxpartition partition;
+        err = mtxpartition_init_block(&partition, size, num_parts, part_sizes);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+
         err = mtxdistvector_init_coordinate_real_single(
-            &x, size, nnz, idx, xdata, comm, &disterr);
+            &x, size, nnz, idx, xdata, &partition, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
         err = mtxdistvector_init_coordinate_real_single(
-            &y, size, nnz, idx, ydata, comm, &disterr);
+            &y, size, nnz, idx, ydata, &partition, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
@@ -2448,21 +2569,28 @@ int test_mtxdistvector_axpy(void)
         int size = 12;
         int nnz = (rank == 0) ? 2 : 3;
         const int * idx = (rank == 0)
-            ? ((const int[2]) {1, 3})
-            : ((const int[3]) {5, 7, 9});
+            ? ((const int[2]) {1,3})
+            : ((const int[3]) {0,1,4});
         const double * xdata = (rank == 0)
             ? ((const double[2]) {1.0f, 1.0f})
             : ((const double[3]) {1.0f, 2.0f, 3.0f});
         const double * ydata = (rank == 0)
             ? ((const double[2]) {2.0f, 1.0f})
             : ((const double[3]) {0.0f, 2.0f, 1.0f});
+
+        const int num_parts = comm_size;
+        int64_t part_sizes[] = {5,7};
+        struct mtxpartition partition;
+        err = mtxpartition_init_block(&partition, size, num_parts, part_sizes);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+
         err = mtxdistvector_init_coordinate_real_double(
-            &x, size, nnz, idx, xdata, comm, &disterr);
+            &x, size, nnz, idx, xdata, &partition, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
         err = mtxdistvector_init_coordinate_real_double(
-            &y, size, nnz, idx, ydata, comm, &disterr);
+            &y, size, nnz, idx, ydata, &partition, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
@@ -2532,13 +2660,20 @@ int test_mtxdistvector_axpy(void)
         const float (* ydata)[2] = (rank == 0)
             ? ((const float[1][2]) {{2.0f, 1.0f}})
             : ((const float[2][2]) {{0.0f, 2.0f}, {1.0f, 0.0f}});
+
+        const int num_parts = comm_size;
+        int64_t part_sizes[] = {5,7};
+        struct mtxpartition partition;
+        err = mtxpartition_init_block(&partition, size, num_parts, part_sizes);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+
         err = mtxdistvector_init_coordinate_complex_single(
-            &x, size, nnz, idx, xdata, comm, &disterr);
+            &x, size, nnz, idx, xdata, &partition, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
         err = mtxdistvector_init_coordinate_complex_single(
-            &y, size, nnz, idx, ydata, comm, &disterr);
+            &y, size, nnz, idx, ydata, &partition, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
@@ -2612,13 +2747,20 @@ int test_mtxdistvector_axpy(void)
         const double (* ydata)[2] = (rank == 0)
             ? ((const double[1][2]) {{2.0f, 1.0f}})
             : ((const double[2][2]) {{0.0f, 2.0f}, {1.0f, 0.0f}});
+
+        const int num_parts = comm_size;
+        int64_t part_sizes[] = {5,7};
+        struct mtxpartition partition;
+        err = mtxpartition_init_block(&partition, size, num_parts, part_sizes);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+
         err = mtxdistvector_init_coordinate_complex_double(
-            &x, size, nnz, idx, xdata, comm, &disterr);
+            &x, size, nnz, idx, xdata, &partition, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
         err = mtxdistvector_init_coordinate_complex_double(
-            &y, size, nnz, idx, ydata, comm, &disterr);
+            &y, size, nnz, idx, ydata, &partition, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
@@ -2681,7 +2823,6 @@ int test_mtxdistvector_axpy(void)
     mtxdisterror_free(&disterr);
     return TEST_SUCCESS;
 }
-#endif
 
 /**
  * `main()' entry point and test driver.
@@ -2708,11 +2849,9 @@ int main(int argc, char * argv[])
     TEST_RUN(test_mtxdistvector_from_mtxfile);
     TEST_RUN(test_mtxdistvector_from_mtxdistfile);
     TEST_RUN(test_mtxdistvector_dot);
-#if 0
     TEST_RUN(test_mtxdistvector_nrm2);
     TEST_RUN(test_mtxdistvector_scal);
     TEST_RUN(test_mtxdistvector_axpy);
-#endif
     TEST_SUITE_END();
 
     /* 3. Clean up and return. */

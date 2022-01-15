@@ -243,7 +243,7 @@ used if @code{mtxfile} is a vector in array format, and
 coordinate format.
 
 @findex mtxvector_to_mtxfile
-Conversely, having peformed the necessary computations, it is
+Conversely, having performed the necessary computations, it is
 sometimes useful to convert a vector back to Matrix Market format.
 For example, to make it easier to output the vector to a file. To
 convert @code{struct mtxvector} to a vector in Matrix Market format,
@@ -720,7 +720,7 @@ used if @code{mtxfile} is a matrix in array format, and
 @samp{mtxmatrix_coordinate} is used if @code{mtxfile} is a matrix in
 coordinate format.
 
-Conversely, having peformed the necessary computations, it is
+Conversely, having performed the necessary computations, it is
 sometimes useful to convert a matrix back to Matrix Market format.
 For example, to make it easier to output the matrix to a file. To
 convert @code{struct mtxmatrix} to a matrix in Matrix Market format,

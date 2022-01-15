@@ -178,12 +178,12 @@ To create a double precision, complex vector in coordinate format, use
     int num_rows,
     int64_t num_nonzeros,
     const int * idx,
-    const double (* values)[2],
+    const double (* data)[2],
     const struct mtxpartition * partition,
     MPI_Comm comm,
     struct mtxdisterror * disterr);}
 @end example
-The arguments @code{idx} and @code{values} are arrays of length
+The arguments @code{idx} and @code{data} are arrays of length
 @code{num_nonzeros}. For each nonzero value
 @code{k=0,1,...,num_nonzeros-1}, @code{idx[k]} is an index in the
 range @samp{[0,N)}, where @samp{N} is the size of the part owned by
@@ -199,11 +199,12 @@ produce incorrect results.
 @subsection Modifying values
 @findex mtxdistvector_set_constant_@var{field}_@var{precision}
 The functions
-@code{mtxdistvector_set_constant_@var{field}_@var{precision}} can be used
-to set every (nonzero) value of a vector equal to a constant scalar,
-where @code{@var{field}} and @code{@var{precision}} should match the
-field (i.e., @samp{real}, @samp{complex} or @samp{integer}) and
-precision (i.e., @samp{single} or @samp{double}) of @code{mtxdistvector}.
+@code{mtxdistvector_set_constant_@var{field}_@var{precision}} can be
+used to set every (nonzero) value of a vector equal to a constant
+scalar, where @code{@var{field}} and @code{@var{precision}} should
+match the field (i.e., @samp{real}, @samp{complex} or @samp{integer})
+and precision (i.e., @samp{single} or @samp{double}) of
+@code{mtxdistvector}.
 @findex mtxdistvector_set_constant_real_single
 @findex mtxdistvector_set_constant_real_double
 @findex mtxdistvector_set_constant_complex_single
@@ -212,21 +213,21 @@ precision (i.e., @samp{single} or @samp{double}) of @code{mtxdistvector}.
 @findex mtxdistvector_set_constant_integer_double
 @example
 @code{int mtxdistvector_set_constant_real_single(
-    struct mtxdistvector *, float a);
+    struct mtxdistvector *, float a, struct mtxdisterror * disterr);
 int mtxdistvector_set_constant_real_double(
-    struct mtxdistvector *, double a);
+    struct mtxdistvector *, double a, struct mtxdisterror * disterr);
 int mtxdistvector_set_constant_complex_single(
-    struct mtxdistvector *, float a[2]);
+    struct mtxdistvector *, float a[2], struct mtxdisterror * disterr);
 int mtxdistvector_set_constant_complex_double(
-    struct mtxdistvector *, double a[2]);
+    struct mtxdistvector *, double a[2], struct mtxdisterror * disterr);
 int mtxdistvector_set_constant_integer_single(
-    struct mtxdistvector *, int32_t a);
+    struct mtxdistvector *, int32_t a, struct mtxdisterror * disterr);
 int mtxdistvector_set_constant_integer_double(
-    struct mtxdistvector *, int64_t a);}
+    struct mtxdistvector *, int64_t a, struct mtxdisterror * disterr);}
 @end example
 To access or modify individual vector elements, the underlying vector
 storage is accessed through the appropriate member of the
-@code{storage} union in the @code{mtxdistvector} struct.
+@code{storage} union in the @code{mtxvector} struct.
 
 
 @node Converting distributed vectors to and from Matrix Market format
@@ -239,31 +240,36 @@ computations.
 
 @findex mtxdistvector_from_mtxfile
 To convert a vector in Matrix Market format to @code{struct
-mtxdistvector}, the function @code{mtxdistvector_from_mtxfile} can be used.
+mtxdistvector}, the function @code{mtxdistvector_from_mtxfile} can be
+used. In this case, the Matrix Market file @code{mtxfile} must reside
+on the process whose rank is @code{root}.
 @example
 @code{int mtxdistvector_from_mtxfile(
     struct mtxdistvector * mtxdistvector,
     const struct mtxfile * mtxfile,
-    enum mtxvectortype type);}
+    enum mtxvectortype type,
+    MPI_Comm comm,
+    int root,
+    struct mtxdisterror * disterr);}
 @end example
-The user may use the @code{type} argument to specify a desired storage
-format or implementation for @code{mtxdistvector}. If @code{type} is
-@samp{mtxdistvector_auto}, then the type of @code{mtxdistvector} is chosen to
-match the type of @code{mtxfile}. That is, @samp{mtxdistvector_array} is
-used if @code{mtxfile} is a vector in array format, and
-@samp{mtxdistvector_coordinate} is used if @code{mtxfile} is a vector in
-coordinate format.
+The @code{type} argument may be used to specify a desired storage
+format or implementation for the underlying @code{mtxvector} on each
+process. If @code{type} is @samp{mtxvector_auto}, then the type of
+@code{mtxvector} is chosen to match the type of @code{mtxfile}. That
+is, @samp{mtxvector_array} is used if @code{mtxfile} is in array
+format, and @samp{mtxvector_coordinate} is used if @code{mtxfile} is
+in coordinate format.
 
 @findex mtxdistvector_to_mtxfile
-Conversely, having peformed the necessary computations, it is
-sometimes useful to convert a vector back to Matrix Market format.
-For example, to make it easier to output the vector to a file. To
-convert @code{struct mtxdistvector} to a vector in Matrix Market format,
+To convert @code{struct mtxdistvector} back to Matrix Market format,
 the function @code{mtxdistvector_to_mtxfile} can be used.
 @example
 @code{int mtxdistvector_to_mtxfile(
     const struct mtxdistvector * mtxdistvector,
-    struct mtxfile * mtxfile);}
+    struct mtxfile * mtxfile,
+    MPI_Comm comm,
+    int root,
+    struct mtxdisterror * disterr);}
 @end example
 The resulting Matrix Market file may be a vector in array or
 coordinate format, depending on the type of @code{mtxdistvector}.
