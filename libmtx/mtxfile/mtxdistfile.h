@@ -708,6 +708,21 @@ int mtxdistfile_from_mtxfile(
     int root,
     struct mtxdisterror * disterr);
 
+/**
+ * ‘mtxdistfile_to_mtxfile()’ gathers a distributed Matrix Market file
+ * onto a single, root process and creates a non-distributed Matrix
+ * Market file on that process.
+ *
+ * This function performs collective communication and therefore
+ * requires every process in the communicator to perform matching
+ * calls to this function.
+ */
+int mtxdistfile_to_mtxfile(
+    struct mtxfile * dst,
+    const struct mtxdistfile * src,
+    int root,
+    struct mtxdisterror * disterr);
+
 /*
  * I/O functions
  */

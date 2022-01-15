@@ -90,7 +90,8 @@ int test_mtxdistvector_from_mtxfile(void)
 
         struct mtxdistvector mtxdistvector;
         err = mtxdistvector_from_mtxfile(
-            &mtxdistvector, &srcmtxfile, mtxvector_auto, comm, root, &disterr);
+            &mtxdistvector, &srcmtxfile, mtxvector_auto,
+            NULL, comm, root, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s",
             err == MTX_ERR_MPI_COLLECTIVE
@@ -133,7 +134,8 @@ int test_mtxdistvector_from_mtxfile(void)
 
         struct mtxdistvector mtxdistvector;
         err = mtxdistvector_from_mtxfile(
-            &mtxdistvector, &srcmtxfile, mtxvector_auto, comm, root, &disterr);
+            &mtxdistvector, &srcmtxfile, mtxvector_auto,
+            NULL, comm, root, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s",
             err == MTX_ERR_MPI_COLLECTIVE
@@ -230,26 +232,30 @@ int test_mtxdistvector_from_mtxdistfile(void)
 
         struct mtxdistvector mtxdistvector;
         err = mtxdistvector_from_mtxdistfile(
-            &mtxdistvector, &src, mtxvector_auto, comm, &disterr);
+            &mtxdistvector, &src, mtxvector_auto,
+            NULL, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
+        TEST_ASSERT_EQ(8, mtxdistvector.partition.size);
+        TEST_ASSERT_EQ(4, mtxdistvector.partition.part_sizes[0]);
+        TEST_ASSERT_EQ(4, mtxdistvector.partition.part_sizes[1]);
         TEST_ASSERT_EQ(mtxvector_array, mtxdistvector.interior.type);
         const struct mtxvector_array * interior =
             &mtxdistvector.interior.storage.array;
         TEST_ASSERT_EQ(mtx_field_real, interior->field);
         TEST_ASSERT_EQ(mtx_double, interior->precision);
-        TEST_ASSERT_EQ(rank == 0 ? 2 : 6, interior->size);
+        TEST_ASSERT_EQ(4, interior->size);
         if (rank == 0) {
             TEST_ASSERT_EQ(1.0, interior->data.real_double[0]);
             TEST_ASSERT_EQ(2.0, interior->data.real_double[1]);
+            TEST_ASSERT_EQ(3.0, interior->data.real_double[2]);
+            TEST_ASSERT_EQ(4.0, interior->data.real_double[3]);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ(3.0, interior->data.real_double[0]);
-            TEST_ASSERT_EQ(4.0, interior->data.real_double[1]);
-            TEST_ASSERT_EQ(5.0, interior->data.real_double[2]);
-            TEST_ASSERT_EQ(6.0, interior->data.real_double[3]);
-            TEST_ASSERT_EQ(7.0, interior->data.real_double[4]);
-            TEST_ASSERT_EQ(8.0, interior->data.real_double[5]);
+            TEST_ASSERT_EQ(5.0, interior->data.real_double[0]);
+            TEST_ASSERT_EQ(6.0, interior->data.real_double[1]);
+            TEST_ASSERT_EQ(7.0, interior->data.real_double[2]);
+            TEST_ASSERT_EQ(8.0, interior->data.real_double[3]);
         }
         mtxdistvector_free(&mtxdistvector);
         mtxdistfile_free(&src);
@@ -274,50 +280,50 @@ int test_mtxdistvector_from_mtxdistfile(void)
         err = mtxpartition_init_block(
             &partition, num_nonzeros, num_parts, part_sizes);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        mtxpartition_free(&partition);
 
         struct mtxdistfile src;
         err = mtxdistfile_init_vector_coordinate_real_double(
             &src, num_rows, num_nonzeros, srcdata, &partition, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
-            MTX_SUCCESS, err, "%s",
-            err == MTX_ERR_MPI_COLLECTIVE
-            ? mtxdisterror_description(&disterr)
-            : mtxstrerror(err));
+            MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
+            ? mtxdisterror_description(&disterr) : mtxstrerror(err));
+        mtxpartition_free(&partition);
 
         struct mtxdistvector mtxdistvector;
         err = mtxdistvector_from_mtxdistfile(
-            &mtxdistvector, &src, mtxvector_auto, comm, &disterr);
+            &mtxdistvector, &src, mtxvector_auto,
+            NULL, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
-            MTX_SUCCESS, err, "%s",
-            err == MTX_ERR_MPI_COLLECTIVE
-            ? mtxdisterror_description(&disterr)
-            : mtxstrerror(err));
+            MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
+            ? mtxdisterror_description(&disterr) : mtxstrerror(err));
+        TEST_ASSERT_EQ(9, mtxdistvector.partition.size);
+        TEST_ASSERT_EQ(5, mtxdistvector.partition.part_sizes[0]);
+        TEST_ASSERT_EQ(4, mtxdistvector.partition.part_sizes[1]);
         TEST_ASSERT_EQ(mtxvector_coordinate, mtxdistvector.interior.type);
         const struct mtxvector_coordinate * interior =
             &mtxdistvector.interior.storage.coordinate;
         TEST_ASSERT_EQ(mtx_field_real, interior->field);
         TEST_ASSERT_EQ(mtx_double, interior->precision);
         TEST_ASSERT_EQ(9, interior->size);
-        TEST_ASSERT_EQ(rank == 0 ? 2 : 6, interior->num_nonzeros);
+        TEST_ASSERT_EQ(rank == 0 ? 5 : 3, interior->num_nonzeros);
         if (rank == 0) {
             TEST_ASSERT_EQ(0, interior->indices[0]);
             TEST_ASSERT_EQ(1, interior->indices[1]);
+            TEST_ASSERT_EQ(2, interior->indices[2]);
+            TEST_ASSERT_EQ(3, interior->indices[3]);
+            TEST_ASSERT_EQ(4, interior->indices[4]);
             TEST_ASSERT_EQ(1.0, interior->data.real_double[0]);
             TEST_ASSERT_EQ(2.0, interior->data.real_double[1]);
+            TEST_ASSERT_EQ(3.0, interior->data.real_double[2]);
+            TEST_ASSERT_EQ(4.0, interior->data.real_double[3]);
+            TEST_ASSERT_EQ(5.0, interior->data.real_double[4]);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ(2, interior->indices[0]);
-            TEST_ASSERT_EQ(3, interior->indices[1]);
-            TEST_ASSERT_EQ(4, interior->indices[2]);
-            TEST_ASSERT_EQ(5, interior->indices[3]);
-            TEST_ASSERT_EQ(6, interior->indices[4]);
-            TEST_ASSERT_EQ(7, interior->indices[5]);
-            TEST_ASSERT_EQ(3.0, interior->data.real_double[0]);
-            TEST_ASSERT_EQ(4.0, interior->data.real_double[1]);
-            TEST_ASSERT_EQ(5.0, interior->data.real_double[2]);
-            TEST_ASSERT_EQ(6.0, interior->data.real_double[3]);
-            TEST_ASSERT_EQ(7.0, interior->data.real_double[4]);
-            TEST_ASSERT_EQ(8.0, interior->data.real_double[5]);
+            TEST_ASSERT_EQ(5, interior->indices[0]);
+            TEST_ASSERT_EQ(6, interior->indices[1]);
+            TEST_ASSERT_EQ(7, interior->indices[2]);
+            TEST_ASSERT_EQ(6.0, interior->data.real_double[0]);
+            TEST_ASSERT_EQ(7.0, interior->data.real_double[1]);
+            TEST_ASSERT_EQ(8.0, interior->data.real_double[2]);
         }
         mtxdistvector_free(&mtxdistvector);
         mtxdistfile_free(&src);

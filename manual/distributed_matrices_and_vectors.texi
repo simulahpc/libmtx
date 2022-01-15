@@ -260,6 +260,7 @@ is, @samp{mtxvector_array} is used if @code{mtxfile} is in array
 format, and @samp{mtxvector_coordinate} is used if @code{mtxfile} is
 in coordinate format.
 
+
 @findex mtxdistvector_to_mtxfile
 To convert @code{struct mtxdistvector} back to Matrix Market format,
 the function @code{mtxdistvector_to_mtxfile} can be used.

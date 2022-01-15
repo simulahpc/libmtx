@@ -242,6 +242,12 @@ used if @code{mtxfile} is a vector in array format, and
 @samp{mtxvector_coordinate} is used if @code{mtxfile} is a vector in
 coordinate format.
 
+@cindex assemble
+@cindex duplicate nonzeros
+When converting to a vector in coordinate format, the vector is sorted
+and assembly is carried out to remove duplicate nonzero entriesq (see
+@ref{mtxfile_assemble}).
+
 @findex mtxvector_to_mtxfile
 Conversely, having performed the necessary computations, it is
 sometimes useful to convert a vector back to Matrix Market format.

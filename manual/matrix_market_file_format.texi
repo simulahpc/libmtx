@@ -299,14 +299,15 @@ section.
 By default, it is assumed that dense matrix entries are stored in
 row major order.
 
-@cindex assembly
+@cindex duplicate nonzeros
+@cindex assemble
 For sparse matrices and vectors, the nonzero entries may appear in any
-order.  Moreover, there may be more than one entry corresponding to a
-single location in a sparse matrix or vector.  In this case, it is
-assumed that the value associated with such a location can be obtained
-by taking the sum of all the entries for that location.  The procedure
-of adding together values for duplicate entries is sometimes referred
-to as @dfn{assembly}.
+order.  Moreover, there may be more than one value given that
+corresponds to a single location in a sparse matrix or vector.  In
+this case, the value associated with a particular matrix or vector
+entry can be obtained by taking the sum of all the nonzero values
+given for that location.  The procedure of adding together values for
+duplicate entries is sometimes referred to as @dfn{assembly}.
 
 The format of a data line depends on the @code{@var{object}},
 @code{@var{format}} and @code{@var{field}} values in the header, as

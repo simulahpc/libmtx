@@ -442,7 +442,7 @@ static int distvector_dot(
     }
     struct mtxdistvector x;
     err = mtxdistvector_from_mtxdistfile(
-        &x, mtxdistfilex, vector_type, comm, disterr);
+        &x, mtxdistfilex, vector_type, NULL, comm, disterr);
     if (err) {
         if (verbose > 0)
             fprintf(diagf, "\n");
@@ -461,7 +461,7 @@ static int distvector_dot(
     }
     struct mtxdistvector y;
     err = mtxdistvector_from_mtxdistfile(
-        &y, mtxdistfiley, vector_type, comm, disterr);
+        &y, mtxdistfiley, vector_type, NULL, comm, disterr);
     if (err) {
         if (verbose > 0)
             fprintf(diagf, "\n");

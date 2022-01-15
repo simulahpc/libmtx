@@ -521,7 +521,7 @@ static int distvector_nrm2(
 
     struct mtxdistvector x;
     err = mtxdistvector_from_mtxdistfile(
-        &x, mtxdistfile, vector_type, comm, disterr);
+        &x, mtxdistfile, vector_type, NULL, comm, disterr);
     if (err) {
         if (verbose > 0)
             fprintf(diagf, "\n");

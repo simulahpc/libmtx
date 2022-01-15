@@ -16,7 +16,7 @@
  * along with libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-01-09
+ * Last modified: 2022-01-15
  *
  * Data structures for vectors in coordinate format.
  */
@@ -649,7 +649,7 @@ int mtxvector_coordinate_set_constant_integer_double(
 
 /**
  * ‘mtxvector_coordinate_from_mtxfile()’ converts a vector in Matrix
- * Market format to a vector.
+ * Market format to a vector in coordinate format.
  */
 int mtxvector_coordinate_from_mtxfile(
     struct mtxvector_coordinate * vector,
@@ -663,39 +663,56 @@ int mtxvector_coordinate_from_mtxfile(
     if (mtxfile->header.format != mtxfile_coordinate)
         return MTX_ERR_INCOMPATIBLE_MTX_FORMAT;
 
+    /* Copy the Matrix Market file and perform assembly to remove any
+     * duplicate nonzero entries. */
+    struct mtxfile copy;
+    err = mtxfile_init_copy(&copy, mtxfile);
+    if (err)
+        return err;
+    err = mtxfile_assemble(&copy, mtxfile_row_major, 0, NULL);
+    if (err) {
+        mtxfile_free(&copy);
+        return err;
+    }
+
     int size = mtxfile->size.num_rows;
     int64_t num_nonzeros = mtxfile->size.num_nonzeros;
 
     if (mtxfile->header.field == mtxfile_real) {
         err = mtxvector_coordinate_alloc(
             vector, mtx_field_real, mtxfile->precision, size, num_nonzeros);
-        if (err)
+        if (err) {
+            mtxfile_free(&copy);
             return err;
+        }
         if (mtxfile->precision == mtx_single) {
             const struct mtxfile_vector_coordinate_real_single * data =
-                mtxfile->data.vector_coordinate_real_single;
+                copy.data.vector_coordinate_real_single;
             for (int64_t k = 0; k < num_nonzeros; k++) {
                 vector->indices[k] = data[k].i-1;
                 vector->data.real_single[k] = data[k].a;
             }
         } else if (mtxfile->precision == mtx_double) {
             const struct mtxfile_vector_coordinate_real_double * data =
-                mtxfile->data.vector_coordinate_real_double;
+                copy.data.vector_coordinate_real_double;
             for (int64_t k = 0; k < num_nonzeros; k++) {
                 vector->indices[k] = data[k].i-1;
                 vector->data.real_double[k] = data[k].a;
             }
         } else {
+            mtxfile_free(&copy);
             return MTX_ERR_INVALID_PRECISION;
         }
     } else if (mtxfile->header.field == mtxfile_complex) {
         err = mtxvector_coordinate_alloc(
             vector, mtx_field_complex, mtxfile->precision, size, num_nonzeros);
-        if (err)
+        if (err) {
+            mtxfile_free(&copy);
             return err;
+        }
         if (mtxfile->precision == mtx_single) {
             const struct mtxfile_vector_coordinate_complex_single * data =
-                mtxfile->data.vector_coordinate_complex_single;
+                copy.data.vector_coordinate_complex_single;
             for (int64_t k = 0; k < num_nonzeros; k++) {
                 vector->indices[k] = data[k].i-1;
                 vector->data.complex_single[k][0] = data[k].a[0];
@@ -703,47 +720,54 @@ int mtxvector_coordinate_from_mtxfile(
             }
         } else if (mtxfile->precision == mtx_double) {
             const struct mtxfile_vector_coordinate_complex_double * data =
-                mtxfile->data.vector_coordinate_complex_double;
+                copy.data.vector_coordinate_complex_double;
             for (int64_t k = 0; k < num_nonzeros; k++) {
                 vector->indices[k] = data[k].i-1;
                 vector->data.complex_double[k][0] = data[k].a[0];
                 vector->data.complex_double[k][1] = data[k].a[1];
             }
         } else {
+            mtxfile_free(&copy);
             return MTX_ERR_INVALID_PRECISION;
         }
     } else if (mtxfile->header.field == mtxfile_integer) {
         err = mtxvector_coordinate_alloc(
             vector, mtx_field_integer, mtxfile->precision, size, num_nonzeros);
-        if (err)
+        if (err) {
+            mtxfile_free(&copy);
             return err;
+        }
         if (mtxfile->precision == mtx_single) {
             const struct mtxfile_vector_coordinate_integer_single * data =
-                mtxfile->data.vector_coordinate_integer_single;
+                copy.data.vector_coordinate_integer_single;
             for (int64_t k = 0; k < num_nonzeros; k++) {
                 vector->indices[k] = data[k].i-1;
                 vector->data.integer_single[k] = data[k].a;
             }
         } else if (mtxfile->precision == mtx_double) {
             const struct mtxfile_vector_coordinate_integer_double * data =
-                mtxfile->data.vector_coordinate_integer_double;
+                copy.data.vector_coordinate_integer_double;
             for (int64_t k = 0; k < num_nonzeros; k++) {
                 vector->indices[k] = data[k].i-1;
                 vector->data.integer_double[k] = data[k].a;
             }
         } else {
+            mtxfile_free(&copy);
             return MTX_ERR_INVALID_PRECISION;
         }
     } else if (mtxfile->header.field == mtxfile_pattern) {
         err = mtxvector_coordinate_alloc(
             vector, mtx_field_pattern, mtx_single, size, num_nonzeros);
-        if (err)
+        if (err) {
+            mtxfile_free(&copy);
             return err;
+        }
         const struct mtxfile_vector_coordinate_pattern * data =
-            mtxfile->data.vector_coordinate_pattern;
+            copy.data.vector_coordinate_pattern;
         for (int64_t k = 0; k < num_nonzeros; k++)
             vector->indices[k] = data[k].i-1;
     } else {
+        mtxfile_free(&copy);
         return MTX_ERR_INVALID_MTX_FIELD;
     }
     for (int64_t k = 0; k < num_nonzeros; k++) {
@@ -751,15 +775,17 @@ int mtxvector_coordinate_from_mtxfile(
             vector->indices[k] >= size)
         {
             mtxvector_coordinate_free(vector);
+            mtxfile_free(&copy);
             return MTX_ERR_INDEX_OUT_OF_BOUNDS;
         }
     }
+    mtxfile_free(&copy);
     return MTX_SUCCESS;
 }
 
 /**
- * ‘mtxvector_coordinate_to_mtxfile()’ converts a vector to a vector
- * in Matrix Market format.
+ * ‘mtxvector_coordinate_to_mtxfile()’ converts a vector in coordinate
+ * format to a vector in Matrix Market format.
  */
 int mtxvector_coordinate_to_mtxfile(
     const struct mtxvector_coordinate * vector,

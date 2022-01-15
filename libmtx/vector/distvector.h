@@ -342,6 +342,7 @@ int mtxdistvector_from_mtxfile(
     struct mtxdistvector * distvector,
     const struct mtxfile * mtxfile,
     enum mtxvectortype vector_type,
+    const struct mtxpartition * partition,
     MPI_Comm comm,
     int root,
     struct mtxdisterror * disterr);
@@ -359,6 +360,7 @@ int mtxdistvector_from_mtxdistfile(
     struct mtxdistvector * distvector,
     const struct mtxdistfile * mtxdistfile,
     enum mtxvectortype vector_type,
+    const struct mtxpartition * partition,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 

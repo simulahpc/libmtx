@@ -16,7 +16,7 @@
  * along with libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-01-09
+ * Last modified: 2022-01-15
  *
  * Data structures for vectors in coordinate format.
  */
@@ -270,15 +270,15 @@ int mtxvector_coordinate_set_constant_integer_double(
 
 /**
  * ‘mtxvector_coordinate_from_mtxfile()’ converts a vector in Matrix
- * Market format to a vector.
+ * Market format to a vector in coordinate format.
  */
 int mtxvector_coordinate_from_mtxfile(
     struct mtxvector_coordinate * vector,
     const struct mtxfile * mtxfile);
 
 /**
- * ‘mtxvector_coordinate_to_mtxfile()’ converts a vector to a vector
- * in Matrix Market format.
+ * ‘mtxvector_coordinate_to_mtxfile()’ converts a vector in coordinate
+ * format to a vector in Matrix Market format.
  */
 int mtxvector_coordinate_to_mtxfile(
     const struct mtxvector_coordinate * vector,

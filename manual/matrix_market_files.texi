@@ -922,6 +922,7 @@ file @code{mtx}.
 
 
 @cindex compact
+@cindex duplicate nonzeros
 @findex mtxfile_compact
 When dealing with matrices in coordinate format, there may in general
 be multiple entries in a Matrix Market file with the same row and
@@ -989,7 +990,9 @@ two entries are merged into one, and the matrix instead becomes:
 3 3 2.0}
 @end example
 
+@anchor{mtxfile_assemble}
 @cindex assemble
+@cindex duplicate nonzeros
 @findex mtxfile_assemble
 If a Matrix Market file is not already sorted, then duplicate entries
 are not necessarily adjacent, and @code{mtxfile_compact} will not

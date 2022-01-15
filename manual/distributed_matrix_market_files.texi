@@ -331,14 +331,10 @@ int mtxdistfile_alloc_vector_array(
 @end example
 @code{field} must be @samp{mtxfile_real}, @samp{mtxfile_complex} or
 @samp{mtxfile_integer}. Moreover, @code{field} and @code{precision}
-must be the same on every process in the MPI communicator. Because
-matrices in array format are distributed according to a
-one-dimensional row distribution, @code{num_columns} must also be the
-same on every process. However, @code{num_rows} is allowed to differ
-between processes and should be used to specify the number of rows of
-the matrix or vector that will reside on the current process. The
-total number of rows in the distributed matrix is obtained by adding
-together the number of rows on each process.
+must be the same on every process in the MPI communicator. Likewise,
+@code{num_rows} and @code{num_columns} specify the total number of
+rows and columns in the distributed matrix or vector, and must
+therefore be the same on every process.
 
 The above functions allocate storage, but they do not initialise the
 underlying matrix or vector values. It is therefore up to the user to
@@ -518,6 +514,21 @@ processes. Next, the number of matrix or vector elements to send to
 each process is determined. For matrices in array format, the rows are
 evenly distributed among the processes. In all other cases, the total
 number of data lines is evenly distributed among the processes.
+
+@findex mtxdistfile_to_mtxfile
+The function @code{mtxdistfile_to_mtxfile} gathers a distributed
+Matrix Market file onto a single, root process, creating a regular,
+non-distributed Matrix Market file on that process.
+@example
+@code{int mtxdistfile_to_mtxfile(
+    struct mtxfile * dst,
+    const struct mtxdistfile * src,
+    int root,
+    struct mtxdisterror * disterr);}
+@end example
+The resulting Matrix Market file @code{dst} is only allocated on the
+process @code{root}, and so only this process should call
+@code{mtxfile_free} to free the allocated storage.
 
 
 @node Reading and writing distributed Matrix Market files
