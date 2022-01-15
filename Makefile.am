@@ -16,7 +16,7 @@
 # along with libmtx.  If not, see <https://www.gnu.org/licenses/>.
 #
 # Authors: James D. Trotter <james@simula.no>
-# Last modified: 2022-01-14
+# Last modified: 2022-01-15
 #
 # Makefile for the top-level directory of libmtx.
 #
@@ -32,11 +32,20 @@ EXTRA_DIST = \
 	INSTALL \
 	README \
 	autogen.sh \
+	manual/image/partition.eps \
+	manual/image/partition.pdf \
+	manual/image/partition.png \
+	manual/image/partition.svg \
+	manual/image/webbase-1M.eps \
+	manual/image/webbase-1M.png \
+	manual/image/webbase-1M_rcm.eps \
+	manual/image/webbase-1M_rcm.png \
 	manual/texinfo.css \
 	tests/test_distsort_parallel \
 	tests/test_mtx_mpi_parallel \
 	tests/test_mtxdistfile_parallel \
-	tests/test_mtxdistvector_parallel
+	tests/test_mtxdistvector_parallel \
+	tests/test_mtxfile_mpi_parallel
 
 # Matrix Market library
 lib_LTLIBRARIES = libmtx.la
@@ -96,6 +105,8 @@ libmtx_la_SOURCES = \
 	libmtx/util/partition.c \
 	libmtx/util/sort.c \
 	libmtx/util/sort.h \
+	libmtx/util/transpose.c \
+	libmtx/util/transpose.h \
 	libmtx/vector/array.c \
 	libmtx/vector/array/blas.c \
 	libmtx/vector/array/data.c \
@@ -415,3 +426,14 @@ manual_libmtx_TEXINFOS = \
 	manual/version.texi
 AM_MAKEINFOHTMLFLAGS = --css-include=$(srcdir)/manual/texinfo.css
 $(top_builddir)/manual/libmtx.html: $(srcdir)/manual/texinfo.css
+install-html-local: $(top_srcdir)/manual/image/partition.png
+install-html-local: $(top_srcdir)/manual/image/webbase-1M.png
+install-html-local: $(top_srcdir)/manual/image/webbase-1M_rcm.png
+install-html-local:
+	echo " $(MKDIR_P) '$(DESTDIR)$(htmldir)'"; \
+	$(INSTALL) -d "$(DESTDIR)$(htmldir)/libmtx.html/image"; \
+	echo " $(INSTALL_DATA) -t '$(DESTDIR)$(htmldir)/libmtx.html/image' $(top_srcdir)/manual/image/*"; \
+	$(INSTALL_DATA) -t '$(DESTDIR)$(htmldir)/libmtx.html/image' $(top_srcdir)/manual/image/*
+
+uninstall-local:
+	-rm -rf "$(DESTDIR)$(htmldir)/libmtx.html/image"

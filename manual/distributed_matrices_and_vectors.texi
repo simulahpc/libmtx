@@ -184,11 +184,12 @@ To create a double precision, complex vector in coordinate format, use
     struct mtxdisterror * disterr);}
 @end example
 The arguments @code{idx} and @code{data} are arrays of length
-@code{num_nonzeros}. For each nonzero value
-@code{k=0,1,...,num_nonzeros-1}, @code{idx[k]} is an index in the
-range @samp{[0,N)}, where @samp{N} is the size of the part owned by
-the current process, (i.e., @samp{partition->part_sizes[rank]}, where
-@samp{rank} is the rank of the current process).
+@code{num_nonzeros}. Each process may provide arrays of different
+lengths. For each nonzero value @code{k=0,1,...,num_nonzeros-1},
+@code{idx[k]} is an index in the range @samp{[0,N)}, where @samp{N} is
+the size of the part owned by the current process, (i.e.,
+@samp{partition->part_sizes[rank]}, where @samp{rank} is the rank of
+the current process).
 
 Note that duplicate entries are allowed, but this may cause some
 operations (e.g., @code{mtxdistvector_dot}, @code{mtxdistvector_nrm2})) to
@@ -232,11 +233,23 @@ storage is accessed through the appropriate member of the
 
 @node Converting distributed vectors to and from Matrix Market format
 @subsection Converting to and from Matrix Market format
-In many cases, a vector may already be available in Matrix Market
-format. However, for reasons involving both performance and
-convenience, it is often a good idea to convert the data from Matrix
-Market format to a more suitable representation before carrying out
-computations.
+@cindex convert to and from Matrix Market format
+@cindex convert to and from distributed Matrix Market format
+A distributed vector can be obtained from a Matrix Market file by
+distributing the Matrix Market entries across multiple processes
+before converting the data on each process to the desired vector
+storage format. Typically, this involves partitioning the rows of the
+vector and distributing the data accordingly. If the Matrix Market
+file is already distributed across several processes, then the data is
+partitioned and redistributed before converting to the desired vector
+storage format.
+
+Conversely, a distributed vector can be converted directly to
+distributed Matrix Market format without the need for redistributing
+any data. If desirable, the data may also be gathered onto a single,
+root process after converting to Matrix Market format. In either case,
+converting to Matrix Market format allows the data to be easily
+written to a Matrix Market file.
 
 @findex mtxdistvector_from_mtxfile
 To convert a vector in Matrix Market format to @code{struct
@@ -274,6 +287,37 @@ the function @code{mtxdistvector_to_mtxfile} can be used.
 @end example
 The resulting Matrix Market file may be a vector in array or
 coordinate format, depending on the type of @code{mtxdistvector}.
+
+
+@findex mtxdistvector_from_mtxdistfile
+If a Matrix Market file has already been distributed among multiple
+processes, then @code{mtxdistvector_from_mtxdistfile} can be used to
+obtain a distributed vector with the desired partitioning and storage
+format.
+@example
+@code{int mtxdistvector_from_mtxdistfile(
+    struct mtxdistvector * distvector,
+    const struct mtxdistfile * mtxdistfile,
+    enum mtxvectortype vector_type,
+    const struct mtxpartition * partition,
+    MPI_Comm comm,
+    struct mtxdisterror * disterr);}
+@end example
+Each process partitions its part of the distributed Matrix Market
+file. The data is then redistributed after partitioning.
+
+
+@findex mtxdistvector_to_mtxdistfile
+The function @code{mtxdistvector_to_mtxdistfile} will convert a
+distributed vector to a distributed Matrix Market format.
+@example
+@code{int mtxdistvector_to_mtxdistfile(
+    const struct mtxdistvector * distvector,
+    struct mtxdistfile * mtxdistfile,
+    struct mtxdisterror * disterr);}
+@end example
+In this case, there is no redistribution or communication of the
+underlying data.
 
 
 @node Halo exchange

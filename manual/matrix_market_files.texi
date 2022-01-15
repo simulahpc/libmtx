@@ -15,7 +15,7 @@
 @c along with libmtx.  If not, see <https://www.gnu.org/licenses/>.
 @c
 @c Authors: James D. Trotter <james@simula.no>
-@c Last modified: 2022-01-14
+@c Last modified: 2022-01-15
 @c
 @c libmtx User Guide: Matrix Market files.
 
@@ -92,7 +92,6 @@ This section describes the basic data types used to represent objects
 in the Matrix Market file format.
 
 @tindex struct mtxfile
-@tindex mtxfile
 The file @file{libmtx/mtxfile/mtxfile.h} defines the @code{struct
 mtxfile} type.  The main purpose of @code{struct mtxfile} is to
 represent objects in Matrix Market format, including dense and sparse
@@ -144,10 +143,10 @@ line of a Matrix Market file.
 @};}
 @end example
 
-@tindex mtxfileobject
-@tindex mtxfileformat
-@tindex mtxfilefield
-@tindex mtxfilesymmetry
+@tindex enum mtxfileobject
+@tindex enum mtxfileformat
+@tindex enum mtxfilefield
+@tindex enum mtxfilesymmetry
 The four enum types, @code{mtxfileobject}, @code{mtxfileformat},
 @code{mtxfilefield} and @code{mtxfilesymmetry} are used to represent values
 that appear in the Matrix Market header (see @ref{Header line}).  The
@@ -274,7 +273,7 @@ vector values to fixed-precision integer or floating point types. The
 @cindex double precision
 @c @cindex quad precision
 @c @cindex arbitrary precision
-@tindex mtxprecision
+@tindex enum mtxprecision
 @example
 @code{enum mtxprecision @{
 @c    mtx_half,         /* Half (16-bit) precision */
@@ -363,13 +362,14 @@ matrices or vectors in array format may not have @code{field} set to
 @samp{mtxfile_pattern}.
 
 @cindex coordinate format
-@tindex mtxfile_matrix_coordinate_real_single
-@tindex mtxfile_matrix_coordinate_real_double
-@tindex mtxfile_matrix_coordinate_complex_single
-@tindex mtxfile_matrix_coordinate_complex_double
-@tindex mtxfile_matrix_coordinate_integer_single
-@tindex mtxfile_matrix_coordinate_integer_double
-@tindex mtxfile_matrix_coordinate_pattern
+@tindex struct mtxfile_matrix_coordinate_@var{field}_@var{precision}
+@tindex struct mtxfile_matrix_coordinate_real_single
+@tindex struct mtxfile_matrix_coordinate_real_double
+@tindex struct mtxfile_matrix_coordinate_complex_single
+@tindex struct mtxfile_matrix_coordinate_complex_double
+@tindex struct mtxfile_matrix_coordinate_integer_single
+@tindex struct mtxfile_matrix_coordinate_integer_double
+@tindex struct mtxfile_matrix_coordinate_pattern
 For a matrix in coordinate format, values are stored in the union
 member @code{matrix_coordinate_@var{field}_@var{precision}}, which is
 an array of type @code{struct
@@ -418,13 +418,14 @@ nonzero value with row index @code{i} and column index @code{j}
 indicates that the matrix has a value of @code{1} at position
 @code{(i,j)}.
 
-@tindex mtxfile_vector_coordinate_real_single
-@tindex mtxfile_vector_coordinate_real_double
-@tindex mtxfile_vector_coordinate_complex_single
-@tindex mtxfile_vector_coordinate_complex_double
-@tindex mtxfile_vector_coordinate_integer_single
-@tindex mtxfile_vector_coordinate_integer_double
-@tindex mtxfile_vector_coordinate_pattern
+@tindex struct mtxfile_vector_coordinate_@var{field}_@var{precision}
+@tindex struct mtxfile_vector_coordinate_real_single
+@tindex struct mtxfile_vector_coordinate_real_double
+@tindex struct mtxfile_vector_coordinate_complex_single
+@tindex struct mtxfile_vector_coordinate_complex_double
+@tindex struct mtxfile_vector_coordinate_integer_single
+@tindex struct mtxfile_vector_coordinate_integer_double
+@tindex struct mtxfile_vector_coordinate_pattern
 Vectors in coordinate format are treated similarly to matrices, except
 that the column index is omitted. More specifically, vector values are
 stored in the union member
@@ -882,7 +883,7 @@ If @code{mtxfile} is a vector, nothing is done.
 @node Sort
 @subsection Sort, compact and assemble
 @cindex sort
-@tindex mtxfilesorting
+@tindex enum mtxfilesorting
 Sometimes, it is useful to sort the values of a matrix or vector in
 some particular order. For this purpose, the enum type
 @code{mtxfilesorting} is used to enumerate different ways of sorting
@@ -1011,31 +1012,40 @@ compaction.
 @node Partition
 @subsection Partition
 @cindex partition
-@tindex mtxpartitioning
-Partitioning is needed, for example, when distributing a matrix or
-vector among multiple processes (see @ref{Distributed matrices and
-vectors}).
+Partitioning refers to the process of dividing up a matrix or vector
+into several parts. This is needed, for example, when distributing a
+matrix or vector among multiple processes (see @ref{Distributed Matrix
+Market files} and @ref{Distributed matrices and vectors}).
 
+@tindex enum mtxpartitioning
 The file @code{libmtx/util/partition.h} defines the type @code{enum
-mtxpartitioning}, which is used to represent different ways of
-partitioning a finite set (e.g., the rows or columns of a matrix). The
-values of this enum type are described below. We follow the convention
-of using the integers 0, 1, ..., @var{N} − 1 to label the elements of
-a finite set of size @var{N} that is to be partitioned. Moreover, we
-use @var{P} to denote the number of parts in the partition, and the
-set @var{P}@sub{@var{i}} denotes the @var{i}th part.
+mtxpartitioning}, which is used to distinguish between different ways
+of partitioning a finite set (e.g., the rows or columns of a
+matrix). The values of this enum type are described below. We follow
+the convention of using the integers 0, 1, ..., @var{N} − 1 to label
+the elements of a finite set of size @var{N} that is to be
+partitioned. Moreover, we use @var{P} to denote the number of parts in
+the partition, and the set @var{P}@sub{@var{i}} denotes the @var{i}th
+part.
 
-@cindex singleton partition
-@cindex block partition
-@cindex cyclic partition
-@cindex block-cyclic partition
-@cindex user-defined partition
+In addition to the ``global'' numbering of elements mentioned above,
+partitioning a set automatically introduces a local numbering of
+elements. The local number of an element has two components: the part
+number and the local number of the element within that part. More
+specifically, the @var{i}th part of a partition, @var{P}@sub{@var{i}},
+consists of @var{N}@sub{@var{i}} elements, @var{P}@sub{@var{i},0},
+@var{P}@sub{@var{i},1}, ...,
+@var{P}@sub{@var{i},@var{N}@sub{@var{i}}-1}.
+
+The following methods of partitioning are supported.
 @itemize
 @item @code{mtx_singleton}
+@cindex singleton partition
 is a singleton partition with only one non-empty component. That is,
 @var{P} = 1 and @var{P}@sub{0} = @{0, 1, ..., @var{N} − 1@}.
 
 @item @code{mtx_block}
+@cindex block partition
 is a partitioning into contiguous blocks of varying size. Let
 @var{N}@sub{@var{i}} denote the number of elements in the @var{i}th
 part, @var{P}@sub{@var{i}}. Furthermore, let @var{S}@sub{@var{i}}
@@ -1048,6 +1058,7 @@ on. The @var{i}th part, @var{P}@sub{@var{i}}, is empty if
 @var{S}@sub{@var{i}} @math{+} @var{N}@sub{@var{i}} − 1@}.
 
 @item @code{mtx_cyclic}
+@cindex cyclic partition
 is a cyclic partitioning, where the @var{i}th part,
 @var{P}@sub{@var{i}}, is made up of the elements @{@var{i}, @var{i}
 @math{+} @var{P}, @var{i} @math{+} 2@var{P}, ..., @var{i} @math{+}
@@ -1061,6 +1072,7 @@ remainder of the division.  Then, @var{N}@sub{@var{i}} =
 @var{N}@sub{@var{i}} = @var{q} otherwise.
 
 @item @code{mtx_block_cyclic}
+@cindex block-cyclic partition
 is cyclic partitioning of fixed-size blocks. If the size of each block
 is denoted by @var{M}, then the @var{j}th block, @var{B}@sub{@var{j}},
 is made up of the elements @{@var{j}@var{M}, @var{j}@var{M} @math{+}
@@ -1069,6 +1081,7 @@ is made up of the elements @{@var{j}@var{M}, @var{j}@var{M} @math{+}
 parts @var{P}@sub{@var{i}}.
 
 @item @code{mtx_custom_partition}
+@cindex user-defined partition
 is a general, user-defined partitioning, where each part,
 @var{P}@sub{@var{i}}, is given in the form of an array of length
 @var{N}@sub{@var{i}} consisting of unique elements
@@ -1078,6 +1091,16 @@ P@sub{@var{i}}[@var{N}@sub{@var{i}}-1]}. Every element
 @code{P@sub{@var{i}}} to ensure that parts are pairwise disjoint and
 cover the entire set.
 @end itemize
+
+The different partitioning methods are also illustrated in
+@ref{fig:partition}.
+@float Figure,fig:partition
+@center @image{image/partition,,,,.png}
+
+@caption{Examples of partitioning a set into three parts, where each
+part is indicated by a different colour.}
+@end float
+
 
 @tindex struct mtxpartition
 The type @code{struct mtxpartition} is used represent a partitioning
@@ -1204,6 +1227,40 @@ number of column parts (@samp{colpart->num_parts}). Note that the
 Note that the user is responsible for freeing storage allocated for
 each Matrix Market file in the @code{dsts} array.
 
+@cindex local-to-global mapping
+@cindex global-to-local mapping
+Once a set has been partitioned, it is frequently necessary to
+translate between the global numbering of elements and the local
+numbering within each part. This can be done with the functions
+@code{mtxpartition_globalidx} and @code{mtxpartition_localidx}.
+@example
+@code{int mtxpartition_globalidx(
+    const struct mtxpartition * partition,
+    int part,
+    int64_t size,
+    const int64_t * localelem,
+    int64_t * globalelem);
+
+int mtxpartition_localidx(
+    const struct mtxpartition * partition,
+    int part,
+    int64_t size,
+    const int64_t * globalelem,
+    int64_t * localelem);}
+@end example
+Here, @code{part} is an integer between @samp{0} and
+@samp{partition->num_parts-1} signifying the part number to use when
+translating from local to global element numbers or from global to
+local element numbers. The arguments @code{localelem} and
+@code{globalelem} are arrays of length @code{size}. For
+@code{mtxpartition_globalidx}, the @code{localelem} array contains the
+local element numbers that should be translated to their corresponding
+global element numbers. The global numbers are stored in
+@code{globalelem}. Conversely, for @code{mtxpartition_localidx}, the
+@code{globalelem} array contains the global element numbers that
+should be translated to their corresponding local element numbers,
+which are stored in @code{localelem}.
+
 
 @node Reorder
 @subsection Reorder
@@ -1239,7 +1296,7 @@ row @code{rowperm[i-1]} and column @code{colperm[j-1]} of the original
 matrix, for @code{i=1,2,...,@var{M}} and @code{j=1,2,...,@var{N}}.
 
 @cindex ordering
-@tindex mtxfileordering
+@tindex enum mtxfileordering
 In addition to permuting a matrix or vector, libmtx also provides
 functions to obtain row and column permutations for certain orderings.
 The enum type @code{mtxfileordering} is used to enumerate different
@@ -1292,7 +1349,17 @@ the chosen starting vertex.
 If @code{mtxfile_reorder} is called with @code{ordering} set to
 @samp{mtxfile_rcm}, then the rows and columns of a matrix are
 reordered according to the Reverse Cuthill-McKee algorithm
-(@pxref{E. Cuthill and J. McKee (1969)}).
+(@pxref{E. Cuthill and J. McKee (1969)}). See @ref{fig:webbase-1M} for
+an example of the RCM reordering applied to the matrix ``webbase-1M''
+from the ``Williams'' group in the SuiteSparse Matrix Collection
+(@ref{T. Davis@comma{} Y. Hu and S. Kolodziej (2021)}).
+
+@float Figure,fig:webbase-1M
+@center @w{@image{image/webbase-1M,50mm,50mm}@ @ @ @ @ @image{image/webbase-1M_rcm,50mm,50mm}}
+
+@caption{Sparsity pattern of the matrix ``webbase-1M'' with original
+ordering (left) and RCM ordering (right).}
+@end float
 
 The RCM algorithm considers the matrix as the adjacency matrix of an
 undirected graph. The vertices of the graph, which correspond to rows
