@@ -403,15 +403,16 @@ int mtxdistfile_alloc_vector_coordinate(
     struct mtxdisterror * disterr);}
 @end example
 The main differences compared to array formats are: @code{field} is
-allowed to be @samp{mtxfile_pattern}, an additional argument
+allowed to be @samp{mtxfile_pattern}, and an additional argument
 (@code{num_nonzeros}) is needed to specify the number of (nonzero)
-matrix or vector entries, and @code{num_rows} and @code{num_columns}
-must have the same values on every process. However,
-@code{num_nonzeros} may have different values on different processes,
-and each process should use this argument to specify the number of
-matrix or vector entries that will reside on the current process. The
-total number of matrix or vector entries in the distributed matrix is
-obtained by adding together the number of entries on each process.
+matrix or vector entries. Note that @code{num_nonzeros} is the total
+number of nonzeros in the distributed Matrix Market file, and every
+process must specify the same value for this argument. The number of
+nonzeros that will reside on each process is determined by
+@code{partition}. This argument is used to give a partitioning of a
+set of size @code{num_nonzeros} into a number of parts, such that
+there is at most one part per process in the MPI communicator
+@code{comm}.
 
 @findex mtxdistfile_init_@var{object}_coordinate_@var{field}_@var{precision}
 The above functions allocate storage, but they do not initialise the
