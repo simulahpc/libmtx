@@ -213,6 +213,7 @@ of rows, columns and nonzeros in the underlying matrix or vector.
 @};}
 @end example
 
+@cindex column vector
 In the case of a matrix, @code{num_rows} and @code{num_columns} are
 non-negative integers representing the number of rows and columns in
 the matrix, respectively. By convention, vectors are represented as

@@ -229,27 +229,31 @@ Matrix Market file, and it depends both on the @code{@var{object}} and
 @code{@var{format}} values in the header.
 
 @itemize
-@cindex dense vector
 @item
+@cindex dense vector
+@cindex row vector
+@cindex column vector
 For dense vectors, where @code{@var{object}} is @code{vector} and
 @code{@var{format}} is @code{array}, the size line is on the form
 @example
 @code{@var{m}}
 @end example
-Here, @code{@var{m}} denotes the number of rows for a row vector, or,
-alternatively, the number of columns for a column vector.  This is
+Here, @code{@var{m}} denotes the number of rows of a column vector,
+or, alternatively, the number of columns of a row vector.  This is
 also the number of vector entries that are stored in the data section
 of the Matrix Market file.
 
-@cindex sparse vector
 @item
+@cindex sparse vector
+@cindex row vector
+@cindex column vector
 For sparse vectors, where @code{@var{object}} is @code{vector} and
 @code{@var{format}} is @code{coordinate}, the size line is on the form
 @example
 @code{@var{m} @var{nnz}}
 @end example
-Here, @code{@var{m}} denotes the number of rows for a row vector, or,
-alternatively, the number of columns for a column vector, whereas
+Here, @code{@var{m}} denotes the number of rows of a column vector,
+or, alternatively, the number of columns of a row vector, whereas
 @code{@var{nnz}} denotes the number of (nonzero) vector entries that
 are explicitly stored in the data section of the Matrix Market file.
 
