@@ -1,6 +1,6 @@
 /* This file is part of libmtx.
  *
- * Copyright (C) 2021 James D. Trotter
+ * Copyright (C) 2022 James D. Trotter
  *
  * libmtx is free software: you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -17,7 +17,7 @@
  * <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-08-09
+ * Last modified: 2022-01-16
  *
  * Input/output for Matrix Market objects.
  */
@@ -35,7 +35,7 @@
 #include <libmtx/vector/coordinate.h>
 #include <libmtx/vector/coordinate/io.h>
 
-#include "../util/format.h"
+#include "../util/fmtspec.h"
 #include "../util/io.h"
 #include "../util/parse.h"
 
@@ -1026,9 +1026,9 @@ static int validate_format_string(
     const char * format_str,
     enum mtx_field field)
 {
-    struct format_specifier format;
+    struct fmtspec format;
     const char * endptr;
-    int err = parse_format_specifier(format_str, &format, &endptr);
+    int err = parse_fmtspec(format_str, &format, &endptr);
     if (err) {
         errno = err;
         return MTX_ERR_ERRNO;
@@ -1036,19 +1036,19 @@ static int validate_format_string(
         return MTX_ERR_INVALID_FORMAT_SPECIFIER;
     }
 
-    if (format.width == format_specifier_width_star ||
-        format.precision == format_specifier_precision_star ||
-        format.length != format_specifier_length_none ||
+    if (format.width == fmtspec_width_star ||
+        format.precision == fmtspec_precision_star ||
+        format.length != fmtspec_length_none ||
         ((field == mtx_real ||
           field == mtx_complex) &&
-         (format.specifier != format_specifier_e &&
-          format.specifier != format_specifier_E &&
-          format.specifier != format_specifier_f &&
-          format.specifier != format_specifier_F &&
-          format.specifier != format_specifier_g &&
-          format.specifier != format_specifier_G)) ||
+         (format.specifier != fmtspec_e &&
+          format.specifier != fmtspec_E &&
+          format.specifier != fmtspec_f &&
+          format.specifier != fmtspec_F &&
+          format.specifier != fmtspec_g &&
+          format.specifier != fmtspec_G)) ||
         (field == mtx_integer &&
-         (format.specifier != format_specifier_d)))
+         (format.specifier != fmtspec_d)))
     {
         return MTX_ERR_INVALID_FORMAT_SPECIFIER;
     }

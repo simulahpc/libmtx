@@ -1,6 +1,6 @@
 /* This file is part of libmtx.
  *
- * Copyright (C) 2021 James D. Trotter
+ * Copyright (C) 2022 James D. Trotter
  *
  * libmtx is free software: you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -17,7 +17,7 @@
  * <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-08-09
+ * Last modified: 2022-01-16
  *
  * Input/output for sparse matrices in coordinate format.
  */
@@ -29,7 +29,7 @@
 #include <libmtx/mtx/mtx.h>
 #include <libmtx/matrix/coordinate.h>
 
-#include "libmtx/util/format.h"
+#include "libmtx/util/fmtspec.h"
 #include "libmtx/util/parse.h"
 
 #include <errno.h>

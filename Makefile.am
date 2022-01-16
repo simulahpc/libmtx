@@ -16,7 +16,7 @@
 # along with libmtx.  If not, see <https://www.gnu.org/licenses/>.
 #
 # Authors: James D. Trotter <james@simula.no>
-# Last modified: 2022-01-15
+# Last modified: 2022-01-16
 #
 # Makefile for the top-level directory of libmtx.
 #
@@ -95,8 +95,8 @@ libmtx_la_SOURCES = \
 	libmtx/util/cuthill_mckee.c \
 	libmtx/util/cuthill_mckee.h \
 	libmtx/util/distpartition.c \
-	libmtx/util/format.c \
-	libmtx/util/format.h \
+	libmtx/util/fmtspec.c \
+	libmtx/util/fmtspec.h \
 	libmtx/util/index_set.c \
 	libmtx/util/io.c \
 	libmtx/util/io.h \
@@ -329,7 +329,7 @@ tests_test_mtx_transpose_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_
 tests_test_mtx_transpose_SOURCES = tests/test_mtx_transpose.c tests/test.h
 tests_test_format_CPPFLAGS = $(MPICPPFLAGS)
 tests_test_format_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
-tests_test_format_SOURCES = tests/test_format.c tests/test.h
+tests_test_format_SOURCES = tests/test_fmtspec.c tests/test.h
 tests_test_parse_CPPFLAGS = $(MPICPPFLAGS)
 tests_test_parse_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
 tests_test_parse_SOURCES = tests/test_parse.c tests/test.h
