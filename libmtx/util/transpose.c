@@ -16,7 +16,7 @@
  * along with libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-10-09
+ * Last modified: 2022-01-16
  *
  * Different ways of transposing matrices and vectors.
  */
@@ -30,7 +30,7 @@
 /**
  * ‘mtxtransposition_str()’ is a string representing the transpose type.
  */
-const char * mtxtransposition_str_(
+const char * mtxtransposition_str(
     enum mtxtransposition transpose)
 {
     switch (transpose) {
