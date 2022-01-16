@@ -54,7 +54,7 @@ The definition of @code{struct mtxdistvector} is shown below.
 @};}
 @end example
 Similar to @code{mtxdistfile} (see @ref{Data structures for
-distributed Matrix Market files}), The first three struct members of
+distributed Matrix Market files}), the first three struct members of
 @code{mtxdistvector} contain information about the group of processes
 sharing the distributed vector. This includes their MPI communicator
 (@code{comm}), the number of processes (@code{comm_size}) and the rank
