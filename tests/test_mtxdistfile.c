@@ -174,8 +174,8 @@ int test_mtxdistfile_from_mtxfile(void)
      */
 
     {
-        int num_rows = 4;
-        int num_columns = 4;
+        int num_rows = 5;
+        int num_columns = 5;
         const struct mtxfile_matrix_coordinate_real_double mtxdata[] = {
             {4, 4, 4.0}, {3, 3, 3.0}, {2, 2, 2.0}, {1, 1, 1.0}};
         int64_t num_nonzeros = sizeof(mtxdata) / sizeof(*mtxdata);
@@ -198,8 +198,8 @@ int test_mtxdistfile_from_mtxfile(void)
         TEST_ASSERT_EQ(mtxfile_real, mtxdistfile.header.field);
         TEST_ASSERT_EQ(mtxfile_general, mtxdistfile.header.symmetry);
         TEST_ASSERT_EQ(mtx_double, mtxdistfile.precision);
-        TEST_ASSERT_EQ(4, mtxdistfile.size.num_rows);
-        TEST_ASSERT_EQ(4, mtxdistfile.size.num_columns);
+        TEST_ASSERT_EQ(5, mtxdistfile.size.num_rows);
+        TEST_ASSERT_EQ(5, mtxdistfile.size.num_columns);
         TEST_ASSERT_EQ(4, mtxdistfile.size.num_nonzeros);
         TEST_ASSERT_EQ(mtx_double, mtxdistfile.precision);
         TEST_ASSERT_EQ(4, mtxdistfile.partition.size);
