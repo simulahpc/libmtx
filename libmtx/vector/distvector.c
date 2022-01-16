@@ -638,6 +638,35 @@ int mtxdistvector_from_mtxfile(
 }
 
 /**
+ * ‘mtxdistvector_to_mtxfile()’ gathers a distributed vector onto a
+ * single, root process and converts it to a (non-distributed) Matrix
+ * Market file on that process.
+ *
+ * This function performs collective communication and therefore
+ * requires every process in the communicator to perform matching
+ * calls to this function.
+ */
+int mtxdistvector_to_mtxfile(
+    struct mtxfile * dst,
+    const struct mtxdistvector * src,
+    int root,
+    struct mtxdisterror * disterr)
+{
+    int err;
+    struct mtxdistfile mtxdistfile;
+    err = mtxdistvector_to_mtxdistfile(src, &mtxdistfile, disterr);
+    if (err)
+        return err;
+    err = mtxdistfile_to_mtxfile(dst, &mtxdistfile, root, disterr);
+    if (err) {
+        mtxdistfile_free(&mtxdistfile);
+        return err;
+    }
+    mtxdistfile_free(&mtxdistfile);
+    return MTX_SUCCESS;
+}
+
+/**
  * ‘mtxdistvector_from_mtxdistfile()’ converts a vector in distributed
  * Matrix Market format to a distributed vector.
  */
@@ -736,26 +765,81 @@ int mtxdistvector_from_mtxdistfile(
  */
 int mtxdistvector_to_mtxdistfile(
     const struct mtxdistvector * distvector,
-    struct mtxdistfile * mtxdistfile,
+    struct mtxdistfile * dst,
     struct mtxdisterror * disterr)
 {
-#if 0
     int err;
+    MPI_Comm comm = distvector->comm;
+    int comm_size = distvector->comm_size;
+    int rank = distvector->rank;
+
     struct mtxfile mtxfile;
     err = mtxvector_to_mtxfile(&distvector->interior, &mtxfile);
     if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
-    err = mtxdistfile_init(mtxdistfile, &mtxfile, distvector->comm, disterr);
+
+    /* TODO: Map from local numbering of rows on each process to
+     * global row numbering? */
+
+    int64_t * part_sizes = malloc(comm_size * sizeof(int64_t));
+    err = !part_sizes ? MTX_ERR_ERRNO : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err)) {
+        mtxfile_free(&mtxfile);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+
+    int64_t part_size = mtxfile.header.format == mtxfile_array
+        ? mtxfile.size.num_rows : mtxfile.size.num_nonzeros;
+    disterr->mpierrcode = MPI_Allgather(
+        &part_size, 1, MPI_INT64_T, part_sizes, 1, MPI_INT64_T, comm);
+    err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err)) {
+        free(part_sizes);
+        mtxfile_free(&mtxfile);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+
+    int64_t size = 0;
+    for (int p = 0; p < comm_size; p++)
+        size += part_sizes[p];
+
+    struct mtxpartition partition;
+    err = mtxpartition_init_block(
+        &partition, size, comm_size, part_sizes);
+    if (mtxdisterror_allreduce(disterr, err)) {
+        free(part_sizes);
+        mtxfile_free(&mtxfile);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+    free(part_sizes);
+
+    if (mtxfile.header.format == mtxfile_array) {
+        mtxfile.size.num_rows = size;
+    } else if (mtxfile.header.format == mtxfile_coordinate) {
+        disterr->mpierrcode = MPI_Allreduce(
+            MPI_IN_PLACE, &mtxfile.size.num_rows, 1, MPI_INT, MPI_SUM, comm);
+        err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+        if (mtxdisterror_allreduce(disterr, err)) {
+            free(part_sizes);
+            mtxfile_free(&mtxfile);
+            return MTX_ERR_MPI_COLLECTIVE;
+        }
+        mtxfile.size.num_nonzeros = size;
+    }
+
+    err = mtxdistfile_alloc(
+        dst, &mtxfile.header, &mtxfile.comments,
+        &mtxfile.size, mtxfile.precision,
+        &partition, distvector->comm, disterr);
     if (err) {
+        mtxpartition_free(&partition);
         mtxfile_free(&mtxfile);
         return err;
     }
-    mtxfile_free(&mtxfile);
+    mtxpartition_free(&partition);
+    dst->data = mtxfile.data;
+    mtxfilecomments_free(&mtxfile.comments);
     return MTX_SUCCESS;
-#else
-    errno = ENOTSUP;
-    return MTX_ERR_ERRNO;
-#endif
 }
 
 /*

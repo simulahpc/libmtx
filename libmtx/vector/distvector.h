@@ -348,13 +348,23 @@ int mtxdistvector_from_mtxfile(
     struct mtxdisterror * disterr);
 
 /**
+ * ‘mtxdistvector_to_mtxfile()’ gathers a distributed vector onto a
+ * single, root process and converts it to a (non-distributed) Matrix
+ * Market file on that process.
+ *
+ * This function performs collective communication and therefore
+ * requires every process in the communicator to perform matching
+ * calls to this function.
+ */
+int mtxdistvector_to_mtxfile(
+    struct mtxfile * dst,
+    const struct mtxdistvector * src,
+    int root,
+    struct mtxdisterror * disterr);
+
+/**
  * ‘mtxdistvector_from_mtxdistfile()’ converts a vector in distributed
  * Matrix Market format to a distributed vector.
- *
- * TODO: This function should also ensure that the distributed vector
- * is partitioned (that is, each location in the vector is assigned to
- * a single process.)  Furthermore, the array and coordinate vectors
- * on each process should ensure that there are no duplicate entries.
  */
 int mtxdistvector_from_mtxdistfile(
     struct mtxdistvector * distvector,

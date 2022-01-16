@@ -334,6 +334,167 @@ int test_mtxdistvector_from_mtxdistfile(void)
 }
 
 /**
+ * `test_mtxdistvector_to_mtxdistfile()' tests converting distributed
+ * vectors to distributed Matrix Market files.
+ */
+int test_mtxdistvector_to_mtxdistfile(void)
+{
+    int err;
+    char mpierrstr[MPI_MAX_ERROR_STRING];
+    int mpierrstrlen;
+    MPI_Comm comm = MPI_COMM_WORLD;
+    int root = 0;
+
+    int comm_size;
+    err = MPI_Comm_size(comm, &comm_size);
+    if (err) {
+        MPI_Error_string(err, mpierrstr, &mpierrstrlen);
+        fprintf(stderr, "%s: MPI_Comm_size failed with %s\n",
+                program_invocation_short_name, mpierrstr);
+        MPI_Abort(comm, EXIT_FAILURE);
+    }
+    int rank;
+    err = MPI_Comm_rank(comm, &rank);
+    if (err) {
+        MPI_Error_string(err, mpierrstr, &mpierrstrlen);
+        fprintf(stderr, "%s: MPI_Comm_rank failed with %s\n",
+                program_invocation_short_name, mpierrstr);
+        MPI_Abort(comm, EXIT_FAILURE);
+    }
+    if (comm_size != 2)
+        TEST_FAIL_MSG("Expected exactly two MPI processes");
+
+    struct mtxdisterror disterr;
+    err = mtxdisterror_alloc(&disterr, comm, NULL);
+    if (err)
+        MPI_Abort(comm, EXIT_FAILURE);
+
+    /*
+     * Array formats
+     */
+
+    {
+        int num_rows = 8;
+        const double * srcdata = (rank == 0)
+            ? ((const double[2]) {1.0, 2.0})
+            : ((const double[6]) {3.0, 4.0, 5.0, 6.0, 7.0, 8.0});
+
+        int num_parts = comm_size;
+        int64_t part_sizes[] = {2,6};
+        struct mtxpartition partition;
+        err = mtxpartition_init_block(
+            &partition, num_rows, num_parts, part_sizes);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+
+        struct mtxdistvector src;
+        err = mtxdistvector_init_array_real_double(
+            &src, num_rows, srcdata, &partition, comm, &disterr);
+        TEST_ASSERT_EQ_MSG(
+            MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
+            ? mtxdisterror_description(&disterr) : mtxstrerror(err));
+        mtxpartition_free(&partition);
+
+        struct mtxdistfile dst;
+        err = mtxdistvector_to_mtxdistfile(&src, &dst, &disterr);
+        TEST_ASSERT_EQ_MSG(
+            MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
+            ? mtxdisterror_description(&disterr) : mtxstrerror(err));
+
+        TEST_ASSERT_EQ(mtxfile_vector, dst.header.object);
+        TEST_ASSERT_EQ(mtxfile_array, dst.header.format);
+        TEST_ASSERT_EQ(mtxfile_real, dst.header.field);
+        TEST_ASSERT_EQ(mtxfile_general, dst.header.symmetry);
+        TEST_ASSERT_EQ(mtx_double, dst.precision);
+        TEST_ASSERT_EQ(8, dst.size.num_rows);
+        TEST_ASSERT_EQ(-1, dst.size.num_columns);
+        TEST_ASSERT_EQ(-1, dst.size.num_nonzeros);
+        TEST_ASSERT_EQ(8, dst.partition.size);
+        TEST_ASSERT_EQ(2, dst.partition.num_parts);
+        TEST_ASSERT_EQ(2, dst.partition.part_sizes[0]);
+        TEST_ASSERT_EQ(6, dst.partition.part_sizes[1]);
+        const double * data = dst.data.array_real_double;
+        if (rank == 0) {
+            TEST_ASSERT_EQ(1.0, data[0]);
+            TEST_ASSERT_EQ(2.0, data[1]);
+        } else if (rank == 1) {
+            TEST_ASSERT_EQ(3.0, data[0]);
+            TEST_ASSERT_EQ(4.0, data[1]);
+            TEST_ASSERT_EQ(5.0, data[2]);
+            TEST_ASSERT_EQ(6.0, data[3]);
+            TEST_ASSERT_EQ(7.0, data[4]);
+            TEST_ASSERT_EQ(8.0, data[5]);
+        }
+        mtxdistfile_free(&dst);
+        mtxdistvector_free(&src);
+    }
+
+    /*
+     * Coordinate formats
+     */
+    {
+        int num_rows = 9;
+        const int * srcidx = (rank == 0)
+            ? ((const int[3]) {0, 1, 2})
+            : ((const int[5]) {0, 1, 2, 3, 4});
+        const double * srcdata = (rank == 0)
+            ? ((const double[3]) {1.0, 2.0, 3.0})
+            : ((const double[5]) {4.0, 5.0, 6.0, 7.0, 8.0});
+        int64_t num_nonzeros = (rank == 0) ? 3 : 5;
+
+        int num_parts = comm_size;
+        int64_t part_sizes[] = {3,6};
+        struct mtxpartition partition;
+        err = mtxpartition_init_block(
+            &partition, num_rows, num_parts, part_sizes);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+
+        struct mtxdistvector src;
+        err = mtxdistvector_init_coordinate_real_double(
+            &src, num_rows, num_nonzeros, srcidx, srcdata,
+            &partition, comm, &disterr);
+        TEST_ASSERT_EQ_MSG(
+            MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
+            ? mtxdisterror_description(&disterr) : mtxstrerror(err));
+        mtxpartition_free(&partition);
+
+        struct mtxdistfile dst;
+        err = mtxdistvector_to_mtxdistfile(&src, &dst, &disterr);
+        TEST_ASSERT_EQ_MSG(
+            MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
+            ? mtxdisterror_description(&disterr) : mtxstrerror(err));
+        TEST_ASSERT_EQ(mtxfile_vector, dst.header.object);
+        TEST_ASSERT_EQ(mtxfile_coordinate, dst.header.format);
+        TEST_ASSERT_EQ(mtxfile_real, dst.header.field);
+        TEST_ASSERT_EQ(mtxfile_general, dst.header.symmetry);
+        TEST_ASSERT_EQ(mtx_double, dst.precision);
+        TEST_ASSERT_EQ(9, dst.size.num_rows);
+        TEST_ASSERT_EQ(-1, dst.size.num_columns);
+        TEST_ASSERT_EQ(8, dst.size.num_nonzeros);
+        TEST_ASSERT_EQ(8, dst.partition.size);
+        TEST_ASSERT_EQ(2, dst.partition.num_parts);
+        TEST_ASSERT_EQ(3, dst.partition.part_sizes[0]);
+        TEST_ASSERT_EQ(5, dst.partition.part_sizes[1]);
+        const struct mtxfile_vector_coordinate_real_double * data =
+            dst.data.vector_coordinate_real_double;
+        if (rank == 0) {
+            TEST_ASSERT_EQ(  1, data[0].i); TEST_ASSERT_EQ(1.0, data[0].a);
+            TEST_ASSERT_EQ(  2, data[1].i); TEST_ASSERT_EQ(2.0, data[1].a);
+            TEST_ASSERT_EQ(  3, data[2].i); TEST_ASSERT_EQ(3.0, data[2].a);
+        } else if (rank == 1) {
+            TEST_ASSERT_EQ(  4, data[0].i); TEST_ASSERT_EQ(4.0, data[0].a);
+            TEST_ASSERT_EQ(  5, data[1].i); TEST_ASSERT_EQ(5.0, data[1].a);
+            TEST_ASSERT_EQ(  6, data[2].i); TEST_ASSERT_EQ(6.0, data[2].a);
+            TEST_ASSERT_EQ(  7, data[3].i); TEST_ASSERT_EQ(7.0, data[3].a);
+            TEST_ASSERT_EQ(  8, data[4].i); TEST_ASSERT_EQ(8.0, data[4].a);
+        }
+        mtxdistfile_free(&dst);
+        mtxdistvector_free(&src);
+    }
+    mtxdisterror_free(&disterr);
+    return TEST_SUCCESS;
+}
+
+/**
  * `test_mtxdistvector_dot()' tests computing the dot products of
  * pairs of vectors.
  */
@@ -2854,6 +3015,7 @@ int main(int argc, char * argv[])
     TEST_SUITE_BEGIN("Running tests for distributed vectors\n");
     TEST_RUN(test_mtxdistvector_from_mtxfile);
     TEST_RUN(test_mtxdistvector_from_mtxdistfile);
+    TEST_RUN(test_mtxdistvector_to_mtxdistfile);
     TEST_RUN(test_mtxdistvector_dot);
     TEST_RUN(test_mtxdistvector_nrm2);
     TEST_RUN(test_mtxdistvector_scal);
