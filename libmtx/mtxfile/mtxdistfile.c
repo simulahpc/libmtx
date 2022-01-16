@@ -2990,7 +2990,10 @@ int mtxdistfile_partition(
     int num_col_parts = colpart ? colpart->num_parts : 1;
     if (rowpart && rowpart->size != src->size.num_rows)
         return MTX_ERR_INCOMPATIBLE_PARTITION;
-    if (colpart && colpart->size != src->size.num_columns)
+    if (colpart &&
+        ((src->size.num_columns == -1 && colpart->size != 1) ||
+         (src->size.num_columns >= 0  &&
+          colpart->size != src->size.num_columns)))
         return MTX_ERR_INCOMPATIBLE_PARTITION;
 
     int local_size = rank < src->partition.num_parts

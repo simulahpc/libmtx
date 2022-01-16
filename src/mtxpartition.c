@@ -885,7 +885,8 @@ int main(int argc, char *argv[])
 
         err = mtxpartition_init(
             &colpart, args.colparttype,
-            src.size.num_columns, args.num_col_parts, NULL, 0, NULL);
+            src.size.num_columns < 0 ? 1 : src.size.num_columns,
+            args.num_col_parts, NULL, 0, NULL);
         if (mtxdisterror_allreduce(&disterr, err)) {
             if (args.verbose > 0)
                 fprintf(diagf, "\n");
@@ -910,7 +911,7 @@ int main(int argc, char *argv[])
     }
 
     if (args.verbose > 0) {
-        fprintf(diagf, "mtxdistfile_partition_rows: ");
+        fprintf(diagf, "mtxdistfile_partition: ");
         fflush(diagf);
         clock_gettime(CLOCK_MONOTONIC, &t0);
     }
