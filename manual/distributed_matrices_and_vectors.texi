@@ -137,8 +137,8 @@ the user to initialise them.
 
 @code{partition} must be a partitioning of the rows of the global
 vector, which means that @code{partition->size} must be equal to
-@samp{num_rows}. Also, the number of parts in the partition is at most
-the number of MPI processes in the communicator @code{comm}.
+@samp{num_rows}. There may be at most one part in the partition per
+MPI process in the communicator @code{comm}.
 
 @findex mtxdistvector_init_@var{type}_@var{field}_@var{precision}
 If the vector values are already known, then there are also functions
@@ -165,9 +165,11 @@ format, use @code{mtxdistvector_init_array_complex_double}.
 Each process provides its local vector entries in the array
 @code{data}. The length of the @code{data} array must be at least
 @samp{partition->part_sizes[rank]}, where @samp{rank} is the rank of
-the current process. (Note that if @samp{rank} is greater than or
-equal to @samp{partition->num_parts}, the @code{data} array is not
-accessed on that process and may be set to @samp{NULL}.)
+the current process. (If there are fewer parts in the partition than
+MPI processes, then the @code{data} array is not used on processes
+where @samp{rank} is greater than or equal to
+@samp{partition->num_parts}. @code{data} may therefore be set to
+@samp{NULL} on those processes.)
 
 @findex mtxdistvector_init_coordinate_complex_double
 To create a double precision, complex vector in coordinate format, use
@@ -323,12 +325,12 @@ underlying data.
 @node Halo exchange
 @subsection Halo exchange
 @cindex halo exchange
-Some linear algebra operations involving distributed vectors will
-require communication between MPI processes. This is particularly the
-case for matrix-vector multiplication. This kind of communication is
-commonly implemented through a @dfn{halo exchange}. This section
-describes data structures for representing vector halos, and how to
-perform halo exchanges.
+Some linear algebra operations, such as matrix-vector multiplication,
+require communication between MPI processes whenever distributed
+matrices and vectors are used. This kind of communication is commonly
+implemented through a @dfn{halo exchange}. This section describes data
+structures for representing vector halos, and how to perform halo
+exchanges.
 
 
 @node Distributed matrices
