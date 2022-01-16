@@ -219,12 +219,13 @@ non-negative integers representing the number of rows and columns in
 the matrix, respectively. By convention, vectors are represented as
 column vectors. As a result, @code{num_rows} is equal to the number of
 vector elements, whereas @code{num_columns} is not used and is
-therefore set to @code{-1}.
+therefore set to @samp{@minus{}1}.
 
 For matrices and vectors in coordinate format, @code{num_nonzeros} is
 the number of entries explicitly stored in the data section of the
 Matrix Market file. For matrices and vectors in array format,
-@code{num_nonzeros} is not used and is therefore set to @code{-1}.
+@code{num_nonzeros} is not used and is therefore set to
+@samp{@minus{}1}.
 
 Given a valid @code{struct mtxfilesize}, the number of lines in the
 data section of a Matrix Market file can be obtained by calling
@@ -1023,7 +1024,7 @@ The file @code{libmtx/util/partition.h} defines the type @code{enum
 mtxpartitioning}, which is used to distinguish between different ways
 of partitioning a finite set (e.g., the rows or columns of a
 matrix). The values of this enum type are described below. We follow
-the convention of using the integers 0, 1, ..., @var{N} − 1 to label
+the convention of using the integers 0, 1, ..., @var{N}@minus{}1 to label
 the elements of a finite set of size @var{N} that is to be
 partitioned. Moreover, we use @var{P} to denote the number of parts in
 the partition, and the set @var{P}@sub{@var{i}} denotes the @var{i}th
@@ -1036,14 +1037,14 @@ number and the local number of the element within that part. More
 specifically, the @var{i}th part of a partition, @var{P}@sub{@var{i}},
 consists of @var{N}@sub{@var{i}} elements, @var{P}@sub{@var{i},0},
 @var{P}@sub{@var{i},1}, ...,
-@var{P}@sub{@var{i},@var{N}@sub{@var{i}}-1}.
+@var{P}@sub{@var{i},@var{N}@sub{@var{i}}@minus{}1}.
 
 The following methods of partitioning are supported.
 @itemize
 @item @code{mtx_singleton}
 @cindex singleton partition
 is a singleton partition with only one non-empty component. That is,
-@var{P} = 1 and @var{P}@sub{0} = @{0, 1, ..., @var{N} − 1@}.
+@var{P} = 1 and @var{P}@sub{0} = @{0, 1, ..., @var{N}@minus{}1@}.
 
 @item @code{mtx_block}
 @cindex block partition
@@ -1056,14 +1057,14 @@ other words, @var{S}@sub{0} = 0, @var{S}@sub{1} = @var{N}@sub{0},
 on. The @var{i}th part, @var{P}@sub{@var{i}}, is empty if
 @var{N}@sub{@var{i}} is zero. Otherwise, it is made up of the elements
 @{@var{S}@sub{@var{i}}, @var{S}@sub{@var{i}} @math{+} 1, ...,
-@var{S}@sub{@var{i}} @math{+} @var{N}@sub{@var{i}} − 1@}.
+@var{S}@sub{@var{i}} @math{+} @var{N}@sub{@var{i}}@minus{}1@}.
 
 @item @code{mtx_cyclic}
 @cindex cyclic partition
 is a cyclic partitioning, where the @var{i}th part,
 @var{P}@sub{@var{i}}, is made up of the elements @{@var{i}, @var{i}
 @math{+} @var{P}, @var{i} @math{+} 2@var{P}, ..., @var{i} @math{+}
-(@var{N}@sub{@var{i}} − 1)@var{P}@}. To find the number of elements in
+(@var{N}@sub{@var{i}}@minus{}1)@var{P}@}. To find the number of elements in
 each part, @var{N}@sub{@var{i}}, we divide the total number of
 elements @var{N} by the number of parts @var{P}. More specifically,
 @var{N} = @var{q}@var{P} @math{+} @var{r}, where @var{q} is the
@@ -1077,7 +1078,7 @@ remainder of the division.  Then, @var{N}@sub{@var{i}} =
 is cyclic partitioning of fixed-size blocks. If the size of each block
 is denoted by @var{M}, then the @var{j}th block, @var{B}@sub{@var{j}},
 is made up of the elements @{@var{j}@var{M}, @var{j}@var{M} @math{+}
-1, ..., @var{j}@var{M} @math{+} @var{M} − 1@}. The blocks
+1, ..., @var{j}@var{M} @math{+} @var{M}@minus{}1@}. The blocks
 @var{B}@sub{@var{j}} are then assigned in a cyclic fashion to the
 parts @var{P}@sub{@var{i}}.
 
@@ -1087,8 +1088,8 @@ is a general, user-defined partitioning, where each part,
 @var{P}@sub{@var{i}}, is given in the form of an array of length
 @var{N}@sub{@var{i}} consisting of unique elements
 @code{P@sub{@var{i}}[0], P@sub{@var{i}}[1], ...,
-P@sub{@var{i}}[@var{N}@sub{@var{i}}-1]}. Every element
-@code{0,1,...,@var{N}-1} should belong to exactly one array
+P@sub{@var{i}}[@var{N}@sub{@var{i}}@minus{}1]}. Every element 0, 1,
+..., @var{N}@minus{}1 should belong to exactly one array
 @code{P@sub{@var{i}}} to ensure that parts are pairwise disjoint and
 cover the entire set.
 @end itemize

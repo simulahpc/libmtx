@@ -187,11 +187,11 @@ To create a double precision, complex vector in coordinate format, use
 @end example
 The arguments @code{idx} and @code{data} are arrays of length
 @code{num_nonzeros}. Each process may provide arrays of different
-lengths. For each nonzero value @code{k=0,1,...,num_nonzeros-1},
-@code{idx[k]} is an index in the range @samp{[0,N)}, where @samp{N} is
-the size of the part owned by the current process, (i.e.,
-@samp{partition->part_sizes[rank]}, where @samp{rank} is the rank of
-the current process).
+lengths. Each index @samp{idx[0]}, @samp{idx[1]}, ...,
+@samp{idx[num_nonzeros-1]}, is an integer in the range
+@samp{[0,N)}, where @samp{N} is the size of the part owned by the
+current process, (i.e., @samp{partition->part_sizes[rank]}, where
+@samp{rank} is the rank of the current process).
 
 Note that duplicate entries are allowed, but this may cause some
 operations (e.g., @code{mtxdistvector_dot}, @code{mtxdistvector_nrm2})) to

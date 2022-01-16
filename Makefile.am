@@ -420,7 +420,6 @@ manual_libmtx_TEXINFOS = \
 	manual/distributed_matrix_market_files.texi \
 	manual/distributed_matrices_and_vectors.texi \
 	manual/commands.texi \
-	manual/c_library_reference.texi \
 	manual/references.texi \
 	manual/fdl.texi \
 	manual/version.texi

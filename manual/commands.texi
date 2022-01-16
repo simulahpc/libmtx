@@ -1,5 +1,5 @@
 @c This file is part of libmtx.
-@c Copyright (C) 2021 James D. Trotter
+@c Copyright (C) 2022 James D. Trotter
 @c
 @c libmtx is free software: you can redistribute it and/or
 @c modify it under the terms of the GNU General Public License as
@@ -16,7 +16,7 @@
 @c <https://www.gnu.org/licenses/>.
 @c
 @c Authors: James D. Trotter <james@simula.no>
-@c Last modified: 2021-08-09
+@c Last modified: 2022-01-16
 @c
 @c libmtx User Guide: Commands.
 
@@ -605,7 +605,7 @@ Filter files through gzip.
 @item --max-height=M
 @item --max-width=N
 Maximum width and height of the rendered image in pixels. The default
-maximum image size is 1000x1000 pixels.
+maximum image size is 1000-by-1000 pixels.
 
 @item fgcolor=COLOR
 @item bgcolor=COLOR

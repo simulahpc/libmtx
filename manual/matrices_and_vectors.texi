@@ -174,9 +174,9 @@ To create a double precision, complex vector in coordinate format, use
     const double (* values)[2]);}
 @end example
 The arguments @code{idx} and @code{values} are arrays of length
-@code{num_nonzeros}. For each nonzero value
-@code{k=0,1,...,num_nonzeros-1}, @code{idx[k]} is an index in the
-range @code{[0,num_rows)}.
+@code{num_nonzeros}. Each index @samp{idx[0]}, @samp{idx[1]}, ...,
+@samp{idx[num_nonzeros-1]}, is an integer in the range
+@code{[0,num_rows)}.
 
 Note that duplicate entries are allowed, but this may cause some
 operations (e.g., @code{mtxvector_dot}, @code{mtxvector_nrm2})) to
