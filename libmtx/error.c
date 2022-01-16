@@ -264,6 +264,15 @@ char * mtxdisterror_description(
         return disterr->description;
     }
 
+    if (disterr->comm_size == 1) {
+        disterr->description = strdup(
+            mtxdiststrerror(
+                disterr->buf[0][1],
+                disterr->mpierrcode,
+                mpierrstr));
+        return disterr->description;
+    }
+
     const char * format_header = "%s";
     const char * format_err_first = ": rank %d - %s";
     const char * format_err = ", rank %d - %s";
