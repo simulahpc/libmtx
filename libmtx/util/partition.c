@@ -16,7 +16,7 @@
  * along with libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-01-14
+ * Last modified: 2022-01-16
  *
  * Data types and functions for partitioning finite sets.
  */
@@ -432,21 +432,30 @@ int mtxpartition_init_custom(
  * ‘mtxpartition_assign()’ assigns part numbers to elements of an
  * array according to the partitioning.
  *
- * The arrays ‘elements’ and ‘parts’ must both contain enough storage
- * for ‘size’ values of type ‘int’. If successful, ‘parts’ will
- * contain the part numbers of each element in the ‘elements’ array.
+ * ‘elements’ must point to an array of length ‘size’. If ‘parts’ is
+ * not ‘NULL’, then it must also point to an array of length ‘size’,
+ * which is then used to store the corresponding part number of each
+ * element in the ‘elements’ array.
+ *
+ * Finally, if ‘localelem’ is not ‘NULL’, then it must point to an
+ * array of length ‘size’. For each global element number in the
+ * ‘elements’, ‘localelem’ is used to store the corresponding local,
+ * partwise element number based on the numbering of elements within
+ * each part.
  */
 int mtxpartition_assign(
     const struct mtxpartition * partition,
     int64_t size,
     const int64_t * elements,
-    int * parts)
+    int * parts,
+    int64_t * localelem)
 {
     if (partition->type == mtx_singleton) {
         for (int64_t k = 0; k < size; k++) {
             if (elements[k] < 0 || elements[k] >= partition->size)
                 return MTX_ERR_INDEX_OUT_OF_BOUNDS;
-            parts[k] = 0;
+            if (parts) parts[k] = 0;
+            if (localelem) localelem[k] = elements[k];
         }
 
     } else if (partition->type == mtx_block) {
@@ -456,17 +465,23 @@ int mtxpartition_assign(
             if (elements[k] < 0 || elements[k] >= partition->size)
                 return MTX_ERR_INDEX_OUT_OF_BOUNDS;
             int64_t n = elements[k];
-            parts[k] = n / (size_per_part+1);
-            if (parts[k] >= remainder)
-                parts[k] = remainder +
+            int part = n / (size_per_part+1);
+            if (part >= remainder)
+                part = remainder +
                     (n - remainder * (size_per_part+1)) / size_per_part;
+            if (parts) parts[k] = part;
+            if (localelem)
+                localelem[k] = elements[k] - partition->parts_ptr[part];
         }
 
     } else if (partition->type == mtx_cyclic) {
         for (int64_t k = 0; k < size; k++) {
             if (elements[k] < 0 || elements[k] >= partition->size)
                 return MTX_ERR_INDEX_OUT_OF_BOUNDS;
-            parts[k] = elements[k] % partition->num_parts;
+            int part = elements[k] % partition->num_parts;
+            if (parts) parts[k] = part;
+            if (localelem)
+                localelem[k] = (elements[k] - part) / partition->num_parts;
         }
 
     } else if (partition->type == mtx_block_cyclic) {
@@ -478,9 +493,23 @@ int mtxpartition_assign(
         for (int64_t k = 0; k < size; k++) {
             if (elements[k] < 0 || elements[k] >= partition->size)
                 return MTX_ERR_INDEX_OUT_OF_BOUNDS;
-            parts[k] = partition->parts[elements[k]];
+            int part = partition->parts[elements[k]];
+            if (parts) parts[k] = part;
+            if (localelem) {
+                for (int64_t k = 0; k < size; k++) {
+                    bool found = false;
+                    for (int64_t l = 0; l < partition->part_sizes[part]; l++) {
+                        if (partition->elements_per_part[l] == elements[k]) {
+                            localelem[k] = l;
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (!found)
+                        return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+                }
+            }
         }
-
     } else {
         return MTX_ERR_INVALID_PARTITION_TYPE;
     }

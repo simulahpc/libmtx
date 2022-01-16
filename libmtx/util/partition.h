@@ -16,7 +16,7 @@
  * along with libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-01-09
+ * Last modified: 2022-01-16
  *
  * Data types and functions for partitioning finite sets.
  */
@@ -224,12 +224,18 @@ int mtxpartition_init_custom(
  * The arrays ‘elements’ and ‘parts’ must both contain enough storage
  * for ‘size’ values of type ‘int’. If successful, ‘parts’ will
  * contain the part numbers of each element in the ‘elements’ array.
+ *
+ * If ‘localelem’ is not ‘NULL’, then it must point to an array of
+ * length ‘size’, which is then used to store the corresponding local
+ * number of each element in the ‘elements’ array based on the
+ * numbering of elements within each part.
  */
 int mtxpartition_assign(
     const struct mtxpartition * partition,
     int64_t size,
     const int64_t * elements,
-    int * parts);
+    int * parts,
+    int64_t * localelem);
 
 /**
  * ‘mtxpartition_globalidx()’ translates from a local numbering of

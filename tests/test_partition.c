@@ -50,7 +50,7 @@ int test_mtxpartition_singleton(void)
         {
             int64_t globalelem[5] = {0,1,2,3,4};
             int parts[5] = {};
-            err = mtxpartition_assign(&partition, size, globalelem, parts);
+            err = mtxpartition_assign(&partition, size, globalelem, parts, NULL);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(0, parts[0]);
             TEST_ASSERT_EQ(0, parts[1]);
@@ -114,7 +114,7 @@ int test_mtxpartition_block(void)
         {
             int64_t globalelem[5] = {0,1,2,3,4};
             int parts[5] = {};
-            err = mtxpartition_assign(&partition, size, globalelem, parts);
+            err = mtxpartition_assign(&partition, size, globalelem, parts, NULL);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(0, parts[0]);
             TEST_ASSERT_EQ(0, parts[1]);
@@ -158,7 +158,7 @@ int test_mtxpartition_block(void)
         {
             int64_t globalelem[5] = {0,1,2,3,4};
             int parts[5] = {};
-            err = mtxpartition_assign(&partition, size, globalelem, parts);
+            err = mtxpartition_assign(&partition, size, globalelem, parts, NULL);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(0, parts[0]);
             TEST_ASSERT_EQ(0, parts[1]);
@@ -224,7 +224,7 @@ int test_mtxpartition_block(void)
         {
             int64_t globalelem[5] = {0,1,2,3,4};
             int parts[5] = {};
-            err = mtxpartition_assign(&partition, size, globalelem, parts);
+            err = mtxpartition_assign(&partition, size, globalelem, parts, NULL);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(0, parts[0]);
             TEST_ASSERT_EQ(0, parts[1]);
@@ -308,7 +308,7 @@ int test_mtxpartition_block(void)
         {
             int64_t globalelem[5] = {0,1,2,3,4};
             int parts[5] = {};
-            err = mtxpartition_assign(&partition, size, globalelem, parts);
+            err = mtxpartition_assign(&partition, size, globalelem, parts, NULL);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_EQ(0, parts[0]);
             TEST_ASSERT_EQ(0, parts[1]);
@@ -409,7 +409,7 @@ int test_mtxpartition_block(void)
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         int64_t globalelem[5] = {0,1,2,3,4};
         int parts[5] = {};
-        err = mtxpartition_assign(&partition, size, globalelem, parts);
+        err = mtxpartition_assign(&partition, size, globalelem, parts, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(0, parts[0]);
         TEST_ASSERT_EQ(1, parts[1]);
@@ -527,7 +527,7 @@ int test_mtxpartition_block(void)
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         int64_t globalelem[5] = {0,1,2,3,4};
         int parts[5] = {};
-        err = mtxpartition_assign(&partition, size, globalelem, parts);
+        err = mtxpartition_assign(&partition, size, globalelem, parts, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(0, parts[0]);
         TEST_ASSERT_EQ(1, parts[1]);
@@ -655,7 +655,7 @@ int test_mtxpartition_cyclic(void)
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         int64_t globalelem[5] = {0,1,2,3,4};
         int parts[5] = {};
-        err = mtxpartition_assign(&partition, size, globalelem, parts);
+        err = mtxpartition_assign(&partition, size, globalelem, parts, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(0, parts[0]);
         TEST_ASSERT_EQ(0, parts[1]);
@@ -685,7 +685,7 @@ int test_mtxpartition_cyclic(void)
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         int64_t globalelem[5] = {0,1,2,3,4};
         int parts[5] = {};
-        err = mtxpartition_assign(&partition, size, globalelem, parts);
+        err = mtxpartition_assign(&partition, size, globalelem, parts, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(0, parts[0]);
         TEST_ASSERT_EQ(1, parts[1]);
@@ -726,7 +726,7 @@ int test_mtxpartition_cyclic(void)
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         int64_t globalelem[5] = {0,1,2,3,4};
         int parts[5] = {};
-        err = mtxpartition_assign(&partition, size, globalelem, parts);
+        err = mtxpartition_assign(&partition, size, globalelem, parts, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(0, parts[0]);
         TEST_ASSERT_EQ(1, parts[1]);
@@ -776,7 +776,7 @@ int test_mtxpartition_cyclic(void)
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         int64_t globalelem[5] = {0,1,2,3,4};
         int parts[5] = {};
-        err = mtxpartition_assign(&partition, size, globalelem, parts);
+        err = mtxpartition_assign(&partition, size, globalelem, parts, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(0, parts[0]);
         TEST_ASSERT_EQ(1, parts[1]);
@@ -835,7 +835,7 @@ int test_mtxpartition_cyclic(void)
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         int64_t globalelem[5] = {0,1,2,3,4};
         int parts[5] = {};
-        err = mtxpartition_assign(&partition, size, globalelem, parts);
+        err = mtxpartition_assign(&partition, size, globalelem, parts, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(0, parts[0]);
         TEST_ASSERT_EQ(1, parts[1]);
@@ -903,7 +903,7 @@ int test_mtxpartition_cyclic(void)
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         int64_t globalelem[5] = {0,1,2,3,4};
         int parts[5] = {};
-        err = mtxpartition_assign(&partition, size, globalelem, parts);
+        err = mtxpartition_assign(&partition, size, globalelem, parts, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(0, parts[0]);
         TEST_ASSERT_EQ(1, parts[1]);

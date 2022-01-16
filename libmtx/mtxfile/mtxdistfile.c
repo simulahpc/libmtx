@@ -2613,7 +2613,7 @@ static int mtxdistfile_sort_permutation(
     for (int64_t k = 0; k < local_size; k++)
         perm[k]--;
     err = mtxpartition_assign(
-        &mtxdistfile->partition, local_size, perm, parts);
+        &mtxdistfile->partition, local_size, perm, parts, NULL);
     if (mtxdisterror_allreduce(disterr, err)) {
         free(parts);
         return MTX_ERR_MPI_COLLECTIVE;
@@ -3010,7 +3010,8 @@ int mtxdistfile_partition(
         &src->data, src->header.object, src->header.format,
         src->header.field, src->precision,
         src->size.num_rows, src->size.num_columns,
-        offset, local_size, rowpart, colpart, part_per_data_line);
+        offset, local_size, rowpart, colpart, part_per_data_line,
+        NULL, NULL);
     if (mtxdisterror_allreduce(disterr, err)) {
         free(part_per_data_line);
         return MTX_ERR_MPI_COLLECTIVE;

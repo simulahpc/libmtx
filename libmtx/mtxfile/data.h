@@ -693,8 +693,8 @@ int mtxfiledata_copy(
     enum mtxfilefield field,
     enum mtxprecision precision,
     int64_t size,
-    int64_t dst_offset,
-    int64_t src_offset);
+    int64_t dstoffset,
+    int64_t srcoffset);
 
 /**
  * ‘mtxfiledata_copy_gather()’ performs an irregular copying (gather)
@@ -1179,6 +1179,22 @@ int mtxfiledata_sortkey_morton(
     uint64_t * keys);
 
 /**
+ * ‘mtxfiledata_sort_keys()’ sorts data lines of a Matrix Market file
+ * by the given keys.
+ */
+int mtxfiledata_sort_keys(
+    union mtxfiledata * data,
+    enum mtxfileobject object,
+    enum mtxfileformat format,
+    enum mtxfilefield field,
+    enum mtxprecision precision,
+    int num_rows,
+    int num_columns,
+    int64_t size,
+    uint64_t * keys,
+    int64_t * sorting_permutation);
+
+/**
  * ‘mtxfiledata_sort_row_major()’ sorts data lines of a Matrix Market
  * file in row major order.
  *
@@ -1276,6 +1292,11 @@ int mtxfiledata_compact(
  * type ‘int’. If successful, ‘parts’ will contain the part number of
  * each data line in the partitioning.
  *
+ * If ‘rowidx’ and ‘colidx’ are not ‘NULL’, then they must point to
+ * arrays of length ‘size’, which are then used to store the row and
+ * column numbers, respectively, of each data line according to the
+ * local numbering of rows and columns within each part.
+ *
  * The partitions ‘rowpart’ or ‘colpart’ are allowed to be ‘NULL’, in
  * which case a trivial, singleton partition is used for the rows or
  * columns, respectively.
@@ -1297,7 +1318,9 @@ int mtxfiledata_partition(
     int64_t size,
     const struct mtxpartition * rowpart,
     const struct mtxpartition * colpart,
-    int * parts);
+    int * parts,
+    int64_t * rowidx,
+    int64_t * colidx);
 
 /*
  * Reordering

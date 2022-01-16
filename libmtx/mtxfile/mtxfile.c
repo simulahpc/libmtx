@@ -16,7 +16,7 @@
  * along with libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-01-14
+ * Last modified: 2022-01-16
  *
  * Matrix Market files.
  */
@@ -2047,84 +2047,265 @@ int mtxfile_partition(
     int * part_per_data_line = malloc(num_data_lines * sizeof(int));
     if (!part_per_data_line)
         return MTX_ERR_ERRNO;
+    int64_t * localrowidx = NULL;
+    int64_t * localcolidx = NULL;
+    if (src->header.format == mtxfile_array) {
+        localrowidx = malloc(num_data_lines * sizeof(int64_t));
+        if (!localrowidx) {
+            free(part_per_data_line);
+            return MTX_ERR_ERRNO;
+        }
+        localcolidx = malloc(num_data_lines * sizeof(int64_t));
+        if (!localcolidx) {
+            free(localrowidx);
+            free(part_per_data_line);
+            return MTX_ERR_ERRNO;
+        }
+    }
 
     /* 1. Assign each data line to its row and column part */
     err = mtxfiledata_partition(
         &src->data, src->header.object, src->header.format,
         src->header.field, src->precision,
         src->size.num_rows, src->size.num_columns,
-        0, num_data_lines, rowpart, colpart, part_per_data_line);
+        0, num_data_lines, rowpart, colpart, part_per_data_line,
+        localrowidx, localcolidx);
     if (err) {
+        if (src->header.format == mtxfile_array) free(localcolidx);
+        if (src->header.format == mtxfile_array) free(localrowidx);
         free(part_per_data_line);
         return err;
     }
 
-    /* 2. Create index arrays of data lines belonging to each part */
+    /* 2. Count the number of elements in each part */
     int num_parts = num_row_parts * num_col_parts;
+    int64_t * num_data_lines_per_part = malloc(num_parts * sizeof(int64_t));
+    if (!num_data_lines_per_part) {
+        if (src->header.format == mtxfile_array) free(localcolidx);
+        if (src->header.format == mtxfile_array) free(localrowidx);
+        free(part_per_data_line);
+        return MTX_ERR_ERRNO;
+    }
     int64_t * data_lines_per_part_ptr = malloc((num_parts+1) * sizeof(int64_t));
     if (!data_lines_per_part_ptr) {
+        free(num_data_lines_per_part);
+        if (src->header.format == mtxfile_array) free(localcolidx);
+        if (src->header.format == mtxfile_array) free(localrowidx);
         free(part_per_data_line);
         return MTX_ERR_ERRNO;
     }
-    int64_t * data_lines_per_part = malloc(num_data_lines * sizeof(int64_t));
-    if (!data_lines_per_part) {
-        free(data_lines_per_part_ptr);
-        free(part_per_data_line);
-        return MTX_ERR_ERRNO;
-    }
-
-    for (int p = 0; p <= num_parts; p++)
-        data_lines_per_part_ptr[p] = 0;
+    for (int p = 0; p < num_parts; p++)
+        num_data_lines_per_part[p] = 0;
     for (int64_t k = 0; k < num_data_lines; k++) {
         int part = part_per_data_line[k];
-        data_lines_per_part_ptr[part+1]++;
-    }
-    for (int p = 0; p < num_parts; p++) {
-        data_lines_per_part_ptr[p+1] +=
-            data_lines_per_part_ptr[p];
-    }
-    for (int64_t k = 0; k < num_data_lines; k++) {
-        int part = part_per_data_line[k];
-        int64_t l = data_lines_per_part_ptr[part];
-        data_lines_per_part[l] = k;
-        data_lines_per_part_ptr[part]++;
-    }
-    for (int p = num_parts-1; p >= 0; p--) {
-        data_lines_per_part_ptr[p+1] =
-            data_lines_per_part_ptr[p];
+        num_data_lines_per_part[part]++;
     }
     data_lines_per_part_ptr[0] = 0;
+    for (int p = 1; p <= num_parts; p++) {
+        data_lines_per_part_ptr[p] =
+            data_lines_per_part_ptr[p-1] +
+            num_data_lines_per_part[p-1];
+    }
+
+    /* Create a copy of the data that can be sorted */
+    union mtxfiledata data;
+    err = mtxfiledata_alloc(
+        &data, src->header.object, src->header.format,
+        src->header.field, src->precision, num_data_lines);
+    if (err) {
+        free(data_lines_per_part_ptr);
+        free(num_data_lines_per_part);
+        if (src->header.format == mtxfile_array) free(localcolidx);
+        if (src->header.format == mtxfile_array) free(localrowidx);
+        free(part_per_data_line);
+        return err;
+    }
+    err = mtxfiledata_copy(
+        &data, &src->data,
+        src->header.object, src->header.format,
+        src->header.field, src->precision,
+        num_data_lines, 0, 0);
+    if (err) {
+        mtxfiledata_free(
+            &data, src->header.object, src->header.format,
+            src->header.field, src->precision);
+        free(data_lines_per_part_ptr);
+        free(num_data_lines_per_part);
+        if (src->header.format == mtxfile_array) free(localcolidx);
+        if (src->header.format == mtxfile_array) free(localrowidx);
+        free(part_per_data_line);
+        return err;
+    }
+
+    /* Allocate sorting keys */
+    uint64_t * sortkeys = malloc(num_data_lines * sizeof(uint64_t));
+    if (!sortkeys) {
+        mtxfiledata_free(
+            &data, src->header.object, src->header.format,
+            src->header.field, src->precision);
+        free(data_lines_per_part_ptr);
+        free(num_data_lines_per_part);
+        if (src->header.format == mtxfile_array) free(localcolidx);
+        if (src->header.format == mtxfile_array) free(localrowidx);
+        free(part_per_data_line);
+        return MTX_ERR_ERRNO;
+    }
+
+    if (src->header.format == mtxfile_array) {
+        /* For a matrix in array format, we need to sort by part
+         * number, and then in row major order using the local row and
+         * column indices within each part. */
+        for (int64_t k = 0; k < num_data_lines; k++) {
+            int r = part_per_data_line[k];
+            int q = r % num_col_parts;
+            int num_columns =
+                colpart ? colpart->part_sizes[q] : src->size.num_columns;
+            sortkeys[k] = data_lines_per_part_ptr[r]
+                + ((localrowidx ? localrowidx[k] : 0) *
+                   (num_columns >= 0 ? num_columns : 1))
+                + (localcolidx ? localcolidx[k] : 0);
+        }
+        free(localcolidx);
+        free(localrowidx);
+
+    } else if (src->header.format == mtxfile_coordinate) {
+        /* For a matrix in coordinate format, simply sort the nonzeros
+         * by their part numbers. Since the sorting is stable, the
+         * order within each part remains the same as in the original
+         * matrix or vector. */
+        for (int64_t k = 0; k < num_data_lines; k++) {
+            int part = part_per_data_line[k];
+            sortkeys[k] = part;
+        }
+
+        /* Find row and column permutations induced by partitioning */
+        int64_t * rowperm64 = NULL;
+        if (rowpart && src->size.num_rows >= 0) {
+            rowperm64 = malloc(src->size.num_rows * sizeof(int64_t));
+            if (!rowperm64) {
+                free(sortkeys);
+                mtxfiledata_free(
+                    &data, src->header.object, src->header.format,
+                    src->header.field, src->precision);
+                free(data_lines_per_part_ptr);
+                free(num_data_lines_per_part);
+                free(part_per_data_line);
+                return MTX_ERR_ERRNO;
+            }
+            for (int i = 0; i < src->size.num_rows; i++)
+                rowperm64[i] = i;
+            err = mtxpartition_assign(
+                rowpart, src->size.num_rows, rowperm64, NULL, rowperm64);
+            if (err) {
+                free(rowperm64);
+                free(sortkeys);
+                mtxfiledata_free(
+                    &data, src->header.object, src->header.format,
+                    src->header.field, src->precision);
+                free(data_lines_per_part_ptr);
+                free(num_data_lines_per_part);
+                free(part_per_data_line);
+                return err;
+            }
+        }
+        int64_t * colperm64 = NULL;
+        if (colpart && src->size.num_columns >= 0) {
+            colperm64 = malloc(src->size.num_columns * sizeof(int64_t));
+            if (!colperm64) {
+                if (rowpart && src->size.num_rows >= 0) free(rowperm64);
+                free(sortkeys);
+                mtxfiledata_free(
+                    &data, src->header.object, src->header.format,
+                    src->header.field, src->precision);
+                free(data_lines_per_part_ptr);
+                free(num_data_lines_per_part);
+                free(part_per_data_line);
+                return MTX_ERR_ERRNO;
+            }
+            for (int j = 0; j < src->size.num_columns; j++)
+                colperm64[j] = j;
+            err = mtxpartition_assign(
+                colpart, src->size.num_columns, colperm64, NULL, colperm64);
+            if (err) {
+                free(colperm64);
+                if (rowpart && src->size.num_rows >= 0) free(rowperm64);
+                free(sortkeys);
+                mtxfiledata_free(
+                    &data, src->header.object, src->header.format,
+                    src->header.field, src->precision);
+                free(data_lines_per_part_ptr);
+                free(num_data_lines_per_part);
+                free(part_per_data_line);
+                return err;
+            }
+        }
+
+        int * rowperm = (int *) rowperm64;
+        if (rowperm) {
+            for (int i = 0; i < src->size.num_rows; i++)
+                rowperm[i] = rowperm64[i]+1;
+        }
+        int * colperm = (int *) colperm64;
+        if (colperm) {
+            for (int i = 0; i < src->size.num_columns; i++)
+                colperm[i] = colperm64[i]+1;
+        }
+
+        /* Convert global row and column numbers to local, partwise
+         * row and column numbers. */
+        err = mtxfiledata_reorder(
+            &data, src->header.object, src->header.format,
+            src->header.field, src->precision, num_data_lines, 0,
+            src->size.num_rows, rowperm, src->size.num_columns, colperm);
+        if (err) {
+            if (colpart && src->size.num_columns >= 0) free(colperm64);
+            if (rowpart && src->size.num_rows >= 0) free(rowperm64);
+            free(sortkeys);
+            mtxfiledata_free(
+                &data, src->header.object, src->header.format,
+                src->header.field, src->precision);
+            free(data_lines_per_part_ptr);
+            free(num_data_lines_per_part);
+            free(part_per_data_line);
+            return err;
+        }
+
+        if (colpart && src->size.num_columns >= 0) free(colperm64);
+        if (rowpart && src->size.num_rows >= 0) free(rowperm64);
+    }
+
     free(part_per_data_line);
 
-    /* 3. Create a submatrix for each part of the partition */
+    /* Sort the data by the keys */
+    err = mtxfiledata_sort_keys(
+        &data, src->header.object, src->header.format,
+        src->header.field, src->precision,
+        src->size.num_rows, src->size.num_columns,
+        num_data_lines, sortkeys, NULL);
+    if (err) {
+        free(sortkeys);
+        mtxfiledata_free(
+            &data, src->header.object, src->header.format,
+            src->header.field, src->precision);
+        free(data_lines_per_part_ptr);
+        free(num_data_lines_per_part);
+        return MTX_ERR_ERRNO;
+    }
+
+    free(sortkeys);
+
+    /* 3. Create a submatrix or -vector for each part */
     for (int p = 0; p < num_row_parts; p++) {
         for (int q = 0; q < num_col_parts; q++) {
             int r = p * num_col_parts + q;
             int64_t N = data_lines_per_part_ptr[r+1] - data_lines_per_part_ptr[r];
 
             struct mtxfilesize size;
-            if (src->size.num_nonzeros >= 0) {
-                size.num_rows = src->size.num_rows;
-                size.num_columns = src->size.num_columns;
-                size.num_nonzeros = N;
-            } else if (src->size.num_columns > 0) {
-                size.num_rows = rowpart
-                    ? rowpart->part_sizes[p] : src->size.num_rows;
-                size.num_columns = colpart
-                    ? colpart->part_sizes[q] : src->size.num_columns;
-                size.num_nonzeros = -1;
-            } else if (src->size.num_rows >= 0) {
-                size.num_rows = rowpart
-                    ? rowpart->part_sizes[p] : src->size.num_rows;
-                size.num_columns = -1;
-                size.num_nonzeros = -1;
-            } else {
-                for (int s = r-1; s >= 0; s--)
-                    mtxfile_free(&dsts[s]);
-                free(data_lines_per_part);
-                free(data_lines_per_part_ptr);
-                return MTX_ERR_INVALID_MTX_SIZE;
-            }
+            size.num_rows = rowpart
+                ? rowpart->part_sizes[p] : src->size.num_rows;
+            size.num_columns = colpart
+                ? colpart->part_sizes[q] : src->size.num_columns;
+            size.num_nonzeros = src->size.num_nonzeros >= 0 ? N : -1;
 
             err = mtxfile_alloc(
                 &dsts[r], &src->header, &src->comments,
@@ -2132,30 +2313,38 @@ int mtxfile_partition(
             if (err) {
                 for (int s = r-1; s >= 0; s--)
                     mtxfile_free(&dsts[s]);
-                free(data_lines_per_part);
+                mtxfiledata_free(
+                    &data, src->header.object, src->header.format,
+                    src->header.field, src->precision);
                 free(data_lines_per_part_ptr);
+                free(num_data_lines_per_part);
                 return err;
             }
 
-            const int64_t * srcdispls =
-                &data_lines_per_part[data_lines_per_part_ptr[r]];
-            err = mtxfiledata_copy_gather(
-                &dsts[r].data, &src->data,
+            err = mtxfiledata_copy(
+                &dsts[r].data, &data,
                 dsts[r].header.object, dsts[r].header.format,
                 dsts[r].header.field, dsts[r].precision,
-                N, 0, srcdispls);
+                N, 0, data_lines_per_part_ptr[r]);
             if (err) {
                 for (int s = r; s >= 0; s--)
                     mtxfile_free(&dsts[s]);
-                free(data_lines_per_part);
+                mtxfiledata_free(
+                    &data, src->header.object, src->header.format,
+                    src->header.field, src->precision);
                 free(data_lines_per_part_ptr);
+                free(num_data_lines_per_part);
                 return err;
             }
+
         }
     }
 
-    free(data_lines_per_part);
+    mtxfiledata_free(
+        &data, src->header.object, src->header.format,
+        src->header.field, src->precision);
     free(data_lines_per_part_ptr);
+    free(num_data_lines_per_part);
     return MTX_SUCCESS;
 }
 

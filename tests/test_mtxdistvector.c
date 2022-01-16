@@ -16,7 +16,7 @@
  * along with libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-01-12
+ * Last modified: 2022-01-17
  *
  * Unit tests for distributed Matrix Market files.
  */
@@ -123,9 +123,9 @@ int test_mtxdistvector_from_mtxfile(void)
      */
 
     {
-        int num_rows = 6;
+        int num_rows = 7;
         const struct mtxfile_vector_coordinate_real_double mtxdata[] =
-            {{1,1.0}, {2,2.0}, {3,3.0}, {4,4.0}, {6,6.0}};
+            {{1,1.0}, {2,2.0}, {3,3.0}, {5,5.0}, {6,6.0}};
         int64_t num_nonzeros = sizeof(mtxdata) / sizeof(*mtxdata);
         struct mtxfile srcmtxfile;
         err = mtxfile_init_vector_coordinate_real_double(
@@ -146,8 +146,12 @@ int test_mtxdistvector_from_mtxfile(void)
             &mtxdistvector.interior.storage.coordinate;
         TEST_ASSERT_EQ(mtx_field_real, interior->field);
         TEST_ASSERT_EQ(mtx_double, interior->precision);
-        TEST_ASSERT_EQ(6, interior->size);
+        TEST_ASSERT_EQ(rank == 0 ? 4 : 3, interior->size);
         TEST_ASSERT_EQ(rank == 0 ? 3 : 2, interior->num_nonzeros);
+        TEST_ASSERT_EQ(7, mtxdistvector.partition.size);
+        TEST_ASSERT_EQ(2, mtxdistvector.partition.num_parts);
+        TEST_ASSERT_EQ(4, mtxdistvector.partition.part_sizes[0]);
+        TEST_ASSERT_EQ(3, mtxdistvector.partition.part_sizes[1]);
         if (rank == 0) {
             TEST_ASSERT_EQ(0, interior->indices[0]);
             TEST_ASSERT_EQ(1, interior->indices[1]);
@@ -156,9 +160,9 @@ int test_mtxdistvector_from_mtxfile(void)
             TEST_ASSERT_EQ(2.0, interior->data.real_double[1]);
             TEST_ASSERT_EQ(3.0, interior->data.real_double[2]);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ(3, interior->indices[0]);
-            TEST_ASSERT_EQ(5, interior->indices[1]);
-            TEST_ASSERT_EQ(4.0, interior->data.real_double[0]);
+            TEST_ASSERT_EQ(0, interior->indices[0]);
+            TEST_ASSERT_EQ(1, interior->indices[1]);
+            TEST_ASSERT_EQ(5.0, interior->data.real_double[0]);
             TEST_ASSERT_EQ(6.0, interior->data.real_double[1]);
         }
         mtxdistvector_free(&mtxdistvector);
@@ -481,11 +485,11 @@ int test_mtxdistvector_to_mtxdistfile(void)
             TEST_ASSERT_EQ(  2, data[1].i); TEST_ASSERT_EQ(2.0, data[1].a);
             TEST_ASSERT_EQ(  3, data[2].i); TEST_ASSERT_EQ(3.0, data[2].a);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ(  4, data[0].i); TEST_ASSERT_EQ(4.0, data[0].a);
-            TEST_ASSERT_EQ(  5, data[1].i); TEST_ASSERT_EQ(5.0, data[1].a);
-            TEST_ASSERT_EQ(  6, data[2].i); TEST_ASSERT_EQ(6.0, data[2].a);
-            TEST_ASSERT_EQ(  7, data[3].i); TEST_ASSERT_EQ(7.0, data[3].a);
-            TEST_ASSERT_EQ(  8, data[4].i); TEST_ASSERT_EQ(8.0, data[4].a);
+            TEST_ASSERT_EQ(  1, data[0].i); TEST_ASSERT_EQ(4.0, data[0].a);
+            TEST_ASSERT_EQ(  2, data[1].i); TEST_ASSERT_EQ(5.0, data[1].a);
+            TEST_ASSERT_EQ(  3, data[2].i); TEST_ASSERT_EQ(6.0, data[2].a);
+            TEST_ASSERT_EQ(  4, data[3].i); TEST_ASSERT_EQ(7.0, data[3].a);
+            TEST_ASSERT_EQ(  5, data[4].i); TEST_ASSERT_EQ(8.0, data[4].a);
         }
         mtxdistfile_free(&dst);
         mtxdistvector_free(&src);
