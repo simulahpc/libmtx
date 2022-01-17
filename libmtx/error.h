@@ -81,6 +81,7 @@ enum mtxerror
     MTX_ERR_INCOMPATIBLE_PRECISION,   /* incompatible precision */
     MTX_ERR_INCOMPATIBLE_SIZE,        /* incompatible size */
     MTX_ERR_INCOMPATIBLE_VECTOR_TYPE, /* incompatible vector type */
+    MTX_ERR_INVALID_PARTITION,        /* invalid partition */
     MTX_ERR_INCOMPATIBLE_PARTITION,   /* incompatible partition */
     MTX_ERR_INVALID_SORTING,          /* invalid sorting */
     MTX_ERR_INVALID_ORDERING,         /* invalid ordering */

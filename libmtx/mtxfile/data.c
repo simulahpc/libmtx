@@ -6054,20 +6054,20 @@ int mtxfiledata_reorder(
     const int * colperm)
 {
     int err;
-    if (rowperm) {
-        for (int i = 0; i < num_rows; i++) {
-            if (rowperm[i] <= 0 || rowperm[i] > num_rows)
-                return MTX_ERR_INDEX_OUT_OF_BOUNDS;
-        }
-    }
-    if (colperm) {
-        for (int i = 0; i < num_columns; i++) {
-            if (colperm[i] <= 0 || colperm[i] > num_columns)
-                return MTX_ERR_INDEX_OUT_OF_BOUNDS;
-        }
-    }
-
     if (format == mtxfile_array) {
+        if (rowperm) {
+            for (int i = 0; i < num_rows; i++) {
+                if (rowperm[i] <= 0 || rowperm[i] > num_rows)
+                    return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            }
+        }
+        if (colperm) {
+            for (int i = 0; i < num_columns; i++) {
+                if (colperm[i] <= 0 || colperm[i] > num_columns)
+                    return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            }
+        }
+
         /* Create a temporary copy of the data to be permuted. */
         union mtxfiledata original;
         err = mtxfiledata_alloc(

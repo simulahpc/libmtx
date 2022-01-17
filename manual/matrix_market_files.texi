@@ -1014,10 +1014,13 @@ compaction.
 @node Partition
 @subsection Partition
 @cindex partition
+@cindex join
 Partitioning refers to the process of dividing up a matrix or vector
 into several parts. This is needed, for example, when distributing a
 matrix or vector among multiple processes (see @ref{Distributed Matrix
-Market files} and @ref{Distributed matrices and vectors}).
+Market files} and @ref{Distributed matrices and vectors}). Conversely,
+matrix or vector blocks can also be @dfn{joined} together, if they are
+compatible, to form a larger matrix or vector.
 
 @tindex enum mtxpartitioning
 The file @code{libmtx/util/partition.h} defines the type @code{enum
@@ -1197,38 +1200,6 @@ any of the above functions must be freed by calling
 @code{void mtxpartition_free(struct mtxpartition * partition);}
 @end example
 
-
-@findex mtxfile_partition
-If a row and column partition is given, the function
-@code{mtxfile_partition} can be used to partition a Matrix Market file
-into parts.
-@example
-@code{int mtxfile_partition(
-    const struct mtxfile * src,
-    struct mtxfile * dsts,
-    const struct mtxpartition * rowpart,
-    const struct mtxpartition * colpart);}
-@end example
-The partitions @code{rowpart} and @code{colpart} are allowed to be
-@samp{NULL}, in which case a trivial, singleton partition is used for
-the rows and columns, respectively. Otherwise, @code{rowpart} and
-@code{colpart} must partition the rows and columns, respectively, of
-the matrix or vector @code{src}. That is, @samp{rowpart->size} must be
-equal to @samp{src->size.num_rows}, and @samp{colpart->size} must be
-equal to @samp{src->size.num_columns}.
-
-The argument @code{dsts} is an array that must have enough storage for
-@samp{P*Q} values of type @code{struct mtxfile}, where @samp{P} is the
-number of row parts (@samp{rowpart->num_parts}), and @samp{Q} is the
-number of column parts (@samp{colpart->num_parts}). Note that the
-@code{r}th part corresponds to a row part @code{p} and column part
-@code{q}, such that @samp{r=p*Q+q}. Thus, the @code{r}th entry of
-@code{dsts} is the submatrix corresponding to the @code{p}th row and
-@code{q}th column of the 2D partitioning.
-
-Note that the user is responsible for freeing storage allocated for
-each Matrix Market file in the @code{dsts} array.
-
 @cindex local-to-global mapping
 @cindex global-to-local mapping
 Once a set has been partitioned, it is frequently necessary to
@@ -1262,6 +1233,71 @@ global element numbers. The global numbers are stored in
 @code{globalelem} array contains the global element numbers that
 should be translated to their corresponding local element numbers,
 which are stored in @code{localelem}.
+
+@findex mtxfile_partition
+If a row and column partition is given, the function
+@code{mtxfile_partition} can be used to partition a Matrix Market file
+into parts.
+@example
+@code{int mtxfile_partition(
+    const struct mtxfile * src,
+    struct mtxfile * dsts,
+    const struct mtxpartition * rowpart,
+    const struct mtxpartition * colpart);}
+@end example
+The partitions @code{rowpart} and @code{colpart} are allowed to be
+@samp{NULL}, in which case a trivial, singleton partition is used for
+the rows and columns, respectively. Otherwise, @code{rowpart} and
+@code{colpart} must partition the rows and columns, respectively, of
+the matrix or vector @code{src}. That is, @samp{rowpart->size} must be
+equal to @samp{src->size.num_rows}, and @samp{colpart->size} must be
+equal to @samp{src->size.num_columns}.
+
+The argument @code{dsts} is an array that must have enough storage for
+@samp{P*Q} values of type @code{struct mtxfile}, where @samp{P} is the
+number of row parts (@samp{rowpart->num_parts}), and @samp{Q} is the
+number of column parts (@samp{colpart->num_parts}). Note that the
+@code{r}th part corresponds to a row part @code{p} and column part
+@code{q}, such that @samp{r=p*Q+q}. Thus, the @code{r}th entry of
+@code{dsts} is the submatrix corresponding to the @code{p}th row and
+@code{q}th column of the 2D partitioning.
+
+Note that the user is responsible for freeing storage allocated for
+each Matrix Market file in the @code{dsts} array.
+
+@findex mtxfile_join
+To join together compatible blocks of matrices or vectors, use the
+function @code{mtxfile_join}.
+@example
+@code{int mtxfile_join(
+    struct mtxfile * dst,
+    const struct mtxfile * srcs,
+    const struct mtxpartition * rowpart,
+    const struct mtxpartition * colpart);}
+@end example
+The partitions @code{rowpart} and @code{colpart} are allowed to be
+@samp{NULL}, in which case a trivial, singleton partition is used for
+the rows and columns, respectively. Otherwise, @code{rowpart} and
+@code{colpart} must partition the rows and columns, respectively, of
+the @emph{joined} matrix or vector @code{dst}.
+
+The argument @code{srcs} is logically arranged as a two-dimensional
+array of size @samp{P*Q}, where @samp{P} is the number of row parts
+(@samp{rowpart->num_parts}) and @samp{Q} is the number of column
+parts (@samp{colpart->num_parts}).  Note that the @code{r}th part
+corresponds to a row part @code{p} and column part @code{q}, such that
+@samp{r=p*Q+q}. Thus, the @code{r}th entry of @code{srcs} is the
+submatrix corresponding to the @code{p}th row and @code{q}th column of
+the 2D partitioning.
+
+Moreover, the blocks must be compatible, which means that each part in
+the same block row @code{p}, must have the same number of rows.
+Similarly, each part in the same block column @code{q} must have the
+same number of columns. Finally, for each block column @code{q}, the
+sum of @samp{srcs[p*Q+q]->size.num_rows} for @samp{p=0,1,...,P-1} must
+be equal to @samp{rowpart->size}. Likewise, for each block row
+@code{p}, the sum of @samp{srcs[p*Q+q]->size.num_rows} for
+@samp{q=0,1,...,Q-1} must be equal to @samp{colpart->size}.
 
 
 @node Reorder

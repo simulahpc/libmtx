@@ -135,6 +135,8 @@ const char * mtxstrerror(
         return "incompatible size";
     case MTX_ERR_INCOMPATIBLE_VECTOR_TYPE:
         return "incompatible vector type";
+    case MTX_ERR_INVALID_PARTITION:
+        return "invalid partition";
     case MTX_ERR_INCOMPATIBLE_PARTITION:
         return "incompatible partition";
     case MTX_ERR_INVALID_ORDERING:

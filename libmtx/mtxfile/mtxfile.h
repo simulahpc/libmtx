@@ -920,6 +920,34 @@ int mtxfile_partition(
     const struct mtxpartition * rowpart,
     const struct mtxpartition * colpart);
 
+/**
+ * ‘mtxfile_join()’ joins together Matrix Market files representing
+ * compatible blocks of a partitioned matrix or vector to form a
+ * larger matrix or vector.
+ *
+ * The argument ‘srcs’ is logically arranged as a two-dimensional
+ * array of size ‘P*Q’, where ‘P’ is the number of row parts
+ * (‘rowpart->num_parts’) and ‘Q’ is the number of column parts
+ * (‘colpart->num_parts’).  Note that the ‘r’th part corresponds to a
+ * row part ‘p’ and column part ‘q’, such that ‘r=p*Q+q’. Thus, the
+ * ‘r’th entry of ‘srcs’ is the submatrix corresponding to the ‘p’th
+ * row and ‘q’th column of the 2D partitioning.
+ *
+ * Moreover, the blocks must be compatible, which means that each part
+ * in the same block row ‘p’, must have the same number of rows.
+ * Similarly, each part in the same block column ‘q’ must have the
+ * same number of columns. Finally, for each block column ‘q’, the sum
+ * of ‘srcs[p*Q+q]->size.num_rows’ for ‘p=0,1,...,P-1’ must be equal
+ * to ‘rowpart->size’. Likewise, for each block row ‘p’, the sum of
+ * ‘srcs[p*Q+q]->size.num_rows’ for ‘q=0,1,...,Q-1’ must be equal to
+ * ‘colpart->size’.
+ */
+int mtxfile_join(
+    struct mtxfile * dst,
+    const struct mtxfile * srcs,
+    const struct mtxpartition * rowpart,
+    const struct mtxpartition * colpart);
+
 /*
  * Reordering
  */
