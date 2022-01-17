@@ -5949,16 +5949,17 @@ int mtxfiledata_partition(
         return err;
     }
 
+    int64_t * elements = malloc(size * sizeof(int64_t));
+    if (!elements) {
+        if (colpart || localcolidx) free(colidx);
+        if (rowpart || localrowidx) free(rowidx);
+        return MTX_ERR_ERRNO;
+    }
+
     /* Assign part numbers to each data line and compute the final
      * part number of the product partition. Note that row and column
      * indices are adjusted from 1-based to 0-based indexing. */
     if (rowpart && colpart) {
-        int64_t * elements = malloc(size * sizeof(int64_t));
-        if (!elements) {
-            free(colidx);
-            free(rowidx);
-            return MTX_ERR_ERRNO;
-        }
         for (int64_t k = 0; k < size; k++)
             elements[k] = rowidx[k]-1;
         int * rowparts = rowidx;
@@ -5966,8 +5967,8 @@ int mtxfiledata_partition(
             rowpart, size, elements, rowparts, localrowidx);
         if (err) {
             free(elements);
-            free(colidx);
-            free(rowidx);
+            if (colpart || localcolidx) free(colidx);
+            if (rowpart || localrowidx) free(rowidx);
             return err;
         }
         for (int64_t k = 0; k < size; k++)
@@ -5977,22 +5978,22 @@ int mtxfiledata_partition(
             colpart, size, elements, colparts, localcolidx);
         if (err) {
             free(elements);
-            free(colidx);
-            free(rowidx);
+            if (colpart || localcolidx) free(colidx);
+            if (rowpart || localrowidx) free(rowidx);
             return err;
         }
         free(elements);
         for (int64_t k = 0; k < size; k++)
             parts[k] = rowparts[k] * num_col_parts + colparts[k];
     } else if (rowpart) {
-        int64_t * elements = malloc(size * sizeof(int64_t));
         for (int64_t k = 0; k < size; k++)
             elements[k] = rowidx[k]-1;
         err = mtxpartition_assign(
             rowpart, size, elements, parts, localrowidx);
         if (err) {
             free(elements);
-            free(rowidx);
+            if (colpart || localcolidx) free(colidx);
+            if (rowpart || localrowidx) free(rowidx);
             return err;
         }
         free(elements);
@@ -6001,14 +6002,14 @@ int mtxfiledata_partition(
                 localcolidx[k] = colidx[k]-1;
         }
     } else if (colpart) {
-        int64_t * elements = malloc(size * sizeof(int64_t));
         for (int64_t k = 0; k < size; k++)
             elements[k] = colidx[k]-1;
         err = mtxpartition_assign(
             colpart, size, elements, parts, localcolidx);
         if (err) {
             free(elements);
-            free(colidx);
+            if (colpart || localcolidx) free(colidx);
+            if (rowpart || localrowidx) free(rowidx);
             return err;
         }
         free(elements);
@@ -6017,8 +6018,8 @@ int mtxfiledata_partition(
                 localrowidx[k] = rowidx[k]-1;
         }
     }
-    if (colpart) free(colidx);
-    if (rowpart) free(rowidx);
+    if (colpart || localcolidx) free(colidx);
+    if (rowpart || localrowidx) free(rowidx);
     return MTX_SUCCESS;
 }
 

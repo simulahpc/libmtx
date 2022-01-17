@@ -60,6 +60,7 @@
 void mtxdistvector_free(
     struct mtxdistvector * distvector)
 {
+    mtxpartition_free(&distvector->partition);
     mtxvector_free(&distvector->interior);
 }
 
@@ -813,8 +814,11 @@ int mtxdistvector_to_mtxdistfile(
     }
     free(part_sizes);
 
+    struct mtxfilesize dstsize;
     if (mtxfile.header.format == mtxfile_array) {
-        mtxfile.size.num_rows = size;
+        dstsize.num_rows = size;
+        dstsize.num_columns = mtxfile.size.num_columns;
+        dstsize.num_nonzeros = mtxfile.size.num_nonzeros;
     } else if (mtxfile.header.format == mtxfile_coordinate) {
         disterr->mpierrcode = MPI_Allreduce(
             MPI_IN_PLACE, &mtxfile.size.num_rows, 1, MPI_INT, MPI_SUM, comm);
@@ -824,12 +828,14 @@ int mtxdistvector_to_mtxdistfile(
             mtxfile_free(&mtxfile);
             return MTX_ERR_MPI_COLLECTIVE;
         }
-        mtxfile.size.num_nonzeros = size;
+        dstsize.num_rows = mtxfile.size.num_rows;
+        dstsize.num_columns = mtxfile.size.num_columns;
+        dstsize.num_nonzeros = size;
     }
 
     err = mtxdistfile_alloc(
         dst, &mtxfile.header, &mtxfile.comments,
-        &mtxfile.size, mtxfile.precision,
+        &dstsize, mtxfile.precision,
         &partition, distvector->comm, disterr);
     if (err) {
         mtxpartition_free(&partition);
@@ -837,8 +843,26 @@ int mtxdistvector_to_mtxdistfile(
         return err;
     }
     mtxpartition_free(&partition);
-    dst->data = mtxfile.data;
-    mtxfilecomments_free(&mtxfile.comments);
+
+    int64_t num_data_lines;
+    err = mtxfilesize_num_data_lines(
+        &mtxfile.size, mtxfile.header.symmetry, &num_data_lines);
+    if (err) {
+        mtxdistfile_free(dst);
+        mtxfile_free(&mtxfile);
+        return err;
+    }
+    err = mtxfiledata_copy(
+        &dst->data, &mtxfile.data,
+        dst->header.object, dst->header.format,
+        dst->header.field, dst->precision,
+        num_data_lines, 0, 0);
+    if (err) {
+        mtxdistfile_free(dst);
+        mtxfile_free(&mtxfile);
+        return err;
+    }
+    mtxfile_free(&mtxfile);
     return MTX_SUCCESS;
 }
 

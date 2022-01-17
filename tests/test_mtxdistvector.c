@@ -601,6 +601,7 @@ int test_mtxdistvector_dot(void)
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
         TEST_ASSERT_EQ(9.0, zdotc[0]); TEST_ASSERT_EQ(0.0, zdotc[1]);
+        mtxpartition_free(&partition);
         mtxdistvector_free(&y);
         mtxdistvector_free(&x);
     }
@@ -668,6 +669,7 @@ int test_mtxdistvector_dot(void)
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
         TEST_ASSERT_EQ(9.0, zdotc[0]); TEST_ASSERT_EQ(0.0, zdotc[1]);
+        mtxpartition_free(&partition);
         mtxdistvector_free(&y);
         mtxdistvector_free(&x);
     }
@@ -729,6 +731,7 @@ int test_mtxdistvector_dot(void)
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
         TEST_ASSERT_EQ(9.0, zdotc[0]); TEST_ASSERT_EQ(-3.0, zdotc[1]);
+        mtxpartition_free(&partition);
         mtxdistvector_free(&y);
         mtxdistvector_free(&x);
     }
@@ -790,6 +793,7 @@ int test_mtxdistvector_dot(void)
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
         TEST_ASSERT_EQ(9.0, zdotc[0]); TEST_ASSERT_EQ(-3.0, zdotc[1]);
+        mtxpartition_free(&partition);
         mtxdistvector_free(&y);
         mtxdistvector_free(&x);
     }
@@ -857,6 +861,7 @@ int test_mtxdistvector_dot(void)
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
         TEST_ASSERT_EQ(9.0, zdotc[0]); TEST_ASSERT_EQ(0.0, zdotc[1]);
+        mtxpartition_free(&partition);
         mtxdistvector_free(&y);
         mtxdistvector_free(&x);
     }
@@ -924,6 +929,7 @@ int test_mtxdistvector_dot(void)
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
         TEST_ASSERT_EQ(9.0, zdotc[0]); TEST_ASSERT_EQ(0.0, zdotc[1]);
+        mtxpartition_free(&partition);
         mtxdistvector_free(&y);
         mtxdistvector_free(&x);
     }
@@ -999,6 +1005,7 @@ int test_mtxdistvector_dot(void)
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
         TEST_ASSERT_EQ(9.0, zdotc[0]); TEST_ASSERT_EQ(0.0, zdotc[1]);
+        mtxpartition_free(&partition);
         mtxdistvector_free(&y);
         mtxdistvector_free(&x);
     }
@@ -1070,6 +1077,7 @@ int test_mtxdistvector_dot(void)
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
         TEST_ASSERT_EQ(9.0, zdotc[0]); TEST_ASSERT_EQ(0.0, zdotc[1]);
+        mtxpartition_free(&partition);
         mtxdistvector_free(&y);
         mtxdistvector_free(&x);
     }
@@ -1135,6 +1143,7 @@ int test_mtxdistvector_dot(void)
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
         TEST_ASSERT_EQ(9.0, zdotc[0]); TEST_ASSERT_EQ(-3.0, zdotc[1]);
+        mtxpartition_free(&partition);
         mtxdistvector_free(&y);
         mtxdistvector_free(&x);
     }
@@ -1200,6 +1209,7 @@ int test_mtxdistvector_dot(void)
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
         TEST_ASSERT_EQ(9.0, zdotc[0]); TEST_ASSERT_EQ(-3.0, zdotc[1]);
+        mtxpartition_free(&partition);
         mtxdistvector_free(&y);
         mtxdistvector_free(&x);
     }
@@ -1271,6 +1281,7 @@ int test_mtxdistvector_dot(void)
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
         TEST_ASSERT_EQ(9.0, zdotc[0]); TEST_ASSERT_EQ(0.0, zdotc[1]);
+        mtxpartition_free(&partition);
         mtxdistvector_free(&y);
         mtxdistvector_free(&x);
     }
@@ -1342,6 +1353,7 @@ int test_mtxdistvector_dot(void)
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
         TEST_ASSERT_EQ(9.0, zdotc[0]); TEST_ASSERT_EQ(0.0, zdotc[1]);
+        mtxpartition_free(&partition);
         mtxdistvector_free(&y);
         mtxdistvector_free(&x);
     }
@@ -1420,6 +1432,7 @@ int test_mtxdistvector_nrm2(void)
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
         TEST_ASSERT_EQ(4.0, dnrm2);
+        mtxpartition_free(&partition);
         mtxdistvector_free(&x);
     }
 
@@ -1453,6 +1466,7 @@ int test_mtxdistvector_nrm2(void)
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
         TEST_ASSERT_EQ(4.0, dnrm2);
+        mtxpartition_free(&partition);
         mtxdistvector_free(&x);
     }
 
@@ -1486,6 +1500,7 @@ int test_mtxdistvector_nrm2(void)
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
         TEST_ASSERT_EQ(4.0, dnrm2);
+        mtxpartition_free(&partition);
         mtxdistvector_free(&x);
     }
 
@@ -1519,6 +1534,7 @@ int test_mtxdistvector_nrm2(void)
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
         TEST_ASSERT_EQ(4.0, dnrm2);
+        mtxpartition_free(&partition);
         mtxdistvector_free(&x);
     }
 
@@ -1552,6 +1568,7 @@ int test_mtxdistvector_nrm2(void)
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
         TEST_ASSERT_EQ(4.0, dnrm2);
+        mtxpartition_free(&partition);
         mtxdistvector_free(&x);
     }
 
@@ -1586,6 +1603,7 @@ int test_mtxdistvector_nrm2(void)
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
         TEST_ASSERT_EQ(4.0, dnrm2);
         mtxdistvector_free(&x);
+        mtxpartition_free(&partition);
     }
 
     /*
@@ -1627,6 +1645,7 @@ int test_mtxdistvector_nrm2(void)
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
         TEST_ASSERT_EQ(4.0, dnrm2);
         mtxdistvector_free(&x);
+        mtxpartition_free(&partition);
     }
 
     {
@@ -1663,6 +1682,7 @@ int test_mtxdistvector_nrm2(void)
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
         TEST_ASSERT_EQ(4.0, dnrm2);
+        mtxpartition_free(&partition);
         mtxdistvector_free(&x);
     }
 
@@ -1700,6 +1720,7 @@ int test_mtxdistvector_nrm2(void)
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
         TEST_ASSERT_EQ(4.0, dnrm2);
+        mtxpartition_free(&partition);
         mtxdistvector_free(&x);
     }
 
@@ -1737,6 +1758,7 @@ int test_mtxdistvector_nrm2(void)
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
         TEST_ASSERT_EQ(4.0, dnrm2);
+        mtxpartition_free(&partition);
         mtxdistvector_free(&x);
     }
 
@@ -1774,6 +1796,7 @@ int test_mtxdistvector_nrm2(void)
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
         TEST_ASSERT_EQ(4.0, dnrm2);
+        mtxpartition_free(&partition);
         mtxdistvector_free(&x);
     }
 
@@ -1811,6 +1834,7 @@ int test_mtxdistvector_nrm2(void)
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
         TEST_ASSERT_EQ(4.0, dnrm2);
+        mtxpartition_free(&partition);
         mtxdistvector_free(&x);
     }
 
@@ -1845,6 +1869,7 @@ int test_mtxdistvector_nrm2(void)
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
         TEST_ASSERT_EQ(4.0, dnrm2);
+        mtxpartition_free(&partition);
         mtxdistvector_free(&x);
     }
 
@@ -1933,6 +1958,7 @@ int test_mtxdistvector_scal(void)
             TEST_ASSERT_EQ(8.0f, x.interior.storage.array.data.real_single[1]);
             TEST_ASSERT_EQ(12.0f, x.interior.storage.array.data.real_single[2]);
         }
+        mtxpartition_free(&partition);
         mtxdistvector_free(&x);
     }
 
@@ -1978,6 +2004,7 @@ int test_mtxdistvector_scal(void)
             TEST_ASSERT_EQ(8.0, x.interior.storage.array.data.real_double[1]);
             TEST_ASSERT_EQ(12.0, x.interior.storage.array.data.real_double[2]);
         }
+        mtxpartition_free(&partition);
         mtxdistvector_free(&x);
     }
 
@@ -2025,6 +2052,7 @@ int test_mtxdistvector_scal(void)
             TEST_ASSERT_EQ(12.0f, x.interior.storage.array.data.complex_single[1][0]);
             TEST_ASSERT_EQ(0.0f, x.interior.storage.array.data.complex_single[1][1]);
         }
+        mtxpartition_free(&partition);
         mtxdistvector_free(&x);
     }
 
@@ -2072,6 +2100,7 @@ int test_mtxdistvector_scal(void)
             TEST_ASSERT_EQ(12.0, x.interior.storage.array.data.complex_double[1][0]);
             TEST_ASSERT_EQ(0.0, x.interior.storage.array.data.complex_double[1][1]);
         }
+        mtxpartition_free(&partition);
         mtxdistvector_free(&x);
     }
 
@@ -2125,6 +2154,7 @@ int test_mtxdistvector_scal(void)
             TEST_ASSERT_EQ(8.0f, x.interior.storage.coordinate.data.real_single[1]);
             TEST_ASSERT_EQ(12.0f, x.interior.storage.coordinate.data.real_single[2]);
         }
+        mtxpartition_free(&partition);
         mtxdistvector_free(&x);
     }
 
@@ -2174,6 +2204,7 @@ int test_mtxdistvector_scal(void)
             TEST_ASSERT_EQ(8.0f, x.interior.storage.coordinate.data.real_double[1]);
             TEST_ASSERT_EQ(12.0f, x.interior.storage.coordinate.data.real_double[2]);
         }
+        mtxpartition_free(&partition);
         mtxdistvector_free(&x);
     }
 
@@ -2225,6 +2256,7 @@ int test_mtxdistvector_scal(void)
             TEST_ASSERT_EQ(12.0f, x.interior.storage.coordinate.data.complex_single[1][0]);
             TEST_ASSERT_EQ(0.0f, x.interior.storage.coordinate.data.complex_single[1][1]);
         }
+        mtxpartition_free(&partition);
         mtxdistvector_free(&x);
     }
 
@@ -2276,6 +2308,7 @@ int test_mtxdistvector_scal(void)
             TEST_ASSERT_EQ(12.0f, x.interior.storage.coordinate.data.complex_double[1][0]);
             TEST_ASSERT_EQ(0.0f, x.interior.storage.coordinate.data.complex_double[1][1]);
         }
+        mtxpartition_free(&partition);
         mtxdistvector_free(&x);
     }
 
@@ -2398,6 +2431,7 @@ int test_mtxdistvector_axpy(void)
             TEST_ASSERT_EQ(46.0f, y.interior.storage.array.data.real_single[1]);
             TEST_ASSERT_EQ(61.0f, y.interior.storage.array.data.real_single[2]);
         }
+        mtxpartition_free(&partition);
         mtxdistvector_free(&y);
         mtxdistvector_free(&x);
     }
@@ -2477,6 +2511,7 @@ int test_mtxdistvector_axpy(void)
             TEST_ASSERT_EQ(46.0, y.interior.storage.array.data.real_double[1]);
             TEST_ASSERT_EQ(61.0, y.interior.storage.array.data.real_double[2]);
         }
+        mtxpartition_free(&partition);
         mtxdistvector_free(&y);
         mtxdistvector_free(&x);
     }
@@ -2560,6 +2595,7 @@ int test_mtxdistvector_axpy(void)
             TEST_ASSERT_EQ(61.0f, y.interior.storage.array.data.complex_single[1][0]);
             TEST_ASSERT_EQ(0.0f, y.interior.storage.array.data.complex_single[1][1]);
         }
+        mtxpartition_free(&partition);
         mtxdistvector_free(&y);
         mtxdistvector_free(&x);
     }
@@ -2643,6 +2679,7 @@ int test_mtxdistvector_axpy(void)
             TEST_ASSERT_EQ(61.0, y.interior.storage.array.data.complex_double[1][0]);
             TEST_ASSERT_EQ(0.0, y.interior.storage.array.data.complex_double[1][1]);
         }
+        mtxpartition_free(&partition);
         mtxdistvector_free(&y);
         mtxdistvector_free(&x);
     }
@@ -2730,6 +2767,7 @@ int test_mtxdistvector_axpy(void)
             TEST_ASSERT_EQ(46.0f, y.interior.storage.coordinate.data.real_single[1]);
             TEST_ASSERT_EQ(61.0f, y.interior.storage.coordinate.data.real_single[2]);
         }
+        mtxpartition_free(&partition);
         mtxdistvector_free(&y);
         mtxdistvector_free(&x);
     }
@@ -2813,6 +2851,7 @@ int test_mtxdistvector_axpy(void)
             TEST_ASSERT_EQ(46.0, y.interior.storage.coordinate.data.real_double[1]);
             TEST_ASSERT_EQ(61.0, y.interior.storage.coordinate.data.real_double[2]);
         }
+        mtxpartition_free(&partition);
         mtxdistvector_free(&y);
         mtxdistvector_free(&x);
     }
@@ -2900,6 +2939,7 @@ int test_mtxdistvector_axpy(void)
             TEST_ASSERT_EQ(61.0f, y.interior.storage.coordinate.data.complex_single[1][0]);
             TEST_ASSERT_EQ(0.0f, y.interior.storage.coordinate.data.complex_single[1][1]);
         }
+        mtxpartition_free(&partition);
         mtxdistvector_free(&y);
         mtxdistvector_free(&x);
     }
@@ -2987,6 +3027,7 @@ int test_mtxdistvector_axpy(void)
             TEST_ASSERT_EQ(61.0, y.interior.storage.coordinate.data.complex_double[1][0]);
             TEST_ASSERT_EQ(0.0, y.interior.storage.coordinate.data.complex_double[1][1]);
         }
+        mtxpartition_free(&partition);
         mtxdistvector_free(&y);
         mtxdistvector_free(&x);
     }
