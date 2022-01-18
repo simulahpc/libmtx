@@ -86,15 +86,15 @@ int mtxpartitioning_parse(
     if (strncmp("singleton", t, strlen("singleton")) == 0) {
         t += strlen("singleton");
         *partition_type = mtx_singleton;
+    } else if (strncmp("block-cyclic", t, strlen("block-cyclic")) == 0) {
+        t += strlen("block-cyclic");
+        *partition_type = mtx_block_cyclic;
     } else if (strncmp("block", t, strlen("block")) == 0) {
         t += strlen("block");
         *partition_type = mtx_block;
     } else if (strncmp("cyclic", t, strlen("cyclic")) == 0) {
         t += strlen("cyclic");
         *partition_type = mtx_cyclic;
-    } else if (strncmp("block-cyclic", t, strlen("block-cyclic")) == 0) {
-        t += strlen("block-cyclic");
-        *partition_type = mtx_block_cyclic;
     } else if (strncmp("custom", t, strlen("custom")) == 0) {
         t += strlen("custom");
         *partition_type = mtx_custom_partition;
@@ -259,7 +259,7 @@ int mtxpartition_init_block(
 {
     int err;
     if (num_parts <= 0)
-        return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+        return MTX_ERR_INVALID_PARTITION;
     if (size / num_parts >= INT_MAX) {
         errno = ERANGE;
         return MTX_ERR_ERRNO;
@@ -293,7 +293,7 @@ int mtxpartition_init_block(
     if (partition->parts_ptr[num_parts] != size) {
         free(partition->parts_ptr);
         free(partition->part_sizes);
-        return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+        return MTX_ERR_INVALID_PARTITION;
     }
     partition->parts = NULL;
     partition->elements_per_part = NULL;
@@ -311,7 +311,7 @@ int mtxpartition_init_cyclic(
 {
     int err;
     if (num_parts <= 0)
-        return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+        return MTX_ERR_INVALID_PARTITION;
     if (size / num_parts >= INT_MAX) {
         errno = ERANGE;
         return MTX_ERR_ERRNO;
@@ -337,6 +337,11 @@ int mtxpartition_init_cyclic(
     for (int p = 0; p < num_parts; p++) {
         partition->parts_ptr[p+1] =
             partition->parts_ptr[p] + partition->part_sizes[p];
+    }
+    if (partition->parts_ptr[num_parts] != size) {
+        free(partition->parts_ptr);
+        free(partition->part_sizes);
+        return MTX_ERR_INVALID_PARTITION;
     }
     partition->parts = NULL;
     partition->elements_per_part = NULL;
@@ -369,7 +374,7 @@ int mtxpartition_init_custom(
 {
     int err;
     if (num_parts <= 0)
-        return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+        return MTX_ERR_INVALID_PARTITION;
     for (int64_t i = 0; i < size; i++) {
         if (parts[i] < 0 || parts[i] >= num_parts)
             return MTX_ERR_INDEX_OUT_OF_BOUNDS;
@@ -396,6 +401,11 @@ int mtxpartition_init_custom(
     for (int p = 0; p < num_parts; p++) {
         partition->parts_ptr[p+1] =
             partition->parts_ptr[p] + partition->part_sizes[p];
+    }
+    if (partition->parts_ptr[num_parts] != size) {
+        free(partition->parts_ptr);
+        free(partition->part_sizes);
+        return MTX_ERR_INVALID_PARTITION;
     }
 
     partition->parts = malloc(partition->size * sizeof(int64_t));
