@@ -16,7 +16,7 @@
  * along with libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-01-12
+ * Last modified: 2022-01-17
  *
  * Matrix Market files distributed among multiple processes with MPI
  * for inter-process communication.
@@ -225,7 +225,22 @@ int mtxdistfile_alloc_copy(
 int mtxdistfile_init_copy(
     struct mtxdistfile * dst,
     const struct mtxdistfile * src,
-    struct mtxdisterror * disterr);
+    struct mtxdisterror * disterr)
+{
+    int err = mtxdistfile_alloc_copy(dst, src, disterr);
+    if (err) return err;
+    int64_t local_size = dst->partition.part_sizes[dst->rank];
+    err = mtxfiledata_copy(
+        &dst->data, &src->data,
+        src->header.object, src->header.format,
+        src->header.field, src->precision,
+        local_size, 0, 0);
+    if (mtxdisterror_allreduce(disterr, err)) {
+        mtxdistfile_free(dst);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+    return MTX_SUCCESS;
+}
 
 /*
  * Matrix array formats
@@ -2984,187 +2999,376 @@ int mtxdistfile_partition(
     struct mtxdisterror * disterr)
 {
     int err;
+    MPI_Comm comm = src->comm;
     int comm_size = src->comm_size;
     int rank = src->rank;
-    int num_row_parts = rowpart ? rowpart->num_parts : 1;
-    int num_col_parts = colpart ? colpart->num_parts : 1;
-    if (rowpart && rowpart->size != src->size.num_rows)
+    int num_row_blocks = rowpart ? rowpart->num_parts : 1;
+    int num_col_blocks = colpart ? colpart->num_parts : 1;
+    if (rowpart &&
+        ((src->size.num_rows == -1 && rowpart->size != 1) ||
+         (src->size.num_rows >= 0  && rowpart->size != src->size.num_rows)))
         return MTX_ERR_INCOMPATIBLE_PARTITION;
     if (colpart &&
         ((src->size.num_columns == -1 && colpart->size != 1) ||
-         (src->size.num_columns >= 0  &&
-          colpart->size != src->size.num_columns)))
+         (src->size.num_columns >= 0  && colpart->size != src->size.num_columns)))
         return MTX_ERR_INCOMPATIBLE_PARTITION;
 
-    int local_size = rank < src->partition.num_parts
+    int64_t local_size = rank < src->partition.num_parts
         ? src->partition.part_sizes[rank] : 0;
     int64_t offset = rank < src->partition.num_parts
         ? src->partition.parts_ptr[rank] : 0;
-    int * part_per_data_line = malloc(local_size * sizeof(int));
-    err = !part_per_data_line ? MTX_ERR_ERRNO : MTX_SUCCESS;
+
+    int * block_per_data_line = malloc(local_size * sizeof(int));
+    err = !block_per_data_line ? MTX_ERR_ERRNO : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
 
-    /* 1. Assign each data line to its row and column part */
+    int64_t * localrowidx = NULL;
+    int64_t * localcolidx = NULL;
+    if (src->header.format == mtxfile_array) {
+        localrowidx = malloc(local_size * sizeof(int64_t));
+        err = !localrowidx ? MTX_ERR_ERRNO : MTX_SUCCESS;
+        if (mtxdisterror_allreduce(disterr, err)) {
+            free(block_per_data_line);
+            return MTX_ERR_MPI_COLLECTIVE;
+        }
+        localcolidx = malloc(local_size * sizeof(int64_t));
+        err = !localcolidx ? MTX_ERR_ERRNO : MTX_SUCCESS;
+        if (mtxdisterror_allreduce(disterr, err)) {
+            free(localrowidx);
+            free(block_per_data_line);
+            return MTX_ERR_ERRNO;
+        }
+    }
+
+    /* 1. Assign each data line to its row and column block */
     err = mtxfiledata_partition(
         &src->data, src->header.object, src->header.format,
         src->header.field, src->precision,
         src->size.num_rows, src->size.num_columns,
-        offset, local_size, rowpart, colpart, part_per_data_line,
-        NULL, NULL);
+        offset, local_size, rowpart, colpart,
+        block_per_data_line, localrowidx, localcolidx);
     if (mtxdisterror_allreduce(disterr, err)) {
-        free(part_per_data_line);
+        if (src->header.format == mtxfile_array) free(localcolidx);
+        if (src->header.format == mtxfile_array) free(localrowidx);
+        free(block_per_data_line);
         return MTX_ERR_MPI_COLLECTIVE;
     }
 
-    /* 2. Create index arrays of data lines belonging to each part */
-    int num_parts = num_row_parts * num_col_parts;
-    int64_t * data_lines_per_part_ptr = malloc((num_parts+1) * sizeof(int64_t));
-    err = !data_lines_per_part_ptr ? MTX_ERR_ERRNO : MTX_SUCCESS;
+    /* 2. Count the number of elements in each block on each rank. */
+    int num_blocks = num_row_blocks * num_col_blocks;
+    int64_t * blocksize_local = malloc(num_blocks * sizeof(int64_t));
+    err = !blocksize_local ? MTX_ERR_ERRNO : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err)) {
-        free(part_per_data_line);
+        if (src->header.format == mtxfile_array) free(localcolidx);
+        if (src->header.format == mtxfile_array) free(localrowidx);
+        free(block_per_data_line);
         return MTX_ERR_MPI_COLLECTIVE;
     }
-    int64_t * data_lines_per_part = malloc(local_size * sizeof(int64_t));
-    err = !data_lines_per_part ? MTX_ERR_ERRNO : MTX_SUCCESS;
-    if (mtxdisterror_allreduce(disterr, err)) {
-        free(data_lines_per_part_ptr);
-        free(part_per_data_line);
-        return MTX_ERR_MPI_COLLECTIVE;
-    }
-
-    for (int p = 0; p <= num_parts; p++)
-        data_lines_per_part_ptr[p] = 0;
+    for (int r = 0; r < num_blocks; r++)
+        blocksize_local[r] = 0;
     for (int64_t k = 0; k < local_size; k++) {
-        int part = part_per_data_line[k];
-        data_lines_per_part_ptr[part+1]++;
+        int r = block_per_data_line[k];
+        blocksize_local[r]++;
     }
-    for (int p = 0; p < num_parts; p++) {
-        data_lines_per_part_ptr[p+1] +=
-            data_lines_per_part_ptr[p];
-    }
-    for (int64_t k = 0; k < local_size; k++) {
-        int part = part_per_data_line[k];
-        int64_t l = data_lines_per_part_ptr[part];
-        data_lines_per_part[l] = k;
-        data_lines_per_part_ptr[part]++;
-    }
-    for (int p = num_parts-1; p >= 0; p--) {
-        data_lines_per_part_ptr[p+1] =
-            data_lines_per_part_ptr[p];
-    }
-    data_lines_per_part_ptr[0] = 0;
-    free(part_per_data_line);
-
-    int64_t * local_part_sizes = malloc(src->comm_size * sizeof(int64_t));
-    err = !local_part_sizes ? MTX_ERR_ERRNO : MTX_SUCCESS;
+    int64_t * blocksize = malloc(num_blocks * sizeof(int64_t));
+    err = !blocksize ? MTX_ERR_ERRNO : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err)) {
-        free(data_lines_per_part);
-        free(data_lines_per_part_ptr);
+        free(blocksize_local);
+        if (src->header.format == mtxfile_array) free(localcolidx);
+        if (src->header.format == mtxfile_array) free(localrowidx);
+        free(block_per_data_line);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+    disterr->mpierrcode = MPI_Allreduce(
+        blocksize_local, blocksize,
+        num_blocks, MPI_INT64_T, MPI_SUM, comm);
+    err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err)) {
+        free(blocksize);
+        free(blocksize_local);
+        if (src->header.format == mtxfile_array) free(localcolidx);
+        if (src->header.format == mtxfile_array) free(localrowidx);
+        free(block_per_data_line);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+    int64_t * blockptr = malloc((num_blocks+1) * sizeof(int64_t));
+    err = !blockptr ? MTX_ERR_ERRNO : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err)) {
+        free(blocksize);
+        free(blocksize_local);
+        if (src->header.format == mtxfile_array) free(localcolidx);
+        if (src->header.format == mtxfile_array) free(localrowidx);
+        free(block_per_data_line);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+    blockptr[0] = 0;
+    for (int r = 1; r <= num_blocks; r++) {
+        blockptr[r] =
+            blockptr[r-1] +
+            blocksize[r-1];
+    }
+
+    /* Create a copy of the data that can be sorted */
+    struct mtxdistfile copy;
+    err = mtxdistfile_init_copy(&copy, src, disterr);
+    if (err) {
+        free(blockptr);
+        free(blocksize);
+        free(blocksize_local);
+        if (src->header.format == mtxfile_array) free(localcolidx);
+        if (src->header.format == mtxfile_array) free(localrowidx);
+        free(block_per_data_line);
+        return err;
+    }
+
+    /* Allocate sorting keys */
+    uint64_t * sortkeys = malloc(local_size * sizeof(uint64_t));
+    err = !sortkeys ? MTX_ERR_ERRNO : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err)) {
+        mtxdistfile_free(&copy);
+        free(blockptr);
+        free(blocksize);
+        free(blocksize_local);
+        if (src->header.format == mtxfile_array) free(localcolidx);
+        if (src->header.format == mtxfile_array) free(localrowidx);
+        free(block_per_data_line);
         return MTX_ERR_MPI_COLLECTIVE;
     }
 
-    /* 3. Create a submatrix for each part of the partition */
-    for (int p = 0; p < num_row_parts; p++) {
-        for (int q = 0; q < num_col_parts; q++) {
-            int r = p * num_col_parts + q;
-            int64_t local_part_size = data_lines_per_part_ptr[r+1] -
-                data_lines_per_part_ptr[r];
+    if (src->header.format == mtxfile_array) {
+        /* For a matrix in array format, sort by block number and then
+         * in row major order using the local row and column indices
+         * within each block. */
 
-            /* Gather the number of nonzeros in each part */
+        for (int64_t k = 0; k < local_size; k++) {
+            int r = block_per_data_line[k];
+            int q = r % num_col_blocks;
+            int num_columns =
+                colpart ? colpart->part_sizes[q] : src->size.num_columns;
+            sortkeys[k] = blockptr[r]
+                + ((localrowidx ? localrowidx[k] : 0) *
+                   (num_columns >= 0 ? num_columns : 1))
+                + (localcolidx ? localcolidx[k] : 0);
+        }
+
+        free(localcolidx);
+        free(localrowidx);
+        free(block_per_data_line);
+
+    } else if (src->header.format == mtxfile_coordinate) {
+        /* For a matrix in coordinate format, simply sort the nonzeros
+         * by their block numbers. Since the sorting is stable, the
+         * order within each block remains the same as in the original
+         * matrix or vector. */
+        for (int64_t k = 0; k < local_size; k++)
+            sortkeys[k] = block_per_data_line[k];
+        free(block_per_data_line);
+
+        /* Find row and column permutations induced by partitioning */
+        int64_t * rowperm64 = NULL;
+        if (rowpart && src->size.num_rows >= 0) {
+            rowperm64 = malloc(src->size.num_rows * sizeof(int64_t));
+            err = !rowperm64 ? MTX_ERR_ERRNO : MTX_SUCCESS;
+            if (mtxdisterror_allreduce(disterr, err)) {
+                free(blockptr);
+                free(blocksize);
+                free(sortkeys);
+                mtxdistfile_free(&copy);
+                free(blocksize_local);
+                return MTX_ERR_MPI_COLLECTIVE;
+            }
+            for (int i = 0; i < src->size.num_rows; i++)
+                rowperm64[i] = i;
+            err = mtxpartition_assign(
+                rowpart, src->size.num_rows, rowperm64, NULL, rowperm64);
+            if (mtxdisterror_allreduce(disterr, err)) {
+                free(sortkeys);
+                mtxdistfile_free(&copy);
+                free(rowperm64);
+                free(blockptr);
+                free(blocksize);
+                free(blocksize_local);
+                return MTX_ERR_MPI_COLLECTIVE;
+            }
+        }
+        int64_t * colperm64 = NULL;
+        if (colpart && src->size.num_columns >= 0) {
+            colperm64 = malloc(src->size.num_columns * sizeof(int64_t));
+            err = !colperm64 ? MTX_ERR_ERRNO : MTX_SUCCESS;
+            if (mtxdisterror_allreduce(disterr, err)) {
+                if (rowpart && src->size.num_rows >= 0) free(rowperm64);
+                free(sortkeys);
+                mtxdistfile_free(&copy);
+                free(blockptr);
+                free(blocksize);
+                free(blocksize_local);
+                return MTX_ERR_MPI_COLLECTIVE;
+            }
+            for (int j = 0; j < src->size.num_columns; j++)
+                colperm64[j] = j;
+            err = mtxpartition_assign(
+                colpart, src->size.num_columns, colperm64, NULL, colperm64);
+            if (mtxdisterror_allreduce(disterr, err)) {
+                free(colperm64);
+                if (rowpart && src->size.num_rows >= 0) free(rowperm64);
+                free(sortkeys);
+                mtxdistfile_free(&copy);
+                free(blockptr);
+                free(blocksize);
+                free(blocksize_local);
+                return MTX_ERR_MPI_COLLECTIVE;
+            }
+        }
+
+        int * rowperm = (int *) rowperm64;
+        if (rowperm) {
+            for (int i = 0; i < src->size.num_rows; i++)
+                rowperm[i] = rowperm64[i]+1;
+        }
+        int * colperm = (int *) colperm64;
+        if (colperm) {
+            for (int i = 0; i < src->size.num_columns; i++)
+                colperm[i] = colperm64[i]+1;
+        }
+
+        /* Convert global row and column numbers to local, blockwise
+         * row and column numbers. */
+        err = mtxfiledata_reorder(
+            &copy.data, src->header.object, src->header.format,
+            src->header.field, src->precision, local_size, 0,
+            src->size.num_rows, rowperm, src->size.num_columns, colperm);
+        if (mtxdisterror_allreduce(disterr, err)) {
+            if (colpart && src->size.num_columns >= 0) free(colperm64);
+            if (rowpart && src->size.num_rows >= 0) free(rowperm64);
+            free(sortkeys);
+            mtxdistfile_free(&copy);
+            free(blockptr);
+            free(blocksize);
+            free(blocksize_local);
+            return MTX_ERR_MPI_COLLECTIVE;
+        }
+
+        if (colpart && src->size.num_columns >= 0) free(colperm64);
+        if (rowpart && src->size.num_rows >= 0) free(rowperm64);
+    }
+
+    /* Sort the data by the keys */
+    err = mtxdistfile_sort_keys(
+        &copy, local_size, sortkeys, NULL, disterr);
+    if (err) {
+        free(sortkeys);
+        mtxdistfile_free(&copy);
+        free(blockptr);
+        free(blocksize);
+        free(blocksize_local);
+        return err;
+    }
+    free(sortkeys);
+
+    /* Because the sorting potentially redistributes data lines among
+     * processes, we again need to count for each block how many data
+     * lines reside on the current process. */
+    for (int r = 0; r < num_blocks; r++) {
+        int64_t first = blockptr[r] > copy.partition.parts_ptr[rank]
+            ? blockptr[r] : copy.partition.parts_ptr[rank];
+        int64_t last = blockptr[r+1] < copy.partition.parts_ptr[rank+1]
+            ? blockptr[r+1] : copy.partition.parts_ptr[rank+1];
+        blocksize_local[r] = first <= last ? last - first : 0;
+    }
+    free(blockptr);
+    
+    /* 3. Create a submatrix or -vector for each block */
+    int64_t srcoffset = 0;
+    for (int p = 0; p < num_row_blocks; p++) {
+        for (int q = 0; q < num_col_blocks; q++) {
+            int r = p * num_col_blocks + q;
+
+            int64_t * blocksize_per_rank =
+                malloc(comm_size * sizeof(int64_t));
+            err = !blocksize_per_rank ? MTX_ERR_ERRNO : MTX_SUCCESS;
+            if (mtxdisterror_allreduce(disterr, err)) {
+                for (int s = r-1; s >= 0; s--)
+                    mtxdistfile_free(&dsts[s]);
+                mtxdistfile_free(&copy);
+                free(blocksize);
+                free(blocksize_local);
+                return MTX_ERR_MPI_COLLECTIVE;
+            }
+            blocksize_per_rank[rank] = blocksize_local[r];
             disterr->mpierrcode = MPI_Allgather(
-                &local_part_size, 1, MPI_INT64_T,
-                local_part_sizes, 1, MPI_INT64_T, src->comm);
+                MPI_IN_PLACE, 0, MPI_DATATYPE_NULL,
+                blocksize_per_rank, 1, MPI_INT64_T, comm);
             err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
             if (mtxdisterror_allreduce(disterr, err)) {
+                free(blocksize_per_rank);
                 for (int s = r-1; s >= 0; s--)
                     mtxdistfile_free(&dsts[s]);
-                free(local_part_sizes);
-                free(data_lines_per_part);
-                free(data_lines_per_part_ptr);
+                mtxdistfile_free(&copy);
+                free(blocksize);
+                free(blocksize_local);
                 return MTX_ERR_MPI_COLLECTIVE;
             }
-            int64_t N = 0;
-            for (int p = 0; p < src->comm_size; p++)
-                N += local_part_sizes[p];
 
+            int64_t N = blocksize[r];
             struct mtxfilesize size;
-            if (src->size.num_nonzeros >= 0) {
-                size.num_rows = src->size.num_rows;
-                size.num_columns = src->size.num_columns;
-                size.num_nonzeros = N;
-            } else if (src->size.num_columns > 0) {
-                size.num_rows = rowpart
-                    ? rowpart->part_sizes[p] : src->size.num_rows;
-                size.num_columns = colpart
-                    ? colpart->part_sizes[q] : src->size.num_columns;
-                size.num_nonzeros = -1;
-            } else if (src->size.num_rows >= 0) {
-                size.num_rows = rowpart
-                    ? rowpart->part_sizes[p] : src->size.num_rows;
-                size.num_columns = -1;
-                size.num_nonzeros = -1;
-            } else {
-                err = MTX_ERR_INVALID_MTX_SIZE;
-            }
-            if (mtxdisterror_allreduce(disterr, err)) {
-                for (int s = r-1; s >= 0; s--)
-                    mtxdistfile_free(&dsts[s]);
-                free(local_part_sizes);
-                free(data_lines_per_part);
-                free(data_lines_per_part_ptr);
-                return MTX_ERR_MPI_COLLECTIVE;
-            }
+            size.num_rows = rowpart
+                ? rowpart->part_sizes[p] : src->size.num_rows;
+            size.num_columns = colpart
+                ? colpart->part_sizes[q] : src->size.num_columns;
+            size.num_nonzeros = src->size.num_nonzeros >= 0 ? N : -1;
 
             struct mtxpartition partition;
             err = mtxpartition_init_block(
-                &partition, N, src->partition.num_parts, local_part_sizes);
+                &partition, N, src->partition.num_parts,
+                blocksize_per_rank);
             if (mtxdisterror_allreduce(disterr, err)) {
+                free(blocksize_per_rank);
                 for (int s = r-1; s >= 0; s--)
                     mtxdistfile_free(&dsts[s]);
-                free(local_part_sizes);
-                free(data_lines_per_part);
-                free(data_lines_per_part_ptr);
+                mtxdistfile_free(&copy);
+                free(blocksize);
+                free(blocksize_local);
                 return MTX_ERR_MPI_COLLECTIVE;
             }
+            free(blocksize_per_rank);
 
             err = mtxdistfile_alloc(
                 &dsts[r], &src->header, &src->comments,
                 &size, src->precision, &partition,
-                src->comm, disterr);
+                comm, disterr);
             if (mtxdisterror_allreduce(disterr, err)) {
                 mtxpartition_free(&partition);
                 for (int s = r-1; s >= 0; s--)
                     mtxdistfile_free(&dsts[s]);
-                free(local_part_sizes);
-                free(data_lines_per_part);
-                free(data_lines_per_part_ptr);
+                mtxdistfile_free(&copy);
+                free(blocksize);
+                free(blocksize_local);
                 return MTX_ERR_MPI_COLLECTIVE;
             }
             mtxpartition_free(&partition);
 
-            const int64_t * srcdispls =
-                &data_lines_per_part[data_lines_per_part_ptr[r]];
-            err = mtxfiledata_copy_gather(
-                &dsts[r].data, &src->data,
+            err = mtxfiledata_copy(
+                &dsts[r].data, &copy.data,
                 dsts[r].header.object, dsts[r].header.format,
                 dsts[r].header.field, dsts[r].precision,
-                local_part_size, 0, srcdispls);
+                blocksize_local[r],
+                0, srcoffset);
             if (mtxdisterror_allreduce(disterr, err)) {
                 for (int s = r; s >= 0; s--)
                     mtxdistfile_free(&dsts[s]);
-                free(local_part_sizes);
-                free(data_lines_per_part);
-                free(data_lines_per_part_ptr);
+                mtxdistfile_free(&copy);
+                free(blocksize);
+                free(blocksize_local);
                 return MTX_ERR_MPI_COLLECTIVE;
             }
+            srcoffset += blocksize_local[r];
         }
     }
 
-    free(local_part_sizes);
-    free(data_lines_per_part);
-    free(data_lines_per_part_ptr);
+    mtxdistfile_free(&copy);
+    free(blocksize);
+    free(blocksize_local);
     return MTX_SUCCESS;
 }
-
 #endif

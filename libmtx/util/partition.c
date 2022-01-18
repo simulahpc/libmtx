@@ -459,8 +459,6 @@ int mtxpartition_assign(
         }
 
     } else if (partition->type == mtx_block) {
-        int64_t size_per_part = partition->size / partition->num_parts;
-        int64_t remainder = partition->size % partition->num_parts;
         for (int64_t k = 0; k < size; k++) {
             if (elements[k] < 0 || elements[k] >= partition->size)
                 return MTX_ERR_INDEX_OUT_OF_BOUNDS;

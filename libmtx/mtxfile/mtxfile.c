@@ -168,15 +168,13 @@ int mtxfile_init_copy(
     struct mtxfile * dst,
     const struct mtxfile * src)
 {
-    int err;
-    err = mtxfile_alloc_copy(dst, src);
-    if (err)
-        return err;
+    int err = mtxfile_alloc_copy(dst, src);
+    if (err) return err;
     int64_t num_data_lines;
     err = mtxfilesize_num_data_lines(
         &src->size, src->header.symmetry, &num_data_lines);
     if (err) {
-        mtxfilecomments_free(&dst->comments);
+        mtxfile_free(dst);
         return err;
     }
     err = mtxfiledata_copy(
@@ -185,7 +183,7 @@ int mtxfile_init_copy(
         src->header.field, src->precision,
         num_data_lines, 0, 0);
     if (err) {
-        mtxfilecomments_free(&dst->comments);
+        mtxfile_free(dst);
         return err;
     }
     return MTX_SUCCESS;
@@ -2033,9 +2031,13 @@ int mtxfile_partition(
     int err;
     int num_row_parts = rowpart ? rowpart->num_parts : 1;
     int num_col_parts = colpart ? colpart->num_parts : 1;
-    if (rowpart && rowpart->size != src->size.num_rows)
+    if (rowpart &&
+        ((src->size.num_rows == -1 && rowpart->size != 1) ||
+         (src->size.num_rows >= 0  && rowpart->size != src->size.num_rows)))
         return MTX_ERR_INCOMPATIBLE_PARTITION;
-    if (colpart && colpart->size != src->size.num_columns)
+    if (colpart &&
+        ((src->size.num_columns == -1 && colpart->size != 1) ||
+         (src->size.num_columns >= 0  && colpart->size != src->size.num_columns)))
         return MTX_ERR_INCOMPATIBLE_PARTITION;
 
     int64_t num_data_lines;
@@ -2336,7 +2338,6 @@ int mtxfile_partition(
                 free(num_data_lines_per_part);
                 return err;
             }
-
         }
     }
 
