@@ -891,3 +891,42 @@ number of column parts, @code{colpart->num_parts}. Note that the
 
 Note that the user is responsible for freeing storage allocated for
 each Matrix Market file in the @code{dsts} array.
+
+@cindex join
+@findex mtxdistfile_join
+Distributed Matrix Market files can also be joined together, provided
+that they form compatible blocks of matrices or vectors. This is done
+with @code{mtxdistfile_join}, which takes one or more distributed
+Matrix Market files, @code{srcs}, and produces a single, distributed
+Matrix Market file, @code{dst}.
+@example
+@code{int mtxdistfile_join(
+    struct mtxdistfile * dst,
+    const struct mtxfile * srcs,
+    const struct mtxpartition * rowpart,
+    const struct mtxpartition * colpart,
+    struct mtxdisterror * disterr);}
+@end example
+The partitions @code{rowpart} and @code{colpart} are allowed to be
+@samp{NULL}, in which case a trivial, singleton partition is used for
+the rows and columns, respectively. Otherwise, @code{rowpart} and
+@code{colpart} must partition the rows and columns, respectively, of
+the @emph{joined} matrix or vector @code{dst}.
+
+The argument @code{srcs} is logically arranged as a two-dimensional
+array of size @samp{P*Q}, where @samp{P} is the number of row parts
+(@samp{rowpart->num_parts}) and @samp{Q} is the number of column
+parts (@samp{colpart->num_parts}).  Note that the @code{r}th part
+corresponds to a row part @code{p} and column part @code{q}, such that
+@samp{r=p*Q+q}. Thus, the @code{r}th entry of @code{srcs} is the
+submatrix corresponding to the @code{p}th row and @code{q}th column of
+the 2D partitioning.
+
+Moreover, the blocks must be compatible, which means that each part in
+the same block row @code{p}, must have the same number of rows.
+Similarly, each part in the same block column @code{q} must have the
+same number of columns. Finally, for each block column @code{q}, the
+sum of @samp{srcs[p*Q+q]->size.num_rows} for @samp{p=0,1,...,P-1} must
+be equal to @samp{rowpart->size}. Likewise, for each block row
+@code{p}, the sum of @samp{srcs[p*Q+q]->size.num_rows} for
+@samp{q=0,1,...,Q-1} must be equal to @samp{colpart->size}.

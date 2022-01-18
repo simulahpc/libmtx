@@ -2381,8 +2381,7 @@ int mtxfile_join(
     int num_row_parts = rowpart ? rowpart->num_parts : 1;
     int num_col_parts = colpart ? colpart->num_parts : 1;
     int num_parts = num_row_parts * num_col_parts;
-    if (num_row_parts < 0 || num_col_parts < 0) return MTX_ERR_INVALID_PARTITION;
-    if (num_parts == 0) return MTX_SUCCESS;
+    if (num_row_parts <= 0 || num_col_parts <= 0) return MTX_ERR_INVALID_PARTITION;
 
     /* Check that the blocks are of the same type */
     struct mtxfileheader header;

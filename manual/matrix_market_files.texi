@@ -1265,6 +1265,7 @@ number of column parts (@samp{colpart->num_parts}). Note that the
 Note that the user is responsible for freeing storage allocated for
 each Matrix Market file in the @code{dsts} array.
 
+@cindex join
 @findex mtxfile_join
 To join together compatible blocks of matrices or vectors, use the
 function @code{mtxfile_join}.

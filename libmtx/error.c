@@ -149,6 +149,10 @@ const char * mtxstrerror(
         return "invalid transpose type";
     case MTX_ERR_INVALID_PROCESS_GRID:
         return "invalid process grid";
+    case MTX_ERR_INVALID_MPI_COMM:
+        return "invalid MPI communicator";
+    case MTX_ERR_INCOMPATIBLE_MPI_COMM:
+        return "incompatible MPI communicator";
     default:
         return "unknown error";
     }

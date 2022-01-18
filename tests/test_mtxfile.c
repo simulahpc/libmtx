@@ -4470,11 +4470,10 @@ int test_mtxfile_join(void)
         TEST_ASSERT_EQ(4, dst.size.num_nonzeros);
         const struct mtxfile_matrix_coordinate_real_double * data =
             dst.data.matrix_coordinate_real_double;
-        TEST_ASSERT_EQ(2, data[0].i);
+        TEST_ASSERT_EQ(2, data[0].i); TEST_ASSERT_EQ(2, data[0].j);
         TEST_ASSERT_EQ(5.0, data[0].a);
         TEST_ASSERT_EQ(1, data[1].i); TEST_ASSERT_EQ(1, data[1].j);
         TEST_ASSERT_EQ(1.0, data[1].a);
-        fprintf(stderr, "data[2]=(%d,%d,%g)\n", data[2].i, data[2].j, data[2].a);
         TEST_ASSERT_EQ(3, data[2].i); TEST_ASSERT_EQ(3, data[2].j);
         TEST_ASSERT_EQ(9.0, data[2].a);
         TEST_ASSERT_EQ(3, data[3].i); TEST_ASSERT_EQ(2, data[3].j);
