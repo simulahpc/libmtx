@@ -16,7 +16,7 @@
  * along with libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-01-16
+ * Last modified: 2022-01-18
  *
  * Data types and functions for partitioning finite sets.
  */
@@ -465,13 +465,18 @@ int mtxpartition_assign(
             if (elements[k] < 0 || elements[k] >= partition->size)
                 return MTX_ERR_INDEX_OUT_OF_BOUNDS;
             int64_t n = elements[k];
-            int part = n / (size_per_part+1);
-            if (part >= remainder)
-                part = remainder +
-                    (n - remainder * (size_per_part+1)) / size_per_part;
+            int part = -1;
+            for (int p = 0; p < partition->num_parts; p++) {
+                if (n >= partition->parts_ptr[p] &&
+                    n < partition->parts_ptr[p+1]) {
+                    part = p;
+                    break;
+                }
+            }
+            if (part == -1)
+                return MTX_ERR_INVALID_PARTITION;
             if (parts) parts[k] = part;
-            if (localelem)
-                localelem[k] = elements[k] - partition->parts_ptr[part];
+            if (localelem) localelem[k] = n - partition->parts_ptr[part];
         }
 
     } else if (partition->type == mtx_cyclic) {
