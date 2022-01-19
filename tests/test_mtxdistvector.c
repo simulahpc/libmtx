@@ -148,10 +148,10 @@ int test_mtxdistvector_from_mtxfile(void)
         TEST_ASSERT_EQ(mtx_double, interior->precision);
         TEST_ASSERT_EQ(rank == 0 ? 4 : 3, interior->size);
         TEST_ASSERT_EQ(rank == 0 ? 3 : 2, interior->num_nonzeros);
-        TEST_ASSERT_EQ(7, mtxdistvector.partition.size);
-        TEST_ASSERT_EQ(2, mtxdistvector.partition.num_parts);
-        TEST_ASSERT_EQ(4, mtxdistvector.partition.part_sizes[0]);
-        TEST_ASSERT_EQ(3, mtxdistvector.partition.part_sizes[1]);
+        TEST_ASSERT_EQ(7, mtxdistvector.rowpart.size);
+        TEST_ASSERT_EQ(2, mtxdistvector.rowpart.num_parts);
+        TEST_ASSERT_EQ(4, mtxdistvector.rowpart.part_sizes[0]);
+        TEST_ASSERT_EQ(3, mtxdistvector.rowpart.part_sizes[1]);
         if (rank == 0) {
             TEST_ASSERT_EQ(0, interior->indices[0]);
             TEST_ASSERT_EQ(1, interior->indices[1]);
@@ -241,9 +241,9 @@ int test_mtxdistvector_from_mtxdistfile(void)
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
-        TEST_ASSERT_EQ(8, mtxdistvector.partition.size);
-        TEST_ASSERT_EQ(4, mtxdistvector.partition.part_sizes[0]);
-        TEST_ASSERT_EQ(4, mtxdistvector.partition.part_sizes[1]);
+        TEST_ASSERT_EQ(8, mtxdistvector.rowpart.size);
+        TEST_ASSERT_EQ(4, mtxdistvector.rowpart.part_sizes[0]);
+        TEST_ASSERT_EQ(4, mtxdistvector.rowpart.part_sizes[1]);
         TEST_ASSERT_EQ(mtxvector_array, mtxdistvector.interior.type);
         const struct mtxvector_array * interior =
             &mtxdistvector.interior.storage.array;
@@ -300,9 +300,9 @@ int test_mtxdistvector_from_mtxdistfile(void)
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
-        TEST_ASSERT_EQ(9, mtxdistvector.partition.size);
-        TEST_ASSERT_EQ(5, mtxdistvector.partition.part_sizes[0]);
-        TEST_ASSERT_EQ(4, mtxdistvector.partition.part_sizes[1]);
+        TEST_ASSERT_EQ(9, mtxdistvector.rowpart.size);
+        TEST_ASSERT_EQ(5, mtxdistvector.rowpart.part_sizes[0]);
+        TEST_ASSERT_EQ(4, mtxdistvector.rowpart.part_sizes[1]);
         TEST_ASSERT_EQ(mtxvector_coordinate, mtxdistvector.interior.type);
         const struct mtxvector_coordinate * interior =
             &mtxdistvector.interior.storage.coordinate;

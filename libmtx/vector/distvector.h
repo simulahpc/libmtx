@@ -52,8 +52,8 @@ struct mtxpartition;
  * where MPI is used for communicating between processes.
  *
  * Processes are arranged as a one-dimensional linear array, and
- * vector elements are distributed among processes according to a
- * specified partitioning.
+ * vector elements (i.e., the rows of a row vector) are distributed
+ * among processes according to a specified partitioning.
  */
 struct mtxdistvector
 {
@@ -76,10 +76,9 @@ struct mtxdistvector
     int rank;
 
     /**
-     * ‘partition’ is a partitioning of the data lines in the
-     * underlying Matrix Market file.
+     * ‘rowpart’ is a partitioning of the rows of the vector.
      */
-    struct mtxpartition partition;
+    struct mtxpartition rowpart;
 
     struct mtxvector interior;
 
@@ -126,7 +125,7 @@ int mtxdistvector_alloc_array(
     enum mtxfield field,
     enum mtxprecision precision,
     int num_rows,
-    const struct mtxpartition * partition,
+    const struct mtxpartition * rowpart,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
@@ -139,7 +138,7 @@ int mtxdistvector_init_array_real_single(
     struct mtxdistvector * distvector,
     int num_rows,
     const float * data,
-    const struct mtxpartition * partition,
+    const struct mtxpartition * rowpart,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
@@ -152,7 +151,7 @@ int mtxdistvector_init_array_real_double(
     struct mtxdistvector * distvector,
     int num_rows,
     const double * data,
-    const struct mtxpartition * partition,
+    const struct mtxpartition * rowpart,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
@@ -165,7 +164,7 @@ int mtxdistvector_init_array_complex_single(
     struct mtxdistvector * distvector,
     int num_rows,
     const float (* data)[2],
-    const struct mtxpartition * partition,
+    const struct mtxpartition * rowpart,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
@@ -178,7 +177,7 @@ int mtxdistvector_init_array_complex_double(
     struct mtxdistvector * distvector,
     int num_rows,
     const double (* data)[2],
-    const struct mtxpartition * partition,
+    const struct mtxpartition * rowpart,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
@@ -191,7 +190,7 @@ int mtxdistvector_init_array_integer_single(
     struct mtxdistvector * distvector,
     int num_rows,
     const int32_t * data,
-    const struct mtxpartition * partition,
+    const struct mtxpartition * rowpart,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
@@ -204,7 +203,7 @@ int mtxdistvector_init_array_integer_double(
     struct mtxdistvector * distvector,
     int num_rows,
     const int64_t * data,
-    const struct mtxpartition * partition,
+    const struct mtxpartition * rowpart,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
@@ -222,7 +221,7 @@ int mtxdistvector_alloc_coordinate(
     enum mtxprecision precision,
     int num_rows,
     int64_t num_nonzeros,
-    const struct mtxpartition * partition,
+    const struct mtxpartition * rowpart,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
@@ -237,7 +236,7 @@ int mtxdistvector_init_coordinate_real_single(
     int64_t num_nonzeros,
     const int * idx,
     const float * data,
-    const struct mtxpartition * partition,
+    const struct mtxpartition * rowpart,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
@@ -252,7 +251,7 @@ int mtxdistvector_init_coordinate_real_double(
     int64_t num_nonzeros,
     const int * idx,
     const double * data,
-    const struct mtxpartition * partition,
+    const struct mtxpartition * rowpart,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
@@ -267,7 +266,7 @@ int mtxdistvector_init_coordinate_complex_single(
     int64_t num_nonzeros,
     const int * idx,
     const float (* data)[2],
-    const struct mtxpartition * partition,
+    const struct mtxpartition * rowpart,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
@@ -282,7 +281,7 @@ int mtxdistvector_init_coordinate_complex_double(
     int64_t num_nonzeros,
     const int * idx,
     const double (* data)[2],
-    const struct mtxpartition * partition,
+    const struct mtxpartition * rowpart,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
@@ -297,7 +296,7 @@ int mtxdistvector_init_coordinate_integer_single(
     int64_t num_nonzeros,
     const int * idx,
     const int32_t * data,
-    const struct mtxpartition * partition,
+    const struct mtxpartition * rowpart,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
@@ -312,7 +311,7 @@ int mtxdistvector_init_coordinate_integer_double(
     int64_t num_nonzeros,
     const int * idx,
     const int64_t * data,
-    const struct mtxpartition * partition,
+    const struct mtxpartition * rowpart,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
@@ -326,7 +325,7 @@ int mtxdistvector_init_coordinate_pattern(
     int num_rows,
     int64_t num_nonzeros,
     const int * idx,
-    const struct mtxpartition * partition,
+    const struct mtxpartition * rowpart,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
@@ -342,7 +341,7 @@ int mtxdistvector_from_mtxfile(
     struct mtxdistvector * distvector,
     const struct mtxfile * mtxfile,
     enum mtxvectortype vector_type,
-    const struct mtxpartition * partition,
+    const struct mtxpartition * rowpart,
     MPI_Comm comm,
     int root,
     struct mtxdisterror * disterr);
@@ -371,7 +370,7 @@ int mtxdistvector_from_mtxdistfile(
     struct mtxdistvector * distvector,
     const struct mtxdistfile * mtxdistfile,
     enum mtxvectortype vector_type,
-    const struct mtxpartition * partition,
+    const struct mtxpartition * rowpart,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 

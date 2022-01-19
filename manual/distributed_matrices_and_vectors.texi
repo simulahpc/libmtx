@@ -53,7 +53,7 @@ The definition of @code{struct mtxdistvector} is shown below.
     MPI_Comm comm;
     int comm_size;
     int rank;
-    struct mtxpartition partition;
+    struct mtxpartition rowpart;
     struct mtxvector interior;
 @};}
 @end example
@@ -62,7 +62,7 @@ distributed Matrix Market files}), the first three struct members of
 @code{mtxdistvector} contain information about the group of processes
 sharing the distributed vector. This includes their MPI communicator
 (@code{comm}), the number of processes (@code{comm_size}) and the rank
-of the current process (@code{rank}). Also, @code{partition} defines a
+of the current process (@code{rank}). Also, @code{rowpart} defines a
 partitioning of the vector elements. This is used to determine which
 parts of the vector belongs to which process.
 
@@ -117,7 +117,7 @@ To allocate storage for a distributed vector in @emph{array} or
     enum mtxfield field,
     enum mtxprecision precision,
     int num_rows,
-    const struct mtxpartition * partition,
+    const struct mtxpartition * rowpart,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
@@ -127,7 +127,7 @@ int mtxdistvector_alloc_coordinate(
     enum mtxprecision precision,
     int num_rows,
     int64_t num_nonzeros,
-    const struct mtxpartition * partition,
+    const struct mtxpartition * rowpart,
     MPI_Comm comm,
     struct mtxdisterror * disterr);}
 @end example
@@ -140,8 +140,8 @@ necessary to specify the number of nonzero vector elements
 Note that the vector values are not initialised, and so it is up to
 the user to initialise them.
 
-@code{partition} must be a partitioning of the rows of the global
-vector, which means that @code{partition->size} must be equal to
+@code{rowpart} must be a partitioning of the rows of the global
+vector, which means that @code{rowpart->size} must be equal to
 @samp{num_rows}. There may be at most one part in the partition per
 MPI process in the communicator @code{comm}.
 
@@ -163,18 +163,18 @@ format, use @code{mtxdistvector_init_array_complex_double}.
     struct mtxdistvector * distvector,
     int num_rows,
     const double (* data)[2],
-    const struct mtxpartition * partition,
+    const struct mtxpartition * rowpart,
     MPI_Comm comm,
     struct mtxdisterror * disterr);}
 @end example
 @noindent
 Each process provides its local vector entries in the array
 @code{data}. The length of the @code{data} array must be at least
-@samp{partition->part_sizes[rank]}, where @samp{rank} is the rank of
-the current process. (If there are fewer parts in the partition than
-MPI processes, then the @code{data} array is not used on processes
-where @samp{rank} is greater than or equal to
-@samp{partition->num_parts}. @code{data} may therefore be set to
+@samp{rowpart->part_sizes[rank]}, where @samp{rank} is the rank of the
+current process. (If there are fewer parts in the partition than MPI
+processes, then the @code{data} array is not used on processes where
+@samp{rank} is greater than or equal to
+@samp{rowpart->num_parts}. @code{data} may therefore be set to
 @samp{NULL} on those processes.)
 
 @findex mtxdistvector_init_coordinate_complex_double
@@ -187,7 +187,7 @@ To create a double precision, complex vector in coordinate format, use
     int64_t num_nonzeros,
     const int * idx,
     const double (* data)[2],
-    const struct mtxpartition * partition,
+    const struct mtxpartition * rowpart,
     MPI_Comm comm,
     struct mtxdisterror * disterr);}
 @end example
@@ -197,7 +197,7 @@ The arguments @code{idx} and @code{data} are arrays of length
 lengths. Each index @samp{idx[0]}, @samp{idx[1]}, ...,
 @samp{idx[num_nonzeros-1]}, is an integer in the range
 @samp{[0,N)}, where @samp{N} is the size of the part owned by the
-current process, (i.e., @samp{partition->part_sizes[rank]}, where
+current process, (i.e., @samp{rowpart->part_sizes[rank]}, where
 @samp{rank} is the rank of the current process).
 
 Note that duplicate entries are allowed, but this may cause some
@@ -272,6 +272,7 @@ on the process whose rank is @code{root}.
     struct mtxdistvector * mtxdistvector,
     const struct mtxfile * mtxfile,
     enum mtxvectortype type,
+    const struct mtxpartition * rowpart,
     MPI_Comm comm,
     int root,
     struct mtxdisterror * disterr);}
@@ -293,15 +294,15 @@ the function @code{mtxdistvector_to_mtxfile} can be used.
 @code{int mtxdistvector_to_mtxfile(
     const struct mtxdistvector * mtxdistvector,
     struct mtxfile * mtxfile,
-    enum mtxfileformat format,
+    enum mtxfileformat mtxfmt,
     MPI_Comm comm,
     int root,
     struct mtxdisterror * disterr);}
 @end example
 @noindent
 The resulting Matrix Market file resides on the process whose rank is
-@code{root}. The vector is stored in array format if @code{format} is
-@samp{mtxfile_array} or in coordinate format if @code{format} is
+@code{root}. The vector is stored in array format if @code{mtxfmt} is
+@samp{mtxfile_array} or in coordinate format if @code{mtxfmt} is
 @samp{mtxfile_coordinate}.
 
 
@@ -315,7 +316,7 @@ format.
     struct mtxdistvector * distvector,
     const struct mtxdistfile * mtxdistfile,
     enum mtxvectortype vector_type,
-    const struct mtxpartition * partition,
+    const struct mtxpartition * rowpart,
     MPI_Comm comm,
     struct mtxdisterror * disterr);}
 @end example
