@@ -480,6 +480,7 @@ value of @code{1} at position @code{i}.
 
 @node Reading and writing Matrix Market files
 @section Reading and writing Matrix Market files
+@cindex file I/O
 In most cases, matrices and vectors are obtained by reading from a
 file in Matrix Market format. These files are typically named with a
 @file{.mtx} extension, so we refer to them here as @file{mtx} files.
@@ -488,6 +489,7 @@ vectors to and from files in Matrix Market format.
 
 @node Reading Matrix Market files
 @subsection Reading Matrix Market files
+@cindex reading files
 @findex mtxfile_fread
 To read an @file{mtx} file from a @code{FILE} stream, use the
 function @code{mtxfile_fread}:
@@ -556,6 +558,7 @@ then the standard input stream is used.
 
 @node Writing Matrix Market files
 @subsection Writing Matrix Market files
+@cindex writing files
 @findex mtxfile_fwrite
 To write an @file{mtx} file to a @code{FILE} stream, use the
 function @code{mtxfile_fwrite}:

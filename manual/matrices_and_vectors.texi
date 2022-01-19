@@ -267,6 +267,8 @@ format if @code{mtxfmt} is @samp{mtxfile_coordinate}.
 
 @node Reading and writing vectors
 @subsection Reading and writing Matrix Market files
+@cindex file I/O
+@cindex reading files
 For convenience, the function @code{mtxvector_read},
 @code{mtxvector_fread} and @code{mtxvector_gzread} are provided to
 more easily read a vector from a file in Matrix Market format and
@@ -312,6 +314,7 @@ then the underlying vector is stored in array format or coordinate
 format according to the format of the Matrix Market file. Otherwise,
 an attempt is made to convert the vector to the desired type.
 
+@cindex writing files
 @findex mtxvector_write
 @findex mtxvector_fwrite
 @findex mtxvector_gzwrite
@@ -345,7 +348,7 @@ int mtxvector_gzwrite(
 The @code{mtxfmt} argument may be used to specify whether the vector
 should be written in array or coordinate format.
 
-@node Vectors: Level 1 BLAS
+@node Level 1 BLAS for vectors
 @subsection Level 1 BLAS
 @cindex BLAS
 The libmtx C library implements a subset of the Basic Linear Algebra
@@ -527,7 +530,7 @@ The functions @code{mtxvector_sasum} and @code{mtxvector_dasum}
 compute the sum of absolute values, or 1-norm, of a vector. in single
 and double precision floating point, respectively. If the vector is
 complex-valued, then the sum of the absolute values of the real and
-imaginaty parts is computed.
+imaginary parts is computed.
 @example
 @code{int mtxvector_sasum(
     const struct mtxvector * x,
@@ -816,7 +819,7 @@ int mtxmatrix_gzwrite(
 @end example
 
 
-@node Matrices: Level 1 BLAS
+@node Level 1 BLAS for matrices
 @subsection Level 1 BLAS
 It is sometimes useful to treat a matrix as a vector (sometimes called
 the @emph{vectorisation} of a matrix) and then apply level 1 BLAS
@@ -983,7 +986,7 @@ The functions @code{mtxmatrix_sasum} and @code{mtxmatrix_dasum}
 compute the sum of absolute values of a matrix in single and double
 precision floating point, respectively. (Note that this is not the
 same as the 1-norm of a matrix.) If the matrix is complex-valued, then
-the sum of the absolute values of the real and imaginaty parts is
+the sum of the absolute values of the real and imaginary parts is
 computed.
 @example
 @code{int mtxmatrix_sasum(
@@ -1009,7 +1012,7 @@ real and imaginary parts.
 @end example
 
 
-@node Matrices: Level 2 BLAS
+@node Level 2 BLAS
 @subsection Level 2 BLAS
 
 @cindex matrix-vector multiplication

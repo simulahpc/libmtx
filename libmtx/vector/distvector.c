@@ -938,6 +938,7 @@ int mtxdistvector_to_mtxdistfile(
 int mtxdistvector_read(
     struct mtxdistvector * distvector,
     enum mtxprecision precision,
+    enum mtxvectortype type,
     const char * path,
     bool gzip,
     int * lines_read,
@@ -957,6 +958,7 @@ int mtxdistvector_read(
 int mtxdistvector_fread(
     struct mtxdistvector * distvector,
     enum mtxprecision precision,
+    enum mtxvectortype type,
     FILE * f,
     int * lines_read,
     int64_t * bytes_read,
@@ -978,6 +980,7 @@ int mtxdistvector_fread(
 int mtxdistvector_gzread(
     struct mtxdistvector * distvector,
     enum mtxprecision precision,
+    enum mtxvectortype type,
     gzFile f,
     int * lines_read,
     int64_t * bytes_read,

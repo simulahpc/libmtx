@@ -109,7 +109,7 @@ message will be printed:
 @code{error: MPI_ERR_COMM: invalid communicator}
 @end example
 
-
+@node Distributed error handling
 @subsection Distributed error handling
 @tindex struct mtxdisterror
 To more easily handle errors in cases where one or more processes may
