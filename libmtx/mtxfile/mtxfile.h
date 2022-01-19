@@ -16,7 +16,7 @@
  * along with libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-01-07
+ * Last modified: 2022-01-19
  *
  * Matrix Market files.
  */
@@ -915,8 +915,8 @@ int mtxfile_assemble(
  * Matrix Market file in the ‘dsts’ array.
  */
 int mtxfile_partition(
-    const struct mtxfile * src,
     struct mtxfile * dsts,
+    const struct mtxfile * src,
     const struct mtxpartition * rowpart,
     const struct mtxpartition * colpart);
 

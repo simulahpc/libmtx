@@ -16,7 +16,7 @@
  * along with libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-01-14
+ * Last modified: 2022-01-19
  *
  * Data structures for distributed vectors.
  */

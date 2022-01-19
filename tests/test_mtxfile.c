@@ -16,7 +16,7 @@
  * along with libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-01-16
+ * Last modified: 2022-01-19
  *
  * Unit tests for Matrix Market files.
  */
@@ -3405,7 +3405,7 @@ int test_mtxfile_partition(void)
 
         const int num_parts = num_row_parts;
         struct mtxfile dsts[num_parts];
-        err = mtxfile_partition(&src, dsts, &rowpart, NULL);
+        err = mtxfile_partition(dsts, &src, &rowpart, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
         {
@@ -3464,7 +3464,7 @@ int test_mtxfile_partition(void)
 
         const int num_parts = num_row_parts;
         struct mtxfile dsts[num_parts];
-        err = mtxfile_partition(&src, dsts, &rowpart, NULL);
+        err = mtxfile_partition(dsts, &src, &rowpart, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
         {
@@ -3530,7 +3530,7 @@ int test_mtxfile_partition(void)
 
         const int num_parts = num_row_parts * num_col_parts;
         struct mtxfile dsts[num_parts];
-        err = mtxfile_partition(&src, dsts, &rowpart, &colpart);
+        err = mtxfile_partition(dsts, &src, &rowpart, &colpart);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
         {
@@ -3590,7 +3590,7 @@ int test_mtxfile_partition(void)
 
         const int num_parts = num_col_parts;
         struct mtxfile dsts[num_parts];
-        err = mtxfile_partition(&src, dsts, NULL, &colpart);
+        err = mtxfile_partition(dsts, &src, NULL, &colpart);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
         {
@@ -3656,7 +3656,7 @@ int test_mtxfile_partition(void)
 
         const int num_parts = num_row_parts * num_col_parts;
         struct mtxfile dsts[num_parts];
-        err = mtxfile_partition(&src, dsts, &rowpart, &colpart);
+        err = mtxfile_partition(dsts, &src, &rowpart, &colpart);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
         {
@@ -3747,7 +3747,7 @@ int test_mtxfile_partition(void)
 
         const int num_parts = num_row_parts * num_col_parts;
         struct mtxfile dsts[num_parts];
-        err = mtxfile_partition(&src, dsts, &rowpart, &colpart);
+        err = mtxfile_partition(dsts, &src, &rowpart, &colpart);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
         {
@@ -3829,7 +3829,7 @@ int test_mtxfile_partition(void)
 
         const int num_parts = num_row_parts;
         struct mtxfile dsts[num_parts];
-        err = mtxfile_partition(&src, dsts, &rowpart, NULL);
+        err = mtxfile_partition(dsts, &src, &rowpart, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
         {
@@ -3904,7 +3904,7 @@ int test_mtxfile_partition(void)
 
         const int num_parts = num_row_parts;
         struct mtxfile dsts[num_parts];
-        err = mtxfile_partition(&src, dsts, &rowpart, NULL);
+        err = mtxfile_partition(dsts, &src, &rowpart, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
         {
@@ -3964,7 +3964,7 @@ int test_mtxfile_partition(void)
 
         const int num_parts = num_row_parts;
         struct mtxfile dsts[num_parts];
-        err = mtxfile_partition(&src, dsts, &rowpart, NULL);
+        err = mtxfile_partition(dsts, &src, &rowpart, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
         {

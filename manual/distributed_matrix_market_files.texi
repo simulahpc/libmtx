@@ -42,8 +42,9 @@ not distributed.
   Basic data structures for representing distributed @file{mtx} files.
 * Creating distributed Matrix Market files::
   How to create distributed @file{mtx} files.
-* Converting to and from distributed Matrix Market files::
-  Functions for converting to and from distributed @file{mtx} files
+* Converting to and from Matrix Market files::
+  Functions for converting from @file{mtx} files to distributed
+  @file{mtx} files and vice versa.
 * Reading and writing distributed Matrix Market files::
   Functions for reading from and writing to files in Matrix Market
   format.
@@ -488,8 +489,8 @@ int mtxdistfile_set_constant_integer_double(
     struct mtxdisterror * disterr);}
 @end example
 
-@node Converting to and from distributed Matrix Market files
-@section Converting to and from distributed Matrix Market files
+@node Converting to and from Matrix Market files
+@section Converting to and from Matrix Market files
 This section describes how to convert a Matrix Market file that
 resides on a single process to a Matrix Market file that is
 distributed among multiple processes.
@@ -866,8 +867,8 @@ If a row and column partition is given, the function
 the matrix or vector entries of a distributed Matrix Market file.
 @example
 @code{int mtxdistfile_partition(
-    const struct mtxdistfile * src,
     struct mtxdistfile * dsts,
+    const struct mtxdistfile * src,
     const struct mtxpartition * rowpart,
     const struct mtxpartition * colpart,
     struct mtxdisterror * disterr);}

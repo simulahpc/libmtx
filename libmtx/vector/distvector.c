@@ -16,7 +16,7 @@
  * along with libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-01-14
+ * Last modified: 2022-01-19
  *
  * Data structures for distributed vectors.
  */
@@ -598,7 +598,7 @@ int mtxdistvector_from_mtxfile(
 
     if (rank == root) {
         err = mtxfile_partition(
-            mtxfile, sendmtxfiles, &distvector->partition, NULL);
+            sendmtxfiles, mtxfile, &distvector->partition, NULL);
     }
     if (mtxdisterror_allreduce(disterr, err)) {
         if (rank == root)
@@ -718,8 +718,7 @@ int mtxdistvector_from_mtxdistfile(
     }
 
     err = mtxdistfile_partition(
-        mtxdistfile, dsts,
-        &distvector->partition, NULL, disterr);
+        dsts, mtxdistfile, &distvector->partition, NULL, disterr);
     if (err) {
         free(dsts);
         mtxpartition_free(&distvector->partition);

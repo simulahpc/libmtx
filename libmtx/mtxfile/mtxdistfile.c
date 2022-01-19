@@ -16,7 +16,7 @@
  * along with libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-01-17
+ * Last modified: 2022-01-19
  *
  * Matrix Market files distributed among multiple processes with MPI
  * for inter-process communication.
@@ -2992,8 +2992,8 @@ int mtxdistfile_sort(
  * Matrix Market file in the ‘dsts’ array.
  */
 int mtxdistfile_partition(
-    const struct mtxdistfile * src,
     struct mtxdistfile * dsts,
+    const struct mtxdistfile * src,
     const struct mtxpartition * rowpart,
     const struct mtxpartition * colpart,
     struct mtxdisterror * disterr)

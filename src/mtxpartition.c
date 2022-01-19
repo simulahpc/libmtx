@@ -16,7 +16,7 @@
  * along with libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-01-13
+ * Last modified: 2022-01-19
  *
  * Partition a Matrix Market file and write parts to separate files.
  */
@@ -940,7 +940,7 @@ int main(int argc, char *argv[])
     }
 
     err = mtxdistfile_partition(
-        &src, dsts, &rowpart, &colpart, &disterr);
+        dsts, &src, &rowpart, &colpart, &disterr);
     if (err) {
         if (args.verbose > 0)
             fprintf(diagf, "\n");
@@ -1405,7 +1405,7 @@ int main(int argc, char *argv[])
     }
 
     err = mtxfile_partition(
-        &mtxfile, dsts, &rowpart, &colpart);
+        dsts, &mtxfile, &rowpart, &colpart);
     if (err) {
         if (args.verbose > 0)
             fprintf(diagf, "\n");

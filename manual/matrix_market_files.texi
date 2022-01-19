@@ -1240,8 +1240,8 @@ If a row and column partition is given, the function
 into parts.
 @example
 @code{int mtxfile_partition(
-    const struct mtxfile * src,
     struct mtxfile * dsts,
+    const struct mtxfile * src,
     const struct mtxpartition * rowpart,
     const struct mtxpartition * colpart);}
 @end example

@@ -16,7 +16,7 @@
  * along with libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-01-12
+ * Last modified: 2022-01-19
  *
  * Unit tests for distributed Matrix Market files.
  */
@@ -1268,7 +1268,7 @@ int test_mtxdistfile_partition(void)
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
         struct mtxdistfile dsts[num_parts];
-        err = mtxdistfile_partition(&src, dsts, &rowpart, NULL, &disterr);
+        err = mtxdistfile_partition(dsts, &src, &rowpart, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
@@ -1355,7 +1355,7 @@ int test_mtxdistfile_partition(void)
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
         struct mtxdistfile dsts[num_parts];
-        err = mtxdistfile_partition(&src, dsts, &rowpart, NULL, &disterr);
+        err = mtxdistfile_partition(dsts, &src, &rowpart, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
@@ -1444,7 +1444,7 @@ int test_mtxdistfile_partition(void)
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
         struct mtxdistfile dsts[num_parts];
-        err = mtxdistfile_partition(&src, dsts, NULL, &colpart, &disterr);
+        err = mtxdistfile_partition(dsts, &src, NULL, &colpart, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
@@ -1540,7 +1540,7 @@ int test_mtxdistfile_partition(void)
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
         struct mtxdistfile dsts[num_row_parts*num_col_parts];
-        err = mtxdistfile_partition(&src, dsts, &rowpart, &colpart, &disterr);
+        err = mtxdistfile_partition(dsts, &src, &rowpart, &colpart, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
@@ -1677,7 +1677,7 @@ int test_mtxdistfile_partition(void)
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
         struct mtxdistfile dsts[num_row_parts*num_col_parts];
-        err = mtxdistfile_partition(&src, dsts, &rowpart, &colpart, &disterr);
+        err = mtxdistfile_partition(dsts, &src, &rowpart, &colpart, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
@@ -1805,7 +1805,7 @@ int test_mtxdistfile_partition(void)
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
         struct mtxdistfile dsts[num_row_parts];
-        err = mtxdistfile_partition(&src, dsts, &rowpart, NULL, &disterr);
+        err = mtxdistfile_partition(dsts, &src, &rowpart, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
@@ -1911,7 +1911,7 @@ int test_mtxdistfile_partition(void)
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
         struct mtxdistfile dsts[num_row_parts];
-        err = mtxdistfile_partition(&src, dsts, &rowpart, NULL, &disterr);
+        err = mtxdistfile_partition(dsts, &src, &rowpart, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
@@ -2025,7 +2025,7 @@ int test_mtxdistfile_partition(void)
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
         struct mtxdistfile dsts[num_row_parts];
-        err = mtxdistfile_partition(&src, dsts, &rowpart, NULL, &disterr);
+        err = mtxdistfile_partition(dsts, &src, &rowpart, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
@@ -2130,7 +2130,7 @@ int test_mtxdistfile_partition(void)
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
         struct mtxdistfile dsts[num_row_parts];
-        err = mtxdistfile_partition(&src, dsts, &rowpart, NULL, &disterr);
+        err = mtxdistfile_partition(dsts, &src, &rowpart, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
@@ -2219,7 +2219,7 @@ int test_mtxdistfile_partition(void)
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
         struct mtxdistfile dsts[num_row_parts];
-        err = mtxdistfile_partition(&src, dsts, &rowpart, NULL, &disterr);
+        err = mtxdistfile_partition(dsts, &src, &rowpart, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
