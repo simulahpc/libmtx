@@ -16,7 +16,7 @@
  * along with libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-01-14
+ * Last modified: 2022-01-19
  *
  * Multiply a vector by a scalar and add it to another vector.
  *
@@ -599,8 +599,11 @@ static int distvector_axpy(
             clock_gettime(CLOCK_MONOTONIC, &t0);
         }
         int64_t bytes_written = 0;
+        enum mtxfileformat mtxfmt =
+            y.interior.type == mtxvector_coordinate
+            ? mtxfile_coordinate : mtxfile_array;
         err = mtxdistvector_fwrite_shared(
-            &y, stdout, format, &bytes_written, root, disterr);
+            &y, mtxfmt, stdout, format, &bytes_written, root, disterr);
         if (err) {
             if (verbose > 0)
                 fprintf(diagf, "\n");
@@ -1002,8 +1005,11 @@ static int vector_axpy(
             clock_gettime(CLOCK_MONOTONIC, &t0);
         }
         int64_t bytes_written = 0;
+        enum mtxfileformat mtxfmt =
+            y.type == mtxvector_coordinate
+            ? mtxfile_coordinate : mtxfile_array;
         err = mtxvector_fwrite(
-            &y, stdout, format, &bytes_written);
+            &y, mtxfmt, stdout, format, &bytes_written);
         if (err) {
             if (verbose > 0)
                 fprintf(diagf, "\n");

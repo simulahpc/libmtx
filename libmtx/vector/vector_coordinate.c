@@ -16,7 +16,7 @@
  * along with libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-01-15
+ * Last modified: 2022-01-19
  *
  * Data structures for vectors in coordinate format.
  */
@@ -789,8 +789,12 @@ int mtxvector_coordinate_from_mtxfile(
  */
 int mtxvector_coordinate_to_mtxfile(
     const struct mtxvector_coordinate * vector,
-    struct mtxfile * mtxfile)
+    struct mtxfile * mtxfile,
+    enum mtxfileformat format)
 {
+    if (format != mtxfile_coordinate)
+        return MTX_ERR_INCOMPATIBLE_MTX_FORMAT;
+
     int err;
     if (vector->field == mtx_field_real) {
         err = mtxfile_alloc_vector_coordinate(

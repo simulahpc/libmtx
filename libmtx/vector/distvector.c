@@ -650,12 +650,13 @@ int mtxdistvector_from_mtxfile(
 int mtxdistvector_to_mtxfile(
     struct mtxfile * dst,
     const struct mtxdistvector * src,
+    enum mtxfileformat mtxfmt,
     int root,
     struct mtxdisterror * disterr)
 {
     int err;
     struct mtxdistfile mtxdistfile;
-    err = mtxdistvector_to_mtxdistfile(src, &mtxdistfile, disterr);
+    err = mtxdistvector_to_mtxdistfile(src, &mtxdistfile, mtxfmt, disterr);
     if (err)
         return err;
     err = mtxdistfile_to_mtxfile(dst, &mtxdistfile, root, disterr);
@@ -767,6 +768,7 @@ int mtxdistvector_from_mtxdistfile(
 int mtxdistvector_to_mtxdistfile(
     const struct mtxdistvector * distvector,
     struct mtxdistfile * dst,
+    enum mtxfileformat mtxfmt,
     struct mtxdisterror * disterr)
 {
     int err;
@@ -775,7 +777,7 @@ int mtxdistvector_to_mtxdistfile(
     int rank = distvector->rank;
 
     struct mtxfile mtxfile;
-    err = mtxvector_to_mtxfile(&distvector->interior, &mtxfile);
+    err = mtxvector_to_mtxfile(&distvector->interior, &mtxfile, mtxfmt);
     if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
 
@@ -955,6 +957,7 @@ int mtxdistvector_gzread(
  */
 int mtxdistvector_write(
     const struct mtxdistvector * distvector,
+    enum mtxfileformat mtxfmt,
     const char * path,
     bool gzip,
     const char * fmt,
@@ -982,6 +985,7 @@ int mtxdistvector_write(
  */
 int mtxdistvector_fwrite(
     const struct mtxdistvector * distvector,
+    enum mtxfileformat mtxfmt,
     FILE * f,
     const char * fmt,
     int64_t * bytes_written);
@@ -1018,6 +1022,7 @@ int mtxdistvector_fwrite(
  */
 int mtxdistvector_fwrite_shared(
     const struct mtxdistvector * mtxdistvector,
+    enum mtxfileformat mtxfmt,
     FILE * f,
     const char * fmt,
     int64_t * bytes_written,
@@ -1027,7 +1032,7 @@ int mtxdistvector_fwrite_shared(
     int err;
     struct mtxdistfile mtxdistfile;
     err = mtxdistvector_to_mtxdistfile(
-        mtxdistvector, &mtxdistfile, disterr);
+        mtxdistvector, &mtxdistfile, mtxfmt, disterr);
     if (err)
         return err;
 
@@ -1065,6 +1070,7 @@ int mtxdistvector_fwrite_shared(
  */
 int mtxdistvector_gzwrite(
     const struct mtxdistvector * distvector,
+    enum mtxfileformat mtxfmt,
     gzFile f,
     const char * fmt,
     int64_t * bytes_written);

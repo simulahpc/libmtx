@@ -16,7 +16,7 @@
  * along with libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-01-09
+ * Last modified: 2022-01-19
  *
  * Data structures for vectors in array format.
  */
@@ -590,8 +590,12 @@ int mtxvector_array_from_mtxfile(
  */
 int mtxvector_array_to_mtxfile(
     const struct mtxvector_array * vector,
-    struct mtxfile * mtxfile)
+    struct mtxfile * mtxfile,
+    enum mtxfileformat format)
 {
+    if (format != mtxfile_array)
+        return MTX_ERR_INCOMPATIBLE_MTX_FORMAT;
+
     if (vector->field == mtx_field_real) {
         if (vector->precision == mtx_single) {
             return mtxfile_init_vector_array_real_single(

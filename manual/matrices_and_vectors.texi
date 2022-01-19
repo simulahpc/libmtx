@@ -15,7 +15,7 @@
 @c along with libmtx.  If not, see <https://www.gnu.org/licenses/>.
 @c
 @c Authors: James D. Trotter <james@simula.no>
-@c Last modified: 2022-01-05
+@c Last modified: 2022-01-19
 @c
 @c libmtx User Guide: Matrices and vectors.
 
@@ -257,10 +257,12 @@ the function @code{mtxvector_to_mtxfile} can be used.
 @example
 @code{int mtxvector_to_mtxfile(
     const struct mtxvector * mtxvector,
-    struct mtxfile * mtxfile);}
+    struct mtxfile * mtxfile,
+    enum mtxfileformat mtxfmt);}
 @end example
-The resulting Matrix Market file may be a vector in array or
-coordinate format, depending on the type of @code{mtxvector}.
+The resulting Matrix Market represents a vector in array format if
+@code{mtxfmt} is @samp{mtxfile_array}, or a vector in coordinate
+format if @code{mtxfmt} is @samp{mtxfile_coordinate}.
 
 
 @node Reading and writing vectors
@@ -319,6 +321,7 @@ write a vector to a file in Matrix Market format.
 @example
 @code{int mtxvector_write(
     const struct mtxvector * vector,
+    enum mtxfileformat mtxfmt,
     const char * path,
     bool gzip,
     const char * fmt,
@@ -326,17 +329,21 @@ write a vector to a file in Matrix Market format.
 
 int mtxvector_fwrite(
     const struct mtxvector * vector,
+    enum mtxfileformat mtxfmt,
     FILE * f,
     const char * fmt,
     int64_t * bytes_written);
 
 int mtxvector_gzwrite(
     const struct mtxvector * vector,
+    enum mtxfileformat mtxfmt,
     gzFile f,
     const char * fmt,
     int64_t * bytes_written);}
 @end example
-
+@noindent
+The @code{mtxfmt} argument may be used to specify whether the vector
+should be written in array or coordinate format.
 
 @node Vectors: Level 1 BLAS
 @subsection Level 1 BLAS

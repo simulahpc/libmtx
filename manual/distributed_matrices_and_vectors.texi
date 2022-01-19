@@ -15,7 +15,7 @@
 @c along with libmtx.  If not, see <https://www.gnu.org/licenses/>.
 @c
 @c Authors: James D. Trotter <james@simula.no>
-@c Last modified: 2022-01-14
+@c Last modified: 2022-01-19
 @c
 @c libmtx User Guide: Distributed matrices and vectors.
 
@@ -25,7 +25,11 @@ This chapter describes how to distribute matrices and vectors across
 multiple processes, and how to perform various linear algebra
 operations on distributed matrices and vectors. The distributed-memory
 computing features in libmtx are implemented using MPI, and,
-therefore, you will need to build libmtx with MPI support.
+therefore, you will need to build libmtx with MPI support. In many
+cases, working with distributed matrices and vectors involves
+converting to or from Matrix Market format, and it may therefore be a
+good idea to read @ref{Distributed Matrix Market files} to understand
+how to work with distributed Matrix Market files in libmtx.
 
 @menu
 * Distributed vectors:: Data structures for distributed vectors.
@@ -127,6 +131,7 @@ int mtxdistvector_alloc_coordinate(
     MPI_Comm comm,
     struct mtxdisterror * disterr);}
 @end example
+@noindent
 In both cases, the desired field and precision must be specified, as
 well as the number of rows in the entire, global vector
 (@code{num_rows}). For a vector in coordinate format, it is also
@@ -162,6 +167,7 @@ format, use @code{mtxdistvector_init_array_complex_double}.
     MPI_Comm comm,
     struct mtxdisterror * disterr);}
 @end example
+@noindent
 Each process provides its local vector entries in the array
 @code{data}. The length of the @code{data} array must be at least
 @samp{partition->part_sizes[rank]}, where @samp{rank} is the rank of
@@ -185,6 +191,7 @@ To create a double precision, complex vector in coordinate format, use
     MPI_Comm comm,
     struct mtxdisterror * disterr);}
 @end example
+@noindent
 The arguments @code{idx} and @code{data} are arrays of length
 @code{num_nonzeros}. Each process may provide arrays of different
 lengths. Each index @samp{idx[0]}, @samp{idx[1]}, ...,
@@ -208,6 +215,7 @@ scalar, where @code{@var{field}} and @code{@var{precision}} should
 match the field (i.e., @samp{real}, @samp{complex} or @samp{integer})
 and precision (i.e., @samp{single} or @samp{double}) of
 @code{mtxdistvector}.
+@findex mtxdistvector_set_constant_@var{field}_@var{precision}
 @findex mtxdistvector_set_constant_real_single
 @findex mtxdistvector_set_constant_real_double
 @findex mtxdistvector_set_constant_complex_single
@@ -228,6 +236,7 @@ int mtxdistvector_set_constant_integer_single(
 int mtxdistvector_set_constant_integer_double(
     struct mtxdistvector *, int64_t a, struct mtxdisterror * disterr);}
 @end example
+
 To access or modify individual vector elements, the underlying vector
 storage is accessed through the appropriate member of the
 @code{storage} union in the @code{mtxvector} struct.
@@ -267,6 +276,7 @@ on the process whose rank is @code{root}.
     int root,
     struct mtxdisterror * disterr);}
 @end example
+@noindent
 The @code{type} argument may be used to specify a desired storage
 format or implementation for the underlying @code{mtxvector} on each
 process. If @code{type} is @samp{mtxvector_auto}, then the type of
@@ -283,12 +293,16 @@ the function @code{mtxdistvector_to_mtxfile} can be used.
 @code{int mtxdistvector_to_mtxfile(
     const struct mtxdistvector * mtxdistvector,
     struct mtxfile * mtxfile,
+    enum mtxfileformat format,
     MPI_Comm comm,
     int root,
     struct mtxdisterror * disterr);}
 @end example
-The resulting Matrix Market file may be a vector in array or
-coordinate format, depending on the type of @code{mtxdistvector}.
+@noindent
+The resulting Matrix Market file resides on the process whose rank is
+@code{root}. The vector is stored in array format if @code{format} is
+@samp{mtxfile_array} or in coordinate format if @code{format} is
+@samp{mtxfile_coordinate}.
 
 
 @findex mtxdistvector_from_mtxdistfile
@@ -305,6 +319,7 @@ format.
     MPI_Comm comm,
     struct mtxdisterror * disterr);}
 @end example
+@noindent
 Each process partitions its part of the distributed Matrix Market
 file. The data is then redistributed after partitioning.
 
@@ -318,6 +333,7 @@ distributed vector to a distributed Matrix Market format.
     struct mtxdistfile * mtxdistfile,
     struct mtxdisterror * disterr);}
 @end example
+@noindent
 In this case, there is no redistribution or communication of the
 underlying data.
 
@@ -349,6 +365,7 @@ for the underlying storage and implementation of matrix operations.
     struct mtxmatrix interior;
 @};}
 @end example
+@noindent
 Similar to @code{mtxdistfile} (see @ref{Data structures for
 distributed Matrix Market files}), The first three struct members of
 @code{mtxdistmatrix} contain information about the group of processes

@@ -16,7 +16,7 @@
  * along with libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-01-17
+ * Last modified: 2022-01-19
  *
  * Unit tests for distributed Matrix Market files.
  */
@@ -399,7 +399,7 @@ int test_mtxdistvector_to_mtxdistfile(void)
         mtxpartition_free(&partition);
 
         struct mtxdistfile dst;
-        err = mtxdistvector_to_mtxdistfile(&src, &dst, &disterr);
+        err = mtxdistvector_to_mtxdistfile(&src, &dst, mtxfile_array, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
@@ -435,6 +435,7 @@ int test_mtxdistvector_to_mtxdistfile(void)
     /*
      * Coordinate formats
      */
+
     {
         int num_rows = 9;
         const int * srcidx = (rank == 0)
@@ -462,7 +463,7 @@ int test_mtxdistvector_to_mtxdistfile(void)
         mtxpartition_free(&partition);
 
         struct mtxdistfile dst;
-        err = mtxdistvector_to_mtxdistfile(&src, &dst, &disterr);
+        err = mtxdistvector_to_mtxdistfile(&src, &dst, mtxfile_coordinate, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));

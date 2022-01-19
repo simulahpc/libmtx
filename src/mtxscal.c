@@ -16,7 +16,7 @@
  * along with libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-01-07
+ * Last modified: 2022-01-19
  *
  * Scale a vector by a constant.
  *
@@ -559,8 +559,11 @@ static int distvector_scal(
             clock_gettime(CLOCK_MONOTONIC, &t0);
         }
         int64_t bytes_written = 0;
+        enum mtxfileformat mtxfmt =
+            x.interior.type == mtxvector_coordinate
+            ? mtxfile_coordinate : mtxfile_array;
         err = mtxdistvector_fwrite_shared(
-            &x, stdout, format, &bytes_written, root, disterr);
+            &x, mtxfmt, stdout, format, &bytes_written, root, disterr);
         if (err) {
             if (verbose > 0)
                 fprintf(diagf, "\n");
@@ -854,8 +857,11 @@ static int vector_scal(
             clock_gettime(CLOCK_MONOTONIC, &t0);
         }
         int64_t bytes_written = 0;
+        enum mtxfileformat mtxfmt =
+            x.type == mtxvector_coordinate
+            ? mtxfile_coordinate : mtxfile_array;
         err = mtxvector_fwrite(
-            &x, stdout, format, &bytes_written);
+            &x, mtxfmt, stdout, format, &bytes_written);
         if (err) {
             if (verbose > 0)
                 fprintf(diagf, "\n");

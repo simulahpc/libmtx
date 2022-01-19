@@ -16,7 +16,7 @@
  * along with libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-01-09
+ * Last modified: 2022-01-19
  *
  * Data structures for vectors in array format.
  */
@@ -28,6 +28,7 @@
 
 #include <libmtx/precision.h>
 #include <libmtx/field.h>
+#include <libmtx/mtxfile/header.h>
 
 #ifdef LIBMTX_HAVE_LIBZ
 #include <zlib.h>
@@ -239,7 +240,8 @@ int mtxvector_array_from_mtxfile(
  */
 int mtxvector_array_to_mtxfile(
     const struct mtxvector_array * vector,
-    struct mtxfile * mtxfile);
+    struct mtxfile * mtxfile,
+    enum mtxfileformat format);
 
 /*
  * Level 1 BLAS operations

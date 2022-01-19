@@ -359,6 +359,7 @@ int mtxdistvector_from_mtxfile(
 int mtxdistvector_to_mtxfile(
     struct mtxfile * dst,
     const struct mtxdistvector * src,
+    enum mtxfileformat mtxfmt,
     int root,
     struct mtxdisterror * disterr);
 
@@ -381,6 +382,7 @@ int mtxdistvector_from_mtxdistfile(
 int mtxdistvector_to_mtxdistfile(
     const struct mtxdistvector * distvector,
     struct mtxdistfile * mtxdistfile,
+    enum mtxfileformat mtxfmt,
     struct mtxdisterror * disterr);
 
 /*
@@ -472,6 +474,7 @@ int mtxdistvector_gzread(
  */
 int mtxdistvector_write(
     const struct mtxdistvector * distvector,
+    enum mtxfileformat mtxfmt,
     const char * path,
     bool gzip,
     const char * fmt,
@@ -499,6 +502,7 @@ int mtxdistvector_write(
  */
 int mtxdistvector_fwrite(
     const struct mtxdistvector * distvector,
+    enum mtxfileformat mtxfmt,
     FILE * f,
     const char * fmt,
     int64_t * bytes_written);
@@ -535,6 +539,7 @@ int mtxdistvector_fwrite(
  */
 int mtxdistvector_fwrite_shared(
     const struct mtxdistvector * mtxdistvector,
+    enum mtxfileformat mtxfmt,
     FILE * f,
     const char * fmt,
     int64_t * bytes_written,
@@ -565,6 +570,7 @@ int mtxdistvector_fwrite_shared(
  */
 int mtxdistvector_gzwrite(
     const struct mtxdistvector * distvector,
+    enum mtxfileformat mtxfmt,
     gzFile f,
     const char * fmt,
     int64_t * bytes_written);

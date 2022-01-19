@@ -16,7 +16,7 @@
  * along with libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-01-06
+ * Last modified: 2022-01-19
  *
  * Data structures for vectors.
  */
@@ -370,8 +370,8 @@ int mtxvector_set_constant_integer_double(
  * format to a vector.
  */
 int mtxvector_from_mtxfile(
-    struct mtxvector * vector,
-    const struct mtxfile * mtxfile,
+    struct mtxvector * dst,
+    const struct mtxfile * src,
     enum mtxvectortype type);
 
 /**
@@ -379,8 +379,9 @@ int mtxvector_from_mtxfile(
  * Market format.
  */
 int mtxvector_to_mtxfile(
-    const struct mtxvector * vector,
-    struct mtxfile * mtxfile);
+    const struct mtxvector * src,
+    struct mtxfile * dst,
+    enum mtxfileformat format);
 
 /*
  * I/O functions
@@ -494,6 +495,7 @@ int mtxvector_gzread(
  */
 int mtxvector_write(
     const struct mtxvector * vector,
+    enum mtxfileformat format,
     const char * path,
     bool gzip,
     const char * fmt,
@@ -521,6 +523,7 @@ int mtxvector_write(
  */
 int mtxvector_fwrite(
     const struct mtxvector * vector,
+    enum mtxfileformat format,
     FILE * f,
     const char * fmt,
     int64_t * bytes_written);
@@ -548,6 +551,7 @@ int mtxvector_fwrite(
  */
 int mtxvector_gzwrite(
     const struct mtxvector * vector,
+    enum mtxfileformat format,
     gzFile f,
     const char * fmt,
     int64_t * bytes_written);

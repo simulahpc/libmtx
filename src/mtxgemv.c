@@ -1,23 +1,22 @@
 /* This file is part of libmtx.
  *
- * Copyright (C) 2021 James D. Trotter
+ * Copyright (C) 2022 James D. Trotter
  *
- * libmtx is free software: you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 3 of the
- * License, or (at your option) any later version.
+ * libmtx is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * libmtx is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * libmtx is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with libmtx.  If not, see
- * <https://www.gnu.org/licenses/>.
+ * along with libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-10-08
+ * Last modified: 2022-01-19
  *
  * Multiply a general, unsymmetric matrix with a vector.
  *
@@ -537,7 +536,8 @@ static int gemv(
         }
         int64_t bytes_written = 0;
         err = mtxvector_fwrite(
-            y, stdout, format, &bytes_written);
+            y, y->type == mtxvector_coordinate ? mtxfile_coordinate : mtxfile_array,
+            stdout, format, &bytes_written);
         if (err) {
             if (verbose > 0)
                 fprintf(diagf, "\n");
