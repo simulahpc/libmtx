@@ -1280,6 +1280,7 @@ int mtxdistfile_set_constant_integer_double(
 int mtxdistfile_from_mtxfile(
     struct mtxdistfile * dst,
     const struct mtxfile * src,
+    const struct mtxpartition * datapart,
     MPI_Comm comm,
     int root,
     struct mtxdisterror * disterr)
@@ -1341,7 +1342,6 @@ int mtxdistfile_from_mtxfile(
         return MTX_ERR_MPI_COLLECTIVE;
     }
 
-    /* Partition the data lines into equal-sized blocks. */
     int64_t num_data_lines;
     err = mtxfilesize_num_data_lines(
         &dst->size, dst->header.symmetry, &num_data_lines);
@@ -1349,11 +1349,26 @@ int mtxdistfile_from_mtxfile(
         mtxfilecomments_free(&dst->comments);
         return MTX_ERR_MPI_COLLECTIVE;
     }
-    err = mtxpartition_init_block(
-        &dst->partition, num_data_lines, comm_size, NULL);
-    if (mtxdisterror_allreduce(disterr, err)) {
-        mtxfilecomments_free(&dst->comments);
-        return MTX_ERR_MPI_COLLECTIVE;
+    if (datapart) {
+        if (datapart->num_parts > comm_size || datapart->size != num_data_lines)
+            err = MTX_ERR_INCOMPATIBLE_PARTITION;
+        if (mtxdisterror_allreduce(disterr, err)) {
+            mtxfilecomments_free(&dst->comments);
+            return MTX_ERR_MPI_COLLECTIVE;
+        }
+        err = mtxpartition_copy(&dst->partition, datapart);
+        if (mtxdisterror_allreduce(disterr, err)) {
+            mtxfilecomments_free(&dst->comments);
+            return MTX_ERR_MPI_COLLECTIVE;
+        }
+    } else {
+        /* partition data lines into equal-sized blocks */
+        err = mtxpartition_init_block(
+            &dst->partition, num_data_lines, comm_size, NULL);
+        if (mtxdisterror_allreduce(disterr, err)) {
+            mtxfilecomments_free(&dst->comments);
+            return MTX_ERR_MPI_COLLECTIVE;
+        }
     }
 
     /* Find the offset to the first data line to send to each part. */
@@ -1428,7 +1443,8 @@ int mtxdistfile_from_mtxfile(
 
     /* Scatter the data lines of the Matrix Market file. */
     err = mtxfiledata_scatterv(
-        &src->data, dst->header.object, dst->header.format,
+        rank == root ? &src->data : NULL,
+        dst->header.object, dst->header.format,
         dst->header.field, dst->precision,
         0, sendcounts, displs, &dst->data, 0, recvcount,
         root, comm, disterr);
@@ -3558,9 +3574,11 @@ int mtxdistfile_join(
         dst, &header, &comments, &size, precision,
         &datapart, comm, disterr);
     if (err) {
+        mtxpartition_free(&datapart);
         mtxfilecomments_free(&comments);
         return err;
     }
+    mtxpartition_free(&datapart);
     mtxfilecomments_free(&comments);
 
     if (dst->header.format == mtxfile_array) {
@@ -3570,7 +3588,7 @@ int mtxdistfile_join(
          * vector. Then we sort the matrix or vector in row major
          * order. */
 
-        int64_t local_size_dst = datapart.part_sizes[rank];
+        int64_t local_size_dst = dst->partition.part_sizes[rank];
 
         /* Allocate sorting keys */
         uint64_t * sortkeys = malloc(local_size_dst * sizeof(uint64_t));

@@ -269,8 +269,8 @@ used. In this case, the Matrix Market file @code{mtxfile} must reside
 on the process whose rank is @code{root}.
 @example
 @code{int mtxdistvector_from_mtxfile(
-    struct mtxdistvector * mtxdistvector,
-    const struct mtxfile * mtxfile,
+    struct mtxdistvector * dst,
+    const struct mtxfile * src,
     enum mtxvectortype type,
     const struct mtxpartition * rowpart,
     MPI_Comm comm,
@@ -281,10 +281,10 @@ on the process whose rank is @code{root}.
 The @code{type} argument may be used to specify a desired storage
 format or implementation for the underlying @code{mtxvector} on each
 process. If @code{type} is @samp{mtxvector_auto}, then the type of
-@code{mtxvector} is chosen to match the type of @code{mtxfile}. That
-is, @samp{mtxvector_array} is used if @code{mtxfile} is in array
-format, and @samp{mtxvector_coordinate} is used if @code{mtxfile} is
-in coordinate format.
+@code{mtxvector} is chosen to match the type of @code{src}. That is,
+@samp{mtxvector_array} is used if @code{src} is in array format, and
+@samp{mtxvector_coordinate} is used if @code{src} is in coordinate
+format.
 
 Furthermore, @code{rowpart} must be a partitioning of the rows of the
 global vector. Therefore, @code{rowpart->size} must be equal to the

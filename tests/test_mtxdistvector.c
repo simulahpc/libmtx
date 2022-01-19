@@ -461,9 +461,9 @@ int test_mtxdistvector_from_mtxdistfile(void)
             &mtxdistvector.interior.storage.coordinate;
         TEST_ASSERT_EQ(mtx_field_real, interior->field);
         TEST_ASSERT_EQ(mtx_double, interior->precision);
-        TEST_ASSERT_EQ(9, interior->size);
-        TEST_ASSERT_EQ(rank == 0 ? 5 : 3, interior->num_nonzeros);
         if (rank == 0) {
+            TEST_ASSERT_EQ(5, interior->size);
+            TEST_ASSERT_EQ(5, interior->num_nonzeros);
             TEST_ASSERT_EQ(0, interior->indices[0]);
             TEST_ASSERT_EQ(1, interior->indices[1]);
             TEST_ASSERT_EQ(2, interior->indices[2]);
@@ -475,9 +475,11 @@ int test_mtxdistvector_from_mtxdistfile(void)
             TEST_ASSERT_EQ(4.0, interior->data.real_double[3]);
             TEST_ASSERT_EQ(5.0, interior->data.real_double[4]);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ(5, interior->indices[0]);
-            TEST_ASSERT_EQ(6, interior->indices[1]);
-            TEST_ASSERT_EQ(7, interior->indices[2]);
+            TEST_ASSERT_EQ(4, interior->size);
+            TEST_ASSERT_EQ(3, interior->num_nonzeros);
+            TEST_ASSERT_EQ(0, interior->indices[0]);
+            TEST_ASSERT_EQ(1, interior->indices[1]);
+            TEST_ASSERT_EQ(2, interior->indices[2]);
             TEST_ASSERT_EQ(6.0, interior->data.real_double[0]);
             TEST_ASSERT_EQ(7.0, interior->data.real_double[1]);
             TEST_ASSERT_EQ(8.0, interior->data.real_double[2]);
@@ -639,11 +641,11 @@ int test_mtxdistvector_to_mtxdistfile(void)
             TEST_ASSERT_EQ(  2, data[1].i); TEST_ASSERT_EQ(2.0, data[1].a);
             TEST_ASSERT_EQ(  3, data[2].i); TEST_ASSERT_EQ(3.0, data[2].a);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ(  1, data[0].i); TEST_ASSERT_EQ(4.0, data[0].a);
-            TEST_ASSERT_EQ(  2, data[1].i); TEST_ASSERT_EQ(5.0, data[1].a);
-            TEST_ASSERT_EQ(  3, data[2].i); TEST_ASSERT_EQ(6.0, data[2].a);
-            TEST_ASSERT_EQ(  4, data[3].i); TEST_ASSERT_EQ(7.0, data[3].a);
-            TEST_ASSERT_EQ(  5, data[4].i); TEST_ASSERT_EQ(8.0, data[4].a);
+            TEST_ASSERT_EQ(  4, data[0].i); TEST_ASSERT_EQ(4.0, data[0].a);
+            TEST_ASSERT_EQ(  5, data[1].i); TEST_ASSERT_EQ(5.0, data[1].a);
+            TEST_ASSERT_EQ(  6, data[2].i); TEST_ASSERT_EQ(6.0, data[2].a);
+            TEST_ASSERT_EQ(  7, data[3].i); TEST_ASSERT_EQ(7.0, data[3].a);
+            TEST_ASSERT_EQ(  8, data[4].i); TEST_ASSERT_EQ(8.0, data[4].a);
         }
         mtxdistfile_free(&dst);
         mtxdistvector_free(&src);

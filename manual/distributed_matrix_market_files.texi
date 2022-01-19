@@ -503,19 +503,26 @@ the underlying matrix or vector among processes in a communicator.
 @code{int mtxdistfile_from_mtxfile(
     struct mtxdistfile * dst,
     const struct mtxfile * src,
+    const struct mtxpartition * datapart,
     MPI_Comm comm, int root,
     struct mtxdisterror * disterr);}
 @end example
-This function performs collective communication and therefore requires
-every process in the communicator to perform matching calls to the
-function.
-
+@noindent
 The Matrix Market file @code{src} is distributed by first broadcasting
 the header line and precision from the root process to the other
 processes. Next, the number of matrix or vector elements to send to
-each process is determined. For matrices in array format, the rows are
-evenly distributed among the processes. In all other cases, the total
-number of data lines is evenly distributed among the processes.
+each process is determined and data is distributed accordingly.
+
+The argument @code{datapart} must partition the data lines (nonzeros)
+of the Matrix Market file, and @code{datapart->size} must therefore be
+equal to the number of data lines in @code{src}. The partition must
+consist of at most one part for each MPI process in the communicator
+@code{comm}. If @code{datapart} is @samp{NULL}, then data lines are
+partitioned into contiguous blocks of equal size by default.
+
+This function performs collective communication and therefore requires
+every process in the communicator to perform matching calls to the
+function.
 
 @findex mtxdistfile_to_mtxfile
 The function @code{mtxdistfile_to_mtxfile} gathers a distributed
@@ -903,7 +910,7 @@ Matrix Market file, @code{dst}.
 @example
 @code{int mtxdistfile_join(
     struct mtxdistfile * dst,
-    const struct mtxfile * srcs,
+    const struct mtxdistfile * srcs,
     const struct mtxpartition * rowpart,
     const struct mtxpartition * colpart,
     struct mtxdisterror * disterr);}

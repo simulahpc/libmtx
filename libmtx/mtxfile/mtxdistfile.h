@@ -704,6 +704,7 @@ int mtxdistfile_set_constant_integer_double(
 int mtxdistfile_from_mtxfile(
     struct mtxdistfile * dst,
     const struct mtxfile * src,
+    const struct mtxpartition * datapart,
     MPI_Comm comm,
     int root,
     struct mtxdisterror * disterr);

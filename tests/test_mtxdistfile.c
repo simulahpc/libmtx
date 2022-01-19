@@ -90,7 +90,7 @@ int test_mtxdistfile_from_mtxfile(void)
 
         struct mtxdistfile mtxdistfile;
         err = mtxdistfile_from_mtxfile(
-            &mtxdistfile, &srcmtxfile, comm, root, &disterr);
+            &mtxdistfile, &srcmtxfile, NULL, comm, root, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s",
             err == MTX_ERR_MPI_COLLECTIVE
@@ -135,7 +135,7 @@ int test_mtxdistfile_from_mtxfile(void)
 
         struct mtxdistfile mtxdistfile;
         err = mtxdistfile_from_mtxfile(
-            &mtxdistfile, &srcmtxfile, comm, root, &disterr);
+            &mtxdistfile, &srcmtxfile, NULL, comm, root, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s",
             err == MTX_ERR_MPI_COLLECTIVE
@@ -187,7 +187,7 @@ int test_mtxdistfile_from_mtxfile(void)
 
         struct mtxdistfile mtxdistfile;
         err = mtxdistfile_from_mtxfile(
-            &mtxdistfile, &srcmtxfile, comm, root, &disterr);
+            &mtxdistfile, &srcmtxfile, NULL, comm, root, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s",
             err == MTX_ERR_MPI_COLLECTIVE
@@ -238,7 +238,7 @@ int test_mtxdistfile_from_mtxfile(void)
 
         struct mtxdistfile mtxdistfile;
         err = mtxdistfile_from_mtxfile(
-            &mtxdistfile, &srcmtxfile, comm, root, &disterr);
+            &mtxdistfile, &srcmtxfile, NULL, comm, root, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s",
             err == MTX_ERR_MPI_COLLECTIVE
@@ -3146,6 +3146,7 @@ int test_mtxdistfile_join(void)
         mtxdistfile_free(&srcs[0]);
         mtxpartition_free(&rowpart);
     }
+    mtxdisterror_free(&disterr);
     return TEST_SUCCESS;
 }
 
