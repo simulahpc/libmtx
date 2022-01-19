@@ -589,11 +589,11 @@ int mtxvector_array_from_mtxfile(
  * Matrix Market format.
  */
 int mtxvector_array_to_mtxfile(
-    const struct mtxvector_array * vector,
     struct mtxfile * mtxfile,
-    enum mtxfileformat format)
+    const struct mtxvector_array * vector,
+    enum mtxfileformat mtxfmt)
 {
-    if (format != mtxfile_array)
+    if (mtxfmt != mtxfile_array)
         return MTX_ERR_INCOMPATIBLE_MTX_FORMAT;
 
     if (vector->field == mtx_field_real) {

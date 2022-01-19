@@ -239,9 +239,9 @@ int mtxvector_array_from_mtxfile(
  * Matrix Market format.
  */
 int mtxvector_array_to_mtxfile(
-    const struct mtxvector_array * vector,
     struct mtxfile * mtxfile,
-    enum mtxfileformat format);
+    const struct mtxvector_array * vector,
+    enum mtxfileformat mtxfmt);
 
 /*
  * Level 1 BLAS operations

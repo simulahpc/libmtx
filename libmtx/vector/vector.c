@@ -491,16 +491,16 @@ int mtxvector_from_mtxfile(
  * Market format.
  */
 int mtxvector_to_mtxfile(
-    const struct mtxvector * vector,
     struct mtxfile * mtxfile,
-    enum mtxfileformat format)
+    const struct mtxvector * vector,
+    enum mtxfileformat mtxfmt)
 {
     if (vector->type == mtxvector_array) {
         return mtxvector_array_to_mtxfile(
-            &vector->storage.array, mtxfile, format);
+            mtxfile, &vector->storage.array, mtxfmt);
     } else if (vector->type == mtxvector_coordinate) {
         return mtxvector_coordinate_to_mtxfile(
-            &vector->storage.coordinate, mtxfile, format);
+            mtxfile, &vector->storage.coordinate, mtxfmt);
     } else {
         return MTX_ERR_INVALID_VECTOR_TYPE;
     }
@@ -665,7 +665,7 @@ int mtxvector_gzread(
  */
 int mtxvector_write(
     const struct mtxvector * vector,
-    enum mtxfileformat format,
+    enum mtxfileformat mtxfmt,
     const char * path,
     bool gzip,
     const char * fmt,
@@ -673,7 +673,7 @@ int mtxvector_write(
 {
     int err;
     struct mtxfile mtxfile;
-    err = mtxvector_to_mtxfile(vector, &mtxfile, format);
+    err = mtxvector_to_mtxfile(&mtxfile, vector, mtxfmt);
     if (err)
         return err;
     err = mtxfile_write(
@@ -708,14 +708,14 @@ int mtxvector_write(
  */
 int mtxvector_fwrite(
     const struct mtxvector * vector,
-    enum mtxfileformat format,
+    enum mtxfileformat mtxfmt,
     FILE * f,
     const char * fmt,
     int64_t * bytes_written)
 {
     int err;
     struct mtxfile mtxfile;
-    err = mtxvector_to_mtxfile(vector, &mtxfile, format);
+    err = mtxvector_to_mtxfile(&mtxfile, vector, mtxfmt);
     if (err)
         return err;
 
@@ -752,14 +752,14 @@ int mtxvector_fwrite(
  */
 int mtxvector_gzwrite(
     const struct mtxvector * vector,
-    enum mtxfileformat format,
+    enum mtxfileformat mtxfmt,
     gzFile f,
     const char * fmt,
     int64_t * bytes_written)
 {
     int err;
     struct mtxfile mtxfile;
-    err = mtxvector_to_mtxfile(vector, &mtxfile, format);
+    err = mtxvector_to_mtxfile(&mtxfile, vector, mtxfmt);
     if (err)
         return err;
 

@@ -282,9 +282,9 @@ int mtxvector_coordinate_from_mtxfile(
  * format to a vector in Matrix Market format.
  */
 int mtxvector_coordinate_to_mtxfile(
-    const struct mtxvector_coordinate * vector,
     struct mtxfile * mtxfile,
-    enum mtxfileformat format);
+    const struct mtxvector_coordinate * vector,
+    enum mtxfileformat mtxfmt);
 
 /*
  * Level 1 BLAS operations

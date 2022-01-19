@@ -336,10 +336,26 @@ int mtxdistvector_init_coordinate_pattern(
 /**
  * ‘mtxdistvector_from_mtxfile()’ converts a vector in Matrix Market
  * format to a distributed vector.
+ *
+ * The ‘type’ argument may be used to specify a desired storage format
+ * or implementation for the underlying ‘mtxvector’ on each
+ * process. If ‘type’ is ‘mtxvector_auto’, then the type of
+ * ‘mtxvector’ is chosen to match the type of ‘mtxfile’. That is,
+ * ‘mtxvector_array’ is used if ‘mtxfile’ is in array format, and
+ * ‘mtxvector_coordinate’ is used if ‘mtxfile’ is in coordinate
+ * format.
+ *
+ * Furthermore, ‘rowpart’ must be a partitioning of the rows of the
+ * global vector. Therefore, ‘rowpart->size’ must be equal to the
+ * number of rows in the underlying vector represented by
+ * ‘mtxfile’. The partition must consist of at most one part for each
+ * MPI process in the communicator ‘comm’. If ‘rowpart’ is ‘NULL’,
+ * then the rows are partitioned into contiguous blocks of equal size
+ * by default.
  */
 int mtxdistvector_from_mtxfile(
-    struct mtxdistvector * distvector,
-    const struct mtxfile * mtxfile,
+    struct mtxdistvector * dst,
+    const struct mtxfile * src,
     enum mtxvectortype vector_type,
     const struct mtxpartition * rowpart,
     MPI_Comm comm,
@@ -367,8 +383,8 @@ int mtxdistvector_to_mtxfile(
  * Matrix Market format to a distributed vector.
  */
 int mtxdistvector_from_mtxdistfile(
-    struct mtxdistvector * distvector,
-    const struct mtxdistfile * mtxdistfile,
+    struct mtxdistvector * dst,
+    const struct mtxdistfile * src,
     enum mtxvectortype vector_type,
     const struct mtxpartition * rowpart,
     MPI_Comm comm,
@@ -379,8 +395,8 @@ int mtxdistvector_from_mtxdistfile(
  * vector in a distributed Matrix Market format.
  */
 int mtxdistvector_to_mtxdistfile(
-    const struct mtxdistvector * distvector,
-    struct mtxdistfile * mtxdistfile,
+    struct mtxdistfile * dst,
+    const struct mtxdistvector * src,
     enum mtxfileformat mtxfmt,
     struct mtxdisterror * disterr);
 

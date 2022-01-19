@@ -541,6 +541,22 @@ int mtxdistvector_init_coordinate_pattern(
 /**
  * ‘mtxdistvector_from_mtxfile()’ converts a vector in Matrix Market
  * format to a distributed vector.
+ *
+ * The ‘type’ argument may be used to specify a desired storage format
+ * or implementation for the underlying ‘mtxvector’ on each
+ * process. If ‘type’ is ‘mtxvector_auto’, then the type of
+ * ‘mtxvector’ is chosen to match the type of ‘mtxfile’. That is,
+ * ‘mtxvector_array’ is used if ‘mtxfile’ is in array format, and
+ * ‘mtxvector_coordinate’ is used if ‘mtxfile’ is in coordinate
+ * format.
+ *
+ * Furthermore, ‘rowpart’ must be a partitioning of the rows of the
+ * global vector. Therefore, ‘rowpart->size’ must be equal to the
+ * number of rows in the underlying vector represented by
+ * ‘mtxfile’. The partition must consist of at most one part for each
+ * MPI process in the communicator ‘comm’. If ‘rowpart’ is ‘NULL’,
+ * then the rows are partitioned into contiguous blocks of equal size
+ * by default.
  */
 int mtxdistvector_from_mtxfile(
     struct mtxdistvector * distvector,
@@ -655,16 +671,52 @@ int mtxdistvector_to_mtxfile(
     struct mtxdisterror * disterr)
 {
     int err;
-    struct mtxdistfile mtxdistfile;
-    err = mtxdistvector_to_mtxdistfile(src, &mtxdistfile, mtxfmt, disterr);
-    if (err)
-        return err;
-    err = mtxdistfile_to_mtxfile(dst, &mtxdistfile, root, disterr);
+    MPI_Comm comm = src->comm;
+    int comm_size = src->comm_size;
+    int rank = src->rank;
+
+    /* 1. Each process converts its part of the vector to Matrix
+     * Market format */
+    struct mtxfile sendmtxfile;
+    err = mtxvector_to_mtxfile(
+        &sendmtxfile, &src->interior, mtxfmt);
+    if (mtxdisterror_allreduce(disterr, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+
+    /* 2. Gather each part onto the root process */
+    struct mtxfile * recvmtxfiles =
+        rank == root ? malloc(comm_size * sizeof(struct mtxfile)) : NULL;
+    err = rank == root && !recvmtxfiles ? MTX_ERR_ERRNO : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err)) {
+        mtxfile_free(&sendmtxfile);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+    err = mtxfile_gather(
+        &sendmtxfile, recvmtxfiles, root, comm, disterr);
     if (err) {
-        mtxdistfile_free(&mtxdistfile);
+        if (rank == root) free(recvmtxfiles);
+        mtxfile_free(&sendmtxfile);
         return err;
     }
-    mtxdistfile_free(&mtxdistfile);
+    mtxfile_free(&sendmtxfile);
+
+    /* 3. Join the Matrix Market files on the root process */
+    err = rank == root
+        ? mtxfile_join(dst, recvmtxfiles, &src->rowpart, NULL)
+        : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err)) {
+        if (rank == root) {
+            for (int p = 0; p < comm_size; p++)
+                mtxfile_free(&recvmtxfiles[p]);
+            free(recvmtxfiles);
+        }
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+    if (rank == root) {
+        for (int p = 0; p < comm_size; p++)
+            mtxfile_free(&recvmtxfiles[p]);
+        free(recvmtxfiles);
+    }
     return MTX_SUCCESS;
 }
 
@@ -765,18 +817,18 @@ int mtxdistvector_from_mtxdistfile(
  * vector in a distributed Matrix Market format.
  */
 int mtxdistvector_to_mtxdistfile(
-    const struct mtxdistvector * distvector,
     struct mtxdistfile * dst,
+    const struct mtxdistvector * src,
     enum mtxfileformat mtxfmt,
     struct mtxdisterror * disterr)
 {
     int err;
-    MPI_Comm comm = distvector->comm;
-    int comm_size = distvector->comm_size;
-    int rank = distvector->rank;
+    MPI_Comm comm = src->comm;
+    int comm_size = src->comm_size;
+    int rank = src->rank;
 
     struct mtxfile mtxfile;
-    err = mtxvector_to_mtxfile(&distvector->interior, &mtxfile, mtxfmt);
+    err = mtxvector_to_mtxfile(&mtxfile, &src->interior, mtxfmt);
     if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
 
@@ -837,7 +889,7 @@ int mtxdistvector_to_mtxdistfile(
     err = mtxdistfile_alloc(
         dst, &mtxfile.header, &mtxfile.comments,
         &dstsize, mtxfile.precision,
-        &partition, distvector->comm, disterr);
+        &partition, src->comm, disterr);
     if (err) {
         mtxpartition_free(&partition);
         mtxfile_free(&mtxfile);
@@ -1031,7 +1083,7 @@ int mtxdistvector_fwrite_shared(
     int err;
     struct mtxdistfile mtxdistfile;
     err = mtxdistvector_to_mtxdistfile(
-        mtxdistvector, &mtxdistfile, mtxfmt, disterr);
+        &mtxdistfile, mtxdistvector, mtxfmt, disterr);
     if (err)
         return err;
 

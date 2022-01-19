@@ -379,9 +379,9 @@ int mtxvector_from_mtxfile(
  * Market format.
  */
 int mtxvector_to_mtxfile(
-    const struct mtxvector * src,
     struct mtxfile * dst,
-    enum mtxfileformat format);
+    const struct mtxvector * src,
+    enum mtxfileformat mtxfmt);
 
 /*
  * I/O functions
@@ -495,7 +495,7 @@ int mtxvector_gzread(
  */
 int mtxvector_write(
     const struct mtxvector * vector,
-    enum mtxfileformat format,
+    enum mtxfileformat mtxfmt,
     const char * path,
     bool gzip,
     const char * fmt,
@@ -523,7 +523,7 @@ int mtxvector_write(
  */
 int mtxvector_fwrite(
     const struct mtxvector * vector,
-    enum mtxfileformat format,
+    enum mtxfileformat mtxfmt,
     FILE * f,
     const char * fmt,
     int64_t * bytes_written);
@@ -551,7 +551,7 @@ int mtxvector_fwrite(
  */
 int mtxvector_gzwrite(
     const struct mtxvector * vector,
-    enum mtxfileformat format,
+    enum mtxfileformat mtxfmt,
     gzFile f,
     const char * fmt,
     int64_t * bytes_written);
