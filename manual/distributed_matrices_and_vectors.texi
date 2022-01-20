@@ -1,35 +1,35 @@
-@c This file is part of libmtx.
+@c This file is part of Libmtx.
 @c Copyright (C) 2022 James D. Trotter
 @c
-@c libmtx is free software: you can redistribute it and/or modify it
+@c Libmtx is free software: you can redistribute it and/or modify it
 @c under the terms of the GNU General Public License as published by
 @c the Free Software Foundation, either version 3 of the License, or
 @c (at your option) any later version.
 @c
-@c libmtx is distributed in the hope that it will be useful, but
+@c Libmtx is distributed in the hope that it will be useful, but
 @c WITHOUT ANY WARRANTY; without even the implied warranty of
 @c MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 @c General Public License for more details.
 @c
 @c You should have received a copy of the GNU General Public License
-@c along with libmtx.  If not, see <https://www.gnu.org/licenses/>.
+@c along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
 @c
 @c Authors: James D. Trotter <james@simula.no>
 @c Last modified: 2022-01-19
 @c
-@c libmtx User Guide: Distributed matrices and vectors.
+@c Libmtx User Guide: Distributed matrices and vectors.
 
 @node Distributed matrices and vectors
 @chapter Distributed matrices and vectors
 This chapter describes how to distribute matrices and vectors across
 multiple processes, and how to perform various linear algebra
 operations on distributed matrices and vectors. The distributed-memory
-computing features in libmtx are implemented using MPI, and,
-therefore, you will need to build libmtx with MPI support. In many
+computing features in Libmtx are implemented using MPI, and,
+therefore, you will need to build Libmtx with MPI support. In many
 cases, working with distributed matrices and vectors involves
 converting to or from Matrix Market format, and it may therefore be a
 good idea to read @ref{Distributed Matrix Market files} to understand
-how to work with distributed Matrix Market files in libmtx.
+how to work with distributed Matrix Market files in Libmtx.
 
 @menu
 * Distributed vectors:: Data structures for distributed vectors.

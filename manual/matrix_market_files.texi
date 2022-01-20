@@ -1,29 +1,29 @@
-@c This file is part of libmtx.
+@c This file is part of Libmtx.
 @c Copyright (C) 2022 James D. Trotter
 @c
-@c libmtx is free software: you can redistribute it and/or modify it
+@c Libmtx is free software: you can redistribute it and/or modify it
 @c under the terms of the GNU General Public License as published by
 @c the Free Software Foundation, either version 3 of the License, or
 @c (at your option) any later version.
 @c
-@c libmtx is distributed in the hope that it will be useful, but
+@c Libmtx is distributed in the hope that it will be useful, but
 @c WITHOUT ANY WARRANTY; without even the implied warranty of
 @c MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 @c General Public License for more details.
 @c
 @c You should have received a copy of the GNU General Public License
-@c along with libmtx.  If not, see <https://www.gnu.org/licenses/>.
+@c along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
 @c
 @c Authors: James D. Trotter <james@simula.no>
 @c Last modified: 2022-01-15
 @c
-@c libmtx User Guide: Matrix Market files.
+@c Libmtx User Guide: Matrix Market files.
 
 @node Matrix Market files
 @chapter Matrix Market files
 
 This chapter provides a detailed explanation of how to work with
-Matrix Market files using the libmtx C library.  For now, we are
+Matrix Market files using the Libmtx C library.  For now, we are
 concerned with Matrix Market files on a single, shared-memory machine
 or node.  For files that are distributed across multiple processes
 using MPI, see @ref{Distributed Matrix Market files}.
@@ -31,10 +31,10 @@ using MPI, see @ref{Distributed Matrix Market files}.
 For any user-facing types and functions, the library uses the
 convention of prefixing their names with @code{mtx}. This makes it
 easier to avoid possible name clashes with other code when using
-libmtx.
+Libmtx.
 
 @menu
-* Error handling:: How to handle errors when working with the libmtx C library.
+* Error handling:: How to handle errors when working with the Libmtx C library.
 * Data structures: Data structures for Matrix Market files. Basic data structures for representing objects in Matrix Market format.
 * Reading and writing Matrix Market files:: How to read from and write to files in Matrix Market format.
 * Creating Matrix Market files:: How to create matrices and vectors in Matrix Market format.
@@ -47,7 +47,7 @@ libmtx.
 @section Error handling
 
 @cindex error handling
-Functions in the libmtx C library generally return a status code that
+Functions in the Libmtx C library generally return a status code that
 either indicates success (represented by the status code
 @samp{MTX_SUCCESS}) or a specific error.  Valid error codes correspond
 to values of the type @code{enum mtxerror}, which is defined in the
@@ -103,7 +103,7 @@ The file @file{libmtx/mtxfile/mtxfile.h} defines the @code{struct
 mtxfile} type.  The main purpose of @code{struct mtxfile} is to
 represent objects in Matrix Market format, including dense and sparse
 matrices and vectors with real, complex, integer or binary values. In
-addition to @code{struct mtxfile}, libmtx also implements other data
+addition to @code{struct mtxfile}, Libmtx also implements other data
 structures to represent matrices and vectors with different underlying
 storage formats.
 @c These are described in @ref{...}.
@@ -491,7 +491,7 @@ value of @code{1} at position @code{i}.
 In most cases, matrices and vectors are obtained by reading from a
 file in Matrix Market format. These files are typically named with a
 @file{.mtx} extension, so we refer to them here as @file{mtx} files.
-This section describes how to use libmtx to read or write matrices and
+This section describes how to use Libmtx to read or write matrices and
 vectors to and from files in Matrix Market format.
 
 @node Reading Matrix Market files
@@ -534,7 +534,7 @@ and used, and the maximum line length is determined by calling
 @cindex zlib
 @cindex gzip compression
 @findex mtxfile_gzread
-If libmtx is built with zlib support, then @code{mtxfile_gzread} can
+If Libmtx is built with zlib support, then @code{mtxfile_gzread} can
 be used to read gzip-compressed @file{mtx} files.
 @example
 @code{int mtxfile_gzread(
@@ -603,7 +603,7 @@ affect output.
 
 
 @findex mtxfile_gzwrite
-If libmtx is built with zlib support, then @code{mtxfile_gzwrite} can
+If Libmtx is built with zlib support, then @code{mtxfile_gzwrite} can
 be used to write gzip-compressed @file{mtx} files.
 @example
 @code{int mtxfile_gzwrite(
@@ -652,7 +652,7 @@ matrices and vectors when the size is known, but the values of the
 matrix or vector entries are not given. In this case, storage is
 allocated for data, but initialising the data is left to the
 user. (See, for example, @ref{Setting matrix and vector values}.)  In
-addition, libmtx provides functions for when both the size and the
+addition, Libmtx provides functions for when both the size and the
 matrix or vector entries are provided directly by the user. In this
 case, storage is allocated and the provided data is copied to the
 newly allocated storage.
@@ -1346,7 +1346,7 @@ matrix, for @code{i=1,2,...,@var{M}} and @code{j=1,2,...,@var{N}}.
 
 @cindex ordering
 @tindex enum mtxfileordering
-In addition to permuting a matrix or vector, libmtx also provides
+In addition to permuting a matrix or vector, Libmtx also provides
 functions to obtain row and column permutations for certain orderings.
 The enum type @code{mtxfileordering} is used to enumerate different
 orderings for the rows and columns of a matrix.
@@ -1447,7 +1447,7 @@ matrix.
 @node Communicating Matrix Market files
 @section Communicating Matrix Market files
 @cindex MPI
-If libmtx is built with MPI support, then some additional
+If Libmtx is built with MPI support, then some additional
 functionality becomes available to allow sending and receiving Matrix
 Market files between MPI processes. Note that these functions rely on
 the error handling functionality described in @ref{Error handling for

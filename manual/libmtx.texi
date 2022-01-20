@@ -1,33 +1,33 @@
 \input texinfo @c -*-texinfo-*-
-@c This file is part of libmtx.
+@c This file is part of Libmtx.
 @c Copyright (C) 2022 James D. Trotter
 @c
-@c libmtx is free software: you can redistribute it and/or modify it
+@c Libmtx is free software: you can redistribute it and/or modify it
 @c under the terms of the GNU General Public License as published by
 @c the Free Software Foundation, either version 3 of the License, or
 @c (at your option) any later version.
 @c
-@c libmtx is distributed in the hope that it will be useful, but
+@c Libmtx is distributed in the hope that it will be useful, but
 @c WITHOUT ANY WARRANTY; without even the implied warranty of
 @c MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 @c General Public License for more details.
 @c
 @c You should have received a copy of the GNU General Public License
-@c along with libmtx.  If not, see <https://www.gnu.org/licenses/>.
+@c along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
 @c
 @c Authors: James D. Trotter <james@simula.no>
 @c Last modified: 2022-01-14
 @c
-@c libmtx User Guide.
+@c Libmtx User Guide.
 
 @c %**start of header
 @setfilename libmtx.info
 @include version.texi
-@settitle libmtx User Guide @value{VERSION}
+@settitle Libmtx User Guide @value{VERSION}
 @c %**end of header
 
 @copying
-This manual describes how to install and use libmtx, version
+This manual describes how to install and use Libmtx, version
 @value{VERSION}, @value{UPDATED}, a C library and collection of
 utility programs for working with objects in the Matrix Market file
 format, including vectors, dense matrices and sparse matrices.
@@ -46,11 +46,11 @@ Texts.  A copy of the license is included in the section entitled
 
 @dircategory Mathematics
 @direntry
-* libmtx: (libmtx).         C library and utility programs for working with Matrix Market files.
+* Libmtx: (Libmtx).         C library and utility programs for working with Matrix Market files.
 @end direntry
 
 @titlepage
-@title libmtx User Guide
+@title Libmtx User Guide
 @subtitle for version @value{VERSION}, @value{UPDATED}
 @author James D. Trotter (@email{james@@simula.no})
 @page
@@ -60,7 +60,7 @@ Texts.  A copy of the license is included in the section entitled
 
 @ifnottex
 @node Top
-@top libmtx
+@top Libmtx
 
 @insertcopying
 @end ifnottex
@@ -71,8 +71,8 @@ Texts.  A copy of the license is included in the section entitled
 
 @menu
 * Copying:: Copying Conditions (GPLv3).
-* Introduction to libmtx:: Brief introduction to libmtx.
-* Installing libmtx:: How to configure and compile libmtx.
+* Introduction to Libmtx:: Brief introduction to Libmtx.
+* Installing Libmtx:: How to configure and compile Libmtx.
 * Matrix Market format:: Description of the Matrix Market file format.
 * Matrix Market files:: Working with Matrix Market files.
 * Matrices and vectors:: Working with matrices and vectors.
@@ -94,18 +94,18 @@ Texts.  A copy of the license is included in the section entitled
 @node Copying
 @unnumbered Copying Conditions
 
-libmtx is free software: you can redistribute it and/or modify it
+Libmtx is free software: you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
 Free Software Foundation, either version 3 of the License, or (at your
 option) any later version.
 
-libmtx is distributed in the hope that it will be useful, but WITHOUT
+Libmtx is distributed in the hope that it will be useful, but WITHOUT
 ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
 for more details.
 
 You should have received a copy of the GNU General Public License
-along with libmtx.  If not, see <https://www.gnu.org/licenses/>.
+along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
 
 
 @include introduction.texi

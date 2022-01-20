@@ -1,30 +1,30 @@
-@c This file is part of libmtx.
+@c This file is part of Libmtx.
 @c Copyright (C) 2022 James D. Trotter
 @c
-@c libmtx is free software: you can redistribute it and/or
+@c Libmtx is free software: you can redistribute it and/or
 @c modify it under the terms of the GNU General Public License as
 @c published by the Free Software Foundation, either version 3 of the
 @c License, or (at your option) any later version.
 @c
-@c libmtx is distributed in the hope that it will be useful,
+@c Libmtx is distributed in the hope that it will be useful,
 @c but WITHOUT ANY WARRANTY; without even the implied warranty of
 @c MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 @c General Public License for more details.
 @c
 @c You should have received a copy of the GNU General Public License
-@c along with libmtx.  If not, see
+@c along with Libmtx.  If not, see
 @c <https://www.gnu.org/licenses/>.
 @c
 @c Authors: James D. Trotter <james@simula.no>
 @c Last modified: 2022-01-16
 @c
-@c libmtx User Guide: Commands.
+@c Libmtx User Guide: Commands.
 
 @node Commands
 @chapter Commands
 
 This chapter decribes a collection of command-line programs that are
-provided by libmtx for working with Matrix Market files.
+provided by Libmtx for working with Matrix Market files.
 
 @table @command
 @cindex vector addition
@@ -587,7 +587,7 @@ Print diagnostics to standard error.
 @cindex libpng
 The command @command{mtxspy} draws an image of the sparsity pattern of
 a matrix, saving it to a PNG file.  This command is only available if
-libmtx is compiled with libpng support.
+Libmtx is compiled with libpng support.
 @example
 @code{mtxspy [OPTION..] FILE}
 @end example

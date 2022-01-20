@@ -1,23 +1,23 @@
-@c This file is part of libmtx.
+@c This file is part of Libmtx.
 @c Copyright (C) 2022 James D. Trotter
 @c
-@c libmtx is free software: you can redistribute it and/or modify it
+@c Libmtx is free software: you can redistribute it and/or modify it
 @c under the terms of the GNU General Public License as published by
 @c the Free Software Foundation, either version 3 of the License, or
 @c (at your option) any later version.
 @c
-@c libmtx is distributed in the hope that it will be useful, but
+@c Libmtx is distributed in the hope that it will be useful, but
 @c WITHOUT ANY WARRANTY; without even the implied warranty of
 @c MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 @c General Public License for more details.
 @c
 @c You should have received a copy of the GNU General Public License
-@c along with libmtx.  If not, see <https://www.gnu.org/licenses/>.
+@c along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
 @c
 @c Authors: James D. Trotter <james@simula.no>
 @c Last modified: 2022-01-19
 @c
-@c libmtx User Guide: Matrices and vectors.
+@c Libmtx User Guide: Matrices and vectors.
 
 @node Matrices and vectors
 @chapter Matrices and vectors
@@ -30,11 +30,11 @@ machine or node. For matrices and vectors that are distributed across
 multiple processes using MPI, see @ref{Distributed matrices and
 vectors}.
 
-One of the goals of libmtx is to allow for experimenting with various
+One of the goals of Libmtx is to allow for experimenting with various
 storage formats for matrices and vectors, as well as different
 implementations of basic linear algebra operations. Moreover, it
 should be simple to switch from one storage format or implementation
-to another. To achieve this, libmtx defines a single, common data
+to another. To achieve this, Libmtx defines a single, common data
 type, @code{struct mtxvector}, for working with vectors that may have
 different underlying storage formats or implementations. Similarly, a
 single data type, @code{struct mtxmatrix}, is used for matrices that
@@ -351,10 +351,10 @@ should be written in array or coordinate format.
 @node Level 1 BLAS for vectors
 @subsection Level 1 BLAS
 @cindex BLAS
-The libmtx C library implements a subset of the Basic Linear Algebra
-Subprograms (BLAS) routines. For dense operations, libmtx can use
+The Libmtx C library implements a subset of the Basic Linear Algebra
+Subprograms (BLAS) routines. For dense operations, Libmtx can use
 optimised, third-party BLAS libraries, such as OpenBLAS
-(@url{https://www.openblas.net/}). Otherwise, libmtx uses internal
+(@url{https://www.openblas.net/}). Otherwise, Libmtx uses internal
 routines for sparse matrix operations.
 
 The following Level 1 BLAS operations are supported:
@@ -409,7 +409,7 @@ int mtxvector_dscal(
     struct mtxvector * x,
     int64_t * num_flops);}
 @end example
-Note that most of the BLAS functions in libmtx take an additional
+Note that most of the BLAS functions in Libmtx take an additional
 argument @code{num_flops}, which can be used to obtain the number of
 floating point operations that were carried out. If @code{num_flops}
 is @samp{NULL}, then it is ignored.
@@ -573,10 +573,10 @@ implementation of matrix operations.
     @} storage;
 @};}
 @end example
-The idea is for libmtx to provide several storage formats and
+The idea is for Libmtx to provide several storage formats and
 implementations for sparse matrices, but there are two basic kinds of
 matrices obtained directly from the Matrix Market format, namely
-@emph{array} and @emph{coordinate} matrices. In the future, libmtx
+@emph{array} and @emph{coordinate} matrices. In the future, Libmtx
 will also provide sparse matrices in Compressed Sparse Row (CSR) and
 ELL (or ELLPACK) format.
 
@@ -877,7 +877,7 @@ int mtxmatrix_dscal(
     struct mtxmatrix * X,
     int64_t * num_flops);}
 @end example
-Note that most of the BLAS functions in libmtx take an additional
+Note that most of the BLAS functions in Libmtx take an additional
 argument @code{num_flops}, which can be used to obtain the number of
 floating point operations that were carried out. If @code{num_flops}
 is @samp{NULL}, then it is ignored.

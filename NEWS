@@ -1,5 +1,5 @@
 * Noteworthy changes in the upcoming release
 
-This is the initial release of libmtx, which supports reading
+This is the initial release of Libmtx, which supports reading
 and writing Matrix Market files, sorting sparse matrices and basic
 BLAS operations, such as matrix-vector multiplication.

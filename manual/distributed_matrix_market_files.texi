@@ -1,23 +1,23 @@
-@c This file is part of libmtx.
+@c This file is part of Libmtx.
 @c Copyright (C) 2022 James D. Trotter
 @c
-@c libmtx is free software: you can redistribute it and/or modify it
+@c Libmtx is free software: you can redistribute it and/or modify it
 @c under the terms of the GNU General Public License as published by
 @c the Free Software Foundation, either version 3 of the License, or
 @c (at your option) any later version.
 @c
-@c libmtx is distributed in the hope that it will be useful, but
+@c Libmtx is distributed in the hope that it will be useful, but
 @c WITHOUT ANY WARRANTY; without even the implied warranty of
 @c MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 @c General Public License for more details.
 @c
 @c You should have received a copy of the GNU General Public License
-@c along with libmtx.  If not, see <https://www.gnu.org/licenses/>.
+@c along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
 @c
 @c Authors: James D. Trotter <james@simula.no>
 @c Last modified: 2022-01-07
 @c
-@c libmtx User Guide: Distributed Matrix Market files.
+@c Libmtx User Guide: Distributed Matrix Market files.
 
 @node Distributed Matrix Market files
 @chapter Distributed Matrix Market files
@@ -25,19 +25,19 @@
 This chapter describes how to distribute Matrix Market files among
 multiple processes using MPI, and how to perform various operations on
 those files in a distributed manner. The distributed-memory computing
-features in libmtx are implemented using MPI, and you will therefore
-need to build libmtx with MPI support.
+features in Libmtx are implemented using MPI, and you will therefore
+need to build Libmtx with MPI support.
 
 For most user-facing types and functions that relate to distributed
-computing, libmtx uses the convention of prefixing their names with
+computing, Libmtx uses the convention of prefixing their names with
 @code{mtxdist}. This makes it easier to avoid possible name clashes
-with other code when using libmtx, and also to distinguish parts of a
+with other code when using Libmtx, and also to distinguish parts of a
 program that rely on distributed computing from those parts that are
 not distributed.
 
 @menu
 * Error handling: Error handling for distributed Matrix Market files.
-  How to handle errors when using libmtx for distributed computing.
+  How to handle errors when using Libmtx for distributed computing.
 * Data structures: Data structures for distributed Matrix Market files.
   Basic data structures for representing distributed @file{mtx} files.
 * Creating distributed Matrix Market files::
@@ -57,7 +57,7 @@ not distributed.
 @section Error handling
 @cindex error handling
 In addition to the error handling routines described in @ref{Error
-handling}, libmtx provides some additional error handling
+handling}, Libmtx provides some additional error handling
 functionality when working with MPI and distributed data. First, some
 MPI functions may return an error code on failure, which should be
 handled correctly. Second, whenever multiple processes are involved,
@@ -68,7 +68,7 @@ instead of hanging indefinitely.
 
 @subsection MPI errors
 @findex mtxdiststrerror
-Some functions in libmtx may fail due to MPI errors. In these cases,
+Some functions in Libmtx may fail due to MPI errors. In these cases,
 some additional information is needed to provide helpful error
 descriptions, and the function @code{mtxdiststrerror} should be used
 (instead of @code{mtxstrerror}).
@@ -113,8 +113,8 @@ message will be printed:
 @subsection Distributed error handling
 @tindex struct mtxdisterror
 To more easily handle errors in cases where one or more processes may
-fail, libmtx uses the data type @code{struct mtxdisterror}. Most of
-the functions in libmtx that involve distributed computing take an
+fail, Libmtx uses the data type @code{struct mtxdisterror}. Most of
+the functions in Libmtx that involve distributed computing take an
 additional argument of type @code{struct mtxdisterror} to provide
 robust error handling in these cases.
 
@@ -579,7 +579,7 @@ Note that when using a very large number of MPI processes and very
 large files, a high-performance I/O library such as MPI-IO
 (@ref{W. Gropp@comma{} E. Lusk and R. Thakur (1999)}) or HDF5
 (@ref{HDF5}) may be a better alternative. However, this is not
-currently supported in libmtx.
+currently supported in Libmtx.
 
 @node Reading distributed Matrix Market files
 @subsection Reading distributed Matrix Market files
@@ -640,7 +640,7 @@ function.
 @cindex zlib
 @cindex gzip compression
 @findex mtxdistfile_gzread_shared
-If libmtx is built with zlib support, then @code{mtxdistfile_gzread_shared}
+If Libmtx is built with zlib support, then @code{mtxdistfile_gzread_shared}
 can be used to read gzip-compressed @file{mtx} files. The data is
 partitioned and distributed among MPI processes in the same way as
 with @code{mtxdistfile_fread_shared}.
@@ -736,7 +736,7 @@ calls to the function.
 
 @findex mtxdistfile_gzwrite
 @findex mtxdistfile_gzwrite_shared
-If libmtx is built with zlib support, then @code{mtxdistfile_gzwrite}
+If Libmtx is built with zlib support, then @code{mtxdistfile_gzwrite}
 and @code{mtxdistfile_gzwrite_shared} can be used to write
 gzip-compressed @file{mtx} files using the file-per-process and shared
 file models, respectively.

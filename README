@@ -1,7 +1,6 @@
-This is the README file for libmtx, a C library and
-collection of utility programs for working with objects in the Matrix
-Market file format, including vectors, dense matrices and sparse
-matrices.
+This is the README file for Libmtx, a C library and collection of
+utility programs for working with objects in the Matrix Market file
+format, including dense and sparse matrices and vectors.
 
   Copyright (C) 2022 James D. Trotter
 
@@ -11,5 +10,4 @@ matrices.
 
 See the file INSTALL for instructions on how to build and install.
 
-libmtx is free software. See the file COPYING for copying
-conditions.
+Libmtx is free software. See the file COPYING for copying conditions.

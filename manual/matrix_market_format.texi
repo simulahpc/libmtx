@@ -1,32 +1,31 @@
-@c This file is part of libmtx.
+@c This file is part of Libmtx.
 @c Copyright (C) 2022 James D. Trotter
 @c
-@c libmtx is free software: you can redistribute it and/or modify it
+@c Libmtx is free software: you can redistribute it and/or modify it
 @c under the terms of the GNU General Public License as published by
 @c the Free Software Foundation, either version 3 of the License, or
 @c (at your option) any later version.
 @c
-@c libmtx is distributed in the hope that it will be useful, but
+@c Libmtx is distributed in the hope that it will be useful, but
 @c WITHOUT ANY WARRANTY; without even the implied warranty of
 @c MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 @c General Public License for more details.
 @c
 @c You should have received a copy of the GNU General Public License
-@c along with libmtx.  If not, see <https://www.gnu.org/licenses/>.
+@c along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
 @c
 @c Authors: James D. Trotter <james@simula.no>
 @c Last modified: 2022-01-20
 @c
-@c libmtx User Guide: Matrix Market format.
+@c Libmtx User Guide: Matrix Market format.
 
 @node Matrix Market format
 @chapter Matrix Market format
 
-This chapter describes the Matrix Market file format.
-
 @cindex Matrix Market format
-Matrix Market files, or @file{.mtx} files, are plain text ASCII files
-that consist of the following four parts:
+This chapter describes the Matrix Market file format. Matrix Market
+files, or @file{.mtx} files, are plain text ASCII files that consist
+of the following four parts:
 
 @enumerate
 @item a @dfn{header line},
@@ -121,6 +120,7 @@ sparse or dense form.
       @samp{skew-symmetric} or @samp{hermitian}.
 @end enumerate
 
+@noindent
 The @t{@var{field}} value of the header is used as follows:
 
 @itemize
@@ -142,6 +142,7 @@ matrix or vector entries. Instead, only the locations of nonzeros are
 stored.
 @end itemize
 
+@noindent
 The @t{@var{symmetry}} value of the header is ignored if
 @t{@var{object}} is @samp{vector}.  However, if @t{@var{object}} is
 @samp{matrix}, then it is used as follows:
@@ -158,7 +159,7 @@ stored explicitly.
 @samp{symmetric}. The matrix must be square.  If @t{@var{format}} is
 @samp{array}, then only the lower or upper triangular part of the
 matrix is stored explicitly.  (Note that there is no indication in the
-Matrix Market file regarding which part is stored, but libmtx assumes
+Matrix Market file regarding which part is stored, but Libmtx assumes
 by default that the lower triangular part is stored in row major
 order.)  Otherwise, if @t{@var{format}} is @samp{coordinate}, then
 values may be explicitly represented from the lower or upper
@@ -173,7 +174,7 @@ square, but skew symmetry implies that diagonal entries are zero.
 Therefore, if @t{@var{format}} is @samp{array}, then only the strictly
 lower or upper triangular part of the matrix is stored explicitly.
 (Note that there is no indication in the Matrix Market file regarding
-which part is stored, but libmtx assumes by default that the strictly
+which part is stored, but Libmtx assumes by default that the strictly
 lower triangular part is stored in row major order.)  Otherwise, if
 @t{@var{format}} is @samp{coordinate}, then values may be explicitly
 represented from the strictly lower or upper triangular part of the
@@ -188,7 +189,7 @@ location @samp{(j,i)}.
 @t{@var{format}} is @samp{array}, then only the lower or upper
 triangular part of the matrix is stored explicitly. (Note that there
 is no indication in the Matrix Market file regarding which part is
-stored, but libmtx assumes by default that the lower triangular part
+stored, but Libmtx assumes by default that the lower triangular part
 is stored in row major order.)  Otherwise, if @t{@var{format}} is
 @samp{coordinate}, then values may be explicitly represented from the
 lower or upper triangular part of the matrix, or both. For each

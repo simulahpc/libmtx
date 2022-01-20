@@ -1,30 +1,30 @@
-@c This file is part of libmtx.
+@c This file is part of Libmtx.
 @c Copyright (C) 2022 James D. Trotter
 @c
-@c libmtx is free software: you can redistribute it and/or modify it
+@c Libmtx is free software: you can redistribute it and/or modify it
 @c under the terms of the GNU General Public License as published by
 @c the Free Software Foundation, either version 3 of the License, or
 @c (at your option) any later version.
 @c
-@c libmtx is distributed in the hope that it will be useful, but
+@c Libmtx is distributed in the hope that it will be useful, but
 @c WITHOUT ANY WARRANTY; without even the implied warranty of
 @c MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 @c General Public License for more details.
 @c
 @c You should have received a copy of the GNU General Public License
-@c along with libmtx.  If not, see <https://www.gnu.org/licenses/>.
+@c along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
 @c
 @c Authors: James D. Trotter <james@simula.no>
 @c Last modified: 2022-01-20
 @c
-@c libmtx User Guide: Installing libmtx.
+@c Libmtx User Guide: Installing Libmtx.
 
-@node Installing libmtx
-@chapter Installing libmtx
+@node Installing Libmtx
+@chapter Installing Libmtx
 
 @cindex installing
 
-libmtx uses GNU Autotools, which means that a basic build on a
+Libmtx uses GNU Autotools, which means that a basic build on a
 UNIX-like system can be done by running the commands
 
 @example
@@ -51,14 +51,14 @@ If you experience problems, please report them to
 what to include in a bug report.
 
 @menu
-* Optional dependencies:: Other software that may be used by libmtx.
+* Optional dependencies:: Other software that may be used by Libmtx.
 * Reporting bugs:: How to usefully report bugs.
 @end menu
 
 @node Optional dependencies
 @section Optional dependencies
 
-Some features of libmtx are optional and will only be available if
+Some features of Libmtx are optional and will only be available if
 some of the following dependencies are provided:
 
 @itemize
@@ -90,7 +90,7 @@ is needed for writing PNG images of matrix sparsity patterns.
 @cindex reporting bugs
 
 To report bugs, suggest enhancements or otherwise discuss
-libmtx, please send electronic mail to
+Libmtx, please send electronic mail to
 @email{james@@simula.no}.
 
 @cindex checklist for bug reports
@@ -98,7 +98,7 @@ For bug reports, please include enough information for the maintainers
 to reproduce the problem.  Generally speaking, that means:
 
 @itemize @bullet
-@item The version numbers of libmtx (which you can find by running
+@item The version numbers of Libmtx (which you can find by running
       @w{@samp{mtxinfo --version}}) and any other program(s) or
       manual(s) involved.
 @item Hardware and operating system names and versions.

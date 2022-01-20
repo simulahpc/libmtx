@@ -1,29 +1,28 @@
-/* This file is part of libmtx.
+/* This file is part of Libmtx.
  *
- * Copyright (C) 2021 James D. Trotter
+ * Copyright (C) 2022 James D. Trotter
  *
- * libmtx is free software: you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 3 of the
- * License, or (at your option) any later version.
+ * Libmtx is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * libmtx is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * Libmtx is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with libmtx.  If not, see
- * <https://www.gnu.org/licenses/>.
+ * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-08-09
+ * Last modified: 2022-01-20
  *
  * String parsing.
  */
 
-#ifndef LIBMTX_PARSE_H
-#define LIBMTX_PARSE_H
+#ifndef LIBMTX_UTIL_PARSE_H
+#define LIBMTX_UTIL_PARSE_H
 
 #include <stdint.h>
 
