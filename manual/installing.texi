@@ -15,7 +15,7 @@
 @c along with libmtx.  If not, see <https://www.gnu.org/licenses/>.
 @c
 @c Authors: James D. Trotter <james@simula.no>
-@c Last modified: 2022-01-14
+@c Last modified: 2022-01-20
 @c
 @c libmtx User Guide: Installing libmtx.
 
@@ -23,17 +23,25 @@
 @chapter Installing libmtx
 
 @cindex installing
+
 libmtx uses GNU Autotools, which means that a basic build on a
 UNIX-like system can be done by running the commands
+
 @example
 @code{./configure
 make}
 @end example
+
+@noindent
 To run some tests, use the command
+
 @example
 @code{make check}
 @end example
+
+@noindent
 Finally, install the programs and library with
+
 @example
 @code{make install}
 @end example
@@ -52,6 +60,7 @@ what to include in a bug report.
 
 Some features of libmtx are optional and will only be available if
 some of the following dependencies are provided:
+
 @itemize
 @cindex MPI
 @item @emph{MPI}

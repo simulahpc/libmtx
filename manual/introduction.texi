@@ -19,7 +19,7 @@
 @c
 @c libmtx User Guide: Introduction to libmtx.
 
-@node Introduction to libmtx
+@node Introduction to libmtx, Installing libmtx, Top, Top
 @chapter Introduction to libmtx
 
 The @dfn{libmtx} C library and its accompanying utility
@@ -71,7 +71,7 @@ matrices are also distributed in the Matrix Market format.
 
 @section How to Use This Manual
 To familiarise yourself with the Matrix Market file format, read
-@ref{Matrix Market file format}. If you need to install the library
+@ref{Matrix Market format}. If you need to install the library
 yourself, you should read @ref{Installing libmtx}. If you want to
 learn how to use the libmtx C library to work with Matrix Market
 files, refer to @ref{Matrix Market files}. To learn how to use

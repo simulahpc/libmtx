@@ -1,0 +1,473 @@
+@c This file is part of libmtx.
+@c Copyright (C) 2022 James D. Trotter
+@c
+@c libmtx is free software: you can redistribute it and/or modify it
+@c under the terms of the GNU General Public License as published by
+@c the Free Software Foundation, either version 3 of the License, or
+@c (at your option) any later version.
+@c
+@c libmtx is distributed in the hope that it will be useful, but
+@c WITHOUT ANY WARRANTY; without even the implied warranty of
+@c MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+@c General Public License for more details.
+@c
+@c You should have received a copy of the GNU General Public License
+@c along with libmtx.  If not, see <https://www.gnu.org/licenses/>.
+@c
+@c Authors: James D. Trotter <james@simula.no>
+@c Last modified: 2022-01-20
+@c
+@c libmtx User Guide: Matrix Market format.
+
+@node Matrix Market format
+@chapter Matrix Market format
+
+This chapter describes the Matrix Market file format.
+
+@cindex Matrix Market format
+Matrix Market files, or @file{.mtx} files, are plain text ASCII files
+that consist of the following four parts:
+
+@enumerate
+@item a @dfn{header line},
+@item an optional section containing @dfn{comment lines},
+@item a @dfn{size line}, and
+@item @dfn{data lines} for nonzero matrix or vector entries.
+@end enumerate
+
+@noindent
+Here is an example of a Matrix Market file, which describes a sparse
+matrix with 4 rows, 5 columns and 7 real-valued, non-zero entries:
+
+@example
+%%MatrixMarket matrix coordinate real general
+% Sparse matrix example
+4 5 7
+1 2 2.0
+3 3 3.0
+1 1 1.0
+4 5 1.0
+2 2 1.0
+4 1 -1.0
+4 4 2.0
+@end example
+
+@noindent
+The above example is equivalent to the following 4-by-5 matrix:
+
+@example
+ 1 2 0 0 0
+ 0 1 0 0 0
+ 0 0 3 0 0
+-1 0 0 2 1
+@end example
+
+The different parts of a Matrix Market file are described in the
+following subsections.
+
+
+@node Header line
+@section Header line
+
+@cindex Matrix Market format @subentry header line
+@cindex header line
+The @dfn{header line} of a Matrix Market file is on the form:
+
+@example
+%%MatrixMarket @var{object} @var{format} @var{field} @var{symmetry}
+@end example
+
+@noindent
+This line always begins with the identifier @samp{%%MatrixMarket} to
+indicate that the file is in the Matrix Market format. The four fields
+that follow describe different properties of the Matrix Market object,
+such as whether it is a matrix or a vector, and if it is stored in
+sparse or dense form.
+
+@cindex Matrix Market format @subentry object
+@cindex object
+@enumerate
+@item @t{@var{object}}
+      is either @samp{matrix} or @samp{vector}.
+
+@cindex Matrix Market format @subentry format
+@cindex format
+@cindex array
+@cindex coordinate
+@item @t{@var{format}}
+      is @samp{array} if the data is stored in a dense format, or
+      @samp{coordinate} if it is stored in a sparse format.
+
+@cindex Matrix Market format @subentry field
+@cindex field
+@cindex real
+@cindex complex
+@cindex integer
+@cindex pattern
+@item @t{@var{field}}
+      indicates the field to which the matrix (or vector) values
+      belong, and may be one of the following: @samp{real},
+      @samp{complex}, @samp{integer} or @samp{pattern}.
+
+@cindex Matrix Market format @subentry symmetry
+@cindex symmetry
+@cindex unsymmetric
+@cindex symmetric
+@cindex skew-symmetric
+@cindex Hermitian
+@item @t{@var{symmetry}}
+      specifies the symmetry properties of a matrix, and may be one of
+      the following: @samp{general}, @samp{symmetric},
+      @samp{skew-symmetric} or @samp{hermitian}.
+@end enumerate
+
+The @t{@var{field}} value of the header is used as follows:
+
+@itemize
+@item For real-valued matrices or vectors,
+@t{@var{field}} is @samp{real}, and values are stored as decimal
+numbers.
+
+@item For complex matrices or vectors,
+@t{@var{field}} is @samp{complex}, and values are stored as pairs of
+decimal numbers, comprising the real and imaginary parts of a complex
+number.
+
+@item For integer-valued matrices or vectors,
+@t{@var{field}} is @samp{integer}, and values are stored as integers.
+
+@item For binary-valued sparse matrices or vectors,
+@t{@var{field}} is @samp{pattern}. No values are stored for nonzero
+matrix or vector entries. Instead, only the locations of nonzeros are
+stored.
+@end itemize
+
+The @t{@var{symmetry}} value of the header is ignored if
+@t{@var{object}} is @samp{vector}.  However, if @t{@var{object}} is
+@samp{matrix}, then it is used as follows:
+
+@itemize
+@item For a general, unsymmetric matrix,
+@t{@var{symmetry}} is @samp{general}. Every nonzero matrix entry is
+stored explicitly.
+
+@cindex triangular matrix
+@cindex row major
+@item For a symmetric matrix,
+(i.e., a matrix that is equal to its transpose), @t{@var{symmetry}} is
+@samp{symmetric}. The matrix must be square.  If @t{@var{format}} is
+@samp{array}, then only the lower or upper triangular part of the
+matrix is stored explicitly.  (Note that there is no indication in the
+Matrix Market file regarding which part is stored, but libmtx assumes
+by default that the lower triangular part is stored in row major
+order.)  Otherwise, if @t{@var{format}} is @samp{coordinate}, then
+values may be explicitly represented from the lower or upper
+triangular part of the matrix, or both. For each off-diagonal entry
+@samp{(i,j)} that is given explicitly, there is assumed to be an
+identical value present at location @samp{(j,i)}.
+
+@item For a skew-symmetric matrix,
+(i.e., a matrix that is equal to the negative of its transpose),
+@t{@var{symmetry}} is @samp{skew-symmetric}. The matrix must be
+square, but skew symmetry implies that diagonal entries are zero.
+Therefore, if @t{@var{format}} is @samp{array}, then only the strictly
+lower or upper triangular part of the matrix is stored explicitly.
+(Note that there is no indication in the Matrix Market file regarding
+which part is stored, but libmtx assumes by default that the strictly
+lower triangular part is stored in row major order.)  Otherwise, if
+@t{@var{format}} is @samp{coordinate}, then values may be explicitly
+represented from the strictly lower or upper triangular part of the
+matrix, or both.  Nonzero diagonal entries are not allowed.  For each
+off-diagonal entry @samp{(i,j)} that is given explicitly, there is
+assumed to be an equal value with the opposite sign present at
+location @samp{(j,i)}.
+
+@item For a Hermitian matrix,
+(i.e., a matrix that is equal to its conjugate transpose),
+@t{@var{symmetry}} is @samp{hermitian}. The matrix must be square.  If
+@t{@var{format}} is @samp{array}, then only the lower or upper
+triangular part of the matrix is stored explicitly. (Note that there
+is no indication in the Matrix Market file regarding which part is
+stored, but libmtx assumes by default that the lower triangular part
+is stored in row major order.)  Otherwise, if @t{@var{format}} is
+@samp{coordinate}, then values may be explicitly represented from the
+lower or upper triangular part of the matrix, or both. For each
+off-diagonal entry @samp{(i,j)} that is given explicitly, there is
+assumed to be an equal, complex conjugated value present at location
+@samp{(j,i)}.
+
+@end itemize
+
+
+@node Comment lines
+@section Comment lines
+@cindex Matrix Market format @subentry comment lines
+@cindex comment lines
+Matrix Market files allow for an optional section of comments, which
+are ignored when processing the file. If present, comments must follow
+immediately after the header line and right before the size line. Each
+comment line begins with the character @samp{%} and continues until
+the end of the line.
+
+
+@node Size line
+@section Size line
+@cindex Matrix Market format @subentry size line
+@cindex size line
+The @dfn{size line} describes the size of the object stored in a
+Matrix Market file, and it depends both on the @t{@var{object}} and
+@t{@var{format}} values in the header.
+
+@itemize
+
+@cindex dense vector
+@cindex row vector
+@cindex column vector
+@item For @emph{dense vectors}
+(i.e., @t{@var{object}} is @samp{vector} and @t{@var{format}} is
+@samp{array}), the size line is on the form
+
+@example
+M
+@end example
+
+@noindent
+Here, @t{M} is an integer denoting the size or number of elements in
+the vector. In the case of a column vector, @t{M} is the number of
+rows. Alternatively, for a row vector, @t{M} is the number of
+columns. In any case, it is also the number of lines or lines in the
+data section of the Matrix Market file.
+
+@cindex sparse vector
+@cindex row vector
+@cindex column vector
+@item For @emph{sparse vectors}
+(i.e., @t{@var{object}} is @samp{vector} and @t{@var{format}} is
+@samp{coordinate}), the size line is on the form
+
+@example
+M NNZ
+@end example
+
+@noindent
+As above, @t{M} is an integer denoting the number of rows in a column
+vector or the number of columns in a row vector. In addition, @t{NNZ}
+is an integer denoting the number of lines or (nonzero) entries that
+are explicitly stored in the data section of the Matrix Market file.
+
+@cindex dense matrix
+@item For @emph{dense matrices}
+(i.e., @t{@var{object}} is @samp{matrix} and @t{@var{format}} is
+@samp{array}), the size line is on the form
+
+@example
+M N
+@end example
+
+@noindent
+The integers @t{M} and @t{N} denote the number of matrix rows and
+columns, respectively. In the case of a general, unsymmetric matrix
+(@t{@var{symmetry}} is @samp{general}), there are
+@iftex
+@tex${\tt M}\times {\tt N}$ @end tex
+@end iftex
+@ifnottex
+@math{@t{M} times @t{N}}
+@end ifnottex
+matrix lines or entries in the data section of the Matrix Market
+file. However, if @t{@var{symmetry}} is @samp{symmetric} or
+@samp{hermitian}, then @t{M} and @t{N} must be equal, and there are
+@iftex
+@tex${\tt M}\times ({\tt N}+1)/2$ @end tex
+@end iftex
+@ifnottex
+@math{@t{M} times (@t{N}+1)/2}
+@end ifnottex
+lines or entries in the data section.  Finally, if
+@t{@var{symmetry}} is @samp{skew-symmetric}, then @t{M} and @t{N}
+must again be equal, and there are
+@iftex
+@tex${\tt M}\times ({\tt N}-1)/2$ @end tex
+@end iftex
+@ifnottex
+@math{@t{M} times (@t{N}-1)/2}
+@end ifnottex
+lines or entries in the data section.
+
+@cindex sparse matrix
+@item For @emph{sparse matrices}
+(i.e., @t{@var{object}} is @samp{matrix} and @t{@var{format}} is
+@samp{coordinate}), the size line is on the form
+
+@example
+M N NNZ
+@end example
+
+@noindent
+Here, @t{M} and @t{N} denote the number of rows and columns in the
+matrix, whereas @t{NNZ} denotes the number of (nonzero) matrix entries
+that are explicitly stored in the data section of the Matrix Market
+file.
+@end itemize
+
+
+@node Data lines
+@section Data lines
+@cindex Matrix Market format @subentry data lines
+@cindex data lines
+The final section of a Matrix Market file contains @dfn{data lines}
+for each (nonzero) matrix or vector entry. The number of data lines
+depends on the matrix or vector format and size, as described in the
+previous section.
+
+@cindex row major
+@cindex duplicate nonzeros
+@cindex assemble
+It is assumed that dense matrix entries are stored in row major
+order. However, for sparse matrices and vectors, the nonzero entries
+may appear in any order. Moreover, for any particular location in a
+sparse matrix or vector, there may be more than one data line or
+entry. In this case, the value associated with a particular matrix or
+vector location is obtained by taking the sum of all the nonzero
+values given for that location.  The procedure of adding together
+values for duplicate entries is sometimes referred to as
+@dfn{assembly} (see also @ref{Sort@comma{} compact and assemble}).
+
+The format of a data line depends on the @t{@var{object}},
+@t{@var{format}} and @t{@var{field}} values in the header, as
+described in the following.
+
+@cindex dense matrix
+@cindex dense vector
+A dense matrix or vector with real or integer values (that is,
+@t{@var{format}} is @samp{array} and @t{@var{field}} is @samp{real} or
+@samp{integer}), has data lines on the form
+
+@example
+a
+@end example
+
+@noindent
+where @t{a} is a decimal number if @t{@var{field}} is @samp{real}, or
+an integer if @t{@var{field}} is @samp{integer}.
+
+Otherwise, if @t{@var{format}} is @samp{array} and @t{@var{field}} is
+@samp{complex}, then data lines are on the form
+
+@example
+a b
+@end example
+
+@noindent
+Here @t{a} and @t{b} are decimal numbers denoting the real and
+imaginary parts of the complex number
+@iftex
+@tex$z={\tt a}+{\tt b}i$, @end tex
+@end iftex
+@ifnottex
+@math{z = @t{a} + @t{b} times i},
+@end ifnottex
+@noindent
+where @math{i} is the imaginary unit.
+
+@cindex sparse matrix
+A sparse matrix, (that is, @t{@var{object}} is @samp{matrix} and
+@t{@var{format}} is @samp{coordinate}), has data lines on one of three
+different forms depending on the @t{@var{field}} value. Note that
+indexing of sparse matrix and vector entries is 1-based.
+
+@itemize
+@item
+If @t{@var{field}} is @samp{real} or @samp{integer}, then data lines
+are written as:
+
+@example
+i j a
+@end example
+
+@noindent
+where @t{i} and @t{j} denote the row and column index of a nonzero
+entry and @t{a} denotes its value.
+
+@item
+If @t{@var{field}} is @samp{complex}, then data lines are on the form
+
+@example
+i j a b
+@end example
+
+@noindent
+where @t{i} and @t{j} again denote the row and column index. Here,
+@t{a} is the real part and @t{b} is the imaginary part of the complex
+number
+@iftex
+@tex$z={\tt a}+{\tt b}i$, @end tex
+@end iftex
+@ifnottex
+@math{z = @t{a} + @t{b} times i},
+@end ifnottex
+@noindent
+where @math{i} is the imaginary unit.
+
+@item
+If @t{@var{field}} is @samp{pattern}, then each data line consists of
+two numbers
+
+@example
+i j
+@end example
+
+@noindent
+denoting the row and column index of a nonzero entry.
+@end itemize
+
+@cindex sparse vector
+For a sparse vector, (that is, @t{@var{object}} is @samp{vector} and
+@t{@var{format}} is @samp{coordinate}), the data lines are similar to
+those of a sparse matrix, but the column index is omitted. More
+specifically, data lines are on one of three different forms depending
+on the @t{@var{field}} value.
+
+@itemize
+@item
+If @t{@var{field}} is @samp{real} or @samp{integer}, then data lines
+are written as:
+
+@example
+i a
+@end example
+
+@noindent
+where @t{i} denotes the index of a nonzero entry and @t{a} denotes its
+value.
+
+@item
+If @t{@var{field}} is @samp{complex}, then data lines are on the form
+
+@example
+i a b
+@end example
+
+@noindent
+The integer @t{i} is the nonzero index, whereas @t{a} and @t{b} are
+the real part and imaginary parts of the complex number
+@iftex
+@tex$z={\tt a}+{\tt b}i$, @end tex
+@end iftex
+@ifnottex
+@math{z = @t{a} + @t{b} times i},
+@end ifnottex
+@noindent
+where @math{i} is the imaginary unit.
+
+@item
+If @t{@var{field}} is @samp{pattern}, then each data line consists of
+a single integer
+
+@example
+i
+@end example
+
+@noindent
+denoting the index of a nonzero entry.
+@end itemize

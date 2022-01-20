@@ -73,7 +73,7 @@ Texts.  A copy of the license is included in the section entitled
 * Copying:: Copying Conditions (GPLv3).
 * Introduction to libmtx:: Brief introduction to libmtx.
 * Installing libmtx:: How to configure and compile libmtx.
-* Matrix Market file format:: Description of the Matrix Market format.
+* Matrix Market format:: Description of the Matrix Market file format.
 * Matrix Market files:: Working with Matrix Market files.
 * Matrices and vectors:: Working with matrices and vectors.
 * Distributed Matrix Market files:: Distributing Matrix Market files
@@ -110,7 +110,7 @@ along with libmtx.  If not, see <https://www.gnu.org/licenses/>.
 
 @include introduction.texi
 @include installing.texi
-@include matrix_market_file_format.texi
+@include matrix_market_format.texi
 @include matrix_market_files.texi
 @include matrices_and_vectors.texi
 @include distributed_matrix_market_files.texi

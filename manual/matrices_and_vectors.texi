@@ -825,9 +825,9 @@ It is sometimes useful to treat a matrix as a vector (sometimes called
 the @emph{vectorisation} of a matrix) and then apply level 1 BLAS
 operations. This section describes level 1 BLAS operations for
 @code{struct mtxmatrix}. These are more or less identical to the level
-1 BLAS operations described for vectors in @ref{Vectors: Level 1
-BLAS}, except that arguments with the type @code{struct mtxvector} are
-replaced with @code{struct mtxmatrix}.
+1 BLAS operations described for vectors in @ref{Level 1 BLAS for
+vectors}, except that arguments with the type @code{struct mtxvector}
+are replaced with @code{struct mtxmatrix}.
 
 The following Level 1 BLAS operations are supported:
 @cindex @code{swap}

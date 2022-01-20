@@ -151,7 +151,7 @@ The four enum types, @code{mtxfileobject}, @code{mtxfileformat},
 @code{mtxfilefield} and @code{mtxfilesymmetry} are used to represent values
 that appear in the Matrix Market header (see @ref{Header line}).  The
 meaning of the values associated with these types is described in
-detail in @ref{Matrix Market file format}.
+detail in @ref{Matrix Market format}.
 @example
 @code{enum mtxfileobject @{
     mtxfile_matrix,
@@ -885,7 +885,7 @@ If @code{mtxfile} is a vector, nothing is done.
 @c conjugated. Otherwise, nothing is done.
 
 
-@node Sort
+@node Sort@comma{} compact and assemble
 @subsection Sort, compact and assemble
 @cindex sort
 @tindex enum mtxfilesorting

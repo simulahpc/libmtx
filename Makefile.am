@@ -414,7 +414,7 @@ info_TEXINFOS = manual/libmtx.texi
 manual_libmtx_TEXINFOS = \
 	manual/introduction.texi \
 	manual/installing.texi \
-	manual/matrix_market_file_format.texi \
+	manual/matrix_market_format.texi \
 	manual/matrix_market_files.texi \
 	manual/matrices_and_vectors.texi \
 	manual/distributed_matrix_market_files.texi \
