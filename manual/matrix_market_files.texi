@@ -57,15 +57,19 @@ functions.
 @findex mtxstrerror
 The function @code{mtxstrerror} can be used to give a string
 containing a description of a given error code.
+
 @example
-@code{const char * mtxstrerror(int err);}
+const char * mtxstrerror(int err);
 @end example
+
+@noindent
 Here, the integer @code{err} should correspond to one of the error
 codes from the @code{mtxerror} enum type.
 
 @code{mtxstrerror} is typically used as shown in the example below.
+
 @example
-@code{FILE * f = fopen("test.mtx", "r");
+FILE * f = fopen("test.mtx", "r");
 
 struct mtxfile mtx;
 int lines_read;
@@ -76,12 +80,15 @@ if (err) @{
     fprintf(stderr, "Error: test.mtx:%d: %s\n",
             lines_read, mtxstrerror(err));
     fclose(f);
-@}}
+@}
 @end example
+
+@noindent
 If @code{mtxfile_fread} returns @samp{MTX_ERR_INVALID_MTX_OBJECT}, for
 example, then the following message will be printed:
+
 @example
-@code{Error: test.mtx:1: invalid Matrix Market object}
+Error: test.mtx:1: invalid Matrix Market object
 @end example
 
 
