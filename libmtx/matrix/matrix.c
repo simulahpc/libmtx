@@ -133,7 +133,18 @@ void mtxmatrix_free(
  */
 int mtxmatrix_alloc_copy(
     struct mtxmatrix * dst,
-    const struct mtxmatrix * src);
+    const struct mtxmatrix * src)
+{
+    if (src->type == mtxmatrix_array) {
+        return mtxmatrix_array_alloc_copy(
+            &dst->storage.array, &src->storage.array);
+    } else if (src->type == mtxmatrix_coordinate) {
+        return mtxmatrix_coordinate_alloc_copy(
+            &dst->storage.coordinate, &src->storage.coordinate);
+    } else {
+        return MTX_ERR_INVALID_MATRIX_TYPE;
+    }
+}
 
 /**
  * ‘mtxmatrix_init_copy()’ allocates a copy of a matrix and also
@@ -141,7 +152,18 @@ int mtxmatrix_alloc_copy(
  */
 int mtxmatrix_init_copy(
     struct mtxmatrix * dst,
-    const struct mtxmatrix * src);
+    const struct mtxmatrix * src)
+{
+    if (src->type == mtxmatrix_array) {
+        return mtxmatrix_array_init_copy(
+            &dst->storage.array, &src->storage.array);
+    } else if (src->type == mtxmatrix_coordinate) {
+        return mtxmatrix_coordinate_init_copy(
+            &dst->storage.coordinate, &src->storage.coordinate);
+    } else {
+        return MTX_ERR_INVALID_MATRIX_TYPE;
+    }
+}
 
 /*
  * Row and columns vectors
@@ -501,15 +523,16 @@ int mtxmatrix_from_mtxfile(
  * Market format.
  */
 int mtxmatrix_to_mtxfile(
-    const struct mtxmatrix * matrix,
-    struct mtxfile * mtxfile)
+    struct mtxfile * dst,
+    const struct mtxmatrix * src,
+    enum mtxfileformat mtxfmt)
 {
-    if (matrix->type == mtxmatrix_array) {
+    if (src->type == mtxmatrix_array) {
         return mtxmatrix_array_to_mtxfile(
-            &matrix->storage.array, mtxfile);
-    } else if (matrix->type == mtxmatrix_coordinate) {
+            dst, &src->storage.array, mtxfmt);
+    } else if (src->type == mtxmatrix_coordinate) {
         return mtxmatrix_coordinate_to_mtxfile(
-            &matrix->storage.coordinate, mtxfile);
+            dst, &src->storage.coordinate, mtxfmt);
     } else {
         return MTX_ERR_INVALID_MATRIX_TYPE;
     }
@@ -672,6 +695,7 @@ int mtxmatrix_gzread(
  */
 int mtxmatrix_write(
     const struct mtxmatrix * matrix,
+    enum mtxfileformat mtxfmt,
     const char * path,
     bool gzip,
     const char * fmt,
@@ -679,7 +703,7 @@ int mtxmatrix_write(
 {
     int err;
     struct mtxfile mtxfile;
-    err = mtxmatrix_to_mtxfile(matrix, &mtxfile);
+    err = mtxmatrix_to_mtxfile(&mtxfile, matrix, mtxfmt);
     if (err)
         return err;
     err = mtxfile_write(
@@ -714,13 +738,14 @@ int mtxmatrix_write(
  */
 int mtxmatrix_fwrite(
     const struct mtxmatrix * matrix,
+    enum mtxfileformat mtxfmt,
     FILE * f,
     const char * fmt,
     int64_t * bytes_written)
 {
     int err;
     struct mtxfile mtxfile;
-    err = mtxmatrix_to_mtxfile(matrix, &mtxfile);
+    err = mtxmatrix_to_mtxfile(&mtxfile, matrix, mtxfmt);
     if (err)
         return err;
     err = mtxfile_fwrite(
@@ -756,13 +781,14 @@ int mtxmatrix_fwrite(
  */
 int mtxmatrix_gzwrite(
     const struct mtxmatrix * matrix,
+    enum mtxfileformat mtxfmt,
     gzFile f,
     const char * fmt,
     int64_t * bytes_written)
 {
     int err;
     struct mtxfile mtxfile;
-    err = mtxmatrix_to_mtxfile(matrix, &mtxfile);
+    err = mtxmatrix_to_mtxfile(&mtxfile, matrix, mtxfmt);
     if (err)
         return err;
     err = mtxfile_gzwrite(
@@ -786,14 +812,36 @@ int mtxmatrix_gzwrite(
  */
 int mtxmatrix_swap(
     struct mtxmatrix * X,
-    struct mtxmatrix * Y);
+    struct mtxmatrix * Y)
+{
+    if (X->type == mtxmatrix_array && Y->type == mtxmatrix_array) {
+        return mtxmatrix_array_swap(
+            &X->storage.array, &Y->storage.array);
+    } else if (X->type == mtxmatrix_coordinate && Y->type == mtxmatrix_coordinate) {
+        return mtxmatrix_coordinate_swap(
+            &X->storage.coordinate, &Y->storage.coordinate);
+    } else {
+        return MTX_ERR_INVALID_MATRIX_TYPE;
+    }
+}
 
 /**
  * ‘mtxmatrix_copy()’ copies values of a matrix, ‘Y = X’.
  */
 int mtxmatrix_copy(
     struct mtxmatrix * Y,
-    const struct mtxmatrix * X);
+    const struct mtxmatrix * X)
+{
+    if (X->type == mtxmatrix_array && Y->type == mtxmatrix_array) {
+        return mtxmatrix_array_copy(
+            &Y->storage.array, &X->storage.array);
+    } else if (X->type == mtxmatrix_coordinate && Y->type == mtxmatrix_coordinate) {
+        return mtxmatrix_coordinate_copy(
+            &Y->storage.coordinate, &X->storage.coordinate);
+    } else {
+        return MTX_ERR_INVALID_MATRIX_TYPE;
+    }
+}
 
 /**
  * ‘mtxmatrix_sscal()’ scales a matrix by a single precision floating
@@ -802,7 +850,18 @@ int mtxmatrix_copy(
 int mtxmatrix_sscal(
     float a,
     struct mtxmatrix * X,
-    int64_t * num_flops);
+    int64_t * num_flops)
+{
+    if (X->type == mtxmatrix_array) {
+        return mtxmatrix_array_sscal(
+            a, &X->storage.array, num_flops);
+    } else if (X->type == mtxmatrix_coordinate) {
+        return mtxmatrix_coordinate_sscal(
+            a, &X->storage.coordinate, num_flops);
+    } else {
+        return MTX_ERR_INVALID_MATRIX_TYPE;
+    }
+}
 
 /**
  * ‘mtxmatrix_dscal()’ scales a matrix by a double precision floating
@@ -811,7 +870,18 @@ int mtxmatrix_sscal(
 int mtxmatrix_dscal(
     double a,
     struct mtxmatrix * X,
-    int64_t * num_flops);
+    int64_t * num_flops)
+{
+    if (X->type == mtxmatrix_array) {
+        return mtxmatrix_array_dscal(
+            a, &X->storage.array, num_flops);
+    } else if (X->type == mtxmatrix_coordinate) {
+        return mtxmatrix_coordinate_dscal(
+            a, &X->storage.coordinate, num_flops);
+    } else {
+        return MTX_ERR_INVALID_MATRIX_TYPE;
+    }
+}
 
 /**
  * ‘mtxmatrix_saxpy()’ adds a matrix to another matrix multiplied by a
@@ -821,7 +891,18 @@ int mtxmatrix_saxpy(
     float a,
     const struct mtxmatrix * X,
     struct mtxmatrix * Y,
-    int64_t * num_flops);
+    int64_t * num_flops)
+{
+    if (X->type == mtxmatrix_array && Y->type == mtxmatrix_array) {
+        return mtxmatrix_array_saxpy(
+            a, &X->storage.array, &Y->storage.array, num_flops);
+    } else if (X->type == mtxmatrix_coordinate && Y->type == mtxmatrix_coordinate) {
+        return mtxmatrix_coordinate_saxpy(
+            a, &X->storage.coordinate, &Y->storage.coordinate, num_flops);
+    } else {
+        return MTX_ERR_INVALID_MATRIX_TYPE;
+    }
+}
 
 /**
  * ‘mtxmatrix_daxpy()’ adds a matrix to another matrix multiplied by a
@@ -831,7 +912,18 @@ int mtxmatrix_daxpy(
     double a,
     const struct mtxmatrix * X,
     struct mtxmatrix * Y,
-    int64_t * num_flops);
+    int64_t * num_flops)
+{
+    if (X->type == mtxmatrix_array && Y->type == mtxmatrix_array) {
+        return mtxmatrix_array_daxpy(
+            a, &X->storage.array, &Y->storage.array, num_flops);
+    } else if (X->type == mtxmatrix_coordinate && Y->type == mtxmatrix_coordinate) {
+        return mtxmatrix_coordinate_daxpy(
+            a, &X->storage.coordinate, &Y->storage.coordinate, num_flops);
+    } else {
+        return MTX_ERR_INVALID_MATRIX_TYPE;
+    }
+}
 
 /**
  * ‘mtxmatrix_saypx()’ multiplies a matrix by a single precision
@@ -841,7 +933,18 @@ int mtxmatrix_saypx(
     float a,
     struct mtxmatrix * Y,
     const struct mtxmatrix * X,
-    int64_t * num_flops);
+    int64_t * num_flops)
+{
+    if (X->type == mtxmatrix_array && Y->type == mtxmatrix_array) {
+        return mtxmatrix_array_saypx(
+            a, &Y->storage.array, &X->storage.array, num_flops);
+    } else if (X->type == mtxmatrix_coordinate && Y->type == mtxmatrix_coordinate) {
+        return mtxmatrix_coordinate_saypx(
+            a, &Y->storage.coordinate, &X->storage.coordinate, num_flops);
+    } else {
+        return MTX_ERR_INVALID_MATRIX_TYPE;
+    }
+}
 
 /**
  * ‘mtxmatrix_daypx()’ multiplies a matrix by a double precision
@@ -851,7 +954,18 @@ int mtxmatrix_daypx(
     double a,
     struct mtxmatrix * Y,
     const struct mtxmatrix * X,
-    int64_t * num_flops);
+    int64_t * num_flops)
+{
+    if (X->type == mtxmatrix_array && Y->type == mtxmatrix_array) {
+        return mtxmatrix_array_daypx(
+            a, &Y->storage.array, &X->storage.array, num_flops);
+    } else if (X->type == mtxmatrix_coordinate && Y->type == mtxmatrix_coordinate) {
+        return mtxmatrix_coordinate_daypx(
+            a, &Y->storage.coordinate, &X->storage.coordinate, num_flops);
+    } else {
+        return MTX_ERR_INVALID_MATRIX_TYPE;
+    }
+}
 
 /**
  * ‘mtxmatrix_sdot()’ computes the Frobenius dot product of two
@@ -861,7 +975,18 @@ int mtxmatrix_sdot(
     const struct mtxmatrix * X,
     const struct mtxmatrix * Y,
     float * dot,
-    int64_t * num_flops);
+    int64_t * num_flops)
+{
+    if (X->type == mtxmatrix_array && Y->type == mtxmatrix_array) {
+        return mtxmatrix_array_sdot(
+            &X->storage.array, &Y->storage.array, dot, num_flops);
+    } else if (X->type == mtxmatrix_coordinate && Y->type == mtxmatrix_coordinate) {
+        return mtxmatrix_coordinate_sdot(
+            &X->storage.coordinate, &Y->storage.coordinate, dot, num_flops);
+    } else {
+        return MTX_ERR_INVALID_MATRIX_TYPE;
+    }
+}
 
 /**
  * ‘mtxmatrix_ddot()’ computes the Frobenius dot product of two
@@ -871,7 +996,18 @@ int mtxmatrix_ddot(
     const struct mtxmatrix * X,
     const struct mtxmatrix * Y,
     double * dot,
-    int64_t * num_flops);
+    int64_t * num_flops)
+{
+    if (X->type == mtxmatrix_array && Y->type == mtxmatrix_array) {
+        return mtxmatrix_array_ddot(
+            &X->storage.array, &Y->storage.array, dot, num_flops);
+    } else if (X->type == mtxmatrix_coordinate && Y->type == mtxmatrix_coordinate) {
+        return mtxmatrix_coordinate_ddot(
+            &X->storage.coordinate, &Y->storage.coordinate, dot, num_flops);
+    } else {
+        return MTX_ERR_INVALID_MATRIX_TYPE;
+    }
+}
 
 /**
  * ‘mtxmatrix_cdotu()’ computes the product of the dot product of the
@@ -883,7 +1019,18 @@ int mtxmatrix_cdotu(
     const struct mtxmatrix * X,
     const struct mtxmatrix * Y,
     float (* dot)[2],
-    int64_t * num_flops);
+    int64_t * num_flops)
+{
+    if (X->type == mtxmatrix_array && Y->type == mtxmatrix_array) {
+        return mtxmatrix_array_cdotu(
+            &X->storage.array, &Y->storage.array, dot, num_flops);
+    } else if (X->type == mtxmatrix_coordinate && Y->type == mtxmatrix_coordinate) {
+        return mtxmatrix_coordinate_cdotu(
+            &X->storage.coordinate, &Y->storage.coordinate, dot, num_flops);
+    } else {
+        return MTX_ERR_INVALID_MATRIX_TYPE;
+    }
+}
 
 /**
  * ‘mtxmatrix_zdotu()’ computes the product of the dot product of the
@@ -895,7 +1042,18 @@ int mtxmatrix_zdotu(
     const struct mtxmatrix * X,
     const struct mtxmatrix * Y,
     double (* dot)[2],
-    int64_t * num_flops);
+    int64_t * num_flops)
+{
+    if (X->type == mtxmatrix_array && Y->type == mtxmatrix_array) {
+        return mtxmatrix_array_zdotu(
+            &X->storage.array, &Y->storage.array, dot, num_flops);
+    } else if (X->type == mtxmatrix_coordinate && Y->type == mtxmatrix_coordinate) {
+        return mtxmatrix_coordinate_zdotu(
+            &X->storage.coordinate, &Y->storage.coordinate, dot, num_flops);
+    } else {
+        return MTX_ERR_INVALID_MATRIX_TYPE;
+    }
+}
 
 /**
  * ‘mtxmatrix_cdotc()’ computes the Frobenius dot product of two
@@ -906,7 +1064,18 @@ int mtxmatrix_cdotc(
     const struct mtxmatrix * X,
     const struct mtxmatrix * Y,
     float (* dot)[2],
-    int64_t * num_flops);
+    int64_t * num_flops)
+{
+    if (X->type == mtxmatrix_array && Y->type == mtxmatrix_array) {
+        return mtxmatrix_array_cdotc(
+            &X->storage.array, &Y->storage.array, dot, num_flops);
+    } else if (X->type == mtxmatrix_coordinate && Y->type == mtxmatrix_coordinate) {
+        return mtxmatrix_coordinate_cdotc(
+            &X->storage.coordinate, &Y->storage.coordinate, dot, num_flops);
+    } else {
+        return MTX_ERR_INVALID_MATRIX_TYPE;
+    }
+}
 
 /**
  * ‘mtxmatrix_zdotc()’ computes the Frobenius dot product of two
@@ -917,7 +1086,18 @@ int mtxmatrix_zdotc(
     const struct mtxmatrix * X,
     const struct mtxmatrix * Y,
     double (* dot)[2],
-    int64_t * num_flops);
+    int64_t * num_flops)
+{
+    if (X->type == mtxmatrix_array && Y->type == mtxmatrix_array) {
+        return mtxmatrix_array_zdotc(
+            &X->storage.array, &Y->storage.array, dot, num_flops);
+    } else if (X->type == mtxmatrix_coordinate && Y->type == mtxmatrix_coordinate) {
+        return mtxmatrix_coordinate_zdotc(
+            &X->storage.coordinate, &Y->storage.coordinate, dot, num_flops);
+    } else {
+        return MTX_ERR_INVALID_MATRIX_TYPE;
+    }
+}
 
 /**
  * ‘mtxmatrix_snrm2()’ computes the Frobenius norm of a matrix in
@@ -926,7 +1106,16 @@ int mtxmatrix_zdotc(
 int mtxmatrix_snrm2(
     const struct mtxmatrix * X,
     float * nrm2,
-    int64_t * num_flops);
+    int64_t * num_flops)
+{
+    if (X->type == mtxmatrix_array) {
+        return mtxmatrix_array_snrm2(&X->storage.array, nrm2, num_flops);
+    } else if (X->type == mtxmatrix_coordinate) {
+        return mtxmatrix_coordinate_snrm2(&X->storage.coordinate, nrm2, num_flops);
+    } else {
+        return MTX_ERR_INVALID_MATRIX_TYPE;
+    }
+}
 
 /**
  * ‘mtxmatrix_dnrm2()’ computes the Frobenius norm of a matrix in
@@ -935,7 +1124,16 @@ int mtxmatrix_snrm2(
 int mtxmatrix_dnrm2(
     const struct mtxmatrix * X,
     double * nrm2,
-    int64_t * num_flops);
+    int64_t * num_flops)
+{
+    if (X->type == mtxmatrix_array) {
+        return mtxmatrix_array_dnrm2(&X->storage.array, nrm2, num_flops);
+    } else if (X->type == mtxmatrix_coordinate) {
+        return mtxmatrix_coordinate_dnrm2(&X->storage.coordinate, nrm2, num_flops);
+    } else {
+        return MTX_ERR_INVALID_MATRIX_TYPE;
+    }
+}
 
 /**
  * ‘mtxmatrix_sasum()’ computes the sum of absolute values (1-norm) of
@@ -946,7 +1144,16 @@ int mtxmatrix_dnrm2(
 int mtxmatrix_sasum(
     const struct mtxmatrix * X,
     float * asum,
-    int64_t * num_flops);
+    int64_t * num_flops)
+{
+    if (X->type == mtxmatrix_array) {
+        return mtxmatrix_array_sasum(&X->storage.array, asum, num_flops);
+    } else if (X->type == mtxmatrix_coordinate) {
+        return mtxmatrix_coordinate_sasum(&X->storage.coordinate, asum, num_flops);
+    } else {
+        return MTX_ERR_INVALID_MATRIX_TYPE;
+    }
+}
 
 /**
  * ‘mtxmatrix_dasum()’ computes the sum of absolute values (1-norm) of
@@ -957,7 +1164,16 @@ int mtxmatrix_sasum(
 int mtxmatrix_dasum(
     const struct mtxmatrix * X,
     double * asum,
-    int64_t * num_flops);
+    int64_t * num_flops)
+{
+    if (X->type == mtxmatrix_array) {
+        return mtxmatrix_array_dasum(&X->storage.array, asum, num_flops);
+    } else if (X->type == mtxmatrix_coordinate) {
+        return mtxmatrix_coordinate_dasum(&X->storage.coordinate, asum, num_flops);
+    } else {
+        return MTX_ERR_INVALID_MATRIX_TYPE;
+    }
+}
 
 /**
  * ‘mtxmatrix_iamax()’ finds the index of the first element having the
@@ -967,7 +1183,16 @@ int mtxmatrix_dasum(
  */
 int mtxmatrix_iamax(
     const struct mtxmatrix * X,
-    int * iamax);
+    int * iamax)
+{
+    if (X->type == mtxmatrix_array) {
+        return mtxmatrix_array_iamax(&X->storage.array, iamax);
+    } else if (X->type == mtxmatrix_coordinate) {
+        return mtxmatrix_coordinate_iamax(&X->storage.coordinate, iamax);
+    } else {
+        return MTX_ERR_INVALID_MATRIX_TYPE;
+    }
+}
 
 /*
  * Level 2 BLAS operations

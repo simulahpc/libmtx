@@ -132,7 +132,18 @@ void mtxvector_free(
  */
 int mtxvector_alloc_copy(
     struct mtxvector * dst,
-    const struct mtxvector * src);
+    const struct mtxvector * src)
+{
+    if (src->type == mtxvector_array) {
+        return mtxvector_array_alloc_copy(
+            &dst->storage.array, &src->storage.array);
+    } else if (src->type == mtxvector_coordinate) {
+        return mtxvector_coordinate_alloc_copy(
+            &dst->storage.coordinate, &src->storage.coordinate);
+    } else {
+        return MTX_ERR_INVALID_VECTOR_TYPE;
+    }
+}
 
 /**
  * ‘mtxvector_init_copy()’ allocates a copy of a vector and also
@@ -140,7 +151,18 @@ int mtxvector_alloc_copy(
  */
 int mtxvector_init_copy(
     struct mtxvector * dst,
-    const struct mtxvector * src);
+    const struct mtxvector * src)
+{
+    if (src->type == mtxvector_array) {
+        return mtxvector_array_init_copy(
+            &dst->storage.array, &src->storage.array);
+    } else if (src->type == mtxvector_coordinate) {
+        return mtxvector_coordinate_init_copy(
+            &dst->storage.coordinate, &src->storage.coordinate);
+    } else {
+        return MTX_ERR_INVALID_VECTOR_TYPE;
+    }
+}
 
 /*
  * Vector array formats
@@ -393,8 +415,7 @@ int mtxvector_init_coordinate_pattern(
  * number.
  */
 int mtxvector_set_constant_real_single(
-    struct mtxvector * vector,
-    float a)
+    struct mtxvector * vector, float a)
 {
     if (vector->type == mtxvector_array) {
         return mtxvector_array_set_constant_real_single(
@@ -413,8 +434,18 @@ int mtxvector_set_constant_real_single(
  * number.
  */
 int mtxvector_set_constant_real_double(
-    struct mtxvector * mtxvector,
-    double a);
+    struct mtxvector * vector, double a)
+{
+    if (vector->type == mtxvector_array) {
+        return mtxvector_array_set_constant_real_double(
+            &vector->storage.array, a);
+    } else if (vector->type == mtxvector_coordinate) {
+        return mtxvector_coordinate_set_constant_real_double(
+            &vector->storage.coordinate, a);
+    } else {
+        return MTX_ERR_INVALID_VECTOR_TYPE;
+    }
+}
 
 /**
  * ‘mtxvector_set_constant_complex_single()’ sets every (nonzero)
@@ -422,8 +453,18 @@ int mtxvector_set_constant_real_double(
  * point complex number.
  */
 int mtxvector_set_constant_complex_single(
-    struct mtxvector * mtxvector,
-    float a[2]);
+    struct mtxvector * vector, float a[2])
+{
+    if (vector->type == mtxvector_array) {
+        return mtxvector_array_set_constant_complex_single(
+            &vector->storage.array, a);
+    } else if (vector->type == mtxvector_coordinate) {
+        return mtxvector_coordinate_set_constant_complex_single(
+            &vector->storage.coordinate, a);
+    } else {
+        return MTX_ERR_INVALID_VECTOR_TYPE;
+    }
+}
 
 /**
  * ‘mtxvector_set_constant_complex_double()’ sets every (nonzero)
@@ -431,24 +472,54 @@ int mtxvector_set_constant_complex_single(
  * point complex number.
  */
 int mtxvector_set_constant_complex_double(
-    struct mtxvector * mtxvector,
-    double a[2]);
+    struct mtxvector * vector, double a[2])
+{
+    if (vector->type == mtxvector_array) {
+        return mtxvector_array_set_constant_complex_double(
+            &vector->storage.array, a);
+    } else if (vector->type == mtxvector_coordinate) {
+        return mtxvector_coordinate_set_constant_complex_double(
+            &vector->storage.coordinate, a);
+    } else {
+        return MTX_ERR_INVALID_VECTOR_TYPE;
+    }
+}
 
 /**
  * ‘mtxvector_set_constant_integer_single()’ sets every (nonzero)
  * value of a vector equal to a constant integer.
  */
 int mtxvector_set_constant_integer_single(
-    struct mtxvector * mtxvector,
-    int32_t a);
+    struct mtxvector * vector, int32_t a)
+{
+    if (vector->type == mtxvector_array) {
+        return mtxvector_array_set_constant_integer_single(
+            &vector->storage.array, a);
+    } else if (vector->type == mtxvector_coordinate) {
+        return mtxvector_coordinate_set_constant_integer_single(
+            &vector->storage.coordinate, a);
+    } else {
+        return MTX_ERR_INVALID_VECTOR_TYPE;
+    }
+}
 
 /**
  * ‘mtxvector_set_constant_integer_double()’ sets every (nonzero)
  * value of a vector equal to a constant integer.
  */
 int mtxvector_set_constant_integer_double(
-    struct mtxvector * mtxvector,
-    int64_t a);
+    struct mtxvector * vector, int64_t a)
+{
+    if (vector->type == mtxvector_array) {
+        return mtxvector_array_set_constant_integer_double(
+            &vector->storage.array, a);
+    } else if (vector->type == mtxvector_coordinate) {
+        return mtxvector_coordinate_set_constant_integer_double(
+            &vector->storage.coordinate, a);
+    } else {
+        return MTX_ERR_INVALID_VECTOR_TYPE;
+    }
+}
 
 /*
  * Convert to and from Matrix Market format

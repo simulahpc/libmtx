@@ -1,6 +1,6 @@
 /* This file is part of Libmtx.
  *
- * Copyright (C) 2021 James D. Trotter
+ * Copyright (C) 2022 James D. Trotter
  *
  * Libmtx is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-10-05
+ * Last modified: 2022-01-20
  *
  * Data structures for matrices in array format.
  */
@@ -40,39 +40,39 @@ struct mtxfile;
 struct mtxvector;
 
 /**
- * `mtxmatrix_array' represents a matrix in array format.
+ * ‘mtxmatrix_array’ represents a matrix in array format.
  */
 struct mtxmatrix_array
 {
     /**
-     * `field' is the matrix field: `real', `complex', `integer' or
-     * `pattern'.
+     * ‘field’ is the matrix field: ‘real’, ‘complex’, ‘integer’ or
+     * ‘pattern’.
      */
     enum mtxfield field;
 
     /**
-     * `precision' is the precision used to store values.
+     * ‘precision’ is the precision used to store values.
      */
     enum mtxprecision precision;
 
     /**
-     * `num_rows' is the number of matrix rows.
+     * ‘num_rows’ is the number of matrix rows.
      */
     int num_rows;
 
     /**
-     * `num_columns' is the number of matrix columns.
+     * ‘num_columns’ is the number of matrix columns.
      */
     int num_columns;
 
     /**
-     * `size' is the number of matrix elements, which is equal to
+     * ‘size’ is the number of matrix elements, which is equal to
      * ‘num_rows*num_columns’.
      */
     int64_t size;
 
     /**
-     * `data' contains values for each matrix entry.
+     * ‘data’ contains values for each matrix entry.
      */
     union {
         float * real_single;
@@ -89,7 +89,7 @@ struct mtxmatrix_array
  */
 
 /**
- * `mtxmatrix_array_alloc()' allocates a matrix in array format.
+ * ‘mtxmatrix_array_alloc()’ allocates a matrix in array format.
  */
 int mtxmatrix_array_alloc(
     struct mtxmatrix_array * matrix,
@@ -99,13 +99,13 @@ int mtxmatrix_array_alloc(
     int num_columns);
 
 /**
- * `mtxmatrix_array_free()' frees storage allocated for a matrix.
+ * ‘mtxmatrix_array_free()’ frees storage allocated for a matrix.
  */
 void mtxmatrix_array_free(
     struct mtxmatrix_array * matrix);
 
 /**
- * `mtxmatrix_array_alloc_copy()' allocates a copy of a matrix without
+ * ‘mtxmatrix_array_alloc_copy()’ allocates a copy of a matrix without
  * initialising the values.
  */
 int mtxmatrix_array_alloc_copy(
@@ -113,7 +113,7 @@ int mtxmatrix_array_alloc_copy(
     const struct mtxmatrix_array * src);
 
 /**
- * `mtxmatrix_array_init_copy()' allocates a copy of a matrix and also
+ * ‘mtxmatrix_array_init_copy()’ allocates a copy of a matrix and also
  * copies the values.
  */
 int mtxmatrix_array_init_copy(
@@ -125,7 +125,7 @@ int mtxmatrix_array_init_copy(
  */
 
 /**
- * `mtxmatrix_array_init_real_single()' allocates and initialises a
+ * ‘mtxmatrix_array_init_real_single()’ allocates and initialises a
  * matrix in array format with real, single precision coefficients.
  */
 int mtxmatrix_array_init_real_single(
@@ -135,7 +135,7 @@ int mtxmatrix_array_init_real_single(
     const float * data);
 
 /**
- * `mtxmatrix_array_init_real_double()' allocates and initialises a
+ * ‘mtxmatrix_array_init_real_double()’ allocates and initialises a
  * matrix in array format with real, double precision coefficients.
  */
 int mtxmatrix_array_init_real_double(
@@ -145,7 +145,7 @@ int mtxmatrix_array_init_real_double(
     const double * data);
 
 /**
- * `mtxmatrix_array_init_complex_single()' allocates and initialises a
+ * ‘mtxmatrix_array_init_complex_single()’ allocates and initialises a
  * matrix in array format with complex, single precision coefficients.
  */
 int mtxmatrix_array_init_complex_single(
@@ -155,7 +155,7 @@ int mtxmatrix_array_init_complex_single(
     const float (* data)[2]);
 
 /**
- * `mtxmatrix_array_init_complex_double()' allocates and initialises a
+ * ‘mtxmatrix_array_init_complex_double()’ allocates and initialises a
  * matrix in array format with complex, double precision coefficients.
  */
 int mtxmatrix_array_init_complex_double(
@@ -165,7 +165,7 @@ int mtxmatrix_array_init_complex_double(
     const double (* data)[2]);
 
 /**
- * `mtxmatrix_array_init_integer_single()' allocates and initialises a
+ * ‘mtxmatrix_array_init_integer_single()’ allocates and initialises a
  * matrix in array format with integer, single precision coefficients.
  */
 int mtxmatrix_array_init_integer_single(
@@ -175,7 +175,7 @@ int mtxmatrix_array_init_integer_single(
     const int32_t * data);
 
 /**
- * `mtxmatrix_array_init_integer_double()' allocates and initialises a
+ * ‘mtxmatrix_array_init_integer_double()’ allocates and initialises a
  * matrix in array format with integer, double precision coefficients.
  */
 int mtxmatrix_array_init_integer_double(
@@ -189,7 +189,7 @@ int mtxmatrix_array_init_integer_double(
  */
 
 /**
- * `mtxmatrix_array_alloc_row_vector()' allocates a row vector for a
+ * ‘mtxmatrix_array_alloc_row_vector()’ allocates a row vector for a
  * given matrix, where a row vector is a vector whose length equal to
  * a single row of the matrix.
  */
@@ -199,7 +199,7 @@ int mtxmatrix_array_alloc_row_vector(
     enum mtxvectortype vector_type);
 
 /**
- * `mtxmatrix_array_alloc_column_vector()' allocates a column vector
+ * ‘mtxmatrix_array_alloc_column_vector()’ allocates a column vector
  * for a given matrix, where a column vector is a vector whose length
  * equal to a single column of the matrix.
  */
@@ -213,7 +213,7 @@ int mtxmatrix_array_alloc_column_vector(
  */
 
 /**
- * `mtxmatrix_array_from_mtxfile()' converts a matrix in Matrix Market
+ * ‘mtxmatrix_array_from_mtxfile()’ converts a matrix in Matrix Market
  * format to a matrix.
  */
 int mtxmatrix_array_from_mtxfile(
@@ -221,12 +221,241 @@ int mtxmatrix_array_from_mtxfile(
     const struct mtxfile * mtxfile);
 
 /**
- * `mtxmatrix_array_to_mtxfile()' converts a matrix to a matrix in
+ * ‘mtxmatrix_array_to_mtxfile()’ converts a matrix to a matrix in
  * Matrix Market format.
  */
 int mtxmatrix_array_to_mtxfile(
+    struct mtxfile * mtxfile,
     const struct mtxmatrix_array * matrix,
-    struct mtxfile * mtxfile);
+    enum mtxfileformat mtxfmt);
+
+/*
+ * Level 1 BLAS operations
+ */
+
+/**
+ * ‘mtxmatrix_array_swap()’ swaps values of two matrices,
+ * simultaneously performing ‘y <- x’ and ‘x <- y’.
+ *
+ * The matrices ‘x’ and ‘y’ must have the same field, precision and
+ * size.
+ */
+int mtxmatrix_array_swap(
+    struct mtxmatrix_array * x,
+    struct mtxmatrix_array * y);
+
+/**
+ * ‘mtxmatrix_array_copy()’ copies values of a matrix, ‘y = x’.
+ *
+ * The matrices ‘x’ and ‘y’ must have the same field, precision and
+ * size.
+ */
+int mtxmatrix_array_copy(
+    struct mtxmatrix_array * y,
+    const struct mtxmatrix_array * x);
+
+/**
+ * ‘mtxmatrix_array_sscal()’ scales a matrix by a single precision
+ * floating point scalar, ‘x = a*x’.
+ */
+int mtxmatrix_array_sscal(
+    float a,
+    struct mtxmatrix_array * x,
+    int64_t * num_flops);
+
+/**
+ * ‘mtxmatrix_array_dscal()’ scales a matrix by a double precision
+ * floating point scalar, ‘x = a*x’.
+ */
+int mtxmatrix_array_dscal(
+    double a,
+    struct mtxmatrix_array * x,
+    int64_t * num_flops);
+
+/**
+ * ‘mtxmatrix_array_saxpy()’ adds a matrix to another one multiplied
+ * by a single precision floating point value, ‘y = a*x + y’.
+ *
+ * The matrices ‘x’ and ‘y’ must have the same field, precision and
+ * size.
+ */
+int mtxmatrix_array_saxpy(
+    float a,
+    const struct mtxmatrix_array * x,
+    struct mtxmatrix_array * y,
+    int64_t * num_flops);
+
+/**
+ * ‘mtxmatrix_array_daxpy()’ adds a matrix to another one multiplied
+ * by a double precision floating point value, ‘y = a*x + y’.
+ *
+ * The matrices ‘x’ and ‘y’ must have the same field, precision and
+ * size.
+ */
+int mtxmatrix_array_daxpy(
+    double a,
+    const struct mtxmatrix_array * x,
+    struct mtxmatrix_array * y,
+    int64_t * num_flops);
+
+/**
+ * ‘mtxmatrix_array_saypx()’ multiplies a matrix by a single precision
+ * floating point scalar and adds another matrix, ‘y = a*y + x’.
+ *
+ * The matrices ‘x’ and ‘y’ must have the same field, precision and
+ * size.
+ */
+int mtxmatrix_array_saypx(
+    float a,
+    struct mtxmatrix_array * y,
+    const struct mtxmatrix_array * x,
+    int64_t * num_flops);
+
+/**
+ * ‘mtxmatrix_array_daypx()’ multiplies a matrix by a double precision
+ * floating point scalar and adds another matrix, ‘y = a*y + x’.
+ *
+ * The matrices ‘x’ and ‘y’ must have the same field, precision and
+ * size.
+ */
+int mtxmatrix_array_daypx(
+    double a,
+    struct mtxmatrix_array * y,
+    const struct mtxmatrix_array * x,
+    int64_t * num_flops);
+
+/**
+ * ‘mtxmatrix_array_sdot()’ computes the Frobenius inner product of
+ * two matrices in single precision floating point.
+ *
+ * The matrices ‘x’ and ‘y’ must have the same field, precision and
+ * size.
+ */
+int mtxmatrix_array_sdot(
+    const struct mtxmatrix_array * x,
+    const struct mtxmatrix_array * y,
+    float * dot,
+    int64_t * num_flops);
+
+/**
+ * ‘mtxmatrix_array_ddot()’ computes the Frobenius inner product of
+ * two matrices in double precision floating point.
+ *
+ * The matrices ‘x’ and ‘y’ must have the same field, precision and
+ * size.
+ */
+int mtxmatrix_array_ddot(
+    const struct mtxmatrix_array * x,
+    const struct mtxmatrix_array * y,
+    double * dot,
+    int64_t * num_flops);
+
+/**
+ * ‘mtxmatrix_array_cdotu()’ computes the product of the transpose of
+ * a complex row matrix with another complex row matrix in single
+ * precision floating point, ‘dot := x^T*y’.
+ *
+ * The matrices ‘x’ and ‘y’ must have the same field, precision and
+ * size.
+ */
+int mtxmatrix_array_cdotu(
+    const struct mtxmatrix_array * x,
+    const struct mtxmatrix_array * y,
+    float (* dot)[2],
+    int64_t * num_flops);
+
+/**
+ * ‘mtxmatrix_array_zdotu()’ computes the product of the transpose of
+ * a complex row matrix with another complex row matrix in double
+ * precision floating point, ‘dot := x^T*y’.
+ *
+ * The matrices ‘x’ and ‘y’ must have the same field, precision and
+ * size.
+ */
+int mtxmatrix_array_zdotu(
+    const struct mtxmatrix_array * x,
+    const struct mtxmatrix_array * y,
+    double (* dot)[2],
+    int64_t * num_flops);
+
+/**
+ * ‘mtxmatrix_array_cdotc()’ computes the Frobenius inner product of
+ * two complex matrices in single precision floating point, ‘dot :=
+ * x^H*y’.
+ *
+ * The matrices ‘x’ and ‘y’ must have the same field, precision and
+ * size.
+ */
+int mtxmatrix_array_cdotc(
+    const struct mtxmatrix_array * x,
+    const struct mtxmatrix_array * y,
+    float (* dot)[2],
+    int64_t * num_flops);
+
+/**
+ * ‘mtxmatrix_array_zdotc()’ computes the Frobenius inner product of
+ * two complex matrices in double precision floating point, ‘dot :=
+ * x^H*y’.
+ *
+ * The matrices ‘x’ and ‘y’ must have the same field, precision and
+ * size.
+ */
+int mtxmatrix_array_zdotc(
+    const struct mtxmatrix_array * x,
+    const struct mtxmatrix_array * y,
+    double (* dot)[2],
+    int64_t * num_flops);
+
+/**
+ * ‘mtxmatrix_array_snrm2()’ computes the Frobenius norm of a matrix in
+ * single precision floating point.
+ */
+int mtxmatrix_array_snrm2(
+    const struct mtxmatrix_array * x,
+    float * nrm2,
+    int64_t * num_flops);
+
+/**
+ * ‘mtxmatrix_array_dnrm2()’ computes the Frobenius norm of a matrix in
+ * double precision floating point.
+ */
+int mtxmatrix_array_dnrm2(
+    const struct mtxmatrix_array * x,
+    double * nrm2,
+    int64_t * num_flops);
+
+/**
+ * ‘mtxmatrix_array_sasum()’ computes the sum of absolute values
+ * (1-norm) of a matrix in single precision floating point.  If the
+ * matrix is complex-valued, then the sum of the absolute values of
+ * the real and imaginary parts is computed.
+ */
+int mtxmatrix_array_sasum(
+    const struct mtxmatrix_array * x,
+    float * asum,
+    int64_t * num_flops);
+
+/**
+ * ‘mtxmatrix_array_dasum()’ computes the sum of absolute values
+ * (1-norm) of a matrix in double precision floating point.  If the
+ * matrix is complex-valued, then the sum of the absolute values of
+ * the real and imaginary parts is computed.
+ */
+int mtxmatrix_array_dasum(
+    const struct mtxmatrix_array * x,
+    double * asum,
+    int64_t * num_flops);
+
+/**
+ * ‘mtxmatrix_array_iamax()’ finds the index of the first element
+ * having the maximum absolute value.  If the matrix is
+ * complex-valued, then the index points to the first element having
+ * the maximum sum of the absolute values of the real and imaginary
+ * parts.
+ */
+int mtxmatrix_array_iamax(
+    const struct mtxmatrix_array * x,
+    int * iamax);
 
 /*
  * Level 2 BLAS operations (matrix-vector)
@@ -246,8 +475,8 @@ int mtxmatrix_array_to_mtxfile(
  * ‘trans’ is ‘mtx_notrans’, then the size of ‘x’ must equal the
  * number of columns of ‘A’ and the size of ‘y’ must equal the number
  * of rows of ‘A’. if ‘trans’ is ‘mtx_trans’ or ‘mtx_conjtrans’, then
- * the size of ‘x’ must equal the number of rows of ‘A’ and the
- * size of ‘y’ must equal the number of columns of ‘A’.
+ * the size of ‘x’ must equal the number of rows of ‘A’ and the size
+ * of ‘y’ must equal the number of columns of ‘A’.
  */
 int mtxmatrix_array_sgemv(
     enum mtxtransposition trans,
@@ -271,8 +500,8 @@ int mtxmatrix_array_sgemv(
  * ‘trans’ is ‘mtx_notrans’, then the size of ‘x’ must equal the
  * number of columns of ‘A’ and the size of ‘y’ must equal the number
  * of rows of ‘A’. if ‘trans’ is ‘mtx_trans’ or ‘mtx_conjtrans’, then
- * the size of ‘x’ must equal the number of rows of ‘A’ and the
- * size of ‘y’ must equal the number of columns of ‘A’.
+ * the size of ‘x’ must equal the number of rows of ‘A’ and the size
+ * of ‘y’ must equal the number of columns of ‘A’.
  */
 int mtxmatrix_array_dgemv(
     enum mtxtransposition trans,
@@ -298,8 +527,8 @@ int mtxmatrix_array_dgemv(
  * ‘trans’ is ‘mtx_notrans’, then the size of ‘x’ must equal the
  * number of columns of ‘A’ and the size of ‘y’ must equal the number
  * of rows of ‘A’. if ‘trans’ is ‘mtx_trans’ or ‘mtx_conjtrans’, then
- * the size of ‘x’ must equal the number of rows of ‘A’ and the
- * size of ‘y’ must equal the number of columns of ‘A’.
+ * the size of ‘x’ must equal the number of rows of ‘A’ and the size
+ * of ‘y’ must equal the number of columns of ‘A’.
  */
 int mtxmatrix_array_cgemv(
     enum mtxtransposition trans,
@@ -325,8 +554,8 @@ int mtxmatrix_array_cgemv(
  * ‘trans’ is ‘mtx_notrans’, then the size of ‘x’ must equal the
  * number of columns of ‘A’ and the size of ‘y’ must equal the number
  * of rows of ‘A’. if ‘trans’ is ‘mtx_trans’ or ‘mtx_conjtrans’, then
- * the size of ‘x’ must equal the number of rows of ‘A’ and the
- * size of ‘y’ must equal the number of columns of ‘A’.
+ * the size of ‘x’ must equal the number of rows of ‘A’ and the size
+ * of ‘y’ must equal the number of columns of ‘A’.
  */
 int mtxmatrix_array_zgemv(
     enum mtxtransposition trans,

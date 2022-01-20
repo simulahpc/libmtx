@@ -19,8 +19,7 @@
 # Authors: James D. Trotter <james@simula.no>
 # Last modified: 2022-01-22
 #
-# Unit tests for MPI communication routines for matrices and vectors
-# in Matrix Market format.
+# Unit tests for distributed matrices.
 
 timeout --kill-after=60 60 \
-	mpirun --tag-output -np 2 tests/test_mtx_mpi
+	mpirun --tag-output -np 2 tests/test_mtxdistmatrix

@@ -96,7 +96,14 @@ int mtxvector_coordinate_alloc_copy(
  */
 int mtxvector_coordinate_init_copy(
     struct mtxvector_coordinate * dst,
-    const struct mtxvector_coordinate * src);
+    const struct mtxvector_coordinate * src)
+{
+    int err = mtxvector_coordinate_alloc_copy(dst, src);
+    if (err) return err;
+    err = mtxvector_coordinate_copy(dst, src);
+    if (err) return err;
+    return MTX_SUCCESS;
+}
 
 /*
  * Vector coordinate formats

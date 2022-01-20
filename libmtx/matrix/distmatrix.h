@@ -16,20 +16,21 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-01-19
+ * Last modified: 2022-01-20
  *
- * Data structures for distributed vectors.
+ * Data structures for distributed matrices.
  */
 
-#ifndef LIBMTX_VECTOR_DISTVECTOR_H
-#define LIBMTX_VECTOR_DISTVECTOR_H
+#ifndef LIBMTX_MATRIX_DISTMATRIX_H
+#define LIBMTX_MATRIX_DISTMATRIX_H
 
 #include <libmtx/libmtx-config.h>
 
 #ifdef LIBMTX_HAVE_MPI
 #include <libmtx/precision.h>
 #include <libmtx/field.h>
-#include <libmtx/vector/vector.h>
+#include <libmtx/matrix/matrix.h>
+#include <libmtx/util/partition.h>
 
 #include <mpi.h>
 
@@ -48,14 +49,14 @@ struct mtxdisterror;
 struct mtxpartition;
 
 /**
- * ‘mtxdistvector’ is a vector distributed across multiple processes,
+ * ‘mtxdistmatrix’ is a matrix distributed across multiple processes,
  * where MPI is used for communicating between processes.
  *
- * Processes are arranged as a one-dimensional linear array, and
- * vector elements (i.e., the rows of a row vector) are distributed
- * among processes according to a specified partitioning.
+ * Processes are arranged in a two-dimensional grid, and matrices are
+ * distributed among processes in rectangular blocks according to
+ * specified partitionings of the matrix rows and columns.
  */
-struct mtxdistvector
+struct mtxdistmatrix
 {
     /**
      * ‘comm’ is an MPI communicator for processes among which the
@@ -64,8 +65,9 @@ struct mtxdistvector
     MPI_Comm comm;
 
     /**
-     * ‘comm_size’ is the size of the MPI communicator.  This is equal
-     * to the number of parts of the row partitioning of the vector.
+     * ‘comm_size’ is the size of the MPI communicator. This is equal
+     * to the number of parts of the partitioning of the matrix rows
+     * times the number of parts in the partitioning of the columns.
      */
     int comm_size;
 
@@ -75,15 +77,16 @@ struct mtxdistvector
     int rank;
 
     /**
-     * ‘rowpart’ is a partitioning of the rows of the vector.
+     * ‘rowpart’ is a partitioning of the rows of the matrix.
      */
     struct mtxpartition rowpart;
 
-    struct mtxvector interior;
+    /**
+     * ‘colpart’ is a partitioning of the columns of the matrix.
+     */
+    struct mtxpartition colpart;
 
-    struct mtxvector_coordinate interior_halo;
-
-    struct mtxvector_coordinate exterior_halo;
+    struct mtxmatrix interior;
 };
 
 /*
@@ -91,336 +94,321 @@ struct mtxdistvector
  */
 
 /**
- * ‘mtxdistvector_free()’ frees storage allocated for a vector.
+ * ‘mtxdistmatrix_free()’ frees storage allocated for a matrix.
  */
-void mtxdistvector_free(
-    struct mtxdistvector * distvector);
+void mtxdistmatrix_free(
+    struct mtxdistmatrix * distmatrix);
 
 /**
- * ‘mtxdistvector_alloc_copy()’ allocates storage for a copy of a
- * distributed vector without initialising the underlying values.
+ * ‘mtxdistmatrix_alloc_copy()’ allocates storage for a copy of a
+ * distributed matrix without initialising the underlying values.
  */
-int mtxdistvector_alloc_copy(
-    struct mtxdistvector * dst,
-    const struct mtxdistvector * src,
+int mtxdistmatrix_alloc_copy(
+    struct mtxdistmatrix * dst,
+    const struct mtxdistmatrix * src,
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxdistvector_init_copy()’ creates a copy of a distributed vector.
+ * ‘mtxdistmatrix_init_copy()’ creates a copy of a distributed matrix.
  */
-int mtxdistvector_init_copy(
-    struct mtxdistvector * dst,
-    const struct mtxdistvector * src,
+int mtxdistmatrix_init_copy(
+    struct mtxdistmatrix * dst,
+    const struct mtxdistmatrix * src,
     struct mtxdisterror * disterr);
 
 /*
- * Distributed vectors in array format
+ * Distributed matrices in array format
  */
 
 /**
- * ‘mtxdistvector_alloc_array()’ allocates a distributed vector in
+ * ‘mtxdistmatrix_alloc_array()’ allocates a distributed matrix in
  * array format.
  */
-int mtxdistvector_alloc_array(
-    struct mtxdistvector * distvector,
+int mtxdistmatrix_alloc_array(
+    struct mtxdistmatrix * distmatrix,
     enum mtxfield field,
     enum mtxprecision precision,
     int num_local_rows,
+    int num_local_columns,
     const struct mtxpartition * rowpart,
+    const struct mtxpartition * colpart,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxdistvector_init_array_real_single()’ allocates and initialises
- * a distributed vector in array format with real, single precision
+ * ‘mtxdistmatrix_init_array_real_single()’ allocates and initialises
+ * a distributed matrix in array format with real, single precision
  * coefficients.
  */
-int mtxdistvector_init_array_real_single(
-    struct mtxdistvector * distvector,
+int mtxdistmatrix_init_array_real_single(
+    struct mtxdistmatrix * distmatrix,
     int num_local_rows,
+    int num_local_columns,
     const float * data,
     const struct mtxpartition * rowpart,
+    const struct mtxpartition * colpart,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxdistvector_init_array_real_double()’ allocates and initialises
- * a distributed vector in array format with real, double precision
+ * ‘mtxdistmatrix_init_array_real_double()’ allocates and initialises
+ * a distributed matrix in array format with real, double precision
  * coefficients.
  */
-int mtxdistvector_init_array_real_double(
-    struct mtxdistvector * distvector,
+int mtxdistmatrix_init_array_real_double(
+    struct mtxdistmatrix * distmatrix,
     int num_local_rows,
+    int num_local_columns,
     const double * data,
     const struct mtxpartition * rowpart,
+    const struct mtxpartition * colpart,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxdistvector_init_array_complex_single()’ allocates and
- * initialises a distributed vector in array format with complex,
+ * ‘mtxdistmatrix_init_array_complex_single()’ allocates and
+ * initialises a distributed matrix in array format with complex,
  * single precision coefficients.
  */
-int mtxdistvector_init_array_complex_single(
-    struct mtxdistvector * distvector,
+int mtxdistmatrix_init_array_complex_single(
+    struct mtxdistmatrix * distmatrix,
     int num_local_rows,
+    int num_local_columns,
     const float (* data)[2],
     const struct mtxpartition * rowpart,
+    const struct mtxpartition * colpart,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxdistvector_init_array_complex_double()’ allocates and
- * initialises a distributed vector in array format with complex,
+ * ‘mtxdistmatrix_init_array_complex_double()’ allocates and
+ * initialises a distributed matrix in array format with complex,
  * double precision coefficients.
  */
-int mtxdistvector_init_array_complex_double(
-    struct mtxdistvector * distvector,
+int mtxdistmatrix_init_array_complex_double(
+    struct mtxdistmatrix * distmatrix,
     int num_local_rows,
+    int num_local_columns,
     const double (* data)[2],
     const struct mtxpartition * rowpart,
+    const struct mtxpartition * colpart,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxdistvector_init_array_integer_single()’ allocates and
- * initialises a distributed vector in array format with integer,
+ * ‘mtxdistmatrix_init_array_integer_single()’ allocates and
+ * initialises a distributed matrix in array format with integer,
  * single precision coefficients.
  */
-int mtxdistvector_init_array_integer_single(
-    struct mtxdistvector * distvector,
+int mtxdistmatrix_init_array_integer_single(
+    struct mtxdistmatrix * distmatrix,
     int num_local_rows,
+    int num_local_columns,
     const int32_t * data,
     const struct mtxpartition * rowpart,
+    const struct mtxpartition * colpart,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxdistvector_init_array_integer_double()’ allocates and
- * initialises a distributed vector in array format with integer,
+ * ‘mtxdistmatrix_init_array_integer_double()’ allocates and
+ * initialises a distributed matrix in array format with integer,
  * double precision coefficients.
  */
-int mtxdistvector_init_array_integer_double(
-    struct mtxdistvector * distvector,
+int mtxdistmatrix_init_array_integer_double(
+    struct mtxdistmatrix * distmatrix,
     int num_local_rows,
+    int num_local_columns,
     const int64_t * data,
     const struct mtxpartition * rowpart,
+    const struct mtxpartition * colpart,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
 /*
- * Distributed vectors in coordinate format
+ * Distributed matrices in coordinate format
  */
 
 /**
- * ‘mtxdistvector_alloc_coordinate()’ allocates a distributed vector
+ * ‘mtxdistmatrix_alloc_coordinate()’ allocates a distributed matrix
  * in coordinate format.
  */
-int mtxdistvector_alloc_coordinate(
-    struct mtxdistvector * distvector,
+int mtxdistmatrix_alloc_coordinate(
+    struct mtxdistmatrix * distmatrix,
     enum mtxfield field,
     enum mtxprecision precision,
     int num_local_rows,
+    int num_local_columns,
     int64_t num_local_nonzeros,
     const struct mtxpartition * rowpart,
+    const struct mtxpartition * colpart,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxdistvector_init_coordinate_real_single()’ allocates and
- * initialises a distributed vector in coordinate format with real,
+ * ‘mtxdistmatrix_init_coordinate_real_single()’ allocates and
+ * initialises a distributed matrix in coordinate format with real,
  * single precision coefficients.
  */
-int mtxdistvector_init_coordinate_real_single(
-    struct mtxdistvector * distvector,
+int mtxdistmatrix_init_coordinate_real_single(
+    struct mtxdistmatrix * distmatrix,
     int num_local_rows,
+    int num_local_columns,
     int64_t num_local_nonzeros,
-    const int * idx,
+    const int * rowidx,
+    const int * colidx,
     const float * data,
     const struct mtxpartition * rowpart,
+    const struct mtxpartition * colpart,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxdistvector_init_coordinate_real_double()’ allocates and
- * initialises a distributed vector in coordinate format with real,
+ * ‘mtxdistmatrix_init_coordinate_real_double()’ allocates and
+ * initialises a distributed matrix in coordinate format with real,
  * double precision coefficients.
  */
-int mtxdistvector_init_coordinate_real_double(
-    struct mtxdistvector * distvector,
+int mtxdistmatrix_init_coordinate_real_double(
+    struct mtxdistmatrix * distmatrix,
     int num_local_rows,
+    int num_local_columns,
     int64_t num_local_nonzeros,
-    const int * idx,
+    const int * rowidx,
+    const int * colidx,
     const double * data,
     const struct mtxpartition * rowpart,
+    const struct mtxpartition * colpart,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxdistvector_init_coordinate_complex_single()’ allocates and
- * initialises a distributed vector in coordinate format with complex,
+ * ‘mtxdistmatrix_init_coordinate_complex_single()’ allocates and
+ * initialises a distributed matrix in coordinate format with complex,
  * single precision coefficients.
  */
-int mtxdistvector_init_coordinate_complex_single(
-    struct mtxdistvector * distvector,
+int mtxdistmatrix_init_coordinate_complex_single(
+    struct mtxdistmatrix * distmatrix,
     int num_local_rows,
+    int num_local_columns,
     int64_t num_local_nonzeros,
-    const int * idx,
+    const int * rowidx,
+    const int * colidx,
     const float (* data)[2],
     const struct mtxpartition * rowpart,
+    const struct mtxpartition * colpart,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxdistvector_init_coordinate_complex_double()’ allocates and
- * initialises a distributed vector in coordinate format with complex,
+ * ‘mtxdistmatrix_init_coordinate_complex_double()’ allocates and
+ * initialises a distributed matrix in coordinate format with complex,
  * double precision coefficients.
  */
-int mtxdistvector_init_coordinate_complex_double(
-    struct mtxdistvector * distvector,
+int mtxdistmatrix_init_coordinate_complex_double(
+    struct mtxdistmatrix * distmatrix,
     int num_local_rows,
+    int num_local_columns,
     int64_t num_local_nonzeros,
-    const int * idx,
+    const int * rowidx,
+    const int * colidx,
     const double (* data)[2],
     const struct mtxpartition * rowpart,
+    const struct mtxpartition * colpart,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxdistvector_init_coordinate_integer_single()’ allocates and
- * initialises a distributed vector in coordinate format with integer,
+ * ‘mtxdistmatrix_init_coordinate_integer_single()’ allocates and
+ * initialises a distributed matrix in coordinate format with integer,
  * single precision coefficients.
  */
-int mtxdistvector_init_coordinate_integer_single(
-    struct mtxdistvector * distvector,
+int mtxdistmatrix_init_coordinate_integer_single(
+    struct mtxdistmatrix * distmatrix,
     int num_local_rows,
+    int num_local_columns,
     int64_t num_local_nonzeros,
-    const int * idx,
+    const int * rowidx,
+    const int * colidx,
     const int32_t * data,
     const struct mtxpartition * rowpart,
+    const struct mtxpartition * colpart,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxdistvector_init_coordinate_integer_double()’ allocates and
- * initialises a distributed vector in coordinate format with integer,
+ * ‘mtxdistmatrix_init_coordinate_integer_double()’ allocates and
+ * initialises a distributed matrix in coordinate format with integer,
  * double precision coefficients.
  */
-int mtxdistvector_init_coordinate_integer_double(
-    struct mtxdistvector * distvector,
+int mtxdistmatrix_init_coordinate_integer_double(
+    struct mtxdistmatrix * distmatrix,
     int num_local_rows,
+    int num_local_columns,
     int64_t num_local_nonzeros,
-    const int * idx,
+    const int * rowidx,
+    const int * colidx,
     const int64_t * data,
     const struct mtxpartition * rowpart,
+    const struct mtxpartition * colpart,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxdistvector_init_coordinate_pattern()’ allocates and initialises
- * a distributed vector in coordinate format with boolean
+ * ‘mtxdistmatrix_init_coordinate_pattern()’ allocates and initialises
+ * a distributed matrix in coordinate format with boolean
  * coefficients.
  */
-int mtxdistvector_init_coordinate_pattern(
-    struct mtxdistvector * distvector,
+int mtxdistmatrix_init_coordinate_pattern(
+    struct mtxdistmatrix * distmatrix,
     int num_local_rows,
+    int num_local_columns,
     int64_t num_local_nonzeros,
-    const int * idx,
+    const int * rowidx,
+    const int * colidx,
     const struct mtxpartition * rowpart,
+    const struct mtxpartition * colpart,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
-
-/*
- * Modifying values
- */
-
-/**
- * ‘mtxdistvector_set_constant_real_single()’ sets every (nonzero)
- * value of a vector equal to a constant, single precision floating
- * point number.
- */
-int mtxdistvector_set_constant_real_single(
-    struct mtxdistvector * mtxdistvector,
-    float a, struct mtxdisterror * disterr);
-
-/**
- * ‘mtxdistvector_set_constant_real_double()’ sets every (nonzero)
- * value of a vector equal to a constant, double precision floating
- * point number.
- */
-int mtxdistvector_set_constant_real_double(
-    struct mtxdistvector * mtxdistvector,
-    double a, struct mtxdisterror * disterr);
-
-/**
- * ‘mtxdistvector_set_constant_complex_single()’ sets every (nonzero)
- * value of a vector equal to a constant, single precision floating
- * point complex number.
- */
-int mtxdistvector_set_constant_complex_single(
-    struct mtxdistvector * mtxdistvector,
-    float a[2], struct mtxdisterror * disterr);
-
-/**
- * ‘mtxdistvector_set_constant_complex_double()’ sets every (nonzero)
- * value of a vector equal to a constant, double precision floating
- * point complex number.
- */
-int mtxdistvector_set_constant_complex_double(
-    struct mtxdistvector * mtxdistvector,
-    double a[2], struct mtxdisterror * disterr);
-
-/**
- * ‘mtxdistvector_set_constant_integer_single()’ sets every (nonzero)
- * value of a vector equal to a constant integer.
- */
-int mtxdistvector_set_constant_integer_single(
-    struct mtxdistvector * mtxdistvector,
-    int32_t a, struct mtxdisterror * disterr);
-
-/**
- * ‘mtxdistvector_set_constant_integer_double()’ sets every (nonzero)
- * value of a vector equal to a constant integer.
- */
-int mtxdistvector_set_constant_integer_double(
-    struct mtxdistvector * mtxdistvector,
-    int64_t a, struct mtxdisterror * disterr);
 
 /*
  * Convert to and from Matrix Market format
  */
 
 /**
- * ‘mtxdistvector_from_mtxfile()’ converts a vector in Matrix Market
- * format to a distributed vector.
+ * ‘mtxdistmatrix_from_mtxfile()’ converts a matrix in Matrix Market
+ * format to a distributed matrix.
  *
  * The ‘type’ argument may be used to specify a desired storage format
- * or implementation for the underlying ‘mtxvector’ on each
- * process. If ‘type’ is ‘mtxvector_auto’, then the type of
- * ‘mtxvector’ is chosen to match the type of ‘mtxfile’. That is,
- * ‘mtxvector_array’ is used if ‘mtxfile’ is in array format, and
- * ‘mtxvector_coordinate’ is used if ‘mtxfile’ is in coordinate
+ * or implementation for the underlying ‘mtxmatrix’ on each
+ * process. If ‘type’ is ‘mtxmatrix_auto’, then the type of
+ * ‘mtxmatrix’ is chosen to match the type of ‘mtxfile’. That is,
+ * ‘mtxmatrix_array’ is used if ‘mtxfile’ is in array format, and
+ * ‘mtxmatrix_coordinate’ is used if ‘mtxfile’ is in coordinate
  * format.
  *
- * Furthermore, ‘rowpart’ must be a partitioning of the rows of the
- * global vector. Therefore, ‘rowpart->size’ must be equal to the
- * number of rows in the underlying vector represented by
- * ‘mtxfile’. The partition must consist of at most one part for each
- * MPI process in the communicator ‘comm’. If ‘rowpart’ is ‘NULL’,
- * then the rows are partitioned into contiguous blocks of equal size
- * by default.
+ * Furthermore, ‘rowpart’ and ‘colpart’ must be partitionings of the
+ * rows and columns of the global matrix. Therefore, ‘rowpart->size’
+ * must be equal to the number of rows and ‘colpart->size’ must be
+ * equal to the number of columns in ‘mtxfile’. There must be at least
+ * one MPI process in the communicator ‘comm’ for each part in the
+ * partitioned matrix (i.e., the number of row parts times the number
+ * of column parts).
+ *
+ * If ‘rowpart’ and ‘colpart’ are both ‘NULL’, then the rows are
+ * partitioned into contiguous blocks of equal size by default.
  */
-int mtxdistvector_from_mtxfile(
-    struct mtxdistvector * dst,
+int mtxdistmatrix_from_mtxfile(
+    struct mtxdistmatrix * dst,
     const struct mtxfile * src,
-    enum mtxvectortype vector_type,
+    enum mtxmatrixtype matrix_type,
     const struct mtxpartition * rowpart,
+    const struct mtxpartition * colpart,
     MPI_Comm comm,
     int root,
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxdistvector_to_mtxfile()’ gathers a distributed vector onto a
+ * ‘mtxdistmatrix_to_mtxfile()’ gathers a distributed matrix onto a
  * single, root process and converts it to a (non-distributed) Matrix
  * Market file on that process.
  *
@@ -428,32 +416,33 @@ int mtxdistvector_from_mtxfile(
  * requires every process in the communicator to perform matching
  * calls to this function.
  */
-int mtxdistvector_to_mtxfile(
+int mtxdistmatrix_to_mtxfile(
     struct mtxfile * dst,
-    const struct mtxdistvector * src,
+    const struct mtxdistmatrix * src,
     enum mtxfileformat mtxfmt,
     int root,
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxdistvector_from_mtxdistfile()’ converts a vector in distributed
- * Matrix Market format to a distributed vector.
+ * ‘mtxdistmatrix_from_mtxdistfile()’ converts a matrix in distributed
+ * Matrix Market format to a distributed matrix.
  */
-int mtxdistvector_from_mtxdistfile(
-    struct mtxdistvector * dst,
+int mtxdistmatrix_from_mtxdistfile(
+    struct mtxdistmatrix * dst,
     const struct mtxdistfile * src,
-    enum mtxvectortype vector_type,
+    enum mtxmatrixtype matrix_type,
     const struct mtxpartition * rowpart,
+    const struct mtxpartition * colpart,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxdistvector_to_mtxdistfile()’ converts a distributed vector to a
- * vector in a distributed Matrix Market format.
+ * ‘mtxdistmatrix_to_mtxdistfile()’ converts a distributed matrix to a
+ * matrix in a distributed Matrix Market format.
  */
-int mtxdistvector_to_mtxdistfile(
+int mtxdistmatrix_to_mtxdistfile(
     struct mtxdistfile * dst,
-    const struct mtxdistvector * src,
+    const struct mtxdistmatrix * src,
     enum mtxfileformat mtxfmt,
     struct mtxdisterror * disterr);
 
@@ -462,42 +451,42 @@ int mtxdistvector_to_mtxdistfile(
  */
 
 /**
- * ‘mtxdistvector_read()’ reads a vector from a Matrix Market file.
+ * ‘mtxdistmatrix_read()’ reads a matrix from a Matrix Market file.
  * The file may optionally be compressed by gzip.
  *
  * The ‘precision’ argument specifies which precision to use for
- * storing vector values.
+ * storing matrix or matrix values.
  *
  * If ‘path’ is ‘-’, then standard input is used.
  *
  * If an error code is returned, then ‘lines_read’ and ‘bytes_read’
  * are used to return the line number and byte at which the error was
- * encountered during the parsing of the vector.
+ * encountered during the parsing of the matrix.
  */
-int mtxdistvector_read(
-    struct mtxdistvector * distvector,
+int mtxdistmatrix_read(
+    struct mtxdistmatrix * distmatrix,
     enum mtxprecision precision,
-    enum mtxvectortype type,
+    enum mtxmatrixtype type,
     const char * path,
     bool gzip,
     int * lines_read,
     int64_t * bytes_read);
 
 /**
- * ‘mtxdistvector_fread()’ reads a vector from a stream in Matrix
+ * ‘mtxdistmatrix_fread()’ reads a matrix from a stream in Matrix
  * Market format.
  *
  * ‘precision’ is used to determine the precision to use for storing
- * the values of vector entries.
+ * the values of matrix or matrix entries.
  *
  * If an error code is returned, then ‘lines_read’ and ‘bytes_read’
  * are used to return the line number and byte at which the error was
- * encountered during the parsing of the vector.
+ * encountered during the parsing of the matrix.
  */
-int mtxdistvector_fread(
-    struct mtxdistvector * distvector,
+int mtxdistmatrix_fread(
+    struct mtxdistmatrix * distmatrix,
     enum mtxprecision precision,
-    enum mtxvectortype type,
+    enum mtxmatrixtype type,
     FILE * f,
     int * lines_read,
     int64_t * bytes_read,
@@ -506,20 +495,20 @@ int mtxdistvector_fread(
 
 #ifdef LIBMTX_HAVE_LIBZ
 /**
- * ‘mtxdistvector_gzread()’ reads a vector from a gzip-compressed
+ * ‘mtxdistmatrix_gzread()’ reads a matrix from a gzip-compressed
  * stream.
  *
  * ‘precision’ is used to determine the precision to use for storing
- * the values of vector entries.
+ * the values of matrix or matrix entries.
  *
  * If an error code is returned, then ‘lines_read’ and ‘bytes_read’
  * are used to return the line number and byte at which the error was
- * encountered during the parsing of the vector.
+ * encountered during the parsing of the matrix.
  */
-int mtxdistvector_gzread(
-    struct mtxdistvector * distvector,
+int mtxdistmatrix_gzread(
+    struct mtxdistmatrix * distmatrix,
     enum mtxprecision precision,
-    enum mtxvectortype type,
+    enum mtxmatrixtype type,
     gzFile f,
     int * lines_read,
     int64_t * bytes_read,
@@ -528,7 +517,7 @@ int mtxdistvector_gzread(
 #endif
 
 /**
- * ‘mtxdistvector_write()’ writes a vector to a Matrix Market
+ * ‘mtxdistmatrix_write()’ writes a matrix to a Matrix Market
  * file. The file may optionally be compressed by gzip.
  *
  * If ‘path’ is ‘-’, then standard output is used.
@@ -547,8 +536,8 @@ int mtxdistvector_gzread(
  * width and precision (e.g., "%*.*f"), as well as length modifiers
  * (e.g., "%Lf") are not allowed.
  */
-int mtxdistvector_write(
-    const struct mtxdistvector * distvector,
+int mtxdistmatrix_write(
+    const struct mtxdistmatrix * distmatrix,
     enum mtxfileformat mtxfmt,
     const char * path,
     bool gzip,
@@ -556,7 +545,7 @@ int mtxdistvector_write(
     int64_t * bytes_written);
 
 /**
- * ‘mtxdistvector_fwrite()’ writes a vector to a stream.
+ * ‘mtxdistmatrix_fwrite()’ writes a matrix to a stream.
  *
  * If ‘fmt’ is ‘NULL’, then the format specifier ‘%g’ is used to print
  * floating point numbers with enough digits to ensure correct
@@ -575,15 +564,15 @@ int mtxdistvector_write(
  * If it is not ‘NULL’, then the number of bytes written to the stream
  * is returned in ‘bytes_written’.
  */
-int mtxdistvector_fwrite(
-    const struct mtxdistvector * distvector,
+int mtxdistmatrix_fwrite(
+    const struct mtxdistmatrix * distmatrix,
     enum mtxfileformat mtxfmt,
     FILE * f,
     const char * fmt,
     int64_t * bytes_written);
 
 /**
- * `mtxdistvector_fwrite_shared()' writes a distributed vector as a
+ * `mtxdistmatrix_fwrite_shared()' writes a distributed matrix as a
  * Matrix Market file to a single stream that is shared by every
  * process in the communicator.
  *
@@ -612,8 +601,8 @@ int mtxdistvector_fwrite(
  * requires every process in the communicator to perform matching
  * calls to the function.
  */
-int mtxdistvector_fwrite_shared(
-    const struct mtxdistvector * mtxdistvector,
+int mtxdistmatrix_fwrite_shared(
+    const struct mtxdistmatrix * mtxdistmatrix,
     enum mtxfileformat mtxfmt,
     FILE * f,
     const char * fmt,
@@ -623,7 +612,7 @@ int mtxdistvector_fwrite_shared(
 
 #ifdef LIBMTX_HAVE_LIBZ
 /**
- * ‘mtxdistvector_gzwrite()’ writes a vector to a gzip-compressed
+ * ‘mtxdistmatrix_gzwrite()’ writes a matrix to a gzip-compressed
  * stream.
  *
  * If ‘fmt’ is ‘NULL’, then the format specifier ‘%g’ is used to print
@@ -643,8 +632,8 @@ int mtxdistvector_fwrite_shared(
  * If it is not ‘NULL’, then the number of bytes written to the stream
  * is returned in ‘bytes_written’.
  */
-int mtxdistvector_gzwrite(
-    const struct mtxdistvector * distvector,
+int mtxdistmatrix_gzwrite(
+    const struct mtxdistmatrix * distmatrix,
     enum mtxfileformat mtxfmt,
     gzFile f,
     const char * fmt,
@@ -656,200 +645,200 @@ int mtxdistvector_gzwrite(
  */
 
 /**
- * `mtxdistvector_swap()' swaps values of two vectors, simultaneously
+ * `mtxdistmatrix_swap()' swaps values of two matrices, simultaneously
  * performing ‘y <- x’ and ‘x <- y’.
  */
-int mtxdistvector_swap(
-    struct mtxdistvector * x,
-    struct mtxdistvector * y,
+int mtxdistmatrix_swap(
+    struct mtxdistmatrix * x,
+    struct mtxdistmatrix * y,
     struct mtxdisterror * disterr);
 
 /**
- * `mtxdistvector_copy()' copies values of a vector, ‘y = x’.
+ * `mtxdistmatrix_copy()' copies values of a matrix, ‘y = x’.
  */
-int mtxdistvector_copy(
-    struct mtxdistvector * y,
-    const struct mtxdistvector * x,
+int mtxdistmatrix_copy(
+    struct mtxdistmatrix * y,
+    const struct mtxdistmatrix * x,
     struct mtxdisterror * disterr);
 
 /**
- * `mtxdistvector_sscal()' scales a vector by a single precision
+ * `mtxdistmatrix_sscal()' scales a matrix by a single precision
  * floating point scalar, ‘x = a*x’.
  */
-int mtxdistvector_sscal(
+int mtxdistmatrix_sscal(
     float a,
-    struct mtxdistvector * x,
+    struct mtxdistmatrix * x,
     int64_t * num_flops,
     struct mtxdisterror * disterr);
 
 /**
- * `mtxdistvector_dscal()' scales a vector by a double precision
+ * `mtxdistmatrix_dscal()' scales a matrix by a double precision
  * floating point scalar, ‘x = a*x’.
  */
-int mtxdistvector_dscal(
+int mtxdistmatrix_dscal(
     double a,
-    struct mtxdistvector * x,
+    struct mtxdistmatrix * x,
     int64_t * num_flops,
     struct mtxdisterror * disterr);
 
 /**
- * `mtxdistvector_saxpy()' adds a vector to another vector multiplied
+ * `mtxdistmatrix_saxpy()' adds a matrix to another matrix multiplied
  * by a single precision floating point value, ‘y = a*x + y’.
  */
-int mtxdistvector_saxpy(
+int mtxdistmatrix_saxpy(
     float a,
-    const struct mtxdistvector * x,
-    struct mtxdistvector * y,
+    const struct mtxdistmatrix * x,
+    struct mtxdistmatrix * y,
     int64_t * num_flops,
     struct mtxdisterror * disterr);
 
 /**
- * `mtxdistvector_daxpy()' adds a vector to another vector multiplied
+ * `mtxdistmatrix_daxpy()' adds a matrix to another matrix multiplied
  * by a double precision floating point value, ‘y = a*x + y’.
  */
-int mtxdistvector_daxpy(
+int mtxdistmatrix_daxpy(
     double a,
-    const struct mtxdistvector * x,
-    struct mtxdistvector * y,
+    const struct mtxdistmatrix * x,
+    struct mtxdistmatrix * y,
     int64_t * num_flops,
     struct mtxdisterror * disterr);
 
 /**
- * `mtxdistvector_saypx()' multiplies a vector by a single precision
- * floating point scalar and adds another vector, ‘y = a*y + x’.
+ * `mtxdistmatrix_saypx()' multiplies a matrix by a single precision
+ * floating point scalar and adds another matrix, ‘y = a*y + x’.
  */
-int mtxdistvector_saypx(
+int mtxdistmatrix_saypx(
     float a,
-    struct mtxdistvector * y,
-    const struct mtxdistvector * x,
+    struct mtxdistmatrix * y,
+    const struct mtxdistmatrix * x,
     int64_t * num_flops,
     struct mtxdisterror * disterr);
 
 /**
- * `mtxdistvector_daypx()' multiplies a vector by a double precision
- * floating point scalar and adds another vector, ‘y = a*y + x’.
+ * `mtxdistmatrix_daypx()' multiplies a matrix by a double precision
+ * floating point scalar and adds another matrix, ‘y = a*y + x’.
  */
-int mtxdistvector_daypx(
+int mtxdistmatrix_daypx(
     double a,
-    struct mtxdistvector * y,
-    const struct mtxdistvector * x,
+    struct mtxdistmatrix * y,
+    const struct mtxdistmatrix * x,
     int64_t * num_flops,
     struct mtxdisterror * disterr);
 
 /**
- * `mtxdistvector_sdot()' computes the Euclidean dot product of two
- * vectors in single precision floating point.
+ * `mtxdistmatrix_sdot()' computes the Euclidean dot product of two
+ * matrices in single precision floating point.
  */
-int mtxdistvector_sdot(
-    const struct mtxdistvector * x,
-    const struct mtxdistvector * y,
+int mtxdistmatrix_sdot(
+    const struct mtxdistmatrix * x,
+    const struct mtxdistmatrix * y,
     float * dot,
     int64_t * num_flops,
     struct mtxdisterror * disterr);
 
 /**
- * `mtxdistvector_ddot()' computes the Euclidean dot product of two
- * vectors in double precision floating point.
+ * `mtxdistmatrix_ddot()' computes the Euclidean dot product of two
+ * matrices in double precision floating point.
  */
-int mtxdistvector_ddot(
-    const struct mtxdistvector * x,
-    const struct mtxdistvector * y,
+int mtxdistmatrix_ddot(
+    const struct mtxdistmatrix * x,
+    const struct mtxdistmatrix * y,
     double * dot,
     int64_t * num_flops,
     struct mtxdisterror * disterr);
 
 /**
- * `mtxdistvector_cdotu()' computes the product of the transpose of a
- * complex row vector with another complex row vector in single
+ * `mtxdistmatrix_cdotu()' computes the product of the transpose of a
+ * complex row matrix with another complex row matrix in single
  * precision floating point, ‘dot := x^T*y’.
  */
-int mtxdistvector_cdotu(
-    const struct mtxdistvector * x,
-    const struct mtxdistvector * y,
+int mtxdistmatrix_cdotu(
+    const struct mtxdistmatrix * x,
+    const struct mtxdistmatrix * y,
     float (* dot)[2],
     int64_t * num_flops,
     struct mtxdisterror * disterr);
 
 /**
- * `mtxdistvector_zdotu()' computes the product of the transpose of a
- * complex row vector with another complex row vector in double
+ * `mtxdistmatrix_zdotu()' computes the product of the transpose of a
+ * complex row matrix with another complex row matrix in double
  * precision floating point, ‘dot := x^T*y’.
  */
-int mtxdistvector_zdotu(
-    const struct mtxdistvector * x,
-    const struct mtxdistvector * y,
+int mtxdistmatrix_zdotu(
+    const struct mtxdistmatrix * x,
+    const struct mtxdistmatrix * y,
     double (* dot)[2],
     int64_t * num_flops,
     struct mtxdisterror * disterr);
 
 /**
- * `mtxdistvector_cdotc()' computes the Euclidean dot product of two
- * complex vectors in single precision floating point, ‘dot := x^H*y’.
+ * `mtxdistmatrix_cdotc()' computes the Euclidean dot product of two
+ * complex matrices in single precision floating point, ‘dot := x^H*y’.
  */
-int mtxdistvector_cdotc(
-    const struct mtxdistvector * x,
-    const struct mtxdistvector * y,
+int mtxdistmatrix_cdotc(
+    const struct mtxdistmatrix * x,
+    const struct mtxdistmatrix * y,
     float (* dot)[2],
     int64_t * num_flops,
     struct mtxdisterror * disterr);
 
 /**
- * `mtxdistvector_zdotc()' computes the Euclidean dot product of two
- * complex vectors in double precision floating point, ‘dot := x^H*y’.
+ * `mtxdistmatrix_zdotc()' computes the Euclidean dot product of two
+ * complex matrices in double precision floating point, ‘dot := x^H*y’.
  */
-int mtxdistvector_zdotc(
-    const struct mtxdistvector * x,
-    const struct mtxdistvector * y,
+int mtxdistmatrix_zdotc(
+    const struct mtxdistmatrix * x,
+    const struct mtxdistmatrix * y,
     double (* dot)[2],
     int64_t * num_flops,
     struct mtxdisterror * disterr);
 
 /**
- * `mtxdistvector_snrm2()' computes the Euclidean norm of a vector in
+ * `mtxdistmatrix_snrm2()' computes the Euclidean norm of a matrix in
  * single precision floating point.
  */
-int mtxdistvector_snrm2(
-    const struct mtxdistvector * x,
+int mtxdistmatrix_snrm2(
+    const struct mtxdistmatrix * x,
     float * nrm2,
     int64_t * num_flops,
     struct mtxdisterror * disterr);
 
 /**
- * `mtxdistvector_dnrm2()' computes the Euclidean norm of a vector in
+ * `mtxdistmatrix_dnrm2()' computes the Euclidean norm of a matrix in
  * double precision floating point.
  */
-int mtxdistvector_dnrm2(
-    const struct mtxdistvector * x,
+int mtxdistmatrix_dnrm2(
+    const struct mtxdistmatrix * x,
     double * nrm2,
     int64_t * num_flops,
     struct mtxdisterror * disterr);
 
 /**
- * `mtxdistvector_sasum()' computes the sum of absolute values
- * (1-norm) of a vector in single precision floating point.
+ * `mtxdistmatrix_sasum()' computes the sum of absolute values
+ * (1-norm) of a matrix in single precision floating point.
  */
-int mtxdistvector_sasum(
-    const struct mtxdistvector * x,
+int mtxdistmatrix_sasum(
+    const struct mtxdistmatrix * x,
     float * asum,
     int64_t * num_flops,
     struct mtxdisterror * disterr);
 
 /**
- * `mtxdistvector_dasum()' computes the sum of absolute values
- * (1-norm) of a vector in double precision floating point.
+ * `mtxdistmatrix_dasum()' computes the sum of absolute values
+ * (1-norm) of a matrix in double precision floating point.
  */
-int mtxdistvector_dasum(
-    const struct mtxdistvector * x,
+int mtxdistmatrix_dasum(
+    const struct mtxdistmatrix * x,
     double * asum,
     int64_t * num_flops,
     struct mtxdisterror * disterr);
 
 /**
- * `mtxdistvector_imax()' finds the index of the first element having
+ * `mtxdistmatrix_iamax()' finds the index of the first element having
  * the maximum absolute value.
  */
-int mtxdistvector_imax(
-    const struct mtxdistvector * x,
+int mtxdistmatrix_iamax(
+    const struct mtxdistmatrix * x,
     int * max,
     struct mtxdisterror * disterr);
 #endif

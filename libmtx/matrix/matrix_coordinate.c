@@ -84,7 +84,13 @@ void mtxmatrix_coordinate_free(
  */
 int mtxmatrix_coordinate_alloc_copy(
     struct mtxmatrix_coordinate * dst,
-    const struct mtxmatrix_coordinate * src);
+    const struct mtxmatrix_coordinate * src)
+{
+    return mtxmatrix_coordinate_alloc(
+        dst, src->field, src->precision,
+        src->num_rows, src->num_columns,
+        src->num_nonzeros);
+}
 
 /**
  * `mtxmatrix_coordinate_init_copy()' allocates a copy of a matrix and
@@ -92,7 +98,14 @@ int mtxmatrix_coordinate_alloc_copy(
  */
 int mtxmatrix_coordinate_init_copy(
     struct mtxmatrix_coordinate * dst,
-    const struct mtxmatrix_coordinate * src);
+    const struct mtxmatrix_coordinate * src)
+{
+    int err = mtxmatrix_coordinate_alloc_copy(dst, src);
+    if (err) return err;
+    err = mtxmatrix_coordinate_copy(dst, src);
+    if (err) return err;
+    return MTX_SUCCESS;
+}
 
 /*
  * Matrix coordinate formats
@@ -786,9 +799,13 @@ int mtxmatrix_coordinate_from_mtxfile(
  * in Matrix Market format.
  */
 int mtxmatrix_coordinate_to_mtxfile(
+    struct mtxfile * mtxfile,
     const struct mtxmatrix_coordinate * matrix,
-    struct mtxfile * mtxfile)
+    enum mtxfileformat mtxfmt)
 {
+    if (mtxfmt != mtxfile_coordinate)
+        return MTX_ERR_INCOMPATIBLE_MTX_FORMAT;
+
     int err;
     if (matrix->field == mtx_field_real) {
         err = mtxfile_alloc_matrix_coordinate(
@@ -883,6 +900,436 @@ int mtxmatrix_coordinate_to_mtxfile(
         return MTX_ERR_INVALID_FIELD;
     }
     return MTX_SUCCESS;
+}
+
+/*
+ * Level 1 BLAS operations
+ */
+
+static int mtxmatrix_coordinate_vectorise(
+    struct mtxvector_coordinate * vecx,
+    const struct mtxmatrix_coordinate * x)
+{
+    int64_t size;
+    if (__builtin_mul_overflow(x->num_rows, x->num_columns, &size)) {
+        errno = EOVERFLOW;
+        return MTX_ERR_ERRNO;
+    } else if (size > INT_MAX) {
+        errno = ERANGE;
+        return MTX_ERR_ERRNO;
+    }
+
+    vecx->field = x->field;
+    vecx->precision = x->precision;
+    vecx->size = size;
+    vecx->num_nonzeros = x->num_nonzeros;
+    vecx->indices = NULL;
+    if (x->field == mtx_field_real) {
+        if (x->precision == mtx_single) {
+            vecx->data.real_single = x->data.real_single;
+        } else if (x->precision == mtx_double) {
+            vecx->data.real_double = x->data.real_double;
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else if (x->field == mtx_field_complex) {
+        if (x->precision == mtx_single) {
+            vecx->data.complex_single = x->data.complex_single;
+        } else if (x->precision == mtx_double) {
+            vecx->data.complex_double = x->data.complex_double;
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else if (x->field == mtx_field_integer) {
+        if (x->precision == mtx_single) {
+            vecx->data.integer_single = x->data.integer_single;
+        } else if (x->precision == mtx_double) {
+            vecx->data.integer_double = x->data.integer_double;
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else {
+        return MTX_ERR_INVALID_FIELD;
+    }
+    return MTX_SUCCESS;
+}
+
+/**
+ * ‘mtxmatrix_coordinate_swap()’ swaps values of two matrices,
+ * simultaneously performing ‘y <- x’ and ‘x <- y’.
+ *
+ * The matrices ‘x’ and ‘y’ must have the same field, precision and
+ * size.
+ */
+int mtxmatrix_coordinate_swap(
+    struct mtxmatrix_coordinate * x,
+    struct mtxmatrix_coordinate * y)
+{
+    struct mtxvector_coordinate vecx;
+    int err = mtxmatrix_coordinate_vectorise(&vecx, x);
+    if (err) return err;
+    struct mtxvector_coordinate vecy;
+    err = mtxmatrix_coordinate_vectorise(&vecy, x);
+    if (err) return err;
+    return mtxvector_coordinate_swap(&vecx, &vecy);
+}
+
+/**
+ * ‘mtxmatrix_coordinate_copy()’ copies values of a matrix, ‘y = x’.
+ *
+ * The matrices ‘x’ and ‘y’ must have the same field, precision and
+ * size.
+ */
+int mtxmatrix_coordinate_copy(
+    struct mtxmatrix_coordinate * y,
+    const struct mtxmatrix_coordinate * x)
+{
+    struct mtxvector_coordinate vecy;
+    int err = mtxmatrix_coordinate_vectorise(&vecy, y);
+    if (err) return err;
+    struct mtxvector_coordinate vecx;
+    err = mtxmatrix_coordinate_vectorise(&vecx, x);
+    if (err) return err;
+    return mtxvector_coordinate_copy(&vecy, &vecx);
+}
+
+/**
+ * ‘mtxmatrix_coordinate_sscal()’ scales a matrix by a single
+ * precision floating point scalar, ‘x = a*x’.
+ */
+int mtxmatrix_coordinate_sscal(
+    float a,
+    struct mtxmatrix_coordinate * x,
+    int64_t * num_flops)
+{
+    struct mtxvector_coordinate vecx;
+    int err = mtxmatrix_coordinate_vectorise(&vecx, x);
+    if (err) return err;
+    return mtxvector_coordinate_sscal(a, &vecx, num_flops);
+}
+
+/**
+ * ‘mtxmatrix_coordinate_dscal()’ scales a matrix by a double
+ * precision floating point scalar, ‘x = a*x’.
+ */
+int mtxmatrix_coordinate_dscal(
+    double a,
+    struct mtxmatrix_coordinate * x,
+    int64_t * num_flops)
+{
+    struct mtxvector_coordinate vecx;
+    int err = mtxmatrix_coordinate_vectorise(&vecx, x);
+    if (err) return err;
+    return mtxvector_coordinate_dscal(a, &vecx, num_flops);
+}
+
+/**
+ * ‘mtxmatrix_coordinate_saxpy()’ adds a matrix to another one
+ * multiplied by a single precision floating point value, ‘y = a*x +
+ * y’.
+ *
+ * The matrices ‘x’ and ‘y’ must have the same field, precision and
+ * size.
+ */
+int mtxmatrix_coordinate_saxpy(
+    float a,
+    const struct mtxmatrix_coordinate * x,
+    struct mtxmatrix_coordinate * y,
+    int64_t * num_flops)
+{
+    struct mtxvector_coordinate vecx;
+    int err = mtxmatrix_coordinate_vectorise(&vecx, x);
+    if (err) return err;
+    struct mtxvector_coordinate vecy;
+    err = mtxmatrix_coordinate_vectorise(&vecy, y);
+    if (err) return err;
+    return mtxvector_coordinate_saxpy(a, &vecx, &vecy, num_flops);
+}
+
+/**
+ * ‘mtxmatrix_coordinate_daxpy()’ adds a matrix to another one
+ * multiplied by a double precision floating point value, ‘y = a*x +
+ * y’.
+ *
+ * The matrices ‘x’ and ‘y’ must have the same field, precision and
+ * size.
+ */
+int mtxmatrix_coordinate_daxpy(
+    double a,
+    const struct mtxmatrix_coordinate * x,
+    struct mtxmatrix_coordinate * y,
+    int64_t * num_flops)
+{
+    struct mtxvector_coordinate vecx;
+    int err = mtxmatrix_coordinate_vectorise(&vecx, x);
+    if (err) return err;
+    struct mtxvector_coordinate vecy;
+    err = mtxmatrix_coordinate_vectorise(&vecy, y);
+    if (err) return err;
+    return mtxvector_coordinate_daxpy(a, &vecx, &vecy, num_flops);
+}
+
+/**
+ * ‘mtxmatrix_coordinate_saypx()’ multiplies a matrix by a single
+ * precision floating point scalar and adds another matrix, ‘y = a*y +
+ * x’.
+ *
+ * The matrices ‘x’ and ‘y’ must have the same field, precision and
+ * size.
+ */
+int mtxmatrix_coordinate_saypx(
+    float a,
+    struct mtxmatrix_coordinate * y,
+    const struct mtxmatrix_coordinate * x,
+    int64_t * num_flops)
+{
+    struct mtxvector_coordinate vecy;
+    int err = mtxmatrix_coordinate_vectorise(&vecy, y);
+    if (err) return err;
+    struct mtxvector_coordinate vecx;
+    err = mtxmatrix_coordinate_vectorise(&vecx, x);
+    if (err) return err;
+    return mtxvector_coordinate_saypx(a, &vecy, &vecx, num_flops);
+}
+
+/**
+ * ‘mtxmatrix_coordinate_daypx()’ multiplies a matrix by a double
+ * precision floating point scalar and adds another matrix, ‘y = a*y +
+ * x’.
+ *
+ * The matrices ‘x’ and ‘y’ must have the same field, precision and
+ * size.
+ */
+int mtxmatrix_coordinate_daypx(
+    double a,
+    struct mtxmatrix_coordinate * y,
+    const struct mtxmatrix_coordinate * x,
+    int64_t * num_flops)
+{
+    struct mtxvector_coordinate vecy;
+    int err = mtxmatrix_coordinate_vectorise(&vecy, y);
+    if (err) return err;
+    struct mtxvector_coordinate vecx;
+    err = mtxmatrix_coordinate_vectorise(&vecx, x);
+    if (err) return err;
+    return mtxvector_coordinate_daypx(a, &vecy, &vecx, num_flops);
+}
+
+/**
+ * ‘mtxmatrix_coordinate_sdot()’ computes the Frobenius inner product
+ * of two matrices in single precision floating point.
+ *
+ * The matrices ‘x’ and ‘y’ must have the same field, precision and
+ * size.
+ */
+int mtxmatrix_coordinate_sdot(
+    const struct mtxmatrix_coordinate * x,
+    const struct mtxmatrix_coordinate * y,
+    float * dot,
+    int64_t * num_flops)
+{
+    struct mtxvector_coordinate vecx;
+    int err = mtxmatrix_coordinate_vectorise(&vecx, x);
+    if (err) return err;
+    struct mtxvector_coordinate vecy;
+    err = mtxmatrix_coordinate_vectorise(&vecy, y);
+    if (err) return err;
+    return mtxvector_coordinate_sdot(&vecx, &vecy, dot, num_flops);
+}
+
+/**
+ * ‘mtxmatrix_coordinate_ddot()’ computes the Frobenius inner product
+ * of two matrices in double precision floating point.
+ *
+ * The matrices ‘x’ and ‘y’ must have the same field, precision and
+ * size.
+ */
+int mtxmatrix_coordinate_ddot(
+    const struct mtxmatrix_coordinate * x,
+    const struct mtxmatrix_coordinate * y,
+    double * dot,
+    int64_t * num_flops)
+{
+    struct mtxvector_coordinate vecx;
+    int err = mtxmatrix_coordinate_vectorise(&vecx, x);
+    if (err) return err;
+    struct mtxvector_coordinate vecy;
+    err = mtxmatrix_coordinate_vectorise(&vecy, y);
+    if (err) return err;
+    return mtxvector_coordinate_ddot(&vecx, &vecy, dot, num_flops);
+}
+
+/**
+ * ‘mtxmatrix_coordinate_cdotu()’ computes the product of the
+ * transpose of a complex row matrix with another complex row matrix
+ * in single precision floating point, ‘dot := x^T*y’.
+ *
+ * The matrices ‘x’ and ‘y’ must have the same field, precision and
+ * size.
+ */
+int mtxmatrix_coordinate_cdotu(
+    const struct mtxmatrix_coordinate * x,
+    const struct mtxmatrix_coordinate * y,
+    float (* dot)[2],
+    int64_t * num_flops)
+{
+    struct mtxvector_coordinate vecx;
+    int err = mtxmatrix_coordinate_vectorise(&vecx, x);
+    if (err) return err;
+    struct mtxvector_coordinate vecy;
+    err = mtxmatrix_coordinate_vectorise(&vecy, y);
+    if (err) return err;
+    return mtxvector_coordinate_cdotu(&vecx, &vecy, dot, num_flops);
+}
+
+/**
+ * ‘mtxmatrix_coordinate_zdotu()’ computes the product of the
+ * transpose of a complex row matrix with another complex row matrix
+ * in double precision floating point, ‘dot := x^T*y’.
+ *
+ * The matrices ‘x’ and ‘y’ must have the same field, precision and
+ * size.
+ */
+int mtxmatrix_coordinate_zdotu(
+    const struct mtxmatrix_coordinate * x,
+    const struct mtxmatrix_coordinate * y,
+    double (* dot)[2],
+    int64_t * num_flops)
+{
+    struct mtxvector_coordinate vecx;
+    int err = mtxmatrix_coordinate_vectorise(&vecx, x);
+    if (err) return err;
+    struct mtxvector_coordinate vecy;
+    err = mtxmatrix_coordinate_vectorise(&vecy, y);
+    if (err) return err;
+    return mtxvector_coordinate_zdotu(&vecx, &vecy, dot, num_flops);
+}
+
+/**
+ * ‘mtxmatrix_coordinate_cdotc()’ computes the Frobenius inner product
+ * of two complex matrices in single precision floating point, ‘dot :=
+ * x^H*y’.
+ *
+ * The matrices ‘x’ and ‘y’ must have the same field, precision and
+ * size.
+ */
+int mtxmatrix_coordinate_cdotc(
+    const struct mtxmatrix_coordinate * x,
+    const struct mtxmatrix_coordinate * y,
+    float (* dot)[2],
+    int64_t * num_flops)
+{
+    struct mtxvector_coordinate vecx;
+    int err = mtxmatrix_coordinate_vectorise(&vecx, x);
+    if (err) return err;
+    struct mtxvector_coordinate vecy;
+    err = mtxmatrix_coordinate_vectorise(&vecy, y);
+    if (err) return err;
+    return mtxvector_coordinate_cdotc(&vecx, &vecy, dot, num_flops);
+}
+
+/**
+ * ‘mtxmatrix_coordinate_zdotc()’ computes the Frobenius inner product
+ * of two complex matrices in double precision floating point, ‘dot :=
+ * x^H*y’.
+ *
+ * The matrices ‘x’ and ‘y’ must have the same field, precision and
+ * size.
+ */
+int mtxmatrix_coordinate_zdotc(
+    const struct mtxmatrix_coordinate * x,
+    const struct mtxmatrix_coordinate * y,
+    double (* dot)[2],
+    int64_t * num_flops)
+{
+    struct mtxvector_coordinate vecx;
+    int err = mtxmatrix_coordinate_vectorise(&vecx, x);
+    if (err) return err;
+    struct mtxvector_coordinate vecy;
+    err = mtxmatrix_coordinate_vectorise(&vecy, y);
+    if (err) return err;
+    return mtxvector_coordinate_zdotc(&vecx, &vecy, dot, num_flops);
+}
+
+/**
+ * ‘mtxmatrix_coordinate_snrm2()’ computes the Frobenius norm of a
+ * matrix in single precision floating point.
+ */
+int mtxmatrix_coordinate_snrm2(
+    const struct mtxmatrix_coordinate * x,
+    float * nrm2,
+    int64_t * num_flops)
+{
+    struct mtxvector_coordinate vecx;
+    int err = mtxmatrix_coordinate_vectorise(&vecx, x);
+    if (err) return err;
+    return mtxvector_coordinate_snrm2(&vecx, nrm2, num_flops);
+}
+
+/**
+ * ‘mtxmatrix_coordinate_dnrm2()’ computes the Frobenius norm of a
+ * matrix in double precision floating point.
+ */
+int mtxmatrix_coordinate_dnrm2(
+    const struct mtxmatrix_coordinate * x,
+    double * nrm2,
+    int64_t * num_flops)
+{
+    struct mtxvector_coordinate vecx;
+    int err = mtxmatrix_coordinate_vectorise(&vecx, x);
+    if (err) return err;
+    return mtxvector_coordinate_dnrm2(&vecx, nrm2, num_flops);
+}
+
+/**
+ * ‘mtxmatrix_coordinate_sasum()’ computes the sum of absolute values
+ * (1-norm) of a matrix in single precision floating point.  If the
+ * matrix is complex-valued, then the sum of the absolute values of
+ * the real and imaginary parts is computed.
+ */
+int mtxmatrix_coordinate_sasum(
+    const struct mtxmatrix_coordinate * x,
+    float * asum,
+    int64_t * num_flops)
+{
+    struct mtxvector_coordinate vecx;
+    int err = mtxmatrix_coordinate_vectorise(&vecx, x);
+    if (err) return err;
+    return mtxvector_coordinate_sasum(&vecx, asum, num_flops);
+}
+
+/**
+ * ‘mtxmatrix_coordinate_dasum()’ computes the sum of absolute values
+ * (1-norm) of a matrix in double precision floating point.  If the
+ * matrix is complex-valued, then the sum of the absolute values of
+ * the real and imaginary parts is computed.
+ */
+int mtxmatrix_coordinate_dasum(
+    const struct mtxmatrix_coordinate * x,
+    double * asum,
+    int64_t * num_flops)
+{
+    struct mtxvector_coordinate vecx;
+    int err = mtxmatrix_coordinate_vectorise(&vecx, x);
+    if (err) return err;
+    return mtxvector_coordinate_dasum(&vecx, asum, num_flops);
+}
+
+/**
+ * ‘mtxmatrix_coordinate_iamax()’ finds the index of the first element
+ * having the maximum absolute value.  If the matrix is
+ * complex-valued, then the index points to the first element having
+ * the maximum sum of the absolute values of the real and imaginary
+ * parts.
+ */
+int mtxmatrix_coordinate_iamax(
+    const struct mtxmatrix_coordinate * x,
+    int * iamax)
+{
+    struct mtxvector_coordinate vecx;
+    int err = mtxmatrix_coordinate_vectorise(&vecx, x);
+    if (err) return err;
+    return mtxvector_coordinate_iamax(&vecx, iamax);
 }
 
 /*

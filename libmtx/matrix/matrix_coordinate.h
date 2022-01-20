@@ -277,8 +277,241 @@ int mtxmatrix_coordinate_from_mtxfile(
  * in Matrix Market format.
  */
 int mtxmatrix_coordinate_to_mtxfile(
+    struct mtxfile * mtxfile,
     const struct mtxmatrix_coordinate * matrix,
-    struct mtxfile * mtxfile);
+    enum mtxfileformat mtxfmt);
+
+/*
+ * Level 1 BLAS operations
+ */
+
+/**
+ * ‘mtxmatrix_coordinate_swap()’ swaps values of two matrices,
+ * simultaneously performing ‘y <- x’ and ‘x <- y’.
+ *
+ * The matrices ‘x’ and ‘y’ must have the same field, precision and
+ * size.
+ */
+int mtxmatrix_coordinate_swap(
+    struct mtxmatrix_coordinate * x,
+    struct mtxmatrix_coordinate * y);
+
+/**
+ * ‘mtxmatrix_coordinate_copy()’ copies values of a matrix, ‘y = x’.
+ *
+ * The matrices ‘x’ and ‘y’ must have the same field, precision and
+ * size.
+ */
+int mtxmatrix_coordinate_copy(
+    struct mtxmatrix_coordinate * y,
+    const struct mtxmatrix_coordinate * x);
+
+/**
+ * ‘mtxmatrix_coordinate_sscal()’ scales a matrix by a single
+ * precision floating point scalar, ‘x = a*x’.
+ */
+int mtxmatrix_coordinate_sscal(
+    float a,
+    struct mtxmatrix_coordinate * x,
+    int64_t * num_flops);
+
+/**
+ * ‘mtxmatrix_coordinate_dscal()’ scales a matrix by a double
+ * precision floating point scalar, ‘x = a*x’.
+ */
+int mtxmatrix_coordinate_dscal(
+    double a,
+    struct mtxmatrix_coordinate * x,
+    int64_t * num_flops);
+
+/**
+ * ‘mtxmatrix_coordinate_saxpy()’ adds a matrix to another one
+ * multiplied by a single precision floating point value, ‘y = a*x +
+ * y’.
+ *
+ * The matrices ‘x’ and ‘y’ must have the same field, precision and
+ * size.
+ */
+int mtxmatrix_coordinate_saxpy(
+    float a,
+    const struct mtxmatrix_coordinate * x,
+    struct mtxmatrix_coordinate * y,
+    int64_t * num_flops);
+
+/**
+ * ‘mtxmatrix_coordinate_daxpy()’ adds a matrix to another one
+ * multiplied by a double precision floating point value, ‘y = a*x +
+ * y’.
+ *
+ * The matrices ‘x’ and ‘y’ must have the same field, precision and
+ * size.
+ */
+int mtxmatrix_coordinate_daxpy(
+    double a,
+    const struct mtxmatrix_coordinate * x,
+    struct mtxmatrix_coordinate * y,
+    int64_t * num_flops);
+
+/**
+ * ‘mtxmatrix_coordinate_saypx()’ multiplies a matrix by a single
+ * precision floating point scalar and adds another matrix, ‘y = a*y +
+ * x’.
+ *
+ * The matrices ‘x’ and ‘y’ must have the same field, precision and
+ * size.
+ */
+int mtxmatrix_coordinate_saypx(
+    float a,
+    struct mtxmatrix_coordinate * y,
+    const struct mtxmatrix_coordinate * x,
+    int64_t * num_flops);
+
+/**
+ * ‘mtxmatrix_coordinate_daypx()’ multiplies a matrix by a double
+ * precision floating point scalar and adds another matrix, ‘y = a*y +
+ * x’.
+ *
+ * The matrices ‘x’ and ‘y’ must have the same field, precision and
+ * size.
+ */
+int mtxmatrix_coordinate_daypx(
+    double a,
+    struct mtxmatrix_coordinate * y,
+    const struct mtxmatrix_coordinate * x,
+    int64_t * num_flops);
+
+/**
+ * ‘mtxmatrix_coordinate_sdot()’ computes the Frobenius inner product
+ * of two matrices in single precision floating point.
+ *
+ * The matrices ‘x’ and ‘y’ must have the same field, precision and
+ * size.
+ */
+int mtxmatrix_coordinate_sdot(
+    const struct mtxmatrix_coordinate * x,
+    const struct mtxmatrix_coordinate * y,
+    float * dot,
+    int64_t * num_flops);
+
+/**
+ * ‘mtxmatrix_coordinate_ddot()’ computes the Frobenius inner product
+ * of two matrices in double precision floating point.
+ *
+ * The matrices ‘x’ and ‘y’ must have the same field, precision and
+ * size.
+ */
+int mtxmatrix_coordinate_ddot(
+    const struct mtxmatrix_coordinate * x,
+    const struct mtxmatrix_coordinate * y,
+    double * dot,
+    int64_t * num_flops);
+
+/**
+ * ‘mtxmatrix_coordinate_cdotu()’ computes the product of the
+ * transpose of a complex row matrix with another complex row matrix
+ * in single precision floating point, ‘dot := x^T*y’.
+ *
+ * The matrices ‘x’ and ‘y’ must have the same field, precision and
+ * size.
+ */
+int mtxmatrix_coordinate_cdotu(
+    const struct mtxmatrix_coordinate * x,
+    const struct mtxmatrix_coordinate * y,
+    float (* dot)[2],
+    int64_t * num_flops);
+
+/**
+ * ‘mtxmatrix_coordinate_zdotu()’ computes the product of the
+ * transpose of a complex row matrix with another complex row matrix
+ * in double precision floating point, ‘dot := x^T*y’.
+ *
+ * The matrices ‘x’ and ‘y’ must have the same field, precision and
+ * size.
+ */
+int mtxmatrix_coordinate_zdotu(
+    const struct mtxmatrix_coordinate * x,
+    const struct mtxmatrix_coordinate * y,
+    double (* dot)[2],
+    int64_t * num_flops);
+
+/**
+ * ‘mtxmatrix_coordinate_cdotc()’ computes the Frobenius inner product
+ * of two complex matrices in single precision floating point, ‘dot :=
+ * x^H*y’.
+ *
+ * The matrices ‘x’ and ‘y’ must have the same field, precision and
+ * size.
+ */
+int mtxmatrix_coordinate_cdotc(
+    const struct mtxmatrix_coordinate * x,
+    const struct mtxmatrix_coordinate * y,
+    float (* dot)[2],
+    int64_t * num_flops);
+
+/**
+ * ‘mtxmatrix_coordinate_zdotc()’ computes the Frobenius inner product
+ * of two complex matrices in double precision floating point, ‘dot :=
+ * x^H*y’.
+ *
+ * The matrices ‘x’ and ‘y’ must have the same field, precision and
+ * size.
+ */
+int mtxmatrix_coordinate_zdotc(
+    const struct mtxmatrix_coordinate * x,
+    const struct mtxmatrix_coordinate * y,
+    double (* dot)[2],
+    int64_t * num_flops);
+
+/**
+ * ‘mtxmatrix_coordinate_snrm2()’ computes the Frobenius norm of a
+ * matrix in single precision floating point.
+ */
+int mtxmatrix_coordinate_snrm2(
+    const struct mtxmatrix_coordinate * x,
+    float * nrm2,
+    int64_t * num_flops);
+
+/**
+ * ‘mtxmatrix_coordinate_dnrm2()’ computes the Frobenius norm of a
+ * matrix in double precision floating point.
+ */
+int mtxmatrix_coordinate_dnrm2(
+    const struct mtxmatrix_coordinate * x,
+    double * nrm2,
+    int64_t * num_flops);
+
+/**
+ * ‘mtxmatrix_coordinate_sasum()’ computes the sum of absolute values
+ * (1-norm) of a matrix in single precision floating point.  If the
+ * matrix is complex-valued, then the sum of the absolute values of
+ * the real and imaginary parts is computed.
+ */
+int mtxmatrix_coordinate_sasum(
+    const struct mtxmatrix_coordinate * x,
+    float * asum,
+    int64_t * num_flops);
+
+/**
+ * ‘mtxmatrix_coordinate_dasum()’ computes the sum of absolute values
+ * (1-norm) of a matrix in double precision floating point.  If the
+ * matrix is complex-valued, then the sum of the absolute values of
+ * the real and imaginary parts is computed.
+ */
+int mtxmatrix_coordinate_dasum(
+    const struct mtxmatrix_coordinate * x,
+    double * asum,
+    int64_t * num_flops);
+
+/**
+ * ‘mtxmatrix_coordinate_iamax()’ finds the index of the first element
+ * having the maximum absolute value.  If the matrix is
+ * complex-valued, then the index points to the first element having
+ * the maximum sum of the absolute values of the real and imaginary
+ * parts.
+ */
+int mtxmatrix_coordinate_iamax(
+    const struct mtxmatrix_coordinate * x,
+    int * iamax);
 
 /*
  * Level 2 BLAS operations (matrix-vector)

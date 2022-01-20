@@ -256,8 +256,8 @@ convert @code{struct mtxvector} to a vector in Matrix Market format,
 the function @code{mtxvector_to_mtxfile} can be used.
 @example
 @code{int mtxvector_to_mtxfile(
-    const struct mtxvector * mtxvector,
     struct mtxfile * mtxfile,
+    const struct mtxvector * mtxvector,
     enum mtxfileformat mtxfmt);}
 @end example
 The resulting Matrix Market represents a vector in array format if
@@ -743,12 +743,13 @@ convert @code{struct mtxmatrix} to a matrix in Matrix Market format,
 the function @code{mtxmatrix_to_mtxfile} can be used.
 @example
 @code{int mtxmatrix_to_mtxfile(
+    struct mtxfile * mtxfile,
     const struct mtxmatrix * mtxmatrix,
-    struct mtxfile * mtxfile);}
+    enum mtxfileformat mtxfmt);}
 @end example
-The resulting Matrix Market file may be a matrix in array or
-coordinate format, depending on the type of @code{mtxmatrix}.
-
+The resulting Matrix Market represents a matrix in array format if
+@code{mtxfmt} is @samp{mtxfile_array}, or a matrix in coordinate
+format if @code{mtxfmt} is @samp{mtxfile_coordinate}.
 
 @node Reading and writing matrices
 @subsection Reading and writing Matrix Market files

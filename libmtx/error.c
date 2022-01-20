@@ -373,6 +373,7 @@ int mtxdisterror_allreduce(
     if (err == MTX_ERR_MPI_COLLECTIVE)
         return err;
 
+    disterr->err = err;
     int buf[3] = { disterr->rank, err, errno };
     int mpierr = MPI_Allgather(
         &buf, 3, MPI_INT, disterr->buf, 3, MPI_INT,

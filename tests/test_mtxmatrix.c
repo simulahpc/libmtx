@@ -1,23 +1,22 @@
 /* This file is part of Libmtx.
  *
- * Copyright (C) 2021 James D. Trotter
+ * Copyright (C) 2022 James D. Trotter
  *
- * Libmtx is free software: you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 3 of the
- * License, or (at your option) any later version.
+ * Libmtx is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * Libmtx is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * Libmtx is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with Libmtx.  If not, see
- * <https://www.gnu.org/licenses/>.
+ * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-09-20
+ * Last modified: 2022-01-21
  *
  * Unit tests for matrices.
  */
@@ -934,7 +933,7 @@ int test_mtxmatrix_to_mtxfile(void)
         err = mtxmatrix_init_array_real_single(&A, num_rows, num_columns, Adata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxfile mtxfile;
-        err = mtxmatrix_to_mtxfile(&A, &mtxfile);
+        err = mtxmatrix_to_mtxfile(&mtxfile, &A, mtxfile_array);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(mtxfile_matrix, mtxfile.header.object);
         TEST_ASSERT_EQ(mtxfile_array, mtxfile.header.format);
@@ -960,7 +959,7 @@ int test_mtxmatrix_to_mtxfile(void)
         err = mtxmatrix_init_array_real_double(&A, num_rows, num_columns, Adata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxfile mtxfile;
-        err = mtxmatrix_to_mtxfile(&A, &mtxfile);
+        err = mtxmatrix_to_mtxfile(&mtxfile, &A, mtxfile_array);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(mtxfile_matrix, mtxfile.header.object);
         TEST_ASSERT_EQ(mtxfile_array, mtxfile.header.format);
@@ -986,7 +985,7 @@ int test_mtxmatrix_to_mtxfile(void)
         err = mtxmatrix_init_array_complex_single(&A, num_rows, num_columns, Adata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxfile mtxfile;
-        err = mtxmatrix_to_mtxfile(&A, &mtxfile);
+        err = mtxmatrix_to_mtxfile(&mtxfile, &A, mtxfile_array);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(mtxfile_matrix, mtxfile.header.object);
         TEST_ASSERT_EQ(mtxfile_array, mtxfile.header.format);
@@ -1014,7 +1013,7 @@ int test_mtxmatrix_to_mtxfile(void)
         err = mtxmatrix_init_array_complex_double(&A, num_rows, num_columns, Adata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxfile mtxfile;
-        err = mtxmatrix_to_mtxfile(&A, &mtxfile);
+        err = mtxmatrix_to_mtxfile(&mtxfile, &A, mtxfile_array);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(mtxfile_matrix, mtxfile.header.object);
         TEST_ASSERT_EQ(mtxfile_array, mtxfile.header.format);
@@ -1042,7 +1041,7 @@ int test_mtxmatrix_to_mtxfile(void)
         err = mtxmatrix_init_array_integer_single(&A, num_rows, num_columns, Adata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxfile mtxfile;
-        err = mtxmatrix_to_mtxfile(&A, &mtxfile);
+        err = mtxmatrix_to_mtxfile(&mtxfile, &A, mtxfile_array);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(mtxfile_matrix, mtxfile.header.object);
         TEST_ASSERT_EQ(mtxfile_array, mtxfile.header.format);
@@ -1068,7 +1067,7 @@ int test_mtxmatrix_to_mtxfile(void)
         err = mtxmatrix_init_array_integer_double(&A, num_rows, num_columns, Adata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxfile mtxfile;
-        err = mtxmatrix_to_mtxfile(&A, &mtxfile);
+        err = mtxmatrix_to_mtxfile(&mtxfile, &A, mtxfile_array);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(mtxfile_matrix, mtxfile.header.object);
         TEST_ASSERT_EQ(mtxfile_array, mtxfile.header.format);
@@ -1101,7 +1100,7 @@ int test_mtxmatrix_to_mtxfile(void)
             &A, num_rows, num_columns, nnz, rowidx, colidx, Adata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxfile mtxfile;
-        err = mtxmatrix_to_mtxfile(&A, &mtxfile);
+        err = mtxmatrix_to_mtxfile(&mtxfile, &A, mtxfile_coordinate);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(mtxfile_matrix, mtxfile.header.object);
         TEST_ASSERT_EQ(mtxfile_coordinate, mtxfile.header.format);
@@ -1134,7 +1133,7 @@ int test_mtxmatrix_to_mtxfile(void)
             &A, num_rows, num_columns, nnz, rowidx, colidx, Adata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxfile mtxfile;
-        err = mtxmatrix_to_mtxfile(&A, &mtxfile);
+        err = mtxmatrix_to_mtxfile(&mtxfile, &A, mtxfile_coordinate);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(mtxfile_matrix, mtxfile.header.object);
         TEST_ASSERT_EQ(mtxfile_coordinate, mtxfile.header.format);
@@ -1167,7 +1166,7 @@ int test_mtxmatrix_to_mtxfile(void)
             &A, num_rows, num_columns, nnz, rowidx, colidx, Adata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxfile mtxfile;
-        err = mtxmatrix_to_mtxfile(&A, &mtxfile);
+        err = mtxmatrix_to_mtxfile(&mtxfile, &A, mtxfile_coordinate);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(mtxfile_matrix, mtxfile.header.object);
         TEST_ASSERT_EQ(mtxfile_coordinate, mtxfile.header.format);
@@ -1201,7 +1200,7 @@ int test_mtxmatrix_to_mtxfile(void)
             &A, num_rows, num_columns, nnz, rowidx, colidx, Adata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxfile mtxfile;
-        err = mtxmatrix_to_mtxfile(&A, &mtxfile);
+        err = mtxmatrix_to_mtxfile(&mtxfile, &A, mtxfile_coordinate);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(mtxfile_matrix, mtxfile.header.object);
         TEST_ASSERT_EQ(mtxfile_coordinate, mtxfile.header.format);
@@ -1235,7 +1234,7 @@ int test_mtxmatrix_to_mtxfile(void)
             &A, num_rows, num_columns, nnz, rowidx, colidx, Adata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxfile mtxfile;
-        err = mtxmatrix_to_mtxfile(&A, &mtxfile);
+        err = mtxmatrix_to_mtxfile(&mtxfile, &A, mtxfile_coordinate);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(mtxfile_matrix, mtxfile.header.object);
         TEST_ASSERT_EQ(mtxfile_coordinate, mtxfile.header.format);
@@ -1268,7 +1267,7 @@ int test_mtxmatrix_to_mtxfile(void)
             &A, num_rows, num_columns, nnz, rowidx, colidx, Adata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxfile mtxfile;
-        err = mtxmatrix_to_mtxfile(&A, &mtxfile);
+        err = mtxmatrix_to_mtxfile(&mtxfile, &A, mtxfile_coordinate);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(mtxfile_matrix, mtxfile.header.object);
         TEST_ASSERT_EQ(mtxfile_coordinate, mtxfile.header.format);
@@ -1300,7 +1299,7 @@ int test_mtxmatrix_to_mtxfile(void)
             &A, num_rows, num_columns, nnz, rowidx, colidx);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxfile mtxfile;
-        err = mtxmatrix_to_mtxfile(&A, &mtxfile);
+        err = mtxmatrix_to_mtxfile(&mtxfile, &A, mtxfile_coordinate);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(mtxfile_matrix, mtxfile.header.object);
         TEST_ASSERT_EQ(mtxfile_coordinate, mtxfile.header.format);

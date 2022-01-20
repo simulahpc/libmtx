@@ -93,7 +93,14 @@ int mtxvector_array_alloc_copy(
  */
 int mtxvector_array_init_copy(
     struct mtxvector_array * dst,
-    const struct mtxvector_array * src);
+    const struct mtxvector_array * src)
+{
+    int err = mtxvector_array_alloc_copy(dst, src);
+    if (err) return err;
+    err = mtxvector_array_copy(dst, src);
+    if (err) return err;
+    return MTX_SUCCESS;
+}
 
 /*
  * Vector array formats

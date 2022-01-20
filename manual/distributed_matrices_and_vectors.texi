@@ -48,6 +48,7 @@ options for the underlying storage and implementation of vector
 operations.
 
 The definition of @code{struct mtxdistvector} is shown below.
+
 @example
 @code{struct mtxdistvector @{
     MPI_Comm comm;
@@ -57,6 +58,8 @@ The definition of @code{struct mtxdistvector} is shown below.
     struct mtxvector interior;
 @};}
 @end example
+
+@noindent
 Similar to @code{mtxdistfile} (see @ref{Data structures for
 distributed Matrix Market files}), the first three struct members of
 @code{mtxdistvector} contain information about the group of processes
@@ -77,6 +80,7 @@ distributed vector that resides on the current process.
 This section describes how to create distributed vectors. But first,
 the function @code{mtxdistvector_free} is used to free storage allocated
 for a distributed vector.
+
 @example
 @code{void mtxdistvector_free(struct mtxdistvector * distvector);}
 @end example
@@ -85,10 +89,12 @@ for a distributed vector.
 @findex mtxdistvector_init_copy
 To create a copy of an existing distributed vector, use the function
 @code{mtxdistvector_init_copy}.
+
 @example
 @code{int mtxdistvector_init_copy(
     struct mtxdistvector * dst,
-    const struct mtxdistvector * src);}
+    const struct mtxdistvector * src,
+    struct mtxdisterror * disterr);}
 @end example
 
 @cindex copy
@@ -96,10 +102,12 @@ To create a copy of an existing distributed vector, use the function
 If storage for a copy of an existing distributed vector is needed, but
 the vector values should not be copied or initialised, use the
 function @code{mtxdistvector_alloc_copy}.
+
 @example
 @code{int mtxdistvector_alloc_copy(
     struct mtxdistvector * dst,
-    const struct mtxdistvector * src);}
+    const struct mtxdistvector * src,
+    struct mtxdisterror * disterr);}
 @end example
 
 @cindex allocate
@@ -111,12 +119,13 @@ To allocate storage for a distributed vector in @emph{array} or
 @emph{coordinate} format, the functions
 @code{mtxdistvector_alloc_array} or
 @code{mtxdistvector_alloc_coordinate} may be used.
+
 @example
 @code{int mtxdistvector_alloc_array(
     struct mtxdistvector * vector,
     enum mtxfield field,
     enum mtxprecision precision,
-    int num_rows,
+    int num_local_rows,
     const struct mtxpartition * rowpart,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
@@ -125,25 +134,34 @@ int mtxdistvector_alloc_coordinate(
     struct mtxdistvector * vector,
     enum mtxfield field,
     enum mtxprecision precision,
-    int num_rows,
-    int64_t num_nonzeros,
+    int num_local_rows,
+    int64_t num_local_nonzeros,
     const struct mtxpartition * rowpart,
     MPI_Comm comm,
     struct mtxdisterror * disterr);}
 @end example
-@noindent
-In both cases, the desired field and precision must be specified, as
-well as the number of rows in the entire, global vector
-(@code{num_rows}). For a vector in coordinate format, it is also
-necessary to specify the number of nonzero vector elements
-(@code{num_nonzeros}) that will reside @emph{on the current process}.
-Note that the vector values are not initialised, and so it is up to
-the user to initialise them.
 
-@code{rowpart} must be a partitioning of the rows of the global
-vector, which means that @code{rowpart->size} must be equal to
-@samp{num_rows}. There may be at most one part in the partition per
-MPI process in the communicator @code{comm}.
+@noindent
+In addition to the desired field and precision, the argument
+@code{num_local_rows} is used to specify the number of rows of the
+vector that are @emph{owned by the current process}. For a vector in
+coordinate format, it is also necessary to specify the number of
+nonzero vector elements (@code{num_local_nonzeros}) that will reside
+on the current process. Note that the vector values are not
+initialised, and so it is up to the user to initialise them.
+
+If it is not @samp{NULL}, then @code{rowpart} must partition the rows
+of the global vector. Consequently, if @code{rank} is the rank of the
+current process, then @samp{rowpart->part_sizes[rank]} must be equal
+to the value of @samp{num_local_rows}. Moreover, @samp{rowpart->size}
+must be equal to the sum of the values of @samp{num_local_rows} on
+every process in the communicator @code{comm}. The partition may have
+at most one part for each MPI process in the communicator.
+
+If @code{rowpart} is @samp{NULL}, then the rows of the vector are
+partitioned into blocks with one block for each process in the MPI
+communicator @code{comm}. Moreover, the size of each block is obtained
+from the argument @code{num_local_rows} on each process.
 
 @findex mtxdistvector_init_@var{type}_@var{field}_@var{precision}
 If the vector values are already known, then there are also functions
@@ -158,51 +176,54 @@ precision (i.e., @samp{single} or @samp{double}).
 @findex mtxdistvector_init_array_complex_double
 For example, to create a double precision, complex vector in array
 format, use @code{mtxdistvector_init_array_complex_double}.
+
 @example
 @code{int mtxdistvector_init_array_complex_double(
     struct mtxdistvector * distvector,
-    int num_rows,
+    int num_local_rows,
     const double (* data)[2],
     const struct mtxpartition * rowpart,
     MPI_Comm comm,
     struct mtxdisterror * disterr);}
 @end example
+
 @noindent
 Each process provides its local vector entries in the array
 @code{data}. The length of the @code{data} array must be at least
-@samp{rowpart->part_sizes[rank]}, where @samp{rank} is the rank of the
-current process. (If there are fewer parts in the partition than MPI
-processes, then the @code{data} array is not used on processes where
-@samp{rank} is greater than or equal to
-@samp{rowpart->num_parts}. @code{data} may therefore be set to
-@samp{NULL} on those processes.)
+@samp{num_local_rows}. (There may be fewer parts in the partition than
+MPI processes. In this case, the @code{data} array is not used on
+processes where @samp{rank} is greater than or equal to
+@samp{rowpart->num_parts}, and may therefore be set to @samp{NULL} on
+those processes.)
 
 @findex mtxdistvector_init_coordinate_complex_double
 To create a double precision, complex vector in coordinate format, use
 @code{mtxdistvector_init_coordinate_complex_double}.
+
 @example
 @code{int mtxdistvector_init_coordinate_complex_double(
     struct mtxdistvector * vector,
-    int num_rows,
-    int64_t num_nonzeros,
+    int num_local_rows,
+    int64_t num_local_nonzeros,
     const int * idx,
     const double (* data)[2],
     const struct mtxpartition * rowpart,
     MPI_Comm comm,
     struct mtxdisterror * disterr);}
 @end example
+
 @noindent
 The arguments @code{idx} and @code{data} are arrays of length
-@code{num_nonzeros}. Each process may provide arrays of different
-lengths. Each index @samp{idx[0]}, @samp{idx[1]}, ...,
-@samp{idx[num_nonzeros-1]}, is an integer in the range
+@code{num_local_nonzeros}. Each process may provide arrays of
+different lengths. Each index @samp{idx[0]}, @samp{idx[1]}, ...,
+@samp{idx[num_local_nonzeros-1]}, is an integer in the range
 @samp{[0,N)}, where @samp{N} is the size of the part owned by the
 current process, (i.e., @samp{rowpart->part_sizes[rank]}, where
 @samp{rank} is the rank of the current process).
 
 Note that duplicate entries are allowed, but this may cause some
-operations (e.g., @code{mtxdistvector_dot}, @code{mtxdistvector_nrm2})) to
-produce incorrect results.
+operations (e.g., @code{mtxdistvector_[sd]dot},
+@code{mtxdistvector_[sd]nrm2})) to produce incorrect results.
 
 
 @node Modifying values of distributed vectors
@@ -222,6 +243,7 @@ and precision (i.e., @samp{single} or @samp{double}) of
 @findex mtxdistvector_set_constant_complex_double
 @findex mtxdistvector_set_constant_integer_single
 @findex mtxdistvector_set_constant_integer_double
+
 @example
 @code{int mtxdistvector_set_constant_real_single(
     struct mtxdistvector *, float a, struct mtxdisterror * disterr);
@@ -267,6 +289,7 @@ To convert a vector in Matrix Market format to @code{struct
 mtxdistvector}, the function @code{mtxdistvector_from_mtxfile} can be
 used. In this case, the Matrix Market file @code{mtxfile} must reside
 on the process whose rank is @code{root}.
+
 @example
 @code{int mtxdistvector_from_mtxfile(
     struct mtxdistvector * dst,
@@ -277,6 +300,7 @@ on the process whose rank is @code{root}.
     int root,
     struct mtxdisterror * disterr);}
 @end example
+
 @noindent
 The @code{type} argument may be used to specify a desired storage
 format or implementation for the underlying @code{mtxvector} on each
@@ -298,6 +322,7 @@ equal size by default.
 @findex mtxdistvector_to_mtxfile
 To convert @code{struct mtxdistvector} back to Matrix Market format,
 the function @code{mtxdistvector_to_mtxfile} can be used.
+
 @example
 @code{int mtxdistvector_to_mtxfile(
     const struct mtxdistvector * mtxdistvector,
@@ -307,6 +332,7 @@ the function @code{mtxdistvector_to_mtxfile} can be used.
     int root,
     struct mtxdisterror * disterr);}
 @end example
+
 @noindent
 The resulting Matrix Market file resides on the process whose rank is
 @code{root}. The vector is stored in array format if @code{mtxfmt} is
@@ -319,29 +345,33 @@ If a Matrix Market file has already been distributed among multiple
 processes, then @code{mtxdistvector_from_mtxdistfile} can be used to
 obtain a distributed vector with the desired partitioning and storage
 format.
+
 @example
 @code{int mtxdistvector_from_mtxdistfile(
     struct mtxdistvector * distvector,
     const struct mtxdistfile * mtxdistfile,
-    enum mtxvectortype vector_type,
+    enum mtxvectortype type,
     const struct mtxpartition * rowpart,
     MPI_Comm comm,
     struct mtxdisterror * disterr);}
 @end example
+
 @noindent
 Each process partitions its part of the distributed Matrix Market
 file. The data is then redistributed after partitioning.
 
-
 @findex mtxdistvector_to_mtxdistfile
 The function @code{mtxdistvector_to_mtxdistfile} will convert a
 distributed vector to a distributed Matrix Market format.
+
 @example
 @code{int mtxdistvector_to_mtxdistfile(
-    const struct mtxdistvector * distvector,
-    struct mtxdistfile * mtxdistfile,
+    struct mtxdistfile * dst,
+    const struct mtxdistvector * src,
+    enum mtxfileformat mtxfmt,
     struct mtxdisterror * disterr);}
 @end example
+
 @noindent
 In this case, there is no redistribution or communication of the
 underlying data.
@@ -361,6 +391,7 @@ each process.
 @findex mtxdistvector_read
 @findex mtxdistvector_fread
 @findex mtxdistvector_gzead
+
 @example
 @code{int mtxdistvector_read(
     struct mtxdistvector * vector,
@@ -391,6 +422,7 @@ int mtxdistvector_gzread(
     size_t line_max,
     char * linebuf);}
 @end example
+
 @noindent
 Here @code{type} specifies a format to use for representing the
 vector, whereas @code{precision} specifies the precision to use for
@@ -408,6 +440,7 @@ described in @ref{Reading Matrix Market files}.
 Conversely, the functions @code{mtxdistvector_write},
 @code{mtxdistvector_fwrite} and @code{mtxdistvector_gzwrite} are
 provided to write a vector to a file in Matrix Market format.
+
 @example
 @code{int mtxdistvector_write(
     const struct mtxdistvector * vector,
@@ -431,6 +464,7 @@ int mtxdistvector_gzwrite(
     const char * fmt,
     int64_t * bytes_written);}
 @end example
+
 @noindent
 The @code{mtxfmt} argument may be used to specify whether the vector
 should be written in array or coordinate format.
@@ -457,6 +491,7 @@ The function @code{mtxdistvector_swap} swaps the values of two
 vectors, whereas @code{mtxdistvector_copy} copies the values from one
 vector to another. Both operations are performed without any
 communication.
+
 @example
 @code{int mtxdistvector_swap(
     struct mtxdistvector * x,
@@ -476,6 +511,7 @@ The functions @code{mtxdistvector_sscal} and
 constant @code{a} in single or double precision, respectively. That
 is, @code{x = a*x}. This operation does not require communication
 between processes.
+
 @example
 @code{int mtxdistvector_sscal(
     float a,
@@ -489,6 +525,7 @@ int mtxdistvector_dscal(
     int64_t * num_flops,
     struct mtxdisterror * disterr);}
 @end example
+
 @noindent
 If @code{num_flops} is not @samp{NULL}, then it is used to return the
 total number of floating point operations performed by all processes.
@@ -502,6 +539,7 @@ The functions @code{mtxdistvector_saxpy}, @code{mtxdistvector_daxpy},
 vectors multiplied by a single or double precision floating point
 value, @code{y = a*x + y} or @code{y = a*y + x}. This may also be done
 without needing to perform communication.
+
 @example
 @code{int mtxdistvector_saxpy(
     float a,
@@ -538,6 +576,7 @@ The functions @code{mtxdistvector_sdot} and @code{mtxdistvector_ddot}
 compute the Euclidean dot product of two real- or integer-valued
 vectors. This performs a reduction among all processes involved to
 produce the final result.
+
 @example
 @code{int mtxdistvector_sdot(
     const struct mtxdistvector * x,
@@ -565,6 +604,7 @@ where @code{x^T} denotes the transpose of @code{x}. The functions
 @code{mtxdistvector_cdotc} and @code{mtxdistvector_zdotc} compute the
 Euclidean dot product of two complex vectors, @code{x^H*y}, where
 @code{x^H} denotes the conjugate transpose of @code{x}.
+
 @example
 @code{int mtxdistvector_cdotu(
     const struct mtxdistvector * x,
@@ -600,6 +640,7 @@ int mtxdistvector_zdotc(
 The functions @code{mtxdistvector_snrm2} and
 @code{mtxdistvector_dnrm2} compute the Euclidean norm of a vector. in
 single and double precision floating point, respectively.
+
 @example
 @code{int mtxdistvector_snrm2(
     const struct mtxdistvector * x,
@@ -622,6 +663,7 @@ The functions @code{mtxdistvector_sasum} and
 respectively. If the vector is complex-valued, then the sum of the
 absolute values of the real and imaginary parts is computed. A
 reduction is performed to combine the values computed by each process.
+
 @example
 @code{int mtxdistvector_sasum(
     const struct mtxdistvector * x,
@@ -642,6 +684,7 @@ element having the largest absolute value among all the vector
 elements. If the vector is complex-valued, then the index points to
 the first element having the maximum sum of the absolute values of the
 real and imaginary parts.
+
 @example
 @code{int mtxdistvector_iamax(
     const struct mtxdistvector * x,
@@ -656,25 +699,404 @@ real and imaginary parts.
 @tindex struct mtxdistmatrix
 The file @file{libmtx/distmatrix/distmatrix.h} defines the type
 @code{struct mtxdistmatrix}. This data type builds on top of
-@code{struct mtxmatrix} (see @ref{Matrices}) to offer different options
-for the underlying storage and implementation of matrix operations.
+@code{struct mtxmatrix} (see @ref{Matrices}) to offer different
+options for the underlying storage and implementation of matrix
+operations.
+
+The definition of @code{struct mtxdistmatrix} is shown below.
+
 @example
 @code{struct mtxdistmatrix @{
     MPI_Comm comm;
     int comm_size;
     int rank;
+    struct mtxpartition rowpart;
+    struct mtxpartition colpart;
     struct mtxmatrix interior;
 @};}
 @end example
+
 @noindent
-Similar to @code{mtxdistfile} (see @ref{Data structures for
-distributed Matrix Market files}), The first three struct members of
-@code{mtxdistmatrix} contain information about the group of processes
-sharing the distributed matrix. This includes their MPI communicator
-(@code{comm}), the number of processes (@code{comm_size}) and the rank
-of the current process (@code{rank}). The matrix, @code{interior},
-stores the part of the distributed matrix that resides on the current
-process.
+This is mostly similar to @code{struct mtxdistvector}, except that
+@code{interior} is of type @code{struct mtxmatrix} and is used to
+store the part of the distributed matrix that resides on the current
+process. In addition, there is an additional struct member,
+@code{colpart}, to partition the matrix columns. Libmtx thus allows 2D
+partitionings and distributions of matrices among a two-dimensional
+grid of processes.
+
+@node Creating distributed matrices
+@subsection Creating distributed matrices
+@cindex free
+@findex mtxdistmatrix_free
+This section describes how to create distributed matrices. But first,
+the function @code{mtxdistmatrix_free} is used to free storage allocated
+for a distributed matrix.
+
+@example
+@code{void mtxdistmatrix_free(struct mtxdistmatrix * distmatrix);}
+@end example
+
+@cindex copy
+@findex mtxdistmatrix_init_copy
+To create a copy of an existing distributed matrix, use the function
+@code{mtxdistmatrix_init_copy}.
+
+@example
+@code{int mtxdistmatrix_init_copy(
+    struct mtxdistmatrix * dst,
+    const struct mtxdistmatrix * src,
+    struct mtxdisterror * disterr);}
+@end example
+
+@cindex copy
+@findex mtxdistmatrix_alloc_copy
+If storage for a copy of an existing distributed matrix is needed, but
+the matrix values should not be copied or initialised, use the
+function @code{mtxdistmatrix_alloc_copy}.
+
+@example
+@code{int mtxdistmatrix_alloc_copy(
+    struct mtxdistmatrix * dst,
+    const struct mtxdistmatrix * src,
+    struct mtxdisterror * disterr);}
+@end example
+
+@cindex allocate
+@cindex array format
+@cindex coordinate format
+@findex mtxdistmatrix_alloc_array
+@findex mtxdistmatrix_alloc_coordinate
+To allocate storage for a distributed matrix in @emph{array} or
+@emph{coordinate} format, the functions
+@code{mtxdistmatrix_alloc_array} or
+@code{mtxdistmatrix_alloc_coordinate} may be used.
+
+@example
+@code{int mtxdistmatrix_alloc_array(
+    struct mtxdistmatrix * matrix,
+    enum mtxfield field,
+    enum mtxprecision precision,
+    int num_local_rows,
+    int num_local_columns,
+    const struct mtxpartition * rowpart,
+    const struct mtxpartition * colpart,
+    MPI_Comm comm,
+    struct mtxdisterror * disterr);
+
+int mtxdistmatrix_alloc_coordinate(
+    struct mtxdistmatrix * matrix,
+    enum mtxfield field,
+    enum mtxprecision precision,
+    int num_local_rows,
+    int num_local_columns,
+    int64_t num_local_nonzeros,
+    const struct mtxpartition * rowpart,
+    const struct mtxpartition * colpart,
+    MPI_Comm comm,
+    struct mtxdisterror * disterr);}
+@end example
+
+@noindent
+Each process is responsible for a rectangular block of size
+@code{num_local_rows} and @code{num_local_columns} defined by the
+intersection certain rows and columns of the global matrix. For a
+matrix in coordinate format, it is also necessary to specify the
+number of nonzero matrix elements (@code{num_local_nonzeros}) that
+will reside on the current process. Note that matrix values are not
+initialised, and so it is up to the user to initialise them.
+
+If it is not @samp{NULL}, then @code{rowpart} must partition the rows
+of the global matrix. Consequently, if @code{rank} is the rank of the
+current process, then @samp{rowpart->part_sizes[rank]} must be equal
+to the value of @samp{num_local_rows}. Moreover, @samp{rowpart->size}
+must be equal to the sum of the values of @samp{num_local_rows} on
+every process in the communicator @code{comm}. The partition may have
+at most one part for each MPI process in the communicator. In the same
+manner, @code{colpart} may be used to partition the matrix columns.
+
+If @code{rowpart} and @code{colpart} are both @samp{NULL}, then the
+rows of the matrix are partitioned into blocks with one block for each
+process in the MPI communicator @code{comm}. Moreover, the size of
+each block is obtained from the argument @code{num_local_rows} on each
+process. If only one of @code{rowpart} or @code{colpart} are
+@samp{NULL}, then a singleton partition is used for the rows or
+columns, respectively.
+
+@findex mtxdistmatrix_init_@var{type}_@var{field}_@var{precision}
+If the matrix values are already known, then there are also functions
+for allocating a distributed matrix and initialising the values
+directly. This is done by calling
+@code{mtxdistmatrix_init_@var{type}_@var{field}_@var{precision}},
+where @code{@var{type}}, @code{@var{field}} and @code{@var{precision}}
+denote the matrix type (i.e., @samp{array} or @samp{coordinate}),
+field (i.e., @samp{real}, @samp{complex} or @samp{integer}) and
+precision (i.e., @samp{single} or @samp{double}).
+
+@findex mtxdistmatrix_init_array_complex_double
+For example, to create a double precision, complex matrix in array
+format, use @code{mtxdistmatrix_init_array_complex_double}.
+
+@example
+@code{int mtxdistmatrix_init_array_complex_double(
+    struct mtxdistmatrix * distmatrix,
+    int num_local_rows,
+    int num_local_columns,
+    const double (* data)[2],
+    const struct mtxpartition * rowpart,
+    const struct mtxpartition * colpart,
+    MPI_Comm comm,
+    struct mtxdisterror * disterr);}
+@end example
+
+@noindent
+Each process provides its local matrix entries in the array
+@code{data}. The length of the @code{data} array must be at least
+@iftex
+@tex${\tt num\_local\_rows}\times {\tt num\_local\_columns}$. @end tex
+@end iftex
+@ifnottex
+@math{@t{num_local_rows} times @t{num_local_columns}}.
+@end ifnottex
+There may be fewer parts in the partition than MPI processes. In this
+case, the @code{data} array is not used on processes where @samp{rank}
+is greater than or equal to @samp{rowpart->num_parts}, and may
+therefore be set to @samp{NULL} on those processes.
+
+@findex mtxdistmatrix_init_coordinate_complex_double
+To create a double precision, complex matrix in coordinate format, use
+@code{mtxdistmatrix_init_coordinate_complex_double}.
+
+@example
+@code{int mtxdistmatrix_init_coordinate_complex_double(
+    struct mtxdistmatrix * matrix,
+    int num_local_rows,
+    int num_local_columns,
+    int64_t num_local_nonzeros,
+    const int * rowidx,
+    const int * colidx,
+    const double (* data)[2],
+    const struct mtxpartition * rowpart,
+    const struct mtxpartition * colpart,
+    MPI_Comm comm,
+    struct mtxdisterror * disterr);}
+@end example
+
+@noindent
+The arguments @code{rowidx}, @code{colidx} and @code{data} are arrays
+of length @code{num_local_nonzeros}. Thus, each process may provide
+arrays of different lengths. Each row index @samp{rowidx[0]},
+@samp{rowidx[1]}, ..., @samp{rowidx[num_local_nonzeros-1]}, is an
+integer in the range @samp{[0,M)}, where @samp{M} is the number of
+rows owned by the current process, (i.e.,
+@samp{rowpart->part_sizes[rank]}, where @samp{rank} is the rank of the
+current process). Similarly, each column index @samp{colidx[0]},
+@samp{colidx[1]}, ..., @samp{colidx[num_local_nonzeros-1]}, is an
+integer in the range @samp{[0,N)}, where @samp{N} is the number of
+columns owned by the current process.
+
+Note that duplicate entries are allowed, but this may cause some
+operations (e.g., @code{mtxdistmatrix_[sd]dot},
+@code{mtxdistmatrix_[sd]nrm2} and @code{mtxdistmatrix_[sdcz]gemv}) to
+produce incorrect results.
+
+@node Converting distributed matrices to and from Matrix Market format
+@subsection Converting to and from Matrix Market format
+@cindex convert to and from Matrix Market format
+@cindex convert to and from distributed Matrix Market format
+Given a Matrix Market file that represents a matrix can be converted
+to a distributed matrix by partitioning and distributing the Matrix
+Market entries among processes, before converting the data on each
+process to the desired matrix storage format. A two-dimensional
+partitioning is obtained by partitioning the matrix rows and columns,
+and matrix entries are distributed accordingly. If the Matrix Market
+file is already distributed across several processes, then the data is
+partitioned and redistributed before converting to the desired matrix
+storage format.
+
+Conversely, a distributed matrix can be converted directly to
+distributed Matrix Market format without the need for redistributing
+any data. If desirable, the data may also be gathered onto a single,
+root process after converting to Matrix Market format. In any case,
+converting to Matrix Market format allows the data to be easily
+written to a Matrix Market file.
+
+@findex mtxdistmatrix_from_mtxfile
+To convert a matrix in Matrix Market format to @code{struct
+mtxdistmatrix}, the function @code{mtxdistmatrix_from_mtxfile} can be
+used. In this case, the Matrix Market file @code{mtxfile} must reside
+on the process whose rank is @code{root}.
+
+@example
+@code{int mtxdistmatrix_from_mtxfile(
+    struct mtxdistmatrix * dst,
+    const struct mtxfile * src,
+    enum mtxmatrixtype type,
+    const struct mtxpartition * rowpart,
+    const struct mtxpartition * colpart,
+    MPI_Comm comm,
+    int root,
+    struct mtxdisterror * disterr);}
+@end example
+
+@noindent
+The @code{type} argument may be used to specify a desired storage
+format or implementation for the underlying @code{mtxmatrix} on each
+process. If @code{type} is @samp{mtxmatrix_auto}, then the type of
+@code{mtxmatrix} is chosen to match the type of @code{src}. That is,
+@samp{mtxmatrix_array} is used if @code{src} is in array format, and
+@samp{mtxmatrix_coordinate} is used if @code{src} is in coordinate
+format.
+
+Furthermore, @code{rowpart} and @code{colpart} must be partitionings
+of the rows and columns of the matrix, respectively. Therefore,
+@samp{rowpart->size} must be equal to the number of rows and
+@samp{colpart->size} must be equal to the number of columns in the
+underlying matrix represented by @code{mtxfile}. The number of parts
+in the 2D partitioning of the matrix is equal to the product of number
+of parts in the row and column partitions. There may be at most one
+part for each MPI process in the communicator @code{comm}. If
+@code{rowpart} and @code{colparts} are both @samp{NULL}, then the rows
+are partitioned into contiguous blocks of equal size by default.
+
+@findex mtxdistmatrix_to_mtxfile
+To convert @code{struct mtxdistmatrix} back to Matrix Market format,
+the function @code{mtxdistmatrix_to_mtxfile} can be used.
+
+@example
+@code{int mtxdistmatrix_to_mtxfile(
+    const struct mtxdistmatrix * mtxdistmatrix,
+    struct mtxfile * mtxfile,
+    enum mtxfileformat mtxfmt,
+    MPI_Comm comm,
+    int root,
+    struct mtxdisterror * disterr);}
+@end example
+
+@noindent
+The resulting Matrix Market file resides on the process whose rank is
+@code{root}. The matrix is stored in array format if @code{mtxfmt} is
+@samp{mtxfile_array} or in coordinate format if @code{mtxfmt} is
+@samp{mtxfile_coordinate}.
+
+@findex mtxdistmatrix_from_mtxdistfile
+If a Matrix Market file has already been distributed among multiple
+processes, then @code{mtxdistmatrix_from_mtxdistfile} can be used to
+obtain a distributed matrix with the desired partitioning and storage
+format.
+
+@example
+@code{int mtxdistmatrix_from_mtxdistfile(
+    struct mtxdistmatrix * distmatrix,
+    const struct mtxdistfile * mtxdistfile,
+    enum mtxmatrixtype type,
+    const struct mtxpartition * rowpart,
+    const struct mtxpartition * colpart,
+    MPI_Comm comm,
+    struct mtxdisterror * disterr);}
+@end example
+
+@noindent
+Each process partitions its part of the distributed Matrix Market
+file. The data is then redistributed after partitioning.
+
+@findex mtxdistmatrix_to_mtxdistfile
+The function @code{mtxdistmatrix_to_mtxdistfile} will convert a
+distributed matrix to a distributed Matrix Market format.
+
+@example
+@code{int mtxdistmatrix_to_mtxdistfile(
+    struct mtxdistfile * dst,
+    const struct mtxdistmatrix * src,
+    enum mtxfileformat mtxfmt,
+    struct mtxdisterror * disterr);}
+@end example
+
+@noindent
+In this case, there is no redistribution or communication of the
+underlying data.
+
+@node Level 1 BLAS for distributed matrices
+@subsection Level 1 BLAS
+@cindex BLAS
+Level 1 BLAS operations can also be applied to distributed matrices,
+and this works exactly as described for distributed vectors in
+@ref{Level 1 BLAS for distributed vectors}. Recall that for matrices,
+the dot product and 2-norm become the Frobenius inner product and
+Frobenius norm instead.
+
+@node Level 2 BLAS for distributed matrices
+@subsection Level 2 BLAS
+@cindex BLAS
+The Level 2 BLAS operations encompass matrix-vector operations, such
+as matrix-vector multiplication. This section describes how to apply
+these operations to distributed matrices and vectors.
+
+@cindex matrix-vector multiplication
+@cindex @code{sgemv}
+@cindex @code{dgemv}
+@cindex @code{cgemv}
+@cindex @code{zgemv}
+The function @code{mtxdistmatrix_sgemv} multiplies a matrix @code{A}
+or its transpose @samp{A'} by a real scalar @code{alpha} (@code{α})
+and a vector @code{x}, before adding the result to another vector
+@code{y} multiplied by another real scalar @code{beta}
+(@code{β}). That is, @code{y = α*A*x + β*y} or @code{y = α*A'*x +
+β*y}. In this version, the scalars @code{alpha} and @code{beta} are
+given as single precision floating point numbers.
+
+@example
+@code{int mtxdistmatrix_sgemv(
+    enum mtxtransposition trans,
+    float alpha,
+    const struct mtxdistmatrix * A,
+    const struct mtxdistvector * x,
+    float beta,
+    struct mtxdistvector * y);}
+@end example
+
+@noindent
+If @code{trans} is @samp{mtx_notrans}, the matrix @code{A} is used. If
+@code{trans} is @samp{mtx_trans}, then @code{A'} is used instead.
+
+The function @code{mtxdistmatrix_dgemv} performs the same operation as
+@code{mtxdistmatrix_sgemv}, except that the scalars @code{alpha} and
+@code{beta} are now given as double precision floating point numbers.
+
+@example
+@code{int mtxdistmatrix_dgemv(
+    enum mtxtransposition trans,
+    double alpha,
+    const struct mtxdistmatrix * A,
+    const struct mtxdistvector * x,
+    double beta,
+    struct mtxdistvector * y);}
+@end example
+
+There are also two analogous routines, @code{mtxdistmatrix_cgemv} and
+@code{mtxdistmatrix_zgemv} for the cases where @code{alpha} and
+@code{beta} are given as complex numbers in single and double
+precision floating point, respectively. These functions can also be
+used to multiply with the conjugate transpose @samp{A^H}, if
+@code{trans} is @samp{mtx_conjtrans}.
+
+@example
+@code{int mtxdistmatrix_cgemv(
+    enum mtxtransposition trans,
+    float alpha[2],
+    const struct mtxdistmatrix * A,
+    const struct mtxdistvector * x,
+    float beta[2],
+    struct mtxdistvector * y);
+
+int mtxdistmatrix_zgemv(
+    enum mtxtransposition trans,
+    double alpha[2],
+    const struct mtxdistmatrix * A,
+    const struct mtxdistvector * x,
+    double beta[2],
+    struct mtxdistvector * y);}
+@end example
 
 @node Halo exchange
 @subsection Halo exchange

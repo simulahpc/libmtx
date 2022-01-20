@@ -365,8 +365,8 @@ int mtxmatrix_alloc_column_vector(
  * format to a matrix.
  */
 int mtxmatrix_from_mtxfile(
-    struct mtxmatrix * matrix,
-    const struct mtxfile * mtxfile,
+    struct mtxmatrix * dst,
+    const struct mtxfile * src,
     enum mtxmatrixtype type);
 
 /**
@@ -374,8 +374,9 @@ int mtxmatrix_from_mtxfile(
  * Market format.
  */
 int mtxmatrix_to_mtxfile(
-    const struct mtxmatrix * matrix,
-    struct mtxfile * mtxfile);
+    struct mtxfile * dst,
+    const struct mtxmatrix * src,
+    enum mtxfileformat mtxfmt);
 
 /*
  * I/O functions
@@ -489,6 +490,7 @@ int mtxmatrix_gzread(
  */
 int mtxmatrix_write(
     const struct mtxmatrix * matrix,
+    enum mtxfileformat mtxfmt,
     const char * path,
     bool gzip,
     const char * fmt,
@@ -516,6 +518,7 @@ int mtxmatrix_write(
  */
 int mtxmatrix_fwrite(
     const struct mtxmatrix * matrix,
+    enum mtxfileformat mtxfmt,
     FILE * f,
     const char * fmt,
     int64_t * bytes_written);
@@ -543,6 +546,7 @@ int mtxmatrix_fwrite(
  */
 int mtxmatrix_gzwrite(
     const struct mtxmatrix * matrix,
+    enum mtxfileformat mtxfmt,
     gzFile f,
     const char * fmt,
     int64_t * bytes_written);
