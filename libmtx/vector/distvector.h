@@ -541,7 +541,7 @@ int mtxdistvector_gzread(
  * The format string follows the conventions of ‘printf’. If the field
  * is ‘real’, ‘double’ or ‘complex’, then the format specifiers '%e',
  * '%E', '%f', '%F', '%g' or '%G' may be used. If the field is
- * ‘integer', then the format specifier must be '%d'. The format
+ * ‘integer’, then the format specifier must be '%d'. The format
  * string is ignored if the field is ‘pattern’. Field width and
  * precision may be specified (e.g., "%3.1f"), but variable field
  * width and precision (e.g., "%*.*f"), as well as length modifiers
@@ -566,7 +566,7 @@ int mtxdistvector_write(
  * The format string follows the conventions of ‘printf’. If the field
  * is ‘real’, ‘double’ or ‘complex’, then the format specifiers '%e',
  * '%E', '%f', '%F', '%g' or '%G' may be used. If the field is
- * ‘integer', then the format specifier must be '%d'. The format
+ * ‘integer’, then the format specifier must be '%d'. The format
  * string is ignored if the field is ‘pattern’. Field width and
  * precision may be specified (e.g., "%3.1f"), but variable field
  * width and precision (e.g., "%*.*f"), as well as length modifiers
@@ -583,7 +583,7 @@ int mtxdistvector_fwrite(
     int64_t * bytes_written);
 
 /**
- * `mtxdistvector_fwrite_shared()' writes a distributed vector as a
+ * ‘mtxdistvector_fwrite_shared()’ writes a distributed vector as a
  * Matrix Market file to a single stream that is shared by every
  * process in the communicator.
  *
@@ -592,17 +592,17 @@ int mtxdistvector_fwrite(
  * round-trip conversion from decimal text and back.  Otherwise, the
  * given format string is used to print numerical values.
  *
- * The format string follows the conventions of `printf'. If the field
- * is `real', `double' or `complex', then the format specifiers '%e',
+ * The format string follows the conventions of ‘printf’. If the field
+ * is ‘real’, ‘double’ or ‘complex’, then the format specifiers '%e',
  * '%E', '%f', '%F', '%g' or '%G' may be used. If the field is
- * `integer', then the format specifier must be '%d'. The format
- * string is ignored if the field is `pattern'. Field width and
+ * ‘integer’, then the format specifier must be '%d'. The format
+ * string is ignored if the field is ‘pattern’. Field width and
  * precision may be specified (e.g., "%3.1f"), but variable field
  * width and precision (e.g., "%*.*f"), as well as length modifiers
  * (e.g., "%Lf") are not allowed.
  *
- * If it is not `NULL', then the number of bytes written to the stream
- * is returned in `bytes_written'.
+ * If it is not ‘NULL’, then the number of bytes written to the stream
+ * is returned in ‘bytes_written’.
  *
  * Note that only the specified ‘root’ process will print anything to
  * the stream. Other processes will therefore send their part of the
@@ -634,7 +634,7 @@ int mtxdistvector_fwrite_shared(
  * The format string follows the conventions of ‘printf’. If the field
  * is ‘real’, ‘double’ or ‘complex’, then the format specifiers '%e',
  * '%E', '%f', '%F', '%g' or '%G' may be used. If the field is
- * ‘integer', then the format specifier must be '%d'. The format
+ * ‘integer’, then the format specifier must be '%d'. The format
  * string is ignored if the field is ‘pattern’. Field width and
  * precision may be specified (e.g., "%3.1f"), but variable field
  * width and precision (e.g., "%*.*f"), as well as length modifiers
@@ -656,7 +656,7 @@ int mtxdistvector_gzwrite(
  */
 
 /**
- * `mtxdistvector_swap()' swaps values of two vectors, simultaneously
+ * ‘mtxdistvector_swap()’ swaps values of two vectors, simultaneously
  * performing ‘y <- x’ and ‘x <- y’.
  */
 int mtxdistvector_swap(
@@ -665,7 +665,7 @@ int mtxdistvector_swap(
     struct mtxdisterror * disterr);
 
 /**
- * `mtxdistvector_copy()' copies values of a vector, ‘y = x’.
+ * ‘mtxdistvector_copy()’ copies values of a vector, ‘y = x’.
  */
 int mtxdistvector_copy(
     struct mtxdistvector * y,
@@ -673,7 +673,7 @@ int mtxdistvector_copy(
     struct mtxdisterror * disterr);
 
 /**
- * `mtxdistvector_sscal()' scales a vector by a single precision
+ * ‘mtxdistvector_sscal()’ scales a vector by a single precision
  * floating point scalar, ‘x = a*x’.
  */
 int mtxdistvector_sscal(
@@ -683,7 +683,7 @@ int mtxdistvector_sscal(
     struct mtxdisterror * disterr);
 
 /**
- * `mtxdistvector_dscal()' scales a vector by a double precision
+ * ‘mtxdistvector_dscal()’ scales a vector by a double precision
  * floating point scalar, ‘x = a*x’.
  */
 int mtxdistvector_dscal(
@@ -693,7 +693,7 @@ int mtxdistvector_dscal(
     struct mtxdisterror * disterr);
 
 /**
- * `mtxdistvector_saxpy()' adds a vector to another vector multiplied
+ * ‘mtxdistvector_saxpy()’ adds a vector to another vector multiplied
  * by a single precision floating point value, ‘y = a*x + y’.
  */
 int mtxdistvector_saxpy(
@@ -704,7 +704,7 @@ int mtxdistvector_saxpy(
     struct mtxdisterror * disterr);
 
 /**
- * `mtxdistvector_daxpy()' adds a vector to another vector multiplied
+ * ‘mtxdistvector_daxpy()’ adds a vector to another vector multiplied
  * by a double precision floating point value, ‘y = a*x + y’.
  */
 int mtxdistvector_daxpy(
@@ -715,7 +715,7 @@ int mtxdistvector_daxpy(
     struct mtxdisterror * disterr);
 
 /**
- * `mtxdistvector_saypx()' multiplies a vector by a single precision
+ * ‘mtxdistvector_saypx()’ multiplies a vector by a single precision
  * floating point scalar and adds another vector, ‘y = a*y + x’.
  */
 int mtxdistvector_saypx(
@@ -726,7 +726,7 @@ int mtxdistvector_saypx(
     struct mtxdisterror * disterr);
 
 /**
- * `mtxdistvector_daypx()' multiplies a vector by a double precision
+ * ‘mtxdistvector_daypx()’ multiplies a vector by a double precision
  * floating point scalar and adds another vector, ‘y = a*y + x’.
  */
 int mtxdistvector_daypx(
@@ -737,7 +737,7 @@ int mtxdistvector_daypx(
     struct mtxdisterror * disterr);
 
 /**
- * `mtxdistvector_sdot()' computes the Euclidean dot product of two
+ * ‘mtxdistvector_sdot()’ computes the Euclidean dot product of two
  * vectors in single precision floating point.
  */
 int mtxdistvector_sdot(
@@ -748,7 +748,7 @@ int mtxdistvector_sdot(
     struct mtxdisterror * disterr);
 
 /**
- * `mtxdistvector_ddot()' computes the Euclidean dot product of two
+ * ‘mtxdistvector_ddot()’ computes the Euclidean dot product of two
  * vectors in double precision floating point.
  */
 int mtxdistvector_ddot(
@@ -759,7 +759,7 @@ int mtxdistvector_ddot(
     struct mtxdisterror * disterr);
 
 /**
- * `mtxdistvector_cdotu()' computes the product of the transpose of a
+ * ‘mtxdistvector_cdotu()’ computes the product of the transpose of a
  * complex row vector with another complex row vector in single
  * precision floating point, ‘dot := x^T*y’.
  */
@@ -771,7 +771,7 @@ int mtxdistvector_cdotu(
     struct mtxdisterror * disterr);
 
 /**
- * `mtxdistvector_zdotu()' computes the product of the transpose of a
+ * ‘mtxdistvector_zdotu()’ computes the product of the transpose of a
  * complex row vector with another complex row vector in double
  * precision floating point, ‘dot := x^T*y’.
  */
@@ -783,7 +783,7 @@ int mtxdistvector_zdotu(
     struct mtxdisterror * disterr);
 
 /**
- * `mtxdistvector_cdotc()' computes the Euclidean dot product of two
+ * ‘mtxdistvector_cdotc()’ computes the Euclidean dot product of two
  * complex vectors in single precision floating point, ‘dot := x^H*y’.
  */
 int mtxdistvector_cdotc(
@@ -794,7 +794,7 @@ int mtxdistvector_cdotc(
     struct mtxdisterror * disterr);
 
 /**
- * `mtxdistvector_zdotc()' computes the Euclidean dot product of two
+ * ‘mtxdistvector_zdotc()’ computes the Euclidean dot product of two
  * complex vectors in double precision floating point, ‘dot := x^H*y’.
  */
 int mtxdistvector_zdotc(
@@ -805,7 +805,7 @@ int mtxdistvector_zdotc(
     struct mtxdisterror * disterr);
 
 /**
- * `mtxdistvector_snrm2()' computes the Euclidean norm of a vector in
+ * ‘mtxdistvector_snrm2()’ computes the Euclidean norm of a vector in
  * single precision floating point.
  */
 int mtxdistvector_snrm2(
@@ -815,7 +815,7 @@ int mtxdistvector_snrm2(
     struct mtxdisterror * disterr);
 
 /**
- * `mtxdistvector_dnrm2()' computes the Euclidean norm of a vector in
+ * ‘mtxdistvector_dnrm2()’ computes the Euclidean norm of a vector in
  * double precision floating point.
  */
 int mtxdistvector_dnrm2(
@@ -825,7 +825,7 @@ int mtxdistvector_dnrm2(
     struct mtxdisterror * disterr);
 
 /**
- * `mtxdistvector_sasum()' computes the sum of absolute values
+ * ‘mtxdistvector_sasum()’ computes the sum of absolute values
  * (1-norm) of a vector in single precision floating point.
  */
 int mtxdistvector_sasum(
@@ -835,7 +835,7 @@ int mtxdistvector_sasum(
     struct mtxdisterror * disterr);
 
 /**
- * `mtxdistvector_dasum()' computes the sum of absolute values
+ * ‘mtxdistvector_dasum()’ computes the sum of absolute values
  * (1-norm) of a vector in double precision floating point.
  */
 int mtxdistvector_dasum(
@@ -845,7 +845,7 @@ int mtxdistvector_dasum(
     struct mtxdisterror * disterr);
 
 /**
- * `mtxdistvector_imax()' finds the index of the first element having
+ * ‘mtxdistvector_imax()’ finds the index of the first element having
  * the maximum absolute value.
  */
 int mtxdistvector_imax(

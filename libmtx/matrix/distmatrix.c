@@ -1308,7 +1308,7 @@ int mtxdistmatrix_gzread(
  * The format string follows the conventions of ‘printf’. If the field
  * is ‘real’, ‘double’ or ‘complex’, then the format specifiers '%e',
  * '%E', '%f', '%F', '%g' or '%G' may be used. If the field is
- * ‘integer', then the format specifier must be '%d'. The format
+ * ‘integer’, then the format specifier must be '%d'. The format
  * string is ignored if the field is ‘pattern’. Field width and
  * precision may be specified (e.g., "%3.1f"), but variable field
  * width and precision (e.g., "%*.*f"), as well as length modifiers
@@ -1333,7 +1333,7 @@ int mtxdistmatrix_write(
  * The format string follows the conventions of ‘printf’. If the field
  * is ‘real’, ‘double’ or ‘complex’, then the format specifiers '%e',
  * '%E', '%f', '%F', '%g' or '%G' may be used. If the field is
- * ‘integer', then the format specifier must be '%d'. The format
+ * ‘integer’, then the format specifier must be '%d'. The format
  * string is ignored if the field is ‘pattern’. Field width and
  * precision may be specified (e.g., "%3.1f"), but variable field
  * width and precision (e.g., "%*.*f"), as well as length modifiers
@@ -1350,7 +1350,7 @@ int mtxdistmatrix_fwrite(
     int64_t * bytes_written);
 
 /**
- * `mtxdistmatrix_fwrite_shared()' writes a distributed matrix as a
+ * ‘mtxdistmatrix_fwrite_shared()’ writes a distributed matrix as a
  * Matrix Market file to a single stream that is shared by every
  * process in the communicator.
  *
@@ -1359,17 +1359,17 @@ int mtxdistmatrix_fwrite(
  * round-trip conversion from decimal text and back.  Otherwise, the
  * given format string is used to print numerical values.
  *
- * The format string follows the conventions of `printf'. If the field
- * is `real', `double' or `complex', then the format specifiers '%e',
+ * The format string follows the conventions of ‘printf’. If the field
+ * is ‘real’, ‘double’ or ‘complex’, then the format specifiers '%e',
  * '%E', '%f', '%F', '%g' or '%G' may be used. If the field is
- * `integer', then the format specifier must be '%d'. The format
- * string is ignored if the field is `pattern'. Field width and
+ * ‘integer’, then the format specifier must be '%d'. The format
+ * string is ignored if the field is ‘pattern’. Field width and
  * precision may be specified (e.g., "%3.1f"), but variable field
  * width and precision (e.g., "%*.*f"), as well as length modifiers
  * (e.g., "%Lf") are not allowed.
  *
- * If it is not `NULL', then the number of bytes written to the stream
- * is returned in `bytes_written'.
+ * If it is not ‘NULL’, then the number of bytes written to the stream
+ * is returned in ‘bytes_written’.
  *
  * Note that only the specified ‘root’ process will print anything to
  * the stream. Other processes will therefore send their part of the
@@ -1401,7 +1401,7 @@ int mtxdistmatrix_fwrite_shared(
  * The format string follows the conventions of ‘printf’. If the field
  * is ‘real’, ‘double’ or ‘complex’, then the format specifiers '%e',
  * '%E', '%f', '%F', '%g' or '%G' may be used. If the field is
- * ‘integer', then the format specifier must be '%d'. The format
+ * ‘integer’, then the format specifier must be '%d'. The format
  * string is ignored if the field is ‘pattern’. Field width and
  * precision may be specified (e.g., "%3.1f"), but variable field
  * width and precision (e.g., "%*.*f"), as well as length modifiers
@@ -1423,7 +1423,7 @@ int mtxdistmatrix_gzwrite(
  */
 
 /**
- * `mtxdistmatrix_swap()' swaps values of two matrices, simultaneously
+ * ‘mtxdistmatrix_swap()’ swaps values of two matrices, simultaneously
  * performing ‘y <- x’ and ‘x <- y’.
  */
 int mtxdistmatrix_swap(
@@ -1441,7 +1441,7 @@ int mtxdistmatrix_swap(
 }
 
 /**
- * `mtxdistmatrix_copy()' copies values of a matrix, ‘y = x’.
+ * ‘mtxdistmatrix_copy()’ copies values of a matrix, ‘y = x’.
  */
 int mtxdistmatrix_copy(
     struct mtxdistmatrix * y,
@@ -1458,7 +1458,7 @@ int mtxdistmatrix_copy(
 }
 
 /**
- * `mtxdistmatrix_sscal()' scales a matrix by a single precision
+ * ‘mtxdistmatrix_sscal()’ scales a matrix by a single precision
  * floating point scalar, ‘x = a*x’.
  */
 int mtxdistmatrix_sscal(
@@ -1472,7 +1472,7 @@ int mtxdistmatrix_sscal(
 }
 
 /**
- * `mtxdistmatrix_dscal()' scales a matrix by a double precision
+ * ‘mtxdistmatrix_dscal()’ scales a matrix by a double precision
  * floating point scalar, ‘x = a*x’.
  */
 int mtxdistmatrix_dscal(
@@ -1486,7 +1486,7 @@ int mtxdistmatrix_dscal(
 }
 
 /**
- * `mtxdistmatrix_saxpy()' adds a matrix to another matrix multiplied
+ * ‘mtxdistmatrix_saxpy()’ adds a matrix to another matrix multiplied
  * by a single precision floating point value, ‘y = a*x + y’.
  */
 int mtxdistmatrix_saxpy(
@@ -1506,7 +1506,7 @@ int mtxdistmatrix_saxpy(
 }
 
 /**
- * `mtxdistmatrix_daxpy()' adds a matrix to another matrix multiplied
+ * ‘mtxdistmatrix_daxpy()’ adds a matrix to another matrix multiplied
  * by a double precision floating point value, ‘y = a*x + y’.
  */
 int mtxdistmatrix_daxpy(
@@ -1526,7 +1526,7 @@ int mtxdistmatrix_daxpy(
 }
 
 /**
- * `mtxdistmatrix_saypx()' multiplies a matrix by a single precision
+ * ‘mtxdistmatrix_saypx()’ multiplies a matrix by a single precision
  * floating point scalar and adds another matrix, ‘y = a*y + x’.
  */
 int mtxdistmatrix_saypx(
@@ -1546,7 +1546,7 @@ int mtxdistmatrix_saypx(
 }
 
 /**
- * `mtxdistmatrix_daypx()' multiplies a matrix by a double precision
+ * ‘mtxdistmatrix_daypx()’ multiplies a matrix by a double precision
  * floating point scalar and adds another matrix, ‘y = a*y + x’.
  */
 int mtxdistmatrix_daypx(
@@ -1566,7 +1566,7 @@ int mtxdistmatrix_daypx(
 }
 
 /**
- * `mtxdistmatrix_sdot()' computes the Euclidean dot product of two
+ * ‘mtxdistmatrix_sdot()’ computes the Euclidean dot product of two
  * matrices in single precision floating point.
  */
 int mtxdistmatrix_sdot(
@@ -1591,7 +1591,7 @@ int mtxdistmatrix_sdot(
 }
 
 /**
- * `mtxdistmatrix_ddot()' computes the Euclidean dot product of two
+ * ‘mtxdistmatrix_ddot()’ computes the Euclidean dot product of two
  * matrices in double precision floating point.
  */
 int mtxdistmatrix_ddot(
@@ -1616,7 +1616,7 @@ int mtxdistmatrix_ddot(
 }
 
 /**
- * `mtxdistmatrix_cdotu()' computes the product of the transpose of a
+ * ‘mtxdistmatrix_cdotu()’ computes the product of the transpose of a
  * complex row matrix with another complex row matrix in single
  * precision floating point, ‘dot := x^T*y’.
  */
@@ -1642,7 +1642,7 @@ int mtxdistmatrix_cdotu(
 }
 
 /**
- * `mtxdistmatrix_zdotu()' computes the product of the transpose of a
+ * ‘mtxdistmatrix_zdotu()’ computes the product of the transpose of a
  * complex row matrix with another complex row matrix in double
  * precision floating point, ‘dot := x^T*y’.
  */
@@ -1668,7 +1668,7 @@ int mtxdistmatrix_zdotu(
 }
 
 /**
- * `mtxdistmatrix_cdotc()' computes the Euclidean dot product of two
+ * ‘mtxdistmatrix_cdotc()’ computes the Euclidean dot product of two
  * complex matrices in single precision floating point, ‘dot := x^H*y’.
  */
 int mtxdistmatrix_cdotc(
@@ -1693,7 +1693,7 @@ int mtxdistmatrix_cdotc(
 }
 
 /**
- * `mtxdistmatrix_zdotc()' computes the Euclidean dot product of two
+ * ‘mtxdistmatrix_zdotc()’ computes the Euclidean dot product of two
  * complex matrices in double precision floating point, ‘dot := x^H*y’.
  */
 int mtxdistmatrix_zdotc(
@@ -1718,7 +1718,7 @@ int mtxdistmatrix_zdotc(
 }
 
 /**
- * `mtxdistmatrix_snrm2()' computes the Euclidean norm of a matrix in
+ * ‘mtxdistmatrix_snrm2()’ computes the Euclidean norm of a matrix in
  * single precision floating point.
  */
 int mtxdistmatrix_snrm2(
@@ -1738,7 +1738,7 @@ int mtxdistmatrix_snrm2(
 }
 
 /**
- * `mtxdistmatrix_dnrm2()' computes the Euclidean norm of a matrix in
+ * ‘mtxdistmatrix_dnrm2()’ computes the Euclidean norm of a matrix in
  * double precision floating point.
  */
 int mtxdistmatrix_dnrm2(
@@ -1758,7 +1758,7 @@ int mtxdistmatrix_dnrm2(
 }
 
 /**
- * `mtxdistmatrix_sasum()' computes the sum of absolute values
+ * ‘mtxdistmatrix_sasum()’ computes the sum of absolute values
  * (1-norm) of a matrix in single precision floating point.
  */
 int mtxdistmatrix_sasum(
@@ -1767,7 +1767,7 @@ int mtxdistmatrix_sasum(
     int64_t * num_flops,
     struct mtxdisterror * disterr)
 {
-    err = mtxmatrix_sasum(&x->interior, asum, num_flops);
+    int err = mtxmatrix_sasum(&x->interior, asum, num_flops);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     disterr->mpierrcode = MPI_Allreduce(
         MPI_IN_PLACE, asum, 1, MPI_FLOAT, MPI_SUM, x->comm);
@@ -1777,7 +1777,7 @@ int mtxdistmatrix_sasum(
 }
 
 /**
- * `mtxdistmatrix_dasum()' computes the sum of absolute values
+ * ‘mtxdistmatrix_dasum()’ computes the sum of absolute values
  * (1-norm) of a matrix in double precision floating point.
  */
 int mtxdistmatrix_dasum(
@@ -1786,7 +1786,7 @@ int mtxdistmatrix_dasum(
     int64_t * num_flops,
     struct mtxdisterror * disterr)
 {
-    err = mtxmatrix_dasum(&x->interior, asum, num_flops);
+    int err = mtxmatrix_dasum(&x->interior, asum, num_flops);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     disterr->mpierrcode = MPI_Allreduce(
         MPI_IN_PLACE, asum, 1, MPI_DOUBLE, MPI_SUM, x->comm);
@@ -1796,7 +1796,7 @@ int mtxdistmatrix_dasum(
 }
 
 /**
- * `mtxdistmatrix_iamax()' finds the index of the first element having
+ * ‘mtxdistmatrix_iamax()’ finds the index of the first element having
  * the maximum absolute value.
  */
 int mtxdistmatrix_iamax(

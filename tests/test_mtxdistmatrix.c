@@ -26,10 +26,11 @@
 #include <libmtx/libmtx-config.h>
 
 #include <libmtx/error.h>
+#include <libmtx/matrix/distmatrix.h>
 #include <libmtx/mtxfile/mtxdistfile.h>
 #include <libmtx/mtxfile/mtxfile.h>
-#include <libmtx/matrix/distmatrix.h>
 #include <libmtx/util/partition.h>
+#include <libmtx/vector/distvector.h>
 
 #include <mpi.h>
 
@@ -236,6 +237,7 @@ int test_mtxdistmatrix_from_mtxfile(void)
             TEST_ASSERT_EQ(9.0, interior->data.real_double[1]);
         }
         mtxdistmatrix_free(&mtxdistmatrix);
+        mtxpartition_free(&colpart);
         mtxfile_free(&srcmtxfile);
     }
 
