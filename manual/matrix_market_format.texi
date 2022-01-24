@@ -332,7 +332,7 @@ entry. In this case, the value associated with a particular matrix or
 vector location is obtained by taking the sum of all the nonzero
 values given for that location.  The procedure of adding together
 values for duplicate entries is sometimes referred to as
-@dfn{assembly} (see also @ref{Sort@comma{} compact and assemble}).
+@dfn{assembly} (see also @ref{Sort compact and assemble}).
 
 The format of a data line depends on the @t{@var{object}},
 @t{@var{format}} and @t{@var{field}} values in the header, as

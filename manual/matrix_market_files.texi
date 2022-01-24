@@ -892,7 +892,7 @@ If @code{mtxfile} is a vector, nothing is done.
 @c conjugated. Otherwise, nothing is done.
 
 
-@node Sort@comma{} compact and assemble
+@node Sort compact and assemble
 @subsection Sort, compact and assemble
 @cindex sort
 @tindex enum mtxfilesorting
@@ -1053,6 +1053,7 @@ consists of @var{N}@sub{@var{i}} elements, @var{P}@sub{@var{i},0},
 @var{P}@sub{@var{i},@var{N}@sub{@var{i}}@minus{}1}.
 
 The following methods of partitioning are supported.
+
 @itemize
 @item @code{mtx_singleton}
 @cindex singleton partition
@@ -1109,17 +1110,17 @@ cover the entire set.
 
 The different partitioning methods are also illustrated in
 @ref{fig:partition}.
+
 @float Figure,fig:partition
 @center @image{image/partition,,,,.png}
-
 @caption{Examples of partitioning a set into three parts, where each
 part is indicated by a different colour.}
 @end float
 
-
 @tindex struct mtxpartition
 The type @code{struct mtxpartition} is used represent a partitioning
 of a finite set based on one of the methods described above.
+
 @example
 @code{struct mtxpartition @{
     enum mtxpartitioning type;
@@ -1131,6 +1132,8 @@ of a finite set based on one of the methods described above.
     int64_t * elements_per_part;
 @};}
 @end example
+
+@noindent
 The @code{type} member describes the type of partitioning
 used. @code{size} and @code{num_parts} are the size of the partitioned
 set and the number of parts, respectively. @code{part_sizes} is an
@@ -1159,6 +1162,7 @@ are given by @code{elements_per_part[i]}, for @code{i} in
 @findex mtxpartition_init_custom
 Several functions are provided to create partitions corresponding to
 the different types described above.
+
 @example
 @code{int mtxpartition_init_singleton(
     struct mtxpartition * partition,
@@ -1187,6 +1191,7 @@ int mtxpartition_init_custom(
     int num_parts,
     const int * parts);}
 @end example
+
 @findex mtxpartition_init
 For convenience, the function @code{mtxpartition_init} is also
 provided to create a partition when the type is given by @code{enum
@@ -1216,6 +1221,7 @@ Once a set has been partitioned, it is frequently necessary to
 translate between the global numbering of elements and the local
 numbering within each part. This can be done with the functions
 @code{mtxpartition_globalidx} and @code{mtxpartition_localidx}.
+
 @example
 @code{int mtxpartition_globalidx(
     const struct mtxpartition * partition,
@@ -1231,6 +1237,8 @@ int mtxpartition_localidx(
     const int64_t * globalelem,
     int64_t * localelem);}
 @end example
+
+@noindent
 Here, @code{part} is an integer between @samp{0} and
 @samp{partition->num_parts-1} signifying the part number to use when
 translating from local to global element numbers or from global to
@@ -1248,6 +1256,7 @@ which are stored in @code{localelem}.
 If a row and column partition is given, the function
 @code{mtxfile_partition} can be used to partition a Matrix Market file
 into parts.
+
 @example
 @code{int mtxfile_partition(
     struct mtxfile * dsts,
@@ -1255,6 +1264,8 @@ into parts.
     const struct mtxpartition * rowpart,
     const struct mtxpartition * colpart);}
 @end example
+
+@noindent
 The partitions @code{rowpart} and @code{colpart} are allowed to be
 @samp{NULL}, in which case a trivial, singleton partition is used for
 the rows and columns, respectively. Otherwise, @code{rowpart} and
@@ -1279,6 +1290,7 @@ each Matrix Market file in the @code{dsts} array.
 @findex mtxfile_join
 To join together compatible blocks of matrices or vectors, use the
 function @code{mtxfile_join}.
+
 @example
 @code{int mtxfile_join(
     struct mtxfile * dst,
@@ -1286,6 +1298,8 @@ function @code{mtxfile_join}.
     const struct mtxpartition * rowpart,
     const struct mtxpartition * colpart);}
 @end example
+
+@noindent
 The partitions @code{rowpart} and @code{colpart} are allowed to be
 @samp{NULL}, in which case a trivial, singleton partition is used for
 the rows and columns, respectively. Otherwise, @code{rowpart} and
@@ -1309,7 +1323,6 @@ sum of @samp{srcs[p*Q+q]->size.num_rows} for @samp{p=0,1,...,P-1} must
 be equal to @samp{rowpart->size}. Likewise, for each block row
 @code{p}, the sum of @samp{srcs[p*Q+q]->size.num_rows} for
 @samp{q=0,1,...,Q-1} must be equal to @samp{colpart->size}.
-
 
 @node Reorder
 @subsection Reorder
