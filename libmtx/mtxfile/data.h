@@ -49,9 +49,9 @@ struct mtxpartition;
  */
 
 /**
- * `mtxfile_matrix_coordinate_real_single' represents a nonzero matrix
- * entry in a Matrix Market file with `matrix' object, `coordinate'
- * format and `real' field, when using single precision data types.
+ * ‘mtxfile_matrix_coordinate_real_single’ represents a nonzero matrix
+ * entry in a Matrix Market file with ‘matrix’ object, ‘coordinate’
+ * format and ‘real’ field, when using single precision data types.
  */
 struct mtxfile_matrix_coordinate_real_single
 {
@@ -61,9 +61,9 @@ struct mtxfile_matrix_coordinate_real_single
 };
 
 /**
- * `mtxfile_matrix_coordinate_double' represents a nonzero matrix
- * entry in a Matrix Market file with `matrix' object, `coordinate'
- * format and `real' field, when using double precision data types.
+ * ‘mtxfile_matrix_coordinate_double’ represents a nonzero matrix
+ * entry in a Matrix Market file with ‘matrix’ object, ‘coordinate’
+ * format and ‘real’ field, when using double precision data types.
  */
 struct mtxfile_matrix_coordinate_real_double
 {
@@ -73,9 +73,9 @@ struct mtxfile_matrix_coordinate_real_double
 };
 
 /**
- * `mtxfile_matrix_coordinate_complex_single' represents a nonzero
- * matrix entry in a Matrix Market file with `matrix' object,
- * `coordinate' format and `complex' field, when using single
+ * ‘mtxfile_matrix_coordinate_complex_single’ represents a nonzero
+ * matrix entry in a Matrix Market file with ‘matrix’ object,
+ * ‘coordinate’ format and ‘complex’ field, when using single
  * precision data types.
  */
 struct mtxfile_matrix_coordinate_complex_single
@@ -86,9 +86,9 @@ struct mtxfile_matrix_coordinate_complex_single
 };
 
 /**
- * `mtxfile_matrix_coordinate_complex_double' represents a nonzero
- * matrix entry in a Matrix Market file with `matrix' object,
- * `coordinate' format and `complex' field, when using double
+ * ‘mtxfile_matrix_coordinate_complex_double’ represents a nonzero
+ * matrix entry in a Matrix Market file with ‘matrix’ object,
+ * ‘coordinate’ format and ‘complex’ field, when using double
  * precision data types.
  */
 struct mtxfile_matrix_coordinate_complex_double
@@ -99,9 +99,9 @@ struct mtxfile_matrix_coordinate_complex_double
 };
 
 /**
- * `mtxfile_matrix_coordinate_integer_single' represents a nonzero
- * matrix entry in a Matrix Market file with `matrix' object,
- * `coordinate' format and `integer' field, when using single
+ * ‘mtxfile_matrix_coordinate_integer_single’ represents a nonzero
+ * matrix entry in a Matrix Market file with ‘matrix’ object,
+ * ‘coordinate’ format and ‘integer’ field, when using single
  * precision data types.
  */
 struct mtxfile_matrix_coordinate_integer_single
@@ -112,9 +112,9 @@ struct mtxfile_matrix_coordinate_integer_single
 };
 
 /**
- * `mtxfile_matrix_coordinate_integer_double' represents a nonzero
- * matrix entry in a Matrix Market file with `matrix' object,
- * `coordinate' format and `integer' field, when using double
+ * ‘mtxfile_matrix_coordinate_integer_double’ represents a nonzero
+ * matrix entry in a Matrix Market file with ‘matrix’ object,
+ * ‘coordinate’ format and ‘integer’ field, when using double
  * precision data types.
  */
 struct mtxfile_matrix_coordinate_integer_double
@@ -125,9 +125,9 @@ struct mtxfile_matrix_coordinate_integer_double
 };
 
 /**
- * `mtxfile_matrix_coordinate_pattern' represents a nonzero matrix
- * entry in a Matrix Market file with `matrix' object, `coordinate'
- * format and `pattern' field.
+ * ‘mtxfile_matrix_coordinate_pattern’ represents a nonzero matrix
+ * entry in a Matrix Market file with ‘matrix’ object, ‘coordinate’
+ * format and ‘pattern’ field.
  */
 struct mtxfile_matrix_coordinate_pattern
 {
@@ -140,9 +140,9 @@ struct mtxfile_matrix_coordinate_pattern
  */
 
 /**
- * `mtxfile_vector_coordinate_real_single' represents a nonzero vector
- * entry in a Matrix Market file with `vector' object, `coordinate'
- * format and `real' field, when using single precision data types.
+ * ‘mtxfile_vector_coordinate_real_single’ represents a nonzero vector
+ * entry in a Matrix Market file with ‘vector’ object, ‘coordinate’
+ * format and ‘real’ field, when using single precision data types.
  */
 struct mtxfile_vector_coordinate_real_single
 {
@@ -151,9 +151,9 @@ struct mtxfile_vector_coordinate_real_single
 };
 
 /**
- * `mtxfile_vector_coordinate_double' represents a nonzero vector
- * entry in a Matrix Market file with `vector' object, `coordinate'
- * format and `real' field, when using double precision data types.
+ * ‘mtxfile_vector_coordinate_double’ represents a nonzero vector
+ * entry in a Matrix Market file with ‘vector’ object, ‘coordinate’
+ * format and ‘real’ field, when using double precision data types.
  */
 struct mtxfile_vector_coordinate_real_double
 {
@@ -162,9 +162,9 @@ struct mtxfile_vector_coordinate_real_double
 };
 
 /**
- * `mtxfile_vector_coordinate_complex_single' represents a nonzero
- * vector entry in a Matrix Market file with `vector' object,
- * `coordinate' format and `complex' field, when using single
+ * ‘mtxfile_vector_coordinate_complex_single’ represents a nonzero
+ * vector entry in a Matrix Market file with ‘vector’ object,
+ * ‘coordinate’ format and ‘complex’ field, when using single
  * precision data types.
  */
 struct mtxfile_vector_coordinate_complex_single
@@ -174,9 +174,9 @@ struct mtxfile_vector_coordinate_complex_single
 };
 
 /**
- * `mtxfile_vector_coordinate_complex_double' represents a nonzero
- * vector entry in a Matrix Market file with `vector' object,
- * `coordinate' format and `complex' field, when using double
+ * ‘mtxfile_vector_coordinate_complex_double’ represents a nonzero
+ * vector entry in a Matrix Market file with ‘vector’ object,
+ * ‘coordinate’ format and ‘complex’ field, when using double
  * precision data types.
  */
 struct mtxfile_vector_coordinate_complex_double
@@ -186,9 +186,9 @@ struct mtxfile_vector_coordinate_complex_double
 };
 
 /**
- * `mtxfile_vector_coordinate_integer_single' represents a nonzero
- * vector entry in a Matrix Market file with `vector' object,
- * `coordinate' format and `integer' field, when using single
+ * ‘mtxfile_vector_coordinate_integer_single’ represents a nonzero
+ * vector entry in a Matrix Market file with ‘vector’ object,
+ * ‘coordinate’ format and ‘integer’ field, when using single
  * precision data types.
  */
 struct mtxfile_vector_coordinate_integer_single
@@ -198,9 +198,9 @@ struct mtxfile_vector_coordinate_integer_single
 };
 
 /**
- * `mtxfile_vector_coordinate_integer_double' represents a nonzero
- * vector entry in a Matrix Market file with `vector' object,
- * `coordinate' format and `integer' field, when using double
+ * ‘mtxfile_vector_coordinate_integer_double’ represents a nonzero
+ * vector entry in a Matrix Market file with ‘vector’ object,
+ * ‘coordinate’ format and ‘integer’ field, when using double
  * precision data types.
  */
 struct mtxfile_vector_coordinate_integer_double
@@ -210,9 +210,9 @@ struct mtxfile_vector_coordinate_integer_double
 };
 
 /**
- * `mtxfile_vector_coordinate_pattern' represents a nonzero vector
- * entry in a Matrix Market file with `vector' object, `coordinate'
- * format and `pattern' field.
+ * ‘mtxfile_vector_coordinate_pattern’ represents a nonzero vector
+ * entry in a Matrix Market file with ‘vector’ object, ‘coordinate’
+ * format and ‘pattern’ field.
  */
 struct mtxfile_vector_coordinate_pattern
 {
@@ -224,7 +224,7 @@ struct mtxfile_vector_coordinate_pattern
  */
 
 /**
- * `mtxfiledata' represents an array of data lines from a Matrix
+ * ‘mtxfiledata’ represents an array of data lines from a Matrix
  * Market file.
  */
 union mtxfiledata
@@ -271,9 +271,9 @@ int mtxfiledata_dataptr(
     int64_t k);
 
 /**
- * `mtxfiledata_size_per_element()' calculates the size of each
+ * ‘mtxfiledata_size_per_element()’ calculates the size of each
  * element in an array of Matrix Market data corresponding to the
- * given `object', `format', `field' and `precision'.
+ * given ‘object’, ‘format’, ‘field’ and ‘precision’.
  */
 int mtxfiledata_size_per_element(
     const union mtxfiledata * data,
@@ -288,13 +288,13 @@ int mtxfiledata_size_per_element(
  */
 
 /**
- * `mtxfiledata_parse_array_real_single()' parses a string containing
+ * ‘mtxfiledata_parse_array_real_single()’ parses a string containing
  * a data line for a Matrix Market file in array format with real
  * values.
  *
- * If `bytes_read' is not `NULL', then it is set to the number of
+ * If ‘bytes_read’ is not ‘NULL’, then it is set to the number of
  * bytes consumed by the parser, if successful.  Similarly, if
- * `endptr' is not `NULL', then the address stored in `endptr' points
+ * ‘endptr’ is not ‘NULL’, then the address stored in ‘endptr’ points
  * to the first character beyond the characters that were consumed
  * during parsing.
  */
@@ -305,13 +305,13 @@ int mtxfiledata_parse_array_real_single(
     const char * s);
 
 /**
- * `mtxfiledata_parse_array_real_double()' parses a string containing
+ * ‘mtxfiledata_parse_array_real_double()’ parses a string containing
  * a data line for a Matrix Market file in array format with real
  * values.
  *
- * If `bytes_read' is not `NULL', then it is set to the number of
+ * If ‘bytes_read’ is not ‘NULL’, then it is set to the number of
  * bytes consumed by the parser, if successful.  Similarly, if
- * `endptr' is not `NULL', then the address stored in `endptr' points
+ * ‘endptr’ is not ‘NULL’, then the address stored in ‘endptr’ points
  * to the first character beyond the characters that were consumed
  * during parsing.
  */
@@ -322,13 +322,13 @@ int mtxfiledata_parse_array_real_double(
     const char * s);
 
 /**
- * `mtxfiledata_parse_array_complex_single()' parses a string
+ * ‘mtxfiledata_parse_array_complex_single()’ parses a string
  * containing a data line for a Matrix Market file in array format
  * with complex values.
  *
- * If `bytes_read' is not `NULL', then it is set to the number of
+ * If ‘bytes_read’ is not ‘NULL’, then it is set to the number of
  * bytes consumed by the parser, if successful.  Similarly, if
- * `endptr' is not `NULL', then the address stored in `endptr' points
+ * ‘endptr’ is not ‘NULL’, then the address stored in ‘endptr’ points
  * to the first character beyond the characters that were consumed
  * during parsing.
  */
@@ -339,13 +339,13 @@ int mtxfiledata_parse_array_complex_single(
     const char * s);
 
 /**
- * `mtxfiledata_parse_array_complex_double()' parses a string
+ * ‘mtxfiledata_parse_array_complex_double()’ parses a string
  * containing a data line for a Matrix Market file in array format
  * with complex values.
  *
- * If `bytes_read' is not `NULL', then it is set to the number of
+ * If ‘bytes_read’ is not ‘NULL’, then it is set to the number of
  * bytes consumed by the parser, if successful.  Similarly, if
- * `endptr' is not `NULL', then the address stored in `endptr' points
+ * ‘endptr’ is not ‘NULL’, then the address stored in ‘endptr’ points
  * to the first character beyond the characters that were consumed
  * during parsing.
  */
@@ -356,13 +356,13 @@ int mtxfiledata_parse_array_complex_double(
     const char * s);
 
 /**
- * `mtxfiledata_parse_array_integer_single()' parses a string
+ * ‘mtxfiledata_parse_array_integer_single()’ parses a string
  * containing a data line for a Matrix Market file in array format
  * with integer values.
  *
- * If `bytes_read' is not `NULL', then it is set to the number of
+ * If ‘bytes_read’ is not ‘NULL’, then it is set to the number of
  * bytes consumed by the parser, if successful.  Similarly, if
- * `endptr' is not `NULL', then the address stored in `endptr' points
+ * ‘endptr’ is not ‘NULL’, then the address stored in ‘endptr’ points
  * to the first character beyond the characters that were consumed
  * during parsing.
  */
@@ -373,13 +373,13 @@ int mtxfiledata_parse_array_integer_single(
     const char * s);
 
 /**
- * `mtxfiledata_parse_array_integer_double()' parses a string
+ * ‘mtxfiledata_parse_array_integer_double()’ parses a string
  * containing a data line for a Matrix Market file in array format
  * with integer values.
  *
- * If `bytes_read' is not `NULL', then it is set to the number of
+ * If ‘bytes_read’ is not ‘NULL’, then it is set to the number of
  * bytes consumed by the parser, if successful.  Similarly, if
- * `endptr' is not `NULL', then the address stored in `endptr' points
+ * ‘endptr’ is not ‘NULL’, then the address stored in ‘endptr’ points
  * to the first character beyond the characters that were consumed
  * during parsing.
  */
@@ -394,13 +394,13 @@ int mtxfiledata_parse_array_integer_double(
  */
 
 /**
- * `mtxfiledata_parse_matrix_coordinate_real_single()' parses a
+ * ‘mtxfiledata_parse_matrix_coordinate_real_single()’ parses a
  * string containing a data line for a Matrix Market file in matrix
  * coordinate format with real values.
  *
- * If `bytes_read' is not `NULL', then it is set to the number of
+ * If ‘bytes_read’ is not ‘NULL’, then it is set to the number of
  * bytes consumed by the parser, if successful.  Similarly, if
- * `endptr' is not `NULL', then the address stored in `endptr' points
+ * ‘endptr’ is not ‘NULL’, then the address stored in ‘endptr’ points
  * to the first character beyond the characters that were consumed
  * during parsing.
  */
@@ -413,13 +413,13 @@ int mtxfiledata_parse_matrix_coordinate_real_single(
     int num_columns);
 
 /**
- * `mtxfiledata_parse_matrix_coordinate_real_double()' parses a
+ * ‘mtxfiledata_parse_matrix_coordinate_real_double()’ parses a
  * string containing a data line for a Matrix Market file in matrix
  * coordinate format with real values.
  *
- * If `bytes_read' is not `NULL', then it is set to the number of
+ * If ‘bytes_read’ is not ‘NULL’, then it is set to the number of
  * bytes consumed by the parser, if successful.  Similarly, if
- * `endptr' is not `NULL', then the address stored in `endptr' points
+ * ‘endptr’ is not ‘NULL’, then the address stored in ‘endptr’ points
  * to the first character beyond the characters that were consumed
  * during parsing.
  */
@@ -432,13 +432,13 @@ int mtxfiledata_parse_matrix_coordinate_real_double(
     int num_columns);
 
 /**
- * `mtxfiledata_parse_matrix_coordinate_complex_single()' parses a
+ * ‘mtxfiledata_parse_matrix_coordinate_complex_single()’ parses a
  * string containing a data line for a Matrix Market file in matrix
  * coordinate format with complex values.
  *
- * If `bytes_read' is not `NULL', then it is set to the number of
+ * If ‘bytes_read’ is not ‘NULL’, then it is set to the number of
  * bytes consumed by the parser, if successful.  Similarly, if
- * `endptr' is not `NULL', then the address stored in `endptr' points
+ * ‘endptr’ is not ‘NULL’, then the address stored in ‘endptr’ points
  * to the first character beyond the characters that were consumed
  * during parsing.
  */
@@ -451,13 +451,13 @@ int mtxfiledata_parse_matrix_coordinate_complex_single(
     int num_columns);
 
 /**
- * `mtxfiledata_parse_matrix_coordinate_complex_double()' parses a
+ * ‘mtxfiledata_parse_matrix_coordinate_complex_double()’ parses a
  * string containing a data line for a Matrix Market file in matrix
  * coordinate format with complex values.
  *
- * If `bytes_read' is not `NULL', then it is set to the number of
+ * If ‘bytes_read’ is not ‘NULL’, then it is set to the number of
  * bytes consumed by the parser, if successful.  Similarly, if
- * `endptr' is not `NULL', then the address stored in `endptr' points
+ * ‘endptr’ is not ‘NULL’, then the address stored in ‘endptr’ points
  * to the first character beyond the characters that were consumed
  * during parsing.
  */
@@ -470,13 +470,13 @@ int mtxfiledata_parse_matrix_coordinate_complex_double(
     int num_columns);
 
 /**
- * `mtxfiledata_parse_matrix_coordinate_integer_single()' parses a
+ * ‘mtxfiledata_parse_matrix_coordinate_integer_single()’ parses a
  * string containing a data line for a Matrix Market file in matrix
  * coordinate format with integer values.
  *
- * If `bytes_read' is not `NULL', then it is set to the number of
+ * If ‘bytes_read’ is not ‘NULL’, then it is set to the number of
  * bytes consumed by the parser, if successful.  Similarly, if
- * `endptr' is not `NULL', then the address stored in `endptr' points
+ * ‘endptr’ is not ‘NULL’, then the address stored in ‘endptr’ points
  * to the first character beyond the characters that were consumed
  * during parsing.
  */
@@ -489,13 +489,13 @@ int mtxfiledata_parse_matrix_coordinate_integer_single(
     int num_columns);
 
 /**
- * `mtxfiledata_parse_matrix_coordinate_integer_double()' parses a
+ * ‘mtxfiledata_parse_matrix_coordinate_integer_double()’ parses a
  * string containing a data line for a Matrix Market file in matrix
  * coordinate format with integer values.
  *
- * If `bytes_read' is not `NULL', then it is set to the number of
+ * If ‘bytes_read’ is not ‘NULL’, then it is set to the number of
  * bytes consumed by the parser, if successful.  Similarly, if
- * `endptr' is not `NULL', then the address stored in `endptr' points
+ * ‘endptr’ is not ‘NULL’, then the address stored in ‘endptr’ points
  * to the first character beyond the characters that were consumed
  * during parsing.
  */
@@ -508,13 +508,13 @@ int mtxfiledata_parse_matrix_coordinate_integer_double(
     int num_columns);
 
 /**
- * `mtxfiledata_parse_matrix_coordinate_pattern()' parses a string
+ * ‘mtxfiledata_parse_matrix_coordinate_pattern()’ parses a string
  * containing a data line for a Matrix Market file in matrix
  * coordinate format with pattern (boolean) values.
  *
- * If `bytes_read' is not `NULL', then it is set to the number of
+ * If ‘bytes_read’ is not ‘NULL’, then it is set to the number of
  * bytes consumed by the parser, if successful.  Similarly, if
- * `endptr' is not `NULL', then the address stored in `endptr' points
+ * ‘endptr’ is not ‘NULL’, then the address stored in ‘endptr’ points
  * to the first character beyond the characters that were consumed
  * during parsing.
  */
@@ -531,13 +531,13 @@ int mtxfiledata_parse_matrix_coordinate_pattern(
  */
 
 /**
- * `mtxfiledata_parse_vector_coordinate_real_single()' parses a
+ * ‘mtxfiledata_parse_vector_coordinate_real_single()’ parses a
  * string containing a data line for a Matrix Market file in vector
  * coordinate format with real values.
  *
- * If `bytes_read' is not `NULL', then it is set to the number of
+ * If ‘bytes_read’ is not ‘NULL’, then it is set to the number of
  * bytes consumed by the parser, if successful.  Similarly, if
- * `endptr' is not `NULL', then the address stored in `endptr' points
+ * ‘endptr’ is not ‘NULL’, then the address stored in ‘endptr’ points
  * to the first character beyond the characters that were consumed
  * during parsing.
  */
@@ -549,13 +549,13 @@ int mtxfiledata_parse_vector_coordinate_real_single(
     int num_rows);
 
 /**
- * `mtxfiledata_parse_vector_coordinate_real_double()' parses a
+ * ‘mtxfiledata_parse_vector_coordinate_real_double()’ parses a
  * string containing a data line for a Matrix Market file in vector
  * coordinate format with real values.
  *
- * If `bytes_read' is not `NULL', then it is set to the number of
+ * If ‘bytes_read’ is not ‘NULL’, then it is set to the number of
  * bytes consumed by the parser, if successful.  Similarly, if
- * `endptr' is not `NULL', then the address stored in `endptr' points
+ * ‘endptr’ is not ‘NULL’, then the address stored in ‘endptr’ points
  * to the first character beyond the characters that were consumed
  * during parsing.
  */
@@ -567,13 +567,13 @@ int mtxfiledata_parse_vector_coordinate_real_double(
     int num_rows);
 
 /**
- * `mtxfiledata_parse_vector_coordinate_complex_single()' parses a
+ * ‘mtxfiledata_parse_vector_coordinate_complex_single()’ parses a
  * string containing a data line for a Matrix Market file in vector
  * coordinate format with complex values.
  *
- * If `bytes_read' is not `NULL', then it is set to the number of
+ * If ‘bytes_read’ is not ‘NULL’, then it is set to the number of
  * bytes consumed by the parser, if successful.  Similarly, if
- * `endptr' is not `NULL', then the address stored in `endptr' points
+ * ‘endptr’ is not ‘NULL’, then the address stored in ‘endptr’ points
  * to the first character beyond the characters that were consumed
  * during parsing.
  */
@@ -585,13 +585,13 @@ int mtxfiledata_parse_vector_coordinate_complex_single(
     int num_rows);
 
 /**
- * `mtxfiledata_parse_vector_coordinate_complex_double()' parses a
+ * ‘mtxfiledata_parse_vector_coordinate_complex_double()’ parses a
  * string containing a data line for a Matrix Market file in vector
  * coordinate format with complex values.
  *
- * If `bytes_read' is not `NULL', then it is set to the number of
+ * If ‘bytes_read’ is not ‘NULL’, then it is set to the number of
  * bytes consumed by the parser, if successful.  Similarly, if
- * `endptr' is not `NULL', then the address stored in `endptr' points
+ * ‘endptr’ is not ‘NULL’, then the address stored in ‘endptr’ points
  * to the first character beyond the characters that were consumed
  * during parsing.
  */
@@ -603,13 +603,13 @@ int mtxfiledata_parse_vector_coordinate_complex_double(
     int num_rows);
 
 /**
- * `mtxfiledata_parse_vector_coordinate_integer_single()' parses a
+ * ‘mtxfiledata_parse_vector_coordinate_integer_single()’ parses a
  * string containing a data line for a Matrix Market file in vector
  * coordinate format with integer values.
  *
- * If `bytes_read' is not `NULL', then it is set to the number of
+ * If ‘bytes_read’ is not ‘NULL’, then it is set to the number of
  * bytes consumed by the parser, if successful.  Similarly, if
- * `endptr' is not `NULL', then the address stored in `endptr' points
+ * ‘endptr’ is not ‘NULL’, then the address stored in ‘endptr’ points
  * to the first character beyond the characters that were consumed
  * during parsing.
  */
@@ -621,13 +621,13 @@ int mtxfiledata_parse_vector_coordinate_integer_single(
     int num_rows);
 
 /**
- * `mtxfiledata_parse_vector_coordinate_integer_double()' parses a
+ * ‘mtxfiledata_parse_vector_coordinate_integer_double()’ parses a
  * string containing a data line for a Matrix Market file in vector
  * coordinate format with integer values.
  *
- * If `bytes_read' is not `NULL', then it is set to the number of
+ * If ‘bytes_read’ is not ‘NULL’, then it is set to the number of
  * bytes consumed by the parser, if successful.  Similarly, if
- * `endptr' is not `NULL', then the address stored in `endptr' points
+ * ‘endptr’ is not ‘NULL’, then the address stored in ‘endptr’ points
  * to the first character beyond the characters that were consumed
  * during parsing.
  */
@@ -639,13 +639,13 @@ int mtxfiledata_parse_vector_coordinate_integer_double(
     int num_rows);
 
 /**
- * `mtxfiledata_parse_vector_coordinate_pattern()' parses a string
+ * ‘mtxfiledata_parse_vector_coordinate_pattern()’ parses a string
  * containing a data line for a Matrix Market file in vector
  * coordinate format with pattern (boolean) values.
  *
- * If `bytes_read' is not `NULL', then it is set to the number of
+ * If ‘bytes_read’ is not ‘NULL’, then it is set to the number of
  * bytes consumed by the parser, if successful.  Similarly, if
- * `endptr' is not `NULL', then the address stored in `endptr' points
+ * ‘endptr’ is not ‘NULL’, then the address stored in ‘endptr’ points
  * to the first character beyond the characters that were consumed
  * during parsing.
  */
@@ -661,7 +661,7 @@ int mtxfiledata_parse_vector_coordinate_pattern(
  */
 
 /**
- * `mtxfiledata_alloc()' allocates storage for a given number of data
+ * ‘mtxfiledata_alloc()’ allocates storage for a given number of data
  * lines for a given type of matrix or vector.
  */
 int mtxfiledata_alloc(
@@ -673,7 +673,7 @@ int mtxfiledata_alloc(
     int64_t size);
 
 /**
- * `mtxfiledata_free()' frees allocaed storage for data lines.
+ * ‘mtxfiledata_free()’ frees allocaed storage for data lines.
  */
 int mtxfiledata_free(
     union mtxfiledata * data,
@@ -683,7 +683,7 @@ int mtxfiledata_free(
     enum mtxprecision precision);
 
 /**
- * `mtxfiledata_copy()' copies data lines.
+ * ‘mtxfiledata_copy()’ copies data lines.
  */
 int mtxfiledata_copy(
     union mtxfiledata * dst,
@@ -751,7 +751,7 @@ int mtxfiledata_rowcolidx(
     int * colidx);
 
 /**
- * `mtxfiledata_rowptr()' computes row pointers for a matrix in
+ * ‘mtxfiledata_rowptr()’ computes row pointers for a matrix in
  * coordinate format.
  *
  * ‘rowptr’ must point to an array containing enough storage for
@@ -781,7 +781,7 @@ int mtxfiledata_rowptr(
     int * colidx);
 
 /**
- * `mtxfiledata_colptr()' computes column pointers for a matrix in
+ * ‘mtxfiledata_colptr()’ computes column pointers for a matrix in
  * coordinate format.
  *
  * ‘colptr’ must point to an array containing enough storage for
@@ -908,19 +908,19 @@ int mtxfiledata_set_constant_integer_double(
  */
 
 /**
- * `mtxfiledata_fread()' reads Matrix Market data lines from a
+ * ‘mtxfiledata_fread()’ reads Matrix Market data lines from a
  * stream.
  *
- * Storage for the corresponding array of the `data' union, according
- * to the given `object', `format', `field' and `precision' variables,
+ * Storage for the corresponding array of the ‘data’ union, according
+ * to the given ‘object’, ‘format’, ‘field’ and ‘precision’ variables,
  * must already be allocated with enough storage to hold at least
- * `offset+size' elements.
+ * ‘offset+size’ elements.
  *
- * At most `size' lines are read from the stream and written to the
- * appropriate array of the `data' union, starting `offset' elements
+ * At most ‘size’ lines are read from the stream and written to the
+ * appropriate array of the ‘data’ union, starting ‘offset’ elements
  * from the beginning of the array.
  *
- * If an error code is returned, then `lines_read' and `bytes_read'
+ * If an error code is returned, then ‘lines_read’ and ‘bytes_read’
  * are used to return the line number and byte at which the error was
  * encountered during the parsing of the Matrix Market file.
  *
@@ -946,19 +946,19 @@ int mtxfiledata_fread(
 
 #ifdef LIBMTX_HAVE_LIBZ
 /**
- * `mtxfiledata_gzread()' reads Matrix Market data lines from a
+ * ‘mtxfiledata_gzread()’ reads Matrix Market data lines from a
  * gzip-compressed stream.
  *
- * Storage for the corresponding array of the `data' union, according
- * to the given `object', `format', `field' and `precision' variables,
+ * Storage for the corresponding array of the ‘data’ union, according
+ * to the given ‘object’, ‘format’, ‘field’ and ‘precision’ variables,
  * must already be allocated with enough storage to hold at least
- * `offset+size' elements.
+ * ‘offset+size’ elements.
  *
- * At most `size' lines are read from the stream and written to the
- * appropriate array of the `data' union, starting `offset' elements
+ * At most ‘size’ lines are read from the stream and written to the
+ * appropriate array of the ‘data’ union, starting ‘offset’ elements
  * from the beginning of the array.
  *
- * If an error code is returned, then `lines_read' and `bytes_read'
+ * If an error code is returned, then ‘lines_read’ and ‘bytes_read’
  * are used to return the line number and byte at which the error was
  * encountered during the parsing of the Matrix Market file.
  *
@@ -984,7 +984,7 @@ int mtxfiledata_gzread(
 #endif
 
 /**
- * `mtxfiledata_fwrite()' writes data lines of a Matrix Market file
+ * ‘mtxfiledata_fwrite()’ writes data lines of a Matrix Market file
  * to a stream.
  *
  * If ‘fmt’ is ‘NULL’, then the format specifier ‘%g’ is used to print
@@ -1002,8 +1002,8 @@ int mtxfiledata_gzread(
  * "%*.*f"), as well as length modifiers (e.g., "%Lf") are not
  * allowed.
  *
- * If it is not `NULL', then the number of bytes written to the stream
- * is returned in `bytes_written'.
+ * If it is not ‘NULL’, then the number of bytes written to the stream
+ * is returned in ‘bytes_written’.
  *
  * The locale is temporarily changed to "C" to ensure that
  * locale-specific settings, such as the type of decimal point, do not
@@ -1022,7 +1022,7 @@ int mtxfiledata_fwrite(
 
 #ifdef LIBMTX_HAVE_LIBZ
 /**
- * `mtxfiledata_gzwrite()' writes data lines of a Matrix Market file
+ * ‘mtxfiledata_gzwrite()’ writes data lines of a Matrix Market file
  * to a gzip-compressed stream.
  *
  * If ‘fmt’ is ‘NULL’, then the format specifier ‘%g’ is used to print
@@ -1040,8 +1040,8 @@ int mtxfiledata_fwrite(
  * "%*.*f"), as well as length modifiers (e.g., "%Lf") are not
  * allowed.
  *
- * If it is not `NULL', then the number of bytes written to the stream
- * is returned in `bytes_written'.
+ * If it is not ‘NULL’, then the number of bytes written to the stream
+ * is returned in ‘bytes_written’.
  *
  * The locale is temporarily changed to "C" to ensure that
  * locale-specific settings, such as the type of decimal point, do not
@@ -1064,7 +1064,7 @@ int mtxfiledata_gzwrite(
  */
 
 /**
- * `mtxfiledata_transpose()' tranposes the data lines of a Matrix
+ * ‘mtxfiledata_transpose()’ tranposes the data lines of a Matrix
  * Market file.
  */
 int mtxfiledata_transpose(
@@ -1231,7 +1231,7 @@ int mtxfiledata_sort_column_major(
     int64_t * perm);
 
 /**
- * `mtxfiledata_sort_morton()' sorts data lines of a Matrix Market
+ * ‘mtxfiledata_sort_morton()’ sorts data lines of a Matrix Market
  * file in Morton order, also known as Z-order.
  *
  * This operation is only supported for matrices in coordinate format.
@@ -1374,11 +1374,11 @@ int mtxfiledata_mpi_datatype(
     int * mpierrcode);
 
 /**
- * `mtxfiledata_send()' sends Matrix Market data lines to another MPI
+ * ‘mtxfiledata_send()’ sends Matrix Market data lines to another MPI
  * process.
  *
- * This is analogous to `MPI_Send()' and requires the receiving
- * process to perform a matching call to `mtxfiledata_recv()'.
+ * This is analogous to ‘MPI_Send()’ and requires the receiving
+ * process to perform a matching call to ‘mtxfiledata_recv()’.
  */
 int mtxfiledata_send(
     const union mtxfiledata * data,
@@ -1394,11 +1394,11 @@ int mtxfiledata_send(
     struct mtxdisterror * disterr);
 
 /**
- * `mtxfiledata_recv()' receives Matrix Market data lines from
+ * ‘mtxfiledata_recv()’ receives Matrix Market data lines from
  * another MPI process.
  *
- * This is analogous to `MPI_Recv()' and requires the sending process
- * to perform a matching call to `mtxfiledata_send()'.
+ * This is analogous to ‘MPI_Recv()’ and requires the sending process
+ * to perform a matching call to ‘mtxfiledata_send()’.
  */
 int mtxfiledata_recv(
     union mtxfiledata * data,
@@ -1414,12 +1414,12 @@ int mtxfiledata_recv(
     struct mtxdisterror * disterr);
 
 /**
- * `mtxfiledata_bcast()' broadcasts Matrix Market data lines from an
+ * ‘mtxfiledata_bcast()’ broadcasts Matrix Market data lines from an
  * MPI root process to other processes in a communicator.
  *
- * This is analogous to `MPI_Bcast()' and requires every process in
+ * This is analogous to ‘MPI_Bcast()’ and requires every process in
  * the communicator to perform matching calls to
- * `mtxfiledata_bcast()'.
+ * ‘mtxfiledata_bcast()’.
  */
 int mtxfiledata_bcast(
     union mtxfiledata * data,
@@ -1434,12 +1434,12 @@ int mtxfiledata_bcast(
     struct mtxdisterror * disterr);
 
 /**
- * `mtxfiledata_gatherv()' gathers Matrix Market data lines onto an
+ * ‘mtxfiledata_gatherv()’ gathers Matrix Market data lines onto an
  * MPI root process from other processes in a communicator.
  *
- * This is analogous to `MPI_Gatherv()' and requires every process in
+ * This is analogous to ‘MPI_Gatherv()’ and requires every process in
  * the communicator to perform matching calls to
- * `mtxfiledata_gatherv()'.
+ * ‘mtxfiledata_gatherv()’.
  */
 int mtxfiledata_gatherv(
     const union mtxfiledata * sendbuf,
@@ -1458,12 +1458,12 @@ int mtxfiledata_gatherv(
     struct mtxdisterror * disterr);
 
 /**
- * `mtxfiledata_scatterv()' scatters Matrix Market data lines from an
+ * ‘mtxfiledata_scatterv()’ scatters Matrix Market data lines from an
  * MPI root process to other processes in a communicator.
  *
- * This is analogous to `MPI_Scatterv()' and requires every process in
+ * This is analogous to ‘MPI_Scatterv()’ and requires every process in
  * the communicator to perform matching calls to
- * `mtxfiledata_scatterv()'.
+ * ‘mtxfiledata_scatterv()’.
  */
 int mtxfiledata_scatterv(
     const union mtxfiledata * sendbuf,
@@ -1482,12 +1482,12 @@ int mtxfiledata_scatterv(
     struct mtxdisterror * disterr);
 
 /**
- * `mtxfiledata_alltoallv()' performs an all-to-all exchange of
+ * ‘mtxfiledata_alltoallv()’ performs an all-to-all exchange of
  * Matrix Market data lines between MPI processes in a communicator.
  *
- * This is analogous to `MPI_Alltoallv()' and requires every process
+ * This is analogous to ‘MPI_Alltoallv()’ and requires every process
  * in the communicator to perform matching calls to
- * `mtxfiledata_alltoallv()'.
+ * ‘mtxfiledata_alltoallv()’.
  */
 int mtxfiledata_alltoallv(
     const union mtxfiledata * sendbuf,
