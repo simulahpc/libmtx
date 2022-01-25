@@ -27,8 +27,9 @@
 #include <libmtx/libmtx-config.h>
 
 #ifdef LIBMTX_HAVE_MPI
-#include <libmtx/precision.h>
 #include <libmtx/field.h>
+#include <libmtx/precision.h>
+#include <libmtx/util/partition.h>
 #include <libmtx/vector/vector.h>
 
 #include <mpi.h>
@@ -45,7 +46,6 @@
 struct mtxfile;
 struct mtxdistfile;
 struct mtxdisterror;
-struct mtxpartition;
 
 /**
  * ‘mtxdistvector’ is a vector distributed across multiple processes,
@@ -80,10 +80,6 @@ struct mtxdistvector
     struct mtxpartition rowpart;
 
     struct mtxvector interior;
-
-    struct mtxvector_coordinate interior_halo;
-
-    struct mtxvector_coordinate exterior_halo;
 };
 
 /*

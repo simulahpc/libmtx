@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-01-19
+ * Last modified: 2022-01-25
  *
  * Data structures for distributed vectors.
  */
@@ -25,13 +25,14 @@
 
 #ifdef LIBMTX_HAVE_MPI
 #include <libmtx/error.h>
-#include <libmtx/precision.h>
-#include <libmtx/mtxfile/mtxdistfile.h>
+#include <libmtx/field.h>
 #include <libmtx/mtxfile/header.h>
+#include <libmtx/mtxfile/mtxdistfile.h>
 #include <libmtx/mtxfile/mtxfile.h>
 #include <libmtx/mtxfile/size.h>
-#include <libmtx/field.h>
+#include <libmtx/precision.h>
 #include <libmtx/util/partition.h>
+#include <libmtx/util/sort.h>
 #include <libmtx/vector/distvector.h>
 #include <libmtx/vector/vector.h>
 
@@ -1594,7 +1595,16 @@ int mtxdistvector_sasum(
     const struct mtxdistvector * x,
     float * asum,
     int64_t * num_flops,
-    struct mtxdisterror * disterr);
+    struct mtxdisterror * disterr)
+{
+    int err = mtxvector_sasum(&x->interior, asum, num_flops);
+    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+    disterr->mpierrcode = MPI_Allreduce(
+        MPI_IN_PLACE, asum, 1, MPI_FLOAT, MPI_SUM, x->comm);
+    err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+    return MTX_SUCCESS;
+}
 
 /**
  * ‘mtxdistvector_dasum()’ computes the sum of absolute values
@@ -1604,7 +1614,16 @@ int mtxdistvector_dasum(
     const struct mtxdistvector * x,
     double * asum,
     int64_t * num_flops,
-    struct mtxdisterror * disterr);
+    struct mtxdisterror * disterr)
+{
+    int err = mtxvector_dasum(&x->interior, asum, num_flops);
+    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+    disterr->mpierrcode = MPI_Allreduce(
+        MPI_IN_PLACE, asum, 1, MPI_DOUBLE, MPI_SUM, x->comm);
+    err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+    return MTX_SUCCESS;
+}
 
 /**
  * ‘mtxdistvector_iamax()’ finds the index of the first element having

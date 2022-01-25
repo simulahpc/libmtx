@@ -514,6 +514,7 @@ int mtxvector_coordinate_dasum(
     const struct mtxvector_coordinate * x,
     double * asum,
     int64_t * num_flops);
+
 /**
  * ‘mtxvector_coordinate_iamax()’ finds the index of the first element
  * having the maximum absolute value.  If the vector is
@@ -524,5 +525,164 @@ int mtxvector_coordinate_dasum(
 int mtxvector_coordinate_iamax(
     const struct mtxvector_coordinate * x,
     int * iamax);
+
+/*
+ * Sorting
+ */
+
+/**
+ * ‘mtxvector_coordinate_permute()’ permutes the elements of a vector
+ * according to a given permutation.
+ *
+ * The array ‘perm’ should be an array of length ‘size’ that stores a
+ * permutation of the integers ‘0,1,...,N-1’, where ‘N’ is the number
+ * of vector elements.
+ *
+ * After permuting, the 1st vector element of the original vector is
+ * now located at position ‘perm[0]’ in the sorted vector ‘x’, the 2nd
+ * element is now at position ‘perm[1]’, and so on.
+ */
+int mtxvector_coordinate_permute(
+    struct mtxvector_coordinate * x,
+    int64_t size,
+    int64_t * perm);
+
+/**
+ * ‘mtxvector_coordinate_sort()’ sorts elements of a vector by the
+ * given keys.
+ *
+ * The array ‘keys’ must be an array of length ‘size’ that stores a
+ * 64-bit unsigned integer sorting key that is used to define the
+ * order in which to sort the vector elements..
+ *
+ * If it is not ‘NULL’, then ‘perm’ must point to an array of length
+ * ‘size’, which is then used to store the sorting permutation. That
+ * is, ‘perm’ is a permutation of the integers ‘0,1,...,N-1’, where
+ * ‘N’ is the number of vector elements, such that the 1st vector
+ * element in the original vector is now located at position ‘perm[0]’
+ * in the sorted vector ‘x’, the 2nd element is now at position
+ * ‘perm[1]’, and so on.
+ */
+int mtxvector_coordinate_sort(
+    struct mtxvector_coordinate * x,
+    int64_t size,
+    uint64_t * keys,
+    int64_t * perm);
+
+/*
+ * MPI functions
+ */
+
+#ifdef LIBMTX_HAVE_MPI
+/**
+ * ‘mtxvector_coordinate_send()’ sends Matrix Market data lines to
+ * another MPI process.
+ *
+ * This is analogous to ‘MPI_Send()’ and requires the receiving
+ * process to perform a matching call to
+ * ‘mtxvector_coordinate_recv()’.
+ */
+int mtxvector_coordinate_send(
+    const struct mtxvector_coordinate * data,
+    int64_t size,
+    int64_t offset,
+    int dest,
+    int tag,
+    MPI_Comm comm,
+    struct mtxdisterror * disterr);
+
+/**
+ * ‘mtxvector_coordinate_recv()’ receives Matrix Market data lines
+ * from another MPI process.
+ *
+ * This is analogous to ‘MPI_Recv()’ and requires the sending process
+ * to perform a matching call to ‘mtxvector_coordinate_send()’.
+ */
+int mtxvector_coordinate_recv(
+    struct mtxvector_coordinate * data,
+    int64_t size,
+    int64_t offset,
+    int source,
+    int tag,
+    MPI_Comm comm,
+    struct mtxdisterror * disterr);
+
+/**
+ * ‘mtxvector_coordinate_bcast()’ broadcasts Matrix Market data lines
+ * from an MPI root process to other processes in a communicator.
+ *
+ * This is analogous to ‘MPI_Bcast()’ and requires every process in
+ * the communicator to perform matching calls to
+ * ‘mtxvector_coordinate_bcast()’.
+ */
+int mtxvector_coordinate_bcast(
+    struct mtxvector_coordinate * data,
+    int64_t size,
+    int64_t offset,
+    int root,
+    MPI_Comm comm,
+    struct mtxdisterror * disterr);
+
+/**
+ * ‘mtxvector_coordinate_gatherv()’ gathers Matrix Market data lines
+ * onto an MPI root process from other processes in a communicator.
+ *
+ * This is analogous to ‘MPI_Gatherv()’ and requires every process in
+ * the communicator to perform matching calls to
+ * ‘mtxvector_coordinate_gatherv()’.
+ */
+int mtxvector_coordinate_gatherv(
+    const struct mtxvector_coordinate * sendbuf,
+    int64_t sendoffset,
+    int sendcount,
+    struct mtxvector_coordinate * recvbuf,
+    int64_t recvoffset,
+    const int * recvcounts,
+    const int * recvdispls,
+    int root,
+    MPI_Comm comm,
+    struct mtxdisterror * disterr);
+
+/**
+ * ‘mtxvector_coordinate_scatterv()’ scatters Matrix Market data lines
+ * from an MPI root process to other processes in a communicator.
+ *
+ * This is analogous to ‘MPI_Scatterv()’ and requires every process in
+ * the communicator to perform matching calls to
+ * ‘mtxvector_coordinate_scatterv()’.
+ */
+int mtxvector_coordinate_scatterv(
+    const struct mtxvector_coordinate * sendbuf,
+    int64_t sendoffset,
+    const int * sendcounts,
+    const int * displs,
+    struct mtxvector_coordinate * recvbuf,
+    int64_t recvoffset,
+    int recvcount,
+    int root,
+    MPI_Comm comm,
+    struct mtxdisterror * disterr);
+
+/**
+ * ‘mtxvector_coordinate_alltoallv()’ performs an all-to-all exchange
+ * of Matrix Market data lines between MPI processes in a
+ * communicator.
+ *
+ * This is analogous to ‘MPI_Alltoallv()’ and requires every process
+ * in the communicator to perform matching calls to
+ * ‘mtxvector_coordinate_alltoallv()’.
+ */
+int mtxvector_coordinate_alltoallv(
+    const struct mtxvector_coordinate * sendbuf,
+    int64_t sendoffset,
+    const int * sendcounts,
+    const int * senddispls,
+    struct mtxvector_coordinate * recvbuf,
+    int64_t recvoffset,
+    const int * recvcounts,
+    const int * recvdispls,
+    MPI_Comm comm,
+    struct mtxdisterror * disterr);
+#endif
 
 #endif

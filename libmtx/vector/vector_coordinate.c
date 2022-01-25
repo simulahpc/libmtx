@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-01-19
+ * Last modified: 2022-01-24
  *
  * Data structures for vectors in coordinate format.
  */
@@ -24,9 +24,10 @@
 #include <libmtx/libmtx-config.h>
 
 #include <libmtx/error.h>
-#include <libmtx/precision.h>
-#include <libmtx/mtxfile/mtxfile.h>
 #include <libmtx/field.h>
+#include <libmtx/mtxfile/mtxfile.h>
+#include <libmtx/precision.h>
+#include <libmtx/util/sort.h>
 #include <libmtx/vector/vector_coordinate.h>
 
 #ifdef LIBMTX_HAVE_BLAS
@@ -101,7 +102,10 @@ int mtxvector_coordinate_init_copy(
     int err = mtxvector_coordinate_alloc_copy(dst, src);
     if (err) return err;
     err = mtxvector_coordinate_copy(dst, src);
-    if (err) return err;
+    if (err) {
+        mtxvector_coordinate_free(dst);
+        return err;
+    }
     return MTX_SUCCESS;
 }
 
@@ -2427,3 +2431,271 @@ int mtxvector_coordinate_iamax(
     }
     return MTX_SUCCESS;
 }
+
+/*
+ * Sorting
+ */
+
+/**
+ * ‘mtxvector_coordinate_permute()’ permutes the elements of a vector
+ * according to a given permutation.
+ *
+ * The array ‘perm’ should be an array of length ‘size’ that stores a
+ * permutation of the integers ‘0,1,...,N-1’, where ‘N’ is the number
+ * of vector elements.
+ *
+ * After permuting, the 1st vector element of the original vector is
+ * now located at position ‘perm[0]’ in the sorted vector ‘x’, the 2nd
+ * element is now at position ‘perm[1]’, and so on.
+ */
+int mtxvector_coordinate_permute(
+    struct mtxvector_coordinate * x,
+    int64_t size,
+    int64_t * perm)
+{
+    if (size > x->size)
+        return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+    for (int64_t k = 0; k < size; k++) {
+        if (perm[k] < 0 || perm[k] >= size)
+            return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+    }
+
+    /* 1. Copy the original, unsorted data. */
+    struct mtxvector_coordinate y;
+    int err = mtxvector_coordinate_init_copy(&y, x);
+    if (err) return err;
+
+    /* 2. Permute the data. */
+    if (x->field == mtx_field_real) {
+        if (x->precision == mtx_single) {
+            float * dst = x->data.real_single;
+            const float * src = y.data.real_single;
+            for (int64_t k = 0; k < size; k++) {
+                x->indices[perm[k]] = y.indices[k];
+                dst[perm[k]] = src[k];
+            }
+        } else if (x->precision == mtx_double) {
+            double * dst = x->data.real_double;
+            const double * src = y.data.real_double;
+            for (int64_t k = 0; k < size; k++) {
+                x->indices[perm[k]] = y.indices[k];
+                dst[perm[k]] = src[k];
+            }
+        } else {
+            mtxvector_coordinate_free(&y);
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else if (x->field == mtx_field_complex) {
+        if (x->precision == mtx_single) {
+            float (* dst)[2] = x->data.complex_single;
+            const float (* src)[2] = y.data.complex_single;
+            for (int64_t k = 0; k < size; k++) {
+                x->indices[perm[k]] = y.indices[k];
+                dst[perm[k]][0] = src[k][0];
+                dst[perm[k]][1] = src[k][1];
+            }
+        } else if (x->precision == mtx_double) {
+            double (* dst)[2] = x->data.complex_double;
+            const double (* src)[2] = y.data.complex_double;
+            for (int64_t k = 0; k < size; k++) {
+                x->indices[perm[k]] = y.indices[k];
+                dst[perm[k]][0] = src[k][0];
+                dst[perm[k]][1] = src[k][1];
+            }
+        } else {
+            mtxvector_coordinate_free(&y);
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else if (x->field == mtx_field_integer) {
+        if (x->precision == mtx_single) {
+            int32_t * dst = x->data.integer_single;
+            const int32_t * src = y.data.integer_single;
+            for (int64_t k = 0; k < size; k++) {
+                x->indices[perm[k]] = y.indices[k];
+                dst[perm[k]] = src[k];
+            }
+        } else if (x->precision == mtx_double) {
+            int64_t * dst = x->data.integer_double;
+            const int64_t * src = y.data.integer_double;
+            for (int64_t k = 0; k < size; k++) {
+                x->indices[perm[k]] = y.indices[k];
+                dst[perm[k]] = src[k];
+            }
+        } else {
+            mtxvector_coordinate_free(&y);
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else if (x->field == mtx_field_pattern) {
+        for (int64_t k = 0; k < size; k++)
+            x->indices[perm[k]] = y.indices[k];
+    } else {
+        mtxvector_coordinate_free(&y);
+        return MTX_ERR_INVALID_MTX_FIELD;
+    }
+    mtxvector_coordinate_free(&y);
+    return MTX_SUCCESS;
+}
+
+/**
+ * ‘mtxvector_coordinate_sort()’ sorts elements of a vector by the
+ * given keys.
+ *
+ * The array ‘keys’ must be an array of length ‘size’ that stores a
+ * 64-bit unsigned integer sorting key that is used to define the
+ * order in which to sort the vector elements..
+ *
+ * If it is not ‘NULL’, then ‘perm’ must point to an array of length
+ * ‘size’, which is then used to store the sorting permutation. That
+ * is, ‘perm’ is a permutation of the integers ‘0,1,...,N-1’, where
+ * ‘N’ is the number of vector elements, such that the 1st vector
+ * element in the original vector is now located at position ‘perm[0]’
+ * in the sorted vector ‘x’, the 2nd element is now at position
+ * ‘perm[1]’, and so on.
+ */
+int mtxvector_coordinate_sort(
+    struct mtxvector_coordinate * x,
+    int64_t size,
+    uint64_t * keys,
+    int64_t * perm)
+{
+    /* 1. Sort the keys and obtain a sorting permutation. */
+    bool alloc_perm = !perm;
+    if (alloc_perm) {
+        perm = malloc(size * sizeof(int64_t));
+        if (!perm)
+            return MTX_ERR_ERRNO;
+    }
+    int err = radix_sort_uint64(size, keys, perm);
+    if (err) {
+        if (alloc_perm) free(perm);
+        return err;
+    }
+
+    /* 2. Sort data according to the sorting permutation. */
+    err = mtxvector_coordinate_permute(x, size, perm);
+    if (err) {
+        if (alloc_perm) free(perm);
+        return err;
+    }
+    if (alloc_perm) free(perm);
+    return MTX_SUCCESS;
+}
+
+/*
+ * MPI functions
+ */
+
+#ifdef LIBMTX_HAVE_MPI
+/**
+ * ‘mtxvector_coordinate_send()’ sends Matrix Market data lines to
+ * another MPI process.
+ *
+ * This is analogous to ‘MPI_Send()’ and requires the receiving
+ * process to perform a matching call to
+ * ‘mtxvector_coordinate_recv()’.
+ */
+int mtxvector_coordinate_send(
+    const struct mtxvector_coordinate * data,
+    int64_t size,
+    int64_t offset,
+    int dest,
+    int tag,
+    MPI_Comm comm,
+    struct mtxdisterror * disterr);
+
+/**
+ * ‘mtxvector_coordinate_recv()’ receives Matrix Market data lines
+ * from another MPI process.
+ *
+ * This is analogous to ‘MPI_Recv()’ and requires the sending process
+ * to perform a matching call to ‘mtxvector_coordinate_send()’.
+ */
+int mtxvector_coordinate_recv(
+    struct mtxvector_coordinate * data,
+    int64_t size,
+    int64_t offset,
+    int source,
+    int tag,
+    MPI_Comm comm,
+    struct mtxdisterror * disterr);
+
+/**
+ * ‘mtxvector_coordinate_bcast()’ broadcasts Matrix Market data lines
+ * from an MPI root process to other processes in a communicator.
+ *
+ * This is analogous to ‘MPI_Bcast()’ and requires every process in
+ * the communicator to perform matching calls to
+ * ‘mtxvector_coordinate_bcast()’.
+ */
+int mtxvector_coordinate_bcast(
+    struct mtxvector_coordinate * data,
+    int64_t size,
+    int64_t offset,
+    int root,
+    MPI_Comm comm,
+    struct mtxdisterror * disterr);
+
+/**
+ * ‘mtxvector_coordinate_gatherv()’ gathers Matrix Market data lines
+ * onto an MPI root process from other processes in a communicator.
+ *
+ * This is analogous to ‘MPI_Gatherv()’ and requires every process in
+ * the communicator to perform matching calls to
+ * ‘mtxvector_coordinate_gatherv()’.
+ */
+int mtxvector_coordinate_gatherv(
+    const struct mtxvector_coordinate * sendbuf,
+    int64_t sendoffset,
+    int sendcount,
+    struct mtxvector_coordinate * recvbuf,
+    int64_t recvoffset,
+    const int * recvcounts,
+    const int * recvdispls,
+    int root,
+    MPI_Comm comm,
+    struct mtxdisterror * disterr);
+
+/**
+ * ‘mtxvector_coordinate_scatterv()’ scatters Matrix Market data lines
+ * from an MPI root process to other processes in a communicator.
+ *
+ * This is analogous to ‘MPI_Scatterv()’ and requires every process in
+ * the communicator to perform matching calls to
+ * ‘mtxvector_coordinate_scatterv()’.
+ */
+int mtxvector_coordinate_scatterv(
+    const struct mtxvector_coordinate * sendbuf,
+    int64_t sendoffset,
+    const int * sendcounts,
+    const int * displs,
+    struct mtxvector_coordinate * recvbuf,
+    int64_t recvoffset,
+    int recvcount,
+    int root,
+    MPI_Comm comm,
+    struct mtxdisterror * disterr);
+
+/**
+ * ‘mtxvector_coordinate_alltoallv()’ performs an all-to-all exchange
+ * of Matrix Market data lines between MPI processes in a
+ * communicator.
+ *
+ * This is analogous to ‘MPI_Alltoallv()’ and requires every process
+ * in the communicator to perform matching calls to
+ * ‘mtxvector_coordinate_alltoallv()’.
+ */
+int mtxvector_coordinate_alltoallv(
+    const struct mtxvector_coordinate * sendbuf,
+    int64_t sendoffset,
+    const int * sendcounts,
+    const int * senddispls,
+    struct mtxvector_coordinate * recvbuf,
+    int64_t recvoffset,
+    const int * recvcounts,
+    const int * recvdispls,
+    MPI_Comm comm,
+    struct mtxdisterror * disterr)
+{
+    return MTX_SUCCESS;
+}
+#endif

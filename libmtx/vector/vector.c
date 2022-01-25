@@ -135,9 +135,11 @@ int mtxvector_alloc_copy(
     const struct mtxvector * src)
 {
     if (src->type == mtxvector_array) {
+        dst->type = mtxvector_array;
         return mtxvector_array_alloc_copy(
             &dst->storage.array, &src->storage.array);
     } else if (src->type == mtxvector_coordinate) {
+        dst->type = mtxvector_coordinate;
         return mtxvector_coordinate_alloc_copy(
             &dst->storage.coordinate, &src->storage.coordinate);
     } else {
@@ -154,9 +156,11 @@ int mtxvector_init_copy(
     const struct mtxvector * src)
 {
     if (src->type == mtxvector_array) {
+        dst->type = mtxvector_array;
         return mtxvector_array_init_copy(
             &dst->storage.array, &src->storage.array);
     } else if (src->type == mtxvector_coordinate) {
+        dst->type = mtxvector_coordinate;
         return mtxvector_coordinate_init_copy(
             &dst->storage.coordinate, &src->storage.coordinate);
     } else {
@@ -857,6 +861,8 @@ int mtxvector_swap(
     struct mtxvector * x,
     struct mtxvector * y)
 {
+    if (x->type != y->type)
+        return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
     if (x->type == mtxvector_array) {
         return mtxvector_array_swap(
             &x->storage.array, &y->storage.array);
@@ -875,6 +881,8 @@ int mtxvector_copy(
     struct mtxvector * y,
     const struct mtxvector * x)
 {
+    if (x->type != y->type)
+        return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
     if (x->type == mtxvector_array) {
         return mtxvector_array_copy(
             &y->storage.array, &x->storage.array);
@@ -1248,3 +1256,196 @@ int mtxvector_iamax(
         return MTX_ERR_INVALID_VECTOR_TYPE;
     }
 }
+
+/*
+ * Sorting
+ */
+
+/**
+ * ‘mtxvector_permute()’ permutes the elements of a vector according
+ * to a given permutation.
+ *
+ * The array ‘perm’ should be an array of length ‘size’ that stores a
+ * permutation of the integers ‘0,1,...,N-1’, where ‘N’ is the number
+ * of vector elements.
+ *
+ * After permuting, the 1st vector element of the original vector is
+ * now located at position ‘perm[0]’ in the sorted vector ‘x’, the 2nd
+ * element is now at position ‘perm[1]’, and so on.
+ */
+int mtxvector_permute(
+    struct mtxvector * x,
+    int64_t size,
+    int64_t * perm)
+{
+    if (x->type == mtxvector_array) {
+        return mtxvector_array_permute(&x->storage.array, size, perm);
+    } else if (x->type == mtxvector_coordinate) {
+        return mtxvector_coordinate_permute(&x->storage.coordinate, size, perm);
+    } else {
+        return MTX_ERR_INVALID_VECTOR_TYPE;
+    }
+}
+
+/**
+ * ‘mtxvector_sort()’ sorts elements of a vector by the given keys.
+ *
+ * The array ‘keys’ must be an array of length ‘size’ that stores a
+ * 64-bit unsigned integer sorting key that is used to define the
+ * order in which to sort the vector elements..
+ *
+ * If it is not ‘NULL’, then ‘perm’ must point to an array of length
+ * ‘size’, which is then used to store the sorting permutation. That
+ * is, ‘perm’ is a permutation of the integers ‘0,1,...,N-1’, where
+ * ‘N’ is the number of vector elements, such that the 1st vector
+ * element in the original vector is now located at position ‘perm[0]’
+ * in the sorted vector ‘x’, the 2nd element is now at position
+ * ‘perm[1]’, and so on.
+ */
+int mtxvector_sort(
+    struct mtxvector * x,
+    int64_t size,
+    uint64_t * keys,
+    int64_t * perm)
+{
+    if (x->type == mtxvector_array) {
+        return mtxvector_array_sort(&x->storage.array, size, keys, perm);
+    } else if (x->type == mtxvector_coordinate) {
+        return mtxvector_coordinate_sort(&x->storage.coordinate, size, keys, perm);
+    } else {
+        return MTX_ERR_INVALID_VECTOR_TYPE;
+    }
+}
+
+/*
+ * MPI functions
+ */
+
+#ifdef LIBMTX_HAVE_MPI
+/**
+ * ‘mtxvector_send()’ sends Matrix Market data lines to another MPI
+ * process.
+ *
+ * This is analogous to ‘MPI_Send()’ and requires the receiving
+ * process to perform a matching call to ‘mtxvector_recv()’.
+ */
+int mtxvector_send(
+    const struct mtxvector * data,
+    int64_t size,
+    int64_t offset,
+    int dest,
+    int tag,
+    MPI_Comm comm,
+    struct mtxdisterror * disterr);
+
+/**
+ * ‘mtxvector_recv()’ receives Matrix Market data lines from
+ * another MPI process.
+ *
+ * This is analogous to ‘MPI_Recv()’ and requires the sending process
+ * to perform a matching call to ‘mtxvector_send()’.
+ */
+int mtxvector_recv(
+    struct mtxvector * data,
+    int64_t size,
+    int64_t offset,
+    int source,
+    int tag,
+    MPI_Comm comm,
+    struct mtxdisterror * disterr);
+
+/**
+ * ‘mtxvector_bcast()’ broadcasts Matrix Market data lines from an
+ * MPI root process to other processes in a communicator.
+ *
+ * This is analogous to ‘MPI_Bcast()’ and requires every process in
+ * the communicator to perform matching calls to
+ * ‘mtxvector_bcast()’.
+ */
+int mtxvector_bcast(
+    struct mtxvector * data,
+    int64_t size,
+    int64_t offset,
+    int root,
+    MPI_Comm comm,
+    struct mtxdisterror * disterr);
+
+/**
+ * ‘mtxvector_gatherv()’ gathers Matrix Market data lines onto an
+ * MPI root process from other processes in a communicator.
+ *
+ * This is analogous to ‘MPI_Gatherv()’ and requires every process in
+ * the communicator to perform matching calls to
+ * ‘mtxvector_gatherv()’.
+ */
+int mtxvector_gatherv(
+    const struct mtxvector * sendbuf,
+    int64_t sendoffset,
+    int sendcount,
+    struct mtxvector * recvbuf,
+    int64_t recvoffset,
+    const int * recvcounts,
+    const int * recvdispls,
+    int root,
+    MPI_Comm comm,
+    struct mtxdisterror * disterr);
+
+/**
+ * ‘mtxvector_scatterv()’ scatters Matrix Market data lines from an
+ * MPI root process to other processes in a communicator.
+ *
+ * This is analogous to ‘MPI_Scatterv()’ and requires every process in
+ * the communicator to perform matching calls to
+ * ‘mtxvector_scatterv()’.
+ */
+int mtxvector_scatterv(
+    const struct mtxvector * sendbuf,
+    int64_t sendoffset,
+    const int * sendcounts,
+    const int * displs,
+    struct mtxvector * recvbuf,
+    int64_t recvoffset,
+    int recvcount,
+    int root,
+    MPI_Comm comm,
+    struct mtxdisterror * disterr);
+
+/**
+ * ‘mtxvector_alltoallv()’ performs an all-to-all exchange of
+ * Matrix Market data lines between MPI processes in a communicator.
+ *
+ * This is analogous to ‘MPI_Alltoallv()’ and requires every process
+ * in the communicator to perform matching calls to
+ * ‘mtxvector_alltoallv()’.
+ */
+int mtxvector_alltoallv(
+    const struct mtxvector * sendbuf,
+    int64_t sendoffset,
+    const int * sendcounts,
+    const int * senddispls,
+    struct mtxvector * recvbuf,
+    int64_t recvoffset,
+    const int * recvcounts,
+    const int * recvdispls,
+    MPI_Comm comm,
+    struct mtxdisterror * disterr)
+{
+    if (sendbuf->type == mtxvector_array && recvbuf->type == sendbuf->type) {
+        return mtxvector_array_alltoallv(
+            &sendbuf->storage.array, sendoffset, sendcounts, senddispls,
+            &recvbuf->storage.array, recvoffset, recvcounts, recvdispls,
+            comm, disterr);
+    } else if (sendbuf->type == mtxvector_coordinate &&
+               recvbuf->type == sendbuf->type)
+    {
+        return mtxvector_coordinate_alltoallv(
+            &sendbuf->storage.coordinate, sendoffset, sendcounts, senddispls,
+            &recvbuf->storage.coordinate, recvoffset, recvcounts, recvdispls,
+            comm, disterr);
+    } else if (sendbuf->type != recvbuf->type) {
+        return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
+    } else {
+        return MTX_ERR_INVALID_VECTOR_TYPE;
+    }
+}
+#endif

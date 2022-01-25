@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-01-19
+ * Last modified: 2022-01-24
  *
  * Data structures for vectors in array format.
  */
@@ -24,9 +24,10 @@
 #include <libmtx/libmtx-config.h>
 
 #include <libmtx/error.h>
-#include <libmtx/precision.h>
-#include <libmtx/mtxfile/mtxfile.h>
 #include <libmtx/field.h>
+#include <libmtx/mtxfile/mtxfile.h>
+#include <libmtx/precision.h>
+#include <libmtx/util/sort.h>
 #include <libmtx/vector/vector_array.h>
 
 #ifdef LIBMTX_HAVE_BLAS
@@ -98,7 +99,10 @@ int mtxvector_array_init_copy(
     int err = mtxvector_array_alloc_copy(dst, src);
     if (err) return err;
     err = mtxvector_array_copy(dst, src);
-    if (err) return err;
+    if (err) {
+        mtxvector_array_free(dst);
+        return err;
+    }
     return MTX_SUCCESS;
 }
 
@@ -2138,3 +2142,299 @@ int mtxvector_array_iamax(
     }
     return MTX_SUCCESS;
 }
+
+/*
+ * Sorting
+ */
+
+/**
+ * ‘mtxvector_array_permute()’ permutes the elements of a vector
+ * according to a given permutation.
+ *
+ * The array ‘perm’ should be an array of length ‘size’ that stores a
+ * permutation of the integers ‘0,1,...,N-1’, where ‘N’ is the number
+ * of vector elements.
+ *
+ * After permuting, the 1st vector element of the original vector is
+ * now located at position ‘perm[0]’ in the sorted vector ‘x’, the 2nd
+ * element is now at position ‘perm[1]’, and so on.
+ */
+int mtxvector_array_permute(
+    struct mtxvector_array * x,
+    int64_t size,
+    int64_t * perm)
+{
+    if (size > x->size)
+        return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+    for (int64_t k = 0; k < size; k++) {
+        if (perm[k] < 0 || perm[k] >= size)
+            return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+    }
+
+    /* 1. Copy the original, unsorted data. */
+    struct mtxvector_array y;
+    int err = mtxvector_array_init_copy(&y, x);
+    if (err) return err;
+
+    /* 2. Permute the data. */
+    if (x->field == mtx_field_real) {
+        if (x->precision == mtx_single) {
+            float * dst = x->data.real_single;
+            const float * src = y.data.real_single;
+            for (int64_t k = 0; k < size; k++)
+                dst[perm[k]] = src[k];
+        } else if (x->precision == mtx_double) {
+            double * dst = x->data.real_double;
+            const double * src = y.data.real_double;
+            for (int64_t k = 0; k < size; k++)
+                dst[perm[k]] = src[k];
+        } else {
+            mtxvector_array_free(&y);
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else if (x->field == mtx_field_complex) {
+        if (x->precision == mtx_single) {
+            float (* dst)[2] = x->data.complex_single;
+            const float (* src)[2] = y.data.complex_single;
+            for (int64_t k = 0; k < size; k++) {
+                dst[perm[k]][0] = src[k][0];
+                dst[perm[k]][1] = src[k][1];
+            }
+        } else if (x->precision == mtx_double) {
+            double (* dst)[2] = x->data.complex_double;
+            const double (* src)[2] = y.data.complex_double;
+            for (int64_t k = 0; k < size; k++) {
+                dst[perm[k]][0] = src[k][0];
+                dst[perm[k]][1] = src[k][1];
+            }
+        } else {
+            mtxvector_array_free(&y);
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else if (x->field == mtx_field_integer) {
+        if (x->precision == mtx_single) {
+            int32_t * dst = x->data.integer_single;
+            const int32_t * src = y.data.integer_single;
+            for (int64_t k = 0; k < size; k++)
+                dst[perm[k]] = src[k];
+        } else if (x->precision == mtx_double) {
+            int64_t * dst = x->data.integer_double;
+            const int64_t * src = y.data.integer_double;
+            for (int64_t k = 0; k < size; k++)
+                dst[perm[k]] = src[k];
+        } else {
+            mtxvector_array_free(&y);
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else {
+        mtxvector_array_free(&y);
+        return MTX_ERR_INVALID_MTX_FIELD;
+    }
+    mtxvector_array_free(&y);
+    return MTX_SUCCESS;
+}
+
+/**
+ * ‘mtxvector_array_sort()’ sorts elements of a vector by the given
+ * keys.
+ *
+ * The array ‘keys’ must be an array of length ‘size’ that stores a
+ * 64-bit unsigned integer sorting key that is used to define the
+ * order in which to sort the vector elements..
+ *
+ * If it is not ‘NULL’, then ‘perm’ must point to an array of length
+ * ‘size’, which is then used to store the sorting permutation. That
+ * is, ‘perm’ is a permutation of the integers ‘0,1,...,N-1’, where
+ * ‘N’ is the number of vector elements, such that the 1st vector
+ * element in the original vector is now located at position ‘perm[0]’
+ * in the sorted vector ‘x’, the 2nd element is now at position
+ * ‘perm[1]’, and so on.
+ */
+int mtxvector_array_sort(
+    struct mtxvector_array * x,
+    int64_t size,
+    uint64_t * keys,
+    int64_t * perm)
+{
+    /* 1. Sort the keys and obtain a sorting permutation. */
+    bool alloc_perm = !perm;
+    if (alloc_perm) {
+        perm = malloc(size * sizeof(int64_t));
+        if (!perm)
+            return MTX_ERR_ERRNO;
+    }
+    int err = radix_sort_uint64(size, keys, perm);
+    if (err) {
+        if (alloc_perm) free(perm);
+        return err;
+    }
+
+    /* 2. Sort data according to the sorting permutation. */
+    err = mtxvector_array_permute(x, size, perm);
+    if (err) {
+        if (alloc_perm) free(perm);
+        return err;
+    }
+    if (alloc_perm) free(perm);
+    return MTX_SUCCESS;
+}
+
+/*
+ * MPI functions
+ */
+
+#ifdef LIBMTX_HAVE_MPI
+/**
+ * ‘mtxvector_array_send()’ sends Matrix Market data lines to another
+ * MPI process.
+ *
+ * This is analogous to ‘MPI_Send()’ and requires the receiving
+ * process to perform a matching call to ‘mtxvector_array_recv()’.
+ */
+int mtxvector_array_send(
+    const struct mtxvector_array * data,
+    int64_t size,
+    int64_t offset,
+    int dest,
+    int tag,
+    MPI_Comm comm,
+    struct mtxdisterror * disterr);
+
+/**
+ * ‘mtxvector_array_recv()’ receives Matrix Market data lines from
+ * another MPI process.
+ *
+ * This is analogous to ‘MPI_Recv()’ and requires the sending process
+ * to perform a matching call to ‘mtxvector_array_send()’.
+ */
+int mtxvector_array_recv(
+    struct mtxvector_array * data,
+    int64_t size,
+    int64_t offset,
+    int source,
+    int tag,
+    MPI_Comm comm,
+    struct mtxdisterror * disterr);
+
+/**
+ * ‘mtxvector_array_bcast()’ broadcasts Matrix Market data lines from
+ * an MPI root process to other processes in a communicator.
+ *
+ * This is analogous to ‘MPI_Bcast()’ and requires every process in
+ * the communicator to perform matching calls to
+ * ‘mtxvector_array_bcast()’.
+ */
+int mtxvector_array_bcast(
+    struct mtxvector_array * data,
+    int64_t size,
+    int64_t offset,
+    int root,
+    MPI_Comm comm,
+    struct mtxdisterror * disterr);
+
+/**
+ * ‘mtxvector_array_gatherv()’ gathers Matrix Market data lines onto an
+ * MPI root process from other processes in a communicator.
+ *
+ * This is analogous to ‘MPI_Gatherv()’ and requires every process in
+ * the communicator to perform matching calls to
+ * ‘mtxvector_array_gatherv()’.
+ */
+int mtxvector_array_gatherv(
+    const struct mtxvector_array * sendbuf,
+    int64_t sendoffset,
+    int sendcount,
+    struct mtxvector_array * recvbuf,
+    int64_t recvoffset,
+    const int * recvcounts,
+    const int * recvdispls,
+    int root,
+    MPI_Comm comm,
+    struct mtxdisterror * disterr);
+
+/**
+ * ‘mtxvector_array_scatterv()’ scatters Matrix Market data lines from an
+ * MPI root process to other processes in a communicator.
+ *
+ * This is analogous to ‘MPI_Scatterv()’ and requires every process in
+ * the communicator to perform matching calls to
+ * ‘mtxvector_array_scatterv()’.
+ */
+int mtxvector_array_scatterv(
+    const struct mtxvector_array * sendbuf,
+    int64_t sendoffset,
+    const int * sendcounts,
+    const int * displs,
+    struct mtxvector_array * recvbuf,
+    int64_t recvoffset,
+    int recvcount,
+    int root,
+    MPI_Comm comm,
+    struct mtxdisterror * disterr);
+
+/**
+ * ‘mtxvector_array_alltoallv()’ performs an all-to-all exchange of
+ * Matrix Market data lines between MPI processes in a communicator.
+ *
+ * This is analogous to ‘MPI_Alltoallv()’ and requires every process
+ * in the communicator to perform matching calls to
+ * ‘mtxvector_array_alltoallv()’.
+ */
+int mtxvector_array_alltoallv(
+    const struct mtxvector_array * sendbuf,
+    int64_t sendoffset,
+    const int * sendcounts,
+    const int * senddispls,
+    struct mtxvector_array * recvbuf,
+    int64_t recvoffset,
+    const int * recvcounts,
+    const int * recvdispls,
+    MPI_Comm comm,
+    struct mtxdisterror * disterr)
+{
+
+    enum mtxfileobject object = mtxfile_vector;
+    enum mtxfileformat format = mtxfile_array;
+    enum mtxfilefield field = sendbuf->field;
+    if (sendbuf->field != recvbuf->field)
+        return MTX_ERR_INCOMPATIBLE_FIELD;
+    enum mtxprecision precision = sendbuf->precision;
+    if (sendbuf->precision != recvbuf->precision)
+        return MTX_ERR_INCOMPATIBLE_PRECISION;
+
+    union mtxfiledata senddata;
+    union mtxfiledata recvdata;
+    if (field == mtx_field_real) {
+        field = mtxfile_real;
+        if (precision == mtx_single) {
+            senddata.array_real_single = sendbuf->data.real_single;
+            recvdata.array_real_single = recvbuf->data.real_single;
+        } else if (precision == mtx_double) {
+            senddata.array_real_double = sendbuf->data.real_double;
+            recvdata.array_real_double = recvbuf->data.real_double;
+        } else { return MTX_ERR_INVALID_PRECISION; }
+    } else if (field == mtx_field_complex) {
+        field = mtxfile_complex;
+        if (precision == mtx_single) {
+            senddata.array_complex_single = sendbuf->data.complex_single;
+            recvdata.array_complex_single = recvbuf->data.complex_single;
+        } else if (precision == mtx_double) {
+            senddata.array_complex_double = sendbuf->data.complex_double;
+            recvdata.array_complex_double = recvbuf->data.complex_double;
+        } else { return MTX_ERR_INVALID_PRECISION; }
+    } else if (field == mtx_field_integer) {
+        field = mtxfile_integer;
+        if (precision == mtx_single) {
+            senddata.array_integer_single = sendbuf->data.integer_single;
+            recvdata.array_integer_single = recvbuf->data.integer_single;
+        } else if (precision == mtx_double) {
+            senddata.array_integer_double = sendbuf->data.integer_double;
+            recvdata.array_integer_double = recvbuf->data.integer_double;
+        } else { return MTX_ERR_INVALID_PRECISION; }
+    } else { return MTX_ERR_INVALID_FIELD; }
+
+    return mtxfiledata_alltoallv(
+        &senddata, object, format, field, precision, 0, sendcounts, senddispls,
+        &recvdata, 0, recvcounts, recvdispls, comm, disterr);
+}
+#endif
