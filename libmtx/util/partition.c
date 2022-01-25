@@ -476,9 +476,6 @@ int mtxpartition_init_custom(
         free(partition->part_sizes);
         return MTX_ERR_ERRNO;
     }
-    for (int64_t i = 0; i < size; i++)
-        partition->parts[i] = parts[i];
-
     partition->elements_per_part = malloc(partition->size * sizeof(int64_t));
     if (!partition->elements_per_part) {
         free(partition->parts);
@@ -488,8 +485,28 @@ int mtxpartition_init_custom(
     }
     if (part_sizes && elements_per_part) {
         for (int64_t i = 0; i < size; i++)
-            partition->elements_per_part[i] = elements_per_part[i];
+            partition->parts[i] = -1;
+
+        int64_t i = 0;
+        for (int64_t p = 0; p < num_parts; p++) {
+            for (int64_t j = 0; j < part_sizes[p]; j++, i++) {
+                partition->elements_per_part[i] = elements_per_part[i];
+                partition->parts[elements_per_part[i]] = p;
+            }
+        }
+
+        for (int64_t i = 0; i < size; i++) {
+            if (partition->parts[i] == -1) {
+                free(partition->elements_per_part);
+                free(partition->parts);
+                free(partition->parts_ptr);
+                free(partition->part_sizes);
+                return MTX_ERR_INVALID_PARTITION;
+            }
+        }
     } else {
+        for (int64_t i = 0; i < size; i++)
+            partition->parts[i] = parts[i];
         for (int64_t i = 0; i < size; i++) {
             int p = parts[i];
             partition->elements_per_part[

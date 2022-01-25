@@ -1145,15 +1145,15 @@ partition are ordered by their assigned parts, then
 @code{p}th part.
 
 The pointers @code{parts} and @code{elements_per_part} are both
-@samp{NULL}, unless @code{type} is
-@samp{mtx_custom_partition}. However, if @code{type} is
-@samp{mtx_custom_partition}, then @code{parts} and
-@code{elements_per_part} point to arrays of length @code{size}. The
-former contains the part number assigned to each element in the
-partitioned set, whereas the latter specifies the elements belonging
-to each part. That is, the elements belonging to the @code{p}th part
-are given by @code{elements_per_part[i]}, for @code{i} in
-@code{parts_ptr[p], parts_ptr[p]+1, ..., parts_ptr[p+1]-1}.
+@samp{NULL}, unless @code{type} is @samp{mtx_custom_partition}.
+However, if @code{type} is @samp{mtx_custom_partition}, then
+@code{parts} and @code{elements_per_part} point to arrays of length
+@code{size}. The former contains the part number assigned to each
+element in the partitioned set, whereas the latter specifies the
+elements belonging to each part. That is, the elements belonging to
+the @code{p}th part are given by @code{elements_per_part[i]}, for
+@code{i} in @code{parts_ptr[p], parts_ptr[p]+1, ...,
+parts_ptr[p+1]-1}.
 
 @findex mtxpartition_init_singleton
 @findex mtxpartition_init_block
@@ -1164,7 +1164,7 @@ Several functions are provided to create partitions corresponding to
 the different types described above.
 
 @example
-@code{int mtxpartition_init_singleton(
+int mtxpartition_init_singleton(
     struct mtxpartition * partition,
     int64_t size);
 
@@ -1189,7 +1189,9 @@ int mtxpartition_init_custom(
     struct mtxpartition * partition,
     int64_t size,
     int num_parts,
-    const int * parts);}
+    const int * parts,
+    const int64_t * part_sizes,
+    const int64_t * elements_per_part);
 @end example
 
 @findex mtxpartition_init
