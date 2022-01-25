@@ -45,7 +45,7 @@ int test_mtxpartition_singleton(void)
         int num_parts = 1;
         struct mtxpartition partition;
         err = mtxpartition_init(
-            &partition, mtx_singleton, size, num_parts, NULL, 0, NULL);
+            &partition, mtx_singleton, size, num_parts, NULL, 0, NULL, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         {
             int64_t globalelem[5] = {0,1,2,3,4};
@@ -89,7 +89,7 @@ int test_mtxpartition_singleton(void)
         int num_parts = 2;
         struct mtxpartition partition;
         err = mtxpartition_init(
-            &partition, mtx_singleton, size, num_parts, NULL, 0, NULL);
+            &partition, mtx_singleton, size, num_parts, NULL, 0, NULL, NULL);
         TEST_ASSERT_EQ_MSG(
             MTX_ERR_INVALID_PARTITION_TYPE, err, "%s", mtxstrerror(err));
     }
@@ -110,7 +110,7 @@ int test_mtxpartition_block(void)
         int num_parts = 1;
         struct mtxpartition partition;
         err = mtxpartition_init(
-            &partition, mtx_block, size, num_parts, NULL, 0, NULL);
+            &partition, mtx_block, size, num_parts, NULL, 0, NULL, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         {
             int64_t globalelem[5] = {0,1,2,3,4};
@@ -154,7 +154,7 @@ int test_mtxpartition_block(void)
         int num_parts = 2;
         struct mtxpartition partition;
         err = mtxpartition_init(
-            &partition, mtx_block, size, num_parts, NULL, 0, NULL);
+            &partition, mtx_block, size, num_parts, NULL, 0, NULL, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         {
             int64_t globalelem[5] = {0,1,2,3,4};
@@ -220,7 +220,7 @@ int test_mtxpartition_block(void)
         int num_parts = 3;
         struct mtxpartition partition;
         err = mtxpartition_init(
-            &partition, mtx_block, size, num_parts, NULL, 0, NULL);
+            &partition, mtx_block, size, num_parts, NULL, 0, NULL, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         {
             int64_t globalelem[5] = {0,1,2,3,4};
@@ -304,7 +304,7 @@ int test_mtxpartition_block(void)
         int num_parts = 4;
         struct mtxpartition partition;
         err = mtxpartition_init(
-            &partition, mtx_block, size, num_parts, NULL, 0, NULL);
+            &partition, mtx_block, size, num_parts, NULL, 0, NULL, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         {
             int64_t globalelem[5] = {0,1,2,3,4};
@@ -406,7 +406,7 @@ int test_mtxpartition_block(void)
         int num_parts = 5;
         struct mtxpartition partition;
         err = mtxpartition_init(
-            &partition, mtx_block, size, num_parts, NULL, 0, NULL);
+            &partition, mtx_block, size, num_parts, NULL, 0, NULL, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         int64_t globalelem[5] = {0,1,2,3,4};
         int parts[5] = {};
@@ -524,7 +524,7 @@ int test_mtxpartition_block(void)
         int num_parts = 6;
         struct mtxpartition partition;
         err = mtxpartition_init(
-            &partition, mtx_block, size, num_parts, NULL, 0, NULL);
+            &partition, mtx_block, size, num_parts, NULL, 0, NULL, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         int64_t globalelem[5] = {0,1,2,3,4};
         int parts[5] = {};
@@ -655,7 +655,7 @@ int test_mtxpartition_blockv(void)
         int64_t part_sizes[] = {5};
         struct mtxpartition partition;
         err = mtxpartition_init(
-            &partition, mtx_block, size, num_parts, part_sizes, 0, NULL);
+            &partition, mtx_block, size, num_parts, part_sizes, 0, NULL, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         {
             int64_t globalelem[5] = {0,1,2,3,4};
@@ -700,7 +700,7 @@ int test_mtxpartition_blockv(void)
         int64_t part_sizes[] = {2, 3};
         struct mtxpartition partition;
         err = mtxpartition_init(
-            &partition, mtx_block, size, num_parts, part_sizes, 0, NULL);
+            &partition, mtx_block, size, num_parts, part_sizes, 0, NULL, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         {
             int64_t globalelem[5] = {0,1,2,3,4};
@@ -767,7 +767,7 @@ int test_mtxpartition_blockv(void)
         int64_t part_sizes[] = {1, 3, 1};
         struct mtxpartition partition;
         err = mtxpartition_init(
-            &partition, mtx_block, size, num_parts, part_sizes, 0, NULL);
+            &partition, mtx_block, size, num_parts, part_sizes, 0, NULL, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         {
             int64_t globalelem[5] = {0,1,2,3,4};
@@ -852,7 +852,7 @@ int test_mtxpartition_blockv(void)
         int64_t part_sizes[] = {1, 2, 0, 2};
         struct mtxpartition partition;
         err = mtxpartition_init(
-            &partition, mtx_block, size, num_parts, part_sizes, 0, NULL);
+            &partition, mtx_block, size, num_parts, part_sizes, 0, NULL, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         {
             int64_t globalelem[5] = {0,1,2,3,4};
@@ -955,7 +955,7 @@ int test_mtxpartition_blockv(void)
         int64_t part_sizes[] = {1, 2, 1, 0, 1};
         struct mtxpartition partition;
         err = mtxpartition_init(
-            &partition, mtx_block, size, num_parts, part_sizes, 0, NULL);
+            &partition, mtx_block, size, num_parts, part_sizes, 0, NULL, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         int64_t globalelem[5] = {0,1,2,3,4};
         int parts[5] = {};
@@ -1074,7 +1074,7 @@ int test_mtxpartition_blockv(void)
         int64_t part_sizes[] = {1, 2, 1, 0, 1, 0};
         struct mtxpartition partition;
         err = mtxpartition_init(
-            &partition, mtx_block, size, num_parts, part_sizes, 0, NULL);
+            &partition, mtx_block, size, num_parts, part_sizes, 0, NULL, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         int64_t globalelem[5] = {0,1,2,3,4};
         int parts[5] = {};
@@ -1220,7 +1220,7 @@ int test_mtxpartition_cyclic(void)
         int num_parts = 1;
         struct mtxpartition partition;
         err = mtxpartition_init(
-            &partition, mtx_cyclic, size, num_parts, NULL, 0, NULL);
+            &partition, mtx_cyclic, size, num_parts, NULL, 0, NULL, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         int64_t globalelem[5] = {0,1,2,3,4};
         int parts[5] = {};
@@ -1250,7 +1250,7 @@ int test_mtxpartition_cyclic(void)
         int num_parts = 2;
         struct mtxpartition partition;
         err = mtxpartition_init(
-            &partition, mtx_cyclic, size, num_parts, NULL, 0, NULL);
+            &partition, mtx_cyclic, size, num_parts, NULL, 0, NULL, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         int64_t globalelem[5] = {0,1,2,3,4};
         int parts[5] = {};
@@ -1291,7 +1291,7 @@ int test_mtxpartition_cyclic(void)
         int num_parts = 3;
         struct mtxpartition partition;
         err = mtxpartition_init(
-            &partition, mtx_cyclic, size, num_parts, NULL, 0, NULL);
+            &partition, mtx_cyclic, size, num_parts, NULL, 0, NULL, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         int64_t globalelem[5] = {0,1,2,3,4};
         int parts[5] = {};
@@ -1341,7 +1341,7 @@ int test_mtxpartition_cyclic(void)
         int num_parts = 4;
         struct mtxpartition partition;
         err = mtxpartition_init(
-            &partition, mtx_cyclic, size, num_parts, NULL, 0, NULL);
+            &partition, mtx_cyclic, size, num_parts, NULL, 0, NULL, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         int64_t globalelem[5] = {0,1,2,3,4};
         int parts[5] = {};
@@ -1400,7 +1400,7 @@ int test_mtxpartition_cyclic(void)
         int num_parts = 5;
         struct mtxpartition partition;
         err = mtxpartition_init(
-            &partition, mtx_cyclic, size, num_parts, NULL, 0, NULL);
+            &partition, mtx_cyclic, size, num_parts, NULL, 0, NULL, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         int64_t globalelem[5] = {0,1,2,3,4};
         int parts[5] = {};
@@ -1468,7 +1468,7 @@ int test_mtxpartition_cyclic(void)
         int num_parts = 6;
         struct mtxpartition partition;
         err = mtxpartition_init(
-            &partition, mtx_cyclic, size, num_parts, NULL, 0, NULL);
+            &partition, mtx_cyclic, size, num_parts, NULL, 0, NULL, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         int64_t globalelem[5] = {0,1,2,3,4};
         int parts[5] = {};

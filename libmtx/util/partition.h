@@ -153,7 +153,8 @@ int mtxpartition_init(
     int num_parts,
     const int64_t * part_sizes,
     int block_size,
-    const int * parts);
+    const int * parts,
+    const int64_t * elements_per_part);
 
 /**
  * ‘mtxpartition_copy()’ creates a copy of a partitioning.
@@ -210,25 +211,84 @@ int mtxpartition_init_block_cyclic(
 /**
  * ‘mtxpartition_init_custom()’ initialises a user-defined
  * partitioning of a finite set.
+ *
+ * In the simplest case, a partition can be created by specifying the
+ * part number for each element in the set. Elements remain ordered
+ * within each part according to their global element numbers, and
+ * thus no additional reordering is performed. To achieve this,
+ * ‘part_sizes’ and ‘elements_per_part’ must both be ‘NULL’, and
+ * ‘parts’ must point to an array of length ‘size’. Moreover, each
+ * entry in ‘parts’ is a non-negative integer less than ‘num_parts’,
+ * which assigns a part number to the corresponding global element.
+ *
+ * Alternatively, a partition may be specified by providing the global
+ * element numbers for the elements that make up each part. This
+ * method also allows an arbitrary ordering or numbering of elements
+ * within each part. Thus, there is no requirement for elements within
+ * a part to be ordered according to their global element numbers.
+ *
+ * To create a custom partition with arbitrary ordering of local
+ * elements, ‘part_sizes’ and ‘elements_per_part’ must both be
+ * non-‘NULL’. The former must point to an array of size ‘num_parts’,
+ * whereas the latter must point to an array of length ‘size’. In this
+ * case, ‘parts’ is ignored and may be set to ‘NULL’. Moreover,
+ * ‘part_sizes’ must contain non-negative integers that specify the
+ * number of elements in each part, and whose sum must be equal to
+ * ‘size’. For a given part ‘p’, taking the sum of the ‘p-1’ first
+ * integers in ‘part_sizes’, that is, ‘r := part_sizes[0] +
+ * part_sizes[1] + ... + part_sizes[p-1]’, gives the location in the
+ * array ‘elements_per_part’ of the first element belonging to the pth
+ * part. Thus, the pth part of the partition is made up of the
+ * elements ‘elements_per_part[r]’, ‘elements_per_part[r+1]’, ...,
+ * ‘elements_per_part[r+part_sizes[p]-1]’.
+ *
+ * As mentioned above, any ordering of elements is allowed within each
+ * part. However, some operations, such as halo updates or exchanges
+ * can sometimes be carried out more efficiently if certain rules are
+ * observed. For example, some reordering steps may be avoided if the
+ * elements in each part are already ordered in ascendingly by global
+ * element numbers. (In other words, ‘elements_per_part[r] <
+ * elements_per_part[r+1] < ... <
+ * elements_per_part[r+part_sizes[p]-1]’.)
  */
 int mtxpartition_init_custom(
     struct mtxpartition * partition,
     int64_t size,
     int num_parts,
-    const int * parts);
+    const int * parts,
+    const int64_t * part_sizes,
+    const int64_t * elements_per_part);
+
+/**
+ * ‘mtxpartition_compare()’ checks if two partitions are the same.
+ *
+ * ‘result’ must point to an integer, which is used to return the
+ * result of the comparison. If ‘a’ and ‘b’ are the same partitioning
+ * of the same set, then the integer pointed to by ‘result’ will be
+ * set to 0. Otherwise, it is set to some nonzero value.
+ */
+int mtxpartition_compare(
+    const struct mtxpartition * a,
+    const struct mtxpartition * b,
+    int * result);
 
 /**
  * ‘mtxpartition_assign()’ assigns part numbers to elements of an
  * array according to the partitioning.
  *
- * The arrays ‘elements’ and ‘parts’ must both contain enough storage
- * for ‘size’ values of type ‘int’. If successful, ‘parts’ will
- * contain the part numbers of each element in the ‘elements’ array.
+ * ‘elements’ must point to an array of length ‘size’ that is used to
+ * specify (global) element numbers. If ‘parts’ is not ‘NULL’, then it
+ * must also point to an array of length ‘size’, which is then used to
+ * store the corresponding part number of each element in the
+ * ‘elements’ array.
  *
- * If ‘localelem’ is not ‘NULL’, then it must point to an array of
- * length ‘size’, which is then used to store the corresponding local
- * number of each element in the ‘elements’ array based on the
- * numbering of elements within each part.
+ * Finally, if ‘localelem’ is not ‘NULL’, then it must point to an
+ * array of length ‘size’. For each global element number in the
+ * ‘elements’ array, ‘localelem’ is used to store the corresponding
+ * local, partwise element number based on the numbering of elements
+ * within each part. The ‘elements’ and ‘localelem’ pointers are
+ * allowed to point to the same underlying array, in which case the
+ * former is overwritten by the latter.
  */
 int mtxpartition_assign(
     const struct mtxpartition * partition,

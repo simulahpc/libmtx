@@ -811,7 +811,7 @@ int main(int argc, char *argv[])
 
         err = mtxpartition_init(
             &partition, args.partition,
-            mtxdistfile.size.num_rows, args.num_parts, NULL, 0, NULL);
+            mtxdistfile.size.num_rows, args.num_parts, NULL, 0, NULL, NULL);
         if (mtxdisterror_allreduce(&disterr, err)) {
             if (args.verbose > 0)
                 fprintf(diagf, "\n");

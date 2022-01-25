@@ -140,7 +140,8 @@ int mtxpartition_init(
     int num_parts,
     const int64_t * part_sizes,
     int block_size,
-    const int * parts)
+    const int * parts,
+    const int64_t * elements_per_part)
 {
     if (type == mtx_singleton && num_parts == 1) {
         return mtxpartition_init_singleton(partition, size);
@@ -153,7 +154,7 @@ int mtxpartition_init(
             partition, size, num_parts, block_size);
     } else if (type == mtx_custom_partition) {
         return mtxpartition_init_custom(
-            partition, size, num_parts, parts);
+            partition, size, num_parts, parts, part_sizes, elements_per_part);
     } else {
         return MTX_ERR_INVALID_PARTITION_TYPE;
     }
@@ -365,19 +366,75 @@ int mtxpartition_init_block_cyclic(
 /**
  * ‘mtxpartition_init_custom()’ initialises a user-defined
  * partitioning of a finite set.
+ *
+ * In the simplest case, a partition can be created by specifying the
+ * part number for each element in the set. Elements remain ordered
+ * within each part according to their global element numbers, and
+ * thus no additional reordering is performed. To achieve this,
+ * ‘part_sizes’ and ‘elements_per_part’ must both be ‘NULL’, and
+ * ‘parts’ must point to an array of length ‘size’. Moreover, each
+ * entry in ‘parts’ is a non-negative integer less than ‘num_parts’,
+ * which assigns a part number to the corresponding global element.
+ *
+ * Alternatively, a partition may be specified by providing the global
+ * element numbers for the elements that make up each part. This
+ * method also allows an arbitrary ordering or numbering of elements
+ * within each part. Thus, there is no requirement for elements within
+ * a part to be ordered according to their global element numbers.
+ *
+ * To create a custom partition with arbitrary ordering of local
+ * elements, ‘part_sizes’ and ‘elements_per_part’ must both be
+ * non-‘NULL’. The former must point to an array of size ‘num_parts’,
+ * whereas the latter must point to an array of length ‘size’. In this
+ * case, ‘parts’ is ignored and may be set to ‘NULL’. Moreover,
+ * ‘part_sizes’ must contain non-negative integers that specify the
+ * number of elements in each part, and whose sum must be equal to
+ * ‘size’. For a given part ‘p’, taking the sum of the ‘p-1’ first
+ * integers in ‘part_sizes’, that is, ‘r := part_sizes[0] +
+ * part_sizes[1] + ... + part_sizes[p-1]’, gives the location in the
+ * array ‘elements_per_part’ of the first element belonging to the pth
+ * part. Thus, the pth part of the partition is made up of the
+ * elements ‘elements_per_part[r]’, ‘elements_per_part[r+1]’, ...,
+ * ‘elements_per_part[r+part_sizes[p]-1]’.
+ *
+ * As mentioned above, any ordering of elements is allowed within each
+ * part. However, some operations, such as halo updates or exchanges
+ * can sometimes be carried out more efficiently if certain rules are
+ * observed. For example, some reordering steps may be avoided if the
+ * elements in each part are already ordered in ascendingly by global
+ * element numbers. (In other words, ‘elements_per_part[r] <
+ * elements_per_part[r+1] < ... <
+ * elements_per_part[r+part_sizes[p]-1]’.)
  */
 int mtxpartition_init_custom(
     struct mtxpartition * partition,
     int64_t size,
     int num_parts,
-    const int * parts)
+    const int * parts,
+    const int64_t * part_sizes,
+    const int64_t * elements_per_part)
 {
     int err;
     if (num_parts <= 0)
         return MTX_ERR_INVALID_PARTITION;
-    for (int64_t i = 0; i < size; i++) {
-        if (parts[i] < 0 || parts[i] >= num_parts)
-            return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+
+    if (part_sizes && elements_per_part) {
+        int64_t i = 0;
+        for (int64_t p = 0; p < num_parts; p++) {
+            for (int64_t j = 0; j < part_sizes[p]; j++, i++) {
+                if (elements_per_part[i] < 0 || elements_per_part[i] >= size)
+                    return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            }
+        }
+        if (i != size)
+            return MTX_ERR_INVALID_PARTITION;
+    } else if (parts) {
+        for (int64_t i = 0; i < size; i++) {
+            if (parts[i] < 0 || parts[i] >= num_parts)
+                return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+        }
+    } else {
+        return MTX_ERR_INVALID_PARTITION;
     }
 
     partition->type = mtx_custom_partition;
@@ -387,10 +444,15 @@ int mtxpartition_init_custom(
     if (!partition->part_sizes)
         return MTX_ERR_ERRNO;
 
-    for (int p = 0; p < num_parts; p++)
-        partition->part_sizes[p] = 0;
-    for (int64_t k = 0; k < size; k++)
-        partition->part_sizes[parts[k]]++;
+    if (part_sizes && elements_per_part) {
+        for (int p = 0; p < num_parts; p++)
+            partition->part_sizes[p] = part_sizes[p];
+    } else {
+        for (int p = 0; p < num_parts; p++)
+            partition->part_sizes[p] = 0;
+        for (int64_t k = 0; k < size; k++)
+            partition->part_sizes[parts[k]]++;
+    }
 
     partition->parts_ptr = malloc((partition->num_parts+1) * sizeof(int64_t));
     if (!partition->parts_ptr) {
@@ -424,17 +486,86 @@ int mtxpartition_init_custom(
         free(partition->part_sizes);
         return MTX_ERR_ERRNO;
     }
-    for (int64_t i = 0; i < size; i++) {
-        int p = parts[i];
-        partition->elements_per_part[
-            partition->parts_ptr[p]] = i;
-        partition->parts_ptr[p]++;
+    if (part_sizes && elements_per_part) {
+        for (int64_t i = 0; i < size; i++)
+            partition->elements_per_part[i] = elements_per_part[i];
+    } else {
+        for (int64_t i = 0; i < size; i++) {
+            int p = parts[i];
+            partition->elements_per_part[
+                partition->parts_ptr[p]] = i;
+            partition->parts_ptr[p]++;
+        }
+        partition->parts_ptr[0] = 0;
+        for (int p = 0; p < num_parts; p++) {
+            partition->parts_ptr[p+1] =
+                partition->parts_ptr[p] + partition->part_sizes[p];
+        }
     }
-    partition->parts_ptr[0] = 0;
-    for (int p = 0; p < num_parts; p++) {
-        partition->parts_ptr[p+1] =
-            partition->parts_ptr[p] + partition->part_sizes[p];
+    return MTX_SUCCESS;
+}
+
+/**
+ * ‘mtxpartition_compare()’ checks if two partitions are the same.
+ *
+ * ‘result’ must point to an integer, which is used to return the
+ * result of the comparison. If ‘a’ and ‘b’ are the same partitioning
+ * of the same set, then the integer pointed to by ‘result’ will be
+ * set to 0. Otherwise, it is set to some nonzero value.
+ */
+int mtxpartition_compare(
+    const struct mtxpartition * a,
+    const struct mtxpartition * b,
+    int * result)
+{
+    if ((a->type != mtx_singleton &&
+         a->type != mtx_block &&
+         a->type != mtx_cyclic &&
+         a->type != mtx_block_cyclic &&
+         a->type != mtx_custom_partition) ||
+        (b->type != mtx_singleton &&
+         b->type != mtx_block &&
+         b->type != mtx_cyclic &&
+         b->type != mtx_block_cyclic &&
+         b->type != mtx_custom_partition))
+    {
+        *result = 1;
+        return MTX_ERR_INVALID_PARTITION_TYPE;
     }
+
+    if (a->type != b->type ||
+        a->size != b->size ||
+        a->num_parts != b->num_parts)
+    {
+        *result = 1;
+        return MTX_SUCCESS;
+    }
+
+    for (int p = 0; p < a->num_parts; p++) {
+        if (a->part_sizes[p] != b->part_sizes[p]) {
+            *result = 1;
+            return MTX_SUCCESS;
+        }
+    }
+    for (int p = 0; p <= a->num_parts; p++) {
+        if (a->parts_ptr[p] != b->parts_ptr[p]) {
+            *result = 1;
+            return MTX_SUCCESS;
+        }
+    }
+
+    if (a->type == mtx_custom_partition) {
+        for (int64_t k = 0; k < a->size; k++) {
+            if (a->parts[k] != b->parts[k] ||
+                a->elements_per_part[k] != b->elements_per_part[k])
+            {
+                *result = 1;
+                return MTX_SUCCESS;
+            }
+        }
+    }
+
+    *result = 0;
     return MTX_SUCCESS;
 }
 
@@ -442,16 +573,19 @@ int mtxpartition_init_custom(
  * ‘mtxpartition_assign()’ assigns part numbers to elements of an
  * array according to the partitioning.
  *
- * ‘elements’ must point to an array of length ‘size’. If ‘parts’ is
- * not ‘NULL’, then it must also point to an array of length ‘size’,
- * which is then used to store the corresponding part number of each
- * element in the ‘elements’ array.
+ * ‘elements’ must point to an array of length ‘size’ that is used to
+ * specify (global) element numbers. If ‘parts’ is not ‘NULL’, then it
+ * must also point to an array of length ‘size’, which is then used to
+ * store the corresponding part number of each element in the
+ * ‘elements’ array.
  *
  * Finally, if ‘localelem’ is not ‘NULL’, then it must point to an
  * array of length ‘size’. For each global element number in the
- * ‘elements’, ‘localelem’ is used to store the corresponding local,
- * partwise element number based on the numbering of elements within
- * each part.
+ * ‘elements’ array, ‘localelem’ is used to store the corresponding
+ * local, partwise element number based on the numbering of elements
+ * within each part. The ‘elements’ and ‘localelem’ pointers are
+ * allowed to point to the same underlying array, in which case the
+ * former is overwritten by the latter.
  */
 int mtxpartition_assign(
     const struct mtxpartition * partition,
@@ -765,7 +899,7 @@ int mtxpartition_fread_parts(
 
     err = mtxpartition_init_custom(
         partition, mtxfile.size.num_rows, num_parts,
-        mtxfile.data.array_integer_single);
+        mtxfile.data.array_integer_single, NULL, NULL);
     if (err) {
         mtxfile_free(&mtxfile);
         return err;

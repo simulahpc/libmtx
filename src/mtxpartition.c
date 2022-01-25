@@ -811,7 +811,7 @@ int main(int argc, char *argv[])
 
         err = mtxpartition_init(
             &rowpart, args.rowparttype,
-            src.size.num_rows, args.num_row_parts, NULL, 0, NULL);
+            src.size.num_rows, args.num_row_parts, NULL, 0, NULL, NULL);
         if (mtxdisterror_allreduce(&disterr, err)) {
             if (args.verbose > 0)
                 fprintf(diagf, "\n");
@@ -886,7 +886,7 @@ int main(int argc, char *argv[])
         err = mtxpartition_init(
             &colpart, args.colparttype,
             src.size.num_columns < 0 ? 1 : src.size.num_columns,
-            args.num_col_parts, NULL, 0, NULL);
+            args.num_col_parts, NULL, 0, NULL, NULL);
         if (mtxdisterror_allreduce(&disterr, err)) {
             if (args.verbose > 0)
                 fprintf(diagf, "\n");
@@ -1293,7 +1293,7 @@ int main(int argc, char *argv[])
 
         err = mtxpartition_init(
             &rowpart, args.rowparttype,
-            mtxfile.size.num_rows, args.num_row_parts, NULL, 0, NULL);
+            mtxfile.size.num_rows, args.num_row_parts, NULL, 0, NULL, NULL);
         if (err) {
             if (args.verbose > 0)
                 fprintf(diagf, "\n");
