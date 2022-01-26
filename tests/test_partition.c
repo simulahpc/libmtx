@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-01-18
+ * Last modified: 2022-01-26
  *
  * Unit tests for partitioning functions.
  */
@@ -1536,6 +1536,344 @@ int test_mtxpartition_cyclic(void)
 }
 
 /**
+ * ‘test_mtxpartition_custom()’ tests custom partitioning.
+ */
+int test_mtxpartition_custom(void)
+{
+    int err;
+    {
+        int size = 5;
+        int num_parts = 1;
+        int64_t part_sizes[] = {5};
+        int64_t elements_per_part[] = {3,1,4,2,0};
+        struct mtxpartition partition;
+        err = mtxpartition_init_custom(
+            &partition, size, num_parts, NULL, part_sizes, elements_per_part);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        int64_t globalelem[5] = {0,1,2,3,4};
+        int parts[5] = {};
+        err = mtxpartition_assign(&partition, size, globalelem, parts, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(0, parts[0]);
+        TEST_ASSERT_EQ(0, parts[1]);
+        TEST_ASSERT_EQ(0, parts[2]);
+        TEST_ASSERT_EQ(0, parts[3]);
+        TEST_ASSERT_EQ(0, parts[4]);
+        {
+            int64_t localelem[5] = {0,1,2,3,4};
+            int64_t globalelem[5] = {};
+            err = mtxpartition_globalidx(
+                &partition, 0, size, localelem, globalelem);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            TEST_ASSERT_EQ(3, globalelem[0]);
+            TEST_ASSERT_EQ(1, globalelem[1]);
+            TEST_ASSERT_EQ(4, globalelem[2]);
+            TEST_ASSERT_EQ(2, globalelem[3]);
+            TEST_ASSERT_EQ(0, globalelem[4]);
+        }
+        mtxpartition_free(&partition);
+    }
+    {
+        int size = 5;
+        int num_parts = 2;
+        int64_t part_sizes[] = {3,2};
+        int64_t elements_per_part[] = {3,1,4,2,0};
+        struct mtxpartition partition;
+        err = mtxpartition_init_custom(
+            &partition, size, num_parts, NULL, part_sizes, elements_per_part);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        int64_t globalelem[5] = {0,1,2,3,4};
+        int parts[5] = {};
+        err = mtxpartition_assign(&partition, size, globalelem, parts, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(1, parts[0]);
+        TEST_ASSERT_EQ(0, parts[1]);
+        TEST_ASSERT_EQ(1, parts[2]);
+        TEST_ASSERT_EQ(0, parts[3]);
+        TEST_ASSERT_EQ(0, parts[4]);
+        {
+            int part = 0;
+            int64_t localelem[3] = {0,1,2};
+            int64_t globalelem[3] = {};
+            err = mtxpartition_globalidx(
+                &partition, part, partition.part_sizes[part],
+                localelem, globalelem);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            TEST_ASSERT_EQ(3, globalelem[0]);
+            TEST_ASSERT_EQ(1, globalelem[1]);
+            TEST_ASSERT_EQ(4, globalelem[2]);
+        }
+        {
+            int part = 1;
+            int64_t localelem[2] = {0,1};
+            int64_t globalelem[2] = {};
+            err = mtxpartition_globalidx(
+                &partition, part, partition.part_sizes[part],
+                localelem, globalelem);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            TEST_ASSERT_EQ(2, globalelem[0]);
+            TEST_ASSERT_EQ(0, globalelem[1]);
+        }
+        mtxpartition_free(&partition);
+    }
+    {
+        int size = 5;
+        int num_parts = 3;
+        int64_t part_sizes[] = {2,2,1};
+        int64_t elements_per_part[] = {3,1,4,2,0};
+        struct mtxpartition partition;
+        err = mtxpartition_init_custom(
+            &partition, size, num_parts, NULL, part_sizes, elements_per_part);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        int64_t globalelem[5] = {0,1,2,3,4};
+        int parts[5] = {};
+        err = mtxpartition_assign(&partition, size, globalelem, parts, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(2, parts[0]);
+        TEST_ASSERT_EQ(0, parts[1]);
+        TEST_ASSERT_EQ(1, parts[2]);
+        TEST_ASSERT_EQ(0, parts[3]);
+        TEST_ASSERT_EQ(1, parts[4]);
+        {
+            int part = 0;
+            int64_t localelem[2] = {0,1};
+            int64_t globalelem[2] = {};
+            err = mtxpartition_globalidx(
+                &partition, part, partition.part_sizes[part],
+                localelem, globalelem);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            TEST_ASSERT_EQ(3, globalelem[0]);
+            TEST_ASSERT_EQ(1, globalelem[1]);
+        }
+        {
+            int part = 1;
+            int64_t localelem[2] = {0,1};
+            int64_t globalelem[2] = {};
+            err = mtxpartition_globalidx(
+                &partition, part, partition.part_sizes[part],
+                localelem, globalelem);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            TEST_ASSERT_EQ(4, globalelem[0]);
+            TEST_ASSERT_EQ(2, globalelem[1]);
+        }
+        {
+            int part = 2;
+            int64_t localelem[1] = {0};
+            int64_t globalelem[1] = {};
+            err = mtxpartition_globalidx(
+                &partition, part, partition.part_sizes[part],
+                localelem, globalelem);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            TEST_ASSERT_EQ(0, globalelem[0]);
+        }
+        mtxpartition_free(&partition);
+    }
+    {
+        int size = 5;
+        int num_parts = 4;
+        int64_t part_sizes[] = {2,1,1,1};
+        int64_t elements_per_part[] = {3,1,4,2,0};
+        struct mtxpartition partition;
+        err = mtxpartition_init_custom(
+            &partition, size, num_parts, NULL, part_sizes, elements_per_part);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        int64_t globalelem[5] = {0,1,2,3,4};
+        int parts[5] = {};
+        err = mtxpartition_assign(&partition, size, globalelem, parts, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(3, parts[0]);
+        TEST_ASSERT_EQ(0, parts[1]);
+        TEST_ASSERT_EQ(2, parts[2]);
+        TEST_ASSERT_EQ(0, parts[3]);
+        TEST_ASSERT_EQ(1, parts[4]);
+        {
+            int part = 0;
+            int64_t localelem[2] = {0,1};
+            int64_t globalelem[2] = {};
+            err = mtxpartition_globalidx(
+                &partition, part, partition.part_sizes[part],
+                localelem, globalelem);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            TEST_ASSERT_EQ(3, globalelem[0]);
+            TEST_ASSERT_EQ(1, globalelem[1]);
+        }
+        {
+            int part = 1;
+            int64_t localelem[1] = {0};
+            int64_t globalelem[1] = {};
+            err = mtxpartition_globalidx(
+                &partition, part, partition.part_sizes[part],
+                localelem, globalelem);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            TEST_ASSERT_EQ(4, globalelem[0]);
+        }
+        {
+            int part = 2;
+            int64_t localelem[1] = {0};
+            int64_t globalelem[1] = {};
+            err = mtxpartition_globalidx(
+                &partition, part, partition.part_sizes[part],
+                localelem, globalelem);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            TEST_ASSERT_EQ(2, globalelem[0]);
+        }
+        {
+            int part = 3;
+            int64_t localelem[1] = {0};
+            int64_t globalelem[1] = {};
+            err = mtxpartition_globalidx(
+                &partition, part, partition.part_sizes[part],
+                localelem, globalelem);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            TEST_ASSERT_EQ(0, globalelem[0]);
+        }
+        mtxpartition_free(&partition);
+    }
+    {
+        int size = 5;
+        int num_parts = 5;
+        int64_t part_sizes[] = {1,1,1,1,1};
+        int64_t elements_per_part[] = {3,1,4,2,0};
+        struct mtxpartition partition;
+        err = mtxpartition_init_custom(
+            &partition, size, num_parts, NULL, part_sizes, elements_per_part);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        int64_t globalelem[5] = {0,1,2,3,4};
+        int parts[5] = {};
+        err = mtxpartition_assign(&partition, size, globalelem, parts, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(4, parts[0]);
+        TEST_ASSERT_EQ(1, parts[1]);
+        TEST_ASSERT_EQ(3, parts[2]);
+        TEST_ASSERT_EQ(0, parts[3]);
+        TEST_ASSERT_EQ(2, parts[4]);
+        {
+            int part = 0;
+            int64_t localelem[1] = {0};
+            int64_t globalelem[1] = {};
+            err = mtxpartition_globalidx(
+                &partition, part, partition.part_sizes[part],
+                localelem, globalelem);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            TEST_ASSERT_EQ(3, globalelem[0]);
+        }
+        {
+            int part = 1;
+            int64_t localelem[1] = {0};
+            int64_t globalelem[1] = {};
+            err = mtxpartition_globalidx(
+                &partition, part, partition.part_sizes[part],
+                localelem, globalelem);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            TEST_ASSERT_EQ(1, globalelem[0]);
+        }
+        {
+            int part = 2;
+            int64_t localelem[1] = {0};
+            int64_t globalelem[1] = {};
+            err = mtxpartition_globalidx(
+                &partition, part, partition.part_sizes[part],
+                localelem, globalelem);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            TEST_ASSERT_EQ(4, globalelem[0]);
+        }
+        {
+            int part = 3;
+            int64_t localelem[1] = {0};
+            int64_t globalelem[1] = {};
+            err = mtxpartition_globalidx(
+                &partition, part, partition.part_sizes[part],
+                localelem, globalelem);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            TEST_ASSERT_EQ(2, globalelem[0]);
+        }
+        {
+            int part = 4;
+            int64_t localelem[1] = {0};
+            int64_t globalelem[1] = {};
+            err = mtxpartition_globalidx(
+                &partition, part, partition.part_sizes[part],
+                localelem, globalelem);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            TEST_ASSERT_EQ(0, globalelem[0]);
+        }
+        mtxpartition_free(&partition);
+    }
+    {
+        int size = 5;
+        int num_parts = 6;
+        int64_t part_sizes[] = {1,1,1,1,1,0};
+        int64_t elements_per_part[] = {3,1,4,2,0};
+        struct mtxpartition partition;
+        err = mtxpartition_init_custom(
+            &partition, size, num_parts, NULL, part_sizes, elements_per_part);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        int64_t globalelem[5] = {0,1,2,3,4};
+        int parts[5] = {};
+        err = mtxpartition_assign(&partition, size, globalelem, parts, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(4, parts[0]);
+        TEST_ASSERT_EQ(1, parts[1]);
+        TEST_ASSERT_EQ(3, parts[2]);
+        TEST_ASSERT_EQ(0, parts[3]);
+        TEST_ASSERT_EQ(2, parts[4]);
+        {
+            int part = 0;
+            int64_t localelem[1] = {0};
+            int64_t globalelem[1] = {};
+            err = mtxpartition_globalidx(
+                &partition, part, partition.part_sizes[part],
+                localelem, globalelem);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            TEST_ASSERT_EQ(3, globalelem[0]);
+        }
+        {
+            int part = 1;
+            int64_t localelem[1] = {0};
+            int64_t globalelem[1] = {};
+            err = mtxpartition_globalidx(
+                &partition, part, partition.part_sizes[part],
+                localelem, globalelem);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            TEST_ASSERT_EQ(1, globalelem[0]);
+        }
+        {
+            int part = 2;
+            int64_t localelem[1] = {0};
+            int64_t globalelem[1] = {};
+            err = mtxpartition_globalidx(
+                &partition, part, partition.part_sizes[part],
+                localelem, globalelem);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            TEST_ASSERT_EQ(4, globalelem[0]);
+        }
+        {
+            int part = 3;
+            int64_t localelem[1] = {0};
+            int64_t globalelem[1] = {};
+            err = mtxpartition_globalidx(
+                &partition, part, partition.part_sizes[part],
+                localelem, globalelem);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            TEST_ASSERT_EQ(2, globalelem[0]);
+        }
+        {
+            int part = 4;
+            int64_t localelem[1] = {0};
+            int64_t globalelem[1] = {};
+            err = mtxpartition_globalidx(
+                &partition, part, partition.part_sizes[part],
+                localelem, globalelem);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            TEST_ASSERT_EQ(0, globalelem[0]);
+        }
+        mtxpartition_free(&partition);
+    }
+
+    return TEST_SUCCESS;
+}
+
+/**
  * ‘main()’ entry point and test driver.
  */
 int main(int argc, char * argv[])
@@ -1545,6 +1883,7 @@ int main(int argc, char * argv[])
     TEST_RUN(test_mtxpartition_block);
     TEST_RUN(test_mtxpartition_blockv);
     TEST_RUN(test_mtxpartition_cyclic);
+    TEST_RUN(test_mtxpartition_custom);
     TEST_SUITE_END();
     return (TEST_SUITE_STATUS == TEST_SUCCESS) ?
         EXIT_SUCCESS : EXIT_FAILURE;
