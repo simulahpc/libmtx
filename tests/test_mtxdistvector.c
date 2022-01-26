@@ -3236,6 +3236,249 @@ int test_mtxdistvector_axpy(void)
 }
 
 /**
+ * ‘test_mtxdistvector_halo_update()’ tests performing halo updates
+ * for distributed vectors.
+ */
+int test_mtxdistvector_halo_update(void)
+{
+    int err;
+    char mpierrstr[MPI_MAX_ERROR_STRING];
+    int mpierrstrlen;
+    MPI_Comm comm = MPI_COMM_WORLD;
+    int root = 0;
+
+    int comm_size;
+    err = MPI_Comm_size(comm, &comm_size);
+    if (err) {
+        MPI_Error_string(err, mpierrstr, &mpierrstrlen);
+        fprintf(stderr, "%s: MPI_Comm_size failed with %s\n",
+                program_invocation_short_name, mpierrstr);
+        MPI_Abort(comm, EXIT_FAILURE);
+    }
+    int rank;
+    err = MPI_Comm_rank(comm, &rank);
+    if (err) {
+        MPI_Error_string(err, mpierrstr, &mpierrstrlen);
+        fprintf(stderr, "%s: MPI_Comm_rank failed with %s\n",
+                program_invocation_short_name, mpierrstr);
+        MPI_Abort(comm, EXIT_FAILURE);
+    }
+    if (comm_size != 2)
+        TEST_FAIL_MSG("Expected exactly two MPI processes");
+
+    struct mtxdisterror disterr;
+    err = mtxdisterror_alloc(&disterr, comm, NULL);
+    if (err)
+        MPI_Abort(comm, EXIT_FAILURE);
+
+    /*
+     * Array formats
+     */
+
+    {
+        struct mtxdistvector x;
+        struct mtxdistvector y;
+        int size = 5;
+        const float * xdata = rank == 0
+            ? ((const float[3]) {1.0f, 2.0f, 3.0f})
+            : ((const float[2]) {4.0f, 5.0f});
+        const int num_parts = comm_size;
+        int64_t xpartsizes[] = {3,2};
+        struct mtxpartition xpart;
+        err = mtxpartition_init_block(&xpart, size, num_parts, xpartsizes);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        err = mtxdistvector_init_array_real_single(
+            &x, xpartsizes[rank], xdata, &xpart, comm, &disterr);
+        TEST_ASSERT_EQ_MSG(
+            MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
+            ? mtxdisterror_description(&disterr) : mtxstrerror(err));
+        mtxpartition_free(&xpart);
+        int64_t ypartsizes[] = {2,3};
+        struct mtxpartition ypart;
+        err = mtxpartition_init_block(&ypart, size, num_parts, ypartsizes);
+        TEST_ASSERT_EQ_MSG(
+            MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
+            ? mtxdisterror_description(&disterr) : mtxstrerror(err));
+        err = mtxdistvector_alloc_array(
+            &y, mtx_field_real, mtx_single, ypartsizes[rank], &ypart, comm, &disterr);
+        TEST_ASSERT_EQ_MSG(
+            MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
+            ? mtxdisterror_description(&disterr) : mtxstrerror(err));
+        mtxpartition_free(&ypart);
+        err = mtxdistvector_halo_update(&y, &x, &disterr);
+        TEST_ASSERT_EQ_MSG(
+            MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
+            ? mtxdisterror_description(&disterr) : mtxstrerror(err));
+        if (rank == 0) {
+            TEST_ASSERT_EQ(2, y.interior.storage.array.size);
+            TEST_ASSERT_EQ(1.0f, y.interior.storage.array.data.real_single[0]);
+            TEST_ASSERT_EQ(2.0f, y.interior.storage.array.data.real_single[1]);
+        } else if (rank == 1) {
+            TEST_ASSERT_EQ(3, y.interior.storage.array.size);
+            TEST_ASSERT_EQ(3.0f, y.interior.storage.array.data.real_single[0]);
+            TEST_ASSERT_EQ(4.0f, y.interior.storage.array.data.real_single[1]);
+            TEST_ASSERT_EQ(5.0f, y.interior.storage.array.data.real_single[2]);
+        }
+        mtxdistvector_free(&y);
+        mtxdistvector_free(&x);
+    }
+    {
+        struct mtxdistvector x;
+        struct mtxdistvector y;
+        int size = 5;
+        const float * xdata = rank == 0
+            ? ((const float[3]) {1.0f, 2.0f, 3.0f})
+            : ((const float[2]) {4.0f, 5.0f});
+        const int num_parts = comm_size;
+        int64_t xpartsizes[] = {3,2};
+        struct mtxpartition xpart;
+        err = mtxpartition_init_block(&xpart, size, num_parts, xpartsizes);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        err = mtxdistvector_init_array_real_single(
+            &x, xpartsizes[rank], xdata, &xpart, comm, &disterr);
+        TEST_ASSERT_EQ_MSG(
+            MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
+            ? mtxdisterror_description(&disterr) : mtxstrerror(err));
+        mtxpartition_free(&xpart);
+        int64_t ypartsizes[] = {2,3};
+        // int64_t yelements_per_part[] = {2,0,4,1,3};
+        int64_t yelements_per_part[] = {0,2,1,3,4};
+        struct mtxpartition ypart;
+        err = mtxpartition_init_custom(
+            &ypart, size, num_parts, NULL, ypartsizes, yelements_per_part);
+        TEST_ASSERT_EQ_MSG(
+            MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
+            ? mtxdisterror_description(&disterr) : mtxstrerror(err));
+        err = mtxdistvector_alloc_array(
+            &y, mtx_field_real, mtx_single, ypartsizes[rank], &ypart, comm, &disterr);
+        TEST_ASSERT_EQ_MSG(
+            MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
+            ? mtxdisterror_description(&disterr) : mtxstrerror(err));
+        mtxpartition_free(&ypart);
+        err = mtxdistvector_halo_update(&y, &x, &disterr);
+        TEST_ASSERT_EQ_MSG(
+            MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
+            ? mtxdisterror_description(&disterr) : mtxstrerror(err));
+        if (rank == 0) {
+            TEST_ASSERT_EQ(2, y.interior.storage.array.size);
+            TEST_ASSERT_EQ(1.0f, y.interior.storage.array.data.real_single[0]);
+            TEST_ASSERT_EQ(3.0f, y.interior.storage.array.data.real_single[1]);
+        } else if (rank == 1) {
+            TEST_ASSERT_EQ(3, y.interior.storage.array.size);
+            TEST_ASSERT_EQ(2.0f, y.interior.storage.array.data.real_single[0]);
+            TEST_ASSERT_EQ(4.0f, y.interior.storage.array.data.real_single[1]);
+            TEST_ASSERT_EQ(5.0f, y.interior.storage.array.data.real_single[2]);
+        }
+        mtxdistvector_free(&y);
+        mtxdistvector_free(&x);
+    }
+    {
+        struct mtxdistvector x;
+        struct mtxdistvector y;
+        int size = 5;
+        const float * xdata = rank == 0
+            ? ((const float[3]) {1.0f, 2.0f, 3.0f})
+            : ((const float[2]) {4.0f, 5.0f});
+        const int num_parts = comm_size;
+        int64_t xpartsizes[] = {3,2};
+        struct mtxpartition xpart;
+        err = mtxpartition_init_block(&xpart, size, num_parts, xpartsizes);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        err = mtxdistvector_init_array_real_single(
+            &x, xpartsizes[rank], xdata, &xpart, comm, &disterr);
+        TEST_ASSERT_EQ_MSG(
+            MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
+            ? mtxdisterror_description(&disterr) : mtxstrerror(err));
+        mtxpartition_free(&xpart);
+        int64_t ypartsizes[] = {2,3};
+        int64_t yelements_per_part[] = {2,0,4,1,3};
+        struct mtxpartition ypart;
+        err = mtxpartition_init_custom(
+            &ypart, size, num_parts, NULL, ypartsizes, yelements_per_part);
+        TEST_ASSERT_EQ_MSG(
+            MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
+            ? mtxdisterror_description(&disterr) : mtxstrerror(err));
+        err = mtxdistvector_alloc_array(
+            &y, mtx_field_real, mtx_single, ypartsizes[rank], &ypart, comm, &disterr);
+        TEST_ASSERT_EQ_MSG(
+            MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
+            ? mtxdisterror_description(&disterr) : mtxstrerror(err));
+        mtxpartition_free(&ypart);
+        err = mtxdistvector_halo_update(&y, &x, &disterr);
+        TEST_ASSERT_EQ_MSG(
+            MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
+            ? mtxdisterror_description(&disterr) : mtxstrerror(err));
+        if (rank == 0) {
+            TEST_ASSERT_EQ(2, y.interior.storage.array.size);
+            TEST_ASSERT_EQ(3.0f, y.interior.storage.array.data.real_single[0]);
+            TEST_ASSERT_EQ(1.0f, y.interior.storage.array.data.real_single[1]);
+        } else if (rank == 1) {
+            TEST_ASSERT_EQ(3, y.interior.storage.array.size);
+            TEST_ASSERT_EQ(5.0f, y.interior.storage.array.data.real_single[0]);
+            TEST_ASSERT_EQ(2.0f, y.interior.storage.array.data.real_single[1]);
+            TEST_ASSERT_EQ(4.0f, y.interior.storage.array.data.real_single[2]);
+        }
+        mtxdistvector_free(&y);
+        mtxdistvector_free(&x);
+    }
+    {
+        struct mtxdistvector x;
+        struct mtxdistvector y;
+        int size = 5;
+        const float * xdata = rank == 0
+            ? ((const float[3]) {3.0f, 2.0f, 1.0f})
+            : ((const float[2]) {5.0f, 4.0f});
+        const int num_parts = comm_size;
+        int64_t xpartsizes[] = {3,2};
+        int64_t xelements_per_part[] = {2,1,0,4,3};
+        struct mtxpartition xpart;
+        err = mtxpartition_init_custom(
+            &xpart, size, num_parts, NULL, xpartsizes, xelements_per_part);
+        TEST_ASSERT_EQ_MSG(
+            MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
+            ? mtxdisterror_description(&disterr) : mtxstrerror(err));
+        err = mtxdistvector_init_array_real_single(
+            &x, xpartsizes[rank], xdata, &xpart, comm, &disterr);
+        TEST_ASSERT_EQ_MSG(
+            MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
+            ? mtxdisterror_description(&disterr) : mtxstrerror(err));
+        mtxpartition_free(&xpart);
+        int64_t ypartsizes[] = {2,3};
+        int64_t yelements_per_part[] = {2,0,4,1,3};
+        struct mtxpartition ypart;
+        err = mtxpartition_init_custom(
+            &ypart, size, num_parts, NULL, ypartsizes, yelements_per_part);
+        TEST_ASSERT_EQ_MSG(
+            MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
+            ? mtxdisterror_description(&disterr) : mtxstrerror(err));
+        err = mtxdistvector_alloc_array(
+            &y, mtx_field_real, mtx_single, ypartsizes[rank], &ypart, comm, &disterr);
+        TEST_ASSERT_EQ_MSG(
+            MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
+            ? mtxdisterror_description(&disterr) : mtxstrerror(err));
+        mtxpartition_free(&ypart);
+        err = mtxdistvector_halo_update(&y, &x, &disterr);
+        TEST_ASSERT_EQ_MSG(
+            MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
+            ? mtxdisterror_description(&disterr) : mtxstrerror(err));
+        if (rank == 0) {
+            TEST_ASSERT_EQ(2, y.interior.storage.array.size);
+            TEST_ASSERT_EQ(3.0f, y.interior.storage.array.data.real_single[0]);
+            TEST_ASSERT_EQ(1.0f, y.interior.storage.array.data.real_single[1]);
+        } else if (rank == 1) {
+            TEST_ASSERT_EQ(3, y.interior.storage.array.size);
+            TEST_ASSERT_EQ(5.0f, y.interior.storage.array.data.real_single[0]);
+            TEST_ASSERT_EQ(2.0f, y.interior.storage.array.data.real_single[1]);
+            TEST_ASSERT_EQ(4.0f, y.interior.storage.array.data.real_single[2]);
+        }
+        mtxdistvector_free(&y);
+        mtxdistvector_free(&x);
+    }
+    mtxdisterror_free(&disterr);
+    return TEST_SUCCESS;
+}
+
+/**
  * ‘main()’ entry point and test driver.
  */
 int main(int argc, char * argv[])
@@ -3265,6 +3508,7 @@ int main(int argc, char * argv[])
     TEST_RUN(test_mtxdistvector_nrm2);
     TEST_RUN(test_mtxdistvector_scal);
     TEST_RUN(test_mtxdistvector_axpy);
+    TEST_RUN(test_mtxdistvector_halo_update);
     TEST_SUITE_END();
 
     /* 3. Clean up and return. */

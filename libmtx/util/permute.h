@@ -68,6 +68,14 @@ void mtxpermutation_free(
     struct mtxpermutation * permutation);
 
 /**
+ * ‘mtxpermutation_init_default()’ creates a default, identity
+ * permutation that maps every element to itself.
+ */
+int mtxpermutation_init_default(
+    struct mtxpermutation * permutation,
+    int64_t size);
+
+/**
  * ‘mtxpermutation_init()’ creates a permutation.
  *
  * The array ‘perm’ must be of length ‘size’ and must define a
@@ -111,6 +119,20 @@ int mtxpermutation_permute_int(
     struct mtxpermutation * permutation,
     int64_t size,
     int * x);
+
+/**
+ * ‘mtxpermutation_permute_int64()’ permutes an array of 64-bit signed
+ * integers.
+ *
+ * The array ‘x’ must be of length ‘size’, which may not exceed
+ * ‘permutation->size’. Applying the permutation to ‘x’ moves the
+ * element at position ‘i’ to the position ‘permutation->perm[i]’, or,
+ * ‘x[permutation->perm[i]] <- x[i]’, for ‘i=0,1,...,size-1’.
+ */
+int mtxpermutation_permute_int64(
+    struct mtxpermutation * permutation,
+    int64_t size,
+    int64_t * x);
 
 /*
  * Standalone permutation functions

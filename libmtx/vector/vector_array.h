@@ -487,6 +487,7 @@ int mtxvector_array_iamax(
  */
 int mtxvector_array_permute(
     struct mtxvector_array * x,
+    int64_t offset,
     int64_t size,
     int64_t * perm);
 

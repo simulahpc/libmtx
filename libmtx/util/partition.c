@@ -660,18 +660,17 @@ int mtxpartition_assign(
             int part = partition->parts[elements[k]];
             if (parts) parts[k] = part;
             if (localelem) {
-                for (int64_t k = 0; k < size; k++) {
-                    bool found = false;
-                    for (int64_t l = 0; l < partition->part_sizes[part]; l++) {
-                        if (partition->elements_per_part[l] == elements[k]) {
-                            localelem[k] = l;
-                            found = true;
-                            break;
-                        }
+                bool found = false;
+                for (int64_t l = 0; l < partition->part_sizes[part]; l++) {
+                    int64_t offset = partition->parts_ptr[part];
+                    if (partition->elements_per_part[offset+l] == elements[k]) {
+                        localelem[k] = l;
+                        found = true;
+                        break;
                     }
-                    if (!found)
-                        return MTX_ERR_INDEX_OUT_OF_BOUNDS;
                 }
+                if (!found)
+                    return MTX_ERR_INDEX_OUT_OF_BOUNDS;
             }
         }
     } else {

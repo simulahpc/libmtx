@@ -848,6 +848,19 @@ int mtxdistvector_imax(
     const struct mtxdistvector * x,
     int * max,
     struct mtxdisterror * disterr);
+
+/*
+ * Halo update and exchange
+ */
+
+/**
+ * ‘mtxdistvector_halo_update()’ performs a halo update of a
+ * distributed vector.
+ */
+int mtxdistvector_halo_update(
+    struct mtxdistvector * dst,
+    const struct mtxdistvector * src,
+    struct mtxdisterror * disterr);
 #endif
 
 #endif

@@ -1275,13 +1275,15 @@ int mtxvector_iamax(
  */
 int mtxvector_permute(
     struct mtxvector * x,
+    int64_t offset,
     int64_t size,
     int64_t * perm)
 {
     if (x->type == mtxvector_array) {
-        return mtxvector_array_permute(&x->storage.array, size, perm);
+        return mtxvector_array_permute(&x->storage.array, offset, size, perm);
     } else if (x->type == mtxvector_coordinate) {
-        return mtxvector_coordinate_permute(&x->storage.coordinate, size, perm);
+        return mtxvector_coordinate_permute(
+            &x->storage.coordinate, offset, size, perm);
     } else {
         return MTX_ERR_INVALID_VECTOR_TYPE;
     }

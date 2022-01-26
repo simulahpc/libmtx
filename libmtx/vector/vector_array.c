@@ -2161,13 +2161,14 @@ int mtxvector_array_iamax(
  */
 int mtxvector_array_permute(
     struct mtxvector_array * x,
+    int64_t offset,
     int64_t size,
     int64_t * perm)
 {
-    if (size > x->size)
+    if (offset + size > x->size)
         return MTX_ERR_INDEX_OUT_OF_BOUNDS;
     for (int64_t k = 0; k < size; k++) {
-        if (perm[k] < 0 || perm[k] >= size)
+        if (perm[k] < 0 || perm[k] >= x->size)
             return MTX_ERR_INDEX_OUT_OF_BOUNDS;
     }
 
@@ -2182,12 +2183,12 @@ int mtxvector_array_permute(
             float * dst = x->data.real_single;
             const float * src = y.data.real_single;
             for (int64_t k = 0; k < size; k++)
-                dst[perm[k]] = src[k];
+                dst[perm[k]] = src[offset+k];
         } else if (x->precision == mtx_double) {
             double * dst = x->data.real_double;
             const double * src = y.data.real_double;
             for (int64_t k = 0; k < size; k++)
-                dst[perm[k]] = src[k];
+                dst[perm[k]] = src[offset+k];
         } else {
             mtxvector_array_free(&y);
             return MTX_ERR_INVALID_PRECISION;
@@ -2197,15 +2198,15 @@ int mtxvector_array_permute(
             float (* dst)[2] = x->data.complex_single;
             const float (* src)[2] = y.data.complex_single;
             for (int64_t k = 0; k < size; k++) {
-                dst[perm[k]][0] = src[k][0];
-                dst[perm[k]][1] = src[k][1];
+                dst[perm[k]][0] = src[offset+k][0];
+                dst[perm[k]][1] = src[offset+k][1];
             }
         } else if (x->precision == mtx_double) {
             double (* dst)[2] = x->data.complex_double;
             const double (* src)[2] = y.data.complex_double;
             for (int64_t k = 0; k < size; k++) {
-                dst[perm[k]][0] = src[k][0];
-                dst[perm[k]][1] = src[k][1];
+                dst[perm[k]][0] = src[offset+k][0];
+                dst[perm[k]][1] = src[offset+k][1];
             }
         } else {
             mtxvector_array_free(&y);
@@ -2216,12 +2217,12 @@ int mtxvector_array_permute(
             int32_t * dst = x->data.integer_single;
             const int32_t * src = y.data.integer_single;
             for (int64_t k = 0; k < size; k++)
-                dst[perm[k]] = src[k];
+                dst[perm[k]] = src[offset+k];
         } else if (x->precision == mtx_double) {
             int64_t * dst = x->data.integer_double;
             const int64_t * src = y.data.integer_double;
             for (int64_t k = 0; k < size; k++)
-                dst[perm[k]] = src[k];
+                dst[perm[k]] = src[offset+k];
         } else {
             mtxvector_array_free(&y);
             return MTX_ERR_INVALID_PRECISION;
@@ -2270,7 +2271,7 @@ int mtxvector_array_sort(
     }
 
     /* 2. Sort data according to the sorting permutation. */
-    err = mtxvector_array_permute(x, size, perm);
+    err = mtxvector_array_permute(x, 0, size, perm);
     if (err) {
         if (alloc_perm) free(perm);
         return err;

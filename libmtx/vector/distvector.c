@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-01-25
+ * Last modified: 2022-01-26
  *
  * Data structures for distributed vectors.
  */
@@ -32,6 +32,7 @@
 #include <libmtx/mtxfile/size.h>
 #include <libmtx/precision.h>
 #include <libmtx/util/partition.h>
+#include <libmtx/util/permute.h>
 #include <libmtx/util/sort.h>
 #include <libmtx/vector/distvector.h>
 #include <libmtx/vector/vector.h>
@@ -1633,4 +1634,555 @@ int mtxdistvector_iamax(
     const struct mtxdistvector * x,
     int * max,
     struct mtxdisterror * disterr);
+
+/*
+ * Halo update and exchange
+ */
+
+/**
+ * ‘mtxdistvector_halo_update()’ performs a halo update of a distributed
+ * vector.
+ */
+int mtxdistvector_halo_update(
+    struct mtxdistvector * dst,
+    const struct mtxdistvector * src,
+    struct mtxdisterror * disterr)
+{
+    int result;
+    int err = MPI_Comm_compare(dst->comm, src->comm, &result);
+    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+    err = result != MPI_IDENT ? MTX_ERR_INCOMPATIBLE_MPI_COMM : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+    MPI_Comm comm = src->comm;
+    int comm_size = src->comm_size;
+    int srcrank = src->rank;
+    int dstrank = dst->rank;
+
+    if (src->rowpart.size != dst->rowpart.size)
+        return MTX_ERR_INCOMPATIBLE_SIZE;
+
+    /* Consider a vector with 6 elements with two different
+     * partitionings, src and dst, into two parts a and b.
+     *
+     *   src: a0 a1 a2 b0 b1 b2
+     *   dst: c0 d0 c2 d1 c1 d2
+     *
+     * On the first process, the destination vector has 3 elements
+     * with local element numbers 0, 1 and 2. Translating these to
+     * global element numbers yields 0, 4 and 2. The source vector
+     * also has 3 elements in part a, but the corresponding global
+     * element numbers are 0, 1 and 2.
+     *
+     * The global element numbers of the source vector, 0, 1 and 2,
+     * belong to parts c, d and c with respect to the destination
+     * vector partitioning. Thus, sorting the source vector elements
+     * by their destination parts rearranges them in the order 0, 2,
+     * 1, with respect to their global element numbers.
+     *
+     * Next, the two first elements, 0 and 2, are sent by the first
+     * process to itself in this order, and element 4 is sent to the
+     * first process by the second process. Thus, the first proecss
+     * now possesses elements with global numbers 0, 2 and 4, in that
+     * order.
+     *
+     * Finally, these elements must be rearranged in ascending order
+     * of their local element numbers within the part c.
+     *
+     * Suppose that we take the destination vector elements of the
+     * first process (i.e., global element numbers 0, 4 and 2), and
+     * partition them according to the source vector partitioning.
+     * Then we find that the elements come from parts a, b and a, with
+     * local element numbers 0, 1 and 2, within their respective
+     * parts.
+     */
+
+    /*
+     * TODO: This operation can be optimised if the element numbers to
+     * send/receive are already sorted by part numbers (and in the
+     * correct order within each part). In this case, it is possible
+     * to drop the intermediate send/receive buffers and use the
+     * source/destination vector directly.
+     */
+
+    /*
+     * TODO: Another optimisation or use case is to treat the
+     * "interior" separately from the halo elements. The "interior"
+     * consists of those elements that lie in the inersection of the
+     * source and destination partitionings. These elements will
+     * remain on the same process, and so it is not necessary to
+     * perform any communication for them. If the numbering of these
+     * elements is the same in the source and destination, then there
+     * is also no need to perform any reordering.
+     */
+
+    /*
+     * TODO: Yet another optimisation is to reuse the send and receive
+     * buffers for repeated halo updates. To achieve this, we should
+     * abstract away the halo update by storing the needed data in a
+     * struct and offering some functions to initialise and perform
+     * halo updates.
+     *
+     * Finally, some operations, such as the sorting of the send (and
+     * receive) buffer allocate some temporary workspace. There may
+     * also an opportunity to reuse storage for the workspace in some
+     * cases by adding extra arguments to ‘mtxvector_sort()’ and
+     * ‘mtxvector_permute()’.
+     */
+
+    /*
+     * Step 1: Prepare to send data to other processes.
+     *
+     * This involves counting the number of elements to send from the
+     * current process to each other process. Before sending, we also
+     * need to group elements together according to their destination
+     * process. In addition, we handle the case where the source
+     * vector has been reordered to use a local numbering within each
+     * part that differs from the global element numbering.
+     */
+
+    /* For each element in the source vector owned by the current
+     * process, find its global element number and which part of the
+     * destination vector that it belongs to. This tells us which
+     * processes we must send data to. */
+    int srclocalsize = srcrank < src->rowpart.num_parts
+        ? src->rowpart.part_sizes[srcrank] : 0;
+    int64_t * srcidx = malloc(srclocalsize * sizeof(int64_t));
+    err = !srcidx ? MTX_ERR_ERRNO : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+    for (int64_t j = 0; j < srclocalsize; j++)
+        srcidx[j] = j;
+    err = mtxpartition_globalidx(
+        &src->rowpart, srcrank, srclocalsize, srcidx, srcidx);
+    if (mtxdisterror_allreduce(disterr, err)) {
+        free(srcidx);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+    int * dstparts = malloc(srclocalsize * sizeof(int));
+    err = !dstparts ? MTX_ERR_ERRNO : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err)) {
+        free(srcidx);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+    err = mtxpartition_assign(&dst->rowpart, srclocalsize, srcidx, dstparts, NULL);
+    if (mtxdisterror_allreduce(disterr, err)) {
+        free(dstparts);
+        free(srcidx);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+
+    /* count the number of elements to send to each process
+     * (sendcounts), as well as the offset to the first element to
+     * send to each process (senddispls). */
+    int * sendcounts = malloc(comm_size * sizeof(int));
+    err = !sendcounts ? MTX_ERR_ERRNO : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err)) {
+        free(dstparts);
+        free(srcidx);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+    int * senddispls = malloc((comm_size+1) * sizeof(int));
+    err = !senddispls ? MTX_ERR_ERRNO : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err)) {
+        free(sendcounts);
+        free(dstparts);
+        free(srcidx);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+    for (int p = 0; p < comm_size; p++)
+        sendcounts[p] = 0;
+    for (int64_t k = 0; k < srclocalsize; k++) {
+        if (dstparts[k] < 0 || dstparts[k] >= dst->rowpart.num_parts) {
+            err = MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            break;
+        }
+        sendcounts[dstparts[k]]++;
+    }
+    if (mtxdisterror_allreduce(disterr, err)) {
+        free(senddispls);
+        free(sendcounts);
+        free(dstparts);
+        free(srcidx);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+    senddispls[0] = 0;
+    for (int p = 0; p < comm_size; p++)
+        senddispls[p+1] = senddispls[p] + sendcounts[p];
+    if (!err && senddispls[comm_size] != srclocalsize)
+        err = MTX_ERR_INCOMPATIBLE_PARTITION;
+    if (mtxdisterror_allreduce(disterr, err)) {
+        free(senddispls);
+        free(sendcounts);
+        free(dstparts);
+        free(srcidx);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+
+    /* sort data to send first by the part number of the destination
+     * vector partitioning. */
+    struct mtxpermutation sendpermpart;
+    err = mtxpermutation_init_default(&sendpermpart, srclocalsize);
+    if (mtxdisterror_allreduce(disterr, err)) {
+        free(senddispls);
+        free(sendcounts);
+        free(dstparts);
+        free(srcidx);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+    err = radix_sort_uint32(srclocalsize, dstparts, sendpermpart.perm);
+    if (mtxdisterror_allreduce(disterr, err)) {
+        mtxpermutation_free(&sendpermpart);
+        free(senddispls);
+        free(sendcounts);
+        free(dstparts);
+        free(srcidx);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+    free(dstparts);
+    err = mtxpermutation_permute_int64(
+        &sendpermpart, srclocalsize, srcidx);
+    if (mtxdisterror_allreduce(disterr, err)) {
+        mtxpermutation_free(&sendpermpart);
+        free(senddispls);
+        free(sendcounts);
+        free(srcidx);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+
+    /* Second, within each destination part, sort elements in
+     * ascending order of their global element numbers.
+     *
+     * In this way, the sender and receiver agree on a common ordering
+     * of elements that are sent and received, without having to
+     * explicitly communicate the underlying ordering that is used.
+     * (The global element order is instead inferred from partitioning
+     * information that is already available to both processes.) */
+    struct mtxpermutation sendpermidx;
+    err = mtxpermutation_init_default(&sendpermidx, srclocalsize);
+    if (mtxdisterror_allreduce(disterr, err)) {
+        mtxpermutation_free(&sendpermpart);
+        free(senddispls);
+        free(sendcounts);
+        free(srcidx);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+    for (int p = 0; p < comm_size; p++) {
+        err = radix_sort_uint64(
+            sendcounts[p], (uint64_t *) &srcidx[senddispls[p]],
+            &sendpermidx.perm[senddispls[p]]);
+        if (mtxdisterror_allreduce(disterr, err)) {
+            mtxpermutation_free(&sendpermidx);
+            mtxpermutation_free(&sendpermpart);
+            free(senddispls);
+            free(sendcounts);
+            free(srcidx);
+            return MTX_ERR_MPI_COLLECTIVE;
+        }
+        for (int64_t i = 0; i < sendcounts[p]; i++)
+            sendpermidx.perm[senddispls[p]+i] += senddispls[p];
+    }
+    free(srcidx);
+
+    /* combine the two sorting permutations */
+    struct mtxpermutation sendperm;
+    err = mtxpermutation_compose(&sendperm, &sendpermpart, &sendpermidx);
+    if (mtxdisterror_allreduce(disterr, err)) {
+        mtxpermutation_free(&sendpermidx);
+        mtxpermutation_free(&sendpermpart);
+        free(senddispls);
+        free(sendcounts);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+    mtxpermutation_free(&sendpermidx);
+    mtxpermutation_free(&sendpermpart);
+
+    /*
+     * Step 2: Prepare to receive data from other processes.
+     */
+
+    /* For each element in the destination vector owned by the current
+     * process, find its global element number and which part of the
+     * source vector that it belongs to. This tells us which processes
+     * we will receive data from. */
+    int dstlocalsize = dstrank < dst->rowpart.num_parts
+        ? dst->rowpart.part_sizes[dstrank] : 0;
+    int64_t * dstidx = malloc(dstlocalsize * sizeof(int64_t));
+    err = !dstidx ? MTX_ERR_ERRNO : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err)) {
+        mtxpermutation_free(&sendperm);
+        free(senddispls);
+        free(sendcounts);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+    for (int64_t j = 0; j < dstlocalsize; j++)
+        dstidx[j] = j;
+    err = mtxpartition_globalidx(
+        &dst->rowpart, dstrank, dstlocalsize, dstidx, dstidx);
+    if (mtxdisterror_allreduce(disterr, err)) {
+        free(dstidx);
+        mtxpermutation_free(&sendperm);
+        free(senddispls);
+        free(sendcounts);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+    int * srcparts = malloc(dstlocalsize * sizeof(int));
+    err = !srcparts ? MTX_ERR_ERRNO : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err)) {
+        free(dstidx);
+        mtxpermutation_free(&sendperm);
+        free(senddispls);
+        free(sendcounts);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+    err = mtxpartition_assign(
+        &src->rowpart, dstlocalsize, dstidx, srcparts, NULL);
+    if (mtxdisterror_allreduce(disterr, err)) {
+        free(srcparts);
+        free(dstidx);
+        mtxpermutation_free(&sendperm);
+        free(senddispls);
+        free(sendcounts);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+
+    /* count the number of elements to receive from each process
+     * (recvcounts), as well as the offset to the first element to
+     * receive from each process (recvdispls). */
+    int * recvcounts = malloc(comm_size * sizeof(int));
+    err = !recvcounts ? MTX_ERR_ERRNO : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err)) {
+        free(srcparts);
+        free(dstidx);
+        mtxpermutation_free(&sendperm);
+        free(senddispls);
+        free(sendcounts);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+    int * recvdispls = malloc((comm_size+1) * sizeof(int));
+    err = !recvdispls ? MTX_ERR_ERRNO : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err)) {
+        free(recvcounts);
+        free(srcparts);
+        free(dstidx);
+        mtxpermutation_free(&sendperm);
+        free(senddispls);
+        free(sendcounts);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+    for (int p = 0; p < comm_size; p++)
+        recvcounts[p] = 0;
+    for (int64_t k = 0; k < dstlocalsize; k++) {
+        if (srcparts[k] < 0 || srcparts[k] >= src->rowpart.num_parts) {
+            err = MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            break;
+        }
+        recvcounts[srcparts[k]]++;
+    }
+    recvdispls[0] = 0;
+    for (int p = 0; p < comm_size; p++)
+        recvdispls[p+1] = recvdispls[p] + recvcounts[p];
+    if (!err && recvdispls[comm_size] != dstlocalsize)
+        err = MTX_ERR_INCOMPATIBLE_PARTITION;
+    if (mtxdisterror_allreduce(disterr, err)) {
+        free(recvdispls);
+        free(recvcounts);
+        free(srcparts);
+        free(dstidx);
+        mtxpermutation_free(&sendperm);
+        free(senddispls);
+        free(sendcounts);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+
+    /* sort destination vector first by the part number of the source
+     * vector partitioning. */
+    struct mtxpermutation recvpermpart;
+    err = mtxpermutation_init_default(&recvpermpart, dstlocalsize);
+    if (mtxdisterror_allreduce(disterr, err)) {
+        free(recvdispls);
+        free(recvcounts);
+        free(srcparts);
+        free(dstidx);
+        mtxpermutation_free(&sendperm);
+        free(senddispls);
+        free(sendcounts);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+    err = radix_sort_uint32(dstlocalsize, srcparts, recvpermpart.perm);
+    if (mtxdisterror_allreduce(disterr, err)) {
+        mtxpermutation_free(&recvpermpart);
+        free(recvdispls);
+        free(recvcounts);
+        free(srcparts);
+        free(dstidx);
+        mtxpermutation_free(&sendperm);
+        free(senddispls);
+        free(sendcounts);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+    free(srcparts);
+    err = mtxpermutation_permute_int64(
+        &recvpermpart, dstlocalsize, dstidx);
+    if (mtxdisterror_allreduce(disterr, err)) {
+        mtxpermutation_free(&recvpermpart);
+        free(recvdispls);
+        free(recvcounts);
+        free(dstidx);
+        mtxpermutation_free(&sendperm);
+        free(senddispls);
+        free(sendcounts);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+
+    /* Second, within each source vector part, sort elements in
+     * ascending order of their global element numbers.
+     *
+     * In this way, the sender and receiver agree on a common ordering
+     * of elements that are sent and received, without having to
+     * explicitly communicate the underlying ordering that is used.
+     * (The global element order is instead inferred from partitioning
+     * information that is already available to both processes.) */
+    struct mtxpermutation recvpermidx;
+    err = mtxpermutation_init_default(&recvpermidx, dstlocalsize);
+    if (mtxdisterror_allreduce(disterr, err)) {
+        mtxpermutation_free(&recvpermpart);
+        free(recvdispls);
+        free(recvcounts);
+        free(dstidx);
+        mtxpermutation_free(&sendperm);
+        free(senddispls);
+        free(sendcounts);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+    for (int p = 0; p < comm_size; p++) {
+        err = radix_sort_uint64(
+            recvcounts[p], (uint64_t *) &dstidx[recvdispls[p]],
+            &recvpermidx.perm[recvdispls[p]]);
+        if (mtxdisterror_allreduce(disterr, err)) {
+            mtxpermutation_free(&recvpermidx);
+            mtxpermutation_free(&recvpermpart);
+            free(recvdispls);
+            free(recvcounts);
+            free(dstidx);
+            mtxpermutation_free(&sendperm);
+            free(senddispls);
+            free(sendcounts);
+            return MTX_ERR_MPI_COLLECTIVE;
+        }
+        for (int64_t i = 0; i < recvcounts[p]; i++)
+            recvpermidx.perm[recvdispls[p]+i] += recvdispls[p];
+    }
+    free(dstidx);
+
+    /* combine the two sorting permutations */
+    struct mtxpermutation recvperm;
+    err = mtxpermutation_compose(&recvperm, &recvpermpart, &recvpermidx);
+    if (mtxdisterror_allreduce(disterr, err)) {
+        mtxpermutation_free(&recvpermidx);
+        mtxpermutation_free(&recvpermpart);
+        free(recvdispls);
+        free(recvcounts);
+        mtxpermutation_free(&sendperm);
+        free(senddispls);
+        free(sendcounts);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+    mtxpermutation_free(&recvpermidx);
+    mtxpermutation_free(&recvpermpart);
+
+    /* invert the permutation */
+    err = mtxpermutation_invert(&recvperm);
+    if (mtxdisterror_allreduce(disterr, err)) {
+        mtxpermutation_free(&recvperm);
+        free(recvdispls);
+        free(recvcounts);
+        mtxpermutation_free(&sendperm);
+        free(senddispls);
+        free(sendcounts);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+
+    /*
+     * Step 3: Exchange data between processes.
+     */
+
+    /* allocate buffer for sending data to other processes */
+    struct mtxvector sendbuf;
+    err = mtxvector_init_copy(&sendbuf, &src->interior);
+    if (mtxdisterror_allreduce(disterr, err)) {
+        mtxpermutation_free(&recvperm);
+        free(recvdispls);
+        free(recvcounts);
+        mtxpermutation_free(&sendperm);
+        free(senddispls);
+        free(sendcounts);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+
+    /* Apply the permutation to the data that will be sent. */
+    err = mtxvector_permute(&sendbuf, 0, srclocalsize, sendperm.perm);
+    if (mtxdisterror_allreduce(disterr, err)) {
+        mtxvector_free(&sendbuf);
+        mtxpermutation_free(&recvperm);
+        free(recvdispls);
+        free(recvcounts);
+        mtxpermutation_free(&sendperm);
+        free(senddispls);
+        free(sendcounts);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+    mtxpermutation_free(&sendperm);
+
+    /* allocate buffer for receiving data from other processes */
+    struct mtxvector recvbuf;
+    err = mtxvector_alloc_copy(&recvbuf, &dst->interior);
+    if (mtxdisterror_allreduce(disterr, err)) {
+        mtxvector_free(&sendbuf);
+        mtxpermutation_free(&recvperm);
+        free(recvdispls);
+        free(recvcounts);
+        free(senddispls);
+        free(sendcounts);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+
+    /* perform all-to-all exchange */
+    err = mtxvector_alltoallv(
+        &sendbuf, 0, sendcounts, senddispls,
+        &recvbuf, 0, recvcounts, recvdispls,
+        comm, disterr);
+    if (mtxdisterror_allreduce(disterr, err)) {
+        mtxvector_free(&recvbuf);
+        mtxvector_free(&sendbuf);
+        mtxpermutation_free(&recvperm);
+        free(recvdispls);
+        free(recvcounts);
+        free(senddispls);
+        free(sendcounts);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+    mtxvector_free(&sendbuf);
+    free(recvdispls);
+    free(recvcounts);
+    free(senddispls);
+    free(sendcounts);
+
+    /* permute the received data */
+    err = mtxvector_permute(&recvbuf, 0, dstlocalsize, recvperm.perm);
+    if (mtxdisterror_allreduce(disterr, err)) {
+        mtxvector_free(&recvbuf);
+        mtxpermutation_free(&recvperm);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+    mtxpermutation_free(&recvperm);
+
+    /* copy data from the receiving buffer */
+    err = mtxvector_copy(&dst->interior, &recvbuf);
+    if (mtxdisterror_allreduce(disterr, err)) {
+        mtxvector_free(&recvbuf);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+    mtxvector_free(&recvbuf);
+    return MTX_SUCCESS;
+}
 #endif

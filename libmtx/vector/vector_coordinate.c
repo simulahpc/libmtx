@@ -2450,13 +2450,14 @@ int mtxvector_coordinate_iamax(
  */
 int mtxvector_coordinate_permute(
     struct mtxvector_coordinate * x,
+    int64_t offset,
     int64_t size,
     int64_t * perm)
 {
-    if (size > x->size)
+    if (offset + size > x->size)
         return MTX_ERR_INDEX_OUT_OF_BOUNDS;
     for (int64_t k = 0; k < size; k++) {
-        if (perm[k] < 0 || perm[k] >= size)
+        if (perm[k] < 0 || perm[k] >= x->size)
             return MTX_ERR_INDEX_OUT_OF_BOUNDS;
     }
 
@@ -2471,15 +2472,15 @@ int mtxvector_coordinate_permute(
             float * dst = x->data.real_single;
             const float * src = y.data.real_single;
             for (int64_t k = 0; k < size; k++) {
-                x->indices[perm[k]] = y.indices[k];
-                dst[perm[k]] = src[k];
+                x->indices[perm[k]] = y.indices[offset+k];
+                dst[perm[k]] = src[offset+k];
             }
         } else if (x->precision == mtx_double) {
             double * dst = x->data.real_double;
             const double * src = y.data.real_double;
             for (int64_t k = 0; k < size; k++) {
-                x->indices[perm[k]] = y.indices[k];
-                dst[perm[k]] = src[k];
+                x->indices[perm[k]] = y.indices[offset+k];
+                dst[perm[k]] = src[offset+k];
             }
         } else {
             mtxvector_coordinate_free(&y);
@@ -2490,17 +2491,17 @@ int mtxvector_coordinate_permute(
             float (* dst)[2] = x->data.complex_single;
             const float (* src)[2] = y.data.complex_single;
             for (int64_t k = 0; k < size; k++) {
-                x->indices[perm[k]] = y.indices[k];
-                dst[perm[k]][0] = src[k][0];
-                dst[perm[k]][1] = src[k][1];
+                x->indices[perm[k]] = y.indices[offset+k];
+                dst[perm[k]][0] = src[offset+k][0];
+                dst[perm[k]][1] = src[offset+k][1];
             }
         } else if (x->precision == mtx_double) {
             double (* dst)[2] = x->data.complex_double;
             const double (* src)[2] = y.data.complex_double;
             for (int64_t k = 0; k < size; k++) {
-                x->indices[perm[k]] = y.indices[k];
-                dst[perm[k]][0] = src[k][0];
-                dst[perm[k]][1] = src[k][1];
+                x->indices[perm[k]] = y.indices[offset+k];
+                dst[perm[k]][0] = src[offset+k][0];
+                dst[perm[k]][1] = src[offset+k][1];
             }
         } else {
             mtxvector_coordinate_free(&y);
@@ -2511,15 +2512,15 @@ int mtxvector_coordinate_permute(
             int32_t * dst = x->data.integer_single;
             const int32_t * src = y.data.integer_single;
             for (int64_t k = 0; k < size; k++) {
-                x->indices[perm[k]] = y.indices[k];
-                dst[perm[k]] = src[k];
+                x->indices[perm[k]] = y.indices[offset+k];
+                dst[perm[k]] = src[offset+k];
             }
         } else if (x->precision == mtx_double) {
             int64_t * dst = x->data.integer_double;
             const int64_t * src = y.data.integer_double;
             for (int64_t k = 0; k < size; k++) {
-                x->indices[perm[k]] = y.indices[k];
-                dst[perm[k]] = src[k];
+                x->indices[perm[k]] = y.indices[offset+k];
+                dst[perm[k]] = src[offset+k];
             }
         } else {
             mtxvector_coordinate_free(&y);
@@ -2527,7 +2528,7 @@ int mtxvector_coordinate_permute(
         }
     } else if (x->field == mtx_field_pattern) {
         for (int64_t k = 0; k < size; k++)
-            x->indices[perm[k]] = y.indices[k];
+            x->indices[perm[k]] = y.indices[offset+k];
     } else {
         mtxvector_coordinate_free(&y);
         return MTX_ERR_INVALID_MTX_FIELD;
@@ -2572,7 +2573,7 @@ int mtxvector_coordinate_sort(
     }
 
     /* 2. Sort data according to the sorting permutation. */
-    err = mtxvector_coordinate_permute(x, size, perm);
+    err = mtxvector_coordinate_permute(x, 0, size, perm);
     if (err) {
         if (alloc_perm) free(perm);
         return err;

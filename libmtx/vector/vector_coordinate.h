@@ -544,6 +544,7 @@ int mtxvector_coordinate_iamax(
  */
 int mtxvector_coordinate_permute(
     struct mtxvector_coordinate * x,
+    int64_t offset,
     int64_t size,
     int64_t * perm);
 
