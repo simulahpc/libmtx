@@ -15,7 +15,7 @@
 @c along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
 @c
 @c Authors: James D. Trotter <james@simula.no>
-@c Last modified: 2022-01-19
+@c Last modified: 2022-01-27
 @c
 @c Libmtx User Guide: Distributed matrices and vectors.
 
@@ -50,13 +50,13 @@ operations.
 The definition of @code{struct mtxdistvector} is shown below.
 
 @example
-@code{struct mtxdistvector @{
+struct mtxdistvector @{
     MPI_Comm comm;
     int comm_size;
     int rank;
     struct mtxpartition rowpart;
     struct mtxvector interior;
-@};}
+@};
 @end example
 
 @noindent
@@ -82,7 +82,7 @@ the function @code{mtxdistvector_free} is used to free storage allocated
 for a distributed vector.
 
 @example
-@code{void mtxdistvector_free(struct mtxdistvector * distvector);}
+void mtxdistvector_free(struct mtxdistvector * distvector);
 @end example
 
 @cindex copy
@@ -91,10 +91,10 @@ To create a copy of an existing distributed vector, use the function
 @code{mtxdistvector_init_copy}.
 
 @example
-@code{int mtxdistvector_init_copy(
+int mtxdistvector_init_copy(
     struct mtxdistvector * dst,
     const struct mtxdistvector * src,
-    struct mtxdisterror * disterr);}
+    struct mtxdisterror * disterr);
 @end example
 
 @cindex copy
@@ -104,10 +104,10 @@ the vector values should not be copied or initialised, use the
 function @code{mtxdistvector_alloc_copy}.
 
 @example
-@code{int mtxdistvector_alloc_copy(
+int mtxdistvector_alloc_copy(
     struct mtxdistvector * dst,
     const struct mtxdistvector * src,
-    struct mtxdisterror * disterr);}
+    struct mtxdisterror * disterr);
 @end example
 
 @cindex allocate
@@ -121,7 +121,7 @@ To allocate storage for a distributed vector in @emph{array} or
 @code{mtxdistvector_alloc_coordinate} may be used.
 
 @example
-@code{int mtxdistvector_alloc_array(
+int mtxdistvector_alloc_array(
     struct mtxdistvector * vector,
     enum mtxfield field,
     enum mtxprecision precision,
@@ -138,7 +138,7 @@ int mtxdistvector_alloc_coordinate(
     int64_t num_local_nonzeros,
     const struct mtxpartition * rowpart,
     MPI_Comm comm,
-    struct mtxdisterror * disterr);}
+    struct mtxdisterror * disterr);
 @end example
 
 @noindent
@@ -178,13 +178,13 @@ For example, to create a double precision, complex vector in array
 format, use @code{mtxdistvector_init_array_complex_double}.
 
 @example
-@code{int mtxdistvector_init_array_complex_double(
+int mtxdistvector_init_array_complex_double(
     struct mtxdistvector * distvector,
     int num_local_rows,
     const double (* data)[2],
     const struct mtxpartition * rowpart,
     MPI_Comm comm,
-    struct mtxdisterror * disterr);}
+    struct mtxdisterror * disterr);
 @end example
 
 @noindent
@@ -201,7 +201,7 @@ To create a double precision, complex vector in coordinate format, use
 @code{mtxdistvector_init_coordinate_complex_double}.
 
 @example
-@code{int mtxdistvector_init_coordinate_complex_double(
+int mtxdistvector_init_coordinate_complex_double(
     struct mtxdistvector * vector,
     int num_local_rows,
     int64_t num_local_nonzeros,
@@ -209,7 +209,7 @@ To create a double precision, complex vector in coordinate format, use
     const double (* data)[2],
     const struct mtxpartition * rowpart,
     MPI_Comm comm,
-    struct mtxdisterror * disterr);}
+    struct mtxdisterror * disterr);
 @end example
 
 @noindent
@@ -245,7 +245,7 @@ and precision (i.e., @samp{single} or @samp{double}) of
 @findex mtxdistvector_set_constant_integer_double
 
 @example
-@code{int mtxdistvector_set_constant_real_single(
+int mtxdistvector_set_constant_real_single(
     struct mtxdistvector *, float a, struct mtxdisterror * disterr);
 int mtxdistvector_set_constant_real_double(
     struct mtxdistvector *, double a, struct mtxdisterror * disterr);
@@ -256,7 +256,7 @@ int mtxdistvector_set_constant_complex_double(
 int mtxdistvector_set_constant_integer_single(
     struct mtxdistvector *, int32_t a, struct mtxdisterror * disterr);
 int mtxdistvector_set_constant_integer_double(
-    struct mtxdistvector *, int64_t a, struct mtxdisterror * disterr);}
+    struct mtxdistvector *, int64_t a, struct mtxdisterror * disterr);
 @end example
 
 To access or modify individual vector elements, the underlying vector
@@ -291,14 +291,14 @@ used. In this case, the Matrix Market file @code{mtxfile} must reside
 on the process whose rank is @code{root}.
 
 @example
-@code{int mtxdistvector_from_mtxfile(
+int mtxdistvector_from_mtxfile(
     struct mtxdistvector * dst,
     const struct mtxfile * src,
     enum mtxvectortype type,
     const struct mtxpartition * rowpart,
     MPI_Comm comm,
     int root,
-    struct mtxdisterror * disterr);}
+    struct mtxdisterror * disterr);
 @end example
 
 @noindent
@@ -324,13 +324,13 @@ To convert @code{struct mtxdistvector} back to Matrix Market format,
 the function @code{mtxdistvector_to_mtxfile} can be used.
 
 @example
-@code{int mtxdistvector_to_mtxfile(
+int mtxdistvector_to_mtxfile(
     const struct mtxdistvector * mtxdistvector,
     struct mtxfile * mtxfile,
     enum mtxfileformat mtxfmt,
     MPI_Comm comm,
     int root,
-    struct mtxdisterror * disterr);}
+    struct mtxdisterror * disterr);
 @end example
 
 @noindent
@@ -347,13 +347,13 @@ obtain a distributed vector with the desired partitioning and storage
 format.
 
 @example
-@code{int mtxdistvector_from_mtxdistfile(
+int mtxdistvector_from_mtxdistfile(
     struct mtxdistvector * distvector,
     const struct mtxdistfile * mtxdistfile,
     enum mtxvectortype type,
     const struct mtxpartition * rowpart,
     MPI_Comm comm,
-    struct mtxdisterror * disterr);}
+    struct mtxdisterror * disterr);
 @end example
 
 @noindent
@@ -365,11 +365,11 @@ The function @code{mtxdistvector_to_mtxdistfile} will convert a
 distributed vector to a distributed Matrix Market format.
 
 @example
-@code{int mtxdistvector_to_mtxdistfile(
+int mtxdistvector_to_mtxdistfile(
     struct mtxdistfile * dst,
     const struct mtxdistvector * src,
     enum mtxfileformat mtxfmt,
-    struct mtxdisterror * disterr);}
+    struct mtxdisterror * disterr);
 @end example
 
 @noindent
@@ -393,7 +393,7 @@ each process.
 @findex mtxdistvector_gzead
 
 @example
-@code{int mtxdistvector_read(
+int mtxdistvector_read(
     struct mtxdistvector * vector,
     enum mtxprecision precision,
     enum mtxvectortype type,
@@ -420,7 +420,7 @@ int mtxdistvector_gzread(
     int * lines_read,
     int64_t * bytes_read,
     size_t line_max,
-    char * linebuf);}
+    char * linebuf);
 @end example
 
 @noindent
@@ -442,7 +442,7 @@ Conversely, the functions @code{mtxdistvector_write},
 provided to write a vector to a file in Matrix Market format.
 
 @example
-@code{int mtxdistvector_write(
+int mtxdistvector_write(
     const struct mtxdistvector * vector,
     enum mtxfileformat mtxfmt,
     const char * path,
@@ -462,7 +462,7 @@ int mtxdistvector_gzwrite(
     enum mtxfileformat mtxfmt,
     gzFile f,
     const char * fmt,
-    int64_t * bytes_written);}
+    int64_t * bytes_written);
 @end example
 
 @noindent
@@ -493,7 +493,7 @@ vector to another. Both operations are performed without any
 communication.
 
 @example
-@code{int mtxdistvector_swap(
+int mtxdistvector_swap(
     struct mtxdistvector * x,
     struct mtxdistvector * y,
     struct mtxdisterror * disterr);
@@ -501,7 +501,7 @@ communication.
 int mtxdistvector_copy(
     struct mtxdistvector * y,
     const struct mtxdistvector * x,
-    struct mtxdisterror * disterr);}
+    struct mtxdisterror * disterr);
 @end example
 
 @findex mtxdistvector_sscal
@@ -513,7 +513,7 @@ is, @code{x = a*x}. This operation does not require communication
 between processes.
 
 @example
-@code{int mtxdistvector_sscal(
+int mtxdistvector_sscal(
     float a,
     struct mtxdistvector * x,
     int64_t * num_flops,
@@ -523,7 +523,7 @@ int mtxdistvector_dscal(
     double a,
     struct mtxdistvector * x,
     int64_t * num_flops,
-    struct mtxdisterror * disterr);}
+    struct mtxdisterror * disterr);
 @end example
 
 @noindent
@@ -541,7 +541,7 @@ value, @code{y = a*x + y} or @code{y = a*y + x}. This may also be done
 without needing to perform communication.
 
 @example
-@code{int mtxdistvector_saxpy(
+int mtxdistvector_saxpy(
     float a,
     const struct mtxdistvector * x,
     struct mtxdistvector * y,
@@ -567,7 +567,7 @@ int mtxdistvector_daypx(
     struct mtxdistvector * y,
     const struct mtxdistvector * x,
     int64_t * num_flops,
-    struct mtxdisterror * disterr);}
+    struct mtxdisterror * disterr);
 @end example
 
 @findex mtxdistvector_sdot
@@ -578,7 +578,7 @@ vectors. This performs a reduction among all processes involved to
 produce the final result.
 
 @example
-@code{int mtxdistvector_sdot(
+int mtxdistvector_sdot(
     const struct mtxdistvector * x,
     const struct mtxdistvector * y,
     float * dot,
@@ -590,7 +590,7 @@ int mtxdistvector_ddot(
     const struct mtxdistvector * y,
     double * dot,
     int64_t * num_flops,
-    struct mtxdisterror * disterr);}
+    struct mtxdisterror * disterr);
 @end example
 
 @findex mtxdistvector_cdotu
@@ -606,7 +606,7 @@ Euclidean dot product of two complex vectors, @code{x^H*y}, where
 @code{x^H} denotes the conjugate transpose of @code{x}.
 
 @example
-@code{int mtxdistvector_cdotu(
+int mtxdistvector_cdotu(
     const struct mtxdistvector * x,
     const struct mtxdistvector * y,
     float (* dot)[2],
@@ -632,7 +632,7 @@ int mtxdistvector_zdotc(
     const struct mtxdistvector * y,
     double (* dot)[2],
     int64_t * num_flops,
-    struct mtxdisterror * disterr);}
+    struct mtxdisterror * disterr);
 @end example
 
 @findex mtxdistvector_snrm2
@@ -642,7 +642,7 @@ The functions @code{mtxdistvector_snrm2} and
 single and double precision floating point, respectively.
 
 @example
-@code{int mtxdistvector_snrm2(
+int mtxdistvector_snrm2(
     const struct mtxdistvector * x,
     float * nrm2,
     int64_t * num_flops,
@@ -652,7 +652,7 @@ int mtxdistvector_dnrm2(
     const struct mtxdistvector * x,
     double * nrm2,
     int64_t * num_flops,
-    struct mtxdisterror * disterr);}
+    struct mtxdisterror * disterr);
 @end example
 
 @findex mtxdistvector_sasum
@@ -665,7 +665,7 @@ absolute values of the real and imaginary parts is computed. A
 reduction is performed to combine the values computed by each process.
 
 @example
-@code{int mtxdistvector_sasum(
+int mtxdistvector_sasum(
     const struct mtxdistvector * x,
     float * asum,
     int64_t * num_flops,
@@ -675,7 +675,7 @@ int mtxdistvector_dasum(
     const struct mtxdistvector * x,
     double * asum,
     int64_t * num_flops,
-    struct mtxdisterror * disterr);}
+    struct mtxdisterror * disterr);
 @end example
 
 @findex mtxdistvector_iamax
@@ -686,10 +686,27 @@ the first element having the maximum sum of the absolute values of the
 real and imaginary parts.
 
 @example
-@code{int mtxdistvector_iamax(
+int mtxdistvector_iamax(
     const struct mtxdistvector * x,
     int * iamax,
-    struct mtxdisterror * disterr);}
+    struct mtxdisterror * disterr);
+@end example
+
+@node Halo updates
+@subsection Halo updates
+@cindex halo update
+Some linear algebra operations, such as matrix-vector multiplication,
+require communication between MPI processes whenever distributed
+matrices and vectors are used. This kind of communication is commonly
+implemented through a @dfn{halo update}. This section describes data
+structures for representing vector halos, and how to perform halo
+updates.
+
+@example
+int mtxdistvector_halo_update(
+    struct mtxdistvector * dst,
+    const struct mtxdistvector * src,
+    struct mtxdisterror * disterr);
 @end example
 
 
@@ -706,14 +723,14 @@ operations.
 The definition of @code{struct mtxdistmatrix} is shown below.
 
 @example
-@code{struct mtxdistmatrix @{
+struct mtxdistmatrix @{
     MPI_Comm comm;
     int comm_size;
     int rank;
     struct mtxpartition rowpart;
     struct mtxpartition colpart;
     struct mtxmatrix interior;
-@};}
+@};
 @end example
 
 @noindent
@@ -734,7 +751,7 @@ the function @code{mtxdistmatrix_free} is used to free storage allocated
 for a distributed matrix.
 
 @example
-@code{void mtxdistmatrix_free(struct mtxdistmatrix * distmatrix);}
+void mtxdistmatrix_free(struct mtxdistmatrix * distmatrix);
 @end example
 
 @cindex copy
@@ -743,10 +760,10 @@ To create a copy of an existing distributed matrix, use the function
 @code{mtxdistmatrix_init_copy}.
 
 @example
-@code{int mtxdistmatrix_init_copy(
+int mtxdistmatrix_init_copy(
     struct mtxdistmatrix * dst,
     const struct mtxdistmatrix * src,
-    struct mtxdisterror * disterr);}
+    struct mtxdisterror * disterr);
 @end example
 
 @cindex copy
@@ -756,10 +773,10 @@ the matrix values should not be copied or initialised, use the
 function @code{mtxdistmatrix_alloc_copy}.
 
 @example
-@code{int mtxdistmatrix_alloc_copy(
+int mtxdistmatrix_alloc_copy(
     struct mtxdistmatrix * dst,
     const struct mtxdistmatrix * src,
-    struct mtxdisterror * disterr);}
+    struct mtxdisterror * disterr);
 @end example
 
 @cindex allocate
@@ -773,7 +790,7 @@ To allocate storage for a distributed matrix in @emph{array} or
 @code{mtxdistmatrix_alloc_coordinate} may be used.
 
 @example
-@code{int mtxdistmatrix_alloc_array(
+int mtxdistmatrix_alloc_array(
     struct mtxdistmatrix * matrix,
     enum mtxfield field,
     enum mtxprecision precision,
@@ -794,7 +811,7 @@ int mtxdistmatrix_alloc_coordinate(
     const struct mtxpartition * rowpart,
     const struct mtxpartition * colpart,
     MPI_Comm comm,
-    struct mtxdisterror * disterr);}
+    struct mtxdisterror * disterr);
 @end example
 
 @noindent
@@ -838,7 +855,7 @@ For example, to create a double precision, complex matrix in array
 format, use @code{mtxdistmatrix_init_array_complex_double}.
 
 @example
-@code{int mtxdistmatrix_init_array_complex_double(
+int mtxdistmatrix_init_array_complex_double(
     struct mtxdistmatrix * distmatrix,
     int num_local_rows,
     int num_local_columns,
@@ -846,7 +863,7 @@ format, use @code{mtxdistmatrix_init_array_complex_double}.
     const struct mtxpartition * rowpart,
     const struct mtxpartition * colpart,
     MPI_Comm comm,
-    struct mtxdisterror * disterr);}
+    struct mtxdisterror * disterr);
 @end example
 
 @noindent
@@ -868,7 +885,7 @@ To create a double precision, complex matrix in coordinate format, use
 @code{mtxdistmatrix_init_coordinate_complex_double}.
 
 @example
-@code{int mtxdistmatrix_init_coordinate_complex_double(
+int mtxdistmatrix_init_coordinate_complex_double(
     struct mtxdistmatrix * matrix,
     int num_local_rows,
     int num_local_columns,
@@ -879,7 +896,7 @@ To create a double precision, complex matrix in coordinate format, use
     const struct mtxpartition * rowpart,
     const struct mtxpartition * colpart,
     MPI_Comm comm,
-    struct mtxdisterror * disterr);}
+    struct mtxdisterror * disterr);
 @end example
 
 @noindent
@@ -928,7 +945,7 @@ used. In this case, the Matrix Market file @code{mtxfile} must reside
 on the process whose rank is @code{root}.
 
 @example
-@code{int mtxdistmatrix_from_mtxfile(
+int mtxdistmatrix_from_mtxfile(
     struct mtxdistmatrix * dst,
     const struct mtxfile * src,
     enum mtxmatrixtype type,
@@ -936,7 +953,7 @@ on the process whose rank is @code{root}.
     const struct mtxpartition * colpart,
     MPI_Comm comm,
     int root,
-    struct mtxdisterror * disterr);}
+    struct mtxdisterror * disterr);
 @end example
 
 @noindent
@@ -964,13 +981,13 @@ To convert @code{struct mtxdistmatrix} back to Matrix Market format,
 the function @code{mtxdistmatrix_to_mtxfile} can be used.
 
 @example
-@code{int mtxdistmatrix_to_mtxfile(
+int mtxdistmatrix_to_mtxfile(
     const struct mtxdistmatrix * mtxdistmatrix,
     struct mtxfile * mtxfile,
     enum mtxfileformat mtxfmt,
     MPI_Comm comm,
     int root,
-    struct mtxdisterror * disterr);}
+    struct mtxdisterror * disterr);
 @end example
 
 @noindent
@@ -986,14 +1003,14 @@ obtain a distributed matrix with the desired partitioning and storage
 format.
 
 @example
-@code{int mtxdistmatrix_from_mtxdistfile(
+int mtxdistmatrix_from_mtxdistfile(
     struct mtxdistmatrix * distmatrix,
     const struct mtxdistfile * mtxdistfile,
     enum mtxmatrixtype type,
     const struct mtxpartition * rowpart,
     const struct mtxpartition * colpart,
     MPI_Comm comm,
-    struct mtxdisterror * disterr);}
+    struct mtxdisterror * disterr);
 @end example
 
 @noindent
@@ -1005,11 +1022,11 @@ The function @code{mtxdistmatrix_to_mtxdistfile} will convert a
 distributed matrix to a distributed Matrix Market format.
 
 @example
-@code{int mtxdistmatrix_to_mtxdistfile(
+int mtxdistmatrix_to_mtxdistfile(
     struct mtxdistfile * dst,
     const struct mtxdistmatrix * src,
     enum mtxfileformat mtxfmt,
-    struct mtxdisterror * disterr);}
+    struct mtxdisterror * disterr);
 @end example
 
 @noindent
@@ -1046,13 +1063,13 @@ and a vector @code{x}, before adding the result to another vector
 given as single precision floating point numbers.
 
 @example
-@code{int mtxdistmatrix_sgemv(
+int mtxdistmatrix_sgemv(
     enum mtxtransposition trans,
     float alpha,
     const struct mtxdistmatrix * A,
     const struct mtxdistvector * x,
     float beta,
-    struct mtxdistvector * y);}
+    struct mtxdistvector * y);
 @end example
 
 @noindent
@@ -1064,13 +1081,13 @@ The function @code{mtxdistmatrix_dgemv} performs the same operation as
 @code{beta} are now given as double precision floating point numbers.
 
 @example
-@code{int mtxdistmatrix_dgemv(
+int mtxdistmatrix_dgemv(
     enum mtxtransposition trans,
     double alpha,
     const struct mtxdistmatrix * A,
     const struct mtxdistvector * x,
     double beta,
-    struct mtxdistvector * y);}
+    struct mtxdistvector * y);
 @end example
 
 There are also two analogous routines, @code{mtxdistmatrix_cgemv} and
@@ -1081,7 +1098,7 @@ used to multiply with the conjugate transpose @samp{A^H}, if
 @code{trans} is @samp{mtx_conjtrans}.
 
 @example
-@code{int mtxdistmatrix_cgemv(
+int mtxdistmatrix_cgemv(
     enum mtxtransposition trans,
     float alpha[2],
     const struct mtxdistmatrix * A,
@@ -1095,20 +1112,8 @@ int mtxdistmatrix_zgemv(
     const struct mtxdistmatrix * A,
     const struct mtxdistvector * x,
     double beta[2],
-    struct mtxdistvector * y);}
+    struct mtxdistvector * y);
 @end example
-
-@node Halo exchange
-@subsection Halo exchange
-@cindex halo exchange
-Some linear algebra operations, such as matrix-vector multiplication,
-require communication between MPI processes whenever distributed
-matrices and vectors are used. This kind of communication is commonly
-implemented through a @dfn{halo exchange}. This section describes data
-structures for representing vector halos, and how to perform halo
-exchanges.
-
-
 
 @c @node Data distribution
 @c @subsection Data distribution

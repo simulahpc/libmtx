@@ -15,7 +15,7 @@
 @c along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
 @c
 @c Authors: James D. Trotter <james@simula.no>
-@c Last modified: 2022-01-19
+@c Last modified: 2022-01-27
 @c
 @c Libmtx User Guide: Matrices and vectors.
 
@@ -59,24 +59,28 @@ The file @file{libmtx/vector/vector.h} defines the type @code{struct
 mtxvector}. This is a single, abstract data type used to represent a
 vector with different options available for the underlying storage and
 implementation of vector operations.
+
 @example
-@code{struct mtxvector @{
+struct mtxvector @{
     enum mtxvectortype type;
     union @{
         struct mtxvector_array array;
         struct mtxvector_coordinate coordinate;
     @} storage;
-@};}
+@};
 @end example
+
+@noindent
 The two basic kinds of vectors are @emph{array} and @emph{coordinate}
 vectors. The enum type @code{mtxvectortype} is used to enumerate
 vector storage formats.
+
 @example
-@code{enum mtxvectortype @{
+enum mtxvectortype @{
     mtxvector_auto,       /* automatic selection of vector type */
     mtxvector_array,      /* array format for dense vectors */
     mtxvector_coordinate, /* coordinate format for sparse vectors */
-@};}
+@};
 @end example
 
 @node Creating vectors
@@ -87,18 +91,20 @@ This section covers functions that are provided to construct vectors.
 @findex mtxvector_free
 The function @code{mtxvector_free} is used to free storage allocated
 for a vector.
+
 @example
-@code{void mtxvector_free(struct mtxvector * vector);}
+void mtxvector_free(struct mtxvector * vector);
 @end example
 
 @cindex copy
 @findex mtxvector_init_copy
 To create a copy of an existing vector, use the function
 @code{mtxvector_init_copy}.
+
 @example
-@code{int mtxvector_init_copy(
+int mtxvector_init_copy(
     struct mtxvector * dst,
-    const struct mtxvector * src);}
+    const struct mtxvector * src);
 @end example
 
 @cindex copy
@@ -106,10 +112,11 @@ To create a copy of an existing vector, use the function
 If storage for a copy of an existing vector is needed, but the vector
 values should not be copied or initialised, use the function
 @code{mtxvector_alloc_copy}.
+
 @example
-@code{int mtxvector_alloc_copy(
+int mtxvector_alloc_copy(
     struct mtxvector * dst,
-    const struct mtxvector * src);}
+    const struct mtxvector * src);
 @end example
 
 @cindex allocate
@@ -120,8 +127,9 @@ values should not be copied or initialised, use the function
 To allocate storage for a vector in @emph{array} or @emph{coordinate}
 format, the functions @code{mtxvector_alloc_array} or
 @code{mtxvector_alloc_coordinate} may be used.
+
 @example
-@code{int mtxvector_alloc_array(
+int mtxvector_alloc_array(
     struct mtxvector * vector,
     enum mtxfield field,
     enum mtxprecision precision,
@@ -132,8 +140,10 @@ int mtxvector_alloc_coordinate(
     enum mtxfield field,
     enum mtxprecision precision,
     int num_rows,
-    int64_t num_nonzeros);}
+    int64_t num_nonzeros);
 @end example
+
+@noindent
 In both cases, the desired field and precision must be specified, as
 well as the number of rows. For a vector in coordinate format, it is
 also necessary to specify the number of nonzero vector elements. Note
@@ -153,26 +163,32 @@ precision (i.e., @samp{single} or @samp{double}).
 @findex mtxvector_init_array_complex_double
 For example, to create a double precision, complex vector in array
 format, use @code{mtxvector_init_array_complex_double}.
+
 @example
-@code{int mtxvector_init_array_complex_double(
+int mtxvector_init_array_complex_double(
     struct mtxvector * vector,
     int num_rows,
-    const double (* data)[2]);}
+    const double (* data)[2]);
 @end example
+
+@noindent
 The vector entries are provided by the array @code{data}, which must
 contain @code{num_rows} values.
 
 @findex mtxvector_init_coordinate_complex_double
 To create a double precision, complex vector in coordinate format, use
 @code{mtxvector_init_coordinate_complex_double}.
+
 @example
-@code{int mtxvector_init_coordinate_complex_double(
+int mtxvector_init_coordinate_complex_double(
     struct mtxvector * vector,
     int num_rows,
     int64_t num_nonzeros,
     const int * idx,
-    const double (* values)[2]);}
+    const double (* values)[2]);
 @end example
+
+@noindent
 The arguments @code{idx} and @code{values} are arrays of length
 @code{num_nonzeros}. Each index @samp{idx[0]}, @samp{idx[1]}, ...,
 @samp{idx[num_nonzeros-1]}, is an integer in the range
@@ -198,8 +214,9 @@ precision (i.e., @samp{single} or @samp{double}) of @code{mtxvector}.
 @findex mtxvector_set_constant_complex_double
 @findex mtxvector_set_constant_integer_single
 @findex mtxvector_set_constant_integer_double
+
 @example
-@code{int mtxvector_set_constant_real_single(
+int mtxvector_set_constant_real_single(
     struct mtxvector *, float a);
 int mtxvector_set_constant_real_double(
     struct mtxvector *, double a);
@@ -210,8 +227,10 @@ int mtxvector_set_constant_complex_double(
 int mtxvector_set_constant_integer_single(
     struct mtxvector *, int32_t a);
 int mtxvector_set_constant_integer_double(
-    struct mtxvector *, int64_t a);}
+    struct mtxvector *, int64_t a);
 @end example
+
+@noindent
 To access or modify individual vector elements, the underlying vector
 storage is accessed through the appropriate member of the
 @code{storage} union in the @code{mtxvector} struct.
@@ -228,12 +247,15 @@ computations.
 @findex mtxvector_from_mtxfile
 To convert a vector in Matrix Market format to @code{struct
 mtxvector}, the function @code{mtxvector_from_mtxfile} can be used.
+
 @example
-@code{int mtxvector_from_mtxfile(
+int mtxvector_from_mtxfile(
     struct mtxvector * mtxvector,
     const struct mtxfile * mtxfile,
-    enum mtxvectortype type);}
+    enum mtxvectortype type);
 @end example
+
+@noindent
 The user may use the @code{type} argument to specify a desired storage
 format or implementation for @code{mtxvector}. If @code{type} is
 @samp{mtxvector_auto}, then the type of @code{mtxvector} is chosen to
@@ -254,12 +276,15 @@ sometimes useful to convert a vector back to Matrix Market format.
 For example, to make it easier to output the vector to a file. To
 convert @code{struct mtxvector} to a vector in Matrix Market format,
 the function @code{mtxvector_to_mtxfile} can be used.
+
 @example
-@code{int mtxvector_to_mtxfile(
+int mtxvector_to_mtxfile(
     struct mtxfile * mtxfile,
     const struct mtxvector * mtxvector,
-    enum mtxfileformat mtxfmt);}
+    enum mtxfileformat mtxfmt);
 @end example
+
+@noindent
 The resulting Matrix Market represents a vector in array format if
 @code{mtxfmt} is @samp{mtxfile_array}, or a vector in coordinate
 format if @code{mtxfmt} is @samp{mtxfile_coordinate}.
@@ -278,8 +303,9 @@ Market files}.
 @findex mtxvector_read
 @findex mtxvector_fread
 @findex mtxvector_gzead
+
 @example
-@code{int mtxvector_read(
+int mtxvector_read(
     struct mtxvector * vector,
     enum mtxprecision precision,
     enum mtxvectortype type,
@@ -306,8 +332,10 @@ int mtxvector_gzread(
     int * lines_read,
     int64_t * bytes_read,
     size_t line_max,
-    char * linebuf);}
+    char * linebuf);
 @end example
+
+@noindent
 The @code{type} argument specifies which format to use for
 representing the vector.  If @code{type} is @samp{mtxvector_auto},
 then the underlying vector is stored in array format or coordinate
@@ -321,8 +349,9 @@ an attempt is made to convert the vector to the desired type.
 Similarly, the functions @code{mtxvector_write},
 @code{mtxvector_fwrite} and @code{mtxvector_gzwrite} are provided to
 write a vector to a file in Matrix Market format.
+
 @example
-@code{int mtxvector_write(
+int mtxvector_write(
     const struct mtxvector * vector,
     enum mtxfileformat mtxfmt,
     const char * path,
@@ -342,8 +371,9 @@ int mtxvector_gzwrite(
     enum mtxfileformat mtxfmt,
     gzFile f,
     const char * fmt,
-    int64_t * bytes_written);}
+    int64_t * bytes_written);
 @end example
+
 @noindent
 The @code{mtxfmt} argument may be used to specify whether the vector
 should be written in array or coordinate format.
@@ -388,9 +418,10 @@ The following Level 1 BLAS operations are supported:
 The function @code{mtxvector_swap} swaps the values of two vectors,
 whereas @code{mtxvector_copy} copies the values from one vector to
 another.
+
 @example
-@code{int mtxvector_swap(struct mtxvector * x, struct mtxvector * y);
-int mtxvector_copy(struct mtxvector * y, const struct mtxvector * x);}
+int mtxvector_swap(struct mtxvector * x, struct mtxvector * y);
+int mtxvector_copy(struct mtxvector * y, const struct mtxvector * x);
 @end example
 
 @findex mtxvector_sscal
@@ -398,8 +429,9 @@ int mtxvector_copy(struct mtxvector * y, const struct mtxvector * x);}
 The functions @code{mtxvector_sscal} and @code{mtxvector_dscal} are
 used to scale a vector @code{x} by a floating point constant @code{a}
 in single or double precision, respectively. That is, @code{x = a*x}.
+
 @example
-@code{int mtxvector_sscal(
+int mtxvector_sscal(
     float a,
     struct mtxvector * x,
     int64_t * num_flops);
@@ -407,8 +439,10 @@ in single or double precision, respectively. That is, @code{x = a*x}.
 int mtxvector_dscal(
     double a,
     struct mtxvector * x,
-    int64_t * num_flops);}
+    int64_t * num_flops);
 @end example
+
+@noindent
 Note that most of the BLAS functions in Libmtx take an additional
 argument @code{num_flops}, which can be used to obtain the number of
 floating point operations that were carried out. If @code{num_flops}
@@ -419,8 +453,9 @@ is @samp{NULL}, then it is ignored.
 The functions @code{mtxvector_saxpy} and @code{mtxvector_daxpy} add a
 vector to another vector multiplied by a single or double precision
 floating point value, @code{y = a*x + y}.
+
 @example
-@code{int mtxvector_saxpy(
+int mtxvector_saxpy(
     float a,
     const struct mtxvector * x,
     struct mtxvector * y,
@@ -430,7 +465,7 @@ int mtxvector_daxpy(
     double a,
     const struct mtxvector * x,
     struct mtxvector * y,
-    int64_t * num_flops);}
+    int64_t * num_flops);
 @end example
 
 @findex mtxvector_saypx
@@ -438,8 +473,9 @@ int mtxvector_daxpy(
 Similarly, @code{mtxvector_saypx} and @code{mtxvector_daypx} multiply
 a vector by a single or double precision floating point scalar before
 adding the result to another vector, @code{y = a*y + x}.
+
 @example
-@code{int mtxvector_saypx(
+int mtxvector_saypx(
     float a,
     struct mtxvector * y,
     const struct mtxvector * x,
@@ -449,15 +485,16 @@ int mtxvector_daypx(
     double a,
     struct mtxvector * y,
     const struct mtxvector * x,
-    int64_t * num_flops);}
+    int64_t * num_flops);
 @end example
 
 @findex mtxvector_sdot
 @findex mtxvector_ddot
 The functions @code{mtxvector_sdot} and @code{mtxvector_ddot} compute
 the Euclidean dot product of two real- or integer-valued vectors.
+
 @example
-@code{int mtxvector_sdot(
+int mtxvector_sdot(
     const struct mtxvector * x,
     const struct mtxvector * y,
     float * dot,
@@ -467,7 +504,7 @@ int mtxvector_ddot(
     const struct mtxvector * x,
     const struct mtxvector * y,
     double * dot,
-    int64_t * num_flops);}
+    int64_t * num_flops);
 @end example
 
 @findex mtxvector_cdotu
@@ -481,8 +518,9 @@ transpose of a complex row vector with another complex row vector,
 functions @code{mtxvector_cdotc} and @code{mtxvector_zdotc} compute
 the Euclidean dot product of two complex vectors, @code{x^H*y}, where
 @code{x^H} denotes the conjugate transpose of @code{x}.
+
 @example
-@code{int mtxvector_cdotu(
+int mtxvector_cdotu(
     const struct mtxvector * x,
     const struct mtxvector * y,
     float (* dot)[2],
@@ -504,7 +542,7 @@ int mtxvector_zdotc(
     const struct mtxvector * x,
     const struct mtxvector * y,
     double (* dot)[2],
-    int64_t * num_flops);}
+    int64_t * num_flops);
 @end example
 
 @findex mtxvector_snrm2
@@ -512,8 +550,9 @@ int mtxvector_zdotc(
 The functions @code{mtxvector_snrm2} and @code{mtxvector_dnrm2}
 compute the Euclidean norm of a vector. in single and double precision
 floating point, respectively.
+
 @example
-@code{int mtxvector_snrm2(
+int mtxvector_snrm2(
     const struct mtxvector * x,
     float * nrm2,
     int64_t * num_flops);
@@ -521,7 +560,7 @@ floating point, respectively.
 int mtxvector_dnrm2(
     const struct mtxvector * x,
     double * nrm2,
-    int64_t * num_flops);}
+    int64_t * num_flops);
 @end example
 
 @findex mtxvector_sasum
@@ -531,8 +570,9 @@ compute the sum of absolute values, or 1-norm, of a vector. in single
 and double precision floating point, respectively. If the vector is
 complex-valued, then the sum of the absolute values of the real and
 imaginary parts is computed.
+
 @example
-@code{int mtxvector_sasum(
+int mtxvector_sasum(
     const struct mtxvector * x,
     float * asum,
     int64_t * num_flops);
@@ -540,7 +580,7 @@ imaginary parts is computed.
 int mtxvector_dasum(
     const struct mtxvector * x,
     double * asum,
-    int64_t * num_flops);}
+    int64_t * num_flops);
 @end example
 
 @findex mtxvector_iamax
@@ -549,10 +589,11 @@ element having the largest absolute value among all the vector
 elements. If the vector is complex-valued, then the index points to
 the first element having the maximum sum of the absolute values of the
 real and imaginary parts.
+
 @example
-@code{int mtxvector_iamax(
+int mtxvector_iamax(
     const struct mtxvector * x,
-    int * iamax);}
+    int * iamax);
 @end example
 
 
@@ -564,15 +605,18 @@ The file @file{libmtx/matrix/matrix.h} defines the type @code{struct
 mtxmatrix}. This is a single, abstract data type used to represent a
 matrix with different options available for the underlying storage and
 implementation of matrix operations.
+
 @example
-@code{struct mtxmatrix @{
+struct mtxmatrix @{
     enum mtxmatrixtype type;
     union @{
         struct mtxmatrix_array array;
         struct mtxmatrix_coordinate coordinate;
     @} storage;
-@};}
+@};
 @end example
+
+@noindent
 The idea is for Libmtx to provide several storage formats and
 implementations for sparse matrices, but there are two basic kinds of
 matrices obtained directly from the Matrix Market format, namely
@@ -582,12 +626,13 @@ ELL (or ELLPACK) format.
 
 The enum type @code{mtxmatrixtype} is used to enumerate matrix storage
 formats.
+
 @example
-@code{enum mtxmatrixtype @{
+enum mtxmatrixtype @{
     mtxmatrix_auto,       /* automatic selection of matrix type */
     mtxmatrix_array,      /* array format for dense matrices */
     mtxmatrix_coordinate, /* coordinate format for sparse matrices */
-@};}
+@};
 @end example
 
 @node Creating matrices
@@ -596,31 +641,35 @@ This section covers functions that are provided to construct matrices.
 
 The function @code{mtxmatrix_free} is used to free storage allocated
 for a matrix.
+
 @example
-@code{void mtxmatrix_free(struct mtxmatrix * matrix);}
+void mtxmatrix_free(struct mtxmatrix * matrix);
 @end example
 
 To create a copy of an existing matrix, use the function @code{mtxmatrix_init_copy}.
+
 @example
-@code{int mtxmatrix_init_copy(
+int mtxmatrix_init_copy(
     struct mtxmatrix * dst,
-    const struct mtxmatrix * src);}
+    const struct mtxmatrix * src);
 @end example
 
 If storage for a copy of an existing matrix is needed, but the matrix
 values should not be copied or initialised, use the function
 @code{mtxmatrix_alloc_copy}.
+
 @example
-@code{int mtxmatrix_alloc_copy(
+int mtxmatrix_alloc_copy(
     struct mtxmatrix * dst,
-    const struct mtxmatrix * src);}
+    const struct mtxmatrix * src);
 @end example
 
 To allocate storage for a matrix in @emph{array} or @emph{coordinate}
 format, the functions @code{mtxmatrix_alloc_array} or
 @code{mtxmatrix_alloc_coordinate} may be used.
+
 @example
-@code{int mtxmatrix_alloc_array(
+int mtxmatrix_alloc_array(
     struct mtxmatrix * matrix,
     enum mtxfield field,
     enum mtxprecision precision,
@@ -633,8 +682,10 @@ int mtxmatrix_alloc_coordinate(
     enum mtxprecision precision,
     int num_rows,
     int num_columns,
-    int64_t num_nonzeros);}
+    int64_t num_nonzeros);
 @end example
+
+@noindent
 In both cases, the desired field and precision must be specified, as
 well as the number of rows. For a matrix in coordinate format, it is
 also necessary to specify the number of nonzero matrix elements. Note
@@ -652,28 +703,34 @@ precision (i.e., @samp{single} or @samp{double}) of the matrix.
 
 For example, to create a double precision, complex matrix in array
 format, use @code{mtxmatrix_init_array_complex_double}.
+
 @example
-@code{int mtxmatrix_init_array_complex_double(
+int mtxmatrix_init_array_complex_double(
     struct mtxmatrix * matrix,
     int num_rows,
     int num_columns,
-    const double (* data)[2]);}
+    const double (* data)[2]);
 @end example
+
+@noindent
 The matrix entries are provided by the array @code{data}, which must
 contain @code{num_rows*num_columns} values.
 
 To create a double precision, complex matrix in coordinate format, use
 @code{mtxmatrix_init_coordinate_complex_double}.
+
 @example
-@code{int mtxmatrix_init_coordinate_complex_double(
+int mtxmatrix_init_coordinate_complex_double(
     struct mtxmatrix * matrix,
     int num_rows,
     int num_columns,
     int64_t num_nonzeros,
     const int * rowidx,
     const int * colidx,
-    const double (* values)[2]);}
+    const double (* values)[2]);
 @end example
+
+@noindent
 The arguments @code{rowidx}, @code{colidx} and @code{values} are
 arrays of length @code{num_nonzeros}. For each nonzero value
 @code{k=0,1,...,num_nonzeros-1}, @code{rowidx[k]} is a row index in
@@ -684,6 +741,55 @@ Note that duplicate entries are allowed, but this may cause some
 operations (e.g., @code{mtxmatrix_dot}, @code{mtxmatrix_nrm2},
 @code{mtxmatrix_sgemv}) to produce incorrect results.
 
+@node Row and column vectors
+@subsection Row and column vectors
+
+Matrices of a given size are naturally associated with their row and
+column vectors. These are vectors whose length is equal to the length
+of a matrix row or column, respectively. A row vector,
+@iftex
+@tex$x$, @end tex
+@end iftex
+@ifnottex
+@math{x},
+@end ifnottex
+and a column vector,
+@iftex
+@tex$y$, @end tex
+@end iftex
+@ifnottex
+@math{y},
+@end ifnottex
+may therefore be used as source and destination vectors, respectively,
+in a matrix-vector multiplication
+@iftex
+@tex$y = Ax$. @end tex
+@end iftex
+@ifnottex
+@math{y = A times x}.
+@end ifnottex
+
+@noindent
+For convenience, Libmtx provides the functions
+@code{mtxmatrix_alloc_row_vector} and
+@code{mtxmatrix_alloc_column_vector} for creating row and column
+vectors that are compatible with a given matrix.
+
+@example
+int mtxmatrix_alloc_row_vector(
+    const struct mtxmatrix * matrix,
+    struct mtxvector * vector,
+    enum mtxvectortype vector_type);
+
+int mtxmatrix_alloc_column_vector(
+    const struct mtxmatrix * matrix,
+    struct mtxvector * vector,
+    enum mtxvectortype vector_type);
+@end example
+
+@noindent
+The argument @code{vector_type} is used to specify the desired,
+underlying storage type for the row or column vector.
 
 @node Modifying matrix values
 @subsection Modifying values
@@ -693,8 +799,9 @@ to set every (nonzero) value of a matrix equal to a constant scalar,
 where @code{@var{field}} and @code{@var{precision}} should match the
 field (i.e., @samp{real}, @samp{complex} or @samp{integer}) and
 precision (i.e., @samp{single} or @samp{double}) of @code{mtxmatrix}.
+
 @example
-@code{int mtxmatrix_set_constant_real_single(
+int mtxmatrix_set_constant_real_single(
     struct mtxmatrix *, float a);
 int mtxmatrix_set_constant_real_double(
     struct mtxmatrix *, double a);
@@ -705,8 +812,10 @@ int mtxmatrix_set_constant_complex_double(
 int mtxmatrix_set_constant_integer_single(
     struct mtxmatrix *, int32_t a);
 int mtxmatrix_set_constant_integer_double(
-    struct mtxmatrix *, int64_t a);}
+    struct mtxmatrix *, int64_t a);
 @end example
+
+@noindent
 To access or modify individual matrix elements, the underlying matrix
 storage is accessed through the appropriate member of the
 @code{storage} union in the @code{mtxmatrix} struct.
@@ -722,12 +831,15 @@ computations.
 
 To convert a matrix in Matrix Market format to @code{struct
 mtxmatrix}, the function @code{mtxmatrix_from_mtxfile} can be used.
+
 @example
-@code{int mtxmatrix_from_mtxfile(
+int mtxmatrix_from_mtxfile(
     struct mtxmatrix * mtxmatrix,
     const struct mtxfile * mtxfile,
-    enum mtxmatrixtype type);}
+    enum mtxmatrixtype type);
 @end example
+
+@noindent
 The user may use the @code{type} argument to specify a desired storage
 format or implementation for @code{mtxmatrix}. If @code{type} is
 @samp{mtxmatrix_auto}, then the type of @code{mtxmatrix} is chosen to
@@ -741,12 +853,15 @@ sometimes useful to convert a matrix back to Matrix Market format.
 For example, to make it easier to output the matrix to a file. To
 convert @code{struct mtxmatrix} to a matrix in Matrix Market format,
 the function @code{mtxmatrix_to_mtxfile} can be used.
+
 @example
-@code{int mtxmatrix_to_mtxfile(
+int mtxmatrix_to_mtxfile(
     struct mtxfile * mtxfile,
     const struct mtxmatrix * mtxmatrix,
-    enum mtxfileformat mtxfmt);}
+    enum mtxfileformat mtxfmt);
 @end example
+
+@noindent
 The resulting Matrix Market represents a matrix in array format if
 @code{mtxfmt} is @samp{mtxfile_array}, or a matrix in coordinate
 format if @code{mtxfmt} is @samp{mtxfile_coordinate}.
@@ -759,8 +874,9 @@ more easily read a matrix from a file in Matrix Market format and
 convert it to a desired matrix representation. These functions are
 based on the functions described in @ref{Reading and writing Matrix
 Market files}.
+
 @example
-@code{int mtxmatrix_read(
+int mtxmatrix_read(
     struct mtxmatrix * matrix,
     enum mtxprecision precision,
     enum mtxmatrixtype type,
@@ -787,8 +903,10 @@ int mtxmatrix_gzread(
     int * lines_read,
     int64_t * bytes_read,
     size_t line_max,
-    char * linebuf);}
+    char * linebuf);
 @end example
+
+@noindent
 The @code{type} argument specifies which format to use for
 representing the matrix.  If @code{type} is @samp{mtxmatrix_auto},
 then the underlying matrix is stored in array format or coordinate
@@ -798,8 +916,9 @@ an attempt is made to convert the matrix to the desired type.
 Similarly, the functions @code{mtxmatrix_write},
 @code{mtxmatrix_fwrite} and @code{mtxmatrix_gzwrite} are provided to
 write a matrix to a file in Matrix Market format.
+
 @example
-@code{int mtxmatrix_write(
+int mtxmatrix_write(
     const struct mtxmatrix * matrix,
     const char * path,
     bool gzip,
@@ -816,7 +935,7 @@ int mtxmatrix_gzwrite(
     const struct mtxmatrix * matrix,
     gzFile f,
     const char * fmt,
-    int64_t * bytes_written);}
+    int64_t * bytes_written);
 @end example
 
 
@@ -859,16 +978,18 @@ The following Level 1 BLAS operations are supported:
 The function @code{mtxmatrix_swap} swaps the values of two matrices,
 whereas @code{mtxmatrix_copy} copies the values from one matrix to
 another.
+
 @example
-@code{int mtxmatrix_swap(struct mtxmatrix * X, struct mtxmatrix * Y);
-int mtxmatrix_copy(struct mtxmatrix * X, const struct mtxmatrix * Y);}
+int mtxmatrix_swap(struct mtxmatrix * X, struct mtxmatrix * Y);
+int mtxmatrix_copy(struct mtxmatrix * X, const struct mtxmatrix * Y);
 @end example
 
 The functions @code{mtxmatrix_sscal} and @code{mtxmatrix_dscal} are
 used to scale a matrix @code{X} by a floating point constant @code{a}
 in single or double precision, respectively. That is, @code{X = a*X}.
+
 @example
-@code{int mtxmatrix_sscal(
+int mtxmatrix_sscal(
     float a,
     struct mtxmatrix * X,
     int64_t * num_flops);
@@ -876,8 +997,10 @@ in single or double precision, respectively. That is, @code{X = a*X}.
 int mtxmatrix_dscal(
     double a,
     struct mtxmatrix * X,
-    int64_t * num_flops);}
+    int64_t * num_flops);
 @end example
+
+@noindent
 Note that most of the BLAS functions in Libmtx take an additional
 argument @code{num_flops}, which can be used to obtain the number of
 floating point operations that were carried out. If @code{num_flops}
@@ -886,8 +1009,9 @@ is @samp{NULL}, then it is ignored.
 The functions @code{mtxmatrix_saxpy} and @code{mtxmatrix_daxpy} add a
 matrix to another matrix multiplied by a single or double precision
 floating point value, @code{Y = a*X + Y}.
+
 @example
-@code{int mtxmatrix_saxpy(
+int mtxmatrix_saxpy(
     float a,
     const struct mtxmatrix * X,
     struct mtxmatrix * Y,
@@ -897,14 +1021,15 @@ int mtxmatrix_daxpy(
     double a,
     const struct mtxmatrix * X,
     struct mtxmatrix * Y,
-    int64_t * num_flops);}
+    int64_t * num_flops);
 @end example
 
 Similarly, @code{mtxmatrix_saypx} and @code{mtxmatrix_daypx} multiply
 a matrix by a single or double precision floating point scalar before
 adding the result to another matrix, @code{Y = a*Y + X}.
+
 @example
-@code{int mtxmatrix_saypx(
+int mtxmatrix_saypx(
     float a,
     struct mtxmatrix * Y,
     const struct mtxmatrix * X,
@@ -914,13 +1039,14 @@ int mtxmatrix_daypx(
     double a,
     struct mtxmatrix * Y,
     const struct mtxmatrix * X,
-    int64_t * num_flops);}
+    int64_t * num_flops);
 @end example
 
 The functions @code{mtxmatrix_sdot} and @code{mtxmatrix_ddot} compute
 the Frobenius dot product of two real- or integer-valued matrices.
+
 @example
-@code{int mtxmatrix_sdot(
+int mtxmatrix_sdot(
     const struct mtxmatrix * X,
     const struct mtxmatrix * Y,
     float * dot,
@@ -930,7 +1056,7 @@ int mtxmatrix_ddot(
     const struct mtxmatrix * X,
     const struct mtxmatrix * Y,
     double * dot,
-    int64_t * num_flops);}
+    int64_t * num_flops);
 @end example
 
 For complex matrices, the functions @code{mtxmatrix_cdotu} and
@@ -942,8 +1068,9 @@ transpose of a complex matrix with another complex matrix,
 @code{mtxmatrix_zdotc} compute the Frobenius dot product of two
 complex matrices, @code{vec(X)^H*vec(Y)}, where @code{x^H} denotes the
 conjugate transpose of @code{x}.
+
 @example
-@code{int mtxmatrix_cdotu(
+int mtxmatrix_cdotu(
     const struct mtxmatrix * X,
     const struct mtxmatrix * Y,
     float (* dot)[2],
@@ -965,14 +1092,15 @@ int mtxmatrix_zdotc(
     const struct mtxmatrix * X,
     const struct mtxmatrix * Y,
     double (* dot)[2],
-    int64_t * num_flops);}
+    int64_t * num_flops);
 @end example
 
 The functions @code{mtxmatrix_snrm2} and @code{mtxmatrix_dnrm2}
 compute the Frobenius norm of a matrix. in single and double precision
 floating point, respectively.
+
 @example
-@code{int mtxmatrix_snrm2(
+int mtxmatrix_snrm2(
     const struct mtxmatrix * X,
     float * nrm2,
     int64_t * num_flops);
@@ -980,7 +1108,7 @@ floating point, respectively.
 int mtxmatrix_dnrm2(
     const struct mtxmatrix * X,
     double * nrm2,
-    int64_t * num_flops);}
+    int64_t * num_flops);
 @end example
 
 The functions @code{mtxmatrix_sasum} and @code{mtxmatrix_dasum}
@@ -989,8 +1117,9 @@ precision floating point, respectively. (Note that this is not the
 same as the 1-norm of a matrix.) If the matrix is complex-valued, then
 the sum of the absolute values of the real and imaginary parts is
 computed.
+
 @example
-@code{int mtxmatrix_sasum(
+int mtxmatrix_sasum(
     const struct mtxmatrix * X,
     float * asum,
     int64_t * num_flops);
@@ -998,7 +1127,7 @@ computed.
 int mtxmatrix_dasum(
     const struct mtxmatrix * X,
     double * asum,
-    int64_t * num_flops);}
+    int64_t * num_flops);
 @end example
 
 The function @code{mtxmatrix_iamax} finds the index of the first
@@ -1006,10 +1135,11 @@ element having the largest absolute value among all the matrix
 elements. If the matrix is complex-valued, then the index points to
 the first element having the maximum sum of the absolute values of the
 real and imaginary parts.
+
 @example
-@code{int mtxmatrix_iamax(
+int mtxmatrix_iamax(
     const struct mtxmatrix * X,
-    int * iamax);}
+    int * iamax);
 @end example
 
 
@@ -1043,29 +1173,33 @@ multiplied by another real scalar @code{beta} (@code{β}). That is,
 @code{y = α*A*x + β*y} or @code{y = α*A'*x + β*y}. In this version,
 the scalars @code{alpha} and @code{beta} are given as single precision
 floating point numbers.
+
 @example
-@code{int mtxmatrix_sgemv(
+int mtxmatrix_sgemv(
     enum mtxtransposition trans,
     float alpha,
     const struct mtxmatrix * A,
     const struct mtxvector * x,
     float beta,
-    struct mtxvector * y);}
+    struct mtxvector * y);
 @end example
+
+@noindent
 If @code{trans} is @samp{mtx_notrans}, the matrix @code{A} is used. If
 @code{trans} is @samp{mtx_trans}, then @code{A'} is used instead.
 
 The function @code{mtxmatrix_dgemv} performs the same operation as
 @code{mtxmatrix_sgemv}, except that the scalars @code{alpha} and
 @code{beta} are now given as double precision floating point numbers.
+
 @example
-@code{int mtxmatrix_dgemv(
+int mtxmatrix_dgemv(
     enum mtxtransposition trans,
     double alpha,
     const struct mtxmatrix * A,
     const struct mtxvector * x,
     double beta,
-    struct mtxvector * y);}
+    struct mtxvector * y);
 @end example
 
 There are also two analogous routines, @code{mtxmatrix_cgemv} and
@@ -1074,8 +1208,9 @@ There are also two analogous routines, @code{mtxmatrix_cgemv} and
 precision floating point, respectively. These functions can also be
 used to multiply with the conjugate transpose @samp{A^H}, if
 @code{trans} is @samp{mtx_conjtrans}.
+
 @example
-@code{int mtxmatrix_cgemv(
+int mtxmatrix_cgemv(
     enum mtxtransposition trans,
     float alpha[2],
     const struct mtxmatrix * A,
@@ -1089,5 +1224,5 @@ int mtxmatrix_zgemv(
     const struct mtxmatrix * A,
     const struct mtxvector * x,
     double beta[2],
-    struct mtxvector * y);}
+    struct mtxvector * y);
 @end example
