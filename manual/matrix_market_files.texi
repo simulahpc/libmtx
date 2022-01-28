@@ -15,7 +15,7 @@
 @c along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
 @c
 @c Authors: James D. Trotter <james@simula.no>
-@c Last modified: 2022-01-15
+@c Last modified: 2022-01-28
 @c
 @c Libmtx User Guide: Matrix Market files.
 
@@ -931,7 +931,7 @@ If @code{perm} is @samp{NULL}, then it is ignored. Otherwise, it must
 point to an array of length @code{size}, which is used to store the
 permutation of the Matrix Market entries. @code{size} must therefore
 be at least equal to the number of data lines in the Matrix Market
-file @code{mtx}.
+file @code{mtxfile}.
 
 
 @cindex compact

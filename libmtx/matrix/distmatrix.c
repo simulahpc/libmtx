@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-01-20
+ * Last modified: 2022-01-26
  *
  * Data structures for distributed matrices.
  */
@@ -62,6 +62,9 @@
 void mtxdistmatrix_free(
     struct mtxdistmatrix * distmatrix)
 {
+    MPI_Comm_free(&distmatrix->colcomm);
+    MPI_Comm_free(&distmatrix->rowcomm);
+    MPI_Comm_free(&distmatrix->comm);
     mtxpartition_free(&distmatrix->rowpart);
     mtxpartition_free(&distmatrix->colpart);
     mtxmatrix_free(&distmatrix->interior);
@@ -69,23 +72,107 @@ void mtxdistmatrix_free(
 
 static int mtxdistmatrix_init_comm(
     struct mtxdistmatrix * distmatrix,
-    MPI_Comm comm,
+    MPI_Comm parent,
+    int num_process_rows,
+    int num_process_columns,
     struct mtxdisterror * disterr)
 {
     int err;
     int comm_size;
-    disterr->mpierrcode = MPI_Comm_size(comm, &comm_size);
+    disterr->mpierrcode = MPI_Comm_size(parent, &comm_size);
     err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
-    int rank;
-    disterr->mpierrcode = MPI_Comm_rank(comm, &rank);
+
+    int dims[2] = {num_process_rows, num_process_columns};
+    if (num_process_rows == 0 && num_process_columns == 0) {
+        disterr->mpierrcode = MPI_Dims_create(comm_size, 2, dims);
+        err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+        if (mtxdisterror_allreduce(disterr, err))
+            return MTX_ERR_MPI_COLLECTIVE;
+    } else if (
+        num_process_rows <= 0 || num_process_columns <= 0 ||
+        num_process_rows * num_process_columns > comm_size)
+    {
+        return MTX_ERR_INVALID_PROCESS_GRID;
+    }
+
+    int reorder = true;
+    const int periods[] = {false, false};
+    disterr->mpierrcode = MPI_Cart_create(
+        parent, 2, dims, periods, reorder, &distmatrix->comm);
     err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
-    if (mtxdisterror_allreduce(disterr, err))
+    if (mtxdisterror_allreduce(disterr, err)) {
+        MPI_Comm_free(&distmatrix->comm);
         return MTX_ERR_MPI_COLLECTIVE;
-    distmatrix->comm = comm;
-    distmatrix->comm_size = comm_size;
-    distmatrix->rank = rank;
+    }
+    disterr->mpierrcode = MPI_Comm_size(
+        distmatrix->comm, &distmatrix->comm_size);
+    err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err)) {
+        MPI_Comm_free(&distmatrix->comm);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+    disterr->mpierrcode = MPI_Comm_rank(
+        distmatrix->comm, &distmatrix->rank);
+    err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err)) {
+        MPI_Comm_free(&distmatrix->comm);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+
+    int coldims[] = {1, 0};
+    disterr->mpierrcode = MPI_Cart_sub(
+        distmatrix->comm, coldims, &distmatrix->colcomm);
+    err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err)) {
+        MPI_Comm_free(&distmatrix->comm);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+    disterr->mpierrcode = MPI_Comm_size(
+        distmatrix->colcomm, &distmatrix->num_process_rows);
+    err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err)) {
+        MPI_Comm_free(&distmatrix->colcomm);
+        MPI_Comm_free(&distmatrix->comm);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+    disterr->mpierrcode = MPI_Comm_rank(
+        distmatrix->colcomm, &distmatrix->rowrank);
+    err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err)) {
+        MPI_Comm_free(&distmatrix->colcomm);
+        MPI_Comm_free(&distmatrix->comm);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+
+    int rowdims[] = {0, 1};
+    disterr->mpierrcode = MPI_Cart_sub(
+        distmatrix->comm, rowdims, &distmatrix->rowcomm);
+    err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err)) {
+        MPI_Comm_free(&distmatrix->colcomm);
+        MPI_Comm_free(&distmatrix->comm);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+    disterr->mpierrcode = MPI_Comm_size(
+        distmatrix->rowcomm, &distmatrix->num_process_columns);
+    err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err)) {
+        MPI_Comm_free(&distmatrix->rowcomm);
+        MPI_Comm_free(&distmatrix->colcomm);
+        MPI_Comm_free(&distmatrix->comm);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+    disterr->mpierrcode = MPI_Comm_rank(
+        distmatrix->rowcomm, &distmatrix->colrank);
+    err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err)) {
+        MPI_Comm_free(&distmatrix->rowcomm);
+        MPI_Comm_free(&distmatrix->colcomm);
+        MPI_Comm_free(&distmatrix->comm);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
     return MTX_SUCCESS;
 }
 
@@ -155,7 +242,7 @@ static int mtxdistmatrix_init_partitions(
                     &num_local_rows_t, 1, MPI_INT,
                     p*num_col_parts+t, 0, comm, MPI_STATUS_IGNORE);
                 if (disterr->mpierrcode) err = MTX_ERR_MPI;
-                if (num_local_rows != num_local_rows_t)
+                else if (num_local_rows != num_local_rows_t)
                     err = MTX_ERR_INCOMPATIBLE_PARTITION;
             }
         } else {
@@ -168,33 +255,21 @@ static int mtxdistmatrix_init_partitions(
     if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
 
-    if (rowpart) {
-        int64_t num_rows = num_local_rows;
-        disterr->mpierrcode = MPI_Allreduce(
-            MPI_IN_PLACE, &num_rows, 1, MPI_INT64_T, MPI_SUM, comm);
-        if (disterr->mpierrcode) err = MTX_ERR_MPI;
-        if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
-        if (rowpart->size != num_rows ||
-            (p < num_row_parts && rowpart->part_sizes[p] != num_local_rows))
-            err = MTX_ERR_INCOMPATIBLE_PARTITION;
-        if (mtxdisterror_allreduce(disterr, err))
-            return MTX_ERR_MPI_COLLECTIVE;
-    }
-
-    if (colpart) {
-        int64_t num_columns = num_local_columns;
-        disterr->mpierrcode = MPI_Allreduce(
-            MPI_IN_PLACE, &num_columns, 1, MPI_INT64_T, MPI_SUM, comm);
-        if (disterr->mpierrcode) err = MTX_ERR_MPI;
-        if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
-        if (colpart->size != num_columns ||
-            (q < num_col_parts && colpart->part_sizes[q] != num_local_columns))
-            err = MTX_ERR_INCOMPATIBLE_PARTITION;
-        if (mtxdisterror_allreduce(disterr, err))
-            return MTX_ERR_MPI_COLLECTIVE;
-    }
+    if (rowpart && p < num_row_parts && rowpart->part_sizes[p] != num_local_rows)
+        err = MTX_ERR_INCOMPATIBLE_PARTITION;
+    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+    if (colpart && q < num_col_parts && colpart->part_sizes[q] != num_local_columns)
+        err = MTX_ERR_INCOMPATIBLE_PARTITION;
+    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
 
     if (rowpart && colpart) {
+        int64_t size = num_local_rows * num_local_columns;
+        disterr->mpierrcode = MPI_Allreduce(
+            MPI_IN_PLACE, &size, 1, MPI_INT64_T, MPI_SUM, comm);
+        if (disterr->mpierrcode) err = MTX_ERR_MPI;
+        else if (rowpart->size * colpart->size != size)
+            err = MTX_ERR_INCOMPATIBLE_PARTITION;
+        if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
         err = mtxpartition_copy(&distmatrix->rowpart, rowpart);
         if (mtxdisterror_allreduce(disterr, err))
             return MTX_ERR_MPI_COLLECTIVE;
@@ -267,7 +342,8 @@ int mtxdistmatrix_alloc_copy(
     const struct mtxdistmatrix * src,
     struct mtxdisterror * disterr)
 {
-    int err = mtxdistmatrix_init_comm(dst, src->comm, disterr);
+    int err = mtxdistmatrix_init_comm(
+        dst, src->comm, src->num_process_rows, src->num_process_columns, disterr);
     if (err) return err;
     err = mtxpartition_copy(&dst->rowpart, &src->rowpart);
     if (mtxdisterror_allreduce(disterr, err))
@@ -294,7 +370,8 @@ int mtxdistmatrix_init_copy(
     const struct mtxdistmatrix * src,
     struct mtxdisterror * disterr)
 {
-    int err = mtxdistmatrix_init_comm(dst, src->comm, disterr);
+    int err = mtxdistmatrix_init_comm(
+        dst, src->comm, src->num_process_rows, src->num_process_columns, disterr);
     if (err) return err;
     err = mtxpartition_copy(&dst->rowpart, &src->rowpart);
     if (mtxdisterror_allreduce(disterr, err))
@@ -330,9 +407,12 @@ int mtxdistmatrix_alloc_array(
     const struct mtxpartition * rowpart,
     const struct mtxpartition * colpart,
     MPI_Comm comm,
+    int num_process_rows,
+    int num_process_columns,
     struct mtxdisterror * disterr)
 {
-    int err = mtxdistmatrix_init_comm(distmatrix, comm, disterr);
+    int err = mtxdistmatrix_init_comm(
+        distmatrix, comm, num_process_rows, num_process_columns, disterr);
     if (err) return err;
     err = mtxdistmatrix_init_partitions(
         distmatrix, num_local_rows, num_local_columns, rowpart, colpart, disterr);
@@ -361,9 +441,12 @@ int mtxdistmatrix_init_array_real_single(
     const struct mtxpartition * rowpart,
     const struct mtxpartition * colpart,
     MPI_Comm comm,
+    int num_process_rows,
+    int num_process_columns,
     struct mtxdisterror * disterr)
 {
-    int err = mtxdistmatrix_init_comm(distmatrix, comm, disterr);
+    int err = mtxdistmatrix_init_comm(
+        distmatrix, comm, num_process_rows, num_process_columns, disterr);
     if (err) return err;
     err = mtxdistmatrix_init_partitions(
         distmatrix, num_local_rows, num_local_columns, rowpart, colpart, disterr);
@@ -391,9 +474,12 @@ int mtxdistmatrix_init_array_real_double(
     const struct mtxpartition * rowpart,
     const struct mtxpartition * colpart,
     MPI_Comm comm,
+    int num_process_rows,
+    int num_process_columns,
     struct mtxdisterror * disterr)
 {
-    int err = mtxdistmatrix_init_comm(distmatrix, comm, disterr);
+    int err = mtxdistmatrix_init_comm(
+        distmatrix, comm, num_process_rows, num_process_columns, disterr);
     if (err) return err;
     err = mtxdistmatrix_init_partitions(
         distmatrix, num_local_rows, num_local_columns, rowpart, colpart, disterr);
@@ -421,9 +507,12 @@ int mtxdistmatrix_init_array_complex_single(
     const struct mtxpartition * rowpart,
     const struct mtxpartition * colpart,
     MPI_Comm comm,
+    int num_process_rows,
+    int num_process_columns,
     struct mtxdisterror * disterr)
 {
-    int err = mtxdistmatrix_init_comm(distmatrix, comm, disterr);
+    int err = mtxdistmatrix_init_comm(
+        distmatrix, comm, num_process_rows, num_process_columns, disterr);
     if (err) return err;
     err = mtxdistmatrix_init_partitions(
         distmatrix, num_local_rows, num_local_columns, rowpart, colpart, disterr);
@@ -451,9 +540,12 @@ int mtxdistmatrix_init_array_complex_double(
     const struct mtxpartition * rowpart,
     const struct mtxpartition * colpart,
     MPI_Comm comm,
+    int num_process_rows,
+    int num_process_columns,
     struct mtxdisterror * disterr)
 {
-    int err = mtxdistmatrix_init_comm(distmatrix, comm, disterr);
+    int err = mtxdistmatrix_init_comm(
+        distmatrix, comm, num_process_rows, num_process_columns, disterr);
     if (err) return err;
     err = mtxdistmatrix_init_partitions(
         distmatrix, num_local_rows, num_local_columns, rowpart, colpart, disterr);
@@ -481,9 +573,12 @@ int mtxdistmatrix_init_array_integer_single(
     const struct mtxpartition * rowpart,
     const struct mtxpartition * colpart,
     MPI_Comm comm,
+    int num_process_rows,
+    int num_process_columns,
     struct mtxdisterror * disterr)
 {
-    int err = mtxdistmatrix_init_comm(distmatrix, comm, disterr);
+    int err = mtxdistmatrix_init_comm(
+        distmatrix, comm, num_process_rows, num_process_columns, disterr);
     if (err) return err;
     err = mtxdistmatrix_init_partitions(
         distmatrix, num_local_rows, num_local_columns, rowpart, colpart, disterr);
@@ -511,9 +606,12 @@ int mtxdistmatrix_init_array_integer_double(
     const struct mtxpartition * rowpart,
     const struct mtxpartition * colpart,
     MPI_Comm comm,
+    int num_process_rows,
+    int num_process_columns,
     struct mtxdisterror * disterr)
 {
-    int err = mtxdistmatrix_init_comm(distmatrix, comm, disterr);
+    int err = mtxdistmatrix_init_comm(
+        distmatrix, comm, num_process_rows, num_process_columns, disterr);
     if (err) return err;
     err = mtxdistmatrix_init_partitions(
         distmatrix, num_local_rows, num_local_columns, rowpart, colpart, disterr);
@@ -546,9 +644,12 @@ int mtxdistmatrix_alloc_coordinate(
     const struct mtxpartition * rowpart,
     const struct mtxpartition * colpart,
     MPI_Comm comm,
+    int num_process_rows,
+    int num_process_columns,
     struct mtxdisterror * disterr)
 {
-    int err = mtxdistmatrix_init_comm(distmatrix, comm, disterr);
+    int err = mtxdistmatrix_init_comm(
+        distmatrix, comm, num_process_rows, num_process_columns, disterr);
     if (err) return err;
     err = mtxdistmatrix_init_partitions(
         distmatrix, num_local_rows, num_local_columns, rowpart, colpart, disterr);
@@ -580,9 +681,12 @@ int mtxdistmatrix_init_coordinate_real_single(
     const struct mtxpartition * rowpart,
     const struct mtxpartition * colpart,
     MPI_Comm comm,
+    int num_process_rows,
+    int num_process_columns,
     struct mtxdisterror * disterr)
 {
-    int err = mtxdistmatrix_init_comm(distmatrix, comm, disterr);
+    int err = mtxdistmatrix_init_comm(
+        distmatrix, comm, num_process_rows, num_process_columns, disterr);
     if (err) return err;
     err = mtxdistmatrix_init_partitions(
         distmatrix, num_local_rows, num_local_columns, rowpart, colpart, disterr);
@@ -614,9 +718,12 @@ int mtxdistmatrix_init_coordinate_real_double(
     const struct mtxpartition * rowpart,
     const struct mtxpartition * colpart,
     MPI_Comm comm,
+    int num_process_rows,
+    int num_process_columns,
     struct mtxdisterror * disterr)
 {
-    int err = mtxdistmatrix_init_comm(distmatrix, comm, disterr);
+    int err = mtxdistmatrix_init_comm(
+        distmatrix, comm, num_process_rows, num_process_columns, disterr);
     if (err) return err;
     err = mtxdistmatrix_init_partitions(
         distmatrix, num_local_rows, num_local_columns, rowpart, colpart, disterr);
@@ -648,9 +755,12 @@ int mtxdistmatrix_init_coordinate_complex_single(
     const struct mtxpartition * rowpart,
     const struct mtxpartition * colpart,
     MPI_Comm comm,
+    int num_process_rows,
+    int num_process_columns,
     struct mtxdisterror * disterr)
 {
-    int err = mtxdistmatrix_init_comm(distmatrix, comm, disterr);
+    int err = mtxdistmatrix_init_comm(
+        distmatrix, comm, num_process_rows, num_process_columns, disterr);
     if (err) return err;
     err = mtxdistmatrix_init_partitions(
         distmatrix, num_local_rows, num_local_columns, rowpart, colpart, disterr);
@@ -682,9 +792,12 @@ int mtxdistmatrix_init_coordinate_complex_double(
     const struct mtxpartition * rowpart,
     const struct mtxpartition * colpart,
     MPI_Comm comm,
+    int num_process_rows,
+    int num_process_columns,
     struct mtxdisterror * disterr)
 {
-    int err = mtxdistmatrix_init_comm(distmatrix, comm, disterr);
+    int err = mtxdistmatrix_init_comm(
+        distmatrix, comm, num_process_rows, num_process_columns, disterr);
     if (err) return err;
     err = mtxdistmatrix_init_partitions(
         distmatrix, num_local_rows, num_local_columns, rowpart, colpart, disterr);
@@ -716,9 +829,12 @@ int mtxdistmatrix_init_coordinate_integer_single(
     const struct mtxpartition * rowpart,
     const struct mtxpartition * colpart,
     MPI_Comm comm,
+    int num_process_rows,
+    int num_process_columns,
     struct mtxdisterror * disterr)
 {
-    int err = mtxdistmatrix_init_comm(distmatrix, comm, disterr);
+    int err = mtxdistmatrix_init_comm(
+        distmatrix, comm, num_process_rows, num_process_columns, disterr);
     if (err) return err;
     err = mtxdistmatrix_init_partitions(
         distmatrix, num_local_rows, num_local_columns, rowpart, colpart, disterr);
@@ -750,9 +866,12 @@ int mtxdistmatrix_init_coordinate_integer_double(
     const struct mtxpartition * rowpart,
     const struct mtxpartition * colpart,
     MPI_Comm comm,
+    int num_process_rows,
+    int num_process_columns,
     struct mtxdisterror * disterr)
 {
-    int err = mtxdistmatrix_init_comm(distmatrix, comm, disterr);
+    int err = mtxdistmatrix_init_comm(
+        distmatrix, comm, num_process_rows, num_process_columns, disterr);
     if (err) return err;
     err = mtxdistmatrix_init_partitions(
         distmatrix, num_local_rows, num_local_columns, rowpart, colpart, disterr);
@@ -783,9 +902,12 @@ int mtxdistmatrix_init_coordinate_pattern(
     const struct mtxpartition * rowpart,
     const struct mtxpartition * colpart,
     MPI_Comm comm,
+    int num_process_rows,
+    int num_process_columns,
     struct mtxdisterror * disterr)
 {
-    int err = mtxdistmatrix_init_comm(distmatrix, comm, disterr);
+    int err = mtxdistmatrix_init_comm(
+        distmatrix, comm, num_process_rows, num_process_columns, disterr);
     if (err) return err;
     err = mtxdistmatrix_init_partitions(
         distmatrix, num_local_rows, num_local_columns, rowpart, colpart, disterr);
@@ -796,6 +918,66 @@ int mtxdistmatrix_init_coordinate_pattern(
     if (mtxdisterror_allreduce(disterr, err)) {
         mtxpartition_free(&distmatrix->colpart);
         mtxpartition_free(&distmatrix->rowpart);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+    return MTX_SUCCESS;
+}
+
+/*
+ * Row and column vectors
+ */
+
+/**
+ * ‘mtxdistmatrix_alloc_row_vector()’ allocates a distributed row
+ * vector for a given distributed matrix. A row vector is a vector
+ * whose length equal to a single row of the matrix, and it is
+ * distributed among processes in a given process row according to the
+ * column partitioning of the distributed matrix.
+ */
+int mtxdistmatrix_alloc_row_vector(
+    const struct mtxdistmatrix * distmatrix,
+    struct mtxdistvector * distvector,
+    enum mtxvectortype vector_type,
+    struct mtxdisterror * disterr)
+{
+    distvector->comm = distmatrix->rowcomm;
+    distvector->comm_size = distmatrix->num_process_columns;
+    distvector->rank = distmatrix->colrank;
+    int err = mtxpartition_copy(&distvector->rowpart, &distmatrix->colpart);
+    if (mtxdisterror_allreduce(disterr, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+    err = mtxmatrix_alloc_row_vector(
+        &distmatrix->interior, &distvector->interior, vector_type);
+    if (mtxdisterror_allreduce(disterr, err)) {
+        mtxpartition_free(&distvector->rowpart);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+    return MTX_SUCCESS;
+}
+
+/**
+ * ‘mtxdistmatrix_alloc_column_vector()’ allocates a distributed
+ * column vector for a given distributed matrix. A column vector is a
+ * vector whose length equal to a single column of the matrix, and it
+ * is distributed among processes in a given process column according
+ * to the row partitioning of the distributed matrix.
+ */
+int mtxdistmatrix_alloc_column_vector(
+    const struct mtxdistmatrix * distmatrix,
+    struct mtxdistvector * distvector,
+    enum mtxvectortype vector_type,
+    struct mtxdisterror * disterr)
+{
+    distvector->comm = distmatrix->colcomm;
+    distvector->comm_size = distmatrix->num_process_rows;
+    distvector->rank = distmatrix->rowrank;
+    int err = mtxpartition_copy(&distvector->rowpart, &distmatrix->rowpart);
+    if (mtxdisterror_allreduce(disterr, err))
+        return MTX_ERR_MPI_COLLECTIVE;
+    err = mtxmatrix_alloc_column_vector(
+        &distmatrix->interior, &distvector->interior, vector_type);
+    if (mtxdisterror_allreduce(disterr, err)) {
+        mtxpartition_free(&distvector->rowpart);
         return MTX_ERR_MPI_COLLECTIVE;
     }
     return MTX_SUCCESS;
@@ -836,9 +1018,12 @@ int mtxdistmatrix_from_mtxfile(
     const struct mtxpartition * colpart,
     MPI_Comm comm,
     int root,
+    int num_process_rows,
+    int num_process_columns,
     struct mtxdisterror * disterr)
 {
-    int err = mtxdistmatrix_init_comm(dst, comm, disterr);
+    int err = mtxdistmatrix_init_comm(
+        dst, comm, num_process_rows, num_process_columns, disterr);
     if (err) return err;
     int comm_size = dst->comm_size;
     int rank = dst->rank;
@@ -1025,10 +1210,12 @@ int mtxdistmatrix_from_mtxdistfile(
     const struct mtxpartition * rowpart,
     const struct mtxpartition * colpart,
     MPI_Comm comm,
+    int num_process_rows,
+    int num_process_columns,
     struct mtxdisterror * disterr)
 {
     int err = mtxdistmatrix_init_comm(
-        dst, comm, disterr);
+        dst, comm, num_process_rows, num_process_columns, disterr);
     if (err) return err;
     int comm_size = dst->comm_size;
     int rank = dst->rank;
@@ -1432,9 +1619,11 @@ int mtxdistmatrix_swap(
     struct mtxdisterror * disterr)
 {
     int result;
-    int err = MPI_Comm_compare(x->comm, y->comm, &result);
+    disterr->mpierrcode = MPI_Comm_compare(x->comm, y->comm, &result);
+    int err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
-    err = result != MPI_IDENT ? MTX_ERR_INCOMPATIBLE_MPI_COMM : MTX_SUCCESS;
+    err = result != MPI_IDENT && result != MPI_CONGRUENT
+        ? MTX_ERR_INCOMPATIBLE_MPI_COMM : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     err = mtxmatrix_swap(&x->interior, &y->interior);
     return mtxdisterror_allreduce(disterr, err);
@@ -1449,9 +1638,11 @@ int mtxdistmatrix_copy(
     struct mtxdisterror * disterr)
 {
     int result;
-    int err = MPI_Comm_compare(x->comm, y->comm, &result);
+    disterr->mpierrcode = MPI_Comm_compare(x->comm, y->comm, &result);
+    int err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
-    err = result != MPI_IDENT ? MTX_ERR_INCOMPATIBLE_MPI_COMM : MTX_SUCCESS;
+    err = result != MPI_IDENT && result != MPI_CONGRUENT
+        ? MTX_ERR_INCOMPATIBLE_MPI_COMM : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     err = mtxmatrix_copy(&y->interior, &x->interior);
     return mtxdisterror_allreduce(disterr, err);
@@ -1497,9 +1688,11 @@ int mtxdistmatrix_saxpy(
     struct mtxdisterror * disterr)
 {
     int result;
-    int err = MPI_Comm_compare(x->comm, y->comm, &result);
+    disterr->mpierrcode = MPI_Comm_compare(x->comm, y->comm, &result);
+    int err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
-    err = result != MPI_IDENT ? MTX_ERR_INCOMPATIBLE_MPI_COMM : MTX_SUCCESS;
+    err = result != MPI_IDENT && result != MPI_CONGRUENT
+        ? MTX_ERR_INCOMPATIBLE_MPI_COMM : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     err = mtxmatrix_saxpy(a, &x->interior, &y->interior, num_flops);
     return mtxdisterror_allreduce(disterr, err);
@@ -1517,9 +1710,11 @@ int mtxdistmatrix_daxpy(
     struct mtxdisterror * disterr)
 {
     int result;
-    int err = MPI_Comm_compare(x->comm, y->comm, &result);
+    disterr->mpierrcode = MPI_Comm_compare(x->comm, y->comm, &result);
+    int err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
-    err = result != MPI_IDENT ? MTX_ERR_INCOMPATIBLE_MPI_COMM : MTX_SUCCESS;
+    err = result != MPI_IDENT && result != MPI_CONGRUENT
+        ? MTX_ERR_INCOMPATIBLE_MPI_COMM : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     err = mtxmatrix_daxpy(a, &x->interior, &y->interior, num_flops);
     return mtxdisterror_allreduce(disterr, err);
@@ -1537,9 +1732,11 @@ int mtxdistmatrix_saypx(
     struct mtxdisterror * disterr)
 {
     int result;
-    int err = MPI_Comm_compare(x->comm, y->comm, &result);
+    disterr->mpierrcode = MPI_Comm_compare(x->comm, y->comm, &result);
+    int err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
-    err = result != MPI_IDENT ? MTX_ERR_INCOMPATIBLE_MPI_COMM : MTX_SUCCESS;
+    err = result != MPI_IDENT && result != MPI_CONGRUENT
+        ? MTX_ERR_INCOMPATIBLE_MPI_COMM : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     err = mtxmatrix_saypx(a, &y->interior, &x->interior, num_flops);
     return mtxdisterror_allreduce(disterr, err);
@@ -1557,9 +1754,11 @@ int mtxdistmatrix_daypx(
     struct mtxdisterror * disterr)
 {
     int result;
-    int err = MPI_Comm_compare(x->comm, y->comm, &result);
+    disterr->mpierrcode = MPI_Comm_compare(x->comm, y->comm, &result);
+    int err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
-    err = result != MPI_IDENT ? MTX_ERR_INCOMPATIBLE_MPI_COMM : MTX_SUCCESS;
+    err = result != MPI_IDENT && result != MPI_CONGRUENT
+        ? MTX_ERR_INCOMPATIBLE_MPI_COMM : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     err = mtxmatrix_daypx(a, &y->interior, &x->interior, num_flops);
     return mtxdisterror_allreduce(disterr, err);
@@ -1577,9 +1776,11 @@ int mtxdistmatrix_sdot(
     struct mtxdisterror * disterr)
 {
     int result;
-    int err = MPI_Comm_compare(x->comm, y->comm, &result);
+    disterr->mpierrcode = MPI_Comm_compare(x->comm, y->comm, &result);
+    int err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
-    err = result != MPI_IDENT ? MTX_ERR_INCOMPATIBLE_MPI_COMM : MTX_SUCCESS;
+    err = result != MPI_IDENT && result != MPI_CONGRUENT
+        ? MTX_ERR_INCOMPATIBLE_MPI_COMM : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     err = mtxmatrix_sdot(&x->interior, &y->interior, dot, num_flops);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
@@ -1602,9 +1803,11 @@ int mtxdistmatrix_ddot(
     struct mtxdisterror * disterr)
 {
     int result;
-    int err = MPI_Comm_compare(x->comm, y->comm, &result);
+    disterr->mpierrcode = MPI_Comm_compare(x->comm, y->comm, &result);
+    int err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
-    err = result != MPI_IDENT ? MTX_ERR_INCOMPATIBLE_MPI_COMM : MTX_SUCCESS;
+    err = result != MPI_IDENT && result != MPI_CONGRUENT
+        ? MTX_ERR_INCOMPATIBLE_MPI_COMM : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     err = mtxmatrix_ddot(&x->interior, &y->interior, dot, num_flops);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
@@ -1628,9 +1831,11 @@ int mtxdistmatrix_cdotu(
     struct mtxdisterror * disterr)
 {
     int result;
-    int err = MPI_Comm_compare(x->comm, y->comm, &result);
+    disterr->mpierrcode = MPI_Comm_compare(x->comm, y->comm, &result);
+    int err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
-    err = result != MPI_IDENT ? MTX_ERR_INCOMPATIBLE_MPI_COMM : MTX_SUCCESS;
+    err = result != MPI_IDENT && result != MPI_CONGRUENT
+        ? MTX_ERR_INCOMPATIBLE_MPI_COMM : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     err = mtxmatrix_cdotu(&x->interior, &y->interior, dot, num_flops);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
@@ -1654,9 +1859,11 @@ int mtxdistmatrix_zdotu(
     struct mtxdisterror * disterr)
 {
     int result;
-    int err = MPI_Comm_compare(x->comm, y->comm, &result);
+    disterr->mpierrcode = MPI_Comm_compare(x->comm, y->comm, &result);
+    int err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
-    err = result != MPI_IDENT ? MTX_ERR_INCOMPATIBLE_MPI_COMM : MTX_SUCCESS;
+    err = result != MPI_IDENT && result != MPI_CONGRUENT
+        ? MTX_ERR_INCOMPATIBLE_MPI_COMM : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     err = mtxmatrix_zdotu(&x->interior, &y->interior, dot, num_flops);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
@@ -1679,9 +1886,11 @@ int mtxdistmatrix_cdotc(
     struct mtxdisterror * disterr)
 {
     int result;
-    int err = MPI_Comm_compare(x->comm, y->comm, &result);
+    disterr->mpierrcode = MPI_Comm_compare(x->comm, y->comm, &result);
+    int err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
-    err = result != MPI_IDENT ? MTX_ERR_INCOMPATIBLE_MPI_COMM : MTX_SUCCESS;
+    err = result != MPI_IDENT && result != MPI_CONGRUENT
+        ? MTX_ERR_INCOMPATIBLE_MPI_COMM : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     err = mtxmatrix_cdotc(&x->interior, &y->interior, dot, num_flops);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
@@ -1704,9 +1913,11 @@ int mtxdistmatrix_zdotc(
     struct mtxdisterror * disterr)
 {
     int result;
-    int err = MPI_Comm_compare(x->comm, y->comm, &result);
+    disterr->mpierrcode = MPI_Comm_compare(x->comm, y->comm, &result);
+    int err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
-    err = result != MPI_IDENT ? MTX_ERR_INCOMPATIBLE_MPI_COMM : MTX_SUCCESS;
+    err = result != MPI_IDENT && result != MPI_CONGRUENT
+        ? MTX_ERR_INCOMPATIBLE_MPI_COMM : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     err = mtxmatrix_zdotc(&x->interior, &y->interior, dot, num_flops);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;

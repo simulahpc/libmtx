@@ -917,6 +917,46 @@ operations (e.g., @code{mtxdistmatrix_[sd]dot},
 @code{mtxdistmatrix_[sd]nrm2} and @code{mtxdistmatrix_[sdcz]gemv}) to
 produce incorrect results.
 
+
+@node Creating row and column vectors for distributed matrices
+@subsection Creating row and column vectors
+
+@cindex row vector
+@cindex column vector
+Row and column vectors can also be created for distributed matrices,
+though this requires some additional considerations compared to the
+non-distributed case described in @ref{Creating row and column
+vectors}. More specifically, the allocated vectors are created so that
+they are compatible with the partitioning of the distributed matrix. A
+row vector is thus partitioned in the same way as the matrix columns,
+whereas a column vector is partitioned in the same way as the matrix
+rows.
+
+@findex mtxdistmatrix_alloc_row_vector
+@findex mtxdistmatrix_alloc_column_vector
+To create distributed row and column vectors, the functions
+@code{mtxdistmatrix_alloc_row_vector} and
+@code{mtxdistmatrix_alloc_column_vector} may be used.
+
+@example
+int mtxdistmatrix_alloc_row_vector(
+    const struct mtxdistmatrix * distmatrix,
+    struct mtxdistvector * distvector,
+    enum mtxvectortype vector_type,
+    struct mtxdisterror * disterr)
+
+int mtxdistmatrix_alloc_column_vector(
+    const struct mtxdistmatrix * distmatrix,
+    struct mtxdistvector * distvector,
+    enum mtxvectortype vector_type,
+    struct mtxdisterror * disterr)
+@end example
+
+@noindent
+The argument @code{vector_type} is used to specify the desired,
+underlying storage type for the row or column vector.
+
+
 @node Converting distributed matrices to and from Matrix Market format
 @subsection Converting to and from Matrix Market format
 @cindex convert to and from Matrix Market format
@@ -1050,10 +1090,7 @@ as matrix-vector multiplication. This section describes how to apply
 these operations to distributed matrices and vectors.
 
 @cindex matrix-vector multiplication
-@cindex @code{sgemv}
-@cindex @code{dgemv}
-@cindex @code{cgemv}
-@cindex @code{zgemv}
+@cindex gemv
 The function @code{mtxdistmatrix_sgemv} multiplies a matrix @code{A}
 or its transpose @samp{A'} by a real scalar @code{alpha} (@code{α})
 and a vector @code{x}, before adding the result to another vector

@@ -15,7 +15,7 @@
 @c along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
 @c
 @c Authors: James D. Trotter <james@simula.no>
-@c Last modified: 2022-01-27
+@c Last modified: 2022-01-28
 @c
 @c Libmtx User Guide: Matrices and vectors.
 
@@ -388,15 +388,15 @@ optimised, third-party BLAS libraries, such as OpenBLAS
 routines for sparse matrix operations.
 
 The following Level 1 BLAS operations are supported:
-@cindex @code{swap}
-@cindex @code{copy}
-@cindex @code{scal}
-@cindex @code{axpy}
-@cindex @code{aypx}
-@cindex @code{dot}
-@cindex @code{nrm2}
-@cindex @code{asum}
-@cindex @code{iamax}
+@cindex swap
+@cindex copy
+@cindex scal
+@cindex axpy
+@cindex aypx
+@cindex dot
+@cindex nrm2
+@cindex asum
+@cindex iamax
 @cindex vector scaling
 @cindex vector addition
 @cindex Euclidean inner product
@@ -741,9 +741,11 @@ Note that duplicate entries are allowed, but this may cause some
 operations (e.g., @code{mtxmatrix_dot}, @code{mtxmatrix_nrm2},
 @code{mtxmatrix_sgemv}) to produce incorrect results.
 
-@node Row and column vectors
-@subsection Row and column vectors
+@node Creating row and column vectors
+@subsection Creating row and column vectors
 
+@cindex row vector
+@cindex column vector
 Matrices of a given size are naturally associated with their row and
 column vectors. These are vectors whose length is equal to the length
 of a matrix row or column, respectively. A row vector,
@@ -769,6 +771,8 @@ in a matrix-vector multiplication
 @math{y = A times x}.
 @end ifnottex
 
+@findex mtxmatrix_alloc_row_vector
+@findex mtxmatrix_alloc_column_vector
 @noindent
 For convenience, Libmtx provides the functions
 @code{mtxmatrix_alloc_row_vector} and
@@ -950,15 +954,15 @@ vectors}, except that arguments with the type @code{struct mtxvector}
 are replaced with @code{struct mtxmatrix}.
 
 The following Level 1 BLAS operations are supported:
-@cindex @code{swap}
-@cindex @code{copy}
-@cindex @code{scal}
-@cindex @code{axpy}
-@cindex @code{aypx}
-@cindex @code{dot}
-@cindex @code{nrm2}
-@cindex @code{asum}
-@cindex @code{iamax}
+@cindex swap
+@cindex copy
+@cindex scal
+@cindex axpy
+@cindex aypx
+@cindex dot
+@cindex nrm2
+@cindex asum
+@cindex iamax
 @cindex matrix scaling
 @cindex matrix addition
 @cindex Frobenius inner product
@@ -1147,10 +1151,7 @@ int mtxmatrix_iamax(
 @subsection Level 2 BLAS
 
 @cindex matrix-vector multiplication
-@cindex @code{sgemv}
-@cindex @code{dgemv}
-@cindex @code{cgemv}
-@cindex @code{zgemv}
+@cindex gemv
 Some of the most useful linear algebra operations are covered by the
 Level 2 BLAS routines, which involve a matrix and one or more
 vectors. This section describes level 2 BLAS operations for

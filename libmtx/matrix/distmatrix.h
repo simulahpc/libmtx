@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-01-20
+ * Last modified: 2022-01-26
  *
  * Data structures for distributed matrices.
  */
@@ -60,22 +60,78 @@ struct mtxpartition;
 struct mtxdistmatrix
 {
     /**
-     * ‘comm’ is an MPI communicator for processes among which the
-     * Matrix Market file is distributed.
+     * ‘parent’ is the original MPI communicator from which the new
+     * Cartesian communicator ‘comm’ was created.
+     */
+    MPI_Comm parent;
+
+    /**
+     * ‘comm’ is a two-dimensional Cartesian communicator for
+     * processes among which the matrix is distributed.
      */
     MPI_Comm comm;
 
     /**
-     * ‘comm_size’ is the size of the MPI communicator. This is equal
-     * to the number of parts of the partitioning of the matrix rows
-     * times the number of parts in the partitioning of the columns.
+     * ‘colcomm’ is a one-dimensional subgroup of the Cartesian
+     * communicator ‘comm’ that is made up of processes belonging to
+     * the same column in the two-dimensional process grid.
+     */
+    MPI_Comm colcomm;
+
+    /**
+     * ‘rowcomm’ is a one-dimensional subgroup of the Cartesian
+     * communicator ‘comm’ that is made up of processes belonging to
+     * the same row in the two-dimensional process grid.
+     */
+    MPI_Comm rowcomm;
+
+    /**
+     * ‘comm_size’ is the size (number of processes) of the MPI
+     * communicator ‘comm’. This is equal to the number of parts in
+     * the two-dimensional matrix partitioning, or, equivalently, the
+     * number of parts in the partitioning of the matrix rows times
+     * the number of parts in the partitioning of the columns.
      */
     int comm_size;
 
     /**
-     * ‘rank’ is the rank of the current process.
+     * ‘num_process_rows’ is the number of processes in each column of
+     * the two-dimensional process grid. This is equal to the size
+     * (number of processes) in the MPI communicator ‘colcomm’, and it
+     * is equal to the number of parts in the partitioning of the
+     * matrix rows.
+     */
+    int num_process_rows;
+
+    /**
+     * ‘num_process_columns’ is the number of processes in each row of
+     * the two-dimensional process grid. This is equal to the size
+     * (number of processes) in the MPI communicator ‘rowcomm’, and it
+     * is equal to the number of parts in the partitioning of the
+     * matrix columns.
+     */
+    int num_process_columns;
+
+    /**
+     * ‘rank’ is the rank of the current process within the process
+     * group of the communicator ‘comm’.
      */
     int rank;
+
+    /**
+     * ‘rowrank’ is the rank of the current process within the process
+     * group of the communicator ‘colcomm’. This is also equal to
+     * ‘comm_size’ divided by ‘num_process_columns’.
+     */
+    int rowrank;
+
+    /**
+     * ‘colrank’ is the rank of the current process within the process
+     * group of the communicator ‘rowcomm’. This is also equal to the
+     * remainder when ‘comm_size’ is divided by ‘num_process_columns’,
+     * (i.e., ‘comm_size’ modulo ‘num_process_columns’).
+     */
+    int colrank;
 
     /**
      * ‘rowpart’ is a partitioning of the rows of the matrix.
@@ -87,6 +143,10 @@ struct mtxdistmatrix
      */
     struct mtxpartition colpart;
 
+    /**
+     * ‘interior’ is the local, rectangular block of the distributed
+     * matrix that resides on the current process.
+     */
     struct mtxmatrix interior;
 };
 
@@ -134,6 +194,8 @@ int mtxdistmatrix_alloc_array(
     const struct mtxpartition * rowpart,
     const struct mtxpartition * colpart,
     MPI_Comm comm,
+    int num_process_rows,
+    int num_process_columns,
     struct mtxdisterror * disterr);
 
 /**
@@ -149,6 +211,8 @@ int mtxdistmatrix_init_array_real_single(
     const struct mtxpartition * rowpart,
     const struct mtxpartition * colpart,
     MPI_Comm comm,
+    int num_process_rows,
+    int num_process_columns,
     struct mtxdisterror * disterr);
 
 /**
@@ -164,6 +228,8 @@ int mtxdistmatrix_init_array_real_double(
     const struct mtxpartition * rowpart,
     const struct mtxpartition * colpart,
     MPI_Comm comm,
+    int num_process_rows,
+    int num_process_columns,
     struct mtxdisterror * disterr);
 
 /**
@@ -179,6 +245,8 @@ int mtxdistmatrix_init_array_complex_single(
     const struct mtxpartition * rowpart,
     const struct mtxpartition * colpart,
     MPI_Comm comm,
+    int num_process_rows,
+    int num_process_columns,
     struct mtxdisterror * disterr);
 
 /**
@@ -194,6 +262,8 @@ int mtxdistmatrix_init_array_complex_double(
     const struct mtxpartition * rowpart,
     const struct mtxpartition * colpart,
     MPI_Comm comm,
+    int num_process_rows,
+    int num_process_columns,
     struct mtxdisterror * disterr);
 
 /**
@@ -209,6 +279,8 @@ int mtxdistmatrix_init_array_integer_single(
     const struct mtxpartition * rowpart,
     const struct mtxpartition * colpart,
     MPI_Comm comm,
+    int num_process_rows,
+    int num_process_columns,
     struct mtxdisterror * disterr);
 
 /**
@@ -224,6 +296,8 @@ int mtxdistmatrix_init_array_integer_double(
     const struct mtxpartition * rowpart,
     const struct mtxpartition * colpart,
     MPI_Comm comm,
+    int num_process_rows,
+    int num_process_columns,
     struct mtxdisterror * disterr);
 
 /*
@@ -244,6 +318,8 @@ int mtxdistmatrix_alloc_coordinate(
     const struct mtxpartition * rowpart,
     const struct mtxpartition * colpart,
     MPI_Comm comm,
+    int num_process_rows,
+    int num_process_columns,
     struct mtxdisterror * disterr);
 
 /**
@@ -262,6 +338,8 @@ int mtxdistmatrix_init_coordinate_real_single(
     const struct mtxpartition * rowpart,
     const struct mtxpartition * colpart,
     MPI_Comm comm,
+    int num_process_rows,
+    int num_process_columns,
     struct mtxdisterror * disterr);
 
 /**
@@ -280,6 +358,8 @@ int mtxdistmatrix_init_coordinate_real_double(
     const struct mtxpartition * rowpart,
     const struct mtxpartition * colpart,
     MPI_Comm comm,
+    int num_process_rows,
+    int num_process_columns,
     struct mtxdisterror * disterr);
 
 /**
@@ -298,6 +378,8 @@ int mtxdistmatrix_init_coordinate_complex_single(
     const struct mtxpartition * rowpart,
     const struct mtxpartition * colpart,
     MPI_Comm comm,
+    int num_process_rows,
+    int num_process_columns,
     struct mtxdisterror * disterr);
 
 /**
@@ -316,6 +398,8 @@ int mtxdistmatrix_init_coordinate_complex_double(
     const struct mtxpartition * rowpart,
     const struct mtxpartition * colpart,
     MPI_Comm comm,
+    int num_process_rows,
+    int num_process_columns,
     struct mtxdisterror * disterr);
 
 /**
@@ -334,6 +418,8 @@ int mtxdistmatrix_init_coordinate_integer_single(
     const struct mtxpartition * rowpart,
     const struct mtxpartition * colpart,
     MPI_Comm comm,
+    int num_process_rows,
+    int num_process_columns,
     struct mtxdisterror * disterr);
 
 /**
@@ -352,6 +438,8 @@ int mtxdistmatrix_init_coordinate_integer_double(
     const struct mtxpartition * rowpart,
     const struct mtxpartition * colpart,
     MPI_Comm comm,
+    int num_process_rows,
+    int num_process_columns,
     struct mtxdisterror * disterr);
 
 /**
@@ -369,6 +457,38 @@ int mtxdistmatrix_init_coordinate_pattern(
     const struct mtxpartition * rowpart,
     const struct mtxpartition * colpart,
     MPI_Comm comm,
+    int num_process_rows,
+    int num_process_columns,
+    struct mtxdisterror * disterr);
+
+/*
+ * Row and column vectors
+ */
+
+/**
+ * ‘mtxdistmatrix_alloc_row_vector()’ allocates a distributed row
+ * vector for a given distributed matrix. A row vector is a vector
+ * whose length equal to a single row of the matrix, and it is
+ * distributed among processes in a given process row according to the
+ * column partitioning of the distributed matrix.
+ */
+int mtxdistmatrix_alloc_row_vector(
+    const struct mtxdistmatrix * distmatrix,
+    struct mtxdistvector * distvector,
+    enum mtxvectortype vector_type,
+    struct mtxdisterror * disterr);
+
+/**
+ * ‘mtxdistmatrix_alloc_column_vector()’ allocates a distributed
+ * column vector for a given distributed matrix. A column vector is a
+ * vector whose length equal to a single column of the matrix, and it
+ * is distributed among processes in a given process column according
+ * to the row partitioning of the distributed matrix.
+ */
+int mtxdistmatrix_alloc_column_vector(
+    const struct mtxdistmatrix * distmatrix,
+    struct mtxdistvector * distvector,
+    enum mtxvectortype vector_type,
     struct mtxdisterror * disterr);
 
 /*
@@ -406,6 +526,8 @@ int mtxdistmatrix_from_mtxfile(
     const struct mtxpartition * colpart,
     MPI_Comm comm,
     int root,
+    int num_process_rows,
+    int num_process_columns,
     struct mtxdisterror * disterr);
 
 /**
@@ -435,6 +557,8 @@ int mtxdistmatrix_from_mtxdistfile(
     const struct mtxpartition * rowpart,
     const struct mtxpartition * colpart,
     MPI_Comm comm,
+    int num_process_rows,
+    int num_process_columns,
     struct mtxdisterror * disterr);
 
 /**
