@@ -37,7 +37,7 @@ const char * mtxtransposition_str(
     case mtx_notrans: return "notrans";
     case mtx_trans: return "trans";
     case mtx_conjtrans: return "conjtrans";
-    default: return mtxstrerror(MTX_ERR_INVALID_TRANS_TYPE);
+    default: return mtxstrerror(MTX_ERR_INVALID_TRANSPOSITION);
     }
 }
 
@@ -80,11 +80,11 @@ int mtxtransposition_parse(
         t += strlen("conjtrans");
         *transpose = mtx_conjtrans;
     } else {
-        return MTX_ERR_INVALID_TRANS_TYPE;
+        return MTX_ERR_INVALID_TRANSPOSITION;
     }
     if (valid_delimiters && *t != '\0') {
         if (!strchr(valid_delimiters, *t))
-            return MTX_ERR_INVALID_TRANS_TYPE;
+            return MTX_ERR_INVALID_TRANSPOSITION;
         t++;
     }
     if (bytes_read)

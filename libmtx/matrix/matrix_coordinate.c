@@ -1448,7 +1448,7 @@ int mtxmatrix_coordinate_sgemv(
                     mtxvector_array_free(&z);
                 }
             } else {
-                return MTX_ERR_INVALID_TRANS_TYPE;
+                return MTX_ERR_INVALID_TRANSPOSITION;
             }
         } else if (A->precision == mtx_double) {
             const double * Adata = A->data.real_double;
@@ -1513,7 +1513,7 @@ int mtxmatrix_coordinate_sgemv(
                     mtxvector_array_free(&z);
                 }
             } else {
-                return MTX_ERR_INVALID_TRANS_TYPE;
+                return MTX_ERR_INVALID_TRANSPOSITION;
             }
         } else {
             return MTX_ERR_INVALID_PRECISION;
@@ -1645,7 +1645,7 @@ int mtxmatrix_coordinate_sgemv(
                     mtxvector_array_free(&z);
                 }
             } else {
-                return MTX_ERR_INVALID_TRANS_TYPE;
+                return MTX_ERR_INVALID_TRANSPOSITION;
             }
         } else if (A->precision == mtx_double) {
             const double (* Adata)[2] = A->data.complex_double;
@@ -1769,7 +1769,7 @@ int mtxmatrix_coordinate_sgemv(
                     mtxvector_array_free(&z);
                 }
             } else {
-                return MTX_ERR_INVALID_TRANS_TYPE;
+                return MTX_ERR_INVALID_TRANSPOSITION;
             }
         } else {
             return MTX_ERR_INVALID_PRECISION;
@@ -1842,7 +1842,7 @@ int mtxmatrix_coordinate_sgemv(
                     mtxvector_array_free(&z);
                 }
             } else {
-                return MTX_ERR_INVALID_TRANS_TYPE;
+                return MTX_ERR_INVALID_TRANSPOSITION;
             }
         } else if (A->precision == mtx_double) {
             const int64_t * Adata = A->data.integer_double;
@@ -1907,7 +1907,7 @@ int mtxmatrix_coordinate_sgemv(
                     mtxvector_array_free(&z);
                 }
             } else {
-                return MTX_ERR_INVALID_TRANS_TYPE;
+                return MTX_ERR_INVALID_TRANSPOSITION;
             }
         } else {
             return MTX_ERR_INVALID_PRECISION;
@@ -1980,7 +1980,7 @@ int mtxmatrix_coordinate_sgemv(
                         mtxvector_array_free(&z);
                     }
                 } else {
-                    return MTX_ERR_INVALID_TRANS_TYPE;
+                    return MTX_ERR_INVALID_TRANSPOSITION;
                 }
             } else if (x_->precision == mtx_double) {
                 const double * xdata = x_->data.real_double;
@@ -2044,7 +2044,7 @@ int mtxmatrix_coordinate_sgemv(
                         mtxvector_array_free(&z);
                     }
                 } else {
-                    return MTX_ERR_INVALID_TRANS_TYPE;
+                    return MTX_ERR_INVALID_TRANSPOSITION;
                 }
             } else {
                 return MTX_ERR_INVALID_PRECISION;
@@ -2157,7 +2157,7 @@ int mtxmatrix_coordinate_sgemv(
                         mtxvector_array_free(&z);
                     }
                 } else {
-                    return MTX_ERR_INVALID_TRANS_TYPE;
+                    return MTX_ERR_INVALID_TRANSPOSITION;
                 }
             } else if (x_->precision == mtx_double) {
                 const double (* xdata)[2] = x_->data.complex_double;
@@ -2266,7 +2266,7 @@ int mtxmatrix_coordinate_sgemv(
                         mtxvector_array_free(&z);
                     }
                 } else {
-                    return MTX_ERR_INVALID_TRANS_TYPE;
+                    return MTX_ERR_INVALID_TRANSPOSITION;
                 }
             } else {
                 return MTX_ERR_INVALID_PRECISION;
@@ -2334,7 +2334,7 @@ int mtxmatrix_coordinate_sgemv(
                         mtxvector_array_free(&z);
                     }
                 } else {
-                    return MTX_ERR_INVALID_TRANS_TYPE;
+                    return MTX_ERR_INVALID_TRANSPOSITION;
                 }
             } else if (x_->precision == mtx_double) {
                 const int64_t * xdata = x_->data.integer_double;
@@ -2398,7 +2398,7 @@ int mtxmatrix_coordinate_sgemv(
                         mtxvector_array_free(&z);
                     }
                 } else {
-                    return MTX_ERR_INVALID_TRANS_TYPE;
+                    return MTX_ERR_INVALID_TRANSPOSITION;
                 }
             } else {
                 return MTX_ERR_INVALID_PRECISION;
@@ -2523,7 +2523,7 @@ int mtxmatrix_coordinate_dgemv(
                     mtxvector_array_free(&z);
                 }
             } else {
-                return MTX_ERR_INVALID_TRANS_TYPE;
+                return MTX_ERR_INVALID_TRANSPOSITION;
             }
         } else if (A->precision == mtx_double) {
             const double * Adata = A->data.real_double;
@@ -2588,7 +2588,7 @@ int mtxmatrix_coordinate_dgemv(
                     mtxvector_array_free(&z);
                 }
             } else {
-                return MTX_ERR_INVALID_TRANS_TYPE;
+                return MTX_ERR_INVALID_TRANSPOSITION;
             }
         } else {
             return MTX_ERR_INVALID_PRECISION;
@@ -2720,7 +2720,7 @@ int mtxmatrix_coordinate_dgemv(
                     mtxvector_array_free(&z);
                 }
             } else {
-                return MTX_ERR_INVALID_TRANS_TYPE;
+                return MTX_ERR_INVALID_TRANSPOSITION;
             }
         } else if (A->precision == mtx_double) {
             const double (* Adata)[2] = A->data.complex_double;
@@ -2844,7 +2844,7 @@ int mtxmatrix_coordinate_dgemv(
                     mtxvector_array_free(&z);
                 }
             } else {
-                return MTX_ERR_INVALID_TRANS_TYPE;
+                return MTX_ERR_INVALID_TRANSPOSITION;
             }
         } else {
             return MTX_ERR_INVALID_PRECISION;
@@ -2917,7 +2917,7 @@ int mtxmatrix_coordinate_dgemv(
                     mtxvector_array_free(&z);
                 }
             } else {
-                return MTX_ERR_INVALID_TRANS_TYPE;
+                return MTX_ERR_INVALID_TRANSPOSITION;
             }
         } else if (A->precision == mtx_double) {
             const int64_t * Adata = A->data.integer_double;
@@ -2982,7 +2982,7 @@ int mtxmatrix_coordinate_dgemv(
                     mtxvector_array_free(&z);
                 }
             } else {
-                return MTX_ERR_INVALID_TRANS_TYPE;
+                return MTX_ERR_INVALID_TRANSPOSITION;
             }
         } else {
             return MTX_ERR_INVALID_PRECISION;
@@ -3055,7 +3055,7 @@ int mtxmatrix_coordinate_dgemv(
                         mtxvector_array_free(&z);
                     }
                 } else {
-                    return MTX_ERR_INVALID_TRANS_TYPE;
+                    return MTX_ERR_INVALID_TRANSPOSITION;
                 }
             } else if (x_->precision == mtx_double) {
                 const double * xdata = x_->data.real_double;
@@ -3119,7 +3119,7 @@ int mtxmatrix_coordinate_dgemv(
                         mtxvector_array_free(&z);
                     }
                 } else {
-                    return MTX_ERR_INVALID_TRANS_TYPE;
+                    return MTX_ERR_INVALID_TRANSPOSITION;
                 }
             } else {
                 return MTX_ERR_INVALID_PRECISION;
@@ -3232,7 +3232,7 @@ int mtxmatrix_coordinate_dgemv(
                         mtxvector_array_free(&z);
                     }
                 } else {
-                    return MTX_ERR_INVALID_TRANS_TYPE;
+                    return MTX_ERR_INVALID_TRANSPOSITION;
                 }
             } else if (x_->precision == mtx_double) {
                 const double (* xdata)[2] = x_->data.complex_double;
@@ -3341,7 +3341,7 @@ int mtxmatrix_coordinate_dgemv(
                         mtxvector_array_free(&z);
                     }
                 } else {
-                    return MTX_ERR_INVALID_TRANS_TYPE;
+                    return MTX_ERR_INVALID_TRANSPOSITION;
                 }
             } else {
                 return MTX_ERR_INVALID_PRECISION;
@@ -3409,7 +3409,7 @@ int mtxmatrix_coordinate_dgemv(
                         mtxvector_array_free(&z);
                     }
                 } else {
-                    return MTX_ERR_INVALID_TRANS_TYPE;
+                    return MTX_ERR_INVALID_TRANSPOSITION;
                 }
             } else if (x_->precision == mtx_double) {
                 const int64_t * xdata = x_->data.integer_double;
@@ -3473,7 +3473,7 @@ int mtxmatrix_coordinate_dgemv(
                         mtxvector_array_free(&z);
                     }
                 } else {
-                    return MTX_ERR_INVALID_TRANS_TYPE;
+                    return MTX_ERR_INVALID_TRANSPOSITION;
                 }
             } else {
                 return MTX_ERR_INVALID_PRECISION;
@@ -3670,7 +3670,7 @@ int mtxmatrix_coordinate_cgemv(
                 mtxvector_array_free(&z);
             }
         } else {
-            return MTX_ERR_INVALID_TRANS_TYPE;
+            return MTX_ERR_INVALID_TRANSPOSITION;
         }
     } else if (A->precision == mtx_double) {
         const double (* Adata)[2] = A->data.complex_double;
@@ -3809,7 +3809,7 @@ int mtxmatrix_coordinate_cgemv(
                 mtxvector_array_free(&z);
             }
         } else {
-            return MTX_ERR_INVALID_TRANS_TYPE;
+            return MTX_ERR_INVALID_TRANSPOSITION;
         }
     } else {
         return MTX_ERR_INVALID_PRECISION;
@@ -4000,7 +4000,7 @@ int mtxmatrix_coordinate_zgemv(
                 mtxvector_array_free(&z);
             }
         } else {
-            return MTX_ERR_INVALID_TRANS_TYPE;
+            return MTX_ERR_INVALID_TRANSPOSITION;
         }
     } else if (A->precision == mtx_double) {
         const double (* Adata)[2] = A->data.complex_double;
@@ -4139,7 +4139,7 @@ int mtxmatrix_coordinate_zgemv(
                 mtxvector_array_free(&z);
             }
         } else {
-            return MTX_ERR_INVALID_TRANS_TYPE;
+            return MTX_ERR_INVALID_TRANSPOSITION;
         }
     } else {
         return MTX_ERR_INVALID_PRECISION;

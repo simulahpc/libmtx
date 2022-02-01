@@ -145,7 +145,7 @@ const char * mtxstrerror(
         return "invalid matrix type";
     case MTX_ERR_INCOMPATIBLE_MATRIX_TYPE:
         return "incompatible matrix type";
-    case MTX_ERR_INVALID_TRANS_TYPE:
+    case MTX_ERR_INVALID_TRANSPOSITION:
         return "invalid transpose type";
     case MTX_ERR_INVALID_PROCESS_GRID:
         return "invalid process grid";

@@ -958,7 +958,7 @@ int mtxmatrix_array_sgemv(
                     ydata[j] = alpha*z + beta*ydata[j];
                 }
             } else {
-                return MTX_ERR_INVALID_TRANS_TYPE;
+                return MTX_ERR_INVALID_TRANSPOSITION;
             }
 #endif
         } else if (A->precision == mtx_double) {
@@ -986,7 +986,7 @@ int mtxmatrix_array_sgemv(
                     ydata[j] = alpha*z + beta*ydata[j];
                 }
             } else {
-                return MTX_ERR_INVALID_TRANS_TYPE;
+                return MTX_ERR_INVALID_TRANSPOSITION;
             }
 #endif
         } else {
@@ -1044,7 +1044,7 @@ int mtxmatrix_array_sgemv(
                     ydata[j][1] = alpha*z[1] + beta*ydata[j][1];
                 }
             } else {
-                return MTX_ERR_INVALID_TRANS_TYPE;
+                return MTX_ERR_INVALID_TRANSPOSITION;
             }
 #endif
         } else if (A->precision == mtx_double) {
@@ -1098,7 +1098,7 @@ int mtxmatrix_array_sgemv(
                     ydata[j][1] = alpha*z[1] + beta*ydata[j][1];
                 }
             } else {
-                return MTX_ERR_INVALID_TRANS_TYPE;
+                return MTX_ERR_INVALID_TRANSPOSITION;
             }
 #endif
         } else {
@@ -1124,7 +1124,7 @@ int mtxmatrix_array_sgemv(
                     ydata[j] = alpha*z + beta*ydata[j];
                 }
             } else {
-                return MTX_ERR_INVALID_TRANS_TYPE;
+                return MTX_ERR_INVALID_TRANSPOSITION;
             }
         } else if (A->precision == mtx_double) {
             const int64_t * Adata = A->data.integer_double;
@@ -1145,7 +1145,7 @@ int mtxmatrix_array_sgemv(
                     ydata[j] = alpha*z + beta*ydata[j];
                 }
             } else {
-                return MTX_ERR_INVALID_TRANS_TYPE;
+                return MTX_ERR_INVALID_TRANSPOSITION;
             }
         } else {
             return MTX_ERR_INVALID_PRECISION;
@@ -1220,7 +1220,7 @@ int mtxmatrix_array_dgemv(
                     ydata[j] = alpha*z + beta*ydata[j];
                 }
             } else {
-                return MTX_ERR_INVALID_TRANS_TYPE;
+                return MTX_ERR_INVALID_TRANSPOSITION;
             }
 #endif
         } else if (A->precision == mtx_double) {
@@ -1248,7 +1248,7 @@ int mtxmatrix_array_dgemv(
                     ydata[j] = alpha*z + beta*ydata[j];
                 }
             } else {
-                return MTX_ERR_INVALID_TRANS_TYPE;
+                return MTX_ERR_INVALID_TRANSPOSITION;
             }
 #endif
         } else {
@@ -1306,7 +1306,7 @@ int mtxmatrix_array_dgemv(
                     ydata[j][1] = alpha*z[1] + beta*ydata[j][1];
                 }
             } else {
-                return MTX_ERR_INVALID_TRANS_TYPE;
+                return MTX_ERR_INVALID_TRANSPOSITION;
             }
 #endif
         } else if (A->precision == mtx_double) {
@@ -1360,7 +1360,7 @@ int mtxmatrix_array_dgemv(
                     ydata[j][1] = alpha*z[1] + beta*ydata[j][1];
                 }
             } else {
-                return MTX_ERR_INVALID_TRANS_TYPE;
+                return MTX_ERR_INVALID_TRANSPOSITION;
             }
 #endif
         } else {
@@ -1386,7 +1386,7 @@ int mtxmatrix_array_dgemv(
                     ydata[j] = alpha*z + beta*ydata[j];
                 }
             } else {
-                return MTX_ERR_INVALID_TRANS_TYPE;
+                return MTX_ERR_INVALID_TRANSPOSITION;
             }
         } else if (A->precision == mtx_double) {
             const int64_t * Adata = A->data.integer_double;
@@ -1407,7 +1407,7 @@ int mtxmatrix_array_dgemv(
                     ydata[j] = alpha*z + beta*ydata[j];
                 }
             } else {
-                return MTX_ERR_INVALID_TRANS_TYPE;
+                return MTX_ERR_INVALID_TRANSPOSITION;
             }
         } else {
             return MTX_ERR_INVALID_PRECISION;
@@ -1522,7 +1522,7 @@ int mtxmatrix_array_cgemv(
                     + beta[0]*yold[1] + beta[1]*yold[0];
             }
         } else {
-            return MTX_ERR_INVALID_TRANS_TYPE;
+            return MTX_ERR_INVALID_TRANSPOSITION;
         }
 #endif
     } else if (A->precision == mtx_double) {
@@ -1585,7 +1585,7 @@ int mtxmatrix_array_cgemv(
                     + beta[0]*yold[1] + beta[1]*yold[0];
             }
         } else {
-            return MTX_ERR_INVALID_TRANS_TYPE;
+            return MTX_ERR_INVALID_TRANSPOSITION;
         }
 #endif
     } else {
@@ -1700,7 +1700,7 @@ int mtxmatrix_array_zgemv(
                     + beta[0]*yold[1] + beta[1]*yold[0];
             }
         } else {
-            return MTX_ERR_INVALID_TRANS_TYPE;
+            return MTX_ERR_INVALID_TRANSPOSITION;
         }
 #endif
     } else if (A->precision == mtx_double) {
@@ -1761,7 +1761,7 @@ int mtxmatrix_array_zgemv(
                     + beta[0]*yold[1] + beta[1]*yold[0];
             }
         } else {
-            return MTX_ERR_INVALID_TRANS_TYPE;
+            return MTX_ERR_INVALID_TRANSPOSITION;
         }
 #endif
     } else {

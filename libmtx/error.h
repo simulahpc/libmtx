@@ -87,7 +87,7 @@ enum mtxerror
     MTX_ERR_INVALID_ORDERING,         /* invalid ordering */
     MTX_ERR_INVALID_MATRIX_TYPE,      /* invalid matrix type */
     MTX_ERR_INCOMPATIBLE_MATRIX_TYPE, /* incompatible matrix type */
-    MTX_ERR_INVALID_TRANS_TYPE,       /* invalid transpose type */
+    MTX_ERR_INVALID_TRANSPOSITION,    /* invalid transposition */
     MTX_ERR_INVALID_PROCESS_GRID,     /* invalid process grid */
     MTX_ERR_INVALID_MPI_COMM,         /* invalid MPI communicator */
     MTX_ERR_INCOMPATIBLE_MPI_COMM,    /* incompatible MPI communicator */
