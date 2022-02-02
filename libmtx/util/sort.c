@@ -432,6 +432,24 @@ int radix_sort_uint32(
     return MTX_SUCCESS;
 }
 
+static void swap_uint64_t(
+    uint64_t ** a,
+    uint64_t ** b)
+{
+    uint64_t * tmp = *a;
+    *a = *b;
+    *b = tmp;
+}
+
+static void swap_int64_t(
+    int64_t ** a,
+    int64_t ** b)
+{
+    uint64_t * tmp = *a;
+    *a = *b;
+    *b = tmp;
+}
+
 /**
  * ‘radix_sort_uint64()’ sorts an array of 64-bit unsigned integers in
  * ascending order using a radix sort algorithm.
@@ -457,7 +475,9 @@ int radix_sort_uint64(
     if (!extra_keys)
         return MTX_ERR_ERRNO;
 
-    int64_t * bucketptr = malloc(257 * sizeof(int64_t));
+    /* allocate six buckets to count occurrences and offsets for
+     * 11-digit binary numbers. */
+    int64_t * bucketptr = malloc(6*2049 * sizeof(int64_t));
     if (!bucketptr) {
         free(extra_keys);
         return MTX_ERR_ERRNO;
@@ -473,53 +493,113 @@ int radix_sort_uint64(
         }
     }
 
-    /* Perform one round of sorting for each digit in a key */
-    for (int k = 0; k < 8; k++) {
-        /* 1. Count the number of keys in each bucket. */
-        for (int j = 0; j <= 256; j++)
-            bucketptr[j] = 0;
-        for (int64_t i = 0; i < size; i++)
-            bucketptr[((keys[i] >> (8*k)) & 0xff)+1]++;
-
-        /* 2. Compute offset to first key in each bucket. */
-        for (int j = 0; j < 256; j++)
-            bucketptr[j+1] += bucketptr[j];
-
-        /* 3. Sort the keys into their respective buckets. */
-        if (sorting_permutation && k == 0) {
-            for (int64_t i = 0; i < size; i++) {
-                int64_t destidx = bucketptr[((keys[i] >> (8*k)) & 0xff)]++;
-                extra_keys[destidx] = keys[i];
-                sorting_permutation[destidx] = i;
-            }
-        } else if (sorting_permutation) {
-            for (int64_t i = 0; i < size; i++) {
-                int64_t destidx = bucketptr[((keys[i] >> (8*k)) & 0xff)]++;
-                extra_keys[destidx] = keys[i];
-                extra_sorting_permutation[destidx] = sorting_permutation[i];
-            }
-        } else {
-            for (int64_t i = 0; i < size; i++) {
-                int64_t destidx = bucketptr[((keys[i] >> (8*k)) & 0xff)]++;
-                extra_keys[destidx] = keys[i];
-            }
+    /* 1. Count the number of keys in each bucket. */
+    for (int k = 0; k < 6; k++) {
+        for (int j = 0; j <= 2048; j++) {
+            bucketptr[k*2049+j] = 0;
         }
+    }
+    for (int64_t i = 0; i < size; i++) {
+        bucketptr[0*2049+((keys[i] >> (11*0)) & 0x7ff)+1]++;
+        bucketptr[1*2049+((keys[i] >> (11*1)) & 0x7ff)+1]++;
+        bucketptr[2*2049+((keys[i] >> (11*2)) & 0x7ff)+1]++;
+        bucketptr[3*2049+((keys[i] >> (11*3)) & 0x7ff)+1]++;
+        bucketptr[4*2049+((keys[i] >> (11*4)) & 0x7ff)+1]++;
+        bucketptr[5*2049+((keys[i] >> (11*5)) & 0x7ff)+1]++;
+    }
 
-        /* 4. Copy data needed for the next round. */
-        if (sorting_permutation && k == 7) {
-            for (int64_t j = 0; j < size; j++) {
-                keys[j] = extra_keys[j];
-                sorting_permutation[extra_sorting_permutation[j]] = j;
-            }
-        } else if (sorting_permutation && k > 0) {
-            for (int64_t j = 0; j < size; j++) {
-                keys[j] = extra_keys[j];
-                sorting_permutation[j] = extra_sorting_permutation[j];
-            }
-        } else {
-            for (int64_t j = 0; j < size; j++)
-                keys[j] = extra_keys[j];
+    /* 2. Compute offset to first key in each bucket. */
+    for (int k = 0; k < 6; k++) {
+        for (int j = 0; j < 2048; j++) {
+            bucketptr[k*2049+j+1] += bucketptr[k*2049+j];
         }
+    }
+
+    /*
+     * 3. Sort in 6 rounds with 11 binary digits treated in each
+     * round. Note that pointers to the original and auxiliary arrays
+     * of keys (and sorting permutation) are swapped after each round.
+     * There is an even number of swaps, so that the sorted keys (and
+     * the final sorting permutation) end up in the original array.
+     *
+     * The choice of using 11 bits in each round is described in the
+     * article "Radix Tricks" by Michael Herf, published online in
+     * December 2001 at http://stereopsis.com/radix.html.
+     */
+    if (sorting_permutation) {
+        for (int64_t i = 0; i < size; i++) {
+            int64_t destidx = bucketptr[0*2049+((keys[i] >> (11*0)) & 0x7ff)]++;
+            extra_keys[destidx] = keys[i];
+            sorting_permutation[destidx] = i;
+        }
+        swap_uint64_t(&keys, &extra_keys);
+        for (int64_t i = 0; i < size; i++) {
+            int64_t destidx = bucketptr[1*2049+((keys[i] >> (11*1)) & 0x7ff)]++;
+            extra_keys[destidx] = keys[i];
+            extra_sorting_permutation[destidx] = sorting_permutation[i];
+        }
+        swap_uint64_t(&keys, &extra_keys);
+        swap_int64_t(&sorting_permutation, &extra_sorting_permutation);
+        for (int64_t i = 0; i < size; i++) {
+            int64_t destidx = bucketptr[2*2049+((keys[i] >> (11*2)) & 0x7ff)]++;
+            extra_keys[destidx] = keys[i];
+            extra_sorting_permutation[destidx] = sorting_permutation[i];
+        }
+        swap_uint64_t(&keys, &extra_keys);
+        swap_int64_t(&sorting_permutation, &extra_sorting_permutation);
+        for (int64_t i = 0; i < size; i++) {
+            int64_t destidx = bucketptr[3*2049+((keys[i] >> (11*3)) & 0x7ff)]++;
+            extra_keys[destidx] = keys[i];
+            extra_sorting_permutation[destidx] = sorting_permutation[i];
+        }
+        swap_uint64_t(&keys, &extra_keys);
+        swap_int64_t(&sorting_permutation, &extra_sorting_permutation);
+        for (int64_t i = 0; i < size; i++) {
+            int64_t destidx = bucketptr[4*2049+((keys[i] >> (11*4)) & 0x7ff)]++;
+            extra_keys[destidx] = keys[i];
+            extra_sorting_permutation[destidx] = sorting_permutation[i];
+        }
+        swap_uint64_t(&keys, &extra_keys);
+        swap_int64_t(&sorting_permutation, &extra_sorting_permutation);
+        for (int64_t i = 0; i < size; i++) {
+            int64_t destidx = bucketptr[5*2049+((keys[i] >> (11*5)) & 0x7ff)]++;
+            extra_keys[destidx] = keys[i];
+            extra_sorting_permutation[destidx] = sorting_permutation[i];
+        }
+        swap_uint64_t(&keys, &extra_keys);
+        for (int64_t j = 0; j < size; j++)
+            sorting_permutation[extra_sorting_permutation[j]] = j;
+    } else {
+        for (int64_t i = 0; i < size; i++) {
+            int64_t destidx = bucketptr[0*2049+((keys[i] >> (11*0)) & 0x7ff)]++;
+            extra_keys[destidx] = keys[i];
+        }
+        swap_uint64_t(&keys, &extra_keys);
+        for (int64_t i = 0; i < size; i++) {
+            int64_t destidx = bucketptr[1*2049+((keys[i] >> (11*1)) & 0x7ff)]++;
+            extra_keys[destidx] = keys[i];
+        }
+        swap_uint64_t(&keys, &extra_keys);
+        for (int64_t i = 0; i < size; i++) {
+            int64_t destidx = bucketptr[2*2049+((keys[i] >> (11*2)) & 0x7ff)]++;
+            extra_keys[destidx] = keys[i];
+        }
+        swap_uint64_t(&keys, &extra_keys);
+        for (int64_t i = 0; i < size; i++) {
+            int64_t destidx = bucketptr[3*2049+((keys[i] >> (11*3)) & 0x7ff)]++;
+            extra_keys[destidx] = keys[i];
+        }
+        swap_uint64_t(&keys, &extra_keys);
+        for (int64_t i = 0; i < size; i++) {
+            int64_t destidx = bucketptr[4*2049+((keys[i] >> (11*4)) & 0x7ff)]++;
+            extra_keys[destidx] = keys[i];
+        }
+        swap_uint64_t(&keys, &extra_keys);
+        for (int64_t i = 0; i < size; i++) {
+            int64_t destidx = bucketptr[5*2049+((keys[i] >> (11*5)) & 0x7ff)]++;
+            extra_keys[destidx] = keys[i];
+        }
+        swap_uint64_t(&keys, &extra_keys);
     }
 
     if (sorting_permutation)
