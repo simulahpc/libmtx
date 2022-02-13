@@ -1364,7 +1364,7 @@ int main(int argc, char *argv[])
 
         err = mtxpartition_init(
             &colpart, args.colparttype,
-            mtxfile.size.num_columns, args.num_col_parts, NULL, 0, NULL);
+            mtxfile.size.num_columns, args.num_col_parts, NULL, 0, NULL, NULL);
         if (err) {
             if (args.verbose > 0)
                 fprintf(diagf, "\n");
