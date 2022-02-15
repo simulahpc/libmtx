@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-01-03
+ * Last modified: 2022-02-15
  *
  * Reorder the nonzeros of a sparse matrix and any number of vectors
  * in Matrix Market format according to a specified reordering
@@ -120,8 +120,8 @@ static void program_options_print_help(
     fprintf(f, "\t\t\t'%%e', '%%E', '%%f', '%%F', '%%g' or '%%G' may be used,\n");
     fprintf(f, "\t\t\twhereas '%%d' must be used for integers. Flags, field width\n");
     fprintf(f, "\t\t\tand precision can optionally be specified, e.g., \"%%+3.1f\".\n");
-    fprintf(f, "  --rowperm-path=FILE\tpath for outputting row permuation\n");
-    fprintf(f, "  --colperm-path=FILE\tpath for outputting column permuation\n");
+    fprintf(f, "  --rowperm-path=FILE\tpath for outputting row permutation\n");
+    fprintf(f, "  --colperm-path=FILE\tpath for outputting column permutation\n");
     fprintf(f, "  --ordering=ORDERING\tordering to use: rcm (default: rcm).\n");
     fprintf(f, "  --rcm-starting-vertex=N\tstarting vertex for the RCM algorithm.\n");
     fprintf(f, "\t\t\tThe default value is 0, which means to choose automatically.\n");

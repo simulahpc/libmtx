@@ -431,11 +431,11 @@ be used for integers. Flags, field width and precision can optionally
 be specified, e.g., @samp{%+3.1f}.
 
 @item --rowperm-path=FILE
-Path for outputting row permuation as a dense vector in Matrix Market
+Path for outputting row permutation as a dense vector in Matrix Market
 format.
 
 @item --colperm-path=FILE
-Path for outputting column permuation as a dense vector in Matrix
+Path for outputting column permutation as a dense vector in Matrix
 Market format.
 
 @item --ordering=ORDERING
