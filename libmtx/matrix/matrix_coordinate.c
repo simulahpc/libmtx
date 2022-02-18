@@ -1,6 +1,6 @@
 /* This file is part of Libmtx.
  *
- * Copyright (C) 2021 James D. Trotter
+ * Copyright (C) 2022 James D. Trotter
  *
  * Libmtx is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-10-05
+ * Last modified: 2022-02-18
  *
  * Data structures for matrices in coordinate format.
  */
@@ -30,6 +30,7 @@
 #include <libmtx/matrix/matrix_coordinate.h>
 #include <libmtx/vector/vector.h>
 #include <libmtx/vector/vector_array.h>
+#include <libmtx/util/sort.h>
 
 #ifdef LIBMTX_HAVE_BLAS
 #include <cblas.h>
@@ -899,6 +900,114 @@ int mtxmatrix_coordinate_to_mtxfile(
     } else {
         return MTX_ERR_INVALID_FIELD;
     }
+    return MTX_SUCCESS;
+}
+
+/*
+ * Nonzero rows and columns
+ */
+
+/**
+ * ‘mtxmatrix_coordinate_nzrows()’ counts the number of nonzero
+ * (non-empty) matrix rows, and, optionally, fills an array with the
+ * row indices of the nonzero (non-empty) matrix rows.
+ *
+ * If ‘num_nonzero_rows’ is ‘NULL’, then it is ignored, or else it
+ * must point to an integer that is used to store the number of
+ * nonzero matrix rows.
+ *
+ * ‘nonzero_rows’ may be ‘NULL’, in which case it is ignored.
+ * Otherwise, it must point to an array of length at least equal to
+ * ‘size’. On successful completion, this array contains the row
+ * indices of the nonzero matrix rows. Note that ‘size’ must be at
+ * least equal to the number of non-zero rows.
+ */
+int mtxmatrix_coordinate_nzrows(
+    const struct mtxmatrix_coordinate * matrix,
+    int * num_nonzero_rows,
+    int size,
+    int * nonzero_rows)
+{
+    int err;
+    int * rowidx = malloc(matrix->num_nonzeros * sizeof(int));
+    if (!rowidx) return MTX_ERR_ERRNO;
+    for (int64_t k = 0; k < matrix->num_nonzeros; k++)
+        rowidx[k] = matrix->rowidx[k];
+
+    /* sort, then compact the sorted row indices */
+    err = radix_sort_int(size, rowidx, NULL);
+    if (err) {
+        free(rowidx);
+        return err;
+    }
+    int n = 0;
+    for (int64_t k = 1; k < matrix->num_nonzeros; k++) {
+        if (rowidx[n] != rowidx[k])
+            rowidx[++n] = rowidx[k];
+    }
+    n = matrix->num_nonzeros == 0 ? 0 : n+1;
+    if (num_nonzero_rows) *num_nonzero_rows = n;
+    if (nonzero_rows) {
+        if (size < n) {
+            free(rowidx);
+            return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+        }
+        for (int i = 0; i < n; i++)
+            nonzero_rows[i] = rowidx[i];
+    }
+    free(rowidx);
+    return MTX_SUCCESS;
+}
+
+/**
+ * ‘mtxmatrix_coordinate_nzcols()’ counts the number of nonzero
+ * (non-empty) matrix columns, and, optionally, fills an array with
+ * the column indices of the nonzero (non-empty) matrix columns.
+ *
+ * If ‘num_nonzero_columns’ is ‘NULL’, then it is ignored, or else it
+ * must point to an integer that is used to store the number of
+ * nonzero matrix columns.
+ *
+ * ‘nonzero_columns’ may be ‘NULL’, in which case it is ignored.
+ * Otherwise, it must point to an array of length at least equal to
+ * ‘size’. On successful completion, this array contains the column
+ * indices of the nonzero matrix columns. Note that ‘size’ must be at
+ * least equal to the number of non-zero columns.
+ */
+int mtxmatrix_coordinate_nzcols(
+    const struct mtxmatrix_coordinate * matrix,
+    int * num_nonzero_columns,
+    int size,
+    int * nonzero_columns)
+{
+    int err;
+    int * colidx = malloc(matrix->num_nonzeros * sizeof(int));
+    if (!colidx) return MTX_ERR_ERRNO;
+    for (int64_t k = 0; k < matrix->num_nonzeros; k++)
+        colidx[k] = matrix->colidx[k];
+
+    /* sort, then compact the sorted column indices */
+    err = radix_sort_int(size, colidx, NULL);
+    if (err) {
+        free(colidx);
+        return err;
+    }
+    int n = 0;
+    for (int64_t k = 1; k < matrix->num_nonzeros; k++) {
+        if (colidx[n] != colidx[k])
+            colidx[++n] = colidx[k];
+    }
+    n = matrix->num_nonzeros == 0 ? 0 : n+1;
+    if (num_nonzero_columns) *num_nonzero_columns = n;
+    if (nonzero_columns) {
+        if (size < n) {
+            free(colidx);
+            return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+        }
+        for (int i = 0; i < n; i++)
+            nonzero_columns[i] = colidx[i];
+    }
+    free(colidx);
     return MTX_SUCCESS;
 }
 

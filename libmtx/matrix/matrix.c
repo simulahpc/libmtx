@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-01-06
+ * Last modified: 2022-02-18
  *
  * Data structures for matrices.
  */
@@ -27,7 +27,6 @@
 #include <libmtx/matrix/matrix.h>
 #include <libmtx/mtxfile/mtxfile.h>
 #include <libmtx/precision.h>
-#include <libmtx/util/partition.h>
 
 #ifdef LIBMTX_HAVE_LIBZ
 #include <zlib.h>
@@ -801,6 +800,74 @@ int mtxmatrix_gzwrite(
     return MTX_SUCCESS;
 }
 #endif
+
+/*
+ * Nonzero rows and columns
+ */
+
+/**
+ * ‘mtxmatrix_nzrows()’ counts the number of nonzero (non-empty)
+ * matrix rows, and, optionally, fills an array with the row indices
+ * of the nonzero (non-empty) matrix rows.
+ *
+ * If ‘num_nonzero_rows’ is ‘NULL’, then it is ignored, or else it
+ * must point to an integer that is used to store the number of
+ * nonzero matrix rows.
+ *
+ * ‘nonzero_rows’ may be ‘NULL’, in which case it is ignored.
+ * Otherwise, it must point to an array of length at least equal to
+ * ‘size’. On successful completion, this array contains the row
+ * indices of the nonzero matrix rows. Note that ‘size’ must be at
+ * least equal to the number of non-zero rows.
+ */
+int mtxmatrix_nzrows(
+    const struct mtxmatrix * matrix,
+    int * num_nonzero_rows,
+    int size,
+    int * nonzero_rows)
+{
+    if (matrix->type == mtxmatrix_array) {
+        return mtxmatrix_array_nzrows(
+            &matrix->storage.array, num_nonzero_rows, size, nonzero_rows);
+    } else if (matrix->type == mtxmatrix_coordinate) {
+        return mtxmatrix_coordinate_nzrows(
+            &matrix->storage.coordinate, num_nonzero_rows, size, nonzero_rows);
+    } else {
+        return MTX_ERR_INVALID_MATRIX_TYPE;
+    }
+}
+
+/**
+ * ‘mtxmatrix_nzcols()’ counts the number of nonzero (non-empty)
+ * matrix columns, and, optionally, fills an array with the column
+ * indices of the nonzero (non-empty) matrix columns.
+ *
+ * If ‘num_nonzero_columns’ is ‘NULL’, then it is ignored, or else it
+ * must point to an integer that is used to store the number of
+ * nonzero matrix columns.
+ *
+ * ‘nonzero_columns’ may be ‘NULL’, in which case it is ignored.
+ * Otherwise, it must point to an array of length at least equal to
+ * ‘size’. On successful completion, this array contains the column
+ * indices of the nonzero matrix columns. Note that ‘size’ must be at
+ * least equal to the number of non-zero columns.
+ */
+int mtxmatrix_nzcols(
+    const struct mtxmatrix * matrix,
+    int * num_nonzero_columns,
+    int size,
+    int * nonzero_columns)
+{
+    if (matrix->type == mtxmatrix_array) {
+        return mtxmatrix_array_nzcols(
+            &matrix->storage.array, num_nonzero_columns, size, nonzero_columns);
+    } else if (matrix->type == mtxmatrix_coordinate) {
+        return mtxmatrix_coordinate_nzcols(
+            &matrix->storage.coordinate, num_nonzero_columns, size, nonzero_columns);
+    } else {
+        return MTX_ERR_INVALID_MATRIX_TYPE;
+    }
+}
 
 /*
  * Level 1 BLAS operations

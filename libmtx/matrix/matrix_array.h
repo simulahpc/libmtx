@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-01-20
+ * Last modified: 2022-02-18
  *
  * Data structures for matrices in array format.
  */
@@ -228,6 +228,52 @@ int mtxmatrix_array_to_mtxfile(
     struct mtxfile * mtxfile,
     const struct mtxmatrix_array * matrix,
     enum mtxfileformat mtxfmt);
+
+/*
+ * Nonzero rows and columns
+ */
+
+/**
+ * ‘mtxmatrix_array_nzrows()’ counts the number of nonzero (non-empty)
+ * matrix rows, and, optionally, fills an array with the row indices
+ * of the nonzero (non-empty) matrix rows.
+ *
+ * If ‘num_nonzero_rows’ is ‘NULL’, then it is ignored, or else it
+ * must point to an integer that is used to store the number of
+ * nonzero matrix rows.
+ *
+ * ‘nonzero_rows’ may be ‘NULL’, in which case it is ignored.
+ * Otherwise, it must point to an array of length at least equal to
+ * ‘size’. On successful completion, this array contains the row
+ * indices of the nonzero matrix rows. Note that ‘size’ must be at
+ * least equal to the number of non-zero rows.
+ */
+int mtxmatrix_array_nzrows(
+    const struct mtxmatrix_array * matrix,
+    int * num_nonzero_rows,
+    int size,
+    int * nonzero_rows);
+
+/**
+ * ‘mtxmatrix_array_nzcols()’ counts the number of nonzero (non-empty)
+ * matrix columns, and, optionally, fills an array with the column
+ * indices of the nonzero (non-empty) matrix columns.
+ *
+ * If ‘num_nonzero_columns’ is ‘NULL’, then it is ignored, or else it
+ * must point to an integer that is used to store the number of
+ * nonzero matrix columns.
+ *
+ * ‘nonzero_columns’ may be ‘NULL’, in which case it is ignored.
+ * Otherwise, it must point to an array of length at least equal to
+ * ‘size’. On successful completion, this array contains the column
+ * indices of the nonzero matrix columns. Note that ‘size’ must be at
+ * least equal to the number of non-zero columns.
+ */
+int mtxmatrix_array_nzcols(
+    const struct mtxmatrix_array * matrix,
+    int * num_nonzero_columns,
+    int size,
+    int * nonzero_columns);
 
 /*
  * Level 1 BLAS operations

@@ -152,6 +152,26 @@ int radix_sort_uint64(
     uint64_t * keys,
     int64_t * sorting_permutation);
 
+/**
+ * ‘radix_sort_int()’ sorts an array of (signed) integers in ascending
+ * order using a radix sort algorithm.
+ *
+ * The number of keys to sort is given by ‘size’, and the unsorted,
+ * integer keys are given in the array ‘keys’. On success, the same
+ * array will contain the keys in sorted order.
+ *
+ * If ‘sorting_permutation’ is ‘NULL’, then this argument is ignored
+ * and a sorting permutation is not computed. Otherwise, it must point
+ * to an array that holds enough storage for ‘size’ values of type
+ * ‘int64_t’. On success, this array will contain the sorting
+ * permutation, mapping the locations of the original, unsorted keys
+ * to their new locations in the sorted array.
+ */
+int radix_sort_int(
+    int64_t size,
+    int * keys,
+    int64_t * sorting_permutation);
+
 #ifdef LIBMTX_HAVE_MPI
 /**
  * ‘distradix_sort_uint32()’ sorts a distributed array of 32-bit

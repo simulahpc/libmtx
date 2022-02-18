@@ -115,7 +115,7 @@ static uint64_t rand_uint64(void)
 int test_radix_sort(void)
 {
     /*
-     * 32-bit integer keys.
+     * 32-bit unsigned integer keys.
      */
 
     {
@@ -199,7 +199,7 @@ int test_radix_sort(void)
     }
 
     /*
-     * 64-bit integer keys.
+     * 64-bit unsigned integer keys.
      */
 
     {
@@ -269,6 +269,92 @@ int test_radix_sort(void)
         clock_gettime(CLOCK_MONOTONIC, &t0);
 
         err = radix_sort_uint64(size, keys, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+
+        clock_gettime(CLOCK_MONOTONIC, &t1);
+        fprintf(stderr, "%'.6f seconds (%'.1f MB/s)\n",
+                timespec_duration(t0, t1),
+                1.0e-6 * (size * sizeof(*keys)) / timespec_duration(t0, t1));
+
+        free(sorting_permutation);
+        free(keys);
+    }
+
+    /*
+     * signed integer keys.
+     */
+
+    {
+        int err;
+        int64_t size = 5;
+        int keys[5] = {0,255,-30,1,-2};
+        int64_t permutation[5];
+        err = radix_sort_int(size, keys, permutation);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(-30, keys[0]);
+        TEST_ASSERT_EQ( -2, keys[1]);
+        TEST_ASSERT_EQ(  0, keys[2]);
+        TEST_ASSERT_EQ(  1, keys[3]);
+        TEST_ASSERT_EQ(255, keys[4]);
+        TEST_ASSERT_EQ(2, permutation[0]);
+        TEST_ASSERT_EQ(4, permutation[1]);
+        TEST_ASSERT_EQ(0, permutation[2]);
+        TEST_ASSERT_EQ(3, permutation[3]);
+        TEST_ASSERT_EQ(1, permutation[4]);
+    }
+
+    {
+        int err;
+        int64_t size = 5;
+        int keys[5] = {25820, -24732, -1352, 34041, 38784};
+        int64_t permutation[5];
+        err = radix_sort_int(size, keys, permutation);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(-24732, keys[0]);
+        TEST_ASSERT_EQ( -1352, keys[1]);
+        TEST_ASSERT_EQ( 25820, keys[2]);
+        TEST_ASSERT_EQ( 34041, keys[3]);
+        TEST_ASSERT_EQ( 38784, keys[4]);
+        TEST_ASSERT_EQ(2, permutation[0]);
+        TEST_ASSERT_EQ(0, permutation[1]);
+        TEST_ASSERT_EQ(1, permutation[2]);
+        TEST_ASSERT_EQ(3, permutation[3]);
+        TEST_ASSERT_EQ(4, permutation[4]);
+    }
+
+    {
+        int err;
+        int64_t size = 100;
+        int keys[100];
+        srand(415);
+        for (int i = 0; i < size; i++)
+            keys[i] = rand() - RAND_MAX/2;
+        err = radix_sort_int(size, keys, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        for (int i = 1; i < size; i++)
+            TEST_ASSERT_LE_MSG(
+                keys[i-1], keys[i],
+                "i=%d, keys[i-1]=%"PRIu32", keys[i]=%"PRIu32"",
+                i, keys[i-1], keys[i]);
+    }
+
+    {
+        int err;
+        int64_t size = 1000;
+        int * keys = malloc(size * sizeof(int));
+        TEST_ASSERT_NEQ_MSG(NULL, keys, "%s", strerror(errno));
+        srand(415);
+        for (int i = 0; i < size; i++)
+            keys[i] = rand() - RAND_MAX/2;
+        int64_t * sorting_permutation = malloc(size * sizeof(int64_t));
+        TEST_ASSERT_NEQ_MSG(NULL, sorting_permutation, "%s", strerror(errno));
+
+        struct timespec t0, t1;
+        fprintf(stderr, "radix_sort_int: ");
+        fflush(stderr);
+        clock_gettime(CLOCK_MONOTONIC, &t0);
+
+        err = radix_sort_int(size, keys, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
         clock_gettime(CLOCK_MONOTONIC, &t1);
