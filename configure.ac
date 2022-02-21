@@ -74,7 +74,7 @@ AS_IF([test "x$enable_bmi2" != "xno"], [
      fi])
   ])
 AC_SUBST([X86_FEATURE_CFLAGS])
-CFLAGS="$CFLAGS $X86_FEATURE_CFLAGS"
+libmtx_CPPFLAGS="$libmtx_CPPFLAGS $X86_FEATURE_CFLAGS"
 
 dnl Check for C math library
 AC_SEARCH_LIBS([floor], [m])
