@@ -73,7 +73,7 @@ implementations may be used, such as the netlib reference BLAS,
 OpenBLAS, BLIS, and so on.
 
 @cindex zlib
-@item @emph{zlib} (@indicateurl{https://www.zlib.net/})
+@item @emph{zlib} (@indicateurl{https://www.zlib.net/}) (version 1.2.7.1 or newer)
 is needed for reading and writing gzip-compressed Matrix Market files.
 
 @cindex libpng
