@@ -1048,6 +1048,9 @@ int mtxfileordering_parse(
  * ‘N’ is the number of matrix columns, selects a vertex corresponding
  * to a column of the matrix.
  *
+ * The reordering is symmetric if the matrix is square, and
+ * unsymmetric otherwise.
+ *
  * If successful, this function returns ‘MTX_SUCCESS’, and the rows
  * and columns of ‘mtxfile’ have been reordered according to the
  * Reverse Cuthill-McKee algorithm. If ‘rowperm’ is not ‘NULL’, then
@@ -1062,6 +1065,7 @@ int mtxfile_reorder_rcm(
     int * rowperm,
     int * colperm,
     bool permute,
+    bool * symmetric,
     int * starting_vertex);
 
 /**
@@ -1075,6 +1079,11 @@ int mtxfile_reorder_rcm(
  * matrix. In this case, the array is used to store the permutation
  * for reordering the matrix rows. Similarly, ‘colperm’ is used to
  * store the permutation for reordering the matrix columns.
+ *
+ * If ‘symmetric’ is not ‘NULL’, then it is used to return whether or
+ * not the reordering is symmetric. That is, if the value returned in
+ * ‘symmetric’ is ‘true’ then ‘rowperm’ and ‘colperm’ are identical,
+ * and only one of them is needed.
  */
 int mtxfile_reorder(
     struct mtxfile * mtxfile,
@@ -1082,6 +1091,7 @@ int mtxfile_reorder(
     int * rowperm,
     int * colperm,
     bool permute,
+    bool * symmetric,
     int * rcm_starting_vertex);
 
 /*

@@ -121,7 +121,8 @@ static void program_options_print_help(
     fprintf(f, "\t\t\twhereas '%%d' must be used for integers. Flags, field width\n");
     fprintf(f, "\t\t\tand precision can optionally be specified, e.g., \"%%+3.1f\".\n");
     fprintf(f, "  --rowperm-path=FILE\tpath for outputting row permutation\n");
-    fprintf(f, "  --colperm-path=FILE\tpath for outputting column permutation\n");
+    fprintf(f, "  --colperm-path=FILE\tpath for outputting column permutation\n,\n");
+    fprintf(f, "\t\t\twhich is only used if the reordering not symmetric.");
     fprintf(f, "  --ordering=ORDERING\tordering to use: rcm (default: rcm).\n");
     fprintf(f, "  --rcm-starting-vertex=N\tstarting vertex for the RCM algorithm.\n");
     fprintf(f, "\t\t\tThe default value is 0, which means to choose automatically.\n");
@@ -509,10 +510,11 @@ int main(int argc, char *argv[])
     }
     int * colperm = &rowperm[num_rows];
 
+    bool symmetric;
     int rcm_starting_vertex = args.rcm_starting_vertex;
     err = mtxfile_reorder(
         &mtxfile, args.ordering, rowperm, colperm,
-        !args.quiet, &rcm_starting_vertex);
+        !args.quiet, &symmetric, &rcm_starting_vertex);
     if (err) {
         if (args.verbose > 0)
             fprintf(diagf, "\n");
@@ -654,7 +656,7 @@ int main(int argc, char *argv[])
     }
 
     /* Write the column permutation to a Matrix Market file. */
-    if (args.colperm_path) {
+    if (args.colperm_path && !symmetric) {
         struct mtxfile colperm_mtxfile;
         err = mtxfile_init_vector_array_integer_single(
             &colperm_mtxfile, mtxfile.size.num_columns, colperm);

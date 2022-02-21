@@ -4941,11 +4941,14 @@ int test_mtxfile_reorder_rcm(void)
             &mtxfile, mtxfile_general, num_rows, num_columns, size, srcdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
+        bool symmetric;
         int starting_vertex = 1;
         int rowperm[5] = {};
         int colperm[5] = {};
-        err = mtxfile_reorder_rcm(&mtxfile, rowperm, colperm, true, &starting_vertex);
+        err = mtxfile_reorder_rcm(
+            &mtxfile, rowperm, colperm, true, &symmetric, &starting_vertex);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(true, symmetric);
         TEST_ASSERT_EQ(5, rowperm[0]);
         TEST_ASSERT_EQ(3, rowperm[1]);
         TEST_ASSERT_EQ(4, rowperm[2]);
@@ -5007,11 +5010,14 @@ int test_mtxfile_reorder_rcm(void)
             &mtxfile, mtxfile_general, num_rows, num_columns, size, srcdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
+        bool symmetric;
         int starting_vertex = 1;
         int rowperm[5] = {};
         int colperm[5] = {};
-        err = mtxfile_reorder_rcm(&mtxfile, rowperm, colperm, true, &starting_vertex);
+        err = mtxfile_reorder_rcm(
+            &mtxfile, rowperm, colperm, true, &symmetric, &starting_vertex);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(true, symmetric);
         TEST_ASSERT_EQ(5, rowperm[0]);
         TEST_ASSERT_EQ(3, rowperm[1]);
         TEST_ASSERT_EQ(4, rowperm[2]);
@@ -5061,11 +5067,14 @@ int test_mtxfile_reorder_rcm(void)
             &mtxfile, mtxfile_general, num_rows, num_columns, size, srcdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
+        bool symmetric;
         int starting_vertex = 1;
         int rowperm[5] = {};
         int colperm[5] = {};
-        err = mtxfile_reorder_rcm(&mtxfile, rowperm, colperm, true, &starting_vertex);
+        err = mtxfile_reorder_rcm(
+            &mtxfile, rowperm, colperm, true, &symmetric, &starting_vertex);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(true, symmetric);
         TEST_ASSERT_EQ(5, rowperm[0]);
         TEST_ASSERT_EQ(4, rowperm[1]);
         TEST_ASSERT_EQ(3, rowperm[2]);
@@ -5112,10 +5121,13 @@ int test_mtxfile_reorder_rcm(void)
             &mtxfile, mtxfile_general, num_rows, num_columns, size, srcdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
+        bool symmetric;
         int starting_vertex = 1;
         int rowperm[3] = {};
         int colperm[2] = {};
-        err = mtxfile_reorder_rcm(&mtxfile, rowperm, colperm, true, &starting_vertex);
+        err = mtxfile_reorder_rcm(
+            &mtxfile, rowperm, colperm, true, &symmetric, &starting_vertex);
+        TEST_ASSERT_EQ(false, symmetric);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(3, rowperm[0]);
         TEST_ASSERT_EQ(2, rowperm[1]);
