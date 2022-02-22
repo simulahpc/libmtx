@@ -1323,7 +1323,7 @@ Similarly, each part in the same block column @code{q} must have the
 same number of columns. Finally, for each block column @code{q}, the
 sum of @samp{srcs[p*Q+q]->size.num_rows} for @samp{p=0,1,...,P-1} must
 be equal to @samp{rowpart->size}. Likewise, for each block row
-@code{p}, the sum of @samp{srcs[p*Q+q]->size.num_rows} for
+@code{p}, the sum of @samp{srcs[p*Q+q]->size.num_columns} for
 @samp{q=0,1,...,Q-1} must be equal to @samp{colpart->size}.
 
 @node Reorder

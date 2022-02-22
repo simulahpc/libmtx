@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-02-18
+ * Last modified: 2022-02-22
  *
  * Data structures for matrices.
  */
@@ -27,6 +27,7 @@
 #include <libmtx/matrix/matrix.h>
 #include <libmtx/mtxfile/mtxfile.h>
 #include <libmtx/precision.h>
+#include <libmtx/util/partition.h>
 
 #ifdef LIBMTX_HAVE_LIBZ
 #include <zlib.h>
@@ -864,6 +865,96 @@ int mtxmatrix_nzcols(
     } else if (matrix->type == mtxmatrix_coordinate) {
         return mtxmatrix_coordinate_nzcols(
             &matrix->storage.coordinate, num_nonzero_columns, size, nonzero_columns);
+    } else {
+        return MTX_ERR_INVALID_MATRIX_TYPE;
+    }
+}
+
+/*
+ * Partitioning
+ */
+
+/**
+ * ‘mtxmatrix_partition()’ partitions a matrix into blocks according
+ * to the given row and column partitions.
+ *
+ * The partitions ‘rowpart’ or ‘colpart’ are allowed to be ‘NULL’, in
+ * which case a trivial, singleton partition is used for the rows or
+ * columns, respectively.
+ *
+ * Otherwise, ‘rowpart’ and ‘colpart’ must partition the rows and
+ * columns of the matrix ‘src’, respectively. That is, ‘rowpart->size’
+ * must be equal to the number of matrix rows, and ‘colpart->size’
+ * must be equal to the number of matrix columns.
+ *
+ * The argument ‘dsts’ is an array that must have enough storage for
+ * ‘P*Q’ values of type ‘struct mtxmatrix’, where ‘P’ is the number of
+ * row parts, ‘rowpart->num_parts’, and ‘Q’ is the number of column
+ * parts, ‘colpart->num_parts’. Note that the ‘r’th part corresponds
+ * to a row part ‘p’ and column part ‘q’, such that ‘r=p*Q+q’. Thus,
+ * the ‘r’th entry of ‘dsts’ is the submatrix corresponding to the
+ * ‘p’th row and ‘q’th column of the 2D partitioning.
+ *
+ * The user is responsible for freeing storage allocated for each
+ * matrix in the ‘dsts’ array.
+ */
+int mtxmatrix_partition(
+    struct mtxmatrix * dsts,
+    const struct mtxmatrix * src,
+    const struct mtxpartition * rowpart,
+    const struct mtxpartition * colpart)
+{
+    if (src->type == mtxmatrix_array) {
+        return mtxmatrix_array_partition(
+            dsts, &src->storage.array, rowpart, colpart);
+    } else if (src->type == mtxmatrix_coordinate) {
+        return mtxmatrix_coordinate_partition(
+            dsts, &src->storage.coordinate, rowpart, colpart);
+    } else {
+        return MTX_ERR_INVALID_MATRIX_TYPE;
+    }
+}
+
+/**
+ * ‘mtxmatrix_join()’ joins together matrices representing compatible
+ * blocks of a partitioned matrix to form a larger matrix.
+ *
+ * The argument ‘srcs’ is logically arranged as a two-dimensional
+ * array of size ‘P*Q’, where ‘P’ is the number of row parts
+ * (‘rowpart->num_parts’) and ‘Q’ is the number of column parts
+ * (‘colpart->num_parts’).  Note that the ‘r’th part corresponds to a
+ * row part ‘p’ and column part ‘q’, such that ‘r=p*Q+q’. Thus, the
+ * ‘r’th entry of ‘srcs’ is the submatrix corresponding to the ‘p’th
+ * row and ‘q’th column of the 2D partitioning.
+ *
+ * Moreover, the blocks must be compatible, which means that each part
+ * in the same block row ‘p’, must have the same number of rows.
+ * Similarly, each part in the same block column ‘q’ must have the
+ * same number of columns. Finally, for each block column ‘q’, the sum
+ * of the number of rows of ‘srcs[p*Q+q]’ for ‘p=0,1,...,P-1’ must be
+ * equal to ‘rowpart->size’. Likewise, for each block row ‘p’, the sum
+ * of the number of columns of ‘srcs[p*Q+q]’ for ‘q=0,1,...,Q-1’ must
+ * be equal to ‘colpart->size’.
+ */
+int mtxmatrix_join(
+    struct mtxmatrix * dst,
+    const struct mtxmatrix * srcs,
+    const struct mtxpartition * rowpart,
+    const struct mtxpartition * colpart)
+{
+    int num_row_parts = rowpart ? rowpart->num_parts : 1;
+    int num_col_parts = colpart ? colpart->num_parts : 1;
+    int num_parts = num_row_parts * num_col_parts;
+    if (num_parts <= 0)
+        return MTX_SUCCESS;
+    if (srcs[0].type == mtxmatrix_array) {
+        dst->type = mtxmatrix_array;
+        return mtxmatrix_array_join(
+            &dst->storage.array, srcs, rowpart, colpart);
+    } else if (srcs[0].type == mtxmatrix_coordinate) {
+        dst->type = mtxmatrix_coordinate;
+        return mtxmatrix_coordinate_join(
+            &dst->storage.coordinate, srcs, rowpart, colpart);
     } else {
         return MTX_ERR_INVALID_MATRIX_TYPE;
     }

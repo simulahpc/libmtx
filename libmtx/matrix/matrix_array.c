@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-02-18
+ * Last modified: 2022-02-22
  *
  * Data structures for matrices in array format.
  */
@@ -24,10 +24,12 @@
 #include <libmtx/libmtx-config.h>
 
 #include <libmtx/error.h>
-#include <libmtx/precision.h>
-#include <libmtx/mtxfile/mtxfile.h>
 #include <libmtx/field.h>
+#include <libmtx/matrix/matrix.h>
 #include <libmtx/matrix/matrix_array.h>
+#include <libmtx/mtxfile/mtxfile.h>
+#include <libmtx/precision.h>
+#include <libmtx/util/partition.h>
 #include <libmtx/vector/vector.h>
 #include <libmtx/vector/vector_array.h>
 
@@ -532,6 +534,136 @@ int mtxmatrix_array_nzcols(
         for (int j = 0; j < matrix->num_columns; j++)
             nonzero_columns[j] = j;
     }
+    return MTX_SUCCESS;
+}
+
+
+/*
+ * Partitioning
+ */
+
+/**
+ * ‘mtxmatrix_array_partition()’ partitions a matrix into blocks
+ * according to the given row and column partitions.
+ *
+ * The partitions ‘rowpart’ or ‘colpart’ are allowed to be ‘NULL’, in
+ * which case a trivial, singleton partition is used for the rows or
+ * columns, respectively.
+ *
+ * Otherwise, ‘rowpart’ and ‘colpart’ must partition the rows and
+ * columns of the matrix ‘src’, respectively. That is, ‘rowpart->size’
+ * must be equal to the number of matrix rows, and ‘colpart->size’
+ * must be equal to the number of matrix columns.
+ *
+ * The argument ‘dsts’ is an array that must have enough storage for
+ * ‘P*Q’ values of type ‘struct mtxmatrix’, where ‘P’ is the number of
+ * row parts, ‘rowpart->num_parts’, and ‘Q’ is the number of column
+ * parts, ‘colpart->num_parts’. Note that the ‘r’th part corresponds
+ * to a row part ‘p’ and column part ‘q’, such that ‘r=p*Q+q’. Thus,
+ * the ‘r’th entry of ‘dsts’ is the submatrix corresponding to the
+ * ‘p’th row and ‘q’th column of the 2D partitioning.
+ *
+ * The user is responsible for freeing storage allocated for each
+ * matrix in the ‘dsts’ array.
+ */
+int mtxmatrix_array_partition(
+    struct mtxmatrix * dsts,
+    const struct mtxmatrix_array * src,
+    const struct mtxpartition * rowpart,
+    const struct mtxpartition * colpart)
+{
+    int err;
+    int num_row_parts = rowpart ? rowpart->num_parts : 1;
+    int num_col_parts = colpart ? colpart->num_parts : 1;
+    int num_parts = num_row_parts * num_col_parts;
+
+    struct mtxfile mtxfile;
+    err = mtxmatrix_array_to_mtxfile(&mtxfile, src, mtxfile_array);
+    if (err) return err;
+
+    struct mtxfile * dstmtxfiles = malloc(sizeof(struct mtxfile) * num_parts);
+    if (!dstmtxfiles) return MTX_ERR_ERRNO;
+
+    err = mtxfile_partition(dstmtxfiles, &mtxfile, rowpart, colpart);
+    if (err) {
+        free(dstmtxfiles);
+        return err;
+    }
+
+    for (int p = 0; p < num_parts; p++) {
+        dsts[p].type = mtxmatrix_array;
+        err = mtxmatrix_array_from_mtxfile(
+            &dsts[p].storage.array, &dstmtxfiles[p]);
+        if (err) {
+            for (int q = p; q < num_parts; q++)
+                mtxfile_free(&dstmtxfiles[q]);
+            free(dstmtxfiles);
+            return err;
+        }
+        mtxfile_free(&dstmtxfiles[p]);
+    }
+    free(dstmtxfiles);
+    return MTX_SUCCESS;
+}
+
+/**
+ * ‘mtxmatrix_array_join()’ joins together matrices representing
+ * compatible blocks of a partitioned matrix to form a larger matrix.
+ *
+ * The argument ‘srcs’ is logically arranged as a two-dimensional
+ * array of size ‘P*Q’, where ‘P’ is the number of row parts
+ * (‘rowpart->num_parts’) and ‘Q’ is the number of column parts
+ * (‘colpart->num_parts’).  Note that the ‘r’th part corresponds to a
+ * row part ‘p’ and column part ‘q’, such that ‘r=p*Q+q’. Thus, the
+ * ‘r’th entry of ‘srcs’ is the submatrix corresponding to the ‘p’th
+ * row and ‘q’th column of the 2D partitioning.
+ *
+ * Moreover, the blocks must be compatible, which means that each part
+ * in the same block row ‘p’, must have the same number of rows.
+ * Similarly, each part in the same block column ‘q’ must have the
+ * same number of columns. Finally, for each block column ‘q’, the sum
+ * of the number of rows of ‘srcs[p*Q+q]’ for ‘p=0,1,...,P-1’ must be
+ * equal to ‘rowpart->size’. Likewise, for each block row ‘p’, the sum
+ * of the number of columns of ‘srcs[p*Q+q]’ for ‘q=0,1,...,Q-1’ must
+ * be equal to ‘colpart->size’.
+ */
+int mtxmatrix_array_join(
+    struct mtxmatrix_array * dst,
+    const struct mtxmatrix * srcs,
+    const struct mtxpartition * rowpart,
+    const struct mtxpartition * colpart)
+{
+    int err;
+    int num_row_parts = rowpart ? rowpart->num_parts : 1;
+    int num_col_parts = colpart ? colpart->num_parts : 1;
+    int num_parts = num_row_parts * num_col_parts;
+
+    struct mtxfile * srcmtxfiles = malloc(sizeof(struct mtxfile) * num_parts);
+    if (!srcmtxfiles) return MTX_ERR_ERRNO;
+    for (int p = 0; p < num_parts; p++) {
+        err = mtxmatrix_to_mtxfile(&srcmtxfiles[p], &srcs[p], mtxfile_array);
+        if (err) {
+            for (int q = p-1; q >= 0; q--)
+                mtxfile_free(&srcmtxfiles[q]);
+            free(srcmtxfiles);
+            return err;
+        }
+    }
+
+    struct mtxfile dstmtxfile;
+    err = mtxfile_join(&dstmtxfile, srcmtxfiles, rowpart, colpart);
+    if (err) {
+        for (int p = 0; p < num_parts; p++)
+            mtxfile_free(&srcmtxfiles[p]);
+        free(srcmtxfiles);
+        return err;
+    }
+    for (int p = 0; p < num_parts; p++)
+        mtxfile_free(&srcmtxfiles[p]);
+    free(srcmtxfiles);
+
+    err = mtxmatrix_array_from_mtxfile(dst, &dstmtxfile);
+    if (err) return err;
     return MTX_SUCCESS;
 }
 

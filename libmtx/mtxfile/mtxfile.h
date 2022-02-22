@@ -939,8 +939,8 @@ int mtxfile_partition(
  * same number of columns. Finally, for each block column ‘q’, the sum
  * of ‘srcs[p*Q+q]->size.num_rows’ for ‘p=0,1,...,P-1’ must be equal
  * to ‘rowpart->size’. Likewise, for each block row ‘p’, the sum of
- * ‘srcs[p*Q+q]->size.num_rows’ for ‘q=0,1,...,Q-1’ must be equal to
- * ‘colpart->size’.
+ * ‘srcs[p*Q+q]->size.num_columns’ for ‘q=0,1,...,Q-1’ must be equal
+ * to ‘colpart->size’.
  */
 int mtxfile_join(
     struct mtxfile * dst,

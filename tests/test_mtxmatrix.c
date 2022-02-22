@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-01-21
+ * Last modified: 2022-02-22
  *
  * Unit tests for matrices.
  */
@@ -25,8 +25,9 @@
 
 #include <libmtx/error.h>
 #include <libmtx/matrix/matrix.h>
-#include <libmtx/vector/vector.h>
 #include <libmtx/mtxfile/mtxfile.h>
+#include <libmtx/util/partition.h>
+#include <libmtx/vector/vector.h>
 
 #include <errno.h>
 #include <unistd.h>
@@ -1316,6 +1317,242 @@ int test_mtxmatrix_to_mtxfile(void)
         }
         mtxfile_free(&mtxfile);
         mtxmatrix_free(&A);
+    }
+    return TEST_SUCCESS;
+}
+
+/**
+ * ‘test_mtxmatrix_partition_array()’ tests partitioning matrices in
+ * array format.
+ */
+int test_mtxmatrix_partition_array(void)
+{
+    int err;
+
+    {
+        struct mtxmatrix src;
+        int num_rows = 3;
+        int num_columns = 3;
+        float srcdata[] = {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0, 8.0f, 9.0f};
+        err = mtxmatrix_init_array_real_single(&src, num_rows, num_columns, srcdata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+
+        int num_row_parts = 2;
+        enum mtxpartitioning rowpart_type = mtx_block;
+        struct mtxpartition rowpart;
+        err = mtxpartition_init(
+            &rowpart, rowpart_type, num_rows, num_row_parts, NULL, 0, NULL, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+
+        const int num_parts = num_row_parts;
+        struct mtxmatrix dsts[num_parts];
+        err = mtxmatrix_partition(dsts, &src, &rowpart, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        {
+            TEST_ASSERT_EQ(mtxmatrix_array, dsts[0].type);
+            const struct mtxmatrix_array * A = &dsts[0].storage.array;
+            TEST_ASSERT_EQ(mtx_field_real, A->field);
+            TEST_ASSERT_EQ(mtx_single, A->precision);
+            TEST_ASSERT_EQ(2, A->num_rows);
+            TEST_ASSERT_EQ(3, A->num_columns);
+            TEST_ASSERT_EQ(6, A->size);
+            TEST_ASSERT_EQ(A->data.real_single[0], 1.0f);
+            TEST_ASSERT_EQ(A->data.real_single[1], 2.0f);
+            TEST_ASSERT_EQ(A->data.real_single[2], 3.0f);
+            TEST_ASSERT_EQ(A->data.real_single[3], 4.0f);
+            TEST_ASSERT_EQ(A->data.real_single[4], 5.0f);
+            TEST_ASSERT_EQ(A->data.real_single[5], 6.0f);
+            mtxmatrix_free(&dsts[0]);
+        }
+        {
+            TEST_ASSERT_EQ(mtxmatrix_array, dsts[1].type);
+            const struct mtxmatrix_array * A = &dsts[1].storage.array;
+            TEST_ASSERT_EQ(mtx_field_real, A->field);
+            TEST_ASSERT_EQ(mtx_single, A->precision);
+            TEST_ASSERT_EQ(1, A->num_rows);
+            TEST_ASSERT_EQ(3, A->num_columns);
+            TEST_ASSERT_EQ(3, A->size);
+            TEST_ASSERT_EQ(A->data.real_single[0], 7.0f);
+            TEST_ASSERT_EQ(A->data.real_single[1], 8.0f);
+            TEST_ASSERT_EQ(A->data.real_single[2], 9.0f);
+            mtxmatrix_free(&dsts[1]);
+        }
+        mtxpartition_free(&rowpart);
+        mtxmatrix_free(&src);
+    }
+    return TEST_SUCCESS;
+}
+
+/**
+ * ‘test_mtxmatrix_partition_coordinate()’ tests partitioning matrices
+ * in coordinate format.
+ */
+int test_mtxmatrix_partition_coordinate(void)
+{
+    int err;
+
+    {
+        struct mtxmatrix src;
+        int num_rows = 3;
+        int num_columns = 3;
+        int nnz = 9;
+        int rowidx[] = {0, 0, 0, 1, 1, 1, 2, 2, 2};
+        int colidx[] = {0, 1, 2, 0, 1, 2, 0, 1, 2};
+        err = mtxmatrix_init_coordinate_pattern(
+            &src, num_rows, num_columns, nnz, rowidx, colidx);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+
+        int num_row_parts = 2;
+        enum mtxpartitioning rowpart_type = mtx_block;
+        struct mtxpartition rowpart;
+        err = mtxpartition_init(
+            &rowpart, rowpart_type, num_rows, num_row_parts, NULL, 0, NULL, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+
+        const int num_parts = num_row_parts;
+        struct mtxmatrix dsts[num_parts];
+        err = mtxmatrix_partition(dsts, &src, &rowpart, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        {
+            TEST_ASSERT_EQ(mtxmatrix_coordinate, dsts[0].type);
+            const struct mtxmatrix_coordinate * A = &dsts[0].storage.coordinate;
+            TEST_ASSERT_EQ(mtx_field_pattern, A->field);
+            TEST_ASSERT_EQ(2, A->num_rows);
+            TEST_ASSERT_EQ(3, A->num_columns);
+            TEST_ASSERT_EQ(6, A->num_nonzeros);
+            TEST_ASSERT_EQ(A->rowidx[0], 0); TEST_ASSERT_EQ(A->colidx[0], 0);
+            TEST_ASSERT_EQ(A->rowidx[1], 0); TEST_ASSERT_EQ(A->colidx[1], 1);
+            TEST_ASSERT_EQ(A->rowidx[2], 0); TEST_ASSERT_EQ(A->colidx[2], 2);
+            TEST_ASSERT_EQ(A->rowidx[3], 1); TEST_ASSERT_EQ(A->colidx[3], 0);
+            TEST_ASSERT_EQ(A->rowidx[4], 1); TEST_ASSERT_EQ(A->colidx[4], 1);
+            TEST_ASSERT_EQ(A->rowidx[5], 1); TEST_ASSERT_EQ(A->colidx[5], 2);
+            mtxmatrix_free(&dsts[0]);
+        }
+        {
+            TEST_ASSERT_EQ(mtxmatrix_coordinate, dsts[1].type);
+            const struct mtxmatrix_coordinate * A = &dsts[1].storage.coordinate;
+            TEST_ASSERT_EQ(mtx_field_pattern, A->field);
+            TEST_ASSERT_EQ(1, A->num_rows);
+            TEST_ASSERT_EQ(3, A->num_columns);
+            TEST_ASSERT_EQ(3, A->num_nonzeros);
+            TEST_ASSERT_EQ(A->rowidx[0], 0); TEST_ASSERT_EQ(A->colidx[0], 0);
+            TEST_ASSERT_EQ(A->rowidx[1], 0); TEST_ASSERT_EQ(A->colidx[1], 1);
+            TEST_ASSERT_EQ(A->rowidx[2], 0); TEST_ASSERT_EQ(A->colidx[2], 2);
+            mtxmatrix_free(&dsts[1]);
+        }
+        mtxpartition_free(&rowpart);
+        mtxmatrix_free(&src);
+    }
+    return TEST_SUCCESS;
+}
+
+/**
+ * ‘test_mtxmatrix_join_array()’ tests joining matrices in
+ * array format.
+ */
+int test_mtxmatrix_join_array(void)
+{
+    int err;
+
+    {
+        struct mtxmatrix srcs[2];
+        int num_rows[] = {2, 1};
+        int num_columns[] = {3, 3};
+        float srcdata0[] = {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f};
+        float srcdata1[] = {7.0, 8.0f, 9.0f};
+        err = mtxmatrix_init_array_real_single(&srcs[0], num_rows[0], num_columns[0], srcdata0);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        err = mtxmatrix_init_array_real_single(&srcs[1], num_rows[1], num_columns[1], srcdata1);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+
+        int num_row_parts = 2;
+        enum mtxpartitioning rowpart_type = mtx_block;
+        struct mtxpartition rowpart;
+        err = mtxpartition_init(
+            &rowpart, rowpart_type, num_rows[0]+num_rows[1], num_row_parts, NULL, 0, NULL, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+
+        const int num_parts = num_row_parts;
+        struct mtxmatrix dst;
+        err = mtxmatrix_join(&dst, srcs, &rowpart, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(mtxmatrix_array, dst.type);
+        const struct mtxmatrix_array * A = &dst.storage.array;
+        TEST_ASSERT_EQ(mtx_field_real, A->field);
+        TEST_ASSERT_EQ(mtx_single, A->precision);
+        TEST_ASSERT_EQ(3, A->num_rows);
+        TEST_ASSERT_EQ(3, A->num_columns);
+        TEST_ASSERT_EQ(9, A->size);
+        TEST_ASSERT_EQ(A->data.real_single[0], 1.0f);
+        TEST_ASSERT_EQ(A->data.real_single[1], 2.0f);
+        TEST_ASSERT_EQ(A->data.real_single[2], 3.0f);
+        TEST_ASSERT_EQ(A->data.real_single[3], 4.0f);
+        TEST_ASSERT_EQ(A->data.real_single[4], 5.0f);
+        TEST_ASSERT_EQ(A->data.real_single[5], 6.0f);
+        TEST_ASSERT_EQ(A->data.real_single[6], 7.0f);
+        TEST_ASSERT_EQ(A->data.real_single[7], 8.0f);
+        TEST_ASSERT_EQ(A->data.real_single[8], 9.0f);
+        mtxmatrix_free(&dst);
+        mtxpartition_free(&rowpart);
+        mtxmatrix_free(&srcs[1]);
+        mtxmatrix_free(&srcs[0]);
+    }
+    return TEST_SUCCESS;
+}
+
+/**
+ * ‘test_mtxmatrix_join_coordinate()’ tests joining matrices
+ * in coordinate format.
+ */
+int test_mtxmatrix_join_coordinate(void)
+{
+    int err;
+
+    {
+        struct mtxmatrix srcs[2];
+        int num_rows[] = {2, 1};
+        int num_columns[] = {3, 3};
+        int nnz[] = {6, 3};
+        int rowidx0[] = {0, 0, 0, 1, 1, 1};
+        int colidx0[] = {0, 1, 2, 0, 1, 2};
+        int rowidx1[] = {0, 0, 0};
+        int colidx1[] = {0, 1, 2};
+        err = mtxmatrix_init_coordinate_pattern(
+            &srcs[0], num_rows[0], num_columns[0], nnz[0], rowidx0, colidx0);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        err = mtxmatrix_init_coordinate_pattern(
+            &srcs[1], num_rows[1], num_columns[1], nnz[1], rowidx1, colidx1);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+
+        int num_row_parts = 2;
+        enum mtxpartitioning rowpart_type = mtx_block;
+        struct mtxpartition rowpart;
+        err = mtxpartition_init(
+            &rowpart, rowpart_type, num_rows[0]+num_rows[1], num_row_parts, NULL, 0, NULL, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+
+        struct mtxmatrix dst;
+        err = mtxmatrix_join(&dst, srcs, &rowpart, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(mtxmatrix_coordinate, dst.type);
+        const struct mtxmatrix_coordinate * A = &dst.storage.coordinate;
+        TEST_ASSERT_EQ(mtx_field_pattern, A->field);
+        TEST_ASSERT_EQ(3, A->num_rows);
+        TEST_ASSERT_EQ(3, A->num_columns);
+        TEST_ASSERT_EQ(9, A->num_nonzeros);
+        TEST_ASSERT_EQ(A->rowidx[0], 0); TEST_ASSERT_EQ(A->colidx[0], 0);
+        TEST_ASSERT_EQ(A->rowidx[1], 0); TEST_ASSERT_EQ(A->colidx[1], 1);
+        TEST_ASSERT_EQ(A->rowidx[2], 0); TEST_ASSERT_EQ(A->colidx[2], 2);
+        TEST_ASSERT_EQ(A->rowidx[3], 1); TEST_ASSERT_EQ(A->colidx[3], 0);
+        TEST_ASSERT_EQ(A->rowidx[4], 1); TEST_ASSERT_EQ(A->colidx[4], 1);
+        TEST_ASSERT_EQ(A->rowidx[5], 1); TEST_ASSERT_EQ(A->colidx[5], 2);
+        TEST_ASSERT_EQ(A->rowidx[6], 2); TEST_ASSERT_EQ(A->colidx[6], 0);
+        TEST_ASSERT_EQ(A->rowidx[7], 2); TEST_ASSERT_EQ(A->colidx[7], 1);
+        TEST_ASSERT_EQ(A->rowidx[8], 2); TEST_ASSERT_EQ(A->colidx[8], 2);
+        mtxmatrix_free(&dst);
+        mtxpartition_free(&rowpart);
+        mtxmatrix_free(&srcs[1]);
+        mtxmatrix_free(&srcs[0]);
     }
     return TEST_SUCCESS;
 }
@@ -3108,6 +3345,10 @@ int main(int argc, char * argv[])
     TEST_SUITE_BEGIN("Running tests for matrices\n");
     TEST_RUN(test_mtxmatrix_from_mtxfile);
     TEST_RUN(test_mtxmatrix_to_mtxfile);
+    TEST_RUN(test_mtxmatrix_partition_array);
+    TEST_RUN(test_mtxmatrix_partition_coordinate);
+    TEST_RUN(test_mtxmatrix_join_array);
+    TEST_RUN(test_mtxmatrix_join_coordinate);
     TEST_RUN(test_mtxmatrix_gemv_array);
     TEST_RUN(test_mtxmatrix_gemv_coordinate);
     TEST_SUITE_END();
