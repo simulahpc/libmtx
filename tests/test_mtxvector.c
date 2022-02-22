@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-01-19
+ * Last modified: 2022-02-22
  *
  * Unit tests for vectors.
  */
@@ -24,8 +24,9 @@
 #include "test.h"
 
 #include <libmtx/error.h>
-#include <libmtx/vector/vector.h>
 #include <libmtx/mtxfile/mtxfile.h>
+#include <libmtx/util/partition.h>
+#include <libmtx/vector/vector.h>
 
 #include <errno.h>
 #include <unistd.h>
@@ -731,6 +732,209 @@ int test_mtxvector_to_mtxfile(void)
         }
         mtxfile_free(&mtxfile);
         mtxvector_free(&x);
+    }
+    return TEST_SUCCESS;
+}
+
+/**
+ * ‘test_mtxvector_partition()’ tests partitioning vectors.
+ */
+int test_mtxvector_partition(void)
+{
+    int err;
+
+    {
+        struct mtxvector src;
+        float srcdata[] = {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0, 8.0f, 9.0f};
+        int srcsize = sizeof(srcdata) / sizeof(*srcdata);
+        err = mtxvector_init_array_real_single(&src, srcsize, srcdata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+
+        int num_parts = 2;
+        enum mtxpartitioning parttype = mtx_block;
+        struct mtxpartition part;
+        err = mtxpartition_init(
+            &part, parttype, srcsize, num_parts, NULL, 0, NULL, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+
+        struct mtxvector dsts[num_parts];
+        err = mtxvector_partition(dsts, &src, &part);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        {
+            TEST_ASSERT_EQ(mtxvector_array, dsts[0].type);
+            const struct mtxvector_array * x = &dsts[0].storage.array;
+            TEST_ASSERT_EQ(mtx_field_real, x->field);
+            TEST_ASSERT_EQ(mtx_single, x->precision);
+            TEST_ASSERT_EQ(5, x->size);
+            TEST_ASSERT_EQ(x->data.real_single[0], 1.0f);
+            TEST_ASSERT_EQ(x->data.real_single[1], 2.0f);
+            TEST_ASSERT_EQ(x->data.real_single[2], 3.0f);
+            TEST_ASSERT_EQ(x->data.real_single[3], 4.0f);
+            TEST_ASSERT_EQ(x->data.real_single[4], 5.0f);
+            mtxvector_free(&dsts[0]);
+        }
+        {
+            TEST_ASSERT_EQ(mtxvector_array, dsts[1].type);
+            const struct mtxvector_array * x = &dsts[1].storage.array;
+            TEST_ASSERT_EQ(mtx_field_real, x->field);
+            TEST_ASSERT_EQ(mtx_single, x->precision);
+            TEST_ASSERT_EQ(4, x->size);
+            TEST_ASSERT_EQ(x->data.real_single[0], 6.0f);
+            TEST_ASSERT_EQ(x->data.real_single[1], 7.0f);
+            TEST_ASSERT_EQ(x->data.real_single[2], 8.0f);
+            TEST_ASSERT_EQ(x->data.real_single[3], 9.0f);
+            mtxvector_free(&dsts[1]);
+        }
+        mtxpartition_free(&part);
+        mtxvector_free(&src);
+    }
+
+    {
+        int srcsize = 12;
+        int srcnnz = 5;
+        struct mtxvector src;
+        int srcidx[] = {0, 2, 4, 6, 8};
+        int64_t srcdata[] = {1, 3, 5, 7, 9};
+        err = mtxvector_init_coordinate_integer_double(
+            &src, srcsize, srcnnz, srcidx, srcdata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+
+        int num_parts = 2;
+        enum mtxpartitioning parttype = mtx_block;
+        struct mtxpartition part;
+        err = mtxpartition_init(
+            &part, parttype, srcsize, num_parts, NULL, 0, NULL, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+
+        struct mtxvector dsts[num_parts];
+        err = mtxvector_partition(dsts, &src, &part);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        {
+            TEST_ASSERT_EQ(mtxvector_coordinate, dsts[0].type);
+            const struct mtxvector_coordinate * x = &dsts[0].storage.coordinate;
+            TEST_ASSERT_EQ(mtx_field_integer, x->field);
+            TEST_ASSERT_EQ(mtx_double, x->precision);
+            TEST_ASSERT_EQ(6, x->size);
+            TEST_ASSERT_EQ(3, x->num_nonzeros);
+            TEST_ASSERT_EQ(x->indices[0], 0);
+            TEST_ASSERT_EQ(x->indices[1], 2);
+            TEST_ASSERT_EQ(x->indices[2], 4);
+            TEST_ASSERT_EQ(x->data.integer_double[0], 1);
+            TEST_ASSERT_EQ(x->data.integer_double[1], 3);
+            TEST_ASSERT_EQ(x->data.integer_double[2], 5);
+            mtxvector_free(&dsts[0]);
+        }
+        {
+            TEST_ASSERT_EQ(mtxvector_coordinate, dsts[1].type);
+            const struct mtxvector_coordinate * x = &dsts[1].storage.coordinate;
+            TEST_ASSERT_EQ(mtx_field_integer, x->field);
+            TEST_ASSERT_EQ(mtx_double, x->precision);
+            TEST_ASSERT_EQ(6, x->size);
+            TEST_ASSERT_EQ(2, x->num_nonzeros);
+            TEST_ASSERT_EQ(x->indices[0], 0);
+            TEST_ASSERT_EQ(x->indices[1], 2);
+            TEST_ASSERT_EQ(x->data.integer_double[0], 7);
+            TEST_ASSERT_EQ(x->data.integer_double[1], 9);
+            mtxvector_free(&dsts[1]);
+        }
+        mtxpartition_free(&part);
+        mtxvector_free(&src);
+    }
+    return TEST_SUCCESS;
+}
+
+/**
+ * ‘test_mtxvector_join()’ tests joining vectors.
+ */
+int test_mtxvector_join(void)
+{
+    int err;
+
+    {
+        struct mtxvector srcs[2];
+        int num_rows[] = {6, 3};
+        float srcdata0[] = {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f};
+        float srcdata1[] = {7.0, 8.0f, 9.0f};
+        err = mtxvector_init_array_real_single(&srcs[0], num_rows[0], srcdata0);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        err = mtxvector_init_array_real_single(&srcs[1], num_rows[1], srcdata1);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+
+        int num_parts = 2;
+        int64_t partsizes[] = {6, 3};
+        enum mtxpartitioning parttype = mtx_block;
+        struct mtxpartition part;
+        err = mtxpartition_init(
+            &part, parttype, num_rows[0]+num_rows[1],
+            num_parts, partsizes, 0, NULL, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+
+        struct mtxvector dst;
+        err = mtxvector_join(&dst, srcs, &part);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(mtxvector_array, dst.type);
+        const struct mtxvector_array * A = &dst.storage.array;
+        TEST_ASSERT_EQ(mtx_field_real, A->field);
+        TEST_ASSERT_EQ(mtx_single, A->precision);
+        TEST_ASSERT_EQ(9, A->size);
+        TEST_ASSERT_EQ(A->data.real_single[0], 1.0f);
+        TEST_ASSERT_EQ(A->data.real_single[1], 2.0f);
+        TEST_ASSERT_EQ(A->data.real_single[2], 3.0f);
+        TEST_ASSERT_EQ(A->data.real_single[3], 4.0f);
+        TEST_ASSERT_EQ(A->data.real_single[4], 5.0f);
+        TEST_ASSERT_EQ(A->data.real_single[5], 6.0f);
+        TEST_ASSERT_EQ(A->data.real_single[6], 7.0f);
+        TEST_ASSERT_EQ(A->data.real_single[7], 8.0f);
+        TEST_ASSERT_EQ(A->data.real_single[8], 9.0f);
+        mtxvector_free(&dst);
+        mtxpartition_free(&part);
+        mtxvector_free(&srcs[1]);
+        mtxvector_free(&srcs[0]);
+    }
+
+    {
+        struct mtxvector srcs[2];
+        int num_rows[] = {9, 3};
+        int nnz[] = {6, 3};
+        int idx0[] = {0, 1, 2, 3, 4, 5};
+        int idx1[] = {0, 1, 2};
+        err = mtxvector_init_coordinate_pattern(
+            &srcs[0], num_rows[0], nnz[0], idx0);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        err = mtxvector_init_coordinate_pattern(
+            &srcs[1], num_rows[1], nnz[1], idx1);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+
+        int num_row_parts = 2;
+        int64_t partsizes[] = {9, 3};
+        enum mtxpartitioning parttype = mtx_block;
+        struct mtxpartition part;
+        err = mtxpartition_init(
+            &part, parttype, num_rows[0]+num_rows[1], num_row_parts,
+            partsizes, 0, NULL, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+
+        struct mtxvector dst;
+        err = mtxvector_join(&dst, srcs, &part);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(mtxvector_coordinate, dst.type);
+        const struct mtxvector_coordinate * A = &dst.storage.coordinate;
+        TEST_ASSERT_EQ(mtx_field_pattern, A->field);
+        TEST_ASSERT_EQ(12, A->size);
+        TEST_ASSERT_EQ(9, A->num_nonzeros);
+        TEST_ASSERT_EQ(A->indices[0], 0);
+        TEST_ASSERT_EQ(A->indices[1], 1);
+        TEST_ASSERT_EQ(A->indices[2], 2);
+        TEST_ASSERT_EQ(A->indices[3], 3);
+        TEST_ASSERT_EQ(A->indices[4], 4);
+        TEST_ASSERT_EQ(A->indices[5], 5);
+        TEST_ASSERT_EQ(A->indices[6], 9);
+        TEST_ASSERT_EQ(A->indices[7],10);
+        TEST_ASSERT_EQ(A->indices[8],11);
+        mtxvector_free(&dst);
+        mtxpartition_free(&part);
+        mtxvector_free(&srcs[1]);
+        mtxvector_free(&srcs[0]);
     }
     return TEST_SUCCESS;
 }
@@ -2300,6 +2504,8 @@ int main(int argc, char * argv[])
     TEST_SUITE_BEGIN("Running tests for vectors\n");
     TEST_RUN(test_mtxvector_from_mtxfile);
     TEST_RUN(test_mtxvector_to_mtxfile);
+    TEST_RUN(test_mtxvector_partition);
+    TEST_RUN(test_mtxvector_join);
     TEST_RUN(test_mtxvector_dot);
     TEST_RUN(test_mtxvector_nrm2);
     TEST_RUN(test_mtxvector_asum);

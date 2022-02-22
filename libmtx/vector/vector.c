@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-01-19
+ * Last modified: 2022-02-22
  *
  * Data structures for vectors.
  */
@@ -24,9 +24,10 @@
 #include <libmtx/libmtx-config.h>
 
 #include <libmtx/error.h>
-#include <libmtx/vector/vector.h>
 #include <libmtx/mtxfile/mtxfile.h>
 #include <libmtx/precision.h>
+#include <libmtx/util/partition.h>
+#include <libmtx/vector/vector.h>
 
 #ifdef LIBMTX_HAVE_LIBZ
 #include <zlib.h>
@@ -848,6 +849,71 @@ int mtxvector_gzwrite(
     return MTX_SUCCESS;
 }
 #endif
+
+/*
+ * Partitioning
+ */
+
+/**
+ * ‘mtxvector_partition()’ partitions a vector into blocks according
+ * to the given partitioning.
+ *
+ * The partition ‘part’ is allowed to be ‘NULL’, in which case a
+ * trivial, singleton partition is used to partition the entries of
+ * the vector. Otherwise, ‘part’ must partition the entries of the
+ * vector ‘src’. That is, ‘part->size’ must be equal to the size of
+ * the vector.
+ *
+ * The argument ‘dsts’ is an array that must have enough storage for
+ * ‘P’ values of type ‘struct mtxvector’, where ‘P’ is the number of
+ * parts, ‘part->num_parts’.
+ *
+ * The user is responsible for freeing storage allocated for each
+ * vector in the ‘dsts’ array.
+ */
+int mtxvector_partition(
+    struct mtxvector * dsts,
+    const struct mtxvector * src,
+    const struct mtxpartition * part)
+{
+    if (src->type == mtxvector_array) {
+        return mtxvector_array_partition(
+            dsts, &src->storage.array, part);
+    } else if (src->type == mtxvector_coordinate) {
+        return mtxvector_coordinate_partition(
+            dsts, &src->storage.coordinate, part);
+    } else {
+        return MTX_ERR_INVALID_VECTOR_TYPE;
+    }
+}
+
+/**
+ * ‘mtxvector_join()’ joins together block vectors to form a larger
+ * vector.
+ *
+ * The argument ‘srcs’ is an array of size ‘P’, where ‘P’ is the
+ * number of parts in the partitioning (i.e, ‘part->num_parts’).
+ */
+int mtxvector_join(
+    struct mtxvector * dst,
+    const struct mtxvector * srcs,
+    const struct mtxpartition * part)
+{
+    int num_parts = part ? part->num_parts : 1;
+    if (num_parts <= 0)
+        return MTX_SUCCESS;
+    if (srcs[0].type == mtxvector_array) {
+        dst->type = mtxvector_array;
+        return mtxvector_array_join(
+            &dst->storage.array, srcs, part);
+    } else if (srcs[0].type == mtxvector_coordinate) {
+        dst->type = mtxvector_coordinate;
+        return mtxvector_coordinate_join(
+            &dst->storage.coordinate, srcs, part);
+    } else {
+        return MTX_ERR_INVALID_VECTOR_TYPE;
+    }
+}
 
 /*
  * Level 1 BLAS operations

@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-01-24
+ * Last modified: 2022-02-22
  *
  * Data structures for vectors in array format.
  */
@@ -27,8 +27,10 @@
 #include <libmtx/field.h>
 #include <libmtx/mtxfile/mtxfile.h>
 #include <libmtx/precision.h>
+#include <libmtx/util/partition.h>
 #include <libmtx/util/sort.h>
 #include <libmtx/vector/vector_array.h>
+#include <libmtx/vector/vector.h>
 
 #ifdef LIBMTX_HAVE_BLAS
 #include <cblas.h>
@@ -642,6 +644,105 @@ int mtxvector_array_to_mtxfile(
     } else {
         return MTX_ERR_INVALID_FIELD;
     }
+}
+
+/*
+ * Partitioning
+ */
+
+/**
+ * ‘mtxvector_array_partition()’ partitions a vector into blocks
+ * according to the given partitioning.
+ *
+ * The partition ‘part’ is allowed to be ‘NULL’, in which case a
+ * trivial, singleton partition is used to partition the entries of
+ * the vector. Otherwise, ‘part’ must partition the entries of the
+ * vector ‘src’. That is, ‘part->size’ must be equal to the size of
+ * the vector.
+ *
+ * The argument ‘dsts’ is an array that must have enough storage for
+ * ‘P’ values of type ‘struct mtxvector’, where ‘P’ is the number of
+ * parts, ‘part->num_parts’.
+ *
+ * The user is responsible for freeing storage allocated for each
+ * vector in the ‘dsts’ array.
+ */
+int mtxvector_array_partition(
+    struct mtxvector * dsts,
+    const struct mtxvector_array * src,
+    const struct mtxpartition * part)
+{
+    int err;
+    int num_parts = part ? part->num_parts : 1;
+    struct mtxfile mtxfile;
+    err = mtxvector_array_to_mtxfile(&mtxfile, src, mtxfile_array);
+    if (err) return err;
+
+    struct mtxfile * dstmtxfiles = malloc(sizeof(struct mtxfile) * num_parts);
+    if (!dstmtxfiles) return MTX_ERR_ERRNO;
+    err = mtxfile_partition(dstmtxfiles, &mtxfile, part, NULL);
+    if (err) {
+        free(dstmtxfiles);
+        return err;
+    }
+
+    for (int p = 0; p < num_parts; p++) {
+        dsts[p].type = mtxvector_array;
+        err = mtxvector_array_from_mtxfile(
+            &dsts[p].storage.array, &dstmtxfiles[p]);
+        if (err) {
+            for (int q = p; q < num_parts; q++)
+                mtxfile_free(&dstmtxfiles[q]);
+            free(dstmtxfiles);
+            return err;
+        }
+        mtxfile_free(&dstmtxfiles[p]);
+    }
+    free(dstmtxfiles);
+    return MTX_SUCCESS;
+}
+
+/**
+ * ‘mtxvector_array_join()’ joins together block vectors to form a
+ * larger vector.
+ *
+ * The argument ‘srcs’ is an array of size ‘P’, where ‘P’ is the
+ * number of parts in the partitioning (i.e, ‘part->num_parts’).
+ */
+int mtxvector_array_join(
+    struct mtxvector_array * dst,
+    const struct mtxvector * srcs,
+    const struct mtxpartition * part)
+{
+    int err;
+    int num_parts = part ? part->num_parts : 1;
+    struct mtxfile * srcmtxfiles = malloc(sizeof(struct mtxfile) * num_parts);
+    if (!srcmtxfiles) return MTX_ERR_ERRNO;
+    for (int p = 0; p < num_parts; p++) {
+        err = mtxvector_to_mtxfile(&srcmtxfiles[p], &srcs[p], mtxfile_array);
+        if (err) {
+            for (int q = p-1; q >= 0; q--)
+                mtxfile_free(&srcmtxfiles[q]);
+            free(srcmtxfiles);
+            return err;
+        }
+    }
+
+    struct mtxfile dstmtxfile;
+    err = mtxfile_join(&dstmtxfile, srcmtxfiles, part, NULL);
+    if (err) {
+        for (int p = 0; p < num_parts; p++)
+            mtxfile_free(&srcmtxfiles[p]);
+        free(srcmtxfiles);
+        return err;
+    }
+    for (int p = 0; p < num_parts; p++)
+        mtxfile_free(&srcmtxfiles[p]);
+    free(srcmtxfiles);
+
+    err = mtxvector_array_from_mtxfile(dst, &dstmtxfile);
+    if (err) return err;
+    return MTX_SUCCESS;
 }
 
 /*
