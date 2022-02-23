@@ -1023,6 +1023,7 @@ int mtxvector_coordinate_swap(
             float * ydata = y->data.real_single;
 #ifdef LIBMTX_HAVE_BLAS
             cblas_sswap(x->num_nonzeros, xdata, 1, ydata, 1);
+            if (mtxblaserror()) return MTX_ERR_BLAS;
 #else
             for (int64_t k = 0; k < x->num_nonzeros; k++) {
                 float z = ydata[k];
@@ -1035,6 +1036,7 @@ int mtxvector_coordinate_swap(
             double * ydata = y->data.real_double;
 #ifdef LIBMTX_HAVE_BLAS
             cblas_dswap(x->num_nonzeros, xdata, 1, ydata, 1);
+            if (mtxblaserror()) return MTX_ERR_BLAS;
 #else
             for (int64_t k = 0; k < x->num_nonzeros; k++) {
                 double z = ydata[k];
@@ -1051,6 +1053,7 @@ int mtxvector_coordinate_swap(
             float (* ydata)[2] = y->data.complex_single;
 #ifdef LIBMTX_HAVE_BLAS
             cblas_cswap(x->num_nonzeros, xdata, 1, ydata, 1);
+            if (mtxblaserror()) return MTX_ERR_BLAS;
 #else
             for (int64_t k = 0; k < x->num_nonzeros; k++) {
                 float z[2] = {ydata[k][0], ydata[k][1]};
@@ -1065,6 +1068,7 @@ int mtxvector_coordinate_swap(
             double (* ydata)[2] = y->data.complex_double;
 #ifdef LIBMTX_HAVE_BLAS
             cblas_zswap(x->num_nonzeros, xdata, 1, ydata, 1);
+            if (mtxblaserror()) return MTX_ERR_BLAS;
 #else
             for (int64_t k = 0; k < x->num_nonzeros; k++) {
                 double z[2] = {ydata[k][0], ydata[k][1]};
@@ -1126,6 +1130,7 @@ int mtxvector_coordinate_copy(
             float * ydata = y->data.real_single;
 #ifdef LIBMTX_HAVE_BLAS
             cblas_scopy(x->num_nonzeros, xdata, 1, ydata, 1);
+            if (mtxblaserror()) return MTX_ERR_BLAS;
 #else
             for (int64_t k = 0; k < x->num_nonzeros; k++)
                 ydata[k] = xdata[k];
@@ -1135,6 +1140,7 @@ int mtxvector_coordinate_copy(
             double * ydata = y->data.real_double;
 #ifdef LIBMTX_HAVE_BLAS
             cblas_dcopy(x->num_nonzeros, xdata, 1, ydata, 1);
+            if (mtxblaserror()) return MTX_ERR_BLAS;
 #else
             for (int64_t k = 0; k < x->num_nonzeros; k++)
                 ydata[k] = xdata[k];
@@ -1148,6 +1154,7 @@ int mtxvector_coordinate_copy(
             float (* ydata)[2] = y->data.complex_single;
 #ifdef LIBMTX_HAVE_BLAS
             cblas_ccopy(x->num_nonzeros, xdata, 1, ydata, 1);
+            if (mtxblaserror()) return MTX_ERR_BLAS;
 #else
             for (int64_t k = 0; k < x->num_nonzeros; k++) {
                 ydata[k][0] = xdata[k][0];
@@ -1159,6 +1166,7 @@ int mtxvector_coordinate_copy(
             double (* ydata)[2] = y->data.complex_double;
 #ifdef LIBMTX_HAVE_BLAS
             cblas_zcopy(x->num_nonzeros, xdata, 1, ydata, 1);
+            if (mtxblaserror()) return MTX_ERR_BLAS;
 #else
             for (int64_t k = 0; k < x->num_nonzeros; k++) {
                 ydata[k][0] = xdata[k][0];
@@ -1204,6 +1212,7 @@ int mtxvector_coordinate_sscal(
             float * xdata = x->data.real_single;
 #ifdef LIBMTX_HAVE_BLAS
             cblas_sscal(x->num_nonzeros, a, xdata, 1);
+            if (mtxblaserror()) return MTX_ERR_BLAS;
 #else
             for (int64_t k = 0; k < x->num_nonzeros; k++)
                 xdata[k] *= a;
@@ -1213,6 +1222,7 @@ int mtxvector_coordinate_sscal(
             double * xdata = x->data.real_double;
 #ifdef LIBMTX_HAVE_BLAS
             cblas_dscal(x->num_nonzeros, a, xdata, 1);
+            if (mtxblaserror()) return MTX_ERR_BLAS;
 #else
             for (int64_t k = 0; k < x->num_nonzeros; k++)
                 xdata[k] *= a;
@@ -1226,6 +1236,7 @@ int mtxvector_coordinate_sscal(
             float (* xdata)[2] = x->data.complex_single;
 #ifdef LIBMTX_HAVE_BLAS
             cblas_sscal(2*x->num_nonzeros, a, (float *) xdata, 1);
+            if (mtxblaserror()) return MTX_ERR_BLAS;
 #else
             for (int64_t k = 0; k < x->num_nonzeros; k++) {
                 xdata[k][0] *= a;
@@ -1237,6 +1248,7 @@ int mtxvector_coordinate_sscal(
             double (* xdata)[2] = x->data.complex_double;
 #ifdef LIBMTX_HAVE_BLAS
             cblas_dscal(2*x->num_nonzeros, a, (double *) xdata, 1);
+            if (mtxblaserror()) return MTX_ERR_BLAS;
 #else
             for (int64_t k = 0; k < x->num_nonzeros; k++) {
                 xdata[k][0] *= a;
@@ -1283,6 +1295,7 @@ int mtxvector_coordinate_dscal(
             float * xdata = x->data.real_single;
 #ifdef LIBMTX_HAVE_BLAS
             cblas_sscal(x->num_nonzeros, a, xdata, 1);
+            if (mtxblaserror()) return MTX_ERR_BLAS;
 #else
             for (int64_t k = 0; k < x->num_nonzeros; k++)
                 xdata[k] *= a;
@@ -1292,6 +1305,7 @@ int mtxvector_coordinate_dscal(
             double * xdata = x->data.real_double;
 #ifdef LIBMTX_HAVE_BLAS
             cblas_dscal(x->num_nonzeros, a, xdata, 1);
+            if (mtxblaserror()) return MTX_ERR_BLAS;
 #else
             for (int64_t k = 0; k < x->num_nonzeros; k++)
                 xdata[k] *= a;
@@ -1305,6 +1319,7 @@ int mtxvector_coordinate_dscal(
             float (* xdata)[2] = x->data.complex_single;
 #ifdef LIBMTX_HAVE_BLAS
             cblas_sscal(2*x->num_nonzeros, a, (float *) xdata, 1);
+            if (mtxblaserror()) return MTX_ERR_BLAS;
 #else
             for (int64_t k = 0; k < x->num_nonzeros; k++) {
                 xdata[k][0] *= a;
@@ -1316,6 +1331,7 @@ int mtxvector_coordinate_dscal(
             double (* xdata)[2] = x->data.complex_double;
 #ifdef LIBMTX_HAVE_BLAS
             cblas_dscal(2*x->num_nonzeros, a, (double *) xdata, 1);
+            if (mtxblaserror()) return MTX_ERR_BLAS;
 #else
             for (int64_t k = 0; k < x->num_nonzeros; k++) {
                 xdata[k][0] *= a;
@@ -1374,6 +1390,7 @@ int mtxvector_coordinate_saxpy(
             float * ydata = y->data.real_single;
 #ifdef LIBMTX_HAVE_BLAS
             cblas_saxpy(x->num_nonzeros, a, xdata, 1, ydata, 1);
+            if (mtxblaserror()) return MTX_ERR_BLAS;
 #else
             for (int64_t k = 0; k < x->num_nonzeros; k++)
                 ydata[k] += a*xdata[k];
@@ -1384,6 +1401,7 @@ int mtxvector_coordinate_saxpy(
             double * ydata = y->data.real_double;
 #ifdef LIBMTX_HAVE_BLAS
             cblas_daxpy(x->num_nonzeros, a, xdata, 1, ydata, 1);
+            if (mtxblaserror()) return MTX_ERR_BLAS;
 #else
             for (int64_t k = 0; k < x->num_nonzeros; k++)
                 ydata[k] += a*xdata[k];
@@ -1398,6 +1416,7 @@ int mtxvector_coordinate_saxpy(
             float (* ydata)[2] = y->data.complex_single;
 #ifdef LIBMTX_HAVE_BLAS
             cblas_saxpy(2*x->num_nonzeros, a, (const float *) xdata, 1, (float *) ydata, 1);
+            if (mtxblaserror()) return MTX_ERR_BLAS;
 #else
             for (int64_t k = 0; k < x->num_nonzeros; k++) {
                 ydata[k][0] += a*xdata[k][0];
@@ -1410,6 +1429,7 @@ int mtxvector_coordinate_saxpy(
             double (* ydata)[2] = y->data.complex_double;
 #ifdef LIBMTX_HAVE_BLAS
             cblas_daxpy(2*x->num_nonzeros, a, (const double *) xdata, 1, (double *) ydata, 1);
+            if (mtxblaserror()) return MTX_ERR_BLAS;
 #else
             for (int64_t k = 0; k < x->num_nonzeros; k++) {
                 ydata[k][0] += a*xdata[k][0];
@@ -1470,6 +1490,7 @@ int mtxvector_coordinate_daxpy(
             float * ydata = y->data.real_single;
 #ifdef LIBMTX_HAVE_BLAS
             cblas_saxpy(x->num_nonzeros, a, xdata, 1, ydata, 1);
+            if (mtxblaserror()) return MTX_ERR_BLAS;
 #else
             for (int64_t k = 0; k < x->num_nonzeros; k++)
                 ydata[k] += a*xdata[k];
@@ -1480,6 +1501,7 @@ int mtxvector_coordinate_daxpy(
             double * ydata = y->data.real_double;
 #ifdef LIBMTX_HAVE_BLAS
             cblas_daxpy(x->num_nonzeros, a, xdata, 1, ydata, 1);
+            if (mtxblaserror()) return MTX_ERR_BLAS;
 #else
             for (int64_t k = 0; k < x->num_nonzeros; k++)
                 ydata[k] += a*xdata[k];
@@ -1494,6 +1516,7 @@ int mtxvector_coordinate_daxpy(
             float (* ydata)[2] = y->data.complex_single;
 #ifdef LIBMTX_HAVE_BLAS
             cblas_saxpy(2*x->num_nonzeros, a, (const float *) xdata, 1, (float *) ydata, 1);
+            if (mtxblaserror()) return MTX_ERR_BLAS;
 #else
             for (int64_t k = 0; k < x->num_nonzeros; k++) {
                 ydata[k][0] += a*xdata[k][0];
@@ -1506,6 +1529,7 @@ int mtxvector_coordinate_daxpy(
             double (* ydata)[2] = y->data.complex_double;
 #ifdef LIBMTX_HAVE_BLAS
             cblas_daxpy(2*x->num_nonzeros, a, (const double *) xdata, 1, (double *) ydata, 1);
+            if (mtxblaserror()) return MTX_ERR_BLAS;
 #else
             for (int64_t k = 0; k < x->num_nonzeros; k++) {
                 ydata[k][0] += a*xdata[k][0];
@@ -1726,6 +1750,7 @@ int mtxvector_coordinate_sdot(
             const float * ydata = y->data.real_single;
 #ifdef LIBMTX_HAVE_BLAS
             *dot = cblas_sdot(x->num_nonzeros, xdata, 1, ydata, 1);
+            if (mtxblaserror()) return MTX_ERR_BLAS;
 #else
             *dot = 0;
             for (int64_t k = 0; k < x->num_nonzeros; k++)
@@ -1737,6 +1762,7 @@ int mtxvector_coordinate_sdot(
             const double * ydata = y->data.real_double;
 #ifdef LIBMTX_HAVE_BLAS
             *dot = cblas_ddot(x->num_nonzeros, xdata, 1, ydata, 1);
+            if (mtxblaserror()) return MTX_ERR_BLAS;
 #else
             *dot = 0;
             for (int64_t k = 0; k < x->num_nonzeros; k++)
@@ -1798,6 +1824,7 @@ int mtxvector_coordinate_ddot(
             const float * ydata = y->data.real_single;
 #ifdef LIBMTX_HAVE_BLAS
             *dot = cblas_sdot(x->num_nonzeros, xdata, 1, ydata, 1);
+            if (mtxblaserror()) return MTX_ERR_BLAS;
 #else
             *dot = 0;
             for (int64_t k = 0; k < x->num_nonzeros; k++)
@@ -1809,6 +1836,7 @@ int mtxvector_coordinate_ddot(
             const double * ydata = y->data.real_double;
 #ifdef LIBMTX_HAVE_BLAS
             *dot = cblas_ddot(x->num_nonzeros, xdata, 1, ydata, 1);
+            if (mtxblaserror()) return MTX_ERR_BLAS;
 #else
             *dot = 0;
             for (int64_t k = 0; k < x->num_nonzeros; k++)
@@ -1871,6 +1899,7 @@ int mtxvector_coordinate_cdotu(
             const float (* ydata)[2] = y->data.complex_single;
 #ifdef LIBMTX_HAVE_BLAS
             cblas_cdotu_sub(x->num_nonzeros, xdata, 1, ydata, 1, dot);
+            if (mtxblaserror()) return MTX_ERR_BLAS;
 #else
             (*dot)[0] = (*dot)[1] = 0;
             for (int64_t k = 0; k < x->num_nonzeros; k++) {
@@ -1885,6 +1914,7 @@ int mtxvector_coordinate_cdotu(
 #ifdef LIBMTX_HAVE_BLAS
             double tmp[2];
             cblas_zdotu_sub(x->num_nonzeros, xdata, 1, ydata, 1, tmp);
+            if (mtxblaserror()) return MTX_ERR_BLAS;
             (*dot)[0] = tmp[0];
             (*dot)[1] = tmp[1];
 #else
@@ -1933,6 +1963,7 @@ int mtxvector_coordinate_zdotu(
 #ifdef LIBMTX_HAVE_BLAS
             float tmp[2];
             cblas_cdotu_sub(x->num_nonzeros, xdata, 1, ydata, 1, tmp);
+            if (mtxblaserror()) return MTX_ERR_BLAS;
             (*dot)[0] = tmp[0];
             (*dot)[1] = tmp[1];
 #else
@@ -1948,6 +1979,7 @@ int mtxvector_coordinate_zdotu(
             const double (* ydata)[2] = y->data.complex_double;
 #ifdef LIBMTX_HAVE_BLAS
             cblas_zdotu_sub(x->num_nonzeros, xdata, 1, ydata, 1, dot);
+            if (mtxblaserror()) return MTX_ERR_BLAS;
 #else
             (*dot)[0] = (*dot)[1] = 0;
             for (int64_t k = 0; k < x->num_nonzeros; k++) {
@@ -1993,6 +2025,7 @@ int mtxvector_coordinate_cdotc(
             const float (* ydata)[2] = y->data.complex_single;
 #ifdef LIBMTX_HAVE_BLAS
             cblas_cdotc_sub(x->num_nonzeros, xdata, 1, ydata, 1, dot);
+            if (mtxblaserror()) return MTX_ERR_BLAS;
 #else
             (*dot)[0] = (*dot)[1] = 0;
             for (int64_t k = 0; k < x->num_nonzeros; k++) {
@@ -2007,6 +2040,7 @@ int mtxvector_coordinate_cdotc(
 #ifdef LIBMTX_HAVE_BLAS
             double tmp[2];
             cblas_zdotc_sub(x->num_nonzeros, xdata, 1, ydata, 1, tmp);
+            if (mtxblaserror()) return MTX_ERR_BLAS;
             (*dot)[0] = tmp[0];
             (*dot)[1] = tmp[1];
 #else
@@ -2055,6 +2089,7 @@ int mtxvector_coordinate_zdotc(
 #ifdef LIBMTX_HAVE_BLAS
             float tmp[2];
             cblas_cdotc_sub(x->num_nonzeros, xdata, 1, ydata, 1, tmp);
+            if (mtxblaserror()) return MTX_ERR_BLAS;
             (*dot)[0] = tmp[0];
             (*dot)[1] = tmp[1];
 #else
@@ -2070,6 +2105,7 @@ int mtxvector_coordinate_zdotc(
             const double (* ydata)[2] = y->data.complex_double;
 #ifdef LIBMTX_HAVE_BLAS
             cblas_zdotc_sub(x->num_nonzeros, xdata, 1, ydata, 1, dot);
+            if (mtxblaserror()) return MTX_ERR_BLAS;
 #else
             (*dot)[0] = (*dot)[1] = 0;
             for (int64_t k = 0; k < x->num_nonzeros; k++) {
@@ -2102,6 +2138,7 @@ int mtxvector_coordinate_snrm2(
             const float * xdata = x->data.real_single;
 #ifdef LIBMTX_HAVE_BLAS
             *nrm2 = cblas_snrm2(x->num_nonzeros, xdata, 1);
+            if (mtxblaserror()) return MTX_ERR_BLAS;
 #else
             *nrm2 = 0;
             for (int64_t k = 0; k < x->num_nonzeros; k++)
@@ -2113,6 +2150,7 @@ int mtxvector_coordinate_snrm2(
             const double * xdata = x->data.real_double;
 #ifdef LIBMTX_HAVE_BLAS
             *nrm2 = cblas_dnrm2(x->num_nonzeros, xdata, 1);
+            if (mtxblaserror()) return MTX_ERR_BLAS;
 #else
             *nrm2 = 0;
             for (int64_t k = 0; k < x->num_nonzeros; k++)
@@ -2128,6 +2166,7 @@ int mtxvector_coordinate_snrm2(
             const float (* xdata)[2] = x->data.complex_single;
 #ifdef LIBMTX_HAVE_BLAS
             *nrm2 = cblas_scnrm2(x->num_nonzeros, xdata, 1);
+            if (mtxblaserror()) return MTX_ERR_BLAS;
 #else
             *nrm2 = 0;
             for (int64_t k = 0; k < x->num_nonzeros; k++)
@@ -2139,6 +2178,7 @@ int mtxvector_coordinate_snrm2(
             const double (* xdata)[2] = x->data.complex_double;
 #ifdef LIBMTX_HAVE_BLAS
             *nrm2 = cblas_dznrm2(x->num_nonzeros, xdata, 1);
+            if (mtxblaserror()) return MTX_ERR_BLAS;
 #else
             *nrm2 = 0;
             for (int64_t k = 0; k < x->num_nonzeros; k++)
@@ -2189,6 +2229,7 @@ int mtxvector_coordinate_dnrm2(
             const float * xdata = x->data.real_single;
 #ifdef LIBMTX_HAVE_BLAS
             *nrm2 = cblas_snrm2(x->num_nonzeros, xdata, 1);
+            if (mtxblaserror()) return MTX_ERR_BLAS;
 #else
             *nrm2 = 0;
             for (int64_t k = 0; k < x->num_nonzeros; k++)
@@ -2200,6 +2241,7 @@ int mtxvector_coordinate_dnrm2(
             const double * xdata = x->data.real_double;
 #ifdef LIBMTX_HAVE_BLAS
             *nrm2 = cblas_dnrm2(x->num_nonzeros, xdata, 1);
+            if (mtxblaserror()) return MTX_ERR_BLAS;
 #else
             *nrm2 = 0;
             for (int64_t k = 0; k < x->num_nonzeros; k++)
@@ -2215,6 +2257,7 @@ int mtxvector_coordinate_dnrm2(
             const float (* xdata)[2] = x->data.complex_single;
 #ifdef LIBMTX_HAVE_BLAS
             *nrm2 = cblas_scnrm2(x->num_nonzeros, xdata, 1);
+            if (mtxblaserror()) return MTX_ERR_BLAS;
 #else
             *nrm2 = 0;
             for (int64_t k = 0; k < x->num_nonzeros; k++)
@@ -2226,6 +2269,7 @@ int mtxvector_coordinate_dnrm2(
             const double (* xdata)[2] = x->data.complex_double;
 #ifdef LIBMTX_HAVE_BLAS
             *nrm2 = cblas_dznrm2(x->num_nonzeros, xdata, 1);
+            if (mtxblaserror()) return MTX_ERR_BLAS;
 #else
             *nrm2 = 0;
             for (int64_t k = 0; k < x->num_nonzeros; k++)
@@ -2278,6 +2322,7 @@ int mtxvector_coordinate_sasum(
             const float * xdata = x->data.real_single;
 #ifdef LIBMTX_HAVE_BLAS
             *asum = cblas_sasum(x->num_nonzeros, xdata, 1);
+            if (mtxblaserror()) return MTX_ERR_BLAS;
 #else
             *asum = 0;
             for (int64_t k = 0; k < x->num_nonzeros; k++)
@@ -2288,6 +2333,7 @@ int mtxvector_coordinate_sasum(
             const double * xdata = x->data.real_double;
 #ifdef LIBMTX_HAVE_BLAS
             *asum = cblas_dasum(x->num_nonzeros, xdata, 1);
+            if (mtxblaserror()) return MTX_ERR_BLAS;
 #else
             *asum = 0;
             for (int64_t k = 0; k < x->num_nonzeros; k++)
@@ -2302,6 +2348,7 @@ int mtxvector_coordinate_sasum(
             const float (* xdata)[2] = x->data.complex_single;
 #ifdef LIBMTX_HAVE_BLAS
             *asum = cblas_scasum(x->num_nonzeros, xdata, 1);
+            if (mtxblaserror()) return MTX_ERR_BLAS;
 #else
             *asum = 0;
             for (int64_t k = 0; k < x->num_nonzeros; k++)
@@ -2312,6 +2359,7 @@ int mtxvector_coordinate_sasum(
             const double (* xdata)[2] = x->data.complex_double;
 #ifdef LIBMTX_HAVE_BLAS
             *asum = cblas_dzasum(x->num_nonzeros, xdata, 1);
+            if (mtxblaserror()) return MTX_ERR_BLAS;
 #else
             *asum = 0;
             for (int64_t k = 0; k < x->num_nonzeros; k++)
@@ -2361,6 +2409,7 @@ int mtxvector_coordinate_dasum(
             const float * xdata = x->data.real_single;
 #ifdef LIBMTX_HAVE_BLAS
             *asum = cblas_sasum(x->num_nonzeros, xdata, 1);
+            if (mtxblaserror()) return MTX_ERR_BLAS;
 #else
             *asum = 0;
             for (int64_t k = 0; k < x->num_nonzeros; k++)
@@ -2371,6 +2420,7 @@ int mtxvector_coordinate_dasum(
             const double * xdata = x->data.real_double;
 #ifdef LIBMTX_HAVE_BLAS
             *asum = cblas_dasum(x->num_nonzeros, xdata, 1);
+            if (mtxblaserror()) return MTX_ERR_BLAS;
 #else
             *asum = 0;
             for (int64_t k = 0; k < x->num_nonzeros; k++)
@@ -2385,6 +2435,7 @@ int mtxvector_coordinate_dasum(
             const float (* xdata)[2] = x->data.complex_single;
 #ifdef LIBMTX_HAVE_BLAS
             *asum = cblas_scasum(x->num_nonzeros, xdata, 1);
+            if (mtxblaserror()) return MTX_ERR_BLAS;
 #else
             *asum = 0;
             for (int64_t k = 0; k < x->num_nonzeros; k++)
@@ -2395,6 +2446,7 @@ int mtxvector_coordinate_dasum(
             const double (* xdata)[2] = x->data.complex_double;
 #ifdef LIBMTX_HAVE_BLAS
             *asum = cblas_dzasum(x->num_nonzeros, xdata, 1);
+            if (mtxblaserror()) return MTX_ERR_BLAS;
 #else
             *asum = 0;
             for (int64_t k = 0; k < x->num_nonzeros; k++)
@@ -2444,6 +2496,7 @@ int mtxvector_coordinate_iamax(
             const float * xdata = x->data.real_single;
 #ifdef LIBMTX_HAVE_BLAS
             *iamax = cblas_isamax(x->num_nonzeros, xdata, 1);
+            if (mtxblaserror()) return MTX_ERR_BLAS;
 #else
             *iamax = 0;
             float max = x->num_nonzeros > 0 ? fabsf(xdata[0]) : 0;
@@ -2458,6 +2511,7 @@ int mtxvector_coordinate_iamax(
             const double * xdata = x->data.real_double;
 #ifdef LIBMTX_HAVE_BLAS
             *iamax = cblas_idamax(x->num_nonzeros, xdata, 1);
+            if (mtxblaserror()) return MTX_ERR_BLAS;
 #else
             *iamax = 0;
             double max = x->num_nonzeros > 0 ? fabs(xdata[0]) : 0;
@@ -2476,6 +2530,7 @@ int mtxvector_coordinate_iamax(
             const float (* xdata)[2] = x->data.complex_single;
 #ifdef LIBMTX_HAVE_BLAS
             *iamax = cblas_icamax(x->num_nonzeros, xdata, 1);
+            if (mtxblaserror()) return MTX_ERR_BLAS;
 #else
             *iamax = 0;
             float max = x->num_nonzeros > 0 ? fabsf(xdata[0][0]) + fabsf(xdata[0][1]) : 0;
@@ -2490,6 +2545,7 @@ int mtxvector_coordinate_iamax(
             const double (* xdata)[2] = x->data.complex_double;
 #ifdef LIBMTX_HAVE_BLAS
             *iamax = cblas_izamax(x->num_nonzeros, xdata, 1);
+            if (mtxblaserror()) return MTX_ERR_BLAS;
 #else
             *iamax = 0;
             double max = x->num_nonzeros > 0 ? fabs(xdata[0][0]) + fabs(xdata[0][1]) : 0;

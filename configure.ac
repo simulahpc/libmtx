@@ -91,6 +91,7 @@ AC_DEFINE(LIBMTX_HAVE_BLAS,1,[Define to 1 if you have a BLAS library.])
 AC_SUBST(LIBMTX_HAVE_BLAS)
 fi
 fi
+AM_CONDITIONAL([HAVE_BLAS], [test x"$ax_blas_ok" = xyes])
 
 dnl Check for MPI
 AC_ARG_WITH(mpi,

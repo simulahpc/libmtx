@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-01-04
+ * Last modified: 2022-02-23
  *
  * Error handling.
  */
@@ -29,11 +29,71 @@
 #include <mpi.h>
 #endif
 
+#ifdef LIBMTX_HAVE_BLAS
+#include <cblas.h>
+#endif
+
 #include <errno.h>
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+/**
+ * ‘mtxblaserr’ is a global variable used to flag errors occuring in
+ * BLAS routines. It is set by the BLAS error handler routine
+ * ‘xerbla_’ when an error occurs in a BLAS routine.
+ */
+int mtxblaserr = 0;
+
+/**
+ * ‘mtxblaserrstr’ is an error string that is written by the BLAS
+ * error handler routine ‘xerbla_’ whenever an error occurs in a BLAS
+ * routine and the
+ */
+char mtxblaserrstr[256] = "unknown BLAS error";
+
+/**
+ * ‘mtxblaserror()’ returns ‘MTX_ERR_BLAS’ if an error occurred in a
+ * BLAS routine, and ‘MTX_SUCCESS’ otherwise.
+ */
+int mtxblaserror(void)
+{
+    return mtxblaserr ? MTX_ERR_BLAS : MTX_SUCCESS;
+}
+
+/**
+ * ‘mtxblaserrorclear()’ clears any error flags that may have been set
+ * during error handling in BLAS routines.
+ */
+int mtxblaserrorclear(void)
+{
+    snprintf(mtxblaserrstr, sizeof(mtxblaserrstr), "unknown BLAS error");
+    mtxblaserr = 0;
+}
+
+#ifdef LIBMTX_HAVE_BLAS
+/**
+ * ‘xerbla_’ is an error handling function used by BLAS routines.
+ *
+ * The name of the subroutine where the error occured is given in
+ * ‘srname’, which should contain at most six characters. The ‘info’
+ * argument is an integer used to specify the argument number whenever
+ * an invalid argument occurs.
+ */
+int xerbla_(
+    char * srname,
+    int * info)
+{
+    int len = 0;
+    while (srname[len] != ' ' && srname[len] != '\0') len++;
+    const char fmt[] = "BLAS error - on entry to %.*s "
+        "parameter number %d had an illegal value";
+    snprintf(mtxblaserrstr, sizeof(mtxblaserrstr), fmt, len, srname, *info);
+    mtxblaserr = 1;
+    return 0;
+}
+#endif
 
 /**
  * ‘mtxstrerror()’ is a string describing an error code.
@@ -67,6 +127,8 @@ const char * mtxstrerror(
         return "MPI error";
     case MTX_ERR_MPI_COLLECTIVE:
         return "Collective MPI error";
+    case MTX_ERR_BLAS:
+        return mtxblaserrstr;
     case MTX_ERR_EOF:
         if (errno) return strerror(errno);
         else return "unexpected end-of-file";

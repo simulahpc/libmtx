@@ -16,9 +16,9 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-01-26
+ * Last modified: 2022-02-23
  *
- * Unit tests for distributed Matrix Market files.
+ * Unit tests for distributed matrices.
  */
 
 #include "test.h"

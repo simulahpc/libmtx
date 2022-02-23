@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-01-04
+ * Last modified: 2022-02-23
  *
  * Error handling.
  */
@@ -47,6 +47,7 @@ enum mtxerror
     MTX_ERR_MPI,                      /* MPI error */
     MTX_ERR_MPI_COLLECTIVE,           /* MPI collective error */
     MTX_ERR_MPI_NOT_INITIALIZED,      /* MPI not initialized */
+    MTX_ERR_BLAS,                     /* BLAS error */
     MTX_ERR_EOF,                      /* unexpected end-of-file */
     MTX_ERR_LINE_TOO_LONG,            /* line exceeds maximum length */
     MTX_ERR_INVALID_MTX_HEADER,       /* invalid Matrix Market header */
@@ -106,6 +107,18 @@ enum mtxerror
  * used instead.
  */
 const char * mtxstrerror(int err);
+
+/**
+ * ‘mtxblaserror()’ returns ‘MTX_ERR_BLAS’ if an error occurred in a
+ * BLAS routine, and ‘MTX_SUCCESS’ otherwise.
+ */
+int mtxblaserror(void);
+
+/**
+ * ‘mtxblaserrorclear()’ clears any error flags that may have been set
+ * during error handling in BLAS routines.
+ */
+int mtxblaserrorclear(void);
 
 /**
  * ‘mtxdiststrerror()’ is a string describing an error code.

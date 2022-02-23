@@ -1142,6 +1142,7 @@ int mtxmatrix_array_sgemv(
             cblas_sgemv(
                 CblasRowMajor, transA, A->num_rows, A->num_columns,
                 alpha, Adata, A->num_columns, xdata, 1, beta, ydata, 1);
+            if (mtxblaserror()) return MTX_ERR_BLAS;
 #else
             if (trans == mtx_notrans) {
                 for (int i = 0; i < A->num_rows; i++) {
@@ -1170,6 +1171,7 @@ int mtxmatrix_array_sgemv(
             cblas_dgemv(
                 CblasRowMajor, transA, A->num_rows, A->num_columns,
                 alpha, Adata, A->num_columns, xdata, 1, beta, ydata, 1);
+            if (mtxblaserror()) return MTX_ERR_BLAS;
 #else
             if (trans == mtx_notrans) {
                 for (int i = 0; i < A->num_rows; i++) {
@@ -1206,6 +1208,7 @@ int mtxmatrix_array_sgemv(
                 CblasRowMajor, transA, A->num_rows, A->num_columns,
                 calpha, (const float *) Adata, A->num_columns,
                 (const float *) xdata, 1, cbeta, (float *) ydata, 1);
+            if (mtxblaserror()) return MTX_ERR_BLAS;
 #else
             if (trans == mtx_notrans) {
                 for (int i = 0; i < A->num_rows; i++) {
@@ -1260,6 +1263,7 @@ int mtxmatrix_array_sgemv(
                 CblasRowMajor, transA, A->num_rows, A->num_columns,
                 zalpha, (const double *) Adata, A->num_columns,
                 (const double *) xdata, 1, zbeta, (double *) ydata, 1);
+            if (mtxblaserror()) return MTX_ERR_BLAS;
 #else
             if (trans == mtx_notrans) {
                 for (int i = 0; i < A->num_rows; i++) {
@@ -1404,6 +1408,7 @@ int mtxmatrix_array_dgemv(
             cblas_sgemv(
                 CblasRowMajor, transA, A->num_rows, A->num_columns,
                 alpha, Adata, A->num_columns, xdata, 1, beta, ydata, 1);
+            if (mtxblaserror()) return MTX_ERR_BLAS;
 #else
             if (trans == mtx_notrans) {
                 for (int i = 0; i < A->num_rows; i++) {
@@ -1432,6 +1437,7 @@ int mtxmatrix_array_dgemv(
             cblas_dgemv(
                 CblasRowMajor, transA, A->num_rows, A->num_columns,
                 alpha, Adata, A->num_columns, xdata, 1, beta, ydata, 1);
+            if (mtxblaserror()) return MTX_ERR_BLAS;
 #else
             if (trans == mtx_notrans) {
                 for (int i = 0; i < A->num_rows; i++) {
@@ -1468,6 +1474,7 @@ int mtxmatrix_array_dgemv(
                 CblasRowMajor, transA, A->num_rows, A->num_columns,
                 calpha, (const float *) Adata, A->num_columns,
                 (const float *) xdata, 1, cbeta, (float *) ydata, 1);
+            if (mtxblaserror()) return MTX_ERR_BLAS;
 #else
             if (trans == mtx_notrans) {
                 for (int i = 0; i < A->num_rows; i++) {
@@ -1522,6 +1529,7 @@ int mtxmatrix_array_dgemv(
                 CblasRowMajor, transA, A->num_rows, A->num_columns,
                 zalpha, (const double *) Adata, A->num_columns,
                 (const double *) xdata, 1, zbeta, (double *) ydata, 1);
+            if (mtxblaserror()) return MTX_ERR_BLAS;
 #else
             if (trans == mtx_notrans) {
                 for (int i = 0; i < A->num_rows; i++) {
@@ -1675,6 +1683,7 @@ int mtxmatrix_array_cgemv(
             CblasRowMajor, transA, A->num_rows, A->num_columns,
             alpha, (const float *) Adata, A->num_columns,
             (const float *) xdata, 1, beta, (float *) ydata, 1);
+        if (mtxblaserror()) return MTX_ERR_BLAS;
 #else
         if (trans == mtx_notrans) {
             for (int i = 0; i < A->num_rows; i++) {
@@ -1738,6 +1747,7 @@ int mtxmatrix_array_cgemv(
             CblasRowMajor, transA, A->num_rows, A->num_columns,
             zalpha, (const double *) Adata, A->num_columns,
             (const double *) xdata, 1, zbeta, (double *) ydata, 1);
+        if (mtxblaserror()) return MTX_ERR_BLAS;
 #else
         if (trans == mtx_notrans) {
             for (int i = 0; i < A->num_rows; i++) {
@@ -1853,6 +1863,7 @@ int mtxmatrix_array_zgemv(
             CblasRowMajor, transA, A->num_rows, A->num_columns,
             calpha, (const float *) Adata, A->num_columns,
             (const float *) xdata, 1, cbeta, (float *) ydata, 1);
+        if (mtxblaserror()) return MTX_ERR_BLAS;
 #else
         if (trans == mtx_notrans) {
             for (int i = 0; i < A->num_rows; i++) {
@@ -1914,6 +1925,7 @@ int mtxmatrix_array_zgemv(
             CblasRowMajor, transA, A->num_rows, A->num_columns,
             alpha, (const double *) Adata, A->num_columns,
             (const double *) xdata, 1, beta, (double *) ydata, 1);
+        if (mtxblaserror()) return MTX_ERR_BLAS;
 #else
         if (trans == mtx_notrans) {
             for (int i = 0; i < A->num_rows; i++) {

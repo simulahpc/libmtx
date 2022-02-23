@@ -34,10 +34,6 @@
 #include <libmtx/vector/vector.h>
 #include <libmtx/vector/vector_array.h>
 
-#ifdef LIBMTX_HAVE_BLAS
-#include <cblas.h>
-#endif
-
 #include <errno.h>
 
 #include <math.h>

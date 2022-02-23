@@ -59,13 +59,13 @@ struct mtxdistvector
 {
     /**
      * ‘comm’ is an MPI communicator for processes among which the
-     * Matrix Market file is distributed.
+     * vector is distributed.
      */
     MPI_Comm comm;
 
     /**
-     * ‘comm_size’ is the size of the MPI communicator.  This is equal
-     * to the number of parts of the row partitioning of the vector.
+     * ‘comm_size’ is the size of the MPI communicator. This is equal
+     * to the number of parts in the partitioning of the vector.
      */
     int comm_size;
 
