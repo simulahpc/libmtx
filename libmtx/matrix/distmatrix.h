@@ -31,6 +31,7 @@
 #include <libmtx/field.h>
 #include <libmtx/matrix/matrix.h>
 #include <libmtx/util/partition.h>
+#include <libmtx/util/transpose.h>
 
 #include <mpi.h>
 
@@ -965,6 +966,84 @@ int mtxdistmatrix_dasum(
 int mtxdistmatrix_iamax(
     const struct mtxdistmatrix * x,
     int * max,
+    struct mtxdisterror * disterr);
+
+/*
+ * Level 2 BLAS operations
+ */
+
+/**
+ * ‘mtxdistmatrix_sgemv()’ multiplies a matrix ‘A’ or its transpose ‘A'’
+ * by a real scalar ‘alpha’ (‘α’) and a vector ‘x’, before adding the
+ * result to another vector ‘y’ multiplied by another real scalar
+ * ‘beta’ (‘β’). That is, ‘y = α*A*x + β*y’ or ‘y = α*A'*x + β*y’.
+ *
+ * The scalars ‘alpha’ and ‘beta’ are given as single precision
+ * floating point numbers.
+ */
+int mtxdistmatrix_sgemv(
+    enum mtxtransposition trans,
+    float alpha,
+    const struct mtxdistmatrix * A,
+    const struct mtxdistvector * x,
+    float beta,
+    struct mtxdistvector * y,
+    struct mtxdisterror * disterr);
+
+/**
+ * ‘mtxdistmatrix_dgemv()’ multiplies a matrix ‘A’ or its transpose ‘A'’
+ * by a real scalar ‘alpha’ (‘α’) and a vector ‘x’, before adding the
+ * result to another vector ‘y’ multiplied by another scalar real
+ * ‘beta’ (‘β’).  That is, ‘y = α*A*x + β*y’ or ‘y = α*A'*x + β*y’.
+ *
+ * The scalars ‘alpha’ and ‘beta’ are given as double precision
+ * floating point numbers.
+ */
+int mtxdistmatrix_dgemv(
+    enum mtxtransposition trans,
+    double alpha,
+    const struct mtxdistmatrix * A,
+    const struct mtxdistvector * x,
+    double beta,
+    struct mtxdistvector * y,
+    struct mtxdisterror * disterr);
+
+/**
+ * ‘mtxdistmatrix_cgemv()’ multiplies a complex-valued matrix ‘A’, its
+ * transpose ‘A'’ or its conjugate transpose ‘Aᴴ’ by a complex scalar
+ * ‘alpha’ (‘α’) and a vector ‘x’, before adding the result to another
+ * vector ‘y’ multiplied by another complex scalar ‘beta’ (‘β’).  That
+ * is, ‘y = α*A*x + β*y’, ‘y = α*A'*x + β*y’ or ‘y = α*Aᴴ*x + β*y’.
+ *
+ * The complex scalars ‘alpha’ and ‘beta’ are given as pairs of single
+ * precision floating point numbers.
+ */
+int mtxdistmatrix_cgemv(
+    enum mtxtransposition trans,
+    float alpha[2],
+    const struct mtxdistmatrix * A,
+    const struct mtxdistvector * x,
+    float beta[2],
+    struct mtxdistvector * y,
+    struct mtxdisterror * disterr);
+
+/**
+ * ‘mtxdistmatrix_zgemv()’ multiplies a complex-valued matrix ‘A’, its
+ * transpose ‘A'’ or its conjugate transpose ‘Aᴴ’ by a complex scalar
+ * ‘alpha’ (‘α’) and a vector ‘x’, before adding the result to another
+ * vector ‘y’ multiplied by another complex scalar ‘beta’ (‘β’).  That
+ * is, ‘y = α*A*x + β*y’, ‘y = α*A'*x + β*y’ or ‘y = α*Aᴴ*x + β*y’.
+ *
+ * The complex scalars ‘alpha’ and ‘beta’ are given as pairs of double
+ * precision floating point numbers.
+ */
+int mtxdistmatrix_zgemv(
+    enum mtxtransposition trans,
+    double alpha[2],
+    const struct mtxdistmatrix * A,
+    const struct mtxdistvector * x,
+    double beta[2],
+    struct mtxdistvector * y,
     struct mtxdisterror * disterr);
 #endif
 

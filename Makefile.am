@@ -45,6 +45,7 @@ EXTRA_DIST = \
 	tests/test_mtx_mpi_parallel \
 	tests/test_mtxdistfile_parallel \
 	tests/test_mtxdistmatrix_parallel \
+	tests/test_mtxdistmatrixgemv_parallel \
 	tests/test_mtxdistvector_parallel \
 	tests/test_mtxfile_mpi_parallel
 
@@ -72,6 +73,7 @@ libmtx_la_SOURCES = \
 	libmtx/matrix/coordinate/reorder.c \
 	libmtx/matrix/coordinate/sort.c \
 	libmtx/matrix/distmatrix.c \
+	libmtx/matrix/distmatrixgemv.c \
 	libmtx/matrix/matrix.c \
 	libmtx/matrix/matrix_array.c \
 	libmtx/matrix/matrix_coordinate.c \
@@ -145,6 +147,7 @@ nobase_include_HEADERS = \
 	libmtx/matrix/coordinate/reorder.h \
 	libmtx/matrix/coordinate/sort.h \
 	libmtx/matrix/distmatrix.h \
+	libmtx/matrix/distmatrixgemv.h \
 	libmtx/matrix/matrix.h \
 	libmtx/matrix/matrix_array.h \
 	libmtx/matrix/matrix_coordinate.h \
@@ -384,6 +387,7 @@ check_PROGRAMS += \
 	tests/test_mtx_mpi \
 	tests/test_mtxdistfile \
 	tests/test_mtxdistmatrix \
+	tests/test_mtxdistmatrixgemv \
 	tests/test_mtxdistvector \
 	tests/test_mtxfile_mpi
 
@@ -412,6 +416,11 @@ tests_test_mtxdistmatrix_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_
 tests_test_mtxdistmatrix_SOURCES = tests/test_mtxdistmatrix.c tests/test.h
 tests/test_mtxdistmatrix_parallel: tests/test_mtxdistmatrix
 
+tests_test_mtxdistmatrixgemv_CPPFLAGS = $(MPICPPFLAGS)
+tests_test_mtxdistmatrixgemv_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
+tests_test_mtxdistmatrixgemv_SOURCES = tests/test_mtxdistmatrixgemv.c tests/test.h
+tests/test_mtxdistmatrixgemv_parallel: tests/test_mtxdistmatrixgemv
+
 tests_test_mtxdistvector_CPPFLAGS = $(MPICPPFLAGS)
 tests_test_mtxdistvector_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
 tests_test_mtxdistvector_SOURCES = tests/test_mtxdistvector.c tests/test.h
@@ -423,6 +432,7 @@ TESTS += \
 	tests/test_mtxfile_mpi_parallel \
 	tests/test_mtxdistfile_parallel \
 	tests/test_mtxdistmatrix_parallel \
+	tests/test_mtxdistmatrixgemv_parallel \
 	tests/test_mtxdistvector_parallel
 endif
 

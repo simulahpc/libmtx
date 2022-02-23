@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-01-26
+ * Last modified: 2022-02-22
  *
  * Data structures for distributed matrices.
  */
@@ -27,6 +27,7 @@
 #include <libmtx/error.h>
 #include <libmtx/field.h>
 #include <libmtx/matrix/distmatrix.h>
+#include <libmtx/matrix/distmatrixgemv.h>
 #include <libmtx/matrix/matrix.h>
 #include <libmtx/mtxfile/header.h>
 #include <libmtx/mtxfile/mtxdistfile.h>
@@ -173,6 +174,7 @@ static int mtxdistmatrix_init_comm(
         MPI_Comm_free(&distmatrix->comm);
         return MTX_ERR_MPI_COLLECTIVE;
     }
+    distmatrix->parent = parent;
     return MTX_SUCCESS;
 }
 
@@ -343,7 +345,7 @@ int mtxdistmatrix_alloc_copy(
     struct mtxdisterror * disterr)
 {
     int err = mtxdistmatrix_init_comm(
-        dst, src->comm, src->num_process_rows, src->num_process_columns, disterr);
+        dst, src->parent, src->num_process_rows, src->num_process_columns, disterr);
     if (err) return err;
     err = mtxpartition_copy(&dst->rowpart, &src->rowpart);
     if (mtxdisterror_allreduce(disterr, err))
@@ -371,7 +373,7 @@ int mtxdistmatrix_init_copy(
     struct mtxdisterror * disterr)
 {
     int err = mtxdistmatrix_init_comm(
-        dst, src->comm, src->num_process_rows, src->num_process_columns, disterr);
+        dst, src->parent, src->num_process_rows, src->num_process_columns, disterr);
     if (err) return err;
     err = mtxpartition_copy(&dst->rowpart, &src->rowpart);
     if (mtxdisterror_allreduce(disterr, err))
@@ -2014,4 +2016,377 @@ int mtxdistmatrix_iamax(
     const struct mtxdistmatrix * x,
     int * max,
     struct mtxdisterror * disterr);
+
+/*
+ * Level 2 BLAS operations
+ */
+
+/**
+ * ‘mtxdistmatrix_sgemv()’ multiplies a matrix ‘A’ or its transpose ‘A'’
+ * by a real scalar ‘alpha’ (‘α’) and a vector ‘x’, before adding the
+ * result to another vector ‘y’ multiplied by another real scalar
+ * ‘beta’ (‘β’). That is, ‘y = α*A*x + β*y’ or ‘y = α*A'*x + β*y’.
+ *
+ * The scalars ‘alpha’ and ‘beta’ are given as single precision
+ * floating point numbers.
+ */
+int mtxdistmatrix_sgemv(
+    enum mtxtransposition trans,
+    float alpha,
+    const struct mtxdistmatrix * A,
+    const struct mtxdistvector * x,
+    float beta,
+    struct mtxdistvector * y,
+    struct mtxdisterror * disterr)
+{
+    int err;
+    struct mtxdistmatrixgemv gemv;
+    err = mtxdistmatrixgemv_init(&gemv, trans, A, x, y, disterr);
+    if (err)
+        return err;
+    err = mtxdistmatrixgemv_sgemv(&gemv, alpha, beta, disterr);
+    if (err) {
+        mtxdistmatrixgemv_free(&gemv);
+        return err;
+    }
+    err = mtxdistmatrixgemv_wait(&gemv, disterr);
+    if (err) {
+        mtxdistmatrixgemv_free(&gemv);
+        return err;
+    }
+    mtxdistmatrixgemv_free(&gemv);
+    return MTX_SUCCESS;
+#if 0
+    int result;
+    if (trans == mtx_notrans) {
+        disterr->mpierrcode = MPI_Comm_compare(A->rowcomm, x->comm, &result);
+        int err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+        if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+        err = result != MPI_IDENT && result != MPI_CONGRUENT
+            ? MTX_ERR_INCOMPATIBLE_MPI_COMM : MTX_SUCCESS;
+        if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+        disterr->mpierrcode = MPI_Comm_compare(A->colcomm, y->comm, &result);
+        err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+        if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+        err = result != MPI_IDENT && result != MPI_CONGRUENT
+            ? MTX_ERR_INCOMPATIBLE_MPI_COMM : MTX_SUCCESS;
+        if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+
+        MPI_Comm comm = A->comm;
+        int comm_size = A->comm_size;
+        int P = A->comm_size / A->colpart.num_parts;
+        int Q = A->colpart.num_parts;
+        int r = A->rank;
+
+        int p = r / A->colpart.num_parts;
+        int q = r % A->colpart.num_parts;
+        int num_local_rows =
+            p < A->rowpart.num_parts ? A->rowpart.part_sizes[p] : 0;
+        int num_local_columns =
+            q < A->colpart.num_parts ? A->colpart.part_sizes[q] : 0;
+
+        err = mtxpartition_compare(&A->rowpart, &y->rowpart, &result);
+        if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+        if (result == 0) {
+            /* Rows of the matrix are partitioned in the same way as rows
+             * of the destination vector. We can therefore use the destination
+             * vector ‘y’ to store the computed results directly. */
+
+            err = mtxpartition_compare(&A->colpart, &x->rowpart, &result);
+            if (mtxdisterror_allreduce(disterr, err))
+                return MTX_ERR_MPI_COLLECTIVE;
+
+            if (result == 0) {
+                /* Columns of the matrix are partitioned in the same way
+                 * as columns of the source vector. We can therefore use
+                 * the part of the source vector ‘x’ on the current process
+                 * to compute results directly. */
+                err = mtxmatrix_sgemv(
+                    trans, alpha, &A->interior, &x->interior, beta, &y->interior);
+                if (mtxdisterror_allreduce(disterr, err))
+                    return MTX_ERR_MPI_COLLECTIVE;
+
+            } else {
+                /* Columns of the matrix are not partitioned in the same
+                 * way as columns of the source vector. Thus, additional
+                 * storage and communication is needed to prepare the part
+                 * of the source vector that is needed by the current
+                 * process to compute its part of the destination vector. */
+
+#if 0
+                /* allocate temporary source vector */
+                struct mtxdistvector xr;
+                for (int p = 0; p < rowpart.num_parts; p++) {
+                    err = mtxdistmatrix_alloc_row_vector(
+                        A, &xr, x->interior.type, disterr);
+                    if (err) return err;
+                }
+
+                /* Obtain the global column numbers according to the
+                 * partitioning of the matrix columns. These are the
+                 * global element numbers of the source vector that are
+                 * needed to perform the local part of the matrix-vector
+                 * multiplication. */
+                int64_t * colidx = malloc(num_local_columns * sizeof(int64_t));
+                err = !colidx ? MTX_ERR_ERRNO : MTX_SUCCESS;
+                if (mtxdisterror_allreduce(disterr, err)) {
+                    mtxvector_free(&xr);
+                    return MTX_ERR_MPI_COLLECTIVE;
+                }
+                for (int64_t j = 0; j < num_local_columns; j++)
+                    colidx[j] = j;
+                err = mtxpartition_globalidx(
+                    &A->colpart, q, num_local_columns, colidx, colidx);
+                if (mtxdisterror_allreduce(disterr, err)) {
+                    free(colidx);
+                    mtxvector_free(&xr);
+                    return MTX_ERR_MPI_COLLECTIVE;
+                }
+
+                free(colidx);
+
+                /* perform halo update to gather source vector */
+                err = mtxdistvector_halo_update(&xr, x, MPI_COMM_NULL, disterr);
+                if (err) {
+                    mtxdistvector_free(&xr);
+                    return err;
+                }
+
+                /* perform local matrix-vector multiplication */
+                err = mtxmatrix_sgemv(
+                    trans, alpha, &A->interior, &xr.interior, beta, &y->interior);
+                if (mtxdisterror_allreduce(disterr, err)) {
+                    mtxdistvector_free(&xr);
+                    return MTX_ERR_MPI_COLLECTIVE;
+                }
+                mtxdistvector_free(&xr);
+#endif
+            }
+
+        } else {
+            /* Rows of the matrix are not partitioned in the same way as
+             * rows of the destination vector. Thus, additional storage
+             * and communication is needed to form the final destination
+             * vector. */
+
+            /* TODO: not implemented */
+            errno = ENOTSUP;
+            return MTX_ERR_ERRNO;
+        }
+
+    } else if (trans == mtx_trans || trans == mtx_conjtrans) {
+        disterr->mpierrcode = MPI_Comm_compare(A->colcomm, x->comm, &result);
+        int err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+        if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+        err = result != MPI_IDENT && result != MPI_CONGRUENT
+            ? MTX_ERR_INCOMPATIBLE_MPI_COMM : MTX_SUCCESS;
+        if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+        disterr->mpierrcode = MPI_Comm_compare(A->rowcomm, y->comm, &result);
+        err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+        if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+        err = result != MPI_IDENT && result != MPI_CONGRUENT
+            ? MTX_ERR_INCOMPATIBLE_MPI_COMM : MTX_SUCCESS;
+        if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+
+        MPI_Comm comm = A->comm;
+        int comm_size = A->comm_size;
+        int P = A->comm_size / A->colpart.num_parts;
+        int Q = A->colpart.num_parts;
+        int r = A->rank;
+
+        int p = r / A->colpart.num_parts;
+        int q = r % A->colpart.num_parts;
+        int num_local_rows =
+            p < A->rowpart.num_parts ? A->rowpart.part_sizes[p] : 0;
+        int num_local_columns =
+            q < A->colpart.num_parts ? A->colpart.part_sizes[q] : 0;
+
+        err = mtxpartition_compare(&A->colpart, &y->rowpart, &result);
+        if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+        if (result == 0) {
+            /*
+             * Rows of the transposed matrix are partitioned in the
+             * same way as rows of the destination vector. We can
+             * therefore use the destination vector ‘y’ to store the
+             * computed results directly.
+             */
+
+            err = mtxpartition_compare(&A->rowpart, &x->rowpart, &result);
+            if (mtxdisterror_allreduce(disterr, err))
+                return MTX_ERR_MPI_COLLECTIVE;
+
+            if (result == 0) {
+                /*
+                 * Columns of the transposed matrix are partitioned in
+                 * the same way as columns of the source vector. We
+                 * can therefore use the part of the source vector ‘x’
+                 * on the current process to compute results directly.
+                 */
+                err = mtxmatrix_sgemv(
+                    trans, alpha, &A->interior, &x->interior, beta, &y->interior);
+                if (mtxdisterror_allreduce(disterr, err))
+                    return MTX_ERR_MPI_COLLECTIVE;
+
+            } else {
+                /*
+                 * Columns of the transposed matrix are not
+                 * partitioned in the same way as columns of the
+                 * source vector. Thus, additional storage and
+                 * communication is needed to prepare the part of the
+                 * source vector that is needed by the current process
+                 * to compute its part of the destination vector.
+                 */
+
+                /* allocate temporary source vector */
+                struct mtxdistvector xr;
+                err = mtxdistmatrix_alloc_column_vector(
+                    A, &xr, x->interior.type, disterr);
+                if (err) return err;
+
+                /* perform halo update to gather source vector */
+                err = mtxdistvector_halo_update(&xr, x, disterr);
+                if (err) {
+                    mtxdistvector_free(&xr);
+                    return err;
+                }
+
+                /* perform local matrix-vector multiplication */
+                err = mtxmatrix_sgemv(
+                    trans, alpha, &A->interior, &xr.interior, beta, &y->interior);
+                if (mtxdisterror_allreduce(disterr, err)) {
+                    mtxdistvector_free(&xr);
+                    return MTX_ERR_MPI_COLLECTIVE;
+                }
+                mtxdistvector_free(&xr);
+            }
+
+        } else {
+            /* Rows of the transposed matrix are not partitioned in
+             * the same way as rows of the destination vector. Thus,
+             * additional storage and communication is needed to form
+             * the final destination vector. */
+
+            /* TODO: not implemented */
+            errno = ENOTSUP;
+            return MTX_ERR_ERRNO;
+        }
+    } else {
+        return MTX_ERR_INVALID_TRANSPOSITION;
+    }
+    return MTX_SUCCESS;
+#endif
+}
+
+/**
+ * ‘mtxdistmatrix_dgemv()’ multiplies a matrix ‘A’ or its transpose ‘A'’
+ * by a real scalar ‘alpha’ (‘α’) and a vector ‘x’, before adding the
+ * result to another vector ‘y’ multiplied by another scalar real
+ * ‘beta’ (‘β’).  That is, ‘y = α*A*x + β*y’ or ‘y = α*A'*x + β*y’.
+ *
+ * The scalars ‘alpha’ and ‘beta’ are given as double precision
+ * floating point numbers.
+ */
+int mtxdistmatrix_dgemv(
+    enum mtxtransposition trans,
+    double alpha,
+    const struct mtxdistmatrix * A,
+    const struct mtxdistvector * x,
+    double beta,
+    struct mtxdistvector * y,
+    struct mtxdisterror * disterr)
+{
+    int err;
+    struct mtxdistmatrixgemv gemv;
+    err = mtxdistmatrixgemv_init(&gemv, trans, A, x, y, disterr);
+    if (err)
+        return err;
+    err = mtxdistmatrixgemv_dgemv(&gemv, alpha, beta, disterr);
+    if (err) {
+        mtxdistmatrixgemv_free(&gemv);
+        return err;
+    }
+    err = mtxdistmatrixgemv_wait(&gemv, disterr);
+    if (err) {
+        mtxdistmatrixgemv_free(&gemv);
+        return err;
+    }
+    mtxdistmatrixgemv_free(&gemv);
+    return MTX_SUCCESS;
+}
+
+/**
+ * ‘mtxdistmatrix_cgemv()’ multiplies a complex-valued matrix ‘A’, its
+ * transpose ‘A'’ or its conjugate transpose ‘Aᴴ’ by a complex scalar
+ * ‘alpha’ (‘α’) and a vector ‘x’, before adding the result to another
+ * vector ‘y’ multiplied by another complex scalar ‘beta’ (‘β’).  That
+ * is, ‘y = α*A*x + β*y’, ‘y = α*A'*x + β*y’ or ‘y = α*Aᴴ*x + β*y’.
+ *
+ * The scalars ‘alpha’ and ‘beta’ are given as single precision
+ * floating point numbers.
+ */
+int mtxdistmatrix_cgemv(
+    enum mtxtransposition trans,
+    float alpha[2],
+    const struct mtxdistmatrix * A,
+    const struct mtxdistvector * x,
+    float beta[2],
+    struct mtxdistvector * y,
+    struct mtxdisterror * disterr)
+{
+    int err;
+    struct mtxdistmatrixgemv gemv;
+    err = mtxdistmatrixgemv_init(&gemv, trans, A, x, y, disterr);
+    if (err)
+        return err;
+    err = mtxdistmatrixgemv_cgemv(&gemv, alpha, beta, disterr);
+    if (err) {
+        mtxdistmatrixgemv_free(&gemv);
+        return err;
+    }
+    err = mtxdistmatrixgemv_wait(&gemv, disterr);
+    if (err) {
+        mtxdistmatrixgemv_free(&gemv);
+        return err;
+    }
+    mtxdistmatrixgemv_free(&gemv);
+    return MTX_SUCCESS;
+}
+
+/**
+ * ‘mtxdistmatrix_zgemv()’ multiplies a complex-valued matrix ‘A’, its
+ * transpose ‘A'’ or its conjugate transpose ‘Aᴴ’ by a complex scalar
+ * ‘alpha’ (‘α’) and a vector ‘x’, before adding the result to another
+ * vector ‘y’ multiplied by another complex scalar ‘beta’ (‘β’).  That
+ * is, ‘y = α*A*x + β*y’, ‘y = α*A'*x + β*y’ or ‘y = α*Aᴴ*x + β*y’.
+ *
+ * The scalars ‘alpha’ and ‘beta’ are given as double precision
+ * floating point numbers.
+ */
+int mtxdistmatrix_zgemv(
+    enum mtxtransposition trans,
+    double alpha[2],
+    const struct mtxdistmatrix * A,
+    const struct mtxdistvector * x,
+    double beta[2],
+    struct mtxdistvector * y,
+    struct mtxdisterror * disterr)
+{
+    int err;
+    struct mtxdistmatrixgemv gemv;
+    err = mtxdistmatrixgemv_init(&gemv, trans, A, x, y, disterr);
+    if (err)
+        return err;
+    err = mtxdistmatrixgemv_zgemv(&gemv, alpha, beta, disterr);
+    if (err) {
+        mtxdistmatrixgemv_free(&gemv);
+        return err;
+    }
+    err = mtxdistmatrixgemv_wait(&gemv, disterr);
+    if (err) {
+        mtxdistmatrixgemv_free(&gemv);
+        return err;
+    }
+    mtxdistmatrixgemv_free(&gemv);
+    return MTX_SUCCESS;
+}
 #endif
