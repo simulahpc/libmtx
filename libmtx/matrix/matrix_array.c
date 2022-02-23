@@ -1131,6 +1131,8 @@ int mtxmatrix_array_sgemv(
         if (A->num_columns != y_->size || A->num_rows != x_->size)
             return MTX_ERR_INCOMPATIBLE_SIZE;
     }
+    if (A->num_rows == 0 || A->num_columns == 0)
+        return MTX_SUCCESS;
 
     if (A->field == mtx_field_real) {
         if (A->precision == mtx_single) {
@@ -1387,16 +1389,21 @@ int mtxmatrix_array_dgemv(
 {
     if (x->type != mtxvector_array || y->type != mtxvector_array)
         return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
-
     const struct mtxvector_array * x_ = &x->storage.array;
     struct mtxvector_array * y_ = &y->storage.array;
-    if (A->num_rows != y_->size ||
-        A->num_columns != x_->size)
-        return MTX_ERR_INCOMPATIBLE_SIZE;
     if (x_->field != A->field || y_->field != A->field)
         return MTX_ERR_INCOMPATIBLE_FIELD;
     if (x_->precision != A->precision || y_->precision != A->precision)
         return MTX_ERR_INCOMPATIBLE_PRECISION;
+    if (trans == mtx_notrans) {
+        if (A->num_rows != y_->size || A->num_columns != x_->size)
+            return MTX_ERR_INCOMPATIBLE_SIZE;
+    } else if (trans == mtx_trans || trans == mtx_conjtrans) {
+        if (A->num_columns != y_->size || A->num_rows != x_->size)
+            return MTX_ERR_INCOMPATIBLE_SIZE;
+    }
+    if (A->num_rows == 0 || A->num_columns == 0)
+        return MTX_SUCCESS;
 
     if (A->field == mtx_field_real) {
         if (A->precision == mtx_single) {
