@@ -929,7 +929,7 @@ int test_mtxmatrix_to_mtxfile(void)
         struct mtxmatrix A;
         int num_rows = 3;
         int num_columns = 3;
-        float Adata[] = {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0, 8.0f, 9.0f};
+        float Adata[] = {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f, 9.0f};
         int Asize = sizeof(Adata) / sizeof(*Adata);
         err = mtxmatrix_init_array_real_single(&A, num_rows, num_columns, Adata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
@@ -981,7 +981,7 @@ int test_mtxmatrix_to_mtxfile(void)
         struct mtxmatrix A;
         int num_rows = 2;
         int num_columns = 2;
-        float Adata[][2] = {{1.0f, 2.0f}, {3.0f, 4.0f}, {5.0f, 6.0f}, {7.0, 8.0f}};
+        float Adata[][2] = {{1.0f, 2.0f}, {3.0f, 4.0f}, {5.0f, 6.0f}, {7.0f, 8.0f}};
         int Asize = sizeof(Adata) / sizeof(*Adata);
         err = mtxmatrix_init_array_complex_single(&A, num_rows, num_columns, Adata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
@@ -1037,7 +1037,7 @@ int test_mtxmatrix_to_mtxfile(void)
         struct mtxmatrix A;
         int num_rows = 3;
         int num_columns = 3;
-        int32_t Adata[] = {1, 2, 3, 4, 5, 6, 7.0, 8, 9};
+        int32_t Adata[] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
         int Asize = sizeof(Adata) / sizeof(*Adata);
         err = mtxmatrix_init_array_integer_single(&A, num_rows, num_columns, Adata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
@@ -1063,7 +1063,7 @@ int test_mtxmatrix_to_mtxfile(void)
         struct mtxmatrix A;
         int num_rows = 3;
         int num_columns = 3;
-        int64_t Adata[] = {1, 2, 3, 4, 5, 6, 7.0, 8, 9};
+        int64_t Adata[] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
         int Asize = sizeof(Adata) / sizeof(*Adata);
         err = mtxmatrix_init_array_integer_double(&A, num_rows, num_columns, Adata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
@@ -1333,7 +1333,7 @@ int test_mtxmatrix_partition_array(void)
         struct mtxmatrix src;
         int num_rows = 3;
         int num_columns = 3;
-        float srcdata[] = {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0, 8.0f, 9.0f};
+        float srcdata[] = {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f, 9.0f};
         err = mtxmatrix_init_array_real_single(&src, num_rows, num_columns, srcdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
@@ -1459,7 +1459,7 @@ int test_mtxmatrix_join_array(void)
         int num_rows[] = {2, 1};
         int num_columns[] = {3, 3};
         float srcdata0[] = {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f};
-        float srcdata1[] = {7.0, 8.0f, 9.0f};
+        float srcdata1[] = {7.0f, 8.0f, 9.0f};
         err = mtxmatrix_init_array_real_single(&srcs[0], num_rows[0], num_columns[0], srcdata0);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxmatrix_init_array_real_single(&srcs[1], num_rows[1], num_columns[1], srcdata1);
@@ -1625,7 +1625,7 @@ int test_mtxmatrix_gemv_array(void)
         struct mtxvector y;
         int num_rows = 3;
         int num_columns = 3;
-        float Adata[] = {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0, 8.0f, 9.0f};
+        float Adata[] = {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f, 9.0f};
         float xdata[] = {3.0f, 2.0f, 1.0f};
         float ydata[] = {1.0f, 0.0f, 2.0f};
         err = mtxmatrix_init_array_real_single(&A, num_rows, num_columns, Adata);
@@ -1783,7 +1783,7 @@ int test_mtxmatrix_gemv_array(void)
         struct mtxvector y;
         int num_rows = 2;
         int num_columns = 2;
-        float Adata[][2] = {{1.0f,2.0f}, {3.0f,4.0f}, {5.0f,6.0f}, {7.0,8.0f}};
+        float Adata[][2] = {{1.0f,2.0f}, {3.0f,4.0f}, {5.0f,6.0f}, {7.0f,8.0f}};
         float xdata[][2] = {{3.0f,1.0f}, {1.0f,2.0f}};
         float ydata[][2] = {{1.0f,0.0f}, {2.0f,2.0f}};
         err = mtxmatrix_init_array_complex_single(&A, num_rows, num_columns, Adata);
@@ -2219,7 +2219,7 @@ int test_mtxmatrix_gemv_array(void)
         struct mtxvector y;
         int num_rows = 3;
         int num_columns = 3;
-        int32_t Adata[] = {1, 2, 3, 4, 5, 6, 7.0, 8, 9};
+        int32_t Adata[] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
         int32_t xdata[] = {3, 2, 1};
         int32_t ydata[] = {1, 0, 2};
         err = mtxmatrix_init_array_integer_single(&A, num_rows, num_columns, Adata);
@@ -2675,7 +2675,7 @@ int test_mtxmatrix_gemv_coordinate(void)
         int num_nonzeros = 3;
         int Arowidx[] = {0, 0, 1};
         int Acolidx[] = {0, 1, 1};
-        float Adata[][2] = {{1.0f,2.0f}, {3.0f,4.0f}, {7.0,8.0f}};
+        float Adata[][2] = {{1.0f,2.0f}, {3.0f,4.0f}, {7.0f,8.0f}};
         float xdata[][2] = {{3.0f,1.0f}, {1.0f,2.0f}};
         float ydata[][2] = {{1.0f,0.0f}, {2.0f,2.0f}};
         err = mtxmatrix_init_coordinate_complex_single(

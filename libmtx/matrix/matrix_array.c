@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-02-22
+ * Last modified: 2022-02-23
  *
  * Data structures for matrices in array format.
  */
@@ -1675,6 +1675,8 @@ int mtxmatrix_array_cgemv(
         if (A->num_columns != y_->size || A->num_rows != x_->size)
             return MTX_ERR_INCOMPATIBLE_SIZE;
     }
+    if (A->num_rows == 0 || A->num_columns == 0)
+        return MTX_SUCCESS;
 
     if (A->field != mtx_field_complex)
         return MTX_ERR_INCOMPATIBLE_FIELD;
@@ -1853,6 +1855,8 @@ int mtxmatrix_array_zgemv(
         if (A->num_columns != y_->size || A->num_rows != x_->size)
             return MTX_ERR_INCOMPATIBLE_SIZE;
     }
+    if (A->num_rows == 0 || A->num_columns == 0)
+        return MTX_SUCCESS;
 
     if (A->field != mtx_field_complex)
         return MTX_ERR_INCOMPATIBLE_FIELD;
