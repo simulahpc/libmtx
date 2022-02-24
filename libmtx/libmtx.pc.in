@@ -5,6 +5,6 @@ includedir=@includedir@
 
 Name: libmtx
 Description: C library and utility programs for Matrix Market files
-Version: 0.1.0
+Version: @PACKAGE_VERSION@
 Libs: -L${libdir} -lmtx
 Cflags: -I${includedir} @libmtx_CPPFLAGS@

@@ -169,5 +169,5 @@ AC_SUBST(LIBMTX_RELEASE_VERSION)
 AC_CONFIG_FILES([
 	Makefile
 	libmtx/version.h
-	libmtx/libmtx.pc:libmtx/libmtx.pc.in])
+	libmtx/libmtx-${LIBMTX_MAJOR_VERSION}.pc:libmtx/libmtx.pc.in])
 AC_OUTPUT

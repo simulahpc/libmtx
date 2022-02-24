@@ -194,7 +194,7 @@ nobase_nodist_include_HEADERS = \
 
 # pkg-config files
 pkgconfigdir = $(libdir)/pkgconfig
-pkgconfig_DATA = libmtx/libmtx.pc
+pkgconfig_DATA = libmtx/libmtx-$(LIBMTX_MAJOR_VERSION).pc
 
 # Matrix Market utility programs
 bin_PROGRAMS = \
