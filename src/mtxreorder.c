@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-02-15
+ * Last modified: 2022-02-24
  *
  * Reorder the nonzeros of a sparse matrix and any number of vectors
  * in Matrix Market format according to a specified reordering
@@ -30,6 +30,7 @@
 #include <errno.h>
 
 #include <inttypes.h>
+#include <locale.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -415,6 +416,7 @@ int main(int argc, char *argv[])
     int err;
     struct timespec t0, t1;
     FILE * diagf = stderr;
+    setlocale(LC_ALL, "");
 
     /* 1. Parse program options. */
     struct program_options args;

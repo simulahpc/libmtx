@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-01-03
+ * Last modified: 2022-02-24
  *
  * Draw an image of a matrix sparsity pattern and save to a PNG file.
  */
@@ -30,6 +30,7 @@
 #include <errno.h>
 
 #include <inttypes.h>
+#include <locale.h>
 #include <math.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -1001,6 +1002,7 @@ int main(int argc, char *argv[])
     int err;
     struct timespec t0, t1;
     FILE * diagf = stderr;
+    setlocale(LC_ALL, "");
 
     /* 1. Parse program options. */
     struct program_options args;
