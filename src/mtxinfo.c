@@ -1,23 +1,22 @@
 /* This file is part of Libmtx.
  *
- * Copyright (C) 2021 James D. Trotter
+ * Copyright (C) 2022 James D. Trotter
  *
- * Libmtx is free software: you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 3 of the
- * License, or (at your option) any later version.
+ * Libmtx is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * Libmtx is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * Libmtx is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with Libmtx.  If not, see
- * <https://www.gnu.org/licenses/>.
+ * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-08-09
+ * Last modified: 2022-02-24
  *
  * Read, validate and print some high-level information about a Matrix
  * Market file.
@@ -39,7 +38,7 @@
 #include <time.h>
 
 const char * program_name = "mtxinfo";
-const char * program_version = "0.1.0";
+const char * program_version = LIBMTX_VERSION;
 const char * program_copyright =
     "Copyright (C) 2021 James D. Trotter";
 const char * program_license =
@@ -112,8 +111,7 @@ static void program_options_print_help(
 static void program_options_print_version(
     FILE * f)
 {
-    fprintf(f, "%s %s (Libmtx %s)\n", program_name, program_version,
-            libmtx_version);
+    fprintf(f, "%s %s (Libmtx %s)\n", program_name, program_version, libmtx_version);
     fprintf(f, "%s\n", program_copyright);
     fprintf(f, "%s\n", program_license);
 }

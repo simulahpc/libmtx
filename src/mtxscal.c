@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-01-19
+ * Last modified: 2022-02-24
  *
  * Scale a vector by a constant.
  *
@@ -45,7 +45,7 @@
 #include <time.h>
 
 const char * program_name = "mtxscal";
-const char * program_version = "0.1.0";
+const char * program_version = LIBMTX_VERSION;
 const char * program_copyright =
     "Copyright (C) 2022 James D. Trotter";
 const char * program_license =
@@ -155,8 +155,7 @@ static void program_options_print_help(
 static void program_options_print_version(
     FILE * f)
 {
-    fprintf(f, "%s %s (Libmtx %s)\n", program_name, program_version,
-            libmtx_version);
+    fprintf(f, "%s %s (Libmtx %s)\n", program_name, program_version, libmtx_version);
     fprintf(f, "%s\n", program_copyright);
     fprintf(f, "%s\n", program_license);
 }
