@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-02-22
+ * Last modified: 2022-03-09
  *
  * Data structures for matrices.
  */
@@ -53,6 +53,7 @@ const char * mtxmatrixtype_str(
     case mtxmatrix_auto: return "auto";
     case mtxmatrix_array: return "array";
     case mtxmatrix_coordinate: return "coordinate";
+    case mtxmatrix_csr: return "csr";
     default: return mtxstrerror(MTX_ERR_INVALID_MATRIX_TYPE);
     }
 }
@@ -95,6 +96,9 @@ int mtxmatrixtype_parse(
     } else if (strncmp("coordinate", t, strlen("coordinate")) == 0) {
         t += strlen("coordinate");
         *matrix_type = mtxmatrix_coordinate;
+    } else if (strncmp("csr", t, strlen("csr")) == 0) {
+        t += strlen("csr");
+        *matrix_type = mtxmatrix_csr;
     } else {
         return MTX_ERR_INVALID_MATRIX_TYPE;
     }
@@ -124,6 +128,8 @@ void mtxmatrix_free(
         mtxmatrix_array_free(&matrix->storage.array);
     } else if (matrix->type == mtxmatrix_coordinate) {
         mtxmatrix_coordinate_free(&matrix->storage.coordinate);
+    } else if (matrix->type == mtxmatrix_csr) {
+        mtxmatrix_csr_free(&matrix->storage.csr);
     }
 }
 
@@ -141,6 +147,9 @@ int mtxmatrix_alloc_copy(
     } else if (src->type == mtxmatrix_coordinate) {
         return mtxmatrix_coordinate_alloc_copy(
             &dst->storage.coordinate, &src->storage.coordinate);
+    } else if (src->type == mtxmatrix_csr) {
+        return mtxmatrix_csr_alloc_copy(
+            &dst->storage.csr, &src->storage.csr);
     } else {
         return MTX_ERR_INVALID_MATRIX_TYPE;
     }
@@ -160,6 +169,9 @@ int mtxmatrix_init_copy(
     } else if (src->type == mtxmatrix_coordinate) {
         return mtxmatrix_coordinate_init_copy(
             &dst->storage.coordinate, &src->storage.coordinate);
+    } else if (src->type == mtxmatrix_csr) {
+        return mtxmatrix_csr_init_copy(
+            &dst->storage.csr, &src->storage.csr);
     } else {
         return MTX_ERR_INVALID_MATRIX_TYPE;
     }
@@ -185,6 +197,9 @@ int mtxmatrix_alloc_row_vector(
     } else if (matrix->type == mtxmatrix_coordinate) {
         return mtxmatrix_coordinate_alloc_row_vector(
             &matrix->storage.coordinate, vector, vector_type);
+    } else if (matrix->type == mtxmatrix_csr) {
+        return mtxmatrix_csr_alloc_row_vector(
+            &matrix->storage.csr, vector, vector_type);
     } else {
         return MTX_ERR_INVALID_MATRIX_TYPE;
     }
@@ -206,6 +221,9 @@ int mtxmatrix_alloc_column_vector(
     } else if (matrix->type == mtxmatrix_coordinate) {
         return mtxmatrix_coordinate_alloc_column_vector(
             &matrix->storage.coordinate, vector, vector_type);
+    } else if (matrix->type == mtxmatrix_csr) {
+        return mtxmatrix_csr_alloc_column_vector(
+            &matrix->storage.csr, vector, vector_type);
     } else {
         return MTX_ERR_INVALID_MATRIX_TYPE;
     }
@@ -483,6 +501,152 @@ int mtxmatrix_init_coordinate_pattern(
 }
 
 /*
+ * Compressed sparse row (CSR)
+ */
+
+/**
+ * ‘mtxmatrix_alloc_csr()’ allocates a matrix in CSR format.
+ */
+int mtxmatrix_alloc_csr(
+    struct mtxmatrix * matrix,
+    enum mtxfield field,
+    enum mtxprecision precision,
+    int num_rows,
+    int num_columns,
+    int64_t num_nonzeros)
+{
+    matrix->type = mtxmatrix_csr;
+    return mtxmatrix_csr_alloc(
+        &matrix->storage.csr,
+        field, precision, num_rows, num_columns, num_nonzeros);
+}
+
+/**
+ * ‘mtxmatrix_init_csr_real_single()’ allocates and initialises a
+ * matrix in CSR format with real, single precision coefficients.
+ */
+int mtxmatrix_init_csr_real_single(
+    struct mtxmatrix * matrix,
+    int num_rows,
+    int num_columns,
+    const int64_t * rowptr,
+    const int * colidx,
+    const float * data)
+{
+    matrix->type = mtxmatrix_csr;
+    return mtxmatrix_csr_init_real_single(
+        &matrix->storage.csr,
+        num_rows, num_columns, rowptr, colidx, data);
+}
+
+/**
+ * ‘mtxmatrix_init_csr_real_double()’ allocates and initialises a
+ * matrix in CSR format with real, double precision coefficients.
+ */
+int mtxmatrix_init_csr_real_double(
+    struct mtxmatrix * matrix,
+    int num_rows,
+    int num_columns,
+    const int64_t * rowptr,
+    const int * colidx,
+    const double * data)
+{
+    matrix->type = mtxmatrix_csr;
+    return mtxmatrix_csr_init_real_double(
+        &matrix->storage.csr,
+        num_rows, num_columns, rowptr, colidx, data);
+}
+
+/**
+ * ‘mtxmatrix_init_csr_complex_single()’ allocates and initialises a
+ * matrix in CSR format with complex, single precision coefficients.
+ */
+int mtxmatrix_init_csr_complex_single(
+    struct mtxmatrix * matrix,
+    int num_rows,
+    int num_columns,
+    const int64_t * rowptr,
+    const int * colidx,
+    const float (* data)[2])
+{
+    matrix->type = mtxmatrix_csr;
+    return mtxmatrix_csr_init_complex_single(
+        &matrix->storage.csr,
+        num_rows, num_columns, rowptr, colidx, data);
+}
+
+/**
+ * ‘mtxmatrix_init_csr_complex_double()’ allocates and initialises a
+ * matrix in CSR format with complex, double precision coefficients.
+ */
+int mtxmatrix_init_csr_complex_double(
+    struct mtxmatrix * matrix,
+    int num_rows,
+    int num_columns,
+    const int64_t * rowptr,
+    const int * colidx,
+    const double (* data)[2])
+{
+    matrix->type = mtxmatrix_csr;
+    return mtxmatrix_csr_init_complex_double(
+        &matrix->storage.csr,
+        num_rows, num_columns, rowptr, colidx, data);
+}
+
+/**
+ * ‘mtxmatrix_init_csr_integer_single()’ allocates and initialises a
+ * matrix in CSR format with integer, single precision coefficients.
+ */
+int mtxmatrix_init_csr_integer_single(
+    struct mtxmatrix * matrix,
+    int num_rows,
+    int num_columns,
+    const int64_t * rowptr,
+    const int * colidx,
+    const int32_t * data)
+{
+    matrix->type = mtxmatrix_csr;
+    return mtxmatrix_csr_init_integer_single(
+        &matrix->storage.csr,
+        num_rows, num_columns, rowptr, colidx, data);
+}
+
+/**
+ * ‘mtxmatrix_init_csr_integer_double()’ allocates and initialises a
+ * matrix in CSR format with integer, double precision coefficients.
+ */
+int mtxmatrix_init_csr_integer_double(
+    struct mtxmatrix * matrix,
+    int num_rows,
+    int num_columns,
+    const int64_t * rowptr,
+    const int * colidx,
+    const int64_t * data)
+{
+    matrix->type = mtxmatrix_csr;
+    return mtxmatrix_csr_init_integer_double(
+        &matrix->storage.csr,
+        num_rows, num_columns, rowptr, colidx, data);
+}
+
+/**
+ * ‘mtxmatrix_init_csr_pattern()’ allocates and initialises a matrix
+ * in CSR format with integer, double precision coefficients.
+ */
+int mtxmatrix_init_csr_pattern(
+    struct mtxmatrix * matrix,
+    int num_rows,
+    int num_columns,
+    const int64_t * rowptr,
+    const int * colidx)
+{
+    matrix->type = mtxmatrix_csr;
+    return mtxmatrix_csr_init_pattern(
+        &matrix->storage.csr,
+        num_rows, num_columns, rowptr, colidx);
+}
+
+/*
  * Convert to and from Matrix Market format
  */
 
@@ -513,6 +677,10 @@ int mtxmatrix_from_mtxfile(
         matrix->type = mtxmatrix_coordinate;
         return mtxmatrix_coordinate_from_mtxfile(
             &matrix->storage.coordinate, mtxfile);
+    } else if (type == mtxmatrix_csr) {
+        matrix->type = mtxmatrix_csr;
+        return mtxmatrix_csr_from_mtxfile(
+            &matrix->storage.csr, mtxfile);
     } else {
         return MTX_ERR_INVALID_MATRIX_TYPE;
     }
@@ -533,6 +701,9 @@ int mtxmatrix_to_mtxfile(
     } else if (src->type == mtxmatrix_coordinate) {
         return mtxmatrix_coordinate_to_mtxfile(
             dst, &src->storage.coordinate, mtxfmt);
+    } else if (src->type == mtxmatrix_csr) {
+        return mtxmatrix_csr_to_mtxfile(
+            dst, &src->storage.csr, mtxfmt);
     } else {
         return MTX_ERR_INVALID_MATRIX_TYPE;
     }
@@ -833,6 +1004,9 @@ int mtxmatrix_nzrows(
     } else if (matrix->type == mtxmatrix_coordinate) {
         return mtxmatrix_coordinate_nzrows(
             &matrix->storage.coordinate, num_nonzero_rows, size, nonzero_rows);
+    } else if (matrix->type == mtxmatrix_csr) {
+        return mtxmatrix_csr_nzrows(
+            &matrix->storage.csr, num_nonzero_rows, size, nonzero_rows);
     } else {
         return MTX_ERR_INVALID_MATRIX_TYPE;
     }
@@ -865,6 +1039,9 @@ int mtxmatrix_nzcols(
     } else if (matrix->type == mtxmatrix_coordinate) {
         return mtxmatrix_coordinate_nzcols(
             &matrix->storage.coordinate, num_nonzero_columns, size, nonzero_columns);
+    } else if (matrix->type == mtxmatrix_csr) {
+        return mtxmatrix_csr_nzcols(
+            &matrix->storage.csr, num_nonzero_columns, size, nonzero_columns);
     } else {
         return MTX_ERR_INVALID_MATRIX_TYPE;
     }
@@ -910,6 +1087,9 @@ int mtxmatrix_partition(
     } else if (src->type == mtxmatrix_coordinate) {
         return mtxmatrix_coordinate_partition(
             dsts, &src->storage.coordinate, rowpart, colpart);
+    } else if (src->type == mtxmatrix_csr) {
+        return mtxmatrix_csr_partition(
+            dsts, &src->storage.csr, rowpart, colpart);
     } else {
         return MTX_ERR_INVALID_MATRIX_TYPE;
     }
@@ -955,6 +1135,10 @@ int mtxmatrix_join(
         dst->type = mtxmatrix_coordinate;
         return mtxmatrix_coordinate_join(
             &dst->storage.coordinate, srcs, rowpart, colpart);
+    } else if (srcs[0].type == mtxmatrix_csr) {
+        dst->type = mtxmatrix_csr;
+        return mtxmatrix_csr_join(
+            &dst->storage.csr, srcs, rowpart, colpart);
     } else {
         return MTX_ERR_INVALID_MATRIX_TYPE;
     }
@@ -978,6 +1162,9 @@ int mtxmatrix_swap(
     } else if (X->type == mtxmatrix_coordinate && Y->type == mtxmatrix_coordinate) {
         return mtxmatrix_coordinate_swap(
             &X->storage.coordinate, &Y->storage.coordinate);
+    } else if (X->type == mtxmatrix_csr && Y->type == mtxmatrix_csr) {
+        return mtxmatrix_csr_swap(
+            &X->storage.csr, &Y->storage.csr);
     } else {
         return MTX_ERR_INVALID_MATRIX_TYPE;
     }
@@ -996,6 +1183,9 @@ int mtxmatrix_copy(
     } else if (X->type == mtxmatrix_coordinate && Y->type == mtxmatrix_coordinate) {
         return mtxmatrix_coordinate_copy(
             &Y->storage.coordinate, &X->storage.coordinate);
+    } else if (X->type == mtxmatrix_csr && Y->type == mtxmatrix_csr) {
+        return mtxmatrix_csr_copy(
+            &Y->storage.csr, &X->storage.csr);
     } else {
         return MTX_ERR_INVALID_MATRIX_TYPE;
     }
@@ -1016,6 +1206,9 @@ int mtxmatrix_sscal(
     } else if (X->type == mtxmatrix_coordinate) {
         return mtxmatrix_coordinate_sscal(
             a, &X->storage.coordinate, num_flops);
+    } else if (X->type == mtxmatrix_csr) {
+        return mtxmatrix_csr_sscal(
+            a, &X->storage.csr, num_flops);
     } else {
         return MTX_ERR_INVALID_MATRIX_TYPE;
     }
@@ -1036,6 +1229,9 @@ int mtxmatrix_dscal(
     } else if (X->type == mtxmatrix_coordinate) {
         return mtxmatrix_coordinate_dscal(
             a, &X->storage.coordinate, num_flops);
+    } else if (X->type == mtxmatrix_csr) {
+        return mtxmatrix_csr_dscal(
+            a, &X->storage.csr, num_flops);
     } else {
         return MTX_ERR_INVALID_MATRIX_TYPE;
     }
@@ -1057,6 +1253,9 @@ int mtxmatrix_saxpy(
     } else if (X->type == mtxmatrix_coordinate && Y->type == mtxmatrix_coordinate) {
         return mtxmatrix_coordinate_saxpy(
             a, &X->storage.coordinate, &Y->storage.coordinate, num_flops);
+    } else if (X->type == mtxmatrix_csr && Y->type == mtxmatrix_csr) {
+        return mtxmatrix_csr_saxpy(
+            a, &X->storage.csr, &Y->storage.csr, num_flops);
     } else {
         return MTX_ERR_INVALID_MATRIX_TYPE;
     }
@@ -1078,6 +1277,9 @@ int mtxmatrix_daxpy(
     } else if (X->type == mtxmatrix_coordinate && Y->type == mtxmatrix_coordinate) {
         return mtxmatrix_coordinate_daxpy(
             a, &X->storage.coordinate, &Y->storage.coordinate, num_flops);
+    } else if (X->type == mtxmatrix_csr && Y->type == mtxmatrix_csr) {
+        return mtxmatrix_csr_daxpy(
+            a, &X->storage.csr, &Y->storage.csr, num_flops);
     } else {
         return MTX_ERR_INVALID_MATRIX_TYPE;
     }
@@ -1099,6 +1301,9 @@ int mtxmatrix_saypx(
     } else if (X->type == mtxmatrix_coordinate && Y->type == mtxmatrix_coordinate) {
         return mtxmatrix_coordinate_saypx(
             a, &Y->storage.coordinate, &X->storage.coordinate, num_flops);
+    } else if (X->type == mtxmatrix_csr && Y->type == mtxmatrix_csr) {
+        return mtxmatrix_csr_saypx(
+            a, &Y->storage.csr, &X->storage.csr, num_flops);
     } else {
         return MTX_ERR_INVALID_MATRIX_TYPE;
     }
@@ -1120,6 +1325,9 @@ int mtxmatrix_daypx(
     } else if (X->type == mtxmatrix_coordinate && Y->type == mtxmatrix_coordinate) {
         return mtxmatrix_coordinate_daypx(
             a, &Y->storage.coordinate, &X->storage.coordinate, num_flops);
+    } else if (X->type == mtxmatrix_csr && Y->type == mtxmatrix_csr) {
+        return mtxmatrix_csr_daypx(
+            a, &Y->storage.csr, &X->storage.csr, num_flops);
     } else {
         return MTX_ERR_INVALID_MATRIX_TYPE;
     }
@@ -1141,6 +1349,9 @@ int mtxmatrix_sdot(
     } else if (X->type == mtxmatrix_coordinate && Y->type == mtxmatrix_coordinate) {
         return mtxmatrix_coordinate_sdot(
             &X->storage.coordinate, &Y->storage.coordinate, dot, num_flops);
+    } else if (X->type == mtxmatrix_csr && Y->type == mtxmatrix_csr) {
+        return mtxmatrix_csr_sdot(
+            &X->storage.csr, &Y->storage.csr, dot, num_flops);
     } else {
         return MTX_ERR_INVALID_MATRIX_TYPE;
     }
@@ -1162,6 +1373,9 @@ int mtxmatrix_ddot(
     } else if (X->type == mtxmatrix_coordinate && Y->type == mtxmatrix_coordinate) {
         return mtxmatrix_coordinate_ddot(
             &X->storage.coordinate, &Y->storage.coordinate, dot, num_flops);
+    } else if (X->type == mtxmatrix_csr && Y->type == mtxmatrix_csr) {
+        return mtxmatrix_csr_ddot(
+            &X->storage.csr, &Y->storage.csr, dot, num_flops);
     } else {
         return MTX_ERR_INVALID_MATRIX_TYPE;
     }
@@ -1185,6 +1399,9 @@ int mtxmatrix_cdotu(
     } else if (X->type == mtxmatrix_coordinate && Y->type == mtxmatrix_coordinate) {
         return mtxmatrix_coordinate_cdotu(
             &X->storage.coordinate, &Y->storage.coordinate, dot, num_flops);
+    } else if (X->type == mtxmatrix_csr && Y->type == mtxmatrix_csr) {
+        return mtxmatrix_csr_cdotu(
+            &X->storage.csr, &Y->storage.csr, dot, num_flops);
     } else {
         return MTX_ERR_INVALID_MATRIX_TYPE;
     }
@@ -1208,6 +1425,9 @@ int mtxmatrix_zdotu(
     } else if (X->type == mtxmatrix_coordinate && Y->type == mtxmatrix_coordinate) {
         return mtxmatrix_coordinate_zdotu(
             &X->storage.coordinate, &Y->storage.coordinate, dot, num_flops);
+    } else if (X->type == mtxmatrix_csr && Y->type == mtxmatrix_csr) {
+        return mtxmatrix_csr_zdotu(
+            &X->storage.csr, &Y->storage.csr, dot, num_flops);
     } else {
         return MTX_ERR_INVALID_MATRIX_TYPE;
     }
@@ -1230,6 +1450,9 @@ int mtxmatrix_cdotc(
     } else if (X->type == mtxmatrix_coordinate && Y->type == mtxmatrix_coordinate) {
         return mtxmatrix_coordinate_cdotc(
             &X->storage.coordinate, &Y->storage.coordinate, dot, num_flops);
+    } else if (X->type == mtxmatrix_csr && Y->type == mtxmatrix_csr) {
+        return mtxmatrix_csr_cdotc(
+            &X->storage.csr, &Y->storage.csr, dot, num_flops);
     } else {
         return MTX_ERR_INVALID_MATRIX_TYPE;
     }
@@ -1252,6 +1475,9 @@ int mtxmatrix_zdotc(
     } else if (X->type == mtxmatrix_coordinate && Y->type == mtxmatrix_coordinate) {
         return mtxmatrix_coordinate_zdotc(
             &X->storage.coordinate, &Y->storage.coordinate, dot, num_flops);
+    } else if (X->type == mtxmatrix_csr && Y->type == mtxmatrix_csr) {
+        return mtxmatrix_csr_zdotc(
+            &X->storage.csr, &Y->storage.csr, dot, num_flops);
     } else {
         return MTX_ERR_INVALID_MATRIX_TYPE;
     }
@@ -1270,6 +1496,8 @@ int mtxmatrix_snrm2(
         return mtxmatrix_array_snrm2(&X->storage.array, nrm2, num_flops);
     } else if (X->type == mtxmatrix_coordinate) {
         return mtxmatrix_coordinate_snrm2(&X->storage.coordinate, nrm2, num_flops);
+    } else if (X->type == mtxmatrix_csr) {
+        return mtxmatrix_csr_snrm2(&X->storage.csr, nrm2, num_flops);
     } else {
         return MTX_ERR_INVALID_MATRIX_TYPE;
     }
@@ -1288,6 +1516,8 @@ int mtxmatrix_dnrm2(
         return mtxmatrix_array_dnrm2(&X->storage.array, nrm2, num_flops);
     } else if (X->type == mtxmatrix_coordinate) {
         return mtxmatrix_coordinate_dnrm2(&X->storage.coordinate, nrm2, num_flops);
+    } else if (X->type == mtxmatrix_csr) {
+        return mtxmatrix_csr_dnrm2(&X->storage.csr, nrm2, num_flops);
     } else {
         return MTX_ERR_INVALID_MATRIX_TYPE;
     }
@@ -1308,6 +1538,8 @@ int mtxmatrix_sasum(
         return mtxmatrix_array_sasum(&X->storage.array, asum, num_flops);
     } else if (X->type == mtxmatrix_coordinate) {
         return mtxmatrix_coordinate_sasum(&X->storage.coordinate, asum, num_flops);
+    } else if (X->type == mtxmatrix_csr) {
+        return mtxmatrix_csr_sasum(&X->storage.csr, asum, num_flops);
     } else {
         return MTX_ERR_INVALID_MATRIX_TYPE;
     }
@@ -1328,6 +1560,8 @@ int mtxmatrix_dasum(
         return mtxmatrix_array_dasum(&X->storage.array, asum, num_flops);
     } else if (X->type == mtxmatrix_coordinate) {
         return mtxmatrix_coordinate_dasum(&X->storage.coordinate, asum, num_flops);
+    } else if (X->type == mtxmatrix_csr) {
+        return mtxmatrix_csr_dasum(&X->storage.csr, asum, num_flops);
     } else {
         return MTX_ERR_INVALID_MATRIX_TYPE;
     }
@@ -1347,6 +1581,8 @@ int mtxmatrix_iamax(
         return mtxmatrix_array_iamax(&X->storage.array, iamax);
     } else if (X->type == mtxmatrix_coordinate) {
         return mtxmatrix_coordinate_iamax(&X->storage.coordinate, iamax);
+    } else if (X->type == mtxmatrix_csr) {
+        return mtxmatrix_csr_iamax(&X->storage.csr, iamax);
     } else {
         return MTX_ERR_INVALID_MATRIX_TYPE;
     }
@@ -1379,6 +1615,9 @@ int mtxmatrix_sgemv(
     } else if (A->type == mtxmatrix_coordinate) {
         return mtxmatrix_coordinate_sgemv(
             trans, alpha, &A->storage.coordinate, x, beta, y);
+    } else if (A->type == mtxmatrix_csr) {
+        return mtxmatrix_csr_sgemv(
+            trans, alpha, &A->storage.csr, x, beta, y);
     } else {
         return MTX_ERR_INVALID_MATRIX_TYPE;
     }
@@ -1407,6 +1646,9 @@ int mtxmatrix_dgemv(
     } else if (A->type == mtxmatrix_coordinate) {
         return mtxmatrix_coordinate_dgemv(
             trans, alpha, &A->storage.coordinate, x, beta, y);
+    } else if (A->type == mtxmatrix_csr) {
+        return mtxmatrix_csr_dgemv(
+            trans, alpha, &A->storage.csr, x, beta, y);
     } else {
         return MTX_ERR_INVALID_MATRIX_TYPE;
     }
@@ -1436,6 +1678,9 @@ int mtxmatrix_cgemv(
     } else if (A->type == mtxmatrix_coordinate) {
         return mtxmatrix_coordinate_cgemv(
             trans, alpha, &A->storage.coordinate, x, beta, y);
+    } else if (A->type == mtxmatrix_csr) {
+        return mtxmatrix_csr_cgemv(
+            trans, alpha, &A->storage.csr, x, beta, y);
     } else {
         return MTX_ERR_INVALID_MATRIX_TYPE;
     }
@@ -1465,6 +1710,9 @@ int mtxmatrix_zgemv(
     } else if (A->type == mtxmatrix_coordinate) {
         return mtxmatrix_coordinate_zgemv(
             trans, alpha, &A->storage.coordinate, x, beta, y);
+    } else if (A->type == mtxmatrix_csr) {
+        return mtxmatrix_csr_zgemv(
+            trans, alpha, &A->storage.csr, x, beta, y);
     } else {
         return MTX_ERR_INVALID_MATRIX_TYPE;
     }

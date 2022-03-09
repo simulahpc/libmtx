@@ -77,6 +77,7 @@ libmtx_la_SOURCES = \
 	libmtx/matrix/matrix.c \
 	libmtx/matrix/matrix_array.c \
 	libmtx/matrix/matrix_coordinate.c \
+	libmtx/matrix/matrix_csr.c \
 	libmtx/mtx/assembly.c \
 	libmtx/mtx/blas.c \
 	libmtx/mtx/cg.c \
@@ -151,6 +152,7 @@ nobase_include_HEADERS = \
 	libmtx/matrix/matrix.h \
 	libmtx/matrix/matrix_array.h \
 	libmtx/matrix/matrix_coordinate.h \
+	libmtx/matrix/matrix_csr.h \
 	libmtx/mtx/assembly.h \
 	libmtx/mtx/blas.h \
 	libmtx/mtx/cg.h \

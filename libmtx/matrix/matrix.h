@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-02-22
+ * Last modified: 2022-03-09
  *
  * Data structures for matrices.
  */
@@ -31,6 +31,7 @@
 #include <libmtx/util/transpose.h>
 #include <libmtx/matrix/matrix_array.h>
 #include <libmtx/matrix/matrix_coordinate.h>
+#include <libmtx/matrix/matrix_csr.h>
 #include <libmtx/vector/vector.h>
 
 #ifdef LIBMTX_HAVE_LIBZ
@@ -58,6 +59,7 @@ enum mtxmatrixtype
     mtxmatrix_auto,       /* automatic selection of matrix type */
     mtxmatrix_array,      /* array format for dense matrices */
     mtxmatrix_coordinate, /* coordinate format for sparse matrices */
+    mtxmatrix_csr,        /* compressed sparse row */
 };
 
 /**
@@ -105,7 +107,8 @@ int mtxmatrixtype_parse(
 struct mtxmatrix
 {
     /**
-     * ‘format’ is the matrix format: ‘array’ or ‘coordinate’.
+     * ‘type’ denotes the matrix type or storage format: ‘array’,
+     * ‘coordinate’ or ‘csr’.
      */
     enum mtxmatrixtype type;
 
@@ -117,6 +120,7 @@ struct mtxmatrix
     {
         struct mtxmatrix_array array;
         struct mtxmatrix_coordinate coordinate;
+        struct mtxmatrix_csr csr;
     } storage;
 };
 
@@ -248,7 +252,7 @@ int mtxmatrix_init_coordinate_real_single(
     int64_t num_nonzeros,
     const int * rowidx,
     const int * colidx,
-    const float * values);
+    const float * data);
 
 /**
  * ‘mtxmatrix_init_coordinate_real_double()’ allocates and initialises
@@ -262,7 +266,7 @@ int mtxmatrix_init_coordinate_real_double(
     int64_t num_nonzeros,
     const int * rowidx,
     const int * colidx,
-    const double * values);
+    const double * data);
 
 /**
  * ‘mtxmatrix_init_coordinate_complex_single()’ allocates and
@@ -276,7 +280,7 @@ int mtxmatrix_init_coordinate_complex_single(
     int64_t num_nonzeros,
     const int * rowidx,
     const int * colidx,
-    const float (* values)[2]);
+    const float (* data)[2]);
 
 /**
  * ‘mtxmatrix_init_coordinate_complex_double()’ allocates and
@@ -290,7 +294,7 @@ int mtxmatrix_init_coordinate_complex_double(
     int64_t num_nonzeros,
     const int * rowidx,
     const int * colidx,
-    const double (* values)[2]);
+    const double (* data)[2]);
 
 /**
  * ‘mtxmatrix_init_coordinate_integer_single()’ allocates and
@@ -304,7 +308,7 @@ int mtxmatrix_init_coordinate_integer_single(
     int64_t num_nonzeros,
     const int * rowidx,
     const int * colidx,
-    const int32_t * values);
+    const int32_t * data);
 
 /**
  * ‘mtxmatrix_init_coordinate_integer_double()’ allocates and
@@ -318,7 +322,7 @@ int mtxmatrix_init_coordinate_integer_double(
     int64_t num_nonzeros,
     const int * rowidx,
     const int * colidx,
-    const int64_t * values);
+    const int64_t * data);
 
 /**
  * ‘mtxmatrix_init_coordinate_pattern()’ allocates and initialises a
@@ -331,6 +335,104 @@ int mtxmatrix_init_coordinate_pattern(
     int num_columns,
     int64_t num_nonzeros,
     const int * rowidx,
+    const int * colidx);
+
+/*
+ * Compressed sparse row (CSR)
+ */
+
+/**
+ * ‘mtxmatrix_alloc_csr()’ allocates a matrix in CSR format.
+ */
+int mtxmatrix_alloc_csr(
+    struct mtxmatrix * matrix,
+    enum mtxfield field,
+    enum mtxprecision precision,
+    int num_rows,
+    int num_columns,
+    int64_t num_nonzeros);
+
+/**
+ * ‘mtxmatrix_init_csr_real_single()’ allocates and initialises a
+ * matrix in CSR format with real, single precision coefficients.
+ */
+int mtxmatrix_init_csr_real_single(
+    struct mtxmatrix * matrix,
+    int num_rows,
+    int num_columns,
+    const int64_t * rowptr,
+    const int * colidx,
+    const float * data);
+
+/**
+ * ‘mtxmatrix_init_csr_real_double()’ allocates and initialises a
+ * matrix in CSR format with real, double precision coefficients.
+ */
+int mtxmatrix_init_csr_real_double(
+    struct mtxmatrix * matrix,
+    int num_rows,
+    int num_columns,
+    const int64_t * rowptr,
+    const int * colidx,
+    const double * data);
+
+/**
+ * ‘mtxmatrix_init_csr_complex_single()’ allocates and initialises a
+ * matrix in CSR format with complex, single precision coefficients.
+ */
+int mtxmatrix_init_csr_complex_single(
+    struct mtxmatrix * matrix,
+    int num_rows,
+    int num_columns,
+    const int64_t * rowptr,
+    const int * colidx,
+    const float (* data)[2]);
+
+/**
+ * ‘mtxmatrix_init_csr_complex_double()’ allocates and initialises a
+ * matrix in CSR format with complex, double precision coefficients.
+ */
+int mtxmatrix_init_csr_complex_double(
+    struct mtxmatrix * matrix,
+    int num_rows,
+    int num_columns,
+    const int64_t * rowptr,
+    const int * colidx,
+    const double (* data)[2]);
+
+/**
+ * ‘mtxmatrix_init_csr_integer_single()’ allocates and initialises a
+ * matrix in CSR format with integer, single precision coefficients.
+ */
+int mtxmatrix_init_csr_integer_single(
+    struct mtxmatrix * matrix,
+    int num_rows,
+    int num_columns,
+    const int64_t * rowptr,
+    const int * colidx,
+    const int32_t * data);
+
+/**
+ * ‘mtxmatrix_init_csr_integer_double()’ allocates and initialises a
+ * matrix in CSR format with integer, double precision coefficients.
+ */
+int mtxmatrix_init_csr_integer_double(
+    struct mtxmatrix * matrix,
+    int num_rows,
+    int num_columns,
+    const int64_t * rowptr,
+    const int * colidx,
+    const int64_t * data);
+
+/**
+ * ‘mtxmatrix_init_csr_pattern()’ allocates and initialises a matrix
+ * in CSR format with integer, double precision coefficients.
+ */
+int mtxmatrix_init_csr_pattern(
+    struct mtxmatrix * matrix,
+    int num_rows,
+    int num_columns,
+    const int64_t * rowptr,
     const int * colidx);
 
 /*
@@ -356,6 +458,7 @@ int mtxmatrix_alloc_column_vector(
     const struct mtxmatrix * matrix,
     struct mtxvector * vector,
     enum mtxvectortype vector_type);
+
 
 /*
  * Convert to and from Matrix Market format

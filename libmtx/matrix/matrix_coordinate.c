@@ -49,7 +49,7 @@
  */
 
 /**
- * `mtxmatrix_coordinate_free()' frees storage allocated for a matrix.
+ * ‘mtxmatrix_coordinate_free()’ frees storage allocated for a matrix.
  */
 void mtxmatrix_coordinate_free(
     struct mtxmatrix_coordinate * matrix)
@@ -78,7 +78,7 @@ void mtxmatrix_coordinate_free(
 }
 
 /**
- * `mtxmatrix_coordinate_alloc_copy()' allocates a copy of a matrix
+ * ‘mtxmatrix_coordinate_alloc_copy()’ allocates a copy of a matrix
  * without initialising the values.
  */
 int mtxmatrix_coordinate_alloc_copy(
@@ -92,7 +92,7 @@ int mtxmatrix_coordinate_alloc_copy(
 }
 
 /**
- * `mtxmatrix_coordinate_init_copy()' allocates a copy of a matrix and
+ * ‘mtxmatrix_coordinate_init_copy()’ allocates a copy of a matrix and
  * also copies the values.
  */
 int mtxmatrix_coordinate_init_copy(
@@ -111,7 +111,7 @@ int mtxmatrix_coordinate_init_copy(
  */
 
 /**
- * `mtxmatrix_coordinate_alloc()' allocates a matrix in coordinate
+ * ‘mtxmatrix_coordinate_alloc()’ allocates a matrix in coordinate
  * format.
  */
 int mtxmatrix_coordinate_alloc(
@@ -210,7 +210,7 @@ int mtxmatrix_coordinate_alloc(
 }
 
 /**
- * `mtxmatrix_coordinate_init_real_single()' allocates and initialises
+ * ‘mtxmatrix_coordinate_init_real_single()’ allocates and initialises
  * a matrix in coordinate format with real, single precision
  * coefficients.
  */
@@ -236,7 +236,7 @@ int mtxmatrix_coordinate_init_real_single(
 }
 
 /**
- * `mtxmatrix_coordinate_init_real_double()' allocates and initialises
+ * ‘mtxmatrix_coordinate_init_real_double()’ allocates and initialises
  * a matrix in coordinate format with real, double precision
  * coefficients.
  */
@@ -262,7 +262,7 @@ int mtxmatrix_coordinate_init_real_double(
 }
 
 /**
- * `mtxmatrix_coordinate_init_complex_single()' allocates and
+ * ‘mtxmatrix_coordinate_init_complex_single()’ allocates and
  * initialises a matrix in coordinate format with complex, single
  * precision coefficients.
  */
@@ -289,7 +289,7 @@ int mtxmatrix_coordinate_init_complex_single(
 }
 
 /**
- * `mtxmatrix_coordinate_init_complex_double()' allocates and
+ * ‘mtxmatrix_coordinate_init_complex_double()’ allocates and
  * initialises a matrix in coordinate format with complex, double
  * precision coefficients.
  */
@@ -316,7 +316,7 @@ int mtxmatrix_coordinate_init_complex_double(
 }
 
 /**
- * `mtxmatrix_coordinate_init_integer_single()' allocates and
+ * ‘mtxmatrix_coordinate_init_integer_single()’ allocates and
  * initialises a matrix in coordinate format with integer, single
  * precision coefficients.
  */
@@ -342,7 +342,7 @@ int mtxmatrix_coordinate_init_integer_single(
 }
 
 /**
- * `mtxmatrix_coordinate_init_integer_double()' allocates and
+ * ‘mtxmatrix_coordinate_init_integer_double()’ allocates and
  * initialises a matrix in coordinate format with integer, double
  * precision coefficients.
  */
@@ -368,7 +368,7 @@ int mtxmatrix_coordinate_init_integer_double(
 }
 
 /**
- * `mtxmatrix_coordinate_init_pattern()' allocates and initialises a
+ * ‘mtxmatrix_coordinate_init_pattern()’ allocates and initialises a
  * matrix in coordinate format with boolean coefficients.
  */
 int mtxmatrix_coordinate_init_pattern(
@@ -395,7 +395,7 @@ int mtxmatrix_coordinate_init_pattern(
  */
 
 /**
- * `mtxmatrix_coordinate_alloc_row_vector()' allocates a row vector
+ * ‘mtxmatrix_coordinate_alloc_row_vector()’ allocates a row vector
  * for a given matrix, where a row vector is a vector whose length
  * equal to a single row of the matrix.
  */
@@ -423,7 +423,7 @@ int mtxmatrix_coordinate_alloc_row_vector(
 }
 
 /**
- * `mtxmatrix_coordinate_alloc_column_vector()' allocates a column
+ * ‘mtxmatrix_coordinate_alloc_column_vector()’ allocates a column
  * vector for a given matrix, where a column vector is a vector whose
  * length equal to a single column of the matrix.
  */
@@ -455,7 +455,7 @@ int mtxmatrix_coordinate_alloc_column_vector(
  */
 
 /**
- * `mtxfile_num_offdiagonal_data_lines()' counts the number of data
+ * ‘mtxfile_num_offdiagonal_data_lines()’ counts the number of data
  * lines that are not on the main diagonal of a matrix in the Matrix
  * Market format.
  */
@@ -539,7 +539,7 @@ static int mtxfile_num_offdiagonal_data_lines(
 }
 
 /**
- * `mtxmatrix_coordinate_from_mtxfile()' converts a matrix in Matrix
+ * ‘mtxmatrix_coordinate_from_mtxfile()’ converts a matrix in Matrix
  * Market format to a matrix.
  */
 int mtxmatrix_coordinate_from_mtxfile(
@@ -794,7 +794,7 @@ int mtxmatrix_coordinate_from_mtxfile(
 }
 
 /**
- * `mtxmatrix_coordinate_to_mtxfile()' converts a matrix to a matrix
+ * ‘mtxmatrix_coordinate_to_mtxfile()’ converts a matrix to a matrix
  * in Matrix Market format.
  */
 int mtxmatrix_coordinate_to_mtxfile(
@@ -1008,7 +1008,6 @@ int mtxmatrix_coordinate_nzcols(
     free(colidx);
     return MTX_SUCCESS;
 }
-
 
 /*
  * Partitioning
