@@ -574,8 +574,112 @@ int mtxmatrix_csr_from_mtxfile(
     if (mtxfile->header.format != mtxfile_coordinate)
         return MTX_ERR_INCOMPATIBLE_MTX_FORMAT;
 
-    errno = ENOTSUP;
-    return MTX_ERR_ERRNO;
+    /* TODO: add support for symmetric matrices */
+    if (mtxfile->header.symmetry == mtxfile_symmetric ||
+        mtxfile->header.symmetry == mtxfile_skew_symmetric ||
+        mtxfile->header.symmetry == mtxfile_hermitian)
+        return MTX_ERR_INCOMPATIBLE_MTX_SYMMETRY;
+
+    int num_rows = mtxfile->size.num_rows;
+    int num_columns = mtxfile->size.num_columns;
+    int64_t num_nonzeros = mtxfile->size.num_nonzeros;
+
+    /* obtain row pointers and rowwise column indices. */
+    if (mtxfile->header.field == mtxfile_real) {
+        err = mtxmatrix_csr_alloc(
+            matrix, mtx_field_real, mtxfile->precision,
+            num_rows, num_columns, num_nonzeros);
+        if (err) return err;
+        if (mtxfile->precision == mtx_single) {
+            err = mtxfiledata_rowptr(
+                &mtxfile->data, mtxfile->header.object, mtxfile->header.format,
+                mtxfile->header.field, mtxfile->precision, num_rows, num_nonzeros,
+                matrix->rowptr, matrix->colidx, matrix->data.real_single);
+            if (err) {
+                mtxmatrix_csr_free(matrix);
+                return err;
+            }
+        } else if (mtxfile->precision == mtx_double) {
+            err = mtxfiledata_rowptr(
+                &mtxfile->data, mtxfile->header.object, mtxfile->header.format,
+                mtxfile->header.field, mtxfile->precision, num_rows, num_nonzeros,
+                matrix->rowptr, matrix->colidx, matrix->data.real_double);
+            if (err) {
+                mtxmatrix_csr_free(matrix);
+                return err;
+            }
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else if (mtxfile->header.field == mtxfile_complex) {
+        err = mtxmatrix_csr_alloc(
+            matrix, mtx_field_complex, mtxfile->precision,
+            num_rows, num_columns, num_nonzeros);
+        if (err) return err;
+        if (mtxfile->precision == mtx_single) {
+            err = mtxfiledata_rowptr(
+                &mtxfile->data, mtxfile->header.object, mtxfile->header.format,
+                mtxfile->header.field, mtxfile->precision, num_rows, num_nonzeros,
+                matrix->rowptr, matrix->colidx, matrix->data.complex_single);
+            if (err) {
+                mtxmatrix_csr_free(matrix);
+                return err;
+            }
+        } else if (mtxfile->precision == mtx_double) {
+            err = mtxfiledata_rowptr(
+                &mtxfile->data, mtxfile->header.object, mtxfile->header.format,
+                mtxfile->header.field, mtxfile->precision, num_rows, num_nonzeros,
+                matrix->rowptr, matrix->colidx, matrix->data.complex_double);
+            if (err) {
+                mtxmatrix_csr_free(matrix);
+                return err;
+            }
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else if (mtxfile->header.field == mtxfile_integer) {
+        err = mtxmatrix_csr_alloc(
+            matrix, mtx_field_integer, mtxfile->precision,
+            num_rows, num_columns, num_nonzeros);
+        if (err) return err;
+        if (mtxfile->precision == mtx_single) {
+            err = mtxfiledata_rowptr(
+                &mtxfile->data, mtxfile->header.object, mtxfile->header.format,
+                mtxfile->header.field, mtxfile->precision, num_rows, num_nonzeros,
+                matrix->rowptr, matrix->colidx, matrix->data.integer_single);
+            if (err) {
+                mtxmatrix_csr_free(matrix);
+                return err;
+            }
+        } else if (mtxfile->precision == mtx_double) {
+            err = mtxfiledata_rowptr(
+                &mtxfile->data, mtxfile->header.object, mtxfile->header.format,
+                mtxfile->header.field, mtxfile->precision, num_rows, num_nonzeros,
+                matrix->rowptr, matrix->colidx, matrix->data.integer_double);
+            if (err) {
+                mtxmatrix_csr_free(matrix);
+                return err;
+            }
+        } else {
+            return MTX_ERR_INVALID_PRECISION;
+        }
+    } else if (mtxfile->header.field == mtxfile_pattern) {
+        err = mtxmatrix_csr_alloc(
+            matrix, mtx_field_pattern, mtxfile->precision,
+            num_rows, num_columns, num_nonzeros);
+        if (err) return err;
+        err = mtxfiledata_rowptr(
+            &mtxfile->data, mtxfile->header.object, mtxfile->header.format,
+            mtxfile->header.field, mtxfile->precision, num_rows, num_nonzeros,
+            matrix->rowptr, matrix->colidx, NULL);
+        if (err) {
+            mtxmatrix_csr_free(matrix);
+            return err;
+        }
+    } else {
+        return MTX_ERR_INVALID_FIELD;
+    }
+    return MTX_SUCCESS;
 }
 
 /**

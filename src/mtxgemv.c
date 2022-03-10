@@ -146,7 +146,7 @@ static void program_options_print_help(
     fprintf(f, "  --precision=PRECISION\tprecision used to represent matrix\n");
     fprintf(f, "\t\t\tvector values: single or double. (default: double)\n");
     fprintf(f, "  --matrix-type=TYPE\tformat for representing matrices:\n");
-    fprintf(f, "\t\t\t‘auto’, ‘array’ or ‘coordinate’. (default: ‘auto’)\n");
+    fprintf(f, "\t\t\t‘auto’, ‘array’, ‘coordinate’ or ‘csr’. (default: ‘auto’)\n");
     fprintf(f, "  --vector-type=TYPE\tformat for representing vectors:\n");
     fprintf(f, "\t\t\t‘auto’, ‘array’ or ‘coordinate’. (default: ‘auto’)\n");
     fprintf(f, "  --vector-field=TYPE\tIf the matrix is in coordinate format with ‘pattern’ field,\n");
