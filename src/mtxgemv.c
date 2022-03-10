@@ -492,7 +492,8 @@ static int gemv(
                 fflush(diagf);
                 clock_gettime(CLOCK_MONOTONIC, &t0);
             }
-            err = mtxmatrix_sgemv(trans, alpha, A, x, beta, y);
+            int64_t num_flops = 0;
+            err = mtxmatrix_sgemv(trans, alpha, A, x, beta, y, &num_flops);
             if (err) {
                 if (verbose > 0)
                     fprintf(diagf, "\n");
@@ -500,8 +501,9 @@ static int gemv(
             }
             if (verbose > 0) {
                 clock_gettime(CLOCK_MONOTONIC, &t1);
-                fprintf(diagf, "%'.6f seconds\n",
-                        timespec_duration(t0, t1));
+                fprintf(diagf, "%'.6f seconds (%'.3f Gflop/s)\n",
+                        timespec_duration(t0, t1),
+                        1.0e-9 * num_flops / timespec_duration(t0, t1));
             }
         }
     } else if (precision == mtx_double) {
@@ -511,7 +513,8 @@ static int gemv(
                 fflush(diagf);
                 clock_gettime(CLOCK_MONOTONIC, &t0);
             }
-            err = mtxmatrix_dgemv(trans, alpha, A, x, beta, y);
+            int64_t num_flops = 0;
+            err = mtxmatrix_dgemv(trans, alpha, A, x, beta, y, &num_flops);
             if (err) {
                 if (verbose > 0)
                     fprintf(diagf, "\n");
@@ -519,8 +522,9 @@ static int gemv(
             }
             if (verbose > 0) {
                 clock_gettime(CLOCK_MONOTONIC, &t1);
-                fprintf(diagf, "%'.6f seconds\n",
-                        timespec_duration(t0, t1));
+                fprintf(diagf, "%'.6f seconds (%'.3f Gflop/s)\n",
+                        timespec_duration(t0, t1),
+                        1.0e-9 * num_flops / timespec_duration(t0, t1));
             }
         }
     } else {

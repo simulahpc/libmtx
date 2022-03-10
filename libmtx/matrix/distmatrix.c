@@ -2037,6 +2037,7 @@ int mtxdistmatrix_sgemv(
     const struct mtxdistvector * x,
     float beta,
     struct mtxdistvector * y,
+    int64_t * num_flops,
     struct mtxdisterror * disterr)
 {
     int err;
@@ -2044,7 +2045,7 @@ int mtxdistmatrix_sgemv(
     err = mtxdistmatrixgemv_init(&gemv, trans, A, x, y, disterr);
     if (err)
         return err;
-    err = mtxdistmatrixgemv_sgemv(&gemv, alpha, beta, disterr);
+    err = mtxdistmatrixgemv_sgemv(&gemv, alpha, beta, num_flops, disterr);
     if (err) {
         mtxdistmatrixgemv_free(&gemv);
         return err;
@@ -2102,7 +2103,8 @@ int mtxdistmatrix_sgemv(
                  * the part of the source vector ‘x’ on the current process
                  * to compute results directly. */
                 err = mtxmatrix_sgemv(
-                    trans, alpha, &A->interior, &x->interior, beta, &y->interior);
+                    trans, alpha, &A->interior, &x->interior, beta, &y->interior,
+                    num_flops);
                 if (mtxdisterror_allreduce(disterr, err))
                     return MTX_ERR_MPI_COLLECTIVE;
 
@@ -2154,7 +2156,8 @@ int mtxdistmatrix_sgemv(
 
                 /* perform local matrix-vector multiplication */
                 err = mtxmatrix_sgemv(
-                    trans, alpha, &A->interior, &xr.interior, beta, &y->interior);
+                    trans, alpha, &A->interior, &xr.interior, beta, &y->interior,
+                    num_flops);
                 if (mtxdisterror_allreduce(disterr, err)) {
                     mtxdistvector_free(&xr);
                     return MTX_ERR_MPI_COLLECTIVE;
@@ -2223,7 +2226,8 @@ int mtxdistmatrix_sgemv(
                  * on the current process to compute results directly.
                  */
                 err = mtxmatrix_sgemv(
-                    trans, alpha, &A->interior, &x->interior, beta, &y->interior);
+                    trans, alpha, &A->interior, &x->interior, beta, &y->interior,
+                    num_flops);
                 if (mtxdisterror_allreduce(disterr, err))
                     return MTX_ERR_MPI_COLLECTIVE;
 
@@ -2252,7 +2256,8 @@ int mtxdistmatrix_sgemv(
 
                 /* perform local matrix-vector multiplication */
                 err = mtxmatrix_sgemv(
-                    trans, alpha, &A->interior, &xr.interior, beta, &y->interior);
+                    trans, alpha, &A->interior, &xr.interior, beta, &y->interior,
+                    num_flops);
                 if (mtxdisterror_allreduce(disterr, err)) {
                     mtxdistvector_free(&xr);
                     return MTX_ERR_MPI_COLLECTIVE;
@@ -2293,6 +2298,7 @@ int mtxdistmatrix_dgemv(
     const struct mtxdistvector * x,
     double beta,
     struct mtxdistvector * y,
+    int64_t * num_flops,
     struct mtxdisterror * disterr)
 {
     int err;
@@ -2300,7 +2306,7 @@ int mtxdistmatrix_dgemv(
     err = mtxdistmatrixgemv_init(&gemv, trans, A, x, y, disterr);
     if (err)
         return err;
-    err = mtxdistmatrixgemv_dgemv(&gemv, alpha, beta, disterr);
+    err = mtxdistmatrixgemv_dgemv(&gemv, alpha, beta, num_flops, disterr);
     if (err) {
         mtxdistmatrixgemv_free(&gemv);
         return err;
@@ -2331,6 +2337,7 @@ int mtxdistmatrix_cgemv(
     const struct mtxdistvector * x,
     float beta[2],
     struct mtxdistvector * y,
+    int64_t * num_flops,
     struct mtxdisterror * disterr)
 {
     int err;
@@ -2338,7 +2345,7 @@ int mtxdistmatrix_cgemv(
     err = mtxdistmatrixgemv_init(&gemv, trans, A, x, y, disterr);
     if (err)
         return err;
-    err = mtxdistmatrixgemv_cgemv(&gemv, alpha, beta, disterr);
+    err = mtxdistmatrixgemv_cgemv(&gemv, alpha, beta, num_flops, disterr);
     if (err) {
         mtxdistmatrixgemv_free(&gemv);
         return err;
@@ -2369,6 +2376,7 @@ int mtxdistmatrix_zgemv(
     const struct mtxdistvector * x,
     double beta[2],
     struct mtxdistvector * y,
+    int64_t * num_flops,
     struct mtxdisterror * disterr)
 {
     int err;
@@ -2376,7 +2384,7 @@ int mtxdistmatrix_zgemv(
     err = mtxdistmatrixgemv_init(&gemv, trans, A, x, y, disterr);
     if (err)
         return err;
-    err = mtxdistmatrixgemv_zgemv(&gemv, alpha, beta, disterr);
+    err = mtxdistmatrixgemv_zgemv(&gemv, alpha, beta, num_flops, disterr);
     if (err) {
         mtxdistmatrixgemv_free(&gemv);
         return err;

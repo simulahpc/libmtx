@@ -593,7 +593,8 @@ int mtxmatrix_array_sgemv(
     const struct mtxmatrix_array * A,
     const struct mtxvector * x,
     float beta,
-    struct mtxvector * y);
+    struct mtxvector * y,
+    int64_t * num_flops);
 
 /**
  * ‘mtxmatrix_array_dgemv()’ multiplies a matrix ‘A’ or its transpose
@@ -618,7 +619,8 @@ int mtxmatrix_array_dgemv(
     const struct mtxmatrix_array * A,
     const struct mtxvector * x,
     double beta,
-    struct mtxvector * y);
+    struct mtxvector * y,
+    int64_t * num_flops);
 
 /**
  * ‘mtxmatrix_array_cgemv()’ multiplies a complex-valued matrix ‘A’,
@@ -645,7 +647,8 @@ int mtxmatrix_array_cgemv(
     const struct mtxmatrix_array * A,
     const struct mtxvector * x,
     float beta[2],
-    struct mtxvector * y);
+    struct mtxvector * y,
+    int64_t * num_flops);
 
 /**
  * ‘mtxmatrix_array_zgemv()’ multiplies a complex-valued matrix ‘A’,
@@ -672,6 +675,7 @@ int mtxmatrix_array_zgemv(
     const struct mtxmatrix_array * A,
     const struct mtxvector * x,
     double beta[2],
-    struct mtxvector * y);
+    struct mtxvector * y,
+    int64_t * num_flops);
 
 #endif

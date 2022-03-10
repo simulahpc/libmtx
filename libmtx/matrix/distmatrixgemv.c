@@ -285,13 +285,14 @@ int mtxdistmatrixgemv_sgemv(
     struct mtxdistmatrixgemv * gemv,
     float alpha,
     float beta,
+    int64_t * num_flops,
     struct mtxdisterror * disterr)
 {
     int err;
     for (int r = 0; r < gemv->comm_size; r++) {
         err = mtxmatrix_sgemv(
             mtx_notrans, alpha, &gemv->Ar[r], &gemv->xr[r],
-            beta, &gemv->y->interior);
+            beta, &gemv->y->interior, num_flops);
         if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     }
     return MTX_SUCCESS;
@@ -311,13 +312,14 @@ int mtxdistmatrixgemv_dgemv(
     struct mtxdistmatrixgemv * gemv,
     double alpha,
     double beta,
+    int64_t * num_flops,
     struct mtxdisterror * disterr)
 {
     int err;
     for (int r = 0; r < gemv->comm_size; r++) {
         err = mtxmatrix_dgemv(
             mtx_notrans, alpha, &gemv->Ar[r], &gemv->xr[r],
-            beta, &gemv->y->interior);
+            beta, &gemv->y->interior, num_flops);
         if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     }
     return MTX_SUCCESS;
@@ -338,13 +340,14 @@ int mtxdistmatrixgemv_cgemv(
     struct mtxdistmatrixgemv * gemv,
     float alpha[2],
     float beta[2],
+    int64_t * num_flops,
     struct mtxdisterror * disterr)
 {
     int err;
     for (int r = 0; r < gemv->comm_size; r++) {
         err = mtxmatrix_cgemv(
             mtx_notrans, alpha, &gemv->Ar[r], &gemv->xr[r],
-            beta, &gemv->y->interior);
+            beta, &gemv->y->interior, num_flops);
         if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     }
     return MTX_SUCCESS;
@@ -365,13 +368,14 @@ int mtxdistmatrixgemv_zgemv(
     struct mtxdistmatrixgemv * gemv,
     double alpha[2],
     double beta[2],
+    int64_t * num_flops,
     struct mtxdisterror * disterr)
 {
     int err;
     for (int r = 0; r < gemv->comm_size; r++) {
         err = mtxmatrix_zgemv(
             mtx_notrans, alpha, &gemv->Ar[r], &gemv->xr[r],
-            beta, &gemv->y->interior);
+            beta, &gemv->y->interior, num_flops);
         if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     }
     return MTX_SUCCESS;

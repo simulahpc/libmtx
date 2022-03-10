@@ -178,6 +178,7 @@ int mtxdistmatrixgemv_sgemv(
     struct mtxdistmatrixgemv * gemv,
     float alpha,
     float beta,
+    int64_t * num_flops,
     struct mtxdisterror * disterr);
 
 /**
@@ -194,6 +195,7 @@ int mtxdistmatrixgemv_dgemv(
     struct mtxdistmatrixgemv * gemv,
     double alpha,
     double beta,
+    int64_t * num_flops,
     struct mtxdisterror * disterr);
 
 /**
@@ -211,6 +213,7 @@ int mtxdistmatrixgemv_cgemv(
     struct mtxdistmatrixgemv * gemv,
     float alpha[2],
     float beta[2],
+    int64_t * num_flops,
     struct mtxdisterror * disterr);
 
 /**
@@ -228,6 +231,7 @@ int mtxdistmatrixgemv_zgemv(
     struct mtxdistmatrixgemv * gemv,
     double alpha[2],
     double beta[2],
+    int64_t * num_flops,
     struct mtxdisterror * disterr);
 #endif
 

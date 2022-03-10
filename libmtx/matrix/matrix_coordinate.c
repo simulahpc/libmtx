@@ -1601,7 +1601,8 @@ int mtxmatrix_coordinate_sgemv(
     const struct mtxmatrix_coordinate * A,
     const struct mtxvector * x,
     float beta,
-    struct mtxvector * y)
+    struct mtxvector * y,
+    int64_t * num_flops)
 {
     int err;
     if (x->type != mtxvector_array || y->type != mtxvector_array)
@@ -1633,11 +1634,13 @@ int mtxmatrix_coordinate_sgemv(
                         int i = A->rowidx[k], j = A->colidx[k];
                         ydata[i] += alpha*Adata[k]*xdata[j];
                     }
+                    if (num_flops) *num_flops = 3*A->num_nonzeros;
                 } else if (beta == 1) {
                     for (int64_t k = 0; k < A->num_nonzeros; k++) {
                         int i = A->rowidx[k], j = A->colidx[k];
                         ydata[i] += alpha*Adata[k]*xdata[j];
                     }
+                    if (num_flops) *num_flops = 3*A->num_nonzeros;
                 } else {
                     struct mtxvector_array z;
                     err = mtxvector_array_alloc_copy(&z, y_);
@@ -1653,6 +1656,7 @@ int mtxmatrix_coordinate_sgemv(
                     for (int i = 0; i < A->num_rows; i++)
                         ydata[i] = alpha*zdata[i] + beta*ydata[i];
                     mtxvector_array_free(&z);
+                    if (num_flops) *num_flops = 2*A->num_nonzeros+3*A->num_rows;
                 }
             } else if (trans == mtx_trans || trans == mtx_conjtrans) {
                 if (beta == 0) {
@@ -1662,11 +1666,13 @@ int mtxmatrix_coordinate_sgemv(
                         int i = A->rowidx[k], j = A->colidx[k];
                         ydata[j] += alpha*Adata[k]*xdata[i];
                     }
+                    if (num_flops) *num_flops = 3*A->num_nonzeros;
                 } else if (beta == 1) {
                     for (int64_t k = 0; k < A->num_nonzeros; k++) {
                         int i = A->rowidx[k], j = A->colidx[k];
                         ydata[j] += alpha*Adata[k]*xdata[i];
                     }
+                    if (num_flops) *num_flops = 3*A->num_nonzeros;
                 } else {
                     struct mtxvector_array z;
                     err = mtxvector_array_alloc_copy(&z, y_);
@@ -1682,6 +1688,7 @@ int mtxmatrix_coordinate_sgemv(
                     for (int j = 0; j < A->num_columns; j++)
                         ydata[j] = alpha*zdata[j] + beta*ydata[j];
                     mtxvector_array_free(&z);
+                    if (num_flops) *num_flops = 2*A->num_nonzeros+3*A->num_columns;
                 }
             } else {
                 return MTX_ERR_INVALID_TRANSPOSITION;
@@ -1698,11 +1705,13 @@ int mtxmatrix_coordinate_sgemv(
                         int i = A->rowidx[k], j = A->colidx[k];
                         ydata[i] += alpha*Adata[k]*xdata[j];
                     }
+                    if (num_flops) *num_flops = 3*A->num_nonzeros;
                 } else if (beta == 1) {
                     for (int64_t k = 0; k < A->num_nonzeros; k++) {
                         int i = A->rowidx[k], j = A->colidx[k];
                         ydata[i] += alpha*Adata[k]*xdata[j];
                     }
+                    if (num_flops) *num_flops = 3*A->num_nonzeros;
                 } else {
                     struct mtxvector_array z;
                     err = mtxvector_array_alloc_copy(&z, y_);
@@ -1718,6 +1727,7 @@ int mtxmatrix_coordinate_sgemv(
                     for (int i = 0; i < A->num_rows; i++)
                         ydata[i] = alpha*zdata[i] + beta*ydata[i];
                     mtxvector_array_free(&z);
+                    if (num_flops) *num_flops = 2*A->num_nonzeros+3*A->num_rows;
                 }
             } else if (trans == mtx_trans || trans == mtx_conjtrans) {
                 if (beta == 0) {
@@ -1727,11 +1737,13 @@ int mtxmatrix_coordinate_sgemv(
                         int i = A->rowidx[k], j = A->colidx[k];
                         ydata[j] += alpha*Adata[k]*xdata[i];
                     }
+                    if (num_flops) *num_flops = 3*A->num_nonzeros;
                 } else if (beta == 1) {
                     for (int64_t k = 0; k < A->num_nonzeros; k++) {
                         int i = A->rowidx[k], j = A->colidx[k];
                         ydata[j] += alpha*Adata[k]*xdata[i];
                     }
+                    if (num_flops) *num_flops = 3*A->num_nonzeros;
                 } else {
                     struct mtxvector_array z;
                     err = mtxvector_array_alloc_copy(&z, y_);
@@ -1747,6 +1759,7 @@ int mtxmatrix_coordinate_sgemv(
                     for (int j = 0; j < A->num_columns; j++)
                         ydata[j] = alpha*zdata[j] + beta*ydata[j];
                     mtxvector_array_free(&z);
+                    if (num_flops) *num_flops = 2*A->num_nonzeros+3*A->num_columns;
                 }
             } else {
                 return MTX_ERR_INVALID_TRANSPOSITION;
@@ -1774,6 +1787,7 @@ int mtxmatrix_coordinate_sgemv(
                         ydata[i][1] += alpha * (Adata[k][0]*xdata[j][1] +
                                                 Adata[k][1]*xdata[j][0]);
                     }
+                    if (num_flops) *num_flops = 10*A->num_nonzeros;
                 } else if (beta == 1) {
                     for (int64_t k = 0; k < A->num_nonzeros; k++) {
                         int i = A->rowidx[k], j = A->colidx[k];
@@ -1782,6 +1796,7 @@ int mtxmatrix_coordinate_sgemv(
                         ydata[i][1] += alpha * (Adata[k][0]*xdata[j][1] +
                                                 Adata[k][1]*xdata[j][0]);
                     }
+                    if (num_flops) *num_flops = 10*A->num_nonzeros;
                 } else {
                     struct mtxvector_array z;
                     err = mtxvector_array_alloc_copy(&z, y_);
@@ -1803,6 +1818,7 @@ int mtxmatrix_coordinate_sgemv(
                         ydata[i][1] = alpha*zdata[i][1] + beta*ydata[i][1];
                     }
                     mtxvector_array_free(&z);
+                    if (num_flops) *num_flops = 8*A->num_nonzeros+6*A->num_rows;
                 }
             } else if (trans == mtx_trans) {
                 if (beta == 0) {
@@ -1815,6 +1831,7 @@ int mtxmatrix_coordinate_sgemv(
                         ydata[j][1] += alpha * (Adata[k][0]*xdata[i][1] +
                                                 Adata[k][1]*xdata[i][0]);
                     }
+                    if (num_flops) *num_flops = 10*A->num_nonzeros;
                 } else if (beta == 1) {
                     for (int64_t k = 0; k < A->num_nonzeros; k++) {
                         int i = A->rowidx[k], j = A->colidx[k];
@@ -1823,6 +1840,7 @@ int mtxmatrix_coordinate_sgemv(
                         ydata[j][1] += alpha * (Adata[k][0]*xdata[i][1] +
                                                 Adata[k][1]*xdata[i][0]);
                     }
+                    if (num_flops) *num_flops = 10*A->num_nonzeros;
                 } else {
                     struct mtxvector_array z;
                     err = mtxvector_array_alloc_copy(&z, y_);
@@ -1841,6 +1859,7 @@ int mtxmatrix_coordinate_sgemv(
                         ydata[j][1] = alpha*zdata[j][1] + beta*ydata[j][1];
                     }
                     mtxvector_array_free(&z);
+                    if (num_flops) *num_flops = 8*A->num_nonzeros+6*A->num_columns;
                 }
             } else if (trans == mtx_conjtrans) {
                 if (beta == 0) {
@@ -1853,6 +1872,7 @@ int mtxmatrix_coordinate_sgemv(
                         ydata[j][1] += alpha * (Adata[k][0]*xdata[i][1] -
                                                 Adata[k][1]*xdata[i][0]);
                     }
+                    if (num_flops) *num_flops = 10*A->num_nonzeros;
                 } else if (beta == 1) {
                     for (int64_t k = 0; k < A->num_nonzeros; k++) {
                         int i = A->rowidx[k], j = A->colidx[k];
@@ -1861,6 +1881,7 @@ int mtxmatrix_coordinate_sgemv(
                         ydata[j][1] += alpha * (Adata[k][0]*xdata[i][1] -
                                                 Adata[k][1]*xdata[i][0]);
                     }
+                    if (num_flops) *num_flops = 10*A->num_nonzeros;
                 } else {
                     struct mtxvector_array z;
                     err = mtxvector_array_alloc_copy(&z, y_);
@@ -1879,6 +1900,7 @@ int mtxmatrix_coordinate_sgemv(
                         ydata[j][1] = alpha*zdata[j][1] + beta*ydata[j][1];
                     }
                     mtxvector_array_free(&z);
+                    if (num_flops) *num_flops = 8*A->num_nonzeros+6*A->num_columns;
                 }
             } else {
                 return MTX_ERR_INVALID_TRANSPOSITION;
@@ -1898,6 +1920,7 @@ int mtxmatrix_coordinate_sgemv(
                         ydata[i][1] += alpha * (Adata[k][0]*xdata[j][1] +
                                                 Adata[k][1]*xdata[j][0]);
                     }
+                    if (num_flops) *num_flops = 10*A->num_nonzeros;
                 } else if (beta == 1) {
                     for (int64_t k = 0; k < A->num_nonzeros; k++) {
                         int i = A->rowidx[k], j = A->colidx[k];
@@ -1906,6 +1929,7 @@ int mtxmatrix_coordinate_sgemv(
                         ydata[i][1] += alpha * (Adata[k][0]*xdata[j][1] +
                                                 Adata[k][1]*xdata[j][0]);
                     }
+                    if (num_flops) *num_flops = 10*A->num_nonzeros;
                 } else {
                     struct mtxvector_array z;
                     err = mtxvector_array_alloc_copy(&z, y_);
@@ -1927,6 +1951,7 @@ int mtxmatrix_coordinate_sgemv(
                         ydata[i][1] = alpha*zdata[i][1] + beta*ydata[i][1];
                     }
                     mtxvector_array_free(&z);
+                    if (num_flops) *num_flops = 8*A->num_nonzeros+6*A->num_rows;
                 }
             } else if (trans == mtx_trans) {
                 if (beta == 0) {
@@ -1939,6 +1964,7 @@ int mtxmatrix_coordinate_sgemv(
                         ydata[j][1] += alpha * (Adata[k][0]*xdata[i][1] +
                                                 Adata[k][1]*xdata[i][0]);
                     }
+                    if (num_flops) *num_flops = 10*A->num_nonzeros;
                 } else if (beta == 1) {
                     for (int64_t k = 0; k < A->num_nonzeros; k++) {
                         int i = A->rowidx[k], j = A->colidx[k];
@@ -1947,6 +1973,7 @@ int mtxmatrix_coordinate_sgemv(
                         ydata[j][1] += alpha * (Adata[k][0]*xdata[i][1] +
                                                 Adata[k][1]*xdata[i][0]);
                     }
+                    if (num_flops) *num_flops = 10*A->num_nonzeros;
                 } else {
                     struct mtxvector_array z;
                     err = mtxvector_array_alloc_copy(&z, y_);
@@ -1965,6 +1992,7 @@ int mtxmatrix_coordinate_sgemv(
                         ydata[j][1] = alpha*zdata[j][1] + beta*ydata[j][1];
                     }
                     mtxvector_array_free(&z);
+                    if (num_flops) *num_flops = 8*A->num_nonzeros+6*A->num_columns;
                 }
             } else if (trans == mtx_conjtrans) {
                 if (beta == 0) {
@@ -1977,6 +2005,7 @@ int mtxmatrix_coordinate_sgemv(
                         ydata[j][1] += alpha * (Adata[k][0]*xdata[i][1] -
                                                 Adata[k][1]*xdata[i][0]);
                     }
+                    if (num_flops) *num_flops = 10*A->num_nonzeros;
                 } else if (beta == 1) {
                     for (int64_t k = 0; k < A->num_nonzeros; k++) {
                         int i = A->rowidx[k], j = A->colidx[k];
@@ -1985,6 +2014,7 @@ int mtxmatrix_coordinate_sgemv(
                         ydata[j][1] += alpha * (Adata[k][0]*xdata[i][1] -
                                                 Adata[k][1]*xdata[i][0]);
                     }
+                    if (num_flops) *num_flops = 10*A->num_nonzeros;
                 } else {
                     struct mtxvector_array z;
                     err = mtxvector_array_alloc_copy(&z, y_);
@@ -2003,6 +2033,7 @@ int mtxmatrix_coordinate_sgemv(
                         ydata[j][1] = alpha*zdata[j][1] + beta*ydata[j][1];
                     }
                     mtxvector_array_free(&z);
+                    if (num_flops) *num_flops = 8*A->num_nonzeros+6*A->num_columns;
                 }
             } else {
                 return MTX_ERR_INVALID_TRANSPOSITION;
@@ -2027,11 +2058,13 @@ int mtxmatrix_coordinate_sgemv(
                         int i = A->rowidx[k], j = A->colidx[k];
                         ydata[i] += alpha*Adata[k]*xdata[j];
                     }
+                    if (num_flops) *num_flops = 3*A->num_nonzeros;
                 } else if (beta == 1) {
                     for (int64_t k = 0; k < A->num_nonzeros; k++) {
                         int i = A->rowidx[k], j = A->colidx[k];
                         ydata[i] += alpha*Adata[k]*xdata[j];
                     }
+                    if (num_flops) *num_flops = 3*A->num_nonzeros;
                 } else {
                     struct mtxvector_array z;
                     err = mtxvector_array_alloc_copy(&z, y_);
@@ -2047,6 +2080,7 @@ int mtxmatrix_coordinate_sgemv(
                     for (int i = 0; i < A->num_rows; i++)
                         ydata[i] = alpha*zdata[i] + beta*ydata[i];
                     mtxvector_array_free(&z);
+                    if (num_flops) *num_flops = 2*A->num_nonzeros+3*A->num_rows;
                 }
             } else if (trans == mtx_trans || trans == mtx_conjtrans) {
                 if (beta == 0) {
@@ -2056,11 +2090,13 @@ int mtxmatrix_coordinate_sgemv(
                         int i = A->rowidx[k], j = A->colidx[k];
                         ydata[j] += alpha*Adata[k]*xdata[i];
                     }
+                    if (num_flops) *num_flops = 3*A->num_nonzeros;
                 } else if (beta == 1) {
                     for (int64_t k = 0; k < A->num_nonzeros; k++) {
                         int i = A->rowidx[k], j = A->colidx[k];
                         ydata[j] += alpha*Adata[k]*xdata[i];
                     }
+                    if (num_flops) *num_flops = 3*A->num_nonzeros;
                 } else {
                     struct mtxvector_array z;
                     err = mtxvector_array_alloc_copy(&z, y_);
@@ -2076,6 +2112,7 @@ int mtxmatrix_coordinate_sgemv(
                     for (int j = 0; j < A->num_columns; j++)
                         ydata[j] = alpha*zdata[j] + beta*ydata[j];
                     mtxvector_array_free(&z);
+                    if (num_flops) *num_flops = 2*A->num_nonzeros+3*A->num_columns;
                 }
             } else {
                 return MTX_ERR_INVALID_TRANSPOSITION;
@@ -2092,11 +2129,13 @@ int mtxmatrix_coordinate_sgemv(
                         int i = A->rowidx[k], j = A->colidx[k];
                         ydata[i] += alpha*Adata[k]*xdata[j];
                     }
+                    if (num_flops) *num_flops = 3*A->num_nonzeros;
                 } else if (beta == 1) {
                     for (int64_t k = 0; k < A->num_nonzeros; k++) {
                         int i = A->rowidx[k], j = A->colidx[k];
                         ydata[i] += alpha*Adata[k]*xdata[j];
                     }
+                    if (num_flops) *num_flops = 3*A->num_nonzeros;
                 } else {
                     struct mtxvector_array z;
                     err = mtxvector_array_alloc_copy(&z, y_);
@@ -2112,6 +2151,7 @@ int mtxmatrix_coordinate_sgemv(
                     for (int i = 0; i < A->num_rows; i++)
                         ydata[i] = alpha*zdata[i] + beta*ydata[i];
                     mtxvector_array_free(&z);
+                    if (num_flops) *num_flops = 2*A->num_nonzeros+3*A->num_rows;
                 }
             } else if (trans == mtx_trans || trans == mtx_conjtrans) {
                 if (beta == 0) {
@@ -2121,11 +2161,13 @@ int mtxmatrix_coordinate_sgemv(
                         int i = A->rowidx[k], j = A->colidx[k];
                         ydata[j] += alpha*Adata[k]*xdata[i];
                     }
+                    if (num_flops) *num_flops = 3*A->num_nonzeros;
                 } else if (beta == 1) {
                     for (int64_t k = 0; k < A->num_nonzeros; k++) {
                         int i = A->rowidx[k], j = A->colidx[k];
                         ydata[j] += alpha*Adata[k]*xdata[i];
                     }
+                    if (num_flops) *num_flops = 3*A->num_nonzeros;
                 } else {
                     struct mtxvector_array z;
                     err = mtxvector_array_alloc_copy(&z, y_);
@@ -2141,6 +2183,7 @@ int mtxmatrix_coordinate_sgemv(
                     for (int j = 0; j < A->num_columns; j++)
                         ydata[j] = alpha*zdata[j] + beta*ydata[j];
                     mtxvector_array_free(&z);
+                    if (num_flops) *num_flops = 2*A->num_nonzeros+3*A->num_columns;
                 }
             } else {
                 return MTX_ERR_INVALID_TRANSPOSITION;
@@ -2165,11 +2208,13 @@ int mtxmatrix_coordinate_sgemv(
                             int i = A->rowidx[k], j = A->colidx[k];
                             ydata[i] += alpha*xdata[j];
                         }
+                        if (num_flops) *num_flops = 2*A->num_nonzeros;
                     } else if (beta == 1) {
                         for (int64_t k = 0; k < A->num_nonzeros; k++) {
                             int i = A->rowidx[k], j = A->colidx[k];
                             ydata[i] += alpha*xdata[j];
                         }
+                        if (num_flops) *num_flops = 2*A->num_nonzeros;
                     } else {
                         struct mtxvector_array z;
                         err = mtxvector_array_alloc_copy(&z, y_);
@@ -2185,6 +2230,7 @@ int mtxmatrix_coordinate_sgemv(
                         for (int i = 0; i < A->num_rows; i++)
                             ydata[i] = alpha*zdata[i] + beta*ydata[i];
                         mtxvector_array_free(&z);
+                        if (num_flops) *num_flops = A->num_nonzeros+3*A->num_rows;
                     }
                 } else if (trans == mtx_trans || trans == mtx_conjtrans) {
                     if (beta == 0) {
@@ -2194,11 +2240,13 @@ int mtxmatrix_coordinate_sgemv(
                             int i = A->rowidx[k], j = A->colidx[k];
                             ydata[j] += alpha*xdata[i];
                         }
+                        if (num_flops) *num_flops = 2*A->num_nonzeros;
                     } else if (beta == 1) {
                         for (int64_t k = 0; k < A->num_nonzeros; k++) {
                             int i = A->rowidx[k], j = A->colidx[k];
                             ydata[j] += alpha*xdata[i];
                         }
+                        if (num_flops) *num_flops = 2*A->num_nonzeros;
                     } else {
                         struct mtxvector_array z;
                         err = mtxvector_array_alloc_copy(&z, y_);
@@ -2214,6 +2262,7 @@ int mtxmatrix_coordinate_sgemv(
                         for (int j = 0; j < A->num_columns; j++)
                             ydata[j] = alpha*zdata[j] + beta*ydata[j];
                         mtxvector_array_free(&z);
+                        if (num_flops) *num_flops = A->num_nonzeros+3*A->num_columns;
                     }
                 } else {
                     return MTX_ERR_INVALID_TRANSPOSITION;
@@ -2229,11 +2278,13 @@ int mtxmatrix_coordinate_sgemv(
                             int i = A->rowidx[k], j = A->colidx[k];
                             ydata[i] += alpha*xdata[j];
                         }
+                        if (num_flops) *num_flops = 2*A->num_nonzeros;
                     } else if (beta == 1) {
                         for (int64_t k = 0; k < A->num_nonzeros; k++) {
                             int i = A->rowidx[k], j = A->colidx[k];
                             ydata[i] += alpha*xdata[j];
                         }
+                        if (num_flops) *num_flops = 2*A->num_nonzeros;
                     } else {
                         struct mtxvector_array z;
                         err = mtxvector_array_alloc_copy(&z, y_);
@@ -2249,6 +2300,7 @@ int mtxmatrix_coordinate_sgemv(
                         for (int i = 0; i < A->num_rows; i++)
                             ydata[i] = alpha*zdata[i] + beta*ydata[i];
                         mtxvector_array_free(&z);
+                        if (num_flops) *num_flops = A->num_nonzeros+3*A->num_rows;
                     }
                 } else if (trans == mtx_trans || trans == mtx_conjtrans) {
                     if (beta == 0) {
@@ -2258,11 +2310,13 @@ int mtxmatrix_coordinate_sgemv(
                             int i = A->rowidx[k], j = A->colidx[k];
                             ydata[j] += alpha*xdata[i];
                         }
+                        if (num_flops) *num_flops = 2*A->num_nonzeros;
                     } else if (beta == 1) {
                         for (int64_t k = 0; k < A->num_nonzeros; k++) {
                             int i = A->rowidx[k], j = A->colidx[k];
                             ydata[j] += alpha*xdata[i];
                         }
+                        if (num_flops) *num_flops = 2*A->num_nonzeros;
                     } else {
                         struct mtxvector_array z;
                         err = mtxvector_array_alloc_copy(&z, y_);
@@ -2278,6 +2332,7 @@ int mtxmatrix_coordinate_sgemv(
                         for (int j = 0; j < A->num_columns; j++)
                             ydata[j] = alpha*zdata[j] + beta*ydata[j];
                         mtxvector_array_free(&z);
+                        if (num_flops) *num_flops = A->num_nonzeros+3*A->num_columns;
                     }
                 } else {
                     return MTX_ERR_INVALID_TRANSPOSITION;
@@ -2298,12 +2353,14 @@ int mtxmatrix_coordinate_sgemv(
                             ydata[i][0] += alpha*xdata[j][0];
                             ydata[i][1] += alpha*xdata[j][1];
                         }
+                        if (num_flops) *num_flops = 4*A->num_nonzeros;
                     } else if (beta == 1) {
                         for (int64_t k = 0; k < A->num_nonzeros; k++) {
                             int i = A->rowidx[k], j = A->colidx[k];
                             ydata[i][0] += alpha*xdata[j][0];
                             ydata[i][1] += alpha*xdata[j][1];
                         }
+                        if (num_flops) *num_flops = 4*A->num_nonzeros;
                     } else {
                         struct mtxvector_array z;
                         err = mtxvector_array_alloc_copy(&z, y_);
@@ -2323,6 +2380,7 @@ int mtxmatrix_coordinate_sgemv(
                             ydata[i][1] = alpha*zdata[i][1] + beta*ydata[i][1];
                         }
                         mtxvector_array_free(&z);
+                        if (num_flops) *num_flops = 2*A->num_nonzeros+6*A->num_rows;
                     }
                 } else if (trans == mtx_trans) {
                     if (beta == 0) {
@@ -2333,12 +2391,14 @@ int mtxmatrix_coordinate_sgemv(
                             ydata[j][0] += alpha*xdata[i][0];
                             ydata[j][1] += alpha*xdata[i][1];
                         }
+                        if (num_flops) *num_flops = 4*A->num_nonzeros;
                     } else if (beta == 1) {
                         for (int64_t k = 0; k < A->num_nonzeros; k++) {
                             int i = A->rowidx[k], j = A->colidx[k];
                             ydata[j][0] += alpha*xdata[i][0];
                             ydata[j][1] += alpha*xdata[i][1];
                         }
+                        if (num_flops) *num_flops = 4*A->num_nonzeros;
                     } else {
                         struct mtxvector_array z;
                         err = mtxvector_array_alloc_copy(&z, y_);
@@ -2357,6 +2417,7 @@ int mtxmatrix_coordinate_sgemv(
                             ydata[j][1] = alpha*zdata[j][1] + beta*ydata[j][1];
                         }
                         mtxvector_array_free(&z);
+                        if (num_flops) *num_flops = 2*A->num_nonzeros+6*A->num_columns;
                     }
                 } else if (trans == mtx_conjtrans) {
                     if (beta == 0) {
@@ -2367,12 +2428,14 @@ int mtxmatrix_coordinate_sgemv(
                             ydata[j][0] += alpha*xdata[i][0];
                             ydata[j][1] += alpha*xdata[i][1];
                         }
+                        if (num_flops) *num_flops = 4*A->num_nonzeros;
                     } else if (beta == 1) {
                         for (int64_t k = 0; k < A->num_nonzeros; k++) {
                             int i = A->rowidx[k], j = A->colidx[k];
                             ydata[j][0] += alpha*xdata[i][0];
                             ydata[j][1] += alpha*xdata[i][1];
                         }
+                        if (num_flops) *num_flops = 4*A->num_nonzeros;
                     } else {
                         struct mtxvector_array z;
                         err = mtxvector_array_alloc_copy(&z, y_);
@@ -2391,6 +2454,7 @@ int mtxmatrix_coordinate_sgemv(
                             ydata[j][1] = alpha*zdata[j][1] + beta*ydata[j][1];
                         }
                         mtxvector_array_free(&z);
+                        if (num_flops) *num_flops = 2*A->num_nonzeros+6*A->num_columns;
                     }
                 } else {
                     return MTX_ERR_INVALID_TRANSPOSITION;
@@ -2407,12 +2471,14 @@ int mtxmatrix_coordinate_sgemv(
                             ydata[i][0] += alpha*xdata[j][0];
                             ydata[i][1] += alpha*xdata[j][1];
                         }
+                        if (num_flops) *num_flops = 4*A->num_nonzeros;
                     } else if (beta == 1) {
                         for (int64_t k = 0; k < A->num_nonzeros; k++) {
                             int i = A->rowidx[k], j = A->colidx[k];
                             ydata[i][0] += alpha*xdata[j][0];
                             ydata[i][1] += alpha*xdata[j][1];
                         }
+                        if (num_flops) *num_flops = 4*A->num_nonzeros;
                     } else {
                         struct mtxvector_array z;
                         err = mtxvector_array_alloc_copy(&z, y_);
@@ -2425,13 +2491,13 @@ int mtxmatrix_coordinate_sgemv(
                             int i = A->rowidx[k], j = A->colidx[k];
                             zdata[i][0] += xdata[j][0];
                             zdata[i][1] += xdata[j][1];
-
                         }
                         for (int i = 0; i < A->num_rows; i++) {
                             ydata[i][0] = alpha*zdata[i][0] + beta*ydata[i][0];
                             ydata[i][1] = alpha*zdata[i][1] + beta*ydata[i][1];
                         }
                         mtxvector_array_free(&z);
+                        if (num_flops) *num_flops = 2*A->num_nonzeros+6*A->num_rows;
                     }
                 } else if (trans == mtx_trans) {
                     if (beta == 0) {
@@ -2442,12 +2508,14 @@ int mtxmatrix_coordinate_sgemv(
                             ydata[j][0] += alpha*xdata[i][0];
                             ydata[j][1] += alpha*xdata[i][1];
                         }
+                        if (num_flops) *num_flops = 4*A->num_nonzeros;
                     } else if (beta == 1) {
                         for (int64_t k = 0; k < A->num_nonzeros; k++) {
                             int i = A->rowidx[k], j = A->colidx[k];
                             ydata[j][0] += alpha*xdata[i][0];
                             ydata[j][1] += alpha*xdata[i][1];
                         }
+                        if (num_flops) *num_flops = 4*A->num_nonzeros;
                     } else {
                         struct mtxvector_array z;
                         err = mtxvector_array_alloc_copy(&z, y_);
@@ -2466,6 +2534,7 @@ int mtxmatrix_coordinate_sgemv(
                             ydata[j][1] = alpha*zdata[j][1] + beta*ydata[j][1];
                         }
                         mtxvector_array_free(&z);
+                        if (num_flops) *num_flops = 2*A->num_nonzeros+6*A->num_columns;
                     }
                 } else if (trans == mtx_conjtrans) {
                     if (beta == 0) {
@@ -2476,12 +2545,14 @@ int mtxmatrix_coordinate_sgemv(
                             ydata[j][0] += alpha*xdata[i][0];
                             ydata[j][1] += alpha*xdata[i][1];
                         }
+                        if (num_flops) *num_flops = 4*A->num_nonzeros;
                     } else if (beta == 1) {
                         for (int64_t k = 0; k < A->num_nonzeros; k++) {
                             int i = A->rowidx[k], j = A->colidx[k];
                             ydata[j][0] += alpha*xdata[i][0];
                             ydata[j][1] += alpha*xdata[i][1];
                         }
+                        if (num_flops) *num_flops = 4*A->num_nonzeros;
                     } else {
                         struct mtxvector_array z;
                         err = mtxvector_array_alloc_copy(&z, y_);
@@ -2500,6 +2571,7 @@ int mtxmatrix_coordinate_sgemv(
                             ydata[j][1] = alpha*zdata[j][1] + beta*ydata[j][1];
                         }
                         mtxvector_array_free(&z);
+                        if (num_flops) *num_flops = 2*A->num_nonzeros+6*A->num_columns;
                     }
                 } else {
                     return MTX_ERR_INVALID_TRANSPOSITION;
@@ -2519,11 +2591,13 @@ int mtxmatrix_coordinate_sgemv(
                             int i = A->rowidx[k], j = A->colidx[k];
                             ydata[i] += alpha*xdata[j];
                         }
+                        if (num_flops) *num_flops = 2*A->num_nonzeros;
                     } else if (beta == 1) {
                         for (int64_t k = 0; k < A->num_nonzeros; k++) {
                             int i = A->rowidx[k], j = A->colidx[k];
                             ydata[i] += alpha*xdata[j];
                         }
+                        if (num_flops) *num_flops = 2*A->num_nonzeros;
                     } else {
                         struct mtxvector_array z;
                         err = mtxvector_array_alloc_copy(&z, y_);
@@ -2539,6 +2613,7 @@ int mtxmatrix_coordinate_sgemv(
                         for (int i = 0; i < A->num_rows; i++)
                             ydata[i] = alpha*zdata[i] + beta*ydata[i];
                         mtxvector_array_free(&z);
+                        if (num_flops) *num_flops = A->num_nonzeros+3*A->num_rows;
                     }
                 } else if (trans == mtx_trans || trans == mtx_conjtrans) {
                     if (beta == 0) {
@@ -2548,11 +2623,13 @@ int mtxmatrix_coordinate_sgemv(
                             int i = A->rowidx[k], j = A->colidx[k];
                             ydata[j] += alpha*xdata[i];
                         }
+                        if (num_flops) *num_flops = 2*A->num_nonzeros;
                     } else if (beta == 1) {
                         for (int64_t k = 0; k < A->num_nonzeros; k++) {
                             int i = A->rowidx[k], j = A->colidx[k];
                             ydata[j] += alpha*xdata[i];
                         }
+                        if (num_flops) *num_flops = 2*A->num_nonzeros;
                     } else {
                         struct mtxvector_array z;
                         err = mtxvector_array_alloc_copy(&z, y_);
@@ -2568,6 +2645,7 @@ int mtxmatrix_coordinate_sgemv(
                         for (int j = 0; j < A->num_columns; j++)
                             ydata[j] = alpha*zdata[j] + beta*ydata[j];
                         mtxvector_array_free(&z);
+                        if (num_flops) *num_flops = A->num_nonzeros+3*A->num_columns;
                     }
                 } else {
                     return MTX_ERR_INVALID_TRANSPOSITION;
@@ -2583,11 +2661,13 @@ int mtxmatrix_coordinate_sgemv(
                             int i = A->rowidx[k], j = A->colidx[k];
                             ydata[i] += alpha*xdata[j];
                         }
+                        if (num_flops) *num_flops = 2*A->num_nonzeros;
                     } else if (beta == 1) {
                         for (int64_t k = 0; k < A->num_nonzeros; k++) {
                             int i = A->rowidx[k], j = A->colidx[k];
                             ydata[i] += alpha*xdata[j];
                         }
+                        if (num_flops) *num_flops = 2*A->num_nonzeros;
                     } else {
                         struct mtxvector_array z;
                         err = mtxvector_array_alloc_copy(&z, y_);
@@ -2603,6 +2683,7 @@ int mtxmatrix_coordinate_sgemv(
                         for (int i = 0; i < A->num_rows; i++)
                             ydata[i] = alpha*zdata[i] + beta*ydata[i];
                         mtxvector_array_free(&z);
+                        if (num_flops) *num_flops = A->num_nonzeros+3*A->num_rows;
                     }
                 } else if (trans == mtx_trans || trans == mtx_conjtrans) {
                     if (beta == 0) {
@@ -2612,11 +2693,13 @@ int mtxmatrix_coordinate_sgemv(
                             int i = A->rowidx[k], j = A->colidx[k];
                             ydata[j] += alpha*xdata[i];
                         }
+                        if (num_flops) *num_flops = 2*A->num_nonzeros;
                     } else if (beta == 1) {
                         for (int64_t k = 0; k < A->num_nonzeros; k++) {
                             int i = A->rowidx[k], j = A->colidx[k];
                             ydata[j] += alpha*xdata[i];
                         }
+                        if (num_flops) *num_flops = 2*A->num_nonzeros;
                     } else {
                         struct mtxvector_array z;
                         err = mtxvector_array_alloc_copy(&z, y_);
@@ -2632,6 +2715,7 @@ int mtxmatrix_coordinate_sgemv(
                         for (int j = 0; j < A->num_columns; j++)
                             ydata[j] = alpha*zdata[j] + beta*ydata[j];
                         mtxvector_array_free(&z);
+                        if (num_flops) *num_flops = A->num_nonzeros+3*A->num_columns;
                     }
                 } else {
                     return MTX_ERR_INVALID_TRANSPOSITION;
@@ -2676,7 +2760,8 @@ int mtxmatrix_coordinate_dgemv(
     const struct mtxmatrix_coordinate * A,
     const struct mtxvector * x,
     double beta,
-    struct mtxvector * y)
+    struct mtxvector * y,
+    int64_t * num_flops)
 {
     int err;
     if (x->type != mtxvector_array || y->type != mtxvector_array)
@@ -2708,11 +2793,13 @@ int mtxmatrix_coordinate_dgemv(
                         int i = A->rowidx[k], j = A->colidx[k];
                         ydata[i] += alpha*Adata[k]*xdata[j];
                     }
+                    if (num_flops) *num_flops = 3*A->num_nonzeros;
                 } else if (beta == 1) {
                     for (int64_t k = 0; k < A->num_nonzeros; k++) {
                         int i = A->rowidx[k], j = A->colidx[k];
                         ydata[i] += alpha*Adata[k]*xdata[j];
                     }
+                    if (num_flops) *num_flops = 3*A->num_nonzeros;
                 } else {
                     struct mtxvector_array z;
                     err = mtxvector_array_alloc_copy(&z, y_);
@@ -2728,6 +2815,7 @@ int mtxmatrix_coordinate_dgemv(
                     for (int i = 0; i < A->num_rows; i++)
                         ydata[i] = alpha*zdata[i] + beta*ydata[i];
                     mtxvector_array_free(&z);
+                    if (num_flops) *num_flops = 2*A->num_nonzeros+3*A->num_rows;
                 }
             } else if (trans == mtx_trans || trans == mtx_conjtrans) {
                 if (beta == 0) {
@@ -2737,11 +2825,13 @@ int mtxmatrix_coordinate_dgemv(
                         int i = A->rowidx[k], j = A->colidx[k];
                         ydata[j] += alpha*Adata[k]*xdata[i];
                     }
+                    if (num_flops) *num_flops = 3*A->num_nonzeros;
                 } else if (beta == 1) {
                     for (int64_t k = 0; k < A->num_nonzeros; k++) {
                         int i = A->rowidx[k], j = A->colidx[k];
                         ydata[j] += alpha*Adata[k]*xdata[i];
                     }
+                    if (num_flops) *num_flops = 3*A->num_nonzeros;
                 } else {
                     struct mtxvector_array z;
                     err = mtxvector_array_alloc_copy(&z, y_);
@@ -2757,6 +2847,7 @@ int mtxmatrix_coordinate_dgemv(
                     for (int j = 0; j < A->num_columns; j++)
                         ydata[j] = alpha*zdata[j] + beta*ydata[j];
                     mtxvector_array_free(&z);
+                    if (num_flops) *num_flops = 2*A->num_nonzeros+3*A->num_columns;
                 }
             } else {
                 return MTX_ERR_INVALID_TRANSPOSITION;
@@ -2773,11 +2864,13 @@ int mtxmatrix_coordinate_dgemv(
                         int i = A->rowidx[k], j = A->colidx[k];
                         ydata[i] += alpha*Adata[k]*xdata[j];
                     }
+                    if (num_flops) *num_flops = 3*A->num_nonzeros;
                 } else if (beta == 1) {
                     for (int64_t k = 0; k < A->num_nonzeros; k++) {
                         int i = A->rowidx[k], j = A->colidx[k];
                         ydata[i] += alpha*Adata[k]*xdata[j];
                     }
+                    if (num_flops) *num_flops = 3*A->num_nonzeros;
                 } else {
                     struct mtxvector_array z;
                     err = mtxvector_array_alloc_copy(&z, y_);
@@ -2793,6 +2886,7 @@ int mtxmatrix_coordinate_dgemv(
                     for (int i = 0; i < A->num_rows; i++)
                         ydata[i] = alpha*zdata[i] + beta*ydata[i];
                     mtxvector_array_free(&z);
+                    if (num_flops) *num_flops = 2*A->num_nonzeros+3*A->num_rows;
                 }
             } else if (trans == mtx_trans || trans == mtx_conjtrans) {
                 if (beta == 0) {
@@ -2802,11 +2896,13 @@ int mtxmatrix_coordinate_dgemv(
                         int i = A->rowidx[k], j = A->colidx[k];
                         ydata[j] += alpha*Adata[k]*xdata[i];
                     }
+                    if (num_flops) *num_flops = 3*A->num_nonzeros;
                 } else if (beta == 1) {
                     for (int64_t k = 0; k < A->num_nonzeros; k++) {
                         int i = A->rowidx[k], j = A->colidx[k];
                         ydata[j] += alpha*Adata[k]*xdata[i];
                     }
+                    if (num_flops) *num_flops = 3*A->num_nonzeros;
                 } else {
                     struct mtxvector_array z;
                     err = mtxvector_array_alloc_copy(&z, y_);
@@ -2822,6 +2918,7 @@ int mtxmatrix_coordinate_dgemv(
                     for (int j = 0; j < A->num_columns; j++)
                         ydata[j] = alpha*zdata[j] + beta*ydata[j];
                     mtxvector_array_free(&z);
+                    if (num_flops) *num_flops = 2*A->num_nonzeros+3*A->num_columns;
                 }
             } else {
                 return MTX_ERR_INVALID_TRANSPOSITION;
@@ -2849,6 +2946,7 @@ int mtxmatrix_coordinate_dgemv(
                         ydata[i][1] += alpha * (Adata[k][0]*xdata[j][1] +
                                                 Adata[k][1]*xdata[j][0]);
                     }
+                    if (num_flops) *num_flops = 10*A->num_nonzeros;
                 } else if (beta == 1) {
                     for (int64_t k = 0; k < A->num_nonzeros; k++) {
                         int i = A->rowidx[k], j = A->colidx[k];
@@ -2857,6 +2955,7 @@ int mtxmatrix_coordinate_dgemv(
                         ydata[i][1] += alpha * (Adata[k][0]*xdata[j][1] +
                                                 Adata[k][1]*xdata[j][0]);
                     }
+                    if (num_flops) *num_flops = 10*A->num_nonzeros;
                 } else {
                     struct mtxvector_array z;
                     err = mtxvector_array_alloc_copy(&z, y_);
@@ -2878,6 +2977,7 @@ int mtxmatrix_coordinate_dgemv(
                         ydata[i][1] = alpha*zdata[i][1] + beta*ydata[i][1];
                     }
                     mtxvector_array_free(&z);
+                    if (num_flops) *num_flops = 8*A->num_nonzeros+6*A->num_rows;
                 }
             } else if (trans == mtx_trans) {
                 if (beta == 0) {
@@ -2890,6 +2990,7 @@ int mtxmatrix_coordinate_dgemv(
                         ydata[j][1] += alpha * (Adata[k][0]*xdata[i][1] +
                                                 Adata[k][1]*xdata[i][0]);
                     }
+                    if (num_flops) *num_flops = 10*A->num_nonzeros;
                 } else if (beta == 1) {
                     for (int64_t k = 0; k < A->num_nonzeros; k++) {
                         int i = A->rowidx[k], j = A->colidx[k];
@@ -2898,6 +2999,7 @@ int mtxmatrix_coordinate_dgemv(
                         ydata[j][1] += alpha * (Adata[k][0]*xdata[i][1] +
                                                 Adata[k][1]*xdata[i][0]);
                     }
+                    if (num_flops) *num_flops = 10*A->num_nonzeros;
                 } else {
                     struct mtxvector_array z;
                     err = mtxvector_array_alloc_copy(&z, y_);
@@ -2916,6 +3018,7 @@ int mtxmatrix_coordinate_dgemv(
                         ydata[j][1] = alpha*zdata[j][1] + beta*ydata[j][1];
                     }
                     mtxvector_array_free(&z);
+                    if (num_flops) *num_flops = 8*A->num_nonzeros+6*A->num_columns;
                 }
             } else if (trans == mtx_conjtrans) {
                 if (beta == 0) {
@@ -2928,6 +3031,7 @@ int mtxmatrix_coordinate_dgemv(
                         ydata[j][1] += alpha * (Adata[k][0]*xdata[i][1] -
                                                 Adata[k][1]*xdata[i][0]);
                     }
+                    if (num_flops) *num_flops = 10*A->num_nonzeros;
                 } else if (beta == 1) {
                     for (int64_t k = 0; k < A->num_nonzeros; k++) {
                         int i = A->rowidx[k], j = A->colidx[k];
@@ -2936,6 +3040,7 @@ int mtxmatrix_coordinate_dgemv(
                         ydata[j][1] += alpha * (Adata[k][0]*xdata[i][1] -
                                                 Adata[k][1]*xdata[i][0]);
                     }
+                    if (num_flops) *num_flops = 10*A->num_nonzeros;
                 } else {
                     struct mtxvector_array z;
                     err = mtxvector_array_alloc_copy(&z, y_);
@@ -2954,6 +3059,7 @@ int mtxmatrix_coordinate_dgemv(
                         ydata[j][1] = alpha*zdata[j][1] + beta*ydata[j][1];
                     }
                     mtxvector_array_free(&z);
+                    if (num_flops) *num_flops = 8*A->num_nonzeros+6*A->num_columns;
                 }
             } else {
                 return MTX_ERR_INVALID_TRANSPOSITION;
@@ -2973,6 +3079,7 @@ int mtxmatrix_coordinate_dgemv(
                         ydata[i][1] += alpha * (Adata[k][0]*xdata[j][1] +
                                                 Adata[k][1]*xdata[j][0]);
                     }
+                    if (num_flops) *num_flops = 10*A->num_nonzeros;
                 } else if (beta == 1) {
                     for (int64_t k = 0; k < A->num_nonzeros; k++) {
                         int i = A->rowidx[k], j = A->colidx[k];
@@ -2981,6 +3088,7 @@ int mtxmatrix_coordinate_dgemv(
                         ydata[i][1] += alpha * (Adata[k][0]*xdata[j][1] +
                                                 Adata[k][1]*xdata[j][0]);
                     }
+                    if (num_flops) *num_flops = 10*A->num_nonzeros;
                 } else {
                     struct mtxvector_array z;
                     err = mtxvector_array_alloc_copy(&z, y_);
@@ -3002,6 +3110,7 @@ int mtxmatrix_coordinate_dgemv(
                         ydata[i][1] = alpha*zdata[i][1] + beta*ydata[i][1];
                     }
                     mtxvector_array_free(&z);
+                    if (num_flops) *num_flops = 8*A->num_nonzeros+6*A->num_rows;
                 }
             } else if (trans == mtx_trans) {
                 if (beta == 0) {
@@ -3014,6 +3123,7 @@ int mtxmatrix_coordinate_dgemv(
                         ydata[j][1] += alpha * (Adata[k][0]*xdata[i][1] +
                                                 Adata[k][1]*xdata[i][0]);
                     }
+                    if (num_flops) *num_flops = 10*A->num_nonzeros;
                 } else if (beta == 1) {
                     for (int64_t k = 0; k < A->num_nonzeros; k++) {
                         int i = A->rowidx[k], j = A->colidx[k];
@@ -3022,6 +3132,7 @@ int mtxmatrix_coordinate_dgemv(
                         ydata[j][1] += alpha * (Adata[k][0]*xdata[i][1] +
                                                 Adata[k][1]*xdata[i][0]);
                     }
+                    if (num_flops) *num_flops = 10*A->num_nonzeros;
                 } else {
                     struct mtxvector_array z;
                     err = mtxvector_array_alloc_copy(&z, y_);
@@ -3040,6 +3151,7 @@ int mtxmatrix_coordinate_dgemv(
                         ydata[j][1] = alpha*zdata[j][1] + beta*ydata[j][1];
                     }
                     mtxvector_array_free(&z);
+                    if (num_flops) *num_flops = 8*A->num_nonzeros+6*A->num_columns;
                 }
             } else if (trans == mtx_conjtrans) {
                 if (beta == 0) {
@@ -3052,6 +3164,7 @@ int mtxmatrix_coordinate_dgemv(
                         ydata[j][1] += alpha * (Adata[k][0]*xdata[i][1] -
                                                 Adata[k][1]*xdata[i][0]);
                     }
+                    if (num_flops) *num_flops = 10*A->num_nonzeros;
                 } else if (beta == 1) {
                     for (int64_t k = 0; k < A->num_nonzeros; k++) {
                         int i = A->rowidx[k], j = A->colidx[k];
@@ -3060,6 +3173,7 @@ int mtxmatrix_coordinate_dgemv(
                         ydata[j][1] += alpha * (Adata[k][0]*xdata[i][1] -
                                                 Adata[k][1]*xdata[i][0]);
                     }
+                    if (num_flops) *num_flops = 10*A->num_nonzeros;
                 } else {
                     struct mtxvector_array z;
                     err = mtxvector_array_alloc_copy(&z, y_);
@@ -3078,6 +3192,7 @@ int mtxmatrix_coordinate_dgemv(
                         ydata[j][1] = alpha*zdata[j][1] + beta*ydata[j][1];
                     }
                     mtxvector_array_free(&z);
+                    if (num_flops) *num_flops = 8*A->num_nonzeros+6*A->num_columns;
                 }
             } else {
                 return MTX_ERR_INVALID_TRANSPOSITION;
@@ -3102,11 +3217,13 @@ int mtxmatrix_coordinate_dgemv(
                         int i = A->rowidx[k], j = A->colidx[k];
                         ydata[i] += alpha*Adata[k]*xdata[j];
                     }
+                    if (num_flops) *num_flops = 3*A->num_nonzeros;
                 } else if (beta == 1) {
                     for (int64_t k = 0; k < A->num_nonzeros; k++) {
                         int i = A->rowidx[k], j = A->colidx[k];
                         ydata[i] += alpha*Adata[k]*xdata[j];
                     }
+                    if (num_flops) *num_flops = 3*A->num_nonzeros;
                 } else {
                     struct mtxvector_array z;
                     err = mtxvector_array_alloc_copy(&z, y_);
@@ -3122,6 +3239,7 @@ int mtxmatrix_coordinate_dgemv(
                     for (int i = 0; i < A->num_rows; i++)
                         ydata[i] = alpha*zdata[i] + beta*ydata[i];
                     mtxvector_array_free(&z);
+                    if (num_flops) *num_flops = 2*A->num_nonzeros+3*A->num_rows;
                 }
             } else if (trans == mtx_trans || trans == mtx_conjtrans) {
                 if (beta == 0) {
@@ -3131,11 +3249,13 @@ int mtxmatrix_coordinate_dgemv(
                         int i = A->rowidx[k], j = A->colidx[k];
                         ydata[j] += alpha*Adata[k]*xdata[i];
                     }
+                    if (num_flops) *num_flops = 3*A->num_nonzeros;
                 } else if (beta == 1) {
                     for (int64_t k = 0; k < A->num_nonzeros; k++) {
                         int i = A->rowidx[k], j = A->colidx[k];
                         ydata[j] += alpha*Adata[k]*xdata[i];
                     }
+                    if (num_flops) *num_flops = 3*A->num_nonzeros;
                 } else {
                     struct mtxvector_array z;
                     err = mtxvector_array_alloc_copy(&z, y_);
@@ -3151,6 +3271,7 @@ int mtxmatrix_coordinate_dgemv(
                     for (int j = 0; j < A->num_columns; j++)
                         ydata[j] = alpha*zdata[j] + beta*ydata[j];
                     mtxvector_array_free(&z);
+                    if (num_flops) *num_flops = 2*A->num_nonzeros+3*A->num_columns;
                 }
             } else {
                 return MTX_ERR_INVALID_TRANSPOSITION;
@@ -3167,11 +3288,13 @@ int mtxmatrix_coordinate_dgemv(
                         int i = A->rowidx[k], j = A->colidx[k];
                         ydata[i] += alpha*Adata[k]*xdata[j];
                     }
+                    if (num_flops) *num_flops = 3*A->num_nonzeros;
                 } else if (beta == 1) {
                     for (int64_t k = 0; k < A->num_nonzeros; k++) {
                         int i = A->rowidx[k], j = A->colidx[k];
                         ydata[i] += alpha*Adata[k]*xdata[j];
                     }
+                    if (num_flops) *num_flops = 3*A->num_nonzeros;
                 } else {
                     struct mtxvector_array z;
                     err = mtxvector_array_alloc_copy(&z, y_);
@@ -3187,6 +3310,7 @@ int mtxmatrix_coordinate_dgemv(
                     for (int i = 0; i < A->num_rows; i++)
                         ydata[i] = alpha*zdata[i] + beta*ydata[i];
                     mtxvector_array_free(&z);
+                    if (num_flops) *num_flops = 2*A->num_nonzeros+3*A->num_rows;
                 }
             } else if (trans == mtx_trans || trans == mtx_conjtrans) {
                 if (beta == 0) {
@@ -3196,11 +3320,13 @@ int mtxmatrix_coordinate_dgemv(
                         int i = A->rowidx[k], j = A->colidx[k];
                         ydata[j] += alpha*Adata[k]*xdata[i];
                     }
+                    if (num_flops) *num_flops = 3*A->num_nonzeros;
                 } else if (beta == 1) {
                     for (int64_t k = 0; k < A->num_nonzeros; k++) {
                         int i = A->rowidx[k], j = A->colidx[k];
                         ydata[j] += alpha*Adata[k]*xdata[i];
                     }
+                    if (num_flops) *num_flops = 3*A->num_nonzeros;
                 } else {
                     struct mtxvector_array z;
                     err = mtxvector_array_alloc_copy(&z, y_);
@@ -3216,6 +3342,7 @@ int mtxmatrix_coordinate_dgemv(
                     for (int j = 0; j < A->num_columns; j++)
                         ydata[j] = alpha*zdata[j] + beta*ydata[j];
                     mtxvector_array_free(&z);
+                    if (num_flops) *num_flops = 2*A->num_nonzeros+3*A->num_columns;
                 }
             } else {
                 return MTX_ERR_INVALID_TRANSPOSITION;
@@ -3240,11 +3367,13 @@ int mtxmatrix_coordinate_dgemv(
                             int i = A->rowidx[k], j = A->colidx[k];
                             ydata[i] += alpha*xdata[j];
                         }
+                        if (num_flops) *num_flops = 2*A->num_nonzeros;
                     } else if (beta == 1) {
                         for (int64_t k = 0; k < A->num_nonzeros; k++) {
                             int i = A->rowidx[k], j = A->colidx[k];
                             ydata[i] += alpha*xdata[j];
                         }
+                        if (num_flops) *num_flops = 2*A->num_nonzeros;
                     } else {
                         struct mtxvector_array z;
                         err = mtxvector_array_alloc_copy(&z, y_);
@@ -3260,6 +3389,7 @@ int mtxmatrix_coordinate_dgemv(
                         for (int i = 0; i < A->num_rows; i++)
                             ydata[i] = alpha*zdata[i] + beta*ydata[i];
                         mtxvector_array_free(&z);
+                        if (num_flops) *num_flops = A->num_nonzeros+3*A->num_rows;
                     }
                 } else if (trans == mtx_trans || trans == mtx_conjtrans) {
                     if (beta == 0) {
@@ -3269,11 +3399,13 @@ int mtxmatrix_coordinate_dgemv(
                             int i = A->rowidx[k], j = A->colidx[k];
                             ydata[j] += alpha*xdata[i];
                         }
+                        if (num_flops) *num_flops = 2*A->num_nonzeros;
                     } else if (beta == 1) {
                         for (int64_t k = 0; k < A->num_nonzeros; k++) {
                             int i = A->rowidx[k], j = A->colidx[k];
                             ydata[j] += alpha*xdata[i];
                         }
+                        if (num_flops) *num_flops = 2*A->num_nonzeros;
                     } else {
                         struct mtxvector_array z;
                         err = mtxvector_array_alloc_copy(&z, y_);
@@ -3289,6 +3421,7 @@ int mtxmatrix_coordinate_dgemv(
                         for (int j = 0; j < A->num_columns; j++)
                             ydata[j] = alpha*zdata[j] + beta*ydata[j];
                         mtxvector_array_free(&z);
+                        if (num_flops) *num_flops = A->num_nonzeros+3*A->num_columns;
                     }
                 } else {
                     return MTX_ERR_INVALID_TRANSPOSITION;
@@ -3304,11 +3437,13 @@ int mtxmatrix_coordinate_dgemv(
                             int i = A->rowidx[k], j = A->colidx[k];
                             ydata[i] += alpha*xdata[j];
                         }
+                        if (num_flops) *num_flops = 2*A->num_nonzeros;
                     } else if (beta == 1) {
                         for (int64_t k = 0; k < A->num_nonzeros; k++) {
                             int i = A->rowidx[k], j = A->colidx[k];
                             ydata[i] += alpha*xdata[j];
                         }
+                        if (num_flops) *num_flops = 2*A->num_nonzeros;
                     } else {
                         struct mtxvector_array z;
                         err = mtxvector_array_alloc_copy(&z, y_);
@@ -3324,6 +3459,7 @@ int mtxmatrix_coordinate_dgemv(
                         for (int i = 0; i < A->num_rows; i++)
                             ydata[i] = alpha*zdata[i] + beta*ydata[i];
                         mtxvector_array_free(&z);
+                        if (num_flops) *num_flops = A->num_nonzeros+3*A->num_rows;
                     }
                 } else if (trans == mtx_trans || trans == mtx_conjtrans) {
                     if (beta == 0) {
@@ -3333,11 +3469,13 @@ int mtxmatrix_coordinate_dgemv(
                             int i = A->rowidx[k], j = A->colidx[k];
                             ydata[j] += alpha*xdata[i];
                         }
+                        if (num_flops) *num_flops = 2*A->num_nonzeros;
                     } else if (beta == 1) {
                         for (int64_t k = 0; k < A->num_nonzeros; k++) {
                             int i = A->rowidx[k], j = A->colidx[k];
                             ydata[j] += alpha*xdata[i];
                         }
+                        if (num_flops) *num_flops = 2*A->num_nonzeros;
                     } else {
                         struct mtxvector_array z;
                         err = mtxvector_array_alloc_copy(&z, y_);
@@ -3353,6 +3491,7 @@ int mtxmatrix_coordinate_dgemv(
                         for (int j = 0; j < A->num_columns; j++)
                             ydata[j] = alpha*zdata[j] + beta*ydata[j];
                         mtxvector_array_free(&z);
+                        if (num_flops) *num_flops = A->num_nonzeros+3*A->num_columns;
                     }
                 } else {
                     return MTX_ERR_INVALID_TRANSPOSITION;
@@ -3373,12 +3512,14 @@ int mtxmatrix_coordinate_dgemv(
                             ydata[i][0] += alpha*xdata[j][0];
                             ydata[i][1] += alpha*xdata[j][1];
                         }
+                        if (num_flops) *num_flops = 4*A->num_nonzeros;
                     } else if (beta == 1) {
                         for (int64_t k = 0; k < A->num_nonzeros; k++) {
                             int i = A->rowidx[k], j = A->colidx[k];
                             ydata[i][0] += alpha*xdata[j][0];
                             ydata[i][1] += alpha*xdata[j][1];
                         }
+                        if (num_flops) *num_flops = 4*A->num_nonzeros;
                     } else {
                         struct mtxvector_array z;
                         err = mtxvector_array_alloc_copy(&z, y_);
@@ -3398,6 +3539,7 @@ int mtxmatrix_coordinate_dgemv(
                             ydata[i][1] = alpha*zdata[i][1] + beta*ydata[i][1];
                         }
                         mtxvector_array_free(&z);
+                        if (num_flops) *num_flops = 2*A->num_nonzeros+6*A->num_rows;
                     }
                 } else if (trans == mtx_trans) {
                     if (beta == 0) {
@@ -3408,12 +3550,14 @@ int mtxmatrix_coordinate_dgemv(
                             ydata[j][0] += alpha*xdata[i][0];
                             ydata[j][1] += alpha*xdata[i][1];
                         }
+                        if (num_flops) *num_flops = 4*A->num_nonzeros;
                     } else if (beta == 1) {
                         for (int64_t k = 0; k < A->num_nonzeros; k++) {
                             int i = A->rowidx[k], j = A->colidx[k];
                             ydata[j][0] += alpha*xdata[i][0];
                             ydata[j][1] += alpha*xdata[i][1];
                         }
+                        if (num_flops) *num_flops = 4*A->num_nonzeros;
                     } else {
                         struct mtxvector_array z;
                         err = mtxvector_array_alloc_copy(&z, y_);
@@ -3432,6 +3576,7 @@ int mtxmatrix_coordinate_dgemv(
                             ydata[j][1] = alpha*zdata[j][1] + beta*ydata[j][1];
                         }
                         mtxvector_array_free(&z);
+                        if (num_flops) *num_flops = 2*A->num_nonzeros+6*A->num_columns;
                     }
                 } else if (trans == mtx_conjtrans) {
                     if (beta == 0) {
@@ -3442,12 +3587,14 @@ int mtxmatrix_coordinate_dgemv(
                             ydata[j][0] += alpha*xdata[i][0];
                             ydata[j][1] += alpha*xdata[i][1];
                         }
+                        if (num_flops) *num_flops = 4*A->num_nonzeros;
                     } else if (beta == 1) {
                         for (int64_t k = 0; k < A->num_nonzeros; k++) {
                             int i = A->rowidx[k], j = A->colidx[k];
                             ydata[j][0] += alpha*xdata[i][0];
                             ydata[j][1] += alpha*xdata[i][1];
                         }
+                        if (num_flops) *num_flops = 4*A->num_nonzeros;
                     } else {
                         struct mtxvector_array z;
                         err = mtxvector_array_alloc_copy(&z, y_);
@@ -3466,6 +3613,7 @@ int mtxmatrix_coordinate_dgemv(
                             ydata[j][1] = alpha*zdata[j][1] + beta*ydata[j][1];
                         }
                         mtxvector_array_free(&z);
+                        if (num_flops) *num_flops = 2*A->num_nonzeros+6*A->num_columns;
                     }
                 } else {
                     return MTX_ERR_INVALID_TRANSPOSITION;
@@ -3482,12 +3630,14 @@ int mtxmatrix_coordinate_dgemv(
                             ydata[i][0] += alpha*xdata[j][0];
                             ydata[i][1] += alpha*xdata[j][1];
                         }
+                        if (num_flops) *num_flops = 4*A->num_nonzeros;
                     } else if (beta == 1) {
                         for (int64_t k = 0; k < A->num_nonzeros; k++) {
                             int i = A->rowidx[k], j = A->colidx[k];
                             ydata[i][0] += alpha*xdata[j][0];
                             ydata[i][1] += alpha*xdata[j][1];
                         }
+                        if (num_flops) *num_flops = 4*A->num_nonzeros;
                     } else {
                         struct mtxvector_array z;
                         err = mtxvector_array_alloc_copy(&z, y_);
@@ -3500,13 +3650,13 @@ int mtxmatrix_coordinate_dgemv(
                             int i = A->rowidx[k], j = A->colidx[k];
                             zdata[i][0] += xdata[j][0];
                             zdata[i][1] += xdata[j][1];
-
                         }
                         for (int i = 0; i < A->num_rows; i++) {
                             ydata[i][0] = alpha*zdata[i][0] + beta*ydata[i][0];
                             ydata[i][1] = alpha*zdata[i][1] + beta*ydata[i][1];
                         }
                         mtxvector_array_free(&z);
+                        if (num_flops) *num_flops = 2*A->num_nonzeros+6*A->num_rows;
                     }
                 } else if (trans == mtx_trans) {
                     if (beta == 0) {
@@ -3517,12 +3667,14 @@ int mtxmatrix_coordinate_dgemv(
                             ydata[j][0] += alpha*xdata[i][0];
                             ydata[j][1] += alpha*xdata[i][1];
                         }
+                        if (num_flops) *num_flops = 4*A->num_nonzeros;
                     } else if (beta == 1) {
                         for (int64_t k = 0; k < A->num_nonzeros; k++) {
                             int i = A->rowidx[k], j = A->colidx[k];
                             ydata[j][0] += alpha*xdata[i][0];
                             ydata[j][1] += alpha*xdata[i][1];
                         }
+                        if (num_flops) *num_flops = 4*A->num_nonzeros;
                     } else {
                         struct mtxvector_array z;
                         err = mtxvector_array_alloc_copy(&z, y_);
@@ -3541,6 +3693,7 @@ int mtxmatrix_coordinate_dgemv(
                             ydata[j][1] = alpha*zdata[j][1] + beta*ydata[j][1];
                         }
                         mtxvector_array_free(&z);
+                        if (num_flops) *num_flops = 2*A->num_nonzeros+6*A->num_columns;
                     }
                 } else if (trans == mtx_conjtrans) {
                     if (beta == 0) {
@@ -3551,12 +3704,14 @@ int mtxmatrix_coordinate_dgemv(
                             ydata[j][0] += alpha*xdata[i][0];
                             ydata[j][1] += alpha*xdata[i][1];
                         }
+                        if (num_flops) *num_flops = 4*A->num_nonzeros;
                     } else if (beta == 1) {
                         for (int64_t k = 0; k < A->num_nonzeros; k++) {
                             int i = A->rowidx[k], j = A->colidx[k];
                             ydata[j][0] += alpha*xdata[i][0];
                             ydata[j][1] += alpha*xdata[i][1];
                         }
+                        if (num_flops) *num_flops = 4*A->num_nonzeros;
                     } else {
                         struct mtxvector_array z;
                         err = mtxvector_array_alloc_copy(&z, y_);
@@ -3575,6 +3730,7 @@ int mtxmatrix_coordinate_dgemv(
                             ydata[j][1] = alpha*zdata[j][1] + beta*ydata[j][1];
                         }
                         mtxvector_array_free(&z);
+                        if (num_flops) *num_flops = 2*A->num_nonzeros+6*A->num_columns;
                     }
                 } else {
                     return MTX_ERR_INVALID_TRANSPOSITION;
@@ -3594,11 +3750,13 @@ int mtxmatrix_coordinate_dgemv(
                             int i = A->rowidx[k], j = A->colidx[k];
                             ydata[i] += alpha*xdata[j];
                         }
+                        if (num_flops) *num_flops = 2*A->num_nonzeros;
                     } else if (beta == 1) {
                         for (int64_t k = 0; k < A->num_nonzeros; k++) {
                             int i = A->rowidx[k], j = A->colidx[k];
                             ydata[i] += alpha*xdata[j];
                         }
+                        if (num_flops) *num_flops = 2*A->num_nonzeros;
                     } else {
                         struct mtxvector_array z;
                         err = mtxvector_array_alloc_copy(&z, y_);
@@ -3614,6 +3772,7 @@ int mtxmatrix_coordinate_dgemv(
                         for (int i = 0; i < A->num_rows; i++)
                             ydata[i] = alpha*zdata[i] + beta*ydata[i];
                         mtxvector_array_free(&z);
+                        if (num_flops) *num_flops = A->num_nonzeros+3*A->num_rows;
                     }
                 } else if (trans == mtx_trans || trans == mtx_conjtrans) {
                     if (beta == 0) {
@@ -3623,11 +3782,13 @@ int mtxmatrix_coordinate_dgemv(
                             int i = A->rowidx[k], j = A->colidx[k];
                             ydata[j] += alpha*xdata[i];
                         }
+                        if (num_flops) *num_flops = 2*A->num_nonzeros;
                     } else if (beta == 1) {
                         for (int64_t k = 0; k < A->num_nonzeros; k++) {
                             int i = A->rowidx[k], j = A->colidx[k];
                             ydata[j] += alpha*xdata[i];
                         }
+                        if (num_flops) *num_flops = 2*A->num_nonzeros;
                     } else {
                         struct mtxvector_array z;
                         err = mtxvector_array_alloc_copy(&z, y_);
@@ -3643,6 +3804,7 @@ int mtxmatrix_coordinate_dgemv(
                         for (int j = 0; j < A->num_columns; j++)
                             ydata[j] = alpha*zdata[j] + beta*ydata[j];
                         mtxvector_array_free(&z);
+                        if (num_flops) *num_flops = A->num_nonzeros+3*A->num_columns;
                     }
                 } else {
                     return MTX_ERR_INVALID_TRANSPOSITION;
@@ -3658,11 +3820,13 @@ int mtxmatrix_coordinate_dgemv(
                             int i = A->rowidx[k], j = A->colidx[k];
                             ydata[i] += alpha*xdata[j];
                         }
+                        if (num_flops) *num_flops = 2*A->num_nonzeros;
                     } else if (beta == 1) {
                         for (int64_t k = 0; k < A->num_nonzeros; k++) {
                             int i = A->rowidx[k], j = A->colidx[k];
                             ydata[i] += alpha*xdata[j];
                         }
+                        if (num_flops) *num_flops = 2*A->num_nonzeros;
                     } else {
                         struct mtxvector_array z;
                         err = mtxvector_array_alloc_copy(&z, y_);
@@ -3678,6 +3842,7 @@ int mtxmatrix_coordinate_dgemv(
                         for (int i = 0; i < A->num_rows; i++)
                             ydata[i] = alpha*zdata[i] + beta*ydata[i];
                         mtxvector_array_free(&z);
+                        if (num_flops) *num_flops = A->num_nonzeros+3*A->num_rows;
                     }
                 } else if (trans == mtx_trans || trans == mtx_conjtrans) {
                     if (beta == 0) {
@@ -3687,11 +3852,13 @@ int mtxmatrix_coordinate_dgemv(
                             int i = A->rowidx[k], j = A->colidx[k];
                             ydata[j] += alpha*xdata[i];
                         }
+                        if (num_flops) *num_flops = 2*A->num_nonzeros;
                     } else if (beta == 1) {
                         for (int64_t k = 0; k < A->num_nonzeros; k++) {
                             int i = A->rowidx[k], j = A->colidx[k];
                             ydata[j] += alpha*xdata[i];
                         }
+                        if (num_flops) *num_flops = 2*A->num_nonzeros;
                     } else {
                         struct mtxvector_array z;
                         err = mtxvector_array_alloc_copy(&z, y_);
@@ -3707,6 +3874,7 @@ int mtxmatrix_coordinate_dgemv(
                         for (int j = 0; j < A->num_columns; j++)
                             ydata[j] = alpha*zdata[j] + beta*ydata[j];
                         mtxvector_array_free(&z);
+                        if (num_flops) *num_flops = A->num_nonzeros+3*A->num_columns;
                     }
                 } else {
                     return MTX_ERR_INVALID_TRANSPOSITION;
@@ -3748,7 +3916,8 @@ int mtxmatrix_coordinate_cgemv(
     const struct mtxmatrix_coordinate * A,
     const struct mtxvector * x,
     float beta[2],
-    struct mtxvector * y)
+    struct mtxvector * y,
+    int64_t * num_flops)
 {
     int err;
     if (x->type != mtxvector_array || y->type != mtxvector_array)
@@ -3785,6 +3954,7 @@ int mtxmatrix_coordinate_cgemv(
                     ydata[i][0] += alpha[0]*z[0]-alpha[1]*z[1];
                     ydata[i][1] += alpha[0]*z[1]+alpha[1]*z[0];
                 }
+                if (num_flops) *num_flops = 14*A->num_nonzeros;
             } else if (beta[0] == 1 && beta[1] == 0) {
                 for (int64_t k = 0; k < A->num_nonzeros; k++) {
                     int i = A->rowidx[k];
@@ -3794,6 +3964,7 @@ int mtxmatrix_coordinate_cgemv(
                     ydata[i][0] += alpha[0]*z[0]-alpha[1]*z[1];
                     ydata[i][1] += alpha[0]*z[1]+alpha[1]*z[0];
                 }
+                if (num_flops) *num_flops = 14*A->num_nonzeros;
             } else {
                 struct mtxvector_array z;
                 err = mtxvector_array_alloc_copy(&z, y_);
@@ -3816,6 +3987,7 @@ int mtxmatrix_coordinate_cgemv(
                         + beta[0]*w[1]+beta[1]*w[0];
                 }
                 mtxvector_array_free(&z);
+                if (num_flops) *num_flops = 8*A->num_nonzeros+14*A->num_rows;
             }
         } else if (trans == mtx_trans) {
             if (beta[0] == 0 && beta[1] == 0) {
@@ -3829,6 +4001,7 @@ int mtxmatrix_coordinate_cgemv(
                     ydata[j][0] += alpha[0]*z[0]-alpha[1]*z[1];
                     ydata[j][1] += alpha[0]*z[1]+alpha[1]*z[0];
                 }
+                if (num_flops) *num_flops = 14*A->num_nonzeros;
             } else if (beta[0] == 1 && beta[1] == 0) {
                 for (int64_t k = 0; k < A->num_nonzeros; k++) {
                     int i = A->rowidx[k];
@@ -3838,6 +4011,7 @@ int mtxmatrix_coordinate_cgemv(
                     ydata[j][0] += alpha[0]*z[0]-alpha[1]*z[1];
                     ydata[j][1] += alpha[0]*z[1]+alpha[1]*z[0];
                 }
+                if (num_flops) *num_flops = 14*A->num_nonzeros;
             } else {
                 struct mtxvector_array z;
                 err = mtxvector_array_alloc_copy(&z, y_);
@@ -3860,6 +4034,7 @@ int mtxmatrix_coordinate_cgemv(
                         + beta[0]*w[1]+beta[1]*w[0];
                 }
                 mtxvector_array_free(&z);
+                if (num_flops) *num_flops = 8*A->num_nonzeros+14*A->num_columns;
             }
         } else if (trans == mtx_conjtrans) {
             if (beta[0] == 0 && beta[1] == 0) {
@@ -3873,6 +4048,7 @@ int mtxmatrix_coordinate_cgemv(
                     ydata[j][0] += alpha[0]*z[0]-alpha[1]*z[1];
                     ydata[j][1] += alpha[0]*z[1]+alpha[1]*z[0];
                 }
+                if (num_flops) *num_flops = 14*A->num_nonzeros;
             } else if (beta[0] == 1 && beta[1] == 0) {
                 for (int64_t k = 0; k < A->num_nonzeros; k++) {
                     int i = A->rowidx[k];
@@ -3882,6 +4058,7 @@ int mtxmatrix_coordinate_cgemv(
                     ydata[j][0] += alpha[0]*z[0]-alpha[1]*z[1];
                     ydata[j][1] += alpha[0]*z[1]+alpha[1]*z[0];
                 }
+                if (num_flops) *num_flops = 14*A->num_nonzeros;
             } else {
                 struct mtxvector_array z;
                 err = mtxvector_array_alloc_copy(&z, y_);
@@ -3904,6 +4081,7 @@ int mtxmatrix_coordinate_cgemv(
                         + beta[0]*w[1]+beta[1]*w[0];
                 }
                 mtxvector_array_free(&z);
+                if (num_flops) *num_flops = 8*A->num_nonzeros+14*A->num_columns;
             }
         } else {
             return MTX_ERR_INVALID_TRANSPOSITION;
@@ -3924,6 +4102,7 @@ int mtxmatrix_coordinate_cgemv(
                     ydata[i][0] += alpha[0]*z[0]-alpha[1]*z[1];
                     ydata[i][1] += alpha[0]*z[1]+alpha[1]*z[0];
                 }
+                if (num_flops) *num_flops = 14*A->num_nonzeros;
             } else if (beta[0] == 1 && beta[1] == 0) {
                 for (int64_t k = 0; k < A->num_nonzeros; k++) {
                     int i = A->rowidx[k];
@@ -3933,6 +4112,7 @@ int mtxmatrix_coordinate_cgemv(
                     ydata[i][0] += alpha[0]*z[0]-alpha[1]*z[1];
                     ydata[i][1] += alpha[0]*z[1]+alpha[1]*z[0];
                 }
+                if (num_flops) *num_flops = 14*A->num_nonzeros;
             } else {
                 struct mtxvector_array z;
                 err = mtxvector_array_alloc_copy(&z, y_);
@@ -3944,8 +4124,8 @@ int mtxmatrix_coordinate_cgemv(
                 for (int64_t k = 0; k < A->num_nonzeros; k++) {
                     int i = A->rowidx[k];
                     int j = A->colidx[k];
-                    zdata[i][0] += (Adata[k][0]*xdata[j][0]-Adata[k][1]*xdata[j][1]);
-                    zdata[i][1] += (Adata[k][0]*xdata[j][1]+Adata[k][1]*xdata[j][0]);
+                    zdata[i][0] += Adata[k][0]*xdata[j][0]-Adata[k][1]*xdata[j][1];
+                    zdata[i][1] += Adata[k][0]*xdata[j][1]+Adata[k][1]*xdata[j][0];
                 }
                 for (int i = 0; i < A->num_rows; i++) {
                     double w[2] = {ydata[i][0], ydata[i][1]};
@@ -3955,6 +4135,7 @@ int mtxmatrix_coordinate_cgemv(
                         + beta[0]*w[1]+beta[1]*w[0];
                 }
                 mtxvector_array_free(&z);
+                if (num_flops) *num_flops = 8*A->num_nonzeros+14*A->num_rows;
             }
         } else if (trans == mtx_trans) {
             if (beta[0] == 0 && beta[1] == 0) {
@@ -3968,6 +4149,7 @@ int mtxmatrix_coordinate_cgemv(
                     ydata[j][0] += alpha[0]*z[0]-alpha[1]*z[1];
                     ydata[j][1] += alpha[0]*z[1]+alpha[1]*z[0];
                 }
+                if (num_flops) *num_flops = 14*A->num_nonzeros;
             } else if (beta[0] == 1 && beta[1] == 0) {
                 for (int64_t k = 0; k < A->num_nonzeros; k++) {
                     int i = A->rowidx[k];
@@ -3977,6 +4159,7 @@ int mtxmatrix_coordinate_cgemv(
                     ydata[j][0] += alpha[0]*z[0]-alpha[1]*z[1];
                     ydata[j][1] += alpha[0]*z[1]+alpha[1]*z[0];
                 }
+                if (num_flops) *num_flops = 14*A->num_nonzeros;
             } else {
                 struct mtxvector_array z;
                 err = mtxvector_array_alloc_copy(&z, y_);
@@ -3999,6 +4182,7 @@ int mtxmatrix_coordinate_cgemv(
                         + beta[0]*w[1]+beta[1]*w[0];
                 }
                 mtxvector_array_free(&z);
+                if (num_flops) *num_flops = 8*A->num_nonzeros+14*A->num_columns;
             }
         } else if (trans == mtx_conjtrans) {
             if (beta[0] == 0 && beta[1] == 0) {
@@ -4012,6 +4196,7 @@ int mtxmatrix_coordinate_cgemv(
                     ydata[j][0] += alpha[0]*z[0]-alpha[1]*z[1];
                     ydata[j][1] += alpha[0]*z[1]+alpha[1]*z[0];
                 }
+                if (num_flops) *num_flops = 14*A->num_nonzeros;
             } else if (beta[0] == 1 && beta[1] == 0) {
                 for (int64_t k = 0; k < A->num_nonzeros; k++) {
                     int i = A->rowidx[k];
@@ -4021,6 +4206,7 @@ int mtxmatrix_coordinate_cgemv(
                     ydata[j][0] += alpha[0]*z[0]-alpha[1]*z[1];
                     ydata[j][1] += alpha[0]*z[1]+alpha[1]*z[0];
                 }
+                if (num_flops) *num_flops = 14*A->num_nonzeros;
             } else {
                 struct mtxvector_array z;
                 err = mtxvector_array_alloc_copy(&z, y_);
@@ -4043,6 +4229,7 @@ int mtxmatrix_coordinate_cgemv(
                         + beta[0]*w[1]+beta[1]*w[0];
                 }
                 mtxvector_array_free(&z);
+                if (num_flops) *num_flops = 8*A->num_nonzeros+14*A->num_columns;
             }
         } else {
             return MTX_ERR_INVALID_TRANSPOSITION;
@@ -4078,7 +4265,8 @@ int mtxmatrix_coordinate_zgemv(
     const struct mtxmatrix_coordinate * A,
     const struct mtxvector * x,
     double beta[2],
-    struct mtxvector * y)
+    struct mtxvector * y,
+    int64_t * num_flops)
 {
     int err;
     if (x->type != mtxvector_array || y->type != mtxvector_array)
@@ -4115,6 +4303,7 @@ int mtxmatrix_coordinate_zgemv(
                     ydata[i][0] += alpha[0]*z[0]-alpha[1]*z[1];
                     ydata[i][1] += alpha[0]*z[1]+alpha[1]*z[0];
                 }
+                if (num_flops) *num_flops = 14*A->num_nonzeros;
             } else if (beta[0] == 1 && beta[1] == 0) {
                 for (int64_t k = 0; k < A->num_nonzeros; k++) {
                     int i = A->rowidx[k];
@@ -4124,6 +4313,7 @@ int mtxmatrix_coordinate_zgemv(
                     ydata[i][0] += alpha[0]*z[0]-alpha[1]*z[1];
                     ydata[i][1] += alpha[0]*z[1]+alpha[1]*z[0];
                 }
+                if (num_flops) *num_flops = 14*A->num_nonzeros;
             } else {
                 struct mtxvector_array z;
                 err = mtxvector_array_alloc_copy(&z, y_);
@@ -4146,6 +4336,7 @@ int mtxmatrix_coordinate_zgemv(
                         + beta[0]*w[1]+beta[1]*w[0];
                 }
                 mtxvector_array_free(&z);
+                if (num_flops) *num_flops = 8*A->num_nonzeros+14*A->num_rows;
             }
         } else if (trans == mtx_trans) {
             if (beta[0] == 0 && beta[1] == 0) {
@@ -4159,6 +4350,7 @@ int mtxmatrix_coordinate_zgemv(
                     ydata[j][0] += alpha[0]*z[0]-alpha[1]*z[1];
                     ydata[j][1] += alpha[0]*z[1]+alpha[1]*z[0];
                 }
+                if (num_flops) *num_flops = 14*A->num_nonzeros;
             } else if (beta[0] == 1 && beta[1] == 0) {
                 for (int64_t k = 0; k < A->num_nonzeros; k++) {
                     int i = A->rowidx[k];
@@ -4168,6 +4360,7 @@ int mtxmatrix_coordinate_zgemv(
                     ydata[j][0] += alpha[0]*z[0]-alpha[1]*z[1];
                     ydata[j][1] += alpha[0]*z[1]+alpha[1]*z[0];
                 }
+                if (num_flops) *num_flops = 14*A->num_nonzeros;
             } else {
                 struct mtxvector_array z;
                 err = mtxvector_array_alloc_copy(&z, y_);
@@ -4190,6 +4383,7 @@ int mtxmatrix_coordinate_zgemv(
                         + beta[0]*w[1]+beta[1]*w[0];
                 }
                 mtxvector_array_free(&z);
+                if (num_flops) *num_flops = 8*A->num_nonzeros+14*A->num_columns;
             }
         } else if (trans == mtx_conjtrans) {
             if (beta[0] == 0 && beta[1] == 0) {
@@ -4203,6 +4397,7 @@ int mtxmatrix_coordinate_zgemv(
                     ydata[j][0] += alpha[0]*z[0]-alpha[1]*z[1];
                     ydata[j][1] += alpha[0]*z[1]+alpha[1]*z[0];
                 }
+                if (num_flops) *num_flops = 14*A->num_nonzeros;
             } else if (beta[0] == 1 && beta[1] == 0) {
                 for (int64_t k = 0; k < A->num_nonzeros; k++) {
                     int i = A->rowidx[k];
@@ -4212,6 +4407,7 @@ int mtxmatrix_coordinate_zgemv(
                     ydata[j][0] += alpha[0]*z[0]-alpha[1]*z[1];
                     ydata[j][1] += alpha[0]*z[1]+alpha[1]*z[0];
                 }
+                if (num_flops) *num_flops = 14*A->num_nonzeros;
             } else {
                 struct mtxvector_array z;
                 err = mtxvector_array_alloc_copy(&z, y_);
@@ -4234,6 +4430,7 @@ int mtxmatrix_coordinate_zgemv(
                         + beta[0]*w[1]+beta[1]*w[0];
                 }
                 mtxvector_array_free(&z);
+                if (num_flops) *num_flops = 8*A->num_nonzeros+14*A->num_columns;
             }
         } else {
             return MTX_ERR_INVALID_TRANSPOSITION;
@@ -4254,6 +4451,7 @@ int mtxmatrix_coordinate_zgemv(
                     ydata[i][0] += alpha[0]*z[0]-alpha[1]*z[1];
                     ydata[i][1] += alpha[0]*z[1]+alpha[1]*z[0];
                 }
+                if (num_flops) *num_flops = 14*A->num_nonzeros;
             } else if (beta[0] == 1 && beta[1] == 0) {
                 for (int64_t k = 0; k < A->num_nonzeros; k++) {
                     int i = A->rowidx[k];
@@ -4263,6 +4461,7 @@ int mtxmatrix_coordinate_zgemv(
                     ydata[i][0] += alpha[0]*z[0]-alpha[1]*z[1];
                     ydata[i][1] += alpha[0]*z[1]+alpha[1]*z[0];
                 }
+                if (num_flops) *num_flops = 14*A->num_nonzeros;
             } else {
                 struct mtxvector_array z;
                 err = mtxvector_array_alloc_copy(&z, y_);
@@ -4274,8 +4473,8 @@ int mtxmatrix_coordinate_zgemv(
                 for (int64_t k = 0; k < A->num_nonzeros; k++) {
                     int i = A->rowidx[k];
                     int j = A->colidx[k];
-                    zdata[i][0] += (Adata[k][0]*xdata[j][0]-Adata[k][1]*xdata[j][1]);
-                    zdata[i][1] += (Adata[k][0]*xdata[j][1]+Adata[k][1]*xdata[j][0]);
+                    zdata[i][0] += Adata[k][0]*xdata[j][0]-Adata[k][1]*xdata[j][1];
+                    zdata[i][1] += Adata[k][0]*xdata[j][1]+Adata[k][1]*xdata[j][0];
                 }
                 for (int i = 0; i < A->num_rows; i++) {
                     double w[2] = {ydata[i][0], ydata[i][1]};
@@ -4285,6 +4484,7 @@ int mtxmatrix_coordinate_zgemv(
                         + beta[0]*w[1]+beta[1]*w[0];
                 }
                 mtxvector_array_free(&z);
+                if (num_flops) *num_flops = 8*A->num_nonzeros+14*A->num_rows;
             }
         } else if (trans == mtx_trans) {
             if (beta[0] == 0 && beta[1] == 0) {
@@ -4298,6 +4498,7 @@ int mtxmatrix_coordinate_zgemv(
                     ydata[j][0] += alpha[0]*z[0]-alpha[1]*z[1];
                     ydata[j][1] += alpha[0]*z[1]+alpha[1]*z[0];
                 }
+                if (num_flops) *num_flops = 14*A->num_nonzeros;
             } else if (beta[0] == 1 && beta[1] == 0) {
                 for (int64_t k = 0; k < A->num_nonzeros; k++) {
                     int i = A->rowidx[k];
@@ -4307,6 +4508,7 @@ int mtxmatrix_coordinate_zgemv(
                     ydata[j][0] += alpha[0]*z[0]-alpha[1]*z[1];
                     ydata[j][1] += alpha[0]*z[1]+alpha[1]*z[0];
                 }
+                if (num_flops) *num_flops = 14*A->num_nonzeros;
             } else {
                 struct mtxvector_array z;
                 err = mtxvector_array_alloc_copy(&z, y_);
@@ -4329,6 +4531,7 @@ int mtxmatrix_coordinate_zgemv(
                         + beta[0]*w[1]+beta[1]*w[0];
                 }
                 mtxvector_array_free(&z);
+                if (num_flops) *num_flops = 8*A->num_nonzeros+14*A->num_columns;
             }
         } else if (trans == mtx_conjtrans) {
             if (beta[0] == 0 && beta[1] == 0) {
@@ -4342,6 +4545,7 @@ int mtxmatrix_coordinate_zgemv(
                     ydata[j][0] += alpha[0]*z[0]-alpha[1]*z[1];
                     ydata[j][1] += alpha[0]*z[1]+alpha[1]*z[0];
                 }
+                if (num_flops) *num_flops = 14*A->num_nonzeros;
             } else if (beta[0] == 1 && beta[1] == 0) {
                 for (int64_t k = 0; k < A->num_nonzeros; k++) {
                     int i = A->rowidx[k];
@@ -4351,6 +4555,7 @@ int mtxmatrix_coordinate_zgemv(
                     ydata[j][0] += alpha[0]*z[0]-alpha[1]*z[1];
                     ydata[j][1] += alpha[0]*z[1]+alpha[1]*z[0];
                 }
+                if (num_flops) *num_flops = 14*A->num_nonzeros;
             } else {
                 struct mtxvector_array z;
                 err = mtxvector_array_alloc_copy(&z, y_);
@@ -4373,6 +4578,7 @@ int mtxmatrix_coordinate_zgemv(
                         + beta[0]*w[1]+beta[1]*w[0];
                 }
                 mtxvector_array_free(&z);
+                if (num_flops) *num_flops = 8*A->num_nonzeros+14*A->num_columns;
             }
         } else {
             return MTX_ERR_INVALID_TRANSPOSITION;

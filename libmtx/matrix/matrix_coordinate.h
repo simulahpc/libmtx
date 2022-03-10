@@ -655,7 +655,8 @@ int mtxmatrix_coordinate_sgemv(
     const struct mtxmatrix_coordinate * A,
     const struct mtxvector * x,
     float beta,
-    struct mtxvector * y);
+    struct mtxvector * y,
+    int64_t * num_flops);
 
 /**
  * ‘mtxmatrix_coordinate_dgemv()’ multiplies a matrix ‘A’ or its
@@ -686,7 +687,8 @@ int mtxmatrix_coordinate_dgemv(
     const struct mtxmatrix_coordinate * A,
     const struct mtxvector * x,
     double beta,
-    struct mtxvector * y);
+    struct mtxvector * y,
+    int64_t * num_flops);
 
 /**
  * ‘mtxmatrix_coordinate_cgemv()’ multiplies a complex-valued matrix
@@ -714,7 +716,8 @@ int mtxmatrix_coordinate_cgemv(
     const struct mtxmatrix_coordinate * A,
     const struct mtxvector * x,
     float beta[2],
-    struct mtxvector * y);
+    struct mtxvector * y,
+    int64_t * num_flops);
 
 /**
  * ‘mtxmatrix_coordinate_zgemv()’ multiplies a complex-valued matrix
@@ -742,6 +745,7 @@ int mtxmatrix_coordinate_zgemv(
     const struct mtxmatrix_coordinate * A,
     const struct mtxvector * x,
     double beta[2],
-    struct mtxvector * y);
+    struct mtxvector * y,
+    int64_t * num_flops);
 
 #endif

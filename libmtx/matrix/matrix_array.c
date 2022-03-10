@@ -1114,7 +1114,8 @@ int mtxmatrix_array_sgemv(
     const struct mtxmatrix_array * A,
     const struct mtxvector * x,
     float beta,
-    struct mtxvector * y)
+    struct mtxvector * y,
+    int64_t * num_flops)
 {
     if (x->type != mtxvector_array || y->type != mtxvector_array)
         return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
@@ -1358,6 +1359,14 @@ int mtxmatrix_array_sgemv(
         }
     } else {
         return MTX_ERR_INVALID_FIELD;
+    }
+
+    if (num_flops) {
+        *num_flops +=
+            (int64_t) (trans == mtx_notrans ? A->num_rows : A->num_columns) *
+            ((A->field == mtx_field_complex ? 8 : 2) *
+             (int64_t) (trans == mtx_notrans ? A->num_columns : A->num_rows) +
+             (A->field == mtx_field_complex ? 6 : 3));
     }
     return MTX_SUCCESS;
 }
@@ -1385,7 +1394,8 @@ int mtxmatrix_array_dgemv(
     const struct mtxmatrix_array * A,
     const struct mtxvector * x,
     double beta,
-    struct mtxvector * y)
+    struct mtxvector * y,
+    int64_t * num_flops)
 {
     if (x->type != mtxvector_array || y->type != mtxvector_array)
         return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
@@ -1629,6 +1639,14 @@ int mtxmatrix_array_dgemv(
         }
     } else {
         return MTX_ERR_INVALID_FIELD;
+    }
+
+    if (num_flops) {
+        *num_flops +=
+            (int64_t) (trans == mtx_notrans ? A->num_rows : A->num_columns) *
+            ((A->field == mtx_field_complex ? 8 : 2) *
+             (int64_t) (trans == mtx_notrans ? A->num_columns : A->num_rows) +
+             (A->field == mtx_field_complex ? 6 : 3));
     }
     return MTX_SUCCESS;
 }
@@ -1658,7 +1676,8 @@ int mtxmatrix_array_cgemv(
     const struct mtxmatrix_array * A,
     const struct mtxvector * x,
     float beta[2],
-    struct mtxvector * y)
+    struct mtxvector * y,
+    int64_t * num_flops)
 {
     if (x->type != mtxvector_array || y->type != mtxvector_array)
         return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
@@ -1810,6 +1829,12 @@ int mtxmatrix_array_cgemv(
     } else {
         return MTX_ERR_INVALID_PRECISION;
     }
+
+    if (num_flops) {
+        *num_flops +=
+            (int64_t) (trans == mtx_notrans ? A->num_rows : A->num_columns) *
+            (8 * (int64_t) (trans == mtx_notrans ? A->num_columns : A->num_rows) + 14);
+    }
     return MTX_SUCCESS;
 }
 
@@ -1838,7 +1863,8 @@ int mtxmatrix_array_zgemv(
     const struct mtxmatrix_array * A,
     const struct mtxvector * x,
     double beta[2],
-    struct mtxvector * y)
+    struct mtxvector * y,
+    int64_t * num_flops)
 {
     if (x->type != mtxvector_array || y->type != mtxvector_array)
         return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
@@ -1989,6 +2015,12 @@ int mtxmatrix_array_zgemv(
 #endif
     } else {
         return MTX_ERR_INVALID_PRECISION;
+    }
+
+    if (num_flops) {
+        *num_flops +=
+            (int64_t) (trans == mtx_notrans ? A->num_rows : A->num_columns) *
+            (8 * (int64_t) (trans == mtx_notrans ? A->num_columns : A->num_rows) + 14);
     }
     return MTX_SUCCESS;
 }

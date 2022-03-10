@@ -1382,7 +1382,8 @@ int mtxmatrix_csr_sgemv(
     const struct mtxmatrix_csr * A,
     const struct mtxvector * x,
     float beta,
-    struct mtxvector * y)
+    struct mtxvector * y,
+    int64_t * num_flops)
 {
     int err;
     if (x->type != mtxvector_array || y->type != mtxvector_array)
@@ -1415,6 +1416,7 @@ int mtxmatrix_csr_sgemv(
                     }
                     ydata[i] = alpha*z+beta*ydata[i];
                 }
+                if (num_flops) *num_flops += 2*A->num_nonzeros+3*A->num_rows;
             /* } else if (trans == mtx_trans || trans == mtx_conjtrans) { */
             } else {
                 return MTX_ERR_INVALID_TRANSPOSITION;
@@ -1432,6 +1434,7 @@ int mtxmatrix_csr_sgemv(
                     }
                     ydata[i] = alpha*z+beta*ydata[i];
                 }
+                if (num_flops) *num_flops += 2*A->num_nonzeros+3*A->num_rows;
             /* } else if (trans == mtx_trans || trans == mtx_conjtrans) { */
             } else {
                 return MTX_ERR_INVALID_TRANSPOSITION;
@@ -1459,6 +1462,7 @@ int mtxmatrix_csr_sgemv(
                     ydata[i][0] = alpha*z0+beta*ydata[i][0];
                     ydata[i][1] = alpha*z1+beta*ydata[i][1];
                 }
+                if (num_flops) *num_flops += 8*A->num_nonzeros+6*A->num_rows;
             /* } else if (trans == mtx_trans) { */
             /* } else if (trans == mtx_conjtrans) { */
             } else {
@@ -1479,6 +1483,7 @@ int mtxmatrix_csr_sgemv(
                     ydata[i][0] = alpha*z0+beta*ydata[i][0];
                     ydata[i][1] = alpha*z1+beta*ydata[i][1];
                 }
+                if (num_flops) *num_flops += 8*A->num_nonzeros+6*A->num_rows;
             /* } else if (trans == mtx_trans) { */
             /* } else if (trans == mtx_conjtrans) { */
             } else {
@@ -1505,6 +1510,7 @@ int mtxmatrix_csr_sgemv(
                     }
                     ydata[i] = alpha*z+beta*ydata[i];
                 }
+                if (num_flops) *num_flops += 2*A->num_nonzeros+3*A->num_rows;
             /* } else if (trans == mtx_trans || trans == mtx_conjtrans) { */
             } else {
                 return MTX_ERR_INVALID_TRANSPOSITION;
@@ -1522,6 +1528,7 @@ int mtxmatrix_csr_sgemv(
                     }
                     ydata[i] = alpha*z+beta*ydata[i];
                 }
+                if (num_flops) *num_flops += 2*A->num_nonzeros+3*A->num_rows;
             /* } else if (trans == mtx_trans || trans == mtx_conjtrans) { */
             } else {
                 return MTX_ERR_INVALID_TRANSPOSITION;
@@ -1547,6 +1554,7 @@ int mtxmatrix_csr_sgemv(
                         }
                         ydata[i] = alpha*z+beta*ydata[i];
                     }
+                    if (num_flops) *num_flops += A->num_nonzeros+3*A->num_rows;
                 /* } else if (trans == mtx_trans || trans == mtx_conjtrans) { */
                 } else {
                     return MTX_ERR_INVALID_TRANSPOSITION;
@@ -1563,6 +1571,7 @@ int mtxmatrix_csr_sgemv(
                         }
                         ydata[i] = alpha*z+beta*ydata[i];
                     }
+                    if (num_flops) *num_flops += A->num_nonzeros+3*A->num_rows;
                 /* } else if (trans == mtx_trans || trans == mtx_conjtrans) { */
                 } else {
                     return MTX_ERR_INVALID_TRANSPOSITION;
@@ -1585,6 +1594,7 @@ int mtxmatrix_csr_sgemv(
                         ydata[i][0] = alpha*z0 + beta*ydata[i][0];
                         ydata[i][1] = alpha*z1 + beta*ydata[i][1];
                     }
+                    if (num_flops) *num_flops += 2*A->num_nonzeros+6*A->num_rows;
                 /* } else if (trans == mtx_trans) { */
                 /* } else if (trans == mtx_conjtrans) { */
                 } else {
@@ -1604,6 +1614,7 @@ int mtxmatrix_csr_sgemv(
                         ydata[i][0] = alpha*z0 + beta*ydata[i][0];
                         ydata[i][1] = alpha*z1 + beta*ydata[i][1];
                     }
+                    if (num_flops) *num_flops += 2*A->num_nonzeros+6*A->num_rows;
                 /* } else if (trans == mtx_trans) { */
                 /* } else if (trans == mtx_conjtrans) { */
                 } else {
@@ -1625,6 +1636,7 @@ int mtxmatrix_csr_sgemv(
                         }
                         ydata[i] = alpha*z+beta*ydata[i];
                     }
+                    if (num_flops) *num_flops += A->num_nonzeros+3*A->num_rows;
                 /* } else if (trans == mtx_trans || trans == mtx_conjtrans) { */
                 } else {
                     return MTX_ERR_INVALID_TRANSPOSITION;
@@ -1641,6 +1653,7 @@ int mtxmatrix_csr_sgemv(
                         }
                         ydata[i] = alpha*z+beta*ydata[i];
                     }
+                    if (num_flops) *num_flops += A->num_nonzeros+3*A->num_rows;
                 /* } else if (trans == mtx_trans || trans == mtx_conjtrans) { */
                 } else {
                     return MTX_ERR_INVALID_TRANSPOSITION;
@@ -1685,7 +1698,8 @@ int mtxmatrix_csr_dgemv(
     const struct mtxmatrix_csr * A,
     const struct mtxvector * x,
     double beta,
-    struct mtxvector * y)
+    struct mtxvector * y,
+    int64_t * num_flops)
 {
     int err;
     if (x->type != mtxvector_array || y->type != mtxvector_array)
@@ -1718,6 +1732,7 @@ int mtxmatrix_csr_dgemv(
                     }
                     ydata[i] = alpha*z+beta*ydata[i];
                 }
+                if (num_flops) *num_flops += 2*A->num_nonzeros+3*A->num_rows;
             /* } else if (trans == mtx_trans || trans == mtx_conjtrans) { */
             } else {
                 return MTX_ERR_INVALID_TRANSPOSITION;
@@ -1735,6 +1750,7 @@ int mtxmatrix_csr_dgemv(
                     }
                     ydata[i] = alpha*z+beta*ydata[i];
                 }
+                if (num_flops) *num_flops += 2*A->num_nonzeros+3*A->num_rows;
             /* } else if (trans == mtx_trans || trans == mtx_conjtrans) { */
             } else {
                 return MTX_ERR_INVALID_TRANSPOSITION;
@@ -1762,6 +1778,7 @@ int mtxmatrix_csr_dgemv(
                     ydata[i][0] = alpha*z0+beta*ydata[i][0];
                     ydata[i][1] = alpha*z1+beta*ydata[i][1];
                 }
+                if (num_flops) *num_flops += 8*A->num_nonzeros+6*A->num_rows;
             /* } else if (trans == mtx_trans) { */
             /* } else if (trans == mtx_conjtrans) { */
             } else {
@@ -1782,6 +1799,7 @@ int mtxmatrix_csr_dgemv(
                     ydata[i][0] = alpha*z0+beta*ydata[i][0];
                     ydata[i][1] = alpha*z1+beta*ydata[i][1];
                 }
+                if (num_flops) *num_flops += 8*A->num_nonzeros+6*A->num_rows;
             /* } else if (trans == mtx_trans) { */
             /* } else if (trans == mtx_conjtrans) { */
             } else {
@@ -1808,6 +1826,7 @@ int mtxmatrix_csr_dgemv(
                     }
                     ydata[i] = alpha*z+beta*ydata[i];
                 }
+                if (num_flops) *num_flops += 2*A->num_nonzeros+3*A->num_rows;
             /* } else if (trans == mtx_trans || trans == mtx_conjtrans) { */
             } else {
                 return MTX_ERR_INVALID_TRANSPOSITION;
@@ -1825,6 +1844,7 @@ int mtxmatrix_csr_dgemv(
                     }
                     ydata[i] = alpha*z+beta*ydata[i];
                 }
+                if (num_flops) *num_flops += 2*A->num_nonzeros+3*A->num_rows;
             /* } else if (trans == mtx_trans || trans == mtx_conjtrans) { */
             } else {
                 return MTX_ERR_INVALID_TRANSPOSITION;
@@ -1850,6 +1870,7 @@ int mtxmatrix_csr_dgemv(
                         }
                         ydata[i] = alpha*z+beta*ydata[i];
                     }
+                    if (num_flops) *num_flops += A->num_nonzeros+3*A->num_rows;
                 /* } else if (trans == mtx_trans || trans == mtx_conjtrans) { */
                 } else {
                     return MTX_ERR_INVALID_TRANSPOSITION;
@@ -1866,6 +1887,7 @@ int mtxmatrix_csr_dgemv(
                         }
                         ydata[i] = alpha*z+beta*ydata[i];
                     }
+                    if (num_flops) *num_flops += A->num_nonzeros+3*A->num_rows;
                 /* } else if (trans == mtx_trans || trans == mtx_conjtrans) { */
                 } else {
                     return MTX_ERR_INVALID_TRANSPOSITION;
@@ -1888,6 +1910,7 @@ int mtxmatrix_csr_dgemv(
                         ydata[i][0] = alpha*z0 + beta*ydata[i][0];
                         ydata[i][1] = alpha*z1 + beta*ydata[i][1];
                     }
+                    if (num_flops) *num_flops += 2*A->num_nonzeros+6*A->num_rows;
                 /* } else if (trans == mtx_trans) { */
                 /* } else if (trans == mtx_conjtrans) { */
                 } else {
@@ -1907,6 +1930,7 @@ int mtxmatrix_csr_dgemv(
                         ydata[i][0] = alpha*z0 + beta*ydata[i][0];
                         ydata[i][1] = alpha*z1 + beta*ydata[i][1];
                     }
+                    if (num_flops) *num_flops += 2*A->num_nonzeros+6*A->num_rows;
                 /* } else if (trans == mtx_trans) { */
                 /* } else if (trans == mtx_conjtrans) { */
                 } else {
@@ -1928,6 +1952,7 @@ int mtxmatrix_csr_dgemv(
                         }
                         ydata[i] = alpha*z+beta*ydata[i];
                     }
+                    if (num_flops) *num_flops += A->num_nonzeros+3*A->num_rows;
                 /* } else if (trans == mtx_trans || trans == mtx_conjtrans) { */
                 } else {
                     return MTX_ERR_INVALID_TRANSPOSITION;
@@ -1944,6 +1969,7 @@ int mtxmatrix_csr_dgemv(
                         }
                         ydata[i] = alpha*z+beta*ydata[i];
                     }
+                    if (num_flops) *num_flops += A->num_nonzeros+3*A->num_rows;
                 /* } else if (trans == mtx_trans || trans == mtx_conjtrans) { */
                 } else {
                     return MTX_ERR_INVALID_TRANSPOSITION;
@@ -1985,7 +2011,8 @@ int mtxmatrix_csr_cgemv(
     const struct mtxmatrix_csr * A,
     const struct mtxvector * x,
     float beta[2],
-    struct mtxvector * y)
+    struct mtxvector * y,
+    int64_t * num_flops)
 {
     int err;
     if (x->type != mtxvector_array || y->type != mtxvector_array)
@@ -2079,7 +2106,8 @@ int mtxmatrix_csr_zgemv(
     const struct mtxmatrix_csr * A,
     const struct mtxvector * x,
     double beta[2],
-    struct mtxvector * y)
+    struct mtxvector * y,
+    int64_t * num_flops)
 {
     int err;
     if (x->type != mtxvector_array || y->type != mtxvector_array)

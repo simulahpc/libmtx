@@ -1607,17 +1607,18 @@ int mtxmatrix_sgemv(
     const struct mtxmatrix * A,
     const struct mtxvector * x,
     float beta,
-    struct mtxvector * y)
+    struct mtxvector * y,
+    int64_t * num_flops)
 {
     if (A->type == mtxmatrix_array) {
         return mtxmatrix_array_sgemv(
-            trans, alpha, &A->storage.array, x, beta, y);
+            trans, alpha, &A->storage.array, x, beta, y, num_flops);
     } else if (A->type == mtxmatrix_coordinate) {
         return mtxmatrix_coordinate_sgemv(
-            trans, alpha, &A->storage.coordinate, x, beta, y);
+            trans, alpha, &A->storage.coordinate, x, beta, y, num_flops);
     } else if (A->type == mtxmatrix_csr) {
         return mtxmatrix_csr_sgemv(
-            trans, alpha, &A->storage.csr, x, beta, y);
+            trans, alpha, &A->storage.csr, x, beta, y, num_flops);
     } else {
         return MTX_ERR_INVALID_MATRIX_TYPE;
     }
@@ -1638,17 +1639,18 @@ int mtxmatrix_dgemv(
     const struct mtxmatrix * A,
     const struct mtxvector * x,
     double beta,
-    struct mtxvector * y)
+    struct mtxvector * y,
+    int64_t * num_flops)
 {
     if (A->type == mtxmatrix_array) {
         return mtxmatrix_array_dgemv(
-            trans, alpha, &A->storage.array, x, beta, y);
+            trans, alpha, &A->storage.array, x, beta, y, num_flops);
     } else if (A->type == mtxmatrix_coordinate) {
         return mtxmatrix_coordinate_dgemv(
-            trans, alpha, &A->storage.coordinate, x, beta, y);
+            trans, alpha, &A->storage.coordinate, x, beta, y, num_flops);
     } else if (A->type == mtxmatrix_csr) {
         return mtxmatrix_csr_dgemv(
-            trans, alpha, &A->storage.csr, x, beta, y);
+            trans, alpha, &A->storage.csr, x, beta, y, num_flops);
     } else {
         return MTX_ERR_INVALID_MATRIX_TYPE;
     }
@@ -1670,17 +1672,18 @@ int mtxmatrix_cgemv(
     const struct mtxmatrix * A,
     const struct mtxvector * x,
     float beta[2],
-    struct mtxvector * y)
+    struct mtxvector * y,
+    int64_t * num_flops)
 {
     if (A->type == mtxmatrix_array) {
         return mtxmatrix_array_cgemv(
-            trans, alpha, &A->storage.array, x, beta, y);
+            trans, alpha, &A->storage.array, x, beta, y, num_flops);
     } else if (A->type == mtxmatrix_coordinate) {
         return mtxmatrix_coordinate_cgemv(
-            trans, alpha, &A->storage.coordinate, x, beta, y);
+            trans, alpha, &A->storage.coordinate, x, beta, y, num_flops);
     } else if (A->type == mtxmatrix_csr) {
         return mtxmatrix_csr_cgemv(
-            trans, alpha, &A->storage.csr, x, beta, y);
+            trans, alpha, &A->storage.csr, x, beta, y, num_flops);
     } else {
         return MTX_ERR_INVALID_MATRIX_TYPE;
     }
@@ -1702,17 +1705,18 @@ int mtxmatrix_zgemv(
     const struct mtxmatrix * A,
     const struct mtxvector * x,
     double beta[2],
-    struct mtxvector * y)
+    struct mtxvector * y,
+    int64_t * num_flops)
 {
     if (A->type == mtxmatrix_array) {
         return mtxmatrix_array_zgemv(
-            trans, alpha, &A->storage.array, x, beta, y);
+            trans, alpha, &A->storage.array, x, beta, y, num_flops);
     } else if (A->type == mtxmatrix_coordinate) {
         return mtxmatrix_coordinate_zgemv(
-            trans, alpha, &A->storage.coordinate, x, beta, y);
+            trans, alpha, &A->storage.coordinate, x, beta, y, num_flops);
     } else if (A->type == mtxmatrix_csr) {
         return mtxmatrix_csr_zgemv(
-            trans, alpha, &A->storage.csr, x, beta, y);
+            trans, alpha, &A->storage.csr, x, beta, y, num_flops);
     } else {
         return MTX_ERR_INVALID_MATRIX_TYPE;
     }
