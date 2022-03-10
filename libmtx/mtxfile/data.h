@@ -760,17 +760,18 @@ int mtxfiledata_rowcolidx(
  * ‘colidx’ may be ‘NULL’, in which case it is ignored. Otherwise, it
  * must point to an array containing enough storage for ‘size’ values
  * of type ‘int’.  On successful completion, this array will contain
- * the column indices of the nonzero matrix entries arranged in row
- * major order.  The ‘i’-th entry of ‘rowptr’ is the location in the
- * ‘colidx’ array of the first nonzero that belongs to the ‘i+1’-th
- * row of the matrix, for ‘i=0,1,...,num_rows-1’.  The final entry of
- * ‘rowptr’ indicates the position one place beyond the last nonzero.
+ * the column indices of the nonzero matrix entries arranged rowwise.
+ * The order of nonzeros within each row remains unchanged. The ‘i’-th
+ * entry of ‘rowptr’ is the location in the ‘colidx’ array of the
+ * first nonzero that belongs to the ‘i+1’-th row of the matrix, for
+ * ‘i=0,1,...,num_rows-1’.  The final entry of ‘rowptr’ indicates the
+ * position one place beyond the last nonzero.
  *
- * The matrix data is not required to be sorted in any particular
- * order.
+ * This function does not require the matrix data to be sorted in any
+ * particular order beforehand.
  */
 int mtxfiledata_rowptr(
-    const union mtxfiledata * data,
+    const union mtxfiledata * srcdata,
     enum mtxfileobject object,
     enum mtxfileformat format,
     enum mtxfilefield field,
@@ -778,7 +779,8 @@ int mtxfiledata_rowptr(
     int num_rows,
     int64_t size,
     int64_t * rowptr,
-    int * colidx);
+    int * colidx,
+    void * dstdata);
 
 /**
  * ‘mtxfiledata_colptr()’ computes column pointers for a matrix in
@@ -787,13 +789,14 @@ int mtxfiledata_rowptr(
  * ‘colptr’ must point to an array containing enough storage for
  * ‘num_columns+1’ values of type ‘int64_t’.
  *
- * ‘colidx’ may be ‘NULL’, in which case it is ignored. Otherwise, it
+ * ‘rowidx’ may be ‘NULL’, in which case it is ignored. Otherwise, it
  * must point to an array containing enough storage for ‘size’ values
- * of type ‘int’.  On successful completion, this array will contain
- * the column indices of the nonzero matrix entries arranged in column
- * major order.  The ‘i’-th entry of ‘colptr’ is the location in the
- * ‘colidx’ array of the first nonzero that belongs to the ‘i+1’-th
- * column of the matrix, for ‘i=0,1,...,num_columns-1’.  The final
+ * of type ‘int’. On successful completion, this array will contain
+ * the row indices of the nonzero matrix entries arranged
+ * columnwise. The order of nonzeros within each row remains
+ * unchanged. The ‘j’-th entry of ‘colptr’ is the location in the
+ * ‘rowidx’ array of the first nonzero that belongs to the ‘j+1’-th
+ * column of the matrix, for ‘i=0,1,...,num_columns-1’. The final
  * entry of ‘colptr’ indicates the position one place beyond the last
  * nonzero.
  *
@@ -801,7 +804,7 @@ int mtxfiledata_rowptr(
  * order.
  */
 int mtxfiledata_colptr(
-    const union mtxfiledata * data,
+    const union mtxfiledata * srcdata,
     enum mtxfileobject object,
     enum mtxfileformat format,
     enum mtxfilefield field,
@@ -809,7 +812,8 @@ int mtxfiledata_colptr(
     int num_columns,
     int64_t size,
     int64_t * colptr,
-    int * rowidx);
+    int * rowidx,
+    void * dstdata);
 
 /*
  * Modifying values

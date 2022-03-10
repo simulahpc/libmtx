@@ -2916,7 +2916,7 @@ int mtxfile_reorder_rcm(
     err = mtxfiledata_rowptr(
         &mtxfile->data, mtxfile->header.object, mtxfile->header.format,
         mtxfile->header.field, mtxfile->precision, num_rows, num_nonzeros,
-        rowptr, colidx);
+        rowptr, colidx, NULL);
     if (err) {
         free(rowptr);
         return err;
@@ -2934,7 +2934,7 @@ int mtxfile_reorder_rcm(
     err = mtxfiledata_colptr(
         &mtxfile->data, mtxfile->header.object, mtxfile->header.format,
         mtxfile->header.field, mtxfile->precision, num_columns, num_nonzeros,
-        colptr, rowidx);
+        colptr, rowidx, NULL);
     if (err) {
         free(colptr);
         free(rowptr);
