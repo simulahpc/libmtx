@@ -520,7 +520,7 @@ int cuthill_mckee(
         }
 
         if (starting_vertex)
-            *starting_vertex = pseudoperipheral_vertex;
+            *starting_vertex = pseudoperipheral_vertex+1;
         err = rooted_level_structure(
             num_rows, num_columns,
             rowptr, colidx, colptr, rowidx,
