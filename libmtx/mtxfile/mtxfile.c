@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-01-19
+ * Last modified: 2022-03-11
  *
  * Matrix Market files.
  */
@@ -2781,7 +2781,8 @@ const char * mtxfileordering_str(
     enum mtxfileordering ordering)
 {
     switch (ordering) {
-    case mtxfile_unordered: return "unordered";
+    case mtxfile_default_order: return "default";
+    case mtxfile_custom_order: return "custom";
     case mtxfile_rcm: return "rcm";
     default: return mtxstrerror(MTX_ERR_INVALID_ORDERING);
     }
@@ -2816,9 +2817,12 @@ int mtxfileordering_parse(
     const char * valid_delimiters)
 {
     const char * t = s;
-    if (strncmp("unordered", t, strlen("unordered")) == 0) {
-        t += strlen("unordered");
-        *ordering = mtxfile_unordered;
+    if (strncmp("default", t, strlen("default")) == 0) {
+        t += strlen("default");
+        *ordering = mtxfile_default_order;
+    } else if (strncmp("custom", t, strlen("custom")) == 0) {
+        t += strlen("custom");
+        *ordering = mtxfile_custom_order;
     } else if (strncmp("rcm", t, strlen("rcm")) == 0) {
         t += strlen("rcm");
         *ordering = mtxfile_rcm;
@@ -3029,7 +3033,8 @@ int mtxfile_reorder_rcm(
 
     /* 7. Permute the matrix. */
     if (permute) {
-        err = mtxfile_permute(mtxfile, rowperm, colperm);
+        err = mtxfile_permute(
+            mtxfile, rowperm, square ? rowperm : colperm);
         if (err) {
             if (alloc_colperm)
                 free(colperm);
@@ -3075,7 +3080,39 @@ int mtxfile_reorder(
     int * rcm_starting_vertex)
 {
     int err;
-    if (ordering == mtxfile_rcm) {
+
+    /* rectangular matrices always yield unsymmetric orderings */
+    int num_rows = mtxfile->size.num_rows;
+    int num_columns = mtxfile->size.num_columns;
+    bool square = num_rows == num_columns;
+
+    if (ordering == mtxfile_default_order) {
+        if (symmetric) *symmetric = !square;
+        if (rowperm) {
+            for (int i = 0; i < num_rows; i++)
+                rowperm[i] = i+1;
+        }
+        if (colperm) {
+            for (int j = 0; j < num_columns; j++)
+                colperm[j] = j+1;
+        }
+        return MTX_SUCCESS;
+    } else if (ordering == mtxfile_custom_order) {
+        if (symmetric && square && rowperm == colperm) {
+            *symmetric = true;
+        } else if (symmetric && square && rowperm != NULL && colperm != NULL) {
+            *symmetric = true;
+            for (int i = 0; i < num_rows; i++) {
+                if (rowperm[i] != colperm[i]) {
+                    *symmetric = false;
+                    break;
+                }
+            }
+        } else if (symmetric) {
+            *symmetric = false;
+        }
+        return permute ? mtxfile_permute(mtxfile, rowperm, colperm) : MTX_SUCCESS;
+    } else if (ordering == mtxfile_rcm) {
         return mtxfile_reorder_rcm(
             mtxfile, rowperm, colperm, permute,
             symmetric, rcm_starting_vertex);

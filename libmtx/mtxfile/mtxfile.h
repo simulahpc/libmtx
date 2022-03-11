@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-01-19
+ * Last modified: 2022-03-11
  *
  * Matrix Market files.
  */
@@ -978,8 +978,9 @@ int mtxfile_permute(
  */
 enum mtxfileordering
 {
-    mtxfile_unordered,  /* general, unordered matrix */
-    mtxfile_rcm,        /* Reverse Cuthill-McKee ordering */
+    mtxfile_default_order, /* default ordering of the Matrix Market file */
+    mtxfile_custom_order,  /* general, user-defined ordering */
+    mtxfile_rcm,           /* Reverse Cuthill-McKee ordering */
 };
 
 /**
