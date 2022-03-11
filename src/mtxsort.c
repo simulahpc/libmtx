@@ -974,7 +974,8 @@ int main(int argc, char *argv[])
             if (args.verbose > 0)
                 fprintf(diagf, "\n");
             fprintf(stderr, "%s: %s\n",
-                    program_invocation_short_name, strerror(errno));
+                    program_invocation_short_name,
+                    mtxstrerror(err));
             mtxfile_free(&perm_mtxfile);
             mtxfile_free(&mtxfile);
             program_options_free(&args);
