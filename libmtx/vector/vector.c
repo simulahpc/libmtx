@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-02-22
+ * Last modified: 2022-03-14
  *
  * Data structures for vectors.
  */
@@ -991,6 +991,42 @@ int mtxvector_dscal(
         return mtxvector_array_dscal(a, &x->storage.array, num_flops);
     } else if (x->type == mtxvector_coordinate) {
         return mtxvector_coordinate_dscal(a, &x->storage.coordinate, num_flops);
+    } else {
+        return MTX_ERR_INVALID_VECTOR_TYPE;
+    }
+}
+
+/**
+ * ‘mtxvector_cscal()’ scales a vector by a complex, single precision
+ * floating point scalar, ‘x = (a+b*i)*x’.
+ */
+int mtxvector_cscal(
+    float a[2],
+    struct mtxvector * x,
+    int64_t * num_flops)
+{
+    if (x->type == mtxvector_array) {
+        return mtxvector_array_cscal(a, &x->storage.array, num_flops);
+    } else if (x->type == mtxvector_coordinate) {
+        return mtxvector_coordinate_cscal(a, &x->storage.coordinate, num_flops);
+    } else {
+        return MTX_ERR_INVALID_VECTOR_TYPE;
+    }
+}
+
+/**
+ * ‘mtxvector_zscal()’ scales a vector by a complex, double precision
+ * floating point scalar, ‘x = (a+b*i)*x’.
+ */
+int mtxvector_zscal(
+    double a[2],
+    struct mtxvector * x,
+    int64_t * num_flops)
+{
+    if (x->type == mtxvector_array) {
+        return mtxvector_array_zscal(a, &x->storage.array, num_flops);
+    } else if (x->type == mtxvector_coordinate) {
+        return mtxvector_coordinate_zscal(a, &x->storage.coordinate, num_flops);
     } else {
         return MTX_ERR_INVALID_VECTOR_TYPE;
     }

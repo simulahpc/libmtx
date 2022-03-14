@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-02-22
+ * Last modified: 2022-03-14
  *
  * Data structures for vectors in array format.
  */
@@ -1102,6 +1102,98 @@ int mtxvector_array_dscal(
         }
     } else {
         return MTX_ERR_INVALID_FIELD;
+    }
+    return MTX_SUCCESS;
+}
+
+/**
+ * ‘mtxvector_array_cscal()’ scales a vector by a complex, single
+ * precision floating point scalar, ‘x = (a+b*i)*x’.
+ */
+int mtxvector_array_cscal(
+    float a[2],
+    struct mtxvector_array * x,
+    int64_t * num_flops)
+{
+    if (x->field != mtx_field_complex)
+        return MTX_ERR_INCOMPATIBLE_FIELD;
+    if (x->precision == mtx_single) {
+        float (* xdata)[2] = x->data.complex_single;
+#ifdef LIBMTX_HAVE_BLAS
+        cblas_cscal(x->size, a, (float *) xdata, 1);
+        if (mtxblaserror()) return MTX_ERR_BLAS;
+#else
+        for (int64_t k = 0; k < x->size; k++) {
+            float c = xdata[k][0]*a[0] - xdata[k][1]*a[1];
+            float d = xdata[k][0]*a[1] + xdata[k][1]*a[0];
+            xdata[k][0] = c;
+            xdata[k][1] = d;
+        }
+#endif
+        if (num_flops) *num_flops += 6*x->size;
+    } else if (x->precision == mtx_double) {
+        double (* xdata)[2] = x->data.complex_double;
+#ifdef LIBMTX_HAVE_BLAS
+        double az[2] = {a[0], a[1]};
+        cblas_zscal(x->size, az, (double *) xdata, 1);
+        if (mtxblaserror()) return MTX_ERR_BLAS;
+#else
+        for (int64_t k = 0; k < x->size; k++) {
+            double c = xdata[k][0]*a[0] - xdata[k][1]*a[1];
+            double d = xdata[k][0]*a[1] + xdata[k][1]*a[0];
+            xdata[k][0] = c;
+            xdata[k][1] = d;
+        }
+#endif
+        if (num_flops) *num_flops += 6*x->size;
+    } else {
+        return MTX_ERR_INVALID_PRECISION;
+    }
+    return MTX_SUCCESS;
+}
+
+/**
+ * ‘mtxvector_array_zscal()’ scales a vector by a complex, double
+ * precision floating point scalar, ‘x = (a+b*i)*x’.
+ */
+int mtxvector_array_zscal(
+    double a[2],
+    struct mtxvector_array * x,
+    int64_t * num_flops)
+{
+    if (x->field != mtx_field_complex)
+        return MTX_ERR_INCOMPATIBLE_FIELD;
+    if (x->precision == mtx_single) {
+        float (* xdata)[2] = x->data.complex_single;
+#ifdef LIBMTX_HAVE_BLAS
+        float ac[2] = {a[0], a[1]};
+        cblas_cscal(x->size, ac, (float *) xdata, 1);
+        if (mtxblaserror()) return MTX_ERR_BLAS;
+#else
+        for (int64_t k = 0; k < x->size; k++) {
+            float c = xdata[k][0]*a[0] - xdata[k][1]*a[1];
+            float d = xdata[k][0]*a[1] + xdata[k][1]*a[0];
+            xdata[k][0] = c;
+            xdata[k][1] = d;
+        }
+#endif
+        if (num_flops) *num_flops += 6*x->size;
+    } else if (x->precision == mtx_double) {
+        double (* xdata)[2] = x->data.complex_double;
+#ifdef LIBMTX_HAVE_BLAS
+        cblas_zscal(x->size, a, (double *) xdata, 1);
+        if (mtxblaserror()) return MTX_ERR_BLAS;
+#else
+        for (int64_t k = 0; k < x->size; k++) {
+            double c = xdata[k][0]*a[0] - xdata[k][1]*a[1];
+            double d = xdata[k][0]*a[1] + xdata[k][1]*a[0];
+            xdata[k][0] = c;
+            xdata[k][1] = d;
+        }
+#endif
+        if (num_flops) *num_flops += 6*x->size;
+    } else {
+        return MTX_ERR_INVALID_PRECISION;
     }
     return MTX_SUCCESS;
 }

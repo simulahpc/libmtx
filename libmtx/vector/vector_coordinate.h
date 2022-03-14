@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-02-22
+ * Last modified: 2022-03-14
  *
  * Data structures for vectors in coordinate format.
  */
@@ -370,6 +370,24 @@ int mtxvector_coordinate_sscal(
  */
 int mtxvector_coordinate_dscal(
     double a,
+    struct mtxvector_coordinate * x,
+    int64_t * num_flops);
+
+/**
+ * ‘mtxvector_coordinate_cscal()’ scales a vector by a complex, single
+ * precision floating point scalar, ‘x = (a+b*i)*x’.
+ */
+int mtxvector_coordinate_cscal(
+    float a[2],
+    struct mtxvector_coordinate * x,
+    int64_t * num_flops);
+
+/**
+ * ‘mtxvector_coordinate_zscal()’ scales a vector by a complex, double
+ * precision floating point scalar, ‘x = (a+b*i)*x’.
+ */
+int mtxvector_coordinate_zscal(
+    double a[2],
     struct mtxvector_coordinate * x,
     int64_t * num_flops);
 

@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-02-22
+ * Last modified: 2022-03-14
  *
  * Unit tests for vectors.
  */
@@ -1968,6 +1968,24 @@ int test_mtxvector_scal(void)
         TEST_ASSERT_EQ(8.0f, x.storage.array.data.complex_single[1][1]);
         TEST_ASSERT_EQ(12.0f, x.storage.array.data.complex_single[2][0]);
         TEST_ASSERT_EQ(0.0f, x.storage.array.data.complex_single[2][1]);
+        float as[2] = {2, 3};
+        err = mtxvector_cscal(as, &x, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ( -4.0f, x.storage.array.data.complex_single[0][0]);
+        TEST_ASSERT_EQ( 20.0f, x.storage.array.data.complex_single[0][1]);
+        TEST_ASSERT_EQ(-16.0f, x.storage.array.data.complex_single[1][0]);
+        TEST_ASSERT_EQ( 28.0f, x.storage.array.data.complex_single[1][1]);
+        TEST_ASSERT_EQ( 24.0f, x.storage.array.data.complex_single[2][0]);
+        TEST_ASSERT_EQ( 36.0f, x.storage.array.data.complex_single[2][1]);
+        double ad[2] = {2, 3};
+        err = mtxvector_zscal(ad, &x, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ( -68.0f, x.storage.array.data.complex_single[0][0]);
+        TEST_ASSERT_EQ(  28.0f, x.storage.array.data.complex_single[0][1]);
+        TEST_ASSERT_EQ(-116.0f, x.storage.array.data.complex_single[1][0]);
+        TEST_ASSERT_EQ(   8.0f, x.storage.array.data.complex_single[1][1]);
+        TEST_ASSERT_EQ( -60.0f, x.storage.array.data.complex_single[2][0]);
+        TEST_ASSERT_EQ( 144.0f, x.storage.array.data.complex_single[2][1]);
         mtxvector_free(&x);
     }
 
@@ -1993,6 +2011,24 @@ int test_mtxvector_scal(void)
         TEST_ASSERT_EQ(8.0, x.storage.array.data.complex_double[1][1]);
         TEST_ASSERT_EQ(12.0, x.storage.array.data.complex_double[2][0]);
         TEST_ASSERT_EQ(0.0, x.storage.array.data.complex_double[2][1]);
+        float as[2] = {2, 3};
+        err = mtxvector_cscal(as, &x, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ( -4.0, x.storage.array.data.complex_double[0][0]);
+        TEST_ASSERT_EQ( 20.0, x.storage.array.data.complex_double[0][1]);
+        TEST_ASSERT_EQ(-16.0, x.storage.array.data.complex_double[1][0]);
+        TEST_ASSERT_EQ( 28.0, x.storage.array.data.complex_double[1][1]);
+        TEST_ASSERT_EQ( 24.0, x.storage.array.data.complex_double[2][0]);
+        TEST_ASSERT_EQ( 36.0, x.storage.array.data.complex_double[2][1]);
+        double ad[2] = {2, 3};
+        err = mtxvector_zscal(ad, &x, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ( -68.0, x.storage.array.data.complex_double[0][0]);
+        TEST_ASSERT_EQ(  28.0, x.storage.array.data.complex_double[0][1]);
+        TEST_ASSERT_EQ(-116.0, x.storage.array.data.complex_double[1][0]);
+        TEST_ASSERT_EQ(   8.0, x.storage.array.data.complex_double[1][1]);
+        TEST_ASSERT_EQ( -60.0, x.storage.array.data.complex_double[2][0]);
+        TEST_ASSERT_EQ( 144.0, x.storage.array.data.complex_double[2][1]);
         mtxvector_free(&x);
     }
 
@@ -2077,6 +2113,24 @@ int test_mtxvector_scal(void)
         TEST_ASSERT_EQ(8.0f, x.storage.coordinate.data.complex_single[1][1]);
         TEST_ASSERT_EQ(12.0f, x.storage.coordinate.data.complex_single[2][0]);
         TEST_ASSERT_EQ(0.0f, x.storage.coordinate.data.complex_single[2][1]);
+        float as[2] = {2, 3};
+        err = mtxvector_cscal(as, &x, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ( -4.0f, x.storage.coordinate.data.complex_single[0][0]);
+        TEST_ASSERT_EQ( 20.0f, x.storage.coordinate.data.complex_single[0][1]);
+        TEST_ASSERT_EQ(-16.0f, x.storage.coordinate.data.complex_single[1][0]);
+        TEST_ASSERT_EQ( 28.0f, x.storage.coordinate.data.complex_single[1][1]);
+        TEST_ASSERT_EQ( 24.0f, x.storage.coordinate.data.complex_single[2][0]);
+        TEST_ASSERT_EQ( 36.0f, x.storage.coordinate.data.complex_single[2][1]);
+        double ad[2] = {2, 3};
+        err = mtxvector_zscal(ad, &x, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ( -68.0f, x.storage.coordinate.data.complex_single[0][0]);
+        TEST_ASSERT_EQ(  28.0f, x.storage.coordinate.data.complex_single[0][1]);
+        TEST_ASSERT_EQ(-116.0f, x.storage.coordinate.data.complex_single[1][0]);
+        TEST_ASSERT_EQ(   8.0f, x.storage.coordinate.data.complex_single[1][1]);
+        TEST_ASSERT_EQ( -60.0f, x.storage.coordinate.data.complex_single[2][0]);
+        TEST_ASSERT_EQ( 144.0f, x.storage.coordinate.data.complex_single[2][1]);
         mtxvector_free(&x);
     }
 
@@ -2105,6 +2159,24 @@ int test_mtxvector_scal(void)
         TEST_ASSERT_EQ(8.0f, x.storage.coordinate.data.complex_double[1][1]);
         TEST_ASSERT_EQ(12.0f, x.storage.coordinate.data.complex_double[2][0]);
         TEST_ASSERT_EQ(0.0f, x.storage.coordinate.data.complex_double[2][1]);
+        float as[2] = {2, 3};
+        err = mtxvector_cscal(as, &x, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ( -4.0, x.storage.coordinate.data.complex_double[0][0]);
+        TEST_ASSERT_EQ( 20.0, x.storage.coordinate.data.complex_double[0][1]);
+        TEST_ASSERT_EQ(-16.0, x.storage.coordinate.data.complex_double[1][0]);
+        TEST_ASSERT_EQ( 28.0, x.storage.coordinate.data.complex_double[1][1]);
+        TEST_ASSERT_EQ( 24.0, x.storage.coordinate.data.complex_double[2][0]);
+        TEST_ASSERT_EQ( 36.0, x.storage.coordinate.data.complex_double[2][1]);
+        double ad[2] = {2, 3};
+        err = mtxvector_zscal(ad, &x, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ( -68.0, x.storage.coordinate.data.complex_double[0][0]);
+        TEST_ASSERT_EQ(  28.0, x.storage.coordinate.data.complex_double[0][1]);
+        TEST_ASSERT_EQ(-116.0, x.storage.coordinate.data.complex_double[1][0]);
+        TEST_ASSERT_EQ(   8.0, x.storage.coordinate.data.complex_double[1][1]);
+        TEST_ASSERT_EQ( -60.0, x.storage.coordinate.data.complex_double[2][0]);
+        TEST_ASSERT_EQ( 144.0, x.storage.coordinate.data.complex_double[2][1]);
         mtxvector_free(&x);
     }
     return TEST_SUCCESS;

@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-02-22
+ * Last modified: 2022-03-14
  *
  * Data structures for vectors in array format.
  */
@@ -323,6 +323,24 @@ int mtxvector_array_sscal(
  */
 int mtxvector_array_dscal(
     double a,
+    struct mtxvector_array * x,
+    int64_t * num_flops);
+
+/**
+ * ‘mtxvector_array_cscal()’ scales a vector by a complex, single
+ * precision floating point scalar, ‘x = (a+b*i)*x’.
+ */
+int mtxvector_array_cscal(
+    float a[2],
+    struct mtxvector_array * x,
+    int64_t * num_flops);
+
+/**
+ * ‘mtxvector_array_zscal()’ scales a vector by a complex, double
+ * precision floating point scalar, ‘x = (a+b*i)*x’.
+ */
+int mtxvector_array_zscal(
+    double a[2],
     struct mtxvector_array * x,
     int64_t * num_flops);
 
