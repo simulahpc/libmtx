@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-02-22
+ * Last modified: 2022-03-14
  *
  * Data structures for matrices in coordinate format.
  */
@@ -1617,6 +1617,14 @@ int mtxmatrix_coordinate_sgemv(
             return MTX_ERR_INCOMPATIBLE_SIZE;
     }
 
+    if (beta == 0) {
+        err = mtxvector_set_constant_real_single(y, 0);
+        if (err) return err;
+    } else if (beta != 1) {
+        err = mtxvector_sscal(beta, y, num_flops);
+        if (err) return err;
+    }
+
     if (A->field == mtx_field_real) {
         if (x_->field != A->field || y_->field != A->field)
             return MTX_ERR_INCOMPATIBLE_FIELD;
@@ -1627,69 +1635,17 @@ int mtxmatrix_coordinate_sgemv(
             const float * xdata = x_->data.real_single;
             float * ydata = y_->data.real_single;
             if (trans == mtx_notrans) {
-                if (beta == 0) {
-                    for (int i = 0; i < A->num_rows; i++)
-                        ydata[i] = 0;
-                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                        int i = A->rowidx[k], j = A->colidx[k];
-                        ydata[i] += alpha*Adata[k]*xdata[j];
-                    }
-                    if (num_flops) *num_flops = 3*A->num_nonzeros;
-                } else if (beta == 1) {
-                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                        int i = A->rowidx[k], j = A->colidx[k];
-                        ydata[i] += alpha*Adata[k]*xdata[j];
-                    }
-                    if (num_flops) *num_flops = 3*A->num_nonzeros;
-                } else {
-                    struct mtxvector_array z;
-                    err = mtxvector_array_alloc_copy(&z, y_);
-                    if (err)
-                        return err;
-                    float * zdata = z.data.real_single;
-                    for (int i = 0; i < A->num_rows; i++)
-                        zdata[i] = 0;
-                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                        int i = A->rowidx[k], j = A->colidx[k];
-                        zdata[i] += Adata[k]*xdata[j];
-                    }
-                    for (int i = 0; i < A->num_rows; i++)
-                        ydata[i] = alpha*zdata[i] + beta*ydata[i];
-                    mtxvector_array_free(&z);
-                    if (num_flops) *num_flops = 2*A->num_nonzeros+3*A->num_rows;
+                for (int64_t k = 0; k < A->num_nonzeros; k++) {
+                    int i = A->rowidx[k], j = A->colidx[k];
+                    ydata[i] += alpha*Adata[k]*xdata[j];
                 }
+                if (num_flops) *num_flops = 3*A->num_nonzeros;
             } else if (trans == mtx_trans || trans == mtx_conjtrans) {
-                if (beta == 0) {
-                    for (int j = 0; j < A->num_columns; j++)
-                        ydata[j] = 0;
-                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                        int i = A->rowidx[k], j = A->colidx[k];
-                        ydata[j] += alpha*Adata[k]*xdata[i];
-                    }
-                    if (num_flops) *num_flops = 3*A->num_nonzeros;
-                } else if (beta == 1) {
-                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                        int i = A->rowidx[k], j = A->colidx[k];
-                        ydata[j] += alpha*Adata[k]*xdata[i];
-                    }
-                    if (num_flops) *num_flops = 3*A->num_nonzeros;
-                } else {
-                    struct mtxvector_array z;
-                    err = mtxvector_array_alloc_copy(&z, y_);
-                    if (err)
-                        return err;
-                    float * zdata = z.data.real_single;
-                    for (int j = 0; j < A->num_columns; j++)
-                        zdata[j] = 0;
-                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                        int i = A->rowidx[k], j = A->colidx[k];
-                        zdata[j] += Adata[k]*xdata[i];
-                    }
-                    for (int j = 0; j < A->num_columns; j++)
-                        ydata[j] = alpha*zdata[j] + beta*ydata[j];
-                    mtxvector_array_free(&z);
-                    if (num_flops) *num_flops = 2*A->num_nonzeros+3*A->num_columns;
+                for (int64_t k = 0; k < A->num_nonzeros; k++) {
+                    int i = A->rowidx[k], j = A->colidx[k];
+                    ydata[j] += alpha*Adata[k]*xdata[i];
                 }
+                if (num_flops) *num_flops = 3*A->num_nonzeros;
             } else {
                 return MTX_ERR_INVALID_TRANSPOSITION;
             }
@@ -1698,69 +1654,17 @@ int mtxmatrix_coordinate_sgemv(
             const double * xdata = x_->data.real_double;
             double * ydata = y_->data.real_double;
             if (trans == mtx_notrans) {
-                if (beta == 0) {
-                    for (int i = 0; i < A->num_rows; i++)
-                        ydata[i] = 0;
-                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                        int i = A->rowidx[k], j = A->colidx[k];
-                        ydata[i] += alpha*Adata[k]*xdata[j];
-                    }
-                    if (num_flops) *num_flops = 3*A->num_nonzeros;
-                } else if (beta == 1) {
-                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                        int i = A->rowidx[k], j = A->colidx[k];
-                        ydata[i] += alpha*Adata[k]*xdata[j];
-                    }
-                    if (num_flops) *num_flops = 3*A->num_nonzeros;
-                } else {
-                    struct mtxvector_array z;
-                    err = mtxvector_array_alloc_copy(&z, y_);
-                    if (err)
-                        return err;
-                    double * zdata = z.data.real_double;
-                    for (int i = 0; i < A->num_rows; i++)
-                        zdata[i] = 0;
-                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                        int i = A->rowidx[k], j = A->colidx[k];
-                        zdata[i] += Adata[k]*xdata[j];
-                    }
-                    for (int i = 0; i < A->num_rows; i++)
-                        ydata[i] = alpha*zdata[i] + beta*ydata[i];
-                    mtxvector_array_free(&z);
-                    if (num_flops) *num_flops = 2*A->num_nonzeros+3*A->num_rows;
+                for (int64_t k = 0; k < A->num_nonzeros; k++) {
+                    int i = A->rowidx[k], j = A->colidx[k];
+                    ydata[i] += alpha*Adata[k]*xdata[j];
                 }
+                if (num_flops) *num_flops = 3*A->num_nonzeros;
             } else if (trans == mtx_trans || trans == mtx_conjtrans) {
-                if (beta == 0) {
-                    for (int j = 0; j < A->num_columns; j++)
-                        ydata[j] = 0;
-                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                        int i = A->rowidx[k], j = A->colidx[k];
-                        ydata[j] += alpha*Adata[k]*xdata[i];
-                    }
-                    if (num_flops) *num_flops = 3*A->num_nonzeros;
-                } else if (beta == 1) {
-                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                        int i = A->rowidx[k], j = A->colidx[k];
-                        ydata[j] += alpha*Adata[k]*xdata[i];
-                    }
-                    if (num_flops) *num_flops = 3*A->num_nonzeros;
-                } else {
-                    struct mtxvector_array z;
-                    err = mtxvector_array_alloc_copy(&z, y_);
-                    if (err)
-                        return err;
-                    double * zdata = z.data.real_double;
-                    for (int j = 0; j < A->num_columns; j++)
-                        zdata[j] = 0;
-                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                        int i = A->rowidx[k], j = A->colidx[k];
-                        zdata[j] += Adata[k]*xdata[i];
-                    }
-                    for (int j = 0; j < A->num_columns; j++)
-                        ydata[j] = alpha*zdata[j] + beta*ydata[j];
-                    mtxvector_array_free(&z);
-                    if (num_flops) *num_flops = 2*A->num_nonzeros+3*A->num_columns;
+                for (int64_t k = 0; k < A->num_nonzeros; k++) {
+                    int i = A->rowidx[k], j = A->colidx[k];
+                    ydata[j] += alpha*Adata[k]*xdata[i];
                 }
+                if (num_flops) *num_flops = 3*A->num_nonzeros;
             } else {
                 return MTX_ERR_INVALID_TRANSPOSITION;
             }
@@ -1777,131 +1681,32 @@ int mtxmatrix_coordinate_sgemv(
             const float (* xdata)[2] = x_->data.complex_single;
             float (* ydata)[2] = y_->data.complex_single;
             if (trans == mtx_notrans) {
-                if (beta == 0) {
-                    for (int i = 0; i < A->num_rows; i++)
-                        ydata[i][0] = ydata[i][1] = 0;
-                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                        int i = A->rowidx[k], j = A->colidx[k];
-                        ydata[i][0] += alpha * (Adata[k][0]*xdata[j][0] -
-                                                Adata[k][1]*xdata[j][1]);
-                        ydata[i][1] += alpha * (Adata[k][0]*xdata[j][1] +
-                                                Adata[k][1]*xdata[j][0]);
-                    }
-                    if (num_flops) *num_flops = 10*A->num_nonzeros;
-                } else if (beta == 1) {
-                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                        int i = A->rowidx[k], j = A->colidx[k];
-                        ydata[i][0] += alpha * (Adata[k][0]*xdata[j][0] -
-                                                Adata[k][1]*xdata[j][1]);
-                        ydata[i][1] += alpha * (Adata[k][0]*xdata[j][1] +
-                                                Adata[k][1]*xdata[j][0]);
-                    }
-                    if (num_flops) *num_flops = 10*A->num_nonzeros;
-                } else {
-                    struct mtxvector_array z;
-                    err = mtxvector_array_alloc_copy(&z, y_);
-                    if (err)
-                        return err;
-                    float (* zdata)[2] = z.data.complex_single;
-                    for (int i = 0; i < A->num_rows; i++)
-                        zdata[i][0] = zdata[i][1] = 0;
-                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                        int i = A->rowidx[k], j = A->colidx[k];
-                        zdata[i][0] += (Adata[k][0]*xdata[j][0] -
-                                        Adata[k][1]*xdata[j][1]);
-                        zdata[i][1] += (Adata[k][0]*xdata[j][1] +
-                                        Adata[k][1]*xdata[j][0]);
-
-                    }
-                    for (int i = 0; i < A->num_rows; i++) {
-                        ydata[i][0] = alpha*zdata[i][0] + beta*ydata[i][0];
-                        ydata[i][1] = alpha*zdata[i][1] + beta*ydata[i][1];
-                    }
-                    mtxvector_array_free(&z);
-                    if (num_flops) *num_flops = 8*A->num_nonzeros+6*A->num_rows;
+                for (int64_t k = 0; k < A->num_nonzeros; k++) {
+                    int i = A->rowidx[k], j = A->colidx[k];
+                    ydata[i][0] += alpha * (Adata[k][0]*xdata[j][0] -
+                                            Adata[k][1]*xdata[j][1]);
+                    ydata[i][1] += alpha * (Adata[k][0]*xdata[j][1] +
+                                            Adata[k][1]*xdata[j][0]);
                 }
+                if (num_flops) *num_flops = 10*A->num_nonzeros;
             } else if (trans == mtx_trans) {
-                if (beta == 0) {
-                    for (int j = 0; j < A->num_columns; j++)
-                        ydata[j][0] = ydata[j][1] = 0;
-                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                        int i = A->rowidx[k], j = A->colidx[k];
-                        ydata[j][0] += alpha * (Adata[k][0]*xdata[i][0] -
-                                                Adata[k][1]*xdata[i][1]);
-                        ydata[j][1] += alpha * (Adata[k][0]*xdata[i][1] +
-                                                Adata[k][1]*xdata[i][0]);
-                    }
-                    if (num_flops) *num_flops = 10*A->num_nonzeros;
-                } else if (beta == 1) {
-                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                        int i = A->rowidx[k], j = A->colidx[k];
-                        ydata[j][0] += alpha * (Adata[k][0]*xdata[i][0] -
-                                                Adata[k][1]*xdata[i][1]);
-                        ydata[j][1] += alpha * (Adata[k][0]*xdata[i][1] +
-                                                Adata[k][1]*xdata[i][0]);
-                    }
-                    if (num_flops) *num_flops = 10*A->num_nonzeros;
-                } else {
-                    struct mtxvector_array z;
-                    err = mtxvector_array_alloc_copy(&z, y_);
-                    if (err)
-                        return err;
-                    float (* zdata)[2] = z.data.complex_single;
-                    for (int j = 0; j < A->num_columns; j++)
-                        zdata[j][0] = zdata[j][1] = 0;
-                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                        int i = A->rowidx[k], j = A->colidx[k];
-                        zdata[j][0] += Adata[k][0]*xdata[i][0]-Adata[k][1]*xdata[i][1];
-                        zdata[j][1] += Adata[k][0]*xdata[i][1]+Adata[k][1]*xdata[i][0];
-                    }
-                    for (int j = 0; j < A->num_columns; j++) {
-                        ydata[j][0] = alpha*zdata[j][0] + beta*ydata[j][0];
-                        ydata[j][1] = alpha*zdata[j][1] + beta*ydata[j][1];
-                    }
-                    mtxvector_array_free(&z);
-                    if (num_flops) *num_flops = 8*A->num_nonzeros+6*A->num_columns;
+                for (int64_t k = 0; k < A->num_nonzeros; k++) {
+                    int i = A->rowidx[k], j = A->colidx[k];
+                    ydata[j][0] += alpha * (Adata[k][0]*xdata[i][0] -
+                                            Adata[k][1]*xdata[i][1]);
+                    ydata[j][1] += alpha * (Adata[k][0]*xdata[i][1] +
+                                            Adata[k][1]*xdata[i][0]);
                 }
+                if (num_flops) *num_flops = 10*A->num_nonzeros;
             } else if (trans == mtx_conjtrans) {
-                if (beta == 0) {
-                    for (int j = 0; j < A->num_columns; j++)
-                        ydata[j][0] = ydata[j][1] = 0;
-                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                        int i = A->rowidx[k], j = A->colidx[k];
-                        ydata[j][0] += alpha * (Adata[k][0]*xdata[i][0] +
-                                                Adata[k][1]*xdata[i][1]);
-                        ydata[j][1] += alpha * (Adata[k][0]*xdata[i][1] -
-                                                Adata[k][1]*xdata[i][0]);
-                    }
-                    if (num_flops) *num_flops = 10*A->num_nonzeros;
-                } else if (beta == 1) {
-                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                        int i = A->rowidx[k], j = A->colidx[k];
-                        ydata[j][0] += alpha * (Adata[k][0]*xdata[i][0] +
-                                                Adata[k][1]*xdata[i][1]);
-                        ydata[j][1] += alpha * (Adata[k][0]*xdata[i][1] -
-                                                Adata[k][1]*xdata[i][0]);
-                    }
-                    if (num_flops) *num_flops = 10*A->num_nonzeros;
-                } else {
-                    struct mtxvector_array z;
-                    err = mtxvector_array_alloc_copy(&z, y_);
-                    if (err)
-                        return err;
-                    float (* zdata)[2] = z.data.complex_single;
-                    for (int j = 0; j < A->num_columns; j++)
-                        zdata[j][0] = zdata[j][1] = 0;
-                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                        int i = A->rowidx[k], j = A->colidx[k];
-                        zdata[j][0] += Adata[k][0]*xdata[i][0]+Adata[k][1]*xdata[i][1];
-                        zdata[j][1] += Adata[k][0]*xdata[i][1]-Adata[k][1]*xdata[i][0];
-                    }
-                    for (int j = 0; j < A->num_columns; j++) {
-                        ydata[j][0] = alpha*zdata[j][0] + beta*ydata[j][0];
-                        ydata[j][1] = alpha*zdata[j][1] + beta*ydata[j][1];
-                    }
-                    mtxvector_array_free(&z);
-                    if (num_flops) *num_flops = 8*A->num_nonzeros+6*A->num_columns;
+                for (int64_t k = 0; k < A->num_nonzeros; k++) {
+                    int i = A->rowidx[k], j = A->colidx[k];
+                    ydata[j][0] += alpha * (Adata[k][0]*xdata[i][0] +
+                                            Adata[k][1]*xdata[i][1]);
+                    ydata[j][1] += alpha * (Adata[k][0]*xdata[i][1] -
+                                            Adata[k][1]*xdata[i][0]);
                 }
+                if (num_flops) *num_flops = 10*A->num_nonzeros;
             } else {
                 return MTX_ERR_INVALID_TRANSPOSITION;
             }
@@ -1910,131 +1715,32 @@ int mtxmatrix_coordinate_sgemv(
             const double (* xdata)[2] = x_->data.complex_double;
             double (* ydata)[2] = y_->data.complex_double;
             if (trans == mtx_notrans) {
-                if (beta == 0) {
-                    for (int i = 0; i < A->num_rows; i++)
-                        ydata[i][0] = ydata[i][1] = 0;
-                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                        int i = A->rowidx[k], j = A->colidx[k];
-                        ydata[i][0] += alpha * (Adata[k][0]*xdata[j][0] -
-                                                Adata[k][1]*xdata[j][1]);
-                        ydata[i][1] += alpha * (Adata[k][0]*xdata[j][1] +
-                                                Adata[k][1]*xdata[j][0]);
-                    }
-                    if (num_flops) *num_flops = 10*A->num_nonzeros;
-                } else if (beta == 1) {
-                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                        int i = A->rowidx[k], j = A->colidx[k];
-                        ydata[i][0] += alpha * (Adata[k][0]*xdata[j][0] -
-                                                Adata[k][1]*xdata[j][1]);
-                        ydata[i][1] += alpha * (Adata[k][0]*xdata[j][1] +
-                                                Adata[k][1]*xdata[j][0]);
-                    }
-                    if (num_flops) *num_flops = 10*A->num_nonzeros;
-                } else {
-                    struct mtxvector_array z;
-                    err = mtxvector_array_alloc_copy(&z, y_);
-                    if (err)
-                        return err;
-                    double (* zdata)[2] = z.data.complex_double;
-                    for (int i = 0; i < A->num_rows; i++)
-                        zdata[i][0] = zdata[i][1] = 0;
-                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                        int i = A->rowidx[k], j = A->colidx[k];
-                        zdata[i][0] += (Adata[k][0]*xdata[j][0] -
-                                        Adata[k][1]*xdata[j][1]);
-                        zdata[i][1] += (Adata[k][0]*xdata[j][1] +
-                                        Adata[k][1]*xdata[j][0]);
-
-                    }
-                    for (int i = 0; i < A->num_rows; i++) {
-                        ydata[i][0] = alpha*zdata[i][0] + beta*ydata[i][0];
-                        ydata[i][1] = alpha*zdata[i][1] + beta*ydata[i][1];
-                    }
-                    mtxvector_array_free(&z);
-                    if (num_flops) *num_flops = 8*A->num_nonzeros+6*A->num_rows;
+                for (int64_t k = 0; k < A->num_nonzeros; k++) {
+                    int i = A->rowidx[k], j = A->colidx[k];
+                    ydata[i][0] += alpha * (Adata[k][0]*xdata[j][0] -
+                                            Adata[k][1]*xdata[j][1]);
+                    ydata[i][1] += alpha * (Adata[k][0]*xdata[j][1] +
+                                            Adata[k][1]*xdata[j][0]);
                 }
+                if (num_flops) *num_flops = 10*A->num_nonzeros;
             } else if (trans == mtx_trans) {
-                if (beta == 0) {
-                    for (int j = 0; j < A->num_columns; j++)
-                        ydata[j][0] = ydata[j][1] = 0;
-                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                        int i = A->rowidx[k], j = A->colidx[k];
-                        ydata[j][0] += alpha * (Adata[k][0]*xdata[i][0] -
-                                                Adata[k][1]*xdata[i][1]);
-                        ydata[j][1] += alpha * (Adata[k][0]*xdata[i][1] +
-                                                Adata[k][1]*xdata[i][0]);
-                    }
-                    if (num_flops) *num_flops = 10*A->num_nonzeros;
-                } else if (beta == 1) {
-                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                        int i = A->rowidx[k], j = A->colidx[k];
-                        ydata[j][0] += alpha * (Adata[k][0]*xdata[i][0] -
-                                                Adata[k][1]*xdata[i][1]);
-                        ydata[j][1] += alpha * (Adata[k][0]*xdata[i][1] +
-                                                Adata[k][1]*xdata[i][0]);
-                    }
-                    if (num_flops) *num_flops = 10*A->num_nonzeros;
-                } else {
-                    struct mtxvector_array z;
-                    err = mtxvector_array_alloc_copy(&z, y_);
-                    if (err)
-                        return err;
-                    double (* zdata)[2] = z.data.complex_double;
-                    for (int j = 0; j < A->num_columns; j++)
-                        zdata[j][0] = zdata[j][1] = 0;
-                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                        int i = A->rowidx[k], j = A->colidx[k];
-                        zdata[j][0] += Adata[k][0]*xdata[i][0]-Adata[k][1]*xdata[i][1];
-                        zdata[j][1] += Adata[k][0]*xdata[i][1]+Adata[k][1]*xdata[i][0];
-                    }
-                    for (int j = 0; j < A->num_columns; j++) {
-                        ydata[j][0] = alpha*zdata[j][0] + beta*ydata[j][0];
-                        ydata[j][1] = alpha*zdata[j][1] + beta*ydata[j][1];
-                    }
-                    mtxvector_array_free(&z);
-                    if (num_flops) *num_flops = 8*A->num_nonzeros+6*A->num_columns;
+                for (int64_t k = 0; k < A->num_nonzeros; k++) {
+                    int i = A->rowidx[k], j = A->colidx[k];
+                    ydata[j][0] += alpha * (Adata[k][0]*xdata[i][0] -
+                                            Adata[k][1]*xdata[i][1]);
+                    ydata[j][1] += alpha * (Adata[k][0]*xdata[i][1] +
+                                            Adata[k][1]*xdata[i][0]);
                 }
+                if (num_flops) *num_flops = 10*A->num_nonzeros;
             } else if (trans == mtx_conjtrans) {
-                if (beta == 0) {
-                    for (int j = 0; j < A->num_columns; j++)
-                        ydata[j][0] = ydata[j][1] = 0;
-                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                        int i = A->rowidx[k], j = A->colidx[k];
-                        ydata[j][0] += alpha * (Adata[k][0]*xdata[i][0] +
-                                                Adata[k][1]*xdata[i][1]);
-                        ydata[j][1] += alpha * (Adata[k][0]*xdata[i][1] -
-                                                Adata[k][1]*xdata[i][0]);
-                    }
-                    if (num_flops) *num_flops = 10*A->num_nonzeros;
-                } else if (beta == 1) {
-                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                        int i = A->rowidx[k], j = A->colidx[k];
-                        ydata[j][0] += alpha * (Adata[k][0]*xdata[i][0] +
-                                                Adata[k][1]*xdata[i][1]);
-                        ydata[j][1] += alpha * (Adata[k][0]*xdata[i][1] -
-                                                Adata[k][1]*xdata[i][0]);
-                    }
-                    if (num_flops) *num_flops = 10*A->num_nonzeros;
-                } else {
-                    struct mtxvector_array z;
-                    err = mtxvector_array_alloc_copy(&z, y_);
-                    if (err)
-                        return err;
-                    double (* zdata)[2] = z.data.complex_double;
-                    for (int j = 0; j < A->num_columns; j++)
-                        zdata[j][0] = zdata[j][1] = 0;
-                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                        int i = A->rowidx[k], j = A->colidx[k];
-                        zdata[j][0] += Adata[k][0]*xdata[i][0]+Adata[k][1]*xdata[i][1];
-                        zdata[j][1] += Adata[k][0]*xdata[i][1]-Adata[k][1]*xdata[i][0];
-                    }
-                    for (int j = 0; j < A->num_columns; j++) {
-                        ydata[j][0] = alpha*zdata[j][0] + beta*ydata[j][0];
-                        ydata[j][1] = alpha*zdata[j][1] + beta*ydata[j][1];
-                    }
-                    mtxvector_array_free(&z);
-                    if (num_flops) *num_flops = 8*A->num_nonzeros+6*A->num_columns;
+                for (int64_t k = 0; k < A->num_nonzeros; k++) {
+                    int i = A->rowidx[k], j = A->colidx[k];
+                    ydata[j][0] += alpha * (Adata[k][0]*xdata[i][0] +
+                                            Adata[k][1]*xdata[i][1]);
+                    ydata[j][1] += alpha * (Adata[k][0]*xdata[i][1] -
+                                            Adata[k][1]*xdata[i][0]);
                 }
+                if (num_flops) *num_flops = 10*A->num_nonzeros;
             } else {
                 return MTX_ERR_INVALID_TRANSPOSITION;
             }
@@ -2051,69 +1757,17 @@ int mtxmatrix_coordinate_sgemv(
             const int32_t * xdata = x_->data.integer_single;
             int32_t * ydata = y_->data.integer_single;
             if (trans == mtx_notrans) {
-                if (beta == 0) {
-                    for (int i = 0; i < A->num_rows; i++)
-                        ydata[i] = 0;
-                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                        int i = A->rowidx[k], j = A->colidx[k];
-                        ydata[i] += alpha*Adata[k]*xdata[j];
-                    }
-                    if (num_flops) *num_flops = 3*A->num_nonzeros;
-                } else if (beta == 1) {
-                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                        int i = A->rowidx[k], j = A->colidx[k];
-                        ydata[i] += alpha*Adata[k]*xdata[j];
-                    }
-                    if (num_flops) *num_flops = 3*A->num_nonzeros;
-                } else {
-                    struct mtxvector_array z;
-                    err = mtxvector_array_alloc_copy(&z, y_);
-                    if (err)
-                        return err;
-                    int32_t * zdata = z.data.integer_single;
-                    for (int i = 0; i < A->num_rows; i++)
-                        zdata[i] = 0;
-                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                        int i = A->rowidx[k], j = A->colidx[k];
-                        zdata[i] += Adata[k]*xdata[j];
-                    }
-                    for (int i = 0; i < A->num_rows; i++)
-                        ydata[i] = alpha*zdata[i] + beta*ydata[i];
-                    mtxvector_array_free(&z);
-                    if (num_flops) *num_flops = 2*A->num_nonzeros+3*A->num_rows;
+                for (int64_t k = 0; k < A->num_nonzeros; k++) {
+                    int i = A->rowidx[k], j = A->colidx[k];
+                    ydata[i] += alpha*Adata[k]*xdata[j];
                 }
+                if (num_flops) *num_flops = 3*A->num_nonzeros;
             } else if (trans == mtx_trans || trans == mtx_conjtrans) {
-                if (beta == 0) {
-                    for (int j = 0; j < A->num_columns; j++)
-                        ydata[j] = 0;
-                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                        int i = A->rowidx[k], j = A->colidx[k];
-                        ydata[j] += alpha*Adata[k]*xdata[i];
-                    }
-                    if (num_flops) *num_flops = 3*A->num_nonzeros;
-                } else if (beta == 1) {
-                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                        int i = A->rowidx[k], j = A->colidx[k];
-                        ydata[j] += alpha*Adata[k]*xdata[i];
-                    }
-                    if (num_flops) *num_flops = 3*A->num_nonzeros;
-                } else {
-                    struct mtxvector_array z;
-                    err = mtxvector_array_alloc_copy(&z, y_);
-                    if (err)
-                        return err;
-                    int32_t * zdata = z.data.integer_single;
-                    for (int j = 0; j < A->num_columns; j++)
-                        zdata[j] = 0;
-                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                        int i = A->rowidx[k], j = A->colidx[k];
-                        zdata[j] += Adata[k]*xdata[i];
-                    }
-                    for (int j = 0; j < A->num_columns; j++)
-                        ydata[j] = alpha*zdata[j] + beta*ydata[j];
-                    mtxvector_array_free(&z);
-                    if (num_flops) *num_flops = 2*A->num_nonzeros+3*A->num_columns;
+                for (int64_t k = 0; k < A->num_nonzeros; k++) {
+                    int i = A->rowidx[k], j = A->colidx[k];
+                    ydata[j] += alpha*Adata[k]*xdata[i];
                 }
+                if (num_flops) *num_flops = 3*A->num_nonzeros;
             } else {
                 return MTX_ERR_INVALID_TRANSPOSITION;
             }
@@ -2122,69 +1776,17 @@ int mtxmatrix_coordinate_sgemv(
             const int64_t * xdata = x_->data.integer_double;
             int64_t * ydata = y_->data.integer_double;
             if (trans == mtx_notrans) {
-                if (beta == 0) {
-                    for (int i = 0; i < A->num_rows; i++)
-                        ydata[i] = 0;
-                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                        int i = A->rowidx[k], j = A->colidx[k];
-                        ydata[i] += alpha*Adata[k]*xdata[j];
-                    }
-                    if (num_flops) *num_flops = 3*A->num_nonzeros;
-                } else if (beta == 1) {
-                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                        int i = A->rowidx[k], j = A->colidx[k];
-                        ydata[i] += alpha*Adata[k]*xdata[j];
-                    }
-                    if (num_flops) *num_flops = 3*A->num_nonzeros;
-                } else {
-                    struct mtxvector_array z;
-                    err = mtxvector_array_alloc_copy(&z, y_);
-                    if (err)
-                        return err;
-                    int64_t * zdata = z.data.integer_double;
-                    for (int i = 0; i < A->num_rows; i++)
-                        zdata[i] = 0;
-                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                        int i = A->rowidx[k], j = A->colidx[k];
-                        zdata[i] += Adata[k]*xdata[j];
-                    }
-                    for (int i = 0; i < A->num_rows; i++)
-                        ydata[i] = alpha*zdata[i] + beta*ydata[i];
-                    mtxvector_array_free(&z);
-                    if (num_flops) *num_flops = 2*A->num_nonzeros+3*A->num_rows;
+                for (int64_t k = 0; k < A->num_nonzeros; k++) {
+                    int i = A->rowidx[k], j = A->colidx[k];
+                    ydata[i] += alpha*Adata[k]*xdata[j];
                 }
+                if (num_flops) *num_flops = 3*A->num_nonzeros;
             } else if (trans == mtx_trans || trans == mtx_conjtrans) {
-                if (beta == 0) {
-                    for (int j = 0; j < A->num_columns; j++)
-                        ydata[j] = 0;
-                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                        int i = A->rowidx[k], j = A->colidx[k];
-                        ydata[j] += alpha*Adata[k]*xdata[i];
-                    }
-                    if (num_flops) *num_flops = 3*A->num_nonzeros;
-                } else if (beta == 1) {
-                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                        int i = A->rowidx[k], j = A->colidx[k];
-                        ydata[j] += alpha*Adata[k]*xdata[i];
-                    }
-                    if (num_flops) *num_flops = 3*A->num_nonzeros;
-                } else {
-                    struct mtxvector_array z;
-                    err = mtxvector_array_alloc_copy(&z, y_);
-                    if (err)
-                        return err;
-                    int64_t * zdata = z.data.integer_double;
-                    for (int j = 0; j < A->num_columns; j++)
-                        zdata[j] = 0;
-                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                        int i = A->rowidx[k], j = A->colidx[k];
-                        zdata[j] += Adata[k]*xdata[i];
-                    }
-                    for (int j = 0; j < A->num_columns; j++)
-                        ydata[j] = alpha*zdata[j] + beta*ydata[j];
-                    mtxvector_array_free(&z);
-                    if (num_flops) *num_flops = 2*A->num_nonzeros+3*A->num_columns;
+                for (int64_t k = 0; k < A->num_nonzeros; k++) {
+                    int i = A->rowidx[k], j = A->colidx[k];
+                    ydata[j] += alpha*Adata[k]*xdata[i];
                 }
+                if (num_flops) *num_flops = 3*A->num_nonzeros;
             } else {
                 return MTX_ERR_INVALID_TRANSPOSITION;
             }
@@ -2201,69 +1803,17 @@ int mtxmatrix_coordinate_sgemv(
                 const float * xdata = x_->data.real_single;
                 float * ydata = y_->data.real_single;
                 if (trans == mtx_notrans) {
-                    if (beta == 0) {
-                        for (int i = 0; i < A->num_rows; i++)
-                            ydata[i] = 0;
-                        for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                            int i = A->rowidx[k], j = A->colidx[k];
-                            ydata[i] += alpha*xdata[j];
-                        }
-                        if (num_flops) *num_flops = 2*A->num_nonzeros;
-                    } else if (beta == 1) {
-                        for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                            int i = A->rowidx[k], j = A->colidx[k];
-                            ydata[i] += alpha*xdata[j];
-                        }
-                        if (num_flops) *num_flops = 2*A->num_nonzeros;
-                    } else {
-                        struct mtxvector_array z;
-                        err = mtxvector_array_alloc_copy(&z, y_);
-                        if (err)
-                            return err;
-                        float * zdata = z.data.real_single;
-                        for (int i = 0; i < A->num_rows; i++)
-                            zdata[i] = 0;
-                        for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                            int i = A->rowidx[k], j = A->colidx[k];
-                            zdata[i] += xdata[j];
-                        }
-                        for (int i = 0; i < A->num_rows; i++)
-                            ydata[i] = alpha*zdata[i] + beta*ydata[i];
-                        mtxvector_array_free(&z);
-                        if (num_flops) *num_flops = A->num_nonzeros+3*A->num_rows;
+                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
+                        int i = A->rowidx[k], j = A->colidx[k];
+                        ydata[i] += alpha*xdata[j];
                     }
+                    if (num_flops) *num_flops = 2*A->num_nonzeros;
                 } else if (trans == mtx_trans || trans == mtx_conjtrans) {
-                    if (beta == 0) {
-                        for (int j = 0; j < A->num_columns; j++)
-                            ydata[j] = 0;
-                        for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                            int i = A->rowidx[k], j = A->colidx[k];
-                            ydata[j] += alpha*xdata[i];
-                        }
-                        if (num_flops) *num_flops = 2*A->num_nonzeros;
-                    } else if (beta == 1) {
-                        for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                            int i = A->rowidx[k], j = A->colidx[k];
-                            ydata[j] += alpha*xdata[i];
-                        }
-                        if (num_flops) *num_flops = 2*A->num_nonzeros;
-                    } else {
-                        struct mtxvector_array z;
-                        err = mtxvector_array_alloc_copy(&z, y_);
-                        if (err)
-                            return err;
-                        float * zdata = z.data.real_single;
-                        for (int j = 0; j < A->num_columns; j++)
-                            zdata[j] = 0;
-                        for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                            int i = A->rowidx[k], j = A->colidx[k];
-                            zdata[j] += xdata[i];
-                        }
-                        for (int j = 0; j < A->num_columns; j++)
-                            ydata[j] = alpha*zdata[j] + beta*ydata[j];
-                        mtxvector_array_free(&z);
-                        if (num_flops) *num_flops = A->num_nonzeros+3*A->num_columns;
+                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
+                        int i = A->rowidx[k], j = A->colidx[k];
+                        ydata[j] += alpha*xdata[i];
                     }
+                    if (num_flops) *num_flops = 2*A->num_nonzeros;
                 } else {
                     return MTX_ERR_INVALID_TRANSPOSITION;
                 }
@@ -2271,69 +1821,17 @@ int mtxmatrix_coordinate_sgemv(
                 const double * xdata = x_->data.real_double;
                 double * ydata = y_->data.real_double;
                 if (trans == mtx_notrans) {
-                    if (beta == 0) {
-                        for (int i = 0; i < A->num_rows; i++)
-                            ydata[i] = 0;
-                        for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                            int i = A->rowidx[k], j = A->colidx[k];
-                            ydata[i] += alpha*xdata[j];
-                        }
-                        if (num_flops) *num_flops = 2*A->num_nonzeros;
-                    } else if (beta == 1) {
-                        for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                            int i = A->rowidx[k], j = A->colidx[k];
-                            ydata[i] += alpha*xdata[j];
-                        }
-                        if (num_flops) *num_flops = 2*A->num_nonzeros;
-                    } else {
-                        struct mtxvector_array z;
-                        err = mtxvector_array_alloc_copy(&z, y_);
-                        if (err)
-                            return err;
-                        double * zdata = z.data.real_double;
-                        for (int i = 0; i < A->num_rows; i++)
-                            zdata[i] = 0;
-                        for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                            int i = A->rowidx[k], j = A->colidx[k];
-                            zdata[i] += xdata[j];
-                        }
-                        for (int i = 0; i < A->num_rows; i++)
-                            ydata[i] = alpha*zdata[i] + beta*ydata[i];
-                        mtxvector_array_free(&z);
-                        if (num_flops) *num_flops = A->num_nonzeros+3*A->num_rows;
+                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
+                        int i = A->rowidx[k], j = A->colidx[k];
+                        ydata[i] += alpha*xdata[j];
                     }
+                    if (num_flops) *num_flops = 2*A->num_nonzeros;
                 } else if (trans == mtx_trans || trans == mtx_conjtrans) {
-                    if (beta == 0) {
-                        for (int j = 0; j < A->num_columns; j++)
-                            ydata[j] = 0;
-                        for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                            int i = A->rowidx[k], j = A->colidx[k];
-                            ydata[j] += alpha*xdata[i];
-                        }
-                        if (num_flops) *num_flops = 2*A->num_nonzeros;
-                    } else if (beta == 1) {
-                        for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                            int i = A->rowidx[k], j = A->colidx[k];
-                            ydata[j] += alpha*xdata[i];
-                        }
-                        if (num_flops) *num_flops = 2*A->num_nonzeros;
-                    } else {
-                        struct mtxvector_array z;
-                        err = mtxvector_array_alloc_copy(&z, y_);
-                        if (err)
-                            return err;
-                        double * zdata = z.data.real_double;
-                        for (int j = 0; j < A->num_columns; j++)
-                            zdata[j] = 0;
-                        for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                            int i = A->rowidx[k], j = A->colidx[k];
-                            zdata[j] += xdata[i];
-                        }
-                        for (int j = 0; j < A->num_columns; j++)
-                            ydata[j] = alpha*zdata[j] + beta*ydata[j];
-                        mtxvector_array_free(&z);
-                        if (num_flops) *num_flops = A->num_nonzeros+3*A->num_columns;
+                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
+                        int i = A->rowidx[k], j = A->colidx[k];
+                        ydata[j] += alpha*xdata[i];
                     }
+                    if (num_flops) *num_flops = 2*A->num_nonzeros;
                 } else {
                     return MTX_ERR_INVALID_TRANSPOSITION;
                 }
@@ -2345,117 +1843,26 @@ int mtxmatrix_coordinate_sgemv(
                 const float (* xdata)[2] = x_->data.complex_single;
                 float (* ydata)[2] = y_->data.complex_single;
                 if (trans == mtx_notrans) {
-                    if (beta == 0) {
-                        for (int i = 0; i < A->num_rows; i++)
-                            ydata[i][0] = ydata[i][1] = 0;
-                        for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                            int i = A->rowidx[k], j = A->colidx[k];
-                            ydata[i][0] += alpha*xdata[j][0];
-                            ydata[i][1] += alpha*xdata[j][1];
-                        }
-                        if (num_flops) *num_flops = 4*A->num_nonzeros;
-                    } else if (beta == 1) {
-                        for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                            int i = A->rowidx[k], j = A->colidx[k];
-                            ydata[i][0] += alpha*xdata[j][0];
-                            ydata[i][1] += alpha*xdata[j][1];
-                        }
-                        if (num_flops) *num_flops = 4*A->num_nonzeros;
-                    } else {
-                        struct mtxvector_array z;
-                        err = mtxvector_array_alloc_copy(&z, y_);
-                        if (err)
-                            return err;
-                        float (* zdata)[2] = z.data.complex_single;
-                        for (int i = 0; i < A->num_rows; i++)
-                            zdata[i][0] = zdata[i][1] = 0;
-                        for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                            int i = A->rowidx[k], j = A->colidx[k];
-                            zdata[i][0] += xdata[j][0];
-                            zdata[i][1] += xdata[j][1];
-
-                        }
-                        for (int i = 0; i < A->num_rows; i++) {
-                            ydata[i][0] = alpha*zdata[i][0] + beta*ydata[i][0];
-                            ydata[i][1] = alpha*zdata[i][1] + beta*ydata[i][1];
-                        }
-                        mtxvector_array_free(&z);
-                        if (num_flops) *num_flops = 2*A->num_nonzeros+6*A->num_rows;
+                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
+                        int i = A->rowidx[k], j = A->colidx[k];
+                        ydata[i][0] += alpha*xdata[j][0];
+                        ydata[i][1] += alpha*xdata[j][1];
                     }
+                    if (num_flops) *num_flops = 4*A->num_nonzeros;
                 } else if (trans == mtx_trans) {
-                    if (beta == 0) {
-                        for (int j = 0; j < A->num_columns; j++)
-                            ydata[j][0] = ydata[j][1] = 0;
-                        for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                            int i = A->rowidx[k], j = A->colidx[k];
-                            ydata[j][0] += alpha*xdata[i][0];
-                            ydata[j][1] += alpha*xdata[i][1];
-                        }
-                        if (num_flops) *num_flops = 4*A->num_nonzeros;
-                    } else if (beta == 1) {
-                        for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                            int i = A->rowidx[k], j = A->colidx[k];
-                            ydata[j][0] += alpha*xdata[i][0];
-                            ydata[j][1] += alpha*xdata[i][1];
-                        }
-                        if (num_flops) *num_flops = 4*A->num_nonzeros;
-                    } else {
-                        struct mtxvector_array z;
-                        err = mtxvector_array_alloc_copy(&z, y_);
-                        if (err)
-                            return err;
-                        float (* zdata)[2] = z.data.complex_single;
-                        for (int j = 0; j < A->num_columns; j++)
-                            zdata[j][0] = zdata[j][1] = 0;
-                        for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                            int i = A->rowidx[k], j = A->colidx[k];
-                            zdata[j][0] += xdata[i][0];
-                            zdata[j][1] += xdata[i][1];
-                        }
-                        for (int j = 0; j < A->num_columns; j++) {
-                            ydata[j][0] = alpha*zdata[j][0] + beta*ydata[j][0];
-                            ydata[j][1] = alpha*zdata[j][1] + beta*ydata[j][1];
-                        }
-                        mtxvector_array_free(&z);
-                        if (num_flops) *num_flops = 2*A->num_nonzeros+6*A->num_columns;
+                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
+                        int i = A->rowidx[k], j = A->colidx[k];
+                        ydata[j][0] += alpha*xdata[i][0];
+                        ydata[j][1] += alpha*xdata[i][1];
                     }
+                    if (num_flops) *num_flops = 4*A->num_nonzeros;
                 } else if (trans == mtx_conjtrans) {
-                    if (beta == 0) {
-                        for (int j = 0; j < A->num_columns; j++)
-                            ydata[j][0] = ydata[j][1] = 0;
-                        for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                            int i = A->rowidx[k], j = A->colidx[k];
-                            ydata[j][0] += alpha*xdata[i][0];
-                            ydata[j][1] += alpha*xdata[i][1];
-                        }
-                        if (num_flops) *num_flops = 4*A->num_nonzeros;
-                    } else if (beta == 1) {
-                        for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                            int i = A->rowidx[k], j = A->colidx[k];
-                            ydata[j][0] += alpha*xdata[i][0];
-                            ydata[j][1] += alpha*xdata[i][1];
-                        }
-                        if (num_flops) *num_flops = 4*A->num_nonzeros;
-                    } else {
-                        struct mtxvector_array z;
-                        err = mtxvector_array_alloc_copy(&z, y_);
-                        if (err)
-                            return err;
-                        float (* zdata)[2] = z.data.complex_single;
-                        for (int j = 0; j < A->num_columns; j++)
-                            zdata[j][0] = zdata[j][1] = 0;
-                        for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                            int i = A->rowidx[k], j = A->colidx[k];
-                            zdata[j][0] += xdata[i][0];
-                            zdata[j][1] += xdata[i][1];
-                        }
-                        for (int j = 0; j < A->num_columns; j++) {
-                            ydata[j][0] = alpha*zdata[j][0] + beta*ydata[j][0];
-                            ydata[j][1] = alpha*zdata[j][1] + beta*ydata[j][1];
-                        }
-                        mtxvector_array_free(&z);
-                        if (num_flops) *num_flops = 2*A->num_nonzeros+6*A->num_columns;
+                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
+                        int i = A->rowidx[k], j = A->colidx[k];
+                        ydata[j][0] += alpha*xdata[i][0];
+                        ydata[j][1] += alpha*xdata[i][1];
                     }
+                    if (num_flops) *num_flops = 4*A->num_nonzeros;
                 } else {
                     return MTX_ERR_INVALID_TRANSPOSITION;
                 }
@@ -2463,116 +1870,26 @@ int mtxmatrix_coordinate_sgemv(
                 const double (* xdata)[2] = x_->data.complex_double;
                 double (* ydata)[2] = y_->data.complex_double;
                 if (trans == mtx_notrans) {
-                    if (beta == 0) {
-                        for (int i = 0; i < A->num_rows; i++)
-                            ydata[i][0] = ydata[i][1] = 0;
-                        for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                            int i = A->rowidx[k], j = A->colidx[k];
-                            ydata[i][0] += alpha*xdata[j][0];
-                            ydata[i][1] += alpha*xdata[j][1];
-                        }
-                        if (num_flops) *num_flops = 4*A->num_nonzeros;
-                    } else if (beta == 1) {
-                        for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                            int i = A->rowidx[k], j = A->colidx[k];
-                            ydata[i][0] += alpha*xdata[j][0];
-                            ydata[i][1] += alpha*xdata[j][1];
-                        }
-                        if (num_flops) *num_flops = 4*A->num_nonzeros;
-                    } else {
-                        struct mtxvector_array z;
-                        err = mtxvector_array_alloc_copy(&z, y_);
-                        if (err)
-                            return err;
-                        double (* zdata)[2] = z.data.complex_double;
-                        for (int i = 0; i < A->num_rows; i++)
-                            zdata[i][0] = zdata[i][1] = 0;
-                        for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                            int i = A->rowidx[k], j = A->colidx[k];
-                            zdata[i][0] += xdata[j][0];
-                            zdata[i][1] += xdata[j][1];
-                        }
-                        for (int i = 0; i < A->num_rows; i++) {
-                            ydata[i][0] = alpha*zdata[i][0] + beta*ydata[i][0];
-                            ydata[i][1] = alpha*zdata[i][1] + beta*ydata[i][1];
-                        }
-                        mtxvector_array_free(&z);
-                        if (num_flops) *num_flops = 2*A->num_nonzeros+6*A->num_rows;
+                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
+                        int i = A->rowidx[k], j = A->colidx[k];
+                        ydata[i][0] += alpha*xdata[j][0];
+                        ydata[i][1] += alpha*xdata[j][1];
                     }
+                    if (num_flops) *num_flops = 4*A->num_nonzeros;
                 } else if (trans == mtx_trans) {
-                    if (beta == 0) {
-                        for (int j = 0; j < A->num_columns; j++)
-                            ydata[j][0] = ydata[j][1] = 0;
-                        for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                            int i = A->rowidx[k], j = A->colidx[k];
-                            ydata[j][0] += alpha*xdata[i][0];
-                            ydata[j][1] += alpha*xdata[i][1];
-                        }
-                        if (num_flops) *num_flops = 4*A->num_nonzeros;
-                    } else if (beta == 1) {
-                        for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                            int i = A->rowidx[k], j = A->colidx[k];
-                            ydata[j][0] += alpha*xdata[i][0];
-                            ydata[j][1] += alpha*xdata[i][1];
-                        }
-                        if (num_flops) *num_flops = 4*A->num_nonzeros;
-                    } else {
-                        struct mtxvector_array z;
-                        err = mtxvector_array_alloc_copy(&z, y_);
-                        if (err)
-                            return err;
-                        double (* zdata)[2] = z.data.complex_double;
-                        for (int j = 0; j < A->num_columns; j++)
-                            zdata[j][0] = zdata[j][1] = 0;
-                        for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                            int i = A->rowidx[k], j = A->colidx[k];
-                            zdata[j][0] += xdata[i][0];
-                            zdata[j][1] += xdata[i][1];
-                        }
-                        for (int j = 0; j < A->num_columns; j++) {
-                            ydata[j][0] = alpha*zdata[j][0] + beta*ydata[j][0];
-                            ydata[j][1] = alpha*zdata[j][1] + beta*ydata[j][1];
-                        }
-                        mtxvector_array_free(&z);
-                        if (num_flops) *num_flops = 2*A->num_nonzeros+6*A->num_columns;
+                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
+                        int i = A->rowidx[k], j = A->colidx[k];
+                        ydata[j][0] += alpha*xdata[i][0];
+                        ydata[j][1] += alpha*xdata[i][1];
                     }
+                    if (num_flops) *num_flops = 4*A->num_nonzeros;
                 } else if (trans == mtx_conjtrans) {
-                    if (beta == 0) {
-                        for (int j = 0; j < A->num_columns; j++)
-                            ydata[j][0] = ydata[j][1] = 0;
-                        for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                            int i = A->rowidx[k], j = A->colidx[k];
-                            ydata[j][0] += alpha*xdata[i][0];
-                            ydata[j][1] += alpha*xdata[i][1];
-                        }
-                        if (num_flops) *num_flops = 4*A->num_nonzeros;
-                    } else if (beta == 1) {
-                        for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                            int i = A->rowidx[k], j = A->colidx[k];
-                            ydata[j][0] += alpha*xdata[i][0];
-                            ydata[j][1] += alpha*xdata[i][1];
-                        }
-                        if (num_flops) *num_flops = 4*A->num_nonzeros;
-                    } else {
-                        struct mtxvector_array z;
-                        err = mtxvector_array_alloc_copy(&z, y_);
-                        if (err)
-                            return err;
-                        double (* zdata)[2] = z.data.complex_double;
-                        for (int j = 0; j < A->num_columns; j++)
-                            zdata[j][0] = zdata[j][1] = 0;
-                        for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                            int i = A->rowidx[k], j = A->colidx[k];
-                            zdata[j][0] += xdata[i][0];
-                            zdata[j][1] += xdata[i][1];
-                        }
-                        for (int j = 0; j < A->num_columns; j++) {
-                            ydata[j][0] = alpha*zdata[j][0] + beta*ydata[j][0];
-                            ydata[j][1] = alpha*zdata[j][1] + beta*ydata[j][1];
-                        }
-                        mtxvector_array_free(&z);
-                        if (num_flops) *num_flops = 2*A->num_nonzeros+6*A->num_columns;
+                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
+                        int i = A->rowidx[k], j = A->colidx[k];
+                        ydata[j][0] += alpha*xdata[i][0];
+                        ydata[j][1] += alpha*xdata[i][1];
                     }
+                    if (num_flops) *num_flops = 4*A->num_nonzeros;
                 } else {
                     return MTX_ERR_INVALID_TRANSPOSITION;
                 }
@@ -2584,69 +1901,17 @@ int mtxmatrix_coordinate_sgemv(
                 const int32_t * xdata = x_->data.integer_single;
                 int32_t * ydata = y_->data.integer_single;
                 if (trans == mtx_notrans) {
-                    if (beta == 0) {
-                        for (int i = 0; i < A->num_rows; i++)
-                            ydata[i] = 0;
-                        for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                            int i = A->rowidx[k], j = A->colidx[k];
-                            ydata[i] += alpha*xdata[j];
-                        }
-                        if (num_flops) *num_flops = 2*A->num_nonzeros;
-                    } else if (beta == 1) {
-                        for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                            int i = A->rowidx[k], j = A->colidx[k];
-                            ydata[i] += alpha*xdata[j];
-                        }
-                        if (num_flops) *num_flops = 2*A->num_nonzeros;
-                    } else {
-                        struct mtxvector_array z;
-                        err = mtxvector_array_alloc_copy(&z, y_);
-                        if (err)
-                            return err;
-                        int32_t * zdata = z.data.integer_single;
-                        for (int i = 0; i < A->num_rows; i++)
-                            zdata[i] = 0;
-                        for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                            int i = A->rowidx[k], j = A->colidx[k];
-                            zdata[i] += xdata[j];
-                        }
-                        for (int i = 0; i < A->num_rows; i++)
-                            ydata[i] = alpha*zdata[i] + beta*ydata[i];
-                        mtxvector_array_free(&z);
-                        if (num_flops) *num_flops = A->num_nonzeros+3*A->num_rows;
+                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
+                        int i = A->rowidx[k], j = A->colidx[k];
+                        ydata[i] += alpha*xdata[j];
                     }
+                    if (num_flops) *num_flops = 2*A->num_nonzeros;
                 } else if (trans == mtx_trans || trans == mtx_conjtrans) {
-                    if (beta == 0) {
-                        for (int j = 0; j < A->num_columns; j++)
-                            ydata[j] = 0;
-                        for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                            int i = A->rowidx[k], j = A->colidx[k];
-                            ydata[j] += alpha*xdata[i];
-                        }
-                        if (num_flops) *num_flops = 2*A->num_nonzeros;
-                    } else if (beta == 1) {
-                        for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                            int i = A->rowidx[k], j = A->colidx[k];
-                            ydata[j] += alpha*xdata[i];
-                        }
-                        if (num_flops) *num_flops = 2*A->num_nonzeros;
-                    } else {
-                        struct mtxvector_array z;
-                        err = mtxvector_array_alloc_copy(&z, y_);
-                        if (err)
-                            return err;
-                        int32_t * zdata = z.data.integer_single;
-                        for (int j = 0; j < A->num_columns; j++)
-                            zdata[j] = 0;
-                        for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                            int i = A->rowidx[k], j = A->colidx[k];
-                            zdata[j] += xdata[i];
-                        }
-                        for (int j = 0; j < A->num_columns; j++)
-                            ydata[j] = alpha*zdata[j] + beta*ydata[j];
-                        mtxvector_array_free(&z);
-                        if (num_flops) *num_flops = A->num_nonzeros+3*A->num_columns;
+                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
+                        int i = A->rowidx[k], j = A->colidx[k];
+                        ydata[j] += alpha*xdata[i];
                     }
+                    if (num_flops) *num_flops = 2*A->num_nonzeros;
                 } else {
                     return MTX_ERR_INVALID_TRANSPOSITION;
                 }
@@ -2654,69 +1919,17 @@ int mtxmatrix_coordinate_sgemv(
                 const int64_t * xdata = x_->data.integer_double;
                 int64_t * ydata = y_->data.integer_double;
                 if (trans == mtx_notrans) {
-                    if (beta == 0) {
-                        for (int i = 0; i < A->num_rows; i++)
-                            ydata[i] = 0;
-                        for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                            int i = A->rowidx[k], j = A->colidx[k];
-                            ydata[i] += alpha*xdata[j];
-                        }
-                        if (num_flops) *num_flops = 2*A->num_nonzeros;
-                    } else if (beta == 1) {
-                        for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                            int i = A->rowidx[k], j = A->colidx[k];
-                            ydata[i] += alpha*xdata[j];
-                        }
-                        if (num_flops) *num_flops = 2*A->num_nonzeros;
-                    } else {
-                        struct mtxvector_array z;
-                        err = mtxvector_array_alloc_copy(&z, y_);
-                        if (err)
-                            return err;
-                        int64_t * zdata = z.data.integer_double;
-                        for (int i = 0; i < A->num_rows; i++)
-                            zdata[i] = 0;
-                        for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                            int i = A->rowidx[k], j = A->colidx[k];
-                            zdata[i] += xdata[j];
-                        }
-                        for (int i = 0; i < A->num_rows; i++)
-                            ydata[i] = alpha*zdata[i] + beta*ydata[i];
-                        mtxvector_array_free(&z);
-                        if (num_flops) *num_flops = A->num_nonzeros+3*A->num_rows;
+                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
+                        int i = A->rowidx[k], j = A->colidx[k];
+                        ydata[i] += alpha*xdata[j];
                     }
+                    if (num_flops) *num_flops = 2*A->num_nonzeros;
                 } else if (trans == mtx_trans || trans == mtx_conjtrans) {
-                    if (beta == 0) {
-                        for (int j = 0; j < A->num_columns; j++)
-                            ydata[j] = 0;
-                        for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                            int i = A->rowidx[k], j = A->colidx[k];
-                            ydata[j] += alpha*xdata[i];
-                        }
-                        if (num_flops) *num_flops = 2*A->num_nonzeros;
-                    } else if (beta == 1) {
-                        for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                            int i = A->rowidx[k], j = A->colidx[k];
-                            ydata[j] += alpha*xdata[i];
-                        }
-                        if (num_flops) *num_flops = 2*A->num_nonzeros;
-                    } else {
-                        struct mtxvector_array z;
-                        err = mtxvector_array_alloc_copy(&z, y_);
-                        if (err)
-                            return err;
-                        int64_t * zdata = z.data.integer_double;
-                        for (int j = 0; j < A->num_columns; j++)
-                            zdata[j] = 0;
-                        for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                            int i = A->rowidx[k], j = A->colidx[k];
-                            zdata[j] += xdata[i];
-                        }
-                        for (int j = 0; j < A->num_columns; j++)
-                            ydata[j] = alpha*zdata[j] + beta*ydata[j];
-                        mtxvector_array_free(&z);
-                        if (num_flops) *num_flops = A->num_nonzeros+3*A->num_columns;
+                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
+                        int i = A->rowidx[k], j = A->colidx[k];
+                        ydata[j] += alpha*xdata[i];
                     }
+                    if (num_flops) *num_flops = 2*A->num_nonzeros;
                 } else {
                     return MTX_ERR_INVALID_TRANSPOSITION;
                 }
@@ -2776,6 +1989,14 @@ int mtxmatrix_coordinate_dgemv(
             return MTX_ERR_INCOMPATIBLE_SIZE;
     }
 
+    if (beta == 0) {
+        err = mtxvector_set_constant_real_double(y, 0);
+        if (err) return err;
+    } else if (beta != 1) {
+        err = mtxvector_dscal(beta, y, num_flops);
+        if (err) return err;
+    }
+
     if (A->field == mtx_field_real) {
         if (x_->field != A->field || y_->field != A->field)
             return MTX_ERR_INCOMPATIBLE_FIELD;
@@ -2786,69 +2007,17 @@ int mtxmatrix_coordinate_dgemv(
             const float * xdata = x_->data.real_single;
             float * ydata = y_->data.real_single;
             if (trans == mtx_notrans) {
-                if (beta == 0) {
-                    for (int i = 0; i < A->num_rows; i++)
-                        ydata[i] = 0;
-                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                        int i = A->rowidx[k], j = A->colidx[k];
-                        ydata[i] += alpha*Adata[k]*xdata[j];
-                    }
-                    if (num_flops) *num_flops = 3*A->num_nonzeros;
-                } else if (beta == 1) {
-                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                        int i = A->rowidx[k], j = A->colidx[k];
-                        ydata[i] += alpha*Adata[k]*xdata[j];
-                    }
-                    if (num_flops) *num_flops = 3*A->num_nonzeros;
-                } else {
-                    struct mtxvector_array z;
-                    err = mtxvector_array_alloc_copy(&z, y_);
-                    if (err)
-                        return err;
-                    float * zdata = z.data.real_single;
-                    for (int i = 0; i < A->num_rows; i++)
-                        zdata[i] = 0;
-                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                        int i = A->rowidx[k], j = A->colidx[k];
-                        zdata[i] += Adata[k]*xdata[j];
-                    }
-                    for (int i = 0; i < A->num_rows; i++)
-                        ydata[i] = alpha*zdata[i] + beta*ydata[i];
-                    mtxvector_array_free(&z);
-                    if (num_flops) *num_flops = 2*A->num_nonzeros+3*A->num_rows;
+                for (int64_t k = 0; k < A->num_nonzeros; k++) {
+                    int i = A->rowidx[k], j = A->colidx[k];
+                    ydata[i] += alpha*Adata[k]*xdata[j];
                 }
+                if (num_flops) *num_flops = 3*A->num_nonzeros;
             } else if (trans == mtx_trans || trans == mtx_conjtrans) {
-                if (beta == 0) {
-                    for (int j = 0; j < A->num_columns; j++)
-                        ydata[j] = 0;
-                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                        int i = A->rowidx[k], j = A->colidx[k];
-                        ydata[j] += alpha*Adata[k]*xdata[i];
-                    }
-                    if (num_flops) *num_flops = 3*A->num_nonzeros;
-                } else if (beta == 1) {
-                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                        int i = A->rowidx[k], j = A->colidx[k];
-                        ydata[j] += alpha*Adata[k]*xdata[i];
-                    }
-                    if (num_flops) *num_flops = 3*A->num_nonzeros;
-                } else {
-                    struct mtxvector_array z;
-                    err = mtxvector_array_alloc_copy(&z, y_);
-                    if (err)
-                        return err;
-                    float * zdata = z.data.real_single;
-                    for (int j = 0; j < A->num_columns; j++)
-                        zdata[j] = 0;
-                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                        int i = A->rowidx[k], j = A->colidx[k];
-                        zdata[j] += Adata[k]*xdata[i];
-                    }
-                    for (int j = 0; j < A->num_columns; j++)
-                        ydata[j] = alpha*zdata[j] + beta*ydata[j];
-                    mtxvector_array_free(&z);
-                    if (num_flops) *num_flops = 2*A->num_nonzeros+3*A->num_columns;
+                for (int64_t k = 0; k < A->num_nonzeros; k++) {
+                    int i = A->rowidx[k], j = A->colidx[k];
+                    ydata[j] += alpha*Adata[k]*xdata[i];
                 }
+                if (num_flops) *num_flops = 3*A->num_nonzeros;
             } else {
                 return MTX_ERR_INVALID_TRANSPOSITION;
             }
@@ -2857,69 +2026,17 @@ int mtxmatrix_coordinate_dgemv(
             const double * xdata = x_->data.real_double;
             double * ydata = y_->data.real_double;
             if (trans == mtx_notrans) {
-                if (beta == 0) {
-                    for (int i = 0; i < A->num_rows; i++)
-                        ydata[i] = 0;
-                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                        int i = A->rowidx[k], j = A->colidx[k];
-                        ydata[i] += alpha*Adata[k]*xdata[j];
-                    }
-                    if (num_flops) *num_flops = 3*A->num_nonzeros;
-                } else if (beta == 1) {
-                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                        int i = A->rowidx[k], j = A->colidx[k];
-                        ydata[i] += alpha*Adata[k]*xdata[j];
-                    }
-                    if (num_flops) *num_flops = 3*A->num_nonzeros;
-                } else {
-                    struct mtxvector_array z;
-                    err = mtxvector_array_alloc_copy(&z, y_);
-                    if (err)
-                        return err;
-                    double * zdata = z.data.real_double;
-                    for (int i = 0; i < A->num_rows; i++)
-                        zdata[i] = 0;
-                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                        int i = A->rowidx[k], j = A->colidx[k];
-                        zdata[i] += Adata[k]*xdata[j];
-                    }
-                    for (int i = 0; i < A->num_rows; i++)
-                        ydata[i] = alpha*zdata[i] + beta*ydata[i];
-                    mtxvector_array_free(&z);
-                    if (num_flops) *num_flops = 2*A->num_nonzeros+3*A->num_rows;
+                for (int64_t k = 0; k < A->num_nonzeros; k++) {
+                    int i = A->rowidx[k], j = A->colidx[k];
+                    ydata[i] += alpha*Adata[k]*xdata[j];
                 }
+                if (num_flops) *num_flops = 3*A->num_nonzeros;
             } else if (trans == mtx_trans || trans == mtx_conjtrans) {
-                if (beta == 0) {
-                    for (int j = 0; j < A->num_columns; j++)
-                        ydata[j] = 0;
-                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                        int i = A->rowidx[k], j = A->colidx[k];
-                        ydata[j] += alpha*Adata[k]*xdata[i];
-                    }
-                    if (num_flops) *num_flops = 3*A->num_nonzeros;
-                } else if (beta == 1) {
-                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                        int i = A->rowidx[k], j = A->colidx[k];
-                        ydata[j] += alpha*Adata[k]*xdata[i];
-                    }
-                    if (num_flops) *num_flops = 3*A->num_nonzeros;
-                } else {
-                    struct mtxvector_array z;
-                    err = mtxvector_array_alloc_copy(&z, y_);
-                    if (err)
-                        return err;
-                    double * zdata = z.data.real_double;
-                    for (int j = 0; j < A->num_columns; j++)
-                        zdata[j] = 0;
-                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                        int i = A->rowidx[k], j = A->colidx[k];
-                        zdata[j] += Adata[k]*xdata[i];
-                    }
-                    for (int j = 0; j < A->num_columns; j++)
-                        ydata[j] = alpha*zdata[j] + beta*ydata[j];
-                    mtxvector_array_free(&z);
-                    if (num_flops) *num_flops = 2*A->num_nonzeros+3*A->num_columns;
+                for (int64_t k = 0; k < A->num_nonzeros; k++) {
+                    int i = A->rowidx[k], j = A->colidx[k];
+                    ydata[j] += alpha*Adata[k]*xdata[i];
                 }
+                if (num_flops) *num_flops = 3*A->num_nonzeros;
             } else {
                 return MTX_ERR_INVALID_TRANSPOSITION;
             }
@@ -2936,131 +2053,32 @@ int mtxmatrix_coordinate_dgemv(
             const float (* xdata)[2] = x_->data.complex_single;
             float (* ydata)[2] = y_->data.complex_single;
             if (trans == mtx_notrans) {
-                if (beta == 0) {
-                    for (int i = 0; i < A->num_rows; i++)
-                        ydata[i][0] = ydata[i][1] = 0;
-                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                        int i = A->rowidx[k], j = A->colidx[k];
-                        ydata[i][0] += alpha * (Adata[k][0]*xdata[j][0] -
-                                                Adata[k][1]*xdata[j][1]);
-                        ydata[i][1] += alpha * (Adata[k][0]*xdata[j][1] +
-                                                Adata[k][1]*xdata[j][0]);
-                    }
-                    if (num_flops) *num_flops = 10*A->num_nonzeros;
-                } else if (beta == 1) {
-                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                        int i = A->rowidx[k], j = A->colidx[k];
-                        ydata[i][0] += alpha * (Adata[k][0]*xdata[j][0] -
-                                                Adata[k][1]*xdata[j][1]);
-                        ydata[i][1] += alpha * (Adata[k][0]*xdata[j][1] +
-                                                Adata[k][1]*xdata[j][0]);
-                    }
-                    if (num_flops) *num_flops = 10*A->num_nonzeros;
-                } else {
-                    struct mtxvector_array z;
-                    err = mtxvector_array_alloc_copy(&z, y_);
-                    if (err)
-                        return err;
-                    float (* zdata)[2] = z.data.complex_single;
-                    for (int i = 0; i < A->num_rows; i++)
-                        zdata[i][0] = zdata[i][1] = 0;
-                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                        int i = A->rowidx[k], j = A->colidx[k];
-                        zdata[i][0] += (Adata[k][0]*xdata[j][0] -
-                                        Adata[k][1]*xdata[j][1]);
-                        zdata[i][1] += (Adata[k][0]*xdata[j][1] +
-                                        Adata[k][1]*xdata[j][0]);
-
-                    }
-                    for (int i = 0; i < A->num_rows; i++) {
-                        ydata[i][0] = alpha*zdata[i][0] + beta*ydata[i][0];
-                        ydata[i][1] = alpha*zdata[i][1] + beta*ydata[i][1];
-                    }
-                    mtxvector_array_free(&z);
-                    if (num_flops) *num_flops = 8*A->num_nonzeros+6*A->num_rows;
+                for (int64_t k = 0; k < A->num_nonzeros; k++) {
+                    int i = A->rowidx[k], j = A->colidx[k];
+                    ydata[i][0] += alpha * (Adata[k][0]*xdata[j][0] -
+                                            Adata[k][1]*xdata[j][1]);
+                    ydata[i][1] += alpha * (Adata[k][0]*xdata[j][1] +
+                                            Adata[k][1]*xdata[j][0]);
                 }
+                if (num_flops) *num_flops = 10*A->num_nonzeros;
             } else if (trans == mtx_trans) {
-                if (beta == 0) {
-                    for (int j = 0; j < A->num_columns; j++)
-                        ydata[j][0] = ydata[j][1] = 0;
-                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                        int i = A->rowidx[k], j = A->colidx[k];
-                        ydata[j][0] += alpha * (Adata[k][0]*xdata[i][0] -
-                                                Adata[k][1]*xdata[i][1]);
-                        ydata[j][1] += alpha * (Adata[k][0]*xdata[i][1] +
-                                                Adata[k][1]*xdata[i][0]);
-                    }
-                    if (num_flops) *num_flops = 10*A->num_nonzeros;
-                } else if (beta == 1) {
-                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                        int i = A->rowidx[k], j = A->colidx[k];
-                        ydata[j][0] += alpha * (Adata[k][0]*xdata[i][0] -
-                                                Adata[k][1]*xdata[i][1]);
-                        ydata[j][1] += alpha * (Adata[k][0]*xdata[i][1] +
-                                                Adata[k][1]*xdata[i][0]);
-                    }
-                    if (num_flops) *num_flops = 10*A->num_nonzeros;
-                } else {
-                    struct mtxvector_array z;
-                    err = mtxvector_array_alloc_copy(&z, y_);
-                    if (err)
-                        return err;
-                    float (* zdata)[2] = z.data.complex_single;
-                    for (int j = 0; j < A->num_columns; j++)
-                        zdata[j][0] = zdata[j][1] = 0;
-                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                        int i = A->rowidx[k], j = A->colidx[k];
-                        zdata[j][0] += Adata[k][0]*xdata[i][0]-Adata[k][1]*xdata[i][1];
-                        zdata[j][1] += Adata[k][0]*xdata[i][1]+Adata[k][1]*xdata[i][0];
-                    }
-                    for (int j = 0; j < A->num_columns; j++) {
-                        ydata[j][0] = alpha*zdata[j][0] + beta*ydata[j][0];
-                        ydata[j][1] = alpha*zdata[j][1] + beta*ydata[j][1];
-                    }
-                    mtxvector_array_free(&z);
-                    if (num_flops) *num_flops = 8*A->num_nonzeros+6*A->num_columns;
+                for (int64_t k = 0; k < A->num_nonzeros; k++) {
+                    int i = A->rowidx[k], j = A->colidx[k];
+                    ydata[j][0] += alpha * (Adata[k][0]*xdata[i][0] -
+                                            Adata[k][1]*xdata[i][1]);
+                    ydata[j][1] += alpha * (Adata[k][0]*xdata[i][1] +
+                                            Adata[k][1]*xdata[i][0]);
                 }
+                if (num_flops) *num_flops = 10*A->num_nonzeros;
             } else if (trans == mtx_conjtrans) {
-                if (beta == 0) {
-                    for (int j = 0; j < A->num_columns; j++)
-                        ydata[j][0] = ydata[j][1] = 0;
-                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                        int i = A->rowidx[k], j = A->colidx[k];
-                        ydata[j][0] += alpha * (Adata[k][0]*xdata[i][0] +
-                                                Adata[k][1]*xdata[i][1]);
-                        ydata[j][1] += alpha * (Adata[k][0]*xdata[i][1] -
-                                                Adata[k][1]*xdata[i][0]);
-                    }
-                    if (num_flops) *num_flops = 10*A->num_nonzeros;
-                } else if (beta == 1) {
-                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                        int i = A->rowidx[k], j = A->colidx[k];
-                        ydata[j][0] += alpha * (Adata[k][0]*xdata[i][0] +
-                                                Adata[k][1]*xdata[i][1]);
-                        ydata[j][1] += alpha * (Adata[k][0]*xdata[i][1] -
-                                                Adata[k][1]*xdata[i][0]);
-                    }
-                    if (num_flops) *num_flops = 10*A->num_nonzeros;
-                } else {
-                    struct mtxvector_array z;
-                    err = mtxvector_array_alloc_copy(&z, y_);
-                    if (err)
-                        return err;
-                    float (* zdata)[2] = z.data.complex_single;
-                    for (int j = 0; j < A->num_columns; j++)
-                        zdata[j][0] = zdata[j][1] = 0;
-                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                        int i = A->rowidx[k], j = A->colidx[k];
-                        zdata[j][0] += Adata[k][0]*xdata[i][0]+Adata[k][1]*xdata[i][1];
-                        zdata[j][1] += Adata[k][0]*xdata[i][1]-Adata[k][1]*xdata[i][0];
-                    }
-                    for (int j = 0; j < A->num_columns; j++) {
-                        ydata[j][0] = alpha*zdata[j][0] + beta*ydata[j][0];
-                        ydata[j][1] = alpha*zdata[j][1] + beta*ydata[j][1];
-                    }
-                    mtxvector_array_free(&z);
-                    if (num_flops) *num_flops = 8*A->num_nonzeros+6*A->num_columns;
+                for (int64_t k = 0; k < A->num_nonzeros; k++) {
+                    int i = A->rowidx[k], j = A->colidx[k];
+                    ydata[j][0] += alpha * (Adata[k][0]*xdata[i][0] +
+                                            Adata[k][1]*xdata[i][1]);
+                    ydata[j][1] += alpha * (Adata[k][0]*xdata[i][1] -
+                                            Adata[k][1]*xdata[i][0]);
                 }
+                if (num_flops) *num_flops = 10*A->num_nonzeros;
             } else {
                 return MTX_ERR_INVALID_TRANSPOSITION;
             }
@@ -3069,131 +2087,32 @@ int mtxmatrix_coordinate_dgemv(
             const double (* xdata)[2] = x_->data.complex_double;
             double (* ydata)[2] = y_->data.complex_double;
             if (trans == mtx_notrans) {
-                if (beta == 0) {
-                    for (int i = 0; i < A->num_rows; i++)
-                        ydata[i][0] = ydata[i][1] = 0;
-                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                        int i = A->rowidx[k], j = A->colidx[k];
-                        ydata[i][0] += alpha * (Adata[k][0]*xdata[j][0] -
-                                                Adata[k][1]*xdata[j][1]);
-                        ydata[i][1] += alpha * (Adata[k][0]*xdata[j][1] +
-                                                Adata[k][1]*xdata[j][0]);
-                    }
-                    if (num_flops) *num_flops = 10*A->num_nonzeros;
-                } else if (beta == 1) {
-                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                        int i = A->rowidx[k], j = A->colidx[k];
-                        ydata[i][0] += alpha * (Adata[k][0]*xdata[j][0] -
-                                                Adata[k][1]*xdata[j][1]);
-                        ydata[i][1] += alpha * (Adata[k][0]*xdata[j][1] +
-                                                Adata[k][1]*xdata[j][0]);
-                    }
-                    if (num_flops) *num_flops = 10*A->num_nonzeros;
-                } else {
-                    struct mtxvector_array z;
-                    err = mtxvector_array_alloc_copy(&z, y_);
-                    if (err)
-                        return err;
-                    double (* zdata)[2] = z.data.complex_double;
-                    for (int i = 0; i < A->num_rows; i++)
-                        zdata[i][0] = zdata[i][1] = 0;
-                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                        int i = A->rowidx[k], j = A->colidx[k];
-                        zdata[i][0] += (Adata[k][0]*xdata[j][0] -
-                                        Adata[k][1]*xdata[j][1]);
-                        zdata[i][1] += (Adata[k][0]*xdata[j][1] +
-                                        Adata[k][1]*xdata[j][0]);
-
-                    }
-                    for (int i = 0; i < A->num_rows; i++) {
-                        ydata[i][0] = alpha*zdata[i][0] + beta*ydata[i][0];
-                        ydata[i][1] = alpha*zdata[i][1] + beta*ydata[i][1];
-                    }
-                    mtxvector_array_free(&z);
-                    if (num_flops) *num_flops = 8*A->num_nonzeros+6*A->num_rows;
+                for (int64_t k = 0; k < A->num_nonzeros; k++) {
+                    int i = A->rowidx[k], j = A->colidx[k];
+                    ydata[i][0] += alpha * (Adata[k][0]*xdata[j][0] -
+                                            Adata[k][1]*xdata[j][1]);
+                    ydata[i][1] += alpha * (Adata[k][0]*xdata[j][1] +
+                                            Adata[k][1]*xdata[j][0]);
                 }
+                if (num_flops) *num_flops = 10*A->num_nonzeros;
             } else if (trans == mtx_trans) {
-                if (beta == 0) {
-                    for (int j = 0; j < A->num_columns; j++)
-                        ydata[j][0] = ydata[j][1] = 0;
-                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                        int i = A->rowidx[k], j = A->colidx[k];
-                        ydata[j][0] += alpha * (Adata[k][0]*xdata[i][0] -
-                                                Adata[k][1]*xdata[i][1]);
-                        ydata[j][1] += alpha * (Adata[k][0]*xdata[i][1] +
-                                                Adata[k][1]*xdata[i][0]);
-                    }
-                    if (num_flops) *num_flops = 10*A->num_nonzeros;
-                } else if (beta == 1) {
-                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                        int i = A->rowidx[k], j = A->colidx[k];
-                        ydata[j][0] += alpha * (Adata[k][0]*xdata[i][0] -
-                                                Adata[k][1]*xdata[i][1]);
-                        ydata[j][1] += alpha * (Adata[k][0]*xdata[i][1] +
-                                                Adata[k][1]*xdata[i][0]);
-                    }
-                    if (num_flops) *num_flops = 10*A->num_nonzeros;
-                } else {
-                    struct mtxvector_array z;
-                    err = mtxvector_array_alloc_copy(&z, y_);
-                    if (err)
-                        return err;
-                    double (* zdata)[2] = z.data.complex_double;
-                    for (int j = 0; j < A->num_columns; j++)
-                        zdata[j][0] = zdata[j][1] = 0;
-                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                        int i = A->rowidx[k], j = A->colidx[k];
-                        zdata[j][0] += Adata[k][0]*xdata[i][0]-Adata[k][1]*xdata[i][1];
-                        zdata[j][1] += Adata[k][0]*xdata[i][1]+Adata[k][1]*xdata[i][0];
-                    }
-                    for (int j = 0; j < A->num_columns; j++) {
-                        ydata[j][0] = alpha*zdata[j][0] + beta*ydata[j][0];
-                        ydata[j][1] = alpha*zdata[j][1] + beta*ydata[j][1];
-                    }
-                    mtxvector_array_free(&z);
-                    if (num_flops) *num_flops = 8*A->num_nonzeros+6*A->num_columns;
-                }
+              for (int64_t k = 0; k < A->num_nonzeros; k++) {
+                  int i = A->rowidx[k], j = A->colidx[k];
+                  ydata[j][0] += alpha * (Adata[k][0]*xdata[i][0] -
+                                          Adata[k][1]*xdata[i][1]);
+                  ydata[j][1] += alpha * (Adata[k][0]*xdata[i][1] +
+                                          Adata[k][1]*xdata[i][0]);
+              }
+              if (num_flops) *num_flops = 10*A->num_nonzeros;
             } else if (trans == mtx_conjtrans) {
-                if (beta == 0) {
-                    for (int j = 0; j < A->num_columns; j++)
-                        ydata[j][0] = ydata[j][1] = 0;
-                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                        int i = A->rowidx[k], j = A->colidx[k];
-                        ydata[j][0] += alpha * (Adata[k][0]*xdata[i][0] +
-                                                Adata[k][1]*xdata[i][1]);
-                        ydata[j][1] += alpha * (Adata[k][0]*xdata[i][1] -
-                                                Adata[k][1]*xdata[i][0]);
-                    }
-                    if (num_flops) *num_flops = 10*A->num_nonzeros;
-                } else if (beta == 1) {
-                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                        int i = A->rowidx[k], j = A->colidx[k];
-                        ydata[j][0] += alpha * (Adata[k][0]*xdata[i][0] +
-                                                Adata[k][1]*xdata[i][1]);
-                        ydata[j][1] += alpha * (Adata[k][0]*xdata[i][1] -
-                                                Adata[k][1]*xdata[i][0]);
-                    }
-                    if (num_flops) *num_flops = 10*A->num_nonzeros;
-                } else {
-                    struct mtxvector_array z;
-                    err = mtxvector_array_alloc_copy(&z, y_);
-                    if (err)
-                        return err;
-                    double (* zdata)[2] = z.data.complex_double;
-                    for (int j = 0; j < A->num_columns; j++)
-                        zdata[j][0] = zdata[j][1] = 0;
-                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                        int i = A->rowidx[k], j = A->colidx[k];
-                        zdata[j][0] += Adata[k][0]*xdata[i][0]+Adata[k][1]*xdata[i][1];
-                        zdata[j][1] += Adata[k][0]*xdata[i][1]-Adata[k][1]*xdata[i][0];
-                    }
-                    for (int j = 0; j < A->num_columns; j++) {
-                        ydata[j][0] = alpha*zdata[j][0] + beta*ydata[j][0];
-                        ydata[j][1] = alpha*zdata[j][1] + beta*ydata[j][1];
-                    }
-                    mtxvector_array_free(&z);
-                    if (num_flops) *num_flops = 8*A->num_nonzeros+6*A->num_columns;
-                }
+                  for (int64_t k = 0; k < A->num_nonzeros; k++) {
+                      int i = A->rowidx[k], j = A->colidx[k];
+                      ydata[j][0] += alpha * (Adata[k][0]*xdata[i][0] +
+                                              Adata[k][1]*xdata[i][1]);
+                      ydata[j][1] += alpha * (Adata[k][0]*xdata[i][1] -
+                                              Adata[k][1]*xdata[i][0]);
+                  }
+                  if (num_flops) *num_flops = 10*A->num_nonzeros;
             } else {
                 return MTX_ERR_INVALID_TRANSPOSITION;
             }
@@ -3210,69 +2129,17 @@ int mtxmatrix_coordinate_dgemv(
             const int32_t * xdata = x_->data.integer_single;
             int32_t * ydata = y_->data.integer_single;
             if (trans == mtx_notrans) {
-                if (beta == 0) {
-                    for (int i = 0; i < A->num_rows; i++)
-                        ydata[i] = 0;
-                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                        int i = A->rowidx[k], j = A->colidx[k];
-                        ydata[i] += alpha*Adata[k]*xdata[j];
-                    }
-                    if (num_flops) *num_flops = 3*A->num_nonzeros;
-                } else if (beta == 1) {
-                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                        int i = A->rowidx[k], j = A->colidx[k];
-                        ydata[i] += alpha*Adata[k]*xdata[j];
-                    }
-                    if (num_flops) *num_flops = 3*A->num_nonzeros;
-                } else {
-                    struct mtxvector_array z;
-                    err = mtxvector_array_alloc_copy(&z, y_);
-                    if (err)
-                        return err;
-                    int32_t * zdata = z.data.integer_single;
-                    for (int i = 0; i < A->num_rows; i++)
-                        zdata[i] = 0;
-                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                        int i = A->rowidx[k], j = A->colidx[k];
-                        zdata[i] += Adata[k]*xdata[j];
-                    }
-                    for (int i = 0; i < A->num_rows; i++)
-                        ydata[i] = alpha*zdata[i] + beta*ydata[i];
-                    mtxvector_array_free(&z);
-                    if (num_flops) *num_flops = 2*A->num_nonzeros+3*A->num_rows;
+                for (int64_t k = 0; k < A->num_nonzeros; k++) {
+                    int i = A->rowidx[k], j = A->colidx[k];
+                    ydata[i] += alpha*Adata[k]*xdata[j];
                 }
+                if (num_flops) *num_flops = 3*A->num_nonzeros;
             } else if (trans == mtx_trans || trans == mtx_conjtrans) {
-                if (beta == 0) {
-                    for (int j = 0; j < A->num_columns; j++)
-                        ydata[j] = 0;
-                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                        int i = A->rowidx[k], j = A->colidx[k];
-                        ydata[j] += alpha*Adata[k]*xdata[i];
-                    }
-                    if (num_flops) *num_flops = 3*A->num_nonzeros;
-                } else if (beta == 1) {
-                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                        int i = A->rowidx[k], j = A->colidx[k];
-                        ydata[j] += alpha*Adata[k]*xdata[i];
-                    }
-                    if (num_flops) *num_flops = 3*A->num_nonzeros;
-                } else {
-                    struct mtxvector_array z;
-                    err = mtxvector_array_alloc_copy(&z, y_);
-                    if (err)
-                        return err;
-                    int32_t * zdata = z.data.integer_single;
-                    for (int j = 0; j < A->num_columns; j++)
-                        zdata[j] = 0;
-                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                        int i = A->rowidx[k], j = A->colidx[k];
-                        zdata[j] += Adata[k]*xdata[i];
-                    }
-                    for (int j = 0; j < A->num_columns; j++)
-                        ydata[j] = alpha*zdata[j] + beta*ydata[j];
-                    mtxvector_array_free(&z);
-                    if (num_flops) *num_flops = 2*A->num_nonzeros+3*A->num_columns;
+                for (int64_t k = 0; k < A->num_nonzeros; k++) {
+                    int i = A->rowidx[k], j = A->colidx[k];
+                    ydata[j] += alpha*Adata[k]*xdata[i];
                 }
+                if (num_flops) *num_flops = 3*A->num_nonzeros;
             } else {
                 return MTX_ERR_INVALID_TRANSPOSITION;
             }
@@ -3281,69 +2148,17 @@ int mtxmatrix_coordinate_dgemv(
             const int64_t * xdata = x_->data.integer_double;
             int64_t * ydata = y_->data.integer_double;
             if (trans == mtx_notrans) {
-                if (beta == 0) {
-                    for (int i = 0; i < A->num_rows; i++)
-                        ydata[i] = 0;
-                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                        int i = A->rowidx[k], j = A->colidx[k];
-                        ydata[i] += alpha*Adata[k]*xdata[j];
-                    }
-                    if (num_flops) *num_flops = 3*A->num_nonzeros;
-                } else if (beta == 1) {
-                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                        int i = A->rowidx[k], j = A->colidx[k];
-                        ydata[i] += alpha*Adata[k]*xdata[j];
-                    }
-                    if (num_flops) *num_flops = 3*A->num_nonzeros;
-                } else {
-                    struct mtxvector_array z;
-                    err = mtxvector_array_alloc_copy(&z, y_);
-                    if (err)
-                        return err;
-                    int64_t * zdata = z.data.integer_double;
-                    for (int i = 0; i < A->num_rows; i++)
-                        zdata[i] = 0;
-                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                        int i = A->rowidx[k], j = A->colidx[k];
-                        zdata[i] += Adata[k]*xdata[j];
-                    }
-                    for (int i = 0; i < A->num_rows; i++)
-                        ydata[i] = alpha*zdata[i] + beta*ydata[i];
-                    mtxvector_array_free(&z);
-                    if (num_flops) *num_flops = 2*A->num_nonzeros+3*A->num_rows;
+                for (int64_t k = 0; k < A->num_nonzeros; k++) {
+                    int i = A->rowidx[k], j = A->colidx[k];
+                    ydata[i] += alpha*Adata[k]*xdata[j];
                 }
+                if (num_flops) *num_flops = 3*A->num_nonzeros;
             } else if (trans == mtx_trans || trans == mtx_conjtrans) {
-                if (beta == 0) {
-                    for (int j = 0; j < A->num_columns; j++)
-                        ydata[j] = 0;
-                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                        int i = A->rowidx[k], j = A->colidx[k];
-                        ydata[j] += alpha*Adata[k]*xdata[i];
-                    }
-                    if (num_flops) *num_flops = 3*A->num_nonzeros;
-                } else if (beta == 1) {
-                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                        int i = A->rowidx[k], j = A->colidx[k];
-                        ydata[j] += alpha*Adata[k]*xdata[i];
-                    }
-                    if (num_flops) *num_flops = 3*A->num_nonzeros;
-                } else {
-                    struct mtxvector_array z;
-                    err = mtxvector_array_alloc_copy(&z, y_);
-                    if (err)
-                        return err;
-                    int64_t * zdata = z.data.integer_double;
-                    for (int j = 0; j < A->num_columns; j++)
-                        zdata[j] = 0;
-                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                        int i = A->rowidx[k], j = A->colidx[k];
-                        zdata[j] += Adata[k]*xdata[i];
-                    }
-                    for (int j = 0; j < A->num_columns; j++)
-                        ydata[j] = alpha*zdata[j] + beta*ydata[j];
-                    mtxvector_array_free(&z);
-                    if (num_flops) *num_flops = 2*A->num_nonzeros+3*A->num_columns;
+                for (int64_t k = 0; k < A->num_nonzeros; k++) {
+                    int i = A->rowidx[k], j = A->colidx[k];
+                    ydata[j] += alpha*Adata[k]*xdata[i];
                 }
+                if (num_flops) *num_flops = 3*A->num_nonzeros;
             } else {
                 return MTX_ERR_INVALID_TRANSPOSITION;
             }
@@ -3360,69 +2175,17 @@ int mtxmatrix_coordinate_dgemv(
                 const float * xdata = x_->data.real_single;
                 float * ydata = y_->data.real_single;
                 if (trans == mtx_notrans) {
-                    if (beta == 0) {
-                        for (int i = 0; i < A->num_rows; i++)
-                            ydata[i] = 0;
-                        for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                            int i = A->rowidx[k], j = A->colidx[k];
-                            ydata[i] += alpha*xdata[j];
-                        }
-                        if (num_flops) *num_flops = 2*A->num_nonzeros;
-                    } else if (beta == 1) {
-                        for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                            int i = A->rowidx[k], j = A->colidx[k];
-                            ydata[i] += alpha*xdata[j];
-                        }
-                        if (num_flops) *num_flops = 2*A->num_nonzeros;
-                    } else {
-                        struct mtxvector_array z;
-                        err = mtxvector_array_alloc_copy(&z, y_);
-                        if (err)
-                            return err;
-                        float * zdata = z.data.real_single;
-                        for (int i = 0; i < A->num_rows; i++)
-                            zdata[i] = 0;
-                        for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                            int i = A->rowidx[k], j = A->colidx[k];
-                            zdata[i] += xdata[j];
-                        }
-                        for (int i = 0; i < A->num_rows; i++)
-                            ydata[i] = alpha*zdata[i] + beta*ydata[i];
-                        mtxvector_array_free(&z);
-                        if (num_flops) *num_flops = A->num_nonzeros+3*A->num_rows;
+                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
+                        int i = A->rowidx[k], j = A->colidx[k];
+                        ydata[i] += alpha*xdata[j];
                     }
+                    if (num_flops) *num_flops = 2*A->num_nonzeros;
                 } else if (trans == mtx_trans || trans == mtx_conjtrans) {
-                    if (beta == 0) {
-                        for (int j = 0; j < A->num_columns; j++)
-                            ydata[j] = 0;
-                        for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                            int i = A->rowidx[k], j = A->colidx[k];
-                            ydata[j] += alpha*xdata[i];
-                        }
-                        if (num_flops) *num_flops = 2*A->num_nonzeros;
-                    } else if (beta == 1) {
-                        for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                            int i = A->rowidx[k], j = A->colidx[k];
-                            ydata[j] += alpha*xdata[i];
-                        }
-                        if (num_flops) *num_flops = 2*A->num_nonzeros;
-                    } else {
-                        struct mtxvector_array z;
-                        err = mtxvector_array_alloc_copy(&z, y_);
-                        if (err)
-                            return err;
-                        float * zdata = z.data.real_single;
-                        for (int j = 0; j < A->num_columns; j++)
-                            zdata[j] = 0;
-                        for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                            int i = A->rowidx[k], j = A->colidx[k];
-                            zdata[j] += xdata[i];
-                        }
-                        for (int j = 0; j < A->num_columns; j++)
-                            ydata[j] = alpha*zdata[j] + beta*ydata[j];
-                        mtxvector_array_free(&z);
-                        if (num_flops) *num_flops = A->num_nonzeros+3*A->num_columns;
+                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
+                        int i = A->rowidx[k], j = A->colidx[k];
+                        ydata[j] += alpha*xdata[i];
                     }
+                    if (num_flops) *num_flops = 2*A->num_nonzeros;
                 } else {
                     return MTX_ERR_INVALID_TRANSPOSITION;
                 }
@@ -3430,69 +2193,17 @@ int mtxmatrix_coordinate_dgemv(
                 const double * xdata = x_->data.real_double;
                 double * ydata = y_->data.real_double;
                 if (trans == mtx_notrans) {
-                    if (beta == 0) {
-                        for (int i = 0; i < A->num_rows; i++)
-                            ydata[i] = 0;
-                        for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                            int i = A->rowidx[k], j = A->colidx[k];
-                            ydata[i] += alpha*xdata[j];
-                        }
-                        if (num_flops) *num_flops = 2*A->num_nonzeros;
-                    } else if (beta == 1) {
-                        for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                            int i = A->rowidx[k], j = A->colidx[k];
-                            ydata[i] += alpha*xdata[j];
-                        }
-                        if (num_flops) *num_flops = 2*A->num_nonzeros;
-                    } else {
-                        struct mtxvector_array z;
-                        err = mtxvector_array_alloc_copy(&z, y_);
-                        if (err)
-                            return err;
-                        double * zdata = z.data.real_double;
-                        for (int i = 0; i < A->num_rows; i++)
-                            zdata[i] = 0;
-                        for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                            int i = A->rowidx[k], j = A->colidx[k];
-                            zdata[i] += xdata[j];
-                        }
-                        for (int i = 0; i < A->num_rows; i++)
-                            ydata[i] = alpha*zdata[i] + beta*ydata[i];
-                        mtxvector_array_free(&z);
-                        if (num_flops) *num_flops = A->num_nonzeros+3*A->num_rows;
+                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
+                        int i = A->rowidx[k], j = A->colidx[k];
+                        ydata[i] += alpha*xdata[j];
                     }
+                    if (num_flops) *num_flops = 2*A->num_nonzeros;
                 } else if (trans == mtx_trans || trans == mtx_conjtrans) {
-                    if (beta == 0) {
-                        for (int j = 0; j < A->num_columns; j++)
-                            ydata[j] = 0;
-                        for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                            int i = A->rowidx[k], j = A->colidx[k];
-                            ydata[j] += alpha*xdata[i];
-                        }
-                        if (num_flops) *num_flops = 2*A->num_nonzeros;
-                    } else if (beta == 1) {
-                        for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                            int i = A->rowidx[k], j = A->colidx[k];
-                            ydata[j] += alpha*xdata[i];
-                        }
-                        if (num_flops) *num_flops = 2*A->num_nonzeros;
-                    } else {
-                        struct mtxvector_array z;
-                        err = mtxvector_array_alloc_copy(&z, y_);
-                        if (err)
-                            return err;
-                        double * zdata = z.data.real_double;
-                        for (int j = 0; j < A->num_columns; j++)
-                            zdata[j] = 0;
-                        for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                            int i = A->rowidx[k], j = A->colidx[k];
-                            zdata[j] += xdata[i];
-                        }
-                        for (int j = 0; j < A->num_columns; j++)
-                            ydata[j] = alpha*zdata[j] + beta*ydata[j];
-                        mtxvector_array_free(&z);
-                        if (num_flops) *num_flops = A->num_nonzeros+3*A->num_columns;
+                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
+                        int i = A->rowidx[k], j = A->colidx[k];
+                        ydata[j] += alpha*xdata[i];
                     }
+                    if (num_flops) *num_flops = 2*A->num_nonzeros;
                 } else {
                     return MTX_ERR_INVALID_TRANSPOSITION;
                 }
@@ -3504,117 +2215,26 @@ int mtxmatrix_coordinate_dgemv(
                 const float (* xdata)[2] = x_->data.complex_single;
                 float (* ydata)[2] = y_->data.complex_single;
                 if (trans == mtx_notrans) {
-                    if (beta == 0) {
-                        for (int i = 0; i < A->num_rows; i++)
-                            ydata[i][0] = ydata[i][1] = 0;
-                        for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                            int i = A->rowidx[k], j = A->colidx[k];
-                            ydata[i][0] += alpha*xdata[j][0];
-                            ydata[i][1] += alpha*xdata[j][1];
-                        }
-                        if (num_flops) *num_flops = 4*A->num_nonzeros;
-                    } else if (beta == 1) {
-                        for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                            int i = A->rowidx[k], j = A->colidx[k];
-                            ydata[i][0] += alpha*xdata[j][0];
-                            ydata[i][1] += alpha*xdata[j][1];
-                        }
-                        if (num_flops) *num_flops = 4*A->num_nonzeros;
-                    } else {
-                        struct mtxvector_array z;
-                        err = mtxvector_array_alloc_copy(&z, y_);
-                        if (err)
-                            return err;
-                        float (* zdata)[2] = z.data.complex_single;
-                        for (int i = 0; i < A->num_rows; i++)
-                            zdata[i][0] = zdata[i][1] = 0;
-                        for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                            int i = A->rowidx[k], j = A->colidx[k];
-                            zdata[i][0] += xdata[j][0];
-                            zdata[i][1] += xdata[j][1];
-
-                        }
-                        for (int i = 0; i < A->num_rows; i++) {
-                            ydata[i][0] = alpha*zdata[i][0] + beta*ydata[i][0];
-                            ydata[i][1] = alpha*zdata[i][1] + beta*ydata[i][1];
-                        }
-                        mtxvector_array_free(&z);
-                        if (num_flops) *num_flops = 2*A->num_nonzeros+6*A->num_rows;
+                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
+                        int i = A->rowidx[k], j = A->colidx[k];
+                        ydata[i][0] += alpha*xdata[j][0];
+                        ydata[i][1] += alpha*xdata[j][1];
                     }
+                    if (num_flops) *num_flops = 4*A->num_nonzeros;
                 } else if (trans == mtx_trans) {
-                    if (beta == 0) {
-                        for (int j = 0; j < A->num_columns; j++)
-                            ydata[j][0] = ydata[j][1] = 0;
-                        for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                            int i = A->rowidx[k], j = A->colidx[k];
-                            ydata[j][0] += alpha*xdata[i][0];
-                            ydata[j][1] += alpha*xdata[i][1];
-                        }
-                        if (num_flops) *num_flops = 4*A->num_nonzeros;
-                    } else if (beta == 1) {
-                        for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                            int i = A->rowidx[k], j = A->colidx[k];
-                            ydata[j][0] += alpha*xdata[i][0];
-                            ydata[j][1] += alpha*xdata[i][1];
-                        }
-                        if (num_flops) *num_flops = 4*A->num_nonzeros;
-                    } else {
-                        struct mtxvector_array z;
-                        err = mtxvector_array_alloc_copy(&z, y_);
-                        if (err)
-                            return err;
-                        float (* zdata)[2] = z.data.complex_single;
-                        for (int j = 0; j < A->num_columns; j++)
-                            zdata[j][0] = zdata[j][1] = 0;
-                        for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                            int i = A->rowidx[k], j = A->colidx[k];
-                            zdata[j][0] += xdata[i][0];
-                            zdata[j][1] += xdata[i][1];
-                        }
-                        for (int j = 0; j < A->num_columns; j++) {
-                            ydata[j][0] = alpha*zdata[j][0] + beta*ydata[j][0];
-                            ydata[j][1] = alpha*zdata[j][1] + beta*ydata[j][1];
-                        }
-                        mtxvector_array_free(&z);
-                        if (num_flops) *num_flops = 2*A->num_nonzeros+6*A->num_columns;
+                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
+                        int i = A->rowidx[k], j = A->colidx[k];
+                        ydata[j][0] += alpha*xdata[i][0];
+                        ydata[j][1] += alpha*xdata[i][1];
                     }
+                    if (num_flops) *num_flops = 4*A->num_nonzeros;
                 } else if (trans == mtx_conjtrans) {
-                    if (beta == 0) {
-                        for (int j = 0; j < A->num_columns; j++)
-                            ydata[j][0] = ydata[j][1] = 0;
-                        for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                            int i = A->rowidx[k], j = A->colidx[k];
-                            ydata[j][0] += alpha*xdata[i][0];
-                            ydata[j][1] += alpha*xdata[i][1];
-                        }
-                        if (num_flops) *num_flops = 4*A->num_nonzeros;
-                    } else if (beta == 1) {
-                        for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                            int i = A->rowidx[k], j = A->colidx[k];
-                            ydata[j][0] += alpha*xdata[i][0];
-                            ydata[j][1] += alpha*xdata[i][1];
-                        }
-                        if (num_flops) *num_flops = 4*A->num_nonzeros;
-                    } else {
-                        struct mtxvector_array z;
-                        err = mtxvector_array_alloc_copy(&z, y_);
-                        if (err)
-                            return err;
-                        float (* zdata)[2] = z.data.complex_single;
-                        for (int j = 0; j < A->num_columns; j++)
-                            zdata[j][0] = zdata[j][1] = 0;
-                        for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                            int i = A->rowidx[k], j = A->colidx[k];
-                            zdata[j][0] += xdata[i][0];
-                            zdata[j][1] += xdata[i][1];
-                        }
-                        for (int j = 0; j < A->num_columns; j++) {
-                            ydata[j][0] = alpha*zdata[j][0] + beta*ydata[j][0];
-                            ydata[j][1] = alpha*zdata[j][1] + beta*ydata[j][1];
-                        }
-                        mtxvector_array_free(&z);
-                        if (num_flops) *num_flops = 2*A->num_nonzeros+6*A->num_columns;
+                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
+                        int i = A->rowidx[k], j = A->colidx[k];
+                        ydata[j][0] += alpha*xdata[i][0];
+                        ydata[j][1] += alpha*xdata[i][1];
                     }
+                    if (num_flops) *num_flops = 4*A->num_nonzeros;
                 } else {
                     return MTX_ERR_INVALID_TRANSPOSITION;
                 }
@@ -3622,116 +2242,26 @@ int mtxmatrix_coordinate_dgemv(
                 const double (* xdata)[2] = x_->data.complex_double;
                 double (* ydata)[2] = y_->data.complex_double;
                 if (trans == mtx_notrans) {
-                    if (beta == 0) {
-                        for (int i = 0; i < A->num_rows; i++)
-                            ydata[i][0] = ydata[i][1] = 0;
-                        for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                            int i = A->rowidx[k], j = A->colidx[k];
-                            ydata[i][0] += alpha*xdata[j][0];
-                            ydata[i][1] += alpha*xdata[j][1];
-                        }
-                        if (num_flops) *num_flops = 4*A->num_nonzeros;
-                    } else if (beta == 1) {
-                        for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                            int i = A->rowidx[k], j = A->colidx[k];
-                            ydata[i][0] += alpha*xdata[j][0];
-                            ydata[i][1] += alpha*xdata[j][1];
-                        }
-                        if (num_flops) *num_flops = 4*A->num_nonzeros;
-                    } else {
-                        struct mtxvector_array z;
-                        err = mtxvector_array_alloc_copy(&z, y_);
-                        if (err)
-                            return err;
-                        double (* zdata)[2] = z.data.complex_double;
-                        for (int i = 0; i < A->num_rows; i++)
-                            zdata[i][0] = zdata[i][1] = 0;
-                        for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                            int i = A->rowidx[k], j = A->colidx[k];
-                            zdata[i][0] += xdata[j][0];
-                            zdata[i][1] += xdata[j][1];
-                        }
-                        for (int i = 0; i < A->num_rows; i++) {
-                            ydata[i][0] = alpha*zdata[i][0] + beta*ydata[i][0];
-                            ydata[i][1] = alpha*zdata[i][1] + beta*ydata[i][1];
-                        }
-                        mtxvector_array_free(&z);
-                        if (num_flops) *num_flops = 2*A->num_nonzeros+6*A->num_rows;
+                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
+                        int i = A->rowidx[k], j = A->colidx[k];
+                        ydata[i][0] += alpha*xdata[j][0];
+                        ydata[i][1] += alpha*xdata[j][1];
                     }
+                    if (num_flops) *num_flops = 4*A->num_nonzeros;
                 } else if (trans == mtx_trans) {
-                    if (beta == 0) {
-                        for (int j = 0; j < A->num_columns; j++)
-                            ydata[j][0] = ydata[j][1] = 0;
-                        for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                            int i = A->rowidx[k], j = A->colidx[k];
-                            ydata[j][0] += alpha*xdata[i][0];
-                            ydata[j][1] += alpha*xdata[i][1];
-                        }
-                        if (num_flops) *num_flops = 4*A->num_nonzeros;
-                    } else if (beta == 1) {
-                        for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                            int i = A->rowidx[k], j = A->colidx[k];
-                            ydata[j][0] += alpha*xdata[i][0];
-                            ydata[j][1] += alpha*xdata[i][1];
-                        }
-                        if (num_flops) *num_flops = 4*A->num_nonzeros;
-                    } else {
-                        struct mtxvector_array z;
-                        err = mtxvector_array_alloc_copy(&z, y_);
-                        if (err)
-                            return err;
-                        double (* zdata)[2] = z.data.complex_double;
-                        for (int j = 0; j < A->num_columns; j++)
-                            zdata[j][0] = zdata[j][1] = 0;
-                        for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                            int i = A->rowidx[k], j = A->colidx[k];
-                            zdata[j][0] += xdata[i][0];
-                            zdata[j][1] += xdata[i][1];
-                        }
-                        for (int j = 0; j < A->num_columns; j++) {
-                            ydata[j][0] = alpha*zdata[j][0] + beta*ydata[j][0];
-                            ydata[j][1] = alpha*zdata[j][1] + beta*ydata[j][1];
-                        }
-                        mtxvector_array_free(&z);
-                        if (num_flops) *num_flops = 2*A->num_nonzeros+6*A->num_columns;
+                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
+                        int i = A->rowidx[k], j = A->colidx[k];
+                        ydata[j][0] += alpha*xdata[i][0];
+                        ydata[j][1] += alpha*xdata[i][1];
                     }
+                    if (num_flops) *num_flops = 4*A->num_nonzeros;
                 } else if (trans == mtx_conjtrans) {
-                    if (beta == 0) {
-                        for (int j = 0; j < A->num_columns; j++)
-                            ydata[j][0] = ydata[j][1] = 0;
-                        for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                            int i = A->rowidx[k], j = A->colidx[k];
-                            ydata[j][0] += alpha*xdata[i][0];
-                            ydata[j][1] += alpha*xdata[i][1];
-                        }
-                        if (num_flops) *num_flops = 4*A->num_nonzeros;
-                    } else if (beta == 1) {
-                        for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                            int i = A->rowidx[k], j = A->colidx[k];
-                            ydata[j][0] += alpha*xdata[i][0];
-                            ydata[j][1] += alpha*xdata[i][1];
-                        }
-                        if (num_flops) *num_flops = 4*A->num_nonzeros;
-                    } else {
-                        struct mtxvector_array z;
-                        err = mtxvector_array_alloc_copy(&z, y_);
-                        if (err)
-                            return err;
-                        double (* zdata)[2] = z.data.complex_double;
-                        for (int j = 0; j < A->num_columns; j++)
-                            zdata[j][0] = zdata[j][1] = 0;
-                        for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                            int i = A->rowidx[k], j = A->colidx[k];
-                            zdata[j][0] += xdata[i][0];
-                            zdata[j][1] += xdata[i][1];
-                        }
-                        for (int j = 0; j < A->num_columns; j++) {
-                            ydata[j][0] = alpha*zdata[j][0] + beta*ydata[j][0];
-                            ydata[j][1] = alpha*zdata[j][1] + beta*ydata[j][1];
-                        }
-                        mtxvector_array_free(&z);
-                        if (num_flops) *num_flops = 2*A->num_nonzeros+6*A->num_columns;
+                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
+                        int i = A->rowidx[k], j = A->colidx[k];
+                        ydata[j][0] += alpha*xdata[i][0];
+                        ydata[j][1] += alpha*xdata[i][1];
                     }
+                    if (num_flops) *num_flops = 4*A->num_nonzeros;
                 } else {
                     return MTX_ERR_INVALID_TRANSPOSITION;
                 }
@@ -3743,69 +2273,17 @@ int mtxmatrix_coordinate_dgemv(
                 const int32_t * xdata = x_->data.integer_single;
                 int32_t * ydata = y_->data.integer_single;
                 if (trans == mtx_notrans) {
-                    if (beta == 0) {
-                        for (int i = 0; i < A->num_rows; i++)
-                            ydata[i] = 0;
-                        for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                            int i = A->rowidx[k], j = A->colidx[k];
-                            ydata[i] += alpha*xdata[j];
-                        }
-                        if (num_flops) *num_flops = 2*A->num_nonzeros;
-                    } else if (beta == 1) {
-                        for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                            int i = A->rowidx[k], j = A->colidx[k];
-                            ydata[i] += alpha*xdata[j];
-                        }
-                        if (num_flops) *num_flops = 2*A->num_nonzeros;
-                    } else {
-                        struct mtxvector_array z;
-                        err = mtxvector_array_alloc_copy(&z, y_);
-                        if (err)
-                            return err;
-                        int32_t * zdata = z.data.integer_single;
-                        for (int i = 0; i < A->num_rows; i++)
-                            zdata[i] = 0;
-                        for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                            int i = A->rowidx[k], j = A->colidx[k];
-                            zdata[i] += xdata[j];
-                        }
-                        for (int i = 0; i < A->num_rows; i++)
-                            ydata[i] = alpha*zdata[i] + beta*ydata[i];
-                        mtxvector_array_free(&z);
-                        if (num_flops) *num_flops = A->num_nonzeros+3*A->num_rows;
+                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
+                        int i = A->rowidx[k], j = A->colidx[k];
+                        ydata[i] += alpha*xdata[j];
                     }
+                    if (num_flops) *num_flops = 2*A->num_nonzeros;
                 } else if (trans == mtx_trans || trans == mtx_conjtrans) {
-                    if (beta == 0) {
-                        for (int j = 0; j < A->num_columns; j++)
-                            ydata[j] = 0;
-                        for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                            int i = A->rowidx[k], j = A->colidx[k];
-                            ydata[j] += alpha*xdata[i];
-                        }
-                        if (num_flops) *num_flops = 2*A->num_nonzeros;
-                    } else if (beta == 1) {
-                        for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                            int i = A->rowidx[k], j = A->colidx[k];
-                            ydata[j] += alpha*xdata[i];
-                        }
-                        if (num_flops) *num_flops = 2*A->num_nonzeros;
-                    } else {
-                        struct mtxvector_array z;
-                        err = mtxvector_array_alloc_copy(&z, y_);
-                        if (err)
-                            return err;
-                        int32_t * zdata = z.data.integer_single;
-                        for (int j = 0; j < A->num_columns; j++)
-                            zdata[j] = 0;
-                        for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                            int i = A->rowidx[k], j = A->colidx[k];
-                            zdata[j] += xdata[i];
-                        }
-                        for (int j = 0; j < A->num_columns; j++)
-                            ydata[j] = alpha*zdata[j] + beta*ydata[j];
-                        mtxvector_array_free(&z);
-                        if (num_flops) *num_flops = A->num_nonzeros+3*A->num_columns;
+                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
+                        int i = A->rowidx[k], j = A->colidx[k];
+                        ydata[j] += alpha*xdata[i];
                     }
+                    if (num_flops) *num_flops = 2*A->num_nonzeros;
                 } else {
                     return MTX_ERR_INVALID_TRANSPOSITION;
                 }
@@ -3813,69 +2291,17 @@ int mtxmatrix_coordinate_dgemv(
                 const int64_t * xdata = x_->data.integer_double;
                 int64_t * ydata = y_->data.integer_double;
                 if (trans == mtx_notrans) {
-                    if (beta == 0) {
-                        for (int i = 0; i < A->num_rows; i++)
-                            ydata[i] = 0;
-                        for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                            int i = A->rowidx[k], j = A->colidx[k];
-                            ydata[i] += alpha*xdata[j];
-                        }
-                        if (num_flops) *num_flops = 2*A->num_nonzeros;
-                    } else if (beta == 1) {
-                        for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                            int i = A->rowidx[k], j = A->colidx[k];
-                            ydata[i] += alpha*xdata[j];
-                        }
-                        if (num_flops) *num_flops = 2*A->num_nonzeros;
-                    } else {
-                        struct mtxvector_array z;
-                        err = mtxvector_array_alloc_copy(&z, y_);
-                        if (err)
-                            return err;
-                        int64_t * zdata = z.data.integer_double;
-                        for (int i = 0; i < A->num_rows; i++)
-                            zdata[i] = 0;
-                        for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                            int i = A->rowidx[k], j = A->colidx[k];
-                            zdata[i] += xdata[j];
-                        }
-                        for (int i = 0; i < A->num_rows; i++)
-                            ydata[i] = alpha*zdata[i] + beta*ydata[i];
-                        mtxvector_array_free(&z);
-                        if (num_flops) *num_flops = A->num_nonzeros+3*A->num_rows;
+                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
+                        int i = A->rowidx[k], j = A->colidx[k];
+                        ydata[i] += alpha*xdata[j];
                     }
+                    if (num_flops) *num_flops = 2*A->num_nonzeros;
                 } else if (trans == mtx_trans || trans == mtx_conjtrans) {
-                    if (beta == 0) {
-                        for (int j = 0; j < A->num_columns; j++)
-                            ydata[j] = 0;
-                        for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                            int i = A->rowidx[k], j = A->colidx[k];
-                            ydata[j] += alpha*xdata[i];
-                        }
-                        if (num_flops) *num_flops = 2*A->num_nonzeros;
-                    } else if (beta == 1) {
-                        for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                            int i = A->rowidx[k], j = A->colidx[k];
-                            ydata[j] += alpha*xdata[i];
-                        }
-                        if (num_flops) *num_flops = 2*A->num_nonzeros;
-                    } else {
-                        struct mtxvector_array z;
-                        err = mtxvector_array_alloc_copy(&z, y_);
-                        if (err)
-                            return err;
-                        int64_t * zdata = z.data.integer_double;
-                        for (int j = 0; j < A->num_columns; j++)
-                            zdata[j] = 0;
-                        for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                            int i = A->rowidx[k], j = A->colidx[k];
-                            zdata[j] += xdata[i];
-                        }
-                        for (int j = 0; j < A->num_columns; j++)
-                            ydata[j] = alpha*zdata[j] + beta*ydata[j];
-                        mtxvector_array_free(&z);
-                        if (num_flops) *num_flops = A->num_nonzeros+3*A->num_columns;
+                    for (int64_t k = 0; k < A->num_nonzeros; k++) {
+                        int i = A->rowidx[k], j = A->colidx[k];
+                        ydata[j] += alpha*xdata[i];
                     }
+                    if (num_flops) *num_flops = 2*A->num_nonzeros;
                 } else {
                     return MTX_ERR_INVALID_TRANSPOSITION;
                 }
@@ -3892,12 +2318,12 @@ int mtxmatrix_coordinate_dgemv(
 }
 
 /**
- * ‘mtxmatrix_coordinate_cgemv()’ multiplies a complex-valued matrix ‘A’,
- * its transpose ‘A'’ or its conjugate transpose ‘Aᴴ’ by a complex
- * scalar ‘alpha’ (‘α’) and a vector ‘x’, before adding the result to
- * another vector ‘y’ multiplied by another complex scalar ‘beta’
- * (‘β’).  That is, ‘y = α*A*x + β*y’, ‘y = α*A'*x + β*y’ or ‘y =
- * α*Aᴴ*x + β*y’.
+ * ‘mtxmatrix_coordinate_cgemv()’ multiplies a complex-valued matrix
+ * ‘A’, its transpose ‘A'’ or its conjugate transpose ‘Aᴴ’ by a
+ * complex scalar ‘alpha’ (‘α’) and a vector ‘x’, before adding the
+ * result to another vector ‘y’ multiplied by another complex scalar
+ * ‘beta’ (‘β’).  That is, ‘y = α*A*x + β*y’, ‘y = α*A'*x + β*y’ or ‘y
+ * = α*Aᴴ*x + β*y’.
  *
  * The scalars ‘alpha’ and ‘beta’ are given as single precision
  * floating point numbers.
@@ -3907,8 +2333,8 @@ int mtxmatrix_coordinate_dgemv(
  * ‘trans’ is ‘mtx_notrans’, then the size of ‘x’ must equal the
  * number of columns of ‘A’ and the size of ‘y’ must equal the number
  * of rows of ‘A’. if ‘trans’ is ‘mtx_trans’ or ‘mtx_conjtrans’, then
- * the size of ‘x’ must equal the number of rows of ‘A’ and the
- * size of ‘y’ must equal the number of columns of ‘A’.
+ * the size of ‘x’ must equal the number of rows of ‘A’ and the size
+ * of ‘y’ must equal the number of columns of ‘A’.
  */
 int mtxmatrix_coordinate_cgemv(
     enum mtxtransposition trans,
@@ -3938,151 +2364,48 @@ int mtxmatrix_coordinate_cgemv(
     if (A->field != mtx_field_complex)
         return MTX_ERR_INCOMPATIBLE_FIELD;
 
+    if (beta[0] == 0 && beta[1] == 0) {
+        err = mtxvector_set_constant_real_single(y, 0);
+        if (err) return err;
+    } else if (beta[0] != 1 || beta[1] != 0) {
+        err = mtxvector_cscal(beta, y, num_flops);
+        if (err) return err;
+    }
+
     if (A->precision == mtx_single) {
         const float (* Adata)[2] = A->data.complex_single;
         const float (* xdata)[2] = x_->data.complex_single;
         float (* ydata)[2] = y_->data.complex_single;
         if (trans == mtx_notrans) {
-            if (beta[0] == 0 && beta[1] == 0) {
-                for (int i = 0; i < A->num_rows; i++)
-                    ydata[i][0] = ydata[i][1] = 0;
-                for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                    int i = A->rowidx[k];
-                    int j = A->colidx[k];
-                    float z[2] = {Adata[k][0]*xdata[j][0] - Adata[k][1]*xdata[j][1],
-                                  Adata[k][0]*xdata[j][1] + Adata[k][1]*xdata[j][0]};
-                    ydata[i][0] += alpha[0]*z[0]-alpha[1]*z[1];
-                    ydata[i][1] += alpha[0]*z[1]+alpha[1]*z[0];
-                }
-                if (num_flops) *num_flops = 14*A->num_nonzeros;
-            } else if (beta[0] == 1 && beta[1] == 0) {
-                for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                    int i = A->rowidx[k];
-                    int j = A->colidx[k];
-                    float z[2] = {Adata[k][0]*xdata[j][0] - Adata[k][1]*xdata[j][1],
-                                  Adata[k][0]*xdata[j][1] + Adata[k][1]*xdata[j][0]};
-                    ydata[i][0] += alpha[0]*z[0]-alpha[1]*z[1];
-                    ydata[i][1] += alpha[0]*z[1]+alpha[1]*z[0];
-                }
-                if (num_flops) *num_flops = 14*A->num_nonzeros;
-            } else {
-                struct mtxvector_array z;
-                err = mtxvector_array_alloc_copy(&z, y_);
-                if (err)
-                    return err;
-                float (* zdata)[2] = z.data.complex_single;
-                for (int i = 0; i < A->num_rows; i++)
-                    zdata[i][0] = zdata[i][1] = 0;
-                for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                    int i = A->rowidx[k];
-                    int j = A->colidx[k];
-                    zdata[i][0] += Adata[k][0]*xdata[j][0]-Adata[k][1]*xdata[j][1];
-                    zdata[i][1] += Adata[k][0]*xdata[j][1]+Adata[k][1]*xdata[j][0];
-                }
-                for (int i = 0; i < A->num_rows; i++) {
-                    float w[2] = {ydata[i][0], ydata[i][1]};
-                    ydata[i][0] = alpha[0]*zdata[i][0]-alpha[1]*zdata[i][1]
-                        + beta[0]*w[0]-beta[1]*w[1];
-                    ydata[i][1] = alpha[0]*zdata[i][1]+alpha[1]*zdata[i][0]
-                        + beta[0]*w[1]+beta[1]*w[0];
-                }
-                mtxvector_array_free(&z);
-                if (num_flops) *num_flops = 8*A->num_nonzeros+14*A->num_rows;
+            for (int64_t k = 0; k < A->num_nonzeros; k++) {
+                int i = A->rowidx[k];
+                int j = A->colidx[k];
+                float z[2] = {Adata[k][0]*xdata[j][0] - Adata[k][1]*xdata[j][1],
+                              Adata[k][0]*xdata[j][1] + Adata[k][1]*xdata[j][0]};
+                ydata[i][0] += alpha[0]*z[0]-alpha[1]*z[1];
+                ydata[i][1] += alpha[0]*z[1]+alpha[1]*z[0];
             }
+            if (num_flops) *num_flops = 14*A->num_nonzeros;
         } else if (trans == mtx_trans) {
-            if (beta[0] == 0 && beta[1] == 0) {
-                for (int j = 0; j < A->num_columns; j++)
-                    ydata[j][0] = ydata[j][1] = 0;
-                for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                    int i = A->rowidx[k];
-                    int j = A->colidx[k];
-                    float z[2] = {Adata[k][0]*xdata[i][0] - Adata[k][1]*xdata[i][1],
-                                  Adata[k][0]*xdata[i][1] + Adata[k][1]*xdata[i][0]};
-                    ydata[j][0] += alpha[0]*z[0]-alpha[1]*z[1];
-                    ydata[j][1] += alpha[0]*z[1]+alpha[1]*z[0];
-                }
-                if (num_flops) *num_flops = 14*A->num_nonzeros;
-            } else if (beta[0] == 1 && beta[1] == 0) {
-                for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                    int i = A->rowidx[k];
-                    int j = A->colidx[k];
-                    float z[2] = {Adata[k][0]*xdata[i][0] - Adata[k][1]*xdata[i][1],
-                                  Adata[k][0]*xdata[i][1] + Adata[k][1]*xdata[i][0]};
-                    ydata[j][0] += alpha[0]*z[0]-alpha[1]*z[1];
-                    ydata[j][1] += alpha[0]*z[1]+alpha[1]*z[0];
-                }
-                if (num_flops) *num_flops = 14*A->num_nonzeros;
-            } else {
-                struct mtxvector_array z;
-                err = mtxvector_array_alloc_copy(&z, y_);
-                if (err)
-                    return err;
-                float (* zdata)[2] = z.data.complex_single;
-                for (int j = 0; j < A->num_columns; j++)
-                    zdata[j][0] = zdata[j][1] = 0;
-                for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                    int i = A->rowidx[k];
-                    int j = A->colidx[k];
-                    zdata[j][0] += Adata[k][0]*xdata[i][0]-Adata[k][1]*xdata[i][1];
-                    zdata[j][1] += Adata[k][0]*xdata[i][1]+Adata[k][1]*xdata[i][0];
-                }
-                for (int j = 0; j < A->num_columns; j++) {
-                    float w[2] = {ydata[j][0], ydata[j][1]};
-                    ydata[j][0] = alpha[0]*zdata[j][0]-alpha[1]*zdata[j][1]
-                        + beta[0]*w[0]-beta[1]*w[1];
-                    ydata[j][1] = alpha[0]*zdata[j][1]+alpha[1]*zdata[j][0]
-                        + beta[0]*w[1]+beta[1]*w[0];
-                }
-                mtxvector_array_free(&z);
-                if (num_flops) *num_flops = 8*A->num_nonzeros+14*A->num_columns;
+            for (int64_t k = 0; k < A->num_nonzeros; k++) {
+                int i = A->rowidx[k];
+                int j = A->colidx[k];
+                float z[2] = {Adata[k][0]*xdata[i][0] - Adata[k][1]*xdata[i][1],
+                              Adata[k][0]*xdata[i][1] + Adata[k][1]*xdata[i][0]};
+                ydata[j][0] += alpha[0]*z[0]-alpha[1]*z[1];
+                ydata[j][1] += alpha[0]*z[1]+alpha[1]*z[0];
             }
+            if (num_flops) *num_flops = 14*A->num_nonzeros;
         } else if (trans == mtx_conjtrans) {
-            if (beta[0] == 0 && beta[1] == 0) {
-                for (int j = 0; j < A->num_columns; j++)
-                    ydata[j][0] = ydata[j][1] = 0;
-                for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                    int i = A->rowidx[k];
-                    int j = A->colidx[k];
-                    float z[2] = {Adata[k][0]*xdata[i][0]+Adata[k][1]*xdata[i][1],
-                                  Adata[k][0]*xdata[i][1]-Adata[k][1]*xdata[i][0]};
-                    ydata[j][0] += alpha[0]*z[0]-alpha[1]*z[1];
-                    ydata[j][1] += alpha[0]*z[1]+alpha[1]*z[0];
-                }
-                if (num_flops) *num_flops = 14*A->num_nonzeros;
-            } else if (beta[0] == 1 && beta[1] == 0) {
-                for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                    int i = A->rowidx[k];
-                    int j = A->colidx[k];
-                    float z[2] = {Adata[k][0]*xdata[i][0]+Adata[k][1]*xdata[i][1],
-                                  Adata[k][0]*xdata[i][1]-Adata[k][1]*xdata[i][0]};
-                    ydata[j][0] += alpha[0]*z[0]-alpha[1]*z[1];
-                    ydata[j][1] += alpha[0]*z[1]+alpha[1]*z[0];
-                }
-                if (num_flops) *num_flops = 14*A->num_nonzeros;
-            } else {
-                struct mtxvector_array z;
-                err = mtxvector_array_alloc_copy(&z, y_);
-                if (err)
-                    return err;
-                float (* zdata)[2] = z.data.complex_single;
-                for (int j = 0; j < A->num_columns; j++)
-                    zdata[j][0] = zdata[j][1] = 0;
-                for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                    int i = A->rowidx[k];
-                    int j = A->colidx[k];
-                    zdata[j][0] += Adata[k][0]*xdata[i][0]+Adata[k][1]*xdata[i][1];
-                    zdata[j][1] += Adata[k][0]*xdata[i][1]-Adata[k][1]*xdata[i][0];
-                }
-                for (int j = 0; j < A->num_columns; j++) {
-                    float w[2] = {ydata[j][0], ydata[j][1]};
-                    ydata[j][0] = alpha[0]*zdata[j][0]-alpha[1]*zdata[j][1]
-                        + beta[0]*w[0]-beta[1]*w[1];
-                    ydata[j][1] = alpha[0]*zdata[j][1]+alpha[1]*zdata[j][0]
-                        + beta[0]*w[1]+beta[1]*w[0];
-                }
-                mtxvector_array_free(&z);
-                if (num_flops) *num_flops = 8*A->num_nonzeros+14*A->num_columns;
+            for (int64_t k = 0; k < A->num_nonzeros; k++) {
+                int i = A->rowidx[k];
+                int j = A->colidx[k];
+                float z[2] = {Adata[k][0]*xdata[i][0]+Adata[k][1]*xdata[i][1],
+                              Adata[k][0]*xdata[i][1]-Adata[k][1]*xdata[i][0]};
+                ydata[j][0] += alpha[0]*z[0]-alpha[1]*z[1];
+                ydata[j][1] += alpha[0]*z[1]+alpha[1]*z[0];
             }
+            if (num_flops) *num_flops = 14*A->num_nonzeros;
         } else {
             return MTX_ERR_INVALID_TRANSPOSITION;
         }
@@ -4091,146 +2414,35 @@ int mtxmatrix_coordinate_cgemv(
         const double (* xdata)[2] = x_->data.complex_double;
         double (* ydata)[2] = y_->data.complex_double;
         if (trans == mtx_notrans) {
-            if (beta[0] == 0 && beta[1] == 0) {
-                for (int i = 0; i < A->num_rows; i++)
-                    ydata[i][0] = ydata[i][1] = 0;
-                for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                    int i = A->rowidx[k];
-                    int j = A->colidx[k];
-                    double z[2] = {Adata[k][0]*xdata[j][0] - Adata[k][1]*xdata[j][1],
-                                   Adata[k][0]*xdata[j][1] + Adata[k][1]*xdata[j][0]};
-                    ydata[i][0] += alpha[0]*z[0]-alpha[1]*z[1];
-                    ydata[i][1] += alpha[0]*z[1]+alpha[1]*z[0];
-                }
-                if (num_flops) *num_flops = 14*A->num_nonzeros;
-            } else if (beta[0] == 1 && beta[1] == 0) {
-                for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                    int i = A->rowidx[k];
-                    int j = A->colidx[k];
-                    double z[2] = {Adata[k][0]*xdata[j][0] - Adata[k][1]*xdata[j][1],
-                                   Adata[k][0]*xdata[j][1] + Adata[k][1]*xdata[j][0]};
-                    ydata[i][0] += alpha[0]*z[0]-alpha[1]*z[1];
-                    ydata[i][1] += alpha[0]*z[1]+alpha[1]*z[0];
-                }
-                if (num_flops) *num_flops = 14*A->num_nonzeros;
-            } else {
-                struct mtxvector_array z;
-                err = mtxvector_array_alloc_copy(&z, y_);
-                if (err)
-                    return err;
-                double (* zdata)[2] = z.data.complex_double;
-                for (int i = 0; i < A->num_rows; i++)
-                    zdata[i][0] = zdata[i][1] = 0;
-                for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                    int i = A->rowidx[k];
-                    int j = A->colidx[k];
-                    zdata[i][0] += Adata[k][0]*xdata[j][0]-Adata[k][1]*xdata[j][1];
-                    zdata[i][1] += Adata[k][0]*xdata[j][1]+Adata[k][1]*xdata[j][0];
-                }
-                for (int i = 0; i < A->num_rows; i++) {
-                    double w[2] = {ydata[i][0], ydata[i][1]};
-                    ydata[i][0] = alpha[0]*zdata[i][0]-alpha[1]*zdata[i][1]
-                        + beta[0]*w[0]-beta[1]*w[1];
-                    ydata[i][1] = alpha[0]*zdata[i][1]+alpha[1]*zdata[i][0]
-                        + beta[0]*w[1]+beta[1]*w[0];
-                }
-                mtxvector_array_free(&z);
-                if (num_flops) *num_flops = 8*A->num_nonzeros+14*A->num_rows;
+            for (int64_t k = 0; k < A->num_nonzeros; k++) {
+                int i = A->rowidx[k];
+                int j = A->colidx[k];
+                double z[2] = {Adata[k][0]*xdata[j][0] - Adata[k][1]*xdata[j][1],
+                               Adata[k][0]*xdata[j][1] + Adata[k][1]*xdata[j][0]};
+                ydata[i][0] += alpha[0]*z[0]-alpha[1]*z[1];
+                ydata[i][1] += alpha[0]*z[1]+alpha[1]*z[0];
             }
+            if (num_flops) *num_flops = 14*A->num_nonzeros;
         } else if (trans == mtx_trans) {
-            if (beta[0] == 0 && beta[1] == 0) {
-                for (int j = 0; j < A->num_columns; j++)
-                    ydata[j][0] = ydata[j][1] = 0;
-                for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                    int i = A->rowidx[k];
-                    int j = A->colidx[k];
-                    double z[2] = {Adata[k][0]*xdata[i][0] - Adata[k][1]*xdata[i][1],
-                                   Adata[k][0]*xdata[i][1] + Adata[k][1]*xdata[i][0]};
-                    ydata[j][0] += alpha[0]*z[0]-alpha[1]*z[1];
-                    ydata[j][1] += alpha[0]*z[1]+alpha[1]*z[0];
-                }
-                if (num_flops) *num_flops = 14*A->num_nonzeros;
-            } else if (beta[0] == 1 && beta[1] == 0) {
-                for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                    int i = A->rowidx[k];
-                    int j = A->colidx[k];
-                    double z[2] = {Adata[k][0]*xdata[i][0] - Adata[k][1]*xdata[i][1],
-                                   Adata[k][0]*xdata[i][1] + Adata[k][1]*xdata[i][0]};
-                    ydata[j][0] += alpha[0]*z[0]-alpha[1]*z[1];
-                    ydata[j][1] += alpha[0]*z[1]+alpha[1]*z[0];
-                }
-                if (num_flops) *num_flops = 14*A->num_nonzeros;
-            } else {
-                struct mtxvector_array z;
-                err = mtxvector_array_alloc_copy(&z, y_);
-                if (err)
-                    return err;
-                double (* zdata)[2] = z.data.complex_double;
-                for (int j = 0; j < A->num_columns; j++)
-                    zdata[j][0] = zdata[j][1] = 0;
-                for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                    int i = A->rowidx[k];
-                    int j = A->colidx[k];
-                    zdata[j][0] += Adata[k][0]*xdata[i][0]-Adata[k][1]*xdata[i][1];
-                    zdata[j][1] += Adata[k][0]*xdata[i][1]+Adata[k][1]*xdata[i][0];
-                }
-                for (int j = 0; j < A->num_columns; j++) {
-                    double w[2] = {ydata[j][0], ydata[j][1]};
-                    ydata[j][0] = alpha[0]*zdata[j][0]-alpha[1]*zdata[j][1]
-                        + beta[0]*w[0]-beta[1]*w[1];
-                    ydata[j][1] = alpha[0]*zdata[j][1]+alpha[1]*zdata[j][0]
-                        + beta[0]*w[1]+beta[1]*w[0];
-                }
-                mtxvector_array_free(&z);
-                if (num_flops) *num_flops = 8*A->num_nonzeros+14*A->num_columns;
+            for (int64_t k = 0; k < A->num_nonzeros; k++) {
+                int i = A->rowidx[k];
+                int j = A->colidx[k];
+                double z[2] = {Adata[k][0]*xdata[i][0] - Adata[k][1]*xdata[i][1],
+                               Adata[k][0]*xdata[i][1] + Adata[k][1]*xdata[i][0]};
+                ydata[j][0] += alpha[0]*z[0]-alpha[1]*z[1];
+                ydata[j][1] += alpha[0]*z[1]+alpha[1]*z[0];
             }
+            if (num_flops) *num_flops = 14*A->num_nonzeros;
         } else if (trans == mtx_conjtrans) {
-            if (beta[0] == 0 && beta[1] == 0) {
-                for (int j = 0; j < A->num_columns; j++)
-                    ydata[j][0] = ydata[j][1] = 0;
-                for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                    int i = A->rowidx[k];
-                    int j = A->colidx[k];
-                    double z[2] = {Adata[k][0]*xdata[i][0]+Adata[k][1]*xdata[i][1],
-                                   Adata[k][0]*xdata[i][1]-Adata[k][1]*xdata[i][0]};
-                    ydata[j][0] += alpha[0]*z[0]-alpha[1]*z[1];
-                    ydata[j][1] += alpha[0]*z[1]+alpha[1]*z[0];
-                }
-                if (num_flops) *num_flops = 14*A->num_nonzeros;
-            } else if (beta[0] == 1 && beta[1] == 0) {
-                for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                    int i = A->rowidx[k];
-                    int j = A->colidx[k];
-                    double z[2] = {Adata[k][0]*xdata[i][0]+Adata[k][1]*xdata[i][1],
-                                   Adata[k][0]*xdata[i][1]-Adata[k][1]*xdata[i][0]};
-                    ydata[j][0] += alpha[0]*z[0]-alpha[1]*z[1];
-                    ydata[j][1] += alpha[0]*z[1]+alpha[1]*z[0];
-                }
-                if (num_flops) *num_flops = 14*A->num_nonzeros;
-            } else {
-                struct mtxvector_array z;
-                err = mtxvector_array_alloc_copy(&z, y_);
-                if (err)
-                    return err;
-                double (* zdata)[2] = z.data.complex_double;
-                for (int j = 0; j < A->num_columns; j++)
-                    zdata[j][0] = zdata[j][1] = 0;
-                for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                    int i = A->rowidx[k];
-                    int j = A->colidx[k];
-                    zdata[j][0] += Adata[k][0]*xdata[i][0]+Adata[k][1]*xdata[i][1];
-                    zdata[j][1] += Adata[k][0]*xdata[i][1]-Adata[k][1]*xdata[i][0];
-                }
-                for (int j = 0; j < A->num_columns; j++) {
-                    double w[2] = {ydata[j][0], ydata[j][1]};
-                    ydata[j][0] = alpha[0]*zdata[j][0]-alpha[1]*zdata[j][1]
-                        + beta[0]*w[0]-beta[1]*w[1];
-                    ydata[j][1] = alpha[0]*zdata[j][1]+alpha[1]*zdata[j][0]
-                        + beta[0]*w[1]+beta[1]*w[0];
-                }
-                mtxvector_array_free(&z);
-                if (num_flops) *num_flops = 8*A->num_nonzeros+14*A->num_columns;
+            for (int64_t k = 0; k < A->num_nonzeros; k++) {
+                int i = A->rowidx[k];
+                int j = A->colidx[k];
+                double z[2] = {Adata[k][0]*xdata[i][0]+Adata[k][1]*xdata[i][1],
+                               Adata[k][0]*xdata[i][1]-Adata[k][1]*xdata[i][0]};
+                ydata[j][0] += alpha[0]*z[0]-alpha[1]*z[1];
+                ydata[j][1] += alpha[0]*z[1]+alpha[1]*z[0];
             }
+            if (num_flops) *num_flops = 14*A->num_nonzeros;
         } else {
             return MTX_ERR_INVALID_TRANSPOSITION;
         }
@@ -4287,151 +2499,48 @@ int mtxmatrix_coordinate_zgemv(
     if (A->field != mtx_field_complex)
         return MTX_ERR_INCOMPATIBLE_FIELD;
 
+    if (beta[0] == 0 && beta[1] == 0) {
+        err = mtxvector_set_constant_real_double(y, 0);
+        if (err) return err;
+    } else if (beta[0] != 1 || beta[1] != 0) {
+        err = mtxvector_zscal(beta, y, num_flops);
+        if (err) return err;
+    }
+
     if (A->precision == mtx_single) {
         const float (* Adata)[2] = A->data.complex_single;
         const float (* xdata)[2] = x_->data.complex_single;
         float (* ydata)[2] = y_->data.complex_single;
         if (trans == mtx_notrans) {
-            if (beta[0] == 0 && beta[1] == 0) {
-                for (int i = 0; i < A->num_rows; i++)
-                    ydata[i][0] = ydata[i][1] = 0;
-                for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                    int i = A->rowidx[k];
-                    int j = A->colidx[k];
-                    float z[2] = {Adata[k][0]*xdata[j][0] - Adata[k][1]*xdata[j][1],
-                                  Adata[k][0]*xdata[j][1] + Adata[k][1]*xdata[j][0]};
-                    ydata[i][0] += alpha[0]*z[0]-alpha[1]*z[1];
-                    ydata[i][1] += alpha[0]*z[1]+alpha[1]*z[0];
-                }
-                if (num_flops) *num_flops = 14*A->num_nonzeros;
-            } else if (beta[0] == 1 && beta[1] == 0) {
-                for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                    int i = A->rowidx[k];
-                    int j = A->colidx[k];
-                    float z[2] = {Adata[k][0]*xdata[j][0] - Adata[k][1]*xdata[j][1],
-                                  Adata[k][0]*xdata[j][1] + Adata[k][1]*xdata[j][0]};
-                    ydata[i][0] += alpha[0]*z[0]-alpha[1]*z[1];
-                    ydata[i][1] += alpha[0]*z[1]+alpha[1]*z[0];
-                }
-                if (num_flops) *num_flops = 14*A->num_nonzeros;
-            } else {
-                struct mtxvector_array z;
-                err = mtxvector_array_alloc_copy(&z, y_);
-                if (err)
-                    return err;
-                float (* zdata)[2] = z.data.complex_single;
-                for (int i = 0; i < A->num_rows; i++)
-                    zdata[i][0] = zdata[i][1] = 0;
-                for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                    int i = A->rowidx[k];
-                    int j = A->colidx[k];
-                    zdata[i][0] += Adata[k][0]*xdata[j][0]-Adata[k][1]*xdata[j][1];
-                    zdata[i][1] += Adata[k][0]*xdata[j][1]+Adata[k][1]*xdata[j][0];
-                }
-                for (int i = 0; i < A->num_rows; i++) {
-                    float w[2] = {ydata[i][0], ydata[i][1]};
-                    ydata[i][0] = alpha[0]*zdata[i][0]-alpha[1]*zdata[i][1]
-                        + beta[0]*w[0]-beta[1]*w[1];
-                    ydata[i][1] = alpha[0]*zdata[i][1]+alpha[1]*zdata[i][0]
-                        + beta[0]*w[1]+beta[1]*w[0];
-                }
-                mtxvector_array_free(&z);
-                if (num_flops) *num_flops = 8*A->num_nonzeros+14*A->num_rows;
+            for (int64_t k = 0; k < A->num_nonzeros; k++) {
+                int i = A->rowidx[k];
+                int j = A->colidx[k];
+                float z[2] = {Adata[k][0]*xdata[j][0] - Adata[k][1]*xdata[j][1],
+                              Adata[k][0]*xdata[j][1] + Adata[k][1]*xdata[j][0]};
+                ydata[i][0] += alpha[0]*z[0]-alpha[1]*z[1];
+                ydata[i][1] += alpha[0]*z[1]+alpha[1]*z[0];
             }
+            if (num_flops) *num_flops = 14*A->num_nonzeros;
         } else if (trans == mtx_trans) {
-            if (beta[0] == 0 && beta[1] == 0) {
-                for (int j = 0; j < A->num_columns; j++)
-                    ydata[j][0] = ydata[j][1] = 0;
-                for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                    int i = A->rowidx[k];
-                    int j = A->colidx[k];
-                    float z[2] = {Adata[k][0]*xdata[i][0] - Adata[k][1]*xdata[i][1],
-                                  Adata[k][0]*xdata[i][1] + Adata[k][1]*xdata[i][0]};
-                    ydata[j][0] += alpha[0]*z[0]-alpha[1]*z[1];
-                    ydata[j][1] += alpha[0]*z[1]+alpha[1]*z[0];
-                }
-                if (num_flops) *num_flops = 14*A->num_nonzeros;
-            } else if (beta[0] == 1 && beta[1] == 0) {
-                for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                    int i = A->rowidx[k];
-                    int j = A->colidx[k];
-                    float z[2] = {Adata[k][0]*xdata[i][0] - Adata[k][1]*xdata[i][1],
-                                  Adata[k][0]*xdata[i][1] + Adata[k][1]*xdata[i][0]};
-                    ydata[j][0] += alpha[0]*z[0]-alpha[1]*z[1];
-                    ydata[j][1] += alpha[0]*z[1]+alpha[1]*z[0];
-                }
-                if (num_flops) *num_flops = 14*A->num_nonzeros;
-            } else {
-                struct mtxvector_array z;
-                err = mtxvector_array_alloc_copy(&z, y_);
-                if (err)
-                    return err;
-                float (* zdata)[2] = z.data.complex_single;
-                for (int j = 0; j < A->num_columns; j++)
-                    zdata[j][0] = zdata[j][1] = 0;
-                for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                    int i = A->rowidx[k];
-                    int j = A->colidx[k];
-                    zdata[j][0] += Adata[k][0]*xdata[i][0]-Adata[k][1]*xdata[i][1];
-                    zdata[j][1] += Adata[k][0]*xdata[i][1]+Adata[k][1]*xdata[i][0];
-                }
-                for (int j = 0; j < A->num_columns; j++) {
-                    float w[2] = {ydata[j][0], ydata[j][1]};
-                    ydata[j][0] = alpha[0]*zdata[j][0]-alpha[1]*zdata[j][1]
-                        + beta[0]*w[0]-beta[1]*w[1];
-                    ydata[j][1] = alpha[0]*zdata[j][1]+alpha[1]*zdata[j][0]
-                        + beta[0]*w[1]+beta[1]*w[0];
-                }
-                mtxvector_array_free(&z);
-                if (num_flops) *num_flops = 8*A->num_nonzeros+14*A->num_columns;
+            for (int64_t k = 0; k < A->num_nonzeros; k++) {
+                int i = A->rowidx[k];
+                int j = A->colidx[k];
+                float z[2] = {Adata[k][0]*xdata[i][0] - Adata[k][1]*xdata[i][1],
+                              Adata[k][0]*xdata[i][1] + Adata[k][1]*xdata[i][0]};
+                ydata[j][0] += alpha[0]*z[0]-alpha[1]*z[1];
+                ydata[j][1] += alpha[0]*z[1]+alpha[1]*z[0];
             }
+            if (num_flops) *num_flops = 14*A->num_nonzeros;
         } else if (trans == mtx_conjtrans) {
-            if (beta[0] == 0 && beta[1] == 0) {
-                for (int j = 0; j < A->num_columns; j++)
-                    ydata[j][0] = ydata[j][1] = 0;
-                for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                    int i = A->rowidx[k];
-                    int j = A->colidx[k];
-                    float z[2] = {Adata[k][0]*xdata[i][0]+Adata[k][1]*xdata[i][1],
-                                  Adata[k][0]*xdata[i][1]-Adata[k][1]*xdata[i][0]};
-                    ydata[j][0] += alpha[0]*z[0]-alpha[1]*z[1];
-                    ydata[j][1] += alpha[0]*z[1]+alpha[1]*z[0];
-                }
-                if (num_flops) *num_flops = 14*A->num_nonzeros;
-            } else if (beta[0] == 1 && beta[1] == 0) {
-                for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                    int i = A->rowidx[k];
-                    int j = A->colidx[k];
-                    float z[2] = {Adata[k][0]*xdata[i][0]+Adata[k][1]*xdata[i][1],
-                                  Adata[k][0]*xdata[i][1]-Adata[k][1]*xdata[i][0]};
-                    ydata[j][0] += alpha[0]*z[0]-alpha[1]*z[1];
-                    ydata[j][1] += alpha[0]*z[1]+alpha[1]*z[0];
-                }
-                if (num_flops) *num_flops = 14*A->num_nonzeros;
-            } else {
-                struct mtxvector_array z;
-                err = mtxvector_array_alloc_copy(&z, y_);
-                if (err)
-                    return err;
-                float (* zdata)[2] = z.data.complex_single;
-                for (int j = 0; j < A->num_columns; j++)
-                    zdata[j][0] = zdata[j][1] = 0;
-                for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                    int i = A->rowidx[k];
-                    int j = A->colidx[k];
-                    zdata[j][0] += Adata[k][0]*xdata[i][0]+Adata[k][1]*xdata[i][1];
-                    zdata[j][1] += Adata[k][0]*xdata[i][1]-Adata[k][1]*xdata[i][0];
-                }
-                for (int j = 0; j < A->num_columns; j++) {
-                    float w[2] = {ydata[j][0], ydata[j][1]};
-                    ydata[j][0] = alpha[0]*zdata[j][0]-alpha[1]*zdata[j][1]
-                        + beta[0]*w[0]-beta[1]*w[1];
-                    ydata[j][1] = alpha[0]*zdata[j][1]+alpha[1]*zdata[j][0]
-                        + beta[0]*w[1]+beta[1]*w[0];
-                }
-                mtxvector_array_free(&z);
-                if (num_flops) *num_flops = 8*A->num_nonzeros+14*A->num_columns;
+            for (int64_t k = 0; k < A->num_nonzeros; k++) {
+                int i = A->rowidx[k];
+                int j = A->colidx[k];
+                float z[2] = {Adata[k][0]*xdata[i][0]+Adata[k][1]*xdata[i][1],
+                              Adata[k][0]*xdata[i][1]-Adata[k][1]*xdata[i][0]};
+                ydata[j][0] += alpha[0]*z[0]-alpha[1]*z[1];
+                ydata[j][1] += alpha[0]*z[1]+alpha[1]*z[0];
             }
+            if (num_flops) *num_flops = 14*A->num_nonzeros;
         } else {
             return MTX_ERR_INVALID_TRANSPOSITION;
         }
@@ -4440,146 +2549,35 @@ int mtxmatrix_coordinate_zgemv(
         const double (* xdata)[2] = x_->data.complex_double;
         double (* ydata)[2] = y_->data.complex_double;
         if (trans == mtx_notrans) {
-            if (beta[0] == 0 && beta[1] == 0) {
-                for (int i = 0; i < A->num_rows; i++)
-                    ydata[i][0] = ydata[i][1] = 0;
-                for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                    int i = A->rowidx[k];
-                    int j = A->colidx[k];
-                    double z[2] = {Adata[k][0]*xdata[j][0] - Adata[k][1]*xdata[j][1],
-                                   Adata[k][0]*xdata[j][1] + Adata[k][1]*xdata[j][0]};
-                    ydata[i][0] += alpha[0]*z[0]-alpha[1]*z[1];
-                    ydata[i][1] += alpha[0]*z[1]+alpha[1]*z[0];
-                }
-                if (num_flops) *num_flops = 14*A->num_nonzeros;
-            } else if (beta[0] == 1 && beta[1] == 0) {
-                for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                    int i = A->rowidx[k];
-                    int j = A->colidx[k];
-                    double z[2] = {Adata[k][0]*xdata[j][0] - Adata[k][1]*xdata[j][1],
-                                   Adata[k][0]*xdata[j][1] + Adata[k][1]*xdata[j][0]};
-                    ydata[i][0] += alpha[0]*z[0]-alpha[1]*z[1];
-                    ydata[i][1] += alpha[0]*z[1]+alpha[1]*z[0];
-                }
-                if (num_flops) *num_flops = 14*A->num_nonzeros;
-            } else {
-                struct mtxvector_array z;
-                err = mtxvector_array_alloc_copy(&z, y_);
-                if (err)
-                    return err;
-                double (* zdata)[2] = z.data.complex_double;
-                for (int i = 0; i < A->num_rows; i++)
-                    zdata[i][0] = zdata[i][1] = 0;
-                for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                    int i = A->rowidx[k];
-                    int j = A->colidx[k];
-                    zdata[i][0] += Adata[k][0]*xdata[j][0]-Adata[k][1]*xdata[j][1];
-                    zdata[i][1] += Adata[k][0]*xdata[j][1]+Adata[k][1]*xdata[j][0];
-                }
-                for (int i = 0; i < A->num_rows; i++) {
-                    double w[2] = {ydata[i][0], ydata[i][1]};
-                    ydata[i][0] = alpha[0]*zdata[i][0]-alpha[1]*zdata[i][1]
-                        + beta[0]*w[0]-beta[1]*w[1];
-                    ydata[i][1] = alpha[0]*zdata[i][1]+alpha[1]*zdata[i][0]
-                        + beta[0]*w[1]+beta[1]*w[0];
-                }
-                mtxvector_array_free(&z);
-                if (num_flops) *num_flops = 8*A->num_nonzeros+14*A->num_rows;
+            for (int64_t k = 0; k < A->num_nonzeros; k++) {
+                int i = A->rowidx[k];
+                int j = A->colidx[k];
+                double z[2] = {Adata[k][0]*xdata[j][0] - Adata[k][1]*xdata[j][1],
+                               Adata[k][0]*xdata[j][1] + Adata[k][1]*xdata[j][0]};
+                ydata[i][0] += alpha[0]*z[0]-alpha[1]*z[1];
+                ydata[i][1] += alpha[0]*z[1]+alpha[1]*z[0];
             }
+            if (num_flops) *num_flops = 14*A->num_nonzeros;
         } else if (trans == mtx_trans) {
-            if (beta[0] == 0 && beta[1] == 0) {
-                for (int j = 0; j < A->num_columns; j++)
-                    ydata[j][0] = ydata[j][1] = 0;
-                for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                    int i = A->rowidx[k];
-                    int j = A->colidx[k];
-                    double z[2] = {Adata[k][0]*xdata[i][0] - Adata[k][1]*xdata[i][1],
-                                   Adata[k][0]*xdata[i][1] + Adata[k][1]*xdata[i][0]};
-                    ydata[j][0] += alpha[0]*z[0]-alpha[1]*z[1];
-                    ydata[j][1] += alpha[0]*z[1]+alpha[1]*z[0];
-                }
-                if (num_flops) *num_flops = 14*A->num_nonzeros;
-            } else if (beta[0] == 1 && beta[1] == 0) {
-                for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                    int i = A->rowidx[k];
-                    int j = A->colidx[k];
-                    double z[2] = {Adata[k][0]*xdata[i][0] - Adata[k][1]*xdata[i][1],
-                                   Adata[k][0]*xdata[i][1] + Adata[k][1]*xdata[i][0]};
-                    ydata[j][0] += alpha[0]*z[0]-alpha[1]*z[1];
-                    ydata[j][1] += alpha[0]*z[1]+alpha[1]*z[0];
-                }
-                if (num_flops) *num_flops = 14*A->num_nonzeros;
-            } else {
-                struct mtxvector_array z;
-                err = mtxvector_array_alloc_copy(&z, y_);
-                if (err)
-                    return err;
-                double (* zdata)[2] = z.data.complex_double;
-                for (int j = 0; j < A->num_columns; j++)
-                    zdata[j][0] = zdata[j][1] = 0;
-                for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                    int i = A->rowidx[k];
-                    int j = A->colidx[k];
-                    zdata[j][0] += Adata[k][0]*xdata[i][0]-Adata[k][1]*xdata[i][1];
-                    zdata[j][1] += Adata[k][0]*xdata[i][1]+Adata[k][1]*xdata[i][0];
-                }
-                for (int j = 0; j < A->num_columns; j++) {
-                    double w[2] = {ydata[j][0], ydata[j][1]};
-                    ydata[j][0] = alpha[0]*zdata[j][0]-alpha[1]*zdata[j][1]
-                        + beta[0]*w[0]-beta[1]*w[1];
-                    ydata[j][1] = alpha[0]*zdata[j][1]+alpha[1]*zdata[j][0]
-                        + beta[0]*w[1]+beta[1]*w[0];
-                }
-                mtxvector_array_free(&z);
-                if (num_flops) *num_flops = 8*A->num_nonzeros+14*A->num_columns;
+            for (int64_t k = 0; k < A->num_nonzeros; k++) {
+                int i = A->rowidx[k];
+                int j = A->colidx[k];
+                double z[2] = {Adata[k][0]*xdata[i][0] - Adata[k][1]*xdata[i][1],
+                               Adata[k][0]*xdata[i][1] + Adata[k][1]*xdata[i][0]};
+                ydata[j][0] += alpha[0]*z[0]-alpha[1]*z[1];
+                ydata[j][1] += alpha[0]*z[1]+alpha[1]*z[0];
             }
+            if (num_flops) *num_flops = 14*A->num_nonzeros;
         } else if (trans == mtx_conjtrans) {
-            if (beta[0] == 0 && beta[1] == 0) {
-                for (int j = 0; j < A->num_columns; j++)
-                    ydata[j][0] = ydata[j][1] = 0;
-                for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                    int i = A->rowidx[k];
-                    int j = A->colidx[k];
-                    double z[2] = {Adata[k][0]*xdata[i][0]+Adata[k][1]*xdata[i][1],
-                                   Adata[k][0]*xdata[i][1]-Adata[k][1]*xdata[i][0]};
-                    ydata[j][0] += alpha[0]*z[0]-alpha[1]*z[1];
-                    ydata[j][1] += alpha[0]*z[1]+alpha[1]*z[0];
-                }
-                if (num_flops) *num_flops = 14*A->num_nonzeros;
-            } else if (beta[0] == 1 && beta[1] == 0) {
-                for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                    int i = A->rowidx[k];
-                    int j = A->colidx[k];
-                    double z[2] = {Adata[k][0]*xdata[i][0]+Adata[k][1]*xdata[i][1],
-                                   Adata[k][0]*xdata[i][1]-Adata[k][1]*xdata[i][0]};
-                    ydata[j][0] += alpha[0]*z[0]-alpha[1]*z[1];
-                    ydata[j][1] += alpha[0]*z[1]+alpha[1]*z[0];
-                }
-                if (num_flops) *num_flops = 14*A->num_nonzeros;
-            } else {
-                struct mtxvector_array z;
-                err = mtxvector_array_alloc_copy(&z, y_);
-                if (err)
-                    return err;
-                double (* zdata)[2] = z.data.complex_double;
-                for (int j = 0; j < A->num_columns; j++)
-                    zdata[j][0] = zdata[j][1] = 0;
-                for (int64_t k = 0; k < A->num_nonzeros; k++) {
-                    int i = A->rowidx[k];
-                    int j = A->colidx[k];
-                    zdata[j][0] += Adata[k][0]*xdata[i][0]+Adata[k][1]*xdata[i][1];
-                    zdata[j][1] += Adata[k][0]*xdata[i][1]-Adata[k][1]*xdata[i][0];
-                }
-                for (int j = 0; j < A->num_columns; j++) {
-                    double w[2] = {ydata[j][0], ydata[j][1]};
-                    ydata[j][0] = alpha[0]*zdata[j][0]-alpha[1]*zdata[j][1]
-                        + beta[0]*w[0]-beta[1]*w[1];
-                    ydata[j][1] = alpha[0]*zdata[j][1]+alpha[1]*zdata[j][0]
-                        + beta[0]*w[1]+beta[1]*w[0];
-                }
-                mtxvector_array_free(&z);
-                if (num_flops) *num_flops = 8*A->num_nonzeros+14*A->num_columns;
+            for (int64_t k = 0; k < A->num_nonzeros; k++) {
+                int i = A->rowidx[k];
+                int j = A->colidx[k];
+                double z[2] = {Adata[k][0]*xdata[i][0]+Adata[k][1]*xdata[i][1],
+                               Adata[k][0]*xdata[i][1]-Adata[k][1]*xdata[i][0]};
+                ydata[j][0] += alpha[0]*z[0]-alpha[1]*z[1];
+                ydata[j][1] += alpha[0]*z[1]+alpha[1]*z[0];
             }
+            if (num_flops) *num_flops = 14*A->num_nonzeros;
         } else {
             return MTX_ERR_INVALID_TRANSPOSITION;
         }
