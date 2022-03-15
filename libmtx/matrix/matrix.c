@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-03-09
+ * Last modified: 2022-03-15
  *
  * Data structures for matrices.
  */
@@ -241,12 +241,13 @@ int mtxmatrix_alloc_array(
     struct mtxmatrix * matrix,
     enum mtxfield field,
     enum mtxprecision precision,
+    enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns)
 {
     matrix->type = mtxmatrix_array;
     return mtxmatrix_array_alloc(
-        &matrix->storage.array, field, precision, num_rows, num_columns);
+        &matrix->storage.array, field, precision, symmetry, num_rows, num_columns);
 }
 
 /**
@@ -255,13 +256,14 @@ int mtxmatrix_alloc_array(
  */
 int mtxmatrix_init_array_real_single(
     struct mtxmatrix * matrix,
+    enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
     const float * data)
 {
     matrix->type = mtxmatrix_array;
     return mtxmatrix_array_init_real_single(
-        &matrix->storage.array, num_rows, num_columns, data);
+        &matrix->storage.array, symmetry, num_rows, num_columns, data);
 }
 
 /**
@@ -270,13 +272,14 @@ int mtxmatrix_init_array_real_single(
  */
 int mtxmatrix_init_array_real_double(
     struct mtxmatrix * matrix,
+    enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
     const double * data)
 {
     matrix->type = mtxmatrix_array;
     return mtxmatrix_array_init_real_double(
-        &matrix->storage.array, num_rows, num_columns, data);
+        &matrix->storage.array, symmetry, num_rows, num_columns, data);
 }
 
 /**
@@ -285,13 +288,14 @@ int mtxmatrix_init_array_real_double(
  */
 int mtxmatrix_init_array_complex_single(
     struct mtxmatrix * matrix,
+    enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
     const float (* data)[2])
 {
     matrix->type = mtxmatrix_array;
     return mtxmatrix_array_init_complex_single(
-        &matrix->storage.array, num_rows, num_columns, data);
+        &matrix->storage.array, symmetry, num_rows, num_columns, data);
 }
 
 /**
@@ -300,13 +304,14 @@ int mtxmatrix_init_array_complex_single(
  */
 int mtxmatrix_init_array_complex_double(
     struct mtxmatrix * matrix,
+    enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
     const double (* data)[2])
 {
     matrix->type = mtxmatrix_array;
     return mtxmatrix_array_init_complex_double(
-        &matrix->storage.array, num_rows, num_columns, data);
+        &matrix->storage.array, symmetry, num_rows, num_columns, data);
 }
 
 /**
@@ -315,13 +320,14 @@ int mtxmatrix_init_array_complex_double(
  */
 int mtxmatrix_init_array_integer_single(
     struct mtxmatrix * matrix,
+    enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
     const int32_t * data)
 {
     matrix->type = mtxmatrix_array;
     return mtxmatrix_array_init_integer_single(
-        &matrix->storage.array, num_rows, num_columns, data);
+        &matrix->storage.array, symmetry, num_rows, num_columns, data);
 }
 
 /**
@@ -330,13 +336,14 @@ int mtxmatrix_init_array_integer_single(
  */
 int mtxmatrix_init_array_integer_double(
     struct mtxmatrix * matrix,
+    enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
     const int64_t * data)
 {
     matrix->type = mtxmatrix_array;
     return mtxmatrix_array_init_integer_double(
-        &matrix->storage.array, num_rows, num_columns, data);
+        &matrix->storage.array, symmetry, num_rows, num_columns, data);
 }
 
 /*
@@ -351,14 +358,15 @@ int mtxmatrix_alloc_coordinate(
     struct mtxmatrix * matrix,
     enum mtxfield field,
     enum mtxprecision precision,
+    enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
     int64_t num_nonzeros)
 {
     matrix->type = mtxmatrix_coordinate;
     return mtxmatrix_coordinate_alloc(
-        &matrix->storage.coordinate,
-        field, precision, num_rows, num_columns, num_nonzeros);
+        &matrix->storage.coordinate, field, precision, symmetry,
+        num_rows, num_columns, num_nonzeros);
 }
 
 /**
@@ -368,6 +376,7 @@ int mtxmatrix_alloc_coordinate(
  */
 int mtxmatrix_init_coordinate_real_single(
     struct mtxmatrix * matrix,
+    enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
     int64_t num_nonzeros,
@@ -377,7 +386,7 @@ int mtxmatrix_init_coordinate_real_single(
 {
     matrix->type = mtxmatrix_coordinate;
     return mtxmatrix_coordinate_init_real_single(
-        &matrix->storage.coordinate,
+        &matrix->storage.coordinate, symmetry,
         num_rows, num_columns, num_nonzeros, rowidx, colidx, data);
 }
 
@@ -388,6 +397,7 @@ int mtxmatrix_init_coordinate_real_single(
  */
 int mtxmatrix_init_coordinate_real_double(
     struct mtxmatrix * matrix,
+    enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
     int64_t num_nonzeros,
@@ -397,7 +407,7 @@ int mtxmatrix_init_coordinate_real_double(
 {
     matrix->type = mtxmatrix_coordinate;
     return mtxmatrix_coordinate_init_real_double(
-        &matrix->storage.coordinate,
+        &matrix->storage.coordinate, symmetry,
         num_rows, num_columns, num_nonzeros, rowidx, colidx, data);
 }
 
@@ -408,6 +418,7 @@ int mtxmatrix_init_coordinate_real_double(
  */
 int mtxmatrix_init_coordinate_complex_single(
     struct mtxmatrix * matrix,
+    enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
     int64_t num_nonzeros,
@@ -417,7 +428,7 @@ int mtxmatrix_init_coordinate_complex_single(
 {
     matrix->type = mtxmatrix_coordinate;
     return mtxmatrix_coordinate_init_complex_single(
-        &matrix->storage.coordinate,
+        &matrix->storage.coordinate, symmetry,
         num_rows, num_columns, num_nonzeros, rowidx, colidx, data);
 }
 
@@ -428,6 +439,7 @@ int mtxmatrix_init_coordinate_complex_single(
  */
 int mtxmatrix_init_coordinate_complex_double(
     struct mtxmatrix * matrix,
+    enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
     int64_t num_nonzeros,
@@ -437,7 +449,7 @@ int mtxmatrix_init_coordinate_complex_double(
 {
     matrix->type = mtxmatrix_coordinate;
     return mtxmatrix_coordinate_init_complex_double(
-        &matrix->storage.coordinate,
+        &matrix->storage.coordinate, symmetry,
         num_rows, num_columns, num_nonzeros, rowidx, colidx, data);
 }
 
@@ -448,6 +460,7 @@ int mtxmatrix_init_coordinate_complex_double(
  */
 int mtxmatrix_init_coordinate_integer_single(
     struct mtxmatrix * matrix,
+    enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
     int64_t num_nonzeros,
@@ -457,7 +470,7 @@ int mtxmatrix_init_coordinate_integer_single(
 {
     matrix->type = mtxmatrix_coordinate;
     return mtxmatrix_coordinate_init_integer_single(
-        &matrix->storage.coordinate,
+        &matrix->storage.coordinate, symmetry,
         num_rows, num_columns, num_nonzeros, rowidx, colidx, data);
 }
 
@@ -468,6 +481,7 @@ int mtxmatrix_init_coordinate_integer_single(
  */
 int mtxmatrix_init_coordinate_integer_double(
     struct mtxmatrix * matrix,
+    enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
     int64_t num_nonzeros,
@@ -477,7 +491,7 @@ int mtxmatrix_init_coordinate_integer_double(
 {
     matrix->type = mtxmatrix_coordinate;
     return mtxmatrix_coordinate_init_integer_double(
-        &matrix->storage.coordinate,
+        &matrix->storage.coordinate, symmetry,
         num_rows, num_columns, num_nonzeros, rowidx, colidx, data);
 }
 
@@ -488,6 +502,7 @@ int mtxmatrix_init_coordinate_integer_double(
  */
 int mtxmatrix_init_coordinate_pattern(
     struct mtxmatrix * matrix,
+    enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
     int64_t num_nonzeros,
@@ -496,7 +511,7 @@ int mtxmatrix_init_coordinate_pattern(
 {
     matrix->type = mtxmatrix_coordinate;
     return mtxmatrix_coordinate_init_pattern(
-        &matrix->storage.coordinate,
+        &matrix->storage.coordinate, symmetry,
         num_rows, num_columns, num_nonzeros, rowidx, colidx);
 }
 

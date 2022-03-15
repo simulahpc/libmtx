@@ -72,6 +72,7 @@ enum mtxerror
     MTX_ERR_NOT_CONVERGED,            /* iterative method did not converge */
     MTX_ERR_INVALID_PATH_FORMAT,      /* invalid path format */
     MTX_ERR_INVALID_FIELD,            /* invalid field */
+    MTX_ERR_INVALID_SYMMETRY,         /* invalid symmetry */
     MTX_ERR_INVALID_VECTOR_TYPE,      /* invalid vector type */
     MTX_ERR_INCOMPATIBLE_MTX_OBJECT,  /* incompatible Matrix Market object */
     MTX_ERR_INCOMPATIBLE_MTX_FORMAT,  /* incompatible Matrix Market format */

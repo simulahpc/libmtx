@@ -25,6 +25,7 @@
 
 #include <libmtx/error.h>
 #include <libmtx/mtxfile/header.h>
+#include <libmtx/util/symmetry.h>
 
 #ifdef LIBMTX_HAVE_MPI
 #include <mpi.h>
@@ -318,6 +319,44 @@ int mtxfilesymmetry_parse(
         *bytes_read += t-s;
     if (endptr)
         *endptr = t;
+    return MTX_SUCCESS;
+}
+
+/**
+ * ‘mtxfilesymmetry_from_mtxsymmetry()’ converts a value to the
+ * ‘mtxfilesymmetry’ enum type to a corresponding value from the
+ * ‘mtxsymmetry’ enum type.
+ */
+int mtxfilesymmetry_from_mtxsymmetry(
+    enum mtxfilesymmetry * dst,
+    enum mtxsymmetry src)
+{
+    switch (src) {
+    case mtx_unsymmetric: *dst = mtxfile_general; break;
+    case mtx_symmetric: *dst = mtxfile_symmetric; break;
+    case mtx_skew_symmetric: *dst = mtxfile_skew_symmetric; break;
+    case mtx_hermitian: *dst = mtxfile_hermitian; break;
+    default: return MTX_ERR_INVALID_SYMMETRY;
+    }
+    return MTX_SUCCESS;
+}
+
+/**
+ * ‘mtxfilesymmetry_to_mtxsymmetry()’ converts a value of the
+ * ‘mtxfilesymmetry’ enum type to a corresponding value of the
+ * ‘mtxsymmetry’ enum type.
+ */
+int mtxfilesymmetry_to_mtxsymmetry(
+    enum mtxsymmetry * dst,
+    enum mtxfilesymmetry src)
+{
+    switch (src) {
+    case mtxfile_general: *dst = mtx_unsymmetric; break;
+    case mtxfile_symmetric: *dst = mtx_symmetric; break;
+    case mtxfile_skew_symmetric: *dst = mtx_skew_symmetric; break;
+    case mtxfile_hermitian: *dst = mtx_hermitian; break;
+    default: return MTX_ERR_INVALID_MTX_SYMMETRY;
+    }
     return MTX_SUCCESS;
 }
 

@@ -133,7 +133,7 @@ int mtx_matrix_coordinate_data_alloc(
 
     mtxdata->field = field;
     mtxdata->precision = precision;
-    mtxdata->symmetry = mtx_general;
+    mtxdata->symmetry = mtx_general_;
     mtxdata->triangle = mtx_nontriangular;
     mtxdata->sorting = mtx_unsorted;
     mtxdata->assembly = mtx_unassembled;

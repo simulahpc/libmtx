@@ -49,7 +49,7 @@ int mtx_matrix_submatrix(
         return MTX_ERR_INVALID_MTX_OBJECT;
    if (mtx->format == mtx_array)
        return MTX_ERR_INVALID_MTX_FORMAT;
-     if (mtx->symmetry != mtx_general) {
+     if (mtx->symmetry != mtx_general_) {
         errno = ENOTSUP;
         return MTX_ERR_ERRNO;
     }

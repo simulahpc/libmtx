@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-02-22
+ * Last modified: 2022-03-15
  *
  * Data structures for matrices in array format.
  */
@@ -28,6 +28,7 @@
 
 #include <libmtx/precision.h>
 #include <libmtx/field.h>
+#include <libmtx/util/symmetry.h>
 #include <libmtx/util/transpose.h>
 #include <libmtx/vector/vector.h>
 
@@ -56,6 +57,12 @@ struct mtxmatrix_array
      * ‘precision’ is the precision used to store values.
      */
     enum mtxprecision precision;
+
+    /**
+     * ‘symmetry’ is the matrix symmetry: ‘unsymmetric’, ‘symmetric’,
+     * ‘skew-symmetric’ or ‘hermitian’.
+     */
+    enum mtxsymmetry symmetry;
 
     /**
      * ‘num_rows’ is the number of matrix rows.
@@ -97,6 +104,7 @@ int mtxmatrix_array_alloc(
     struct mtxmatrix_array * matrix,
     enum mtxfield field,
     enum mtxprecision precision,
+    enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns);
 
@@ -132,6 +140,7 @@ int mtxmatrix_array_init_copy(
  */
 int mtxmatrix_array_init_real_single(
     struct mtxmatrix_array * matrix,
+    enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
     const float * data);
@@ -142,6 +151,7 @@ int mtxmatrix_array_init_real_single(
  */
 int mtxmatrix_array_init_real_double(
     struct mtxmatrix_array * matrix,
+    enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
     const double * data);
@@ -152,6 +162,7 @@ int mtxmatrix_array_init_real_double(
  */
 int mtxmatrix_array_init_complex_single(
     struct mtxmatrix_array * matrix,
+    enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
     const float (* data)[2]);
@@ -162,6 +173,7 @@ int mtxmatrix_array_init_complex_single(
  */
 int mtxmatrix_array_init_complex_double(
     struct mtxmatrix_array * matrix,
+    enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
     const double (* data)[2]);
@@ -172,6 +184,7 @@ int mtxmatrix_array_init_complex_double(
  */
 int mtxmatrix_array_init_integer_single(
     struct mtxmatrix_array * matrix,
+    enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
     const int32_t * data);
@@ -182,6 +195,7 @@ int mtxmatrix_array_init_integer_single(
  */
 int mtxmatrix_array_init_integer_double(
     struct mtxmatrix_array * matrix,
+    enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
     const int64_t * data);

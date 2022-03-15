@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-02-22
+ * Last modified: 2022-03-15
  *
  * Data structures for distributed matrices.
  */
@@ -404,6 +404,7 @@ int mtxdistmatrix_alloc_array(
     struct mtxdistmatrix * distmatrix,
     enum mtxfield field,
     enum mtxprecision precision,
+    enum mtxsymmetry symmetry,
     int num_local_rows,
     int num_local_columns,
     const struct mtxpartition * rowpart,
@@ -420,7 +421,7 @@ int mtxdistmatrix_alloc_array(
         distmatrix, num_local_rows, num_local_columns, rowpart, colpart, disterr);
     if (err) return err;
     err = mtxmatrix_alloc_array(
-        &distmatrix->interior, field, precision,
+        &distmatrix->interior, field, precision, symmetry,
         num_local_rows, num_local_columns);
     if (mtxdisterror_allreduce(disterr, err)) {
         mtxpartition_free(&distmatrix->colpart);
@@ -437,6 +438,7 @@ int mtxdistmatrix_alloc_array(
  */
 int mtxdistmatrix_init_array_real_single(
     struct mtxdistmatrix * distmatrix,
+    enum mtxsymmetry symmetry,
     int num_local_rows,
     int num_local_columns,
     const float * data,
@@ -454,7 +456,7 @@ int mtxdistmatrix_init_array_real_single(
         distmatrix, num_local_rows, num_local_columns, rowpart, colpart, disterr);
     if (err) return err;
     err = mtxmatrix_init_array_real_single(
-        &distmatrix->interior, num_local_rows, num_local_columns, data);
+        &distmatrix->interior, symmetry, num_local_rows, num_local_columns, data);
     if (mtxdisterror_allreduce(disterr, err)) {
         mtxpartition_free(&distmatrix->colpart);
         mtxpartition_free(&distmatrix->rowpart);
@@ -470,6 +472,7 @@ int mtxdistmatrix_init_array_real_single(
  */
 int mtxdistmatrix_init_array_real_double(
     struct mtxdistmatrix * distmatrix,
+    enum mtxsymmetry symmetry,
     int num_local_rows,
     int num_local_columns,
     const double * data,
@@ -487,7 +490,7 @@ int mtxdistmatrix_init_array_real_double(
         distmatrix, num_local_rows, num_local_columns, rowpart, colpart, disterr);
     if (err) return err;
     err = mtxmatrix_init_array_real_double(
-        &distmatrix->interior, num_local_rows, num_local_columns, data);
+        &distmatrix->interior, symmetry, num_local_rows, num_local_columns, data);
     if (mtxdisterror_allreduce(disterr, err)) {
         mtxpartition_free(&distmatrix->colpart);
         mtxpartition_free(&distmatrix->rowpart);
@@ -503,6 +506,7 @@ int mtxdistmatrix_init_array_real_double(
  */
 int mtxdistmatrix_init_array_complex_single(
     struct mtxdistmatrix * distmatrix,
+    enum mtxsymmetry symmetry,
     int num_local_rows,
     int num_local_columns,
     const float (* data)[2],
@@ -520,7 +524,7 @@ int mtxdistmatrix_init_array_complex_single(
         distmatrix, num_local_rows, num_local_columns, rowpart, colpart, disterr);
     if (err) return err;
     err = mtxmatrix_init_array_complex_single(
-        &distmatrix->interior, num_local_rows, num_local_columns, data);
+        &distmatrix->interior, symmetry, num_local_rows, num_local_columns, data);
     if (mtxdisterror_allreduce(disterr, err)) {
         mtxpartition_free(&distmatrix->colpart);
         mtxpartition_free(&distmatrix->rowpart);
@@ -536,6 +540,7 @@ int mtxdistmatrix_init_array_complex_single(
  */
 int mtxdistmatrix_init_array_complex_double(
     struct mtxdistmatrix * distmatrix,
+    enum mtxsymmetry symmetry,
     int num_local_rows,
     int num_local_columns,
     const double (* data)[2],
@@ -553,7 +558,7 @@ int mtxdistmatrix_init_array_complex_double(
         distmatrix, num_local_rows, num_local_columns, rowpart, colpart, disterr);
     if (err) return err;
     err = mtxmatrix_init_array_complex_double(
-        &distmatrix->interior, num_local_rows, num_local_columns, data);
+        &distmatrix->interior, symmetry, num_local_rows, num_local_columns, data);
     if (mtxdisterror_allreduce(disterr, err)) {
         mtxpartition_free(&distmatrix->colpart);
         mtxpartition_free(&distmatrix->rowpart);
@@ -569,6 +574,7 @@ int mtxdistmatrix_init_array_complex_double(
  */
 int mtxdistmatrix_init_array_integer_single(
     struct mtxdistmatrix * distmatrix,
+    enum mtxsymmetry symmetry,
     int num_local_rows,
     int num_local_columns,
     const int32_t * data,
@@ -586,7 +592,7 @@ int mtxdistmatrix_init_array_integer_single(
         distmatrix, num_local_rows, num_local_columns, rowpart, colpart, disterr);
     if (err) return err;
     err = mtxmatrix_init_array_integer_single(
-        &distmatrix->interior, num_local_rows, num_local_columns, data);
+        &distmatrix->interior, symmetry, num_local_rows, num_local_columns, data);
     if (mtxdisterror_allreduce(disterr, err)) {
         mtxpartition_free(&distmatrix->colpart);
         mtxpartition_free(&distmatrix->rowpart);
@@ -602,6 +608,7 @@ int mtxdistmatrix_init_array_integer_single(
  */
 int mtxdistmatrix_init_array_integer_double(
     struct mtxdistmatrix * distmatrix,
+    enum mtxsymmetry symmetry,
     int num_local_rows,
     int num_local_columns,
     const int64_t * data,
@@ -619,7 +626,7 @@ int mtxdistmatrix_init_array_integer_double(
         distmatrix, num_local_rows, num_local_columns, rowpart, colpart, disterr);
     if (err) return err;
     err = mtxmatrix_init_array_integer_double(
-        &distmatrix->interior, num_local_rows, num_local_columns, data);
+        &distmatrix->interior, symmetry, num_local_rows, num_local_columns, data);
     if (mtxdisterror_allreduce(disterr, err)) {
         mtxpartition_free(&distmatrix->colpart);
         mtxpartition_free(&distmatrix->rowpart);
@@ -640,6 +647,7 @@ int mtxdistmatrix_alloc_coordinate(
     struct mtxdistmatrix * distmatrix,
     enum mtxfield field,
     enum mtxprecision precision,
+    enum mtxsymmetry symmetry,
     int num_local_rows,
     int num_local_columns,
     int64_t num_local_nonzeros,
@@ -657,7 +665,7 @@ int mtxdistmatrix_alloc_coordinate(
         distmatrix, num_local_rows, num_local_columns, rowpart, colpart, disterr);
     if (err) return err;
     err = mtxmatrix_alloc_coordinate(
-        &distmatrix->interior, field, precision,
+        &distmatrix->interior, field, precision, symmetry,
         num_local_rows, num_local_columns, num_local_nonzeros);
     if (mtxdisterror_allreduce(disterr, err)) {
         mtxpartition_free(&distmatrix->colpart);
@@ -674,6 +682,7 @@ int mtxdistmatrix_alloc_coordinate(
  */
 int mtxdistmatrix_init_coordinate_real_single(
     struct mtxdistmatrix * distmatrix,
+    enum mtxsymmetry symmetry,
     int num_local_rows,
     int num_local_columns,
     int64_t num_local_nonzeros,
@@ -694,7 +703,7 @@ int mtxdistmatrix_init_coordinate_real_single(
         distmatrix, num_local_rows, num_local_columns, rowpart, colpart, disterr);
     if (err) return err;
     err = mtxmatrix_init_coordinate_real_single(
-        &distmatrix->interior, num_local_rows, num_local_columns,
+        &distmatrix->interior, symmetry, num_local_rows, num_local_columns,
         num_local_nonzeros, rowidx, colidx, data);
     if (mtxdisterror_allreduce(disterr, err)) {
         mtxpartition_free(&distmatrix->colpart);
@@ -711,6 +720,7 @@ int mtxdistmatrix_init_coordinate_real_single(
  */
 int mtxdistmatrix_init_coordinate_real_double(
     struct mtxdistmatrix * distmatrix,
+    enum mtxsymmetry symmetry,
     int num_local_rows,
     int num_local_columns,
     int64_t num_local_nonzeros,
@@ -731,7 +741,7 @@ int mtxdistmatrix_init_coordinate_real_double(
         distmatrix, num_local_rows, num_local_columns, rowpart, colpart, disterr);
     if (err) return err;
     err = mtxmatrix_init_coordinate_real_double(
-        &distmatrix->interior, num_local_rows, num_local_columns,
+        &distmatrix->interior, symmetry, num_local_rows, num_local_columns,
         num_local_nonzeros, rowidx, colidx, data);
     if (mtxdisterror_allreduce(disterr, err)) {
         mtxpartition_free(&distmatrix->colpart);
@@ -748,6 +758,7 @@ int mtxdistmatrix_init_coordinate_real_double(
  */
 int mtxdistmatrix_init_coordinate_complex_single(
     struct mtxdistmatrix * distmatrix,
+    enum mtxsymmetry symmetry,
     int num_local_rows,
     int num_local_columns,
     int64_t num_local_nonzeros,
@@ -768,7 +779,7 @@ int mtxdistmatrix_init_coordinate_complex_single(
         distmatrix, num_local_rows, num_local_columns, rowpart, colpart, disterr);
     if (err) return err;
     err = mtxmatrix_init_coordinate_complex_single(
-        &distmatrix->interior, num_local_rows, num_local_columns,
+        &distmatrix->interior, symmetry, num_local_rows, num_local_columns,
         num_local_nonzeros, rowidx, colidx, data);
     if (mtxdisterror_allreduce(disterr, err)) {
         mtxpartition_free(&distmatrix->colpart);
@@ -785,6 +796,7 @@ int mtxdistmatrix_init_coordinate_complex_single(
  */
 int mtxdistmatrix_init_coordinate_complex_double(
     struct mtxdistmatrix * distmatrix,
+    enum mtxsymmetry symmetry,
     int num_local_rows,
     int num_local_columns,
     int64_t num_local_nonzeros,
@@ -805,7 +817,7 @@ int mtxdistmatrix_init_coordinate_complex_double(
         distmatrix, num_local_rows, num_local_columns, rowpart, colpart, disterr);
     if (err) return err;
     err = mtxmatrix_init_coordinate_complex_double(
-        &distmatrix->interior, num_local_rows, num_local_columns,
+        &distmatrix->interior, symmetry, num_local_rows, num_local_columns,
         num_local_nonzeros, rowidx, colidx, data);
     if (mtxdisterror_allreduce(disterr, err)) {
         mtxpartition_free(&distmatrix->colpart);
@@ -822,6 +834,7 @@ int mtxdistmatrix_init_coordinate_complex_double(
  */
 int mtxdistmatrix_init_coordinate_integer_single(
     struct mtxdistmatrix * distmatrix,
+    enum mtxsymmetry symmetry,
     int num_local_rows,
     int num_local_columns,
     int64_t num_local_nonzeros,
@@ -842,7 +855,7 @@ int mtxdistmatrix_init_coordinate_integer_single(
         distmatrix, num_local_rows, num_local_columns, rowpart, colpart, disterr);
     if (err) return err;
     err = mtxmatrix_init_coordinate_integer_single(
-        &distmatrix->interior, num_local_rows, num_local_columns,
+        &distmatrix->interior, symmetry, num_local_rows, num_local_columns,
         num_local_nonzeros, rowidx, colidx, data);
     if (mtxdisterror_allreduce(disterr, err)) {
         mtxpartition_free(&distmatrix->colpart);
@@ -859,6 +872,7 @@ int mtxdistmatrix_init_coordinate_integer_single(
  */
 int mtxdistmatrix_init_coordinate_integer_double(
     struct mtxdistmatrix * distmatrix,
+    enum mtxsymmetry symmetry,
     int num_local_rows,
     int num_local_columns,
     int64_t num_local_nonzeros,
@@ -879,7 +893,7 @@ int mtxdistmatrix_init_coordinate_integer_double(
         distmatrix, num_local_rows, num_local_columns, rowpart, colpart, disterr);
     if (err) return err;
     err = mtxmatrix_init_coordinate_integer_double(
-        &distmatrix->interior, num_local_rows, num_local_columns,
+        &distmatrix->interior, symmetry, num_local_rows, num_local_columns,
         num_local_nonzeros, rowidx, colidx, data);
     if (mtxdisterror_allreduce(disterr, err)) {
         mtxpartition_free(&distmatrix->colpart);
@@ -896,6 +910,7 @@ int mtxdistmatrix_init_coordinate_integer_double(
  */
 int mtxdistmatrix_init_coordinate_pattern(
     struct mtxdistmatrix * distmatrix,
+    enum mtxsymmetry symmetry,
     int num_local_rows,
     int num_local_columns,
     int64_t num_local_nonzeros,
@@ -915,7 +930,7 @@ int mtxdistmatrix_init_coordinate_pattern(
         distmatrix, num_local_rows, num_local_columns, rowpart, colpart, disterr);
     if (err) return err;
     err = mtxmatrix_init_coordinate_pattern(
-        &distmatrix->interior, num_local_rows, num_local_columns,
+        &distmatrix->interior, symmetry, num_local_rows, num_local_columns,
         num_local_nonzeros, rowidx, colidx);
     if (mtxdisterror_allreduce(disterr, err)) {
         mtxpartition_free(&distmatrix->colpart);

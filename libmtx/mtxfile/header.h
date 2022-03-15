@@ -26,6 +26,8 @@
 
 #include <libmtx/libmtx-config.h>
 
+#include <libmtx/util/symmetry.h>
+
 #ifdef LIBMTX_HAVE_MPI
 #include <mpi.h>
 #endif
@@ -227,6 +229,24 @@ int mtxfilesymmetry_parse(
     const char ** endptr,
     const char * s,
     const char * valid_delimiters);
+
+/**
+ * ‘mtxfilesymmetry_from_mtxsymmetry()’ converts a value to the
+ * ‘mtxfilesymmetry’ enum type to a corresponding value from the
+ * ‘mtxsymmetry’ enum type.
+ */
+int mtxfilesymmetry_from_mtxsymmetry(
+    enum mtxfilesymmetry * dst,
+    enum mtxsymmetry src);
+
+/**
+ * ‘mtxfilesymmetry_to_mtxsymmetry()’ converts a value of the
+ * ‘mtxfilesymmetry’ enum type to a corresponding value of the
+ * ‘mtxsymmetry’ enum type.
+ */
+int mtxfilesymmetry_to_mtxsymmetry(
+    enum mtxsymmetry * dst,
+    enum mtxfilesymmetry src);
 
 /*
  * Matrix Market header.

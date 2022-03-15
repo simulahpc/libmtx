@@ -61,7 +61,7 @@ int test_mtx_copy_init(void)
         {3,3,4.0f},
         {4,1,5.0f}, {4,4,6.0f}};
     err = mtx_init_matrix_coordinate_real_single(
-        &srcmtx, mtx_general, mtx_nontriangular,
+        &srcmtx, mtx_general_, mtx_nontriangular,
         mtx_unsorted, mtx_unassembled,
         num_comment_lines, comment_lines,
         num_rows, num_columns, size, data);
@@ -74,7 +74,7 @@ int test_mtx_copy_init(void)
     TEST_ASSERT_EQ(mtx_matrix, destmtx.object);
     TEST_ASSERT_EQ(mtx_coordinate, destmtx.format);
     TEST_ASSERT_EQ(mtx_real, destmtx.field);
-    TEST_ASSERT_EQ(mtx_general, destmtx.symmetry);
+    TEST_ASSERT_EQ(mtx_general_, destmtx.symmetry);
     TEST_ASSERT_EQ(1, destmtx.num_comment_lines);
     TEST_ASSERT_STREQ("% a comment\n", destmtx.comment_lines[0]);
     TEST_ASSERT_EQ(4, destmtx.num_rows);
@@ -207,7 +207,7 @@ int test_mtx_set_zero_matrix_coordinate_real_single(void)
         {1, 1, 1.0f}, {2, 3, 2.0f}, {4, 2, 4.0f}};
     int size = sizeof(data) / sizeof(*data);
     err = mtx_init_matrix_coordinate_real_single(
-        &mtx, mtx_general, mtx_nontriangular,
+        &mtx, mtx_general_, mtx_nontriangular,
         mtx_unsorted, mtx_unassembled,
         num_comment_lines, comment_lines,
         num_rows, num_columns, size, data);

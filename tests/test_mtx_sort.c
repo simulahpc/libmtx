@@ -60,7 +60,7 @@ int test_mtx_sort_matrix_coordinate_real_single(void)
         {2,2,3.0f},
         {4,4,6.0f}};
     err = mtx_init_matrix_coordinate_real_single(
-        &mtx, mtx_general, mtx_nontriangular,
+        &mtx, mtx_general_, mtx_nontriangular,
         mtx_unsorted, mtx_unassembled,
         num_comment_lines, comment_lines,
         num_rows, num_columns, size, data);
@@ -73,7 +73,7 @@ int test_mtx_sort_matrix_coordinate_real_single(void)
     TEST_ASSERT_EQ(mtx_matrix, mtx.object);
     TEST_ASSERT_EQ(mtx_coordinate, mtx.format);
     TEST_ASSERT_EQ(mtx_real, mtx.field);
-    TEST_ASSERT_EQ(mtx_general, mtx.symmetry);
+    TEST_ASSERT_EQ(mtx_general_, mtx.symmetry);
     TEST_ASSERT_EQ(4, mtx.num_rows);
     TEST_ASSERT_EQ(4, mtx.num_columns);
     TEST_ASSERT_EQ(6, mtx.num_nonzeros);
@@ -128,7 +128,7 @@ int test_mtx_sort_matrix_coordinate_real_double(void)
         {2,2,3.0},
         {4,4,6.0}};
     err = mtx_init_matrix_coordinate_real_double(
-        &mtx, mtx_general, mtx_nontriangular,
+        &mtx, mtx_general_, mtx_nontriangular,
         mtx_unsorted, mtx_unassembled,
         num_comment_lines, comment_lines,
         num_rows, num_columns, size, data);
@@ -141,7 +141,7 @@ int test_mtx_sort_matrix_coordinate_real_double(void)
     TEST_ASSERT_EQ(mtx_matrix, mtx.object);
     TEST_ASSERT_EQ(mtx_coordinate, mtx.format);
     TEST_ASSERT_EQ(mtx_real, mtx.field);
-    TEST_ASSERT_EQ(mtx_general, mtx.symmetry);
+    TEST_ASSERT_EQ(mtx_general_, mtx.symmetry);
     TEST_ASSERT_EQ(4, mtx.num_rows);
     TEST_ASSERT_EQ(4, mtx.num_columns);
     TEST_ASSERT_EQ(6, mtx.num_nonzeros);
@@ -197,7 +197,7 @@ int test_mtx_sort_matrix_coordinate_real_double_column_major(void)
         {2,2,3.0},
         {4,4,6.0}};
     err = mtx_init_matrix_coordinate_real_double(
-        &mtx, mtx_general, mtx_nontriangular,
+        &mtx, mtx_general_, mtx_nontriangular,
         mtx_unsorted, mtx_unassembled,
         num_comment_lines, comment_lines,
         num_rows, num_columns, size, data);
@@ -210,7 +210,7 @@ int test_mtx_sort_matrix_coordinate_real_double_column_major(void)
     TEST_ASSERT_EQ(mtx_matrix, mtx.object);
     TEST_ASSERT_EQ(mtx_coordinate, mtx.format);
     TEST_ASSERT_EQ(mtx_real, mtx.field);
-    TEST_ASSERT_EQ(mtx_general, mtx.symmetry);
+    TEST_ASSERT_EQ(mtx_general_, mtx.symmetry);
     TEST_ASSERT_EQ(4, mtx.num_rows);
     TEST_ASSERT_EQ(4, mtx.num_columns);
     TEST_ASSERT_EQ(6, mtx.num_nonzeros);
@@ -266,7 +266,7 @@ int test_mtx_sort_matrix_coordinate_complex_single(void)
         {2,2,{3.0f,-3.0f}},
         {4,4,{6.0f,-6.0f}}};
     err = mtx_init_matrix_coordinate_complex_single(
-        &mtx, mtx_general, mtx_nontriangular,
+        &mtx, mtx_general_, mtx_nontriangular,
         mtx_unsorted, mtx_unassembled,
         num_comment_lines, comment_lines,
         num_rows, num_columns, size, data);
@@ -279,7 +279,7 @@ int test_mtx_sort_matrix_coordinate_complex_single(void)
     TEST_ASSERT_EQ(mtx_matrix, mtx.object);
     TEST_ASSERT_EQ(mtx_coordinate, mtx.format);
     TEST_ASSERT_EQ(mtx_complex, mtx.field);
-    TEST_ASSERT_EQ(mtx_general, mtx.symmetry);
+    TEST_ASSERT_EQ(mtx_general_, mtx.symmetry);
     TEST_ASSERT_EQ(4, mtx.num_rows);
     TEST_ASSERT_EQ(4, mtx.num_columns);
     TEST_ASSERT_EQ(6, mtx.num_nonzeros);
@@ -335,7 +335,7 @@ int test_mtx_sort_matrix_coordinate_integer_single(void)
         {2,2,3},
         {4,4,6}};
     err = mtx_init_matrix_coordinate_integer_single(
-        &mtx, mtx_general, mtx_nontriangular,
+        &mtx, mtx_general_, mtx_nontriangular,
         mtx_unsorted, mtx_unassembled,
         num_comment_lines, comment_lines,
         num_rows, num_columns, size, data);
@@ -348,7 +348,7 @@ int test_mtx_sort_matrix_coordinate_integer_single(void)
     TEST_ASSERT_EQ(mtx_matrix, mtx.object);
     TEST_ASSERT_EQ(mtx_coordinate, mtx.format);
     TEST_ASSERT_EQ(mtx_integer, mtx.field);
-    TEST_ASSERT_EQ(mtx_general, mtx.symmetry);
+    TEST_ASSERT_EQ(mtx_general_, mtx.symmetry);
     TEST_ASSERT_EQ(4, mtx.num_rows);
     TEST_ASSERT_EQ(4, mtx.num_columns);
     TEST_ASSERT_EQ(6, mtx.num_nonzeros);
@@ -404,7 +404,7 @@ int test_mtx_sort_matrix_coordinate_pattern(void)
         {2,2},
         {4,4}};
     err = mtx_init_matrix_coordinate_pattern(
-        &mtx, mtx_general, mtx_nontriangular,
+        &mtx, mtx_general_, mtx_nontriangular,
         mtx_unsorted, mtx_unassembled,
         num_comment_lines, comment_lines,
         num_rows, num_columns, size, data);
@@ -417,7 +417,7 @@ int test_mtx_sort_matrix_coordinate_pattern(void)
     TEST_ASSERT_EQ(mtx_matrix, mtx.object);
     TEST_ASSERT_EQ(mtx_coordinate, mtx.format);
     TEST_ASSERT_EQ(mtx_pattern, mtx.field);
-    TEST_ASSERT_EQ(mtx_general, mtx.symmetry);
+    TEST_ASSERT_EQ(mtx_general_, mtx.symmetry);
     TEST_ASSERT_EQ(4, mtx.num_rows);
     TEST_ASSERT_EQ(4, mtx.num_columns);
     TEST_ASSERT_EQ(6, mtx.num_nonzeros);

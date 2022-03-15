@@ -90,10 +90,10 @@ const char * mtx_field_str(
  */
 enum mtx_symmetry
 {
-    mtx_general,        /* general, non-symmetric matrix */
-    mtx_symmetric,      /* symmetric matrix */
-    mtx_skew_symmetric, /* skew-symmetric matrix */
-    mtx_hermitian       /* Hermitian matrix */
+    mtx_general_,        /* general, non-symmetric matrix */
+    mtx_symmetric_,      /* symmetric matrix */
+    mtx_skew_symmetric_, /* skew-symmetric matrix */
+    mtx_hermitian_       /* Hermitian matrix */
 };
 
 /**

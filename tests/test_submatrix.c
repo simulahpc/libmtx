@@ -57,7 +57,7 @@ int test_mtx_matrix_submatrix_coordinate_real_general(void)
         {3,3,4.0f},
         {4,1,5.0f}, {4,4,6.0f}};
     err = mtx_init_matrix_coordinate_real_single(
-        &mtx, mtx_general,
+        &mtx, mtx_general_,
         mtx_nontriangular, mtx_unsorted, mtx_unassembled,
         num_comment_lines, comment_lines,
         num_rows, num_columns, size, data);
@@ -74,7 +74,7 @@ int test_mtx_matrix_submatrix_coordinate_real_general(void)
     TEST_ASSERT_EQ(mtx_matrix, submtx.object);
     TEST_ASSERT_EQ(mtx_coordinate, submtx.format);
     TEST_ASSERT_EQ(mtx_real, submtx.field);
-    TEST_ASSERT_EQ(mtx_general, submtx.symmetry);
+    TEST_ASSERT_EQ(mtx_general_, submtx.symmetry);
     TEST_ASSERT_EQ(4, submtx.num_rows);
     TEST_ASSERT_EQ(4, submtx.num_columns);
     TEST_ASSERT_EQ(3, submtx.num_nonzeros);
@@ -83,7 +83,7 @@ int test_mtx_matrix_submatrix_coordinate_real_general(void)
         &submtx.storage.matrix_coordinate;
     TEST_ASSERT_EQ(mtx_real, matrix_coordinate->field);
     TEST_ASSERT_EQ(mtx_single, matrix_coordinate->precision);
-    TEST_ASSERT_EQ(mtx_general, matrix_coordinate->symmetry);
+    TEST_ASSERT_EQ(mtx_general_, matrix_coordinate->symmetry);
     TEST_ASSERT_EQ(mtx_nontriangular, matrix_coordinate->triangle);
     TEST_ASSERT_EQ(mtx_unsorted, matrix_coordinate->sorting);
     TEST_ASSERT_EQ(mtx_unassembled, matrix_coordinate->assembly);

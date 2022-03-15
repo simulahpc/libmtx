@@ -112,6 +112,8 @@ libmtx_la_SOURCES = \
 	libmtx/util/permute.h \
 	libmtx/util/sort.c \
 	libmtx/util/sort.h \
+	libmtx/util/symmetry.c \
+	libmtx/util/symmetry.h \
 	libmtx/util/transpose.c \
 	libmtx/util/transpose.h \
 	libmtx/vector/array.c \

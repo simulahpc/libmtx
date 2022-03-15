@@ -89,10 +89,10 @@ const char * mtx_symmetry_str(
     enum mtx_symmetry symmetry)
 {
     switch (symmetry) {
-    case mtx_general: return "general";
-    case mtx_symmetric: return "symmetric";
-    case mtx_skew_symmetric: return "skew-symmetric";
-    case mtx_hermitian: return "hermitian";
+    case mtx_general_: return "general";
+    case mtx_symmetric_: return "symmetric";
+    case mtx_skew_symmetric_: return "skew-symmetric";
+    case mtx_hermitian_: return "hermitian";
     default: return "unknown";
     }
 }
@@ -182,17 +182,17 @@ int mtx_header_parse(
 
     /* Parse the symmetry type. */
     if (strcmp("general", t) == 0 || strcmp("general\n", t) == 0) {
-        header->symmetry = mtx_general;
+        header->symmetry = mtx_general_;
     } else if (strcmp("symmetric", t) == 0 || strcmp("symmetric\n", t) == 0) {
-        header->symmetry = mtx_symmetric;
+        header->symmetry = mtx_symmetric_;
     } else if (strcmp("skew-symmetric", t) == 0 ||
                strcmp("skew-symmetric\n", t) == 0)
     {
-        header->symmetry = mtx_skew_symmetric;
+        header->symmetry = mtx_skew_symmetric_;
     } else if (strcmp("hermitian", t) == 0 || strcmp("hermitian\n", t) == 0 ||
                strcmp("Hermitian", t) == 0 || strcmp("Hermitian\n", t) == 0)
     {
-        header->symmetry = mtx_hermitian;
+        header->symmetry = mtx_hermitian_;
     } else {
         return MTX_ERR_INVALID_MTX_SYMMETRY;
     }

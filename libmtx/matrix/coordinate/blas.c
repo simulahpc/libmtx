@@ -232,7 +232,7 @@ int mtx_matrix_coordinate_snrm2(
     const struct mtx_matrix_coordinate_data * x,
     float * nrm2)
 {
-    if (x->symmetry != mtx_general)
+    if (x->symmetry != mtx_general_)
         return MTX_ERR_INVALID_MTX_SYMMETRY;
 
     if (x->field == mtx_real) {
@@ -281,7 +281,7 @@ int mtx_matrix_coordinate_dnrm2(
     const struct mtx_matrix_coordinate_data * x,
     double * nrm2)
 {
-    if (x->symmetry != mtx_general)
+    if (x->symmetry != mtx_general_)
         return MTX_ERR_INVALID_MTX_SYMMETRY;
 
     if (x->field == mtx_real) {
@@ -338,7 +338,7 @@ int mtx_matrix_coordinate_sgemv(
     float beta,
     struct mtx_vector_array_data * y)
 {
-    if (A->symmetry != mtx_general)
+    if (A->symmetry != mtx_general_)
         return MTX_ERR_INVALID_MTX_SYMMETRY;
     if (A->num_rows != y->size ||
         A->num_columns != x->size)
@@ -414,7 +414,7 @@ int mtx_matrix_coordinate_dgemv(
     double beta,
     struct mtx_vector_array_data * y)
 {
-    if (A->symmetry != mtx_general)
+    if (A->symmetry != mtx_general_)
         return MTX_ERR_INVALID_MTX_SYMMETRY;
     if (A->num_rows != y->size ||
         A->num_columns != x->size)

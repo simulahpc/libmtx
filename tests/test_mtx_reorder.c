@@ -123,7 +123,7 @@ int test_mtx_permute_matrix_array_real_single(void)
         float data[] = {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f, 9.0f};
         size_t size = sizeof(data) / sizeof(*data);
         err = mtx_init_matrix_array_real_single(
-            &mtx, mtx_general, mtx_nontriangular, mtx_row_major,
+            &mtx, mtx_general_, mtx_nontriangular, mtx_row_major,
             num_comment_lines, comment_lines,
             num_rows, num_columns, size, data);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
@@ -162,7 +162,7 @@ int test_mtx_permute_matrix_array_real_single(void)
         float data[] = {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f, 9.0f};
         size_t size = sizeof(data) / sizeof(*data);
         err = mtx_init_matrix_array_real_single(
-            &mtx, mtx_general, mtx_nontriangular, mtx_row_major,
+            &mtx, mtx_general_, mtx_nontriangular, mtx_row_major,
             num_comment_lines, comment_lines,
             num_rows, num_columns, size, data);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
@@ -201,7 +201,7 @@ int test_mtx_permute_matrix_array_real_single(void)
         float data[] = {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f, 9.0f};
         size_t size = sizeof(data) / sizeof(*data);
         err = mtx_init_matrix_array_real_single(
-            &mtx, mtx_general, mtx_nontriangular, mtx_row_major,
+            &mtx, mtx_general_, mtx_nontriangular, mtx_row_major,
             num_comment_lines, comment_lines,
             num_rows, num_columns, size, data);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
@@ -253,7 +253,7 @@ int test_mtx_permute_matrix_coordinate_real_single(void)
             {3,3,4.0f},
             {4,1,5.0f}, {4,4,6.0f}};
         err = mtx_init_matrix_coordinate_real_single(
-            &mtx, mtx_general, mtx_nontriangular,
+            &mtx, mtx_general_, mtx_nontriangular,
             mtx_unsorted, mtx_unassembled,
             num_comment_lines, comment_lines,
             num_rows, num_columns, size, data);
@@ -301,7 +301,7 @@ int test_mtx_permute_matrix_coordinate_real_single(void)
             {3,3,4.0f},
             {4,1,5.0f}, {4,4,6.0f}};
         err = mtx_init_matrix_coordinate_real_single(
-            &mtx, mtx_general, mtx_nontriangular,
+            &mtx, mtx_general_, mtx_nontriangular,
             mtx_unsorted, mtx_unassembled,
             num_comment_lines, comment_lines,
             num_rows, num_columns, size, data);
@@ -349,7 +349,7 @@ int test_mtx_permute_matrix_coordinate_real_single(void)
             {3,3,4.0f},
             {4,1,5.0f}, {4,4,6.0f}};
         err = mtx_init_matrix_coordinate_real_single(
-            &mtx, mtx_general, mtx_nontriangular,
+            &mtx, mtx_general_, mtx_nontriangular,
             mtx_unsorted, mtx_unassembled,
             num_comment_lines, comment_lines,
             num_rows, num_columns, size, data);
@@ -416,7 +416,7 @@ int test_mtx_permute_matrix_coordinate_pattern(void)
         {8,1}, {8,2}, {8,4}, {8,5},
         {9,1}, {9,4}};
     err = mtx_init_matrix_coordinate_pattern(
-        &mtx, mtx_general, mtx_nontriangular,
+        &mtx, mtx_general_, mtx_nontriangular,
         mtx_unsorted, mtx_unassembled,
         num_comment_lines, comment_lines,
         num_rows, num_columns, size, data);
@@ -491,7 +491,7 @@ int test_mtx_matrix_reorder_rcm_coordinate_real_single(void)
         {5,3,10.0f}};
     size_t size = sizeof(data) / sizeof(*data);
     err = mtx_init_matrix_coordinate_real_single(
-        &mtx, mtx_general, mtx_nontriangular,
+        &mtx, mtx_general_, mtx_nontriangular,
         mtx_row_major, mtx_unassembled,
         num_comment_lines, comment_lines,
         num_rows, num_columns, size, data);
@@ -513,7 +513,7 @@ int test_mtx_matrix_reorder_rcm_coordinate_real_single(void)
     TEST_ASSERT_EQ(mtx_matrix, mtx.object);
     TEST_ASSERT_EQ(mtx_coordinate, mtx.format);
     TEST_ASSERT_EQ(mtx_real, mtx.field);
-    TEST_ASSERT_EQ(mtx_general, mtx.symmetry);
+    TEST_ASSERT_EQ(mtx_general_, mtx.symmetry);
     TEST_ASSERT_EQ(0, mtx.num_comment_lines);
     TEST_ASSERT_EQ(5, mtx.num_rows);
     TEST_ASSERT_EQ(5, mtx.num_columns);

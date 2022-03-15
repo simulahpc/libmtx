@@ -835,13 +835,13 @@ static int read_mtx(
     if (header->object == mtx_matrix) {
         if (header->format == mtx_array) {
             enum mtx_triangle triangle;
-            if (header->symmetry == mtx_general) {
+            if (header->symmetry == mtx_general_) {
                 triangle = mtx_nontriangular;
-            } else if (header->symmetry == mtx_symmetric ||
-                       header->symmetry == mtx_hermitian)
+            } else if (header->symmetry == mtx_symmetric_ ||
+                       header->symmetry == mtx_hermitian_)
             {
                 triangle = mtx_lower_triangular;
-            } else if (header->symmetry == mtx_skew_symmetric) {
+            } else if (header->symmetry == mtx_skew_symmetric_) {
                 triangle = mtx_strict_lower_triangular;
             } else {
                 mtx_comments_free(&comments);

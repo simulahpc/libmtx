@@ -203,12 +203,12 @@ int mtx_matrix_array_data_alloc(
     int num_columns)
 {
     int err;
-    if ((symmetry == mtx_symmetric ||
-         symmetry == mtx_hermitian) &&
+    if ((symmetry == mtx_symmetric_ ||
+         symmetry == mtx_hermitian_) &&
         triangle != mtx_lower_triangular &&
         triangle != mtx_upper_triangular)
         return MTX_ERR_INVALID_MTX_TRIANGLE;
-    if (symmetry == mtx_skew_symmetric &&
+    if (symmetry == mtx_skew_symmetric_ &&
         triangle != mtx_strict_lower_triangular &&
         triangle != mtx_strict_upper_triangular)
         return MTX_ERR_INVALID_MTX_TRIANGLE;

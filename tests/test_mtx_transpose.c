@@ -54,7 +54,7 @@ int test_mtx_transpose_matrix_coordinate_real_single_general(void)
         {4,1,5.0f}, {4,4,6.0f}};
     size_t size = sizeof(data) / sizeof(*data);
     err = mtx_init_matrix_coordinate_real_single(
-        &mtx, mtx_general, mtx_nontriangular, mtx_unsorted, mtx_unassembled,
+        &mtx, mtx_general_, mtx_nontriangular, mtx_unsorted, mtx_unassembled,
         num_comment_lines, comment_lines,
         num_rows, num_columns, size, data);
     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
@@ -63,7 +63,7 @@ int test_mtx_transpose_matrix_coordinate_real_single_general(void)
     TEST_ASSERT_EQ(mtx_matrix, mtx.object);
     TEST_ASSERT_EQ(mtx_coordinate, mtx.format);
     TEST_ASSERT_EQ(mtx_real, mtx.field);
-    TEST_ASSERT_EQ(mtx_general, mtx.symmetry);
+    TEST_ASSERT_EQ(mtx_general_, mtx.symmetry);
     TEST_ASSERT_EQ(4, mtx.num_rows);
     TEST_ASSERT_EQ(4, mtx.num_columns);
     TEST_ASSERT_EQ(6, mtx.num_nonzeros);
@@ -115,7 +115,7 @@ int test_mtx_transpose_matrix_coordinate_real_single_symmetric(void)
         {4,1,4.0f}, {4,4,5.0f}};
     size_t size = sizeof(data) / sizeof(*data);
     err = mtx_init_matrix_coordinate_real_single(
-        &mtx, mtx_symmetric, mtx_nontriangular, mtx_unsorted, mtx_unassembled,
+        &mtx, mtx_symmetric_, mtx_nontriangular, mtx_unsorted, mtx_unassembled,
         num_comment_lines, comment_lines,
         num_rows, num_columns, size, data);
     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
@@ -124,7 +124,7 @@ int test_mtx_transpose_matrix_coordinate_real_single_symmetric(void)
     TEST_ASSERT_EQ(mtx_matrix, mtx.object);
     TEST_ASSERT_EQ(mtx_coordinate, mtx.format);
     TEST_ASSERT_EQ(mtx_real, mtx.field);
-    TEST_ASSERT_EQ(mtx_symmetric, mtx.symmetry);
+    TEST_ASSERT_EQ(mtx_symmetric_, mtx.symmetry);
     TEST_ASSERT_EQ(4, mtx.num_rows);
     TEST_ASSERT_EQ(4, mtx.num_columns);
     TEST_ASSERT_EQ(5, mtx.num_nonzeros);
@@ -174,7 +174,7 @@ int test_mtx_transpose_matrix_coordinate_real_double_general(void)
         {4,1,5.0}, {4,4,6.0}};
     size_t size = sizeof(data) / sizeof(*data);
     err = mtx_init_matrix_coordinate_real_double(
-        &mtx, mtx_general, mtx_nontriangular, mtx_unsorted, mtx_unassembled,
+        &mtx, mtx_general_, mtx_nontriangular, mtx_unsorted, mtx_unassembled,
         num_comment_lines, comment_lines,
         num_rows, num_columns, size, data);
     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
@@ -183,7 +183,7 @@ int test_mtx_transpose_matrix_coordinate_real_double_general(void)
     TEST_ASSERT_EQ(mtx_matrix, mtx.object);
     TEST_ASSERT_EQ(mtx_coordinate, mtx.format);
     TEST_ASSERT_EQ(mtx_real, mtx.field);
-    TEST_ASSERT_EQ(mtx_general, mtx.symmetry);
+    TEST_ASSERT_EQ(mtx_general_, mtx.symmetry);
     TEST_ASSERT_EQ(4, mtx.num_rows);
     TEST_ASSERT_EQ(4, mtx.num_columns);
     TEST_ASSERT_EQ(6, mtx.num_nonzeros);
@@ -235,7 +235,7 @@ int test_mtx_transpose_matrix_coordinate_complex_single_general(void)
         {4,1,5.0,-5.0}, {4,4,6.0,-6.0}};
     size_t size = sizeof(data) / sizeof(*data);
     err = mtx_init_matrix_coordinate_complex_single(
-        &mtx, mtx_general, mtx_nontriangular, mtx_unsorted, mtx_unassembled,
+        &mtx, mtx_general_, mtx_nontriangular, mtx_unsorted, mtx_unassembled,
         num_comment_lines, comment_lines,
         num_rows, num_columns, size, data);
     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
@@ -244,7 +244,7 @@ int test_mtx_transpose_matrix_coordinate_complex_single_general(void)
     TEST_ASSERT_EQ(mtx_matrix, mtx.object);
     TEST_ASSERT_EQ(mtx_coordinate, mtx.format);
     TEST_ASSERT_EQ(mtx_complex, mtx.field);
-    TEST_ASSERT_EQ(mtx_general, mtx.symmetry);
+    TEST_ASSERT_EQ(mtx_general_, mtx.symmetry);
     TEST_ASSERT_EQ(4, mtx.num_rows);
     TEST_ASSERT_EQ(4, mtx.num_columns);
     TEST_ASSERT_EQ(6, mtx.num_nonzeros);
@@ -296,7 +296,7 @@ int test_mtx_transpose_matrix_coordinate_integer_single_general(void)
         {4,1,5}, {4,4,6}};
     size_t size = sizeof(data) / sizeof(*data);
     err = mtx_init_matrix_coordinate_integer_single(
-        &mtx, mtx_general, mtx_nontriangular, mtx_unsorted, mtx_unassembled,
+        &mtx, mtx_general_, mtx_nontriangular, mtx_unsorted, mtx_unassembled,
         num_comment_lines, comment_lines,
         num_rows, num_columns, size, data);
     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
@@ -305,7 +305,7 @@ int test_mtx_transpose_matrix_coordinate_integer_single_general(void)
     TEST_ASSERT_EQ(mtx_matrix, mtx.object);
     TEST_ASSERT_EQ(mtx_coordinate, mtx.format);
     TEST_ASSERT_EQ(mtx_integer, mtx.field);
-    TEST_ASSERT_EQ(mtx_general, mtx.symmetry);
+    TEST_ASSERT_EQ(mtx_general_, mtx.symmetry);
     TEST_ASSERT_EQ(4, mtx.num_rows);
     TEST_ASSERT_EQ(4, mtx.num_columns);
     TEST_ASSERT_EQ(6, mtx.num_nonzeros);
@@ -357,7 +357,7 @@ int test_mtx_transpose_matrix_coordinate_pattern_general(void)
         {4,1}, {4,4}};
     size_t size = sizeof(data) / sizeof(*data);
     err = mtx_init_matrix_coordinate_pattern(
-        &mtx, mtx_general, mtx_nontriangular, mtx_unsorted, mtx_unassembled,
+        &mtx, mtx_general_, mtx_nontriangular, mtx_unsorted, mtx_unassembled,
         num_comment_lines, comment_lines,
         num_rows, num_columns, size, data);
     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
@@ -366,7 +366,7 @@ int test_mtx_transpose_matrix_coordinate_pattern_general(void)
     TEST_ASSERT_EQ(mtx_matrix, mtx.object);
     TEST_ASSERT_EQ(mtx_coordinate, mtx.format);
     TEST_ASSERT_EQ(mtx_pattern, mtx.field);
-    TEST_ASSERT_EQ(mtx_general, mtx.symmetry);
+    TEST_ASSERT_EQ(mtx_general_, mtx.symmetry);
     TEST_ASSERT_EQ(4, mtx.num_rows);
     TEST_ASSERT_EQ(4, mtx.num_columns);
     TEST_ASSERT_EQ(6, mtx.num_nonzeros);

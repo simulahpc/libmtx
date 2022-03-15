@@ -261,7 +261,7 @@ int test_mtx_sgemv_array_real_single(void)
     float A_data[] = {1.0f, 2.0f, 3.0f, 4.0f};
     size_t size = sizeof(A_data) / sizeof(*A_data);
     err = mtx_init_matrix_array_real_single(
-        &A, mtx_general, mtx_nontriangular, mtx_row_major,
+        &A, mtx_general_, mtx_nontriangular, mtx_row_major,
         0, NULL, num_rows, num_columns, size, A_data);
     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
@@ -313,7 +313,7 @@ int test_mtx_dgemv_array_real_double(void)
     double A_data[] = {1.0, 2.0, 3.0, 4.0};
     size_t size = sizeof(A_data) / sizeof(*A_data);
     err = mtx_init_matrix_array_real_double(
-        &A, mtx_general, mtx_nontriangular, mtx_row_major,
+        &A, mtx_general_, mtx_nontriangular, mtx_row_major,
         0, NULL, num_rows, num_columns, size, A_data);
     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
@@ -369,7 +369,7 @@ int test_mtx_sgemv_coordinate_real_single(void)
     const struct mtx_matrix_coordinate_real_single Adata[] = {
         {1,1,1.0f}, {1,2,2.0f}, {2,2,3.0f}};
     err = mtx_init_matrix_coordinate_real_single(
-        &A, mtx_general, mtx_nontriangular, mtx_unsorted, mtx_unassembled,
+        &A, mtx_general_, mtx_nontriangular, mtx_unsorted, mtx_unassembled,
         num_comment_lines, comment_lines,
         num_rows, num_columns, size, Adata);
     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));

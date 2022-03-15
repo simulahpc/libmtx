@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-02-23
+ * Last modified: 2022-03-15
  *
  * Data structures for matrices in array format.
  */
@@ -30,6 +30,7 @@
 #include <libmtx/mtxfile/mtxfile.h>
 #include <libmtx/precision.h>
 #include <libmtx/util/partition.h>
+#include <libmtx/util/symmetry.h>
 #include <libmtx/vector/vector.h>
 #include <libmtx/vector/vector_array.h>
 
@@ -87,7 +88,7 @@ int mtxmatrix_array_alloc_copy(
     const struct mtxmatrix_array * src)
 {
     return mtxmatrix_array_alloc(
-        dst, src->field, src->precision,
+        dst, src->field, src->precision, src->symmetry,
         src->num_rows, src->num_columns);
 }
 
@@ -117,6 +118,7 @@ int mtxmatrix_array_alloc(
     struct mtxmatrix_array * matrix,
     enum mtxfield field,
     enum mtxprecision precision,
+    enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns)
 {
@@ -173,6 +175,7 @@ int mtxmatrix_array_alloc(
     }
     matrix->field = field;
     matrix->precision = precision;
+    matrix->symmetry = symmetry;
     matrix->num_rows = num_rows;
     matrix->num_columns = num_columns;
     matrix->size = size;
@@ -185,12 +188,13 @@ int mtxmatrix_array_alloc(
  */
 int mtxmatrix_array_init_real_single(
     struct mtxmatrix_array * matrix,
+    enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
     const float * data)
 {
     int err = mtxmatrix_array_alloc(
-        matrix, mtx_field_real, mtx_single, num_rows, num_columns);
+        matrix, mtx_field_real, mtx_single, symmetry, num_rows, num_columns);
     if (err)
         return err;
     for (int64_t k = 0; k < matrix->size; k++)
@@ -204,12 +208,13 @@ int mtxmatrix_array_init_real_single(
  */
 int mtxmatrix_array_init_real_double(
     struct mtxmatrix_array * matrix,
+    enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
     const double * data)
 {
     int err = mtxmatrix_array_alloc(
-        matrix, mtx_field_real, mtx_double, num_rows, num_columns);
+        matrix, mtx_field_real, mtx_double, symmetry, num_rows, num_columns);
     if (err)
         return err;
     for (int64_t k = 0; k < matrix->size; k++)
@@ -223,12 +228,13 @@ int mtxmatrix_array_init_real_double(
  */
 int mtxmatrix_array_init_complex_single(
     struct mtxmatrix_array * matrix,
+    enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
     const float (* data)[2])
 {
     int err = mtxmatrix_array_alloc(
-        matrix, mtx_field_complex, mtx_single, num_rows, num_columns);
+        matrix, mtx_field_complex, mtx_single, symmetry, num_rows, num_columns);
     if (err)
         return err;
     for (int64_t k = 0; k < matrix->size; k++) {
@@ -244,12 +250,13 @@ int mtxmatrix_array_init_complex_single(
  */
 int mtxmatrix_array_init_complex_double(
     struct mtxmatrix_array * matrix,
+    enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
     const double (* data)[2])
 {
     int err = mtxmatrix_array_alloc(
-        matrix, mtx_field_complex, mtx_double, num_rows, num_columns);
+        matrix, mtx_field_complex, mtx_double, symmetry, num_rows, num_columns);
     if (err)
         return err;
     for (int64_t k = 0; k < matrix->size; k++) {
@@ -265,12 +272,13 @@ int mtxmatrix_array_init_complex_double(
  */
 int mtxmatrix_array_init_integer_single(
     struct mtxmatrix_array * matrix,
+    enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
     const int32_t * data)
 {
     int err = mtxmatrix_array_alloc(
-        matrix, mtx_field_integer, mtx_single, num_rows, num_columns);
+        matrix, mtx_field_integer, mtx_single, symmetry, num_rows, num_columns);
     if (err)
         return err;
     for (int64_t k = 0; k < matrix->size; k++)
@@ -284,12 +292,13 @@ int mtxmatrix_array_init_integer_single(
  */
 int mtxmatrix_array_init_integer_double(
     struct mtxmatrix_array * matrix,
+    enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
     const int64_t * data)
 {
     int err = mtxmatrix_array_alloc(
-        matrix, mtx_field_integer, mtx_double, num_rows, num_columns);
+        matrix, mtx_field_integer, mtx_double, symmetry, num_rows, num_columns);
     if (err)
         return err;
     for (int64_t k = 0; k < matrix->size; k++)
@@ -363,6 +372,7 @@ int mtxmatrix_array_from_mtxfile(
     struct mtxmatrix_array * matrix,
     const struct mtxfile * mtxfile)
 {
+    int err;
     if (mtxfile->header.object != mtxfile_matrix)
         return MTX_ERR_INCOMPATIBLE_MTX_OBJECT;
 
@@ -370,14 +380,19 @@ int mtxmatrix_array_from_mtxfile(
     if (mtxfile->header.format != mtxfile_array)
         return MTX_ERR_INCOMPATIBLE_MTX_FORMAT;
 
+    enum mtxsymmetry symmetry;
+    err = mtxfilesymmetry_to_mtxsymmetry(
+        &symmetry, mtxfile->header.symmetry);
+    if (err) return err;
+
     if (mtxfile->header.field == mtxfile_real) {
         if (mtxfile->precision == mtx_single) {
             return mtxmatrix_array_init_real_single(
-                matrix, mtxfile->size.num_rows, mtxfile->size.num_columns,
+                matrix, symmetry, mtxfile->size.num_rows, mtxfile->size.num_columns,
                 mtxfile->data.array_real_single);
         } else if (mtxfile->precision == mtx_double) {
             return mtxmatrix_array_init_real_double(
-                matrix, mtxfile->size.num_rows, mtxfile->size.num_columns,
+                matrix, symmetry, mtxfile->size.num_rows, mtxfile->size.num_columns,
                 mtxfile->data.array_real_double);
         } else {
             return MTX_ERR_INVALID_PRECISION;
@@ -385,11 +400,11 @@ int mtxmatrix_array_from_mtxfile(
     } else if (mtxfile->header.field == mtxfile_complex) {
         if (mtxfile->precision == mtx_single) {
             return mtxmatrix_array_init_complex_single(
-                matrix, mtxfile->size.num_rows, mtxfile->size.num_columns,
+                matrix, symmetry, mtxfile->size.num_rows, mtxfile->size.num_columns,
                 mtxfile->data.array_complex_single);
         } else if (mtxfile->precision == mtx_double) {
             return mtxmatrix_array_init_complex_double(
-                matrix, mtxfile->size.num_rows, mtxfile->size.num_columns,
+                matrix, symmetry, mtxfile->size.num_rows, mtxfile->size.num_columns,
                 mtxfile->data.array_complex_double);
         } else {
             return MTX_ERR_INVALID_PRECISION;
@@ -397,11 +412,11 @@ int mtxmatrix_array_from_mtxfile(
     } else if (mtxfile->header.field == mtxfile_integer) {
         if (mtxfile->precision == mtx_single) {
             return mtxmatrix_array_init_integer_single(
-                matrix, mtxfile->size.num_rows, mtxfile->size.num_columns,
+                matrix, symmetry, mtxfile->size.num_rows, mtxfile->size.num_columns,
                 mtxfile->data.array_integer_single);
         } else if (mtxfile->precision == mtx_double) {
             return mtxmatrix_array_init_integer_double(
-                matrix, mtxfile->size.num_rows, mtxfile->size.num_columns,
+                matrix, symmetry, mtxfile->size.num_rows, mtxfile->size.num_columns,
                 mtxfile->data.array_integer_double);
         } else {
             return MTX_ERR_INVALID_PRECISION;
@@ -423,17 +438,22 @@ int mtxmatrix_array_to_mtxfile(
     const struct mtxmatrix_array * matrix,
     enum mtxfileformat mtxfmt)
 {
+    int err;
     if (mtxfmt != mtxfile_array)
         return MTX_ERR_INCOMPATIBLE_MTX_FORMAT;
+
+    enum mtxfilesymmetry symmetry;
+    err = mtxfilesymmetry_from_mtxsymmetry(&symmetry, matrix->symmetry);
+    if (err) return err;
 
     if (matrix->field == mtx_field_real) {
         if (matrix->precision == mtx_single) {
             return mtxfile_init_matrix_array_real_single(
-                mtxfile, mtxfile_general, matrix->num_rows, matrix->num_columns,
+                mtxfile, symmetry, matrix->num_rows, matrix->num_columns,
                 matrix->data.real_single);
         } else if (matrix->precision == mtx_double) {
             return mtxfile_init_matrix_array_real_double(
-                mtxfile, mtxfile_general, matrix->num_rows, matrix->num_columns,
+                mtxfile, symmetry, matrix->num_rows, matrix->num_columns,
                 matrix->data.real_double);
         } else {
             return MTX_ERR_INVALID_PRECISION;
@@ -441,11 +461,11 @@ int mtxmatrix_array_to_mtxfile(
     } else if (matrix->field == mtx_field_complex) {
         if (matrix->precision == mtx_single) {
             return mtxfile_init_matrix_array_complex_single(
-                mtxfile, mtxfile_general, matrix->num_rows, matrix->num_columns,
+                mtxfile, symmetry, matrix->num_rows, matrix->num_columns,
                 matrix->data.complex_single);
         } else if (matrix->precision == mtx_double) {
             return mtxfile_init_matrix_array_complex_double(
-                mtxfile, mtxfile_general, matrix->num_rows, matrix->num_columns,
+                mtxfile, symmetry, matrix->num_rows, matrix->num_columns,
                 matrix->data.complex_double);
         } else {
             return MTX_ERR_INVALID_PRECISION;
@@ -453,11 +473,11 @@ int mtxmatrix_array_to_mtxfile(
     } else if (matrix->field == mtx_field_integer) {
         if (matrix->precision == mtx_single) {
             return mtxfile_init_matrix_array_integer_single(
-                mtxfile, mtxfile_general, matrix->num_rows, matrix->num_columns,
+                mtxfile, symmetry, matrix->num_rows, matrix->num_columns,
                 matrix->data.integer_single);
         } else if (matrix->precision == mtx_double) {
             return mtxfile_init_matrix_array_integer_double(
-                mtxfile, mtxfile_general, matrix->num_rows, matrix->num_columns,
+                mtxfile, symmetry, matrix->num_rows, matrix->num_columns,
                 matrix->data.integer_double);
         } else {
             return MTX_ERR_INVALID_PRECISION;

@@ -440,7 +440,7 @@ int mtx_matrix_array_snrm2(
     const struct mtx_matrix_array_data * x,
     float * nrm2)
 {
-    if (x->symmetry != mtx_general)
+    if (x->symmetry != mtx_general_)
         return MTX_ERR_INVALID_MTX_SYMMETRY;
 
     if (x->field == mtx_real) {
@@ -481,7 +481,7 @@ int mtx_matrix_array_dnrm2(
     const struct mtx_matrix_array_data * x,
     double * nrm2)
 {
-    if (x->symmetry != mtx_general)
+    if (x->symmetry != mtx_general_)
         return MTX_ERR_INVALID_MTX_SYMMETRY;
 
     if (x->field == mtx_real) {
@@ -530,7 +530,7 @@ int mtx_matrix_array_sgemv(
     float beta,
     struct mtx_vector_array_data * y)
 {
-    if (A->symmetry != mtx_general)
+    if (A->symmetry != mtx_general_)
         return MTX_ERR_INVALID_MTX_SYMMETRY;
     if (A->triangle != mtx_nontriangular)
         return MTX_ERR_INVALID_MTX_TRIANGLE;
@@ -603,7 +603,7 @@ int mtx_matrix_array_dgemv(
     double beta,
     struct mtx_vector_array_data * y)
 {
-    if (A->symmetry != mtx_general)
+    if (A->symmetry != mtx_general_)
         return MTX_ERR_INVALID_MTX_SYMMETRY;
     if (A->triangle != mtx_nontriangular)
         return MTX_ERR_INVALID_MTX_TRIANGLE;

@@ -50,7 +50,7 @@ int mtx_alloc_vector_array(
     mtx->object = mtx_vector;
     mtx->format = mtx_array;
     mtx->field = field;
-    mtx->symmetry = mtx_general;
+    mtx->symmetry = mtx_general_;
 
     mtx->num_comment_lines = 0;
     mtx->comment_lines = NULL;
@@ -101,7 +101,7 @@ int mtx_init_vector_array_real_single(
     mtx->object = mtx_vector;
     mtx->format = mtx_array;
     mtx->field = mtx_real;
-    mtx->symmetry = mtx_general;
+    mtx->symmetry = mtx_general_;
     mtx->num_comment_lines = 0;
     mtx->comment_lines = NULL;
     err = mtx_set_comment_lines(mtx, num_comment_lines, comment_lines);
@@ -137,7 +137,7 @@ int mtx_init_vector_array_real_double(
     mtx->object = mtx_vector;
     mtx->format = mtx_array;
     mtx->field = mtx_real;
-    mtx->symmetry = mtx_general;
+    mtx->symmetry = mtx_general_;
     mtx->num_comment_lines = 0;
     mtx->comment_lines = NULL;
     err = mtx_set_comment_lines(mtx, num_comment_lines, comment_lines);
@@ -173,7 +173,7 @@ int mtx_init_vector_array_complex_single(
     mtx->object = mtx_vector;
     mtx->format = mtx_array;
     mtx->field = mtx_complex;
-    mtx->symmetry = mtx_general;
+    mtx->symmetry = mtx_general_;
     mtx->num_comment_lines = 0;
     mtx->comment_lines = NULL;
     err = mtx_set_comment_lines(mtx, num_comment_lines, comment_lines);
@@ -209,7 +209,7 @@ int mtx_init_vector_array_integer_single(
     mtx->object = mtx_vector;
     mtx->format = mtx_array;
     mtx->field = mtx_integer;
-    mtx->symmetry = mtx_general;
+    mtx->symmetry = mtx_general_;
     mtx->num_comment_lines = 0;
     mtx->comment_lines = NULL;
     err = mtx_set_comment_lines(mtx, num_comment_lines, comment_lines);

@@ -51,7 +51,7 @@ int test_mtx_alloc_vector_array_real_single(void)
     TEST_ASSERT_EQ(mtx_vector, mtx.object);
     TEST_ASSERT_EQ(mtx_array, mtx.format);
     TEST_ASSERT_EQ(mtx_real, mtx.field);
-    TEST_ASSERT_EQ(mtx_general, mtx.symmetry);
+    TEST_ASSERT_EQ(mtx_general_, mtx.symmetry);
     TEST_ASSERT_EQ(1, mtx.num_comment_lines);
     TEST_ASSERT_STREQ("% a comment\n", mtx.comment_lines[0]);
     TEST_ASSERT_EQ(3, mtx.num_rows);
@@ -87,7 +87,7 @@ int test_mtx_init_vector_array_real_single(void)
     TEST_ASSERT_EQ(mtx_vector, mtx.object);
     TEST_ASSERT_EQ(mtx_array, mtx.format);
     TEST_ASSERT_EQ(mtx_real, mtx.field);
-    TEST_ASSERT_EQ(mtx_general, mtx.symmetry);
+    TEST_ASSERT_EQ(mtx_general_, mtx.symmetry);
     TEST_ASSERT_EQ(1, mtx.num_comment_lines);
     TEST_ASSERT_STREQ("% a comment\n", mtx.comment_lines[0]);
     TEST_ASSERT_EQ(3, mtx.num_rows);
@@ -125,7 +125,7 @@ int test_mtx_init_vector_array_real_double(void)
     TEST_ASSERT_EQ(mtx_vector, mtx.object);
     TEST_ASSERT_EQ(mtx_array, mtx.format);
     TEST_ASSERT_EQ(mtx_real, mtx.field);
-    TEST_ASSERT_EQ(mtx_general, mtx.symmetry);
+    TEST_ASSERT_EQ(mtx_general_, mtx.symmetry);
     TEST_ASSERT_EQ(3, mtx.num_rows);
     TEST_ASSERT_EQ(-1, mtx.num_columns);
     TEST_ASSERT_EQ(-1, mtx.num_nonzeros);
@@ -161,7 +161,7 @@ int test_mtx_init_vector_array_complex_single(void)
     TEST_ASSERT_EQ(mtx_vector, mtx.object);
     TEST_ASSERT_EQ(mtx_array, mtx.format);
     TEST_ASSERT_EQ(mtx_complex, mtx.field);
-    TEST_ASSERT_EQ(mtx_general, mtx.symmetry);
+    TEST_ASSERT_EQ(mtx_general_, mtx.symmetry);
     TEST_ASSERT_EQ(2, mtx.num_rows);
     TEST_ASSERT_EQ(-1, mtx.num_columns);
     TEST_ASSERT_EQ(-1, mtx.num_nonzeros);
@@ -196,7 +196,7 @@ int test_mtx_init_vector_array_integer_single(void)
     TEST_ASSERT_EQ(mtx_vector, mtx.object);
     TEST_ASSERT_EQ(mtx_array, mtx.format);
     TEST_ASSERT_EQ(mtx_integer, mtx.field);
-    TEST_ASSERT_EQ(mtx_general, mtx.symmetry);
+    TEST_ASSERT_EQ(mtx_general_, mtx.symmetry);
     TEST_ASSERT_EQ(3, mtx.num_rows);
     TEST_ASSERT_EQ(-1, mtx.num_columns);
     TEST_ASSERT_EQ(-1, mtx.num_nonzeros);
@@ -234,7 +234,7 @@ int test_mtx_alloc_vector_coordinate_real_single(void)
     TEST_ASSERT_EQ(mtx_vector, mtx.object);
     TEST_ASSERT_EQ(mtx_coordinate, mtx.format);
     TEST_ASSERT_EQ(mtx_real, mtx.field);
-    TEST_ASSERT_EQ(mtx_general, mtx.symmetry);
+    TEST_ASSERT_EQ(mtx_general_, mtx.symmetry);
     TEST_ASSERT_EQ(4, mtx.num_rows);
     TEST_ASSERT_EQ(-1, mtx.num_columns);
     TEST_ASSERT_EQ(3, mtx.num_nonzeros);
@@ -277,7 +277,7 @@ int test_mtx_init_vector_coordinate_real_single(void)
     TEST_ASSERT_EQ(mtx_vector, mtx.object);
     TEST_ASSERT_EQ(mtx_coordinate, mtx.format);
     TEST_ASSERT_EQ(mtx_real, mtx.field);
-    TEST_ASSERT_EQ(mtx_general, mtx.symmetry);
+    TEST_ASSERT_EQ(mtx_general_, mtx.symmetry);
     TEST_ASSERT_EQ(4, mtx.num_rows);
     TEST_ASSERT_EQ(-1, mtx.num_columns);
     TEST_ASSERT_EQ(3, mtx.num_nonzeros);
@@ -321,7 +321,7 @@ int test_mtx_init_vector_coordinate_real_double(void)
     TEST_ASSERT_EQ(mtx_vector, mtx.object);
     TEST_ASSERT_EQ(mtx_coordinate, mtx.format);
     TEST_ASSERT_EQ(mtx_real, mtx.field);
-    TEST_ASSERT_EQ(mtx_general, mtx.symmetry);
+    TEST_ASSERT_EQ(mtx_general_, mtx.symmetry);
     TEST_ASSERT_EQ(4, mtx.num_rows);
     TEST_ASSERT_EQ(-1, mtx.num_columns);
     TEST_ASSERT_EQ(3, mtx.num_nonzeros);
@@ -364,7 +364,7 @@ int test_mtx_init_vector_coordinate_complex_single(void)
     TEST_ASSERT_EQ(mtx_vector, mtx.object);
     TEST_ASSERT_EQ(mtx_coordinate, mtx.format);
     TEST_ASSERT_EQ(mtx_complex, mtx.field);
-    TEST_ASSERT_EQ(mtx_general, mtx.symmetry);
+    TEST_ASSERT_EQ(mtx_general_, mtx.symmetry);
     TEST_ASSERT_EQ(4, mtx.num_rows);
     TEST_ASSERT_EQ(-1, mtx.num_columns);
     TEST_ASSERT_EQ(3, mtx.num_nonzeros);
@@ -408,7 +408,7 @@ int test_mtx_init_vector_coordinate_integer_single(void)
     TEST_ASSERT_EQ(mtx_vector, mtx.object);
     TEST_ASSERT_EQ(mtx_coordinate, mtx.format);
     TEST_ASSERT_EQ(mtx_integer, mtx.field);
-    TEST_ASSERT_EQ(mtx_general, mtx.symmetry);
+    TEST_ASSERT_EQ(mtx_general_, mtx.symmetry);
     TEST_ASSERT_EQ(4, mtx.num_rows);
     TEST_ASSERT_EQ(-1, mtx.num_columns);
     TEST_ASSERT_EQ(3, mtx.num_nonzeros);
@@ -451,7 +451,7 @@ int test_mtx_init_vector_coordinate_pattern(void)
     TEST_ASSERT_EQ(mtx_vector, mtx.object);
     TEST_ASSERT_EQ(mtx_coordinate, mtx.format);
     TEST_ASSERT_EQ(mtx_pattern, mtx.field);
-    TEST_ASSERT_EQ(mtx_general, mtx.symmetry);
+    TEST_ASSERT_EQ(mtx_general_, mtx.symmetry);
     TEST_ASSERT_EQ(4, mtx.num_rows);
     TEST_ASSERT_EQ(-1, mtx.num_columns);
     TEST_ASSERT_EQ(3, mtx.num_nonzeros);

@@ -139,7 +139,7 @@ int test_mtx_header_parse(void)
         TEST_ASSERT_EQ(mtx_matrix, header.object);
         TEST_ASSERT_EQ(mtx_coordinate, header.format);
         TEST_ASSERT_EQ(mtx_real, header.field);
-        TEST_ASSERT_EQ(mtx_general, header.symmetry);
+        TEST_ASSERT_EQ(mtx_general_, header.symmetry);
         TEST_ASSERT_EQ(strlen(line), bytes_read);
         TEST_ASSERT_EQ(line + strlen(line), endptr);
     }
@@ -155,7 +155,7 @@ int test_mtx_header_parse(void)
         TEST_ASSERT_EQ(mtx_matrix, header.object);
         TEST_ASSERT_EQ(mtx_coordinate, header.format);
         TEST_ASSERT_EQ(mtx_real, header.field);
-        TEST_ASSERT_EQ(mtx_general, header.symmetry);
+        TEST_ASSERT_EQ(mtx_general_, header.symmetry);
         TEST_ASSERT_EQ(strlen(line)-1, bytes_read);
         TEST_ASSERT_EQ(line + strlen(line)-1, endptr);
     }
@@ -346,7 +346,7 @@ int test_mtx_fread_header(void)
         TEST_ASSERT_EQ(mtx_matrix, mtx.object);
         TEST_ASSERT_EQ(mtx_coordinate, mtx.format);
         TEST_ASSERT_EQ(mtx_real, mtx.field);
-        TEST_ASSERT_EQ(mtx_general, mtx.symmetry);
+        TEST_ASSERT_EQ(mtx_general_, mtx.symmetry);
         if (!err)
             mtx_free(&mtx);
         fclose(f);
@@ -510,7 +510,7 @@ int test_mtx_fread_matrix_array_real_single(void)
     const struct mtx_matrix_array_data * matrix_array = &mtx.storage.matrix_array;
     TEST_ASSERT_EQ(mtx_real, matrix_array->field);
     TEST_ASSERT_EQ(mtx_single, matrix_array->precision);
-    TEST_ASSERT_EQ(mtx_general, matrix_array->symmetry);
+    TEST_ASSERT_EQ(mtx_general_, matrix_array->symmetry);
     TEST_ASSERT_EQ(mtx_nontriangular, matrix_array->triangle);
     TEST_ASSERT_EQ(mtx_row_major, matrix_array->sorting);
     TEST_ASSERT_EQ(4, matrix_array->size);
@@ -551,7 +551,7 @@ int test_mtx_fread_matrix_array_real_double(void)
     const struct mtx_matrix_array_data * matrix_array = &mtx.storage.matrix_array;
     TEST_ASSERT_EQ(mtx_real, matrix_array->field);
     TEST_ASSERT_EQ(mtx_double, matrix_array->precision);
-    TEST_ASSERT_EQ(mtx_general, matrix_array->symmetry);
+    TEST_ASSERT_EQ(mtx_general_, matrix_array->symmetry);
     TEST_ASSERT_EQ(mtx_nontriangular, matrix_array->triangle);
     TEST_ASSERT_EQ(mtx_row_major, matrix_array->sorting);
     TEST_ASSERT_EQ(4, matrix_array->size);
@@ -592,7 +592,7 @@ int test_mtx_fread_matrix_array_complex_single(void)
     const struct mtx_matrix_array_data * matrix_array = &mtx.storage.matrix_array;
     TEST_ASSERT_EQ(mtx_complex, matrix_array->field);
     TEST_ASSERT_EQ(mtx_single, matrix_array->precision);
-    TEST_ASSERT_EQ(mtx_general, matrix_array->symmetry);
+    TEST_ASSERT_EQ(mtx_general_, matrix_array->symmetry);
     TEST_ASSERT_EQ(mtx_nontriangular, matrix_array->triangle);
     TEST_ASSERT_EQ(mtx_row_major, matrix_array->sorting);
     TEST_ASSERT_EQ(4, matrix_array->size);
@@ -633,7 +633,7 @@ int test_mtx_fread_matrix_array_integer_single(void)
     const struct mtx_matrix_array_data * matrix_array = &mtx.storage.matrix_array;
     TEST_ASSERT_EQ(mtx_integer, matrix_array->field);
     TEST_ASSERT_EQ(mtx_single, matrix_array->precision);
-    TEST_ASSERT_EQ(mtx_general, matrix_array->symmetry);
+    TEST_ASSERT_EQ(mtx_general_, matrix_array->symmetry);
     TEST_ASSERT_EQ(mtx_nontriangular, matrix_array->triangle);
     TEST_ASSERT_EQ(mtx_row_major, matrix_array->sorting);
     TEST_ASSERT_EQ(4, matrix_array->size);
@@ -678,7 +678,7 @@ int test_mtx_fread_matrix_coordinate_real_single(void)
         &mtx.storage.matrix_coordinate;
     TEST_ASSERT_EQ(mtx_real, matrix_coordinate->field);
     TEST_ASSERT_EQ(mtx_single, matrix_coordinate->precision);
-    TEST_ASSERT_EQ(mtx_general, matrix_coordinate->symmetry);
+    TEST_ASSERT_EQ(mtx_general_, matrix_coordinate->symmetry);
     TEST_ASSERT_EQ(mtx_nontriangular, matrix_coordinate->triangle);
     TEST_ASSERT_EQ(mtx_unsorted, matrix_coordinate->sorting);
     TEST_ASSERT_EQ(mtx_unassembled, matrix_coordinate->assembly);
@@ -725,7 +725,7 @@ int test_mtx_fread_matrix_coordinate_real_double(void)
         &mtx.storage.matrix_coordinate;
     TEST_ASSERT_EQ(mtx_real, matrix_coordinate->field);
     TEST_ASSERT_EQ(mtx_double, matrix_coordinate->precision);
-    TEST_ASSERT_EQ(mtx_general, matrix_coordinate->symmetry);
+    TEST_ASSERT_EQ(mtx_general_, matrix_coordinate->symmetry);
     TEST_ASSERT_EQ(mtx_nontriangular, matrix_coordinate->triangle);
     TEST_ASSERT_EQ(mtx_unsorted, matrix_coordinate->sorting);
     TEST_ASSERT_EQ(mtx_unassembled, matrix_coordinate->assembly);
@@ -773,7 +773,7 @@ int test_mtx_fread_matrix_coordinate_complex_single(void)
         &mtx.storage.matrix_coordinate;
     TEST_ASSERT_EQ(mtx_complex, matrix_coordinate->field);
     TEST_ASSERT_EQ(mtx_single, matrix_coordinate->precision);
-    TEST_ASSERT_EQ(mtx_general, matrix_coordinate->symmetry);
+    TEST_ASSERT_EQ(mtx_general_, matrix_coordinate->symmetry);
     TEST_ASSERT_EQ(mtx_nontriangular, matrix_coordinate->triangle);
     TEST_ASSERT_EQ(mtx_unsorted, matrix_coordinate->sorting);
     TEST_ASSERT_EQ(mtx_unassembled, matrix_coordinate->assembly);
@@ -825,7 +825,7 @@ int test_mtx_fread_matrix_coordinate_integer_single(void)
         &mtx.storage.matrix_coordinate;
     TEST_ASSERT_EQ(mtx_integer, matrix_coordinate->field);
     TEST_ASSERT_EQ(mtx_single, matrix_coordinate->precision);
-    TEST_ASSERT_EQ(mtx_general, matrix_coordinate->symmetry);
+    TEST_ASSERT_EQ(mtx_general_, matrix_coordinate->symmetry);
     TEST_ASSERT_EQ(mtx_nontriangular, matrix_coordinate->triangle);
     TEST_ASSERT_EQ(mtx_unsorted, matrix_coordinate->sorting);
     TEST_ASSERT_EQ(mtx_unassembled, matrix_coordinate->assembly);
@@ -871,7 +871,7 @@ int test_mtx_fread_matrix_coordinate_pattern(void)
     const struct mtx_matrix_coordinate_data * matrix_coordinate =
         &mtx.storage.matrix_coordinate;
     TEST_ASSERT_EQ(mtx_pattern, matrix_coordinate->field);
-    TEST_ASSERT_EQ(mtx_general, matrix_coordinate->symmetry);
+    TEST_ASSERT_EQ(mtx_general_, matrix_coordinate->symmetry);
     TEST_ASSERT_EQ(mtx_nontriangular, matrix_coordinate->triangle);
     TEST_ASSERT_EQ(mtx_unsorted, matrix_coordinate->sorting);
     TEST_ASSERT_EQ(mtx_unassembled, matrix_coordinate->assembly);
@@ -994,7 +994,7 @@ int test_mtx_fwrite_matrix_coordinate_real_single(void)
         {3,3,4.0f}};
     size_t size = sizeof(data) / sizeof(*data);
     err = mtx_init_matrix_coordinate_real_single(
-        &mtx, mtx_general, mtx_nontriangular, mtx_unsorted, mtx_unassembled,
+        &mtx, mtx_general_, mtx_nontriangular, mtx_unsorted, mtx_unassembled,
         num_comment_lines, comment_lines,
         num_rows, num_columns, size, data);
     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
@@ -1086,7 +1086,7 @@ int test_mtx_gzread_matrix_coordinate_real_single(void)
         &mtx.storage.matrix_coordinate;
     TEST_ASSERT_EQ(mtx_real, matrix_coordinate->field);
     TEST_ASSERT_EQ(mtx_single, matrix_coordinate->precision);
-    TEST_ASSERT_EQ(mtx_general, matrix_coordinate->symmetry);
+    TEST_ASSERT_EQ(mtx_general_, matrix_coordinate->symmetry);
     TEST_ASSERT_EQ(mtx_nontriangular, matrix_coordinate->triangle);
     TEST_ASSERT_EQ(mtx_unsorted, matrix_coordinate->sorting);
     TEST_ASSERT_EQ(mtx_unassembled, matrix_coordinate->assembly);
@@ -1123,7 +1123,7 @@ int test_mtx_gzwrite_matrix_coordinate_real_single(void)
         {2,2,3.0f},
         {3,3,4.0f}};
     err = mtx_init_matrix_coordinate_real_single(
-        &mtx, mtx_general, mtx_nontriangular, mtx_unsorted, mtx_unassembled,
+        &mtx, mtx_general_, mtx_nontriangular, mtx_unsorted, mtx_unassembled,
         num_comment_lines, comment_lines,
         num_rows, num_columns, size, data);
     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));

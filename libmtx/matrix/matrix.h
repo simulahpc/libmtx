@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-03-09
+ * Last modified: 2022-03-15
  *
  * Data structures for matrices.
  */
@@ -28,6 +28,7 @@
 
 #include <libmtx/precision.h>
 #include <libmtx/field.h>
+#include <libmtx/util/symmetry.h>
 #include <libmtx/util/transpose.h>
 #include <libmtx/matrix/matrix_array.h>
 #include <libmtx/matrix/matrix_coordinate.h>
@@ -161,6 +162,7 @@ int mtxmatrix_alloc_array(
     struct mtxmatrix * matrix,
     enum mtxfield field,
     enum mtxprecision precision,
+    enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns);
 
@@ -170,6 +172,7 @@ int mtxmatrix_alloc_array(
  */
 int mtxmatrix_init_array_real_single(
     struct mtxmatrix * matrix,
+    enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
     const float * data);
@@ -180,6 +183,7 @@ int mtxmatrix_init_array_real_single(
  */
 int mtxmatrix_init_array_real_double(
     struct mtxmatrix * matrix,
+    enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
     const double * data);
@@ -190,6 +194,7 @@ int mtxmatrix_init_array_real_double(
  */
 int mtxmatrix_init_array_complex_single(
     struct mtxmatrix * matrix,
+    enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
     const float (* data)[2]);
@@ -200,6 +205,7 @@ int mtxmatrix_init_array_complex_single(
  */
 int mtxmatrix_init_array_complex_double(
     struct mtxmatrix * matrix,
+    enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
     const double (* data)[2]);
@@ -210,6 +216,7 @@ int mtxmatrix_init_array_complex_double(
  */
 int mtxmatrix_init_array_integer_single(
     struct mtxmatrix * matrix,
+    enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
     const int32_t * data);
@@ -220,6 +227,7 @@ int mtxmatrix_init_array_integer_single(
  */
 int mtxmatrix_init_array_integer_double(
     struct mtxmatrix * matrix,
+    enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
     const int64_t * data);
@@ -236,6 +244,7 @@ int mtxmatrix_alloc_coordinate(
     struct mtxmatrix * matrix,
     enum mtxfield field,
     enum mtxprecision precision,
+    enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
     int64_t num_nonzeros);
@@ -247,6 +256,7 @@ int mtxmatrix_alloc_coordinate(
  */
 int mtxmatrix_init_coordinate_real_single(
     struct mtxmatrix * matrix,
+    enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
     int64_t num_nonzeros,
@@ -261,6 +271,7 @@ int mtxmatrix_init_coordinate_real_single(
  */
 int mtxmatrix_init_coordinate_real_double(
     struct mtxmatrix * matrix,
+    enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
     int64_t num_nonzeros,
@@ -275,6 +286,7 @@ int mtxmatrix_init_coordinate_real_double(
  */
 int mtxmatrix_init_coordinate_complex_single(
     struct mtxmatrix * matrix,
+    enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
     int64_t num_nonzeros,
@@ -289,6 +301,7 @@ int mtxmatrix_init_coordinate_complex_single(
  */
 int mtxmatrix_init_coordinate_complex_double(
     struct mtxmatrix * matrix,
+    enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
     int64_t num_nonzeros,
@@ -303,6 +316,7 @@ int mtxmatrix_init_coordinate_complex_double(
  */
 int mtxmatrix_init_coordinate_integer_single(
     struct mtxmatrix * matrix,
+    enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
     int64_t num_nonzeros,
@@ -317,6 +331,7 @@ int mtxmatrix_init_coordinate_integer_single(
  */
 int mtxmatrix_init_coordinate_integer_double(
     struct mtxmatrix * matrix,
+    enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
     int64_t num_nonzeros,
@@ -331,6 +346,7 @@ int mtxmatrix_init_coordinate_integer_double(
  */
 int mtxmatrix_init_coordinate_pattern(
     struct mtxmatrix * matrix,
+    enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
     int64_t num_nonzeros,
