@@ -304,6 +304,7 @@ int mtxfilesize_num_data_lines(
                 errno = EOVERFLOW;
                 return MTX_ERR_ERRNO;
             }
+            *num_data_lines /= 2;
         } else if (size->num_rows == size->num_columns &&
                    symmetry == mtxfile_skew_symmetric)
         {
@@ -313,6 +314,7 @@ int mtxfilesize_num_data_lines(
                 errno = EOVERFLOW;
                 return MTX_ERR_ERRNO;
             }
+            *num_data_lines /= 2;
         } else {
             return MTX_ERR_INVALID_MTX_SYMMETRY;
         }
