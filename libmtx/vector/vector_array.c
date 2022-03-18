@@ -683,8 +683,10 @@ int mtxvector_array_partition(
     err = mtxfile_partition(dstmtxfiles, &mtxfile, part, NULL);
     if (err) {
         free(dstmtxfiles);
+        mtxfile_free(&mtxfile);
         return err;
     }
+    mtxfile_free(&mtxfile);
 
     for (int p = 0; p < num_parts; p++) {
         dsts[p].type = mtxvector_array;
@@ -741,7 +743,11 @@ int mtxvector_array_join(
     free(srcmtxfiles);
 
     err = mtxvector_array_from_mtxfile(dst, &dstmtxfile);
-    if (err) return err;
+    if (err) {
+        mtxfile_free(&dstmtxfile);
+        return err;
+    }
+    mtxfile_free(&dstmtxfile);
     return MTX_SUCCESS;
 }
 

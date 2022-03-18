@@ -933,8 +933,10 @@ int mtxvector_coordinate_partition(
     err = mtxfile_partition(dstmtxfiles, &mtxfile, part, NULL);
     if (err) {
         free(dstmtxfiles);
+        mtxfile_free(&mtxfile);
         return err;
     }
+    mtxfile_free(&mtxfile);
 
     for (int p = 0; p < num_parts; p++) {
         dsts[p].type = mtxvector_coordinate;
@@ -991,7 +993,11 @@ int mtxvector_coordinate_join(
     free(srcmtxfiles);
 
     err = mtxvector_coordinate_from_mtxfile(dst, &dstmtxfile);
-    if (err) return err;
+    if (err) {
+        mtxfile_free(&dstmtxfile);
+        return err;
+    }
+    mtxfile_free(&dstmtxfile);
     return MTX_SUCCESS;
 }
 

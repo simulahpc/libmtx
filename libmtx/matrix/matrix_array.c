@@ -602,13 +602,18 @@ int mtxmatrix_array_partition(
     if (err) return err;
 
     struct mtxfile * dstmtxfiles = malloc(sizeof(struct mtxfile) * num_parts);
-    if (!dstmtxfiles) return MTX_ERR_ERRNO;
+    if (!dstmtxfiles) {
+        mtxfile_free(&mtxfile);
+        return MTX_ERR_ERRNO;
+    }
 
     err = mtxfile_partition(dstmtxfiles, &mtxfile, rowpart, colpart);
     if (err) {
         free(dstmtxfiles);
+        mtxfile_free(&mtxfile);
         return err;
     }
+    mtxfile_free(&mtxfile);
 
     for (int p = 0; p < num_parts; p++) {
         dsts[p].type = mtxmatrix_array;
@@ -683,7 +688,11 @@ int mtxmatrix_array_join(
     free(srcmtxfiles);
 
     err = mtxmatrix_array_from_mtxfile(dst, &dstmtxfile);
-    if (err) return err;
+    if (err) {
+        mtxfile_free(&dstmtxfile);
+        return err;
+    }
+    mtxfile_free(&dstmtxfile);
     return MTX_SUCCESS;
 }
 
