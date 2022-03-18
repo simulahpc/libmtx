@@ -123,9 +123,28 @@ int mtxmatrix_array_alloc(
     int num_columns)
 {
     int64_t size;
-    if (__builtin_mul_overflow(num_rows, num_columns, &size)) {
-        errno = EOVERFLOW;
-        return MTX_ERR_ERRNO;
+    if (symmetry == mtx_unsymmetric) {
+        if (__builtin_mul_overflow(num_rows, num_columns, &size)) {
+            errno = EOVERFLOW;
+            return MTX_ERR_ERRNO;
+        }
+    } else if (num_rows == num_columns &&
+               (symmetry == mtx_symmetric ||
+                (symmetry == mtx_hermitian && field == mtx_field_complex)))
+    {
+        if (__builtin_mul_overflow(num_rows, (num_rows+1), &size)) {
+            errno = EOVERFLOW;
+            return MTX_ERR_ERRNO;
+        }
+        size /= 2;
+    } else if (num_rows == num_columns && symmetry == mtx_skew_symmetric) {
+        if (__builtin_mul_overflow(num_rows, (num_rows-1), &size)) {
+            errno = EOVERFLOW;
+            return MTX_ERR_ERRNO;
+        }
+        size /= 2;
+    } else {
+        return MTX_ERR_INVALID_SYMMETRY;
     }
 
     if (field == mtx_field_real) {
