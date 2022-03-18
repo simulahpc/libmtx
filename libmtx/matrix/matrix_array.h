@@ -75,8 +75,18 @@ struct mtxmatrix_array
     int num_columns;
 
     /**
-     * ‘size’ is the number of matrix elements, which is equal to
-     * ‘num_rows*num_columns’.
+     * ‘num_entries’ is the number of matrix entries, including
+     * entries that are represented implicitly due to symmetry, and
+     * ‘num_entries’ is therefore equal to ‘num_rows*num_columns’.
+     */
+    int64_t num_entries;
+
+    /**
+     * ‘size’ is the number of explicitly stored matrix entries, which
+     * is ‘num_rows*num_columns’ if the matrix is unsymmetric, or
+     * ‘num_rows*(num_rows+1)/2’ if the matrix is square and symmetric
+     * or Hermitian, or ‘num_rows*(num_rows-1)/2’ if the matrix is
+     * square and skew-symmetric.
      */
     int64_t size;
 
@@ -585,10 +595,11 @@ int mtxmatrix_array_iamax(
  */
 
 /**
- * ‘mtxmatrix_array_sgemv()’ multiplies a matrix ‘A’ or its transpose
- * ‘A'’ by a real scalar ‘alpha’ (‘α’) and a vector ‘x’, before adding
- * the result to another vector ‘y’ multiplied by another real scalar
- * ‘beta’ (‘β’). That is, ‘y = α*A*x + β*y’ or ‘y = α*A'*x + β*y’.
+ * ‘mtxmatrix_array_sgemv()’ multiplies a matrix ‘A’, its transpose
+ * ‘A'’ or its conjugate transpose ‘Aᴴ’ by a real scalar ‘alpha’ (‘α’)
+ * and a vector ‘x’, before adding the result to another vector ‘y’
+ * multiplied by another real scalar ‘beta’ (‘β’). That is, ‘y = α*A*x
+ * + β*y’, ‘y = α*A'*x + β*y’ or ‘y = α*Aᴴ*x + β*y’.
  *
  * The scalars ‘alpha’ and ‘beta’ are given as single precision
  * floating point numbers.
@@ -611,10 +622,11 @@ int mtxmatrix_array_sgemv(
     int64_t * num_flops);
 
 /**
- * ‘mtxmatrix_array_dgemv()’ multiplies a matrix ‘A’ or its transpose
- * ‘A'’ by a real scalar ‘alpha’ (‘α’) and a vector ‘x’, before adding
- * the result to another vector ‘y’ multiplied by another scalar real
- * ‘beta’ (‘β’).  That is, ‘y = α*A*x + β*y’ or ‘y = α*A'*x + β*y’.
+ * ‘mtxmatrix_array_dgemv()’ multiplies a matrix ‘A’, its transpose
+ * ‘A'’ or its conjugate transpose ‘Aᴴ’ by a real scalar ‘alpha’ (‘α’)
+ * and a vector ‘x’, before adding the result to another vector ‘y’
+ * multiplied by another real scalar ‘beta’ (‘β’). That is, ‘y = α*A*x
+ * + β*y’, ‘y = α*A'*x + β*y’ or ‘y = α*Aᴴ*x + β*y’.
  *
  * The scalars ‘alpha’ and ‘beta’ are given as double precision
  * floating point numbers.
