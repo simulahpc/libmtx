@@ -1692,57 +1692,112 @@ int test_mtxmatrix_gemv_array(void)
     int err;
 
     /*
-     * For real or integer matrices, calculate
+     * a) For unsymmetric real or integer matrices, calculate
      *
      *   ⎡ 1 2 3⎤  ⎡ 3⎤     ⎡ 1⎤  ⎡ 20⎤  ⎡ 3⎤  ⎡ 23⎤
      * 2*⎢ 4 5 6⎥ *⎢ 2⎥ + 3*⎢ 0⎥ =⎢ 56⎥ +⎢ 0⎥ =⎢ 56⎥,
      *   ⎣ 7 8 9⎦  ⎣ 1⎦     ⎣ 2⎦  ⎣ 92⎦  ⎣ 6⎦  ⎣ 98⎦
      *
-     * and
+     * and the transposed product
      *
      *   ⎡ 1 4 7⎤  ⎡ 3⎤     ⎡ 1⎤  ⎡ 36⎤  ⎡ 3⎤  ⎡ 39⎤
      * 2*⎢ 2 5 8⎥ *⎢ 2⎥ + 3*⎢ 0⎥ =⎢ 48⎥ +⎢ 0⎥ =⎢ 48⎥.
      *   ⎣ 3 6 9⎦  ⎣ 1⎦     ⎣ 2⎦  ⎣ 60⎦  ⎣ 6⎦  ⎣ 66⎦
      *
-     * For complex matrices, calculate
+     * b) For symmetric real or integer matrices, calculate
+     *
+     *   ⎡ 1 2 3⎤  ⎡ 3⎤     ⎡ 1⎤  ⎡ 20⎤  ⎡ 3⎤  ⎡ 23⎤
+     * 2*⎢ 2 5 6⎥ *⎢ 2⎥ + 3*⎢ 0⎥ =⎢ 44⎥ +⎢ 0⎥ =⎢ 44⎥,
+     *   ⎣ 3 6 9⎦  ⎣ 1⎦     ⎣ 2⎦  ⎣ 60⎦  ⎣ 6⎦  ⎣ 66⎦
+     *
+     * c) For unsymmetric complex matrices, calculate
      *
      *   ⎡ 1+2i 3+4i⎤  ⎡ 3+1i⎤     ⎡ 1+0i⎤  ⎡-8+34i⎤  ⎡ 3   ⎤  ⎡-5+34i⎤
      * 2*⎢          ⎥ *⎢     ⎥ + 3*⎢     ⎥ =⎢      ⎥ +⎢     ⎥ =⎢      ⎥,
      *   ⎣ 5+6i 7+8i⎦  ⎣ 1+2i⎦     ⎣ 2+2i⎦  ⎣ 0+90i⎦  ⎣ 6+6i⎦  ⎣ 6+96i⎦
      *
-     * and
+     * and the transposed product
      *
      *   ⎡ 1+2i 5+6i⎤  ⎡ 3+1i⎤     ⎡ 1+0i⎤  ⎡-12+46i⎤  ⎡ 3   ⎤  ⎡-9+46i⎤
      * 2*⎢          ⎥ *⎢     ⎥ + 3*⎢     ⎥ =⎢       ⎥ +⎢     ⎥ =⎢      ⎥,
      *   ⎣ 3+4i 7+8i⎦  ⎣ 1+2i⎦     ⎣ 2+2i⎦  ⎣ -8+74i⎦  ⎣ 6+6i⎦  ⎣-2+80i⎦
      *
-     * and
+     * and the conjugate transposed product
      *
      *   ⎡ 1-2i 5-6i⎤  ⎡ 3+1i⎤     ⎡ 1+0i⎤  ⎡ 44-2i⎤  ⎡ 3   ⎤  ⎡ 47-2i⎤
-     * 2*⎢          ⎥ *⎢     ⎥ + 3*⎢     ⎥ =⎢      ⎥ +⎢     ⎥ =⎢      ⎥.
+     * 2*⎢          ⎥ *⎢     ⎥ + 3*⎢     ⎥ =⎢      ⎥ +⎢     ⎥ =⎢      ⎥,
      *   ⎣ 3-4i 7-8i⎦  ⎣ 1+2i⎦     ⎣ 2+2i⎦  ⎣ 72-6i⎦  ⎣ 6+6i⎦  ⎣ 78   ⎦
      *
-     * and
+     * and the product with complex coefficients (cgemv/zgemv)
      *
      *    ⎡ 1+2i 3+4i⎤  ⎡ 3+1i⎤          ⎡ 1+0i⎤  ⎡-34-8i⎤  ⎡ 3+1i⎤  ⎡-31-7i⎤
      * 2i*⎢          ⎥ *⎢     ⎥ + (3+1i)*⎢     ⎥ =⎢      ⎥ +⎢     ⎥ =⎢      ⎥,
      *    ⎣ 5+6i 7+8i⎦  ⎣ 1+2i⎦          ⎣ 2+2i⎦  ⎣-90   ⎦  ⎣ 4+8i⎦  ⎣-86+8i⎦
      *
-     * and
+     * and the transposed product with complex coefficients (cgemv/zgemv)
      *
      *    ⎡ 1+2i 5+6i⎤  ⎡ 3+1i⎤          ⎡ 1+0i⎤  ⎡-46-12i⎤  ⎡ 3+1i⎤  ⎡-43-11i⎤
      * 2i*⎢          ⎥ *⎢     ⎥ + (3+1i)*⎢     ⎥ =⎢       ⎥ +⎢     ⎥ =⎢       ⎥,
      *    ⎣ 3+4i 7+8i⎦  ⎣ 1+2i⎦          ⎣ 2+2i⎦  ⎣-74- 8i⎦  ⎣ 4+8i⎦  ⎣-70    ⎦
      *
-     * and
+     * and the conjugate transposed product with complex coefficients (cgemv/zgemv)
      *
      *    ⎡ 1-2i 5-6i⎤  ⎡ 3+1i⎤          ⎡ 1+0i⎤  ⎡ 2+44i⎤  ⎡ 3+1i⎤  ⎡  5+45i⎤
      * 2i*⎢          ⎥ *⎢     ⎥ + (3+1i)*⎢     ⎥ =⎢      ⎥ +⎢     ⎥ =⎢       ⎥.
      *    ⎣ 3-4i 7-8i⎦  ⎣ 1+2i⎦          ⎣ 2+2i⎦  ⎣ 6+72i⎦  ⎣ 4+8i⎦  ⎣ 10+80i⎦
+     *
+     * d) For symmetric complex matrices, calculate
+     *
+     *   ⎡ 1+2i 3+4i⎤  ⎡ 3+1i⎤     ⎡ 1+0i⎤  ⎡-8+34i⎤  ⎡ 3   ⎤  ⎡-5+34i⎤
+     * 2*⎢          ⎥ *⎢     ⎥ + 3*⎢     ⎥ =⎢      ⎥ +⎢     ⎥ =⎢      ⎥.
+     *   ⎣ 3+4i 7+8i⎦  ⎣ 1+2i⎦     ⎣ 2+2i⎦  ⎣-8+74i⎦  ⎣ 6+6i⎦  ⎣-2+80i⎦
+     *
+     * and the conjugate transposed product
+     *
+     *   ⎡ 1-2i 3-4i⎤  ⎡ 3+1i⎤     ⎡ 1+0i⎤  ⎡ 32-6i⎤  ⎡ 3   ⎤  ⎡ 35-6i⎤
+     * 2*⎢          ⎥ *⎢     ⎥ + 3*⎢     ⎥ =⎢      ⎥ +⎢     ⎥ =⎢      ⎥.
+     *   ⎣ 3-4i 7-8i⎦  ⎣ 1+2i⎦     ⎣ 2+2i⎦  ⎣ 72-6i⎦  ⎣ 6+6i⎦  ⎣ 78+0i⎦
+     *
+     * and the product with complex coefficients (cgemv/zgemv)
+     *
+     *    ⎡ 1+2i 3+4i⎤  ⎡ 3+1i⎤          ⎡ 1+0i⎤  ⎡-34-8i⎤  ⎡ 3+1i⎤  ⎡-31-7i⎤
+     * 2i*⎢          ⎥ *⎢     ⎥ + (3+1i)*⎢     ⎥ =⎢      ⎥ +⎢     ⎥ =⎢      ⎥.
+     *    ⎣ 3+4i 7+8i⎦  ⎣ 1+2i⎦          ⎣ 2+2i⎦  ⎣-74-8i⎦  ⎣ 4+8i⎦  ⎣-70+0i⎦
+     *
+     * and the conjugate transposed product with complex coefficients (cgemv/zgemv)
+     *
+     *    ⎡ 1-2i 3-4i⎤  ⎡ 3+1i⎤          ⎡ 1+0i⎤  ⎡ 6+32i⎤  ⎡ 3+1i⎤  ⎡ 9+33i⎤
+     * 2i*⎢          ⎥ *⎢     ⎥ + (3+1i)*⎢     ⎥ =⎢      ⎥ +⎢     ⎥ =⎢      ⎥.
+     *    ⎣ 3-4i 7-8i⎦  ⎣ 1+2i⎦          ⎣ 2+2i⎦  ⎣ 6+72i⎦  ⎣ 4+8i⎦  ⎣10+80i⎦
+     *
+     * e) for Hermitian complex matrices, calculate
+     *
+     *   ⎡ 1+0i 3+4i⎤  ⎡ 3+1i⎤     ⎡ 1+0i⎤  ⎡-4+22i⎤  ⎡ 3   ⎤  ⎡-1+22i⎤
+     * 2*⎢          ⎥ *⎢     ⎥ + 3*⎢     ⎥ =⎢      ⎥ +⎢     ⎥ =⎢      ⎥.
+     *   ⎣ 3-4i 7+0i⎦  ⎣ 1+2i⎦     ⎣ 2+2i⎦  ⎣40+10i⎦  ⎣ 6+6i⎦  ⎣46+16i⎦
+     *
+     * and the transposed product
+     *
+     *   ⎡ 1+0i 3-4i⎤  ⎡ 3+1i⎤     ⎡ 1+0i⎤  ⎡  28+6i⎤  ⎡ 3   ⎤  ⎡  31+6i⎤
+     * 2*⎢          ⎥ *⎢     ⎥ + 3*⎢     ⎥ =⎢       ⎥ +⎢     ⎥ =⎢       ⎥.
+     *   ⎣ 3+4i 7+0i⎦  ⎣ 1+2i⎦     ⎣ 2+2i⎦  ⎣ 24+58i⎦  ⎣ 6+6i⎦  ⎣ 30+64i⎦
+     *
+     * and the product with complex coefficients (cgemv/zgemv)
+     *
+     *    ⎡ 1+0i 3+4i⎤  ⎡ 3+1i⎤          ⎡ 1+0i⎤  ⎡ -22-4i⎤  ⎡ 3+1i⎤  ⎡-19-3i⎤
+     * 2i*⎢          ⎥ *⎢     ⎥ + (3+1i)*⎢     ⎥ =⎢       ⎥ +⎢     ⎥ =⎢      ⎥.
+     *    ⎣ 3-4i 7+0i⎦  ⎣ 1+2i⎦          ⎣ 2+2i⎦  ⎣-10+40i⎦  ⎣ 4+8i⎦  ⎣-6+48i⎦
+     *
+     * and the transposed product with complex coefficients (cgemv/zgemv)
+     *
+     *    ⎡ 1+0i 3-4i⎤  ⎡ 3+1i⎤          ⎡ 1+0i⎤  ⎡ -6+28i⎤  ⎡ 3+1i⎤  ⎡ -3+29i⎤
+     * 2i*⎢          ⎥ *⎢     ⎥ + (3+1i)*⎢     ⎥ =⎢       ⎥ +⎢     ⎥ =⎢       ⎥.
+     *    ⎣ 3+4i 7+0i⎦  ⎣ 1+2i⎦          ⎣ 2+2i⎦  ⎣-58+24i⎦  ⎣ 4+8i⎦  ⎣-54+32i⎦
+     *
      */
 
     /*
-     * Real matrices
+     * Real, single precision, unsymmetric matrices
      */
 
     {
@@ -1823,6 +1878,92 @@ int test_mtxmatrix_gemv_array(void)
         mtxmatrix_free(&A);
     }
 
+    /*
+     * Real, single precision, symmetric matrices
+     */
+
+    {
+        struct mtxmatrix A;
+        struct mtxvector x;
+        struct mtxvector y;
+        int num_rows = 3;
+        int num_columns = 3;
+        float Adata[] = {1.0f, 2.0f, 3.0f, 5.0f, 6.0f, 9.0f};
+        float xdata[] = {3.0f, 2.0f, 1.0f};
+        float ydata[] = {1.0f, 0.0f, 2.0f};
+        err = mtxmatrix_init_array_real_single(
+            &A, mtx_symmetric, num_rows, num_columns, Adata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        err = mtxvector_init_array_real_single(&x, num_columns, xdata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        {
+            err = mtxvector_init_array_real_single(&y, num_rows, ydata);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxmatrix_sgemv(mtx_notrans, 2.0f, &A, &x, 3.0f, &y, NULL);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.type);
+            const struct mtxvector_array * y_ = &y.storage.array;
+            TEST_ASSERT_EQ(mtx_field_real, y_->field);
+            TEST_ASSERT_EQ(mtx_single, y_->precision);
+            TEST_ASSERT_EQ(3, y_->size);
+            TEST_ASSERT_EQ(y_->data.real_single[0], 23.0f);
+            TEST_ASSERT_EQ(y_->data.real_single[1], 44.0f);
+            TEST_ASSERT_EQ(y_->data.real_single[2], 66.0f);
+            mtxvector_free(&y);
+        }
+        {
+            err = mtxvector_init_array_real_single(&y, num_rows, ydata);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxmatrix_sgemv(mtx_trans, 2.0f, &A, &x, 3.0f, &y, NULL);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.type);
+            const struct mtxvector_array * y_ = &y.storage.array;
+            TEST_ASSERT_EQ(mtx_field_real, y_->field);
+            TEST_ASSERT_EQ(mtx_single, y_->precision);
+            TEST_ASSERT_EQ(3, y_->size);
+            TEST_ASSERT_EQ(y_->data.real_single[0], 23.0f);
+            TEST_ASSERT_EQ(y_->data.real_single[1], 44.0f);
+            TEST_ASSERT_EQ(y_->data.real_single[2], 66.0f);
+            mtxvector_free(&y);
+        }
+        {
+            err = mtxvector_init_array_real_single(&y, num_rows, ydata);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxmatrix_dgemv(mtx_notrans, 2.0, &A, &x, 3.0, &y, NULL);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.type);
+            const struct mtxvector_array * y_ = &y.storage.array;
+            TEST_ASSERT_EQ(mtx_field_real, y_->field);
+            TEST_ASSERT_EQ(mtx_single, y_->precision);
+            TEST_ASSERT_EQ(3, y_->size);
+            TEST_ASSERT_EQ(y_->data.real_single[0], 23.0f);
+            TEST_ASSERT_EQ(y_->data.real_single[1], 44.0f);
+            TEST_ASSERT_EQ(y_->data.real_single[2], 66.0f);
+            mtxvector_free(&y);
+        }
+        {
+            err = mtxvector_init_array_real_single(&y, num_rows, ydata);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxmatrix_dgemv(mtx_trans, 2.0, &A, &x, 3.0, &y, NULL);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.type);
+            const struct mtxvector_array * y_ = &y.storage.array;
+            TEST_ASSERT_EQ(mtx_field_real, y_->field);
+            TEST_ASSERT_EQ(mtx_single, y_->precision);
+            TEST_ASSERT_EQ(3, y_->size);
+            TEST_ASSERT_EQ(y_->data.real_single[0], 23.0f);
+            TEST_ASSERT_EQ(y_->data.real_single[1], 44.0f);
+            TEST_ASSERT_EQ(y_->data.real_single[2], 66.0f);
+            mtxvector_free(&y);
+        }
+        mtxvector_free(&x);
+        mtxmatrix_free(&A);
+    }
+
+    /*
+     * Real, double precision, unsymmetric matrices
+     */
+
     {
         struct mtxmatrix A;
         struct mtxvector x;
@@ -1902,7 +2043,89 @@ int test_mtxmatrix_gemv_array(void)
     }
 
     /*
-     * Complex matrices
+     * Real, double precision, symmetric matrices
+     */
+
+    {
+        struct mtxmatrix A;
+        struct mtxvector x;
+        struct mtxvector y;
+        int num_rows = 3;
+        int num_columns = 3;
+        double Adata[] = {1.0, 2.0, 3.0, 5.0, 6.0, 9.0};
+        double xdata[] = {3.0, 2.0, 1.0};
+        double ydata[] = {1.0, 0.0, 2.0};
+        err = mtxmatrix_init_array_real_double(
+            &A, mtx_symmetric, num_rows, num_columns, Adata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        err = mtxvector_init_array_real_double(&x, num_columns, xdata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        {
+            err = mtxvector_init_array_real_double(&y, num_rows, ydata);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxmatrix_sgemv(mtx_notrans, 2.0f, &A, &x, 3.0f, &y, NULL);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.type);
+            const struct mtxvector_array * y_ = &y.storage.array;
+            TEST_ASSERT_EQ(mtx_field_real, y_->field);
+            TEST_ASSERT_EQ(mtx_double, y_->precision);
+            TEST_ASSERT_EQ(3, y_->size);
+            TEST_ASSERT_EQ(y_->data.real_double[0], 23.0);
+            TEST_ASSERT_EQ(y_->data.real_double[1], 44.0);
+            TEST_ASSERT_EQ(y_->data.real_double[2], 66.0);
+            mtxvector_free(&y);
+        }
+        {
+            err = mtxvector_init_array_real_double(&y, num_rows, ydata);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxmatrix_sgemv(mtx_trans, 2.0f, &A, &x, 3.0f, &y, NULL);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.type);
+            const struct mtxvector_array * y_ = &y.storage.array;
+            TEST_ASSERT_EQ(mtx_field_real, y_->field);
+            TEST_ASSERT_EQ(mtx_double, y_->precision);
+            TEST_ASSERT_EQ(3, y_->size);
+            TEST_ASSERT_EQ(y_->data.real_double[0], 23.0);
+            TEST_ASSERT_EQ(y_->data.real_double[1], 44.0);
+            TEST_ASSERT_EQ(y_->data.real_double[2], 66.0);
+            mtxvector_free(&y);
+        }
+        {
+            err = mtxvector_init_array_real_double(&y, num_rows, ydata);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxmatrix_dgemv(mtx_notrans, 2.0, &A, &x, 3.0, &y, NULL);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.type);
+            const struct mtxvector_array * y_ = &y.storage.array;
+            TEST_ASSERT_EQ(mtx_field_real, y_->field);
+            TEST_ASSERT_EQ(mtx_double, y_->precision);
+            TEST_ASSERT_EQ(3, y_->size);
+            TEST_ASSERT_EQ(y_->data.real_double[0], 23.0);
+            TEST_ASSERT_EQ(y_->data.real_double[1], 44.0);
+            TEST_ASSERT_EQ(y_->data.real_double[2], 66.0);
+            mtxvector_free(&y);
+        }
+        {
+            err = mtxvector_init_array_real_double(&y, num_rows, ydata);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxmatrix_dgemv(mtx_trans, 2.0, &A, &x, 3.0, &y, NULL);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.type);
+            const struct mtxvector_array * y_ = &y.storage.array;
+            TEST_ASSERT_EQ(mtx_field_real, y_->field);
+            TEST_ASSERT_EQ(mtx_double, y_->precision);
+            TEST_ASSERT_EQ(3, y_->size);
+            TEST_ASSERT_EQ(y_->data.real_double[0], 23.0);
+            TEST_ASSERT_EQ(y_->data.real_double[1], 44.0);
+            TEST_ASSERT_EQ(y_->data.real_double[2], 66.0);
+            mtxvector_free(&y);
+        }
+        mtxvector_free(&x);
+        mtxmatrix_free(&A);
+    }
+
+    /*
+     * Complex, single precision, unsymmetric matrices
      */
 
     {
@@ -2015,7 +2238,6 @@ int test_mtxmatrix_gemv_array(void)
             TEST_ASSERT_EQ(y_->data.complex_single[1][1],  0.0f);
             mtxvector_free(&y);
         }
-
         float calpha[2] = {0.0f, 2.0f};
         float cbeta[2]  = {3.0f, 1.0f};
         {
@@ -2066,7 +2288,6 @@ int test_mtxmatrix_gemv_array(void)
             TEST_ASSERT_EQ(y_->data.complex_single[1][1], 80.0f);
             mtxvector_free(&y);
         }
-
         double zalpha[2] = {0.0, 2.0};
         double zbeta[2]  = {3.0, 1.0};
         {
@@ -2117,10 +2338,449 @@ int test_mtxmatrix_gemv_array(void)
             TEST_ASSERT_EQ(y_->data.complex_single[1][1], 80.0f);
             mtxvector_free(&y);
         }
-
         mtxvector_free(&x);
         mtxmatrix_free(&A);
     }
+
+    /*
+     * Complex, single precision, symmetric matrices
+     */
+
+    {
+        struct mtxmatrix A;
+        struct mtxvector x;
+        struct mtxvector y;
+        int num_rows = 2;
+        int num_columns = 2;
+        float Adata[][2] = {{1.0f,2.0f}, {3.0f,4.0f}, {7.0f,8.0f}};
+        float xdata[][2] = {{3.0f,1.0f}, {1.0f,2.0f}};
+        float ydata[][2] = {{1.0f,0.0f}, {2.0f,2.0f}};
+        err = mtxmatrix_init_array_complex_single(
+            &A, mtx_symmetric, num_rows, num_columns, Adata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        err = mtxvector_init_array_complex_single(&x, num_columns, xdata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        {
+            err = mtxvector_init_array_complex_single(&y, num_rows, ydata);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxmatrix_sgemv(mtx_notrans, 2.0f, &A, &x, 3.0f, &y, NULL);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.type);
+            const struct mtxvector_array * y_ = &y.storage.array;
+            TEST_ASSERT_EQ(mtx_field_complex, y_->field);
+            TEST_ASSERT_EQ(mtx_single, y_->precision);
+            TEST_ASSERT_EQ(2, y_->size);
+            TEST_ASSERT_EQ(y_->data.complex_single[0][0], -5.0f);
+            TEST_ASSERT_EQ(y_->data.complex_single[0][1], 34.0f);
+            TEST_ASSERT_EQ(y_->data.complex_single[1][0], -2.0f);
+            TEST_ASSERT_EQ(y_->data.complex_single[1][1], 80.0f);
+            mtxvector_free(&y);
+        }
+        {
+            err = mtxvector_init_array_complex_single(&y, num_rows, ydata);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxmatrix_sgemv(mtx_trans, 2.0f, &A, &x, 3.0f, &y, NULL);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.type);
+            const struct mtxvector_array * y_ = &y.storage.array;
+            TEST_ASSERT_EQ(mtx_field_complex, y_->field);
+            TEST_ASSERT_EQ(mtx_single, y_->precision);
+            TEST_ASSERT_EQ(2, y_->size);
+            TEST_ASSERT_EQ(y_->data.complex_single[0][0], -5.0f);
+            TEST_ASSERT_EQ(y_->data.complex_single[0][1], 34.0f);
+            TEST_ASSERT_EQ(y_->data.complex_single[1][0], -2.0f);
+            TEST_ASSERT_EQ(y_->data.complex_single[1][1], 80.0f);
+            mtxvector_free(&y);
+        }
+        {
+            err = mtxvector_init_array_complex_single(&y, num_rows, ydata);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxmatrix_sgemv(mtx_conjtrans, 2.0f, &A, &x, 3.0f, &y, NULL);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.type);
+            const struct mtxvector_array * y_ = &y.storage.array;
+            TEST_ASSERT_EQ(mtx_field_complex, y_->field);
+            TEST_ASSERT_EQ(mtx_single, y_->precision);
+            TEST_ASSERT_EQ(2, y_->size);
+            TEST_ASSERT_EQ(y_->data.complex_single[0][0], 35.0f);
+            TEST_ASSERT_EQ(y_->data.complex_single[0][1], -6.0f);
+            TEST_ASSERT_EQ(y_->data.complex_single[1][0], 78.0f);
+            TEST_ASSERT_EQ(y_->data.complex_single[1][1],  0.0f);
+            mtxvector_free(&y);
+        }
+        {
+            err = mtxvector_init_array_complex_single(&y, num_rows, ydata);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxmatrix_dgemv(mtx_notrans, 2.0, &A, &x, 3.0, &y, NULL);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.type);
+            const struct mtxvector_array * y_ = &y.storage.array;
+            TEST_ASSERT_EQ(mtx_field_complex, y_->field);
+            TEST_ASSERT_EQ(mtx_single, y_->precision);
+            TEST_ASSERT_EQ(2, y_->size);
+            TEST_ASSERT_EQ(y_->data.complex_single[0][0], -5.0f);
+            TEST_ASSERT_EQ(y_->data.complex_single[0][1], 34.0f);
+            TEST_ASSERT_EQ(y_->data.complex_single[1][0], -2.0f);
+            TEST_ASSERT_EQ(y_->data.complex_single[1][1], 80.0f);
+            mtxvector_free(&y);
+        }
+        {
+            err = mtxvector_init_array_complex_single(&y, num_rows, ydata);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxmatrix_dgemv(mtx_trans, 2.0, &A, &x, 3.0, &y, NULL);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.type);
+            const struct mtxvector_array * y_ = &y.storage.array;
+            TEST_ASSERT_EQ(mtx_field_complex, y_->field);
+            TEST_ASSERT_EQ(mtx_single, y_->precision);
+            TEST_ASSERT_EQ(2, y_->size);
+            TEST_ASSERT_EQ(y_->data.complex_single[0][0], -5.0f);
+            TEST_ASSERT_EQ(y_->data.complex_single[0][1], 34.0f);
+            TEST_ASSERT_EQ(y_->data.complex_single[1][0], -2.0f);
+            TEST_ASSERT_EQ(y_->data.complex_single[1][1], 80.0f);
+            mtxvector_free(&y);
+        }
+        {
+            err = mtxvector_init_array_complex_single(&y, num_rows, ydata);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxmatrix_dgemv(mtx_conjtrans, 2.0, &A, &x, 3.0, &y, NULL);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.type);
+            const struct mtxvector_array * y_ = &y.storage.array;
+            TEST_ASSERT_EQ(mtx_field_complex, y_->field);
+            TEST_ASSERT_EQ(mtx_single, y_->precision);
+            TEST_ASSERT_EQ(2, y_->size);
+            TEST_ASSERT_EQ(y_->data.complex_single[0][0], 35.0f);
+            TEST_ASSERT_EQ(y_->data.complex_single[0][1], -6.0f);
+            TEST_ASSERT_EQ(y_->data.complex_single[1][0], 78.0f);
+            TEST_ASSERT_EQ(y_->data.complex_single[1][1],  0.0f);
+            mtxvector_free(&y);
+        }
+        float calpha[2] = {0.0f, 2.0f};
+        float cbeta[2]  = {3.0f, 1.0f};
+        {
+            err = mtxvector_init_array_complex_single(&y, num_rows, ydata);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxmatrix_cgemv(mtx_notrans, calpha, &A, &x, cbeta, &y, NULL);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.type);
+            const struct mtxvector_array * y_ = &y.storage.array;
+            TEST_ASSERT_EQ(mtx_field_complex, y_->field);
+            TEST_ASSERT_EQ(mtx_single, y_->precision);
+            TEST_ASSERT_EQ(2, y_->size);
+            TEST_ASSERT_EQ(y_->data.complex_single[0][0], -31.0f);
+            TEST_ASSERT_EQ(y_->data.complex_single[0][1],  -7.0f);
+            TEST_ASSERT_EQ(y_->data.complex_single[1][0], -70.0f);
+            TEST_ASSERT_EQ(y_->data.complex_single[1][1],   0.0f);
+            mtxvector_free(&y);
+        }
+        {
+            err = mtxvector_init_array_complex_single(&y, num_rows, ydata);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxmatrix_cgemv(mtx_trans, calpha, &A, &x, cbeta, &y, NULL);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.type);
+            const struct mtxvector_array * y_ = &y.storage.array;
+            TEST_ASSERT_EQ(mtx_field_complex, y_->field);
+            TEST_ASSERT_EQ(mtx_single, y_->precision);
+            TEST_ASSERT_EQ(2, y_->size);
+            TEST_ASSERT_EQ(y_->data.complex_single[0][0], -31.0f);
+            TEST_ASSERT_EQ(y_->data.complex_single[0][1],  -7.0f);
+            TEST_ASSERT_EQ(y_->data.complex_single[1][0], -70.0f);
+            TEST_ASSERT_EQ(y_->data.complex_single[1][1],   0.0f);
+            mtxvector_free(&y);
+        }
+        {
+            err = mtxvector_init_array_complex_single(&y, num_rows, ydata);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxmatrix_cgemv(mtx_conjtrans, calpha, &A, &x, cbeta, &y, NULL);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.type);
+            const struct mtxvector_array * y_ = &y.storage.array;
+            TEST_ASSERT_EQ(mtx_field_complex, y_->field);
+            TEST_ASSERT_EQ(mtx_single, y_->precision);
+            TEST_ASSERT_EQ(2, y_->size);
+            TEST_ASSERT_EQ(y_->data.complex_single[0][0],  9.0f);
+            TEST_ASSERT_EQ(y_->data.complex_single[0][1], 33.0f);
+            TEST_ASSERT_EQ(y_->data.complex_single[1][0], 10.0f);
+            TEST_ASSERT_EQ(y_->data.complex_single[1][1], 80.0f);
+            mtxvector_free(&y);
+        }
+        double zalpha[2] = {0.0, 2.0};
+        double zbeta[2]  = {3.0, 1.0};
+        {
+            err = mtxvector_init_array_complex_single(&y, num_rows, ydata);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxmatrix_zgemv(mtx_notrans, zalpha, &A, &x, zbeta, &y, NULL);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.type);
+            const struct mtxvector_array * y_ = &y.storage.array;
+            TEST_ASSERT_EQ(mtx_field_complex, y_->field);
+            TEST_ASSERT_EQ(mtx_single, y_->precision);
+            TEST_ASSERT_EQ(2, y_->size);
+            TEST_ASSERT_EQ(y_->data.complex_single[0][0], -31.0f);
+            TEST_ASSERT_EQ(y_->data.complex_single[0][1],  -7.0f);
+            TEST_ASSERT_EQ(y_->data.complex_single[1][0], -70.0f);
+            TEST_ASSERT_EQ(y_->data.complex_single[1][1],   0.0f);
+            mtxvector_free(&y);
+        }
+        {
+            err = mtxvector_init_array_complex_single(&y, num_rows, ydata);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxmatrix_zgemv(mtx_trans, zalpha, &A, &x, zbeta, &y, NULL);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.type);
+            const struct mtxvector_array * y_ = &y.storage.array;
+            TEST_ASSERT_EQ(mtx_field_complex, y_->field);
+            TEST_ASSERT_EQ(mtx_single, y_->precision);
+            TEST_ASSERT_EQ(2, y_->size);
+            TEST_ASSERT_EQ(y_->data.complex_single[0][0], -31.0f);
+            TEST_ASSERT_EQ(y_->data.complex_single[0][1],  -7.0f);
+            TEST_ASSERT_EQ(y_->data.complex_single[1][0], -70.0f);
+            TEST_ASSERT_EQ(y_->data.complex_single[1][1],   0.0f);
+            mtxvector_free(&y);
+        }
+        {
+            err = mtxvector_init_array_complex_single(&y, num_rows, ydata);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxmatrix_zgemv(mtx_conjtrans, zalpha, &A, &x, zbeta, &y, NULL);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.type);
+            const struct mtxvector_array * y_ = &y.storage.array;
+            TEST_ASSERT_EQ(mtx_field_complex, y_->field);
+            TEST_ASSERT_EQ(mtx_single, y_->precision);
+            TEST_ASSERT_EQ(2, y_->size);
+            TEST_ASSERT_EQ(y_->data.complex_single[0][0],  9.0f);
+            TEST_ASSERT_EQ(y_->data.complex_single[0][1], 33.0f);
+            TEST_ASSERT_EQ(y_->data.complex_single[1][0], 10.0f);
+            TEST_ASSERT_EQ(y_->data.complex_single[1][1], 80.0f);
+            mtxvector_free(&y);
+        }
+        mtxvector_free(&x);
+        mtxmatrix_free(&A);
+    }
+
+    /*
+     * Complex, single precision, hermitian matrices
+     */
+
+    {
+        struct mtxmatrix A;
+        struct mtxvector x;
+        struct mtxvector y;
+        int num_rows = 2;
+        int num_columns = 2;
+        float Adata[][2] = {{1.0f,0.0f}, {3.0f,4.0f}, {7.0f,0.0f}};
+        float xdata[][2] = {{3.0f,1.0f}, {1.0f,2.0f}};
+        float ydata[][2] = {{1.0f,0.0f}, {2.0f,2.0f}};
+        err = mtxmatrix_init_array_complex_single(
+            &A, mtx_hermitian, num_rows, num_columns, Adata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        err = mtxvector_init_array_complex_single(&x, num_columns, xdata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        {
+            err = mtxvector_init_array_complex_single(&y, num_rows, ydata);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxmatrix_sgemv(mtx_notrans, 2.0f, &A, &x, 3.0f, &y, NULL);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.type);
+            const struct mtxvector_array * y_ = &y.storage.array;
+            TEST_ASSERT_EQ(mtx_field_complex, y_->field);
+            TEST_ASSERT_EQ(mtx_single, y_->precision);
+            TEST_ASSERT_EQ(2, y_->size);
+            TEST_ASSERT_EQ(y_->data.complex_single[0][0], -1.0f);
+            TEST_ASSERT_EQ(y_->data.complex_single[0][1], 22.0f);
+            TEST_ASSERT_EQ(y_->data.complex_single[1][0], 46.0f);
+            TEST_ASSERT_EQ(y_->data.complex_single[1][1], 16.0f);
+            mtxvector_free(&y);
+        }
+        {
+            err = mtxvector_init_array_complex_single(&y, num_rows, ydata);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxmatrix_sgemv(mtx_trans, 2.0f, &A, &x, 3.0f, &y, NULL);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.type);
+            const struct mtxvector_array * y_ = &y.storage.array;
+            TEST_ASSERT_EQ(mtx_field_complex, y_->field);
+            TEST_ASSERT_EQ(mtx_single, y_->precision);
+            TEST_ASSERT_EQ(2, y_->size);
+            TEST_ASSERT_EQ(y_->data.complex_single[0][0], 31.0f);
+            TEST_ASSERT_EQ(y_->data.complex_single[0][1],  6.0f);
+            TEST_ASSERT_EQ(y_->data.complex_single[1][0], 30.0f);
+            TEST_ASSERT_EQ(y_->data.complex_single[1][1], 64.0f);
+            mtxvector_free(&y);
+        }
+        {
+            err = mtxvector_init_array_complex_single(&y, num_rows, ydata);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxmatrix_sgemv(mtx_conjtrans, 2.0f, &A, &x, 3.0f, &y, NULL);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.type);
+            const struct mtxvector_array * y_ = &y.storage.array;
+            TEST_ASSERT_EQ(mtx_field_complex, y_->field);
+            TEST_ASSERT_EQ(mtx_single, y_->precision);
+            TEST_ASSERT_EQ(2, y_->size);
+            TEST_ASSERT_EQ(y_->data.complex_single[0][0], -1.0f);
+            TEST_ASSERT_EQ(y_->data.complex_single[0][1], 22.0f);
+            TEST_ASSERT_EQ(y_->data.complex_single[1][0], 46.0f);
+            TEST_ASSERT_EQ(y_->data.complex_single[1][1], 16.0f);
+            mtxvector_free(&y);
+        }
+        {
+            err = mtxvector_init_array_complex_single(&y, num_rows, ydata);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxmatrix_dgemv(mtx_notrans, 2.0, &A, &x, 3.0, &y, NULL);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.type);
+            const struct mtxvector_array * y_ = &y.storage.array;
+            TEST_ASSERT_EQ(mtx_field_complex, y_->field);
+            TEST_ASSERT_EQ(mtx_single, y_->precision);
+            TEST_ASSERT_EQ(2, y_->size);
+            TEST_ASSERT_EQ(y_->data.complex_single[0][0], -1.0f);
+            TEST_ASSERT_EQ(y_->data.complex_single[0][1], 22.0f);
+            TEST_ASSERT_EQ(y_->data.complex_single[1][0], 46.0f);
+            TEST_ASSERT_EQ(y_->data.complex_single[1][1], 16.0f);
+            mtxvector_free(&y);
+        }
+        {
+            err = mtxvector_init_array_complex_single(&y, num_rows, ydata);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxmatrix_dgemv(mtx_trans, 2.0, &A, &x, 3.0, &y, NULL);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.type);
+            const struct mtxvector_array * y_ = &y.storage.array;
+            TEST_ASSERT_EQ(mtx_field_complex, y_->field);
+            TEST_ASSERT_EQ(mtx_single, y_->precision);
+            TEST_ASSERT_EQ(2, y_->size);
+            TEST_ASSERT_EQ(y_->data.complex_single[0][0], 31.0f);
+            TEST_ASSERT_EQ(y_->data.complex_single[0][1],  6.0f);
+            TEST_ASSERT_EQ(y_->data.complex_single[1][0], 30.0f);
+            TEST_ASSERT_EQ(y_->data.complex_single[1][1], 64.0f);
+            mtxvector_free(&y);
+        }
+        {
+            err = mtxvector_init_array_complex_single(&y, num_rows, ydata);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxmatrix_dgemv(mtx_conjtrans, 2.0, &A, &x, 3.0, &y, NULL);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.type);
+            const struct mtxvector_array * y_ = &y.storage.array;
+            TEST_ASSERT_EQ(mtx_field_complex, y_->field);
+            TEST_ASSERT_EQ(mtx_single, y_->precision);
+            TEST_ASSERT_EQ(2, y_->size);
+            TEST_ASSERT_EQ(y_->data.complex_single[0][0], -1.0f);
+            TEST_ASSERT_EQ(y_->data.complex_single[0][1], 22.0f);
+            TEST_ASSERT_EQ(y_->data.complex_single[1][0], 46.0f);
+            TEST_ASSERT_EQ(y_->data.complex_single[1][1], 16.0f);
+            mtxvector_free(&y);
+        }
+        float calpha[2] = {0.0f, 2.0f};
+        float cbeta[2]  = {3.0f, 1.0f};
+        {
+            err = mtxvector_init_array_complex_single(&y, num_rows, ydata);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxmatrix_cgemv(mtx_notrans, calpha, &A, &x, cbeta, &y, NULL);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.type);
+            const struct mtxvector_array * y_ = &y.storage.array;
+            TEST_ASSERT_EQ(mtx_field_complex, y_->field);
+            TEST_ASSERT_EQ(mtx_single, y_->precision);
+            TEST_ASSERT_EQ(2, y_->size);
+            TEST_ASSERT_EQ(y_->data.complex_single[0][0], -19.0f);
+            TEST_ASSERT_EQ(y_->data.complex_single[0][1],  -3.0f);
+            TEST_ASSERT_EQ(y_->data.complex_single[1][0],  -6.0f);
+            TEST_ASSERT_EQ(y_->data.complex_single[1][1],  48.0f);
+            mtxvector_free(&y);
+        }
+        {
+            err = mtxvector_init_array_complex_single(&y, num_rows, ydata);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxmatrix_cgemv(mtx_trans, calpha, &A, &x, cbeta, &y, NULL);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.type);
+            const struct mtxvector_array * y_ = &y.storage.array;
+            TEST_ASSERT_EQ(mtx_field_complex, y_->field);
+            TEST_ASSERT_EQ(mtx_single, y_->precision);
+            TEST_ASSERT_EQ(2, y_->size);
+            TEST_ASSERT_EQ(y_->data.complex_single[0][0],  -3.0f);
+            TEST_ASSERT_EQ(y_->data.complex_single[0][1],  29.0f);
+            TEST_ASSERT_EQ(y_->data.complex_single[1][0], -54.0f);
+            TEST_ASSERT_EQ(y_->data.complex_single[1][1],  32.0f);
+            mtxvector_free(&y);
+        }
+        {
+            err = mtxvector_init_array_complex_single(&y, num_rows, ydata);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxmatrix_cgemv(mtx_conjtrans, calpha, &A, &x, cbeta, &y, NULL);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.type);
+            const struct mtxvector_array * y_ = &y.storage.array;
+            TEST_ASSERT_EQ(mtx_field_complex, y_->field);
+            TEST_ASSERT_EQ(mtx_single, y_->precision);
+            TEST_ASSERT_EQ(2, y_->size);
+            TEST_ASSERT_EQ(y_->data.complex_single[0][0],-19.0f);
+            TEST_ASSERT_EQ(y_->data.complex_single[0][1], -3.0f);
+            TEST_ASSERT_EQ(y_->data.complex_single[1][0], -6.0f);
+            TEST_ASSERT_EQ(y_->data.complex_single[1][1], 48.0f);
+            mtxvector_free(&y);
+        }
+        double zalpha[2] = {0.0, 2.0};
+        double zbeta[2]  = {3.0, 1.0};
+        {
+            err = mtxvector_init_array_complex_single(&y, num_rows, ydata);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxmatrix_zgemv(mtx_notrans, zalpha, &A, &x, zbeta, &y, NULL);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.type);
+            const struct mtxvector_array * y_ = &y.storage.array;
+            TEST_ASSERT_EQ(mtx_field_complex, y_->field);
+            TEST_ASSERT_EQ(mtx_single, y_->precision);
+            TEST_ASSERT_EQ(2, y_->size);
+            TEST_ASSERT_EQ(y_->data.complex_single[0][0], -19.0f);
+            TEST_ASSERT_EQ(y_->data.complex_single[0][1],  -3.0f);
+            TEST_ASSERT_EQ(y_->data.complex_single[1][0],  -6.0f);
+            TEST_ASSERT_EQ(y_->data.complex_single[1][1],  48.0f);
+            mtxvector_free(&y);
+        }
+        {
+            err = mtxvector_init_array_complex_single(&y, num_rows, ydata);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxmatrix_zgemv(mtx_trans, zalpha, &A, &x, zbeta, &y, NULL);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.type);
+            const struct mtxvector_array * y_ = &y.storage.array;
+            TEST_ASSERT_EQ(mtx_field_complex, y_->field);
+            TEST_ASSERT_EQ(mtx_single, y_->precision);
+            TEST_ASSERT_EQ(2, y_->size);
+            TEST_ASSERT_EQ(y_->data.complex_single[0][0],  -3.0f);
+            TEST_ASSERT_EQ(y_->data.complex_single[0][1],  29.0f);
+            TEST_ASSERT_EQ(y_->data.complex_single[1][0], -54.0f);
+            TEST_ASSERT_EQ(y_->data.complex_single[1][1],  32.0f);
+            mtxvector_free(&y);
+        }
+        {
+            err = mtxvector_init_array_complex_single(&y, num_rows, ydata);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxmatrix_zgemv(mtx_conjtrans, zalpha, &A, &x, zbeta, &y, NULL);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.type);
+            const struct mtxvector_array * y_ = &y.storage.array;
+            TEST_ASSERT_EQ(mtx_field_complex, y_->field);
+            TEST_ASSERT_EQ(mtx_single, y_->precision);
+            TEST_ASSERT_EQ(2, y_->size);
+            TEST_ASSERT_EQ(y_->data.complex_single[0][0], -19.0f);
+            TEST_ASSERT_EQ(y_->data.complex_single[0][1],  -3.0f);
+            TEST_ASSERT_EQ(y_->data.complex_single[1][0],  -6.0f);
+            TEST_ASSERT_EQ(y_->data.complex_single[1][1],  48.0f);
+            mtxvector_free(&y);
+        }
+        mtxvector_free(&x);
+        mtxmatrix_free(&A);
+    }
+
+    /*
+     * Complex, double precision, unsymmetric matrices
+     */
 
     {
         struct mtxmatrix A;
@@ -2232,7 +2892,6 @@ int test_mtxmatrix_gemv_array(void)
             TEST_ASSERT_EQ(y_->data.complex_double[1][1],  0.0);
             mtxvector_free(&y);
         }
-
         float calpha[2] = {0.0f, 2.0f};
         float cbeta[2]  = {3.0f, 1.0f};
         {
@@ -2283,7 +2942,6 @@ int test_mtxmatrix_gemv_array(void)
             TEST_ASSERT_EQ(y_->data.complex_double[1][1], 80.0);
             mtxvector_free(&y);
         }
-
         double zalpha[2] = {0.0, 2.0};
         double zbeta[2]  = {3.0, 1.0};
         {
@@ -2334,13 +2992,448 @@ int test_mtxmatrix_gemv_array(void)
             TEST_ASSERT_EQ(y_->data.complex_double[1][1], 80.0);
             mtxvector_free(&y);
         }
-
         mtxvector_free(&x);
         mtxmatrix_free(&A);
     }
 
     /*
-     * Integer matrices
+     * Complex, double precision, symmetric matrices
+     */
+
+    {
+        struct mtxmatrix A;
+        struct mtxvector x;
+        struct mtxvector y;
+        int num_rows = 2;
+        int num_columns = 2;
+        double Adata[][2] = {{1.0,2.0}, {3.0,4.0}, {7.0,8.0}};
+        double xdata[][2] = {{3.0,1.0}, {1.0,2.0}};
+        double ydata[][2] = {{1.0,0.0}, {2.0,2.0}};
+        err = mtxmatrix_init_array_complex_double(
+            &A, mtx_symmetric, num_rows, num_columns, Adata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        err = mtxvector_init_array_complex_double(&x, num_columns, xdata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        {
+            err = mtxvector_init_array_complex_double(&y, num_rows, ydata);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxmatrix_sgemv(mtx_notrans, 2.0f, &A, &x, 3.0f, &y, NULL);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.type);
+            const struct mtxvector_array * y_ = &y.storage.array;
+            TEST_ASSERT_EQ(mtx_field_complex, y_->field);
+            TEST_ASSERT_EQ(mtx_double, y_->precision);
+            TEST_ASSERT_EQ(2, y_->size);
+            TEST_ASSERT_EQ(y_->data.complex_double[0][0], -5.0);
+            TEST_ASSERT_EQ(y_->data.complex_double[0][1], 34.0);
+            TEST_ASSERT_EQ(y_->data.complex_double[1][0], -2.0);
+            TEST_ASSERT_EQ(y_->data.complex_double[1][1], 80.0);
+            mtxvector_free(&y);
+        }
+        {
+            err = mtxvector_init_array_complex_double(&y, num_rows, ydata);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxmatrix_sgemv(mtx_trans, 2.0f, &A, &x, 3.0f, &y, NULL);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.type);
+            const struct mtxvector_array * y_ = &y.storage.array;
+            TEST_ASSERT_EQ(mtx_field_complex, y_->field);
+            TEST_ASSERT_EQ(mtx_double, y_->precision);
+            TEST_ASSERT_EQ(2, y_->size);
+            TEST_ASSERT_EQ(y_->data.complex_double[0][0], -5.0);
+            TEST_ASSERT_EQ(y_->data.complex_double[0][1], 34.0);
+            TEST_ASSERT_EQ(y_->data.complex_double[1][0], -2.0);
+            TEST_ASSERT_EQ(y_->data.complex_double[1][1], 80.0);
+            mtxvector_free(&y);
+        }
+        {
+            err = mtxvector_init_array_complex_double(&y, num_rows, ydata);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxmatrix_sgemv(mtx_conjtrans, 2.0f, &A, &x, 3.0f, &y, NULL);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.type);
+            const struct mtxvector_array * y_ = &y.storage.array;
+            TEST_ASSERT_EQ(mtx_field_complex, y_->field);
+            TEST_ASSERT_EQ(mtx_double, y_->precision);
+            TEST_ASSERT_EQ(2, y_->size);
+            TEST_ASSERT_EQ(y_->data.complex_double[0][0], 35.0);
+            TEST_ASSERT_EQ(y_->data.complex_double[0][1], -6.0);
+            TEST_ASSERT_EQ(y_->data.complex_double[1][0], 78.0);
+            TEST_ASSERT_EQ(y_->data.complex_double[1][1],  0.0);
+            mtxvector_free(&y);
+        }
+        {
+            err = mtxvector_init_array_complex_double(&y, num_rows, ydata);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxmatrix_dgemv(mtx_notrans, 2.0, &A, &x, 3.0, &y, NULL);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.type);
+            const struct mtxvector_array * y_ = &y.storage.array;
+            TEST_ASSERT_EQ(mtx_field_complex, y_->field);
+            TEST_ASSERT_EQ(mtx_double, y_->precision);
+            TEST_ASSERT_EQ(2, y_->size);
+            TEST_ASSERT_EQ(y_->data.complex_double[0][0], -5.0);
+            TEST_ASSERT_EQ(y_->data.complex_double[0][1], 34.0);
+            TEST_ASSERT_EQ(y_->data.complex_double[1][0], -2.0);
+            TEST_ASSERT_EQ(y_->data.complex_double[1][1], 80.0);
+            mtxvector_free(&y);
+        }
+        {
+            err = mtxvector_init_array_complex_double(&y, num_rows, ydata);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxmatrix_dgemv(mtx_trans, 2.0, &A, &x, 3.0, &y, NULL);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.type);
+            const struct mtxvector_array * y_ = &y.storage.array;
+            TEST_ASSERT_EQ(mtx_field_complex, y_->field);
+            TEST_ASSERT_EQ(mtx_double, y_->precision);
+            TEST_ASSERT_EQ(2, y_->size);
+            TEST_ASSERT_EQ(y_->data.complex_double[0][0], -5.0);
+            TEST_ASSERT_EQ(y_->data.complex_double[0][1], 34.0);
+            TEST_ASSERT_EQ(y_->data.complex_double[1][0], -2.0);
+            TEST_ASSERT_EQ(y_->data.complex_double[1][1], 80.0);
+            mtxvector_free(&y);
+        }
+        {
+            err = mtxvector_init_array_complex_double(&y, num_rows, ydata);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxmatrix_dgemv(mtx_conjtrans, 2.0, &A, &x, 3.0, &y, NULL);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.type);
+            const struct mtxvector_array * y_ = &y.storage.array;
+            TEST_ASSERT_EQ(mtx_field_complex, y_->field);
+            TEST_ASSERT_EQ(mtx_double, y_->precision);
+            TEST_ASSERT_EQ(2, y_->size);
+            TEST_ASSERT_EQ(y_->data.complex_double[0][0], 35.0);
+            TEST_ASSERT_EQ(y_->data.complex_double[0][1], -6.0);
+            TEST_ASSERT_EQ(y_->data.complex_double[1][0], 78.0);
+            TEST_ASSERT_EQ(y_->data.complex_double[1][1],  0.0);
+            mtxvector_free(&y);
+        }
+        float calpha[2] = {0.0f, 2.0f};
+        float cbeta[2]  = {3.0f, 1.0f};
+        {
+            err = mtxvector_init_array_complex_double(&y, num_rows, ydata);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxmatrix_cgemv(mtx_notrans, calpha, &A, &x, cbeta, &y, NULL);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.type);
+            const struct mtxvector_array * y_ = &y.storage.array;
+            TEST_ASSERT_EQ(mtx_field_complex, y_->field);
+            TEST_ASSERT_EQ(mtx_double, y_->precision);
+            TEST_ASSERT_EQ(2, y_->size);
+            TEST_ASSERT_EQ(y_->data.complex_double[0][0], -31.0);
+            TEST_ASSERT_EQ(y_->data.complex_double[0][1],  -7.0);
+            TEST_ASSERT_EQ(y_->data.complex_double[1][0], -70.0);
+            TEST_ASSERT_EQ(y_->data.complex_double[1][1],   0.0);
+            mtxvector_free(&y);
+        }
+        {
+            err = mtxvector_init_array_complex_double(&y, num_rows, ydata);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxmatrix_cgemv(mtx_trans, calpha, &A, &x, cbeta, &y, NULL);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.type);
+            const struct mtxvector_array * y_ = &y.storage.array;
+            TEST_ASSERT_EQ(mtx_field_complex, y_->field);
+            TEST_ASSERT_EQ(mtx_double, y_->precision);
+            TEST_ASSERT_EQ(2, y_->size);
+            TEST_ASSERT_EQ(y_->data.complex_double[0][0], -31.0);
+            TEST_ASSERT_EQ(y_->data.complex_double[0][1],  -7.0);
+            TEST_ASSERT_EQ(y_->data.complex_double[1][0], -70.0);
+            TEST_ASSERT_EQ(y_->data.complex_double[1][1],   0.0);
+            mtxvector_free(&y);
+        }
+        {
+            err = mtxvector_init_array_complex_double(&y, num_rows, ydata);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxmatrix_cgemv(mtx_conjtrans, calpha, &A, &x, cbeta, &y, NULL);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.type);
+            const struct mtxvector_array * y_ = &y.storage.array;
+            TEST_ASSERT_EQ(mtx_field_complex, y_->field);
+            TEST_ASSERT_EQ(mtx_double, y_->precision);
+            TEST_ASSERT_EQ(2, y_->size);
+            TEST_ASSERT_EQ(y_->data.complex_double[0][0],  9.0);
+            TEST_ASSERT_EQ(y_->data.complex_double[0][1], 33.0);
+            TEST_ASSERT_EQ(y_->data.complex_double[1][0], 10.0);
+            TEST_ASSERT_EQ(y_->data.complex_double[1][1], 80.0);
+            mtxvector_free(&y);
+        }
+        double zalpha[2] = {0.0, 2.0};
+        double zbeta[2]  = {3.0, 1.0};
+        {
+            err = mtxvector_init_array_complex_double(&y, num_rows, ydata);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxmatrix_zgemv(mtx_notrans, zalpha, &A, &x, zbeta, &y, NULL);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.type);
+            const struct mtxvector_array * y_ = &y.storage.array;
+            TEST_ASSERT_EQ(mtx_field_complex, y_->field);
+            TEST_ASSERT_EQ(mtx_double, y_->precision);
+            TEST_ASSERT_EQ(2, y_->size);
+            TEST_ASSERT_EQ(y_->data.complex_double[0][0], -31.0);
+            TEST_ASSERT_EQ(y_->data.complex_double[0][1],  -7.0);
+            TEST_ASSERT_EQ(y_->data.complex_double[1][0], -70.0);
+            TEST_ASSERT_EQ(y_->data.complex_double[1][1],   0.0);
+            mtxvector_free(&y);
+        }
+        {
+            err = mtxvector_init_array_complex_double(&y, num_rows, ydata);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxmatrix_zgemv(mtx_trans, zalpha, &A, &x, zbeta, &y, NULL);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.type);
+            const struct mtxvector_array * y_ = &y.storage.array;
+            TEST_ASSERT_EQ(mtx_field_complex, y_->field);
+            TEST_ASSERT_EQ(mtx_double, y_->precision);
+            TEST_ASSERT_EQ(2, y_->size);
+            TEST_ASSERT_EQ(y_->data.complex_double[0][0], -31.0);
+            TEST_ASSERT_EQ(y_->data.complex_double[0][1],  -7.0);
+            TEST_ASSERT_EQ(y_->data.complex_double[1][0], -70.0);
+            TEST_ASSERT_EQ(y_->data.complex_double[1][1],   0.0);
+            mtxvector_free(&y);
+        }
+        {
+            err = mtxvector_init_array_complex_double(&y, num_rows, ydata);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxmatrix_zgemv(mtx_conjtrans, zalpha, &A, &x, zbeta, &y, NULL);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.type);
+            const struct mtxvector_array * y_ = &y.storage.array;
+            TEST_ASSERT_EQ(mtx_field_complex, y_->field);
+            TEST_ASSERT_EQ(mtx_double, y_->precision);
+            TEST_ASSERT_EQ(2, y_->size);
+            TEST_ASSERT_EQ(y_->data.complex_double[0][0],  9.0);
+            TEST_ASSERT_EQ(y_->data.complex_double[0][1], 33.0);
+            TEST_ASSERT_EQ(y_->data.complex_double[1][0], 10.0);
+            TEST_ASSERT_EQ(y_->data.complex_double[1][1], 80.0);
+            mtxvector_free(&y);
+        }
+        mtxvector_free(&x);
+        mtxmatrix_free(&A);
+    }
+
+    /*
+     * Complex, double precision, hermitian matrices
+     */
+
+    {
+        struct mtxmatrix A;
+        struct mtxvector x;
+        struct mtxvector y;
+        int num_rows = 2;
+        int num_columns = 2;
+        double Adata[][2] = {{1.0,0.0}, {3.0,4.0}, {7.0,0.0}};
+        double xdata[][2] = {{3.0,1.0}, {1.0,2.0}};
+        double ydata[][2] = {{1.0,0.0}, {2.0,2.0}};
+        err = mtxmatrix_init_array_complex_double(
+            &A, mtx_hermitian, num_rows, num_columns, Adata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        err = mtxvector_init_array_complex_double(&x, num_columns, xdata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        {
+            err = mtxvector_init_array_complex_double(&y, num_rows, ydata);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxmatrix_sgemv(mtx_notrans, 2.0f, &A, &x, 3.0f, &y, NULL);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.type);
+            const struct mtxvector_array * y_ = &y.storage.array;
+            TEST_ASSERT_EQ(mtx_field_complex, y_->field);
+            TEST_ASSERT_EQ(mtx_double, y_->precision);
+            TEST_ASSERT_EQ(2, y_->size);
+            TEST_ASSERT_EQ(y_->data.complex_double[0][0], -1.0);
+            TEST_ASSERT_EQ(y_->data.complex_double[0][1], 22.0);
+            TEST_ASSERT_EQ(y_->data.complex_double[1][0], 46.0);
+            TEST_ASSERT_EQ(y_->data.complex_double[1][1], 16.0);
+            mtxvector_free(&y);
+        }
+        {
+            err = mtxvector_init_array_complex_double(&y, num_rows, ydata);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxmatrix_sgemv(mtx_trans, 2.0f, &A, &x, 3.0f, &y, NULL);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.type);
+            const struct mtxvector_array * y_ = &y.storage.array;
+            TEST_ASSERT_EQ(mtx_field_complex, y_->field);
+            TEST_ASSERT_EQ(mtx_double, y_->precision);
+            TEST_ASSERT_EQ(2, y_->size);
+            TEST_ASSERT_EQ(y_->data.complex_double[0][0], 31.0);
+            TEST_ASSERT_EQ(y_->data.complex_double[0][1],  6.0);
+            TEST_ASSERT_EQ(y_->data.complex_double[1][0], 30.0);
+            TEST_ASSERT_EQ(y_->data.complex_double[1][1], 64.0);
+            mtxvector_free(&y);
+        }
+        {
+            err = mtxvector_init_array_complex_double(&y, num_rows, ydata);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxmatrix_sgemv(mtx_conjtrans, 2.0f, &A, &x, 3.0f, &y, NULL);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.type);
+            const struct mtxvector_array * y_ = &y.storage.array;
+            TEST_ASSERT_EQ(mtx_field_complex, y_->field);
+            TEST_ASSERT_EQ(mtx_double, y_->precision);
+            TEST_ASSERT_EQ(2, y_->size);
+            TEST_ASSERT_EQ(y_->data.complex_double[0][0], -1.0);
+            TEST_ASSERT_EQ(y_->data.complex_double[0][1], 22.0);
+            TEST_ASSERT_EQ(y_->data.complex_double[1][0], 46.0);
+            TEST_ASSERT_EQ(y_->data.complex_double[1][1], 16.0);
+            mtxvector_free(&y);
+        }
+        {
+            err = mtxvector_init_array_complex_double(&y, num_rows, ydata);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxmatrix_dgemv(mtx_notrans, 2.0, &A, &x, 3.0, &y, NULL);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.type);
+            const struct mtxvector_array * y_ = &y.storage.array;
+            TEST_ASSERT_EQ(mtx_field_complex, y_->field);
+            TEST_ASSERT_EQ(mtx_double, y_->precision);
+            TEST_ASSERT_EQ(2, y_->size);
+            TEST_ASSERT_EQ(y_->data.complex_double[0][0], -1.0);
+            TEST_ASSERT_EQ(y_->data.complex_double[0][1], 22.0);
+            TEST_ASSERT_EQ(y_->data.complex_double[1][0], 46.0);
+            TEST_ASSERT_EQ(y_->data.complex_double[1][1], 16.0);
+            mtxvector_free(&y);
+        }
+        {
+            err = mtxvector_init_array_complex_double(&y, num_rows, ydata);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxmatrix_dgemv(mtx_trans, 2.0, &A, &x, 3.0, &y, NULL);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.type);
+            const struct mtxvector_array * y_ = &y.storage.array;
+            TEST_ASSERT_EQ(mtx_field_complex, y_->field);
+            TEST_ASSERT_EQ(mtx_double, y_->precision);
+            TEST_ASSERT_EQ(2, y_->size);
+            TEST_ASSERT_EQ(y_->data.complex_double[0][0], 31.0);
+            TEST_ASSERT_EQ(y_->data.complex_double[0][1],  6.0);
+            TEST_ASSERT_EQ(y_->data.complex_double[1][0], 30.0);
+            TEST_ASSERT_EQ(y_->data.complex_double[1][1], 64.0);
+            mtxvector_free(&y);
+        }
+        {
+            err = mtxvector_init_array_complex_double(&y, num_rows, ydata);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxmatrix_dgemv(mtx_conjtrans, 2.0, &A, &x, 3.0, &y, NULL);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.type);
+            const struct mtxvector_array * y_ = &y.storage.array;
+            TEST_ASSERT_EQ(mtx_field_complex, y_->field);
+            TEST_ASSERT_EQ(mtx_double, y_->precision);
+            TEST_ASSERT_EQ(2, y_->size);
+            TEST_ASSERT_EQ(y_->data.complex_double[0][0], -1.0);
+            TEST_ASSERT_EQ(y_->data.complex_double[0][1], 22.0);
+            TEST_ASSERT_EQ(y_->data.complex_double[1][0], 46.0);
+            TEST_ASSERT_EQ(y_->data.complex_double[1][1], 16.0);
+            mtxvector_free(&y);
+        }
+        float calpha[2] = {0.0f, 2.0f};
+        float cbeta[2]  = {3.0f, 1.0f};
+        {
+            err = mtxvector_init_array_complex_double(&y, num_rows, ydata);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxmatrix_cgemv(mtx_notrans, calpha, &A, &x, cbeta, &y, NULL);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.type);
+            const struct mtxvector_array * y_ = &y.storage.array;
+            TEST_ASSERT_EQ(mtx_field_complex, y_->field);
+            TEST_ASSERT_EQ(mtx_double, y_->precision);
+            TEST_ASSERT_EQ(2, y_->size);
+            TEST_ASSERT_EQ(y_->data.complex_double[0][0], -19.0);
+            TEST_ASSERT_EQ(y_->data.complex_double[0][1],  -3.0);
+            TEST_ASSERT_EQ(y_->data.complex_double[1][0],  -6.0);
+            TEST_ASSERT_EQ(y_->data.complex_double[1][1],  48.0);
+            mtxvector_free(&y);
+        }
+        {
+            err = mtxvector_init_array_complex_double(&y, num_rows, ydata);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxmatrix_cgemv(mtx_trans, calpha, &A, &x, cbeta, &y, NULL);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.type);
+            const struct mtxvector_array * y_ = &y.storage.array;
+            TEST_ASSERT_EQ(mtx_field_complex, y_->field);
+            TEST_ASSERT_EQ(mtx_double, y_->precision);
+            TEST_ASSERT_EQ(2, y_->size);
+            TEST_ASSERT_EQ(y_->data.complex_double[0][0],  -3.0);
+            TEST_ASSERT_EQ(y_->data.complex_double[0][1],  29.0);
+            TEST_ASSERT_EQ(y_->data.complex_double[1][0], -54.0);
+            TEST_ASSERT_EQ(y_->data.complex_double[1][1],  32.0);
+            mtxvector_free(&y);
+        }
+        {
+            err = mtxvector_init_array_complex_double(&y, num_rows, ydata);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxmatrix_cgemv(mtx_conjtrans, calpha, &A, &x, cbeta, &y, NULL);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.type);
+            const struct mtxvector_array * y_ = &y.storage.array;
+            TEST_ASSERT_EQ(mtx_field_complex, y_->field);
+            TEST_ASSERT_EQ(mtx_double, y_->precision);
+            TEST_ASSERT_EQ(2, y_->size);
+            TEST_ASSERT_EQ(y_->data.complex_double[0][0],-19.0);
+            TEST_ASSERT_EQ(y_->data.complex_double[0][1], -3.0);
+            TEST_ASSERT_EQ(y_->data.complex_double[1][0], -6.0);
+            TEST_ASSERT_EQ(y_->data.complex_double[1][1], 48.0);
+            mtxvector_free(&y);
+        }
+        double zalpha[2] = {0.0, 2.0};
+        double zbeta[2]  = {3.0, 1.0};
+        {
+            err = mtxvector_init_array_complex_double(&y, num_rows, ydata);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxmatrix_zgemv(mtx_notrans, zalpha, &A, &x, zbeta, &y, NULL);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.type);
+            const struct mtxvector_array * y_ = &y.storage.array;
+            TEST_ASSERT_EQ(mtx_field_complex, y_->field);
+            TEST_ASSERT_EQ(mtx_double, y_->precision);
+            TEST_ASSERT_EQ(2, y_->size);
+            TEST_ASSERT_EQ(y_->data.complex_double[0][0], -19.0);
+            TEST_ASSERT_EQ(y_->data.complex_double[0][1],  -3.0);
+            TEST_ASSERT_EQ(y_->data.complex_double[1][0],  -6.0);
+            TEST_ASSERT_EQ(y_->data.complex_double[1][1],  48.0);
+            mtxvector_free(&y);
+        }
+        {
+            err = mtxvector_init_array_complex_double(&y, num_rows, ydata);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxmatrix_zgemv(mtx_trans, zalpha, &A, &x, zbeta, &y, NULL);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.type);
+            const struct mtxvector_array * y_ = &y.storage.array;
+            TEST_ASSERT_EQ(mtx_field_complex, y_->field);
+            TEST_ASSERT_EQ(mtx_double, y_->precision);
+            TEST_ASSERT_EQ(2, y_->size);
+            TEST_ASSERT_EQ(y_->data.complex_double[0][0],  -3.0);
+            TEST_ASSERT_EQ(y_->data.complex_double[0][1],  29.0);
+            TEST_ASSERT_EQ(y_->data.complex_double[1][0], -54.0);
+            TEST_ASSERT_EQ(y_->data.complex_double[1][1],  32.0);
+            mtxvector_free(&y);
+        }
+        {
+            err = mtxvector_init_array_complex_double(&y, num_rows, ydata);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxmatrix_zgemv(mtx_conjtrans, zalpha, &A, &x, zbeta, &y, NULL);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.type);
+            const struct mtxvector_array * y_ = &y.storage.array;
+            TEST_ASSERT_EQ(mtx_field_complex, y_->field);
+            TEST_ASSERT_EQ(mtx_double, y_->precision);
+            TEST_ASSERT_EQ(2, y_->size);
+            TEST_ASSERT_EQ(y_->data.complex_double[0][0], -19.0);
+            TEST_ASSERT_EQ(y_->data.complex_double[0][1],  -3.0);
+            TEST_ASSERT_EQ(y_->data.complex_double[1][0],  -6.0);
+            TEST_ASSERT_EQ(y_->data.complex_double[1][1],  48.0);
+            mtxvector_free(&y);
+        }
+        mtxvector_free(&x);
+        mtxmatrix_free(&A);
+    }
+
+    /*
+     * Integer, single precision, unsymmetric matrices
      */
 
     {
@@ -2421,6 +3514,92 @@ int test_mtxmatrix_gemv_array(void)
         mtxmatrix_free(&A);
     }
 
+    /*
+     * Integer, single precision, symmetric matrices
+     */
+
+    {
+        struct mtxmatrix A;
+        struct mtxvector x;
+        struct mtxvector y;
+        int num_rows = 3;
+        int num_columns = 3;
+        int32_t Adata[] = {1, 2, 3, 5, 6, 9};
+        int32_t xdata[] = {3, 2, 1};
+        int32_t ydata[] = {1, 0, 2};
+        err = mtxmatrix_init_array_integer_single(
+            &A, mtx_symmetric, num_rows, num_columns, Adata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        err = mtxvector_init_array_integer_single(&x, num_columns, xdata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        {
+            err = mtxvector_init_array_integer_single(&y, num_rows, ydata);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxmatrix_sgemv(mtx_notrans, 2.0f, &A, &x, 3.0f, &y, NULL);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.type);
+            const struct mtxvector_array * y_ = &y.storage.array;
+            TEST_ASSERT_EQ(mtx_field_integer, y_->field);
+            TEST_ASSERT_EQ(mtx_single, y_->precision);
+            TEST_ASSERT_EQ(3, y_->size);
+            TEST_ASSERT_EQ(y_->data.integer_single[0], 23);
+            TEST_ASSERT_EQ(y_->data.integer_single[1], 44);
+            TEST_ASSERT_EQ(y_->data.integer_single[2], 66);
+            mtxvector_free(&y);
+        }
+        {
+            err = mtxvector_init_array_integer_single(&y, num_rows, ydata);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxmatrix_sgemv(mtx_trans, 2.0f, &A, &x, 3.0f, &y, NULL);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.type);
+            const struct mtxvector_array * y_ = &y.storage.array;
+            TEST_ASSERT_EQ(mtx_field_integer, y_->field);
+            TEST_ASSERT_EQ(mtx_single, y_->precision);
+            TEST_ASSERT_EQ(3, y_->size);
+            TEST_ASSERT_EQ(y_->data.integer_single[0], 23);
+            TEST_ASSERT_EQ(y_->data.integer_single[1], 44);
+            TEST_ASSERT_EQ(y_->data.integer_single[2], 66);
+            mtxvector_free(&y);
+        }
+        {
+            err = mtxvector_init_array_integer_single(&y, num_rows, ydata);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxmatrix_dgemv(mtx_notrans, 2.0, &A, &x, 3.0, &y, NULL);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.type);
+            const struct mtxvector_array * y_ = &y.storage.array;
+            TEST_ASSERT_EQ(mtx_field_integer, y_->field);
+            TEST_ASSERT_EQ(mtx_single, y_->precision);
+            TEST_ASSERT_EQ(3, y_->size);
+            TEST_ASSERT_EQ(y_->data.integer_single[0], 23);
+            TEST_ASSERT_EQ(y_->data.integer_single[1], 44);
+            TEST_ASSERT_EQ(y_->data.integer_single[2], 66);
+            mtxvector_free(&y);
+        }
+        {
+            err = mtxvector_init_array_integer_single(&y, num_rows, ydata);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxmatrix_dgemv(mtx_trans, 2.0, &A, &x, 3.0, &y, NULL);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.type);
+            const struct mtxvector_array * y_ = &y.storage.array;
+            TEST_ASSERT_EQ(mtx_field_integer, y_->field);
+            TEST_ASSERT_EQ(mtx_single, y_->precision);
+            TEST_ASSERT_EQ(3, y_->size);
+            TEST_ASSERT_EQ(y_->data.integer_single[0], 23);
+            TEST_ASSERT_EQ(y_->data.integer_single[1], 44);
+            TEST_ASSERT_EQ(y_->data.integer_single[2], 66);
+            mtxvector_free(&y);
+        }
+        mtxvector_free(&x);
+        mtxmatrix_free(&A);
+    }
+
+    /*
+     * Integer, double precision, unsymmetric matrices
+     */
+
     {
         struct mtxmatrix A;
         struct mtxvector x;
@@ -2492,6 +3671,88 @@ int test_mtxmatrix_gemv_array(void)
             TEST_ASSERT_EQ(3, y_->size);
             TEST_ASSERT_EQ(y_->data.integer_double[0], 39);
             TEST_ASSERT_EQ(y_->data.integer_double[1], 48);
+            TEST_ASSERT_EQ(y_->data.integer_double[2], 66);
+            mtxvector_free(&y);
+        }
+        mtxvector_free(&x);
+        mtxmatrix_free(&A);
+    }
+
+    /*
+     * Integer, double precision, symmetric matrices
+     */
+
+    {
+        struct mtxmatrix A;
+        struct mtxvector x;
+        struct mtxvector y;
+        int num_rows = 3;
+        int num_columns = 3;
+        int64_t Adata[] = {1, 2, 3, 5, 6, 9};
+        int64_t xdata[] = {3, 2, 1};
+        int64_t ydata[] = {1, 0, 2};
+        err = mtxmatrix_init_array_integer_double(
+            &A, mtx_symmetric, num_rows, num_columns, Adata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        err = mtxvector_init_array_integer_double(&x, num_columns, xdata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        {
+            err = mtxvector_init_array_integer_double(&y, num_rows, ydata);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxmatrix_sgemv(mtx_notrans, 2.0f, &A, &x, 3.0f, &y, NULL);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.type);
+            const struct mtxvector_array * y_ = &y.storage.array;
+            TEST_ASSERT_EQ(mtx_field_integer, y_->field);
+            TEST_ASSERT_EQ(mtx_double, y_->precision);
+            TEST_ASSERT_EQ(3, y_->size);
+            TEST_ASSERT_EQ(y_->data.integer_double[0], 23);
+            TEST_ASSERT_EQ(y_->data.integer_double[1], 44);
+            TEST_ASSERT_EQ(y_->data.integer_double[2], 66);
+            mtxvector_free(&y);
+        }
+        {
+            err = mtxvector_init_array_integer_double(&y, num_rows, ydata);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxmatrix_sgemv(mtx_trans, 2.0f, &A, &x, 3.0f, &y, NULL);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.type);
+            const struct mtxvector_array * y_ = &y.storage.array;
+            TEST_ASSERT_EQ(mtx_field_integer, y_->field);
+            TEST_ASSERT_EQ(mtx_double, y_->precision);
+            TEST_ASSERT_EQ(3, y_->size);
+            TEST_ASSERT_EQ(y_->data.integer_double[0], 23);
+            TEST_ASSERT_EQ(y_->data.integer_double[1], 44);
+            TEST_ASSERT_EQ(y_->data.integer_double[2], 66);
+            mtxvector_free(&y);
+        }
+        {
+            err = mtxvector_init_array_integer_double(&y, num_rows, ydata);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxmatrix_dgemv(mtx_notrans, 2.0, &A, &x, 3.0, &y, NULL);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.type);
+            const struct mtxvector_array * y_ = &y.storage.array;
+            TEST_ASSERT_EQ(mtx_field_integer, y_->field);
+            TEST_ASSERT_EQ(mtx_double, y_->precision);
+            TEST_ASSERT_EQ(3, y_->size);
+            TEST_ASSERT_EQ(y_->data.integer_double[0], 23);
+            TEST_ASSERT_EQ(y_->data.integer_double[1], 44);
+            TEST_ASSERT_EQ(y_->data.integer_double[2], 66);
+            mtxvector_free(&y);
+        }
+        {
+            err = mtxvector_init_array_integer_double(&y, num_rows, ydata);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxmatrix_dgemv(mtx_trans, 2.0, &A, &x, 3.0, &y, NULL);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.type);
+            const struct mtxvector_array * y_ = &y.storage.array;
+            TEST_ASSERT_EQ(mtx_field_integer, y_->field);
+            TEST_ASSERT_EQ(mtx_double, y_->precision);
+            TEST_ASSERT_EQ(3, y_->size);
+            TEST_ASSERT_EQ(y_->data.integer_double[0], 23);
+            TEST_ASSERT_EQ(y_->data.integer_double[1], 44);
             TEST_ASSERT_EQ(y_->data.integer_double[2], 66);
             mtxvector_free(&y);
         }

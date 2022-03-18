@@ -959,6 +959,7 @@ int mtxvector_array_sscal(
     struct mtxvector_array * x,
     int64_t * num_flops)
 {
+    if (a == 1) return MTX_SUCCESS;
     if (x->field == mtx_field_real) {
         if (x->precision == mtx_single) {
             float * xdata = x->data.real_single;
@@ -1040,6 +1041,7 @@ int mtxvector_array_dscal(
     struct mtxvector_array * x,
     int64_t * num_flops)
 {
+    if (a == 1) return MTX_SUCCESS;
     if (x->field == mtx_field_real) {
         if (x->precision == mtx_single) {
             float * xdata = x->data.real_single;
