@@ -1006,6 +1006,45 @@ int mtxvector_coordinate_join(
  * Level 1 BLAS operations
  */
 
+static bool same_pattern(
+    const struct mtxvector_coordinate * x,
+    const struct mtxvector_coordinate * y)
+{
+    return x->num_entries == y->num_entries
+        && x->num_nonzeros == y->num_nonzeros
+        && x->size == y->size
+        && memcmp(x->indices, y->indices, x->size*sizeof(*x->indices)) == 0;
+}
+
+static int mtxvector_coordinate_to_array(
+    struct mtxvector_array * vecx,
+    const struct mtxvector_coordinate * x)
+{
+    vecx->field = x->field;
+    vecx->precision = x->precision;
+    vecx->size = x->size;
+    if (x->field == mtx_field_real) {
+        if (x->precision == mtx_single) {
+            vecx->data.real_single = x->data.real_single;
+        } else if (x->precision == mtx_double) {
+            vecx->data.real_double = x->data.real_double;
+        } else { return MTX_ERR_INVALID_PRECISION; }
+    } else if (x->field == mtx_field_complex) {
+        if (x->precision == mtx_single) {
+            vecx->data.complex_single = x->data.complex_single;
+        } else if (x->precision == mtx_double) {
+            vecx->data.complex_double = x->data.complex_double;
+        } else { return MTX_ERR_INVALID_PRECISION; }
+    } else if (x->field == mtx_field_integer) {
+        if (x->precision == mtx_single) {
+            vecx->data.integer_single = x->data.integer_single;
+        } else if (x->precision == mtx_double) {
+            vecx->data.integer_double = x->data.integer_double;
+        } else { return MTX_ERR_INVALID_PRECISION; }
+    } else { return MTX_ERR_INVALID_FIELD; }
+    return MTX_SUCCESS;
+}
+
 /**
  * ‘mtxvector_coordinate_swap()’ swaps values of two vectors,
  * simultaneously performing ‘y <- x’ and ‘x <- y’.
@@ -1018,100 +1057,17 @@ int mtxvector_coordinate_swap(
     struct mtxvector_coordinate * x,
     struct mtxvector_coordinate * y)
 {
-    if (x->field != y->field)
-        return MTX_ERR_INCOMPATIBLE_FIELD;
-    if (x->precision != y->precision)
-        return MTX_ERR_INCOMPATIBLE_PRECISION;
-    if (x->num_entries != y->num_entries || x->size != y->size)
-        return MTX_ERR_INCOMPATIBLE_SIZE;
-    if (x->field == mtx_field_real) {
-        if (x->precision == mtx_single) {
-            float * xdata = x->data.real_single;
-            float * ydata = y->data.real_single;
-#ifdef LIBMTX_HAVE_BLAS
-            cblas_sswap(x->size, xdata, 1, ydata, 1);
-            if (mtxblaserror()) return MTX_ERR_BLAS;
-#else
-            for (int64_t k = 0; k < x->size; k++) {
-                float z = ydata[k];
-                ydata[k] = xdata[k];
-                xdata[k] = z;
-            }
-#endif
-        } else if (x->precision == mtx_double) {
-            double * xdata = x->data.real_double;
-            double * ydata = y->data.real_double;
-#ifdef LIBMTX_HAVE_BLAS
-            cblas_dswap(x->size, xdata, 1, ydata, 1);
-            if (mtxblaserror()) return MTX_ERR_BLAS;
-#else
-            for (int64_t k = 0; k < x->size; k++) {
-                double z = ydata[k];
-                ydata[k] = xdata[k];
-                xdata[k] = z;
-            }
-#endif
-        } else {
-            return MTX_ERR_INVALID_PRECISION;
-        }
-    } else if (x->field == mtx_field_complex) {
-        if (x->precision == mtx_single) {
-            float (* xdata)[2] = x->data.complex_single;
-            float (* ydata)[2] = y->data.complex_single;
-#ifdef LIBMTX_HAVE_BLAS
-            cblas_cswap(x->size, xdata, 1, ydata, 1);
-            if (mtxblaserror()) return MTX_ERR_BLAS;
-#else
-            for (int64_t k = 0; k < x->size; k++) {
-                float z[2] = {ydata[k][0], ydata[k][1]};
-                ydata[k][0] = xdata[k][0];
-                ydata[k][1] = xdata[k][1];
-                xdata[k][0] = z[0];
-                xdata[k][1] = z[1];
-            }
-#endif
-        } else if (x->precision == mtx_double) {
-            double (* xdata)[2] = x->data.complex_double;
-            double (* ydata)[2] = y->data.complex_double;
-#ifdef LIBMTX_HAVE_BLAS
-            cblas_zswap(x->size, xdata, 1, ydata, 1);
-            if (mtxblaserror()) return MTX_ERR_BLAS;
-#else
-            for (int64_t k = 0; k < x->size; k++) {
-                double z[2] = {ydata[k][0], ydata[k][1]};
-                ydata[k][0] = xdata[k][0];
-                ydata[k][1] = xdata[k][1];
-                xdata[k][0] = z[0];
-                xdata[k][1] = z[1];
-            }
-#endif
-        } else {
-            return MTX_ERR_INVALID_PRECISION;
-        }
-    } else if (x->field == mtx_field_integer) {
-        if (x->precision == mtx_single) {
-            int32_t * xdata = x->data.integer_single;
-            int32_t * ydata = y->data.integer_single;
-            for (int64_t k = 0; k < x->size; k++) {
-                int32_t z = ydata[k];
-                ydata[k] = xdata[k];
-                xdata[k] = z;
-            }
-        } else if (x->precision == mtx_double) {
-            int64_t * xdata = x->data.integer_double;
-            int64_t * ydata = y->data.integer_double;
-            for (int64_t k = 0; k < x->size; k++) {
-                int64_t z = ydata[k];
-                ydata[k] = xdata[k];
-                xdata[k] = z;
-            }
-        } else {
-            return MTX_ERR_INVALID_PRECISION;
-        }
-    } else {
-        return MTX_ERR_INVALID_FIELD;
-    }
-    return MTX_SUCCESS;
+    if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
+    if (x->field == mtx_field_pattern) return MTX_SUCCESS;
+    if (x->precision != y->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
+    if (!same_pattern(x, y)) return MTX_ERR_INCOMPATIBLE_PATTERN;
+    struct mtxvector_array xarray;
+    int err = mtxvector_coordinate_to_array(&xarray, x);
+    if (err) return err;
+    struct mtxvector_array yarray;
+    err = mtxvector_coordinate_to_array(&yarray, y);
+    if (err) return err;
+    return mtxvector_array_swap(&xarray, &yarray);
 }
 
 /**
@@ -1125,84 +1081,17 @@ int mtxvector_coordinate_copy(
     struct mtxvector_coordinate * y,
     const struct mtxvector_coordinate * x)
 {
-    if (x->field != y->field)
-        return MTX_ERR_INCOMPATIBLE_FIELD;
-    if (x->precision != y->precision)
-        return MTX_ERR_INCOMPATIBLE_PRECISION;
-    if (x->num_entries != y->num_entries || x->size != y->size)
-        return MTX_ERR_INCOMPATIBLE_SIZE;
-    if (x->field == mtx_field_real) {
-        if (x->precision == mtx_single) {
-            const float * xdata = x->data.real_single;
-            float * ydata = y->data.real_single;
-#ifdef LIBMTX_HAVE_BLAS
-            cblas_scopy(x->size, xdata, 1, ydata, 1);
-            if (mtxblaserror()) return MTX_ERR_BLAS;
-#else
-            for (int64_t k = 0; k < x->size; k++)
-                ydata[k] = xdata[k];
-#endif
-        } else if (x->precision == mtx_double) {
-            const double * xdata = x->data.real_double;
-            double * ydata = y->data.real_double;
-#ifdef LIBMTX_HAVE_BLAS
-            cblas_dcopy(x->size, xdata, 1, ydata, 1);
-            if (mtxblaserror()) return MTX_ERR_BLAS;
-#else
-            for (int64_t k = 0; k < x->size; k++)
-                ydata[k] = xdata[k];
-#endif
-        } else {
-            return MTX_ERR_INVALID_PRECISION;
-        }
-    } else if (x->field == mtx_field_complex) {
-        if (x->precision == mtx_single) {
-            const float (* xdata)[2] = x->data.complex_single;
-            float (* ydata)[2] = y->data.complex_single;
-#ifdef LIBMTX_HAVE_BLAS
-            cblas_ccopy(x->size, xdata, 1, ydata, 1);
-            if (mtxblaserror()) return MTX_ERR_BLAS;
-#else
-            for (int64_t k = 0; k < x->size; k++) {
-                ydata[k][0] = xdata[k][0];
-                ydata[k][1] = xdata[k][1];
-            }
-#endif
-        } else if (x->precision == mtx_double) {
-            const double (* xdata)[2] = x->data.complex_double;
-            double (* ydata)[2] = y->data.complex_double;
-#ifdef LIBMTX_HAVE_BLAS
-            cblas_zcopy(x->size, xdata, 1, ydata, 1);
-            if (mtxblaserror()) return MTX_ERR_BLAS;
-#else
-            for (int64_t k = 0; k < x->size; k++) {
-                ydata[k][0] = xdata[k][0];
-                ydata[k][1] = xdata[k][1];
-            }
-#endif
-        } else {
-            return MTX_ERR_INVALID_PRECISION;
-        }
-    } else if (x->field == mtx_field_integer) {
-        if (x->precision == mtx_single) {
-            const int32_t * xdata = x->data.integer_single;
-            int32_t * ydata = y->data.integer_single;
-            for (int64_t k = 0; k < x->size; k++)
-                ydata[k] = xdata[k];
-        } else if (x->precision == mtx_double) {
-            const int64_t * xdata = x->data.integer_double;
-            int64_t * ydata = y->data.integer_double;
-            for (int64_t k = 0; k < x->size; k++)
-                ydata[k] = xdata[k];
-        } else {
-            return MTX_ERR_INVALID_PRECISION;
-        }
-    } else if (x->field == mtx_field_pattern) {
-        /* Nothing to be done. */
-    } else {
-        return MTX_ERR_INVALID_FIELD;
-    }
-    return MTX_SUCCESS;
+    if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
+    if (x->field == mtx_field_pattern) return MTX_SUCCESS;
+    if (x->precision != y->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
+    if (!same_pattern(x, y)) return MTX_ERR_INCOMPATIBLE_PATTERN;
+    struct mtxvector_array xarray;
+    int err = mtxvector_coordinate_to_array(&xarray, x);
+    if (err) return err;
+    struct mtxvector_array yarray;
+    err = mtxvector_coordinate_to_array(&yarray, y);
+    if (err) return err;
+    return mtxvector_array_copy(&yarray, &xarray);
 }
 
 /**
@@ -1214,78 +1103,11 @@ int mtxvector_coordinate_sscal(
     struct mtxvector_coordinate * x,
     int64_t * num_flops)
 {
-    if (x->field == mtx_field_real) {
-        if (x->precision == mtx_single) {
-            float * xdata = x->data.real_single;
-#ifdef LIBMTX_HAVE_BLAS
-            cblas_sscal(x->size, a, xdata, 1);
-            if (mtxblaserror()) return MTX_ERR_BLAS;
-#else
-            for (int64_t k = 0; k < x->size; k++)
-                xdata[k] *= a;
-#endif
-            if (num_flops) *num_flops += x->size;
-        } else if (x->precision == mtx_double) {
-            double * xdata = x->data.real_double;
-#ifdef LIBMTX_HAVE_BLAS
-            cblas_dscal(x->size, a, xdata, 1);
-            if (mtxblaserror()) return MTX_ERR_BLAS;
-#else
-            for (int64_t k = 0; k < x->size; k++)
-                xdata[k] *= a;
-#endif
-            if (num_flops) *num_flops += x->size;
-        } else {
-            return MTX_ERR_INVALID_PRECISION;
-        }
-    } else if (x->field == mtx_field_complex) {
-        if (x->precision == mtx_single) {
-            float (* xdata)[2] = x->data.complex_single;
-#ifdef LIBMTX_HAVE_BLAS
-            cblas_sscal(2*x->size, a, (float *) xdata, 1);
-            if (mtxblaserror()) return MTX_ERR_BLAS;
-#else
-            for (int64_t k = 0; k < x->size; k++) {
-                xdata[k][0] *= a;
-                xdata[k][1] *= a;
-            }
-#endif
-            if (num_flops) *num_flops += 2*x->size;
-        } else if (x->precision == mtx_double) {
-            double (* xdata)[2] = x->data.complex_double;
-#ifdef LIBMTX_HAVE_BLAS
-            cblas_dscal(2*x->size, a, (double *) xdata, 1);
-            if (mtxblaserror()) return MTX_ERR_BLAS;
-#else
-            for (int64_t k = 0; k < x->size; k++) {
-                xdata[k][0] *= a;
-                xdata[k][1] *= a;
-            }
-#endif
-            if (num_flops) *num_flops += 2*x->size;
-        } else {
-            return MTX_ERR_INVALID_PRECISION;
-        }
-    } else if (x->field == mtx_field_integer) {
-        if (x->precision == mtx_single) {
-            int32_t * xdata = x->data.integer_single;
-            for (int64_t k = 0; k < x->size; k++)
-                xdata[k] *= a;
-            if (num_flops) *num_flops += x->size;
-        } else if (x->precision == mtx_double) {
-            int64_t * xdata = x->data.integer_double;
-            for (int64_t k = 0; k < x->size; k++)
-                xdata[k] *= a;
-            if (num_flops) *num_flops += x->size;
-        } else {
-            return MTX_ERR_INVALID_PRECISION;
-        }
-    } else if (x->field == mtx_field_pattern) {
-        /* Nothing to be done. */
-    } else {
-        return MTX_ERR_INVALID_FIELD;
-    }
-    return MTX_SUCCESS;
+    if (x->field == mtx_field_pattern) return MTX_SUCCESS;
+    struct mtxvector_array xarray;
+    int err = mtxvector_coordinate_to_array(&xarray, x);
+    if (err) return err;
+    return mtxvector_array_sscal(a, &xarray, num_flops);
 }
 
 /**
@@ -1297,78 +1119,11 @@ int mtxvector_coordinate_dscal(
     struct mtxvector_coordinate * x,
     int64_t * num_flops)
 {
-    if (x->field == mtx_field_real) {
-        if (x->precision == mtx_single) {
-            float * xdata = x->data.real_single;
-#ifdef LIBMTX_HAVE_BLAS
-            cblas_sscal(x->size, a, xdata, 1);
-            if (mtxblaserror()) return MTX_ERR_BLAS;
-#else
-            for (int64_t k = 0; k < x->size; k++)
-                xdata[k] *= a;
-#endif
-            if (num_flops) *num_flops += x->size;
-        } else if (x->precision == mtx_double) {
-            double * xdata = x->data.real_double;
-#ifdef LIBMTX_HAVE_BLAS
-            cblas_dscal(x->size, a, xdata, 1);
-            if (mtxblaserror()) return MTX_ERR_BLAS;
-#else
-            for (int64_t k = 0; k < x->size; k++)
-                xdata[k] *= a;
-#endif
-            if (num_flops) *num_flops += x->size;
-        } else {
-            return MTX_ERR_INVALID_PRECISION;
-        }
-    } else if (x->field == mtx_field_complex) {
-        if (x->precision == mtx_single) {
-            float (* xdata)[2] = x->data.complex_single;
-#ifdef LIBMTX_HAVE_BLAS
-            cblas_sscal(2*x->size, a, (float *) xdata, 1);
-            if (mtxblaserror()) return MTX_ERR_BLAS;
-#else
-            for (int64_t k = 0; k < x->size; k++) {
-                xdata[k][0] *= a;
-                xdata[k][1] *= a;
-            }
-#endif
-            if (num_flops) *num_flops += 2*x->size;
-        } else if (x->precision == mtx_double) {
-            double (* xdata)[2] = x->data.complex_double;
-#ifdef LIBMTX_HAVE_BLAS
-            cblas_dscal(2*x->size, a, (double *) xdata, 1);
-            if (mtxblaserror()) return MTX_ERR_BLAS;
-#else
-            for (int64_t k = 0; k < x->size; k++) {
-                xdata[k][0] *= a;
-                xdata[k][1] *= a;
-            }
-#endif
-            if (num_flops) *num_flops += 2*x->size;
-        } else {
-            return MTX_ERR_INVALID_PRECISION;
-        }
-    } else if (x->field == mtx_field_integer) {
-        if (x->precision == mtx_single) {
-            int32_t * xdata = x->data.integer_single;
-            for (int64_t k = 0; k < x->size; k++)
-                xdata[k] *= a;
-            if (num_flops) *num_flops += x->size;
-        } else if (x->precision == mtx_double) {
-            int64_t * xdata = x->data.integer_double;
-            for (int64_t k = 0; k < x->size; k++)
-                xdata[k] *= a;
-            if (num_flops) *num_flops += x->size;
-        } else {
-            return MTX_ERR_INVALID_PRECISION;
-        }
-    } else if (x->field == mtx_field_pattern) {
-        /* Nothing to be done. */
-    } else {
-        return MTX_ERR_INVALID_FIELD;
-    }
-    return MTX_SUCCESS;
+    if (x->field == mtx_field_pattern) return MTX_SUCCESS;
+    struct mtxvector_array xarray;
+    int err = mtxvector_coordinate_to_array(&xarray, x);
+    if (err) return err;
+    return mtxvector_array_dscal(a, &xarray, num_flops);
 }
 
 /**
@@ -1380,41 +1135,11 @@ int mtxvector_coordinate_cscal(
     struct mtxvector_coordinate * x,
     int64_t * num_flops)
 {
-    if (x->field != mtx_field_complex)
-        return MTX_ERR_INCOMPATIBLE_FIELD;
-    if (x->precision == mtx_single) {
-        float (* xdata)[2] = x->data.complex_single;
-#ifdef LIBMTX_HAVE_BLAS
-        cblas_cscal(x->size, a, (float *) xdata, 1);
-        if (mtxblaserror()) return MTX_ERR_BLAS;
-#else
-        for (int64_t k = 0; k < x->size; k++) {
-            float c = xdata[k][0]*a[0] - xdata[k][1]*a[1];
-            float d = xdata[k][0]*a[1] + xdata[k][1]*a[0];
-            xdata[k][0] = c;
-            xdata[k][1] = d;
-        }
-#endif
-        if (num_flops) *num_flops += 6*x->size;
-    } else if (x->precision == mtx_double) {
-        double (* xdata)[2] = x->data.complex_double;
-#ifdef LIBMTX_HAVE_BLAS
-        double az[2] = {a[0], a[1]};
-        cblas_zscal(x->size, az, (double *) xdata, 1);
-        if (mtxblaserror()) return MTX_ERR_BLAS;
-#else
-        for (int64_t k = 0; k < x->size; k++) {
-            double c = xdata[k][0]*a[0] - xdata[k][1]*a[1];
-            double d = xdata[k][0]*a[1] + xdata[k][1]*a[0];
-            xdata[k][0] = c;
-            xdata[k][1] = d;
-        }
-#endif
-        if (num_flops) *num_flops += 6*x->size;
-    } else {
-        return MTX_ERR_INVALID_PRECISION;
-    }
-    return MTX_SUCCESS;
+    if (x->field == mtx_field_pattern) return MTX_SUCCESS;
+    struct mtxvector_array xarray;
+    int err = mtxvector_coordinate_to_array(&xarray, x);
+    if (err) return err;
+    return mtxvector_array_cscal(a, &xarray, num_flops);
 }
 
 /**
@@ -1426,41 +1151,11 @@ int mtxvector_coordinate_zscal(
     struct mtxvector_coordinate * x,
     int64_t * num_flops)
 {
-    if (x->field != mtx_field_complex)
-        return MTX_ERR_INCOMPATIBLE_FIELD;
-    if (x->precision == mtx_single) {
-        float (* xdata)[2] = x->data.complex_single;
-#ifdef LIBMTX_HAVE_BLAS
-        float ac[2] = {a[0], a[1]};
-        cblas_cscal(x->size, ac, (float *) xdata, 1);
-        if (mtxblaserror()) return MTX_ERR_BLAS;
-#else
-        for (int64_t k = 0; k < x->size; k++) {
-            float c = xdata[k][0]*a[0] - xdata[k][1]*a[1];
-            float d = xdata[k][0]*a[1] + xdata[k][1]*a[0];
-            xdata[k][0] = c;
-            xdata[k][1] = d;
-        }
-#endif
-        if (num_flops) *num_flops += 6*x->size;
-    } else if (x->precision == mtx_double) {
-        double (* xdata)[2] = x->data.complex_double;
-#ifdef LIBMTX_HAVE_BLAS
-        cblas_zscal(x->size, a, (double *) xdata, 1);
-        if (mtxblaserror()) return MTX_ERR_BLAS;
-#else
-        for (int64_t k = 0; k < x->size; k++) {
-            double c = xdata[k][0]*a[0] - xdata[k][1]*a[1];
-            double d = xdata[k][0]*a[1] + xdata[k][1]*a[0];
-            xdata[k][0] = c;
-            xdata[k][1] = d;
-        }
-#endif
-        if (num_flops) *num_flops += 6*x->size;
-    } else {
-        return MTX_ERR_INVALID_PRECISION;
-    }
-    return MTX_SUCCESS;
+    if (x->field == mtx_field_pattern) return MTX_SUCCESS;
+    struct mtxvector_array xarray;
+    int err = mtxvector_coordinate_to_array(&xarray, x);
+    if (err) return err;
+    return mtxvector_array_zscal(a, &xarray, num_flops);
 }
 
 /**
@@ -1477,90 +1172,17 @@ int mtxvector_coordinate_saxpy(
     struct mtxvector_coordinate * y,
     int64_t * num_flops)
 {
-    if (x->field != y->field)
-        return MTX_ERR_INCOMPATIBLE_FIELD;
-    if (x->precision != y->precision)
-        return MTX_ERR_INCOMPATIBLE_PRECISION;
-    if (x->num_entries != y->num_entries || x->size != y->size)
-        return MTX_ERR_INCOMPATIBLE_SIZE;
-    if (x->field == mtx_field_real) {
-        if (x->precision == mtx_single) {
-            const float * xdata = x->data.real_single;
-            float * ydata = y->data.real_single;
-#ifdef LIBMTX_HAVE_BLAS
-            cblas_saxpy(x->size, a, xdata, 1, ydata, 1);
-            if (mtxblaserror()) return MTX_ERR_BLAS;
-#else
-            for (int64_t k = 0; k < x->size; k++)
-                ydata[k] += a*xdata[k];
-#endif
-            if (num_flops) *num_flops += 2*x->size;
-        } else if (x->precision == mtx_double) {
-            const double * xdata = x->data.real_double;
-            double * ydata = y->data.real_double;
-#ifdef LIBMTX_HAVE_BLAS
-            cblas_daxpy(x->size, a, xdata, 1, ydata, 1);
-            if (mtxblaserror()) return MTX_ERR_BLAS;
-#else
-            for (int64_t k = 0; k < x->size; k++)
-                ydata[k] += a*xdata[k];
-#endif
-            if (num_flops) *num_flops += 2*x->size;
-        } else {
-            return MTX_ERR_INVALID_PRECISION;
-        }
-    } else if (x->field == mtx_field_complex) {
-        if (x->precision == mtx_single) {
-            const float (* xdata)[2] = x->data.complex_single;
-            float (* ydata)[2] = y->data.complex_single;
-#ifdef LIBMTX_HAVE_BLAS
-            cblas_saxpy(2*x->size, a, (const float *) xdata, 1, (float *) ydata, 1);
-            if (mtxblaserror()) return MTX_ERR_BLAS;
-#else
-            for (int64_t k = 0; k < x->size; k++) {
-                ydata[k][0] += a*xdata[k][0];
-                ydata[k][1] += a*xdata[k][1];
-            }
-#endif
-            if (num_flops) *num_flops += 4*x->size;
-        } else if (x->precision == mtx_double) {
-            const double (* xdata)[2] = x->data.complex_double;
-            double (* ydata)[2] = y->data.complex_double;
-#ifdef LIBMTX_HAVE_BLAS
-            cblas_daxpy(2*x->size, a, (const double *) xdata, 1, (double *) ydata, 1);
-            if (mtxblaserror()) return MTX_ERR_BLAS;
-#else
-            for (int64_t k = 0; k < x->size; k++) {
-                ydata[k][0] += a*xdata[k][0];
-                ydata[k][1] += a*xdata[k][1];
-            }
-#endif
-            if (num_flops) *num_flops += 4*x->size;
-        } else {
-            return MTX_ERR_INVALID_PRECISION;
-        }
-    } else if (x->field == mtx_field_integer) {
-        if (x->precision == mtx_single) {
-            const int32_t * xdata = x->data.integer_single;
-            int32_t * ydata = y->data.integer_single;
-            for (int64_t k = 0; k < x->size; k++)
-                ydata[k] += a*xdata[k];
-            if (num_flops) *num_flops += 2*x->size;
-        } else if (x->precision == mtx_double) {
-            const int64_t * xdata = x->data.integer_double;
-            int64_t * ydata = y->data.integer_double;
-            for (int64_t k = 0; k < x->size; k++)
-                ydata[k] += a*xdata[k];
-            if (num_flops) *num_flops += 2*x->size;
-        } else {
-            return MTX_ERR_INVALID_PRECISION;
-        }
-    } else if (x->field == mtx_field_pattern) {
-        /* Nothing to be done. */
-    } else {
-        return MTX_ERR_INVALID_FIELD;
-    }
-    return MTX_SUCCESS;
+    if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
+    if (x->field == mtx_field_pattern) return MTX_SUCCESS;
+    if (x->precision != y->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
+    if (!same_pattern(x, y)) return MTX_ERR_INCOMPATIBLE_PATTERN;
+    struct mtxvector_array xarray;
+    int err = mtxvector_coordinate_to_array(&xarray, x);
+    if (err) return err;
+    struct mtxvector_array yarray;
+    err = mtxvector_coordinate_to_array(&yarray, y);
+    if (err) return err;
+    return mtxvector_array_saxpy(a, &xarray, &yarray, num_flops);
 }
 
 /**
@@ -1577,90 +1199,17 @@ int mtxvector_coordinate_daxpy(
     struct mtxvector_coordinate * y,
     int64_t * num_flops)
 {
-    if (x->field != y->field)
-        return MTX_ERR_INCOMPATIBLE_FIELD;
-    if (x->precision != y->precision)
-        return MTX_ERR_INCOMPATIBLE_PRECISION;
-    if (x->num_entries != y->num_entries || x->size != y->size)
-        return MTX_ERR_INCOMPATIBLE_SIZE;
-    if (x->field == mtx_field_real) {
-        if (x->precision == mtx_single) {
-            const float * xdata = x->data.real_single;
-            float * ydata = y->data.real_single;
-#ifdef LIBMTX_HAVE_BLAS
-            cblas_saxpy(x->size, a, xdata, 1, ydata, 1);
-            if (mtxblaserror()) return MTX_ERR_BLAS;
-#else
-            for (int64_t k = 0; k < x->size; k++)
-                ydata[k] += a*xdata[k];
-#endif
-            if (num_flops) *num_flops += 2*x->size;
-        } else if (x->precision == mtx_double) {
-            const double * xdata = x->data.real_double;
-            double * ydata = y->data.real_double;
-#ifdef LIBMTX_HAVE_BLAS
-            cblas_daxpy(x->size, a, xdata, 1, ydata, 1);
-            if (mtxblaserror()) return MTX_ERR_BLAS;
-#else
-            for (int64_t k = 0; k < x->size; k++)
-                ydata[k] += a*xdata[k];
-#endif
-            if (num_flops) *num_flops += 2*x->size;
-        } else {
-            return MTX_ERR_INVALID_PRECISION;
-        }
-    } else if (x->field == mtx_field_complex) {
-        if (x->precision == mtx_single) {
-            const float (* xdata)[2] = x->data.complex_single;
-            float (* ydata)[2] = y->data.complex_single;
-#ifdef LIBMTX_HAVE_BLAS
-            cblas_saxpy(2*x->size, a, (const float *) xdata, 1, (float *) ydata, 1);
-            if (mtxblaserror()) return MTX_ERR_BLAS;
-#else
-            for (int64_t k = 0; k < x->size; k++) {
-                ydata[k][0] += a*xdata[k][0];
-                ydata[k][1] += a*xdata[k][1];
-            }
-#endif
-            if (num_flops) *num_flops += 4*x->size;
-        } else if (x->precision == mtx_double) {
-            const double (* xdata)[2] = x->data.complex_double;
-            double (* ydata)[2] = y->data.complex_double;
-#ifdef LIBMTX_HAVE_BLAS
-            cblas_daxpy(2*x->size, a, (const double *) xdata, 1, (double *) ydata, 1);
-            if (mtxblaserror()) return MTX_ERR_BLAS;
-#else
-            for (int64_t k = 0; k < x->size; k++) {
-                ydata[k][0] += a*xdata[k][0];
-                ydata[k][1] += a*xdata[k][1];
-            }
-#endif
-            if (num_flops) *num_flops += 4*x->size;
-        } else {
-            return MTX_ERR_INVALID_PRECISION;
-        }
-    } else if (x->field == mtx_field_integer) {
-        if (x->precision == mtx_single) {
-            const int32_t * xdata = x->data.integer_single;
-            int32_t * ydata = y->data.integer_single;
-            for (int64_t k = 0; k < x->size; k++)
-                ydata[k] += a*xdata[k];
-            if (num_flops) *num_flops += 2*x->size;
-        } else if (x->precision == mtx_double) {
-            const int64_t * xdata = x->data.integer_double;
-            int64_t * ydata = y->data.integer_double;
-            for (int64_t k = 0; k < x->size; k++)
-                ydata[k] += a*xdata[k];
-            if (num_flops) *num_flops += 2*x->size;
-        } else {
-            return MTX_ERR_INVALID_PRECISION;
-        }
-    } else if (x->field == mtx_field_pattern) {
-        /* Nothing to be done. */
-    } else {
-        return MTX_ERR_INVALID_FIELD;
-    }
-    return MTX_SUCCESS;
+    if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
+    if (x->field == mtx_field_pattern) return MTX_SUCCESS;
+    if (x->precision != y->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
+    if (!same_pattern(x, y)) return MTX_ERR_INCOMPATIBLE_PATTERN;
+    struct mtxvector_array xarray;
+    int err = mtxvector_coordinate_to_array(&xarray, x);
+    if (err) return err;
+    struct mtxvector_array yarray;
+    err = mtxvector_coordinate_to_array(&yarray, y);
+    if (err) return err;
+    return mtxvector_array_daxpy(a, &xarray, &yarray, num_flops);
 }
 
 /**
@@ -1677,70 +1226,17 @@ int mtxvector_coordinate_saypx(
     const struct mtxvector_coordinate * x,
     int64_t * num_flops)
 {
-    if (x->field != y->field)
-        return MTX_ERR_INCOMPATIBLE_FIELD;
-    if (x->precision != y->precision)
-        return MTX_ERR_INCOMPATIBLE_PRECISION;
-    if (x->num_entries != y->num_entries || x->size != y->size)
-        return MTX_ERR_INCOMPATIBLE_SIZE;
-    if (x->field == mtx_field_real) {
-        if (x->precision == mtx_single) {
-            const float * xdata = x->data.real_single;
-            float * ydata = y->data.real_single;
-            for (int64_t k = 0; k < x->size; k++)
-                ydata[k] = a*ydata[k]+xdata[k];
-            if (num_flops) *num_flops += 2*x->size;
-        } else if (x->precision == mtx_double) {
-            const double * xdata = x->data.real_double;
-            double * ydata = y->data.real_double;
-            for (int64_t k = 0; k < x->size; k++)
-                ydata[k] = a*ydata[k]+xdata[k];
-            if (num_flops) *num_flops += 2*x->size;
-        } else {
-            return MTX_ERR_INVALID_PRECISION;
-        }
-    } else if (x->field == mtx_field_complex) {
-        if (x->precision == mtx_single) {
-            const float (* xdata)[2] = x->data.complex_single;
-            float (* ydata)[2] = y->data.complex_single;
-            for (int64_t k = 0; k < x->size; k++) {
-                ydata[k][0] = a*ydata[k][0]+xdata[k][0];
-                ydata[k][1] = a*ydata[k][1]+xdata[k][1];
-            }
-            if (num_flops) *num_flops += 4*x->size;
-        } else if (x->precision == mtx_double) {
-            const double (* xdata)[2] = x->data.complex_double;
-            double (* ydata)[2] = y->data.complex_double;
-            for (int64_t k = 0; k < x->size; k++) {
-                ydata[k][0] = a*ydata[k][0]+xdata[k][0];
-                ydata[k][1] = a*ydata[k][1]+xdata[k][1];
-            }
-            if (num_flops) *num_flops += 4*x->size;
-        } else {
-            return MTX_ERR_INVALID_PRECISION;
-        }
-    } else if (x->field == mtx_field_integer) {
-        if (x->precision == mtx_single) {
-            const int32_t * xdata = x->data.integer_single;
-            int32_t * ydata = y->data.integer_single;
-            for (int64_t k = 0; k < x->size; k++)
-                ydata[k] = a*ydata[k]+xdata[k];
-            if (num_flops) *num_flops += 2*x->size;
-        } else if (x->precision == mtx_double) {
-            const int64_t * xdata = x->data.integer_double;
-            int64_t * ydata = y->data.integer_double;
-            for (int64_t k = 0; k < x->size; k++)
-                ydata[k] = a*ydata[k]+xdata[k];
-            if (num_flops) *num_flops += 2*x->size;
-        } else {
-            return MTX_ERR_INVALID_PRECISION;
-        }
-    } else if (x->field == mtx_field_pattern) {
-        /* Nothing to be done. */
-    } else {
-        return MTX_ERR_INVALID_FIELD;
-    }
-    return MTX_SUCCESS;
+    if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
+    if (x->field == mtx_field_pattern) return MTX_SUCCESS;
+    if (x->precision != y->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
+    if (!same_pattern(x, y)) return MTX_ERR_INCOMPATIBLE_PATTERN;
+    struct mtxvector_array xarray;
+    int err = mtxvector_coordinate_to_array(&xarray, x);
+    if (err) return err;
+    struct mtxvector_array yarray;
+    err = mtxvector_coordinate_to_array(&yarray, y);
+    if (err) return err;
+    return mtxvector_array_saypx(a, &yarray, &xarray, num_flops);
 }
 
 /**
@@ -1757,70 +1253,17 @@ int mtxvector_coordinate_daypx(
     const struct mtxvector_coordinate * x,
     int64_t * num_flops)
 {
-    if (x->field != y->field)
-        return MTX_ERR_INCOMPATIBLE_FIELD;
-    if (x->precision != y->precision)
-        return MTX_ERR_INCOMPATIBLE_PRECISION;
-    if (x->num_entries != y->num_entries || x->size != y->size)
-        return MTX_ERR_INCOMPATIBLE_SIZE;
-    if (x->field == mtx_field_real) {
-        if (x->precision == mtx_single) {
-            const float * xdata = x->data.real_single;
-            float * ydata = y->data.real_single;
-            for (int64_t k = 0; k < x->size; k++)
-                ydata[k] = a*ydata[k]+xdata[k];
-            if (num_flops) *num_flops += 2*x->size;
-        } else if (x->precision == mtx_double) {
-            const double * xdata = x->data.real_double;
-            double * ydata = y->data.real_double;
-            for (int64_t k = 0; k < x->size; k++)
-                ydata[k] = a*ydata[k]+xdata[k];
-            if (num_flops) *num_flops += 2*x->size;
-        } else {
-            return MTX_ERR_INVALID_PRECISION;
-        }
-    } else if (x->field == mtx_field_complex) {
-        if (x->precision == mtx_single) {
-            const float (* xdata)[2] = x->data.complex_single;
-            float (* ydata)[2] = y->data.complex_single;
-            for (int64_t k = 0; k < x->size; k++) {
-                ydata[k][0] = a*ydata[k][0]+xdata[k][0];
-                ydata[k][1] = a*ydata[k][1]+xdata[k][1];
-            }
-            if (num_flops) *num_flops += 4*x->size;
-        } else if (x->precision == mtx_double) {
-            const double (* xdata)[2] = x->data.complex_double;
-            double (* ydata)[2] = y->data.complex_double;
-            for (int64_t k = 0; k < x->size; k++) {
-                ydata[k][0] = a*ydata[k][0]+xdata[k][0];
-                ydata[k][1] = a*ydata[k][1]+xdata[k][1];
-            }
-            if (num_flops) *num_flops += 4*x->size;
-        } else {
-            return MTX_ERR_INVALID_PRECISION;
-        }
-    } else if (x->field == mtx_field_integer) {
-        if (x->precision == mtx_single) {
-            const int32_t * xdata = x->data.integer_single;
-            int32_t * ydata = y->data.integer_single;
-            for (int64_t k = 0; k < x->size; k++)
-                ydata[k] = a*ydata[k]+xdata[k];
-            if (num_flops) *num_flops += 2*x->size;
-        } else if (x->precision == mtx_double) {
-            const int64_t * xdata = x->data.integer_double;
-            int64_t * ydata = y->data.integer_double;
-            for (int64_t k = 0; k < x->size; k++)
-                ydata[k] = a*ydata[k]+xdata[k];
-            if (num_flops) *num_flops += 2*x->size;
-        } else {
-            return MTX_ERR_INVALID_PRECISION;
-        }
-    } else if (x->field == mtx_field_pattern) {
-        /* Nothing to be done. */
-    } else {
-        return MTX_ERR_INVALID_FIELD;
-    }
-    return MTX_SUCCESS;
+    if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
+    if (x->field == mtx_field_pattern) return MTX_SUCCESS;
+    if (x->precision != y->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
+    if (!same_pattern(x, y)) return MTX_ERR_INCOMPATIBLE_PATTERN;
+    struct mtxvector_array xarray;
+    int err = mtxvector_coordinate_to_array(&xarray, x);
+    if (err) return err;
+    struct mtxvector_array yarray;
+    err = mtxvector_coordinate_to_array(&yarray, y);
+    if (err) return err;
+    return mtxvector_array_daypx(a, &yarray, &xarray, num_flops);
 }
 
 /**
@@ -1837,64 +1280,20 @@ int mtxvector_coordinate_sdot(
     float * dot,
     int64_t * num_flops)
 {
-    if (x->field != y->field)
-        return MTX_ERR_INCOMPATIBLE_FIELD;
-    if (x->precision != y->precision)
-        return MTX_ERR_INCOMPATIBLE_PRECISION;
-    if (x->num_entries != y->num_entries || x->size != y->size)
-        return MTX_ERR_INCOMPATIBLE_SIZE;
-    if (x->field == mtx_field_real) {
-        if (x->precision == mtx_single) {
-            const float * xdata = x->data.real_single;
-            const float * ydata = y->data.real_single;
-#ifdef LIBMTX_HAVE_BLAS
-            *dot = cblas_sdot(x->size, xdata, 1, ydata, 1);
-            if (mtxblaserror()) return MTX_ERR_BLAS;
-#else
-            *dot = 0;
-            for (int64_t k = 0; k < x->size; k++)
-                *dot += xdata[k]*ydata[k];
-#endif
-            if (num_flops) *num_flops += 2*x->size;
-        } else if (x->precision == mtx_double) {
-            const double * xdata = x->data.real_double;
-            const double * ydata = y->data.real_double;
-#ifdef LIBMTX_HAVE_BLAS
-            *dot = cblas_ddot(x->size, xdata, 1, ydata, 1);
-            if (mtxblaserror()) return MTX_ERR_BLAS;
-#else
-            *dot = 0;
-            for (int64_t k = 0; k < x->size; k++)
-                *dot += xdata[k]*ydata[k];
-#endif
-            if (num_flops) *num_flops += 2*x->size;
-        } else {
-            return MTX_ERR_INVALID_PRECISION;
-        }
-    } else if (x->field == mtx_field_integer) {
-        if (x->precision == mtx_single) {
-            const int32_t * xdata = x->data.integer_single;
-            const int32_t * ydata = y->data.integer_single;
-            *dot = 0;
-            for (int64_t k = 0; k < x->size; k++)
-                *dot += xdata[k]*ydata[k];
-            if (num_flops) *num_flops += 2*x->size;
-        } else if (x->precision == mtx_double) {
-            const int64_t * xdata = x->data.integer_double;
-            const int64_t * ydata = y->data.integer_double;
-            *dot = 0;
-            for (int64_t k = 0; k < x->size; k++)
-                *dot += xdata[k]*ydata[k];
-            if (num_flops) *num_flops += 2*x->size;
-        } else {
-            return MTX_ERR_INVALID_PRECISION;
-        }
-    } else if (x->field == mtx_field_pattern) {
+    if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
+    if (x->precision != y->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
+    if (!same_pattern(x, y)) return MTX_ERR_INCOMPATIBLE_PATTERN;
+    if (x->field == mtx_field_pattern) {
         *dot = x->size;
-    } else {
-        return MTX_ERR_INVALID_FIELD;
+        return MTX_SUCCESS;
     }
-    return MTX_SUCCESS;
+    struct mtxvector_array xarray;
+    int err = mtxvector_coordinate_to_array(&xarray, x);
+    if (err) return err;
+    struct mtxvector_array yarray;
+    err = mtxvector_coordinate_to_array(&yarray, y);
+    if (err) return err;
+    return mtxvector_array_sdot(&xarray, &yarray, dot, num_flops);
 }
 
 /**
@@ -1911,64 +1310,20 @@ int mtxvector_coordinate_ddot(
     double * dot,
     int64_t * num_flops)
 {
-    if (x->field != y->field)
-        return MTX_ERR_INCOMPATIBLE_FIELD;
-    if (x->precision != y->precision)
-        return MTX_ERR_INCOMPATIBLE_PRECISION;
-    if (x->num_entries != y->num_entries || x->size != y->size)
-        return MTX_ERR_INCOMPATIBLE_SIZE;
-    if (x->field == mtx_field_real) {
-        if (x->precision == mtx_single) {
-            const float * xdata = x->data.real_single;
-            const float * ydata = y->data.real_single;
-#ifdef LIBMTX_HAVE_BLAS
-            *dot = cblas_sdot(x->size, xdata, 1, ydata, 1);
-            if (mtxblaserror()) return MTX_ERR_BLAS;
-#else
-            *dot = 0;
-            for (int64_t k = 0; k < x->size; k++)
-                *dot += xdata[k]*ydata[k];
-#endif
-            if (num_flops) *num_flops += 2*x->size;
-        } else if (x->precision == mtx_double) {
-            const double * xdata = x->data.real_double;
-            const double * ydata = y->data.real_double;
-#ifdef LIBMTX_HAVE_BLAS
-            *dot = cblas_ddot(x->size, xdata, 1, ydata, 1);
-            if (mtxblaserror()) return MTX_ERR_BLAS;
-#else
-            *dot = 0;
-            for (int64_t k = 0; k < x->size; k++)
-                *dot += xdata[k]*ydata[k];
-#endif
-            if (num_flops) *num_flops += 2*x->size;
-        } else {
-            return MTX_ERR_INVALID_PRECISION;
-        }
-    } else if (x->field == mtx_field_integer) {
-        if (x->precision == mtx_single) {
-            const int32_t * xdata = x->data.integer_single;
-            const int32_t * ydata = y->data.integer_single;
-            *dot = 0;
-            for (int64_t k = 0; k < x->size; k++)
-                *dot += xdata[k]*ydata[k];
-            if (num_flops) *num_flops += 2*x->size;
-        } else if (x->precision == mtx_double) {
-            const int64_t * xdata = x->data.integer_double;
-            const int64_t * ydata = y->data.integer_double;
-            *dot = 0;
-            for (int64_t k = 0; k < x->size; k++)
-                *dot += xdata[k]*ydata[k];
-            if (num_flops) *num_flops += 2*x->size;
-        } else {
-            return MTX_ERR_INVALID_PRECISION;
-        }
-    } else if (x->field == mtx_field_pattern) {
+    if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
+    if (x->precision != y->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
+    if (!same_pattern(x, y)) return MTX_ERR_INCOMPATIBLE_PATTERN;
+    if (x->field == mtx_field_pattern) {
         *dot = x->size;
-    } else {
-        return MTX_ERR_INVALID_FIELD;
+        return MTX_SUCCESS;
     }
-    return MTX_SUCCESS;
+    struct mtxvector_array xarray;
+    int err = mtxvector_coordinate_to_array(&xarray, x);
+    if (err) return err;
+    struct mtxvector_array yarray;
+    err = mtxvector_coordinate_to_array(&yarray, y);
+    if (err) return err;
+    return mtxvector_array_ddot(&xarray, &yarray, dot, num_flops);
 }
 
 /**
@@ -1986,52 +1341,20 @@ int mtxvector_coordinate_cdotu(
     float (* dot)[2],
     int64_t * num_flops)
 {
-    if (x->field != y->field)
-        return MTX_ERR_INCOMPATIBLE_FIELD;
-    if (x->precision != y->precision)
-        return MTX_ERR_INCOMPATIBLE_PRECISION;
-    if (x->num_entries != y->num_entries || x->size != y->size)
-        return MTX_ERR_INCOMPATIBLE_SIZE;
-    if (x->field == mtx_field_complex) {
-        if (x->precision == mtx_single) {
-            const float (* xdata)[2] = x->data.complex_single;
-            const float (* ydata)[2] = y->data.complex_single;
-#ifdef LIBMTX_HAVE_BLAS
-            cblas_cdotu_sub(x->size, xdata, 1, ydata, 1, dot);
-            if (mtxblaserror()) return MTX_ERR_BLAS;
-#else
-            (*dot)[0] = (*dot)[1] = 0;
-            for (int64_t k = 0; k < x->size; k++) {
-                (*dot)[0] += xdata[k][0]*ydata[k][0] - xdata[k][1]*ydata[k][1];
-                (*dot)[1] += xdata[k][0]*ydata[k][1] + xdata[k][1]*ydata[k][0];
-            }
-#endif
-            if (num_flops) *num_flops += 8*x->size;
-        } else if (x->precision == mtx_double) {
-            const double (* xdata)[2] = x->data.complex_double;
-            const double (* ydata)[2] = y->data.complex_double;
-#ifdef LIBMTX_HAVE_BLAS
-            double tmp[2];
-            cblas_zdotu_sub(x->size, xdata, 1, ydata, 1, tmp);
-            if (mtxblaserror()) return MTX_ERR_BLAS;
-            (*dot)[0] = tmp[0];
-            (*dot)[1] = tmp[1];
-#else
-            (*dot)[0] = (*dot)[1] = 0;
-            for (int64_t k = 0; k < x->size; k++) {
-                (*dot)[0] += xdata[k][0]*ydata[k][0] - xdata[k][1]*ydata[k][1];
-                (*dot)[1] += xdata[k][0]*ydata[k][1] + xdata[k][1]*ydata[k][0];
-            }
-#endif
-            if (num_flops) *num_flops += 8*x->size;
-        } else {
-            return MTX_ERR_INVALID_PRECISION;
-        }
-    } else {
-        (*dot)[1] = 0;
-        return mtxvector_coordinate_sdot(x, y, &(*dot)[0], num_flops);
+    if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
+    if (x->precision != y->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
+    if (!same_pattern(x, y)) return MTX_ERR_INCOMPATIBLE_PATTERN;
+    if (x->field == mtx_field_pattern) {
+        *dot[0] = x->size; *dot[1] = 0;
+        return MTX_SUCCESS;
     }
-    return MTX_SUCCESS;
+    struct mtxvector_array xarray;
+    int err = mtxvector_coordinate_to_array(&xarray, x);
+    if (err) return err;
+    struct mtxvector_array yarray;
+    err = mtxvector_coordinate_to_array(&yarray, y);
+    if (err) return err;
+    return mtxvector_array_cdotu(&xarray, &yarray, dot, num_flops);
 }
 
 /**
@@ -2049,52 +1372,20 @@ int mtxvector_coordinate_zdotu(
     double (* dot)[2],
     int64_t * num_flops)
 {
-    if (x->field != y->field)
-        return MTX_ERR_INCOMPATIBLE_FIELD;
-    if (x->precision != y->precision)
-        return MTX_ERR_INCOMPATIBLE_PRECISION;
-    if (x->num_entries != y->num_entries || x->size != y->size)
-        return MTX_ERR_INCOMPATIBLE_SIZE;
-    if (x->field == mtx_field_complex) {
-        if (x->precision == mtx_single) {
-            const float (* xdata)[2] = x->data.complex_single;
-            const float (* ydata)[2] = y->data.complex_single;
-#ifdef LIBMTX_HAVE_BLAS
-            float tmp[2];
-            cblas_cdotu_sub(x->size, xdata, 1, ydata, 1, tmp);
-            if (mtxblaserror()) return MTX_ERR_BLAS;
-            (*dot)[0] = tmp[0];
-            (*dot)[1] = tmp[1];
-#else
-            (*dot)[0] = (*dot)[1] = 0;
-            for (int64_t k = 0; k < x->size; k++) {
-                (*dot)[0] += xdata[k][0]*ydata[k][0] - xdata[k][1]*ydata[k][1];
-                (*dot)[1] += xdata[k][0]*ydata[k][1] + xdata[k][1]*ydata[k][0];
-            }
-#endif
-            if (num_flops) *num_flops += 8*x->size;
-        } else if (x->precision == mtx_double) {
-            const double (* xdata)[2] = x->data.complex_double;
-            const double (* ydata)[2] = y->data.complex_double;
-#ifdef LIBMTX_HAVE_BLAS
-            cblas_zdotu_sub(x->size, xdata, 1, ydata, 1, dot);
-            if (mtxblaserror()) return MTX_ERR_BLAS;
-#else
-            (*dot)[0] = (*dot)[1] = 0;
-            for (int64_t k = 0; k < x->size; k++) {
-                (*dot)[0] += xdata[k][0]*ydata[k][0] - xdata[k][1]*ydata[k][1];
-                (*dot)[1] += xdata[k][0]*ydata[k][1] + xdata[k][1]*ydata[k][0];
-            }
-#endif
-            if (num_flops) *num_flops += 8*x->size;
-        } else {
-            return MTX_ERR_INVALID_PRECISION;
-        }
-    } else {
-        (*dot)[1] = 0;
-        return mtxvector_coordinate_ddot(x, y, &(*dot)[0], num_flops);
+    if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
+    if (x->precision != y->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
+    if (!same_pattern(x, y)) return MTX_ERR_INCOMPATIBLE_PATTERN;
+    if (x->field == mtx_field_pattern) {
+        *dot[0] = x->size; *dot[1] = 0;
+        return MTX_SUCCESS;
     }
-    return MTX_SUCCESS;
+    struct mtxvector_array xarray;
+    int err = mtxvector_coordinate_to_array(&xarray, x);
+    if (err) return err;
+    struct mtxvector_array yarray;
+    err = mtxvector_coordinate_to_array(&yarray, y);
+    if (err) return err;
+    return mtxvector_array_zdotu(&xarray, &yarray, dot, num_flops);
 }
 
 /**
@@ -2112,52 +1403,20 @@ int mtxvector_coordinate_cdotc(
     float (* dot)[2],
     int64_t * num_flops)
 {
-    if (x->field != y->field)
-        return MTX_ERR_INCOMPATIBLE_FIELD;
-    if (x->precision != y->precision)
-        return MTX_ERR_INCOMPATIBLE_PRECISION;
-    if (x->num_entries != y->num_entries || x->size != y->size)
-        return MTX_ERR_INCOMPATIBLE_SIZE;
-    if (x->field == mtx_field_complex) {
-        if (x->precision == mtx_single) {
-            const float (* xdata)[2] = x->data.complex_single;
-            const float (* ydata)[2] = y->data.complex_single;
-#ifdef LIBMTX_HAVE_BLAS
-            cblas_cdotc_sub(x->size, xdata, 1, ydata, 1, dot);
-            if (mtxblaserror()) return MTX_ERR_BLAS;
-#else
-            (*dot)[0] = (*dot)[1] = 0;
-            for (int64_t k = 0; k < x->size; k++) {
-                (*dot)[0] += xdata[k][0]*ydata[k][0] + xdata[k][1]*ydata[k][1];
-                (*dot)[1] += xdata[k][0]*ydata[k][1] - xdata[k][1]*ydata[k][0];
-            }
-#endif
-            if (num_flops) *num_flops += 8*x->size;
-        } else if (x->precision == mtx_double) {
-            const double (* xdata)[2] = x->data.complex_double;
-            const double (* ydata)[2] = y->data.complex_double;
-#ifdef LIBMTX_HAVE_BLAS
-            double tmp[2];
-            cblas_zdotc_sub(x->size, xdata, 1, ydata, 1, tmp);
-            if (mtxblaserror()) return MTX_ERR_BLAS;
-            (*dot)[0] = tmp[0];
-            (*dot)[1] = tmp[1];
-#else
-            (*dot)[0] = (*dot)[1] = 0;
-            for (int64_t k = 0; k < x->size; k++) {
-                (*dot)[0] += xdata[k][0]*ydata[k][0] + xdata[k][1]*ydata[k][1];
-                (*dot)[1] += xdata[k][0]*ydata[k][1] - xdata[k][1]*ydata[k][0];
-            }
-#endif
-            if (num_flops) *num_flops += 8*x->size;
-        } else {
-            return MTX_ERR_INVALID_PRECISION;
-        }
-    } else {
-        (*dot)[1] = 0;
-        return mtxvector_coordinate_sdot(x, y, &(*dot)[0], num_flops);
+    if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
+    if (x->precision != y->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
+    if (!same_pattern(x, y)) return MTX_ERR_INCOMPATIBLE_PATTERN;
+    if (x->field == mtx_field_pattern) {
+        *dot[0] = x->size; *dot[1] = 0;
+        return MTX_SUCCESS;
     }
-    return MTX_SUCCESS;
+    struct mtxvector_array xarray;
+    int err = mtxvector_coordinate_to_array(&xarray, x);
+    if (err) return err;
+    struct mtxvector_array yarray;
+    err = mtxvector_coordinate_to_array(&yarray, y);
+    if (err) return err;
+    return mtxvector_array_cdotc(&xarray, &yarray, dot, num_flops);
 }
 
 /**
@@ -2175,52 +1434,20 @@ int mtxvector_coordinate_zdotc(
     double (* dot)[2],
     int64_t * num_flops)
 {
-    if (x->field != y->field)
-        return MTX_ERR_INCOMPATIBLE_FIELD;
-    if (x->precision != y->precision)
-        return MTX_ERR_INCOMPATIBLE_PRECISION;
-    if (x->num_entries != y->num_entries || x->size != y->size)
-        return MTX_ERR_INCOMPATIBLE_SIZE;
-    if (x->field == mtx_field_complex) {
-        if (x->precision == mtx_single) {
-            const float (* xdata)[2] = x->data.complex_single;
-            const float (* ydata)[2] = y->data.complex_single;
-#ifdef LIBMTX_HAVE_BLAS
-            float tmp[2];
-            cblas_cdotc_sub(x->size, xdata, 1, ydata, 1, tmp);
-            if (mtxblaserror()) return MTX_ERR_BLAS;
-            (*dot)[0] = tmp[0];
-            (*dot)[1] = tmp[1];
-#else
-            (*dot)[0] = (*dot)[1] = 0;
-            for (int64_t k = 0; k < x->size; k++) {
-                (*dot)[0] += xdata[k][0]*ydata[k][0] + xdata[k][1]*ydata[k][1];
-                (*dot)[1] += xdata[k][0]*ydata[k][1] - xdata[k][1]*ydata[k][0];
-            }
-#endif
-            if (num_flops) *num_flops += 8*x->size;
-        } else if (x->precision == mtx_double) {
-            const double (* xdata)[2] = x->data.complex_double;
-            const double (* ydata)[2] = y->data.complex_double;
-#ifdef LIBMTX_HAVE_BLAS
-            cblas_zdotc_sub(x->size, xdata, 1, ydata, 1, dot);
-            if (mtxblaserror()) return MTX_ERR_BLAS;
-#else
-            (*dot)[0] = (*dot)[1] = 0;
-            for (int64_t k = 0; k < x->size; k++) {
-                (*dot)[0] += xdata[k][0]*ydata[k][0] + xdata[k][1]*ydata[k][1];
-                (*dot)[1] += xdata[k][0]*ydata[k][1] - xdata[k][1]*ydata[k][0];
-            }
-#endif
-            if (num_flops) *num_flops += 8*x->size;
-        } else {
-            return MTX_ERR_INVALID_PRECISION;
-        }
-    } else {
-        (*dot)[1] = 0;
-        return mtxvector_coordinate_ddot(x, y, &(*dot)[0], num_flops);
+    if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
+    if (x->precision != y->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
+    if (!same_pattern(x, y)) return MTX_ERR_INCOMPATIBLE_PATTERN;
+    if (x->field == mtx_field_pattern) {
+        *dot[0] = x->size; *dot[1] = 0;
+        return MTX_SUCCESS;
     }
-    return MTX_SUCCESS;
+    struct mtxvector_array xarray;
+    int err = mtxvector_coordinate_to_array(&xarray, x);
+    if (err) return err;
+    struct mtxvector_array yarray;
+    err = mtxvector_coordinate_to_array(&yarray, y);
+    if (err) return err;
+    return mtxvector_array_zdotc(&xarray, &yarray, dot, num_flops);
 }
 
 /**
@@ -2232,86 +1459,14 @@ int mtxvector_coordinate_snrm2(
     float * nrm2,
     int64_t * num_flops)
 {
-    if (x->field == mtx_field_real) {
-        if (x->precision == mtx_single) {
-            const float * xdata = x->data.real_single;
-#ifdef LIBMTX_HAVE_BLAS
-            *nrm2 = cblas_snrm2(x->size, xdata, 1);
-            if (mtxblaserror()) return MTX_ERR_BLAS;
-#else
-            *nrm2 = 0;
-            for (int64_t k = 0; k < x->size; k++)
-                *nrm2 += xdata[k]*xdata[k];
-            *nrm2 = sqrtf(*nrm2);
-#endif
-            if (num_flops) *num_flops += 2*x->size;
-        } else if (x->precision == mtx_double) {
-            const double * xdata = x->data.real_double;
-#ifdef LIBMTX_HAVE_BLAS
-            *nrm2 = cblas_dnrm2(x->size, xdata, 1);
-            if (mtxblaserror()) return MTX_ERR_BLAS;
-#else
-            *nrm2 = 0;
-            for (int64_t k = 0; k < x->size; k++)
-                *nrm2 += xdata[k]*xdata[k];
-            *nrm2 = sqrtf(*nrm2);
-#endif
-            if (num_flops) *num_flops += 2*x->size;
-        } else {
-            return MTX_ERR_INVALID_PRECISION;
-        }
-    } else if (x->field == mtx_field_complex) {
-        if (x->precision == mtx_single) {
-            const float (* xdata)[2] = x->data.complex_single;
-#ifdef LIBMTX_HAVE_BLAS
-            *nrm2 = cblas_scnrm2(x->size, xdata, 1);
-            if (mtxblaserror()) return MTX_ERR_BLAS;
-#else
-            *nrm2 = 0;
-            for (int64_t k = 0; k < x->size; k++)
-                *nrm2 += xdata[k][0]*xdata[k][0] + xdata[k][1]*xdata[k][1];
-            *nrm2 = sqrtf(*nrm2);
-#endif
-            if (num_flops) *num_flops += 4*x->size;
-        } else if (x->precision == mtx_double) {
-            const double (* xdata)[2] = x->data.complex_double;
-#ifdef LIBMTX_HAVE_BLAS
-            *nrm2 = cblas_dznrm2(x->size, xdata, 1);
-            if (mtxblaserror()) return MTX_ERR_BLAS;
-#else
-            *nrm2 = 0;
-            for (int64_t k = 0; k < x->size; k++)
-                *nrm2 += xdata[k][0]*xdata[k][0] + xdata[k][1]*xdata[k][1];
-            *nrm2 = sqrtf(*nrm2);
-#endif
-            if (num_flops) *num_flops += 4*x->size;
-        } else {
-            return MTX_ERR_INVALID_PRECISION;
-        }
-    } else if (x->field == mtx_field_integer) {
-        if (x->precision == mtx_single) {
-            const int32_t * xdata = x->data.integer_single;
-            *nrm2 = 0;
-            for (int64_t k = 0; k < x->size; k++)
-                *nrm2 += xdata[k]*xdata[k];
-            *nrm2 = sqrtf(*nrm2);
-            if (num_flops) *num_flops += 2*x->size;
-        } else if (x->precision == mtx_double) {
-            const int64_t * xdata = x->data.integer_double;
-            *nrm2 = 0;
-            for (int64_t k = 0; k < x->size; k++)
-                *nrm2 += xdata[k]*xdata[k];
-            *nrm2 = sqrtf(*nrm2);
-            if (num_flops) *num_flops += 2*x->size;
-        } else {
-            return MTX_ERR_INVALID_PRECISION;
-        }
-    } else if (x->field == mtx_field_pattern) {
+    if (x->field == mtx_field_pattern) {
         *nrm2 = sqrtf(x->size);
-    } else {
-        return MTX_ERR_INVALID_FIELD;
+        return MTX_SUCCESS;
     }
-    return MTX_SUCCESS;
+    struct mtxvector_array xarray;
+    int err = mtxvector_coordinate_to_array(&xarray, x);
+    if (err) return err;
+    return mtxvector_array_snrm2(&xarray, nrm2, num_flops);
 }
 
 /**
@@ -2323,86 +1478,14 @@ int mtxvector_coordinate_dnrm2(
     double * nrm2,
     int64_t * num_flops)
 {
-    if (x->field == mtx_field_real) {
-        if (x->precision == mtx_single) {
-            const float * xdata = x->data.real_single;
-#ifdef LIBMTX_HAVE_BLAS
-            *nrm2 = cblas_snrm2(x->size, xdata, 1);
-            if (mtxblaserror()) return MTX_ERR_BLAS;
-#else
-            *nrm2 = 0;
-            for (int64_t k = 0; k < x->size; k++)
-                *nrm2 += xdata[k]*xdata[k];
-            *nrm2 = sqrt(*nrm2);
-#endif
-            if (num_flops) *num_flops += 2*x->size;
-        } else if (x->precision == mtx_double) {
-            const double * xdata = x->data.real_double;
-#ifdef LIBMTX_HAVE_BLAS
-            *nrm2 = cblas_dnrm2(x->size, xdata, 1);
-            if (mtxblaserror()) return MTX_ERR_BLAS;
-#else
-            *nrm2 = 0;
-            for (int64_t k = 0; k < x->size; k++)
-                *nrm2 += xdata[k]*xdata[k];
-            *nrm2 = sqrt(*nrm2);
-#endif
-            if (num_flops) *num_flops += 2*x->size;
-        } else {
-            return MTX_ERR_INVALID_PRECISION;
-        }
-    } else if (x->field == mtx_field_complex) {
-        if (x->precision == mtx_single) {
-            const float (* xdata)[2] = x->data.complex_single;
-#ifdef LIBMTX_HAVE_BLAS
-            *nrm2 = cblas_scnrm2(x->size, xdata, 1);
-            if (mtxblaserror()) return MTX_ERR_BLAS;
-#else
-            *nrm2 = 0;
-            for (int64_t k = 0; k < x->size; k++)
-                *nrm2 += xdata[k][0]*xdata[k][0] + xdata[k][1]*xdata[k][1];
-            *nrm2 = sqrt(*nrm2);
-#endif
-            if (num_flops) *num_flops += 4*x->size;
-        } else if (x->precision == mtx_double) {
-            const double (* xdata)[2] = x->data.complex_double;
-#ifdef LIBMTX_HAVE_BLAS
-            *nrm2 = cblas_dznrm2(x->size, xdata, 1);
-            if (mtxblaserror()) return MTX_ERR_BLAS;
-#else
-            *nrm2 = 0;
-            for (int64_t k = 0; k < x->size; k++)
-                *nrm2 += xdata[k][0]*xdata[k][0] + xdata[k][1]*xdata[k][1];
-            *nrm2 = sqrt(*nrm2);
-#endif
-            if (num_flops) *num_flops += 4*x->size;
-        } else {
-            return MTX_ERR_INVALID_PRECISION;
-        }
-    } else if (x->field == mtx_field_integer) {
-        if (x->precision == mtx_single) {
-            const int32_t * xdata = x->data.integer_single;
-            *nrm2 = 0;
-            for (int64_t k = 0; k < x->size; k++)
-                *nrm2 += xdata[k]*xdata[k];
-            *nrm2 = sqrt(*nrm2);
-            if (num_flops) *num_flops += 2*x->size;
-        } else if (x->precision == mtx_double) {
-            const int64_t * xdata = x->data.integer_double;
-            *nrm2 = 0;
-            for (int64_t k = 0; k < x->size; k++)
-                *nrm2 += xdata[k]*xdata[k];
-            *nrm2 = sqrt(*nrm2);
-            if (num_flops) *num_flops += 2*x->size;
-        } else {
-            return MTX_ERR_INVALID_PRECISION;
-        }
-    } else if (x->field == mtx_field_pattern) {
-        *nrm2 = sqrtf(x->size);
-    } else {
-        return MTX_ERR_INVALID_FIELD;
+    if (x->field == mtx_field_pattern) {
+        *nrm2 = sqrt(x->size);
+        return MTX_SUCCESS;
     }
-    return MTX_SUCCESS;
+    struct mtxvector_array xarray;
+    int err = mtxvector_coordinate_to_array(&xarray, x);
+    if (err) return err;
+    return mtxvector_array_dnrm2(&xarray, nrm2, num_flops);
 }
 
 /**
@@ -2416,80 +1499,14 @@ int mtxvector_coordinate_sasum(
     float * asum,
     int64_t * num_flops)
 {
-    if (x->field == mtx_field_real) {
-        if (x->precision == mtx_single) {
-            const float * xdata = x->data.real_single;
-#ifdef LIBMTX_HAVE_BLAS
-            *asum = cblas_sasum(x->size, xdata, 1);
-            if (mtxblaserror()) return MTX_ERR_BLAS;
-#else
-            *asum = 0;
-            for (int64_t k = 0; k < x->size; k++)
-                *asum += fabsf(xdata[k]);
-#endif
-            if (num_flops) *num_flops += x->size;
-        } else if (x->precision == mtx_double) {
-            const double * xdata = x->data.real_double;
-#ifdef LIBMTX_HAVE_BLAS
-            *asum = cblas_dasum(x->size, xdata, 1);
-            if (mtxblaserror()) return MTX_ERR_BLAS;
-#else
-            *asum = 0;
-            for (int64_t k = 0; k < x->size; k++)
-                *asum += fabs(xdata[k]);
-#endif
-            if (num_flops) *num_flops += x->size;
-        } else {
-            return MTX_ERR_INVALID_PRECISION;
-        }
-    } else if (x->field == mtx_field_complex) {
-        if (x->precision == mtx_single) {
-            const float (* xdata)[2] = x->data.complex_single;
-#ifdef LIBMTX_HAVE_BLAS
-            *asum = cblas_scasum(x->size, xdata, 1);
-            if (mtxblaserror()) return MTX_ERR_BLAS;
-#else
-            *asum = 0;
-            for (int64_t k = 0; k < x->size; k++)
-                *asum += fabsf(xdata[k][0]) + fabsf(xdata[k][1]);
-#endif
-            if (num_flops) *num_flops += 2*x->size;
-        } else if (x->precision == mtx_double) {
-            const double (* xdata)[2] = x->data.complex_double;
-#ifdef LIBMTX_HAVE_BLAS
-            *asum = cblas_dzasum(x->size, xdata, 1);
-            if (mtxblaserror()) return MTX_ERR_BLAS;
-#else
-            *asum = 0;
-            for (int64_t k = 0; k < x->size; k++)
-                *asum += fabs(xdata[k][0]) + fabs(xdata[k][1]);
-#endif
-            if (num_flops) *num_flops += 2*x->size;
-        } else {
-            return MTX_ERR_INVALID_PRECISION;
-        }
-    } else if (x->field == mtx_field_integer) {
-        if (x->precision == mtx_single) {
-            const int32_t * xdata = x->data.integer_single;
-            *asum = 0;
-            for (int64_t k = 0; k < x->size; k++)
-                *asum += abs(xdata[k]);
-            if (num_flops) *num_flops += x->size;
-        } else if (x->precision == mtx_double) {
-            const int64_t * xdata = x->data.integer_double;
-            *asum = 0;
-            for (int64_t k = 0; k < x->size; k++)
-                *asum += llabs(xdata[k]);
-            if (num_flops) *num_flops += x->size;
-        } else {
-            return MTX_ERR_INVALID_PRECISION;
-        }
-    } else if (x->field == mtx_field_pattern) {
+    if (x->field == mtx_field_pattern) {
         *asum = x->size;
-    } else {
-        return MTX_ERR_INVALID_FIELD;
+        return MTX_SUCCESS;
     }
-    return MTX_SUCCESS;
+    struct mtxvector_array xarray;
+    int err = mtxvector_coordinate_to_array(&xarray, x);
+    if (err) return err;
+    return mtxvector_array_sasum(&xarray, asum, num_flops);
 }
 
 /**
@@ -2503,80 +1520,14 @@ int mtxvector_coordinate_dasum(
     double * asum,
     int64_t * num_flops)
 {
-    if (x->field == mtx_field_real) {
-        if (x->precision == mtx_single) {
-            const float * xdata = x->data.real_single;
-#ifdef LIBMTX_HAVE_BLAS
-            *asum = cblas_sasum(x->size, xdata, 1);
-            if (mtxblaserror()) return MTX_ERR_BLAS;
-#else
-            *asum = 0;
-            for (int64_t k = 0; k < x->size; k++)
-                *asum += fabsf(xdata[k]);
-#endif
-            if (num_flops) *num_flops += x->size;
-        } else if (x->precision == mtx_double) {
-            const double * xdata = x->data.real_double;
-#ifdef LIBMTX_HAVE_BLAS
-            *asum = cblas_dasum(x->size, xdata, 1);
-            if (mtxblaserror()) return MTX_ERR_BLAS;
-#else
-            *asum = 0;
-            for (int64_t k = 0; k < x->size; k++)
-                *asum += fabs(xdata[k]);
-#endif
-            if (num_flops) *num_flops += x->size;
-        } else {
-            return MTX_ERR_INVALID_PRECISION;
-        }
-    } else if (x->field == mtx_field_complex) {
-        if (x->precision == mtx_single) {
-            const float (* xdata)[2] = x->data.complex_single;
-#ifdef LIBMTX_HAVE_BLAS
-            *asum = cblas_scasum(x->size, xdata, 1);
-            if (mtxblaserror()) return MTX_ERR_BLAS;
-#else
-            *asum = 0;
-            for (int64_t k = 0; k < x->size; k++)
-                *asum += fabsf(xdata[k][0]) + fabsf(xdata[k][1]);
-#endif
-            if (num_flops) *num_flops += 2*x->size;
-        } else if (x->precision == mtx_double) {
-            const double (* xdata)[2] = x->data.complex_double;
-#ifdef LIBMTX_HAVE_BLAS
-            *asum = cblas_dzasum(x->size, xdata, 1);
-            if (mtxblaserror()) return MTX_ERR_BLAS;
-#else
-            *asum = 0;
-            for (int64_t k = 0; k < x->size; k++)
-                *asum += fabs(xdata[k][0]) + fabs(xdata[k][1]);
-#endif
-            if (num_flops) *num_flops += 2*x->size;
-        } else {
-            return MTX_ERR_INVALID_PRECISION;
-        }
-    } else if (x->field == mtx_field_integer) {
-        if (x->precision == mtx_single) {
-            const int32_t * xdata = x->data.integer_single;
-            *asum = 0;
-            for (int64_t k = 0; k < x->size; k++)
-                *asum += abs(xdata[k]);
-            if (num_flops) *num_flops += x->size;
-        } else if (x->precision == mtx_double) {
-            const int64_t * xdata = x->data.integer_double;
-            *asum = 0;
-            for (int64_t k = 0; k < x->size; k++)
-                *asum += llabs(xdata[k]);
-            if (num_flops) *num_flops += x->size;
-        } else {
-            return MTX_ERR_INVALID_PRECISION;
-        }
-    } else if (x->field == mtx_field_pattern) {
+    if (x->field == mtx_field_pattern) {
         *asum = x->size;
-    } else {
-        return MTX_ERR_INVALID_FIELD;
+        return MTX_SUCCESS;
     }
-    return MTX_SUCCESS;
+    struct mtxvector_array xarray;
+    int err = mtxvector_coordinate_to_array(&xarray, x);
+    if (err) return err;
+    return mtxvector_array_dasum(&xarray, asum, num_flops);
 }
 
 /**

@@ -84,6 +84,7 @@ enum mtxerror
     MTX_ERR_INCOMPATIBLE_SYMMETRY,    /* incompatible symmetry */
     MTX_ERR_INCOMPATIBLE_SIZE,        /* incompatible size */
     MTX_ERR_INCOMPATIBLE_VECTOR_TYPE, /* incompatible vector type */
+    MTX_ERR_INCOMPATIBLE_PATTERN,     /* incompatible sparsity pattern */
     MTX_ERR_INVALID_PARTITION,        /* invalid partition */
     MTX_ERR_INCOMPATIBLE_PARTITION,   /* incompatible partition */
     MTX_ERR_INVALID_SORTING,          /* invalid sorting */

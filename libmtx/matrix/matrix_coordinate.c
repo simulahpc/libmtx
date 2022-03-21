@@ -990,43 +990,44 @@ int mtxmatrix_coordinate_join(
  * Level 1 BLAS operations
  */
 
-static int mtxmatrix_coordinate_vectorise(
-    struct mtxvector_coordinate * vecx,
+static bool same_pattern(
+    const struct mtxmatrix_coordinate * x,
+    const struct mtxmatrix_coordinate * y)
+{
+    return x->symmetry == y->symmetry
+        && x->num_rows == y->num_rows
+        && x->num_columns == y->num_columns
+        && x->size == y->size
+        && memcmp(x->rowidx, y->rowidx, x->size*sizeof(*x->rowidx)) == 0
+        && memcmp(x->colidx, y->colidx, x->size*sizeof(*x->colidx)) == 0;
+}
+
+static int vectorise_array(
+    struct mtxvector_array * vecx,
     const struct mtxmatrix_coordinate * x)
 {
     vecx->field = x->field;
     vecx->precision = x->precision;
-    vecx->num_entries = x->num_entries;
     vecx->size = x->size;
-    vecx->num_nonzeros = x->size;
-    vecx->indices = x->colidx;
     if (x->field == mtx_field_real) {
         if (x->precision == mtx_single) {
             vecx->data.real_single = x->data.real_single;
         } else if (x->precision == mtx_double) {
             vecx->data.real_double = x->data.real_double;
-        } else {
-            return MTX_ERR_INVALID_PRECISION;
-        }
+        } else { return MTX_ERR_INVALID_PRECISION; }
     } else if (x->field == mtx_field_complex) {
         if (x->precision == mtx_single) {
             vecx->data.complex_single = x->data.complex_single;
         } else if (x->precision == mtx_double) {
             vecx->data.complex_double = x->data.complex_double;
-        } else {
-            return MTX_ERR_INVALID_PRECISION;
-        }
+        } else { return MTX_ERR_INVALID_PRECISION; }
     } else if (x->field == mtx_field_integer) {
         if (x->precision == mtx_single) {
             vecx->data.integer_single = x->data.integer_single;
         } else if (x->precision == mtx_double) {
             vecx->data.integer_double = x->data.integer_double;
-        } else {
-            return MTX_ERR_INVALID_PRECISION;
-        }
-    } else {
-        return MTX_ERR_INVALID_FIELD;
-    }
+        } else { return MTX_ERR_INVALID_PRECISION; }
+    } else { return MTX_ERR_INVALID_FIELD; }
     return MTX_SUCCESS;
 }
 
@@ -1041,13 +1042,14 @@ int mtxmatrix_coordinate_swap(
     struct mtxmatrix_coordinate * x,
     struct mtxmatrix_coordinate * y)
 {
-    struct mtxvector_coordinate vecx;
-    int err = mtxmatrix_coordinate_vectorise(&vecx, x);
+    if (!same_pattern(x, y)) return MTX_ERR_INCOMPATIBLE_PATTERN;
+    struct mtxvector_array vecx;
+    int err = vectorise_array(&vecx, x);
     if (err) return err;
-    struct mtxvector_coordinate vecy;
-    err = mtxmatrix_coordinate_vectorise(&vecy, x);
+    struct mtxvector_array vecy;
+    err = vectorise_array(&vecy, x);
     if (err) return err;
-    return mtxvector_coordinate_swap(&vecx, &vecy);
+    return mtxvector_array_swap(&vecx, &vecy);
 }
 
 /**
@@ -1060,13 +1062,14 @@ int mtxmatrix_coordinate_copy(
     struct mtxmatrix_coordinate * y,
     const struct mtxmatrix_coordinate * x)
 {
-    struct mtxvector_coordinate vecy;
-    int err = mtxmatrix_coordinate_vectorise(&vecy, y);
+    if (!same_pattern(x, y)) return MTX_ERR_INCOMPATIBLE_PATTERN;
+    struct mtxvector_array vecy;
+    int err = vectorise_array(&vecy, y);
     if (err) return err;
-    struct mtxvector_coordinate vecx;
-    err = mtxmatrix_coordinate_vectorise(&vecx, x);
+    struct mtxvector_array vecx;
+    err = vectorise_array(&vecx, x);
     if (err) return err;
-    return mtxvector_coordinate_copy(&vecy, &vecx);
+    return mtxvector_array_copy(&vecy, &vecx);
 }
 
 /**
@@ -1078,10 +1081,10 @@ int mtxmatrix_coordinate_sscal(
     struct mtxmatrix_coordinate * x,
     int64_t * num_flops)
 {
-    struct mtxvector_coordinate vecx;
-    int err = mtxmatrix_coordinate_vectorise(&vecx, x);
+    struct mtxvector_array vecx;
+    int err = vectorise_array(&vecx, x);
     if (err) return err;
-    return mtxvector_coordinate_sscal(a, &vecx, num_flops);
+    return mtxvector_array_sscal(a, &vecx, num_flops);
 }
 
 /**
@@ -1093,10 +1096,10 @@ int mtxmatrix_coordinate_dscal(
     struct mtxmatrix_coordinate * x,
     int64_t * num_flops)
 {
-    struct mtxvector_coordinate vecx;
-    int err = mtxmatrix_coordinate_vectorise(&vecx, x);
+    struct mtxvector_array vecx;
+    int err = vectorise_array(&vecx, x);
     if (err) return err;
-    return mtxvector_coordinate_dscal(a, &vecx, num_flops);
+    return mtxvector_array_dscal(a, &vecx, num_flops);
 }
 
 /**
@@ -1113,13 +1116,14 @@ int mtxmatrix_coordinate_saxpy(
     struct mtxmatrix_coordinate * y,
     int64_t * num_flops)
 {
-    struct mtxvector_coordinate vecx;
-    int err = mtxmatrix_coordinate_vectorise(&vecx, x);
+    if (!same_pattern(x, y)) return MTX_ERR_INCOMPATIBLE_PATTERN;
+    struct mtxvector_array vecx;
+    int err = vectorise_array(&vecx, x);
     if (err) return err;
-    struct mtxvector_coordinate vecy;
-    err = mtxmatrix_coordinate_vectorise(&vecy, y);
+    struct mtxvector_array vecy;
+    err = vectorise_array(&vecy, y);
     if (err) return err;
-    return mtxvector_coordinate_saxpy(a, &vecx, &vecy, num_flops);
+    return mtxvector_array_saxpy(a, &vecx, &vecy, num_flops);
 }
 
 /**
@@ -1136,13 +1140,14 @@ int mtxmatrix_coordinate_daxpy(
     struct mtxmatrix_coordinate * y,
     int64_t * num_flops)
 {
-    struct mtxvector_coordinate vecx;
-    int err = mtxmatrix_coordinate_vectorise(&vecx, x);
+    if (!same_pattern(x, y)) return MTX_ERR_INCOMPATIBLE_PATTERN;
+    struct mtxvector_array vecx;
+    int err = vectorise_array(&vecx, x);
     if (err) return err;
-    struct mtxvector_coordinate vecy;
-    err = mtxmatrix_coordinate_vectorise(&vecy, y);
+    struct mtxvector_array vecy;
+    err = vectorise_array(&vecy, y);
     if (err) return err;
-    return mtxvector_coordinate_daxpy(a, &vecx, &vecy, num_flops);
+    return mtxvector_array_daxpy(a, &vecx, &vecy, num_flops);
 }
 
 /**
@@ -1159,13 +1164,14 @@ int mtxmatrix_coordinate_saypx(
     const struct mtxmatrix_coordinate * x,
     int64_t * num_flops)
 {
-    struct mtxvector_coordinate vecy;
-    int err = mtxmatrix_coordinate_vectorise(&vecy, y);
+    if (!same_pattern(x, y)) return MTX_ERR_INCOMPATIBLE_PATTERN;
+    struct mtxvector_array vecy;
+    int err = vectorise_array(&vecy, y);
     if (err) return err;
-    struct mtxvector_coordinate vecx;
-    err = mtxmatrix_coordinate_vectorise(&vecx, x);
+    struct mtxvector_array vecx;
+    err = vectorise_array(&vecx, x);
     if (err) return err;
-    return mtxvector_coordinate_saypx(a, &vecy, &vecx, num_flops);
+    return mtxvector_array_saypx(a, &vecy, &vecx, num_flops);
 }
 
 /**
@@ -1182,13 +1188,14 @@ int mtxmatrix_coordinate_daypx(
     const struct mtxmatrix_coordinate * x,
     int64_t * num_flops)
 {
-    struct mtxvector_coordinate vecy;
-    int err = mtxmatrix_coordinate_vectorise(&vecy, y);
+    if (!same_pattern(x, y)) return MTX_ERR_INCOMPATIBLE_PATTERN;
+    struct mtxvector_array vecy;
+    int err = vectorise_array(&vecy, y);
     if (err) return err;
-    struct mtxvector_coordinate vecx;
-    err = mtxmatrix_coordinate_vectorise(&vecx, x);
+    struct mtxvector_array vecx;
+    err = vectorise_array(&vecx, x);
     if (err) return err;
-    return mtxvector_coordinate_daypx(a, &vecy, &vecx, num_flops);
+    return mtxvector_array_daypx(a, &vecy, &vecx, num_flops);
 }
 
 /**
@@ -1204,14 +1211,15 @@ int mtxmatrix_coordinate_sdot(
     float * dot,
     int64_t * num_flops)
 {
+    if (!same_pattern(x, y)) return MTX_ERR_INCOMPATIBLE_PATTERN;
     if (x->symmetry == mtx_unsymmetric && y->symmetry == mtx_unsymmetric) {
-        struct mtxvector_coordinate vecx;
-        int err = mtxmatrix_coordinate_vectorise(&vecx, x);
+        struct mtxvector_array vecx;
+        int err = vectorise_array(&vecx, x);
         if (err) return err;
-        struct mtxvector_coordinate vecy;
-        err = mtxmatrix_coordinate_vectorise(&vecy, y);
+        struct mtxvector_array vecy;
+        err = vectorise_array(&vecy, y);
         if (err) return err;
-        return mtxvector_coordinate_sdot(&vecx, &vecy, dot, num_flops);
+        return mtxvector_array_sdot(&vecx, &vecy, dot, num_flops);
     } else {
         return MTX_ERR_INVALID_SYMMETRY;
     }
@@ -1230,14 +1238,15 @@ int mtxmatrix_coordinate_ddot(
     double * dot,
     int64_t * num_flops)
 {
+    if (!same_pattern(x, y)) return MTX_ERR_INCOMPATIBLE_PATTERN;
     if (x->symmetry == mtx_unsymmetric && y->symmetry == mtx_unsymmetric) {
-        struct mtxvector_coordinate vecx;
-        int err = mtxmatrix_coordinate_vectorise(&vecx, x);
+        struct mtxvector_array vecx;
+        int err = vectorise_array(&vecx, x);
         if (err) return err;
-        struct mtxvector_coordinate vecy;
-        err = mtxmatrix_coordinate_vectorise(&vecy, y);
+        struct mtxvector_array vecy;
+        err = vectorise_array(&vecy, y);
         if (err) return err;
-        return mtxvector_coordinate_ddot(&vecx, &vecy, dot, num_flops);
+        return mtxvector_array_ddot(&vecx, &vecy, dot, num_flops);
     } else {
         return MTX_ERR_INVALID_SYMMETRY;
     }
@@ -1257,14 +1266,15 @@ int mtxmatrix_coordinate_cdotu(
     float (* dot)[2],
     int64_t * num_flops)
 {
+    if (!same_pattern(x, y)) return MTX_ERR_INCOMPATIBLE_PATTERN;
     if (x->symmetry == mtx_unsymmetric && y->symmetry == mtx_unsymmetric) {
-        struct mtxvector_coordinate vecx;
-        int err = mtxmatrix_coordinate_vectorise(&vecx, x);
+        struct mtxvector_array vecx;
+        int err = vectorise_array(&vecx, x);
         if (err) return err;
-        struct mtxvector_coordinate vecy;
-        err = mtxmatrix_coordinate_vectorise(&vecy, y);
+        struct mtxvector_array vecy;
+        err = vectorise_array(&vecy, y);
         if (err) return err;
-        return mtxvector_coordinate_cdotu(&vecx, &vecy, dot, num_flops);
+        return mtxvector_array_cdotu(&vecx, &vecy, dot, num_flops);
     } else {
         return MTX_ERR_INVALID_SYMMETRY;
     }
@@ -1284,14 +1294,15 @@ int mtxmatrix_coordinate_zdotu(
     double (* dot)[2],
     int64_t * num_flops)
 {
+    if (!same_pattern(x, y)) return MTX_ERR_INCOMPATIBLE_PATTERN;
     if (x->symmetry == mtx_unsymmetric && y->symmetry == mtx_unsymmetric) {
-        struct mtxvector_coordinate vecx;
-        int err = mtxmatrix_coordinate_vectorise(&vecx, x);
+        struct mtxvector_array vecx;
+        int err = vectorise_array(&vecx, x);
         if (err) return err;
-        struct mtxvector_coordinate vecy;
-        err = mtxmatrix_coordinate_vectorise(&vecy, y);
+        struct mtxvector_array vecy;
+        err = vectorise_array(&vecy, y);
         if (err) return err;
-        return mtxvector_coordinate_zdotu(&vecx, &vecy, dot, num_flops);
+        return mtxvector_array_zdotu(&vecx, &vecy, dot, num_flops);
     } else {
         return MTX_ERR_INVALID_SYMMETRY;
     }
@@ -1311,14 +1322,15 @@ int mtxmatrix_coordinate_cdotc(
     float (* dot)[2],
     int64_t * num_flops)
 {
+    if (!same_pattern(x, y)) return MTX_ERR_INCOMPATIBLE_PATTERN;
     if (x->symmetry == mtx_unsymmetric && y->symmetry == mtx_unsymmetric) {
-        struct mtxvector_coordinate vecx;
-        int err = mtxmatrix_coordinate_vectorise(&vecx, x);
+        struct mtxvector_array vecx;
+        int err = vectorise_array(&vecx, x);
         if (err) return err;
-        struct mtxvector_coordinate vecy;
-        err = mtxmatrix_coordinate_vectorise(&vecy, y);
+        struct mtxvector_array vecy;
+        err = vectorise_array(&vecy, y);
         if (err) return err;
-        return mtxvector_coordinate_cdotc(&vecx, &vecy, dot, num_flops);
+        return mtxvector_array_cdotc(&vecx, &vecy, dot, num_flops);
     } else {
         return MTX_ERR_INVALID_SYMMETRY;
     }
@@ -1338,14 +1350,15 @@ int mtxmatrix_coordinate_zdotc(
     double (* dot)[2],
     int64_t * num_flops)
 {
+    if (!same_pattern(x, y)) return MTX_ERR_INCOMPATIBLE_PATTERN;
     if (x->symmetry == mtx_unsymmetric && y->symmetry == mtx_unsymmetric) {
-        struct mtxvector_coordinate vecx;
-        int err = mtxmatrix_coordinate_vectorise(&vecx, x);
+        struct mtxvector_array vecx;
+        int err = vectorise_array(&vecx, x);
         if (err) return err;
-        struct mtxvector_coordinate vecy;
-        err = mtxmatrix_coordinate_vectorise(&vecy, y);
+        struct mtxvector_array vecy;
+        err = vectorise_array(&vecy, y);
         if (err) return err;
-        return mtxvector_coordinate_zdotc(&vecx, &vecy, dot, num_flops);
+        return mtxvector_array_zdotc(&vecx, &vecy, dot, num_flops);
     } else {
         return MTX_ERR_INVALID_SYMMETRY;
     }
@@ -1361,10 +1374,10 @@ int mtxmatrix_coordinate_snrm2(
     int64_t * num_flops)
 {
     if (x->symmetry == mtx_unsymmetric) {
-        struct mtxvector_coordinate vecx;
-        int err = mtxmatrix_coordinate_vectorise(&vecx, x);
+        struct mtxvector_array vecx;
+        int err = vectorise_array(&vecx, x);
         if (err) return err;
-        return mtxvector_coordinate_snrm2(&vecx, nrm2, num_flops);
+        return mtxvector_array_snrm2(&vecx, nrm2, num_flops);
     } else {
         return MTX_ERR_INVALID_SYMMETRY;
     }
@@ -1380,10 +1393,10 @@ int mtxmatrix_coordinate_dnrm2(
     int64_t * num_flops)
 {
     if (x->symmetry == mtx_unsymmetric) {
-        struct mtxvector_coordinate vecx;
-        int err = mtxmatrix_coordinate_vectorise(&vecx, x);
+        struct mtxvector_array vecx;
+        int err = vectorise_array(&vecx, x);
         if (err) return err;
-        return mtxvector_coordinate_dnrm2(&vecx, nrm2, num_flops);
+        return mtxvector_array_dnrm2(&vecx, nrm2, num_flops);
     } else {
         return MTX_ERR_INVALID_SYMMETRY;
     }
@@ -1401,10 +1414,10 @@ int mtxmatrix_coordinate_sasum(
     int64_t * num_flops)
 {
     if (x->symmetry == mtx_unsymmetric) {
-        struct mtxvector_coordinate vecx;
-        int err = mtxmatrix_coordinate_vectorise(&vecx, x);
+        struct mtxvector_array vecx;
+        int err = vectorise_array(&vecx, x);
         if (err) return err;
-        return mtxvector_coordinate_sasum(&vecx, asum, num_flops);
+        return mtxvector_array_sasum(&vecx, asum, num_flops);
     } else {
         return MTX_ERR_INVALID_SYMMETRY;
     }
@@ -1422,10 +1435,10 @@ int mtxmatrix_coordinate_dasum(
     int64_t * num_flops)
 {
     if (x->symmetry == mtx_unsymmetric) {
-        struct mtxvector_coordinate vecx;
-        int err = mtxmatrix_coordinate_vectorise(&vecx, x);
+        struct mtxvector_array vecx;
+        int err = vectorise_array(&vecx, x);
         if (err) return err;
-        return mtxvector_coordinate_dasum(&vecx, asum, num_flops);
+        return mtxvector_array_dasum(&vecx, asum, num_flops);
     } else {
         return MTX_ERR_INVALID_SYMMETRY;
     }
@@ -1442,10 +1455,10 @@ int mtxmatrix_coordinate_iamax(
     const struct mtxmatrix_coordinate * x,
     int * iamax)
 {
-    struct mtxvector_coordinate vecx;
-    int err = mtxmatrix_coordinate_vectorise(&vecx, x);
+    struct mtxvector_array vecx;
+    int err = vectorise_array(&vecx, x);
     if (err) return err;
-    return mtxvector_coordinate_iamax(&vecx, iamax);
+    return mtxvector_array_iamax(&vecx, iamax);
 }
 
 /*
