@@ -364,6 +364,7 @@ int mtxmatrix_alloc_csr(
     struct mtxmatrix * matrix,
     enum mtxfield field,
     enum mtxprecision precision,
+    enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
     int64_t num_nonzeros);
@@ -374,6 +375,7 @@ int mtxmatrix_alloc_csr(
  */
 int mtxmatrix_init_csr_real_single(
     struct mtxmatrix * matrix,
+    enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
     const int64_t * rowptr,
@@ -386,6 +388,7 @@ int mtxmatrix_init_csr_real_single(
  */
 int mtxmatrix_init_csr_real_double(
     struct mtxmatrix * matrix,
+    enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
     const int64_t * rowptr,
@@ -398,6 +401,7 @@ int mtxmatrix_init_csr_real_double(
  */
 int mtxmatrix_init_csr_complex_single(
     struct mtxmatrix * matrix,
+    enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
     const int64_t * rowptr,
@@ -410,6 +414,7 @@ int mtxmatrix_init_csr_complex_single(
  */
 int mtxmatrix_init_csr_complex_double(
     struct mtxmatrix * matrix,
+    enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
     const int64_t * rowptr,
@@ -422,6 +427,7 @@ int mtxmatrix_init_csr_complex_double(
  */
 int mtxmatrix_init_csr_integer_single(
     struct mtxmatrix * matrix,
+    enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
     const int64_t * rowptr,
@@ -434,6 +440,7 @@ int mtxmatrix_init_csr_integer_single(
  */
 int mtxmatrix_init_csr_integer_double(
     struct mtxmatrix * matrix,
+    enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
     const int64_t * rowptr,
@@ -446,6 +453,7 @@ int mtxmatrix_init_csr_integer_double(
  */
 int mtxmatrix_init_csr_pattern(
     struct mtxmatrix * matrix,
+    enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
     const int64_t * rowptr,

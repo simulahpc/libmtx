@@ -526,6 +526,7 @@ int mtxmatrix_alloc_csr(
     struct mtxmatrix * matrix,
     enum mtxfield field,
     enum mtxprecision precision,
+    enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
     int64_t num_nonzeros)
@@ -533,7 +534,7 @@ int mtxmatrix_alloc_csr(
     matrix->type = mtxmatrix_csr;
     return mtxmatrix_csr_alloc(
         &matrix->storage.csr,
-        field, precision, num_rows, num_columns, num_nonzeros);
+        field, precision, symmetry, num_rows, num_columns, num_nonzeros);
 }
 
 /**
@@ -542,6 +543,7 @@ int mtxmatrix_alloc_csr(
  */
 int mtxmatrix_init_csr_real_single(
     struct mtxmatrix * matrix,
+    enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
     const int64_t * rowptr,
@@ -551,7 +553,7 @@ int mtxmatrix_init_csr_real_single(
     matrix->type = mtxmatrix_csr;
     return mtxmatrix_csr_init_real_single(
         &matrix->storage.csr,
-        num_rows, num_columns, rowptr, colidx, data);
+        symmetry, num_rows, num_columns, rowptr, colidx, data);
 }
 
 /**
@@ -560,6 +562,7 @@ int mtxmatrix_init_csr_real_single(
  */
 int mtxmatrix_init_csr_real_double(
     struct mtxmatrix * matrix,
+    enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
     const int64_t * rowptr,
@@ -569,7 +572,7 @@ int mtxmatrix_init_csr_real_double(
     matrix->type = mtxmatrix_csr;
     return mtxmatrix_csr_init_real_double(
         &matrix->storage.csr,
-        num_rows, num_columns, rowptr, colidx, data);
+        symmetry, num_rows, num_columns, rowptr, colidx, data);
 }
 
 /**
@@ -578,6 +581,7 @@ int mtxmatrix_init_csr_real_double(
  */
 int mtxmatrix_init_csr_complex_single(
     struct mtxmatrix * matrix,
+    enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
     const int64_t * rowptr,
@@ -587,7 +591,7 @@ int mtxmatrix_init_csr_complex_single(
     matrix->type = mtxmatrix_csr;
     return mtxmatrix_csr_init_complex_single(
         &matrix->storage.csr,
-        num_rows, num_columns, rowptr, colidx, data);
+        symmetry, num_rows, num_columns, rowptr, colidx, data);
 }
 
 /**
@@ -596,6 +600,7 @@ int mtxmatrix_init_csr_complex_single(
  */
 int mtxmatrix_init_csr_complex_double(
     struct mtxmatrix * matrix,
+    enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
     const int64_t * rowptr,
@@ -605,7 +610,7 @@ int mtxmatrix_init_csr_complex_double(
     matrix->type = mtxmatrix_csr;
     return mtxmatrix_csr_init_complex_double(
         &matrix->storage.csr,
-        num_rows, num_columns, rowptr, colidx, data);
+        symmetry, num_rows, num_columns, rowptr, colidx, data);
 }
 
 /**
@@ -614,6 +619,7 @@ int mtxmatrix_init_csr_complex_double(
  */
 int mtxmatrix_init_csr_integer_single(
     struct mtxmatrix * matrix,
+    enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
     const int64_t * rowptr,
@@ -623,7 +629,7 @@ int mtxmatrix_init_csr_integer_single(
     matrix->type = mtxmatrix_csr;
     return mtxmatrix_csr_init_integer_single(
         &matrix->storage.csr,
-        num_rows, num_columns, rowptr, colidx, data);
+        symmetry, num_rows, num_columns, rowptr, colidx, data);
 }
 
 /**
@@ -632,6 +638,7 @@ int mtxmatrix_init_csr_integer_single(
  */
 int mtxmatrix_init_csr_integer_double(
     struct mtxmatrix * matrix,
+    enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
     const int64_t * rowptr,
@@ -641,7 +648,7 @@ int mtxmatrix_init_csr_integer_double(
     matrix->type = mtxmatrix_csr;
     return mtxmatrix_csr_init_integer_double(
         &matrix->storage.csr,
-        num_rows, num_columns, rowptr, colidx, data);
+        symmetry, num_rows, num_columns, rowptr, colidx, data);
 }
 
 /**
@@ -650,6 +657,7 @@ int mtxmatrix_init_csr_integer_double(
  */
 int mtxmatrix_init_csr_pattern(
     struct mtxmatrix * matrix,
+    enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
     const int64_t * rowptr,
@@ -658,7 +666,7 @@ int mtxmatrix_init_csr_pattern(
     matrix->type = mtxmatrix_csr;
     return mtxmatrix_csr_init_pattern(
         &matrix->storage.csr,
-        num_rows, num_columns, rowptr, colidx);
+        symmetry,num_rows, num_columns, rowptr, colidx);
 }
 
 /*

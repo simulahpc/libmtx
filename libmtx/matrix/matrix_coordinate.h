@@ -159,7 +159,7 @@ int mtxmatrix_coordinate_alloc(
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
-    int64_t num_nonzeros);
+    int64_t size);
 
 /**
  * ‘mtxmatrix_coordinate_init_real_single()’ allocates and initialises
@@ -171,7 +171,7 @@ int mtxmatrix_coordinate_init_real_single(
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
-    int64_t num_nonzeros,
+    int64_t size,
     const int * rowidx,
     const int * colidx,
     const float * data);
@@ -186,7 +186,7 @@ int mtxmatrix_coordinate_init_real_double(
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
-    int64_t num_nonzeros,
+    int64_t size,
     const int * rowidx,
     const int * colidx,
     const double * data);
@@ -201,7 +201,7 @@ int mtxmatrix_coordinate_init_complex_single(
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
-    int64_t num_nonzeros,
+    int64_t size,
     const int * rowidx,
     const int * colidx,
     const float (* data)[2]);
@@ -216,7 +216,7 @@ int mtxmatrix_coordinate_init_complex_double(
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
-    int64_t num_nonzeros,
+    int64_t size,
     const int * rowidx,
     const int * colidx,
     const double (* data)[2]);
@@ -231,7 +231,7 @@ int mtxmatrix_coordinate_init_integer_single(
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
-    int64_t num_nonzeros,
+    int64_t size,
     const int * rowidx,
     const int * colidx,
     const int32_t * data);
@@ -246,7 +246,7 @@ int mtxmatrix_coordinate_init_integer_double(
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
-    int64_t num_nonzeros,
+    int64_t size,
     const int * rowidx,
     const int * colidx,
     const int64_t * data);
@@ -260,7 +260,7 @@ int mtxmatrix_coordinate_init_pattern(
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
-    int64_t num_nonzeros,
+    int64_t size,
     const int * rowidx,
     const int * colidx);
 

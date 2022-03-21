@@ -86,9 +86,8 @@ int mtxmatrix_csr_alloc_copy(
     const struct mtxmatrix_csr * src)
 {
     return mtxmatrix_csr_alloc(
-        dst, src->field, src->precision,
-        src->num_rows, src->num_columns,
-        src->num_nonzeros);
+        dst, src->field, src->precision, src->symmetry,
+        src->num_rows, src->num_columns, src->num_nonzeros);
 }
 
 /**
@@ -117,9 +116,10 @@ int mtxmatrix_csr_alloc(
     struct mtxmatrix_csr * matrix,
     enum mtxfield field,
     enum mtxprecision precision,
+    enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
-    int64_t num_nonzeros)
+    int64_t size)
 {
     int64_t num_entries;
     if (__builtin_mul_overflow(num_rows, num_columns, &num_entries)) {
@@ -130,7 +130,7 @@ int mtxmatrix_csr_alloc(
     matrix->rowptr = malloc((num_rows+1) * sizeof(int64_t));
     if (!matrix->rowptr)
         return MTX_ERR_ERRNO;
-    matrix->colidx = malloc(num_nonzeros * sizeof(int));
+    matrix->colidx = malloc(size * sizeof(int));
     if (!matrix->colidx) {
         free(matrix->rowptr);
         return MTX_ERR_ERRNO;
@@ -138,7 +138,7 @@ int mtxmatrix_csr_alloc(
     if (field == mtx_field_real) {
         if (precision == mtx_single) {
             matrix->data.real_single =
-                malloc(num_nonzeros * sizeof(*matrix->data.real_single));
+                malloc(size * sizeof(*matrix->data.real_single));
             if (!matrix->data.real_single) {
                 free(matrix->colidx);
                 free(matrix->rowptr);
@@ -146,7 +146,7 @@ int mtxmatrix_csr_alloc(
             }
         } else if (precision == mtx_double) {
             matrix->data.real_double =
-                malloc(num_nonzeros * sizeof(*matrix->data.real_double));
+                malloc(size * sizeof(*matrix->data.real_double));
             if (!matrix->data.real_double) {
                 free(matrix->colidx);
                 free(matrix->rowptr);
@@ -160,7 +160,7 @@ int mtxmatrix_csr_alloc(
     } else if (field == mtx_field_complex) {
         if (precision == mtx_single) {
             matrix->data.complex_single =
-                malloc(num_nonzeros * sizeof(*matrix->data.complex_single));
+                malloc(size * sizeof(*matrix->data.complex_single));
             if (!matrix->data.complex_single) {
                 free(matrix->colidx);
                 free(matrix->rowptr);
@@ -168,7 +168,7 @@ int mtxmatrix_csr_alloc(
             }
         } else if (precision == mtx_double) {
             matrix->data.complex_double =
-                malloc(num_nonzeros * sizeof(*matrix->data.complex_double));
+                malloc(size * sizeof(*matrix->data.complex_double));
             if (!matrix->data.complex_double) {
                 free(matrix->colidx);
                 free(matrix->rowptr);
@@ -182,7 +182,7 @@ int mtxmatrix_csr_alloc(
     } else if (field == mtx_field_integer) {
         if (precision == mtx_single) {
             matrix->data.integer_single =
-                malloc(num_nonzeros * sizeof(*matrix->data.integer_single));
+                malloc(size * sizeof(*matrix->data.integer_single));
             if (!matrix->data.integer_single) {
                 free(matrix->colidx);
                 free(matrix->rowptr);
@@ -190,7 +190,7 @@ int mtxmatrix_csr_alloc(
             }
         } else if (precision == mtx_double) {
             matrix->data.integer_double =
-                malloc(num_nonzeros * sizeof(*matrix->data.integer_double));
+                malloc(size * sizeof(*matrix->data.integer_double));
             if (!matrix->data.integer_double) {
                 free(matrix->colidx);
                 free(matrix->rowptr);
@@ -208,10 +208,12 @@ int mtxmatrix_csr_alloc(
     }
     matrix->field = field;
     matrix->precision = precision;
+    matrix->symmetry = symmetry;
     matrix->num_rows = num_rows;
     matrix->num_columns = num_columns;
     matrix->num_entries = num_entries;
-    matrix->num_nonzeros = num_nonzeros;
+    matrix->num_nonzeros = size;
+    matrix->size = size;
     return MTX_SUCCESS;
 }
 
@@ -221,6 +223,7 @@ int mtxmatrix_csr_alloc(
  */
 int mtxmatrix_csr_init_real_single(
     struct mtxmatrix_csr * matrix,
+    enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
     const int64_t * rowptr,
@@ -231,13 +234,13 @@ int mtxmatrix_csr_init_real_single(
         if (rowptr[i] > rowptr[i+1])
             return MTX_ERR_INDEX_OUT_OF_BOUNDS;
     }
-    int64_t num_nonzeros = rowptr[num_rows] - rowptr[0];
+    int64_t size = rowptr[num_rows] - rowptr[0];
     int err = mtxmatrix_csr_alloc(
-        matrix, mtx_field_real, mtx_single, num_rows, num_columns, num_nonzeros);
+        matrix, mtx_field_real, mtx_single, symmetry, num_rows, num_columns, size);
     if (err) return err;
     for (int i = 0; i <= num_rows; i++)
         matrix->rowptr[i] = rowptr[i];
-    for (int64_t k = 0; k < num_nonzeros; k++) {
+    for (int64_t k = 0; k < size; k++) {
         matrix->colidx[k] = colidx[k];
         matrix->data.real_single[k] = data[k];
     }
@@ -250,6 +253,7 @@ int mtxmatrix_csr_init_real_single(
  */
 int mtxmatrix_csr_init_real_double(
     struct mtxmatrix_csr * matrix,
+    enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
     const int64_t * rowptr,
@@ -260,13 +264,13 @@ int mtxmatrix_csr_init_real_double(
         if (rowptr[i] > rowptr[i+1])
             return MTX_ERR_INDEX_OUT_OF_BOUNDS;
     }
-    int64_t num_nonzeros = rowptr[num_rows] - rowptr[0];
+    int64_t size = rowptr[num_rows] - rowptr[0];
     int err = mtxmatrix_csr_alloc(
-        matrix, mtx_field_real, mtx_double, num_rows, num_columns, num_nonzeros);
+        matrix, mtx_field_real, mtx_double, symmetry, num_rows, num_columns, size);
     if (err) return err;
     for (int i = 0; i <= num_rows; i++)
         matrix->rowptr[i] = rowptr[i];
-    for (int64_t k = 0; k < num_nonzeros; k++) {
+    for (int64_t k = 0; k < size; k++) {
         matrix->colidx[k] = colidx[k];
         matrix->data.real_double[k] = data[k];
     }
@@ -279,6 +283,7 @@ int mtxmatrix_csr_init_real_double(
  */
 int mtxmatrix_csr_init_complex_single(
     struct mtxmatrix_csr * matrix,
+    enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
     const int64_t * rowptr,
@@ -289,13 +294,13 @@ int mtxmatrix_csr_init_complex_single(
         if (rowptr[i] > rowptr[i+1])
             return MTX_ERR_INDEX_OUT_OF_BOUNDS;
     }
-    int64_t num_nonzeros = rowptr[num_rows] - rowptr[0];
+    int64_t size = rowptr[num_rows] - rowptr[0];
     int err = mtxmatrix_csr_alloc(
-        matrix, mtx_field_complex, mtx_single, num_rows, num_columns, num_nonzeros);
+        matrix, mtx_field_complex, mtx_single, symmetry, num_rows, num_columns, size);
     if (err) return err;
     for (int i = 0; i <= num_rows; i++)
         matrix->rowptr[i] = rowptr[i];
-    for (int64_t k = 0; k < num_nonzeros; k++) {
+    for (int64_t k = 0; k < size; k++) {
         matrix->colidx[k] = colidx[k];
         matrix->data.complex_single[k][0] = data[k][0];
         matrix->data.complex_single[k][1] = data[k][1];
@@ -309,6 +314,7 @@ int mtxmatrix_csr_init_complex_single(
  */
 int mtxmatrix_csr_init_complex_double(
     struct mtxmatrix_csr * matrix,
+    enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
     const int64_t * rowptr,
@@ -319,13 +325,13 @@ int mtxmatrix_csr_init_complex_double(
         if (rowptr[i] > rowptr[i+1])
             return MTX_ERR_INDEX_OUT_OF_BOUNDS;
     }
-    int64_t num_nonzeros = rowptr[num_rows] - rowptr[0];
+    int64_t size = rowptr[num_rows] - rowptr[0];
     int err = mtxmatrix_csr_alloc(
-        matrix, mtx_field_complex, mtx_double, num_rows, num_columns, num_nonzeros);
+        matrix, mtx_field_complex, mtx_double, symmetry, num_rows, num_columns, size);
     if (err) return err;
     for (int i = 0; i <= num_rows; i++)
         matrix->rowptr[i] = rowptr[i];
-    for (int64_t k = 0; k < num_nonzeros; k++) {
+    for (int64_t k = 0; k < size; k++) {
         matrix->colidx[k] = colidx[k];
         matrix->data.complex_double[k][0] = data[k][0];
         matrix->data.complex_double[k][1] = data[k][1];
@@ -339,6 +345,7 @@ int mtxmatrix_csr_init_complex_double(
  */
 int mtxmatrix_csr_init_integer_single(
     struct mtxmatrix_csr * matrix,
+    enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
     const int64_t * rowptr,
@@ -349,13 +356,13 @@ int mtxmatrix_csr_init_integer_single(
         if (rowptr[i] > rowptr[i+1])
             return MTX_ERR_INDEX_OUT_OF_BOUNDS;
     }
-    int64_t num_nonzeros = rowptr[num_rows] - rowptr[0];
+    int64_t size = rowptr[num_rows] - rowptr[0];
     int err = mtxmatrix_csr_alloc(
-        matrix, mtx_field_integer, mtx_single, num_rows, num_columns, num_nonzeros);
+        matrix, mtx_field_integer, mtx_single, symmetry, num_rows, num_columns, size);
     if (err) return err;
     for (int i = 0; i <= num_rows; i++)
         matrix->rowptr[i] = rowptr[i];
-    for (int64_t k = 0; k < num_nonzeros; k++) {
+    for (int64_t k = 0; k < size; k++) {
         matrix->colidx[k] = colidx[k];
         matrix->data.integer_single[k] = data[k];
     }
@@ -368,6 +375,7 @@ int mtxmatrix_csr_init_integer_single(
  */
 int mtxmatrix_csr_init_integer_double(
     struct mtxmatrix_csr * matrix,
+    enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
     const int64_t * rowptr,
@@ -378,13 +386,13 @@ int mtxmatrix_csr_init_integer_double(
         if (rowptr[i] > rowptr[i+1])
             return MTX_ERR_INDEX_OUT_OF_BOUNDS;
     }
-    int64_t num_nonzeros = rowptr[num_rows] - rowptr[0];
+    int64_t size = rowptr[num_rows] - rowptr[0];
     int err = mtxmatrix_csr_alloc(
-        matrix, mtx_field_integer, mtx_double, num_rows, num_columns, num_nonzeros);
+        matrix, mtx_field_integer, mtx_double, symmetry, num_rows, num_columns, size);
     if (err) return err;
     for (int i = 0; i <= num_rows; i++)
         matrix->rowptr[i] = rowptr[i];
-    for (int64_t k = 0; k < num_nonzeros; k++) {
+    for (int64_t k = 0; k < size; k++) {
         matrix->colidx[k] = colidx[k];
         matrix->data.integer_double[k] = data[k];
     }
@@ -397,6 +405,7 @@ int mtxmatrix_csr_init_integer_double(
  */
 int mtxmatrix_csr_init_pattern(
     struct mtxmatrix_csr * matrix,
+    enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
     const int64_t * rowptr,
@@ -406,13 +415,13 @@ int mtxmatrix_csr_init_pattern(
         if (rowptr[i] > rowptr[i+1])
             return MTX_ERR_INDEX_OUT_OF_BOUNDS;
     }
-    int64_t num_nonzeros = rowptr[num_rows] - rowptr[0];
+    int64_t size = rowptr[num_rows] - rowptr[0];
     int err = mtxmatrix_csr_alloc(
-        matrix, mtx_field_pattern, mtx_single, num_rows, num_columns, num_nonzeros);
+        matrix, mtx_field_pattern, mtx_single, symmetry, num_rows, num_columns, size);
     if (err) return err;
     for (int i = 0; i <= num_rows; i++)
         matrix->rowptr[i] = rowptr[i];
-    for (int64_t k = 0; k < num_nonzeros; k++)
+    for (int64_t k = 0; k < size; k++)
         matrix->colidx[k] = colidx[k];
     return MTX_SUCCESS;
 }
@@ -496,20 +505,20 @@ static int mtxfile_num_offdiagonal_data_lines(
     if (mtxfile->header.format != mtxfile_coordinate)
         return MTX_ERR_INCOMPATIBLE_MTX_FORMAT;
 
-    int64_t num_nonzeros = mtxfile->size.num_nonzeros;
+    int64_t size = mtxfile->size.num_nonzeros;
     *num_offdiagonal_data_lines = 0;
     if (mtxfile->header.field == mtxfile_real) {
         if (mtxfile->precision == mtx_single) {
             const struct mtxfile_matrix_coordinate_real_single * data =
                 mtxfile->data.matrix_coordinate_real_single;
-            for (int64_t k = 0; k < num_nonzeros; k++) {
+            for (int64_t k = 0; k < size; k++) {
                 if (data[k].i != data[k].j)
                     (*num_offdiagonal_data_lines)++;
             }
         } else if (mtxfile->precision == mtx_double) {
             const struct mtxfile_matrix_coordinate_real_double * data =
                 mtxfile->data.matrix_coordinate_real_double;
-            for (int64_t k = 0; k < num_nonzeros; k++) {
+            for (int64_t k = 0; k < size; k++) {
                 if (data[k].i != data[k].j)
                     (*num_offdiagonal_data_lines)++;
             }
@@ -520,14 +529,14 @@ static int mtxfile_num_offdiagonal_data_lines(
         if (mtxfile->precision == mtx_single) {
             const struct mtxfile_matrix_coordinate_complex_single * data =
                 mtxfile->data.matrix_coordinate_complex_single;
-            for (int64_t k = 0; k < num_nonzeros; k++) {
+            for (int64_t k = 0; k < size; k++) {
                 if (data[k].i != data[k].j)
                     (*num_offdiagonal_data_lines)++;
             }
         } else if (mtxfile->precision == mtx_double) {
             const struct mtxfile_matrix_coordinate_complex_double * data =
                 mtxfile->data.matrix_coordinate_complex_double;
-            for (int64_t k = 0; k < num_nonzeros; k++) {
+            for (int64_t k = 0; k < size; k++) {
                 if (data[k].i != data[k].j)
                     (*num_offdiagonal_data_lines)++;
             }
@@ -538,14 +547,14 @@ static int mtxfile_num_offdiagonal_data_lines(
         if (mtxfile->precision == mtx_single) {
             const struct mtxfile_matrix_coordinate_integer_single * data =
                 mtxfile->data.matrix_coordinate_integer_single;
-            for (int64_t k = 0; k < num_nonzeros; k++) {
+            for (int64_t k = 0; k < size; k++) {
                 if (data[k].i != data[k].j)
                     (*num_offdiagonal_data_lines)++;
             }
         } else if (mtxfile->precision == mtx_double) {
             const struct mtxfile_matrix_coordinate_integer_double * data =
                 mtxfile->data.matrix_coordinate_integer_double;
-            for (int64_t k = 0; k < num_nonzeros; k++) {
+            for (int64_t k = 0; k < size; k++) {
                 if (data[k].i != data[k].j)
                     (*num_offdiagonal_data_lines)++;
             }
@@ -555,7 +564,7 @@ static int mtxfile_num_offdiagonal_data_lines(
     } else if (mtxfile->header.field == mtxfile_pattern) {
         const struct mtxfile_matrix_coordinate_pattern * data =
             mtxfile->data.matrix_coordinate_pattern;
-        for (int64_t k = 0; k < num_nonzeros; k++) {
+        for (int64_t k = 0; k < size; k++) {
             if (data[k].i != data[k].j)
                 (*num_offdiagonal_data_lines)++;
         }
@@ -587,20 +596,21 @@ int mtxmatrix_csr_from_mtxfile(
         mtxfile->header.symmetry == mtxfile_hermitian)
         return MTX_ERR_INCOMPATIBLE_MTX_SYMMETRY;
 
+    enum mtxsymmetry symmetry = mtx_unsymmetric;
     int num_rows = mtxfile->size.num_rows;
     int num_columns = mtxfile->size.num_columns;
-    int64_t num_nonzeros = mtxfile->size.num_nonzeros;
+    int64_t size = mtxfile->size.num_nonzeros;
 
     /* obtain row pointers and rowwise column indices. */
     if (mtxfile->header.field == mtxfile_real) {
         err = mtxmatrix_csr_alloc(
-            matrix, mtx_field_real, mtxfile->precision,
-            num_rows, num_columns, num_nonzeros);
+            matrix, mtx_field_real, mtxfile->precision, symmetry,
+            num_rows, num_columns, size);
         if (err) return err;
         if (mtxfile->precision == mtx_single) {
             err = mtxfiledata_rowptr(
                 &mtxfile->data, mtxfile->header.object, mtxfile->header.format,
-                mtxfile->header.field, mtxfile->precision, num_rows, num_nonzeros,
+                mtxfile->header.field, mtxfile->precision, num_rows, size,
                 matrix->rowptr, matrix->colidx, matrix->data.real_single);
             if (err) {
                 mtxmatrix_csr_free(matrix);
@@ -609,7 +619,7 @@ int mtxmatrix_csr_from_mtxfile(
         } else if (mtxfile->precision == mtx_double) {
             err = mtxfiledata_rowptr(
                 &mtxfile->data, mtxfile->header.object, mtxfile->header.format,
-                mtxfile->header.field, mtxfile->precision, num_rows, num_nonzeros,
+                mtxfile->header.field, mtxfile->precision, num_rows, size,
                 matrix->rowptr, matrix->colidx, matrix->data.real_double);
             if (err) {
                 mtxmatrix_csr_free(matrix);
@@ -620,13 +630,13 @@ int mtxmatrix_csr_from_mtxfile(
         }
     } else if (mtxfile->header.field == mtxfile_complex) {
         err = mtxmatrix_csr_alloc(
-            matrix, mtx_field_complex, mtxfile->precision,
-            num_rows, num_columns, num_nonzeros);
+            matrix, mtx_field_complex, mtxfile->precision, symmetry,
+            num_rows, num_columns, size);
         if (err) return err;
         if (mtxfile->precision == mtx_single) {
             err = mtxfiledata_rowptr(
                 &mtxfile->data, mtxfile->header.object, mtxfile->header.format,
-                mtxfile->header.field, mtxfile->precision, num_rows, num_nonzeros,
+                mtxfile->header.field, mtxfile->precision, num_rows, size,
                 matrix->rowptr, matrix->colidx, matrix->data.complex_single);
             if (err) {
                 mtxmatrix_csr_free(matrix);
@@ -635,7 +645,7 @@ int mtxmatrix_csr_from_mtxfile(
         } else if (mtxfile->precision == mtx_double) {
             err = mtxfiledata_rowptr(
                 &mtxfile->data, mtxfile->header.object, mtxfile->header.format,
-                mtxfile->header.field, mtxfile->precision, num_rows, num_nonzeros,
+                mtxfile->header.field, mtxfile->precision, num_rows, size,
                 matrix->rowptr, matrix->colidx, matrix->data.complex_double);
             if (err) {
                 mtxmatrix_csr_free(matrix);
@@ -646,13 +656,13 @@ int mtxmatrix_csr_from_mtxfile(
         }
     } else if (mtxfile->header.field == mtxfile_integer) {
         err = mtxmatrix_csr_alloc(
-            matrix, mtx_field_integer, mtxfile->precision,
-            num_rows, num_columns, num_nonzeros);
+            matrix, mtx_field_integer, mtxfile->precision, symmetry,
+            num_rows, num_columns, size);
         if (err) return err;
         if (mtxfile->precision == mtx_single) {
             err = mtxfiledata_rowptr(
                 &mtxfile->data, mtxfile->header.object, mtxfile->header.format,
-                mtxfile->header.field, mtxfile->precision, num_rows, num_nonzeros,
+                mtxfile->header.field, mtxfile->precision, num_rows, size,
                 matrix->rowptr, matrix->colidx, matrix->data.integer_single);
             if (err) {
                 mtxmatrix_csr_free(matrix);
@@ -661,7 +671,7 @@ int mtxmatrix_csr_from_mtxfile(
         } else if (mtxfile->precision == mtx_double) {
             err = mtxfiledata_rowptr(
                 &mtxfile->data, mtxfile->header.object, mtxfile->header.format,
-                mtxfile->header.field, mtxfile->precision, num_rows, num_nonzeros,
+                mtxfile->header.field, mtxfile->precision, num_rows, size,
                 matrix->rowptr, matrix->colidx, matrix->data.integer_double);
             if (err) {
                 mtxmatrix_csr_free(matrix);
@@ -672,12 +682,12 @@ int mtxmatrix_csr_from_mtxfile(
         }
     } else if (mtxfile->header.field == mtxfile_pattern) {
         err = mtxmatrix_csr_alloc(
-            matrix, mtx_field_pattern, mtxfile->precision,
-            num_rows, num_columns, num_nonzeros);
+            matrix, mtx_field_pattern, mtxfile->precision, symmetry,
+            num_rows, num_columns, size);
         if (err) return err;
         err = mtxfiledata_rowptr(
             &mtxfile->data, mtxfile->header.object, mtxfile->header.format,
-            mtxfile->header.field, mtxfile->precision, num_rows, num_nonzeros,
+            mtxfile->header.field, mtxfile->precision, num_rows, size,
             matrix->rowptr, matrix->colidx, NULL);
         if (err) {
             mtxmatrix_csr_free(matrix);
@@ -686,6 +696,8 @@ int mtxmatrix_csr_from_mtxfile(
     } else {
         return MTX_ERR_INVALID_FIELD;
     }
+    for (int64_t k = 0; k < matrix->size; k++)
+        matrix->colidx[k]--;
     return MTX_SUCCESS;
 }
 
@@ -705,7 +717,7 @@ int mtxmatrix_csr_to_mtxfile(
     if (matrix->field == mtx_field_real) {
         err = mtxfile_alloc_matrix_coordinate(
             mtxfile, mtxfile_real, mtxfile_general, matrix->precision,
-            matrix->num_rows, matrix->num_columns, matrix->num_nonzeros);
+            matrix->num_rows, matrix->num_columns, matrix->size);
         if (err)
             return err;
         if (matrix->precision == mtx_single) {
@@ -734,7 +746,7 @@ int mtxmatrix_csr_to_mtxfile(
     } else if (matrix->field == mtx_field_complex) {
         err = mtxfile_alloc_matrix_coordinate(
             mtxfile, mtxfile_complex, mtxfile_general, matrix->precision,
-            matrix->num_rows, matrix->num_columns, matrix->num_nonzeros);
+            matrix->num_rows, matrix->num_columns, matrix->size);
         if (err)
             return err;
         if (matrix->precision == mtx_single) {
@@ -765,7 +777,7 @@ int mtxmatrix_csr_to_mtxfile(
     } else if (matrix->field == mtx_field_integer) {
         err = mtxfile_alloc_matrix_coordinate(
             mtxfile, mtxfile_integer, mtxfile_general, matrix->precision,
-            matrix->num_rows, matrix->num_columns, matrix->num_nonzeros);
+            matrix->num_rows, matrix->num_columns, matrix->size);
         if (err)
             return err;
         if (matrix->precision == mtx_single) {
@@ -794,7 +806,7 @@ int mtxmatrix_csr_to_mtxfile(
     } else if (matrix->field == mtx_field_pattern) {
         err = mtxfile_alloc_matrix_coordinate(
             mtxfile, mtxfile_pattern, mtxfile_general, mtx_single,
-            matrix->num_rows, matrix->num_columns, matrix->num_nonzeros);
+            matrix->num_rows, matrix->num_columns, matrix->size);
         if (err)
             return err;
         struct mtxfile_matrix_coordinate_pattern * data =
@@ -877,9 +889,9 @@ int mtxmatrix_csr_nzcols(
     int * nonzero_columns)
 {
     int err;
-    int * colidx = malloc(matrix->num_nonzeros * sizeof(int));
+    int * colidx = malloc(matrix->size * sizeof(int));
     if (!colidx) return MTX_ERR_ERRNO;
-    for (int64_t k = 0; k < matrix->num_nonzeros; k++)
+    for (int64_t k = 0; k < matrix->size; k++)
         colidx[k] = matrix->colidx[k];
 
     /* sort, then compact the sorted column indices */
@@ -889,11 +901,11 @@ int mtxmatrix_csr_nzcols(
         return err;
     }
     int n = 0;
-    for (int64_t k = 1; k < matrix->num_nonzeros; k++) {
+    for (int64_t k = 1; k < matrix->size; k++) {
         if (colidx[n] != colidx[k])
             colidx[++n] = colidx[k];
     }
-    n = matrix->num_nonzeros == 0 ? 0 : n+1;
+    n = matrix->size == 0 ? 0 : n+1;
     if (num_nonzero_columns) *num_nonzero_columns = n;
     if (nonzero_columns) {
         if (size < n) {
@@ -1056,7 +1068,7 @@ static int mtxmatrix_csr_vectorise(
     vecx->field = x->field;
     vecx->precision = x->precision;
     vecx->num_entries = x->num_entries;
-    vecx->num_nonzeros = x->num_nonzeros;
+    vecx->size = x->size;
     vecx->indices = NULL;
     if (x->field == mtx_field_real) {
         if (x->precision == mtx_single) {
@@ -1527,7 +1539,7 @@ int mtxmatrix_csr_sgemv(
                     }
                     ydata[i] = alpha*z+beta*ydata[i];
                 }
-                if (num_flops) *num_flops += 2*A->num_nonzeros+3*A->num_rows;
+                if (num_flops) *num_flops += 2*A->size+3*A->num_rows;
             /* } else if (trans == mtx_trans || trans == mtx_conjtrans) { */
             } else {
                 return MTX_ERR_INVALID_TRANSPOSITION;
@@ -1545,7 +1557,7 @@ int mtxmatrix_csr_sgemv(
                     }
                     ydata[i] = alpha*z+beta*ydata[i];
                 }
-                if (num_flops) *num_flops += 2*A->num_nonzeros+3*A->num_rows;
+                if (num_flops) *num_flops += 2*A->size+3*A->num_rows;
             /* } else if (trans == mtx_trans || trans == mtx_conjtrans) { */
             } else {
                 return MTX_ERR_INVALID_TRANSPOSITION;
@@ -1573,7 +1585,7 @@ int mtxmatrix_csr_sgemv(
                     ydata[i][0] = alpha*z0+beta*ydata[i][0];
                     ydata[i][1] = alpha*z1+beta*ydata[i][1];
                 }
-                if (num_flops) *num_flops += 8*A->num_nonzeros+6*A->num_rows;
+                if (num_flops) *num_flops += 8*A->size+6*A->num_rows;
             /* } else if (trans == mtx_trans) { */
             /* } else if (trans == mtx_conjtrans) { */
             } else {
@@ -1594,7 +1606,7 @@ int mtxmatrix_csr_sgemv(
                     ydata[i][0] = alpha*z0+beta*ydata[i][0];
                     ydata[i][1] = alpha*z1+beta*ydata[i][1];
                 }
-                if (num_flops) *num_flops += 8*A->num_nonzeros+6*A->num_rows;
+                if (num_flops) *num_flops += 8*A->size+6*A->num_rows;
             /* } else if (trans == mtx_trans) { */
             /* } else if (trans == mtx_conjtrans) { */
             } else {
@@ -1621,7 +1633,7 @@ int mtxmatrix_csr_sgemv(
                     }
                     ydata[i] = alpha*z+beta*ydata[i];
                 }
-                if (num_flops) *num_flops += 2*A->num_nonzeros+3*A->num_rows;
+                if (num_flops) *num_flops += 2*A->size+3*A->num_rows;
             /* } else if (trans == mtx_trans || trans == mtx_conjtrans) { */
             } else {
                 return MTX_ERR_INVALID_TRANSPOSITION;
@@ -1639,7 +1651,7 @@ int mtxmatrix_csr_sgemv(
                     }
                     ydata[i] = alpha*z+beta*ydata[i];
                 }
-                if (num_flops) *num_flops += 2*A->num_nonzeros+3*A->num_rows;
+                if (num_flops) *num_flops += 2*A->size+3*A->num_rows;
             /* } else if (trans == mtx_trans || trans == mtx_conjtrans) { */
             } else {
                 return MTX_ERR_INVALID_TRANSPOSITION;
@@ -1665,7 +1677,7 @@ int mtxmatrix_csr_sgemv(
                         }
                         ydata[i] = alpha*z+beta*ydata[i];
                     }
-                    if (num_flops) *num_flops += A->num_nonzeros+3*A->num_rows;
+                    if (num_flops) *num_flops += A->size+3*A->num_rows;
                 /* } else if (trans == mtx_trans || trans == mtx_conjtrans) { */
                 } else {
                     return MTX_ERR_INVALID_TRANSPOSITION;
@@ -1682,7 +1694,7 @@ int mtxmatrix_csr_sgemv(
                         }
                         ydata[i] = alpha*z+beta*ydata[i];
                     }
-                    if (num_flops) *num_flops += A->num_nonzeros+3*A->num_rows;
+                    if (num_flops) *num_flops += A->size+3*A->num_rows;
                 /* } else if (trans == mtx_trans || trans == mtx_conjtrans) { */
                 } else {
                     return MTX_ERR_INVALID_TRANSPOSITION;
@@ -1705,7 +1717,7 @@ int mtxmatrix_csr_sgemv(
                         ydata[i][0] = alpha*z0 + beta*ydata[i][0];
                         ydata[i][1] = alpha*z1 + beta*ydata[i][1];
                     }
-                    if (num_flops) *num_flops += 2*A->num_nonzeros+6*A->num_rows;
+                    if (num_flops) *num_flops += 2*A->size+6*A->num_rows;
                 /* } else if (trans == mtx_trans) { */
                 /* } else if (trans == mtx_conjtrans) { */
                 } else {
@@ -1725,7 +1737,7 @@ int mtxmatrix_csr_sgemv(
                         ydata[i][0] = alpha*z0 + beta*ydata[i][0];
                         ydata[i][1] = alpha*z1 + beta*ydata[i][1];
                     }
-                    if (num_flops) *num_flops += 2*A->num_nonzeros+6*A->num_rows;
+                    if (num_flops) *num_flops += 2*A->size+6*A->num_rows;
                 /* } else if (trans == mtx_trans) { */
                 /* } else if (trans == mtx_conjtrans) { */
                 } else {
@@ -1747,7 +1759,7 @@ int mtxmatrix_csr_sgemv(
                         }
                         ydata[i] = alpha*z+beta*ydata[i];
                     }
-                    if (num_flops) *num_flops += A->num_nonzeros+3*A->num_rows;
+                    if (num_flops) *num_flops += A->size+3*A->num_rows;
                 /* } else if (trans == mtx_trans || trans == mtx_conjtrans) { */
                 } else {
                     return MTX_ERR_INVALID_TRANSPOSITION;
@@ -1764,7 +1776,7 @@ int mtxmatrix_csr_sgemv(
                         }
                         ydata[i] = alpha*z+beta*ydata[i];
                     }
-                    if (num_flops) *num_flops += A->num_nonzeros+3*A->num_rows;
+                    if (num_flops) *num_flops += A->size+3*A->num_rows;
                 /* } else if (trans == mtx_trans || trans == mtx_conjtrans) { */
                 } else {
                     return MTX_ERR_INVALID_TRANSPOSITION;
@@ -1843,7 +1855,7 @@ int mtxmatrix_csr_dgemv(
                     }
                     ydata[i] = alpha*z+beta*ydata[i];
                 }
-                if (num_flops) *num_flops += 2*A->num_nonzeros+3*A->num_rows;
+                if (num_flops) *num_flops += 2*A->size+3*A->num_rows;
             /* } else if (trans == mtx_trans || trans == mtx_conjtrans) { */
             } else {
                 return MTX_ERR_INVALID_TRANSPOSITION;
@@ -1861,7 +1873,7 @@ int mtxmatrix_csr_dgemv(
                     }
                     ydata[i] = alpha*z+beta*ydata[i];
                 }
-                if (num_flops) *num_flops += 2*A->num_nonzeros+3*A->num_rows;
+                if (num_flops) *num_flops += 2*A->size+3*A->num_rows;
             /* } else if (trans == mtx_trans || trans == mtx_conjtrans) { */
             } else {
                 return MTX_ERR_INVALID_TRANSPOSITION;
@@ -1889,7 +1901,7 @@ int mtxmatrix_csr_dgemv(
                     ydata[i][0] = alpha*z0+beta*ydata[i][0];
                     ydata[i][1] = alpha*z1+beta*ydata[i][1];
                 }
-                if (num_flops) *num_flops += 8*A->num_nonzeros+6*A->num_rows;
+                if (num_flops) *num_flops += 8*A->size+6*A->num_rows;
             /* } else if (trans == mtx_trans) { */
             /* } else if (trans == mtx_conjtrans) { */
             } else {
@@ -1910,7 +1922,7 @@ int mtxmatrix_csr_dgemv(
                     ydata[i][0] = alpha*z0+beta*ydata[i][0];
                     ydata[i][1] = alpha*z1+beta*ydata[i][1];
                 }
-                if (num_flops) *num_flops += 8*A->num_nonzeros+6*A->num_rows;
+                if (num_flops) *num_flops += 8*A->size+6*A->num_rows;
             /* } else if (trans == mtx_trans) { */
             /* } else if (trans == mtx_conjtrans) { */
             } else {
@@ -1937,7 +1949,7 @@ int mtxmatrix_csr_dgemv(
                     }
                     ydata[i] = alpha*z+beta*ydata[i];
                 }
-                if (num_flops) *num_flops += 2*A->num_nonzeros+3*A->num_rows;
+                if (num_flops) *num_flops += 2*A->size+3*A->num_rows;
             /* } else if (trans == mtx_trans || trans == mtx_conjtrans) { */
             } else {
                 return MTX_ERR_INVALID_TRANSPOSITION;
@@ -1955,7 +1967,7 @@ int mtxmatrix_csr_dgemv(
                     }
                     ydata[i] = alpha*z+beta*ydata[i];
                 }
-                if (num_flops) *num_flops += 2*A->num_nonzeros+3*A->num_rows;
+                if (num_flops) *num_flops += 2*A->size+3*A->num_rows;
             /* } else if (trans == mtx_trans || trans == mtx_conjtrans) { */
             } else {
                 return MTX_ERR_INVALID_TRANSPOSITION;
@@ -1981,7 +1993,7 @@ int mtxmatrix_csr_dgemv(
                         }
                         ydata[i] = alpha*z+beta*ydata[i];
                     }
-                    if (num_flops) *num_flops += A->num_nonzeros+3*A->num_rows;
+                    if (num_flops) *num_flops += A->size+3*A->num_rows;
                 /* } else if (trans == mtx_trans || trans == mtx_conjtrans) { */
                 } else {
                     return MTX_ERR_INVALID_TRANSPOSITION;
@@ -1998,7 +2010,7 @@ int mtxmatrix_csr_dgemv(
                         }
                         ydata[i] = alpha*z+beta*ydata[i];
                     }
-                    if (num_flops) *num_flops += A->num_nonzeros+3*A->num_rows;
+                    if (num_flops) *num_flops += A->size+3*A->num_rows;
                 /* } else if (trans == mtx_trans || trans == mtx_conjtrans) { */
                 } else {
                     return MTX_ERR_INVALID_TRANSPOSITION;
@@ -2021,7 +2033,7 @@ int mtxmatrix_csr_dgemv(
                         ydata[i][0] = alpha*z0 + beta*ydata[i][0];
                         ydata[i][1] = alpha*z1 + beta*ydata[i][1];
                     }
-                    if (num_flops) *num_flops += 2*A->num_nonzeros+6*A->num_rows;
+                    if (num_flops) *num_flops += 2*A->size+6*A->num_rows;
                 /* } else if (trans == mtx_trans) { */
                 /* } else if (trans == mtx_conjtrans) { */
                 } else {
@@ -2041,7 +2053,7 @@ int mtxmatrix_csr_dgemv(
                         ydata[i][0] = alpha*z0 + beta*ydata[i][0];
                         ydata[i][1] = alpha*z1 + beta*ydata[i][1];
                     }
-                    if (num_flops) *num_flops += 2*A->num_nonzeros+6*A->num_rows;
+                    if (num_flops) *num_flops += 2*A->size+6*A->num_rows;
                 /* } else if (trans == mtx_trans) { */
                 /* } else if (trans == mtx_conjtrans) { */
                 } else {
@@ -2063,7 +2075,7 @@ int mtxmatrix_csr_dgemv(
                         }
                         ydata[i] = alpha*z+beta*ydata[i];
                     }
-                    if (num_flops) *num_flops += A->num_nonzeros+3*A->num_rows;
+                    if (num_flops) *num_flops += A->size+3*A->num_rows;
                 /* } else if (trans == mtx_trans || trans == mtx_conjtrans) { */
                 } else {
                     return MTX_ERR_INVALID_TRANSPOSITION;
@@ -2080,7 +2092,7 @@ int mtxmatrix_csr_dgemv(
                         }
                         ydata[i] = alpha*z+beta*ydata[i];
                     }
-                    if (num_flops) *num_flops += A->num_nonzeros+3*A->num_rows;
+                    if (num_flops) *num_flops += A->size+3*A->num_rows;
                 /* } else if (trans == mtx_trans || trans == mtx_conjtrans) { */
                 } else {
                     return MTX_ERR_INVALID_TRANSPOSITION;

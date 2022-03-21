@@ -59,6 +59,12 @@ struct mtxmatrix_csr
     enum mtxprecision precision;
 
     /**
+     * ‘symmetry’ is the matrix symmetry: ‘unsymmetric’, ‘symmetric’,
+     * ‘skew-symmetric’ or ‘hermitian’.
+     */
+    enum mtxsymmetry symmetry;
+
+    /**
      * ‘num_rows’ is the number of matrix rows.
      */
     int num_rows;
@@ -151,9 +157,10 @@ int mtxmatrix_csr_alloc(
     struct mtxmatrix_csr * matrix,
     enum mtxfield field,
     enum mtxprecision precision,
+    enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
-    int64_t num_nonzeros);
+    int64_t size);
 
 /**
  * ‘mtxmatrix_csr_init_real_single()’ allocates and initialises a
@@ -161,6 +168,7 @@ int mtxmatrix_csr_alloc(
  */
 int mtxmatrix_csr_init_real_single(
     struct mtxmatrix_csr * matrix,
+    enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
     const int64_t * rowptr,
@@ -173,6 +181,7 @@ int mtxmatrix_csr_init_real_single(
  */
 int mtxmatrix_csr_init_real_double(
     struct mtxmatrix_csr * matrix,
+    enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
     const int64_t * rowptr,
@@ -185,6 +194,7 @@ int mtxmatrix_csr_init_real_double(
  */
 int mtxmatrix_csr_init_complex_single(
     struct mtxmatrix_csr * matrix,
+    enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
     const int64_t * rowptr,
@@ -197,6 +207,7 @@ int mtxmatrix_csr_init_complex_single(
  */
 int mtxmatrix_csr_init_complex_double(
     struct mtxmatrix_csr * matrix,
+    enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
     const int64_t * rowptr,
@@ -209,6 +220,7 @@ int mtxmatrix_csr_init_complex_double(
  */
 int mtxmatrix_csr_init_integer_single(
     struct mtxmatrix_csr * matrix,
+    enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
     const int64_t * rowptr,
@@ -221,6 +233,7 @@ int mtxmatrix_csr_init_integer_single(
  */
 int mtxmatrix_csr_init_integer_double(
     struct mtxmatrix_csr * matrix,
+    enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
     const int64_t * rowptr,
@@ -233,6 +246,7 @@ int mtxmatrix_csr_init_integer_double(
  */
 int mtxmatrix_csr_init_pattern(
     struct mtxmatrix_csr * matrix,
+    enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
     const int64_t * rowptr,
