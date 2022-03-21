@@ -997,8 +997,9 @@ static int mtxmatrix_coordinate_vectorise(
     vecx->field = x->field;
     vecx->precision = x->precision;
     vecx->num_entries = x->num_entries;
+    vecx->size = x->size;
     vecx->num_nonzeros = x->size;
-    vecx->indices = NULL;
+    vecx->indices = x->colidx;
     if (x->field == mtx_field_real) {
         if (x->precision == mtx_single) {
             vecx->data.real_single = x->data.real_single;

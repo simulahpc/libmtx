@@ -71,6 +71,12 @@ struct mtxvector_coordinate
     int64_t num_nonzeros;
 
     /**
+     * ‘size’ is the number of explicitly stored vector entries of a
+     * coordinate vector, which is the same as ‘num_nonzeros’.
+     */
+    int64_t size;
+
+    /**
      * ‘indices’ is an array containing the locations of nonzero
      * vector entries.  Note that indices are 0-based, unlike the
      * Matrix Market format, where indices are 1-based.
