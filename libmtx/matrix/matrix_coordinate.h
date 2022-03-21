@@ -75,6 +75,12 @@ struct mtxmatrix_coordinate
     int num_columns;
 
     /**
+     * ‘num_entries’ is the number of nonzero matrix entries,
+     *  including those represented implicitly due to symmetry.
+     */
+    int64_t num_entries;
+
+    /**
      * ‘num_nonzeros’ is the number of nonzero matrix entries for a
      * sparse matrix.
      */
