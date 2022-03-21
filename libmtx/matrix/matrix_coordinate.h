@@ -75,16 +75,21 @@ struct mtxmatrix_coordinate
     int num_columns;
 
     /**
-     * ‘num_entries’ is the number of nonzero matrix entries,
-     *  including those represented implicitly due to symmetry.
+     * ‘num_entries’ is the total number of (zero and nonzero) matrix
+     * entries, which is therefore equal to ‘num_rows*num_columns’.
      */
     int64_t num_entries;
 
     /**
-     * ‘num_nonzeros’ is the number of nonzero matrix entries for a
-     * sparse matrix.
+     * ‘num_nonzeros’ is the number of nonzero matrix entries,
+     *  including those represented implicitly due to symmetry.
      */
     int64_t num_nonzeros;
+
+    /**
+     * ‘size’ is the number of explicitly stored matrix entries.
+     */
+    int64_t size;
 
     /**
      * ‘rowidx’ is an array containing the row indices of nonzero
@@ -289,15 +294,15 @@ int mtxmatrix_coordinate_alloc_column_vector(
 
 /**
  * ‘mtxmatrix_coordinate_from_mtxfile()’ converts a matrix in Matrix
- * Market format to a matrix.
+ * Market format to a coordinate matrix.
  */
 int mtxmatrix_coordinate_from_mtxfile(
     struct mtxmatrix_coordinate * matrix,
     const struct mtxfile * mtxfile);
 
 /**
- * ‘mtxmatrix_coordinate_to_mtxfile()’ converts a matrix to a matrix
- * in Matrix Market format.
+ * ‘mtxmatrix_coordinate_to_mtxfile()’ converts a coordinate matrix to
+ * a matrix in Matrix Market format.
  */
 int mtxmatrix_coordinate_to_mtxfile(
     struct mtxfile * mtxfile,

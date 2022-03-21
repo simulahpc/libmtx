@@ -81,6 +81,7 @@ enum mtxerror
     MTX_ERR_INCOMPATIBLE_MTX_SIZE,    /* incompatible Matrix Market size */
     MTX_ERR_INCOMPATIBLE_FIELD,       /* incompatible field */
     MTX_ERR_INCOMPATIBLE_PRECISION,   /* incompatible precision */
+    MTX_ERR_INCOMPATIBLE_SYMMETRY,    /* incompatible symmetry */
     MTX_ERR_INCOMPATIBLE_SIZE,        /* incompatible size */
     MTX_ERR_INCOMPATIBLE_VECTOR_TYPE, /* incompatible vector type */
     MTX_ERR_INVALID_PARTITION,        /* invalid partition */

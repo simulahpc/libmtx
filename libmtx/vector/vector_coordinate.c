@@ -89,7 +89,7 @@ int mtxvector_coordinate_alloc_copy(
     const struct mtxvector_coordinate * src)
 {
     return mtxvector_coordinate_alloc(
-        dst, src->field, src->precision, src->size, src->num_nonzeros);
+        dst, src->field, src->precision, src->num_entries, src->num_nonzeros);
 }
 
 
@@ -123,7 +123,7 @@ int mtxvector_coordinate_alloc(
     struct mtxvector_coordinate * vector,
     enum mtxfield field,
     enum mtxprecision precision,
-    int size,
+    int64_t num_entries,
     int64_t num_nonzeros)
 {
     vector->indices = malloc(num_nonzeros * sizeof(int));
@@ -193,7 +193,7 @@ int mtxvector_coordinate_alloc(
     }
     vector->field = field;
     vector->precision = precision;
-    vector->size = size;
+    vector->num_entries = num_entries;
     vector->num_nonzeros = num_nonzeros;
     return MTX_SUCCESS;
 }
@@ -205,18 +205,18 @@ int mtxvector_coordinate_alloc(
  */
 int mtxvector_coordinate_init_real_single(
     struct mtxvector_coordinate * vector,
-    int size,
+    int64_t num_entries,
     int64_t num_nonzeros,
     const int * indices,
     const float * data)
 {
     int err;
     for (int64_t k = 0; k < num_nonzeros; k++) {
-        if (indices[k] < 0 || indices[k] >= size)
+        if (indices[k] < 0 || indices[k] >= num_entries)
             return MTX_ERR_INDEX_OUT_OF_BOUNDS;
     }
     err = mtxvector_coordinate_alloc(
-        vector, mtx_field_real, mtx_single, size, num_nonzeros);
+        vector, mtx_field_real, mtx_single, num_entries, num_nonzeros);
     if (err)
         return err;
     for (int64_t k = 0; k < num_nonzeros; k++) {
@@ -233,18 +233,18 @@ int mtxvector_coordinate_init_real_single(
  */
 int mtxvector_coordinate_init_real_double(
     struct mtxvector_coordinate * vector,
-    int size,
+    int64_t num_entries,
     int64_t num_nonzeros,
     const int * indices,
     const double * data)
 {
     int err;
     for (int64_t k = 0; k < num_nonzeros; k++) {
-        if (indices[k] < 0 || indices[k] >= size)
+        if (indices[k] < 0 || indices[k] >= num_entries)
             return MTX_ERR_INDEX_OUT_OF_BOUNDS;
     }
     err = mtxvector_coordinate_alloc(
-        vector, mtx_field_real, mtx_double, size, num_nonzeros);
+        vector, mtx_field_real, mtx_double, num_entries, num_nonzeros);
     if (err)
         return err;
     for (int64_t k = 0; k < num_nonzeros; k++) {
@@ -261,18 +261,18 @@ int mtxvector_coordinate_init_real_double(
  */
 int mtxvector_coordinate_init_complex_single(
     struct mtxvector_coordinate * vector,
-    int size,
+    int64_t num_entries,
     int64_t num_nonzeros,
     const int * indices,
     const float (* data)[2])
 {
     int err;
     for (int64_t k = 0; k < num_nonzeros; k++) {
-        if (indices[k] < 0 || indices[k] >= size)
+        if (indices[k] < 0 || indices[k] >= num_entries)
             return MTX_ERR_INDEX_OUT_OF_BOUNDS;
     }
     err = mtxvector_coordinate_alloc(
-        vector, mtx_field_complex, mtx_single, size, num_nonzeros);
+        vector, mtx_field_complex, mtx_single, num_entries, num_nonzeros);
     if (err)
         return err;
     for (int64_t k = 0; k < num_nonzeros; k++) {
@@ -290,18 +290,18 @@ int mtxvector_coordinate_init_complex_single(
  */
 int mtxvector_coordinate_init_complex_double(
     struct mtxvector_coordinate * vector,
-    int size,
+    int64_t num_entries,
     int64_t num_nonzeros,
     const int * indices,
     const double (* data)[2])
 {
     int err;
     for (int64_t k = 0; k < num_nonzeros; k++) {
-        if (indices[k] < 0 || indices[k] >= size)
+        if (indices[k] < 0 || indices[k] >= num_entries)
             return MTX_ERR_INDEX_OUT_OF_BOUNDS;
     }
     err = mtxvector_coordinate_alloc(
-        vector, mtx_field_complex, mtx_double, size, num_nonzeros);
+        vector, mtx_field_complex, mtx_double, num_entries, num_nonzeros);
     if (err)
         return err;
     for (int64_t k = 0; k < num_nonzeros; k++) {
@@ -319,18 +319,18 @@ int mtxvector_coordinate_init_complex_double(
  */
 int mtxvector_coordinate_init_integer_single(
     struct mtxvector_coordinate * vector,
-    int size,
+    int64_t num_entries,
     int64_t num_nonzeros,
     const int * indices,
     const int32_t * data)
 {
     int err;
     for (int64_t k = 0; k < num_nonzeros; k++) {
-        if (indices[k] < 0 || indices[k] >= size)
+        if (indices[k] < 0 || indices[k] >= num_entries)
             return MTX_ERR_INDEX_OUT_OF_BOUNDS;
     }
     err = mtxvector_coordinate_alloc(
-        vector, mtx_field_integer, mtx_single, size, num_nonzeros);
+        vector, mtx_field_integer, mtx_single, num_entries, num_nonzeros);
     if (err)
         return err;
     for (int64_t k = 0; k < num_nonzeros; k++) {
@@ -347,18 +347,18 @@ int mtxvector_coordinate_init_integer_single(
  */
 int mtxvector_coordinate_init_integer_double(
     struct mtxvector_coordinate * vector,
-    int size,
+    int64_t num_entries,
     int64_t num_nonzeros,
     const int * indices,
     const int64_t * data)
 {
     int err;
     for (int64_t k = 0; k < num_nonzeros; k++) {
-        if (indices[k] < 0 || indices[k] >= size)
+        if (indices[k] < 0 || indices[k] >= num_entries)
             return MTX_ERR_INDEX_OUT_OF_BOUNDS;
     }
     err = mtxvector_coordinate_alloc(
-        vector, mtx_field_integer, mtx_double, size, num_nonzeros);
+        vector, mtx_field_integer, mtx_double, num_entries, num_nonzeros);
     if (err)
         return err;
     for (int64_t k = 0; k < num_nonzeros; k++) {
@@ -374,17 +374,17 @@ int mtxvector_coordinate_init_integer_double(
  */
 int mtxvector_coordinate_init_pattern(
     struct mtxvector_coordinate * vector,
-    int size,
+    int64_t num_entries,
     int64_t num_nonzeros,
     const int * indices)
 {
     int err;
     for (int64_t k = 0; k < num_nonzeros; k++) {
-        if (indices[k] < 0 || indices[k] >= size)
+        if (indices[k] < 0 || indices[k] >= num_entries)
             return MTX_ERR_INDEX_OUT_OF_BOUNDS;
     }
     err = mtxvector_coordinate_alloc(
-        vector, mtx_field_pattern, mtx_single, size, num_nonzeros);
+        vector, mtx_field_pattern, mtx_single, num_entries, num_nonzeros);
     if (err)
         return err;
     for (int64_t k = 0; k < num_nonzeros; k++)
@@ -688,12 +688,12 @@ int mtxvector_coordinate_from_mtxfile(
         return err;
     }
 
-    int size = mtxfile->size.num_rows;
+    int64_t num_entries = mtxfile->size.num_rows;
     int64_t num_nonzeros = mtxfile->size.num_nonzeros;
 
     if (mtxfile->header.field == mtxfile_real) {
         err = mtxvector_coordinate_alloc(
-            vector, mtx_field_real, mtxfile->precision, size, num_nonzeros);
+            vector, mtx_field_real, mtxfile->precision, num_entries, num_nonzeros);
         if (err) {
             mtxfile_free(&copy);
             return err;
@@ -718,7 +718,7 @@ int mtxvector_coordinate_from_mtxfile(
         }
     } else if (mtxfile->header.field == mtxfile_complex) {
         err = mtxvector_coordinate_alloc(
-            vector, mtx_field_complex, mtxfile->precision, size, num_nonzeros);
+            vector, mtx_field_complex, mtxfile->precision, num_entries, num_nonzeros);
         if (err) {
             mtxfile_free(&copy);
             return err;
@@ -745,7 +745,7 @@ int mtxvector_coordinate_from_mtxfile(
         }
     } else if (mtxfile->header.field == mtxfile_integer) {
         err = mtxvector_coordinate_alloc(
-            vector, mtx_field_integer, mtxfile->precision, size, num_nonzeros);
+            vector, mtx_field_integer, mtxfile->precision, num_entries, num_nonzeros);
         if (err) {
             mtxfile_free(&copy);
             return err;
@@ -770,7 +770,7 @@ int mtxvector_coordinate_from_mtxfile(
         }
     } else if (mtxfile->header.field == mtxfile_pattern) {
         err = mtxvector_coordinate_alloc(
-            vector, mtx_field_pattern, mtx_single, size, num_nonzeros);
+            vector, mtx_field_pattern, mtx_single, num_entries, num_nonzeros);
         if (err) {
             mtxfile_free(&copy);
             return err;
@@ -785,7 +785,7 @@ int mtxvector_coordinate_from_mtxfile(
     }
     for (int64_t k = 0; k < num_nonzeros; k++) {
         if (vector->indices[k] < 0 ||
-            vector->indices[k] >= size)
+            vector->indices[k] >= num_entries)
         {
             mtxvector_coordinate_free(vector);
             mtxfile_free(&copy);
@@ -812,7 +812,7 @@ int mtxvector_coordinate_to_mtxfile(
     if (vector->field == mtx_field_real) {
         err = mtxfile_alloc_vector_coordinate(
             mtxfile, mtxfile_real, vector->precision,
-            vector->size, vector->num_nonzeros);
+            vector->num_entries, vector->num_nonzeros);
         if (err)
             return err;
         if (vector->precision == mtx_single) {
@@ -835,7 +835,7 @@ int mtxvector_coordinate_to_mtxfile(
     } else if (vector->field == mtx_field_complex) {
         err = mtxfile_alloc_vector_coordinate(
             mtxfile, mtxfile_complex, vector->precision,
-            vector->size, vector->num_nonzeros);
+            vector->num_entries, vector->num_nonzeros);
         if (err)
             return err;
         if (vector->precision == mtx_single) {
@@ -860,7 +860,7 @@ int mtxvector_coordinate_to_mtxfile(
     } else if (vector->field == mtx_field_integer) {
         err = mtxfile_alloc_vector_coordinate(
             mtxfile, mtxfile_integer, vector->precision,
-            vector->size, vector->num_nonzeros);
+            vector->num_entries, vector->num_nonzeros);
         if (err)
             return err;
         if (vector->precision == mtx_single) {
@@ -883,7 +883,7 @@ int mtxvector_coordinate_to_mtxfile(
     } else if (vector->field == mtx_field_pattern) {
         err = mtxfile_alloc_vector_coordinate(
             mtxfile, mtxfile_pattern, mtx_single,
-            vector->size, vector->num_nonzeros);
+            vector->num_entries, vector->num_nonzeros);
         if (err)
             return err;
         struct mtxfile_vector_coordinate_pattern * data =
@@ -1021,7 +1021,7 @@ int mtxvector_coordinate_swap(
         return MTX_ERR_INCOMPATIBLE_FIELD;
     if (x->precision != y->precision)
         return MTX_ERR_INCOMPATIBLE_PRECISION;
-    if (x->size != y->size || x->num_nonzeros != y->num_nonzeros)
+    if (x->num_entries != y->num_entries || x->num_nonzeros != y->num_nonzeros)
         return MTX_ERR_INCOMPATIBLE_SIZE;
     if (x->field == mtx_field_real) {
         if (x->precision == mtx_single) {
@@ -1128,7 +1128,7 @@ int mtxvector_coordinate_copy(
         return MTX_ERR_INCOMPATIBLE_FIELD;
     if (x->precision != y->precision)
         return MTX_ERR_INCOMPATIBLE_PRECISION;
-    if (x->size != y->size || x->num_nonzeros != y->num_nonzeros)
+    if (x->num_entries != y->num_entries || x->num_nonzeros != y->num_nonzeros)
         return MTX_ERR_INCOMPATIBLE_SIZE;
     if (x->field == mtx_field_real) {
         if (x->precision == mtx_single) {
@@ -1480,7 +1480,7 @@ int mtxvector_coordinate_saxpy(
         return MTX_ERR_INCOMPATIBLE_FIELD;
     if (x->precision != y->precision)
         return MTX_ERR_INCOMPATIBLE_PRECISION;
-    if (x->size != y->size || x->num_nonzeros != y->num_nonzeros)
+    if (x->num_entries != y->num_entries || x->num_nonzeros != y->num_nonzeros)
         return MTX_ERR_INCOMPATIBLE_SIZE;
     if (x->field == mtx_field_real) {
         if (x->precision == mtx_single) {
@@ -1580,7 +1580,7 @@ int mtxvector_coordinate_daxpy(
         return MTX_ERR_INCOMPATIBLE_FIELD;
     if (x->precision != y->precision)
         return MTX_ERR_INCOMPATIBLE_PRECISION;
-    if (x->size != y->size || x->num_nonzeros != y->num_nonzeros)
+    if (x->num_entries != y->num_entries || x->num_nonzeros != y->num_nonzeros)
         return MTX_ERR_INCOMPATIBLE_SIZE;
     if (x->field == mtx_field_real) {
         if (x->precision == mtx_single) {
@@ -1680,7 +1680,7 @@ int mtxvector_coordinate_saypx(
         return MTX_ERR_INCOMPATIBLE_FIELD;
     if (x->precision != y->precision)
         return MTX_ERR_INCOMPATIBLE_PRECISION;
-    if (x->size != y->size || x->num_nonzeros != y->num_nonzeros)
+    if (x->num_entries != y->num_entries || x->num_nonzeros != y->num_nonzeros)
         return MTX_ERR_INCOMPATIBLE_SIZE;
     if (x->field == mtx_field_real) {
         if (x->precision == mtx_single) {
@@ -1760,7 +1760,7 @@ int mtxvector_coordinate_daypx(
         return MTX_ERR_INCOMPATIBLE_FIELD;
     if (x->precision != y->precision)
         return MTX_ERR_INCOMPATIBLE_PRECISION;
-    if (x->size != y->size || x->num_nonzeros != y->num_nonzeros)
+    if (x->num_entries != y->num_entries || x->num_nonzeros != y->num_nonzeros)
         return MTX_ERR_INCOMPATIBLE_SIZE;
     if (x->field == mtx_field_real) {
         if (x->precision == mtx_single) {
@@ -1840,7 +1840,7 @@ int mtxvector_coordinate_sdot(
         return MTX_ERR_INCOMPATIBLE_FIELD;
     if (x->precision != y->precision)
         return MTX_ERR_INCOMPATIBLE_PRECISION;
-    if (x->size != y->size || x->num_nonzeros != y->num_nonzeros)
+    if (x->num_entries != y->num_entries || x->num_nonzeros != y->num_nonzeros)
         return MTX_ERR_INCOMPATIBLE_SIZE;
     if (x->field == mtx_field_real) {
         if (x->precision == mtx_single) {
@@ -1914,7 +1914,7 @@ int mtxvector_coordinate_ddot(
         return MTX_ERR_INCOMPATIBLE_FIELD;
     if (x->precision != y->precision)
         return MTX_ERR_INCOMPATIBLE_PRECISION;
-    if (x->size != y->size || x->num_nonzeros != y->num_nonzeros)
+    if (x->num_entries != y->num_entries || x->num_nonzeros != y->num_nonzeros)
         return MTX_ERR_INCOMPATIBLE_SIZE;
     if (x->field == mtx_field_real) {
         if (x->precision == mtx_single) {
@@ -1989,7 +1989,7 @@ int mtxvector_coordinate_cdotu(
         return MTX_ERR_INCOMPATIBLE_FIELD;
     if (x->precision != y->precision)
         return MTX_ERR_INCOMPATIBLE_PRECISION;
-    if (x->size != y->size || x->num_nonzeros != y->num_nonzeros)
+    if (x->num_entries != y->num_entries || x->num_nonzeros != y->num_nonzeros)
         return MTX_ERR_INCOMPATIBLE_SIZE;
     if (x->field == mtx_field_complex) {
         if (x->precision == mtx_single) {
@@ -2052,7 +2052,7 @@ int mtxvector_coordinate_zdotu(
         return MTX_ERR_INCOMPATIBLE_FIELD;
     if (x->precision != y->precision)
         return MTX_ERR_INCOMPATIBLE_PRECISION;
-    if (x->size != y->size || x->num_nonzeros != y->num_nonzeros)
+    if (x->num_entries != y->num_entries || x->num_nonzeros != y->num_nonzeros)
         return MTX_ERR_INCOMPATIBLE_SIZE;
     if (x->field == mtx_field_complex) {
         if (x->precision == mtx_single) {
@@ -2115,7 +2115,7 @@ int mtxvector_coordinate_cdotc(
         return MTX_ERR_INCOMPATIBLE_FIELD;
     if (x->precision != y->precision)
         return MTX_ERR_INCOMPATIBLE_PRECISION;
-    if (x->size != y->size || x->num_nonzeros != y->num_nonzeros)
+    if (x->num_entries != y->num_entries || x->num_nonzeros != y->num_nonzeros)
         return MTX_ERR_INCOMPATIBLE_SIZE;
     if (x->field == mtx_field_complex) {
         if (x->precision == mtx_single) {
@@ -2178,7 +2178,7 @@ int mtxvector_coordinate_zdotc(
         return MTX_ERR_INCOMPATIBLE_FIELD;
     if (x->precision != y->precision)
         return MTX_ERR_INCOMPATIBLE_PRECISION;
-    if (x->size != y->size || x->num_nonzeros != y->num_nonzeros)
+    if (x->num_entries != y->num_entries || x->num_nonzeros != y->num_nonzeros)
         return MTX_ERR_INCOMPATIBLE_SIZE;
     if (x->field == mtx_field_complex) {
         if (x->precision == mtx_single) {
@@ -2709,10 +2709,10 @@ int mtxvector_coordinate_permute(
     int64_t size,
     int64_t * perm)
 {
-    if (offset + size > x->size)
+    if (offset + size > x->num_entries)
         return MTX_ERR_INDEX_OUT_OF_BOUNDS;
     for (int64_t k = 0; k < size; k++) {
-        if (perm[k] < 0 || perm[k] >= x->size)
+        if (perm[k] < 0 || perm[k] >= x->num_entries)
             return MTX_ERR_INDEX_OUT_OF_BOUNDS;
     }
 

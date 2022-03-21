@@ -195,6 +195,8 @@ const char * mtxstrerror(
         return "incompatible field";
     case MTX_ERR_INCOMPATIBLE_PRECISION:
         return "incompatible precision";
+    case MTX_ERR_INCOMPATIBLE_SYMMETRY:
+        return "incompatible symmetry";
     case MTX_ERR_INCOMPATIBLE_SIZE:
         return "incompatible size";
     case MTX_ERR_INCOMPATIBLE_VECTOR_TYPE:

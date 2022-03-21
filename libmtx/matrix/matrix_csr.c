@@ -121,6 +121,12 @@ int mtxmatrix_csr_alloc(
     int num_columns,
     int64_t num_nonzeros)
 {
+    int64_t num_entries;
+    if (__builtin_mul_overflow(num_rows, num_columns, &num_entries)) {
+        errno = EOVERFLOW;
+        return MTX_ERR_ERRNO;
+    }
+
     matrix->rowptr = malloc((num_rows+1) * sizeof(int64_t));
     if (!matrix->rowptr)
         return MTX_ERR_ERRNO;
@@ -204,6 +210,7 @@ int mtxmatrix_csr_alloc(
     matrix->precision = precision;
     matrix->num_rows = num_rows;
     matrix->num_columns = num_columns;
+    matrix->num_entries = num_entries;
     matrix->num_nonzeros = num_nonzeros;
     return MTX_SUCCESS;
 }
@@ -1048,7 +1055,7 @@ static int mtxmatrix_csr_vectorise(
 
     vecx->field = x->field;
     vecx->precision = x->precision;
-    vecx->size = size;
+    vecx->num_entries = x->num_entries;
     vecx->num_nonzeros = x->num_nonzeros;
     vecx->indices = NULL;
     if (x->field == mtx_field_real) {

@@ -206,7 +206,7 @@ int test_mtxvector_from_mtxfile(void)
         const struct mtxvector_coordinate * x_ = &x.storage.coordinate;
         TEST_ASSERT_EQ(mtx_field_real, x_->field);
         TEST_ASSERT_EQ(mtx_single, x_->precision);
-        TEST_ASSERT_EQ(4, x_->size);
+        TEST_ASSERT_EQ(4, x_->num_entries);
         TEST_ASSERT_EQ(3, x_->num_nonzeros);
         TEST_ASSERT_EQ(x_->indices[0], 0);
         TEST_ASSERT_EQ(x_->indices[1], 1);
@@ -234,7 +234,7 @@ int test_mtxvector_from_mtxfile(void)
         const struct mtxvector_coordinate * x_ = &x.storage.coordinate;
         TEST_ASSERT_EQ(mtx_field_real, x_->field);
         TEST_ASSERT_EQ(mtx_double, x_->precision);
-        TEST_ASSERT_EQ(4, x_->size);
+        TEST_ASSERT_EQ(4, x_->num_entries);
         TEST_ASSERT_EQ(3, x_->num_nonzeros);
         TEST_ASSERT_EQ(x_->indices[0], 0);
         TEST_ASSERT_EQ(x_->indices[1], 1);
@@ -262,7 +262,7 @@ int test_mtxvector_from_mtxfile(void)
         const struct mtxvector_coordinate * x_ = &x.storage.coordinate;
         TEST_ASSERT_EQ(mtx_field_complex, x_->field);
         TEST_ASSERT_EQ(mtx_single, x_->precision);
-        TEST_ASSERT_EQ(4, x_->size);
+        TEST_ASSERT_EQ(4, x_->num_entries);
         TEST_ASSERT_EQ(3, x_->num_nonzeros);
         TEST_ASSERT_EQ(x_->indices[0], 0);
         TEST_ASSERT_EQ(x_->indices[1], 1);
@@ -293,7 +293,7 @@ int test_mtxvector_from_mtxfile(void)
         const struct mtxvector_coordinate * x_ = &x.storage.coordinate;
         TEST_ASSERT_EQ(mtx_field_complex, x_->field);
         TEST_ASSERT_EQ(mtx_double, x_->precision);
-        TEST_ASSERT_EQ(4, x_->size);
+        TEST_ASSERT_EQ(4, x_->num_entries);
         TEST_ASSERT_EQ(3, x_->num_nonzeros);
         TEST_ASSERT_EQ(x_->indices[0], 0);
         TEST_ASSERT_EQ(x_->indices[1], 1);
@@ -324,7 +324,7 @@ int test_mtxvector_from_mtxfile(void)
         const struct mtxvector_coordinate * x_ = &x.storage.coordinate;
         TEST_ASSERT_EQ(mtx_field_integer, x_->field);
         TEST_ASSERT_EQ(mtx_single, x_->precision);
-        TEST_ASSERT_EQ(4, x_->size);
+        TEST_ASSERT_EQ(4, x_->num_entries);
         TEST_ASSERT_EQ(3, x_->num_nonzeros);
         TEST_ASSERT_EQ(x_->indices[0], 0);
         TEST_ASSERT_EQ(x_->indices[1], 1);
@@ -352,7 +352,7 @@ int test_mtxvector_from_mtxfile(void)
         const struct mtxvector_coordinate * x_ = &x.storage.coordinate;
         TEST_ASSERT_EQ(mtx_field_integer, x_->field);
         TEST_ASSERT_EQ(mtx_double, x_->precision);
-        TEST_ASSERT_EQ(4, x_->size);
+        TEST_ASSERT_EQ(4, x_->num_entries);
         TEST_ASSERT_EQ(3, x_->num_nonzeros);
         TEST_ASSERT_EQ(x_->indices[0], 0);
         TEST_ASSERT_EQ(x_->indices[1], 1);
@@ -378,7 +378,7 @@ int test_mtxvector_from_mtxfile(void)
         TEST_ASSERT_EQ(mtxvector_coordinate, x.type);
         const struct mtxvector_coordinate * x_ = &x.storage.coordinate;
         TEST_ASSERT_EQ(mtx_field_pattern, x_->field);
-        TEST_ASSERT_EQ(4, x_->size);
+        TEST_ASSERT_EQ(4, x_->num_entries);
         TEST_ASSERT_EQ(3, x_->num_nonzeros);
         TEST_ASSERT_EQ(x_->indices[0], 0);
         TEST_ASSERT_EQ(x_->indices[1], 1);
@@ -814,7 +814,7 @@ int test_mtxvector_partition(void)
             const struct mtxvector_coordinate * x = &dsts[0].storage.coordinate;
             TEST_ASSERT_EQ(mtx_field_integer, x->field);
             TEST_ASSERT_EQ(mtx_double, x->precision);
-            TEST_ASSERT_EQ(6, x->size);
+            TEST_ASSERT_EQ(6, x->num_entries);
             TEST_ASSERT_EQ(3, x->num_nonzeros);
             TEST_ASSERT_EQ(x->indices[0], 0);
             TEST_ASSERT_EQ(x->indices[1], 2);
@@ -829,7 +829,7 @@ int test_mtxvector_partition(void)
             const struct mtxvector_coordinate * x = &dsts[1].storage.coordinate;
             TEST_ASSERT_EQ(mtx_field_integer, x->field);
             TEST_ASSERT_EQ(mtx_double, x->precision);
-            TEST_ASSERT_EQ(6, x->size);
+            TEST_ASSERT_EQ(6, x->num_entries);
             TEST_ASSERT_EQ(2, x->num_nonzeros);
             TEST_ASSERT_EQ(x->indices[0], 0);
             TEST_ASSERT_EQ(x->indices[1], 2);
@@ -920,7 +920,7 @@ int test_mtxvector_join(void)
         TEST_ASSERT_EQ(mtxvector_coordinate, dst.type);
         const struct mtxvector_coordinate * A = &dst.storage.coordinate;
         TEST_ASSERT_EQ(mtx_field_pattern, A->field);
-        TEST_ASSERT_EQ(12, A->size);
+        TEST_ASSERT_EQ(12, A->num_entries);
         TEST_ASSERT_EQ(9, A->num_nonzeros);
         TEST_ASSERT_EQ(A->indices[0], 0);
         TEST_ASSERT_EQ(A->indices[1], 1);

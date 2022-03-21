@@ -60,9 +60,9 @@ struct mtxvector_coordinate
     enum mtxprecision precision;
 
     /**
-     * ‘size’ is the number of vector elements.
+     * ‘num_entries’ is the number of vector elements.
      */
-    int size;
+    int64_t num_entries;
 
     /**
      * ‘num_nonzeros’ is the number of nonzero vector entries for a
@@ -128,7 +128,7 @@ int mtxvector_coordinate_alloc(
     struct mtxvector_coordinate * vector,
     enum mtxfield field,
     enum mtxprecision precision,
-    int size,
+    int64_t num_entries,
     int64_t num_nonzeros);
 
 /**
@@ -138,7 +138,7 @@ int mtxvector_coordinate_alloc(
  */
 int mtxvector_coordinate_init_real_single(
     struct mtxvector_coordinate * vector,
-    int size,
+    int64_t num_entries,
     int64_t num_nonzeros,
     const int * indices,
     const float * data);
@@ -150,7 +150,7 @@ int mtxvector_coordinate_init_real_single(
  */
 int mtxvector_coordinate_init_real_double(
     struct mtxvector_coordinate * vector,
-    int size,
+    int64_t num_entries,
     int64_t num_nonzeros,
     const int * indices,
     const double * data);
@@ -162,7 +162,7 @@ int mtxvector_coordinate_init_real_double(
  */
 int mtxvector_coordinate_init_complex_single(
     struct mtxvector_coordinate * vector,
-    int size,
+    int64_t num_entries,
     int64_t num_nonzeros,
     const int * indices,
     const float (* data)[2]);
@@ -174,7 +174,7 @@ int mtxvector_coordinate_init_complex_single(
  */
 int mtxvector_coordinate_init_complex_double(
     struct mtxvector_coordinate * vector,
-    int size,
+    int64_t num_entries,
     int64_t num_nonzeros,
     const int * indices,
     const double (* data)[2]);
@@ -186,7 +186,7 @@ int mtxvector_coordinate_init_complex_double(
  */
 int mtxvector_coordinate_init_integer_single(
     struct mtxvector_coordinate * vector,
-    int size,
+    int64_t num_entries,
     int64_t num_nonzeros,
     const int * indices,
     const int32_t * data);
@@ -198,7 +198,7 @@ int mtxvector_coordinate_init_integer_single(
  */
 int mtxvector_coordinate_init_integer_double(
     struct mtxvector_coordinate * vector,
-    int size,
+    int64_t num_entries,
     int64_t num_nonzeros,
     const int * indices,
     const int64_t * data);
@@ -209,7 +209,7 @@ int mtxvector_coordinate_init_integer_double(
  */
 int mtxvector_coordinate_init_pattern(
     struct mtxvector_coordinate * vector,
-    int size,
+    int64_t num_entries,
     int64_t num_nonzeros,
     const int * indices);
 

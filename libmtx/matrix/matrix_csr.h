@@ -69,10 +69,21 @@ struct mtxmatrix_csr
     int num_columns;
 
     /**
+     * ‘num_entries’ is the total number of (zero and nonzero) matrix
+     * entries, which is therefore equal to ‘num_rows*num_columns’.
+     */
+    int64_t num_entries;
+
+    /**
      * ‘num_nonzeros’ is the number of nonzero matrix entries for a
      * sparse matrix.
      */
     int64_t num_nonzeros;
+
+    /**
+     * ‘size’ is the number of explicitly stored matrix entries.
+     */
+    int64_t size;
 
     /**
      * ‘rowptr’ is an array containing row pointers. Since nonzeros
