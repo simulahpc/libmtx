@@ -2238,7 +2238,7 @@ int mtxfiledata_rowptr(
                     srcdata->matrix_coordinate_complex_single;
                 float (* dst)[2] = dstdata;
                 for (int64_t k = 0; k < size; k++) {
-                    dst[rowptr[src[k].i-1]++][0] = src[k].a[0];
+                    dst[rowptr[src[k].i-1]  ][0] = src[k].a[0];
                     dst[rowptr[src[k].i-1]++][1] = src[k].a[1];
                 }
             } else if (precision == mtx_double) {
@@ -2246,7 +2246,7 @@ int mtxfiledata_rowptr(
                     srcdata->matrix_coordinate_complex_double;
                 double (* dst)[2] = dstdata;
                 for (int64_t k = 0; k < size; k++) {
-                    dst[rowptr[src[k].i-1]++][0] = src[k].a[0];
+                    dst[rowptr[src[k].i-1]  ][0] = src[k].a[0];
                     dst[rowptr[src[k].i-1]++][1] = src[k].a[1];
                 }
             } else {

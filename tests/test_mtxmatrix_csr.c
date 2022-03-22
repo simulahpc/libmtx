@@ -97,71 +97,79 @@ int test_mtxmatrix_csr_from_mtxfile(void)
         mtxmatrix_free(&x);
         mtxfile_free(&mtxfile);
     }
-    /* { */
-    /*     int num_rows = 3; */
-    /*     int num_columns = 3; */
-    /*     struct mtxfile_matrix_coordinate_real_single mtxdata[] = { */
-    /*         {1,1,1.0f}, {1,3,3.0f}, {2,1,4.0f}, {3,3,9.0f}}; */
-    /*     int64_t size = sizeof(mtxdata) / sizeof(*mtxdata); */
-    /*     struct mtxfile mtxfile; */
-    /*     err = mtxfile_init_matrix_coordinate_real_single( */
-    /*         &mtxfile, mtxfile_symmetric, num_rows, num_columns, size, mtxdata); */
-    /*     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err)); */
-    /*     struct mtxmatrix x; */
-    /*     err = mtxmatrix_from_mtxfile(&x, &mtxfile, mtxmatrix_auto); */
-    /*     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err)); */
-    /*     TEST_ASSERT_EQ(mtxmatrix_coordinate, x.type); */
-    /*     const struct mtxmatrix_coordinate * x_ = &x.storage.coordinate; */
-    /*     TEST_ASSERT_EQ(mtx_field_real, x_->field); */
-    /*     TEST_ASSERT_EQ(mtx_single, x_->precision); */
-    /*     TEST_ASSERT_EQ(mtx_symmetric, x_->symmetry); */
-    /*     TEST_ASSERT_EQ(3, x_->num_rows); */
-    /*     TEST_ASSERT_EQ(3, x_->num_columns); */
-    /*     TEST_ASSERT_EQ(6, x_->num_nonzeros); */
-    /*     TEST_ASSERT_EQ(4, x_->size); */
-    /*     TEST_ASSERT_EQ(x_->rowidx[0], 0); TEST_ASSERT_EQ(x_->colidx[0], 0); */
-    /*     TEST_ASSERT_EQ(x_->rowidx[1], 0); TEST_ASSERT_EQ(x_->colidx[1], 2); */
-    /*     TEST_ASSERT_EQ(x_->rowidx[2], 1); TEST_ASSERT_EQ(x_->colidx[2], 0); */
-    /*     TEST_ASSERT_EQ(x_->rowidx[3], 2); TEST_ASSERT_EQ(x_->colidx[3], 2); */
-    /*     TEST_ASSERT_EQ(x_->data.real_single[0], 1.0f); */
-    /*     TEST_ASSERT_EQ(x_->data.real_single[1], 3.0f); */
-    /*     TEST_ASSERT_EQ(x_->data.real_single[2], 4.0f); */
-    /*     TEST_ASSERT_EQ(x_->data.real_single[3], 9.0f); */
-    /*     mtxmatrix_free(&x); */
-    /*     mtxfile_free(&mtxfile); */
-    /* } */
-    /* { */
-    /*     int num_rows = 3; */
-    /*     int num_columns = 3; */
-    /*     struct mtxfile_matrix_coordinate_real_single mtxdata[] = { */
-    /*         {1,3,3.0f}, {2,1,4.0f}, {3,2,8.0f}}; */
-    /*     int64_t size = sizeof(mtxdata) / sizeof(*mtxdata); */
-    /*     struct mtxfile mtxfile; */
-    /*     err = mtxfile_init_matrix_coordinate_real_single( */
-    /*         &mtxfile, mtxfile_skew_symmetric, num_rows, num_columns, size, */
-    /*         mtxdata); */
-    /*     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err)); */
-    /*     struct mtxmatrix x; */
-    /*     err = mtxmatrix_from_mtxfile(&x, &mtxfile, mtxmatrix_auto); */
-    /*     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err)); */
-    /*     TEST_ASSERT_EQ(mtxmatrix_coordinate, x.type); */
-    /*     const struct mtxmatrix_coordinate * x_ = &x.storage.coordinate; */
-    /*     TEST_ASSERT_EQ(mtx_field_real, x_->field); */
-    /*     TEST_ASSERT_EQ(mtx_single, x_->precision); */
-    /*     TEST_ASSERT_EQ(mtx_skew_symmetric, x_->symmetry); */
-    /*     TEST_ASSERT_EQ(3, x_->num_rows); */
-    /*     TEST_ASSERT_EQ(3, x_->num_columns); */
-    /*     TEST_ASSERT_EQ(6, x_->num_nonzeros); */
-    /*     TEST_ASSERT_EQ(3, x_->size); */
-    /*     TEST_ASSERT_EQ(x_->rowidx[0], 0); TEST_ASSERT_EQ(x_->colidx[0], 2); */
-    /*     TEST_ASSERT_EQ(x_->rowidx[1], 1); TEST_ASSERT_EQ(x_->colidx[1], 0); */
-    /*     TEST_ASSERT_EQ(x_->rowidx[2], 2); TEST_ASSERT_EQ(x_->colidx[2], 1); */
-    /*     TEST_ASSERT_EQ(x_->data.real_single[0], 3.0f); */
-    /*     TEST_ASSERT_EQ(x_->data.real_single[1], 4.0f); */
-    /*     TEST_ASSERT_EQ(x_->data.real_single[2], 8.0f); */
-    /*     mtxmatrix_free(&x); */
-    /*     mtxfile_free(&mtxfile); */
-    /* } */
+    {
+        int num_rows = 3;
+        int num_columns = 3;
+        struct mtxfile_matrix_coordinate_real_single mtxdata[] = {
+            {1,1,1.0f}, {1,3,3.0f}, {2,1,4.0f}, {3,3,9.0f}};
+        int64_t size = sizeof(mtxdata) / sizeof(*mtxdata);
+        struct mtxfile mtxfile;
+        err = mtxfile_init_matrix_coordinate_real_single(
+            &mtxfile, mtxfile_symmetric, num_rows, num_columns, size, mtxdata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        struct mtxmatrix x;
+        err = mtxmatrix_from_mtxfile(&x, &mtxfile, mtxmatrix_csr);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(mtxmatrix_csr, x.type);
+        const struct mtxmatrix_csr * x_ = &x.storage.csr;
+        TEST_ASSERT_EQ(mtx_field_real, x_->field);
+        TEST_ASSERT_EQ(mtx_single, x_->precision);
+        TEST_ASSERT_EQ(mtx_symmetric, x_->symmetry);
+        TEST_ASSERT_EQ(3, x_->num_rows);
+        TEST_ASSERT_EQ(3, x_->num_columns);
+        TEST_ASSERT_EQ(6, x_->num_nonzeros);
+        TEST_ASSERT_EQ(4, x_->size);
+        TEST_ASSERT_EQ(x_->rowptr[0], 0);
+        TEST_ASSERT_EQ(x_->rowptr[1], 2);
+        TEST_ASSERT_EQ(x_->rowptr[2], 3);
+        TEST_ASSERT_EQ(x_->rowptr[3], 4);
+        TEST_ASSERT_EQ(x_->colidx[0], 0);
+        TEST_ASSERT_EQ(x_->colidx[1], 2);
+        TEST_ASSERT_EQ(x_->colidx[2], 0);
+        TEST_ASSERT_EQ(x_->colidx[3], 2);
+        TEST_ASSERT_EQ(x_->data.real_single[0], 1.0f);
+        TEST_ASSERT_EQ(x_->data.real_single[1], 3.0f);
+        TEST_ASSERT_EQ(x_->data.real_single[2], 4.0f);
+        TEST_ASSERT_EQ(x_->data.real_single[3], 9.0f);
+        mtxmatrix_free(&x);
+        mtxfile_free(&mtxfile);
+    }
+    {
+        int num_rows = 3;
+        int num_columns = 3;
+        struct mtxfile_matrix_coordinate_real_single mtxdata[] = {
+            {1,3,3.0f}, {2,1,4.0f}, {3,2,8.0f}};
+        int64_t size = sizeof(mtxdata) / sizeof(*mtxdata);
+        struct mtxfile mtxfile;
+        err = mtxfile_init_matrix_coordinate_real_single(
+            &mtxfile, mtxfile_skew_symmetric, num_rows, num_columns, size,
+            mtxdata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        struct mtxmatrix x;
+        err = mtxmatrix_from_mtxfile(&x, &mtxfile, mtxmatrix_csr);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(mtxmatrix_csr, x.type);
+        const struct mtxmatrix_csr * x_ = &x.storage.csr;
+        TEST_ASSERT_EQ(mtx_field_real, x_->field);
+        TEST_ASSERT_EQ(mtx_single, x_->precision);
+        TEST_ASSERT_EQ(mtx_skew_symmetric, x_->symmetry);
+        TEST_ASSERT_EQ(3, x_->num_rows);
+        TEST_ASSERT_EQ(3, x_->num_columns);
+        TEST_ASSERT_EQ(6, x_->num_nonzeros);
+        TEST_ASSERT_EQ(3, x_->size);
+        TEST_ASSERT_EQ(x_->rowptr[0], 0);
+        TEST_ASSERT_EQ(x_->rowptr[1], 1);
+        TEST_ASSERT_EQ(x_->rowptr[2], 2);
+        TEST_ASSERT_EQ(x_->rowptr[3], 3);
+        TEST_ASSERT_EQ(x_->colidx[0], 2);
+        TEST_ASSERT_EQ(x_->colidx[1], 0);
+        TEST_ASSERT_EQ(x_->colidx[2], 1);
+        TEST_ASSERT_EQ(x_->data.real_single[0], 3.0f);
+        TEST_ASSERT_EQ(x_->data.real_single[1], 4.0f);
+        TEST_ASSERT_EQ(x_->data.real_single[2], 8.0f);
+        mtxmatrix_free(&x);
+        mtxfile_free(&mtxfile);
+    }
 
     {
         int num_rows = 3;
@@ -174,10 +182,10 @@ int test_mtxmatrix_csr_from_mtxfile(void)
             &mtxfile, mtxfile_general, num_rows, num_columns, size, mtxdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxmatrix x;
-        err = mtxmatrix_from_mtxfile(&x, &mtxfile, mtxmatrix_auto);
+        err = mtxmatrix_from_mtxfile(&x, &mtxfile, mtxmatrix_csr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        TEST_ASSERT_EQ(mtxmatrix_coordinate, x.type);
-        const struct mtxmatrix_coordinate * x_ = &x.storage.coordinate;
+        TEST_ASSERT_EQ(mtxmatrix_csr, x.type);
+        const struct mtxmatrix_csr * x_ = &x.storage.csr;
         TEST_ASSERT_EQ(mtx_field_real, x_->field);
         TEST_ASSERT_EQ(mtx_double, x_->precision);
         TEST_ASSERT_EQ(mtx_unsymmetric, x_->symmetry);
@@ -185,10 +193,14 @@ int test_mtxmatrix_csr_from_mtxfile(void)
         TEST_ASSERT_EQ(3, x_->num_columns);
         TEST_ASSERT_EQ(4, x_->num_nonzeros);
         TEST_ASSERT_EQ(4, x_->size);
-        TEST_ASSERT_EQ(x_->rowidx[0], 0); TEST_ASSERT_EQ(x_->colidx[0], 0);
-        TEST_ASSERT_EQ(x_->rowidx[1], 0); TEST_ASSERT_EQ(x_->colidx[1], 2);
-        TEST_ASSERT_EQ(x_->rowidx[2], 1); TEST_ASSERT_EQ(x_->colidx[2], 0);
-        TEST_ASSERT_EQ(x_->rowidx[3], 2); TEST_ASSERT_EQ(x_->colidx[3], 2);
+        TEST_ASSERT_EQ(x_->rowptr[0], 0);
+        TEST_ASSERT_EQ(x_->rowptr[1], 2);
+        TEST_ASSERT_EQ(x_->rowptr[2], 3);
+        TEST_ASSERT_EQ(x_->rowptr[3], 4);
+        TEST_ASSERT_EQ(x_->colidx[0], 0);
+        TEST_ASSERT_EQ(x_->colidx[1], 2);
+        TEST_ASSERT_EQ(x_->colidx[2], 0);
+        TEST_ASSERT_EQ(x_->colidx[3], 2);
         TEST_ASSERT_EQ(x_->data.real_double[0], 1.0);
         TEST_ASSERT_EQ(x_->data.real_double[1], 3.0);
         TEST_ASSERT_EQ(x_->data.real_double[2], 4.0);
@@ -196,71 +208,79 @@ int test_mtxmatrix_csr_from_mtxfile(void)
         mtxmatrix_free(&x);
         mtxfile_free(&mtxfile);
     }
-    /* { */
-    /*     int num_rows = 3; */
-    /*     int num_columns = 3; */
-    /*     struct mtxfile_matrix_coordinate_real_double mtxdata[] = { */
-    /*         {1,1,1.0}, {1,3,3.0}, {2,1,4.0}, {3,3,9.0}}; */
-    /*     int64_t size = sizeof(mtxdata) / sizeof(*mtxdata); */
-    /*     struct mtxfile mtxfile; */
-    /*     err = mtxfile_init_matrix_coordinate_real_double( */
-    /*         &mtxfile, mtxfile_symmetric, num_rows, num_columns, size, mtxdata); */
-    /*     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err)); */
-    /*     struct mtxmatrix x; */
-    /*     err = mtxmatrix_from_mtxfile(&x, &mtxfile, mtxmatrix_auto); */
-    /*     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err)); */
-    /*     TEST_ASSERT_EQ(mtxmatrix_coordinate, x.type); */
-    /*     const struct mtxmatrix_coordinate * x_ = &x.storage.coordinate; */
-    /*     TEST_ASSERT_EQ(mtx_field_real, x_->field); */
-    /*     TEST_ASSERT_EQ(mtx_double, x_->precision); */
-    /*     TEST_ASSERT_EQ(mtx_symmetric, x_->symmetry); */
-    /*     TEST_ASSERT_EQ(3, x_->num_rows); */
-    /*     TEST_ASSERT_EQ(3, x_->num_columns); */
-    /*     TEST_ASSERT_EQ(6, x_->num_nonzeros); */
-    /*     TEST_ASSERT_EQ(4, x_->size); */
-    /*     TEST_ASSERT_EQ(x_->rowidx[0], 0); TEST_ASSERT_EQ(x_->colidx[0], 0); */
-    /*     TEST_ASSERT_EQ(x_->rowidx[1], 0); TEST_ASSERT_EQ(x_->colidx[1], 2); */
-    /*     TEST_ASSERT_EQ(x_->rowidx[2], 1); TEST_ASSERT_EQ(x_->colidx[2], 0); */
-    /*     TEST_ASSERT_EQ(x_->rowidx[3], 2); TEST_ASSERT_EQ(x_->colidx[3], 2); */
-    /*     TEST_ASSERT_EQ(x_->data.real_double[0], 1.0); */
-    /*     TEST_ASSERT_EQ(x_->data.real_double[1], 3.0); */
-    /*     TEST_ASSERT_EQ(x_->data.real_double[2], 4.0); */
-    /*     TEST_ASSERT_EQ(x_->data.real_double[3], 9.0); */
-    /*     mtxmatrix_free(&x); */
-    /*     mtxfile_free(&mtxfile); */
-    /* } */
-    /* { */
-    /*     int num_rows = 3; */
-    /*     int num_columns = 3; */
-    /*     struct mtxfile_matrix_coordinate_real_double mtxdata[] = { */
-    /*         {1,3,3.0}, {2,1,4.0}, {3,2,8.0}}; */
-    /*     int64_t size = sizeof(mtxdata) / sizeof(*mtxdata); */
-    /*     struct mtxfile mtxfile; */
-    /*     err = mtxfile_init_matrix_coordinate_real_double( */
-    /*         &mtxfile, mtxfile_skew_symmetric, num_rows, num_columns, size, */
-    /*         mtxdata); */
-    /*     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err)); */
-    /*     struct mtxmatrix x; */
-    /*     err = mtxmatrix_from_mtxfile(&x, &mtxfile, mtxmatrix_auto); */
-    /*     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err)); */
-    /*     TEST_ASSERT_EQ(mtxmatrix_coordinate, x.type); */
-    /*     const struct mtxmatrix_coordinate * x_ = &x.storage.coordinate; */
-    /*     TEST_ASSERT_EQ(mtx_field_real, x_->field); */
-    /*     TEST_ASSERT_EQ(mtx_double, x_->precision); */
-    /*     TEST_ASSERT_EQ(mtx_skew_symmetric, x_->symmetry); */
-    /*     TEST_ASSERT_EQ(3, x_->num_rows); */
-    /*     TEST_ASSERT_EQ(3, x_->num_columns); */
-    /*     TEST_ASSERT_EQ(6, x_->num_nonzeros); */
-    /*     TEST_ASSERT_EQ(3, x_->size); */
-    /*     TEST_ASSERT_EQ(x_->rowidx[0], 0); TEST_ASSERT_EQ(x_->colidx[0], 2); */
-    /*     TEST_ASSERT_EQ(x_->rowidx[1], 1); TEST_ASSERT_EQ(x_->colidx[1], 0); */
-    /*     TEST_ASSERT_EQ(x_->rowidx[2], 2); TEST_ASSERT_EQ(x_->colidx[2], 1); */
-    /*     TEST_ASSERT_EQ(x_->data.real_double[0], 3.0); */
-    /*     TEST_ASSERT_EQ(x_->data.real_double[1], 4.0); */
-    /*     TEST_ASSERT_EQ(x_->data.real_double[2], 8.0); */
-    /*     mtxmatrix_free(&x); */
-    /*     mtxfile_free(&mtxfile); */
-    /* } */
+    {
+        int num_rows = 3;
+        int num_columns = 3;
+        struct mtxfile_matrix_coordinate_real_double mtxdata[] = {
+            {1,1,1.0}, {1,3,3.0}, {2,1,4.0}, {3,3,9.0}};
+        int64_t size = sizeof(mtxdata) / sizeof(*mtxdata);
+        struct mtxfile mtxfile;
+        err = mtxfile_init_matrix_coordinate_real_double(
+            &mtxfile, mtxfile_symmetric, num_rows, num_columns, size, mtxdata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        struct mtxmatrix x;
+        err = mtxmatrix_from_mtxfile(&x, &mtxfile, mtxmatrix_csr);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(mtxmatrix_csr, x.type);
+        const struct mtxmatrix_csr * x_ = &x.storage.csr;
+        TEST_ASSERT_EQ(mtx_field_real, x_->field);
+        TEST_ASSERT_EQ(mtx_double, x_->precision);
+        TEST_ASSERT_EQ(mtx_symmetric, x_->symmetry);
+        TEST_ASSERT_EQ(3, x_->num_rows);
+        TEST_ASSERT_EQ(3, x_->num_columns);
+        TEST_ASSERT_EQ(6, x_->num_nonzeros);
+        TEST_ASSERT_EQ(4, x_->size);
+        TEST_ASSERT_EQ(x_->rowptr[0], 0);
+        TEST_ASSERT_EQ(x_->rowptr[1], 2);
+        TEST_ASSERT_EQ(x_->rowptr[2], 3);
+        TEST_ASSERT_EQ(x_->rowptr[3], 4);
+        TEST_ASSERT_EQ(x_->colidx[0], 0);
+        TEST_ASSERT_EQ(x_->colidx[1], 2);
+        TEST_ASSERT_EQ(x_->colidx[2], 0);
+        TEST_ASSERT_EQ(x_->colidx[3], 2);
+        TEST_ASSERT_EQ(x_->data.real_double[0], 1.0);
+        TEST_ASSERT_EQ(x_->data.real_double[1], 3.0);
+        TEST_ASSERT_EQ(x_->data.real_double[2], 4.0);
+        TEST_ASSERT_EQ(x_->data.real_double[3], 9.0);
+        mtxmatrix_free(&x);
+        mtxfile_free(&mtxfile);
+    }
+    {
+        int num_rows = 3;
+        int num_columns = 3;
+        struct mtxfile_matrix_coordinate_real_double mtxdata[] = {
+            {1,3,3.0}, {2,1,4.0}, {3,2,8.0}};
+        int64_t size = sizeof(mtxdata) / sizeof(*mtxdata);
+        struct mtxfile mtxfile;
+        err = mtxfile_init_matrix_coordinate_real_double(
+            &mtxfile, mtxfile_skew_symmetric, num_rows, num_columns, size,
+            mtxdata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        struct mtxmatrix x;
+        err = mtxmatrix_from_mtxfile(&x, &mtxfile, mtxmatrix_csr);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(mtxmatrix_csr, x.type);
+        const struct mtxmatrix_csr * x_ = &x.storage.csr;
+        TEST_ASSERT_EQ(mtx_field_real, x_->field);
+        TEST_ASSERT_EQ(mtx_double, x_->precision);
+        TEST_ASSERT_EQ(mtx_skew_symmetric, x_->symmetry);
+        TEST_ASSERT_EQ(3, x_->num_rows);
+        TEST_ASSERT_EQ(3, x_->num_columns);
+        TEST_ASSERT_EQ(6, x_->num_nonzeros);
+        TEST_ASSERT_EQ(3, x_->size);
+        TEST_ASSERT_EQ(x_->rowptr[0], 0);
+        TEST_ASSERT_EQ(x_->rowptr[1], 1);
+        TEST_ASSERT_EQ(x_->rowptr[2], 2);
+        TEST_ASSERT_EQ(x_->rowptr[3], 3);
+        TEST_ASSERT_EQ(x_->colidx[0], 2);
+        TEST_ASSERT_EQ(x_->colidx[1], 0);
+        TEST_ASSERT_EQ(x_->colidx[2], 1);
+        TEST_ASSERT_EQ(x_->data.real_double[0], 3.0);
+        TEST_ASSERT_EQ(x_->data.real_double[1], 4.0);
+        TEST_ASSERT_EQ(x_->data.real_double[2], 8.0);
+        mtxmatrix_free(&x);
+        mtxfile_free(&mtxfile);
+    }
 
     {
         int num_rows = 3;
@@ -274,10 +294,10 @@ int test_mtxmatrix_csr_from_mtxfile(void)
             &mtxfile, mtxfile_general, num_rows, num_columns, size, mtxdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxmatrix x;
-        err = mtxmatrix_from_mtxfile(&x, &mtxfile, mtxmatrix_auto);
+        err = mtxmatrix_from_mtxfile(&x, &mtxfile, mtxmatrix_csr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        TEST_ASSERT_EQ(mtxmatrix_coordinate, x.type);
-        const struct mtxmatrix_coordinate * x_ = &x.storage.coordinate;
+        TEST_ASSERT_EQ(mtxmatrix_csr, x.type);
+        const struct mtxmatrix_csr * x_ = &x.storage.csr;
         TEST_ASSERT_EQ(mtx_field_complex, x_->field);
         TEST_ASSERT_EQ(mtx_single, x_->precision);
         TEST_ASSERT_EQ(mtx_unsymmetric, x_->symmetry);
@@ -285,10 +305,14 @@ int test_mtxmatrix_csr_from_mtxfile(void)
         TEST_ASSERT_EQ(3, x_->num_columns);
         TEST_ASSERT_EQ(4, x_->num_nonzeros);
         TEST_ASSERT_EQ(4, x_->size);
-        TEST_ASSERT_EQ(x_->rowidx[0], 0); TEST_ASSERT_EQ(x_->colidx[0], 0);
-        TEST_ASSERT_EQ(x_->rowidx[1], 0); TEST_ASSERT_EQ(x_->colidx[1], 2);
-        TEST_ASSERT_EQ(x_->rowidx[2], 1); TEST_ASSERT_EQ(x_->colidx[2], 0);
-        TEST_ASSERT_EQ(x_->rowidx[3], 2); TEST_ASSERT_EQ(x_->colidx[3], 2);
+        TEST_ASSERT_EQ(x_->rowptr[0], 0);
+        TEST_ASSERT_EQ(x_->rowptr[1], 2);
+        TEST_ASSERT_EQ(x_->rowptr[2], 3);
+        TEST_ASSERT_EQ(x_->rowptr[3], 4);
+        TEST_ASSERT_EQ(x_->colidx[0], 0);
+        TEST_ASSERT_EQ(x_->colidx[1], 2);
+        TEST_ASSERT_EQ(x_->colidx[2], 0);
+        TEST_ASSERT_EQ(x_->colidx[3], 2);
         TEST_ASSERT_EQ(x_->data.complex_single[0][0], 1.0f);
         TEST_ASSERT_EQ(x_->data.complex_single[0][1],-1.0f);
         TEST_ASSERT_EQ(x_->data.complex_single[1][0], 3.0f);
@@ -300,117 +324,129 @@ int test_mtxmatrix_csr_from_mtxfile(void)
         mtxmatrix_free(&x);
         mtxfile_free(&mtxfile);
     }
-    /* { */
-    /*     int num_rows = 3; */
-    /*     int num_columns = 3; */
-    /*     struct mtxfile_matrix_coordinate_complex_single mtxdata[] = { */
-    /*         {1,1,{1.0f,-1.0f}}, {1,3,{3.0f,-3.0f}}, */
-    /*         {2,1,{4.0f,-4.0f}}, {3,3,{9.0f,-9.0f}}}; */
-    /*     int64_t size = sizeof(mtxdata) / sizeof(*mtxdata); */
-    /*     struct mtxfile mtxfile; */
-    /*     err = mtxfile_init_matrix_coordinate_complex_single( */
-    /*         &mtxfile, mtxfile_symmetric, num_rows, num_columns, size, mtxdata); */
-    /*     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err)); */
-    /*     struct mtxmatrix x; */
-    /*     err = mtxmatrix_from_mtxfile(&x, &mtxfile, mtxmatrix_auto); */
-    /*     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err)); */
-    /*     TEST_ASSERT_EQ(mtxmatrix_coordinate, x.type); */
-    /*     const struct mtxmatrix_coordinate * x_ = &x.storage.coordinate; */
-    /*     TEST_ASSERT_EQ(mtx_field_complex, x_->field); */
-    /*     TEST_ASSERT_EQ(mtx_single, x_->precision); */
-    /*     TEST_ASSERT_EQ(mtx_symmetric, x_->symmetry); */
-    /*     TEST_ASSERT_EQ(3, x_->num_rows); */
-    /*     TEST_ASSERT_EQ(3, x_->num_columns); */
-    /*     TEST_ASSERT_EQ(6, x_->num_nonzeros); */
-    /*     TEST_ASSERT_EQ(4, x_->size); */
-    /*     TEST_ASSERT_EQ(x_->rowidx[0], 0); TEST_ASSERT_EQ(x_->colidx[0], 0); */
-    /*     TEST_ASSERT_EQ(x_->rowidx[1], 0); TEST_ASSERT_EQ(x_->colidx[1], 2); */
-    /*     TEST_ASSERT_EQ(x_->rowidx[2], 1); TEST_ASSERT_EQ(x_->colidx[2], 0); */
-    /*     TEST_ASSERT_EQ(x_->rowidx[3], 2); TEST_ASSERT_EQ(x_->colidx[3], 2); */
-    /*     TEST_ASSERT_EQ(x_->data.complex_single[0][0], 1.0f); */
-    /*     TEST_ASSERT_EQ(x_->data.complex_single[0][1],-1.0f); */
-    /*     TEST_ASSERT_EQ(x_->data.complex_single[1][0], 3.0f); */
-    /*     TEST_ASSERT_EQ(x_->data.complex_single[1][1],-3.0f); */
-    /*     TEST_ASSERT_EQ(x_->data.complex_single[2][0], 4.0f); */
-    /*     TEST_ASSERT_EQ(x_->data.complex_single[2][1],-4.0f); */
-    /*     TEST_ASSERT_EQ(x_->data.complex_single[3][0], 9.0f); */
-    /*     TEST_ASSERT_EQ(x_->data.complex_single[3][1],-9.0f); */
-    /*     mtxmatrix_free(&x); */
-    /*     mtxfile_free(&mtxfile); */
-    /* } */
-    /* { */
-    /*     int num_rows = 3; */
-    /*     int num_columns = 3; */
-    /*     struct mtxfile_matrix_coordinate_complex_single mtxdata[] = { */
-    /*         {1,2,{2.0f,-2.0f}}, {1,3,{3.0f,-3.0f}}, {2,3,{6.0f,-6.0f}}}; */
-    /*     int64_t size = sizeof(mtxdata) / sizeof(*mtxdata); */
-    /*     struct mtxfile mtxfile; */
-    /*     err = mtxfile_init_matrix_coordinate_complex_single( */
-    /*         &mtxfile, mtxfile_skew_symmetric, num_rows, num_columns, size, */
-    /*         mtxdata); */
-    /*     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err)); */
-    /*     struct mtxmatrix x; */
-    /*     err = mtxmatrix_from_mtxfile(&x, &mtxfile, mtxmatrix_auto); */
-    /*     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err)); */
-    /*     TEST_ASSERT_EQ(mtxmatrix_coordinate, x.type); */
-    /*     const struct mtxmatrix_coordinate * x_ = &x.storage.coordinate; */
-    /*     TEST_ASSERT_EQ(mtx_field_complex, x_->field); */
-    /*     TEST_ASSERT_EQ(mtx_single, x_->precision); */
-    /*     TEST_ASSERT_EQ(mtx_skew_symmetric, x_->symmetry); */
-    /*     TEST_ASSERT_EQ(3, x_->num_rows); */
-    /*     TEST_ASSERT_EQ(3, x_->num_columns); */
-    /*     TEST_ASSERT_EQ(6, x_->num_nonzeros); */
-    /*     TEST_ASSERT_EQ(3, x_->size); */
-    /*     TEST_ASSERT_EQ(x_->rowidx[0], 0); TEST_ASSERT_EQ(x_->colidx[0], 1); */
-    /*     TEST_ASSERT_EQ(x_->rowidx[1], 0); TEST_ASSERT_EQ(x_->colidx[1], 2); */
-    /*     TEST_ASSERT_EQ(x_->rowidx[2], 1); TEST_ASSERT_EQ(x_->colidx[2], 2); */
-    /*     TEST_ASSERT_EQ(x_->data.complex_single[0][0], 2.0f); */
-    /*     TEST_ASSERT_EQ(x_->data.complex_single[0][1],-2.0f); */
-    /*     TEST_ASSERT_EQ(x_->data.complex_single[1][0], 3.0f); */
-    /*     TEST_ASSERT_EQ(x_->data.complex_single[1][1],-3.0f); */
-    /*     TEST_ASSERT_EQ(x_->data.complex_single[2][0], 6.0f); */
-    /*     TEST_ASSERT_EQ(x_->data.complex_single[2][1],-6.0f); */
-    /*     mtxmatrix_free(&x); */
-    /*     mtxfile_free(&mtxfile); */
-    /* } */
-    /* { */
-    /*     int num_rows = 3; */
-    /*     int num_columns = 3; */
-    /*     struct mtxfile_matrix_coordinate_complex_single mtxdata[] = { */
-    /*         {1,1,{1.0f,-1.0f}}, {1,3,{3.0f,-3.0f}}, */
-    /*         {2,1,{4.0f,-4.0f}}, {3,3,{9.0f,-9.0f}}}; */
-    /*     int64_t size = sizeof(mtxdata) / sizeof(*mtxdata); */
-    /*     struct mtxfile mtxfile; */
-    /*     err = mtxfile_init_matrix_coordinate_complex_single( */
-    /*         &mtxfile, mtxfile_hermitian, num_rows, num_columns, size, mtxdata); */
-    /*     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err)); */
-    /*     struct mtxmatrix x; */
-    /*     err = mtxmatrix_from_mtxfile(&x, &mtxfile, mtxmatrix_auto); */
-    /*     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err)); */
-    /*     TEST_ASSERT_EQ(mtxmatrix_coordinate, x.type); */
-    /*     const struct mtxmatrix_coordinate * x_ = &x.storage.coordinate; */
-    /*     TEST_ASSERT_EQ(mtx_field_complex, x_->field); */
-    /*     TEST_ASSERT_EQ(mtx_single, x_->precision); */
-    /*     TEST_ASSERT_EQ(mtx_hermitian, x_->symmetry); */
-    /*     TEST_ASSERT_EQ(3, x_->num_rows); */
-    /*     TEST_ASSERT_EQ(3, x_->num_columns); */
-    /*     TEST_ASSERT_EQ(6, x_->num_nonzeros); */
-    /*     TEST_ASSERT_EQ(4, x_->size); */
-    /*     TEST_ASSERT_EQ(x_->rowidx[0], 0); TEST_ASSERT_EQ(x_->colidx[0], 0); */
-    /*     TEST_ASSERT_EQ(x_->rowidx[1], 0); TEST_ASSERT_EQ(x_->colidx[1], 2); */
-    /*     TEST_ASSERT_EQ(x_->rowidx[2], 1); TEST_ASSERT_EQ(x_->colidx[2], 0); */
-    /*     TEST_ASSERT_EQ(x_->rowidx[3], 2); TEST_ASSERT_EQ(x_->colidx[3], 2); */
-    /*     TEST_ASSERT_EQ(x_->data.complex_single[0][0], 1.0f); */
-    /*     TEST_ASSERT_EQ(x_->data.complex_single[0][1],-1.0f); */
-    /*     TEST_ASSERT_EQ(x_->data.complex_single[1][0], 3.0f); */
-    /*     TEST_ASSERT_EQ(x_->data.complex_single[1][1],-3.0f); */
-    /*     TEST_ASSERT_EQ(x_->data.complex_single[2][0], 4.0f); */
-    /*     TEST_ASSERT_EQ(x_->data.complex_single[2][1],-4.0f); */
-    /*     TEST_ASSERT_EQ(x_->data.complex_single[3][0], 9.0f); */
-    /*     TEST_ASSERT_EQ(x_->data.complex_single[3][1],-9.0f); */
-    /*     mtxmatrix_free(&x); */
-    /*     mtxfile_free(&mtxfile); */
-    /* } */
+    {
+        int num_rows = 3;
+        int num_columns = 3;
+        struct mtxfile_matrix_coordinate_complex_single mtxdata[] = {
+            {1,1,{1.0f,-1.0f}}, {1,3,{3.0f,-3.0f}},
+            {2,1,{4.0f,-4.0f}}, {3,3,{9.0f,-9.0f}}};
+        int64_t size = sizeof(mtxdata) / sizeof(*mtxdata);
+        struct mtxfile mtxfile;
+        err = mtxfile_init_matrix_coordinate_complex_single(
+            &mtxfile, mtxfile_symmetric, num_rows, num_columns, size, mtxdata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        struct mtxmatrix x;
+        err = mtxmatrix_from_mtxfile(&x, &mtxfile, mtxmatrix_csr);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(mtxmatrix_csr, x.type);
+        const struct mtxmatrix_csr * x_ = &x.storage.csr;
+        TEST_ASSERT_EQ(mtx_field_complex, x_->field);
+        TEST_ASSERT_EQ(mtx_single, x_->precision);
+        TEST_ASSERT_EQ(mtx_symmetric, x_->symmetry);
+        TEST_ASSERT_EQ(3, x_->num_rows);
+        TEST_ASSERT_EQ(3, x_->num_columns);
+        TEST_ASSERT_EQ(6, x_->num_nonzeros);
+        TEST_ASSERT_EQ(4, x_->size);
+        TEST_ASSERT_EQ(x_->rowptr[0], 0);
+        TEST_ASSERT_EQ(x_->rowptr[1], 2);
+        TEST_ASSERT_EQ(x_->rowptr[2], 3);
+        TEST_ASSERT_EQ(x_->rowptr[3], 4);
+        TEST_ASSERT_EQ(x_->colidx[0], 0);
+        TEST_ASSERT_EQ(x_->colidx[1], 2);
+        TEST_ASSERT_EQ(x_->colidx[2], 0);
+        TEST_ASSERT_EQ(x_->colidx[3], 2);
+        TEST_ASSERT_EQ(x_->data.complex_single[0][0], 1.0f);
+        TEST_ASSERT_EQ(x_->data.complex_single[0][1],-1.0f);
+        TEST_ASSERT_EQ(x_->data.complex_single[1][0], 3.0f);
+        TEST_ASSERT_EQ(x_->data.complex_single[1][1],-3.0f);
+        TEST_ASSERT_EQ(x_->data.complex_single[2][0], 4.0f);
+        TEST_ASSERT_EQ(x_->data.complex_single[2][1],-4.0f);
+        TEST_ASSERT_EQ(x_->data.complex_single[3][0], 9.0f);
+        TEST_ASSERT_EQ(x_->data.complex_single[3][1],-9.0f);
+        mtxmatrix_free(&x);
+        mtxfile_free(&mtxfile);
+    }
+    {
+        int num_rows = 3;
+        int num_columns = 3;
+        struct mtxfile_matrix_coordinate_complex_single mtxdata[] = {
+            {1,2,{2.0f,-2.0f}}, {1,3,{3.0f,-3.0f}}, {2,3,{6.0f,-6.0f}}};
+        int64_t size = sizeof(mtxdata) / sizeof(*mtxdata);
+        struct mtxfile mtxfile;
+        err = mtxfile_init_matrix_coordinate_complex_single(
+            &mtxfile, mtxfile_skew_symmetric, num_rows, num_columns, size,
+            mtxdata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        struct mtxmatrix x;
+        err = mtxmatrix_from_mtxfile(&x, &mtxfile, mtxmatrix_csr);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(mtxmatrix_csr, x.type);
+        const struct mtxmatrix_csr * x_ = &x.storage.csr;
+        TEST_ASSERT_EQ(mtx_field_complex, x_->field);
+        TEST_ASSERT_EQ(mtx_single, x_->precision);
+        TEST_ASSERT_EQ(mtx_skew_symmetric, x_->symmetry);
+        TEST_ASSERT_EQ(3, x_->num_rows);
+        TEST_ASSERT_EQ(3, x_->num_columns);
+        TEST_ASSERT_EQ(6, x_->num_nonzeros);
+        TEST_ASSERT_EQ(3, x_->size);
+        TEST_ASSERT_EQ(x_->rowptr[0], 0);
+        TEST_ASSERT_EQ(x_->rowptr[1], 2);
+        TEST_ASSERT_EQ(x_->rowptr[2], 3);
+        TEST_ASSERT_EQ(x_->rowptr[3], 3);
+        TEST_ASSERT_EQ(x_->colidx[0], 1);
+        TEST_ASSERT_EQ(x_->colidx[1], 2);
+        TEST_ASSERT_EQ(x_->colidx[2], 2);
+        TEST_ASSERT_EQ(x_->data.complex_single[0][0], 2.0f);
+        TEST_ASSERT_EQ(x_->data.complex_single[0][1],-2.0f);
+        TEST_ASSERT_EQ(x_->data.complex_single[1][0], 3.0f);
+        TEST_ASSERT_EQ(x_->data.complex_single[1][1],-3.0f);
+        TEST_ASSERT_EQ(x_->data.complex_single[2][0], 6.0f);
+        TEST_ASSERT_EQ(x_->data.complex_single[2][1],-6.0f);
+        mtxmatrix_free(&x);
+        mtxfile_free(&mtxfile);
+    }
+    {
+        int num_rows = 3;
+        int num_columns = 3;
+        struct mtxfile_matrix_coordinate_complex_single mtxdata[] = {
+            {1,1,{1.0f,-1.0f}}, {1,3,{3.0f,-3.0f}},
+            {2,1,{4.0f,-4.0f}}, {3,3,{9.0f,-9.0f}}};
+        int64_t size = sizeof(mtxdata) / sizeof(*mtxdata);
+        struct mtxfile mtxfile;
+        err = mtxfile_init_matrix_coordinate_complex_single(
+            &mtxfile, mtxfile_hermitian, num_rows, num_columns, size, mtxdata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        struct mtxmatrix x;
+        err = mtxmatrix_from_mtxfile(&x, &mtxfile, mtxmatrix_csr);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(mtxmatrix_csr, x.type);
+        const struct mtxmatrix_csr * x_ = &x.storage.csr;
+        TEST_ASSERT_EQ(mtx_field_complex, x_->field);
+        TEST_ASSERT_EQ(mtx_single, x_->precision);
+        TEST_ASSERT_EQ(mtx_hermitian, x_->symmetry);
+        TEST_ASSERT_EQ(3, x_->num_rows);
+        TEST_ASSERT_EQ(3, x_->num_columns);
+        TEST_ASSERT_EQ(6, x_->num_nonzeros);
+        TEST_ASSERT_EQ(4, x_->size);
+        TEST_ASSERT_EQ(x_->rowptr[0], 0);
+        TEST_ASSERT_EQ(x_->rowptr[1], 2);
+        TEST_ASSERT_EQ(x_->rowptr[2], 3);
+        TEST_ASSERT_EQ(x_->rowptr[3], 4);
+        TEST_ASSERT_EQ(x_->colidx[0], 0);
+        TEST_ASSERT_EQ(x_->colidx[1], 2);
+        TEST_ASSERT_EQ(x_->colidx[2], 0);
+        TEST_ASSERT_EQ(x_->colidx[3], 2);
+        TEST_ASSERT_EQ(x_->data.complex_single[0][0], 1.0f);
+        TEST_ASSERT_EQ(x_->data.complex_single[0][1],-1.0f);
+        TEST_ASSERT_EQ(x_->data.complex_single[1][0], 3.0f);
+        TEST_ASSERT_EQ(x_->data.complex_single[1][1],-3.0f);
+        TEST_ASSERT_EQ(x_->data.complex_single[2][0], 4.0f);
+        TEST_ASSERT_EQ(x_->data.complex_single[2][1],-4.0f);
+        TEST_ASSERT_EQ(x_->data.complex_single[3][0], 9.0f);
+        TEST_ASSERT_EQ(x_->data.complex_single[3][1],-9.0f);
+        mtxmatrix_free(&x);
+        mtxfile_free(&mtxfile);
+    }
 
     {
         int num_rows = 3;
@@ -424,10 +460,10 @@ int test_mtxmatrix_csr_from_mtxfile(void)
             &mtxfile, mtxfile_general, num_rows, num_columns, size, mtxdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxmatrix x;
-        err = mtxmatrix_from_mtxfile(&x, &mtxfile, mtxmatrix_auto);
+        err = mtxmatrix_from_mtxfile(&x, &mtxfile, mtxmatrix_csr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        TEST_ASSERT_EQ(mtxmatrix_coordinate, x.type);
-        const struct mtxmatrix_coordinate * x_ = &x.storage.coordinate;
+        TEST_ASSERT_EQ(mtxmatrix_csr, x.type);
+        const struct mtxmatrix_csr * x_ = &x.storage.csr;
         TEST_ASSERT_EQ(mtx_field_complex, x_->field);
         TEST_ASSERT_EQ(mtx_double, x_->precision);
         TEST_ASSERT_EQ(mtx_unsymmetric, x_->symmetry);
@@ -435,10 +471,14 @@ int test_mtxmatrix_csr_from_mtxfile(void)
         TEST_ASSERT_EQ(3, x_->num_columns);
         TEST_ASSERT_EQ(4, x_->num_nonzeros);
         TEST_ASSERT_EQ(4, x_->size);
-        TEST_ASSERT_EQ(x_->rowidx[0], 0); TEST_ASSERT_EQ(x_->colidx[0], 0);
-        TEST_ASSERT_EQ(x_->rowidx[1], 0); TEST_ASSERT_EQ(x_->colidx[1], 2);
-        TEST_ASSERT_EQ(x_->rowidx[2], 1); TEST_ASSERT_EQ(x_->colidx[2], 0);
-        TEST_ASSERT_EQ(x_->rowidx[3], 2); TEST_ASSERT_EQ(x_->colidx[3], 2);
+        TEST_ASSERT_EQ(x_->rowptr[0], 0);
+        TEST_ASSERT_EQ(x_->rowptr[1], 2);
+        TEST_ASSERT_EQ(x_->rowptr[2], 3);
+        TEST_ASSERT_EQ(x_->rowptr[3], 4);
+        TEST_ASSERT_EQ(x_->colidx[0], 0);
+        TEST_ASSERT_EQ(x_->colidx[1], 2);
+        TEST_ASSERT_EQ(x_->colidx[2], 0);
+        TEST_ASSERT_EQ(x_->colidx[3], 2);
         TEST_ASSERT_EQ(x_->data.complex_double[0][0], 1.0);
         TEST_ASSERT_EQ(x_->data.complex_double[0][1],-1.0);
         TEST_ASSERT_EQ(x_->data.complex_double[1][0], 3.0);
@@ -462,10 +502,10 @@ int test_mtxmatrix_csr_from_mtxfile(void)
             &mtxfile, mtxfile_general, num_rows, num_columns, size, mtxdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxmatrix x;
-        err = mtxmatrix_from_mtxfile(&x, &mtxfile, mtxmatrix_auto);
+        err = mtxmatrix_from_mtxfile(&x, &mtxfile, mtxmatrix_csr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        TEST_ASSERT_EQ(mtxmatrix_coordinate, x.type);
-        const struct mtxmatrix_coordinate * x_ = &x.storage.coordinate;
+        TEST_ASSERT_EQ(mtxmatrix_csr, x.type);
+        const struct mtxmatrix_csr * x_ = &x.storage.csr;
         TEST_ASSERT_EQ(mtx_field_integer, x_->field);
         TEST_ASSERT_EQ(mtx_single, x_->precision);
         TEST_ASSERT_EQ(mtx_unsymmetric, x_->symmetry);
@@ -473,10 +513,14 @@ int test_mtxmatrix_csr_from_mtxfile(void)
         TEST_ASSERT_EQ(3, x_->num_columns);
         TEST_ASSERT_EQ(4, x_->num_nonzeros);
         TEST_ASSERT_EQ(4, x_->size);
-        TEST_ASSERT_EQ(x_->rowidx[0], 0); TEST_ASSERT_EQ(x_->colidx[0], 0);
-        TEST_ASSERT_EQ(x_->rowidx[1], 0); TEST_ASSERT_EQ(x_->colidx[1], 2);
-        TEST_ASSERT_EQ(x_->rowidx[2], 1); TEST_ASSERT_EQ(x_->colidx[2], 0);
-        TEST_ASSERT_EQ(x_->rowidx[3], 2); TEST_ASSERT_EQ(x_->colidx[3], 2);
+        TEST_ASSERT_EQ(x_->rowptr[0], 0);
+        TEST_ASSERT_EQ(x_->rowptr[1], 2);
+        TEST_ASSERT_EQ(x_->rowptr[2], 3);
+        TEST_ASSERT_EQ(x_->rowptr[3], 4);
+        TEST_ASSERT_EQ(x_->colidx[0], 0);
+        TEST_ASSERT_EQ(x_->colidx[1], 2);
+        TEST_ASSERT_EQ(x_->colidx[2], 0);
+        TEST_ASSERT_EQ(x_->colidx[3], 2);
         TEST_ASSERT_EQ(x_->data.integer_single[0], 1);
         TEST_ASSERT_EQ(x_->data.integer_single[1], 3);
         TEST_ASSERT_EQ(x_->data.integer_single[2], 4);
@@ -484,71 +528,79 @@ int test_mtxmatrix_csr_from_mtxfile(void)
         mtxmatrix_free(&x);
         mtxfile_free(&mtxfile);
     }
-    /* { */
-    /*     int num_rows = 3; */
-    /*     int num_columns = 3; */
-    /*     struct mtxfile_matrix_coordinate_integer_single mtxdata[] = { */
-    /*         {1,1,1}, {1,3,3}, {2,1,4}, {3,3,9}}; */
-    /*     int64_t size = sizeof(mtxdata) / sizeof(*mtxdata); */
-    /*     struct mtxfile mtxfile; */
-    /*     err = mtxfile_init_matrix_coordinate_integer_single( */
-    /*         &mtxfile, mtxfile_symmetric, num_rows, num_columns, size, mtxdata); */
-    /*     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err)); */
-    /*     struct mtxmatrix x; */
-    /*     err = mtxmatrix_from_mtxfile(&x, &mtxfile, mtxmatrix_auto); */
-    /*     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err)); */
-    /*     TEST_ASSERT_EQ(mtxmatrix_coordinate, x.type); */
-    /*     const struct mtxmatrix_coordinate * x_ = &x.storage.coordinate; */
-    /*     TEST_ASSERT_EQ(mtx_field_integer, x_->field); */
-    /*     TEST_ASSERT_EQ(mtx_single, x_->precision); */
-    /*     TEST_ASSERT_EQ(mtx_symmetric, x_->symmetry); */
-    /*     TEST_ASSERT_EQ(3, x_->num_rows); */
-    /*     TEST_ASSERT_EQ(3, x_->num_columns); */
-    /*     TEST_ASSERT_EQ(6, x_->num_nonzeros); */
-    /*     TEST_ASSERT_EQ(4, x_->size); */
-    /*     TEST_ASSERT_EQ(x_->rowidx[0], 0); TEST_ASSERT_EQ(x_->colidx[0], 0); */
-    /*     TEST_ASSERT_EQ(x_->rowidx[1], 0); TEST_ASSERT_EQ(x_->colidx[1], 2); */
-    /*     TEST_ASSERT_EQ(x_->rowidx[2], 1); TEST_ASSERT_EQ(x_->colidx[2], 0); */
-    /*     TEST_ASSERT_EQ(x_->rowidx[3], 2); TEST_ASSERT_EQ(x_->colidx[3], 2); */
-    /*     TEST_ASSERT_EQ(x_->data.integer_single[0], 1); */
-    /*     TEST_ASSERT_EQ(x_->data.integer_single[1], 3); */
-    /*     TEST_ASSERT_EQ(x_->data.integer_single[2], 4); */
-    /*     TEST_ASSERT_EQ(x_->data.integer_single[3], 9); */
-    /*     mtxmatrix_free(&x); */
-    /*     mtxfile_free(&mtxfile); */
-    /* } */
-    /* { */
-    /*     int num_rows = 3; */
-    /*     int num_columns = 3; */
-    /*     struct mtxfile_matrix_coordinate_integer_single mtxdata[] = { */
-    /*         {1,2,2}, {1,3,3}, {2,3,6}}; */
-    /*     int64_t size = sizeof(mtxdata) / sizeof(*mtxdata); */
-    /*     struct mtxfile mtxfile; */
-    /*     err = mtxfile_init_matrix_coordinate_integer_single( */
-    /*         &mtxfile, mtxfile_skew_symmetric, num_rows, num_columns, size, */
-    /*         mtxdata); */
-    /*     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err)); */
-    /*     struct mtxmatrix x; */
-    /*     err = mtxmatrix_from_mtxfile(&x, &mtxfile, mtxmatrix_auto); */
-    /*     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err)); */
-    /*     TEST_ASSERT_EQ(mtxmatrix_coordinate, x.type); */
-    /*     const struct mtxmatrix_coordinate * x_ = &x.storage.coordinate; */
-    /*     TEST_ASSERT_EQ(mtx_field_integer, x_->field); */
-    /*     TEST_ASSERT_EQ(mtx_single, x_->precision); */
-    /*     TEST_ASSERT_EQ(mtx_skew_symmetric, x_->symmetry); */
-    /*     TEST_ASSERT_EQ(3, x_->num_rows); */
-    /*     TEST_ASSERT_EQ(3, x_->num_columns); */
-    /*     TEST_ASSERT_EQ(6, x_->num_nonzeros); */
-    /*     TEST_ASSERT_EQ(3, x_->size); */
-    /*     TEST_ASSERT_EQ(x_->rowidx[0], 0); TEST_ASSERT_EQ(x_->colidx[0], 1); */
-    /*     TEST_ASSERT_EQ(x_->rowidx[1], 0); TEST_ASSERT_EQ(x_->colidx[1], 2); */
-    /*     TEST_ASSERT_EQ(x_->rowidx[2], 1); TEST_ASSERT_EQ(x_->colidx[2], 2); */
-    /*     TEST_ASSERT_EQ(x_->data.integer_single[0], 2); */
-    /*     TEST_ASSERT_EQ(x_->data.integer_single[1], 3); */
-    /*     TEST_ASSERT_EQ(x_->data.integer_single[2], 6); */
-    /*     mtxmatrix_free(&x); */
-    /*     mtxfile_free(&mtxfile); */
-    /* } */
+    {
+        int num_rows = 3;
+        int num_columns = 3;
+        struct mtxfile_matrix_coordinate_integer_single mtxdata[] = {
+            {1,1,1}, {1,3,3}, {2,1,4}, {3,3,9}};
+        int64_t size = sizeof(mtxdata) / sizeof(*mtxdata);
+        struct mtxfile mtxfile;
+        err = mtxfile_init_matrix_coordinate_integer_single(
+            &mtxfile, mtxfile_symmetric, num_rows, num_columns, size, mtxdata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        struct mtxmatrix x;
+        err = mtxmatrix_from_mtxfile(&x, &mtxfile, mtxmatrix_csr);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(mtxmatrix_csr, x.type);
+        const struct mtxmatrix_csr * x_ = &x.storage.csr;
+        TEST_ASSERT_EQ(mtx_field_integer, x_->field);
+        TEST_ASSERT_EQ(mtx_single, x_->precision);
+        TEST_ASSERT_EQ(mtx_symmetric, x_->symmetry);
+        TEST_ASSERT_EQ(3, x_->num_rows);
+        TEST_ASSERT_EQ(3, x_->num_columns);
+        TEST_ASSERT_EQ(6, x_->num_nonzeros);
+        TEST_ASSERT_EQ(4, x_->size);
+        TEST_ASSERT_EQ(x_->rowptr[0], 0);
+        TEST_ASSERT_EQ(x_->rowptr[1], 2);
+        TEST_ASSERT_EQ(x_->rowptr[2], 3);
+        TEST_ASSERT_EQ(x_->rowptr[3], 4);
+        TEST_ASSERT_EQ(x_->colidx[0], 0);
+        TEST_ASSERT_EQ(x_->colidx[1], 2);
+        TEST_ASSERT_EQ(x_->colidx[2], 0);
+        TEST_ASSERT_EQ(x_->colidx[3], 2);
+        TEST_ASSERT_EQ(x_->data.integer_single[0], 1);
+        TEST_ASSERT_EQ(x_->data.integer_single[1], 3);
+        TEST_ASSERT_EQ(x_->data.integer_single[2], 4);
+        TEST_ASSERT_EQ(x_->data.integer_single[3], 9);
+        mtxmatrix_free(&x);
+        mtxfile_free(&mtxfile);
+    }
+    {
+        int num_rows = 3;
+        int num_columns = 3;
+        struct mtxfile_matrix_coordinate_integer_single mtxdata[] = {
+            {1,2,2}, {1,3,3}, {2,3,6}};
+        int64_t size = sizeof(mtxdata) / sizeof(*mtxdata);
+        struct mtxfile mtxfile;
+        err = mtxfile_init_matrix_coordinate_integer_single(
+            &mtxfile, mtxfile_skew_symmetric, num_rows, num_columns, size,
+            mtxdata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        struct mtxmatrix x;
+        err = mtxmatrix_from_mtxfile(&x, &mtxfile, mtxmatrix_csr);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(mtxmatrix_csr, x.type);
+        const struct mtxmatrix_csr * x_ = &x.storage.csr;
+        TEST_ASSERT_EQ(mtx_field_integer, x_->field);
+        TEST_ASSERT_EQ(mtx_single, x_->precision);
+        TEST_ASSERT_EQ(mtx_skew_symmetric, x_->symmetry);
+        TEST_ASSERT_EQ(3, x_->num_rows);
+        TEST_ASSERT_EQ(3, x_->num_columns);
+        TEST_ASSERT_EQ(6, x_->num_nonzeros);
+        TEST_ASSERT_EQ(3, x_->size);
+        TEST_ASSERT_EQ(x_->rowptr[0], 0);
+        TEST_ASSERT_EQ(x_->rowptr[1], 2);
+        TEST_ASSERT_EQ(x_->rowptr[2], 3);
+        TEST_ASSERT_EQ(x_->rowptr[3], 3);
+        TEST_ASSERT_EQ(x_->colidx[0], 1);
+        TEST_ASSERT_EQ(x_->colidx[1], 2);
+        TEST_ASSERT_EQ(x_->colidx[2], 2);
+        TEST_ASSERT_EQ(x_->data.integer_single[0], 2);
+        TEST_ASSERT_EQ(x_->data.integer_single[1], 3);
+        TEST_ASSERT_EQ(x_->data.integer_single[2], 6);
+        mtxmatrix_free(&x);
+        mtxfile_free(&mtxfile);
+    }
 
     {
         int num_rows = 3;
@@ -561,10 +613,10 @@ int test_mtxmatrix_csr_from_mtxfile(void)
             &mtxfile, mtxfile_general, num_rows, num_columns, size, mtxdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxmatrix x;
-        err = mtxmatrix_from_mtxfile(&x, &mtxfile, mtxmatrix_auto);
+        err = mtxmatrix_from_mtxfile(&x, &mtxfile, mtxmatrix_csr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        TEST_ASSERT_EQ(mtxmatrix_coordinate, x.type);
-        const struct mtxmatrix_coordinate * x_ = &x.storage.coordinate;
+        TEST_ASSERT_EQ(mtxmatrix_csr, x.type);
+        const struct mtxmatrix_csr * x_ = &x.storage.csr;
         TEST_ASSERT_EQ(mtx_field_integer, x_->field);
         TEST_ASSERT_EQ(mtx_double, x_->precision);
         TEST_ASSERT_EQ(mtx_unsymmetric, x_->symmetry);
@@ -572,10 +624,14 @@ int test_mtxmatrix_csr_from_mtxfile(void)
         TEST_ASSERT_EQ(3, x_->num_columns);
         TEST_ASSERT_EQ(4, x_->num_nonzeros);
         TEST_ASSERT_EQ(4, x_->size);
-        TEST_ASSERT_EQ(x_->rowidx[0], 0); TEST_ASSERT_EQ(x_->colidx[0], 0);
-        TEST_ASSERT_EQ(x_->rowidx[1], 0); TEST_ASSERT_EQ(x_->colidx[1], 2);
-        TEST_ASSERT_EQ(x_->rowidx[2], 1); TEST_ASSERT_EQ(x_->colidx[2], 0);
-        TEST_ASSERT_EQ(x_->rowidx[3], 2); TEST_ASSERT_EQ(x_->colidx[3], 2);
+        TEST_ASSERT_EQ(x_->rowptr[0], 0);
+        TEST_ASSERT_EQ(x_->rowptr[1], 2);
+        TEST_ASSERT_EQ(x_->rowptr[2], 3);
+        TEST_ASSERT_EQ(x_->rowptr[3], 4);
+        TEST_ASSERT_EQ(x_->colidx[0], 0);
+        TEST_ASSERT_EQ(x_->colidx[1], 2);
+        TEST_ASSERT_EQ(x_->colidx[2], 0);
+        TEST_ASSERT_EQ(x_->colidx[3], 2);
         TEST_ASSERT_EQ(x_->data.integer_double[0], 1);
         TEST_ASSERT_EQ(x_->data.integer_double[1], 3);
         TEST_ASSERT_EQ(x_->data.integer_double[2], 4);
@@ -583,71 +639,79 @@ int test_mtxmatrix_csr_from_mtxfile(void)
         mtxmatrix_free(&x);
         mtxfile_free(&mtxfile);
     }
-    /* { */
-    /*     int num_rows = 3; */
-    /*     int num_columns = 3; */
-    /*     struct mtxfile_matrix_coordinate_integer_double mtxdata[] = { */
-    /*         {1,1,1}, {1,3,3}, {2,1,4}, {3,3,9}}; */
-    /*     int64_t size = sizeof(mtxdata) / sizeof(*mtxdata); */
-    /*     struct mtxfile mtxfile; */
-    /*     err = mtxfile_init_matrix_coordinate_integer_double( */
-    /*         &mtxfile, mtxfile_symmetric, num_rows, num_columns, size, mtxdata); */
-    /*     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err)); */
-    /*     struct mtxmatrix x; */
-    /*     err = mtxmatrix_from_mtxfile(&x, &mtxfile, mtxmatrix_auto); */
-    /*     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err)); */
-    /*     TEST_ASSERT_EQ(mtxmatrix_coordinate, x.type); */
-    /*     const struct mtxmatrix_coordinate * x_ = &x.storage.coordinate; */
-    /*     TEST_ASSERT_EQ(mtx_field_integer, x_->field); */
-    /*     TEST_ASSERT_EQ(mtx_double, x_->precision); */
-    /*     TEST_ASSERT_EQ(mtx_symmetric, x_->symmetry); */
-    /*     TEST_ASSERT_EQ(3, x_->num_rows); */
-    /*     TEST_ASSERT_EQ(3, x_->num_columns); */
-    /*     TEST_ASSERT_EQ(6, x_->num_nonzeros); */
-    /*     TEST_ASSERT_EQ(4, x_->size); */
-    /*     TEST_ASSERT_EQ(x_->rowidx[0], 0); TEST_ASSERT_EQ(x_->colidx[0], 0); */
-    /*     TEST_ASSERT_EQ(x_->rowidx[1], 0); TEST_ASSERT_EQ(x_->colidx[1], 2); */
-    /*     TEST_ASSERT_EQ(x_->rowidx[2], 1); TEST_ASSERT_EQ(x_->colidx[2], 0); */
-    /*     TEST_ASSERT_EQ(x_->rowidx[3], 2); TEST_ASSERT_EQ(x_->colidx[3], 2); */
-    /*     TEST_ASSERT_EQ(x_->data.integer_double[0], 1); */
-    /*     TEST_ASSERT_EQ(x_->data.integer_double[1], 3); */
-    /*     TEST_ASSERT_EQ(x_->data.integer_double[2], 4); */
-    /*     TEST_ASSERT_EQ(x_->data.integer_double[3], 9); */
-    /*     mtxmatrix_free(&x); */
-    /*     mtxfile_free(&mtxfile); */
-    /* } */
-    /* { */
-    /*     int num_rows = 3; */
-    /*     int num_columns = 3; */
-    /*     struct mtxfile_matrix_coordinate_integer_double mtxdata[] = { */
-    /*         {1,2,2}, {1,3,3}, {2,3,6}}; */
-    /*     int64_t size = sizeof(mtxdata) / sizeof(*mtxdata); */
-    /*     struct mtxfile mtxfile; */
-    /*     err = mtxfile_init_matrix_coordinate_integer_double( */
-    /*         &mtxfile, mtxfile_skew_symmetric, num_rows, num_columns, size, */
-    /*         mtxdata); */
-    /*     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err)); */
-    /*     struct mtxmatrix x; */
-    /*     err = mtxmatrix_from_mtxfile(&x, &mtxfile, mtxmatrix_auto); */
-    /*     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err)); */
-    /*     TEST_ASSERT_EQ(mtxmatrix_coordinate, x.type); */
-    /*     const struct mtxmatrix_coordinate * x_ = &x.storage.coordinate; */
-    /*     TEST_ASSERT_EQ(mtx_field_integer, x_->field); */
-    /*     TEST_ASSERT_EQ(mtx_double, x_->precision); */
-    /*     TEST_ASSERT_EQ(mtx_skew_symmetric, x_->symmetry); */
-    /*     TEST_ASSERT_EQ(3, x_->num_rows); */
-    /*     TEST_ASSERT_EQ(3, x_->num_columns); */
-    /*     TEST_ASSERT_EQ(6, x_->num_nonzeros); */
-    /*     TEST_ASSERT_EQ(3, x_->size); */
-    /*     TEST_ASSERT_EQ(x_->rowidx[0], 0); TEST_ASSERT_EQ(x_->colidx[0], 1); */
-    /*     TEST_ASSERT_EQ(x_->rowidx[1], 0); TEST_ASSERT_EQ(x_->colidx[1], 2); */
-    /*     TEST_ASSERT_EQ(x_->rowidx[2], 1); TEST_ASSERT_EQ(x_->colidx[2], 2); */
-    /*     TEST_ASSERT_EQ(x_->data.integer_double[0], 2); */
-    /*     TEST_ASSERT_EQ(x_->data.integer_double[1], 3); */
-    /*     TEST_ASSERT_EQ(x_->data.integer_double[2], 6); */
-    /*     mtxmatrix_free(&x); */
-    /*     mtxfile_free(&mtxfile); */
-    /* } */
+    {
+        int num_rows = 3;
+        int num_columns = 3;
+        struct mtxfile_matrix_coordinate_integer_double mtxdata[] = {
+            {1,1,1}, {1,3,3}, {2,1,4}, {3,3,9}};
+        int64_t size = sizeof(mtxdata) / sizeof(*mtxdata);
+        struct mtxfile mtxfile;
+        err = mtxfile_init_matrix_coordinate_integer_double(
+            &mtxfile, mtxfile_symmetric, num_rows, num_columns, size, mtxdata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        struct mtxmatrix x;
+        err = mtxmatrix_from_mtxfile(&x, &mtxfile, mtxmatrix_csr);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(mtxmatrix_csr, x.type);
+        const struct mtxmatrix_csr * x_ = &x.storage.csr;
+        TEST_ASSERT_EQ(mtx_field_integer, x_->field);
+        TEST_ASSERT_EQ(mtx_double, x_->precision);
+        TEST_ASSERT_EQ(mtx_symmetric, x_->symmetry);
+        TEST_ASSERT_EQ(3, x_->num_rows);
+        TEST_ASSERT_EQ(3, x_->num_columns);
+        TEST_ASSERT_EQ(6, x_->num_nonzeros);
+        TEST_ASSERT_EQ(4, x_->size);
+        TEST_ASSERT_EQ(x_->rowptr[0], 0);
+        TEST_ASSERT_EQ(x_->rowptr[1], 2);
+        TEST_ASSERT_EQ(x_->rowptr[2], 3);
+        TEST_ASSERT_EQ(x_->rowptr[3], 4);
+        TEST_ASSERT_EQ(x_->colidx[0], 0);
+        TEST_ASSERT_EQ(x_->colidx[1], 2);
+        TEST_ASSERT_EQ(x_->colidx[2], 0);
+        TEST_ASSERT_EQ(x_->colidx[3], 2);
+        TEST_ASSERT_EQ(x_->data.integer_double[0], 1);
+        TEST_ASSERT_EQ(x_->data.integer_double[1], 3);
+        TEST_ASSERT_EQ(x_->data.integer_double[2], 4);
+        TEST_ASSERT_EQ(x_->data.integer_double[3], 9);
+        mtxmatrix_free(&x);
+        mtxfile_free(&mtxfile);
+    }
+    {
+        int num_rows = 3;
+        int num_columns = 3;
+        struct mtxfile_matrix_coordinate_integer_double mtxdata[] = {
+            {1,2,2}, {1,3,3}, {2,3,6}};
+        int64_t size = sizeof(mtxdata) / sizeof(*mtxdata);
+        struct mtxfile mtxfile;
+        err = mtxfile_init_matrix_coordinate_integer_double(
+            &mtxfile, mtxfile_skew_symmetric, num_rows, num_columns, size,
+            mtxdata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        struct mtxmatrix x;
+        err = mtxmatrix_from_mtxfile(&x, &mtxfile, mtxmatrix_csr);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(mtxmatrix_csr, x.type);
+        const struct mtxmatrix_csr * x_ = &x.storage.csr;
+        TEST_ASSERT_EQ(mtx_field_integer, x_->field);
+        TEST_ASSERT_EQ(mtx_double, x_->precision);
+        TEST_ASSERT_EQ(mtx_skew_symmetric, x_->symmetry);
+        TEST_ASSERT_EQ(3, x_->num_rows);
+        TEST_ASSERT_EQ(3, x_->num_columns);
+        TEST_ASSERT_EQ(6, x_->num_nonzeros);
+        TEST_ASSERT_EQ(3, x_->size);
+        TEST_ASSERT_EQ(x_->rowptr[0], 0);
+        TEST_ASSERT_EQ(x_->rowptr[1], 2);
+        TEST_ASSERT_EQ(x_->rowptr[2], 3);
+        TEST_ASSERT_EQ(x_->rowptr[3], 3);
+        TEST_ASSERT_EQ(x_->colidx[0], 1);
+        TEST_ASSERT_EQ(x_->colidx[1], 2);
+        TEST_ASSERT_EQ(x_->colidx[2], 2);
+        TEST_ASSERT_EQ(x_->data.integer_double[0], 2);
+        TEST_ASSERT_EQ(x_->data.integer_double[1], 3);
+        TEST_ASSERT_EQ(x_->data.integer_double[2], 6);
+        mtxmatrix_free(&x);
+        mtxfile_free(&mtxfile);
+    }
 
     {
         int num_rows = 3;
@@ -660,49 +724,57 @@ int test_mtxmatrix_csr_from_mtxfile(void)
             &mtxfile, mtxfile_general, num_rows, num_columns, size, mtxdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxmatrix x;
-        err = mtxmatrix_from_mtxfile(&x, &mtxfile, mtxmatrix_auto);
+        err = mtxmatrix_from_mtxfile(&x, &mtxfile, mtxmatrix_csr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        TEST_ASSERT_EQ(mtxmatrix_coordinate, x.type);
-        const struct mtxmatrix_coordinate * x_ = &x.storage.coordinate;
+        TEST_ASSERT_EQ(mtxmatrix_csr, x.type);
+        const struct mtxmatrix_csr * x_ = &x.storage.csr;
         TEST_ASSERT_EQ(mtx_field_pattern, x_->field);
         TEST_ASSERT_EQ(3, x_->num_rows);
         TEST_ASSERT_EQ(3, x_->num_columns);
         TEST_ASSERT_EQ(4, x_->num_nonzeros);
         TEST_ASSERT_EQ(4, x_->size);
-        TEST_ASSERT_EQ(x_->rowidx[0], 0); TEST_ASSERT_EQ(x_->colidx[0], 0);
-        TEST_ASSERT_EQ(x_->rowidx[1], 0); TEST_ASSERT_EQ(x_->colidx[1], 2);
-        TEST_ASSERT_EQ(x_->rowidx[2], 1); TEST_ASSERT_EQ(x_->colidx[2], 0);
-        TEST_ASSERT_EQ(x_->rowidx[3], 2); TEST_ASSERT_EQ(x_->colidx[3], 2);
+        TEST_ASSERT_EQ(x_->rowptr[0], 0);
+        TEST_ASSERT_EQ(x_->rowptr[1], 2);
+        TEST_ASSERT_EQ(x_->rowptr[2], 3);
+        TEST_ASSERT_EQ(x_->rowptr[3], 4);
+        TEST_ASSERT_EQ(x_->colidx[0], 0);
+        TEST_ASSERT_EQ(x_->colidx[1], 2);
+        TEST_ASSERT_EQ(x_->colidx[2], 0);
+        TEST_ASSERT_EQ(x_->colidx[3], 2);
         mtxmatrix_free(&x);
         mtxfile_free(&mtxfile);
     }
-    /* { */
-    /*     int num_rows = 3; */
-    /*     int num_columns = 3; */
-    /*     struct mtxfile_matrix_coordinate_pattern mtxdata[] = { */
-    /*         {1,1}, {1,3}, {2,1}, {3,3}}; */
-    /*     int64_t size = sizeof(mtxdata) / sizeof(*mtxdata); */
-    /*     struct mtxfile mtxfile; */
-    /*     err = mtxfile_init_matrix_coordinate_pattern( */
-    /*         &mtxfile, mtxfile_symmetric, num_rows, num_columns, size, mtxdata); */
-    /*     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err)); */
-    /*     struct mtxmatrix x; */
-    /*     err = mtxmatrix_from_mtxfile(&x, &mtxfile, mtxmatrix_auto); */
-    /*     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err)); */
-    /*     TEST_ASSERT_EQ(mtxmatrix_coordinate, x.type); */
-    /*     const struct mtxmatrix_coordinate * x_ = &x.storage.coordinate; */
-    /*     TEST_ASSERT_EQ(mtx_field_pattern, x_->field); */
-    /*     TEST_ASSERT_EQ(3, x_->num_rows); */
-    /*     TEST_ASSERT_EQ(3, x_->num_columns); */
-    /*     TEST_ASSERT_EQ(6, x_->num_nonzeros); */
-    /*     TEST_ASSERT_EQ(4, x_->size); */
-    /*     TEST_ASSERT_EQ(x_->rowidx[0], 0); TEST_ASSERT_EQ(x_->colidx[0], 0); */
-    /*     TEST_ASSERT_EQ(x_->rowidx[1], 0); TEST_ASSERT_EQ(x_->colidx[1], 2); */
-    /*     TEST_ASSERT_EQ(x_->rowidx[2], 1); TEST_ASSERT_EQ(x_->colidx[2], 0); */
-    /*     TEST_ASSERT_EQ(x_->rowidx[3], 2); TEST_ASSERT_EQ(x_->colidx[3], 2); */
-    /*     mtxmatrix_free(&x); */
-    /*     mtxfile_free(&mtxfile); */
-    /* } */
+    {
+        int num_rows = 3;
+        int num_columns = 3;
+        struct mtxfile_matrix_coordinate_pattern mtxdata[] = {
+            {1,1}, {1,3}, {2,1}, {3,3}};
+        int64_t size = sizeof(mtxdata) / sizeof(*mtxdata);
+        struct mtxfile mtxfile;
+        err = mtxfile_init_matrix_coordinate_pattern(
+            &mtxfile, mtxfile_symmetric, num_rows, num_columns, size, mtxdata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        struct mtxmatrix x;
+        err = mtxmatrix_from_mtxfile(&x, &mtxfile, mtxmatrix_csr);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(mtxmatrix_csr, x.type);
+        const struct mtxmatrix_csr * x_ = &x.storage.csr;
+        TEST_ASSERT_EQ(mtx_field_pattern, x_->field);
+        TEST_ASSERT_EQ(3, x_->num_rows);
+        TEST_ASSERT_EQ(3, x_->num_columns);
+        TEST_ASSERT_EQ(6, x_->num_nonzeros);
+        TEST_ASSERT_EQ(4, x_->size);
+        TEST_ASSERT_EQ(x_->rowptr[0], 0);
+        TEST_ASSERT_EQ(x_->rowptr[1], 2);
+        TEST_ASSERT_EQ(x_->rowptr[2], 3);
+        TEST_ASSERT_EQ(x_->rowptr[3], 4);
+        TEST_ASSERT_EQ(x_->colidx[0], 0);
+        TEST_ASSERT_EQ(x_->colidx[1], 2);
+        TEST_ASSERT_EQ(x_->colidx[2], 0);
+        TEST_ASSERT_EQ(x_->colidx[3], 2);
+        mtxmatrix_free(&x);
+        mtxfile_free(&mtxfile);
+    }
     return TEST_SUCCESS;
 }
 
@@ -748,70 +820,74 @@ int test_mtxmatrix_csr_to_mtxfile(void)
         mtxfile_free(&mtxfile);
         mtxmatrix_free(&A);
     }
-    /* { */
-    /*     int num_rows = 3; */
-    /*     int num_columns = 3; */
-    /*     int nnz = 4; */
-    /*     int rowidx[] = {1, 1, 2, 3}; */
-    /*     int colidx[] = {1, 3, 3, 3}; */
-    /*     float Adata[] = {1.0f, 3.0f, 6.0f, 9.0f}; */
-    /*     struct mtxmatrix A; */
-    /*     err = mtxmatrix_init_coordinate_real_single( */
-    /*         &A, mtx_symmetric, num_rows, num_columns, nnz, rowidx, colidx, Adata); */
-    /*     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err)); */
-    /*     struct mtxfile mtxfile; */
-    /*     err = mtxmatrix_to_mtxfile(&mtxfile, &A, mtxfile_coordinate); */
-    /*     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err)); */
-    /*     TEST_ASSERT_EQ(mtxfile_matrix, mtxfile.header.object); */
-    /*     TEST_ASSERT_EQ(mtxfile_coordinate, mtxfile.header.format); */
-    /*     TEST_ASSERT_EQ(mtxfile_real, mtxfile.header.field); */
-    /*     TEST_ASSERT_EQ(mtxfile_symmetric, mtxfile.header.symmetry); */
-    /*     TEST_ASSERT_EQ(num_rows, mtxfile.size.num_rows); */
-    /*     TEST_ASSERT_EQ(num_columns, mtxfile.size.num_columns); */
-    /*     TEST_ASSERT_EQ(nnz, mtxfile.size.num_nonzeros); */
-    /*     TEST_ASSERT_EQ(mtx_single, mtxfile.precision); */
-    /*     const struct mtxfile_matrix_coordinate_real_single * data = */
-    /*         mtxfile.data.matrix_coordinate_real_single; */
-    /*     for (int64_t k = 0; k < nnz; k++) { */
-    /*         TEST_ASSERT_EQ(rowidx[k]+1, data[k].i); */
-    /*         TEST_ASSERT_EQ(colidx[k]+1, data[k].j); */
-    /*         TEST_ASSERT_EQ(Adata[k], data[k].a); */
-    /*     } */
-    /*     mtxfile_free(&mtxfile); */
-    /*     mtxmatrix_free(&A); */
-    /* } */
-    /* { */
-    /*     int num_rows = 3; */
-    /*     int num_columns = 3; */
-    /*     int nnz = 3; */
-    /*     int rowidx[] = {1, 1, 2}; */
-    /*     int colidx[] = {2, 3, 3}; */
-    /*     float Adata[] = {2.0f, 3.0f, 6.0f}; */
-    /*     struct mtxmatrix A; */
-    /*     err = mtxmatrix_init_coordinate_real_single( */
-    /*         &A, mtx_skew_symmetric, num_rows, num_columns, nnz, rowidx, colidx, Adata); */
-    /*     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err)); */
-    /*     struct mtxfile mtxfile; */
-    /*     err = mtxmatrix_to_mtxfile(&mtxfile, &A, mtxfile_coordinate); */
-    /*     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err)); */
-    /*     TEST_ASSERT_EQ(mtxfile_matrix, mtxfile.header.object); */
-    /*     TEST_ASSERT_EQ(mtxfile_coordinate, mtxfile.header.format); */
-    /*     TEST_ASSERT_EQ(mtxfile_real, mtxfile.header.field); */
-    /*     TEST_ASSERT_EQ(mtxfile_skew_symmetric, mtxfile.header.symmetry); */
-    /*     TEST_ASSERT_EQ(num_rows, mtxfile.size.num_rows); */
-    /*     TEST_ASSERT_EQ(num_columns, mtxfile.size.num_columns); */
-    /*     TEST_ASSERT_EQ(nnz, mtxfile.size.num_nonzeros); */
-    /*     TEST_ASSERT_EQ(mtx_single, mtxfile.precision); */
-    /*     const struct mtxfile_matrix_coordinate_real_single * data = */
-    /*         mtxfile.data.matrix_coordinate_real_single; */
-    /*     for (int64_t k = 0; k < nnz; k++) { */
-    /*         TEST_ASSERT_EQ(rowidx[k]+1, data[k].i); */
-    /*         TEST_ASSERT_EQ(colidx[k]+1, data[k].j); */
-    /*         TEST_ASSERT_EQ(Adata[k], data[k].a); */
-    /*     } */
-    /*     mtxfile_free(&mtxfile); */
-    /*     mtxmatrix_free(&A); */
-    /* } */
+    {
+        int num_rows = 3;
+        int num_columns = 3;
+        int nnz = 4;
+        int64_t rowptr[] = {0, 2, 3, 4};
+        int colidx[] = {1, 3, 3, 3};
+        float Adata[] = {1.0f, 3.0f, 6.0f, 9.0f};
+        struct mtxmatrix A;
+        err = mtxmatrix_init_csr_real_single(
+            &A, mtx_symmetric, num_rows, num_columns, rowptr, colidx, Adata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        struct mtxfile mtxfile;
+        err = mtxmatrix_to_mtxfile(&mtxfile, &A, mtxfile_coordinate);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(mtxfile_matrix, mtxfile.header.object);
+        TEST_ASSERT_EQ(mtxfile_coordinate, mtxfile.header.format);
+        TEST_ASSERT_EQ(mtxfile_real, mtxfile.header.field);
+        TEST_ASSERT_EQ(mtxfile_symmetric, mtxfile.header.symmetry);
+        TEST_ASSERT_EQ(num_rows, mtxfile.size.num_rows);
+        TEST_ASSERT_EQ(num_columns, mtxfile.size.num_columns);
+        TEST_ASSERT_EQ(nnz, mtxfile.size.num_nonzeros);
+        TEST_ASSERT_EQ(mtx_single, mtxfile.precision);
+        const struct mtxfile_matrix_coordinate_real_single * data =
+            mtxfile.data.matrix_coordinate_real_single;
+        for (int i = 0; i < num_rows; i++) {
+            for (int64_t k = rowptr[i]; k < rowptr[i+1]; k++) {
+                TEST_ASSERT_EQ(i+1, data[k].i);
+                TEST_ASSERT_EQ(colidx[k]+1, data[k].j);
+                TEST_ASSERT_EQ(Adata[k], data[k].a);
+            }
+        }
+        mtxfile_free(&mtxfile);
+        mtxmatrix_free(&A);
+    }
+    {
+        int num_rows = 3;
+        int num_columns = 3;
+        int nnz = 3;
+        int64_t rowptr[] = {0, 2, 3, 3};
+        int colidx[] = {2, 3, 3};
+        float Adata[] = {2.0f, 3.0f, 6.0f};
+        struct mtxmatrix A;
+        err = mtxmatrix_init_csr_real_single(
+            &A, mtx_skew_symmetric, num_rows, num_columns, rowptr, colidx, Adata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        struct mtxfile mtxfile;
+        err = mtxmatrix_to_mtxfile(&mtxfile, &A, mtxfile_coordinate);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(mtxfile_matrix, mtxfile.header.object);
+        TEST_ASSERT_EQ(mtxfile_coordinate, mtxfile.header.format);
+        TEST_ASSERT_EQ(mtxfile_real, mtxfile.header.field);
+        TEST_ASSERT_EQ(mtxfile_skew_symmetric, mtxfile.header.symmetry);
+        TEST_ASSERT_EQ(num_rows, mtxfile.size.num_rows);
+        TEST_ASSERT_EQ(num_columns, mtxfile.size.num_columns);
+        TEST_ASSERT_EQ(nnz, mtxfile.size.num_nonzeros);
+        TEST_ASSERT_EQ(mtx_single, mtxfile.precision);
+        const struct mtxfile_matrix_coordinate_real_single * data =
+            mtxfile.data.matrix_coordinate_real_single;
+        for (int i = 0; i < num_rows; i++) {
+            for (int64_t k = rowptr[i]; k < rowptr[i+1]; k++) {
+                TEST_ASSERT_EQ(i+1, data[k].i);
+                TEST_ASSERT_EQ(colidx[k]+1, data[k].j);
+                TEST_ASSERT_EQ(Adata[k], data[k].a);
+            }
+        }
+        mtxfile_free(&mtxfile);
+        mtxmatrix_free(&A);
+    }
 
     {
         int num_rows = 3;
@@ -884,39 +960,41 @@ int test_mtxmatrix_csr_to_mtxfile(void)
         mtxmatrix_free(&A);
     }
 
-    /* { */
-    /*     int num_rows = 3; */
-    /*     int num_columns = 3; */
-    /*     int nnz = 4; */
-    /*     int rowidx[] = {1, 1, 2, 3}; */
-    /*     int colidx[] = {2, 3, 3, 3}; */
-    /*     float Adata[][2] = {{2.0f,-2.0f}, {3.0f,-3.0f}, {6.0f,-6.0f}, {9.0f,-9.0f}}; */
-    /*     struct mtxmatrix A; */
-    /*     err = mtxmatrix_init_coordinate_complex_single( */
-    /*         &A, mtx_hermitian, num_rows, num_columns, nnz, rowidx, colidx, Adata); */
-    /*     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err)); */
-    /*     struct mtxfile mtxfile; */
-    /*     err = mtxmatrix_to_mtxfile(&mtxfile, &A, mtxfile_coordinate); */
-    /*     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err)); */
-    /*     TEST_ASSERT_EQ(mtxfile_matrix, mtxfile.header.object); */
-    /*     TEST_ASSERT_EQ(mtxfile_coordinate, mtxfile.header.format); */
-    /*     TEST_ASSERT_EQ(mtxfile_complex, mtxfile.header.field); */
-    /*     TEST_ASSERT_EQ(mtxfile_hermitian, mtxfile.header.symmetry); */
-    /*     TEST_ASSERT_EQ(num_rows, mtxfile.size.num_rows); */
-    /*     TEST_ASSERT_EQ(num_columns, mtxfile.size.num_columns); */
-    /*     TEST_ASSERT_EQ(nnz, mtxfile.size.num_nonzeros); */
-    /*     TEST_ASSERT_EQ(mtx_single, mtxfile.precision); */
-    /*     const struct mtxfile_matrix_coordinate_complex_single * data = */
-    /*         mtxfile.data.matrix_coordinate_complex_single; */
-    /*     for (int64_t k = 0; k < nnz; k++) { */
-    /*         TEST_ASSERT_EQ(rowidx[k]+1, data[k].i); */
-    /*         TEST_ASSERT_EQ(colidx[k]+1, data[k].j); */
-    /*         TEST_ASSERT_EQ(Adata[k][0], data[k].a[0]); */
-    /*         TEST_ASSERT_EQ(Adata[k][1], data[k].a[1]); */
-    /*     } */
-    /*     mtxfile_free(&mtxfile); */
-    /*     mtxmatrix_free(&A); */
-    /* } */
+    {
+        int num_rows = 3;
+        int num_columns = 3;
+        int nnz = 4;
+        int64_t rowptr[] = {0, 2, 3, 4};
+        int colidx[] = {2, 3, 3, 3};
+        float Adata[][2] = {{2.0f,-2.0f}, {3.0f,-3.0f}, {6.0f,-6.0f}, {9.0f,-9.0f}};
+        struct mtxmatrix A;
+        err = mtxmatrix_init_csr_complex_single(
+            &A, mtx_hermitian, num_rows, num_columns, rowptr, colidx, Adata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        struct mtxfile mtxfile;
+        err = mtxmatrix_to_mtxfile(&mtxfile, &A, mtxfile_coordinate);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(mtxfile_matrix, mtxfile.header.object);
+        TEST_ASSERT_EQ(mtxfile_coordinate, mtxfile.header.format);
+        TEST_ASSERT_EQ(mtxfile_complex, mtxfile.header.field);
+        TEST_ASSERT_EQ(mtxfile_hermitian, mtxfile.header.symmetry);
+        TEST_ASSERT_EQ(num_rows, mtxfile.size.num_rows);
+        TEST_ASSERT_EQ(num_columns, mtxfile.size.num_columns);
+        TEST_ASSERT_EQ(nnz, mtxfile.size.num_nonzeros);
+        TEST_ASSERT_EQ(mtx_single, mtxfile.precision);
+        const struct mtxfile_matrix_coordinate_complex_single * data =
+            mtxfile.data.matrix_coordinate_complex_single;
+        for (int i = 0; i < num_rows; i++) {
+            for (int64_t k = rowptr[i]; k < rowptr[i+1]; k++) {
+                TEST_ASSERT_EQ(i+1, data[k].i);
+                TEST_ASSERT_EQ(colidx[k]+1, data[k].j);
+                TEST_ASSERT_EQ(Adata[k][0], data[k].a[0]);
+                TEST_ASSERT_EQ(Adata[k][1], data[k].a[1]);
+            }
+        }
+        mtxfile_free(&mtxfile);
+        mtxmatrix_free(&A);
+    }
 
     {
         int num_rows = 3;

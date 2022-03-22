@@ -212,8 +212,27 @@ int mtxmatrix_csr_alloc(
     matrix->num_rows = num_rows;
     matrix->num_columns = num_columns;
     matrix->num_entries = num_entries;
-    matrix->num_nonzeros = size;
+    matrix->num_nonzeros = -1;
     matrix->size = size;
+    return MTX_SUCCESS;
+}
+
+static int mtxmatrix_csr_count_nonzeros(
+    struct mtxmatrix_csr * matrix)
+{
+    if (matrix->symmetry == mtx_unsymmetric) {
+        matrix->num_nonzeros = matrix->size;
+    } else if (matrix->symmetry == mtx_skew_symmetric) {
+        matrix->num_nonzeros = 2*matrix->size;
+    } else if (matrix->symmetry == mtx_symmetric ||
+               matrix->symmetry == mtx_hermitian)
+    {
+        matrix->num_nonzeros = 0;
+        for (int i = 0; i < matrix->num_rows; i++) {
+            for (int64_t k = matrix->rowptr[i]; k < matrix->rowptr[i+1]; k++)
+                matrix->num_nonzeros += (i == matrix->colidx[k]) ? 1 : 2;
+        }
+    }
     return MTX_SUCCESS;
 }
 
@@ -244,6 +263,8 @@ int mtxmatrix_csr_init_real_single(
         matrix->colidx[k] = colidx[k];
         matrix->data.real_single[k] = data[k];
     }
+    err = mtxmatrix_csr_count_nonzeros(matrix);
+    if (err) return err;
     return MTX_SUCCESS;
 }
 
@@ -274,6 +295,8 @@ int mtxmatrix_csr_init_real_double(
         matrix->colidx[k] = colidx[k];
         matrix->data.real_double[k] = data[k];
     }
+    err = mtxmatrix_csr_count_nonzeros(matrix);
+    if (err) return err;
     return MTX_SUCCESS;
 }
 
@@ -305,6 +328,8 @@ int mtxmatrix_csr_init_complex_single(
         matrix->data.complex_single[k][0] = data[k][0];
         matrix->data.complex_single[k][1] = data[k][1];
     }
+    err = mtxmatrix_csr_count_nonzeros(matrix);
+    if (err) return err;
     return MTX_SUCCESS;
 }
 
@@ -336,6 +361,8 @@ int mtxmatrix_csr_init_complex_double(
         matrix->data.complex_double[k][0] = data[k][0];
         matrix->data.complex_double[k][1] = data[k][1];
     }
+    err = mtxmatrix_csr_count_nonzeros(matrix);
+    if (err) return err;
     return MTX_SUCCESS;
 }
 
@@ -366,6 +393,8 @@ int mtxmatrix_csr_init_integer_single(
         matrix->colidx[k] = colidx[k];
         matrix->data.integer_single[k] = data[k];
     }
+    err = mtxmatrix_csr_count_nonzeros(matrix);
+    if (err) return err;
     return MTX_SUCCESS;
 }
 
@@ -396,6 +425,8 @@ int mtxmatrix_csr_init_integer_double(
         matrix->colidx[k] = colidx[k];
         matrix->data.integer_double[k] = data[k];
     }
+    err = mtxmatrix_csr_count_nonzeros(matrix);
+    if (err) return err;
     return MTX_SUCCESS;
 }
 
@@ -423,6 +454,8 @@ int mtxmatrix_csr_init_pattern(
         matrix->rowptr[i] = rowptr[i];
     for (int64_t k = 0; k < size; k++)
         matrix->colidx[k] = colidx[k];
+    err = mtxmatrix_csr_count_nonzeros(matrix);
+    if (err) return err;
     return MTX_SUCCESS;
 }
 
@@ -491,90 +524,6 @@ int mtxmatrix_csr_alloc_column_vector(
  */
 
 /**
- * ‘mtxfile_num_offdiagonal_data_lines()’ counts the number of data
- * lines that are not on the main diagonal of a matrix in the Matrix
- * Market format.
- */
-static int mtxfile_num_offdiagonal_data_lines(
-    const struct mtxfile * mtxfile,
-    int64_t * num_offdiagonal_data_lines)
-{
-    int err;
-    if (mtxfile->header.object != mtxfile_matrix)
-        return MTX_ERR_INCOMPATIBLE_MTX_OBJECT;
-    if (mtxfile->header.format != mtxfile_coordinate)
-        return MTX_ERR_INCOMPATIBLE_MTX_FORMAT;
-
-    int64_t size = mtxfile->size.num_nonzeros;
-    *num_offdiagonal_data_lines = 0;
-    if (mtxfile->header.field == mtxfile_real) {
-        if (mtxfile->precision == mtx_single) {
-            const struct mtxfile_matrix_coordinate_real_single * data =
-                mtxfile->data.matrix_coordinate_real_single;
-            for (int64_t k = 0; k < size; k++) {
-                if (data[k].i != data[k].j)
-                    (*num_offdiagonal_data_lines)++;
-            }
-        } else if (mtxfile->precision == mtx_double) {
-            const struct mtxfile_matrix_coordinate_real_double * data =
-                mtxfile->data.matrix_coordinate_real_double;
-            for (int64_t k = 0; k < size; k++) {
-                if (data[k].i != data[k].j)
-                    (*num_offdiagonal_data_lines)++;
-            }
-        } else {
-            return MTX_ERR_INVALID_PRECISION;
-        }
-    } else if (mtxfile->header.field == mtxfile_complex) {
-        if (mtxfile->precision == mtx_single) {
-            const struct mtxfile_matrix_coordinate_complex_single * data =
-                mtxfile->data.matrix_coordinate_complex_single;
-            for (int64_t k = 0; k < size; k++) {
-                if (data[k].i != data[k].j)
-                    (*num_offdiagonal_data_lines)++;
-            }
-        } else if (mtxfile->precision == mtx_double) {
-            const struct mtxfile_matrix_coordinate_complex_double * data =
-                mtxfile->data.matrix_coordinate_complex_double;
-            for (int64_t k = 0; k < size; k++) {
-                if (data[k].i != data[k].j)
-                    (*num_offdiagonal_data_lines)++;
-            }
-        } else {
-            return MTX_ERR_INVALID_PRECISION;
-        }
-    } else if (mtxfile->header.field == mtxfile_integer) {
-        if (mtxfile->precision == mtx_single) {
-            const struct mtxfile_matrix_coordinate_integer_single * data =
-                mtxfile->data.matrix_coordinate_integer_single;
-            for (int64_t k = 0; k < size; k++) {
-                if (data[k].i != data[k].j)
-                    (*num_offdiagonal_data_lines)++;
-            }
-        } else if (mtxfile->precision == mtx_double) {
-            const struct mtxfile_matrix_coordinate_integer_double * data =
-                mtxfile->data.matrix_coordinate_integer_double;
-            for (int64_t k = 0; k < size; k++) {
-                if (data[k].i != data[k].j)
-                    (*num_offdiagonal_data_lines)++;
-            }
-        } else {
-            return MTX_ERR_INVALID_PRECISION;
-        }
-    } else if (mtxfile->header.field == mtxfile_pattern) {
-        const struct mtxfile_matrix_coordinate_pattern * data =
-            mtxfile->data.matrix_coordinate_pattern;
-        for (int64_t k = 0; k < size; k++) {
-            if (data[k].i != data[k].j)
-                (*num_offdiagonal_data_lines)++;
-        }
-    } else {
-        return MTX_ERR_INVALID_MTX_FIELD;
-    }
-    return MTX_SUCCESS;
-}
-
-/**
  * ‘mtxmatrix_csr_from_mtxfile()’ converts a matrix in Matrix Market
  * format to a matrix.
  */
@@ -590,13 +539,11 @@ int mtxmatrix_csr_from_mtxfile(
     if (mtxfile->header.format != mtxfile_coordinate)
         return MTX_ERR_INCOMPATIBLE_MTX_FORMAT;
 
-    /* TODO: add support for symmetric matrices */
-    if (mtxfile->header.symmetry == mtxfile_symmetric ||
-        mtxfile->header.symmetry == mtxfile_skew_symmetric ||
-        mtxfile->header.symmetry == mtxfile_hermitian)
-        return MTX_ERR_INCOMPATIBLE_MTX_SYMMETRY;
+    enum mtxsymmetry symmetry;
+    err = mtxfilesymmetry_to_mtxsymmetry(
+        &symmetry, mtxfile->header.symmetry);
+    if (err) return err;
 
-    enum mtxsymmetry symmetry = mtx_unsymmetric;
     int num_rows = mtxfile->size.num_rows;
     int num_columns = mtxfile->size.num_columns;
     int64_t size = mtxfile->size.num_nonzeros;
@@ -698,6 +645,9 @@ int mtxmatrix_csr_from_mtxfile(
     }
     for (int64_t k = 0; k < matrix->size; k++)
         matrix->colidx[k]--;
+
+    err = mtxmatrix_csr_count_nonzeros(matrix);
+    if (err) return err;
     return MTX_SUCCESS;
 }
 
@@ -710,13 +660,17 @@ int mtxmatrix_csr_to_mtxfile(
     const struct mtxmatrix_csr * matrix,
     enum mtxfileformat mtxfmt)
 {
+    int err;
     if (mtxfmt != mtxfile_coordinate)
         return MTX_ERR_INCOMPATIBLE_MTX_FORMAT;
 
-    int err;
+    enum mtxfilesymmetry symmetry;
+    err = mtxfilesymmetry_from_mtxsymmetry(&symmetry, matrix->symmetry);
+    if (err) return err;
+
     if (matrix->field == mtx_field_real) {
         err = mtxfile_alloc_matrix_coordinate(
-            mtxfile, mtxfile_real, mtxfile_general, matrix->precision,
+            mtxfile, mtxfile_real, symmetry, matrix->precision,
             matrix->num_rows, matrix->num_columns, matrix->size);
         if (err)
             return err;
@@ -745,7 +699,7 @@ int mtxmatrix_csr_to_mtxfile(
         }
     } else if (matrix->field == mtx_field_complex) {
         err = mtxfile_alloc_matrix_coordinate(
-            mtxfile, mtxfile_complex, mtxfile_general, matrix->precision,
+            mtxfile, mtxfile_complex, symmetry, matrix->precision,
             matrix->num_rows, matrix->num_columns, matrix->size);
         if (err)
             return err;
@@ -776,7 +730,7 @@ int mtxmatrix_csr_to_mtxfile(
         }
     } else if (matrix->field == mtx_field_integer) {
         err = mtxfile_alloc_matrix_coordinate(
-            mtxfile, mtxfile_integer, mtxfile_general, matrix->precision,
+            mtxfile, mtxfile_integer, symmetry, matrix->precision,
             matrix->num_rows, matrix->num_columns, matrix->size);
         if (err)
             return err;
@@ -805,7 +759,7 @@ int mtxmatrix_csr_to_mtxfile(
         }
     } else if (matrix->field == mtx_field_pattern) {
         err = mtxfile_alloc_matrix_coordinate(
-            mtxfile, mtxfile_pattern, mtxfile_general, mtx_single,
+            mtxfile, mtxfile_pattern, symmetry, mtx_single,
             matrix->num_rows, matrix->num_columns, matrix->size);
         if (err)
             return err;
