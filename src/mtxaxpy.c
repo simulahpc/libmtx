@@ -188,8 +188,7 @@ static int parse_program_options(
 
     /* Set default program options. */
     err = program_options_init(args);
-    if (err)
-        return err;
+    if (err) return err;
 
     /* Parse program options. */
     int num_positional_arguments_consumed = 0;
