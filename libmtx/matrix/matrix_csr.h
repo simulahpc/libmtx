@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-03-09
+ * Last modified: 2022-03-22
  *
  * Data structures for matrices in compressed sparse row format.
  */

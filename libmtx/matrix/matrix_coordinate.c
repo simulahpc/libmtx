@@ -2122,9 +2122,9 @@ int mtxmatrix_coordinate_cgemv(
         if (err) return err;
     }
 
+    const int * i = A->rowidx;
+    const int * j = A->colidx;
     if (A->symmetry == mtx_unsymmetric) {
-        const int * i = A->rowidx;
-        const int * j = A->colidx;
         if (trans == mtx_notrans) {
             if (A->precision == mtx_single) {
                 const float (* Adata)[2] = A->data.complex_single;
@@ -2187,8 +2187,6 @@ int mtxmatrix_coordinate_cgemv(
             } else { return MTX_ERR_INVALID_PRECISION; }
         } else { return MTX_ERR_INVALID_TRANSPOSITION; }
     } else if (A->num_rows == A->num_columns && A->symmetry == mtx_symmetric) {
-        const int * i = A->rowidx;
-        const int * j = A->colidx;
         if (trans == mtx_notrans || trans == mtx_trans) {
             if (A->precision == mtx_single) {
                 const float (* Adata)[2] = A->data.complex_single;
@@ -2250,8 +2248,6 @@ int mtxmatrix_coordinate_cgemv(
         /* TODO: allow skew-symmetric matrices */
         return MTX_ERR_INVALID_SYMMETRY;
     } else if (A->num_rows == A->num_columns && A->symmetry == mtx_hermitian) {
-        const int * i = A->rowidx;
-        const int * j = A->colidx;
         if (trans == mtx_notrans || trans == mtx_conjtrans) {
             if (A->precision == mtx_single) {
                 const float (* Adata)[2] = A->data.complex_single;
@@ -2365,9 +2361,9 @@ int mtxmatrix_coordinate_zgemv(
         if (err) return err;
     }
 
+    const int * i = A->rowidx;
+    const int * j = A->colidx;
     if (A->symmetry == mtx_unsymmetric) {
-        const int * i = A->rowidx;
-        const int * j = A->colidx;
         if (trans == mtx_notrans) {
             if (A->precision == mtx_single) {
                 const float (* Adata)[2] = A->data.complex_single;
@@ -2430,8 +2426,6 @@ int mtxmatrix_coordinate_zgemv(
             } else { return MTX_ERR_INVALID_PRECISION; }
         } else { return MTX_ERR_INVALID_TRANSPOSITION; }
     } else if (A->num_rows == A->num_columns && A->symmetry == mtx_symmetric) {
-        const int * i = A->rowidx;
-        const int * j = A->colidx;
         if (trans == mtx_notrans || trans == mtx_trans) {
             if (A->precision == mtx_single) {
                 const float (* Adata)[2] = A->data.complex_single;
@@ -2493,8 +2487,6 @@ int mtxmatrix_coordinate_zgemv(
         /* TODO: allow skew-symmetric matrices */
         return MTX_ERR_INVALID_SYMMETRY;
     } else if (A->num_rows == A->num_columns && A->symmetry == mtx_hermitian) {
-        const int * i = A->rowidx;
-        const int * j = A->colidx;
         if (trans == mtx_notrans || trans == mtx_conjtrans) {
             if (A->precision == mtx_single) {
                 const float (* Adata)[2] = A->data.complex_single;
