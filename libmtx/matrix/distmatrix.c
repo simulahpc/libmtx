@@ -2058,8 +2058,7 @@ int mtxdistmatrix_sgemv(
     int err;
     struct mtxdistmatrixgemv gemv;
     err = mtxdistmatrixgemv_init(&gemv, trans, A, x, y, disterr);
-    if (err)
-        return err;
+    if (err) return err;
     err = mtxdistmatrixgemv_sgemv(&gemv, alpha, beta, num_flops, disterr);
     if (err) {
         mtxdistmatrixgemv_free(&gemv);

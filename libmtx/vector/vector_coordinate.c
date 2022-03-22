@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-03-14
+ * Last modified: 2022-03-22
  *
  * Data structures for vectors in coordinate format.
  */
@@ -1795,8 +1795,8 @@ int mtxvector_coordinate_sort(
 
 #ifdef LIBMTX_HAVE_MPI
 /**
- * ‘mtxvector_coordinate_send()’ sends Matrix Market data lines to
- * another MPI process.
+ * ‘mtxvector_coordinate_send()’ sends a vector to another MPI
+ * process.
  *
  * This is analogous to ‘MPI_Send()’ and requires the receiving
  * process to perform a matching call to
@@ -1812,8 +1812,8 @@ int mtxvector_coordinate_send(
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxvector_coordinate_recv()’ receives Matrix Market data lines
- * from another MPI process.
+ * ‘mtxvector_coordinate_recv()’ receives a vector from another MPI
+ * process.
  *
  * This is analogous to ‘MPI_Recv()’ and requires the sending process
  * to perform a matching call to ‘mtxvector_coordinate_send()’.
@@ -1828,8 +1828,8 @@ int mtxvector_coordinate_recv(
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxvector_coordinate_bcast()’ broadcasts Matrix Market data lines
- * from an MPI root process to other processes in a communicator.
+ * ‘mtxvector_coordinate_bcast()’ broadcasts a vector from an MPI root
+ * process to other processes in a communicator.
  *
  * This is analogous to ‘MPI_Bcast()’ and requires every process in
  * the communicator to perform matching calls to
@@ -1844,8 +1844,8 @@ int mtxvector_coordinate_bcast(
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxvector_coordinate_gatherv()’ gathers Matrix Market data lines
- * onto an MPI root process from other processes in a communicator.
+ * ‘mtxvector_coordinate_gatherv()’ gathers a vector onto an MPI root
+ * process from other processes in a communicator.
  *
  * This is analogous to ‘MPI_Gatherv()’ and requires every process in
  * the communicator to perform matching calls to
@@ -1864,8 +1864,8 @@ int mtxvector_coordinate_gatherv(
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxvector_coordinate_scatterv()’ scatters Matrix Market data lines
- * from an MPI root process to other processes in a communicator.
+ * ‘mtxvector_coordinate_scatterv()’ scatters a vector from an MPI
+ * root process to other processes in a communicator.
  *
  * This is analogous to ‘MPI_Scatterv()’ and requires every process in
  * the communicator to perform matching calls to
@@ -1885,8 +1885,7 @@ int mtxvector_coordinate_scatterv(
 
 /**
  * ‘mtxvector_coordinate_alltoallv()’ performs an all-to-all exchange
- * of Matrix Market data lines between MPI processes in a
- * communicator.
+ * of a vector between MPI processes in a communicator.
  *
  * This is analogous to ‘MPI_Alltoallv()’ and requires every process
  * in the communicator to perform matching calls to
