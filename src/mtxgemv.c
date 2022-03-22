@@ -63,6 +63,7 @@ struct program_options
     enum mtxprecision precision;
     enum mtxmatrixtype matrix_type;
     enum mtxvectortype vector_type;
+    enum mtxtransposition trans;
     bool gzip;
     int repeat;
     int verbose;
@@ -84,6 +85,7 @@ static int program_options_init(
     args->precision = mtx_double;
     args->matrix_type = mtxmatrix_auto;
     args->vector_type = mtxvector_auto;
+    args->trans = mtx_notrans;
     args->gzip = false;
     args->repeat = 1;
     args->quiet = false;
@@ -142,11 +144,13 @@ static void program_options_print_help(
     fprintf(f, "\n");
     fprintf(f, " Other options are:\n");
     fprintf(f, "  --precision=PRECISION\tprecision used to represent matrix or\n");
-    fprintf(f, "\t\t\tvector values: ‘single’ or ‘double’. (default: ‘double’)\n");
+    fprintf(f, "\t\t\tvector values: ‘single’ or ‘double’ (default).\n");
     fprintf(f, "  --matrix-type=TYPE\tformat for representing matrices:\n");
-    fprintf(f, "\t\t\t‘auto’, ‘array’, ‘coordinate’ or ‘csr’. (default: ‘auto’)\n");
+    fprintf(f, "\t\t\t‘auto’ (default), ‘array’, ‘coordinate’ or ‘csr’.\n");
     fprintf(f, "  --vector-type=TYPE\tformat for representing vectors:\n");
-    fprintf(f, "\t\t\t‘auto’, ‘array’ or ‘coordinate’. (default: ‘auto’)\n");
+    fprintf(f, "\t\t\t‘auto’ (default), ‘array’ or ‘coordinate’.\n");
+    fprintf(f, "  --trans=TRANS\t\tCompute transpose or conjugate transpose matrix-vector product.\n");
+    fprintf(f, "\t\t\tOptions are ‘notrans’ (default), ‘trans’ or ‘conjtrans’.\n");
     fprintf(f, "  -z, --gzip, --gunzip, --ungzip\tfilter files through gzip\n");
     fprintf(f, "  --format=FORMAT\tFormat string for outputting numerical values.\n");
     fprintf(f, "\t\t\tFor real, double and complex values, the format specifiers\n");
@@ -272,6 +276,33 @@ static int parse_program_options(
             char * s = argv[0] + strlen("--vector-type=");
             err = mtxvectortype_parse(
                 &args->vector_type, NULL, NULL, s, "");
+            if (err) {
+                program_options_free(args);
+                return EINVAL;
+            }
+            (*nargs)++; argv++;
+            continue;
+        }
+
+        if (strcmp(argv[0], "--trans") == 0) {
+            if (argc - *nargs < 2) {
+                program_options_free(args);
+                return EINVAL;
+            }
+            (*nargs)++; argv++;
+            char * s = argv[0];
+            err = mtxtransposition_parse(
+                &args->trans, NULL, NULL, s, "");
+            if (err) {
+                program_options_free(args);
+                return EINVAL;
+            }
+            (*nargs)++; argv++;
+            continue;
+        } else if (strstr(argv[0], "--trans=") == argv[0]) {
+            char * s = argv[0] + strlen("--trans=");
+            err = mtxtransposition_parse(
+                &args->trans, NULL, NULL, s, "");
             if (err) {
                 program_options_free(args);
                 return EINVAL;
@@ -734,12 +765,8 @@ int main(int argc, char *argv[])
         }
     }
 
-    /* TODO: Allow the user to select transpose or conjugate
-     * transpose matrix-vector multiplication. */
-    enum mtxtransposition trans = mtx_notrans;
-
     /* 5. Compute matrix-vector multiplication. */
-    err = gemv(args.alpha, &A, &x, args.beta, &y, args.precision, trans,
+    err = gemv(args.alpha, &A, &x, args.beta, &y, args.precision, args.trans,
                args.format, args.repeat, args.verbose, diagf, args.quiet);
     if (err) {
         fprintf(stderr, "%s: %s\n",
