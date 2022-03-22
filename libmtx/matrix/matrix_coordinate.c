@@ -1514,6 +1514,11 @@ int mtxmatrix_coordinate_sgemv(
             return MTX_ERR_INCOMPATIBLE_SIZE;
     }
 
+    if (beta != 1) {
+        err = mtxvector_sscal(beta, y, num_flops);
+        if (err) return err;
+    }
+
     if (A->symmetry == mtx_unsymmetric) {
         const int * i = trans == mtx_notrans ? A->rowidx : A->colidx;
         const int * j = trans == mtx_notrans ? A->colidx : A->rowidx;
@@ -1522,8 +1527,6 @@ int mtxmatrix_coordinate_sgemv(
                 const float * Adata = A->data.real_single;
                 const float * xdata = x_->data.real_single;
                 float * ydata = y_->data.real_single;
-                err = mtxvector_dscal(beta, y, num_flops);
-                if (err) return err;
                 for (int64_t k = 0; k < A->size; k++)
                     ydata[i[k]] += alpha*Adata[k]*xdata[j[k]];
                 if (num_flops) *num_flops += 3*A->num_nonzeros;
@@ -1531,8 +1534,6 @@ int mtxmatrix_coordinate_sgemv(
                 const double * Adata = A->data.real_double;
                 const double * xdata = x_->data.real_double;
                 double * ydata = y_->data.real_double;
-                err = mtxvector_dscal(beta, y, num_flops);
-                if (err) return err;
                 for (int64_t k = 0; k < A->size; k++)
                     ydata[i[k]] += alpha*Adata[k]*xdata[j[k]];
                 if (num_flops) *num_flops += 3*A->num_nonzeros;
@@ -1543,8 +1544,6 @@ int mtxmatrix_coordinate_sgemv(
                     const float (* Adata)[2] = A->data.complex_single;
                     const float (* xdata)[2] = x_->data.complex_single;
                     float (* ydata)[2] = y_->data.complex_single;
-                    err = mtxvector_dscal(beta, y, num_flops);
-                    if (err) return err;
                     for (int64_t k = 0; k < A->size; k++) {
                         ydata[i[k]][0] += alpha*(Adata[k][0]*xdata[j[k]][0]-Adata[k][1]*xdata[j[k]][1]);
                         ydata[i[k]][1] += alpha*(Adata[k][0]*xdata[j[k]][1]+Adata[k][1]*xdata[j[k]][0]);
@@ -1554,8 +1553,6 @@ int mtxmatrix_coordinate_sgemv(
                     const double (* Adata)[2] = A->data.complex_double;
                     const double (* xdata)[2] = x_->data.complex_double;
                     double (* ydata)[2] = y_->data.complex_double;
-                    err = mtxvector_dscal(beta, y, num_flops);
-                    if (err) return err;
                     for (int64_t k = 0; k < A->size; k++) {
                         ydata[i[k]][0] += alpha*(Adata[k][0]*xdata[j[k]][0]-Adata[k][1]*xdata[j[k]][1]);
                         ydata[i[k]][1] += alpha*(Adata[k][0]*xdata[j[k]][1]+Adata[k][1]*xdata[j[k]][0]);
@@ -1567,8 +1564,6 @@ int mtxmatrix_coordinate_sgemv(
                     const float (* Adata)[2] = A->data.complex_single;
                     const float (* xdata)[2] = x_->data.complex_single;
                     float (* ydata)[2] = y_->data.complex_single;
-                    err = mtxvector_dscal(beta, y, num_flops);
-                    if (err) return err;
                     for (int64_t k = 0; k < A->size; k++) {
                         ydata[i[k]][0] += alpha*(Adata[k][0]*xdata[j[k]][0]+Adata[k][1]*xdata[j[k]][1]);
                         ydata[i[k]][1] += alpha*(Adata[k][0]*xdata[j[k]][1]-Adata[k][1]*xdata[j[k]][0]);
@@ -1578,8 +1573,6 @@ int mtxmatrix_coordinate_sgemv(
                     const double (* Adata)[2] = A->data.complex_double;
                     const double (* xdata)[2] = x_->data.complex_double;
                     double (* ydata)[2] = y_->data.complex_double;
-                    err = mtxvector_dscal(beta, y, num_flops);
-                    if (err) return err;
                     for (int64_t k = 0; k < A->size; k++) {
                         ydata[i[k]][0] += alpha*(Adata[k][0]*xdata[j[k]][0]+Adata[k][1]*xdata[j[k]][1]);
                         ydata[i[k]][1] += alpha*(Adata[k][0]*xdata[j[k]][1]-Adata[k][1]*xdata[j[k]][0]);
@@ -1592,8 +1585,6 @@ int mtxmatrix_coordinate_sgemv(
                 const int32_t * Adata = A->data.integer_single;
                 const int32_t * xdata = x_->data.integer_single;
                 int32_t * ydata = y_->data.integer_single;
-                err = mtxvector_dscal(beta, y, num_flops);
-                if (err) return err;
                 for (int64_t k = 0; k < A->size; k++)
                     ydata[i[k]] += alpha*Adata[k]*xdata[j[k]];
                 if (num_flops) *num_flops += 3*A->num_nonzeros;
@@ -1601,8 +1592,6 @@ int mtxmatrix_coordinate_sgemv(
                 const int64_t * Adata = A->data.integer_double;
                 const int64_t * xdata = x_->data.integer_double;
                 int64_t * ydata = y_->data.integer_double;
-                err = mtxvector_dscal(beta, y, num_flops);
-                if (err) return err;
                 for (int64_t k = 0; k < A->size; k++)
                     ydata[i[k]] += alpha*Adata[k]*xdata[j[k]];
                 if (num_flops) *num_flops += 3*A->num_nonzeros;
@@ -1616,8 +1605,6 @@ int mtxmatrix_coordinate_sgemv(
                 const float * Adata = A->data.real_single;
                 const float * xdata = x_->data.real_single;
                 float * ydata = y_->data.real_single;
-                err = mtxvector_dscal(beta, y, num_flops);
-                if (err) return err;
                 for (int64_t k = 0; k < A->size; k++) {
                     ydata[i[k]] += alpha*Adata[k]*xdata[j[k]];
                     if (i[k] != j[k]) ydata[j[k]] += alpha*Adata[k]*xdata[i[k]];
@@ -1627,8 +1614,6 @@ int mtxmatrix_coordinate_sgemv(
                 const double * Adata = A->data.real_double;
                 const double * xdata = x_->data.real_double;
                 double * ydata = y_->data.real_double;
-                err = mtxvector_dscal(beta, y, num_flops);
-                if (err) return err;
                 for (int64_t k = 0; k < A->size; k++) {
                     ydata[i[k]] += alpha*Adata[k]*xdata[j[k]];
                     if (i[k] != j[k]) ydata[j[k]] += alpha*Adata[k]*xdata[i[k]];
@@ -1641,8 +1626,6 @@ int mtxmatrix_coordinate_sgemv(
                     const float (* Adata)[2] = A->data.complex_single;
                     const float (* xdata)[2] = x_->data.complex_single;
                     float (* ydata)[2] = y_->data.complex_single;
-                    err = mtxvector_dscal(beta, y, num_flops);
-                    if (err) return err;
                     for (int k = 0; k < A->size; k++) {
                         ydata[i[k]][0] += alpha*(Adata[k][0]*xdata[j[k]][0]-Adata[k][1]*xdata[j[k]][1]);
                         ydata[i[k]][1] += alpha*(Adata[k][0]*xdata[j[k]][1]+Adata[k][1]*xdata[j[k]][0]);
@@ -1656,8 +1639,6 @@ int mtxmatrix_coordinate_sgemv(
                     const double (* Adata)[2] = A->data.complex_double;
                     const double (* xdata)[2] = x_->data.complex_double;
                     double (* ydata)[2] = y_->data.complex_double;
-                    err = mtxvector_dscal(beta, y, num_flops);
-                    if (err) return err;
                     for (int k = 0; k < A->size; k++) {
                         ydata[i[k]][0] += alpha*(Adata[k][0]*xdata[j[k]][0]-Adata[k][1]*xdata[j[k]][1]);
                         ydata[i[k]][1] += alpha*(Adata[k][0]*xdata[j[k]][1]+Adata[k][1]*xdata[j[k]][0]);
@@ -1673,8 +1654,6 @@ int mtxmatrix_coordinate_sgemv(
                     const float (* Adata)[2] = A->data.complex_single;
                     const float (* xdata)[2] = x_->data.complex_single;
                     float (* ydata)[2] = y_->data.complex_single;
-                    err = mtxvector_dscal(beta, y, num_flops);
-                    if (err) return err;
                     for (int k = 0; k < A->size; k++) {
                         ydata[i[k]][0] += alpha*(Adata[k][0]*xdata[j[k]][0]+Adata[k][1]*xdata[j[k]][1]);
                         ydata[i[k]][1] += alpha*(Adata[k][0]*xdata[j[k]][1]-Adata[k][1]*xdata[j[k]][0]);
@@ -1688,8 +1667,6 @@ int mtxmatrix_coordinate_sgemv(
                     const double (* Adata)[2] = A->data.complex_double;
                     const double (* xdata)[2] = x_->data.complex_double;
                     double (* ydata)[2] = y_->data.complex_double;
-                    err = mtxvector_dscal(beta, y, num_flops);
-                    if (err) return err;
                     for (int k = 0; k < A->size; k++) {
                         ydata[i[k]][0] += alpha*(Adata[k][0]*xdata[j[k]][0]+Adata[k][1]*xdata[j[k]][1]);
                         ydata[i[k]][1] += alpha*(Adata[k][0]*xdata[j[k]][1]-Adata[k][1]*xdata[j[k]][0]);
@@ -1706,8 +1683,6 @@ int mtxmatrix_coordinate_sgemv(
                 const int32_t * Adata = A->data.integer_single;
                 const int32_t * xdata = x_->data.integer_single;
                 int32_t * ydata = y_->data.integer_single;
-                err = mtxvector_dscal(beta, y, num_flops);
-                if (err) return err;
                 for (int k = 0; k < A->size; k++) {
                     ydata[i[k]] += alpha*Adata[k]*xdata[j[k]];
                     if (i[k] != j[k]) ydata[j[k]] += alpha*Adata[k]*xdata[i[k]];
@@ -1717,8 +1692,6 @@ int mtxmatrix_coordinate_sgemv(
                 const int64_t * Adata = A->data.integer_double;
                 const int64_t * xdata = x_->data.integer_double;
                 int64_t * ydata = y_->data.integer_double;
-                err = mtxvector_dscal(beta, y, num_flops);
-                if (err) return err;
                 for (int k = 0; k < A->size; k++) {
                     ydata[i[k]] += alpha*Adata[k]*xdata[j[k]];
                     if (i[k] != j[k]) ydata[j[k]] += alpha*Adata[k]*xdata[i[k]];
@@ -1738,8 +1711,6 @@ int mtxmatrix_coordinate_sgemv(
                     const float (* Adata)[2] = A->data.complex_single;
                     const float (* xdata)[2] = x_->data.complex_single;
                     float (* ydata)[2] = y_->data.complex_single;
-                    err = mtxvector_dscal(beta, y, num_flops);
-                    if (err) return err;
                     for (int k = 0; k < A->size; k++) {
                         ydata[i[k]][0] += alpha*(Adata[k][0]*xdata[j[k]][0]-Adata[k][1]*xdata[j[k]][1]);
                         ydata[i[k]][1] += alpha*(Adata[k][0]*xdata[j[k]][1]+Adata[k][1]*xdata[j[k]][0]);
@@ -1753,8 +1724,6 @@ int mtxmatrix_coordinate_sgemv(
                     const double (* Adata)[2] = A->data.complex_double;
                     const double (* xdata)[2] = x_->data.complex_double;
                     double (* ydata)[2] = y_->data.complex_double;
-                    err = mtxvector_dscal(beta, y, num_flops);
-                    if (err) return err;
                     for (int k = 0; k < A->size; k++) {
                         ydata[i[k]][0] += alpha*(Adata[k][0]*xdata[j[k]][0]-Adata[k][1]*xdata[j[k]][1]);
                         ydata[i[k]][1] += alpha*(Adata[k][0]*xdata[j[k]][1]+Adata[k][1]*xdata[j[k]][0]);
@@ -1770,8 +1739,6 @@ int mtxmatrix_coordinate_sgemv(
                     const float (* Adata)[2] = A->data.complex_single;
                     const float (* xdata)[2] = x_->data.complex_single;
                     float (* ydata)[2] = y_->data.complex_single;
-                    err = mtxvector_dscal(beta, y, num_flops);
-                    if (err) return err;
                     for (int k = 0; k < A->size; k++) {
                         ydata[i[k]][0] += alpha*(Adata[k][0]*xdata[j[k]][0]+Adata[k][1]*xdata[j[k]][1]);
                         ydata[i[k]][1] += alpha*(Adata[k][0]*xdata[j[k]][1]-Adata[k][1]*xdata[j[k]][0]);
@@ -1785,8 +1752,6 @@ int mtxmatrix_coordinate_sgemv(
                     const double (* Adata)[2] = A->data.complex_double;
                     const double (* xdata)[2] = x_->data.complex_double;
                     double (* ydata)[2] = y_->data.complex_double;
-                    err = mtxvector_dscal(beta, y, num_flops);
-                    if (err) return err;
                     for (int k = 0; k < A->size; k++) {
                         ydata[i[k]][0] += alpha*(Adata[k][0]*xdata[j[k]][0]+Adata[k][1]*xdata[j[k]][1]);
                         ydata[i[k]][1] += alpha*(Adata[k][0]*xdata[j[k]][1]-Adata[k][1]*xdata[j[k]][0]);
@@ -1851,6 +1816,11 @@ int mtxmatrix_coordinate_dgemv(
             return MTX_ERR_INCOMPATIBLE_SIZE;
     }
 
+    if (beta != 1) {
+        err = mtxvector_dscal(beta, y, num_flops);
+        if (err) return err;
+    }
+
     if (A->symmetry == mtx_unsymmetric) {
         const int * i = trans == mtx_notrans ? A->rowidx : A->colidx;
         const int * j = trans == mtx_notrans ? A->colidx : A->rowidx;
@@ -1859,8 +1829,6 @@ int mtxmatrix_coordinate_dgemv(
                 const float * Adata = A->data.real_single;
                 const float * xdata = x_->data.real_single;
                 float * ydata = y_->data.real_single;
-                err = mtxvector_dscal(beta, y, num_flops);
-                if (err) return err;
                 for (int64_t k = 0; k < A->size; k++)
                     ydata[i[k]] += alpha*Adata[k]*xdata[j[k]];
                 if (num_flops) *num_flops += 3*A->num_nonzeros;
@@ -1868,8 +1836,6 @@ int mtxmatrix_coordinate_dgemv(
                 const double * Adata = A->data.real_double;
                 const double * xdata = x_->data.real_double;
                 double * ydata = y_->data.real_double;
-                err = mtxvector_dscal(beta, y, num_flops);
-                if (err) return err;
                 for (int64_t k = 0; k < A->size; k++)
                     ydata[i[k]] += alpha*Adata[k]*xdata[j[k]];
                 if (num_flops) *num_flops += 3*A->num_nonzeros;
@@ -1880,8 +1846,6 @@ int mtxmatrix_coordinate_dgemv(
                     const float (* Adata)[2] = A->data.complex_single;
                     const float (* xdata)[2] = x_->data.complex_single;
                     float (* ydata)[2] = y_->data.complex_single;
-                    err = mtxvector_dscal(beta, y, num_flops);
-                    if (err) return err;
                     for (int64_t k = 0; k < A->size; k++) {
                         ydata[i[k]][0] += alpha*(Adata[k][0]*xdata[j[k]][0]-Adata[k][1]*xdata[j[k]][1]);
                         ydata[i[k]][1] += alpha*(Adata[k][0]*xdata[j[k]][1]+Adata[k][1]*xdata[j[k]][0]);
@@ -1891,8 +1855,6 @@ int mtxmatrix_coordinate_dgemv(
                     const double (* Adata)[2] = A->data.complex_double;
                     const double (* xdata)[2] = x_->data.complex_double;
                     double (* ydata)[2] = y_->data.complex_double;
-                    err = mtxvector_dscal(beta, y, num_flops);
-                    if (err) return err;
                     for (int64_t k = 0; k < A->size; k++) {
                         ydata[i[k]][0] += alpha*(Adata[k][0]*xdata[j[k]][0]-Adata[k][1]*xdata[j[k]][1]);
                         ydata[i[k]][1] += alpha*(Adata[k][0]*xdata[j[k]][1]+Adata[k][1]*xdata[j[k]][0]);
@@ -1904,8 +1866,6 @@ int mtxmatrix_coordinate_dgemv(
                     const float (* Adata)[2] = A->data.complex_single;
                     const float (* xdata)[2] = x_->data.complex_single;
                     float (* ydata)[2] = y_->data.complex_single;
-                    err = mtxvector_dscal(beta, y, num_flops);
-                    if (err) return err;
                     for (int64_t k = 0; k < A->size; k++) {
                         ydata[i[k]][0] += alpha*(Adata[k][0]*xdata[j[k]][0]+Adata[k][1]*xdata[j[k]][1]);
                         ydata[i[k]][1] += alpha*(Adata[k][0]*xdata[j[k]][1]-Adata[k][1]*xdata[j[k]][0]);
@@ -1915,8 +1875,6 @@ int mtxmatrix_coordinate_dgemv(
                     const double (* Adata)[2] = A->data.complex_double;
                     const double (* xdata)[2] = x_->data.complex_double;
                     double (* ydata)[2] = y_->data.complex_double;
-                    err = mtxvector_dscal(beta, y, num_flops);
-                    if (err) return err;
                     for (int64_t k = 0; k < A->size; k++) {
                         ydata[i[k]][0] += alpha*(Adata[k][0]*xdata[j[k]][0]+Adata[k][1]*xdata[j[k]][1]);
                         ydata[i[k]][1] += alpha*(Adata[k][0]*xdata[j[k]][1]-Adata[k][1]*xdata[j[k]][0]);
@@ -1929,8 +1887,6 @@ int mtxmatrix_coordinate_dgemv(
                 const int32_t * Adata = A->data.integer_single;
                 const int32_t * xdata = x_->data.integer_single;
                 int32_t * ydata = y_->data.integer_single;
-                err = mtxvector_dscal(beta, y, num_flops);
-                if (err) return err;
                 for (int64_t k = 0; k < A->size; k++)
                     ydata[i[k]] += alpha*Adata[k]*xdata[j[k]];
                 if (num_flops) *num_flops += 3*A->num_nonzeros;
@@ -1938,8 +1894,6 @@ int mtxmatrix_coordinate_dgemv(
                 const int64_t * Adata = A->data.integer_double;
                 const int64_t * xdata = x_->data.integer_double;
                 int64_t * ydata = y_->data.integer_double;
-                err = mtxvector_dscal(beta, y, num_flops);
-                if (err) return err;
                 for (int64_t k = 0; k < A->size; k++)
                     ydata[i[k]] += alpha*Adata[k]*xdata[j[k]];
                 if (num_flops) *num_flops += 3*A->num_nonzeros;
@@ -1953,8 +1907,6 @@ int mtxmatrix_coordinate_dgemv(
                 const float * Adata = A->data.real_single;
                 const float * xdata = x_->data.real_single;
                 float * ydata = y_->data.real_single;
-                err = mtxvector_dscal(beta, y, num_flops);
-                if (err) return err;
                 for (int64_t k = 0; k < A->size; k++) {
                     ydata[i[k]] += alpha*Adata[k]*xdata[j[k]];
                     if (i[k] != j[k]) ydata[j[k]] += alpha*Adata[k]*xdata[i[k]];
@@ -1964,8 +1916,6 @@ int mtxmatrix_coordinate_dgemv(
                 const double * Adata = A->data.real_double;
                 const double * xdata = x_->data.real_double;
                 double * ydata = y_->data.real_double;
-                err = mtxvector_dscal(beta, y, num_flops);
-                if (err) return err;
                 for (int64_t k = 0; k < A->size; k++) {
                     ydata[i[k]] += alpha*Adata[k]*xdata[j[k]];
                     if (i[k] != j[k]) ydata[j[k]] += alpha*Adata[k]*xdata[i[k]];
@@ -1978,8 +1928,6 @@ int mtxmatrix_coordinate_dgemv(
                     const float (* Adata)[2] = A->data.complex_single;
                     const float (* xdata)[2] = x_->data.complex_single;
                     float (* ydata)[2] = y_->data.complex_single;
-                    err = mtxvector_dscal(beta, y, num_flops);
-                    if (err) return err;
                     for (int k = 0; k < A->size; k++) {
                         ydata[i[k]][0] += alpha*(Adata[k][0]*xdata[j[k]][0]-Adata[k][1]*xdata[j[k]][1]);
                         ydata[i[k]][1] += alpha*(Adata[k][0]*xdata[j[k]][1]+Adata[k][1]*xdata[j[k]][0]);
@@ -1993,8 +1941,6 @@ int mtxmatrix_coordinate_dgemv(
                     const double (* Adata)[2] = A->data.complex_double;
                     const double (* xdata)[2] = x_->data.complex_double;
                     double (* ydata)[2] = y_->data.complex_double;
-                    err = mtxvector_dscal(beta, y, num_flops);
-                    if (err) return err;
                     for (int k = 0; k < A->size; k++) {
                         ydata[i[k]][0] += alpha*(Adata[k][0]*xdata[j[k]][0]-Adata[k][1]*xdata[j[k]][1]);
                         ydata[i[k]][1] += alpha*(Adata[k][0]*xdata[j[k]][1]+Adata[k][1]*xdata[j[k]][0]);
@@ -2010,8 +1956,6 @@ int mtxmatrix_coordinate_dgemv(
                     const float (* Adata)[2] = A->data.complex_single;
                     const float (* xdata)[2] = x_->data.complex_single;
                     float (* ydata)[2] = y_->data.complex_single;
-                    err = mtxvector_dscal(beta, y, num_flops);
-                    if (err) return err;
                     for (int k = 0; k < A->size; k++) {
                         ydata[i[k]][0] += alpha*(Adata[k][0]*xdata[j[k]][0]+Adata[k][1]*xdata[j[k]][1]);
                         ydata[i[k]][1] += alpha*(Adata[k][0]*xdata[j[k]][1]-Adata[k][1]*xdata[j[k]][0]);
@@ -2025,8 +1969,6 @@ int mtxmatrix_coordinate_dgemv(
                     const double (* Adata)[2] = A->data.complex_double;
                     const double (* xdata)[2] = x_->data.complex_double;
                     double (* ydata)[2] = y_->data.complex_double;
-                    err = mtxvector_dscal(beta, y, num_flops);
-                    if (err) return err;
                     for (int k = 0; k < A->size; k++) {
                         ydata[i[k]][0] += alpha*(Adata[k][0]*xdata[j[k]][0]+Adata[k][1]*xdata[j[k]][1]);
                         ydata[i[k]][1] += alpha*(Adata[k][0]*xdata[j[k]][1]-Adata[k][1]*xdata[j[k]][0]);
@@ -2043,8 +1985,6 @@ int mtxmatrix_coordinate_dgemv(
                 const int32_t * Adata = A->data.integer_single;
                 const int32_t * xdata = x_->data.integer_single;
                 int32_t * ydata = y_->data.integer_single;
-                err = mtxvector_dscal(beta, y, num_flops);
-                if (err) return err;
                 for (int k = 0; k < A->size; k++) {
                     ydata[i[k]] += alpha*Adata[k]*xdata[j[k]];
                     if (i[k] != j[k]) ydata[j[k]] += alpha*Adata[k]*xdata[i[k]];
@@ -2054,8 +1994,6 @@ int mtxmatrix_coordinate_dgemv(
                 const int64_t * Adata = A->data.integer_double;
                 const int64_t * xdata = x_->data.integer_double;
                 int64_t * ydata = y_->data.integer_double;
-                err = mtxvector_dscal(beta, y, num_flops);
-                if (err) return err;
                 for (int k = 0; k < A->size; k++) {
                     ydata[i[k]] += alpha*Adata[k]*xdata[j[k]];
                     if (i[k] != j[k]) ydata[j[k]] += alpha*Adata[k]*xdata[i[k]];
@@ -2075,8 +2013,6 @@ int mtxmatrix_coordinate_dgemv(
                     const float (* Adata)[2] = A->data.complex_single;
                     const float (* xdata)[2] = x_->data.complex_single;
                     float (* ydata)[2] = y_->data.complex_single;
-                    err = mtxvector_dscal(beta, y, num_flops);
-                    if (err) return err;
                     for (int k = 0; k < A->size; k++) {
                         ydata[i[k]][0] += alpha*(Adata[k][0]*xdata[j[k]][0]-Adata[k][1]*xdata[j[k]][1]);
                         ydata[i[k]][1] += alpha*(Adata[k][0]*xdata[j[k]][1]+Adata[k][1]*xdata[j[k]][0]);
@@ -2090,8 +2026,6 @@ int mtxmatrix_coordinate_dgemv(
                     const double (* Adata)[2] = A->data.complex_double;
                     const double (* xdata)[2] = x_->data.complex_double;
                     double (* ydata)[2] = y_->data.complex_double;
-                    err = mtxvector_dscal(beta, y, num_flops);
-                    if (err) return err;
                     for (int k = 0; k < A->size; k++) {
                         ydata[i[k]][0] += alpha*(Adata[k][0]*xdata[j[k]][0]-Adata[k][1]*xdata[j[k]][1]);
                         ydata[i[k]][1] += alpha*(Adata[k][0]*xdata[j[k]][1]+Adata[k][1]*xdata[j[k]][0]);
@@ -2107,8 +2041,6 @@ int mtxmatrix_coordinate_dgemv(
                     const float (* Adata)[2] = A->data.complex_single;
                     const float (* xdata)[2] = x_->data.complex_single;
                     float (* ydata)[2] = y_->data.complex_single;
-                    err = mtxvector_dscal(beta, y, num_flops);
-                    if (err) return err;
                     for (int k = 0; k < A->size; k++) {
                         ydata[i[k]][0] += alpha*(Adata[k][0]*xdata[j[k]][0]+Adata[k][1]*xdata[j[k]][1]);
                         ydata[i[k]][1] += alpha*(Adata[k][0]*xdata[j[k]][1]-Adata[k][1]*xdata[j[k]][0]);
@@ -2122,8 +2054,6 @@ int mtxmatrix_coordinate_dgemv(
                     const double (* Adata)[2] = A->data.complex_double;
                     const double (* xdata)[2] = x_->data.complex_double;
                     double (* ydata)[2] = y_->data.complex_double;
-                    err = mtxvector_dscal(beta, y, num_flops);
-                    if (err) return err;
                     for (int k = 0; k < A->size; k++) {
                         ydata[i[k]][0] += alpha*(Adata[k][0]*xdata[j[k]][0]+Adata[k][1]*xdata[j[k]][1]);
                         ydata[i[k]][1] += alpha*(Adata[k][0]*xdata[j[k]][1]-Adata[k][1]*xdata[j[k]][0]);
@@ -2187,6 +2117,11 @@ int mtxmatrix_coordinate_cgemv(
     if (A->field != mtx_field_complex)
         return MTX_ERR_INCOMPATIBLE_FIELD;
 
+    if (beta[0] != 1 || beta[1] != 0) {
+        err = mtxvector_cscal(beta, y, num_flops);
+        if (err) return err;
+    }
+
     if (A->symmetry == mtx_unsymmetric) {
         const int * i = A->rowidx;
         const int * j = A->colidx;
@@ -2195,8 +2130,6 @@ int mtxmatrix_coordinate_cgemv(
                 const float (* Adata)[2] = A->data.complex_single;
                 const float (* xdata)[2] = x_->data.complex_single;
                 float (* ydata)[2] = y_->data.complex_single;
-                err = mtxvector_cscal(beta, y, num_flops);
-                if (err) return err;
                 for (int k = 0; k < A->size; k++) {
                     ydata[i[k]][0] += alpha[0]*(Adata[k][0]*xdata[j[k]][0]-Adata[k][1]*xdata[j[k]][1])-alpha[1]*(Adata[k][0]*xdata[j[k]][1]+Adata[k][1]*xdata[j[k]][0]);
                     ydata[i[k]][1] += alpha[0]*(Adata[k][0]*xdata[j[k]][1]+Adata[k][1]*xdata[j[k]][0])+alpha[1]*(Adata[k][0]*xdata[j[k]][0]-Adata[k][1]*xdata[j[k]][1]);
@@ -2206,8 +2139,6 @@ int mtxmatrix_coordinate_cgemv(
                 const double (* Adata)[2] = A->data.complex_double;
                 const double (* xdata)[2] = x_->data.complex_double;
                 double (* ydata)[2] = y_->data.complex_double;
-                err = mtxvector_cscal(beta, y, num_flops);
-                if (err) return err;
                 for (int k = 0; k < A->size; k++) {
                     ydata[i[k]][0] += alpha[0]*(Adata[k][0]*xdata[j[k]][0]-Adata[k][1]*xdata[j[k]][1])-alpha[1]*(Adata[k][0]*xdata[j[k]][1]+Adata[k][1]*xdata[j[k]][0]);
                     ydata[i[k]][1] += alpha[0]*(Adata[k][0]*xdata[j[k]][1]+Adata[k][1]*xdata[j[k]][0])+alpha[1]*(Adata[k][0]*xdata[j[k]][0]-Adata[k][1]*xdata[j[k]][1]);
@@ -2219,8 +2150,6 @@ int mtxmatrix_coordinate_cgemv(
                 const float (* Adata)[2] = A->data.complex_single;
                 const float (* xdata)[2] = x_->data.complex_single;
                 float (* ydata)[2] = y_->data.complex_single;
-                err = mtxvector_cscal(beta, y, num_flops);
-                if (err) return err;
                 for (int k = 0; k < A->size; k++) {
                     ydata[j[k]][0] += alpha[0]*(Adata[k][0]*xdata[i[k]][0]-Adata[k][1]*xdata[i[k]][1])-alpha[1]*(Adata[k][0]*xdata[i[k]][1]+Adata[k][1]*xdata[i[k]][0]);
                     ydata[j[k]][1] += alpha[0]*(Adata[k][0]*xdata[i[k]][1]+Adata[k][1]*xdata[i[k]][0])+alpha[1]*(Adata[k][0]*xdata[i[k]][0]-Adata[k][1]*xdata[i[k]][1]);
@@ -2230,8 +2159,6 @@ int mtxmatrix_coordinate_cgemv(
                 const double (* Adata)[2] = A->data.complex_double;
                 const double (* xdata)[2] = x_->data.complex_double;
                 double (* ydata)[2] = y_->data.complex_double;
-                err = mtxvector_cscal(beta, y, num_flops);
-                if (err) return err;
                 for (int k = 0; k < A->size; k++) {
                     ydata[j[k]][0] += alpha[0]*(Adata[k][0]*xdata[i[k]][0]-Adata[k][1]*xdata[i[k]][1])-alpha[1]*(Adata[k][0]*xdata[i[k]][1]+Adata[k][1]*xdata[i[k]][0]);
                     ydata[j[k]][1] += alpha[0]*(Adata[k][0]*xdata[i[k]][1]+Adata[k][1]*xdata[i[k]][0])+alpha[1]*(Adata[k][0]*xdata[i[k]][0]-Adata[k][1]*xdata[i[k]][1]);
@@ -2243,8 +2170,6 @@ int mtxmatrix_coordinate_cgemv(
                 const float (* Adata)[2] = A->data.complex_single;
                 const float (* xdata)[2] = x_->data.complex_single;
                 float (* ydata)[2] = y_->data.complex_single;
-                err = mtxvector_cscal(beta, y, num_flops);
-                if (err) return err;
                 for (int k = 0; k < A->size; k++) {
                     ydata[j[k]][0] += alpha[0]*(Adata[k][0]*xdata[i[k]][0]+Adata[k][1]*xdata[i[k]][1])-alpha[1]*(Adata[k][0]*xdata[i[k]][1]-Adata[k][1]*xdata[i[k]][0]);
                     ydata[j[k]][1] += alpha[0]*(Adata[k][0]*xdata[i[k]][1]-Adata[k][1]*xdata[i[k]][0])+alpha[1]*(Adata[k][0]*xdata[i[k]][0]+Adata[k][1]*xdata[i[k]][1]);
@@ -2254,8 +2179,6 @@ int mtxmatrix_coordinate_cgemv(
                 const double (* Adata)[2] = A->data.complex_double;
                 const double (* xdata)[2] = x_->data.complex_double;
                 double (* ydata)[2] = y_->data.complex_double;
-                err = mtxvector_cscal(beta, y, num_flops);
-                if (err) return err;
                 for (int k = 0; k < A->size; k++) {
                     ydata[j[k]][0] += alpha[0]*(Adata[k][0]*xdata[i[k]][0]+Adata[k][1]*xdata[i[k]][1])-alpha[1]*(Adata[k][0]*xdata[i[k]][1]-Adata[k][1]*xdata[i[k]][0]);
                     ydata[j[k]][1] += alpha[0]*(Adata[k][0]*xdata[i[k]][1]-Adata[k][1]*xdata[i[k]][0])+alpha[1]*(Adata[k][0]*xdata[i[k]][0]+Adata[k][1]*xdata[i[k]][1]);
@@ -2271,8 +2194,6 @@ int mtxmatrix_coordinate_cgemv(
                 const float (* Adata)[2] = A->data.complex_single;
                 const float (* xdata)[2] = x_->data.complex_single;
                 float (* ydata)[2] = y_->data.complex_single;
-                err = mtxvector_cscal(beta, y, num_flops);
-                if (err) return err;
                 for (int k = 0; k < A->size; k++) {
                     ydata[i[k]][0] += alpha[0]*(Adata[k][0]*xdata[j[k]][0]-Adata[k][1]*xdata[j[k]][1]) - alpha[1]*(Adata[k][0]*xdata[j[k]][1]+Adata[k][1]*xdata[j[k]][0]);
                     ydata[i[k]][1] += alpha[0]*(Adata[k][0]*xdata[j[k]][1]+Adata[k][1]*xdata[j[k]][0]) + alpha[1]*(Adata[k][0]*xdata[j[k]][0]-Adata[k][1]*xdata[j[k]][1]);
@@ -2286,8 +2207,6 @@ int mtxmatrix_coordinate_cgemv(
                 const double (* Adata)[2] = A->data.complex_double;
                 const double (* xdata)[2] = x_->data.complex_double;
                 double (* ydata)[2] = y_->data.complex_double;
-                err = mtxvector_cscal(beta, y, num_flops);
-                if (err) return err;
                 for (int k = 0; k < A->size; k++) {
                     ydata[i[k]][0] += alpha[0]*(Adata[k][0]*xdata[j[k]][0]-Adata[k][1]*xdata[j[k]][1]) - alpha[1]*(Adata[k][0]*xdata[j[k]][1]+Adata[k][1]*xdata[j[k]][0]);
                     ydata[i[k]][1] += alpha[0]*(Adata[k][0]*xdata[j[k]][1]+Adata[k][1]*xdata[j[k]][0]) + alpha[1]*(Adata[k][0]*xdata[j[k]][0]-Adata[k][1]*xdata[j[k]][1]);
@@ -2303,8 +2222,6 @@ int mtxmatrix_coordinate_cgemv(
                 const float (* Adata)[2] = A->data.complex_single;
                 const float (* xdata)[2] = x_->data.complex_single;
                 float (* ydata)[2] = y_->data.complex_single;
-                err = mtxvector_cscal(beta, y, num_flops);
-                if (err) return err;
                 for (int k = 0; k < A->size; k++) {
                     ydata[i[k]][0] += alpha[0]*(Adata[k][0]*xdata[j[k]][0]+Adata[k][1]*xdata[j[k]][1]) - alpha[1]*(Adata[k][0]*xdata[j[k]][1]-Adata[k][1]*xdata[j[k]][0]);
                     ydata[i[k]][1] += alpha[0]*(Adata[k][0]*xdata[j[k]][1]-Adata[k][1]*xdata[j[k]][0]) + alpha[1]*(Adata[k][0]*xdata[j[k]][0]+Adata[k][1]*xdata[j[k]][1]);
@@ -2318,8 +2235,6 @@ int mtxmatrix_coordinate_cgemv(
                 const double (* Adata)[2] = A->data.complex_double;
                 const double (* xdata)[2] = x_->data.complex_double;
                 double (* ydata)[2] = y_->data.complex_double;
-                err = mtxvector_cscal(beta, y, num_flops);
-                if (err) return err;
                 for (int k = 0; k < A->size; k++) {
                     ydata[i[k]][0] += alpha[0]*(Adata[k][0]*xdata[j[k]][0]+Adata[k][1]*xdata[j[k]][1]) - alpha[1]*(Adata[k][0]*xdata[j[k]][1]-Adata[k][1]*xdata[j[k]][0]);
                     ydata[i[k]][1] += alpha[0]*(Adata[k][0]*xdata[j[k]][1]-Adata[k][1]*xdata[j[k]][0]) + alpha[1]*(Adata[k][0]*xdata[j[k]][0]+Adata[k][1]*xdata[j[k]][1]);
@@ -2342,8 +2257,6 @@ int mtxmatrix_coordinate_cgemv(
                 const float (* Adata)[2] = A->data.complex_single;
                 const float (* xdata)[2] = x_->data.complex_single;
                 float (* ydata)[2] = y_->data.complex_single;
-                err = mtxvector_cscal(beta, y, num_flops);
-                if (err) return err;
                 for (int k = 0; k < A->size; k++) {
                     ydata[i[k]][0] += alpha[0]*(Adata[k][0]*xdata[j[k]][0]-Adata[k][1]*xdata[j[k]][1]) - alpha[1]*(Adata[k][0]*xdata[j[k]][1]+Adata[k][1]*xdata[j[k]][0]);
                     ydata[i[k]][1] += alpha[0]*(Adata[k][0]*xdata[j[k]][1]+Adata[k][1]*xdata[j[k]][0]) + alpha[1]*(Adata[k][0]*xdata[j[k]][0]-Adata[k][1]*xdata[j[k]][1]);
@@ -2357,8 +2270,6 @@ int mtxmatrix_coordinate_cgemv(
                 const double (* Adata)[2] = A->data.complex_double;
                 const double (* xdata)[2] = x_->data.complex_double;
                 double (* ydata)[2] = y_->data.complex_double;
-                err = mtxvector_cscal(beta, y, num_flops);
-                if (err) return err;
                 for (int k = 0; k < A->size; k++) {
                     ydata[i[k]][0] += alpha[0]*(Adata[k][0]*xdata[j[k]][0]-Adata[k][1]*xdata[j[k]][1]) - alpha[1]*(Adata[k][0]*xdata[j[k]][1]+Adata[k][1]*xdata[j[k]][0]);
                     ydata[i[k]][1] += alpha[0]*(Adata[k][0]*xdata[j[k]][1]+Adata[k][1]*xdata[j[k]][0]) + alpha[1]*(Adata[k][0]*xdata[j[k]][0]-Adata[k][1]*xdata[j[k]][1]);
@@ -2374,8 +2285,6 @@ int mtxmatrix_coordinate_cgemv(
                 const float (* Adata)[2] = A->data.complex_single;
                 const float (* xdata)[2] = x_->data.complex_single;
                 float (* ydata)[2] = y_->data.complex_single;
-                err = mtxvector_cscal(beta, y, num_flops);
-                if (err) return err;
                 for (int k = 0; k < A->size; k++) {
                     ydata[i[k]][0] += alpha[0]*(Adata[k][0]*xdata[j[k]][0]+Adata[k][1]*xdata[j[k]][1]) - alpha[1]*(Adata[k][0]*xdata[j[k]][1]-Adata[k][1]*xdata[j[k]][0]);
                     ydata[i[k]][1] += alpha[0]*(Adata[k][0]*xdata[j[k]][1]-Adata[k][1]*xdata[j[k]][0]) + alpha[1]*(Adata[k][0]*xdata[j[k]][0]+Adata[k][1]*xdata[j[k]][1]);
@@ -2389,8 +2298,6 @@ int mtxmatrix_coordinate_cgemv(
                 const double (* Adata)[2] = A->data.complex_double;
                 const double (* xdata)[2] = x_->data.complex_double;
                 double (* ydata)[2] = y_->data.complex_double;
-                err = mtxvector_cscal(beta, y, num_flops);
-                if (err) return err;
                 for (int k = 0; k < A->size; k++) {
                     ydata[i[k]][0] += alpha[0]*(Adata[k][0]*xdata[j[k]][0]+Adata[k][1]*xdata[j[k]][1]) - alpha[1]*(Adata[k][0]*xdata[j[k]][1]-Adata[k][1]*xdata[j[k]][0]);
                     ydata[i[k]][1] += alpha[0]*(Adata[k][0]*xdata[j[k]][1]-Adata[k][1]*xdata[j[k]][0]) + alpha[1]*(Adata[k][0]*xdata[j[k]][0]+Adata[k][1]*xdata[j[k]][1]);
@@ -2453,6 +2360,11 @@ int mtxmatrix_coordinate_zgemv(
     if (A->field != mtx_field_complex)
         return MTX_ERR_INCOMPATIBLE_FIELD;
 
+    if (beta[0] != 1 || beta[1] != 0) {
+        err = mtxvector_zscal(beta, y, num_flops);
+        if (err) return err;
+    }
+
     if (A->symmetry == mtx_unsymmetric) {
         const int * i = A->rowidx;
         const int * j = A->colidx;
@@ -2461,8 +2373,6 @@ int mtxmatrix_coordinate_zgemv(
                 const float (* Adata)[2] = A->data.complex_single;
                 const float (* xdata)[2] = x_->data.complex_single;
                 float (* ydata)[2] = y_->data.complex_single;
-                err = mtxvector_zscal(beta, y, num_flops);
-                if (err) return err;
                 for (int k = 0; k < A->size; k++) {
                     ydata[i[k]][0] += alpha[0]*(Adata[k][0]*xdata[j[k]][0]-Adata[k][1]*xdata[j[k]][1])-alpha[1]*(Adata[k][0]*xdata[j[k]][1]+Adata[k][1]*xdata[j[k]][0]);
                     ydata[i[k]][1] += alpha[0]*(Adata[k][0]*xdata[j[k]][1]+Adata[k][1]*xdata[j[k]][0])+alpha[1]*(Adata[k][0]*xdata[j[k]][0]-Adata[k][1]*xdata[j[k]][1]);
@@ -2472,8 +2382,6 @@ int mtxmatrix_coordinate_zgemv(
                 const double (* Adata)[2] = A->data.complex_double;
                 const double (* xdata)[2] = x_->data.complex_double;
                 double (* ydata)[2] = y_->data.complex_double;
-                err = mtxvector_zscal(beta, y, num_flops);
-                if (err) return err;
                 for (int k = 0; k < A->size; k++) {
                     ydata[i[k]][0] += alpha[0]*(Adata[k][0]*xdata[j[k]][0]-Adata[k][1]*xdata[j[k]][1])-alpha[1]*(Adata[k][0]*xdata[j[k]][1]+Adata[k][1]*xdata[j[k]][0]);
                     ydata[i[k]][1] += alpha[0]*(Adata[k][0]*xdata[j[k]][1]+Adata[k][1]*xdata[j[k]][0])+alpha[1]*(Adata[k][0]*xdata[j[k]][0]-Adata[k][1]*xdata[j[k]][1]);
@@ -2485,8 +2393,6 @@ int mtxmatrix_coordinate_zgemv(
                 const float (* Adata)[2] = A->data.complex_single;
                 const float (* xdata)[2] = x_->data.complex_single;
                 float (* ydata)[2] = y_->data.complex_single;
-                err = mtxvector_zscal(beta, y, num_flops);
-                if (err) return err;
                 for (int k = 0; k < A->size; k++) {
                     ydata[j[k]][0] += alpha[0]*(Adata[k][0]*xdata[i[k]][0]-Adata[k][1]*xdata[i[k]][1])-alpha[1]*(Adata[k][0]*xdata[i[k]][1]+Adata[k][1]*xdata[i[k]][0]);
                     ydata[j[k]][1] += alpha[0]*(Adata[k][0]*xdata[i[k]][1]+Adata[k][1]*xdata[i[k]][0])+alpha[1]*(Adata[k][0]*xdata[i[k]][0]-Adata[k][1]*xdata[i[k]][1]);
@@ -2496,8 +2402,6 @@ int mtxmatrix_coordinate_zgemv(
                 const double (* Adata)[2] = A->data.complex_double;
                 const double (* xdata)[2] = x_->data.complex_double;
                 double (* ydata)[2] = y_->data.complex_double;
-                err = mtxvector_zscal(beta, y, num_flops);
-                if (err) return err;
                 for (int k = 0; k < A->size; k++) {
                     ydata[j[k]][0] += alpha[0]*(Adata[k][0]*xdata[i[k]][0]-Adata[k][1]*xdata[i[k]][1])-alpha[1]*(Adata[k][0]*xdata[i[k]][1]+Adata[k][1]*xdata[i[k]][0]);
                     ydata[j[k]][1] += alpha[0]*(Adata[k][0]*xdata[i[k]][1]+Adata[k][1]*xdata[i[k]][0])+alpha[1]*(Adata[k][0]*xdata[i[k]][0]-Adata[k][1]*xdata[i[k]][1]);
@@ -2509,8 +2413,6 @@ int mtxmatrix_coordinate_zgemv(
                 const float (* Adata)[2] = A->data.complex_single;
                 const float (* xdata)[2] = x_->data.complex_single;
                 float (* ydata)[2] = y_->data.complex_single;
-                err = mtxvector_zscal(beta, y, num_flops);
-                if (err) return err;
                 for (int k = 0; k < A->size; k++) {
                     ydata[j[k]][0] += alpha[0]*(Adata[k][0]*xdata[i[k]][0]+Adata[k][1]*xdata[i[k]][1])-alpha[1]*(Adata[k][0]*xdata[i[k]][1]-Adata[k][1]*xdata[i[k]][0]);
                     ydata[j[k]][1] += alpha[0]*(Adata[k][0]*xdata[i[k]][1]-Adata[k][1]*xdata[i[k]][0])+alpha[1]*(Adata[k][0]*xdata[i[k]][0]+Adata[k][1]*xdata[i[k]][1]);
@@ -2520,8 +2422,6 @@ int mtxmatrix_coordinate_zgemv(
                 const double (* Adata)[2] = A->data.complex_double;
                 const double (* xdata)[2] = x_->data.complex_double;
                 double (* ydata)[2] = y_->data.complex_double;
-                err = mtxvector_zscal(beta, y, num_flops);
-                if (err) return err;
                 for (int k = 0; k < A->size; k++) {
                     ydata[j[k]][0] += alpha[0]*(Adata[k][0]*xdata[i[k]][0]+Adata[k][1]*xdata[i[k]][1])-alpha[1]*(Adata[k][0]*xdata[i[k]][1]-Adata[k][1]*xdata[i[k]][0]);
                     ydata[j[k]][1] += alpha[0]*(Adata[k][0]*xdata[i[k]][1]-Adata[k][1]*xdata[i[k]][0])+alpha[1]*(Adata[k][0]*xdata[i[k]][0]+Adata[k][1]*xdata[i[k]][1]);
@@ -2537,8 +2437,6 @@ int mtxmatrix_coordinate_zgemv(
                 const float (* Adata)[2] = A->data.complex_single;
                 const float (* xdata)[2] = x_->data.complex_single;
                 float (* ydata)[2] = y_->data.complex_single;
-                err = mtxvector_zscal(beta, y, num_flops);
-                if (err) return err;
                 for (int k = 0; k < A->size; k++) {
                     ydata[i[k]][0] += alpha[0]*(Adata[k][0]*xdata[j[k]][0]-Adata[k][1]*xdata[j[k]][1]) - alpha[1]*(Adata[k][0]*xdata[j[k]][1]+Adata[k][1]*xdata[j[k]][0]);
                     ydata[i[k]][1] += alpha[0]*(Adata[k][0]*xdata[j[k]][1]+Adata[k][1]*xdata[j[k]][0]) + alpha[1]*(Adata[k][0]*xdata[j[k]][0]-Adata[k][1]*xdata[j[k]][1]);
@@ -2552,8 +2450,6 @@ int mtxmatrix_coordinate_zgemv(
                 const double (* Adata)[2] = A->data.complex_double;
                 const double (* xdata)[2] = x_->data.complex_double;
                 double (* ydata)[2] = y_->data.complex_double;
-                err = mtxvector_zscal(beta, y, num_flops);
-                if (err) return err;
                 for (int k = 0; k < A->size; k++) {
                     ydata[i[k]][0] += alpha[0]*(Adata[k][0]*xdata[j[k]][0]-Adata[k][1]*xdata[j[k]][1]) - alpha[1]*(Adata[k][0]*xdata[j[k]][1]+Adata[k][1]*xdata[j[k]][0]);
                     ydata[i[k]][1] += alpha[0]*(Adata[k][0]*xdata[j[k]][1]+Adata[k][1]*xdata[j[k]][0]) + alpha[1]*(Adata[k][0]*xdata[j[k]][0]-Adata[k][1]*xdata[j[k]][1]);
@@ -2569,8 +2465,6 @@ int mtxmatrix_coordinate_zgemv(
                 const float (* Adata)[2] = A->data.complex_single;
                 const float (* xdata)[2] = x_->data.complex_single;
                 float (* ydata)[2] = y_->data.complex_single;
-                err = mtxvector_zscal(beta, y, num_flops);
-                if (err) return err;
                 for (int k = 0; k < A->size; k++) {
                     ydata[i[k]][0] += alpha[0]*(Adata[k][0]*xdata[j[k]][0]+Adata[k][1]*xdata[j[k]][1]) - alpha[1]*(Adata[k][0]*xdata[j[k]][1]-Adata[k][1]*xdata[j[k]][0]);
                     ydata[i[k]][1] += alpha[0]*(Adata[k][0]*xdata[j[k]][1]-Adata[k][1]*xdata[j[k]][0]) + alpha[1]*(Adata[k][0]*xdata[j[k]][0]+Adata[k][1]*xdata[j[k]][1]);
@@ -2584,8 +2478,6 @@ int mtxmatrix_coordinate_zgemv(
                 const double (* Adata)[2] = A->data.complex_double;
                 const double (* xdata)[2] = x_->data.complex_double;
                 double (* ydata)[2] = y_->data.complex_double;
-                err = mtxvector_zscal(beta, y, num_flops);
-                if (err) return err;
                 for (int k = 0; k < A->size; k++) {
                     ydata[i[k]][0] += alpha[0]*(Adata[k][0]*xdata[j[k]][0]+Adata[k][1]*xdata[j[k]][1]) - alpha[1]*(Adata[k][0]*xdata[j[k]][1]-Adata[k][1]*xdata[j[k]][0]);
                     ydata[i[k]][1] += alpha[0]*(Adata[k][0]*xdata[j[k]][1]-Adata[k][1]*xdata[j[k]][0]) + alpha[1]*(Adata[k][0]*xdata[j[k]][0]+Adata[k][1]*xdata[j[k]][1]);
@@ -2608,8 +2500,6 @@ int mtxmatrix_coordinate_zgemv(
                 const float (* Adata)[2] = A->data.complex_single;
                 const float (* xdata)[2] = x_->data.complex_single;
                 float (* ydata)[2] = y_->data.complex_single;
-                err = mtxvector_zscal(beta, y, num_flops);
-                if (err) return err;
                 for (int k = 0; k < A->size; k++) {
                     ydata[i[k]][0] += alpha[0]*(Adata[k][0]*xdata[j[k]][0]-Adata[k][1]*xdata[j[k]][1]) - alpha[1]*(Adata[k][0]*xdata[j[k]][1]+Adata[k][1]*xdata[j[k]][0]);
                     ydata[i[k]][1] += alpha[0]*(Adata[k][0]*xdata[j[k]][1]+Adata[k][1]*xdata[j[k]][0]) + alpha[1]*(Adata[k][0]*xdata[j[k]][0]-Adata[k][1]*xdata[j[k]][1]);
@@ -2623,8 +2513,6 @@ int mtxmatrix_coordinate_zgemv(
                 const double (* Adata)[2] = A->data.complex_double;
                 const double (* xdata)[2] = x_->data.complex_double;
                 double (* ydata)[2] = y_->data.complex_double;
-                err = mtxvector_zscal(beta, y, num_flops);
-                if (err) return err;
                 for (int k = 0; k < A->size; k++) {
                     ydata[i[k]][0] += alpha[0]*(Adata[k][0]*xdata[j[k]][0]-Adata[k][1]*xdata[j[k]][1]) - alpha[1]*(Adata[k][0]*xdata[j[k]][1]+Adata[k][1]*xdata[j[k]][0]);
                     ydata[i[k]][1] += alpha[0]*(Adata[k][0]*xdata[j[k]][1]+Adata[k][1]*xdata[j[k]][0]) + alpha[1]*(Adata[k][0]*xdata[j[k]][0]-Adata[k][1]*xdata[j[k]][1]);
@@ -2640,8 +2528,6 @@ int mtxmatrix_coordinate_zgemv(
                 const float (* Adata)[2] = A->data.complex_single;
                 const float (* xdata)[2] = x_->data.complex_single;
                 float (* ydata)[2] = y_->data.complex_single;
-                err = mtxvector_zscal(beta, y, num_flops);
-                if (err) return err;
                 for (int k = 0; k < A->size; k++) {
                     ydata[i[k]][0] += alpha[0]*(Adata[k][0]*xdata[j[k]][0]+Adata[k][1]*xdata[j[k]][1]) - alpha[1]*(Adata[k][0]*xdata[j[k]][1]-Adata[k][1]*xdata[j[k]][0]);
                     ydata[i[k]][1] += alpha[0]*(Adata[k][0]*xdata[j[k]][1]-Adata[k][1]*xdata[j[k]][0]) + alpha[1]*(Adata[k][0]*xdata[j[k]][0]+Adata[k][1]*xdata[j[k]][1]);
@@ -2654,8 +2540,6 @@ int mtxmatrix_coordinate_zgemv(
                 const double (* Adata)[2] = A->data.complex_double;
                 const double (* xdata)[2] = x_->data.complex_double;
                 double (* ydata)[2] = y_->data.complex_double;
-                err = mtxvector_zscal(beta, y, num_flops);
-                if (err) return err;
                 for (int k = 0; k < A->size; k++) {
                     ydata[i[k]][0] += alpha[0]*(Adata[k][0]*xdata[j[k]][0]+Adata[k][1]*xdata[j[k]][1]) - alpha[1]*(Adata[k][0]*xdata[j[k]][1]-Adata[k][1]*xdata[j[k]][0]);
                     ydata[i[k]][1] += alpha[0]*(Adata[k][0]*xdata[j[k]][1]-Adata[k][1]*xdata[j[k]][0]) + alpha[1]*(Adata[k][0]*xdata[j[k]][0]+Adata[k][1]*xdata[j[k]][1]);
