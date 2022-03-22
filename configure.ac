@@ -16,7 +16,7 @@ dnl You should have received a copy of the GNU General Public License
 dnl along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
 dnl
 dnl Authors: James D. Trotter <james@simula.no>
-dnl Last modified: 2022-01-20
+dnl Last modified: 2022-03-22
 dnl
 dnl autoconf script for the top-level directory of Libmtx.
 dnl
@@ -127,6 +127,37 @@ else
   AC_MSG_RESULT([$mpi_found])
 fi
 AM_CONDITIONAL([HAVE_MPI], [test x"$mpi_found" != xno])
+
+dnl Check for OpenMP
+AC_ARG_WITH(openmp,
+  [AS_HELP_STRING(
+    [--with-openmp],
+    [compile with OpenMP support [default: auto]])],,
+  [with_openmp=auto])
+openmp_found=no
+if test x"$with_openmp" != xno; then
+  AX_OPENMP([
+    AC_MSG_CHECKING([for openmp])
+    openmp_found=yes
+    AC_MSG_RESULT([$openmp_found])
+    AC_DEFINE(LIBMTX_HAVE_OPENMP,1,[Define to 1 if OpenMP is enabled.])
+    AC_SUBST(LIBMTX_HAVE_OPENMP)
+    AC_MSG_CHECKING([for openmp compiler flags])
+    AC_MSG_RESULT(${OPENMP_CFLAGS})
+    AC_SUBST([OPENMP_CFLAGS])
+    libmtx_CPPFLAGS="$libmtx_CPPFLAGS ${OPENMP_CFLAGS}"
+    LDFLAGS="$LDFLAGS ${OPENMP_CFLAGS}"
+   ],[
+    AC_MSG_CHECKING([for openmp])
+    AC_MSG_RESULT([$openmp_found])
+    if test x"$with_openmp" = xyes; then
+      AC_MSG_FAILURE([openmp not found.])
+    fi])
+else
+  AC_MSG_CHECKING([for openmp])
+  AC_MSG_RESULT([$openmp_found])
+fi
+AM_CONDITIONAL([HAVE_OPENMP], [test x"$openmp_found" != xno])
 
 dnl Check for zlib
 AX_CHECK_ZLIB([

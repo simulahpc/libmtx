@@ -1493,6 +1493,7 @@ int mtxmatrix_csr_sgemv(
                     const float * Adata = A->data.real_single;
                     const float * xdata = x_->data.real_single;
                     float * ydata = y_->data.real_single;
+                    #pragma omp parallel for
                     for (int i = 0; i < A->num_rows; i++) {
                         for (int64_t k = rowptr[i]; k < rowptr[i+1]; k++)
                             ydata[i] += alpha*Adata[k]*xdata[j[k]];
@@ -1502,6 +1503,7 @@ int mtxmatrix_csr_sgemv(
                     const double * Adata = A->data.real_double;
                     const double * xdata = x_->data.real_double;
                     double * ydata = y_->data.real_double;
+                    #pragma omp parallel for
                     for (int i = 0; i < A->num_rows; i++) {
                         for (int64_t k = rowptr[i]; k < rowptr[i+1]; k++)
                             ydata[i] += alpha*Adata[k]*xdata[j[k]];
@@ -1535,6 +1537,7 @@ int mtxmatrix_csr_sgemv(
                     const float (* Adata)[2] = A->data.complex_single;
                     const float (* xdata)[2] = x_->data.complex_single;
                     float (* ydata)[2] = y_->data.complex_single;
+                    #pragma omp parallel for
                     for (int i = 0; i < A->num_rows; i++) {
                         for (int64_t k = rowptr[i]; k < rowptr[i+1]; k++) {
                             ydata[i][0] += alpha*(Adata[k][0]*xdata[j[k]][0]-Adata[k][1]*xdata[j[k]][1]);
@@ -1546,6 +1549,7 @@ int mtxmatrix_csr_sgemv(
                     const double (* Adata)[2] = A->data.complex_double;
                     const double (* xdata)[2] = x_->data.complex_double;
                     double (* ydata)[2] = y_->data.complex_double;
+                    #pragma omp parallel for
                     for (int i = 0; i < A->num_rows; i++) {
                         for (int64_t k = rowptr[i]; k < rowptr[i+1]; k++) {
                             ydata[i][0] += alpha*(Adata[k][0]*xdata[j[k]][0]-Adata[k][1]*xdata[j[k]][1]);
@@ -1609,6 +1613,7 @@ int mtxmatrix_csr_sgemv(
                     const int32_t * Adata = A->data.integer_single;
                     const int32_t * xdata = x_->data.integer_single;
                     int32_t * ydata = y_->data.integer_single;
+                    #pragma omp parallel for
                     for (int i = 0; i < A->num_rows; i++) {
                         for (int64_t k = rowptr[i]; k < rowptr[i+1]; k++)
                             ydata[i] += alpha*Adata[k]*xdata[j[k]];
@@ -1618,6 +1623,7 @@ int mtxmatrix_csr_sgemv(
                     const int64_t * Adata = A->data.integer_double;
                     const int64_t * xdata = x_->data.integer_double;
                     int64_t * ydata = y_->data.integer_double;
+                    #pragma omp parallel for
                     for (int i = 0; i < A->num_rows; i++) {
                         for (int64_t k = rowptr[i]; k < rowptr[i+1]; k++)
                             ydata[i] += alpha*Adata[k]*xdata[j[k]];
@@ -1900,6 +1906,7 @@ int mtxmatrix_csr_dgemv(
                     const float * Adata = A->data.real_single;
                     const float * xdata = x_->data.real_single;
                     float * ydata = y_->data.real_single;
+                    #pragma omp parallel for
                     for (int i = 0; i < A->num_rows; i++) {
                         for (int64_t k = rowptr[i]; k < rowptr[i+1]; k++)
                             ydata[i] += alpha*Adata[k]*xdata[j[k]];
@@ -1909,6 +1916,7 @@ int mtxmatrix_csr_dgemv(
                     const double * Adata = A->data.real_double;
                     const double * xdata = x_->data.real_double;
                     double * ydata = y_->data.real_double;
+                    #pragma omp parallel for
                     for (int i = 0; i < A->num_rows; i++) {
                         for (int64_t k = rowptr[i]; k < rowptr[i+1]; k++)
                             ydata[i] += alpha*Adata[k]*xdata[j[k]];
@@ -1942,6 +1950,7 @@ int mtxmatrix_csr_dgemv(
                     const float (* Adata)[2] = A->data.complex_single;
                     const float (* xdata)[2] = x_->data.complex_single;
                     float (* ydata)[2] = y_->data.complex_single;
+                    #pragma omp parallel for
                     for (int i = 0; i < A->num_rows; i++) {
                         for (int64_t k = rowptr[i]; k < rowptr[i+1]; k++) {
                             ydata[i][0] += alpha*(Adata[k][0]*xdata[j[k]][0]-Adata[k][1]*xdata[j[k]][1]);
@@ -1953,6 +1962,7 @@ int mtxmatrix_csr_dgemv(
                     const double (* Adata)[2] = A->data.complex_double;
                     const double (* xdata)[2] = x_->data.complex_double;
                     double (* ydata)[2] = y_->data.complex_double;
+                    #pragma omp parallel for
                     for (int i = 0; i < A->num_rows; i++) {
                         for (int64_t k = rowptr[i]; k < rowptr[i+1]; k++) {
                             ydata[i][0] += alpha*(Adata[k][0]*xdata[j[k]][0]-Adata[k][1]*xdata[j[k]][1]);
@@ -2016,6 +2026,7 @@ int mtxmatrix_csr_dgemv(
                     const int32_t * Adata = A->data.integer_single;
                     const int32_t * xdata = x_->data.integer_single;
                     int32_t * ydata = y_->data.integer_single;
+                    #pragma omp parallel for
                     for (int i = 0; i < A->num_rows; i++) {
                         for (int64_t k = rowptr[i]; k < rowptr[i+1]; k++)
                             ydata[i] += alpha*Adata[k]*xdata[j[k]];
@@ -2025,6 +2036,7 @@ int mtxmatrix_csr_dgemv(
                     const int64_t * Adata = A->data.integer_double;
                     const int64_t * xdata = x_->data.integer_double;
                     int64_t * ydata = y_->data.integer_double;
+                    #pragma omp parallel for
                     for (int i = 0; i < A->num_rows; i++) {
                         for (int64_t k = rowptr[i]; k < rowptr[i+1]; k++)
                             ydata[i] += alpha*Adata[k]*xdata[j[k]];
@@ -2304,6 +2316,7 @@ int mtxmatrix_csr_cgemv(
                 const float (* Adata)[2] = A->data.complex_single;
                 const float (* xdata)[2] = x_->data.complex_single;
                 float (* ydata)[2] = y_->data.complex_single;
+                #pragma omp parallel for
                 for (int i = 0; i < A->num_rows; i++) {
                     for (int k = rowptr[i]; k < rowptr[i+1]; k++) {
                         ydata[i][0] += alpha[0]*(Adata[k][0]*xdata[j[k]][0]-Adata[k][1]*xdata[j[k]][1])-alpha[1]*(Adata[k][0]*xdata[j[k]][1]+Adata[k][1]*xdata[j[k]][0]);
@@ -2315,6 +2328,7 @@ int mtxmatrix_csr_cgemv(
                 const double (* Adata)[2] = A->data.complex_double;
                 const double (* xdata)[2] = x_->data.complex_double;
                 double (* ydata)[2] = y_->data.complex_double;
+                #pragma omp parallel for
                 for (int i = 0; i < A->num_rows; i++) {
                     for (int k = rowptr[i]; k < rowptr[i+1]; k++) {
                         ydata[i][0] += alpha[0]*(Adata[k][0]*xdata[j[k]][0]-Adata[k][1]*xdata[j[k]][1])-alpha[1]*(Adata[k][0]*xdata[j[k]][1]+Adata[k][1]*xdata[j[k]][0]);
@@ -2571,6 +2585,7 @@ int mtxmatrix_csr_zgemv(
                 const float (* Adata)[2] = A->data.complex_single;
                 const float (* xdata)[2] = x_->data.complex_single;
                 float (* ydata)[2] = y_->data.complex_single;
+                #pragma omp parallel for
                 for (int i = 0; i < A->num_rows; i++) {
                     for (int k = rowptr[i]; k < rowptr[i+1]; k++) {
                         ydata[i][0] += alpha[0]*(Adata[k][0]*xdata[j[k]][0]-Adata[k][1]*xdata[j[k]][1])-alpha[1]*(Adata[k][0]*xdata[j[k]][1]+Adata[k][1]*xdata[j[k]][0]);
@@ -2582,6 +2597,7 @@ int mtxmatrix_csr_zgemv(
                 const double (* Adata)[2] = A->data.complex_double;
                 const double (* xdata)[2] = x_->data.complex_double;
                 double (* ydata)[2] = y_->data.complex_double;
+                #pragma omp parallel for
                 for (int i = 0; i < A->num_rows; i++) {
                     for (int k = rowptr[i]; k < rowptr[i+1]; k++) {
                         ydata[i][0] += alpha[0]*(Adata[k][0]*xdata[j[k]][0]-Adata[k][1]*xdata[j[k]][1])-alpha[1]*(Adata[k][0]*xdata[j[k]][1]+Adata[k][1]*xdata[j[k]][0]);
