@@ -1145,8 +1145,9 @@ int mtxmatrix_csr_saxpy(
     struct mtxmatrix_csr * y,
     int64_t * num_flops)
 {
-    struct mtxvector_coordinate vecx;
-    int err = mtxmatrix_csr_vectorise(&vecx, x);
+    struct mtxvector vecx;
+    vecx.type = mtxvector_coordinate;
+    int err = mtxmatrix_csr_vectorise(&vecx.storage.coordinate, x);
     if (err) return err;
     struct mtxvector_coordinate vecy;
     err = mtxmatrix_csr_vectorise(&vecy, y);
@@ -1167,8 +1168,9 @@ int mtxmatrix_csr_daxpy(
     struct mtxmatrix_csr * y,
     int64_t * num_flops)
 {
-    struct mtxvector_coordinate vecx;
-    int err = mtxmatrix_csr_vectorise(&vecx, x);
+    struct mtxvector vecx;
+    vecx.type = mtxvector_coordinate;
+    int err = mtxmatrix_csr_vectorise(&vecx.storage.coordinate, x);
     if (err) return err;
     struct mtxvector_coordinate vecy;
     err = mtxmatrix_csr_vectorise(&vecy, y);
@@ -1192,8 +1194,9 @@ int mtxmatrix_csr_saypx(
     struct mtxvector_coordinate vecy;
     int err = mtxmatrix_csr_vectorise(&vecy, y);
     if (err) return err;
-    struct mtxvector_coordinate vecx;
-    err = mtxmatrix_csr_vectorise(&vecx, x);
+    struct mtxvector vecx;
+    vecx.type = mtxvector_coordinate;
+    err = mtxmatrix_csr_vectorise(&vecx.storage.coordinate, x);
     if (err) return err;
     return mtxvector_coordinate_saypx(a, &vecy, &vecx, num_flops);
 }
@@ -1214,8 +1217,9 @@ int mtxmatrix_csr_daypx(
     struct mtxvector_coordinate vecy;
     int err = mtxmatrix_csr_vectorise(&vecy, y);
     if (err) return err;
-    struct mtxvector_coordinate vecx;
-    err = mtxmatrix_csr_vectorise(&vecx, x);
+    struct mtxvector vecx;
+    vecx.type = mtxvector_coordinate;
+    err = mtxmatrix_csr_vectorise(&vecx.storage.coordinate, x);
     if (err) return err;
     return mtxvector_coordinate_daypx(a, &vecy, &vecx, num_flops);
 }
@@ -1236,8 +1240,9 @@ int mtxmatrix_csr_sdot(
     struct mtxvector_coordinate vecx;
     int err = mtxmatrix_csr_vectorise(&vecx, x);
     if (err) return err;
-    struct mtxvector_coordinate vecy;
-    err = mtxmatrix_csr_vectorise(&vecy, y);
+    struct mtxvector vecy;
+    vecy.type = mtxvector_coordinate;
+    err = mtxmatrix_csr_vectorise(&vecy.storage.coordinate, y);
     if (err) return err;
     return mtxvector_coordinate_sdot(&vecx, &vecy, dot, num_flops);
 }
@@ -1258,8 +1263,9 @@ int mtxmatrix_csr_ddot(
     struct mtxvector_coordinate vecx;
     int err = mtxmatrix_csr_vectorise(&vecx, x);
     if (err) return err;
-    struct mtxvector_coordinate vecy;
-    err = mtxmatrix_csr_vectorise(&vecy, y);
+    struct mtxvector vecy;
+    vecy.type = mtxvector_coordinate;
+    err = mtxmatrix_csr_vectorise(&vecy.storage.coordinate, y);
     if (err) return err;
     return mtxvector_coordinate_ddot(&vecx, &vecy, dot, num_flops);
 }
@@ -1281,8 +1287,9 @@ int mtxmatrix_csr_cdotu(
     struct mtxvector_coordinate vecx;
     int err = mtxmatrix_csr_vectorise(&vecx, x);
     if (err) return err;
-    struct mtxvector_coordinate vecy;
-    err = mtxmatrix_csr_vectorise(&vecy, y);
+    struct mtxvector vecy;
+    vecy.type = mtxvector_coordinate;
+    err = mtxmatrix_csr_vectorise(&vecy.storage.coordinate, y);
     if (err) return err;
     return mtxvector_coordinate_cdotu(&vecx, &vecy, dot, num_flops);
 }
@@ -1304,8 +1311,9 @@ int mtxmatrix_csr_zdotu(
     struct mtxvector_coordinate vecx;
     int err = mtxmatrix_csr_vectorise(&vecx, x);
     if (err) return err;
-    struct mtxvector_coordinate vecy;
-    err = mtxmatrix_csr_vectorise(&vecy, y);
+    struct mtxvector vecy;
+    vecy.type = mtxvector_coordinate;
+    err = mtxmatrix_csr_vectorise(&vecy.storage.coordinate, y);
     if (err) return err;
     return mtxvector_coordinate_zdotu(&vecx, &vecy, dot, num_flops);
 }
@@ -1327,8 +1335,9 @@ int mtxmatrix_csr_cdotc(
     struct mtxvector_coordinate vecx;
     int err = mtxmatrix_csr_vectorise(&vecx, x);
     if (err) return err;
-    struct mtxvector_coordinate vecy;
-    err = mtxmatrix_csr_vectorise(&vecy, y);
+    struct mtxvector vecy;
+    vecy.type = mtxvector_coordinate;
+    err = mtxmatrix_csr_vectorise(&vecy.storage.coordinate, y);
     if (err) return err;
     return mtxvector_coordinate_cdotc(&vecx, &vecy, dot, num_flops);
 }
@@ -1350,8 +1359,9 @@ int mtxmatrix_csr_zdotc(
     struct mtxvector_coordinate vecx;
     int err = mtxmatrix_csr_vectorise(&vecx, x);
     if (err) return err;
-    struct mtxvector_coordinate vecy;
-    err = mtxmatrix_csr_vectorise(&vecy, y);
+    struct mtxvector vecy;
+    vecy.type = mtxvector_coordinate;
+    err = mtxmatrix_csr_vectorise(&vecy.storage.coordinate, y);
     if (err) return err;
     return mtxvector_coordinate_zdotc(&vecx, &vecy, dot, num_flops);
 }

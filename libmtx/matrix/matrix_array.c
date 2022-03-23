@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-03-19
+ * Last modified: 2022-03-23
  *
  * Data structures for matrices in array format.
  */
@@ -839,8 +839,9 @@ int mtxmatrix_array_saxpy(
     struct mtxmatrix_array * y,
     int64_t * num_flops)
 {
-    struct mtxvector_array vecx;
-    int err = mtxmatrix_array_vectorise(&vecx, x);
+    struct mtxvector vecx;
+    vecx.type = mtxvector_array;
+    int err = mtxmatrix_array_vectorise(&vecx.storage.array, x);
     if (err) return err;
     struct mtxvector_array vecy;
     err = mtxmatrix_array_vectorise(&vecy, y);
@@ -861,8 +862,9 @@ int mtxmatrix_array_daxpy(
     struct mtxmatrix_array * y,
     int64_t * num_flops)
 {
-    struct mtxvector_array vecx;
-    int err = mtxmatrix_array_vectorise(&vecx, x);
+    struct mtxvector vecx;
+    vecx.type = mtxvector_array;
+    int err = mtxmatrix_array_vectorise(&vecx.storage.array, x);
     if (err) return err;
     struct mtxvector_array vecy;
     err = mtxmatrix_array_vectorise(&vecy, y);
@@ -886,8 +888,9 @@ int mtxmatrix_array_saypx(
     struct mtxvector_array vecy;
     int err = mtxmatrix_array_vectorise(&vecy, y);
     if (err) return err;
-    struct mtxvector_array vecx;
-    err = mtxmatrix_array_vectorise(&vecx, x);
+    struct mtxvector vecx;
+    vecx.type = mtxvector_array;
+    err = mtxmatrix_array_vectorise(&vecx.storage.array, x);
     if (err) return err;
     return mtxvector_array_saypx(a, &vecy, &vecx, num_flops);
 }
@@ -908,8 +911,9 @@ int mtxmatrix_array_daypx(
     struct mtxvector_array vecy;
     int err = mtxmatrix_array_vectorise(&vecy, y);
     if (err) return err;
-    struct mtxvector_array vecx;
-    err = mtxmatrix_array_vectorise(&vecx, x);
+    struct mtxvector vecx;
+    vecx.type = mtxvector_array;
+    err = mtxmatrix_array_vectorise(&vecx.storage.array, x);
     if (err) return err;
     return mtxvector_array_daypx(a, &vecy, &vecx, num_flops);
 }

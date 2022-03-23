@@ -359,7 +359,7 @@ int mtxvector_array_zscal(
  */
 int mtxvector_array_saxpy(
     float a,
-    const struct mtxvector_array * x,
+    const struct mtxvector * x,
     struct mtxvector_array * y,
     int64_t * num_flops);
 
@@ -372,7 +372,7 @@ int mtxvector_array_saxpy(
  */
 int mtxvector_array_daxpy(
     double a,
-    const struct mtxvector_array * x,
+    const struct mtxvector * x,
     struct mtxvector_array * y,
     int64_t * num_flops);
 
@@ -386,7 +386,7 @@ int mtxvector_array_daxpy(
 int mtxvector_array_saypx(
     float a,
     struct mtxvector_array * y,
-    const struct mtxvector_array * x,
+    const struct mtxvector * x,
     int64_t * num_flops);
 
 /**
@@ -399,7 +399,7 @@ int mtxvector_array_saypx(
 int mtxvector_array_daypx(
     double a,
     struct mtxvector_array * y,
-    const struct mtxvector_array * x,
+    const struct mtxvector * x,
     int64_t * num_flops);
 
 /**

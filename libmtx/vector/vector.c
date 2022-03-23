@@ -882,9 +882,7 @@ int mtxvector_partition(
     } else if (src->type == mtxvector_coordinate) {
         return mtxvector_coordinate_partition(
             dsts, &src->storage.coordinate, part);
-    } else {
-        return MTX_ERR_INVALID_VECTOR_TYPE;
-    }
+    } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
 }
 
 /**
@@ -910,9 +908,7 @@ int mtxvector_join(
         dst->type = mtxvector_coordinate;
         return mtxvector_coordinate_join(
             &dst->storage.coordinate, srcs, part);
-    } else {
-        return MTX_ERR_INVALID_VECTOR_TYPE;
-    }
+    } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
 }
 
 /*
@@ -935,9 +931,7 @@ int mtxvector_swap(
     } else if (x->type == mtxvector_coordinate) {
         return mtxvector_coordinate_swap(
             &x->storage.coordinate, &y->storage.coordinate);
-    } else {
-        return MTX_ERR_INVALID_VECTOR_TYPE;
-    }
+    } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
 }
 
 /**
@@ -955,9 +949,7 @@ int mtxvector_copy(
     } else if (x->type == mtxvector_coordinate) {
         return mtxvector_coordinate_copy(
             &y->storage.coordinate, &x->storage.coordinate);
-    } else {
-        return MTX_ERR_INVALID_VECTOR_TYPE;
-    }
+    } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
 }
 
 /**
@@ -973,9 +965,7 @@ int mtxvector_sscal(
         return mtxvector_array_sscal(a, &x->storage.array, num_flops);
     } else if (x->type == mtxvector_coordinate) {
         return mtxvector_coordinate_sscal(a, &x->storage.coordinate, num_flops);
-    } else {
-        return MTX_ERR_INVALID_VECTOR_TYPE;
-    }
+    } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
 }
 
 /**
@@ -991,9 +981,7 @@ int mtxvector_dscal(
         return mtxvector_array_dscal(a, &x->storage.array, num_flops);
     } else if (x->type == mtxvector_coordinate) {
         return mtxvector_coordinate_dscal(a, &x->storage.coordinate, num_flops);
-    } else {
-        return MTX_ERR_INVALID_VECTOR_TYPE;
-    }
+    } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
 }
 
 /**
@@ -1009,9 +997,7 @@ int mtxvector_cscal(
         return mtxvector_array_cscal(a, &x->storage.array, num_flops);
     } else if (x->type == mtxvector_coordinate) {
         return mtxvector_coordinate_cscal(a, &x->storage.coordinate, num_flops);
-    } else {
-        return MTX_ERR_INVALID_VECTOR_TYPE;
-    }
+    } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
 }
 
 /**
@@ -1027,9 +1013,7 @@ int mtxvector_zscal(
         return mtxvector_array_zscal(a, &x->storage.array, num_flops);
     } else if (x->type == mtxvector_coordinate) {
         return mtxvector_coordinate_zscal(a, &x->storage.coordinate, num_flops);
-    } else {
-        return MTX_ERR_INVALID_VECTOR_TYPE;
-    }
+    } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
 }
 
 /**
@@ -1042,17 +1026,11 @@ int mtxvector_saxpy(
     struct mtxvector * y,
     int64_t * num_flops)
 {
-    if (x->type != y->type)
-        return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
-    if (x->type == mtxvector_array) {
-        return mtxvector_array_saxpy(
-            a, &x->storage.array, &y->storage.array, num_flops);
-    } else if (x->type == mtxvector_coordinate) {
-        return mtxvector_coordinate_saxpy(
-            a, &x->storage.coordinate, &y->storage.coordinate, num_flops);
-    } else {
-        return MTX_ERR_INVALID_VECTOR_TYPE;
-    }
+    if (y->type == mtxvector_array) {
+        return mtxvector_array_saxpy(a, x, &y->storage.array, num_flops);
+    } else if (y->type == mtxvector_coordinate) {
+        return mtxvector_coordinate_saxpy(a, x, &y->storage.coordinate, num_flops);
+    } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
 }
 
 /**
@@ -1065,17 +1043,11 @@ int mtxvector_daxpy(
     struct mtxvector * y,
     int64_t * num_flops)
 {
-    if (x->type != y->type)
-        return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
-    if (x->type == mtxvector_array) {
-        return mtxvector_array_daxpy(
-            a, &x->storage.array, &y->storage.array, num_flops);
-    } else if (x->type == mtxvector_coordinate) {
-        return mtxvector_coordinate_daxpy(
-            a, &x->storage.coordinate, &y->storage.coordinate, num_flops);
-    } else {
-        return MTX_ERR_INVALID_VECTOR_TYPE;
-    }
+    if (y->type == mtxvector_array) {
+        return mtxvector_array_daxpy(a, x, &y->storage.array, num_flops);
+    } else if (y->type == mtxvector_coordinate) {
+        return mtxvector_coordinate_daxpy(a, x, &y->storage.coordinate, num_flops);
+    } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
 }
 
 /**
@@ -1088,17 +1060,11 @@ int mtxvector_saypx(
     const struct mtxvector * x,
     int64_t * num_flops)
 {
-    if (x->type != y->type)
-        return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
-    if (x->type == mtxvector_array) {
-        return mtxvector_array_saypx(
-            a, &y->storage.array, &x->storage.array, num_flops);
-    } else if (x->type == mtxvector_coordinate) {
-        return mtxvector_coordinate_saypx(
-            a, &y->storage.coordinate, &x->storage.coordinate, num_flops);
-    } else {
-        return MTX_ERR_INVALID_VECTOR_TYPE;
-    }
+    if (y->type == mtxvector_array) {
+        return mtxvector_array_saypx(a, &y->storage.array, x, num_flops);
+    } else if (y->type == mtxvector_coordinate) {
+        return mtxvector_coordinate_saypx(a, &y->storage.coordinate, x, num_flops);
+    } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
 }
 
 /**
@@ -1111,17 +1077,11 @@ int mtxvector_daypx(
     const struct mtxvector * x,
     int64_t * num_flops)
 {
-    if (x->type != y->type)
-        return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
-    if (x->type == mtxvector_array) {
-        return mtxvector_array_daypx(
-            a, &y->storage.array, &x->storage.array, num_flops);
-    } else if (x->type == mtxvector_coordinate) {
-        return mtxvector_coordinate_daypx(
-            a, &y->storage.coordinate, &x->storage.coordinate, num_flops);
-    } else {
-        return MTX_ERR_INVALID_VECTOR_TYPE;
-    }
+    if (y->type == mtxvector_array) {
+        return mtxvector_array_daypx(a, &y->storage.array, x, num_flops);
+    } else if (y->type == mtxvector_coordinate) {
+        return mtxvector_coordinate_daypx(a, &y->storage.coordinate, x, num_flops);
+    } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
 }
 
 /**
@@ -1135,14 +1095,10 @@ int mtxvector_sdot(
     int64_t * num_flops)
 {
     if (x->type == mtxvector_array) {
-        return mtxvector_array_sdot(
-            &x->storage.array, y, dot, num_flops);
+        return mtxvector_array_sdot(&x->storage.array, y, dot, num_flops);
     } else if (x->type == mtxvector_coordinate) {
-        return mtxvector_coordinate_sdot(
-            &x->storage.coordinate, y, dot, num_flops);
-    } else {
-        return MTX_ERR_INVALID_VECTOR_TYPE;
-    }
+        return mtxvector_coordinate_sdot(&x->storage.coordinate, y, dot, num_flops);
+    } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
 }
 
 /**
@@ -1156,14 +1112,10 @@ int mtxvector_ddot(
     int64_t * num_flops)
 {
     if (x->type == mtxvector_array) {
-        return mtxvector_array_ddot(
-            &x->storage.array, y, dot, num_flops);
+        return mtxvector_array_ddot(&x->storage.array, y, dot, num_flops);
     } else if (x->type == mtxvector_coordinate) {
-        return mtxvector_coordinate_ddot(
-            &x->storage.coordinate, y, dot, num_flops);
-    } else {
-        return MTX_ERR_INVALID_VECTOR_TYPE;
-    }
+        return mtxvector_coordinate_ddot(&x->storage.coordinate, y, dot, num_flops);
+    } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
 }
 
 /**
@@ -1178,14 +1130,10 @@ int mtxvector_cdotu(
     int64_t * num_flops)
 {
     if (x->type == mtxvector_array) {
-        return mtxvector_array_cdotu(
-            &x->storage.array, y, dot, num_flops);
+        return mtxvector_array_cdotu(&x->storage.array, y, dot, num_flops);
     } else if (x->type == mtxvector_coordinate) {
-        return mtxvector_coordinate_cdotu(
-            &x->storage.coordinate, y, dot, num_flops);
-    } else {
-        return MTX_ERR_INVALID_VECTOR_TYPE;
-    }
+        return mtxvector_coordinate_cdotu(&x->storage.coordinate, y, dot, num_flops);
+    } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
 }
 
 /**
@@ -1200,14 +1148,10 @@ int mtxvector_zdotu(
     int64_t * num_flops)
 {
     if (x->type == mtxvector_array) {
-        return mtxvector_array_zdotu(
-            &x->storage.array, y, dot, num_flops);
+        return mtxvector_array_zdotu(&x->storage.array, y, dot, num_flops);
     } else if (x->type == mtxvector_coordinate) {
-        return mtxvector_coordinate_zdotu(
-            &x->storage.coordinate, y, dot, num_flops);
-    } else {
-        return MTX_ERR_INVALID_VECTOR_TYPE;
-    }
+        return mtxvector_coordinate_zdotu(&x->storage.coordinate, y, dot, num_flops);
+    } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
 }
 
 /**
@@ -1221,14 +1165,10 @@ int mtxvector_cdotc(
     int64_t * num_flops)
 {
     if (x->type == mtxvector_array) {
-        return mtxvector_array_cdotc(
-            &x->storage.array, y, dot, num_flops);
+        return mtxvector_array_cdotc(&x->storage.array, y, dot, num_flops);
     } else if (x->type == mtxvector_coordinate) {
-        return mtxvector_coordinate_cdotc(
-            &x->storage.coordinate, y, dot, num_flops);
-    } else {
-        return MTX_ERR_INVALID_VECTOR_TYPE;
-    }
+        return mtxvector_coordinate_cdotc(&x->storage.coordinate, y, dot, num_flops);
+    } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
 }
 
 /**
@@ -1242,14 +1182,10 @@ int mtxvector_zdotc(
     int64_t * num_flops)
 {
     if (x->type == mtxvector_array) {
-        return mtxvector_array_zdotc(
-            &x->storage.array, y, dot, num_flops);
+        return mtxvector_array_zdotc(&x->storage.array, y, dot, num_flops);
     } else if (x->type == mtxvector_coordinate) {
-        return mtxvector_coordinate_zdotc(
-            &x->storage.coordinate, y, dot, num_flops);
-    } else {
-        return MTX_ERR_INVALID_VECTOR_TYPE;
-    }
+        return mtxvector_coordinate_zdotc(&x->storage.coordinate, y, dot, num_flops);
+    } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
 }
 
 /**
@@ -1265,9 +1201,7 @@ int mtxvector_snrm2(
         return mtxvector_array_snrm2(&x->storage.array, nrm2, num_flops);
     } else if (x->type == mtxvector_coordinate) {
         return mtxvector_coordinate_snrm2(&x->storage.coordinate, nrm2, num_flops);
-    } else {
-        return MTX_ERR_INVALID_VECTOR_TYPE;
-    }
+    } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
 }
 
 /**
@@ -1283,9 +1217,7 @@ int mtxvector_dnrm2(
         return mtxvector_array_dnrm2(&x->storage.array, nrm2, num_flops);
     } else if (x->type == mtxvector_coordinate) {
         return mtxvector_coordinate_dnrm2(&x->storage.coordinate, nrm2, num_flops);
-    } else {
-        return MTX_ERR_INVALID_VECTOR_TYPE;
-    }
+    } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
 }
 
 /**
@@ -1303,9 +1235,7 @@ int mtxvector_sasum(
         return mtxvector_array_sasum(&x->storage.array, asum, num_flops);
     } else if (x->type == mtxvector_coordinate) {
         return mtxvector_coordinate_sasum(&x->storage.coordinate, asum, num_flops);
-    } else {
-        return MTX_ERR_INVALID_VECTOR_TYPE;
-    }
+    } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
 }
 
 /**
@@ -1323,9 +1253,7 @@ int mtxvector_dasum(
         return mtxvector_array_dasum(&x->storage.array, asum, num_flops);
     } else if (x->type == mtxvector_coordinate) {
         return mtxvector_coordinate_dasum(&x->storage.coordinate, asum, num_flops);
-    } else {
-        return MTX_ERR_INVALID_VECTOR_TYPE;
-    }
+    } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
 }
 
 /**
@@ -1342,9 +1270,7 @@ int mtxvector_iamax(
         return mtxvector_array_iamax(&x->storage.array, iamax);
     } else if (x->type == mtxvector_coordinate) {
         return mtxvector_coordinate_iamax(&x->storage.coordinate, iamax);
-    } else {
-        return MTX_ERR_INVALID_VECTOR_TYPE;
-    }
+    } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
 }
 
 /*
@@ -1374,9 +1300,7 @@ int mtxvector_permute(
     } else if (x->type == mtxvector_coordinate) {
         return mtxvector_coordinate_permute(
             &x->storage.coordinate, offset, size, perm);
-    } else {
-        return MTX_ERR_INVALID_VECTOR_TYPE;
-    }
+    } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
 }
 
 /**
@@ -1404,9 +1328,7 @@ int mtxvector_sort(
         return mtxvector_array_sort(&x->storage.array, size, keys, perm);
     } else if (x->type == mtxvector_coordinate) {
         return mtxvector_coordinate_sort(&x->storage.coordinate, size, keys, perm);
-    } else {
-        return MTX_ERR_INVALID_VECTOR_TYPE;
-    }
+    } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
 }
 
 /*
@@ -1534,8 +1456,6 @@ int mtxvector_alltoallv(
             comm, disterr);
     } else if (sendbuf->type != recvbuf->type) {
         return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
-    } else {
-        return MTX_ERR_INVALID_VECTOR_TYPE;
-    }
+    } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
 }
 #endif

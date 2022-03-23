@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-03-15
+ * Last modified: 2022-03-23
  *
  * Data structures for matrices in coordinate format.
  */
@@ -1117,8 +1117,9 @@ int mtxmatrix_coordinate_saxpy(
     int64_t * num_flops)
 {
     if (!same_pattern(x, y)) return MTX_ERR_INCOMPATIBLE_PATTERN;
-    struct mtxvector_array vecx;
-    int err = vectorise_array(&vecx, x);
+    struct mtxvector vecx;
+    vecx.type = mtxvector_array;
+    int err = vectorise_array(&vecx.storage.array, x);
     if (err) return err;
     struct mtxvector_array vecy;
     err = vectorise_array(&vecy, y);
@@ -1141,8 +1142,9 @@ int mtxmatrix_coordinate_daxpy(
     int64_t * num_flops)
 {
     if (!same_pattern(x, y)) return MTX_ERR_INCOMPATIBLE_PATTERN;
-    struct mtxvector_array vecx;
-    int err = vectorise_array(&vecx, x);
+    struct mtxvector vecx;
+    vecx.type = mtxvector_array;
+    int err = vectorise_array(&vecx.storage.array, x);
     if (err) return err;
     struct mtxvector_array vecy;
     err = vectorise_array(&vecy, y);
@@ -1168,8 +1170,9 @@ int mtxmatrix_coordinate_saypx(
     struct mtxvector_array vecy;
     int err = vectorise_array(&vecy, y);
     if (err) return err;
-    struct mtxvector_array vecx;
-    err = vectorise_array(&vecx, x);
+    struct mtxvector vecx;
+    vecx.type = mtxvector_array;
+    err = vectorise_array(&vecx.storage.array, x);
     if (err) return err;
     return mtxvector_array_saypx(a, &vecy, &vecx, num_flops);
 }
@@ -1192,8 +1195,9 @@ int mtxmatrix_coordinate_daypx(
     struct mtxvector_array vecy;
     int err = vectorise_array(&vecy, y);
     if (err) return err;
-    struct mtxvector_array vecx;
-    err = vectorise_array(&vecx, x);
+    struct mtxvector vecx;
+    vecx.type = mtxvector_array;
+    err = vectorise_array(&vecx.storage.array, x);
     if (err) return err;
     return mtxvector_array_daypx(a, &vecy, &vecx, num_flops);
 }
@@ -1216,8 +1220,9 @@ int mtxmatrix_coordinate_sdot(
         struct mtxvector_array vecx;
         int err = vectorise_array(&vecx, x);
         if (err) return err;
-        struct mtxvector_array vecy;
-        err = vectorise_array(&vecy, y);
+        struct mtxvector vecy;
+        vecy.type = mtxvector_array;
+        err = vectorise_array(&vecy.storage.array, y);
         if (err) return err;
         return mtxvector_array_sdot(&vecx, &vecy, dot, num_flops);
     } else {
@@ -1243,8 +1248,9 @@ int mtxmatrix_coordinate_ddot(
         struct mtxvector_array vecx;
         int err = vectorise_array(&vecx, x);
         if (err) return err;
-        struct mtxvector_array vecy;
-        err = vectorise_array(&vecy, y);
+        struct mtxvector vecy;
+        vecy.type = mtxvector_array;
+        err = vectorise_array(&vecy.storage.array, y);
         if (err) return err;
         return mtxvector_array_ddot(&vecx, &vecy, dot, num_flops);
     } else {
@@ -1271,8 +1277,9 @@ int mtxmatrix_coordinate_cdotu(
         struct mtxvector_array vecx;
         int err = vectorise_array(&vecx, x);
         if (err) return err;
-        struct mtxvector_array vecy;
-        err = vectorise_array(&vecy, y);
+        struct mtxvector vecy;
+        vecy.type = mtxvector_array;
+        err = vectorise_array(&vecy.storage.array, y);
         if (err) return err;
         return mtxvector_array_cdotu(&vecx, &vecy, dot, num_flops);
     } else {
@@ -1299,8 +1306,9 @@ int mtxmatrix_coordinate_zdotu(
         struct mtxvector_array vecx;
         int err = vectorise_array(&vecx, x);
         if (err) return err;
-        struct mtxvector_array vecy;
-        err = vectorise_array(&vecy, y);
+        struct mtxvector vecy;
+        vecy.type = mtxvector_array;
+        err = vectorise_array(&vecy.storage.array, y);
         if (err) return err;
         return mtxvector_array_zdotu(&vecx, &vecy, dot, num_flops);
     } else {
@@ -1327,8 +1335,9 @@ int mtxmatrix_coordinate_cdotc(
         struct mtxvector_array vecx;
         int err = vectorise_array(&vecx, x);
         if (err) return err;
-        struct mtxvector_array vecy;
-        err = vectorise_array(&vecy, y);
+        struct mtxvector vecy;
+        vecy.type = mtxvector_array;
+        err = vectorise_array(&vecy.storage.array, y);
         if (err) return err;
         return mtxvector_array_cdotc(&vecx, &vecy, dot, num_flops);
     } else {
@@ -1355,8 +1364,9 @@ int mtxmatrix_coordinate_zdotc(
         struct mtxvector_array vecx;
         int err = vectorise_array(&vecx, x);
         if (err) return err;
-        struct mtxvector_array vecy;
-        err = vectorise_array(&vecy, y);
+        struct mtxvector vecy;
+        vecy.type = mtxvector_array;
+        err = vectorise_array(&vecy.storage.array, y);
         if (err) return err;
         return mtxvector_array_zdotc(&vecx, &vecy, dot, num_flops);
     } else {

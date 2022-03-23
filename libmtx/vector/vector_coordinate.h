@@ -407,7 +407,7 @@ int mtxvector_coordinate_zscal(
  */
 int mtxvector_coordinate_saxpy(
     float a,
-    const struct mtxvector_coordinate * x,
+    const struct mtxvector * x,
     struct mtxvector_coordinate * y,
     int64_t * num_flops);
 
@@ -421,7 +421,7 @@ int mtxvector_coordinate_saxpy(
  */
 int mtxvector_coordinate_daxpy(
     double a,
-    const struct mtxvector_coordinate * x,
+    const struct mtxvector * x,
     struct mtxvector_coordinate * y,
     int64_t * num_flops);
 
@@ -436,7 +436,7 @@ int mtxvector_coordinate_daxpy(
 int mtxvector_coordinate_saypx(
     float a,
     struct mtxvector_coordinate * y,
-    const struct mtxvector_coordinate * x,
+    const struct mtxvector * x,
     int64_t * num_flops);
 
 /**
@@ -450,7 +450,7 @@ int mtxvector_coordinate_saypx(
 int mtxvector_coordinate_daypx(
     double a,
     struct mtxvector_coordinate * y,
-    const struct mtxvector_coordinate * x,
+    const struct mtxvector * x,
     int64_t * num_flops);
 
 /**
