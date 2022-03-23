@@ -923,8 +923,7 @@ int mtxvector_swap(
     struct mtxvector * x,
     struct mtxvector * y)
 {
-    if (x->type != y->type)
-        return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
+    if (x->type != y->type) return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
     if (x->type == mtxvector_array) {
         return mtxvector_array_swap(
             &x->storage.array, &y->storage.array);
@@ -941,12 +940,11 @@ int mtxvector_copy(
     struct mtxvector * y,
     const struct mtxvector * x)
 {
-    if (x->type != y->type)
-        return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
-    if (x->type == mtxvector_array) {
+    if (x->type != y->type) return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
+    if (y->type == mtxvector_array) {
         return mtxvector_array_copy(
             &y->storage.array, &x->storage.array);
-    } else if (x->type == mtxvector_coordinate) {
+    } else if (y->type == mtxvector_coordinate) {
         return mtxvector_coordinate_copy(
             &y->storage.coordinate, &x->storage.coordinate);
     } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
@@ -1270,6 +1268,51 @@ int mtxvector_iamax(
         return mtxvector_array_iamax(&x->storage.array, iamax);
     } else if (x->type == mtxvector_coordinate) {
         return mtxvector_coordinate_iamax(&x->storage.coordinate, iamax);
+    } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
+}
+
+/*
+ * Level 1 Sparse BLAS operations.
+ */
+
+/**
+ * ‘mtxvector_usga()’ performs a (sparse) gather from a vector ‘y’
+ * into another vector ‘x’.
+ */
+int mtxvector_usga(
+    const struct mtxvector * y,
+    struct mtxvector * x)
+{
+    if (x->type == mtxvector_array) {
+        return mtxvector_array_usga(y, &x->storage.array);
+    } else if (x->type == mtxvector_coordinate) {
+        return mtxvector_coordinate_usga(y, &x->storage.coordinate);
+    } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
+}
+
+/**
+ * ‘mtxvector_usgz()’ performs a (sparse) gather from a vector ‘y’
+ * into another vector ‘x’, while zeroing the corresponding elements
+ * of ‘y’ that were copied to ‘x’.
+ */
+int mtxvector_usgz(
+    const struct mtxvector * y,
+    struct mtxvector * x);
+
+/**
+ * ‘mtxvector_ussc()’ performs a (sparse) scatter from a vector ‘x’
+ * into another vector ‘y’.
+ */
+int mtxvector_ussc(
+    const struct mtxvector * x,
+    struct mtxvector * y)
+{
+    if (y->type == mtxvector_array) {
+        return mtxvector_array_ussc(x, &y->storage.array);
+    } else if (y->type == mtxvector_coordinate) {
+        /* if (x->type != y->type) return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE; */
+        /* return mtxvector_coordinate_copy( */
+        /*     &y->storage.coordinate, &x->storage.coordinate); */
     } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
 }
 

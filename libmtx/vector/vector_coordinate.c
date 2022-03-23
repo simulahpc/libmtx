@@ -1717,6 +1717,102 @@ int mtxvector_coordinate_iamax(
 }
 
 /*
+ * Level 1 Sparse BLAS operations.
+ *
+ * See I. Duff, M. Heroux and R. Pozo, "An Overview of the Sparse
+ * Basic Linear Algebra Subprograms: The New Standard from the BLAS
+ * Technical Forum," ACM TOMS, Vol. 28, No. 2, June 2002, pp. 239-267.
+ */
+
+/**
+ * ‘mtxvector_coordinate_usga()’ performs a (sparse) gather from a
+ * vector ‘y’ into another vector ‘x’.
+ */
+int mtxvector_coordinate_usga(
+    const struct mtxvector * y,
+    struct mtxvector_coordinate * x)
+{
+    if (y->type == mtxvector_array) {
+        const struct mtxvector_array * yarray = &y->storage.array;
+        if (x->field != yarray->field) return MTX_ERR_INCOMPATIBLE_FIELD;
+        if (x->precision != yarray->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
+        if (x->num_entries != yarray->size) return MTX_ERR_INCOMPATIBLE_SIZE;
+        if (x->field == mtx_field_real) {
+            if (x->precision == mtx_single) {
+                float * xdata = x->data.real_single;
+                const float * ydata = yarray->data.real_single;
+                const int * xidx = x->indices;
+                for (int64_t k = 0; k < x->size; k++)
+                    xdata[k] = ydata[xidx[k]];
+            } else if (x->precision == mtx_double) {
+                double * xdata = x->data.real_double;
+                const double * ydata = yarray->data.real_double;
+                const int * xidx = x->indices;
+                for (int64_t k = 0; k < x->size; k++)
+                    xdata[k] = ydata[xidx[k]];
+            } else { return MTX_ERR_INVALID_PRECISION; }
+        } else if (x->field == mtx_field_complex) {
+            if (x->precision == mtx_single) {
+                float (* xdata)[2] = x->data.complex_single;
+                const float (* ydata)[2] = yarray->data.complex_single;
+                const int * xidx = x->indices;
+                for (int64_t k = 0; k < x->size; k++) {
+                    xdata[k][0] = ydata[xidx[k]][0];
+                    xdata[k][1] = ydata[xidx[k]][1];
+                }
+            } else if (x->precision == mtx_double) {
+                double (* xdata)[2] = x->data.complex_double;
+                const double (* ydata)[2] = yarray->data.complex_double;
+                const int * xidx = x->indices;
+                for (int64_t k = 0; k < x->size; k++) {
+                    xdata[k][0] = ydata[xidx[k]][0];
+                    xdata[k][1] = ydata[xidx[k]][1];
+                }
+            } else { return MTX_ERR_INVALID_PRECISION; }
+        } else if (x->field == mtx_field_integer) {
+            if (x->precision == mtx_single) {
+                int32_t * xdata = x->data.integer_single;
+                const int32_t * ydata = yarray->data.integer_single;
+                const int * xidx = x->indices;
+                for (int64_t k = 0; k < x->size; k++)
+                    xdata[k] = ydata[xidx[k]];
+            } else if (x->precision == mtx_double) {
+                int64_t * xdata = x->data.integer_double;
+                const int64_t * ydata = yarray->data.integer_double;
+                const int * xidx = x->indices;
+                for (int64_t k = 0; k < x->size; k++)
+                    xdata[k] = ydata[xidx[k]];
+            } else { return MTX_ERR_INVALID_PRECISION; }
+        } else { return MTX_ERR_INVALID_FIELD; }
+    } else if (y->type == mtxvector_coordinate) {
+        return MTX_ERR_INVALID_VECTOR_TYPE;
+    } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
+    return MTX_SUCCESS;
+}
+
+/**
+ * ‘mtxvector_coordinate_usgz()’ performs a (sparse) gather from a
+ * vector ‘y’ into another vector ‘x’, while zeroing the corresponding
+ * elements of ‘y’ that were copied to ‘x’.
+ */
+int mtxvector_coordinate_usgz(
+    const struct mtxvector * y,
+    struct mtxvector_coordinate * x);
+
+/**
+ * ‘mtxvector_coordinate_ussc()’ performs a (sparse) scatter from a
+ * vector ‘x’ into another vector ‘y’.
+ */
+int mtxvector_coordinate_ussc(
+    const struct mtxvector * x,
+    struct mtxvector_coordinate * y)
+{
+    if (x->type == mtxvector_coordinate) {
+        return mtxvector_coordinate_copy(y, &x->storage.coordinate);
+    } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
+}
+
+/*
  * Sorting
  */
 

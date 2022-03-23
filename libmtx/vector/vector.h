@@ -805,6 +805,39 @@ int mtxvector_iamax(
     int * iamax);
 
 /*
+ * Level 1 Sparse BLAS operations.
+ *
+ * See I. Duff, M. Heroux and R. Pozo, "An Overview of the Sparse
+ * Basic Linear Algebra Subprograms: The New Standard from the BLAS
+ * Technical Forum," ACM TOMS, Vol. 28, No. 2, June 2002, pp. 239-267.
+ */
+
+/**
+ * ‘mtxvector_usga()’ performs a (sparse) gather from a vector ‘y’
+ * into another vector ‘x’.
+ */
+int mtxvector_usga(
+    const struct mtxvector * y,
+    struct mtxvector * x);
+
+/**
+ * ‘mtxvector_usgz()’ performs a (sparse) gather from a vector ‘y’
+ * into another vector ‘x’, while zeroing the corresponding elements
+ * of ‘y’ that were copied to ‘x’.
+ */
+int mtxvector_usgz(
+    const struct mtxvector * y,
+    struct mtxvector * x);
+
+/**
+ * ‘mtxvector_ussc()’ performs a (sparse) scatter from a vector ‘x’
+ * into another vector ‘y’.
+ */
+int mtxvector_ussc(
+    const struct mtxvector * x,
+    struct mtxvector * y);
+
+/*
  * Sorting
  */
 
