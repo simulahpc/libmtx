@@ -463,7 +463,7 @@ int mtxvector_coordinate_daypx(
  */
 int mtxvector_coordinate_sdot(
     const struct mtxvector_coordinate * x,
-    const struct mtxvector_coordinate * y,
+    const struct mtxvector * y,
     float * dot,
     int64_t * num_flops);
 
@@ -477,7 +477,7 @@ int mtxvector_coordinate_sdot(
  */
 int mtxvector_coordinate_ddot(
     const struct mtxvector_coordinate * x,
-    const struct mtxvector_coordinate * y,
+    const struct mtxvector * y,
     double * dot,
     int64_t * num_flops);
 
@@ -492,7 +492,7 @@ int mtxvector_coordinate_ddot(
  */
 int mtxvector_coordinate_cdotu(
     const struct mtxvector_coordinate * x,
-    const struct mtxvector_coordinate * y,
+    const struct mtxvector * y,
     float (* dot)[2],
     int64_t * num_flops);
 
@@ -507,7 +507,7 @@ int mtxvector_coordinate_cdotu(
  */
 int mtxvector_coordinate_zdotu(
     const struct mtxvector_coordinate * x,
-    const struct mtxvector_coordinate * y,
+    const struct mtxvector * y,
     double (* dot)[2],
     int64_t * num_flops);
 
@@ -522,7 +522,7 @@ int mtxvector_coordinate_zdotu(
  */
 int mtxvector_coordinate_cdotc(
     const struct mtxvector_coordinate * x,
-    const struct mtxvector_coordinate * y,
+    const struct mtxvector * y,
     float (* dot)[2],
     int64_t * num_flops);
 
@@ -537,7 +537,7 @@ int mtxvector_coordinate_cdotc(
  */
 int mtxvector_coordinate_zdotc(
     const struct mtxvector_coordinate * x,
-    const struct mtxvector_coordinate * y,
+    const struct mtxvector * y,
     double (* dot)[2],
     int64_t * num_flops);
 

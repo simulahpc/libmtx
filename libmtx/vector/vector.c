@@ -1134,14 +1134,12 @@ int mtxvector_sdot(
     float * dot,
     int64_t * num_flops)
 {
-    if (x->type != y->type)
-        return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
     if (x->type == mtxvector_array) {
         return mtxvector_array_sdot(
-            &x->storage.array, &y->storage.array, dot, num_flops);
+            &x->storage.array, y, dot, num_flops);
     } else if (x->type == mtxvector_coordinate) {
         return mtxvector_coordinate_sdot(
-            &x->storage.coordinate, &y->storage.coordinate, dot, num_flops);
+            &x->storage.coordinate, y, dot, num_flops);
     } else {
         return MTX_ERR_INVALID_VECTOR_TYPE;
     }
@@ -1157,14 +1155,12 @@ int mtxvector_ddot(
     double * dot,
     int64_t * num_flops)
 {
-    if (x->type != y->type)
-        return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
     if (x->type == mtxvector_array) {
         return mtxvector_array_ddot(
-            &x->storage.array, &y->storage.array, dot, num_flops);
+            &x->storage.array, y, dot, num_flops);
     } else if (x->type == mtxvector_coordinate) {
         return mtxvector_coordinate_ddot(
-            &x->storage.coordinate, &y->storage.coordinate, dot, num_flops);
+            &x->storage.coordinate, y, dot, num_flops);
     } else {
         return MTX_ERR_INVALID_VECTOR_TYPE;
     }
@@ -1181,14 +1177,12 @@ int mtxvector_cdotu(
     float (* dot)[2],
     int64_t * num_flops)
 {
-    if (x->type != y->type)
-        return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
     if (x->type == mtxvector_array) {
         return mtxvector_array_cdotu(
-            &x->storage.array, &y->storage.array, dot, num_flops);
+            &x->storage.array, y, dot, num_flops);
     } else if (x->type == mtxvector_coordinate) {
         return mtxvector_coordinate_cdotu(
-            &x->storage.coordinate, &y->storage.coordinate, dot, num_flops);
+            &x->storage.coordinate, y, dot, num_flops);
     } else {
         return MTX_ERR_INVALID_VECTOR_TYPE;
     }
@@ -1205,14 +1199,12 @@ int mtxvector_zdotu(
     double (* dot)[2],
     int64_t * num_flops)
 {
-    if (x->type != y->type)
-        return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
     if (x->type == mtxvector_array) {
         return mtxvector_array_zdotu(
-            &x->storage.array, &y->storage.array, dot, num_flops);
+            &x->storage.array, y, dot, num_flops);
     } else if (x->type == mtxvector_coordinate) {
         return mtxvector_coordinate_zdotu(
-            &x->storage.coordinate, &y->storage.coordinate, dot, num_flops);
+            &x->storage.coordinate, y, dot, num_flops);
     } else {
         return MTX_ERR_INVALID_VECTOR_TYPE;
     }
@@ -1228,14 +1220,12 @@ int mtxvector_cdotc(
     float (* dot)[2],
     int64_t * num_flops)
 {
-    if (x->type != y->type)
-        return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
     if (x->type == mtxvector_array) {
         return mtxvector_array_cdotc(
-            &x->storage.array, &y->storage.array, dot, num_flops);
+            &x->storage.array, y, dot, num_flops);
     } else if (x->type == mtxvector_coordinate) {
         return mtxvector_coordinate_cdotc(
-            &x->storage.coordinate, &y->storage.coordinate, dot, num_flops);
+            &x->storage.coordinate, y, dot, num_flops);
     } else {
         return MTX_ERR_INVALID_VECTOR_TYPE;
     }
@@ -1251,14 +1241,12 @@ int mtxvector_zdotc(
     double (* dot)[2],
     int64_t * num_flops)
 {
-    if (x->type != y->type)
-        return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
     if (x->type == mtxvector_array) {
         return mtxvector_array_zdotc(
-            &x->storage.array, &y->storage.array, dot, num_flops);
+            &x->storage.array, y, dot, num_flops);
     } else if (x->type == mtxvector_coordinate) {
         return mtxvector_coordinate_zdotc(
-            &x->storage.coordinate, &y->storage.coordinate, dot, num_flops);
+            &x->storage.coordinate, y, dot, num_flops);
     } else {
         return MTX_ERR_INVALID_VECTOR_TYPE;
     }

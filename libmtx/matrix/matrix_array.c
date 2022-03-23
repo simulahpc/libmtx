@@ -930,8 +930,9 @@ int mtxmatrix_array_sdot(
     struct mtxvector_array vecx;
     int err = mtxmatrix_array_vectorise(&vecx, x);
     if (err) return err;
-    struct mtxvector_array vecy;
-    err = mtxmatrix_array_vectorise(&vecy, y);
+    struct mtxvector vecy;
+    vecy.type = mtxvector_array;
+    err = mtxmatrix_array_vectorise(&vecy.storage.array, y);
     if (err) return err;
     return mtxvector_array_sdot(&vecx, &vecy, dot, num_flops);
 }
@@ -952,8 +953,9 @@ int mtxmatrix_array_ddot(
     struct mtxvector_array vecx;
     int err = mtxmatrix_array_vectorise(&vecx, x);
     if (err) return err;
-    struct mtxvector_array vecy;
-    err = mtxmatrix_array_vectorise(&vecy, y);
+    struct mtxvector vecy;
+    vecy.type = mtxvector_array;
+    err = mtxmatrix_array_vectorise(&vecy.storage.array, y);
     if (err) return err;
     return mtxvector_array_ddot(&vecx, &vecy, dot, num_flops);
 }
@@ -975,8 +977,9 @@ int mtxmatrix_array_cdotu(
     struct mtxvector_array vecx;
     int err = mtxmatrix_array_vectorise(&vecx, x);
     if (err) return err;
-    struct mtxvector_array vecy;
-    err = mtxmatrix_array_vectorise(&vecy, y);
+    struct mtxvector vecy;
+    vecy.type = mtxvector_array;
+    err = mtxmatrix_array_vectorise(&vecy.storage.array, y);
     if (err) return err;
     return mtxvector_array_cdotu(&vecx, &vecy, dot, num_flops);
 }
@@ -998,8 +1001,9 @@ int mtxmatrix_array_zdotu(
     struct mtxvector_array vecx;
     int err = mtxmatrix_array_vectorise(&vecx, x);
     if (err) return err;
-    struct mtxvector_array vecy;
-    err = mtxmatrix_array_vectorise(&vecy, y);
+    struct mtxvector vecy;
+    vecy.type = mtxvector_array;
+    err = mtxmatrix_array_vectorise(&vecy.storage.array, y);
     if (err) return err;
     return mtxvector_array_zdotu(&vecx, &vecy, dot, num_flops);
 }
@@ -1021,8 +1025,9 @@ int mtxmatrix_array_cdotc(
     struct mtxvector_array vecx;
     int err = mtxmatrix_array_vectorise(&vecx, x);
     if (err) return err;
-    struct mtxvector_array vecy;
-    err = mtxmatrix_array_vectorise(&vecy, y);
+    struct mtxvector vecy;
+    vecy.type = mtxvector_array;
+    err = mtxmatrix_array_vectorise(&vecy.storage.array, y);
     if (err) return err;
     return mtxvector_array_cdotc(&vecx, &vecy, dot, num_flops);
 }
@@ -1044,8 +1049,9 @@ int mtxmatrix_array_zdotc(
     struct mtxvector_array vecx;
     int err = mtxmatrix_array_vectorise(&vecx, x);
     if (err) return err;
-    struct mtxvector_array vecy;
-    err = mtxmatrix_array_vectorise(&vecy, y);
+    struct mtxvector vecy;
+    vecy.type = mtxvector_array;
+    err = mtxmatrix_array_vectorise(&vecy.storage.array, y);
     if (err) return err;
     return mtxvector_array_zdotc(&vecx, &vecy, dot, num_flops);
 }

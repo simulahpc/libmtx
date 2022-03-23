@@ -60,6 +60,12 @@ struct mtxvector_array
     enum mtxprecision precision;
 
     /**
+     * ‘num_entries’ is the number of vector elements, which is always
+     * equal to ‘size’.
+     */
+    int64_t num_entries;
+
+    /**
      * ‘size’ is the number of vector elements.
      */
     int size;
@@ -405,7 +411,7 @@ int mtxvector_array_daypx(
  */
 int mtxvector_array_sdot(
     const struct mtxvector_array * x,
-    const struct mtxvector_array * y,
+    const struct mtxvector * y,
     float * dot,
     int64_t * num_flops);
 
@@ -418,7 +424,7 @@ int mtxvector_array_sdot(
  */
 int mtxvector_array_ddot(
     const struct mtxvector_array * x,
-    const struct mtxvector_array * y,
+    const struct mtxvector * y,
     double * dot,
     int64_t * num_flops);
 
@@ -432,7 +438,7 @@ int mtxvector_array_ddot(
  */
 int mtxvector_array_cdotu(
     const struct mtxvector_array * x,
-    const struct mtxvector_array * y,
+    const struct mtxvector * y,
     float (* dot)[2],
     int64_t * num_flops);
 
@@ -446,7 +452,7 @@ int mtxvector_array_cdotu(
  */
 int mtxvector_array_zdotu(
     const struct mtxvector_array * x,
-    const struct mtxvector_array * y,
+    const struct mtxvector * y,
     double (* dot)[2],
     int64_t * num_flops);
 
@@ -459,7 +465,7 @@ int mtxvector_array_zdotu(
  */
 int mtxvector_array_cdotc(
     const struct mtxvector_array * x,
-    const struct mtxvector_array * y,
+    const struct mtxvector * y,
     float (* dot)[2],
     int64_t * num_flops);
 
@@ -472,7 +478,7 @@ int mtxvector_array_cdotc(
  */
 int mtxvector_array_zdotc(
     const struct mtxvector_array * x,
-    const struct mtxvector_array * y,
+    const struct mtxvector * y,
     double (* dot)[2],
     int64_t * num_flops);
 

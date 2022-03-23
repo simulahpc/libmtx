@@ -1276,24 +1276,34 @@ int mtxvector_coordinate_daypx(
  */
 int mtxvector_coordinate_sdot(
     const struct mtxvector_coordinate * x,
-    const struct mtxvector_coordinate * y,
+    const struct mtxvector * y,
     float * dot,
     int64_t * num_flops)
 {
-    if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
-    if (x->precision != y->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
-    if (!same_pattern(x, y)) return MTX_ERR_INCOMPATIBLE_PATTERN;
-    if (x->field == mtx_field_pattern) {
-        *dot = x->size;
-        return MTX_SUCCESS;
-    }
-    struct mtxvector_array xarray;
-    int err = mtxvector_coordinate_to_array(&xarray, x);
-    if (err) return err;
-    struct mtxvector_array yarray;
-    err = mtxvector_coordinate_to_array(&yarray, y);
-    if (err) return err;
-    return mtxvector_array_sdot(&xarray, &yarray, dot, num_flops);
+    if (y->type == mtxvector_array) {
+        struct mtxvector xcoordinate;
+        xcoordinate.type = mtxvector_coordinate;
+        xcoordinate.storage.coordinate = *x;
+        return mtxvector_array_sdot(&y->storage.array, &xcoordinate, dot, num_flops);
+    } else if (y->type == mtxvector_coordinate) {
+        const struct mtxvector_coordinate * ycoordinate = &y->storage.coordinate;
+        if (x->field != ycoordinate->field) return MTX_ERR_INCOMPATIBLE_FIELD;
+        if (x->precision != ycoordinate->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
+        if (!same_pattern(x, ycoordinate)) return MTX_ERR_INCOMPATIBLE_PATTERN;
+        if (x->field == mtx_field_pattern) {
+            *dot = x->size;
+            return MTX_SUCCESS;
+        }
+        struct mtxvector_array xarray;
+        int err = mtxvector_coordinate_to_array(&xarray, x);
+        if (err) return err;
+        struct mtxvector yarray;
+        yarray.type = mtxvector_array;
+        err = mtxvector_coordinate_to_array(&yarray.storage.array, ycoordinate);
+        if (err) return err;
+        return mtxvector_array_sdot(&xarray, &yarray, dot, num_flops);
+    } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
+    return MTX_SUCCESS;
 }
 
 /**
@@ -1306,24 +1316,34 @@ int mtxvector_coordinate_sdot(
  */
 int mtxvector_coordinate_ddot(
     const struct mtxvector_coordinate * x,
-    const struct mtxvector_coordinate * y,
+    const struct mtxvector * y,
     double * dot,
     int64_t * num_flops)
 {
-    if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
-    if (x->precision != y->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
-    if (!same_pattern(x, y)) return MTX_ERR_INCOMPATIBLE_PATTERN;
-    if (x->field == mtx_field_pattern) {
-        *dot = x->size;
-        return MTX_SUCCESS;
-    }
-    struct mtxvector_array xarray;
-    int err = mtxvector_coordinate_to_array(&xarray, x);
-    if (err) return err;
-    struct mtxvector_array yarray;
-    err = mtxvector_coordinate_to_array(&yarray, y);
-    if (err) return err;
-    return mtxvector_array_ddot(&xarray, &yarray, dot, num_flops);
+    if (y->type == mtxvector_array) {
+        struct mtxvector xcoordinate;
+        xcoordinate.type = mtxvector_coordinate;
+        xcoordinate.storage.coordinate = *x;
+        return mtxvector_array_ddot(&y->storage.array, &xcoordinate, dot, num_flops);
+    } else if (y->type == mtxvector_coordinate) {
+        const struct mtxvector_coordinate * ycoordinate = &y->storage.coordinate;
+        if (x->field != ycoordinate->field) return MTX_ERR_INCOMPATIBLE_FIELD;
+        if (x->precision != ycoordinate->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
+        if (!same_pattern(x, ycoordinate)) return MTX_ERR_INCOMPATIBLE_PATTERN;
+        if (x->field == mtx_field_pattern) {
+            *dot = x->size;
+            return MTX_SUCCESS;
+        }
+        struct mtxvector_array xarray;
+        int err = mtxvector_coordinate_to_array(&xarray, x);
+        if (err) return err;
+        struct mtxvector yarray;
+        yarray.type = mtxvector_array;
+        err = mtxvector_coordinate_to_array(&yarray.storage.array, ycoordinate);
+        if (err) return err;
+        return mtxvector_array_ddot(&xarray, &yarray, dot, num_flops);
+    } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
+    return MTX_SUCCESS;
 }
 
 /**
@@ -1337,24 +1357,34 @@ int mtxvector_coordinate_ddot(
  */
 int mtxvector_coordinate_cdotu(
     const struct mtxvector_coordinate * x,
-    const struct mtxvector_coordinate * y,
+    const struct mtxvector * y,
     float (* dot)[2],
     int64_t * num_flops)
 {
-    if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
-    if (x->precision != y->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
-    if (!same_pattern(x, y)) return MTX_ERR_INCOMPATIBLE_PATTERN;
-    if (x->field == mtx_field_pattern) {
-        *dot[0] = x->size; *dot[1] = 0;
-        return MTX_SUCCESS;
-    }
-    struct mtxvector_array xarray;
-    int err = mtxvector_coordinate_to_array(&xarray, x);
-    if (err) return err;
-    struct mtxvector_array yarray;
-    err = mtxvector_coordinate_to_array(&yarray, y);
-    if (err) return err;
-    return mtxvector_array_cdotu(&xarray, &yarray, dot, num_flops);
+    if (y->type == mtxvector_array) {
+        struct mtxvector xcoordinate;
+        xcoordinate.type = mtxvector_coordinate;
+        xcoordinate.storage.coordinate = *x;
+        return mtxvector_array_cdotu(&y->storage.array, &xcoordinate, dot, num_flops);
+    } else if (y->type == mtxvector_coordinate) {
+        const struct mtxvector_coordinate * ycoordinate = &y->storage.coordinate;
+        if (x->field != ycoordinate->field) return MTX_ERR_INCOMPATIBLE_FIELD;
+        if (x->precision != ycoordinate->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
+        if (!same_pattern(x, ycoordinate)) return MTX_ERR_INCOMPATIBLE_PATTERN;
+        if (x->field == mtx_field_pattern) {
+            (*dot)[0] = x->size; (*dot)[1] = 0;
+            return MTX_SUCCESS;
+        }
+        struct mtxvector_array xarray;
+        int err = mtxvector_coordinate_to_array(&xarray, x);
+        if (err) return err;
+        struct mtxvector yarray;
+        yarray.type = mtxvector_array;
+        err = mtxvector_coordinate_to_array(&yarray.storage.array, ycoordinate);
+        if (err) return err;
+        return mtxvector_array_cdotu(&xarray, &yarray, dot, num_flops);
+    } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
+    return MTX_SUCCESS;
 }
 
 /**
@@ -1368,24 +1398,34 @@ int mtxvector_coordinate_cdotu(
  */
 int mtxvector_coordinate_zdotu(
     const struct mtxvector_coordinate * x,
-    const struct mtxvector_coordinate * y,
+    const struct mtxvector * y,
     double (* dot)[2],
     int64_t * num_flops)
 {
-    if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
-    if (x->precision != y->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
-    if (!same_pattern(x, y)) return MTX_ERR_INCOMPATIBLE_PATTERN;
-    if (x->field == mtx_field_pattern) {
-        *dot[0] = x->size; *dot[1] = 0;
-        return MTX_SUCCESS;
-    }
-    struct mtxvector_array xarray;
-    int err = mtxvector_coordinate_to_array(&xarray, x);
-    if (err) return err;
-    struct mtxvector_array yarray;
-    err = mtxvector_coordinate_to_array(&yarray, y);
-    if (err) return err;
-    return mtxvector_array_zdotu(&xarray, &yarray, dot, num_flops);
+    if (y->type == mtxvector_array) {
+        struct mtxvector xcoordinate;
+        xcoordinate.type = mtxvector_coordinate;
+        xcoordinate.storage.coordinate = *x;
+        return mtxvector_array_zdotu(&y->storage.array, &xcoordinate, dot, num_flops);
+    } else if (y->type == mtxvector_coordinate) {
+        const struct mtxvector_coordinate * ycoordinate = &y->storage.coordinate;
+        if (x->field != ycoordinate->field) return MTX_ERR_INCOMPATIBLE_FIELD;
+        if (x->precision != ycoordinate->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
+        if (!same_pattern(x, ycoordinate)) return MTX_ERR_INCOMPATIBLE_PATTERN;
+        if (x->field == mtx_field_pattern) {
+            (*dot)[0] = x->size; (*dot)[1] = 0;
+            return MTX_SUCCESS;
+        }
+        struct mtxvector_array xarray;
+        int err = mtxvector_coordinate_to_array(&xarray, x);
+        if (err) return err;
+        struct mtxvector yarray;
+        yarray.type = mtxvector_array;
+        err = mtxvector_coordinate_to_array(&yarray.storage.array, ycoordinate);
+        if (err) return err;
+        return mtxvector_array_zdotu(&xarray, &yarray, dot, num_flops);
+    } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
+    return MTX_SUCCESS;
 }
 
 /**
@@ -1399,24 +1439,34 @@ int mtxvector_coordinate_zdotu(
  */
 int mtxvector_coordinate_cdotc(
     const struct mtxvector_coordinate * x,
-    const struct mtxvector_coordinate * y,
+    const struct mtxvector * y,
     float (* dot)[2],
     int64_t * num_flops)
 {
-    if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
-    if (x->precision != y->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
-    if (!same_pattern(x, y)) return MTX_ERR_INCOMPATIBLE_PATTERN;
-    if (x->field == mtx_field_pattern) {
-        *dot[0] = x->size; *dot[1] = 0;
-        return MTX_SUCCESS;
-    }
-    struct mtxvector_array xarray;
-    int err = mtxvector_coordinate_to_array(&xarray, x);
-    if (err) return err;
-    struct mtxvector_array yarray;
-    err = mtxvector_coordinate_to_array(&yarray, y);
-    if (err) return err;
-    return mtxvector_array_cdotc(&xarray, &yarray, dot, num_flops);
+    if (y->type == mtxvector_array) {
+        struct mtxvector xcoordinate;
+        xcoordinate.type = mtxvector_coordinate;
+        xcoordinate.storage.coordinate = *x;
+        return mtxvector_array_cdotc(&y->storage.array, &xcoordinate, dot, num_flops);
+    } else if (y->type == mtxvector_coordinate) {
+        const struct mtxvector_coordinate * ycoordinate = &y->storage.coordinate;
+        if (x->field != ycoordinate->field) return MTX_ERR_INCOMPATIBLE_FIELD;
+        if (x->precision != ycoordinate->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
+        if (!same_pattern(x, ycoordinate)) return MTX_ERR_INCOMPATIBLE_PATTERN;
+        if (x->field == mtx_field_pattern) {
+            (*dot)[0] = x->size; (*dot)[1] = 0;
+            return MTX_SUCCESS;
+        }
+        struct mtxvector_array xarray;
+        int err = mtxvector_coordinate_to_array(&xarray, x);
+        if (err) return err;
+        struct mtxvector yarray;
+        yarray.type = mtxvector_array;
+        err = mtxvector_coordinate_to_array(&yarray.storage.array, ycoordinate);
+        if (err) return err;
+        return mtxvector_array_cdotc(&xarray, &yarray, dot, num_flops);
+    } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
+    return MTX_SUCCESS;
 }
 
 /**
@@ -1430,24 +1480,34 @@ int mtxvector_coordinate_cdotc(
  */
 int mtxvector_coordinate_zdotc(
     const struct mtxvector_coordinate * x,
-    const struct mtxvector_coordinate * y,
+    const struct mtxvector * y,
     double (* dot)[2],
     int64_t * num_flops)
 {
-    if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
-    if (x->precision != y->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
-    if (!same_pattern(x, y)) return MTX_ERR_INCOMPATIBLE_PATTERN;
-    if (x->field == mtx_field_pattern) {
-        *dot[0] = x->size; *dot[1] = 0;
-        return MTX_SUCCESS;
-    }
-    struct mtxvector_array xarray;
-    int err = mtxvector_coordinate_to_array(&xarray, x);
-    if (err) return err;
-    struct mtxvector_array yarray;
-    err = mtxvector_coordinate_to_array(&yarray, y);
-    if (err) return err;
-    return mtxvector_array_zdotc(&xarray, &yarray, dot, num_flops);
+    if (y->type == mtxvector_array) {
+        struct mtxvector xcoordinate;
+        xcoordinate.type = mtxvector_coordinate;
+        xcoordinate.storage.coordinate = *x;
+        return mtxvector_array_zdotc(&y->storage.array, &xcoordinate, dot, num_flops);
+    } else if (y->type == mtxvector_coordinate) {
+        const struct mtxvector_coordinate * ycoordinate = &y->storage.coordinate;
+        if (x->field != ycoordinate->field) return MTX_ERR_INCOMPATIBLE_FIELD;
+        if (x->precision != ycoordinate->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
+        if (!same_pattern(x, ycoordinate)) return MTX_ERR_INCOMPATIBLE_PATTERN;
+        if (x->field == mtx_field_pattern) {
+            (*dot)[0] = x->size; (*dot)[1] = 0;
+            return MTX_SUCCESS;
+        }
+        struct mtxvector_array xarray;
+        int err = mtxvector_coordinate_to_array(&xarray, x);
+        if (err) return err;
+        struct mtxvector yarray;
+        yarray.type = mtxvector_array;
+        err = mtxvector_coordinate_to_array(&yarray.storage.array, ycoordinate);
+        if (err) return err;
+        return mtxvector_array_zdotc(&xarray, &yarray, dot, num_flops);
+    } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
+    return MTX_SUCCESS;
 }
 
 /**
