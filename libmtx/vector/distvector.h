@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-01-19
+ * Last modified: 2022-03-24
  *
  * Data structures for distributed vectors.
  */
@@ -841,10 +841,10 @@ int mtxdistvector_dasum(
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxdistvector_imax()’ finds the index of the first element having
+ * ‘mtxdistvector_iamax()’ finds the index of the first element having
  * the maximum absolute value.
  */
-int mtxdistvector_imax(
+int mtxdistvector_iamax(
     const struct mtxdistvector * x,
     int * max,
     struct mtxdisterror * disterr);

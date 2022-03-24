@@ -16,7 +16,7 @@
 # along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
 #
 # Authors: James D. Trotter <james@simula.no>
-# Last modified: 2022-03-23
+# Last modified: 2022-03-24
 #
 # Makefile for the top-level directory of Libmtx.
 #
@@ -407,7 +407,8 @@ check_PROGRAMS += \
 	tests/test_mtxdistfile \
 	tests/test_mtxdistmatrix \
 	tests/test_mtxdistmatrixgemv \
-	tests/test_mtxdistvector \
+	tests/test_mtxdistvector_array \
+	tests/test_mtxdistvector_coordinate \
 	tests/test_mtxfile_mpi
 
 tests_test_distsort_CPPFLAGS = $(MPICPPFLAGS)
@@ -440,10 +441,13 @@ tests_test_mtxdistmatrixgemv_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(B
 tests_test_mtxdistmatrixgemv_SOURCES = tests/test_mtxdistmatrixgemv.c tests/test.h
 tests/test_mtxdistmatrixgemv_parallel: tests/test_mtxdistmatrixgemv
 
-tests_test_mtxdistvector_CPPFLAGS = $(MPICPPFLAGS)
-tests_test_mtxdistvector_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
-tests_test_mtxdistvector_SOURCES = tests/test_mtxdistvector.c tests/test.h
-tests/test_mtxdistvector_parallel: tests/test_mtxdistvector
+tests_test_mtxdistvector_array_CPPFLAGS = $(MPICPPFLAGS)
+tests_test_mtxdistvector_array_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
+tests_test_mtxdistvector_array_SOURCES = tests/test_mtxdistvector_array.c tests/test.h
+tests_test_mtxdistvector_coordinate_CPPFLAGS = $(MPICPPFLAGS)
+tests_test_mtxdistvector_coordinate_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
+tests_test_mtxdistvector_coordinate_SOURCES = tests/test_mtxdistvector_coordinate.c tests/test.h
+tests/test_mtxdistvector_parallel:  tests/test_mtxdistvector_array tests/test_mtxdistvector_coordinate
 
 TESTS += \
 	tests/test_distsort_parallel \
