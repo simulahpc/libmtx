@@ -23,11 +23,11 @@
 
 status=0
 
-if timeout --kill-after=60 60 mpirun --tag-output -np 2 tests/test_mtxdistvector_array
+if ! timeout --kill-after=60 60 mpirun --tag-output -np 2 tests/test_mtxdistvector_array
 then
     status=1
 fi
-if timeout --kill-after=60 60 mpirun --tag-output -np 2 tests/test_mtxdistvector_coordinate
+if ! timeout --kill-after=60 60 mpirun --tag-output -np 2 tests/test_mtxdistvector_coordinate
 then
     status=1
 fi
