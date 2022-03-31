@@ -67,6 +67,7 @@ struct program_options
     enum mtxprecision precision;
     enum mtxvectortype vector_type;
     bool gzip;
+    int repeat;
     int verbose;
     bool quiet;
 };
@@ -82,6 +83,7 @@ static int program_options_init(
     args->format = NULL;
     args->precision = mtx_double;
     args->vector_type = mtxvector_auto;
+    args->repeat = 1;
     args->gzip = false;
     args->quiet = false;
     args->verbose = 0;
@@ -143,6 +145,7 @@ static void program_options_print_help(
     fprintf(f, "\t\t\t'%%e', '%%E', '%%f', '%%F', '%%g' or '%%G' may be used,\n");
     fprintf(f, "\t\t\twhereas '%%d' must be used for integers. Flags, field width\n");
     fprintf(f, "\t\t\tand precision can optionally be specified, e.g., \"%%+3.1f\".\n");
+    fprintf(f, "  --repeat=N\t\trepeat the calculation N times\n");
     fprintf(f, "  -q, --quiet\t\tdo not print Matrix Market output\n");
     fprintf(f, "  -v, --verbose\t\tbe more verbose\n");
     fprintf(f, "\n");
@@ -273,6 +276,30 @@ static int parse_program_options(
             if (!args->format) {
                 program_options_free(args);
                 return errno;
+            }
+            num_arguments_consumed++;
+            continue;
+        }
+
+        if (strcmp((*argv)[0], "--repeat") == 0) {
+            if (*argc < 2) {
+                program_options_free(args);
+                return EINVAL;
+            }
+            err = parse_int32((*argv)[1], NULL, &args->repeat, NULL);
+            if (err) {
+                program_options_free(args);
+                return err;
+            }
+            num_arguments_consumed += 2;
+            continue;
+        } else if (strstr((*argv)[0], "--repeat=") == (*argv)[0]) {
+            err = parse_int32(
+                (*argv)[0] + strlen("--repeat="), NULL,
+                &args->repeat, NULL);
+            if (err) {
+                program_options_free(args);
+                return err;
             }
             num_arguments_consumed++;
             continue;
@@ -420,6 +447,7 @@ static int distvector_dot(
     struct mtxdistfile * mtxdistfiley,
     enum mtxvectortype vector_type,
     const char * format,
+    int repeat,
     int verbose,
     FILE * diagf,
     bool quiet,
@@ -476,37 +504,39 @@ static int distvector_dot(
     /* 2. Compute the dot product. */
     if (mtxdistfilex->header.field == mtx_complex) {
         if (precision == mtx_single) {
-            if (verbose > 0) {
-                fprintf(diagf, "mtxdistvector_cdotc: ");
-                fflush(diagf);
-                clock_gettime(CLOCK_MONOTONIC, &t0);
-            }
             float dot[2] = {0.0f, 0.0f};
-            int64_t num_flops = 0;
-            err = mtxdistvector_cdotc(&x, &y, &dot, &num_flops, disterr);
-            if (err) {
-                if (verbose > 0)
-                    fprintf(diagf, "\n");
-                mtxdistvector_free(&y);
-                mtxdistvector_free(&x);
-                return err;
-            }
-            clock_gettime(CLOCK_MONOTONIC, &t1);
-            err = MPI_Reduce(
-                rank == root ? MPI_IN_PLACE : &num_flops,
-                &num_flops, 1, MPI_INT64_T, MPI_SUM, root, comm);
-            if (err) {
-                char mpierrstr[MPI_MAX_ERROR_STRING];
-                int mpierrstrlen;
-                MPI_Error_string(err, mpierrstr, &mpierrstrlen);
-                fprintf(stderr, "%s: MPI_Reduce failed with %s\n",
-                        program_invocation_short_name, mpierrstr);
-                MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
-            }
-            if (verbose > 0) {
-                fprintf(diagf, "%'.6f seconds (%'.3f Gflop/s)\n",
-                        timespec_duration(t0, t1),
-                        1.0e-9 * num_flops / timespec_duration(t0, t1));
+            for (int i = 0; i < repeat; i++) {
+                if (verbose > 0) {
+                    fprintf(diagf, "mtxdistvector_cdotc: ");
+                    fflush(diagf);
+                    clock_gettime(CLOCK_MONOTONIC, &t0);
+                }
+                int64_t num_flops = 0;
+                err = mtxdistvector_cdotc(&x, &y, &dot, &num_flops, disterr);
+                if (err) {
+                    if (verbose > 0)
+                        fprintf(diagf, "\n");
+                    mtxdistvector_free(&y);
+                    mtxdistvector_free(&x);
+                    return err;
+                }
+                clock_gettime(CLOCK_MONOTONIC, &t1);
+                err = MPI_Reduce(
+                    rank == root ? MPI_IN_PLACE : &num_flops,
+                    &num_flops, 1, MPI_INT64_T, MPI_SUM, root, comm);
+                if (err) {
+                    char mpierrstr[MPI_MAX_ERROR_STRING];
+                    int mpierrstrlen;
+                    MPI_Error_string(err, mpierrstr, &mpierrstrlen);
+                    fprintf(stderr, "%s: MPI_Reduce failed with %s\n",
+                            program_invocation_short_name, mpierrstr);
+                    MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
+                }
+                if (verbose > 0) {
+                    fprintf(diagf, "%'.6f seconds (%'.3f Gflop/s)\n",
+                            timespec_duration(t0, t1),
+                            1.0e-9 * num_flops / timespec_duration(t0, t1));
+                }
             }
             if (!quiet) {
                 fprintf(stdout, format ? format : "%.*g", FLT_DIG, dot[0]);
@@ -515,37 +545,39 @@ static int distvector_dot(
                 fputc('\n', stdout);
             }
         } else if (precision == mtx_double) {
-            if (verbose > 0) {
-                fprintf(diagf, "mtxdistvector_zdotc: ");
-                fflush(diagf);
-                clock_gettime(CLOCK_MONOTONIC, &t0);
-            }
             double dot[2] = {0.0, 0.0};
-            int64_t num_flops = 0;
-            err = mtxdistvector_zdotc(&x, &y, &dot, &num_flops, disterr);
-            if (err) {
-                if (verbose > 0)
-                    fprintf(diagf, "\n");
-                mtxdistvector_free(&y);
-                mtxdistvector_free(&x);
-                return err;
-            }
-            clock_gettime(CLOCK_MONOTONIC, &t1);
-            err = MPI_Reduce(
-                rank == root ? MPI_IN_PLACE : &num_flops,
-                &num_flops, 1, MPI_INT64_T, MPI_SUM, root, comm);
-            if (err) {
-                char mpierrstr[MPI_MAX_ERROR_STRING];
-                int mpierrstrlen;
-                MPI_Error_string(err, mpierrstr, &mpierrstrlen);
-                fprintf(stderr, "%s: MPI_Reduce failed with %s\n",
-                        program_invocation_short_name, mpierrstr);
-                MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
-            }
-            if (verbose > 0) {
-                fprintf(diagf, "%'.6f seconds (%'.3f Gflop/s)\n",
-                        timespec_duration(t0, t1),
-                        1.0e-9 * num_flops / timespec_duration(t0, t1));
+            for (int i = 0; i < repeat; i++) {
+                if (verbose > 0) {
+                    fprintf(diagf, "mtxdistvector_zdotc: ");
+                    fflush(diagf);
+                    clock_gettime(CLOCK_MONOTONIC, &t0);
+                }
+                int64_t num_flops = 0;
+                err = mtxdistvector_zdotc(&x, &y, &dot, &num_flops, disterr);
+                if (err) {
+                    if (verbose > 0)
+                        fprintf(diagf, "\n");
+                    mtxdistvector_free(&y);
+                    mtxdistvector_free(&x);
+                    return err;
+                }
+                clock_gettime(CLOCK_MONOTONIC, &t1);
+                err = MPI_Reduce(
+                    rank == root ? MPI_IN_PLACE : &num_flops,
+                    &num_flops, 1, MPI_INT64_T, MPI_SUM, root, comm);
+                if (err) {
+                    char mpierrstr[MPI_MAX_ERROR_STRING];
+                    int mpierrstrlen;
+                    MPI_Error_string(err, mpierrstr, &mpierrstrlen);
+                    fprintf(stderr, "%s: MPI_Reduce failed with %s\n",
+                            program_invocation_short_name, mpierrstr);
+                    MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
+                }
+                if (verbose > 0) {
+                    fprintf(diagf, "%'.6f seconds (%'.3f Gflop/s)\n",
+                            timespec_duration(t0, t1),
+                            1.0e-9 * num_flops / timespec_duration(t0, t1));
+                }
             }
             if (!quiet) {
                 fprintf(stdout, format ? format : "%.*g", DBL_DIG, dot[0]);
@@ -560,74 +592,78 @@ static int distvector_dot(
         }
     } else {
         if (precision == mtx_single) {
-            if (verbose > 0) {
-                fprintf(diagf, "mtxdistvector_sdot: ");
-                fflush(diagf);
-                clock_gettime(CLOCK_MONOTONIC, &t0);
-            }
             float dot = 0.0f;
-            int64_t num_flops = 0;
-            err = mtxdistvector_sdot(&x, &y, &dot, &num_flops, disterr);
-            if (err) {
-                if (verbose > 0)
-                    fprintf(diagf, "\n");
-                mtxdistvector_free(&y);
-                mtxdistvector_free(&x);
-                return err;
-            }
-            clock_gettime(CLOCK_MONOTONIC, &t1);
-            err = MPI_Reduce(
-                rank == root ? MPI_IN_PLACE : &num_flops,
-                &num_flops, 1, MPI_INT64_T, MPI_SUM, root, comm);
-            if (err) {
-                char mpierrstr[MPI_MAX_ERROR_STRING];
-                int mpierrstrlen;
-                MPI_Error_string(err, mpierrstr, &mpierrstrlen);
-                fprintf(stderr, "%s: MPI_Reduce failed with %s\n",
-                        program_invocation_short_name, mpierrstr);
-                MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
-            }
-            if (verbose > 0) {
-                fprintf(diagf, "%'.6f seconds (%'.3f Gflop/s)\n",
-                        timespec_duration(t0, t1),
-                        1.0e-9 * num_flops / timespec_duration(t0, t1));
+            for (int i = 0; i < repeat; i++) {
+                if (verbose > 0) {
+                    fprintf(diagf, "mtxdistvector_sdot: ");
+                    fflush(diagf);
+                    clock_gettime(CLOCK_MONOTONIC, &t0);
+                }
+                int64_t num_flops = 0;
+                err = mtxdistvector_sdot(&x, &y, &dot, &num_flops, disterr);
+                if (err) {
+                    if (verbose > 0)
+                        fprintf(diagf, "\n");
+                    mtxdistvector_free(&y);
+                    mtxdistvector_free(&x);
+                    return err;
+                }
+                clock_gettime(CLOCK_MONOTONIC, &t1);
+                err = MPI_Reduce(
+                    rank == root ? MPI_IN_PLACE : &num_flops,
+                    &num_flops, 1, MPI_INT64_T, MPI_SUM, root, comm);
+                if (err) {
+                    char mpierrstr[MPI_MAX_ERROR_STRING];
+                    int mpierrstrlen;
+                    MPI_Error_string(err, mpierrstr, &mpierrstrlen);
+                    fprintf(stderr, "%s: MPI_Reduce failed with %s\n",
+                            program_invocation_short_name, mpierrstr);
+                    MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
+                }
+                if (verbose > 0) {
+                    fprintf(diagf, "%'.6f seconds (%'.3f Gflop/s)\n",
+                            timespec_duration(t0, t1),
+                            1.0e-9 * num_flops / timespec_duration(t0, t1));
+                }
             }
             if (!quiet) {
                 fprintf(stdout, format ? format : "%.*g", FLT_DIG, dot);
                 fputc('\n', stdout);
             }
         } else if (precision == mtx_double) {
-            if (verbose > 0) {
-                fprintf(diagf, "mtxdistvector_ddot: ");
-                fflush(diagf);
-                clock_gettime(CLOCK_MONOTONIC, &t0);
-            }
             double dot = 0.0;
-            int64_t num_flops = 0;
-            err = mtxdistvector_ddot(&x, &y, &dot, &num_flops, disterr);
-            if (err) {
-                if (verbose > 0)
-                    fprintf(diagf, "\n");
-                mtxdistvector_free(&y);
-                mtxdistvector_free(&x);
-                return err;
-            }
-            clock_gettime(CLOCK_MONOTONIC, &t1);
-            err = MPI_Reduce(
-                rank == root ? MPI_IN_PLACE : &num_flops,
-                &num_flops, 1, MPI_INT64_T, MPI_SUM, root, comm);
-            if (err) {
-                char mpierrstr[MPI_MAX_ERROR_STRING];
-                int mpierrstrlen;
-                MPI_Error_string(err, mpierrstr, &mpierrstrlen);
-                fprintf(stderr, "%s: MPI_Reduce failed with %s\n",
-                        program_invocation_short_name, mpierrstr);
-                MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
-            }
-            if (verbose > 0) {
-                fprintf(diagf, "%'.6f seconds (%'.3f Gflop/s)\n",
-                        timespec_duration(t0, t1),
-                        1.0e-9 * num_flops / timespec_duration(t0, t1));
+            for (int i = 0; i < repeat; i++) {
+                if (verbose > 0) {
+                    fprintf(diagf, "mtxdistvector_ddot: ");
+                    fflush(diagf);
+                    clock_gettime(CLOCK_MONOTONIC, &t0);
+                }
+                int64_t num_flops = 0;
+                err = mtxdistvector_ddot(&x, &y, &dot, &num_flops, disterr);
+                if (err) {
+                    if (verbose > 0)
+                        fprintf(diagf, "\n");
+                    mtxdistvector_free(&y);
+                    mtxdistvector_free(&x);
+                    return err;
+                }
+                clock_gettime(CLOCK_MONOTONIC, &t1);
+                err = MPI_Reduce(
+                    rank == root ? MPI_IN_PLACE : &num_flops,
+                    &num_flops, 1, MPI_INT64_T, MPI_SUM, root, comm);
+                if (err) {
+                    char mpierrstr[MPI_MAX_ERROR_STRING];
+                    int mpierrstrlen;
+                    MPI_Error_string(err, mpierrstr, &mpierrstrlen);
+                    fprintf(stderr, "%s: MPI_Reduce failed with %s\n",
+                            program_invocation_short_name, mpierrstr);
+                    MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
+                }
+                if (verbose > 0) {
+                    fprintf(diagf, "%'.6f seconds (%'.3f Gflop/s)\n",
+                            timespec_duration(t0, t1),
+                            1.0e-9 * num_flops / timespec_duration(t0, t1));
+                }
             }
             if (!quiet) {
                 fprintf(stdout, format ? format : "%.*g", DBL_DIG, dot);
@@ -871,7 +907,7 @@ int main(int argc, char *argv[])
     } else if (mtxdistfilex.header.object == mtxfile_vector) {
         err = distvector_dot(
             &mtxdistfilex, &mtxdistfiley, args.vector_type, args.format,
-            args.verbose, diagf, args.quiet,
+            args.repeat, args.verbose, diagf, args.quiet,
             comm, comm_size, rank, root, &disterr);
         if (err) {
             if (rank == root) {
@@ -922,6 +958,7 @@ static int vector_dot(
     struct mtxfile * mtxfiley,
     enum mtxvectortype vector_type,
     const char * format,
+    int repeat,
     int verbose,
     FILE * diagf,
     bool quiet)
@@ -970,26 +1007,28 @@ static int vector_dot(
     /* 2. Compute the dot product. */
     if (mtxfilex->header.field == mtx_complex) {
         if (precision == mtx_single) {
-            if (verbose > 0) {
-                fprintf(diagf, "mtxvector_cdotc: ");
-                fflush(diagf);
-                clock_gettime(CLOCK_MONOTONIC, &t0);
-            }
             float dot[2] = {0.0f, 0.0f};
-            int64_t num_flops = 0;
-            err = mtxvector_cdotc(&x, &y, &dot, &num_flops);
-            if (err) {
-                if (verbose > 0)
-                    fprintf(diagf, "\n");
-                mtxvector_free(&y);
-                mtxvector_free(&x);
-                return err;
-            }
-            if (verbose > 0) {
-                clock_gettime(CLOCK_MONOTONIC, &t1);
-                fprintf(diagf, "%'.6f seconds (%'.3f Gflop/s)\n",
-                        timespec_duration(t0, t1),
-                        1.0e-9 * num_flops / timespec_duration(t0, t1));
+            for (int i = 0; i < repeat; i++) {
+                if (verbose > 0) {
+                    fprintf(diagf, "mtxvector_cdotc: ");
+                    fflush(diagf);
+                    clock_gettime(CLOCK_MONOTONIC, &t0);
+                }
+                int64_t num_flops = 0;
+                err = mtxvector_cdotc(&x, &y, &dot, &num_flops);
+                if (err) {
+                    if (verbose > 0)
+                        fprintf(diagf, "\n");
+                    mtxvector_free(&y);
+                    mtxvector_free(&x);
+                    return err;
+                }
+                if (verbose > 0) {
+                    clock_gettime(CLOCK_MONOTONIC, &t1);
+                    fprintf(diagf, "%'.6f seconds (%'.3f Gflop/s)\n",
+                            timespec_duration(t0, t1),
+                            1.0e-9 * num_flops / timespec_duration(t0, t1));
+                }
             }
             if (!quiet) {
                 fprintf(stdout, format ? format : "%.*g", FLT_DIG, dot[0]);
@@ -998,26 +1037,28 @@ static int vector_dot(
                 fputc('\n', stdout);
             }
         } else if (precision == mtx_double) {
-            if (verbose > 0) {
-                fprintf(diagf, "mtxvector_zdotc: ");
-                fflush(diagf);
-                clock_gettime(CLOCK_MONOTONIC, &t0);
-            }
             double dot[2] = {0.0, 0.0};
-            int64_t num_flops = 0;
-            err = mtxvector_zdotc(&x, &y, &dot, &num_flops);
-            if (err) {
-                if (verbose > 0)
-                    fprintf(diagf, "\n");
-                mtxvector_free(&y);
-                mtxvector_free(&x);
-                return err;
-            }
-            if (verbose > 0) {
-                clock_gettime(CLOCK_MONOTONIC, &t1);
-                fprintf(diagf, "%'.6f seconds (%'.3f Gflop/s)\n",
-                        timespec_duration(t0, t1),
-                        1.0e-9 * num_flops / timespec_duration(t0, t1));
+            for (int i = 0; i < repeat; i++) {
+                if (verbose > 0) {
+                    fprintf(diagf, "mtxvector_zdotc: ");
+                    fflush(diagf);
+                    clock_gettime(CLOCK_MONOTONIC, &t0);
+                }
+                int64_t num_flops = 0;
+                err = mtxvector_zdotc(&x, &y, &dot, &num_flops);
+                if (err) {
+                    if (verbose > 0)
+                        fprintf(diagf, "\n");
+                    mtxvector_free(&y);
+                    mtxvector_free(&x);
+                    return err;
+                }
+                if (verbose > 0) {
+                    clock_gettime(CLOCK_MONOTONIC, &t1);
+                    fprintf(diagf, "%'.6f seconds (%'.3f Gflop/s)\n",
+                            timespec_duration(t0, t1),
+                            1.0e-9 * num_flops / timespec_duration(t0, t1));
+                }
             }
             if (!quiet) {
                 fprintf(stdout, format ? format : "%.*g", DBL_DIG, dot[0]);
@@ -1032,52 +1073,56 @@ static int vector_dot(
         }
     } else {
         if (precision == mtx_single) {
-            if (verbose > 0) {
-                fprintf(diagf, "mtxvector_sdot: ");
-                fflush(diagf);
-                clock_gettime(CLOCK_MONOTONIC, &t0);
-            }
             float dot = 0.0f;
-            int64_t num_flops = 0;
-            err = mtxvector_sdot(&x, &y, &dot, &num_flops);
-            if (err) {
-                if (verbose > 0)
-                    fprintf(diagf, "\n");
-                mtxvector_free(&y);
-                mtxvector_free(&x);
-                return err;
-            }
-            if (verbose > 0) {
-                clock_gettime(CLOCK_MONOTONIC, &t1);
-                fprintf(diagf, "%'.6f seconds (%'.3f Gflop/s)\n",
-                        timespec_duration(t0, t1),
-                        1.0e-9 * num_flops / timespec_duration(t0, t1));
+            for (int i = 0; i < repeat; i++) {
+                if (verbose > 0) {
+                    fprintf(diagf, "mtxvector_sdot: ");
+                    fflush(diagf);
+                    clock_gettime(CLOCK_MONOTONIC, &t0);
+                }
+                int64_t num_flops = 0;
+                err = mtxvector_sdot(&x, &y, &dot, &num_flops);
+                if (err) {
+                    if (verbose > 0)
+                        fprintf(diagf, "\n");
+                    mtxvector_free(&y);
+                    mtxvector_free(&x);
+                    return err;
+                }
+                if (verbose > 0) {
+                    clock_gettime(CLOCK_MONOTONIC, &t1);
+                    fprintf(diagf, "%'.6f seconds (%'.3f Gflop/s)\n",
+                            timespec_duration(t0, t1),
+                            1.0e-9 * num_flops / timespec_duration(t0, t1));
+                }
             }
             if (!quiet) {
                 fprintf(stdout, format ? format : "%.*g", FLT_DIG, dot);
                 fputc('\n', stdout);
             }
         } else if (precision == mtx_double) {
-            if (verbose > 0) {
-                fprintf(diagf, "mtxvector_ddot: ");
-                fflush(diagf);
-                clock_gettime(CLOCK_MONOTONIC, &t0);
-            }
             double dot = 0.0;
-            int64_t num_flops = 0;
-            err = mtxvector_ddot(&x, &y, &dot, &num_flops);
-            if (err) {
-                if (verbose > 0)
-                    fprintf(diagf, "\n");
-                mtxvector_free(&y);
-                mtxvector_free(&x);
-                return err;
-            }
-            if (verbose > 0) {
-                clock_gettime(CLOCK_MONOTONIC, &t1);
-                fprintf(diagf, "%'.6f seconds (%'.3f Gflop/s)\n",
-                        timespec_duration(t0, t1),
-                        1.0e-9 * num_flops / timespec_duration(t0, t1));
+            for (int i = 0; i < repeat; i++) {
+                if (verbose > 0) {
+                    fprintf(diagf, "mtxvector_ddot: ");
+                    fflush(diagf);
+                    clock_gettime(CLOCK_MONOTONIC, &t0);
+                }
+                int64_t num_flops = 0;
+                err = mtxvector_ddot(&x, &y, &dot, &num_flops);
+                if (err) {
+                    if (verbose > 0)
+                        fprintf(diagf, "\n");
+                    mtxvector_free(&y);
+                    mtxvector_free(&x);
+                    return err;
+                }
+                if (verbose > 0) {
+                    clock_gettime(CLOCK_MONOTONIC, &t1);
+                    fprintf(diagf, "%'.6f seconds (%'.3f Gflop/s)\n",
+                            timespec_duration(t0, t1),
+                            1.0e-9 * num_flops / timespec_duration(t0, t1));
+                }
             }
             if (!quiet) {
                 fprintf(stdout, format ? format : "%.*g", DBL_DIG, dot);
@@ -1234,7 +1279,7 @@ int main(int argc, char *argv[])
     } else if (mtxfilex.header.object == mtxfile_vector) {
         err = vector_dot(
             &mtxfilex, &mtxfiley, args.vector_type, args.format,
-            args.verbose, diagf, args.quiet);
+            args.repeat, args.verbose, diagf, args.quiet);
         if (err) {
             fprintf(stderr, "%s: %s\n",
                     program_invocation_short_name,
