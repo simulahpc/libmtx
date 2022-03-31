@@ -975,37 +975,37 @@ int test_mtxdistmatrix_dot(void)
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
 
-        float sdot;
+        float sdot = 0.0f;
         err = mtxdistmatrix_sdot(&x, &y, &sdot, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
         TEST_ASSERT_EQ(9.0f, sdot);
-        double ddot;
+        double ddot = 0.0;
         err = mtxdistmatrix_ddot(&x, &y, &ddot, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
         TEST_ASSERT_EQ(9.0, ddot);
-        float cdotu[2];
+        float cdotu[2] = {0.0f, 0.0f};
         err = mtxdistmatrix_cdotu(&x, &y, &cdotu, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
         TEST_ASSERT_EQ(9.0f, cdotu[0]); TEST_ASSERT_EQ(0.0f, cdotu[1]);
-        float cdotc[2];
+        float cdotc[2] = {0.0f, 0.0f};
         err = mtxdistmatrix_cdotc(&x, &y, &cdotc, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
         TEST_ASSERT_EQ(9.0f, cdotc[0]); TEST_ASSERT_EQ(0.0f, cdotc[1]);
-        double zdotu[2];
+        double zdotu[2] = {0.0, 0.0};
         err = mtxdistmatrix_zdotu(&x, &y, &zdotu, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
         TEST_ASSERT_EQ(9.0, zdotu[0]); TEST_ASSERT_EQ(0.0, zdotu[1]);
-        double zdotc[2];
+        double zdotc[2] = {0.0, 0.0};
         err = mtxdistmatrix_zdotc(&x, &y, &zdotc, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
@@ -1041,31 +1041,31 @@ int test_mtxdistmatrix_dot(void)
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
 
-        float sdot;
+        float sdot = 0.0f;
         err = mtxdistmatrix_sdot(&x, &y, &sdot, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_ERR_MPI_COLLECTIVE, err, "%s", mtxstrerror(err));
-        double ddot;
+        double ddot = 0.0;
         err = mtxdistmatrix_ddot(&x, &y, &ddot, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_ERR_MPI_COLLECTIVE, err, "%s", mtxstrerror(err));
-        float cdotu[2];
+        float cdotu[2] = {0.0f, 0.0f};
         err = mtxdistmatrix_cdotu(&x, &y, &cdotu, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
         TEST_ASSERT_EQ(5.0f, cdotu[0]); TEST_ASSERT_EQ(7.0f, cdotu[1]);
-        float cdotc[2];
+        float cdotc[2] = {0.0f, 0.0f};
         err = mtxdistmatrix_cdotc(&x, &y, &cdotc, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
         TEST_ASSERT_EQ(9.0f, cdotc[0]); TEST_ASSERT_EQ(-3.0f, cdotc[1]);
-        double zdotu[2];
+        double zdotu[2] = {0.0, 0.0};
         err = mtxdistmatrix_zdotu(&x, &y, &zdotu, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
         TEST_ASSERT_EQ(5.0, zdotu[0]); TEST_ASSERT_EQ(7.0, zdotu[1]);
-        double zdotc[2];
+        double zdotc[2] = {0.0, 0.0};
         err = mtxdistmatrix_zdotc(&x, &y, &zdotc, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
@@ -1110,37 +1110,37 @@ int test_mtxdistmatrix_dot(void)
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
 
-        float sdot;
+        float sdot = 0.0f;
         err = mtxdistmatrix_sdot(&x, &y, &sdot, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
         TEST_ASSERT_EQ(9.0f, sdot);
-        double ddot;
+        double ddot = 0.0;
         err = mtxdistmatrix_ddot(&x, &y, &ddot, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
         TEST_ASSERT_EQ(9.0, ddot);
-        float cdotu[2];
+        float cdotu[2] = {0.0f, 0.0f};
         err = mtxdistmatrix_cdotu(&x, &y, &cdotu, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
         TEST_ASSERT_EQ(9.0f, cdotu[0]); TEST_ASSERT_EQ(0.0f, cdotu[1]);
-        float cdotc[2];
+        float cdotc[2] = {0.0f, 0.0f};
         err = mtxdistmatrix_cdotc(&x, &y, &cdotc, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
         TEST_ASSERT_EQ(9.0f, cdotc[0]); TEST_ASSERT_EQ(0.0f, cdotc[1]);
-        double zdotu[2];
+        double zdotu[2] = {0.0, 0.0};
         err = mtxdistmatrix_zdotu(&x, &y, &zdotu, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
         TEST_ASSERT_EQ(9.0, zdotu[0]); TEST_ASSERT_EQ(0.0, zdotu[1]);
-        double zdotc[2];
+        double zdotc[2] = {0.0, 0.0};
         err = mtxdistmatrix_zdotc(&x, &y, &zdotc, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
@@ -1207,13 +1207,13 @@ int test_mtxdistmatrix_nrm2(void)
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
 
-        float snrm2;
+        float snrm2 = 0.0f;
         err = mtxdistmatrix_snrm2(&x, &snrm2, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
         TEST_ASSERT_EQ_MSG(4.0f, snrm2, "snrm2=%f", snrm2);
-        double dnrm2;
+        double dnrm2 = 0.0;
         err = mtxdistmatrix_dnrm2(&x, &dnrm2, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
@@ -1237,12 +1237,12 @@ int test_mtxdistmatrix_nrm2(void)
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
 
-        float snrm2;
+        float snrm2 = 0.0f;
         err = mtxdistmatrix_snrm2(&x, &snrm2, NULL, &disterr);
         TEST_ASSERT_EQ(MTX_ERR_MPI_COLLECTIVE, err);
         TEST_ASSERT_EQ_MSG(MTX_ERR_INVALID_FIELD, disterr.err,
                            "%s", mtxstrerror(disterr.err));
-        double dnrm2;
+        double dnrm2 = 0.0;
         err = mtxdistmatrix_dnrm2(&x, &dnrm2, NULL, &disterr);
         TEST_ASSERT_EQ(MTX_ERR_MPI_COLLECTIVE, err);
         TEST_ASSERT_EQ(MTX_ERR_INVALID_FIELD, disterr.err);
@@ -1262,13 +1262,13 @@ int test_mtxdistmatrix_nrm2(void)
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
-        float snrm2;
+        float snrm2 = 0.0f;
         err = mtxdistmatrix_snrm2(&x, &snrm2, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
         TEST_ASSERT_EQ_MSG(4.0f, snrm2, "snrm2=%f", snrm2);
-        double dnrm2;
+        double dnrm2 = 0.0;
         err = mtxdistmatrix_dnrm2(&x, &dnrm2, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
@@ -1302,13 +1302,13 @@ int test_mtxdistmatrix_nrm2(void)
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
 
-        float snrm2;
+        float snrm2 = 0.0f;
         err = mtxdistmatrix_snrm2(&x, &snrm2, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
         TEST_ASSERT_EQ_MSG(4.0f, snrm2, "snrm2=%f", snrm2);
-        double dnrm2;
+        double dnrm2 = 0.0;
         err = mtxdistmatrix_dnrm2(&x, &dnrm2, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
@@ -1337,13 +1337,13 @@ int test_mtxdistmatrix_nrm2(void)
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
-        float snrm2;
+        float snrm2 = 0.0f;
         err = mtxdistmatrix_snrm2(&x, &snrm2, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
         TEST_ASSERT_EQ(4.0f, snrm2);
-        double dnrm2;
+        double dnrm2 = 0.0;
         err = mtxdistmatrix_dnrm2(&x, &dnrm2, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE

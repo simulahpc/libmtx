@@ -1308,7 +1308,7 @@ int mtxvector_coordinate_sdot(
         if (x->precision != ycoordinate->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
         if (!same_pattern(x, ycoordinate)) return MTX_ERR_INCOMPATIBLE_PATTERN;
         if (x->field == mtx_field_pattern) {
-            *dot = x->size;
+            *dot += x->size;
             return MTX_SUCCESS;
         }
         struct mtxvector_array xarray;
@@ -1348,7 +1348,7 @@ int mtxvector_coordinate_ddot(
         if (x->precision != ycoordinate->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
         if (!same_pattern(x, ycoordinate)) return MTX_ERR_INCOMPATIBLE_PATTERN;
         if (x->field == mtx_field_pattern) {
-            *dot = x->size;
+            *dot += x->size;
             return MTX_SUCCESS;
         }
         struct mtxvector_array xarray;
@@ -1389,7 +1389,7 @@ int mtxvector_coordinate_cdotu(
         if (x->precision != ycoordinate->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
         if (!same_pattern(x, ycoordinate)) return MTX_ERR_INCOMPATIBLE_PATTERN;
         if (x->field == mtx_field_pattern) {
-            (*dot)[0] = x->size; (*dot)[1] = 0;
+            (*dot)[0] += x->size; /* (*dot)[1] = 0; */
             return MTX_SUCCESS;
         }
         struct mtxvector_array xarray;
@@ -1430,7 +1430,7 @@ int mtxvector_coordinate_zdotu(
         if (x->precision != ycoordinate->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
         if (!same_pattern(x, ycoordinate)) return MTX_ERR_INCOMPATIBLE_PATTERN;
         if (x->field == mtx_field_pattern) {
-            (*dot)[0] = x->size; (*dot)[1] = 0;
+            (*dot)[0] += x->size; /* (*dot)[1] = 0; */
             return MTX_SUCCESS;
         }
         struct mtxvector_array xarray;
@@ -1471,7 +1471,7 @@ int mtxvector_coordinate_cdotc(
         if (x->precision != ycoordinate->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
         if (!same_pattern(x, ycoordinate)) return MTX_ERR_INCOMPATIBLE_PATTERN;
         if (x->field == mtx_field_pattern) {
-            (*dot)[0] = x->size; (*dot)[1] = 0;
+            (*dot)[0] += x->size; /* (*dot)[1] = 0; */
             return MTX_SUCCESS;
         }
         struct mtxvector_array xarray;
@@ -1512,7 +1512,7 @@ int mtxvector_coordinate_zdotc(
         if (x->precision != ycoordinate->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
         if (!same_pattern(x, ycoordinate)) return MTX_ERR_INCOMPATIBLE_PATTERN;
         if (x->field == mtx_field_pattern) {
-            (*dot)[0] = x->size; (*dot)[1] = 0;
+            (*dot)[0] += x->size; /* (*dot)[1] = 0; */
             return MTX_SUCCESS;
         }
         struct mtxvector_array xarray;
