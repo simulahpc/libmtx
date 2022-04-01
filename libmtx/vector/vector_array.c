@@ -1996,7 +1996,7 @@ int mtxvector_array_cdotu(
                 const double (* xdata)[2] = x->data.complex_double;
                 const double (* ydata)[2] = yarray->data.complex_double;
 #ifdef LIBMTX_HAVE_BLAS
-                double tmp[2];
+                double tmp[2] = {0.0, 0.0};
                 cblas_zdotu_sub(x->size, xdata, 1, ydata, 1, tmp);
                 if (mtxblaserror()) return MTX_ERR_BLAS;
                 (*dot)[0] = tmp[0];
@@ -2073,7 +2073,7 @@ int mtxvector_array_zdotu(
                 const float (* xdata)[2] = x->data.complex_single;
                 const float (* ydata)[2] = yarray->data.complex_single;
 #ifdef LIBMTX_HAVE_BLAS
-                float tmp[2];
+                float tmp[2] = {0.0f, 0.0f};
                 cblas_cdotu_sub(x->size, xdata, 1, ydata, 1, tmp);
                 if (mtxblaserror()) return MTX_ERR_BLAS;
                 (*dot)[0] = tmp[0];
@@ -2177,7 +2177,7 @@ int mtxvector_array_cdotc(
                 const double (* xdata)[2] = x->data.complex_double;
                 const double (* ydata)[2] = yarray->data.complex_double;
 #ifdef LIBMTX_HAVE_BLAS
-                double tmp[2];
+                double tmp[2] = {0.0, 0.0};
                 cblas_zdotc_sub(x->size, xdata, 1, ydata, 1, tmp);
                 if (mtxblaserror()) return MTX_ERR_BLAS;
                 (*dot)[0] = tmp[0];
@@ -2255,7 +2255,7 @@ int mtxvector_array_zdotc(
                 const float (* xdata)[2] = x->data.complex_single;
                 const float (* ydata)[2] = yarray->data.complex_single;
 #ifdef LIBMTX_HAVE_BLAS
-                float tmp[2];
+                float tmp[2] = {0.0f, 0.0f};
                 cblas_cdotc_sub(x->size, xdata, 1, ydata, 1, tmp);
                 if (mtxblaserror()) return MTX_ERR_BLAS;
                 (*dot)[0] = tmp[0];
