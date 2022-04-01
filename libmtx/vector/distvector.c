@@ -1407,7 +1407,7 @@ int mtxdistvector_sdot(
     struct mtxdisterror * disterr)
 {
     int err;
-    float dotp = 0.0f;
+    float dotp;
     err = mtxvector_sdot(&x->interior, &y->interior, &dotp, num_flops);
     if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
@@ -1431,7 +1431,7 @@ int mtxdistvector_ddot(
     struct mtxdisterror * disterr)
 {
     int err;
-    double dotp = 0.0;
+    double dotp;
     err = mtxvector_ddot(&x->interior, &y->interior, &dotp, num_flops);
     if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
@@ -1456,7 +1456,7 @@ int mtxdistvector_cdotu(
     struct mtxdisterror * disterr)
 {
     int err;
-    float dotp[2] = {0.0f, 0.0f};
+    float dotp[2];
     err = mtxvector_cdotu(&x->interior, &y->interior, &dotp, num_flops);
     if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
@@ -1481,7 +1481,7 @@ int mtxdistvector_zdotu(
     struct mtxdisterror * disterr)
 {
     int err;
-    double dotp[2] = {0.0, 0.0};
+    double dotp[2];
     err = mtxvector_zdotu(&x->interior, &y->interior, &dotp, num_flops);
     if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
@@ -1505,7 +1505,7 @@ int mtxdistvector_cdotc(
     struct mtxdisterror * disterr)
 {
     int err;
-    float dotp[2] = {0.0f, 0.0f};
+    float dotp[2];
     err = mtxvector_cdotc(&x->interior, &y->interior, &dotp, num_flops);
     if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
@@ -1529,7 +1529,7 @@ int mtxdistvector_zdotc(
     struct mtxdisterror * disterr)
 {
     int err;
-    double dotp[2] = {0.0, 0.0};
+    double dotp[2];
     err = mtxvector_zdotc(&x->interior, &y->interior, &dotp, num_flops);
     if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
@@ -1552,7 +1552,7 @@ int mtxdistvector_snrm2(
     struct mtxdisterror * disterr)
 {
     int err;
-    float dot[2] = {0.0f, 0.0f};
+    float dot[2];
     err = mtxvector_cdotc(&x->interior, &x->interior, &dot, num_flops);
     if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
@@ -1575,7 +1575,7 @@ int mtxdistvector_dnrm2(
     int64_t * num_flops,
     struct mtxdisterror * disterr)
 {
-    double dot[2] = {0.0, 0.0};
+    double dot[2];
     int err = mtxvector_zdotc(&x->interior, &x->interior, &dot, num_flops);
     if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
