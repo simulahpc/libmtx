@@ -3126,7 +3126,6 @@ int mtxvector_array_alltoallv(
     MPI_Comm comm,
     struct mtxdisterror * disterr)
 {
-
     enum mtxfileobject object = mtxfile_vector;
     enum mtxfileformat format = mtxfile_array;
     enum mtxfilefield field = sendbuf->field;

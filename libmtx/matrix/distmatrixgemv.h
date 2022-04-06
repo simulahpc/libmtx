@@ -91,14 +91,36 @@ struct mtxdistmatrixgemv
     struct mtxdistvector * y;
 
     /**
-     * ‘Ar’ is an array of local matrix blocks.
+     * ‘colexthalo’ is the partition used to divide columns of the
+     * local matrix block into “interior” and “exterior halo” parts.
      */
-    struct mtxmatrix * Ar;
+    struct mtxpartition colexthalo;
 
     /**
-     * ‘xr’ is an array of local source vector blocks.
+     * ‘colinthalo’ is the partition used to divide local source
+     * vector entries into “interior” and “interior halo” parts.
      */
-    struct mtxvector * xr;
+    struct mtxpartition colinthalo;
+
+    /**
+     * ‘Ai’ is the “interior” part of the local matrix block.
+     */
+    struct mtxmatrix * Ai;
+
+    /**
+     * ‘Ae’ is the “exterior” part of the local matrix.
+     */
+    struct mtxmatrix * Ae;
+
+    /**
+     * ‘xi’ is the “interior” part of the local source vector.
+     */
+    struct mtxvector * xi;
+
+    /**
+     * ‘xe’ is the “exterior” part of the local source vector.
+     */
+    struct mtxvector * xe;
 };
 
 /*
@@ -136,8 +158,8 @@ int mtxdistmatrixgemv_init_copy(
  */
 
 /**
- * ‘mtxdistmatrixgemv_init()’ allocates and initialises a data
- * structure for distributed matrix-vector multiplication.
+ * ‘mtxdistmatrixgemv_init()’ allocates and initialises data
+ * structures for distributed matrix-vector multiplication.
  */
 int mtxdistmatrixgemv_init(
     struct mtxdistmatrixgemv * gemv,
