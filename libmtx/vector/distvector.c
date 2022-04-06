@@ -1707,7 +1707,7 @@ int mtxdistvector_halo_update(
     /*
      * TODO: Another optimisation or use case is to treat the
      * "interior" separately from the halo elements. The "interior"
-     * consists of those elements that lie in the intersection of the
+     * consists of those elements that lie in the inersection of the
      * source and destination partitionings. These elements will
      * remain on the same process, and so it is not necessary to
      * perform any communication for them. If the numbering of these
