@@ -28,8 +28,9 @@
 
 #include <libmtx/precision.h>
 #include <libmtx/field.h>
-#include <libmtx/vector/vector_array.h>
+#include <libmtx/vector/base.h>
 #include <libmtx/vector/omp.h>
+#include <libmtx/vector/vector_array.h>
 #include <libmtx/vector/vector_coordinate.h>
 
 #ifdef LIBMTX_HAVE_LIBZ
@@ -54,6 +55,7 @@ enum mtxvectortype
 {
     mtxvector_auto,       /* automatic selection of vector type */
     mtxvector_array,      /* array format for dense vectors */
+    mtxvector_base,       /* basic dense vectors */
     mtxvector_omp,        /* dense vectors using OpenMP for shared
                            * memory parallel operations */
     mtxvector_coordinate, /* coordinate format for sparse vectors */
@@ -115,6 +117,7 @@ struct mtxvector
     union
     {
         struct mtxvector_array array;
+        struct mtxvector_base base;
 #ifdef LIBMTX_HAVE_OPENMP
         struct mtxvector_omp omp;
 #endif
@@ -213,6 +216,73 @@ int mtxvector_init_array_integer_single(
 int mtxvector_init_array_integer_double(
     struct mtxvector * vector,
     int num_rows,
+    const int64_t * data);
+
+/*
+ * Basic, dense vectors
+ */
+
+/**
+ * ‘mtxvector_alloc_base()’ allocates a dense vector.
+ */
+int mtxvector_alloc_base(
+    struct mtxvector * vector,
+    enum mtxfield field,
+    enum mtxprecision precision,
+    int64_t size);
+
+/**
+ * ‘mtxvector_init_base_real_single()’ allocates and initialises a
+ *  dense vector with real, single precision coefficients.
+ */
+int mtxvector_init_base_real_single(
+    struct mtxvector * vector,
+    int64_t size,
+    const float * data);
+
+/**
+ * ‘mtxvector_init_base_real_double()’ allocates and initialises a
+ *  dense vector with real, double precision coefficients.
+ */
+int mtxvector_init_base_real_double(
+    struct mtxvector * vector,
+    int64_t size,
+    const double * data);
+
+/**
+ * ‘mtxvector_init_base_complex_single()’ allocates and initialises a
+ *  dense vector with complex, single precision coefficients.
+ */
+int mtxvector_init_base_complex_single(
+    struct mtxvector * vector,
+    int64_t size,
+    const float (* data)[2]);
+
+/**
+ * ‘mtxvector_init_base_complex_double()’ allocates and initialises a
+ *  dense vector with complex, double precision coefficients.
+ */
+int mtxvector_init_base_complex_double(
+    struct mtxvector * vector,
+    int64_t size,
+    const double (* data)[2]);
+
+/**
+ * ‘mtxvector_init_base_integer_single()’ allocates and initialises a
+ *  dense vector with integer, single precision coefficients.
+ */
+int mtxvector_init_base_integer_single(
+    struct mtxvector * vector,
+    int64_t size,
+    const int32_t * data);
+
+/**
+ * ‘mtxvector_init_base_integer_double()’ allocates and initialises a
+ *  dense vector with integer, double precision coefficients.
+ */
+int mtxvector_init_base_integer_double(
+    struct mtxvector * vector,
+    int64_t size,
     const int64_t * data);
 
 /*

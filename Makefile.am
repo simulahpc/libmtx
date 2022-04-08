@@ -129,6 +129,7 @@ libmtx_la_SOURCES = \
 	libmtx/vector/vector.c \
 	libmtx/vector/vector_array.c \
 	libmtx/vector/vector_coordinate.c \
+	libmtx/vector/base.c \
 	libmtx/vector/omp.c \
 	libmtx/version.c
 
@@ -191,6 +192,7 @@ nobase_include_HEADERS = \
 	libmtx/vector/vector.h \
 	libmtx/vector/vector_array.h \
 	libmtx/vector/vector_coordinate.h \
+	libmtx/vector/base.h \
 	libmtx/vector/omp.h \
 	libmtx/version.h
 
@@ -298,6 +300,7 @@ check_PROGRAMS = \
 	tests/test_mtxmatrix_coordinate \
 	tests/test_mtxmatrix_csr \
 	tests/test_mtxvector_array \
+	tests/test_mtxvector_base \
 	tests/test_mtxvector_omp \
 	tests/test_mtxvector_coordinate \
 	tests/test_parse \
@@ -394,6 +397,7 @@ TESTS = \
 	tests/test_mtxmatrix_coordinate \
 	tests/test_mtxmatrix_csr \
 	tests/test_mtxvector_array \
+	tests/test_mtxvector_base \
 	tests/test_mtxvector_omp \
 	tests/test_mtxvector_coordinate \
 	tests/test_parse \
@@ -402,6 +406,12 @@ TESTS = \
 	tests/test_sort \
 	tests/test_submatrix \
 	tests/test_vector
+
+tests_test_mtxvector_base_CPPFLAGS =
+tests_test_mtxvector_base_LDADD = $(top_builddir)/libmtx.la
+tests_test_mtxvector_base_SOURCES = tests/test_mtxvector_base.c tests/test.h
+check_PROGRAMS += tests/test_mtxvector_base
+TESTS += tests/test_mtxvector_base
 
 if HAVE_OPENMP
 tests_test_mtxvector_omp_CPPFLAGS =
