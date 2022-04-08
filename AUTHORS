@@ -10,5 +10,6 @@ See also the ChangeLog file.
 
 James D. Trotter wrote the initial version of all files.
 
-The files ax_blas.m4, ax_check_zlib.m4, ax_gcc_x86_cpu_supports.m4 and
-ax_mpi.m4 in the m4/ directory are from the GNU Autoconf Archive.
+The files ax_blas.m4, ax_check_zlib.m4, ax_gcc_x86_cpu_supports.m4,
+ax_mpi.m4 and ax_openmp.m4 in the m4/ directory are from the GNU
+Autoconf Archive.
