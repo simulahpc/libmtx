@@ -962,7 +962,7 @@ int test_mtxvector_base_axpy(void)
 }
 
 /**
- * ‘test_mtxvector_base_dot()’ tests cbaseuting the dot products of
+ * ‘test_mtxvector_base_dot()’ tests computing the dot products of
  * pairs of vectors.
  */
 int test_mtxvector_base_dot(void)
@@ -1196,7 +1196,7 @@ int test_mtxvector_base_dot(void)
 }
 
 /**
- * ‘test_mtxvector_base_nrm2()’ tests cbaseuting the Euclidean norm of
+ * ‘test_mtxvector_base_nrm2()’ tests computing the Euclidean norm of
  * vectors.
  */
 int test_mtxvector_base_nrm2(void)
@@ -1270,7 +1270,7 @@ int test_mtxvector_base_nrm2(void)
 }
 
 /**
- * ‘test_mtxvector_base_asum()’ tests cbaseuting the sum of absolute
+ * ‘test_mtxvector_base_asum()’ tests computing the sum of absolute
  * values of vectors.
  */
 int test_mtxvector_base_asum(void)
@@ -1344,7 +1344,7 @@ int test_mtxvector_base_asum(void)
 }
 
 /**
- * ‘test_mtxvector_base_iamax()’ tests cbaseuting the sum of absolute
+ * ‘test_mtxvector_base_iamax()’ tests computing the sum of absolute
  * values of vectors.
  */
 int test_mtxvector_base_iamax(void)

@@ -31,7 +31,7 @@
 #include <libmtx/precision.h>
 #include <libmtx/field.h>
 #include <libmtx/mtxfile/header.h>
-#include <libmtx/vector/vector_array.h>
+#include <libmtx/vector/base.h>
 
 #include <stdarg.h>
 #include <stdbool.h>
@@ -55,9 +55,9 @@ struct mtxvector_omp
     int num_threads;
 
     /**
-     * ‘array’ is the underlying dense vector.
+     * ‘base’ is the underlying dense vector.
      */
-    struct mtxvector_array array;
+    struct mtxvector_base base;
 };
 
 /*

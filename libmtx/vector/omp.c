@@ -32,7 +32,7 @@
 #include <libmtx/mtxfile/mtxfile.h>
 #include <libmtx/util/partition.h>
 #include <libmtx/vector/omp.h>
-#include <libmtx/vector/vector_array.h>
+#include <libmtx/vector/base.h>
 #include <libmtx/vector/vector.h>
 
 #include <math.h>
@@ -53,7 +53,7 @@
 void mtxvector_omp_free(
     struct mtxvector_omp * vector)
 {
-    mtxvector_array_free(&vector->array);
+    mtxvector_base_free(&vector->base);
 }
 
 /**
@@ -64,7 +64,7 @@ int mtxvector_omp_alloc_copy(
     struct mtxvector_omp * dst,
     const struct mtxvector_omp * src)
 {
-    return mtxvector_array_alloc_copy(&dst->array, &src->array);
+    return mtxvector_base_alloc_copy(&dst->base, &src->base);
 }
 
 /**
@@ -75,7 +75,7 @@ int mtxvector_omp_init_copy(
     struct mtxvector_omp * dst,
     const struct mtxvector_omp * src)
 {
-    return mtxvector_array_init_copy(&dst->array, &src->array);
+    return mtxvector_base_init_copy(&dst->base, &src->base);
 }
 
 /*
@@ -92,8 +92,8 @@ int mtxvector_omp_alloc(
     int size,
     int num_threads)
 {
-    int err = mtxvector_array_alloc(
-        &vector->array, field, precision, size);
+    int err = mtxvector_base_alloc(
+        &vector->base, field, precision, size);
     if (err) return err;
     vector->num_threads = num_threads;
     return MTX_SUCCESS;
@@ -112,10 +112,10 @@ int mtxvector_omp_init_real_single(
     int err = mtxvector_omp_alloc(
         vector, mtx_field_real, mtx_single, size, num_threads);
     if (err) return err;
-    struct mtxvector_array * array = &vector->array;
+    struct mtxvector_base * base = &vector->base;
     #pragma omp parallel for num_threads(num_threads)
     for (int64_t k = 0; k < size; k++)
-        array->data.real_single[k] = data[k];
+        base->data.real_single[k] = data[k];
     return MTX_SUCCESS;
 }
 
@@ -132,10 +132,10 @@ int mtxvector_omp_init_real_double(
     int err = mtxvector_omp_alloc(
         vector, mtx_field_real, mtx_double, size, num_threads);
     if (err) return err;
-    struct mtxvector_array * array = &vector->array;
+    struct mtxvector_base * base = &vector->base;
     #pragma omp parallel for num_threads(num_threads)
     for (int64_t k = 0; k < size; k++)
-        array->data.real_double[k] = data[k];
+        base->data.real_double[k] = data[k];
     return MTX_SUCCESS;
 }
 
@@ -152,11 +152,11 @@ int mtxvector_omp_init_complex_single(
     int err = mtxvector_omp_alloc(
         vector, mtx_field_complex, mtx_single, size, num_threads);
     if (err) return err;
-    struct mtxvector_array * array = &vector->array;
+    struct mtxvector_base * base = &vector->base;
     #pragma omp parallel for num_threads(num_threads)
     for (int64_t k = 0; k < size; k++) {
-        array->data.complex_single[k][0] = data[k][0];
-        array->data.complex_single[k][1] = data[k][1];
+        base->data.complex_single[k][0] = data[k][0];
+        base->data.complex_single[k][1] = data[k][1];
     }
     return MTX_SUCCESS;
 }
@@ -174,11 +174,11 @@ int mtxvector_omp_init_complex_double(
     int err = mtxvector_omp_alloc(
         vector, mtx_field_complex, mtx_double, size, num_threads);
     if (err) return err;
-    struct mtxvector_array * array = &vector->array;
+    struct mtxvector_base * base = &vector->base;
     #pragma omp parallel for num_threads(num_threads)
     for (int64_t k = 0; k < size; k++) {
-        array->data.complex_double[k][0] = data[k][0];
-        array->data.complex_double[k][1] = data[k][1];
+        base->data.complex_double[k][0] = data[k][0];
+        base->data.complex_double[k][1] = data[k][1];
     }
     return MTX_SUCCESS;
 }
@@ -196,10 +196,10 @@ int mtxvector_omp_init_integer_single(
     int err = mtxvector_omp_alloc(
         vector, mtx_field_integer, mtx_single, size, num_threads);
     if (err) return err;
-    struct mtxvector_array * array = &vector->array;
+    struct mtxvector_base * base = &vector->base;
     #pragma omp parallel for num_threads(num_threads)
     for (int64_t k = 0; k < size; k++)
-        array->data.integer_single[k] = data[k];
+        base->data.integer_single[k] = data[k];
     return MTX_SUCCESS;
 }
 
@@ -216,10 +216,10 @@ int mtxvector_omp_init_integer_double(
     int err = mtxvector_omp_alloc(
         vector, mtx_field_integer, mtx_double, size, num_threads);
     if (err) return err;
-    struct mtxvector_array * array = &vector->array;
+    struct mtxvector_base * base = &vector->base;
     #pragma omp parallel for num_threads(num_threads)
     for (int64_t k = 0; k < size; k++)
-        array->data.integer_double[k] = data[k];
+        base->data.integer_double[k] = data[k];
     return MTX_SUCCESS;
 }
 
@@ -235,7 +235,7 @@ int mtxvector_omp_set_constant_real_single(
     struct mtxvector_omp * xomp,
     float a)
 {
-    struct mtxvector_array * x = &xomp->array;
+    struct mtxvector_base * x = &xomp->base;
     int num_threads = xomp->num_threads;
     if (x->field == mtx_field_real) {
         if (x->precision == mtx_single) {
@@ -283,7 +283,7 @@ int mtxvector_omp_set_constant_real_double(
     struct mtxvector_omp * xomp,
     double a)
 {
-    struct mtxvector_array * x = &xomp->array;
+    struct mtxvector_base * x = &xomp->base;
     int num_threads = xomp->num_threads;
     if (x->field == mtx_field_real) {
         if (x->precision == mtx_single) {
@@ -332,7 +332,7 @@ int mtxvector_omp_set_constant_complex_single(
     struct mtxvector_omp * xomp,
     float a[2])
 {
-    struct mtxvector_array * x = &xomp->array;
+    struct mtxvector_base * x = &xomp->base;
     int num_threads = xomp->num_threads;
     if (x->field == mtx_field_complex) {
         if (x->precision == mtx_single) {
@@ -361,7 +361,7 @@ int mtxvector_omp_set_constant_complex_double(
     struct mtxvector_omp * xomp,
     double a[2])
 {
-    struct mtxvector_array * x = &xomp->array;
+    struct mtxvector_base * x = &xomp->base;
     int num_threads = xomp->num_threads;
     if (x->field == mtx_field_complex) {
         if (x->precision == mtx_single) {
@@ -389,7 +389,7 @@ int mtxvector_omp_set_constant_integer_single(
     struct mtxvector_omp * xomp,
     int32_t a)
 {
-    struct mtxvector_array * x = &xomp->array;
+    struct mtxvector_base * x = &xomp->base;
     int num_threads = xomp->num_threads;
     if (x->field == mtx_field_real) {
         if (x->precision == mtx_single) {
@@ -437,7 +437,7 @@ int mtxvector_omp_set_constant_integer_double(
     struct mtxvector_omp * xomp,
     int64_t a)
 {
-    struct mtxvector_array * x = &xomp->array;
+    struct mtxvector_base * x = &xomp->base;
     int num_threads = xomp->num_threads;
     if (x->field == mtx_field_real) {
         if (x->precision == mtx_single) {
@@ -489,7 +489,7 @@ int mtxvector_omp_from_mtxfile(
     struct mtxvector_omp * vector,
     const struct mtxfile * mtxfile)
 {
-    return mtxvector_array_from_mtxfile(&vector->array, mtxfile);
+    return mtxvector_base_from_mtxfile(&vector->base, mtxfile);
 }
 
 /**
@@ -501,7 +501,7 @@ int mtxvector_omp_to_mtxfile(
     const struct mtxvector_omp * vector,
     enum mtxfileformat mtxfmt)
 {
-    return mtxvector_array_to_mtxfile(mtxfile, &vector->array, mtxfmt);
+    return mtxvector_base_to_mtxfile(mtxfile, &vector->base, mtxfmt);
 }
 
 /*
@@ -624,8 +624,8 @@ int mtxvector_omp_swap(
     struct mtxvector_omp * xomp,
     struct mtxvector_omp * yomp)
 {
-    struct mtxvector_array * x = &xomp->array;
-    struct mtxvector_array * y = &yomp->array;
+    struct mtxvector_base * x = &xomp->base;
+    struct mtxvector_base * y = &yomp->base;
     int num_threads = xomp->num_threads < yomp->num_threads
         ? xomp->num_threads : yomp->num_threads;
     if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
@@ -709,8 +709,8 @@ int mtxvector_omp_copy(
     struct mtxvector_omp * yomp,
     const struct mtxvector_omp * xomp)
 {
-    const struct mtxvector_array * x = &xomp->array;
-    struct mtxvector_array * y = &yomp->array;
+    const struct mtxvector_base * x = &xomp->base;
+    struct mtxvector_base * y = &yomp->base;
     int num_threads = xomp->num_threads < yomp->num_threads
         ? xomp->num_threads : yomp->num_threads;
     if (y->field != x->field) return MTX_ERR_INCOMPATIBLE_FIELD;
@@ -775,7 +775,7 @@ int mtxvector_omp_sscal(
     struct mtxvector_omp * xomp,
     int64_t * num_flops)
 {
-    struct mtxvector_array * x = &xomp->array;
+    struct mtxvector_base * x = &xomp->base;
     int num_threads = xomp->num_threads;
     if (a == 1) return MTX_SUCCESS;
     if (x->field == mtx_field_real) {
@@ -837,7 +837,7 @@ int mtxvector_omp_dscal(
     struct mtxvector_omp * xomp,
     int64_t * num_flops)
 {
-    struct mtxvector_array * x = &xomp->array;
+    struct mtxvector_base * x = &xomp->base;
     int num_threads = xomp->num_threads;
     if (a == 1) return MTX_SUCCESS;
     if (x->field == mtx_field_real) {
@@ -899,7 +899,7 @@ int mtxvector_omp_cscal(
     struct mtxvector_omp * xomp,
     int64_t * num_flops)
 {
-    struct mtxvector_array * x = &xomp->array;
+    struct mtxvector_base * x = &xomp->base;
     int num_threads = xomp->num_threads;
     if (x->field != mtx_field_complex) return MTX_ERR_INCOMPATIBLE_FIELD;
     if (x->precision == mtx_single) {
@@ -935,7 +935,7 @@ int mtxvector_omp_zscal(
     struct mtxvector_omp * xomp,
     int64_t * num_flops)
 {
-    struct mtxvector_array * x = &xomp->array;
+    struct mtxvector_base * x = &xomp->base;
     int num_threads = xomp->num_threads;
     if (x->field != mtx_field_complex) return MTX_ERR_INCOMPATIBLE_FIELD;
     if (x->precision == mtx_single) {
@@ -975,8 +975,8 @@ int mtxvector_omp_saxpy(
     struct mtxvector_omp * yomp,
     int64_t * num_flops)
 {
-    const struct mtxvector_array * x = &xomp->array;
-    struct mtxvector_array * y = &yomp->array;
+    const struct mtxvector_base * x = &xomp->base;
+    struct mtxvector_base * y = &yomp->base;
     int num_threads = xomp->num_threads < yomp->num_threads
         ? xomp->num_threads : yomp->num_threads;
     if (y->field != x->field) return MTX_ERR_INCOMPATIBLE_FIELD;
@@ -1051,8 +1051,8 @@ int mtxvector_omp_daxpy(
     struct mtxvector_omp * yomp,
     int64_t * num_flops)
 {
-    const struct mtxvector_array * x = &xomp->array;
-    struct mtxvector_array * y = &yomp->array;
+    const struct mtxvector_base * x = &xomp->base;
+    struct mtxvector_base * y = &yomp->base;
     int num_threads = xomp->num_threads < yomp->num_threads
         ? xomp->num_threads : yomp->num_threads;
     if (y->field != x->field) return MTX_ERR_INCOMPATIBLE_FIELD;
@@ -1127,8 +1127,8 @@ int mtxvector_omp_saypx(
     const struct mtxvector_omp * xomp,
     int64_t * num_flops)
 {
-    const struct mtxvector_array * x = &xomp->array;
-    struct mtxvector_array * y = &yomp->array;
+    const struct mtxvector_base * x = &xomp->base;
+    struct mtxvector_base * y = &yomp->base;
     int num_threads = xomp->num_threads < yomp->num_threads
         ? xomp->num_threads : yomp->num_threads;
     if (y->field != x->field) return MTX_ERR_INCOMPATIBLE_FIELD;
@@ -1203,8 +1203,8 @@ int mtxvector_omp_daypx(
     const struct mtxvector_omp * xomp,
     int64_t * num_flops)
 {
-    const struct mtxvector_array * x = &xomp->array;
-    struct mtxvector_array * y = &yomp->array;
+    const struct mtxvector_base * x = &xomp->base;
+    struct mtxvector_base * y = &yomp->base;
     int num_threads = xomp->num_threads < yomp->num_threads
         ? xomp->num_threads : yomp->num_threads;
     if (y->field != x->field) return MTX_ERR_INCOMPATIBLE_FIELD;
@@ -1279,8 +1279,8 @@ int mtxvector_omp_sdot(
     float * dot,
     int64_t * num_flops)
 {
-    const struct mtxvector_array * x = &xomp->array;
-    const struct mtxvector_array * y = &yomp->array;
+    const struct mtxvector_base * x = &xomp->base;
+    const struct mtxvector_base * y = &yomp->base;
     int num_threads = xomp->num_threads < yomp->num_threads
         ? xomp->num_threads : yomp->num_threads;
     if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
@@ -1343,8 +1343,8 @@ int mtxvector_omp_ddot(
     double * dot,
     int64_t * num_flops)
 {
-    const struct mtxvector_array * x = &xomp->array;
-    const struct mtxvector_array * y = &yomp->array;
+    const struct mtxvector_base * x = &xomp->base;
+    const struct mtxvector_base * y = &yomp->base;
     int num_threads = xomp->num_threads < yomp->num_threads
         ? xomp->num_threads : yomp->num_threads;
     if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
@@ -1408,8 +1408,8 @@ int mtxvector_omp_cdotu(
     float (* dot)[2],
     int64_t * num_flops)
 {
-    const struct mtxvector_array * x = &xomp->array;
-    const struct mtxvector_array * y = &yomp->array;
+    const struct mtxvector_base * x = &xomp->base;
+    const struct mtxvector_base * y = &yomp->base;
     int num_threads = xomp->num_threads < yomp->num_threads
         ? xomp->num_threads : yomp->num_threads;
     if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
@@ -1460,8 +1460,8 @@ int mtxvector_omp_zdotu(
     double (* dot)[2],
     int64_t * num_flops)
 {
-    const struct mtxvector_array * x = &xomp->array;
-    const struct mtxvector_array * y = &yomp->array;
+    const struct mtxvector_base * x = &xomp->base;
+    const struct mtxvector_base * y = &yomp->base;
     int num_threads = xomp->num_threads < yomp->num_threads
         ? xomp->num_threads : yomp->num_threads;
     if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
@@ -1511,8 +1511,8 @@ int mtxvector_omp_cdotc(
     float (* dot)[2],
     int64_t * num_flops)
 {
-    const struct mtxvector_array * x = &xomp->array;
-    const struct mtxvector_array * y = &yomp->array;
+    const struct mtxvector_base * x = &xomp->base;
+    const struct mtxvector_base * y = &yomp->base;
     int num_threads = xomp->num_threads < yomp->num_threads
         ? xomp->num_threads : yomp->num_threads;
     if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
@@ -1562,8 +1562,8 @@ int mtxvector_omp_zdotc(
     double (* dot)[2],
     int64_t * num_flops)
 {
-    const struct mtxvector_array * x = &xomp->array;
-    const struct mtxvector_array * y = &yomp->array;
+    const struct mtxvector_base * x = &xomp->base;
+    const struct mtxvector_base * y = &yomp->base;
     int num_threads = xomp->num_threads < yomp->num_threads
         ? xomp->num_threads : yomp->num_threads;
     if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
@@ -1609,7 +1609,7 @@ int mtxvector_omp_snrm2(
     float * nrm2,
     int64_t * num_flops)
 {
-    const struct mtxvector_array * x = &xomp->array;
+    const struct mtxvector_base * x = &xomp->base;
     int num_threads = xomp->num_threads;
     if (x->field == mtx_field_real) {
         if (x->precision == mtx_single) {
@@ -1682,7 +1682,7 @@ int mtxvector_omp_dnrm2(
     double * nrm2,
     int64_t * num_flops)
 {
-    const struct mtxvector_array * x = &xomp->array;
+    const struct mtxvector_base * x = &xomp->base;
     int num_threads = xomp->num_threads;
     if (x->field == mtx_field_real) {
         if (x->precision == mtx_single) {
@@ -1757,7 +1757,7 @@ int mtxvector_omp_sasum(
     float * asum,
     int64_t * num_flops)
 {
-    const struct mtxvector_array * x = &xomp->array;
+    const struct mtxvector_base * x = &xomp->base;
     int num_threads = xomp->num_threads;
     if (x->field == mtx_field_real) {
         if (x->precision == mtx_single) {
@@ -1828,7 +1828,7 @@ int mtxvector_omp_dasum(
     double * asum,
     int64_t * num_flops)
 {
-    const struct mtxvector_array * x = &xomp->array;
+    const struct mtxvector_base * x = &xomp->base;
     int num_threads = xomp->num_threads;
     if (x->field == mtx_field_real) {
         if (x->precision == mtx_single) {
@@ -1898,8 +1898,7 @@ int mtxvector_omp_iamax(
     const struct mtxvector_omp * xomp,
     int * iamax)
 {
-    const struct mtxvector_array * x = &xomp->array;
-    return mtxvector_array_iamax(x, iamax);
+    const struct mtxvector_base * x = &xomp->base;
+    return mtxvector_base_iamax(x, iamax);
 }
-
 #endif
