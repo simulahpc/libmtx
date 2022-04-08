@@ -29,6 +29,7 @@
 #include <libmtx/precision.h>
 #include <libmtx/field.h>
 #include <libmtx/vector/base.h>
+#include <libmtx/vector/blas.h>
 #include <libmtx/vector/omp.h>
 #include <libmtx/vector/vector_array.h>
 #include <libmtx/vector/vector_coordinate.h>
@@ -56,6 +57,8 @@ enum mtxvectortype
     mtxvector_auto,       /* automatic selection of vector type */
     mtxvector_array,      /* array format for dense vectors */
     mtxvector_base,       /* basic dense vectors */
+    mtxvector_blas,       /* dense vectors with vector operations
+                           * performed by an external BLAS library */
     mtxvector_omp,        /* dense vectors using OpenMP for shared
                            * memory parallel operations */
     mtxvector_coordinate, /* coordinate format for sparse vectors */
@@ -106,7 +109,7 @@ int mtxvectortype_parse(
 struct mtxvector
 {
     /**
-     * ‘format’ is the vector format: ‘array’ or ‘coordinate’.
+     * ‘type’ is the type of vector.
      */
     enum mtxvectortype type;
 
@@ -118,6 +121,9 @@ struct mtxvector
     {
         struct mtxvector_array array;
         struct mtxvector_base base;
+#ifdef LIBMTX_HAVE_BLAS
+        struct mtxvector_blas blas;
+#endif
 #ifdef LIBMTX_HAVE_OPENMP
         struct mtxvector_omp omp;
 #endif
@@ -133,7 +139,7 @@ struct mtxvector
  * ‘mtxvector_free()’ frees storage allocated for a vector.
  */
 void mtxvector_free(
-    struct mtxvector * vector);
+    struct mtxvector * x);
 
 /**
  * ‘mtxvector_alloc_copy()’ allocates a copy of a vector without
@@ -159,7 +165,7 @@ int mtxvector_init_copy(
  * ‘mtxvector_alloc_array()’ allocates a vector in array format.
  */
 int mtxvector_alloc_array(
-    struct mtxvector * vector,
+    struct mtxvector * x,
     enum mtxfield field,
     enum mtxprecision precision,
     int num_rows);
@@ -169,7 +175,7 @@ int mtxvector_alloc_array(
  * vector in array format with real, single precision coefficients.
  */
 int mtxvector_init_array_real_single(
-    struct mtxvector * vector,
+    struct mtxvector * x,
     int num_rows,
     const float * data);
 
@@ -178,7 +184,7 @@ int mtxvector_init_array_real_single(
  * vector in array format with real, double precision coefficients.
  */
 int mtxvector_init_array_real_double(
-    struct mtxvector * vector,
+    struct mtxvector * x,
     int num_rows,
     const double * data);
 
@@ -187,7 +193,7 @@ int mtxvector_init_array_real_double(
  * vector in array format with complex, single precision coefficients.
  */
 int mtxvector_init_array_complex_single(
-    struct mtxvector * vector,
+    struct mtxvector * x,
     int num_rows,
     const float (* data)[2]);
 
@@ -196,7 +202,7 @@ int mtxvector_init_array_complex_single(
  * vector in array format with complex, double precision coefficients.
  */
 int mtxvector_init_array_complex_double(
-    struct mtxvector * vector,
+    struct mtxvector * x,
     int num_rows,
     const double (* data)[2]);
 
@@ -205,7 +211,7 @@ int mtxvector_init_array_complex_double(
  * vector in array format with integer, single precision coefficients.
  */
 int mtxvector_init_array_integer_single(
-    struct mtxvector * vector,
+    struct mtxvector * x,
     int num_rows,
     const int32_t * data);
 
@@ -214,7 +220,7 @@ int mtxvector_init_array_integer_single(
  * vector in array format with integer, double precision coefficients.
  */
 int mtxvector_init_array_integer_double(
-    struct mtxvector * vector,
+    struct mtxvector * x,
     int num_rows,
     const int64_t * data);
 
@@ -226,7 +232,7 @@ int mtxvector_init_array_integer_double(
  * ‘mtxvector_alloc_base()’ allocates a dense vector.
  */
 int mtxvector_alloc_base(
-    struct mtxvector * vector,
+    struct mtxvector * x,
     enum mtxfield field,
     enum mtxprecision precision,
     int64_t size);
@@ -236,7 +242,7 @@ int mtxvector_alloc_base(
  *  dense vector with real, single precision coefficients.
  */
 int mtxvector_init_base_real_single(
-    struct mtxvector * vector,
+    struct mtxvector * x,
     int64_t size,
     const float * data);
 
@@ -245,7 +251,7 @@ int mtxvector_init_base_real_single(
  *  dense vector with real, double precision coefficients.
  */
 int mtxvector_init_base_real_double(
-    struct mtxvector * vector,
+    struct mtxvector * x,
     int64_t size,
     const double * data);
 
@@ -254,7 +260,7 @@ int mtxvector_init_base_real_double(
  *  dense vector with complex, single precision coefficients.
  */
 int mtxvector_init_base_complex_single(
-    struct mtxvector * vector,
+    struct mtxvector * x,
     int64_t size,
     const float (* data)[2]);
 
@@ -263,7 +269,7 @@ int mtxvector_init_base_complex_single(
  *  dense vector with complex, double precision coefficients.
  */
 int mtxvector_init_base_complex_double(
-    struct mtxvector * vector,
+    struct mtxvector * x,
     int64_t size,
     const double (* data)[2]);
 
@@ -272,7 +278,7 @@ int mtxvector_init_base_complex_double(
  *  dense vector with integer, single precision coefficients.
  */
 int mtxvector_init_base_integer_single(
-    struct mtxvector * vector,
+    struct mtxvector * x,
     int64_t size,
     const int32_t * data);
 
@@ -281,7 +287,75 @@ int mtxvector_init_base_integer_single(
  *  dense vector with integer, double precision coefficients.
  */
 int mtxvector_init_base_integer_double(
-    struct mtxvector * vector,
+    struct mtxvector * x,
+    int64_t size,
+    const int64_t * data);
+
+/*
+ * Dense vectors with vector operations accelerated by an external
+ * BLAS library.
+ */
+
+/**
+ * ‘mtxvector_alloc_blas()’ allocates a dense vector.
+ */
+int mtxvector_alloc_blas(
+    struct mtxvector * x,
+    enum mtxfield field,
+    enum mtxprecision precision,
+    int64_t size);
+
+/**
+ * ‘mtxvector_init_blas_real_single()’ allocates and initialises a
+ *  dense vector with real, single precision coefficients.
+ */
+int mtxvector_init_blas_real_single(
+    struct mtxvector * x,
+    int64_t size,
+    const float * data);
+
+/**
+ * ‘mtxvector_init_blas_real_double()’ allocates and initialises a
+ *  dense vector with real, double precision coefficients.
+ */
+int mtxvector_init_blas_real_double(
+    struct mtxvector * x,
+    int64_t size,
+    const double * data);
+
+/**
+ * ‘mtxvector_init_blas_complex_single()’ allocates and initialises a
+ *  dense vector with complex, single precision coefficients.
+ */
+int mtxvector_init_blas_complex_single(
+    struct mtxvector * x,
+    int64_t size,
+    const float (* data)[2]);
+
+/**
+ * ‘mtxvector_init_blas_complex_double()’ allocates and initialises a
+ *  dense vector with complex, double precision coefficients.
+ */
+int mtxvector_init_blas_complex_double(
+    struct mtxvector * x,
+    int64_t size,
+    const double (* data)[2]);
+
+/**
+ * ‘mtxvector_init_blas_integer_single()’ allocates and initialises a
+ *  dense vector with integer, single precision coefficients.
+ */
+int mtxvector_init_blas_integer_single(
+    struct mtxvector * x,
+    int64_t size,
+    const int32_t * data);
+
+/**
+ * ‘mtxvector_init_blas_integer_double()’ allocates and initialises a
+ *  dense vector with integer, double precision coefficients.
+ */
+int mtxvector_init_blas_integer_double(
+    struct mtxvector * x,
     int64_t size,
     const int64_t * data);
 
@@ -294,7 +368,7 @@ int mtxvector_init_base_integer_double(
  * vector.
  */
 int mtxvector_alloc_omp(
-    struct mtxvector * vector,
+    struct mtxvector * x,
     enum mtxfield field,
     enum mtxprecision precision,
     int size,
@@ -306,7 +380,7 @@ int mtxvector_alloc_omp(
  *  coefficients.
  */
 int mtxvector_init_omp_real_single(
-    struct mtxvector * vector,
+    struct mtxvector * x,
     int size,
     const float * data,
     int num_threads);
@@ -317,7 +391,7 @@ int mtxvector_init_omp_real_single(
  *  coefficients.
  */
 int mtxvector_init_omp_real_double(
-    struct mtxvector * vector,
+    struct mtxvector * x,
     int size,
     const double * data,
     int num_threads);
@@ -328,7 +402,7 @@ int mtxvector_init_omp_real_double(
  *  precision coefficients.
  */
 int mtxvector_init_omp_complex_single(
-    struct mtxvector * vector,
+    struct mtxvector * x,
     int size,
     const float (* data)[2],
     int num_threads);
@@ -339,7 +413,7 @@ int mtxvector_init_omp_complex_single(
  *  precision coefficients.
  */
 int mtxvector_init_omp_complex_double(
-    struct mtxvector * vector,
+    struct mtxvector * x,
     int size,
     const double (* data)[2],
     int num_threads);
@@ -350,7 +424,7 @@ int mtxvector_init_omp_complex_double(
  *  precision coefficients.
  */
 int mtxvector_init_omp_integer_single(
-    struct mtxvector * vector,
+    struct mtxvector * x,
     int size,
     const int32_t * data,
     int num_threads);
@@ -361,7 +435,7 @@ int mtxvector_init_omp_integer_single(
  *  precision coefficients.
  */
 int mtxvector_init_omp_integer_double(
-    struct mtxvector * vector,
+    struct mtxvector * x,
     int size,
     const int64_t * data,
     int num_threads);
@@ -375,7 +449,7 @@ int mtxvector_init_omp_integer_double(
  * coordinate format.
  */
 int mtxvector_alloc_coordinate(
-    struct mtxvector * vector,
+    struct mtxvector * x,
     enum mtxfield field,
     enum mtxprecision precision,
     int num_rows,
@@ -387,7 +461,7 @@ int mtxvector_alloc_coordinate(
  * coefficients.
  */
 int mtxvector_init_coordinate_real_single(
-    struct mtxvector * vector,
+    struct mtxvector * x,
     int num_rows,
     int64_t num_nonzeros,
     const int * indices,
@@ -399,7 +473,7 @@ int mtxvector_init_coordinate_real_single(
  * coefficients.
  */
 int mtxvector_init_coordinate_real_double(
-    struct mtxvector * vector,
+    struct mtxvector * x,
     int num_rows,
     int64_t num_nonzeros,
     const int * indices,
@@ -411,7 +485,7 @@ int mtxvector_init_coordinate_real_double(
  * precision coefficients.
  */
 int mtxvector_init_coordinate_complex_single(
-    struct mtxvector * vector,
+    struct mtxvector * x,
     int num_rows,
     int64_t num_nonzeros,
     const int * indices,
@@ -423,7 +497,7 @@ int mtxvector_init_coordinate_complex_single(
  * precision coefficients.
  */
 int mtxvector_init_coordinate_complex_double(
-    struct mtxvector * vector,
+    struct mtxvector * x,
     int num_rows,
     int64_t num_nonzeros,
     const int * indices,
@@ -435,7 +509,7 @@ int mtxvector_init_coordinate_complex_double(
  * precision coefficients.
  */
 int mtxvector_init_coordinate_integer_single(
-    struct mtxvector * vector,
+    struct mtxvector * x,
     int num_rows,
     int64_t num_nonzeros,
     const int * indices,
@@ -447,7 +521,7 @@ int mtxvector_init_coordinate_integer_single(
  * precision coefficients.
  */
 int mtxvector_init_coordinate_integer_double(
-    struct mtxvector * vector,
+    struct mtxvector * x,
     int num_rows,
     int64_t num_nonzeros,
     const int * indices,
@@ -459,7 +533,7 @@ int mtxvector_init_coordinate_integer_double(
  * coefficients.
  */
 int mtxvector_init_coordinate_pattern(
-    struct mtxvector * vector,
+    struct mtxvector * x,
     int num_rows,
     int64_t num_nonzeros,
     const int * indices);
@@ -474,7 +548,7 @@ int mtxvector_init_coordinate_pattern(
  * number.
  */
 int mtxvector_set_constant_real_single(
-    struct mtxvector * mtxvector,
+    struct mtxvector * x,
     float a);
 
 /**
@@ -483,7 +557,7 @@ int mtxvector_set_constant_real_single(
  * number.
  */
 int mtxvector_set_constant_real_double(
-    struct mtxvector * mtxvector,
+    struct mtxvector * x,
     double a);
 
 /**
@@ -492,7 +566,7 @@ int mtxvector_set_constant_real_double(
  * point complex number.
  */
 int mtxvector_set_constant_complex_single(
-    struct mtxvector * mtxvector,
+    struct mtxvector * x,
     float a[2]);
 
 /**
@@ -501,7 +575,7 @@ int mtxvector_set_constant_complex_single(
  * point complex number.
  */
 int mtxvector_set_constant_complex_double(
-    struct mtxvector * mtxvector,
+    struct mtxvector * x,
     double a[2]);
 
 /**
@@ -509,7 +583,7 @@ int mtxvector_set_constant_complex_double(
  * value of a vector equal to a constant integer.
  */
 int mtxvector_set_constant_integer_single(
-    struct mtxvector * mtxvector,
+    struct mtxvector * x,
     int32_t a);
 
 /**
@@ -517,7 +591,7 @@ int mtxvector_set_constant_integer_single(
  * value of a vector equal to a constant integer.
  */
 int mtxvector_set_constant_integer_double(
-    struct mtxvector * mtxvector,
+    struct mtxvector * x,
     int64_t a);
 
 /*
@@ -569,7 +643,7 @@ int mtxvector_to_mtxfile(
  * encountered during the parsing of the vector.
  */
 int mtxvector_read(
-    struct mtxvector * vector,
+    struct mtxvector * x,
     enum mtxprecision precision,
     enum mtxvectortype type,
     const char * path,
@@ -595,7 +669,7 @@ int mtxvector_read(
  * encountered during the parsing of the vector.
  */
 int mtxvector_fread(
-    struct mtxvector * vector,
+    struct mtxvector * x,
     enum mtxprecision precision,
     enum mtxvectortype type,
     FILE * f,
@@ -622,7 +696,7 @@ int mtxvector_fread(
  * encountered during the parsing of the vector.
  */
 int mtxvector_gzread(
-    struct mtxvector * vector,
+    struct mtxvector * x,
     enum mtxprecision precision,
     enum mtxvectortype type,
     gzFile f,
@@ -653,7 +727,7 @@ int mtxvector_gzread(
  * allowed.
  */
 int mtxvector_write(
-    const struct mtxvector * vector,
+    const struct mtxvector * x,
     enum mtxfileformat mtxfmt,
     const char * path,
     bool gzip,
@@ -681,7 +755,7 @@ int mtxvector_write(
  * is returned in ‘bytes_written’.
  */
 int mtxvector_fwrite(
-    const struct mtxvector * vector,
+    const struct mtxvector * x,
     enum mtxfileformat mtxfmt,
     FILE * f,
     const char * fmt,
@@ -709,7 +783,7 @@ int mtxvector_fwrite(
  * is returned in ‘bytes_written’.
  */
 int mtxvector_gzwrite(
-    const struct mtxvector * vector,
+    const struct mtxvector * x,
     enum mtxfileformat mtxfmt,
     gzFile f,
     const char * fmt,

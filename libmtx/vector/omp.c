@@ -51,9 +51,9 @@
  * ‘mtxvector_omp_free()’ frees storage allocated for a vector.
  */
 void mtxvector_omp_free(
-    struct mtxvector_omp * vector)
+    struct mtxvector_omp * x)
 {
-    mtxvector_base_free(&vector->base);
+    mtxvector_base_free(&x->base);
 }
 
 /**
@@ -86,16 +86,16 @@ int mtxvector_omp_init_copy(
  * ‘mtxvector_omp_alloc()’ allocates a vector.
  */
 int mtxvector_omp_alloc(
-    struct mtxvector_omp * vector,
+    struct mtxvector_omp * x,
     enum mtxfield field,
     enum mtxprecision precision,
     int size,
     int num_threads)
 {
     int err = mtxvector_base_alloc(
-        &vector->base, field, precision, size);
+        &x->base, field, precision, size);
     if (err) return err;
-    vector->num_threads = num_threads;
+    x->num_threads = num_threads;
     return MTX_SUCCESS;
 }
 
@@ -104,15 +104,15 @@ int mtxvector_omp_alloc(
  * vector with real, single precision coefficients.
  */
 int mtxvector_omp_init_real_single(
-    struct mtxvector_omp * vector,
+    struct mtxvector_omp * x,
     int size,
     const float * data,
     int num_threads)
 {
     int err = mtxvector_omp_alloc(
-        vector, mtx_field_real, mtx_single, size, num_threads);
+        x, mtx_field_real, mtx_single, size, num_threads);
     if (err) return err;
-    struct mtxvector_base * base = &vector->base;
+    struct mtxvector_base * base = &x->base;
     #pragma omp parallel for num_threads(num_threads)
     for (int64_t k = 0; k < size; k++)
         base->data.real_single[k] = data[k];
@@ -124,15 +124,15 @@ int mtxvector_omp_init_real_single(
  * vector with real, double precision coefficients.
  */
 int mtxvector_omp_init_real_double(
-    struct mtxvector_omp * vector,
+    struct mtxvector_omp * x,
     int size,
     const double * data,
     int num_threads)
 {
     int err = mtxvector_omp_alloc(
-        vector, mtx_field_real, mtx_double, size, num_threads);
+        x, mtx_field_real, mtx_double, size, num_threads);
     if (err) return err;
-    struct mtxvector_base * base = &vector->base;
+    struct mtxvector_base * base = &x->base;
     #pragma omp parallel for num_threads(num_threads)
     for (int64_t k = 0; k < size; k++)
         base->data.real_double[k] = data[k];
@@ -144,15 +144,15 @@ int mtxvector_omp_init_real_double(
  * vector with complex, single precision coefficients.
  */
 int mtxvector_omp_init_complex_single(
-    struct mtxvector_omp * vector,
+    struct mtxvector_omp * x,
     int size,
     const float (* data)[2],
     int num_threads)
 {
     int err = mtxvector_omp_alloc(
-        vector, mtx_field_complex, mtx_single, size, num_threads);
+        x, mtx_field_complex, mtx_single, size, num_threads);
     if (err) return err;
-    struct mtxvector_base * base = &vector->base;
+    struct mtxvector_base * base = &x->base;
     #pragma omp parallel for num_threads(num_threads)
     for (int64_t k = 0; k < size; k++) {
         base->data.complex_single[k][0] = data[k][0];
@@ -166,15 +166,15 @@ int mtxvector_omp_init_complex_single(
  * vector with complex, double precision coefficients.
  */
 int mtxvector_omp_init_complex_double(
-    struct mtxvector_omp * vector,
+    struct mtxvector_omp * x,
     int size,
     const double (* data)[2],
     int num_threads)
 {
     int err = mtxvector_omp_alloc(
-        vector, mtx_field_complex, mtx_double, size, num_threads);
+        x, mtx_field_complex, mtx_double, size, num_threads);
     if (err) return err;
-    struct mtxvector_base * base = &vector->base;
+    struct mtxvector_base * base = &x->base;
     #pragma omp parallel for num_threads(num_threads)
     for (int64_t k = 0; k < size; k++) {
         base->data.complex_double[k][0] = data[k][0];
@@ -188,15 +188,15 @@ int mtxvector_omp_init_complex_double(
  * vector with integer, single precision coefficients.
  */
 int mtxvector_omp_init_integer_single(
-    struct mtxvector_omp * vector,
+    struct mtxvector_omp * x,
     int size,
     const int32_t * data,
     int num_threads)
 {
     int err = mtxvector_omp_alloc(
-        vector, mtx_field_integer, mtx_single, size, num_threads);
+        x, mtx_field_integer, mtx_single, size, num_threads);
     if (err) return err;
-    struct mtxvector_base * base = &vector->base;
+    struct mtxvector_base * base = &x->base;
     #pragma omp parallel for num_threads(num_threads)
     for (int64_t k = 0; k < size; k++)
         base->data.integer_single[k] = data[k];
@@ -208,15 +208,15 @@ int mtxvector_omp_init_integer_single(
  * vector with integer, double precision coefficients.
  */
 int mtxvector_omp_init_integer_double(
-    struct mtxvector_omp * vector,
+    struct mtxvector_omp * x,
     int size,
     const int64_t * data,
     int num_threads)
 {
     int err = mtxvector_omp_alloc(
-        vector, mtx_field_integer, mtx_double, size, num_threads);
+        x, mtx_field_integer, mtx_double, size, num_threads);
     if (err) return err;
-    struct mtxvector_base * base = &vector->base;
+    struct mtxvector_base * base = &x->base;
     #pragma omp parallel for num_threads(num_threads)
     for (int64_t k = 0; k < size; k++)
         base->data.integer_double[k] = data[k];
@@ -486,10 +486,10 @@ int mtxvector_omp_set_constant_integer_double(
  * format to a vector.
  */
 int mtxvector_omp_from_mtxfile(
-    struct mtxvector_omp * vector,
+    struct mtxvector_omp * x,
     const struct mtxfile * mtxfile)
 {
-    return mtxvector_base_from_mtxfile(&vector->base, mtxfile);
+    return mtxvector_base_from_mtxfile(&x->base, mtxfile);
 }
 
 /**
@@ -498,10 +498,10 @@ int mtxvector_omp_from_mtxfile(
  */
 int mtxvector_omp_to_mtxfile(
     struct mtxfile * mtxfile,
-    const struct mtxvector_omp * vector,
+    const struct mtxvector_omp * x,
     enum mtxfileformat mtxfmt)
 {
-    return mtxvector_base_to_mtxfile(mtxfile, &vector->base, mtxfmt);
+    return mtxvector_base_to_mtxfile(mtxfile, &x->base, mtxfmt);
 }
 
 /*

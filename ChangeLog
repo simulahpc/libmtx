@@ -1,7 +1,9 @@
 2022-04-08 James D. Trotter <james@simula.no>
 
-	Add support for OpenMP shared-memory parallel dense vector
-	operations.
+	Refactor dense vector implementations to have a serial base
+	implementation and another implementation with BLAS-accelerated
+	operations. Also, add a third implementation to support OpenMP
+	shared-memory parallel dense vector operations.
 
 2021-08-05 James D. Trotter <james@simula.no>
 

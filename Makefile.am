@@ -16,7 +16,7 @@
 # along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
 #
 # Authors: James D. Trotter <james@simula.no>
-# Last modified: 2022-03-24
+# Last modified: 2022-04-08
 #
 # Makefile for the top-level directory of Libmtx.
 #
@@ -130,6 +130,7 @@ libmtx_la_SOURCES = \
 	libmtx/vector/vector_array.c \
 	libmtx/vector/vector_coordinate.c \
 	libmtx/vector/base.c \
+	libmtx/vector/blas.c \
 	libmtx/vector/omp.c \
 	libmtx/version.c
 
@@ -193,6 +194,7 @@ nobase_include_HEADERS = \
 	libmtx/vector/vector_array.h \
 	libmtx/vector/vector_coordinate.h \
 	libmtx/vector/base.h \
+	libmtx/vector/blas.h \
 	libmtx/vector/omp.h \
 	libmtx/version.h
 
@@ -300,8 +302,6 @@ check_PROGRAMS = \
 	tests/test_mtxmatrix_coordinate \
 	tests/test_mtxmatrix_csr \
 	tests/test_mtxvector_array \
-	tests/test_mtxvector_base \
-	tests/test_mtxvector_omp \
 	tests/test_mtxvector_coordinate \
 	tests/test_parse \
 	tests/test_partition \
@@ -397,8 +397,6 @@ TESTS = \
 	tests/test_mtxmatrix_coordinate \
 	tests/test_mtxmatrix_csr \
 	tests/test_mtxvector_array \
-	tests/test_mtxvector_base \
-	tests/test_mtxvector_omp \
 	tests/test_mtxvector_coordinate \
 	tests/test_parse \
 	tests/test_partition \
@@ -412,6 +410,14 @@ tests_test_mtxvector_base_LDADD = $(top_builddir)/libmtx.la
 tests_test_mtxvector_base_SOURCES = tests/test_mtxvector_base.c tests/test.h
 check_PROGRAMS += tests/test_mtxvector_base
 TESTS += tests/test_mtxvector_base
+
+if HAVE_BLAS
+tests_test_mtxvector_blas_CPPFLAGS =
+tests_test_mtxvector_blas_LDADD = $(top_builddir)/libmtx.la
+tests_test_mtxvector_blas_SOURCES = tests/test_mtxvector_blas.c tests/test.h
+check_PROGRAMS += tests/test_mtxvector_blas
+TESTS += tests/test_mtxvector_blas
+endif
 
 if HAVE_OPENMP
 tests_test_mtxvector_omp_CPPFLAGS =

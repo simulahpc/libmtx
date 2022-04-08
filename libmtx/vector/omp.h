@@ -68,7 +68,7 @@ struct mtxvector_omp
  * ‘mtxvector_omp_free()’ frees storage allocated for a vector.
  */
 void mtxvector_omp_free(
-    struct mtxvector_omp * vector);
+    struct mtxvector_omp * x);
 
 /**
  * ‘mtxvector_omp_alloc_copy()’ allocates a copy of a vector without
@@ -94,7 +94,7 @@ int mtxvector_omp_init_copy(
  * ‘mtxvector_omp_alloc()’ allocates a vector.
  */
 int mtxvector_omp_alloc(
-    struct mtxvector_omp * vector,
+    struct mtxvector_omp * x,
     enum mtxfield field,
     enum mtxprecision precision,
     int size,
@@ -105,7 +105,7 @@ int mtxvector_omp_alloc(
  * vector with real, single precision coefficients.
  */
 int mtxvector_omp_init_real_single(
-    struct mtxvector_omp * vector,
+    struct mtxvector_omp * x,
     int size,
     const float * data,
     int num_threads);
@@ -115,7 +115,7 @@ int mtxvector_omp_init_real_single(
  * vector with real, double precision coefficients.
  */
 int mtxvector_omp_init_real_double(
-    struct mtxvector_omp * vector,
+    struct mtxvector_omp * x,
     int size,
     const double * data,
     int num_threads);
@@ -125,7 +125,7 @@ int mtxvector_omp_init_real_double(
  * vector with complex, single precision coefficients.
  */
 int mtxvector_omp_init_complex_single(
-    struct mtxvector_omp * vector,
+    struct mtxvector_omp * x,
     int size,
     const float (* data)[2],
     int num_threads);
@@ -135,7 +135,7 @@ int mtxvector_omp_init_complex_single(
  * vector with complex, double precision coefficients.
  */
 int mtxvector_omp_init_complex_double(
-    struct mtxvector_omp * vector,
+    struct mtxvector_omp * x,
     int size,
     const double (* data)[2],
     int num_threads);
@@ -145,7 +145,7 @@ int mtxvector_omp_init_complex_double(
  * vector with integer, single precision coefficients.
  */
 int mtxvector_omp_init_integer_single(
-    struct mtxvector_omp * vector,
+    struct mtxvector_omp * x,
     int size,
     const int32_t * data,
     int num_threads);
@@ -155,7 +155,7 @@ int mtxvector_omp_init_integer_single(
  * vector with integer, double precision coefficients.
  */
 int mtxvector_omp_init_integer_double(
-    struct mtxvector_omp * vector,
+    struct mtxvector_omp * x,
     int size,
     const int64_t * data,
     int num_threads);
@@ -169,7 +169,7 @@ int mtxvector_omp_init_integer_double(
  * vector equal to a constant, single precision floating point number.
  */
 int mtxvector_omp_set_constant_real_single(
-    struct mtxvector_omp * vector,
+    struct mtxvector_omp * x,
     float a);
 
 /**
@@ -177,7 +177,7 @@ int mtxvector_omp_set_constant_real_single(
  * vector equal to a constant, double precision floating point number.
  */
 int mtxvector_omp_set_constant_real_double(
-    struct mtxvector_omp * vector,
+    struct mtxvector_omp * x,
     double a);
 
 /**
@@ -186,7 +186,7 @@ int mtxvector_omp_set_constant_real_double(
  * number.
  */
 int mtxvector_omp_set_constant_complex_single(
-    struct mtxvector_omp * vector,
+    struct mtxvector_omp * x,
     float a[2]);
 
 /**
@@ -195,7 +195,7 @@ int mtxvector_omp_set_constant_complex_single(
  * number.
  */
 int mtxvector_omp_set_constant_complex_double(
-    struct mtxvector_omp * vector,
+    struct mtxvector_omp * x,
     double a[2]);
 
 /**
@@ -203,7 +203,7 @@ int mtxvector_omp_set_constant_complex_double(
  * vector equal to a constant integer.
  */
 int mtxvector_omp_set_constant_integer_single(
-    struct mtxvector_omp * vector,
+    struct mtxvector_omp * x,
     int32_t a);
 
 /**
@@ -211,7 +211,7 @@ int mtxvector_omp_set_constant_integer_single(
  * vector equal to a constant integer.
  */
 int mtxvector_omp_set_constant_integer_double(
-    struct mtxvector_omp * vector,
+    struct mtxvector_omp * x,
     int64_t a);
 
 /*
@@ -223,7 +223,7 @@ int mtxvector_omp_set_constant_integer_double(
  * format to a vector.
  */
 int mtxvector_omp_from_mtxfile(
-    struct mtxvector_omp * vector,
+    struct mtxvector_omp * x,
     const struct mtxfile * mtxfile);
 
 /**
@@ -232,7 +232,7 @@ int mtxvector_omp_from_mtxfile(
  */
 int mtxvector_omp_to_mtxfile(
     struct mtxfile * mtxfile,
-    const struct mtxvector_omp * vector,
+    const struct mtxvector_omp * x,
     enum mtxfileformat mtxfmt);
 
 /*
