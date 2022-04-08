@@ -52,6 +52,7 @@ const char * mtxvectortype_str(
     switch (type) {
     case mtxvector_auto: return "auto";
     case mtxvector_array: return "array";
+    case mtxvector_omp: return "omp";
     case mtxvector_coordinate: return "coordinate";
     default: return mtxstrerror(MTX_ERR_INVALID_VECTOR_TYPE);
     }
@@ -92,6 +93,9 @@ int mtxvectortype_parse(
     } else if (strncmp("array", t, strlen("array")) == 0) {
         t += strlen("array");
         *vector_type = mtxvector_array;
+    } else if (strncmp("omp", t, strlen("omp")) == 0) {
+        t += strlen("omp");
+        *vector_type = mtxvector_omp;
     } else if (strncmp("coordinate", t, strlen("coordinate")) == 0) {
         t += strlen("coordinate");
         *vector_type = mtxvector_coordinate;
@@ -122,6 +126,12 @@ void mtxvector_free(
 {
     if (vector->type == mtxvector_array) {
         mtxvector_array_free(&vector->storage.array);
+    } else if (vector->type == mtxvector_omp) {
+#ifdef LIBMTX_HAVE_OPENMP
+        mtxvector_omp_free(&vector->storage.omp);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
     } else if (vector->type == mtxvector_coordinate) {
         mtxvector_coordinate_free(&vector->storage.coordinate);
     }
@@ -139,6 +149,14 @@ int mtxvector_alloc_copy(
         dst->type = mtxvector_array;
         return mtxvector_array_alloc_copy(
             &dst->storage.array, &src->storage.array);
+    } else if (src->type == mtxvector_omp) {
+#ifdef LIBMTX_HAVE_OPENMP
+        dst->type = mtxvector_omp;
+        return mtxvector_omp_alloc_copy(
+            &dst->storage.omp, &src->storage.omp);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
     } else if (src->type == mtxvector_coordinate) {
         dst->type = mtxvector_coordinate;
         return mtxvector_coordinate_alloc_copy(
@@ -160,6 +178,14 @@ int mtxvector_init_copy(
         dst->type = mtxvector_array;
         return mtxvector_array_init_copy(
             &dst->storage.array, &src->storage.array);
+    } else if (src->type == mtxvector_omp) {
+#ifdef LIBMTX_HAVE_OPENMP
+        dst->type = mtxvector_omp;
+        return mtxvector_omp_init_copy(
+            &dst->storage.omp, &src->storage.omp);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
     } else if (src->type == mtxvector_coordinate) {
         dst->type = mtxvector_coordinate;
         return mtxvector_coordinate_init_copy(
@@ -270,6 +296,150 @@ int mtxvector_init_array_integer_double(
     vector->type = mtxvector_array;
     return mtxvector_array_init_integer_double(
         &vector->storage.array, num_rows, data);
+}
+
+/*
+ * OpenMP shared-memory parallel vectors
+ */
+
+/**
+ * ‘mtxvector_alloc_omp()’ allocates an OpenMP shared-memory parallel
+ * vector.
+ */
+int mtxvector_alloc_omp(
+    struct mtxvector * vector,
+    enum mtxfield field,
+    enum mtxprecision precision,
+    int size,
+    int num_threads)
+{
+#ifdef LIBMTX_HAVE_OPENMP
+    vector->type = mtxvector_omp;
+    return mtxvector_omp_alloc(
+        &vector->storage.omp, field, precision, size, num_threads);
+#else
+    return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
+}
+
+/**
+ * ‘mtxvector_init_omp_real_single()’ allocates and initialises an
+ *  OpenMP shared-memory parallel vector with real, single precision
+ *  coefficients.
+ */
+int mtxvector_init_omp_real_single(
+    struct mtxvector * vector,
+    int size,
+    const float * data,
+    int num_threads)
+{
+#ifdef LIBMTX_HAVE_OPENMP
+    vector->type = mtxvector_omp;
+    return mtxvector_omp_init_real_single(
+        &vector->storage.omp, size, data, num_threads);
+#else
+    return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
+}
+
+/**
+ * ‘mtxvector_init_omp_real_double()’ allocates and initialises an
+ *  OpenMP shared-memory parallel vector with real, double precision
+ *  coefficients.
+ */
+int mtxvector_init_omp_real_double(
+    struct mtxvector * vector,
+    int size,
+    const double * data,
+    int num_threads)
+{
+#ifdef LIBMTX_HAVE_OPENMP
+    vector->type = mtxvector_omp;
+    return mtxvector_omp_init_real_double(
+        &vector->storage.omp, size, data, num_threads);
+#else
+    return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
+}
+
+/**
+ * ‘mtxvector_init_omp_complex_single()’ allocates and initialises an
+ *  OpenMP shared-memory parallel vector with complex, single
+ *  precision coefficients.
+ */
+int mtxvector_init_omp_complex_single(
+    struct mtxvector * vector,
+    int size,
+    const float (* data)[2],
+    int num_threads)
+{
+#ifdef LIBMTX_HAVE_OPENMP
+    vector->type = mtxvector_omp;
+    return mtxvector_omp_init_complex_single(
+        &vector->storage.omp, size, data, num_threads);
+#else
+    return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
+}
+
+/**
+ * ‘mtxvector_init_omp_complex_double()’ allocates and initialises an
+ *  OpenMP shared-memory parallel vector with complex, double
+ *  precision coefficients.
+ */
+int mtxvector_init_omp_complex_double(
+    struct mtxvector * vector,
+    int size,
+    const double (* data)[2],
+    int num_threads)
+{
+#ifdef LIBMTX_HAVE_OPENMP
+    vector->type = mtxvector_omp;
+    return mtxvector_omp_init_complex_double(
+        &vector->storage.omp, size, data, num_threads);
+#else
+    return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
+}
+
+/**
+ * ‘mtxvector_init_omp_integer_single()’ allocates and initialises an
+ *  OpenMP shared-memory parallel vector with integer, single
+ *  precision coefficients.
+ */
+int mtxvector_init_omp_integer_single(
+    struct mtxvector * vector,
+    int size,
+    const int32_t * data,
+    int num_threads)
+{
+#ifdef LIBMTX_HAVE_OPENMP
+    vector->type = mtxvector_omp;
+    return mtxvector_omp_init_integer_single(
+        &vector->storage.omp, size, data, num_threads);
+#else
+    return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
+}
+
+/**
+ * ‘mtxvector_init_omp_integer_double()’ allocates and initialises an
+ *  OpenMP shared-memory parallel vector with integer, double
+ *  precision coefficients.
+ */
+int mtxvector_init_omp_integer_double(
+    struct mtxvector * vector,
+    int size,
+    const int64_t * data,
+    int num_threads)
+{
+#ifdef LIBMTX_HAVE_OPENMP
+    vector->type = mtxvector_omp;
+    return mtxvector_omp_init_integer_double(
+        &vector->storage.omp, size, data, num_threads);
+#else
+    return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
 }
 
 /*
@@ -425,6 +595,13 @@ int mtxvector_set_constant_real_single(
     if (vector->type == mtxvector_array) {
         return mtxvector_array_set_constant_real_single(
             &vector->storage.array, a);
+    } else if (vector->type == mtxvector_omp) {
+#ifdef LIBMTX_HAVE_OPENMP
+        return mtxvector_omp_set_constant_real_single(
+            &vector->storage.omp, a);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
     } else if (vector->type == mtxvector_coordinate) {
         return mtxvector_coordinate_set_constant_real_single(
             &vector->storage.coordinate, a);
@@ -444,6 +621,13 @@ int mtxvector_set_constant_real_double(
     if (vector->type == mtxvector_array) {
         return mtxvector_array_set_constant_real_double(
             &vector->storage.array, a);
+    } else if (vector->type == mtxvector_omp) {
+#ifdef LIBMTX_HAVE_OPENMP
+        return mtxvector_omp_set_constant_real_double(
+            &vector->storage.omp, a);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
     } else if (vector->type == mtxvector_coordinate) {
         return mtxvector_coordinate_set_constant_real_double(
             &vector->storage.coordinate, a);
@@ -463,6 +647,13 @@ int mtxvector_set_constant_complex_single(
     if (vector->type == mtxvector_array) {
         return mtxvector_array_set_constant_complex_single(
             &vector->storage.array, a);
+    } else if (vector->type == mtxvector_omp) {
+#ifdef LIBMTX_HAVE_OPENMP
+        return mtxvector_omp_set_constant_complex_single(
+            &vector->storage.omp, a);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
     } else if (vector->type == mtxvector_coordinate) {
         return mtxvector_coordinate_set_constant_complex_single(
             &vector->storage.coordinate, a);
@@ -482,6 +673,13 @@ int mtxvector_set_constant_complex_double(
     if (vector->type == mtxvector_array) {
         return mtxvector_array_set_constant_complex_double(
             &vector->storage.array, a);
+    } else if (vector->type == mtxvector_omp) {
+#ifdef LIBMTX_HAVE_OPENMP
+        return mtxvector_omp_set_constant_complex_double(
+            &vector->storage.omp, a);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
     } else if (vector->type == mtxvector_coordinate) {
         return mtxvector_coordinate_set_constant_complex_double(
             &vector->storage.coordinate, a);
@@ -500,6 +698,13 @@ int mtxvector_set_constant_integer_single(
     if (vector->type == mtxvector_array) {
         return mtxvector_array_set_constant_integer_single(
             &vector->storage.array, a);
+    } else if (vector->type == mtxvector_omp) {
+#ifdef LIBMTX_HAVE_OPENMP
+        return mtxvector_omp_set_constant_integer_single(
+            &vector->storage.omp, a);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
     } else if (vector->type == mtxvector_coordinate) {
         return mtxvector_coordinate_set_constant_integer_single(
             &vector->storage.coordinate, a);
@@ -518,6 +723,13 @@ int mtxvector_set_constant_integer_double(
     if (vector->type == mtxvector_array) {
         return mtxvector_array_set_constant_integer_double(
             &vector->storage.array, a);
+    } else if (vector->type == mtxvector_omp) {
+#ifdef LIBMTX_HAVE_OPENMP
+        return mtxvector_omp_set_constant_integer_double(
+            &vector->storage.omp, a);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
     } else if (vector->type == mtxvector_coordinate) {
         return mtxvector_coordinate_set_constant_integer_double(
             &vector->storage.coordinate, a);
@@ -553,6 +765,14 @@ int mtxvector_from_mtxfile(
         vector->type = mtxvector_array;
         return mtxvector_array_from_mtxfile(
             &vector->storage.array, mtxfile);
+    } else if (type == mtxvector_omp) {
+#ifdef LIBMTX_HAVE_OPENMP
+        vector->type = mtxvector_omp;
+        return mtxvector_omp_from_mtxfile(
+            &vector->storage.omp, mtxfile);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
     } else if (type == mtxvector_coordinate) {
         vector->type = mtxvector_coordinate;
         return mtxvector_coordinate_from_mtxfile(
@@ -574,6 +794,13 @@ int mtxvector_to_mtxfile(
     if (vector->type == mtxvector_array) {
         return mtxvector_array_to_mtxfile(
             mtxfile, &vector->storage.array, mtxfmt);
+    } else if (vector->type == mtxvector_omp) {
+#ifdef LIBMTX_HAVE_OPENMP
+        return mtxvector_omp_to_mtxfile(
+            mtxfile, &vector->storage.omp, mtxfmt);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
     } else if (vector->type == mtxvector_coordinate) {
         return mtxvector_coordinate_to_mtxfile(
             mtxfile, &vector->storage.coordinate, mtxfmt);
@@ -874,6 +1101,13 @@ int mtxvector_partition(
     if (src->type == mtxvector_array) {
         return mtxvector_array_partition(
             dsts, &src->storage.array, part);
+    } else if (src->type == mtxvector_omp) {
+#ifdef LIBMTX_HAVE_OPENMP
+        return mtxvector_omp_partition(
+            dsts, &src->storage.omp, part);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
     } else if (src->type == mtxvector_coordinate) {
         return mtxvector_coordinate_partition(
             dsts, &src->storage.coordinate, part);
@@ -899,6 +1133,14 @@ int mtxvector_join(
         dst->type = mtxvector_array;
         return mtxvector_array_join(
             &dst->storage.array, srcs, part);
+    } else if (srcs[0].type == mtxvector_omp) {
+#ifdef LIBMTX_HAVE_OPENMP
+        dst->type = mtxvector_omp;
+        return mtxvector_omp_join(
+            &dst->storage.omp, srcs, part);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
     } else if (srcs[0].type == mtxvector_coordinate) {
         dst->type = mtxvector_coordinate;
         return mtxvector_coordinate_join(
@@ -922,6 +1164,12 @@ int mtxvector_swap(
     if (x->type == mtxvector_array) {
         return mtxvector_array_swap(
             &x->storage.array, &y->storage.array);
+    } else if (x->type == mtxvector_omp) {
+#ifdef LIBMTX_HAVE_OPENMP
+        return mtxvector_omp_swap(&x->storage.omp, &y->storage.omp);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
     } else if (x->type == mtxvector_coordinate) {
         return mtxvector_coordinate_swap(
             &x->storage.coordinate, &y->storage.coordinate);
@@ -939,6 +1187,12 @@ int mtxvector_copy(
     if (y->type == mtxvector_array) {
         return mtxvector_array_copy(
             &y->storage.array, &x->storage.array);
+    } else if (y->type == mtxvector_omp) {
+#ifdef LIBMTX_HAVE_OPENMP
+        return mtxvector_omp_copy(&y->storage.omp, &x->storage.omp);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
     } else if (y->type == mtxvector_coordinate) {
         return mtxvector_coordinate_copy(
             &y->storage.coordinate, &x->storage.coordinate);
@@ -956,6 +1210,12 @@ int mtxvector_sscal(
 {
     if (x->type == mtxvector_array) {
         return mtxvector_array_sscal(a, &x->storage.array, num_flops);
+    } else if (x->type == mtxvector_omp) {
+#ifdef LIBMTX_HAVE_OPENMP
+        return mtxvector_omp_sscal(a, &x->storage.omp, num_flops);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
     } else if (x->type == mtxvector_coordinate) {
         return mtxvector_coordinate_sscal(a, &x->storage.coordinate, num_flops);
     } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
@@ -972,6 +1232,12 @@ int mtxvector_dscal(
 {
     if (x->type == mtxvector_array) {
         return mtxvector_array_dscal(a, &x->storage.array, num_flops);
+    } else if (x->type == mtxvector_omp) {
+#ifdef LIBMTX_HAVE_OPENMP
+        return mtxvector_omp_dscal(a, &x->storage.omp, num_flops);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
     } else if (x->type == mtxvector_coordinate) {
         return mtxvector_coordinate_dscal(a, &x->storage.coordinate, num_flops);
     } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
@@ -988,6 +1254,12 @@ int mtxvector_cscal(
 {
     if (x->type == mtxvector_array) {
         return mtxvector_array_cscal(a, &x->storage.array, num_flops);
+    } else if (x->type == mtxvector_omp) {
+#ifdef LIBMTX_HAVE_OPENMP
+        return mtxvector_omp_cscal(a, &x->storage.omp, num_flops);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
     } else if (x->type == mtxvector_coordinate) {
         return mtxvector_coordinate_cscal(a, &x->storage.coordinate, num_flops);
     } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
@@ -1004,6 +1276,12 @@ int mtxvector_zscal(
 {
     if (x->type == mtxvector_array) {
         return mtxvector_array_zscal(a, &x->storage.array, num_flops);
+    } else if (x->type == mtxvector_omp) {
+#ifdef LIBMTX_HAVE_OPENMP
+        return mtxvector_omp_zscal(a, &x->storage.omp, num_flops);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
     } else if (x->type == mtxvector_coordinate) {
         return mtxvector_coordinate_zscal(a, &x->storage.coordinate, num_flops);
     } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
@@ -1021,6 +1299,13 @@ int mtxvector_saxpy(
 {
     if (y->type == mtxvector_array) {
         return mtxvector_array_saxpy(a, x, &y->storage.array, num_flops);
+    } else if (y->type == mtxvector_omp) {
+        if (x->type != y->type) return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
+#ifdef LIBMTX_HAVE_OPENMP
+        return mtxvector_omp_saxpy(a, &x->storage.omp, &y->storage.omp, num_flops);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
     } else if (y->type == mtxvector_coordinate) {
         return mtxvector_coordinate_saxpy(a, x, &y->storage.coordinate, num_flops);
     } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
@@ -1038,6 +1323,13 @@ int mtxvector_daxpy(
 {
     if (y->type == mtxvector_array) {
         return mtxvector_array_daxpy(a, x, &y->storage.array, num_flops);
+    } else if (y->type == mtxvector_omp) {
+        if (x->type != y->type) return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
+#ifdef LIBMTX_HAVE_OPENMP
+        return mtxvector_omp_daxpy(a, &x->storage.omp, &y->storage.omp, num_flops);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
     } else if (y->type == mtxvector_coordinate) {
         return mtxvector_coordinate_daxpy(a, x, &y->storage.coordinate, num_flops);
     } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
@@ -1055,6 +1347,13 @@ int mtxvector_saypx(
 {
     if (y->type == mtxvector_array) {
         return mtxvector_array_saypx(a, &y->storage.array, x, num_flops);
+    } else if (y->type == mtxvector_omp) {
+        if (x->type != y->type) return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
+#ifdef LIBMTX_HAVE_OPENMP
+        return mtxvector_omp_saypx(a, &y->storage.omp, &x->storage.omp, num_flops);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
     } else if (y->type == mtxvector_coordinate) {
         return mtxvector_coordinate_saypx(a, &y->storage.coordinate, x, num_flops);
     } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
@@ -1072,6 +1371,13 @@ int mtxvector_daypx(
 {
     if (y->type == mtxvector_array) {
         return mtxvector_array_daypx(a, &y->storage.array, x, num_flops);
+    } else if (y->type == mtxvector_omp) {
+        if (x->type != y->type) return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
+#ifdef LIBMTX_HAVE_OPENMP
+        return mtxvector_omp_daypx(a, &y->storage.omp, &x->storage.omp, num_flops);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
     } else if (y->type == mtxvector_coordinate) {
         return mtxvector_coordinate_daypx(a, &y->storage.coordinate, x, num_flops);
     } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
@@ -1089,6 +1395,13 @@ int mtxvector_sdot(
 {
     if (x->type == mtxvector_array) {
         return mtxvector_array_sdot(&x->storage.array, y, dot, num_flops);
+    } else if (x->type == mtxvector_omp) {
+        if (x->type != y->type) return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
+#ifdef LIBMTX_HAVE_OPENMP
+        return mtxvector_omp_sdot(&x->storage.omp, &y->storage.omp, dot, num_flops);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
     } else if (x->type == mtxvector_coordinate) {
         return mtxvector_coordinate_sdot(&x->storage.coordinate, y, dot, num_flops);
     } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
@@ -1106,6 +1419,13 @@ int mtxvector_ddot(
 {
     if (x->type == mtxvector_array) {
         return mtxvector_array_ddot(&x->storage.array, y, dot, num_flops);
+    } else if (x->type == mtxvector_omp) {
+        if (x->type != y->type) return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
+#ifdef LIBMTX_HAVE_OPENMP
+        return mtxvector_omp_ddot(&x->storage.omp, &y->storage.omp, dot, num_flops);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
     } else if (x->type == mtxvector_coordinate) {
         return mtxvector_coordinate_ddot(&x->storage.coordinate, y, dot, num_flops);
     } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
@@ -1124,6 +1444,13 @@ int mtxvector_cdotu(
 {
     if (x->type == mtxvector_array) {
         return mtxvector_array_cdotu(&x->storage.array, y, dot, num_flops);
+    } else if (x->type == mtxvector_omp) {
+        if (x->type != y->type) return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
+#ifdef LIBMTX_HAVE_OPENMP
+        return mtxvector_omp_cdotu(&x->storage.omp, &y->storage.omp, dot, num_flops);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
     } else if (x->type == mtxvector_coordinate) {
         return mtxvector_coordinate_cdotu(&x->storage.coordinate, y, dot, num_flops);
     } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
@@ -1142,6 +1469,13 @@ int mtxvector_zdotu(
 {
     if (x->type == mtxvector_array) {
         return mtxvector_array_zdotu(&x->storage.array, y, dot, num_flops);
+    } else if (x->type == mtxvector_omp) {
+        if (x->type != y->type) return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
+#ifdef LIBMTX_HAVE_OPENMP
+        return mtxvector_omp_zdotu(&x->storage.omp, &y->storage.omp, dot, num_flops);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
     } else if (x->type == mtxvector_coordinate) {
         return mtxvector_coordinate_zdotu(&x->storage.coordinate, y, dot, num_flops);
     } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
@@ -1159,6 +1493,13 @@ int mtxvector_cdotc(
 {
     if (x->type == mtxvector_array) {
         return mtxvector_array_cdotc(&x->storage.array, y, dot, num_flops);
+    } else if (x->type == mtxvector_omp) {
+        if (x->type != y->type) return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
+#ifdef LIBMTX_HAVE_OPENMP
+        return mtxvector_omp_cdotc(&x->storage.omp, &y->storage.omp, dot, num_flops);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
     } else if (x->type == mtxvector_coordinate) {
         return mtxvector_coordinate_cdotc(&x->storage.coordinate, y, dot, num_flops);
     } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
@@ -1176,6 +1517,13 @@ int mtxvector_zdotc(
 {
     if (x->type == mtxvector_array) {
         return mtxvector_array_zdotc(&x->storage.array, y, dot, num_flops);
+    } else if (x->type == mtxvector_omp) {
+        if (x->type != y->type) return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
+#ifdef LIBMTX_HAVE_OPENMP
+        return mtxvector_omp_zdotc(&x->storage.omp, &y->storage.omp, dot, num_flops);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
     } else if (x->type == mtxvector_coordinate) {
         return mtxvector_coordinate_zdotc(&x->storage.coordinate, y, dot, num_flops);
     } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
@@ -1192,6 +1540,12 @@ int mtxvector_snrm2(
 {
     if (x->type == mtxvector_array) {
         return mtxvector_array_snrm2(&x->storage.array, nrm2, num_flops);
+    } else if (x->type == mtxvector_omp) {
+#ifdef LIBMTX_HAVE_OPENMP
+        return mtxvector_omp_snrm2(&x->storage.omp, nrm2, num_flops);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
     } else if (x->type == mtxvector_coordinate) {
         return mtxvector_coordinate_snrm2(&x->storage.coordinate, nrm2, num_flops);
     } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
@@ -1208,6 +1562,12 @@ int mtxvector_dnrm2(
 {
     if (x->type == mtxvector_array) {
         return mtxvector_array_dnrm2(&x->storage.array, nrm2, num_flops);
+    } else if (x->type == mtxvector_omp) {
+#ifdef LIBMTX_HAVE_OPENMP
+        return mtxvector_omp_dnrm2(&x->storage.omp, nrm2, num_flops);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
     } else if (x->type == mtxvector_coordinate) {
         return mtxvector_coordinate_dnrm2(&x->storage.coordinate, nrm2, num_flops);
     } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
@@ -1226,6 +1586,12 @@ int mtxvector_sasum(
 {
     if (x->type == mtxvector_array) {
         return mtxvector_array_sasum(&x->storage.array, asum, num_flops);
+    } else if (x->type == mtxvector_omp) {
+#ifdef LIBMTX_HAVE_OPENMP
+        return mtxvector_omp_sasum(&x->storage.omp, asum, num_flops);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
     } else if (x->type == mtxvector_coordinate) {
         return mtxvector_coordinate_sasum(&x->storage.coordinate, asum, num_flops);
     } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
@@ -1244,6 +1610,12 @@ int mtxvector_dasum(
 {
     if (x->type == mtxvector_array) {
         return mtxvector_array_dasum(&x->storage.array, asum, num_flops);
+    } else if (x->type == mtxvector_omp) {
+#ifdef LIBMTX_HAVE_OPENMP
+        return mtxvector_omp_dasum(&x->storage.omp, asum, num_flops);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
     } else if (x->type == mtxvector_coordinate) {
         return mtxvector_coordinate_dasum(&x->storage.coordinate, asum, num_flops);
     } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
@@ -1261,6 +1633,12 @@ int mtxvector_iamax(
 {
     if (x->type == mtxvector_array) {
         return mtxvector_array_iamax(&x->storage.array, iamax);
+    } else if (x->type == mtxvector_omp) {
+#ifdef LIBMTX_HAVE_OPENMP
+        return mtxvector_omp_iamax(&x->storage.omp, iamax);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
     } else if (x->type == mtxvector_coordinate) {
         return mtxvector_coordinate_iamax(&x->storage.coordinate, iamax);
     } else { return MTX_ERR_INVALID_VECTOR_TYPE; }

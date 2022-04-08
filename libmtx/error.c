@@ -117,6 +117,8 @@ const char * mtxstrerror(
         return strerror(errno);
     case MTX_ERR_MPI_NOT_SUPPORTED:
         return "MPI not supported; please rebuild with MPI support";
+    case MTX_ERR_OPENMP_NOT_SUPPORTED:
+        return "OpenMP not supported; please rebuild with OpenMP support";
     case MTX_ERR_ZLIB_NOT_SUPPORTED:
         return "zlib not supported; please rebuild with zlib support";
     case MTX_ERR_BLAS_NOT_SUPPORTED:

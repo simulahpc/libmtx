@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-03-22
+ * Last modified: 2022-04-08
  *
  * Data structures for vectors.
  */
@@ -29,6 +29,7 @@
 #include <libmtx/precision.h>
 #include <libmtx/field.h>
 #include <libmtx/vector/vector_array.h>
+#include <libmtx/vector/omp.h>
 #include <libmtx/vector/vector_coordinate.h>
 
 #ifdef LIBMTX_HAVE_LIBZ
@@ -53,6 +54,8 @@ enum mtxvectortype
 {
     mtxvector_auto,       /* automatic selection of vector type */
     mtxvector_array,      /* array format for dense vectors */
+    mtxvector_omp,        /* dense vectors using OpenMP for shared
+                           * memory parallel operations */
     mtxvector_coordinate, /* coordinate format for sparse vectors */
 };
 
@@ -112,6 +115,9 @@ struct mtxvector
     union
     {
         struct mtxvector_array array;
+#ifdef LIBMTX_HAVE_OPENMP
+        struct mtxvector_omp omp;
+#endif
         struct mtxvector_coordinate coordinate;
     } storage;
 };
@@ -208,6 +214,87 @@ int mtxvector_init_array_integer_double(
     struct mtxvector * vector,
     int num_rows,
     const int64_t * data);
+
+/*
+ * OpenMP shared-memory parallel vectors
+ */
+
+/**
+ * ‘mtxvector_alloc_omp()’ allocates an OpenMP shared-memory parallel
+ * vector.
+ */
+int mtxvector_alloc_omp(
+    struct mtxvector * vector,
+    enum mtxfield field,
+    enum mtxprecision precision,
+    int size,
+    int num_threads);
+
+/**
+ * ‘mtxvector_init_omp_real_single()’ allocates and initialises an
+ *  OpenMP shared-memory parallel vector with real, single precision
+ *  coefficients.
+ */
+int mtxvector_init_omp_real_single(
+    struct mtxvector * vector,
+    int size,
+    const float * data,
+    int num_threads);
+
+/**
+ * ‘mtxvector_init_omp_real_double()’ allocates and initialises an
+ *  OpenMP shared-memory parallel vector with real, double precision
+ *  coefficients.
+ */
+int mtxvector_init_omp_real_double(
+    struct mtxvector * vector,
+    int size,
+    const double * data,
+    int num_threads);
+
+/**
+ * ‘mtxvector_init_omp_complex_single()’ allocates and initialises an
+ *  OpenMP shared-memory parallel vector with complex, single
+ *  precision coefficients.
+ */
+int mtxvector_init_omp_complex_single(
+    struct mtxvector * vector,
+    int size,
+    const float (* data)[2],
+    int num_threads);
+
+/**
+ * ‘mtxvector_init_omp_complex_double()’ allocates and initialises an
+ *  OpenMP shared-memory parallel vector with complex, double
+ *  precision coefficients.
+ */
+int mtxvector_init_omp_complex_double(
+    struct mtxvector * vector,
+    int size,
+    const double (* data)[2],
+    int num_threads);
+
+/**
+ * ‘mtxvector_init_omp_integer_single()’ allocates and initialises an
+ *  OpenMP shared-memory parallel vector with integer, single
+ *  precision coefficients.
+ */
+int mtxvector_init_omp_integer_single(
+    struct mtxvector * vector,
+    int size,
+    const int32_t * data,
+    int num_threads);
+
+/**
+ * ‘mtxvector_init_omp_integer_double()’ allocates and initialises an
+ *  OpenMP shared-memory parallel vector with integer, double
+ *  precision coefficients.
+ */
+int mtxvector_init_omp_integer_double(
+    struct mtxvector * vector,
+    int size,
+    const int64_t * data,
+    int num_threads);
 
 /*
  * Vector coordinate formats

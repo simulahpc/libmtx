@@ -31,6 +31,9 @@
 /* Define if you have an MPI library. */
 #undef LIBMTX_HAVE_MPI
 
+/* Define if you have OpenMP. */
+#undef LIBMTX_HAVE_OPENMP
+
 /* Define if you have `z' library (-lz) */
 #undef LIBMTX_HAVE_LIBZ
 
