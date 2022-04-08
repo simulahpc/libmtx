@@ -36,10 +36,6 @@
 #include <cblas.h>
 #endif
 
-#ifdef LIBMTX_HAVE_LIBZ
-#include <zlib.h>
-#endif
-
 #include <math.h>
 #include <stdarg.h>
 #include <stdbool.h>
@@ -767,12 +763,9 @@ int mtxvector_array_swap(
     struct mtxvector_array * x,
     struct mtxvector_array * y)
 {
-    if (x->field != y->field)
-        return MTX_ERR_INCOMPATIBLE_FIELD;
-    if (x->precision != y->precision)
-        return MTX_ERR_INCOMPATIBLE_PRECISION;
-    if (x->size != y->size)
-        return MTX_ERR_INCOMPATIBLE_SIZE;
+    if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
+    if (x->precision != y->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
+    if (x->size != y->size) return MTX_ERR_INCOMPATIBLE_SIZE;
     if (x->field == mtx_field_real) {
         if (x->precision == mtx_single) {
             float * xdata = x->data.real_single;
@@ -800,9 +793,7 @@ int mtxvector_array_swap(
                 xdata[k] = z;
             }
 #endif
-        } else {
-            return MTX_ERR_INVALID_PRECISION;
-        }
+        } else { return MTX_ERR_INVALID_PRECISION; }
     } else if (x->field == mtx_field_complex) {
         if (x->precision == mtx_single) {
             float (* xdata)[2] = x->data.complex_single;
@@ -834,9 +825,7 @@ int mtxvector_array_swap(
                 xdata[k][1] = z[1];
             }
 #endif
-        } else {
-            return MTX_ERR_INVALID_PRECISION;
-        }
+        } else { return MTX_ERR_INVALID_PRECISION; }
     } else if (x->field == mtx_field_integer) {
         if (x->precision == mtx_single) {
             int32_t * xdata = x->data.integer_single;
@@ -854,12 +843,8 @@ int mtxvector_array_swap(
                 ydata[k] = xdata[k];
                 xdata[k] = z;
             }
-        } else {
-            return MTX_ERR_INVALID_PRECISION;
-        }
-    } else {
-        return MTX_ERR_INVALID_FIELD;
-    }
+        } else { return MTX_ERR_INVALID_PRECISION; }
+    } else { return MTX_ERR_INVALID_FIELD; }
     return MTX_SUCCESS;
 }
 
@@ -971,9 +956,7 @@ int mtxvector_array_sscal(
                 xdata[k] *= a;
 #endif
             if (num_flops) *num_flops += x->size;
-        } else {
-            return MTX_ERR_INVALID_PRECISION;
-        }
+        } else { return MTX_ERR_INVALID_PRECISION; }
     } else if (x->field == mtx_field_complex) {
         if (x->precision == mtx_single) {
             float (* xdata)[2] = x->data.complex_single;
@@ -999,9 +982,7 @@ int mtxvector_array_sscal(
             }
 #endif
             if (num_flops) *num_flops += 2*x->size;
-        } else {
-            return MTX_ERR_INVALID_PRECISION;
-        }
+        } else { return MTX_ERR_INVALID_PRECISION; }
     } else if (x->field == mtx_field_integer) {
         if (x->precision == mtx_single) {
             int32_t * xdata = x->data.integer_single;
@@ -1013,12 +994,8 @@ int mtxvector_array_sscal(
             for (int64_t k = 0; k < x->size; k++)
                 xdata[k] *= a;
             if (num_flops) *num_flops += x->size;
-        } else {
-            return MTX_ERR_INVALID_PRECISION;
-        }
-    } else {
-        return MTX_ERR_INVALID_FIELD;
-    }
+        } else { return MTX_ERR_INVALID_PRECISION; }
+    } else { return MTX_ERR_INVALID_FIELD; }
     return MTX_SUCCESS;
 }
 
@@ -1053,9 +1030,7 @@ int mtxvector_array_dscal(
                 xdata[k] *= a;
 #endif
             if (num_flops) *num_flops += x->size;
-        } else {
-            return MTX_ERR_INVALID_PRECISION;
-        }
+        } else { return MTX_ERR_INVALID_PRECISION; }
     } else if (x->field == mtx_field_complex) {
         if (x->precision == mtx_single) {
             float (* xdata)[2] = x->data.complex_single;
@@ -1081,9 +1056,7 @@ int mtxvector_array_dscal(
             }
 #endif
             if (num_flops) *num_flops += 2*x->size;
-        } else {
-            return MTX_ERR_INVALID_PRECISION;
-        }
+        } else { return MTX_ERR_INVALID_PRECISION; }
     } else if (x->field == mtx_field_integer) {
         if (x->precision == mtx_single) {
             int32_t * xdata = x->data.integer_single;
@@ -1095,12 +1068,8 @@ int mtxvector_array_dscal(
             for (int64_t k = 0; k < x->size; k++)
                 xdata[k] *= a;
             if (num_flops) *num_flops += x->size;
-        } else {
-            return MTX_ERR_INVALID_PRECISION;
-        }
-    } else {
-        return MTX_ERR_INVALID_FIELD;
-    }
+        } else { return MTX_ERR_INVALID_PRECISION; }
+    } else { return MTX_ERR_INVALID_FIELD; }
     return MTX_SUCCESS;
 }
 
@@ -1113,8 +1082,7 @@ int mtxvector_array_cscal(
     struct mtxvector_array * x,
     int64_t * num_flops)
 {
-    if (x->field != mtx_field_complex)
-        return MTX_ERR_INCOMPATIBLE_FIELD;
+    if (x->field != mtx_field_complex) return MTX_ERR_INCOMPATIBLE_FIELD;
     if (x->precision == mtx_single) {
         float (* xdata)[2] = x->data.complex_single;
 #ifdef LIBMTX_HAVE_BLAS
@@ -1144,9 +1112,7 @@ int mtxvector_array_cscal(
         }
 #endif
         if (num_flops) *num_flops += 6*x->size;
-    } else {
-        return MTX_ERR_INVALID_PRECISION;
-    }
+    } else { return MTX_ERR_INVALID_PRECISION; }
     return MTX_SUCCESS;
 }
 
@@ -1159,8 +1125,7 @@ int mtxvector_array_zscal(
     struct mtxvector_array * x,
     int64_t * num_flops)
 {
-    if (x->field != mtx_field_complex)
-        return MTX_ERR_INCOMPATIBLE_FIELD;
+    if (x->field != mtx_field_complex) return MTX_ERR_INCOMPATIBLE_FIELD;
     if (x->precision == mtx_single) {
         float (* xdata)[2] = x->data.complex_single;
 #ifdef LIBMTX_HAVE_BLAS
@@ -1190,9 +1155,7 @@ int mtxvector_array_zscal(
         }
 #endif
         if (num_flops) *num_flops += 6*x->size;
-    } else {
-        return MTX_ERR_INVALID_PRECISION;
-    }
+    } else { return MTX_ERR_INVALID_PRECISION; }
     return MTX_SUCCESS;
 }
 
@@ -2358,9 +2321,7 @@ int mtxvector_array_snrm2(
             *nrm2 = sqrtf(*nrm2);
 #endif
             if (num_flops) *num_flops += 2*x->size;
-        } else {
-            return MTX_ERR_INVALID_PRECISION;
-        }
+        } else { return MTX_ERR_INVALID_PRECISION; }
     } else if (x->field == mtx_field_complex) {
         if (x->precision == mtx_single) {
             const float (* xdata)[2] = x->data.complex_single;
@@ -2386,9 +2347,7 @@ int mtxvector_array_snrm2(
             *nrm2 = sqrtf(*nrm2);
 #endif
             if (num_flops) *num_flops += 4*x->size;
-        } else {
-            return MTX_ERR_INVALID_PRECISION;
-        }
+        } else { return MTX_ERR_INVALID_PRECISION; }
     } else if (x->field == mtx_field_integer) {
         if (x->precision == mtx_single) {
             const int32_t * xdata = x->data.integer_single;
@@ -2404,12 +2363,8 @@ int mtxvector_array_snrm2(
                 *nrm2 += xdata[k]*xdata[k];
             *nrm2 = sqrtf(*nrm2);
             if (num_flops) *num_flops += 2*x->size;
-        } else {
-            return MTX_ERR_INVALID_PRECISION;
-        }
-    } else {
-        return MTX_ERR_INVALID_FIELD;
-    }
+        } else { return MTX_ERR_INVALID_PRECISION; }
+    } else { return MTX_ERR_INVALID_FIELD; }
     return MTX_SUCCESS;
 }
 
@@ -2447,9 +2402,7 @@ int mtxvector_array_dnrm2(
             *nrm2 = sqrt(*nrm2);
 #endif
             if (num_flops) *num_flops += 2*x->size;
-        } else {
-            return MTX_ERR_INVALID_PRECISION;
-        }
+        } else { return MTX_ERR_INVALID_PRECISION; }
     } else if (x->field == mtx_field_complex) {
         if (x->precision == mtx_single) {
             const float (* xdata)[2] = x->data.complex_single;
@@ -2475,9 +2428,7 @@ int mtxvector_array_dnrm2(
             *nrm2 = sqrt(*nrm2);
 #endif
             if (num_flops) *num_flops += 4*x->size;
-        } else {
-            return MTX_ERR_INVALID_PRECISION;
-        }
+        } else { return MTX_ERR_INVALID_PRECISION; }
     } else if (x->field == mtx_field_integer) {
         if (x->precision == mtx_single) {
             const int32_t * xdata = x->data.integer_single;
@@ -2493,12 +2444,8 @@ int mtxvector_array_dnrm2(
                 *nrm2 += xdata[k]*xdata[k];
             *nrm2 = sqrt(*nrm2);
             if (num_flops) *num_flops += 2*x->size;
-        } else {
-            return MTX_ERR_INVALID_PRECISION;
-        }
-    } else {
-        return MTX_ERR_INVALID_FIELD;
-    }
+        } else { return MTX_ERR_INVALID_PRECISION; }
+    } else { return MTX_ERR_INVALID_FIELD; }
     return MTX_SUCCESS;
 }
 
@@ -2536,9 +2483,7 @@ int mtxvector_array_sasum(
                 *asum += fabs(xdata[k]);
 #endif
             if (num_flops) *num_flops += x->size;
-        } else {
-            return MTX_ERR_INVALID_PRECISION;
-        }
+        } else { return MTX_ERR_INVALID_PRECISION; }
     } else if (x->field == mtx_field_complex) {
         if (x->precision == mtx_single) {
             const float (* xdata)[2] = x->data.complex_single;
@@ -2562,9 +2507,7 @@ int mtxvector_array_sasum(
                 *asum += fabs(xdata[k][0]) + fabs(xdata[k][1]);
 #endif
             if (num_flops) *num_flops += 2*x->size;
-        } else {
-            return MTX_ERR_INVALID_PRECISION;
-        }
+        } else { return MTX_ERR_INVALID_PRECISION; }
     } else if (x->field == mtx_field_integer) {
         if (x->precision == mtx_single) {
             const int32_t * xdata = x->data.integer_single;
@@ -2578,12 +2521,8 @@ int mtxvector_array_sasum(
             for (int64_t k = 0; k < x->size; k++)
                 *asum += llabs(xdata[k]);
             if (num_flops) *num_flops += x->size;
-        } else {
-            return MTX_ERR_INVALID_PRECISION;
-        }
-    } else {
-        return MTX_ERR_INVALID_FIELD;
-    }
+        } else { return MTX_ERR_INVALID_PRECISION; }
+    } else { return MTX_ERR_INVALID_FIELD; }
     return MTX_SUCCESS;
 }
 
@@ -2621,9 +2560,7 @@ int mtxvector_array_dasum(
                 *asum += fabs(xdata[k]);
 #endif
             if (num_flops) *num_flops += x->size;
-        } else {
-            return MTX_ERR_INVALID_PRECISION;
-        }
+        } else { return MTX_ERR_INVALID_PRECISION; }
     } else if (x->field == mtx_field_complex) {
         if (x->precision == mtx_single) {
             const float (* xdata)[2] = x->data.complex_single;
@@ -2647,9 +2584,7 @@ int mtxvector_array_dasum(
                 *asum += fabs(xdata[k][0]) + fabs(xdata[k][1]);
 #endif
             if (num_flops) *num_flops += 2*x->size;
-        } else {
-            return MTX_ERR_INVALID_PRECISION;
-        }
+        } else { return MTX_ERR_INVALID_PRECISION; }
     } else if (x->field == mtx_field_integer) {
         if (x->precision == mtx_single) {
             const int32_t * xdata = x->data.integer_single;
@@ -2663,12 +2598,8 @@ int mtxvector_array_dasum(
             for (int64_t k = 0; k < x->size; k++)
                 *asum += llabs(xdata[k]);
             if (num_flops) *num_flops += x->size;
-        } else {
-            return MTX_ERR_INVALID_PRECISION;
-        }
-    } else {
-        return MTX_ERR_INVALID_FIELD;
-    }
+        } else { return MTX_ERR_INVALID_PRECISION; }
+    } else { return MTX_ERR_INVALID_FIELD; }
     return MTX_SUCCESS;
 }
 
@@ -2714,9 +2645,7 @@ int mtxvector_array_iamax(
                 }
             }
 #endif
-        } else {
-            return MTX_ERR_INVALID_PRECISION;
-        }
+        } else { return MTX_ERR_INVALID_PRECISION; }
     } else if (x->field == mtx_field_complex) {
         if (x->precision == mtx_single) {
             const float (* xdata)[2] = x->data.complex_single;
@@ -2748,9 +2677,7 @@ int mtxvector_array_iamax(
                 }
             }
 #endif
-        } else {
-            return MTX_ERR_INVALID_PRECISION;
-        }
+        } else { return MTX_ERR_INVALID_PRECISION; }
     } else if (x->field == mtx_field_integer) {
         if (x->precision == mtx_single) {
             const int32_t * xdata = x->data.integer_single;
@@ -2772,12 +2699,8 @@ int mtxvector_array_iamax(
                     *iamax = k;
                 }
             }
-        } else {
-            return MTX_ERR_INVALID_PRECISION;
-        }
-    } else {
-        return MTX_ERR_INVALID_FIELD;
-    }
+        } else { return MTX_ERR_INVALID_PRECISION; }
+    } else { return MTX_ERR_INVALID_FIELD; }
     return MTX_SUCCESS;
 }
 

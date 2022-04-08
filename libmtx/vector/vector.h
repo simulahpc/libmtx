@@ -143,7 +143,7 @@ int mtxvector_init_copy(
     const struct mtxvector * src);
 
 /*
- * Vector array formats
+ * Dense vectors
  */
 
 /**

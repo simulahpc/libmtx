@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-03-22
+ * Last modified: 2022-04-08
  *
  * Data structures for vectors.
  */
@@ -619,9 +619,9 @@ int mtxvector_read(
 {
     int err;
     struct mtxfile mtxfile;
-    err = mtxfile_read(&mtxfile, precision, path, gzip, lines_read, bytes_read);
-    if (err)
-        return err;
+    err = mtxfile_read(
+        &mtxfile, precision, path, gzip, lines_read, bytes_read);
+    if (err) return err;
 
     err = mtxvector_from_mtxfile(vector, &mtxfile, type);
     if (err) {
@@ -663,8 +663,7 @@ int mtxvector_fread(
     struct mtxfile mtxfile;
     err = mtxfile_fread(
         &mtxfile, precision, f, lines_read, bytes_read, line_max, linebuf);
-    if (err)
-        return err;
+    if (err) return err;
 
     err = mtxvector_from_mtxfile(vector, &mtxfile, type);
     if (err) {
@@ -706,8 +705,7 @@ int mtxvector_gzread(
     struct mtxfile mtxfile;
     err = mtxfile_gzread(
         &mtxfile, precision, f, lines_read, bytes_read, line_max, linebuf);
-    if (err)
-        return err;
+    if (err) return err;
 
     err = mtxvector_from_mtxfile(vector, &mtxfile, type);
     if (err) {
@@ -750,8 +748,7 @@ int mtxvector_write(
     int err;
     struct mtxfile mtxfile;
     err = mtxvector_to_mtxfile(&mtxfile, vector, mtxfmt);
-    if (err)
-        return err;
+    if (err) return err;
     err = mtxfile_write(
         &mtxfile, path, gzip, fmt, bytes_written);
     if (err) {
@@ -792,8 +789,7 @@ int mtxvector_fwrite(
     int err;
     struct mtxfile mtxfile;
     err = mtxvector_to_mtxfile(&mtxfile, vector, mtxfmt);
-    if (err)
-        return err;
+    if (err) return err;
 
     err = mtxfile_fwrite(
         &mtxfile, f, fmt, bytes_written);
@@ -836,8 +832,7 @@ int mtxvector_gzwrite(
     int err;
     struct mtxfile mtxfile;
     err = mtxvector_to_mtxfile(&mtxfile, vector, mtxfmt);
-    if (err)
-        return err;
+    if (err) return err;
 
     err = mtxfile_gzwrite(
         &mtxfile, f, fmt, bytes_written);
