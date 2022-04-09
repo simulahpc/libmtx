@@ -1195,6 +1195,86 @@ int mtxvector_iamax(
  */
 
 /**
+ * ‘mtxvector_ussdot()’ computes the Euclidean dot product of two
+ * vectors in single precision floating point.
+ *
+ * The vectors ‘x’ and ‘y’ must have the same field, precision and
+ * size. The vector ‘x’ is a sparse vector in packed form.
+ */
+int mtxvector_ussdot(
+    const struct mtxvector_packed * x,
+    const struct mtxvector * y,
+    float * dot,
+    int64_t * num_flops);
+
+/**
+ * ‘mtxvector_usddot()’ computes the Euclidean dot product of two
+ * vectors in double precision floating point.
+ *
+ * The vectors ‘x’ and ‘y’ must have the same field, precision and
+ * size. The vector ‘x’ is a sparse vector in packed form.
+ */
+int mtxvector_usddot(
+    const struct mtxvector_packed * x,
+    const struct mtxvector * y,
+    double * dot,
+    int64_t * num_flops);
+
+/**
+ * ‘mtxvector_uscdotu()’ computes the product of the transpose of
+ * a complex row vector with another complex row vector in single
+ * precision floating point, ‘dot := x^T*y’.
+ *
+ * The vectors ‘x’ and ‘y’ must have the same field, precision and
+ * size. The vector ‘x’ is a sparse vector in packed form.
+ */
+int mtxvector_uscdotu(
+    const struct mtxvector_packed * x,
+    const struct mtxvector * y,
+    float (* dot)[2],
+    int64_t * num_flops);
+
+/**
+ * ‘mtxvector_uszdotu()’ computes the product of the transpose of
+ * a complex row vector with another complex row vector in double
+ * precision floating point, ‘dot := x^T*y’.
+ *
+ * The vectors ‘x’ and ‘y’ must have the same field, precision and
+ * size. The vector ‘x’ is a sparse vector in packed form.
+ */
+int mtxvector_uszdotu(
+    const struct mtxvector_packed * x,
+    const struct mtxvector * y,
+    double (* dot)[2],
+    int64_t * num_flops);
+
+/**
+ * ‘mtxvector_uscdotc()’ computes the Euclidean dot product of two
+ * complex vectors in single precision floating point, ‘dot := x^H*y’.
+ *
+ * The vectors ‘x’ and ‘y’ must have the same field, precision and
+ * size. The vector ‘x’ is a sparse vector in packed form.
+ */
+int mtxvector_uscdotc(
+    const struct mtxvector_packed * x,
+    const struct mtxvector * y,
+    float (* dot)[2],
+    int64_t * num_flops);
+
+/**
+ * ‘mtxvector_uszdotc()’ computes the Euclidean dot product of two
+ * complex vectors in double precision floating point, ‘dot := x^H*y’.
+ *
+ * The vectors ‘x’ and ‘y’ must have the same field, precision and
+ * size. The vector ‘x’ is a sparse vector in packed form.
+ */
+int mtxvector_uszdotc(
+    const struct mtxvector_packed * x,
+    const struct mtxvector * y,
+    double (* dot)[2],
+    int64_t * num_flops);
+
+/**
  * ‘mtxvector_ussaxpy()’ performs a sparse vector update, multiplying
  * a sparse vector ‘x’ in packed form by a scalar ‘alpha’ and adding
  * the result to a vector ‘y’. That is, ‘y = alpha*x + y’.

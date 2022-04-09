@@ -404,7 +404,7 @@ int mtxvector_base_daypx(
     int64_t * num_flops);
 
 /**
- * ‘mtxvector_base_sdot()’ cbaseutes the Euclidean dot product of two
+ * ‘mtxvector_base_sdot()’ computes the Euclidean dot product of two
  * vectors in single precision floating point.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
@@ -417,7 +417,7 @@ int mtxvector_base_sdot(
     int64_t * num_flops);
 
 /**
- * ‘mtxvector_base_ddot()’ cbaseutes the Euclidean dot product of two
+ * ‘mtxvector_base_ddot()’ computes the Euclidean dot product of two
  * vectors in double precision floating point.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
@@ -430,7 +430,7 @@ int mtxvector_base_ddot(
     int64_t * num_flops);
 
 /**
- * ‘mtxvector_base_cdotu()’ cbaseutes the product of the transpose of
+ * ‘mtxvector_base_cdotu()’ computes the product of the transpose of
  * a complex row vector with another complex row vector in single
  * precision floating point, ‘dot := x^T*y’.
  *
@@ -444,7 +444,7 @@ int mtxvector_base_cdotu(
     int64_t * num_flops);
 
 /**
- * ‘mtxvector_base_zdotu()’ cbaseutes the product of the transpose of
+ * ‘mtxvector_base_zdotu()’ computes the product of the transpose of
  * a complex row vector with another complex row vector in double
  * precision floating point, ‘dot := x^T*y’.
  *
@@ -458,7 +458,7 @@ int mtxvector_base_zdotu(
     int64_t * num_flops);
 
 /**
- * ‘mtxvector_base_cdotc()’ cbaseutes the Euclidean dot product of two
+ * ‘mtxvector_base_cdotc()’ computes the Euclidean dot product of two
  * complex vectors in single precision floating point, ‘dot := x^H*y’.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
@@ -471,7 +471,7 @@ int mtxvector_base_cdotc(
     int64_t * num_flops);
 
 /**
- * ‘mtxvector_base_zdotc()’ cbaseutes the Euclidean dot product of two
+ * ‘mtxvector_base_zdotc()’ computes the Euclidean dot product of two
  * complex vectors in double precision floating point, ‘dot := x^H*y’.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
@@ -484,7 +484,7 @@ int mtxvector_base_zdotc(
     int64_t * num_flops);
 
 /**
- * ‘mtxvector_base_snrm2()’ cbaseutes the Euclidean norm of a vector
+ * ‘mtxvector_base_snrm2()’ computes the Euclidean norm of a vector
  * in single precision floating point.
  */
 int mtxvector_base_snrm2(
@@ -493,7 +493,7 @@ int mtxvector_base_snrm2(
     int64_t * num_flops);
 
 /**
- * ‘mtxvector_base_dnrm2()’ cbaseutes the Euclidean norm of a vector
+ * ‘mtxvector_base_dnrm2()’ computes the Euclidean norm of a vector
  * in double precision floating point.
  */
 int mtxvector_base_dnrm2(
@@ -502,7 +502,7 @@ int mtxvector_base_dnrm2(
     int64_t * num_flops);
 
 /**
- * ‘mtxvector_base_sasum()’ cbaseutes the sum of absolute values
+ * ‘mtxvector_base_sasum()’ computes the sum of absolute values
  * (1-norm) of a vector in single precision floating point.  If the
  * vector is complex-valued, then the sum of the absolute values of
  * the real and imaginary parts is computed.
@@ -513,7 +513,7 @@ int mtxvector_base_sasum(
     int64_t * num_flops);
 
 /**
- * ‘mtxvector_base_dasum()’ cbaseutes the sum of absolute values
+ * ‘mtxvector_base_dasum()’ computes the sum of absolute values
  * (1-norm) of a vector in double precision floating point.  If the
  * vector is complex-valued, then the sum of the absolute values of
  * the real and imaginary parts is computed.
@@ -541,6 +541,86 @@ int mtxvector_base_iamax(
  * Basic Linear Algebra Subprograms: The New Standard from the BLAS
  * Technical Forum,” ACM TOMS, Vol. 28, No. 2, June 2002, pp. 239-267.
  */
+
+/**
+ * ‘mtxvector_base_ussdot()’ computes the Euclidean dot product of two
+ * vectors in single precision floating point.
+ *
+ * The vectors ‘x’ and ‘y’ must have the same field, precision and
+ * size. The vector ‘x’ is a sparse vector in packed form.
+ */
+int mtxvector_base_ussdot(
+    const struct mtxvector_packed * x,
+    const struct mtxvector_base * y,
+    float * dot,
+    int64_t * num_flops);
+
+/**
+ * ‘mtxvector_base_usddot()’ computes the Euclidean dot product of two
+ * vectors in double precision floating point.
+ *
+ * The vectors ‘x’ and ‘y’ must have the same field, precision and
+ * size. The vector ‘x’ is a sparse vector in packed form.
+ */
+int mtxvector_base_usddot(
+    const struct mtxvector_packed * x,
+    const struct mtxvector_base * y,
+    double * dot,
+    int64_t * num_flops);
+
+/**
+ * ‘mtxvector_base_uscdotu()’ computes the product of the transpose of
+ * a complex row vector with another complex row vector in single
+ * precision floating point, ‘dot := x^T*y’.
+ *
+ * The vectors ‘x’ and ‘y’ must have the same field, precision and
+ * size. The vector ‘x’ is a sparse vector in packed form.
+ */
+int mtxvector_base_uscdotu(
+    const struct mtxvector_packed * x,
+    const struct mtxvector_base * y,
+    float (* dot)[2],
+    int64_t * num_flops);
+
+/**
+ * ‘mtxvector_base_uszdotu()’ computes the product of the transpose of
+ * a complex row vector with another complex row vector in double
+ * precision floating point, ‘dot := x^T*y’.
+ *
+ * The vectors ‘x’ and ‘y’ must have the same field, precision and
+ * size. The vector ‘x’ is a sparse vector in packed form.
+ */
+int mtxvector_base_uszdotu(
+    const struct mtxvector_packed * x,
+    const struct mtxvector_base * y,
+    double (* dot)[2],
+    int64_t * num_flops);
+
+/**
+ * ‘mtxvector_base_uscdotc()’ computes the Euclidean dot product of two
+ * complex vectors in single precision floating point, ‘dot := x^H*y’.
+ *
+ * The vectors ‘x’ and ‘y’ must have the same field, precision and
+ * size. The vector ‘x’ is a sparse vector in packed form.
+ */
+int mtxvector_base_uscdotc(
+    const struct mtxvector_packed * x,
+    const struct mtxvector_base * y,
+    float (* dot)[2],
+    int64_t * num_flops);
+
+/**
+ * ‘mtxvector_base_uszdotc()’ computes the Euclidean dot product of two
+ * complex vectors in double precision floating point, ‘dot := x^H*y’.
+ *
+ * The vectors ‘x’ and ‘y’ must have the same field, precision and
+ * size. The vector ‘x’ is a sparse vector in packed form.
+ */
+int mtxvector_base_uszdotc(
+    const struct mtxvector_packed * x,
+    const struct mtxvector_base * y,
+    double (* dot)[2],
+    int64_t * num_flops);
 
 /**
  * ‘mtxvector_base_ussaxpy()’ performs a sparse vector update,

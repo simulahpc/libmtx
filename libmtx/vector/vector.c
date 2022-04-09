@@ -2433,6 +2433,188 @@ int mtxvector_iamax(
  */
 
 /**
+ * ‘mtxvector_ussdot()’ computes the Euclidean dot product of two
+ * vectors in single precision floating point.
+ *
+ * The vectors ‘x’ and ‘y’ must have the same field, precision and
+ * size. The vector ‘x’ is a sparse vector in packed form.
+ */
+int mtxvector_ussdot(
+    const struct mtxvector_packed * x,
+    const struct mtxvector * y,
+    float * dot,
+    int64_t * num_flops)
+{
+    if (y->type == mtxvector_base) {
+        return mtxvector_base_ussdot(x, &y->storage.base, dot, num_flops);
+    } else if (y->type == mtxvector_blas) {
+#ifdef LIBMTX_HAVE_BLAS
+        return mtxvector_blas_ussdot(x, &y->storage.blas, dot, num_flops);
+#else
+        return MTX_ERR_BLAS_NOT_SUPPORTED;
+#endif
+    } else if (y->type == mtxvector_omp) {
+#ifdef LIBMTX_HAVE_OPENMP
+        return mtxvector_omp_ussdot(x, &y->storage.omp, dot, num_flops);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
+    } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
+}
+
+/**
+ * ‘mtxvector_usddot()’ computes the Euclidean dot product of two
+ * vectors in double precision floating point.
+ *
+ * The vectors ‘x’ and ‘y’ must have the same field, precision and
+ * size. The vector ‘x’ is a sparse vector in packed form.
+ */
+int mtxvector_usddot(
+    const struct mtxvector_packed * x,
+    const struct mtxvector * y,
+    double * dot,
+    int64_t * num_flops)
+{
+    if (y->type == mtxvector_base) {
+        return mtxvector_base_usddot(x, &y->storage.base, dot, num_flops);
+    } else if (y->type == mtxvector_blas) {
+#ifdef LIBMTX_HAVE_BLAS
+        return mtxvector_blas_usddot(x, &y->storage.blas, dot, num_flops);
+#else
+        return MTX_ERR_BLAS_NOT_SUPPORTED;
+#endif
+    } else if (y->type == mtxvector_omp) {
+#ifdef LIBMTX_HAVE_OPENMP
+        return mtxvector_omp_usddot(x, &y->storage.omp, dot, num_flops);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
+    } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
+}
+
+/**
+ * ‘mtxvector_uscdotu()’ computes the product of the transpose of
+ * a complex row vector with another complex row vector in single
+ * precision floating point, ‘dot := x^T*y’.
+ *
+ * The vectors ‘x’ and ‘y’ must have the same field, precision and
+ * size. The vector ‘x’ is a sparse vector in packed form.
+ */
+int mtxvector_uscdotu(
+    const struct mtxvector_packed * x,
+    const struct mtxvector * y,
+    float (* dot)[2],
+    int64_t * num_flops)
+{
+    if (y->type == mtxvector_base) {
+        return mtxvector_base_uscdotu(x, &y->storage.base, dot, num_flops);
+    } else if (y->type == mtxvector_blas) {
+#ifdef LIBMTX_HAVE_BLAS
+        return mtxvector_blas_uscdotu(x, &y->storage.blas, dot, num_flops);
+#else
+        return MTX_ERR_BLAS_NOT_SUPPORTED;
+#endif
+    } else if (y->type == mtxvector_omp) {
+#ifdef LIBMTX_HAVE_OPENMP
+        return mtxvector_omp_uscdotu(x, &y->storage.omp, dot, num_flops);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
+    } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
+}
+
+/**
+ * ‘mtxvector_uszdotu()’ computes the product of the transpose of
+ * a complex row vector with another complex row vector in double
+ * precision floating point, ‘dot := x^T*y’.
+ *
+ * The vectors ‘x’ and ‘y’ must have the same field, precision and
+ * size. The vector ‘x’ is a sparse vector in packed form.
+ */
+int mtxvector_uszdotu(
+    const struct mtxvector_packed * x,
+    const struct mtxvector * y,
+    double (* dot)[2],
+    int64_t * num_flops)
+{
+    if (y->type == mtxvector_base) {
+        return mtxvector_base_uszdotu(x, &y->storage.base, dot, num_flops);
+    } else if (y->type == mtxvector_blas) {
+#ifdef LIBMTX_HAVE_BLAS
+        return mtxvector_blas_uszdotu(x, &y->storage.blas, dot, num_flops);
+#else
+        return MTX_ERR_BLAS_NOT_SUPPORTED;
+#endif
+    } else if (y->type == mtxvector_omp) {
+#ifdef LIBMTX_HAVE_OPENMP
+        return mtxvector_omp_uszdotu(x, &y->storage.omp, dot, num_flops);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
+    } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
+}
+
+/**
+ * ‘mtxvector_uscdotc()’ computes the Euclidean dot product of two
+ * complex vectors in single precision floating point, ‘dot := x^H*y’.
+ *
+ * The vectors ‘x’ and ‘y’ must have the same field, precision and
+ * size. The vector ‘x’ is a sparse vector in packed form.
+ */
+int mtxvector_uscdotc(
+    const struct mtxvector_packed * x,
+    const struct mtxvector * y,
+    float (* dot)[2],
+    int64_t * num_flops)
+{
+    if (y->type == mtxvector_base) {
+        return mtxvector_base_uscdotc(x, &y->storage.base, dot, num_flops);
+    } else if (y->type == mtxvector_blas) {
+#ifdef LIBMTX_HAVE_BLAS
+        return mtxvector_blas_uscdotc(x, &y->storage.blas, dot, num_flops);
+#else
+        return MTX_ERR_BLAS_NOT_SUPPORTED;
+#endif
+    } else if (y->type == mtxvector_omp) {
+#ifdef LIBMTX_HAVE_OPENMP
+        return mtxvector_omp_uscdotc(x, &y->storage.omp, dot, num_flops);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
+    } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
+}
+
+/**
+ * ‘mtxvector_uszdotc()’ computes the Euclidean dot product of two
+ * complex vectors in double precision floating point, ‘dot := x^H*y’.
+ *
+ * The vectors ‘x’ and ‘y’ must have the same field, precision and
+ * size. The vector ‘x’ is a sparse vector in packed form.
+ */
+int mtxvector_uszdotc(
+    const struct mtxvector_packed * x,
+    const struct mtxvector * y,
+    double (* dot)[2],
+    int64_t * num_flops)
+{
+    if (y->type == mtxvector_base) {
+        return mtxvector_base_uszdotc(x, &y->storage.base, dot, num_flops);
+    } else if (y->type == mtxvector_blas) {
+#ifdef LIBMTX_HAVE_BLAS
+        return mtxvector_blas_uszdotc(x, &y->storage.blas, dot, num_flops);
+#else
+        return MTX_ERR_BLAS_NOT_SUPPORTED;
+#endif
+    } else if (y->type == mtxvector_omp) {
+#ifdef LIBMTX_HAVE_OPENMP
+        return mtxvector_omp_uszdotc(x, &y->storage.omp, dot, num_flops);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
+    } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
+}
+
+/**
  * ‘mtxvector_ussaxpy()’ performs a sparse vector update, multiplying
  * a sparse vector ‘x’ in packed form by a scalar ‘alpha’ and adding
  * the result to a vector ‘y’. That is, ‘y = alpha*x + y’.

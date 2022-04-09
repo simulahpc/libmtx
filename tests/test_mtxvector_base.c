@@ -1403,6 +1403,128 @@ int test_mtxvector_base_iamax(void)
 }
 
 /**
+ * ‘test_mtxvector_base_usdot()’ tests scattering values to a dense
+ * vector from a sparse vector in packed storage format.
+ */
+int test_mtxvector_base_usdot(void)
+{
+    int err;
+    {
+        struct mtxvector_packed x;
+        struct mtxvector y;
+        int size = 12;
+        int64_t idx[] = {0, 3, 5, 6, 9};
+        float xdata[] = {1.0f, 1.0f, 1.0f, 2.0f, 3.0f};
+        float ydata[] = {2.0f, 0, 0, 1.0f, 0, 0.0f, 2.0f, 0, 0, 1.0f, 0, 0};
+        int num_nonzeros = sizeof(xdata) / sizeof(*xdata);
+        err = mtxvector_packed_init_real_single(
+            &x, mtxvector_base, size, num_nonzeros, idx, xdata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        err = mtxvector_init_base_real_single(&y, size, ydata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        float sdot;
+        err = mtxvector_ussdot(&x, &y, &sdot, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(10.0f, sdot);
+        double ddot;
+        err = mtxvector_usddot(&x, &y, &ddot, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(10.0, ddot);
+        mtxvector_free(&y);
+        mtxvector_packed_free(&x);
+    }
+    {
+        struct mtxvector_packed x;
+        struct mtxvector y;
+        int size = 12;
+        int64_t idx[] = {0, 3, 5, 6, 9};
+        double xdata[] = {1.0, 1.0, 1.0, 2.0, 3.0};
+        double ydata[] = {2.0, 0, 0, 1.0, 0, 0.0, 2.0, 0, 0, 1.0, 0, 0};
+        int num_nonzeros = sizeof(xdata) / sizeof(*xdata);
+        err = mtxvector_packed_init_real_double(
+            &x, mtxvector_base, size, num_nonzeros, idx, xdata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        err = mtxvector_init_base_real_double(&y, size, ydata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        float sdot;
+        err = mtxvector_ussdot(&x, &y, &sdot, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(10.0f, sdot);
+        double ddot;
+        err = mtxvector_usddot(&x, &y, &ddot, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(10.0, ddot);
+        mtxvector_free(&y);
+        mtxvector_packed_free(&x);
+    }
+    {
+        struct mtxvector_packed x;
+        struct mtxvector y;
+        int size = 6;
+        int64_t idx[] = {0, 3, 5};
+        float xdata[][2] = {{1.0f,1.0f}, {1.0f,2.0f}, {3.0f,0.0f}};
+        float ydata[][2] = {{2.0f,1.0f}, {0,0}, {0,0}, {0.0f,2.0f}, {0,0}, {1.0f,0.0f}};
+        int64_t num_nonzeros = sizeof(xdata) / sizeof(*xdata);
+        err = mtxvector_packed_init_complex_single(
+            &x, mtxvector_base, size, num_nonzeros, idx, xdata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        err = mtxvector_init_base_complex_single(&y, size, ydata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        float cdotu[2];
+        err = mtxvector_uscdotu(&x, &y, &cdotu, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(0.0f, cdotu[0]); TEST_ASSERT_EQ(5.0f, cdotu[1]);
+        double zdotu[2];
+        err = mtxvector_uszdotu(&x, &y, &zdotu, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(0.0, zdotu[0]); TEST_ASSERT_EQ(5.0, zdotu[1]);
+        float cdotc[2];
+        err = mtxvector_uscdotc(&x, &y, &cdotc, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(10.0f, cdotc[0]); TEST_ASSERT_EQ(1.0f, cdotc[1]);
+        double zdotc[2];
+        err = mtxvector_uszdotc(&x, &y, &zdotc, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(10.0, zdotc[0]); TEST_ASSERT_EQ(1.0, zdotc[1]);
+        mtxvector_free(&y);
+        mtxvector_packed_free(&x);
+    }
+    {
+        struct mtxvector_packed x;
+        struct mtxvector y;
+        int size = 6;
+        int64_t idx[] = {0, 3, 5};
+        double xdata[][2] = {{1.0,1.0}, {1.0,2.0}, {3.0,0.0}};
+        double ydata[][2] = {{2.0,1.0}, {0,0}, {0,0}, {0.0,2.0}, {0,0}, {1.0,0.0}};
+        int64_t num_nonzeros = sizeof(xdata) / sizeof(*xdata);
+        err = mtxvector_packed_init_complex_double(
+            &x, mtxvector_base, size, num_nonzeros, idx, xdata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        err = mtxvector_init_base_complex_double(&y, size, ydata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        float cdotu[2];
+        err = mtxvector_uscdotu(&x, &y, &cdotu, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(0.0f, cdotu[0]); TEST_ASSERT_EQ(5.0f, cdotu[1]);
+        double zdotu[2];
+        err = mtxvector_uszdotu(&x, &y, &zdotu, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(0.0, zdotu[0]); TEST_ASSERT_EQ(5.0, zdotu[1]);
+        float cdotc[2];
+        err = mtxvector_uscdotc(&x, &y, &cdotc, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(10.0f, cdotc[0]); TEST_ASSERT_EQ(1.0f, cdotc[1]);
+        double zdotc[2];
+        err = mtxvector_uszdotc(&x, &y, &zdotc, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(10.0, zdotc[0]); TEST_ASSERT_EQ(1.0, zdotc[1]);
+        mtxvector_free(&y);
+        mtxvector_packed_free(&x);
+    }
+    return TEST_SUCCESS;
+}
+
+/**
  * ‘test_mtxvector_base_usaxpy()’ tests scattering values to a dense
  * vector from a sparse vector in packed storage format.
  */
@@ -1796,6 +1918,7 @@ int main(int argc, char * argv[])
     TEST_RUN(test_mtxvector_base_nrm2);
     TEST_RUN(test_mtxvector_base_asum);
     TEST_RUN(test_mtxvector_base_iamax);
+    TEST_RUN(test_mtxvector_base_usdot);
     TEST_RUN(test_mtxvector_base_usaxpy);
     TEST_RUN(test_mtxvector_base_usga);
     TEST_RUN(test_mtxvector_base_ussc);

@@ -1243,7 +1243,7 @@ int mtxvector_base_daypx(
 }
 
 /**
- * ‘mtxvector_base_sdot()’ cbaseutes the Euclidean dot product of two
+ * ‘mtxvector_base_sdot()’ computes the Euclidean dot product of two
  * vectors in single precision floating point.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
@@ -1299,7 +1299,7 @@ int mtxvector_base_sdot(
 }
 
 /**
- * ‘mtxvector_base_ddot()’ cbaseutes the Euclidean dot product of two
+ * ‘mtxvector_base_ddot()’ computes the Euclidean dot product of two
  * vectors in double precision floating point.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
@@ -1355,7 +1355,7 @@ int mtxvector_base_ddot(
 }
 
 /**
- * ‘mtxvector_base_cdotu()’ cbaseutes the product of the transpose of
+ * ‘mtxvector_base_cdotu()’ computes the product of the transpose of
  * a complex row vector with another complex row vector in single
  * precision floating point, ‘dot := x^T*y’.
  *
@@ -1401,7 +1401,7 @@ int mtxvector_base_cdotu(
 }
 
 /**
- * ‘mtxvector_base_zdotu()’ cbaseutes the product of the transpose of
+ * ‘mtxvector_base_zdotu()’ computes the product of the transpose of
  * a complex row vector with another complex row vector in double
  * precision floating point, ‘dot := x^T*y’.
  *
@@ -1447,7 +1447,7 @@ int mtxvector_base_zdotu(
 }
 
 /**
- * ‘mtxvector_base_cdotc()’ cbaseutes the Euclidean dot product of two
+ * ‘mtxvector_base_cdotc()’ computes the Euclidean dot product of two
  * complex vectors in single precision floating point, ‘dot := x^H*y’.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
@@ -1492,7 +1492,7 @@ int mtxvector_base_cdotc(
 }
 
 /**
- * ‘mtxvector_base_zdotc()’ cbaseutes the Euclidean dot product of two
+ * ‘mtxvector_base_zdotc()’ computes the Euclidean dot product of two
  * complex vectors in double precision floating point, ‘dot := x^H*y’.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
@@ -1537,7 +1537,7 @@ int mtxvector_base_zdotc(
 }
 
 /**
- * ‘mtxvector_base_snrm2()’ cbaseutes the Euclidean norm of a vector
+ * ‘mtxvector_base_snrm2()’ computes the Euclidean norm of a vector
  * in single precision floating point.
  */
 int mtxvector_base_snrm2(
@@ -1602,7 +1602,7 @@ int mtxvector_base_snrm2(
 }
 
 /**
- * ‘mtxvector_base_dnrm2()’ cbaseutes the Euclidean norm of a vector
+ * ‘mtxvector_base_dnrm2()’ computes the Euclidean norm of a vector
  * in double precision floating point.
  */
 int mtxvector_base_dnrm2(
@@ -1667,7 +1667,7 @@ int mtxvector_base_dnrm2(
 }
 
 /**
- * ‘mtxvector_base_sasum()’ cbaseutes the sum of absolute values
+ * ‘mtxvector_base_sasum()’ computes the sum of absolute values
  * (1-norm) of a vector in single precision floating point.  If the
  * vector is complex-valued, then the sum of the absolute values of
  * the real and imaginary parts is computed.
@@ -1730,7 +1730,7 @@ int mtxvector_base_sasum(
 }
 
 /**
- * ‘mtxvector_base_dasum()’ cbaseutes the sum of absolute values
+ * ‘mtxvector_base_dasum()’ computes the sum of absolute values
  * (1-norm) of a vector in double precision floating point.  If the
  * vector is complex-valued, then the sum of the absolute values of
  * the real and imaginary parts is computed.
@@ -1880,6 +1880,324 @@ int mtxvector_base_iamax(
  * Basic Linear Algebra Subprograms: The New Standard from the BLAS
  * Technical Forum,” ACM TOMS, Vol. 28, No. 2, June 2002, pp. 239-267.
  */
+
+/**
+ * ‘mtxvector_base_ussdot()’ computes the Euclidean dot product of two
+ * vectors in single precision floating point.
+ *
+ * The vectors ‘x’ and ‘y’ must have the same field, precision and
+ * size. The vector ‘x’ is a sparse vector in packed form.
+ */
+int mtxvector_base_ussdot(
+    const struct mtxvector_packed * xpacked,
+    const struct mtxvector_base * y,
+    float * dot,
+    int64_t * num_flops)
+{
+    if (xpacked->x.type != mtxvector_base) return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
+    const struct mtxvector_base * x = &xpacked->x.storage.base;
+    if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
+    if (x->precision != y->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
+    if (xpacked->size != y->size) return MTX_ERR_INCOMPATIBLE_SIZE;
+    if (xpacked->num_nonzeros != x->size) return MTX_ERR_INCOMPATIBLE_SIZE;
+    const int64_t * idx = xpacked->idx;
+    if (x->field == mtx_field_real) {
+        if (x->precision == mtx_single) {
+            const float * xdata = x->data.real_single;
+            const float * ydata = y->data.real_single;
+            float c = 0;
+            for (int64_t k = 0; k < x->size; k++)
+                c += xdata[k]*ydata[idx[k]];
+            *dot = c;
+            if (num_flops) *num_flops += 2*x->size;
+        } else if (x->precision == mtx_double) {
+            const double * xdata = x->data.real_double;
+            const double * ydata = y->data.real_double;
+            float c = 0;
+            for (int64_t k = 0; k < x->size; k++)
+                c += xdata[k]*ydata[idx[k]];
+            *dot = c;
+            if (num_flops) *num_flops += 2*x->size;
+        } else { return MTX_ERR_INVALID_PRECISION; }
+    } else if (x->field == mtx_field_integer) {
+        if (x->precision == mtx_single) {
+            const int32_t * xdata = x->data.integer_single;
+            const int32_t * ydata = y->data.integer_single;
+            float c = 0;
+            for (int64_t k = 0; k < x->size; k++)
+                c += xdata[k]*ydata[idx[k]];
+            *dot = c;
+            if (num_flops) *num_flops += 2*x->size;
+        } else if (x->precision == mtx_double) {
+            const int64_t * xdata = x->data.integer_double;
+            const int64_t * ydata = y->data.integer_double;
+            float c = 0;
+            for (int64_t k = 0; k < x->size; k++)
+                c += xdata[k]*ydata[idx[k]];
+            *dot = c;
+            if (num_flops) *num_flops += 2*x->size;
+        } else { return MTX_ERR_INVALID_PRECISION; }
+    } else { return MTX_ERR_INVALID_FIELD; }
+    return MTX_SUCCESS;
+}
+
+/**
+ * ‘mtxvector_base_usddot()’ computes the Euclidean dot product of two
+ * vectors in double precision floating point.
+ *
+ * The vectors ‘x’ and ‘y’ must have the same field, precision and
+ * size. The vector ‘x’ is a sparse vector in packed form.
+ */
+int mtxvector_base_usddot(
+    const struct mtxvector_packed * xpacked,
+    const struct mtxvector_base * y,
+    double * dot,
+    int64_t * num_flops)
+{
+    if (xpacked->x.type != mtxvector_base) return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
+    const struct mtxvector_base * x = &xpacked->x.storage.base;
+    if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
+    if (x->precision != y->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
+    if (xpacked->size != y->size) return MTX_ERR_INCOMPATIBLE_SIZE;
+    if (xpacked->num_nonzeros != x->size) return MTX_ERR_INCOMPATIBLE_SIZE;
+    const int64_t * idx = xpacked->idx;
+    if (x->field == mtx_field_real) {
+        if (x->precision == mtx_single) {
+            const float * xdata = x->data.real_single;
+            const float * ydata = y->data.real_single;
+            double c = 0;
+            for (int64_t k = 0; k < x->size; k++)
+                c += xdata[k]*ydata[idx[k]];
+            *dot = c;
+            if (num_flops) *num_flops += 2*x->size;
+        } else if (x->precision == mtx_double) {
+            const double * xdata = x->data.real_double;
+            const double * ydata = y->data.real_double;
+            double c = 0;
+            for (int64_t k = 0; k < x->size; k++)
+                c += xdata[k]*ydata[idx[k]];
+            *dot = c;
+            if (num_flops) *num_flops += 2*x->size;
+        } else { return MTX_ERR_INVALID_PRECISION; }
+    } else if (x->field == mtx_field_integer) {
+        if (x->precision == mtx_single) {
+            const int32_t * xdata = x->data.integer_single;
+            const int32_t * ydata = y->data.integer_single;
+            double c = 0;
+            for (int64_t k = 0; k < x->size; k++)
+                c += xdata[k]*ydata[idx[k]];
+            *dot = c;
+            if (num_flops) *num_flops += 2*x->size;
+        } else if (x->precision == mtx_double) {
+            const int64_t * xdata = x->data.integer_double;
+            const int64_t * ydata = y->data.integer_double;
+            double c = 0;
+            for (int64_t k = 0; k < x->size; k++)
+                c += xdata[k]*ydata[idx[k]];
+            *dot = c;
+            if (num_flops) *num_flops += 2*x->size;
+        } else { return MTX_ERR_INVALID_PRECISION; }
+    } else { return MTX_ERR_INVALID_FIELD; }
+    return MTX_SUCCESS;
+}
+
+/**
+ * ‘mtxvector_base_uscdotu()’ computes the product of the transpose of
+ * a complex row vector with another complex row vector in single
+ * precision floating point, ‘dot := x^T*y’.
+ *
+ * The vectors ‘x’ and ‘y’ must have the same field, precision and
+ * size. The vector ‘x’ is a sparse vector in packed form.
+ */
+int mtxvector_base_uscdotu(
+    const struct mtxvector_packed * xpacked,
+    const struct mtxvector_base * y,
+    float (* dot)[2],
+    int64_t * num_flops)
+{
+    if (xpacked->x.type != mtxvector_base) return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
+    const struct mtxvector_base * x = &xpacked->x.storage.base;
+    if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
+    if (x->precision != y->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
+    if (xpacked->size != y->size) return MTX_ERR_INCOMPATIBLE_SIZE;
+    if (xpacked->num_nonzeros != x->size) return MTX_ERR_INCOMPATIBLE_SIZE;
+    const int64_t * idx = xpacked->idx;
+    if (x->field == mtx_field_complex) {
+        if (x->precision == mtx_single) {
+            const float (* xdata)[2] = x->data.complex_single;
+            const float (* ydata)[2] = y->data.complex_single;
+            float c0 = 0, c1 = 0;
+            for (int64_t k = 0; k < x->size; k++) {
+                c0 += xdata[k][0]*ydata[idx[k]][0] - xdata[k][1]*ydata[idx[k]][1];
+                c1 += xdata[k][0]*ydata[idx[k]][1] + xdata[k][1]*ydata[idx[k]][0];
+            }
+            (*dot)[0] = c0; (*dot)[1] = c1;
+            if (num_flops) *num_flops += 8*x->size;
+        } else if (x->precision == mtx_double) {
+            const double (* xdata)[2] = x->data.complex_double;
+            const double (* ydata)[2] = y->data.complex_double;
+            float c0 = 0, c1 = 0;
+            for (int64_t k = 0; k < x->size; k++) {
+                c0 += xdata[k][0]*ydata[idx[k]][0] - xdata[k][1]*ydata[idx[k]][1];
+                c1 += xdata[k][0]*ydata[idx[k]][1] + xdata[k][1]*ydata[idx[k]][0];
+            }
+            (*dot)[0] = c0; (*dot)[1] = c1;
+            if (num_flops) *num_flops += 8*x->size;
+        } else { return MTX_ERR_INVALID_PRECISION; }
+    } else {
+        (*dot)[1] = 0;
+        return mtxvector_base_ussdot(xpacked, y, &(*dot)[0], num_flops);
+    }
+    return MTX_SUCCESS;
+}
+
+/**
+ * ‘mtxvector_base_uszdotu()’ computes the product of the transpose of
+ * a complex row vector with another complex row vector in double
+ * precision floating point, ‘dot := x^T*y’.
+ *
+ * The vectors ‘x’ and ‘y’ must have the same field, precision and
+ * size. The vector ‘x’ is a sparse vector in packed form.
+ */
+int mtxvector_base_uszdotu(
+    const struct mtxvector_packed * xpacked,
+    const struct mtxvector_base * y,
+    double (* dot)[2],
+    int64_t * num_flops)
+{
+    if (xpacked->x.type != mtxvector_base) return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
+    const struct mtxvector_base * x = &xpacked->x.storage.base;
+    if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
+    if (x->precision != y->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
+    if (xpacked->size != y->size) return MTX_ERR_INCOMPATIBLE_SIZE;
+    if (xpacked->num_nonzeros != x->size) return MTX_ERR_INCOMPATIBLE_SIZE;
+    const int64_t * idx = xpacked->idx;
+    if (x->field == mtx_field_complex) {
+        if (x->precision == mtx_single) {
+            const float (* xdata)[2] = x->data.complex_single;
+            const float (* ydata)[2] = y->data.complex_single;
+            double c0 = 0, c1 = 0;
+            for (int64_t k = 0; k < x->size; k++) {
+                c0 += xdata[k][0]*ydata[idx[k]][0] - xdata[k][1]*ydata[idx[k]][1];
+                c1 += xdata[k][0]*ydata[idx[k]][1] + xdata[k][1]*ydata[idx[k]][0];
+            }
+            (*dot)[0] = c0; (*dot)[1] = c1;
+            if (num_flops) *num_flops += 8*x->size;
+        } else if (x->precision == mtx_double) {
+            const double (* xdata)[2] = x->data.complex_double;
+            const double (* ydata)[2] = y->data.complex_double;
+            double c0 = 0, c1 = 0;
+            for (int64_t k = 0; k < x->size; k++) {
+                c0 += xdata[k][0]*ydata[idx[k]][0] - xdata[k][1]*ydata[idx[k]][1];
+                c1 += xdata[k][0]*ydata[idx[k]][1] + xdata[k][1]*ydata[idx[k]][0];
+            }
+            (*dot)[0] = c0; (*dot)[1] = c1;
+            if (num_flops) *num_flops += 8*x->size;
+        } else { return MTX_ERR_INVALID_PRECISION; }
+    } else {
+        (*dot)[1] = 0;
+        return mtxvector_base_usddot(xpacked, y, &(*dot)[0], num_flops);
+    }
+    return MTX_SUCCESS;
+}
+
+/**
+ * ‘mtxvector_base_uscdotc()’ computes the Euclidean dot product of two
+ * complex vectors in single precision floating point, ‘dot := x^H*y’.
+ *
+ * The vectors ‘x’ and ‘y’ must have the same field, precision and
+ * size. The vector ‘x’ is a sparse vector in packed form.
+ */
+int mtxvector_base_uscdotc(
+    const struct mtxvector_packed * xpacked,
+    const struct mtxvector_base * y,
+    float (* dot)[2],
+    int64_t * num_flops)
+{
+    if (xpacked->x.type != mtxvector_base) return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
+    const struct mtxvector_base * x = &xpacked->x.storage.base;
+    if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
+    if (x->precision != y->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
+    if (xpacked->size != y->size) return MTX_ERR_INCOMPATIBLE_SIZE;
+    if (xpacked->num_nonzeros != x->size) return MTX_ERR_INCOMPATIBLE_SIZE;
+    const int64_t * idx = xpacked->idx;
+    if (x->field == mtx_field_complex) {
+        if (x->precision == mtx_single) {
+            const float (* xdata)[2] = x->data.complex_single;
+            const float (* ydata)[2] = y->data.complex_single;
+            float c0 = 0, c1 = 0;
+            for (int64_t k = 0; k < x->size; k++) {
+                c0 += xdata[k][0]*ydata[idx[k]][0] + xdata[k][1]*ydata[idx[k]][1];
+                c1 += xdata[k][0]*ydata[idx[k]][1] - xdata[k][1]*ydata[idx[k]][0];
+            }
+            (*dot)[0] = c0; (*dot)[1] = c1;
+            if (num_flops) *num_flops += 8*x->size;
+        } else if (x->precision == mtx_double) {
+            const double (* xdata)[2] = x->data.complex_double;
+            const double (* ydata)[2] = y->data.complex_double;
+            float c0 = 0, c1 = 0;
+            for (int64_t k = 0; k < x->size; k++) {
+                c0 += xdata[k][0]*ydata[idx[k]][0] + xdata[k][1]*ydata[idx[k]][1];
+                c1 += xdata[k][0]*ydata[idx[k]][1] - xdata[k][1]*ydata[idx[k]][0];
+            }
+            (*dot)[0] = c0; (*dot)[1] = c1;
+            if (num_flops) *num_flops += 8*x->size;
+        } else { return MTX_ERR_INVALID_PRECISION; }
+    } else {
+        (*dot)[1] = 0;
+        return mtxvector_base_ussdot(xpacked, y, &(*dot)[0], num_flops);
+    }
+    return MTX_SUCCESS;
+}
+
+/**
+ * ‘mtxvector_base_uszdotc()’ computes the Euclidean dot product of two
+ * complex vectors in double precision floating point, ‘dot := x^H*y’.
+ *
+ * The vectors ‘x’ and ‘y’ must have the same field, precision and
+ * size. The vector ‘x’ is a sparse vector in packed form.
+ */
+int mtxvector_base_uszdotc(
+    const struct mtxvector_packed * xpacked,
+    const struct mtxvector_base * y,
+    double (* dot)[2],
+    int64_t * num_flops)
+{
+    if (xpacked->x.type != mtxvector_base) return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
+    const struct mtxvector_base * x = &xpacked->x.storage.base;
+    if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
+    if (x->precision != y->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
+    if (xpacked->size != y->size) return MTX_ERR_INCOMPATIBLE_SIZE;
+    if (xpacked->num_nonzeros != x->size) return MTX_ERR_INCOMPATIBLE_SIZE;
+    const int64_t * idx = xpacked->idx;
+    if (x->field == mtx_field_complex) {
+        if (x->precision == mtx_single) {
+            const float (* xdata)[2] = x->data.complex_single;
+            const float (* ydata)[2] = y->data.complex_single;
+            double c0 = 0, c1 = 0;
+            for (int64_t k = 0; k < x->size; k++) {
+                c0 += xdata[k][0]*ydata[idx[k]][0] + xdata[k][1]*ydata[idx[k]][1];
+                c1 += xdata[k][0]*ydata[idx[k]][1] - xdata[k][1]*ydata[idx[k]][0];
+            }
+            (*dot)[0] = c0; (*dot)[1] = c1;
+            if (num_flops) *num_flops += 8*x->size;
+        } else if (x->precision == mtx_double) {
+            const double (* xdata)[2] = x->data.complex_double;
+            const double (* ydata)[2] = y->data.complex_double;
+            double c0 = 0, c1 = 0;
+            for (int64_t k = 0; k < x->size; k++) {
+                c0 += xdata[k][0]*ydata[idx[k]][0] + xdata[k][1]*ydata[idx[k]][1];
+                c1 += xdata[k][0]*ydata[idx[k]][1] - xdata[k][1]*ydata[idx[k]][0];
+            }
+            (*dot)[0] = c0; (*dot)[1] = c1;
+            if (num_flops) *num_flops += 8*x->size;
+        } else { return MTX_ERR_INVALID_PRECISION; }
+    } else {
+        (*dot)[1] = 0;
+        return mtxvector_base_usddot(xpacked, y, &(*dot)[0], num_flops);
+    }
+    return MTX_SUCCESS;
+}
 
 /**
  * ‘mtxvector_base_ussaxpy()’ performs a sparse vector update,
