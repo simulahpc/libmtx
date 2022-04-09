@@ -29,7 +29,6 @@
 #include <libmtx/precision.h>
 #include <libmtx/field.h>
 #include <libmtx/mtxfile/header.h>
-#include <libmtx/vector/vector_array.h>
 
 #include <stdarg.h>
 #include <stdbool.h>

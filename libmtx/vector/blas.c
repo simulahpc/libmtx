@@ -91,7 +91,7 @@ int mtxvector_blas_alloc(
     struct mtxvector_blas * x,
     enum mtxfield field,
     enum mtxprecision precision,
-    int size)
+    int64_t size)
 {
     return mtxvector_base_alloc(&x->base, field, precision, size);
 }
@@ -102,7 +102,7 @@ int mtxvector_blas_alloc(
  */
 int mtxvector_blas_init_real_single(
     struct mtxvector_blas * x,
-    int size,
+    int64_t size,
     const float * data)
 {
     return mtxvector_base_init_real_single(&x->base, size, data);
@@ -114,7 +114,7 @@ int mtxvector_blas_init_real_single(
  */
 int mtxvector_blas_init_real_double(
     struct mtxvector_blas * x,
-    int size,
+    int64_t size,
     const double * data)
 {
     return mtxvector_base_init_real_double(&x->base, size, data);
@@ -126,7 +126,7 @@ int mtxvector_blas_init_real_double(
  */
 int mtxvector_blas_init_complex_single(
     struct mtxvector_blas * x,
-    int size,
+    int64_t size,
     const float (* data)[2])
 {
     return mtxvector_base_init_complex_single(&x->base, size, data);
@@ -138,7 +138,7 @@ int mtxvector_blas_init_complex_single(
  */
 int mtxvector_blas_init_complex_double(
     struct mtxvector_blas * x,
-    int size,
+    int64_t size,
     const double (* data)[2])
 {
     return mtxvector_base_init_complex_double(&x->base, size, data);
@@ -150,7 +150,7 @@ int mtxvector_blas_init_complex_double(
  */
 int mtxvector_blas_init_integer_single(
     struct mtxvector_blas * x,
-    int size,
+    int64_t size,
     const int32_t * data)
 {
     return mtxvector_base_init_integer_single(&x->base, size, data);
@@ -162,7 +162,7 @@ int mtxvector_blas_init_integer_single(
  */
 int mtxvector_blas_init_integer_double(
     struct mtxvector_blas * x,
-    int size,
+    int64_t size,
     const int64_t * data)
 {
     return mtxvector_base_init_integer_double(&x->base, size, data);

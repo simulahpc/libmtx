@@ -89,7 +89,7 @@ int mtxvector_omp_alloc(
     struct mtxvector_omp * x,
     enum mtxfield field,
     enum mtxprecision precision,
-    int size,
+    int64_t size,
     int num_threads)
 {
     int err = mtxvector_base_alloc(
@@ -105,7 +105,7 @@ int mtxvector_omp_alloc(
  */
 int mtxvector_omp_init_real_single(
     struct mtxvector_omp * x,
-    int size,
+    int64_t size,
     const float * data,
     int num_threads)
 {
@@ -125,7 +125,7 @@ int mtxvector_omp_init_real_single(
  */
 int mtxvector_omp_init_real_double(
     struct mtxvector_omp * x,
-    int size,
+    int64_t size,
     const double * data,
     int num_threads)
 {
@@ -145,7 +145,7 @@ int mtxvector_omp_init_real_double(
  */
 int mtxvector_omp_init_complex_single(
     struct mtxvector_omp * x,
-    int size,
+    int64_t size,
     const float (* data)[2],
     int num_threads)
 {
@@ -167,7 +167,7 @@ int mtxvector_omp_init_complex_single(
  */
 int mtxvector_omp_init_complex_double(
     struct mtxvector_omp * x,
-    int size,
+    int64_t size,
     const double (* data)[2],
     int num_threads)
 {
@@ -189,7 +189,7 @@ int mtxvector_omp_init_complex_double(
  */
 int mtxvector_omp_init_integer_single(
     struct mtxvector_omp * x,
-    int size,
+    int64_t size,
     const int32_t * data,
     int num_threads)
 {
@@ -209,7 +209,7 @@ int mtxvector_omp_init_integer_single(
  */
 int mtxvector_omp_init_integer_double(
     struct mtxvector_omp * x,
-    int size,
+    int64_t size,
     const int64_t * data,
     int num_threads)
 {
