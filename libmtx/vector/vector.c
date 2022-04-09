@@ -2433,6 +2433,118 @@ int mtxvector_iamax(
  */
 
 /**
+ * ‘mtxvector_ussaxpy()’ performs a sparse vector update, multiplying
+ * a sparse vector ‘x’ in packed form by a scalar ‘alpha’ and adding
+ * the result to a vector ‘y’. That is, ‘y = alpha*x + y’.
+ */
+int mtxvector_ussaxpy(
+    struct mtxvector * y,
+    float alpha,
+    const struct mtxvector_packed * x,
+    int64_t * num_flops)
+{
+    if (y->type == mtxvector_base) {
+        return mtxvector_base_ussaxpy(&y->storage.base, alpha, x, num_flops);
+    } else if (y->type == mtxvector_blas) {
+#ifdef LIBMTX_HAVE_BLAS
+        return mtxvector_blas_ussaxpy(&y->storage.blas, alpha, x, num_flops);
+#else
+        return MTX_ERR_BLAS_NOT_SUPPORTED;
+#endif
+    } else if (y->type == mtxvector_omp) {
+#ifdef LIBMTX_HAVE_OPENMP
+        return mtxvector_omp_ussaxpy(&y->storage.omp, alpha, x, num_flops);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
+    } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
+}
+
+/**
+ * ‘mtxvector_usdaxpy()’ performs a sparse vector update, multiplying
+ * a sparse vector ‘x’ in packed form by a scalar ‘alpha’ and adding
+ * the result to a vector ‘y’. That is, ‘y = alpha*x + y’.
+ */
+int mtxvector_usdaxpy(
+    struct mtxvector * y,
+    double alpha,
+    const struct mtxvector_packed * x,
+    int64_t * num_flops)
+{
+    if (y->type == mtxvector_base) {
+        return mtxvector_base_usdaxpy(&y->storage.base, alpha, x, num_flops);
+    } else if (y->type == mtxvector_blas) {
+#ifdef LIBMTX_HAVE_BLAS
+        return mtxvector_blas_usdaxpy(&y->storage.blas, alpha, x, num_flops);
+#else
+        return MTX_ERR_BLAS_NOT_SUPPORTED;
+#endif
+    } else if (y->type == mtxvector_omp) {
+#ifdef LIBMTX_HAVE_OPENMP
+        return mtxvector_omp_usdaxpy(&y->storage.omp, alpha, x, num_flops);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
+    } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
+}
+
+/**
+ * ‘mtxvector_uscaxpy()’ performs a sparse vector update, multiplying
+ * a sparse vector ‘x’ in packed form by a scalar ‘alpha’ and adding
+ * the result to a vector ‘y’. That is, ‘y = alpha*x + y’.
+ */
+int mtxvector_uscaxpy(
+    struct mtxvector * y,
+    float alpha[2],
+    const struct mtxvector_packed * x,
+    int64_t * num_flops)
+{
+    if (y->type == mtxvector_base) {
+        return mtxvector_base_uscaxpy(&y->storage.base, alpha, x, num_flops);
+    } else if (y->type == mtxvector_blas) {
+#ifdef LIBMTX_HAVE_BLAS
+        return mtxvector_blas_uscaxpy(&y->storage.blas, alpha, x, num_flops);
+#else
+        return MTX_ERR_BLAS_NOT_SUPPORTED;
+#endif
+    } else if (y->type == mtxvector_omp) {
+#ifdef LIBMTX_HAVE_OPENMP
+        return mtxvector_omp_uscaxpy(&y->storage.omp, alpha, x, num_flops);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
+    } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
+}
+
+/**
+ * ‘mtxvector_uszaxpy()’ performs a sparse vector update, multiplying
+ * a sparse vector ‘x’ in packed form by a scalar ‘alpha’ and adding
+ * the result to a vector ‘y’. That is, ‘y = alpha*x + y’.
+ */
+int mtxvector_uszaxpy(
+    struct mtxvector * y,
+    double alpha[2],
+    const struct mtxvector_packed * x,
+    int64_t * num_flops)
+{
+    if (y->type == mtxvector_base) {
+        return mtxvector_base_uszaxpy(&y->storage.base, alpha, x, num_flops);
+    } else if (y->type == mtxvector_blas) {
+#ifdef LIBMTX_HAVE_BLAS
+        return mtxvector_blas_uszaxpy(&y->storage.blas, alpha, x, num_flops);
+#else
+        return MTX_ERR_BLAS_NOT_SUPPORTED;
+#endif
+    } else if (y->type == mtxvector_omp) {
+#ifdef LIBMTX_HAVE_OPENMP
+        return mtxvector_omp_uszaxpy(&y->storage.omp, alpha, x, num_flops);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
+    } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
+}
+
+/**
  * ‘mtxvector_usga()’ performs a (sparse) gather from a vector ‘y’
  * into another vector ‘x’.
  */

@@ -1195,6 +1195,50 @@ int mtxvector_iamax(
  */
 
 /**
+ * ‘mtxvector_ussaxpy()’ performs a sparse vector update, multiplying
+ * a sparse vector ‘x’ in packed form by a scalar ‘alpha’ and adding
+ * the result to a vector ‘y’. That is, ‘y = alpha*x + y’.
+ */
+int mtxvector_ussaxpy(
+    struct mtxvector * y,
+    float alpha,
+    const struct mtxvector_packed * x,
+    int64_t * num_flops);
+
+/**
+ * ‘mtxvector_usdaxpy()’ performs a sparse vector update, multiplying
+ * a sparse vector ‘x’ in packed form by a scalar ‘alpha’ and adding
+ * the result to a vector ‘y’. That is, ‘y = alpha*x + y’.
+ */
+int mtxvector_usdaxpy(
+    struct mtxvector * y,
+    double alpha,
+    const struct mtxvector_packed * x,
+    int64_t * num_flops);
+
+/**
+ * ‘mtxvector_uscaxpy()’ performs a sparse vector update, multiplying
+ * a sparse vector ‘x’ in packed form by a scalar ‘alpha’ and adding
+ * the result to a vector ‘y’. That is, ‘y = alpha*x + y’.
+ */
+int mtxvector_uscaxpy(
+    struct mtxvector * y,
+    float alpha[2],
+    const struct mtxvector_packed * x,
+    int64_t * num_flops);
+
+/**
+ * ‘mtxvector_uszaxpy()’ performs a sparse vector update, multiplying
+ * a sparse vector ‘x’ in packed form by a scalar ‘alpha’ and adding
+ * the result to a vector ‘y’. That is, ‘y = alpha*x + y’.
+ */
+int mtxvector_uszaxpy(
+    struct mtxvector * y,
+    double alpha[2],
+    const struct mtxvector_packed * x,
+    int64_t * num_flops);
+
+/**
  * ‘mtxvector_usga()’ performs a (sparse) gather from a vector ‘y’
  * into another vector ‘x’.
  */
