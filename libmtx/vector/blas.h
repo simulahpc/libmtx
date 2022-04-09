@@ -41,6 +41,7 @@
 struct mtxfile;
 struct mtxpartition;
 struct mtxvector;
+struct mtxvector_packed;
 
 /**
  * ‘mtxvector_blas’ represents a dense vector that can perform
@@ -146,6 +147,14 @@ int mtxvector_blas_init_integer_double(
     struct mtxvector_blas * x,
     int64_t size,
     const int64_t * data);
+
+/**
+ * ‘mtxvector_blas_init_pattern()’ allocates and initialises a vector
+ * of ones.
+ */
+int mtxvector_blas_init_pattern(
+    struct mtxvector_blas * x,
+    int64_t size);
 
 /*
  * Modifying values
@@ -503,6 +512,30 @@ int mtxvector_blas_dasum(
 int mtxvector_blas_iamax(
     const struct mtxvector_blas * x,
     int * iamax);
+
+/*
+ * Level 1 Sparse BLAS operations.
+ *
+ * See I. Duff, M. Heroux and R. Pozo, “An Overview of the Sparse
+ * Basic Linear Algebra Subprograms: The New Standard from the BLAS
+ * Technical Forum,” ACM TOMS, Vol. 28, No. 2, June 2002, pp. 239-267.
+ */
+
+/**
+ * ‘mtxvector_blas_usga()’ performs a gather operation from a vector
+ * ‘y’ into a sparse vector ‘x’ in packed storage format.
+ */
+int mtxvector_blas_usga(
+    struct mtxvector_packed * xpacked,
+    const struct mtxvector_blas * yblas);
+
+/**
+ * ‘mtxvector_blas_ussc()’ performs a scatter operation to a vector
+ * ‘y’ from a sparse vector ‘x’ in packed storage format.
+ */
+int mtxvector_blas_ussc(
+    struct mtxvector_blas * y,
+    const struct mtxvector_packed * x);
 #endif
 
 #endif

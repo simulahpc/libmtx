@@ -33,6 +33,7 @@
 #include <libmtx/util/partition.h>
 #include <libmtx/vector/omp.h>
 #include <libmtx/vector/base.h>
+#include <libmtx/vector/packed.h>
 #include <libmtx/vector/vector.h>
 
 #include <math.h>
@@ -221,6 +222,19 @@ int mtxvector_omp_init_integer_double(
     for (int64_t k = 0; k < size; k++)
         base->data.integer_double[k] = data[k];
     return MTX_SUCCESS;
+}
+
+/**
+ * ‘mtxvector_omp_init_pattern()’ allocates and initialises a vector
+ * of ones.
+ */
+int mtxvector_omp_init_pattern(
+    struct mtxvector_omp * x,
+    int64_t size,
+    int num_threads)
+{
+    return mtxvector_omp_alloc(
+        x, mtx_field_pattern, mtx_single, size, num_threads);
 }
 
 /*
@@ -1900,5 +1914,149 @@ int mtxvector_omp_iamax(
 {
     const struct mtxvector_base * x = &xomp->base;
     return mtxvector_base_iamax(x, iamax);
+}
+
+/*
+ * Level 1 Sparse BLAS operations.
+ *
+ * See I. Duff, M. Heroux and R. Pozo, “An Overview of the Sparse
+ * Basic Linear Algebra Subprograms: The New Standard from the BLAS
+ * Technical Forum,” ACM TOMS, Vol. 28, No. 2, June 2002, pp. 239-267.
+ */
+
+/**
+ * ‘mtxvector_omp_usga()’ performs a gather operation from a vector
+ * ‘y’ into a sparse vector ‘x’ in packed storage format.
+ */
+int mtxvector_omp_usga(
+    struct mtxvector_packed * xpacked,
+    const struct mtxvector_omp * yomp)
+{
+    if (xpacked->x.type != mtxvector_omp) return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
+    struct mtxvector_omp * xomp = &xpacked->x.storage.omp;
+    struct mtxvector_base * x = &xomp->base;
+    const struct mtxvector_base * y = &yomp->base;
+    int num_threads = xomp->num_threads < yomp->num_threads
+        ? xomp->num_threads : yomp->num_threads;
+    if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
+    if (x->precision != y->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
+    if (xpacked->size != y->size) return MTX_ERR_INCOMPATIBLE_SIZE;
+    if (xpacked->num_nonzeros != x->size) return MTX_ERR_INCOMPATIBLE_SIZE;
+    if (x->field == mtx_field_real) {
+        if (x->precision == mtx_single) {
+            float * xdata = x->data.real_single;
+            const float * ydata = y->data.real_single;
+            #pragma omp parallel for num_threads(num_threads)
+            for (int64_t k = 0; k < x->size; k++)
+                xdata[k] = ydata[xpacked->idx[k]];
+        } else if (x->precision == mtx_double) {
+            double * xdata = x->data.real_double;
+            const double * ydata = y->data.real_double;
+            #pragma omp parallel for num_threads(num_threads)
+            for (int64_t k = 0; k < x->size; k++)
+                xdata[k] = ydata[xpacked->idx[k]];
+        } else { return MTX_ERR_INVALID_PRECISION; }
+    } else if (x->field == mtx_field_complex) {
+        if (x->precision == mtx_single) {
+            float (* xdata)[2] = x->data.complex_single;
+            const float (* ydata)[2] = y->data.complex_single;
+            #pragma omp parallel for num_threads(num_threads)
+            for (int64_t k = 0; k < x->size; k++) {
+                xdata[k][0] = ydata[xpacked->idx[k]][0];
+                xdata[k][1] = ydata[xpacked->idx[k]][1];
+            }
+        } else if (x->precision == mtx_double) {
+            double (* xdata)[2] = x->data.complex_double;
+            const double (* ydata)[2] = y->data.complex_double;
+            #pragma omp parallel for num_threads(num_threads)
+            for (int64_t k = 0; k < x->size; k++) {
+                xdata[k][0] = ydata[xpacked->idx[k]][0];
+                xdata[k][1] = ydata[xpacked->idx[k]][1];
+            }
+        } else { return MTX_ERR_INVALID_PRECISION; }
+    } else if (x->field == mtx_field_integer) {
+        if (x->precision == mtx_single) {
+            int32_t * xdata = x->data.integer_single;
+            const int32_t * ydata = y->data.integer_single;
+            #pragma omp parallel for num_threads(num_threads)
+            for (int64_t k = 0; k < x->size; k++)
+                xdata[k] = ydata[xpacked->idx[k]];
+        } else if (x->precision == mtx_double) {
+            int64_t * xdata = x->data.integer_double;
+            const int64_t * ydata = y->data.integer_double;
+            #pragma omp parallel for num_threads(num_threads)
+            for (int64_t k = 0; k < x->size; k++)
+                xdata[k] = ydata[xpacked->idx[k]];
+        } else { return MTX_ERR_INVALID_PRECISION; }
+    } else { return MTX_ERR_INVALID_FIELD; }
+    return MTX_SUCCESS;
+}
+
+/**
+ * ‘mtxvector_omp_ussc()’ performs a scatter operation to a vector ‘y’
+ * from a sparse vector ‘x’ in packed storage format.
+ */
+int mtxvector_omp_ussc(
+    struct mtxvector_omp * yomp,
+    const struct mtxvector_packed * xpacked)
+{
+    if (xpacked->x.type != mtxvector_omp) return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
+    const struct mtxvector_omp * xomp = &xpacked->x.storage.omp;
+    const struct mtxvector_base * x = &xomp->base;
+    struct mtxvector_base * y = &yomp->base;
+    int num_threads = xomp->num_threads < yomp->num_threads
+        ? xomp->num_threads : yomp->num_threads;
+    if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
+    if (x->precision != y->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
+    if (xpacked->size != y->size) return MTX_ERR_INCOMPATIBLE_SIZE;
+    if (xpacked->num_nonzeros != x->size) return MTX_ERR_INCOMPATIBLE_SIZE;
+    if (x->field == mtx_field_real) {
+        if (x->precision == mtx_single) {
+            const float * xdata = x->data.real_single;
+            float * ydata = y->data.real_single;
+            #pragma omp parallel for num_threads(num_threads)
+            for (int64_t k = 0; k < x->size; k++)
+                ydata[xpacked->idx[k]] = xdata[k];
+        } else if (x->precision == mtx_double) {
+            const double * xdata = x->data.real_double;
+            double * ydata = y->data.real_double;
+            #pragma omp parallel for num_threads(num_threads)
+            for (int64_t k = 0; k < x->size; k++)
+                ydata[xpacked->idx[k]] = xdata[k];
+        } else { return MTX_ERR_INVALID_PRECISION; }
+    } else if (x->field == mtx_field_complex) {
+        if (x->precision == mtx_single) {
+            const float (* xdata)[2] = x->data.complex_single;
+            float (* ydata)[2] = y->data.complex_single;
+            #pragma omp parallel for num_threads(num_threads)
+            for (int64_t k = 0; k < x->size; k++) {
+                ydata[xpacked->idx[k]][0] = xdata[k][0];
+                ydata[xpacked->idx[k]][1] = xdata[k][1];
+            }
+        } else if (x->precision == mtx_double) {
+            const double (* xdata)[2] = x->data.complex_double;
+            double (* ydata)[2] = y->data.complex_double;
+            #pragma omp parallel for num_threads(num_threads)
+            for (int64_t k = 0; k < x->size; k++) {
+                ydata[xpacked->idx[k]][0] = xdata[k][0];
+                ydata[xpacked->idx[k]][1] = xdata[k][1];
+            }
+        } else { return MTX_ERR_INVALID_PRECISION; }
+    } else if (x->field == mtx_field_integer) {
+        if (x->precision == mtx_single) {
+            const int32_t * xdata = x->data.integer_single;
+            int32_t * ydata = y->data.integer_single;
+            #pragma omp parallel for num_threads(num_threads)
+            for (int64_t k = 0; k < x->size; k++)
+                ydata[xpacked->idx[k]] = xdata[k];
+        } else if (x->precision == mtx_double) {
+            const int64_t * xdata = x->data.integer_double;
+            int64_t * ydata = y->data.integer_double;
+            #pragma omp parallel for num_threads(num_threads)
+            for (int64_t k = 0; k < x->size; k++)
+                ydata[xpacked->idx[k]] = xdata[k];
+        } else { return MTX_ERR_INVALID_PRECISION; }
+    } else { return MTX_ERR_INVALID_FIELD; }
+    return MTX_SUCCESS;
 }
 #endif

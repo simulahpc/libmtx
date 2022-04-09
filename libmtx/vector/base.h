@@ -38,6 +38,7 @@
 struct mtxfile;
 struct mtxpartition;
 struct mtxvector;
+struct mtxvector_packed;
 
 /**
  * ‘mtxvector_base’ represents a dense vector stored as a contiguous
@@ -169,8 +170,8 @@ int mtxvector_base_init_integer_double(
     const int64_t * data);
 
 /**
- * ‘mtxvector_base_init_pattern()’ allocates and initialises a binary
- * pattern vector, where every entry has a value of one.
+ * ‘mtxvector_base_init_pattern()’ allocates and initialises a vector
+ * of ones.
  */
 int mtxvector_base_init_pattern(
     struct mtxvector_base * x,
@@ -532,5 +533,29 @@ int mtxvector_base_dasum(
 int mtxvector_base_iamax(
     const struct mtxvector_base * x,
     int * iamax);
+
+/*
+ * Level 1 Sparse BLAS operations.
+ *
+ * See I. Duff, M. Heroux and R. Pozo, “An Overview of the Sparse
+ * Basic Linear Algebra Subprograms: The New Standard from the BLAS
+ * Technical Forum,” ACM TOMS, Vol. 28, No. 2, June 2002, pp. 239-267.
+ */
+
+/**
+ * ‘mtxvector_base_usga()’ performs a gather operation from a vector
+ * ‘y’ into a sparse vector ‘x’ in packed storage format.
+ */
+int mtxvector_base_usga(
+    struct mtxvector_packed * x,
+    const struct mtxvector_base * y);
+
+/**
+ * ‘mtxvector_base_ussc()’ performs a scatter operation to a vector
+ * ‘y’ from a sparse vector ‘x’ in packed storage format.
+ */
+int mtxvector_base_ussc(
+    struct mtxvector_base * y,
+    const struct mtxvector_packed * x);
 
 #endif

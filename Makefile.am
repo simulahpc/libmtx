@@ -132,6 +132,7 @@ libmtx_la_SOURCES = \
 	libmtx/vector/base.c \
 	libmtx/vector/blas.c \
 	libmtx/vector/omp.c \
+	libmtx/vector/packed.c \
 	libmtx/version.c
 
 # Header files
@@ -196,6 +197,7 @@ nobase_include_HEADERS = \
 	libmtx/vector/base.h \
 	libmtx/vector/blas.h \
 	libmtx/vector/omp.h \
+	libmtx/vector/packed.h \
 	libmtx/version.h
 
 # Header files that will not be distributed

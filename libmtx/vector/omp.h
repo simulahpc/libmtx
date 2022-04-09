@@ -160,6 +160,15 @@ int mtxvector_omp_init_integer_double(
     const int64_t * data,
     int num_threads);
 
+/**
+ * ‘mtxvector_omp_init_pattern()’ allocates and initialises a vector
+ * of ones.
+ */
+int mtxvector_omp_init_pattern(
+    struct mtxvector_omp * x,
+    int64_t size,
+    int num_threads);
+
 /*
  * Modifying values
  */
@@ -515,6 +524,30 @@ int mtxvector_omp_dasum(
 int mtxvector_omp_iamax(
     const struct mtxvector_omp * x,
     int * iamax);
+
+/*
+ * Level 1 Sparse BLAS operations.
+ *
+ * See I. Duff, M. Heroux and R. Pozo, “An Overview of the Sparse
+ * Basic Linear Algebra Subprograms: The New Standard from the BLAS
+ * Technical Forum,” ACM TOMS, Vol. 28, No. 2, June 2002, pp. 239-267.
+ */
+
+/**
+ * ‘mtxvector_omp_usga()’ performs a gather operation from a vector
+ * ‘y’ into a sparse vector ‘x’ in packed storage format.
+ */
+int mtxvector_omp_usga(
+    struct mtxvector_packed * x,
+    const struct mtxvector_omp * y);
+
+/**
+ * ‘mtxvector_omp_ussc()’ performs a scatter operation to a vector ‘y’
+ * from a sparse vector ‘x’ in packed storage format.
+ */
+int mtxvector_omp_ussc(
+    struct mtxvector_omp * y,
+    const struct mtxvector_packed * x);
 #endif
 
 #endif
