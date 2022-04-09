@@ -142,14 +142,10 @@ void mtxvector_free(
     } else if (x->type == mtxvector_blas) {
 #ifdef LIBMTX_HAVE_BLAS
         mtxvector_blas_free(&x->storage.blas);
-#else
-        return MTX_ERR_BLAS_NOT_SUPPORTED;
 #endif
     } else if (x->type == mtxvector_omp) {
 #ifdef LIBMTX_HAVE_OPENMP
         mtxvector_omp_free(&x->storage.omp);
-#else
-        return MTX_ERR_OPENMP_NOT_SUPPORTED;
 #endif
     } else if (x->type == mtxvector_coordinate) {
         mtxvector_coordinate_free(&x->storage.coordinate);
