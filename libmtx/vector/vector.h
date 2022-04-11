@@ -1199,7 +1199,9 @@ int mtxvector_iamax(
  * vectors in single precision floating point.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
- * size. The vector ‘x’ is a sparse vector in packed form.
+ * size. The vector ‘x’ is a sparse vector in packed form. Repeated
+ * indices in the packed vector are not allowed, otherwise the result
+ * is undefined.
  */
 int mtxvector_ussdot(
     const struct mtxvector_packed * x,
@@ -1212,7 +1214,9 @@ int mtxvector_ussdot(
  * vectors in double precision floating point.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
- * size. The vector ‘x’ is a sparse vector in packed form.
+ * size. The vector ‘x’ is a sparse vector in packed form. Repeated
+ * indices in the packed vector are not allowed, otherwise the result
+ * is undefined.
  */
 int mtxvector_usddot(
     const struct mtxvector_packed * x,
@@ -1226,7 +1230,9 @@ int mtxvector_usddot(
  * precision floating point, ‘dot := x^T*y’.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
- * size. The vector ‘x’ is a sparse vector in packed form.
+ * size. The vector ‘x’ is a sparse vector in packed form. Repeated
+ * indices in the packed vector are not allowed, otherwise the result
+ * is undefined.
  */
 int mtxvector_uscdotu(
     const struct mtxvector_packed * x,
@@ -1240,7 +1246,9 @@ int mtxvector_uscdotu(
  * precision floating point, ‘dot := x^T*y’.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
- * size. The vector ‘x’ is a sparse vector in packed form.
+ * size. The vector ‘x’ is a sparse vector in packed form. Repeated
+ * indices in the packed vector are not allowed, otherwise the result
+ * is undefined.
  */
 int mtxvector_uszdotu(
     const struct mtxvector_packed * x,
@@ -1253,7 +1261,9 @@ int mtxvector_uszdotu(
  * complex vectors in single precision floating point, ‘dot := x^H*y’.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
- * size. The vector ‘x’ is a sparse vector in packed form.
+ * size. The vector ‘x’ is a sparse vector in packed form. Repeated
+ * indices in the packed vector are not allowed, otherwise the result
+ * is undefined.
  */
 int mtxvector_uscdotc(
     const struct mtxvector_packed * x,
@@ -1266,7 +1276,9 @@ int mtxvector_uscdotc(
  * complex vectors in double precision floating point, ‘dot := x^H*y’.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
- * size. The vector ‘x’ is a sparse vector in packed form.
+ * size. The vector ‘x’ is a sparse vector in packed form. Repeated
+ * indices in the packed vector are not allowed, otherwise the result
+ * is undefined.
  */
 int mtxvector_uszdotc(
     const struct mtxvector_packed * x,
@@ -1278,6 +1290,10 @@ int mtxvector_uszdotc(
  * ‘mtxvector_ussaxpy()’ performs a sparse vector update, multiplying
  * a sparse vector ‘x’ in packed form by a scalar ‘alpha’ and adding
  * the result to a vector ‘y’. That is, ‘y = alpha*x + y’.
+ *
+ * The vectors ‘x’ and ‘y’ must have the same field, precision and
+ * size. Repeated indices in the packed vector are not allowed,
+ * otherwise the result is undefined.
  */
 int mtxvector_ussaxpy(
     struct mtxvector * y,
@@ -1289,6 +1305,10 @@ int mtxvector_ussaxpy(
  * ‘mtxvector_usdaxpy()’ performs a sparse vector update, multiplying
  * a sparse vector ‘x’ in packed form by a scalar ‘alpha’ and adding
  * the result to a vector ‘y’. That is, ‘y = alpha*x + y’.
+ *
+ * The vectors ‘x’ and ‘y’ must have the same field, precision and
+ * size. Repeated indices in the packed vector are not allowed,
+ * otherwise the result is undefined.
  */
 int mtxvector_usdaxpy(
     struct mtxvector * y,
@@ -1300,6 +1320,10 @@ int mtxvector_usdaxpy(
  * ‘mtxvector_uscaxpy()’ performs a sparse vector update, multiplying
  * a sparse vector ‘x’ in packed form by a scalar ‘alpha’ and adding
  * the result to a vector ‘y’. That is, ‘y = alpha*x + y’.
+ *
+ * The vectors ‘x’ and ‘y’ must have the same field, precision and
+ * size. Repeated indices in the packed vector are not allowed,
+ * otherwise the result is undefined.
  */
 int mtxvector_uscaxpy(
     struct mtxvector * y,
@@ -1311,6 +1335,10 @@ int mtxvector_uscaxpy(
  * ‘mtxvector_uszaxpy()’ performs a sparse vector update, multiplying
  * a sparse vector ‘x’ in packed form by a scalar ‘alpha’ and adding
  * the result to a vector ‘y’. That is, ‘y = alpha*x + y’.
+ *
+ * The vectors ‘x’ and ‘y’ must have the same field, precision and
+ * size. Repeated indices in the packed vector are not allowed,
+ * otherwise the result is undefined.
  */
 int mtxvector_uszaxpy(
     struct mtxvector * y,
@@ -1328,7 +1356,8 @@ int mtxvector_usga(
 
 /**
  * ‘mtxvector_usga2()’ performs a gather operation from a vector ‘y’
- * into a sparse vector ‘x’ in packed storage format.
+ * into a sparse vector ‘x’ in packed form. Repeated indices in the
+ * packed vector are allowed.
  */
 int mtxvector_usga2(
     struct mtxvector_packed * x,
@@ -1353,7 +1382,8 @@ int mtxvector_ussc(
 
 /**
  * ‘mtxvector_ussc2()’ performs a scatter operation to a vector ‘y’
- * from a sparse vector ‘x’ in packed storage format.
+ * from a sparse vector ‘x’ in packed form. Repeated indices in the
+ * packed vector are not allowed, otherwise the result is undefined.
  */
 int mtxvector_ussc2(
     struct mtxvector * y,

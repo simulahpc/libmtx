@@ -522,9 +522,105 @@ int mtxvector_blas_iamax(
  */
 
 /**
+ * ‘mtxvector_blas_ussdot()’ computes the Euclidean dot product of two
+ * vectors in single precision floating point.
+ *
+ * The vectors ‘x’ and ‘y’ must have the same field, precision and
+ * size. The vector ‘x’ is a sparse vector in packed form. Repeated
+ * indices in the packed vector are not allowed, otherwise the result
+ * is undefined.
+ */
+int mtxvector_blas_ussdot(
+    const struct mtxvector_packed * x,
+    const struct mtxvector_blas * y,
+    float * dot,
+    int64_t * num_flops);
+
+/**
+ * ‘mtxvector_blas_usddot()’ computes the Euclidean dot product of two
+ * vectors in double precision floating point.
+ *
+ * The vectors ‘x’ and ‘y’ must have the same field, precision and
+ * size. The vector ‘x’ is a sparse vector in packed form. Repeated
+ * indices in the packed vector are not allowed, otherwise the result
+ * is undefined.
+ */
+int mtxvector_blas_usddot(
+    const struct mtxvector_packed * x,
+    const struct mtxvector_blas * y,
+    double * dot,
+    int64_t * num_flops);
+
+/**
+ * ‘mtxvector_blas_uscdotu()’ computes the product of the transpose of
+ * a complex row vector with another complex row vector in single
+ * precision floating point, ‘dot := x^T*y’.
+ *
+ * The vectors ‘x’ and ‘y’ must have the same field, precision and
+ * size. The vector ‘x’ is a sparse vector in packed form. Repeated
+ * indices in the packed vector are not allowed, otherwise the result
+ * is undefined.
+ */
+int mtxvector_blas_uscdotu(
+    const struct mtxvector_packed * x,
+    const struct mtxvector_blas * y,
+    float (* dot)[2],
+    int64_t * num_flops);
+
+/**
+ * ‘mtxvector_blas_uszdotu()’ computes the product of the transpose of
+ * a complex row vector with another complex row vector in double
+ * precision floating point, ‘dot := x^T*y’.
+ *
+ * The vectors ‘x’ and ‘y’ must have the same field, precision and
+ * size. The vector ‘x’ is a sparse vector in packed form. Repeated
+ * indices in the packed vector are not allowed, otherwise the result
+ * is undefined.
+ */
+int mtxvector_blas_uszdotu(
+    const struct mtxvector_packed * x,
+    const struct mtxvector_blas * y,
+    double (* dot)[2],
+    int64_t * num_flops);
+
+/**
+ * ‘mtxvector_blas_uscdotc()’ computes the Euclidean dot product of two
+ * complex vectors in single precision floating point, ‘dot := x^H*y’.
+ *
+ * The vectors ‘x’ and ‘y’ must have the same field, precision and
+ * size. The vector ‘x’ is a sparse vector in packed form. Repeated
+ * indices in the packed vector are not allowed, otherwise the result
+ * is undefined.
+ */
+int mtxvector_blas_uscdotc(
+    const struct mtxvector_packed * x,
+    const struct mtxvector_blas * y,
+    float (* dot)[2],
+    int64_t * num_flops);
+
+/**
+ * ‘mtxvector_blas_uszdotc()’ computes the Euclidean dot product of two
+ * complex vectors in double precision floating point, ‘dot := x^H*y’.
+ *
+ * The vectors ‘x’ and ‘y’ must have the same field, precision and
+ * size. The vector ‘x’ is a sparse vector in packed form. Repeated
+ * indices in the packed vector are not allowed, otherwise the result
+ * is undefined.
+ */
+int mtxvector_blas_uszdotc(
+    const struct mtxvector_packed * x,
+    const struct mtxvector_blas * y,
+    double (* dot)[2],
+    int64_t * num_flops);
+
+/**
  * ‘mtxvector_blas_ussaxpy()’ performs a sparse vector update,
  * multiplying a sparse vector ‘x’ in packed form by a scalar ‘alpha’
  * and adding the result to a vector ‘y’. That is, ‘y = alpha*x + y’.
+ *
+ * The vectors ‘x’ and ‘y’ must have the same field, precision and
+ * size. Repeated indices in the packed vector are not allowed,
+ * otherwise the result is undefined.
  */
 int mtxvector_blas_ussaxpy(
     struct mtxvector_blas * y,
@@ -536,6 +632,10 @@ int mtxvector_blas_ussaxpy(
  * ‘mtxvector_blas_usdaxpy()’ performs a sparse vector update,
  * multiplying a sparse vector ‘x’ in packed form by a scalar ‘alpha’
  * and adding the result to a vector ‘y’. That is, ‘y = alpha*x + y’.
+ *
+ * The vectors ‘x’ and ‘y’ must have the same field, precision and
+ * size. Repeated indices in the packed vector are not allowed,
+ * otherwise the result is undefined.
  */
 int mtxvector_blas_usdaxpy(
     struct mtxvector_blas * y,
@@ -547,6 +647,10 @@ int mtxvector_blas_usdaxpy(
  * ‘mtxvector_blas_uscaxpy()’ performs a sparse vector update,
  * multiplying a sparse vector ‘x’ in packed form by a scalar ‘alpha’
  * and adding the result to a vector ‘y’. That is, ‘y = alpha*x + y’.
+ *
+ * The vectors ‘x’ and ‘y’ must have the same field, precision and
+ * size. Repeated indices in the packed vector are not allowed,
+ * otherwise the result is undefined.
  */
 int mtxvector_blas_uscaxpy(
     struct mtxvector_blas * y,
@@ -558,6 +662,10 @@ int mtxvector_blas_uscaxpy(
  * ‘mtxvector_blas_uszaxpy()’ performs a sparse vector update,
  * multiplying a sparse vector ‘x’ in packed form by a scalar ‘alpha’
  * and adding the result to a vector ‘y’. That is, ‘y = alpha*x + y’.
+ *
+ * The vectors ‘x’ and ‘y’ must have the same field, precision and
+ * size. Repeated indices in the packed vector are not allowed,
+ * otherwise the result is undefined.
  */
 int mtxvector_blas_uszaxpy(
     struct mtxvector_blas * y,
@@ -567,15 +675,18 @@ int mtxvector_blas_uszaxpy(
 
 /**
  * ‘mtxvector_blas_usga()’ performs a gather operation from a vector
- * ‘y’ into a sparse vector ‘x’ in packed storage format.
+ * ‘y’ into a sparse vector ‘x’ in packed form. Repeated indices in
+ * the packed vector are allowed.
  */
 int mtxvector_blas_usga(
-    struct mtxvector_packed * xpacked,
-    const struct mtxvector_blas * yblas);
+    struct mtxvector_packed * x,
+    const struct mtxvector_blas * y);
 
 /**
  * ‘mtxvector_blas_ussc()’ performs a scatter operation to a vector
- * ‘y’ from a sparse vector ‘x’ in packed storage format.
+ * ‘y’ from a sparse vector ‘x’ in packed form. Repeated indices in
+ * the packed vector are not allowed, otherwise the result is
+ * undefined.
  */
 int mtxvector_blas_ussc(
     struct mtxvector_blas * y,
