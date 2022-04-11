@@ -263,6 +263,44 @@ int mtxvector_base_init_pattern(
  */
 
 /**
+ * ‘mtxvector_base_setzero()’ sets every value of a vector to zero.
+ */
+int mtxvector_base_setzero(
+    struct mtxvector_base * x)
+{
+    if (x->field == mtx_field_real) {
+        if (x->precision == mtx_single) {
+            for (int k = 0; k < x->size; k++)
+                x->data.real_single[k] = 0;
+        } else if (x->precision == mtx_double) {
+            for (int k = 0; k < x->size; k++)
+                x->data.real_double[k] = 0;
+        } else { return MTX_ERR_INVALID_PRECISION; }
+    } else if (x->field == mtx_field_complex) {
+        if (x->precision == mtx_single) {
+            for (int k = 0; k < x->size; k++) {
+                x->data.complex_single[k][0] = 0;
+                x->data.complex_single[k][1] = 0;
+            }
+        } else if (x->precision == mtx_double) {
+            for (int k = 0; k < x->size; k++) {
+                x->data.complex_double[k][0] = 0;
+                x->data.complex_double[k][1] = 0;
+            }
+        } else { return MTX_ERR_INVALID_PRECISION; }
+    } else if (x->field == mtx_field_integer) {
+        if (x->precision == mtx_single) {
+            for (int k = 0; k < x->size; k++)
+                x->data.integer_single[k] = 0;
+        } else if (x->precision == mtx_double) {
+            for (int k = 0; k < x->size; k++)
+                x->data.integer_double[k] = 0;
+        } else { return MTX_ERR_INVALID_PRECISION; }
+    } else { return MTX_ERR_INVALID_FIELD; }
+    return MTX_SUCCESS;
+}
+
+/**
  * ‘mtxvector_base_set_constant_real_single()’ sets every value of a
  * vector equal to a constant, single precision floating point number.
  */
@@ -2561,5 +2599,40 @@ int mtxvector_base_ussc(
                 ydata[idx[k]] = xdata[k];
         } else { return MTX_ERR_INVALID_PRECISION; }
     } else { return MTX_ERR_INVALID_FIELD; }
+    return MTX_SUCCESS;
+}
+
+/*
+ * Level 1 BLAS-like extensions
+ */
+
+/**
+ * ‘mtxvector_base_usscga()’ performs a combined scatter-gather
+ * operation from a sparse vector ‘x’ in packed form into another
+ * sparse vector ‘z’ in packed form. Repeated indices in the packed
+ * vector ‘x’ are not allowed, otherwise the result is undefined. They
+ * are, however, allowed in the packed vector ‘z’.
+ */
+int mtxvector_base_usscga(
+    struct mtxvector_packed * zpacked,
+    const struct mtxvector_packed * xpacked)
+{
+    if (xpacked->x.type != mtxvector_base) return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
+    const struct mtxvector_base * x = &xpacked->x.storage.base;
+    if (zpacked->x.type != mtxvector_base) return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
+    const struct mtxvector_base * z = &zpacked->x.storage.base;
+    if (x->field != z->field) return MTX_ERR_INCOMPATIBLE_FIELD;
+    if (x->precision != z->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
+    if (xpacked->size != zpacked->size) return MTX_ERR_INCOMPATIBLE_SIZE;
+    struct mtxvector_base y;
+    int err = mtxvector_base_alloc(&y, x->field, x->precision, xpacked->size);
+    if (err) return err;
+    err = mtxvector_base_setzero(&y);
+    if (err) { mtxvector_base_free(&y); return err; }
+    err = mtxvector_base_ussc(&y, xpacked);
+    if (err) { mtxvector_base_free(&y); return err; }
+    err = mtxvector_base_usga(zpacked, &y);
+    if (err) { mtxvector_base_free(&y); return err; }
+    mtxvector_base_free(&y);
     return MTX_SUCCESS;
 }

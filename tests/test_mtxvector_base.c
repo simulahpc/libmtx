@@ -1901,6 +1901,131 @@ int test_mtxvector_base_ussc(void)
 }
 
 /**
+ * ‘test_mtxvector_base_usscga()’ tests combined scatter-gather
+ * operations from a sparse vector in packed form to another sparse
+ * vector in packed form.
+ */
+int test_mtxvector_base_usscga(void)
+{
+    int err;
+    {
+        struct mtxvector_packed x;
+        struct mtxvector_packed z;
+        int size = 12;
+        int64_t xidx[] = {0, 3, 5, 6, 9};
+        float xdata[] = {1, 4, 6, 7, 10};
+        int xnum_nonzeros = sizeof(xdata) / sizeof(*xdata);
+        int64_t zidx[] = {0, 1, 5, 6, 9};
+        float zdata[] = {0, 0, 0, 0, 0};
+        int znum_nonzeros = sizeof(zdata) / sizeof(*zdata);
+        err = mtxvector_packed_init_real_single(
+            &x, mtxvector_base, size, xnum_nonzeros, xidx, xdata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        err = mtxvector_packed_init_real_single(
+            &z, mtxvector_base, size, znum_nonzeros, zidx, zdata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        err = mtxvector_usscga(&z, &x);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(mtxvector_base, z.x.type);
+        struct mtxvector_base * zbase = &z.x.storage.base;
+        TEST_ASSERT_EQ( 1.0f, zbase->data.real_single[0]);
+        TEST_ASSERT_EQ( 0.0f, zbase->data.real_single[1]);
+        TEST_ASSERT_EQ( 6.0f, zbase->data.real_single[2]);
+        TEST_ASSERT_EQ( 7.0f, zbase->data.real_single[3]);
+        TEST_ASSERT_EQ(10.0f, zbase->data.real_single[4]);
+        mtxvector_packed_free(&z);
+        mtxvector_packed_free(&x);
+    }
+    {
+        struct mtxvector_packed x;
+        struct mtxvector_packed z;
+        int size = 12;
+        int64_t xidx[] = {0, 3, 5, 6, 9};
+        double xdata[] = {1, 4, 6, 7, 10};
+        int xnum_nonzeros = sizeof(xdata) / sizeof(*xdata);
+        int64_t zidx[] = {0, 1, 5, 6, 9};
+        double zdata[] = {0, 0, 0, 0, 0};
+        int znum_nonzeros = sizeof(zdata) / sizeof(*zdata);
+        err = mtxvector_packed_init_real_double(
+            &x, mtxvector_base, size, xnum_nonzeros, xidx, xdata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        err = mtxvector_packed_init_real_double(
+            &z, mtxvector_base, size, znum_nonzeros, zidx, zdata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        err = mtxvector_usscga(&z, &x);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(mtxvector_base, z.x.type);
+        struct mtxvector_base * zbase = &z.x.storage.base;
+        TEST_ASSERT_EQ( 1.0, zbase->data.real_double[0]);
+        TEST_ASSERT_EQ( 0.0, zbase->data.real_double[1]);
+        TEST_ASSERT_EQ( 6.0, zbase->data.real_double[2]);
+        TEST_ASSERT_EQ( 7.0, zbase->data.real_double[3]);
+        TEST_ASSERT_EQ(10.0, zbase->data.real_double[4]);
+        mtxvector_packed_free(&z);
+        mtxvector_packed_free(&x);
+    }
+    {
+        struct mtxvector_packed x;
+        struct mtxvector_packed z;
+        int size = 6;
+        int64_t xidx[] = {0, 3, 5};
+        float xdata[][2] = {{1, -1}, {4, -4}, {6, -6}};
+        int xnum_nonzeros = sizeof(xdata) / sizeof(*xdata);
+        int64_t zidx[] = {0, 1, 5};
+        float zdata[][2] = {{0, 0}, {0, 0}, {0, 0}};
+        int znum_nonzeros = sizeof(zdata) / sizeof(*zdata);
+        err = mtxvector_packed_init_complex_single(
+            &x, mtxvector_base, size, xnum_nonzeros, xidx, xdata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        err = mtxvector_packed_init_complex_single(
+            &z, mtxvector_base, size, znum_nonzeros, zidx, zdata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        err = mtxvector_usscga(&z, &x);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(mtxvector_base, z.x.type);
+        struct mtxvector_base * zbase = &z.x.storage.base;
+        TEST_ASSERT_EQ( 1.0f, zbase->data.complex_single[0][0]);
+        TEST_ASSERT_EQ(-1.0f, zbase->data.complex_single[0][1]);
+        TEST_ASSERT_EQ( 0.0f, zbase->data.complex_single[1][0]);
+        TEST_ASSERT_EQ( 0.0f, zbase->data.complex_single[1][1]);
+        TEST_ASSERT_EQ( 6.0f, zbase->data.complex_single[2][0]);
+        TEST_ASSERT_EQ(-6.0f, zbase->data.complex_single[2][1]);
+        mtxvector_packed_free(&z);
+        mtxvector_packed_free(&x);
+    }
+    {
+        struct mtxvector_packed x;
+        struct mtxvector_packed z;
+        int size = 6;
+        int64_t xidx[] = {0, 3, 5};
+        double xdata[][2] = {{1, -1}, {4, -4}, {6, -6}};
+        int xnum_nonzeros = sizeof(xdata) / sizeof(*xdata);
+        int64_t zidx[] = {0, 1, 5};
+        double zdata[][2] = {{0, 0}, {0, 0}, {0, 0}};
+        int znum_nonzeros = sizeof(zdata) / sizeof(*zdata);
+        err = mtxvector_packed_init_complex_double(
+            &x, mtxvector_base, size, xnum_nonzeros, xidx, xdata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        err = mtxvector_packed_init_complex_double(
+            &z, mtxvector_base, size, znum_nonzeros, zidx, zdata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        err = mtxvector_usscga(&z, &x);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(mtxvector_base, z.x.type);
+        struct mtxvector_base * zbase = &z.x.storage.base;
+        TEST_ASSERT_EQ( 1.0, zbase->data.complex_double[0][0]);
+        TEST_ASSERT_EQ(-1.0, zbase->data.complex_double[0][1]);
+        TEST_ASSERT_EQ( 0.0, zbase->data.complex_double[1][0]);
+        TEST_ASSERT_EQ( 0.0, zbase->data.complex_double[1][1]);
+        TEST_ASSERT_EQ( 6.0, zbase->data.complex_double[2][0]);
+        TEST_ASSERT_EQ(-6.0, zbase->data.complex_double[2][1]);
+        mtxvector_packed_free(&z);
+        mtxvector_packed_free(&x);
+    }
+    return TEST_SUCCESS;
+}
+
+/**
  * ‘main()’ entry point and test driver.
  */
 int main(int argc, char * argv[])
@@ -1922,6 +2047,7 @@ int main(int argc, char * argv[])
     TEST_RUN(test_mtxvector_base_usaxpy);
     TEST_RUN(test_mtxvector_base_usga);
     TEST_RUN(test_mtxvector_base_ussc);
+    TEST_RUN(test_mtxvector_base_usscga);
     TEST_SUITE_END();
     return (TEST_SUITE_STATUS == TEST_SUCCESS) ?
         EXIT_SUCCESS : EXIT_FAILURE;

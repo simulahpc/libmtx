@@ -30,6 +30,7 @@
 #include <libmtx/vector/base.h>
 #include <libmtx/vector/blas.h>
 #include <libmtx/vector/omp.h>
+#include <libmtx/vector/packed.h>
 #include <libmtx/vector/vector.h>
 
 #ifdef LIBMTX_HAVE_LIBZ
@@ -1097,6 +1098,29 @@ int mtxvector_init_coordinate_pattern(
  */
 
 /**
+ * ‘mtxvector_setzero()’ sets every value of a vector to zero.
+ */
+int mtxvector_setzero(
+    struct mtxvector * x)
+{
+    if (x->type == mtxvector_base) {
+        return mtxvector_base_setzero(&x->storage.base);
+    } else if (x->type == mtxvector_blas) {
+#ifdef LIBMTX_HAVE_BLAS
+        return mtxvector_blas_setzero(&x->storage.blas);
+#else
+        return MTX_ERR_BLAS_NOT_SUPPORTED;
+#endif
+    } else if (x->type == mtxvector_omp) {
+#ifdef LIBMTX_HAVE_OPENMP
+        return mtxvector_omp_setzero(&x->storage.omp);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
+    } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
+}
+
+/**
  * ‘mtxvector_set_constant_real_single()’ sets every (nonzero) value
  * of a vector equal to a constant, single precision floating point
  * number.
@@ -1125,9 +1149,7 @@ int mtxvector_set_constant_real_single(
     } else if (x->type == mtxvector_coordinate) {
         return mtxvector_coordinate_set_constant_real_single(
             &x->storage.coordinate, a);
-    } else {
-        return MTX_ERR_INVALID_VECTOR_TYPE;
-    }
+    } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
 }
 
 /**
@@ -2841,6 +2863,39 @@ int mtxvector_ussc2(
     } else if (y->type == mtxvector_omp) {
 #ifdef LIBMTX_HAVE_OPENMP
         return mtxvector_omp_ussc(&y->storage.omp, x);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
+    } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
+}
+
+
+/*
+ * Level 1 BLAS-like extensions
+ */
+
+/**
+ * ‘mtxvector_usscga()’ performs a combined scatter-gather operation
+ * from a sparse vector ‘x’ in packed form into another sparse vector
+ * ‘z’ in packed form. Repeated indices in the packed vector ‘x’ are
+ * not allowed, otherwise the result is undefined. They are, however,
+ * allowed in the packed vector ‘z’.
+ */
+int mtxvector_usscga(
+    struct mtxvector_packed * z,
+    const struct mtxvector_packed * x)
+{
+    if (z->x.type == mtxvector_base) {
+        return mtxvector_base_usscga(z, x);
+    } else if (z->x.type == mtxvector_blas) {
+#ifdef LIBMTX_HAVE_BLAS
+        return mtxvector_blas_usscga(z, x);
+#else
+        return MTX_ERR_BLAS_NOT_SUPPORTED;
+#endif
+    } else if (z->x.type == mtxvector_omp) {
+#ifdef LIBMTX_HAVE_OPENMP
+        return mtxvector_omp_usscga(z, x);
 #else
         return MTX_ERR_OPENMP_NOT_SUPPORTED;
 #endif

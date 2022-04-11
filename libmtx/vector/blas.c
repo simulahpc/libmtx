@@ -185,6 +185,15 @@ int mtxvector_blas_init_pattern(
  */
 
 /**
+ * ‘mtxvector_blas_setzero()’ sets every value of a vector to zero.
+ */
+int mtxvector_blas_setzero(
+    struct mtxvector_blas * x)
+{
+    return mtxvector_base_setzero(&x->base);
+}
+
+/**
  * ‘mtxvector_blas_set_constant_real_single()’ sets every value of a
  * vector equal to a constant, single precision floating point number.
  */
@@ -1917,5 +1926,44 @@ int mtxvector_blas_ussc(
         } else { return MTX_ERR_INVALID_PRECISION; }
     } else { return MTX_ERR_INVALID_FIELD; }
     return MTX_SUCCESS;
+}
+
+/*
+ * Level 1 BLAS-like extensions
+ */
+
+/**
+ * ‘mtxvector_blas_usscga()’ performs a combined scatter-gather
+ * operation from a sparse vector ‘x’ in packed form into another
+ * sparse vector ‘z’ in packed form. Repeated indices in the packed
+ * vector ‘x’ are not allowed, otherwise the result is undefined. They
+ * are, however, allowed in the packed vector ‘z’.
+ */
+int mtxvector_blas_usscga(
+    struct mtxvector_packed * zpacked,
+    const struct mtxvector_packed * xpacked)
+{
+    if (xpacked->x.type != mtxvector_blas) return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
+    const struct mtxvector_blas * xblas = &xpacked->x.storage.blas;
+    const struct mtxvector_base * x = &xblas->base;
+    if (zpacked->x.type != mtxvector_blas) return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
+    const struct mtxvector_blas * zblas = &zpacked->x.storage.blas;
+    const struct mtxvector_base * z = &zblas->base;
+    if (x->field != z->field) return MTX_ERR_INCOMPATIBLE_FIELD;
+    if (x->precision != z->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
+    if (xpacked->size != zpacked->size) return MTX_ERR_INCOMPATIBLE_SIZE;
+    struct mtxvector_packed xpackedbase;
+    xpackedbase.size = xpacked->size;
+    xpackedbase.num_nonzeros = xpacked->num_nonzeros;
+    xpackedbase.idx = xpacked->idx;
+    xpackedbase.x.type = mtxvector_base;
+    xpackedbase.x.storage.base = xpacked->x.storage.blas.base;
+    struct mtxvector_packed zpackedbase;
+    zpackedbase.size = zpacked->size;
+    zpackedbase.num_nonzeros = zpacked->num_nonzeros;
+    zpackedbase.idx = zpacked->idx;
+    zpackedbase.x.type = mtxvector_base;
+    zpackedbase.x.storage.base = zpacked->x.storage.blas.base;
+    return mtxvector_base_usscga(&zpackedbase, &xpackedbase);
 }
 #endif

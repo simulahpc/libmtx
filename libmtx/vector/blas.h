@@ -161,6 +161,12 @@ int mtxvector_blas_init_pattern(
  */
 
 /**
+ * ‘mtxvector_blas_setzero()’ sets every value of a vector to zero.
+ */
+int mtxvector_blas_setzero(
+    struct mtxvector_blas * x);
+
+/**
  * ‘mtxvector_blas_set_constant_real_single()’ sets every value of a
  * vector equal to a constant, single precision floating point number.
  */
@@ -691,6 +697,21 @@ int mtxvector_blas_usga(
 int mtxvector_blas_ussc(
     struct mtxvector_blas * y,
     const struct mtxvector_packed * x);
+
+/*
+ * Level 1 BLAS-like extensions
+ */
+
+/**
+ * ‘mtxvector_blas_usscga()’ performs a combined scatter-gather
+ * operation from a sparse vector ‘x’ in packed form into another
+ * sparse vector ‘z’ in packed form. Repeated indices in the packed
+ * vector ‘x’ are not allowed, otherwise the result is undefined. They
+ * are, however, allowed in the packed vector ‘z’.
+ */
+int mtxvector_blas_usscga(
+    struct mtxvector_packed * zpacked,
+    const struct mtxvector_packed * xpacked);
 #endif
 
 #endif

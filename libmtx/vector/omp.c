@@ -242,6 +242,52 @@ int mtxvector_omp_init_pattern(
  */
 
 /**
+ * ‘mtxvector_omp_setzero()’ sets every value of a vector to zero.
+ */
+int mtxvector_omp_setzero(
+    struct mtxvector_omp * xomp)
+{
+    struct mtxvector_base * x = &xomp->base;
+    int num_threads = xomp->num_threads;
+    if (x->field == mtx_field_real) {
+        if (x->precision == mtx_single) {
+            #pragma omp parallel for num_threads(num_threads)
+            for (int k = 0; k < x->size; k++)
+                x->data.real_single[k] = 0;
+        } else if (x->precision == mtx_double) {
+            #pragma omp parallel for num_threads(num_threads)
+            for (int k = 0; k < x->size; k++)
+                x->data.real_double[k] = 0;
+        } else { return MTX_ERR_INVALID_PRECISION; }
+    } else if (x->field == mtx_field_complex) {
+        if (x->precision == mtx_single) {
+            #pragma omp parallel for num_threads(num_threads)
+            for (int k = 0; k < x->size; k++) {
+                x->data.complex_single[k][0] = 0;
+                x->data.complex_single[k][1] = 0;
+            }
+        } else if (x->precision == mtx_double) {
+            #pragma omp parallel for num_threads(num_threads)
+            for (int k = 0; k < x->size; k++) {
+                x->data.complex_double[k][0] = 0;
+                x->data.complex_double[k][1] = 0;
+            }
+        } else { return MTX_ERR_INVALID_PRECISION; }
+    } else if (x->field == mtx_field_integer) {
+        if (x->precision == mtx_single) {
+            #pragma omp parallel for num_threads(num_threads)
+            for (int k = 0; k < x->size; k++)
+                x->data.integer_single[k] = 0;
+        } else if (x->precision == mtx_double) {
+            #pragma omp parallel for num_threads(num_threads)
+            for (int k = 0; k < x->size; k++)
+                x->data.integer_double[k] = 0;
+        } else { return MTX_ERR_INVALID_PRECISION; }
+    } else { return MTX_ERR_INVALID_FIELD; }
+    return MTX_SUCCESS;
+}
+
+/**
  * ‘mtxvector_omp_set_constant_real_single()’ sets every value of a
  * vector equal to a constant, single precision floating point number.
  */
@@ -2695,6 +2741,46 @@ int mtxvector_omp_ussc(
                 ydata[idx[k]] = xdata[k];
         } else { return MTX_ERR_INVALID_PRECISION; }
     } else { return MTX_ERR_INVALID_FIELD; }
+    return MTX_SUCCESS;
+}
+
+/*
+ * Level 1 BLAS-like extensions
+ */
+
+/**
+ * ‘mtxvector_omp_usscga()’ performs a combined scatter-gather
+ * operation from a sparse vector ‘x’ in packed form into another
+ * sparse vector ‘z’ in packed form. Repeated indices in the packed
+ * vector ‘x’ are not allowed, otherwise the result is undefined. They
+ * are, however, allowed in the packed vector ‘z’.
+ */
+int mtxvector_omp_usscga(
+    struct mtxvector_packed * zpacked,
+    const struct mtxvector_packed * xpacked)
+{
+    if (xpacked->x.type != mtxvector_omp) return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
+    const struct mtxvector_omp * xomp = &xpacked->x.storage.omp;
+    const struct mtxvector_base * x = &xomp->base;
+    if (zpacked->x.type != mtxvector_omp) return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
+    const struct mtxvector_omp * zomp = &zpacked->x.storage.omp;
+    const struct mtxvector_base * z = &zomp->base;
+    int num_threads = xomp->num_threads < zomp->num_threads
+        ? xomp->num_threads : zomp->num_threads;
+    if (x->field != z->field) return MTX_ERR_INCOMPATIBLE_FIELD;
+    if (x->precision != z->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
+    if (xpacked->size != zpacked->size) return MTX_ERR_INCOMPATIBLE_SIZE;
+    struct mtxvector_omp y;
+    int err = mtxvector_omp_alloc(
+        &y, x->field, x->precision, xpacked->size, num_threads);
+    if (err) return err;
+    err = mtxvector_omp_setzero(&y);
+    if (err) { mtxvector_omp_free(&y); return err; }
+    err = mtxvector_omp_ussc(&y, xpacked);
+    if (err) { mtxvector_omp_free(&y); return err; }
+    err = mtxvector_omp_usga(zpacked, &y);
+    if (err) { mtxvector_omp_free(&y); return err; }
+    mtxvector_omp_free(&y);
     return MTX_SUCCESS;
 }
 #endif

@@ -174,6 +174,12 @@ int mtxvector_omp_init_pattern(
  */
 
 /**
+ * ‘mtxvector_omp_setzero()’ sets every value of a vector to zero.
+ */
+int mtxvector_omp_setzero(
+    struct mtxvector_omp * x);
+
+/**
  * ‘mtxvector_omp_set_constant_real_single()’ sets every value of a
  * vector equal to a constant, single precision floating point number.
  */
@@ -701,6 +707,21 @@ int mtxvector_omp_usga(
  */
 int mtxvector_omp_ussc(
     struct mtxvector_omp * y,
+    const struct mtxvector_packed * x);
+
+/*
+ * Level 1 BLAS-like extensions
+ */
+
+/**
+ * ‘mtxvector_omp_usscga()’ performs a combined scatter-gather
+ * operation from a sparse vector ‘x’ in packed form into another
+ * sparse vector ‘z’ in packed form. Repeated indices in the packed
+ * vector ‘x’ are not allowed, otherwise the result is undefined. They
+ * are, however, allowed in the packed vector ‘z’.
+ */
+int mtxvector_omp_usscga(
+    struct mtxvector_packed * z,
     const struct mtxvector_packed * x);
 #endif
 
