@@ -409,8 +409,8 @@ int mtxfiledata_parse_matrix_coordinate_real_single(
     int64_t * bytes_read,
     char ** endptr,
     const char * s,
-    int num_rows,
-    int num_columns);
+    int64_t num_rows,
+    int64_t num_columns);
 
 /**
  * ‘mtxfiledata_parse_matrix_coordinate_real_double()’ parses a
@@ -428,8 +428,8 @@ int mtxfiledata_parse_matrix_coordinate_real_double(
     int64_t * bytes_read,
     char ** endptr,
     const char * s,
-    int num_rows,
-    int num_columns);
+    int64_t num_rows,
+    int64_t num_columns);
 
 /**
  * ‘mtxfiledata_parse_matrix_coordinate_complex_single()’ parses a
@@ -447,8 +447,8 @@ int mtxfiledata_parse_matrix_coordinate_complex_single(
     int64_t * bytes_read,
     char ** endptr,
     const char * s,
-    int num_rows,
-    int num_columns);
+    int64_t num_rows,
+    int64_t num_columns);
 
 /**
  * ‘mtxfiledata_parse_matrix_coordinate_complex_double()’ parses a
@@ -466,8 +466,8 @@ int mtxfiledata_parse_matrix_coordinate_complex_double(
     int64_t * bytes_read,
     char ** endptr,
     const char * s,
-    int num_rows,
-    int num_columns);
+    int64_t num_rows,
+    int64_t num_columns);
 
 /**
  * ‘mtxfiledata_parse_matrix_coordinate_integer_single()’ parses a
@@ -485,8 +485,8 @@ int mtxfiledata_parse_matrix_coordinate_integer_single(
     int64_t * bytes_read,
     char ** endptr,
     const char * s,
-    int num_rows,
-    int num_columns);
+    int64_t num_rows,
+    int64_t num_columns);
 
 /**
  * ‘mtxfiledata_parse_matrix_coordinate_integer_double()’ parses a
@@ -504,8 +504,8 @@ int mtxfiledata_parse_matrix_coordinate_integer_double(
     int64_t * bytes_read,
     char ** endptr,
     const char * s,
-    int num_rows,
-    int num_columns);
+    int64_t num_rows,
+    int64_t num_columns);
 
 /**
  * ‘mtxfiledata_parse_matrix_coordinate_pattern()’ parses a string
@@ -523,8 +523,8 @@ int mtxfiledata_parse_matrix_coordinate_pattern(
     int64_t * bytes_read,
     char ** endptr,
     const char * s,
-    int num_rows,
-    int num_columns);
+    int64_t num_rows,
+    int64_t num_columns);
 
 /*
  * Vector coordinate formats
@@ -546,7 +546,7 @@ int mtxfiledata_parse_vector_coordinate_real_single(
     int64_t * bytes_read,
     char ** endptr,
     const char * s,
-    int num_rows);
+    int64_t num_rows);
 
 /**
  * ‘mtxfiledata_parse_vector_coordinate_real_double()’ parses a
@@ -564,7 +564,7 @@ int mtxfiledata_parse_vector_coordinate_real_double(
     int64_t * bytes_read,
     char ** endptr,
     const char * s,
-    int num_rows);
+    int64_t num_rows);
 
 /**
  * ‘mtxfiledata_parse_vector_coordinate_complex_single()’ parses a
@@ -582,7 +582,7 @@ int mtxfiledata_parse_vector_coordinate_complex_single(
     int64_t * bytes_read,
     char ** endptr,
     const char * s,
-    int num_rows);
+    int64_t num_rows);
 
 /**
  * ‘mtxfiledata_parse_vector_coordinate_complex_double()’ parses a
@@ -600,7 +600,7 @@ int mtxfiledata_parse_vector_coordinate_complex_double(
     int64_t * bytes_read,
     char ** endptr,
     const char * s,
-    int num_rows);
+    int64_t num_rows);
 
 /**
  * ‘mtxfiledata_parse_vector_coordinate_integer_single()’ parses a
@@ -618,7 +618,7 @@ int mtxfiledata_parse_vector_coordinate_integer_single(
     int64_t * bytes_read,
     char ** endptr,
     const char * s,
-    int num_rows);
+    int64_t num_rows);
 
 /**
  * ‘mtxfiledata_parse_vector_coordinate_integer_double()’ parses a
@@ -636,7 +636,7 @@ int mtxfiledata_parse_vector_coordinate_integer_double(
     int64_t * bytes_read,
     char ** endptr,
     const char * s,
-    int num_rows);
+    int64_t num_rows);
 
 /**
  * ‘mtxfiledata_parse_vector_coordinate_pattern()’ parses a string
@@ -654,7 +654,7 @@ int mtxfiledata_parse_vector_coordinate_pattern(
     int64_t * bytes_read,
     char ** endptr,
     const char * s,
-    int num_rows);
+    int64_t num_rows);
 
 /*
  * Memory management
@@ -743,8 +743,8 @@ int mtxfiledata_rowcolidx(
     enum mtxfileformat format,
     enum mtxfilefield field,
     enum mtxprecision precision,
-    int num_rows,
-    int num_columns,
+    int64_t num_rows,
+    int64_t num_columns,
     int64_t offset,
     int64_t size,
     int * rowidx,
@@ -776,7 +776,7 @@ int mtxfiledata_rowptr(
     enum mtxfileformat format,
     enum mtxfilefield field,
     enum mtxprecision precision,
-    int num_rows,
+    int64_t num_rows,
     int64_t size,
     int64_t * rowptr,
     int * colidx,
@@ -809,7 +809,7 @@ int mtxfiledata_colptr(
     enum mtxfileformat format,
     enum mtxfilefield field,
     enum mtxprecision precision,
-    int num_columns,
+    int64_t num_columns,
     int64_t size,
     int64_t * colptr,
     int * rowidx,
@@ -943,8 +943,8 @@ int mtxfiledata_fread(
     enum mtxfileformat format,
     enum mtxfilefield field,
     enum mtxprecision precision,
-    int num_rows,
-    int num_columns,
+    int64_t num_rows,
+    int64_t num_columns,
     int64_t size,
     int64_t offset);
 
@@ -981,8 +981,8 @@ int mtxfiledata_gzread(
     enum mtxfileformat format,
     enum mtxfilefield field,
     enum mtxprecision precision,
-    int num_rows,
-    int num_columns,
+    int64_t num_rows,
+    int64_t num_columns,
     int64_t size,
     int64_t offset);
 #endif
@@ -1077,8 +1077,8 @@ int mtxfiledata_transpose(
     enum mtxfileformat format,
     enum mtxfilefield field,
     enum mtxprecision precision,
-    int num_rows,
-    int num_columns,
+    int64_t num_rows,
+    int64_t num_columns,
     int64_t size);
 
 /*
@@ -1099,8 +1099,8 @@ int mtxfiledata_permute(
     enum mtxfileformat format,
     enum mtxfilefield field,
     enum mtxprecision precision,
-    int num_rows,
-    int num_columns,
+    int64_t num_rows,
+    int64_t num_columns,
     int64_t size,
     int64_t * perm);
 
@@ -1124,8 +1124,8 @@ int mtxfiledata_sortkey_row_major(
     enum mtxfileformat format,
     enum mtxfilefield field,
     enum mtxprecision precision,
-    int num_rows,
-    int num_columns,
+    int64_t num_rows,
+    int64_t num_columns,
     int64_t offset,
     int64_t size,
     uint64_t * keys);
@@ -1150,8 +1150,8 @@ int mtxfiledata_sortkey_column_major(
     enum mtxfileformat format,
     enum mtxfilefield field,
     enum mtxprecision precision,
-    int num_rows,
-    int num_columns,
+    int64_t num_rows,
+    int64_t num_columns,
     int64_t offset,
     int64_t size,
     uint64_t * keys);
@@ -1176,8 +1176,8 @@ int mtxfiledata_sortkey_morton(
     enum mtxfileformat format,
     enum mtxfilefield field,
     enum mtxprecision precision,
-    int num_rows,
-    int num_columns,
+    int64_t num_rows,
+    int64_t num_columns,
     int64_t offset,
     int64_t size,
     uint64_t * keys);
@@ -1192,8 +1192,8 @@ int mtxfiledata_sort_keys(
     enum mtxfileformat format,
     enum mtxfilefield field,
     enum mtxprecision precision,
-    int num_rows,
-    int num_columns,
+    int64_t num_rows,
+    int64_t num_columns,
     int64_t size,
     uint64_t * keys,
     int64_t * sorting_permutation);
@@ -1211,8 +1211,8 @@ int mtxfiledata_sort_row_major(
     enum mtxfileformat format,
     enum mtxfilefield field,
     enum mtxprecision precision,
-    int num_rows,
-    int num_columns,
+    int64_t num_rows,
+    int64_t num_columns,
     int64_t size,
     int64_t * perm);
 
@@ -1229,8 +1229,8 @@ int mtxfiledata_sort_column_major(
     enum mtxfileformat format,
     enum mtxfilefield field,
     enum mtxprecision precision,
-    int num_rows,
-    int num_columns,
+    int64_t num_rows,
+    int64_t num_columns,
     int64_t size,
     int64_t * perm);
 
@@ -1246,8 +1246,8 @@ int mtxfiledata_sort_morton(
     enum mtxfileformat format,
     enum mtxfilefield field,
     enum mtxprecision precision,
-    int num_rows,
-    int num_columns,
+    int64_t num_rows,
+    int64_t num_columns,
     int64_t size,
     int64_t * perm);
 
@@ -1278,8 +1278,8 @@ int mtxfiledata_compact(
     enum mtxfileformat format,
     enum mtxfilefield field,
     enum mtxprecision precision,
-    int num_rows,
-    int num_columns,
+    int64_t num_rows,
+    int64_t num_columns,
     int64_t size,
     int64_t * perm,
     int64_t * outsize);
@@ -1316,8 +1316,8 @@ int mtxfiledata_partition(
     enum mtxfileformat format,
     enum mtxfilefield field,
     enum mtxprecision precision,
-    int num_rows,
-    int num_columns,
+    int64_t num_rows,
+    int64_t num_columns,
     int64_t offset,
     int64_t size,
     const struct mtxpartition * rowpart,
@@ -1351,9 +1351,9 @@ int mtxfiledata_reorder(
     enum mtxprecision precision,
     int64_t size,
     int64_t offset,
-    int num_rows,
+    int64_t num_rows,
     const int * row_permutation,
-    int num_columns,
+    int64_t num_columns,
     const int * column_permutation);
 
 /*

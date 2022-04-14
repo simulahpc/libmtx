@@ -415,8 +415,8 @@ int mtxfile_alloc_matrix_array(
     enum mtxfilefield field,
     enum mtxfilesymmetry symmetry,
     enum mtxprecision precision,
-    int num_rows,
-    int num_columns)
+    int64_t num_rows,
+    int64_t num_columns)
 {
     int err;
     if (field != mtxfile_real &&
@@ -467,8 +467,8 @@ int mtxfile_alloc_matrix_array(
 int mtxfile_init_matrix_array_real_single(
     struct mtxfile * mtxfile,
     enum mtxfilesymmetry symmetry,
-    int num_rows,
-    int num_columns,
+    int64_t num_rows,
+    int64_t num_columns,
     const float * data)
 {
     int err;
@@ -494,8 +494,8 @@ int mtxfile_init_matrix_array_real_single(
 int mtxfile_init_matrix_array_real_double(
     struct mtxfile * mtxfile,
     enum mtxfilesymmetry symmetry,
-    int num_rows,
-    int num_columns,
+    int64_t num_rows,
+    int64_t num_columns,
     const double * data)
 {
     int err;
@@ -522,8 +522,8 @@ int mtxfile_init_matrix_array_real_double(
 int mtxfile_init_matrix_array_complex_single(
     struct mtxfile * mtxfile,
     enum mtxfilesymmetry symmetry,
-    int num_rows,
-    int num_columns,
+    int64_t num_rows,
+    int64_t num_columns,
     const float (* data)[2])
 {
     int err;
@@ -550,8 +550,8 @@ int mtxfile_init_matrix_array_complex_single(
 int mtxfile_init_matrix_array_complex_double(
     struct mtxfile * mtxfile,
     enum mtxfilesymmetry symmetry,
-    int num_rows,
-    int num_columns,
+    int64_t num_rows,
+    int64_t num_columns,
     const double (* data)[2])
 {
     int err;
@@ -578,8 +578,8 @@ int mtxfile_init_matrix_array_complex_double(
 int mtxfile_init_matrix_array_integer_single(
     struct mtxfile * mtxfile,
     enum mtxfilesymmetry symmetry,
-    int num_rows,
-    int num_columns,
+    int64_t num_rows,
+    int64_t num_columns,
     const int32_t * data)
 {
     int err;
@@ -606,8 +606,8 @@ int mtxfile_init_matrix_array_integer_single(
 int mtxfile_init_matrix_array_integer_double(
     struct mtxfile * mtxfile,
     enum mtxfilesymmetry symmetry,
-    int num_rows,
-    int num_columns,
+    int64_t num_rows,
+    int64_t num_columns,
     const int64_t * data)
 {
     int err;
@@ -637,7 +637,7 @@ int mtxfile_alloc_vector_array(
     struct mtxfile * mtxfile,
     enum mtxfilefield field,
     enum mtxprecision precision,
-    int num_rows)
+    int64_t num_rows)
 {
     int err;
     if (field != mtxfile_real &&
@@ -672,7 +672,7 @@ int mtxfile_alloc_vector_array(
  */
 int mtxfile_init_vector_array_real_single(
     struct mtxfile * mtxfile,
-    int num_rows,
+    int64_t num_rows,
     const float * data)
 {
     int err = mtxfile_alloc_vector_array(mtxfile, mtxfile_real, mtx_single, num_rows);
@@ -688,7 +688,7 @@ int mtxfile_init_vector_array_real_single(
  */
 int mtxfile_init_vector_array_real_double(
     struct mtxfile * mtxfile,
-    int num_rows,
+    int64_t num_rows,
     const double * data)
 {
     int err = mtxfile_alloc_vector_array(mtxfile, mtxfile_real, mtx_double, num_rows);
@@ -705,7 +705,7 @@ int mtxfile_init_vector_array_real_double(
  */
 int mtxfile_init_vector_array_complex_single(
     struct mtxfile * mtxfile,
-    int num_rows,
+    int64_t num_rows,
     const float (* data)[2])
 {
     int err = mtxfile_alloc_vector_array(
@@ -723,7 +723,7 @@ int mtxfile_init_vector_array_complex_single(
  */
 int mtxfile_init_vector_array_complex_double(
     struct mtxfile * mtxfile,
-    int num_rows,
+    int64_t num_rows,
     const double (* data)[2])
 {
     int err = mtxfile_alloc_vector_array(
@@ -741,7 +741,7 @@ int mtxfile_init_vector_array_complex_double(
  */
 int mtxfile_init_vector_array_integer_single(
     struct mtxfile * mtxfile,
-    int num_rows,
+    int64_t num_rows,
     const int32_t * data)
 {
     int err = mtxfile_alloc_vector_array(
@@ -759,7 +759,7 @@ int mtxfile_init_vector_array_integer_single(
  */
 int mtxfile_init_vector_array_integer_double(
     struct mtxfile * mtxfile,
-    int num_rows,
+    int64_t num_rows,
     const int64_t * data)
 {
     int err = mtxfile_alloc_vector_array(
@@ -783,8 +783,8 @@ int mtxfile_alloc_matrix_coordinate(
     enum mtxfilefield field,
     enum mtxfilesymmetry symmetry,
     enum mtxprecision precision,
-    int num_rows,
-    int num_columns,
+    int64_t num_rows,
+    int64_t num_columns,
     int64_t num_nonzeros)
 {
     int err;
@@ -831,8 +831,8 @@ int mtxfile_alloc_matrix_coordinate(
 int mtxfile_init_matrix_coordinate_real_single(
     struct mtxfile * mtxfile,
     enum mtxfilesymmetry symmetry,
-    int num_rows,
-    int num_columns,
+    int64_t num_rows,
+    int64_t num_columns,
     int64_t num_nonzeros,
     const struct mtxfile_matrix_coordinate_real_single * data)
 {
@@ -853,8 +853,8 @@ int mtxfile_init_matrix_coordinate_real_single(
 int mtxfile_init_matrix_coordinate_real_double(
     struct mtxfile * mtxfile,
     enum mtxfilesymmetry symmetry,
-    int num_rows,
-    int num_columns,
+    int64_t num_rows,
+    int64_t num_columns,
     int64_t num_nonzeros,
     const struct mtxfile_matrix_coordinate_real_double * data)
 {
@@ -877,8 +877,8 @@ int mtxfile_init_matrix_coordinate_real_double(
 int mtxfile_init_matrix_coordinate_complex_single(
     struct mtxfile * mtxfile,
     enum mtxfilesymmetry symmetry,
-    int num_rows,
-    int num_columns,
+    int64_t num_rows,
+    int64_t num_columns,
     int64_t num_nonzeros,
     const struct mtxfile_matrix_coordinate_complex_single * data)
 {
@@ -900,8 +900,8 @@ int mtxfile_init_matrix_coordinate_complex_single(
 int mtxfile_init_matrix_coordinate_complex_double(
     struct mtxfile * mtxfile,
     enum mtxfilesymmetry symmetry,
-    int num_rows,
-    int num_columns,
+    int64_t num_rows,
+    int64_t num_columns,
     int64_t num_nonzeros,
     const struct mtxfile_matrix_coordinate_complex_double * data)
 {
@@ -923,8 +923,8 @@ int mtxfile_init_matrix_coordinate_complex_double(
 int mtxfile_init_matrix_coordinate_integer_single(
     struct mtxfile * mtxfile,
     enum mtxfilesymmetry symmetry,
-    int num_rows,
-    int num_columns,
+    int64_t num_rows,
+    int64_t num_columns,
     int64_t num_nonzeros,
     const struct mtxfile_matrix_coordinate_integer_single * data)
 {
@@ -946,8 +946,8 @@ int mtxfile_init_matrix_coordinate_integer_single(
 int mtxfile_init_matrix_coordinate_integer_double(
     struct mtxfile * mtxfile,
     enum mtxfilesymmetry symmetry,
-    int num_rows,
-    int num_columns,
+    int64_t num_rows,
+    int64_t num_columns,
     int64_t num_nonzeros,
     const struct mtxfile_matrix_coordinate_integer_double * data)
 {
@@ -969,8 +969,8 @@ int mtxfile_init_matrix_coordinate_integer_double(
 int mtxfile_init_matrix_coordinate_pattern(
     struct mtxfile * mtxfile,
     enum mtxfilesymmetry symmetry,
-    int num_rows,
-    int num_columns,
+    int64_t num_rows,
+    int64_t num_columns,
     int64_t num_nonzeros,
     const struct mtxfile_matrix_coordinate_pattern * data)
 {
@@ -996,7 +996,7 @@ int mtxfile_alloc_vector_coordinate(
     struct mtxfile * mtxfile,
     enum mtxfilefield field,
     enum mtxprecision precision,
-    int num_rows,
+    int64_t num_rows,
     int64_t num_nonzeros)
 {
     int err;
@@ -1037,7 +1037,7 @@ int mtxfile_alloc_vector_coordinate(
  */
 int mtxfile_init_vector_coordinate_real_single(
     struct mtxfile * mtxfile,
-    int num_rows,
+    int64_t num_rows,
     int64_t num_nonzeros,
     const struct mtxfile_vector_coordinate_real_single * data)
 {
@@ -1056,7 +1056,7 @@ int mtxfile_init_vector_coordinate_real_single(
  */
 int mtxfile_init_vector_coordinate_real_double(
     struct mtxfile * mtxfile,
-    int num_rows,
+    int64_t num_rows,
     int64_t num_nonzeros,
     const struct mtxfile_vector_coordinate_real_double * data)
 {
@@ -1076,7 +1076,7 @@ int mtxfile_init_vector_coordinate_real_double(
  */
 int mtxfile_init_vector_coordinate_complex_single(
     struct mtxfile * mtxfile,
-    int num_rows,
+    int64_t num_rows,
     int64_t num_nonzeros,
     const struct mtxfile_vector_coordinate_complex_single * data)
 {
@@ -1096,7 +1096,7 @@ int mtxfile_init_vector_coordinate_complex_single(
  */
 int mtxfile_init_vector_coordinate_complex_double(
     struct mtxfile * mtxfile,
-    int num_rows,
+    int64_t num_rows,
     int64_t num_nonzeros,
     const struct mtxfile_vector_coordinate_complex_double * data)
 {
@@ -1116,7 +1116,7 @@ int mtxfile_init_vector_coordinate_complex_double(
  */
 int mtxfile_init_vector_coordinate_integer_single(
     struct mtxfile * mtxfile,
-    int num_rows,
+    int64_t num_rows,
     int64_t num_nonzeros,
     const struct mtxfile_vector_coordinate_integer_single * data)
 {
@@ -1136,7 +1136,7 @@ int mtxfile_init_vector_coordinate_integer_single(
  */
 int mtxfile_init_vector_coordinate_integer_double(
     struct mtxfile * mtxfile,
-    int num_rows,
+    int64_t num_rows,
     int64_t num_nonzeros,
     const struct mtxfile_vector_coordinate_integer_double * data)
 {
@@ -1156,7 +1156,7 @@ int mtxfile_init_vector_coordinate_integer_double(
  */
 int mtxfile_init_vector_coordinate_pattern(
     struct mtxfile * mtxfile,
-    int num_rows,
+    int64_t num_rows,
     int64_t num_nonzeros,
     const struct mtxfile_vector_coordinate_pattern * data)
 {
@@ -2160,7 +2160,7 @@ int mtxfile_partition(
         for (int64_t k = 0; k < num_data_lines; k++) {
             int r = part_per_data_line[k];
             int q = r % num_col_parts;
-            int num_columns =
+            int64_t num_columns =
                 colpart ? colpart->part_sizes[q] : src->size.num_columns;
             sortkeys[k] = data_lines_per_part_ptr[r]
                 + ((localrowidx ? localrowidx[k] : 0) *
@@ -2893,8 +2893,8 @@ int mtxfile_reorder_rcm(
     int * starting_vertex)
 {
     int err;
-    int num_rows = mtxfile->size.num_rows;
-    int num_columns = mtxfile->size.num_columns;
+    int64_t num_rows = mtxfile->size.num_rows;
+    int64_t num_columns = mtxfile->size.num_columns;
     int64_t num_nonzeros = mtxfile->size.num_nonzeros;
     bool square = num_rows == num_columns;
     int num_vertices = square ? num_rows : num_rows + num_columns;
@@ -3082,8 +3082,8 @@ int mtxfile_reorder(
     int err;
 
     /* rectangular matrices always yield unsymmetric orderings */
-    int num_rows = mtxfile->size.num_rows;
-    int num_columns = mtxfile->size.num_columns;
+    int64_t num_rows = mtxfile->size.num_rows;
+    int64_t num_columns = mtxfile->size.num_columns;
     bool square = num_rows == num_columns;
 
     if (ordering == mtxfile_default_order) {

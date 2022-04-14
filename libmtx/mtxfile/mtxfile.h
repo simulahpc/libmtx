@@ -165,8 +165,8 @@ int mtxfile_alloc_matrix_array(
     enum mtxfilefield field,
     enum mtxfilesymmetry symmetry,
     enum mtxprecision precision,
-    int num_rows,
-    int num_columns);
+    int64_t num_rows,
+    int64_t num_columns);
 
 /**
  * ‘mtxfile_init_matrix_array_real_single()’ allocates and initialises
@@ -175,8 +175,8 @@ int mtxfile_alloc_matrix_array(
 int mtxfile_init_matrix_array_real_single(
     struct mtxfile * mtxfile,
     enum mtxfilesymmetry symmetry,
-    int num_rows,
-    int num_columns,
+    int64_t num_rows,
+    int64_t num_columns,
     const float * data);
 
 /**
@@ -186,8 +186,8 @@ int mtxfile_init_matrix_array_real_single(
 int mtxfile_init_matrix_array_real_double(
     struct mtxfile * mtxfile,
     enum mtxfilesymmetry symmetry,
-    int num_rows,
-    int num_columns,
+    int64_t num_rows,
+    int64_t num_columns,
     const double * data);
 
 /**
@@ -198,8 +198,8 @@ int mtxfile_init_matrix_array_real_double(
 int mtxfile_init_matrix_array_complex_single(
     struct mtxfile * mtxfile,
     enum mtxfilesymmetry symmetry,
-    int num_rows,
-    int num_columns,
+    int64_t num_rows,
+    int64_t num_columns,
     const float (* data)[2]);
 
 /**
@@ -210,8 +210,8 @@ int mtxfile_init_matrix_array_complex_single(
 int mtxfile_init_matrix_array_complex_double(
     struct mtxfile * mtxfile,
     enum mtxfilesymmetry symmetry,
-    int num_rows,
-    int num_columns,
+    int64_t num_rows,
+    int64_t num_columns,
     const double (* data)[2]);
 
 /**
@@ -222,8 +222,8 @@ int mtxfile_init_matrix_array_complex_double(
 int mtxfile_init_matrix_array_integer_single(
     struct mtxfile * mtxfile,
     enum mtxfilesymmetry symmetry,
-    int num_rows,
-    int num_columns,
+    int64_t num_rows,
+    int64_t num_columns,
     const int32_t * data);
 
 /**
@@ -234,8 +234,8 @@ int mtxfile_init_matrix_array_integer_single(
 int mtxfile_init_matrix_array_integer_double(
     struct mtxfile * mtxfile,
     enum mtxfilesymmetry symmetry,
-    int num_rows,
-    int num_columns,
+    int64_t num_rows,
+    int64_t num_columns,
     const int64_t * data);
 
 /*
@@ -249,7 +249,7 @@ int mtxfile_alloc_vector_array(
     struct mtxfile * mtxfile,
     enum mtxfilefield field,
     enum mtxprecision precision,
-    int num_rows);
+    int64_t num_rows);
 
 /**
  * ‘mtxfile_init_vector_array_real_single()’ allocates and initialises
@@ -257,7 +257,7 @@ int mtxfile_alloc_vector_array(
  */
 int mtxfile_init_vector_array_real_single(
     struct mtxfile * mtxfile,
-    int num_rows,
+    int64_t num_rows,
     const float * data);
 
 /**
@@ -266,7 +266,7 @@ int mtxfile_init_vector_array_real_single(
  */
 int mtxfile_init_vector_array_real_double(
     struct mtxfile * mtxfile,
-    int num_rows,
+    int64_t num_rows,
     const double * data);
 
 /**
@@ -276,7 +276,7 @@ int mtxfile_init_vector_array_real_double(
  */
 int mtxfile_init_vector_array_complex_single(
     struct mtxfile * mtxfile,
-    int num_rows,
+    int64_t num_rows,
     const float (* data)[2]);
 
 /**
@@ -286,7 +286,7 @@ int mtxfile_init_vector_array_complex_single(
  */
 int mtxfile_init_vector_array_complex_double(
     struct mtxfile * mtxfile,
-    int num_rows,
+    int64_t num_rows,
     const double (* data)[2]);
 
 /**
@@ -296,7 +296,7 @@ int mtxfile_init_vector_array_complex_double(
  */
 int mtxfile_init_vector_array_integer_single(
     struct mtxfile * mtxfile,
-    int num_rows,
+    int64_t num_rows,
     const int32_t * data);
 
 /**
@@ -306,7 +306,7 @@ int mtxfile_init_vector_array_integer_single(
  */
 int mtxfile_init_vector_array_integer_double(
     struct mtxfile * mtxfile,
-    int num_rows,
+    int64_t num_rows,
     const int64_t * data);
 
 /*
@@ -322,8 +322,8 @@ int mtxfile_alloc_matrix_coordinate(
     enum mtxfilefield field,
     enum mtxfilesymmetry symmetry,
     enum mtxprecision precision,
-    int num_rows,
-    int num_columns,
+    int64_t num_rows,
+    int64_t num_columns,
     int64_t num_nonzeros);
 
 /**
@@ -333,8 +333,8 @@ int mtxfile_alloc_matrix_coordinate(
 int mtxfile_init_matrix_coordinate_real_single(
     struct mtxfile * mtxfile,
     enum mtxfilesymmetry symmetry,
-    int num_rows,
-    int num_columns,
+    int64_t num_rows,
+    int64_t num_columns,
     int64_t num_nonzeros,
     const struct mtxfile_matrix_coordinate_real_single * data);
 
@@ -345,8 +345,8 @@ int mtxfile_init_matrix_coordinate_real_single(
 int mtxfile_init_matrix_coordinate_real_double(
     struct mtxfile * mtxfile,
     enum mtxfilesymmetry symmetry,
-    int num_rows,
-    int num_columns,
+    int64_t num_rows,
+    int64_t num_columns,
     int64_t num_nonzeros,
     const struct mtxfile_matrix_coordinate_real_double * data);
 
@@ -358,8 +358,8 @@ int mtxfile_init_matrix_coordinate_real_double(
 int mtxfile_init_matrix_coordinate_complex_single(
     struct mtxfile * mtxfile,
     enum mtxfilesymmetry symmetry,
-    int num_rows,
-    int num_columns,
+    int64_t num_rows,
+    int64_t num_columns,
     int64_t num_nonzeros,
     const struct mtxfile_matrix_coordinate_complex_single * data);
 
@@ -371,8 +371,8 @@ int mtxfile_init_matrix_coordinate_complex_single(
 int mtxfile_init_matrix_coordinate_complex_double(
     struct mtxfile * mtxfile,
     enum mtxfilesymmetry symmetry,
-    int num_rows,
-    int num_columns,
+    int64_t num_rows,
+    int64_t num_columns,
     int64_t num_nonzeros,
     const struct mtxfile_matrix_coordinate_complex_double * data);
 
@@ -384,8 +384,8 @@ int mtxfile_init_matrix_coordinate_complex_double(
 int mtxfile_init_matrix_coordinate_integer_single(
     struct mtxfile * mtxfile,
     enum mtxfilesymmetry symmetry,
-    int num_rows,
-    int num_columns,
+    int64_t num_rows,
+    int64_t num_columns,
     int64_t num_nonzeros,
     const struct mtxfile_matrix_coordinate_integer_single * data);
 
@@ -397,8 +397,8 @@ int mtxfile_init_matrix_coordinate_integer_single(
 int mtxfile_init_matrix_coordinate_integer_double(
     struct mtxfile * mtxfile,
     enum mtxfilesymmetry symmetry,
-    int num_rows,
-    int num_columns,
+    int64_t num_rows,
+    int64_t num_columns,
     int64_t num_nonzeros,
     const struct mtxfile_matrix_coordinate_integer_double * data);
 
@@ -410,8 +410,8 @@ int mtxfile_init_matrix_coordinate_integer_double(
 int mtxfile_init_matrix_coordinate_pattern(
     struct mtxfile * mtxfile,
     enum mtxfilesymmetry symmetry,
-    int num_rows,
-    int num_columns,
+    int64_t num_rows,
+    int64_t num_columns,
     int64_t num_nonzeros,
     const struct mtxfile_matrix_coordinate_pattern * data);
 
@@ -427,7 +427,7 @@ int mtxfile_alloc_vector_coordinate(
     struct mtxfile * mtxfile,
     enum mtxfilefield field,
     enum mtxprecision precision,
-    int num_rows,
+    int64_t num_rows,
     int64_t num_nonzeros);
 
 /**
@@ -436,7 +436,7 @@ int mtxfile_alloc_vector_coordinate(
  */
 int mtxfile_init_vector_coordinate_real_single(
     struct mtxfile * mtxfile,
-    int num_rows,
+    int64_t num_rows,
     int64_t num_nonzeros,
     const struct mtxfile_vector_coordinate_real_single * data);
 
@@ -446,7 +446,7 @@ int mtxfile_init_vector_coordinate_real_single(
  */
 int mtxfile_init_vector_coordinate_real_double(
     struct mtxfile * mtxfile,
-    int num_rows,
+    int64_t num_rows,
     int64_t num_nonzeros,
     const struct mtxfile_vector_coordinate_real_double * data);
 
@@ -457,7 +457,7 @@ int mtxfile_init_vector_coordinate_real_double(
  */
 int mtxfile_init_vector_coordinate_complex_single(
     struct mtxfile * mtxfile,
-    int num_rows,
+    int64_t num_rows,
     int64_t num_nonzeros,
     const struct mtxfile_vector_coordinate_complex_single * data);
 
@@ -468,7 +468,7 @@ int mtxfile_init_vector_coordinate_complex_single(
  */
 int mtxfile_init_vector_coordinate_complex_double(
     struct mtxfile * mtxfile,
-    int num_rows,
+    int64_t num_rows,
     int64_t num_nonzeros,
     const struct mtxfile_vector_coordinate_complex_double * data);
 
@@ -479,7 +479,7 @@ int mtxfile_init_vector_coordinate_complex_double(
  */
 int mtxfile_init_vector_coordinate_integer_single(
     struct mtxfile * mtxfile,
-    int num_rows,
+    int64_t num_rows,
     int64_t num_nonzeros,
     const struct mtxfile_vector_coordinate_integer_single * data);
 
@@ -490,7 +490,7 @@ int mtxfile_init_vector_coordinate_integer_single(
  */
 int mtxfile_init_vector_coordinate_integer_double(
     struct mtxfile * mtxfile,
-    int num_rows,
+    int64_t num_rows,
     int64_t num_nonzeros,
     const struct mtxfile_vector_coordinate_integer_double * data);
 
@@ -501,7 +501,7 @@ int mtxfile_init_vector_coordinate_integer_double(
  */
 int mtxfile_init_vector_coordinate_pattern(
     struct mtxfile * mtxfile,
-    int num_rows,
+    int64_t num_rows,
     int64_t num_nonzeros,
     const struct mtxfile_vector_coordinate_pattern * data);
 

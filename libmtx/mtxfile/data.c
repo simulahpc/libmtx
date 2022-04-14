@@ -425,8 +425,8 @@ int mtxfiledata_parse_matrix_coordinate_real_single(
     int64_t * bytes_read,
     char ** outendptr,
     const char * s,
-    int num_rows,
-    int num_columns)
+    int64_t num_rows,
+    int64_t num_columns)
 {
     char * endptr;
     int err = parse_int32(&data->i, s, &endptr, bytes_read);
@@ -466,8 +466,8 @@ int mtxfiledata_parse_matrix_coordinate_real_double(
     int64_t * bytes_read,
     char ** outendptr,
     const char * s,
-    int num_rows,
-    int num_columns)
+    int64_t num_rows,
+    int64_t num_columns)
 {
     char * endptr;
     int err = parse_int32(&data->i, s, &endptr, bytes_read);
@@ -507,8 +507,8 @@ int mtxfiledata_parse_matrix_coordinate_complex_single(
     int64_t * bytes_read,
     char ** outendptr,
     const char * s,
-    int num_rows,
-    int num_columns)
+    int64_t num_rows,
+    int64_t num_columns)
 {
     char * endptr;
     int err = parse_int32(&data->i, s, &endptr, bytes_read);
@@ -528,7 +528,6 @@ int mtxfiledata_parse_matrix_coordinate_complex_single(
     err = parse_float(&data->a[0], s, &endptr, bytes_read);
     if (err) return err;
     if (s == endptr || *endptr != ' ') return MTX_ERR_INVALID_MTX_DATA;
-    else if (data->j <= 0 || data->j > num_columns) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
     if (bytes_read) (*bytes_read)++;
     if (outendptr) *outendptr = endptr+1;
     s = endptr+1;
@@ -555,8 +554,8 @@ int mtxfiledata_parse_matrix_coordinate_complex_double(
     int64_t * bytes_read,
     char ** outendptr,
     const char * s,
-    int num_rows,
-    int num_columns)
+    int64_t num_rows,
+    int64_t num_columns)
 {
     char * endptr;
     int err = parse_int32(&data->i, s, &endptr, bytes_read);
@@ -576,7 +575,6 @@ int mtxfiledata_parse_matrix_coordinate_complex_double(
     err = parse_double(&data->a[0], s, &endptr, bytes_read);
     if (err) return err;
     if (s == endptr || *endptr != ' ') return MTX_ERR_INVALID_MTX_DATA;
-    else if (data->j <= 0 || data->j > num_columns) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
     if (bytes_read) (*bytes_read)++;
     if (outendptr) *outendptr = endptr+1;
     s = endptr+1;
@@ -603,8 +601,8 @@ int mtxfiledata_parse_matrix_coordinate_integer_single(
     int64_t * bytes_read,
     char ** outendptr,
     const char * s,
-    int num_rows,
-    int num_columns)
+    int64_t num_rows,
+    int64_t num_columns)
 {
     char * endptr;
     int err = parse_int32(&data->i, s, &endptr, bytes_read);
@@ -644,8 +642,8 @@ int mtxfiledata_parse_matrix_coordinate_integer_double(
     int64_t * bytes_read,
     char ** outendptr,
     const char * s,
-    int num_rows,
-    int num_columns)
+    int64_t num_rows,
+    int64_t num_columns)
 {
     char * endptr;
     int err = parse_int32(&data->i, s, &endptr, bytes_read);
@@ -685,8 +683,8 @@ int mtxfiledata_parse_matrix_coordinate_pattern(
     int64_t * bytes_read,
     char ** outendptr,
     const char * s,
-    int num_rows,
-    int num_columns)
+    int64_t num_rows,
+    int64_t num_columns)
 {
     char * endptr;
     int err = parse_int32(&data->i, s, &endptr, bytes_read);
@@ -724,7 +722,7 @@ int mtxfiledata_parse_vector_coordinate_real_single(
     int64_t * bytes_read,
     char ** outendptr,
     const char * s,
-    int num_rows)
+    int64_t num_rows)
 {
     char * endptr;
     int err = parse_int64(&data->i, s, &endptr, bytes_read);
@@ -757,7 +755,7 @@ int mtxfiledata_parse_vector_coordinate_real_double(
     int64_t * bytes_read,
     char ** outendptr,
     const char * s,
-    int num_rows)
+    int64_t num_rows)
 {
     char * endptr;
     int err = parse_int64(&data->i, s, &endptr, bytes_read);
@@ -790,7 +788,7 @@ int mtxfiledata_parse_vector_coordinate_complex_single(
     int64_t * bytes_read,
     char ** outendptr,
     const char * s,
-    int num_rows)
+    int64_t num_rows)
 {
     char * endptr;
     int err = parse_int64(&data->i, s, &endptr, bytes_read);
@@ -829,7 +827,7 @@ int mtxfiledata_parse_vector_coordinate_complex_double(
     int64_t * bytes_read,
     char ** outendptr,
     const char * s,
-    int num_rows)
+    int64_t num_rows)
 {
     char * endptr;
     int err = parse_int64(&data->i, s, &endptr, bytes_read);
@@ -868,7 +866,7 @@ int mtxfiledata_parse_vector_coordinate_integer_single(
     int64_t * bytes_read,
     char ** outendptr,
     const char * s,
-    int num_rows)
+    int64_t num_rows)
 {
     char * endptr;
     int err = parse_int64(&data->i, s, &endptr, bytes_read);
@@ -901,7 +899,7 @@ int mtxfiledata_parse_vector_coordinate_integer_double(
     int64_t * bytes_read,
     char ** outendptr,
     const char * s,
-    int num_rows)
+    int64_t num_rows)
 {
     char * endptr;
     int err = parse_int64(&data->i, s, &endptr, bytes_read);
@@ -934,7 +932,7 @@ int mtxfiledata_parse_vector_coordinate_pattern(
     int64_t * bytes_read,
     char ** outendptr,
     const char * s,
-    int num_rows)
+    int64_t num_rows)
 {
     char * endptr;
     int err = parse_int64(&data->i, s, &endptr, bytes_read);
@@ -1437,8 +1435,8 @@ int mtxfiledata_rowcolidx(
     enum mtxfileformat format,
     enum mtxfilefield field,
     enum mtxprecision precision,
-    int num_rows,
-    int num_columns,
+    int64_t num_rows,
+    int64_t num_columns,
     int64_t offset,
     int64_t size,
     int * rowidx,
@@ -1494,8 +1492,8 @@ int mtxfiledata_rowcolidx(
                 if (offset < 0 || (offset + size) / num_rows > num_columns)
                     return MTX_ERR_INDEX_OUT_OF_BOUNDS;
                 for (int64_t k = offset, l = 0; l < size; k++, l++) {
-                    int i = k / num_columns;
-                    int j = k % num_columns;
+                    int64_t i = k / num_columns;
+                    int64_t j = k % num_columns;
                     rowidx[l] = i+1;
                     colidx[l] = j+1;
                 }
@@ -1589,7 +1587,7 @@ int mtxfiledata_rowcolidx(
                 if (offset < 0 || (offset + size) / num_rows > num_columns)
                     return MTX_ERR_INDEX_OUT_OF_BOUNDS;
                 for (int64_t k = offset, l = 0; l < size; k++, l++) {
-                    int i = k / num_columns;
+                    int64_t i = k / num_columns;
                     rowidx[l] = i+1;
                 }
             } else { return MTX_ERR_INVALID_MTX_FORMAT; }
@@ -1667,7 +1665,7 @@ int mtxfiledata_rowcolidx(
                 if (offset < 0 || (offset + size) / num_rows > num_columns)
                     return MTX_ERR_INDEX_OUT_OF_BOUNDS;
                 for (int64_t k = offset, l = 0; l < size; k++, l++) {
-                    int j = k % num_columns;
+                    int64_t j = k % num_columns;
                     colidx[l] = j+1;
                 }
             } else { return MTX_ERR_INVALID_MTX_FORMAT; }
@@ -1722,7 +1720,7 @@ int mtxfiledata_rowptr(
     enum mtxfileformat format,
     enum mtxfilefield field,
     enum mtxprecision precision,
-    int num_rows,
+    int64_t num_rows,
     int64_t size,
     int64_t * rowptr,
     int * colidx,
@@ -1733,7 +1731,7 @@ int mtxfiledata_rowptr(
     if (format != mtxfile_coordinate)
         return MTX_ERR_INCOMPATIBLE_MTX_FORMAT;
 
-    for (int i = 0; i <= num_rows; i++)
+    for (int64_t i = 0; i <= num_rows; i++)
         rowptr[i] = 0;
     if (field == mtxfile_real) {
         if (precision == mtx_single) {
@@ -1763,7 +1761,7 @@ int mtxfiledata_rowptr(
         for (int64_t k = 0; k < size; k++)
             rowptr[srcdata->matrix_coordinate_pattern[k].i]++;
     } else { return MTX_ERR_INVALID_MTX_FIELD; }
-    for (int i = 1; i <= num_rows; i++)
+    for (int64_t i = 1; i <= num_rows; i++)
         rowptr[i] += rowptr[i-1];
 
     /* sort column indices rowwise */
@@ -1810,7 +1808,7 @@ int mtxfiledata_rowptr(
             for (int64_t k = 0; k < size; k++)
                 colidx[rowptr[src[k].i-1]++] = src[k].j;
         } else { return MTX_ERR_INVALID_MTX_FIELD; }
-        for (int i = num_rows; i > 0; i--)
+        for (int64_t i = num_rows; i > 0; i--)
             rowptr[i] = rowptr[i-1];
         rowptr[0] = 0;
     }
@@ -1867,7 +1865,7 @@ int mtxfiledata_rowptr(
             /* nothing to be done */
         } else { return MTX_ERR_INVALID_MTX_FIELD; }
         if (field != mtxfile_pattern) {
-            for (int i = num_rows; i > 0; i--)
+            for (int64_t i = num_rows; i > 0; i--)
                 rowptr[i] = rowptr[i-1];
             rowptr[0] = 0;
         }
@@ -1902,7 +1900,7 @@ int mtxfiledata_colptr(
     enum mtxfileformat format,
     enum mtxfilefield field,
     enum mtxprecision precision,
-    int num_columns,
+    int64_t num_columns,
     int64_t size,
     int64_t * colptr,
     int * rowidx,
@@ -1912,7 +1910,7 @@ int mtxfiledata_colptr(
         return MTX_ERR_INCOMPATIBLE_MTX_OBJECT;
     if (format != mtxfile_coordinate)
         return MTX_ERR_INCOMPATIBLE_MTX_FORMAT;
-    for (int j = 0; j <= num_columns; j++)
+    for (int64_t j = 0; j <= num_columns; j++)
         colptr[j] = 0;
     if (field == mtxfile_real) {
         if (precision == mtx_single) {
@@ -1942,7 +1940,7 @@ int mtxfiledata_colptr(
         for (int64_t k = 0; k < size; k++)
             colptr[srcdata->matrix_coordinate_pattern[k].j]++;
     } else { return MTX_ERR_INVALID_MTX_FIELD; }
-    for (int j = 1; j <= num_columns; j++)
+    for (int64_t j = 1; j <= num_columns; j++)
         colptr[j] += colptr[j-1];
 
     /* sort row indices columnwise */
@@ -1989,7 +1987,7 @@ int mtxfiledata_colptr(
             for (int64_t k = 0; k < size; k++)
                 rowidx[colptr[src[k].j-1]++] = src[k].i;
         } else { return MTX_ERR_INVALID_MTX_FIELD; }
-        for (int i = num_columns; i > 0; i--)
+        for (int64_t i = num_columns; i > 0; i--)
             colptr[i] = colptr[i-1];
         colptr[0] = 0;
     }
@@ -2046,7 +2044,7 @@ int mtxfiledata_colptr(
             /* nothing to be done */
         } else { return MTX_ERR_INVALID_MTX_FIELD; }
         if (field != mtxfile_pattern) {
-            for (int i = num_columns; i > 0; i--)
+            for (int64_t i = num_columns; i > 0; i--)
                 colptr[i] = colptr[i-1];
             colptr[0] = 0;
         }
@@ -2679,8 +2677,8 @@ static int mtxfiledata_parse(
     enum mtxfileformat format,
     enum mtxfilefield field,
     enum mtxprecision precision,
-    int num_rows,
-    int num_columns,
+    int64_t num_rows,
+    int64_t num_columns,
     int64_t i)
 {
     if (format == mtxfile_array) {
@@ -2844,8 +2842,8 @@ int mtxfiledata_fread(
     enum mtxfileformat format,
     enum mtxfilefield field,
     enum mtxprecision precision,
-    int num_rows,
-    int num_columns,
+    int64_t num_rows,
+    int64_t num_columns,
     int64_t size,
     int64_t offset)
 {
@@ -2959,8 +2957,8 @@ int mtxfiledata_gzread(
     enum mtxfileformat format,
     enum mtxfilefield field,
     enum mtxprecision precision,
-    int num_rows,
-    int num_columns,
+    int64_t num_rows,
+    int64_t num_columns,
     int64_t size,
     int64_t offset)
 {
@@ -3928,8 +3926,8 @@ int mtxfiledata_transpose(
     enum mtxfileformat format,
     enum mtxfilefield field,
     enum mtxprecision precision,
-    int num_rows,
-    int num_columns,
+    int64_t num_rows,
+    int64_t num_columns,
     int64_t size)
 {
     int err;
@@ -4007,18 +4005,18 @@ int mtxfiledata_transpose(
             int64_t k, l;
             if (field == mtxfile_real) {
                 if (precision == mtx_single) {
-                    for (int i = 0; i < num_rows; i++) {
-                        for (int j = 0; j < num_columns; j++) {
-                            k = (int64_t) i * (int64_t) num_columns + (int64_t) j;
-                            l = (int64_t) j * (int64_t) num_rows + (int64_t) i;
+                    for (int64_t i = 0; i < num_rows; i++) {
+                        for (int64_t j = 0; j < num_columns; j++) {
+                            k = i * num_columns + j;
+                            l = j * num_rows + i;
                             data->array_real_single[l] = copy.array_real_single[k];
                         }
                     }
                 } else if (precision == mtx_double) {
-                    for (int i = 0; i < num_rows; i++) {
-                        for (int j = 0; j < num_columns; j++) {
-                            k = (int64_t) i * (int64_t) num_columns + (int64_t) j;
-                            l = (int64_t) j * (int64_t) num_rows + (int64_t) i;
+                    for (int64_t i = 0; i < num_rows; i++) {
+                        for (int64_t j = 0; j < num_columns; j++) {
+                            k = i * num_columns + j;
+                            l = j * num_rows + i;
                             data->array_real_double[l] = copy.array_real_double[k];
                         }
                     }
@@ -4028,10 +4026,10 @@ int mtxfiledata_transpose(
                 }
             } else if (field == mtxfile_complex) {
                 if (precision == mtx_single) {
-                    for (int i = 0; i < num_rows; i++) {
-                        for (int j = 0; j < num_columns; j++) {
-                            k = (int64_t) i * (int64_t) num_columns + (int64_t) j;
-                            l = (int64_t) j * (int64_t) num_rows + (int64_t) i;
+                    for (int64_t i = 0; i < num_rows; i++) {
+                        for (int64_t j = 0; j < num_columns; j++) {
+                            k = i * num_columns + j;
+                            l = j * num_rows + i;
                             data->array_complex_single[l][0] =
                                 copy.array_complex_single[k][0];
                             data->array_complex_single[l][1] =
@@ -4039,10 +4037,10 @@ int mtxfiledata_transpose(
                         }
                     }
                 } else if (precision == mtx_double) {
-                    for (int i = 0; i < num_rows; i++) {
-                        for (int j = 0; j < num_columns; j++) {
-                            k = (int64_t) i * (int64_t) num_columns + (int64_t) j;
-                            l = (int64_t) j * (int64_t) num_rows + (int64_t) i;
+                    for (int64_t i = 0; i < num_rows; i++) {
+                        for (int64_t j = 0; j < num_columns; j++) {
+                            k = i * num_columns + j;
+                            l = j * num_rows + i;
                             data->array_complex_double[l][0] =
                                 copy.array_complex_double[k][0];
                             data->array_complex_double[l][1] =
@@ -4055,10 +4053,10 @@ int mtxfiledata_transpose(
                 }
             } else if (field == mtxfile_integer) {
                 if (precision == mtx_single) {
-                    for (int i = 0; i < num_rows; i++) {
-                        for (int j = 0; j < num_columns; j++) {
-                            k = (int64_t) i * (int64_t) num_columns + (int64_t) j;
-                            l = (int64_t) j * (int64_t) num_rows + (int64_t) i;
+                    for (int64_t i = 0; i < num_rows; i++) {
+                        for (int64_t j = 0; j < num_columns; j++) {
+                            k = i * num_columns + j;
+                            l = j * num_rows + i;
                             data->array_integer_single[l] =
                                 copy.array_integer_single[k];
                             data->array_integer_single[l] =
@@ -4066,10 +4064,10 @@ int mtxfiledata_transpose(
                         }
                     }
                 } else if (precision == mtx_double) {
-                    for (int i = 0; i < num_rows; i++) {
-                        for (int j = 0; j < num_columns; j++) {
-                            k = (int64_t) i * (int64_t) num_columns + (int64_t) j;
-                            l = (int64_t) j * (int64_t) num_rows + (int64_t) i;
+                    for (int64_t i = 0; i < num_rows; i++) {
+                        for (int64_t j = 0; j < num_columns; j++) {
+                            k = i * num_columns + j;
+                            l = j * num_rows + i;
                             data->array_integer_double[l] =
                                 copy.array_integer_double[k];
                         }
@@ -4110,8 +4108,8 @@ int mtxfiledata_permute(
     enum mtxfileformat format,
     enum mtxfilefield field,
     enum mtxprecision precision,
-    int num_rows,
-    int num_columns,
+    int64_t num_rows,
+    int64_t num_columns,
     int64_t size,
     int64_t * perm)
 {
@@ -4361,8 +4359,8 @@ int mtxfiledata_sortkey_row_major(
     enum mtxfileformat format,
     enum mtxfilefield field,
     enum mtxprecision precision,
-    int num_rows,
-    int num_columns,
+    int64_t num_rows,
+    int64_t num_columns,
     int64_t offset,
     int64_t size,
     uint64_t * keys)
@@ -4371,11 +4369,11 @@ int mtxfiledata_sortkey_row_major(
 
     if (object == mtxfile_matrix) {
         if (format == mtxfile_array) {
-            if ((offset + size) > (int64_t) num_rows * (int64_t) num_columns)
+            if ((offset + size) > num_rows * num_columns)
                 return MTX_ERR_INDEX_OUT_OF_BOUNDS;
             for (int64_t k = offset, l = 0; l < size; k++, l++) {
-                int i = k / num_columns;
-                int j = k % num_columns;
+                int64_t i = k / num_columns;
+                int64_t j = k % num_columns;
                 keys[l] = ((uint64_t) i << 32) | j;
             }
         } else if (format == mtxfile_coordinate) {
@@ -4426,7 +4424,7 @@ int mtxfiledata_sortkey_row_major(
         if (format == mtxfile_array) {
             if (num_columns != -1)
                 return MTX_ERR_INVALID_MTX_SIZE;
-            if (offset + size > (int64_t) num_rows)
+            if (offset + size > num_rows)
                 return MTX_ERR_INDEX_OUT_OF_BOUNDS;
             for (int64_t k = offset, l = 0; l < size; k++, l++)
                 keys[l] = k;
@@ -4498,8 +4496,8 @@ int mtxfiledata_sortkey_column_major(
     enum mtxfileformat format,
     enum mtxfilefield field,
     enum mtxprecision precision,
-    int num_rows,
-    int num_columns,
+    int64_t num_rows,
+    int64_t num_columns,
     int64_t offset,
     int64_t size,
     uint64_t * keys)
@@ -4508,11 +4506,11 @@ int mtxfiledata_sortkey_column_major(
 
     if (object == mtxfile_matrix) {
         if (format == mtxfile_array) {
-            if ((offset + size) > (int64_t) num_rows * (int64_t) num_columns)
+            if ((offset + size) > num_rows * num_columns)
                 return MTX_ERR_INDEX_OUT_OF_BOUNDS;
             for (int64_t k = offset, l = 0; l < size; k++, l++) {
-                int i = k / num_columns;
-                int j = k % num_columns;
+                int64_t i = k / num_columns;
+                int64_t j = k % num_columns;
                 keys[l] = ((uint64_t) j << 32) | i;
             }
         } else if (format == mtxfile_coordinate) {
@@ -4593,8 +4591,8 @@ int mtxfiledata_sortkey_morton(
     enum mtxfileformat format,
     enum mtxfilefield field,
     enum mtxprecision precision,
-    int num_rows,
-    int num_columns,
+    int64_t num_rows,
+    int64_t num_columns,
     int64_t offset,
     int64_t size,
     uint64_t * keys)
@@ -4603,11 +4601,11 @@ int mtxfiledata_sortkey_morton(
 
     if (object == mtxfile_matrix) {
         if (format == mtxfile_array) {
-            if ((offset + size) > (int64_t) num_rows * (int64_t) num_columns)
+            if ((offset + size) > num_rows * num_columns)
                 return MTX_ERR_INDEX_OUT_OF_BOUNDS;
             for (int64_t k = offset, l = 0; l < size; k++, l++) {
-                int i = k / num_columns;
-                int j = k % num_columns;
+                int64_t i = k / num_columns;
+                int64_t j = k % num_columns;
                 keys[l] = xy_to_morton(j, i);
             }
         } else if (format == mtxfile_coordinate) {
@@ -4673,8 +4671,8 @@ int mtxfiledata_sort_keys(
     enum mtxfileformat format,
     enum mtxfilefield field,
     enum mtxprecision precision,
-    int num_rows,
-    int num_columns,
+    int64_t num_rows,
+    int64_t num_columns,
     int64_t size,
     uint64_t * keys,
     int64_t * sorting_permutation)
@@ -4726,8 +4724,8 @@ int mtxfiledata_sort_row_major(
     enum mtxfileformat format,
     enum mtxfilefield field,
     enum mtxprecision precision,
-    int num_rows,
-    int num_columns,
+    int64_t num_rows,
+    int64_t num_columns,
     int64_t size,
     int64_t * sorting_permutation)
 {
@@ -4775,8 +4773,8 @@ int mtxfiledata_sort_column_major(
     enum mtxfileformat format,
     enum mtxfilefield field,
     enum mtxprecision precision,
-    int num_rows,
-    int num_columns,
+    int64_t num_rows,
+    int64_t num_columns,
     int64_t size,
     int64_t * sorting_permutation)
 {
@@ -4818,8 +4816,8 @@ int mtxfiledata_sort_morton(
     enum mtxfileformat format,
     enum mtxfilefield field,
     enum mtxprecision precision,
-    int num_rows,
-    int num_columns,
+    int64_t num_rows,
+    int64_t num_columns,
     int64_t size,
     int64_t * sorting_permutation)
 {
@@ -4877,8 +4875,8 @@ int mtxfiledata_compact(
     enum mtxfileformat format,
     enum mtxfilefield field,
     enum mtxprecision precision,
-    int num_rows,
-    int num_columns,
+    int64_t num_rows,
+    int64_t num_columns,
     int64_t size,
     int64_t * perm,
     int64_t * outsize)
@@ -5231,8 +5229,8 @@ int mtxfiledata_partition(
     enum mtxfileformat format,
     enum mtxfilefield field,
     enum mtxprecision precision,
-    int num_rows,
-    int num_columns,
+    int64_t num_rows,
+    int64_t num_columns,
     int64_t offset,
     int64_t size,
     const struct mtxpartition * rowpart,
@@ -5363,21 +5361,21 @@ int mtxfiledata_reorder(
     enum mtxprecision precision,
     int64_t size,
     int64_t offset,
-    int num_rows,
+    int64_t num_rows,
     const int * rowperm,
-    int num_columns,
+    int64_t num_columns,
     const int * colperm)
 {
     int err;
     if (format == mtxfile_array) {
         if (rowperm) {
-            for (int i = 0; i < num_rows; i++) {
+            for (int64_t i = 0; i < num_rows; i++) {
                 if (rowperm[i] <= 0 || rowperm[i] > num_rows)
                     return MTX_ERR_INDEX_OUT_OF_BOUNDS;
             }
         }
         if (colperm) {
-            for (int i = 0; i < num_columns; i++) {
+            for (int64_t i = 0; i < num_columns; i++) {
                 if (colperm[i] <= 0 || colperm[i] > num_columns)
                     return MTX_ERR_INDEX_OUT_OF_BOUNDS;
             }
@@ -5404,7 +5402,7 @@ int mtxfiledata_reorder(
                     if (rowperm && colperm) {
                         for (int64_t i = 0; i < num_rows; i++) {
                             for (int64_t j = 0; j < num_columns; j++) {
-                                int64_t k = (int64_t) i*num_columns+j;
+                                int64_t k = i*num_columns+j;
                                 int64_t l = (int64_t) (rowperm[i]-1)*num_columns + colperm[j]-1;
                                 dst[k] = src[l];
                             }
@@ -5412,7 +5410,7 @@ int mtxfiledata_reorder(
                     } else if (rowperm) {
                         for (int64_t i = 0; i < num_rows; i++) {
                             for (int64_t j = 0; j < num_columns; j++) {
-                                int64_t k = (int64_t) i*num_columns+j;
+                                int64_t k = i*num_columns+j;
                                 int64_t l = (int64_t) (rowperm[i]-1)*num_columns + j;
                                 dst[k] = src[l];
                             }
@@ -5420,7 +5418,7 @@ int mtxfiledata_reorder(
                     } else if (colperm) {
                         for (int64_t i = 0; i < num_rows; i++) {
                             for (int64_t j = 0; j < num_columns; j++) {
-                                int64_t k = (int64_t) i*num_columns+j;
+                                int64_t k = i*num_columns+j;
                                 int64_t l = (int64_t) i*num_columns + colperm[j]-1;
                                 dst[k] = src[l];
                             }
@@ -5432,7 +5430,7 @@ int mtxfiledata_reorder(
                     if (rowperm && colperm) {
                         for (int64_t i = 0; i < num_rows; i++) {
                             for (int64_t j = 0; j < num_columns; j++) {
-                                int64_t k = (int64_t) i*num_columns+j;
+                                int64_t k = i*num_columns+j;
                                 int64_t l = (int64_t) (rowperm[i]-1)*num_columns + colperm[j]-1;
                                 dst[k] = src[l];
                             }
@@ -5440,7 +5438,7 @@ int mtxfiledata_reorder(
                     } else if (rowperm) {
                         for (int64_t i = 0; i < num_rows; i++) {
                             for (int64_t j = 0; j < num_columns; j++) {
-                                int64_t k = (int64_t) i*num_columns+j;
+                                int64_t k = i*num_columns+j;
                                 int64_t l = (int64_t) (rowperm[i]-1)*num_columns + j;
                                 dst[k] = src[l];
                             }
@@ -5448,7 +5446,7 @@ int mtxfiledata_reorder(
                     } else if (colperm) {
                         for (int64_t i = 0; i < num_rows; i++) {
                             for (int64_t j = 0; j < num_columns; j++) {
-                                int64_t k = (int64_t) i*num_columns+j;
+                                int64_t k = i*num_columns+j;
                                 int64_t l = (int64_t) i*num_columns + colperm[j]-1;
                                 dst[k] = src[l];
                             }
@@ -5465,7 +5463,7 @@ int mtxfiledata_reorder(
                     if (rowperm && colperm) {
                         for (int64_t i = 0; i < num_rows; i++) {
                             for (int64_t j = 0; j < num_columns; j++) {
-                                int64_t k = (int64_t) i*num_columns+j;
+                                int64_t k = i*num_columns+j;
                                 int64_t l = (int64_t) (rowperm[i]-1)*num_columns + colperm[j]-1;
                                 dst[k][0] = src[l][0];
                                 dst[k][1] = src[l][1];
@@ -5474,7 +5472,7 @@ int mtxfiledata_reorder(
                     } else if (rowperm) {
                         for (int64_t i = 0; i < num_rows; i++) {
                             for (int64_t j = 0; j < num_columns; j++) {
-                                int64_t k = (int64_t) i*num_columns+j;
+                                int64_t k = i*num_columns+j;
                                 int64_t l = (int64_t) (rowperm[i]-1)*num_columns + j;
                                 dst[k][0] = src[l][0];
                                 dst[k][1] = src[l][1];
@@ -5483,7 +5481,7 @@ int mtxfiledata_reorder(
                     } else if (colperm) {
                         for (int64_t i = 0; i < num_rows; i++) {
                             for (int64_t j = 0; j < num_columns; j++) {
-                                int64_t k = (int64_t) i*num_columns+j;
+                                int64_t k = i*num_columns+j;
                                 int64_t l = (int64_t) i*num_columns + colperm[j]-1;
                                 dst[k][0] = src[l][0];
                                 dst[k][1] = src[l][1];
@@ -5496,7 +5494,7 @@ int mtxfiledata_reorder(
                     if (rowperm && colperm) {
                         for (int64_t i = 0; i < num_rows; i++) {
                             for (int64_t j = 0; j < num_columns; j++) {
-                                int64_t k = (int64_t) i*num_columns+j;
+                                int64_t k = i*num_columns+j;
                                 int64_t l = (int64_t) (rowperm[i]-1)*num_columns + colperm[j]-1;
                                 dst[k][0] = src[l][0];
                                 dst[k][1] = src[l][1];
@@ -5505,7 +5503,7 @@ int mtxfiledata_reorder(
                     } else if (rowperm) {
                         for (int64_t i = 0; i < num_rows; i++) {
                             for (int64_t j = 0; j < num_columns; j++) {
-                                int64_t k = (int64_t) i*num_columns+j;
+                                int64_t k = i*num_columns+j;
                                 int64_t l = (int64_t) (rowperm[i]-1)*num_columns + j;
                                 dst[k][0] = src[l][0];
                                 dst[k][1] = src[l][1];
@@ -5514,7 +5512,7 @@ int mtxfiledata_reorder(
                     } else if (colperm) {
                         for (int64_t i = 0; i < num_rows; i++) {
                             for (int64_t j = 0; j < num_columns; j++) {
-                                int64_t k = (int64_t) i*num_columns+j;
+                                int64_t k = i*num_columns+j;
                                 int64_t l = (int64_t) i*num_columns + colperm[j]-1;
                                 dst[k][0] = src[l][0];
                                 dst[k][1] = src[l][1];
@@ -5532,7 +5530,7 @@ int mtxfiledata_reorder(
                     if (rowperm && colperm) {
                         for (int64_t i = 0; i < num_rows; i++) {
                             for (int64_t j = 0; j < num_columns; j++) {
-                                int64_t k = (int64_t) i*num_columns+j;
+                                int64_t k = i*num_columns+j;
                                 int64_t l = (int64_t) (rowperm[i]-1)*num_columns + colperm[j]-1;
                                 dst[k] = src[l];
                             }
@@ -5540,7 +5538,7 @@ int mtxfiledata_reorder(
                     } else if (rowperm) {
                         for (int64_t i = 0; i < num_rows; i++) {
                             for (int64_t j = 0; j < num_columns; j++) {
-                                int64_t k = (int64_t) i*num_columns+j;
+                                int64_t k = i*num_columns+j;
                                 int64_t l = (int64_t) (rowperm[i]-1)*num_columns + j;
                                 dst[k] = src[l];
                             }
@@ -5548,7 +5546,7 @@ int mtxfiledata_reorder(
                     } else if (colperm) {
                         for (int64_t i = 0; i < num_rows; i++) {
                             for (int64_t j = 0; j < num_columns; j++) {
-                                int64_t k = (int64_t) i*num_columns+j;
+                                int64_t k = i*num_columns+j;
                                 int64_t l = (int64_t) i*num_columns + colperm[j]-1;
                                 dst[k] = src[l];
                             }
@@ -5560,7 +5558,7 @@ int mtxfiledata_reorder(
                     if (rowperm && colperm) {
                         for (int64_t i = 0; i < num_rows; i++) {
                             for (int64_t j = 0; j < num_columns; j++) {
-                                int64_t k = (int64_t) i*num_columns+j;
+                                int64_t k = i*num_columns+j;
                                 int64_t l = (int64_t) (rowperm[i]-1)*num_columns + colperm[j]-1;
                                 dst[k] = src[l];
                             }
@@ -5568,7 +5566,7 @@ int mtxfiledata_reorder(
                     } else if (rowperm) {
                         for (int64_t i = 0; i < num_rows; i++) {
                             for (int64_t j = 0; j < num_columns; j++) {
-                                int64_t k = (int64_t) i*num_columns+j;
+                                int64_t k = i*num_columns+j;
                                 int64_t l = (int64_t) (rowperm[i]-1)*num_columns + j;
                                 dst[k] = src[l];
                             }
@@ -5576,7 +5574,7 @@ int mtxfiledata_reorder(
                     } else if (colperm) {
                         for (int64_t i = 0; i < num_rows; i++) {
                             for (int64_t j = 0; j < num_columns; j++) {
-                                int64_t k = (int64_t) i*num_columns+j;
+                                int64_t k = i*num_columns+j;
                                 int64_t l = (int64_t) i*num_columns + colperm[j]-1;
                                 dst[k] = src[l];
                             }
@@ -5597,14 +5595,14 @@ int mtxfiledata_reorder(
                     const float * src = original.array_real_single;
                     float * dst = data->array_real_single;
                     if (rowperm) {
-                        for (int i = 0; i < num_rows; i++)
+                        for (int64_t i = 0; i < num_rows; i++)
                             dst[i] = src[rowperm[i]-1];
                     }
                 } else if (precision == mtx_double) {
                     const double * src = original.array_real_double;
                     double * dst = data->array_real_double;
                     if (rowperm) {
-                        for (int i = 0; i < num_rows; i++)
+                        for (int64_t i = 0; i < num_rows; i++)
                             dst[i] = src[rowperm[i]-1];
                     }
                 } else {
@@ -5616,7 +5614,7 @@ int mtxfiledata_reorder(
                     const float (* src)[2] = original.array_complex_single;
                     float (* dst)[2] = data->array_complex_single;
                     if (rowperm) {
-                        for (int i = 0; i < num_rows; i++) {
+                        for (int64_t i = 0; i < num_rows; i++) {
                             dst[i][0] = src[rowperm[i]-1][0];
                             dst[i][1] = src[rowperm[i]-1][1];
                         }
@@ -5625,7 +5623,7 @@ int mtxfiledata_reorder(
                     const double (* src)[2] = original.array_complex_double;
                     double (* dst)[2] = data->array_complex_double;
                     if (rowperm) {
-                        for (int i = 0; i < num_rows; i++) {
+                        for (int64_t i = 0; i < num_rows; i++) {
                             dst[i][0] = src[rowperm[i]-1][0];
                             dst[i][1] = src[rowperm[i]-1][1];
                         }
@@ -5639,14 +5637,14 @@ int mtxfiledata_reorder(
                     const int32_t * src = original.array_integer_single;
                     int32_t * dst = data->array_integer_single;
                     if (rowperm) {
-                        for (int i = 0; i < num_rows; i++)
+                        for (int64_t i = 0; i < num_rows; i++)
                             dst[i] = src[rowperm[i]-1];
                     }
                 } else if (precision == mtx_double) {
                     const int64_t * src = original.array_integer_double;
                     int64_t * dst = data->array_integer_double;
                     if (rowperm) {
-                        for (int i = 0; i < num_rows; i++)
+                        for (int64_t i = 0; i < num_rows; i++)
                             dst[i] = src[rowperm[i]-1];
                     }
                 } else {
