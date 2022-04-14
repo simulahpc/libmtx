@@ -50,14 +50,14 @@ struct mtxfilesize
     /**
      * ‘num_rows’ is the number of rows in the matrix or vector.
      */
-    int num_rows;
+    int64_t num_rows;
 
     /**
      * ‘num_columns’ is the number of columns in the matrix if
      * ‘object’ is ‘matrix’. Otherwise, if ‘object’ is ‘vector’, then
      * ‘num_columns’ is equal to ‘-1’.
      */
-    int num_columns;
+    int64_t num_columns;
 
     /**
      * ‘num_nonzeros’ is the number of nonzero matrix or vector

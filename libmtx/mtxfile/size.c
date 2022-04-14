@@ -60,14 +60,14 @@ static int mtxfilesize_parse_matrix_array(
 {
     int err;
     const char * t = s;
-    err = parse_int32(t, " ", &size->num_rows, &t);
+    err = parse_int64(t, " ", &size->num_rows, &t);
     if (err == EINVAL) {
         return MTX_ERR_INVALID_MTX_SIZE;
     } else if (err) {
         errno = err;
         return MTX_ERR_ERRNO;
     }
-    err = parse_int32(t, "\n", &size->num_columns, &t);
+    err = parse_int64(t, "\n", &size->num_columns, &t);
     if (err == EINVAL) {
         return MTX_ERR_INVALID_MTX_SIZE;
     } else if (err) {
@@ -94,14 +94,14 @@ static int mtxfilesize_parse_matrix_coordinate(
 {
     int err;
     const char * t = s;
-    err = parse_int32(t, " ", &size->num_rows, &t);
+    err = parse_int64(t, " ", &size->num_rows, &t);
     if (err == EINVAL) {
         return MTX_ERR_INVALID_MTX_SIZE;
     } else if (err) {
         errno = err;
         return MTX_ERR_ERRNO;
     }
-    err = parse_int32(t, " ", &size->num_columns, &t);
+    err = parse_int64(t, " ", &size->num_columns, &t);
     if (err == EINVAL) {
         return MTX_ERR_INVALID_MTX_SIZE;
     } else if (err) {
@@ -134,7 +134,7 @@ int mtxfilesize_parse_vector_array(
 {
     int err;
     const char * t = s;
-    err = parse_int32(t, "\n", &size->num_rows, &t);
+    err = parse_int64(t, "\n", &size->num_rows, &t);
     if (err == EINVAL) {
         return MTX_ERR_INVALID_MTX_SIZE;
     } else if (err) {
@@ -162,7 +162,7 @@ int mtxfilesize_parse_vector_coordinate(
 {
     int err;
     const char * t = s;
-    err = parse_int32(t, " ", &size->num_rows, &t);
+    err = parse_int64(t, " ", &size->num_rows, &t);
     if (err == EINVAL) {
         return MTX_ERR_INVALID_MTX_SIZE;
     } else if (err) {
@@ -481,19 +481,21 @@ int mtxfilesize_fwrite(
     int ret;
     if (object == mtxfile_matrix) {
         if (format == mtxfile_array) {
-            ret = fprintf(f, "%d %d\n", size->num_rows, size->num_columns);
+            ret = fprintf(f, "%"PRId64" %"PRId64"\n",
+                          size->num_rows, size->num_columns);
         } else if (format == mtxfile_coordinate) {
             ret = fprintf(
-                f, "%d %d %"PRId64"\n",
+                f, "%"PRId64" %"PRId64" %"PRId64"\n",
                 size->num_rows, size->num_columns, size->num_nonzeros);
         } else {
             return MTX_ERR_INVALID_MTX_FORMAT;
         }
     } else if (object == mtxfile_vector) {
         if (format == mtxfile_array) {
-            ret = fprintf(f, "%d\n", size->num_rows);
+            ret = fprintf(f, "%"PRId64"\n", size->num_rows);
         } else if (format == mtxfile_coordinate) {
-            ret = fprintf(f, "%d %"PRId64"\n", size->num_rows, size->num_nonzeros);
+            ret = fprintf(f, "%"PRId64" %"PRId64"\n",
+                          size->num_rows, size->num_nonzeros);
         } else {
             return MTX_ERR_INVALID_MTX_FORMAT;
         }
@@ -525,19 +527,21 @@ int mtxfilesize_gzwrite(
     int ret;
     if (object == mtxfile_matrix) {
         if (format == mtxfile_array) {
-            ret = gzprintf(f, "%d %d\n", size->num_rows, size->num_columns);
+            ret = gzprintf(f, "%"PRId64" %"PRId64"\n",
+                           size->num_rows, size->num_columns);
         } else if (format == mtxfile_coordinate) {
             ret = gzprintf(
-                f, "%d %d %"PRId64"\n",
+                f, "%"PRId64" %"PRId64" %"PRId64"\n",
                 size->num_rows, size->num_columns, size->num_nonzeros);
         } else {
             return MTX_ERR_INVALID_MTX_FORMAT;
         }
     } else if (object == mtxfile_vector) {
         if (format == mtxfile_array) {
-            ret = gzprintf(f, "%d\n", size->num_rows);
+            ret = gzprintf(f, "%"PRId64"\n", size->num_rows);
         } else if (format == mtxfile_coordinate) {
-            ret = gzprintf(f, "%d %"PRId64"\n", size->num_rows, size->num_nonzeros);
+            ret = gzprintf(f, "%"PRId64" %"PRId64"\n",
+                           size->num_rows, size->num_nonzeros);
         } else {
             return MTX_ERR_INVALID_MTX_FORMAT;
         }
@@ -563,7 +567,7 @@ int mtxfilesize_gzwrite(
 int mtxfilesize_transpose(
     struct mtxfilesize * size)
 {
-    int num_rows = size->num_rows;
+    int64_t num_rows = size->num_rows;
     size->num_rows = size->num_columns;
     size->num_columns = num_rows;
     return MTX_SUCCESS;
@@ -634,11 +638,11 @@ int mtxfilesize_send(
     struct mtxdisterror * disterr)
 {
     disterr->err = MPI_Send(
-        &size->num_rows, 1, MPI_INT32_T, dest, tag, comm);
+        &size->num_rows, 1, MPI_INT64_T, dest, tag, comm);
     if (disterr->err)
         return MTX_ERR_MPI;
     disterr->err = MPI_Send(
-        &size->num_columns, 1, MPI_INT32_T, dest, tag, comm);
+        &size->num_columns, 1, MPI_INT64_T, dest, tag, comm);
     if (disterr->err)
         return MTX_ERR_MPI;
     disterr->err = MPI_Send(
@@ -663,11 +667,11 @@ int mtxfilesize_recv(
     struct mtxdisterror * disterr)
 {
     disterr->err = MPI_Recv(
-        &size->num_rows, 1, MPI_INT32_T, source, tag, comm, MPI_STATUS_IGNORE);
+        &size->num_rows, 1, MPI_INT64_T, source, tag, comm, MPI_STATUS_IGNORE);
     if (disterr->err)
         return MTX_ERR_MPI;
     disterr->err = MPI_Recv(
-        &size->num_columns, 1, MPI_INT32_T, source, tag, comm, MPI_STATUS_IGNORE);
+        &size->num_columns, 1, MPI_INT64_T, source, tag, comm, MPI_STATUS_IGNORE);
     if (disterr->err)
         return MTX_ERR_MPI;
     disterr->err = MPI_Recv(
@@ -693,11 +697,11 @@ int mtxfilesize_bcast(
 {
     int err;
     err = MPI_Bcast(
-        &size->num_rows, 1, MPI_INT32_T, root, comm);
+        &size->num_rows, 1, MPI_INT64_T, root, comm);
     if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
     err = MPI_Bcast(
-        &size->num_columns, 1, MPI_INT32_T, root, comm);
+        &size->num_columns, 1, MPI_INT64_T, root, comm);
     if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
     err = MPI_Bcast(
@@ -790,7 +794,7 @@ int mtxfilesize_scatterv(
                 return MTX_ERR_MPI_COLLECTIVE;
             if (rank == root)
                 recvsize->num_columns = sendsize->num_columns;
-            err = MPI_Bcast(&recvsize->num_columns, 1, MPI_INT32_T, root, comm);
+            err = MPI_Bcast(&recvsize->num_columns, 1, MPI_INT64_T, root, comm);
             if (mtxdisterror_allreduce(disterr, err))
                 return MTX_ERR_MPI_COLLECTIVE;
             err = (recvsize->num_columns == 0)
@@ -815,12 +819,12 @@ int mtxfilesize_scatterv(
             return MTX_ERR_MPI_COLLECTIVE;
         if (rank == root)
             recvsize->num_rows = sendsize->num_rows;
-        err = MPI_Bcast(&recvsize->num_rows, 1, MPI_INT32_T, root, comm);
+        err = MPI_Bcast(&recvsize->num_rows, 1, MPI_INT64_T, root, comm);
         if (mtxdisterror_allreduce(disterr, err))
             return MTX_ERR_MPI_COLLECTIVE;
         if (rank == root)
             recvsize->num_columns = sendsize->num_columns;
-        err = MPI_Bcast(&recvsize->num_columns, 1, MPI_INT32_T, root, comm);
+        err = MPI_Bcast(&recvsize->num_columns, 1, MPI_INT64_T, root, comm);
         if (mtxdisterror_allreduce(disterr, err))
             return MTX_ERR_MPI_COLLECTIVE;
         recvsize->num_nonzeros = recvcount;
