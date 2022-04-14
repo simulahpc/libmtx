@@ -822,7 +822,7 @@ int mtxdistvector_to_mtxfile(
      * Market format */
     struct mtxfile sendmtxfile;
     err = mtxvector_to_mtxfile(
-        &sendmtxfile, &src->interior, mtxfmt);
+        &sendmtxfile, &src->interior, 0, NULL, mtxfmt);
     if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
 
@@ -965,7 +965,7 @@ int mtxdistvector_to_mtxdistfile(
      * Market format */
     struct mtxfile mtxfile;
     err = (rank < num_parts)
-        ? mtxvector_to_mtxfile(&mtxfile, &src->interior, mtxfmt)
+        ? mtxvector_to_mtxfile(&mtxfile, &src->interior, 0, NULL, mtxfmt)
         : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;
