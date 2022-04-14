@@ -801,7 +801,7 @@ int mtxfiledata_parse_vector_coordinate_real_single(
 {
     int err;
     const char * t = s;
-    err = parse_int32(t, " ", &data->i, &t);
+    err = parse_int64(t, " ", &data->i, &t);
     if (err == EINVAL) return MTX_ERR_INVALID_MTX_DATA;
     else if (err) {
         errno = err;
@@ -840,7 +840,7 @@ int mtxfiledata_parse_vector_coordinate_real_double(
 {
     int err;
     const char * t = s;
-    err = parse_int32(t, " ", &data->i, &t);
+    err = parse_int64(t, " ", &data->i, &t);
     if (err == EINVAL) return MTX_ERR_INVALID_MTX_DATA;
     else if (err) {
         errno = err;
@@ -879,7 +879,7 @@ int mtxfiledata_parse_vector_coordinate_complex_single(
 {
     int err;
     const char * t = s;
-    err = parse_int32(t, " ", &data->i, &t);
+    err = parse_int64(t, " ", &data->i, &t);
     if (err == EINVAL) return MTX_ERR_INVALID_MTX_DATA;
     else if (err) {
         errno = err;
@@ -924,7 +924,7 @@ int mtxfiledata_parse_vector_coordinate_complex_double(
 {
     int err;
     const char * t = s;
-    err = parse_int32(t, " ", &data->i, &t);
+    err = parse_int64(t, " ", &data->i, &t);
     if (err == EINVAL) return MTX_ERR_INVALID_MTX_DATA;
     else if (err) {
         errno = err;
@@ -969,7 +969,7 @@ int mtxfiledata_parse_vector_coordinate_integer_single(
 {
     int err;
     const char * t = s;
-    err = parse_int32(t, " ", &data->i, &t);
+    err = parse_int64(t, " ", &data->i, &t);
     if (err == EINVAL) return MTX_ERR_INVALID_MTX_DATA;
     else if (err) {
         errno = err;
@@ -1008,7 +1008,7 @@ int mtxfiledata_parse_vector_coordinate_integer_double(
 {
     int err;
     const char * t = s;
-    err = parse_int32(t, " ", &data->i, &t);
+    err = parse_int64(t, " ", &data->i, &t);
     if (err == EINVAL) return MTX_ERR_INVALID_MTX_DATA;
     else if (err) {
         errno = err;
@@ -1047,7 +1047,7 @@ int mtxfiledata_parse_vector_coordinate_pattern(
 {
     int err;
     const char * t = s;
-    err = parse_int32(t, "\n", &data->i, &t);
+    err = parse_int64(t, "\n", &data->i, &t);
     if (err == EINVAL) return MTX_ERR_INVALID_MTX_DATA;
     else if (err) {
         errno = err;

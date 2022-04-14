@@ -146,8 +146,8 @@ struct mtxfile_matrix_coordinate_pattern
  */
 struct mtxfile_vector_coordinate_real_single
 {
-    int i;    /* row index */
-    float a;  /* nonzero value */
+    int64_t i;  /* offset */
+    float a;    /* nonzero value */
 };
 
 /**
@@ -157,8 +157,8 @@ struct mtxfile_vector_coordinate_real_single
  */
 struct mtxfile_vector_coordinate_real_double
 {
-    int i;    /* row index */
-    double a; /* nonzero value */
+    int64_t i;  /* offset */
+    double a;   /* nonzero value */
 };
 
 /**
@@ -169,8 +169,8 @@ struct mtxfile_vector_coordinate_real_double
  */
 struct mtxfile_vector_coordinate_complex_single
 {
-    int i;        /* row index */
-    float a[2];   /* real and imaginary parts of nonzero value */
+    int64_t i;   /* offset */
+    float a[2];  /* real and imaginary parts of nonzero value */
 };
 
 /**
@@ -181,8 +181,8 @@ struct mtxfile_vector_coordinate_complex_single
  */
 struct mtxfile_vector_coordinate_complex_double
 {
-    int i;        /* row index */
-    double a[2];  /* real and imaginary parts of nonzero value */
+    int64_t i;   /* offset */
+    double a[2]; /* real and imaginary parts of nonzero value */
 };
 
 /**
@@ -193,8 +193,8 @@ struct mtxfile_vector_coordinate_complex_double
  */
 struct mtxfile_vector_coordinate_integer_single
 {
-    int i;      /* row index */
-    int32_t a;  /* nonzero value */
+    int64_t i;   /* offset */
+    int32_t a;   /* nonzero value */
 };
 
 /**
@@ -205,8 +205,8 @@ struct mtxfile_vector_coordinate_integer_single
  */
 struct mtxfile_vector_coordinate_integer_double
 {
-    int i;      /* row index */
-    int64_t a;  /* nonzero value */
+    int64_t i;   /* offset */
+    int64_t a;   /* nonzero value */
 };
 
 /**
@@ -216,7 +216,7 @@ struct mtxfile_vector_coordinate_integer_double
  */
 struct mtxfile_vector_coordinate_pattern
 {
-    int i; /* row index */
+    int64_t i;   /* offset */
 };
 
 /*
