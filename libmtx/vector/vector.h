@@ -241,6 +241,17 @@ int mtxvector_init_pattern(
     enum mtxvectortype type,
     int size);
 
+/**
+ * ‘mtxvector_init_strided_real_single()’ allocates and initialises a
+ * vector with real, single precision coefficients.
+ */
+int mtxvector_init_strided_real_single(
+    struct mtxvector * x,
+    enum mtxvectortype type,
+    int size,
+    const float * data,
+    int64_t stride);
+
 /*
  * Basic, dense vectors
  */

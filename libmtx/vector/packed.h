@@ -202,6 +202,20 @@ int mtxvector_packed_init_pattern(
     int64_t num_nonzeros,
     const int64_t * idx);
 
+/**
+ * ‘mtxvector_packed_init_strided_real_single()’ allocates and
+ * initialises a vector with real, single precision coefficients.
+ */
+int mtxvector_packed_init_strided_real_single(
+    struct mtxvector_packed * x,
+    enum mtxvectortype type,
+    int64_t size,
+    int64_t num_nonzeros,
+    const int64_t * idx,
+    int64_t idxstride,
+    const float * data,
+    int64_t datastride);
+
 /*
  * Modifying values
  */
@@ -268,7 +282,8 @@ int mtxvector_packed_set_constant_integer_double(
  */
 int mtxvector_packed_from_mtxfile(
     struct mtxvector_packed * x,
-    const struct mtxfile * mtxfile);
+    const struct mtxfile * mtxfile,
+    enum mtxvectortype type);
 
 /**
  * ‘mtxvector_packed_to_mtxfile()’ converts to a vector in Matrix

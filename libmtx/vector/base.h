@@ -177,6 +177,16 @@ int mtxvector_base_init_pattern(
     struct mtxvector_base * x,
     int64_t size);
 
+/**
+ * ‘mtxvector_base_init_strided_real_single()’ allocates and
+ * initialises a vector with real, single precision coefficients.
+ */
+int mtxvector_base_init_strided_real_single(
+    struct mtxvector_base * x,
+    int64_t size,
+    const float * data,
+    int64_t stride);
+
 /*
  * Modifying values
  */
