@@ -841,6 +841,8 @@ int mtxvector_from_mtxfile(
 int mtxvector_to_mtxfile(
     struct mtxfile * dst,
     const struct mtxvector * src,
+    int64_t num_rows,
+    const int64_t * idx,
     enum mtxfileformat mtxfmt);
 
 /*
@@ -955,6 +957,8 @@ int mtxvector_gzread(
  */
 int mtxvector_write(
     const struct mtxvector * x,
+    int64_t num_rows,
+    const int64_t * idx,
     enum mtxfileformat mtxfmt,
     const char * path,
     bool gzip,
@@ -983,6 +987,8 @@ int mtxvector_write(
  */
 int mtxvector_fwrite(
     const struct mtxvector * x,
+    int64_t num_rows,
+    const int64_t * idx,
     enum mtxfileformat mtxfmt,
     FILE * f,
     const char * fmt,
@@ -1011,6 +1017,8 @@ int mtxvector_fwrite(
  */
 int mtxvector_gzwrite(
     const struct mtxvector * x,
+    int64_t num_rows,
+    const int64_t * idx,
     enum mtxfileformat mtxfmt,
     gzFile f,
     const char * fmt,

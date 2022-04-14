@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-03-23
+ * Last modified: 2022-04-14
  *
  * Data structures for vectors in array format.
  */
@@ -718,7 +718,7 @@ int mtxvector_array_join(
     struct mtxfile * srcmtxfiles = malloc(sizeof(struct mtxfile) * num_parts);
     if (!srcmtxfiles) return MTX_ERR_ERRNO;
     for (int p = 0; p < num_parts; p++) {
-        err = mtxvector_to_mtxfile(&srcmtxfiles[p], &srcs[p], mtxfile_array);
+        err = mtxvector_to_mtxfile(&srcmtxfiles[p], &srcs[p], 0, NULL, mtxfile_array);
         if (err) {
             for (int q = p-1; q >= 0; q--)
                 mtxfile_free(&srcmtxfiles[q]);

@@ -1541,24 +1541,24 @@ int mtxvector_from_mtxfile(
 int mtxvector_to_mtxfile(
     struct mtxfile * mtxfile,
     const struct mtxvector * x,
+    int64_t num_rows,
+    const int64_t * idx,
     enum mtxfileformat mtxfmt)
 {
     if (x->type == mtxvector_array) {
         return mtxvector_array_to_mtxfile(
             mtxfile, &x->storage.array, mtxfmt);
     } else if (x->type == mtxvector_base) {
-        return mtxvector_base_to_mtxfile(mtxfile, &x->storage.base, mtxfmt);
+        return mtxvector_base_to_mtxfile(mtxfile, &x->storage.base, num_rows, idx, mtxfmt);
     } else if (x->type == mtxvector_blas) {
 #ifdef LIBMTX_HAVE_BLAS
-        return mtxvector_blas_to_mtxfile(
-            mtxfile, &x->storage.blas, mtxfmt);
+        return mtxvector_blas_to_mtxfile(mtxfile, &x->storage.blas, num_rows, idx, mtxfmt);
 #else
         return MTX_ERR_BLAS_NOT_SUPPORTED;
 #endif
     } else if (x->type == mtxvector_omp) {
 #ifdef LIBMTX_HAVE_OPENMP
-        return mtxvector_omp_to_mtxfile(
-            mtxfile, &x->storage.omp, mtxfmt);
+        return mtxvector_omp_to_mtxfile(mtxfile, &x->storage.omp, num_rows, idx, mtxfmt);
 #else
         return MTX_ERR_OPENMP_NOT_SUPPORTED;
 #endif
@@ -1725,6 +1725,8 @@ int mtxvector_gzread(
  */
 int mtxvector_write(
     const struct mtxvector * x,
+    int64_t num_rows,
+    const int64_t * idx,
     enum mtxfileformat mtxfmt,
     const char * path,
     bool gzip,
@@ -1733,7 +1735,7 @@ int mtxvector_write(
 {
     int err;
     struct mtxfile mtxfile;
-    err = mtxvector_to_mtxfile(&mtxfile, x, mtxfmt);
+    err = mtxvector_to_mtxfile(&mtxfile, x, num_rows, idx, mtxfmt);
     if (err) return err;
     err = mtxfile_write(
         &mtxfile, path, gzip, fmt, bytes_written);
@@ -1767,6 +1769,8 @@ int mtxvector_write(
  */
 int mtxvector_fwrite(
     const struct mtxvector * x,
+    int64_t num_rows,
+    const int64_t * idx,
     enum mtxfileformat mtxfmt,
     FILE * f,
     const char * fmt,
@@ -1774,7 +1778,7 @@ int mtxvector_fwrite(
 {
     int err;
     struct mtxfile mtxfile;
-    err = mtxvector_to_mtxfile(&mtxfile, x, mtxfmt);
+    err = mtxvector_to_mtxfile(&mtxfile, x, num_rows, idx, mtxfmt);
     if (err) return err;
 
     err = mtxfile_fwrite(
@@ -1810,6 +1814,8 @@ int mtxvector_fwrite(
  */
 int mtxvector_gzwrite(
     const struct mtxvector * x,
+    int64_t num_rows,
+    const int64_t * idx,
     enum mtxfileformat mtxfmt,
     gzFile f,
     const char * fmt,
@@ -1817,7 +1823,7 @@ int mtxvector_gzwrite(
 {
     int err;
     struct mtxfile mtxfile;
-    err = mtxvector_to_mtxfile(&mtxfile, x, mtxfmt);
+    err = mtxvector_to_mtxfile(&mtxfile, x, num_rows, idx, mtxfmt);
     if (err) return err;
 
     err = mtxfile_gzwrite(

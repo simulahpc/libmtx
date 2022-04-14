@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-04-08
+ * Last modified: 2022-04-14
  *
  * Unit tests for shared-memory parallel, dense vectors using OpenMP.
  */
@@ -196,7 +196,7 @@ int test_mtxvector_omp_to_mtxfile(void)
         err = mtxvector_init_omp_real_single(&x, xsize, xdata, num_threads);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxfile mtxfile;
-        err = mtxvector_to_mtxfile(&mtxfile, &x, mtxfile_array);
+        err = mtxvector_to_mtxfile(&mtxfile, &x, 0, NULL, mtxfile_array);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(mtxfile_vector, mtxfile.header.object);
         TEST_ASSERT_EQ(mtxfile_array, mtxfile.header.format);
@@ -219,7 +219,7 @@ int test_mtxvector_omp_to_mtxfile(void)
         err = mtxvector_init_omp_real_double(&x, xsize, xdata, num_threads);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxfile mtxfile;
-        err = mtxvector_to_mtxfile(&mtxfile, &x, mtxfile_array);
+        err = mtxvector_to_mtxfile(&mtxfile, &x, 0, NULL, mtxfile_array);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(mtxfile_vector, mtxfile.header.object);
         TEST_ASSERT_EQ(mtxfile_array, mtxfile.header.format);
@@ -242,7 +242,7 @@ int test_mtxvector_omp_to_mtxfile(void)
         err = mtxvector_init_omp_complex_single(&x, xsize, xdata, num_threads);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxfile mtxfile;
-        err = mtxvector_to_mtxfile(&mtxfile, &x, mtxfile_array);
+        err = mtxvector_to_mtxfile(&mtxfile, &x, 0, NULL, mtxfile_array);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(mtxfile_vector, mtxfile.header.object);
         TEST_ASSERT_EQ(mtxfile_array, mtxfile.header.format);
@@ -267,7 +267,7 @@ int test_mtxvector_omp_to_mtxfile(void)
         err = mtxvector_init_omp_complex_double(&x, xsize, xdata, num_threads);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxfile mtxfile;
-        err = mtxvector_to_mtxfile(&mtxfile, &x, mtxfile_array);
+        err = mtxvector_to_mtxfile(&mtxfile, &x, 0, NULL, mtxfile_array);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(mtxfile_vector, mtxfile.header.object);
         TEST_ASSERT_EQ(mtxfile_array, mtxfile.header.format);
@@ -292,7 +292,7 @@ int test_mtxvector_omp_to_mtxfile(void)
         err = mtxvector_init_omp_integer_single(&x, xsize, xdata, num_threads);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxfile mtxfile;
-        err = mtxvector_to_mtxfile(&mtxfile, &x, mtxfile_array);
+        err = mtxvector_to_mtxfile(&mtxfile, &x, 0, NULL, mtxfile_array);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(mtxfile_vector, mtxfile.header.object);
         TEST_ASSERT_EQ(mtxfile_array, mtxfile.header.format);
@@ -315,7 +315,7 @@ int test_mtxvector_omp_to_mtxfile(void)
         err = mtxvector_init_omp_integer_double(&x, xsize, xdata, num_threads);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxfile mtxfile;
-        err = mtxvector_to_mtxfile(&mtxfile, &x, mtxfile_array);
+        err = mtxvector_to_mtxfile(&mtxfile, &x, 0, NULL, mtxfile_array);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(mtxfile_vector, mtxfile.header.object);
         TEST_ASSERT_EQ(mtxfile_array, mtxfile.header.format);

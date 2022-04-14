@@ -1044,7 +1044,6 @@ int mtxfiledata_alloc(
                 data->vector_coordinate_pattern =
                     malloc(size * sizeof(*data->vector_coordinate_pattern));
             } else { return MTX_ERR_INVALID_MTX_FIELD; }
-
         } else { return MTX_ERR_INVALID_MTX_OBJECT; }
     } else { return MTX_ERR_INVALID_MTX_FORMAT; }
     return MTX_SUCCESS;

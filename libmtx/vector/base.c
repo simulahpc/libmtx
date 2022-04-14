@@ -678,39 +678,112 @@ int mtxvector_base_from_mtxfile(
 int mtxvector_base_to_mtxfile(
     struct mtxfile * mtxfile,
     const struct mtxvector_base * x,
+    int64_t num_rows,
+    const int64_t * idx,
     enum mtxfileformat mtxfmt)
 {
-    /* TODO: If needed, we could convert from array to coordinate format. */
-    if (mtxfmt != mtxfile_array)
-        return MTX_ERR_INCOMPATIBLE_MTX_FORMAT;
-
-    if (x->field == mtx_field_real) {
-        if (x->precision == mtx_single) {
-            return mtxfile_init_vector_array_real_single(
-                mtxfile, x->size, x->data.real_single);
-        } else if (x->precision == mtx_double) {
-            return mtxfile_init_vector_array_real_double(
-                mtxfile, x->size, x->data.real_double);
-        } else { return MTX_ERR_INVALID_PRECISION; }
-    } else if (x->field == mtx_field_complex) {
-        if (x->precision == mtx_single) {
-            return mtxfile_init_vector_array_complex_single(
-                mtxfile, x->size, x->data.complex_single);
-        } else if (x->precision == mtx_double) {
-            return mtxfile_init_vector_array_complex_double(
-                mtxfile, x->size, x->data.complex_double);
-        } else { return MTX_ERR_INVALID_PRECISION; }
-    } else if (x->field == mtx_field_integer) {
-        if (x->precision == mtx_single) {
-            return mtxfile_init_vector_array_integer_single(
-                mtxfile, x->size, x->data.integer_single);
-        } else if (x->precision == mtx_double) {
-            return mtxfile_init_vector_array_integer_double(
-                mtxfile, x->size, x->data.integer_double);
-        } else { return MTX_ERR_INVALID_PRECISION; }
-    } else if (x->field == mtx_field_pattern) {
-        return MTX_ERR_INCOMPATIBLE_FIELD;
-    } else { return MTX_ERR_INVALID_FIELD; }
+    int err;
+    if (mtxfmt == mtxfile_array) {
+        if (x->field == mtx_field_real) {
+            if (x->precision == mtx_single) {
+                return mtxfile_init_vector_array_real_single(
+                    mtxfile, x->size, x->data.real_single);
+            } else if (x->precision == mtx_double) {
+                return mtxfile_init_vector_array_real_double(
+                    mtxfile, x->size, x->data.real_double);
+            } else { return MTX_ERR_INVALID_PRECISION; }
+        } else if (x->field == mtx_field_complex) {
+            if (x->precision == mtx_single) {
+                return mtxfile_init_vector_array_complex_single(
+                    mtxfile, x->size, x->data.complex_single);
+            } else if (x->precision == mtx_double) {
+                return mtxfile_init_vector_array_complex_double(
+                    mtxfile, x->size, x->data.complex_double);
+            } else { return MTX_ERR_INVALID_PRECISION; }
+        } else if (x->field == mtx_field_integer) {
+            if (x->precision == mtx_single) {
+                return mtxfile_init_vector_array_integer_single(
+                    mtxfile, x->size, x->data.integer_single);
+            } else if (x->precision == mtx_double) {
+                return mtxfile_init_vector_array_integer_double(
+                    mtxfile, x->size, x->data.integer_double);
+            } else { return MTX_ERR_INVALID_PRECISION; }
+        } else if (x->field == mtx_field_pattern) {
+            return MTX_ERR_INCOMPATIBLE_FIELD;
+        } else { return MTX_ERR_INVALID_FIELD; }
+    } else if (mtxfmt == mtxfile_coordinate) {
+        if (x->field == mtx_field_real) {
+            err = mtxfile_alloc_vector_coordinate(
+                mtxfile, mtxfile_real, x->precision, num_rows, x->size);
+            if (err) return err;
+            if (x->precision == mtx_single) {
+                for (int64_t k = 0; k < x->size; k++) {
+                    mtxfile->data.vector_coordinate_real_single[k].i = idx[k]+1;
+                    mtxfile->data.vector_coordinate_real_single[k].a =
+                        x->data.real_single[k];
+                }
+            } else if (x->precision == mtx_double) {
+                for (int64_t k = 0; k < x->size; k++) {
+                    mtxfile->data.vector_coordinate_real_double[k].i = idx[k]+1;
+                    mtxfile->data.vector_coordinate_real_double[k].a =
+                        x->data.real_double[k];
+                }
+            } else {
+                mtxfile_free(mtxfile);
+                return MTX_ERR_INVALID_PRECISION;
+            }
+        } else if (x->field == mtx_field_complex) {
+            err = mtxfile_alloc_vector_coordinate(
+                mtxfile, mtxfile_complex, x->precision, num_rows, x->size);
+            if (err) return err;
+            if (x->precision == mtx_single) {
+                for (int64_t k = 0; k < x->size; k++) {
+                    mtxfile->data.vector_coordinate_complex_single[k].i = idx[k]+1;
+                    mtxfile->data.vector_coordinate_complex_single[k].a[0] =
+                        x->data.complex_single[k][0];
+                    mtxfile->data.vector_coordinate_complex_single[k].a[1] =
+                        x->data.complex_single[k][1];
+                }
+            } else if (x->precision == mtx_double) {
+                for (int64_t k = 0; k < x->size; k++) {
+                    mtxfile->data.vector_coordinate_complex_double[k].i = idx[k]+1;
+                    mtxfile->data.vector_coordinate_complex_double[k].a[0] =
+                        x->data.complex_double[k][0];
+                    mtxfile->data.vector_coordinate_complex_double[k].a[1] =
+                        x->data.complex_double[k][1];
+                }
+            } else {
+                mtxfile_free(mtxfile);
+                return MTX_ERR_INVALID_PRECISION;
+            }
+        } else if (x->field == mtx_field_integer) {
+            err = mtxfile_alloc_vector_coordinate(
+                mtxfile, mtxfile_integer, x->precision, num_rows, x->size);
+            if (err) return err;
+            if (x->precision == mtx_single) {
+                for (int64_t k = 0; k < x->size; k++) {
+                    mtxfile->data.vector_coordinate_integer_single[k].i = idx[k]+1;
+                    mtxfile->data.vector_coordinate_integer_single[k].a =
+                        x->data.integer_single[k];
+                }
+            } else if (x->precision == mtx_double) {
+                for (int64_t k = 0; k < x->size; k++) {
+                    mtxfile->data.vector_coordinate_integer_double[k].i = idx[k]+1;
+                    mtxfile->data.vector_coordinate_integer_double[k].a =
+                        x->data.integer_double[k];
+                }
+            } else {
+                mtxfile_free(mtxfile);
+                return MTX_ERR_INVALID_PRECISION;
+            }
+        } else if (x->field == mtx_field_pattern) {
+            err = mtxfile_alloc_vector_coordinate(
+                mtxfile, mtxfile_pattern, x->precision, num_rows, x->size);
+            if (err) return err;
+            for (int64_t k = 0; k < x->size; k++)
+                mtxfile->data.vector_coordinate_pattern[k].i = idx[k]+1;
+        } else { return MTX_ERR_INVALID_FIELD; }
+    } else { return MTX_ERR_INVALID_MTX_FORMAT; }
     return MTX_SUCCESS;
 }
 
@@ -743,7 +816,7 @@ int mtxvector_base_partition(
     int err;
     int num_parts = part ? part->num_parts : 1;
     struct mtxfile mtxfile;
-    err = mtxvector_base_to_mtxfile(&mtxfile, src, mtxfile_array);
+    err = mtxvector_base_to_mtxfile(&mtxfile, src, 0, NULL, mtxfile_array);
     if (err) return err;
 
     struct mtxfile * dstmtxfiles = malloc(sizeof(struct mtxfile) * num_parts);
@@ -789,7 +862,7 @@ int mtxvector_base_join(
     struct mtxfile * srcmtxfiles = malloc(sizeof(struct mtxfile) * num_parts);
     if (!srcmtxfiles) return MTX_ERR_ERRNO;
     for (int p = 0; p < num_parts; p++) {
-        err = mtxvector_to_mtxfile(&srcmtxfiles[p], &srcs[p], mtxfile_array);
+        err = mtxvector_to_mtxfile(&srcmtxfiles[p], &srcs[p], 0, NULL, mtxfile_array);
         if (err) {
             for (int q = p-1; q >= 0; q--)
                 mtxfile_free(&srcmtxfiles[q]);

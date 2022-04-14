@@ -318,6 +318,8 @@ int mtxvector_omp_from_mtxfile(
 int mtxvector_omp_to_mtxfile(
     struct mtxfile * mtxfile,
     const struct mtxvector_omp * x,
+    int64_t num_rows,
+    const int64_t * idx,
     enum mtxfileformat mtxfmt);
 
 /*

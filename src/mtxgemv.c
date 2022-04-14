@@ -554,8 +554,7 @@ static int gemv(
         }
         int64_t bytes_written = 0;
         err = mtxvector_fwrite(
-            y, y->type == mtxvector_coordinate ? mtxfile_coordinate : mtxfile_array,
-            stdout, format, &bytes_written);
+            y, 0, NULL, mtxfile_array, stdout, format, &bytes_written);
         if (err) {
             if (verbose > 0)
                 fprintf(diagf, "\n");

@@ -1007,7 +1007,7 @@ static int vector_axpy(
             y.type == mtxvector_coordinate
             ? mtxfile_coordinate : mtxfile_array;
         err = mtxvector_fwrite(
-            &y, mtxfmt, stdout, format, &bytes_written);
+            &y, 0, NULL, mtxfmt, stdout, format, &bytes_written);
         if (err) {
             if (verbose > 0)
                 fprintf(diagf, "\n");

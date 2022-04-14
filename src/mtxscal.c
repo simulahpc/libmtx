@@ -856,11 +856,8 @@ static int vector_scal(
             clock_gettime(CLOCK_MONOTONIC, &t0);
         }
         int64_t bytes_written = 0;
-        enum mtxfileformat mtxfmt =
-            x.type == mtxvector_coordinate
-            ? mtxfile_coordinate : mtxfile_array;
         err = mtxvector_fwrite(
-            &x, mtxfmt, stdout, format, &bytes_written);
+            &x, 0, NULL, mtxfile_array, stdout, format, &bytes_written);
         if (err) {
             if (verbose > 0)
                 fprintf(diagf, "\n");

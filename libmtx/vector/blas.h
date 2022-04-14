@@ -299,6 +299,8 @@ int mtxvector_blas_from_mtxfile(
 int mtxvector_blas_to_mtxfile(
     struct mtxfile * mtxfile,
     const struct mtxvector_blas * x,
+    int64_t num_rows,
+    const int64_t * idx,
     enum mtxfileformat mtxfmt);
 
 /*

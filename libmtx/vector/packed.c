@@ -584,7 +584,10 @@ int mtxvector_packed_from_mtxfile(
 int mtxvector_packed_to_mtxfile(
     struct mtxfile * mtxfile,
     const struct mtxvector_packed * x,
-    enum mtxfileformat mtxfmt);
+    enum mtxfileformat mtxfmt)
+{
+    return mtxvector_to_mtxfile(mtxfile, &x->x, x->size, x->idx, mtxfmt);
+}
 
 /*
  * Partitioning

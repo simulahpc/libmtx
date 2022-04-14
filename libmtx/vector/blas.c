@@ -365,9 +365,11 @@ int mtxvector_blas_from_mtxfile(
 int mtxvector_blas_to_mtxfile(
     struct mtxfile * mtxfile,
     const struct mtxvector_blas * x,
+    int64_t num_rows,
+    const int64_t * idx,
     enum mtxfileformat mtxfmt)
 {
-    return mtxvector_base_to_mtxfile(mtxfile, &x->base, mtxfmt);
+    return mtxvector_base_to_mtxfile(mtxfile, &x->base, num_rows, idx, mtxfmt);
 }
 
 /*
@@ -399,7 +401,7 @@ int mtxvector_blas_partition(
     int err;
     int num_parts = part ? part->num_parts : 1;
     struct mtxfile mtxfile;
-    err = mtxvector_blas_to_mtxfile(&mtxfile, src, mtxfile_array);
+    err = mtxvector_blas_to_mtxfile(&mtxfile, src, 0, NULL, mtxfile_array);
     if (err) return err;
 
     struct mtxfile * dstmtxfiles = malloc(sizeof(struct mtxfile) * num_parts);
@@ -445,7 +447,7 @@ int mtxvector_blas_join(
     struct mtxfile * srcmtxfiles = malloc(sizeof(struct mtxfile) * num_parts);
     if (!srcmtxfiles) return MTX_ERR_ERRNO;
     for (int p = 0; p < num_parts; p++) {
-        err = mtxvector_to_mtxfile(&srcmtxfiles[p], &srcs[p], mtxfile_array);
+        err = mtxvector_to_mtxfile(&srcmtxfiles[p], &srcs[p], 0, NULL, mtxfile_array);
         if (err) {
             for (int q = p-1; q >= 0; q--)
                 mtxfile_free(&srcmtxfiles[q]);
