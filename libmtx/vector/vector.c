@@ -293,9 +293,7 @@ int mtxvector_init_real_single(
 #else
         return MTX_ERR_OPENMP_NOT_SUPPORTED;
 #endif
-    } else {
-        return MTX_ERR_INVALID_VECTOR_TYPE;
-    }
+    } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
 }
 
 /**
@@ -325,9 +323,7 @@ int mtxvector_init_real_double(
 #else
         return MTX_ERR_OPENMP_NOT_SUPPORTED;
 #endif
-    } else {
-        return MTX_ERR_INVALID_VECTOR_TYPE;
-    }
+    } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
 }
 
 /**
@@ -357,9 +353,7 @@ int mtxvector_init_complex_single(
 #else
         return MTX_ERR_OPENMP_NOT_SUPPORTED;
 #endif
-    } else {
-        return MTX_ERR_INVALID_VECTOR_TYPE;
-    }
+    } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
 }
 
 /**
@@ -389,9 +383,7 @@ int mtxvector_init_complex_double(
 #else
         return MTX_ERR_OPENMP_NOT_SUPPORTED;
 #endif
-    } else {
-        return MTX_ERR_INVALID_VECTOR_TYPE;
-    }
+    } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
 }
 
 /**
@@ -421,9 +413,7 @@ int mtxvector_init_integer_single(
 #else
         return MTX_ERR_OPENMP_NOT_SUPPORTED;
 #endif
-    } else {
-        return MTX_ERR_INVALID_VECTOR_TYPE;
-    }
+    } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
 }
 
 /**
@@ -453,9 +443,7 @@ int mtxvector_init_integer_double(
 #else
         return MTX_ERR_OPENMP_NOT_SUPPORTED;
 #endif
-    } else {
-        return MTX_ERR_INVALID_VECTOR_TYPE;
-    }
+    } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
 }
 
 /**
@@ -484,9 +472,7 @@ int mtxvector_init_pattern(
 #else
         return MTX_ERR_OPENMP_NOT_SUPPORTED;
 #endif
-    } else {
-        return MTX_ERR_INVALID_VECTOR_TYPE;
-    }
+    } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
 }
 
 /*
@@ -1181,9 +1167,7 @@ int mtxvector_set_constant_real_double(
     } else if (x->type == mtxvector_coordinate) {
         return mtxvector_coordinate_set_constant_real_double(
             &x->storage.coordinate, a);
-    } else {
-        return MTX_ERR_INVALID_VECTOR_TYPE;
-    }
+    } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
 }
 
 /**
@@ -1215,9 +1199,7 @@ int mtxvector_set_constant_complex_single(
     } else if (x->type == mtxvector_coordinate) {
         return mtxvector_coordinate_set_constant_complex_single(
             &x->storage.coordinate, a);
-    } else {
-        return MTX_ERR_INVALID_VECTOR_TYPE;
-    }
+    } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
 }
 
 /**
@@ -1249,9 +1231,7 @@ int mtxvector_set_constant_complex_double(
     } else if (x->type == mtxvector_coordinate) {
         return mtxvector_coordinate_set_constant_complex_double(
             &x->storage.coordinate, a);
-    } else {
-        return MTX_ERR_INVALID_VECTOR_TYPE;
-    }
+    } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
 }
 
 /**
@@ -1282,9 +1262,7 @@ int mtxvector_set_constant_integer_single(
     } else if (x->type == mtxvector_coordinate) {
         return mtxvector_coordinate_set_constant_integer_single(
             &x->storage.coordinate, a);
-    } else {
-        return MTX_ERR_INVALID_VECTOR_TYPE;
-    }
+    } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
 }
 
 /**
@@ -1315,9 +1293,7 @@ int mtxvector_set_constant_integer_double(
     } else if (x->type == mtxvector_coordinate) {
         return mtxvector_coordinate_set_constant_integer_double(
             &x->storage.coordinate, a);
-    } else {
-        return MTX_ERR_INVALID_VECTOR_TYPE;
-    }
+    } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
 }
 
 /*
@@ -1369,9 +1345,7 @@ int mtxvector_from_mtxfile(
         x->type = mtxvector_coordinate;
         return mtxvector_coordinate_from_mtxfile(
             &x->storage.coordinate, mtxfile);
-    } else {
-        return MTX_ERR_INVALID_VECTOR_TYPE;
-    }
+    } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
 }
 
 /**
@@ -1405,9 +1379,7 @@ int mtxvector_to_mtxfile(
     } else if (x->type == mtxvector_coordinate) {
         return mtxvector_coordinate_to_mtxfile(
             mtxfile, &x->storage.coordinate, mtxfmt);
-    } else {
-        return MTX_ERR_INVALID_VECTOR_TYPE;
-    }
+    } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
 }
 
 /*
