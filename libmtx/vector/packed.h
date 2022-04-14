@@ -430,7 +430,7 @@ int mtxvector_packed_join(
  * simultaneously performing ‘y <- x’ and ‘x <- y’.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
- * size.
+ * size, as well as the same number of nonzero elements.
  */
 int mtxvector_packed_swap(
     struct mtxvector_packed * x,
@@ -487,7 +487,9 @@ int mtxvector_packed_zscal(
  * by a single precision floating point value, ‘y = a*x + y’.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
- * size.
+ * size, as well as the same number of nonzeros. The offsets of the
+ * nonzero entries are assumed to be identical for both vectors,
+ * otherwise the results are undefined.
  */
 int mtxvector_packed_saxpy(
     float a,
@@ -500,7 +502,9 @@ int mtxvector_packed_saxpy(
  * by a double precision floating point value, ‘y = a*x + y’.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
- * size.
+ * size, as well as the same number of nonzeros. The offsets of the
+ * nonzero entries are assumed to be identical for both vectors,
+ * otherwise the results are undefined.
  */
 int mtxvector_packed_daxpy(
     double a,
@@ -514,7 +518,9 @@ int mtxvector_packed_daxpy(
  * x’.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
- * size.
+ * size, as well as the same number of nonzeros. The offsets of the
+ * nonzero entries are assumed to be identical for both vectors,
+ * otherwise the results are undefined.
  */
 int mtxvector_packed_saypx(
     float a,
@@ -528,7 +534,9 @@ int mtxvector_packed_saypx(
  * x’.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
- * size.
+ * size, as well as the same number of nonzeros. The offsets of the
+ * nonzero entries are assumed to be identical for both vectors,
+ * otherwise the results are undefined.
  */
 int mtxvector_packed_daypx(
     double a,
@@ -541,7 +549,9 @@ int mtxvector_packed_daypx(
  * two vectors in single precision floating point.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
- * size.
+ * size, as well as the same number of nonzeros. The offsets of the
+ * nonzero entries are assumed to be identical for both vectors,
+ * otherwise the results are undefined.
  */
 int mtxvector_packed_sdot(
     const struct mtxvector_packed * x,
@@ -554,7 +564,9 @@ int mtxvector_packed_sdot(
  * two vectors in double precision floating point.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
- * size.
+ * size, as well as the same number of nonzeros. The offsets of the
+ * nonzero entries are assumed to be identical for both vectors,
+ * otherwise the results are undefined.
  */
 int mtxvector_packed_ddot(
     const struct mtxvector_packed * x,
@@ -568,7 +580,9 @@ int mtxvector_packed_ddot(
  * precision floating point, ‘dot := x^T*y’.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
- * size.
+ * size, as well as the same number of nonzeros. The offsets of the
+ * nonzero entries are assumed to be identical for both vectors,
+ * otherwise the results are undefined.
  */
 int mtxvector_packed_cdotu(
     const struct mtxvector_packed * x,
@@ -582,7 +596,9 @@ int mtxvector_packed_cdotu(
  * precision floating point, ‘dot := x^T*y’.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
- * size.
+ * size, as well as the same number of nonzeros. The offsets of the
+ * nonzero entries are assumed to be identical for both vectors,
+ * otherwise the results are undefined.
  */
 int mtxvector_packed_zdotu(
     const struct mtxvector_packed * x,
@@ -596,7 +612,9 @@ int mtxvector_packed_zdotu(
  * x^H*y’.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
- * size.
+ * size, as well as the same number of nonzeros. The offsets of the
+ * nonzero entries are assumed to be identical for both vectors,
+ * otherwise the results are undefined.
  */
 int mtxvector_packed_cdotc(
     const struct mtxvector_packed * x,
@@ -610,7 +628,9 @@ int mtxvector_packed_cdotc(
  * x^H*y’.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
- * size.
+ * size, as well as the same number of nonzeros. The offsets of the
+ * nonzero entries are assumed to be identical for both vectors,
+ * otherwise the results are undefined.
  */
 int mtxvector_packed_zdotc(
     const struct mtxvector_packed * x,

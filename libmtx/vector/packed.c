@@ -451,7 +451,10 @@ int mtxvector_packed_init_strided_pattern(
  */
 int mtxvector_packed_set_constant_real_single(
     struct mtxvector_packed * x,
-    float a);
+    float a)
+{
+    return mtxvector_set_constant_real_single(&x->x, a);
+}
 
 /**
  * ‘mtxvector_packed_set_constant_real_double()’ sets every nonzero
@@ -460,7 +463,10 @@ int mtxvector_packed_set_constant_real_single(
  */
 int mtxvector_packed_set_constant_real_double(
     struct mtxvector_packed * x,
-    double a);
+    double a)
+{
+    return mtxvector_set_constant_real_double(&x->x, a);
+}
 
 /**
  * ‘mtxvector_packed_set_constant_complex_single()’ sets every nonzero
@@ -469,7 +475,10 @@ int mtxvector_packed_set_constant_real_double(
  */
 int mtxvector_packed_set_constant_complex_single(
     struct mtxvector_packed * x,
-    float a[2]);
+    float a[2])
+{
+    return mtxvector_set_constant_complex_single(&x->x, a);
+}
 
 /**
  * ‘mtxvector_packed_set_constant_complex_double()’ sets every nonzero
@@ -478,7 +487,10 @@ int mtxvector_packed_set_constant_complex_single(
  */
 int mtxvector_packed_set_constant_complex_double(
     struct mtxvector_packed * x,
-    double a[2]);
+    double a[2])
+{
+    return mtxvector_set_constant_complex_double(&x->x, a);
+}
 
 /**
  * ‘mtxvector_packed_set_constant_integer_single()’ sets every nonzero
@@ -486,7 +498,10 @@ int mtxvector_packed_set_constant_complex_double(
  */
 int mtxvector_packed_set_constant_integer_single(
     struct mtxvector_packed * x,
-    int32_t a);
+    int32_t a)
+{
+    return mtxvector_set_constant_integer_single(&x->x, a);
+}
 
 /**
  * ‘mtxvector_packed_set_constant_integer_double()’ sets every nonzero
@@ -494,7 +509,10 @@ int mtxvector_packed_set_constant_integer_single(
  */
 int mtxvector_packed_set_constant_integer_double(
     struct mtxvector_packed * x,
-    int64_t a);
+    int64_t a)
+{
+    return mtxvector_set_constant_integer_double(&x->x, a);
+}
 
 /*
  * Convert to and from Matrix Market format
@@ -636,11 +654,23 @@ int mtxvector_packed_join(
  * simultaneously performing ‘y <- x’ and ‘x <- y’.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
- * size.
+ * size, as well as the same number of nonzero elements.
  */
 int mtxvector_packed_swap(
     struct mtxvector_packed * x,
-    struct mtxvector_packed * y);
+    struct mtxvector_packed * y)
+{
+    if (x->size != y->size) return MTX_ERR_INCOMPATIBLE_SIZE;
+    if (x->num_nonzeros != y->num_nonzeros) return MTX_ERR_INCOMPATIBLE_SIZE;
+    int err = mtxvector_swap(&x->x, &y->x);
+    if (err) return err;
+    for (int64_t k = 0; k < x->num_nonzeros; k++) {
+        int64_t tmp = y->idx[k];
+        y->idx[k] = x->idx[k];
+        x->idx[k] = tmp;
+    }
+    return MTX_SUCCESS;
+}
 
 /**
  * ‘mtxvector_packed_copy()’ copies values of a vector, ‘y = x’.
@@ -650,7 +680,16 @@ int mtxvector_packed_swap(
  */
 int mtxvector_packed_copy(
     struct mtxvector_packed * y,
-    const struct mtxvector_packed * x);
+    const struct mtxvector_packed * x)
+{
+    if (x->size != y->size) return MTX_ERR_INCOMPATIBLE_SIZE;
+    if (x->num_nonzeros != y->num_nonzeros) return MTX_ERR_INCOMPATIBLE_SIZE;
+    int err = mtxvector_copy(&y->x, &x->x);
+    if (err) return err;
+    for (int64_t k = 0; k < x->num_nonzeros; k++)
+        y->idx[k] = x->idx[k];
+    return MTX_SUCCESS;
+}
 
 /**
  * ‘mtxvector_packed_sscal()’ scales a vector by a single precision
@@ -659,7 +698,10 @@ int mtxvector_packed_copy(
 int mtxvector_packed_sscal(
     float a,
     struct mtxvector_packed * x,
-    int64_t * num_flops);
+    int64_t * num_flops)
+{
+    return mtxvector_sscal(a, &x->x, num_flops);
+}
 
 /**
  * ‘mtxvector_packed_dscal()’ scales a vector by a double precision
@@ -668,7 +710,10 @@ int mtxvector_packed_sscal(
 int mtxvector_packed_dscal(
     double a,
     struct mtxvector_packed * x,
-    int64_t * num_flops);
+    int64_t * num_flops)
+{
+    return mtxvector_dscal(a, &x->x, num_flops);
+}
 
 /**
  * ‘mtxvector_packed_cscal()’ scales a vector by a complex, single
@@ -677,7 +722,10 @@ int mtxvector_packed_dscal(
 int mtxvector_packed_cscal(
     float a[2],
     struct mtxvector_packed * x,
-    int64_t * num_flops);
+    int64_t * num_flops)
+{
+    return mtxvector_cscal(a, &x->x, num_flops);
+}
 
 /**
  * ‘mtxvector_packed_zscal()’ scales a vector by a complex, double
@@ -686,33 +734,52 @@ int mtxvector_packed_cscal(
 int mtxvector_packed_zscal(
     double a[2],
     struct mtxvector_packed * x,
-    int64_t * num_flops);
+    int64_t * num_flops)
+{
+    return mtxvector_zscal(a, &x->x, num_flops);
+}
 
 /**
  * ‘mtxvector_packed_saxpy()’ adds a vector to another one multiplied
  * by a single precision floating point value, ‘y = a*x + y’.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
- * size.
+ * size, as well as the same number of nonzeros. The offsets of the
+ * nonzero entries are assumed to be identical for both vectors,
+ * otherwise the results are undefined.
  */
 int mtxvector_packed_saxpy(
     float a,
     const struct mtxvector_packed * x,
     struct mtxvector_packed * y,
-    int64_t * num_flops);
+    int64_t * num_flops)
+{
+    if (x->size != y->size) return MTX_ERR_INCOMPATIBLE_SIZE;
+    if (x->num_nonzeros != y->num_nonzeros) return MTX_ERR_INCOMPATIBLE_SIZE;
+    /* if (memcmp(x->idx, y->idx, x->num_nonzeros*sizeof(*x->idx)) != 0) return MTX_ERR_INCOMPATIBLE_PATTERN; */
+    return mtxvector_saxpy(a, &x->x, &y->x, num_flops);
+}
 
 /**
  * ‘mtxvector_packed_daxpy()’ adds a vector to another one multiplied
  * by a double precision floating point value, ‘y = a*x + y’.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
- * size.
+ * size, as well as the same number of nonzeros. The offsets of the
+ * nonzero entries are assumed to be identical for both vectors,
+ * otherwise the results are undefined.
  */
 int mtxvector_packed_daxpy(
     double a,
     const struct mtxvector_packed * x,
     struct mtxvector_packed * y,
-    int64_t * num_flops);
+    int64_t * num_flops)
+{
+    if (x->size != y->size) return MTX_ERR_INCOMPATIBLE_SIZE;
+    if (x->num_nonzeros != y->num_nonzeros) return MTX_ERR_INCOMPATIBLE_SIZE;
+    /* if (memcmp(x->idx, y->idx, x->num_nonzeros*sizeof(*x->idx)) != 0) return MTX_ERR_INCOMPATIBLE_PATTERN; */
+    return mtxvector_daxpy(a, &x->x, &y->x, num_flops);
+}
 
 /**
  * ‘mtxvector_packed_saypx()’ multiplies a vector by a single
@@ -720,13 +787,21 @@ int mtxvector_packed_daxpy(
  * x’.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
- * size.
+ * size, as well as the same number of nonzeros. The offsets of the
+ * nonzero entries are assumed to be identical for both vectors,
+ * otherwise the results are undefined.
  */
 int mtxvector_packed_saypx(
     float a,
     struct mtxvector_packed * y,
     const struct mtxvector_packed * x,
-    int64_t * num_flops);
+    int64_t * num_flops)
+{
+    if (x->size != y->size) return MTX_ERR_INCOMPATIBLE_SIZE;
+    if (x->num_nonzeros != y->num_nonzeros) return MTX_ERR_INCOMPATIBLE_SIZE;
+    /* if (memcmp(x->idx, y->idx, x->num_nonzeros*sizeof(*x->idx)) != 0) return MTX_ERR_INCOMPATIBLE_PATTERN; */
+    return mtxvector_saypx(a, &y->x, &x->x, num_flops);
+}
 
 /**
  * ‘mtxvector_packed_daypx()’ multiplies a vector by a double
@@ -734,39 +809,63 @@ int mtxvector_packed_saypx(
  * x’.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
- * size.
+ * size, as well as the same number of nonzeros. The offsets of the
+ * nonzero entries are assumed to be identical for both vectors,
+ * otherwise the results are undefined.
  */
 int mtxvector_packed_daypx(
     double a,
     struct mtxvector_packed * y,
     const struct mtxvector_packed * x,
-    int64_t * num_flops);
+    int64_t * num_flops)
+{
+    if (x->size != y->size) return MTX_ERR_INCOMPATIBLE_SIZE;
+    if (x->num_nonzeros != y->num_nonzeros) return MTX_ERR_INCOMPATIBLE_SIZE;
+    /* if (memcmp(x->idx, y->idx, x->num_nonzeros*sizeof(*x->idx)) != 0) return MTX_ERR_INCOMPATIBLE_PATTERN; */
+    return mtxvector_daypx(a, &y->x, &x->x, num_flops);
+}
 
 /**
  * ‘mtxvector_packed_sdot()’ cpackedutes the Euclidean dot product of
  * two vectors in single precision floating point.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
- * size.
+ * size, as well as the same number of nonzeros. The offsets of the
+ * nonzero entries are assumed to be identical for both vectors,
+ * otherwise the results are undefined.
  */
 int mtxvector_packed_sdot(
     const struct mtxvector_packed * x,
     const struct mtxvector_packed * y,
     float * dot,
-    int64_t * num_flops);
+    int64_t * num_flops)
+{
+    if (x->size != y->size) return MTX_ERR_INCOMPATIBLE_SIZE;
+    if (x->num_nonzeros != y->num_nonzeros) return MTX_ERR_INCOMPATIBLE_SIZE;
+    /* if (memcmp(x->idx, y->idx, x->num_nonzeros*sizeof(*x->idx)) != 0) return MTX_ERR_INCOMPATIBLE_PATTERN; */
+    return mtxvector_sdot(&x->x, &y->x, dot, num_flops);
+}
 
 /**
  * ‘mtxvector_packed_ddot()’ cpackedutes the Euclidean dot product of
  * two vectors in double precision floating point.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
- * size.
+ * size, as well as the same number of nonzeros. The offsets of the
+ * nonzero entries are assumed to be identical for both vectors,
+ * otherwise the results are undefined.
  */
 int mtxvector_packed_ddot(
     const struct mtxvector_packed * x,
     const struct mtxvector_packed * y,
     double * dot,
-    int64_t * num_flops);
+    int64_t * num_flops)
+{
+    if (x->size != y->size) return MTX_ERR_INCOMPATIBLE_SIZE;
+    if (x->num_nonzeros != y->num_nonzeros) return MTX_ERR_INCOMPATIBLE_SIZE;
+    /* if (memcmp(x->idx, y->idx, x->num_nonzeros*sizeof(*x->idx)) != 0) return MTX_ERR_INCOMPATIBLE_PATTERN; */
+    return mtxvector_ddot(&x->x, &y->x, dot, num_flops);
+}
 
 /**
  * ‘mtxvector_packed_cdotu()’ cpackedutes the product of the transpose
@@ -774,13 +873,21 @@ int mtxvector_packed_ddot(
  * precision floating point, ‘dot := x^T*y’.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
- * size.
+ * size, as well as the same number of nonzeros. The offsets of the
+ * nonzero entries are assumed to be identical for both vectors,
+ * otherwise the results are undefined.
  */
 int mtxvector_packed_cdotu(
     const struct mtxvector_packed * x,
     const struct mtxvector_packed * y,
     float (* dot)[2],
-    int64_t * num_flops);
+    int64_t * num_flops)
+{
+    if (x->size != y->size) return MTX_ERR_INCOMPATIBLE_SIZE;
+    if (x->num_nonzeros != y->num_nonzeros) return MTX_ERR_INCOMPATIBLE_SIZE;
+    /* if (memcmp(x->idx, y->idx, x->num_nonzeros*sizeof(*x->idx)) != 0) return MTX_ERR_INCOMPATIBLE_PATTERN; */
+    return mtxvector_cdotu(&x->x, &y->x, dot, num_flops);
+}
 
 /**
  * ‘mtxvector_packed_zdotu()’ cpackedutes the product of the transpose
@@ -788,13 +895,21 @@ int mtxvector_packed_cdotu(
  * precision floating point, ‘dot := x^T*y’.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
- * size.
+ * size, as well as the same number of nonzeros. The offsets of the
+ * nonzero entries are assumed to be identical for both vectors,
+ * otherwise the results are undefined.
  */
 int mtxvector_packed_zdotu(
     const struct mtxvector_packed * x,
     const struct mtxvector_packed * y,
     double (* dot)[2],
-    int64_t * num_flops);
+    int64_t * num_flops)
+{
+    if (x->size != y->size) return MTX_ERR_INCOMPATIBLE_SIZE;
+    if (x->num_nonzeros != y->num_nonzeros) return MTX_ERR_INCOMPATIBLE_SIZE;
+    /* if (memcmp(x->idx, y->idx, x->num_nonzeros*sizeof(*x->idx)) != 0) return MTX_ERR_INCOMPATIBLE_PATTERN; */
+    return mtxvector_zdotu(&x->x, &y->x, dot, num_flops);
+}
 
 /**
  * ‘mtxvector_packed_cdotc()’ cpackedutes the Euclidean dot product of
@@ -802,13 +917,21 @@ int mtxvector_packed_zdotu(
  * x^H*y’.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
- * size.
+ * size, as well as the same number of nonzeros. The offsets of the
+ * nonzero entries are assumed to be identical for both vectors,
+ * otherwise the results are undefined.
  */
 int mtxvector_packed_cdotc(
     const struct mtxvector_packed * x,
     const struct mtxvector_packed * y,
     float (* dot)[2],
-    int64_t * num_flops);
+    int64_t * num_flops)
+{
+    if (x->size != y->size) return MTX_ERR_INCOMPATIBLE_SIZE;
+    if (x->num_nonzeros != y->num_nonzeros) return MTX_ERR_INCOMPATIBLE_SIZE;
+    /* if (memcmp(x->idx, y->idx, x->num_nonzeros*sizeof(*x->idx)) != 0) return MTX_ERR_INCOMPATIBLE_PATTERN; */
+    return mtxvector_cdotc(&x->x, &y->x, dot, num_flops);
+}
 
 /**
  * ‘mtxvector_packed_zdotc()’ cpackedutes the Euclidean dot product of
@@ -816,13 +939,21 @@ int mtxvector_packed_cdotc(
  * x^H*y’.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
- * size.
+ * size, as well as the same number of nonzeros. The offsets of the
+ * nonzero entries are assumed to be identical for both vectors,
+ * otherwise the results are undefined.
  */
 int mtxvector_packed_zdotc(
     const struct mtxvector_packed * x,
     const struct mtxvector_packed * y,
     double (* dot)[2],
-    int64_t * num_flops);
+    int64_t * num_flops)
+{
+    if (x->size != y->size) return MTX_ERR_INCOMPATIBLE_SIZE;
+    if (x->num_nonzeros != y->num_nonzeros) return MTX_ERR_INCOMPATIBLE_SIZE;
+    /* if (memcmp(x->idx, y->idx, x->num_nonzeros*sizeof(*x->idx)) != 0) return MTX_ERR_INCOMPATIBLE_PATTERN; */
+    return mtxvector_zdotc(&x->x, &y->x, dot, num_flops);
+}
 
 /**
  * ‘mtxvector_packed_snrm2()’ cpackedutes the Euclidean norm of a
@@ -831,7 +962,10 @@ int mtxvector_packed_zdotc(
 int mtxvector_packed_snrm2(
     const struct mtxvector_packed * x,
     float * nrm2,
-    int64_t * num_flops);
+    int64_t * num_flops)
+{
+    return mtxvector_snrm2(&x->x, nrm2, num_flops);
+}
 
 /**
  * ‘mtxvector_packed_dnrm2()’ cpackedutes the Euclidean norm of a
@@ -840,7 +974,10 @@ int mtxvector_packed_snrm2(
 int mtxvector_packed_dnrm2(
     const struct mtxvector_packed * x,
     double * nrm2,
-    int64_t * num_flops);
+    int64_t * num_flops)
+{
+    return mtxvector_dnrm2(&x->x, nrm2, num_flops);
+}
 
 /**
  * ‘mtxvector_packed_sasum()’ cpackedutes the sum of absolute values
@@ -851,7 +988,10 @@ int mtxvector_packed_dnrm2(
 int mtxvector_packed_sasum(
     const struct mtxvector_packed * x,
     float * asum,
-    int64_t * num_flops);
+    int64_t * num_flops)
+{
+    return mtxvector_sasum(&x->x, asum, num_flops);
+}
 
 /**
  * ‘mtxvector_packed_dasum()’ cpackedutes the sum of absolute values
@@ -862,7 +1002,10 @@ int mtxvector_packed_sasum(
 int mtxvector_packed_dasum(
     const struct mtxvector_packed * x,
     double * asum,
-    int64_t * num_flops);
+    int64_t * num_flops)
+{
+    return mtxvector_dasum(&x->x, asum, num_flops);
+}
 
 /**
  * ‘mtxvector_packed_iamax()’ finds the index of the first element
@@ -873,4 +1016,7 @@ int mtxvector_packed_dasum(
  */
 int mtxvector_packed_iamax(
     const struct mtxvector_packed * x,
-    int * iamax);
+    int * iamax)
+{
+    return mtxvector_iamax(&x->x, iamax);
+}
