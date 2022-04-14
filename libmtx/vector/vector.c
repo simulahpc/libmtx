@@ -242,7 +242,7 @@ int mtxvector_alloc(
     enum mtxvectortype type,
     enum mtxfield field,
     enum mtxprecision precision,
-    int size)
+    int64_t size)
 {
     if (type == mtxvector_base) {
         x->type = mtxvector_base;
@@ -273,7 +273,7 @@ int mtxvector_alloc(
 int mtxvector_init_real_single(
     struct mtxvector * x,
     enum mtxvectortype type,
-    int size,
+    int64_t size,
     const float * data)
 {
     if (type == mtxvector_base) {
@@ -303,7 +303,7 @@ int mtxvector_init_real_single(
 int mtxvector_init_real_double(
     struct mtxvector * x,
     enum mtxvectortype type,
-    int size,
+    int64_t size,
     const double * data)
 {
     if (type == mtxvector_base) {
@@ -333,7 +333,7 @@ int mtxvector_init_real_double(
 int mtxvector_init_complex_single(
     struct mtxvector * x,
     enum mtxvectortype type,
-    int size,
+    int64_t size,
     const float (* data)[2])
 {
     if (type == mtxvector_base) {
@@ -363,7 +363,7 @@ int mtxvector_init_complex_single(
 int mtxvector_init_complex_double(
     struct mtxvector * x,
     enum mtxvectortype type,
-    int size,
+    int64_t size,
     const double (* data)[2])
 {
     if (type == mtxvector_base) {
@@ -393,7 +393,7 @@ int mtxvector_init_complex_double(
 int mtxvector_init_integer_single(
     struct mtxvector * x,
     enum mtxvectortype type,
-    int size,
+    int64_t size,
     const int32_t * data)
 {
     if (type == mtxvector_base) {
@@ -423,7 +423,7 @@ int mtxvector_init_integer_single(
 int mtxvector_init_integer_double(
     struct mtxvector * x,
     enum mtxvectortype type,
-    int size,
+    int64_t size,
     const int64_t * data)
 {
     if (type == mtxvector_base) {
@@ -453,7 +453,7 @@ int mtxvector_init_integer_double(
 int mtxvector_init_pattern(
     struct mtxvector * x,
     enum mtxvectortype type,
-    int size)
+    int64_t size)
 {
     if (type == mtxvector_base) {
         x->type = mtxvector_base;
@@ -475,6 +475,192 @@ int mtxvector_init_pattern(
     } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
 }
 
+/**
+ * ‘mtxvector_init_strided_real_single()’ allocates and initialises a
+ * vector with real, single precision coefficients.
+ */
+int mtxvector_init_strided_real_single(
+    struct mtxvector * x,
+    enum mtxvectortype type,
+    int64_t size,
+    const float * data,
+    int64_t stride)
+{
+    if (type == mtxvector_base) {
+        x->type = mtxvector_base;
+        return mtxvector_base_init_strided_real_single(&x->storage.base, size, data, stride);
+    } else if (type == mtxvector_blas) {
+#ifdef LIBMTX_HAVE_BLAS
+        x->type = mtxvector_blas;
+        return mtxvector_blas_init_strided_real_single(&x->storage.blas, size, data, stride);
+#else
+        return MTX_ERR_BLAS_NOT_SUPPORTED;
+#endif
+    } else if (type == mtxvector_omp) {
+#ifdef LIBMTX_HAVE_OPENMP
+        x->type = mtxvector_omp;
+        return mtxvector_omp_init_strided_real_single(&x->storage.omp, size, data, stride, 0);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
+    } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
+}
+
+/**
+ * ‘mtxvector_init_strided_real_double()’ allocates and initialises a
+ * vector with real, double precision coefficients.
+ */
+int mtxvector_init_strided_real_double(
+    struct mtxvector * x,
+    enum mtxvectortype type,
+    int64_t size,
+    const double * data,
+    int64_t stride)
+{
+    if (type == mtxvector_base) {
+        x->type = mtxvector_base;
+        return mtxvector_base_init_strided_real_double(&x->storage.base, size, data, stride);
+    } else if (type == mtxvector_blas) {
+#ifdef LIBMTX_HAVE_BLAS
+        x->type = mtxvector_blas;
+        return mtxvector_blas_init_strided_real_double(&x->storage.blas, size, data, stride);
+#else
+        return MTX_ERR_BLAS_NOT_SUPPORTED;
+#endif
+    } else if (type == mtxvector_omp) {
+#ifdef LIBMTX_HAVE_OPENMP
+        x->type = mtxvector_omp;
+        return mtxvector_omp_init_strided_real_double(&x->storage.omp, size, data, stride, 0);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
+    } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
+}
+
+/**
+ * ‘mtxvector_init_strided_complex_single()’ allocates and initialises
+ * a vector with complex, single precision coefficients.
+ */
+int mtxvector_init_strided_complex_single(
+    struct mtxvector * x,
+    enum mtxvectortype type,
+    int64_t size,
+    const float (* data)[2],
+    int64_t stride)
+{
+    if (type == mtxvector_base) {
+        x->type = mtxvector_base;
+        return mtxvector_base_init_strided_complex_single(&x->storage.base, size, data, stride);
+    } else if (type == mtxvector_blas) {
+#ifdef LIBMTX_HAVE_BLAS
+        x->type = mtxvector_blas;
+        return mtxvector_blas_init_strided_complex_single(&x->storage.blas, size, data, stride);
+#else
+        return MTX_ERR_BLAS_NOT_SUPPORTED;
+#endif
+    } else if (type == mtxvector_omp) {
+#ifdef LIBMTX_HAVE_OPENMP
+        x->type = mtxvector_omp;
+        return mtxvector_omp_init_strided_complex_single(&x->storage.omp, size, data, stride, 0);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
+    } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
+}
+
+/**
+ * ‘mtxvector_init_strided_complex_double()’ allocates and initialises
+ * a vector with complex, double precision coefficients.
+ */
+int mtxvector_init_strided_complex_double(
+    struct mtxvector * x,
+    enum mtxvectortype type,
+    int64_t size,
+    const double (* data)[2],
+    int64_t stride)
+{
+    if (type == mtxvector_base) {
+        x->type = mtxvector_base;
+        return mtxvector_base_init_strided_complex_double(&x->storage.base, size, data, stride);
+    } else if (type == mtxvector_blas) {
+#ifdef LIBMTX_HAVE_BLAS
+        x->type = mtxvector_blas;
+        return mtxvector_blas_init_strided_complex_double(&x->storage.blas, size, data, stride);
+#else
+        return MTX_ERR_BLAS_NOT_SUPPORTED;
+#endif
+    } else if (type == mtxvector_omp) {
+#ifdef LIBMTX_HAVE_OPENMP
+        x->type = mtxvector_omp;
+        return mtxvector_omp_init_strided_complex_double(&x->storage.omp, size, data, stride, 0);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
+    } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
+}
+
+/**
+ * ‘mtxvector_init_strided_integer_single()’ allocates and initialises
+ * a vector with integer, single precision coefficients.
+ */
+int mtxvector_init_strided_integer_single(
+    struct mtxvector * x,
+    enum mtxvectortype type,
+    int64_t size,
+    const int32_t * data,
+    int64_t stride)
+{
+    if (type == mtxvector_base) {
+        x->type = mtxvector_base;
+        return mtxvector_base_init_strided_integer_single(&x->storage.base, size, data, stride);
+    } else if (type == mtxvector_blas) {
+#ifdef LIBMTX_HAVE_BLAS
+        x->type = mtxvector_blas;
+        return mtxvector_blas_init_strided_integer_single(&x->storage.blas, size, data, stride);
+#else
+        return MTX_ERR_BLAS_NOT_SUPPORTED;
+#endif
+    } else if (type == mtxvector_omp) {
+#ifdef LIBMTX_HAVE_OPENMP
+        x->type = mtxvector_omp;
+        return mtxvector_omp_init_strided_integer_single(&x->storage.omp, size, data, stride, 0);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
+    } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
+}
+
+/**
+ * ‘mtxvector_init_strided_integer_double()’ allocates and initialises
+ * a vector with integer, double precision coefficients.
+ */
+int mtxvector_init_strided_integer_double(
+    struct mtxvector * x,
+    enum mtxvectortype type,
+    int64_t size,
+    const int64_t * data,
+    int64_t stride)
+{
+    if (type == mtxvector_base) {
+        x->type = mtxvector_base;
+        return mtxvector_base_init_strided_integer_double(&x->storage.base, size, data, stride);
+    } else if (type == mtxvector_blas) {
+#ifdef LIBMTX_HAVE_BLAS
+        x->type = mtxvector_blas;
+        return mtxvector_blas_init_strided_integer_double(&x->storage.blas, size, data, stride);
+#else
+        return MTX_ERR_BLAS_NOT_SUPPORTED;
+#endif
+    } else if (type == mtxvector_omp) {
+#ifdef LIBMTX_HAVE_OPENMP
+        x->type = mtxvector_omp;
+        return mtxvector_omp_init_strided_integer_double(&x->storage.omp, size, data, stride, 0);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
+    } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
+}
+
 /*
  * Vector array formats
  */
@@ -487,11 +673,11 @@ int mtxvector_alloc_array(
     struct mtxvector * x,
     enum mtxfield field,
     enum mtxprecision precision,
-    int num_rows)
+    int64_t size)
 {
     x->type = mtxvector_array;
     return mtxvector_array_alloc(
-        &x->storage.array, field, precision, num_rows);
+        &x->storage.array, field, precision, size);
 }
 
 /**
@@ -500,12 +686,12 @@ int mtxvector_alloc_array(
  */
 int mtxvector_init_array_real_single(
     struct mtxvector * x,
-    int num_rows,
+    int64_t size,
     const float * data)
 {
     x->type = mtxvector_array;
     return mtxvector_array_init_real_single(
-        &x->storage.array, num_rows, data);
+        &x->storage.array, size, data);
 }
 
 /**
@@ -514,12 +700,12 @@ int mtxvector_init_array_real_single(
  */
 int mtxvector_init_array_real_double(
     struct mtxvector * x,
-    int num_rows,
+    int64_t size,
     const double * data)
 {
     x->type = mtxvector_array;
     return mtxvector_array_init_real_double(
-        &x->storage.array, num_rows, data);
+        &x->storage.array, size, data);
 }
 
 /**
@@ -528,12 +714,12 @@ int mtxvector_init_array_real_double(
  */
 int mtxvector_init_array_complex_single(
     struct mtxvector * x,
-    int num_rows,
+    int64_t size,
     const float (* data)[2])
 {
     x->type = mtxvector_array;
     return mtxvector_array_init_complex_single(
-        &x->storage.array, num_rows, data);
+        &x->storage.array, size, data);
 }
 
 /**
@@ -542,12 +728,12 @@ int mtxvector_init_array_complex_single(
  */
 int mtxvector_init_array_complex_double(
     struct mtxvector * x,
-    int num_rows,
+    int64_t size,
     const double (* data)[2])
 {
     x->type = mtxvector_array;
     return mtxvector_array_init_complex_double(
-        &x->storage.array, num_rows, data);
+        &x->storage.array, size, data);
 }
 
 /**
@@ -556,12 +742,12 @@ int mtxvector_init_array_complex_double(
  */
 int mtxvector_init_array_integer_single(
     struct mtxvector * x,
-    int num_rows,
+    int64_t size,
     const int32_t * data)
 {
     x->type = mtxvector_array;
     return mtxvector_array_init_integer_single(
-        &x->storage.array, num_rows, data);
+        &x->storage.array, size, data);
 }
 
 /**
@@ -570,12 +756,12 @@ int mtxvector_init_array_integer_single(
  */
 int mtxvector_init_array_integer_double(
     struct mtxvector * x,
-    int num_rows,
+    int64_t size,
     const int64_t * data)
 {
     x->type = mtxvector_array;
     return mtxvector_array_init_integer_double(
-        &x->storage.array, num_rows, data);
+        &x->storage.array, size, data);
 }
 
 /*
@@ -809,7 +995,7 @@ int mtxvector_alloc_omp(
     struct mtxvector * x,
     enum mtxfield field,
     enum mtxprecision precision,
-    int size,
+    int64_t size,
     int num_threads)
 {
 #ifdef LIBMTX_HAVE_OPENMP
@@ -828,7 +1014,7 @@ int mtxvector_alloc_omp(
  */
 int mtxvector_init_omp_real_single(
     struct mtxvector * x,
-    int size,
+    int64_t size,
     const float * data,
     int num_threads)
 {
@@ -848,7 +1034,7 @@ int mtxvector_init_omp_real_single(
  */
 int mtxvector_init_omp_real_double(
     struct mtxvector * x,
-    int size,
+    int64_t size,
     const double * data,
     int num_threads)
 {
@@ -868,7 +1054,7 @@ int mtxvector_init_omp_real_double(
  */
 int mtxvector_init_omp_complex_single(
     struct mtxvector * x,
-    int size,
+    int64_t size,
     const float (* data)[2],
     int num_threads)
 {
@@ -888,7 +1074,7 @@ int mtxvector_init_omp_complex_single(
  */
 int mtxvector_init_omp_complex_double(
     struct mtxvector * x,
-    int size,
+    int64_t size,
     const double (* data)[2],
     int num_threads)
 {
@@ -908,7 +1094,7 @@ int mtxvector_init_omp_complex_double(
  */
 int mtxvector_init_omp_integer_single(
     struct mtxvector * x,
-    int size,
+    int64_t size,
     const int32_t * data,
     int num_threads)
 {
@@ -928,7 +1114,7 @@ int mtxvector_init_omp_integer_single(
  */
 int mtxvector_init_omp_integer_double(
     struct mtxvector * x,
-    int size,
+    int64_t size,
     const int64_t * data,
     int num_threads)
 {
@@ -953,12 +1139,12 @@ int mtxvector_alloc_coordinate(
     struct mtxvector * x,
     enum mtxfield field,
     enum mtxprecision precision,
-    int num_rows,
+    int64_t size,
     int64_t num_nonzeros)
 {
     x->type = mtxvector_coordinate;
     return mtxvector_coordinate_alloc(
-        &x->storage.coordinate, field, precision, num_rows, num_nonzeros);
+        &x->storage.coordinate, field, precision, size, num_nonzeros);
 }
 
 /**
@@ -968,14 +1154,14 @@ int mtxvector_alloc_coordinate(
  */
 int mtxvector_init_coordinate_real_single(
     struct mtxvector * x,
-    int num_rows,
+    int64_t size,
     int64_t num_nonzeros,
     const int * indices,
     const float * data)
 {
     x->type = mtxvector_coordinate;
     return mtxvector_coordinate_init_real_single(
-        &x->storage.coordinate, num_rows, num_nonzeros, indices, data);
+        &x->storage.coordinate, size, num_nonzeros, indices, data);
 }
 
 /**
@@ -985,14 +1171,14 @@ int mtxvector_init_coordinate_real_single(
  */
 int mtxvector_init_coordinate_real_double(
     struct mtxvector * x,
-    int num_rows,
+    int64_t size,
     int64_t num_nonzeros,
     const int * indices,
     const double * data)
 {
     x->type = mtxvector_coordinate;
     return mtxvector_coordinate_init_real_double(
-        &x->storage.coordinate, num_rows, num_nonzeros, indices, data);
+        &x->storage.coordinate, size, num_nonzeros, indices, data);
 }
 
 /**
@@ -1002,14 +1188,14 @@ int mtxvector_init_coordinate_real_double(
  */
 int mtxvector_init_coordinate_complex_single(
     struct mtxvector * x,
-    int num_rows,
+    int64_t size,
     int64_t num_nonzeros,
     const int * indices,
     const float (* data)[2])
 {
     x->type = mtxvector_coordinate;
     return mtxvector_coordinate_init_complex_single(
-        &x->storage.coordinate, num_rows, num_nonzeros, indices, data);
+        &x->storage.coordinate, size, num_nonzeros, indices, data);
 }
 
 /**
@@ -1019,14 +1205,14 @@ int mtxvector_init_coordinate_complex_single(
  */
 int mtxvector_init_coordinate_complex_double(
     struct mtxvector * x,
-    int num_rows,
+    int64_t size,
     int64_t num_nonzeros,
     const int * indices,
     const double (* data)[2])
 {
     x->type = mtxvector_coordinate;
     return mtxvector_coordinate_init_complex_double(
-        &x->storage.coordinate, num_rows, num_nonzeros, indices, data);
+        &x->storage.coordinate, size, num_nonzeros, indices, data);
 }
 
 /**
@@ -1036,14 +1222,14 @@ int mtxvector_init_coordinate_complex_double(
  */
 int mtxvector_init_coordinate_integer_single(
     struct mtxvector * x,
-    int num_rows,
+    int64_t size,
     int64_t num_nonzeros,
     const int * indices,
     const int32_t * data)
 {
     x->type = mtxvector_coordinate;
     return mtxvector_coordinate_init_integer_single(
-        &x->storage.coordinate, num_rows, num_nonzeros, indices, data);
+        &x->storage.coordinate, size, num_nonzeros, indices, data);
 }
 
 /**
@@ -1053,14 +1239,14 @@ int mtxvector_init_coordinate_integer_single(
  */
 int mtxvector_init_coordinate_integer_double(
     struct mtxvector * x,
-    int num_rows,
+    int64_t size,
     int64_t num_nonzeros,
     const int * indices,
     const int64_t * data)
 {
     x->type = mtxvector_coordinate;
     return mtxvector_coordinate_init_integer_double(
-        &x->storage.coordinate, num_rows, num_nonzeros, indices, data);
+        &x->storage.coordinate, size, num_nonzeros, indices, data);
 }
 
 /**
@@ -1070,13 +1256,13 @@ int mtxvector_init_coordinate_integer_double(
  */
 int mtxvector_init_coordinate_pattern(
     struct mtxvector * x,
-    int num_rows,
+    int64_t size,
     int64_t num_nonzeros,
     const int * indices)
 {
     x->type = mtxvector_coordinate;
     return mtxvector_coordinate_init_pattern(
-        &x->storage.coordinate, num_rows, num_nonzeros, indices);
+        &x->storage.coordinate, size, num_nonzeros, indices);
 }
 
 /*

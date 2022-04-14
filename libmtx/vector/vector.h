@@ -170,7 +170,7 @@ int mtxvector_alloc(
     enum mtxvectortype type,
     enum mtxfield field,
     enum mtxprecision precision,
-    int size);
+    int64_t size);
 
 /**
  * ‘mtxvector_init_real_single()’ allocates and initialises a vector
@@ -179,7 +179,7 @@ int mtxvector_alloc(
 int mtxvector_init_real_single(
     struct mtxvector * x,
     enum mtxvectortype type,
-    int size,
+    int64_t size,
     const float * data);
 
 /**
@@ -189,7 +189,7 @@ int mtxvector_init_real_single(
 int mtxvector_init_real_double(
     struct mtxvector * x,
     enum mtxvectortype type,
-    int size,
+    int64_t size,
     const double * data);
 
 /**
@@ -199,7 +199,7 @@ int mtxvector_init_real_double(
 int mtxvector_init_complex_single(
     struct mtxvector * x,
     enum mtxvectortype type,
-    int size,
+    int64_t size,
     const float (* data)[2]);
 
 /**
@@ -209,7 +209,7 @@ int mtxvector_init_complex_single(
 int mtxvector_init_complex_double(
     struct mtxvector * x,
     enum mtxvectortype type,
-    int size,
+    int64_t size,
     const double (* data)[2]);
 
 /**
@@ -219,7 +219,7 @@ int mtxvector_init_complex_double(
 int mtxvector_init_integer_single(
     struct mtxvector * x,
     enum mtxvectortype type,
-    int size,
+    int64_t size,
     const int32_t * data);
 
 /**
@@ -229,7 +229,7 @@ int mtxvector_init_integer_single(
 int mtxvector_init_integer_double(
     struct mtxvector * x,
     enum mtxvectortype type,
-    int size,
+    int64_t size,
     const int64_t * data);
 
 /**
@@ -239,7 +239,77 @@ int mtxvector_init_integer_double(
 int mtxvector_init_pattern(
     struct mtxvector * x,
     enum mtxvectortype type,
-    int size);
+    int64_t size);
+
+/*
+ * initialise vectors from strided arrays
+ */
+
+/**
+ * ‘mtxvector_init_strided_real_single()’ allocates and initialises a
+ * vector with real, single precision coefficients.
+ */
+int mtxvector_init_strided_real_single(
+    struct mtxvector * x,
+    enum mtxvectortype type,
+    int64_t size,
+    const float * data,
+    int64_t stride);
+
+/**
+ * ‘mtxvector_init_strided_real_double()’ allocates and initialises a
+ * vector with real, double precision coefficients.
+ */
+int mtxvector_init_strided_real_double(
+    struct mtxvector * x,
+    enum mtxvectortype type,
+    int64_t size,
+    const double * data,
+    int64_t stride);
+
+/**
+ * ‘mtxvector_init_strided_complex_single()’ allocates and initialises
+ * a vector with complex, single precision coefficients.
+ */
+int mtxvector_init_strided_complex_single(
+    struct mtxvector * x,
+    enum mtxvectortype type,
+    int64_t size,
+    const float (* data)[2],
+    int64_t stride);
+
+/**
+ * ‘mtxvector_init_strided_complex_double()’ allocates and initialises
+ * a vector with complex, double precision coefficients.
+ */
+int mtxvector_init_strided_complex_double(
+    struct mtxvector * x,
+    enum mtxvectortype type,
+    int64_t size,
+    const double (* data)[2],
+    int64_t stride);
+
+/**
+ * ‘mtxvector_init_strided_integer_single()’ allocates and initialises
+ * a vector with integer, single precision coefficients.
+ */
+int mtxvector_init_strided_integer_single(
+    struct mtxvector * x,
+    enum mtxvectortype type,
+    int64_t size,
+    const int32_t * data,
+    int64_t stride);
+
+/**
+ * ‘mtxvector_init_strided_integer_double()’ allocates and initialises
+ * a vector with integer, double precision coefficients.
+ */
+int mtxvector_init_strided_integer_double(
+    struct mtxvector * x,
+    enum mtxvectortype type,
+    int64_t size,
+    const int64_t * data,
+    int64_t stride);
 
 /*
  * Basic, dense vectors
@@ -319,7 +389,7 @@ int mtxvector_alloc_array(
     struct mtxvector * x,
     enum mtxfield field,
     enum mtxprecision precision,
-    int size);
+    int64_t size);
 
 /**
  * ‘mtxvector_init_array_real_single()’ allocates and initialises a
@@ -327,7 +397,7 @@ int mtxvector_alloc_array(
  */
 int mtxvector_init_array_real_single(
     struct mtxvector * x,
-    int size,
+    int64_t size,
     const float * data);
 
 /**
@@ -336,7 +406,7 @@ int mtxvector_init_array_real_single(
  */
 int mtxvector_init_array_real_double(
     struct mtxvector * x,
-    int size,
+    int64_t size,
     const double * data);
 
 /**
@@ -345,7 +415,7 @@ int mtxvector_init_array_real_double(
  */
 int mtxvector_init_array_complex_single(
     struct mtxvector * x,
-    int size,
+    int64_t size,
     const float (* data)[2]);
 
 /**
@@ -354,7 +424,7 @@ int mtxvector_init_array_complex_single(
  */
 int mtxvector_init_array_complex_double(
     struct mtxvector * x,
-    int size,
+    int64_t size,
     const double (* data)[2]);
 
 /**
@@ -363,7 +433,7 @@ int mtxvector_init_array_complex_double(
  */
 int mtxvector_init_array_integer_single(
     struct mtxvector * x,
-    int size,
+    int64_t size,
     const int32_t * data);
 
 /**
@@ -372,7 +442,7 @@ int mtxvector_init_array_integer_single(
  */
 int mtxvector_init_array_integer_double(
     struct mtxvector * x,
-    int size,
+    int64_t size,
     const int64_t * data);
 
 /*
@@ -522,7 +592,7 @@ int mtxvector_alloc_omp(
     struct mtxvector * x,
     enum mtxfield field,
     enum mtxprecision precision,
-    int size,
+    int64_t size,
     int num_threads);
 
 /**
@@ -532,7 +602,7 @@ int mtxvector_alloc_omp(
  */
 int mtxvector_init_omp_real_single(
     struct mtxvector * x,
-    int size,
+    int64_t size,
     const float * data,
     int num_threads);
 
@@ -543,7 +613,7 @@ int mtxvector_init_omp_real_single(
  */
 int mtxvector_init_omp_real_double(
     struct mtxvector * x,
-    int size,
+    int64_t size,
     const double * data,
     int num_threads);
 
@@ -554,7 +624,7 @@ int mtxvector_init_omp_real_double(
  */
 int mtxvector_init_omp_complex_single(
     struct mtxvector * x,
-    int size,
+    int64_t size,
     const float (* data)[2],
     int num_threads);
 
@@ -565,7 +635,7 @@ int mtxvector_init_omp_complex_single(
  */
 int mtxvector_init_omp_complex_double(
     struct mtxvector * x,
-    int size,
+    int64_t size,
     const double (* data)[2],
     int num_threads);
 
@@ -576,7 +646,7 @@ int mtxvector_init_omp_complex_double(
  */
 int mtxvector_init_omp_integer_single(
     struct mtxvector * x,
-    int size,
+    int64_t size,
     const int32_t * data,
     int num_threads);
 
@@ -587,7 +657,7 @@ int mtxvector_init_omp_integer_single(
  */
 int mtxvector_init_omp_integer_double(
     struct mtxvector * x,
-    int size,
+    int64_t size,
     const int64_t * data,
     int num_threads);
 
@@ -603,7 +673,7 @@ int mtxvector_alloc_coordinate(
     struct mtxvector * x,
     enum mtxfield field,
     enum mtxprecision precision,
-    int size,
+    int64_t size,
     int64_t num_nonzeros);
 
 /**
@@ -613,7 +683,7 @@ int mtxvector_alloc_coordinate(
  */
 int mtxvector_init_coordinate_real_single(
     struct mtxvector * x,
-    int size,
+    int64_t size,
     int64_t num_nonzeros,
     const int * indices,
     const float * values);
@@ -625,7 +695,7 @@ int mtxvector_init_coordinate_real_single(
  */
 int mtxvector_init_coordinate_real_double(
     struct mtxvector * x,
-    int size,
+    int64_t size,
     int64_t num_nonzeros,
     const int * indices,
     const double * values);
@@ -637,7 +707,7 @@ int mtxvector_init_coordinate_real_double(
  */
 int mtxvector_init_coordinate_complex_single(
     struct mtxvector * x,
-    int size,
+    int64_t size,
     int64_t num_nonzeros,
     const int * indices,
     const float (* values)[2]);
@@ -649,7 +719,7 @@ int mtxvector_init_coordinate_complex_single(
  */
 int mtxvector_init_coordinate_complex_double(
     struct mtxvector * x,
-    int size,
+    int64_t size,
     int64_t num_nonzeros,
     const int * indices,
     const double (* values)[2]);
@@ -661,7 +731,7 @@ int mtxvector_init_coordinate_complex_double(
  */
 int mtxvector_init_coordinate_integer_single(
     struct mtxvector * x,
-    int size,
+    int64_t size,
     int64_t num_nonzeros,
     const int * indices,
     const int32_t * values);
@@ -673,7 +743,7 @@ int mtxvector_init_coordinate_integer_single(
  */
 int mtxvector_init_coordinate_integer_double(
     struct mtxvector * x,
-    int size,
+    int64_t size,
     int64_t num_nonzeros,
     const int * indices,
     const int64_t * values);
@@ -685,7 +755,7 @@ int mtxvector_init_coordinate_integer_double(
  */
 int mtxvector_init_coordinate_pattern(
     struct mtxvector * x,
-    int size,
+    int64_t size,
     int64_t num_nonzeros,
     const int * indices);
 

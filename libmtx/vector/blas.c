@@ -181,6 +181,88 @@ int mtxvector_blas_init_pattern(
 }
 
 /*
+ * initialise vectors from strided arrays
+ */
+
+/**
+ * ‘mtxvector_blas_init_strided_real_single()’ allocates and
+ * initialises a vector with real, single precision coefficients.
+ */
+int mtxvector_blas_init_strided_real_single(
+    struct mtxvector_blas * x,
+    int64_t size,
+    const float * data,
+    int64_t stride)
+{
+    return mtxvector_base_init_strided_real_single(&x->base, size, data, stride);
+}
+
+/**
+ * ‘mtxvector_blas_init_strided_real_double()’ allocates and
+ * initialises a vector with real, double precision coefficients.
+ */
+int mtxvector_blas_init_strided_real_double(
+    struct mtxvector_blas * x,
+    int64_t size,
+    const double * data,
+    int64_t stride)
+{
+    return mtxvector_base_init_strided_real_double(&x->base, size, data, stride);
+}
+
+/**
+ * ‘mtxvector_blas_init_strided_complex_single()’ allocates and
+ * initialises a vector with complex, single precision coefficients.
+ */
+int mtxvector_blas_init_strided_complex_single(
+    struct mtxvector_blas * x,
+    int64_t size,
+    const float (* data)[2],
+    int64_t stride)
+{
+    return mtxvector_base_init_strided_complex_single(&x->base, size, data, stride);
+}
+
+/**
+ * ‘mtxvector_blas_init_strided_complex_double()’ allocates and
+ * initialises a vector with complex, double precision coefficients.
+ */
+int mtxvector_blas_init_strided_complex_double(
+    struct mtxvector_blas * x,
+    int64_t size,
+    const double (* data)[2],
+    int64_t stride)
+{
+    return mtxvector_base_init_strided_complex_double(&x->base, size, data, stride);
+}
+
+/**
+ * ‘mtxvector_blas_init_strided_integer_single()’ allocates and
+ * initialises a vector with integer, single precision coefficients.
+ */
+int mtxvector_blas_init_strided_integer_single(
+    struct mtxvector_blas * x,
+    int64_t size,
+    const int32_t * data,
+    int64_t stride)
+{
+    return mtxvector_base_init_strided_integer_single(&x->base, size, data, stride);
+}
+
+/**
+ * ‘mtxvector_blas_init_strided_integer_double()’ allocates and
+ * initialises a vector with integer, double precision coefficients.
+ */
+int mtxvector_blas_init_strided_integer_double(
+    struct mtxvector_blas * x,
+    int64_t size,
+    const int64_t * data,
+    int64_t stride)
+{
+    return mtxvector_base_init_strided_integer_double(&x->base, size, data, stride);
+}
+
+/*
  * Modifying values
  */
 

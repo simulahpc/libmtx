@@ -119,6 +119,30 @@ static int mtxvector_packed_init_idx(
     return MTX_SUCCESS;
 }
 
+static int mtxvector_packed_init_strided_idx(
+    struct mtxvector_packed * x,
+    int64_t size,
+    int64_t num_nonzeros,
+    const int64_t * idx,
+    int64_t idxstride,
+    int idxbase)
+{
+    int err;
+    x->size = size;
+    x->num_nonzeros = num_nonzeros;
+    x->idx = malloc(num_nonzeros * sizeof(int64_t));
+    if (!x->idx) return MTX_ERR_ERRNO;
+    for (int64_t k = 0; k < num_nonzeros; k++) {
+        int64_t idxk = (*(int64_t *) ((unsigned char *) idx + k*idxstride)) - idxbase;
+        if (idxk < 0 || idxk >= size) {
+            free(x->idx);
+            return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+        }
+        x->idx[k] = idxk;
+    }
+    return MTX_SUCCESS;
+}
+
 /**
  * ‘mtxvector_packed_init_real_single()’ allocates and initialises a
  * vector with real, single precision coefficients.
@@ -251,6 +275,171 @@ int mtxvector_packed_init_pattern(
     return MTX_SUCCESS;
 }
 
+/**
+ * ‘mtxvector_packed_init_strided_real_single()’ allocates and
+ * initialises a vector with real, single precision coefficients.
+ */
+int mtxvector_packed_init_strided_real_single(
+    struct mtxvector_packed * x,
+    enum mtxvectortype type,
+    int64_t size,
+    int64_t num_nonzeros,
+    const int64_t * idx,
+    int64_t idxstride,
+    int idxbase,
+    const float * data,
+    int64_t datastride)
+{
+    int err = mtxvector_packed_init_strided_idx(
+        x, size, num_nonzeros, idx, idxstride, idxbase);
+    if (err) return err;
+    err = mtxvector_init_strided_real_single(
+        &x->x, type, num_nonzeros, data, datastride);
+    if (err) { free(x->idx); return err; }
+    return MTX_SUCCESS;
+}
+
+/**
+ * ‘mtxvector_packed_init_strided_real_double()’ allocates and
+ * initialises a vector with real, double precision coefficients.
+ */
+int mtxvector_packed_init_strided_real_double(
+    struct mtxvector_packed * x,
+    enum mtxvectortype type,
+    int64_t size,
+    int64_t num_nonzeros,
+    const int64_t * idx,
+    int64_t idxstride,
+    int idxbase,
+    const double * data,
+    int64_t datastride)
+{
+    int err = mtxvector_packed_init_strided_idx(
+        x, size, num_nonzeros, idx, idxstride, idxbase);
+    if (err) return err;
+    err = mtxvector_init_strided_real_double(
+        &x->x, type, num_nonzeros, data, datastride);
+    if (err) { free(x->idx); return err; }
+    return MTX_SUCCESS;
+}
+
+/**
+ * ‘mtxvector_packed_init_strided_complex_single()’ allocates and
+ * initialises a vector with complex, single precision coefficients.
+ */
+int mtxvector_packed_init_strided_complex_single(
+    struct mtxvector_packed * x,
+    enum mtxvectortype type,
+    int64_t size,
+    int64_t num_nonzeros,
+    const int64_t * idx,
+    int64_t idxstride,
+    int idxbase,
+    const float (* data)[2],
+    int64_t datastride)
+{
+    int err = mtxvector_packed_init_strided_idx(
+        x, size, num_nonzeros, idx, idxstride, idxbase);
+    if (err) return err;
+    err = mtxvector_init_strided_complex_single(
+        &x->x, type, num_nonzeros, data, datastride);
+    if (err) { free(x->idx); return err; }
+    return MTX_SUCCESS;
+}
+
+/**
+ * ‘mtxvector_packed_init_strided_complex_double()’ allocates and
+ * initialises a vector with complex, double precision coefficients.
+ */
+int mtxvector_packed_init_strided_complex_double(
+    struct mtxvector_packed * x,
+    enum mtxvectortype type,
+    int64_t size,
+    int64_t num_nonzeros,
+    const int64_t * idx,
+    int64_t idxstride,
+    int idxbase,
+    const double (* data)[2],
+    int64_t datastride)
+{
+    int err = mtxvector_packed_init_strided_idx(
+        x, size, num_nonzeros, idx, idxstride, idxbase);
+    if (err) return err;
+    err = mtxvector_init_strided_complex_double(
+        &x->x, type, num_nonzeros, data, datastride);
+    if (err) { free(x->idx); return err; }
+    return MTX_SUCCESS;
+}
+
+/**
+ * ‘mtxvector_packed_init_strided_integer_single()’ allocates and
+ * initialises a vector with integer, single precision coefficients.
+ */
+int mtxvector_packed_init_strided_integer_single(
+    struct mtxvector_packed * x,
+    enum mtxvectortype type,
+    int64_t size,
+    int64_t num_nonzeros,
+    const int64_t * idx,
+    int64_t idxstride,
+    int idxbase,
+    const int32_t * data,
+    int64_t datastride)
+{
+    int err = mtxvector_packed_init_strided_idx(
+        x, size, num_nonzeros, idx, idxstride, idxbase);
+    if (err) return err;
+    err = mtxvector_init_strided_integer_single(
+        &x->x, type, num_nonzeros, data, datastride);
+    if (err) { free(x->idx); return err; }
+    return MTX_SUCCESS;
+}
+
+/**
+ * ‘mtxvector_packed_init_strided_integer_double()’ allocates and
+ * initialises a vector with integer, double precision coefficients.
+ */
+int mtxvector_packed_init_strided_integer_double(
+    struct mtxvector_packed * x,
+    enum mtxvectortype type,
+    int64_t size,
+    int64_t num_nonzeros,
+    const int64_t * idx,
+    int64_t idxstride,
+    int idxbase,
+    const int64_t * data,
+    int64_t datastride)
+{
+    int err = mtxvector_packed_init_strided_idx(
+        x, size, num_nonzeros, idx, idxstride, idxbase);
+    if (err) return err;
+    err = mtxvector_init_strided_integer_double(
+        &x->x, type, num_nonzeros, data, datastride);
+    if (err) { free(x->idx); return err; }
+    return MTX_SUCCESS;
+}
+
+/**
+ * ‘mtxvector_packed_init_pattern()’ allocates and initialises a
+ * binary pattern vector, where every entry has a value of one.
+ */
+int mtxvector_packed_init_strided_pattern(
+    struct mtxvector_packed * x,
+    enum mtxvectortype type,
+    int64_t size,
+    int64_t num_nonzeros,
+    const int64_t * idx,
+    int64_t idxstride,
+    int idxbase)
+{
+    int err = mtxvector_packed_init_strided_idx(
+        x, size, num_nonzeros, idx, idxstride, idxbase);
+    if (err) return err;
+    err = mtxvector_init_pattern(&x->x, type, num_nonzeros);
+    if (err) { free(x->idx); return err; }
+    return MTX_SUCCESS;
+}
+
 /*
  * Modifying values
  */
@@ -317,7 +506,76 @@ int mtxvector_packed_set_constant_integer_double(
  */
 int mtxvector_packed_from_mtxfile(
     struct mtxvector_packed * x,
-    const struct mtxfile * mtxfile);
+    const struct mtxfile * mtxfile,
+    enum mtxvectortype type)
+{
+    int err;
+    if (mtxfile->header.object != mtxfile_vector)
+        return MTX_ERR_INCOMPATIBLE_MTX_OBJECT;
+
+    /* TODO: If needed, we could convert from array to coordinate. */
+    if (mtxfile->header.format != mtxfile_coordinate)
+        return MTX_ERR_INCOMPATIBLE_MTX_FORMAT;
+
+    int64_t size = mtxfile->size.num_rows;
+    int64_t num_nonzeros = mtxfile->size.num_nonzeros;
+    if (mtxfile->header.field == mtxfile_real) {
+        if (mtxfile->precision == mtx_single) {
+            const struct mtxfile_vector_coordinate_real_single * data =
+                mtxfile->data.vector_coordinate_real_single;
+            err = mtxvector_packed_init_strided_real_single(
+                x, type, size, num_nonzeros, &data[0].i, sizeof(*data), 1,
+                &data[0].a, sizeof(*data));
+            if (err) return err;
+        } else if (mtxfile->precision == mtx_double) {
+            const struct mtxfile_vector_coordinate_real_double * data =
+                mtxfile->data.vector_coordinate_real_double;
+            err = mtxvector_packed_init_strided_real_double(
+                x, type, size, num_nonzeros, &data[0].i, sizeof(*data), 1,
+                &data[0].a, sizeof(*data));
+            if (err) return err;
+        } else { return MTX_ERR_INVALID_PRECISION; }
+    } else if (mtxfile->header.field == mtxfile_complex) {
+        if (mtxfile->precision == mtx_single) {
+            const struct mtxfile_vector_coordinate_complex_single * data =
+                mtxfile->data.vector_coordinate_complex_single;
+            err = mtxvector_packed_init_strided_complex_single(
+                x, type, size, num_nonzeros, &data[0].i, sizeof(*data), 1,
+                &data[0].a, sizeof(*data));
+            if (err) return err;
+        } else if (mtxfile->precision == mtx_double) {
+            const struct mtxfile_vector_coordinate_complex_double * data =
+                mtxfile->data.vector_coordinate_complex_double;
+            err = mtxvector_packed_init_strided_complex_double(
+                x, type, size, num_nonzeros, &data[0].i, sizeof(*data), 1,
+                &data[0].a, sizeof(*data));
+            if (err) return err;
+        } else { return MTX_ERR_INVALID_PRECISION; }
+    } else if (mtxfile->header.field == mtxfile_integer) {
+        if (mtxfile->precision == mtx_single) {
+            const struct mtxfile_vector_coordinate_integer_single * data =
+                mtxfile->data.vector_coordinate_integer_single;
+            err = mtxvector_packed_init_strided_integer_single(
+                x, type, size, num_nonzeros, &data[0].i, sizeof(*data), 1,
+                &data[0].a, sizeof(*data));
+            if (err) return err;
+        } else if (mtxfile->precision == mtx_double) {
+            const struct mtxfile_vector_coordinate_integer_double * data =
+                mtxfile->data.vector_coordinate_integer_double;
+            err = mtxvector_packed_init_strided_integer_double(
+                x, type, size, num_nonzeros, &data[0].i, sizeof(*data), 1,
+                &data[0].a, sizeof(*data));
+            if (err) return err;
+        } else { return MTX_ERR_INVALID_PRECISION; }
+    } else if (mtxfile->header.field == mtxfile_pattern) {
+        const struct mtxfile_vector_coordinate_pattern * data =
+            mtxfile->data.vector_coordinate_pattern;
+        err = mtxvector_packed_init_strided_pattern(
+            x, type, size, num_nonzeros, &data[0].i, sizeof(*data), 1);
+        if (err) return err;
+    } else { return MTX_ERR_INVALID_MTX_FIELD; }
+    return MTX_SUCCESS;
+}
 
 /**
  * ‘mtxvector_packed_to_mtxfile()’ converts to a vector in Matrix
