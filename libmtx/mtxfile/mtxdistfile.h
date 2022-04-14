@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-01-19
+ * Last modified: 2022-04-14
  *
  * Matrix Market files distributed among multiple processes with MPI
  * for inter-process communication.
@@ -765,7 +765,7 @@ int mtxdistfile_read_shared(
     enum mtxprecision precision,
     const char * path,
     bool gzip,
-    int * lines_read,
+    int64_t * lines_read,
     int64_t * bytes_read,
     MPI_Comm comm,
     int root,
@@ -808,7 +808,7 @@ int mtxdistfile_fread_shared(
     struct mtxdistfile * mtxdistfile,
     enum mtxprecision precision,
     FILE * f,
-    int * lines_read,
+    int64_t * lines_read,
     int64_t * bytes_read,
     size_t line_max,
     char * linebuf,
@@ -855,7 +855,7 @@ int mtxdistfile_gzread_shared(
     struct mtxdistfile * mtxdistfile,
     enum mtxprecision precision,
     gzFile f,
-    int * lines_read,
+    int64_t * lines_read,
     int64_t * bytes_read,
     size_t line_max,
     char * linebuf,

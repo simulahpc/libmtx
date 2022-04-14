@@ -721,7 +721,7 @@ int main(int argc, char *argv[])
     }
 
     struct mtxdistfile mtxdistfile;
-    int lines_read;
+    int64_t lines_read = 0;
     int64_t bytes_read;
     err = mtxdistfile_read_shared(
         &mtxdistfile, args.precision,
@@ -768,7 +768,7 @@ int main(int argc, char *argv[])
             clock_gettime(CLOCK_MONOTONIC, &t0);
         }
 
-        int lines_read = 0;
+        int64_t lines_read = 0;
         int64_t bytes_read = 0;
         err = mtxpartition_read_parts(
             &partition, args.num_parts, args.partition_path,
@@ -1015,7 +1015,7 @@ int main(int argc, char *argv[])
     }
 
     struct mtxfile mtxfile;
-    int lines_read;
+    int64_t lines_read = 0;
     int64_t bytes_read;
     err = mtxfile_read(
         &mtxfile, args.precision,

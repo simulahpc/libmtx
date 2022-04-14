@@ -72,7 +72,7 @@ codes from the @code{mtxerror} enum type.
 FILE * f = fopen("test.mtx", "r");
 
 struct mtxfile mtx;
-int lines_read;
+ int64_t lines_read;
 int err = mtxfile_fread(
     &mtx, mtx_double, f,
     &lines_read, NULL, 0, NULL);

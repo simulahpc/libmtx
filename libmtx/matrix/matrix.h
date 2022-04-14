@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-03-15
+ * Last modified: 2022-04-14
  *
  * Data structures for matrices.
  */
@@ -538,7 +538,7 @@ int mtxmatrix_read(
     enum mtxmatrixtype type,
     const char * path,
     bool gzip,
-    int * lines_read,
+    int64_t * lines_read,
     int64_t * bytes_read);
 
 /**
@@ -563,7 +563,7 @@ int mtxmatrix_fread(
     enum mtxprecision precision,
     enum mtxmatrixtype type,
     FILE * f,
-    int * lines_read,
+    int64_t * lines_read,
     int64_t * bytes_read,
     size_t line_max,
     char * linebuf);
@@ -590,7 +590,7 @@ int mtxmatrix_gzread(
     enum mtxprecision precision,
     enum mtxmatrixtype type,
     gzFile f,
-    int * lines_read,
+    int64_t * lines_read,
     int64_t * bytes_read,
     size_t line_max,
     char * linebuf);

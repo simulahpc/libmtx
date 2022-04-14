@@ -278,7 +278,7 @@ int main(int argc, char *argv[])
     }
 
     struct mtxfile mtxfile;
-    int lines_read;
+    int64_t lines_read = 0;
     int64_t bytes_read;
     err = mtxfile_read(
         &mtxfile, args.precision, args.mtx_path, args.gzip,

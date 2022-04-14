@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-01-05
+ * Last modified: 2022-04-14
  *
  * Matrix Market file headers.
  */
@@ -328,7 +328,7 @@ int mtxfileheader_copy(
 int mtxfileheader_fread(
     struct mtxfileheader * header,
     FILE * f,
-    int * lines_read,
+    int64_t * lines_read,
     int64_t * bytes_read,
     size_t line_max,
     char * linebuf);
@@ -345,7 +345,7 @@ int mtxfileheader_fread(
 int mtxfileheader_gzread(
     struct mtxfileheader * header,
     gzFile f,
-    int * lines_read,
+    int64_t * lines_read,
     int64_t * bytes_read,
     size_t line_max,
     char * linebuf);

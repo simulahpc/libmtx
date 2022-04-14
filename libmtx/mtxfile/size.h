@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-01-05
+ * Last modified: 2022-04-14
  *
  * Matrix Market size lines.
  */
@@ -133,7 +133,7 @@ int mtxfilesize_num_data_lines(
 int mtxfilesize_fread(
     struct mtxfilesize * size,
     FILE * f,
-    int * lines_read,
+    int64_t * lines_read,
     int64_t * bytes_read,
     size_t line_max,
     char * linebuf,
@@ -152,7 +152,7 @@ int mtxfilesize_fread(
 int mtxfilesize_gzread(
     struct mtxfilesize * size,
     gzFile f,
-    int * lines_read,
+    int64_t * lines_read,
     int64_t * bytes_read,
     size_t line_max,
     char * linebuf,

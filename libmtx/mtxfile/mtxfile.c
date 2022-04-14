@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-03-11
+ * Last modified: 2022-04-14
  *
  * Matrix Market files.
  */
@@ -1254,7 +1254,7 @@ int mtxfile_read(
     enum mtxprecision precision,
     const char * path,
     bool gzip,
-    int * lines_read,
+    int64_t * lines_read,
     int64_t * bytes_read)
 {
     int err;
@@ -1332,7 +1332,7 @@ int mtxfile_fread(
     struct mtxfile * mtxfile,
     enum mtxprecision precision,
     FILE * f,
-    int * lines_read,
+    int64_t * lines_read,
     int64_t * bytes_read,
     size_t line_max,
     char * linebuf)
@@ -1444,7 +1444,7 @@ int mtxfile_gzread(
     struct mtxfile * mtxfile,
     enum mtxprecision precision,
     gzFile f,
-    int * lines_read,
+    int64_t * lines_read,
     int64_t * bytes_read,
     size_t line_max,
     char * linebuf)

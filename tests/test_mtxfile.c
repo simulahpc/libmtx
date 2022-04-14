@@ -549,7 +549,7 @@ int test_mtxfileheader_fread(void)
         FILE * f = fmemopen(mtxfile, sizeof(mtxfile), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         struct mtxfileheader header;
-        int lines_read = 0;
+        int64_t lines_read = 0;
         int64_t bytes_read = 0;
         err = mtxfileheader_fread(&header, f, &lines_read, &bytes_read, 0, NULL);
         TEST_ASSERT_EQ_MSG(
@@ -565,7 +565,7 @@ int test_mtxfileheader_fread(void)
         FILE * f = fmemopen(mtxfile, sizeof(mtxfile), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         struct mtxfileheader header;
-        int lines_read = 0;
+        int64_t lines_read = 0;
         int64_t bytes_read = 0;
         err = mtxfileheader_fread(&header, f, &lines_read, &bytes_read, 0, NULL);
         TEST_ASSERT_EQ_MSG(
@@ -589,7 +589,7 @@ int test_mtxfileheader_fread(void)
         FILE * f = fmemopen(mtxfile, strlen(mtxfile), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         struct mtxfileheader header;
-        int lines_read = 0;
+        int64_t lines_read = 0;
         int64_t bytes_read = 0;
         err = mtxfileheader_fread(&header, f, &lines_read, &bytes_read, 0, NULL);
         TEST_ASSERT_NEQ_MSG(
@@ -611,7 +611,7 @@ int test_mtxfileheader_fread(void)
         FILE * f = fmemopen(mtxfile, strlen(mtxfile), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         struct mtxfileheader header;
-        int lines_read = 0;
+        int64_t lines_read = 0;
         int64_t bytes_read = 0;
         err = mtxfileheader_fread(&header, f, &lines_read, &bytes_read, 0, NULL);
         TEST_ASSERT_EQ_MSG(
@@ -628,7 +628,7 @@ int test_mtxfileheader_fread(void)
         FILE * f = fmemopen(mtxfile, sizeof(mtxfile), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         struct mtxfileheader header;
-        int lines_read = 0;
+        int64_t lines_read = 0;
         int64_t bytes_read = 0;
         err = mtxfileheader_fread(&header, f, &lines_read, &bytes_read, 0, NULL);
         TEST_ASSERT_EQ_MSG(
@@ -644,7 +644,7 @@ int test_mtxfileheader_fread(void)
         FILE * f = fmemopen(mtxfile, sizeof(mtxfile), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         struct mtxfileheader header;
-        int lines_read = 0;
+        int64_t lines_read = 0;
         int64_t bytes_read = 0;
         err = mtxfileheader_fread(&header, f, &lines_read, &bytes_read, 0, NULL);
         TEST_ASSERT_EQ_MSG(
@@ -661,7 +661,7 @@ int test_mtxfileheader_fread(void)
         FILE * f = fmemopen(mtxfile, sizeof(mtxfile), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         struct mtxfileheader header;
-        int lines_read = 0;
+        int64_t lines_read = 0;
         int64_t bytes_read = 0;
         err = mtxfileheader_fread(&header, f, &lines_read, &bytes_read, 0, NULL);
         TEST_ASSERT_EQ_MSG(
@@ -678,7 +678,7 @@ int test_mtxfileheader_fread(void)
         FILE * f = fmemopen(mtxfile, sizeof(mtxfile), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         struct mtxfileheader header;
-        int lines_read = 0;
+        int64_t lines_read = 0;
         int64_t bytes_read = 0;
         err = mtxfileheader_fread(&header, f, &lines_read, &bytes_read, 0, NULL);
         TEST_ASSERT_EQ_MSG(
@@ -695,7 +695,7 @@ int test_mtxfileheader_fread(void)
         FILE * f = fmemopen(mtxfile, sizeof(mtxfile), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         struct mtxfileheader header;
-        int lines_read = 0;
+        int64_t lines_read = 0;
         int64_t bytes_read = 0;
         err = mtxfileheader_fread(&header, f, &lines_read, &bytes_read, 0, NULL);
         TEST_ASSERT_EQ_MSG(
@@ -721,7 +721,7 @@ int test_mtxfile_fread_comments(void)
         FILE * f = fmemopen(mtxfile, sizeof(mtxfile), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         struct mtxfilecomments comments;
-        int lines_read = 0;
+        int64_t lines_read = 0;
         int64_t bytes_read = 0;
         err = mtxfile_fread_comments(&comments, f, &lines_read, &bytes_read, 0, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
@@ -738,7 +738,7 @@ int test_mtxfile_fread_comments(void)
         FILE * f = fmemopen(mtxfile, sizeof(mtxfile), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         struct mtxfilecomments comments;
-        int lines_read = 0;
+        int64_t lines_read = 0;
         int64_t bytes_read = 0;
         err = mtxfile_fread_comments(&comments, f, &lines_read, &bytes_read, 0, NULL);
         TEST_ASSERT_EQ(MTX_ERR_INVALID_MTX_COMMENT, err);
@@ -753,7 +753,7 @@ int test_mtxfile_fread_comments(void)
         FILE * f = fmemopen(mtxfile, sizeof(mtxfile), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         struct mtxfilecomments comments;
-        int lines_read = 0;
+        int64_t lines_read = 0;
         int64_t bytes_read = 0;
         err = mtxfile_fread_comments(&comments, f, &lines_read, &bytes_read, 0, NULL);
         TEST_ASSERT_EQ_MSG(
@@ -783,7 +783,7 @@ int test_mtxfilesize_fread(void)
         FILE * f = fmemopen(mtxfile, sizeof(mtxfile), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         struct mtxfilesize size;
-        int lines_read = 0;
+        int64_t lines_read = 0;
         int64_t bytes_read = 0;
         err = mtxfilesize_fread(
             &size, f, &lines_read, &bytes_read, 0, NULL,
@@ -802,7 +802,7 @@ int test_mtxfilesize_fread(void)
         FILE * f = fmemopen(mtxfile, sizeof(mtxfile), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         struct mtxfilesize size;
-        int lines_read = 0;
+        int64_t lines_read = 0;
         int64_t bytes_read = 0;
         err = mtxfilesize_fread(
             &size, f, &lines_read, &bytes_read, 0, NULL,
@@ -821,7 +821,7 @@ int test_mtxfilesize_fread(void)
         FILE * f = fmemopen(mtxfile, sizeof(mtxfile), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         struct mtxfilesize size;
-        int lines_read = 0;
+        int64_t lines_read = 0;
         int64_t bytes_read = 0;
         err = mtxfilesize_fread(
             &size, f, &lines_read, &bytes_read, 0, NULL,
@@ -840,7 +840,7 @@ int test_mtxfilesize_fread(void)
         FILE * f = fmemopen(mtxfile, sizeof(mtxfile), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         struct mtxfilesize size;
-        int lines_read = 0;
+        int64_t lines_read = 0;
         int64_t bytes_read = 0;
         err = mtxfilesize_fread(
             &size, f, &lines_read, &bytes_read, 0, NULL,
@@ -870,7 +870,7 @@ int test_mtxfiledata_fread(void)
         char s[] = "1.5\n1.6\n";
         FILE * f = fmemopen(s, sizeof(s), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
-        int lines_read = 0;
+        int64_t lines_read = 0;
         int64_t bytes_read = 0;
         union mtxfiledata data;
         enum mtxfileobject object = mtxfile_matrix;
@@ -897,7 +897,7 @@ int test_mtxfiledata_fread(void)
         char s[] = "1.5\n1.6\n";
         FILE * f = fmemopen(s, sizeof(s), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
-        int lines_read = 0;
+        int64_t lines_read = 0;
         int64_t bytes_read = 0;
         union mtxfiledata data;
         enum mtxfileobject object = mtxfile_matrix;
@@ -924,7 +924,7 @@ int test_mtxfiledata_fread(void)
         char s[] = "1.5 2.1\n1.6 2.2\n";
         FILE * f = fmemopen(s, sizeof(s), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
-        int lines_read = 0;
+        int64_t lines_read = 0;
         int64_t bytes_read = 0;
         union mtxfiledata data;
         enum mtxfileobject object = mtxfile_matrix;
@@ -953,7 +953,7 @@ int test_mtxfiledata_fread(void)
         char s[] = "1.5 2.1\n1.6 2.2\n";
         FILE * f = fmemopen(s, sizeof(s), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
-        int lines_read = 0;
+        int64_t lines_read = 0;
         int64_t bytes_read = 0;
         union mtxfiledata data;
         enum mtxfileobject object = mtxfile_matrix;
@@ -982,7 +982,7 @@ int test_mtxfiledata_fread(void)
         char s[] = "2\n3\n";
         FILE * f = fmemopen(s, sizeof(s), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
-        int lines_read = 0;
+        int64_t lines_read = 0;
         int64_t bytes_read = 0;
         union mtxfiledata data;
         enum mtxfileobject object = mtxfile_matrix;
@@ -1009,7 +1009,7 @@ int test_mtxfiledata_fread(void)
         char s[] = "2\n3\n";
         FILE * f = fmemopen(s, sizeof(s), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
-        int lines_read = 0;
+        int64_t lines_read = 0;
         int64_t bytes_read = 0;
         union mtxfiledata data;
         enum mtxfileobject object = mtxfile_matrix;
@@ -1040,7 +1040,7 @@ int test_mtxfiledata_fread(void)
         char s[] = "3 2 1.5\n2 3 1.5";
         FILE * f = fmemopen(s, sizeof(s), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
-        int lines_read = 0;
+        int64_t lines_read = 0;
         int64_t bytes_read = 0;
         union mtxfiledata data;
         enum mtxfileobject object = mtxfile_matrix;
@@ -1071,7 +1071,7 @@ int test_mtxfiledata_fread(void)
         char s[] = "3 2 1.5\n2 3 1.5";
         FILE * f = fmemopen(s, sizeof(s), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
-        int lines_read = 0;
+        int64_t lines_read = 0;
         int64_t bytes_read = 0;
         union mtxfiledata data;
         enum mtxfileobject object = mtxfile_matrix;
@@ -1102,7 +1102,7 @@ int test_mtxfiledata_fread(void)
         char s[] = "3 2 1.5 2.1\n2 3 -1.5 -2.1\n";
         FILE * f = fmemopen(s, sizeof(s), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
-        int lines_read = 0;
+        int64_t lines_read = 0;
         int64_t bytes_read = 0;
         union mtxfiledata data;
         enum mtxfileobject object = mtxfile_matrix;
@@ -1135,7 +1135,7 @@ int test_mtxfiledata_fread(void)
         char s[] = "3 2 1.5 2.1\n2 3 -1.5 -2.1\n";
         FILE * f = fmemopen(s, sizeof(s), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
-        int lines_read = 0;
+        int64_t lines_read = 0;
         int64_t bytes_read = 0;
         union mtxfiledata data;
         enum mtxfileobject object = mtxfile_matrix;
@@ -1168,7 +1168,7 @@ int test_mtxfiledata_fread(void)
         char s[] = "3 2 4\n2 3 4\n";
         FILE * f = fmemopen(s, sizeof(s), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
-        int lines_read = 0;
+        int64_t lines_read = 0;
         int64_t bytes_read = 0;
         union mtxfiledata data;
         enum mtxfileobject object = mtxfile_matrix;
@@ -1199,7 +1199,7 @@ int test_mtxfiledata_fread(void)
         char s[] = "3 2 4\n2 3 4\n";
         FILE * f = fmemopen(s, sizeof(s), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
-        int lines_read = 0;
+        int64_t lines_read = 0;
         int64_t bytes_read = 0;
         union mtxfiledata data;
         enum mtxfileobject object = mtxfile_matrix;
@@ -1230,7 +1230,7 @@ int test_mtxfiledata_fread(void)
         char s[] = "3 2\n2 3\n";
         FILE * f = fmemopen(s, sizeof(s), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
-        int lines_read = 0;
+        int64_t lines_read = 0;
         int64_t bytes_read = 0;
         union mtxfiledata data;
         enum mtxfileobject object = mtxfile_matrix;
@@ -1263,7 +1263,7 @@ int test_mtxfiledata_fread(void)
         char s[] = "3 1.5\n4 1.6\n";
         FILE * f = fmemopen(s, sizeof(s), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
-        int lines_read = 0;
+        int64_t lines_read = 0;
         int64_t bytes_read = 0;
         union mtxfiledata data;
         enum mtxfileobject object = mtxfile_vector;
@@ -1292,7 +1292,7 @@ int test_mtxfiledata_fread(void)
         char s[] = "3 1.5\n4 1.6\n";
         FILE * f = fmemopen(s, sizeof(s), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
-        int lines_read = 0;
+        int64_t lines_read = 0;
         int64_t bytes_read = 0;
         union mtxfiledata data;
         enum mtxfileobject object = mtxfile_vector;
@@ -1321,7 +1321,7 @@ int test_mtxfiledata_fread(void)
         char s[] = "3 1.5 2.1\n4 1.6 2.2\n";
         FILE * f = fmemopen(s, sizeof(s), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
-        int lines_read = 0;
+        int64_t lines_read = 0;
         int64_t bytes_read = 0;
         union mtxfiledata data;
         enum mtxfileobject object = mtxfile_vector;
@@ -1352,7 +1352,7 @@ int test_mtxfiledata_fread(void)
         char s[] = "3 1.5 2.1\n4 1.6 2.2\n";
         FILE * f = fmemopen(s, sizeof(s), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
-        int lines_read = 0;
+        int64_t lines_read = 0;
         int64_t bytes_read = 0;
         union mtxfiledata data;
         enum mtxfileobject object = mtxfile_vector;
@@ -1383,7 +1383,7 @@ int test_mtxfiledata_fread(void)
         char s[] = "3 4\n4 1\n";
         FILE * f = fmemopen(s, sizeof(s), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
-        int lines_read = 0;
+        int64_t lines_read = 0;
         int64_t bytes_read = 0;
         union mtxfiledata data;
         enum mtxfileobject object = mtxfile_vector;
@@ -1412,7 +1412,7 @@ int test_mtxfiledata_fread(void)
         char s[] = "3 4\n4 1\n";
         FILE * f = fmemopen(s, sizeof(s), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
-        int lines_read = 0;
+        int64_t lines_read = 0;
         int64_t bytes_read = 0;
         union mtxfiledata data;
         enum mtxfileobject object = mtxfile_vector;
@@ -1441,7 +1441,7 @@ int test_mtxfiledata_fread(void)
         char s[] = "3\n4\n";
         FILE * f = fmemopen(s, sizeof(s), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
-        int lines_read = 0;
+        int64_t lines_read = 0;
         int64_t bytes_read = 0;
         union mtxfiledata data;
         enum mtxfileobject object = mtxfile_vector;
@@ -1484,7 +1484,7 @@ int test_mtxfile_fread(void)
             "1.5\n1.6\n";
         FILE * f = fmemopen(s, sizeof(s), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
-        int lines_read = 0;
+        int64_t lines_read = 0;
         int64_t bytes_read = 0;
         struct mtxfile mtxfile;
         enum mtxprecision precision = mtx_single;
@@ -1515,7 +1515,7 @@ int test_mtxfile_fread(void)
             "1.5\n1.6\n";
         FILE * f = fmemopen(s, sizeof(s), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
-        int lines_read = 0;
+        int64_t lines_read = 0;
         int64_t bytes_read = 0;
         struct mtxfile mtxfile;
         enum mtxprecision precision = mtx_double;
@@ -1546,7 +1546,7 @@ int test_mtxfile_fread(void)
             "1.5 2.1\n1.6 2.2\n";
         FILE * f = fmemopen(s, sizeof(s), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
-        int lines_read = 0;
+        int64_t lines_read = 0;
         int64_t bytes_read = 0;
         struct mtxfile mtxfile;
         enum mtxprecision precision = mtx_single;
@@ -1579,7 +1579,7 @@ int test_mtxfile_fread(void)
             "1.5 2.1\n1.6 2.2\n";
         FILE * f = fmemopen(s, sizeof(s), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
-        int lines_read = 0;
+        int64_t lines_read = 0;
         int64_t bytes_read = 0;
         struct mtxfile mtxfile;
         enum mtxprecision precision = mtx_double;
@@ -1612,7 +1612,7 @@ int test_mtxfile_fread(void)
             "2\n3\n";
         FILE * f = fmemopen(s, sizeof(s), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
-        int lines_read = 0;
+        int64_t lines_read = 0;
         int64_t bytes_read = 0;
         struct mtxfile mtxfile;
         enum mtxprecision precision = mtx_single;
@@ -1643,7 +1643,7 @@ int test_mtxfile_fread(void)
             "2\n3\n";
         FILE * f = fmemopen(s, sizeof(s), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
-        int lines_read = 0;
+        int64_t lines_read = 0;
         int64_t bytes_read = 0;
         struct mtxfile mtxfile;
         enum mtxprecision precision = mtx_double;
@@ -1678,7 +1678,7 @@ int test_mtxfile_fread(void)
             "3 2 1.5\n2 3 1.5\n";
         FILE * f = fmemopen(s, sizeof(s), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
-        int lines_read = 0;
+        int64_t lines_read = 0;
         int64_t bytes_read = 0;
         struct mtxfile mtxfile;
         enum mtxprecision precision = mtx_single;
@@ -1714,7 +1714,7 @@ int test_mtxfile_fread(void)
             "2 3 -1.5 -2.1\n";
         FILE * f = fmemopen(s, sizeof(s), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
-        int lines_read = 0;
+        int64_t lines_read = 0;
         int64_t bytes_read = 0;
         struct mtxfile mtxfile;
         enum mtxprecision precision = mtx_double;
@@ -1751,7 +1751,7 @@ int test_mtxfile_fread(void)
             "3 2 5\n2 3 6\n";
         FILE * f = fmemopen(s, sizeof(s), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
-        int lines_read = 0;
+        int64_t lines_read = 0;
         int64_t bytes_read = 0;
         struct mtxfile mtxfile;
         enum mtxprecision precision = mtx_single;
@@ -1786,7 +1786,7 @@ int test_mtxfile_fread(void)
             "3 2\n2 3\n";
         FILE * f = fmemopen(s, sizeof(s), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
-        int lines_read = 0;
+        int64_t lines_read = 0;
         int64_t bytes_read = 0;
         struct mtxfile mtxfile;
         enum mtxprecision precision = mtx_single;
@@ -1823,7 +1823,7 @@ int test_mtxfile_fread(void)
             "3 1.5\n2 1.5\n";
         FILE * f = fmemopen(s, sizeof(s), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
-        int lines_read = 0;
+        int64_t lines_read = 0;
         int64_t bytes_read = 0;
         struct mtxfile mtxfile;
         enum mtxprecision precision = mtx_single;
@@ -1857,7 +1857,7 @@ int test_mtxfile_fread(void)
             "2 -1.5 -2.1\n";
         FILE * f = fmemopen(s, sizeof(s), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
-        int lines_read = 0;
+        int64_t lines_read = 0;
         int64_t bytes_read = 0;
         struct mtxfile mtxfile;
         enum mtxprecision precision = mtx_double;
@@ -1893,7 +1893,7 @@ int test_mtxfile_fread(void)
             "2 6\n";
         FILE * f = fmemopen(s, sizeof(s), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
-        int lines_read = 0;
+        int64_t lines_read = 0;
         int64_t bytes_read = 0;
         struct mtxfile mtxfile;
         enum mtxprecision precision = mtx_single;
@@ -1927,7 +1927,7 @@ int test_mtxfile_fread(void)
             "2\n";
         FILE * f = fmemopen(s, sizeof(s), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
-        int lines_read = 0;
+        int64_t lines_read = 0;
         int64_t bytes_read = 0;
         struct mtxfile mtxfile;
         enum mtxprecision precision = mtx_single;
@@ -2145,7 +2145,7 @@ int test_mtxfile_gzread(void)
 
     gzFile gz_f = gzdopen(p[0], "r");
     TEST_ASSERT_NEQ_MSG(NULL, gz_f, "%s", strerror(errno));
-    int lines_read = 0;
+    int64_t lines_read = 0;
     int64_t bytes_read = 0;
     struct mtxfile mtxfile;
     enum mtxprecision precision = mtx_single;

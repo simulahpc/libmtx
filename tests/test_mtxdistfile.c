@@ -321,7 +321,7 @@ int test_mtxdistfile_fread_shared(void)
             "1.5\n1.6\n";
         FILE * f = fmemopen(s, sizeof(s), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
-        int lines_read = 0;
+        int64_t lines_read = 0;
         int64_t bytes_read = 0;
         struct mtxdistfile mtxdistfile;
         enum mtxprecision precision = mtx_single;
@@ -365,7 +365,7 @@ int test_mtxdistfile_fread_shared(void)
             "1.5\n1.6\n";
         FILE * f = fmemopen(s, sizeof(s), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
-        int lines_read = 0;
+        int64_t lines_read = 0;
         int64_t bytes_read = 0;
         struct mtxdistfile mtxdistfile;
         enum mtxprecision precision = mtx_double;
@@ -408,7 +408,7 @@ int test_mtxdistfile_fread_shared(void)
             "1.5 2.1\n1.6 2.2\n";
         FILE * f = fmemopen(s, sizeof(s), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
-        int lines_read = 0;
+        int64_t lines_read = 0;
         int64_t bytes_read = 0;
         struct mtxdistfile mtxdistfile;
         enum mtxprecision precision = mtx_single;
@@ -453,7 +453,7 @@ int test_mtxdistfile_fread_shared(void)
             "1.5 2.1\n1.6 2.2\n";
         FILE * f = fmemopen(s, sizeof(s), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
-        int lines_read = 0;
+        int64_t lines_read = 0;
         int64_t bytes_read = 0;
         struct mtxdistfile mtxdistfile;
         enum mtxprecision precision = mtx_double;
@@ -498,7 +498,7 @@ int test_mtxdistfile_fread_shared(void)
             "2\n3\n";
         FILE * f = fmemopen(s, sizeof(s), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
-        int lines_read = 0;
+        int64_t lines_read = 0;
         int64_t bytes_read = 0;
         struct mtxdistfile mtxdistfile;
         enum mtxprecision precision = mtx_single;
@@ -541,7 +541,7 @@ int test_mtxdistfile_fread_shared(void)
             "2\n3\n";
         FILE * f = fmemopen(s, sizeof(s), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
-        int lines_read = 0;
+        int64_t lines_read = 0;
         int64_t bytes_read = 0;
         struct mtxdistfile mtxdistfile;
         enum mtxprecision precision = mtx_double;
@@ -587,7 +587,7 @@ int test_mtxdistfile_fread_shared(void)
             "3 2 1.5\n2 3 1.5\n";
         FILE * f = fmemopen(s, sizeof(s), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
-        int lines_read = 0;
+        int64_t lines_read = 0;
         int64_t bytes_read = 0;
         struct mtxdistfile mtxdistfile;
         enum mtxprecision precision = mtx_single;
@@ -635,7 +635,7 @@ int test_mtxdistfile_fread_shared(void)
             "2 3 -1.5 -2.1\n";
         FILE * f = fmemopen(s, sizeof(s), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
-        int lines_read = 0;
+        int64_t lines_read = 0;
         int64_t bytes_read = 0;
         struct mtxdistfile mtxdistfile;
         enum mtxprecision precision = mtx_double;
@@ -684,7 +684,7 @@ int test_mtxdistfile_fread_shared(void)
             "3 2 5\n2 3 6\n";
         FILE * f = fmemopen(s, sizeof(s), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
-        int lines_read = 0;
+        int64_t lines_read = 0;
         int64_t bytes_read = 0;
         struct mtxdistfile mtxdistfile;
         enum mtxprecision precision = mtx_single;
@@ -731,7 +731,7 @@ int test_mtxdistfile_fread_shared(void)
             "3 2\n2 3\n";
         FILE * f = fmemopen(s, sizeof(s), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
-        int lines_read = 0;
+        int64_t lines_read = 0;
         int64_t bytes_read = 0;
         struct mtxdistfile mtxdistfile;
         enum mtxprecision precision = mtx_single;
@@ -779,7 +779,7 @@ int test_mtxdistfile_fread_shared(void)
             "3 1.5\n2 1.5\n";
         FILE * f = fmemopen(s, sizeof(s), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
-        int lines_read = 0;
+        int64_t lines_read = 0;
         int64_t bytes_read = 0;
         struct mtxdistfile mtxdistfile;
         enum mtxprecision precision = mtx_single;
@@ -825,7 +825,7 @@ int test_mtxdistfile_fread_shared(void)
             "2 -1.5 -2.1\n";
         FILE * f = fmemopen(s, sizeof(s), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
-        int lines_read = 0;
+        int64_t lines_read = 0;
         int64_t bytes_read = 0;
         struct mtxdistfile mtxdistfile;
         enum mtxprecision precision = mtx_double;
@@ -873,7 +873,7 @@ int test_mtxdistfile_fread_shared(void)
             "2 6\n";
         FILE * f = fmemopen(s, sizeof(s), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
-        int lines_read = 0;
+        int64_t lines_read = 0;
         int64_t bytes_read = 0;
         struct mtxdistfile mtxdistfile;
         enum mtxprecision precision = mtx_single;
@@ -919,7 +919,7 @@ int test_mtxdistfile_fread_shared(void)
             "2\n";
         FILE * f = fmemopen(s, sizeof(s), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
-        int lines_read = 0;
+        int64_t lines_read = 0;
         int64_t bytes_read = 0;
         struct mtxdistfile mtxdistfile;
         enum mtxprecision precision = mtx_single;

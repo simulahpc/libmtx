@@ -721,7 +721,7 @@ int main(int argc, char *argv[])
     }
 
     struct mtxdistfile src;
-    int lines_read;
+    int64_t lines_read = 0;
     int64_t bytes_read;
     err = mtxdistfile_read_shared(
         &src, args.precision,
@@ -768,7 +768,7 @@ int main(int argc, char *argv[])
             clock_gettime(CLOCK_MONOTONIC, &t0);
         }
 
-        int lines_read = 0;
+        int64_t lines_read = 0;
         int64_t bytes_read = 0;
         err = mtxpartition_read_parts(
             &rowpart, args.num_row_parts, args.rowpart_path,
@@ -841,7 +841,7 @@ int main(int argc, char *argv[])
             clock_gettime(CLOCK_MONOTONIC, &t0);
         }
 
-        int lines_read = 0;
+        int64_t lines_read = 0;
         int64_t bytes_read = 0;
         err = mtxpartition_read_parts(
             &colpart, args.num_col_parts, args.colpart_path,
@@ -1208,7 +1208,7 @@ int main(int argc, char *argv[])
     }
 
     struct mtxfile mtxfile;
-    int lines_read;
+    int64_t lines_read = 0;
     int64_t bytes_read;
     err = mtxfile_read(
         &mtxfile, args.precision,
@@ -1249,7 +1249,7 @@ int main(int argc, char *argv[])
             clock_gettime(CLOCK_MONOTONIC, &t0);
         }
 
-        int lines_read = 0;
+        int64_t lines_read = 0;
         int64_t bytes_read = 0;
         err = mtxpartition_read_parts(
             &rowpart, args.num_row_parts, args.rowpart_path,
@@ -1318,7 +1318,7 @@ int main(int argc, char *argv[])
             clock_gettime(CLOCK_MONOTONIC, &t0);
         }
 
-        int lines_read = 0;
+        int64_t lines_read = 0;
         int64_t bytes_read = 0;
         err = mtxpartition_read_parts(
             &colpart, args.num_col_parts, args.colpart_path,

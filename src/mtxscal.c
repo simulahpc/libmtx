@@ -666,7 +666,7 @@ int main(int argc, char *argv[])
     const enum mtxpartitioning row_partition_type = mtx_block;
 
     struct mtxdistfile mtxdistfile;
-    int lines_read;
+    int64_t lines_read = 0;
     int64_t bytes_read;
     err = mtxdistfile_read_shared(
         &mtxdistfile, args.precision,
@@ -908,7 +908,7 @@ int main(int argc, char *argv[])
     }
 
     struct mtxfile mtxfile;
-    int lines_read;
+    int64_t lines_read = 0;
     int64_t bytes_read;
     err = mtxfile_read(
         &mtxfile, args.precision,

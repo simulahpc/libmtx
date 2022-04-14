@@ -600,7 +600,7 @@ int main(int argc, char *argv[])
     }
 
     struct mtxmatrix A;
-    int lines_read;
+    int64_t lines_read = 0;
     int64_t bytes_read;
     err = mtxmatrix_read(
         &A, args.precision, args.matrix_type,
@@ -642,7 +642,7 @@ int main(int argc, char *argv[])
             clock_gettime(CLOCK_MONOTONIC, &t0);
         }
 
-        int lines_read;
+        int64_t lines_read = 0;
         int64_t bytes_read;
         err = mtxvector_read(
             &x, args.precision, args.vector_type,
@@ -706,7 +706,7 @@ int main(int argc, char *argv[])
             fflush(diagf);
             clock_gettime(CLOCK_MONOTONIC, &t0);
         }
-        int lines_read;
+        int64_t lines_read = 0;
         int64_t bytes_read;
         err = mtxvector_read(
             &y, args.precision, args.vector_type,

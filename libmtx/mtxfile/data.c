@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-01-16
+ * Last modified: 2022-04-14
  *
  * Matrix Market data lines.
  */
@@ -3442,7 +3442,7 @@ static int freadline(
 int mtxfiledata_fread(
     union mtxfiledata * data,
     FILE * f,
-    int * lines_read,
+    int64_t * lines_read,
     int64_t * bytes_read,
     size_t line_max,
     char * linebuf,
@@ -3555,7 +3555,7 @@ static int gzreadline(
 int mtxfiledata_gzread(
     union mtxfiledata * data,
     gzFile f,
-    int * lines_read,
+    int64_t * lines_read,
     int64_t * bytes_read,
     size_t line_max,
     char * linebuf,

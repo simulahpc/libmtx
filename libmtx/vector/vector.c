@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-04-08
+ * Last modified: 2022-04-14
  *
  * Data structures for vectors.
  */
@@ -1414,7 +1414,7 @@ int mtxvector_read(
     enum mtxvectortype type,
     const char * path,
     bool gzip,
-    int * lines_read,
+    int64_t * lines_read,
     int64_t * bytes_read)
 {
     int err;
@@ -1454,7 +1454,7 @@ int mtxvector_fread(
     enum mtxprecision precision,
     enum mtxvectortype type,
     FILE * f,
-    int * lines_read,
+    int64_t * lines_read,
     int64_t * bytes_read,
     size_t line_max,
     char * linebuf)
@@ -1496,7 +1496,7 @@ int mtxvector_gzread(
     enum mtxprecision precision,
     enum mtxvectortype type,
     gzFile f,
-    int * lines_read,
+    int64_t * lines_read,
     int64_t * bytes_read,
     size_t line_max,
     char * linebuf)

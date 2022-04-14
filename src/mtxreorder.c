@@ -451,7 +451,7 @@ int main(int argc, char *argv[])
     }
 
     struct mtxfile mtxfile;
-    int lines_read;
+    int64_t lines_read = 0;
     int64_t bytes_read;
     err = mtxfile_read(
         &mtxfile, args.precision, args.mtx_path, args.gzip,
@@ -513,7 +513,7 @@ int main(int argc, char *argv[])
         }
 
         struct mtxfile rowperm_mtxfile;
-        int lines_read;
+        int64_t lines_read = 0;
         int64_t bytes_read;
         err = mtxfile_read(
             &rowperm_mtxfile, mtx_single,
@@ -590,7 +590,7 @@ int main(int argc, char *argv[])
         }
 
         struct mtxfile colperm_mtxfile;
-        int lines_read;
+        int64_t lines_read = 0;
         int64_t bytes_read;
         err = mtxfile_read(
             &colperm_mtxfile, mtx_single,

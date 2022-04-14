@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-01-16
+ * Last modified: 2022-04-14
  *
  * Data types and functions for partitioning finite sets.
  */
@@ -379,7 +379,7 @@ int mtxpartition_read_parts(
     struct mtxpartition * partition,
     int num_parts,
     const char * path,
-    int * lines_read,
+    int64_t * lines_read,
     int64_t * bytes_read);
 
 /**
@@ -396,7 +396,7 @@ int mtxpartition_fread_parts(
     struct mtxpartition * partition,
     int num_parts,
     FILE * f,
-    int * lines_read,
+    int64_t * lines_read,
     int64_t * bytes_read,
     size_t line_max,
     char * linebuf);
@@ -415,7 +415,7 @@ int mtxpartition_fread_indices(
     struct mtxpartition * partition,
     int part,
     FILE * f,
-    int * lines_read,
+    int64_t * lines_read,
     int64_t * bytes_read,
     size_t line_max,
     char * linebuf);

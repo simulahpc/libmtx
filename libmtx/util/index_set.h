@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-01-09
+ * Last modified: 2022-04-14
  *
  * Index sets.
  */
@@ -166,7 +166,7 @@ bool mtxidxset_contains(
 int mtxidxset_read(
     struct mtxidxset * index_set,
     const char * path,
-    int * lines_read,
+    int64_t * lines_read,
     int64_t * bytes_read);
 
 /**
@@ -180,7 +180,7 @@ int mtxidxset_read(
 int mtxidxset_fread(
     struct mtxidxset * index_set,
     FILE * f,
-    int * lines_read,
+    int64_t * lines_read,
     int64_t * bytes_read,
     size_t line_max,
     char * linebuf);
