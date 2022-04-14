@@ -324,7 +324,7 @@ static int parse_program_options(
                 program_options_free(args);
                 return EINVAL;
             }
-            err = parse_int32((*argv)[1], NULL, &args->rcm_starting_vertex, NULL);
+            err = parse_int32_ex((*argv)[1], NULL, &args->rcm_starting_vertex, NULL);
             if (err) {
                 program_options_free(args);
                 return err;
@@ -332,7 +332,7 @@ static int parse_program_options(
             num_arguments_consumed += 2;
             continue;
         } else if (strstr((*argv)[0], "--rcm-starting-vertex=") == (*argv)[0]) {
-            err = parse_int32(
+            err = parse_int32_ex(
                 (*argv)[0] + strlen("--rcm-starting-vertex="), NULL,
                 &args->rcm_starting_vertex, NULL);
             if (err) {

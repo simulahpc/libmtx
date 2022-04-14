@@ -350,7 +350,7 @@ static int parse_program_options(
                 return EINVAL;
             }
             (*nargs)++; argv++;
-            err = parse_int32(argv[0], NULL, &args->repeat, NULL);
+            err = parse_int32_ex(argv[0], NULL, &args->repeat, NULL);
             if (err) {
                 program_options_free(args);
                 return err;
@@ -358,7 +358,7 @@ static int parse_program_options(
             (*nargs)++; argv++;
             continue;
         } else if (strstr(argv[0], "--repeat=") == argv[0]) {
-            err = parse_int32(
+            err = parse_int32_ex(
                 argv[0] + strlen("--repeat="), NULL,
                 &args->repeat, NULL);
             if (err) {
@@ -425,7 +425,7 @@ static int parse_program_options(
                 return errno;
             }
             argv[0] = strdup(args->A_path);
-            err = parse_double(argv[0], NULL, &args->alpha, NULL);
+            err = parse_double_ex(argv[0], NULL, &args->alpha, NULL);
             if (err) {
                 program_options_free(args);
                 return err;
@@ -438,7 +438,7 @@ static int parse_program_options(
                 return errno;
             }
         } else if (num_positional_arguments_consumed == 3) {
-            err = parse_double(argv[0], NULL, &args->beta, NULL);
+            err = parse_double_ex(argv[0], NULL, &args->beta, NULL);
             if (err) {
                 program_options_free(args);
                 return err;

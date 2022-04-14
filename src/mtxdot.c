@@ -286,7 +286,7 @@ static int parse_program_options(
                 program_options_free(args);
                 return EINVAL;
             }
-            err = parse_int32((*argv)[1], NULL, &args->repeat, NULL);
+            err = parse_int32_ex((*argv)[1], NULL, &args->repeat, NULL);
             if (err) {
                 program_options_free(args);
                 return err;
@@ -294,7 +294,7 @@ static int parse_program_options(
             num_arguments_consumed += 2;
             continue;
         } else if (strstr((*argv)[0], "--repeat=") == (*argv)[0]) {
-            err = parse_int32(
+            err = parse_int32_ex(
                 (*argv)[0] + strlen("--repeat="), NULL,
                 &args->repeat, NULL);
             if (err) {

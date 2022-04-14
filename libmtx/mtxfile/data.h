@@ -301,7 +301,7 @@ int mtxfiledata_size_per_element(
 int mtxfiledata_parse_array_real_single(
     float * data,
     int64_t * bytes_read,
-    const char ** endptr,
+    char ** endptr,
     const char * s);
 
 /**
@@ -318,7 +318,7 @@ int mtxfiledata_parse_array_real_single(
 int mtxfiledata_parse_array_real_double(
     double * data,
     int64_t * bytes_read,
-    const char ** endptr,
+    char ** endptr,
     const char * s);
 
 /**
@@ -335,7 +335,7 @@ int mtxfiledata_parse_array_real_double(
 int mtxfiledata_parse_array_complex_single(
     float (* data)[2],
     int64_t * bytes_read,
-    const char ** endptr,
+    char ** endptr,
     const char * s);
 
 /**
@@ -352,7 +352,7 @@ int mtxfiledata_parse_array_complex_single(
 int mtxfiledata_parse_array_complex_double(
     double (* data)[2],
     int64_t * bytes_read,
-    const char ** endptr,
+    char ** endptr,
     const char * s);
 
 /**
@@ -369,7 +369,7 @@ int mtxfiledata_parse_array_complex_double(
 int mtxfiledata_parse_array_integer_single(
     int32_t * data,
     int64_t * bytes_read,
-    const char ** endptr,
+    char ** endptr,
     const char * s);
 
 /**
@@ -386,7 +386,7 @@ int mtxfiledata_parse_array_integer_single(
 int mtxfiledata_parse_array_integer_double(
     int64_t * data,
     int64_t * bytes_read,
-    const char ** endptr,
+    char ** endptr,
     const char * s);
 
 /*
@@ -407,7 +407,7 @@ int mtxfiledata_parse_array_integer_double(
 int mtxfiledata_parse_matrix_coordinate_real_single(
     struct mtxfile_matrix_coordinate_real_single * data,
     int64_t * bytes_read,
-    const char ** endptr,
+    char ** endptr,
     const char * s,
     int num_rows,
     int num_columns);
@@ -426,7 +426,7 @@ int mtxfiledata_parse_matrix_coordinate_real_single(
 int mtxfiledata_parse_matrix_coordinate_real_double(
     struct mtxfile_matrix_coordinate_real_double * data,
     int64_t * bytes_read,
-    const char ** endptr,
+    char ** endptr,
     const char * s,
     int num_rows,
     int num_columns);
@@ -445,7 +445,7 @@ int mtxfiledata_parse_matrix_coordinate_real_double(
 int mtxfiledata_parse_matrix_coordinate_complex_single(
     struct mtxfile_matrix_coordinate_complex_single * data,
     int64_t * bytes_read,
-    const char ** endptr,
+    char ** endptr,
     const char * s,
     int num_rows,
     int num_columns);
@@ -464,7 +464,7 @@ int mtxfiledata_parse_matrix_coordinate_complex_single(
 int mtxfiledata_parse_matrix_coordinate_complex_double(
     struct mtxfile_matrix_coordinate_complex_double * data,
     int64_t * bytes_read,
-    const char ** endptr,
+    char ** endptr,
     const char * s,
     int num_rows,
     int num_columns);
@@ -483,7 +483,7 @@ int mtxfiledata_parse_matrix_coordinate_complex_double(
 int mtxfiledata_parse_matrix_coordinate_integer_single(
     struct mtxfile_matrix_coordinate_integer_single * data,
     int64_t * bytes_read,
-    const char ** endptr,
+    char ** endptr,
     const char * s,
     int num_rows,
     int num_columns);
@@ -502,7 +502,7 @@ int mtxfiledata_parse_matrix_coordinate_integer_single(
 int mtxfiledata_parse_matrix_coordinate_integer_double(
     struct mtxfile_matrix_coordinate_integer_double * data,
     int64_t * bytes_read,
-    const char ** endptr,
+    char ** endptr,
     const char * s,
     int num_rows,
     int num_columns);
@@ -521,7 +521,7 @@ int mtxfiledata_parse_matrix_coordinate_integer_double(
 int mtxfiledata_parse_matrix_coordinate_pattern(
     struct mtxfile_matrix_coordinate_pattern * data,
     int64_t * bytes_read,
-    const char ** endptr,
+    char ** endptr,
     const char * s,
     int num_rows,
     int num_columns);
@@ -544,7 +544,7 @@ int mtxfiledata_parse_matrix_coordinate_pattern(
 int mtxfiledata_parse_vector_coordinate_real_single(
     struct mtxfile_vector_coordinate_real_single * data,
     int64_t * bytes_read,
-    const char ** endptr,
+    char ** endptr,
     const char * s,
     int num_rows);
 
@@ -562,7 +562,7 @@ int mtxfiledata_parse_vector_coordinate_real_single(
 int mtxfiledata_parse_vector_coordinate_real_double(
     struct mtxfile_vector_coordinate_real_double * data,
     int64_t * bytes_read,
-    const char ** endptr,
+    char ** endptr,
     const char * s,
     int num_rows);
 
@@ -580,7 +580,7 @@ int mtxfiledata_parse_vector_coordinate_real_double(
 int mtxfiledata_parse_vector_coordinate_complex_single(
     struct mtxfile_vector_coordinate_complex_single * data,
     int64_t * bytes_read,
-    const char ** endptr,
+    char ** endptr,
     const char * s,
     int num_rows);
 
@@ -598,7 +598,7 @@ int mtxfiledata_parse_vector_coordinate_complex_single(
 int mtxfiledata_parse_vector_coordinate_complex_double(
     struct mtxfile_vector_coordinate_complex_double * data,
     int64_t * bytes_read,
-    const char ** endptr,
+    char ** endptr,
     const char * s,
     int num_rows);
 
@@ -616,7 +616,7 @@ int mtxfiledata_parse_vector_coordinate_complex_double(
 int mtxfiledata_parse_vector_coordinate_integer_single(
     struct mtxfile_vector_coordinate_integer_single * data,
     int64_t * bytes_read,
-    const char ** endptr,
+    char ** endptr,
     const char * s,
     int num_rows);
 
@@ -634,7 +634,7 @@ int mtxfiledata_parse_vector_coordinate_integer_single(
 int mtxfiledata_parse_vector_coordinate_integer_double(
     struct mtxfile_vector_coordinate_integer_double * data,
     int64_t * bytes_read,
-    const char ** endptr,
+    char ** endptr,
     const char * s,
     int num_rows);
 
@@ -652,7 +652,7 @@ int mtxfiledata_parse_vector_coordinate_integer_double(
 int mtxfiledata_parse_vector_coordinate_pattern(
     struct mtxfile_vector_coordinate_pattern * data,
     int64_t * bytes_read,
-    const char ** endptr,
+    char ** endptr,
     const char * s,
     int num_rows);
 

@@ -51,7 +51,7 @@ int test_mtxfileheader_parse(void)
         struct mtxfileheader header;
         const char line[] = "";
         int64_t bytes_read = 0;
-        const char * endptr;
+        char * endptr;
         int err = mtxfileheader_parse(
             &header, &bytes_read, &endptr, line);
         TEST_ASSERT_EQ(MTX_ERR_INVALID_MTX_HEADER, err);
@@ -62,7 +62,7 @@ int test_mtxfileheader_parse(void)
         struct mtxfileheader header;
         const char line[] = "%MatrixMarket";
         int64_t bytes_read = 0;
-        const char * endptr;
+        char * endptr;
         int err = mtxfileheader_parse(
             &header, &bytes_read, &endptr, line);
         TEST_ASSERT_EQ(MTX_ERR_INVALID_MTX_HEADER, err);
@@ -73,7 +73,7 @@ int test_mtxfileheader_parse(void)
         struct mtxfileheader header;
         const char line[] = "%MatrixMarketasdf";
         int64_t bytes_read = 0;
-        const char * endptr;
+        char * endptr;
         int err = mtxfileheader_parse(
             &header, &bytes_read, &endptr, line);
         TEST_ASSERT_EQ(MTX_ERR_INVALID_MTX_HEADER, err);
@@ -84,7 +84,7 @@ int test_mtxfileheader_parse(void)
         struct mtxfileheader header;
         const char line[] = "%%MatrixMarket invalid_object";
         int64_t bytes_read = 0;
-        const char * endptr;
+        char * endptr;
         int err = mtxfileheader_parse(
             &header, &bytes_read, &endptr, line);
         TEST_ASSERT_EQ(MTX_ERR_INVALID_MTX_OBJECT, err);
@@ -95,7 +95,7 @@ int test_mtxfileheader_parse(void)
         struct mtxfileheader header;
         const char line[] = "%%MatrixMarket matrix invalid_format";
         int64_t bytes_read = 0;
-        const char * endptr;
+        char * endptr;
         int err = mtxfileheader_parse(
             &header, &bytes_read, &endptr, line);
         TEST_ASSERT_EQ(MTX_ERR_INVALID_MTX_FORMAT, err);
@@ -106,7 +106,7 @@ int test_mtxfileheader_parse(void)
         struct mtxfileheader header;
         const char line[] = "%%MatrixMarket matrix coordinate invalid_field";
         int64_t bytes_read = 0;
-        const char * endptr;
+        char * endptr;
         int err = mtxfileheader_parse(
             &header, &bytes_read, &endptr, line);
         TEST_ASSERT_EQ(MTX_ERR_INVALID_MTX_FIELD, err);
@@ -117,7 +117,7 @@ int test_mtxfileheader_parse(void)
         struct mtxfileheader header;
         const char line[] = "%%MatrixMarket matrix coordinate real invalid_symmetry";
         int64_t bytes_read = 0;
-        const char * endptr;
+        char * endptr;
         int err = mtxfileheader_parse(
             &header, &bytes_read, &endptr, line);
         TEST_ASSERT_EQ(MTX_ERR_INVALID_MTX_SYMMETRY, err);
@@ -128,7 +128,7 @@ int test_mtxfileheader_parse(void)
         struct mtxfileheader header;
         const char line[] = "%%MatrixMarket matrix coordinate real general";
         int64_t bytes_read = 0;
-        const char * endptr;
+        char * endptr;
         int err = mtxfileheader_parse(
             &header, &bytes_read, &endptr, line);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
@@ -144,7 +144,7 @@ int test_mtxfileheader_parse(void)
         struct mtxfileheader header;
         const char line[] = "%%MatrixMarket matrix coordinate real general\n";
         int64_t bytes_read = 0;
-        const char * endptr;
+        char * endptr;
         int err = mtxfileheader_parse(
             &header, &bytes_read, &endptr, line);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
@@ -167,7 +167,7 @@ int test_mtxfilesize_parse(void)
         struct mtxfilesize size;
         const char line[] = "";
         int64_t bytes_read = 0;
-        const char * endptr;
+        char * endptr;
         int err = mtxfilesize_parse(
             &size, &bytes_read, &endptr, line, mtxfile_matrix, mtxfile_array);
         TEST_ASSERT_EQ(MTX_ERR_INVALID_MTX_SIZE, err);
@@ -176,9 +176,9 @@ int test_mtxfilesize_parse(void)
 
     {
         struct mtxfilesize size;
-        const char line[] = "8 10\n";
+        const char line[] = "8 10";
         int64_t bytes_read = 0;
-        const char * endptr;
+        char * endptr;
         int err = mtxfilesize_parse(
             &size, &bytes_read, &endptr, line, mtxfile_matrix, mtxfile_array);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
@@ -191,9 +191,9 @@ int test_mtxfilesize_parse(void)
 
     {
         struct mtxfilesize size;
-        const char line[] = "8 10 20\n";
+        const char line[] = "8 10 20";
         int64_t bytes_read = 0;
-        const char * endptr;
+        char * endptr;
         int err = mtxfilesize_parse(
             &size, &bytes_read, &endptr, line, mtxfile_matrix, mtxfile_coordinate);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
@@ -206,9 +206,9 @@ int test_mtxfilesize_parse(void)
 
     {
         struct mtxfilesize size;
-        const char line[] = "10\n";
+        const char line[] = "10";
         int64_t bytes_read = 0;
-        const char * endptr;
+        char * endptr;
         int err = mtxfilesize_parse(
             &size, &bytes_read, &endptr, line, mtxfile_vector, mtxfile_array);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
@@ -221,9 +221,9 @@ int test_mtxfilesize_parse(void)
 
     {
         struct mtxfilesize size;
-        const char line[] = "10 8\n";
+        const char line[] = "10 8";
         int64_t bytes_read = 0;
-        const char * endptr;
+        char * endptr;
         int err = mtxfilesize_parse(
             &size, &bytes_read, &endptr, line, mtxfile_vector, mtxfile_coordinate);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
@@ -246,9 +246,9 @@ int test_mtxfiledata_parse(void)
      */
 
     {
-        const char line[] = "1.5\n";
+        const char line[] = "1.5";
         int64_t bytes_read = 0;
-        const char * endptr;
+        char * endptr;
         float data;
         int err = mtxfiledata_parse_array_real_single(
             &data, &bytes_read, &endptr, line);
@@ -259,9 +259,9 @@ int test_mtxfiledata_parse(void)
     }
 
     {
-        const char line[] = "1.5\n";
+        const char line[] = "1.5";
         int64_t bytes_read = 0;
-        const char * endptr;
+        char * endptr;
         double data;
         int err = mtxfiledata_parse_array_real_double(
             &data, &bytes_read, &endptr, line);
@@ -272,9 +272,9 @@ int test_mtxfiledata_parse(void)
     }
 
     {
-        const char line[] = "1.5 2.1\n";
+        const char line[] = "1.5 2.1";
         int64_t bytes_read = 0;
-        const char * endptr;
+        char * endptr;
         float data[2];
         int err = mtxfiledata_parse_array_complex_single(
             &data, &bytes_read, &endptr, line);
@@ -286,9 +286,9 @@ int test_mtxfiledata_parse(void)
     }
 
     {
-        const char line[] = "1.5 2.1\n";
+        const char line[] = "1.5 2.1";
         int64_t bytes_read = 0;
-        const char * endptr;
+        char * endptr;
         double data[2];
         int err = mtxfiledata_parse_array_complex_double(
             &data, &bytes_read, &endptr, line);
@@ -300,9 +300,9 @@ int test_mtxfiledata_parse(void)
     }
 
     {
-        const char line[] = "2\n";
+        const char line[] = "2";
         int64_t bytes_read = 0;
-        const char * endptr;
+        char * endptr;
         int32_t data;
         int err = mtxfiledata_parse_array_integer_single(
             &data, &bytes_read, &endptr, line);
@@ -313,9 +313,9 @@ int test_mtxfiledata_parse(void)
     }
 
     {
-        const char line[] = "2\n";
+        const char line[] = "2";
         int64_t bytes_read = 0;
-        const char * endptr;
+        char * endptr;
         int64_t data;
         int err = mtxfiledata_parse_array_integer_double(
             &data, &bytes_read, &endptr, line);
@@ -330,9 +330,9 @@ int test_mtxfiledata_parse(void)
      */
 
     {
-        const char line[] = "3 2 1.5\n";
+        const char line[] = "3 2 1.5";
         int64_t bytes_read = 0;
-        const char * endptr;
+        char * endptr;
         struct mtxfile_matrix_coordinate_real_single data;
         int err = mtxfiledata_parse_matrix_coordinate_real_single(
             &data, &bytes_read, &endptr, line, 4, 4);
@@ -345,9 +345,9 @@ int test_mtxfiledata_parse(void)
     }
 
     {
-        const char line[] = "3 2 1.5\n";
+        const char line[] = "3 2 1.5";
         int64_t bytes_read = 0;
-        const char * endptr;
+        char * endptr;
         struct mtxfile_matrix_coordinate_real_double data;
         int err = mtxfiledata_parse_matrix_coordinate_real_double(
             &data, &bytes_read, &endptr, line, 4, 4);
@@ -360,9 +360,9 @@ int test_mtxfiledata_parse(void)
     }
 
     {
-        const char line[] = "3 2 1.5 2.1\n";
+        const char line[] = "3 2 1.5 2.1";
         int64_t bytes_read = 0;
-        const char * endptr;
+        char * endptr;
         struct mtxfile_matrix_coordinate_complex_single data;
         int err = mtxfiledata_parse_matrix_coordinate_complex_single(
             &data, &bytes_read, &endptr, line, 4, 4);
@@ -375,9 +375,9 @@ int test_mtxfiledata_parse(void)
     }
 
     {
-        const char line[] = "3 2 1.5 2.1\n";
+        const char line[] = "3 2 1.5 2.1";
         int64_t bytes_read = 0;
-        const char * endptr;
+        char * endptr;
         struct mtxfile_matrix_coordinate_complex_double data;
         int err = mtxfiledata_parse_matrix_coordinate_complex_double(
             &data, &bytes_read, &endptr, line, 4, 4);
@@ -390,9 +390,9 @@ int test_mtxfiledata_parse(void)
     }
 
     {
-        const char line[] = "3 2 4\n";
+        const char line[] = "3 2 4";
         int64_t bytes_read = 0;
-        const char * endptr;
+        char * endptr;
         struct mtxfile_matrix_coordinate_integer_single data;
         int err = mtxfiledata_parse_matrix_coordinate_integer_single(
             &data, &bytes_read, &endptr, line, 4, 4);
@@ -405,9 +405,9 @@ int test_mtxfiledata_parse(void)
     }
 
     {
-        const char line[] = "3 2 4\n";
+        const char line[] = "3 2 4";
         int64_t bytes_read = 0;
-        const char * endptr;
+        char * endptr;
         struct mtxfile_matrix_coordinate_integer_double data;
         int err = mtxfiledata_parse_matrix_coordinate_integer_double(
             &data, &bytes_read, &endptr, line, 4, 4);
@@ -420,9 +420,9 @@ int test_mtxfiledata_parse(void)
     }
 
     {
-        const char line[] = "3 2\n";
+        const char line[] = "3 2";
         int64_t bytes_read = 0;
-        const char * endptr;
+        char * endptr;
         struct mtxfile_matrix_coordinate_pattern data;
         int err = mtxfiledata_parse_matrix_coordinate_pattern(
             &data, &bytes_read, &endptr, line, 4, 4);
@@ -438,9 +438,9 @@ int test_mtxfiledata_parse(void)
      */
 
     {
-        const char line[] = "3 1.5\n";
+        const char line[] = "3 1.5";
         int64_t bytes_read = 0;
-        const char * endptr;
+        char * endptr;
         struct mtxfile_vector_coordinate_real_single data;
         int err = mtxfiledata_parse_vector_coordinate_real_single(
             &data, &bytes_read, &endptr, line, 4);
@@ -452,9 +452,9 @@ int test_mtxfiledata_parse(void)
     }
 
     {
-        const char line[] = "3 1.5\n";
+        const char line[] = "3 1.5";
         int64_t bytes_read = 0;
-        const char * endptr;
+        char * endptr;
         struct mtxfile_vector_coordinate_real_double data;
         int err = mtxfiledata_parse_vector_coordinate_real_double(
             &data, &bytes_read, &endptr, line, 4);
@@ -466,9 +466,9 @@ int test_mtxfiledata_parse(void)
     }
 
     {
-        const char line[] = "3 1.5 2.1\n";
+        const char line[] = "3 1.5 2.1";
         int64_t bytes_read = 0;
-        const char * endptr;
+        char * endptr;
         struct mtxfile_vector_coordinate_complex_single data;
         int err = mtxfiledata_parse_vector_coordinate_complex_single(
             &data, &bytes_read, &endptr, line, 4);
@@ -480,9 +480,9 @@ int test_mtxfiledata_parse(void)
     }
 
     {
-        const char line[] = "3 1.5 2.1\n";
+        const char line[] = "3 1.5 2.1";
         int64_t bytes_read = 0;
-        const char * endptr;
+        char * endptr;
         struct mtxfile_vector_coordinate_complex_double data;
         int err = mtxfiledata_parse_vector_coordinate_complex_double(
             &data, &bytes_read, &endptr, line, 4);
@@ -494,9 +494,9 @@ int test_mtxfiledata_parse(void)
     }
 
     {
-        const char line[] = "3 4\n";
+        const char line[] = "3 4";
         int64_t bytes_read = 0;
-        const char * endptr;
+        char * endptr;
         struct mtxfile_vector_coordinate_integer_single data;
         int err = mtxfiledata_parse_vector_coordinate_integer_single(
             &data, &bytes_read, &endptr, line, 4);
@@ -508,9 +508,9 @@ int test_mtxfiledata_parse(void)
     }
 
     {
-        const char line[] = "3 4\n";
+        const char line[] = "3 4";
         int64_t bytes_read = 0;
-        const char * endptr;
+        char * endptr;
         struct mtxfile_vector_coordinate_integer_double data;
         int err = mtxfiledata_parse_vector_coordinate_integer_double(
             &data, &bytes_read, &endptr, line, 4);
@@ -522,9 +522,9 @@ int test_mtxfiledata_parse(void)
     }
 
     {
-        const char line[] = "3\n";
+        const char line[] = "3";
         int64_t bytes_read = 0;
-        const char * endptr;
+        char * endptr;
         struct mtxfile_vector_coordinate_pattern data;
         int err = mtxfiledata_parse_vector_coordinate_pattern(
             &data, &bytes_read, &endptr, line, 4);
@@ -867,7 +867,7 @@ int test_mtxfiledata_fread(void)
 
     {
         int err;
-        char s[] = "1.5\n1.6\n";
+        char s[] = "1.5\n1.6";
         FILE * f = fmemopen(s, sizeof(s), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         int64_t lines_read = 0;
@@ -894,7 +894,7 @@ int test_mtxfiledata_fread(void)
 
     {
         int err;
-        char s[] = "1.5\n1.6\n";
+        char s[] = "1.5\n1.6";
         FILE * f = fmemopen(s, sizeof(s), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         int64_t lines_read = 0;
@@ -921,7 +921,7 @@ int test_mtxfiledata_fread(void)
 
     {
         int err;
-        char s[] = "1.5 2.1\n1.6 2.2\n";
+        char s[] = "1.5 2.1\n1.6 2.2";
         FILE * f = fmemopen(s, sizeof(s), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         int64_t lines_read = 0;
@@ -950,7 +950,7 @@ int test_mtxfiledata_fread(void)
 
     {
         int err;
-        char s[] = "1.5 2.1\n1.6 2.2\n";
+        char s[] = "1.5 2.1\n1.6 2.2";
         FILE * f = fmemopen(s, sizeof(s), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         int64_t lines_read = 0;
@@ -979,7 +979,7 @@ int test_mtxfiledata_fread(void)
 
     {
         int err;
-        char s[] = "2\n3\n";
+        char s[] = "2\n3";
         FILE * f = fmemopen(s, sizeof(s), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         int64_t lines_read = 0;
@@ -1006,7 +1006,7 @@ int test_mtxfiledata_fread(void)
 
     {
         int err;
-        char s[] = "2\n3\n";
+        char s[] = "2\n3";
         FILE * f = fmemopen(s, sizeof(s), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         int64_t lines_read = 0;
@@ -1099,7 +1099,7 @@ int test_mtxfiledata_fread(void)
 
     {
         int err;
-        char s[] = "3 2 1.5 2.1\n2 3 -1.5 -2.1\n";
+        char s[] = "3 2 1.5 2.1\n2 3 -1.5 -2.1";
         FILE * f = fmemopen(s, sizeof(s), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         int64_t lines_read = 0;
@@ -1132,7 +1132,7 @@ int test_mtxfiledata_fread(void)
 
     {
         int err;
-        char s[] = "3 2 1.5 2.1\n2 3 -1.5 -2.1\n";
+        char s[] = "3 2 1.5 2.1\n2 3 -1.5 -2.1";
         FILE * f = fmemopen(s, sizeof(s), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         int64_t lines_read = 0;
@@ -1165,7 +1165,7 @@ int test_mtxfiledata_fread(void)
 
     {
         int err;
-        char s[] = "3 2 4\n2 3 4\n";
+        char s[] = "3 2 4\n2 3 4";
         FILE * f = fmemopen(s, sizeof(s), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         int64_t lines_read = 0;
@@ -1196,7 +1196,7 @@ int test_mtxfiledata_fread(void)
 
     {
         int err;
-        char s[] = "3 2 4\n2 3 4\n";
+        char s[] = "3 2 4\n2 3 4";
         FILE * f = fmemopen(s, sizeof(s), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         int64_t lines_read = 0;
@@ -1227,7 +1227,7 @@ int test_mtxfiledata_fread(void)
 
     {
         int err;
-        char s[] = "3 2\n2 3\n";
+        char s[] = "3 2\n2 3";
         FILE * f = fmemopen(s, sizeof(s), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         int64_t lines_read = 0;
@@ -1260,7 +1260,7 @@ int test_mtxfiledata_fread(void)
 
     {
         int err;
-        char s[] = "3 1.5\n4 1.6\n";
+        char s[] = "3 1.5\n4 1.6";
         FILE * f = fmemopen(s, sizeof(s), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         int64_t lines_read = 0;
@@ -1289,7 +1289,7 @@ int test_mtxfiledata_fread(void)
 
     {
         int err;
-        char s[] = "3 1.5\n4 1.6\n";
+        char s[] = "3 1.5\n4 1.6";
         FILE * f = fmemopen(s, sizeof(s), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         int64_t lines_read = 0;
@@ -1318,7 +1318,7 @@ int test_mtxfiledata_fread(void)
 
     {
         int err;
-        char s[] = "3 1.5 2.1\n4 1.6 2.2\n";
+        char s[] = "3 1.5 2.1\n4 1.6 2.2";
         FILE * f = fmemopen(s, sizeof(s), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         int64_t lines_read = 0;
@@ -1349,7 +1349,7 @@ int test_mtxfiledata_fread(void)
 
     {
         int err;
-        char s[] = "3 1.5 2.1\n4 1.6 2.2\n";
+        char s[] = "3 1.5 2.1\n4 1.6 2.2";
         FILE * f = fmemopen(s, sizeof(s), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         int64_t lines_read = 0;
@@ -1380,7 +1380,7 @@ int test_mtxfiledata_fread(void)
 
     {
         int err;
-        char s[] = "3 4\n4 1\n";
+        char s[] = "3 4\n4 1";
         FILE * f = fmemopen(s, sizeof(s), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         int64_t lines_read = 0;
@@ -1409,7 +1409,7 @@ int test_mtxfiledata_fread(void)
 
     {
         int err;
-        char s[] = "3 4\n4 1\n";
+        char s[] = "3 4\n4 1";
         FILE * f = fmemopen(s, sizeof(s), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         int64_t lines_read = 0;
@@ -1438,7 +1438,7 @@ int test_mtxfiledata_fread(void)
 
     {
         int err;
-        char s[] = "3\n4\n";
+        char s[] = "3\n4";
         FILE * f = fmemopen(s, sizeof(s), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         int64_t lines_read = 0;
@@ -1481,7 +1481,7 @@ int test_mtxfile_fread(void)
         char s[] = "%%MatrixMarket matrix array real general\n"
             "% comment\n"
             "2 1\n"
-            "1.5\n1.6\n";
+            "1.5\n1.6";
         FILE * f = fmemopen(s, sizeof(s), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         int64_t lines_read = 0;
@@ -1491,7 +1491,7 @@ int test_mtxfile_fread(void)
         err = mtxfile_fread(
             &mtxfile, precision, f, &lines_read, &bytes_read, 0, NULL);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
-        TEST_ASSERT_EQ(strlen(s), bytes_read);
+        TEST_ASSERT_EQ_MSG(strlen(s), bytes_read, "strlen(s)=%d bytes_read=%d", strlen(s), bytes_read);
         TEST_ASSERT_EQ(5, lines_read);
         TEST_ASSERT_EQ(mtxfile_matrix, mtxfile.header.object);
         TEST_ASSERT_EQ(mtxfile_array, mtxfile.header.format);
@@ -1512,7 +1512,7 @@ int test_mtxfile_fread(void)
         char s[] = "%%MatrixMarket matrix array real general\n"
             "% comment\n"
             "2 1\n"
-            "1.5\n1.6\n";
+            "1.5\n1.6";
         FILE * f = fmemopen(s, sizeof(s), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         int64_t lines_read = 0;
@@ -1543,7 +1543,7 @@ int test_mtxfile_fread(void)
         char s[] = "%%MatrixMarket matrix array complex general\n"
             "% comment\n"
             "2 1\n"
-            "1.5 2.1\n1.6 2.2\n";
+            "1.5 2.1\n1.6 2.2";
         FILE * f = fmemopen(s, sizeof(s), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         int64_t lines_read = 0;
@@ -1576,7 +1576,7 @@ int test_mtxfile_fread(void)
         char s[] = "%%MatrixMarket matrix array complex general\n"
             "% comment\n"
             "2 1\n"
-            "1.5 2.1\n1.6 2.2\n";
+            "1.5 2.1\n1.6 2.2";
         FILE * f = fmemopen(s, sizeof(s), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         int64_t lines_read = 0;
@@ -1609,7 +1609,7 @@ int test_mtxfile_fread(void)
         char s[] = "%%MatrixMarket matrix array integer general\n"
             "% comment\n"
             "2 1\n"
-            "2\n3\n";
+            "2\n3";
         FILE * f = fmemopen(s, sizeof(s), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         int64_t lines_read = 0;
@@ -1640,7 +1640,7 @@ int test_mtxfile_fread(void)
         char s[] = "%%MatrixMarket matrix array integer general\n"
             "% comment\n"
             "2 1\n"
-            "2\n3\n";
+            "2\n3";
         FILE * f = fmemopen(s, sizeof(s), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         int64_t lines_read = 0;
@@ -1675,7 +1675,7 @@ int test_mtxfile_fread(void)
         char s[] = "%%MatrixMarket matrix coordinate real general\n"
             "% comment\n"
             "3 3 2\n"
-            "3 2 1.5\n2 3 1.5\n";
+            "3 2 1.5\n2 3 1.5";
         FILE * f = fmemopen(s, sizeof(s), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         int64_t lines_read = 0;
@@ -1711,7 +1711,7 @@ int test_mtxfile_fread(void)
             "% comment\n"
             "3 3 2\n"
             "3 2 1.5 2.1\n"
-            "2 3 -1.5 -2.1\n";
+            "2 3 -1.5 -2.1";
         FILE * f = fmemopen(s, sizeof(s), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         int64_t lines_read = 0;
@@ -1748,7 +1748,7 @@ int test_mtxfile_fread(void)
         char s[] = "%%MatrixMarket matrix coordinate integer general\n"
             "% comment\n"
             "3 3 2\n"
-            "3 2 5\n2 3 6\n";
+            "3 2 5\n2 3 6";
         FILE * f = fmemopen(s, sizeof(s), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         int64_t lines_read = 0;
@@ -1783,7 +1783,7 @@ int test_mtxfile_fread(void)
         char s[] = "%%MatrixMarket matrix coordinate pattern general\n"
             "% comment\n"
             "3 3 2\n"
-            "3 2\n2 3\n";
+            "3 2\n2 3";
         FILE * f = fmemopen(s, sizeof(s), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         int64_t lines_read = 0;
@@ -1820,7 +1820,7 @@ int test_mtxfile_fread(void)
         char s[] = "%%MatrixMarket vector coordinate real general\n"
             "% comment\n"
             "3 2\n"
-            "3 1.5\n2 1.5\n";
+            "3 1.5\n2 1.5";
         FILE * f = fmemopen(s, sizeof(s), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         int64_t lines_read = 0;
@@ -1854,7 +1854,7 @@ int test_mtxfile_fread(void)
             "% comment\n"
             "3 2\n"
             "3 1.5 2.1\n"
-            "2 -1.5 -2.1\n";
+            "2 -1.5 -2.1";
         FILE * f = fmemopen(s, sizeof(s), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         int64_t lines_read = 0;
@@ -1890,7 +1890,7 @@ int test_mtxfile_fread(void)
             "% comment\n"
             "3 2\n"
             "3 5\n"
-            "2 6\n";
+            "2 6";
         FILE * f = fmemopen(s, sizeof(s), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         int64_t lines_read = 0;
@@ -1924,7 +1924,7 @@ int test_mtxfile_fread(void)
             "% comment\n"
             "3 2\n"
             "3\n"
-            "2\n";
+            "2";
         FILE * f = fmemopen(s, sizeof(s), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         int64_t lines_read = 0;
@@ -2152,7 +2152,7 @@ int test_mtxfile_gzread(void)
     err = mtxfile_gzread(
         &mtxfile, precision, gz_f, &lines_read, &bytes_read, 0, NULL);
     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%d: %s",lines_read+1,mtxstrerror(err));
-    TEST_ASSERT_EQ(84, bytes_read);
+    TEST_ASSERT_EQ(83, bytes_read);
     TEST_ASSERT_EQ(6, lines_read);
     TEST_ASSERT_EQ(mtxfile_matrix, mtxfile.header.object);
     TEST_ASSERT_EQ(mtxfile_coordinate, mtxfile.header.format);

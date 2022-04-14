@@ -86,7 +86,7 @@ struct mtxfilesize
 int mtxfilesize_parse(
     struct mtxfilesize * size,
     int64_t * bytes_read,
-    const char ** endptr,
+    char ** endptr,
     const char * s,
     enum mtxfileobject object,
     enum mtxfileformat format);

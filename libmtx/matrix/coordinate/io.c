@@ -62,7 +62,7 @@ int mtx_matrix_coordinate_parse_data_real_single(
     const char * tmp;
     if (!endptr)
         endptr = &tmp;
-    err = parse_int32(line, " ", &data->i, endptr);
+    err = parse_int32_ex(line, " ", &data->i, endptr);
     if (err == EINVAL || (!err && (data->i < 1 || data->i > num_rows))) {
         return MTX_ERR_INVALID_MTX_DATA;
     } else if (err) {
@@ -71,7 +71,7 @@ int mtx_matrix_coordinate_parse_data_real_single(
     }
     *bytes_read = *endptr - line;
 
-    err = parse_int32(*endptr, " ", &data->j, endptr);
+    err = parse_int32_ex(*endptr, " ", &data->j, endptr);
     if (err == EINVAL || (!err && (data->j < 1 || data->j > num_columns))) {
         return MTX_ERR_INVALID_MTX_DATA;
     } else if (err) {
@@ -80,7 +80,7 @@ int mtx_matrix_coordinate_parse_data_real_single(
     }
     *bytes_read = *endptr - line;
 
-    err = parse_float(*endptr, "\n", &data->a, endptr);
+    err = parse_float_ex(*endptr, "\n", &data->a, endptr);
     if (err == EINVAL) {
         return MTX_ERR_INVALID_MTX_DATA;
     } else if (err) {
@@ -108,7 +108,7 @@ int mtx_matrix_coordinate_parse_data_real_double(
     const char * tmp;
     if (!endptr)
         endptr = &tmp;
-    err = parse_int32(line, " ", &data->i, endptr);
+    err = parse_int32_ex(line, " ", &data->i, endptr);
     if (err == EINVAL || (!err && (data->i < 1 || data->i > num_rows))) {
         return MTX_ERR_INVALID_MTX_DATA;
     } else if (err) {
@@ -117,7 +117,7 @@ int mtx_matrix_coordinate_parse_data_real_double(
     }
     *bytes_read = *endptr - line;
 
-    err = parse_int32(*endptr, " ", &data->j, endptr);
+    err = parse_int32_ex(*endptr, " ", &data->j, endptr);
     if (err == EINVAL || (!err && (data->j < 1 || data->j > num_columns))) {
         return MTX_ERR_INVALID_MTX_DATA;
     } else if (err) {
@@ -126,7 +126,7 @@ int mtx_matrix_coordinate_parse_data_real_double(
     }
     *bytes_read = *endptr - line;
 
-    err = parse_double(*endptr, "\n", &data->a, endptr);
+    err = parse_double_ex(*endptr, "\n", &data->a, endptr);
     if (err == EINVAL) {
         return MTX_ERR_INVALID_MTX_DATA;
     } else if (err) {
@@ -154,7 +154,7 @@ int mtx_matrix_coordinate_parse_data_complex_single(
     const char * tmp;
     if (!endptr)
         endptr = &tmp;
-    err = parse_int32(line, " ", &data->i, endptr);
+    err = parse_int32_ex(line, " ", &data->i, endptr);
     if (err == EINVAL || (!err && (data->i < 1 || data->i > num_rows))) {
         return MTX_ERR_INVALID_MTX_DATA;
     } else if (err) {
@@ -163,7 +163,7 @@ int mtx_matrix_coordinate_parse_data_complex_single(
     }
     *bytes_read = *endptr - line;
 
-    err = parse_int32(*endptr, " ", &data->j, endptr);
+    err = parse_int32_ex(*endptr, " ", &data->j, endptr);
     if (err == EINVAL || (!err && (data->j < 1 || data->j > num_columns))) {
         return MTX_ERR_INVALID_MTX_DATA;
     } else if (err) {
@@ -172,7 +172,7 @@ int mtx_matrix_coordinate_parse_data_complex_single(
     }
     *bytes_read = *endptr - line;
 
-    err = parse_float(*endptr, " ", &data->a[0], endptr);
+    err = parse_float_ex(*endptr, " ", &data->a[0], endptr);
     if (err == EINVAL) {
         return MTX_ERR_INVALID_MTX_DATA;
     } else if (err) {
@@ -181,7 +181,7 @@ int mtx_matrix_coordinate_parse_data_complex_single(
     }
     *bytes_read = *endptr - line;
 
-    err = parse_float(*endptr, "\n", &data->a[1], endptr);
+    err = parse_float_ex(*endptr, "\n", &data->a[1], endptr);
     if (err == EINVAL) {
         return MTX_ERR_INVALID_MTX_DATA;
     } else if (err) {
@@ -209,7 +209,7 @@ int mtx_matrix_coordinate_parse_data_complex_double(
     const char * tmp;
     if (!endptr)
         endptr = &tmp;
-    err = parse_int32(line, " ", &data->i, endptr);
+    err = parse_int32_ex(line, " ", &data->i, endptr);
     if (err == EINVAL || (!err && (data->i < 1 || data->i > num_rows))) {
         return MTX_ERR_INVALID_MTX_DATA;
     } else if (err) {
@@ -218,7 +218,7 @@ int mtx_matrix_coordinate_parse_data_complex_double(
     }
     *bytes_read = *endptr - line;
 
-    err = parse_int32(*endptr, " ", &data->j, endptr);
+    err = parse_int32_ex(*endptr, " ", &data->j, endptr);
     if (err == EINVAL || (!err && (data->j < 1 || data->j > num_columns))) {
         return MTX_ERR_INVALID_MTX_DATA;
     } else if (err) {
@@ -227,7 +227,7 @@ int mtx_matrix_coordinate_parse_data_complex_double(
     }
     *bytes_read = *endptr - line;
 
-    err = parse_double(*endptr, " ", &data->a[0], endptr);
+    err = parse_double_ex(*endptr, " ", &data->a[0], endptr);
     if (err == EINVAL) {
         return MTX_ERR_INVALID_MTX_DATA;
     } else if (err) {
@@ -236,7 +236,7 @@ int mtx_matrix_coordinate_parse_data_complex_double(
     }
     *bytes_read = *endptr - line;
 
-    err = parse_double(*endptr, "\n", &data->a[1], endptr);
+    err = parse_double_ex(*endptr, "\n", &data->a[1], endptr);
     if (err == EINVAL) {
         return MTX_ERR_INVALID_MTX_DATA;
     } else if (err) {
@@ -264,7 +264,7 @@ int mtx_matrix_coordinate_parse_data_integer_single(
     const char * tmp;
     if (!endptr)
         endptr = &tmp;
-    err = parse_int32(line, " ", &data->i, endptr);
+    err = parse_int32_ex(line, " ", &data->i, endptr);
     if (err == EINVAL || (!err && (data->i < 1 || data->i > num_rows))) {
         return MTX_ERR_INVALID_MTX_DATA;
     } else if (err) {
@@ -273,7 +273,7 @@ int mtx_matrix_coordinate_parse_data_integer_single(
     }
     *bytes_read = *endptr - line;
 
-    err = parse_int32(*endptr, " ", &data->j, endptr);
+    err = parse_int32_ex(*endptr, " ", &data->j, endptr);
     if (err == EINVAL || (!err && (data->j < 1 || data->j > num_columns))) {
         return MTX_ERR_INVALID_MTX_DATA;
     } else if (err) {
@@ -282,7 +282,7 @@ int mtx_matrix_coordinate_parse_data_integer_single(
     }
     *bytes_read = *endptr - line;
 
-    err = parse_int32(*endptr, "\n", &data->a, endptr);
+    err = parse_int32_ex(*endptr, "\n", &data->a, endptr);
     if (err == EINVAL) {
         return MTX_ERR_INVALID_MTX_DATA;
     } else if (err) {
@@ -310,7 +310,7 @@ int mtx_matrix_coordinate_parse_data_integer_double(
     const char * tmp;
     if (!endptr)
         endptr = &tmp;
-    err = parse_int32(line, " ", &data->i, endptr);
+    err = parse_int32_ex(line, " ", &data->i, endptr);
     if (err == EINVAL || (!err && (data->i < 1 || data->i > num_rows))) {
         return MTX_ERR_INVALID_MTX_DATA;
     } else if (err) {
@@ -319,7 +319,7 @@ int mtx_matrix_coordinate_parse_data_integer_double(
     }
     *bytes_read = *endptr - line;
 
-    err = parse_int32(*endptr, " ", &data->j, endptr);
+    err = parse_int32_ex(*endptr, " ", &data->j, endptr);
     if (err == EINVAL || (!err && (data->j < 1 || data->j > num_columns))) {
         return MTX_ERR_INVALID_MTX_DATA;
     } else if (err) {
@@ -328,7 +328,7 @@ int mtx_matrix_coordinate_parse_data_integer_double(
     }
     *bytes_read = *endptr - line;
 
-    err = parse_int64(*endptr, "\n", &data->a, endptr);
+    err = parse_int64_ex(*endptr, "\n", &data->a, endptr);
     if (err == EINVAL) {
         return MTX_ERR_INVALID_MTX_DATA;
     } else if (err) {
@@ -355,7 +355,7 @@ int mtx_matrix_coordinate_parse_data_pattern(
     const char * tmp;
     if (!endptr)
         endptr = &tmp;
-    err = parse_int32(line, " ", &data->i, endptr);
+    err = parse_int32_ex(line, " ", &data->i, endptr);
     if (err == EINVAL || (!err && (data->i < 1 || data->i > num_rows))) {
         return MTX_ERR_INVALID_MTX_DATA;
     } else if (err) {
@@ -364,7 +364,7 @@ int mtx_matrix_coordinate_parse_data_pattern(
     }
     *bytes_read = *endptr - line;
 
-    err = parse_int32(*endptr, "\n", &data->j, endptr);
+    err = parse_int32_ex(*endptr, "\n", &data->j, endptr);
     if (err == EINVAL || (!err && (data->j < 1 || data->j > num_columns))) {
         return MTX_ERR_INVALID_MTX_DATA;
     } else if (err) {

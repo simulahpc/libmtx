@@ -340,7 +340,7 @@ static int mtx_size_parse_matrix_array(
     *bytes_read = 0;
 
     /* Parse the number of rows. */
-    err = parse_int32(line, " ", &size->num_rows, endptr);
+    err = parse_int32_ex(line, " ", &size->num_rows, endptr);
     if (err == EINVAL) {
         return MTX_ERR_INVALID_MTX_SIZE;
     } else if (err) {
@@ -350,7 +350,7 @@ static int mtx_size_parse_matrix_array(
     *bytes_read = *endptr - line;
 
     /* Parse the number of columns. */
-    err = parse_int32(*endptr, "\n", &size->num_columns, endptr);
+    err = parse_int32_ex(*endptr, "\n", &size->num_columns, endptr);
     if (err == EINVAL) {
         return MTX_ERR_INVALID_MTX_SIZE;
     } else if (err) {
@@ -377,7 +377,7 @@ static int mtx_size_parse_matrix_coordinate(
     *bytes_read = 0;
 
     /* Parse the number of rows. */
-    err = parse_int32(line, " ", &size->num_rows, endptr);
+    err = parse_int32_ex(line, " ", &size->num_rows, endptr);
     if (err == EINVAL) {
         return MTX_ERR_INVALID_MTX_SIZE;
     } else if (err) {
@@ -387,7 +387,7 @@ static int mtx_size_parse_matrix_coordinate(
     *bytes_read = (*endptr) - line;
 
     /* Parse the number of columns. */
-    err = parse_int32(*endptr, " ", &size->num_columns, endptr);
+    err = parse_int32_ex(*endptr, " ", &size->num_columns, endptr);
     if (err == EINVAL) {
         return MTX_ERR_INVALID_MTX_SIZE;
     } else if (err) {
@@ -397,7 +397,7 @@ static int mtx_size_parse_matrix_coordinate(
     *bytes_read = *endptr - line;
 
     /* Parse the number of stored nonzeros. */
-    err = parse_int64(*endptr, "\n", &size->num_nonzeros, endptr);
+    err = parse_int64_ex(*endptr, "\n", &size->num_nonzeros, endptr);
     if (err == EINVAL) {
         return MTX_ERR_INVALID_MTX_SIZE;
     } else if (err) {
@@ -420,7 +420,7 @@ int mtx_size_parse_vector_array(
 {
     /* Parse the number of rows. */
     *bytes_read = 0;
-    int err = parse_int32(line, "\n", &size->num_rows, endptr);
+    int err = parse_int32_ex(line, "\n", &size->num_rows, endptr);
     if (err == EINVAL) {
         return MTX_ERR_INVALID_MTX_SIZE;
     } else if (err) {
@@ -448,7 +448,7 @@ int mtx_size_parse_vector_coordinate(
     *bytes_read = 0;
 
     /* Parse the number of rows. */
-    err = parse_int32(line, " ", &size->num_rows, endptr);
+    err = parse_int32_ex(line, " ", &size->num_rows, endptr);
     if (err == EINVAL) {
         return MTX_ERR_INVALID_MTX_SIZE;
     } else if (err) {
@@ -460,7 +460,7 @@ int mtx_size_parse_vector_coordinate(
     size->num_columns = -1;
 
     /* Parse the number of stored nonzeros. */
-    err = parse_int64(*endptr, "\n", &size->num_nonzeros, endptr);
+    err = parse_int64_ex(*endptr, "\n", &size->num_nonzeros, endptr);
     if (err == EINVAL) {
         return MTX_ERR_INVALID_MTX_SIZE;
     } else if (err) {

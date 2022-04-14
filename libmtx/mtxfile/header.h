@@ -87,7 +87,7 @@ const char * mtxfileobject_str(
 int mtxfileobject_parse(
     enum mtxfileobject * object,
     int64_t * bytes_read,
-    const char ** endptr,
+    char ** endptr,
     const char * s,
     const char * valid_delimiters);
 
@@ -132,7 +132,7 @@ const char * mtxfileformat_str(
 int mtxfileformat_parse(
     enum mtxfileformat * format,
     int64_t * bytes_read,
-    const char ** endptr,
+    char ** endptr,
     const char * s,
     const char * valid_delimiters);
 
@@ -179,7 +179,7 @@ const char * mtxfilefield_str(
 int mtxfilefield_parse(
     enum mtxfilefield * field,
     int64_t * bytes_read,
-    const char ** endptr,
+    char ** endptr,
     const char * s,
     const char * valid_delimiters);
 
@@ -226,7 +226,7 @@ const char * mtxfilesymmetry_str(
 int mtxfilesymmetry_parse(
     enum mtxfilesymmetry * symmetry,
     int64_t * bytes_read,
-    const char ** endptr,
+    char ** endptr,
     const char * s,
     const char * valid_delimiters);
 
@@ -303,7 +303,7 @@ struct mtxfileheader
 int mtxfileheader_parse(
     struct mtxfileheader * header,
     int64_t * bytes_read,
-    const char ** endptr,
+    char ** endptr,
     const char * s);
 
 /**

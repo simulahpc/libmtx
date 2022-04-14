@@ -269,7 +269,7 @@ static int parse_fmtspec_width(
 
     int32_t n;
     const char * t;
-    int err = parse_int32(*s, NULL, &n, &t);
+    int err = parse_int32_ex(*s, NULL, &n, &t);
     if (err) {
         *width = fmtspec_width_none;
         return 0;
@@ -299,7 +299,7 @@ static int parse_fmtspec_precision(
 
     int32_t n;
     const char * t;
-    int err = parse_int32(*s, NULL, &n, &t);
+    int err = parse_int32_ex(*s, NULL, &n, &t);
     if (err) {
         *precision = fmtspec_precision_none;
         return 0;

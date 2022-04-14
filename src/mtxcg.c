@@ -277,7 +277,7 @@ static int parse_program_options(
                 program_options_free(args);
                 return EINVAL;
             }
-            err = parse_int32((*argv)[1], NULL, &args->restart, NULL);
+            err = parse_int32_ex((*argv)[1], NULL, &args->restart, NULL);
             if (err) {
                 program_options_free(args);
                 return err;
@@ -285,7 +285,7 @@ static int parse_program_options(
             num_arguments_consumed += 2;
             continue;
         } else if (strstr((*argv)[0], "--restart=") == (*argv)[0]) {
-            err = parse_int32(
+            err = parse_int32_ex(
                 (*argv)[0] + strlen("--restart="), NULL,
                 &args->restart, NULL);
             if (err) {
@@ -301,7 +301,7 @@ static int parse_program_options(
                 program_options_free(args);
                 return EINVAL;
             }
-            err = parse_int32((*argv)[1], NULL, &args->progress, NULL);
+            err = parse_int32_ex((*argv)[1], NULL, &args->progress, NULL);
             if (err) {
                 program_options_free(args);
                 return err;
@@ -309,7 +309,7 @@ static int parse_program_options(
             num_arguments_consumed += 2;
             continue;
         } else if (strstr((*argv)[0], "--progress=") == (*argv)[0]) {
-            err = parse_int32(
+            err = parse_int32_ex(
                 (*argv)[0] + strlen("--progress="), NULL,
                 &args->progress, NULL);
             if (err) {
@@ -325,7 +325,7 @@ static int parse_program_options(
                 program_options_free(args);
                 return EINVAL;
             }
-            err = parse_double((*argv)[1], NULL, &args->atol, NULL);
+            err = parse_double_ex((*argv)[1], NULL, &args->atol, NULL);
             if (err) {
                 program_options_free(args);
                 return err;
@@ -333,7 +333,7 @@ static int parse_program_options(
             num_arguments_consumed += 2;
             continue;
         } else if (strstr((*argv)[0], "--atol=") == (*argv)[0]) {
-            err = parse_double(
+            err = parse_double_ex(
                 (*argv)[0] + strlen("--atol="), NULL,
                 &args->atol, NULL);
             if (err) {
@@ -349,7 +349,7 @@ static int parse_program_options(
                 program_options_free(args);
                 return EINVAL;
             }
-            err = parse_double((*argv)[1], NULL, &args->rtol, NULL);
+            err = parse_double_ex((*argv)[1], NULL, &args->rtol, NULL);
             if (err) {
                 program_options_free(args);
                 return err;
@@ -357,7 +357,7 @@ static int parse_program_options(
             num_arguments_consumed += 2;
             continue;
         } else if (strstr((*argv)[0], "--rtol=") == (*argv)[0]) {
-            err = parse_double(
+            err = parse_double_ex(
                 (*argv)[0] + strlen("--rtol="), NULL,
                 &args->rtol, NULL);
             if (err) {
@@ -373,7 +373,7 @@ static int parse_program_options(
                 program_options_free(args);
                 return EINVAL;
             }
-            err = parse_int32((*argv)[1], NULL, &args->max_iterations, NULL);
+            err = parse_int32_ex((*argv)[1], NULL, &args->max_iterations, NULL);
             if (err) {
                 program_options_free(args);
                 return err;
@@ -381,7 +381,7 @@ static int parse_program_options(
             num_arguments_consumed += 2;
             continue;
         } else if (strstr((*argv)[0], "--max-iterations=") == (*argv)[0]) {
-            err = parse_int32(
+            err = parse_int32_ex(
                 (*argv)[0] + strlen("--max-iterations="), NULL,
                 &args->max_iterations, NULL);
             if (err) {

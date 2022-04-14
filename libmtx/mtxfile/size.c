@@ -55,30 +55,21 @@
 static int mtxfilesize_parse_matrix_array(
     struct mtxfilesize * size,
     int64_t * bytes_read,
-    const char ** endptr,
+    char ** outendptr,
     const char * s)
 {
-    int err;
-    const char * t = s;
-    err = parse_int64(t, " ", &size->num_rows, &t);
-    if (err == EINVAL) {
-        return MTX_ERR_INVALID_MTX_SIZE;
-    } else if (err) {
-        errno = err;
-        return MTX_ERR_ERRNO;
-    }
-    err = parse_int64(t, "\n", &size->num_columns, &t);
-    if (err == EINVAL) {
-        return MTX_ERR_INVALID_MTX_SIZE;
-    } else if (err) {
-        errno = err;
-        return MTX_ERR_ERRNO;
-    }
+    char * endptr;
+    int err = parse_int64(&size->num_rows, s, &endptr, bytes_read);
+    if (err) return err;
+    if (s == endptr || *endptr != ' ') return MTX_ERR_INVALID_MTX_SIZE;
+    if (bytes_read) (*bytes_read)++;
+    if (outendptr) *outendptr = endptr+1;
+    s = endptr+1;
+    err = parse_int64(&size->num_columns, s, &endptr, bytes_read);
+    if (err) return err;
+    if (s == endptr) return MTX_ERR_INVALID_MTX_SIZE;
+    if (outendptr) *outendptr = endptr;
     size->num_nonzeros = -1;
-    if (bytes_read)
-        (*bytes_read) += t - s;
-    if (endptr)
-        *endptr = t;
     return MTX_SUCCESS;
 }
 
@@ -89,36 +80,26 @@ static int mtxfilesize_parse_matrix_array(
 static int mtxfilesize_parse_matrix_coordinate(
     struct mtxfilesize * size,
     int64_t * bytes_read,
-    const char ** endptr,
+    char ** outendptr,
     const char * s)
 {
-    int err;
-    const char * t = s;
-    err = parse_int64(t, " ", &size->num_rows, &t);
-    if (err == EINVAL) {
-        return MTX_ERR_INVALID_MTX_SIZE;
-    } else if (err) {
-        errno = err;
-        return MTX_ERR_ERRNO;
-    }
-    err = parse_int64(t, " ", &size->num_columns, &t);
-    if (err == EINVAL) {
-        return MTX_ERR_INVALID_MTX_SIZE;
-    } else if (err) {
-        errno = err;
-        return MTX_ERR_ERRNO;
-    }
-    err = parse_int64(t, "\n", &size->num_nonzeros, &t);
-    if (err == EINVAL) {
-        return MTX_ERR_INVALID_MTX_SIZE;
-    } else if (err) {
-        errno = err;
-        return MTX_ERR_ERRNO;
-    }
-    if (bytes_read)
-        (*bytes_read) += t - s;
-    if (endptr)
-        *endptr = t;
+    char * endptr;
+    int err = parse_int64(&size->num_rows, s, &endptr, bytes_read);
+    if (err) return err;
+    if (s == endptr || *endptr != ' ') return MTX_ERR_INVALID_MTX_SIZE;
+    if (bytes_read) (*bytes_read)++;
+    if (outendptr) *outendptr = endptr+1;
+    s = endptr+1;
+    err = parse_int64(&size->num_columns, s, &endptr, bytes_read);
+    if (err) return err;
+    if (s == endptr || *endptr != ' ') return MTX_ERR_INVALID_MTX_SIZE;
+    if (bytes_read) (*bytes_read)++;
+    if (outendptr) *outendptr = endptr+1;
+    s = endptr+1;
+    err = parse_int64(&size->num_nonzeros, s, &endptr, bytes_read);
+    if (err) return err;
+    if (s == endptr) return MTX_ERR_INVALID_MTX_SIZE;
+    if (outendptr) *outendptr = endptr;
     return MTX_SUCCESS;
 }
 
@@ -129,24 +110,16 @@ static int mtxfilesize_parse_matrix_coordinate(
 int mtxfilesize_parse_vector_array(
     struct mtxfilesize * size,
     int64_t * bytes_read,
-    const char ** endptr,
+    char ** outendptr,
     const char * s)
 {
-    int err;
-    const char * t = s;
-    err = parse_int64(t, "\n", &size->num_rows, &t);
-    if (err == EINVAL) {
-        return MTX_ERR_INVALID_MTX_SIZE;
-    } else if (err) {
-        errno = err;
-        return MTX_ERR_ERRNO;
-    }
+    char * endptr;
+    int err = parse_int64(&size->num_rows, s, &endptr, bytes_read);
+    if (err) return err;
+    if (s == endptr) return MTX_ERR_INVALID_MTX_SIZE;
+    if (outendptr) *outendptr = endptr;
     size->num_columns = -1;
     size->num_nonzeros = -1;
-    if (bytes_read)
-        (*bytes_read) += t - s;
-    if (endptr)
-        *endptr = t;
     return MTX_SUCCESS;
 }
 
@@ -157,30 +130,22 @@ int mtxfilesize_parse_vector_array(
 int mtxfilesize_parse_vector_coordinate(
     struct mtxfilesize * size,
     int64_t * bytes_read,
-    const char ** endptr,
+    char ** outendptr,
     const char * s)
 {
-    int err;
-    const char * t = s;
-    err = parse_int64(t, " ", &size->num_rows, &t);
-    if (err == EINVAL) {
-        return MTX_ERR_INVALID_MTX_SIZE;
-    } else if (err) {
-        errno = err;
-        return MTX_ERR_ERRNO;
-    }
-    err = parse_int64(t, "\n", &size->num_nonzeros, &t);
-    if (err == EINVAL) {
-        return MTX_ERR_INVALID_MTX_SIZE;
-    } else if (err) {
-        errno = err;
-        return MTX_ERR_ERRNO;
-    }
+    char * endptr;
+    int err = parse_int64(&size->num_rows, s, &endptr, bytes_read);
+    if (err) return err;
+    if (s == endptr || *endptr != ' ') return MTX_ERR_INVALID_MTX_SIZE;
+    if (bytes_read) (*bytes_read)++;
+    if (outendptr) *outendptr = endptr+1;
+    s = endptr+1;
     size->num_columns = -1;
-    if (bytes_read)
-        (*bytes_read) += t - s;
-    if (endptr)
-        *endptr = t;
+    err = parse_int64(&size->num_nonzeros, s, &endptr, bytes_read);
+    if (err) return err;
+    if (s == endptr) return MTX_ERR_INVALID_MTX_SIZE;
+    if (outendptr) *outendptr = endptr;
+    size->num_columns = -1;
     return MTX_SUCCESS;
 }
 
@@ -199,7 +164,7 @@ int mtxfilesize_parse_vector_coordinate(
 int mtxfilesize_parse(
     struct mtxfilesize * size,
     int64_t * bytes_read,
-    const char ** endptr,
+    char ** endptr,
     const char * s,
     enum mtxfileobject object,
     enum mtxfileformat format)
@@ -211,9 +176,7 @@ int mtxfilesize_parse(
         } else if (format == mtxfile_coordinate) {
             return mtxfilesize_parse_matrix_coordinate(
                 size, bytes_read, endptr, s);
-        } else {
-            return MTX_ERR_INVALID_MTX_FORMAT;
-        }
+        } else { return MTX_ERR_INVALID_MTX_FORMAT; }
     } else if (object == mtxfile_vector) {
         if (format == mtxfile_array) {
             return mtxfilesize_parse_vector_array(
@@ -221,12 +184,8 @@ int mtxfilesize_parse(
         } else if (format == mtxfile_coordinate) {
             return mtxfilesize_parse_vector_coordinate(
                 size, bytes_read, endptr, s);
-        } else {
-            return MTX_ERR_INVALID_MTX_FORMAT;
-        }
-    } else {
-        return MTX_ERR_INVALID_MTX_OBJECT;
-    }
+        } else { return MTX_ERR_INVALID_MTX_FORMAT; }
+    } else { return MTX_ERR_INVALID_MTX_OBJECT; }
 }
 
 /**
@@ -379,15 +338,17 @@ int mtxfilesize_fread(
         return err;
     }
 
+    char * endptr;
     err = mtxfilesize_parse(
-        size, bytes_read, NULL, linebuf, object, format);
+        size, bytes_read, &endptr, linebuf, object, format);
     if (err) {
         if (free_linebuf)
             free(linebuf);
         return err;
     }
-    if (lines_read)
-        (*lines_read)++;
+    if (*endptr != '\n') return MTX_ERR_INVALID_MTX_SIZE;
+    if (bytes_read) (*bytes_read)++;
+    if (lines_read) (*lines_read)++;
 
     if (free_linebuf)
         free(linebuf);
@@ -448,15 +409,17 @@ int mtxfilesize_gzread(
         return err;
     }
 
+    char * endptr;
     err = mtxfilesize_parse(
-        size, bytes_read, NULL, linebuf, object, format);
+        size, bytes_read, &endptr, linebuf, object, format);
     if (err) {
         if (free_linebuf)
             free(linebuf);
         return err;
     }
-    if (lines_read)
-        (*lines_read)++;
+    if (*endptr != '\n') return MTX_ERR_INVALID_MTX_SIZE;
+    if (bytes_read) (*bytes_read)++;
+    if (lines_read) (*lines_read)++;
 
     if (free_linebuf)
         free(linebuf);

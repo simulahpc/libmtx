@@ -357,7 +357,7 @@ static int read_size_line(
 static int parse_array_real_single(
     const char * s, float * a)
 {
-    int err = parse_float(s, "\n", a, NULL);
+    int err = parse_float_ex(s, "\n", a, NULL);
     if (err == EINVAL) {
         return MTX_ERR_INVALID_MTX_DATA;
     } else if (err) {
@@ -374,7 +374,7 @@ static int parse_array_real_single(
 static int parse_array_real_double(
     const char * s, double * a)
 {
-    int err = parse_double(s, "\n", a, NULL);
+    int err = parse_double_ex(s, "\n", a, NULL);
     if (err == EINVAL) {
         return MTX_ERR_INVALID_MTX_DATA;
     } else if (err) {
@@ -391,14 +391,14 @@ static int parse_array_real_double(
 static int parse_array_complex_single(
     const char * s, float * a, float * b)
 {
-    int err = parse_float(s, " ", a, &s);
+    int err = parse_float_ex(s, " ", a, &s);
     if (err == EINVAL) {
         return MTX_ERR_INVALID_MTX_DATA;
     } else if (err) {
         errno = err;
         return MTX_ERR_ERRNO;
     }
-    err = parse_float(s, "\n", b, NULL);
+    err = parse_float_ex(s, "\n", b, NULL);
     if (err == EINVAL) {
         return MTX_ERR_INVALID_MTX_DATA;
     } else if (err) {
@@ -415,7 +415,7 @@ static int parse_array_complex_single(
 static int parse_array_integer_single(
     const char * s, int32_t * a)
 {
-    int err = parse_int32(s, "\n", a, NULL);
+    int err = parse_int32_ex(s, "\n", a, NULL);
     if (err == EINVAL) {
         return MTX_ERR_INVALID_MTX_DATA;
     } else if (err) {

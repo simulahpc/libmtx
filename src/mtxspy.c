@@ -263,7 +263,7 @@ static int parse_program_options(
 
         /* Parse image maximum width and height. */
         if (strcmp((*argv)[0], "--max-height") == 0 && *argc >= 2) {
-            err = parse_int32((*argv)[1], NULL, &args->max_height, NULL);
+            err = parse_int32_ex((*argv)[1], NULL, &args->max_height, NULL);
             if (err) {
                 program_options_free(args);
                 return err;
@@ -271,7 +271,7 @@ static int parse_program_options(
             num_arguments_consumed += 2;
             continue;
         } else if (strstr((*argv)[0], "--max-height=") == (*argv)[0]) {
-            err = parse_int32(
+            err = parse_int32_ex(
                 (*argv)[0] + strlen("--max-height="), NULL,
                 &args->max_height, NULL);
             if (err) {
@@ -282,7 +282,7 @@ static int parse_program_options(
             continue;
         }
         if (strcmp((*argv)[0], "--max-width") == 0 && *argc >= 2) {
-            err = parse_int32((*argv)[1], NULL, &args->max_width, NULL);
+            err = parse_int32_ex((*argv)[1], NULL, &args->max_width, NULL);
             if (err) {
                 program_options_free(args);
                 return err;
@@ -290,7 +290,7 @@ static int parse_program_options(
             num_arguments_consumed += 2;
             continue;
         } else if (strstr((*argv)[0], "--max-width=") == (*argv)[0]) {
-            err = parse_int32(
+            err = parse_int32_ex(
                 (*argv)[0] + strlen("--max-width="), NULL,
                 &args->max_width, NULL);
             if (err) {
@@ -349,7 +349,7 @@ static int parse_program_options(
         }
 
         if (strcmp((*argv)[0], "--gamma") == 0 && *argc >= 2) {
-            err = parse_double((*argv)[1], NULL, &args->gamma, NULL);
+            err = parse_double_ex((*argv)[1], NULL, &args->gamma, NULL);
             if (err) {
                 program_options_free(args);
                 return err;
@@ -357,7 +357,7 @@ static int parse_program_options(
             num_arguments_consumed += 2;
             continue;
         } else if (strstr((*argv)[0], "--gamma=") == (*argv)[0]) {
-            err = parse_double(
+            err = parse_double_ex(
                 (*argv)[0] + strlen("--gamma="), NULL,
                 &args->gamma, NULL);
             if (err) {

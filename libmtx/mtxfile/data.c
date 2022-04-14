@@ -257,18 +257,14 @@ int mtxfiledata_size_per_element(
 int mtxfiledata_parse_array_real_single(
     float * data,
     int64_t * bytes_read,
-    const char ** endptr,
+    char ** outendptr,
     const char * s)
 {
-    const char * t = s;
-    int err = parse_float(t, "\n", data, &t);
-    if (err == EINVAL) return MTX_ERR_INVALID_MTX_DATA;
-    else if (err) {
-        errno = err;
-        return MTX_ERR_ERRNO;
-    }
-    if (bytes_read) *bytes_read += t-s;
-    if (endptr) *endptr = t;
+    char * endptr;
+    int err = parse_float(data, s, &endptr, bytes_read);
+    if (err) return err;
+    if (s == endptr) return MTX_ERR_INVALID_MTX_DATA;
+    if (outendptr) *outendptr = endptr;
     return MTX_SUCCESS;
 }
 
@@ -286,18 +282,14 @@ int mtxfiledata_parse_array_real_single(
 int mtxfiledata_parse_array_real_double(
     double * data,
     int64_t * bytes_read,
-    const char ** endptr,
+    char ** outendptr,
     const char * s)
 {
-    const char * t = s;
-    int err = parse_double(t, "\n", data, &t);
-    if (err == EINVAL) return MTX_ERR_INVALID_MTX_DATA;
-    else if (err) {
-        errno = err;
-        return MTX_ERR_ERRNO;
-    }
-    if (bytes_read) *bytes_read += t-s;
-    if (endptr) *endptr = t;
+    char * endptr;
+    int err = parse_double(data, s, &endptr, bytes_read);
+    if (err) return err;
+    if (s == endptr) return MTX_ERR_INVALID_MTX_DATA;
+    if (outendptr) *outendptr = endptr;
     return MTX_SUCCESS;
 }
 
@@ -315,25 +307,20 @@ int mtxfiledata_parse_array_real_double(
 int mtxfiledata_parse_array_complex_single(
     float (* data)[2],
     int64_t * bytes_read,
-    const char ** endptr,
+    char ** outendptr,
     const char * s)
 {
-    int err;
-    const char * t = s;
-    err = parse_float(t, " ", &(*data)[0], &t);
-    if (err == EINVAL) return MTX_ERR_INVALID_MTX_DATA;
-    else if (err) {
-        errno = err;
-        return MTX_ERR_ERRNO;
-    }
-    err = parse_float(t, "\n", &(*data)[1], &t);
-    if (err == EINVAL) return MTX_ERR_INVALID_MTX_DATA;
-    else if (err) {
-        errno = err;
-        return MTX_ERR_ERRNO;
-    }
-    if (bytes_read) *bytes_read += t-s;
-    if (endptr) *endptr = t;
+    char * endptr;
+    int err = parse_float(&(*data)[0], s, &endptr, bytes_read);
+    if (err) return err;
+    if (s == endptr || *endptr != ' ') return MTX_ERR_INVALID_MTX_DATA;
+    if (bytes_read) (*bytes_read)++;
+    if (outendptr) *outendptr = endptr+1;
+    s = endptr+1;
+    err = parse_float(&(*data)[1], s, &endptr, bytes_read);
+    if (err) return err;
+    if (s == endptr) return MTX_ERR_INVALID_MTX_DATA;
+    if (outendptr) *outendptr = endptr;
     return MTX_SUCCESS;
 }
 
@@ -351,25 +338,20 @@ int mtxfiledata_parse_array_complex_single(
 int mtxfiledata_parse_array_complex_double(
     double (* data)[2],
     int64_t * bytes_read,
-    const char ** endptr,
+    char ** outendptr,
     const char * s)
 {
-    int err;
-    const char * t = s;
-    err = parse_double(t, " ", &((*data)[0]), &t);
-    if (err == EINVAL) return MTX_ERR_INVALID_MTX_DATA;
-    else if (err) {
-        errno = err;
-        return MTX_ERR_ERRNO;
-    }
-    err = parse_double(t, "\n", &((*data)[1]), &t);
-    if (err == EINVAL) return MTX_ERR_INVALID_MTX_DATA;
-    else if (err) {
-        errno = err;
-        return MTX_ERR_ERRNO;
-    }
-    if (bytes_read) *bytes_read += t-s;
-    if (endptr) *endptr = t;
+    char * endptr;
+    int err = parse_double(&(*data)[0], s, &endptr, bytes_read);
+    if (err) return err;
+    if (s == endptr || *endptr != ' ') return MTX_ERR_INVALID_MTX_DATA;
+    if (bytes_read) (*bytes_read)++;
+    if (outendptr) *outendptr = endptr+1;
+    s = endptr+1;
+    err = parse_double(&(*data)[1], s, &endptr, bytes_read);
+    if (err) return err;
+    if (s == endptr) return MTX_ERR_INVALID_MTX_DATA;
+    if (outendptr) *outendptr = endptr;
     return MTX_SUCCESS;
 }
 
@@ -387,18 +369,14 @@ int mtxfiledata_parse_array_complex_double(
 int mtxfiledata_parse_array_integer_single(
     int32_t * data,
     int64_t * bytes_read,
-    const char ** endptr,
+    char ** outendptr,
     const char * s)
 {
-    const char * t = s;
-    int err = parse_int32(t, "\n", data, &t);
-    if (err == EINVAL) return MTX_ERR_INVALID_MTX_DATA;
-    else if (err) {
-        errno = err;
-        return MTX_ERR_ERRNO;
-    }
-    if (bytes_read) *bytes_read += t-s;
-    if (endptr) *endptr = t;
+    char * endptr;
+    int err = parse_int32(data, s, &endptr, bytes_read);
+    if (err) return err;
+    if (s == endptr) return MTX_ERR_INVALID_MTX_DATA;
+    if (outendptr) *outendptr = endptr;
     return MTX_SUCCESS;
 }
 
@@ -416,18 +394,14 @@ int mtxfiledata_parse_array_integer_single(
 int mtxfiledata_parse_array_integer_double(
     int64_t * data,
     int64_t * bytes_read,
-    const char ** endptr,
+    char ** outendptr,
     const char * s)
 {
-    const char * t = s;
-    int err = parse_int64(t, "\n", data, &t);
-    if (err == EINVAL) return MTX_ERR_INVALID_MTX_DATA;
-    else if (err) {
-        errno = err;
-        return MTX_ERR_ERRNO;
-    }
-    if (bytes_read) *bytes_read += t-s;
-    if (endptr) *endptr = t;
+    char * endptr;
+    int err = parse_int64(data, s, &endptr, bytes_read);
+    if (err) return err;
+    if (s == endptr) return MTX_ERR_INVALID_MTX_DATA;
+    if (outendptr) *outendptr = endptr;
     return MTX_SUCCESS;
 }
 
@@ -449,37 +423,30 @@ int mtxfiledata_parse_array_integer_double(
 int mtxfiledata_parse_matrix_coordinate_real_single(
     struct mtxfile_matrix_coordinate_real_single * data,
     int64_t * bytes_read,
-    const char ** endptr,
+    char ** outendptr,
     const char * s,
     int num_rows,
     int num_columns)
 {
-    int err;
-    const char * t = s;
-    err = parse_int32(t, " ", &data->i, &t);
-    if (err == EINVAL) return MTX_ERR_INVALID_MTX_DATA;
-    else if (err) {
-        errno = err;
-        return MTX_ERR_ERRNO;
-    } else if (data->i <= 0 || data->i > num_rows) {
-        return MTX_ERR_INDEX_OUT_OF_BOUNDS;
-    }
-    err = parse_int32(t, " ", &data->j, &t);
-    if (err == EINVAL) return MTX_ERR_INVALID_MTX_DATA;
-    else if (err) {
-        errno = err;
-        return MTX_ERR_ERRNO;
-    } else if (data->j <= 0 || data->j > num_columns) {
-        return MTX_ERR_INDEX_OUT_OF_BOUNDS;
-    }
-    err = parse_float(t, "\n", &data->a, &t);
-    if (err == EINVAL) return MTX_ERR_INVALID_MTX_DATA;
-    else if (err) {
-        errno = err;
-        return MTX_ERR_ERRNO;
-    }
-    if (bytes_read) *bytes_read += t-s;
-    if (endptr) *endptr = t;
+    char * endptr;
+    int err = parse_int32(&data->i, s, &endptr, bytes_read);
+    if (err) return err;
+    if (s == endptr || *endptr != ' ') return MTX_ERR_INVALID_MTX_DATA;
+    else if (data->i <= 0 || data->i > num_rows) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+    if (bytes_read) (*bytes_read)++;
+    if (outendptr) *outendptr = endptr+1;
+    s = endptr+1;
+    err = parse_int32(&data->j, s, &endptr, bytes_read);
+    if (err) return err;
+    if (s == endptr || *endptr != ' ') return MTX_ERR_INVALID_MTX_DATA;
+    else if (data->j <= 0 || data->j > num_columns) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+    if (bytes_read) (*bytes_read)++;
+    if (outendptr) *outendptr = endptr+1;
+    s = endptr+1;
+    err = parse_float(&data->a, s, &endptr, bytes_read);
+    if (err) return err;
+    if (s == endptr) return MTX_ERR_INVALID_MTX_DATA;
+    if (outendptr) *outendptr = endptr;
     return MTX_SUCCESS;
 }
 
@@ -497,37 +464,30 @@ int mtxfiledata_parse_matrix_coordinate_real_single(
 int mtxfiledata_parse_matrix_coordinate_real_double(
     struct mtxfile_matrix_coordinate_real_double * data,
     int64_t * bytes_read,
-    const char ** endptr,
+    char ** outendptr,
     const char * s,
     int num_rows,
     int num_columns)
 {
-    int err;
-    const char * t = s;
-    err = parse_int32(t, " ", &data->i, &t);
-    if (err == EINVAL) return MTX_ERR_INVALID_MTX_DATA;
-    else if (err) {
-        errno = err;
-        return MTX_ERR_ERRNO;
-    } else if (data->i <= 0 || data->i > num_rows) {
-        return MTX_ERR_INDEX_OUT_OF_BOUNDS;
-    }
-    err = parse_int32(t, " ", &data->j, &t);
-    if (err == EINVAL) return MTX_ERR_INVALID_MTX_DATA;
-    else if (err) {
-        errno = err;
-        return MTX_ERR_ERRNO;
-    } else if (data->j <= 0 || data->j > num_columns) {
-        return MTX_ERR_INDEX_OUT_OF_BOUNDS;
-    }
-    err = parse_double(t, "\n", &data->a, &t);
-    if (err == EINVAL) return MTX_ERR_INVALID_MTX_DATA;
-    else if (err) {
-        errno = err;
-        return MTX_ERR_ERRNO;
-    }
-    if (bytes_read) *bytes_read += t-s;
-    if (endptr) *endptr = t;
+    char * endptr;
+    int err = parse_int32(&data->i, s, &endptr, bytes_read);
+    if (err) return err;
+    if (s == endptr || *endptr != ' ') return MTX_ERR_INVALID_MTX_DATA;
+    else if (data->i <= 0 || data->i > num_rows) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+    if (bytes_read) (*bytes_read)++;
+    if (outendptr) *outendptr = endptr+1;
+    s = endptr+1;
+    err = parse_int32(&data->j, s, &endptr, bytes_read);
+    if (err) return err;
+    if (s == endptr || *endptr != ' ') return MTX_ERR_INVALID_MTX_DATA;
+    else if (data->j <= 0 || data->j > num_columns) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+    if (bytes_read) (*bytes_read)++;
+    if (outendptr) *outendptr = endptr+1;
+    s = endptr+1;
+    err = parse_double(&data->a, s, &endptr, bytes_read);
+    if (err) return err;
+    if (s == endptr) return MTX_ERR_INVALID_MTX_DATA;
+    if (outendptr) *outendptr = endptr;
     return MTX_SUCCESS;
 }
 
@@ -545,43 +505,37 @@ int mtxfiledata_parse_matrix_coordinate_real_double(
 int mtxfiledata_parse_matrix_coordinate_complex_single(
     struct mtxfile_matrix_coordinate_complex_single * data,
     int64_t * bytes_read,
-    const char ** endptr,
+    char ** outendptr,
     const char * s,
     int num_rows,
     int num_columns)
 {
-    int err;
-    const char * t = s;
-    err = parse_int32(t, " ", &data->i, &t);
-    if (err == EINVAL) return MTX_ERR_INVALID_MTX_DATA;
-    else if (err) {
-        errno = err;
-        return MTX_ERR_ERRNO;
-    } else if (data->i <= 0 || data->i > num_rows) {
-        return MTX_ERR_INDEX_OUT_OF_BOUNDS;
-    }
-    err = parse_int32(t, " ", &data->j, &t);
-    if (err == EINVAL) return MTX_ERR_INVALID_MTX_DATA;
-    else if (err) {
-        errno = err;
-        return MTX_ERR_ERRNO;
-    } else if (data->j <= 0 || data->j > num_columns) {
-        return MTX_ERR_INDEX_OUT_OF_BOUNDS;
-    }
-    err = parse_float(t, " ", &data->a[0], &t);
-    if (err == EINVAL) return MTX_ERR_INVALID_MTX_DATA;
-    else if (err) {
-        errno = err;
-        return MTX_ERR_ERRNO;
-    }
-    err = parse_float(t, "\n", &data->a[1], &t);
-    if (err == EINVAL) return MTX_ERR_INVALID_MTX_DATA;
-    else if (err) {
-        errno = err;
-        return MTX_ERR_ERRNO;
-    }
-    if (bytes_read) *bytes_read += t-s;
-    if (endptr) *endptr = t;
+    char * endptr;
+    int err = parse_int32(&data->i, s, &endptr, bytes_read);
+    if (err) return err;
+    if (s == endptr || *endptr != ' ') return MTX_ERR_INVALID_MTX_DATA;
+    else if (data->i <= 0 || data->i > num_rows) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+    if (bytes_read) (*bytes_read)++;
+    if (outendptr) *outendptr = endptr+1;
+    s = endptr+1;
+    err = parse_int32(&data->j, s, &endptr, bytes_read);
+    if (err) return err;
+    if (s == endptr || *endptr != ' ') return MTX_ERR_INVALID_MTX_DATA;
+    else if (data->j <= 0 || data->j > num_columns) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+    if (bytes_read) (*bytes_read)++;
+    if (outendptr) *outendptr = endptr+1;
+    s = endptr+1;
+    err = parse_float(&data->a[0], s, &endptr, bytes_read);
+    if (err) return err;
+    if (s == endptr || *endptr != ' ') return MTX_ERR_INVALID_MTX_DATA;
+    else if (data->j <= 0 || data->j > num_columns) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+    if (bytes_read) (*bytes_read)++;
+    if (outendptr) *outendptr = endptr+1;
+    s = endptr+1;
+    err = parse_float(&data->a[1], s, &endptr, bytes_read);
+    if (err) return err;
+    if (s == endptr) return MTX_ERR_INVALID_MTX_DATA;
+    if (outendptr) *outendptr = endptr;
     return MTX_SUCCESS;
 }
 
@@ -599,43 +553,37 @@ int mtxfiledata_parse_matrix_coordinate_complex_single(
 int mtxfiledata_parse_matrix_coordinate_complex_double(
     struct mtxfile_matrix_coordinate_complex_double * data,
     int64_t * bytes_read,
-    const char ** endptr,
+    char ** outendptr,
     const char * s,
     int num_rows,
     int num_columns)
 {
-    int err;
-    const char * t = s;
-    err = parse_int32(t, " ", &data->i, &t);
-    if (err == EINVAL) return MTX_ERR_INVALID_MTX_DATA;
-    else if (err) {
-        errno = err;
-        return MTX_ERR_ERRNO;
-    } else if (data->i <= 0 || data->i > num_rows) {
-        return MTX_ERR_INDEX_OUT_OF_BOUNDS;
-    }
-    err = parse_int32(t, " ", &data->j, &t);
-    if (err == EINVAL) return MTX_ERR_INVALID_MTX_DATA;
-    else if (err) {
-        errno = err;
-        return MTX_ERR_ERRNO;
-    }
-    err = parse_double(t, " ", &data->a[0], &t);
-    if (err == EINVAL) return MTX_ERR_INVALID_MTX_DATA;
-    else if (err) {
-        errno = err;
-        return MTX_ERR_ERRNO;
-    } else if (data->j <= 0 || data->j > num_columns) {
-        return MTX_ERR_INDEX_OUT_OF_BOUNDS;
-    }
-    err = parse_double(t, "\n", &data->a[1], &t);
-    if (err == EINVAL) return MTX_ERR_INVALID_MTX_DATA;
-    else if (err) {
-        errno = err;
-        return MTX_ERR_ERRNO;
-    }
-    if (bytes_read) *bytes_read += t-s;
-    if (endptr) *endptr = t;
+    char * endptr;
+    int err = parse_int32(&data->i, s, &endptr, bytes_read);
+    if (err) return err;
+    if (s == endptr || *endptr != ' ') return MTX_ERR_INVALID_MTX_DATA;
+    else if (data->i <= 0 || data->i > num_rows) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+    if (bytes_read) (*bytes_read)++;
+    if (outendptr) *outendptr = endptr+1;
+    s = endptr+1;
+    err = parse_int32(&data->j, s, &endptr, bytes_read);
+    if (err) return err;
+    if (s == endptr || *endptr != ' ') return MTX_ERR_INVALID_MTX_DATA;
+    else if (data->j <= 0 || data->j > num_columns) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+    if (bytes_read) (*bytes_read)++;
+    if (outendptr) *outendptr = endptr+1;
+    s = endptr+1;
+    err = parse_double(&data->a[0], s, &endptr, bytes_read);
+    if (err) return err;
+    if (s == endptr || *endptr != ' ') return MTX_ERR_INVALID_MTX_DATA;
+    else if (data->j <= 0 || data->j > num_columns) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+    if (bytes_read) (*bytes_read)++;
+    if (outendptr) *outendptr = endptr+1;
+    s = endptr+1;
+    err = parse_double(&data->a[1], s, &endptr, bytes_read);
+    if (err) return err;
+    if (s == endptr) return MTX_ERR_INVALID_MTX_DATA;
+    if (outendptr) *outendptr = endptr;
     return MTX_SUCCESS;
 }
 
@@ -653,37 +601,30 @@ int mtxfiledata_parse_matrix_coordinate_complex_double(
 int mtxfiledata_parse_matrix_coordinate_integer_single(
     struct mtxfile_matrix_coordinate_integer_single * data,
     int64_t * bytes_read,
-    const char ** endptr,
+    char ** outendptr,
     const char * s,
     int num_rows,
     int num_columns)
 {
-    int err;
-    const char * t = s;
-    err = parse_int32(t, " ", &data->i, &t);
-    if (err == EINVAL) return MTX_ERR_INVALID_MTX_DATA;
-    else if (err) {
-        errno = err;
-        return MTX_ERR_ERRNO;
-    } else if (data->i <= 0 || data->i > num_rows) {
-        return MTX_ERR_INDEX_OUT_OF_BOUNDS;
-    }
-    err = parse_int32(t, " ", &data->j, &t);
-    if (err == EINVAL) return MTX_ERR_INVALID_MTX_DATA;
-    else if (err) {
-        errno = err;
-        return MTX_ERR_ERRNO;
-    } else if (data->j <= 0 || data->j > num_columns) {
-        return MTX_ERR_INDEX_OUT_OF_BOUNDS;
-    }
-    err = parse_int32(t, "\n", &data->a, &t);
-    if (err == EINVAL) return MTX_ERR_INVALID_MTX_DATA;
-    else if (err) {
-        errno = err;
-        return MTX_ERR_ERRNO;
-    }
-    if (bytes_read) *bytes_read += t-s;
-    if (endptr) *endptr = t;
+    char * endptr;
+    int err = parse_int32(&data->i, s, &endptr, bytes_read);
+    if (err) return err;
+    if (s == endptr || *endptr != ' ') return MTX_ERR_INVALID_MTX_DATA;
+    else if (data->i <= 0 || data->i > num_rows) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+    if (bytes_read) (*bytes_read)++;
+    if (outendptr) *outendptr = endptr+1;
+    s = endptr+1;
+    err = parse_int32(&data->j, s, &endptr, bytes_read);
+    if (err) return err;
+    if (s == endptr || *endptr != ' ') return MTX_ERR_INVALID_MTX_DATA;
+    else if (data->j <= 0 || data->j > num_columns) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+    if (bytes_read) (*bytes_read)++;
+    if (outendptr) *outendptr = endptr+1;
+    s = endptr+1;
+    err = parse_int32(&data->a, s, &endptr, bytes_read);
+    if (err) return err;
+    if (s == endptr) return MTX_ERR_INVALID_MTX_DATA;
+    if (outendptr) *outendptr = endptr;
     return MTX_SUCCESS;
 }
 
@@ -701,37 +642,30 @@ int mtxfiledata_parse_matrix_coordinate_integer_single(
 int mtxfiledata_parse_matrix_coordinate_integer_double(
     struct mtxfile_matrix_coordinate_integer_double * data,
     int64_t * bytes_read,
-    const char ** endptr,
+    char ** outendptr,
     const char * s,
     int num_rows,
     int num_columns)
 {
-    int err;
-    const char * t = s;
-    err = parse_int32(t, " ", &data->i, &t);
-    if (err == EINVAL) return MTX_ERR_INVALID_MTX_DATA;
-    else if (err) {
-        errno = err;
-        return MTX_ERR_ERRNO;
-    } else if (data->i <= 0 || data->i > num_rows) {
-        return MTX_ERR_INDEX_OUT_OF_BOUNDS;
-    }
-    err = parse_int32(t, " ", &data->j, &t);
-    if (err == EINVAL) return MTX_ERR_INVALID_MTX_DATA;
-    else if (err) {
-        errno = err;
-        return MTX_ERR_ERRNO;
-    } else if (data->j <= 0 || data->j > num_columns) {
-        return MTX_ERR_INDEX_OUT_OF_BOUNDS;
-    }
-    err = parse_int64(t, "\n", &data->a, &t);
-    if (err == EINVAL) return MTX_ERR_INVALID_MTX_DATA;
-    else if (err) {
-        errno = err;
-        return MTX_ERR_ERRNO;
-    }
-    if (bytes_read) *bytes_read += t-s;
-    if (endptr) *endptr = t;
+    char * endptr;
+    int err = parse_int32(&data->i, s, &endptr, bytes_read);
+    if (err) return err;
+    if (s == endptr || *endptr != ' ') return MTX_ERR_INVALID_MTX_DATA;
+    else if (data->i <= 0 || data->i > num_rows) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+    if (bytes_read) (*bytes_read)++;
+    if (outendptr) *outendptr = endptr+1;
+    s = endptr+1;
+    err = parse_int32(&data->j, s, &endptr, bytes_read);
+    if (err) return err;
+    if (s == endptr || *endptr != ' ') return MTX_ERR_INVALID_MTX_DATA;
+    else if (data->j <= 0 || data->j > num_columns) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+    if (bytes_read) (*bytes_read)++;
+    if (outendptr) *outendptr = endptr+1;
+    s = endptr+1;
+    err = parse_int64(&data->a, s, &endptr, bytes_read);
+    if (err) return err;
+    if (s == endptr) return MTX_ERR_INVALID_MTX_DATA;
+    if (outendptr) *outendptr = endptr;
     return MTX_SUCCESS;
 }
 
@@ -749,31 +683,24 @@ int mtxfiledata_parse_matrix_coordinate_integer_double(
 int mtxfiledata_parse_matrix_coordinate_pattern(
     struct mtxfile_matrix_coordinate_pattern * data,
     int64_t * bytes_read,
-    const char ** endptr,
+    char ** outendptr,
     const char * s,
     int num_rows,
     int num_columns)
 {
-    int err;
-    const char * t = s;
-    err = parse_int32(t, " ", &data->i, &t);
-    if (err == EINVAL) return MTX_ERR_INVALID_MTX_DATA;
-    else if (err) {
-        errno = err;
-        return MTX_ERR_ERRNO;
-    } else if (data->i <= 0 || data->i > num_rows) {
-        return MTX_ERR_INDEX_OUT_OF_BOUNDS;
-    }
-    err = parse_int32(t, "\n", &data->j, &t);
-    if (err == EINVAL) return MTX_ERR_INVALID_MTX_DATA;
-    else if (err) {
-        errno = err;
-        return MTX_ERR_ERRNO;
-    } else if (data->j <= 0 || data->j > num_columns) {
-        return MTX_ERR_INDEX_OUT_OF_BOUNDS;
-    }
-    if (bytes_read) *bytes_read += t-s;
-    if (endptr) *endptr = t;
+    char * endptr;
+    int err = parse_int32(&data->i, s, &endptr, bytes_read);
+    if (err) return err;
+    if (s == endptr || *endptr != ' ') return MTX_ERR_INVALID_MTX_DATA;
+    else if (data->i <= 0 || data->i > num_rows) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+    if (bytes_read) (*bytes_read)++;
+    if (outendptr) *outendptr = endptr+1;
+    s = endptr+1;
+    err = parse_int32(&data->j, s, &endptr, bytes_read);
+    if (err) return err;
+    if (s == endptr) return MTX_ERR_INVALID_MTX_DATA;
+    else if (data->j <= 0 || data->j > num_columns) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+    if (outendptr) *outendptr = endptr;
     return MTX_SUCCESS;
 }
 
@@ -795,28 +722,22 @@ int mtxfiledata_parse_matrix_coordinate_pattern(
 int mtxfiledata_parse_vector_coordinate_real_single(
     struct mtxfile_vector_coordinate_real_single * data,
     int64_t * bytes_read,
-    const char ** endptr,
+    char ** outendptr,
     const char * s,
     int num_rows)
 {
-    int err;
-    const char * t = s;
-    err = parse_int64(t, " ", &data->i, &t);
-    if (err == EINVAL) return MTX_ERR_INVALID_MTX_DATA;
-    else if (err) {
-        errno = err;
-        return MTX_ERR_ERRNO;
-    } else if (data->i <= 0 || data->i > num_rows) {
-        return MTX_ERR_INDEX_OUT_OF_BOUNDS;
-    }
-    err = parse_float(t, "\n", &data->a, &t);
-    if (err == EINVAL) return MTX_ERR_INVALID_MTX_DATA;
-    else if (err) {
-        errno = err;
-        return MTX_ERR_ERRNO;
-    }
-    if (bytes_read) *bytes_read += t-s;
-    if (endptr) *endptr = t;
+    char * endptr;
+    int err = parse_int64(&data->i, s, &endptr, bytes_read);
+    if (err) return err;
+    if (s == endptr || *endptr != ' ') return MTX_ERR_INVALID_MTX_DATA;
+    else if (data->i <= 0 || data->i > num_rows) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+    if (bytes_read) (*bytes_read)++;
+    if (outendptr) *outendptr = endptr+1;
+    s = endptr+1;
+    err = parse_float(&data->a, s, &endptr, bytes_read);
+    if (err) return err;
+    if (s == endptr) return MTX_ERR_INVALID_MTX_DATA;
+    if (outendptr) *outendptr = endptr;
     return MTX_SUCCESS;
 }
 
@@ -834,28 +755,22 @@ int mtxfiledata_parse_vector_coordinate_real_single(
 int mtxfiledata_parse_vector_coordinate_real_double(
     struct mtxfile_vector_coordinate_real_double * data,
     int64_t * bytes_read,
-    const char ** endptr,
+    char ** outendptr,
     const char * s,
     int num_rows)
 {
-    int err;
-    const char * t = s;
-    err = parse_int64(t, " ", &data->i, &t);
-    if (err == EINVAL) return MTX_ERR_INVALID_MTX_DATA;
-    else if (err) {
-        errno = err;
-        return MTX_ERR_ERRNO;
-    } else if (data->i <= 0 || data->i > num_rows) {
-        return MTX_ERR_INDEX_OUT_OF_BOUNDS;
-    }
-    err = parse_double(t, "\n", &data->a, &t);
-    if (err == EINVAL) return MTX_ERR_INVALID_MTX_DATA;
-    else if (err) {
-        errno = err;
-        return MTX_ERR_ERRNO;
-    }
-    if (bytes_read) *bytes_read += t-s;
-    if (endptr) *endptr = t;
+    char * endptr;
+    int err = parse_int64(&data->i, s, &endptr, bytes_read);
+    if (err) return err;
+    if (s == endptr || *endptr != ' ') return MTX_ERR_INVALID_MTX_DATA;
+    else if (data->i <= 0 || data->i > num_rows) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+    if (bytes_read) (*bytes_read)++;
+    if (outendptr) *outendptr = endptr+1;
+    s = endptr+1;
+    err = parse_double(&data->a, s, &endptr, bytes_read);
+    if (err) return err;
+    if (s == endptr) return MTX_ERR_INVALID_MTX_DATA;
+    if (outendptr) *outendptr = endptr;
     return MTX_SUCCESS;
 }
 
@@ -873,34 +788,28 @@ int mtxfiledata_parse_vector_coordinate_real_double(
 int mtxfiledata_parse_vector_coordinate_complex_single(
     struct mtxfile_vector_coordinate_complex_single * data,
     int64_t * bytes_read,
-    const char ** endptr,
+    char ** outendptr,
     const char * s,
     int num_rows)
 {
-    int err;
-    const char * t = s;
-    err = parse_int64(t, " ", &data->i, &t);
-    if (err == EINVAL) return MTX_ERR_INVALID_MTX_DATA;
-    else if (err) {
-        errno = err;
-        return MTX_ERR_ERRNO;
-    } else if (data->i <= 0 || data->i > num_rows) {
-        return MTX_ERR_INDEX_OUT_OF_BOUNDS;
-    }
-    err = parse_float(t, " ", &data->a[0], &t);
-    if (err == EINVAL) return MTX_ERR_INVALID_MTX_DATA;
-    else if (err) {
-        errno = err;
-        return MTX_ERR_ERRNO;
-    }
-    err = parse_float(t, "\n", &data->a[1], &t);
-    if (err == EINVAL) return MTX_ERR_INVALID_MTX_DATA;
-    else if (err) {
-        errno = err;
-        return MTX_ERR_ERRNO;
-    }
-    if (bytes_read) *bytes_read += t-s;
-    if (endptr) *endptr = t;
+    char * endptr;
+    int err = parse_int64(&data->i, s, &endptr, bytes_read);
+    if (err) return err;
+    if (s == endptr || *endptr != ' ') return MTX_ERR_INVALID_MTX_DATA;
+    else if (data->i <= 0 || data->i > num_rows) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+    if (bytes_read) (*bytes_read)++;
+    if (outendptr) *outendptr = endptr+1;
+    s = endptr+1;
+    err = parse_float(&data->a[0], s, &endptr, bytes_read);
+    if (err) return err;
+    if (s == endptr || *endptr != ' ') return MTX_ERR_INVALID_MTX_DATA;
+    if (bytes_read) (*bytes_read)++;
+    if (outendptr) *outendptr = endptr+1;
+    s = endptr+1;
+    err = parse_float(&data->a[1], s, &endptr, bytes_read);
+    if (err) return err;
+    if (s == endptr) return MTX_ERR_INVALID_MTX_DATA;
+    if (outendptr) *outendptr = endptr;
     return MTX_SUCCESS;
 }
 
@@ -918,34 +827,28 @@ int mtxfiledata_parse_vector_coordinate_complex_single(
 int mtxfiledata_parse_vector_coordinate_complex_double(
     struct mtxfile_vector_coordinate_complex_double * data,
     int64_t * bytes_read,
-    const char ** endptr,
+    char ** outendptr,
     const char * s,
     int num_rows)
 {
-    int err;
-    const char * t = s;
-    err = parse_int64(t, " ", &data->i, &t);
-    if (err == EINVAL) return MTX_ERR_INVALID_MTX_DATA;
-    else if (err) {
-        errno = err;
-        return MTX_ERR_ERRNO;
-    } else if (data->i <= 0 || data->i > num_rows) {
-        return MTX_ERR_INDEX_OUT_OF_BOUNDS;
-    }
-    err = parse_double(t, " ", &data->a[0], &t);
-    if (err == EINVAL) return MTX_ERR_INVALID_MTX_DATA;
-    else if (err) {
-        errno = err;
-        return MTX_ERR_ERRNO;
-    }
-    err = parse_double(t, "\n", &data->a[1], &t);
-    if (err == EINVAL) return MTX_ERR_INVALID_MTX_DATA;
-    else if (err) {
-        errno = err;
-        return MTX_ERR_ERRNO;
-    }
-    if (bytes_read) *bytes_read += t-s;
-    if (endptr) *endptr = t;
+    char * endptr;
+    int err = parse_int64(&data->i, s, &endptr, bytes_read);
+    if (err) return err;
+    if (s == endptr || *endptr != ' ') return MTX_ERR_INVALID_MTX_DATA;
+    else if (data->i <= 0 || data->i > num_rows) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+    if (bytes_read) (*bytes_read)++;
+    if (outendptr) *outendptr = endptr+1;
+    s = endptr+1;
+    err = parse_double(&data->a[0], s, &endptr, bytes_read);
+    if (err) return err;
+    if (s == endptr || *endptr != ' ') return MTX_ERR_INVALID_MTX_DATA;
+    if (bytes_read) (*bytes_read)++;
+    if (outendptr) *outendptr = endptr+1;
+    s = endptr+1;
+    err = parse_double(&data->a[1], s, &endptr, bytes_read);
+    if (err) return err;
+    if (s == endptr) return MTX_ERR_INVALID_MTX_DATA;
+    if (outendptr) *outendptr = endptr;
     return MTX_SUCCESS;
 }
 
@@ -963,28 +866,22 @@ int mtxfiledata_parse_vector_coordinate_complex_double(
 int mtxfiledata_parse_vector_coordinate_integer_single(
     struct mtxfile_vector_coordinate_integer_single * data,
     int64_t * bytes_read,
-    const char ** endptr,
+    char ** outendptr,
     const char * s,
     int num_rows)
 {
-    int err;
-    const char * t = s;
-    err = parse_int64(t, " ", &data->i, &t);
-    if (err == EINVAL) return MTX_ERR_INVALID_MTX_DATA;
-    else if (err) {
-        errno = err;
-        return MTX_ERR_ERRNO;
-    } else if (data->i <= 0 || data->i > num_rows) {
-        return MTX_ERR_INDEX_OUT_OF_BOUNDS;
-    }
-    err = parse_int32(t, "\n", &data->a, &t);
-    if (err == EINVAL) return MTX_ERR_INVALID_MTX_DATA;
-    else if (err) {
-        errno = err;
-        return MTX_ERR_ERRNO;
-    }
-    if (bytes_read) *bytes_read += t-s;
-    if (endptr) *endptr = t;
+    char * endptr;
+    int err = parse_int64(&data->i, s, &endptr, bytes_read);
+    if (err) return err;
+    if (s == endptr || *endptr != ' ') return MTX_ERR_INVALID_MTX_DATA;
+    else if (data->i <= 0 || data->i > num_rows) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+    if (bytes_read) (*bytes_read)++;
+    if (outendptr) *outendptr = endptr+1;
+    s = endptr+1;
+    err = parse_int32(&data->a, s, &endptr, bytes_read);
+    if (err) return err;
+    if (s == endptr) return MTX_ERR_INVALID_MTX_DATA;
+    if (outendptr) *outendptr = endptr;
     return MTX_SUCCESS;
 }
 
@@ -1002,28 +899,22 @@ int mtxfiledata_parse_vector_coordinate_integer_single(
 int mtxfiledata_parse_vector_coordinate_integer_double(
     struct mtxfile_vector_coordinate_integer_double * data,
     int64_t * bytes_read,
-    const char ** endptr,
+    char ** outendptr,
     const char * s,
     int num_rows)
 {
-    int err;
-    const char * t = s;
-    err = parse_int64(t, " ", &data->i, &t);
-    if (err == EINVAL) return MTX_ERR_INVALID_MTX_DATA;
-    else if (err) {
-        errno = err;
-        return MTX_ERR_ERRNO;
-    } else if (data->i <= 0 || data->i > num_rows) {
-        return MTX_ERR_INDEX_OUT_OF_BOUNDS;
-    }
-    err = parse_int64(t, "\n", &data->a, &t);
-    if (err == EINVAL) return MTX_ERR_INVALID_MTX_DATA;
-    else if (err) {
-        errno = err;
-        return MTX_ERR_ERRNO;
-    }
-    if (bytes_read) *bytes_read += t-s;
-    if (endptr) *endptr = t;
+    char * endptr;
+    int err = parse_int64(&data->i, s, &endptr, bytes_read);
+    if (err) return err;
+    if (s == endptr || *endptr != ' ') return MTX_ERR_INVALID_MTX_DATA;
+    else if (data->i <= 0 || data->i > num_rows) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+    if (bytes_read) (*bytes_read)++;
+    if (outendptr) *outendptr = endptr+1;
+    s = endptr+1;
+    err = parse_int64(&data->a, s, &endptr, bytes_read);
+    if (err) return err;
+    if (s == endptr) return MTX_ERR_INVALID_MTX_DATA;
+    if (outendptr) *outendptr = endptr;
     return MTX_SUCCESS;
 }
 
@@ -1041,22 +932,16 @@ int mtxfiledata_parse_vector_coordinate_integer_double(
 int mtxfiledata_parse_vector_coordinate_pattern(
     struct mtxfile_vector_coordinate_pattern * data,
     int64_t * bytes_read,
-    const char ** endptr,
+    char ** outendptr,
     const char * s,
     int num_rows)
 {
-    int err;
-    const char * t = s;
-    err = parse_int64(t, "\n", &data->i, &t);
-    if (err == EINVAL) return MTX_ERR_INVALID_MTX_DATA;
-    else if (err) {
-        errno = err;
-        return MTX_ERR_ERRNO;
-    } else if (data->i <= 0 || data->i > num_rows) {
-        return MTX_ERR_INDEX_OUT_OF_BOUNDS;
-    }
-    if (bytes_read) *bytes_read += t-s;
-    if (endptr) *endptr = t;
+    char * endptr;
+    int err = parse_int64(&data->i, s, &endptr, bytes_read);
+    if (err) return err;
+    if (s == endptr) return MTX_ERR_INVALID_MTX_DATA;
+    else if (data->i <= 0 || data->i > num_rows) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+    if (outendptr) *outendptr = endptr;
     return MTX_SUCCESS;
 }
 
@@ -2788,7 +2673,7 @@ int mtxfiledata_set_constant_integer_double(
 static int mtxfiledata_parse(
     union mtxfiledata * data,
     int64_t * bytes_read,
-    const char ** endptr,
+    char ** endptr,
     const char * s,
     enum mtxfileobject object,
     enum mtxfileformat format,
@@ -2830,7 +2715,6 @@ static int mtxfiledata_parse(
                     bytes_read, endptr, s);
             } else { return MTX_ERR_INVALID_PRECISION; }
         } else { return MTX_ERR_INVALID_MTX_FIELD; }
-
     } else if (format == mtxfile_coordinate) {
         if (object == mtxfile_matrix) {
             if (field == mtxfile_real) {
@@ -2868,7 +2752,6 @@ static int mtxfiledata_parse(
                     &data->matrix_coordinate_pattern[i],
                     bytes_read, endptr, s, num_rows, num_columns);
             } else { return MTX_ERR_INVALID_MTX_FIELD; }
-
         } else if (object == mtxfile_vector) {
             if (field == mtxfile_real) {
                 if (precision == mtx_single) {
@@ -2905,7 +2788,6 @@ static int mtxfiledata_parse(
                     &data->vector_coordinate_pattern[i],
                     bytes_read, endptr, s, num_rows);
             } else { return MTX_ERR_INVALID_MTX_FIELD; }
-
         } else { return MTX_ERR_INVALID_MTX_OBJECT; }
     } else { return MTX_ERR_INVALID_MTX_FORMAT; }
     return MTX_SUCCESS;
@@ -2999,8 +2881,9 @@ int mtxfiledata_fread(
             return err;
         }
 
+        char * endptr;
         err = mtxfiledata_parse(
-            data, bytes_read, NULL, linebuf,
+            data, bytes_read, &endptr, linebuf,
             object, format, field, precision,
             num_rows, num_columns, offset+i);
         if (err) {
@@ -3012,8 +2895,9 @@ int mtxfiledata_fread(
                 free(linebuf);
             return err;
         }
-        if (lines_read)
-            (*lines_read)++;
+        if (i < size-1 && *endptr != '\n') return MTX_ERR_INVALID_MTX_DATA;
+        if (i < size-1 && bytes_read) (*bytes_read)++;
+        if (lines_read) (*lines_read)++;
     }
 
     setlocale(LC_ALL, locale);
@@ -3112,8 +2996,9 @@ int mtxfiledata_gzread(
             return err;
         }
 
+        char * endptr;
         err = mtxfiledata_parse(
-            data, bytes_read, NULL, linebuf,
+            data, bytes_read, &endptr, linebuf,
             object, format, field, precision,
             num_rows, num_columns, offset+i);
         if (err) {
@@ -3125,8 +3010,9 @@ int mtxfiledata_gzread(
                 free(linebuf);
             return err;
         }
-        if (lines_read)
-            (*lines_read)++;
+        if (i < size-1 && *endptr != '\n') return MTX_ERR_INVALID_MTX_DATA;
+        if (i < size-1 && bytes_read) (*bytes_read)++;
+        if (lines_read) (*lines_read)++;
     }
 
     setlocale(LC_ALL, locale);
