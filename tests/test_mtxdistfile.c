@@ -256,8 +256,8 @@ int test_mtxdistfile_from_mtxfile(void)
         TEST_ASSERT_EQ(4, mtxdistfile.partition.size);
         TEST_ASSERT_EQ(2, mtxdistfile.partition.part_sizes[0]);
         TEST_ASSERT_EQ(2, mtxdistfile.partition.part_sizes[1]);
-        const struct mtxfile_matrix_coordinate_real_double * data =
-            mtxdistfile.data.matrix_coordinate_real_double;
+        const struct mtxfile_vector_coordinate_real_double * data =
+            mtxdistfile.data.vector_coordinate_real_double;
         if (rank == 0) {
             TEST_ASSERT_EQ(5, data[0].i); TEST_ASSERT_EQ(5.0, data[0].a);
             TEST_ASSERT_EQ(3, data[1].i); TEST_ASSERT_EQ(3.0, data[1].a);
@@ -318,7 +318,7 @@ int test_mtxdistfile_fread_shared(void)
         char s[] = "%%MatrixMarket matrix array real general\n"
             "% comment\n"
             "2 1\n"
-            "1.5\n1.6\n";
+            "1.5\n1.6";
         FILE * f = fmemopen(s, sizeof(s), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         int64_t lines_read = 0;
@@ -362,7 +362,7 @@ int test_mtxdistfile_fread_shared(void)
         char s[] = "%%MatrixMarket matrix array real general\n"
             "% comment\n"
             "2 1\n"
-            "1.5\n1.6\n";
+            "1.5\n1.6";
         FILE * f = fmemopen(s, sizeof(s), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         int64_t lines_read = 0;
@@ -405,7 +405,7 @@ int test_mtxdistfile_fread_shared(void)
         char s[] = "%%MatrixMarket matrix array complex general\n"
             "% comment\n"
             "2 1\n"
-            "1.5 2.1\n1.6 2.2\n";
+            "1.5 2.1\n1.6 2.2";
         FILE * f = fmemopen(s, sizeof(s), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         int64_t lines_read = 0;
@@ -450,7 +450,7 @@ int test_mtxdistfile_fread_shared(void)
         char s[] = "%%MatrixMarket matrix array complex general\n"
             "% comment\n"
             "2 1\n"
-            "1.5 2.1\n1.6 2.2\n";
+            "1.5 2.1\n1.6 2.2";
         FILE * f = fmemopen(s, sizeof(s), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         int64_t lines_read = 0;
@@ -495,7 +495,7 @@ int test_mtxdistfile_fread_shared(void)
         char s[] = "%%MatrixMarket matrix array integer general\n"
             "% comment\n"
             "2 1\n"
-            "2\n3\n";
+            "2\n3";
         FILE * f = fmemopen(s, sizeof(s), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         int64_t lines_read = 0;
@@ -538,7 +538,7 @@ int test_mtxdistfile_fread_shared(void)
         char s[] = "%%MatrixMarket matrix array integer general\n"
             "% comment\n"
             "2 1\n"
-            "2\n3\n";
+            "2\n3";
         FILE * f = fmemopen(s, sizeof(s), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         int64_t lines_read = 0;
@@ -584,7 +584,7 @@ int test_mtxdistfile_fread_shared(void)
         char s[] = "%%MatrixMarket matrix coordinate real general\n"
             "% comment\n"
             "3 3 2\n"
-            "3 2 1.5\n2 3 1.5\n";
+            "3 2 1.5\n2 3 1.5";
         FILE * f = fmemopen(s, sizeof(s), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         int64_t lines_read = 0;
@@ -632,7 +632,7 @@ int test_mtxdistfile_fread_shared(void)
             "% comment\n"
             "3 3 2\n"
             "3 2 1.5 2.1\n"
-            "2 3 -1.5 -2.1\n";
+            "2 3 -1.5 -2.1";
         FILE * f = fmemopen(s, sizeof(s), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         int64_t lines_read = 0;
@@ -681,7 +681,7 @@ int test_mtxdistfile_fread_shared(void)
         char s[] = "%%MatrixMarket matrix coordinate integer general\n"
             "% comment\n"
             "3 3 2\n"
-            "3 2 5\n2 3 6\n";
+            "3 2 5\n2 3 6";
         FILE * f = fmemopen(s, sizeof(s), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         int64_t lines_read = 0;
@@ -728,7 +728,7 @@ int test_mtxdistfile_fread_shared(void)
         char s[] = "%%MatrixMarket matrix coordinate pattern general\n"
             "% comment\n"
             "3 3 2\n"
-            "3 2\n2 3\n";
+            "3 2\n2 3";
         FILE * f = fmemopen(s, sizeof(s), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         int64_t lines_read = 0;
@@ -776,7 +776,7 @@ int test_mtxdistfile_fread_shared(void)
         char s[] = "%%MatrixMarket vector coordinate real general\n"
             "% comment\n"
             "3 2\n"
-            "3 1.5\n2 1.5\n";
+            "3 1.5\n2 1.5";
         FILE * f = fmemopen(s, sizeof(s), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         int64_t lines_read = 0;
@@ -822,7 +822,7 @@ int test_mtxdistfile_fread_shared(void)
             "% comment\n"
             "3 2\n"
             "3 1.5 2.1\n"
-            "2 -1.5 -2.1\n";
+            "2 -1.5 -2.1";
         FILE * f = fmemopen(s, sizeof(s), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         int64_t lines_read = 0;
@@ -870,7 +870,7 @@ int test_mtxdistfile_fread_shared(void)
             "% comment\n"
             "3 2\n"
             "3 5\n"
-            "2 6\n";
+            "2 6";
         FILE * f = fmemopen(s, sizeof(s), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         int64_t lines_read = 0;
@@ -916,7 +916,7 @@ int test_mtxdistfile_fread_shared(void)
             "% comment\n"
             "3 2\n"
             "3\n"
-            "2\n";
+            "2";
         FILE * f = fmemopen(s, sizeof(s), "r");
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         int64_t lines_read = 0;

@@ -55,9 +55,9 @@ struct mtxpartition;
  */
 struct mtxfile_matrix_coordinate_real_single
 {
-    int i;    /* row index */
-    int j;    /* column index */
-    float a;  /* nonzero value */
+    int64_t i; /* row index */
+    int64_t j; /* column index */
+    float a;   /* nonzero value */
 };
 
 /**
@@ -67,8 +67,8 @@ struct mtxfile_matrix_coordinate_real_single
  */
 struct mtxfile_matrix_coordinate_real_double
 {
-    int i;     /* row index */
-    int j;     /* column index */
+    int64_t i; /* row index */
+    int64_t j; /* column index */
     double a;  /* nonzero value */
 };
 
@@ -80,8 +80,8 @@ struct mtxfile_matrix_coordinate_real_double
  */
 struct mtxfile_matrix_coordinate_complex_single
 {
-    int i;       /* row index */
-    int j;       /* column index */
+    int64_t i;   /* row index */
+    int64_t j;   /* column index */
     float a[2];  /* real and imaginary parts of nonzero value */
 };
 
@@ -93,8 +93,8 @@ struct mtxfile_matrix_coordinate_complex_single
  */
 struct mtxfile_matrix_coordinate_complex_double
 {
-    int i;       /* row index */
-    int j;       /* column index */
+    int64_t i;    /* row index */
+    int64_t j;    /* column index */
     double a[2];  /* real and imaginary parts of nonzero value */
 };
 
@@ -106,8 +106,8 @@ struct mtxfile_matrix_coordinate_complex_double
  */
 struct mtxfile_matrix_coordinate_integer_single
 {
-    int i;      /* row index */
-    int j;      /* column index */
+    int64_t i;  /* row index */
+    int64_t j;  /* column index */
     int32_t a;  /* nonzero value */
 };
 
@@ -119,8 +119,8 @@ struct mtxfile_matrix_coordinate_integer_single
  */
 struct mtxfile_matrix_coordinate_integer_double
 {
-    int i;      /* row index */
-    int j;      /* column index */
+    int64_t i;  /* row index */
+    int64_t j;  /* column index */
     int64_t a;  /* nonzero value */
 };
 
@@ -131,8 +131,8 @@ struct mtxfile_matrix_coordinate_integer_double
  */
 struct mtxfile_matrix_coordinate_pattern
 {
-    int i;  /* row index */
-    int j;  /* column index */
+    int64_t i;  /* row index */
+    int64_t j;  /* column index */
 };
 
 /*

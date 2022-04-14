@@ -2000,7 +2000,7 @@ int mtxdistfile_fread_shared(
     if (free_linebuf)
         free(linebuf);
 
-    disterr->mpierrcode = MPI_Bcast(lines_read, 1, MPI_INT, root, comm);
+    disterr->mpierrcode = MPI_Bcast(lines_read, 1, MPI_INT64_T, root, comm);
     err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err)) {
         mtxdistfile_free(mtxdistfile);
@@ -2277,7 +2277,7 @@ int mtxdistfile_gzread_shared(
     if (free_linebuf)
         free(linebuf);
 
-    disterr->mpierrcode = MPI_Bcast(lines_read, 1, MPI_INT, root, comm);
+    disterr->mpierrcode = MPI_Bcast(lines_read, 1, MPI_INT64_T, root, comm);
     err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err)) {
         mtxdistfile_free(mtxdistfile);

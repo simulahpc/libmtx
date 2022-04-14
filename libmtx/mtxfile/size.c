@@ -552,11 +552,10 @@ static int mtxfilesize_datatype(
     MPI_Datatype * datatype,
     int * mpierrcode)
 {
-    int num_elements = 2;
-    int block_lengths[] = {2, 1};
-    MPI_Datatype element_types[] = {MPI_INT, MPI_INT64_T};
-    MPI_Aint element_offsets[] = {
-        0, offsetof(struct mtxfilesize, num_nonzeros)};
+    int num_elements = 1;
+    int block_lengths[] = {3};
+    MPI_Datatype element_types[] = {MPI_INT64_T};
+    MPI_Aint element_offsets[] = {0};
     MPI_Datatype single_datatype;
     *mpierrcode = MPI_Type_create_struct(
         num_elements, block_lengths, element_offsets,

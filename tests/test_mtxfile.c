@@ -2152,7 +2152,7 @@ int test_mtxfile_gzread(void)
     err = mtxfile_gzread(
         &mtxfile, precision, gz_f, &lines_read, &bytes_read, 0, NULL);
     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%d: %s",lines_read+1,mtxstrerror(err));
-    TEST_ASSERT_EQ(83, bytes_read);
+    TEST_ASSERT_EQ(84, bytes_read);
     TEST_ASSERT_EQ(6, lines_read);
     TEST_ASSERT_EQ(mtxfile_matrix, mtxfile.header.object);
     TEST_ASSERT_EQ(mtxfile_coordinate, mtxfile.header.format);

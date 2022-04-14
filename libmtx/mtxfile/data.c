@@ -429,14 +429,14 @@ int mtxfiledata_parse_matrix_coordinate_real_single(
     int64_t num_columns)
 {
     char * endptr;
-    int err = parse_int32(&data->i, s, &endptr, bytes_read);
+    int err = parse_int64(&data->i, s, &endptr, bytes_read);
     if (err) return err;
     if (s == endptr || *endptr != ' ') return MTX_ERR_INVALID_MTX_DATA;
     else if (data->i <= 0 || data->i > num_rows) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
     if (bytes_read) (*bytes_read)++;
     if (outendptr) *outendptr = endptr+1;
     s = endptr+1;
-    err = parse_int32(&data->j, s, &endptr, bytes_read);
+    err = parse_int64(&data->j, s, &endptr, bytes_read);
     if (err) return err;
     if (s == endptr || *endptr != ' ') return MTX_ERR_INVALID_MTX_DATA;
     else if (data->j <= 0 || data->j > num_columns) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
@@ -470,14 +470,14 @@ int mtxfiledata_parse_matrix_coordinate_real_double(
     int64_t num_columns)
 {
     char * endptr;
-    int err = parse_int32(&data->i, s, &endptr, bytes_read);
+    int err = parse_int64(&data->i, s, &endptr, bytes_read);
     if (err) return err;
     if (s == endptr || *endptr != ' ') return MTX_ERR_INVALID_MTX_DATA;
     else if (data->i <= 0 || data->i > num_rows) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
     if (bytes_read) (*bytes_read)++;
     if (outendptr) *outendptr = endptr+1;
     s = endptr+1;
-    err = parse_int32(&data->j, s, &endptr, bytes_read);
+    err = parse_int64(&data->j, s, &endptr, bytes_read);
     if (err) return err;
     if (s == endptr || *endptr != ' ') return MTX_ERR_INVALID_MTX_DATA;
     else if (data->j <= 0 || data->j > num_columns) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
@@ -511,14 +511,14 @@ int mtxfiledata_parse_matrix_coordinate_complex_single(
     int64_t num_columns)
 {
     char * endptr;
-    int err = parse_int32(&data->i, s, &endptr, bytes_read);
+    int err = parse_int64(&data->i, s, &endptr, bytes_read);
     if (err) return err;
     if (s == endptr || *endptr != ' ') return MTX_ERR_INVALID_MTX_DATA;
     else if (data->i <= 0 || data->i > num_rows) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
     if (bytes_read) (*bytes_read)++;
     if (outendptr) *outendptr = endptr+1;
     s = endptr+1;
-    err = parse_int32(&data->j, s, &endptr, bytes_read);
+    err = parse_int64(&data->j, s, &endptr, bytes_read);
     if (err) return err;
     if (s == endptr || *endptr != ' ') return MTX_ERR_INVALID_MTX_DATA;
     else if (data->j <= 0 || data->j > num_columns) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
@@ -558,14 +558,14 @@ int mtxfiledata_parse_matrix_coordinate_complex_double(
     int64_t num_columns)
 {
     char * endptr;
-    int err = parse_int32(&data->i, s, &endptr, bytes_read);
+    int err = parse_int64(&data->i, s, &endptr, bytes_read);
     if (err) return err;
     if (s == endptr || *endptr != ' ') return MTX_ERR_INVALID_MTX_DATA;
     else if (data->i <= 0 || data->i > num_rows) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
     if (bytes_read) (*bytes_read)++;
     if (outendptr) *outendptr = endptr+1;
     s = endptr+1;
-    err = parse_int32(&data->j, s, &endptr, bytes_read);
+    err = parse_int64(&data->j, s, &endptr, bytes_read);
     if (err) return err;
     if (s == endptr || *endptr != ' ') return MTX_ERR_INVALID_MTX_DATA;
     else if (data->j <= 0 || data->j > num_columns) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
@@ -605,14 +605,14 @@ int mtxfiledata_parse_matrix_coordinate_integer_single(
     int64_t num_columns)
 {
     char * endptr;
-    int err = parse_int32(&data->i, s, &endptr, bytes_read);
+    int err = parse_int64(&data->i, s, &endptr, bytes_read);
     if (err) return err;
     if (s == endptr || *endptr != ' ') return MTX_ERR_INVALID_MTX_DATA;
     else if (data->i <= 0 || data->i > num_rows) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
     if (bytes_read) (*bytes_read)++;
     if (outendptr) *outendptr = endptr+1;
     s = endptr+1;
-    err = parse_int32(&data->j, s, &endptr, bytes_read);
+    err = parse_int64(&data->j, s, &endptr, bytes_read);
     if (err) return err;
     if (s == endptr || *endptr != ' ') return MTX_ERR_INVALID_MTX_DATA;
     else if (data->j <= 0 || data->j > num_columns) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
@@ -646,14 +646,14 @@ int mtxfiledata_parse_matrix_coordinate_integer_double(
     int64_t num_columns)
 {
     char * endptr;
-    int err = parse_int32(&data->i, s, &endptr, bytes_read);
+    int err = parse_int64(&data->i, s, &endptr, bytes_read);
     if (err) return err;
     if (s == endptr || *endptr != ' ') return MTX_ERR_INVALID_MTX_DATA;
     else if (data->i <= 0 || data->i > num_rows) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
     if (bytes_read) (*bytes_read)++;
     if (outendptr) *outendptr = endptr+1;
     s = endptr+1;
-    err = parse_int32(&data->j, s, &endptr, bytes_read);
+    err = parse_int64(&data->j, s, &endptr, bytes_read);
     if (err) return err;
     if (s == endptr || *endptr != ' ') return MTX_ERR_INVALID_MTX_DATA;
     else if (data->j <= 0 || data->j > num_columns) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
@@ -687,14 +687,14 @@ int mtxfiledata_parse_matrix_coordinate_pattern(
     int64_t num_columns)
 {
     char * endptr;
-    int err = parse_int32(&data->i, s, &endptr, bytes_read);
+    int err = parse_int64(&data->i, s, &endptr, bytes_read);
     if (err) return err;
     if (s == endptr || *endptr != ' ') return MTX_ERR_INVALID_MTX_DATA;
     else if (data->i <= 0 || data->i > num_rows) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
     if (bytes_read) (*bytes_read)++;
     if (outendptr) *outendptr = endptr+1;
     s = endptr+1;
-    err = parse_int32(&data->j, s, &endptr, bytes_read);
+    err = parse_int64(&data->j, s, &endptr, bytes_read);
     if (err) return err;
     if (s == endptr) return MTX_ERR_INVALID_MTX_DATA;
     else if (data->j <= 0 || data->j > num_columns) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
@@ -2894,7 +2894,7 @@ int mtxfiledata_fread(
             return err;
         }
         if (i < size-1 && *endptr != '\n') return MTX_ERR_INVALID_MTX_DATA;
-        if (i < size-1 && bytes_read) (*bytes_read)++;
+        if (*endptr == '\n' && bytes_read) (*bytes_read)++;
         if (lines_read) (*lines_read)++;
     }
 
@@ -3009,7 +3009,7 @@ int mtxfiledata_gzread(
             return err;
         }
         if (i < size-1 && *endptr != '\n') return MTX_ERR_INVALID_MTX_DATA;
-        if (i < size-1 && bytes_read) (*bytes_read)++;
+        if (*endptr == '\n' && bytes_read) (*bytes_read)++;
         if (lines_read) (*lines_read)++;
     }
 
@@ -5906,11 +5906,11 @@ int mtxfiledata_mpidatatype(
             if (field == mtxfile_real) {
                 if (precision == mtx_single) {
                     num_elements = 3;
-                    element_types[0] = MPI_INT;
+                    element_types[0] = MPI_INT64_T;
                     block_lengths[0] = 1;
                     element_offsets[0] =
                         offsetof(struct mtxfile_matrix_coordinate_real_single, i);
-                    element_types[1] = MPI_INT;
+                    element_types[1] = MPI_INT64_T;
                     block_lengths[1] = 1;
                     element_offsets[1] =
                         offsetof(struct mtxfile_matrix_coordinate_real_single, j);
@@ -5920,11 +5920,11 @@ int mtxfiledata_mpidatatype(
                         offsetof(struct mtxfile_matrix_coordinate_real_single, a);
                 } else if (precision == mtx_double) {
                     num_elements = 3;
-                    element_types[0] = MPI_INT;
+                    element_types[0] = MPI_INT64_T;
                     block_lengths[0] = 1;
                     element_offsets[0] =
                         offsetof(struct mtxfile_matrix_coordinate_real_double, i);
-                    element_types[1] = MPI_INT;
+                    element_types[1] = MPI_INT64_T;
                     block_lengths[1] = 1;
                     element_offsets[1] =
                         offsetof(struct mtxfile_matrix_coordinate_real_double, j);
@@ -5936,11 +5936,11 @@ int mtxfiledata_mpidatatype(
             } else if (field == mtxfile_complex) {
                 if (precision == mtx_single) {
                     num_elements = 3;
-                    element_types[0] = MPI_INT;
+                    element_types[0] = MPI_INT64_T;
                     block_lengths[0] = 1;
                     element_offsets[0] =
                         offsetof(struct mtxfile_matrix_coordinate_complex_single, i);
-                    element_types[1] = MPI_INT;
+                    element_types[1] = MPI_INT64_T;
                     block_lengths[1] = 1;
                     element_offsets[1] =
                         offsetof(struct mtxfile_matrix_coordinate_complex_single, j);
@@ -5950,11 +5950,11 @@ int mtxfiledata_mpidatatype(
                         offsetof(struct mtxfile_matrix_coordinate_complex_single, a);
                 } else if (precision == mtx_double) {
                     num_elements = 3;
-                    element_types[0] = MPI_INT;
+                    element_types[0] = MPI_INT64_T;
                     block_lengths[0] = 1;
                     element_offsets[0] =
                         offsetof(struct mtxfile_matrix_coordinate_complex_double, i);
-                    element_types[1] = MPI_INT;
+                    element_types[1] = MPI_INT64_T;
                     block_lengths[1] = 1;
                     element_offsets[1] =
                         offsetof(struct mtxfile_matrix_coordinate_complex_double, j);
@@ -5966,11 +5966,11 @@ int mtxfiledata_mpidatatype(
             } else if (field == mtxfile_integer) {
                 if (precision == mtx_single) {
                     num_elements = 3;
-                    element_types[0] = MPI_INT;
+                    element_types[0] = MPI_INT64_T;
                     block_lengths[0] = 1;
                     element_offsets[0] =
                         offsetof(struct mtxfile_matrix_coordinate_integer_single, i);
-                    element_types[1] = MPI_INT;
+                    element_types[1] = MPI_INT64_T;
                     block_lengths[1] = 1;
                     element_offsets[1] =
                         offsetof(struct mtxfile_matrix_coordinate_integer_single, j);
@@ -5980,11 +5980,11 @@ int mtxfiledata_mpidatatype(
                         offsetof(struct mtxfile_matrix_coordinate_integer_single, a);
                 } else if (precision == mtx_double) {
                     num_elements = 3;
-                    element_types[0] = MPI_INT;
+                    element_types[0] = MPI_INT64_T;
                     block_lengths[0] = 1;
                     element_offsets[0] =
                         offsetof(struct mtxfile_matrix_coordinate_integer_double, i);
-                    element_types[1] = MPI_INT;
+                    element_types[1] = MPI_INT64_T;
                     block_lengths[1] = 1;
                     element_offsets[1] =
                         offsetof(struct mtxfile_matrix_coordinate_integer_double, j);
@@ -5995,11 +5995,11 @@ int mtxfiledata_mpidatatype(
                 } else { return MTX_ERR_INVALID_PRECISION; }
             } else if (field == mtxfile_pattern) {
                 num_elements = 2;
-                element_types[0] = MPI_INT;
+                element_types[0] = MPI_INT64_T;
                 block_lengths[0] = 1;
                 element_offsets[0] =
                     offsetof(struct mtxfile_matrix_coordinate_pattern, i);
-                element_types[1] = MPI_INT;
+                element_types[1] = MPI_INT64_T;
                 block_lengths[1] = 1;
                 element_offsets[1] =
                     offsetof(struct mtxfile_matrix_coordinate_pattern, j);
@@ -6008,7 +6008,7 @@ int mtxfiledata_mpidatatype(
             if (field == mtxfile_real) {
                 if (precision == mtx_single) {
                     num_elements = 2;
-                    element_types[0] = MPI_INT;
+                    element_types[0] = MPI_INT64_T;
                     block_lengths[0] = 1;
                     element_offsets[0] =
                         offsetof(struct mtxfile_vector_coordinate_real_single, i);
@@ -6018,7 +6018,7 @@ int mtxfiledata_mpidatatype(
                         offsetof(struct mtxfile_vector_coordinate_real_single, a);
                 } else if (precision == mtx_double) {
                     num_elements = 2;
-                    element_types[0] = MPI_INT;
+                    element_types[0] = MPI_INT64_T;
                     block_lengths[0] = 1;
                     element_offsets[0] =
                         offsetof(struct mtxfile_vector_coordinate_real_double, i);
@@ -6030,7 +6030,7 @@ int mtxfiledata_mpidatatype(
             } else if (field == mtxfile_complex) {
                 if (precision == mtx_single) {
                     num_elements = 2;
-                    element_types[0] = MPI_INT;
+                    element_types[0] = MPI_INT64_T;
                     block_lengths[0] = 1;
                     element_offsets[0] =
                         offsetof(struct mtxfile_vector_coordinate_complex_single, i);
@@ -6040,7 +6040,7 @@ int mtxfiledata_mpidatatype(
                         offsetof(struct mtxfile_vector_coordinate_complex_single, a);
                 } else if (precision == mtx_double) {
                     num_elements = 2;
-                    element_types[0] = MPI_INT;
+                    element_types[0] = MPI_INT64_T;
                     block_lengths[0] = 1;
                     element_offsets[0] =
                         offsetof(struct mtxfile_vector_coordinate_complex_double, i);
@@ -6052,7 +6052,7 @@ int mtxfiledata_mpidatatype(
             } else if (field == mtxfile_integer) {
                 if (precision == mtx_single) {
                     num_elements = 2;
-                    element_types[0] = MPI_INT;
+                    element_types[0] = MPI_INT64_T;
                     block_lengths[0] = 1;
                     element_offsets[0] =
                         offsetof(struct mtxfile_vector_coordinate_integer_single, i);
@@ -6062,7 +6062,7 @@ int mtxfiledata_mpidatatype(
                         offsetof(struct mtxfile_vector_coordinate_integer_single, a);
                 } else if (precision == mtx_double) {
                     num_elements = 2;
-                    element_types[0] = MPI_INT;
+                    element_types[0] = MPI_INT64_T;
                     block_lengths[0] = 1;
                     element_offsets[0] =
                         offsetof(struct mtxfile_vector_coordinate_integer_double, i);
@@ -6073,7 +6073,7 @@ int mtxfiledata_mpidatatype(
                 } else { return MTX_ERR_INVALID_PRECISION; }
             } else if (field == mtxfile_pattern) {
                 num_elements = 1;
-                element_types[0] = MPI_INT;
+                element_types[0] = MPI_INT64_T;
                 block_lengths[0] = 1;
                 element_offsets[0] =
                     offsetof(struct mtxfile_vector_coordinate_pattern, i);
@@ -6244,11 +6244,11 @@ static int mtxfile_coordinate_datatype(
         if (field == mtxfile_real) {
             if (precision == mtx_single) {
                 num_elements = 3;
-                element_types[0] = MPI_INT;
+                element_types[0] = MPI_INT64_T;
                 block_lengths[0] = 1;
                 element_offsets[0] =
                     offsetof(struct mtxfile_matrix_coordinate_real_single, i);
-                element_types[1] = MPI_INT;
+                element_types[1] = MPI_INT64_T;
                 block_lengths[1] = 1;
                 element_offsets[1] =
                     offsetof(struct mtxfile_matrix_coordinate_real_single, j);
@@ -6258,11 +6258,11 @@ static int mtxfile_coordinate_datatype(
                     offsetof(struct mtxfile_matrix_coordinate_real_single, a);
             } else if (precision == mtx_double) {
                 num_elements = 3;
-                element_types[0] = MPI_INT;
+                element_types[0] = MPI_INT64_T;
                 block_lengths[0] = 1;
                 element_offsets[0] =
                     offsetof(struct mtxfile_matrix_coordinate_real_double, i);
-                element_types[1] = MPI_INT;
+                element_types[1] = MPI_INT64_T;
                 block_lengths[1] = 1;
                 element_offsets[1] =
                     offsetof(struct mtxfile_matrix_coordinate_real_double, j);
@@ -6274,11 +6274,11 @@ static int mtxfile_coordinate_datatype(
         } else if (field == mtxfile_complex) {
             if (precision == mtx_single) {
                 num_elements = 3;
-                element_types[0] = MPI_INT;
+                element_types[0] = MPI_INT64_T;
                 block_lengths[0] = 1;
                 element_offsets[0] =
                     offsetof(struct mtxfile_matrix_coordinate_complex_single, i);
-                element_types[1] = MPI_INT;
+                element_types[1] = MPI_INT64_T;
                 block_lengths[1] = 1;
                 element_offsets[1] =
                     offsetof(struct mtxfile_matrix_coordinate_complex_single, j);
@@ -6288,11 +6288,11 @@ static int mtxfile_coordinate_datatype(
                     offsetof(struct mtxfile_matrix_coordinate_complex_single, a);
             } else if (precision == mtx_double) {
                 num_elements = 3;
-                element_types[0] = MPI_INT;
+                element_types[0] = MPI_INT64_T;
                 block_lengths[0] = 1;
                 element_offsets[0] =
                     offsetof(struct mtxfile_matrix_coordinate_complex_double, i);
-                element_types[1] = MPI_INT;
+                element_types[1] = MPI_INT64_T;
                 block_lengths[1] = 1;
                 element_offsets[1] =
                     offsetof(struct mtxfile_matrix_coordinate_complex_double, j);
@@ -6304,11 +6304,11 @@ static int mtxfile_coordinate_datatype(
         } else if (field == mtxfile_integer) {
             if (precision == mtx_single) {
                 num_elements = 3;
-                element_types[0] = MPI_INT;
+                element_types[0] = MPI_INT64_T;
                 block_lengths[0] = 1;
                 element_offsets[0] =
                     offsetof(struct mtxfile_matrix_coordinate_integer_single, i);
-                element_types[1] = MPI_INT;
+                element_types[1] = MPI_INT64_T;
                 block_lengths[1] = 1;
                 element_offsets[1] =
                     offsetof(struct mtxfile_matrix_coordinate_integer_single, j);
@@ -6318,11 +6318,11 @@ static int mtxfile_coordinate_datatype(
                     offsetof(struct mtxfile_matrix_coordinate_integer_single, a);
             } else if (precision == mtx_double) {
                 num_elements = 3;
-                element_types[0] = MPI_INT;
+                element_types[0] = MPI_INT64_T;
                 block_lengths[0] = 1;
                 element_offsets[0] =
                     offsetof(struct mtxfile_matrix_coordinate_integer_double, i);
-                element_types[1] = MPI_INT;
+                element_types[1] = MPI_INT64_T;
                 block_lengths[1] = 1;
                 element_offsets[1] =
                     offsetof(struct mtxfile_matrix_coordinate_integer_double, j);
@@ -6333,11 +6333,11 @@ static int mtxfile_coordinate_datatype(
             } else { return MTX_ERR_INVALID_PRECISION; }
         } else if (field == mtxfile_pattern) {
             num_elements = 2;
-            element_types[0] = MPI_INT;
+            element_types[0] = MPI_INT64_T;
             block_lengths[0] = 1;
             element_offsets[0] =
                 offsetof(struct mtxfile_matrix_coordinate_pattern, i);
-            element_types[1] = MPI_INT;
+            element_types[1] = MPI_INT64_T;
             block_lengths[1] = 1;
             element_offsets[1] =
                 offsetof(struct mtxfile_matrix_coordinate_pattern, j);
@@ -6346,7 +6346,7 @@ static int mtxfile_coordinate_datatype(
         if (field == mtxfile_real) {
             if (precision == mtx_single) {
                 num_elements = 2;
-                element_types[0] = MPI_INT;
+                element_types[0] = MPI_INT64_T;
                 block_lengths[0] = 1;
                 element_offsets[0] =
                     offsetof(struct mtxfile_vector_coordinate_real_single, i);
@@ -6356,7 +6356,7 @@ static int mtxfile_coordinate_datatype(
                     offsetof(struct mtxfile_vector_coordinate_real_single, a);
             } else if (precision == mtx_double) {
                 num_elements = 2;
-                element_types[0] = MPI_INT;
+                element_types[0] = MPI_INT64_T;
                 block_lengths[0] = 1;
                 element_offsets[0] =
                     offsetof(struct mtxfile_vector_coordinate_real_double, i);
@@ -6368,7 +6368,7 @@ static int mtxfile_coordinate_datatype(
         } else if (field == mtxfile_complex) {
             if (precision == mtx_single) {
                 num_elements = 2;
-                element_types[0] = MPI_INT;
+                element_types[0] = MPI_INT64_T;
                 block_lengths[0] = 1;
                 element_offsets[0] =
                     offsetof(struct mtxfile_vector_coordinate_complex_single, i);
@@ -6378,7 +6378,7 @@ static int mtxfile_coordinate_datatype(
                     offsetof(struct mtxfile_vector_coordinate_complex_single, a);
             } else if (precision == mtx_double) {
                 num_elements = 2;
-                element_types[0] = MPI_INT;
+                element_types[0] = MPI_INT64_T;
                 block_lengths[0] = 1;
                 element_offsets[0] =
                     offsetof(struct mtxfile_vector_coordinate_complex_double, i);
@@ -6390,7 +6390,7 @@ static int mtxfile_coordinate_datatype(
         } else if (field == mtxfile_integer) {
             if (precision == mtx_single) {
                 num_elements = 2;
-                element_types[0] = MPI_INT;
+                element_types[0] = MPI_INT64_T;
                 block_lengths[0] = 1;
                 element_offsets[0] =
                     offsetof(struct mtxfile_vector_coordinate_integer_single, i);
@@ -6400,7 +6400,7 @@ static int mtxfile_coordinate_datatype(
                     offsetof(struct mtxfile_vector_coordinate_integer_single, a);
             } else if (precision == mtx_double) {
                 num_elements = 2;
-                element_types[0] = MPI_INT;
+                element_types[0] = MPI_INT64_T;
                 block_lengths[0] = 1;
                 element_offsets[0] =
                     offsetof(struct mtxfile_vector_coordinate_integer_double, i);
@@ -6411,7 +6411,7 @@ static int mtxfile_coordinate_datatype(
             } else { return MTX_ERR_INVALID_PRECISION; }
         } else if (field == mtxfile_pattern) {
             num_elements = 1;
-            element_types[0] = MPI_INT;
+            element_types[0] = MPI_INT64_T;
             block_lengths[0] = 1;
             element_offsets[0] =
                 offsetof(struct mtxfile_vector_coordinate_pattern, i);
