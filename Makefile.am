@@ -429,12 +429,6 @@ check_PROGRAMS += tests/test_mtxvector_omp
 TESTS += tests/test_mtxvector_omp
 endif
 
-tests_test_mtxvector_packed_CPPFLAGS =
-tests_test_mtxvector_packed_LDADD = $(top_builddir)/libmtx.la
-tests_test_mtxvector_packed_SOURCES = tests/test_mtxvector_packed.c tests/test.h
-check_PROGRAMS += tests/test_mtxvector_packed
-TESTS += tests/test_mtxvector_packed
-
 # MPI unit tests
 if HAVE_MPI
 check_PROGRAMS += \

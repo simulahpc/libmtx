@@ -119,29 +119,6 @@ static int mtxvector_packed_init_idx(
     return MTX_SUCCESS;
 }
 
-static int mtxvector_packed_init_strided_idx(
-    struct mtxvector_packed * x,
-    int64_t size,
-    int64_t num_nonzeros,
-    const int64_t * idx,
-    int64_t idxstride)
-{
-    int err;
-    x->size = size;
-    x->num_nonzeros = num_nonzeros;
-    x->idx = malloc(num_nonzeros * sizeof(int64_t));
-    if (!x->idx) return MTX_ERR_ERRNO;
-    for (int64_t k = 0; k < num_nonzeros; k++) {
-        int64_t idxk = *(int64_t *) ((unsigned char *) idx + k*idxstride);
-        if (idxk < 0 || idxk >= size) {
-            free(x->idx);
-            return MTX_ERR_INDEX_OUT_OF_BOUNDS;
-        }
-        x->idx[k] = idxk;
-    }
-    return MTX_SUCCESS;
-}
-
 /**
  * ‘mtxvector_packed_init_real_single()’ allocates and initialises a
  * vector with real, single precision coefficients.
@@ -157,27 +134,6 @@ int mtxvector_packed_init_real_single(
     int err = mtxvector_packed_init_idx(x, size, num_nonzeros, idx);
     if (err) return err;
     err = mtxvector_init_real_single(&x->x, type, num_nonzeros, data);
-    if (err) { free(x->idx); return err; }
-    return MTX_SUCCESS;
-}
-
-/**
- * ‘mtxvector_packed_init_strided_real_single()’ allocates and
- * initialises a vector with real, single precision coefficients.
- */
-int mtxvector_packed_init_strided_real_single(
-    struct mtxvector_packed * x,
-    enum mtxvectortype type,
-    int64_t size,
-    int64_t num_nonzeros,
-    const int64_t * idx,
-    int64_t idxstride,
-    const float * data,
-    int64_t datastride)
-{
-    int err = mtxvector_packed_init_strided_idx(x, size, num_nonzeros, idx, idxstride);
-    if (err) return err;
-    err = mtxvector_init_strided_real_single(&x->x, type, num_nonzeros, data, datastride);
     if (err) { free(x->idx); return err; }
     return MTX_SUCCESS;
 }
@@ -361,105 +317,7 @@ int mtxvector_packed_set_constant_integer_double(
  */
 int mtxvector_packed_from_mtxfile(
     struct mtxvector_packed * x,
-    const struct mtxfile * mtxfile,
-    enum mtxvectortype type)
-{
-    int err;
-    if (mtxfile->header.object != mtxfile_vector)
-        return MTX_ERR_INCOMPATIBLE_MTX_OBJECT;
-
-    /* TODO: If needed, we could convert from array to coordinate. */
-    if (mtxfile->header.format != mtxfile_coordinate)
-        return MTX_ERR_INCOMPATIBLE_MTX_FORMAT;
-
-    int64_t size = mtxfile->size.num_rows;
-    int64_t num_nonzeros = mtxfile->size.num_nonzeros;
-    if (mtxfile->header.field == mtxfile_real) {
-        if (mtxfile->precision == mtx_single) {
-            const struct mtxfile_vector_coordinate_real_single * data =
-                mtxfile->data.vector_coordinate_real_single;
-            err = mtxvector_packed_init_strided_real_single(
-                x, type, size, num_nonzeros, &data[0].i, sizeof(*data),
-                &data[0].a, sizeof(*data));
-            if (err) return err;
-        }
-
-        /* err = mtxvector_packed_alloc( */
-        /*     vector, mtx_field_real, mtxfile->precision, size, num_nonzeros); */
-        /* if (err) return err; */
-        /* if (mtxfile->precision == mtx_single) { */
-        /*     const struct mtxfile_vector_coordinate_real_single * data = */
-        /*         mtxfile.data.vector_coordinate_real_single; */
-        /*     for (int64_t k = 0; k < num_nonzeros; k++) { */
-        /*         x->idx[k] = data[k].i-1; */
-        /*         vector->data.real_single[k] = data[k].a; */
-        /*     } */
-        /* } else if (mtxfile->precision == mtx_double) { */
-        /*     /\* const struct mtxfile_vector_coordinate_real_double * data = *\/ */
-        /*     /\*     mtxfile.data.vector_coordinate_real_double; *\/ */
-        /*     /\* for (int64_t k = 0; k < num_nonzeros; k++) { *\/ */
-        /*     /\*     x->idx[k] = data[k].i-1; *\/ */
-        /*     /\*     vector->data.real_double[k] = data[k].a; *\/ */
-        /*     /\* } *\/ */
-        /* } else { return MTX_ERR_INVALID_PRECISION; } */
-    /* } else if (mtxfile->header.field == mtxfile_complex) { */
-    /*     err = mtxvector_packed_alloc( */
-    /*         vector, mtx_field_complex, mtxfile->precision, size, num_nonzeros); */
-    /*     if (err) return err; */
-    /*     if (mtxfile->precision == mtx_single) { */
-    /*         const struct mtxfile_vector_coordinate_complex_single * data = */
-    /*             mtxfile.data.vector_coordinate_complex_single; */
-    /*         for (int64_t k = 0; k < num_nonzeros; k++) { */
-    /*             x->idx[k] = data[k].i-1; */
-    /*             vector->data.complex_single[k][0] = data[k].a[0]; */
-    /*             vector->data.complex_single[k][1] = data[k].a[1]; */
-    /*         } */
-    /*     } else if (mtxfile->precision == mtx_double) { */
-    /*         const struct mtxfile_vector_coordinate_complex_double * data = */
-    /*             mtxfile.data.vector_coordinate_complex_double; */
-    /*         for (int64_t k = 0; k < num_nonzeros; k++) { */
-    /*             x->idx[k] = data[k].i-1; */
-    /*             vector->data.complex_double[k][0] = data[k].a[0]; */
-    /*             vector->data.complex_double[k][1] = data[k].a[1]; */
-    /*         } */
-    /*     } else { return MTX_ERR_INVALID_PRECISION; } */
-    /* } else if (mtxfile->header.field == mtxfile_integer) { */
-    /*     err = mtxvector_packed_alloc( */
-    /*         vector, mtx_field_integer, mtxfile->precision, size, num_nonzeros); */
-    /*     if (err) return err; */
-    /*     if (mtxfile->precision == mtx_single) { */
-    /*         const struct mtxfile_vector_coordinate_integer_single * data = */
-    /*             mtxfile.data.vector_coordinate_integer_single; */
-    /*         for (int64_t k = 0; k < num_nonzeros; k++) { */
-    /*             x->idx[k] = data[k].i-1; */
-    /*             vector->data.integer_single[k] = data[k].a; */
-    /*         } */
-    /*     } else if (mtxfile->precision == mtx_double) { */
-    /*         const struct mtxfile_vector_coordinate_integer_double * data = */
-    /*             mtxfile.data.vector_coordinate_integer_double; */
-    /*         for (int64_t k = 0; k < num_nonzeros; k++) { */
-    /*             x->idx[k] = data[k].i-1; */
-    /*             vector->data.integer_double[k] = data[k].a; */
-    /*         } */
-    /*     } else { return MTX_ERR_INVALID_PRECISION; } */
-    /* } else if (mtxfile->header.field == mtxfile_pattern) { */
-    /*     err = mtxvector_packed_alloc( */
-    /*         vector, mtx_field_pattern, mtx_single, size, num_nonzeros); */
-    /*     if (err) return err; */
-    /*     const struct mtxfile_vector_coordinate_pattern * data = */
-    /*         mtxfile.data.vector_coordinate_pattern; */
-    /*     for (int64_t k = 0; k < num_nonzeros; k++) */
-    /*         x->idx[k] = data[k].i-1; */
-    } else { return MTX_ERR_INVALID_MTX_FIELD; }
-
-    for (int64_t k = 0; k < num_nonzeros; k++) {
-        if (x->idx[k] < 0 || x->idx[k] >= size) {
-            mtxvector_packed_free(x);
-            return MTX_ERR_INDEX_OUT_OF_BOUNDS;
-        }
-    }
-    return MTX_SUCCESS;
-}
+    const struct mtxfile * mtxfile);
 
 /**
  * ‘mtxvector_packed_to_mtxfile()’ converts to a vector in Matrix

@@ -475,37 +475,6 @@ int mtxvector_init_pattern(
     } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
 }
 
-/**
- * ‘mtxvector_init_strided_real_single()’ allocates and initialises a
- * vector with real, single precision coefficients.
- */
-int mtxvector_init_strided_real_single(
-    struct mtxvector * x,
-    enum mtxvectortype type,
-    int size,
-    const float * data,
-    int64_t stride)
-{
-    if (type == mtxvector_base) {
-        x->type = mtxvector_base;
-        return mtxvector_base_init_strided_real_single(&x->storage.base, size, data, stride);
-    } else if (type == mtxvector_blas) {
-#ifdef LIBMTX_HAVE_BLAS
-        x->type = mtxvector_blas;
-        return mtxvector_blas_init_strided_real_single(&x->storage.blas, size, data, stride);
-#else
-        return MTX_ERR_BLAS_NOT_SUPPORTED;
-#endif
-    } else if (type == mtxvector_omp) {
-#ifdef LIBMTX_HAVE_OPENMP
-        x->type = mtxvector_omp;
-        return mtxvector_omp_init_strided_real_single(&x->storage.omp, size, data, stride, 0);
-#else
-        return MTX_ERR_OPENMP_NOT_SUPPORTED;
-#endif
-    } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
-}
-
 /*
  * Vector array formats
  */

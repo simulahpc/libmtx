@@ -258,23 +258,6 @@ int mtxvector_base_init_pattern(
     return mtxvector_base_alloc(x, mtx_field_pattern, mtx_single, size);
 }
 
-/**
- * ‘mtxvector_base_init_strided_real_single()’ allocates and
- * initialises a vector with real, single precision coefficients.
- */
-int mtxvector_base_init_strided_real_single(
-    struct mtxvector_base * x,
-    int64_t size,
-    const float * data,
-    int64_t stride)
-{
-    int err = mtxvector_base_alloc(x, mtx_field_real, mtx_single, size);
-    if (err) return err;
-    for (int64_t k = 0; k < size; k++)
-        x->data.real_single[k] = *(const float *) ((unsigned char *) data + k*stride);
-    return MTX_SUCCESS;
-}
-
 /*
  * Modifying values
  */
