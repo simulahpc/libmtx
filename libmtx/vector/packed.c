@@ -16,10 +16,9 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-04-09
+ * Last modified: 2022-04-14
  *
- * Data structures and routines for sparse vectors in packed storage
- * format.
+ * Data structures and routines for sparse vectors in packed form.
  */
 
 #include <libmtx/libmtx-config.h>
@@ -826,7 +825,7 @@ int mtxvector_packed_daypx(
 }
 
 /**
- * ‘mtxvector_packed_sdot()’ cpackedutes the Euclidean dot product of
+ * ‘mtxvector_packed_sdot()’ computes the Euclidean dot product of
  * two vectors in single precision floating point.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
@@ -847,7 +846,7 @@ int mtxvector_packed_sdot(
 }
 
 /**
- * ‘mtxvector_packed_ddot()’ cpackedutes the Euclidean dot product of
+ * ‘mtxvector_packed_ddot()’ computes the Euclidean dot product of
  * two vectors in double precision floating point.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
@@ -868,7 +867,7 @@ int mtxvector_packed_ddot(
 }
 
 /**
- * ‘mtxvector_packed_cdotu()’ cpackedutes the product of the transpose
+ * ‘mtxvector_packed_cdotu()’ computes the product of the transpose
  * of a complex row vector with another complex row vector in single
  * precision floating point, ‘dot := x^T*y’.
  *
@@ -890,7 +889,7 @@ int mtxvector_packed_cdotu(
 }
 
 /**
- * ‘mtxvector_packed_zdotu()’ cpackedutes the product of the transpose
+ * ‘mtxvector_packed_zdotu()’ computes the product of the transpose
  * of a complex row vector with another complex row vector in double
  * precision floating point, ‘dot := x^T*y’.
  *
@@ -912,7 +911,7 @@ int mtxvector_packed_zdotu(
 }
 
 /**
- * ‘mtxvector_packed_cdotc()’ cpackedutes the Euclidean dot product of
+ * ‘mtxvector_packed_cdotc()’ computes the Euclidean dot product of
  * two complex vectors in single precision floating point, ‘dot :=
  * x^H*y’.
  *
@@ -934,7 +933,7 @@ int mtxvector_packed_cdotc(
 }
 
 /**
- * ‘mtxvector_packed_zdotc()’ cpackedutes the Euclidean dot product of
+ * ‘mtxvector_packed_zdotc()’ computes the Euclidean dot product of
  * two complex vectors in double precision floating point, ‘dot :=
  * x^H*y’.
  *
@@ -956,7 +955,7 @@ int mtxvector_packed_zdotc(
 }
 
 /**
- * ‘mtxvector_packed_snrm2()’ cpackedutes the Euclidean norm of a
+ * ‘mtxvector_packed_snrm2()’ computes the Euclidean norm of a
  * vector in single precision floating point.
  */
 int mtxvector_packed_snrm2(
@@ -968,7 +967,7 @@ int mtxvector_packed_snrm2(
 }
 
 /**
- * ‘mtxvector_packed_dnrm2()’ cpackedutes the Euclidean norm of a
+ * ‘mtxvector_packed_dnrm2()’ computes the Euclidean norm of a
  * vector in double precision floating point.
  */
 int mtxvector_packed_dnrm2(
@@ -980,7 +979,7 @@ int mtxvector_packed_dnrm2(
 }
 
 /**
- * ‘mtxvector_packed_sasum()’ cpackedutes the sum of absolute values
+ * ‘mtxvector_packed_sasum()’ computes the sum of absolute values
  * (1-norm) of a vector in single precision floating point.  If the
  * vector is complex-valued, then the sum of the absolute values of
  * the real and imaginary parts is computed.
@@ -994,7 +993,7 @@ int mtxvector_packed_sasum(
 }
 
 /**
- * ‘mtxvector_packed_dasum()’ cpackedutes the sum of absolute values
+ * ‘mtxvector_packed_dasum()’ computes the sum of absolute values
  * (1-norm) of a vector in double precision floating point.  If the
  * vector is complex-valued, then the sum of the absolute values of
  * the real and imaginary parts is computed.

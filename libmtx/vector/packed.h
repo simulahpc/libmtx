@@ -16,10 +16,9 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-04-09
+ * Last modified: 2022-04-14
  *
- * Data structures and routines for sparse vectors in packed storage
- * format.
+ * Data structures and routines for sparse vectors in packed form.
  */
 
 #ifndef LIBMTX_VECTOR_PACKED_H
@@ -39,7 +38,6 @@
 
 struct mtxfile;
 struct mtxpartition;
-struct mtxvector;
 
 /**
  * ‘mtxvector_packed’ represents a sparse vector in a packed storage
@@ -489,7 +487,8 @@ int mtxvector_packed_zscal(
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
  * size, as well as the same number of nonzeros. The offsets of the
  * nonzero entries are assumed to be identical for both vectors,
- * otherwise the results are undefined.
+ * otherwise the results are undefined. However, repeated indices in
+ * the packed vectors are allowed.
  */
 int mtxvector_packed_saxpy(
     float a,
@@ -504,7 +503,8 @@ int mtxvector_packed_saxpy(
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
  * size, as well as the same number of nonzeros. The offsets of the
  * nonzero entries are assumed to be identical for both vectors,
- * otherwise the results are undefined.
+ * otherwise the results are undefined. However, repeated indices in
+ * the packed vectors are allowed.
  */
 int mtxvector_packed_daxpy(
     double a,
@@ -520,7 +520,8 @@ int mtxvector_packed_daxpy(
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
  * size, as well as the same number of nonzeros. The offsets of the
  * nonzero entries are assumed to be identical for both vectors,
- * otherwise the results are undefined.
+ * otherwise the results are undefined. However, repeated indices in
+ * the packed vectors are allowed.
  */
 int mtxvector_packed_saypx(
     float a,
@@ -536,7 +537,8 @@ int mtxvector_packed_saypx(
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
  * size, as well as the same number of nonzeros. The offsets of the
  * nonzero entries are assumed to be identical for both vectors,
- * otherwise the results are undefined.
+ * otherwise the results are undefined. However, repeated indices in
+ * the packed vectors are allowed.
  */
 int mtxvector_packed_daypx(
     double a,
@@ -545,13 +547,15 @@ int mtxvector_packed_daypx(
     int64_t * num_flops);
 
 /**
- * ‘mtxvector_packed_sdot()’ cpackedutes the Euclidean dot product of
+ * ‘mtxvector_packed_sdot()’ computes the Euclidean dot product of
  * two vectors in single precision floating point.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
  * size, as well as the same number of nonzeros. The offsets of the
  * nonzero entries are assumed to be identical for both vectors,
- * otherwise the results are undefined.
+ * otherwise the results are undefined. Moreover, repeated indices in
+ * the packed vector are not allowed, otherwise the result is
+ * undefined.
  */
 int mtxvector_packed_sdot(
     const struct mtxvector_packed * x,
@@ -560,13 +564,15 @@ int mtxvector_packed_sdot(
     int64_t * num_flops);
 
 /**
- * ‘mtxvector_packed_ddot()’ cpackedutes the Euclidean dot product of
+ * ‘mtxvector_packed_ddot()’ computes the Euclidean dot product of
  * two vectors in double precision floating point.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
  * size, as well as the same number of nonzeros. The offsets of the
  * nonzero entries are assumed to be identical for both vectors,
- * otherwise the results are undefined.
+ * otherwise the results are undefined. Moreover, repeated indices in
+ * the packed vector are not allowed, otherwise the result is
+ * undefined.
  */
 int mtxvector_packed_ddot(
     const struct mtxvector_packed * x,
@@ -575,14 +581,16 @@ int mtxvector_packed_ddot(
     int64_t * num_flops);
 
 /**
- * ‘mtxvector_packed_cdotu()’ cpackedutes the product of the transpose
+ * ‘mtxvector_packed_cdotu()’ computes the product of the transpose
  * of a complex row vector with another complex row vector in single
  * precision floating point, ‘dot := x^T*y’.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
  * size, as well as the same number of nonzeros. The offsets of the
  * nonzero entries are assumed to be identical for both vectors,
- * otherwise the results are undefined.
+ * otherwise the results are undefined. Moreover, repeated indices in
+ * the packed vector are not allowed, otherwise the result is
+ * undefined.
  */
 int mtxvector_packed_cdotu(
     const struct mtxvector_packed * x,
@@ -591,14 +599,16 @@ int mtxvector_packed_cdotu(
     int64_t * num_flops);
 
 /**
- * ‘mtxvector_packed_zdotu()’ cpackedutes the product of the transpose
+ * ‘mtxvector_packed_zdotu()’ computes the product of the transpose
  * of a complex row vector with another complex row vector in double
  * precision floating point, ‘dot := x^T*y’.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
  * size, as well as the same number of nonzeros. The offsets of the
  * nonzero entries are assumed to be identical for both vectors,
- * otherwise the results are undefined.
+ * otherwise the results are undefined. Moreover, repeated indices in
+ * the packed vector are not allowed, otherwise the result is
+ * undefined.
  */
 int mtxvector_packed_zdotu(
     const struct mtxvector_packed * x,
@@ -607,14 +617,16 @@ int mtxvector_packed_zdotu(
     int64_t * num_flops);
 
 /**
- * ‘mtxvector_packed_cdotc()’ cpackedutes the Euclidean dot product of
+ * ‘mtxvector_packed_cdotc()’ computes the Euclidean dot product of
  * two complex vectors in single precision floating point, ‘dot :=
  * x^H*y’.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
  * size, as well as the same number of nonzeros. The offsets of the
  * nonzero entries are assumed to be identical for both vectors,
- * otherwise the results are undefined.
+ * otherwise the results are undefined. Moreover, repeated indices in
+ * the packed vector are not allowed, otherwise the result is
+ * undefined.
  */
 int mtxvector_packed_cdotc(
     const struct mtxvector_packed * x,
@@ -623,14 +635,16 @@ int mtxvector_packed_cdotc(
     int64_t * num_flops);
 
 /**
- * ‘mtxvector_packed_zdotc()’ cpackedutes the Euclidean dot product of
+ * ‘mtxvector_packed_zdotc()’ computes the Euclidean dot product of
  * two complex vectors in double precision floating point, ‘dot :=
  * x^H*y’.
  *
  * The vectors ‘x’ and ‘y’ must have the same field, precision and
  * size, as well as the same number of nonzeros. The offsets of the
  * nonzero entries are assumed to be identical for both vectors,
- * otherwise the results are undefined.
+ * otherwise the results are undefined. Moreover, repeated indices in
+ * the packed vector are not allowed, otherwise the result is
+ * undefined.
  */
 int mtxvector_packed_zdotc(
     const struct mtxvector_packed * x,
@@ -639,8 +653,9 @@ int mtxvector_packed_zdotc(
     int64_t * num_flops);
 
 /**
- * ‘mtxvector_packed_snrm2()’ cpackedutes the Euclidean norm of a
- * vector in single precision floating point.
+ * ‘mtxvector_packed_snrm2()’ computes the Euclidean norm of a vector
+ * in single precision floating point. Repeated indices in the packed
+ * vector are not allowed, otherwise the result is undefined.
  */
 int mtxvector_packed_snrm2(
     const struct mtxvector_packed * x,
@@ -648,8 +663,9 @@ int mtxvector_packed_snrm2(
     int64_t * num_flops);
 
 /**
- * ‘mtxvector_packed_dnrm2()’ cpackedutes the Euclidean norm of a
- * vector in double precision floating point.
+ * ‘mtxvector_packed_dnrm2()’ computes the Euclidean norm of a vector
+ * in double precision floating point. Repeated indices in the packed
+ * vector are not allowed, otherwise the result is undefined.
  */
 int mtxvector_packed_dnrm2(
     const struct mtxvector_packed * x,
@@ -657,10 +673,11 @@ int mtxvector_packed_dnrm2(
     int64_t * num_flops);
 
 /**
- * ‘mtxvector_packed_sasum()’ cpackedutes the sum of absolute values
+ * ‘mtxvector_packed_sasum()’ computes the sum of absolute values
  * (1-norm) of a vector in single precision floating point.  If the
  * vector is complex-valued, then the sum of the absolute values of
- * the real and imaginary parts is computed.
+ * the real and imaginary parts is computed. Repeated indices in the
+ * packed vector are not allowed, otherwise the result is undefined.
  */
 int mtxvector_packed_sasum(
     const struct mtxvector_packed * x,
@@ -668,10 +685,11 @@ int mtxvector_packed_sasum(
     int64_t * num_flops);
 
 /**
- * ‘mtxvector_packed_dasum()’ cpackedutes the sum of absolute values
+ * ‘mtxvector_packed_dasum()’ computes the sum of absolute values
  * (1-norm) of a vector in double precision floating point.  If the
  * vector is complex-valued, then the sum of the absolute values of
- * the real and imaginary parts is computed.
+ * the real and imaginary parts is computed. Repeated indices in the
+ * packed vector are not allowed, otherwise the result is undefined.
  */
 int mtxvector_packed_dasum(
     const struct mtxvector_packed * x,
@@ -683,7 +701,8 @@ int mtxvector_packed_dasum(
  * having the maximum absolute value.  If the vector is
  * complex-valued, then the index points to the first element having
  * the maximum sum of the absolute values of the real and imaginary
- * parts.
+ * parts. Repeated indices in the packed vector are not allowed,
+ * otherwise the result is undefined.
  */
 int mtxvector_packed_iamax(
     const struct mtxvector_packed * x,
