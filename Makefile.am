@@ -16,7 +16,7 @@
 # along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
 #
 # Authors: James D. Trotter <james@simula.no>
-# Last modified: 2022-04-08
+# Last modified: 2022-04-14
 #
 # Makefile for the top-level directory of Libmtx.
 #
@@ -125,14 +125,15 @@ libmtx_la_SOURCES = \
 	libmtx/vector/coordinate/data.c \
 	libmtx/vector/coordinate/io.c \
 	libmtx/vector/coordinate/reorder.c \
+	libmtx/vector/base.c \
+	libmtx/vector/blas.c \
+	libmtx/vector/dist.c \
 	libmtx/vector/distvector.c \
+	libmtx/vector/omp.c \
+	libmtx/vector/packed.c \
 	libmtx/vector/vector.c \
 	libmtx/vector/vector_array.c \
 	libmtx/vector/vector_coordinate.c \
-	libmtx/vector/base.c \
-	libmtx/vector/blas.c \
-	libmtx/vector/omp.c \
-	libmtx/vector/packed.c \
 	libmtx/version.c
 
 # Header files
@@ -190,14 +191,15 @@ nobase_include_HEADERS = \
 	libmtx/vector/coordinate/data.h \
 	libmtx/vector/coordinate/io.h \
 	libmtx/vector/coordinate/reorder.h \
+	libmtx/vector/base.h \
+	libmtx/vector/blas.h \
+	libmtx/vector/dist.h \
 	libmtx/vector/distvector.h \
+	libmtx/vector/omp.h \
+	libmtx/vector/packed.h \
 	libmtx/vector/vector.h \
 	libmtx/vector/vector_array.h \
 	libmtx/vector/vector_coordinate.h \
-	libmtx/vector/base.h \
-	libmtx/vector/blas.h \
-	libmtx/vector/omp.h \
-	libmtx/vector/packed.h \
 	libmtx/version.h
 
 # Header files that will not be distributed
@@ -434,6 +436,15 @@ tests_test_mtxvector_packed_LDADD = $(top_builddir)/libmtx.la
 tests_test_mtxvector_packed_SOURCES = tests/test_mtxvector_packed.c tests/test.h
 check_PROGRAMS += tests/test_mtxvector_packed
 TESTS += tests/test_mtxvector_packed
+
+if HAVE_MPI
+tests_test_mtxvector_dist_CPPFLAGS =
+tests_test_mtxvector_dist_LDADD = $(top_builddir)/libmtx.la
+tests_test_mtxvector_dist_SOURCES = tests/test_mtxvector_dist.c tests/test.h
+check_PROGRAMS += tests/test_mtxvector_dist
+TESTS += tests/test_mtxvector_dist_parallel
+tests/test_mtxvector_dist_parallel:  tests/test_mtxvector_dist
+endif
 
 # MPI unit tests
 if HAVE_MPI
