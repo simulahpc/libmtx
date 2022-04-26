@@ -126,6 +126,60 @@ int mtxvectortype_parse(
     return MTX_SUCCESS;
 }
 
+/**
+ * ‘mtxvector_field()’ gets the field of a vector.
+ */
+int mtxvector_field(
+    const struct mtxvector * x,
+    enum mtxfield * field)
+{
+    if (x->type == mtxvector_base) {
+        *field = x->storage.base.field;
+        return MTX_SUCCESS;
+    } else if (x->type == mtxvector_blas) {
+#ifdef LIBMTX_HAVE_BLAS
+        *field = x->storage.blas.base.field;
+        return MTX_SUCCESS;
+#else
+        return MTX_ERR_BLAS_NOT_SUPPORTED;
+#endif
+    } else if (x->type == mtxvector_omp) {
+#ifdef LIBMTX_HAVE_OPENMP
+        *field = x->storage.omp.base.field;
+        return MTX_SUCCESS;
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
+    } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
+}
+
+/**
+ * ‘mtxvector_precision()’ gets the precision of a vector.
+ */
+int mtxvector_precision(
+    const struct mtxvector * x,
+    enum mtxprecision * precision)
+{
+    if (x->type == mtxvector_base) {
+        *precision = x->storage.base.precision;
+        return MTX_SUCCESS;
+    } else if (x->type == mtxvector_blas) {
+#ifdef LIBMTX_HAVE_BLAS
+        *precision = x->storage.blas.base.precision;
+        return MTX_SUCCESS;
+#else
+        return MTX_ERR_BLAS_NOT_SUPPORTED;
+#endif
+    } else if (x->type == mtxvector_omp) {
+#ifdef LIBMTX_HAVE_OPENMP
+        *precision = x->storage.omp.base.precision;
+        return MTX_SUCCESS;
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
+    } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
+}
+
 /*
  * Memory management
  */

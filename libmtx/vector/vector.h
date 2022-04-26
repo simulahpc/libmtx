@@ -132,6 +132,20 @@ struct mtxvector
     } storage;
 };
 
+/**
+ * ‘mtxvector_field()’ gets the field of a vector.
+ */
+int mtxvector_field(
+    const struct mtxvector * x,
+    enum mtxfield * field);
+
+/**
+ * ‘mtxvector_precision()’ gets the precision of a vector.
+ */
+int mtxvector_precision(
+    const struct mtxvector * x,
+    enum mtxprecision * precision);
+
 /*
  * Memory management
  */
