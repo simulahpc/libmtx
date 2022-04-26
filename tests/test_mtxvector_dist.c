@@ -280,6 +280,7 @@ int test_mtxvector_dist_from_mtxfile(void)
         mtxvector_dist_free(&xdist);
         mtxfile_free(&mtxfile);
     }
+    mtxdisterror_free(&disterr);
     return TEST_SUCCESS;
 }
 
@@ -471,6 +472,7 @@ int test_mtxvector_dist_to_mtxfile(void)
         mtxfile_free(&mtxfile);
         mtxvector_dist_free(&x);
     }
+    mtxdisterror_free(&disterr);
     return TEST_SUCCESS;
 }
 #endif
@@ -825,6 +827,7 @@ int test_mtxvector_dist_swap(void)
         mtxvector_dist_free(&y);
         mtxvector_dist_free(&x);
     }
+    mtxdisterror_free(&disterr);
     return TEST_SUCCESS;
 }
 
@@ -1065,6 +1068,7 @@ int test_mtxvector_dist_copy(void)
         mtxvector_dist_free(&y);
         mtxvector_dist_free(&x);
     }
+    mtxdisterror_free(&disterr);
     return TEST_SUCCESS;
 }
 
@@ -1278,6 +1282,7 @@ int test_mtxvector_dist_scal(void)
         }
         mtxvector_dist_free(&x);
     }
+    mtxdisterror_free(&disterr);
     return TEST_SUCCESS;
 }
 
@@ -1556,6 +1561,7 @@ int test_mtxvector_dist_axpy(void)
         mtxvector_dist_free(&y);
         mtxvector_dist_free(&x);
     }
+    mtxdisterror_free(&disterr);
     return TEST_SUCCESS;
 }
 
@@ -1746,6 +1752,7 @@ int test_mtxvector_dist_dot(void)
         mtxvector_dist_free(&y);
         mtxvector_dist_free(&x);
     }
+    mtxdisterror_free(&disterr);
     return TEST_SUCCESS;
 }
 
@@ -1860,6 +1867,7 @@ int test_mtxvector_dist_nrm2(void)
         TEST_ASSERT_EQ(4.0, dnrm2);
         mtxvector_dist_free(&x);
     }
+    mtxdisterror_free(&disterr);
     return TEST_SUCCESS;
 }
 
@@ -1974,6 +1982,7 @@ int test_mtxvector_dist_asum(void)
         TEST_ASSERT_EQ(8.0, dasum);
         mtxvector_dist_free(&x);
     }
+    mtxdisterror_free(&disterr);
     return TEST_SUCCESS;
 }
 
