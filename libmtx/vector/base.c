@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-04-08
+ * Last modified: 2022-04-26
  *
  * Data structures and routines for basic dense vectors.
  */
@@ -2821,3 +2821,201 @@ int mtxvector_base_usscga(
     mtxvector_base_free(&y);
     return MTX_SUCCESS;
 }
+
+/*
+ * MPI functions
+ */
+
+#ifdef LIBMTX_HAVE_MPI
+/**
+ * ‘mtxvector_base_send()’ sends a vector to another MPI process.
+ *
+ * This is analogous to ‘MPI_Send()’ and requires the receiving
+ * process to perform a matching call to ‘mtxvector_base_recv()’.
+ */
+int mtxvector_base_send(
+    const struct mtxvector_base * x,
+    int64_t offset,
+    int count,
+    int recipient,
+    int tag,
+    MPI_Comm comm,
+    int * mpierrcode)
+{
+    int err;
+    if (offset + count > x->size) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+    if (x->field == mtx_field_real) {
+        if (x->precision == mtx_single) {
+            err = MPI_Send(
+                &x->data.real_single[offset], count, MPI_FLOAT,
+                recipient, tag, comm);
+            if (mpierrcode) *mpierrcode = err;
+            if (err) return MTX_ERR_MPI;
+        } else if (x->precision == mtx_double) {
+            err = MPI_Send(
+                &x->data.real_double[offset], count, MPI_DOUBLE,
+                recipient, tag, comm);
+            if (mpierrcode) *mpierrcode = err;
+            if (err) return MTX_ERR_MPI;
+        } else { return MTX_ERR_INVALID_PRECISION; }
+    } else if (x->field == mtx_field_complex) {
+        if (x->precision == mtx_single) {
+            err = MPI_Send(
+                &x->data.complex_single[offset], 2*count, MPI_FLOAT,
+                recipient, tag, comm);
+            if (mpierrcode) *mpierrcode = err;
+            if (err) return MTX_ERR_MPI;
+        } else if (x->precision == mtx_double) {
+            err = MPI_Send(
+                &x->data.complex_double[offset], 2*count, MPI_DOUBLE,
+                recipient, tag, comm);
+            if (mpierrcode) *mpierrcode = err;
+            if (err) return MTX_ERR_MPI;
+        } else { return MTX_ERR_INVALID_PRECISION; }
+    } else if (x->field == mtx_field_integer) {
+        if (x->precision == mtx_single) {
+            err = MPI_Send(
+                &x->data.integer_single[offset], count, MPI_INT32_T,
+                recipient, tag, comm);
+            if (mpierrcode) *mpierrcode = err;
+            if (err) return MTX_ERR_MPI;
+        } else if (x->precision == mtx_double) {
+            err = MPI_Send(
+                &x->data.integer_double[offset], count, MPI_INT64_T,
+                recipient, tag, comm);
+            if (mpierrcode) *mpierrcode = err;
+            if (err) return MTX_ERR_MPI;
+        } else { return MTX_ERR_INVALID_PRECISION; }
+    } else { return MTX_ERR_INVALID_FIELD; }
+    return MTX_SUCCESS;
+}
+
+/**
+ * ‘mtxvector_base_recv()’ receives a vector from another MPI process.
+ *
+ * This is analogous to ‘MPI_Recv()’ and requires the sending process
+ * to perform a matching call to ‘mtxvector_base_send()’.
+ */
+int mtxvector_base_recv(
+    struct mtxvector_base * x,
+    int64_t offset,
+    int count,
+    int sender,
+    int tag,
+    MPI_Comm comm,
+    MPI_Status * status,
+    int * mpierrcode)
+{
+    int err;
+    if (offset + count > x->size) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+    if (x->field == mtx_field_real) {
+        if (x->precision == mtx_single) {
+            err = MPI_Recv(
+                &x->data.real_single[offset], count, MPI_FLOAT,
+                sender, tag, comm, status);
+            if (mpierrcode) *mpierrcode = err;
+            if (err) return MTX_ERR_MPI;
+        } else if (x->precision == mtx_double) {
+            err = MPI_Recv(
+                &x->data.real_double[offset], count, MPI_DOUBLE,
+                sender, tag, comm, status);
+            if (mpierrcode) *mpierrcode = err;
+            if (err) return MTX_ERR_MPI;
+        } else { return MTX_ERR_INVALID_PRECISION; }
+    } else if (x->field == mtx_field_complex) {
+        if (x->precision == mtx_single) {
+            err = MPI_Recv(
+                &x->data.complex_single[offset], 2*count, MPI_FLOAT,
+                sender, tag, comm, status);
+            if (mpierrcode) *mpierrcode = err;
+            if (err) return MTX_ERR_MPI;
+        } else if (x->precision == mtx_double) {
+            err = MPI_Recv(
+                &x->data.complex_double[offset], 2*count, MPI_DOUBLE,
+                sender, tag, comm, status);
+            if (mpierrcode) *mpierrcode = err;
+            if (err) return MTX_ERR_MPI;
+        } else { return MTX_ERR_INVALID_PRECISION; }
+    } else if (x->field == mtx_field_integer) {
+        if (x->precision == mtx_single) {
+            err = MPI_Recv(
+                &x->data.integer_single[offset], count, MPI_INT32_T,
+                sender, tag, comm, status);
+            if (mpierrcode) *mpierrcode = err;
+            if (err) return MTX_ERR_MPI;
+        } else if (x->precision == mtx_double) {
+            err = MPI_Recv(
+                &x->data.integer_double[offset], count, MPI_INT64_T,
+                sender, tag, comm, status);
+            if (mpierrcode) *mpierrcode = err;
+            if (err) return MTX_ERR_MPI;
+        } else { return MTX_ERR_INVALID_PRECISION; }
+    } else { return MTX_ERR_INVALID_FIELD; }
+    return MTX_SUCCESS;
+}
+
+/**
+ * ‘mtxvector_base_irecv()’ performs a non-blocking receive of a
+ * vector from another MPI process.
+ *
+ * This is analogous to ‘MPI_Irecv()’ and requires the sending process
+ * to perform a matching call to ‘mtxvector_base_send()’.
+ */
+int mtxvector_base_irecv(
+    struct mtxvector_base * x,
+    int64_t offset,
+    int count,
+    int sender,
+    int tag,
+    MPI_Comm comm,
+    MPI_Request * request,
+    int * mpierrcode)
+{
+    int err;
+    if (offset + count > x->size) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+    if (x->field == mtx_field_real) {
+        if (x->precision == mtx_single) {
+            err = MPI_Irecv(
+                &x->data.real_single[offset], count, MPI_FLOAT,
+                sender, tag, comm, request);
+            if (mpierrcode) *mpierrcode = err;
+            if (err) return MTX_ERR_MPI;
+        } else if (x->precision == mtx_double) {
+            err = MPI_Irecv(
+                &x->data.real_double[offset], count, MPI_DOUBLE,
+                sender, tag, comm, request);
+            if (mpierrcode) *mpierrcode = err;
+            if (err) return MTX_ERR_MPI;
+        } else { return MTX_ERR_INVALID_PRECISION; }
+    } else if (x->field == mtx_field_complex) {
+        if (x->precision == mtx_single) {
+            err = MPI_Irecv(
+                &x->data.complex_single[offset], 2*count, MPI_FLOAT,
+                sender, tag, comm, request);
+            if (mpierrcode) *mpierrcode = err;
+            if (err) return MTX_ERR_MPI;
+        } else if (x->precision == mtx_double) {
+            err = MPI_Irecv(
+                &x->data.complex_double[offset], 2*count, MPI_DOUBLE,
+                sender, tag, comm, request);
+            if (mpierrcode) *mpierrcode = err;
+            if (err) return MTX_ERR_MPI;
+        } else { return MTX_ERR_INVALID_PRECISION; }
+    } else if (x->field == mtx_field_integer) {
+        if (x->precision == mtx_single) {
+            err = MPI_Irecv(
+                &x->data.integer_single[offset], count, MPI_INT32_T,
+                sender, tag, comm, request);
+            if (mpierrcode) *mpierrcode = err;
+            if (err) return MTX_ERR_MPI;
+        } else if (x->precision == mtx_double) {
+            err = MPI_Irecv(
+                &x->data.integer_double[offset], count, MPI_INT64_T,
+                sender, tag, comm, request);
+            if (mpierrcode) *mpierrcode = err;
+            if (err) return MTX_ERR_MPI;
+        } else { return MTX_ERR_INVALID_PRECISION; }
+    } else { return MTX_ERR_INVALID_FIELD; }
+    return MTX_SUCCESS;
+}
+#endif

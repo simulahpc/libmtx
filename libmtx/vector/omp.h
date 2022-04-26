@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-04-08
+ * Last modified: 2022-04-26
  *
  * Data structures and routines for shared-memory parallel, dense
  * vectors using OpenMP.
@@ -795,6 +795,60 @@ int mtxvector_omp_ussc(
 int mtxvector_omp_usscga(
     struct mtxvector_packed * z,
     const struct mtxvector_packed * x);
+
+/*
+ * MPI functions
+ */
+
+#ifdef LIBMTX_HAVE_MPI
+/**
+ * ‘mtxvector_omp_send()’ sends a vector to another MPI process.
+ *
+ * This is analogous to ‘MPI_Send()’ and requires the receiving
+ * process to perform a matching call to ‘mtxvector_omp_recv()’.
+ */
+int mtxvector_omp_send(
+    const struct mtxvector_omp * x,
+    int64_t offset,
+    int count,
+    int recipient,
+    int tag,
+    MPI_Comm comm,
+    int * mpierrcode);
+
+/**
+ * ‘mtxvector_omp_recv()’ receives a vector from another MPI process.
+ *
+ * This is analogous to ‘MPI_Recv()’ and requires the sending process
+ * to perform a matching call to ‘mtxvector_omp_send()’.
+ */
+int mtxvector_omp_recv(
+    struct mtxvector_omp * x,
+    int64_t offset,
+    int count,
+    int sender,
+    int tag,
+    MPI_Comm comm,
+    MPI_Status * status,
+    int * mpierrcode);
+
+/**
+ * ‘mtxvector_omp_irecv()’ performs a non-blocking receive of a
+ * vector from another MPI process.
+ *
+ * This is analogous to ‘MPI_Irecv()’ and requires the sending process
+ * to perform a matching call to ‘mtxvector_omp_send()’.
+ */
+int mtxvector_omp_irecv(
+    struct mtxvector_omp * x,
+    int64_t offset,
+    int count,
+    int sender,
+    int tag,
+    MPI_Comm comm,
+    MPI_Request * request,
+    int * mpierrcode);
+#endif
 #endif
 
 #endif

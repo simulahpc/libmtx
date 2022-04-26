@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-04-14
+ * Last modified: 2022-04-26
  *
  * Data structures for vectors.
  */
@@ -1544,12 +1544,12 @@ int mtxvector_sort(
  */
 int mtxvector_send(
     const struct mtxvector * x,
-    int64_t size,
     int64_t offset,
-    int dest,
+    int count,
+    int recipient,
     int tag,
     MPI_Comm comm,
-    struct mtxdisterror * disterr);
+    int * mpierrcode);
 
 /**
  * ‘mtxvector_recv()’ receives a vector from another MPI process.
@@ -1559,12 +1559,30 @@ int mtxvector_send(
  */
 int mtxvector_recv(
     struct mtxvector * x,
-    int64_t size,
     int64_t offset,
-    int source,
+    int count,
+    int sender,
     int tag,
     MPI_Comm comm,
-    struct mtxdisterror * disterr);
+    MPI_Status * status,
+    int * mpierrcode);
+
+/**
+ * ‘mtxvector_irecv()’ performs a non-blocking receive of a vector
+ * from another MPI process.
+ *
+ * This is analogous to ‘MPI_Irecv()’ and requires the sending process
+ * to perform a matching call to ‘mtxvector_send()’.
+ */
+int mtxvector_irecv(
+    struct mtxvector * x,
+    int64_t offset,
+    int count,
+    int sender,
+    int tag,
+    MPI_Comm comm,
+    MPI_Request * request,
+    int * mpierrcode);
 
 /**
  * ‘mtxvector_bcast()’ broadcasts a vector from an MPI root process to

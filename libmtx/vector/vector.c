@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-04-14
+ * Last modified: 2022-04-26
  *
  * Data structures for vectors.
  */
@@ -3136,13 +3136,33 @@ int mtxvector_sort(
  * process to perform a matching call to ‘mtxvector_recv()’.
  */
 int mtxvector_send(
-    const struct mtxvector * data,
-    int64_t size,
+    const struct mtxvector * x,
     int64_t offset,
-    int dest,
+    int count,
+    int recipient,
     int tag,
     MPI_Comm comm,
-    struct mtxdisterror * disterr);
+    int * mpierrcode)
+{
+    if (x->type == mtxvector_base) {
+        return mtxvector_base_send(
+            &x->storage.base, offset, count, recipient, tag, comm, mpierrcode);
+    } else if (x->type == mtxvector_blas) {
+#ifdef LIBMTX_HAVE_BLAS
+        return mtxvector_blas_send(
+            &x->storage.blas, offset, count, recipient, tag, comm, mpierrcode);
+#else
+        return MTX_ERR_BLAS_NOT_SUPPORTED;
+#endif
+    } else if (x->type == mtxvector_omp) {
+#ifdef LIBMTX_HAVE_OPENMP
+        return mtxvector_omp_send(
+            &x->storage.omp, offset, count, recipient, tag, comm, mpierrcode);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
+    } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
+}
 
 /**
  * ‘mtxvector_recv()’ receives a vector from another MPI process.
@@ -3151,13 +3171,71 @@ int mtxvector_send(
  * to perform a matching call to ‘mtxvector_send()’.
  */
 int mtxvector_recv(
-    struct mtxvector * data,
-    int64_t size,
+    struct mtxvector * x,
     int64_t offset,
-    int source,
+    int count,
+    int sender,
     int tag,
     MPI_Comm comm,
-    struct mtxdisterror * disterr);
+    MPI_Status * status,
+    int * mpierrcode)
+{
+    if (x->type == mtxvector_base) {
+        return mtxvector_base_recv(
+            &x->storage.base, offset, count, sender, tag, comm, status, mpierrcode);
+    } else if (x->type == mtxvector_blas) {
+#ifdef LIBMTX_HAVE_BLAS
+        return mtxvector_blas_recv(
+            &x->storage.blas, offset, count, sender, tag, comm, status, mpierrcode);
+#else
+        return MTX_ERR_BLAS_NOT_SUPPORTED;
+#endif
+    } else if (x->type == mtxvector_omp) {
+#ifdef LIBMTX_HAVE_OPENMP
+        return mtxvector_omp_recv(
+            &x->storage.omp, offset, count, sender, tag, comm, status, mpierrcode);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
+    } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
+}
+
+/**
+ * ‘mtxvector_irecv()’ performs a non-blocking receive of a vector
+ * from another MPI process.
+ *
+ * This is analogous to ‘MPI_Irecv()’ and requires the sending process
+ * to perform a matching call to ‘mtxvector_send()’.
+ */
+int mtxvector_irecv(
+    struct mtxvector * x,
+    int64_t offset,
+    int count,
+    int sender,
+    int tag,
+    MPI_Comm comm,
+    MPI_Request * request,
+    int * mpierrcode)
+{
+    if (x->type == mtxvector_base) {
+        return mtxvector_base_irecv(
+            &x->storage.base, offset, count, sender, tag, comm, request, mpierrcode);
+    } else if (x->type == mtxvector_blas) {
+#ifdef LIBMTX_HAVE_BLAS
+        return mtxvector_blas_irecv(
+            &x->storage.blas, offset, count, sender, tag, comm, request, mpierrcode);
+#else
+        return MTX_ERR_BLAS_NOT_SUPPORTED;
+#endif
+    } else if (x->type == mtxvector_omp) {
+#ifdef LIBMTX_HAVE_OPENMP
+        return mtxvector_omp_irecv(
+            &x->storage.omp, offset, count, sender, tag, comm, request, mpierrcode);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
+    } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
+}
 
 /**
  * ‘mtxvector_bcast()’ broadcasts a vector from an MPI root process to
@@ -3168,7 +3246,7 @@ int mtxvector_recv(
  * ‘mtxvector_bcast()’.
  */
 int mtxvector_bcast(
-    struct mtxvector * data,
+    struct mtxvector * x,
     int64_t size,
     int64_t offset,
     int root,

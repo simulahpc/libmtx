@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-04-08
+ * Last modified: 2022-04-26
  *
  * Data structures and routines for dense vectors with vector
  * operations accelerated by an external BLAS library.
@@ -778,6 +778,60 @@ int mtxvector_blas_ussc(
 int mtxvector_blas_usscga(
     struct mtxvector_packed * zpacked,
     const struct mtxvector_packed * xpacked);
+
+/*
+ * MPI functions
+ */
+
+#ifdef LIBMTX_HAVE_MPI
+/**
+ * ‘mtxvector_blas_send()’ sends a vector to another MPI process.
+ *
+ * This is analogous to ‘MPI_Send()’ and requires the receiving
+ * process to perform a matching call to ‘mtxvector_blas_recv()’.
+ */
+int mtxvector_blas_send(
+    const struct mtxvector_blas * x,
+    int64_t offset,
+    int count,
+    int recipient,
+    int tag,
+    MPI_Comm comm,
+    int * mpierrcode);
+
+/**
+ * ‘mtxvector_blas_recv()’ receives a vector from another MPI process.
+ *
+ * This is analogous to ‘MPI_Recv()’ and requires the sending process
+ * to perform a matching call to ‘mtxvector_blas_send()’.
+ */
+int mtxvector_blas_recv(
+    struct mtxvector_blas * x,
+    int64_t offset,
+    int count,
+    int sender,
+    int tag,
+    MPI_Comm comm,
+    MPI_Status * status,
+    int * mpierrcode);
+
+/**
+ * ‘mtxvector_blas_irecv()’ performs a non-blocking receive of a
+ * vector from another MPI process.
+ *
+ * This is analogous to ‘MPI_Irecv()’ and requires the sending process
+ * to perform a matching call to ‘mtxvector_blas_send()’.
+ */
+int mtxvector_blas_irecv(
+    struct mtxvector_blas * x,
+    int64_t offset,
+    int count,
+    int sender,
+    int tag,
+    MPI_Comm comm,
+    MPI_Request * request,
+    int * mpierrcode);
+#endif
 #endif
 
 #endif
