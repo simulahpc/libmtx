@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-04-14
+ * Last modified: 2022-04-26
  *
  * Unit tests for distributed sparse vectors in packed form.
  */
@@ -1987,6 +1987,206 @@ int test_mtxvector_dist_asum(void)
 }
 
 /**
+ * ‘test_mtxvector_dist_usscga()’ tests combined scatter-gather
+ * operations from a distributed sparse vector in packed form to
+ * another distributed sparse vector in packed form.
+ */
+int test_mtxvector_dist_usscga(void)
+{
+    int err;
+    char mpierrstr[MPI_MAX_ERROR_STRING];
+    int mpierrstrlen;
+    MPI_Comm comm = MPI_COMM_WORLD;
+    int root = 0;
+    int comm_size;
+    err = MPI_Comm_size(comm, &comm_size);
+    if (err) {
+        MPI_Error_string(err, mpierrstr, &mpierrstrlen);
+        fprintf(stderr, "%s: MPI_Comm_size failed with %s\n",
+                program_invocation_short_name, mpierrstr);
+        MPI_Abort(comm, EXIT_FAILURE);
+    }
+    int rank;
+    err = MPI_Comm_rank(comm, &rank);
+    if (err) {
+        MPI_Error_string(err, mpierrstr, &mpierrstrlen);
+        fprintf(stderr, "%s: MPI_Comm_rank failed with %s\n",
+                program_invocation_short_name, mpierrstr);
+        MPI_Abort(comm, EXIT_FAILURE);
+    }
+    if (comm_size != 2) TEST_FAIL_MSG("Expected exactly two MPI processes");
+    struct mtxdisterror disterr;
+    err = mtxdisterror_alloc(&disterr, comm, NULL);
+    if (err) MPI_Abort(comm, EXIT_FAILURE);
+    {
+        struct mtxvector_dist x;
+        struct mtxvector_dist z;
+        int size = 12;
+        int64_t * xidx = rank == 0 ? (int64_t[2]) {0, 3} : (int64_t[3]) {5, 6, 9};
+        float * xdata = rank == 0 ? (float[2]) {1, 4} : (float[3]) {6, 7, 10};
+        int xnnz = rank == 0 ? 2 : 3;
+        int64_t * zidx = rank == 0 ? (int64_t[5]) {9, 0, 1, 6, 8} : (int64_t[3]) {3, 2, 5};
+        float * zdata = rank == 0 ? (float[5]) {0, 0, 0, 0, 0} : (float[3]) {0, 0, 0};
+        int znnz = rank == 0 ? 5 : 3;
+        err = mtxvector_dist_init_real_single(
+            &x, mtxvector_base, size, xnnz, xidx, xdata, comm, &disterr);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        err = mtxvector_dist_init_real_single(
+            &z, mtxvector_base, size, znnz, zidx, zdata, comm, &disterr);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        err = mtxvector_dist_usscga(&z, &x, &disterr);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxdisterror_description(&disterr));
+        TEST_ASSERT_EQ(mtxvector_base, z.xp.x.type);
+        TEST_ASSERT_EQ(mtx_field_real, z.xp.x.storage.base.field);
+        TEST_ASSERT_EQ(mtx_single, z.xp.x.storage.base.precision);
+        if (rank == 0) {
+            TEST_ASSERT_EQ(5, z.xp.x.storage.base.size);
+            TEST_ASSERT_EQ(10.0f, z.xp.x.storage.base.data.real_single[0]);
+            TEST_ASSERT_EQ( 1.0f, z.xp.x.storage.base.data.real_single[1]);
+            TEST_ASSERT_EQ( 0.0f, z.xp.x.storage.base.data.real_single[2]);
+            TEST_ASSERT_EQ( 7.0f, z.xp.x.storage.base.data.real_single[3]);
+            TEST_ASSERT_EQ( 0.0f, z.xp.x.storage.base.data.real_single[4]);
+        } else if (rank == 1) {
+            TEST_ASSERT_EQ(3, z.xp.x.storage.base.size);
+            TEST_ASSERT_EQ( 4.0f, z.xp.x.storage.base.data.real_single[0]);
+            TEST_ASSERT_EQ( 0.0f, z.xp.x.storage.base.data.real_single[1]);
+            TEST_ASSERT_EQ( 6.0f, z.xp.x.storage.base.data.real_single[2]);
+        }
+        mtxvector_dist_free(&z);
+        mtxvector_dist_free(&x);
+    }
+    {
+        struct mtxvector_dist x;
+        struct mtxvector_dist z;
+        int size = 12;
+        int64_t * xidx = rank == 0 ? (int64_t[2]) {0, 3} : (int64_t[3]) {5, 6, 9};
+        double * xdata = rank == 0 ? (double[2]) {1, 4} : (double[3]) {6, 7, 10};
+        int xnnz = rank == 0 ? 2 : 3;
+        int64_t * zidx = rank == 0 ? (int64_t[5]) {0, 1, 6, 8, 9} : (int64_t[3]) {3, 2, 5};
+        double * zdata = rank == 0 ? (double[5]) {0, 0, 0, 0, 0} : (double[3]) {0, 0, 0};
+        int znnz = rank == 0 ? 5 : 3;
+        err = mtxvector_dist_init_real_double(
+            &x, mtxvector_base, size, xnnz, xidx, xdata, comm, &disterr);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        err = mtxvector_dist_init_real_double(
+            &z, mtxvector_base, size, znnz, zidx, zdata, comm, &disterr);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        err = mtxvector_dist_usscga(&z, &x, &disterr);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(mtxvector_base, z.xp.x.type);
+        TEST_ASSERT_EQ(mtx_field_real, z.xp.x.storage.base.field);
+        TEST_ASSERT_EQ(mtx_double, z.xp.x.storage.base.precision);
+        if (rank == 0) {
+            TEST_ASSERT_EQ(5, z.xp.x.storage.base.size);
+            TEST_ASSERT_EQ( 1.0, z.xp.x.storage.base.data.real_double[0]);
+            TEST_ASSERT_EQ( 0.0, z.xp.x.storage.base.data.real_double[1]);
+            TEST_ASSERT_EQ( 7.0, z.xp.x.storage.base.data.real_double[2]);
+            TEST_ASSERT_EQ( 0.0, z.xp.x.storage.base.data.real_double[3]);
+            TEST_ASSERT_EQ(10.0, z.xp.x.storage.base.data.real_double[4]);
+        } else if (rank == 1) {
+            TEST_ASSERT_EQ(3, z.xp.x.storage.base.size);
+            TEST_ASSERT_EQ( 4.0, z.xp.x.storage.base.data.real_double[0]);
+            TEST_ASSERT_EQ( 0.0, z.xp.x.storage.base.data.real_double[1]);
+            TEST_ASSERT_EQ( 6.0, z.xp.x.storage.base.data.real_double[2]);
+        }
+        mtxvector_dist_free(&z);
+        mtxvector_dist_free(&x);
+    }
+    {
+        struct mtxvector_dist x;
+        struct mtxvector_dist z;
+        int size = 12;
+        int64_t * xidx = rank == 0 ? (int64_t[2]) {0, 3} : (int64_t[3]) {5, 6, 9};
+        float (* xdata)[2] = rank == 0 ? (float[2][2]) {{1,-1}, {4,-4}} : (float[3][2]) {{6,-6}, {7,-7}, {10,-10}};
+        int xnnz = rank == 0 ? 2 : 3;
+        int64_t * zidx = rank == 0 ? (int64_t[5]) {9, 0, 1, 6, 8} : (int64_t[3]) {3, 2, 5};
+        float (* zdata)[2] = rank == 0 ? (float[5][2]) {{0,0}, {0,0}, {0,0}, {0,0}, {0,0}} : (float[3][2]) {{0,0}, {0,0}, {0,0}};
+        int znnz = rank == 0 ? 5 : 3;
+        err = mtxvector_dist_init_complex_single(
+            &x, mtxvector_base, size, xnnz, xidx, xdata, comm, &disterr);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        err = mtxvector_dist_init_complex_single(
+            &z, mtxvector_base, size, znnz, zidx, zdata, comm, &disterr);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        err = mtxvector_dist_usscga(&z, &x, &disterr);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxdisterror_description(&disterr));
+        TEST_ASSERT_EQ(mtxvector_base, z.xp.x.type);
+        TEST_ASSERT_EQ(mtx_field_complex, z.xp.x.storage.base.field);
+        TEST_ASSERT_EQ(mtx_single, z.xp.x.storage.base.precision);
+        if (rank == 0) {
+            TEST_ASSERT_EQ(5, z.xp.x.storage.base.size);
+            TEST_ASSERT_EQ( 10.0f, z.xp.x.storage.base.data.complex_single[0][0]);
+            TEST_ASSERT_EQ(-10.0f, z.xp.x.storage.base.data.complex_single[0][1]);
+            TEST_ASSERT_EQ(  1.0f, z.xp.x.storage.base.data.complex_single[1][0]);
+            TEST_ASSERT_EQ( -1.0f, z.xp.x.storage.base.data.complex_single[1][1]);
+            TEST_ASSERT_EQ(  0.0f, z.xp.x.storage.base.data.complex_single[2][0]);
+            TEST_ASSERT_EQ(  0.0f, z.xp.x.storage.base.data.complex_single[2][1]);
+            TEST_ASSERT_EQ(  7.0f, z.xp.x.storage.base.data.complex_single[3][0]);
+            TEST_ASSERT_EQ( -7.0f, z.xp.x.storage.base.data.complex_single[3][1]);
+            TEST_ASSERT_EQ(  0.0f, z.xp.x.storage.base.data.complex_single[4][0]);
+            TEST_ASSERT_EQ(  0.0f, z.xp.x.storage.base.data.complex_single[4][1]);
+        } else if (rank == 1) {
+            TEST_ASSERT_EQ(3, z.xp.x.storage.base.size);
+            TEST_ASSERT_EQ( 4.0f, z.xp.x.storage.base.data.complex_single[0][0]);
+            TEST_ASSERT_EQ(-4.0f, z.xp.x.storage.base.data.complex_single[0][1]);
+            TEST_ASSERT_EQ( 0.0f, z.xp.x.storage.base.data.complex_single[1][0]);
+            TEST_ASSERT_EQ( 0.0f, z.xp.x.storage.base.data.complex_single[1][1]);
+            TEST_ASSERT_EQ( 6.0f, z.xp.x.storage.base.data.complex_single[2][0]);
+            TEST_ASSERT_EQ(-6.0f, z.xp.x.storage.base.data.complex_single[2][1]);
+        }
+        mtxvector_dist_free(&z);
+        mtxvector_dist_free(&x);
+    }
+    {
+        struct mtxvector_dist x;
+        struct mtxvector_dist z;
+        int size = 12;
+        int64_t * xidx = rank == 0 ? (int64_t[2]) {0, 3} : (int64_t[3]) {5, 6, 9};
+        double (* xdata)[2] = rank == 0 ? (double[2][2]) {{1,-1}, {4,-4}} : (double[3][2]) {{6,-6}, {7,-7}, {10,-10}};
+        int xnnz = rank == 0 ? 2 : 3;
+        int64_t * zidx = rank == 0 ? (int64_t[5]) {9, 0, 1, 6, 8} : (int64_t[3]) {3, 2, 5};
+        double (* zdata)[2] = rank == 0 ? (double[5][2]) {{0,0}, {0,0}, {0,0}, {0,0}, {0,0}} : (double[3][2]) {{0,0}, {0,0}, {0,0}};
+        int znnz = rank == 0 ? 5 : 3;
+        err = mtxvector_dist_init_complex_double(
+            &x, mtxvector_base, size, xnnz, xidx, xdata, comm, &disterr);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        err = mtxvector_dist_init_complex_double(
+            &z, mtxvector_base, size, znnz, zidx, zdata, comm, &disterr);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        err = mtxvector_dist_usscga(&z, &x, &disterr);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxdisterror_description(&disterr));
+        TEST_ASSERT_EQ(mtxvector_base, z.xp.x.type);
+        TEST_ASSERT_EQ(mtx_field_complex, z.xp.x.storage.base.field);
+        TEST_ASSERT_EQ(mtx_double, z.xp.x.storage.base.precision);
+        if (rank == 0) {
+            TEST_ASSERT_EQ(5, z.xp.x.storage.base.size);
+            TEST_ASSERT_EQ( 10.0, z.xp.x.storage.base.data.complex_double[0][0]);
+            TEST_ASSERT_EQ(-10.0, z.xp.x.storage.base.data.complex_double[0][1]);
+            TEST_ASSERT_EQ(  1.0, z.xp.x.storage.base.data.complex_double[1][0]);
+            TEST_ASSERT_EQ( -1.0, z.xp.x.storage.base.data.complex_double[1][1]);
+            TEST_ASSERT_EQ(  0.0, z.xp.x.storage.base.data.complex_double[2][0]);
+            TEST_ASSERT_EQ(  0.0, z.xp.x.storage.base.data.complex_double[2][1]);
+            TEST_ASSERT_EQ(  7.0, z.xp.x.storage.base.data.complex_double[3][0]);
+            TEST_ASSERT_EQ( -7.0, z.xp.x.storage.base.data.complex_double[3][1]);
+            TEST_ASSERT_EQ(  0.0, z.xp.x.storage.base.data.complex_double[4][0]);
+            TEST_ASSERT_EQ(  0.0, z.xp.x.storage.base.data.complex_double[4][1]);
+        } else if (rank == 1) {
+            TEST_ASSERT_EQ(3, z.xp.x.storage.base.size);
+            TEST_ASSERT_EQ( 4.0, z.xp.x.storage.base.data.complex_double[0][0]);
+            TEST_ASSERT_EQ(-4.0, z.xp.x.storage.base.data.complex_double[0][1]);
+            TEST_ASSERT_EQ( 0.0, z.xp.x.storage.base.data.complex_double[1][0]);
+            TEST_ASSERT_EQ( 0.0, z.xp.x.storage.base.data.complex_double[1][1]);
+            TEST_ASSERT_EQ( 6.0, z.xp.x.storage.base.data.complex_double[2][0]);
+            TEST_ASSERT_EQ(-6.0, z.xp.x.storage.base.data.complex_double[2][1]);
+        }
+        mtxvector_dist_free(&z);
+        mtxvector_dist_free(&x);
+    }
+    mtxdisterror_free(&disterr);
+    return TEST_SUCCESS;
+}
+
+/**
  * ‘main()’ entry point and test driver.
  */
 int main(int argc, char * argv[])
@@ -2019,6 +2219,7 @@ int main(int argc, char * argv[])
     TEST_RUN(test_mtxvector_dist_dot);
     TEST_RUN(test_mtxvector_dist_nrm2);
     TEST_RUN(test_mtxvector_dist_asum);
+    TEST_RUN(test_mtxvector_dist_usscga);
     TEST_SUITE_END();
     return (TEST_SUITE_STATUS == TEST_SUCCESS) ?
         EXIT_SUCCESS : EXIT_FAILURE;

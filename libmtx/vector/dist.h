@@ -93,6 +93,30 @@ struct mtxvector_dist
      * form belonging to the current process.
      */
     struct mtxvector_packed xp;
+
+    /**
+     * ‘blksize’ is the number of vector elements owned by the current
+     * process, if the elements were partitioned and distributed among
+     * processes in equal-sized blocks.
+     */
+    int64_t blksize;
+
+    /**
+     * ‘blkstart’ is the offset to the first vector element owned by
+     * the current process, if the elements were partitioned and
+     * distributed among processes in equal-sized, contiguous blocks.
+     */
+    int64_t blkstart;
+
+    /**
+     * ‘ranks’ is an array of size ‘blksize’. The “assumed partition”
+     * strategy assumes that elements are partitioned and distributed
+     * among processes in equal-sized, contiguous blocks. For each
+     * element in the block of the current process, the array ‘ranks’
+     * contains the rank of the process that actually owns the
+     * element.
+     */
+    int * ranks;
 };
 
 /*
@@ -145,6 +169,11 @@ int mtxvector_dist_alloc(
 /**
  * ‘mtxvector_dist_init_real_single()’ allocates and initialises a
  * vector with real, single precision coefficients.
+ *
+ * On each process, ‘idx’ and ‘data’ are arrays of length
+ * ‘num_nonzeros’, containing the global offsets and values,
+ * respectively, of the vector elements stored on the process. Note
+ * that ‘num_nonzeros’ may differ from one process to the next.
  */
 int mtxvector_dist_init_real_single(
     struct mtxvector_dist * x,
@@ -809,6 +838,23 @@ int mtxvector_dist_dasum(
 int mtxvector_dist_iamax(
     const struct mtxvector_dist * x,
     int * iamax,
+    struct mtxdisterror * disterr);
+
+/*
+ * Level 1 BLAS-like extensions
+ */
+
+/**
+ * ‘mtxvector_dist_usscga()’ performs a combined scatter-gather
+ * operation from a distributed sparse vector ‘x’ in packed form into
+ * another distributed sparse vector ‘z’ in packed form. Repeated
+ * indices in the packed vector ‘x’ are not allowed, otherwise the
+ * result is undefined. They are, however, allowed in the packed
+ * vector ‘z’.
+ */
+int mtxvector_dist_usscga(
+    struct mtxvector_dist * z,
+    const struct mtxvector_dist * x,
     struct mtxdisterror * disterr);
 #endif
 #endif
