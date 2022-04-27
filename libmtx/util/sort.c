@@ -629,9 +629,14 @@ int radix_sort_int(
     int * keys,
     int64_t * sorting_permutation)
 {
+    int err;
     for (int64_t i = 0; i < size; i++)
         keys[i] ^= INT_MIN;
-    int err = radix_sort_uint32(size, keys, sorting_permutation);
+    if (sizeof(int) == sizeof(uint32_t)) {
+        err = radix_sort_uint32(size, keys, sorting_permutation);
+    } else if (sizeof(int) == sizeof(uint64_t)) {
+        err = radix_sort_uint64(size, keys, sorting_permutation);
+    } else { err = MTX_ERR_NOT_SUPPORTED; }
     for (int64_t i = 0; i < size; i++)
         keys[i] ^= INT_MIN;
     return err;

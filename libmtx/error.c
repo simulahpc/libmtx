@@ -115,6 +115,8 @@ const char * mtxstrerror(
         return "success";
     case MTX_ERR_ERRNO:
         return strerror(errno);
+    case MTX_ERR_NOT_SUPPORTED:
+        return "operation not supported";
     case MTX_ERR_MPI_NOT_SUPPORTED:
         return "MPI not supported; please rebuild with MPI support";
     case MTX_ERR_OPENMP_NOT_SUPPORTED:
@@ -128,7 +130,7 @@ const char * mtxstrerror(
     case MTX_ERR_MPI:
         return "MPI error";
     case MTX_ERR_MPI_COLLECTIVE:
-        return "Collective MPI error";
+        return "collective MPI error";
     case MTX_ERR_BLAS:
         return mtxblaserrstr;
     case MTX_ERR_EOF:

@@ -16,7 +16,7 @@
 # along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
 #
 # Authors: James D. Trotter <james@simula.no>
-# Last modified: 2022-04-14
+# Last modified: 2022-04-26
 #
 # Makefile for the top-level directory of Libmtx.
 #
@@ -105,6 +105,8 @@ libmtx_la_SOURCES = \
 	libmtx/util/index_set.c \
 	libmtx/util/io.c \
 	libmtx/util/io.h \
+	libmtx/util/merge.c \
+	libmtx/util/merge.h \
 	libmtx/util/parse.c \
 	libmtx/util/parse.h \
 	libmtx/util/partition.c \
@@ -445,6 +447,12 @@ check_PROGRAMS += tests/test_mtxvector_dist
 TESTS += tests/test_mtxvector_dist_parallel
 tests/test_mtxvector_dist_parallel:  tests/test_mtxvector_dist
 endif
+
+tests_test_merge_CPPFLAGS =
+tests_test_merge_LDADD = $(top_builddir)/libmtx.la
+tests_test_merge_SOURCES = tests/test_merge.c tests/test.h
+check_PROGRAMS += tests/test_merge
+TESTS += tests/test_merge
 
 # MPI unit tests
 if HAVE_MPI

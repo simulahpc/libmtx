@@ -40,6 +40,7 @@ enum mtxerror
 {
     MTX_SUCCESS = 0,                  /* no error */
     MTX_ERR_ERRNO,                    /* error code provided by errno */
+    MTX_ERR_NOT_SUPPORTED,            /* operation not supported */
     MTX_ERR_MPI_NOT_SUPPORTED,        /* MPI not supported */
     MTX_ERR_OPENMP_NOT_SUPPORTED,     /* OpenMP not supported */
     MTX_ERR_ZLIB_NOT_SUPPORTED,       /* zlib not supported */
