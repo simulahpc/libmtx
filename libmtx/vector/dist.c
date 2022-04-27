@@ -115,6 +115,7 @@ static int mtxvector_dist_init_ranks(
     int64_t N = x->size;
     int comm_size = x->comm_size;
     int rank = x->rank;
+    int64_t blksize = (N+comm_size-1) / comm_size;
     const int64_t * idx = x->xp.idx;
     MPI_Win window;
     disterr->mpierrcode = MPI_Win_create(
@@ -129,10 +130,8 @@ static int mtxvector_dist_init_ranks(
         return MTX_ERR_MPI_COLLECTIVE;
     }
     for (int64_t i = 0; i < x->xp.num_nonzeros; i++) {
-        int assumedrank = idx[i] / (N/comm_size);
-        int64_t assumedrankstart = assumedrank*(N/comm_size) +
-            (assumedrank < (N % comm_size) ? assumedrank : (N % comm_size));
-        int assumedidx = idx[i] - assumedrankstart;
+        int assumedrank = idx[i] / blksize;
+        int assumedidx = idx[i] % blksize;
         disterr->mpierrcode = MPI_Put(
             &rank, 1, MPI_INT, assumedrank, assumedidx, 1, MPI_INT, window);
         err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
