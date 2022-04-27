@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-04-14
+ * Last modified: 2022-04-27
  *
  * Data structures for matrices.
  */
@@ -679,8 +679,8 @@ int mtxmatrix_init_csr_pattern(
  */
 int mtxmatrix_from_mtxfile(
     struct mtxmatrix * matrix,
-    const struct mtxfile * mtxfile,
-    enum mtxmatrixtype type)
+    enum mtxmatrixtype type,
+    const struct mtxfile * mtxfile)
 {
     if (type == mtxmatrix_auto) {
         if (mtxfile->header.format == mtxfile_array) {
@@ -773,7 +773,7 @@ int mtxmatrix_read(
         &mtxfile, precision, path, gzip, lines_read, bytes_read);
     if (err)
         return err;
-    err = mtxmatrix_from_mtxfile(matrix, &mtxfile, type);
+    err = mtxmatrix_from_mtxfile(matrix, type, &mtxfile);
     if (err) {
         mtxfile_free(&mtxfile);
         return err;
@@ -813,9 +813,8 @@ int mtxmatrix_fread(
     struct mtxfile mtxfile;
     err = mtxfile_fread(
         &mtxfile, precision, f, lines_read, bytes_read, line_max, linebuf);
-    if (err)
-        return err;
-    err = mtxmatrix_from_mtxfile(matrix, &mtxfile, type);
+    if (err) return err;
+    err = mtxmatrix_from_mtxfile(matrix, type, &mtxfile);
     if (err) {
         mtxfile_free(&mtxfile);
         return err;
@@ -857,7 +856,7 @@ int mtxmatrix_gzread(
         &mtxfile, precision, f, lines_read, bytes_read, line_max, linebuf);
     if (err)
         return err;
-    err = mtxmatrix_from_mtxfile(matrix, &mtxfile, type);
+    err = mtxmatrix_from_mtxfile(matrix, type, &mtxfile);
     if (err) {
         mtxfile_free(&mtxfile);
         return err;

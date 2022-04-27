@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-03-15
+ * Last modified: 2022-04-27
  *
  * Data structures for matrices in coordinate format.
  */
@@ -30,6 +30,7 @@
 #include <libmtx/field.h>
 #include <libmtx/util/symmetry.h>
 #include <libmtx/util/transpose.h>
+#include <libmtx/vector/base.h>
 #include <libmtx/vector/vector.h>
 
 #include <stdarg.h>
@@ -40,24 +41,12 @@
 struct mtxfile;
 struct mtxmatrix;
 struct mtxpartition;
-struct mtxvector;
 
 /**
  * ‘mtxmatrix_coordinate’ represents a matrix in coordinate format.
  */
 struct mtxmatrix_coordinate
 {
-    /**
-     * ‘field’ is the matrix field: ‘real’, ‘complex’, ‘integer’ or
-     * ‘pattern’.
-     */
-    enum mtxfield field;
-
-    /**
-     * ‘precision’ is the precision used to store values.
-     */
-    enum mtxprecision precision;
-
     /**
      * ‘symmetry’ is the matrix symmetry: ‘unsymmetric’, ‘symmetric’,
      * ‘skew-symmetric’ or ‘hermitian’.
@@ -106,16 +95,9 @@ struct mtxmatrix_coordinate
     int * colidx;
 
     /**
-     * ‘data’ contains the values of nonzero matrix entries.
+     * ‘a’ is a vector storing the underlying nonzero matrix entries.
      */
-    union {
-        float * real_single;
-        double * real_double;
-        float (* complex_single)[2];
-        double (* complex_double)[2];
-        int32_t * integer_single;
-        int64_t * integer_double;
-    } data;
+    struct mtxvector_base a;
 };
 
 /*
@@ -425,7 +407,8 @@ int mtxmatrix_coordinate_join(
  * simultaneously performing ‘y <- x’ and ‘x <- y’.
  *
  * The matrices ‘x’ and ‘y’ must have the same field, precision and
- * size.
+ * size. Moreover, it is assumed that they have the same underlying
+ * sparsity pattern, or else the results are undefined.
  */
 int mtxmatrix_coordinate_swap(
     struct mtxmatrix_coordinate * x,
@@ -435,7 +418,8 @@ int mtxmatrix_coordinate_swap(
  * ‘mtxmatrix_coordinate_copy()’ copies values of a matrix, ‘y = x’.
  *
  * The matrices ‘x’ and ‘y’ must have the same field, precision and
- * size.
+ * size. Moreover, it is assumed that they have the same underlying
+ * sparsity pattern, or else the results are undefined.
  */
 int mtxmatrix_coordinate_copy(
     struct mtxmatrix_coordinate * y,
@@ -465,7 +449,8 @@ int mtxmatrix_coordinate_dscal(
  * y’.
  *
  * The matrices ‘x’ and ‘y’ must have the same field, precision and
- * size.
+ * size. Moreover, it is assumed that they have the same underlying
+ * sparsity pattern, or else the results are undefined.
  */
 int mtxmatrix_coordinate_saxpy(
     float a,
@@ -479,7 +464,8 @@ int mtxmatrix_coordinate_saxpy(
  * y’.
  *
  * The matrices ‘x’ and ‘y’ must have the same field, precision and
- * size.
+ * size. Moreover, it is assumed that they have the same underlying
+ * sparsity pattern, or else the results are undefined.
  */
 int mtxmatrix_coordinate_daxpy(
     double a,
@@ -493,7 +479,8 @@ int mtxmatrix_coordinate_daxpy(
  * x’.
  *
  * The matrices ‘x’ and ‘y’ must have the same field, precision and
- * size.
+ * size. Moreover, it is assumed that they have the same underlying
+ * sparsity pattern, or else the results are undefined.
  */
 int mtxmatrix_coordinate_saypx(
     float a,
@@ -507,7 +494,8 @@ int mtxmatrix_coordinate_saypx(
  * x’.
  *
  * The matrices ‘x’ and ‘y’ must have the same field, precision and
- * size.
+ * size. Moreover, it is assumed that they have the same underlying
+ * sparsity pattern, or else the results are undefined.
  */
 int mtxmatrix_coordinate_daypx(
     double a,
@@ -520,7 +508,8 @@ int mtxmatrix_coordinate_daypx(
  * of two matrices in single precision floating point.
  *
  * The matrices ‘x’ and ‘y’ must have the same field, precision and
- * size.
+ * size. Moreover, it is assumed that they have the same underlying
+ * sparsity pattern, or else the results are undefined.
  */
 int mtxmatrix_coordinate_sdot(
     const struct mtxmatrix_coordinate * x,
@@ -533,7 +522,8 @@ int mtxmatrix_coordinate_sdot(
  * of two matrices in double precision floating point.
  *
  * The matrices ‘x’ and ‘y’ must have the same field, precision and
- * size.
+ * size. Moreover, it is assumed that they have the same underlying
+ * sparsity pattern, or else the results are undefined.
  */
 int mtxmatrix_coordinate_ddot(
     const struct mtxmatrix_coordinate * x,
@@ -547,7 +537,8 @@ int mtxmatrix_coordinate_ddot(
  * in single precision floating point, ‘dot := x^T*y’.
  *
  * The matrices ‘x’ and ‘y’ must have the same field, precision and
- * size.
+ * size. Moreover, it is assumed that they have the same underlying
+ * sparsity pattern, or else the results are undefined.
  */
 int mtxmatrix_coordinate_cdotu(
     const struct mtxmatrix_coordinate * x,
@@ -561,7 +552,8 @@ int mtxmatrix_coordinate_cdotu(
  * in double precision floating point, ‘dot := x^T*y’.
  *
  * The matrices ‘x’ and ‘y’ must have the same field, precision and
- * size.
+ * size. Moreover, it is assumed that they have the same underlying
+ * sparsity pattern, or else the results are undefined.
  */
 int mtxmatrix_coordinate_zdotu(
     const struct mtxmatrix_coordinate * x,
@@ -575,7 +567,8 @@ int mtxmatrix_coordinate_zdotu(
  * x^H*y’.
  *
  * The matrices ‘x’ and ‘y’ must have the same field, precision and
- * size.
+ * size. Moreover, it is assumed that they have the same underlying
+ * sparsity pattern, or else the results are undefined.
  */
 int mtxmatrix_coordinate_cdotc(
     const struct mtxmatrix_coordinate * x,
@@ -589,7 +582,8 @@ int mtxmatrix_coordinate_cdotc(
  * x^H*y’.
  *
  * The matrices ‘x’ and ‘y’ must have the same field, precision and
- * size.
+ * size. Moreover, it is assumed that they have the same underlying
+ * sparsity pattern, or else the results are undefined.
  */
 int mtxmatrix_coordinate_zdotc(
     const struct mtxmatrix_coordinate * x,

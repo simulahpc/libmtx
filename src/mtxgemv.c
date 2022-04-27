@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-03-22
+ * Last modified: 2022-04-27
  *
  * Multiply a general, unsymmetric matrix with a vector.
  *

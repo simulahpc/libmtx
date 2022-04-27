@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-03-15
+ * Last modified: 2022-04-27
  *
  * Data structures for distributed matrices.
  */
@@ -1139,7 +1139,7 @@ int mtxdistmatrix_from_mtxfile(
 
     /* 3. Let each process create its local part of the matrix */
     err = mtxmatrix_from_mtxfile(
-        &dst->interior, &recvmtxfile, matrix_type);
+        &dst->interior, matrix_type, &recvmtxfile);
     if (mtxdisterror_allreduce(disterr, err)) {
         mtxfile_free(&recvmtxfile);
         mtxpartition_free(&dst->colpart);
@@ -1298,7 +1298,8 @@ int mtxdistmatrix_from_mtxdistfile(
         }
 
         err = rank == p
-            ? mtxmatrix_from_mtxfile(&dst->interior, &mtxfile, matrix_type)
+            ? mtxmatrix_from_mtxfile(
+                &dst->interior, matrix_type, &mtxfile)
             : MTX_SUCCESS;
         if (mtxdisterror_allreduce(disterr, err)) {
             if (rank == p) mtxfile_free(&mtxfile);
@@ -2294,6 +2295,43 @@ int mtxdistmatrix_sgemv(
     }
     return MTX_SUCCESS;
 #endif
+}
+
+/**
+ * ‘mtxdistmatrix_sgemv2()’ multiplies a matrix ‘A’ or its transpose
+ * ‘A'’ by a real scalar ‘alpha’ (‘α’) and a vector ‘x’, before adding
+ * the result to another vector ‘y’ multiplied by another real scalar
+ * ‘beta’ (‘β’). That is, ‘y = α*A*x + β*y’ or ‘y = α*A'*x + β*y’.
+ *
+ * The scalars ‘alpha’ and ‘beta’ are given as single precision
+ * floating point numbers.
+ */
+int mtxdistmatrix_sgemv2(
+    enum mtxtransposition trans,
+    float alpha,
+    const struct mtxdistmatrix * A,
+    const struct mtxvector_dist * x,
+    float beta,
+    struct mtxvector_dist * y,
+    int64_t * num_flops,
+    struct mtxdisterror * disterr)
+{
+    int err;
+    struct mtxdistmatrixgemv2 gemv;
+    err = mtxdistmatrixgemv2_init(&gemv, trans, A, x, y, disterr);
+    if (err) return err;
+    err = mtxdistmatrixgemv2_sgemv(&gemv, alpha, beta, num_flops, disterr);
+    if (err) {
+        mtxdistmatrixgemv2_free(&gemv);
+        return err;
+    }
+    err = mtxdistmatrixgemv2_wait(&gemv, disterr);
+    if (err) {
+        mtxdistmatrixgemv2_free(&gemv);
+        return err;
+    }
+    mtxdistmatrixgemv2_free(&gemv);
+    return MTX_SUCCESS;
 }
 
 /**

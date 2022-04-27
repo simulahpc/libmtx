@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-03-15
+ * Last modified: 2022-04-27
  *
  * Data structures for distributed matrices.
  */
@@ -49,6 +49,7 @@ struct mtxdistfile;
 struct mtxdistvector;
 struct mtxfile;
 struct mtxpartition;
+struct mtxvector_dist;
 
 /**
  * ‘mtxdistmatrix’ is a matrix distributed across multiple processes,
@@ -988,9 +989,9 @@ int mtxdistmatrix_iamax(
  */
 
 /**
- * ‘mtxdistmatrix_sgemv()’ multiplies a matrix ‘A’ or its transpose ‘A'’
- * by a real scalar ‘alpha’ (‘α’) and a vector ‘x’, before adding the
- * result to another vector ‘y’ multiplied by another real scalar
+ * ‘mtxdistmatrix_sgemv()’ multiplies a matrix ‘A’ or its transpose
+ * ‘A'’ by a real scalar ‘alpha’ (‘α’) and a vector ‘x’, before adding
+ * the result to another vector ‘y’ multiplied by another real scalar
  * ‘beta’ (‘β’). That is, ‘y = α*A*x + β*y’ or ‘y = α*A'*x + β*y’.
  *
  * The scalars ‘alpha’ and ‘beta’ are given as single precision
@@ -1003,6 +1004,25 @@ int mtxdistmatrix_sgemv(
     const struct mtxdistvector * x,
     float beta,
     struct mtxdistvector * y,
+    int64_t * num_flops,
+    struct mtxdisterror * disterr);
+
+/**
+ * ‘mtxdistmatrix_sgemv2()’ multiplies a matrix ‘A’ or its transpose
+ * ‘A'’ by a real scalar ‘alpha’ (‘α’) and a vector ‘x’, before adding
+ * the result to another vector ‘y’ multiplied by another real scalar
+ * ‘beta’ (‘β’). That is, ‘y = α*A*x + β*y’ or ‘y = α*A'*x + β*y’.
+ *
+ * The scalars ‘alpha’ and ‘beta’ are given as single precision
+ * floating point numbers.
+ */
+int mtxdistmatrix_sgemv2(
+    enum mtxtransposition trans,
+    float alpha,
+    const struct mtxdistmatrix * A,
+    const struct mtxvector_dist * x,
+    float beta,
+    struct mtxvector_dist * y,
     int64_t * num_flops,
     struct mtxdisterror * disterr);
 

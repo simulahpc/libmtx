@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-03-23
+ * Last modified: 2022-04-27
  *
  * Data structures for matrices in coordinate format.
  */
@@ -31,8 +31,8 @@
 #include <libmtx/precision.h>
 #include <libmtx/util/partition.h>
 #include <libmtx/util/sort.h>
+#include <libmtx/vector/base.h>
 #include <libmtx/vector/vector.h>
-#include <libmtx/vector/vector_array.h>
 
 #include <errno.h>
 
@@ -54,25 +54,7 @@
 void mtxmatrix_coordinate_free(
     struct mtxmatrix_coordinate * matrix)
 {
-    if (matrix->field == mtx_field_real) {
-        if (matrix->precision == mtx_single) {
-            free(matrix->data.real_single);
-        } else if (matrix->precision == mtx_double) {
-            free(matrix->data.real_double);
-        }
-    } else if (matrix->field == mtx_field_complex) {
-        if (matrix->precision == mtx_single) {
-            free(matrix->data.complex_single);
-        } else if (matrix->precision == mtx_double) {
-            free(matrix->data.complex_double);
-        }
-    } else if (matrix->field == mtx_field_integer) {
-        if (matrix->precision == mtx_single) {
-            free(matrix->data.integer_single);
-        } else if (matrix->precision == mtx_double) {
-            free(matrix->data.integer_double);
-        }
-    }
+    mtxvector_base_free(&matrix->a);
     free(matrix->colidx);
     free(matrix->rowidx);
 }
@@ -86,7 +68,7 @@ int mtxmatrix_coordinate_alloc_copy(
     const struct mtxmatrix_coordinate * src)
 {
     return mtxmatrix_coordinate_alloc(
-        dst, src->field, src->precision, src->symmetry,
+        dst, src->a.field, src->a.precision, src->symmetry,
         src->num_rows, src->num_columns, src->size);
 }
 
@@ -110,6 +92,35 @@ int mtxmatrix_coordinate_init_copy(
  * Matrix coordinate formats
  */
 
+static int mtxmatrix_coordinate_alloc_idx(
+    struct mtxmatrix_coordinate * matrix,
+    enum mtxsymmetry symmetry,
+    int num_rows,
+    int num_columns,
+    int64_t size)
+{
+    int64_t num_entries;
+    if (__builtin_mul_overflow(num_rows, num_columns, &num_entries)) {
+        errno = EOVERFLOW;
+        return MTX_ERR_ERRNO;
+    }
+    matrix->rowidx = malloc(size * sizeof(int));
+    if (!matrix->rowidx)
+        return MTX_ERR_ERRNO;
+    matrix->colidx = malloc(size * sizeof(int));
+    if (!matrix->colidx) {
+        free(matrix->rowidx);
+        return MTX_ERR_ERRNO;
+    }
+    matrix->symmetry = symmetry;
+    matrix->num_rows = num_rows;
+    matrix->num_columns = num_columns;
+    matrix->num_entries = num_entries;
+    matrix->num_nonzeros = -1;
+    matrix->size = size;
+    return MTX_SUCCESS;
+}
+
 /**
  * ‘mtxmatrix_coordinate_alloc()’ allocates a matrix in coordinate
  * format.
@@ -123,99 +134,37 @@ int mtxmatrix_coordinate_alloc(
     int num_columns,
     int64_t size)
 {
-    int64_t num_entries;
-    if (__builtin_mul_overflow(num_rows, num_columns, &num_entries)) {
-        errno = EOVERFLOW;
-        return MTX_ERR_ERRNO;
-    }
-
-    matrix->rowidx = malloc(size * sizeof(int));
-    if (!matrix->rowidx)
-        return MTX_ERR_ERRNO;
-    matrix->colidx = malloc(size * sizeof(int));
-    if (!matrix->colidx) {
+    int err = mtxmatrix_coordinate_alloc_idx(
+        matrix, symmetry, num_rows, num_columns, size);
+    if (err) return err;
+    err = mtxvector_base_alloc(&matrix->a, field, precision, size);
+    if (err) {
+        free(matrix->colidx);
         free(matrix->rowidx);
-        return MTX_ERR_ERRNO;
+        return err;
     }
-    if (field == mtx_field_real) {
-        if (precision == mtx_single) {
-            matrix->data.real_single =
-                malloc(size * sizeof(*matrix->data.real_single));
-            if (!matrix->data.real_single) {
-                free(matrix->colidx);
-                free(matrix->rowidx);
-                return MTX_ERR_ERRNO;
-            }
-        } else if (precision == mtx_double) {
-            matrix->data.real_double =
-                malloc(size * sizeof(*matrix->data.real_double));
-            if (!matrix->data.real_double) {
-                free(matrix->colidx);
-                free(matrix->rowidx);
-                return MTX_ERR_ERRNO;
-            }
-        } else {
-            free(matrix->colidx);
-            free(matrix->rowidx);
-            return MTX_ERR_INVALID_PRECISION;
-        }
-    } else if (field == mtx_field_complex) {
-        if (precision == mtx_single) {
-            matrix->data.complex_single =
-                malloc(size * sizeof(*matrix->data.complex_single));
-            if (!matrix->data.complex_single) {
-                free(matrix->colidx);
-                free(matrix->rowidx);
-                return MTX_ERR_ERRNO;
-            }
-        } else if (precision == mtx_double) {
-            matrix->data.complex_double =
-                malloc(size * sizeof(*matrix->data.complex_double));
-            if (!matrix->data.complex_double) {
-                free(matrix->colidx);
-                free(matrix->rowidx);
-                return MTX_ERR_ERRNO;
-            }
-        } else {
-            free(matrix->colidx);
-            free(matrix->rowidx);
-            return MTX_ERR_INVALID_PRECISION;
-        }
-    } else if (field == mtx_field_integer) {
-        if (precision == mtx_single) {
-            matrix->data.integer_single =
-                malloc(size * sizeof(*matrix->data.integer_single));
-            if (!matrix->data.integer_single) {
-                free(matrix->colidx);
-                free(matrix->rowidx);
-                return MTX_ERR_ERRNO;
-            }
-        } else if (precision == mtx_double) {
-            matrix->data.integer_double =
-                malloc(size * sizeof(*matrix->data.integer_double));
-            if (!matrix->data.integer_double) {
-                free(matrix->colidx);
-                free(matrix->rowidx);
-                return MTX_ERR_ERRNO;
-            }
-        } else {
-            free(matrix->colidx);
-            free(matrix->rowidx);
-            return MTX_ERR_INVALID_PRECISION;
-        }
-    } else if (field == mtx_field_pattern) {
-        /* No data needs to be allocated. */
-    } else {
-        return MTX_ERR_INVALID_FIELD;
+    return MTX_SUCCESS;
+}
+
+static int mtxmatrix_coordinate_init_idx(
+    struct mtxmatrix_coordinate * matrix,
+    enum mtxsymmetry symmetry,
+    int num_rows,
+    int num_columns,
+    int64_t size,
+    const int * rowidx,
+    const int * colidx)
+{
+    int err = mtxmatrix_coordinate_alloc_idx(
+        matrix, symmetry, num_rows, num_columns, size);
+    if (err) return err;
+    matrix->num_nonzeros = 0;
+    for (int64_t k = 0; k < size; k++) {
+        matrix->rowidx[k] = rowidx[k];
+        matrix->colidx[k] = colidx[k];
+        matrix->num_nonzeros +=
+            (symmetry == mtx_unsymmetric || rowidx[k] == colidx[k]) ? 1 : 2;
     }
-    matrix->field = field;
-    matrix->precision = precision;
-    matrix->symmetry = symmetry;
-    matrix->num_rows = num_rows;
-    matrix->num_columns = num_columns;
-    matrix->num_entries = num_entries;
-    matrix->num_nonzeros = -1;
-    matrix->size = size;
     return MTX_SUCCESS;
 }
 
@@ -234,17 +183,14 @@ int mtxmatrix_coordinate_init_real_single(
     const int * colidx,
     const float * data)
 {
-    int err = mtxmatrix_coordinate_alloc(
-        matrix, mtx_field_real, mtx_single, symmetry,
-        num_rows, num_columns, size);
+    int err = mtxmatrix_coordinate_init_idx(
+        matrix, symmetry, num_rows, num_columns, size, rowidx, colidx);
     if (err) return err;
-    matrix->num_nonzeros = 0;
-    for (int64_t k = 0; k < size; k++) {
-        matrix->rowidx[k] = rowidx[k];
-        matrix->colidx[k] = colidx[k];
-        matrix->data.real_single[k] = data[k];
-        matrix->num_nonzeros +=
-            (symmetry == mtx_unsymmetric || rowidx[k] == colidx[k]) ? 1 : 2;
+    err = mtxvector_base_init_real_single(&matrix->a, size, data);
+    if (err) {
+        free(matrix->colidx);
+        free(matrix->rowidx);
+        return err;
     }
     return MTX_SUCCESS;
 }
@@ -264,17 +210,14 @@ int mtxmatrix_coordinate_init_real_double(
     const int * colidx,
     const double * data)
 {
-    int err = mtxmatrix_coordinate_alloc(
-        matrix, mtx_field_real, mtx_double, symmetry,
-        num_rows, num_columns, size);
+    int err = mtxmatrix_coordinate_init_idx(
+        matrix, symmetry, num_rows, num_columns, size, rowidx, colidx);
     if (err) return err;
-    matrix->num_nonzeros = 0;
-    for (int64_t k = 0; k < size; k++) {
-        matrix->rowidx[k] = rowidx[k];
-        matrix->colidx[k] = colidx[k];
-        matrix->data.real_double[k] = data[k];
-        matrix->num_nonzeros +=
-            (symmetry == mtx_unsymmetric || rowidx[k] == colidx[k]) ? 1 : 2;
+    err = mtxvector_base_init_real_double(&matrix->a, size, data);
+    if (err) {
+        free(matrix->colidx);
+        free(matrix->rowidx);
+        return err;
     }
     return MTX_SUCCESS;
 }
@@ -294,18 +237,14 @@ int mtxmatrix_coordinate_init_complex_single(
     const int * colidx,
     const float (* data)[2])
 {
-    int err = mtxmatrix_coordinate_alloc(
-        matrix, mtx_field_complex, mtx_single, symmetry,
-        num_rows, num_columns, size);
+    int err = mtxmatrix_coordinate_init_idx(
+        matrix, symmetry, num_rows, num_columns, size, rowidx, colidx);
     if (err) return err;
-    matrix->num_nonzeros = 0;
-    for (int64_t k = 0; k < size; k++) {
-        matrix->rowidx[k] = rowidx[k];
-        matrix->colidx[k] = colidx[k];
-        matrix->data.complex_single[k][0] = data[k][0];
-        matrix->data.complex_single[k][1] = data[k][1];
-        matrix->num_nonzeros +=
-            (symmetry == mtx_unsymmetric || rowidx[k] == colidx[k]) ? 1 : 2;
+    err = mtxvector_base_init_complex_single(&matrix->a, size, data);
+    if (err) {
+        free(matrix->colidx);
+        free(matrix->rowidx);
+        return err;
     }
     return MTX_SUCCESS;
 }
@@ -325,18 +264,14 @@ int mtxmatrix_coordinate_init_complex_double(
     const int * colidx,
     const double (* data)[2])
 {
-    int err = mtxmatrix_coordinate_alloc(
-        matrix, mtx_field_complex, mtx_double, symmetry,
-        num_rows, num_columns, size);
+    int err = mtxmatrix_coordinate_init_idx(
+        matrix, symmetry, num_rows, num_columns, size, rowidx, colidx);
     if (err) return err;
-    matrix->num_nonzeros = 0;
-    for (int64_t k = 0; k < size; k++) {
-        matrix->rowidx[k] = rowidx[k];
-        matrix->colidx[k] = colidx[k];
-        matrix->data.complex_double[k][0] = data[k][0];
-        matrix->data.complex_double[k][1] = data[k][1];
-        matrix->num_nonzeros +=
-            (symmetry == mtx_unsymmetric || rowidx[k] == colidx[k]) ? 1 : 2;
+    err = mtxvector_base_init_complex_double(&matrix->a, size, data);
+    if (err) {
+        free(matrix->colidx);
+        free(matrix->rowidx);
+        return err;
     }
     return MTX_SUCCESS;
 }
@@ -356,17 +291,14 @@ int mtxmatrix_coordinate_init_integer_single(
     const int * colidx,
     const int32_t * data)
 {
-    int err = mtxmatrix_coordinate_alloc(
-        matrix, mtx_field_integer, mtx_single, symmetry,
-        num_rows, num_columns, size);
+    int err = mtxmatrix_coordinate_init_idx(
+        matrix, symmetry, num_rows, num_columns, size, rowidx, colidx);
     if (err) return err;
-    matrix->num_nonzeros = 0;
-    for (int64_t k = 0; k < size; k++) {
-        matrix->rowidx[k] = rowidx[k];
-        matrix->colidx[k] = colidx[k];
-        matrix->data.integer_single[k] = data[k];
-        matrix->num_nonzeros +=
-            (symmetry == mtx_unsymmetric || rowidx[k] == colidx[k]) ? 1 : 2;
+    err = mtxvector_base_init_integer_single(&matrix->a, size, data);
+    if (err) {
+        free(matrix->colidx);
+        free(matrix->rowidx);
+        return err;
     }
     return MTX_SUCCESS;
 }
@@ -386,17 +318,14 @@ int mtxmatrix_coordinate_init_integer_double(
     const int * colidx,
     const int64_t * data)
 {
-    int err = mtxmatrix_coordinate_alloc(
-        matrix, mtx_field_integer, mtx_double, symmetry,
-        num_rows, num_columns, size);
+    int err = mtxmatrix_coordinate_init_idx(
+        matrix, symmetry, num_rows, num_columns, size, rowidx, colidx);
     if (err) return err;
-    matrix->num_nonzeros = 0;
-    for (int64_t k = 0; k < size; k++) {
-        matrix->rowidx[k] = rowidx[k];
-        matrix->colidx[k] = colidx[k];
-        matrix->data.integer_double[k] = data[k];
-        matrix->num_nonzeros +=
-            (symmetry == mtx_unsymmetric || rowidx[k] == colidx[k]) ? 1 : 2;
+    err = mtxvector_base_init_integer_double(&matrix->a, size, data);
+    if (err) {
+        free(matrix->colidx);
+        free(matrix->rowidx);
+        return err;
     }
     return MTX_SUCCESS;
 }
@@ -414,16 +343,14 @@ int mtxmatrix_coordinate_init_pattern(
     const int * rowidx,
     const int * colidx)
 {
-    int err = mtxmatrix_coordinate_alloc(
-        matrix, mtx_field_pattern, mtx_single, symmetry,
-        num_rows, num_columns, size);
+    int err = mtxmatrix_coordinate_init_idx(
+        matrix, symmetry, num_rows, num_columns, size, rowidx, colidx);
     if (err) return err;
-    matrix->num_nonzeros = 0;
-    for (int64_t k = 0; k < size; k++) {
-        matrix->rowidx[k] = rowidx[k];
-        matrix->colidx[k] = colidx[k];
-        matrix->num_nonzeros +=
-            (symmetry == mtx_unsymmetric || rowidx[k] == colidx[k]) ? 1 : 2;
+    err = mtxvector_base_init_pattern(&matrix->a, size);
+    if (err) {
+        free(matrix->colidx);
+        free(matrix->rowidx);
+        return err;
     }
     return MTX_SUCCESS;
 }
@@ -447,13 +374,13 @@ int mtxmatrix_coordinate_alloc_row_vector(
 
     if (vector_type == mtxvector_array) {
         return mtxvector_alloc_array(
-            vector, matrix->field, matrix->precision, matrix->num_columns);
+            vector, matrix->a.field, matrix->a.precision, matrix->num_columns);
     } else if (vector_type == mtxvector_coordinate) {
         /* TODO: Here we may wish to only allocate a vector with one
          * nonzero for each column of the matrix that contains a
          * nonzero entry. */
         return mtxvector_alloc_coordinate(
-            vector, matrix->field, matrix->precision,
+            vector, matrix->a.field, matrix->a.precision,
             matrix->num_columns, matrix->num_columns);
     } else {
         return MTX_ERR_INVALID_VECTOR_TYPE;
@@ -475,13 +402,13 @@ int mtxmatrix_coordinate_alloc_column_vector(
 
     if (vector_type == mtxvector_array) {
         return mtxvector_alloc_array(
-            vector, matrix->field, matrix->precision, matrix->num_rows);
+            vector, matrix->a.field, matrix->a.precision, matrix->num_rows);
     } else if (vector_type == mtxvector_coordinate) {
         /* TODO: Here we may wish to only allocate a vector with one
          * nonzero for each row of the matrix that contains a nonzero
          * entry. */
         return mtxvector_alloc_coordinate(
-            vector, matrix->field, matrix->precision,
+            vector, matrix->a.field, matrix->a.precision,
             matrix->num_rows, matrix->num_rows);
     } else {
         return MTX_ERR_INVALID_VECTOR_TYPE;
@@ -529,7 +456,7 @@ int mtxmatrix_coordinate_from_mtxfile(
             for (int64_t k = 0; k < size; k++) {
                 matrix->rowidx[k] = data[k].i-1;
                 matrix->colidx[k] = data[k].j-1;
-                matrix->data.real_single[k] = data[k].a;
+                matrix->a.data.real_single[k] = data[k].a;
                 matrix->num_nonzeros +=
                     (symmetry == mtx_unsymmetric || data[k].i == data[k].j) ? 1 : 2;
             }
@@ -540,19 +467,16 @@ int mtxmatrix_coordinate_from_mtxfile(
             for (int64_t k = 0; k < size; k++) {
                 matrix->rowidx[k] = data[k].i-1;
                 matrix->colidx[k] = data[k].j-1;
-                matrix->data.real_double[k] = data[k].a;
+                matrix->a.data.real_double[k] = data[k].a;
                 matrix->num_nonzeros +=
                     (symmetry == mtx_unsymmetric || data[k].i == data[k].j) ? 1 : 2;
             }
-        } else {
-            return MTX_ERR_INVALID_PRECISION;
-        }
+        } else { return MTX_ERR_INVALID_PRECISION; }
     } else if (mtxfile->header.field == mtxfile_complex) {
         err = mtxmatrix_coordinate_alloc(
             matrix, mtx_field_complex, mtxfile->precision, symmetry,
             num_rows, num_columns, size);
-        if (err)
-            return err;
+        if (err) return err;
         if (mtxfile->precision == mtx_single) {
             const struct mtxfile_matrix_coordinate_complex_single * data =
                 mtxfile->data.matrix_coordinate_complex_single;
@@ -560,8 +484,8 @@ int mtxmatrix_coordinate_from_mtxfile(
             for (int64_t k = 0; k < size; k++) {
                 matrix->rowidx[k] = data[k].i-1;
                 matrix->colidx[k] = data[k].j-1;
-                matrix->data.complex_single[k][0] = data[k].a[0];
-                matrix->data.complex_single[k][1] = data[k].a[1];
+                matrix->a.data.complex_single[k][0] = data[k].a[0];
+                matrix->a.data.complex_single[k][1] = data[k].a[1];
                 matrix->num_nonzeros +=
                     (symmetry == mtx_unsymmetric || data[k].i == data[k].j) ? 1 : 2;
             }
@@ -572,20 +496,17 @@ int mtxmatrix_coordinate_from_mtxfile(
             for (int64_t k = 0; k < size; k++) {
                 matrix->rowidx[k] = data[k].i-1;
                 matrix->colidx[k] = data[k].j-1;
-                matrix->data.complex_double[k][0] = data[k].a[0];
-                matrix->data.complex_double[k][1] = data[k].a[1];
+                matrix->a.data.complex_double[k][0] = data[k].a[0];
+                matrix->a.data.complex_double[k][1] = data[k].a[1];
                 matrix->num_nonzeros +=
                     (symmetry == mtx_unsymmetric || data[k].i == data[k].j) ? 1 : 2;
             }
-        } else {
-            return MTX_ERR_INVALID_PRECISION;
-        }
+        } else { return MTX_ERR_INVALID_PRECISION; }
     } else if (mtxfile->header.field == mtxfile_integer) {
         err = mtxmatrix_coordinate_alloc(
             matrix, mtx_field_integer, mtxfile->precision, symmetry,
             num_rows, num_columns, size);
-        if (err)
-            return err;
+        if (err) return err;
         if (mtxfile->precision == mtx_single) {
             const struct mtxfile_matrix_coordinate_integer_single * data =
                 mtxfile->data.matrix_coordinate_integer_single;
@@ -593,7 +514,7 @@ int mtxmatrix_coordinate_from_mtxfile(
             for (int64_t k = 0; k < size; k++) {
                 matrix->rowidx[k] = data[k].i-1;
                 matrix->colidx[k] = data[k].j-1;
-                matrix->data.integer_single[k] = data[k].a;
+                matrix->a.data.integer_single[k] = data[k].a;
                 matrix->num_nonzeros +=
                     (symmetry == mtx_unsymmetric || data[k].i == data[k].j) ? 1 : 2;
             }
@@ -604,13 +525,11 @@ int mtxmatrix_coordinate_from_mtxfile(
             for (int64_t k = 0; k < size; k++) {
                 matrix->rowidx[k] = data[k].i-1;
                 matrix->colidx[k] = data[k].j-1;
-                matrix->data.integer_double[k] = data[k].a;
+                matrix->a.data.integer_double[k] = data[k].a;
                 matrix->num_nonzeros +=
                     (symmetry == mtx_unsymmetric || data[k].i == data[k].j) ? 1 : 2;
             }
-        } else {
-            return MTX_ERR_INVALID_PRECISION;
-        }
+        } else { return MTX_ERR_INVALID_PRECISION; }
     } else if (mtxfile->header.field == mtxfile_pattern) {
         err = mtxmatrix_coordinate_alloc(
             matrix, mtx_field_pattern, mtx_single, symmetry,
@@ -626,9 +545,7 @@ int mtxmatrix_coordinate_from_mtxfile(
             matrix->num_nonzeros +=
                 (symmetry == mtx_unsymmetric || data[k].i == data[k].j) ? 1 : 2;
         }
-    } else {
-        return MTX_ERR_INVALID_MTX_FIELD;
-    }
+    } else { return MTX_ERR_INVALID_MTX_FIELD; }
     return MTX_SUCCESS;
 }
 
@@ -649,81 +566,75 @@ int mtxmatrix_coordinate_to_mtxfile(
     err = mtxfilesymmetry_from_mtxsymmetry(&symmetry, matrix->symmetry);
     if (err) return err;
 
-    if (matrix->field == mtx_field_real) {
+    if (matrix->a.field == mtx_field_real) {
         err = mtxfile_alloc_matrix_coordinate(
-            mtxfile, mtxfile_real, symmetry, matrix->precision,
+            mtxfile, mtxfile_real, symmetry, matrix->a.precision,
             matrix->num_rows, matrix->num_columns, matrix->size);
         if (err) return err;
-        if (matrix->precision == mtx_single) {
+        if (matrix->a.precision == mtx_single) {
             struct mtxfile_matrix_coordinate_real_single * data =
                 mtxfile->data.matrix_coordinate_real_single;
             for (int64_t k = 0; k < matrix->size; k++) {
                 data[k].i = matrix->rowidx[k]+1;
                 data[k].j = matrix->colidx[k]+1;
-                data[k].a = matrix->data.real_single[k];
+                data[k].a = matrix->a.data.real_single[k];
             }
-        } else if (matrix->precision == mtx_double) {
+        } else if (matrix->a.precision == mtx_double) {
             struct mtxfile_matrix_coordinate_real_double * data =
                 mtxfile->data.matrix_coordinate_real_double;
             for (int64_t k = 0; k < matrix->size; k++) {
                 data[k].i = matrix->rowidx[k]+1;
                 data[k].j = matrix->colidx[k]+1;
-                data[k].a = matrix->data.real_double[k];
+                data[k].a = matrix->a.data.real_double[k];
             }
-        } else {
-            return MTX_ERR_INVALID_PRECISION;
-        }
-    } else if (matrix->field == mtx_field_complex) {
+        } else { return MTX_ERR_INVALID_PRECISION; }
+    } else if (matrix->a.field == mtx_field_complex) {
         err = mtxfile_alloc_matrix_coordinate(
-            mtxfile, mtxfile_complex, symmetry, matrix->precision,
+            mtxfile, mtxfile_complex, symmetry, matrix->a.precision,
             matrix->num_rows, matrix->num_columns, matrix->size);
         if (err) return err;
-        if (matrix->precision == mtx_single) {
+        if (matrix->a.precision == mtx_single) {
             struct mtxfile_matrix_coordinate_complex_single * data =
                 mtxfile->data.matrix_coordinate_complex_single;
             for (int64_t k = 0; k < matrix->size; k++) {
                 data[k].i = matrix->rowidx[k]+1;
                 data[k].j = matrix->colidx[k]+1;
-                data[k].a[0] = matrix->data.complex_single[k][0];
-                data[k].a[1] = matrix->data.complex_single[k][1];
+                data[k].a[0] = matrix->a.data.complex_single[k][0];
+                data[k].a[1] = matrix->a.data.complex_single[k][1];
             }
-        } else if (matrix->precision == mtx_double) {
+        } else if (matrix->a.precision == mtx_double) {
             struct mtxfile_matrix_coordinate_complex_double * data =
                 mtxfile->data.matrix_coordinate_complex_double;
             for (int64_t k = 0; k < matrix->size; k++) {
                 data[k].i = matrix->rowidx[k]+1;
                 data[k].j = matrix->colidx[k]+1;
-                data[k].a[0] = matrix->data.complex_double[k][0];
-                data[k].a[1] = matrix->data.complex_double[k][1];
+                data[k].a[0] = matrix->a.data.complex_double[k][0];
+                data[k].a[1] = matrix->a.data.complex_double[k][1];
             }
-        } else {
-            return MTX_ERR_INVALID_PRECISION;
-        }
-    } else if (matrix->field == mtx_field_integer) {
+        } else { return MTX_ERR_INVALID_PRECISION; }
+    } else if (matrix->a.field == mtx_field_integer) {
         err = mtxfile_alloc_matrix_coordinate(
-            mtxfile, mtxfile_integer, symmetry, matrix->precision,
+            mtxfile, mtxfile_integer, symmetry, matrix->a.precision,
             matrix->num_rows, matrix->num_columns, matrix->size);
         if (err) return err;
-        if (matrix->precision == mtx_single) {
+        if (matrix->a.precision == mtx_single) {
             struct mtxfile_matrix_coordinate_integer_single * data =
                 mtxfile->data.matrix_coordinate_integer_single;
             for (int64_t k = 0; k < matrix->size; k++) {
                 data[k].i = matrix->rowidx[k]+1;
                 data[k].j = matrix->colidx[k]+1;
-                data[k].a = matrix->data.integer_single[k];
+                data[k].a = matrix->a.data.integer_single[k];
             }
-        } else if (matrix->precision == mtx_double) {
+        } else if (matrix->a.precision == mtx_double) {
             struct mtxfile_matrix_coordinate_integer_double * data =
                 mtxfile->data.matrix_coordinate_integer_double;
             for (int64_t k = 0; k < matrix->size; k++) {
                 data[k].i = matrix->rowidx[k]+1;
                 data[k].j = matrix->colidx[k]+1;
-                data[k].a = matrix->data.integer_double[k];
+                data[k].a = matrix->a.data.integer_double[k];
             }
-        } else {
-            return MTX_ERR_INVALID_PRECISION;
-        }
-    } else if (matrix->field == mtx_field_pattern) {
+        } else { return MTX_ERR_INVALID_PRECISION; }
+    } else if (matrix->a.field == mtx_field_pattern) {
         err = mtxfile_alloc_matrix_coordinate(
             mtxfile, mtxfile_pattern, symmetry, mtx_single,
             matrix->num_rows, matrix->num_columns, matrix->size);
@@ -734,9 +645,7 @@ int mtxmatrix_coordinate_to_mtxfile(
             data[k].i = matrix->rowidx[k]+1;
             data[k].j = matrix->colidx[k]+1;
         }
-    } else {
-        return MTX_ERR_INVALID_FIELD;
-    }
+    } else { return MTX_ERR_INVALID_FIELD; }
     return MTX_SUCCESS;
 }
 
@@ -990,86 +899,33 @@ int mtxmatrix_coordinate_join(
  * Level 1 BLAS operations
  */
 
-static bool same_pattern(
-    const struct mtxmatrix_coordinate * x,
-    const struct mtxmatrix_coordinate * y)
-{
-    return x->symmetry == y->symmetry
-        && x->num_rows == y->num_rows
-        && x->num_columns == y->num_columns
-        && x->size == y->size
-        && memcmp(x->rowidx, y->rowidx, x->size*sizeof(*x->rowidx)) == 0
-        && memcmp(x->colidx, y->colidx, x->size*sizeof(*x->colidx)) == 0;
-}
-
-static int vectorise_array(
-    struct mtxvector_array * vecx,
-    const struct mtxmatrix_coordinate * x)
-{
-    vecx->field = x->field;
-    vecx->precision = x->precision;
-    vecx->size = x->size;
-    if (x->field == mtx_field_real) {
-        if (x->precision == mtx_single) {
-            vecx->data.real_single = x->data.real_single;
-        } else if (x->precision == mtx_double) {
-            vecx->data.real_double = x->data.real_double;
-        } else { return MTX_ERR_INVALID_PRECISION; }
-    } else if (x->field == mtx_field_complex) {
-        if (x->precision == mtx_single) {
-            vecx->data.complex_single = x->data.complex_single;
-        } else if (x->precision == mtx_double) {
-            vecx->data.complex_double = x->data.complex_double;
-        } else { return MTX_ERR_INVALID_PRECISION; }
-    } else if (x->field == mtx_field_integer) {
-        if (x->precision == mtx_single) {
-            vecx->data.integer_single = x->data.integer_single;
-        } else if (x->precision == mtx_double) {
-            vecx->data.integer_double = x->data.integer_double;
-        } else { return MTX_ERR_INVALID_PRECISION; }
-    } else { return MTX_ERR_INVALID_FIELD; }
-    return MTX_SUCCESS;
-}
-
 /**
  * ‘mtxmatrix_coordinate_swap()’ swaps values of two matrices,
  * simultaneously performing ‘y <- x’ and ‘x <- y’.
  *
  * The matrices ‘x’ and ‘y’ must have the same field, precision and
- * size.
+ * size. Moreover, it is assumed that they have the same underlying
+ * sparsity pattern, or else the results are undefined.
  */
 int mtxmatrix_coordinate_swap(
     struct mtxmatrix_coordinate * x,
     struct mtxmatrix_coordinate * y)
 {
-    if (!same_pattern(x, y)) return MTX_ERR_INCOMPATIBLE_PATTERN;
-    struct mtxvector_array vecx;
-    int err = vectorise_array(&vecx, x);
-    if (err) return err;
-    struct mtxvector_array vecy;
-    err = vectorise_array(&vecy, x);
-    if (err) return err;
-    return mtxvector_array_swap(&vecx, &vecy);
+    return mtxvector_base_swap(&x->a, &y->a);
 }
 
 /**
  * ‘mtxmatrix_coordinate_copy()’ copies values of a matrix, ‘y = x’.
  *
  * The matrices ‘x’ and ‘y’ must have the same field, precision and
- * size.
+ * size. Moreover, it is assumed that they have the same underlying
+ * sparsity pattern, or else the results are undefined.
  */
 int mtxmatrix_coordinate_copy(
     struct mtxmatrix_coordinate * y,
     const struct mtxmatrix_coordinate * x)
 {
-    if (!same_pattern(x, y)) return MTX_ERR_INCOMPATIBLE_PATTERN;
-    struct mtxvector_array vecy;
-    int err = vectorise_array(&vecy, y);
-    if (err) return err;
-    struct mtxvector_array vecx;
-    err = vectorise_array(&vecx, x);
-    if (err) return err;
-    return mtxvector_array_copy(&vecy, &vecx);
+    return mtxvector_base_copy(&y->a, &x->a);
 }
 
 /**
@@ -1081,10 +937,7 @@ int mtxmatrix_coordinate_sscal(
     struct mtxmatrix_coordinate * x,
     int64_t * num_flops)
 {
-    struct mtxvector_array vecx;
-    int err = vectorise_array(&vecx, x);
-    if (err) return err;
-    return mtxvector_array_sscal(a, &vecx, num_flops);
+    return mtxvector_base_sscal(a, &x->a, num_flops);
 }
 
 /**
@@ -1096,10 +949,7 @@ int mtxmatrix_coordinate_dscal(
     struct mtxmatrix_coordinate * x,
     int64_t * num_flops)
 {
-    struct mtxvector_array vecx;
-    int err = vectorise_array(&vecx, x);
-    if (err) return err;
-    return mtxvector_array_dscal(a, &vecx, num_flops);
+    return mtxvector_base_dscal(a, &x->a, num_flops);
 }
 
 /**
@@ -1108,7 +958,8 @@ int mtxmatrix_coordinate_dscal(
  * y’.
  *
  * The matrices ‘x’ and ‘y’ must have the same field, precision and
- * size.
+ * size. Moreover, it is assumed that they have the same underlying
+ * sparsity pattern, or else the results are undefined.
  */
 int mtxmatrix_coordinate_saxpy(
     float a,
@@ -1116,15 +967,7 @@ int mtxmatrix_coordinate_saxpy(
     struct mtxmatrix_coordinate * y,
     int64_t * num_flops)
 {
-    if (!same_pattern(x, y)) return MTX_ERR_INCOMPATIBLE_PATTERN;
-    struct mtxvector vecx;
-    vecx.type = mtxvector_array;
-    int err = vectorise_array(&vecx.storage.array, x);
-    if (err) return err;
-    struct mtxvector_array vecy;
-    err = vectorise_array(&vecy, y);
-    if (err) return err;
-    return mtxvector_array_saxpy(a, &vecx, &vecy, num_flops);
+    return mtxvector_base_saxpy(a, &x->a, &y->a, num_flops);
 }
 
 /**
@@ -1133,7 +976,8 @@ int mtxmatrix_coordinate_saxpy(
  * y’.
  *
  * The matrices ‘x’ and ‘y’ must have the same field, precision and
- * size.
+ * size. Moreover, it is assumed that they have the same underlying
+ * sparsity pattern, or else the results are undefined.
  */
 int mtxmatrix_coordinate_daxpy(
     double a,
@@ -1141,15 +985,7 @@ int mtxmatrix_coordinate_daxpy(
     struct mtxmatrix_coordinate * y,
     int64_t * num_flops)
 {
-    if (!same_pattern(x, y)) return MTX_ERR_INCOMPATIBLE_PATTERN;
-    struct mtxvector vecx;
-    vecx.type = mtxvector_array;
-    int err = vectorise_array(&vecx.storage.array, x);
-    if (err) return err;
-    struct mtxvector_array vecy;
-    err = vectorise_array(&vecy, y);
-    if (err) return err;
-    return mtxvector_array_daxpy(a, &vecx, &vecy, num_flops);
+    return mtxvector_base_daxpy(a, &x->a, &y->a, num_flops);
 }
 
 /**
@@ -1158,7 +994,8 @@ int mtxmatrix_coordinate_daxpy(
  * x’.
  *
  * The matrices ‘x’ and ‘y’ must have the same field, precision and
- * size.
+ * size. Moreover, it is assumed that they have the same underlying
+ * sparsity pattern, or else the results are undefined.
  */
 int mtxmatrix_coordinate_saypx(
     float a,
@@ -1166,15 +1003,7 @@ int mtxmatrix_coordinate_saypx(
     const struct mtxmatrix_coordinate * x,
     int64_t * num_flops)
 {
-    if (!same_pattern(x, y)) return MTX_ERR_INCOMPATIBLE_PATTERN;
-    struct mtxvector_array vecy;
-    int err = vectorise_array(&vecy, y);
-    if (err) return err;
-    struct mtxvector vecx;
-    vecx.type = mtxvector_array;
-    err = vectorise_array(&vecx.storage.array, x);
-    if (err) return err;
-    return mtxvector_array_saypx(a, &vecy, &vecx, num_flops);
+    return mtxvector_base_saypx(a, &y->a, &x->a, num_flops);
 }
 
 /**
@@ -1183,7 +1012,8 @@ int mtxmatrix_coordinate_saypx(
  * x’.
  *
  * The matrices ‘x’ and ‘y’ must have the same field, precision and
- * size.
+ * size. Moreover, it is assumed that they have the same underlying
+ * sparsity pattern, or else the results are undefined.
  */
 int mtxmatrix_coordinate_daypx(
     double a,
@@ -1191,15 +1021,7 @@ int mtxmatrix_coordinate_daypx(
     const struct mtxmatrix_coordinate * x,
     int64_t * num_flops)
 {
-    if (!same_pattern(x, y)) return MTX_ERR_INCOMPATIBLE_PATTERN;
-    struct mtxvector_array vecy;
-    int err = vectorise_array(&vecy, y);
-    if (err) return err;
-    struct mtxvector vecx;
-    vecx.type = mtxvector_array;
-    err = vectorise_array(&vecx.storage.array, x);
-    if (err) return err;
-    return mtxvector_array_daypx(a, &vecy, &vecx, num_flops);
+    return mtxvector_base_daypx(a, &y->a, &x->a, num_flops);
 }
 
 /**
@@ -1207,7 +1029,8 @@ int mtxmatrix_coordinate_daypx(
  * of two matrices in single precision floating point.
  *
  * The matrices ‘x’ and ‘y’ must have the same field, precision and
- * size.
+ * size. Moreover, it is assumed that they have the same underlying
+ * sparsity pattern, or else the results are undefined.
  */
 int mtxmatrix_coordinate_sdot(
     const struct mtxmatrix_coordinate * x,
@@ -1215,16 +1038,8 @@ int mtxmatrix_coordinate_sdot(
     float * dot,
     int64_t * num_flops)
 {
-    if (!same_pattern(x, y)) return MTX_ERR_INCOMPATIBLE_PATTERN;
     if (x->symmetry == mtx_unsymmetric && y->symmetry == mtx_unsymmetric) {
-        struct mtxvector_array vecx;
-        int err = vectorise_array(&vecx, x);
-        if (err) return err;
-        struct mtxvector vecy;
-        vecy.type = mtxvector_array;
-        err = vectorise_array(&vecy.storage.array, y);
-        if (err) return err;
-        return mtxvector_array_sdot(&vecx, &vecy, dot, num_flops);
+        return mtxvector_base_sdot(&x->a, &y->a, dot, num_flops);
     } else {
         return MTX_ERR_INVALID_SYMMETRY;
     }
@@ -1235,7 +1050,8 @@ int mtxmatrix_coordinate_sdot(
  * of two matrices in double precision floating point.
  *
  * The matrices ‘x’ and ‘y’ must have the same field, precision and
- * size.
+ * size. Moreover, it is assumed that they have the same underlying
+ * sparsity pattern, or else the results are undefined.
  */
 int mtxmatrix_coordinate_ddot(
     const struct mtxmatrix_coordinate * x,
@@ -1243,16 +1059,8 @@ int mtxmatrix_coordinate_ddot(
     double * dot,
     int64_t * num_flops)
 {
-    if (!same_pattern(x, y)) return MTX_ERR_INCOMPATIBLE_PATTERN;
     if (x->symmetry == mtx_unsymmetric && y->symmetry == mtx_unsymmetric) {
-        struct mtxvector_array vecx;
-        int err = vectorise_array(&vecx, x);
-        if (err) return err;
-        struct mtxvector vecy;
-        vecy.type = mtxvector_array;
-        err = vectorise_array(&vecy.storage.array, y);
-        if (err) return err;
-        return mtxvector_array_ddot(&vecx, &vecy, dot, num_flops);
+        return mtxvector_base_ddot(&x->a, &y->a, dot, num_flops);
     } else {
         return MTX_ERR_INVALID_SYMMETRY;
     }
@@ -1264,7 +1072,8 @@ int mtxmatrix_coordinate_ddot(
  * in single precision floating point, ‘dot := x^T*y’.
  *
  * The matrices ‘x’ and ‘y’ must have the same field, precision and
- * size.
+ * size. Moreover, it is assumed that they have the same underlying
+ * sparsity pattern, or else the results are undefined.
  */
 int mtxmatrix_coordinate_cdotu(
     const struct mtxmatrix_coordinate * x,
@@ -1272,16 +1081,8 @@ int mtxmatrix_coordinate_cdotu(
     float (* dot)[2],
     int64_t * num_flops)
 {
-    if (!same_pattern(x, y)) return MTX_ERR_INCOMPATIBLE_PATTERN;
     if (x->symmetry == mtx_unsymmetric && y->symmetry == mtx_unsymmetric) {
-        struct mtxvector_array vecx;
-        int err = vectorise_array(&vecx, x);
-        if (err) return err;
-        struct mtxvector vecy;
-        vecy.type = mtxvector_array;
-        err = vectorise_array(&vecy.storage.array, y);
-        if (err) return err;
-        return mtxvector_array_cdotu(&vecx, &vecy, dot, num_flops);
+        return mtxvector_base_cdotu(&x->a, &y->a, dot, num_flops);
     } else {
         return MTX_ERR_INVALID_SYMMETRY;
     }
@@ -1293,7 +1094,8 @@ int mtxmatrix_coordinate_cdotu(
  * in double precision floating point, ‘dot := x^T*y’.
  *
  * The matrices ‘x’ and ‘y’ must have the same field, precision and
- * size.
+ * size. Moreover, it is assumed that they have the same underlying
+ * sparsity pattern, or else the results are undefined.
  */
 int mtxmatrix_coordinate_zdotu(
     const struct mtxmatrix_coordinate * x,
@@ -1301,16 +1103,8 @@ int mtxmatrix_coordinate_zdotu(
     double (* dot)[2],
     int64_t * num_flops)
 {
-    if (!same_pattern(x, y)) return MTX_ERR_INCOMPATIBLE_PATTERN;
     if (x->symmetry == mtx_unsymmetric && y->symmetry == mtx_unsymmetric) {
-        struct mtxvector_array vecx;
-        int err = vectorise_array(&vecx, x);
-        if (err) return err;
-        struct mtxvector vecy;
-        vecy.type = mtxvector_array;
-        err = vectorise_array(&vecy.storage.array, y);
-        if (err) return err;
-        return mtxvector_array_zdotu(&vecx, &vecy, dot, num_flops);
+        return mtxvector_base_zdotu(&x->a, &y->a, dot, num_flops);
     } else {
         return MTX_ERR_INVALID_SYMMETRY;
     }
@@ -1322,7 +1116,8 @@ int mtxmatrix_coordinate_zdotu(
  * x^H*y’.
  *
  * The matrices ‘x’ and ‘y’ must have the same field, precision and
- * size.
+ * size. Moreover, it is assumed that they have the same underlying
+ * sparsity pattern, or else the results are undefined.
  */
 int mtxmatrix_coordinate_cdotc(
     const struct mtxmatrix_coordinate * x,
@@ -1330,16 +1125,8 @@ int mtxmatrix_coordinate_cdotc(
     float (* dot)[2],
     int64_t * num_flops)
 {
-    if (!same_pattern(x, y)) return MTX_ERR_INCOMPATIBLE_PATTERN;
     if (x->symmetry == mtx_unsymmetric && y->symmetry == mtx_unsymmetric) {
-        struct mtxvector_array vecx;
-        int err = vectorise_array(&vecx, x);
-        if (err) return err;
-        struct mtxvector vecy;
-        vecy.type = mtxvector_array;
-        err = vectorise_array(&vecy.storage.array, y);
-        if (err) return err;
-        return mtxvector_array_cdotc(&vecx, &vecy, dot, num_flops);
+        return mtxvector_base_cdotc(&x->a, &y->a, dot, num_flops);
     } else {
         return MTX_ERR_INVALID_SYMMETRY;
     }
@@ -1351,7 +1138,8 @@ int mtxmatrix_coordinate_cdotc(
  * x^H*y’.
  *
  * The matrices ‘x’ and ‘y’ must have the same field, precision and
- * size.
+ * size. Moreover, it is assumed that they have the same underlying
+ * sparsity pattern, or else the results are undefined.
  */
 int mtxmatrix_coordinate_zdotc(
     const struct mtxmatrix_coordinate * x,
@@ -1359,16 +1147,8 @@ int mtxmatrix_coordinate_zdotc(
     double (* dot)[2],
     int64_t * num_flops)
 {
-    if (!same_pattern(x, y)) return MTX_ERR_INCOMPATIBLE_PATTERN;
     if (x->symmetry == mtx_unsymmetric && y->symmetry == mtx_unsymmetric) {
-        struct mtxvector_array vecx;
-        int err = vectorise_array(&vecx, x);
-        if (err) return err;
-        struct mtxvector vecy;
-        vecy.type = mtxvector_array;
-        err = vectorise_array(&vecy.storage.array, y);
-        if (err) return err;
-        return mtxvector_array_zdotc(&vecx, &vecy, dot, num_flops);
+        return mtxvector_base_zdotc(&x->a, &y->a, dot, num_flops);
     } else {
         return MTX_ERR_INVALID_SYMMETRY;
     }
@@ -1384,10 +1164,7 @@ int mtxmatrix_coordinate_snrm2(
     int64_t * num_flops)
 {
     if (x->symmetry == mtx_unsymmetric) {
-        struct mtxvector_array vecx;
-        int err = vectorise_array(&vecx, x);
-        if (err) return err;
-        return mtxvector_array_snrm2(&vecx, nrm2, num_flops);
+        return mtxvector_base_snrm2(&x->a, nrm2, num_flops);
     } else {
         return MTX_ERR_INVALID_SYMMETRY;
     }
@@ -1403,10 +1180,7 @@ int mtxmatrix_coordinate_dnrm2(
     int64_t * num_flops)
 {
     if (x->symmetry == mtx_unsymmetric) {
-        struct mtxvector_array vecx;
-        int err = vectorise_array(&vecx, x);
-        if (err) return err;
-        return mtxvector_array_dnrm2(&vecx, nrm2, num_flops);
+        return mtxvector_base_dnrm2(&x->a, nrm2, num_flops);
     } else {
         return MTX_ERR_INVALID_SYMMETRY;
     }
@@ -1424,10 +1198,7 @@ int mtxmatrix_coordinate_sasum(
     int64_t * num_flops)
 {
     if (x->symmetry == mtx_unsymmetric) {
-        struct mtxvector_array vecx;
-        int err = vectorise_array(&vecx, x);
-        if (err) return err;
-        return mtxvector_array_sasum(&vecx, asum, num_flops);
+        return mtxvector_base_sasum(&x->a, asum, num_flops);
     } else {
         return MTX_ERR_INVALID_SYMMETRY;
     }
@@ -1445,10 +1216,7 @@ int mtxmatrix_coordinate_dasum(
     int64_t * num_flops)
 {
     if (x->symmetry == mtx_unsymmetric) {
-        struct mtxvector_array vecx;
-        int err = vectorise_array(&vecx, x);
-        if (err) return err;
-        return mtxvector_array_dasum(&vecx, asum, num_flops);
+        return mtxvector_base_dasum(&x->a, asum, num_flops);
     } else {
         return MTX_ERR_INVALID_SYMMETRY;
     }
@@ -1465,10 +1233,7 @@ int mtxmatrix_coordinate_iamax(
     const struct mtxmatrix_coordinate * x,
     int * iamax)
 {
-    struct mtxvector_array vecx;
-    int err = vectorise_array(&vecx, x);
-    if (err) return err;
-    return mtxvector_array_iamax(&vecx, iamax);
+    return mtxvector_base_iamax(&x->a, iamax);
 }
 
 /*
@@ -1508,13 +1273,14 @@ int mtxmatrix_coordinate_sgemv(
     int64_t * num_flops)
 {
     int err;
-    if (x->type != mtxvector_array || y->type != mtxvector_array)
+    const struct mtxvector_base * a = &A->a;
+    if (x->type != mtxvector_base || y->type != mtxvector_base)
         return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
-    const struct mtxvector_array * x_ = &x->storage.array;
-    struct mtxvector_array * y_ = &y->storage.array;
-    if (x_->field != A->field || y_->field != A->field)
+    const struct mtxvector_base * x_ = &x->storage.base;
+    struct mtxvector_base * y_ = &y->storage.base;
+    if (x_->field != a->field || y_->field != a->field)
         return MTX_ERR_INCOMPATIBLE_FIELD;
-    if (x_->precision != A->precision || y_->precision != A->precision)
+    if (x_->precision != a->precision || y_->precision != a->precision)
         return MTX_ERR_INCOMPATIBLE_PRECISION;
     if (trans == mtx_notrans) {
         if (A->num_rows != y_->size || A->num_columns != x_->size)
@@ -1532,26 +1298,26 @@ int mtxmatrix_coordinate_sgemv(
     if (A->symmetry == mtx_unsymmetric) {
         const int * i = trans == mtx_notrans ? A->rowidx : A->colidx;
         const int * j = trans == mtx_notrans ? A->colidx : A->rowidx;
-        if (A->field == mtx_field_real) {
-            if (A->precision == mtx_single) {
-                const float * Adata = A->data.real_single;
+        if (a->field == mtx_field_real) {
+            if (a->precision == mtx_single) {
+                const float * Adata = a->data.real_single;
                 const float * xdata = x_->data.real_single;
                 float * ydata = y_->data.real_single;
                 for (int64_t k = 0; k < A->size; k++)
                     ydata[i[k]] += alpha*Adata[k]*xdata[j[k]];
                 if (num_flops) *num_flops += 3*A->num_nonzeros;
-            } else if (A->precision == mtx_double) {
-                const double * Adata = A->data.real_double;
+            } else if (a->precision == mtx_double) {
+                const double * Adata = a->data.real_double;
                 const double * xdata = x_->data.real_double;
                 double * ydata = y_->data.real_double;
                 for (int64_t k = 0; k < A->size; k++)
                     ydata[i[k]] += alpha*Adata[k]*xdata[j[k]];
                 if (num_flops) *num_flops += 3*A->num_nonzeros;
             } else { return MTX_ERR_INVALID_PRECISION; }
-        } else if (A->field == mtx_field_complex) {
+        } else if (a->field == mtx_field_complex) {
             if (trans == mtx_notrans || trans == mtx_trans) {
-                if (A->precision == mtx_single) {
-                    const float (* Adata)[2] = A->data.complex_single;
+                if (a->precision == mtx_single) {
+                    const float (* Adata)[2] = a->data.complex_single;
                     const float (* xdata)[2] = x_->data.complex_single;
                     float (* ydata)[2] = y_->data.complex_single;
                     for (int64_t k = 0; k < A->size; k++) {
@@ -1559,8 +1325,8 @@ int mtxmatrix_coordinate_sgemv(
                         ydata[i[k]][1] += alpha*(Adata[k][0]*xdata[j[k]][1]+Adata[k][1]*xdata[j[k]][0]);
                     }
                     if (num_flops) *num_flops += 10*A->num_nonzeros;
-                } else if (A->precision == mtx_double) {
-                    const double (* Adata)[2] = A->data.complex_double;
+                } else if (a->precision == mtx_double) {
+                    const double (* Adata)[2] = a->data.complex_double;
                     const double (* xdata)[2] = x_->data.complex_double;
                     double (* ydata)[2] = y_->data.complex_double;
                     for (int64_t k = 0; k < A->size; k++) {
@@ -1570,8 +1336,8 @@ int mtxmatrix_coordinate_sgemv(
                     if (num_flops) *num_flops += 10*A->num_nonzeros;
                 } else { return MTX_ERR_INVALID_PRECISION; }
             } else if (trans == mtx_conjtrans) {
-                if (A->precision == mtx_single) {
-                    const float (* Adata)[2] = A->data.complex_single;
+                if (a->precision == mtx_single) {
+                    const float (* Adata)[2] = a->data.complex_single;
                     const float (* xdata)[2] = x_->data.complex_single;
                     float (* ydata)[2] = y_->data.complex_single;
                     for (int64_t k = 0; k < A->size; k++) {
@@ -1579,8 +1345,8 @@ int mtxmatrix_coordinate_sgemv(
                         ydata[i[k]][1] += alpha*(Adata[k][0]*xdata[j[k]][1]-Adata[k][1]*xdata[j[k]][0]);
                     }
                     if (num_flops) *num_flops += 10*A->num_nonzeros;
-                } else if (A->precision == mtx_double) {
-                    const double (* Adata)[2] = A->data.complex_double;
+                } else if (a->precision == mtx_double) {
+                    const double (* Adata)[2] = a->data.complex_double;
                     const double (* xdata)[2] = x_->data.complex_double;
                     double (* ydata)[2] = y_->data.complex_double;
                     for (int64_t k = 0; k < A->size; k++) {
@@ -1590,16 +1356,16 @@ int mtxmatrix_coordinate_sgemv(
                     if (num_flops) *num_flops += 10*A->num_nonzeros;
                 } else { return MTX_ERR_INVALID_PRECISION; }
             } else { return MTX_ERR_INVALID_TRANSPOSITION; }
-        } else if (A->field == mtx_field_integer) {
-            if (A->precision == mtx_single) {
-                const int32_t * Adata = A->data.integer_single;
+        } else if (a->field == mtx_field_integer) {
+            if (a->precision == mtx_single) {
+                const int32_t * Adata = a->data.integer_single;
                 const int32_t * xdata = x_->data.integer_single;
                 int32_t * ydata = y_->data.integer_single;
                 for (int64_t k = 0; k < A->size; k++)
                     ydata[i[k]] += alpha*Adata[k]*xdata[j[k]];
                 if (num_flops) *num_flops += 3*A->num_nonzeros;
-            } else if (A->precision == mtx_double) {
-                const int64_t * Adata = A->data.integer_double;
+            } else if (a->precision == mtx_double) {
+                const int64_t * Adata = a->data.integer_double;
                 const int64_t * xdata = x_->data.integer_double;
                 int64_t * ydata = y_->data.integer_double;
                 for (int64_t k = 0; k < A->size; k++)
@@ -1610,9 +1376,9 @@ int mtxmatrix_coordinate_sgemv(
     } else if (A->num_rows == A->num_columns && A->symmetry == mtx_symmetric) {
         const int * i = A->rowidx;
         const int * j = A->colidx;
-        if (A->field == mtx_field_real) {
-            if (A->precision == mtx_single) {
-                const float * Adata = A->data.real_single;
+        if (a->field == mtx_field_real) {
+            if (a->precision == mtx_single) {
+                const float * Adata = a->data.real_single;
                 const float * xdata = x_->data.real_single;
                 float * ydata = y_->data.real_single;
                 for (int64_t k = 0; k < A->size; k++) {
@@ -1620,8 +1386,8 @@ int mtxmatrix_coordinate_sgemv(
                     if (i[k] != j[k]) ydata[j[k]] += alpha*Adata[k]*xdata[i[k]];
                 }
                 if (num_flops) *num_flops += 3*A->num_nonzeros;
-            } else if (A->precision == mtx_double) {
-                const double * Adata = A->data.real_double;
+            } else if (a->precision == mtx_double) {
+                const double * Adata = a->data.real_double;
                 const double * xdata = x_->data.real_double;
                 double * ydata = y_->data.real_double;
                 for (int64_t k = 0; k < A->size; k++) {
@@ -1630,10 +1396,10 @@ int mtxmatrix_coordinate_sgemv(
                 }
                 if (num_flops) *num_flops += 3*A->num_nonzeros;
             } else { return MTX_ERR_INVALID_PRECISION; }
-        } else if (A->field == mtx_field_complex) {
+        } else if (a->field == mtx_field_complex) {
             if (trans == mtx_notrans || trans == mtx_trans) {
-                if (A->precision == mtx_single) {
-                    const float (* Adata)[2] = A->data.complex_single;
+                if (a->precision == mtx_single) {
+                    const float (* Adata)[2] = a->data.complex_single;
                     const float (* xdata)[2] = x_->data.complex_single;
                     float (* ydata)[2] = y_->data.complex_single;
                     for (int k = 0; k < A->size; k++) {
@@ -1645,8 +1411,8 @@ int mtxmatrix_coordinate_sgemv(
                         }
                     }
                     if (num_flops) *num_flops += 10*A->num_nonzeros;
-                } else if (A->precision == mtx_double) {
-                    const double (* Adata)[2] = A->data.complex_double;
+                } else if (a->precision == mtx_double) {
+                    const double (* Adata)[2] = a->data.complex_double;
                     const double (* xdata)[2] = x_->data.complex_double;
                     double (* ydata)[2] = y_->data.complex_double;
                     for (int k = 0; k < A->size; k++) {
@@ -1660,8 +1426,8 @@ int mtxmatrix_coordinate_sgemv(
                     if (num_flops) *num_flops += 10*A->num_nonzeros;
                 } else { return MTX_ERR_INVALID_PRECISION; }
             } else if (trans == mtx_conjtrans) {
-                if (A->precision == mtx_single) {
-                    const float (* Adata)[2] = A->data.complex_single;
+                if (a->precision == mtx_single) {
+                    const float (* Adata)[2] = a->data.complex_single;
                     const float (* xdata)[2] = x_->data.complex_single;
                     float (* ydata)[2] = y_->data.complex_single;
                     for (int k = 0; k < A->size; k++) {
@@ -1673,8 +1439,8 @@ int mtxmatrix_coordinate_sgemv(
                         }
                     }
                     if (num_flops) *num_flops += 10*A->num_nonzeros;
-                } else if (A->precision == mtx_double) {
-                    const double (* Adata)[2] = A->data.complex_double;
+                } else if (a->precision == mtx_double) {
+                    const double (* Adata)[2] = a->data.complex_double;
                     const double (* xdata)[2] = x_->data.complex_double;
                     double (* ydata)[2] = y_->data.complex_double;
                     for (int k = 0; k < A->size; k++) {
@@ -1688,9 +1454,9 @@ int mtxmatrix_coordinate_sgemv(
                     if (num_flops) *num_flops += 10*A->num_nonzeros;
                 } else { return MTX_ERR_INVALID_PRECISION; }
             } else { return MTX_ERR_INVALID_TRANSPOSITION; }
-        } else if (A->field == mtx_field_integer) {
-            if (A->precision == mtx_single) {
-                const int32_t * Adata = A->data.integer_single;
+        } else if (a->field == mtx_field_integer) {
+            if (a->precision == mtx_single) {
+                const int32_t * Adata = a->data.integer_single;
                 const int32_t * xdata = x_->data.integer_single;
                 int32_t * ydata = y_->data.integer_single;
                 for (int k = 0; k < A->size; k++) {
@@ -1698,8 +1464,8 @@ int mtxmatrix_coordinate_sgemv(
                     if (i[k] != j[k]) ydata[j[k]] += alpha*Adata[k]*xdata[i[k]];
                 }
                 if (num_flops) *num_flops += 3*A->num_nonzeros;
-            } else if (A->precision == mtx_double) {
-                const int64_t * Adata = A->data.integer_double;
+            } else if (a->precision == mtx_double) {
+                const int64_t * Adata = a->data.integer_double;
                 const int64_t * xdata = x_->data.integer_double;
                 int64_t * ydata = y_->data.integer_double;
                 for (int k = 0; k < A->size; k++) {
@@ -1715,10 +1481,10 @@ int mtxmatrix_coordinate_sgemv(
     } else if (A->num_rows == A->num_columns && A->symmetry == mtx_hermitian) {
         const int * i = A->rowidx;
         const int * j = A->colidx;
-        if (A->field == mtx_field_complex) {
+        if (a->field == mtx_field_complex) {
             if (trans == mtx_notrans || trans == mtx_conjtrans) {
-                if (A->precision == mtx_single) {
-                    const float (* Adata)[2] = A->data.complex_single;
+                if (a->precision == mtx_single) {
+                    const float (* Adata)[2] = a->data.complex_single;
                     const float (* xdata)[2] = x_->data.complex_single;
                     float (* ydata)[2] = y_->data.complex_single;
                     for (int k = 0; k < A->size; k++) {
@@ -1730,8 +1496,8 @@ int mtxmatrix_coordinate_sgemv(
                         }
                     }
                     if (num_flops) *num_flops += 10*A->num_nonzeros;
-                } else if (A->precision == mtx_double) {
-                    const double (* Adata)[2] = A->data.complex_double;
+                } else if (a->precision == mtx_double) {
+                    const double (* Adata)[2] = a->data.complex_double;
                     const double (* xdata)[2] = x_->data.complex_double;
                     double (* ydata)[2] = y_->data.complex_double;
                     for (int k = 0; k < A->size; k++) {
@@ -1745,8 +1511,8 @@ int mtxmatrix_coordinate_sgemv(
                     if (num_flops) *num_flops += 10*A->num_nonzeros;
                 } else { return MTX_ERR_INVALID_PRECISION; }
             } else if (trans == mtx_trans) {
-                if (A->precision == mtx_single) {
-                    const float (* Adata)[2] = A->data.complex_single;
+                if (a->precision == mtx_single) {
+                    const float (* Adata)[2] = a->data.complex_single;
                     const float (* xdata)[2] = x_->data.complex_single;
                     float (* ydata)[2] = y_->data.complex_single;
                     for (int k = 0; k < A->size; k++) {
@@ -1758,8 +1524,8 @@ int mtxmatrix_coordinate_sgemv(
                         }
                     }
                     if (num_flops) *num_flops += 10*A->num_nonzeros;
-                } else if (A->precision == mtx_double) {
-                    const double (* Adata)[2] = A->data.complex_double;
+                } else if (a->precision == mtx_double) {
+                    const double (* Adata)[2] = a->data.complex_double;
                     const double (* xdata)[2] = x_->data.complex_double;
                     double (* ydata)[2] = y_->data.complex_double;
                     for (int k = 0; k < A->size; k++) {
@@ -1810,13 +1576,14 @@ int mtxmatrix_coordinate_dgemv(
     int64_t * num_flops)
 {
     int err;
-    if (x->type != mtxvector_array || y->type != mtxvector_array)
+    const struct mtxvector_base * a = &A->a;
+    if (x->type != mtxvector_base || y->type != mtxvector_base)
         return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
-    const struct mtxvector_array * x_ = &x->storage.array;
-    struct mtxvector_array * y_ = &y->storage.array;
-    if (x_->field != A->field || y_->field != A->field)
+    const struct mtxvector_base * x_ = &x->storage.base;
+    struct mtxvector_base * y_ = &y->storage.base;
+    if (x_->field != a->field || y_->field != a->field)
         return MTX_ERR_INCOMPATIBLE_FIELD;
-    if (x_->precision != A->precision || y_->precision != A->precision)
+    if (x_->precision != a->precision || y_->precision != a->precision)
         return MTX_ERR_INCOMPATIBLE_PRECISION;
     if (trans == mtx_notrans) {
         if (A->num_rows != y_->size || A->num_columns != x_->size)
@@ -1834,26 +1601,26 @@ int mtxmatrix_coordinate_dgemv(
     if (A->symmetry == mtx_unsymmetric) {
         const int * i = trans == mtx_notrans ? A->rowidx : A->colidx;
         const int * j = trans == mtx_notrans ? A->colidx : A->rowidx;
-        if (A->field == mtx_field_real) {
-            if (A->precision == mtx_single) {
-                const float * Adata = A->data.real_single;
+        if (a->field == mtx_field_real) {
+            if (a->precision == mtx_single) {
+                const float * Adata = a->data.real_single;
                 const float * xdata = x_->data.real_single;
                 float * ydata = y_->data.real_single;
                 for (int64_t k = 0; k < A->size; k++)
                     ydata[i[k]] += alpha*Adata[k]*xdata[j[k]];
                 if (num_flops) *num_flops += 3*A->num_nonzeros;
-            } else if (A->precision == mtx_double) {
-                const double * Adata = A->data.real_double;
+            } else if (a->precision == mtx_double) {
+                const double * Adata = a->data.real_double;
                 const double * xdata = x_->data.real_double;
                 double * ydata = y_->data.real_double;
                 for (int64_t k = 0; k < A->size; k++)
                     ydata[i[k]] += alpha*Adata[k]*xdata[j[k]];
                 if (num_flops) *num_flops += 3*A->num_nonzeros;
             } else { return MTX_ERR_INVALID_PRECISION; }
-        } else if (A->field == mtx_field_complex) {
+        } else if (a->field == mtx_field_complex) {
             if (trans == mtx_notrans || trans == mtx_trans) {
-                if (A->precision == mtx_single) {
-                    const float (* Adata)[2] = A->data.complex_single;
+                if (a->precision == mtx_single) {
+                    const float (* Adata)[2] = a->data.complex_single;
                     const float (* xdata)[2] = x_->data.complex_single;
                     float (* ydata)[2] = y_->data.complex_single;
                     for (int64_t k = 0; k < A->size; k++) {
@@ -1861,8 +1628,8 @@ int mtxmatrix_coordinate_dgemv(
                         ydata[i[k]][1] += alpha*(Adata[k][0]*xdata[j[k]][1]+Adata[k][1]*xdata[j[k]][0]);
                     }
                     if (num_flops) *num_flops += 10*A->num_nonzeros;
-                } else if (A->precision == mtx_double) {
-                    const double (* Adata)[2] = A->data.complex_double;
+                } else if (a->precision == mtx_double) {
+                    const double (* Adata)[2] = a->data.complex_double;
                     const double (* xdata)[2] = x_->data.complex_double;
                     double (* ydata)[2] = y_->data.complex_double;
                     for (int64_t k = 0; k < A->size; k++) {
@@ -1872,8 +1639,8 @@ int mtxmatrix_coordinate_dgemv(
                     if (num_flops) *num_flops += 10*A->num_nonzeros;
                 } else { return MTX_ERR_INVALID_PRECISION; }
             } else if (trans == mtx_conjtrans) {
-                if (A->precision == mtx_single) {
-                    const float (* Adata)[2] = A->data.complex_single;
+                if (a->precision == mtx_single) {
+                    const float (* Adata)[2] = a->data.complex_single;
                     const float (* xdata)[2] = x_->data.complex_single;
                     float (* ydata)[2] = y_->data.complex_single;
                     for (int64_t k = 0; k < A->size; k++) {
@@ -1881,8 +1648,8 @@ int mtxmatrix_coordinate_dgemv(
                         ydata[i[k]][1] += alpha*(Adata[k][0]*xdata[j[k]][1]-Adata[k][1]*xdata[j[k]][0]);
                     }
                     if (num_flops) *num_flops += 10*A->num_nonzeros;
-                } else if (A->precision == mtx_double) {
-                    const double (* Adata)[2] = A->data.complex_double;
+                } else if (a->precision == mtx_double) {
+                    const double (* Adata)[2] = a->data.complex_double;
                     const double (* xdata)[2] = x_->data.complex_double;
                     double (* ydata)[2] = y_->data.complex_double;
                     for (int64_t k = 0; k < A->size; k++) {
@@ -1892,16 +1659,16 @@ int mtxmatrix_coordinate_dgemv(
                     if (num_flops) *num_flops += 10*A->num_nonzeros;
                 } else { return MTX_ERR_INVALID_PRECISION; }
             } else { return MTX_ERR_INVALID_TRANSPOSITION; }
-        } else if (A->field == mtx_field_integer) {
-            if (A->precision == mtx_single) {
-                const int32_t * Adata = A->data.integer_single;
+        } else if (a->field == mtx_field_integer) {
+            if (a->precision == mtx_single) {
+                const int32_t * Adata = a->data.integer_single;
                 const int32_t * xdata = x_->data.integer_single;
                 int32_t * ydata = y_->data.integer_single;
                 for (int64_t k = 0; k < A->size; k++)
                     ydata[i[k]] += alpha*Adata[k]*xdata[j[k]];
                 if (num_flops) *num_flops += 3*A->num_nonzeros;
-            } else if (A->precision == mtx_double) {
-                const int64_t * Adata = A->data.integer_double;
+            } else if (a->precision == mtx_double) {
+                const int64_t * Adata = a->data.integer_double;
                 const int64_t * xdata = x_->data.integer_double;
                 int64_t * ydata = y_->data.integer_double;
                 for (int64_t k = 0; k < A->size; k++)
@@ -1912,9 +1679,9 @@ int mtxmatrix_coordinate_dgemv(
     } else if (A->num_rows == A->num_columns && A->symmetry == mtx_symmetric) {
         const int * i = A->rowidx;
         const int * j = A->colidx;
-        if (A->field == mtx_field_real) {
-            if (A->precision == mtx_single) {
-                const float * Adata = A->data.real_single;
+        if (a->field == mtx_field_real) {
+            if (a->precision == mtx_single) {
+                const float * Adata = a->data.real_single;
                 const float * xdata = x_->data.real_single;
                 float * ydata = y_->data.real_single;
                 for (int64_t k = 0; k < A->size; k++) {
@@ -1922,8 +1689,8 @@ int mtxmatrix_coordinate_dgemv(
                     if (i[k] != j[k]) ydata[j[k]] += alpha*Adata[k]*xdata[i[k]];
                 }
                 if (num_flops) *num_flops += 3*A->num_nonzeros;
-            } else if (A->precision == mtx_double) {
-                const double * Adata = A->data.real_double;
+            } else if (a->precision == mtx_double) {
+                const double * Adata = a->data.real_double;
                 const double * xdata = x_->data.real_double;
                 double * ydata = y_->data.real_double;
                 for (int64_t k = 0; k < A->size; k++) {
@@ -1932,10 +1699,10 @@ int mtxmatrix_coordinate_dgemv(
                 }
                 if (num_flops) *num_flops += 3*A->num_nonzeros;
             } else { return MTX_ERR_INVALID_PRECISION; }
-        } else if (A->field == mtx_field_complex) {
+        } else if (a->field == mtx_field_complex) {
             if (trans == mtx_notrans || trans == mtx_trans) {
-                if (A->precision == mtx_single) {
-                    const float (* Adata)[2] = A->data.complex_single;
+                if (a->precision == mtx_single) {
+                    const float (* Adata)[2] = a->data.complex_single;
                     const float (* xdata)[2] = x_->data.complex_single;
                     float (* ydata)[2] = y_->data.complex_single;
                     for (int k = 0; k < A->size; k++) {
@@ -1947,8 +1714,8 @@ int mtxmatrix_coordinate_dgemv(
                         }
                     }
                     if (num_flops) *num_flops += 10*A->num_nonzeros;
-                } else if (A->precision == mtx_double) {
-                    const double (* Adata)[2] = A->data.complex_double;
+                } else if (a->precision == mtx_double) {
+                    const double (* Adata)[2] = a->data.complex_double;
                     const double (* xdata)[2] = x_->data.complex_double;
                     double (* ydata)[2] = y_->data.complex_double;
                     for (int k = 0; k < A->size; k++) {
@@ -1962,8 +1729,8 @@ int mtxmatrix_coordinate_dgemv(
                     if (num_flops) *num_flops += 10*A->num_nonzeros;
                 } else { return MTX_ERR_INVALID_PRECISION; }
             } else if (trans == mtx_conjtrans) {
-                if (A->precision == mtx_single) {
-                    const float (* Adata)[2] = A->data.complex_single;
+                if (a->precision == mtx_single) {
+                    const float (* Adata)[2] = a->data.complex_single;
                     const float (* xdata)[2] = x_->data.complex_single;
                     float (* ydata)[2] = y_->data.complex_single;
                     for (int k = 0; k < A->size; k++) {
@@ -1975,8 +1742,8 @@ int mtxmatrix_coordinate_dgemv(
                         }
                     }
                     if (num_flops) *num_flops += 10*A->num_nonzeros;
-                } else if (A->precision == mtx_double) {
-                    const double (* Adata)[2] = A->data.complex_double;
+                } else if (a->precision == mtx_double) {
+                    const double (* Adata)[2] = a->data.complex_double;
                     const double (* xdata)[2] = x_->data.complex_double;
                     double (* ydata)[2] = y_->data.complex_double;
                     for (int k = 0; k < A->size; k++) {
@@ -1990,9 +1757,9 @@ int mtxmatrix_coordinate_dgemv(
                     if (num_flops) *num_flops += 10*A->num_nonzeros;
                 } else { return MTX_ERR_INVALID_PRECISION; }
             } else { return MTX_ERR_INVALID_TRANSPOSITION; }
-        } else if (A->field == mtx_field_integer) {
-            if (A->precision == mtx_single) {
-                const int32_t * Adata = A->data.integer_single;
+        } else if (a->field == mtx_field_integer) {
+            if (a->precision == mtx_single) {
+                const int32_t * Adata = a->data.integer_single;
                 const int32_t * xdata = x_->data.integer_single;
                 int32_t * ydata = y_->data.integer_single;
                 for (int k = 0; k < A->size; k++) {
@@ -2000,8 +1767,8 @@ int mtxmatrix_coordinate_dgemv(
                     if (i[k] != j[k]) ydata[j[k]] += alpha*Adata[k]*xdata[i[k]];
                 }
                 if (num_flops) *num_flops += 3*A->num_nonzeros;
-            } else if (A->precision == mtx_double) {
-                const int64_t * Adata = A->data.integer_double;
+            } else if (a->precision == mtx_double) {
+                const int64_t * Adata = a->data.integer_double;
                 const int64_t * xdata = x_->data.integer_double;
                 int64_t * ydata = y_->data.integer_double;
                 for (int k = 0; k < A->size; k++) {
@@ -2017,10 +1784,10 @@ int mtxmatrix_coordinate_dgemv(
     } else if (A->num_rows == A->num_columns && A->symmetry == mtx_hermitian) {
         const int * i = A->rowidx;
         const int * j = A->colidx;
-        if (A->field == mtx_field_complex) {
+        if (a->field == mtx_field_complex) {
             if (trans == mtx_notrans || trans == mtx_conjtrans) {
-                if (A->precision == mtx_single) {
-                    const float (* Adata)[2] = A->data.complex_single;
+                if (a->precision == mtx_single) {
+                    const float (* Adata)[2] = a->data.complex_single;
                     const float (* xdata)[2] = x_->data.complex_single;
                     float (* ydata)[2] = y_->data.complex_single;
                     for (int k = 0; k < A->size; k++) {
@@ -2032,8 +1799,8 @@ int mtxmatrix_coordinate_dgemv(
                         }
                     }
                     if (num_flops) *num_flops += 10*A->num_nonzeros;
-                } else if (A->precision == mtx_double) {
-                    const double (* Adata)[2] = A->data.complex_double;
+                } else if (a->precision == mtx_double) {
+                    const double (* Adata)[2] = a->data.complex_double;
                     const double (* xdata)[2] = x_->data.complex_double;
                     double (* ydata)[2] = y_->data.complex_double;
                     for (int k = 0; k < A->size; k++) {
@@ -2047,8 +1814,8 @@ int mtxmatrix_coordinate_dgemv(
                     if (num_flops) *num_flops += 10*A->num_nonzeros;
                 } else { return MTX_ERR_INVALID_PRECISION; }
             } else if (trans == mtx_trans) {
-                if (A->precision == mtx_single) {
-                    const float (* Adata)[2] = A->data.complex_single;
+                if (a->precision == mtx_single) {
+                    const float (* Adata)[2] = a->data.complex_single;
                     const float (* xdata)[2] = x_->data.complex_single;
                     float (* ydata)[2] = y_->data.complex_single;
                     for (int k = 0; k < A->size; k++) {
@@ -2060,8 +1827,8 @@ int mtxmatrix_coordinate_dgemv(
                         }
                     }
                     if (num_flops) *num_flops += 10*A->num_nonzeros;
-                } else if (A->precision == mtx_double) {
-                    const double (* Adata)[2] = A->data.complex_double;
+                } else if (a->precision == mtx_double) {
+                    const double (* Adata)[2] = a->data.complex_double;
                     const double (* xdata)[2] = x_->data.complex_double;
                     double (* ydata)[2] = y_->data.complex_double;
                     for (int k = 0; k < A->size; k++) {
@@ -2109,13 +1876,14 @@ int mtxmatrix_coordinate_cgemv(
     int64_t * num_flops)
 {
     int err;
-    if (x->type != mtxvector_array || y->type != mtxvector_array)
+    const struct mtxvector_base * a = &A->a;
+    if (x->type != mtxvector_base || y->type != mtxvector_base)
         return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
-    const struct mtxvector_array * x_ = &x->storage.array;
-    struct mtxvector_array * y_ = &y->storage.array;
-    if (x_->field != A->field || y_->field != A->field)
+    const struct mtxvector_base * x_ = &x->storage.base;
+    struct mtxvector_base * y_ = &y->storage.base;
+    if (x_->field != a->field || y_->field != a->field)
         return MTX_ERR_INCOMPATIBLE_FIELD;
-    if (x_->precision != A->precision || y_->precision != A->precision)
+    if (x_->precision != a->precision || y_->precision != a->precision)
         return MTX_ERR_INCOMPATIBLE_PRECISION;
     if (trans == mtx_notrans) {
         if (A->num_rows != y_->size || A->num_columns != x_->size)
@@ -2124,7 +1892,7 @@ int mtxmatrix_coordinate_cgemv(
         if (A->num_columns != y_->size || A->num_rows != x_->size)
             return MTX_ERR_INCOMPATIBLE_SIZE;
     }
-    if (A->field != mtx_field_complex)
+    if (a->field != mtx_field_complex)
         return MTX_ERR_INCOMPATIBLE_FIELD;
 
     if (beta[0] != 1 || beta[1] != 0) {
@@ -2136,8 +1904,8 @@ int mtxmatrix_coordinate_cgemv(
     const int * j = A->colidx;
     if (A->symmetry == mtx_unsymmetric) {
         if (trans == mtx_notrans) {
-            if (A->precision == mtx_single) {
-                const float (* Adata)[2] = A->data.complex_single;
+            if (a->precision == mtx_single) {
+                const float (* Adata)[2] = a->data.complex_single;
                 const float (* xdata)[2] = x_->data.complex_single;
                 float (* ydata)[2] = y_->data.complex_single;
                 for (int k = 0; k < A->size; k++) {
@@ -2145,8 +1913,8 @@ int mtxmatrix_coordinate_cgemv(
                     ydata[i[k]][1] += alpha[0]*(Adata[k][0]*xdata[j[k]][1]+Adata[k][1]*xdata[j[k]][0])+alpha[1]*(Adata[k][0]*xdata[j[k]][0]-Adata[k][1]*xdata[j[k]][1]);
                 }
                 if (num_flops) *num_flops += 20*A->num_nonzeros;
-            } else if (A->precision == mtx_double) {
-                const double (* Adata)[2] = A->data.complex_double;
+            } else if (a->precision == mtx_double) {
+                const double (* Adata)[2] = a->data.complex_double;
                 const double (* xdata)[2] = x_->data.complex_double;
                 double (* ydata)[2] = y_->data.complex_double;
                 for (int k = 0; k < A->size; k++) {
@@ -2156,8 +1924,8 @@ int mtxmatrix_coordinate_cgemv(
                 if (num_flops) *num_flops += 20*A->num_nonzeros;
             } else { return MTX_ERR_INVALID_PRECISION; }
         } else if (trans == mtx_trans) {
-            if (A->precision == mtx_single) {
-                const float (* Adata)[2] = A->data.complex_single;
+            if (a->precision == mtx_single) {
+                const float (* Adata)[2] = a->data.complex_single;
                 const float (* xdata)[2] = x_->data.complex_single;
                 float (* ydata)[2] = y_->data.complex_single;
                 for (int k = 0; k < A->size; k++) {
@@ -2165,8 +1933,8 @@ int mtxmatrix_coordinate_cgemv(
                     ydata[j[k]][1] += alpha[0]*(Adata[k][0]*xdata[i[k]][1]+Adata[k][1]*xdata[i[k]][0])+alpha[1]*(Adata[k][0]*xdata[i[k]][0]-Adata[k][1]*xdata[i[k]][1]);
                 }
                 if (num_flops) *num_flops += 20*A->num_nonzeros;
-            } else if (A->precision == mtx_double) {
-                const double (* Adata)[2] = A->data.complex_double;
+            } else if (a->precision == mtx_double) {
+                const double (* Adata)[2] = a->data.complex_double;
                 const double (* xdata)[2] = x_->data.complex_double;
                 double (* ydata)[2] = y_->data.complex_double;
                 for (int k = 0; k < A->size; k++) {
@@ -2176,8 +1944,8 @@ int mtxmatrix_coordinate_cgemv(
                 if (num_flops) *num_flops += 20*A->num_nonzeros;
             } else { return MTX_ERR_INVALID_PRECISION; }
         } else if (trans == mtx_conjtrans) {
-            if (A->precision == mtx_single) {
-                const float (* Adata)[2] = A->data.complex_single;
+            if (a->precision == mtx_single) {
+                const float (* Adata)[2] = a->data.complex_single;
                 const float (* xdata)[2] = x_->data.complex_single;
                 float (* ydata)[2] = y_->data.complex_single;
                 for (int k = 0; k < A->size; k++) {
@@ -2185,8 +1953,8 @@ int mtxmatrix_coordinate_cgemv(
                     ydata[j[k]][1] += alpha[0]*(Adata[k][0]*xdata[i[k]][1]-Adata[k][1]*xdata[i[k]][0])+alpha[1]*(Adata[k][0]*xdata[i[k]][0]+Adata[k][1]*xdata[i[k]][1]);
                 }
                 if (num_flops) *num_flops += 20*A->num_nonzeros;
-            } else if (A->precision == mtx_double) {
-                const double (* Adata)[2] = A->data.complex_double;
+            } else if (a->precision == mtx_double) {
+                const double (* Adata)[2] = a->data.complex_double;
                 const double (* xdata)[2] = x_->data.complex_double;
                 double (* ydata)[2] = y_->data.complex_double;
                 for (int k = 0; k < A->size; k++) {
@@ -2198,8 +1966,8 @@ int mtxmatrix_coordinate_cgemv(
         } else { return MTX_ERR_INVALID_TRANSPOSITION; }
     } else if (A->num_rows == A->num_columns && A->symmetry == mtx_symmetric) {
         if (trans == mtx_notrans || trans == mtx_trans) {
-            if (A->precision == mtx_single) {
-                const float (* Adata)[2] = A->data.complex_single;
+            if (a->precision == mtx_single) {
+                const float (* Adata)[2] = a->data.complex_single;
                 const float (* xdata)[2] = x_->data.complex_single;
                 float (* ydata)[2] = y_->data.complex_single;
                 for (int k = 0; k < A->size; k++) {
@@ -2211,8 +1979,8 @@ int mtxmatrix_coordinate_cgemv(
                     }
                 }
                 if (num_flops) *num_flops += 20*A->num_nonzeros;
-            } else if (A->precision == mtx_double) {
-                const double (* Adata)[2] = A->data.complex_double;
+            } else if (a->precision == mtx_double) {
+                const double (* Adata)[2] = a->data.complex_double;
                 const double (* xdata)[2] = x_->data.complex_double;
                 double (* ydata)[2] = y_->data.complex_double;
                 for (int k = 0; k < A->size; k++) {
@@ -2226,8 +1994,8 @@ int mtxmatrix_coordinate_cgemv(
                 if (num_flops) *num_flops += 20*A->num_nonzeros;
             } else { return MTX_ERR_INVALID_PRECISION; }
         } else if (trans == mtx_conjtrans) {
-            if (A->precision == mtx_single) {
-                const float (* Adata)[2] = A->data.complex_single;
+            if (a->precision == mtx_single) {
+                const float (* Adata)[2] = a->data.complex_single;
                 const float (* xdata)[2] = x_->data.complex_single;
                 float (* ydata)[2] = y_->data.complex_single;
                 for (int k = 0; k < A->size; k++) {
@@ -2239,8 +2007,8 @@ int mtxmatrix_coordinate_cgemv(
                     }
                 }
                 if (num_flops) *num_flops += 20*A->num_nonzeros;
-            } else if (A->precision == mtx_double) {
-                const double (* Adata)[2] = A->data.complex_double;
+            } else if (a->precision == mtx_double) {
+                const double (* Adata)[2] = a->data.complex_double;
                 const double (* xdata)[2] = x_->data.complex_double;
                 double (* ydata)[2] = y_->data.complex_double;
                 for (int k = 0; k < A->size; k++) {
@@ -2259,8 +2027,8 @@ int mtxmatrix_coordinate_cgemv(
         return MTX_ERR_INVALID_SYMMETRY;
     } else if (A->num_rows == A->num_columns && A->symmetry == mtx_hermitian) {
         if (trans == mtx_notrans || trans == mtx_conjtrans) {
-            if (A->precision == mtx_single) {
-                const float (* Adata)[2] = A->data.complex_single;
+            if (a->precision == mtx_single) {
+                const float (* Adata)[2] = a->data.complex_single;
                 const float (* xdata)[2] = x_->data.complex_single;
                 float (* ydata)[2] = y_->data.complex_single;
                 for (int k = 0; k < A->size; k++) {
@@ -2272,8 +2040,8 @@ int mtxmatrix_coordinate_cgemv(
                     }
                 }
                 if (num_flops) *num_flops += 20*A->num_nonzeros;
-            } else if (A->precision == mtx_double) {
-                const double (* Adata)[2] = A->data.complex_double;
+            } else if (a->precision == mtx_double) {
+                const double (* Adata)[2] = a->data.complex_double;
                 const double (* xdata)[2] = x_->data.complex_double;
                 double (* ydata)[2] = y_->data.complex_double;
                 for (int k = 0; k < A->size; k++) {
@@ -2287,8 +2055,8 @@ int mtxmatrix_coordinate_cgemv(
                 if (num_flops) *num_flops += 20*A->num_nonzeros;
             } else { return MTX_ERR_INVALID_PRECISION; }
         } else if (trans == mtx_trans) {
-            if (A->precision == mtx_single) {
-                const float (* Adata)[2] = A->data.complex_single;
+            if (a->precision == mtx_single) {
+                const float (* Adata)[2] = a->data.complex_single;
                 const float (* xdata)[2] = x_->data.complex_single;
                 float (* ydata)[2] = y_->data.complex_single;
                 for (int k = 0; k < A->size; k++) {
@@ -2300,8 +2068,8 @@ int mtxmatrix_coordinate_cgemv(
                     }
                 }
                 if (num_flops) *num_flops += 20*A->num_nonzeros;
-            } else if (A->precision == mtx_double) {
-                const double (* Adata)[2] = A->data.complex_double;
+            } else if (a->precision == mtx_double) {
+                const double (* Adata)[2] = a->data.complex_double;
                 const double (* xdata)[2] = x_->data.complex_double;
                 double (* ydata)[2] = y_->data.complex_double;
                 for (int k = 0; k < A->size; k++) {
@@ -2348,13 +2116,14 @@ int mtxmatrix_coordinate_zgemv(
     int64_t * num_flops)
 {
     int err;
-    if (x->type != mtxvector_array || y->type != mtxvector_array)
+    const struct mtxvector_base * a = &A->a;
+    if (x->type != mtxvector_base || y->type != mtxvector_base)
         return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
-    const struct mtxvector_array * x_ = &x->storage.array;
-    struct mtxvector_array * y_ = &y->storage.array;
-    if (x_->field != A->field || y_->field != A->field)
+    const struct mtxvector_base * x_ = &x->storage.base;
+    struct mtxvector_base * y_ = &y->storage.base;
+    if (x_->field != a->field || y_->field != a->field)
         return MTX_ERR_INCOMPATIBLE_FIELD;
-    if (x_->precision != A->precision || y_->precision != A->precision)
+    if (x_->precision != a->precision || y_->precision != a->precision)
         return MTX_ERR_INCOMPATIBLE_PRECISION;
     if (trans == mtx_notrans) {
         if (A->num_rows != y_->size || A->num_columns != x_->size)
@@ -2363,7 +2132,7 @@ int mtxmatrix_coordinate_zgemv(
         if (A->num_columns != y_->size || A->num_rows != x_->size)
             return MTX_ERR_INCOMPATIBLE_SIZE;
     }
-    if (A->field != mtx_field_complex)
+    if (a->field != mtx_field_complex)
         return MTX_ERR_INCOMPATIBLE_FIELD;
 
     if (beta[0] != 1 || beta[1] != 0) {
@@ -2375,8 +2144,8 @@ int mtxmatrix_coordinate_zgemv(
     const int * j = A->colidx;
     if (A->symmetry == mtx_unsymmetric) {
         if (trans == mtx_notrans) {
-            if (A->precision == mtx_single) {
-                const float (* Adata)[2] = A->data.complex_single;
+            if (a->precision == mtx_single) {
+                const float (* Adata)[2] = a->data.complex_single;
                 const float (* xdata)[2] = x_->data.complex_single;
                 float (* ydata)[2] = y_->data.complex_single;
                 for (int k = 0; k < A->size; k++) {
@@ -2384,8 +2153,8 @@ int mtxmatrix_coordinate_zgemv(
                     ydata[i[k]][1] += alpha[0]*(Adata[k][0]*xdata[j[k]][1]+Adata[k][1]*xdata[j[k]][0])+alpha[1]*(Adata[k][0]*xdata[j[k]][0]-Adata[k][1]*xdata[j[k]][1]);
                 }
                 if (num_flops) *num_flops += 20*A->num_nonzeros;
-            } else if (A->precision == mtx_double) {
-                const double (* Adata)[2] = A->data.complex_double;
+            } else if (a->precision == mtx_double) {
+                const double (* Adata)[2] = a->data.complex_double;
                 const double (* xdata)[2] = x_->data.complex_double;
                 double (* ydata)[2] = y_->data.complex_double;
                 for (int k = 0; k < A->size; k++) {
@@ -2395,8 +2164,8 @@ int mtxmatrix_coordinate_zgemv(
                 if (num_flops) *num_flops += 20*A->num_nonzeros;
             } else { return MTX_ERR_INVALID_PRECISION; }
         } else if (trans == mtx_trans) {
-            if (A->precision == mtx_single) {
-                const float (* Adata)[2] = A->data.complex_single;
+            if (a->precision == mtx_single) {
+                const float (* Adata)[2] = a->data.complex_single;
                 const float (* xdata)[2] = x_->data.complex_single;
                 float (* ydata)[2] = y_->data.complex_single;
                 for (int k = 0; k < A->size; k++) {
@@ -2404,8 +2173,8 @@ int mtxmatrix_coordinate_zgemv(
                     ydata[j[k]][1] += alpha[0]*(Adata[k][0]*xdata[i[k]][1]+Adata[k][1]*xdata[i[k]][0])+alpha[1]*(Adata[k][0]*xdata[i[k]][0]-Adata[k][1]*xdata[i[k]][1]);
                 }
                 if (num_flops) *num_flops += 20*A->num_nonzeros;
-            } else if (A->precision == mtx_double) {
-                const double (* Adata)[2] = A->data.complex_double;
+            } else if (a->precision == mtx_double) {
+                const double (* Adata)[2] = a->data.complex_double;
                 const double (* xdata)[2] = x_->data.complex_double;
                 double (* ydata)[2] = y_->data.complex_double;
                 for (int k = 0; k < A->size; k++) {
@@ -2415,8 +2184,8 @@ int mtxmatrix_coordinate_zgemv(
                 if (num_flops) *num_flops += 20*A->num_nonzeros;
             } else { return MTX_ERR_INVALID_PRECISION; }
         } else if (trans == mtx_conjtrans) {
-            if (A->precision == mtx_single) {
-                const float (* Adata)[2] = A->data.complex_single;
+            if (a->precision == mtx_single) {
+                const float (* Adata)[2] = a->data.complex_single;
                 const float (* xdata)[2] = x_->data.complex_single;
                 float (* ydata)[2] = y_->data.complex_single;
                 for (int k = 0; k < A->size; k++) {
@@ -2424,8 +2193,8 @@ int mtxmatrix_coordinate_zgemv(
                     ydata[j[k]][1] += alpha[0]*(Adata[k][0]*xdata[i[k]][1]-Adata[k][1]*xdata[i[k]][0])+alpha[1]*(Adata[k][0]*xdata[i[k]][0]+Adata[k][1]*xdata[i[k]][1]);
                 }
                 if (num_flops) *num_flops += 20*A->num_nonzeros;
-            } else if (A->precision == mtx_double) {
-                const double (* Adata)[2] = A->data.complex_double;
+            } else if (a->precision == mtx_double) {
+                const double (* Adata)[2] = a->data.complex_double;
                 const double (* xdata)[2] = x_->data.complex_double;
                 double (* ydata)[2] = y_->data.complex_double;
                 for (int k = 0; k < A->size; k++) {
@@ -2437,8 +2206,8 @@ int mtxmatrix_coordinate_zgemv(
         } else { return MTX_ERR_INVALID_TRANSPOSITION; }
     } else if (A->num_rows == A->num_columns && A->symmetry == mtx_symmetric) {
         if (trans == mtx_notrans || trans == mtx_trans) {
-            if (A->precision == mtx_single) {
-                const float (* Adata)[2] = A->data.complex_single;
+            if (a->precision == mtx_single) {
+                const float (* Adata)[2] = a->data.complex_single;
                 const float (* xdata)[2] = x_->data.complex_single;
                 float (* ydata)[2] = y_->data.complex_single;
                 for (int k = 0; k < A->size; k++) {
@@ -2450,8 +2219,8 @@ int mtxmatrix_coordinate_zgemv(
                     }
                 }
                 if (num_flops) *num_flops += 20*A->num_nonzeros;
-            } else if (A->precision == mtx_double) {
-                const double (* Adata)[2] = A->data.complex_double;
+            } else if (a->precision == mtx_double) {
+                const double (* Adata)[2] = a->data.complex_double;
                 const double (* xdata)[2] = x_->data.complex_double;
                 double (* ydata)[2] = y_->data.complex_double;
                 for (int k = 0; k < A->size; k++) {
@@ -2465,8 +2234,8 @@ int mtxmatrix_coordinate_zgemv(
                 if (num_flops) *num_flops += 20*A->num_nonzeros;
             } else { return MTX_ERR_INVALID_PRECISION; }
         } else if (trans == mtx_conjtrans) {
-            if (A->precision == mtx_single) {
-                const float (* Adata)[2] = A->data.complex_single;
+            if (a->precision == mtx_single) {
+                const float (* Adata)[2] = a->data.complex_single;
                 const float (* xdata)[2] = x_->data.complex_single;
                 float (* ydata)[2] = y_->data.complex_single;
                 for (int k = 0; k < A->size; k++) {
@@ -2478,8 +2247,8 @@ int mtxmatrix_coordinate_zgemv(
                     }
                 }
                 if (num_flops) *num_flops += 20*A->num_nonzeros;
-            } else if (A->precision == mtx_double) {
-                const double (* Adata)[2] = A->data.complex_double;
+            } else if (a->precision == mtx_double) {
+                const double (* Adata)[2] = a->data.complex_double;
                 const double (* xdata)[2] = x_->data.complex_double;
                 double (* ydata)[2] = y_->data.complex_double;
                 for (int k = 0; k < A->size; k++) {
@@ -2498,8 +2267,8 @@ int mtxmatrix_coordinate_zgemv(
         return MTX_ERR_INVALID_SYMMETRY;
     } else if (A->num_rows == A->num_columns && A->symmetry == mtx_hermitian) {
         if (trans == mtx_notrans || trans == mtx_conjtrans) {
-            if (A->precision == mtx_single) {
-                const float (* Adata)[2] = A->data.complex_single;
+            if (a->precision == mtx_single) {
+                const float (* Adata)[2] = a->data.complex_single;
                 const float (* xdata)[2] = x_->data.complex_single;
                 float (* ydata)[2] = y_->data.complex_single;
                 for (int k = 0; k < A->size; k++) {
@@ -2511,8 +2280,8 @@ int mtxmatrix_coordinate_zgemv(
                     }
                 }
                 if (num_flops) *num_flops += 20*A->num_nonzeros;
-            } else if (A->precision == mtx_double) {
-                const double (* Adata)[2] = A->data.complex_double;
+            } else if (a->precision == mtx_double) {
+                const double (* Adata)[2] = a->data.complex_double;
                 const double (* xdata)[2] = x_->data.complex_double;
                 double (* ydata)[2] = y_->data.complex_double;
                 for (int k = 0; k < A->size; k++) {
@@ -2526,8 +2295,8 @@ int mtxmatrix_coordinate_zgemv(
                 if (num_flops) *num_flops += 20*A->num_nonzeros;
             } else { return MTX_ERR_INVALID_PRECISION; }
         } else if (trans == mtx_trans) {
-            if (A->precision == mtx_single) {
-                const float (* Adata)[2] = A->data.complex_single;
+            if (a->precision == mtx_single) {
+                const float (* Adata)[2] = a->data.complex_single;
                 const float (* xdata)[2] = x_->data.complex_single;
                 float (* ydata)[2] = y_->data.complex_single;
                 for (int k = 0; k < A->size; k++) {
@@ -2538,8 +2307,8 @@ int mtxmatrix_coordinate_zgemv(
                         ydata[j[k]][1] += alpha[0]*(Adata[k][0]*xdata[i[k]][1]+Adata[k][1]*xdata[i[k]][0]) + alpha[1]*(Adata[k][0]*xdata[i[k]][0]-Adata[k][1]*xdata[i[k]][1]);
                     }
                 }
-            } else if (A->precision == mtx_double) {
-                const double (* Adata)[2] = A->data.complex_double;
+            } else if (a->precision == mtx_double) {
+                const double (* Adata)[2] = a->data.complex_double;
                 const double (* xdata)[2] = x_->data.complex_double;
                 double (* ydata)[2] = y_->data.complex_double;
                 for (int k = 0; k < A->size; k++) {

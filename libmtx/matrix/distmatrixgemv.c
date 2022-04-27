@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-02-23
+ * Last modified: 2022-04-26
  *
  * Data structures for distributed matrix-vector multiplication.
  */
@@ -37,6 +37,7 @@
 #include <libmtx/util/partition.h>
 #include <libmtx/util/transpose.h>
 #include <libmtx/vector/distvector.h>
+#include <libmtx/vector/dist.h>
 #include <libmtx/vector/vector.h>
 
 #include <mpi.h>
@@ -65,6 +66,19 @@ void mtxdistmatrixgemv_free(
     free(gemv->xr);
     for (int r = 0; r < gemv->comm_size; r++) mtxmatrix_free(&gemv->Ar[r]);
     free(gemv->Ar);
+}
+
+/**
+ * ‘mtxdistmatrixgemv2_free()’ frees storage allocated for a
+ * distributed matrix-vector multiplication.
+ */
+void mtxdistmatrixgemv2_free(
+    struct mtxdistmatrixgemv2 * gemv)
+{
+    /* mtxvector_free(&gemv->xo); */
+    /* mtxvector_free(&gemv->xd); */
+    /* mtxmatrix_free(&gemv->Ao); */
+    /* mtxmatrix_free(&gemv->Ad); */
 }
 
 /**
@@ -251,6 +265,109 @@ int mtxdistmatrixgemv_init(
     return MTX_SUCCESS;
 }
 
+/**
+ * ‘mtxdistmatrixgemv2_init()’ allocates and initialises a data
+ * structure for distributed matrix-vector multiplication.
+ */
+int mtxdistmatrixgemv2_init(
+    struct mtxdistmatrixgemv2 * gemv,
+    enum mtxtransposition trans,
+    const struct mtxdistmatrix * A,
+    const struct mtxvector_dist * x,
+    struct mtxvector_dist * y,
+    struct mtxdisterror * disterr)
+{
+    int err;
+    int result;
+
+    /* verify that the vectors use the same MPI communicator */
+    disterr->mpierrcode = MPI_Comm_compare(x->comm, y->comm, &result);
+    err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+    err = result != MPI_IDENT && result != MPI_CONGRUENT
+        ? MTX_ERR_INCOMPATIBLE_MPI_COMM : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+
+    /* verify that the matrix and vectors come from the same MPI communicator */
+    disterr->mpierrcode = MPI_Comm_compare(A->parent, x->comm, &result);
+    err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+    err = result != MPI_IDENT && result != MPI_CONGRUENT
+        ? MTX_ERR_INCOMPATIBLE_MPI_COMM : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+
+    int P = A->num_process_rows;
+    int Q = A->num_process_columns;
+    int R = x->comm_size;
+
+    /* TODO: Implement transposed matrix-vector multiplication */
+    err = trans != mtx_notrans ? MTX_ERR_INVALID_TRANSPOSITION : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+
+    /* Find the nonzero columns of the matrix block belonging to the
+     * current process. */
+    int num_nonzero_columns;
+    err = mtxmatrix_nzcols(&A->interior, &num_nonzero_columns, 0, NULL);
+    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+    int * nonzero_columns = malloc(num_nonzero_columns * sizeof(int));
+    err = !nonzero_columns ? MTX_ERR_ERRNO : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+    err = mtxmatrix_nzcols(&A->interior, NULL, num_nonzero_columns, nonzero_columns);
+    if (mtxdisterror_allreduce(disterr, err)) {
+        free(nonzero_columns);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+
+    /* convert nonzero column numbers to global column numbers */
+    int64_t * global_nonzero_columns = malloc(
+        num_nonzero_columns * sizeof(int64_t));
+    err = !global_nonzero_columns ? MTX_ERR_ERRNO : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err)) {
+        free(nonzero_columns);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+    for (int j = 0; j < num_nonzero_columns; j++)
+        global_nonzero_columns[j] = nonzero_columns[j];
+
+#if 1
+    for (int r = 0; r < R; r++) {
+        if (r == x->rank) {
+            fprintf(stderr, "%s:%d: global_nonzero_columns=[", __FILE__, __LINE__);
+            for (int j = 0; j < num_nonzero_columns; j++)
+                fprintf(stderr, " %"PRId64, global_nonzero_columns[j]);
+            fprintf(stderr, "]\n");
+        }
+        MPI_Barrier(x->comm);
+    }
+#endif
+
+    err = mtxpartition_globalidx(
+        &A->colpart, A->colrank, num_nonzero_columns,
+        global_nonzero_columns, global_nonzero_columns);
+    if (mtxdisterror_allreduce(disterr, err)) {
+        free(global_nonzero_columns);
+        free(nonzero_columns);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+
+    int * parts = nonzero_columns;
+    nonzero_columns = NULL;
+
+    /* TODO: create a distributed vector for the remote (or "off-diagonal")
+     * vector elements corresponding to nonzero matrix columns */
+    /* struct mtxvector_dist xo; */
+    /* err = mtxvector_dist_init_real_single( */
+    /*     &xo, x->xp.x.type, num_columns, xnnz, xidx, xdata, comm, &disterr); */
+
+    gemv->comm = x->comm;
+    gemv->comm_size = x->comm_size;
+    gemv->rank = x->rank;
+    gemv->A = A;
+    gemv->x = x;
+    gemv->y = y;
+    return MTX_SUCCESS;
+}
+
 /*
  * Matrix-vector multiplication (Level 2 BLAS operations)
  */
@@ -266,6 +383,22 @@ int mtxdistmatrixgemv_init(
  */
 int mtxdistmatrixgemv_wait(
     struct mtxdistmatrixgemv * gemv,
+    struct mtxdisterror * disterr)
+{
+    return MTX_SUCCESS;
+}
+
+/**
+ * ‘mtxdistmatrixgemv2_wait()’ waits for a matrix-vector multiplication
+ * operation to complete.
+ *
+ * Matrix-vector multiplications may be performed asynchronously to
+ * overlap communication with computation. Therefore, it may be
+ * necessary to explicitly add synchronisation to wait for a
+ * particular operation to complete.
+ */
+int mtxdistmatrixgemv2_wait(
+    struct mtxdistmatrixgemv2 * gemv,
     struct mtxdisterror * disterr)
 {
     return MTX_SUCCESS;
@@ -295,6 +428,35 @@ int mtxdistmatrixgemv_sgemv(
             beta, &gemv->y->interior, num_flops);
         if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     }
+    return MTX_SUCCESS;
+}
+
+/**
+ * ‘mtxdistmatrixgemv2_sgemv()’ multiplies a matrix ‘A’ or its
+ * transpose ‘A'’ by a real scalar ‘alpha’ (‘α’) and a vector ‘x’,
+ * before adding the result to another vector ‘y’ multiplied by
+ * another real scalar ‘beta’ (‘β’). That is, ‘y = α*A*x + β*y’ or ‘y
+ * = α*A'*x + β*y’.
+ *
+ * The scalars ‘alpha’ and ‘beta’ are given as single precision
+ * floating point numbers.
+ */
+int mtxdistmatrixgemv2_sgemv(
+    struct mtxdistmatrixgemv2 * gemv,
+    float alpha,
+    float beta,
+    int64_t * num_flops,
+    struct mtxdisterror * disterr)
+{
+    int err = mtxmatrix_sgemv(
+        mtx_notrans, alpha, &gemv->Ad, &gemv->x->xp.x,
+        beta, &gemv->y->xp.x, num_flops);
+    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+
+    /* TODO: perform combined sparse scatter-gather to obtain remote
+     * elements of the source vector corresponding to nonzero matrix
+     * columns. Then multiply the "off-diagonal" part. */
+
     return MTX_SUCCESS;
 }
 

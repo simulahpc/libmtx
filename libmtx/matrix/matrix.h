@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-04-14
+ * Last modified: 2022-04-27
  *
  * Data structures for matrices.
  */
@@ -494,8 +494,8 @@ int mtxmatrix_alloc_column_vector(
  */
 int mtxmatrix_from_mtxfile(
     struct mtxmatrix * dst,
-    const struct mtxfile * src,
-    enum mtxmatrixtype type);
+    enum mtxmatrixtype type,
+    const struct mtxfile * src);
 
 /**
  * ‘mtxmatrix_to_mtxfile()’ converts a matrix to a matrix in Matrix

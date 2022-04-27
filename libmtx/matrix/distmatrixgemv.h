@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-02-23
+ * Last modified: 2022-04-26
  *
  * Data structures for distributed matrix-vector multiplication.
  */
@@ -101,6 +101,73 @@ struct mtxdistmatrixgemv
     struct mtxvector * xr;
 };
 
+/**
+ * ‘mtxdistmatrixgemv2’ is a data structure for persistent or repeated
+ * matrix-vector multiplication operations with matrices and vectors
+ * distributed across multiple processes and MPI being used for
+ * communication.
+ *
+ * Processes are arranged in a two-dimensional grid, and matrices are
+ * distributed among processes in rectangular blocks according to
+ * specified partitionings of the matrix rows and columns.
+ */
+struct mtxdistmatrixgemv2
+{
+    /**
+     * ‘comm’ is an MPI communicator for processes among which the
+     * matrix and vector are distributed. This is equal to
+     * ‘A->parent’, ‘x->comm’ and ‘y->comm’.
+     */
+    MPI_Comm comm;
+
+    /**
+     * ‘comm_size’ is the size of the MPI communicator. This is equal
+     * to the number of parts in the partitioning of the vectors ‘x’
+     * and ‘y’.
+     */
+    int comm_size;
+
+    /**
+     * ‘rank’ is the rank of the current process.
+     */
+    int rank;
+
+    /**
+     * ‘A’ is a pointer to a distributed matrix.
+     */
+    const struct mtxdistmatrix * A;
+
+    /**
+     * ‘x’ is a pointer to a distributed input or source vector.
+     */
+    const struct mtxvector_dist * x;
+
+    /**
+     * ‘y’ is a pointer to a distributed output or destination vector.
+     */
+    struct mtxvector_dist * y;
+
+    /**
+     * ‘Ad’ is a local matrix block.
+     */
+    struct mtxmatrix Ad;
+
+    /**
+     * ‘xd’ is a local source vector block.
+     */
+    struct mtxvector xd;
+
+    /**
+     * ‘Ao’ is a local matrix block.
+     */
+    struct mtxmatrix Ao;
+
+    /**
+     * ‘xo’ is a local source vector block.
+     */
+    struct mtxvector xo;
+};
+
 /*
  * Memory management
  */
@@ -113,6 +180,13 @@ void mtxdistmatrixgemv_free(
     struct mtxdistmatrixgemv * gemv);
 
 /**
+ * ‘mtxdistmatrixgemv2_free()’ frees storage allocated for a
+ * distributed matrix-vector multiplication.
+ */
+void mtxdistmatrixgemv2_free(
+    struct mtxdistmatrixgemv2 * gemv);
+
+/**
  * ‘mtxdistmatrixgemv_alloc_copy()’ allocates storage for a copy of a
  * distributed matrix-vector multiplication without initialising the
  * underlying values.
@@ -123,12 +197,31 @@ int mtxdistmatrixgemv_alloc_copy(
     struct mtxdisterror * disterr);
 
 /**
+ * ‘mtxdistmatrixgemv2_alloc_copy()’ allocates storage for a copy of a
+ * distributed matrix-vector multiplication without initialising the
+ * underlying values.
+ */
+int mtxdistmatrixgemv2_alloc_copy(
+    struct mtxdistmatrixgemv2 * dst,
+    const struct mtxdistmatrixgemv2 * src,
+    struct mtxdisterror * disterr);
+
+/**
  * ‘mtxdistmatrixgemv_init_copy()’ creates a copy of a distributed
  * matrix-vector multiplication.
  */
 int mtxdistmatrixgemv_init_copy(
     struct mtxdistmatrixgemv * dst,
     const struct mtxdistmatrixgemv * src,
+    struct mtxdisterror * disterr);
+
+/**
+ * ‘mtxdistmatrixgemv2_init_copy()’ creates a copy of a distributed
+ * matrix-vector multiplication.
+ */
+int mtxdistmatrixgemv2_init_copy(
+    struct mtxdistmatrixgemv2 * dst,
+    const struct mtxdistmatrixgemv2 * src,
     struct mtxdisterror * disterr);
 
 /*
@@ -145,6 +238,18 @@ int mtxdistmatrixgemv_init(
     const struct mtxdistmatrix * A,
     const struct mtxdistvector * x,
     struct mtxdistvector * y,
+    struct mtxdisterror * disterr);
+
+/**
+ * ‘mtxdistmatrixgemv2_init()’ allocates and initialises a data
+ * structure for distributed matrix-vector multiplication.
+ */
+int mtxdistmatrixgemv2_init(
+    struct mtxdistmatrixgemv2 * gemv,
+    enum mtxtransposition trans,
+    const struct mtxdistmatrix * A,
+    const struct mtxvector_dist * x,
+    struct mtxvector_dist * y,
     struct mtxdisterror * disterr);
 
 /*
@@ -165,6 +270,19 @@ int mtxdistmatrixgemv_wait(
     struct mtxdisterror * disterr);
 
 /**
+ * ‘mtxdistmatrixgemv2_wait()’ waits for a matrix-vector multiplication
+ * operation to complete.
+ *
+ * Matrix-vector multiplications may be performed asynchronously to
+ * overlap communication with computation. Therefore, it may be
+ * necessary to explicitly add synchronisation to wait for a
+ * particular operation to complete.
+ */
+int mtxdistmatrixgemv2_wait(
+    struct mtxdistmatrixgemv2 * gemv,
+    struct mtxdisterror * disterr);
+
+/**
  * ‘mtxdistmatrixgemv_sgemv()’ multiplies a matrix ‘A’ or its
  * transpose ‘A'’ by a real scalar ‘alpha’ (‘α’) and a vector ‘x’,
  * before adding the result to another vector ‘y’ multiplied by
@@ -176,6 +294,23 @@ int mtxdistmatrixgemv_wait(
  */
 int mtxdistmatrixgemv_sgemv(
     struct mtxdistmatrixgemv * gemv,
+    float alpha,
+    float beta,
+    int64_t * num_flops,
+    struct mtxdisterror * disterr);
+
+/**
+ * ‘mtxdistmatrixgemv2_sgemv()’ multiplies a matrix ‘A’ or its
+ * transpose ‘A'’ by a real scalar ‘alpha’ (‘α’) and a vector ‘x’,
+ * before adding the result to another vector ‘y’ multiplied by
+ * another real scalar ‘beta’ (‘β’). That is, ‘y = α*A*x + β*y’ or ‘y
+ * = α*A'*x + β*y’.
+ *
+ * The scalars ‘alpha’ and ‘beta’ are given as single precision
+ * floating point numbers.
+ */
+int mtxdistmatrixgemv2_sgemv(
+    struct mtxdistmatrixgemv2 * gemv,
     float alpha,
     float beta,
     int64_t * num_flops,

@@ -55,7 +55,7 @@ int test_mtxmatrix_array_from_mtxfile(void)
             &mtxfile, mtxfile_general, num_rows, num_columns, mtxdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxmatrix x;
-        err = mtxmatrix_from_mtxfile(&x, &mtxfile, mtxmatrix_auto);
+        err = mtxmatrix_from_mtxfile(&x, mtxmatrix_auto, &mtxfile);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(mtxmatrix_array, x.type);
         const struct mtxmatrix_array * x_ = &x.storage.array;
@@ -88,7 +88,7 @@ int test_mtxmatrix_array_from_mtxfile(void)
             &mtxfile, mtxfile_general, num_rows, num_columns, mtxdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxmatrix x;
-        err = mtxmatrix_from_mtxfile(&x, &mtxfile, mtxmatrix_auto);
+        err = mtxmatrix_from_mtxfile(&x, mtxmatrix_auto, &mtxfile);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(mtxmatrix_array, x.type);
         const struct mtxmatrix_array * x_ = &x.storage.array;
@@ -121,7 +121,7 @@ int test_mtxmatrix_array_from_mtxfile(void)
             &mtxfile, mtxfile_general, num_rows, num_columns, mtxdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxmatrix x;
-        err = mtxmatrix_from_mtxfile(&x, &mtxfile, mtxmatrix_auto);
+        err = mtxmatrix_from_mtxfile(&x, mtxmatrix_auto, &mtxfile);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(mtxmatrix_array, x.type);
         const struct mtxmatrix_array * x_ = &x.storage.array;
@@ -153,7 +153,7 @@ int test_mtxmatrix_array_from_mtxfile(void)
             &mtxfile, mtxfile_general, num_rows, num_columns, mtxdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxmatrix x;
-        err = mtxmatrix_from_mtxfile(&x, &mtxfile, mtxmatrix_auto);
+        err = mtxmatrix_from_mtxfile(&x, mtxmatrix_auto, &mtxfile);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(mtxmatrix_array, x.type);
         const struct mtxmatrix_array * x_ = &x.storage.array;
@@ -185,7 +185,7 @@ int test_mtxmatrix_array_from_mtxfile(void)
             &mtxfile, mtxfile_general, num_rows, num_columns, mtxdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxmatrix x;
-        err = mtxmatrix_from_mtxfile(&x, &mtxfile, mtxmatrix_auto);
+        err = mtxmatrix_from_mtxfile(&x, mtxmatrix_auto, &mtxfile);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(mtxmatrix_array, x.type);
         const struct mtxmatrix_array * x_ = &x.storage.array;
@@ -218,7 +218,7 @@ int test_mtxmatrix_array_from_mtxfile(void)
             &mtxfile, mtxfile_general, num_rows, num_columns, mtxdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxmatrix x;
-        err = mtxmatrix_from_mtxfile(&x, &mtxfile, mtxmatrix_auto);
+        err = mtxmatrix_from_mtxfile(&x, mtxmatrix_auto, &mtxfile);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(mtxmatrix_array, x.type);
         const struct mtxmatrix_array * x_ = &x.storage.array;

@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-03-22
+ * Last modified: 2022-04-27
  *
  * Unit tests for sparse matrices in CSR format.
  */
@@ -70,7 +70,7 @@ int test_mtxmatrix_csr_from_mtxfile(void)
             &mtxfile, mtxfile_general, num_rows, num_columns, size, mtxdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxmatrix x;
-        err = mtxmatrix_from_mtxfile(&x, &mtxfile, mtxmatrix_csr);
+        err = mtxmatrix_from_mtxfile(&x, mtxmatrix_csr, &mtxfile);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(mtxmatrix_csr, x.type);
         const struct mtxmatrix_csr * x_ = &x.storage.csr;
@@ -108,7 +108,7 @@ int test_mtxmatrix_csr_from_mtxfile(void)
             &mtxfile, mtxfile_symmetric, num_rows, num_columns, size, mtxdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxmatrix x;
-        err = mtxmatrix_from_mtxfile(&x, &mtxfile, mtxmatrix_csr);
+        err = mtxmatrix_from_mtxfile(&x, mtxmatrix_csr, &mtxfile);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(mtxmatrix_csr, x.type);
         const struct mtxmatrix_csr * x_ = &x.storage.csr;
@@ -146,7 +146,7 @@ int test_mtxmatrix_csr_from_mtxfile(void)
             mtxdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxmatrix x;
-        err = mtxmatrix_from_mtxfile(&x, &mtxfile, mtxmatrix_csr);
+        err = mtxmatrix_from_mtxfile(&x, mtxmatrix_csr, &mtxfile);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(mtxmatrix_csr, x.type);
         const struct mtxmatrix_csr * x_ = &x.storage.csr;
@@ -182,7 +182,7 @@ int test_mtxmatrix_csr_from_mtxfile(void)
             &mtxfile, mtxfile_general, num_rows, num_columns, size, mtxdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxmatrix x;
-        err = mtxmatrix_from_mtxfile(&x, &mtxfile, mtxmatrix_csr);
+        err = mtxmatrix_from_mtxfile(&x, mtxmatrix_csr, &mtxfile);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(mtxmatrix_csr, x.type);
         const struct mtxmatrix_csr * x_ = &x.storage.csr;
@@ -219,7 +219,7 @@ int test_mtxmatrix_csr_from_mtxfile(void)
             &mtxfile, mtxfile_symmetric, num_rows, num_columns, size, mtxdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxmatrix x;
-        err = mtxmatrix_from_mtxfile(&x, &mtxfile, mtxmatrix_csr);
+        err = mtxmatrix_from_mtxfile(&x, mtxmatrix_csr, &mtxfile);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(mtxmatrix_csr, x.type);
         const struct mtxmatrix_csr * x_ = &x.storage.csr;
@@ -257,7 +257,7 @@ int test_mtxmatrix_csr_from_mtxfile(void)
             mtxdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxmatrix x;
-        err = mtxmatrix_from_mtxfile(&x, &mtxfile, mtxmatrix_csr);
+        err = mtxmatrix_from_mtxfile(&x, mtxmatrix_csr, &mtxfile);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(mtxmatrix_csr, x.type);
         const struct mtxmatrix_csr * x_ = &x.storage.csr;
@@ -294,7 +294,7 @@ int test_mtxmatrix_csr_from_mtxfile(void)
             &mtxfile, mtxfile_general, num_rows, num_columns, size, mtxdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxmatrix x;
-        err = mtxmatrix_from_mtxfile(&x, &mtxfile, mtxmatrix_csr);
+        err = mtxmatrix_from_mtxfile(&x, mtxmatrix_csr, &mtxfile);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(mtxmatrix_csr, x.type);
         const struct mtxmatrix_csr * x_ = &x.storage.csr;
@@ -336,7 +336,7 @@ int test_mtxmatrix_csr_from_mtxfile(void)
             &mtxfile, mtxfile_symmetric, num_rows, num_columns, size, mtxdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxmatrix x;
-        err = mtxmatrix_from_mtxfile(&x, &mtxfile, mtxmatrix_csr);
+        err = mtxmatrix_from_mtxfile(&x, mtxmatrix_csr, &mtxfile);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(mtxmatrix_csr, x.type);
         const struct mtxmatrix_csr * x_ = &x.storage.csr;
@@ -378,7 +378,7 @@ int test_mtxmatrix_csr_from_mtxfile(void)
             mtxdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxmatrix x;
-        err = mtxmatrix_from_mtxfile(&x, &mtxfile, mtxmatrix_csr);
+        err = mtxmatrix_from_mtxfile(&x, mtxmatrix_csr, &mtxfile);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(mtxmatrix_csr, x.type);
         const struct mtxmatrix_csr * x_ = &x.storage.csr;
@@ -417,7 +417,7 @@ int test_mtxmatrix_csr_from_mtxfile(void)
             &mtxfile, mtxfile_hermitian, num_rows, num_columns, size, mtxdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxmatrix x;
-        err = mtxmatrix_from_mtxfile(&x, &mtxfile, mtxmatrix_csr);
+        err = mtxmatrix_from_mtxfile(&x, mtxmatrix_csr, &mtxfile);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(mtxmatrix_csr, x.type);
         const struct mtxmatrix_csr * x_ = &x.storage.csr;
@@ -460,7 +460,7 @@ int test_mtxmatrix_csr_from_mtxfile(void)
             &mtxfile, mtxfile_general, num_rows, num_columns, size, mtxdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxmatrix x;
-        err = mtxmatrix_from_mtxfile(&x, &mtxfile, mtxmatrix_csr);
+        err = mtxmatrix_from_mtxfile(&x, mtxmatrix_csr, &mtxfile);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(mtxmatrix_csr, x.type);
         const struct mtxmatrix_csr * x_ = &x.storage.csr;
@@ -502,7 +502,7 @@ int test_mtxmatrix_csr_from_mtxfile(void)
             &mtxfile, mtxfile_general, num_rows, num_columns, size, mtxdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxmatrix x;
-        err = mtxmatrix_from_mtxfile(&x, &mtxfile, mtxmatrix_csr);
+        err = mtxmatrix_from_mtxfile(&x, mtxmatrix_csr, &mtxfile);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(mtxmatrix_csr, x.type);
         const struct mtxmatrix_csr * x_ = &x.storage.csr;
@@ -539,7 +539,7 @@ int test_mtxmatrix_csr_from_mtxfile(void)
             &mtxfile, mtxfile_symmetric, num_rows, num_columns, size, mtxdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxmatrix x;
-        err = mtxmatrix_from_mtxfile(&x, &mtxfile, mtxmatrix_csr);
+        err = mtxmatrix_from_mtxfile(&x, mtxmatrix_csr, &mtxfile);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(mtxmatrix_csr, x.type);
         const struct mtxmatrix_csr * x_ = &x.storage.csr;
@@ -577,7 +577,7 @@ int test_mtxmatrix_csr_from_mtxfile(void)
             mtxdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxmatrix x;
-        err = mtxmatrix_from_mtxfile(&x, &mtxfile, mtxmatrix_csr);
+        err = mtxmatrix_from_mtxfile(&x, mtxmatrix_csr, &mtxfile);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(mtxmatrix_csr, x.type);
         const struct mtxmatrix_csr * x_ = &x.storage.csr;
@@ -613,7 +613,7 @@ int test_mtxmatrix_csr_from_mtxfile(void)
             &mtxfile, mtxfile_general, num_rows, num_columns, size, mtxdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxmatrix x;
-        err = mtxmatrix_from_mtxfile(&x, &mtxfile, mtxmatrix_csr);
+        err = mtxmatrix_from_mtxfile(&x, mtxmatrix_csr, &mtxfile);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(mtxmatrix_csr, x.type);
         const struct mtxmatrix_csr * x_ = &x.storage.csr;
@@ -650,7 +650,7 @@ int test_mtxmatrix_csr_from_mtxfile(void)
             &mtxfile, mtxfile_symmetric, num_rows, num_columns, size, mtxdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxmatrix x;
-        err = mtxmatrix_from_mtxfile(&x, &mtxfile, mtxmatrix_csr);
+        err = mtxmatrix_from_mtxfile(&x, mtxmatrix_csr, &mtxfile);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(mtxmatrix_csr, x.type);
         const struct mtxmatrix_csr * x_ = &x.storage.csr;
@@ -688,7 +688,7 @@ int test_mtxmatrix_csr_from_mtxfile(void)
             mtxdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxmatrix x;
-        err = mtxmatrix_from_mtxfile(&x, &mtxfile, mtxmatrix_csr);
+        err = mtxmatrix_from_mtxfile(&x, mtxmatrix_csr, &mtxfile);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(mtxmatrix_csr, x.type);
         const struct mtxmatrix_csr * x_ = &x.storage.csr;
@@ -724,7 +724,7 @@ int test_mtxmatrix_csr_from_mtxfile(void)
             &mtxfile, mtxfile_general, num_rows, num_columns, size, mtxdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxmatrix x;
-        err = mtxmatrix_from_mtxfile(&x, &mtxfile, mtxmatrix_csr);
+        err = mtxmatrix_from_mtxfile(&x, mtxmatrix_csr, &mtxfile);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(mtxmatrix_csr, x.type);
         const struct mtxmatrix_csr * x_ = &x.storage.csr;
@@ -755,7 +755,7 @@ int test_mtxmatrix_csr_from_mtxfile(void)
             &mtxfile, mtxfile_symmetric, num_rows, num_columns, size, mtxdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxmatrix x;
-        err = mtxmatrix_from_mtxfile(&x, &mtxfile, mtxmatrix_csr);
+        err = mtxmatrix_from_mtxfile(&x, mtxmatrix_csr, &mtxfile);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(mtxmatrix_csr, x.type);
         const struct mtxmatrix_csr * x_ = &x.storage.csr;

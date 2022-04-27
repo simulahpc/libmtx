@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-03-15
+ * Last modified: 2022-04-27
  *
  * Unit tests for distributed matrix-vector multiplication.
  */
@@ -30,6 +30,7 @@
 #include <libmtx/mtxfile/mtxdistfile.h>
 #include <libmtx/mtxfile/mtxfile.h>
 #include <libmtx/util/partition.h>
+#include <libmtx/vector/dist.h>
 #include <libmtx/vector/distvector.h>
 
 #include <mpi.h>
@@ -39,6 +40,1250 @@
 #include <stdlib.h>
 
 const char * program_invocation_short_name = "test_mtxdistmatrixgemv";
+
+/**
+ * ‘test_mtxdistmatrixgemv2_array()’ tests computing matrix-vector
+ * products for matrices in array format.
+ */
+int test_mtxdistmatrixgemv2_array(void)
+{
+    int err;
+    char mpierrstr[MPI_MAX_ERROR_STRING];
+    int mpierrstrlen;
+    MPI_Comm comm = MPI_COMM_WORLD;
+    int root = 0;
+
+    int comm_size;
+    err = MPI_Comm_size(comm, &comm_size);
+    if (err) {
+        MPI_Error_string(err, mpierrstr, &mpierrstrlen);
+        fprintf(stderr, "%s: MPI_Comm_size failed with %s\n",
+                program_invocation_short_name, mpierrstr);
+        MPI_Abort(comm, EXIT_FAILURE);
+    }
+    int rank;
+    err = MPI_Comm_rank(comm, &rank);
+    if (err) {
+        MPI_Error_string(err, mpierrstr, &mpierrstrlen);
+        fprintf(stderr, "%s: MPI_Comm_rank failed with %s\n",
+                program_invocation_short_name, mpierrstr);
+        MPI_Abort(comm, EXIT_FAILURE);
+    }
+    if (comm_size != 2)
+        TEST_FAIL_MSG("Expected exactly two MPI processes");
+
+    struct mtxdisterror disterr;
+    err = mtxdisterror_alloc(&disterr, comm, NULL);
+    if (err)
+        MPI_Abort(comm, EXIT_FAILURE);
+
+    /*
+     * For real or integer matrices, calculate
+     *
+     *   ⎡ 1 2 3⎤  ⎡ 3⎤     ⎡ 1⎤  ⎡ 20⎤  ⎡ 3⎤  ⎡ 23⎤
+     * 2*⎢ 4 5 6⎥ *⎢ 2⎥ + 3*⎢ 0⎥ =⎢ 56⎥ +⎢ 0⎥ =⎢ 56⎥,
+     *   ⎣ 7 8 9⎦  ⎣ 1⎦     ⎣ 2⎦  ⎣ 92⎦  ⎣ 6⎦  ⎣ 98⎦
+     *
+     * and
+     *
+     *   ⎡ 1 4 7⎤  ⎡ 3⎤     ⎡ 1⎤  ⎡ 36⎤  ⎡ 3⎤  ⎡ 39⎤
+     * 2*⎢ 2 5 8⎥ *⎢ 2⎥ + 3*⎢ 0⎥ =⎢ 48⎥ +⎢ 0⎥ =⎢ 48⎥.
+     *   ⎣ 3 6 9⎦  ⎣ 1⎦     ⎣ 2⎦  ⎣ 60⎦  ⎣ 6⎦  ⎣ 66⎦
+     *
+     * For complex matrices, calculate
+     *
+     *   ⎡ 1+2i 3+4i⎤  ⎡ 3+1i⎤     ⎡ 1+0i⎤  ⎡-8+34i⎤  ⎡ 3   ⎤  ⎡-5+34i⎤
+     * 2*⎢          ⎥ *⎢     ⎥ + 3*⎢     ⎥ =⎢      ⎥ +⎢     ⎥ =⎢      ⎥,
+     *   ⎣ 5+6i 7+8i⎦  ⎣ 1+2i⎦     ⎣ 2+2i⎦  ⎣ 0+90i⎦  ⎣ 6+6i⎦  ⎣ 6+96i⎦
+     *
+     * and
+     *
+     *   ⎡ 1+2i 5+6i⎤  ⎡ 3+1i⎤     ⎡ 1+0i⎤  ⎡-12+46i⎤  ⎡ 3   ⎤  ⎡-9+46i⎤
+     * 2*⎢          ⎥ *⎢     ⎥ + 3*⎢     ⎥ =⎢       ⎥ +⎢     ⎥ =⎢      ⎥,
+     *   ⎣ 3+4i 7+8i⎦  ⎣ 1+2i⎦     ⎣ 2+2i⎦  ⎣ -8+74i⎦  ⎣ 6+6i⎦  ⎣-2+80i⎦
+     *
+     * and
+     *
+     *   ⎡ 1-2i 5-6i⎤  ⎡ 3+1i⎤     ⎡ 1+0i⎤  ⎡ 44-2i⎤  ⎡ 3   ⎤  ⎡ 47-2i⎤
+     * 2*⎢          ⎥ *⎢     ⎥ + 3*⎢     ⎥ =⎢      ⎥ +⎢     ⎥ =⎢      ⎥.
+     *   ⎣ 3-4i 7-8i⎦  ⎣ 1+2i⎦     ⎣ 2+2i⎦  ⎣ 72-6i⎦  ⎣ 6+6i⎦  ⎣ 78   ⎦
+     *
+     * and
+     *
+     *    ⎡ 1+2i 3+4i⎤  ⎡ 3+1i⎤          ⎡ 1+0i⎤  ⎡-34-8i⎤  ⎡ 3+1i⎤  ⎡-31-7i⎤
+     * 2i*⎢          ⎥ *⎢     ⎥ + (3+1i)*⎢     ⎥ =⎢      ⎥ +⎢     ⎥ =⎢      ⎥,
+     *    ⎣ 5+6i 7+8i⎦  ⎣ 1+2i⎦          ⎣ 2+2i⎦  ⎣-90   ⎦  ⎣ 4+8i⎦  ⎣-86+8i⎦
+     *
+     * and
+     *
+     *    ⎡ 1+2i 5+6i⎤  ⎡ 3+1i⎤          ⎡ 1+0i⎤  ⎡-46-12i⎤  ⎡ 3+1i⎤  ⎡-43-11i⎤
+     * 2i*⎢          ⎥ *⎢     ⎥ + (3+1i)*⎢     ⎥ =⎢       ⎥ +⎢     ⎥ =⎢       ⎥,
+     *    ⎣ 3+4i 7+8i⎦  ⎣ 1+2i⎦          ⎣ 2+2i⎦  ⎣-74- 8i⎦  ⎣ 4+8i⎦  ⎣-70    ⎦
+     *
+     * and
+     *
+     *    ⎡ 1-2i 5-6i⎤  ⎡ 3+1i⎤          ⎡ 1+0i⎤  ⎡ 2+44i⎤  ⎡ 3+1i⎤  ⎡  5+45i⎤
+     * 2i*⎢          ⎥ *⎢     ⎥ + (3+1i)*⎢     ⎥ =⎢      ⎥ +⎢     ⎥ =⎢       ⎥.
+     *    ⎣ 3-4i 7-8i⎦  ⎣ 1+2i⎦          ⎣ 2+2i⎦  ⎣ 6+72i⎦  ⎣ 4+8i⎦  ⎣ 10+80i⎦
+     */
+
+    /*
+     * Real matrices
+     */
+
+    {
+        struct mtxdistmatrix A;
+        int num_local_rows = rank == 0 ? 2 : 1;
+        int num_local_columns = 3;
+        float * Adata = rank == 0
+            ? ((float[]) {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f})
+            : ((float[]) {7.0f, 8.0f, 9.0f});
+
+        struct mtxvector_dist y;
+        int num_rows = 3;
+        int64_t * yidx = rank == 0 ? (int64_t[2]) {0, 1} : (int64_t[1]) {2};
+        float * ydata = rank == 0 ? (float[2]) {1, 0} : (float[1]) {2};
+        int ynnz = rank == 0 ? 2 : 1;
+
+        struct mtxvector_dist x;
+        int num_columns = 3;
+        int64_t * xidx = rank == 0 ? (int64_t[2]) {0, 1} : (int64_t[1]) {2};
+        float * xdata = rank == 0 ? (float[2]) {3, 2} : (float[1]) {1};
+        int xnnz = rank == 0 ? 2 : 1;
+        err = mtxvector_dist_init_real_single(
+            &x, mtxvector_base, num_columns, xnnz, xidx, xdata, comm, &disterr);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxdisterror_description(&disterr));
+
+        struct mtxpartition rowpart;
+        err = mtxpartition_init_block(&rowpart, 3, comm_size, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        struct mtxpartition colpart;
+        err = mtxpartition_init_singleton(&colpart, 3);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        err = mtxdistmatrix_init_array_real_single(
+            &A, mtx_unsymmetric, num_local_rows, num_local_columns,
+            Adata, &rowpart, &colpart, comm, 0, 0, &disterr);
+        TEST_ASSERT_EQ_MSG(
+            MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
+            ? mtxdisterror_description(&disterr) : mtxstrerror(err));
+
+        mtxpartition_free(&colpart);
+        mtxpartition_free(&rowpart);
+        {
+            err = mtxvector_dist_init_real_single(
+                &y, mtxvector_base, num_rows, ynnz, yidx, ydata, comm, &disterr);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxdistmatrix_sgemv2(
+                mtx_notrans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
+            TEST_ASSERT_EQ_MSG(
+                MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
+                ? mtxdisterror_description(&disterr) : mtxstrerror(err));
+
+            TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
+            TEST_ASSERT_EQ(mtx_field_real, y.xp.x.storage.base.field);
+            TEST_ASSERT_EQ(mtx_single, y.xp.x.storage.base.precision);
+            if (rank == 0) {
+                TEST_ASSERT_EQ(2, y.xp.x.storage.base.size);
+                TEST_ASSERT_EQ(23.0f, y.xp.x.storage.base.data.real_single[0]);
+                TEST_ASSERT_EQ(56.0f, y.xp.x.storage.base.data.real_single[1]);
+            } else if (rank == 1) {
+                TEST_ASSERT_EQ(1, y.xp.x.storage.base.size);
+                TEST_ASSERT_EQ(98.0f, y.xp.x.storage.base.data.real_single[0]);
+            }
+            mtxvector_dist_free(&y);
+        }
+#if 0
+        {
+            err = mtxdistvector_init_array_real_single(
+                &y, num_local_rows, ydata, NULL, comm, &disterr);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxdistmatrix_sgemv(
+                mtx_trans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
+            TEST_ASSERT_EQ_MSG(
+                MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
+                ? mtxdisterror_description(&disterr) : mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.interior.type);
+            const struct mtxvector_array * y_ = &y.interior.storage.array;
+            TEST_ASSERT_EQ(mtx_field_real, y_->field);
+            TEST_ASSERT_EQ(mtx_single, y_->precision);
+            if (rank == 0) {
+                TEST_ASSERT_EQ(2, y_->size);
+                TEST_ASSERT_EQ(y_->data.real_single[0], 39.0f);
+                TEST_ASSERT_EQ(y_->data.real_single[1], 48.0f);
+            } else if (rank == 1) {
+                TEST_ASSERT_EQ(1, y_->size);
+                TEST_ASSERT_EQ(y_->data.real_single[0], 66.0f);
+            }
+            mtxdistvector_free(&y);
+        }
+#endif
+#if 0
+        {
+            err = mtxdistvector_init_array_real_single(
+                &y, num_local_rows, ydata, NULL, comm, &disterr);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxdistmatrix_dgemv(mtx_notrans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
+            TEST_ASSERT_EQ_MSG(
+                MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
+                ? mtxdisterror_description(&disterr) : mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.interior.type);
+            const struct mtxvector_array * y_ = &y.interior.storage.array;
+            TEST_ASSERT_EQ(mtx_field_real, y_->field);
+            TEST_ASSERT_EQ(mtx_single, y_->precision);
+            if (rank == 0) {
+                TEST_ASSERT_EQ(2, y_->size);
+                TEST_ASSERT_EQ(y_->data.real_single[0], 23.0f);
+                TEST_ASSERT_EQ(y_->data.real_single[1], 56.0f);
+            } else if (rank == 1) {
+                TEST_ASSERT_EQ(1, y_->size);
+                TEST_ASSERT_EQ(y_->data.real_single[0], 98.0f);
+            }
+            mtxdistvector_free(&y);
+        }
+#endif
+#if 0
+        {
+            err = mtxdistvector_init_array_real_single(
+                &y, num_local_rows, ydata, NULL, comm, &disterr);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxdistmatrix_dgemv(mtx_trans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
+            TEST_ASSERT_EQ_MSG(
+                MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
+                ? mtxdisterror_description(&disterr) : mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.interior.type);
+            const struct mtxvector_array * y_ = &y.interior.storage.array;
+            TEST_ASSERT_EQ(mtx_field_real, y_->field);
+            TEST_ASSERT_EQ(mtx_single, y_->precision);
+            if (rank == 0) {
+                TEST_ASSERT_EQ(2, y_->size);
+                TEST_ASSERT_EQ(y_->data.real_single[0], 39.0f);
+                TEST_ASSERT_EQ(y_->data.real_single[1], 48.0f);
+            } else if (rank == 1) {
+                TEST_ASSERT_EQ(1, y_->size);
+                TEST_ASSERT_EQ(y_->data.real_single[0], 66.0f);
+            }
+            mtxdistvector_free(&y);
+        }
+#endif
+        mtxvector_dist_free(&x);
+        mtxdistmatrix_free(&A);
+    }
+
+    {
+        struct mtxdistmatrix A;
+        struct mtxdistvector x;
+        struct mtxdistvector y;
+        int num_local_rows = rank == 0 ? 2 : 1;
+        int num_local_columns = 3;
+        double * Adata = rank == 0
+            ? ((double[]) {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f})
+            : ((double[]) {7.0f, 8.0f, 9.0f});
+        double * xdata = (double[]) {3.0f, 2.0f, 1.0f};
+        double * ydata = rank == 0
+            ? ((double[]) {1.0f, 0.0f})
+            : ((double[]) {2.0f});
+        err = mtxdistmatrix_init_array_real_double(
+            &A, mtx_unsymmetric, num_local_rows, num_local_columns,
+            Adata, NULL, NULL, comm, 0, 0, &disterr);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        err = mtxdistvector_init_array_real_double(
+            &x, num_local_columns, xdata, NULL, comm, &disterr);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        {
+            err = mtxdistvector_init_array_real_double(
+                &y, num_local_rows, ydata, NULL, comm, &disterr);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxdistmatrix_sgemv(
+                mtx_notrans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
+            TEST_ASSERT_EQ_MSG(
+                MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
+                ? mtxdisterror_description(&disterr) : mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.interior.type);
+            const struct mtxvector_array * y_ = &y.interior.storage.array;
+            TEST_ASSERT_EQ(mtx_field_real, y_->field);
+            TEST_ASSERT_EQ(mtx_double, y_->precision);
+            if (rank == 0) {
+                TEST_ASSERT_EQ(2, y_->size);
+                TEST_ASSERT_EQ(y_->data.real_double[0], 23.0);
+                TEST_ASSERT_EQ(y_->data.real_double[1], 56.0);
+            } else if (rank == 1) {
+                TEST_ASSERT_EQ(1, y_->size);
+                TEST_ASSERT_EQ(y_->data.real_double[0], 98.0);
+            }
+            mtxdistvector_free(&y);
+        }
+#if 0
+        {
+            err = mtxdistvector_init_array_real_double(
+                &y, num_local_rows, ydata, NULL, comm, &disterr);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxdistmatrix_sgemv(
+                mtx_trans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
+            TEST_ASSERT_EQ_MSG(
+                MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
+                ? mtxdisterror_description(&disterr) : mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.interior.type);
+            const struct mtxvector_array * y_ = &y.interior.storage.array;
+            TEST_ASSERT_EQ(mtx_field_real, y_->field);
+            TEST_ASSERT_EQ(mtx_double, y_->precision);
+            if (rank == 0) {
+                TEST_ASSERT_EQ(2, y_->size);
+                TEST_ASSERT_EQ(y_->data.real_double[0], 39.0);
+                TEST_ASSERT_EQ(y_->data.real_double[1], 48.0);
+            } else if (rank == 1) {
+                TEST_ASSERT_EQ(1, y_->size);
+                TEST_ASSERT_EQ(y_->data.real_double[0], 66.0);
+            }
+            mtxdistvector_free(&y);
+        }
+#endif
+        {
+            err = mtxdistvector_init_array_real_double(
+                &y, num_local_rows, ydata, NULL, comm, &disterr);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxdistmatrix_dgemv(
+                mtx_notrans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
+            TEST_ASSERT_EQ_MSG(
+                MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
+                ? mtxdisterror_description(&disterr) : mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.interior.type);
+            const struct mtxvector_array * y_ = &y.interior.storage.array;
+            TEST_ASSERT_EQ(mtx_field_real, y_->field);
+            TEST_ASSERT_EQ(mtx_double, y_->precision);
+            if (rank == 0) {
+                TEST_ASSERT_EQ(2, y_->size);
+                TEST_ASSERT_EQ(y_->data.real_double[0], 23.0);
+                TEST_ASSERT_EQ(y_->data.real_double[1], 56.0);
+            } else if (rank == 1) {
+                TEST_ASSERT_EQ(1, y_->size);
+                TEST_ASSERT_EQ(y_->data.real_double[0], 98.0);
+            }
+            mtxdistvector_free(&y);
+        }
+#if 0
+        {
+            err = mtxdistvector_init_array_real_double(
+                &y, num_local_rows, ydata, NULL, comm, &disterr);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxdistmatrix_dgemv(mtx_trans, 2.0, &A, &x, 3.0, &y);
+            TEST_ASSERT_EQ_MSG(
+                MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
+                ? mtxdisterror_description(&disterr) : mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.interior.type);
+            const struct mtxvector_array * y_ = &y.interior.storage.array;
+            TEST_ASSERT_EQ(mtx_field_real, y_->field);
+            TEST_ASSERT_EQ(mtx_double, y_->precision);
+            if (rank == 0) {
+                TEST_ASSERT_EQ(2, y_->size);
+                TEST_ASSERT_EQ(y_->data.real_double[0], 39.0);
+                TEST_ASSERT_EQ(y_->data.real_double[1], 48.0);
+            } else if (rank == 1) {
+                TEST_ASSERT_EQ(1, y_->size);
+                TEST_ASSERT_EQ(y_->data.real_double[0], 66.0);
+            }
+            mtxdistvector_free(&y);
+        }
+#endif
+        mtxdistvector_free(&x);
+        mtxdistmatrix_free(&A);
+    }
+
+    /*
+     * Complex matrices
+     */
+    {
+        struct mtxdistmatrix A;
+        struct mtxdistvector x;
+        struct mtxdistvector y;
+        int num_local_rows = rank == 0 ? 1 : 1;
+        int num_local_columns = 2;
+        float (* Adata)[2] = rank == 0
+            ? ((float[][2]) {{1.0f,2.0f}, {3.0f,4.0f}})
+            : ((float[][2]) {{5.0f,6.0f}, {7.0f,8.0f}});
+        float (* xdata)[2] = (float[][2]) {{3.0f,1.0f}, {1.0f,2.0f}};
+        float (* ydata)[2] = rank == 0
+            ? ((float[][2]) {{1.0f,0.0f}})
+            : ((float[][2]) {{2.0f,2.0f}});
+        err = mtxdistmatrix_init_array_complex_single(
+            &A, mtx_unsymmetric, num_local_rows, num_local_columns,
+            Adata, NULL, NULL, comm, 0, 0, &disterr);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        err = mtxdistvector_init_array_complex_single(
+            &x, num_local_columns, xdata, NULL, comm, &disterr);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        {
+            err = mtxdistvector_init_array_complex_single(
+                &y, num_local_rows, ydata, NULL, comm, &disterr);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxdistmatrix_sgemv(
+                mtx_notrans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
+            TEST_ASSERT_EQ_MSG(
+                MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
+                ? mtxdisterror_description(&disterr) : mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.interior.type);
+            const struct mtxvector_array * y_ = &y.interior.storage.array;
+            TEST_ASSERT_EQ(mtx_field_complex, y_->field);
+            TEST_ASSERT_EQ(mtx_single, y_->precision);
+            if (rank == 0) {
+                TEST_ASSERT_EQ(1, y_->size);
+                TEST_ASSERT_EQ(y_->data.complex_single[0][0], -5.0f);
+                TEST_ASSERT_EQ(y_->data.complex_single[0][1], 34.0f);
+            } else if (rank == 1) {
+                TEST_ASSERT_EQ(1, y_->size);
+                TEST_ASSERT_EQ(y_->data.complex_single[0][0],  6.0f);
+                TEST_ASSERT_EQ(y_->data.complex_single[0][1], 96.0f);
+            }
+            mtxdistvector_free(&y);
+        }
+#if 0
+        {
+            err = mtxdistvector_init_array_complex_single(
+                &y, num_local_rows, ydata, NULL, comm, &disterr);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxdistmatrix_sgemv(
+                mtx_trans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
+            TEST_ASSERT_EQ_MSG(
+                MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
+                ? mtxdisterror_description(&disterr) : mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.interior.type);
+            const struct mtxvector_array * y_ = &y.interior.storage.array;
+            TEST_ASSERT_EQ(mtx_field_complex, y_->field);
+            TEST_ASSERT_EQ(mtx_single, y_->precision);
+            if (rank == 0) {
+                TEST_ASSERT_EQ(1, y_->size);
+                TEST_ASSERT_EQ(y_->data.complex_single[0][0], -9.0f);
+                TEST_ASSERT_EQ(y_->data.complex_single[0][1], 46.0f);
+            } else if (rank == 1) {
+                TEST_ASSERT_EQ(1, y_->size);
+                TEST_ASSERT_EQ(y_->data.complex_single[0][0], -2.0f);
+                TEST_ASSERT_EQ(y_->data.complex_single[0][1], 80.0f);
+            }
+            mtxdistvector_free(&y);
+        }
+        {
+            err = mtxdistvector_init_array_complex_single(
+                &y, num_local_rows, ydata, NULL, comm, &disterr);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxdistmatrix_sgemv(
+                mtx_conjtrans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
+            TEST_ASSERT_EQ_MSG(
+                MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
+                ? mtxdisterror_description(&disterr) : mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.interior.type);
+            const struct mtxvector_array * y_ = &y.interior.storage.array;
+            TEST_ASSERT_EQ(mtx_field_complex, y_->field);
+            TEST_ASSERT_EQ(mtx_single, y_->precision);
+            if (rank == 0) {
+                TEST_ASSERT_EQ(1, y_->size);
+                TEST_ASSERT_EQ(y_->data.complex_single[0][0], 47.0f);
+                TEST_ASSERT_EQ(y_->data.complex_single[0][1], -2.0f);
+            } else if (rank == 1) {
+                TEST_ASSERT_EQ(1, y_->size);
+                TEST_ASSERT_EQ(y_->data.complex_single[0][0], 78.0f);
+                TEST_ASSERT_EQ(y_->data.complex_single[0][1],  0.0f);
+            }
+            mtxdistvector_free(&y);
+        }
+#endif
+        {
+            err = mtxdistvector_init_array_complex_single(
+                &y, num_local_rows, ydata, NULL, comm, &disterr);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxdistmatrix_dgemv(
+                mtx_notrans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
+            TEST_ASSERT_EQ_MSG(
+                MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
+                ? mtxdisterror_description(&disterr) : mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.interior.type);
+            const struct mtxvector_array * y_ = &y.interior.storage.array;
+            TEST_ASSERT_EQ(mtx_field_complex, y_->field);
+            TEST_ASSERT_EQ(mtx_single, y_->precision);
+            if (rank == 0) {
+                TEST_ASSERT_EQ(1, y_->size);
+                TEST_ASSERT_EQ(y_->data.complex_single[0][0], -5.0f);
+                TEST_ASSERT_EQ(y_->data.complex_single[0][1], 34.0f);
+            } else if (rank == 1) {
+                TEST_ASSERT_EQ(1, y_->size);
+                TEST_ASSERT_EQ(y_->data.complex_single[0][0],  6.0f);
+                TEST_ASSERT_EQ(y_->data.complex_single[0][1], 96.0f);
+            }
+            mtxdistvector_free(&y);
+        }
+#if 0
+        {
+            err = mtxdistvector_init_array_complex_single(
+                &y, num_local_rows, ydata, NULL, comm, &disterr);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxdistmatrix_dgemv(
+                mtx_trans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
+            TEST_ASSERT_EQ_MSG(
+                MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
+                ? mtxdisterror_description(&disterr) : mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.interior.type);
+            const struct mtxvector_array * y_ = &y.interior.storage.array;
+            TEST_ASSERT_EQ(mtx_field_complex, y_->field);
+            TEST_ASSERT_EQ(mtx_single, y_->precision);
+            if (rank == 0) {
+                TEST_ASSERT_EQ(1, y_->size);
+                TEST_ASSERT_EQ(y_->data.complex_single[0][0], -9.0f);
+                TEST_ASSERT_EQ(y_->data.complex_single[0][1], 46.0f);
+            } else if (rank == 1) {
+                TEST_ASSERT_EQ(1, y_->size);
+                TEST_ASSERT_EQ(y_->data.complex_single[0][0], -2.0f);
+                TEST_ASSERT_EQ(y_->data.complex_single[0][1], 80.0f);
+            }
+            mtxdistvector_free(&y);
+        }
+        {
+            err = mtxdistvector_init_array_complex_single(
+                &y, num_local_rows, ydata, NULL, comm, &disterr);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxdistmatrix_dgemv(
+                mtx_conjtrans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
+            TEST_ASSERT_EQ_MSG(
+                MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
+                ? mtxdisterror_description(&disterr) : mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.interior.type);
+            const struct mtxvector_array * y_ = &y.interior.storage.array;
+            TEST_ASSERT_EQ(mtx_field_complex, y_->field);
+            TEST_ASSERT_EQ(mtx_single, y_->precision);
+            if (rank == 0) {
+                TEST_ASSERT_EQ(1, y_->size);
+                TEST_ASSERT_EQ(y_->data.complex_single[0][0], 47.0f);
+                TEST_ASSERT_EQ(y_->data.complex_single[0][1], -2.0f);
+            } else if (rank == 1) {
+                TEST_ASSERT_EQ(1, y_->size);
+                TEST_ASSERT_EQ(y_->data.complex_single[0][0], 78.0f);
+                TEST_ASSERT_EQ(y_->data.complex_single[0][1],  0.0f);
+            }
+            mtxdistvector_free(&y);
+        }
+#endif
+
+        float calpha[2] = {0.0f, 2.0f};
+        float cbeta[2]  = {3.0f, 1.0f};
+        {
+            err = mtxdistvector_init_array_complex_single(
+                &y, num_local_rows, ydata, NULL, comm, &disterr);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxdistmatrix_cgemv(
+                mtx_notrans, calpha, &A, &x, cbeta, &y, NULL, &disterr);
+            TEST_ASSERT_EQ_MSG(
+                MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
+                ? mtxdisterror_description(&disterr) : mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.interior.type);
+            const struct mtxvector_array * y_ = &y.interior.storage.array;
+            TEST_ASSERT_EQ(mtx_field_complex, y_->field);
+            TEST_ASSERT_EQ(mtx_single, y_->precision);
+            if (rank == 0) {
+                TEST_ASSERT_EQ(1, y_->size);
+                TEST_ASSERT_EQ(y_->data.complex_single[0][0], -31.0f);
+                TEST_ASSERT_EQ(y_->data.complex_single[0][1],  -7.0f);
+            } else if (rank == 1) {
+                TEST_ASSERT_EQ(1, y_->size);
+                TEST_ASSERT_EQ(y_->data.complex_single[0][0], -86.0f);
+                TEST_ASSERT_EQ(y_->data.complex_single[0][1],   8.0f);
+            }
+            mtxdistvector_free(&y);
+        }
+#if 0
+        {
+            err = mtxdistvector_init_array_complex_single(
+                &y, num_local_rows, ydata, NULL, comm, &disterr);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxdistmatrix_cgemv(
+                mtx_trans, calpha, &A, &x, cbeta, &y, NULL, &disterr);
+            TEST_ASSERT_EQ_MSG(
+                MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
+                ? mtxdisterror_description(&disterr) : mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.interior.type);
+            const struct mtxvector_array * y_ = &y.interior.storage.array;
+            TEST_ASSERT_EQ(mtx_field_complex, y_->field);
+            TEST_ASSERT_EQ(mtx_single, y_->precision);
+            if (rank == 0) {
+                TEST_ASSERT_EQ(1, y_->size);
+                TEST_ASSERT_EQ(y_->data.complex_single[0][0], -43.0f);
+                TEST_ASSERT_EQ(y_->data.complex_single[0][1], -11.0f);
+            } else if (rank == 1) {
+                TEST_ASSERT_EQ(1, y_->size);
+                TEST_ASSERT_EQ(y_->data.complex_single[0][0], -70.0f);
+                TEST_ASSERT_EQ(y_->data.complex_single[0][1],   0.0f);
+            }
+            mtxdistvector_free(&y);
+        }
+        {
+            err = mtxdistvector_init_array_complex_single(
+                &y, num_local_rows, ydata, NULL, comm, &disterr);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxdistmatrix_cgemv(
+                mtx_conjtrans, calpha, &A, &x, cbeta, &y, NULL, &disterr);
+            TEST_ASSERT_EQ_MSG(
+                MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
+                ? mtxdisterror_description(&disterr) : mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.interior.type);
+            const struct mtxvector_array * y_ = &y.interior.storage.array;
+            TEST_ASSERT_EQ(mtx_field_complex, y_->field);
+            TEST_ASSERT_EQ(mtx_single, y_->precision);
+            if (rank == 0) {
+                TEST_ASSERT_EQ(1, y_->size);
+                TEST_ASSERT_EQ(y_->data.complex_single[0][0],  5.0f);
+                TEST_ASSERT_EQ(y_->data.complex_single[0][1], 45.0f);
+            } else if (rank == 1) {
+                TEST_ASSERT_EQ(1, y_->size);
+                TEST_ASSERT_EQ(y_->data.complex_single[0][0], 10.0f);
+                TEST_ASSERT_EQ(y_->data.complex_single[0][1], 80.0f);
+            }
+            mtxdistvector_free(&y);
+        }
+#endif
+
+        double zalpha[2] = {0.0, 2.0};
+        double zbeta[2]  = {3.0, 1.0};
+        {
+            err = mtxdistvector_init_array_complex_single(
+                &y, num_local_rows, ydata, NULL, comm, &disterr);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxdistmatrix_zgemv(
+                mtx_notrans, zalpha, &A, &x, zbeta, &y, NULL, &disterr);
+            TEST_ASSERT_EQ_MSG(
+                MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
+                ? mtxdisterror_description(&disterr) : mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.interior.type);
+            const struct mtxvector_array * y_ = &y.interior.storage.array;
+            TEST_ASSERT_EQ(mtx_field_complex, y_->field);
+            TEST_ASSERT_EQ(mtx_single, y_->precision);
+            if (rank == 0) {
+                TEST_ASSERT_EQ(1, y_->size);
+                TEST_ASSERT_EQ(y_->data.complex_single[0][0], -31.0f);
+                TEST_ASSERT_EQ(y_->data.complex_single[0][1],  -7.0f);
+            } else if (rank == 1) {
+                TEST_ASSERT_EQ(1, y_->size);
+                TEST_ASSERT_EQ(y_->data.complex_single[0][0], -86.0f);
+                TEST_ASSERT_EQ(y_->data.complex_single[0][1],   8.0f);
+            }
+            mtxdistvector_free(&y);
+        }
+#if 0
+        {
+            err = mtxdistvector_init_array_complex_single(
+                &y, num_local_rows, ydata, NULL, comm, &disterr);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxdistmatrix_zgemv(
+                mtx_trans, zalpha, &A, &x, zbeta, &y, NULL, &disterr);
+            TEST_ASSERT_EQ_MSG(
+                MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
+                ? mtxdisterror_description(&disterr) : mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.interior.type);
+            const struct mtxvector_array * y_ = &y.interior.storage.array;
+            TEST_ASSERT_EQ(mtx_field_complex, y_->field);
+            TEST_ASSERT_EQ(mtx_single, y_->precision);
+            if (rank == 0) {
+                TEST_ASSERT_EQ(1, y_->size);
+                TEST_ASSERT_EQ(y_->data.complex_single[0][0], -43.0f);
+                TEST_ASSERT_EQ(y_->data.complex_single[0][1], -11.0f);
+            } else if (rank == 1) {
+                TEST_ASSERT_EQ(1, y_->size);
+                TEST_ASSERT_EQ(y_->data.complex_single[0][0], -70.0f);
+                TEST_ASSERT_EQ(y_->data.complex_single[0][1],   0.0f);
+            }
+            mtxdistvector_free(&y);
+        }
+        {
+            err = mtxdistvector_init_array_complex_single(
+                &y, num_local_rows, ydata, NULL, comm, &disterr);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxdistmatrix_zgemv(
+                mtx_conjtrans, zalpha, &A, &x, zbeta, &y, NULL, &disterr);
+            TEST_ASSERT_EQ_MSG(
+                MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
+                ? mtxdisterror_description(&disterr) : mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.interior.type);
+            const struct mtxvector_array * y_ = &y.interior.storage.array;
+            TEST_ASSERT_EQ(mtx_field_complex, y_->field);
+            TEST_ASSERT_EQ(mtx_single, y_->precision);
+            if (rank == 0) {
+                TEST_ASSERT_EQ(1, y_->size);
+                TEST_ASSERT_EQ(y_->data.complex_single[0][0],  5.0f);
+                TEST_ASSERT_EQ(y_->data.complex_single[0][1], 45.0f);
+            } else if (rank == 1) {
+                TEST_ASSERT_EQ(1, y_->size);
+                TEST_ASSERT_EQ(y_->data.complex_single[0][0], 10.0f);
+                TEST_ASSERT_EQ(y_->data.complex_single[0][1], 80.0f);
+            }
+            mtxdistvector_free(&y);
+        }
+#endif
+        mtxdistvector_free(&x);
+        mtxdistmatrix_free(&A);
+    }
+
+    {
+        struct mtxdistmatrix A;
+        struct mtxdistvector x;
+        struct mtxdistvector y;
+        int num_local_rows = rank == 0 ? 1 : 1;
+        int num_local_columns = 2;
+        double (* Adata)[2] = rank == 0
+            ? ((double[][2]) {{1.0,2.0}, {3.0,4.0}})
+            : ((double[][2]) {{5.0,6.0}, {7.0,8.0}});
+        double (* xdata)[2] = (double[][2]) {{3.0,1.0}, {1.0,2.0}};
+        double (* ydata)[2] = rank == 0
+            ? ((double[][2]) {{1.0,0.0}})
+            : ((double[][2]) {{2.0,2.0}});
+        err = mtxdistmatrix_init_array_complex_double(
+            &A, mtx_unsymmetric, num_local_rows, num_local_columns,
+            Adata, NULL, NULL, comm, 0, 0, &disterr);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        err = mtxdistvector_init_array_complex_double(
+            &x, num_local_columns, xdata, NULL, comm, &disterr);
+        {
+            err = mtxdistvector_init_array_complex_double(
+                &y, num_local_rows, ydata, NULL, comm, &disterr);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxdistmatrix_sgemv(
+                mtx_notrans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
+            TEST_ASSERT_EQ_MSG(
+                MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
+                ? mtxdisterror_description(&disterr) : mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.interior.type);
+            const struct mtxvector_array * y_ = &y.interior.storage.array;
+            TEST_ASSERT_EQ(mtx_field_complex, y_->field);
+            TEST_ASSERT_EQ(mtx_double, y_->precision);
+            if (rank == 0) {
+                TEST_ASSERT_EQ(1, y_->size);
+                TEST_ASSERT_EQ(y_->data.complex_double[0][0], -5.0);
+                TEST_ASSERT_EQ(y_->data.complex_double[0][1], 34.0);
+            } else if (rank == 1) {
+                TEST_ASSERT_EQ(1, y_->size);
+                TEST_ASSERT_EQ(y_->data.complex_double[0][0],  6.0);
+                TEST_ASSERT_EQ(y_->data.complex_double[0][1], 96.0);
+            }
+            mtxdistvector_free(&y);
+        }
+#if 0
+        {
+            err = mtxdistvector_init_array_complex_double(
+                &y, num_local_rows, ydata, NULL, comm, &disterr);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxdistmatrix_sgemv(
+                mtx_trans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
+            TEST_ASSERT_EQ_MSG(
+                MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
+                ? mtxdisterror_description(&disterr) : mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.interior.type);
+            const struct mtxvector_array * y_ = &y.interior.storage.array;
+            TEST_ASSERT_EQ(mtx_field_complex, y_->field);
+            TEST_ASSERT_EQ(mtx_double, y_->precision);
+            if (rank == 0) {
+                TEST_ASSERT_EQ(1, y_->size);
+                TEST_ASSERT_EQ(y_->data.complex_double[0][0], -9.0);
+                TEST_ASSERT_EQ(y_->data.complex_double[0][1], 46.0);
+            } else if (rank == 1) {
+                TEST_ASSERT_EQ(1, y_->size);
+                TEST_ASSERT_EQ(y_->data.complex_double[0][0], -2.0);
+                TEST_ASSERT_EQ(y_->data.complex_double[0][1], 80.0);
+            }
+            mtxdistvector_free(&y);
+        }
+        {
+            err = mtxdistvector_init_array_complex_double(
+                &y, num_local_rows, ydata, NULL, comm, &disterr);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxdistmatrix_sgemv(
+                mtx_conjtrans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
+            TEST_ASSERT_EQ_MSG(
+                MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
+                ? mtxdisterror_description(&disterr) : mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.interior.type);
+            const struct mtxvector_array * y_ = &y.interior.storage.array;
+            TEST_ASSERT_EQ(mtx_field_complex, y_->field);
+            TEST_ASSERT_EQ(mtx_double, y_->precision);
+            if (rank == 0) {
+                TEST_ASSERT_EQ(1, y_->size);
+                TEST_ASSERT_EQ(y_->data.complex_double[0][0], 47.0);
+                TEST_ASSERT_EQ(y_->data.complex_double[0][1], -2.0);
+            } else if (rank == 1) {
+                TEST_ASSERT_EQ(1, y_->size);
+                TEST_ASSERT_EQ(y_->data.complex_double[0][0], 78.0);
+                TEST_ASSERT_EQ(y_->data.complex_double[0][1],  0.0);
+            }
+            mtxdistvector_free(&y);
+        }
+#endif
+        {
+            err = mtxdistvector_init_array_complex_double(
+                &y, num_local_rows, ydata, NULL, comm, &disterr);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxdistmatrix_dgemv(
+                mtx_notrans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
+            TEST_ASSERT_EQ_MSG(
+                MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
+                ? mtxdisterror_description(&disterr) : mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.interior.type);
+            const struct mtxvector_array * y_ = &y.interior.storage.array;
+            TEST_ASSERT_EQ(mtx_field_complex, y_->field);
+            TEST_ASSERT_EQ(mtx_double, y_->precision);
+            if (rank == 0) {
+                TEST_ASSERT_EQ(1, y_->size);
+                TEST_ASSERT_EQ(y_->data.complex_double[0][0], -5.0);
+                TEST_ASSERT_EQ(y_->data.complex_double[0][1], 34.0);
+            } else if (rank == 1) {
+                TEST_ASSERT_EQ(1, y_->size);
+                TEST_ASSERT_EQ(y_->data.complex_double[0][0],  6.0);
+                TEST_ASSERT_EQ(y_->data.complex_double[0][1], 96.0);
+            }
+            mtxdistvector_free(&y);
+        }
+#if 0
+        {
+            err = mtxdistvector_init_array_complex_double(
+                &y, num_local_rows, ydata, NULL, comm, &disterr);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxdistmatrix_dgemv(
+                mtx_trans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
+            TEST_ASSERT_EQ_MSG(
+                MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
+                ? mtxdisterror_description(&disterr) : mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.interior.type);
+            const struct mtxvector_array * y_ = &y.interior.storage.array;
+            TEST_ASSERT_EQ(mtx_field_complex, y_->field);
+            TEST_ASSERT_EQ(mtx_double, y_->precision);
+            if (rank == 0) {
+                TEST_ASSERT_EQ(1, y_->size);
+                TEST_ASSERT_EQ(y_->data.complex_double[0][0], -9.0);
+                TEST_ASSERT_EQ(y_->data.complex_double[0][1], 46.0);
+            } else if (rank == 1) {
+                TEST_ASSERT_EQ(1, y_->size);
+                TEST_ASSERT_EQ(y_->data.complex_double[0][0], -2.0);
+                TEST_ASSERT_EQ(y_->data.complex_double[0][1], 80.0);
+            }
+            mtxdistvector_free(&y);
+        }
+        {
+            err = mtxdistvector_init_array_complex_double(
+                &y, num_local_rows, ydata, NULL, comm, &disterr);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxdistmatrix_dgemv(
+                mtx_conjtrans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
+            TEST_ASSERT_EQ_MSG(
+                MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
+                ? mtxdisterror_description(&disterr) : mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.interior.type);
+            const struct mtxvector_array * y_ = &y.interior.storage.array;
+            TEST_ASSERT_EQ(mtx_field_complex, y_->field);
+            TEST_ASSERT_EQ(mtx_double, y_->precision);
+            if (rank == 0) {
+                TEST_ASSERT_EQ(1, y_->size);
+                TEST_ASSERT_EQ(y_->data.complex_double[0][0], 47.0);
+                TEST_ASSERT_EQ(y_->data.complex_double[0][1], -2.0);
+            } else if (rank == 1) {
+                TEST_ASSERT_EQ(1, y_->size);
+                TEST_ASSERT_EQ(y_->data.complex_double[0][0], 78.0);
+                TEST_ASSERT_EQ(y_->data.complex_double[0][1],  0.0);
+            }
+            mtxdistvector_free(&y);
+        }
+#endif
+
+        float calpha[2] = {0.0f, 2.0f};
+        float cbeta[2]  = {3.0f, 1.0f};
+        {
+            err = mtxdistvector_init_array_complex_double(
+                &y, num_local_rows, ydata, NULL, comm, &disterr);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxdistmatrix_cgemv(
+                mtx_notrans, calpha, &A, &x, cbeta, &y, NULL, &disterr);
+            TEST_ASSERT_EQ_MSG(
+                MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
+                ? mtxdisterror_description(&disterr) : mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.interior.type);
+            const struct mtxvector_array * y_ = &y.interior.storage.array;
+            TEST_ASSERT_EQ(mtx_field_complex, y_->field);
+            TEST_ASSERT_EQ(mtx_double, y_->precision);
+            if (rank == 0) {
+                TEST_ASSERT_EQ(1, y_->size);
+                TEST_ASSERT_EQ(y_->data.complex_double[0][0], -31.0);
+                TEST_ASSERT_EQ(y_->data.complex_double[0][1],  -7.0);
+            } else if (rank == 1) {
+                TEST_ASSERT_EQ(1, y_->size);
+                TEST_ASSERT_EQ(y_->data.complex_double[0][0], -86.0);
+                TEST_ASSERT_EQ(y_->data.complex_double[0][1],   8.0);
+            }
+            mtxdistvector_free(&y);
+        }
+#if 0
+        {
+            err = mtxdistvector_init_array_complex_double(
+                &y, num_local_rows, ydata, NULL, comm, &disterr);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxdistmatrix_cgemv(
+                mtx_trans, calpha, &A, &x, cbeta, &y, NULL, &disterr);
+            TEST_ASSERT_EQ_MSG(
+                MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
+                ? mtxdisterror_description(&disterr) : mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.interior.type);
+            const struct mtxvector_array * y_ = &y.interior.storage.array;
+            TEST_ASSERT_EQ(mtx_field_complex, y_->field);
+            TEST_ASSERT_EQ(mtx_double, y_->precision);
+            if (rank == 0) {
+                TEST_ASSERT_EQ(1, y_->size);
+                TEST_ASSERT_EQ(y_->data.complex_double[0][0], -43.0);
+                TEST_ASSERT_EQ(y_->data.complex_double[0][1], -11.0);
+            } else if (rank == 1) {
+                TEST_ASSERT_EQ(1, y_->size);
+                TEST_ASSERT_EQ(y_->data.complex_double[0][0], -70.0);
+                TEST_ASSERT_EQ(y_->data.complex_double[0][1],   0.0);
+            }
+            mtxdistvector_free(&y);
+        }
+        {
+            err = mtxdistvector_init_array_complex_double(
+                &y, num_local_rows, ydata, NULL, comm, &disterr);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxdistmatrix_cgemv(
+                mtx_conjtrans, calpha, &A, &x, cbeta, &y, NULL, &disterr);
+            TEST_ASSERT_EQ_MSG(
+                MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
+                ? mtxdisterror_description(&disterr) : mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.interior.type);
+            const struct mtxvector_array * y_ = &y.interior.storage.array;
+            TEST_ASSERT_EQ(mtx_field_complex, y_->field);
+            TEST_ASSERT_EQ(mtx_double, y_->precision);
+            if (rank == 0) {
+                TEST_ASSERT_EQ(1, y_->size);
+                TEST_ASSERT_EQ(y_->data.complex_double[0][0],  5.0);
+                TEST_ASSERT_EQ(y_->data.complex_double[0][1], 45.0);
+            } else if (rank == 1) {
+                TEST_ASSERT_EQ(1, y_->size);
+                TEST_ASSERT_EQ(y_->data.complex_double[0][0], 10.0);
+                TEST_ASSERT_EQ(y_->data.complex_double[0][1], 80.0);
+            }
+            mtxdistvector_free(&y);
+        }
+#endif
+
+        double zalpha[2] = {0.0, 2.0};
+        double zbeta[2]  = {3.0, 1.0};
+        {
+            err = mtxdistvector_init_array_complex_double(
+                &y, num_local_rows, ydata, NULL, comm, &disterr);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxdistmatrix_zgemv(
+                mtx_notrans, zalpha, &A, &x, zbeta, &y, NULL, &disterr);
+            TEST_ASSERT_EQ_MSG(
+                MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
+                ? mtxdisterror_description(&disterr) : mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.interior.type);
+            const struct mtxvector_array * y_ = &y.interior.storage.array;
+            TEST_ASSERT_EQ(mtx_field_complex, y_->field);
+            TEST_ASSERT_EQ(mtx_double, y_->precision);
+            if (rank == 0) {
+                TEST_ASSERT_EQ(1, y_->size);
+                TEST_ASSERT_EQ(y_->data.complex_double[0][0], -31.0);
+                TEST_ASSERT_EQ(y_->data.complex_double[0][1],  -7.0);
+            } else if (rank == 1) {
+                TEST_ASSERT_EQ(1, y_->size);
+                TEST_ASSERT_EQ(y_->data.complex_double[0][0], -86.0);
+                TEST_ASSERT_EQ(y_->data.complex_double[0][1],   8.0);
+            }
+            mtxdistvector_free(&y);
+        }
+#if 0
+        {
+            err = mtxdistvector_init_array_complex_double(
+                &y, num_local_rows, ydata, NULL, comm, &disterr);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxdistmatrix_zgemv(
+                mtx_trans, zalpha, &A, &x, zbeta, &y, NULL, &disterr);
+            TEST_ASSERT_EQ_MSG(
+                MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
+                ? mtxdisterror_description(&disterr) : mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.interior.type);
+            const struct mtxvector_array * y_ = &y.interior.storage.array;
+            TEST_ASSERT_EQ(mtx_field_complex, y_->field);
+            TEST_ASSERT_EQ(mtx_double, y_->precision);
+            if (rank == 0) {
+                TEST_ASSERT_EQ(1, y_->size);
+                TEST_ASSERT_EQ(y_->data.complex_double[0][0], -43.0);
+                TEST_ASSERT_EQ(y_->data.complex_double[0][1], -11.0);
+            } else if (rank == 1) {
+                TEST_ASSERT_EQ(1, y_->size);
+                TEST_ASSERT_EQ(y_->data.complex_double[0][0], -70.0);
+                TEST_ASSERT_EQ(y_->data.complex_double[0][1],   0.0);
+            }
+            mtxdistvector_free(&y);
+        }
+        {
+            err = mtxdistvector_init_array_complex_double(
+                &y, num_local_rows, ydata, NULL, comm, &disterr);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxdistmatrix_zgemv(
+                mtx_conjtrans, zalpha, &A, &x, zbeta, &y, NULL, &disterr);
+            TEST_ASSERT_EQ_MSG(
+                MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
+                ? mtxdisterror_description(&disterr) : mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.interior.type);
+            const struct mtxvector_array * y_ = &y.interior.storage.array;
+            TEST_ASSERT_EQ(mtx_field_complex, y_->field);
+            TEST_ASSERT_EQ(mtx_double, y_->precision);
+            if (rank == 0) {
+                TEST_ASSERT_EQ(1, y_->size);
+                TEST_ASSERT_EQ(y_->data.complex_double[0][0],  5.0);
+                TEST_ASSERT_EQ(y_->data.complex_double[0][1], 45.0);
+            } else if (rank == 1) {
+                TEST_ASSERT_EQ(1, y_->size);
+                TEST_ASSERT_EQ(y_->data.complex_double[0][0], 10.0);
+                TEST_ASSERT_EQ(y_->data.complex_double[0][1], 80.0);
+            }
+            mtxdistvector_free(&y);
+        }
+#endif
+        mtxdistvector_free(&x);
+        mtxdistmatrix_free(&A);
+    }
+
+    /*
+     * Integer matrices
+     */
+
+    {
+        struct mtxdistmatrix A;
+        struct mtxdistvector x;
+        struct mtxdistvector y;
+        int num_local_rows = rank == 0 ? 2 : 1;
+        int num_local_columns = 3;
+        int32_t * Adata = rank == 0
+            ? ((int32_t[]) {1, 2, 3, 4, 5, 6})
+            : ((int32_t[]) {7, 8, 9});
+        int32_t * xdata = (int32_t[]) {3, 2, 1};
+        int32_t * ydata = rank == 0 ? ((int32_t[]) {1, 0}) : ((int32_t[]) {2});
+        err = mtxdistmatrix_init_array_integer_single(
+            &A, mtx_unsymmetric, num_local_rows, num_local_columns,
+            Adata, NULL, NULL, comm, 0, 0, &disterr);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        err = mtxdistvector_init_array_integer_single(
+            &x, num_local_columns, xdata, NULL, comm, &disterr);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        {
+            err = mtxdistvector_init_array_integer_single(
+                &y, num_local_rows, ydata, NULL, comm, &disterr);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxdistmatrix_sgemv(
+                mtx_notrans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
+            TEST_ASSERT_EQ_MSG(
+                MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
+                ? mtxdisterror_description(&disterr) : mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.interior.type);
+            const struct mtxvector_array * y_ = &y.interior.storage.array;
+            TEST_ASSERT_EQ(mtx_field_integer, y_->field);
+            TEST_ASSERT_EQ(mtx_single, y_->precision);
+            if (rank == 0) {
+                TEST_ASSERT_EQ(2, y_->size);
+                TEST_ASSERT_EQ(y_->data.integer_single[0], 23);
+                TEST_ASSERT_EQ(y_->data.integer_single[1], 56);
+            } else if (rank == 1) {
+                TEST_ASSERT_EQ(1, y_->size);
+                TEST_ASSERT_EQ(y_->data.integer_single[0], 98);
+            }
+            mtxdistvector_free(&y);
+        }
+#if 0
+        {
+            err = mtxdistvector_init_array_integer_single(
+                &y, num_local_rows, ydata, NULL, comm, &disterr);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxdistmatrix_sgemv(
+                mtx_trans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
+            TEST_ASSERT_EQ_MSG(
+                MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
+                ? mtxdisterror_description(&disterr) : mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.interior.type);
+            const struct mtxvector_array * y_ = &y.interior.storage.array;
+            TEST_ASSERT_EQ(mtx_field_integer, y_->field);
+            TEST_ASSERT_EQ(mtx_single, y_->precision);
+            if (rank == 0) {
+                TEST_ASSERT_EQ(2, y_->size);
+                TEST_ASSERT_EQ(y_->data.integer_single[0], 39);
+                TEST_ASSERT_EQ(y_->data.integer_single[1], 48);
+            } else if (rank == 1) {
+                TEST_ASSERT_EQ(1, y_->size);
+                TEST_ASSERT_EQ(y_->data.integer_single[0], 66);
+            }
+            mtxdistvector_free(&y);
+        }
+#endif
+        {
+            err = mtxdistvector_init_array_integer_single(
+                &y, num_local_rows, ydata, NULL, comm, &disterr);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxdistmatrix_dgemv(
+                mtx_notrans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
+            TEST_ASSERT_EQ_MSG(
+                MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
+                ? mtxdisterror_description(&disterr) : mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.interior.type);
+            const struct mtxvector_array * y_ = &y.interior.storage.array;
+            TEST_ASSERT_EQ(mtx_field_integer, y_->field);
+            TEST_ASSERT_EQ(mtx_single, y_->precision);
+            if (rank == 0) {
+                TEST_ASSERT_EQ(2, y_->size);
+                TEST_ASSERT_EQ(y_->data.integer_single[0], 23);
+                TEST_ASSERT_EQ(y_->data.integer_single[1], 56);
+            } else if (rank == 1) {
+                TEST_ASSERT_EQ(1, y_->size);
+                TEST_ASSERT_EQ(y_->data.integer_single[0], 98);
+            }
+            mtxdistvector_free(&y);
+        }
+#if 0
+        {
+            err = mtxdistvector_init_array_integer_single(
+                &y, num_local_rows, ydata, NULL, comm, &disterr);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxdistmatrix_dgemv(
+                mtx_trans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
+            TEST_ASSERT_EQ_MSG(
+                MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
+                ? mtxdisterror_description(&disterr) : mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.interior.type);
+            const struct mtxvector_array * y_ = &y.interior.storage.array;
+            TEST_ASSERT_EQ(mtx_field_integer, y_->field);
+            TEST_ASSERT_EQ(mtx_single, y_->precision);
+            if (rank == 0) {
+                TEST_ASSERT_EQ(2, y_->size);
+                TEST_ASSERT_EQ(y_->data.integer_single[0], 39);
+                TEST_ASSERT_EQ(y_->data.integer_single[1], 48);
+            } else if (rank == 1) {
+                TEST_ASSERT_EQ(1, y_->size);
+                TEST_ASSERT_EQ(y_->data.integer_single[0], 66);
+            }
+            mtxdistvector_free(&y);
+        }
+#endif
+        mtxdistvector_free(&x);
+        mtxdistmatrix_free(&A);
+    }
+
+    {
+        struct mtxdistmatrix A;
+        struct mtxdistvector x;
+        struct mtxdistvector y;
+        int num_local_rows = rank == 0 ? 2 : 1;
+        int num_local_columns = 3;
+        int64_t * Adata = rank == 0
+            ? ((int64_t[]) {1, 2, 3, 4, 5, 6})
+            : ((int64_t[]) {7, 8, 9});
+        int64_t * xdata = (int64_t[]) {3, 2, 1};
+        int64_t * ydata = rank == 0 ? ((int64_t[]) {1, 0}) : ((int64_t[]) {2});
+        err = mtxdistmatrix_init_array_integer_double(
+            &A, mtx_unsymmetric, num_local_rows, num_local_columns,
+            Adata, NULL, NULL, comm, 0, 0, &disterr);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        err = mtxdistvector_init_array_integer_double(
+            &x, num_local_columns, xdata, NULL, comm, &disterr);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        {
+            err = mtxdistvector_init_array_integer_double(
+                &y, num_local_rows, ydata, NULL, comm, &disterr);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxdistmatrix_sgemv(
+                mtx_notrans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
+            TEST_ASSERT_EQ_MSG(
+                MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
+                ? mtxdisterror_description(&disterr) : mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.interior.type);
+            const struct mtxvector_array * y_ = &y.interior.storage.array;
+            TEST_ASSERT_EQ(mtx_field_integer, y_->field);
+            TEST_ASSERT_EQ(mtx_double, y_->precision);
+            if (rank == 0) {
+                TEST_ASSERT_EQ(2, y_->size);
+                TEST_ASSERT_EQ(y_->data.integer_double[0], 23);
+                TEST_ASSERT_EQ(y_->data.integer_double[1], 56);
+            } else if (rank == 1) {
+                TEST_ASSERT_EQ(1, y_->size);
+                TEST_ASSERT_EQ(y_->data.integer_double[0], 98);
+            }
+            mtxdistvector_free(&y);
+        }
+#if 0
+        {
+            err = mtxdistvector_init_array_integer_double(
+                &y, num_local_rows, ydata, NULL, comm, &disterr);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxdistmatrix_sgemv(
+                mtx_trans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
+            TEST_ASSERT_EQ_MSG(
+                MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
+                ? mtxdisterror_description(&disterr) : mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.interior.type);
+            const struct mtxvector_array * y_ = &y.interior.storage.array;
+            TEST_ASSERT_EQ(mtx_field_integer, y_->field);
+            TEST_ASSERT_EQ(mtx_double, y_->precision);
+            if (rank == 0) {
+                TEST_ASSERT_EQ(2, y_->size);
+                TEST_ASSERT_EQ(y_->data.integer_double[0], 39);
+                TEST_ASSERT_EQ(y_->data.integer_double[1], 48);
+            } else if (rank == 1) {
+                TEST_ASSERT_EQ(1, y_->size);
+                TEST_ASSERT_EQ(y_->data.integer_double[0], 66);
+            }
+            mtxdistvector_free(&y);
+        }
+#endif
+        {
+            err = mtxdistvector_init_array_integer_double(
+                &y, num_local_rows, ydata, NULL, comm, &disterr);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxdistmatrix_dgemv(
+                mtx_notrans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
+            TEST_ASSERT_EQ_MSG(
+                MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
+                ? mtxdisterror_description(&disterr) : mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.interior.type);
+            const struct mtxvector_array * y_ = &y.interior.storage.array;
+            TEST_ASSERT_EQ(mtx_field_integer, y_->field);
+            TEST_ASSERT_EQ(mtx_double, y_->precision);
+            if (rank == 0) {
+                TEST_ASSERT_EQ(2, y_->size);
+                TEST_ASSERT_EQ(y_->data.integer_double[0], 23);
+                TEST_ASSERT_EQ(y_->data.integer_double[1], 56);
+            } else if (rank == 1) {
+                TEST_ASSERT_EQ(1, y_->size);
+                TEST_ASSERT_EQ(y_->data.integer_double[0], 98);
+            }
+            mtxdistvector_free(&y);
+        }
+#if 0
+        {
+            err = mtxdistvector_init_array_integer_double(
+                &y, num_local_rows, ydata, NULL, comm, &disterr);
+            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            err = mtxdistmatrix_dgemv(
+                mtx_trans, 2.0, &A, &x, 3.0, &y, NULL, &disterr);
+            TEST_ASSERT_EQ_MSG(
+                MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
+                ? mtxdisterror_description(&disterr) : mtxstrerror(err));
+            TEST_ASSERT_EQ(mtxvector_array, y.interior.type);
+            const struct mtxvector_array * y_ = &y.interior.storage.array;
+            TEST_ASSERT_EQ(mtx_field_integer, y_->field);
+            TEST_ASSERT_EQ(mtx_double, y_->precision);
+            if (rank == 0) {
+                TEST_ASSERT_EQ(2, y_->size);
+                TEST_ASSERT_EQ(y_->data.integer_double[0], 39);
+                TEST_ASSERT_EQ(y_->data.integer_double[1], 48);
+            } else if (rank == 1) {
+                TEST_ASSERT_EQ(1, y_->size);
+                TEST_ASSERT_EQ(y_->data.integer_double[0], 66);
+            }
+            mtxdistvector_free(&y);
+        }
+#endif
+        mtxdistvector_free(&x);
+        mtxdistmatrix_free(&A);
+    }
+    mtxdisterror_free(&disterr);
+    return TEST_SUCCESS;
+}
 
 /**
  * ‘test_mtxdistmatrixgemv_array()’ tests computing matrix-vector
@@ -2612,6 +3857,7 @@ int main(int argc, char * argv[])
 
     /* 2. Run test suite. */
     TEST_SUITE_BEGIN("Running tests for distributed matrix-vector multiplication\n");
+    TEST_RUN(test_mtxdistmatrixgemv2_array);
     TEST_RUN(test_mtxdistmatrixgemv_array);
     TEST_RUN(test_mtxdistmatrixgemv_coordinate);
     TEST_SUITE_END();
