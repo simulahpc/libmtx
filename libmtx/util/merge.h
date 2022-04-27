@@ -94,7 +94,7 @@ int merge_sorted_int(
 
 /*
  * set union operations on sorted arrays of unique values (i.e., no
- * duplicates)
+ * duplicates).
  */
 
 /**
@@ -150,8 +150,8 @@ int setunion_sorted_unique_int64(
     const int64_t * b);
 
 /**
- * ‘setunion_sorted_unique_int()’ merges two sorted arrays of 32-bit
- * signed integers based on a set union operation.
+ * ‘setunion_sorted_unique_int()’ merges two sorted arrays of signed
+ * integers based on a set union operation.
  *
  * The two arrays to be merged, ‘a’ and ‘b’, contain ‘asize’ and
  * ‘bsize’ items, respectively. Each array must be sorted in ascending
@@ -177,7 +177,7 @@ int setunion_sorted_unique_int(
 
 /*
  * set union on sorted arrays, possibly containing non-unique values
- * (i.e., duplicates are allowed)
+ * (i.e., duplicates are allowed).
  */
 
 /**
@@ -234,7 +234,7 @@ int setunion_sorted_nonunique_int64(
 
 /**
  * ‘setunion_sorted_nonunique_int()’ merges two sorted arrays of
- * 32-bit signed integers based on a set union operation.
+ * signed integers based on a set union operation.
  *
  * The two arrays to be merged, ‘a’ and ‘b’, contain ‘asize’ and
  * ‘bsize’ items, respectively. Each array must be sorted in ascending
@@ -259,8 +259,174 @@ int setunion_sorted_nonunique_int(
     const int * b);
 
 /*
- * set intersection operations on sorted arrays of unique values (i.e., no
+ * set union operations on unsorted arrays of unique values (i.e., no
  * duplicates)
+ */
+
+/**
+ * ‘setunion_unsorted_unique_int32()’ merges two arrays of 32-bit
+ * signed integers based on a set union operation.
+ *
+ * The two arrays to be merged, ‘a’ and ‘b’, contain ‘asize’ and
+ * ‘bsize’ items, respectively. The arrays need not be sorted and
+ * duplicate values are not allowed.
+ *
+ * If ‘c’ is ‘NULL’, then no output is written. However, ‘csize’ is
+ * used to indicate the number of items that would have been written
+ * if an output array were provided.
+ *
+ * Otherwise, the user must provide an output array ‘c’ with enough
+ * storage to hold the merged results. Moreover, the user must specify
+ * the allocated size of the output array with the value pointed to by
+ * ‘csize’. On success, the value returned in ‘csize’ indicates the
+ * number of items that were written to the output array.
+ */
+int setunion_unsorted_unique_int32(
+    int64_t * csize,
+    int32_t * c,
+    int64_t asize,
+    int32_t * a,
+    int64_t bsize,
+    int32_t * b);
+
+/**
+ * ‘setunion_unsorted_unique_int64()’ merges two arrays of 64-bit
+ * signed integers based on a set union operation.
+ *
+ * The two arrays to be merged, ‘a’ and ‘b’, contain ‘asize’ and
+ * ‘bsize’ items, respectively. The arrays need not be sorted and
+ * duplicate values are not allowed.
+ *
+ * If ‘c’ is ‘NULL’, then no output is written. However, ‘csize’ is
+ * used to indicate the number of items that would have been written
+ * if an output array were provided.
+ *
+ * Otherwise, the user must provide an output array ‘c’ with enough
+ * storage to hold the merged results. Moreover, the user must specify
+ * the allocated size of the output array with the value pointed to by
+ * ‘csize’. On success, the value returned in ‘csize’ indicates the
+ * number of items that were written to the output array.
+ */
+int setunion_unsorted_unique_int64(
+    int64_t * csize,
+    int64_t * c,
+    int64_t asize,
+    int64_t * a,
+    int64_t bsize,
+    int64_t * b);
+
+/**
+ * ‘setunion_unsorted_unique_int()’ merges two arrays of signed
+ * integers based on a set union operation.
+ *
+ * The two arrays to be merged, ‘a’ and ‘b’, contain ‘asize’ and
+ * ‘bsize’ items, respectively. The arrays need not be sorted and
+ * duplicate values are not allowed.
+ *
+ * If ‘c’ is ‘NULL’, then no output is written. However, ‘csize’ is
+ * used to indicate the number of items that would have been written
+ * if an output array were provided.
+ *
+ * Otherwise, the user must provide an output array ‘c’ with enough
+ * storage to hold the merged results. Moreover, the user must specify
+ * the allocated size of the output array with the value pointed to by
+ * ‘csize’. On success, the value returned in ‘csize’ indicates the
+ * number of items that were written to the output array.
+ */
+int setunion_unsorted_unique_int(
+    int64_t * csize,
+    int * c,
+    int64_t asize,
+    int * a,
+    int64_t bsize,
+    int * b);
+
+/*
+ * set union on unsorted arrays, possibly containing non-unique values
+ * (i.e., duplicates are allowed)
+ */
+
+/**
+ * ‘setunion_unsorted_nonunique_int32()’ merges two arrays of 32-bit
+ * signed integers based on a set union operation.
+ *
+ * The two arrays to be merged, ‘a’ and ‘b’, contain ‘asize’ and
+ * ‘bsize’ items, respectively. The arrays need not be sorted and
+ * duplicate values are allowed.
+ *
+ * If ‘c’ is ‘NULL’, then no output is written. However, ‘csize’ is
+ * used to indicate the number of items that would have been written
+ * if an output array were provided.
+ *
+ * Otherwise, the user must provide an output array ‘c’ with enough
+ * storage to hold the merged results. Moreover, the user must specify
+ * the allocated size of the output array with the value pointed to by
+ * ‘csize’. On success, the value returned in ‘csize’ indicates the
+ * number of items that were written to the output array.
+ */
+int setunion_unsorted_nonunique_int32(
+    int64_t * csize,
+    int32_t * c,
+    int64_t asize,
+    int32_t * a,
+    int64_t bsize,
+    int32_t * b);
+
+/**
+ * ‘setunion_unsorted_nonunique_int64()’ merges two arrays of 64-bit
+ * signed integers based on a set union operation.
+ *
+ * The two arrays to be merged, ‘a’ and ‘b’, contain ‘asize’ and
+ * ‘bsize’ items, respectively. The arrays need not be sorted and
+ * duplicate values are allowed.
+ *
+ * If ‘c’ is ‘NULL’, then no output is written. However, ‘csize’ is
+ * used to indicate the number of items that would have been written
+ * if an output array were provided.
+ *
+ * Otherwise, the user must provide an output array ‘c’ with enough
+ * storage to hold the merged results. Moreover, the user must specify
+ * the allocated size of the output array with the value pointed to by
+ * ‘csize’. On success, the value returned in ‘csize’ indicates the
+ * number of items that were written to the output array.
+ */
+int setunion_unsorted_nonunique_int64(
+    int64_t * csize,
+    int64_t * c,
+    int64_t asize,
+    int64_t * a,
+    int64_t bsize,
+    int64_t * b);
+
+/**
+ * ‘setunion_unsorted_nonunique_int()’ merges two arrays of signed
+ * integers based on a set union operation.
+ *
+ * The two arrays to be merged, ‘a’ and ‘b’, contain ‘asize’ and
+ * ‘bsize’ items, respectively. The arrays need not be sorted and
+ * duplicate values are allowed.
+ *
+ * If ‘c’ is ‘NULL’, then no output is written. However, ‘csize’ is
+ * used to indicate the number of items that would have been written
+ * if an output array were provided.
+ *
+ * Otherwise, the user must provide an output array ‘c’ with enough
+ * storage to hold the merged results. Moreover, the user must specify
+ * the allocated size of the output array with the value pointed to by
+ * ‘csize’. On success, the value returned in ‘csize’ indicates the
+ * number of items that were written to the output array.
+ */
+int setunion_unsorted_nonunique_int(
+    int64_t * csize,
+    int * c,
+    int64_t asize,
+    int * a,
+    int64_t bsize,
+    int * b);
+
+/*
+ * set intersection operations on sorted arrays of unique values
+ * (i.e., no duplicates)
  */
 
 /**
@@ -317,7 +483,7 @@ int setintersection_sorted_unique_int64(
 
 /**
  * ‘setintersection_sorted_unique_int()’ merges two sorted arrays of
- * 32-bit signed integers based on a set intersection operation.
+ * signed integers based on a set intersection operation.
  *
  * The two arrays to be merged, ‘a’ and ‘b’, contain ‘asize’ and
  * ‘bsize’ items, respectively. Each array must be sorted in ascending
@@ -342,8 +508,8 @@ int setintersection_sorted_unique_int(
     const int * b);
 
 /*
- * set intersection on sorted arrays, possibly containing non-unique values
- * (i.e., duplicates are allowed)
+ * set intersection on sorted arrays, possibly containing non-unique
+ * values (i.e., duplicates are allowed)
  */
 
 /**
@@ -400,7 +566,7 @@ int setintersection_sorted_nonunique_int64(
 
 /**
  * ‘setintersection_sorted_nonunique_int()’ merges two sorted arrays
- * of 32-bit signed integers based on a set intersection operation.
+ * of signed integers based on a set intersection operation.
  *
  * The two arrays to be merged, ‘a’ and ‘b’, contain ‘asize’ and
  * ‘bsize’ items, respectively. Each array must be sorted in ascending
@@ -425,8 +591,174 @@ int setintersection_sorted_nonunique_int(
     const int * b);
 
 /*
- * set difference operations on sorted arrays of unique values (i.e., no
- * duplicates)
+ * set intersection operations on unsorted arrays of unique values
+ * (i.e., no duplicates)
+ */
+
+/**
+ * ‘setintersection_unsorted_unique_int32()’ merges two arrays of
+ * 32-bit signed integers based on a set intersection operation.
+ *
+ * The two arrays to be merged, ‘a’ and ‘b’, contain ‘asize’ and
+ * ‘bsize’ items, respectively. The arrays need not be sorted and
+ * duplicate values are not allowed.
+ *
+ * If ‘c’ is ‘NULL’, then no output is written. However, ‘csize’ is
+ * used to indicate the number of items that would have been written
+ * if an output array were provided.
+ *
+ * Otherwise, the user must provide an output array ‘c’ with enough
+ * storage to hold the merged results. Moreover, the user must specify
+ * the allocated size of the output array with the value pointed to by
+ * ‘csize’. On success, the value returned in ‘csize’ indicates the
+ * number of items that were written to the output array.
+ */
+int setintersection_unsorted_unique_int32(
+    int64_t * csize,
+    int32_t * c,
+    int64_t asize,
+    int32_t * a,
+    int64_t bsize,
+    int32_t * b);
+
+/**
+ * ‘setintersection_unsorted_unique_int64()’ merges two arrays of
+ * 64-bit signed integers based on a set intersection operation.
+ *
+ * The two arrays to be merged, ‘a’ and ‘b’, contain ‘asize’ and
+ * ‘bsize’ items, respectively. The arrays need not be sorted and
+ * duplicate values are not allowed.
+ *
+ * If ‘c’ is ‘NULL’, then no output is written. However, ‘csize’ is
+ * used to indicate the number of items that would have been written
+ * if an output array were provided.
+ *
+ * Otherwise, the user must provide an output array ‘c’ with enough
+ * storage to hold the merged results. Moreover, the user must specify
+ * the allocated size of the output array with the value pointed to by
+ * ‘csize’. On success, the value returned in ‘csize’ indicates the
+ * number of items that were written to the output array.
+ */
+int setintersection_unsorted_unique_int64(
+    int64_t * csize,
+    int64_t * c,
+    int64_t asize,
+    int64_t * a,
+    int64_t bsize,
+    int64_t * b);
+
+/**
+ * ‘setintersection_unsorted_unique_int()’ merges two arrays of signed
+ * integers based on a set intersection operation.
+ *
+ * The two arrays to be merged, ‘a’ and ‘b’, contain ‘asize’ and
+ * ‘bsize’ items, respectively. The arrays need not be sorted and
+ * duplicate values are not allowed.
+ *
+ * If ‘c’ is ‘NULL’, then no output is written. However, ‘csize’ is
+ * used to indicate the number of items that would have been written
+ * if an output array were provided.
+ *
+ * Otherwise, the user must provide an output array ‘c’ with enough
+ * storage to hold the merged results. Moreover, the user must specify
+ * the allocated size of the output array with the value pointed to by
+ * ‘csize’. On success, the value returned in ‘csize’ indicates the
+ * number of items that were written to the output array.
+ */
+int setintersection_unsorted_unique_int(
+    int64_t * csize,
+    int * c,
+    int64_t asize,
+    int * a,
+    int64_t bsize,
+    int * b);
+
+/*
+ * set intersection on unsorted arrays, possibly containing non-unique
+ * values (i.e., duplicates are allowed)
+ */
+
+/**
+ * ‘setintersection_unsorted_nonunique_int32()’ merges two arrays of
+ * 32-bit signed integers based on a set intersection operation.
+ *
+ * The two arrays to be merged, ‘a’ and ‘b’, contain ‘asize’ and
+ * ‘bsize’ items, respectively. The arrays need not be sorted and
+ * duplicate values are allowed.
+ *
+ * If ‘c’ is ‘NULL’, then no output is written. However, ‘csize’ is
+ * used to indicate the number of items that would have been written
+ * if an output array were provided.
+ *
+ * Otherwise, the user must provide an output array ‘c’ with enough
+ * storage to hold the merged results. Moreover, the user must specify
+ * the allocated size of the output array with the value pointed to by
+ * ‘csize’. On success, the value returned in ‘csize’ indicates the
+ * number of items that were written to the output array.
+ */
+int setintersection_unsorted_nonunique_int32(
+    int64_t * csize,
+    int32_t * c,
+    int64_t asize,
+    int32_t * a,
+    int64_t bsize,
+    int32_t * b);
+
+/**
+ * ‘setintersection_unsorted_nonunique_int64()’ merges two arrays of
+ * 64-bit signed integers based on a set intersection operation.
+ *
+ * The two arrays to be merged, ‘a’ and ‘b’, contain ‘asize’ and
+ * ‘bsize’ items, respectively. The arrays need not be sorted and
+ * duplicate values are allowed.
+ *
+ * If ‘c’ is ‘NULL’, then no output is written. However, ‘csize’ is
+ * used to indicate the number of items that would have been written
+ * if an output array were provided.
+ *
+ * Otherwise, the user must provide an output array ‘c’ with enough
+ * storage to hold the merged results. Moreover, the user must specify
+ * the allocated size of the output array with the value pointed to by
+ * ‘csize’. On success, the value returned in ‘csize’ indicates the
+ * number of items that were written to the output array.
+ */
+int setintersection_unsorted_nonunique_int64(
+    int64_t * csize,
+    int64_t * c,
+    int64_t asize,
+    int64_t * a,
+    int64_t bsize,
+    int64_t * b);
+
+/**
+ * ‘setintersection_unsorted_nonunique_int()’ merges two arrays of
+ * signed integers based on a set intersection operation.
+ *
+ * The two arrays to be merged, ‘a’ and ‘b’, contain ‘asize’ and
+ * ‘bsize’ items, respectively. The arrays need not be sorted and
+ * duplicate values are allowed.
+ *
+ * If ‘c’ is ‘NULL’, then no output is written. However, ‘csize’ is
+ * used to indicate the number of items that would have been written
+ * if an output array were provided.
+ *
+ * Otherwise, the user must provide an output array ‘c’ with enough
+ * storage to hold the merged results. Moreover, the user must specify
+ * the allocated size of the output array with the value pointed to by
+ * ‘csize’. On success, the value returned in ‘csize’ indicates the
+ * number of items that were written to the output array.
+ */
+int setintersection_unsorted_nonunique_int(
+    int64_t * csize,
+    int * c,
+    int64_t asize,
+    int * a,
+    int64_t bsize,
+    int * b);
+
+/*
+ * set difference operations on sorted arrays of unique values (i.e.,
+ * no duplicates)
  */
 
 /**
@@ -483,7 +815,7 @@ int setdifference_sorted_unique_int64(
 
 /**
  * ‘setdifference_sorted_unique_int()’ merges two sorted arrays of
- * 32-bit signed integers based on a set difference operation.
+ * signed integers based on a set difference operation.
  *
  * The two arrays to be merged, ‘a’ and ‘b’, contain ‘asize’ and
  * ‘bsize’ items, respectively. Each array must be sorted in ascending
@@ -566,7 +898,7 @@ int setdifference_sorted_nonunique_int64(
 
 /**
  * ‘setdifference_sorted_nonunique_int()’ merges two sorted arrays of
- * 32-bit signed integers based on a set difference operation.
+ * signed integers based on a set difference operation.
  *
  * The two arrays to be merged, ‘a’ and ‘b’, contain ‘asize’ and
  * ‘bsize’ items, respectively. Each array must be sorted in ascending
@@ -589,5 +921,171 @@ int setdifference_sorted_nonunique_int(
     const int * a,
     int64_t bsize,
     const int * b);
+
+/*
+ * set difference operations on unsorted arrays of unique values
+ * (i.e., no duplicates)
+ */
+
+/**
+ * ‘setdifference_unsorted_unique_int32()’ merges two arrays of 32-bit
+ * signed integers based on a set difference operation.
+ *
+ * The two arrays to be merged, ‘a’ and ‘b’, contain ‘asize’ and
+ * ‘bsize’ items, respectively. The arrays need not be sorted and
+ * duplicate values are not allowed.
+ *
+ * If ‘c’ is ‘NULL’, then no output is written. However, ‘csize’ is
+ * used to indicate the number of items that would have been written
+ * if an output array were provided.
+ *
+ * Otherwise, the user must provide an output array ‘c’ with enough
+ * storage to hold the merged results. Moreover, the user must specify
+ * the allocated size of the output array with the value pointed to by
+ * ‘csize’. On success, the value returned in ‘csize’ indicates the
+ * number of items that were written to the output array.
+ */
+int setdifference_unsorted_unique_int32(
+    int64_t * csize,
+    int32_t * c,
+    int64_t asize,
+    int32_t * a,
+    int64_t bsize,
+    int32_t * b);
+
+/**
+ * ‘setdifference_unsorted_unique_int64()’ merges two arrays of 64-bit
+ * signed integers based on a set difference operation.
+ *
+ * The two arrays to be merged, ‘a’ and ‘b’, contain ‘asize’ and
+ * ‘bsize’ items, respectively. The arrays need not be sorted and
+ * duplicate values are not allowed.
+ *
+ * If ‘c’ is ‘NULL’, then no output is written. However, ‘csize’ is
+ * used to indicate the number of items that would have been written
+ * if an output array were provided.
+ *
+ * Otherwise, the user must provide an output array ‘c’ with enough
+ * storage to hold the merged results. Moreover, the user must specify
+ * the allocated size of the output array with the value pointed to by
+ * ‘csize’. On success, the value returned in ‘csize’ indicates the
+ * number of items that were written to the output array.
+ */
+int setdifference_unsorted_unique_int64(
+    int64_t * csize,
+    int64_t * c,
+    int64_t asize,
+    int64_t * a,
+    int64_t bsize,
+    int64_t * b);
+
+/**
+ * ‘setdifference_unsorted_unique_int()’ merges two arrays of signed
+ * integers based on a set difference operation.
+ *
+ * The two arrays to be merged, ‘a’ and ‘b’, contain ‘asize’ and
+ * ‘bsize’ items, respectively. The arrays need not be sorted and
+ * duplicate values are not allowed.
+ *
+ * If ‘c’ is ‘NULL’, then no output is written. However, ‘csize’ is
+ * used to indicate the number of items that would have been written
+ * if an output array were provided.
+ *
+ * Otherwise, the user must provide an output array ‘c’ with enough
+ * storage to hold the merged results. Moreover, the user must specify
+ * the allocated size of the output array with the value pointed to by
+ * ‘csize’. On success, the value returned in ‘csize’ indicates the
+ * number of items that were written to the output array.
+ */
+int setdifference_unsorted_unique_int(
+    int64_t * csize,
+    int * c,
+    int64_t asize,
+    int * a,
+    int64_t bsize,
+    int * b);
+
+/*
+ * set difference on unsorted arrays, possibly containing non-unique
+ * values (i.e., duplicates are allowed)
+ */
+
+/**
+ * ‘setdifference_unsorted_nonunique_int32()’ merges two arrays of
+ * 32-bit signed integers based on a set difference operation.
+ *
+ * The two arrays to be merged, ‘a’ and ‘b’, contain ‘asize’ and
+ * ‘bsize’ items, respectively. The arrays need not be sorted and
+ * duplicate values are allowed.
+ *
+ * If ‘c’ is ‘NULL’, then no output is written. However, ‘csize’ is
+ * used to indicate the number of items that would have been written
+ * if an output array were provided.
+ *
+ * Otherwise, the user must provide an output array ‘c’ with enough
+ * storage to hold the merged results. Moreover, the user must specify
+ * the allocated size of the output array with the value pointed to by
+ * ‘csize’. On success, the value returned in ‘csize’ indicates the
+ * number of items that were written to the output array.
+ */
+int setdifference_unsorted_nonunique_int32(
+    int64_t * csize,
+    int32_t * c,
+    int64_t asize,
+    int32_t * a,
+    int64_t bsize,
+    int32_t * b);
+
+/**
+ * ‘setdifference_unsorted_nonunique_int64()’ merges two arrays of
+ * 64-bit signed integers based on a set difference operation.
+ *
+ * The two arrays to be merged, ‘a’ and ‘b’, contain ‘asize’ and
+ * ‘bsize’ items, respectively. The arrays need not be sorted and
+ * duplicate values are allowed.
+ *
+ * If ‘c’ is ‘NULL’, then no output is written. However, ‘csize’ is
+ * used to indicate the number of items that would have been written
+ * if an output array were provided.
+ *
+ * Otherwise, the user must provide an output array ‘c’ with enough
+ * storage to hold the merged results. Moreover, the user must specify
+ * the allocated size of the output array with the value pointed to by
+ * ‘csize’. On success, the value returned in ‘csize’ indicates the
+ * number of items that were written to the output array.
+ */
+int setdifference_unsorted_nonunique_int64(
+    int64_t * csize,
+    int64_t * c,
+    int64_t asize,
+    int64_t * a,
+    int64_t bsize,
+    int64_t * b);
+
+/**
+ * ‘setdifference_unsorted_nonunique_int()’ merges two arrays of
+ * signed integers based on a set difference operation.
+ *
+ * The two arrays to be merged, ‘a’ and ‘b’, contain ‘asize’ and
+ * ‘bsize’ items, respectively. The arrays need not be sorted and
+ * duplicate values are allowed.
+ *
+ * If ‘c’ is ‘NULL’, then no output is written. However, ‘csize’ is
+ * used to indicate the number of items that would have been written
+ * if an output array were provided.
+ *
+ * Otherwise, the user must provide an output array ‘c’ with enough
+ * storage to hold the merged results. Moreover, the user must specify
+ * the allocated size of the output array with the value pointed to by
+ * ‘csize’. On success, the value returned in ‘csize’ indicates the
+ * number of items that were written to the output array.
+ */
+int setdifference_unsorted_nonunique_int(
+    int64_t * csize,
+    int * c,
+    int64_t asize,
+    int * a,
+    int64_t bsize,
+    int * b);
 
 #endif

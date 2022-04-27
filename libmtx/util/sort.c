@@ -610,6 +610,64 @@ int radix_sort_uint64(
 }
 
 /**
+ * ‘radix_sort_int32()’ sorts an array of 32-bit (signed) integers in
+ * ascending order using a radix sort algorithm.
+ *
+ * The number of keys to sort is given by ‘size’, and the unsorted,
+ * integer keys are given in the array ‘keys’. On success, the same
+ * array will contain the keys in sorted order.
+ *
+ * If ‘sorting_permutation’ is ‘NULL’, then this argument is ignored
+ * and a sorting permutation is not computed. Otherwise, it must point
+ * to an array that holds enough storage for ‘size’ values of type
+ * ‘int64_t’. On success, this array will contain the sorting
+ * permutation, mapping the locations of the original, unsorted keys
+ * to their new locations in the sorted array.
+ */
+int radix_sort_int32(
+    int64_t size,
+    int32_t * keys,
+    int64_t * sorting_permutation)
+{
+    int err;
+    for (int64_t i = 0; i < size; i++)
+        keys[i] ^= INT32_MIN;
+    err = radix_sort_uint32(size, (uint32_t *) keys, sorting_permutation);
+    for (int64_t i = 0; i < size; i++)
+        keys[i] ^= INT32_MIN;
+    return err;
+}
+
+/**
+ * ‘radix_sort_int64()’ sorts an array of 64-bit (signed) integers in
+ * ascending order using a radix sort algorithm.
+ *
+ * The number of keys to sort is given by ‘size’, and the unsorted,
+ * integer keys are given in the array ‘keys’. On success, the same
+ * array will contain the keys in sorted order.
+ *
+ * If ‘sorting_permutation’ is ‘NULL’, then this argument is ignored
+ * and a sorting permutation is not computed. Otherwise, it must point
+ * to an array that holds enough storage for ‘size’ values of type
+ * ‘int64_t’. On success, this array will contain the sorting
+ * permutation, mapping the locations of the original, unsorted keys
+ * to their new locations in the sorted array.
+ */
+int radix_sort_int64(
+    int64_t size,
+    int64_t * keys,
+    int64_t * sorting_permutation)
+{
+    int err;
+    for (int64_t i = 0; i < size; i++)
+        keys[i] ^= INT64_MIN;
+    err = radix_sort_uint64(size, (uint64_t *) keys, sorting_permutation);
+    for (int64_t i = 0; i < size; i++)
+        keys[i] ^= INT64_MIN;
+    return err;
+}
+
+/**
  * ‘radix_sort_int()’ sorts an array of (signed) integers in ascending
  * order using a radix sort algorithm.
  *
@@ -629,17 +687,13 @@ int radix_sort_int(
     int * keys,
     int64_t * sorting_permutation)
 {
-    int err;
-    for (int64_t i = 0; i < size; i++)
-        keys[i] ^= INT_MIN;
-    if (sizeof(int) == sizeof(uint32_t)) {
-        err = radix_sort_uint32(size, keys, sorting_permutation);
-    } else if (sizeof(int) == sizeof(uint64_t)) {
-        err = radix_sort_uint64(size, keys, sorting_permutation);
-    } else { err = MTX_ERR_NOT_SUPPORTED; }
-    for (int64_t i = 0; i < size; i++)
-        keys[i] ^= INT_MIN;
-    return err;
+    if (sizeof(int) == sizeof(int32_t)) {
+        return radix_sort_int32(size, (int32_t *) keys, sorting_permutation);
+    } else if (sizeof(int) == sizeof(int64_t)) {
+        return radix_sort_int64(size, (int64_t *) keys, sorting_permutation);
+    } else {
+        return MTX_ERR_NOT_SUPPORTED;
+    }
 }
 
 #ifdef LIBMTX_HAVE_MPI
