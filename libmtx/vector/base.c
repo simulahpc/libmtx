@@ -636,38 +636,60 @@ int mtxvector_base_from_mtxfile(
 {
     if (mtxfile->header.object != mtxfile_vector)
         return MTX_ERR_INCOMPATIBLE_MTX_OBJECT;
-
-    /* TODO: If needed, we could convert from coordinate to array. */
-    if (mtxfile->header.format != mtxfile_array)
-        return MTX_ERR_INCOMPATIBLE_MTX_FORMAT;
-
-    if (mtxfile->header.field == mtxfile_real) {
-        if (mtxfile->precision == mtx_single) {
-            return mtxvector_base_init_real_single(
-                x, mtxfile->size.num_rows, mtxfile->data.array_real_single);
-        } else if (mtxfile->precision == mtx_double) {
-            return mtxvector_base_init_real_double(
-                x, mtxfile->size.num_rows, mtxfile->data.array_real_double);
-        } else { return MTX_ERR_INVALID_PRECISION; }
-    } else if (mtxfile->header.field == mtxfile_complex) {
-        if (mtxfile->precision == mtx_single) {
-            return mtxvector_base_init_complex_single(
-                x, mtxfile->size.num_rows, mtxfile->data.array_complex_single);
-        } else if (mtxfile->precision == mtx_double) {
-            return mtxvector_base_init_complex_double(
-                x, mtxfile->size.num_rows, mtxfile->data.array_complex_double);
-        } else { return MTX_ERR_INVALID_PRECISION; }
-    } else if (mtxfile->header.field == mtxfile_integer) {
-        if (mtxfile->precision == mtx_single) {
-            return mtxvector_base_init_integer_single(
-                x, mtxfile->size.num_rows, mtxfile->data.array_integer_single);
-        } else if (mtxfile->precision == mtx_double) {
-            return mtxvector_base_init_integer_double(
-                x, mtxfile->size.num_rows, mtxfile->data.array_integer_double);
-        } else { return MTX_ERR_INVALID_PRECISION; }
-    } else if (mtxfile->header.field == mtxfile_pattern) {
-        return MTX_ERR_INCOMPATIBLE_MTX_FIELD;
-    } else { return MTX_ERR_INVALID_MTX_FIELD; }
+    if (mtxfile->header.format == mtxfile_array) {
+        if (mtxfile->header.field == mtxfile_real) {
+            if (mtxfile->precision == mtx_single) {
+                return mtxvector_base_init_real_single(
+                    x, mtxfile->size.num_rows, mtxfile->data.array_real_single);
+            } else if (mtxfile->precision == mtx_double) {
+                return mtxvector_base_init_real_double(
+                    x, mtxfile->size.num_rows, mtxfile->data.array_real_double);
+            } else { return MTX_ERR_INVALID_PRECISION; }
+        } else if (mtxfile->header.field == mtxfile_complex) {
+            if (mtxfile->precision == mtx_single) {
+                return mtxvector_base_init_complex_single(
+                    x, mtxfile->size.num_rows, mtxfile->data.array_complex_single);
+            } else if (mtxfile->precision == mtx_double) {
+                return mtxvector_base_init_complex_double(
+                    x, mtxfile->size.num_rows, mtxfile->data.array_complex_double);
+            } else { return MTX_ERR_INVALID_PRECISION; }
+        } else if (mtxfile->header.field == mtxfile_integer) {
+            if (mtxfile->precision == mtx_single) {
+                return mtxvector_base_init_integer_single(
+                    x, mtxfile->size.num_rows, mtxfile->data.array_integer_single);
+            } else if (mtxfile->precision == mtx_double) {
+                return mtxvector_base_init_integer_double(
+                    x, mtxfile->size.num_rows, mtxfile->data.array_integer_double);
+            } else { return MTX_ERR_INVALID_PRECISION; }
+        } else if (mtxfile->header.field == mtxfile_pattern) {
+                return mtxvector_base_init_pattern(x, mtxfile->size.num_rows);
+        } else { return MTX_ERR_INVALID_MTX_FIELD; }
+    } else if (mtxfile->header.format == mtxfile_coordinate) {
+        struct mtxvector_packed xpacked;
+        int err = mtxvector_packed_from_mtxfile(
+            &xpacked, mtxfile, mtxvector_base);
+        if (err) return err;
+        err = mtxvector_base_alloc(
+            x, xpacked.x.storage.base.field,
+            xpacked.x.storage.base.precision, xpacked.size);
+        if (err) {
+            mtxvector_packed_free(&xpacked);
+            return err;
+        }
+        err = mtxvector_base_setzero(x);
+        if (err) {
+            mtxvector_base_free(x);
+            mtxvector_packed_free(&xpacked);
+            return err;
+        }
+        err = mtxvector_base_ussc(x, &xpacked);
+        if (err) {
+            mtxvector_base_free(x);
+            mtxvector_packed_free(&xpacked);
+            return err;
+        }
+        mtxvector_packed_free(&xpacked);
+    } else { return MTX_ERR_INVALID_MTX_FORMAT; }
     return MTX_SUCCESS;
 }
 
@@ -714,7 +736,8 @@ int mtxvector_base_to_mtxfile(
     } else if (mtxfmt == mtxfile_coordinate) {
         if (x->field == mtx_field_real) {
             err = mtxfile_alloc_vector_coordinate(
-                mtxfile, mtxfile_real, x->precision, num_rows, x->size);
+                mtxfile, mtxfile_real, x->precision,
+                idx ? num_rows : x->size, x->size);
             if (err) return err;
             if (x->precision == mtx_single) {
                 for (int64_t k = 0; k < x->size; k++) {

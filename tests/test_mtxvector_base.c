@@ -177,7 +177,30 @@ int test_mtxvector_base_from_mtxfile(void)
         mtxvector_free(&x);
         mtxfile_free(&mtxfile);
     }
-
+    {
+        int size = 4;
+        struct mtxfile_vector_coordinate_real_single mtxdata[] = {
+            {1, 1.0f}, {2, 2.0f}, {4, 4.0f}};
+        int64_t num_nonzeros = sizeof(mtxdata) / sizeof(*mtxdata);
+        struct mtxfile mtxfile;
+        err = mtxfile_init_vector_coordinate_real_single(
+            &mtxfile, size, num_nonzeros, mtxdata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        struct mtxvector x;
+        err = mtxvector_from_mtxfile(&x, &mtxfile, mtxvector_base);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(mtxvector_base, x.type);
+        const struct mtxvector_base * x_ = &x.storage.base;
+        TEST_ASSERT_EQ(mtx_field_real, x_->field);
+        TEST_ASSERT_EQ(mtx_single, x_->precision);
+        TEST_ASSERT_EQ(4, x_->size);
+        TEST_ASSERT_EQ(1.0f, x_->data.real_single[0]);
+        TEST_ASSERT_EQ(2.0f, x_->data.real_single[1]);
+        TEST_ASSERT_EQ(0.0f, x_->data.real_single[2]);
+        TEST_ASSERT_EQ(4.0f, x_->data.real_single[3]);
+        mtxvector_free(&x);
+        mtxfile_free(&mtxfile);
+    }
     return TEST_SUCCESS;
 }
 
@@ -327,6 +350,32 @@ int test_mtxvector_base_to_mtxfile(void)
         const int64_t * data = mtxfile.data.array_integer_double;
         for (int64_t k = 0; k < xsize; k++)
             TEST_ASSERT_EQ(xdata[k], data[k]);
+        mtxfile_free(&mtxfile);
+        mtxvector_free(&x);
+    }
+    {
+        struct mtxvector x;
+        float xdata[] = {1.0f, 1.0f, 1.0f, 2.0f, 3.0f};
+        int xsize = sizeof(xdata) / sizeof(*xdata);
+        err = mtxvector_init_base_real_single(&x, xsize, xdata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        struct mtxfile mtxfile;
+        err = mtxvector_to_mtxfile(&mtxfile, &x, 0, NULL, mtxfile_coordinate);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(mtxfile_vector, mtxfile.header.object);
+        TEST_ASSERT_EQ(mtxfile_coordinate, mtxfile.header.format);
+        TEST_ASSERT_EQ(mtxfile_real, mtxfile.header.field);
+        TEST_ASSERT_EQ(mtxfile_general, mtxfile.header.symmetry);
+        TEST_ASSERT_EQ(xsize, mtxfile.size.num_rows);
+        TEST_ASSERT_EQ(-1, mtxfile.size.num_columns);
+        TEST_ASSERT_EQ(xsize, mtxfile.size.num_nonzeros);
+        TEST_ASSERT_EQ(mtx_single, mtxfile.precision);
+        const struct mtxfile_vector_coordinate_real_single * data =
+            mtxfile.data.vector_coordinate_real_single;
+        for (int64_t k = 0; k < xsize; k++) {
+            TEST_ASSERT_EQ(k+1, data[k].i);
+            TEST_ASSERT_EQ(xdata[k], data[k].a);
+        }
         mtxfile_free(&mtxfile);
         mtxvector_free(&x);
     }
