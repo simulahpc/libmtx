@@ -29,6 +29,7 @@
 #include <libmtx/precision.h>
 #include <libmtx/field.h>
 #include <libmtx/mtxfile/header.h>
+#include <libmtx/mtxfile/mtxfile.h>
 #include <libmtx/util/sort.h>
 #include <libmtx/vector/dist.h>
 #include <libmtx/vector/packed.h>
@@ -1059,7 +1060,99 @@ int mtxvector_dist_from_mtxfile(
     enum mtxvectortype type,
     MPI_Comm comm,
     int root,
-    struct mtxdisterror * disterr);
+    struct mtxdisterror * disterr)
+{
+    int err = mtxvector_dist_init_comm(x, comm, disterr);
+    if (err) return err;
+    int comm_size = x->comm_size;
+    int rank = x->rank;
+
+    /* broadcast the header of the Matrix Market file */
+    struct mtxfileheader mtxheader;
+    if (rank == root) mtxheader = mtxfile->header;
+    err = mtxfileheader_bcast(&mtxheader, root, comm, disterr);
+    if (err) return err;
+    if (mtxfile->header.object != mtxfile_vector)
+        return MTX_ERR_INCOMPATIBLE_MTX_OBJECT;
+
+    /* broadcast the size of the Matrix Market file */
+    struct mtxfilesize mtxsize;
+    if (rank == root) mtxsize = mtxfile->size;
+    err = mtxfilesize_bcast(&mtxsize, root, comm, disterr);
+    if (err) return err;
+
+    /* divide rows or nonzeros into equal-sized blocks */
+    x->size = mtxsize.num_rows;
+    if (mtxfile->header.format == mtxfile_array) {
+        x->num_nonzeros = mtxsize.num_rows / comm_size
+            + (rank < (mtxsize.num_rows % comm_size) ? 1 : 0);
+    } else if (mtxfile->header.format == mtxfile_coordinate) {
+        x->num_nonzeros = mtxsize.num_nonzeros / comm_size
+            + (rank < (mtxsize.num_nonzeros % comm_size) ? 1 : 0);
+    } else { return MTX_ERR_INVALID_MTX_FORMAT; }
+
+    int64_t N = x->size;
+    x->blksize = N/comm_size + (rank < (N % comm_size) ? 1 : 0);
+    x->blkstart = rank*(N/comm_size)
+        + (rank < (N % comm_size) ? rank : (N % comm_size));
+    x->ranks = malloc(x->blksize * sizeof(int));
+    err = !x->ranks ? MTX_ERR_ERRNO : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+    for (int64_t i = 0; i < x->blksize; i++) x->ranks[i] = -1;
+
+    int64_t offset = 0;
+    for (int p = 0; p < comm_size; p++) {
+        int64_t num_nonzeros;
+        if (mtxfile->header.format == mtxfile_array) {
+            num_nonzeros = mtxsize.num_rows / comm_size
+                + (p < (mtxsize.num_rows % comm_size) ? 1 : 0);
+        } else if (mtxfile->header.format == mtxfile_coordinate) {
+            num_nonzeros = mtxsize.num_nonzeros / comm_size
+                + (p < (mtxsize.num_nonzeros % comm_size) ? 1 : 0);
+        } else { return MTX_ERR_INVALID_MTX_FORMAT; }
+
+        /* extract a matrix market file for the current process */
+        struct mtxfile sendmtxfile;
+        if (rank == root) {
+            struct mtxfilesize sendsize = mtxfile->size;
+            if (mtxfile->header.format == mtxfile_array)
+                sendsize.num_rows = num_nonzeros;
+            else if (mtxfile->header.format == mtxfile_coordinate)
+                sendsize.num_nonzeros = num_nonzeros;
+            else err = MTX_ERR_INVALID_MTX_FORMAT;
+            err = err ? err : mtxfile_alloc(
+                &sendmtxfile, &mtxfile->header, &mtxfile->comments,
+                &sendsize, mtxfile->precision);
+            err = err ? err : mtxfiledata_copy(
+                &sendmtxfile.data, &mtxfile->data,
+                sendmtxfile.header.object, sendmtxfile.header.format,
+                sendmtxfile.header.field, sendmtxfile.precision,
+                num_nonzeros, 0, offset);
+        }
+        if (rank == root && p != root) {
+            /* send from the root process */
+            err = err ? err : mtxfile_send(&sendmtxfile, p, 0, comm, disterr);
+            mtxfile_free(&sendmtxfile);
+        } else if (rank != root && rank == p) {
+            /* receive from the root process */
+            struct mtxfile recvmtxfile;
+            err = err ? err : mtxfile_recv(&recvmtxfile, root, 0, comm, disterr);
+            err = err ? err : mtxvector_packed_from_mtxfile(
+                &x->xp, &recvmtxfile, type);
+            mtxfile_free(&recvmtxfile);
+        } else if (rank == root && p == root) {
+            err = err ? err : mtxvector_packed_from_mtxfile(
+                &x->xp, &sendmtxfile, type);
+            mtxfile_free(&sendmtxfile);
+        }
+        if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+        offset += num_nonzeros;
+    }
+
+    err = mtxvector_dist_init_ranks(x, disterr);
+    if (err) return err;
+    return MTX_SUCCESS;
+}
 
 /**
  * ‘mtxvector_dist_to_mtxfile()’ converts to a vector in Matrix
