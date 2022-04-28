@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-04-26
+ * Last modified: 2022-04-28
  *
  * Data structures and routines for basic dense vectors.
  */
@@ -718,13 +718,15 @@ int mtxvector_base_to_mtxfile(
             if (err) return err;
             if (x->precision == mtx_single) {
                 for (int64_t k = 0; k < x->size; k++) {
-                    mtxfile->data.vector_coordinate_real_single[k].i = idx[k]+1;
+                    mtxfile->data.vector_coordinate_real_single[k].i =
+                        idx ? idx[k]+1 : k+1;
                     mtxfile->data.vector_coordinate_real_single[k].a =
                         x->data.real_single[k];
                 }
             } else if (x->precision == mtx_double) {
                 for (int64_t k = 0; k < x->size; k++) {
-                    mtxfile->data.vector_coordinate_real_double[k].i = idx[k]+1;
+                    mtxfile->data.vector_coordinate_real_double[k].i =
+                        idx ? idx[k]+1 : k+1;
                     mtxfile->data.vector_coordinate_real_double[k].a =
                         x->data.real_double[k];
                 }
@@ -738,7 +740,8 @@ int mtxvector_base_to_mtxfile(
             if (err) return err;
             if (x->precision == mtx_single) {
                 for (int64_t k = 0; k < x->size; k++) {
-                    mtxfile->data.vector_coordinate_complex_single[k].i = idx[k]+1;
+                    mtxfile->data.vector_coordinate_complex_single[k].i =
+                        idx ? idx[k]+1 : k+1;
                     mtxfile->data.vector_coordinate_complex_single[k].a[0] =
                         x->data.complex_single[k][0];
                     mtxfile->data.vector_coordinate_complex_single[k].a[1] =
@@ -746,7 +749,8 @@ int mtxvector_base_to_mtxfile(
                 }
             } else if (x->precision == mtx_double) {
                 for (int64_t k = 0; k < x->size; k++) {
-                    mtxfile->data.vector_coordinate_complex_double[k].i = idx[k]+1;
+                    mtxfile->data.vector_coordinate_complex_double[k].i =
+                        idx ? idx[k]+1 : k+1;
                     mtxfile->data.vector_coordinate_complex_double[k].a[0] =
                         x->data.complex_double[k][0];
                     mtxfile->data.vector_coordinate_complex_double[k].a[1] =
@@ -762,13 +766,15 @@ int mtxvector_base_to_mtxfile(
             if (err) return err;
             if (x->precision == mtx_single) {
                 for (int64_t k = 0; k < x->size; k++) {
-                    mtxfile->data.vector_coordinate_integer_single[k].i = idx[k]+1;
+                    mtxfile->data.vector_coordinate_integer_single[k].i =
+                        idx ? idx[k]+1 : k+1;
                     mtxfile->data.vector_coordinate_integer_single[k].a =
                         x->data.integer_single[k];
                 }
             } else if (x->precision == mtx_double) {
                 for (int64_t k = 0; k < x->size; k++) {
-                    mtxfile->data.vector_coordinate_integer_double[k].i = idx[k]+1;
+                    mtxfile->data.vector_coordinate_integer_double[k].i =
+                        idx ? idx[k]+1 : k+1;
                     mtxfile->data.vector_coordinate_integer_double[k].a =
                         x->data.integer_double[k];
                 }
@@ -781,7 +787,8 @@ int mtxvector_base_to_mtxfile(
                 mtxfile, mtxfile_pattern, x->precision, num_rows, x->size);
             if (err) return err;
             for (int64_t k = 0; k < x->size; k++)
-                mtxfile->data.vector_coordinate_pattern[k].i = idx[k]+1;
+                mtxfile->data.vector_coordinate_pattern[k].i =
+                    idx ? idx[k]+1 : k+1;
         } else { return MTX_ERR_INVALID_FIELD; }
     } else { return MTX_ERR_INVALID_MTX_FORMAT; }
     return MTX_SUCCESS;

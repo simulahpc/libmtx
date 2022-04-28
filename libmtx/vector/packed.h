@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-04-14
+ * Last modified: 2022-04-28
  *
  * Data structures and routines for sparse vectors in packed form.
  */
@@ -65,6 +65,12 @@ struct mtxvector_packed
      * offset of each nonzero vector entry. Note that offsets are
      * 0-based, unlike the Matrix Market format, where indices are
      * 1-based.
+     *
+     * In some cases, ‘idx’ is set to ‘NULL’, and the packed vector
+     * instead represents an underlying dense vector. In this case,
+     * ‘size’ and ‘num_nonzeros’ must be equal, and elements of the
+     * underlying dense vector are implicitly numbered from ‘0’ up to
+     * ‘size-1’.
      */
     int64_t * idx;
 

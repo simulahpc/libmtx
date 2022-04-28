@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-04-14
+ * Last modified: 2022-04-28
  *
  * Unit tests for sparse vectors in packed storage format.
  */
@@ -45,6 +45,30 @@
 int test_mtxvector_packed_from_mtxfile(void)
 {
     int err;
+    {
+        int num_rows = 3;
+        const float mtxdata[] = {3.0f, 4.0f, 5.0f};
+        int64_t num_nonzeros = sizeof(mtxdata) / sizeof(*mtxdata);
+        struct mtxfile mtxfile;
+        err = mtxfile_init_vector_array_real_single(&mtxfile, num_rows, mtxdata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        struct mtxvector_packed xpacked;
+        err = mtxvector_packed_from_mtxfile(&xpacked, &mtxfile, mtxvector_base);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(3, xpacked.size);
+        TEST_ASSERT_EQ(3, xpacked.num_nonzeros);
+        TEST_ASSERT_EQ(NULL, xpacked.idx);
+        TEST_ASSERT_EQ(mtxvector_base, xpacked.x.type);
+        const struct mtxvector_base * x = &xpacked.x.storage.base;
+        TEST_ASSERT_EQ(mtx_field_real, x->field);
+        TEST_ASSERT_EQ(mtx_single, x->precision);
+        TEST_ASSERT_EQ(3, x->size);
+        TEST_ASSERT_EQ(x->data.real_single[0], 3.0f);
+        TEST_ASSERT_EQ(x->data.real_single[1], 4.0f);
+        TEST_ASSERT_EQ(x->data.real_single[2], 5.0f);
+        mtxvector_packed_free(&xpacked);
+        mtxfile_free(&mtxfile);
+    }
     {
         int size = 4;
         struct mtxfile_vector_coordinate_real_single mtxdata[] = {
@@ -252,6 +276,59 @@ int test_mtxvector_packed_from_mtxfile(void)
 int test_mtxvector_packed_to_mtxfile(void)
 {
     int err;
+    {
+        int size = 5;
+        int nnz = 5;
+        struct mtxvector_packed x;
+        float xdata[] = {1.0f, 1.0f, 1.0f, 2.0f, 3.0f};
+        err = mtxvector_packed_init_real_single(
+            &x, mtxvector_base, size, nnz, NULL, xdata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        struct mtxfile mtxfile;
+        err = mtxvector_packed_to_mtxfile(&mtxfile, &x, mtxfile_array);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(mtxfile_vector, mtxfile.header.object);
+        TEST_ASSERT_EQ(mtxfile_array, mtxfile.header.format);
+        TEST_ASSERT_EQ(mtxfile_real, mtxfile.header.field);
+        TEST_ASSERT_EQ(mtxfile_general, mtxfile.header.symmetry);
+        TEST_ASSERT_EQ(size, mtxfile.size.num_rows);
+        TEST_ASSERT_EQ(-1, mtxfile.size.num_columns);
+        TEST_ASSERT_EQ(-1, mtxfile.size.num_nonzeros);
+        TEST_ASSERT_EQ(mtx_single, mtxfile.precision);
+        const float * data = mtxfile.data.array_real_single;
+        for (int64_t k = 0; k < size; k++)
+            TEST_ASSERT_EQ(xdata[k], data[k]);
+        mtxfile_free(&mtxfile);
+        mtxvector_packed_free(&x);
+    }
+    {
+        int size = 5;
+        int nnz = 5;
+        struct mtxvector_packed x;
+        float xdata[] = {1.0f, 1.0f, 1.0f, 2.0f, 3.0f};
+        err = mtxvector_packed_init_real_single(
+            &x, mtxvector_base, size, nnz, NULL, xdata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        struct mtxfile mtxfile;
+        err = mtxvector_packed_to_mtxfile(&mtxfile, &x, mtxfile_coordinate);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(mtxfile_vector, mtxfile.header.object);
+        TEST_ASSERT_EQ(mtxfile_coordinate, mtxfile.header.format);
+        TEST_ASSERT_EQ(mtxfile_real, mtxfile.header.field);
+        TEST_ASSERT_EQ(mtxfile_general, mtxfile.header.symmetry);
+        TEST_ASSERT_EQ(size, mtxfile.size.num_rows);
+        TEST_ASSERT_EQ(-1, mtxfile.size.num_columns);
+        TEST_ASSERT_EQ(nnz, mtxfile.size.num_nonzeros);
+        TEST_ASSERT_EQ(mtx_single, mtxfile.precision);
+        const struct mtxfile_vector_coordinate_real_single * data =
+            mtxfile.data.vector_coordinate_real_single;
+        for (int64_t k = 0; k < nnz; k++) {
+            TEST_ASSERT_EQ(k+1, data[k].i);
+            TEST_ASSERT_EQ(xdata[k], data[k].a);
+        }
+        mtxfile_free(&mtxfile);
+        mtxvector_packed_free(&x);
+    }
     {
         int size = 12;
         int nnz = 5;
