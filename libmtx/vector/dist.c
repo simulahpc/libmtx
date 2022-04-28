@@ -1155,14 +1155,86 @@ int mtxvector_dist_from_mtxfile(
 }
 
 /**
- * ‘mtxvector_dist_to_mtxfile()’ converts to a vector in Matrix
- * Market format.
+ * ‘mtxvector_dist_to_mtxfile()’ converts to a vector in Matrix Market
+ * format.
  */
 int mtxvector_dist_to_mtxfile(
     struct mtxfile * mtxfile,
     const struct mtxvector_dist * x,
     enum mtxfileformat mtxfmt,
-    struct mtxdisterror * disterr);
+    int root,
+    struct mtxdisterror * disterr)
+{
+    int err;
+    enum mtxfield field;
+    err = mtxvector_field(&x->xp.x, &field);
+    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+    enum mtxprecision precision;
+    err = mtxvector_precision(&x->xp.x, &precision);
+    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+
+    struct mtxfileheader mtxheader;
+    mtxheader.object = mtxfile_vector;
+    mtxheader.format = mtxfmt;
+    if (field == mtx_field_real) mtxheader.field = mtxfile_real;
+    else if (field == mtx_field_complex) mtxheader.field = mtxfile_complex;
+    else if (field == mtx_field_integer) mtxheader.field = mtxfile_integer;
+    else if (field == mtx_field_pattern) mtxheader.field = mtxfile_pattern;
+    else { return MTX_ERR_INVALID_FIELD; }
+    mtxheader.symmetry = mtxfile_general;
+
+    struct mtxfilesize mtxsize;
+    mtxsize.num_rows = x->size;
+    mtxsize.num_columns = -1;
+    if (mtxfmt == mtxfile_array) {
+        mtxsize.num_nonzeros = -1;
+    } else if (mtxfmt == mtxfile_coordinate) {
+        mtxsize.num_nonzeros = x->num_nonzeros;
+    } else { return MTX_ERR_INVALID_MTX_FORMAT; }
+
+    err = mtxfile_alloc(mtxfile, &mtxheader, NULL, &mtxsize, precision);
+    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+
+    int64_t offset = 0;
+    for (int p = 0; p < x->comm_size; p++) {
+        if (x->rank == root && p != root) {
+            /* receive from the root process */
+            struct mtxfile recvmtxfile;
+            err = err ? err : mtxfile_recv(&recvmtxfile, p, 0, x->comm, disterr);
+            int64_t num_nonzeros;
+            if (mtxfile->header.format == mtxfile_array) {
+                num_nonzeros = recvmtxfile.size.num_rows;
+            } else if (mtxfile->header.format == mtxfile_coordinate) {
+                num_nonzeros = recvmtxfile.size.num_nonzeros;
+            } else { err = MTX_ERR_INVALID_MTX_FORMAT; }
+            err = err ? err : mtxfiledata_copy(
+                &mtxfile->data, &recvmtxfile.data,
+                recvmtxfile.header.object, recvmtxfile.header.format,
+                recvmtxfile.header.field, recvmtxfile.precision,
+                num_nonzeros, offset, 0);
+            mtxfile_free(&recvmtxfile);
+            offset += num_nonzeros;
+        } else if (x->rank != root && x->rank == p) {
+            /* send to the root process */
+            struct mtxfile sendmtxfile;
+            err = mtxvector_packed_to_mtxfile(&sendmtxfile, &x->xp, mtxfmt);
+            err = err ? err : mtxfile_send(&sendmtxfile, root, 0, x->comm, disterr);
+            mtxfile_free(&sendmtxfile);
+        } else if (x->rank == root && p == root) {
+            struct mtxfile sendmtxfile;
+            err = mtxvector_packed_to_mtxfile(&sendmtxfile, &x->xp, mtxfmt);
+            err = err ? err : mtxfiledata_copy(
+                &mtxfile->data, &sendmtxfile.data,
+                sendmtxfile.header.object, sendmtxfile.header.format,
+                sendmtxfile.header.field, sendmtxfile.precision,
+                x->xp.num_nonzeros, offset, 0);
+            mtxfile_free(&sendmtxfile);
+            offset += x->xp.num_nonzeros;
+        }
+        if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+    }
+    return MTX_SUCCESS;
+}
 
 /*
  * Partitioning

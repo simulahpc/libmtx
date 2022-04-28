@@ -474,6 +474,7 @@ int mtxvector_dist_to_mtxfile(
     struct mtxfile * mtxfile,
     const struct mtxvector_dist * x,
     enum mtxfileformat mtxfmt,
+    int root,
     struct mtxdisterror * disterr);
 
 /*
