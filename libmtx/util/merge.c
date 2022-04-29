@@ -33,6 +33,247 @@
 #include <stdint.h>
 
 /*
+ * stream compaction
+ */
+
+/**
+ * ‘compact_sorted_int32()’ performs a stream compaction on a sorted
+ * array of 32-bit signed integers to produce a sorted output array of
+ * unique elements from the input array.
+ *
+ * The array to be compacted, ‘a’, contains ‘asize’ items. The array
+ * must be sorted in ascending order and values may appear more than
+ * once.
+ *
+ * If ‘b’ is ‘NULL’, then no output is written. However, ‘bsize’ is
+ * used to indicate the number of items that would have been written
+ * if an output array were provided.
+ *
+ * Otherwise, the user must provide an output array ‘b’ with enough
+ * storage to hold the compacted results. Moreover, the user must
+ * specify the allocated size of the output array with the value
+ * pointed to by ‘bsize’. On success, the value returned in ‘bsize’
+ * indicates the number of items that were written to the output
+ * array.
+ */
+int compact_sorted_int32(
+    int64_t * bsize,
+    int32_t * b,
+    int64_t asize,
+    const int32_t * a)
+{
+    if (b) {
+        int64_t i = 0, k = 0;
+        while (i < asize) {
+            if (k >= *bsize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            b[k++] = a[i];
+            for (i++; i < asize && a[i] == a[i-1]; i++) {}
+        }
+        *bsize = k;
+    } else {
+        int64_t i = 0, k = 0;
+        while (i < asize) {
+            if (k >= *bsize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            k++;
+            for (i++; i < asize && a[i] == a[i-1]; i++) {}
+        }
+        *bsize = k;
+    }
+    return MTX_SUCCESS;
+}
+
+/**
+ * ‘compact_sorted_int64()’ performs a stream compaction on a sorted
+ * array of 64-bit signed integers to produce a sorted output array of
+ * unique elements from the input array.
+ *
+ * The array to be compacted, ‘a’, contains ‘asize’ items. The array
+ * must be sorted in ascending order and values may appear more than
+ * once.
+ *
+ * If ‘b’ is ‘NULL’, then no output is written. However, ‘bsize’ is
+ * used to indicate the number of items that would have been written
+ * if an output array were provided.
+ *
+ * Otherwise, the user must provide an output array ‘b’ with enough
+ * storage to hold the compacted results. Moreover, the user must
+ * specify the allocated size of the output array with the value
+ * pointed to by ‘bsize’. On success, the value returned in ‘bsize’
+ * indicates the number of items that were written to the output
+ * array.
+ */
+int compact_sorted_int64(
+    int64_t * bsize,
+    int64_t * b,
+    int64_t asize,
+    const int64_t * a)
+{
+    if (b) {
+        int64_t i = 0, k = 0;
+        while (i < asize) {
+            if (k >= *bsize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            b[k++] = a[i];
+            for (i++; i < asize && a[i] == a[i-1]; i++) {}
+        }
+        *bsize = k;
+    } else {
+        int64_t i = 0, k = 0;
+        while (i < asize) {
+            if (k >= *bsize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            k++;
+            for (i++; i < asize && a[i] == a[i-1]; i++) {}
+        }
+        *bsize = k;
+    }
+    return MTX_SUCCESS;
+}
+
+/**
+ * ‘compact_sorted_int()’ performs a stream compaction on a sorted
+ * array of signed integers to produce a sorted output array of unique
+ * elements from the input array.
+ *
+ * The array to be compacted, ‘a’, contains ‘asize’ items. The array
+ * must be sorted in ascending order and values may appear more than
+ * once.
+ *
+ * If ‘b’ is ‘NULL’, then no output is written. However, ‘bsize’ is
+ * used to indicate the number of items that would have been written
+ * if an output array were provided.
+ *
+ * Otherwise, the user must provide an output array ‘b’ with enough
+ * storage to hold the compacted results. Moreover, the user must
+ * specify the allocated size of the output array with the value
+ * pointed to by ‘bsize’. On success, the value returned in ‘bsize’
+ * indicates the number of items that were written to the output
+ * array.
+ */
+int compact_sorted_int(
+    int64_t * bsize,
+    int * b,
+    int64_t asize,
+    const int * a)
+{
+    if (b) {
+        int64_t i = 0, k = 0;
+        while (i < asize) {
+            if (k >= *bsize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            b[k++] = a[i];
+            for (i++; i < asize && a[i] == a[i-1]; i++) {}
+        }
+        *bsize = k;
+    } else {
+        int64_t i = 0, k = 0;
+        while (i < asize) {
+            if (k >= *bsize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            k++;
+            for (i++; i < asize && a[i] == a[i-1]; i++) {}
+        }
+        *bsize = k;
+    }
+    return MTX_SUCCESS;
+}
+
+/**
+ * ‘compact_unsorted_int32()’ performs a stream compaction on a sorted
+ * array of 32-bit signed integers to produce a sorted output array of
+ * unique elements from the input array.
+ *
+ * The array to be compacted, ‘a’, contains ‘asize’ items. The arrays
+ * need not be sorted beforehand, but it will be sorted if the
+ * function returns successfully. Duplicate values are allowed in the
+ * input array.
+ *
+ * If ‘b’ is ‘NULL’, then no output is written. However, ‘bsize’ is
+ * used to indicate the number of items that would have been written
+ * if an output array were provided.
+ *
+ * Otherwise, the user must provide an output array ‘b’ with enough
+ * storage to hold the compacted results. (The input and output arrays
+ * may be the same.) Moreover, the user must specify the allocated
+ * size of the output array with the value pointed to by ‘bsize’. On
+ * success, the value returned in ‘bsize’ indicates the number of
+ * items that were written to the output array. The output will be
+ * sorted in ascending order.
+ */
+int compact_unsorted_int32(
+    int64_t * bsize,
+    int32_t * b,
+    int64_t asize,
+    int32_t * a)
+{
+    int err = radix_sort_int32(asize, a, NULL);
+    if (err) return err;
+    return compact_sorted_int32(bsize, b, asize, a);
+}
+
+/**
+ * ‘compact_unsorted_int64()’ performs a stream compaction on a sorted
+ * array of 64-bit signed integers to produce a sorted output array of
+ * unique elements from the input array.
+ *
+ * The array to be compacted, ‘a’, contains ‘asize’ items. The arrays
+ * need not be sorted beforehand, but it will be sorted if the
+ * function returns successfully. Duplicate values are allowed in the
+ * input array.
+ *
+ * If ‘b’ is ‘NULL’, then no output is written. However, ‘bsize’ is
+ * used to indicate the number of items that would have been written
+ * if an output array were provided.
+ *
+ * Otherwise, the user must provide an output array ‘b’ with enough
+ * storage to hold the compacted results. (The input and output arrays
+ * may be the same.) Moreover, the user must specify the allocated
+ * size of the output array with the value pointed to by ‘bsize’. On
+ * success, the value returned in ‘bsize’ indicates the number of
+ * items that were written to the output array. The output will be
+ * sorted in ascending order.
+ */
+int compact_unsorted_int64(
+    int64_t * bsize,
+    int64_t * b,
+    int64_t asize,
+    int64_t * a)
+{
+    int err = radix_sort_int64(asize, a, NULL);
+    if (err) return err;
+    return compact_sorted_int64(bsize, b, asize, a);
+}
+
+/**
+ * ‘compact_unsorted_int()’ performs a stream compaction on a sorted
+ * array of signed integers to produce a sorted output array of
+ * unique elements from the input array.
+ *
+ * The array to be compacted, ‘a’, contains ‘asize’ items. The arrays
+ * need not be sorted beforehand, but it will be sorted if the
+ * function returns successfully. Duplicate values are allowed in the
+ * input array.
+ *
+ * If ‘b’ is ‘NULL’, then no output is written. However, ‘bsize’ is
+ * used to indicate the number of items that would have been written
+ * if an output array were provided.
+ *
+ * Otherwise, the user must provide an output array ‘b’ with enough
+ * storage to hold the compacted results. (The input and output arrays
+ * may be the same.) Moreover, the user must specify the allocated
+ * size of the output array with the value pointed to by ‘bsize’. On
+ * success, the value returned in ‘bsize’ indicates the number of
+ * items that were written to the output array. The output will be
+ * sorted in ascending order.
+ */
+int compact_unsorted_int(
+    int64_t * bsize,
+    int * b,
+    int64_t asize,
+    int * a)
+{
+    int err = radix_sort_int(asize, a, NULL);
+    if (err) return err;
+    return compact_sorted_int(bsize, b, asize, a);
+}
+
+/*
  * merge sorted arrays
  */
 
@@ -562,8 +803,7 @@ int setunion_sorted_nonunique_int(
  * The two arrays to be merged, ‘a’ and ‘b’, contain ‘asize’ and
  * ‘bsize’ items, respectively. The arrays need not be sorted
  * beforehand, but they will be sorted if the function returns
- * successfully. Duplicate values are not allowed in the input
- * arrays.
+ * successfully. Duplicate values are not allowed in the input arrays.
  *
  * If ‘c’ is ‘NULL’, then no output is written. However, ‘csize’ is
  * used to indicate the number of items that would have been written
@@ -597,8 +837,7 @@ int setunion_unsorted_unique_int32(
  * The two arrays to be merged, ‘a’ and ‘b’, contain ‘asize’ and
  * ‘bsize’ items, respectively. The arrays need not be sorted
  * beforehand, but they will be sorted if the function returns
- * successfully.  Duplicate values are not allowed in the input
- * arrays.
+ * successfully. Duplicate values are not allowed in the input arrays.
  *
  * If ‘c’ is ‘NULL’, then no output is written. However, ‘csize’ is
  * used to indicate the number of items that would have been written
@@ -632,8 +871,7 @@ int setunion_unsorted_unique_int64(
  * The two arrays to be merged, ‘a’ and ‘b’, contain ‘asize’ and
  * ‘bsize’ items, respectively. The arrays need not be sorted
  * beforehand, but they will be sorted if the function returns
- * successfully.  Duplicate values are not allowed in the input
- * arrays.
+ * successfully. Duplicate values are not allowed in the input arrays.
  *
  * If ‘c’ is ‘NULL’, then no output is written. However, ‘csize’ is
  * used to indicate the number of items that would have been written
@@ -670,8 +908,9 @@ int setunion_unsorted_unique_int(
  * signed integers based on a set union operation.
  *
  * The two arrays to be merged, ‘a’ and ‘b’, contain ‘asize’ and
- * ‘bsize’ items, respectively. The arrays need not be sorted and
- * duplicate values are allowed.
+ * ‘bsize’ items, respectively. The arrays need not be sorted
+ * beforehand, but they will be sorted if the function returns
+ * successfully. Duplicate values are allowed in the input arrays.
  *
  * If ‘c’ is ‘NULL’, then no output is written. However, ‘csize’ is
  * used to indicate the number of items that would have been written
@@ -703,8 +942,9 @@ int setunion_unsorted_nonunique_int32(
  * signed integers based on a set union operation.
  *
  * The two arrays to be merged, ‘a’ and ‘b’, contain ‘asize’ and
- * ‘bsize’ items, respectively. The arrays need not be sorted and
- * duplicate values are allowed.
+ * ‘bsize’ items, respectively. The arrays need not be sorted
+ * beforehand, but they will be sorted if the function returns
+ * successfully. Duplicate values are allowed in the input arrays.
  *
  * If ‘c’ is ‘NULL’, then no output is written. However, ‘csize’ is
  * used to indicate the number of items that would have been written
@@ -736,8 +976,9 @@ int setunion_unsorted_nonunique_int64(
  * integers based on a set union operation.
  *
  * The two arrays to be merged, ‘a’ and ‘b’, contain ‘asize’ and
- * ‘bsize’ items, respectively. The arrays need not be sorted and
- * duplicate values are allowed.
+ * ‘bsize’ items, respectively. The arrays need not be sorted
+ * beforehand, but they will be sorted if the function returns
+ * successfully. Duplicate values are allowed in the input arrays.
  *
  * If ‘c’ is ‘NULL’, then no output is written. However, ‘csize’ is
  * used to indicate the number of items that would have been written
@@ -1101,8 +1342,7 @@ int setintersection_sorted_nonunique_int(
  * The two arrays to be merged, ‘a’ and ‘b’, contain ‘asize’ and
  * ‘bsize’ items, respectively. The arrays need not be sorted
  * beforehand, but they will be sorted if the function returns
- * successfully. Duplicate values are not allowed in the input
- * arrays.
+ * successfully. Duplicate values are not allowed in the input arrays.
  *
  * If ‘c’ is ‘NULL’, then no output is written. However, ‘csize’ is
  * used to indicate the number of items that would have been written
@@ -1136,8 +1376,7 @@ int setintersection_unsorted_unique_int32(
  * The two arrays to be merged, ‘a’ and ‘b’, contain ‘asize’ and
  * ‘bsize’ items, respectively. The arrays need not be sorted
  * beforehand, but they will be sorted if the function returns
- * successfully.  Duplicate values are not allowed in the input
- * arrays.
+ * successfully. Duplicate values are not allowed in the input arrays.
  *
  * If ‘c’ is ‘NULL’, then no output is written. However, ‘csize’ is
  * used to indicate the number of items that would have been written
@@ -1171,8 +1410,7 @@ int setintersection_unsorted_unique_int64(
  * The two arrays to be merged, ‘a’ and ‘b’, contain ‘asize’ and
  * ‘bsize’ items, respectively. The arrays need not be sorted
  * beforehand, but they will be sorted if the function returns
- * successfully.  Duplicate values are not allowed in the input
- * arrays.
+ * successfully. Duplicate values are not allowed in the input arrays.
  *
  * If ‘c’ is ‘NULL’, then no output is written. However, ‘csize’ is
  * used to indicate the number of items that would have been written
@@ -1209,8 +1447,9 @@ int setintersection_unsorted_unique_int(
  * 32-bit signed integers based on a set intersection operation.
  *
  * The two arrays to be merged, ‘a’ and ‘b’, contain ‘asize’ and
- * ‘bsize’ items, respectively. The arrays need not be sorted and
- * duplicate values are allowed.
+ * ‘bsize’ items, respectively. The arrays need not be sorted
+ * beforehand, but they will be sorted if the function returns
+ * successfully. Duplicate values are allowed in the input arrays.
  *
  * If ‘c’ is ‘NULL’, then no output is written. However, ‘csize’ is
  * used to indicate the number of items that would have been written
@@ -1242,8 +1481,9 @@ int setintersection_unsorted_nonunique_int32(
  * 64-bit signed integers based on a set intersection operation.
  *
  * The two arrays to be merged, ‘a’ and ‘b’, contain ‘asize’ and
- * ‘bsize’ items, respectively. The arrays need not be sorted and
- * duplicate values are allowed.
+ * ‘bsize’ items, respectively. The arrays need not be sorted
+ * beforehand, but they will be sorted if the function returns
+ * successfully. Duplicate values are allowed in the input arrays.
  *
  * If ‘c’ is ‘NULL’, then no output is written. However, ‘csize’ is
  * used to indicate the number of items that would have been written
@@ -1275,8 +1515,9 @@ int setintersection_unsorted_nonunique_int64(
  * signed integers based on a set intersection operation.
  *
  * The two arrays to be merged, ‘a’ and ‘b’, contain ‘asize’ and
- * ‘bsize’ items, respectively. The arrays need not be sorted and
- * duplicate values are allowed.
+ * ‘bsize’ items, respectively. The arrays need not be sorted
+ * beforehand, but they will be sorted if the function returns
+ * successfully. Duplicate values are allowed in the input arrays.
  *
  * If ‘c’ is ‘NULL’, then no output is written. However, ‘csize’ is
  * used to indicate the number of items that would have been written
@@ -1676,8 +1917,7 @@ int setdifference_sorted_nonunique_int(
  * The two arrays to be merged, ‘a’ and ‘b’, contain ‘asize’ and
  * ‘bsize’ items, respectively. The arrays need not be sorted
  * beforehand, but they will be sorted if the function returns
- * successfully. Duplicate values are not allowed in the input
- * arrays.
+ * successfully. Duplicate values are not allowed in the input arrays.
  *
  * If ‘c’ is ‘NULL’, then no output is written. However, ‘csize’ is
  * used to indicate the number of items that would have been written
@@ -1711,8 +1951,7 @@ int setdifference_unsorted_unique_int32(
  * The two arrays to be merged, ‘a’ and ‘b’, contain ‘asize’ and
  * ‘bsize’ items, respectively. The arrays need not be sorted
  * beforehand, but they will be sorted if the function returns
- * successfully.  Duplicate values are not allowed in the input
- * arrays.
+ * successfully. Duplicate values are not allowed in the input arrays.
  *
  * If ‘c’ is ‘NULL’, then no output is written. However, ‘csize’ is
  * used to indicate the number of items that would have been written
@@ -1746,8 +1985,7 @@ int setdifference_unsorted_unique_int64(
  * The two arrays to be merged, ‘a’ and ‘b’, contain ‘asize’ and
  * ‘bsize’ items, respectively. The arrays need not be sorted
  * beforehand, but they will be sorted if the function returns
- * successfully.  Duplicate values are not allowed in the input
- * arrays.
+ * successfully. Duplicate values are not allowed in the input arrays.
  *
  * If ‘c’ is ‘NULL’, then no output is written. However, ‘csize’ is
  * used to indicate the number of items that would have been written
@@ -1784,8 +2022,9 @@ int setdifference_unsorted_unique_int(
  * 32-bit signed integers based on a set difference operation.
  *
  * The two arrays to be merged, ‘a’ and ‘b’, contain ‘asize’ and
- * ‘bsize’ items, respectively. The arrays need not be sorted and
- * duplicate values are allowed.
+ * ‘bsize’ items, respectively. The arrays need not be sorted
+ * beforehand, but they will be sorted if the function returns
+ * successfully. Duplicate values are allowed in the input arrays.
  *
  * If ‘c’ is ‘NULL’, then no output is written. However, ‘csize’ is
  * used to indicate the number of items that would have been written
@@ -1817,8 +2056,9 @@ int setdifference_unsorted_nonunique_int32(
  * 64-bit signed integers based on a set difference operation.
  *
  * The two arrays to be merged, ‘a’ and ‘b’, contain ‘asize’ and
- * ‘bsize’ items, respectively. The arrays need not be sorted and
- * duplicate values are allowed.
+ * ‘bsize’ items, respectively. The arrays need not be sorted
+ * beforehand, but they will be sorted if the function returns
+ * successfully. Duplicate values are allowed in the input arrays.
  *
  * If ‘c’ is ‘NULL’, then no output is written. However, ‘csize’ is
  * used to indicate the number of items that would have been written
@@ -1850,8 +2090,9 @@ int setdifference_unsorted_nonunique_int64(
  * signed integers based on a set difference operation.
  *
  * The two arrays to be merged, ‘a’ and ‘b’, contain ‘asize’ and
- * ‘bsize’ items, respectively. The arrays need not be sorted and
- * duplicate values are allowed.
+ * ‘bsize’ items, respectively. The arrays need not be sorted
+ * beforehand, but they will be sorted if the function returns
+ * successfully. Duplicate values are allowed in the input arrays.
  *
  * If ‘c’ is ‘NULL’, then no output is written. However, ‘csize’ is
  * used to indicate the number of items that would have been written

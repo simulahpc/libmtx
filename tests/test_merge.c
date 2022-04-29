@@ -34,6 +34,159 @@
 #include <stdlib.h>
 
 /**
+ * ‘test_compact_sorted()’ tests compacting sorted arrays.
+ */
+int test_compact_sorted(void)
+{
+    /* 32-bit signed integers */
+    {
+        int err;
+        int64_t asize = 11;
+        int32_t a[11] = {0,2,2,2,4,6,6,8,10,12,14};
+        int64_t bsize = 11;
+        int32_t b[11] = {};
+        err = compact_sorted_int32(&bsize, NULL, asize, a);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(8, bsize);
+        err = compact_sorted_int32(&bsize, b, asize, a);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(8, bsize);
+        TEST_ASSERT_EQ( 0, b[0]);
+        TEST_ASSERT_EQ( 2, b[1]);
+        TEST_ASSERT_EQ( 4, b[2]);
+        TEST_ASSERT_EQ( 6, b[3]);
+        TEST_ASSERT_EQ( 8, b[4]);
+        TEST_ASSERT_EQ(10, b[5]);
+        TEST_ASSERT_EQ(12, b[6]);
+        TEST_ASSERT_EQ(14, b[7]);
+    }
+
+    /* 64-bit signed integers */
+    {
+        int err;
+        int64_t asize = 11;
+        int64_t a[11] = {0,2,2,2,4,6,6,8,10,12,14};
+        int64_t bsize = 11;
+        int64_t b[11] = {};
+        err = compact_sorted_int64(&bsize, NULL, asize, a);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(8, bsize);
+        err = compact_sorted_int64(&bsize, b, asize, a);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(8, bsize);
+        TEST_ASSERT_EQ( 0, b[0]);
+        TEST_ASSERT_EQ( 2, b[1]);
+        TEST_ASSERT_EQ( 4, b[2]);
+        TEST_ASSERT_EQ( 6, b[3]);
+        TEST_ASSERT_EQ( 8, b[4]);
+        TEST_ASSERT_EQ(10, b[5]);
+        TEST_ASSERT_EQ(12, b[6]);
+        TEST_ASSERT_EQ(14, b[7]);
+    }
+
+    /* signed integers */
+    {
+        int err;
+        int64_t asize = 11;
+        int a[11] = {0,2,2,2,4,6,6,8,10,12,14};
+        int64_t bsize = 11;
+        int b[11] = {};
+        err = compact_sorted_int(&bsize, NULL, asize, a);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(8, bsize);
+        err = compact_sorted_int(&bsize, b, asize, a);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(8, bsize);
+        TEST_ASSERT_EQ( 0, b[0]);
+        TEST_ASSERT_EQ( 2, b[1]);
+        TEST_ASSERT_EQ( 4, b[2]);
+        TEST_ASSERT_EQ( 6, b[3]);
+        TEST_ASSERT_EQ( 8, b[4]);
+        TEST_ASSERT_EQ(10, b[5]);
+        TEST_ASSERT_EQ(12, b[6]);
+        TEST_ASSERT_EQ(14, b[7]);
+    }
+    return TEST_SUCCESS;
+}
+
+/**
+ * ‘test_compact_unsorted()’ tests sorting and compacting unsorted
+ * arrays.
+ */
+int test_compact_unsorted(void)
+{
+    /* 32-bit signed integers */
+    {
+        int err;
+        int64_t asize = 11;
+        int32_t a[11] = {2,0,2,2,4,6,8,14,6,12,10};
+        int64_t bsize = 11;
+        int32_t b[11] = {};
+        err = compact_unsorted_int32(&bsize, NULL, asize, a);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(8, bsize);
+        err = compact_unsorted_int32(&bsize, b, asize, a);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(8, bsize);
+        TEST_ASSERT_EQ( 0, b[0]);
+        TEST_ASSERT_EQ( 2, b[1]);
+        TEST_ASSERT_EQ( 4, b[2]);
+        TEST_ASSERT_EQ( 6, b[3]);
+        TEST_ASSERT_EQ( 8, b[4]);
+        TEST_ASSERT_EQ(10, b[5]);
+        TEST_ASSERT_EQ(12, b[6]);
+        TEST_ASSERT_EQ(14, b[7]);
+    }
+
+    /* 64-bit signed integers */
+    {
+        int err;
+        int64_t asize = 11;
+        int64_t a[11] = {2,0,2,2,4,6,8,14,6,12,10};
+        int64_t bsize = 11;
+        int64_t b[11] = {};
+        err = compact_unsorted_int64(&bsize, NULL, asize, a);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(8, bsize);
+        err = compact_unsorted_int64(&bsize, b, asize, a);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(8, bsize);
+        TEST_ASSERT_EQ( 0, b[0]);
+        TEST_ASSERT_EQ( 2, b[1]);
+        TEST_ASSERT_EQ( 4, b[2]);
+        TEST_ASSERT_EQ( 6, b[3]);
+        TEST_ASSERT_EQ( 8, b[4]);
+        TEST_ASSERT_EQ(10, b[5]);
+        TEST_ASSERT_EQ(12, b[6]);
+        TEST_ASSERT_EQ(14, b[7]);
+    }
+
+    /* signed integers */
+    {
+        int err;
+        int64_t asize = 11;
+        int a[11] = {2,0,2,2,4,6,8,14,6,12,10};
+        int64_t bsize = 11;
+        int b[11] = {};
+        err = compact_unsorted_int(&bsize, NULL, asize, a);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(8, bsize);
+        err = compact_unsorted_int(&bsize, b, asize, a);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(8, bsize);
+        TEST_ASSERT_EQ( 0, b[0]);
+        TEST_ASSERT_EQ( 2, b[1]);
+        TEST_ASSERT_EQ( 4, b[2]);
+        TEST_ASSERT_EQ( 6, b[3]);
+        TEST_ASSERT_EQ( 8, b[4]);
+        TEST_ASSERT_EQ(10, b[5]);
+        TEST_ASSERT_EQ(12, b[6]);
+        TEST_ASSERT_EQ(14, b[7]);
+    }
+    return TEST_SUCCESS;
+}
+
+/**
  * ‘test_merge_sorted()’ tests merging two sorted arrays.
  */
 int test_merge_sorted(void)
@@ -1558,6 +1711,7 @@ int test_setdifference_unsorted_nonunique(void)
 int main(int argc, char * argv[])
 {
     TEST_SUITE_BEGIN("Running tests for merging functions\n");
+    TEST_RUN(test_compact_sorted);
     TEST_RUN(test_merge_sorted);
     TEST_RUN(test_setunion_sorted_unique);
     TEST_RUN(test_setunion_sorted_nonunique);
