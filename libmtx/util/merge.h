@@ -51,12 +51,18 @@
  * pointed to by ‘bsize’. On success, the value returned in ‘bsize’
  * indicates the number of items that were written to the output
  * array.
+ *
+ * If ‘dstidx’ is not ‘NULL’, then it must point to an array of length
+ * ‘asize’. For a given item in the input array ‘a’ the corresponding
+ * value in ‘dstidx’ indicates the offset to the same item in the
+ * output array ‘b’.
  */
 int compact_sorted_int32(
     int64_t * bsize,
     int32_t * b,
     int64_t asize,
-    const int32_t * a);
+    const int32_t * a,
+    int64_t * dstidx);
 
 /**
  * ‘compact_sorted_int64()’ performs a stream compaction on a sorted
@@ -77,12 +83,18 @@ int compact_sorted_int32(
  * pointed to by ‘bsize’. On success, the value returned in ‘bsize’
  * indicates the number of items that were written to the output
  * array.
+ *
+ * If ‘dstidx’ is not ‘NULL’, then it must point to an array of length
+ * ‘asize’. For a given item in the input array ‘a’ the corresponding
+ * value in ‘dstidx’ indicates the offset to the same item in the
+ * output array ‘b’.
  */
 int compact_sorted_int64(
     int64_t * bsize,
     int64_t * b,
     int64_t asize,
-    const int64_t * a);
+    const int64_t * a,
+    int64_t * dstidx);
 
 /**
  * ‘compact_sorted_int()’ performs a stream compaction on a sorted
@@ -103,12 +115,18 @@ int compact_sorted_int64(
  * pointed to by ‘bsize’. On success, the value returned in ‘bsize’
  * indicates the number of items that were written to the output
  * array.
+ *
+ * If ‘dstidx’ is not ‘NULL’, then it must point to an array of length
+ * ‘asize’. For a given item in the input array ‘a’ the corresponding
+ * value in ‘dstidx’ indicates the offset to the same item in the
+ * output array ‘b’.
  */
 int compact_sorted_int(
     int64_t * bsize,
     int * b,
     int64_t asize,
-    const int * a);
+    const int * a,
+    int64_t * dstidx);
 
 /**
  * ‘compact_unsorted_int32()’ performs a stream compaction on a sorted
@@ -131,12 +149,19 @@ int compact_sorted_int(
  * success, the value returned in ‘bsize’ indicates the number of
  * items that were written to the output array. The output will be
  * sorted in ascending order.
+ *
+ * If ‘dstidx’ is not ‘NULL’, then it must point to an array of length
+ * ‘asize’. For a given item in the input array ‘a’ the corresponding
+ * value in ‘dstidx’ indicates the offset to the same item in the
+ * output array ‘b’.
  */
 int compact_unsorted_int32(
     int64_t * bsize,
     int32_t * b,
     int64_t asize,
-    int32_t * a);
+    int32_t * a,
+    int64_t * perm,
+    int64_t * dstidx);
 
 /**
  * ‘compact_unsorted_int64()’ performs a stream compaction on a sorted
@@ -159,12 +184,19 @@ int compact_unsorted_int32(
  * success, the value returned in ‘bsize’ indicates the number of
  * items that were written to the output array. The output will be
  * sorted in ascending order.
+ *
+ * If ‘dstidx’ is not ‘NULL’, then it must point to an array of length
+ * ‘asize’. For a given item in the input array ‘a’ the corresponding
+ * value in ‘dstidx’ indicates the offset to the same item in the
+ * output array ‘b’.
  */
 int compact_unsorted_int64(
     int64_t * bsize,
     int64_t * b,
     int64_t asize,
-    int64_t * a);
+    int64_t * a,
+    int64_t * perm,
+    int64_t * dstidx);
 
 /**
  * ‘compact_unsorted_int()’ performs a stream compaction on a sorted
@@ -187,12 +219,19 @@ int compact_unsorted_int64(
  * success, the value returned in ‘bsize’ indicates the number of
  * items that were written to the output array. The output will be
  * sorted in ascending order.
+ *
+ * If ‘dstidx’ is not ‘NULL’, then it must point to an array of length
+ * ‘asize’. For a given item in the input array ‘a’ the corresponding
+ * value in ‘dstidx’ indicates the offset to the same item in the
+ * output array ‘b’.
  */
 int compact_unsorted_int(
     int64_t * bsize,
     int * b,
     int64_t asize,
-    int * a);
+    int * a,
+    int64_t * perm,
+    int64_t * dstidx);
 
 /*
  * merge sorted arrays

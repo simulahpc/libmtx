@@ -45,10 +45,10 @@ int test_compact_sorted(void)
         int32_t a[11] = {0,2,2,2,4,6,6,8,10,12,14};
         int64_t bsize = 11;
         int32_t b[11] = {};
-        err = compact_sorted_int32(&bsize, NULL, asize, a);
+        err = compact_sorted_int32(&bsize, NULL, asize, a, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(8, bsize);
-        err = compact_sorted_int32(&bsize, b, asize, a);
+        err = compact_sorted_int32(&bsize, b, asize, a, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(8, bsize);
         TEST_ASSERT_EQ( 0, b[0]);
@@ -59,6 +59,20 @@ int test_compact_sorted(void)
         TEST_ASSERT_EQ(10, b[5]);
         TEST_ASSERT_EQ(12, b[6]);
         TEST_ASSERT_EQ(14, b[7]);
+        int64_t dstidx[11] = {};
+        err = compact_sorted_int32(&bsize, b, asize, a, dstidx);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(0, dstidx[ 0]);
+        TEST_ASSERT_EQ(1, dstidx[ 1]);
+        TEST_ASSERT_EQ(1, dstidx[ 2]);
+        TEST_ASSERT_EQ(1, dstidx[ 3]);
+        TEST_ASSERT_EQ(2, dstidx[ 4]);
+        TEST_ASSERT_EQ(3, dstidx[ 5]);
+        TEST_ASSERT_EQ(3, dstidx[ 6]);
+        TEST_ASSERT_EQ(4, dstidx[ 7]);
+        TEST_ASSERT_EQ(5, dstidx[ 8]);
+        TEST_ASSERT_EQ(6, dstidx[ 9]);
+        TEST_ASSERT_EQ(7, dstidx[10]);
     }
 
     /* 64-bit signed integers */
@@ -68,10 +82,10 @@ int test_compact_sorted(void)
         int64_t a[11] = {0,2,2,2,4,6,6,8,10,12,14};
         int64_t bsize = 11;
         int64_t b[11] = {};
-        err = compact_sorted_int64(&bsize, NULL, asize, a);
+        err = compact_sorted_int64(&bsize, NULL, asize, a, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(8, bsize);
-        err = compact_sorted_int64(&bsize, b, asize, a);
+        err = compact_sorted_int64(&bsize, b, asize, a, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(8, bsize);
         TEST_ASSERT_EQ( 0, b[0]);
@@ -82,6 +96,20 @@ int test_compact_sorted(void)
         TEST_ASSERT_EQ(10, b[5]);
         TEST_ASSERT_EQ(12, b[6]);
         TEST_ASSERT_EQ(14, b[7]);
+        int64_t dstidx[11] = {};
+        err = compact_sorted_int64(&bsize, b, asize, a, dstidx);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(0, dstidx[ 0]);
+        TEST_ASSERT_EQ(1, dstidx[ 1]);
+        TEST_ASSERT_EQ(1, dstidx[ 2]);
+        TEST_ASSERT_EQ(1, dstidx[ 3]);
+        TEST_ASSERT_EQ(2, dstidx[ 4]);
+        TEST_ASSERT_EQ(3, dstidx[ 5]);
+        TEST_ASSERT_EQ(3, dstidx[ 6]);
+        TEST_ASSERT_EQ(4, dstidx[ 7]);
+        TEST_ASSERT_EQ(5, dstidx[ 8]);
+        TEST_ASSERT_EQ(6, dstidx[ 9]);
+        TEST_ASSERT_EQ(7, dstidx[10]);
     }
 
     /* signed integers */
@@ -91,10 +119,10 @@ int test_compact_sorted(void)
         int a[11] = {0,2,2,2,4,6,6,8,10,12,14};
         int64_t bsize = 11;
         int b[11] = {};
-        err = compact_sorted_int(&bsize, NULL, asize, a);
+        err = compact_sorted_int(&bsize, NULL, asize, a, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(8, bsize);
-        err = compact_sorted_int(&bsize, b, asize, a);
+        err = compact_sorted_int(&bsize, b, asize, a, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(8, bsize);
         TEST_ASSERT_EQ( 0, b[0]);
@@ -105,6 +133,20 @@ int test_compact_sorted(void)
         TEST_ASSERT_EQ(10, b[5]);
         TEST_ASSERT_EQ(12, b[6]);
         TEST_ASSERT_EQ(14, b[7]);
+        int64_t dstidx[11] = {};
+        err = compact_sorted_int(&bsize, b, asize, a, dstidx);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(0, dstidx[ 0]);
+        TEST_ASSERT_EQ(1, dstidx[ 1]);
+        TEST_ASSERT_EQ(1, dstidx[ 2]);
+        TEST_ASSERT_EQ(1, dstidx[ 3]);
+        TEST_ASSERT_EQ(2, dstidx[ 4]);
+        TEST_ASSERT_EQ(3, dstidx[ 5]);
+        TEST_ASSERT_EQ(3, dstidx[ 6]);
+        TEST_ASSERT_EQ(4, dstidx[ 7]);
+        TEST_ASSERT_EQ(5, dstidx[ 8]);
+        TEST_ASSERT_EQ(6, dstidx[ 9]);
+        TEST_ASSERT_EQ(7, dstidx[10]);
     }
     return TEST_SUCCESS;
 }
@@ -122,10 +164,12 @@ int test_compact_unsorted(void)
         int32_t a[11] = {2,0,2,2,4,6,8,14,6,12,10};
         int64_t bsize = 11;
         int32_t b[11] = {};
-        err = compact_unsorted_int32(&bsize, NULL, asize, a);
+        int64_t perm[11] = {};
+        int64_t dstidx[11] = {};
+        err = compact_unsorted_int32(&bsize, NULL, asize, a, perm, dstidx);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(8, bsize);
-        err = compact_unsorted_int32(&bsize, b, asize, a);
+        err = compact_sorted_int32(&bsize, b, asize, a, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(8, bsize);
         TEST_ASSERT_EQ( 0, b[0]);
@@ -136,6 +180,28 @@ int test_compact_unsorted(void)
         TEST_ASSERT_EQ(10, b[5]);
         TEST_ASSERT_EQ(12, b[6]);
         TEST_ASSERT_EQ(14, b[7]);
+        TEST_ASSERT_EQ( 1, perm[ 0]);
+        TEST_ASSERT_EQ( 0, perm[ 1]);
+        TEST_ASSERT_EQ( 2, perm[ 2]);
+        TEST_ASSERT_EQ( 3, perm[ 3]);
+        TEST_ASSERT_EQ( 4, perm[ 4]);
+        TEST_ASSERT_EQ( 5, perm[ 5]);
+        TEST_ASSERT_EQ( 7, perm[ 6]);
+        TEST_ASSERT_EQ(10, perm[ 7]);
+        TEST_ASSERT_EQ( 6, perm[ 8]);
+        TEST_ASSERT_EQ( 9, perm[ 9]);
+        TEST_ASSERT_EQ( 8, perm[10]);
+        TEST_ASSERT_EQ(0, dstidx[ 0]);
+        TEST_ASSERT_EQ(1, dstidx[ 1]);
+        TEST_ASSERT_EQ(1, dstidx[ 2]);
+        TEST_ASSERT_EQ(1, dstidx[ 3]);
+        TEST_ASSERT_EQ(2, dstidx[ 4]);
+        TEST_ASSERT_EQ(3, dstidx[ 5]);
+        TEST_ASSERT_EQ(3, dstidx[ 6]);
+        TEST_ASSERT_EQ(4, dstidx[ 7]);
+        TEST_ASSERT_EQ(5, dstidx[ 8]);
+        TEST_ASSERT_EQ(6, dstidx[ 9]);
+        TEST_ASSERT_EQ(7, dstidx[10]);
     }
 
     /* 64-bit signed integers */
@@ -145,10 +211,12 @@ int test_compact_unsorted(void)
         int64_t a[11] = {2,0,2,2,4,6,8,14,6,12,10};
         int64_t bsize = 11;
         int64_t b[11] = {};
-        err = compact_unsorted_int64(&bsize, NULL, asize, a);
+        int64_t perm[11] = {};
+        int64_t dstidx[11] = {};
+        err = compact_unsorted_int64(&bsize, NULL, asize, a, perm, dstidx);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(8, bsize);
-        err = compact_unsorted_int64(&bsize, b, asize, a);
+        err = compact_sorted_int64(&bsize, b, asize, a, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(8, bsize);
         TEST_ASSERT_EQ( 0, b[0]);
@@ -159,6 +227,28 @@ int test_compact_unsorted(void)
         TEST_ASSERT_EQ(10, b[5]);
         TEST_ASSERT_EQ(12, b[6]);
         TEST_ASSERT_EQ(14, b[7]);
+        TEST_ASSERT_EQ( 1, perm[ 0]);
+        TEST_ASSERT_EQ( 0, perm[ 1]);
+        TEST_ASSERT_EQ( 2, perm[ 2]);
+        TEST_ASSERT_EQ( 3, perm[ 3]);
+        TEST_ASSERT_EQ( 4, perm[ 4]);
+        TEST_ASSERT_EQ( 5, perm[ 5]);
+        TEST_ASSERT_EQ( 7, perm[ 6]);
+        TEST_ASSERT_EQ(10, perm[ 7]);
+        TEST_ASSERT_EQ( 6, perm[ 8]);
+        TEST_ASSERT_EQ( 9, perm[ 9]);
+        TEST_ASSERT_EQ( 8, perm[10]);
+        TEST_ASSERT_EQ(0, dstidx[ 0]);
+        TEST_ASSERT_EQ(1, dstidx[ 1]);
+        TEST_ASSERT_EQ(1, dstidx[ 2]);
+        TEST_ASSERT_EQ(1, dstidx[ 3]);
+        TEST_ASSERT_EQ(2, dstidx[ 4]);
+        TEST_ASSERT_EQ(3, dstidx[ 5]);
+        TEST_ASSERT_EQ(3, dstidx[ 6]);
+        TEST_ASSERT_EQ(4, dstidx[ 7]);
+        TEST_ASSERT_EQ(5, dstidx[ 8]);
+        TEST_ASSERT_EQ(6, dstidx[ 9]);
+        TEST_ASSERT_EQ(7, dstidx[10]);
     }
 
     /* signed integers */
@@ -168,10 +258,12 @@ int test_compact_unsorted(void)
         int a[11] = {2,0,2,2,4,6,8,14,6,12,10};
         int64_t bsize = 11;
         int b[11] = {};
-        err = compact_unsorted_int(&bsize, NULL, asize, a);
+        int64_t perm[11] = {};
+        int64_t dstidx[11] = {};
+        err = compact_unsorted_int(&bsize, NULL, asize, a, perm, dstidx);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(8, bsize);
-        err = compact_unsorted_int(&bsize, b, asize, a);
+        err = compact_sorted_int(&bsize, b, asize, a, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(8, bsize);
         TEST_ASSERT_EQ( 0, b[0]);
@@ -182,6 +274,28 @@ int test_compact_unsorted(void)
         TEST_ASSERT_EQ(10, b[5]);
         TEST_ASSERT_EQ(12, b[6]);
         TEST_ASSERT_EQ(14, b[7]);
+        TEST_ASSERT_EQ( 1, perm[ 0]);
+        TEST_ASSERT_EQ( 0, perm[ 1]);
+        TEST_ASSERT_EQ( 2, perm[ 2]);
+        TEST_ASSERT_EQ( 3, perm[ 3]);
+        TEST_ASSERT_EQ( 4, perm[ 4]);
+        TEST_ASSERT_EQ( 5, perm[ 5]);
+        TEST_ASSERT_EQ( 7, perm[ 6]);
+        TEST_ASSERT_EQ(10, perm[ 7]);
+        TEST_ASSERT_EQ( 6, perm[ 8]);
+        TEST_ASSERT_EQ( 9, perm[ 9]);
+        TEST_ASSERT_EQ( 8, perm[10]);
+        TEST_ASSERT_EQ(0, dstidx[ 0]);
+        TEST_ASSERT_EQ(1, dstidx[ 1]);
+        TEST_ASSERT_EQ(1, dstidx[ 2]);
+        TEST_ASSERT_EQ(1, dstidx[ 3]);
+        TEST_ASSERT_EQ(2, dstidx[ 4]);
+        TEST_ASSERT_EQ(3, dstidx[ 5]);
+        TEST_ASSERT_EQ(3, dstidx[ 6]);
+        TEST_ASSERT_EQ(4, dstidx[ 7]);
+        TEST_ASSERT_EQ(5, dstidx[ 8]);
+        TEST_ASSERT_EQ(6, dstidx[ 9]);
+        TEST_ASSERT_EQ(7, dstidx[10]);
     }
     return TEST_SUCCESS;
 }
@@ -1712,6 +1826,7 @@ int main(int argc, char * argv[])
 {
     TEST_SUITE_BEGIN("Running tests for merging functions\n");
     TEST_RUN(test_compact_sorted);
+    TEST_RUN(test_compact_unsorted);
     TEST_RUN(test_merge_sorted);
     TEST_RUN(test_setunion_sorted_unique);
     TEST_RUN(test_setunion_sorted_nonunique);

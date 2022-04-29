@@ -55,30 +55,44 @@
  * pointed to by ‘bsize’. On success, the value returned in ‘bsize’
  * indicates the number of items that were written to the output
  * array.
+ *
+ * If ‘dstidx’ is not ‘NULL’, then it must point to an array of length
+ * ‘asize’. For a given item in the input array ‘a’ the corresponding
+ * value in ‘dstidx’ indicates the offset to the same item in the
+ * output array ‘b’.
  */
 int compact_sorted_int32(
     int64_t * bsize,
     int32_t * b,
     int64_t asize,
-    const int32_t * a)
+    const int32_t * a,
+    int64_t * dstidx)
 {
-    if (b) {
-        int64_t i = 0, k = 0;
+    int64_t i = 0, k = 0;
+    if (b && dstidx) {
+        while (i < asize) {
+            if (k >= *bsize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            dstidx[i] = k; b[k++] = a[i];
+            for (i++; i < asize && a[i] == a[i-1]; i++) { dstidx[i] = k-1; }
+        }
+    } else if (b) {
         while (i < asize) {
             if (k >= *bsize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
             b[k++] = a[i];
             for (i++; i < asize && a[i] == a[i-1]; i++) {}
         }
-        *bsize = k;
-    } else {
-        int64_t i = 0, k = 0;
+    } else if (dstidx) {
         while (i < asize) {
-            if (k >= *bsize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            dstidx[i] = k; k++;
+            for (i++; i < asize && a[i] == a[i-1]; i++) { dstidx[i] = k-1; }
+        }
+    } else {
+        while (i < asize) {
             k++;
             for (i++; i < asize && a[i] == a[i-1]; i++) {}
         }
-        *bsize = k;
     }
+    *bsize = k;
     return MTX_SUCCESS;
 }
 
@@ -101,30 +115,44 @@ int compact_sorted_int32(
  * pointed to by ‘bsize’. On success, the value returned in ‘bsize’
  * indicates the number of items that were written to the output
  * array.
+ *
+ * If ‘dstidx’ is not ‘NULL’, then it must point to an array of length
+ * ‘asize’. For a given item in the input array ‘a’ the corresponding
+ * value in ‘dstidx’ indicates the offset to the same item in the
+ * output array ‘b’.
  */
 int compact_sorted_int64(
     int64_t * bsize,
     int64_t * b,
     int64_t asize,
-    const int64_t * a)
+    const int64_t * a,
+    int64_t * dstidx)
 {
-    if (b) {
-        int64_t i = 0, k = 0;
+    int64_t i = 0, k = 0;
+    if (b && dstidx) {
+        while (i < asize) {
+            if (k >= *bsize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            dstidx[i] = k; b[k++] = a[i];
+            for (i++; i < asize && a[i] == a[i-1]; i++) { dstidx[i] = k-1; }
+        }
+    } else if (b) {
         while (i < asize) {
             if (k >= *bsize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
             b[k++] = a[i];
             for (i++; i < asize && a[i] == a[i-1]; i++) {}
         }
-        *bsize = k;
-    } else {
-        int64_t i = 0, k = 0;
+    } else if (dstidx) {
         while (i < asize) {
-            if (k >= *bsize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            dstidx[i] = k; k++;
+            for (i++; i < asize && a[i] == a[i-1]; i++) { dstidx[i] = k-1; }
+        }
+    } else {
+        while (i < asize) {
             k++;
             for (i++; i < asize && a[i] == a[i-1]; i++) {}
         }
-        *bsize = k;
     }
+    *bsize = k;
     return MTX_SUCCESS;
 }
 
@@ -147,30 +175,44 @@ int compact_sorted_int64(
  * pointed to by ‘bsize’. On success, the value returned in ‘bsize’
  * indicates the number of items that were written to the output
  * array.
+ *
+ * If ‘dstidx’ is not ‘NULL’, then it must point to an array of length
+ * ‘asize’. For a given item in the input array ‘a’ the corresponding
+ * value in ‘dstidx’ indicates the offset to the same item in the
+ * output array ‘b’.
  */
 int compact_sorted_int(
     int64_t * bsize,
     int * b,
     int64_t asize,
-    const int * a)
+    const int * a,
+    int64_t * dstidx)
 {
-    if (b) {
-        int64_t i = 0, k = 0;
+    int64_t i = 0, k = 0;
+    if (b && dstidx) {
+        while (i < asize) {
+            if (k >= *bsize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            dstidx[i] = k; b[k++] = a[i];
+            for (i++; i < asize && a[i] == a[i-1]; i++) { dstidx[i] = k-1; }
+        }
+    } else if (b) {
         while (i < asize) {
             if (k >= *bsize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
             b[k++] = a[i];
             for (i++; i < asize && a[i] == a[i-1]; i++) {}
         }
-        *bsize = k;
-    } else {
-        int64_t i = 0, k = 0;
+    } else if (dstidx) {
         while (i < asize) {
-            if (k >= *bsize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            dstidx[i] = k; k++;
+            for (i++; i < asize && a[i] == a[i-1]; i++) { dstidx[i] = k-1; }
+        }
+    } else {
+        while (i < asize) {
             k++;
             for (i++; i < asize && a[i] == a[i-1]; i++) {}
         }
-        *bsize = k;
     }
+    *bsize = k;
     return MTX_SUCCESS;
 }
 
@@ -195,16 +237,23 @@ int compact_sorted_int(
  * success, the value returned in ‘bsize’ indicates the number of
  * items that were written to the output array. The output will be
  * sorted in ascending order.
+ *
+ * If ‘dstidx’ is not ‘NULL’, then it must point to an array of length
+ * ‘asize’. For a given item in the input array ‘a’ the corresponding
+ * value in ‘dstidx’ indicates the offset to the same item in the
+ * output array ‘b’.
  */
 int compact_unsorted_int32(
     int64_t * bsize,
     int32_t * b,
     int64_t asize,
-    int32_t * a)
+    int32_t * a,
+    int64_t * perm,
+    int64_t * dstidx)
 {
-    int err = radix_sort_int32(asize, a, NULL);
+    int err = radix_sort_int32(asize, a, perm);
     if (err) return err;
-    return compact_sorted_int32(bsize, b, asize, a);
+    return compact_sorted_int32(bsize, b, asize, a, dstidx);
 }
 
 /**
@@ -228,16 +277,23 @@ int compact_unsorted_int32(
  * success, the value returned in ‘bsize’ indicates the number of
  * items that were written to the output array. The output will be
  * sorted in ascending order.
+ *
+ * If ‘dstidx’ is not ‘NULL’, then it must point to an array of length
+ * ‘asize’. For a given item in the input array ‘a’ the corresponding
+ * value in ‘dstidx’ indicates the offset to the same item in the
+ * output array ‘b’.
  */
 int compact_unsorted_int64(
     int64_t * bsize,
     int64_t * b,
     int64_t asize,
-    int64_t * a)
+    int64_t * a,
+    int64_t * perm,
+    int64_t * dstidx)
 {
-    int err = radix_sort_int64(asize, a, NULL);
+    int err = radix_sort_int64(asize, a, perm);
     if (err) return err;
-    return compact_sorted_int64(bsize, b, asize, a);
+    return compact_sorted_int64(bsize, b, asize, a, dstidx);
 }
 
 /**
@@ -261,16 +317,23 @@ int compact_unsorted_int64(
  * success, the value returned in ‘bsize’ indicates the number of
  * items that were written to the output array. The output will be
  * sorted in ascending order.
+ *
+ * If ‘dstidx’ is not ‘NULL’, then it must point to an array of length
+ * ‘asize’. For a given item in the input array ‘a’ the corresponding
+ * value in ‘dstidx’ indicates the offset to the same item in the
+ * output array ‘b’.
  */
 int compact_unsorted_int(
     int64_t * bsize,
     int * b,
     int64_t asize,
-    int * a)
+    int * a,
+    int64_t * perm,
+    int64_t * dstidx)
 {
-    int err = radix_sort_int(asize, a, NULL);
+    int err = radix_sort_int(asize, a, perm);
     if (err) return err;
-    return compact_sorted_int(bsize, b, asize, a);
+    return compact_sorted_int(bsize, b, asize, a, dstidx);
 }
 
 /*
