@@ -109,7 +109,7 @@ static int mtxvector_dist_init_size(
     return MTX_SUCCESS;
 }
 
-static int mtxvector_dist_init_ranks(
+static int mtxvector_dist_init_map(
     struct mtxvector_dist * x,
     struct mtxdisterror * disterr)
 {
@@ -718,7 +718,9 @@ int mtxvector_dist_init_real_single(
     err = mtxvector_packed_init_real_single(
         &x->xp, type, size, num_nonzeros, idx, data);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
-    return mtxvector_dist_init_ranks(x, disterr);
+    err = mtxvector_dist_init_map(x, disterr);
+    if (err) { mtxvector_packed_free(&x->xp); return err; }
+    return MTX_SUCCESS;
 }
 
 /**
@@ -742,7 +744,9 @@ int mtxvector_dist_init_real_double(
     err = mtxvector_packed_init_real_double(
         &x->xp, type, size, num_nonzeros, idx, data);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
-    return mtxvector_dist_init_ranks(x, disterr);
+    err = mtxvector_dist_init_map(x, disterr);
+    if (err) { mtxvector_packed_free(&x->xp); return err; }
+    return MTX_SUCCESS;
 }
 
 /**
@@ -766,7 +770,9 @@ int mtxvector_dist_init_complex_single(
     err = mtxvector_packed_init_complex_single(
         &x->xp, type, size, num_nonzeros, idx, data);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
-    return mtxvector_dist_init_ranks(x, disterr);
+    err = mtxvector_dist_init_map(x, disterr);
+    if (err) { mtxvector_packed_free(&x->xp); return err; }
+    return MTX_SUCCESS;
 }
 
 /**
@@ -790,7 +796,9 @@ int mtxvector_dist_init_complex_double(
     err = mtxvector_packed_init_complex_double(
         &x->xp, type, size, num_nonzeros, idx, data);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
-    return mtxvector_dist_init_ranks(x, disterr);
+    err = mtxvector_dist_init_map(x, disterr);
+    if (err) { mtxvector_packed_free(&x->xp); return err; }
+    return MTX_SUCCESS;
 }
 
 /**
@@ -814,7 +822,9 @@ int mtxvector_dist_init_integer_single(
     err = mtxvector_packed_init_integer_single(
         &x->xp, type, size, num_nonzeros, idx, data);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
-    return mtxvector_dist_init_ranks(x, disterr);
+    err = mtxvector_dist_init_map(x, disterr);
+    if (err) { mtxvector_packed_free(&x->xp); return err; }
+    return MTX_SUCCESS;
 }
 
 /**
@@ -838,7 +848,9 @@ int mtxvector_dist_init_integer_double(
     err = mtxvector_packed_init_integer_double(
         &x->xp, type, size, num_nonzeros, idx, data);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
-    return mtxvector_dist_init_ranks(x, disterr);
+    err = mtxvector_dist_init_map(x, disterr);
+    if (err) { mtxvector_packed_free(&x->xp); return err; }
+    return MTX_SUCCESS;
 }
 
 /**
@@ -861,7 +873,9 @@ int mtxvector_dist_init_pattern(
     err = mtxvector_packed_init_pattern(
         &x->xp, type, size, num_nonzeros, idx);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
-    return mtxvector_dist_init_ranks(x, disterr);
+    err = mtxvector_dist_init_map(x, disterr);
+    if (err) { mtxvector_packed_free(&x->xp); return err; }
+    return MTX_SUCCESS;
 }
 
 /**
@@ -1149,7 +1163,7 @@ int mtxvector_dist_from_mtxfile(
         offset += num_nonzeros;
     }
 
-    err = mtxvector_dist_init_ranks(x, disterr);
+    err = mtxvector_dist_init_map(x, disterr);
     if (err) return err;
     return MTX_SUCCESS;
 }
