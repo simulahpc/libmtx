@@ -281,6 +281,7 @@ int test_mtxdistmatrix_to_mtxfile(void)
     if (err)
         MPI_Abort(comm, EXIT_FAILURE);
 
+#if 0
     /*
      * Array formats
      */
@@ -329,6 +330,7 @@ int test_mtxdistmatrix_to_mtxfile(void)
         }
         mtxdistmatrix_free(&src);
     }
+#endif
 
     /*
      * Coordinate formats
@@ -336,8 +338,15 @@ int test_mtxdistmatrix_to_mtxfile(void)
 
     {
         int num_rows = 3;
-        int num_local_rows = rank == 0 ? 2 : 1;
-        int num_local_columns = 3;
+        int num_columns = 3;
+        int rowmapsize = rank == 0 ? 2 : 1;
+        const int64_t * rowmap = (rank == 0)
+            ? ((const int64_t[2]) {0, 1})
+            : ((const int64_t[1]) {2});
+        int colmapsize = 3;
+        const int64_t * colmap = (rank == 0)
+            ? ((const int64_t[3]) {0, 1, 2})
+            : ((const int64_t[3]) {0, 1, 2});
         const int * rowidx = (rank == 0)
             ? ((const int[3]) {0, 0, 1})
             : ((const int[2]) {0, 0});
@@ -347,23 +356,15 @@ int test_mtxdistmatrix_to_mtxfile(void)
         const double * srcdata = (rank == 0)
             ? ((const double[3]) {1.0, 2.0, 6.0})
             : ((const double[2]) {7.0, 9.0});
-        int64_t num_local_nonzeros = (rank == 0) ? 3 : 2;
-
-        int num_parts = comm_size;
-        int64_t part_sizes[] = {2,1};
-        struct mtxpartition partition;
-        err = mtxpartition_init_block(
-            &partition, num_rows, num_parts, part_sizes);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-
+        int64_t num_nonzeros = (rank == 0) ? 3 : 2;
         struct mtxdistmatrix src;
-        err = mtxdistmatrix_init_coordinate_real_double(
-            &src, mtx_unsymmetric, num_local_rows, num_local_columns, num_local_nonzeros,
-            rowidx, colidx, srcdata, &partition, NULL, comm, 0, 0, &disterr);
+        err = mtxdistmatrix_init_local_coordinate_real_double(
+            &src, mtx_unsymmetric, num_rows, num_columns,
+            num_nonzeros, rowidx, colidx, srcdata,
+            rowmapsize, rowmap, colmapsize, colmap, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
-        mtxpartition_free(&partition);
 
         struct mtxfile dst;
         err = mtxdistmatrix_to_mtxfile(
@@ -1493,6 +1494,54 @@ int test_mtxdistmatrix_scal(void)
     /*
      * Coordinate formats
      */
+
+    {
+        int64_t num_rows = 3;
+        int64_t num_columns = 3;
+        int num_nonzeros = rank == 0 ? 4 : 1;
+        const int64_t * rowidx = (rank == 0)
+            ? ((const int64_t[4]) {0, 0, 0, 1})
+            : ((const int64_t[1]) {2});
+        const int64_t * colidx = (rank == 0)
+            ? ((const int64_t[4]) {0, 1, 2, 2})
+            : ((const int64_t[1]) {2});
+        const float * xdata = (rank == 0)
+            ? ((const float[4]) {1.0f, 1.0f, 1.0f, 2.0f})
+            : ((const float[1]) {3.0f});
+        struct mtxdistmatrix x;
+        err = mtxdistmatrix_init_global_coordinate_real_single(
+            &x, mtx_unsymmetric, num_rows, num_columns, num_nonzeros,
+            rowidx, colidx, xdata, comm, &disterr);
+        TEST_ASSERT_EQ_MSG(
+            MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
+            ? mtxdisterror_description(&disterr) : mtxstrerror(err));
+
+        err = mtxdistmatrix_sscal(2.0f, &x, NULL, &disterr);
+        TEST_ASSERT_EQ_MSG(
+            MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
+            ? mtxdisterror_description(&disterr) : mtxstrerror(err));
+        if (rank == 0) {
+            TEST_ASSERT_EQ(2.0f, x.interior.storage.coordinate.a.data.real_single[0]);
+            TEST_ASSERT_EQ(2.0f, x.interior.storage.coordinate.a.data.real_single[1]);
+            TEST_ASSERT_EQ(2.0f, x.interior.storage.coordinate.a.data.real_single[2]);
+            TEST_ASSERT_EQ(4.0f, x.interior.storage.coordinate.a.data.real_single[3]);
+        } else if (rank == 1) {
+            TEST_ASSERT_EQ(6.0f, x.interior.storage.coordinate.a.data.real_single[0]);
+        }
+        err = mtxdistmatrix_dscal(2.0, &x, NULL, &disterr);
+        TEST_ASSERT_EQ_MSG(
+            MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
+            ? mtxdisterror_description(&disterr) : mtxstrerror(err));
+        if (rank == 0) {
+            TEST_ASSERT_EQ(4.0f, x.interior.storage.coordinate.a.data.real_single[0]);
+            TEST_ASSERT_EQ(4.0f, x.interior.storage.coordinate.a.data.real_single[1]);
+            TEST_ASSERT_EQ(4.0f, x.interior.storage.coordinate.a.data.real_single[2]);
+            TEST_ASSERT_EQ(8.0f, x.interior.storage.coordinate.a.data.real_single[3]);
+        } else if (rank == 1) {
+            TEST_ASSERT_EQ(12.0f, x.interior.storage.coordinate.a.data.real_single[0]);
+        }
+        mtxdistmatrix_free(&x);
+    }
 
     {
         int num_local_rows = rank == 0 ? 2 : 1;

@@ -146,10 +146,70 @@ struct mtxdistmatrix
     struct mtxpartition colpart;
 
     /**
+     * ‘num_rows’ is the number of matrix rows in the entire,
+     * distributed matrix. This number must be the same across all
+     * processes in the communicator ‘comm’.
+     */
+    int64_t num_rows;
+
+    /**
+     * ‘num_columns’ is the number of matrix columns in the entire,
+     * distributed matrix. This number must be the same across all
+     * processes in the communicator ‘comm’.
+     */
+    int64_t num_columns;
+
+    /**
+     * ‘num_nonzeros’ is the total number of nonzero matrix entries of
+     * the distributed sparse matrix, including those represented
+     * implicitly due to symmetry. This is equal to the sum of the
+     * number of nonzero matrix entries on each process
+     * (‘interior.num_nonzeros’).
+     */
+    int64_t num_nonzeros;
+
+    /**
+     * ‘size’ is the total number of explicitly stored matrix entries
+     * for the distributed sparse matrix. This is equal to the sum of
+     * the number of explicitly stored matrix entries on each process
+     * (‘interior.size’).
+     */
+    int64_t size;
+
+    /**
      * ‘interior’ is the local, rectangular block of the distributed
      * matrix that resides on the current process.
      */
     struct mtxmatrix interior;
+
+    /**
+     * ‘rowmapsize’ is the number of matrix rows in the local part of
+     * the distributed matrix that resides on the current process. It
+     * is also equal to the size of the ‘rowmap’ array.
+     */
+    int64_t rowmapsize;
+
+    /**
+     * ‘rowmap’ is an array that maps rows of the local matrix on the
+     * current process to rows of the global matrix. The size of the
+     * array is size equal to the number of rows in the local matrix.
+     */
+    int64_t * rowmap;
+
+    /**
+     * ‘colmapsize’ is the number of matrix columns in the local part
+     * of the distributed matrix that resides on the current
+     * process. It is also equal to the size of the ‘colmap’ array.
+     */
+    int64_t colmapsize;
+
+    /**
+     * ‘colmap’ is an array that maps columns of the local matrix on
+     * the current process to columns of the global matrix. The size
+     * of the array is size equal to the number of columns in the
+     * local matrix.
+     */
+    int64_t * colmap;
 };
 
 /*
@@ -310,7 +370,76 @@ int mtxdistmatrix_init_array_integer_double(
     struct mtxdisterror * disterr);
 
 /*
- * Distributed matrices in coordinate format
+ * distributed matrices in coordinate format from global row and
+ * column indices.
+ */
+
+/**
+ * ‘mtxdistmatrix_init_global_coordinate_real_single()’ allocates and
+ * initialises a distributed matrix in coordinate format with real,
+ * single precision coefficients.
+ */
+int mtxdistmatrix_init_global_coordinate_real_single(
+    struct mtxdistmatrix * A,
+    enum mtxsymmetry symmetry,
+    int64_t num_rows,
+    int64_t num_columns,
+    int64_t num_nonzeros,
+    const int64_t * rowidx,
+    const int64_t * colidx,
+    const float * data,
+    MPI_Comm comm,
+    struct mtxdisterror * disterr);
+
+/*
+ * distributed matrices in coordinate format from local row and column
+ * indices.
+ */
+
+/**
+ * ‘mtxdistmatrix_init_local_coordinate_real_single()’ allocates and
+ * initialises a distributed matrix in coordinate format with real,
+ * single precision coefficients.
+ */
+int mtxdistmatrix_init_local_coordinate_real_single(
+    struct mtxdistmatrix * A,
+    enum mtxsymmetry symmetry,
+    int64_t num_rows,
+    int64_t num_columns,
+    int64_t num_nonzeros,
+    const int * rowidx,
+    const int * colidx,
+    const float * data,
+    int64_t rowmapsize,
+    const int64_t * rowmap,
+    int64_t colmapsize,
+    const int64_t * colmap,
+    MPI_Comm comm,
+    struct mtxdisterror * disterr);
+
+/**
+ * ‘mtxdistmatrix_init_local_coordinate_real_double()’ allocates and
+ * initialises a distributed matrix in coordinate format with real,
+ * double precision coefficients.
+ */
+int mtxdistmatrix_init_local_coordinate_real_double(
+    struct mtxdistmatrix * A,
+    enum mtxsymmetry symmetry,
+    int64_t num_rows,
+    int64_t num_columns,
+    int64_t num_nonzeros,
+    const int * rowidx,
+    const int * colidx,
+    const double * data,
+    int64_t rowmapsize,
+    const int64_t * rowmap,
+    int64_t colmapsize,
+    const int64_t * colmap,
+    MPI_Comm comm,
+    struct mtxdisterror * disterr);
+
+/*
+ * distributed matrices in coordinate format
  */
 
 /**
@@ -330,6 +459,23 @@ int mtxdistmatrix_alloc_coordinate(
     MPI_Comm comm,
     int num_process_rows,
     int num_process_columns,
+    struct mtxdisterror * disterr);
+
+/**
+ * ‘mtxdistmatrix_init_global_coordinate_real_single()’ allocates and
+ * initialises a distributed matrix in coordinate format with real,
+ * single precision coefficients.
+ */
+int mtxdistmatrix_init_global_coordinate_real_single(
+    struct mtxdistmatrix * distmatrix,
+    enum mtxsymmetry symmetry,
+    int64_t num_rows,
+    int64_t num_columns,
+    int64_t num_nonzeros,
+    const int64_t * rowidx,
+    const int64_t * colidx,
+    const float * data,
+    MPI_Comm comm,
     struct mtxdisterror * disterr);
 
 /**

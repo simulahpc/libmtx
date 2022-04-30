@@ -555,7 +555,11 @@ int mtxmatrix_coordinate_from_mtxfile(
  */
 int mtxmatrix_coordinate_to_mtxfile(
     struct mtxfile * mtxfile,
-    const struct mtxmatrix_coordinate * matrix,
+    const struct mtxmatrix_coordinate * A,
+    int64_t num_rows,
+    const int64_t * rowidx,
+    int64_t num_columns,
+    const int64_t * colidx,
     enum mtxfileformat mtxfmt)
 {
     int err;
@@ -563,87 +567,89 @@ int mtxmatrix_coordinate_to_mtxfile(
         return MTX_ERR_INCOMPATIBLE_MTX_FORMAT;
 
     enum mtxfilesymmetry symmetry;
-    err = mtxfilesymmetry_from_mtxsymmetry(&symmetry, matrix->symmetry);
+    err = mtxfilesymmetry_from_mtxsymmetry(&symmetry, A->symmetry);
     if (err) return err;
 
-    if (matrix->a.field == mtx_field_real) {
+    if (A->a.field == mtx_field_real) {
         err = mtxfile_alloc_matrix_coordinate(
-            mtxfile, mtxfile_real, symmetry, matrix->a.precision,
-            matrix->num_rows, matrix->num_columns, matrix->size);
+            mtxfile, mtxfile_real, symmetry, A->a.precision,
+            rowidx ? num_rows : A->num_rows,
+            colidx ? num_columns : A->num_columns,
+            A->size);
         if (err) return err;
-        if (matrix->a.precision == mtx_single) {
+        if (A->a.precision == mtx_single) {
             struct mtxfile_matrix_coordinate_real_single * data =
                 mtxfile->data.matrix_coordinate_real_single;
-            for (int64_t k = 0; k < matrix->size; k++) {
-                data[k].i = matrix->rowidx[k]+1;
-                data[k].j = matrix->colidx[k]+1;
-                data[k].a = matrix->a.data.real_single[k];
+            for (int64_t k = 0; k < A->size; k++) {
+                data[k].i = rowidx ? rowidx[A->rowidx[k]]+1 : A->rowidx[k]+1;
+                data[k].j = colidx ? colidx[A->colidx[k]]+1 : A->colidx[k]+1;
+                data[k].a = A->a.data.real_single[k];
             }
-        } else if (matrix->a.precision == mtx_double) {
+        } else if (A->a.precision == mtx_double) {
             struct mtxfile_matrix_coordinate_real_double * data =
                 mtxfile->data.matrix_coordinate_real_double;
-            for (int64_t k = 0; k < matrix->size; k++) {
-                data[k].i = matrix->rowidx[k]+1;
-                data[k].j = matrix->colidx[k]+1;
-                data[k].a = matrix->a.data.real_double[k];
+            for (int64_t k = 0; k < A->size; k++) {
+                data[k].i = rowidx ? rowidx[A->rowidx[k]]+1 : A->rowidx[k]+1;
+                data[k].j = colidx ? colidx[A->colidx[k]]+1 : A->colidx[k]+1;
+                data[k].a = A->a.data.real_double[k];
             }
         } else { return MTX_ERR_INVALID_PRECISION; }
-    } else if (matrix->a.field == mtx_field_complex) {
+    } else if (A->a.field == mtx_field_complex) {
         err = mtxfile_alloc_matrix_coordinate(
-            mtxfile, mtxfile_complex, symmetry, matrix->a.precision,
-            matrix->num_rows, matrix->num_columns, matrix->size);
+            mtxfile, mtxfile_complex, symmetry, A->a.precision,
+            A->num_rows, A->num_columns, A->size);
         if (err) return err;
-        if (matrix->a.precision == mtx_single) {
+        if (A->a.precision == mtx_single) {
             struct mtxfile_matrix_coordinate_complex_single * data =
                 mtxfile->data.matrix_coordinate_complex_single;
-            for (int64_t k = 0; k < matrix->size; k++) {
-                data[k].i = matrix->rowidx[k]+1;
-                data[k].j = matrix->colidx[k]+1;
-                data[k].a[0] = matrix->a.data.complex_single[k][0];
-                data[k].a[1] = matrix->a.data.complex_single[k][1];
+            for (int64_t k = 0; k < A->size; k++) {
+                data[k].i = rowidx ? rowidx[A->rowidx[k]]+1 : A->rowidx[k]+1;
+                data[k].j = colidx ? colidx[A->colidx[k]]+1 : A->colidx[k]+1;
+                data[k].a[0] = A->a.data.complex_single[k][0];
+                data[k].a[1] = A->a.data.complex_single[k][1];
             }
-        } else if (matrix->a.precision == mtx_double) {
+        } else if (A->a.precision == mtx_double) {
             struct mtxfile_matrix_coordinate_complex_double * data =
                 mtxfile->data.matrix_coordinate_complex_double;
-            for (int64_t k = 0; k < matrix->size; k++) {
-                data[k].i = matrix->rowidx[k]+1;
-                data[k].j = matrix->colidx[k]+1;
-                data[k].a[0] = matrix->a.data.complex_double[k][0];
-                data[k].a[1] = matrix->a.data.complex_double[k][1];
+            for (int64_t k = 0; k < A->size; k++) {
+                data[k].i = rowidx ? rowidx[A->rowidx[k]]+1 : A->rowidx[k]+1;
+                data[k].j = colidx ? colidx[A->colidx[k]]+1 : A->colidx[k]+1;
+                data[k].a[0] = A->a.data.complex_double[k][0];
+                data[k].a[1] = A->a.data.complex_double[k][1];
             }
         } else { return MTX_ERR_INVALID_PRECISION; }
-    } else if (matrix->a.field == mtx_field_integer) {
+    } else if (A->a.field == mtx_field_integer) {
         err = mtxfile_alloc_matrix_coordinate(
-            mtxfile, mtxfile_integer, symmetry, matrix->a.precision,
-            matrix->num_rows, matrix->num_columns, matrix->size);
+            mtxfile, mtxfile_integer, symmetry, A->a.precision,
+            A->num_rows, A->num_columns, A->size);
         if (err) return err;
-        if (matrix->a.precision == mtx_single) {
+        if (A->a.precision == mtx_single) {
             struct mtxfile_matrix_coordinate_integer_single * data =
                 mtxfile->data.matrix_coordinate_integer_single;
-            for (int64_t k = 0; k < matrix->size; k++) {
-                data[k].i = matrix->rowidx[k]+1;
-                data[k].j = matrix->colidx[k]+1;
-                data[k].a = matrix->a.data.integer_single[k];
+            for (int64_t k = 0; k < A->size; k++) {
+                data[k].i = rowidx ? rowidx[A->rowidx[k]]+1 : A->rowidx[k]+1;
+                data[k].j = colidx ? colidx[A->colidx[k]]+1 : A->colidx[k]+1;
+                data[k].a = A->a.data.integer_single[k];
             }
-        } else if (matrix->a.precision == mtx_double) {
+        } else if (A->a.precision == mtx_double) {
             struct mtxfile_matrix_coordinate_integer_double * data =
                 mtxfile->data.matrix_coordinate_integer_double;
-            for (int64_t k = 0; k < matrix->size; k++) {
-                data[k].i = matrix->rowidx[k]+1;
-                data[k].j = matrix->colidx[k]+1;
-                data[k].a = matrix->a.data.integer_double[k];
+            for (int64_t k = 0; k < A->size; k++) {
+                data[k].i = rowidx ? rowidx[A->rowidx[k]]+1 : A->rowidx[k]+1;
+                data[k].j = colidx ? colidx[A->colidx[k]]+1 : A->colidx[k]+1;
+                data[k].a = A->a.data.integer_double[k];
             }
         } else { return MTX_ERR_INVALID_PRECISION; }
-    } else if (matrix->a.field == mtx_field_pattern) {
+    } else if (A->a.field == mtx_field_pattern) {
         err = mtxfile_alloc_matrix_coordinate(
             mtxfile, mtxfile_pattern, symmetry, mtx_single,
-            matrix->num_rows, matrix->num_columns, matrix->size);
+            A->num_rows, A->num_columns, A->size);
         if (err) return err;
         struct mtxfile_matrix_coordinate_pattern * data =
             mtxfile->data.matrix_coordinate_pattern;
-        for (int64_t k = 0; k < matrix->size; k++) {
-            data[k].i = matrix->rowidx[k]+1;
-            data[k].j = matrix->colidx[k]+1;
+        for (int64_t k = 0; k < A->size; k++) {
+            data[k].i = rowidx ? rowidx[A->rowidx[k]]+1 : A->rowidx[k]+1;
+            data[k].j = colidx ? colidx[A->colidx[k]]+1 : A->colidx[k]+1;
         }
     } else { return MTX_ERR_INVALID_FIELD; }
     return MTX_SUCCESS;
@@ -797,7 +803,8 @@ int mtxmatrix_coordinate_partition(
     int num_parts = num_row_parts * num_col_parts;
 
     struct mtxfile mtxfile;
-    err = mtxmatrix_coordinate_to_mtxfile(&mtxfile, src, mtxfile_coordinate);
+    err = mtxmatrix_coordinate_to_mtxfile(
+        &mtxfile, src, 0, NULL, 0, NULL, mtxfile_coordinate);
     if (err) return err;
 
     struct mtxfile * dstmtxfiles = malloc(sizeof(struct mtxfile) * num_parts);
@@ -865,7 +872,8 @@ int mtxmatrix_coordinate_join(
     struct mtxfile * srcmtxfiles = malloc(sizeof(struct mtxfile) * num_parts);
     if (!srcmtxfiles) return MTX_ERR_ERRNO;
     for (int p = 0; p < num_parts; p++) {
-        err = mtxmatrix_to_mtxfile(&srcmtxfiles[p], &srcs[p], mtxfile_coordinate);
+        err = mtxmatrix_to_mtxfile(
+            &srcmtxfiles[p], &srcs[p], 0, NULL, 0, NULL, mtxfile_coordinate);
         if (err) {
             for (int q = p-1; q >= 0; q--)
                 mtxfile_free(&srcmtxfiles[q]);

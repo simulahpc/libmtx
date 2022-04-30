@@ -99,19 +99,92 @@ int mtxmatrixtype_parse(
     } else if (strncmp("csr", t, strlen("csr")) == 0) {
         t += strlen("csr");
         *matrix_type = mtxmatrix_csr;
-    } else {
-        return MTX_ERR_INVALID_MATRIX_TYPE;
-    }
+    } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
     if (valid_delimiters && *t != '\0') {
         if (!strchr(valid_delimiters, *t))
             return MTX_ERR_INVALID_MATRIX_TYPE;
         t++;
     }
-    if (bytes_read)
-        *bytes_read += t-s;
-    if (endptr)
-        *endptr = t;
+    if (bytes_read) *bytes_read += t-s;
+    if (endptr) *endptr = t;
     return MTX_SUCCESS;
+}
+
+/**
+ * ‘mtxmatrix_field()’ gets the field of a matrix.
+ */
+int mtxmatrix_field(
+    const struct mtxmatrix * A,
+    enum mtxfield * field)
+{
+    if (A->type == mtxmatrix_array) {
+        *field = A->storage.array.field;
+        return MTX_SUCCESS;
+    } else if (A->type == mtxmatrix_coordinate) {
+        *field = A->storage.coordinate.a.field;
+        return MTX_SUCCESS;
+    } else if (A->type == mtxmatrix_csr) {
+        *field = A->storage.csr.field;
+        return MTX_SUCCESS;
+    } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
+}
+
+/**
+ * ‘mtxmatrix_precision()’ gets the precision of a matrix.
+ */
+int mtxmatrix_precision(
+    const struct mtxmatrix * A,
+    enum mtxprecision * precision)
+{
+    if (A->type == mtxmatrix_array) {
+        *precision = A->storage.array.precision;
+        return MTX_SUCCESS;
+    } else if (A->type == mtxmatrix_coordinate) {
+        *precision = A->storage.coordinate.a.precision;
+        return MTX_SUCCESS;
+    } else if (A->type == mtxmatrix_csr) {
+        *precision = A->storage.csr.precision;
+        return MTX_SUCCESS;
+    } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
+}
+
+/**
+ * ‘mtxmatrix_symmetry()’ gets the symmetry of a matrix.
+ */
+int mtxmatrix_symmetry(
+    const struct mtxmatrix * A,
+    enum mtxsymmetry * symmetry)
+{
+    if (A->type == mtxmatrix_array) {
+        *symmetry = A->storage.array.symmetry;
+        return MTX_SUCCESS;
+    } else if (A->type == mtxmatrix_coordinate) {
+        *symmetry = A->storage.coordinate.symmetry;
+        return MTX_SUCCESS;
+    } else if (A->type == mtxmatrix_csr) {
+        *symmetry = A->storage.csr.symmetry;
+        return MTX_SUCCESS;
+    } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
+}
+
+/**
+ * ‘mtxmatrix_size()’ gets the number of explicitly stored nonzeros of
+ * a matrix.
+ */
+int mtxmatrix_size(
+    const struct mtxmatrix * A,
+    int64_t * size)
+{
+    if (A->type == mtxmatrix_array) {
+        *size = A->storage.array.size;
+        return MTX_SUCCESS;
+    } else if (A->type == mtxmatrix_coordinate) {
+        *size = A->storage.coordinate.size;
+        return MTX_SUCCESS;
+    } else if (A->type == mtxmatrix_csr) {
+        *size = A->storage.csr.size;
+        return MTX_SUCCESS;
+    } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
 }
 
 /*
@@ -674,8 +747,8 @@ int mtxmatrix_init_csr_pattern(
  */
 
 /**
- * ‘mtxmatrix_from_mtxfile()’ converts a matrix in Matrix Market
- * format to a matrix.
+ * ‘mtxmatrix_from_mtxfile()’ converts to a matrix from Matrix Market
+ * format.
  */
 int mtxmatrix_from_mtxfile(
     struct mtxmatrix * matrix,
@@ -710,12 +783,15 @@ int mtxmatrix_from_mtxfile(
 }
 
 /**
- * ‘mtxmatrix_to_mtxfile()’ converts a matrix to a matrix in Matrix
- * Market format.
+ * ‘mtxmatrix_to_mtxfile()’ converts a matrix to Matrix Market format.
  */
 int mtxmatrix_to_mtxfile(
     struct mtxfile * dst,
     const struct mtxmatrix * src,
+    int64_t num_rows,
+    const int64_t * rowidx,
+    int64_t num_columns,
+    const int64_t * colidx,
     enum mtxfileformat mtxfmt)
 {
     if (src->type == mtxmatrix_array) {
@@ -723,13 +799,12 @@ int mtxmatrix_to_mtxfile(
             dst, &src->storage.array, mtxfmt);
     } else if (src->type == mtxmatrix_coordinate) {
         return mtxmatrix_coordinate_to_mtxfile(
-            dst, &src->storage.coordinate, mtxfmt);
+            dst, &src->storage.coordinate,
+            num_rows, rowidx, num_columns, colidx, mtxfmt);
     } else if (src->type == mtxmatrix_csr) {
         return mtxmatrix_csr_to_mtxfile(
             dst, &src->storage.csr, mtxfmt);
-    } else {
-        return MTX_ERR_INVALID_MATRIX_TYPE;
-    }
+    } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
 }
 
 /*
@@ -767,12 +842,10 @@ int mtxmatrix_read(
     int64_t * lines_read,
     int64_t * bytes_read)
 {
-    int err;
     struct mtxfile mtxfile;
-    err = mtxfile_read(
+    int err = mtxfile_read(
         &mtxfile, precision, path, gzip, lines_read, bytes_read);
-    if (err)
-        return err;
+    if (err) return err;
     err = mtxmatrix_from_mtxfile(matrix, type, &mtxfile);
     if (err) {
         mtxfile_free(&mtxfile);
@@ -809,9 +882,8 @@ int mtxmatrix_fread(
     size_t line_max,
     char * linebuf)
 {
-    int err;
     struct mtxfile mtxfile;
-    err = mtxfile_fread(
+    int err = mtxfile_fread(
         &mtxfile, precision, f, lines_read, bytes_read, line_max, linebuf);
     if (err) return err;
     err = mtxmatrix_from_mtxfile(matrix, type, &mtxfile);
@@ -850,9 +922,8 @@ int mtxmatrix_gzread(
     size_t line_max,
     char * linebuf)
 {
-    int err;
     struct mtxfile mtxfile;
-    err = mtxfile_gzread(
+    int err = mtxfile_gzread(
         &mtxfile, precision, f, lines_read, bytes_read, line_max, linebuf);
     if (err)
         return err;
@@ -888,15 +959,19 @@ int mtxmatrix_gzread(
  */
 int mtxmatrix_write(
     const struct mtxmatrix * matrix,
+    int64_t num_rows,
+    const int64_t * rowidx,
+    int64_t num_columns,
+    const int64_t * colidx,
     enum mtxfileformat mtxfmt,
     const char * path,
     bool gzip,
     const char * fmt,
     int64_t * bytes_written)
 {
-    int err;
     struct mtxfile mtxfile;
-    err = mtxmatrix_to_mtxfile(&mtxfile, matrix, mtxfmt);
+    int err = mtxmatrix_to_mtxfile(
+        &mtxfile, matrix, num_rows, rowidx, num_columns, colidx, mtxfmt);
     if (err)
         return err;
     err = mtxfile_write(
@@ -931,18 +1006,20 @@ int mtxmatrix_write(
  */
 int mtxmatrix_fwrite(
     const struct mtxmatrix * matrix,
+    int64_t num_rows,
+    const int64_t * rowidx,
+    int64_t num_columns,
+    const int64_t * colidx,
     enum mtxfileformat mtxfmt,
     FILE * f,
     const char * fmt,
     int64_t * bytes_written)
 {
-    int err;
     struct mtxfile mtxfile;
-    err = mtxmatrix_to_mtxfile(&mtxfile, matrix, mtxfmt);
-    if (err)
-        return err;
-    err = mtxfile_fwrite(
-        &mtxfile, f, fmt, bytes_written);
+    int err = mtxmatrix_to_mtxfile(
+        &mtxfile, matrix, num_rows, rowidx, num_columns, colidx, mtxfmt);
+    if (err) return err;
+    err = mtxfile_fwrite(&mtxfile, f, fmt, bytes_written);
     if (err) {
         mtxfile_free(&mtxfile);
         return err;
@@ -974,18 +1051,20 @@ int mtxmatrix_fwrite(
  */
 int mtxmatrix_gzwrite(
     const struct mtxmatrix * matrix,
+    int64_t num_rows,
+    const int64_t * rowidx,
+    int64_t num_columns,
+    const int64_t * colidx,
     enum mtxfileformat mtxfmt,
     gzFile f,
     const char * fmt,
     int64_t * bytes_written)
 {
-    int err;
     struct mtxfile mtxfile;
-    err = mtxmatrix_to_mtxfile(&mtxfile, matrix, mtxfmt);
-    if (err)
-        return err;
-    err = mtxfile_gzwrite(
-        &mtxfile, f, fmt, bytes_written);
+    int err = mtxmatrix_to_mtxfile(
+        &mtxfile, matrix, num_rows, rowidx, num_columns, colidx, mtxfmt);
+    if (err) return err;
+    err = mtxfile_gzwrite(&mtxfile, f, fmt, bytes_written);
     if (err) {
         mtxfile_free(&mtxfile);
         return err;

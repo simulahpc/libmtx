@@ -34,6 +34,7 @@
 #include <libmtx/mtxfile/mtxfile.h>
 #include <libmtx/mtxfile/size.h>
 #include <libmtx/precision.h>
+#include <libmtx/util/merge.h>
 #include <libmtx/util/partition.h>
 #include <libmtx/vector/distvector.h>
 #include <libmtx/vector/vector.h>
@@ -63,12 +64,14 @@
 void mtxdistmatrix_free(
     struct mtxdistmatrix * distmatrix)
 {
-    MPI_Comm_free(&distmatrix->colcomm);
-    MPI_Comm_free(&distmatrix->rowcomm);
-    MPI_Comm_free(&distmatrix->comm);
-    mtxpartition_free(&distmatrix->rowpart);
-    mtxpartition_free(&distmatrix->colpart);
+    free(distmatrix->colmap);
+    free(distmatrix->rowmap);
     mtxmatrix_free(&distmatrix->interior);
+    mtxpartition_free(&distmatrix->colpart);
+    mtxpartition_free(&distmatrix->rowpart);
+    /* MPI_Comm_free(&distmatrix->colcomm); */
+    /* MPI_Comm_free(&distmatrix->rowcomm); */
+    /* MPI_Comm_free(&distmatrix->comm); */
 }
 
 static int mtxdistmatrix_init_comm(
@@ -335,6 +338,55 @@ static int mtxdistmatrix_init_partitions(
     return MTX_SUCCESS;
 }
 
+static int mtxdistmatrix_init_size(
+    struct mtxdistmatrix * A,
+    int64_t num_rows,
+    int64_t num_columns,
+    int64_t size,
+    struct mtxdisterror * disterr)
+{
+    /* check that dimensions are the same on all processes */
+    int64_t pdims[4] = {-num_rows, num_rows, -num_columns, num_columns};
+    disterr->mpierrcode = MPI_Allreduce(
+        MPI_IN_PLACE, pdims, 4, MPI_INT64_T, MPI_MIN, A->comm);
+    int err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+    if (pdims[0] != -pdims[1]) return MTX_ERR_INCOMPATIBLE_SIZE;
+    if (pdims[2] != -pdims[3]) return MTX_ERR_INCOMPATIBLE_SIZE;
+    A->num_rows = num_rows;
+    A->num_columns = num_columns;
+
+    /* sum the number of explicitly stored nonzeros across all processes */
+    A->size = size;
+    disterr->mpierrcode = MPI_Allreduce(
+        MPI_IN_PLACE, &A->size, 1, MPI_INT64_T, MPI_SUM, A->comm);
+    err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+
+    /* int64_t M = A->num_rows; */
+    /* int comm_size = A->comm_size; */
+    /* int rank = A->rank; */
+    /* A->rowblksize = M/comm_size + (rank < (M % comm_size) ? 1 : 0); */
+    /* A->rowblkstart = rank*(M/comm_size) */
+    /*     + (rank < (M % comm_size) ? rank : (M % comm_size)); */
+    /* A->rowranks = malloc(A->rowblksize * sizeof(int)); */
+    /* err = !A->rowranks ? MTX_ERR_ERRNO : MTX_SUCCESS; */
+    /* if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE; */
+    /* for (int64_t i = 0; i < A->rowblksize; i++) A->rowranks[i] = -1; */
+
+    /* int64_t N = A->num_columns; */
+    /* int comm_size = A->comm_size; */
+    /* int rank = A->rank; */
+    /* A->colblksize = N/comm_size + (rank < (N % comm_size) ? 1 : 0); */
+    /* A->colblkstart = rank*(N/comm_size) */
+    /*     + (rank < (N % comm_size) ? rank : (N % comm_size)); */
+    /* A->colranks = malloc(A->colblksize * sizeof(int)); */
+    /* err = !A->colranks ? MTX_ERR_ERRNO : MTX_SUCCESS; */
+    /* if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE; */
+    /* for (int64_t i = 0; i < A->colblksize; i++) A->colranks[i] = -1; */
+    return MTX_SUCCESS;
+}
+
 /**
  * ‘mtxdistmatrix_alloc_copy()’ allocates storage for a copy of a
  * distributed matrix without initialising the underlying values.
@@ -428,6 +480,8 @@ int mtxdistmatrix_alloc_array(
         mtxpartition_free(&distmatrix->rowpart);
         return MTX_ERR_MPI_COLLECTIVE;
     }
+    distmatrix->rowmap = NULL;
+    distmatrix->colmap = NULL;
     return MTX_SUCCESS;
 }
 
@@ -462,6 +516,13 @@ int mtxdistmatrix_init_array_real_single(
         mtxpartition_free(&distmatrix->rowpart);
         return MTX_ERR_MPI_COLLECTIVE;
     }
+
+    distmatrix->num_rows = rowpart ? rowpart->size : 0;
+    distmatrix->num_columns = colpart ? colpart->size : 0;
+    distmatrix->rowmapsize = 0;
+    distmatrix->rowmap = NULL;
+    distmatrix->colmapsize = 0;
+    distmatrix->colmap = NULL;
     return MTX_SUCCESS;
 }
 
@@ -496,6 +557,8 @@ int mtxdistmatrix_init_array_real_double(
         mtxpartition_free(&distmatrix->rowpart);
         return MTX_ERR_MPI_COLLECTIVE;
     }
+    distmatrix->rowmap = NULL;
+    distmatrix->colmap = NULL;
     return MTX_SUCCESS;
 }
 
@@ -530,6 +593,8 @@ int mtxdistmatrix_init_array_complex_single(
         mtxpartition_free(&distmatrix->rowpart);
         return MTX_ERR_MPI_COLLECTIVE;
     }
+    distmatrix->rowmap = NULL;
+    distmatrix->colmap = NULL;
     return MTX_SUCCESS;
 }
 
@@ -564,6 +629,8 @@ int mtxdistmatrix_init_array_complex_double(
         mtxpartition_free(&distmatrix->rowpart);
         return MTX_ERR_MPI_COLLECTIVE;
     }
+    distmatrix->rowmap = NULL;
+    distmatrix->colmap = NULL;
     return MTX_SUCCESS;
 }
 
@@ -598,6 +665,8 @@ int mtxdistmatrix_init_array_integer_single(
         mtxpartition_free(&distmatrix->rowpart);
         return MTX_ERR_MPI_COLLECTIVE;
     }
+    distmatrix->rowmap = NULL;
+    distmatrix->colmap = NULL;
     return MTX_SUCCESS;
 }
 
@@ -632,11 +701,308 @@ int mtxdistmatrix_init_array_integer_double(
         mtxpartition_free(&distmatrix->rowpart);
         return MTX_ERR_MPI_COLLECTIVE;
     }
+    distmatrix->rowmap = NULL;
+    distmatrix->colmap = NULL;
     return MTX_SUCCESS;
 }
 
 /*
- * Distributed matrices in coordinate format
+ * distributed matrices in coordinate format from global row and
+ * column indices.
+ */
+
+static int mtxdistmatrix_init_comm2(
+    struct mtxdistmatrix * A,
+    MPI_Comm comm,
+    struct mtxdisterror * disterr)
+{
+    A->comm = comm;
+    disterr->mpierrcode = MPI_Comm_size(comm, &A->comm_size);
+    int err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+    disterr->mpierrcode = MPI_Comm_rank(comm, &A->rank);
+    err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+    return MTX_SUCCESS;
+}
+
+static int mtxdistmatrix_init_coordinate_global(
+    struct mtxdistmatrix * A,
+    enum mtxfield field,
+    enum mtxprecision precision,
+    enum mtxsymmetry symmetry,
+    int64_t num_rows,
+    int64_t num_columns,
+    int64_t num_nonzeros,
+    const int64_t * rowidx,
+    const int64_t * colidx,
+    MPI_Comm comm,
+    struct mtxdisterror * disterr)
+{
+    int err = mtxdistmatrix_init_comm2(A, comm, disterr);
+    if (err) return err;
+    err = mtxdistmatrix_init_size(A, num_rows, num_columns, num_nonzeros, disterr);
+    if (err) return err;
+
+    /* compute the mapping from local to global matrix rows */
+    int64_t * localrowidx = malloc(num_nonzeros * sizeof(int64_t));
+    err = !localrowidx ? MTX_ERR_ERRNO : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+    int64_t * rowperm = malloc(num_nonzeros * sizeof(int64_t));
+    err = !rowperm ? MTX_ERR_ERRNO : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err)) {
+        free(localrowidx);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+    int64_t * rowdstidx = malloc(num_nonzeros * sizeof(int64_t));
+    err = !rowdstidx ? MTX_ERR_ERRNO : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err)) {
+        free(rowperm); free(localrowidx);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+    for (int64_t k = 0; k < num_nonzeros; k++) localrowidx[k] = rowidx[k];
+    err = compact_unsorted_int64(
+        &A->rowmapsize, NULL, num_nonzeros, localrowidx, rowperm, rowdstidx);
+    if (mtxdisterror_allreduce(disterr, err)) {
+        free(rowdstidx); free(rowperm); free(localrowidx);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+    A->rowmap = malloc(A->rowmapsize * sizeof(int64_t));
+    err = !A->rowmap ? MTX_ERR_ERRNO : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err)) {
+        free(rowdstidx); free(rowperm); free(localrowidx);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+    err = compact_sorted_int64(
+        &A->rowmapsize, A->rowmap, num_nonzeros, localrowidx, NULL);
+    if (mtxdisterror_allreduce(disterr, err)) {
+        free(A->rowmap); free(rowdstidx); free(rowperm); free(localrowidx);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+
+    /* compute the mapping from local to global matrix columns */
+    int64_t * localcolidx = malloc(num_nonzeros * sizeof(int64_t));
+    err = !localcolidx ? MTX_ERR_ERRNO : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err)) {
+        free(A->rowmap); free(rowdstidx); free(rowperm); free(localrowidx);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+    int64_t * colperm = malloc(num_nonzeros * sizeof(int64_t));
+    err = !colperm ? MTX_ERR_ERRNO : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err)) {
+        free(localcolidx);
+        free(A->rowmap); free(rowdstidx); free(rowperm); free(localrowidx);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+    int64_t * coldstidx = malloc(num_nonzeros * sizeof(int64_t));
+    err = !coldstidx ? MTX_ERR_ERRNO : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err)) {
+        free(colperm); free(localcolidx);
+        free(A->rowmap); free(rowdstidx); free(rowperm); free(localrowidx);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+    for (int64_t k = 0; k < num_nonzeros; k++) localcolidx[k] = colidx[k];
+    err = compact_unsorted_int64(
+        &A->colmapsize, NULL, num_nonzeros, localcolidx, colperm, coldstidx);
+    if (mtxdisterror_allreduce(disterr, err)) {
+        free(coldstidx); free(colperm); free(localcolidx);
+        free(A->rowmap); free(rowdstidx); free(rowperm); free(localrowidx);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+    A->colmap = malloc(A->colmapsize * sizeof(int64_t));
+    err = !A->colmap ? MTX_ERR_ERRNO : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err)) {
+        free(coldstidx); free(colperm); free(localcolidx);
+        free(A->rowmap); free(rowdstidx); free(rowperm); free(localrowidx);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+    err = compact_sorted_int64(
+        &A->colmapsize, A->colmap, num_nonzeros, localcolidx, NULL);
+    if (mtxdisterror_allreduce(disterr, err)) {
+        free(A->colmap); free(coldstidx); free(colperm); free(localcolidx);
+        free(A->rowmap); free(rowdstidx); free(rowperm); free(localrowidx);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+
+    /* allocate storage for the local matrix */
+    err = mtxmatrix_alloc_coordinate(
+        &A->interior, field, precision, symmetry,
+        A->rowmapsize, A->colmapsize, num_nonzeros);
+    if (mtxdisterror_allreduce(disterr, err)) {
+        free(A->colmap); free(coldstidx); free(colperm); free(localcolidx);
+        free(A->rowmap); free(rowdstidx); free(rowperm); free(localrowidx);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+
+    /* set the row and column indices of the local matrix */
+    A->interior.storage.coordinate.num_nonzeros = 0;
+    for (int64_t k = 0; k < num_nonzeros; k++) {
+        A->interior.storage.coordinate.rowidx[k] = rowdstidx[rowperm[k]];
+        A->interior.storage.coordinate.colidx[k] = coldstidx[colperm[k]];
+        A->interior.storage.coordinate.num_nonzeros +=
+            (symmetry == mtx_unsymmetric ||
+             A->interior.storage.coordinate.rowidx[k] ==
+             A->interior.storage.coordinate.colidx[k]) ? 1 : 2;
+    }
+    free(coldstidx); free(colperm); free(localcolidx);
+    free(rowdstidx); free(rowperm); free(localrowidx);
+
+    /* sum the number of nonzeros across all processes */
+    A->num_nonzeros = A->interior.storage.coordinate.num_nonzeros;
+    disterr->mpierrcode = MPI_Allreduce(
+        MPI_IN_PLACE, &A->num_nonzeros, 1, MPI_INT64_T, MPI_SUM, comm);
+    err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err)) {
+        free(A->colmap); free(A->rowmap);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+
+    /* TODO: remove these lines when rowpart and colpart are no
+     * longer needed */
+    mtxpartition_init_singleton(&A->rowpart, num_rows);
+    mtxpartition_init_singleton(&A->colpart, num_columns);
+    return MTX_SUCCESS;
+}
+
+/**
+ * ‘mtxdistmatrix_init_global_coordinate_real_single()’ allocates and
+ * initialises a distributed matrix in coordinate format with real,
+ * single precision coefficients.
+ */
+int mtxdistmatrix_init_global_coordinate_real_single(
+    struct mtxdistmatrix * A,
+    enum mtxsymmetry symmetry,
+    int64_t num_rows,
+    int64_t num_columns,
+    int64_t num_nonzeros,
+    const int64_t * rowidx,
+    const int64_t * colidx,
+    const float * data,
+    MPI_Comm comm,
+    struct mtxdisterror * disterr)
+{
+    int err = mtxdistmatrix_init_coordinate_global(
+        A, mtx_field_real, mtx_single, symmetry,
+        num_rows, num_columns, num_nonzeros,
+        rowidx, colidx, comm, disterr);
+    if (err) return err;
+    err = mtxvector_base_init_real_single(
+        &A->interior.storage.coordinate.a, num_nonzeros, data);
+    if (err) {
+        mtxmatrix_free(&A->interior); free(A->colmap); free(A->rowmap);
+        return err;
+    }
+    return MTX_SUCCESS;
+}
+
+/*
+ * distributed matrices in coordinate format from local row and column
+ * indices.
+ */
+
+static int mtxdistmatrix_init_local_coordinate(
+    struct mtxdistmatrix * A,
+    int64_t num_rows,
+    int64_t num_columns,
+    int64_t num_nonzeros,
+    int64_t rowmapsize,
+    const int64_t * rowmap,
+    int64_t colmapsize,
+    const int64_t * colmap,
+    MPI_Comm comm,
+    struct mtxdisterror * disterr)
+{
+    int err = mtxdistmatrix_init_comm2(A, comm, disterr);
+    if (err) return err;
+    err = mtxdistmatrix_init_size(A, num_rows, num_columns, num_nonzeros, disterr);
+    if (err) return err;
+    A->rowmapsize = rowmapsize;
+    A->rowmap = malloc(A->rowmapsize * sizeof(int64_t));
+    err = !A->rowmap ? MTX_ERR_ERRNO : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+    for (int64_t i = 0; i < rowmapsize; i++) A->rowmap[i] = rowmap[i];
+    A->colmapsize = colmapsize;
+    A->colmap = malloc(A->colmapsize * sizeof(int64_t));
+    err = !A->colmap ? MTX_ERR_ERRNO : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err)) {
+        free(A->rowmap);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+    for (int64_t j = 0; j < colmapsize; j++) A->colmap[j] = colmap[j];
+
+    /* TODO: remove these lines when rowpart and colpart are no
+     * longer needed */
+    mtxpartition_init_singleton(&A->rowpart, num_rows);
+    mtxpartition_init_singleton(&A->colpart, num_columns);
+    return MTX_SUCCESS;
+}
+
+/**
+ * ‘mtxdistmatrix_init_local_coordinate_real_single()’ allocates and
+ * initialises a distributed matrix in coordinate format with real,
+ * single precision coefficients.
+ */
+int mtxdistmatrix_init_local_coordinate_real_single(
+    struct mtxdistmatrix * A,
+    enum mtxsymmetry symmetry,
+    int64_t num_rows,
+    int64_t num_columns,
+    int64_t num_nonzeros,
+    const int * rowidx,
+    const int * colidx,
+    const float * data,
+    int64_t rowmapsize,
+    const int64_t * rowmap,
+    int64_t colmapsize,
+    const int64_t * colmap,
+    MPI_Comm comm,
+    struct mtxdisterror * disterr)
+{
+    int err = mtxdistmatrix_init_local_coordinate(
+        A, num_rows, num_columns, num_nonzeros,
+        rowmapsize, rowmap, colmapsize, colmap, comm, disterr);
+    if (err) return err;
+    err = mtxmatrix_init_coordinate_real_single(
+        &A->interior, symmetry, rowmapsize, colmapsize,
+        num_nonzeros, rowidx, colidx, data);
+    if (err) { free(A->colmap); free(A->rowmap); return err; }
+    return MTX_SUCCESS;
+}
+
+/**
+ * ‘mtxdistmatrix_init_local_coordinate_real_double()’ allocates and
+ * initialises a distributed matrix in coordinate format with real,
+ * double precision coefficients.
+ */
+int mtxdistmatrix_init_local_coordinate_real_double(
+    struct mtxdistmatrix * A,
+    enum mtxsymmetry symmetry,
+    int64_t num_rows,
+    int64_t num_columns,
+    int64_t num_nonzeros,
+    const int * rowidx,
+    const int * colidx,
+    const double * data,
+    int64_t rowmapsize,
+    const int64_t * rowmap,
+    int64_t colmapsize,
+    const int64_t * colmap,
+    MPI_Comm comm,
+    struct mtxdisterror * disterr)
+{
+    int err = mtxdistmatrix_init_local_coordinate(
+        A, num_rows, num_columns, num_nonzeros,
+        rowmapsize, rowmap, colmapsize, colmap, comm, disterr);
+    if (err) return err;
+    err = mtxmatrix_init_coordinate_real_double(
+        &A->interior, symmetry, rowmapsize, colmapsize,
+        num_nonzeros, rowidx, colidx, data);
+    if (err) { free(A->colmap); free(A->rowmap); return err; }
+    return MTX_SUCCESS;
+}
+
+/*
+ * distributed matrices in coordinate format
  */
 
 /**
@@ -672,6 +1038,8 @@ int mtxdistmatrix_alloc_coordinate(
         mtxpartition_free(&distmatrix->rowpart);
         return MTX_ERR_MPI_COLLECTIVE;
     }
+    distmatrix->rowmap = NULL;
+    distmatrix->colmap = NULL;
     return MTX_SUCCESS;
 }
 
@@ -710,6 +1078,8 @@ int mtxdistmatrix_init_coordinate_real_single(
         mtxpartition_free(&distmatrix->rowpart);
         return MTX_ERR_MPI_COLLECTIVE;
     }
+    distmatrix->rowmap = NULL;
+    distmatrix->colmap = NULL;
     return MTX_SUCCESS;
 }
 
@@ -748,6 +1118,8 @@ int mtxdistmatrix_init_coordinate_real_double(
         mtxpartition_free(&distmatrix->rowpart);
         return MTX_ERR_MPI_COLLECTIVE;
     }
+    distmatrix->rowmap = NULL;
+    distmatrix->colmap = NULL;
     return MTX_SUCCESS;
 }
 
@@ -786,6 +1158,8 @@ int mtxdistmatrix_init_coordinate_complex_single(
         mtxpartition_free(&distmatrix->rowpart);
         return MTX_ERR_MPI_COLLECTIVE;
     }
+    distmatrix->rowmap = NULL;
+    distmatrix->colmap = NULL;
     return MTX_SUCCESS;
 }
 
@@ -824,6 +1198,8 @@ int mtxdistmatrix_init_coordinate_complex_double(
         mtxpartition_free(&distmatrix->rowpart);
         return MTX_ERR_MPI_COLLECTIVE;
     }
+    distmatrix->rowmap = NULL;
+    distmatrix->colmap = NULL;
     return MTX_SUCCESS;
 }
 
@@ -862,6 +1238,8 @@ int mtxdistmatrix_init_coordinate_integer_single(
         mtxpartition_free(&distmatrix->rowpart);
         return MTX_ERR_MPI_COLLECTIVE;
     }
+    distmatrix->rowmap = NULL;
+    distmatrix->colmap = NULL;
     return MTX_SUCCESS;
 }
 
@@ -900,6 +1278,8 @@ int mtxdistmatrix_init_coordinate_integer_double(
         mtxpartition_free(&distmatrix->rowpart);
         return MTX_ERR_MPI_COLLECTIVE;
     }
+    distmatrix->rowmap = NULL;
+    distmatrix->colmap = NULL;
     return MTX_SUCCESS;
 }
 
@@ -937,6 +1317,8 @@ int mtxdistmatrix_init_coordinate_pattern(
         mtxpartition_free(&distmatrix->rowpart);
         return MTX_ERR_MPI_COLLECTIVE;
     }
+    distmatrix->rowmap = NULL;
+    distmatrix->colmap = NULL;
     return MTX_SUCCESS;
 }
 
@@ -1147,6 +1529,9 @@ int mtxdistmatrix_from_mtxfile(
         return MTX_ERR_MPI_COLLECTIVE;
     }
     mtxfile_free(&recvmtxfile);
+
+    dst->rowmap = NULL;
+    dst->colmap = NULL;
     return MTX_SUCCESS;
 }
 
@@ -1160,58 +1545,91 @@ int mtxdistmatrix_from_mtxfile(
  * calls to this function.
  */
 int mtxdistmatrix_to_mtxfile(
-    struct mtxfile * dst,
-    const struct mtxdistmatrix * src,
+    struct mtxfile * mtxfile,
+    const struct mtxdistmatrix * A,
     enum mtxfileformat mtxfmt,
     int root,
     struct mtxdisterror * disterr)
 {
     int err;
-    MPI_Comm comm = src->comm;
-    int comm_size = src->comm_size;
-    int rank = src->rank;
+    enum mtxfield field;
+    err = mtxmatrix_field(&A->interior, &field);
+    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+    enum mtxprecision precision;
+    err = mtxmatrix_precision(&A->interior, &precision);
+    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+    enum mtxsymmetry symmetry;
+    err = mtxmatrix_symmetry(&A->interior, &symmetry);
+    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+    int64_t size;
+    err = mtxmatrix_size(&A->interior, &size);
+    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
 
-    /* 1. Each process converts its part of the matrix to Matrix
-     * Market format */
-    struct mtxfile sendmtxfile;
-    err = mtxmatrix_to_mtxfile(
-        &sendmtxfile, &src->interior, mtxfmt);
-    if (mtxdisterror_allreduce(disterr, err))
-        return MTX_ERR_MPI_COLLECTIVE;
+    struct mtxfileheader mtxheader;
+    mtxheader.object = mtxfile_matrix;
+    mtxheader.format = mtxfmt;
+    if (field == mtx_field_real) mtxheader.field = mtxfile_real;
+    else if (field == mtx_field_complex) mtxheader.field = mtxfile_complex;
+    else if (field == mtx_field_integer) mtxheader.field = mtxfile_integer;
+    else if (field == mtx_field_pattern) mtxheader.field = mtxfile_pattern;
+    else { return MTX_ERR_INVALID_FIELD; }
+    mtxheader.symmetry = symmetry;
 
-    /* 2. Gather each part onto the root process */
-    struct mtxfile * recvmtxfiles =
-        rank == root ? malloc(comm_size * sizeof(struct mtxfile)) : NULL;
-    err = rank == root && !recvmtxfiles ? MTX_ERR_ERRNO : MTX_SUCCESS;
-    if (mtxdisterror_allreduce(disterr, err)) {
-        mtxfile_free(&sendmtxfile);
-        return MTX_ERR_MPI_COLLECTIVE;
-    }
-    err = mtxfile_gather(
-        &sendmtxfile, recvmtxfiles, root, comm, disterr);
-    if (err) {
-        if (rank == root) free(recvmtxfiles);
-        mtxfile_free(&sendmtxfile);
-        return err;
-    }
-    mtxfile_free(&sendmtxfile);
+    struct mtxfilesize mtxsize;
+    mtxsize.num_rows = A->num_rows;
+    mtxsize.num_columns = A->num_columns;
+    if (mtxfmt == mtxfile_array) {
+        mtxsize.num_nonzeros = -1;
+    } else if (mtxfmt == mtxfile_coordinate) {
+        mtxsize.num_nonzeros = A->size;
+    } else { return MTX_ERR_INVALID_MTX_FORMAT; }
 
-    /* 3. Join the Matrix Market files on the root process */
-    err = rank == root
-        ? mtxfile_join(dst, recvmtxfiles, &src->rowpart, &src->colpart)
-        : MTX_SUCCESS;
-    if (mtxdisterror_allreduce(disterr, err)) {
-        if (rank == root) {
-            for (int p = 0; p < comm_size; p++)
-                mtxfile_free(&recvmtxfiles[p]);
-            free(recvmtxfiles);
+    err = mtxfile_alloc(mtxfile, &mtxheader, NULL, &mtxsize, precision);
+    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+
+    int64_t offset = 0;
+    for (int p = 0; p < A->comm_size; p++) {
+        if (A->rank == root && p != root) {
+            /* receive from the root process */
+            struct mtxfile recvmtxfile;
+            err = err ? err : mtxfile_recv(&recvmtxfile, p, 0, A->comm, disterr);
+            int64_t recvsize;
+            if (mtxfile->header.format == mtxfile_array) {
+                recvsize = recvmtxfile.size.num_rows *
+                    recvmtxfile.size.num_columns;
+            } else if (mtxfile->header.format == mtxfile_coordinate) {
+                recvsize = recvmtxfile.size.num_nonzeros;
+            } else { err = MTX_ERR_INVALID_MTX_FORMAT; }
+            err = err ? err : mtxfiledata_copy(
+                &mtxfile->data, &recvmtxfile.data,
+                recvmtxfile.header.object, recvmtxfile.header.format,
+                recvmtxfile.header.field, recvmtxfile.precision,
+                recvsize, offset, 0);
+            mtxfile_free(&recvmtxfile);
+            offset += recvsize;
+        } else if (A->rank != root && A->rank == p) {
+            /* send to the root process */
+            struct mtxfile sendmtxfile;
+            err = mtxmatrix_to_mtxfile(
+                &sendmtxfile, &A->interior,
+                A->num_rows, A->rowmap, A->num_columns, A->colmap, mtxfmt);
+            err = err ? err : mtxfile_send(
+                &sendmtxfile, root, 0, A->comm, disterr);
+            mtxfile_free(&sendmtxfile);
+        } else if (A->rank == root && p == root) {
+            struct mtxfile srcmtxfile;
+            err = mtxmatrix_to_mtxfile(
+                &srcmtxfile, &A->interior,
+                A->num_rows, A->rowmap, A->num_columns, A->colmap, mtxfmt);
+            err = err ? err : mtxfiledata_copy(
+                &mtxfile->data, &srcmtxfile.data,
+                srcmtxfile.header.object, srcmtxfile.header.format,
+                srcmtxfile.header.field, srcmtxfile.precision,
+                size, offset, 0);
+            mtxfile_free(&srcmtxfile);
+            offset += size;
         }
-        return MTX_ERR_MPI_COLLECTIVE;
-    }
-    if (rank == root) {
-        for (int p = 0; p < comm_size; p++)
-            mtxfile_free(&recvmtxfiles[p]);
-        free(recvmtxfiles);
+        if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     }
     return MTX_SUCCESS;
 }
@@ -1314,6 +1732,9 @@ int mtxdistmatrix_from_mtxdistfile(
         mtxdistfile_free(&dsts[p]);
     }
     free(dsts);
+
+    dst->rowmap = NULL;
+    dst->colmap = NULL;
     return MTX_SUCCESS;
 }
 
@@ -1337,7 +1758,7 @@ int mtxdistmatrix_to_mtxdistfile(
      * Market format */
     struct mtxfile mtxfile;
     err = (rank < num_parts)
-        ? mtxmatrix_to_mtxfile(&mtxfile, &src->interior, mtxfmt)
+        ? mtxmatrix_to_mtxfile(&mtxfile, &src->interior, 0, NULL, 0, NULL, mtxfmt)
         : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err))
         return MTX_ERR_MPI_COLLECTIVE;

@@ -125,6 +125,35 @@ struct mtxmatrix
     } storage;
 };
 
+/**
+ * ‘mtxmatrix_field()’ gets the field of a matrix.
+ */
+int mtxmatrix_field(
+    const struct mtxmatrix * x,
+    enum mtxfield * field);
+
+/**
+ * ‘mtxmatrix_precision()’ gets the precision of a matrix.
+ */
+int mtxmatrix_precision(
+    const struct mtxmatrix * x,
+    enum mtxprecision * precision);
+
+/**
+ * ‘mtxmatrix_symmetry()’ gets the symmetry of a matrix.
+ */
+int mtxmatrix_symmetry(
+    const struct mtxmatrix * x,
+    enum mtxsymmetry * symmetry);
+
+/**
+ * ‘mtxmatrix_size()’ gets the number of explicitly stored nonzeros of
+ * a matrix.
+ */
+int mtxmatrix_size(
+    const struct mtxmatrix * A,
+    int64_t * size);
+
 /*
  * Memory management
  */
@@ -489,8 +518,8 @@ int mtxmatrix_alloc_column_vector(
  */
 
 /**
- * ‘mtxmatrix_from_mtxfile()’ converts a matrix in Matrix Market
- * format to a matrix.
+ * ‘mtxmatrix_from_mtxfile()’ converts a matrix from Matrix Market
+ * format.
  */
 int mtxmatrix_from_mtxfile(
     struct mtxmatrix * dst,
@@ -498,12 +527,15 @@ int mtxmatrix_from_mtxfile(
     const struct mtxfile * src);
 
 /**
- * ‘mtxmatrix_to_mtxfile()’ converts a matrix to a matrix in Matrix
- * Market format.
+ * ‘mtxmatrix_to_mtxfile()’ converts a matrix to Matrix Market format.
  */
 int mtxmatrix_to_mtxfile(
     struct mtxfile * dst,
     const struct mtxmatrix * src,
+    int64_t num_rows,
+    const int64_t * rowidx,
+    int64_t num_columns,
+    const int64_t * colidx,
     enum mtxfileformat mtxfmt);
 
 /*
@@ -618,6 +650,10 @@ int mtxmatrix_gzread(
  */
 int mtxmatrix_write(
     const struct mtxmatrix * matrix,
+    int64_t num_rows,
+    const int64_t * rowidx,
+    int64_t num_columns,
+    const int64_t * colidx,
     enum mtxfileformat mtxfmt,
     const char * path,
     bool gzip,
@@ -646,6 +682,10 @@ int mtxmatrix_write(
  */
 int mtxmatrix_fwrite(
     const struct mtxmatrix * matrix,
+    int64_t num_rows,
+    const int64_t * rowidx,
+    int64_t num_columns,
+    const int64_t * colidx,
     enum mtxfileformat mtxfmt,
     FILE * f,
     const char * fmt,
@@ -674,6 +714,10 @@ int mtxmatrix_fwrite(
  */
 int mtxmatrix_gzwrite(
     const struct mtxmatrix * matrix,
+    int64_t num_rows,
+    const int64_t * rowidx,
+    int64_t num_columns,
+    const int64_t * colidx,
     enum mtxfileformat mtxfmt,
     gzFile f,
     const char * fmt,

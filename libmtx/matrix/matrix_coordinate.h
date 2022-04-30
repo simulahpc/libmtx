@@ -288,7 +288,11 @@ int mtxmatrix_coordinate_from_mtxfile(
  */
 int mtxmatrix_coordinate_to_mtxfile(
     struct mtxfile * mtxfile,
-    const struct mtxmatrix_coordinate * matrix,
+    const struct mtxmatrix_coordinate * A,
+    int64_t num_rows,
+    const int64_t * rowidx,
+    int64_t num_columns,
+    const int64_t * colidx,
     enum mtxfileformat mtxfmt);
 
 /*

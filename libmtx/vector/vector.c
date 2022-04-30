@@ -1541,8 +1541,8 @@ int mtxvector_set_constant_integer_double(
  */
 
 /**
- * ‘mtxvector_from_mtxfile()’ converts a vector in Matrix Market
- * format to a vector.
+ * ‘mtxvector_from_mtxfile()’ converts to a vector from Matrix Market
+ * format.
  */
 int mtxvector_from_mtxfile(
     struct mtxvector * x,
@@ -1589,8 +1589,7 @@ int mtxvector_from_mtxfile(
 }
 
 /**
- * ‘mtxvector_to_mtxfile()’ converts a vector to a vector in Matrix
- * Market format.
+ * ‘mtxvector_to_mtxfile()’ converts a vector to Matrix Market format.
  */
 int mtxvector_to_mtxfile(
     struct mtxfile * mtxfile,

@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-04-27
+ * Last modified: 2022-04-30
  *
  * Unit tests for sparse matrices in coordinate format.
  */
@@ -707,7 +707,7 @@ int test_mtxmatrix_coordinate_to_mtxfile(void)
             &A, mtx_unsymmetric, num_rows, num_columns, nnz, rowidx, colidx, Adata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxfile mtxfile;
-        err = mtxmatrix_to_mtxfile(&mtxfile, &A, mtxfile_coordinate);
+        err = mtxmatrix_to_mtxfile(&mtxfile, &A, 0, NULL, 0, NULL, mtxfile_coordinate);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(mtxfile_matrix, mtxfile.header.object);
         TEST_ASSERT_EQ(mtxfile_coordinate, mtxfile.header.format);
@@ -740,7 +740,7 @@ int test_mtxmatrix_coordinate_to_mtxfile(void)
             &A, mtx_symmetric, num_rows, num_columns, nnz, rowidx, colidx, Adata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxfile mtxfile;
-        err = mtxmatrix_to_mtxfile(&mtxfile, &A, mtxfile_coordinate);
+        err = mtxmatrix_to_mtxfile(&mtxfile, &A, 0, NULL, 0, NULL, mtxfile_coordinate);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(mtxfile_matrix, mtxfile.header.object);
         TEST_ASSERT_EQ(mtxfile_coordinate, mtxfile.header.format);
@@ -773,7 +773,7 @@ int test_mtxmatrix_coordinate_to_mtxfile(void)
             &A, mtx_skew_symmetric, num_rows, num_columns, nnz, rowidx, colidx, Adata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxfile mtxfile;
-        err = mtxmatrix_to_mtxfile(&mtxfile, &A, mtxfile_coordinate);
+        err = mtxmatrix_to_mtxfile(&mtxfile, &A, 0, NULL, 0, NULL, mtxfile_coordinate);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(mtxfile_matrix, mtxfile.header.object);
         TEST_ASSERT_EQ(mtxfile_coordinate, mtxfile.header.format);
@@ -806,7 +806,7 @@ int test_mtxmatrix_coordinate_to_mtxfile(void)
             &A, mtx_unsymmetric, num_rows, num_columns, nnz, rowidx, colidx, Adata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxfile mtxfile;
-        err = mtxmatrix_to_mtxfile(&mtxfile, &A, mtxfile_coordinate);
+        err = mtxmatrix_to_mtxfile(&mtxfile, &A, 0, NULL, 0, NULL, mtxfile_coordinate);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(mtxfile_matrix, mtxfile.header.object);
         TEST_ASSERT_EQ(mtxfile_coordinate, mtxfile.header.format);
@@ -839,7 +839,7 @@ int test_mtxmatrix_coordinate_to_mtxfile(void)
             &A, mtx_unsymmetric, num_rows, num_columns, nnz, rowidx, colidx, Adata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxfile mtxfile;
-        err = mtxmatrix_to_mtxfile(&mtxfile, &A, mtxfile_coordinate);
+        err = mtxmatrix_to_mtxfile(&mtxfile, &A, 0, NULL, 0, NULL, mtxfile_coordinate);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(mtxfile_matrix, mtxfile.header.object);
         TEST_ASSERT_EQ(mtxfile_coordinate, mtxfile.header.format);
@@ -873,7 +873,7 @@ int test_mtxmatrix_coordinate_to_mtxfile(void)
             &A, mtx_hermitian, num_rows, num_columns, nnz, rowidx, colidx, Adata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxfile mtxfile;
-        err = mtxmatrix_to_mtxfile(&mtxfile, &A, mtxfile_coordinate);
+        err = mtxmatrix_to_mtxfile(&mtxfile, &A, 0, NULL, 0, NULL, mtxfile_coordinate);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(mtxfile_matrix, mtxfile.header.object);
         TEST_ASSERT_EQ(mtxfile_coordinate, mtxfile.header.format);
@@ -907,7 +907,7 @@ int test_mtxmatrix_coordinate_to_mtxfile(void)
             &A, mtx_unsymmetric, num_rows, num_columns, nnz, rowidx, colidx, Adata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxfile mtxfile;
-        err = mtxmatrix_to_mtxfile(&mtxfile, &A, mtxfile_coordinate);
+        err = mtxmatrix_to_mtxfile(&mtxfile, &A, 0, NULL, 0, NULL, mtxfile_coordinate);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(mtxfile_matrix, mtxfile.header.object);
         TEST_ASSERT_EQ(mtxfile_coordinate, mtxfile.header.format);
@@ -941,7 +941,7 @@ int test_mtxmatrix_coordinate_to_mtxfile(void)
             &A, mtx_unsymmetric, num_rows, num_columns, nnz, rowidx, colidx, Adata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxfile mtxfile;
-        err = mtxmatrix_to_mtxfile(&mtxfile, &A, mtxfile_coordinate);
+        err = mtxmatrix_to_mtxfile(&mtxfile, &A, 0, NULL, 0, NULL, mtxfile_coordinate);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(mtxfile_matrix, mtxfile.header.object);
         TEST_ASSERT_EQ(mtxfile_coordinate, mtxfile.header.format);
@@ -974,7 +974,7 @@ int test_mtxmatrix_coordinate_to_mtxfile(void)
             &A, mtx_unsymmetric, num_rows, num_columns, nnz, rowidx, colidx, Adata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxfile mtxfile;
-        err = mtxmatrix_to_mtxfile(&mtxfile, &A, mtxfile_coordinate);
+        err = mtxmatrix_to_mtxfile(&mtxfile, &A, 0, NULL, 0, NULL, mtxfile_coordinate);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(mtxfile_matrix, mtxfile.header.object);
         TEST_ASSERT_EQ(mtxfile_coordinate, mtxfile.header.format);
@@ -1006,7 +1006,7 @@ int test_mtxmatrix_coordinate_to_mtxfile(void)
             &A, mtx_unsymmetric, num_rows, num_columns, nnz, rowidx, colidx);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxfile mtxfile;
-        err = mtxmatrix_to_mtxfile(&mtxfile, &A, mtxfile_coordinate);
+        err = mtxmatrix_to_mtxfile(&mtxfile, &A, 0, NULL, 0, NULL, mtxfile_coordinate);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(mtxfile_matrix, mtxfile.header.object);
         TEST_ASSERT_EQ(mtxfile_coordinate, mtxfile.header.format);

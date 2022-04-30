@@ -981,7 +981,8 @@ int mtxmatrix_csr_join(
     struct mtxfile * srcmtxfiles = malloc(sizeof(struct mtxfile) * num_parts);
     if (!srcmtxfiles) return MTX_ERR_ERRNO;
     for (int p = 0; p < num_parts; p++) {
-        err = mtxmatrix_to_mtxfile(&srcmtxfiles[p], &srcs[p], mtxfile_coordinate);
+        err = mtxmatrix_to_mtxfile(
+            &srcmtxfiles[p], &srcs[p], 0, NULL, 0, NULL, mtxfile_coordinate);
         if (err) {
             for (int q = p-1; q >= 0; q--)
                 mtxfile_free(&srcmtxfiles[q]);
