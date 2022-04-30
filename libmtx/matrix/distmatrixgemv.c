@@ -128,15 +128,13 @@ int mtxdistmatrixgemv_init(
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
 
     /* verify that the matrix and vectors come from the same MPI communicator */
-    disterr->mpierrcode = MPI_Comm_compare(A->parent, x->comm, &result);
+    disterr->mpierrcode = MPI_Comm_compare(A->comm, x->comm, &result);
     err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     err = result != MPI_IDENT && result != MPI_CONGRUENT
         ? MTX_ERR_INCOMPATIBLE_MPI_COMM : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
 
-    int P = A->num_process_rows;
-    int Q = A->num_process_columns;
     int R = x->comm_size;
 
     /* TODO: Implement transposed matrix-vector multiplication */
@@ -181,7 +179,7 @@ int mtxdistmatrixgemv_init(
     }
 
     err = mtxpartition_globalidx(
-        &A->colpart, A->colrank, num_nonzero_columns,
+        &A->colpart, A->rank, num_nonzero_columns,
         global_nonzero_columns, global_nonzero_columns);
     if (mtxdisterror_allreduce(disterr, err)) {
         free(global_nonzero_columns);
@@ -289,15 +287,13 @@ int mtxdistmatrixgemv2_init(
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
 
     /* verify that the matrix and vectors come from the same MPI communicator */
-    disterr->mpierrcode = MPI_Comm_compare(A->parent, x->comm, &result);
+    disterr->mpierrcode = MPI_Comm_compare(A->comm, x->comm, &result);
     err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     err = result != MPI_IDENT && result != MPI_CONGRUENT
         ? MTX_ERR_INCOMPATIBLE_MPI_COMM : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
 
-    int P = A->num_process_rows;
-    int Q = A->num_process_columns;
     int R = x->comm_size;
 
     /* TODO: Implement transposed matrix-vector multiplication */
@@ -342,7 +338,7 @@ int mtxdistmatrixgemv2_init(
 #endif
 
     err = mtxpartition_globalidx(
-        &A->colpart, A->colrank, num_nonzero_columns,
+        &A->colpart, A->rank, num_nonzero_columns,
         global_nonzero_columns, global_nonzero_columns);
     if (mtxdisterror_allreduce(disterr, err)) {
         free(global_nonzero_columns);

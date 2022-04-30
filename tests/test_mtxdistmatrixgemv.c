@@ -162,7 +162,7 @@ int test_mtxdistmatrixgemv2_array(void)
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxdistmatrix_init_array_real_single(
             &A, mtx_unsymmetric, num_local_rows, num_local_columns,
-            Adata, &rowpart, &colpart, comm, 0, 0, &disterr);
+            Adata, &rowpart, &colpart, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
@@ -284,7 +284,7 @@ int test_mtxdistmatrixgemv2_array(void)
             : ((double[]) {2.0f});
         err = mtxdistmatrix_init_array_real_double(
             &A, mtx_unsymmetric, num_local_rows, num_local_columns,
-            Adata, NULL, NULL, comm, 0, 0, &disterr);
+            Adata, NULL, NULL, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxdistvector_init_array_real_double(
             &x, num_local_columns, xdata, NULL, comm, &disterr);
@@ -406,7 +406,7 @@ int test_mtxdistmatrixgemv2_array(void)
             : ((float[][2]) {{2.0f,2.0f}});
         err = mtxdistmatrix_init_array_complex_single(
             &A, mtx_unsymmetric, num_local_rows, num_local_columns,
-            Adata, NULL, NULL, comm, 0, 0, &disterr);
+            Adata, NULL, NULL, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxdistvector_init_array_complex_single(
             &x, num_local_columns, xdata, NULL, comm, &disterr);
@@ -732,7 +732,7 @@ int test_mtxdistmatrixgemv2_array(void)
             : ((double[][2]) {{2.0,2.0}});
         err = mtxdistmatrix_init_array_complex_double(
             &A, mtx_unsymmetric, num_local_rows, num_local_columns,
-            Adata, NULL, NULL, comm, 0, 0, &disterr);
+            Adata, NULL, NULL, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxdistvector_init_array_complex_double(
             &x, num_local_columns, xdata, NULL, comm, &disterr);
@@ -1059,7 +1059,7 @@ int test_mtxdistmatrixgemv2_array(void)
         int32_t * ydata = rank == 0 ? ((int32_t[]) {1, 0}) : ((int32_t[]) {2});
         err = mtxdistmatrix_init_array_integer_single(
             &A, mtx_unsymmetric, num_local_rows, num_local_columns,
-            Adata, NULL, NULL, comm, 0, 0, &disterr);
+            Adata, NULL, NULL, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxdistvector_init_array_integer_single(
             &x, num_local_columns, xdata, NULL, comm, &disterr);
@@ -1177,7 +1177,7 @@ int test_mtxdistmatrixgemv2_array(void)
         int64_t * ydata = rank == 0 ? ((int64_t[]) {1, 0}) : ((int64_t[]) {2});
         err = mtxdistmatrix_init_array_integer_double(
             &A, mtx_unsymmetric, num_local_rows, num_local_columns,
-            Adata, NULL, NULL, comm, 0, 0, &disterr);
+            Adata, NULL, NULL, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxdistvector_init_array_integer_double(
             &x, num_local_columns, xdata, NULL, comm, &disterr);
@@ -1397,7 +1397,7 @@ int test_mtxdistmatrixgemv_array(void)
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxdistmatrix_init_array_real_single(
             &A, mtx_unsymmetric, num_local_rows, num_local_columns,
-            Adata, &rowpart, &colpart, comm, 0, 0, &disterr);
+            Adata, &rowpart, &colpart, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
@@ -1449,7 +1449,7 @@ int test_mtxdistmatrixgemv_array(void)
             : ((float[]) {2.0f});
         err = mtxdistmatrix_init_array_real_single(
             &A, mtx_unsymmetric, num_local_rows, num_local_columns,
-            Adata, NULL, NULL, comm, 0, 0, &disterr);
+            Adata, NULL, NULL, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxdistvector_init_array_real_single(
             &x, num_local_columns, xdata, NULL, comm, &disterr);
@@ -1567,7 +1567,7 @@ int test_mtxdistmatrixgemv_array(void)
             : ((double[]) {2.0f});
         err = mtxdistmatrix_init_array_real_double(
             &A, mtx_unsymmetric, num_local_rows, num_local_columns,
-            Adata, NULL, NULL, comm, 0, 0, &disterr);
+            Adata, NULL, NULL, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxdistvector_init_array_real_double(
             &x, num_local_columns, xdata, NULL, comm, &disterr);
@@ -1689,7 +1689,7 @@ int test_mtxdistmatrixgemv_array(void)
             : ((float[][2]) {{2.0f,2.0f}});
         err = mtxdistmatrix_init_array_complex_single(
             &A, mtx_unsymmetric, num_local_rows, num_local_columns,
-            Adata, NULL, NULL, comm, 0, 0, &disterr);
+            Adata, NULL, NULL, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxdistvector_init_array_complex_single(
             &x, num_local_columns, xdata, NULL, comm, &disterr);
@@ -2015,7 +2015,7 @@ int test_mtxdistmatrixgemv_array(void)
             : ((double[][2]) {{2.0,2.0}});
         err = mtxdistmatrix_init_array_complex_double(
             &A, mtx_unsymmetric, num_local_rows, num_local_columns,
-            Adata, NULL, NULL, comm, 0, 0, &disterr);
+            Adata, NULL, NULL, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxdistvector_init_array_complex_double(
             &x, num_local_columns, xdata, NULL, comm, &disterr);
@@ -2342,7 +2342,7 @@ int test_mtxdistmatrixgemv_array(void)
         int32_t * ydata = rank == 0 ? ((int32_t[]) {1, 0}) : ((int32_t[]) {2});
         err = mtxdistmatrix_init_array_integer_single(
             &A, mtx_unsymmetric, num_local_rows, num_local_columns,
-            Adata, NULL, NULL, comm, 0, 0, &disterr);
+            Adata, NULL, NULL, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxdistvector_init_array_integer_single(
             &x, num_local_columns, xdata, NULL, comm, &disterr);
@@ -2460,7 +2460,7 @@ int test_mtxdistmatrixgemv_array(void)
         int64_t * ydata = rank == 0 ? ((int64_t[]) {1, 0}) : ((int64_t[]) {2});
         err = mtxdistmatrix_init_array_integer_double(
             &A, mtx_unsymmetric, num_local_rows, num_local_columns,
-            Adata, NULL, NULL, comm, 0, 0, &disterr);
+            Adata, NULL, NULL, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxdistvector_init_array_integer_double(
             &x, num_local_columns, xdata, NULL, comm, &disterr);
@@ -2710,7 +2710,7 @@ int test_mtxdistmatrixgemv_coordinate(void)
         float * ydata = rank == 0 ? ((float[]) {1.0f, 0.0f}) : ((float[]) {2.0f});
         err = mtxdistmatrix_init_coordinate_real_single(
             &A, mtx_unsymmetric, num_local_rows, num_local_columns, num_local_nonzeros,
-            Arowidx, Acolidx, Adata, NULL, NULL, comm, 0, 0, &disterr);
+            Arowidx, Acolidx, Adata, NULL, NULL, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxdistvector_init_array_real_single(
             &x, num_local_columns, xdata, NULL, comm, &disterr);
@@ -2837,7 +2837,7 @@ int test_mtxdistmatrixgemv_coordinate(void)
         double * ydata = rank == 0 ? ((double[]) {1.0, 0.0}) : ((double[]) {2.0});
         err = mtxdistmatrix_init_coordinate_real_double(
             &A, mtx_unsymmetric, num_local_rows, num_local_columns, num_local_nonzeros,
-            Arowidx, Acolidx, Adata, NULL, NULL, comm, 0, 0, &disterr);
+            Arowidx, Acolidx, Adata, NULL, NULL, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxdistvector_init_array_real_double(
             &x, num_local_columns, xdata, NULL, comm, &disterr);
@@ -2968,7 +2968,7 @@ int test_mtxdistmatrixgemv_coordinate(void)
         float (* ydata)[2] = rank == 0 ? ((float[][2]) {{1.0f, 0.0f}}) : ((float[][2]) {{2.0f,2.0f}});
         err = mtxdistmatrix_init_coordinate_complex_single(
             &A, mtx_unsymmetric, num_local_rows, num_local_columns, num_local_nonzeros,
-            Arowidx, Acolidx, Adata, NULL, NULL, comm, 0, 0, &disterr);
+            Arowidx, Acolidx, Adata, NULL, NULL, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxdistvector_init_array_complex_single(
             &x, num_local_columns, xdata, NULL, comm, &disterr);
@@ -3278,7 +3278,7 @@ int test_mtxdistmatrixgemv_coordinate(void)
         double (* ydata)[2] = rank == 0 ? ((double[][2]) {{1.0, 0.0}}) : ((double[][2]) {{2.0,2.0}});
         err = mtxdistmatrix_init_coordinate_complex_double(
             &A, mtx_unsymmetric, num_local_rows, num_local_columns, num_local_nonzeros,
-            Arowidx, Acolidx, Adata, NULL, NULL, comm, 0, 0, &disterr);
+            Arowidx, Acolidx, Adata, NULL, NULL, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxdistvector_init_array_complex_double(
             &x, num_local_columns, xdata, NULL, comm, &disterr);
@@ -3456,7 +3456,7 @@ int test_mtxdistmatrixgemv_coordinate(void)
         int32_t * ydata = rank == 0 ? ((int32_t[]) {1, 0}) : ((int32_t[]) {2});
         err = mtxdistmatrix_init_coordinate_integer_single(
             &A, mtx_unsymmetric, num_local_rows, num_local_columns, num_local_nonzeros,
-            Arowidx, Acolidx, Adata, NULL, NULL, comm, 0, 0, &disterr);
+            Arowidx, Acolidx, Adata, NULL, NULL, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxdistvector_init_array_integer_single(
             &x, num_local_columns, xdata, NULL, comm, &disterr);
@@ -3563,7 +3563,7 @@ int test_mtxdistmatrixgemv_coordinate(void)
         int64_t * ydata = rank == 0 ? ((int64_t[]) {1, 0}) : ((int64_t[]) {2});
         err = mtxdistmatrix_init_coordinate_integer_double(
             &A, mtx_unsymmetric, num_local_rows, num_local_columns, num_local_nonzeros,
-            Arowidx, Acolidx, Adata, NULL, NULL, comm, 0, 0, &disterr);
+            Arowidx, Acolidx, Adata, NULL, NULL, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxdistvector_init_array_integer_double(
             &x, num_local_columns, xdata, NULL, comm, &disterr);
@@ -3671,7 +3671,7 @@ int test_mtxdistmatrixgemv_coordinate(void)
         int * Acolidx = rank == 0 ? ((int[]) {0, 2, 0, 1}) : ((int[]) {2});
         err = mtxdistmatrix_init_coordinate_pattern(
             &A, mtx_unsymmetric, num_local_rows, num_local_columns, num_local_nonzeros,
-            Arowidx, Acolidx, NULL, NULL, comm, 0, 0, &disterr);
+            Arowidx, Acolidx, NULL, NULL, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         {
             float * xdata = (float[]) {3, 2, 1};

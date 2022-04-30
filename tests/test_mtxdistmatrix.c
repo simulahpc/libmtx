@@ -93,7 +93,7 @@ int test_mtxdistmatrix_from_mtxfile(void)
         struct mtxdistmatrix mtxdistmatrix;
         err = mtxdistmatrix_from_mtxfile(
             &mtxdistmatrix, &srcmtxfile, mtxmatrix_auto,
-            NULL, NULL, comm, root, 0, 0, &disterr);
+            NULL, NULL, comm, root, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
@@ -143,7 +143,7 @@ int test_mtxdistmatrix_from_mtxfile(void)
         struct mtxdistmatrix mtxdistmatrix;
         err = mtxdistmatrix_from_mtxfile(
             &mtxdistmatrix, &srcmtxfile, mtxmatrix_auto,
-            NULL, NULL, comm, root, 0, 0, &disterr);
+            NULL, NULL, comm, root, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
@@ -203,7 +203,7 @@ int test_mtxdistmatrix_from_mtxfile(void)
         struct mtxdistmatrix mtxdistmatrix;
         err = mtxdistmatrix_from_mtxfile(
             &mtxdistmatrix, &srcmtxfile, mtxmatrix_auto,
-            NULL, &colpart, comm, root, 0, 0, &disterr);
+            NULL, &colpart, comm, root, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
@@ -296,7 +296,7 @@ int test_mtxdistmatrix_to_mtxfile(void)
         struct mtxdistmatrix src;
         err = mtxdistmatrix_init_array_real_double(
             &src, mtx_unsymmetric, num_local_rows, num_local_columns,
-            srcdata, NULL, NULL, comm, 0, 0, &disterr);
+            srcdata, NULL, NULL, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
@@ -468,7 +468,7 @@ int test_mtxdistmatrix_from_mtxdistfile(void)
         struct mtxdistmatrix mtxdistmatrix;
         err = mtxdistmatrix_from_mtxdistfile(
             &mtxdistmatrix, &src, mtxmatrix_auto,
-            NULL, NULL, comm, 0, 0, &disterr);
+            NULL, NULL, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
@@ -536,7 +536,7 @@ int test_mtxdistmatrix_from_mtxdistfile(void)
         struct mtxdistmatrix mtxdistmatrix;
         err = mtxdistmatrix_from_mtxdistfile(
             &mtxdistmatrix, &src, mtxmatrix_auto,
-            NULL, NULL, comm, 0, 0, &disterr);
+            NULL, NULL, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
@@ -632,7 +632,7 @@ int test_mtxdistmatrix_to_mtxdistfile(void)
         struct mtxdistmatrix src;
         err = mtxdistmatrix_init_array_real_double(
             &src, mtx_unsymmetric, num_local_rows, num_local_columns,
-            srcdata, NULL, NULL, comm, 0, 0, &disterr);
+            srcdata, NULL, NULL, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
@@ -701,7 +701,7 @@ int test_mtxdistmatrix_to_mtxdistfile(void)
         struct mtxdistmatrix src;
         err = mtxdistmatrix_init_coordinate_real_double(
             &src, mtx_unsymmetric, num_local_rows, num_local_columns, num_local_nonzeros,
-            rowidx, colidx, srcdata, &rowpart, NULL, comm, 0, 0, &disterr);
+            rowidx, colidx, srcdata, &rowpart, NULL, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
@@ -796,7 +796,7 @@ int test_mtxdistmatrix_alloc_row_vector(void)
         struct mtxdistmatrix src;
         err = mtxdistmatrix_init_array_real_double(
             &src, mtx_unsymmetric, num_local_rows, num_local_columns,
-            srcdata, NULL, NULL, comm, 0, 0, &disterr);
+            srcdata, NULL, NULL, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
@@ -807,7 +807,7 @@ int test_mtxdistmatrix_alloc_row_vector(void)
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
-        TEST_ASSERT_EQ(1, x.comm_size);
+        TEST_ASSERT_EQ(2, x.comm_size);
         TEST_ASSERT_EQ(mtx_singleton, x.rowpart.type);
         TEST_ASSERT_EQ(3, x.rowpart.size);
         TEST_ASSERT_EQ(1, x.rowpart.num_parts);
@@ -866,7 +866,7 @@ int test_mtxdistmatrix_alloc_row_vector(void)
         struct mtxdistmatrix src;
         err = mtxdistmatrix_init_coordinate_real_double(
             &src, mtx_unsymmetric, num_local_rows, num_local_columns, num_local_nonzeros,
-            rowidx, colidx, srcdata, &rowpart, NULL, comm, 0, 0, &disterr);
+            rowidx, colidx, srcdata, &rowpart, NULL, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
@@ -878,7 +878,7 @@ int test_mtxdistmatrix_alloc_row_vector(void)
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
-        TEST_ASSERT_EQ(1, x.comm_size);
+        TEST_ASSERT_EQ(2, x.comm_size);
         TEST_ASSERT_EQ(mtx_singleton, x.rowpart.type);
         TEST_ASSERT_EQ(3, x.rowpart.size);
         TEST_ASSERT_EQ(1, x.rowpart.num_parts);
@@ -961,7 +961,7 @@ int test_mtxdistmatrix_dot(void)
         struct mtxdistmatrix x;
         err = mtxdistmatrix_init_array_real_double(
             &x, mtx_unsymmetric, num_local_rows, num_local_columns,
-            xdata, NULL, NULL, comm, 0, 0, &disterr);
+            xdata, NULL, NULL, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
@@ -971,7 +971,7 @@ int test_mtxdistmatrix_dot(void)
         struct mtxdistmatrix y;
         err = mtxdistmatrix_init_array_real_double(
             &y, mtx_unsymmetric, num_local_rows, num_local_columns,
-            ydata, NULL, NULL, comm, 0, 0, &disterr);
+            ydata, NULL, NULL, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
@@ -1026,7 +1026,7 @@ int test_mtxdistmatrix_dot(void)
         struct mtxdistmatrix x;
         err = mtxdistmatrix_init_array_complex_double(
             &x, mtx_unsymmetric, num_local_rows, num_local_columns,
-            xdata, NULL, NULL, comm, 0, 0, &disterr);
+            xdata, NULL, NULL, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
@@ -1037,7 +1037,7 @@ int test_mtxdistmatrix_dot(void)
         struct mtxdistmatrix y;
         err = mtxdistmatrix_init_array_complex_double(
             &y, mtx_unsymmetric, num_local_rows, num_local_columns,
-            ydata, NULL, NULL, comm, 0, 0, &disterr);
+            ydata, NULL, NULL, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
@@ -1096,7 +1096,7 @@ int test_mtxdistmatrix_dot(void)
         struct mtxdistmatrix x;
         err = mtxdistmatrix_init_coordinate_real_double(
             &x, mtx_unsymmetric, num_local_rows, num_local_columns, num_local_nonzeros,
-            rowidx, colidx, xdata, NULL, NULL, comm, 0, 0, &disterr);
+            rowidx, colidx, xdata, NULL, NULL, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
@@ -1106,7 +1106,7 @@ int test_mtxdistmatrix_dot(void)
         struct mtxdistmatrix y;
         err = mtxdistmatrix_init_coordinate_real_double(
             &y, mtx_unsymmetric, num_local_rows, num_local_columns, num_local_nonzeros,
-            rowidx, colidx, ydata, NULL, NULL, comm, 0, 0, &disterr);
+            rowidx, colidx, ydata, NULL, NULL, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
@@ -1203,7 +1203,7 @@ int test_mtxdistmatrix_nrm2(void)
         struct mtxdistmatrix x;
         err = mtxdistmatrix_init_array_real_double(
             &x, mtx_unsymmetric, num_local_rows, num_local_columns,
-            xdata, NULL, NULL, comm, 0, 0, &disterr);
+            xdata, NULL, NULL, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
@@ -1233,7 +1233,7 @@ int test_mtxdistmatrix_nrm2(void)
         struct mtxdistmatrix x;
         err = mtxdistmatrix_init_array_complex_double(
             &x, mtx_unsymmetric, num_local_rows, num_local_columns,
-            xdata, NULL, NULL, comm, 0, 0, &disterr);
+            xdata, NULL, NULL, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
@@ -1259,7 +1259,7 @@ int test_mtxdistmatrix_nrm2(void)
         struct mtxdistmatrix x;
         err = mtxdistmatrix_init_array_integer_single(
             &x, mtx_unsymmetric, num_local_rows, num_local_columns,
-            xdata, NULL, NULL, comm, 0, 0, &disterr);
+            xdata, NULL, NULL, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
@@ -1298,7 +1298,7 @@ int test_mtxdistmatrix_nrm2(void)
         struct mtxdistmatrix x;
         err = mtxdistmatrix_init_coordinate_real_double(
             &x, mtx_unsymmetric, num_local_rows, num_local_columns, num_local_nonzeros,
-            rowidx, colidx, xdata, NULL, NULL, comm, 0, 0, &disterr);
+            rowidx, colidx, xdata, NULL, NULL, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
@@ -1334,7 +1334,7 @@ int test_mtxdistmatrix_nrm2(void)
         struct mtxdistmatrix x;
         err = mtxdistmatrix_init_coordinate_real_single(
             &x, mtx_unsymmetric, num_local_rows, num_local_columns, num_local_nonzeros,
-            rowidx, colidx, xdata, NULL, NULL, comm, 0, 0, &disterr);
+            rowidx, colidx, xdata, NULL, NULL, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
@@ -1404,7 +1404,7 @@ int test_mtxdistmatrix_scal(void)
         struct mtxdistmatrix x;
         err = mtxdistmatrix_init_array_real_single(
             &x, mtx_unsymmetric, num_local_rows, num_local_columns,
-            xdata, NULL, NULL, comm, 0, 0, &disterr);
+            xdata, NULL, NULL, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
@@ -1452,7 +1452,7 @@ int test_mtxdistmatrix_scal(void)
         struct mtxdistmatrix x;
         err = mtxdistmatrix_init_array_real_double(
             &x, mtx_unsymmetric, num_local_rows, num_local_columns,
-            xdata, NULL, NULL, comm, 0, 0, &disterr);
+            xdata, NULL, NULL, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
@@ -1559,7 +1559,7 @@ int test_mtxdistmatrix_scal(void)
         struct mtxdistmatrix x;
         err = mtxdistmatrix_init_coordinate_real_single(
             &x, mtx_unsymmetric, num_local_rows, num_local_columns, num_local_nonzeros,
-            rowidx, colidx, xdata, NULL, NULL, comm, 0, 0, &disterr);
+            rowidx, colidx, xdata, NULL, NULL, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
@@ -1607,7 +1607,7 @@ int test_mtxdistmatrix_scal(void)
         struct mtxdistmatrix x;
         err = mtxdistmatrix_init_coordinate_real_double(
             &x, mtx_unsymmetric, num_local_rows, num_local_columns, num_local_nonzeros,
-            rowidx, colidx, xdata, NULL, NULL, comm, 0, 0, &disterr);
+            rowidx, colidx, xdata, NULL, NULL, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
@@ -1691,7 +1691,7 @@ int test_mtxdistmatrix_axpy(void)
         struct mtxdistmatrix x;
         err = mtxdistmatrix_init_array_real_double(
             &x, mtx_unsymmetric, num_local_rows, num_local_columns,
-            xdata, NULL, NULL, comm, 0, 0, &disterr);
+            xdata, NULL, NULL, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
@@ -1701,7 +1701,7 @@ int test_mtxdistmatrix_axpy(void)
         struct mtxdistmatrix y;
         err = mtxdistmatrix_init_array_real_double(
             &y, mtx_unsymmetric, num_local_rows, num_local_columns,
-            ydata, NULL, NULL, comm, 0, 0, &disterr);
+            ydata, NULL, NULL, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
@@ -1793,7 +1793,7 @@ int test_mtxdistmatrix_axpy(void)
         struct mtxdistmatrix x;
         err = mtxdistmatrix_init_coordinate_real_double(
             &x, mtx_unsymmetric, num_local_rows, num_local_columns, num_local_nonzeros,
-            rowidx, colidx, xdata, NULL, NULL, comm, 0, 0, &disterr);
+            rowidx, colidx, xdata, NULL, NULL, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
@@ -1803,7 +1803,7 @@ int test_mtxdistmatrix_axpy(void)
         struct mtxdistmatrix y;
         err = mtxdistmatrix_init_coordinate_real_double(
             &y, mtx_unsymmetric, num_local_rows, num_local_columns, num_local_nonzeros,
-            rowidx, colidx, ydata, NULL, NULL, comm, 0, 0, &disterr);
+            rowidx, colidx, ydata, NULL, NULL, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));

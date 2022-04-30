@@ -62,30 +62,10 @@ struct mtxvector_dist;
 struct mtxdistmatrix
 {
     /**
-     * ‘parent’ is the original MPI communicator from which the new
-     * Cartesian communicator ‘comm’ was created.
-     */
-    MPI_Comm parent;
-
-    /**
      * ‘comm’ is a two-dimensional Cartesian communicator for
      * processes among which the matrix is distributed.
      */
     MPI_Comm comm;
-
-    /**
-     * ‘colcomm’ is a one-dimensional subgroup of the Cartesian
-     * communicator ‘comm’ that is made up of processes belonging to
-     * the same column in the two-dimensional process grid.
-     */
-    MPI_Comm colcomm;
-
-    /**
-     * ‘rowcomm’ is a one-dimensional subgroup of the Cartesian
-     * communicator ‘comm’ that is made up of processes belonging to
-     * the same row in the two-dimensional process grid.
-     */
-    MPI_Comm rowcomm;
 
     /**
      * ‘comm_size’ is the size (number of processes) of the MPI
@@ -97,43 +77,10 @@ struct mtxdistmatrix
     int comm_size;
 
     /**
-     * ‘num_process_rows’ is the number of processes in each column of
-     * the two-dimensional process grid. This is equal to the size
-     * (number of processes) in the MPI communicator ‘colcomm’, and it
-     * is equal to the number of parts in the partitioning of the
-     * matrix rows.
-     */
-    int num_process_rows;
-
-    /**
-     * ‘num_process_columns’ is the number of processes in each row of
-     * the two-dimensional process grid. This is equal to the size
-     * (number of processes) in the MPI communicator ‘rowcomm’, and it
-     * is equal to the number of parts in the partitioning of the
-     * matrix columns.
-     */
-    int num_process_columns;
-
-    /**
      * ‘rank’ is the rank of the current process within the process
      * group of the communicator ‘comm’.
      */
     int rank;
-
-    /**
-     * ‘rowrank’ is the rank of the current process within the process
-     * group of the communicator ‘colcomm’. This is also equal to
-     * ‘comm_size’ divided by ‘num_process_columns’.
-     */
-    int rowrank;
-
-    /**
-     * ‘colrank’ is the rank of the current process within the process
-     * group of the communicator ‘rowcomm’. This is also equal to the
-     * remainder when ‘comm_size’ is divided by ‘num_process_columns’,
-     * (i.e., ‘comm_size’ modulo ‘num_process_columns’).
-     */
-    int colrank;
 
     /**
      * ‘rowpart’ is a partitioning of the rows of the matrix.
@@ -257,8 +204,6 @@ int mtxdistmatrix_alloc_array(
     const struct mtxpartition * rowpart,
     const struct mtxpartition * colpart,
     MPI_Comm comm,
-    int num_process_rows,
-    int num_process_columns,
     struct mtxdisterror * disterr);
 
 /**
@@ -275,8 +220,6 @@ int mtxdistmatrix_init_array_real_single(
     const struct mtxpartition * rowpart,
     const struct mtxpartition * colpart,
     MPI_Comm comm,
-    int num_process_rows,
-    int num_process_columns,
     struct mtxdisterror * disterr);
 
 /**
@@ -293,8 +236,6 @@ int mtxdistmatrix_init_array_real_double(
     const struct mtxpartition * rowpart,
     const struct mtxpartition * colpart,
     MPI_Comm comm,
-    int num_process_rows,
-    int num_process_columns,
     struct mtxdisterror * disterr);
 
 /**
@@ -311,8 +252,6 @@ int mtxdistmatrix_init_array_complex_single(
     const struct mtxpartition * rowpart,
     const struct mtxpartition * colpart,
     MPI_Comm comm,
-    int num_process_rows,
-    int num_process_columns,
     struct mtxdisterror * disterr);
 
 /**
@@ -329,8 +268,6 @@ int mtxdistmatrix_init_array_complex_double(
     const struct mtxpartition * rowpart,
     const struct mtxpartition * colpart,
     MPI_Comm comm,
-    int num_process_rows,
-    int num_process_columns,
     struct mtxdisterror * disterr);
 
 /**
@@ -347,8 +284,6 @@ int mtxdistmatrix_init_array_integer_single(
     const struct mtxpartition * rowpart,
     const struct mtxpartition * colpart,
     MPI_Comm comm,
-    int num_process_rows,
-    int num_process_columns,
     struct mtxdisterror * disterr);
 
 /**
@@ -365,8 +300,6 @@ int mtxdistmatrix_init_array_integer_double(
     const struct mtxpartition * rowpart,
     const struct mtxpartition * colpart,
     MPI_Comm comm,
-    int num_process_rows,
-    int num_process_columns,
     struct mtxdisterror * disterr);
 
 /*
@@ -457,8 +390,6 @@ int mtxdistmatrix_alloc_coordinate(
     const struct mtxpartition * rowpart,
     const struct mtxpartition * colpart,
     MPI_Comm comm,
-    int num_process_rows,
-    int num_process_columns,
     struct mtxdisterror * disterr);
 
 /**
@@ -495,8 +426,6 @@ int mtxdistmatrix_init_coordinate_real_single(
     const struct mtxpartition * rowpart,
     const struct mtxpartition * colpart,
     MPI_Comm comm,
-    int num_process_rows,
-    int num_process_columns,
     struct mtxdisterror * disterr);
 
 /**
@@ -516,8 +445,6 @@ int mtxdistmatrix_init_coordinate_real_double(
     const struct mtxpartition * rowpart,
     const struct mtxpartition * colpart,
     MPI_Comm comm,
-    int num_process_rows,
-    int num_process_columns,
     struct mtxdisterror * disterr);
 
 /**
@@ -537,8 +464,6 @@ int mtxdistmatrix_init_coordinate_complex_single(
     const struct mtxpartition * rowpart,
     const struct mtxpartition * colpart,
     MPI_Comm comm,
-    int num_process_rows,
-    int num_process_columns,
     struct mtxdisterror * disterr);
 
 /**
@@ -558,8 +483,6 @@ int mtxdistmatrix_init_coordinate_complex_double(
     const struct mtxpartition * rowpart,
     const struct mtxpartition * colpart,
     MPI_Comm comm,
-    int num_process_rows,
-    int num_process_columns,
     struct mtxdisterror * disterr);
 
 /**
@@ -579,8 +502,6 @@ int mtxdistmatrix_init_coordinate_integer_single(
     const struct mtxpartition * rowpart,
     const struct mtxpartition * colpart,
     MPI_Comm comm,
-    int num_process_rows,
-    int num_process_columns,
     struct mtxdisterror * disterr);
 
 /**
@@ -600,8 +521,6 @@ int mtxdistmatrix_init_coordinate_integer_double(
     const struct mtxpartition * rowpart,
     const struct mtxpartition * colpart,
     MPI_Comm comm,
-    int num_process_rows,
-    int num_process_columns,
     struct mtxdisterror * disterr);
 
 /**
@@ -620,8 +539,6 @@ int mtxdistmatrix_init_coordinate_pattern(
     const struct mtxpartition * rowpart,
     const struct mtxpartition * colpart,
     MPI_Comm comm,
-    int num_process_rows,
-    int num_process_columns,
     struct mtxdisterror * disterr);
 
 /*
@@ -689,8 +606,6 @@ int mtxdistmatrix_from_mtxfile(
     const struct mtxpartition * colpart,
     MPI_Comm comm,
     int root,
-    int num_process_rows,
-    int num_process_columns,
     struct mtxdisterror * disterr);
 
 /**
@@ -720,8 +635,6 @@ int mtxdistmatrix_from_mtxdistfile(
     const struct mtxpartition * rowpart,
     const struct mtxpartition * colpart,
     MPI_Comm comm,
-    int num_process_rows,
-    int num_process_columns,
     struct mtxdisterror * disterr);
 
 /**
