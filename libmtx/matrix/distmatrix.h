@@ -192,7 +192,7 @@ struct mtxdistmatrix
     /**
      * ‘rowmap’ is an array that maps rows of the local matrix on the
      * current process to rows of the global matrix. The size of the
-     * array is size equal to the number of rows in the local matrix.
+     * array is equal to the number of rows in the local matrix.
      */
     int64_t * rowmap;
 
@@ -206,8 +206,8 @@ struct mtxdistmatrix
     /**
      * ‘colmap’ is an array that maps columns of the local matrix on
      * the current process to columns of the global matrix. The size
-     * of the array is size equal to the number of columns in the
-     * local matrix.
+     * of the array is equal to the number of columns in the local
+     * matrix.
      */
     int64_t * colmap;
 };
