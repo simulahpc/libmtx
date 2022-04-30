@@ -101,7 +101,8 @@ int mtxfile_alloc(
     const struct mtxfileheader * header,
     const struct mtxfilecomments * comments,
     const struct mtxfilesize * size,
-    enum mtxprecision precision);
+    enum mtxprecision precision,
+    int64_t datasize);
 
 /**
  * ‘mtxfile_free()’ frees storage allocated for a Matrix Market file.

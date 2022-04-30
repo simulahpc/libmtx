@@ -1136,7 +1136,7 @@ int mtxvector_dist_from_mtxfile(
             else err = MTX_ERR_INVALID_MTX_FORMAT;
             err = err ? err : mtxfile_alloc(
                 &sendmtxfile, &mtxfile->header, &mtxfile->comments,
-                &sendsize, mtxfile->precision);
+                &sendsize, mtxfile->precision, -1);
             err = err ? err : mtxfiledata_copy(
                 &sendmtxfile.data, &mtxfile->data,
                 sendmtxfile.header.object, sendmtxfile.header.format,
@@ -1206,7 +1206,7 @@ int mtxvector_dist_to_mtxfile(
         mtxsize.num_nonzeros = x->num_nonzeros;
     } else { return MTX_ERR_INVALID_MTX_FORMAT; }
 
-    err = mtxfile_alloc(mtxfile, &mtxheader, NULL, &mtxsize, precision);
+    err = mtxfile_alloc(mtxfile, &mtxheader, NULL, &mtxsize, precision, -1);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
 
     int64_t offset = 0;

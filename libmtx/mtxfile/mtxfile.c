@@ -66,7 +66,8 @@ int mtxfile_alloc(
     const struct mtxfileheader * header,
     const struct mtxfilecomments * comments,
     const struct mtxfilesize * size,
-    enum mtxprecision precision)
+    enum mtxprecision precision,
+    int64_t datasize)
 {
     int err;
     err = mtxfileheader_copy(&mtxfile->header, header);
@@ -84,10 +85,15 @@ int mtxfile_alloc(
         return err;
     }
     mtxfile->precision = precision;
-    err = mtxfilesize_num_data_lines(size, header->symmetry, &mtxfile->datasize);
-    if (err) {
-        mtxfilecomments_free(&mtxfile->comments);
-        return err;
+    if (datasize >= 0) {
+        mtxfile->datasize = datasize;
+    } else {
+        err = mtxfilesize_num_data_lines(
+            size, header->symmetry, &mtxfile->datasize);
+        if (err) {
+            mtxfilecomments_free(&mtxfile->comments);
+            return err;
+        }
     }
     err = mtxfiledata_alloc(
         &mtxfile->data, mtxfile->header.object, mtxfile->header.format,
@@ -1925,7 +1931,7 @@ int mtxfile_partition(
 
             err = mtxfile_alloc(
                 &dsts[r], &src->header, &src->comments,
-                &size, src->precision);
+                &size, src->precision, -1);
             if (err) {
                 for (int s = r-1; s >= 0; s--)
                     mtxfile_free(&dsts[s]);
@@ -2084,7 +2090,7 @@ int mtxfile_join(
     }
 
     /* Allocate storage for the joined matrix or vector */
-    err = mtxfile_alloc(dst, &header, &comments, &size, precision);
+    err = mtxfile_alloc(dst, &header, &comments, &size, precision, -1);
     if (err) {
         mtxfilecomments_free(&comments);
         return err;
