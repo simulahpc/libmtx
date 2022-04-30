@@ -31,6 +31,7 @@
 #include <libmtx/mtxfile/data.h>
 #include <libmtx/mtxfile/header.h>
 #include <libmtx/mtxfile/size.h>
+#include <libmtx/util/partition.h>
 
 #ifdef LIBMTX_HAVE_MPI
 #include <mpi.h>
@@ -860,6 +861,20 @@ int mtxfile_assemble(
 /*
  * Partitioning
  */
+
+/**
+ * ‘mtxfile_partition_rowwise()’ partitions the entries of a Matrix
+ * Market file according to a given row partitioning.
+ */
+int mtxfile_partition_rowwise(
+    struct mtxfile * src,
+    enum mtxpartitioning parttype,
+    int num_parts,
+    const int64_t * partsizes,
+    int64_t blksize,
+    const int64_t * parts,
+    int64_t * partsptr,
+    int64_t * perm);
 
 /**
  * ‘mtxfile_partition()’ partitions a Matrix Market file according to

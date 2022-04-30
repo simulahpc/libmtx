@@ -28,6 +28,7 @@
 
 #include <libmtx/mtxfile/header.h>
 #include <libmtx/precision.h>
+#include <libmtx/util/partition.h>
 
 #ifdef LIBMTX_HAVE_MPI
 #include <mpi.h>
@@ -1199,6 +1200,22 @@ int mtxfiledata_sort_keys(
     int64_t * sorting_permutation);
 
 /**
+ * ‘mtxfiledata_sort_int()’ sorts data lines of a Matrix Market file
+ * by the given integer keys.
+ */
+int mtxfiledata_sort_int(
+    union mtxfiledata * data,
+    enum mtxfileobject object,
+    enum mtxfileformat format,
+    enum mtxfilefield field,
+    enum mtxprecision precision,
+    int64_t num_rows,
+    int64_t num_columns,
+    int64_t size,
+    int * keys,
+    int64_t * sorting_permutation);
+
+/**
  * ‘mtxfiledata_sort_row_major()’ sorts data lines of a Matrix Market
  * file in row major order.
  *
@@ -1287,6 +1304,37 @@ int mtxfiledata_compact(
 /*
  * Partitioning
  */
+
+/**
+ * ‘mtxfiledata_partition_rowwise()’ partitions data lines according
+ * to a given row partition.
+ *
+ * The array ‘parts’ must contain enough storage for ‘size’ values of
+ * type ‘int’. If successful, ‘parts’ will contain the part number of
+ * each data line in the partitioning.
+ *
+ * If ‘format’ is ‘mtxfile_array’, then a non-negative ‘offset’ value
+ * can be used to partition matrix or vector entries starting from the
+ * specified offset, instead of beginning with the first entry of the
+ * matrix or vector.
+ */
+int mtxfiledata_partition_rowwise(
+    union mtxfiledata * data,
+    enum mtxfileobject object,
+    enum mtxfileformat format,
+    enum mtxfilefield field,
+    enum mtxprecision precision,
+    int64_t num_rows,
+    int64_t num_columns,
+    int64_t offset,
+    int64_t size,
+    enum mtxpartitioning type,
+    int num_parts,
+    const int64_t * partsizes,
+    int64_t blksize,
+    const int64_t * parts,
+    int64_t * partsptr,
+    int64_t * perm);
 
 /**
  * ‘mtxfiledata_partition()’ partitions data lines according to given

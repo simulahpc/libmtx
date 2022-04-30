@@ -36,6 +36,57 @@
 struct mtxdisterror;
 
 /*
+ * Types of partitioning
+ */
+
+/**
+ * ‘mtxpartitioning’ enumerates different kinds of partitionings.
+ */
+enum mtxpartitioning
+{
+    mtx_singleton,         /* singleton partition with only one component */
+    mtx_block,             /* contiguous, fixed-size blocks */
+    mtx_cyclic,            /* cyclic partition */
+    mtx_block_cyclic,      /* cyclic partition of fixed-size blocks */
+    mtx_custom_partition,  /* general, user-defined partition */
+};
+
+/**
+ * ‘mtxpartitioning_str()’ is a string representing the partition
+ * type.
+ */
+const char * mtxpartitioning_str(
+    enum mtxpartitioning type);
+
+/**
+ * ‘mtxpartitioning_parse()’ parses a string to obtain one of the
+ * partition types of ‘enum mtxpartitioning’.
+ *
+ * ‘valid_delimiters’ is either ‘NULL’, in which case it is ignored,
+ * or it is a string of characters considered to be valid delimiters
+ * for the parsed string.  That is, if there are any remaining,
+ * non-NULL characters after parsing, then then the next character is
+ * searched for in ‘valid_delimiters’.  If the character is found,
+ * then the parsing succeeds and the final delimiter character is
+ * consumed by the parser. Otherwise, the parsing fails with an error.
+ *
+ * If ‘endptr’ is not ‘NULL’, then the address stored in ‘endptr’
+ * points to the first character beyond the characters that were
+ * consumed during parsing.
+ *
+ * On success, ‘mtxpartitioning_parse()’ returns ‘MTX_SUCCESS’ and
+ * ‘partition_type’ is set according to the parsed string and
+ * ‘bytes_read’ is set to the number of bytes that were consumed by
+ * the parser.  Otherwise, an error code is returned.
+ */
+int mtxpartitioning_parse(
+    enum mtxpartitioning * partition_type,
+    int64_t * bytes_read,
+    const char ** endptr,
+    const char * s,
+    const char * valid_delimiters);
+
+/*
  * partitioning sets of integers
  */
 
@@ -57,7 +108,7 @@ struct mtxdisterror;
 int partition_block_int64(
     int64_t size,
     int num_parts,
-    int64_t * partsizes,
+    const int64_t * partsizes,
     int64_t idxsize,
     int idxstride,
     const int64_t * idx,
@@ -88,10 +139,9 @@ int partition_block_cyclic_int64(
     int * dstpart);
 
 /**
- * ‘partition_block_cyclic_int64()’ partitions elements of a set of
- * 64-bit signed integers based on a user-defined partitioning to
- * produce an array of part numbers assigned to each element in the
- * input array.
+ * ‘partition_custom_int64()’ partitions elements of a set of 64-bit
+ * signed integers based on a user-defined partitioning to produce an
+ * array of part numbers assigned to each element in the input array.
  *
  * The array to be partitioned, ‘idx’, contains ‘idxsize’ items.
  * Moreover, the user must provide an output array, ‘dstpart’, of size
@@ -105,7 +155,43 @@ int partition_block_cyclic_int64(
 int partition_custom_int64(
     int64_t size,
     int num_parts,
-    int64_t * parts,
+    const int64_t * parts,
+    int64_t idxsize,
+    int idxstride,
+    const int64_t * idx,
+    int * dstpart);
+
+/**
+ * ‘partition_int64()’ partitions elements of a set of 64-bit signed
+ * integers based on a given partitioning to produce an array of part
+ * numbers assigned to each element in the input array.
+ *
+ * The array to be partitioned, ‘idx’, contains ‘idxsize’ items.
+ * Moreover, the user must provide an output array, ‘dstpart’, of size
+ * ‘idxsize’, which is used to write the part number assigned to each
+ * element of the input array.
+ *
+ * The set to be partitioned consists of ‘size’ items.
+ *
+ * - If ‘type’ is ‘mtx_block’, then the array ‘partsizes’ contains
+ *   ‘num_parts’ integers, specifying the size of each block of the
+ *   partitioned set.
+ *
+ * - If ‘type’ is ‘mtx_block_cyclic’, then items are arranged in
+ *   contiguous block of size ‘blksize’, which are then partitioned in
+ *   a cyclic fashion into ‘num_parts’ parts.
+ *
+ * - If ‘type’ is ‘mtx_block_cyclic’, then ‘parts’ is an array of
+ *   length ‘size’, which specifies the part number of each element in
+ *   the set.
+ */
+int partition_int64(
+    enum mtxpartitioning type,
+    int64_t size,
+    int num_parts,
+    const int64_t * partsizes,
+    int64_t blksize,
+    const int64_t * parts,
     int64_t idxsize,
     int idxstride,
     const int64_t * idx,
@@ -167,57 +253,6 @@ int distpartition_block_cyclic_int64(
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 #endif
-
-/*
- * Types of partitioning
- */
-
-/**
- * ‘mtxpartitioning’ enumerates different kinds of partitionings.
- */
-enum mtxpartitioning
-{
-    mtx_singleton,         /* singleton partition with only one component */
-    mtx_block,             /* contiguous, fixed-size blocks */
-    mtx_cyclic,            /* cyclic partition */
-    mtx_block_cyclic,      /* cyclic partition of fixed-size blocks */
-    mtx_custom_partition,  /* general, user-defined partition */
-};
-
-/**
- * ‘mtxpartitioning_str()’ is a string representing the partition
- * type.
- */
-const char * mtxpartitioning_str(
-    enum mtxpartitioning type);
-
-/**
- * ‘mtxpartitioning_parse()’ parses a string to obtain one of the
- * partition types of ‘enum mtxpartitioning’.
- *
- * ‘valid_delimiters’ is either ‘NULL’, in which case it is ignored,
- * or it is a string of characters considered to be valid delimiters
- * for the parsed string.  That is, if there are any remaining,
- * non-NULL characters after parsing, then then the next character is
- * searched for in ‘valid_delimiters’.  If the character is found,
- * then the parsing succeeds and the final delimiter character is
- * consumed by the parser. Otherwise, the parsing fails with an error.
- *
- * If ‘endptr’ is not ‘NULL’, then the address stored in ‘endptr’
- * points to the first character beyond the characters that were
- * consumed during parsing.
- *
- * On success, ‘mtxpartitioning_parse()’ returns ‘MTX_SUCCESS’ and
- * ‘partition_type’ is set according to the parsed string and
- * ‘bytes_read’ is set to the number of bytes that were consumed by
- * the parser.  Otherwise, an error code is returned.
- */
-int mtxpartitioning_parse(
-    enum mtxpartitioning * partition_type,
-    int64_t * bytes_read,
-    const char ** endptr,
-    const char * s,
-    const char * valid_delimiters);
 
 /*
  * Partitions of finite sets

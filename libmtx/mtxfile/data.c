@@ -1407,6 +1407,293 @@ int mtxfiledata_copy_gather(
  */
 
 /**
+ * ‘mtxfiledata_rowcolidx64()’ extracts row and/or column indices for
+ * a matrix or vector in Matrix Market format.
+ *
+ * ‘rowidx’ may be ‘NULL’, in which case it is ignored. Otherwise, it
+ * must point to an array containing enough storage for ‘size’ values
+ * of type ‘int’.  If successful, this array will contain the row
+ * index of each data line.
+ *
+ * Similarly, ‘colidx’ may be ‘NULL’, or it must point to an array of
+ * the same size, which will be used to store the column index of each
+ * data line.
+ *
+ * Note that indexing is 1-based, meaning that rows are numbered
+ * ‘1,2,...,num_rows’, whereas columns are numbered
+ * ‘1,2,...,num_columns’.
+ *
+ * If ‘format’ is ‘mtxfile_array’, then a non-negative ‘offset’ value
+ * can be used to obtain row and column indices for matrix or vector
+ * entries starting from the specified offset, instead of beginning
+ * with the first entry of the matrix or vector.
+ */
+static int mtxfiledata_rowcolidx64(
+    const union mtxfiledata * data,
+    enum mtxfileobject object,
+    enum mtxfileformat format,
+    enum mtxfilefield field,
+    enum mtxprecision precision,
+    int64_t num_rows,
+    int64_t num_columns,
+    int64_t offset,
+    int64_t size,
+    int64_t * rowidx,
+    int64_t * colidx)
+{
+    int err;
+    if (rowidx && colidx) {
+        if (object == mtxfile_matrix) {
+            if (format == mtxfile_coordinate) {
+                if (field == mtxfile_real) {
+                    if (precision == mtx_single) {
+                        for (int64_t k = 0; k < size; k++) {
+                            rowidx[k] = data->matrix_coordinate_real_single[k].i;
+                            colidx[k] = data->matrix_coordinate_real_single[k].j;
+                        }
+                    } else if (precision == mtx_double) {
+                        for (int64_t k = 0; k < size; k++) {
+                            rowidx[k] = data->matrix_coordinate_real_double[k].i;
+                            colidx[k] = data->matrix_coordinate_real_double[k].j;
+                        }
+                    } else { return MTX_ERR_INVALID_PRECISION; }
+                } else if (field == mtxfile_complex) {
+                    if (precision == mtx_single) {
+                        for (int64_t k = 0; k < size; k++) {
+                            rowidx[k] = data->matrix_coordinate_complex_single[k].i;
+                            colidx[k] = data->matrix_coordinate_complex_single[k].j;
+                        }
+                    } else if (precision == mtx_double) {
+                        for (int64_t k = 0; k < size; k++) {
+                            rowidx[k] = data->matrix_coordinate_complex_double[k].i;
+                            colidx[k] = data->matrix_coordinate_complex_double[k].j;
+                        }
+                    } else { return MTX_ERR_INVALID_PRECISION; }
+                } else if (field == mtxfile_integer) {
+                    if (precision == mtx_single) {
+                        for (int64_t k = 0; k < size; k++) {
+                            rowidx[k] = data->matrix_coordinate_integer_single[k].i;
+                            colidx[k] = data->matrix_coordinate_integer_single[k].j;
+                        }
+                    } else if (precision == mtx_double) {
+                        for (int64_t k = 0; k < size; k++) {
+                            rowidx[k] = data->matrix_coordinate_integer_double[k].i;
+                            colidx[k] = data->matrix_coordinate_integer_double[k].j;
+                        }
+                    } else { return MTX_ERR_INVALID_PRECISION; }
+                } else if (field == mtxfile_pattern) {
+                    for (int64_t k = 0; k < size; k++) {
+                        rowidx[k] = data->matrix_coordinate_pattern[k].i;
+                        colidx[k] = data->matrix_coordinate_pattern[k].j;
+                    }
+                } else { return MTX_ERR_INVALID_MTX_FIELD; }
+            } else if (format == mtxfile_array) {
+                if (offset < 0 || (offset + size) / num_rows > num_columns)
+                    return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+                for (int64_t k = offset, l = 0; l < size; k++, l++) {
+                    int64_t i = k / num_columns;
+                    int64_t j = k % num_columns;
+                    rowidx[l] = i+1;
+                    colidx[l] = j+1;
+                }
+            } else { return MTX_ERR_INVALID_MTX_FORMAT; }
+        } else if (object == mtxfile_vector) {
+            if (format == mtxfile_coordinate) {
+                if (field == mtxfile_real) {
+                    if (precision == mtx_single) {
+                        for (int64_t k = 0; k < size; k++) {
+                            rowidx[k] = data->vector_coordinate_real_single[k].i;
+                            colidx[k] = 1;
+                        }
+                    } else if (precision == mtx_double) {
+                        for (int64_t k = 0; k < size; k++) {
+                            rowidx[k] = data->vector_coordinate_real_double[k].i;
+                            colidx[k] = 1;
+                        }
+                    } else { return MTX_ERR_INVALID_PRECISION; }
+                } else if (field == mtxfile_complex) {
+                    if (precision == mtx_single) {
+                        for (int64_t k = 0; k < size; k++) {
+                            rowidx[k] = data->vector_coordinate_complex_single[k].i;
+                            colidx[k] = 1;
+                        }
+                    } else if (precision == mtx_double) {
+                        for (int64_t k = 0; k < size; k++) {
+                            rowidx[k] = data->vector_coordinate_complex_double[k].i;
+                            colidx[k] = 1;
+                        }
+                    } else { return MTX_ERR_INVALID_PRECISION; }
+                } else if (field == mtxfile_integer) {
+                    if (precision == mtx_single) {
+                        for (int64_t k = 0; k < size; k++) {
+                            rowidx[k] = data->vector_coordinate_integer_single[k].i;
+                            colidx[k] = 1;
+                        }
+                    } else if (precision == mtx_double) {
+                        for (int64_t k = 0; k < size; k++) {
+                            rowidx[k] = data->vector_coordinate_integer_double[k].i;
+                            colidx[k] = 1;
+                        }
+                    } else { return MTX_ERR_INVALID_PRECISION; }
+                } else if (field == mtxfile_pattern) {
+                    for (int64_t k = 0; k < size; k++) {
+                        rowidx[k] = data->vector_coordinate_pattern[k].i;
+                        colidx[k] = 1;
+                    }
+                } else { return MTX_ERR_INVALID_MTX_FIELD; }
+            } else if (format == mtxfile_array) {
+                if (offset < 0 || offset + size > num_rows)
+                    return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+                for (int64_t k = offset, l = 0; l < size; k++, l++) {
+                    int64_t i = k;
+                    rowidx[l] = i+1;
+                    colidx[l] = 1;
+                }
+            } else { return MTX_ERR_INVALID_MTX_FORMAT; }
+        } else { return MTX_ERR_INVALID_MTX_OBJECT; }
+    } else if (rowidx) {
+        if (object == mtxfile_matrix) {
+            if (format == mtxfile_coordinate) {
+                if (field == mtxfile_real) {
+                    if (precision == mtx_single) {
+                        for (int64_t k = 0; k < size; k++)
+                            rowidx[k] = data->matrix_coordinate_real_single[k].i;
+                    } else if (precision == mtx_double) {
+                        for (int64_t k = 0; k < size; k++)
+                            rowidx[k] = data->matrix_coordinate_real_double[k].i;
+                    } else { return MTX_ERR_INVALID_PRECISION; }
+                } else if (field == mtxfile_complex) {
+                    if (precision == mtx_single) {
+                        for (int64_t k = 0; k < size; k++)
+                            rowidx[k] = data->matrix_coordinate_complex_single[k].i;
+                    } else if (precision == mtx_double) {
+                        for (int64_t k = 0; k < size; k++)
+                            rowidx[k] = data->matrix_coordinate_complex_double[k].i;
+                    } else { return MTX_ERR_INVALID_PRECISION; }
+                } else if (field == mtxfile_integer) {
+                    if (precision == mtx_single) {
+                        for (int64_t k = 0; k < size; k++)
+                            rowidx[k] = data->matrix_coordinate_integer_single[k].i;
+                    } else if (precision == mtx_double) {
+                        for (int64_t k = 0; k < size; k++)
+                            rowidx[k] = data->matrix_coordinate_integer_double[k].i;
+                    } else { return MTX_ERR_INVALID_PRECISION; }
+                } else if (field == mtxfile_pattern) {
+                    for (int64_t k = 0; k < size; k++)
+                        rowidx[k] = data->matrix_coordinate_pattern[k].i;
+                } else { return MTX_ERR_INVALID_MTX_FIELD; }
+            } else if (format == mtxfile_array) {
+                if (offset < 0 || (offset + size) / num_rows > num_columns)
+                    return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+                for (int64_t k = offset, l = 0; l < size; k++, l++) {
+                    int64_t i = k / num_columns;
+                    rowidx[l] = i+1;
+                }
+            } else { return MTX_ERR_INVALID_MTX_FORMAT; }
+        } else if (object == mtxfile_vector) {
+            if (format == mtxfile_coordinate) {
+                if (field == mtxfile_real) {
+                    if (precision == mtx_single) {
+                        for (int64_t k = 0; k < size; k++)
+                            rowidx[k] = data->vector_coordinate_real_single[k].i;
+                    } else if (precision == mtx_double) {
+                        for (int64_t k = 0; k < size; k++)
+                            rowidx[k] = data->vector_coordinate_real_double[k].i;
+                    } else { return MTX_ERR_INVALID_PRECISION; }
+                } else if (field == mtxfile_complex) {
+                    if (precision == mtx_single) {
+                        for (int64_t k = 0; k < size; k++)
+                            rowidx[k] = data->vector_coordinate_complex_single[k].i;
+                    } else if (precision == mtx_double) {
+                        for (int64_t k = 0; k < size; k++)
+                            rowidx[k] = data->vector_coordinate_complex_double[k].i;
+                    } else { return MTX_ERR_INVALID_PRECISION; }
+                } else if (field == mtxfile_integer) {
+                    if (precision == mtx_single) {
+                        for (int64_t k = 0; k < size; k++)
+                            rowidx[k] = data->vector_coordinate_integer_single[k].i;
+                    } else if (precision == mtx_double) {
+                        for (int64_t k = 0; k < size; k++)
+                            rowidx[k] = data->vector_coordinate_integer_double[k].i;
+                    } else { return MTX_ERR_INVALID_PRECISION; }
+                } else if (field == mtxfile_pattern) {
+                    for (int64_t k = 0; k < size; k++)
+                        rowidx[k] = data->vector_coordinate_pattern[k].i;
+                } else { return MTX_ERR_INVALID_MTX_FIELD; }
+            } else if (format == mtxfile_array) {
+                if (offset < 0 || offset + size > num_rows)
+                    return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+                for (int64_t k = offset, l = 0; l < size; k++, l++) {
+                    int64_t i = k;
+                    rowidx[l] = i+1;
+                }
+            } else { return MTX_ERR_INVALID_MTX_FORMAT; }
+        } else { return MTX_ERR_INVALID_MTX_OBJECT; }
+    } else if (colidx) {
+        if (object == mtxfile_matrix) {
+            if (format == mtxfile_coordinate) {
+                if (field == mtxfile_real) {
+                    if (precision == mtx_single) {
+                        for (int64_t k = 0; k < size; k++)
+                            colidx[k] = data->matrix_coordinate_real_single[k].j;
+                    } else if (precision == mtx_double) {
+                        for (int64_t k = 0; k < size; k++)
+                            colidx[k] = data->matrix_coordinate_real_double[k].j;
+                    } else { return MTX_ERR_INVALID_PRECISION; }
+                } else if (field == mtxfile_complex) {
+                    if (precision == mtx_single) {
+                        for (int64_t k = 0; k < size; k++)
+                            colidx[k] = data->matrix_coordinate_complex_single[k].j;
+                    } else if (precision == mtx_double) {
+                        for (int64_t k = 0; k < size; k++)
+                            colidx[k] = data->matrix_coordinate_complex_double[k].j;
+                    } else { return MTX_ERR_INVALID_PRECISION; }
+                } else if (field == mtxfile_integer) {
+                    if (precision == mtx_single) {
+                        for (int64_t k = 0; k < size; k++)
+                            colidx[k] = data->matrix_coordinate_integer_single[k].j;
+                    } else if (precision == mtx_double) {
+                        for (int64_t k = 0; k < size; k++)
+                            colidx[k] = data->matrix_coordinate_integer_double[k].j;
+                    } else { return MTX_ERR_INVALID_PRECISION; }
+                } else if (field == mtxfile_pattern) {
+                    for (int64_t k = 0; k < size; k++)
+                        colidx[k] = data->matrix_coordinate_pattern[k].j;
+                } else { return MTX_ERR_INVALID_MTX_FIELD; }
+            } else if (format == mtxfile_array) {
+                if (offset < 0 || (offset + size) / num_rows > num_columns)
+                    return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+                for (int64_t k = offset, l = 0; l < size; k++, l++) {
+                    int64_t j = k % num_columns;
+                    colidx[l] = j+1;
+                }
+            } else { return MTX_ERR_INVALID_MTX_FORMAT; }
+        } else if (object == mtxfile_vector) {
+            if (format == mtxfile_coordinate) {
+                if (field == mtxfile_real ||
+                    field == mtxfile_complex ||
+                    field == mtxfile_integer)
+                {
+                    if (precision == mtx_single || precision == mtx_double) {
+                        for (int64_t k = 0; k < size; k++)
+                            colidx[k] = 1;
+                    } else { return MTX_ERR_INVALID_PRECISION; }
+                } else if (field == mtxfile_pattern) {
+                    for (int64_t k = 0; k < size; k++)
+                        colidx[k] = 1;
+                } else { return MTX_ERR_INVALID_MTX_FIELD; }
+            } else if (format == mtxfile_array) {
+                if (offset < 0 || offset + size > num_rows)
+                    return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+                for (int64_t k = offset, l = 0; l < size; k++, l++)
+                    colidx[l] = 1;
+            } else { return MTX_ERR_INVALID_MTX_FORMAT; }
+        } else { return MTX_ERR_INVALID_MTX_OBJECT; }
+    }
+    return MTX_SUCCESS;
+}
+
+/**
  * ‘mtxfiledata_rowcolidx()’ extracts row and/or column indices for a
  * matrix or vector in Matrix Market format.
  *
@@ -4711,6 +4998,42 @@ int mtxfiledata_sort_keys(
 }
 
 /**
+ * ‘mtxfiledata_sort_int()’ sorts data lines of a Matrix Market file
+ * by the given integer keys.
+ */
+int mtxfiledata_sort_int(
+    union mtxfiledata * data,
+    enum mtxfileobject object,
+    enum mtxfileformat format,
+    enum mtxfilefield field,
+    enum mtxprecision precision,
+    int64_t num_rows,
+    int64_t num_columns,
+    int64_t size,
+    int * keys,
+    int64_t * perm)
+{
+    /* 1. Sort the keys and obtain a sorting permutation. */
+    bool alloc_perm = !perm;
+    if (alloc_perm) {
+        perm = malloc(size * sizeof(int64_t));
+        if (!perm) return MTX_ERR_ERRNO;
+    }
+    int err = radix_sort_int(size, keys, perm);
+    if (err) { if (alloc_perm) free(perm); return err; }
+
+    /* 2. Sort nonzeros according to the sorting permutation. */
+    for (int64_t i = 0; i < size; i++) perm[i]++;
+    err = mtxfiledata_permute(
+        data, object, format, field, precision,
+        num_rows, num_columns, size, perm);
+    if (err) { if (alloc_perm) free(perm); return err; }
+    if (alloc_perm) free(perm);
+    else { for (int64_t i = 0; i < size; i++) perm[i]--; }
+    return MTX_SUCCESS;
+}
+
+/**
  * ‘mtxfiledata_sort_row_major()’ sorts data lines of a Matrix Market
  * file in row major order.
  *
@@ -5204,6 +5527,61 @@ int mtxfiledata_compact(
 /*
  * Partitioning
  */
+
+/**
+ * ‘mtxfiledata_partition_rowwise()’ partitions data lines according
+ * to a given row partition.
+ *
+ * The array ‘parts’ must contain enough storage for ‘size’ values of
+ * type ‘int’. If successful, ‘parts’ will contain the part number of
+ * each data line in the partitioning.
+ *
+ * If ‘format’ is ‘mtxfile_array’, then a non-negative ‘offset’ value
+ * can be used to partition matrix or vector entries starting from the
+ * specified offset, instead of beginning with the first entry of the
+ * matrix or vector.
+ */
+int mtxfiledata_partition_rowwise(
+    union mtxfiledata * data,
+    enum mtxfileobject object,
+    enum mtxfileformat format,
+    enum mtxfilefield field,
+    enum mtxprecision precision,
+    int64_t num_rows,
+    int64_t num_columns,
+    int64_t offset,
+    int64_t size,
+    enum mtxpartitioning type,
+    int num_parts,
+    const int64_t * partsizes,
+    int64_t blksize,
+    const int64_t * parts,
+    int64_t * partsptr,
+    int64_t * perm)
+{
+    int64_t * rowidx = malloc(size * sizeof(int64_t));
+    if (!rowidx) return MTX_ERR_ERRNO;
+    int err = mtxfiledata_rowcolidx64(
+        data, object, format, field, precision,
+        num_rows, num_columns, offset, size, rowidx, NULL);
+    if (err) { free(rowidx); return err; }
+    for (int64_t k = 0; k < size; k++) rowidx[k]--;
+    int * dstpart = malloc(size * sizeof(int));
+    if (!dstpart) { free(rowidx); return MTX_ERR_ERRNO; }
+    err = partition_int64(
+        type, num_rows, num_parts, partsizes, blksize, parts,
+        size, sizeof(int64_t), rowidx, dstpart);
+    if (err) { free(rowidx); return err; }
+    for (int p = 0; p < num_parts; p++) partsptr[p] = 0;
+    for (int64_t k = 0; k < size; k++) partsptr[dstpart[k]+1]++;
+    for (int p = 1; p <= num_parts; p++) partsptr[p] += partsptr[p-1];
+    err = mtxfiledata_sort_int(
+        data, object, format, field, precision,
+        num_rows, num_columns, size, dstpart, perm);
+    if (err) { free(dstpart); free(rowidx); return err; }
+    free(dstpart); free(rowidx);
+    return MTX_SUCCESS;
+}
 
 /**
  * ‘mtxfiledata_partition()’ partitions data lines according to given

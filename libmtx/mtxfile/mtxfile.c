@@ -1619,6 +1619,27 @@ int mtxfile_assemble(
  */
 
 /**
+ * ‘mtxfile_partition_rowwise()’ partitions the entries of a Matrix
+ * Market file according to a given row partitioning.
+ */
+int mtxfile_partition_rowwise(
+    struct mtxfile * mtxfile,
+    enum mtxpartitioning parttype,
+    int num_parts,
+    const int64_t * partsizes,
+    int64_t blksize,
+    const int64_t * parts,
+    int64_t * partsptr,
+    int64_t * perm)
+{
+    return mtxfiledata_partition_rowwise(
+        &mtxfile->data, mtxfile->header.object, mtxfile->header.format,
+        mtxfile->header.field, mtxfile->precision,
+        mtxfile->size.num_rows, mtxfile->size.num_columns, 0, mtxfile->datasize,
+        parttype, num_parts, partsizes, blksize, parts, partsptr, perm);
+}
+
+/**
  * ‘mtxfile_partition()’ partitions a Matrix Market file according to
  * the given row and column partitions.
  *
