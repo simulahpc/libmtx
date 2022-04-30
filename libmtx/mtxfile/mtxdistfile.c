@@ -1562,6 +1562,7 @@ int mtxdistfile_to_mtxfile(
     }
 
     if (rank == root) {
+        dst->datasize = src->partition.size;
         err = mtxfiledata_alloc(
             &dst->data, dst->header.object, dst->header.format,
             dst->header.field, dst->precision,

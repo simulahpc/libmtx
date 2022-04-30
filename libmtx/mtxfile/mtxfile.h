@@ -75,6 +75,12 @@ struct mtxfile
     enum mtxprecision precision;
 
     /**
+     * ‘datasize’ is the number of explicitly stored data lines in the
+     * Matrix Market file.
+     */
+    int64_t datasize;
+
+    /**
      * ‘data’ contains the data lines of the Matrix Market file.
      */
     union mtxfiledata data;
