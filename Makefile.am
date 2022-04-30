@@ -454,6 +454,15 @@ tests_test_merge_SOURCES = tests/test_merge.c tests/test.h
 check_PROGRAMS += tests/test_merge
 TESTS += tests/test_merge
 
+if HAVE_MPI
+tests_test_distpartition_CPPFLAGS =
+tests_test_distpartition_LDADD = $(top_builddir)/libmtx.la
+tests_test_distpartition_SOURCES = tests/test_distpartition.c tests/test.h
+check_PROGRAMS += tests/test_distpartition
+TESTS += tests/test_distpartition_parallel
+tests/test_distpartition_parallel:  tests/test_distpartition
+endif
+
 # MPI unit tests
 if HAVE_MPI
 check_PROGRAMS += \

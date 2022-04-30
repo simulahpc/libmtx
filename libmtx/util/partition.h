@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-04-14
+ * Last modified: 2022-04-30
  *
  * Data types and functions for partitioning finite sets.
  */
@@ -24,8 +24,149 @@
 #ifndef LIBMTX_UTIL_PARTITION_H
 #define LIBMTX_UTIL_PARTITION_H
 
+#include <libmtx/libmtx-config.h>
+
+#ifdef LIBMTX_HAVE_MPI
+#include <mpi.h>
+#endif
+
 #include <stdint.h>
 #include <stdio.h>
+
+struct mtxdisterror;
+
+/*
+ * partitioning sets of integers
+ */
+
+/**
+ * ‘partition_block_int64()’ partitions elements of a set of 64-bit
+ * signed integers based on a block partitioning to produce an array
+ * of part numbers assigned to each element in the input array.
+ *
+ * The array to be partitioned, ‘idx’, contains ‘idxsize’ items.
+ * Moreover, the user must provide an output array, ‘dstpart’, of size
+ * ‘idxsize’, which is used to write the part number assigned to each
+ * element of the input array.
+ *
+ * The set to be partitioned consists of ‘size’ items that are
+ * partitioned into ‘num_parts’ contiguous blocks. Furthermore, the
+ * array ‘partsizes’ contains ‘num_parts’ integers, specifying the
+ * size of each block of the partitioned set.
+ */
+int partition_block_int64(
+    int64_t size,
+    int num_parts,
+    int64_t * partsizes,
+    int64_t idxsize,
+    int idxstride,
+    const int64_t * idx,
+    int * dstpart);
+
+/**
+ * ‘partition_block_cyclic_int64()’ partitions elements of a set of
+ * 64-bit signed integers based on a block-cyclic partitioning to
+ * produce an array of part numbers assigned to each element in the
+ * input array.
+ *
+ * The array to be partitioned, ‘idx’, contains ‘idxsize’ items.
+ * Moreover, the user must provide an output array, ‘dstpart’, of size
+ * ‘idxsize’, which is used to write the part number assigned to each
+ * element of the input array.
+ *
+ * The set to be partitioned consists of ‘size’ items arranged in
+ * contiguous block of size ‘blksize’, which are then partitioned in a
+ * cyclic fashion into ‘num_parts’ parts.
+ */
+int partition_block_cyclic_int64(
+    int64_t size,
+    int num_parts,
+    int64_t blksize,
+    int64_t idxsize,
+    int idxstride,
+    const int64_t * idx,
+    int * dstpart);
+
+/**
+ * ‘partition_block_cyclic_int64()’ partitions elements of a set of
+ * 64-bit signed integers based on a user-defined partitioning to
+ * produce an array of part numbers assigned to each element in the
+ * input array.
+ *
+ * The array to be partitioned, ‘idx’, contains ‘idxsize’ items.
+ * Moreover, the user must provide an output array, ‘dstpart’, of size
+ * ‘idxsize’, which is used to write the part number assigned to each
+ * element of the input array.
+ *
+ * The set to be partitioned consists of ‘size’ items. Moreover,
+ * ‘parts’ is an array of length ‘size’, which specifies the part
+ * number of each element in the set.
+ */
+int partition_custom_int64(
+    int64_t size,
+    int num_parts,
+    int64_t * parts,
+    int64_t idxsize,
+    int idxstride,
+    const int64_t * idx,
+    int * dstpart);
+
+/*
+ * distributed partitioning of sets of integers
+ */
+
+#ifdef LIBMTX_HAVE_MPI
+/**
+ * ‘distpartition_block_int64()’ partitions elements of a set of
+ * 64-bit signed integers based on a block partitioning to produce an
+ * array of part numbers assigned to each element in the input array.
+ *
+ * The array to be partitioned, ‘idx’, contains ‘idxsize’ items.
+ * Moreover, the user must provide an output array, ‘dstpart’, of size
+ * ‘idxsize’, which is used to write the part number assigned to each
+ * element of the input array.
+ *
+ * The set to be partitioned consists of ‘size’ items that are
+ * partitioned into ‘P’ contiguous blocks, where ‘P’ is the number of
+ * processes in the MPI communicator ‘comm’. Furthermore, ‘partsize’
+ * is used to specify the size of the block on the current process.
+ */
+int distpartition_block_int64(
+    int64_t size,
+    int64_t partsize,
+    int64_t idxsize,
+    int idxstride,
+    const int64_t * idx,
+    int * dstpart,
+    MPI_Comm comm,
+    struct mtxdisterror * disterr);
+
+/**
+ * ‘distpartition_block_cyclic_int64()’ partitions elements of a set
+ * of 64-bit signed integers based on a block-cyclic partitioning to
+ * produce an array of part numbers assigned to each element in the
+ * input array.
+ *
+ * The array to be partitioned, ‘idx’, contains ‘idxsize’ items.
+ * Moreover, the user must provide an output array, ‘dstpart’, of size
+ * ‘idxsize’, which is used to write the part number assigned to each
+ * element of the input array.
+ *
+ * The partitioned set consists of ‘size’ items arranged in contiguous
+ * block of size ‘blksize’, which are then partitioned in a cyclic
+ * fashion into ‘P’ parts, where ‘P’ is the number of processes in the
+ * MPI communicator ‘comm’.
+ */
+int distpartition_block_cyclic_int64(
+    int64_t size,
+    int64_t blksize,
+    int64_t idxsize,
+    int idxstride,
+    const int64_t * idx,
+    int * dstpart,
+    MPI_Comm comm,
+    struct mtxdisterror * disterr);
+#endif
 
 /*
  * Types of partitioning

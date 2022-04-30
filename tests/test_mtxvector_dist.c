@@ -2318,8 +2318,6 @@ int main(int argc, char * argv[])
     TEST_RUN(test_mtxvector_dist_asum);
     TEST_RUN(test_mtxvector_dist_usscga);
     TEST_SUITE_END();
-    return (TEST_SUITE_STATUS == TEST_SUCCESS) ?
-        EXIT_SUCCESS : EXIT_FAILURE;
 
     /* 3. clean up and return. */
     MPI_Finalize();

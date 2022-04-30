@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-01-26
+ * Last modified: 2022-04-30
  *
  * Unit tests for partitioning functions.
  */
@@ -32,6 +32,241 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+
+/**
+ * ‘test_partition_block()’ tests block partitioning.
+ */
+int test_partition_block(void)
+{
+    int err;
+    {
+        int size = 5;
+        int num_parts = 1;
+        int64_t partsizes[] = {5};
+        int64_t idx[] = {0,2,1,4,3};
+        int idxsize = sizeof(idx) / sizeof(*idx);
+        int dstpart[5] = {};
+        err = partition_block_int64(
+            size, num_parts, partsizes, idxsize, sizeof(*idx), idx, dstpart);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(0, dstpart[0]);
+        TEST_ASSERT_EQ(0, dstpart[1]);
+        TEST_ASSERT_EQ(0, dstpart[2]);
+        TEST_ASSERT_EQ(0, dstpart[3]);
+        TEST_ASSERT_EQ(0, dstpart[4]);
+    }
+    {
+        int size = 5;
+        int num_parts = 2;
+        int64_t partsizes[] = {5,0};
+        int64_t idx[] = {0,2,1,4,3};
+        int idxsize = sizeof(idx) / sizeof(*idx);
+        int dstpart[5] = {};
+        err = partition_block_int64(
+            size, num_parts, partsizes, idxsize, sizeof(*idx), idx, dstpart);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(0, dstpart[0]);
+        TEST_ASSERT_EQ(0, dstpart[1]);
+        TEST_ASSERT_EQ(0, dstpart[2]);
+        TEST_ASSERT_EQ(0, dstpart[3]);
+        TEST_ASSERT_EQ(0, dstpart[4]);
+    }
+    {
+        int size = 5;
+        int num_parts = 2;
+        int64_t partsizes[] = {4,1};
+        int64_t idx[] = {0,2,1,4,3};
+        int idxsize = sizeof(idx) / sizeof(*idx);
+        int dstpart[5] = {};
+        err = partition_block_int64(
+            size, num_parts, partsizes, idxsize, sizeof(*idx), idx, dstpart);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(0, dstpart[0]);
+        TEST_ASSERT_EQ(0, dstpart[1]);
+        TEST_ASSERT_EQ(0, dstpart[2]);
+        TEST_ASSERT_EQ(1, dstpart[3]);
+        TEST_ASSERT_EQ(0, dstpart[4]);
+    }
+    {
+        int size = 5;
+        int num_parts = 2;
+        int64_t partsizes[] = {2,3};
+        int64_t idx[] = {0,2,1,4,3};
+        int idxsize = sizeof(idx) / sizeof(*idx);
+        int dstpart[5] = {};
+        err = partition_block_int64(
+            size, num_parts, partsizes, idxsize, sizeof(*idx), idx, dstpart);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(0, dstpart[0]);
+        TEST_ASSERT_EQ(1, dstpart[1]);
+        TEST_ASSERT_EQ(0, dstpart[2]);
+        TEST_ASSERT_EQ(1, dstpart[3]);
+        TEST_ASSERT_EQ(1, dstpart[4]);
+    }
+    {
+        int size = 5;
+        int num_parts = 3;
+        int64_t partsizes[] = {1,3,1};
+        int64_t idx[] = {0,2,1,4,3};
+        int idxsize = sizeof(idx) / sizeof(*idx);
+        int dstpart[5] = {};
+        err = partition_block_int64(
+            size, num_parts, partsizes, idxsize, sizeof(*idx), idx, dstpart);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(0, dstpart[0]);
+        TEST_ASSERT_EQ(1, dstpart[1]);
+        TEST_ASSERT_EQ(1, dstpart[2]);
+        TEST_ASSERT_EQ(2, dstpart[3]);
+        TEST_ASSERT_EQ(1, dstpart[4]);
+    }
+    return TEST_SUCCESS;
+}
+
+/**
+ * ‘test_partition_block_cyclic()’ tests block-cyclic partitioning.
+ */
+int test_partition_block_cyclic(void)
+{
+    int err;
+    {
+        int size = 5;
+        int num_parts = 1;
+        int blksize = 5;
+        int64_t idx[] = {0,2,1,4,3};
+        int idxsize = sizeof(idx) / sizeof(*idx);
+        int dstpart[5] = {};
+        err = partition_block_cyclic_int64(
+            size, num_parts, blksize, idxsize, sizeof(*idx), idx, dstpart);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(0, dstpart[0]);
+        TEST_ASSERT_EQ(0, dstpart[1]);
+        TEST_ASSERT_EQ(0, dstpart[2]);
+        TEST_ASSERT_EQ(0, dstpart[3]);
+        TEST_ASSERT_EQ(0, dstpart[4]);
+    }
+    {
+        int size = 5;
+        int num_parts = 2;
+        int blksize = 1;
+        int64_t idx[] = {0,2,1,4,3};
+        int idxsize = sizeof(idx) / sizeof(*idx);
+        int dstpart[5] = {};
+        err = partition_block_cyclic_int64(
+            size, num_parts, blksize, idxsize, sizeof(*idx), idx, dstpart);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(0, dstpart[0]);
+        TEST_ASSERT_EQ(0, dstpart[1]);
+        TEST_ASSERT_EQ(1, dstpart[2]);
+        TEST_ASSERT_EQ(0, dstpart[3]);
+        TEST_ASSERT_EQ(1, dstpart[4]);
+    }
+    {
+        int size = 5;
+        int num_parts = 2;
+        int blksize = 2;
+        int64_t idx[] = {0,2,1,4,3};
+        int idxsize = sizeof(idx) / sizeof(*idx);
+        int dstpart[5] = {};
+        err = partition_block_cyclic_int64(
+            size, num_parts, blksize, idxsize, sizeof(*idx), idx, dstpart);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(0, dstpart[0]);
+        TEST_ASSERT_EQ(1, dstpart[1]);
+        TEST_ASSERT_EQ(0, dstpart[2]);
+        TEST_ASSERT_EQ(0, dstpart[3]);
+        TEST_ASSERT_EQ(1, dstpart[4]);
+    }
+    {
+        int size = 5;
+        int num_parts = 3;
+        int blksize = 1;
+        int64_t idx[] = {0,2,1,4,3};
+        int idxsize = sizeof(idx) / sizeof(*idx);
+        int dstpart[5] = {};
+        err = partition_block_cyclic_int64(
+            size, num_parts, blksize, idxsize, sizeof(*idx), idx, dstpart);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(0, dstpart[0]);
+        TEST_ASSERT_EQ(2, dstpart[1]);
+        TEST_ASSERT_EQ(1, dstpart[2]);
+        TEST_ASSERT_EQ(1, dstpart[3]);
+        TEST_ASSERT_EQ(0, dstpart[4]);
+    }
+    {
+        int size = 5;
+        int num_parts = 3;
+        int blksize = 2;
+        int64_t idx[] = {0,2,1,4,3};
+        int idxsize = sizeof(idx) / sizeof(*idx);
+        int dstpart[5] = {};
+        err = partition_block_cyclic_int64(
+            size, num_parts, blksize, idxsize, sizeof(*idx), idx, dstpart);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(0, dstpart[0]);
+        TEST_ASSERT_EQ(1, dstpart[1]);
+        TEST_ASSERT_EQ(0, dstpart[2]);
+        TEST_ASSERT_EQ(2, dstpart[3]);
+        TEST_ASSERT_EQ(1, dstpart[4]);
+    }
+    return TEST_SUCCESS;
+}
+
+/**
+ * ‘test_partition_custom()’ tests custom partitioning.
+ */
+int test_partition_custom(void)
+{
+    int err;
+    {
+        int size = 5;
+        int num_parts = 1;
+        int64_t parts[] = {0,0,0,0,0};
+        int64_t idx[] = {0,2,1,4,3};
+        int idxsize = sizeof(idx) / sizeof(*idx);
+        int dstpart[5] = {};
+        err = partition_custom_int64(
+            size, num_parts, parts, idxsize, sizeof(*idx), idx, dstpart);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(0, dstpart[0]);
+        TEST_ASSERT_EQ(0, dstpart[1]);
+        TEST_ASSERT_EQ(0, dstpart[2]);
+        TEST_ASSERT_EQ(0, dstpart[3]);
+        TEST_ASSERT_EQ(0, dstpart[4]);
+    }
+    {
+        int size = 5;
+        int num_parts = 2;
+        int64_t parts[] = {1,0,0,0,1};
+        int64_t idx[] = {0,2,1,4,3};
+        int idxsize = sizeof(idx) / sizeof(*idx);
+        int dstpart[5] = {};
+        err = partition_custom_int64(
+            size, num_parts, parts, idxsize, sizeof(*idx), idx, dstpart);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(1, dstpart[0]);
+        TEST_ASSERT_EQ(0, dstpart[1]);
+        TEST_ASSERT_EQ(0, dstpart[2]);
+        TEST_ASSERT_EQ(1, dstpart[3]);
+        TEST_ASSERT_EQ(0, dstpart[4]);
+    }
+    {
+        int size = 5;
+        int num_parts = 3;
+        int64_t parts[] = {2,0,2,1,0};
+        int64_t idx[] = {0,2,1,4,3};
+        int idxsize = sizeof(idx) / sizeof(*idx);
+        int dstpart[5] = {};
+        err = partition_custom_int64(
+            size, num_parts, parts, idxsize, sizeof(*idx), idx, dstpart);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(2, dstpart[0]);
+        TEST_ASSERT_EQ(2, dstpart[1]);
+        TEST_ASSERT_EQ(0, dstpart[2]);
+        TEST_ASSERT_EQ(0, dstpart[3]);
+        TEST_ASSERT_EQ(1, dstpart[4]);
+    }
+    return TEST_SUCCESS;
+}
 
 /**
  * ‘test_mtxpartition_singleton()’ tests singleton partitioning.
@@ -1879,6 +2114,9 @@ int test_mtxpartition_custom(void)
 int main(int argc, char * argv[])
 {
     TEST_SUITE_BEGIN("Running tests for partitioning\n");
+    TEST_RUN(test_partition_block);
+    TEST_RUN(test_partition_block_cyclic);
+    TEST_RUN(test_partition_custom);
     TEST_RUN(test_mtxpartition_singleton);
     TEST_RUN(test_mtxpartition_block);
     TEST_RUN(test_mtxpartition_blockv);
