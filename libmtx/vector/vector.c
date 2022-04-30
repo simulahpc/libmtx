@@ -2994,21 +2994,6 @@ int mtxvector_uszaxpy(
 }
 
 /**
- * ‘mtxvector_usga()’ performs a (sparse) gather from a vector ‘y’
- * into another vector ‘x’.
- */
-int mtxvector_usga(
-    const struct mtxvector * y,
-    struct mtxvector * x)
-{
-    if (x->type == mtxvector_array) {
-        return mtxvector_array_usga(y, &x->storage.array);
-    } else if (x->type == mtxvector_coordinate) {
-        return mtxvector_coordinate_usga(y, &x->storage.coordinate);
-    } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
-}
-
-/**
  * ‘mtxvector_usga2()’ performs a gather operation from a vector ‘y’
  * into a sparse vector ‘x’ in packed form. Repeated indices in the
  * packed vector are allowed.
@@ -3042,23 +3027,6 @@ int mtxvector_usga2(
 int mtxvector_usgz(
     const struct mtxvector * y,
     struct mtxvector * x);
-
-/**
- * ‘mtxvector_ussc()’ performs a (sparse) scatter from a vector ‘x’
- * into another vector ‘y’.
- */
-int mtxvector_ussc(
-    const struct mtxvector * x,
-    struct mtxvector * y)
-{
-    if (y->type == mtxvector_array) {
-        return mtxvector_array_ussc(x, &y->storage.array);
-    } else if (y->type == mtxvector_coordinate) {
-        /* if (x->type != y->type) return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE; */
-        /* return mtxvector_coordinate_copy( */
-        /*     &y->storage.coordinate, &x->storage.coordinate); */
-    } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
-}
 
 /**
  * ‘mtxvector_ussc2()’ performs a scatter operation to a vector ‘y’

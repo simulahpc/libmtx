@@ -1900,115 +1900,6 @@ int test_mtxvector_coordinate_axpy(void)
 }
 
 /**
- * ‘test_mtxvector_coordinate_usga()’ tests gathering values from a
- * vector into a sparse vector.
- */
-int test_mtxvector_coordinate_usga(void)
-{
-    int err;
-
-    /*
-     * gather nonzero values from a vector into a sparse vector
-     */
-
-    {
-        struct mtxvector x;
-        struct mtxvector y;
-        int size = 12;
-        int indices[] = {0, 3, 5, 6, 9};
-        float xdata[] = {1.0f, 1.0f, 1.0f, 2.0f, 3.0f};
-        float ydata[] = {2.0f, 0, 0, 1.0f, 0, 0.0f, 2.0f, 0, 0, 1.0f, 0, 0};
-        int num_nonzeros = sizeof(xdata) / sizeof(*xdata);
-        err = mtxvector_init_coordinate_real_single(
-            &x, size, num_nonzeros, indices, xdata);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxvector_init_array_real_single(&y, size, ydata);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxvector_usga(&y, &x);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        TEST_ASSERT_EQ(2.0f, x.storage.coordinate.data.real_single[ 0]);
-        TEST_ASSERT_EQ(1.0f, x.storage.coordinate.data.real_single[ 1]);
-        TEST_ASSERT_EQ(0.0f, x.storage.coordinate.data.real_single[ 2]);
-        TEST_ASSERT_EQ(2.0f, x.storage.coordinate.data.real_single[ 3]);
-        TEST_ASSERT_EQ(1.0f, x.storage.coordinate.data.real_single[ 4]);
-        mtxvector_free(&y);
-        mtxvector_free(&x);
-    }
-    {
-        struct mtxvector x;
-        struct mtxvector y;
-        int size = 12;
-        int indices[] = {0, 3, 5, 6, 9};
-        double xdata[] = {1.0, 1.0, 1.0, 2.0, 3.0};
-        double ydata[] = {2.0, 0, 0, 1.0, 0, 0.0, 2.0, 0, 0, 1.0, 0, 0};
-        int num_nonzeros = sizeof(xdata) / sizeof(*xdata);
-        err = mtxvector_init_coordinate_real_double(
-            &x, size, num_nonzeros, indices, xdata);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxvector_init_array_real_double(&y, size, ydata);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxvector_usga(&y, &x);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        TEST_ASSERT_EQ(2.0, x.storage.coordinate.data.real_double[ 0]);
-        TEST_ASSERT_EQ(1.0, x.storage.coordinate.data.real_double[ 1]);
-        TEST_ASSERT_EQ(0.0, x.storage.coordinate.data.real_double[ 2]);
-        TEST_ASSERT_EQ(2.0, x.storage.coordinate.data.real_double[ 3]);
-        TEST_ASSERT_EQ(1.0, x.storage.coordinate.data.real_double[ 4]);
-        mtxvector_free(&y);
-        mtxvector_free(&x);
-    }
-    {
-        struct mtxvector x;
-        struct mtxvector y;
-        int size = 6;
-        int indices[] = {0, 3, 5};
-        float xdata[][2] = {{1.0f,1.0f}, {1.0f,2.0f}, {3.0f,0.0f}};
-        float ydata[][2] = {{2.0f,1.0f}, {0,0}, {0,0}, {0.0f,2.0f}, {0,0}, {1.0f,0.0f}};
-        int64_t num_nonzeros = sizeof(xdata) / sizeof(*xdata);
-        err = mtxvector_init_coordinate_complex_single(
-            &x, size, num_nonzeros, indices, xdata);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxvector_init_array_complex_single(&y, size, ydata);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxvector_usga(&y, &x);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        TEST_ASSERT_EQ(2.0f, x.storage.coordinate.data.complex_single[0][0]);
-        TEST_ASSERT_EQ(1.0f, x.storage.coordinate.data.complex_single[0][1]);
-        TEST_ASSERT_EQ(0.0f, x.storage.coordinate.data.complex_single[1][0]);
-        TEST_ASSERT_EQ(2.0f, x.storage.coordinate.data.complex_single[1][1]);
-        TEST_ASSERT_EQ(1.0f, x.storage.coordinate.data.complex_single[2][0]);
-        TEST_ASSERT_EQ(0.0f, x.storage.coordinate.data.complex_single[2][1]);
-        mtxvector_free(&y);
-        mtxvector_free(&x);
-    }
-    {
-        struct mtxvector x;
-        struct mtxvector y;
-        int size = 6;
-        int indices[] = {0, 3, 5};
-        double xdata[][2] = {{1.0,1.0}, {1.0,2.0}, {3.0,0.0}};
-        double ydata[][2] = {{2.0,1.0}, {0,0}, {0,0}, {0.0,2.0}, {0,0}, {1.0,0.0}};
-        int64_t num_nonzeros = sizeof(xdata) / sizeof(*xdata);
-        err = mtxvector_init_coordinate_complex_double(
-            &x, size, num_nonzeros, indices, xdata);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxvector_init_array_complex_double(&y, size, ydata);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxvector_usga(&y, &x);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        TEST_ASSERT_EQ(2.0, x.storage.coordinate.data.complex_double[0][0]);
-        TEST_ASSERT_EQ(1.0, x.storage.coordinate.data.complex_double[0][1]);
-        TEST_ASSERT_EQ(0.0, x.storage.coordinate.data.complex_double[1][0]);
-        TEST_ASSERT_EQ(2.0, x.storage.coordinate.data.complex_double[1][1]);
-        TEST_ASSERT_EQ(1.0, x.storage.coordinate.data.complex_double[2][0]);
-        TEST_ASSERT_EQ(0.0, x.storage.coordinate.data.complex_double[2][1]);
-        mtxvector_free(&y);
-        mtxvector_free(&x);
-    }
-    return TEST_SUCCESS;
-}
-
-/**
  * ‘main()’ entry point and test driver.
  */
 int main(int argc, char * argv[])
@@ -2026,7 +1917,6 @@ int main(int argc, char * argv[])
     TEST_RUN(test_mtxvector_coordinate_iamax);
     TEST_RUN(test_mtxvector_coordinate_scal);
     TEST_RUN(test_mtxvector_coordinate_axpy);
-    TEST_RUN(test_mtxvector_coordinate_usga);
     TEST_SUITE_END();
     return (TEST_SUITE_STATUS == TEST_SUCCESS) ?
         EXIT_SUCCESS : EXIT_FAILURE;

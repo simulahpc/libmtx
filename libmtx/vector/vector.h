@@ -1444,14 +1444,6 @@ int mtxvector_uszaxpy(
     int64_t * num_flops);
 
 /**
- * ‘mtxvector_usga()’ performs a (sparse) gather from a vector ‘y’
- * into another vector ‘x’.
- */
-int mtxvector_usga(
-    const struct mtxvector * y,
-    struct mtxvector * x);
-
-/**
  * ‘mtxvector_usga2()’ performs a gather operation from a vector ‘y’
  * into a sparse vector ‘x’ in packed form. Repeated indices in the
  * packed vector are allowed.
@@ -1468,14 +1460,6 @@ int mtxvector_usga2(
 int mtxvector_usgz(
     const struct mtxvector * y,
     struct mtxvector * x);
-
-/**
- * ‘mtxvector_ussc()’ performs a (sparse) scatter from a vector ‘x’
- * into another vector ‘y’.
- */
-int mtxvector_ussc(
-    const struct mtxvector * x,
-    struct mtxvector * y);
 
 /**
  * ‘mtxvector_ussc2()’ performs a scatter operation to a vector ‘y’

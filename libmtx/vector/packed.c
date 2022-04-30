@@ -573,7 +573,7 @@ int mtxvector_packed_from_mtxfile(
                 err = mtxvector_init_integer_single(&x->x, type, size, data);
                 if (err) return err;
             } else if (mtxfile->precision == mtx_double) {
-                const struct int64_t * data = mtxfile->data.array_integer_double;
+                const int64_t * data = mtxfile->data.array_integer_double;
                 err = mtxvector_init_integer_double(&x->x, type, size, data);
                 if (err) return err;
             } else { return MTX_ERR_INVALID_PRECISION; }
