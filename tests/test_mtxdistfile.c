@@ -1002,23 +1002,22 @@ int test_mtxdistfile_fwrite_shared(void)
     {
         int num_rows = 3;
         int num_columns = 3;
-        int num_local_rows = rank == 0 ? 2 : 1;
-        const int64_t * rowmap = rank == 0
-            ? ((const int64_t[2]) {0, 1})
-            : ((const int64_t[1]) {2});
-        int num_local_columns = rank == 0 ? 3 : 3;
-        const int64_t * colmap = rank == 0
-            ? ((const int64_t[3]) {0, 1, 2})
-            : ((const int64_t[3]) {0, 1, 2});
+        int64_t size = 9;
         const double * srcdata = (rank == 0)
             ? ((const double[6]) {1.0, 2.0, 3.0, 4.0, 5.0, 6.0})
             : ((const double[3]) {7.0, 8.0, 9.0});
 
+        int num_parts = comm_size;
+        int64_t part_sizes[] = {6,3};
+        struct mtxpartition partition;
+        err = mtxpartition_init_block(
+            &partition, size, num_parts, part_sizes);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+
         struct mtxdistfile mtxdistfile;
         err = mtxdistfile_init_matrix_array_real_double(
-            &mtxdistfile, mtxfile_general, num_rows, num_columns,
-            num_local_rows, rowmap, num_local_columns, colmap, srcdata,
-            comm, &disterr);
+            &mtxdistfile, mtxfile_general, num_rows, num_columns, srcdata,
+            &partition, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
@@ -1044,6 +1043,7 @@ int test_mtxdistfile_fwrite_shared(void)
         }
         fclose(f);
         mtxdistfile_free(&mtxdistfile);
+        mtxpartition_free(&partition);
     }
 
     {
@@ -1240,23 +1240,22 @@ int test_mtxdistfile_partition(void)
     {
         int num_rows = 3;
         int num_columns = 3;
-        int num_local_rows = rank == 0 ? 2 : 1;
-        const int64_t * rowmap = rank == 0
-            ? ((const int64_t[2]) {0, 1})
-            : ((const int64_t[1]) {2});
-        int num_local_columns = rank == 0 ? 3 : 3;
-        const int64_t * colmap = rank == 0
-            ? ((const int64_t[3]) {0, 1, 2})
-            : ((const int64_t[3]) {0, 1, 2});
+        int64_t size = 9;
         const double * srcdata = (rank == 0)
-            ? ((const double[6]) {1.0, 2.0, 3.0, 4.0, 5.0, 6.0})
-            : ((const double[3]) {7.0, 8.0, 9.0});
+            ? ((const double[5]) {1.0, 2.0, 3.0, 4.0, 5.0})
+            : ((const double[4]) {6.0, 7.0, 8.0, 9.0});
+
+        const int num_parts = comm_size;
+        int64_t part_sizes[] = {5,4};
+        struct mtxpartition partition;
+        err = mtxpartition_init_block(
+            &partition, size, num_parts, part_sizes);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
         struct mtxdistfile src;
         err = mtxdistfile_init_matrix_array_real_double(
-            &src, mtxfile_general, num_rows, num_columns,
-            num_local_rows, rowmap, num_local_columns, colmap, srcdata,
-            comm, &disterr);
+            &src, mtxfile_general, num_rows, num_columns, srcdata,
+            &partition, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
@@ -1268,7 +1267,7 @@ int test_mtxdistfile_partition(void)
             &rowpart, rowpart_type, num_rows, num_row_parts, NULL, 0, NULL, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
-        struct mtxdistfile dsts[2];
+        struct mtxdistfile dsts[num_parts];
         err = mtxdistfile_partition(dsts, &src, &rowpart, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
@@ -1322,28 +1321,28 @@ int test_mtxdistfile_partition(void)
         }
         mtxpartition_free(&rowpart);
         mtxdistfile_free(&src);
+        mtxpartition_free(&partition);
     }
 
     {
         int num_rows = 3;
         int num_columns = 3;
-        int num_local_rows = rank == 0 ? 2 : 1;
-        const int64_t * rowmap = rank == 0
-            ? ((const int64_t[2]) {0, 1})
-            : ((const int64_t[1]) {2});
-        int num_local_columns = rank == 0 ? 3 : 3;
-        const int64_t * colmap = rank == 0
-            ? ((const int64_t[3]) {0, 1, 2})
-            : ((const int64_t[3]) {0, 1, 2});
+        int64_t size = 9;
         const double * srcdata = (rank == 0)
-            ? ((const double[6]) {1.0, 2.0, 3.0, 4.0, 5.0, 6.0})
-            : ((const double[3]) {7.0, 8.0, 9.0});
+            ? ((const double[5]) {1.0, 2.0, 3.0, 4.0, 5.0})
+            : ((const double[4]) {6.0, 7.0, 8.0, 9.0});
+
+        const int num_parts = comm_size;
+        int64_t part_sizes[] = {5,4};
+        struct mtxpartition partition;
+        err = mtxpartition_init_block(
+            &partition, size, num_parts, part_sizes);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
         struct mtxdistfile src;
         err = mtxdistfile_init_matrix_array_real_double(
-            &src, mtxfile_general, num_rows, num_columns,
-            num_local_rows, rowmap, num_local_columns, colmap, srcdata,
-            comm, &disterr);
+            &src, mtxfile_general, num_rows, num_columns, srcdata,
+            &partition, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
@@ -1355,7 +1354,7 @@ int test_mtxdistfile_partition(void)
             &rowpart, rowpart_type, num_rows, num_row_parts, NULL, 0, NULL, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
-        struct mtxdistfile dsts[2];
+        struct mtxdistfile dsts[num_parts];
         err = mtxdistfile_partition(dsts, &src, &rowpart, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
@@ -1411,28 +1410,28 @@ int test_mtxdistfile_partition(void)
         }
         mtxpartition_free(&rowpart);
         mtxdistfile_free(&src);
+        mtxpartition_free(&partition);
     }
 
     {
         int num_rows = 3;
         int num_columns = 3;
-        int num_local_rows = rank == 0 ? 2 : 1;
-        const int64_t * rowmap = rank == 0
-            ? ((const int64_t[2]) {0, 1})
-            : ((const int64_t[1]) {2});
-        int num_local_columns = rank == 0 ? 3 : 3;
-        const int64_t * colmap = rank == 0
-            ? ((const int64_t[3]) {0, 1, 2})
-            : ((const int64_t[3]) {0, 1, 2});
+        int64_t size = 9;
         const double * srcdata = (rank == 0)
-            ? ((const double[6]) {1.0, 2.0, 3.0, 4.0, 5.0, 6.0})
-            : ((const double[3]) {7.0, 8.0, 9.0});
+            ? ((const double[5]) {1.0, 2.0, 3.0, 4.0, 5.0})
+            : ((const double[4]) {6.0, 7.0, 8.0, 9.0});
+
+        const int num_parts = comm_size;
+        int64_t part_sizes[] = {5,4};
+        struct mtxpartition partition;
+        err = mtxpartition_init_block(
+            &partition, size, num_parts, part_sizes);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
         struct mtxdistfile src;
         err = mtxdistfile_init_matrix_array_real_double(
-            &src, mtxfile_general, num_rows, num_columns,
-            num_local_rows, rowmap, num_local_columns, colmap, srcdata,
-            comm, &disterr);
+            &src, mtxfile_general, num_rows, num_columns, srcdata,
+            &partition, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
@@ -1444,7 +1443,7 @@ int test_mtxdistfile_partition(void)
             &colpart, colpart_type, num_columns, num_col_parts, NULL, 0, NULL, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
-        struct mtxdistfile dsts[2];
+        struct mtxdistfile dsts[num_parts];
         err = mtxdistfile_partition(dsts, &src, NULL, &colpart, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
@@ -1500,28 +1499,28 @@ int test_mtxdistfile_partition(void)
         }
         mtxpartition_free(&colpart);
         mtxdistfile_free(&src);
+        mtxpartition_free(&partition);
     }
 
     {
         int num_rows = 3;
         int num_columns = 3;
-        int num_local_rows = rank == 0 ? 2 : 1;
-        const int64_t * rowmap = rank == 0
-            ? ((const int64_t[2]) {0, 1})
-            : ((const int64_t[1]) {2});
-        int num_local_columns = rank == 0 ? 3 : 3;
-        const int64_t * colmap = rank == 0
-            ? ((const int64_t[3]) {0, 1, 2})
-            : ((const int64_t[3]) {0, 1, 2});
+        int64_t size = 9;
         const double * srcdata = (rank == 0)
-            ? ((const double[6]) {1.0, 2.0, 3.0, 4.0, 5.0, 6.0})
-            : ((const double[3]) {7.0, 8.0, 9.0});
+            ? ((const double[5]) {1.0, 2.0, 3.0, 4.0, 5.0})
+            : ((const double[4]) {6.0, 7.0, 8.0, 9.0});
+
+        const int num_parts = comm_size;
+        int64_t part_sizes[] = {5,4};
+        struct mtxpartition partition;
+        err = mtxpartition_init_block(
+            &partition, size, num_parts, part_sizes);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
         struct mtxdistfile src;
         err = mtxdistfile_init_matrix_array_real_double(
-            &src, mtxfile_general, num_rows, num_columns,
-            num_local_rows, rowmap, num_local_columns, colmap, srcdata,
-            comm, &disterr);
+            &src, mtxfile_general, num_rows, num_columns, srcdata,
+            &partition, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
@@ -1637,28 +1636,28 @@ int test_mtxdistfile_partition(void)
         mtxpartition_free(&colpart);
         mtxpartition_free(&rowpart);
         mtxdistfile_free(&src);
+        mtxpartition_free(&partition);
     }
 
     {
         int num_rows = 3;
         int num_columns = 3;
-        int num_local_rows = rank == 0 ? 2 : 1;
-        const int64_t * rowmap = rank == 0
-            ? ((const int64_t[2]) {0, 1})
-            : ((const int64_t[1]) {2});
-        int num_local_columns = rank == 0 ? 3 : 3;
-        const int64_t * colmap = rank == 0
-            ? ((const int64_t[3]) {0, 1, 2})
-            : ((const int64_t[3]) {0, 1, 2});
+        int64_t size = 9;
         const double * srcdata = (rank == 0)
-            ? ((const double[6]) {1.0, 2.0, 3.0, 4.0, 5.0, 6.0})
-            : ((const double[3]) {7.0, 8.0, 9.0});
+            ? ((const double[5]) {1.0, 2.0, 3.0, 4.0, 5.0})
+            : ((const double[4]) {6.0, 7.0, 8.0, 9.0});
+
+        const int num_parts = comm_size;
+        int64_t part_sizes[] = {5,4};
+        struct mtxpartition partition;
+        err = mtxpartition_init_block(
+            &partition, size, num_parts, part_sizes);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
         struct mtxdistfile src;
         err = mtxdistfile_init_matrix_array_real_double(
-            &src, mtxfile_general, num_rows, num_columns,
-            num_local_rows, rowmap, num_local_columns, colmap, srcdata,
-            comm, &disterr);
+            &src, mtxfile_general, num_rows, num_columns, srcdata,
+            &partition, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
@@ -1774,6 +1773,7 @@ int test_mtxdistfile_partition(void)
         mtxpartition_free(&colpart);
         mtxpartition_free(&rowpart);
         mtxdistfile_free(&src);
+        mtxpartition_free(&partition);
     }
 
     {
@@ -2319,7 +2319,7 @@ int test_mtxdistfile_join(void)
     /*
      * Array formats
      */
-#if 0
+
     {
         int num_rows = 3;
         int num_columns = 3;
@@ -2346,7 +2346,6 @@ int test_mtxdistfile_join(void)
 
         const int num_parts = num_row_parts;
         struct mtxdistfile srcs[num_parts];
-
         const double * srcdata0 = (rank == 0)
             ? ((const double[4]) {1.0, 2.0, 3.0, 4.0})
             : ((const double[2]) {5.0, 6.0});
@@ -2969,7 +2968,7 @@ int test_mtxdistfile_join(void)
         mtxdistfile_free(&srcs[0]);
         mtxpartition_free(&rowpart);
     }
-#endif
+
     /*
      * Matrix coordinate formats
      */
@@ -3194,23 +3193,22 @@ int test_mtxdistfile_transpose(void)
     {
         int num_rows = 3;
         int num_columns = 4;
-        int num_local_rows = rank == 0 ? 2 : 1;
-        const int64_t * rowmap = rank == 0
-            ? ((const int64_t[2]) {0, 1})
-            : ((const int64_t[1]) {2});
-        int num_local_columns = rank == 0 ? 4 : 4;
-        const int64_t * colmap = rank == 0
-            ? ((const int64_t[4]) {0, 1, 2, 3})
-            : ((const int64_t[4]) {0, 1, 2, 3});
+        int64_t size = 12;
         const double * srcdata = (rank == 0)
-            ? ((const double[8]) {1.0,  2.0,  3.0,  4.0, 5.0, 6.0, 7.0, 8.0})
-            : ((const double[4]) {9.0, 10.0, 11.0, 12.0});
+            ? ((const double[6]) { 1, 2, 3, 4, 5, 6})
+            : ((const double[6]) { 7, 8, 9,10,11,12});
+
+        int num_parts = comm_size;
+        int64_t part_sizes[] = {6,6};
+        struct mtxpartition partition;
+        err = mtxpartition_init_block(
+            &partition, size, num_parts, part_sizes);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
         struct mtxdistfile src;
         err = mtxdistfile_init_matrix_array_real_double(
-            &src, mtxfile_general, num_rows, num_columns,
-            num_local_rows, rowmap, num_local_columns, colmap, srcdata,
-            comm, &disterr);
+            &src, mtxfile_general, num_rows, num_columns, srcdata,
+            &partition, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
@@ -3249,6 +3247,7 @@ int test_mtxdistfile_transpose(void)
             TEST_ASSERT_EQ(12.0, data[5]);
         }
         mtxdistfile_free(&src);
+        mtxpartition_free(&partition);
     }
 
     /*
@@ -3361,23 +3360,22 @@ int test_mtxdistfile_sort(void)
     {
         int num_rows = 4;
         int num_columns = 4;
-        int num_local_rows = rank == 0 ? 2 : 2;
-        const int64_t * rowmap = rank == 0
-            ? ((const int64_t[2]) {0, 1})
-            : ((const int64_t[2]) {2, 3});
-        int num_local_columns = rank == 0 ? 4 : 4;
-        const int64_t * colmap = rank == 0
-            ? ((const int64_t[4]) {0, 1, 2, 3})
-            : ((const int64_t[4]) {0, 1, 2, 3});
+        int64_t size = 16;
         const double * srcdata = (rank == 0)
-            ? ((const double[8]) {1, 2, 3, 4, 5, 6, 7, 8})
-            : ((const double[8]) {9,10,11,12,13,14,15,16});
+            ? ((const double[8]) { 1, 2, 3, 4, 5, 6, 7, 8})
+            : ((const double[8]) { 9,10,11,12,13,14,15,16});
+
+        int num_parts = comm_size;
+        int64_t part_sizes[] = {8,8};
+        struct mtxpartition partition;
+        err = mtxpartition_init_block(
+            &partition, size, num_parts, part_sizes);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
         struct mtxdistfile src;
         err = mtxdistfile_init_matrix_array_real_double(
-            &src, mtxfile_general, num_rows, num_columns,
-            num_local_rows, rowmap, num_local_columns, colmap, srcdata,
-            comm, &disterr);
+            &src, mtxfile_general, num_rows, num_columns, srcdata,
+            &partition, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
@@ -3420,6 +3418,7 @@ int test_mtxdistfile_sort(void)
             TEST_ASSERT_EQ(16.0, data[7]);
         }
         mtxdistfile_free(&src);
+        mtxpartition_free(&partition);
     }
 
     /*

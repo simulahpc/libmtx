@@ -122,14 +122,6 @@ struct mtxdistfile
     int64_t localdatasize;
 
     /**
-     * ‘idxmap’ is an array of size ‘localdatasize’ that maps local
-     * entries of the underlying Matrix Market file on the current
-     * process to the corresponding global numbering of matrix or
-     * vector entries.
-     */
-    int64_t * idxmap;
-
-    /**
      * ‘data’ contains the data lines of the Matrix Market file that
      * are owned by the current process.
      */
@@ -208,12 +200,9 @@ int mtxdistfile_alloc_matrix_array(
     enum mtxfilefield field,
     enum mtxfilesymmetry symmetry,
     enum mtxprecision precision,
-    int64_t num_rows,
-    int64_t num_columns,
-    int num_local_rows,
-    const int64_t * rowmap,
-    int num_local_columns,
-    const int64_t * colmap,
+    int num_rows,
+    int num_columns,
+    const struct mtxpartition * partition,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
@@ -225,13 +214,10 @@ int mtxdistfile_alloc_matrix_array(
 int mtxdistfile_init_matrix_array_real_single(
     struct mtxdistfile * mtxdistfile,
     enum mtxfilesymmetry symmetry,
-    int64_t num_rows,
-    int64_t num_columns,
-    int num_local_rows,
-    const int64_t * rowmap,
-    int num_local_columns,
-    const int64_t * colmap,
+    int num_rows,
+    int num_columns,
     const float * data,
+    const struct mtxpartition * partition,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
@@ -242,13 +228,10 @@ int mtxdistfile_init_matrix_array_real_single(
 int mtxdistfile_init_matrix_array_real_double(
     struct mtxdistfile * mtxdistfile,
     enum mtxfilesymmetry symmetry,
-    int64_t num_rows,
-    int64_t num_columns,
-    int num_local_rows,
-    const int64_t * rowmap,
-    int num_local_columns,
-    const int64_t * colmap,
+    int num_rows,
+    int num_columns,
     const double * data,
+    const struct mtxpartition * partition,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 

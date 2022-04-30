@@ -1289,45 +1289,6 @@ int mtxfiledata_compact(
  */
 
 /**
- * ‘mtxfiledata_partition_rows()’ partitions the entries of a Matrix
- * Market file according to a partitioning of the rows of the
- * underlying matrix or vector.
- *
- * The array ‘parts’ must contain enough storage for ‘size’ values of
- * type ‘int’. If successful, ‘parts’ will contain the part number of
- * each data line in the partitioning.
- *
- * If ‘rowidx’ and ‘colidx’ are not ‘NULL’, then they must point to
- * arrays of length ‘size’, which are then used to store the row and
- * column numbers, respectively, of each data line according to the
- * local numbering of rows and columns within each part.
- *
- * The partitions ‘rowpart’ or ‘colpart’ are allowed to be ‘NULL’, in
- * which case a trivial, singleton partition is used for the rows or
- * columns, respectively.
- *
- * If ‘format’ is ‘mtxfile_array’, then a non-negative ‘offset’ value
- * can be used to partition matrix or vector entries starting from the
- * specified offset, instead of beginning with the first entry of the
- * matrix or vector.
- */
-int mtxfiledata_partition(
-    const union mtxfiledata * data,
-    enum mtxfileobject object,
-    enum mtxfileformat format,
-    enum mtxfilefield field,
-    enum mtxprecision precision,
-    int64_t num_rows,
-    int64_t num_columns,
-    int64_t offset,
-    int64_t size,
-    const struct mtxpartition * rowpart,
-    const struct mtxpartition * colpart,
-    int * parts,
-    int64_t * rowidx,
-    int64_t * colidx);
-
-/**
  * ‘mtxfiledata_partition()’ partitions data lines according to given
  * row and column partitions.
  *
