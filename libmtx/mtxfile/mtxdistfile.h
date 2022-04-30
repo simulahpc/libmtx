@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-04-14
+ * Last modified: 2022-04-30
  *
  * Matrix Market files distributed among multiple processes with MPI
  * for inter-process communication.
@@ -107,6 +107,19 @@ struct mtxdistfile
      * Matrix Market data lines.
      */
     enum mtxprecision precision;
+
+    /**
+     * ‘datasize’ is the total number of explicitly stored data lines
+     * in the entire distributed Matrix Market file.
+     */
+    int64_t datasize;
+
+    /**
+     * ‘localdatasize’ is the number of explicitly stored data lines
+     * of the distributed Matrix Market file that are stored on the
+     * current process.
+     */
+    int64_t localdatasize;
 
     /**
      * ‘data’ contains the data lines of the Matrix Market file that
