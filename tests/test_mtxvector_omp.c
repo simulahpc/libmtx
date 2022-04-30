@@ -1695,7 +1695,7 @@ int test_mtxvector_omp_usga(void)
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxvector_init_omp_real_single(&y, size, ydata, num_threads);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxvector_usga2(&x, &y);
+        err = mtxvector_usga(&x, &y);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(mtxvector_omp, x.x.type);
         struct mtxvector_base * xbase = &x.x.storage.omp.base;
@@ -1720,7 +1720,7 @@ int test_mtxvector_omp_usga(void)
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxvector_init_omp_real_double(&y, size, ydata, num_threads);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxvector_usga2(&x, &y);
+        err = mtxvector_usga(&x, &y);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(mtxvector_omp, x.x.type);
         struct mtxvector_base * xbase = &x.x.storage.omp.base;
@@ -1745,7 +1745,7 @@ int test_mtxvector_omp_usga(void)
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxvector_init_omp_complex_single(&y, size, ydata, num_threads);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxvector_usga2(&x, &y);
+        err = mtxvector_usga(&x, &y);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(mtxvector_omp, x.x.type);
         struct mtxvector_base * xbase = &x.x.storage.omp.base;
@@ -1771,7 +1771,7 @@ int test_mtxvector_omp_usga(void)
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxvector_init_omp_complex_double(&y, size, ydata, num_threads);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxvector_usga2(&x, &y);
+        err = mtxvector_usga(&x, &y);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(mtxvector_omp, x.x.type);
         struct mtxvector_base * xbase = &x.x.storage.omp.base;
@@ -1808,7 +1808,7 @@ int test_mtxvector_omp_ussc(void)
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxvector_init_omp_real_single(&y, size, ydata, num_threads);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxvector_ussc2(&y, &x);
+        err = mtxvector_ussc(&y, &x);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(1.0f, y.storage.omp.base.data.real_single[ 0]);
         TEST_ASSERT_EQ(   0, y.storage.omp.base.data.real_single[ 1]);
@@ -1838,7 +1838,7 @@ int test_mtxvector_omp_ussc(void)
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxvector_init_omp_real_double(&y, size, ydata, num_threads);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxvector_ussc2(&y, &x);
+        err = mtxvector_ussc(&y, &x);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(1.0, y.storage.omp.base.data.real_double[ 0]);
         TEST_ASSERT_EQ(  0, y.storage.omp.base.data.real_double[ 1]);
@@ -1868,7 +1868,7 @@ int test_mtxvector_omp_ussc(void)
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxvector_init_omp_complex_single(&y, size, ydata, num_threads);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxvector_ussc2(&y, &x);
+        err = mtxvector_ussc(&y, &x);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(1.0f, y.storage.omp.base.data.complex_single[0][0]);
         TEST_ASSERT_EQ(1.0f, y.storage.omp.base.data.complex_single[0][1]);
@@ -1898,7 +1898,7 @@ int test_mtxvector_omp_ussc(void)
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxvector_init_omp_complex_double(&y, size, ydata, num_threads);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxvector_ussc2(&y, &x);
+        err = mtxvector_ussc(&y, &x);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(1.0, y.storage.omp.base.data.complex_double[0][0]);
         TEST_ASSERT_EQ(1.0, y.storage.omp.base.data.complex_double[0][1]);

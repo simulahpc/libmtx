@@ -2319,7 +2319,7 @@ int mtxvector_dist_usscga(
             }
         }
     }
-    err = err ? err : mtxvector_usga2(&sendbuf, &x->xp.x);
+    err = err ? err : mtxvector_usga(&sendbuf, &x->xp.x);
     if (mtxdisterror_allreduce(disterr, err)) {
         mtxvector_packed_free(&sendbuf);
         free(idxrecvbuf);
@@ -2442,7 +2442,7 @@ int mtxvector_dist_usscga(
         if (zperm[i] >= idxsrcrankstart)
             recvbuf.idx[zperm[i]-idxsrcrankstart] = i;
     }
-    err = mtxvector_ussc2(&z->xp.x, &recvbuf);
+    err = mtxvector_ussc(&z->xp.x, &recvbuf);
     if (mtxdisterror_allreduce(disterr, err)) {
         mtxvector_packed_free(&recvbuf);
         mtxvector_packed_free(&sendbuf);

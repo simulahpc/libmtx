@@ -1679,7 +1679,7 @@ int test_mtxvector_blas_usga(void)
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxvector_init_blas_real_single(&y, size, ydata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxvector_usga2(&x, &y);
+        err = mtxvector_usga(&x, &y);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(mtxvector_blas, x.x.type);
         struct mtxvector_base * xbase = &x.x.storage.blas.base;
@@ -1704,7 +1704,7 @@ int test_mtxvector_blas_usga(void)
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxvector_init_blas_real_double(&y, size, ydata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxvector_usga2(&x, &y);
+        err = mtxvector_usga(&x, &y);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(mtxvector_blas, x.x.type);
         struct mtxvector_base * xbase = &x.x.storage.blas.base;
@@ -1729,7 +1729,7 @@ int test_mtxvector_blas_usga(void)
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxvector_init_blas_complex_single(&y, size, ydata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxvector_usga2(&x, &y);
+        err = mtxvector_usga(&x, &y);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(mtxvector_blas, x.x.type);
         struct mtxvector_base * xbase = &x.x.storage.blas.base;
@@ -1755,7 +1755,7 @@ int test_mtxvector_blas_usga(void)
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxvector_init_blas_complex_double(&y, size, ydata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxvector_usga2(&x, &y);
+        err = mtxvector_usga(&x, &y);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(mtxvector_blas, x.x.type);
         struct mtxvector_base * xbase = &x.x.storage.blas.base;
@@ -1791,7 +1791,7 @@ int test_mtxvector_blas_ussc(void)
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxvector_init_blas_real_single(&y, size, ydata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxvector_ussc2(&y, &x);
+        err = mtxvector_ussc(&y, &x);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(1.0f, y.storage.blas.base.data.real_single[ 0]);
         TEST_ASSERT_EQ(   0, y.storage.blas.base.data.real_single[ 1]);
@@ -1821,7 +1821,7 @@ int test_mtxvector_blas_ussc(void)
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxvector_init_blas_real_double(&y, size, ydata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxvector_ussc2(&y, &x);
+        err = mtxvector_ussc(&y, &x);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(1.0, y.storage.blas.base.data.real_double[ 0]);
         TEST_ASSERT_EQ(  0, y.storage.blas.base.data.real_double[ 1]);
@@ -1851,7 +1851,7 @@ int test_mtxvector_blas_ussc(void)
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxvector_init_blas_complex_single(&y, size, ydata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxvector_ussc2(&y, &x);
+        err = mtxvector_ussc(&y, &x);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(1.0f, y.storage.blas.base.data.complex_single[0][0]);
         TEST_ASSERT_EQ(1.0f, y.storage.blas.base.data.complex_single[0][1]);
@@ -1881,7 +1881,7 @@ int test_mtxvector_blas_ussc(void)
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxvector_init_blas_complex_double(&y, size, ydata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxvector_ussc2(&y, &x);
+        err = mtxvector_ussc(&y, &x);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(1.0, y.storage.blas.base.data.complex_double[0][0]);
         TEST_ASSERT_EQ(1.0, y.storage.blas.base.data.complex_double[0][1]);
