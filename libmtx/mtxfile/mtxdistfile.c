@@ -1688,11 +1688,11 @@ int mtxdistfile_to_mtxfile(
     }
 
     if (rank == root) {
-        dst->datasize = src->partition.size;
+        dst->datasize = src->datasize;
         err = mtxfiledata_alloc(
             &dst->data, dst->header.object, dst->header.format,
             dst->header.field, dst->precision,
-            src->partition.size);
+            src->datasize);
     }
     if (mtxdisterror_allreduce(disterr, err)) {
         if (rank == root) free(displs);
@@ -2676,7 +2676,7 @@ int mtxdistfile_transpose(
         if (mtxdistfile->header.format == mtxfile_array) {
             err = mtxdistfile_sort(
                 mtxdistfile, mtxfile_column_major,
-                mtxdistfile->partition.size, NULL, disterr);
+                mtxdistfile->datasize, NULL, disterr);
             if (err)
                 return err;
         } else if (mtxdistfile->header.format == mtxfile_coordinate) {
@@ -2736,7 +2736,7 @@ static int mtxdistfile_sort_permutation(
     MPI_Comm comm = mtxdistfile->comm;
     int comm_size = mtxdistfile->comm_size;
     int rank = mtxdistfile->rank;
-    int64_t size = mtxdistfile->partition.size;
+    int64_t size = mtxdistfile->datasize;
     int64_t local_size = rank < mtxdistfile->partition.num_parts
         ? mtxdistfile->partition.part_sizes[rank] : 0;
 
@@ -3010,7 +3010,7 @@ int mtxdistfile_sort(
     int comm_size = mtxdistfile->comm_size;
     int rank = mtxdistfile->rank;
 
-    int64_t size = mtxdistfile->partition.size;
+    int64_t size = mtxdistfile->datasize;
     int local_size = rank < mtxdistfile->partition.num_parts
         ? mtxdistfile->partition.part_sizes[rank] : 0;
     int64_t offset = rank < mtxdistfile->partition.num_parts
