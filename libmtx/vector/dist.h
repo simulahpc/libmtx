@@ -43,6 +43,7 @@
 
 struct mtxfile;
 struct mtxpartition;
+struct mtxdistfile2;
 struct mtxdisterror;
 
 /**
@@ -475,6 +476,20 @@ int mtxvector_dist_to_mtxfile(
     const struct mtxvector_dist * x,
     enum mtxfileformat mtxfmt,
     int root,
+    struct mtxdisterror * disterr);
+
+/**
+ * ‘mtxvector_dist_from_mtxdistfile2()’ converts from a vector in
+ * Matrix Market format that is distributed among multiple processes.
+ *
+ * The ‘type’ argument may be used to specify a desired storage format
+ * or implementation for the underlying ‘mtxvector’ on each process.
+ */
+int mtxvector_dist_from_mtxdistfile2(
+    struct mtxvector_dist * x,
+    const struct mtxdistfile2 * mtxdistfile2,
+    enum mtxvectortype type,
+    MPI_Comm comm,
     struct mtxdisterror * disterr);
 
 /*

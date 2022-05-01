@@ -27,6 +27,7 @@
 
 #include <libmtx/error.h>
 #include <libmtx/mtxfile/mtxfile.h>
+#include <libmtx/mtxfile/mtxdistfile2.h>
 #include <libmtx/vector/base.h>
 #include <libmtx/vector/dist.h>
 #include <libmtx/vector/packed.h>
@@ -569,6 +570,88 @@ int test_mtxvector_dist_to_mtxfile(void)
             mtxfile_free(&mtxfile);
         }
         mtxvector_dist_free(&x);
+    }
+    mtxdisterror_free(&disterr);
+    return TEST_SUCCESS;
+}
+
+/**
+ * ‘test_mtxvector_dist_from_mtxdistfile2()’ tests converting
+ *  distributed Matrix Market files to vectors.
+ */
+int test_mtxvector_dist_from_mtxdistfile2(void)
+{
+    int err;
+    char mpierrstr[MPI_MAX_ERROR_STRING];
+    int mpierrstrlen;
+    MPI_Comm comm = MPI_COMM_WORLD;
+    int root = 0;
+    int comm_size;
+    err = MPI_Comm_size(comm, &comm_size);
+    if (err) {
+        MPI_Error_string(err, mpierrstr, &mpierrstrlen);
+        fprintf(stderr, "%s: MPI_Comm_size failed with %s\n",
+                program_invocation_short_name, mpierrstr);
+        MPI_Abort(comm, EXIT_FAILURE);
+    }
+    int rank;
+    err = MPI_Comm_rank(comm, &rank);
+    if (err) {
+        MPI_Error_string(err, mpierrstr, &mpierrstrlen);
+        fprintf(stderr, "%s: MPI_Comm_rank failed with %s\n",
+                program_invocation_short_name, mpierrstr);
+        MPI_Abort(comm, EXIT_FAILURE);
+    }
+    if (comm_size != 2) TEST_FAIL_MSG("Expected exactly two MPI processes");
+    struct mtxdisterror disterr;
+    err = mtxdisterror_alloc(&disterr, comm, NULL);
+    if (err) MPI_Abort(comm, EXIT_FAILURE);
+
+    {
+        int num_rows = 9;
+        const struct mtxfile_vector_coordinate_real_single * srcdata = (rank == 0)
+            ? ((const struct mtxfile_vector_coordinate_real_single[2])
+                {{1,1.0f}, {2,2.0f}})
+            : ((const struct mtxfile_vector_coordinate_real_single[1])
+                {{4,4.0f}});
+        int64_t num_nonzeros = 3;
+        int64_t localdatasize = rank == 0 ? 2 : 1;
+
+        struct mtxdistfile2 src;
+        err = mtxdistfile2_init_vector_coordinate_real_single(
+            &src, num_rows, num_nonzeros, localdatasize, srcdata, comm, &disterr);
+        TEST_ASSERT_EQ_MSG(
+            MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
+            ? mtxdisterror_description(&disterr) : mtxstrerror(err));
+
+        struct mtxvector_dist xdist;
+        err = mtxvector_dist_from_mtxdistfile2(
+            &xdist, &src, mtxvector_base, comm, &disterr);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxdisterror_description(&disterr));
+        TEST_ASSERT_EQ(9, xdist.size);
+        TEST_ASSERT_EQ(9, xdist.xp.size);
+        if (rank == 0) {
+            TEST_ASSERT_EQ(2, xdist.xp.num_nonzeros);
+            TEST_ASSERT_EQ(0, xdist.xp.idx[0]);
+            TEST_ASSERT_EQ(1, xdist.xp.idx[1]);
+        } else if (rank == 1) {
+            TEST_ASSERT_EQ(1, xdist.xp.num_nonzeros);
+            TEST_ASSERT_EQ(3, xdist.xp.idx[0]);
+        }
+        TEST_ASSERT_EQ(mtxvector_base, xdist.xp.x.type);
+        const struct mtxvector_base * xbase = &xdist.xp.x.storage.base;
+        TEST_ASSERT_EQ(mtx_field_real, xbase->field);
+        TEST_ASSERT_EQ(mtx_single, xbase->precision);
+        if (rank == 0) {
+            TEST_ASSERT_EQ(2, xbase->size);
+            TEST_ASSERT_EQ(1.0f, xbase->data.real_single[0]);
+            TEST_ASSERT_EQ(2.0f, xbase->data.real_single[1]);
+        } else if (rank == 1) {
+            TEST_ASSERT_EQ(1, xbase->size);
+            TEST_ASSERT_EQ(4.0f, xbase->data.real_single[0]);
+        }
+        mtxvector_dist_free(&xdist);
+        mtxdistfile2_free(&src);
     }
     mtxdisterror_free(&disterr);
     return TEST_SUCCESS;
@@ -2308,6 +2391,7 @@ int main(int argc, char * argv[])
     TEST_SUITE_BEGIN("Running tests for distributed sparse vectors in packed form\n");
     TEST_RUN(test_mtxvector_dist_from_mtxfile);
     TEST_RUN(test_mtxvector_dist_to_mtxfile);
+    TEST_RUN(test_mtxvector_dist_from_mtxdistfile2);
     TEST_RUN(test_mtxvector_dist_swap);
     TEST_RUN(test_mtxvector_dist_copy);
     TEST_RUN(test_mtxvector_dist_scal);

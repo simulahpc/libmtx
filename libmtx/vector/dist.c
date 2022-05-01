@@ -30,6 +30,7 @@
 #include <libmtx/field.h>
 #include <libmtx/mtxfile/header.h>
 #include <libmtx/mtxfile/mtxfile.h>
+#include <libmtx/mtxfile/mtxdistfile2.h>
 #include <libmtx/util/sort.h>
 #include <libmtx/vector/dist.h>
 #include <libmtx/vector/packed.h>
@@ -893,7 +894,19 @@ int mtxvector_dist_init_strided_real_single(
     const float * data,
     int64_t datastride,
     MPI_Comm comm,
-    struct mtxdisterror * disterr);
+    struct mtxdisterror * disterr)
+{
+    int err = mtxvector_dist_init_comm(x, comm, disterr);
+    if (err) return err;
+    err = mtxvector_dist_init_size(x, size, num_nonzeros, comm, disterr);
+    if (err) return err;
+    err = mtxvector_packed_init_strided_real_single(
+        &x->xp, type, size, num_nonzeros, idx, idxstride, idxbase, data, datastride);
+    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+    err = mtxvector_dist_init_map(x, disterr);
+    if (err) { mtxvector_packed_free(&x->xp); return err; }
+    return MTX_SUCCESS;
+}
 
 /**
  * ‘mtxvector_dist_init_strided_real_double()’ allocates and
@@ -910,7 +923,19 @@ int mtxvector_dist_init_strided_real_double(
     const double * data,
     int64_t datastride,
     MPI_Comm comm,
-    struct mtxdisterror * disterr);
+    struct mtxdisterror * disterr)
+{
+    int err = mtxvector_dist_init_comm(x, comm, disterr);
+    if (err) return err;
+    err = mtxvector_dist_init_size(x, size, num_nonzeros, comm, disterr);
+    if (err) return err;
+    err = mtxvector_packed_init_strided_real_double(
+        &x->xp, type, size, num_nonzeros, idx, idxstride, idxbase, data, datastride);
+    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+    err = mtxvector_dist_init_map(x, disterr);
+    if (err) { mtxvector_packed_free(&x->xp); return err; }
+    return MTX_SUCCESS;
+}
 
 /**
  * ‘mtxvector_dist_init_strided_complex_single()’ allocates and
@@ -927,7 +952,19 @@ int mtxvector_dist_init_strided_complex_single(
     const float (* data)[2],
     int64_t datastride,
     MPI_Comm comm,
-    struct mtxdisterror * disterr);
+    struct mtxdisterror * disterr)
+{
+    int err = mtxvector_dist_init_comm(x, comm, disterr);
+    if (err) return err;
+    err = mtxvector_dist_init_size(x, size, num_nonzeros, comm, disterr);
+    if (err) return err;
+    err = mtxvector_packed_init_strided_complex_single(
+        &x->xp, type, size, num_nonzeros, idx, idxstride, idxbase, data, datastride);
+    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+    err = mtxvector_dist_init_map(x, disterr);
+    if (err) { mtxvector_packed_free(&x->xp); return err; }
+    return MTX_SUCCESS;
+}
 
 /**
  * ‘mtxvector_dist_init_strided_complex_double()’ allocates and
@@ -944,7 +981,19 @@ int mtxvector_dist_init_strided_complex_double(
     const double (* data)[2],
     int64_t datastride,
     MPI_Comm comm,
-    struct mtxdisterror * disterr);
+    struct mtxdisterror * disterr)
+{
+    int err = mtxvector_dist_init_comm(x, comm, disterr);
+    if (err) return err;
+    err = mtxvector_dist_init_size(x, size, num_nonzeros, comm, disterr);
+    if (err) return err;
+    err = mtxvector_packed_init_strided_complex_double(
+        &x->xp, type, size, num_nonzeros, idx, idxstride, idxbase, data, datastride);
+    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+    err = mtxvector_dist_init_map(x, disterr);
+    if (err) { mtxvector_packed_free(&x->xp); return err; }
+    return MTX_SUCCESS;
+}
 
 /**
  * ‘mtxvector_dist_init_strided_integer_single()’ allocates and
@@ -961,7 +1010,19 @@ int mtxvector_dist_init_strided_integer_single(
     const int32_t * data,
     int64_t datastride,
     MPI_Comm comm,
-    struct mtxdisterror * disterr);
+    struct mtxdisterror * disterr)
+{
+    int err = mtxvector_dist_init_comm(x, comm, disterr);
+    if (err) return err;
+    err = mtxvector_dist_init_size(x, size, num_nonzeros, comm, disterr);
+    if (err) return err;
+    err = mtxvector_packed_init_strided_integer_single(
+        &x->xp, type, size, num_nonzeros, idx, idxstride, idxbase, data, datastride);
+    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+    err = mtxvector_dist_init_map(x, disterr);
+    if (err) { mtxvector_packed_free(&x->xp); return err; }
+    return MTX_SUCCESS;
+}
 
 /**
  * ‘mtxvector_dist_init_strided_integer_double()’ allocates and
@@ -978,7 +1039,19 @@ int mtxvector_dist_init_strided_integer_double(
     const int64_t * data,
     int64_t datastride,
     MPI_Comm comm,
-    struct mtxdisterror * disterr);
+    struct mtxdisterror * disterr)
+{
+    int err = mtxvector_dist_init_comm(x, comm, disterr);
+    if (err) return err;
+    err = mtxvector_dist_init_size(x, size, num_nonzeros, comm, disterr);
+    if (err) return err;
+    err = mtxvector_packed_init_strided_integer_double(
+        &x->xp, type, size, num_nonzeros, idx, idxstride, idxbase, data, datastride);
+    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+    err = mtxvector_dist_init_map(x, disterr);
+    if (err) { mtxvector_packed_free(&x->xp); return err; }
+    return MTX_SUCCESS;
+}
 
 /**
  * ‘mtxvector_dist_init_pattern()’ allocates and initialises a
@@ -993,7 +1066,19 @@ int mtxvector_dist_init_strided_pattern(
     int64_t idxstride,
     int idxbase,
     MPI_Comm comm,
-    struct mtxdisterror * disterr);
+    struct mtxdisterror * disterr)
+{
+    int err = mtxvector_dist_init_comm(x, comm, disterr);
+    if (err) return err;
+    err = mtxvector_dist_init_size(x, size, num_nonzeros, comm, disterr);
+    if (err) return err;
+    err = mtxvector_packed_init_strided_pattern(
+        &x->xp, type, size, num_nonzeros, idx, idxstride, idxbase);
+    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+    err = mtxvector_dist_init_map(x, disterr);
+    if (err) { mtxvector_packed_free(&x->xp); return err; }
+    return MTX_SUCCESS;
+}
 
 /*
  * Modifying values
@@ -1247,6 +1332,131 @@ int mtxvector_dist_to_mtxfile(
         }
         if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     }
+    return MTX_SUCCESS;
+}
+
+/**
+ * ‘mtxvector_dist_from_mtxdistfile2()’ converts from a vector in
+ * Matrix Market format that is distributed among multiple processes.
+ *
+ * The ‘type’ argument may be used to specify a desired storage format
+ * or implementation for the underlying ‘mtxvector’ on each process.
+ */
+int mtxvector_dist_from_mtxdistfile2(
+    struct mtxvector_dist * x,
+    const struct mtxdistfile2 * mtxdistfile2,
+    enum mtxvectortype type,
+    MPI_Comm comm,
+    struct mtxdisterror * disterr)
+{
+    int err;
+    if (mtxdistfile2->header.object != mtxfile_vector)
+        return MTX_ERR_INCOMPATIBLE_MTX_OBJECT;
+
+    if (mtxdistfile2->header.format == mtxfile_array) {
+        int64_t size = mtxdistfile2->size.num_rows;
+        int64_t num_nonzeros = mtxdistfile2->localdatasize;
+        if (mtxdistfile2->header.field == mtxfile_real) {
+            if (mtxdistfile2->precision == mtx_single) {
+                const float * data = mtxdistfile2->data.array_real_single;
+                err = mtxvector_dist_init_real_single(
+                    x, type, size, num_nonzeros, NULL, data, comm, disterr);
+                if (err) return err;
+            } else if (mtxdistfile2->precision == mtx_double) {
+                const double * data = mtxdistfile2->data.array_real_double;
+                err = mtxvector_dist_init_real_double(
+                    x, type, size, num_nonzeros, NULL, data, comm, disterr);
+                if (err) return err;
+            } else { return MTX_ERR_INVALID_PRECISION; }
+        } else if (mtxdistfile2->header.field == mtxfile_complex) {
+            if (mtxdistfile2->precision == mtx_single) {
+                const float (* data)[2] = mtxdistfile2->data.array_complex_single;
+                err = mtxvector_dist_init_complex_single(
+                    x, type, size, num_nonzeros, NULL, data, comm, disterr);
+                if (err) return err;
+            } else if (mtxdistfile2->precision == mtx_double) {
+                const double (* data)[2] = mtxdistfile2->data.array_complex_double;
+                err = mtxvector_dist_init_complex_double(
+                    x, type, size, num_nonzeros, NULL, data, comm, disterr);
+                if (err) return err;
+            } else { return MTX_ERR_INVALID_PRECISION; }
+        } else if (mtxdistfile2->header.field == mtxfile_integer) {
+            if (mtxdistfile2->precision == mtx_single) {
+                const int32_t * data = mtxdistfile2->data.array_integer_single;
+                err = mtxvector_dist_init_integer_single(
+                    x, type, size, num_nonzeros, NULL, data, comm, disterr);
+                if (err) return err;
+            } else if (mtxdistfile2->precision == mtx_double) {
+                const int64_t * data = mtxdistfile2->data.array_integer_double;
+                err = mtxvector_dist_init_integer_double(
+                    x, type, size, num_nonzeros, NULL, data, comm, disterr);
+                if (err) return err;
+            } else { return MTX_ERR_INVALID_PRECISION; }
+        } else if (mtxdistfile2->header.field == mtxfile_pattern) {
+            err = mtxvector_dist_init_pattern(
+                x, type, size, num_nonzeros, NULL, comm, disterr);
+            if (err) return err;
+        } else { return MTX_ERR_INVALID_MTX_FIELD; }
+    } else if (mtxdistfile2->header.format == mtxfile_coordinate) {
+        int64_t size = mtxdistfile2->size.num_rows;
+        int64_t num_nonzeros = mtxdistfile2->localdatasize;
+        if (mtxdistfile2->header.field == mtxfile_real) {
+            if (mtxdistfile2->precision == mtx_single) {
+                const struct mtxfile_vector_coordinate_real_single * data =
+                    mtxdistfile2->data.vector_coordinate_real_single;
+                err = mtxvector_dist_init_strided_real_single(
+                    x, type, size, num_nonzeros, &data[0].i, sizeof(*data), 1,
+                    &data[0].a, sizeof(*data), comm, disterr);
+                if (err) return err;
+            } else if (mtxdistfile2->precision == mtx_double) {
+                const struct mtxfile_vector_coordinate_real_double * data =
+                    mtxdistfile2->data.vector_coordinate_real_double;
+                err = mtxvector_dist_init_strided_real_double(
+                    x, type, size, num_nonzeros, &data[0].i, sizeof(*data), 1,
+                    &data[0].a, sizeof(*data), comm, disterr);
+                if (err) return err;
+            } else { return MTX_ERR_INVALID_PRECISION; }
+        } else if (mtxdistfile2->header.field == mtxfile_complex) {
+            if (mtxdistfile2->precision == mtx_single) {
+                const struct mtxfile_vector_coordinate_complex_single * data =
+                    mtxdistfile2->data.vector_coordinate_complex_single;
+                err = mtxvector_dist_init_strided_complex_single(
+                    x, type, size, num_nonzeros, &data[0].i, sizeof(*data), 1,
+                    &data[0].a, sizeof(*data), comm, disterr);
+                if (err) return err;
+            } else if (mtxdistfile2->precision == mtx_double) {
+                const struct mtxfile_vector_coordinate_complex_double * data =
+                    mtxdistfile2->data.vector_coordinate_complex_double;
+                err = mtxvector_dist_init_strided_complex_double(
+                    x, type, size, num_nonzeros, &data[0].i, sizeof(*data), 1,
+                    &data[0].a, sizeof(*data), comm, disterr);
+                if (err) return err;
+            } else { return MTX_ERR_INVALID_PRECISION; }
+        } else if (mtxdistfile2->header.field == mtxfile_integer) {
+            if (mtxdistfile2->precision == mtx_single) {
+                const struct mtxfile_vector_coordinate_integer_single * data =
+                    mtxdistfile2->data.vector_coordinate_integer_single;
+                err = mtxvector_dist_init_strided_integer_single(
+                    x, type, size, num_nonzeros, &data[0].i, sizeof(*data), 1,
+                    &data[0].a, sizeof(*data), comm, disterr);
+                if (err) return err;
+            } else if (mtxdistfile2->precision == mtx_double) {
+                const struct mtxfile_vector_coordinate_integer_double * data =
+                    mtxdistfile2->data.vector_coordinate_integer_double;
+                err = mtxvector_dist_init_strided_integer_double(
+                    x, type, size, num_nonzeros, &data[0].i, sizeof(*data), 1,
+                    &data[0].a, sizeof(*data), comm, disterr);
+                if (err) return err;
+            } else { return MTX_ERR_INVALID_PRECISION; }
+        } else if (mtxdistfile2->header.field == mtxfile_pattern) {
+            const struct mtxfile_vector_coordinate_pattern * data =
+                mtxdistfile2->data.vector_coordinate_pattern;
+            err = mtxvector_dist_init_strided_pattern(
+                x, type, size, num_nonzeros, &data[0].i, sizeof(*data), 1,
+                comm, disterr);
+            if (err) return err;
+        } else { return MTX_ERR_INVALID_MTX_FIELD; }
+    } else { return MTX_ERR_INVALID_MTX_FORMAT; }
     return MTX_SUCCESS;
 }
 

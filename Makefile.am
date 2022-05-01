@@ -44,6 +44,7 @@ EXTRA_DIST = \
 	tests/test_distsort_parallel \
 	tests/test_mtx_mpi_parallel \
 	tests/test_mtxdistfile_parallel \
+	tests/test_mtxdistfile2_parallel \
 	tests/test_mtxdistmatrix_parallel \
 	tests/test_mtxdistmatrixgemv_parallel \
 	tests/test_mtxdistvector_parallel \
@@ -94,6 +95,7 @@ libmtx_la_SOURCES = \
 	libmtx/mtxfile/data.c \
 	libmtx/mtxfile/header.c \
 	libmtx/mtxfile/mtxdistfile.c \
+	libmtx/mtxfile/mtxdistfile2.c \
 	libmtx/mtxfile/mtxfile.c \
 	libmtx/mtxfile/size.c \
 	libmtx/precision.c \
@@ -178,6 +180,7 @@ nobase_include_HEADERS = \
 	libmtx/mtxfile/data.h \
 	libmtx/mtxfile/header.h \
 	libmtx/mtxfile/mtxdistfile.h \
+	libmtx/mtxfile/mtxdistfile2.h \
 	libmtx/mtxfile/mtxfile.h \
 	libmtx/mtxfile/size.h \
 	libmtx/precision.h \
@@ -410,6 +413,16 @@ TESTS = \
 	tests/test_sort \
 	tests/test_submatrix \
 	tests/test_vector
+
+
+if HAVE_MPI
+tests_test_mtxdistfile2_CPPFLAGS =
+tests_test_mtxdistfile2_LDADD = $(top_builddir)/libmtx.la
+tests_test_mtxdistfile2_SOURCES = tests/test_mtxdistfile2.c tests/test.h
+check_PROGRAMS += tests/test_mtxdistfile2
+TESTS += tests/test_mtxdistfile2_parallel
+tests/test_mtxdistfile2_parallel:  tests/test_mtxdistfile2
+endif
 
 tests_test_mtxvector_base_CPPFLAGS =
 tests_test_mtxvector_base_LDADD = $(top_builddir)/libmtx.la
