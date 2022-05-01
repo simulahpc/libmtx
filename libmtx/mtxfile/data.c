@@ -5572,7 +5572,7 @@ int mtxfiledata_partition_rowwise(
         type, num_rows, num_parts, partsizes, blksize, parts,
         size, sizeof(int64_t), rowidx, dstpart);
     if (err) { free(rowidx); return err; }
-    for (int p = 0; p < num_parts; p++) partsptr[p] = 0;
+    for (int p = 0; p <= num_parts; p++) partsptr[p] = 0;
     for (int64_t k = 0; k < size; k++) partsptr[dstpart[k]+1]++;
     for (int p = 1; p <= num_parts; p++) partsptr[p] += partsptr[p-1];
     err = mtxfiledata_sort_int(

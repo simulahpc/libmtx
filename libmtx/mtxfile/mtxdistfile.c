@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-04-30
+ * Last modified: 2022-05-01
  *
  * Matrix Market files distributed among multiple processes with MPI
  * for inter-process communication.
@@ -1193,6 +1193,205 @@ int mtxdistfile_set_constant_integer_double(
 /*
  * Convert to and from (non-distributed) Matrix Market format
  */
+
+static int mtxdistfile_from_mtxfile_distribute(
+    struct mtxdistfile * dst,
+    const struct mtxfile * src,
+    int64_t * partsptr,
+    MPI_Comm comm,
+    int root,
+    struct mtxdisterror * disterr)
+{
+    int comm_size;
+    disterr->mpierrcode = MPI_Comm_size(comm, &comm_size);
+    int err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+    int rank;
+    disterr->mpierrcode = MPI_Comm_rank(comm, &rank);
+    err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+    if (root < 0 || root >= comm_size) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+
+    dst->comm = comm;
+    dst->comm_size = comm_size;
+    dst->rank = rank;
+
+    /* Broadcast the header, comments, size line and precision. */
+    err = (rank == root) ? mtxfileheader_copy(
+        &dst->header, &src->header) : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+    err = mtxfileheader_bcast(&dst->header, root, comm, disterr);
+    if (err) return err;
+    err = (rank == root) ? mtxfilecomments_copy(
+        &dst->comments, &src->comments) : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+    err = mtxfilecomments_bcast(&dst->comments, root, comm, disterr);
+    if (err) {
+        if (rank == root) mtxfilecomments_free(&dst->comments);
+        return err;
+    }
+    err = (rank == root) ? mtxfilesize_copy(&dst->size, &src->size) : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err)) {
+        mtxfilecomments_free(&dst->comments);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+    err = mtxfilesize_bcast(&dst->size, root, comm, disterr);
+    if (err) {
+        mtxfilecomments_free(&dst->comments);
+        return err;
+    }
+    if (rank == root) dst->precision = src->precision;
+    disterr->mpierrcode = MPI_Bcast(&dst->precision, 1, MPI_INT, root, comm);
+    err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err)) {
+        mtxfilecomments_free(&dst->comments);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+    if (rank == root) dst->datasize = src->datasize;
+    disterr->mpierrcode = MPI_Bcast(&dst->datasize, 1, MPI_INT64_T, root, comm);
+    err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err)) {
+        mtxfilecomments_free(&dst->comments);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+
+    /* receive from the root process. */
+    for (int p = 0; p < comm_size; p++) {
+        if (p != root && rank == root) {
+            int64_t localdatasize = partsptr[p+1] - partsptr[p];
+            disterr->mpierrcode = MPI_Send(
+                &localdatasize, 1, MPI_INT64_T, p, 0, comm);
+            err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+            err = err ? err : mtxfiledata_send(
+                &src->data, src->header.object, src->header.format,
+                src->header.field, src->precision, localdatasize,
+                partsptr[p], p, 0, comm, disterr);
+        } else if (p != root && rank == p) {
+            disterr->mpierrcode = MPI_Recv(
+                &dst->localdatasize, 1, MPI_INT64_T, root, 0, comm,
+                MPI_STATUS_IGNORE);
+            err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+            err = err ? err : mtxfiledata_alloc(
+                &dst->data, dst->header.object, dst->header.format,
+                dst->header.field, dst->precision, dst->localdatasize);
+            err = err ? err : mtxfiledata_recv(
+                &dst->data, dst->header.object, dst->header.format,
+                dst->header.field, dst->precision, dst->localdatasize,
+                0, root, 0, comm, disterr);
+        } else if (p == root && rank == root) {
+            dst->localdatasize = partsptr[p+1] - partsptr[p];
+            err = err ? err : mtxfiledata_alloc(
+                &dst->data, dst->header.object, dst->header.format,
+                dst->header.field, dst->precision, dst->localdatasize);
+            err = err ? err : mtxfiledata_copy(
+                &dst->data, &src->data, dst->header.object,
+                dst->header.format, dst->header.field, dst->precision,
+                dst->localdatasize, 0, partsptr[p]);
+        }
+        if (mtxdisterror_allreduce(disterr, err)) {
+            if (rank < p) {
+                mtxfiledata_free(
+                    &dst->data, dst->header.object, dst->header.format,
+                    dst->header.field, dst->precision);
+            }
+            return MTX_ERR_MPI_COLLECTIVE;
+        }
+    }
+
+    /* TODO: remove when partition is no longer needed */
+    mtxpartition_init_singleton(&dst->partition, 0);
+    return MTX_SUCCESS;
+}
+
+/**
+ * ‘mtxdistfile_from_mtxfile_rowwise()’ creates a distributed Matrix
+ * Market file from a Matrix Market file stored on a single root
+ * process by partitioning the underlying matrix or vector rowwise and
+ * distributing the parts among processes.
+ *
+ * This function performs collective communication and therefore
+ * requires every process in the communicator to perform matching
+ * calls to this function.
+ */
+int mtxdistfile_from_mtxfile_rowwise(
+    struct mtxdistfile * dst,
+    struct mtxfile * src,
+    enum mtxpartitioning parttype,
+    int64_t partsize,
+    int64_t blksize,
+    MPI_Comm comm,
+    int root,
+    struct mtxdisterror * disterr)
+{
+    int comm_size;
+    disterr->mpierrcode = MPI_Comm_size(comm, &comm_size);
+    int err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+    int rank;
+    disterr->mpierrcode = MPI_Comm_rank(comm, &rank);
+    err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+    if (root < 0 || root >= comm_size) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+
+    /* TODO: only block and block-cyclic partitioning work for now. */
+    if (parttype != mtx_block && parttype != mtx_block_cyclic)
+        return MTX_ERR_INVALID_PARTITION_TYPE;
+
+    /* allocate storage for offsets to each part */
+    int64_t * partsptr = malloc((comm_size+1) * sizeof(int64_t));
+    err = !partsptr ? MTX_ERR_ERRNO : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+
+    /* In the case of a block partitioning, gather part sizes onto the
+     * root process. */
+    int64_t * partsizes = partsptr;
+    if (parttype == mtx_block) {
+        disterr->mpierrcode = MPI_Allgather(
+            &partsize, 1, MPI_INT64_T, partsizes, 1, MPI_INT64_T, comm);
+        err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+        if (mtxdisterror_allreduce(disterr, err)) {
+            free(partsptr);
+            return MTX_ERR_MPI_COLLECTIVE;
+        }
+    }
+
+    /* allocate storage for permutation */
+    int64_t * perm = rank == root ? malloc(src->datasize * sizeof(int64_t)) : NULL;
+    err = rank == root && !perm ? MTX_ERR_ERRNO : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err)) {
+        free(partsptr);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+
+    /* Partition the Matrix Market file on the root process. */
+    err = rank == root ? mtxfile_partition_rowwise(
+        src, parttype, comm_size, partsizes, blksize, NULL, partsptr, perm)
+        : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err)) {
+        free(perm); free(partsptr);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+
+#if 0
+    /* broadcast the size of each part */
+    disterr->mpierrcode = MPI_Bcast(
+        &partsptr, comm_size+1, MPI_INT64_T, root, comm);
+    err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err)) {
+        free(partsptr);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+#endif
+
+    err = mtxdistfile_from_mtxfile_distribute(
+        dst, src, partsptr, comm, root, disterr);
+    if (mtxdisterror_allreduce(disterr, err)) {
+        free(perm); free(partsptr);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+    free(perm); free(partsptr);
+    return MTX_SUCCESS;
+}
 
 /**
  * ‘mtxdistfile_from_mtxfile()’ creates a distributed Matrix Market

@@ -705,6 +705,26 @@ int mtxdistfile_set_constant_integer_double(
  */
 
 /**
+ * ‘mtxdistfile_from_mtxfile_rowwise()’ creates a distributed Matrix
+ * Market file from a Matrix Market file stored on a single root
+ * process by partitioning the underlying matrix or vector rowwise and
+ * distributing the parts among processes.
+ *
+ * This function performs collective communication and therefore
+ * requires every process in the communicator to perform matching
+ * calls to this function.
+ */
+int mtxdistfile_from_mtxfile_rowwise(
+    struct mtxdistfile * dst,
+    struct mtxfile * src,
+    enum mtxpartitioning parttype,
+    int64_t partsize,
+    int64_t blksize,
+    MPI_Comm comm,
+    int root,
+    struct mtxdisterror * disterr);
+
+/**
  * ‘mtxdistfile_from_mtxfile()’ creates a distributed Matrix Market
  * file from a Matrix Market file stored on a single root process by
  * distributing the data of the underlying matrix or vector among
