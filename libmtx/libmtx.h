@@ -46,12 +46,14 @@
 #include <libmtx/mtx/transpose.h>
 #include <libmtx/mtx/triangle.h>
 #include <libmtx/mtxfile/mtxdistfile.h>
+#include <libmtx/mtxfile/mtxdistfile2.h>
 #include <libmtx/mtxfile/mtxfile.h>
 #include <libmtx/field.h>
 #include <libmtx/util/index_set.h>
 #include <libmtx/util/partition.h>
 #include <libmtx/vector/array.h>
 #include <libmtx/vector/coordinate.h>
+#include <libmtx/vector/dist.h>
 #include <libmtx/vector/distvector.h>
 #include <libmtx/vector/vector.h>
 #include <libmtx/vector/vector_array.h>

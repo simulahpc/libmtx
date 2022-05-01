@@ -1356,46 +1356,47 @@ int mtxvector_dist_from_mtxdistfile2(
     if (mtxdistfile2->header.format == mtxfile_array) {
         int64_t size = mtxdistfile2->size.num_rows;
         int64_t num_nonzeros = mtxdistfile2->localdatasize;
+        const int64_t * idx = mtxdistfile2->idx;
         if (mtxdistfile2->header.field == mtxfile_real) {
             if (mtxdistfile2->precision == mtx_single) {
                 const float * data = mtxdistfile2->data.array_real_single;
                 err = mtxvector_dist_init_real_single(
-                    x, type, size, num_nonzeros, NULL, data, comm, disterr);
-                if (err) return err;
+                    x, type, size, num_nonzeros, idx, data, comm, disterr);
+                if (err) { return err; }
             } else if (mtxdistfile2->precision == mtx_double) {
                 const double * data = mtxdistfile2->data.array_real_double;
                 err = mtxvector_dist_init_real_double(
-                    x, type, size, num_nonzeros, NULL, data, comm, disterr);
-                if (err) return err;
+                    x, type, size, num_nonzeros, idx, data, comm, disterr);
+                if (err) { return err; }
             } else { return MTX_ERR_INVALID_PRECISION; }
         } else if (mtxdistfile2->header.field == mtxfile_complex) {
             if (mtxdistfile2->precision == mtx_single) {
                 const float (* data)[2] = mtxdistfile2->data.array_complex_single;
                 err = mtxvector_dist_init_complex_single(
-                    x, type, size, num_nonzeros, NULL, data, comm, disterr);
-                if (err) return err;
+                    x, type, size, num_nonzeros, idx, data, comm, disterr);
+                if (err) { return err; }
             } else if (mtxdistfile2->precision == mtx_double) {
                 const double (* data)[2] = mtxdistfile2->data.array_complex_double;
                 err = mtxvector_dist_init_complex_double(
-                    x, type, size, num_nonzeros, NULL, data, comm, disterr);
-                if (err) return err;
+                    x, type, size, num_nonzeros, idx, data, comm, disterr);
+                if (err) { return err; }
             } else { return MTX_ERR_INVALID_PRECISION; }
         } else if (mtxdistfile2->header.field == mtxfile_integer) {
             if (mtxdistfile2->precision == mtx_single) {
                 const int32_t * data = mtxdistfile2->data.array_integer_single;
                 err = mtxvector_dist_init_integer_single(
-                    x, type, size, num_nonzeros, NULL, data, comm, disterr);
-                if (err) return err;
+                    x, type, size, num_nonzeros, idx, data, comm, disterr);
+                if (err) { return err; }
             } else if (mtxdistfile2->precision == mtx_double) {
                 const int64_t * data = mtxdistfile2->data.array_integer_double;
                 err = mtxvector_dist_init_integer_double(
-                    x, type, size, num_nonzeros, NULL, data, comm, disterr);
-                if (err) return err;
+                    x, type, size, num_nonzeros, idx, data, comm, disterr);
+                if (err) { return err; }
             } else { return MTX_ERR_INVALID_PRECISION; }
         } else if (mtxdistfile2->header.field == mtxfile_pattern) {
             err = mtxvector_dist_init_pattern(
-                x, type, size, num_nonzeros, NULL, comm, disterr);
-            if (err) return err;
+                x, type, size, num_nonzeros, idx, comm, disterr);
+            if (err) { return err; }
         } else { return MTX_ERR_INVALID_MTX_FIELD; }
     } else if (mtxdistfile2->header.format == mtxfile_coordinate) {
         int64_t size = mtxdistfile2->size.num_rows;

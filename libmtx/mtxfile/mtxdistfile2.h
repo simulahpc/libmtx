@@ -115,6 +115,14 @@ struct mtxdistfile2
     int64_t localdatasize;
 
     /**
+     * ‘idx’ is an array of length ‘localdatasize’, containing the
+     * global offset to each entry of the Matrix Market file stored on
+     * the current process. Note that offsets are 0-based, unlike the
+     * Matrix Market format, where indices are 1-based.
+     */
+    int64_t * idx;
+
+    /**
      * ‘data’ contains the data lines of the Matrix Market file that
      * are owned by the current process.
      */

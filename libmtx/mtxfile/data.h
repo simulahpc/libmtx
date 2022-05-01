@@ -1103,7 +1103,7 @@ int mtxfiledata_permute(
     int64_t num_rows,
     int64_t num_columns,
     int64_t size,
-    int64_t * perm);
+    const int64_t * perm);
 
 /**
  * ‘mtxfiledata_sortkey_row_major()’ provides an array of keys that

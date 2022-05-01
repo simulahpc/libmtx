@@ -251,11 +251,15 @@ int test_mtxdistfile2_from_mtxfile_rowwise(void)
             dst.data.vector_coordinate_real_double;
         if (rank == 0) {
             TEST_ASSERT_EQ(3, dst.localdatasize);
+            TEST_ASSERT_EQ(1, dst.idx[0]);
+            TEST_ASSERT_EQ(2, dst.idx[1]);
+            TEST_ASSERT_EQ(3, dst.idx[2]);
             TEST_ASSERT_EQ(3, data[0].i); TEST_ASSERT_EQ(3.0, data[0].a);
             TEST_ASSERT_EQ(2, data[1].i); TEST_ASSERT_EQ(2.0, data[1].a);
             TEST_ASSERT_EQ(1, data[2].i); TEST_ASSERT_EQ(1.0, data[2].a);
         } else if (rank == 1) {
             TEST_ASSERT_EQ(1, dst.localdatasize);
+            TEST_ASSERT_EQ(0, dst.idx[0]);
             TEST_ASSERT_EQ(5, data[0].i); TEST_ASSERT_EQ(5.0, data[0].a);
         }
         mtxdistfile2_free(&dst);

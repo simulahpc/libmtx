@@ -4397,7 +4397,7 @@ int mtxfiledata_permute(
     int64_t num_rows,
     int64_t num_columns,
     int64_t size,
-    int64_t * perm)
+    const int64_t * perm)
 {
     int err;
     for (int64_t k = 0; k < size; k++) {

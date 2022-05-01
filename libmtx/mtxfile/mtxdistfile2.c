@@ -1124,6 +1124,7 @@ static int mtxdistfile2_from_mtxfile_distribute(
     struct mtxdistfile2 * dst,
     const struct mtxfile * src,
     int64_t * partsptr,
+    const int64_t * idx,
     MPI_Comm comm,
     int root,
     struct mtxdisterror * disterr)
@@ -1188,6 +1189,11 @@ static int mtxdistfile2_from_mtxfile_distribute(
             disterr->mpierrcode = MPI_Send(
                 &localdatasize, 1, MPI_INT64_T, p, 0, comm);
             err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+            if (!err) {
+                disterr->mpierrcode = MPI_Send(
+                    &idx[partsptr[p]], localdatasize, MPI_INT64_T, p, 1, comm);
+                err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+            }
             err = err ? err : mtxfiledata_send(
                 &src->data, src->header.object, src->header.format,
                 src->header.field, src->precision, localdatasize,
@@ -1197,6 +1203,16 @@ static int mtxdistfile2_from_mtxfile_distribute(
                 &dst->localdatasize, 1, MPI_INT64_T, root, 0, comm,
                 MPI_STATUS_IGNORE);
             err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+            if (!err) {
+                dst->idx = malloc(dst->localdatasize * sizeof(int64_t));
+                if (!dst->idx) err = MTX_ERR_ERRNO;
+            }
+            if (!err) {
+                disterr->mpierrcode = MPI_Recv(
+                    dst->idx, dst->localdatasize, MPI_INT64_T,
+                    root, 1, comm, MPI_STATUS_IGNORE);
+                err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+            }
             err = err ? err : mtxfiledata_alloc(
                 &dst->data, dst->header.object, dst->header.format,
                 dst->header.field, dst->precision, dst->localdatasize);
@@ -1209,6 +1225,11 @@ static int mtxdistfile2_from_mtxfile_distribute(
             err = err ? err : mtxfiledata_alloc(
                 &dst->data, dst->header.object, dst->header.format,
                 dst->header.field, dst->precision, dst->localdatasize);
+            if (!err) {
+                dst->idx = malloc(dst->localdatasize * sizeof(int64_t));
+                if (dst->idx) { memcpy(dst->idx, idx, dst->localdatasize * sizeof(int64_t)); }
+                else { err = MTX_ERR_ERRNO; }
+            }
             err = err ? err : mtxfiledata_copy(
                 &dst->data, &src->data, dst->header.object,
                 dst->header.format, dst->header.field, dst->precision,
@@ -1295,19 +1316,31 @@ int mtxdistfile2_from_mtxfile_rowwise(
         return MTX_ERR_MPI_COLLECTIVE;
     }
 
+    int64_t * tmp = rank == root ? malloc(src->datasize * sizeof(int64_t)) : NULL;
+    err = rank == root && !perm ? MTX_ERR_ERRNO : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err)) {
+        free(perm); free(partsptr);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+    if (rank == root) {
+        for (int64_t i = 0; i < src->datasize; i++) tmp[i] = perm[i];
+        for (int64_t i = 0; i < src->datasize; i++) perm[tmp[i]] = i;
+    }
+    free(tmp);
+
 #if 0
     /* broadcast the size of each part */
     disterr->mpierrcode = MPI_Bcast(
         &partsptr, comm_size+1, MPI_INT64_T, root, comm);
     err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err)) {
-        free(partsptr);
+        free(perm); free(partsptr);
         return MTX_ERR_MPI_COLLECTIVE;
     }
 #endif
 
     err = mtxdistfile2_from_mtxfile_distribute(
-        dst, src, partsptr, comm, root, disterr);
+        dst, src, partsptr, perm, comm, root, disterr);
     if (mtxdisterror_allreduce(disterr, err)) {
         free(perm); free(partsptr);
         return MTX_ERR_MPI_COLLECTIVE;
