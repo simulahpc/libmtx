@@ -153,6 +153,7 @@ int mtxdistfile2_alloc(
     const struct mtxfilesize * size,
     enum mtxprecision precision,
     int64_t localdatasize,
+    const int64_t * idx,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
@@ -198,6 +199,7 @@ int mtxdistfile2_alloc_matrix_array(
     int64_t num_rows,
     int64_t num_columns,
     int64_t localdatasize,
+    const int64_t * idx,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
@@ -212,6 +214,7 @@ int mtxdistfile2_init_matrix_array_real_single(
     int64_t num_rows,
     int64_t num_columns,
     int64_t localdatasize,
+    const int64_t * idx,
     const float * data,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
@@ -226,6 +229,7 @@ int mtxdistfile2_init_matrix_array_real_double(
     int64_t num_rows,
     int64_t num_columns,
     int64_t localdatasize,
+    const int64_t * idx,
     const double * data,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
@@ -241,6 +245,7 @@ int mtxdistfile2_init_matrix_array_complex_single(
     int64_t num_rows,
     int64_t num_columns,
     int64_t localdatasize,
+    const int64_t * idx,
     const float (* data)[2],
     MPI_Comm comm,
     struct mtxdisterror * disterr);
@@ -256,6 +261,7 @@ int mtxdistfile2_init_matrix_array_complex_double(
     int64_t num_rows,
     int64_t num_columns,
     int64_t localdatasize,
+    const int64_t * idx,
     const double (* data)[2],
     MPI_Comm comm,
     struct mtxdisterror * disterr);
@@ -271,6 +277,7 @@ int mtxdistfile2_init_matrix_array_integer_single(
     int64_t num_rows,
     int64_t num_columns,
     int64_t localdatasize,
+    const int64_t * idx,
     const int32_t * data,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
@@ -286,6 +293,7 @@ int mtxdistfile2_init_matrix_array_integer_double(
     int64_t num_rows,
     int64_t num_columns,
     int64_t localdatasize,
+    const int64_t * idx,
     const int64_t * data,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
@@ -304,6 +312,7 @@ int mtxdistfile2_alloc_vector_array(
     enum mtxprecision precision,
     int64_t num_rows,
     int64_t localdatasize,
+    const int64_t * idx,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
@@ -316,6 +325,7 @@ int mtxdistfile2_init_vector_array_real_single(
     struct mtxdistfile2 * mtxdistfile2,
     int64_t num_rows,
     int64_t localdatasize,
+    const int64_t * idx,
     const float * data,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
@@ -329,6 +339,7 @@ int mtxdistfile2_init_vector_array_real_double(
     struct mtxdistfile2 * mtxdistfile2,
     int64_t num_rows,
     int64_t localdatasize,
+    const int64_t * idx,
     const double * data,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
@@ -342,6 +353,7 @@ int mtxdistfile2_init_vector_array_complex_single(
     struct mtxdistfile2 * mtxdistfile2,
     int64_t num_rows,
     int64_t localdatasize,
+    const int64_t * idx,
     const float (* data)[2],
     MPI_Comm comm,
     struct mtxdisterror * disterr);
@@ -355,6 +367,7 @@ int mtxdistfile2_init_vector_array_complex_double(
     struct mtxdistfile2 * mtxdistfile2,
     int64_t num_rows,
     int64_t localdatasize,
+    const int64_t * idx,
     const double (* data)[2],
     MPI_Comm comm,
     struct mtxdisterror * disterr);
@@ -368,6 +381,7 @@ int mtxdistfile2_init_vector_array_integer_single(
     struct mtxdistfile2 * mtxdistfile2,
     int64_t num_rows,
     int64_t localdatasize,
+    const int64_t * idx,
     const int32_t * data,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
@@ -381,6 +395,7 @@ int mtxdistfile2_init_vector_array_integer_double(
     struct mtxdistfile2 * mtxdistfile2,
     int64_t num_rows,
     int64_t localdatasize,
+    const int64_t * idx,
     const int64_t * data,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
@@ -402,6 +417,7 @@ int mtxdistfile2_alloc_matrix_coordinate(
     int64_t num_columns,
     int64_t num_nonzeros,
     int64_t localdatasize,
+    const int64_t * idx,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
@@ -417,6 +433,7 @@ int mtxdistfile2_init_matrix_coordinate_real_single(
     int64_t num_columns,
     int64_t num_nonzeros,
     int64_t localdatasize,
+    const int64_t * idx,
     const struct mtxfile_matrix_coordinate_real_single * data,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
@@ -433,6 +450,7 @@ int mtxdistfile2_init_matrix_coordinate_real_double(
     int64_t num_columns,
     int64_t num_nonzeros,
     int64_t localdatasize,
+    const int64_t * idx,
     const struct mtxfile_matrix_coordinate_real_double * data,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
@@ -449,6 +467,7 @@ int mtxdistfile2_init_matrix_coordinate_complex_single(
     int64_t num_columns,
     int64_t num_nonzeros,
     int64_t localdatasize,
+    const int64_t * idx,
     const struct mtxfile_matrix_coordinate_complex_single * data,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
@@ -465,6 +484,7 @@ int mtxdistfile2_init_matrix_coordinate_complex_double(
     int64_t num_columns,
     int64_t num_nonzeros,
     int64_t localdatasize,
+    const int64_t * idx,
     const struct mtxfile_matrix_coordinate_complex_double * data,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
@@ -481,6 +501,7 @@ int mtxdistfile2_init_matrix_coordinate_integer_single(
     int64_t num_columns,
     int64_t num_nonzeros,
     int64_t localdatasize,
+    const int64_t * idx,
     const struct mtxfile_matrix_coordinate_integer_single * data,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
@@ -497,6 +518,7 @@ int mtxdistfile2_init_matrix_coordinate_integer_double(
     int64_t num_columns,
     int64_t num_nonzeros,
     int64_t localdatasize,
+    const int64_t * idx,
     const struct mtxfile_matrix_coordinate_integer_double * data,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
@@ -513,6 +535,7 @@ int mtxdistfile2_init_matrix_coordinate_pattern(
     int64_t num_columns,
     int64_t num_nonzeros,
     int64_t localdatasize,
+    const int64_t * idx,
     const struct mtxfile_matrix_coordinate_pattern * data,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
@@ -532,6 +555,7 @@ int mtxdistfile2_alloc_vector_coordinate(
     int64_t num_rows,
     int64_t num_nonzeros,
     int64_t localdatasize,
+    const int64_t * idx,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
@@ -545,6 +569,7 @@ int mtxdistfile2_init_vector_coordinate_real_single(
     int64_t num_rows,
     int64_t num_nonzeros,
     int64_t localdatasize,
+    const int64_t * idx,
     const struct mtxfile_vector_coordinate_real_single * data,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
@@ -559,6 +584,7 @@ int mtxdistfile2_init_vector_coordinate_real_double(
     int64_t num_rows,
     int64_t num_nonzeros,
     int64_t localdatasize,
+    const int64_t * idx,
     const struct mtxfile_vector_coordinate_real_double * data,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
@@ -573,6 +599,7 @@ int mtxdistfile2_init_vector_coordinate_complex_single(
     int64_t num_rows,
     int64_t num_nonzeros,
     int64_t localdatasize,
+    const int64_t * idx,
     const struct mtxfile_vector_coordinate_complex_single * data,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
@@ -587,6 +614,7 @@ int mtxdistfile2_init_vector_coordinate_complex_double(
     int64_t num_rows,
     int64_t num_nonzeros,
     int64_t localdatasize,
+    const int64_t * idx,
     const struct mtxfile_vector_coordinate_complex_double * data,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
@@ -601,6 +629,7 @@ int mtxdistfile2_init_vector_coordinate_integer_single(
     int64_t num_rows,
     int64_t num_nonzeros,
     int64_t localdatasize,
+    const int64_t * idx,
     const struct mtxfile_vector_coordinate_integer_single * data,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
@@ -615,6 +644,7 @@ int mtxdistfile2_init_vector_coordinate_integer_double(
     int64_t num_rows,
     int64_t num_nonzeros,
     int64_t localdatasize,
+    const int64_t * idx,
     const struct mtxfile_vector_coordinate_integer_double * data,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
@@ -629,6 +659,7 @@ int mtxdistfile2_init_vector_coordinate_pattern(
     int64_t num_rows,
     int64_t num_nonzeros,
     int64_t localdatasize,
+    const int64_t * idx,
     const struct mtxfile_vector_coordinate_pattern * data,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
@@ -716,6 +747,20 @@ int mtxdistfile2_from_mtxfile_rowwise(
     int64_t partsize,
     int64_t blksize,
     MPI_Comm comm,
+    int root,
+    struct mtxdisterror * disterr);
+
+/**
+ * ‘mtxdistfile2_to_mtxfile()’ creates a Matrix Market file on a given
+ * root process from a distributed Matrix Market file.
+ *
+ * This function performs collective communication and therefore
+ * requires every process in the communicator to perform matching
+ * calls to this function.
+ */
+int mtxdistfile2_to_mtxfile(
+    struct mtxfile * dst,
+    const struct mtxdistfile2 * src,
     int root,
     struct mtxdisterror * disterr);
 
@@ -847,6 +892,44 @@ int mtxdistfile2_gzread_rowwise(
     int root,
     struct mtxdisterror * disterr);
 #endif
+
+/**
+ * ‘mtxdistfile2_fwrite()’ writes a distributed Matrix Market
+ * file to a single stream that is shared by every process in the
+ * communicator.
+ *
+ * If ‘fmt’ is ‘NULL’, then the format specifier ‘%g’ is used to print
+ * floating point numbers with enough digits to ensure correct
+ * round-trip conversion from decimal text and back.  Otherwise, the
+ * given format string is used to print numerical values.
+ *
+ * The format string follows the conventions of ‘printf’. If the field
+ * is ‘real’ or ‘complex’, then the format specifiers '%e', '%E',
+ * '%f', '%F', '%g' or '%G' may be used. If the field is ‘integer’,
+ * then the format specifier must be '%d'. The format string is
+ * ignored if the field is ‘pattern’. Field width and precision may be
+ * specified (e.g., "%3.1f"), but variable field width and precision
+ * (e.g., "%*.*f"), as well as length modifiers (e.g., "%Lf") are not
+ * allowed.
+ *
+ * If it is not ‘NULL’, then the number of bytes written to the stream
+ * is returned in ‘bytes_written’.
+ *
+ * Note that only the specified ‘root’ process will print anything to
+ * the stream. Other processes will therefore send their part of the
+ * distributed Matrix Market file to the root process for printing.
+ *
+ * This function performs collective communication and therefore
+ * requires every process in the communicator to perform matching
+ * calls to the function.
+ */
+int mtxdistfile2_fwrite(
+    const struct mtxdistfile2 * mtxdistfile2,
+    FILE * f,
+    const char * fmt,
+    int64_t * bytes_written,
+    int root,
+    struct mtxdisterror * disterr);
 #endif
 
 #endif
