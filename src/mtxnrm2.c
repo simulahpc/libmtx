@@ -137,17 +137,17 @@ static void program_options_print_help(
     fprintf(f, "\t\t\tvector values: ‘single’ or ‘double’. (default: ‘double’)\n");
     fprintf(f, "  --vector-type=TYPE\tformat for representing vectors:\n");
     fprintf(f, "\t\t\t‘auto’, ‘array’ or ‘coordinate’. (default: ‘auto’)\n");
+    fprintf(f, "  --partition=TYPE\tmethod of partitioning: ‘block’, ‘block-cyclic’, or ‘custom’.\n");
+    fprintf(f, "\t\t\t(default: ‘block’)\n");
+    fprintf(f, "  --blksize=N\t\tblock size to use for block-cyclic partitioning\n");
+    fprintf(f, "  --partition-path=FILE\tpath to Matrix Market file for reading partition\n");
+    fprintf(f, "\t\t\twhen the partition is ‘custom’.\n");
     fprintf(f, "  -z, --gzip, --gunzip, --ungzip\tfilter files through gzip\n");
     fprintf(f, "  --format=FORMAT\tFormat string for outputting numerical values.\n");
     fprintf(f, "\t\t\tFor real, double and complex values, the format specifiers\n");
     fprintf(f, "\t\t\t'%%e', '%%E', '%%f', '%%F', '%%g' or '%%G' may be used,\n");
     fprintf(f, "\t\t\twhereas '%%d' must be used for integers. Flags, field width\n");
     fprintf(f, "\t\t\tand precision can optionally be specified, e.g., \"%%+3.1f\".\n");
-    fprintf(f, "  --blksize=N\t\tblock size to use for block-cyclic partitioning\n");
-    fprintf(f, "  --partition=TYPE\tmethod of partitioning: ‘block’, ‘block-cyclic’, or ‘custom’.\n");
-    fprintf(f, "\t\t\t(default: ‘block’)\n");
-    fprintf(f, "  --partition-path=FILE\tpath to Matrix Market file for reading partition\n");
-    fprintf(f, "\t\t\twhen the partition is ‘custom’.\n");
     fprintf(f, "  -q, --quiet\t\tdo not print Matrix Market output\n");
     fprintf(f, "  -v, --verbose\t\tbe more verbose\n");
     fprintf(f, "\n");
@@ -518,7 +518,7 @@ static int distvector_nrm2(
 
     struct mtxvector_dist x;
     err = mtxvector_dist_from_mtxdistfile2(
-        &x, mtxdistfile2, vector_type,comm, disterr);
+        &x, mtxdistfile2, vector_type, comm, disterr);
     if (err) {
         if (verbose > 0) fprintf(diagf, "\n");
         return err;

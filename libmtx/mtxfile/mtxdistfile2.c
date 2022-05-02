@@ -168,7 +168,8 @@ int mtxdistfile2_alloc_copy(
     dst->precision = src->precision;
     dst->datasize = src->datasize;
     dst->localdatasize = src->localdatasize;
-
+    dst->idx = malloc(dst->localdatasize * sizeof(int64_t));
+    memcpy(dst->idx, src->idx, dst->localdatasize * sizeof(int64_t));
     err = mtxfiledata_alloc(
         &dst->data, dst->header.object, dst->header.format,
         dst->header.field, dst->precision, dst->localdatasize);
