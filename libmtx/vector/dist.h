@@ -492,44 +492,57 @@ int mtxvector_dist_from_mtxdistfile2(
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
-/*
- * Partitioning
- */
-
 /**
- * ‘mtxvector_dist_partition()’ partitions a vector into blocks
- * according to the given partitioning.
- *
- * The partition ‘part’ is allowed to be ‘NULL’, in which case a
- * trivial, singleton partition is used to partition the entries of
- * the vector. Otherwise, ‘part’ must partition the entries of the
- * vector ‘src’. That is, ‘part->size’ must be equal to the size of
- * the vector.
- *
- * The argument ‘dsts’ is an array that must have enough storage for
- * ‘P’ values of type ‘struct mtxvector’, where ‘P’ is the number of
- * parts, ‘part->num_parts’.
- *
- * The user is responsible for freeing storage allocated for each
- * vector in the ‘dsts’ array.
+ * ‘mtxvector_dist_to_mtxdistfile2()’ converts to a vector in Matrix
+ * Market format that is distributed among multiple processes.
  */
-int mtxvector_dist_partition(
-    struct mtxvector * dsts,
-    const struct mtxvector_dist * src,
-    const struct mtxpartition * part,
+int mtxvector_dist_to_mtxdistfile2(
+    struct mtxdistfile2 * mtxdistfile2,
+    const struct mtxvector_dist * x,
+    enum mtxfileformat mtxfmt,
     struct mtxdisterror * disterr);
 
-/**
- * ‘mtxvector_dist_join()’ joins together block vectors to form a
- * larger vector.
- *
- * The argument ‘srcs’ is an array of size ‘P’, where ‘P’ is the
- * number of parts in the partitioning (i.e, ‘part->num_parts’).
+/*
+ * I/O operations
  */
-int mtxvector_dist_join(
-    struct mtxvector_dist * dst,
-    const struct mtxvector * srcs,
-    const struct mtxpartition * part,
+
+/**
+ * ‘mtxvector_dist_fwrite()’ writes a distributed vector to a single
+ * stream that is shared by every process in the communicator. The
+ * output is written in Matrix Market format.
+ *
+ * If ‘fmt’ is ‘NULL’, then the format specifier ‘%g’ is used to print
+ * floating point numbers with enough digits to ensure correct
+ * round-trip conversion from decimal text and back.  Otherwise, the
+ * given format string is used to print numerical values.
+ *
+ * The format string follows the conventions of ‘printf’. If the field
+ * is ‘real’ or ‘complex’, then the format specifiers '%e', '%E',
+ * '%f', '%F', '%g' or '%G' may be used. If the field is ‘integer’,
+ * then the format specifier must be '%d'. The format string is
+ * ignored if the field is ‘pattern’. Field width and precision may be
+ * specified (e.g., "%3.1f"), but variable field width and precision
+ * (e.g., "%*.*f"), as well as length modifiers (e.g., "%Lf") are not
+ * allowed.
+ *
+ * If it is not ‘NULL’, then the number of bytes written to the stream
+ * is returned in ‘bytes_written’.
+ *
+ * Note that only the specified ‘root’ process will print anything to
+ * the stream. Other processes will therefore send their part of the
+ * distributed data to the root process for printing.
+ *
+ * This function performs collective communication and therefore
+ * requires every process in the communicator to perform matching
+ * calls to the function.
+ */
+int mtxvector_dist_fwrite(
+    const struct mtxvector_dist * x,
+    enum mtxfileformat mtxfmt,
+    FILE * f,
+    const char * fmt,
+    int64_t * bytes_written,
+    int root,
     struct mtxdisterror * disterr);
 
 /*

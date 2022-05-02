@@ -84,7 +84,7 @@ static int program_options_init(
     args->y_path = NULL;
     args->format = NULL;
     args->precision = mtx_double;
-    args->vector_type = mtxvector_auto;
+    args->vector_type = mtxvector_base;
     args->repeat = 1;
     args->gzip = false;
     args->partition = mtx_block;
@@ -140,11 +140,9 @@ static void program_options_print_help(
     fprintf(f, "\n");
     fprintf(f, " Other options are:\n");
     fprintf(f, "  --precision=PRECISION\tprecision used to represent matrix or\n");
-    fprintf(f, "\t\t\tvector values: ‘single’ or ‘double’. (default: ‘double’)\n");
-    fprintf(f, "  --vector-type=TYPE\tformat for representing vectors:\n");
-    fprintf(f, "\t\t\t‘auto’, ‘array’ or ‘coordinate’. (default: ‘auto’)\n");
-    fprintf(f, "  --partition=TYPE\tmethod of partitioning: ‘block’ or ‘block-cyclic’.\n");
-    fprintf(f, "\t\t\t(default: ‘block’)\n");
+    fprintf(f, "\t\t\tvector values: ‘single’ or ‘double’ (default).\n");
+    fprintf(f, "  --vector-type=TYPE\ttype of vectors: ‘base’ (default), ‘blas’ or ‘omp’.\n");
+    fprintf(f, "  --partition=TYPE\tmethod of partitioning: ‘block’ (default), ‘block-cyclic’.\n");
     fprintf(f, "  --blksize=N\t\tblock size to use for block-cyclic partitioning\n");
     fprintf(f, "  -z, --gzip, --gunzip, --ungzip\tfilter files through gzip\n");
     fprintf(f, "  --format=FORMAT\tFormat string for outputting numerical values.\n");

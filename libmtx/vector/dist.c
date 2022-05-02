@@ -1457,45 +1457,122 @@ int mtxvector_dist_from_mtxdistfile2(
     return MTX_SUCCESS;
 }
 
+/**
+ * ‘mtxvector_dist_to_mtxdistfile2()’ converts to a vector in Matrix
+ * Market format that is distributed among multiple processes.
+ */
+int mtxvector_dist_to_mtxdistfile2(
+    struct mtxdistfile2 * mtxdistfile2,
+    const struct mtxvector_dist * x,
+    enum mtxfileformat mtxfmt,
+    struct mtxdisterror * disterr)
+{
+    MPI_Comm comm = x->comm;
+    int comm_size = x->comm_size;
+    int rank = x->rank;
+    enum mtxfield field;
+    int err = mtxvector_field(&x->xp.x, &field);
+    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+    enum mtxprecision precision;
+    err = mtxvector_precision(&x->xp.x, &precision);
+    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+
+    struct mtxfileheader mtxheader;
+    mtxheader.object = mtxfile_vector;
+    mtxheader.format = mtxfmt;
+    if (field == mtx_field_real) mtxheader.field = mtxfile_real;
+    else if (field == mtx_field_complex) mtxheader.field = mtxfile_complex;
+    else if (field == mtx_field_integer) mtxheader.field = mtxfile_integer;
+    else if (field == mtx_field_pattern) mtxheader.field = mtxfile_pattern;
+    else { return MTX_ERR_INVALID_FIELD; }
+    mtxheader.symmetry = mtxfile_general;
+
+    struct mtxfilesize mtxsize;
+    mtxsize.num_rows = x->size;
+    mtxsize.num_columns = -1;
+    if (mtxfmt == mtxfile_array) {
+        mtxsize.num_nonzeros = -1;
+    } else if (mtxfmt == mtxfile_coordinate) {
+        mtxsize.num_nonzeros = x->num_nonzeros;
+    } else { return MTX_ERR_INVALID_MTX_FORMAT; }
+
+    err = mtxdistfile2_alloc(
+        mtxdistfile2, &mtxheader, NULL, &mtxsize, precision,
+        x->xp.num_nonzeros, x->xp.idx, x->comm, disterr);
+    if (err) return err;
+
+    struct mtxfile mtxfile;
+    err = mtxvector_packed_to_mtxfile(&mtxfile, &x->xp, mtxfmt);
+    if (mtxdisterror_allreduce(disterr, err)) {
+        mtxdistfile2_free(mtxdistfile2);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+
+    err = mtxfiledata_copy(
+        &mtxdistfile2->data, &mtxfile.data,
+        mtxfile.header.object, mtxfile.header.format,
+        mtxfile.header.field, mtxfile.precision,
+        x->xp.num_nonzeros, 0, 0);
+    if (mtxdisterror_allreduce(disterr, err)) {
+        mtxfile_free(&mtxfile);
+        mtxdistfile2_free(mtxdistfile2);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+    mtxfile_free(&mtxfile);
+    return MTX_SUCCESS;
+}
+
 /*
- * Partitioning
+ * I/O operations
  */
 
 /**
- * ‘mtxvector_dist_partition()’ partitions a vector into blocks
- * according to the given partitioning.
+ * ‘mtxvector_dist_fwrite()’ writes a distributed vector to a single
+ * stream that is shared by every process in the communicator. The
+ * output is written in Matrix Market format.
  *
- * The partition ‘part’ is allowed to be ‘NULL’, in which case a
- * trivial, singleton partition is used to partition the entries of
- * the vector. Otherwise, ‘part’ must partition the entries of the
- * vector ‘src’. That is, ‘part->size’ must be equal to the size of
- * the vector.
+ * If ‘fmt’ is ‘NULL’, then the format specifier ‘%g’ is used to print
+ * floating point numbers with enough digits to ensure correct
+ * round-trip conversion from decimal text and back.  Otherwise, the
+ * given format string is used to print numerical values.
  *
- * The argument ‘dsts’ is an array that must have enough storage for
- * ‘P’ values of type ‘struct mtxvector’, where ‘P’ is the number of
- * parts, ‘part->num_parts’.
+ * The format string follows the conventions of ‘printf’. If the field
+ * is ‘real’ or ‘complex’, then the format specifiers '%e', '%E',
+ * '%f', '%F', '%g' or '%G' may be used. If the field is ‘integer’,
+ * then the format specifier must be '%d'. The format string is
+ * ignored if the field is ‘pattern’. Field width and precision may be
+ * specified (e.g., "%3.1f"), but variable field width and precision
+ * (e.g., "%*.*f"), as well as length modifiers (e.g., "%Lf") are not
+ * allowed.
  *
- * The user is responsible for freeing storage allocated for each
- * vector in the ‘dsts’ array.
+ * If it is not ‘NULL’, then the number of bytes written to the stream
+ * is returned in ‘bytes_written’.
+ *
+ * Note that only the specified ‘root’ process will print anything to
+ * the stream. Other processes will therefore send their part of the
+ * distributed data to the root process for printing.
+ *
+ * This function performs collective communication and therefore
+ * requires every process in the communicator to perform matching
+ * calls to the function.
  */
-int mtxvector_dist_partition(
-    struct mtxvector * dsts,
-    const struct mtxvector_dist * src,
-    const struct mtxpartition * part,
-    struct mtxdisterror * disterr);
-
-/**
- * ‘mtxvector_dist_join()’ joins together block vectors to form a
- * larger vector.
- *
- * The argument ‘srcs’ is an array of size ‘P’, where ‘P’ is the
- * number of parts in the partitioning (i.e, ‘part->num_parts’).
- */
-int mtxvector_dist_join(
-    struct mtxvector_dist * dst,
-    const struct mtxvector * srcs,
-    const struct mtxpartition * part,
-    struct mtxdisterror * disterr);
+int mtxvector_dist_fwrite(
+    const struct mtxvector_dist * x,
+    enum mtxfileformat mtxfmt,
+    FILE * f,
+    const char * fmt,
+    int64_t * bytes_written,
+    int root,
+    struct mtxdisterror * disterr)
+{
+    struct mtxdistfile2 dst;
+    int err = mtxvector_dist_to_mtxdistfile2(&dst, x, mtxfmt, disterr);
+    if (err) return err;
+    err = mtxdistfile2_fwrite(&dst, f, fmt, bytes_written, root, disterr);
+    if (err) { mtxdistfile2_free(&dst); return err; }
+    mtxdistfile2_free(&dst);
+    return MTX_SUCCESS;
+}
 
 /*
  * Level 1 BLAS operations

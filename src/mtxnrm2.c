@@ -62,10 +62,10 @@ const char * program_invocation_short_name;
 struct program_options
 {
     char * x_path;
+    bool gzip;
     char * format;
     enum mtxprecision precision;
     enum mtxvectortype vector_type;
-    bool gzip;
     enum mtxpartitioning partition;
     int64_t blksize;
     char * partition_path;
@@ -134,11 +134,9 @@ static void program_options_print_help(
     fprintf(f, "\n");
     fprintf(f, " Other options are:\n");
     fprintf(f, "  --precision=PRECISION\tprecision used to represent matrix or\n");
-    fprintf(f, "\t\t\tvector values: ‘single’ or ‘double’. (default: ‘double’)\n");
-    fprintf(f, "  --vector-type=TYPE\tformat for representing vectors:\n");
-    fprintf(f, "\t\t\t‘auto’, ‘array’ or ‘coordinate’. (default: ‘auto’)\n");
-    fprintf(f, "  --partition=TYPE\tmethod of partitioning: ‘block’, ‘block-cyclic’, or ‘custom’.\n");
-    fprintf(f, "\t\t\t(default: ‘block’)\n");
+    fprintf(f, "\t\t\tvector values: ‘single’ or ‘double’ (default).\n");
+    fprintf(f, "  --vector-type=TYPE\ttype of vectors: ‘base’ (default), ‘blas’ or ‘omp’.\n");
+    fprintf(f, "  --partition=TYPE\tmethod of partitioning: ‘block’ (default), ‘block-cyclic’.\n");
     fprintf(f, "  --blksize=N\t\tblock size to use for block-cyclic partitioning\n");
     fprintf(f, "  --partition-path=FILE\tpath to Matrix Market file for reading partition\n");
     fprintf(f, "\t\t\twhen the partition is ‘custom’.\n");
@@ -283,7 +281,6 @@ static int parse_program_options(
             continue;
         }
 
-        /* Parse partitioning options. */
         if (strcmp((*argv)[0], "--partition") == 0) {
             if (*argc < 2) {
                 program_options_free(args);
