@@ -100,7 +100,7 @@ static int mtxvector_dist_init_size(
     int64_t N = x->size;
     int comm_size = x->comm_size;
     int rank = x->rank;
-    x->blksize = N/comm_size + (rank < (N % comm_size) ? 1 : 0);
+    x->blksize = (N+comm_size-1) / comm_size;
     x->blkstart = rank*(N/comm_size)
         + (rank < (N % comm_size) ? rank : (N % comm_size));
     x->ranks = malloc(x->blksize * sizeof(int));
@@ -118,6 +118,7 @@ static int mtxvector_dist_init_map(
     int comm_size = x->comm_size;
     int rank = x->rank;
     int64_t blksize = (N+comm_size-1) / comm_size;
+    int64_t num_nonzeros = x->xp.num_nonzeros;
     const int64_t * idx = x->xp.idx;
     MPI_Win window;
     disterr->mpierrcode = MPI_Win_create(
@@ -125,13 +126,14 @@ static int mtxvector_dist_init_map(
         MPI_INFO_NULL, x->comm, &window);
     int err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+    MPI_Win_set_errhandler(window, MPI_ERRORS_RETURN);
     disterr->mpierrcode = MPI_Win_fence(0, window);
     err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err)) {
         MPI_Win_free(&window);
         return MTX_ERR_MPI_COLLECTIVE;
     }
-    for (int64_t i = 0; i < x->xp.num_nonzeros; i++) {
+    for (int64_t i = 0; i < num_nonzeros; i++) {
         int assumedrank = idx[i] / blksize;
         int assumedidx = idx[i] % blksize;
         disterr->mpierrcode = MPI_Put(
@@ -1181,23 +1183,17 @@ int mtxvector_dist_from_mtxfile(
     if (err) return err;
 
     /* divide rows or nonzeros into equal-sized blocks */
-    x->size = mtxsize.num_rows;
+    int64_t size = mtxsize.num_rows;
+    int64_t num_nonzeros;
     if (mtxfile->header.format == mtxfile_array) {
-        x->num_nonzeros = mtxsize.num_rows / comm_size
+        num_nonzeros = mtxsize.num_rows / comm_size
             + (rank < (mtxsize.num_rows % comm_size) ? 1 : 0);
     } else if (mtxfile->header.format == mtxfile_coordinate) {
-        x->num_nonzeros = mtxsize.num_nonzeros / comm_size
+        num_nonzeros = mtxsize.num_nonzeros / comm_size
             + (rank < (mtxsize.num_nonzeros % comm_size) ? 1 : 0);
     } else { return MTX_ERR_INVALID_MTX_FORMAT; }
-
-    int64_t N = x->size;
-    x->blksize = N/comm_size + (rank < (N % comm_size) ? 1 : 0);
-    x->blkstart = rank*(N/comm_size)
-        + (rank < (N % comm_size) ? rank : (N % comm_size));
-    x->ranks = malloc(x->blksize * sizeof(int));
-    err = !x->ranks ? MTX_ERR_ERRNO : MTX_SUCCESS;
-    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
-    for (int64_t i = 0; i < x->blksize; i++) x->ranks[i] = -1;
+    err = mtxvector_dist_init_size(x, size, num_nonzeros, comm, disterr);
+    if (err) return err;
 
     int64_t offset = 0;
     for (int p = 0; p < comm_size; p++) {

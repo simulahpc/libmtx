@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-02-23
+ * Last modified: 2022-05-02
  *
  * Error handling.
  */
@@ -294,9 +294,8 @@ int mtxdisterror_alloc(
         return MTX_ERR_MPI;
     }
 
-    int (* buf)[3] = malloc(3*comm_size * sizeof(int));
-    if (!buf)
-        return MTX_ERR_ERRNO;
+    int (* buf)[4] = malloc(4*comm_size * sizeof(int));
+    if (!buf) return MTX_ERR_ERRNO;
 
     disterr->comm = comm;
     disterr->comm_size = comm_size;
@@ -361,6 +360,8 @@ char * mtxdisterror_description(
         if (disterr->buf[p][1]) {
             if (disterr->buf[p][1] == MTX_ERR_ERRNO)
                 errno = disterr->buf[p][2];
+            else if (disterr->buf[p][1] == MTX_ERR_MPI)
+                disterr->mpierrcode = disterr->buf[p][3];
             len += snprintf(
                 NULL, 0, num_errors == 0 ? format_err_first : format_err,
                 disterr->buf[p][0],
@@ -380,6 +381,8 @@ char * mtxdisterror_description(
         if (disterr->buf[p][1]) {
             if (disterr->buf[p][1] == MTX_ERR_ERRNO)
                 errno = disterr->buf[p][2];
+            else if (disterr->buf[p][1] == MTX_ERR_MPI)
+                disterr->mpierrcode = disterr->buf[p][3];
             newlen += snprintf(
                 &disterr->description[newlen], len-newlen+1,
                 num_errors == 0 ? format_err_first : format_err,
@@ -446,9 +449,9 @@ int mtxdisterror_allreduce(
         return err;
 
     disterr->err = err;
-    int buf[3] = { disterr->rank, err, errno };
+    int buf[4] = { disterr->rank, err, errno, disterr->mpierrcode };
     int mpierr = MPI_Allgather(
-        &buf, 3, MPI_INT, disterr->buf, 3, MPI_INT,
+        &buf, 4, MPI_INT, disterr->buf, 4, MPI_INT,
         disterr->comm);
     if (mpierr)
         MPI_Abort(disterr->comm, EXIT_FAILURE);

@@ -165,7 +165,7 @@ struct mtxdisterror
     int rank;
     int err;
     int mpierrcode;
-    int (* buf)[3];
+    int (* buf)[4];
     char * description;
 };
 
