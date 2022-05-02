@@ -520,8 +520,7 @@ static int distvector_nrm2(
     err = mtxvector_dist_from_mtxdistfile2(
         &x, mtxdistfile2, vector_type,comm, disterr);
     if (err) {
-        if (verbose > 0)
-            fprintf(diagf, "\n");
+        if (verbose > 0) fprintf(diagf, "\n");
         return err;
     }
 
@@ -542,8 +541,7 @@ static int distvector_nrm2(
         int64_t num_flops = 0;
         err = mtxvector_dist_snrm2(&x, &nrm2, &num_flops, disterr);
         if (err) {
-            if (verbose > 0)
-                fprintf(diagf, "\n");
+            if (verbose > 0) fprintf(diagf, "\n");
             mtxvector_dist_free(&x);
             return err;
         }
@@ -578,8 +576,7 @@ static int distvector_nrm2(
         int64_t num_flops = 0;
         err = mtxvector_dist_dnrm2(&x, &nrm2, &num_flops, disterr);
         if (err) {
-            if (verbose > 0)
-                fprintf(diagf, "\n");
+            if (verbose > 0) fprintf(diagf, "\n");
             mtxvector_dist_free(&x);
             return err;
         }
@@ -792,9 +789,8 @@ int main(int argc, char *argv[])
 
     if (args.verbose > 0) {
         clock_gettime(CLOCK_MONOTONIC, &t1);
-        fprintf(diagf, "%'.6f seconds (%'.1f MB/s)\n",
-                timespec_duration(t0, t1),
-                1.0e-6 * bytes_read / timespec_duration(t0, t1));
+        fprintf(diagf, "%'.6f seconds\n",
+                timespec_duration(t0, t1));
     }
 
     /* 4. Compute the Euclidean norm. */
@@ -879,8 +875,7 @@ static int vector_nrm2(
     struct mtxvector x;
     err = mtxvector_from_mtxfile(&x, mtxfile, vector_type);
     if (err) {
-        if (verbose > 0)
-            fprintf(diagf, "\n");
+        if (verbose > 0) fprintf(diagf, "\n");
         return err;
     }
 
@@ -901,8 +896,7 @@ static int vector_nrm2(
         int64_t num_flops = 0;
         err = mtxvector_snrm2(&x, &nrm2, &num_flops);
         if (err) {
-            if (verbose > 0)
-                fprintf(diagf, "\n");
+            if (verbose > 0) fprintf(diagf, "\n");
             mtxvector_free(&x);
             return err;
         }
@@ -926,8 +920,7 @@ static int vector_nrm2(
         int64_t num_flops = 0;
         err = mtxvector_dnrm2(&x, &nrm2, &num_flops);
         if (err) {
-            if (verbose > 0)
-                fprintf(diagf, "\n");
+            if (verbose > 0) fprintf(diagf, "\n");
             mtxvector_free(&x);
             return err;
         }
@@ -986,8 +979,7 @@ int main(int argc, char *argv[])
         args.x_path ? args.x_path : "", args.gzip,
         &lines_read, &bytes_read);
     if (err && lines_read >= 0) {
-        if (args.verbose > 0)
-            fprintf(diagf, "\n");
+        if (args.verbose > 0) fprintf(diagf, "\n");
         fprintf(stderr, "%s: %s:%d: %s\n",
                 program_invocation_short_name,
                 args.x_path, lines_read+1,
@@ -995,8 +987,7 @@ int main(int argc, char *argv[])
         program_options_free(&args);
         return EXIT_FAILURE;
     } else if (err) {
-        if (args.verbose > 0)
-            fprintf(diagf, "\n");
+        if (args.verbose > 0) fprintf(diagf, "\n");
         fprintf(stderr, "%s: %s: %s\n",
                 program_invocation_short_name,
                 args.x_path, mtxstrerror(err));
