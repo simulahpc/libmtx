@@ -102,12 +102,9 @@ static int program_options_init(
 static void program_options_free(
     struct program_options * args)
 {
-    if (args->x_path)
-        free(args->x_path);
-    if (args->y_path)
-        free(args->y_path);
-    if(args->format)
-        free(args->format);
+    if (args->x_path) free(args->x_path);
+    if (args->y_path) free(args->y_path);
+    if (args->format) free(args->format);
 }
 
 /**
@@ -250,6 +247,19 @@ static int parse_program_options(
             (*nargs)++; argv++; continue;
         }
 
+        if (strcmp(argv[0], "--repeat") == 0) {
+            if (argc - *nargs < 2) { program_options_free(args); return EINVAL; }
+            (*nargs)++; argv++;
+            err = parse_int32_ex(argv[0], NULL, &args->repeat, NULL);
+            if (err) { program_options_free(args); return err; }
+            (*nargs)++; argv++; continue;
+        } else if (strstr(argv[0], "--repeat=") == argv[0]) {
+            err = parse_int32_ex(
+                argv[0] + strlen("--repeat="), NULL, &args->repeat, NULL);
+            if (err) { program_options_free(args); return err; }
+            (*nargs)++; argv++; continue;
+        }
+
         if (strcmp(argv[0], "-z") == 0 ||
             strcmp(argv[0], "--gzip") == 0 ||
             strcmp(argv[0], "--gunzip") == 0 ||
@@ -268,19 +278,6 @@ static int parse_program_options(
         } else if (strstr(argv[0], "--format=") == argv[0]) {
             args->format = strdup(argv[0] + strlen("--format="));
             if (!args->format) { program_options_free(args); return errno; }
-            (*nargs)++; argv++; continue;
-        }
-
-        if (strcmp(argv[0], "--repeat") == 0) {
-            if (argc - *nargs < 2) { program_options_free(args); return EINVAL; }
-            (*nargs)++; argv++;
-            err = parse_int32_ex(argv[0], NULL, &args->repeat, NULL);
-            if (err) { program_options_free(args); return err; }
-            (*nargs)++; argv++; continue;
-        } else if (strstr(argv[0], "--repeat=") == argv[0]) {
-            err = parse_int32_ex(
-                argv[0] + strlen("--repeat="), NULL, &args->repeat, NULL);
-            if (err) { program_options_free(args); return err; }
             (*nargs)++; argv++; continue;
         }
 
@@ -357,34 +354,18 @@ static int parse_program_options(
          */
         if (num_positional_arguments_consumed == 0) {
             args->x_path = strdup(argv[0]);
-            if (!args->x_path) {
-                program_options_free(args);
-                return errno;
-            }
+            if (!args->x_path) { program_options_free(args); return errno; }
         } else if (num_positional_arguments_consumed == 1) {
             char * x_path = strdup(argv[0]);
-            if (!x_path) {
-                program_options_free(args);
-                return errno;
-            }
+            if (!x_path) { program_options_free(args); return errno; }
             argv[0] = strdup(args->x_path);
             err = parse_double_ex(argv[0], NULL, &args->alpha, NULL);
-            if (err) {
-                program_options_free(args);
-                return err;
-            }
+            if (err) { program_options_free(args); return err; }
             args->x_path = x_path;
         } else if (num_positional_arguments_consumed == 2) {
             args->y_path = strdup(argv[0]);
-            if (!args->y_path) {
-                program_options_free(args);
-                return errno;
-            }
-        } else {
-            program_options_free(args);
-            return EINVAL;
-        }
-
+            if (!args->y_path) { program_options_free(args); return errno; }
+        } else { program_options_free(args); return EINVAL; }
         num_positional_arguments_consumed++;
         (*nargs)++; argv++;
     }
@@ -468,9 +449,6 @@ static int distvector_axpy(
         clock_gettime(CLOCK_MONOTONIC, &t1);
         fprintf(diagf, "%'.6f seconds\n",
                 timespec_duration(t0, t1));
-    }
-
-    if (verbose > 0) {
         fprintf(diagf, "mtxvector_dist_from_mtxdistfile2: ");
         fflush(diagf);
         clock_gettime(CLOCK_MONOTONIC, &t0);
@@ -492,6 +470,7 @@ static int distvector_axpy(
     /* 2. Add the vectors. */
     if (precision == mtx_single) {
         for (int i = 0; i < repeat; i++) {
+            MPI_Barrier(comm);
             if (verbose > 0) {
                 fprintf(diagf, "mtxvector_dist_saxpy: ");
                 fflush(diagf);
@@ -505,6 +484,7 @@ static int distvector_axpy(
                 mtxvector_dist_free(&x);
                 return err;
             }
+            MPI_Barrier(comm);
             clock_gettime(CLOCK_MONOTONIC, &t1);
             err = MPI_Reduce(
                 rank == root ? MPI_IN_PLACE : &num_flops,
