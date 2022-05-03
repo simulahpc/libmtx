@@ -622,6 +622,124 @@ int mtxvector_base_set_constant_integer_double(
     return MTX_SUCCESS;
 }
 
+/**
+ * ‘mtxvector_base_set_real_single()’ sets values of a vector based on
+ * an array of single precision floating point numbers.
+ */
+int mtxvector_base_set_real_single(
+    struct mtxvector_base * x,
+    int64_t size,
+    int stride,
+    const float * a)
+{
+    if (x->field != mtx_field_real) return MTX_ERR_INVALID_FIELD;
+    if (x->precision != mtx_single) return MTX_ERR_INVALID_PRECISION;
+    if (x->size != size) return MTX_ERR_INCOMPATIBLE_SIZE;
+    float * b = x->data.real_single;
+    for (int64_t i = 0; i < size; i++)
+        b[i] = *(const float *)((const unsigned char *) a + i*stride);
+    return MTX_SUCCESS;
+}
+
+/**
+ * ‘mtxvector_base_set_real_double()’ sets values of a vector based on
+ * an array of double precision floating point numbers.
+ */
+int mtxvector_base_set_real_double(
+    struct mtxvector_base * x,
+    int64_t size,
+    int stride,
+    const double * a)
+{
+    if (x->field != mtx_field_real) return MTX_ERR_INVALID_FIELD;
+    if (x->precision != mtx_double) return MTX_ERR_INVALID_PRECISION;
+    if (x->size != size) return MTX_ERR_INCOMPATIBLE_SIZE;
+    double * b = x->data.real_double;
+    for (int64_t i = 0; i < size; i++)
+        b[i] = *(const double *)((const unsigned char *) a + i*stride);
+    return MTX_SUCCESS;
+}
+
+/**
+ * ‘mtxvector_base_set_complex_single()’ sets values of a vector based
+ * on an array of single precision floating point complex numbers.
+ */
+int mtxvector_base_set_complex_single(
+    struct mtxvector_base * x,
+    int64_t size,
+    int stride,
+    const float (*a)[2])
+{
+    if (x->field != mtx_field_complex) return MTX_ERR_INVALID_FIELD;
+    if (x->precision != mtx_single) return MTX_ERR_INVALID_PRECISION;
+    if (x->size != size) return MTX_ERR_INCOMPATIBLE_SIZE;
+    float (*b)[2] = x->data.complex_single;
+    for (int64_t i = 0; i < size; i++) {
+        b[i][0] = (*(const float (*)[2])((const unsigned char *) a + i*stride))[0];
+        b[i][1] = (*(const float (*)[2])((const unsigned char *) a + i*stride))[1];
+    }
+    return MTX_SUCCESS;
+}
+
+/**
+ * ‘mtxvector_base_set_complex_double()’ sets values of a vector based
+ * on an array of double precision floating point complex numbers.
+ */
+int mtxvector_base_set_complex_double(
+    struct mtxvector_base * x,
+    int64_t size,
+    int stride,
+    const double (*a)[2])
+{
+    if (x->field != mtx_field_complex) return MTX_ERR_INVALID_FIELD;
+    if (x->precision != mtx_double) return MTX_ERR_INVALID_PRECISION;
+    if (x->size != size) return MTX_ERR_INCOMPATIBLE_SIZE;
+    double (*b)[2] = x->data.complex_double;
+    for (int64_t i = 0; i < size; i++) {
+        b[i][0] = (*(const double (*)[2])((const unsigned char *) a + i*stride))[0];
+        b[i][1] = (*(const double (*)[2])((const unsigned char *) a + i*stride))[1];
+    }
+    return MTX_SUCCESS;
+}
+
+/**
+ * ‘mtxvector_base_set_integer_single()’ sets values of a vector based
+ * on an array of integers.
+ */
+int mtxvector_base_set_integer_single(
+    struct mtxvector_base * x,
+    int64_t size,
+    int stride,
+    const int32_t * a)
+{
+    if (x->field != mtx_field_integer) return MTX_ERR_INVALID_FIELD;
+    if (x->precision != mtx_single) return MTX_ERR_INVALID_PRECISION;
+    if (x->size != size) return MTX_ERR_INCOMPATIBLE_SIZE;
+    int32_t * b = x->data.integer_single;
+    for (int64_t i = 0; i < size; i++)
+        b[i] = *(const int32_t *)((const unsigned char *) a + i*stride);
+    return MTX_SUCCESS;
+}
+
+/**
+ * ‘mtxvector_base_set_integer_double()’ sets values of a vector based
+ * on an array of integers.
+ */
+int mtxvector_base_set_integer_double(
+    struct mtxvector_base * x,
+    int64_t size,
+    int stride,
+    const int64_t * a)
+{
+    if (x->field != mtx_field_integer) return MTX_ERR_INVALID_FIELD;
+    if (x->precision != mtx_double) return MTX_ERR_INVALID_PRECISION;
+    if (x->size != size) return MTX_ERR_INCOMPATIBLE_SIZE;
+    int64_t * b = x->data.integer_double;
+    for (int64_t i = 0; i < size; i++)
+        b[i] = *(const int64_t *)((const unsigned char *) a + i*stride);
+    return MTX_SUCCESS;
+}
+
 /*
  * Convert to and from Matrix Market format
  */
