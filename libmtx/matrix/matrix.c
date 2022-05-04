@@ -256,10 +256,547 @@ int mtxmatrix_init_copy(
     } else if (src->type == mtxmatrix_csr) {
         return mtxmatrix_csr_init_copy(
             &dst->storage.csr, &src->storage.csr);
-    } else {
-        return MTX_ERR_INVALID_MATRIX_TYPE;
-    }
+    } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
 }
+
+/*
+ * initialise matrices from data in coordinate format
+ */
+
+/**
+ * ‘mtxmatrix_alloc_entries()’ allocates storage for a matrix based on
+ * entrywise data in coordinate format.
+ */
+int mtxmatrix_alloc_entries(
+    struct mtxmatrix * A,
+    enum mtxmatrixtype type,
+    enum mtxfield field,
+    enum mtxprecision precision,
+    enum mtxsymmetry symmetry,
+    int num_rows,
+    int num_columns,
+    int64_t num_nonzeros,
+    int idxstride,
+    int idxbase,
+    const int * rowidx,
+    const int * colidx)
+{
+    if (type == mtxmatrix_array) {
+        A->type = mtxmatrix_array;
+        return MTX_ERR_INVALID_MATRIX_TYPE;
+        /* return mtxmatrix_array_alloc_entries( */
+        /*     &A->storage.array, field, precision, symmetry, */
+        /*     num_rows, num_columns, num_nonzeros, rowidx, colidx); */
+    } else if (type == mtxmatrix_coordinate) {
+        A->type = mtxmatrix_coordinate;
+        return mtxmatrix_coordinate_alloc_entries(
+            &A->storage.coordinate, field, precision, symmetry,
+            num_rows, num_columns, num_nonzeros,
+            idxstride, idxbase, rowidx, colidx);
+    } else if (type == mtxmatrix_csr) {
+        A->type = mtxmatrix_csr;
+        return MTX_ERR_INVALID_MATRIX_TYPE;
+        /* return mtxmatrix_csr_alloc_entries( */
+        /*     &A->storage.csr, field, precision, symmetry, */
+        /*     num_rows, num_columns, num_nonzeros, rowidx, colidx); */
+    } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
+}
+
+/**
+ * ‘mtxmatrix_init_entries_real_single()’ allocates and initialises
+ * a matrix from data in coordinate format with real, single precision
+ * coefficients.
+ */
+int mtxmatrix_init_entries_real_single(
+    struct mtxmatrix * A,
+    enum mtxmatrixtype type,
+    enum mtxsymmetry symmetry,
+    int num_rows,
+    int num_columns,
+    int64_t num_nonzeros,
+    const int * rowidx,
+    const int * colidx,
+    const float * data)
+{
+    if (type == mtxmatrix_coordinate) {
+        A->type = mtxmatrix_coordinate;
+        return mtxmatrix_coordinate_init_entries_real_single(
+            &A->storage.coordinate, symmetry,
+            num_rows, num_columns, num_nonzeros, rowidx, colidx, data);
+    } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
+}
+
+/**
+ * ‘mtxmatrix_init_entries_real_double()’ allocates and initialises
+ * a matrix from data in coordinate format with real, double precision
+ * coefficients.
+ */
+int mtxmatrix_init_entries_real_double(
+    struct mtxmatrix * A,
+    enum mtxmatrixtype type,
+    enum mtxsymmetry symmetry,
+    int num_rows,
+    int num_columns,
+    int64_t num_nonzeros,
+    const int * rowidx,
+    const int * colidx,
+    const double * data)
+{
+    if (type == mtxmatrix_coordinate) {
+        A->type = mtxmatrix_coordinate;
+        return mtxmatrix_coordinate_init_entries_real_double(
+            &A->storage.coordinate, symmetry,
+            num_rows, num_columns, num_nonzeros, rowidx, colidx, data);
+    } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
+}
+
+/**
+ * ‘mtxmatrix_init_entries_complex_single()’ allocates and
+ * initialises a matrix from data in coordinate format with complex,
+ * single precision coefficients.
+ */
+int mtxmatrix_init_entries_complex_single(
+    struct mtxmatrix * A,
+    enum mtxmatrixtype type,
+    enum mtxsymmetry symmetry,
+    int num_rows,
+    int num_columns,
+    int64_t num_nonzeros,
+    const int * rowidx,
+    const int * colidx,
+    const float (* data)[2])
+{
+    if (type == mtxmatrix_coordinate) {
+        A->type = mtxmatrix_coordinate;
+        return mtxmatrix_coordinate_init_entries_complex_single(
+            &A->storage.coordinate, symmetry,
+            num_rows, num_columns, num_nonzeros, rowidx, colidx, data);
+    } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
+}
+
+/**
+ * ‘mtxmatrix_init_entries_complex_double()’ allocates and
+ * initialises a matrix from data in coordinate format with complex,
+ * double precision coefficients.
+ */
+int mtxmatrix_init_entries_complex_double(
+    struct mtxmatrix * A,
+    enum mtxmatrixtype type,
+    enum mtxsymmetry symmetry,
+    int num_rows,
+    int num_columns,
+    int64_t num_nonzeros,
+    const int * rowidx,
+    const int * colidx,
+    const double (* data)[2])
+{
+    if (type == mtxmatrix_coordinate) {
+        A->type = mtxmatrix_coordinate;
+        return mtxmatrix_coordinate_init_entries_complex_double(
+            &A->storage.coordinate, symmetry,
+            num_rows, num_columns, num_nonzeros, rowidx, colidx, data);
+    } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
+}
+
+/**
+ * ‘mtxmatrix_init_entries_integer_single()’ allocates and
+ * initialises a matrix from data in coordinate format with integer,
+ * single precision coefficients.
+ */
+int mtxmatrix_init_entries_integer_single(
+    struct mtxmatrix * A,
+    enum mtxmatrixtype type,
+    enum mtxsymmetry symmetry,
+    int num_rows,
+    int num_columns,
+    int64_t num_nonzeros,
+    const int * rowidx,
+    const int * colidx,
+    const int32_t * data)
+{
+    if (type == mtxmatrix_coordinate) {
+        A->type = mtxmatrix_coordinate;
+        return mtxmatrix_coordinate_init_entries_integer_single(
+            &A->storage.coordinate, symmetry,
+            num_rows, num_columns, num_nonzeros, rowidx, colidx, data);
+    } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
+}
+
+/**
+ * ‘mtxmatrix_init_entries_integer_double()’ allocates and
+ * initialises a matrix from data in coordinate format with integer,
+ * double precision coefficients.
+ */
+int mtxmatrix_init_entries_integer_double(
+    struct mtxmatrix * A,
+    enum mtxmatrixtype type,
+    enum mtxsymmetry symmetry,
+    int num_rows,
+    int num_columns,
+    int64_t num_nonzeros,
+    const int * rowidx,
+    const int * colidx,
+    const int64_t * data)
+{
+    if (type == mtxmatrix_coordinate) {
+        A->type = mtxmatrix_coordinate;
+        return mtxmatrix_coordinate_init_entries_integer_double(
+            &A->storage.coordinate, symmetry,
+            num_rows, num_columns, num_nonzeros, rowidx, colidx, data);
+    } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
+}
+
+/**
+ * ‘mtxmatrix_init_entries_pattern()’ allocates and initialises a
+ * matrix from data in coordinate format with integer, double
+ * precision coefficients.
+ */
+int mtxmatrix_init_entries_pattern(
+    struct mtxmatrix * A,
+    enum mtxmatrixtype type,
+    enum mtxsymmetry symmetry,
+    int num_rows,
+    int num_columns,
+    int64_t num_nonzeros,
+    const int * rowidx,
+    const int * colidx)
+{
+    if (type == mtxmatrix_coordinate) {
+        A->type = mtxmatrix_coordinate;
+        return mtxmatrix_coordinate_init_entries_pattern(
+            &A->storage.coordinate, symmetry,
+            num_rows, num_columns, num_nonzeros, rowidx, colidx);
+    } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
+}
+
+/*
+ * initialise matrices from strided data in coordinate format
+ */
+
+/**
+ * ‘mtxmatrix_init_entries_strided_real_single()’ allocates and initialises
+ * a matrix from data in coordinate format with real, single precision
+ * coefficients.
+ */
+int mtxmatrix_init_entries_strided_real_single(
+    struct mtxmatrix * A,
+    enum mtxmatrixtype type,
+    enum mtxsymmetry symmetry,
+    int num_rows,
+    int num_columns,
+    int64_t num_nonzeros,
+    int64_t idxstride,
+    int idxbase,
+    const int * rowidx,
+    const int * colidx,
+    int64_t datastride,
+    const float * data)
+{
+    return MTX_SUCCESS;
+}
+
+/**
+ * ‘mtxmatrix_init_entries_strided_real_double()’ allocates and initialises
+ * a matrix from data in coordinate format with real, double precision
+ * coefficients.
+ */
+int mtxmatrix_init_entries_strided_real_double(
+    struct mtxmatrix * A,
+    enum mtxmatrixtype type,
+    enum mtxsymmetry symmetry,
+    int num_rows,
+    int num_columns,
+    int64_t num_nonzeros,
+    int64_t idxstride,
+    int idxbase,
+    const int * rowidx,
+    const int * colidx,
+    int64_t datastride,
+    const double * data)
+{
+    return MTX_SUCCESS;
+}
+
+/**
+ * ‘mtxmatrix_init_entries_strided_complex_single()’ allocates and
+ * initialises a matrix from data in coordinate format with complex,
+ * single precision coefficients.
+ */
+int mtxmatrix_init_entries_strided_complex_single(
+    struct mtxmatrix * A,
+    enum mtxmatrixtype type,
+    enum mtxsymmetry symmetry,
+    int num_rows,
+    int num_columns,
+    int64_t num_nonzeros,
+    int64_t idxstride,
+    int idxbase,
+    const int * rowidx,
+    const int * colidx,
+    int64_t datastride,
+    const float (* data)[2])
+{
+    return MTX_SUCCESS;
+}
+
+/**
+ * ‘mtxmatrix_init_entries_strided_complex_double()’ allocates and
+ * initialises a matrix from data in coordinate format with complex,
+ * double precision coefficients.
+ */
+int mtxmatrix_init_entries_strided_complex_double(
+    struct mtxmatrix * A,
+    enum mtxmatrixtype type,
+    enum mtxsymmetry symmetry,
+    int num_rows,
+    int num_columns,
+    int64_t num_nonzeros,
+    int64_t idxstride,
+    int idxbase,
+    const int * rowidx,
+    const int * colidx,
+    int64_t datastride,
+    const double (* data)[2])
+{
+    return MTX_SUCCESS;
+}
+
+/**
+ * ‘mtxmatrix_init_entries_strided_integer_single()’ allocates and
+ * initialises a matrix from data in coordinate format with integer,
+ * single precision coefficients.
+ */
+int mtxmatrix_init_entries_strided_integer_single(
+    struct mtxmatrix * A,
+    enum mtxmatrixtype type,
+    enum mtxsymmetry symmetry,
+    int num_rows,
+    int num_columns,
+    int64_t num_nonzeros,
+    int64_t idxstride,
+    int idxbase,
+    const int * rowidx,
+    const int * colidx,
+    int64_t datastride,
+    const int32_t * data)
+{
+    return MTX_SUCCESS;
+}
+
+/**
+ * ‘mtxmatrix_init_entries_strided_integer_double()’ allocates and
+ * initialises a matrix from data in coordinate format with integer,
+ * double precision coefficients.
+ */
+int mtxmatrix_init_entries_strided_integer_double(
+    struct mtxmatrix * A,
+    enum mtxmatrixtype type,
+    enum mtxsymmetry symmetry,
+    int num_rows,
+    int num_columns,
+    int64_t num_nonzeros,
+    int64_t idxstride,
+    int idxbase,
+    const int * rowidx,
+    const int * colidx,
+    int64_t datastride,
+    const int64_t * data)
+{
+    return MTX_SUCCESS;
+}
+
+/**
+ * ‘mtxmatrix_init_entries_strided_pattern()’ allocates and initialises a
+ * matrix from data in coordinate format with integer, double
+ * precision coefficients.
+ */
+int mtxmatrix_init_entries_strided_pattern(
+    struct mtxmatrix * A,
+    enum mtxmatrixtype type,
+    enum mtxsymmetry symmetry,
+    int num_rows,
+    int num_columns,
+    int64_t num_nonzeros,
+    int64_t idxstride,
+    int idxbase,
+    const int * rowidx,
+    const int * colidx)
+{
+    return MTX_SUCCESS;
+}
+
+/*
+ * modifying values
+ */
+
+/**
+ * ‘mtxmatrix_setzero()’ sets every value of a matrix to zero.
+ */
+int mtxmatrix_setzero(
+    struct mtxmatrix * A)
+{
+    if (A->type == mtxmatrix_array) {
+        return MTX_ERR_INVALID_MATRIX_TYPE;
+        /* return mtxmatrix_array_setzero(&A->storage.array); */
+    } else if (A->type == mtxmatrix_coordinate) {
+        return mtxmatrix_coordinate_setzero(&A->storage.coordinate);
+    } else if (A->type == mtxmatrix_csr) {
+        return MTX_ERR_INVALID_MATRIX_TYPE;
+        /* return mtxmatrix_csr_setzero(&A->storage.csr); */
+    } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
+}
+
+/**
+ * ‘mtxmatrix_set_real_single()’ sets values of a matrix based on an
+ * array of single precision floating point numbers.
+ */
+int mtxmatrix_set_real_single(
+    struct mtxmatrix * A,
+    int64_t size,
+    int stride,
+    const float * a)
+{
+    if (A->type == mtxmatrix_array) {
+        return MTX_ERR_INVALID_MATRIX_TYPE;
+        /* return mtxmatrix_array_set_real_single( */
+        /*     &A->storage.array, size, stride, a); */
+    } else if (A->type == mtxmatrix_coordinate) {
+        return mtxmatrix_coordinate_set_real_single(
+            &A->storage.coordinate, size, stride, a);
+    } else if (A->type == mtxmatrix_csr) {
+        return MTX_ERR_INVALID_MATRIX_TYPE;
+        /* return mtxmatrix_csr_set_real_single( */
+        /*     &A->storage.csr, size, stride, a); */
+    } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
+}
+
+/**
+ * ‘mtxmatrix_set_real_double()’ sets values of a matrix based on an
+ * array of double precision floating point numbers.
+ */
+int mtxmatrix_set_real_double(
+    struct mtxmatrix * A,
+    int64_t size,
+    int stride,
+    const double * a)
+{
+    if (A->type == mtxmatrix_array) {
+        return MTX_ERR_INVALID_MATRIX_TYPE;
+        /* return mtxmatrix_array_set_real_double( */
+        /*     &A->storage.array, size, stride, a); */
+    } else if (A->type == mtxmatrix_coordinate) {
+        return mtxmatrix_coordinate_set_real_double(
+            &A->storage.coordinate, size, stride, a);
+    } else if (A->type == mtxmatrix_csr) {
+        return MTX_ERR_INVALID_MATRIX_TYPE;
+        /* return mtxmatrix_csr_set_real_double( */
+        /*     &A->storage.csr, size, stride, a); */
+    } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
+}
+
+/**
+ * ‘mtxmatrix_set_complex_single()’ sets values of a matrix based on
+ * an array of single precision floating point complex numbers.
+ */
+int mtxmatrix_set_complex_single(
+    struct mtxmatrix * A,
+    int64_t size,
+    int stride,
+    const float (*a)[2])
+{
+    if (A->type == mtxmatrix_array) {
+        return MTX_ERR_INVALID_MATRIX_TYPE;
+        /* return mtxmatrix_array_set_complex_single( */
+        /*     &A->storage.array, size, stride, a); */
+    } else if (A->type == mtxmatrix_coordinate) {
+        return mtxmatrix_coordinate_set_complex_single(
+            &A->storage.coordinate, size, stride, a);
+    } else if (A->type == mtxmatrix_csr) {
+        return MTX_ERR_INVALID_MATRIX_TYPE;
+        /* return mtxmatrix_csr_set_complex_single( */
+        /*     &A->storage.csr, size, stride, a); */
+    } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
+}
+
+/**
+ * ‘mtxmatrix_set_complex_double()’ sets values of a matrix based on
+ * an array of double precision floating point complex numbers.
+ */
+int mtxmatrix_set_complex_double(
+    struct mtxmatrix * A,
+    int64_t size,
+    int stride,
+    const double (*a)[2])
+{
+    if (A->type == mtxmatrix_array) {
+        return MTX_ERR_INVALID_MATRIX_TYPE;
+        /* return mtxmatrix_array_set_complex_double( */
+        /*     &A->storage.array, size, stride, a); */
+    } else if (A->type == mtxmatrix_coordinate) {
+        return mtxmatrix_coordinate_set_complex_double(
+            &A->storage.coordinate, size, stride, a);
+    } else if (A->type == mtxmatrix_csr) {
+        return MTX_ERR_INVALID_MATRIX_TYPE;
+        /* return mtxmatrix_csr_set_complex_double( */
+        /*     &A->storage.csr, size, stride, a); */
+    } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
+}
+
+/**
+ * ‘mtxmatrix_set_integer_single()’ sets values of a matrix based on
+ * an array of integers.
+ */
+int mtxmatrix_set_integer_single(
+    struct mtxmatrix * A,
+    int64_t size,
+    int stride,
+    const int32_t * a)
+{
+    if (A->type == mtxmatrix_array) {
+        return MTX_ERR_INVALID_MATRIX_TYPE;
+        /* return mtxmatrix_array_set_integer_single( */
+        /*     &A->storage.array, size, stride, a); */
+    } else if (A->type == mtxmatrix_coordinate) {
+        return mtxmatrix_coordinate_set_integer_single(
+            &A->storage.coordinate, size, stride, a);
+    } else if (A->type == mtxmatrix_csr) {
+        return MTX_ERR_INVALID_MATRIX_TYPE;
+        /* return mtxmatrix_csr_set_integer_single( */
+        /*     &A->storage.csr, size, stride, a); */
+    } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
+}
+
+/**
+ * ‘mtxmatrix_set_integer_double()’ sets values of a matrix based on
+ * an array of integers.
+ */
+int mtxmatrix_set_integer_double(
+    struct mtxmatrix * A,
+    int64_t size,
+    int stride,
+    const int64_t * a)
+{
+    if (A->type == mtxmatrix_array) {
+        return MTX_ERR_INVALID_MATRIX_TYPE;
+        /* return mtxmatrix_array_set_integer_double( */
+        /*     &A->storage.array, size, stride, a); */
+    } else if (A->type == mtxmatrix_coordinate) {
+        return mtxmatrix_coordinate_set_integer_double(
+            &A->storage.coordinate, size, stride, a);
+    } else if (A->type == mtxmatrix_csr) {
+        return MTX_ERR_INVALID_MATRIX_TYPE;
+        /* return mtxmatrix_csr_set_integer_double( */
+        /*     &A->storage.csr, size, stride, a); */
+    } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
+}
+
+
+
+
+
+
+
+
 
 /*
  * Row and columns vectors
@@ -428,175 +965,6 @@ int mtxmatrix_init_array_integer_double(
     matrix->type = mtxmatrix_array;
     return mtxmatrix_array_init_integer_double(
         &matrix->storage.array, symmetry, num_rows, num_columns, data);
-}
-
-/*
- * Matrix coordinate formats
- */
-
-/**
- * ‘mtxmatrix_alloc_coordinate()’ allocates a matrix in
- * coordinate format.
- */
-int mtxmatrix_alloc_coordinate(
-    struct mtxmatrix * matrix,
-    enum mtxfield field,
-    enum mtxprecision precision,
-    enum mtxsymmetry symmetry,
-    int num_rows,
-    int num_columns,
-    int64_t num_nonzeros)
-{
-    matrix->type = mtxmatrix_coordinate;
-    return mtxmatrix_coordinate_alloc(
-        &matrix->storage.coordinate, field, precision, symmetry,
-        num_rows, num_columns, num_nonzeros);
-}
-
-/**
- * ‘mtxmatrix_init_coordinate_real_single()’ allocates and initialises
- * a matrix in coordinate format with real, single precision
- * coefficients.
- */
-int mtxmatrix_init_coordinate_real_single(
-    struct mtxmatrix * matrix,
-    enum mtxsymmetry symmetry,
-    int num_rows,
-    int num_columns,
-    int64_t num_nonzeros,
-    const int * rowidx,
-    const int * colidx,
-    const float * data)
-{
-    matrix->type = mtxmatrix_coordinate;
-    return mtxmatrix_coordinate_init_real_single(
-        &matrix->storage.coordinate, symmetry,
-        num_rows, num_columns, num_nonzeros, rowidx, colidx, data);
-}
-
-/**
- * ‘mtxmatrix_init_coordinate_real_double()’ allocates and initialises
- * a matrix in coordinate format with real, double precision
- * coefficients.
- */
-int mtxmatrix_init_coordinate_real_double(
-    struct mtxmatrix * matrix,
-    enum mtxsymmetry symmetry,
-    int num_rows,
-    int num_columns,
-    int64_t num_nonzeros,
-    const int * rowidx,
-    const int * colidx,
-    const double * data)
-{
-    matrix->type = mtxmatrix_coordinate;
-    return mtxmatrix_coordinate_init_real_double(
-        &matrix->storage.coordinate, symmetry,
-        num_rows, num_columns, num_nonzeros, rowidx, colidx, data);
-}
-
-/**
- * ‘mtxmatrix_init_coordinate_complex_single()’ allocates and
- * initialises a matrix in coordinate format with complex, single
- * precision coefficients.
- */
-int mtxmatrix_init_coordinate_complex_single(
-    struct mtxmatrix * matrix,
-    enum mtxsymmetry symmetry,
-    int num_rows,
-    int num_columns,
-    int64_t num_nonzeros,
-    const int * rowidx,
-    const int * colidx,
-    const float (* data)[2])
-{
-    matrix->type = mtxmatrix_coordinate;
-    return mtxmatrix_coordinate_init_complex_single(
-        &matrix->storage.coordinate, symmetry,
-        num_rows, num_columns, num_nonzeros, rowidx, colidx, data);
-}
-
-/**
- * ‘mtxmatrix_init_coordinate_complex_double()’ allocates and
- * initialises a matrix in coordinate format with complex, double
- * precision coefficients.
- */
-int mtxmatrix_init_coordinate_complex_double(
-    struct mtxmatrix * matrix,
-    enum mtxsymmetry symmetry,
-    int num_rows,
-    int num_columns,
-    int64_t num_nonzeros,
-    const int * rowidx,
-    const int * colidx,
-    const double (* data)[2])
-{
-    matrix->type = mtxmatrix_coordinate;
-    return mtxmatrix_coordinate_init_complex_double(
-        &matrix->storage.coordinate, symmetry,
-        num_rows, num_columns, num_nonzeros, rowidx, colidx, data);
-}
-
-/**
- * ‘mtxmatrix_init_coordinate_integer_single()’ allocates and
- * initialises a matrix in coordinate format with integer, single
- * precision coefficients.
- */
-int mtxmatrix_init_coordinate_integer_single(
-    struct mtxmatrix * matrix,
-    enum mtxsymmetry symmetry,
-    int num_rows,
-    int num_columns,
-    int64_t num_nonzeros,
-    const int * rowidx,
-    const int * colidx,
-    const int32_t * data)
-{
-    matrix->type = mtxmatrix_coordinate;
-    return mtxmatrix_coordinate_init_integer_single(
-        &matrix->storage.coordinate, symmetry,
-        num_rows, num_columns, num_nonzeros, rowidx, colidx, data);
-}
-
-/**
- * ‘mtxmatrix_init_coordinate_integer_double()’ allocates and
- * initialises a matrix in coordinate format with integer, double
- * precision coefficients.
- */
-int mtxmatrix_init_coordinate_integer_double(
-    struct mtxmatrix * matrix,
-    enum mtxsymmetry symmetry,
-    int num_rows,
-    int num_columns,
-    int64_t num_nonzeros,
-    const int * rowidx,
-    const int * colidx,
-    const int64_t * data)
-{
-    matrix->type = mtxmatrix_coordinate;
-    return mtxmatrix_coordinate_init_integer_double(
-        &matrix->storage.coordinate, symmetry,
-        num_rows, num_columns, num_nonzeros, rowidx, colidx, data);
-}
-
-/**
- * ‘mtxmatrix_init_coordinate_pattern()’ allocates and initialises a
- * matrix in coordinate format with integer, double precision
- * coefficients.
- */
-int mtxmatrix_init_coordinate_pattern(
-    struct mtxmatrix * matrix,
-    enum mtxsymmetry symmetry,
-    int num_rows,
-    int num_columns,
-    int64_t num_nonzeros,
-    const int * rowidx,
-    const int * colidx)
-{
-    matrix->type = mtxmatrix_coordinate;
-    return mtxmatrix_coordinate_init_pattern(
-        &matrix->storage.coordinate, symmetry,
-        num_rows, num_columns, num_nonzeros, rowidx, colidx);
 }
 
 /*
@@ -771,9 +1139,7 @@ int mtxmatrix_from_mtxfile(
             type = mtxmatrix_array;
         } else if (mtxfile->header.format == mtxfile_coordinate) {
             type = mtxmatrix_coordinate;
-        } else {
-            return MTX_ERR_INVALID_MTX_FORMAT;
-        }
+        } else { return MTX_ERR_INVALID_MTX_FORMAT; }
     }
 
     if (type == mtxmatrix_array) {
@@ -788,9 +1154,11 @@ int mtxmatrix_from_mtxfile(
         matrix->type = mtxmatrix_csr;
         return mtxmatrix_csr_from_mtxfile(
             &matrix->storage.csr, mtxfile);
-    } else {
-        return MTX_ERR_INVALID_MATRIX_TYPE;
-    }
+    } else if (type == mtxmatrix_dense) {
+        matrix->type = mtxmatrix_dense;
+        return mtxmatrix_dense_from_mtxfile(
+            &matrix->storage.dense, mtxfile);
+    } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
 }
 
 /**
@@ -815,6 +1183,10 @@ int mtxmatrix_to_mtxfile(
     } else if (src->type == mtxmatrix_csr) {
         return mtxmatrix_csr_to_mtxfile(
             dst, &src->storage.csr, mtxfmt);
+    } else if (src->type == mtxmatrix_dense) {
+        return mtxmatrix_dense_to_mtxfile(
+            dst, &src->storage.dense,
+            num_rows, rowidx, num_columns, colidx, mtxfmt);
     } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
 }
 
@@ -1113,9 +1485,6 @@ int mtxmatrix_nzrows(
     if (matrix->type == mtxmatrix_array) {
         return mtxmatrix_array_nzrows(
             &matrix->storage.array, num_nonzero_rows, size, nonzero_rows);
-    } else if (matrix->type == mtxmatrix_coordinate) {
-        return mtxmatrix_coordinate_nzrows(
-            &matrix->storage.coordinate, num_nonzero_rows, size, nonzero_rows);
     } else if (matrix->type == mtxmatrix_csr) {
         return mtxmatrix_csr_nzrows(
             &matrix->storage.csr, num_nonzero_rows, size, nonzero_rows);
@@ -1148,9 +1517,6 @@ int mtxmatrix_nzcols(
     if (matrix->type == mtxmatrix_array) {
         return mtxmatrix_array_nzcols(
             &matrix->storage.array, num_nonzero_columns, size, nonzero_columns);
-    } else if (matrix->type == mtxmatrix_coordinate) {
-        return mtxmatrix_coordinate_nzcols(
-            &matrix->storage.coordinate, num_nonzero_columns, size, nonzero_columns);
     } else if (matrix->type == mtxmatrix_csr) {
         return mtxmatrix_csr_nzcols(
             &matrix->storage.csr, num_nonzero_columns, size, nonzero_columns);
@@ -1196,9 +1562,6 @@ int mtxmatrix_partition(
     if (src->type == mtxmatrix_array) {
         return mtxmatrix_array_partition(
             dsts, &src->storage.array, rowpart, colpart);
-    } else if (src->type == mtxmatrix_coordinate) {
-        return mtxmatrix_coordinate_partition(
-            dsts, &src->storage.coordinate, rowpart, colpart);
     } else if (src->type == mtxmatrix_csr) {
         return mtxmatrix_csr_partition(
             dsts, &src->storage.csr, rowpart, colpart);
@@ -1243,10 +1606,6 @@ int mtxmatrix_join(
         dst->type = mtxmatrix_array;
         return mtxmatrix_array_join(
             &dst->storage.array, srcs, rowpart, colpart);
-    } else if (srcs[0].type == mtxmatrix_coordinate) {
-        dst->type = mtxmatrix_coordinate;
-        return mtxmatrix_coordinate_join(
-            &dst->storage.coordinate, srcs, rowpart, colpart);
     } else if (srcs[0].type == mtxmatrix_csr) {
         dst->type = mtxmatrix_csr;
         return mtxmatrix_csr_join(
@@ -1344,9 +1703,51 @@ int mtxmatrix_dscal(
     } else if (X->type == mtxmatrix_csr) {
         return mtxmatrix_csr_dscal(
             a, &X->storage.csr, num_flops);
-    } else {
-        return MTX_ERR_INVALID_MATRIX_TYPE;
-    }
+    } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
+}
+
+/**
+ * ‘mtxmatrix_cscal()’ scales a matrix by a complex, single precision
+ * floating point scalar, ‘X = (a+b*i)*X’.
+ */
+int mtxmatrix_cscal(
+    float a[2],
+    struct mtxmatrix * X,
+    int64_t * num_flops)
+{
+    /* if (X->type == mtxmatrix_array) { */
+    /*     return mtxmatrix_array_cscal( */
+    /*         a, &X->storage.array, num_flops); */
+    /* } else if (X->type == mtxmatrix_coordinate) { */
+    /*     return mtxmatrix_coordinate_cscal( */
+    /*         a, &X->storage.coordinate, num_flops); */
+    /* } else if (X->type == mtxmatrix_csr) { */
+    /*     return mtxmatrix_csr_cscal( */
+    /*         a, &X->storage.csr, num_flops); */
+    /* } else { return MTX_ERR_INVALID_MATRIX_TYPE; } */
+    return MTX_SUCCESS;
+}
+
+/**
+ * ‘mtxmatrix_zscal()’ scales a matrix by a complex, double precision
+ * floating point scalar, ‘X = (a+b*i)*X’.
+ */
+int mtxmatrix_zscal(
+    double a[2],
+    struct mtxmatrix * X,
+    int64_t * num_flops)
+{
+    /* if (X->type == mtxmatrix_array) { */
+    /*     return mtxmatrix_array_zscal( */
+    /*         a, &X->storage.array, num_flops); */
+    /* } else if (X->type == mtxmatrix_coordinate) { */
+    /*     return mtxmatrix_coordinate_zscal( */
+    /*         a, &X->storage.coordinate, num_flops); */
+    /* } else if (X->type == mtxmatrix_csr) { */
+    /*     return mtxmatrix_csr_zscal( */
+    /*         a, &X->storage.csr, num_flops); */
+    /* } else { return MTX_ERR_INVALID_MATRIX_TYPE; } */
+    return MTX_SUCCESS;
 }
 
 /**

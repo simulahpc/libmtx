@@ -267,8 +267,8 @@ int mtxvector_init_strided_real_single(
     struct mtxvector * x,
     enum mtxvectortype type,
     int64_t size,
-    const float * data,
-    int64_t stride);
+    int64_t stride,
+    const float * data);
 
 /**
  * ‘mtxvector_init_strided_real_double()’ allocates and initialises a
@@ -278,8 +278,8 @@ int mtxvector_init_strided_real_double(
     struct mtxvector * x,
     enum mtxvectortype type,
     int64_t size,
-    const double * data,
-    int64_t stride);
+    int64_t stride,
+    const double * data);
 
 /**
  * ‘mtxvector_init_strided_complex_single()’ allocates and initialises
@@ -289,8 +289,8 @@ int mtxvector_init_strided_complex_single(
     struct mtxvector * x,
     enum mtxvectortype type,
     int64_t size,
-    const float (* data)[2],
-    int64_t stride);
+    int64_t stride,
+    const float (* data)[2]);
 
 /**
  * ‘mtxvector_init_strided_complex_double()’ allocates and initialises
@@ -300,8 +300,8 @@ int mtxvector_init_strided_complex_double(
     struct mtxvector * x,
     enum mtxvectortype type,
     int64_t size,
-    const double (* data)[2],
-    int64_t stride);
+    int64_t stride,
+    const double (* data)[2]);
 
 /**
  * ‘mtxvector_init_strided_integer_single()’ allocates and initialises
@@ -311,8 +311,8 @@ int mtxvector_init_strided_integer_single(
     struct mtxvector * x,
     enum mtxvectortype type,
     int64_t size,
-    const int32_t * data,
-    int64_t stride);
+    int64_t stride,
+    const int32_t * data);
 
 /**
  * ‘mtxvector_init_strided_integer_double()’ allocates and initialises
@@ -322,8 +322,8 @@ int mtxvector_init_strided_integer_double(
     struct mtxvector * x,
     enum mtxvectortype type,
     int64_t size,
-    const int64_t * data,
-    int64_t stride);
+    int64_t stride,
+    const int64_t * data);
 
 /*
  * Basic, dense vectors

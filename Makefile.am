@@ -16,7 +16,7 @@
 # along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
 #
 # Authors: James D. Trotter <james@simula.no>
-# Last modified: 2022-04-26
+# Last modified: 2022-05-02
 #
 # Makefile for the top-level directory of Libmtx.
 #
@@ -45,8 +45,6 @@ EXTRA_DIST = \
 	tests/test_mtx_mpi_parallel \
 	tests/test_mtxdistfile_parallel \
 	tests/test_mtxdistfile2_parallel \
-	tests/test_mtxdistmatrix_parallel \
-	tests/test_mtxdistmatrixgemv_parallel \
 	tests/test_mtxdistvector_parallel \
 	tests/test_mtxfile_mpi_parallel
 
@@ -73,8 +71,8 @@ libmtx_la_SOURCES = \
 	libmtx/matrix/coordinate/mpi.c \
 	libmtx/matrix/coordinate/reorder.c \
 	libmtx/matrix/coordinate/sort.c \
-	libmtx/matrix/distmatrix.c \
-	libmtx/matrix/distmatrixgemv.c \
+	libmtx/matrix/dense.c \
+	libmtx/matrix/dist.c \
 	libmtx/matrix/matrix.c \
 	libmtx/matrix/matrix_array.c \
 	libmtx/matrix/matrix_coordinate.c \
@@ -158,8 +156,8 @@ nobase_include_HEADERS = \
 	libmtx/matrix/coordinate/mpi.h \
 	libmtx/matrix/coordinate/reorder.h \
 	libmtx/matrix/coordinate/sort.h \
-	libmtx/matrix/distmatrix.h \
-	libmtx/matrix/distmatrixgemv.h \
+	libmtx/matrix/dense.h \
+	libmtx/matrix/dist.h \
 	libmtx/matrix/matrix.h \
 	libmtx/matrix/matrix_array.h \
 	libmtx/matrix/matrix_coordinate.h \
@@ -461,6 +459,21 @@ TESTS += tests/test_mtxvector_dist_parallel
 tests/test_mtxvector_dist_parallel:  tests/test_mtxvector_dist
 endif
 
+tests_test_mtxmatrix_dense_CPPFLAGS =
+tests_test_mtxmatrix_dense_LDADD = $(top_builddir)/libmtx.la
+tests_test_mtxmatrix_dense_SOURCES = tests/test_mtxmatrix_dense.c tests/test.h
+check_PROGRAMS += tests/test_mtxmatrix_dense
+TESTS += tests/test_mtxmatrix_dense
+
+if HAVE_MPI
+tests_test_mtxmatrix_dist_CPPFLAGS =
+tests_test_mtxmatrix_dist_LDADD = $(top_builddir)/libmtx.la
+tests_test_mtxmatrix_dist_SOURCES = tests/test_mtxmatrix_dist.c tests/test.h
+check_PROGRAMS += tests/test_mtxmatrix_dist
+TESTS += tests/test_mtxmatrix_dist_parallel
+tests/test_mtxmatrix_dist_parallel:  tests/test_mtxmatrix_dist
+endif
+
 tests_test_merge_CPPFLAGS =
 tests_test_merge_LDADD = $(top_builddir)/libmtx.la
 tests_test_merge_SOURCES = tests/test_merge.c tests/test.h
@@ -482,8 +495,6 @@ check_PROGRAMS += \
 	tests/test_distsort \
 	tests/test_mtx_mpi \
 	tests/test_mtxdistfile \
-	tests/test_mtxdistmatrix \
-	tests/test_mtxdistmatrixgemv \
 	tests/test_mtxdistvector_array \
 	tests/test_mtxdistvector_coordinate \
 	tests/test_mtxfile_mpi
@@ -508,16 +519,6 @@ tests_test_mtxdistfile_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LI
 tests_test_mtxdistfile_SOURCES = tests/test_mtxdistfile.c tests/test.h
 tests/test_mtxdistfile_parallel: tests/test_mtxdistfile
 
-tests_test_mtxdistmatrix_CPPFLAGS = $(MPICPPFLAGS)
-tests_test_mtxdistmatrix_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
-tests_test_mtxdistmatrix_SOURCES = tests/test_mtxdistmatrix.c tests/test.h
-tests/test_mtxdistmatrix_parallel: tests/test_mtxdistmatrix
-
-tests_test_mtxdistmatrixgemv_CPPFLAGS = $(MPICPPFLAGS)
-tests_test_mtxdistmatrixgemv_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
-tests_test_mtxdistmatrixgemv_SOURCES = tests/test_mtxdistmatrixgemv.c tests/test.h
-tests/test_mtxdistmatrixgemv_parallel: tests/test_mtxdistmatrixgemv
-
 tests_test_mtxdistvector_array_CPPFLAGS = $(MPICPPFLAGS)
 tests_test_mtxdistvector_array_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
 tests_test_mtxdistvector_array_SOURCES = tests/test_mtxdistvector_array.c tests/test.h
@@ -531,8 +532,6 @@ TESTS += \
 	tests/test_mtx_mpi_parallel \
 	tests/test_mtxfile_mpi_parallel \
 	tests/test_mtxdistfile_parallel \
-	tests/test_mtxdistmatrix_parallel \
-	tests/test_mtxdistmatrixgemv_parallel \
 	tests/test_mtxdistvector_parallel
 endif
 

@@ -33,6 +33,7 @@
 #include <libmtx/matrix/matrix_array.h>
 #include <libmtx/matrix/matrix_coordinate.h>
 #include <libmtx/matrix/matrix_csr.h>
+#include <libmtx/matrix/dense.h>
 #include <libmtx/vector/vector.h>
 
 #ifdef LIBMTX_HAVE_LIBZ
@@ -61,6 +62,7 @@ enum mtxmatrixtype
     mtxmatrix_array,      /* array format for dense matrices */
     mtxmatrix_coordinate, /* coordinate format for sparse matrices */
     mtxmatrix_csr,        /* compressed sparse row */
+    mtxmatrix_dense,      /* dense matrices */
 };
 
 /**
@@ -122,6 +124,7 @@ struct mtxmatrix
         struct mtxmatrix_array array;
         struct mtxmatrix_coordinate coordinate;
         struct mtxmatrix_csr csr;
+        struct mtxmatrix_dense dense;
     } storage;
 };
 
@@ -188,6 +191,352 @@ int mtxmatrix_alloc_copy(
 int mtxmatrix_init_copy(
     struct mtxmatrix * dst,
     const struct mtxmatrix * src);
+
+/*
+ * initialise matrices from entrywise data in coordinate format
+ */
+
+/**
+ * ‘mtxmatrix_alloc_entries()’ allocates storage for a matrix based on
+ * entrywise data in coordinate format.
+ */
+int mtxmatrix_alloc_entries(
+    struct mtxmatrix * matrix,
+    enum mtxmatrixtype type,
+    enum mtxfield field,
+    enum mtxprecision precision,
+    enum mtxsymmetry symmetry,
+    int num_rows,
+    int num_columns,
+    int64_t num_nonzeros,
+    int idxstride,
+    int idxbase,
+    const int * rowidx,
+    const int * colidx);
+
+/**
+ * ‘mtxmatrix_init_entries_real_single()’ allocates and initialises
+ * a matrix from data in coordinate format with real, single precision
+ * coefficients.
+ */
+int mtxmatrix_init_entries_real_single(
+    struct mtxmatrix * matrix,
+    enum mtxmatrixtype type,
+    enum mtxsymmetry symmetry,
+    int num_rows,
+    int num_columns,
+    int64_t num_nonzeros,
+    const int * rowidx,
+    const int * colidx,
+    const float * data);
+
+/**
+ * ‘mtxmatrix_init_entries_real_double()’ allocates and initialises
+ * a matrix from data in coordinate format with real, double precision
+ * coefficients.
+ */
+int mtxmatrix_init_entries_real_double(
+    struct mtxmatrix * matrix,
+    enum mtxmatrixtype type,
+    enum mtxsymmetry symmetry,
+    int num_rows,
+    int num_columns,
+    int64_t num_nonzeros,
+    const int * rowidx,
+    const int * colidx,
+    const double * data);
+
+/**
+ * ‘mtxmatrix_init_entries_complex_single()’ allocates and
+ * initialises a matrix from data in coordinate format with complex,
+ * single precision coefficients.
+ */
+int mtxmatrix_init_entries_complex_single(
+    struct mtxmatrix * matrix,
+    enum mtxmatrixtype type,
+    enum mtxsymmetry symmetry,
+    int num_rows,
+    int num_columns,
+    int64_t num_nonzeros,
+    const int * rowidx,
+    const int * colidx,
+    const float (* data)[2]);
+
+/**
+ * ‘mtxmatrix_init_entries_complex_double()’ allocates and
+ * initialises a matrix from data in coordinate format with complex,
+ * double precision coefficients.
+ */
+int mtxmatrix_init_entries_complex_double(
+    struct mtxmatrix * matrix,
+    enum mtxmatrixtype type,
+    enum mtxsymmetry symmetry,
+    int num_rows,
+    int num_columns,
+    int64_t num_nonzeros,
+    const int * rowidx,
+    const int * colidx,
+    const double (* data)[2]);
+
+/**
+ * ‘mtxmatrix_init_entries_integer_single()’ allocates and
+ * initialises a matrix from data in coordinate format with integer,
+ * single precision coefficients.
+ */
+int mtxmatrix_init_entries_integer_single(
+    struct mtxmatrix * matrix,
+    enum mtxmatrixtype type,
+    enum mtxsymmetry symmetry,
+    int num_rows,
+    int num_columns,
+    int64_t num_nonzeros,
+    const int * rowidx,
+    const int * colidx,
+    const int32_t * data);
+
+/**
+ * ‘mtxmatrix_init_entries_integer_double()’ allocates and
+ * initialises a matrix from data in coordinate format with integer,
+ * double precision coefficients.
+ */
+int mtxmatrix_init_entries_integer_double(
+    struct mtxmatrix * matrix,
+    enum mtxmatrixtype type,
+    enum mtxsymmetry symmetry,
+    int num_rows,
+    int num_columns,
+    int64_t num_nonzeros,
+    const int * rowidx,
+    const int * colidx,
+    const int64_t * data);
+
+/**
+ * ‘mtxmatrix_init_entries_pattern()’ allocates and initialises a
+ * matrix from data in coordinate format with integer, double
+ * precision coefficients.
+ */
+int mtxmatrix_init_entries_pattern(
+    struct mtxmatrix * matrix,
+    enum mtxmatrixtype type,
+    enum mtxsymmetry symmetry,
+    int num_rows,
+    int num_columns,
+    int64_t num_nonzeros,
+    const int * rowidx,
+    const int * colidx);
+
+/*
+ * initialise matrices from strided data in coordinate format
+ */
+
+/**
+ * ‘mtxmatrix_init_entries_strided_real_single()’ allocates and initialises
+ * a matrix from data in coordinate format with real, single precision
+ * coefficients.
+ */
+int mtxmatrix_init_entries_strided_real_single(
+    struct mtxmatrix * matrix,
+    enum mtxmatrixtype type,
+    enum mtxsymmetry symmetry,
+    int num_rows,
+    int num_columns,
+    int64_t num_nonzeros,
+    int64_t idxstride,
+    int idxbase,
+    const int * rowidx,
+    const int * colidx,
+    int64_t datastride,
+    const float * data);
+
+/**
+ * ‘mtxmatrix_init_entries_strided_real_double()’ allocates and initialises
+ * a matrix from data in coordinate format with real, double precision
+ * coefficients.
+ */
+int mtxmatrix_init_entries_strided_real_double(
+    struct mtxmatrix * matrix,
+    enum mtxmatrixtype type,
+    enum mtxsymmetry symmetry,
+    int num_rows,
+    int num_columns,
+    int64_t num_nonzeros,
+    int64_t idxstride,
+    int idxbase,
+    const int * rowidx,
+    const int * colidx,
+    int64_t datastride,
+    const double * data);
+
+/**
+ * ‘mtxmatrix_init_entries_strided_complex_single()’ allocates and
+ * initialises a matrix from data in coordinate format with complex,
+ * single precision coefficients.
+ */
+int mtxmatrix_init_entries_strided_complex_single(
+    struct mtxmatrix * matrix,
+    enum mtxmatrixtype type,
+    enum mtxsymmetry symmetry,
+    int num_rows,
+    int num_columns,
+    int64_t num_nonzeros,
+    int64_t idxstride,
+    int idxbase,
+    const int * rowidx,
+    const int * colidx,
+    int64_t datastride,
+    const float (* data)[2]);
+
+/**
+ * ‘mtxmatrix_init_entries_strided_complex_double()’ allocates and
+ * initialises a matrix from data in coordinate format with complex,
+ * double precision coefficients.
+ */
+int mtxmatrix_init_entries_strided_complex_double(
+    struct mtxmatrix * matrix,
+    enum mtxmatrixtype type,
+    enum mtxsymmetry symmetry,
+    int num_rows,
+    int num_columns,
+    int64_t num_nonzeros,
+    int64_t idxstride,
+    int idxbase,
+    const int * rowidx,
+    const int * colidx,
+    int64_t datastride,
+    const double (* data)[2]);
+
+/**
+ * ‘mtxmatrix_init_entries_strided_integer_single()’ allocates and
+ * initialises a matrix from data in coordinate format with integer,
+ * single precision coefficients.
+ */
+int mtxmatrix_init_entries_strided_integer_single(
+    struct mtxmatrix * matrix,
+    enum mtxmatrixtype type,
+    enum mtxsymmetry symmetry,
+    int num_rows,
+    int num_columns,
+    int64_t num_nonzeros,
+    int64_t idxstride,
+    int idxbase,
+    const int * rowidx,
+    const int * colidx,
+    int64_t datastride,
+    const int32_t * data);
+
+/**
+ * ‘mtxmatrix_init_entries_strided_integer_double()’ allocates and
+ * initialises a matrix from data in coordinate format with integer,
+ * double precision coefficients.
+ */
+int mtxmatrix_init_entries_strided_integer_double(
+    struct mtxmatrix * matrix,
+    enum mtxmatrixtype type,
+    enum mtxsymmetry symmetry,
+    int num_rows,
+    int num_columns,
+    int64_t num_nonzeros,
+    int64_t idxstride,
+    int idxbase,
+    const int * rowidx,
+    const int * colidx,
+    int64_t datastride,
+    const int64_t * data);
+
+/**
+ * ‘mtxmatrix_init_entries_strided_pattern()’ allocates and initialises a
+ * matrix from data in coordinate format with integer, double
+ * precision coefficients.
+ */
+int mtxmatrix_init_entries_strided_pattern(
+    struct mtxmatrix * matrix,
+    enum mtxmatrixtype type,
+    enum mtxsymmetry symmetry,
+    int num_rows,
+    int num_columns,
+    int64_t num_nonzeros,
+    int64_t idxstride,
+    int idxbase,
+    const int * rowidx,
+    const int * colidx);
+
+/*
+ * modifying values
+ */
+
+/**
+ * ‘mtxmatrix_setzero()’ sets every value of a matrix to zero.
+ */
+int mtxmatrix_setzero(
+    struct mtxmatrix * A);
+
+/**
+ * ‘mtxmatrix_set_real_single()’ sets values of a matrix based on an
+ * array of single precision floating point numbers.
+ */
+int mtxmatrix_set_real_single(
+    struct mtxmatrix * A,
+    int64_t size,
+    int stride,
+    const float * a);
+
+/**
+ * ‘mtxmatrix_set_real_double()’ sets values of a matrix based on an
+ * array of double precision floating point numbers.
+ */
+int mtxmatrix_set_real_double(
+    struct mtxmatrix * A,
+    int64_t size,
+    int stride,
+    const double * a);
+
+/**
+ * ‘mtxmatrix_set_complex_single()’ sets values of a matrix based on
+ * an array of single precision floating point complex numbers.
+ */
+int mtxmatrix_set_complex_single(
+    struct mtxmatrix * A,
+    int64_t size,
+    int stride,
+    const float (*a)[2]);
+
+/**
+ * ‘mtxmatrix_set_complex_double()’ sets values of a matrix based on
+ * an array of double precision floating point complex numbers.
+ */
+int mtxmatrix_set_complex_double(
+    struct mtxmatrix * A,
+    int64_t size,
+    int stride,
+    const double (*a)[2]);
+
+/**
+ * ‘mtxmatrix_set_integer_single()’ sets values of a matrix based on
+ * an array of integers.
+ */
+int mtxmatrix_set_integer_single(
+    struct mtxmatrix * A,
+    int64_t size,
+    int stride,
+    const int32_t * a);
+
+/**
+ * ‘mtxmatrix_set_integer_double()’ sets values of a matrix based on
+ * an array of integers.
+ */
+int mtxmatrix_set_integer_double(
+    struct mtxmatrix * A,
+    int64_t size,
+    int stride,
+    const int64_t * a);
+
+
+
+
+
+
+
+
 
 /*
  * Matrix initialisation for array formats
@@ -269,127 +618,6 @@ int mtxmatrix_init_array_integer_double(
     int num_rows,
     int num_columns,
     const int64_t * data);
-
-/*
- * Matrix coordinate formats
- */
-
-/**
- * ‘mtxmatrix_alloc_coordinate()’ allocates a matrix in
- * coordinate format.
- */
-int mtxmatrix_alloc_coordinate(
-    struct mtxmatrix * matrix,
-    enum mtxfield field,
-    enum mtxprecision precision,
-    enum mtxsymmetry symmetry,
-    int num_rows,
-    int num_columns,
-    int64_t num_nonzeros);
-
-/**
- * ‘mtxmatrix_init_coordinate_real_single()’ allocates and initialises
- * a matrix in coordinate format with real, single precision
- * coefficients.
- */
-int mtxmatrix_init_coordinate_real_single(
-    struct mtxmatrix * matrix,
-    enum mtxsymmetry symmetry,
-    int num_rows,
-    int num_columns,
-    int64_t num_nonzeros,
-    const int * rowidx,
-    const int * colidx,
-    const float * data);
-
-/**
- * ‘mtxmatrix_init_coordinate_real_double()’ allocates and initialises
- * a matrix in coordinate format with real, double precision
- * coefficients.
- */
-int mtxmatrix_init_coordinate_real_double(
-    struct mtxmatrix * matrix,
-    enum mtxsymmetry symmetry,
-    int num_rows,
-    int num_columns,
-    int64_t num_nonzeros,
-    const int * rowidx,
-    const int * colidx,
-    const double * data);
-
-/**
- * ‘mtxmatrix_init_coordinate_complex_single()’ allocates and
- * initialises a matrix in coordinate format with complex, single
- * precision coefficients.
- */
-int mtxmatrix_init_coordinate_complex_single(
-    struct mtxmatrix * matrix,
-    enum mtxsymmetry symmetry,
-    int num_rows,
-    int num_columns,
-    int64_t num_nonzeros,
-    const int * rowidx,
-    const int * colidx,
-    const float (* data)[2]);
-
-/**
- * ‘mtxmatrix_init_coordinate_complex_double()’ allocates and
- * initialises a matrix in coordinate format with complex, double
- * precision coefficients.
- */
-int mtxmatrix_init_coordinate_complex_double(
-    struct mtxmatrix * matrix,
-    enum mtxsymmetry symmetry,
-    int num_rows,
-    int num_columns,
-    int64_t num_nonzeros,
-    const int * rowidx,
-    const int * colidx,
-    const double (* data)[2]);
-
-/**
- * ‘mtxmatrix_init_coordinate_integer_single()’ allocates and
- * initialises a matrix in coordinate format with integer, single
- * precision coefficients.
- */
-int mtxmatrix_init_coordinate_integer_single(
-    struct mtxmatrix * matrix,
-    enum mtxsymmetry symmetry,
-    int num_rows,
-    int num_columns,
-    int64_t num_nonzeros,
-    const int * rowidx,
-    const int * colidx,
-    const int32_t * data);
-
-/**
- * ‘mtxmatrix_init_coordinate_integer_double()’ allocates and
- * initialises a matrix in coordinate format with integer, double
- * precision coefficients.
- */
-int mtxmatrix_init_coordinate_integer_double(
-    struct mtxmatrix * matrix,
-    enum mtxsymmetry symmetry,
-    int num_rows,
-    int num_columns,
-    int64_t num_nonzeros,
-    const int * rowidx,
-    const int * colidx,
-    const int64_t * data);
-
-/**
- * ‘mtxmatrix_init_coordinate_pattern()’ allocates and initialises a
- * matrix in coordinate format with integer, double precision
- * coefficients.
- */
-int mtxmatrix_init_coordinate_pattern(
-    struct mtxmatrix * matrix,
-    enum mtxsymmetry symmetry,
-    int num_rows,
-    int num_columns,
-    int64_t num_nonzeros,
-    const int * rowidx,
-    const int * colidx);
 
 /*
  * Compressed sparse row (CSR)
@@ -873,6 +1101,24 @@ int mtxmatrix_sscal(
  */
 int mtxmatrix_dscal(
     double a,
+    struct mtxmatrix * X,
+    int64_t * num_flops);
+
+/**
+ * ‘mtxmatrix_cscal()’ scales a matrix by a complex, single precision
+ * floating point scalar, ‘X = (a+b*i)*X’.
+ */
+int mtxmatrix_cscal(
+    float a[2],
+    struct mtxmatrix * X,
+    int64_t * num_flops);
+
+/**
+ * ‘mtxmatrix_zscal()’ scales a matrix by a complex, double precision
+ * floating point scalar, ‘X = (a+b*i)*X’.
+ */
+int mtxmatrix_zscal(
+    double a[2],
     struct mtxmatrix * X,
     int64_t * num_flops);
 

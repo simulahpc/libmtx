@@ -890,11 +890,11 @@ int mtxvector_dist_init_strided_real_single(
     enum mtxvectortype type,
     int64_t size,
     int64_t num_nonzeros,
-    const int64_t * idx,
     int64_t idxstride,
     int idxbase,
-    const float * data,
+    const int64_t * idx,
     int64_t datastride,
+    const float * data,
     MPI_Comm comm,
     struct mtxdisterror * disterr)
 {
@@ -903,7 +903,7 @@ int mtxvector_dist_init_strided_real_single(
     err = mtxvector_dist_init_size(x, size, num_nonzeros, comm, disterr);
     if (err) return err;
     err = mtxvector_packed_init_strided_real_single(
-        &x->xp, type, size, num_nonzeros, idx, idxstride, idxbase, data, datastride);
+        &x->xp, type, size, num_nonzeros, idxstride, idxbase, idx, datastride, data);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     err = mtxvector_dist_init_map(x, disterr);
     if (err) { mtxvector_packed_free(&x->xp); return err; }
@@ -919,11 +919,11 @@ int mtxvector_dist_init_strided_real_double(
     enum mtxvectortype type,
     int64_t size,
     int64_t num_nonzeros,
-    const int64_t * idx,
     int64_t idxstride,
     int idxbase,
-    const double * data,
+    const int64_t * idx,
     int64_t datastride,
+    const double * data,
     MPI_Comm comm,
     struct mtxdisterror * disterr)
 {
@@ -932,7 +932,7 @@ int mtxvector_dist_init_strided_real_double(
     err = mtxvector_dist_init_size(x, size, num_nonzeros, comm, disterr);
     if (err) return err;
     err = mtxvector_packed_init_strided_real_double(
-        &x->xp, type, size, num_nonzeros, idx, idxstride, idxbase, data, datastride);
+        &x->xp, type, size, num_nonzeros, idxstride, idxbase, idx, datastride, data);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     err = mtxvector_dist_init_map(x, disterr);
     if (err) { mtxvector_packed_free(&x->xp); return err; }
@@ -948,11 +948,11 @@ int mtxvector_dist_init_strided_complex_single(
     enum mtxvectortype type,
     int64_t size,
     int64_t num_nonzeros,
-    const int64_t * idx,
     int64_t idxstride,
     int idxbase,
-    const float (* data)[2],
+    const int64_t * idx,
     int64_t datastride,
+    const float (* data)[2],
     MPI_Comm comm,
     struct mtxdisterror * disterr)
 {
@@ -961,7 +961,7 @@ int mtxvector_dist_init_strided_complex_single(
     err = mtxvector_dist_init_size(x, size, num_nonzeros, comm, disterr);
     if (err) return err;
     err = mtxvector_packed_init_strided_complex_single(
-        &x->xp, type, size, num_nonzeros, idx, idxstride, idxbase, data, datastride);
+        &x->xp, type, size, num_nonzeros, idxstride, idxbase, idx, datastride, data);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     err = mtxvector_dist_init_map(x, disterr);
     if (err) { mtxvector_packed_free(&x->xp); return err; }
@@ -977,11 +977,11 @@ int mtxvector_dist_init_strided_complex_double(
     enum mtxvectortype type,
     int64_t size,
     int64_t num_nonzeros,
-    const int64_t * idx,
     int64_t idxstride,
     int idxbase,
-    const double (* data)[2],
+    const int64_t * idx,
     int64_t datastride,
+    const double (* data)[2],
     MPI_Comm comm,
     struct mtxdisterror * disterr)
 {
@@ -990,7 +990,7 @@ int mtxvector_dist_init_strided_complex_double(
     err = mtxvector_dist_init_size(x, size, num_nonzeros, comm, disterr);
     if (err) return err;
     err = mtxvector_packed_init_strided_complex_double(
-        &x->xp, type, size, num_nonzeros, idx, idxstride, idxbase, data, datastride);
+        &x->xp, type, size, num_nonzeros, idxstride, idxbase, idx, datastride, data);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     err = mtxvector_dist_init_map(x, disterr);
     if (err) { mtxvector_packed_free(&x->xp); return err; }
@@ -1006,11 +1006,11 @@ int mtxvector_dist_init_strided_integer_single(
     enum mtxvectortype type,
     int64_t size,
     int64_t num_nonzeros,
-    const int64_t * idx,
     int64_t idxstride,
     int idxbase,
-    const int32_t * data,
+    const int64_t * idx,
     int64_t datastride,
+    const int32_t * data,
     MPI_Comm comm,
     struct mtxdisterror * disterr)
 {
@@ -1019,7 +1019,7 @@ int mtxvector_dist_init_strided_integer_single(
     err = mtxvector_dist_init_size(x, size, num_nonzeros, comm, disterr);
     if (err) return err;
     err = mtxvector_packed_init_strided_integer_single(
-        &x->xp, type, size, num_nonzeros, idx, idxstride, idxbase, data, datastride);
+        &x->xp, type, size, num_nonzeros, idxstride, idxbase, idx, datastride, data);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     err = mtxvector_dist_init_map(x, disterr);
     if (err) { mtxvector_packed_free(&x->xp); return err; }
@@ -1035,11 +1035,11 @@ int mtxvector_dist_init_strided_integer_double(
     enum mtxvectortype type,
     int64_t size,
     int64_t num_nonzeros,
-    const int64_t * idx,
     int64_t idxstride,
     int idxbase,
-    const int64_t * data,
+    const int64_t * idx,
     int64_t datastride,
+    const int64_t * data,
     MPI_Comm comm,
     struct mtxdisterror * disterr)
 {
@@ -1048,7 +1048,7 @@ int mtxvector_dist_init_strided_integer_double(
     err = mtxvector_dist_init_size(x, size, num_nonzeros, comm, disterr);
     if (err) return err;
     err = mtxvector_packed_init_strided_integer_double(
-        &x->xp, type, size, num_nonzeros, idx, idxstride, idxbase, data, datastride);
+        &x->xp, type, size, num_nonzeros, idxstride, idxbase, idx, datastride, data);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     err = mtxvector_dist_init_map(x, disterr);
     if (err) { mtxvector_packed_free(&x->xp); return err; }
@@ -1064,9 +1064,9 @@ int mtxvector_dist_init_strided_pattern(
     enum mtxvectortype type,
     int64_t size,
     int64_t num_nonzeros,
-    const int64_t * idx,
     int64_t idxstride,
     int idxbase,
+    const int64_t * idx,
     MPI_Comm comm,
     struct mtxdisterror * disterr)
 {
@@ -1075,7 +1075,7 @@ int mtxvector_dist_init_strided_pattern(
     err = mtxvector_dist_init_size(x, size, num_nonzeros, comm, disterr);
     if (err) return err;
     err = mtxvector_packed_init_strided_pattern(
-        &x->xp, type, size, num_nonzeros, idx, idxstride, idxbase);
+        &x->xp, type, size, num_nonzeros, idxstride, idxbase, idx);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     err = mtxvector_dist_init_map(x, disterr);
     if (err) { mtxvector_packed_free(&x->xp); return err; }
@@ -1402,15 +1402,15 @@ int mtxvector_dist_from_mtxdistfile2(
                 const struct mtxfile_vector_coordinate_real_single * data =
                     mtxdistfile2->data.vector_coordinate_real_single;
                 err = mtxvector_dist_init_strided_real_single(
-                    x, type, size, num_nonzeros, &data[0].i, sizeof(*data), 1,
-                    &data[0].a, sizeof(*data), comm, disterr);
+                    x, type, size, num_nonzeros, sizeof(*data), 1, &data[0].i,
+                    sizeof(*data), &data[0].a, comm, disterr);
                 if (err) return err;
             } else if (mtxdistfile2->precision == mtx_double) {
                 const struct mtxfile_vector_coordinate_real_double * data =
                     mtxdistfile2->data.vector_coordinate_real_double;
                 err = mtxvector_dist_init_strided_real_double(
-                    x, type, size, num_nonzeros, &data[0].i, sizeof(*data), 1,
-                    &data[0].a, sizeof(*data), comm, disterr);
+                    x, type, size, num_nonzeros, sizeof(*data), 1, &data[0].i,
+                    sizeof(*data), &data[0].a, comm, disterr);
                 if (err) return err;
             } else { return MTX_ERR_INVALID_PRECISION; }
         } else if (mtxdistfile2->header.field == mtxfile_complex) {
@@ -1418,15 +1418,15 @@ int mtxvector_dist_from_mtxdistfile2(
                 const struct mtxfile_vector_coordinate_complex_single * data =
                     mtxdistfile2->data.vector_coordinate_complex_single;
                 err = mtxvector_dist_init_strided_complex_single(
-                    x, type, size, num_nonzeros, &data[0].i, sizeof(*data), 1,
-                    &data[0].a, sizeof(*data), comm, disterr);
+                    x, type, size, num_nonzeros, sizeof(*data), 1, &data[0].i,
+                    sizeof(*data), &data[0].a, comm, disterr);
                 if (err) return err;
             } else if (mtxdistfile2->precision == mtx_double) {
                 const struct mtxfile_vector_coordinate_complex_double * data =
                     mtxdistfile2->data.vector_coordinate_complex_double;
                 err = mtxvector_dist_init_strided_complex_double(
-                    x, type, size, num_nonzeros, &data[0].i, sizeof(*data), 1,
-                    &data[0].a, sizeof(*data), comm, disterr);
+                    x, type, size, num_nonzeros, sizeof(*data), 1, &data[0].i,
+                    sizeof(*data), &data[0].a, comm, disterr);
                 if (err) return err;
             } else { return MTX_ERR_INVALID_PRECISION; }
         } else if (mtxdistfile2->header.field == mtxfile_integer) {
@@ -1434,22 +1434,22 @@ int mtxvector_dist_from_mtxdistfile2(
                 const struct mtxfile_vector_coordinate_integer_single * data =
                     mtxdistfile2->data.vector_coordinate_integer_single;
                 err = mtxvector_dist_init_strided_integer_single(
-                    x, type, size, num_nonzeros, &data[0].i, sizeof(*data), 1,
-                    &data[0].a, sizeof(*data), comm, disterr);
+                    x, type, size, num_nonzeros, sizeof(*data), 1, &data[0].i,
+                    sizeof(*data), &data[0].a, comm, disterr);
                 if (err) return err;
             } else if (mtxdistfile2->precision == mtx_double) {
                 const struct mtxfile_vector_coordinate_integer_double * data =
                     mtxdistfile2->data.vector_coordinate_integer_double;
                 err = mtxvector_dist_init_strided_integer_double(
-                    x, type, size, num_nonzeros, &data[0].i, sizeof(*data), 1,
-                    &data[0].a, sizeof(*data), comm, disterr);
+                    x, type, size, num_nonzeros, sizeof(*data), 1, &data[0].i,
+                    sizeof(*data), &data[0].a, comm, disterr);
                 if (err) return err;
             } else { return MTX_ERR_INVALID_PRECISION; }
         } else if (mtxdistfile2->header.field == mtxfile_pattern) {
             const struct mtxfile_vector_coordinate_pattern * data =
                 mtxdistfile2->data.vector_coordinate_pattern;
             err = mtxvector_dist_init_strided_pattern(
-                x, type, size, num_nonzeros, &data[0].i, sizeof(*data), 1,
+                x, type, size, num_nonzeros, sizeof(*data), 1, &data[0].i,
                 comm, disterr);
             if (err) return err;
         } else { return MTX_ERR_INVALID_MTX_FIELD; }

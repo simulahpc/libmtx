@@ -248,8 +248,8 @@ int mtxvector_omp_init_pattern(
 int mtxvector_omp_init_strided_real_single(
     struct mtxvector_omp * x,
     int64_t size,
-    const float * data,
     int64_t stride,
+    const float * data,
     int num_threads)
 {
     int err = mtxvector_omp_alloc(x, mtx_field_real, mtx_single, size, num_threads);
@@ -257,7 +257,7 @@ int mtxvector_omp_init_strided_real_single(
     struct mtxvector_base * base = &x->base;
     #pragma omp parallel for num_threads(num_threads)
     for (int64_t k = 0; k < size; k++)
-        base->data.real_single[k] = *(const float *) ((unsigned char *) data + k*stride);
+        base->data.real_single[k] = *(const float *) ((const char *) data + k*stride);
     return MTX_SUCCESS;
 }
 
@@ -268,8 +268,8 @@ int mtxvector_omp_init_strided_real_single(
 int mtxvector_omp_init_strided_real_double(
     struct mtxvector_omp * x,
     int64_t size,
-    const double * data,
     int64_t stride,
+    const double * data,
     int num_threads)
 {
     int err = mtxvector_omp_alloc(x, mtx_field_real, mtx_double, size, num_threads);
@@ -277,7 +277,7 @@ int mtxvector_omp_init_strided_real_double(
     struct mtxvector_base * base = &x->base;
     #pragma omp parallel for num_threads(num_threads)
     for (int64_t k = 0; k < size; k++)
-        base->data.real_double[k] = *(const double *) ((unsigned char *) data + k*stride);
+        base->data.real_double[k] = *(const double *) ((const char *) data + k*stride);
     return MTX_SUCCESS;
 }
 
@@ -288,8 +288,8 @@ int mtxvector_omp_init_strided_real_double(
 int mtxvector_omp_init_strided_complex_single(
     struct mtxvector_omp * x,
     int64_t size,
-    const float (* data)[2],
     int64_t stride,
+    const float (* data)[2],
     int num_threads)
 {
     int err = mtxvector_omp_alloc(x, mtx_field_complex, mtx_single, size, num_threads);
@@ -297,7 +297,7 @@ int mtxvector_omp_init_strided_complex_single(
     struct mtxvector_base * base = &x->base;
     #pragma omp parallel for num_threads(num_threads)
     for (int64_t k = 0; k < size; k++) {
-        const void * p = ((const unsigned char *) data + k*stride);
+        const void * p = ((const char *) data + k*stride);
         base->data.complex_single[k][0] = (*(const float (*)[2]) p)[0];
         base->data.complex_single[k][1] = (*(const float (*)[2]) p)[1];
     }
@@ -311,8 +311,8 @@ int mtxvector_omp_init_strided_complex_single(
 int mtxvector_omp_init_strided_complex_double(
     struct mtxvector_omp * x,
     int64_t size,
-    const double (* data)[2],
     int64_t stride,
+    const double (* data)[2],
     int num_threads)
 {
     int err = mtxvector_omp_alloc(x, mtx_field_complex, mtx_double, size, num_threads);
@@ -320,7 +320,7 @@ int mtxvector_omp_init_strided_complex_double(
     struct mtxvector_base * base = &x->base;
     #pragma omp parallel for num_threads(num_threads)
     for (int64_t k = 0; k < size; k++) {
-        const void * p = ((const unsigned char *) data + k*stride);
+        const void * p = ((const char *) data + k*stride);
         base->data.complex_double[k][0] = (*(const double (*)[2]) p)[0];
         base->data.complex_double[k][1] = (*(const double (*)[2]) p)[1];
     }
@@ -334,8 +334,8 @@ int mtxvector_omp_init_strided_complex_double(
 int mtxvector_omp_init_strided_integer_single(
     struct mtxvector_omp * x,
     int64_t size,
-    const int32_t * data,
     int64_t stride,
+    const int32_t * data,
     int num_threads)
 {
     int err = mtxvector_omp_alloc(x, mtx_field_integer, mtx_single, size, num_threads);
@@ -343,7 +343,7 @@ int mtxvector_omp_init_strided_integer_single(
     struct mtxvector_base * base = &x->base;
     #pragma omp parallel for num_threads(num_threads)
     for (int64_t k = 0; k < size; k++)
-        base->data.integer_single[k] = *(const int32_t *) ((unsigned char *) data + k*stride);
+        base->data.integer_single[k] = *(const int32_t *) ((const char *) data + k*stride);
     return MTX_SUCCESS;
 }
 
@@ -354,8 +354,8 @@ int mtxvector_omp_init_strided_integer_single(
 int mtxvector_omp_init_strided_integer_double(
     struct mtxvector_omp * x,
     int64_t size,
-    const int64_t * data,
     int64_t stride,
+    const int64_t * data,
     int num_threads)
 {
     int err = mtxvector_omp_alloc(x, mtx_field_integer, mtx_double, size, num_threads);
@@ -363,7 +363,7 @@ int mtxvector_omp_init_strided_integer_double(
     struct mtxvector_base * base = &x->base;
     #pragma omp parallel for num_threads(num_threads)
     for (int64_t k = 0; k < size; k++)
-        base->data.integer_double[k] = *(const int64_t *) ((unsigned char *) data + k*stride);
+        base->data.integer_double[k] = *(const int64_t *) ((const char *) data + k*stride);
     return MTX_SUCCESS;
 }
 

@@ -278,11 +278,11 @@ int mtxvector_dist_init_strided_real_single(
     enum mtxvectortype type,
     int64_t size,
     int64_t num_nonzeros,
-    const int64_t * idx,
     int64_t idxstride,
     int idxbase,
-    const float * data,
+    const int64_t * idx,
     int64_t datastride,
+    const float * data,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
@@ -295,11 +295,11 @@ int mtxvector_dist_init_strided_real_double(
     enum mtxvectortype type,
     int64_t size,
     int64_t num_nonzeros,
-    const int64_t * idx,
     int64_t idxstride,
     int idxbase,
-    const double * data,
+    const int64_t * idx,
     int64_t datastride,
+    const double * data,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
@@ -312,11 +312,11 @@ int mtxvector_dist_init_strided_complex_single(
     enum mtxvectortype type,
     int64_t size,
     int64_t num_nonzeros,
-    const int64_t * idx,
     int64_t idxstride,
     int idxbase,
-    const float (* data)[2],
+    const int64_t * idx,
     int64_t datastride,
+    const float (* data)[2],
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
@@ -329,11 +329,11 @@ int mtxvector_dist_init_strided_complex_double(
     enum mtxvectortype type,
     int64_t size,
     int64_t num_nonzeros,
-    const int64_t * idx,
     int64_t idxstride,
     int idxbase,
-    const double (* data)[2],
+    const int64_t * idx,
     int64_t datastride,
+    const double (* data)[2],
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
@@ -346,11 +346,11 @@ int mtxvector_dist_init_strided_integer_single(
     enum mtxvectortype type,
     int64_t size,
     int64_t num_nonzeros,
-    const int64_t * idx,
     int64_t idxstride,
     int idxbase,
-    const int32_t * data,
+    const int64_t * idx,
     int64_t datastride,
+    const int32_t * data,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
@@ -363,11 +363,11 @@ int mtxvector_dist_init_strided_integer_double(
     enum mtxvectortype type,
     int64_t size,
     int64_t num_nonzeros,
-    const int64_t * idx,
     int64_t idxstride,
     int idxbase,
-    const int64_t * data,
+    const int64_t * idx,
     int64_t datastride,
+    const int64_t * data,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
@@ -380,9 +380,9 @@ int mtxvector_dist_init_strided_pattern(
     enum mtxvectortype type,
     int64_t size,
     int64_t num_nonzeros,
-    const int64_t * idx,
     int64_t idxstride,
     int idxbase,
+    const int64_t * idx,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 

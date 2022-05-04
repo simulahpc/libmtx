@@ -537,23 +537,23 @@ int mtxvector_init_strided_real_single(
     struct mtxvector * x,
     enum mtxvectortype type,
     int64_t size,
-    const float * data,
-    int64_t stride)
+    int64_t stride,
+    const float * data)
 {
     if (type == mtxvector_base) {
         x->type = mtxvector_base;
-        return mtxvector_base_init_strided_real_single(&x->storage.base, size, data, stride);
+        return mtxvector_base_init_strided_real_single(&x->storage.base, size, stride, data);
     } else if (type == mtxvector_blas) {
 #ifdef LIBMTX_HAVE_BLAS
         x->type = mtxvector_blas;
-        return mtxvector_blas_init_strided_real_single(&x->storage.blas, size, data, stride);
+        return mtxvector_blas_init_strided_real_single(&x->storage.blas, size, stride, data);
 #else
         return MTX_ERR_BLAS_NOT_SUPPORTED;
 #endif
     } else if (type == mtxvector_omp) {
 #ifdef LIBMTX_HAVE_OPENMP
         x->type = mtxvector_omp;
-        return mtxvector_omp_init_strided_real_single(&x->storage.omp, size, data, stride, 0);
+        return mtxvector_omp_init_strided_real_single(&x->storage.omp, size, stride, data, 0);
 #else
         return MTX_ERR_OPENMP_NOT_SUPPORTED;
 #endif
@@ -568,23 +568,23 @@ int mtxvector_init_strided_real_double(
     struct mtxvector * x,
     enum mtxvectortype type,
     int64_t size,
-    const double * data,
-    int64_t stride)
+    int64_t stride,
+    const double * data)
 {
     if (type == mtxvector_base) {
         x->type = mtxvector_base;
-        return mtxvector_base_init_strided_real_double(&x->storage.base, size, data, stride);
+        return mtxvector_base_init_strided_real_double(&x->storage.base, size, stride, data);
     } else if (type == mtxvector_blas) {
 #ifdef LIBMTX_HAVE_BLAS
         x->type = mtxvector_blas;
-        return mtxvector_blas_init_strided_real_double(&x->storage.blas, size, data, stride);
+        return mtxvector_blas_init_strided_real_double(&x->storage.blas, size, stride, data);
 #else
         return MTX_ERR_BLAS_NOT_SUPPORTED;
 #endif
     } else if (type == mtxvector_omp) {
 #ifdef LIBMTX_HAVE_OPENMP
         x->type = mtxvector_omp;
-        return mtxvector_omp_init_strided_real_double(&x->storage.omp, size, data, stride, 0);
+        return mtxvector_omp_init_strided_real_double(&x->storage.omp, size, stride, data, 0);
 #else
         return MTX_ERR_OPENMP_NOT_SUPPORTED;
 #endif
@@ -599,23 +599,23 @@ int mtxvector_init_strided_complex_single(
     struct mtxvector * x,
     enum mtxvectortype type,
     int64_t size,
-    const float (* data)[2],
-    int64_t stride)
+    int64_t stride,
+    const float (* data)[2])
 {
     if (type == mtxvector_base) {
         x->type = mtxvector_base;
-        return mtxvector_base_init_strided_complex_single(&x->storage.base, size, data, stride);
+        return mtxvector_base_init_strided_complex_single(&x->storage.base, size, stride, data);
     } else if (type == mtxvector_blas) {
 #ifdef LIBMTX_HAVE_BLAS
         x->type = mtxvector_blas;
-        return mtxvector_blas_init_strided_complex_single(&x->storage.blas, size, data, stride);
+        return mtxvector_blas_init_strided_complex_single(&x->storage.blas, size, stride, data);
 #else
         return MTX_ERR_BLAS_NOT_SUPPORTED;
 #endif
     } else if (type == mtxvector_omp) {
 #ifdef LIBMTX_HAVE_OPENMP
         x->type = mtxvector_omp;
-        return mtxvector_omp_init_strided_complex_single(&x->storage.omp, size, data, stride, 0);
+        return mtxvector_omp_init_strided_complex_single(&x->storage.omp, size, stride, data, 0);
 #else
         return MTX_ERR_OPENMP_NOT_SUPPORTED;
 #endif
@@ -630,23 +630,23 @@ int mtxvector_init_strided_complex_double(
     struct mtxvector * x,
     enum mtxvectortype type,
     int64_t size,
-    const double (* data)[2],
-    int64_t stride)
+    int64_t stride,
+    const double (* data)[2])
 {
     if (type == mtxvector_base) {
         x->type = mtxvector_base;
-        return mtxvector_base_init_strided_complex_double(&x->storage.base, size, data, stride);
+        return mtxvector_base_init_strided_complex_double(&x->storage.base, size, stride, data);
     } else if (type == mtxvector_blas) {
 #ifdef LIBMTX_HAVE_BLAS
         x->type = mtxvector_blas;
-        return mtxvector_blas_init_strided_complex_double(&x->storage.blas, size, data, stride);
+        return mtxvector_blas_init_strided_complex_double(&x->storage.blas, size, stride, data);
 #else
         return MTX_ERR_BLAS_NOT_SUPPORTED;
 #endif
     } else if (type == mtxvector_omp) {
 #ifdef LIBMTX_HAVE_OPENMP
         x->type = mtxvector_omp;
-        return mtxvector_omp_init_strided_complex_double(&x->storage.omp, size, data, stride, 0);
+        return mtxvector_omp_init_strided_complex_double(&x->storage.omp, size, stride, data, 0);
 #else
         return MTX_ERR_OPENMP_NOT_SUPPORTED;
 #endif
@@ -661,23 +661,23 @@ int mtxvector_init_strided_integer_single(
     struct mtxvector * x,
     enum mtxvectortype type,
     int64_t size,
-    const int32_t * data,
-    int64_t stride)
+    int64_t stride,
+    const int32_t * data)
 {
     if (type == mtxvector_base) {
         x->type = mtxvector_base;
-        return mtxvector_base_init_strided_integer_single(&x->storage.base, size, data, stride);
+        return mtxvector_base_init_strided_integer_single(&x->storage.base, size, stride, data);
     } else if (type == mtxvector_blas) {
 #ifdef LIBMTX_HAVE_BLAS
         x->type = mtxvector_blas;
-        return mtxvector_blas_init_strided_integer_single(&x->storage.blas, size, data, stride);
+        return mtxvector_blas_init_strided_integer_single(&x->storage.blas, size, stride, data);
 #else
         return MTX_ERR_BLAS_NOT_SUPPORTED;
 #endif
     } else if (type == mtxvector_omp) {
 #ifdef LIBMTX_HAVE_OPENMP
         x->type = mtxvector_omp;
-        return mtxvector_omp_init_strided_integer_single(&x->storage.omp, size, data, stride, 0);
+        return mtxvector_omp_init_strided_integer_single(&x->storage.omp, size, stride, data, 0);
 #else
         return MTX_ERR_OPENMP_NOT_SUPPORTED;
 #endif
@@ -692,23 +692,23 @@ int mtxvector_init_strided_integer_double(
     struct mtxvector * x,
     enum mtxvectortype type,
     int64_t size,
-    const int64_t * data,
-    int64_t stride)
+    int64_t stride,
+    const int64_t * data)
 {
     if (type == mtxvector_base) {
         x->type = mtxvector_base;
-        return mtxvector_base_init_strided_integer_double(&x->storage.base, size, data, stride);
+        return mtxvector_base_init_strided_integer_double(&x->storage.base, size, stride, data);
     } else if (type == mtxvector_blas) {
 #ifdef LIBMTX_HAVE_BLAS
         x->type = mtxvector_blas;
-        return mtxvector_blas_init_strided_integer_double(&x->storage.blas, size, data, stride);
+        return mtxvector_blas_init_strided_integer_double(&x->storage.blas, size, stride, data);
 #else
         return MTX_ERR_BLAS_NOT_SUPPORTED;
 #endif
     } else if (type == mtxvector_omp) {
 #ifdef LIBMTX_HAVE_OPENMP
         x->type = mtxvector_omp;
-        return mtxvector_omp_init_strided_integer_double(&x->storage.omp, size, data, stride, 0);
+        return mtxvector_omp_init_strided_integer_double(&x->storage.omp, size, stride, data, 0);
 #else
         return MTX_ERR_OPENMP_NOT_SUPPORTED;
 #endif

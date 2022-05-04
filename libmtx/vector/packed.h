@@ -215,11 +215,11 @@ int mtxvector_packed_init_strided_real_single(
     enum mtxvectortype type,
     int64_t size,
     int64_t num_nonzeros,
-    const int64_t * idx,
     int64_t idxstride,
     int idxbase,
-    const float * data,
-    int64_t datastride);
+    const int64_t * idx,
+    int64_t datastride,
+    const float * data);
 
 /**
  * ‘mtxvector_packed_init_strided_real_double()’ allocates and
@@ -230,11 +230,11 @@ int mtxvector_packed_init_strided_real_double(
     enum mtxvectortype type,
     int64_t size,
     int64_t num_nonzeros,
-    const int64_t * idx,
     int64_t idxstride,
     int idxbase,
-    const double * data,
-    int64_t datastride);
+    const int64_t * idx,
+    int64_t datastride,
+    const double * data);
 
 /**
  * ‘mtxvector_packed_init_strided_complex_single()’ allocates and
@@ -245,11 +245,11 @@ int mtxvector_packed_init_strided_complex_single(
     enum mtxvectortype type,
     int64_t size,
     int64_t num_nonzeros,
-    const int64_t * idx,
     int64_t idxstride,
     int idxbase,
-    const float (* data)[2],
-    int64_t datastride);
+    const int64_t * idx,
+    int64_t datastride,
+    const float (* data)[2]);
 
 /**
  * ‘mtxvector_packed_init_strided_complex_double()’ allocates and
@@ -260,11 +260,11 @@ int mtxvector_packed_init_strided_complex_double(
     enum mtxvectortype type,
     int64_t size,
     int64_t num_nonzeros,
-    const int64_t * idx,
     int64_t idxstride,
     int idxbase,
-    const double (* data)[2],
-    int64_t datastride);
+    const int64_t * idx,
+    int64_t datastride,
+    const double (* data)[2]);
 
 /**
  * ‘mtxvector_packed_init_strided_integer_single()’ allocates and
@@ -275,11 +275,11 @@ int mtxvector_packed_init_strided_integer_single(
     enum mtxvectortype type,
     int64_t size,
     int64_t num_nonzeros,
-    const int64_t * idx,
     int64_t idxstride,
     int idxbase,
-    const int32_t * data,
-    int64_t datastride);
+    const int64_t * idx,
+    int64_t datastride,
+    const int32_t * data);
 
 /**
  * ‘mtxvector_packed_init_strided_integer_double()’ allocates and
@@ -290,11 +290,11 @@ int mtxvector_packed_init_strided_integer_double(
     enum mtxvectortype type,
     int64_t size,
     int64_t num_nonzeros,
-    const int64_t * idx,
     int64_t idxstride,
     int idxbase,
-    const int64_t * data,
-    int64_t datastride);
+    const int64_t * idx,
+    int64_t datastride,
+    const int64_t * data);
 
 /**
  * ‘mtxvector_packed_init_pattern()’ allocates and initialises a
@@ -305,9 +305,9 @@ int mtxvector_packed_init_strided_pattern(
     enum mtxvectortype type,
     int64_t size,
     int64_t num_nonzeros,
-    const int64_t * idx,
     int64_t idxstride,
-    int idxbase);
+    int idxbase,
+    const int64_t * idx);
 
 /*
  * Modifying values

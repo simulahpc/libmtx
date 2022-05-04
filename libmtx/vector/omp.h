@@ -180,8 +180,8 @@ int mtxvector_omp_init_pattern(
 int mtxvector_omp_init_strided_real_single(
     struct mtxvector_omp * x,
     int64_t size,
-    const float * data,
     int64_t stride,
+    const float * data,
     int num_threads);
 
 /**
@@ -191,8 +191,8 @@ int mtxvector_omp_init_strided_real_single(
 int mtxvector_omp_init_strided_real_double(
     struct mtxvector_omp * x,
     int64_t size,
-    const double * data,
     int64_t stride,
+    const double * data,
     int num_threads);
 
 /**
@@ -202,8 +202,8 @@ int mtxvector_omp_init_strided_real_double(
 int mtxvector_omp_init_strided_complex_single(
     struct mtxvector_omp * x,
     int64_t size,
-    const float (* data)[2],
     int64_t stride,
+    const float (* data)[2],
     int num_threads);
 
 /**
@@ -213,8 +213,8 @@ int mtxvector_omp_init_strided_complex_single(
 int mtxvector_omp_init_strided_complex_double(
     struct mtxvector_omp * x,
     int64_t size,
-    const double (* data)[2],
     int64_t stride,
+    const double (* data)[2],
     int num_threads);
 
 /**
@@ -224,8 +224,8 @@ int mtxvector_omp_init_strided_complex_double(
 int mtxvector_omp_init_strided_integer_single(
     struct mtxvector_omp * x,
     int64_t size,
-    const int32_t * data,
     int64_t stride,
+    const int32_t * data,
     int num_threads);
 
 /**
@@ -235,8 +235,8 @@ int mtxvector_omp_init_strided_integer_single(
 int mtxvector_omp_init_strided_integer_double(
     struct mtxvector_omp * x,
     int64_t size,
-    const int64_t * data,
     int64_t stride,
+    const int64_t * data,
     int num_threads);
 
 /*
