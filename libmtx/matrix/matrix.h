@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-04-27
+ * Last modified: 2022-05-02
  *
  * Data structures for matrices.
  */
@@ -145,6 +145,15 @@ int mtxmatrix_precision(
 int mtxmatrix_symmetry(
     const struct mtxmatrix * x,
     enum mtxsymmetry * symmetry);
+
+/**
+ * ‘mtxmatrix_num_nonzeros()’ gets the number of the number of nonzero
+ *  matrix entries, including those represented implicitly due to
+ *  symmetry.
+ */
+int mtxmatrix_num_nonzeros(
+    const struct mtxmatrix * A,
+    int64_t * num_nonzeros);
 
 /**
  * ‘mtxmatrix_size()’ gets the number of explicitly stored nonzeros of
@@ -511,7 +520,6 @@ int mtxmatrix_alloc_column_vector(
     const struct mtxmatrix * matrix,
     struct mtxvector * vector,
     enum mtxvectortype vector_type);
-
 
 /*
  * Convert to and from Matrix Market format

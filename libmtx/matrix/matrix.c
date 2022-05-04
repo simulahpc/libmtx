@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-04-27
+ * Last modified: 2022-05-02
  *
  * Data structures for matrices.
  */
@@ -138,14 +138,12 @@ int mtxmatrix_precision(
 {
     if (A->type == mtxmatrix_array) {
         *precision = A->storage.array.precision;
-        return MTX_SUCCESS;
     } else if (A->type == mtxmatrix_coordinate) {
         *precision = A->storage.coordinate.a.precision;
-        return MTX_SUCCESS;
     } else if (A->type == mtxmatrix_csr) {
         *precision = A->storage.csr.precision;
-        return MTX_SUCCESS;
     } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
+    return MTX_SUCCESS;
 }
 
 /**
@@ -157,14 +155,31 @@ int mtxmatrix_symmetry(
 {
     if (A->type == mtxmatrix_array) {
         *symmetry = A->storage.array.symmetry;
-        return MTX_SUCCESS;
     } else if (A->type == mtxmatrix_coordinate) {
         *symmetry = A->storage.coordinate.symmetry;
-        return MTX_SUCCESS;
     } else if (A->type == mtxmatrix_csr) {
         *symmetry = A->storage.csr.symmetry;
-        return MTX_SUCCESS;
     } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
+    return MTX_SUCCESS;
+}
+
+/**
+ * ‘mtxmatrix_num_nonzeros()’ gets the number of the number of nonzero
+ *  matrix entries, including those represented implicitly due to
+ *  symmetry.
+ */
+int mtxmatrix_num_nonzeros(
+    const struct mtxmatrix * A,
+    int64_t * num_nonzeros)
+{
+    if (A->type == mtxmatrix_array) {
+        *num_nonzeros = A->storage.array.num_entries;
+    } else if (A->type == mtxmatrix_coordinate) {
+        *num_nonzeros = A->storage.coordinate.num_nonzeros;
+    } else if (A->type == mtxmatrix_csr) {
+        *num_nonzeros = A->storage.csr.num_nonzeros;
+    } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
+    return MTX_SUCCESS;
 }
 
 /**
@@ -177,14 +192,12 @@ int mtxmatrix_size(
 {
     if (A->type == mtxmatrix_array) {
         *size = A->storage.array.size;
-        return MTX_SUCCESS;
     } else if (A->type == mtxmatrix_coordinate) {
         *size = A->storage.coordinate.size;
-        return MTX_SUCCESS;
     } else if (A->type == mtxmatrix_csr) {
         *size = A->storage.csr.size;
-        return MTX_SUCCESS;
     } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
+    return MTX_SUCCESS;
 }
 
 /*
@@ -223,9 +236,7 @@ int mtxmatrix_alloc_copy(
     } else if (src->type == mtxmatrix_csr) {
         return mtxmatrix_csr_alloc_copy(
             &dst->storage.csr, &src->storage.csr);
-    } else {
-        return MTX_ERR_INVALID_MATRIX_TYPE;
-    }
+    } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
 }
 
 /**
