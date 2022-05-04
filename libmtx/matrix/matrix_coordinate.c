@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-04-27
+ * Last modified: 2022-05-03
  *
  * Data structures for matrices in coordinate format.
  */
@@ -165,6 +165,29 @@ static int mtxmatrix_coordinate_init_idx(
         matrix->num_nonzeros +=
             (symmetry == mtx_unsymmetric || rowidx[k] == colidx[k]) ? 1 : 2;
     }
+    return MTX_SUCCESS;
+}
+
+/**
+ * ‘mtxmatrix_coordinate_alloc_entries()’ allocates a matrix in
+ * coordinate format.
+ */
+int mtxmatrix_coordinate_alloc_entries(
+    struct mtxmatrix_coordinate * A,
+    enum mtxfield field,
+    enum mtxprecision precision,
+    enum mtxsymmetry symmetry,
+    int num_rows,
+    int num_columns,
+    int64_t size,
+    const int * rowidx,
+    const int * colidx)
+{
+    int err = mtxmatrix_coordinate_init_idx(
+        A, symmetry, num_rows, num_columns, size, rowidx, colidx);
+    if (err) return err;
+    err = mtxvector_base_alloc(&A->a, field, precision, size);
+    if (err) { free(A->colidx); free(A->rowidx); return err; }
     return MTX_SUCCESS;
 }
 
@@ -353,6 +376,97 @@ int mtxmatrix_coordinate_init_pattern(
         return err;
     }
     return MTX_SUCCESS;
+}
+
+/*
+ * modifying values
+ */
+
+/**
+ * ‘mtxmatrix_coordinate_setzero()’ sets every value of a matrix to zero.
+ */
+int mtxmatrix_coordinate_setzero(
+    struct mtxmatrix_coordinate * A)
+{
+    return mtxvector_base_setzero(&A->a);
+}
+
+/**
+ * ‘mtxmatrix_coordinate_set_real_single()’ sets values of a matrix based on an
+ * array of single precision floating point numbers.
+ */
+int mtxmatrix_coordinate_set_real_single(
+    struct mtxmatrix_coordinate * A,
+    int64_t size,
+    int stride,
+    const float * a)
+{
+    return mtxvector_base_set_real_single(&A->a, size, stride, a);
+}
+
+/**
+ * ‘mtxmatrix_coordinate_set_real_double()’ sets values of a matrix based on an
+ * array of double precision floating point numbers.
+ */
+int mtxmatrix_coordinate_set_real_double(
+    struct mtxmatrix_coordinate * A,
+    int64_t size,
+    int stride,
+    const double * a)
+{
+    return mtxvector_base_set_real_double(&A->a, size, stride, a);
+}
+
+/**
+ * ‘mtxmatrix_coordinate_set_complex_single()’ sets values of a matrix based on
+ * an array of single precision floating point complex numbers.
+ */
+int mtxmatrix_coordinate_set_complex_single(
+    struct mtxmatrix_coordinate * A,
+    int64_t size,
+    int stride,
+    const float (*a)[2])
+{
+    return mtxvector_base_set_complex_single(&A->a, size, stride, a);
+}
+
+/**
+ * ‘mtxmatrix_coordinate_set_complex_double()’ sets values of a matrix based on
+ * an array of double precision floating point complex numbers.
+ */
+int mtxmatrix_coordinate_set_complex_double(
+    struct mtxmatrix_coordinate * A,
+    int64_t size,
+    int stride,
+    const double (*a)[2])
+{
+    return mtxvector_base_set_complex_double(&A->a, size, stride, a);
+}
+
+/**
+ * ‘mtxmatrix_coordinate_set_integer_single()’ sets values of a matrix based on
+ * an array of integers.
+ */
+int mtxmatrix_coordinate_set_integer_single(
+    struct mtxmatrix_coordinate * A,
+    int64_t size,
+    int stride,
+    const int32_t * a)
+{
+    return mtxvector_base_set_integer_single(&A->a, size, stride, a);
+}
+
+/**
+ * ‘mtxmatrix_coordinate_set_integer_double()’ sets values of a matrix based on
+ * an array of integers.
+ */
+int mtxmatrix_coordinate_set_integer_double(
+    struct mtxmatrix_coordinate * A,
+    int64_t size,
+    int stride,
+    const int64_t * a)
+{
+    return mtxvector_base_set_integer_double(&A->a, size, stride, a);
 }
 
 /*

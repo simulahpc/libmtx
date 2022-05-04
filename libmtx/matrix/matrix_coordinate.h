@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-04-27
+ * Last modified: 2022-05-03
  *
  * Data structures for matrices in coordinate format.
  */
@@ -126,8 +126,26 @@ int mtxmatrix_coordinate_init_copy(
     struct mtxmatrix_coordinate * dst,
     const struct mtxmatrix_coordinate * src);
 
+/**
+ * ‘mtxmatrix_coordinate_alloc_entries()’ allocates a matrix in
+ * coordinate format.
+ */
+int mtxmatrix_coordinate_alloc_entries(
+    struct mtxmatrix_coordinate * matrix,
+    enum mtxfield field,
+    enum mtxprecision precision,
+    enum mtxsymmetry symmetry,
+    int num_rows,
+    int num_columns,
+    int64_t size,
+    const int * rowidx,
+    const int * colidx);
+
 /*
  * Matrix coordinate formats
+ *
+ * TODO: deprecate the functions below in favour of others that
+ * explicitly specify the row and column offsets.
  */
 
 /**
@@ -245,6 +263,76 @@ int mtxmatrix_coordinate_init_pattern(
     int64_t size,
     const int * rowidx,
     const int * colidx);
+
+/*
+ * modifying values
+ */
+
+/**
+ * ‘mtxmatrix_coordinate_setzero()’ sets every value of a matrix to zero.
+ */
+int mtxmatrix_coordinate_setzero(
+    struct mtxmatrix_coordinate * A);
+
+/**
+ * ‘mtxmatrix_coordinate_set_real_single()’ sets values of a matrix based on an
+ * array of single precision floating point numbers.
+ */
+int mtxmatrix_coordinate_set_real_single(
+    struct mtxmatrix_coordinate * A,
+    int64_t size,
+    int stride,
+    const float * a);
+
+/**
+ * ‘mtxmatrix_coordinate_set_real_double()’ sets values of a matrix based on an
+ * array of double precision floating point numbers.
+ */
+int mtxmatrix_coordinate_set_real_double(
+    struct mtxmatrix_coordinate * A,
+    int64_t size,
+    int stride,
+    const double * a);
+
+/**
+ * ‘mtxmatrix_coordinate_set_complex_single()’ sets values of a matrix based on
+ * an array of single precision floating point complex numbers.
+ */
+int mtxmatrix_coordinate_set_complex_single(
+    struct mtxmatrix_coordinate * A,
+    int64_t size,
+    int stride,
+    const float (*a)[2]);
+
+/**
+ * ‘mtxmatrix_coordinate_set_complex_double()’ sets values of a matrix based on
+ * an array of double precision floating point complex numbers.
+ */
+int mtxmatrix_coordinate_set_complex_double(
+    struct mtxmatrix_coordinate * A,
+    int64_t size,
+    int stride,
+    const double (*a)[2]);
+
+/**
+ * ‘mtxmatrix_coordinate_set_integer_single()’ sets values of a matrix based on
+ * an array of integers.
+ */
+int mtxmatrix_coordinate_set_integer_single(
+    struct mtxmatrix_coordinate * A,
+    int64_t size,
+    int stride,
+    const int32_t * a);
+
+/**
+ * ‘mtxmatrix_coordinate_set_integer_double()’ sets values of a matrix based on
+ * an array of integers.
+ */
+int mtxmatrix_coordinate_set_integer_double(
+    struct mtxmatrix_coordinate * A,
+    int64_t size,
+    int stride,
+    const int64_t * a);
 
 /*
  * Row and column vectors
