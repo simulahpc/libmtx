@@ -248,6 +248,43 @@ int mtxfilefield_parse(
 }
 
 /**
+ * ‘mtxfilefield_from_mtxfield()’ converts a value to the
+ * ‘mtxfilefield’ enum type to a corresponding value from the
+ * ‘mtxfield’ enum type.
+ */
+int mtxfilefield_from_mtxfield(
+    enum mtxfilefield * dst,
+    enum mtxfield src)
+{
+    switch (src) {
+    case mtx_field_real: *dst = mtxfile_real; break;
+    case mtx_field_complex: *dst = mtxfile_complex; break;
+    case mtx_field_integer: *dst = mtxfile_integer; break;
+    case mtx_field_pattern: *dst = mtxfile_pattern; break;
+    default: return MTX_ERR_INVALID_FIELD;
+    }
+    return MTX_SUCCESS;
+}
+
+/**
+ * ‘mtxfilefield_to_mtxfield()’ converts a value of the ‘mtxfilefield’
+ * enum type to a corresponding value of the ‘mtxfield’ enum type.
+ */
+int mtxfilefield_to_mtxfield(
+    enum mtxfield * dst,
+    enum mtxfilefield src)
+{
+    switch (src) {
+    case mtxfile_real: *dst = mtx_field_real; break;
+    case mtxfile_complex: *dst = mtx_field_complex; break;
+    case mtxfile_integer: *dst = mtx_field_integer; break;
+    case mtxfile_pattern: *dst = mtx_field_pattern; break;
+    default: return MTX_ERR_INVALID_MTX_FIELD;
+    }
+    return MTX_SUCCESS;
+}
+
+/**
  * ‘mtxfilesymmetry_str()’ is a string representing the Matrix Market
  * symmetry type.
  */

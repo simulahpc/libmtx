@@ -1407,6 +1407,108 @@ int mtxfiledata_copy_gather(
  */
 
 /**
+ * ‘mtxfiledata_rowcolidxptr()’ extracts pointers to the row and/or
+ * column indices for a matrix or vector in Matrix Market format.
+ */
+int mtxfiledata_rowcolidxptr(
+    const union mtxfiledata * data,
+    enum mtxfileobject object,
+    enum mtxfileformat format,
+    enum mtxfilefield field,
+    enum mtxprecision precision,
+    int * idxstride,
+    int64_t ** rowidx,
+    int64_t ** colidx)
+{
+    if (object == mtxfile_matrix) {
+        if (format == mtxfile_coordinate) {
+            if (field == mtxfile_real) {
+                if (precision == mtx_single) {
+                    if (rowidx) *rowidx = &data->matrix_coordinate_real_single[0].i;
+                    if (colidx) *colidx = &data->matrix_coordinate_real_single[0].j;
+                    if (idxstride) *idxstride = sizeof(*data->matrix_coordinate_real_single);
+                } else if (precision == mtx_double) {
+                    if (rowidx) *rowidx = &data->matrix_coordinate_real_double[0].i;
+                    if (colidx) *colidx = &data->matrix_coordinate_real_double[0].j;
+                    if (idxstride) *idxstride = sizeof(*data->matrix_coordinate_real_double);
+                } else { return MTX_ERR_INVALID_PRECISION; }
+            } else if (field == mtxfile_complex) {
+                if (precision == mtx_single) {
+                    if (rowidx) *rowidx = &data->matrix_coordinate_complex_single[0].i;
+                    if (colidx) *colidx = &data->matrix_coordinate_complex_single[0].j;
+                    if (idxstride) *idxstride = sizeof(*data->matrix_coordinate_complex_single);
+                } else if (precision == mtx_double) {
+                    if (rowidx) *rowidx = &data->matrix_coordinate_complex_double[0].i;
+                    if (colidx) *colidx = &data->matrix_coordinate_complex_double[0].j;
+                    if (idxstride) *idxstride = sizeof(*data->matrix_coordinate_complex_double);
+                } else { return MTX_ERR_INVALID_PRECISION; }
+            } else if (field == mtxfile_integer) {
+                if (precision == mtx_single) {
+                    if (rowidx) *rowidx = &data->matrix_coordinate_integer_single[0].i;
+                    if (colidx) *colidx = &data->matrix_coordinate_integer_single[0].j;
+                    if (idxstride) *idxstride = sizeof(*data->matrix_coordinate_integer_single);
+                } else if (precision == mtx_double) {
+                    if (rowidx) *rowidx = &data->matrix_coordinate_integer_double[0].i;
+                    if (colidx) *colidx = &data->matrix_coordinate_integer_double[0].j;
+                    if (idxstride) *idxstride = sizeof(*data->matrix_coordinate_integer_double);
+                } else { return MTX_ERR_INVALID_PRECISION; }
+            } else if (field == mtxfile_pattern) {
+                if (rowidx) *rowidx = &data->matrix_coordinate_pattern[0].i;
+                if (colidx) *colidx = &data->matrix_coordinate_pattern[0].j;
+                if (idxstride) *idxstride = sizeof(*data->matrix_coordinate_pattern);
+            } else { return MTX_ERR_INVALID_MTX_FIELD; }
+        } else if (format == mtxfile_array) {
+            if (rowidx) *rowidx = NULL;
+            if (colidx) *colidx = NULL;
+            if (idxstride) *idxstride = 0;
+        } else { return MTX_ERR_INVALID_MTX_FORMAT; }
+    } else if (object == mtxfile_vector) {
+        if (format == mtxfile_coordinate) {
+            if (field == mtxfile_real) {
+                if (precision == mtx_single) {
+                    if (rowidx) *rowidx = &data->vector_coordinate_real_single[0].i;
+                    if (colidx) *colidx = NULL;
+                    if (idxstride) *idxstride = sizeof(*data->vector_coordinate_real_single);
+                } else if (precision == mtx_double) {
+                    if (rowidx) *rowidx = &data->vector_coordinate_real_double[0].i;
+                    if (colidx) *colidx = NULL;
+                    if (idxstride) *idxstride = sizeof(*data->vector_coordinate_real_double);
+                } else { return MTX_ERR_INVALID_PRECISION; }
+            } else if (field == mtxfile_complex) {
+                if (precision == mtx_single) {
+                    if (rowidx) *rowidx = &data->vector_coordinate_complex_single[0].i;
+                    if (colidx) *colidx = NULL;
+                    if (idxstride) *idxstride = sizeof(*data->vector_coordinate_complex_single);
+                } else if (precision == mtx_double) {
+                    if (rowidx) *rowidx = &data->vector_coordinate_complex_double[0].i;
+                    if (colidx) *colidx = NULL;
+                    if (idxstride) *idxstride = sizeof(*data->vector_coordinate_complex_double);
+                } else { return MTX_ERR_INVALID_PRECISION; }
+            } else if (field == mtxfile_integer) {
+                if (precision == mtx_single) {
+                    if (rowidx) *rowidx = &data->vector_coordinate_integer_single[0].i;
+                    if (colidx) *colidx = NULL;
+                    if (idxstride) *idxstride = sizeof(*data->vector_coordinate_integer_single);
+                } else if (precision == mtx_double) {
+                    if (rowidx) *rowidx = &data->vector_coordinate_integer_double[0].i;
+                    if (colidx) *colidx = NULL;
+                    if (idxstride) *idxstride = sizeof(*data->vector_coordinate_integer_double);
+                } else { return MTX_ERR_INVALID_PRECISION; }
+            } else if (field == mtxfile_pattern) {
+                if (rowidx) *rowidx = &data->vector_coordinate_pattern[0].i;
+                if (colidx) *colidx = NULL;
+                if (idxstride) *idxstride = sizeof(*data->vector_coordinate_pattern);
+            } else { return MTX_ERR_INVALID_MTX_FIELD; }
+        } else if (format == mtxfile_array) {
+            if (rowidx) *rowidx = NULL;
+            if (colidx) *colidx = NULL;
+            if (idxstride) *idxstride = 0;
+        } else { return MTX_ERR_INVALID_MTX_FORMAT; }
+    } else { return MTX_ERR_INVALID_MTX_OBJECT; }
+    return MTX_SUCCESS;
+}
+
+/**
  * ‘mtxfiledata_rowcolidx64()’ extracts row and/or column indices for
  * a matrix or vector in Matrix Market format.
  *
@@ -1428,7 +1530,7 @@ int mtxfiledata_copy_gather(
  * entries starting from the specified offset, instead of beginning
  * with the first entry of the matrix or vector.
  */
-static int mtxfiledata_rowcolidx64(
+int mtxfiledata_rowcolidx64(
     const union mtxfiledata * data,
     enum mtxfileobject object,
     enum mtxfileformat format,

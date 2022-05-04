@@ -717,6 +717,55 @@ int mtxfiledata_copy_gather(
  */
 
 /**
+ * ‘mtxfiledata_rowcolidxptr()’ extracts pointers to the row and/or
+ * column indices for a matrix or vector in Matrix Market format.
+ */
+int mtxfiledata_rowcolidxptr(
+    const union mtxfiledata * data,
+    enum mtxfileobject object,
+    enum mtxfileformat format,
+    enum mtxfilefield field,
+    enum mtxprecision precision,
+    int * idxstride,
+    int64_t ** rowidx,
+    int64_t ** colidx);
+
+/**
+ * ‘mtxfiledata_rowcolidx64()’ extracts row and/or column indices for
+ * a matrix or vector in Matrix Market format.
+ *
+ * ‘rowidx’ may be ‘NULL’, in which case it is ignored. Otherwise, it
+ * must point to an array containing enough storage for ‘size’ values
+ * of type ‘int’.  If successful, this array will contain the row
+ * index of each data line.
+ *
+ * Similarly, ‘colidx’ may be ‘NULL’, or it must point to an array of
+ * the same size, which will be used to store the column index of each
+ * data line.
+ *
+ * Note that indexing is 1-based, meaning that rows are numbered
+ * ‘1,2,...,num_rows’, whereas columns are numbered
+ * ‘1,2,...,num_columns’.
+ *
+ * If ‘format’ is ‘mtxfile_array’, then a non-negative ‘offset’ value
+ * can be used to obtain row and column indices for matrix or vector
+ * entries starting from the specified offset, instead of beginning
+ * with the first entry of the matrix or vector.
+ */
+int mtxfiledata_rowcolidx64(
+    const union mtxfiledata * data,
+    enum mtxfileobject object,
+    enum mtxfileformat format,
+    enum mtxfilefield field,
+    enum mtxprecision precision,
+    int64_t num_rows,
+    int64_t num_columns,
+    int64_t offset,
+    int64_t size,
+    int64_t * rowidx,
+    int64_t * colidx);
+
+/**
  * ‘mtxfiledata_rowcolidx()’ extracts row and/or column indices for a
  * matrix or vector in Matrix Market format.
  *

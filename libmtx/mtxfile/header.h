@@ -26,6 +26,7 @@
 
 #include <libmtx/libmtx-config.h>
 
+#include <libmtx/field.h>
 #include <libmtx/util/symmetry.h>
 
 #ifdef LIBMTX_HAVE_MPI
@@ -182,6 +183,23 @@ int mtxfilefield_parse(
     char ** endptr,
     const char * s,
     const char * valid_delimiters);
+
+/**
+ * ‘mtxfilefield_from_mtxfield()’ converts a value to the
+ * ‘mtxfilefield’ enum type to a corresponding value from the
+ * ‘mtxfield’ enum type.
+ */
+int mtxfilefield_from_mtxfield(
+    enum mtxfilefield * dst,
+    enum mtxfield src);
+
+/**
+ * ‘mtxfilefield_to_mtxfield()’ converts a value of the ‘mtxfilefield’
+ * enum type to a corresponding value of the ‘mtxfield’ enum type.
+ */
+int mtxfilefield_to_mtxfield(
+    enum mtxfield * dst,
+    enum mtxfilefield src);
 
 /**
  * ‘mtxfilesymmetry’ is used to enumerate different kinds of symmetry
