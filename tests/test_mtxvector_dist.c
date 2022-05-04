@@ -16,9 +16,9 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-04-28
+ * Last modified: 2022-05-02
  *
- * Unit tests for distributed sparse vectors in packed form.
+ * Unit tests for distributed vectors.
  */
 
 #include "test.h"
@@ -2654,7 +2654,7 @@ int main(int argc, char * argv[])
     }
 
     /* 2. run test suite. */
-    TEST_SUITE_BEGIN("Running tests for distributed sparse vectors in packed form\n");
+    TEST_SUITE_BEGIN("Running tests for distributed vectors\n");
     TEST_RUN(test_mtxvector_dist_from_mtxfile);
     TEST_RUN(test_mtxvector_dist_to_mtxfile);
     TEST_RUN(test_mtxvector_dist_from_mtxdistfile2);

@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-04-28
+ * Last modified: 2022-05-03
  *
  * Data structures and routines for basic dense vectors.
  */
