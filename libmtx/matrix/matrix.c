@@ -51,7 +51,6 @@ const char * mtxmatrixtype_str(
 {
     switch (type) {
     case mtxmatrix_auto: return "auto";
-    case mtxmatrix_array: return "array";
     case mtxmatrix_blas: return "blas";
     case mtxmatrix_coordinate: return "coordinate";
     case mtxmatrix_csr: return "csr";
@@ -92,9 +91,6 @@ int mtxmatrixtype_parse(
     if (strncmp("auto", t, strlen("auto")) == 0) {
         t += strlen("auto");
         *matrix_type = mtxmatrix_auto;
-    } else if (strncmp("array", t, strlen("array")) == 0) {
-        t += strlen("array");
-        *matrix_type = mtxmatrix_array;
     } else if (strncmp("blas", t, strlen("blas")) == 0) {
         t += strlen("blas");
         *matrix_type = mtxmatrix_blas;

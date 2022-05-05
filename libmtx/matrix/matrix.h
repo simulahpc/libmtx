@@ -30,7 +30,6 @@
 #include <libmtx/field.h>
 #include <libmtx/util/symmetry.h>
 #include <libmtx/util/transpose.h>
-#include <libmtx/matrix/matrix_array.h>
 #include <libmtx/matrix/matrix_coordinate.h>
 #include <libmtx/matrix/matrix_csr.h>
 #include <libmtx/matrix/blas.h>
@@ -60,7 +59,6 @@ struct mtxvector;
 enum mtxmatrixtype
 {
     mtxmatrix_auto,       /* automatic selection of matrix type */
-    mtxmatrix_array,      /* array format for dense matrices */
     mtxmatrix_blas,       /* dense matrices with BLAS-accelerated operations */
     mtxmatrix_coordinate, /* coordinate format for sparse matrices */
     mtxmatrix_csr,        /* compressed sparse row */
@@ -112,8 +110,8 @@ int mtxmatrixtype_parse(
 struct mtxmatrix
 {
     /**
-     * ‘type’ denotes the matrix type or storage format: ‘array’,
-     * ‘coordinate’ or ‘csr’.
+     * ‘type’ denotes the matrix type or storage format: ‘blas’,
+     * ‘coordinate’, ‘csr’ or ‘dense’.
      */
     enum mtxmatrixtype type;
 
@@ -123,7 +121,6 @@ struct mtxmatrix
      */
     union
     {
-        struct mtxmatrix_array array;
         struct mtxmatrix_blas blas;
         struct mtxmatrix_coordinate coordinate;
         struct mtxmatrix_csr csr;
