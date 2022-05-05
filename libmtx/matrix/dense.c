@@ -1964,7 +1964,10 @@ int mtxmatrix_dense_dasum(
  */
 int mtxmatrix_dense_iamax(
     const struct mtxmatrix_dense * x,
-    int * iamax);
+    int * iamax)
+{
+    return mtxvector_base_iamax(&x->a, iamax);
+}
 
 /*
  * Level 2 BLAS operations (matrix-vector)

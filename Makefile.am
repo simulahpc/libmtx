@@ -71,10 +71,10 @@ libmtx_la_SOURCES = \
 	libmtx/matrix/coordinate/mpi.c \
 	libmtx/matrix/coordinate/reorder.c \
 	libmtx/matrix/coordinate/sort.c \
+	libmtx/matrix/blas.c \
 	libmtx/matrix/dense.c \
 	libmtx/matrix/dist.c \
 	libmtx/matrix/matrix.c \
-	libmtx/matrix/matrix_array.c \
 	libmtx/matrix/matrix_coordinate.c \
 	libmtx/matrix/matrix_csr.c \
 	libmtx/mtx/assembly.c \
@@ -156,10 +156,10 @@ nobase_include_HEADERS = \
 	libmtx/matrix/coordinate/mpi.h \
 	libmtx/matrix/coordinate/reorder.h \
 	libmtx/matrix/coordinate/sort.h \
+	libmtx/matrix/blas.h \
 	libmtx/matrix/dense.h \
 	libmtx/matrix/dist.h \
 	libmtx/matrix/matrix.h \
-	libmtx/matrix/matrix_array.h \
 	libmtx/matrix/matrix_coordinate.h \
 	libmtx/matrix/matrix_csr.h \
 	libmtx/mtx/assembly.h \
@@ -299,13 +299,11 @@ check_PROGRAMS = \
 	tests/test_mtx_blas \
 	tests/test_mtx_cg \
 	tests/test_mtx_io \
-	tests/test_mtx_matrix_array \
 	tests/test_mtx_matrix_coordinate \
 	tests/test_mtx_reorder \
 	tests/test_mtx_sort \
 	tests/test_mtx_transpose \
 	tests/test_mtxfile \
-	tests/test_mtxmatrix_array \
 	tests/test_mtxmatrix_coordinate \
 	tests/test_mtxmatrix_csr \
 	tests/test_mtxvector_array \
@@ -329,9 +327,6 @@ tests_test_mtxfile_SOURCES = tests/test_mtxfile.c tests/test.h
 tests_test_mtxmatrix_coordinate_CPPFLAGS = $(MPICPPFLAGS)
 tests_test_mtxmatrix_coordinate_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
 tests_test_mtxmatrix_coordinate_SOURCES = tests/test_mtxmatrix_coordinate.c tests/test.h
-tests_test_mtxmatrix_array_CPPFLAGS = $(MPICPPFLAGS)
-tests_test_mtxmatrix_array_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
-tests_test_mtxmatrix_array_SOURCES = tests/test_mtxmatrix_array.c tests/test.h
 tests_test_mtxmatrix_csr_CPPFLAGS = $(MPICPPFLAGS)
 tests_test_mtxmatrix_csr_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
 tests_test_mtxmatrix_csr_SOURCES = tests/test_mtxmatrix_csr.c tests/test.h
@@ -350,9 +345,6 @@ tests_test_mtx_cg_SOURCES = tests/test_mtx_cg.c tests/test.h
 tests_test_mtx_io_CPPFLAGS = $(MPICPPFLAGS)
 tests_test_mtx_io_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
 tests_test_mtx_io_SOURCES = tests/test_mtx_io.c tests/test.h
-tests_test_mtx_matrix_array_CPPFLAGS = $(MPICPPFLAGS)
-tests_test_mtx_matrix_array_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
-tests_test_mtx_matrix_array_SOURCES = tests/test_mtx_matrix_array.c tests/test.h
 tests_test_mtx_matrix_coordinate_CPPFLAGS = $(MPICPPFLAGS)
 tests_test_mtx_matrix_coordinate_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
 tests_test_mtx_matrix_coordinate_SOURCES = tests/test_mtx_matrix_coordinate.c tests/test.h
@@ -394,13 +386,11 @@ TESTS = \
 	tests/test_mtx_blas \
 	tests/test_mtx_cg \
 	tests/test_mtx_io \
-	tests/test_mtx_matrix_array \
 	tests/test_mtx_matrix_coordinate \
 	tests/test_mtx_reorder \
 	tests/test_mtx_sort \
 	tests/test_mtx_transpose \
 	tests/test_mtxfile \
-	tests/test_mtxmatrix_array \
 	tests/test_mtxmatrix_coordinate \
 	tests/test_mtxmatrix_csr \
 	tests/test_mtxvector_array \
@@ -458,6 +448,12 @@ check_PROGRAMS += tests/test_mtxvector_dist
 TESTS += tests/test_mtxvector_dist_parallel
 tests/test_mtxvector_dist_parallel:  tests/test_mtxvector_dist
 endif
+
+tests_test_mtxmatrix_blas_CPPFLAGS =
+tests_test_mtxmatrix_blas_LDADD = $(top_builddir)/libmtx.la
+tests_test_mtxmatrix_blas_SOURCES = tests/test_mtxmatrix_blas.c tests/test.h
+check_PROGRAMS += tests/test_mtxmatrix_blas
+TESTS += tests/test_mtxmatrix_blas
 
 tests_test_mtxmatrix_dense_CPPFLAGS =
 tests_test_mtxmatrix_dense_LDADD = $(top_builddir)/libmtx.la

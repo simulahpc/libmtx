@@ -52,6 +52,7 @@ const char * mtxmatrixtype_str(
     switch (type) {
     case mtxmatrix_auto: return "auto";
     case mtxmatrix_array: return "array";
+    case mtxmatrix_blas: return "blas";
     case mtxmatrix_coordinate: return "coordinate";
     case mtxmatrix_csr: return "csr";
     case mtxmatrix_dense: return "dense";
@@ -94,6 +95,9 @@ int mtxmatrixtype_parse(
     } else if (strncmp("array", t, strlen("array")) == 0) {
         t += strlen("array");
         *matrix_type = mtxmatrix_array;
+    } else if (strncmp("blas", t, strlen("blas")) == 0) {
+        t += strlen("blas");
+        *matrix_type = mtxmatrix_blas;
     } else if (strncmp("coordinate", t, strlen("coordinate")) == 0) {
         t += strlen("coordinate");
         *matrix_type = mtxmatrix_coordinate;
@@ -121,19 +125,16 @@ int mtxmatrix_field(
     const struct mtxmatrix * A,
     enum mtxfield * field)
 {
-    if (A->type == mtxmatrix_array) {
-        *field = A->storage.array.field;
-        return MTX_SUCCESS;
+    if (A->type == mtxmatrix_blas) {
+        *field = A->storage.blas.a.base.field;
     } else if (A->type == mtxmatrix_coordinate) {
         *field = A->storage.coordinate.a.field;
-        return MTX_SUCCESS;
     } else if (A->type == mtxmatrix_dense) {
         *field = A->storage.dense.a.field;
-        return MTX_SUCCESS;
     } else if (A->type == mtxmatrix_csr) {
         *field = A->storage.csr.field;
-        return MTX_SUCCESS;
     } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
+    return MTX_SUCCESS;
 }
 
 /**
@@ -143,8 +144,8 @@ int mtxmatrix_precision(
     const struct mtxmatrix * A,
     enum mtxprecision * precision)
 {
-    if (A->type == mtxmatrix_array) {
-        *precision = A->storage.array.precision;
+    if (A->type == mtxmatrix_blas) {
+        *precision = A->storage.blas.a.base.precision;
     } else if (A->type == mtxmatrix_coordinate) {
         *precision = A->storage.coordinate.a.precision;
     } else if (A->type == mtxmatrix_dense) {
@@ -162,8 +163,8 @@ int mtxmatrix_symmetry(
     const struct mtxmatrix * A,
     enum mtxsymmetry * symmetry)
 {
-    if (A->type == mtxmatrix_array) {
-        *symmetry = A->storage.array.symmetry;
+    if (A->type == mtxmatrix_blas) {
+        *symmetry = A->storage.blas.symmetry;
     } else if (A->type == mtxmatrix_coordinate) {
         *symmetry = A->storage.coordinate.symmetry;
     } else if (A->type == mtxmatrix_dense) {
@@ -183,8 +184,8 @@ int mtxmatrix_num_nonzeros(
     const struct mtxmatrix * A,
     int64_t * num_nonzeros)
 {
-    if (A->type == mtxmatrix_array) {
-        *num_nonzeros = A->storage.array.num_entries;
+    if (A->type == mtxmatrix_blas) {
+        *num_nonzeros = A->storage.blas.num_nonzeros;
     } else if (A->type == mtxmatrix_coordinate) {
         *num_nonzeros = A->storage.coordinate.num_nonzeros;
     } else if (A->type == mtxmatrix_dense) {
@@ -203,8 +204,8 @@ int mtxmatrix_size(
     const struct mtxmatrix * A,
     int64_t * size)
 {
-    if (A->type == mtxmatrix_array) {
-        *size = A->storage.array.size;
+    if (A->type == mtxmatrix_blas) {
+        *size = A->storage.blas.size;
     } else if (A->type == mtxmatrix_coordinate) {
         *size = A->storage.coordinate.size;
     } else if (A->type == mtxmatrix_dense) {
@@ -225,8 +226,8 @@ int mtxmatrix_size(
 void mtxmatrix_free(
     struct mtxmatrix * matrix)
 {
-    if (matrix->type == mtxmatrix_array) {
-        mtxmatrix_array_free(&matrix->storage.array);
+    if (matrix->type == mtxmatrix_blas) {
+        mtxmatrix_blas_free(&matrix->storage.blas);
     } else if (matrix->type == mtxmatrix_coordinate) {
         mtxmatrix_coordinate_free(&matrix->storage.coordinate);
     } else if (matrix->type == mtxmatrix_dense) {
@@ -244,9 +245,9 @@ int mtxmatrix_alloc_copy(
     struct mtxmatrix * dst,
     const struct mtxmatrix * src)
 {
-    if (src->type == mtxmatrix_array) {
-        return mtxmatrix_array_alloc_copy(
-            &dst->storage.array, &src->storage.array);
+    if (src->type == mtxmatrix_blas) {
+        return mtxmatrix_blas_alloc_copy(
+            &dst->storage.blas, &src->storage.blas);
     } else if (src->type == mtxmatrix_coordinate) {
         return mtxmatrix_coordinate_alloc_copy(
             &dst->storage.coordinate, &src->storage.coordinate);
@@ -267,9 +268,9 @@ int mtxmatrix_init_copy(
     struct mtxmatrix * dst,
     const struct mtxmatrix * src)
 {
-    if (src->type == mtxmatrix_array) {
-        return mtxmatrix_array_init_copy(
-            &dst->storage.array, &src->storage.array);
+    if (src->type == mtxmatrix_blas) {
+        return mtxmatrix_blas_init_copy(
+            &dst->storage.blas, &src->storage.blas);
     } else if (src->type == mtxmatrix_coordinate) {
         return mtxmatrix_coordinate_init_copy(
             &dst->storage.coordinate, &src->storage.coordinate);
@@ -304,12 +305,12 @@ int mtxmatrix_alloc_entries(
     const int * rowidx,
     const int * colidx)
 {
-    if (type == mtxmatrix_array) {
-        A->type = mtxmatrix_array;
-        return MTX_ERR_INVALID_MATRIX_TYPE;
-        /* return mtxmatrix_array_alloc_entries( */
-        /*     &A->storage.array, field, precision, symmetry, */
-        /*     num_rows, num_columns, num_nonzeros, rowidx, colidx); */
+    if (type == mtxmatrix_blas) {
+        A->type = mtxmatrix_blas;
+        return mtxmatrix_blas_alloc_entries(
+            &A->storage.blas, field, precision, symmetry,
+            num_rows, num_columns, num_nonzeros,
+            idxstride, idxbase, rowidx, colidx);
     } else if (type == mtxmatrix_coordinate) {
         A->type = mtxmatrix_coordinate;
         return mtxmatrix_coordinate_alloc_entries(
@@ -347,7 +348,12 @@ int mtxmatrix_init_entries_real_single(
     const int * colidx,
     const float * data)
 {
-    if (type == mtxmatrix_coordinate) {
+    if (type == mtxmatrix_blas) {
+        A->type = mtxmatrix_blas;
+        return mtxmatrix_blas_init_entries_real_single(
+            &A->storage.blas, symmetry,
+            num_rows, num_columns, num_nonzeros, rowidx, colidx, data);
+    } else if (type == mtxmatrix_coordinate) {
         A->type = mtxmatrix_coordinate;
         return mtxmatrix_coordinate_init_entries_real_single(
             &A->storage.coordinate, symmetry,
@@ -376,7 +382,12 @@ int mtxmatrix_init_entries_real_double(
     const int * colidx,
     const double * data)
 {
-    if (type == mtxmatrix_coordinate) {
+    if (type == mtxmatrix_blas) {
+        A->type = mtxmatrix_blas;
+        return mtxmatrix_blas_init_entries_real_double(
+            &A->storage.blas, symmetry,
+            num_rows, num_columns, num_nonzeros, rowidx, colidx, data);
+    } else if (type == mtxmatrix_coordinate) {
         A->type = mtxmatrix_coordinate;
         return mtxmatrix_coordinate_init_entries_real_double(
             &A->storage.coordinate, symmetry,
@@ -405,7 +416,12 @@ int mtxmatrix_init_entries_complex_single(
     const int * colidx,
     const float (* data)[2])
 {
-    if (type == mtxmatrix_coordinate) {
+    if (type == mtxmatrix_blas) {
+        A->type = mtxmatrix_blas;
+        return mtxmatrix_blas_init_entries_complex_single(
+            &A->storage.blas, symmetry,
+            num_rows, num_columns, num_nonzeros, rowidx, colidx, data);
+    } else if (type == mtxmatrix_coordinate) {
         A->type = mtxmatrix_coordinate;
         return mtxmatrix_coordinate_init_entries_complex_single(
             &A->storage.coordinate, symmetry,
@@ -434,7 +450,12 @@ int mtxmatrix_init_entries_complex_double(
     const int * colidx,
     const double (* data)[2])
 {
-    if (type == mtxmatrix_coordinate) {
+    if (type == mtxmatrix_blas) {
+        A->type = mtxmatrix_blas;
+        return mtxmatrix_blas_init_entries_complex_double(
+            &A->storage.blas, symmetry,
+            num_rows, num_columns, num_nonzeros, rowidx, colidx, data);
+    } else if (type == mtxmatrix_coordinate) {
         A->type = mtxmatrix_coordinate;
         return mtxmatrix_coordinate_init_entries_complex_double(
             &A->storage.coordinate, symmetry,
@@ -463,7 +484,12 @@ int mtxmatrix_init_entries_integer_single(
     const int * colidx,
     const int32_t * data)
 {
-    if (type == mtxmatrix_coordinate) {
+    if (type == mtxmatrix_blas) {
+        A->type = mtxmatrix_blas;
+        return mtxmatrix_blas_init_entries_integer_single(
+            &A->storage.blas, symmetry,
+            num_rows, num_columns, num_nonzeros, rowidx, colidx, data);
+    } else if (type == mtxmatrix_coordinate) {
         A->type = mtxmatrix_coordinate;
         return mtxmatrix_coordinate_init_entries_integer_single(
             &A->storage.coordinate, symmetry,
@@ -492,7 +518,12 @@ int mtxmatrix_init_entries_integer_double(
     const int * colidx,
     const int64_t * data)
 {
-    if (type == mtxmatrix_coordinate) {
+    if (type == mtxmatrix_blas) {
+        A->type = mtxmatrix_blas;
+        return mtxmatrix_blas_init_entries_integer_double(
+            &A->storage.blas, symmetry,
+            num_rows, num_columns, num_nonzeros, rowidx, colidx, data);
+    } else if (type == mtxmatrix_coordinate) {
         A->type = mtxmatrix_coordinate;
         return mtxmatrix_coordinate_init_entries_integer_double(
             &A->storage.coordinate, symmetry,
@@ -520,7 +551,12 @@ int mtxmatrix_init_entries_pattern(
     const int * rowidx,
     const int * colidx)
 {
-    if (type == mtxmatrix_coordinate) {
+    if (type == mtxmatrix_blas) {
+        A->type = mtxmatrix_blas;
+        return mtxmatrix_blas_init_entries_pattern(
+            &A->storage.blas, symmetry,
+            num_rows, num_columns, num_nonzeros, rowidx, colidx);
+    } else if (type == mtxmatrix_coordinate) {
         A->type = mtxmatrix_coordinate;
         return mtxmatrix_coordinate_init_entries_pattern(
             &A->storage.coordinate, symmetry,
@@ -699,9 +735,8 @@ int mtxmatrix_init_entries_strided_pattern(
 int mtxmatrix_setzero(
     struct mtxmatrix * A)
 {
-    if (A->type == mtxmatrix_array) {
-        return MTX_ERR_INVALID_MATRIX_TYPE;
-        /* return mtxmatrix_array_setzero(&A->storage.array); */
+    if (A->type == mtxmatrix_blas) {
+        return mtxmatrix_blas_setzero(&A->storage.blas);
     } else if (A->type == mtxmatrix_coordinate) {
         return mtxmatrix_coordinate_setzero(&A->storage.coordinate);
     } else if (A->type == mtxmatrix_dense) {
@@ -722,10 +757,9 @@ int mtxmatrix_set_real_single(
     int stride,
     const float * a)
 {
-    if (A->type == mtxmatrix_array) {
-        return MTX_ERR_INVALID_MATRIX_TYPE;
-        /* return mtxmatrix_array_set_real_single( */
-        /*     &A->storage.array, size, stride, a); */
+    if (A->type == mtxmatrix_blas) {
+        return mtxmatrix_blas_set_real_single(
+            &A->storage.blas, size, stride, a);
     } else if (A->type == mtxmatrix_coordinate) {
         return mtxmatrix_coordinate_set_real_single(
             &A->storage.coordinate, size, stride, a);
@@ -749,10 +783,9 @@ int mtxmatrix_set_real_double(
     int stride,
     const double * a)
 {
-    if (A->type == mtxmatrix_array) {
-        return MTX_ERR_INVALID_MATRIX_TYPE;
-        /* return mtxmatrix_array_set_real_double( */
-        /*     &A->storage.array, size, stride, a); */
+    if (A->type == mtxmatrix_blas) {
+        return mtxmatrix_blas_set_real_double(
+            &A->storage.blas, size, stride, a);
     } else if (A->type == mtxmatrix_coordinate) {
         return mtxmatrix_coordinate_set_real_double(
             &A->storage.coordinate, size, stride, a);
@@ -776,10 +809,9 @@ int mtxmatrix_set_complex_single(
     int stride,
     const float (*a)[2])
 {
-    if (A->type == mtxmatrix_array) {
-        return MTX_ERR_INVALID_MATRIX_TYPE;
-        /* return mtxmatrix_array_set_complex_single( */
-        /*     &A->storage.array, size, stride, a); */
+    if (A->type == mtxmatrix_blas) {
+        return mtxmatrix_blas_set_complex_single(
+            &A->storage.blas, size, stride, a);
     } else if (A->type == mtxmatrix_coordinate) {
         return mtxmatrix_coordinate_set_complex_single(
             &A->storage.coordinate, size, stride, a);
@@ -803,10 +835,9 @@ int mtxmatrix_set_complex_double(
     int stride,
     const double (*a)[2])
 {
-    if (A->type == mtxmatrix_array) {
-        return MTX_ERR_INVALID_MATRIX_TYPE;
-        /* return mtxmatrix_array_set_complex_double( */
-        /*     &A->storage.array, size, stride, a); */
+    if (A->type == mtxmatrix_blas) {
+        return mtxmatrix_blas_set_complex_double(
+            &A->storage.blas, size, stride, a);
     } else if (A->type == mtxmatrix_coordinate) {
         return mtxmatrix_coordinate_set_complex_double(
             &A->storage.coordinate, size, stride, a);
@@ -830,10 +861,9 @@ int mtxmatrix_set_integer_single(
     int stride,
     const int32_t * a)
 {
-    if (A->type == mtxmatrix_array) {
-        return MTX_ERR_INVALID_MATRIX_TYPE;
-        /* return mtxmatrix_array_set_integer_single( */
-        /*     &A->storage.array, size, stride, a); */
+    if (A->type == mtxmatrix_blas) {
+        return mtxmatrix_blas_set_integer_single(
+            &A->storage.blas, size, stride, a);
     } else if (A->type == mtxmatrix_coordinate) {
         return mtxmatrix_coordinate_set_integer_single(
             &A->storage.coordinate, size, stride, a);
@@ -857,10 +887,9 @@ int mtxmatrix_set_integer_double(
     int stride,
     const int64_t * a)
 {
-    if (A->type == mtxmatrix_array) {
-        return MTX_ERR_INVALID_MATRIX_TYPE;
-        /* return mtxmatrix_array_set_integer_double( */
-        /*     &A->storage.array, size, stride, a); */
+    if (A->type == mtxmatrix_blas) {
+        return mtxmatrix_blas_set_integer_double(
+            &A->storage.blas, size, stride, a);
     } else if (A->type == mtxmatrix_coordinate) {
         return mtxmatrix_coordinate_set_integer_double(
             &A->storage.coordinate, size, stride, a);
@@ -874,14 +903,6 @@ int mtxmatrix_set_integer_double(
     } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
 }
 
-
-
-
-
-
-
-
-
 /*
  * Row and columns vectors
  */
@@ -894,23 +915,21 @@ int mtxmatrix_set_integer_double(
 int mtxmatrix_alloc_row_vector(
     const struct mtxmatrix * matrix,
     struct mtxvector * vector,
-    enum mtxvectortype vector_type)
+    enum mtxvectortype vectortype)
 {
-    if (matrix->type == mtxmatrix_array) {
-        return mtxmatrix_array_alloc_row_vector(
-            &matrix->storage.array, vector, vector_type);
+    if (matrix->type == mtxmatrix_blas) {
+        return mtxmatrix_blas_alloc_row_vector(
+            &matrix->storage.blas, vector, vectortype);
     } else if (matrix->type == mtxmatrix_coordinate) {
         return mtxmatrix_coordinate_alloc_row_vector(
-            &matrix->storage.coordinate, vector, vector_type);
+            &matrix->storage.coordinate, vector, vectortype);
     } else if (matrix->type == mtxmatrix_dense) {
         return mtxmatrix_dense_alloc_row_vector(
-            &matrix->storage.dense, vector, vector_type);
+            &matrix->storage.dense, vector, vectortype);
     } else if (matrix->type == mtxmatrix_csr) {
         return mtxmatrix_csr_alloc_row_vector(
-            &matrix->storage.csr, vector, vector_type);
-    } else {
-        return MTX_ERR_INVALID_MATRIX_TYPE;
-    }
+            &matrix->storage.csr, vector, vectortype);
+    } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
 }
 
 /**
@@ -921,140 +940,21 @@ int mtxmatrix_alloc_row_vector(
 int mtxmatrix_alloc_column_vector(
     const struct mtxmatrix * matrix,
     struct mtxvector * vector,
-    enum mtxvectortype vector_type)
+    enum mtxvectortype vectortype)
 {
-    if (matrix->type == mtxmatrix_array) {
-        return mtxmatrix_array_alloc_column_vector(
-            &matrix->storage.array, vector, vector_type);
+    if (matrix->type == mtxmatrix_blas) {
+        return mtxmatrix_blas_alloc_column_vector(
+            &matrix->storage.blas, vector, vectortype);
     } else if (matrix->type == mtxmatrix_coordinate) {
         return mtxmatrix_coordinate_alloc_column_vector(
-            &matrix->storage.coordinate, vector, vector_type);
+            &matrix->storage.coordinate, vector, vectortype);
     } else if (matrix->type == mtxmatrix_dense) {
         return mtxmatrix_dense_alloc_column_vector(
-            &matrix->storage.dense, vector, vector_type);
+            &matrix->storage.dense, vector, vectortype);
     } else if (matrix->type == mtxmatrix_csr) {
         return mtxmatrix_csr_alloc_column_vector(
-            &matrix->storage.csr, vector, vector_type);
-    } else {
-        return MTX_ERR_INVALID_MATRIX_TYPE;
-    }
-}
-
-/*
- * Matrix array formats
- */
-
-/**
- * ‘mtxmatrix_alloc_array()’ allocates a matrix in array
- * format.
- */
-int mtxmatrix_alloc_array(
-    struct mtxmatrix * matrix,
-    enum mtxfield field,
-    enum mtxprecision precision,
-    enum mtxsymmetry symmetry,
-    int num_rows,
-    int num_columns)
-{
-    matrix->type = mtxmatrix_array;
-    return mtxmatrix_array_alloc(
-        &matrix->storage.array, field, precision, symmetry, num_rows, num_columns);
-}
-
-/**
- * ‘mtxmatrix_init_array_real_single()’ allocates and initialises a
- * matrix in array format with real, single precision coefficients.
- */
-int mtxmatrix_init_array_real_single(
-    struct mtxmatrix * matrix,
-    enum mtxsymmetry symmetry,
-    int num_rows,
-    int num_columns,
-    const float * data)
-{
-    matrix->type = mtxmatrix_array;
-    return mtxmatrix_array_init_real_single(
-        &matrix->storage.array, symmetry, num_rows, num_columns, data);
-}
-
-/**
- * ‘mtxmatrix_init_array_real_double()’ allocates and initialises a
- * matrix in array format with real, double precision coefficients.
- */
-int mtxmatrix_init_array_real_double(
-    struct mtxmatrix * matrix,
-    enum mtxsymmetry symmetry,
-    int num_rows,
-    int num_columns,
-    const double * data)
-{
-    matrix->type = mtxmatrix_array;
-    return mtxmatrix_array_init_real_double(
-        &matrix->storage.array, symmetry, num_rows, num_columns, data);
-}
-
-/**
- * ‘mtxmatrix_init_array_complex_single()’ allocates and initialises a
- * matrix in array format with complex, single precision coefficients.
- */
-int mtxmatrix_init_array_complex_single(
-    struct mtxmatrix * matrix,
-    enum mtxsymmetry symmetry,
-    int num_rows,
-    int num_columns,
-    const float (* data)[2])
-{
-    matrix->type = mtxmatrix_array;
-    return mtxmatrix_array_init_complex_single(
-        &matrix->storage.array, symmetry, num_rows, num_columns, data);
-}
-
-/**
- * ‘mtxmatrix_init_array_complex_double()’ allocates and initialises a
- * matrix in array format with complex, double precision coefficients.
- */
-int mtxmatrix_init_array_complex_double(
-    struct mtxmatrix * matrix,
-    enum mtxsymmetry symmetry,
-    int num_rows,
-    int num_columns,
-    const double (* data)[2])
-{
-    matrix->type = mtxmatrix_array;
-    return mtxmatrix_array_init_complex_double(
-        &matrix->storage.array, symmetry, num_rows, num_columns, data);
-}
-
-/**
- * ‘mtxmatrix_init_array_integer_single()’ allocates and initialises a
- * matrix in array format with integer, single precision coefficients.
- */
-int mtxmatrix_init_array_integer_single(
-    struct mtxmatrix * matrix,
-    enum mtxsymmetry symmetry,
-    int num_rows,
-    int num_columns,
-    const int32_t * data)
-{
-    matrix->type = mtxmatrix_array;
-    return mtxmatrix_array_init_integer_single(
-        &matrix->storage.array, symmetry, num_rows, num_columns, data);
-}
-
-/**
- * ‘mtxmatrix_init_array_integer_double()’ allocates and initialises a
- * matrix in array format with integer, double precision coefficients.
- */
-int mtxmatrix_init_array_integer_double(
-    struct mtxmatrix * matrix,
-    enum mtxsymmetry symmetry,
-    int num_rows,
-    int num_columns,
-    const int64_t * data)
-{
-    matrix->type = mtxmatrix_array;
-    return mtxmatrix_array_init_integer_double(
-        &matrix->storage.array, symmetry, num_rows, num_columns, data);
+            &matrix->storage.csr, vector, vectortype);
+    } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
 }
 
 /*
@@ -1224,18 +1124,10 @@ int mtxmatrix_from_mtxfile(
     enum mtxmatrixtype type,
     const struct mtxfile * mtxfile)
 {
-    if (type == mtxmatrix_auto) {
-        if (mtxfile->header.format == mtxfile_array) {
-            type = mtxmatrix_array;
-        } else if (mtxfile->header.format == mtxfile_coordinate) {
-            type = mtxmatrix_coordinate;
-        } else { return MTX_ERR_INVALID_MTX_FORMAT; }
-    }
-
-    if (type == mtxmatrix_array) {
-        matrix->type = mtxmatrix_array;
-        return mtxmatrix_array_from_mtxfile(
-            &matrix->storage.array, mtxfile);
+    if (type == mtxmatrix_blas) {
+        matrix->type = mtxmatrix_blas;
+        return mtxmatrix_blas_from_mtxfile(
+            &matrix->storage.blas, mtxfile);
     } else if (type == mtxmatrix_coordinate) {
         matrix->type = mtxmatrix_coordinate;
         return mtxmatrix_coordinate_from_mtxfile(
@@ -1263,9 +1155,10 @@ int mtxmatrix_to_mtxfile(
     const int64_t * colidx,
     enum mtxfileformat mtxfmt)
 {
-    if (src->type == mtxmatrix_array) {
-        return mtxmatrix_array_to_mtxfile(
-            dst, &src->storage.array, mtxfmt);
+    if (src->type == mtxmatrix_blas) {
+        return mtxmatrix_blas_to_mtxfile(
+            dst, &src->storage.blas,
+            num_rows, rowidx, num_columns, colidx, mtxfmt);
     } else if (src->type == mtxmatrix_coordinate) {
         return mtxmatrix_coordinate_to_mtxfile(
             dst, &src->storage.coordinate,
@@ -1572,15 +1465,10 @@ int mtxmatrix_nzrows(
     int size,
     int * nonzero_rows)
 {
-    if (matrix->type == mtxmatrix_array) {
-        return mtxmatrix_array_nzrows(
-            &matrix->storage.array, num_nonzero_rows, size, nonzero_rows);
-    } else if (matrix->type == mtxmatrix_csr) {
+    if (matrix->type == mtxmatrix_csr) {
         return mtxmatrix_csr_nzrows(
             &matrix->storage.csr, num_nonzero_rows, size, nonzero_rows);
-    } else {
-        return MTX_ERR_INVALID_MATRIX_TYPE;
-    }
+    } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
 }
 
 /**
@@ -1604,15 +1492,10 @@ int mtxmatrix_nzcols(
     int size,
     int * nonzero_columns)
 {
-    if (matrix->type == mtxmatrix_array) {
-        return mtxmatrix_array_nzcols(
-            &matrix->storage.array, num_nonzero_columns, size, nonzero_columns);
-    } else if (matrix->type == mtxmatrix_csr) {
+    if (matrix->type == mtxmatrix_csr) {
         return mtxmatrix_csr_nzcols(
             &matrix->storage.csr, num_nonzero_columns, size, nonzero_columns);
-    } else {
-        return MTX_ERR_INVALID_MATRIX_TYPE;
-    }
+    } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
 }
 
 /*
@@ -1649,15 +1532,10 @@ int mtxmatrix_partition(
     const struct mtxpartition * rowpart,
     const struct mtxpartition * colpart)
 {
-    if (src->type == mtxmatrix_array) {
-        return mtxmatrix_array_partition(
-            dsts, &src->storage.array, rowpart, colpart);
-    } else if (src->type == mtxmatrix_csr) {
+    if (src->type == mtxmatrix_csr) {
         return mtxmatrix_csr_partition(
             dsts, &src->storage.csr, rowpart, colpart);
-    } else {
-        return MTX_ERR_INVALID_MATRIX_TYPE;
-    }
+    } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
 }
 
 /**
@@ -1692,17 +1570,11 @@ int mtxmatrix_join(
     int num_parts = num_row_parts * num_col_parts;
     if (num_parts <= 0)
         return MTX_SUCCESS;
-    if (srcs[0].type == mtxmatrix_array) {
-        dst->type = mtxmatrix_array;
-        return mtxmatrix_array_join(
-            &dst->storage.array, srcs, rowpart, colpart);
-    } else if (srcs[0].type == mtxmatrix_csr) {
+    if (srcs[0].type == mtxmatrix_csr) {
         dst->type = mtxmatrix_csr;
         return mtxmatrix_csr_join(
             &dst->storage.csr, srcs, rowpart, colpart);
-    } else {
-        return MTX_ERR_INVALID_MATRIX_TYPE;
-    }
+    } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
 }
 
 /*
@@ -1717,9 +1589,9 @@ int mtxmatrix_swap(
     struct mtxmatrix * X,
     struct mtxmatrix * Y)
 {
-    if (X->type == mtxmatrix_array && Y->type == mtxmatrix_array) {
-        return mtxmatrix_array_swap(
-            &X->storage.array, &Y->storage.array);
+    if (X->type == mtxmatrix_blas && Y->type == mtxmatrix_blas) {
+        return mtxmatrix_blas_swap(
+            &X->storage.blas, &Y->storage.blas);
     } else if (X->type == mtxmatrix_coordinate && Y->type == mtxmatrix_coordinate) {
         return mtxmatrix_coordinate_swap(
             &X->storage.coordinate, &Y->storage.coordinate);
@@ -1729,9 +1601,7 @@ int mtxmatrix_swap(
     } else if (X->type == mtxmatrix_csr && Y->type == mtxmatrix_csr) {
         return mtxmatrix_csr_swap(
             &X->storage.csr, &Y->storage.csr);
-    } else {
-        return MTX_ERR_INVALID_MATRIX_TYPE;
-    }
+    } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
 }
 
 /**
@@ -1741,9 +1611,9 @@ int mtxmatrix_copy(
     struct mtxmatrix * Y,
     const struct mtxmatrix * X)
 {
-    if (X->type == mtxmatrix_array && Y->type == mtxmatrix_array) {
-        return mtxmatrix_array_copy(
-            &Y->storage.array, &X->storage.array);
+    if (X->type == mtxmatrix_blas && Y->type == mtxmatrix_blas) {
+        return mtxmatrix_blas_copy(
+            &Y->storage.blas, &X->storage.blas);
     } else if (X->type == mtxmatrix_coordinate && Y->type == mtxmatrix_coordinate) {
         return mtxmatrix_coordinate_copy(
             &Y->storage.coordinate, &X->storage.coordinate);
@@ -1753,9 +1623,7 @@ int mtxmatrix_copy(
     } else if (X->type == mtxmatrix_csr && Y->type == mtxmatrix_csr) {
         return mtxmatrix_csr_copy(
             &Y->storage.csr, &X->storage.csr);
-    } else {
-        return MTX_ERR_INVALID_MATRIX_TYPE;
-    }
+    } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
 }
 
 /**
@@ -1767,9 +1635,9 @@ int mtxmatrix_sscal(
     struct mtxmatrix * X,
     int64_t * num_flops)
 {
-    if (X->type == mtxmatrix_array) {
-        return mtxmatrix_array_sscal(
-            a, &X->storage.array, num_flops);
+    if (X->type == mtxmatrix_blas) {
+        return mtxmatrix_blas_sscal(
+            a, &X->storage.blas, num_flops);
     } else if (X->type == mtxmatrix_coordinate) {
         return mtxmatrix_coordinate_sscal(
             a, &X->storage.coordinate, num_flops);
@@ -1779,9 +1647,7 @@ int mtxmatrix_sscal(
     } else if (X->type == mtxmatrix_csr) {
         return mtxmatrix_csr_sscal(
             a, &X->storage.csr, num_flops);
-    } else {
-        return MTX_ERR_INVALID_MATRIX_TYPE;
-    }
+    } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
 }
 
 /**
@@ -1793,9 +1659,9 @@ int mtxmatrix_dscal(
     struct mtxmatrix * X,
     int64_t * num_flops)
 {
-    if (X->type == mtxmatrix_array) {
-        return mtxmatrix_array_dscal(
-            a, &X->storage.array, num_flops);
+    if (X->type == mtxmatrix_blas) {
+        return mtxmatrix_blas_dscal(
+            a, &X->storage.blas, num_flops);
     } else if (X->type == mtxmatrix_coordinate) {
         return mtxmatrix_coordinate_dscal(
             a, &X->storage.coordinate, num_flops);
@@ -1817,7 +1683,10 @@ int mtxmatrix_cscal(
     struct mtxmatrix * X,
     int64_t * num_flops)
 {
-    if (X->type == mtxmatrix_coordinate) {
+    if (X->type == mtxmatrix_blas) {
+        return mtxmatrix_blas_cscal(
+            a, &X->storage.blas, num_flops);
+    } else if (X->type == mtxmatrix_coordinate) {
         return mtxmatrix_coordinate_cscal(
             a, &X->storage.coordinate, num_flops);
     } else if (X->type == mtxmatrix_dense) {
@@ -1836,7 +1705,10 @@ int mtxmatrix_zscal(
     struct mtxmatrix * X,
     int64_t * num_flops)
 {
-    if (X->type == mtxmatrix_coordinate) {
+    if (X->type == mtxmatrix_blas) {
+        return mtxmatrix_blas_zscal(
+            a, &X->storage.blas, num_flops);
+    } else if (X->type == mtxmatrix_coordinate) {
         return mtxmatrix_coordinate_zscal(
             a, &X->storage.coordinate, num_flops);
     } else if (X->type == mtxmatrix_dense) {
@@ -1856,9 +1728,9 @@ int mtxmatrix_saxpy(
     struct mtxmatrix * Y,
     int64_t * num_flops)
 {
-    if (X->type == mtxmatrix_array && Y->type == mtxmatrix_array) {
-        return mtxmatrix_array_saxpy(
-            a, &X->storage.array, &Y->storage.array, num_flops);
+    if (X->type == mtxmatrix_blas && Y->type == mtxmatrix_blas) {
+        return mtxmatrix_blas_saxpy(
+            a, &X->storage.blas, &Y->storage.blas, num_flops);
     } else if (X->type == mtxmatrix_coordinate && Y->type == mtxmatrix_coordinate) {
         return mtxmatrix_coordinate_saxpy(
             a, &X->storage.coordinate, &Y->storage.coordinate, num_flops);
@@ -1868,9 +1740,7 @@ int mtxmatrix_saxpy(
     } else if (X->type == mtxmatrix_csr && Y->type == mtxmatrix_csr) {
         return mtxmatrix_csr_saxpy(
             a, &X->storage.csr, &Y->storage.csr, num_flops);
-    } else {
-        return MTX_ERR_INVALID_MATRIX_TYPE;
-    }
+    } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
 }
 
 /**
@@ -1883,9 +1753,9 @@ int mtxmatrix_daxpy(
     struct mtxmatrix * Y,
     int64_t * num_flops)
 {
-    if (X->type == mtxmatrix_array && Y->type == mtxmatrix_array) {
-        return mtxmatrix_array_daxpy(
-            a, &X->storage.array, &Y->storage.array, num_flops);
+    if (X->type == mtxmatrix_blas && Y->type == mtxmatrix_blas) {
+        return mtxmatrix_blas_daxpy(
+            a, &X->storage.blas, &Y->storage.blas, num_flops);
     } else if (X->type == mtxmatrix_coordinate && Y->type == mtxmatrix_coordinate) {
         return mtxmatrix_coordinate_daxpy(
             a, &X->storage.coordinate, &Y->storage.coordinate, num_flops);
@@ -1895,9 +1765,7 @@ int mtxmatrix_daxpy(
     } else if (X->type == mtxmatrix_csr && Y->type == mtxmatrix_csr) {
         return mtxmatrix_csr_daxpy(
             a, &X->storage.csr, &Y->storage.csr, num_flops);
-    } else {
-        return MTX_ERR_INVALID_MATRIX_TYPE;
-    }
+    } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
 }
 
 /**
@@ -1910,9 +1778,9 @@ int mtxmatrix_saypx(
     const struct mtxmatrix * X,
     int64_t * num_flops)
 {
-    if (X->type == mtxmatrix_array && Y->type == mtxmatrix_array) {
-        return mtxmatrix_array_saypx(
-            a, &Y->storage.array, &X->storage.array, num_flops);
+    if (X->type == mtxmatrix_blas && Y->type == mtxmatrix_blas) {
+        return mtxmatrix_blas_saypx(
+            a, &Y->storage.blas, &X->storage.blas, num_flops);
     } else if (X->type == mtxmatrix_coordinate && Y->type == mtxmatrix_coordinate) {
         return mtxmatrix_coordinate_saypx(
             a, &Y->storage.coordinate, &X->storage.coordinate, num_flops);
@@ -1922,9 +1790,7 @@ int mtxmatrix_saypx(
     } else if (X->type == mtxmatrix_csr && Y->type == mtxmatrix_csr) {
         return mtxmatrix_csr_saypx(
             a, &Y->storage.csr, &X->storage.csr, num_flops);
-    } else {
-        return MTX_ERR_INVALID_MATRIX_TYPE;
-    }
+    } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
 }
 
 /**
@@ -1937,9 +1803,9 @@ int mtxmatrix_daypx(
     const struct mtxmatrix * X,
     int64_t * num_flops)
 {
-    if (X->type == mtxmatrix_array && Y->type == mtxmatrix_array) {
-        return mtxmatrix_array_daypx(
-            a, &Y->storage.array, &X->storage.array, num_flops);
+    if (X->type == mtxmatrix_blas && Y->type == mtxmatrix_blas) {
+        return mtxmatrix_blas_daypx(
+            a, &Y->storage.blas, &X->storage.blas, num_flops);
     } else if (X->type == mtxmatrix_coordinate && Y->type == mtxmatrix_coordinate) {
         return mtxmatrix_coordinate_daypx(
             a, &Y->storage.coordinate, &X->storage.coordinate, num_flops);
@@ -1949,9 +1815,7 @@ int mtxmatrix_daypx(
     } else if (X->type == mtxmatrix_csr && Y->type == mtxmatrix_csr) {
         return mtxmatrix_csr_daypx(
             a, &Y->storage.csr, &X->storage.csr, num_flops);
-    } else {
-        return MTX_ERR_INVALID_MATRIX_TYPE;
-    }
+    } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
 }
 
 /**
@@ -1964,9 +1828,9 @@ int mtxmatrix_sdot(
     float * dot,
     int64_t * num_flops)
 {
-    if (X->type == mtxmatrix_array && Y->type == mtxmatrix_array) {
-        return mtxmatrix_array_sdot(
-            &X->storage.array, &Y->storage.array, dot, num_flops);
+    if (X->type == mtxmatrix_blas && Y->type == mtxmatrix_blas) {
+        return mtxmatrix_blas_sdot(
+            &X->storage.blas, &Y->storage.blas, dot, num_flops);
     } else if (X->type == mtxmatrix_coordinate && Y->type == mtxmatrix_coordinate) {
         return mtxmatrix_coordinate_sdot(
             &X->storage.coordinate, &Y->storage.coordinate, dot, num_flops);
@@ -1976,9 +1840,7 @@ int mtxmatrix_sdot(
     } else if (X->type == mtxmatrix_csr && Y->type == mtxmatrix_csr) {
         return mtxmatrix_csr_sdot(
             &X->storage.csr, &Y->storage.csr, dot, num_flops);
-    } else {
-        return MTX_ERR_INVALID_MATRIX_TYPE;
-    }
+    } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
 }
 
 /**
@@ -1991,9 +1853,9 @@ int mtxmatrix_ddot(
     double * dot,
     int64_t * num_flops)
 {
-    if (X->type == mtxmatrix_array && Y->type == mtxmatrix_array) {
-        return mtxmatrix_array_ddot(
-            &X->storage.array, &Y->storage.array, dot, num_flops);
+    if (X->type == mtxmatrix_blas && Y->type == mtxmatrix_blas) {
+        return mtxmatrix_blas_ddot(
+            &X->storage.blas, &Y->storage.blas, dot, num_flops);
     } else if (X->type == mtxmatrix_coordinate && Y->type == mtxmatrix_coordinate) {
         return mtxmatrix_coordinate_ddot(
             &X->storage.coordinate, &Y->storage.coordinate, dot, num_flops);
@@ -2003,9 +1865,7 @@ int mtxmatrix_ddot(
     } else if (X->type == mtxmatrix_csr && Y->type == mtxmatrix_csr) {
         return mtxmatrix_csr_ddot(
             &X->storage.csr, &Y->storage.csr, dot, num_flops);
-    } else {
-        return MTX_ERR_INVALID_MATRIX_TYPE;
-    }
+    } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
 }
 
 /**
@@ -2020,9 +1880,9 @@ int mtxmatrix_cdotu(
     float (* dot)[2],
     int64_t * num_flops)
 {
-    if (X->type == mtxmatrix_array && Y->type == mtxmatrix_array) {
-        return mtxmatrix_array_cdotu(
-            &X->storage.array, &Y->storage.array, dot, num_flops);
+    if (X->type == mtxmatrix_blas && Y->type == mtxmatrix_blas) {
+        return mtxmatrix_blas_cdotu(
+            &X->storage.blas, &Y->storage.blas, dot, num_flops);
     } else if (X->type == mtxmatrix_coordinate && Y->type == mtxmatrix_coordinate) {
         return mtxmatrix_coordinate_cdotu(
             &X->storage.coordinate, &Y->storage.coordinate, dot, num_flops);
@@ -2032,9 +1892,7 @@ int mtxmatrix_cdotu(
     } else if (X->type == mtxmatrix_csr && Y->type == mtxmatrix_csr) {
         return mtxmatrix_csr_cdotu(
             &X->storage.csr, &Y->storage.csr, dot, num_flops);
-    } else {
-        return MTX_ERR_INVALID_MATRIX_TYPE;
-    }
+    } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
 }
 
 /**
@@ -2049,9 +1907,9 @@ int mtxmatrix_zdotu(
     double (* dot)[2],
     int64_t * num_flops)
 {
-    if (X->type == mtxmatrix_array && Y->type == mtxmatrix_array) {
-        return mtxmatrix_array_zdotu(
-            &X->storage.array, &Y->storage.array, dot, num_flops);
+    if (X->type == mtxmatrix_blas && Y->type == mtxmatrix_blas) {
+        return mtxmatrix_blas_zdotu(
+            &X->storage.blas, &Y->storage.blas, dot, num_flops);
     } else if (X->type == mtxmatrix_coordinate && Y->type == mtxmatrix_coordinate) {
         return mtxmatrix_coordinate_zdotu(
             &X->storage.coordinate, &Y->storage.coordinate, dot, num_flops);
@@ -2061,9 +1919,7 @@ int mtxmatrix_zdotu(
     } else if (X->type == mtxmatrix_csr && Y->type == mtxmatrix_csr) {
         return mtxmatrix_csr_zdotu(
             &X->storage.csr, &Y->storage.csr, dot, num_flops);
-    } else {
-        return MTX_ERR_INVALID_MATRIX_TYPE;
-    }
+    } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
 }
 
 /**
@@ -2077,9 +1933,9 @@ int mtxmatrix_cdotc(
     float (* dot)[2],
     int64_t * num_flops)
 {
-    if (X->type == mtxmatrix_array && Y->type == mtxmatrix_array) {
-        return mtxmatrix_array_cdotc(
-            &X->storage.array, &Y->storage.array, dot, num_flops);
+    if (X->type == mtxmatrix_blas && Y->type == mtxmatrix_blas) {
+        return mtxmatrix_blas_cdotc(
+            &X->storage.blas, &Y->storage.blas, dot, num_flops);
     } else if (X->type == mtxmatrix_coordinate && Y->type == mtxmatrix_coordinate) {
         return mtxmatrix_coordinate_cdotc(
             &X->storage.coordinate, &Y->storage.coordinate, dot, num_flops);
@@ -2089,9 +1945,7 @@ int mtxmatrix_cdotc(
     } else if (X->type == mtxmatrix_csr && Y->type == mtxmatrix_csr) {
         return mtxmatrix_csr_cdotc(
             &X->storage.csr, &Y->storage.csr, dot, num_flops);
-    } else {
-        return MTX_ERR_INVALID_MATRIX_TYPE;
-    }
+    } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
 }
 
 /**
@@ -2105,9 +1959,9 @@ int mtxmatrix_zdotc(
     double (* dot)[2],
     int64_t * num_flops)
 {
-    if (X->type == mtxmatrix_array && Y->type == mtxmatrix_array) {
-        return mtxmatrix_array_zdotc(
-            &X->storage.array, &Y->storage.array, dot, num_flops);
+    if (X->type == mtxmatrix_blas && Y->type == mtxmatrix_blas) {
+        return mtxmatrix_blas_zdotc(
+            &X->storage.blas, &Y->storage.blas, dot, num_flops);
     } else if (X->type == mtxmatrix_coordinate && Y->type == mtxmatrix_coordinate) {
         return mtxmatrix_coordinate_zdotc(
             &X->storage.coordinate, &Y->storage.coordinate, dot, num_flops);
@@ -2117,9 +1971,7 @@ int mtxmatrix_zdotc(
     } else if (X->type == mtxmatrix_csr && Y->type == mtxmatrix_csr) {
         return mtxmatrix_csr_zdotc(
             &X->storage.csr, &Y->storage.csr, dot, num_flops);
-    } else {
-        return MTX_ERR_INVALID_MATRIX_TYPE;
-    }
+    } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
 }
 
 /**
@@ -2131,17 +1983,15 @@ int mtxmatrix_snrm2(
     float * nrm2,
     int64_t * num_flops)
 {
-    if (X->type == mtxmatrix_array) {
-        return mtxmatrix_array_snrm2(&X->storage.array, nrm2, num_flops);
+    if (X->type == mtxmatrix_blas) {
+        return mtxmatrix_blas_snrm2(&X->storage.blas, nrm2, num_flops);
     } else if (X->type == mtxmatrix_coordinate) {
         return mtxmatrix_coordinate_snrm2(&X->storage.coordinate, nrm2, num_flops);
     } else if (X->type == mtxmatrix_dense) {
         return mtxmatrix_dense_snrm2(&X->storage.dense, nrm2, num_flops);
     } else if (X->type == mtxmatrix_csr) {
         return mtxmatrix_csr_snrm2(&X->storage.csr, nrm2, num_flops);
-    } else {
-        return MTX_ERR_INVALID_MATRIX_TYPE;
-    }
+    } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
 }
 
 /**
@@ -2153,17 +2003,15 @@ int mtxmatrix_dnrm2(
     double * nrm2,
     int64_t * num_flops)
 {
-    if (X->type == mtxmatrix_array) {
-        return mtxmatrix_array_dnrm2(&X->storage.array, nrm2, num_flops);
+    if (X->type == mtxmatrix_blas) {
+        return mtxmatrix_blas_dnrm2(&X->storage.blas, nrm2, num_flops);
     } else if (X->type == mtxmatrix_coordinate) {
         return mtxmatrix_coordinate_dnrm2(&X->storage.coordinate, nrm2, num_flops);
     } else if (X->type == mtxmatrix_dense) {
         return mtxmatrix_dense_dnrm2(&X->storage.dense, nrm2, num_flops);
     } else if (X->type == mtxmatrix_csr) {
         return mtxmatrix_csr_dnrm2(&X->storage.csr, nrm2, num_flops);
-    } else {
-        return MTX_ERR_INVALID_MATRIX_TYPE;
-    }
+    } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
 }
 
 /**
@@ -2177,17 +2025,15 @@ int mtxmatrix_sasum(
     float * asum,
     int64_t * num_flops)
 {
-    if (X->type == mtxmatrix_array) {
-        return mtxmatrix_array_sasum(&X->storage.array, asum, num_flops);
+    if (X->type == mtxmatrix_blas) {
+        return mtxmatrix_blas_sasum(&X->storage.blas, asum, num_flops);
     } else if (X->type == mtxmatrix_coordinate) {
         return mtxmatrix_coordinate_sasum(&X->storage.coordinate, asum, num_flops);
     } else if (X->type == mtxmatrix_dense) {
         return mtxmatrix_dense_sasum(&X->storage.dense, asum, num_flops);
     } else if (X->type == mtxmatrix_csr) {
         return mtxmatrix_csr_sasum(&X->storage.csr, asum, num_flops);
-    } else {
-        return MTX_ERR_INVALID_MATRIX_TYPE;
-    }
+    } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
 }
 
 /**
@@ -2201,17 +2047,15 @@ int mtxmatrix_dasum(
     double * asum,
     int64_t * num_flops)
 {
-    if (X->type == mtxmatrix_array) {
-        return mtxmatrix_array_dasum(&X->storage.array, asum, num_flops);
+    if (X->type == mtxmatrix_blas) {
+        return mtxmatrix_blas_dasum(&X->storage.blas, asum, num_flops);
     } else if (X->type == mtxmatrix_coordinate) {
         return mtxmatrix_coordinate_dasum(&X->storage.coordinate, asum, num_flops);
     } else if (X->type == mtxmatrix_dense) {
         return mtxmatrix_dense_dasum(&X->storage.dense, asum, num_flops);
     } else if (X->type == mtxmatrix_csr) {
         return mtxmatrix_csr_dasum(&X->storage.csr, asum, num_flops);
-    } else {
-        return MTX_ERR_INVALID_MATRIX_TYPE;
-    }
+    } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
 }
 
 /**
@@ -2224,15 +2068,15 @@ int mtxmatrix_iamax(
     const struct mtxmatrix * X,
     int * iamax)
 {
-    if (X->type == mtxmatrix_array) {
-        return mtxmatrix_array_iamax(&X->storage.array, iamax);
+    if (X->type == mtxmatrix_blas) {
+        return mtxmatrix_blas_iamax(&X->storage.blas, iamax);
     } else if (X->type == mtxmatrix_coordinate) {
         return mtxmatrix_coordinate_iamax(&X->storage.coordinate, iamax);
     } else if (X->type == mtxmatrix_csr) {
         return mtxmatrix_csr_iamax(&X->storage.csr, iamax);
-    } else {
-        return MTX_ERR_INVALID_MATRIX_TYPE;
-    }
+    } else if (X->type == mtxmatrix_dense) {
+        return mtxmatrix_dense_iamax(&X->storage.dense, iamax);
+    } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
 }
 
 /*
@@ -2257,9 +2101,9 @@ int mtxmatrix_sgemv(
     struct mtxvector * y,
     int64_t * num_flops)
 {
-    if (A->type == mtxmatrix_array) {
-        return mtxmatrix_array_sgemv(
-            trans, alpha, &A->storage.array, x, beta, y, num_flops);
+    if (A->type == mtxmatrix_blas) {
+        return mtxmatrix_blas_sgemv(
+            trans, alpha, &A->storage.blas, x, beta, y, num_flops);
     } else if (A->type == mtxmatrix_coordinate) {
         return mtxmatrix_coordinate_sgemv(
             trans, alpha, &A->storage.coordinate, x, beta, y, num_flops);
@@ -2269,9 +2113,7 @@ int mtxmatrix_sgemv(
     } else if (A->type == mtxmatrix_csr) {
         return mtxmatrix_csr_sgemv(
             trans, alpha, &A->storage.csr, x, beta, y, num_flops);
-    } else {
-        return MTX_ERR_INVALID_MATRIX_TYPE;
-    }
+    } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
 }
 
 /**
@@ -2292,9 +2134,9 @@ int mtxmatrix_dgemv(
     struct mtxvector * y,
     int64_t * num_flops)
 {
-    if (A->type == mtxmatrix_array) {
-        return mtxmatrix_array_dgemv(
-            trans, alpha, &A->storage.array, x, beta, y, num_flops);
+    if (A->type == mtxmatrix_blas) {
+        return mtxmatrix_blas_dgemv(
+            trans, alpha, &A->storage.blas, x, beta, y, num_flops);
     } else if (A->type == mtxmatrix_coordinate) {
         return mtxmatrix_coordinate_dgemv(
             trans, alpha, &A->storage.coordinate, x, beta, y, num_flops);
@@ -2304,9 +2146,7 @@ int mtxmatrix_dgemv(
     } else if (A->type == mtxmatrix_csr) {
         return mtxmatrix_csr_dgemv(
             trans, alpha, &A->storage.csr, x, beta, y, num_flops);
-    } else {
-        return MTX_ERR_INVALID_MATRIX_TYPE;
-    }
+    } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
 }
 
 /**
@@ -2328,9 +2168,9 @@ int mtxmatrix_cgemv(
     struct mtxvector * y,
     int64_t * num_flops)
 {
-    if (A->type == mtxmatrix_array) {
-        return mtxmatrix_array_cgemv(
-            trans, alpha, &A->storage.array, x, beta, y, num_flops);
+    if (A->type == mtxmatrix_blas) {
+        return mtxmatrix_blas_cgemv(
+            trans, alpha, &A->storage.blas, x, beta, y, num_flops);
     } else if (A->type == mtxmatrix_coordinate) {
         return mtxmatrix_coordinate_cgemv(
             trans, alpha, &A->storage.coordinate, x, beta, y, num_flops);
@@ -2340,9 +2180,7 @@ int mtxmatrix_cgemv(
     } else if (A->type == mtxmatrix_csr) {
         return mtxmatrix_csr_cgemv(
             trans, alpha, &A->storage.csr, x, beta, y, num_flops);
-    } else {
-        return MTX_ERR_INVALID_MATRIX_TYPE;
-    }
+    } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
 }
 
 /**
@@ -2364,9 +2202,9 @@ int mtxmatrix_zgemv(
     struct mtxvector * y,
     int64_t * num_flops)
 {
-    if (A->type == mtxmatrix_array) {
-        return mtxmatrix_array_zgemv(
-            trans, alpha, &A->storage.array, x, beta, y, num_flops);
+    if (A->type == mtxmatrix_blas) {
+        return mtxmatrix_blas_zgemv(
+            trans, alpha, &A->storage.blas, x, beta, y, num_flops);
     } else if (A->type == mtxmatrix_coordinate) {
         return mtxmatrix_coordinate_zgemv(
             trans, alpha, &A->storage.coordinate, x, beta, y, num_flops);
@@ -2376,7 +2214,5 @@ int mtxmatrix_zgemv(
     } else if (A->type == mtxmatrix_csr) {
         return mtxmatrix_csr_zgemv(
             trans, alpha, &A->storage.csr, x, beta, y, num_flops);
-    } else {
-        return MTX_ERR_INVALID_MATRIX_TYPE;
-    }
+    } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
 }

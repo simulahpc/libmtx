@@ -343,6 +343,84 @@ int mtxvector_blas_set_constant_integer_double(
     return mtxvector_base_set_constant_integer_double(&x->base, a);
 }
 
+/**
+ * ‘mtxvector_blas_set_real_single()’ sets values of a vector based on
+ * an array of single precision floating point numbers.
+ */
+int mtxvector_blas_set_real_single(
+    struct mtxvector_blas * x,
+    int64_t size,
+    int stride,
+    const float * a)
+{
+    return mtxvector_base_set_real_single(&x->base, size, stride, a);
+}
+
+/**
+ * ‘mtxvector_blas_set_real_double()’ sets values of a vector based on
+ * an array of double precision floating point numbers.
+ */
+int mtxvector_blas_set_real_double(
+    struct mtxvector_blas * x,
+    int64_t size,
+    int stride,
+    const double * a)
+{
+    return mtxvector_base_set_real_double(&x->base, size, stride, a);
+}
+
+/**
+ * ‘mtxvector_blas_set_complex_single()’ sets values of a vector based
+ * on an array of single precision floating point complex numbers.
+ */
+int mtxvector_blas_set_complex_single(
+    struct mtxvector_blas * x,
+    int64_t size,
+    int stride,
+    const float (*a)[2])
+{
+    return mtxvector_base_set_complex_single(&x->base, size, stride, a);
+}
+
+/**
+ * ‘mtxvector_blas_set_complex_double()’ sets values of a vector based
+ * on an array of double precision floating point complex numbers.
+ */
+int mtxvector_blas_set_complex_double(
+    struct mtxvector_blas * x,
+    int64_t size,
+    int stride,
+    const double (*a)[2])
+{
+    return mtxvector_base_set_complex_double(&x->base, size, stride, a);
+}
+
+/**
+ * ‘mtxvector_blas_set_integer_single()’ sets values of a vector based
+ * on an array of integers.
+ */
+int mtxvector_blas_set_integer_single(
+    struct mtxvector_blas * x,
+    int64_t size,
+    int stride,
+    const int32_t * a)
+{
+    return mtxvector_base_set_integer_single(&x->base, size, stride, a);
+}
+
+/**
+ * ‘mtxvector_blas_set_integer_double()’ sets values of a vector based
+ * on an array of integers.
+ */
+int mtxvector_blas_set_integer_double(
+    struct mtxvector_blas * x,
+    int64_t size,
+    int stride,
+    const int64_t * a)
+{
+    return mtxvector_base_set_integer_double(&x->base, size, stride, a);
+}
+
 /*
  * Convert to and from Matrix Market format
  */

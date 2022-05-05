@@ -33,6 +33,7 @@
 #include <libmtx/matrix/matrix_array.h>
 #include <libmtx/matrix/matrix_coordinate.h>
 #include <libmtx/matrix/matrix_csr.h>
+#include <libmtx/matrix/blas.h>
 #include <libmtx/matrix/dense.h>
 #include <libmtx/vector/vector.h>
 
@@ -60,6 +61,7 @@ enum mtxmatrixtype
 {
     mtxmatrix_auto,       /* automatic selection of matrix type */
     mtxmatrix_array,      /* array format for dense matrices */
+    mtxmatrix_blas,       /* dense matrices with BLAS-accelerated operations */
     mtxmatrix_coordinate, /* coordinate format for sparse matrices */
     mtxmatrix_csr,        /* compressed sparse row */
     mtxmatrix_dense,      /* dense matrices */
@@ -122,6 +124,7 @@ struct mtxmatrix
     union
     {
         struct mtxmatrix_array array;
+        struct mtxmatrix_blas blas;
         struct mtxmatrix_coordinate coordinate;
         struct mtxmatrix_csr csr;
         struct mtxmatrix_dense dense;
