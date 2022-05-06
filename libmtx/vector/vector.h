@@ -1453,13 +1453,14 @@ int mtxvector_usga(
     const struct mtxvector * y);
 
 /**
- * ‘mtxvector_usgz()’ performs a (sparse) gather from a vector ‘y’
- * into another vector ‘x’, while zeroing the corresponding elements
- * of ‘y’ that were copied to ‘x’.
+ * ‘mtxvector_usgz()’ performs a gather operation from a vector ‘y’
+ * into a sparse vector ‘x’ in packed form, while zeroing the values
+ * of the source vector ‘y’ that were copied to ‘x’. Repeated indices
+ * in the packed vector are allowed.
  */
 int mtxvector_usgz(
-    const struct mtxvector * y,
-    struct mtxvector * x);
+    struct mtxvector_packed * x,
+    struct mtxvector * y);
 
 /**
  * ‘mtxvector_ussc()’ performs a scatter operation to a vector ‘y’

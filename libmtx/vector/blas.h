@@ -815,6 +815,16 @@ int mtxvector_blas_usga(
     const struct mtxvector_blas * y);
 
 /**
+ * ‘mtxvector_blas_usgz()’ performs a gather operation from a vector
+ * ‘y’ into a sparse vector ‘x’ in packed form, while zeroing the
+ * values of the source vector ‘y’ that were copied to ‘x’. Repeated
+ * indices in the packed vector are allowed.
+ */
+int mtxvector_blas_usgz(
+    struct mtxvector_packed * xpacked,
+    struct mtxvector_blas * y);
+
+/**
  * ‘mtxvector_blas_ussc()’ performs a scatter operation to a vector
  * ‘y’ from a sparse vector ‘x’ in packed form. Repeated indices in
  * the packed vector are not allowed, otherwise the result is

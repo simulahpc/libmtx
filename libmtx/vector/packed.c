@@ -456,6 +456,16 @@ int mtxvector_packed_init_strided_pattern(
  */
 
 /**
+ * ‘mtxvector_packed_setzero()’ sets every nonzero entry of a vector
+ * to zero.
+ */
+int mtxvector_packed_setzero(
+    struct mtxvector_packed * x)
+{
+    return mtxvector_setzero(&x->x);
+}
+
+/**
  * ‘mtxvector_packed_set_constant_real_single()’ sets every nonzero
  * entry of a vector equal to a constant, single precision floating
  * point number.

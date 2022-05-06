@@ -2807,6 +2807,89 @@ int mtxvector_omp_usga(
 }
 
 /**
+ * ‘mtxvector_omp_usgz()’ performs a gather operation from a vector
+ * ‘y’ into a sparse vector ‘x’ in packed form, while zeroing the
+ * values of the source vector ‘y’ that were copied to ‘x’. Repeated
+ * indices in the packed vector are allowed.
+ */
+int mtxvector_omp_usgz(
+    struct mtxvector_packed * xpacked,
+    struct mtxvector_omp * yomp)
+{
+    if (xpacked->x.type != mtxvector_omp) return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
+    struct mtxvector_omp * xomp = &xpacked->x.storage.omp;
+    struct mtxvector_base * x = &xomp->base;
+    const struct mtxvector_base * y = &yomp->base;
+    int num_threads = xomp->num_threads < yomp->num_threads
+        ? xomp->num_threads : yomp->num_threads;
+    if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
+    if (x->precision != y->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
+    if (xpacked->size != y->size) return MTX_ERR_INCOMPATIBLE_SIZE;
+    if (xpacked->num_nonzeros != x->size) return MTX_ERR_INCOMPATIBLE_SIZE;
+    const int64_t * idx = xpacked->idx;
+    if (x->field == mtx_field_real) {
+        if (x->precision == mtx_single) {
+            float * xdata = x->data.real_single;
+            float * ydata = y->data.real_single;
+            #pragma omp parallel for num_threads(num_threads)
+            for (int64_t k = 0; k < x->size; k++) {
+                xdata[k] = ydata[idx[k]];
+                ydata[idx[k]] = 0;
+            }
+        } else if (x->precision == mtx_double) {
+            double * xdata = x->data.real_double;
+            double * ydata = y->data.real_double;
+            #pragma omp parallel for num_threads(num_threads)
+            for (int64_t k = 0; k < x->size; k++) {
+                xdata[k] = ydata[idx[k]];
+                ydata[idx[k]] = 0;
+            }
+        } else { return MTX_ERR_INVALID_PRECISION; }
+    } else if (x->field == mtx_field_complex) {
+        if (x->precision == mtx_single) {
+            float (* xdata)[2] = x->data.complex_single;
+            float (* ydata)[2] = y->data.complex_single;
+            #pragma omp parallel for num_threads(num_threads)
+            for (int64_t k = 0; k < x->size; k++) {
+                xdata[k][0] = ydata[idx[k]][0];
+                xdata[k][1] = ydata[idx[k]][1];
+                ydata[idx[k]][0] = 0;
+                ydata[idx[k]][1] = 0;
+            }
+        } else if (x->precision == mtx_double) {
+            double (* xdata)[2] = x->data.complex_double;
+            double (* ydata)[2] = y->data.complex_double;
+            #pragma omp parallel for num_threads(num_threads)
+            for (int64_t k = 0; k < x->size; k++) {
+                xdata[k][0] = ydata[idx[k]][0];
+                xdata[k][1] = ydata[idx[k]][1];
+                ydata[idx[k]][0] = 0;
+                ydata[idx[k]][1] = 0;
+            }
+        } else { return MTX_ERR_INVALID_PRECISION; }
+    } else if (x->field == mtx_field_integer) {
+        if (x->precision == mtx_single) {
+            int32_t * xdata = x->data.integer_single;
+            int32_t * ydata = y->data.integer_single;
+            #pragma omp parallel for num_threads(num_threads)
+            for (int64_t k = 0; k < x->size; k++) {
+                xdata[k] = ydata[idx[k]];
+                ydata[idx[k]] = 0;
+            }
+        } else if (x->precision == mtx_double) {
+            int64_t * xdata = x->data.integer_double;
+            int64_t * ydata = y->data.integer_double;
+            #pragma omp parallel for num_threads(num_threads)
+            for (int64_t k = 0; k < x->size; k++) {
+                xdata[k] = ydata[idx[k]];
+                ydata[idx[k]] = 0;
+            }
+        } else { return MTX_ERR_INVALID_PRECISION; }
+    } else { return MTX_ERR_INVALID_FIELD; }
+    return MTX_SUCCESS;
+}
+
+/**
  * ‘mtxvector_omp_ussc()’ performs a scatter operation to a vector ‘y’
  * from a sparse vector ‘x’ in packed form. Repeated indices in the
  * packed vector are not allowed, otherwise the result is undefined.

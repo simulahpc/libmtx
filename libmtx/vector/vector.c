@@ -3020,13 +3020,31 @@ int mtxvector_usga(
 }
 
 /**
- * ‘mtxvector_usgz()’ performs a (sparse) gather from a vector ‘y’
- * into another vector ‘x’, while zeroing the corresponding elements
- * of ‘y’ that were copied to ‘x’.
+ * ‘mtxvector_usgz()’ performs a gather operation from a vector ‘y’
+ * into a sparse vector ‘x’ in packed form, while zeroing the values
+ * of the source vector ‘y’ that were copied to ‘x’. Repeated indices
+ * in the packed vector are allowed.
  */
 int mtxvector_usgz(
-    const struct mtxvector * y,
-    struct mtxvector * x);
+    struct mtxvector_packed * x,
+    struct mtxvector * y)
+{
+    if (y->type == mtxvector_base) {
+        return mtxvector_base_usgz(x, &y->storage.base);
+    } else if (y->type == mtxvector_blas) {
+#ifdef LIBMTX_HAVE_BLAS
+        return mtxvector_blas_usgz(x, &y->storage.blas);
+#else
+        return MTX_ERR_BLAS_NOT_SUPPORTED;
+#endif
+    } else if (y->type == mtxvector_omp) {
+#ifdef LIBMTX_HAVE_OPENMP
+        return mtxvector_omp_usgz(x, &y->storage.omp);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
+    } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
+}
 
 /**
  * ‘mtxvector_ussc()’ performs a scatter operation to a vector ‘y’
