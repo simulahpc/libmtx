@@ -29,8 +29,6 @@
 #include <libmtx/matrix/matrix_coordinate.h>
 #include <libmtx/mtxfile/mtxfile.h>
 #include <libmtx/precision.h>
-#include <libmtx/util/partition.h>
-#include <libmtx/util/sort.h>
 #include <libmtx/vector/base.h>
 #include <libmtx/vector/vector.h>
 
@@ -83,54 +81,7 @@ int mtxmatrix_coordinate_init_copy(
 {
     int err = mtxmatrix_coordinate_alloc_copy(dst, src);
     if (err) return err;
-    dst->num_nonzeros = src->num_nonzeros;
     return mtxmatrix_coordinate_copy(dst, src);
-}
-
-static int mtxmatrix_coordinate_alloc_idx(
-    struct mtxmatrix_coordinate * A,
-    enum mtxsymmetry symmetry,
-    int num_rows,
-    int num_columns,
-    int64_t size)
-{
-    int64_t num_entries;
-    if (__builtin_mul_overflow(num_rows, num_columns, &num_entries)) {
-        errno = EOVERFLOW;
-        return MTX_ERR_ERRNO;
-    }
-    A->rowidx = malloc(size * sizeof(int));
-    if (!A->rowidx) return MTX_ERR_ERRNO;
-    A->colidx = malloc(size * sizeof(int));
-    if (!A->colidx) { free(A->rowidx); return MTX_ERR_ERRNO; }
-    A->symmetry = symmetry;
-    A->num_rows = num_rows;
-    A->num_columns = num_columns;
-    A->num_entries = num_entries;
-    A->num_nonzeros = -1;
-    A->size = size;
-    return MTX_SUCCESS;
-}
-
-/**
- * ‘mtxmatrix_coordinate_alloc()’ allocates a matrix in coordinate
- * format.
- */
-static int mtxmatrix_coordinate_alloc(
-    struct mtxmatrix_coordinate * A,
-    enum mtxfield field,
-    enum mtxprecision precision,
-    enum mtxsymmetry symmetry,
-    int num_rows,
-    int num_columns,
-    int64_t size)
-{
-    int err = mtxmatrix_coordinate_alloc_idx(
-        A, symmetry, num_rows, num_columns, size);
-    if (err) return err;
-    err = mtxvector_base_alloc(&A->a, field, precision, size);
-    if (err) { free(A->colidx); free(A->rowidx); return err; }
-    return MTX_SUCCESS;
 }
 
 /*
@@ -154,17 +105,26 @@ int mtxmatrix_coordinate_alloc_entries(
     const int * rowidx,
     const int * colidx)
 {
-    int err = mtxmatrix_coordinate_alloc_idx(
-        A, symmetry, num_rows, num_columns, size);
-    if (err) return err;
+    A->symmetry = symmetry;
+    A->num_rows = num_rows;
+    A->num_columns = num_columns;
+    if (__builtin_mul_overflow(num_rows, num_columns, &A->num_entries)) {
+        errno = EOVERFLOW;
+        return MTX_ERR_ERRNO;
+    }
     A->num_nonzeros = 0;
+    A->size = size;
+    A->rowidx = malloc(size * sizeof(int));
+    if (!A->rowidx) return MTX_ERR_ERRNO;
+    A->colidx = malloc(size * sizeof(int));
+    if (!A->colidx) { free(A->rowidx); return MTX_ERR_ERRNO; }
     for (int64_t k = 0; k < size; k++) {
         A->rowidx[k] = *(const int *)((const char *) rowidx+k*idxstride)-idxbase;
         A->colidx[k] = *(const int *)((const char *) colidx+k*idxstride)-idxbase;
         A->num_nonzeros +=
             (symmetry == mtx_unsymmetric || A->rowidx[k] == A->colidx[k]) ? 1 : 2;
     }
-    err = mtxvector_base_alloc(&A->a, field, precision, size);
+    int err = mtxvector_base_alloc(&A->a, field, precision, size);
     if (err) { free(A->colidx); free(A->rowidx); return err; }
     return MTX_SUCCESS;
 }
@@ -1038,20 +998,32 @@ int mtxmatrix_coordinate_from_mtxfile(
     enum mtxsymmetry symmetry;
     err = mtxfilesymmetry_to_mtxsymmetry(&symmetry, mtxfile->header.symmetry);
     if (err) return err;
+    enum mtxprecision precision = mtxfile->precision;
 
     int num_rows = mtxfile->size.num_rows;
     int num_columns = mtxfile->size.num_columns;
     int64_t size = mtxfile->size.num_nonzeros;
+    int64_t num_entries;
+    if (__builtin_mul_overflow(num_rows, num_columns, &num_entries)) {
+        errno = EOVERFLOW; return MTX_ERR_ERRNO;
+    }
+    A->rowidx = malloc(size * sizeof(int));
+    if (!A->rowidx) return MTX_ERR_ERRNO;
+    A->colidx = malloc(size * sizeof(int));
+    if (!A->colidx) { free(A->rowidx); return MTX_ERR_ERRNO; }
+    A->symmetry = symmetry;
+    A->num_rows = num_rows;
+    A->num_columns = num_columns;
+    A->num_entries = num_entries;
+    A->num_nonzeros = 0;
+    A->size = size;
+    err = mtxvector_base_alloc(&A->a, field, precision, size);
+    if (err) { free(A->colidx); free(A->rowidx); return err; }
 
     if (mtxfile->header.field == mtxfile_real) {
-        err = mtxmatrix_coordinate_alloc(
-            A, mtx_field_real, mtxfile->precision, symmetry,
-            num_rows, num_columns, size);
-        if (err) return err;
         if (mtxfile->precision == mtx_single) {
             const struct mtxfile_matrix_coordinate_real_single * data =
                 mtxfile->data.matrix_coordinate_real_single;
-            A->num_nonzeros = 0;
             for (int64_t k = 0; k < size; k++) {
                 A->rowidx[k] = data[k].i-1;
                 A->colidx[k] = data[k].j-1;
@@ -1062,7 +1034,6 @@ int mtxmatrix_coordinate_from_mtxfile(
         } else if (mtxfile->precision == mtx_double) {
             const struct mtxfile_matrix_coordinate_real_double * data =
                 mtxfile->data.matrix_coordinate_real_double;
-            A->num_nonzeros = 0;
             for (int64_t k = 0; k < size; k++) {
                 A->rowidx[k] = data[k].i-1;
                 A->colidx[k] = data[k].j-1;
@@ -1072,14 +1043,9 @@ int mtxmatrix_coordinate_from_mtxfile(
             }
         } else { return MTX_ERR_INVALID_PRECISION; }
     } else if (mtxfile->header.field == mtxfile_complex) {
-        err = mtxmatrix_coordinate_alloc(
-            A, mtx_field_complex, mtxfile->precision, symmetry,
-            num_rows, num_columns, size);
-        if (err) return err;
         if (mtxfile->precision == mtx_single) {
             const struct mtxfile_matrix_coordinate_complex_single * data =
                 mtxfile->data.matrix_coordinate_complex_single;
-            A->num_nonzeros = 0;
             for (int64_t k = 0; k < size; k++) {
                 A->rowidx[k] = data[k].i-1;
                 A->colidx[k] = data[k].j-1;
@@ -1091,7 +1057,6 @@ int mtxmatrix_coordinate_from_mtxfile(
         } else if (mtxfile->precision == mtx_double) {
             const struct mtxfile_matrix_coordinate_complex_double * data =
                 mtxfile->data.matrix_coordinate_complex_double;
-            A->num_nonzeros = 0;
             for (int64_t k = 0; k < size; k++) {
                 A->rowidx[k] = data[k].i-1;
                 A->colidx[k] = data[k].j-1;
@@ -1102,14 +1067,9 @@ int mtxmatrix_coordinate_from_mtxfile(
             }
         } else { return MTX_ERR_INVALID_PRECISION; }
     } else if (mtxfile->header.field == mtxfile_integer) {
-        err = mtxmatrix_coordinate_alloc(
-            A, mtx_field_integer, mtxfile->precision, symmetry,
-            num_rows, num_columns, size);
-        if (err) return err;
         if (mtxfile->precision == mtx_single) {
             const struct mtxfile_matrix_coordinate_integer_single * data =
                 mtxfile->data.matrix_coordinate_integer_single;
-            A->num_nonzeros = 0;
             for (int64_t k = 0; k < size; k++) {
                 A->rowidx[k] = data[k].i-1;
                 A->colidx[k] = data[k].j-1;
@@ -1120,7 +1080,6 @@ int mtxmatrix_coordinate_from_mtxfile(
         } else if (mtxfile->precision == mtx_double) {
             const struct mtxfile_matrix_coordinate_integer_double * data =
                 mtxfile->data.matrix_coordinate_integer_double;
-            A->num_nonzeros = 0;
             for (int64_t k = 0; k < size; k++) {
                 A->rowidx[k] = data[k].i-1;
                 A->colidx[k] = data[k].j-1;
@@ -1130,14 +1089,8 @@ int mtxmatrix_coordinate_from_mtxfile(
             }
         } else { return MTX_ERR_INVALID_PRECISION; }
     } else if (mtxfile->header.field == mtxfile_pattern) {
-        err = mtxmatrix_coordinate_alloc(
-            A, mtx_field_pattern, mtx_single, symmetry,
-            num_rows, num_columns, size);
-        if (err)
-            return err;
         const struct mtxfile_matrix_coordinate_pattern * data =
             mtxfile->data.matrix_coordinate_pattern;
-            A->num_nonzeros = 0;
         for (int64_t k = 0; k < size; k++) {
             A->rowidx[k] = data[k].i-1;
             A->colidx[k] = data[k].j-1;

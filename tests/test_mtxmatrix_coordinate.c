@@ -26,7 +26,6 @@
 #include <libmtx/error.h>
 #include <libmtx/matrix/matrix.h>
 #include <libmtx/mtxfile/mtxfile.h>
-#include <libmtx/util/partition.h>
 #include <libmtx/vector/vector.h>
 
 #include <errno.h>
@@ -699,8 +698,8 @@ int test_mtxmatrix_coordinate_to_mtxfile(void)
         int num_rows = 3;
         int num_columns = 3;
         int nnz = 4;
-        int rowidx[] = {1, 1, 2, 3};
-        int colidx[] = {1, 3, 1, 3};
+        int rowidx[] = {0, 0, 1, 2};
+        int colidx[] = {0, 2, 0, 2};
         float Adata[] = {1.0f, 3.0f, 4.0f, 9.0f};
         struct mtxmatrix A;
         err = mtxmatrix_init_entries_real_single(
@@ -732,8 +731,8 @@ int test_mtxmatrix_coordinate_to_mtxfile(void)
         int num_rows = 3;
         int num_columns = 3;
         int nnz = 4;
-        int rowidx[] = {1, 1, 2, 3};
-        int colidx[] = {1, 3, 3, 3};
+        int rowidx[] = {0, 0, 1, 2};
+        int colidx[] = {0, 2, 0, 2};
         float Adata[] = {1.0f, 3.0f, 6.0f, 9.0f};
         struct mtxmatrix A;
         err = mtxmatrix_init_entries_real_single(
@@ -765,8 +764,8 @@ int test_mtxmatrix_coordinate_to_mtxfile(void)
         int num_rows = 3;
         int num_columns = 3;
         int nnz = 3;
-        int rowidx[] = {1, 1, 2};
-        int colidx[] = {2, 3, 3};
+        int rowidx[] = {0, 0, 1};
+        int colidx[] = {1, 2, 2};
         float Adata[] = {2.0f, 3.0f, 6.0f};
         struct mtxmatrix A;
         err = mtxmatrix_init_entries_real_single(
@@ -798,8 +797,8 @@ int test_mtxmatrix_coordinate_to_mtxfile(void)
         int num_rows = 3;
         int num_columns = 3;
         int nnz = 4;
-        int rowidx[] = {1, 1, 2, 3};
-        int colidx[] = {1, 3, 1, 3};
+        int rowidx[] = {0, 0, 1, 2};
+        int colidx[] = {0, 2, 0, 2};
         double Adata[] = {1.0, 3.0, 4.0, 9.0};
         struct mtxmatrix A;
         err = mtxmatrix_init_entries_real_double(
@@ -831,8 +830,8 @@ int test_mtxmatrix_coordinate_to_mtxfile(void)
         int num_rows = 3;
         int num_columns = 3;
         int nnz = 4;
-        int rowidx[] = {1, 1, 2, 3};
-        int colidx[] = {1, 3, 1, 3};
+        int rowidx[] = {0, 0, 1, 2};
+        int colidx[] = {0, 2, 0, 2};
         float Adata[][2] = {{1.0f,-1.0f}, {3.0f,-3.0f}, {4.0f,-4.0f}, {9.0f,-9.0f}};
         struct mtxmatrix A;
         err = mtxmatrix_init_entries_complex_single(
@@ -865,8 +864,8 @@ int test_mtxmatrix_coordinate_to_mtxfile(void)
         int num_rows = 3;
         int num_columns = 3;
         int nnz = 4;
-        int rowidx[] = {1, 1, 2, 3};
-        int colidx[] = {2, 3, 3, 3};
+        int rowidx[] = {0, 0, 1, 2};
+        int colidx[] = {0, 2, 2, 2};
         float Adata[][2] = {{2.0f,-2.0f}, {3.0f,-3.0f}, {6.0f,-6.0f}, {9.0f,-9.0f}};
         struct mtxmatrix A;
         err = mtxmatrix_init_entries_complex_single(
@@ -899,8 +898,8 @@ int test_mtxmatrix_coordinate_to_mtxfile(void)
         int num_rows = 3;
         int num_columns = 3;
         int nnz = 4;
-        int rowidx[] = {1, 1, 2, 3};
-        int colidx[] = {1, 3, 1, 3};
+        int rowidx[] = {0, 0, 1, 2};
+        int colidx[] = {0, 2, 0, 2};
         double Adata[][2] = {{1.0,-1.0}, {3.0,-3.0}, {4.0,-4.0}, {9.0,-9.0}};
         struct mtxmatrix A;
         err = mtxmatrix_init_entries_complex_double(
@@ -933,8 +932,8 @@ int test_mtxmatrix_coordinate_to_mtxfile(void)
         int num_rows = 3;
         int num_columns = 3;
         int nnz = 4;
-        int rowidx[] = {1, 1, 2, 3};
-        int colidx[] = {1, 3, 1, 3};
+        int rowidx[] = {0, 0, 1, 2};
+        int colidx[] = {0, 2, 0, 2};
         int32_t Adata[] = {1, 3, 4, 9};
         struct mtxmatrix A;
         err = mtxmatrix_init_entries_integer_single(
@@ -966,8 +965,8 @@ int test_mtxmatrix_coordinate_to_mtxfile(void)
         int num_rows = 3;
         int num_columns = 3;
         int nnz = 4;
-        int rowidx[] = {1, 1, 2, 3};
-        int colidx[] = {1, 3, 1, 3};
+        int rowidx[] = {0, 0, 1, 2};
+        int colidx[] = {0, 2, 0, 2};
         int64_t Adata[] = {1, 3, 4, 9};
         struct mtxmatrix A;
         err = mtxmatrix_init_entries_integer_double(
@@ -999,8 +998,8 @@ int test_mtxmatrix_coordinate_to_mtxfile(void)
         int num_rows = 3;
         int num_columns = 3;
         int nnz = 4;
-        int rowidx[] = {1, 1, 2, 3};
-        int colidx[] = {1, 3, 1, 3};
+        int rowidx[] = {0, 0, 1, 2};
+        int colidx[] = {0, 2, 0, 2};
         struct mtxmatrix A;
         err = mtxmatrix_init_entries_pattern(
             &A, mtxmatrix_coordinate, mtx_unsymmetric, num_rows, num_columns, nnz, rowidx, colidx);

@@ -16,9 +16,9 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-03-22
+ * Last modified: 2022-05-05
  *
- * Data structures for matrices in compressed sparse row format.
+ * Matrices in CSR format.
  */
 
 #ifndef LIBMTX_MATRIX_CSR_H
@@ -28,7 +28,10 @@
 
 #include <libmtx/precision.h>
 #include <libmtx/field.h>
+#include <libmtx/util/symmetry.h>
 #include <libmtx/util/transpose.h>
+#include <libmtx/vector/base.h>
+#include <libmtx/vector/packed.h>
 #include <libmtx/vector/vector.h>
 
 #include <stdarg.h>
@@ -38,8 +41,6 @@
 
 struct mtxfile;
 struct mtxmatrix;
-struct mtxpartition;
-struct mtxvector;
 
 /**
  * ‘mtxmatrix_csr’ represents a matrix in compressed sparse row (CSR)
@@ -47,17 +48,6 @@ struct mtxvector;
  */
 struct mtxmatrix_csr
 {
-    /**
-     * ‘field’ is the matrix field: ‘real’, ‘complex’, ‘integer’ or
-     * ‘pattern’.
-     */
-    enum mtxfield field;
-
-    /**
-     * ‘precision’ is the precision used to store values.
-     */
-    enum mtxprecision precision;
-
     /**
      * ‘symmetry’ is the matrix symmetry: ‘unsymmetric’, ‘symmetric’,
      * ‘skew-symmetric’ or ‘hermitian’.
@@ -81,8 +71,8 @@ struct mtxmatrix_csr
     int64_t num_entries;
 
     /**
-     * ‘num_nonzeros’ is the number of nonzero matrix entries for a
-     * sparse matrix.
+     * ‘num_nonzeros’ is the number of nonzero matrix entries,
+     *  including those represented implicitly due to symmetry.
      */
     int64_t num_nonzeros;
 
@@ -93,42 +83,40 @@ struct mtxmatrix_csr
 
     /**
      * ‘rowptr’ is an array containing row pointers. Since nonzeros
-     * are arranged in row major order, the entries of this array
-     * indicate the position of the first nonzero of each row. There
-     * is also an additional, final entry that is equal to the total
-     * number of nonzeros.
+     * are arranged rowwise, the entries of this array indicate the
+     * position of the first nonzero of each row. There is also an
+     * additional, final entry that is equal to the total number of
+     * nonzeros.
      */
     int64_t * rowptr;
 
     /**
      * ‘colidx’ is an array containing the column indices of nonzero
-     * matrix entries. Note that column indices are 0-based, unlike
+     * matrix entries.  Note that column indices are 0-based, unlike
      * the Matrix Market format, where indices are 1-based.
      */
     int * colidx;
 
     /**
-     * ‘data’ contains the values of nonzero matrix entries.
+     * ‘a’ is a vector storing the underlying nonzero matrix entries.
      */
-    union {
-        float * real_single;
-        double * real_double;
-        float (* complex_single)[2];
-        double (* complex_double)[2];
-        int32_t * integer_single;
-        int64_t * integer_double;
-    } data;
+    struct mtxvector_base a;
+
+    /**
+     * ‘diag’ is a vector storing the diagonal nonzero matrix entries.
+     */
+    struct mtxvector_packed diag;
 };
 
 /*
- * Memory management
+ * memory management
  */
 
 /**
  * ‘mtxmatrix_csr_free()’ frees storage allocated for a matrix.
  */
 void mtxmatrix_csr_free(
-    struct mtxmatrix_csr * matrix);
+    struct mtxmatrix_csr * A);
 
 /**
  * ‘mtxmatrix_csr_alloc_copy()’ allocates a copy of a matrix without
@@ -147,27 +135,290 @@ int mtxmatrix_csr_init_copy(
     const struct mtxmatrix_csr * src);
 
 /*
- * Compressed sparse row formats
+ * initialise matrices from entrywise data in coordinate format
  */
 
 /**
- * ‘mtxmatrix_csr_alloc()’ allocates a matrix in CSR format.
+ * ‘mtxmatrix_csr_alloc_entries()’ allocates a matrix from entrywise
+ * data in coordinate format.
+ *
+ * If it is not ‘NULL’, then ‘perm’ must point to an array of length
+ * ‘size’. Because the sparse matrix storage may internally reorder
+ * the specified nonzero entries, this array is used to store the
+ * permutation applied to the specified nonzero entries.
  */
-int mtxmatrix_csr_alloc(
-    struct mtxmatrix_csr * matrix,
+int mtxmatrix_csr_alloc_entries(
+    struct mtxmatrix_csr * A,
     enum mtxfield field,
     enum mtxprecision precision,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
-    int64_t size);
+    int64_t size,
+    int idxstride,
+    int idxbase,
+    const int * rowidx,
+    const int * colidx,
+    int64_t * perm);
 
 /**
- * ‘mtxmatrix_csr_init_real_single()’ allocates and initialises a
- * matrix in CSR format with real, single precision coefficients.
+ * ‘mtxmatrix_csr_init_entries_real_single()’ allocates and
+ * initialises a matrix from entrywise data in coordinate format with
+ * real, single precision coefficients.
  */
-int mtxmatrix_csr_init_real_single(
-    struct mtxmatrix_csr * matrix,
+int mtxmatrix_csr_init_entries_real_single(
+    struct mtxmatrix_csr * A,
+    enum mtxsymmetry symmetry,
+    int num_rows,
+    int num_columns,
+    int64_t size,
+    const int * rowidx,
+    const int * colidx,
+    const float * data);
+
+/**
+ * ‘mtxmatrix_csr_init_entries_real_double()’ allocates and
+ * initialises a matrix from entrywise data in coordinate format with
+ * real, double precision coefficients.
+ */
+int mtxmatrix_csr_init_entries_real_double(
+    struct mtxmatrix_csr * A,
+    enum mtxsymmetry symmetry,
+    int num_rows,
+    int num_columns,
+    int64_t size,
+    const int * rowidx,
+    const int * colidx,
+    const double * data);
+
+/**
+ * ‘mtxmatrix_csr_init_entries_complex_single()’ allocates and
+ * initialises a matrix from entrywise data in coordinate format with
+ * complex, single precision coefficients.
+ */
+int mtxmatrix_csr_init_entries_complex_single(
+    struct mtxmatrix_csr * A,
+    enum mtxsymmetry symmetry,
+    int num_rows,
+    int num_columns,
+    int64_t size,
+    const int * rowidx,
+    const int * colidx,
+    const float (* data)[2]);
+
+/**
+ * ‘mtxmatrix_csr_init_entries_complex_double()’ allocates and
+ * initialises a matrix from entrywise data in coordinate format with
+ * complex, double precision coefficients.
+ */
+int mtxmatrix_csr_init_entries_complex_double(
+    struct mtxmatrix_csr * A,
+    enum mtxsymmetry symmetry,
+    int num_rows,
+    int num_columns,
+    int64_t size,
+    const int * rowidx,
+    const int * colidx,
+    const double (* data)[2]);
+
+/**
+ * ‘mtxmatrix_csr_init_entries_integer_single()’ allocates and
+ * initialises a matrix from entrywise data in coordinate format with
+ * integer, single precision coefficients.
+ */
+int mtxmatrix_csr_init_entries_integer_single(
+    struct mtxmatrix_csr * A,
+    enum mtxsymmetry symmetry,
+    int num_rows,
+    int num_columns,
+    int64_t size,
+    const int * rowidx,
+    const int * colidx,
+    const int32_t * data);
+
+/**
+ * ‘mtxmatrix_csr_init_entries_integer_double()’ allocates and
+ * initialises a matrix from entrywise data in coordinate format with
+ * integer, double precision coefficients.
+ */
+int mtxmatrix_csr_init_entries_integer_double(
+    struct mtxmatrix_csr * A,
+    enum mtxsymmetry symmetry,
+    int num_rows,
+    int num_columns,
+    int64_t size,
+    const int * rowidx,
+    const int * colidx,
+    const int64_t * data);
+
+/**
+ * ‘mtxmatrix_csr_init_entries_pattern()’ allocates and initialises a
+ * matrix from entrywise data in coordinate format with boolean
+ * coefficients.
+ */
+int mtxmatrix_csr_init_entries_pattern(
+    struct mtxmatrix_csr * A,
+    enum mtxsymmetry symmetry,
+    int num_rows,
+    int num_columns,
+    int64_t size,
+    const int * rowidx,
+    const int * colidx);
+
+/*
+ * initialise matrices from entrywise data in coordinate format with
+ * specified strides
+ */
+
+/**
+ * ‘mtxmatrix_csr_init_entries_strided_real_single()’ allocates and
+ * initialises a matrix from entrywise data in coordinate format with
+ * real, single precision coefficients.
+ */
+int mtxmatrix_csr_init_entries_strided_real_single(
+    struct mtxmatrix_csr * A,
+    enum mtxsymmetry symmetry,
+    int num_rows,
+    int num_columns,
+    int64_t size,
+    int idxstride,
+    int idxbase,
+    const int * rowidx,
+    const int * colidx,
+    int datastride,
+    const float * data);
+
+/**
+ * ‘mtxmatrix_csr_init_entries_strided_real_double()’ allocates and
+ * initialises a matrix from entrywise data in coordinate format with
+ * real, double precision coefficients.
+ */
+int mtxmatrix_csr_init_entries_strided_real_double(
+    struct mtxmatrix_csr * A,
+    enum mtxsymmetry symmetry,
+    int num_rows,
+    int num_columns,
+    int64_t size,
+    int idxstride,
+    int idxbase,
+    const int * rowidx,
+    const int * colidx,
+    int datastride,
+    const double * data);
+
+/**
+ * ‘mtxmatrix_csr_init_entries_strided_complex_single()’ allocates and
+ * initialises a matrix from entrywise data in coordinate format with
+ * complex, single precision coefficients.
+ */
+int mtxmatrix_csr_init_entries_strided_complex_single(
+    struct mtxmatrix_csr * A,
+    enum mtxsymmetry symmetry,
+    int num_rows,
+    int num_columns,
+    int64_t size,
+    int idxstride,
+    int idxbase,
+    const int * rowidx,
+    const int * colidx,
+    int datastride,
+    const float (* data)[2]);
+
+/**
+ * ‘mtxmatrix_csr_init_entries_strided_complex_double()’ allocates and
+ * initialises a matrix from entrywise data in coordinate format with
+ * complex, double precision coefficients.
+ */
+int mtxmatrix_csr_init_entries_strided_complex_double(
+    struct mtxmatrix_csr * A,
+    enum mtxsymmetry symmetry,
+    int num_rows,
+    int num_columns,
+    int64_t size,
+    int idxstride,
+    int idxbase,
+    const int * rowidx,
+    const int * colidx,
+    int datastride,
+    const double (* data)[2]);
+
+/**
+ * ‘mtxmatrix_csr_init_entries_strided_integer_single()’ allocates and
+ * initialises a matrix from entrywise data in coordinate format with
+ * integer, single precision coefficients.
+ */
+int mtxmatrix_csr_init_entries_strided_integer_single(
+    struct mtxmatrix_csr * A,
+    enum mtxsymmetry symmetry,
+    int num_rows,
+    int num_columns,
+    int64_t size,
+    int idxstride,
+    int idxbase,
+    const int * rowidx,
+    const int * colidx,
+    int datastride,
+    const int32_t * data);
+
+/**
+ * ‘mtxmatrix_csr_init_entries_strided_integer_double()’ allocates and
+ * initialises a matrix from entrywise data in coordinate format with
+ * integer, double precision coefficients.
+ */
+int mtxmatrix_csr_init_entries_strided_integer_double(
+    struct mtxmatrix_csr * A,
+    enum mtxsymmetry symmetry,
+    int num_rows,
+    int num_columns,
+    int64_t size,
+    int idxstride,
+    int idxbase,
+    const int * rowidx,
+    const int * colidx,
+    int datastride,
+    const int64_t * data);
+
+/**
+ * ‘mtxmatrix_csr_init_entries_strided_pattern()’ allocates and
+ * initialises a matrix from entrywise data in coordinate format with
+ * boolean coefficients.
+ */
+int mtxmatrix_csr_init_entries_strided_pattern(
+    struct mtxmatrix_csr * A,
+    enum mtxsymmetry symmetry,
+    int num_rows,
+    int num_columns,
+    int64_t size,
+    int idxstride,
+    int idxbase,
+    const int * rowidx,
+    const int * colidx);
+
+/*
+ * initialise matrices from row-wise data in compressed row format
+ */
+
+/**
+ * ‘mtxmatrix_csr_alloc_rows()’ allocates a matrix from row-wise data
+ * in compressed row format.
+ */
+int mtxmatrix_csr_alloc_rows(
+    struct mtxmatrix_csr * A,
+    enum mtxfield field,
+    enum mtxprecision precision,
+    enum mtxsymmetry symmetry,
+    int num_rows,
+    int num_columns,
+    const int64_t * rowptr,
+    const int * colidx);
+
+/**
+ * ‘mtxmatrix_csr_init_rows_real_single()’ allocates and initialises a
+ * matrix from row-wise data in compressed row format with real,
+ * single precision coefficients.
+ */
+int mtxmatrix_csr_init_rows_real_single(
+    struct mtxmatrix_csr * A,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -176,11 +427,12 @@ int mtxmatrix_csr_init_real_single(
     const float * data);
 
 /**
- * ‘mtxmatrix_csr_init_real_double()’ allocates and initialises a
- * matrix in CSR format with real, double precision coefficients.
+ * ‘mtxmatrix_csr_init_rows_real_double()’ allocates and initialises a
+ * matrix from row-wise data in compressed row format with real,
+ * double precision coefficients.
  */
-int mtxmatrix_csr_init_real_double(
-    struct mtxmatrix_csr * matrix,
+int mtxmatrix_csr_init_rows_real_double(
+    struct mtxmatrix_csr * A,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -189,11 +441,12 @@ int mtxmatrix_csr_init_real_double(
     const double * data);
 
 /**
- * ‘mtxmatrix_csr_init_complex_single()’ allocates and initialises a
- * matrix in CSR format with complex, single precision coefficients.
+ * ‘mtxmatrix_csr_init_rows_complex_single()’ allocates and
+ * initialises a matrix from row-wise data in compressed row format
+ * with complex, single precision coefficients.
  */
-int mtxmatrix_csr_init_complex_single(
-    struct mtxmatrix_csr * matrix,
+int mtxmatrix_csr_init_rows_complex_single(
+    struct mtxmatrix_csr * A,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -202,11 +455,12 @@ int mtxmatrix_csr_init_complex_single(
     const float (* data)[2]);
 
 /**
- * ‘mtxmatrix_csr_init_complex_double()’ allocates and initialises a
- * matrix in CSR format with complex, double precision coefficients.
+ * ‘mtxmatrix_csr_init_rows_complex_double()’ allocates and
+ * initialises a matrix from row-wise data in compressed row format
+ * with complex, double precision coefficients.
  */
-int mtxmatrix_csr_init_complex_double(
-    struct mtxmatrix_csr * matrix,
+int mtxmatrix_csr_init_rows_complex_double(
+    struct mtxmatrix_csr * A,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -215,11 +469,12 @@ int mtxmatrix_csr_init_complex_double(
     const double (* data)[2]);
 
 /**
- * ‘mtxmatrix_csr_init_integer_single()’ allocates and initialises a
- * matrix in CSR format with integer, single precision coefficients.
+ * ‘mtxmatrix_csr_init_rows_integer_single()’ allocates and
+ * initialises a matrix from row-wise data in compressed row format
+ * with integer, single precision coefficients.
  */
-int mtxmatrix_csr_init_integer_single(
-    struct mtxmatrix_csr * matrix,
+int mtxmatrix_csr_init_rows_integer_single(
+    struct mtxmatrix_csr * A,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -228,11 +483,12 @@ int mtxmatrix_csr_init_integer_single(
     const int32_t * data);
 
 /**
- * ‘mtxmatrix_csr_init_integer_double()’ allocates and initialises a
- * matrix in CSR format with integer, double precision coefficients.
+ * ‘mtxmatrix_csr_init_rows_integer_double()’ allocates and
+ * initialises a matrix from row-wise data in compressed row format
+ * with integer, double precision coefficients.
  */
-int mtxmatrix_csr_init_integer_double(
-    struct mtxmatrix_csr * matrix,
+int mtxmatrix_csr_init_rows_integer_double(
+    struct mtxmatrix_csr * A,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -241,11 +497,12 @@ int mtxmatrix_csr_init_integer_double(
     const int64_t * data);
 
 /**
- * ‘mtxmatrix_csr_init_pattern()’ allocates and initialises a matrix
- * in CSR format with boolean coefficients.
+ * ‘mtxmatrix_csr_init_rows_pattern()’ allocates and initialises a
+ * matrix from row-wise data in compressed row format with boolean
+ * coefficients.
  */
-int mtxmatrix_csr_init_pattern(
-    struct mtxmatrix_csr * matrix,
+int mtxmatrix_csr_init_rows_pattern(
+    struct mtxmatrix_csr * A,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -253,7 +510,323 @@ int mtxmatrix_csr_init_pattern(
     const int * colidx);
 
 /*
- * Row and column vectors
+ * initialise matrices from column-wise data in compressed column
+ * format
+ */
+
+/**
+ * ‘mtxmatrix_csr_alloc_columns()’ allocates a matrix from column-wise
+ * data in compressed column format.
+ */
+int mtxmatrix_csr_alloc_columns(
+    struct mtxmatrix_csr * A,
+    enum mtxfield field,
+    enum mtxprecision precision,
+    enum mtxsymmetry symmetry,
+    int num_rows,
+    int num_columns,
+    const int64_t * colptr,
+    const int * rowidx);
+
+/**
+ * ‘mtxmatrix_csr_init_columns_real_single()’ allocates and
+ * initialises a matrix from column-wise data in compressed column
+ * format with real, single precision coefficients.
+ */
+int mtxmatrix_csr_init_columns_real_single(
+    struct mtxmatrix_csr * A,
+    enum mtxsymmetry symmetry,
+    int num_rows,
+    int num_columns,
+    const int64_t * colptr,
+    const int * rowidx,
+    const float * data);
+
+/**
+ * ‘mtxmatrix_csr_init_columns_real_double()’ allocates and
+ * initialises a matrix from column-wise data in compressed column
+ * format with real, double precision coefficients.
+ */
+int mtxmatrix_csr_init_columns_real_double(
+    struct mtxmatrix_csr * A,
+    enum mtxsymmetry symmetry,
+    int num_rows,
+    int num_columns,
+    const int64_t * colptr,
+    const int * rowidx,
+    const double * data);
+
+/**
+ * ‘mtxmatrix_csr_init_columns_complex_single()’ allocates and
+ * initialises a matrix from column-wise data in compressed column
+ * format with complex, single precision coefficients.
+ */
+int mtxmatrix_csr_init_columns_complex_single(
+    struct mtxmatrix_csr * A,
+    enum mtxsymmetry symmetry,
+    int num_rows,
+    int num_columns,
+    const int64_t * colptr,
+    const int * rowidx,
+    const float (* data)[2]);
+
+/**
+ * ‘mtxmatrix_csr_init_columns_complex_double()’ allocates and
+ * initialises a matrix from column-wise data in compressed column
+ * format with complex, double precision coefficients.
+ */
+int mtxmatrix_csr_init_columns_complex_double(
+    struct mtxmatrix_csr * A,
+    enum mtxsymmetry symmetry,
+    int num_rows,
+    int num_columns,
+    const int64_t * colptr,
+    const int * rowidx,
+    const double (* data)[2]);
+
+/**
+ * ‘mtxmatrix_csr_init_columns_integer_single()’ allocates and
+ * initialises a matrix from column-wise data in compressed column
+ * format with integer, single precision coefficients.
+ */
+int mtxmatrix_csr_init_columns_integer_single(
+    struct mtxmatrix_csr * A,
+    enum mtxsymmetry symmetry,
+    int num_rows,
+    int num_columns,
+    const int64_t * colptr,
+    const int * rowidx,
+    const int32_t * data);
+
+/**
+ * ‘mtxmatrix_csr_init_columns_integer_double()’ allocates and
+ * initialises a matrix from column-wise data in compressed column
+ * format with integer, double precision coefficients.
+ */
+int mtxmatrix_csr_init_columns_integer_double(
+    struct mtxmatrix_csr * A,
+    enum mtxsymmetry symmetry,
+    int num_rows,
+    int num_columns,
+    const int64_t * colptr,
+    const int * rowidx,
+    const int64_t * data);
+
+/**
+ * ‘mtxmatrix_csr_init_columns_pattern()’ allocates and initialises a
+ * matrix from column-wise data in compressed column format with
+ * boolean coefficients.
+ */
+int mtxmatrix_csr_init_columns_pattern(
+    struct mtxmatrix_csr * A,
+    enum mtxsymmetry symmetry,
+    int num_rows,
+    int num_columns,
+    const int64_t * colptr,
+    const int * rowidx);
+
+/*
+ * initialise matrices from a list of dense cliques
+ */
+
+/**
+ * ‘mtxmatrix_csr_alloc_cliques()’ allocates a matrix from a list of
+ * dense cliques.
+ */
+int mtxmatrix_csr_alloc_cliques(
+    struct mtxmatrix_csr * A,
+    enum mtxfield field,
+    enum mtxprecision precision,
+    enum mtxsymmetry symmetry,
+    int num_rows,
+    int num_columns,
+    int64_t num_cliques,
+    const int64_t * cliqueptr,
+    const int * rowidx,
+    const int * colidx);
+
+/**
+ * ‘mtxmatrix_csr_init_cliques_real_single()’ allocates and
+ * initialises a matrix from a list of dense cliques with real, single
+ * precision coefficients.
+ */
+int mtxmatrix_csr_init_cliques_real_single(
+    struct mtxmatrix_csr * A,
+    enum mtxsymmetry symmetry,
+    int num_rows,
+    int num_columns,
+    int64_t num_cliques,
+    const int64_t * cliqueptr,
+    const int * rowidx,
+    const int * colidx,
+    const float * data);
+
+/**
+ * ‘mtxmatrix_csr_init_cliques_real_double()’ allocates and
+ * initialises a matrix from a list of dense cliques with real, double
+ * precision coefficients.
+ */
+int mtxmatrix_csr_init_cliques_real_double(
+    struct mtxmatrix_csr * A,
+    enum mtxsymmetry symmetry,
+    int num_rows,
+    int num_columns,
+    int64_t num_cliques,
+    const int64_t * cliqueptr,
+    const int * rowidx,
+    const int * colidx,
+    const double * data);
+
+/**
+ * ‘mtxmatrix_csr_init_cliques_complex_single()’ allocates and
+ * initialises a matrix from a list of dense cliques with complex,
+ * single precision coefficients.
+ */
+int mtxmatrix_csr_init_cliques_complex_single(
+    struct mtxmatrix_csr * A,
+    enum mtxsymmetry symmetry,
+    int num_rows,
+    int num_columns,
+    int64_t num_cliques,
+    const int64_t * cliqueptr,
+    const int * rowidx,
+    const int * colidx,
+    const float (* data)[2]);
+
+/**
+ * ‘mtxmatrix_csr_init_cliques_complex_double()’ allocates and
+ * initialises a matrix from a list of dense cliques with complex,
+ * double precision coefficients.
+ */
+int mtxmatrix_csr_init_cliques_complex_double(
+    struct mtxmatrix_csr * A,
+    enum mtxsymmetry symmetry,
+    int num_rows,
+    int num_columns,
+    int64_t num_cliques,
+    const int64_t * cliqueptr,
+    const int * rowidx,
+    const int * colidx,
+    const double (* data)[2]);
+
+/**
+ * ‘mtxmatrix_csr_init_cliques_integer_single()’ allocates and
+ * initialises a matrix from a list of dense cliques with integer,
+ * single precision coefficients.
+ */
+int mtxmatrix_csr_init_cliques_integer_single(
+    struct mtxmatrix_csr * A,
+    enum mtxsymmetry symmetry,
+    int num_rows,
+    int num_columns,
+    int64_t num_cliques,
+    const int64_t * cliqueptr,
+    const int * rowidx,
+    const int * colidx,
+    const int32_t * data);
+
+/**
+ * ‘mtxmatrix_csr_init_cliques_integer_double()’ allocates and
+ * initialises a matrix from a list of dense cliques with integer,
+ * double precision coefficients.
+ */
+int mtxmatrix_csr_init_cliques_integer_double(
+    struct mtxmatrix_csr * A,
+    enum mtxsymmetry symmetry,
+    int num_rows,
+    int num_columns,
+    int64_t num_cliques,
+    const int64_t * cliqueptr,
+    const int * rowidx,
+    const int * colidx,
+    const int64_t * data);
+
+/**
+ * ‘mtxmatrix_csr_init_cliques_pattern()’ allocates and initialises a
+ * matrix from a list of dense cliques with boolean coefficients.
+ */
+int mtxmatrix_csr_init_cliques_pattern(
+    struct mtxmatrix_csr * A,
+    enum mtxsymmetry symmetry,
+    int num_rows,
+    int num_columns,
+    int64_t num_cliques,
+    const int64_t * cliqueptr,
+    const int * rowidx,
+    const int * colidx);
+
+/*
+ * modifying values
+ */
+
+/**
+ * ‘mtxmatrix_csr_setzero()’ sets every value of a matrix to zero.
+ */
+int mtxmatrix_csr_setzero(
+    struct mtxmatrix_csr * A);
+
+/**
+ * ‘mtxmatrix_csr_set_real_single()’ sets values of a matrix based on
+ * an array of single precision floating point numbers.
+ */
+int mtxmatrix_csr_set_real_single(
+    struct mtxmatrix_csr * A,
+    int64_t size,
+    int stride,
+    const float * a);
+
+/**
+ * ‘mtxmatrix_csr_set_real_double()’ sets values of a matrix based on
+ * an array of double precision floating point numbers.
+ */
+int mtxmatrix_csr_set_real_double(
+    struct mtxmatrix_csr * A,
+    int64_t size,
+    int stride,
+    const double * a);
+
+/**
+ * ‘mtxmatrix_csr_set_complex_single()’ sets values of a matrix based
+ * on an array of single precision floating point complex numbers.
+ */
+int mtxmatrix_csr_set_complex_single(
+    struct mtxmatrix_csr * A,
+    int64_t size,
+    int stride,
+    const float (*a)[2]);
+
+/**
+ * ‘mtxmatrix_csr_set_complex_double()’ sets values of a matrix based
+ * on an array of double precision floating point complex numbers.
+ */
+int mtxmatrix_csr_set_complex_double(
+    struct mtxmatrix_csr * A,
+    int64_t size,
+    int stride,
+    const double (*a)[2]);
+
+/**
+ * ‘mtxmatrix_csr_set_integer_single()’ sets values of a matrix based
+ * on an array of integers.
+ */
+int mtxmatrix_csr_set_integer_single(
+    struct mtxmatrix_csr * A,
+    int64_t size,
+    int stride,
+    const int32_t * a);
+
+/**
+ * ‘mtxmatrix_csr_set_integer_double()’ sets values of a matrix based
+ * on an array of integers.
+ */
+int mtxmatrix_csr_set_integer_double(
+    struct mtxmatrix_csr * A,
+    int64_t size,
+    int stride,
+    const int64_t * a);
+
+/*
+ * row and column vectors
  */
 
 /**
@@ -262,9 +835,9 @@ int mtxmatrix_csr_init_pattern(
  * a single row of the matrix.
  */
 int mtxmatrix_csr_alloc_row_vector(
-    const struct mtxmatrix_csr * matrix,
-    struct mtxvector * vector,
-    enum mtxvectortype vector_type);
+    const struct mtxmatrix_csr * A,
+    struct mtxvector * x,
+    enum mtxvectortype vectortype);
 
 /**
  * ‘mtxmatrix_csr_alloc_column_vector()’ allocates a column vector for
@@ -272,137 +845,34 @@ int mtxmatrix_csr_alloc_row_vector(
  * equal to a single column of the matrix.
  */
 int mtxmatrix_csr_alloc_column_vector(
-    const struct mtxmatrix_csr * matrix,
-    struct mtxvector * vector,
-    enum mtxvectortype vector_type);
+    const struct mtxmatrix_csr * A,
+    struct mtxvector * y,
+    enum mtxvectortype vectortype);
 
 /*
- * Convert to and from Matrix Market format
+ * convert to and from Matrix Market format
  */
 
 /**
- * ‘mtxmatrix_csr_from_mtxfile()’ converts a matrix in Matrix Market
- * format to a matrix.
+ * ‘mtxmatrix_csr_from_mtxfile()’ converts a matrix from Matrix Market
+ * format.
  */
 int mtxmatrix_csr_from_mtxfile(
-    struct mtxmatrix_csr * matrix,
+    struct mtxmatrix_csr * A,
     const struct mtxfile * mtxfile);
 
 /**
- * ‘mtxmatrix_csr_to_mtxfile()’ converts a matrix to a matrix in
- * Matrix Market format.
+ * ‘mtxmatrix_csr_to_mtxfile()’ converts a matrix to Matrix Market
+ *  format.
  */
 int mtxmatrix_csr_to_mtxfile(
     struct mtxfile * mtxfile,
-    const struct mtxmatrix_csr * matrix,
+    const struct mtxmatrix_csr * A,
+    int64_t num_rows,
+    const int64_t * rowidx,
+    int64_t num_columns,
+    const int64_t * colidx,
     enum mtxfileformat mtxfmt);
-
-/*
- * Nonzero rows and columns
- */
-
-/**
- * ‘mtxmatrix_csr_nzrows()’ counts the number of nonzero (non-empty)
- * matrix rows, and, optionally, fills an array with the row indices
- * of the nonzero (non-empty) matrix rows.
- *
- * If ‘num_nonzero_rows’ is ‘NULL’, then it is ignored, or else it
- * must point to an integer that is used to store the number of
- * nonzero matrix rows.
- *
- * ‘nonzero_rows’ may be ‘NULL’, in which case it is ignored.
- * Otherwise, it must point to an array of length at least equal to
- * ‘size’. On successful completion, this array contains the row
- * indices of the nonzero matrix rows. Note that ‘size’ must be at
- * least equal to the number of non-zero rows.
- */
-int mtxmatrix_csr_nzrows(
-    const struct mtxmatrix_csr * matrix,
-    int * num_nonzero_rows,
-    int size,
-    int * nonzero_rows);
-
-/**
- * ‘mtxmatrix_csr_nzcols()’ counts the number of nonzero (non-empty)
- * matrix columns, and, optionally, fills an array with the column
- * indices of the nonzero (non-empty) matrix columns.
- *
- * If ‘num_nonzero_columns’ is ‘NULL’, then it is ignored, or else it
- * must point to an integer that is used to store the number of
- * nonzero matrix columns.
- *
- * ‘nonzero_columns’ may be ‘NULL’, in which case it is ignored.
- * Otherwise, it must point to an array of length at least equal to
- * ‘size’. On successful completion, this array contains the column
- * indices of the nonzero matrix columns. Note that ‘size’ must be at
- * least equal to the number of non-zero columns.
- */
-int mtxmatrix_csr_nzcols(
-    const struct mtxmatrix_csr * matrix,
-    int * num_nonzero_columns,
-    int size,
-    int * nonzero_columns);
-
-/*
- * Partitioning
- */
-
-/**
- * ‘mtxmatrix_csr_partition()’ partitions a matrix into blocks
- * according to the given row and column partitions.
- *
- * The partitions ‘rowpart’ or ‘colpart’ are allowed to be ‘NULL’, in
- * which case a trivial, singleton partition is used for the rows or
- * columns, respectively.
- *
- * Otherwise, ‘rowpart’ and ‘colpart’ must partition the rows and
- * columns of the matrix ‘src’, respectively. That is, ‘rowpart->size’
- * must be equal to the number of matrix rows, and ‘colpart->size’
- * must be equal to the number of matrix columns.
- *
- * The argument ‘dsts’ is an array that must have enough storage for
- * ‘P*Q’ values of type ‘struct mtxmatrix’, where ‘P’ is the number of
- * row parts, ‘rowpart->num_parts’, and ‘Q’ is the number of column
- * parts, ‘colpart->num_parts’. Note that the ‘r’th part corresponds
- * to a row part ‘p’ and column part ‘q’, such that ‘r=p*Q+q’. Thus,
- * the ‘r’th entry of ‘dsts’ is the submatrix corresponding to the
- * ‘p’th row and ‘q’th column of the 2D partitioning.
- *
- * The user is responsible for freeing storage allocated for each
- * matrix in the ‘dsts’ array.
- */
-int mtxmatrix_csr_partition(
-    struct mtxmatrix * dsts,
-    const struct mtxmatrix_csr * src,
-    const struct mtxpartition * rowpart,
-    const struct mtxpartition * colpart);
-
-/**
- * ‘mtxmatrix_csr_join()’ joins together matrices representing
- * compatible blocks of a partitioned matrix to form a larger matrix.
- *
- * The argument ‘srcs’ is logically arranged as a two-dimensional
- * array of size ‘P*Q’, where ‘P’ is the number of row parts
- * (‘rowpart->num_parts’) and ‘Q’ is the number of column parts
- * (‘colpart->num_parts’).  Note that the ‘r’th part corresponds to a
- * row part ‘p’ and column part ‘q’, such that ‘r=p*Q+q’. Thus, the
- * ‘r’th entry of ‘srcs’ is the submatrix corresponding to the ‘p’th
- * row and ‘q’th column of the 2D partitioning.
- *
- * Moreover, the blocks must be compatible, which means that each part
- * in the same block row ‘p’, must have the same number of rows.
- * Similarly, each part in the same block column ‘q’ must have the
- * same number of columns. Finally, for each block column ‘q’, the sum
- * of the number of rows of ‘srcs[p*Q+q]’ for ‘p=0,1,...,P-1’ must be
- * equal to ‘rowpart->size’. Likewise, for each block row ‘p’, the sum
- * of the number of columns of ‘srcs[p*Q+q]’ for ‘q=0,1,...,Q-1’ must
- * be equal to ‘colpart->size’.
- */
-int mtxmatrix_csr_join(
-    struct mtxmatrix_csr * dst,
-    const struct mtxmatrix * srcs,
-    const struct mtxpartition * rowpart,
-    const struct mtxpartition * colpart);
 
 /*
  * Level 1 BLAS operations
@@ -413,7 +883,8 @@ int mtxmatrix_csr_join(
  * performing ‘y <- x’ and ‘x <- y’.
  *
  * The matrices ‘x’ and ‘y’ must have the same field, precision and
- * size.
+ * size. Moreover, it is assumed that they have the same underlying
+ * sparsity pattern, or else the results are undefined.
  */
 int mtxmatrix_csr_swap(
     struct mtxmatrix_csr * x,
@@ -423,7 +894,8 @@ int mtxmatrix_csr_swap(
  * ‘mtxmatrix_csr_copy()’ copies values of a matrix, ‘y = x’.
  *
  * The matrices ‘x’ and ‘y’ must have the same field, precision and
- * size.
+ * size. Moreover, it is assumed that they have the same underlying
+ * sparsity pattern, or else the results are undefined.
  */
 int mtxmatrix_csr_copy(
     struct mtxmatrix_csr * y,
@@ -448,11 +920,30 @@ int mtxmatrix_csr_dscal(
     int64_t * num_flops);
 
 /**
+ * ‘mtxmatrix_csr_cscal()’ scales a matrix by a complex, single
+ * precision floating point scalar, ‘x = (a+b*i)*x’.
+ */
+int mtxmatrix_csr_cscal(
+    float a[2],
+    struct mtxmatrix_csr * x,
+    int64_t * num_flops);
+
+/**
+ * ‘mtxmatrix_csr_zscal()’ scales a matrix by a complex, double
+ * precision floating point scalar, ‘x = (a+b*i)*x’.
+ */
+int mtxmatrix_csr_zscal(
+    double a[2],
+    struct mtxmatrix_csr * x,
+    int64_t * num_flops);
+
+/**
  * ‘mtxmatrix_csr_saxpy()’ adds a matrix to another one multiplied by
  * a single precision floating point value, ‘y = a*x + y’.
  *
  * The matrices ‘x’ and ‘y’ must have the same field, precision and
- * size.
+ * size. Moreover, it is assumed that they have the same underlying
+ * sparsity pattern, or else the results are undefined.
  */
 int mtxmatrix_csr_saxpy(
     float a,
@@ -465,7 +956,8 @@ int mtxmatrix_csr_saxpy(
  * a double precision floating point value, ‘y = a*x + y’.
  *
  * The matrices ‘x’ and ‘y’ must have the same field, precision and
- * size.
+ * size. Moreover, it is assumed that they have the same underlying
+ * sparsity pattern, or else the results are undefined.
  */
 int mtxmatrix_csr_daxpy(
     double a,
@@ -478,7 +970,8 @@ int mtxmatrix_csr_daxpy(
  * floating point scalar and adds another matrix, ‘y = a*y + x’.
  *
  * The matrices ‘x’ and ‘y’ must have the same field, precision and
- * size.
+ * size. Moreover, it is assumed that they have the same underlying
+ * sparsity pattern, or else the results are undefined.
  */
 int mtxmatrix_csr_saypx(
     float a,
@@ -491,7 +984,8 @@ int mtxmatrix_csr_saypx(
  * floating point scalar and adds another matrix, ‘y = a*y + x’.
  *
  * The matrices ‘x’ and ‘y’ must have the same field, precision and
- * size.
+ * size. Moreover, it is assumed that they have the same underlying
+ * sparsity pattern, or else the results are undefined.
  */
 int mtxmatrix_csr_daypx(
     double a,
@@ -504,7 +998,8 @@ int mtxmatrix_csr_daypx(
  * matrices in single precision floating point.
  *
  * The matrices ‘x’ and ‘y’ must have the same field, precision and
- * size.
+ * size. Moreover, it is assumed that they have the same underlying
+ * sparsity pattern, or else the results are undefined.
  */
 int mtxmatrix_csr_sdot(
     const struct mtxmatrix_csr * x,
@@ -517,7 +1012,8 @@ int mtxmatrix_csr_sdot(
  * matrices in double precision floating point.
  *
  * The matrices ‘x’ and ‘y’ must have the same field, precision and
- * size.
+ * size. Moreover, it is assumed that they have the same underlying
+ * sparsity pattern, or else the results are undefined.
  */
 int mtxmatrix_csr_ddot(
     const struct mtxmatrix_csr * x,
@@ -531,7 +1027,8 @@ int mtxmatrix_csr_ddot(
  * precision floating point, ‘dot := x^T*y’.
  *
  * The matrices ‘x’ and ‘y’ must have the same field, precision and
- * size.
+ * size. Moreover, it is assumed that they have the same underlying
+ * sparsity pattern, or else the results are undefined.
  */
 int mtxmatrix_csr_cdotu(
     const struct mtxmatrix_csr * x,
@@ -545,7 +1042,8 @@ int mtxmatrix_csr_cdotu(
  * precision floating point, ‘dot := x^T*y’.
  *
  * The matrices ‘x’ and ‘y’ must have the same field, precision and
- * size.
+ * size. Moreover, it is assumed that they have the same underlying
+ * sparsity pattern, or else the results are undefined.
  */
 int mtxmatrix_csr_zdotu(
     const struct mtxmatrix_csr * x,
@@ -559,7 +1057,8 @@ int mtxmatrix_csr_zdotu(
  * x^H*y’.
  *
  * The matrices ‘x’ and ‘y’ must have the same field, precision and
- * size.
+ * size. Moreover, it is assumed that they have the same underlying
+ * sparsity pattern, or else the results are undefined.
  */
 int mtxmatrix_csr_cdotc(
     const struct mtxmatrix_csr * x,
@@ -573,7 +1072,8 @@ int mtxmatrix_csr_cdotc(
  * x^H*y’.
  *
  * The matrices ‘x’ and ‘y’ must have the same field, precision and
- * size.
+ * size. Moreover, it is assumed that they have the same underlying
+ * sparsity pattern, or else the results are undefined.
  */
 int mtxmatrix_csr_zdotc(
     const struct mtxmatrix_csr * x,
