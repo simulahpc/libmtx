@@ -164,6 +164,7 @@ int mtxvector_dist_alloc(
     enum mtxprecision precision,
     int64_t size,
     int64_t num_nonzeros,
+    const int64_t * idx,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
@@ -389,6 +390,14 @@ int mtxvector_dist_init_strided_pattern(
 /*
  * Modifying values
  */
+
+/**
+ * ‘mtxvector_dist_setzero()’ sets every nonzero entry of a vector to
+ * zero.
+ */
+int mtxvector_dist_setzero(
+    struct mtxvector_dist * x,
+    struct mtxdisterror * disterr);
 
 /**
  * ‘mtxvector_dist_set_constant_real_single()’ sets every nonzero

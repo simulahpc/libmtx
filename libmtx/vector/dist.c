@@ -690,8 +690,21 @@ int mtxvector_dist_alloc(
     enum mtxprecision precision,
     int64_t size,
     int64_t num_nonzeros,
+    const int64_t * idx,
     MPI_Comm comm,
-    struct mtxdisterror * disterr);
+    struct mtxdisterror * disterr)
+{
+    int err = mtxvector_dist_init_comm(x, comm, disterr);
+    if (err) return err;
+    err = mtxvector_dist_init_size(x, size, num_nonzeros, comm, disterr);
+    if (err) return err;
+    err = mtxvector_packed_alloc(
+        &x->xp, type, field, precision, size, num_nonzeros, idx);
+    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+    err = mtxvector_dist_init_map(x, disterr);
+    if (err) { mtxvector_packed_free(&x->xp); return err; }
+    return MTX_SUCCESS;
+}
 
 /**
  * ‘mtxvector_dist_init_real_single()’ allocates and initialises a
@@ -1087,6 +1100,18 @@ int mtxvector_dist_init_strided_pattern(
  */
 
 /**
+ * ‘mtxvector_dist_setzero()’ sets every nonzero entry of a vector to
+ * zero.
+ */
+int mtxvector_dist_setzero(
+    struct mtxvector_dist * x,
+    struct mtxdisterror * disterr)
+{
+    int err = mtxvector_packed_setzero(&x->xp);
+    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+}
+
+/**
  * ‘mtxvector_dist_set_constant_real_single()’ sets every nonzero
  * entry of a vector equal to a constant, single precision floating
  * point number.
@@ -1094,7 +1119,11 @@ int mtxvector_dist_init_strided_pattern(
 int mtxvector_dist_set_constant_real_single(
     struct mtxvector_dist * x,
     float a,
-    struct mtxdisterror * disterr);
+    struct mtxdisterror * disterr)
+{
+    int err = mtxvector_packed_set_constant_real_single(&x->xp, a);
+    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+}
 
 /**
  * ‘mtxvector_dist_set_constant_real_double()’ sets every nonzero
@@ -1104,7 +1133,11 @@ int mtxvector_dist_set_constant_real_single(
 int mtxvector_dist_set_constant_real_double(
     struct mtxvector_dist * x,
     double a,
-    struct mtxdisterror * disterr);
+    struct mtxdisterror * disterr)
+{
+    int err = mtxvector_packed_set_constant_real_double(&x->xp, a);
+    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+}
 
 /**
  * ‘mtxvector_dist_set_constant_complex_single()’ sets every nonzero
@@ -1114,7 +1147,11 @@ int mtxvector_dist_set_constant_real_double(
 int mtxvector_dist_set_constant_complex_single(
     struct mtxvector_dist * x,
     float a[2],
-    struct mtxdisterror * disterr);
+    struct mtxdisterror * disterr)
+{
+    int err = mtxvector_packed_set_constant_complex_single(&x->xp, a);
+    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+}
 
 /**
  * ‘mtxvector_dist_set_constant_complex_double()’ sets every nonzero
@@ -1124,7 +1161,11 @@ int mtxvector_dist_set_constant_complex_single(
 int mtxvector_dist_set_constant_complex_double(
     struct mtxvector_dist * x,
     double a[2],
-    struct mtxdisterror * disterr);
+    struct mtxdisterror * disterr)
+{
+    int err = mtxvector_packed_set_constant_complex_double(&x->xp, a);
+    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+}
 
 /**
  * ‘mtxvector_dist_set_constant_integer_single()’ sets every nonzero
@@ -1133,7 +1174,11 @@ int mtxvector_dist_set_constant_complex_double(
 int mtxvector_dist_set_constant_integer_single(
     struct mtxvector_dist * x,
     int32_t a,
-    struct mtxdisterror * disterr);
+    struct mtxdisterror * disterr)
+{
+    int err = mtxvector_packed_set_constant_integer_single(&x->xp, a);
+    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+}
 
 /**
  * ‘mtxvector_dist_set_constant_integer_double()’ sets every nonzero
@@ -1142,7 +1187,11 @@ int mtxvector_dist_set_constant_integer_single(
 int mtxvector_dist_set_constant_integer_double(
     struct mtxvector_dist * x,
     int64_t a,
-    struct mtxdisterror * disterr);
+    struct mtxdisterror * disterr)
+{
+    int err = mtxvector_packed_set_constant_integer_double(&x->xp, a);
+    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+}
 
 /*
  * Convert to and from Matrix Market format
@@ -2583,7 +2632,7 @@ int mtxvector_dist_usscga(
     struct mtxvector_packed sendbuf;
     err = mtxvector_packed_alloc(
         &sendbuf, x->xp.x.type, field, precision,
-        x->xp.num_nonzeros, sdispls[nsendranks]);
+        x->xp.num_nonzeros, sdispls[nsendranks], NULL);
     if (mtxdisterror_allreduce(disterr, err)) {
         free(idxrecvbuf);
         free(sdispls);
@@ -2639,7 +2688,7 @@ int mtxvector_dist_usscga(
     struct mtxvector_packed recvbuf;
     err = mtxvector_packed_alloc(
         &recvbuf, z->xp.x.type, field, precision,
-        z->xp.num_nonzeros, rdispls[nrecvranks]);
+        z->xp.num_nonzeros, rdispls[nrecvranks], NULL);
     if (mtxdisterror_allreduce(disterr, err)) {
         mtxvector_packed_free(&sendbuf);
         free(sdispls);

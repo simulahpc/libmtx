@@ -121,7 +121,8 @@ int mtxvector_packed_alloc(
     enum mtxfield field,
     enum mtxprecision precision,
     int64_t size,
-    int64_t num_nonzeros);
+    int64_t num_nonzeros,
+    const int64_t * idx);
 
 /**
  * ‘mtxvector_packed_init_real_single()’ allocates and initialises a

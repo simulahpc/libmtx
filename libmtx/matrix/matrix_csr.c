@@ -158,7 +158,8 @@ int mtxmatrix_csr_alloc_entries(
         }
         A->num_nonzeros = 2*A->size-num_diagonals;
         err = mtxvector_packed_alloc(
-            &A->diag, mtxvector_base, field, precision, A->size, num_diagonals);
+            &A->diag, mtxvector_base, field, precision,
+            A->size, num_diagonals, NULL);
         if (err) {
             mtxvector_base_free(&A->a);
             free(A->colidx); free(A->rowptr);
@@ -174,7 +175,7 @@ int mtxmatrix_csr_alloc_entries(
     } else if (symmetry == mtx_unsymmetric) {
         A->num_nonzeros = A->size;
         err = mtxvector_packed_alloc(
-            &A->diag, mtxvector_base, field, precision, A->size, 0);
+            &A->diag, mtxvector_base, field, precision, A->size, 0, NULL);
         if (err) {
             mtxvector_base_free(&A->a);
             free(A->colidx); free(A->rowptr);

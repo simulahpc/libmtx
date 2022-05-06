@@ -85,16 +85,23 @@ int mtxvector_packed_alloc(
     enum mtxfield field,
     enum mtxprecision precision,
     int64_t size,
-    int64_t num_nonzeros)
+    int64_t num_nonzeros,
+    const int64_t * idx)
 {
     x->size = size;
     x->num_nonzeros = num_nonzeros;
     x->idx = malloc(num_nonzeros * sizeof(int64_t));
     if (!x->idx) return MTX_ERR_ERRNO;
     int err = mtxvector_alloc(&x->x, type, field, precision, num_nonzeros);
-    if (err) {
-        free(x->idx);
-        return err;
+    if (err) { free(x->idx); return err; }
+    if (idx) {
+        for (int64_t k = 0; k < num_nonzeros; k++) {
+            if (idx[k] < 0 || idx[k] >= size) {
+                free(x->idx);
+                return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            }
+            x->idx[k] = idx[k];
+        }
     }
     return MTX_SUCCESS;
 }

@@ -631,7 +631,7 @@ int mtxvector_base_set_real_single(
     if (x->size != size) return MTX_ERR_INCOMPATIBLE_SIZE;
     float * b = x->data.real_single;
     for (int64_t i = 0; i < size; i++)
-        b[i] = *(const float *)((const unsigned char *) a + i*stride);
+        b[i] = *(const float *)((const char *) a + i*stride);
     return MTX_SUCCESS;
 }
 
@@ -650,7 +650,7 @@ int mtxvector_base_set_real_double(
     if (x->size != size) return MTX_ERR_INCOMPATIBLE_SIZE;
     double * b = x->data.real_double;
     for (int64_t i = 0; i < size; i++)
-        b[i] = *(const double *)((const unsigned char *) a + i*stride);
+        b[i] = *(const double *)((const char *) a + i*stride);
     return MTX_SUCCESS;
 }
 
@@ -669,8 +669,8 @@ int mtxvector_base_set_complex_single(
     if (x->size != size) return MTX_ERR_INCOMPATIBLE_SIZE;
     float (*b)[2] = x->data.complex_single;
     for (int64_t i = 0; i < size; i++) {
-        b[i][0] = (*(const float (*)[2])((const unsigned char *) a + i*stride))[0];
-        b[i][1] = (*(const float (*)[2])((const unsigned char *) a + i*stride))[1];
+        b[i][0] = (*(const float (*)[2])((const char *) a + i*stride))[0];
+        b[i][1] = (*(const float (*)[2])((const char *) a + i*stride))[1];
     }
     return MTX_SUCCESS;
 }
@@ -690,8 +690,8 @@ int mtxvector_base_set_complex_double(
     if (x->size != size) return MTX_ERR_INCOMPATIBLE_SIZE;
     double (*b)[2] = x->data.complex_double;
     for (int64_t i = 0; i < size; i++) {
-        b[i][0] = (*(const double (*)[2])((const unsigned char *) a + i*stride))[0];
-        b[i][1] = (*(const double (*)[2])((const unsigned char *) a + i*stride))[1];
+        b[i][0] = (*(const double (*)[2])((const char *) a + i*stride))[0];
+        b[i][1] = (*(const double (*)[2])((const char *) a + i*stride))[1];
     }
     return MTX_SUCCESS;
 }
@@ -711,7 +711,7 @@ int mtxvector_base_set_integer_single(
     if (x->size != size) return MTX_ERR_INCOMPATIBLE_SIZE;
     int32_t * b = x->data.integer_single;
     for (int64_t i = 0; i < size; i++)
-        b[i] = *(const int32_t *)((const unsigned char *) a + i*stride);
+        b[i] = *(const int32_t *)((const char *) a + i*stride);
     return MTX_SUCCESS;
 }
 
@@ -730,7 +730,7 @@ int mtxvector_base_set_integer_double(
     if (x->size != size) return MTX_ERR_INCOMPATIBLE_SIZE;
     int64_t * b = x->data.integer_double;
     for (int64_t i = 0; i < size; i++)
-        b[i] = *(const int64_t *)((const unsigned char *) a + i*stride);
+        b[i] = *(const int64_t *)((const char *) a + i*stride);
     return MTX_SUCCESS;
 }
 
