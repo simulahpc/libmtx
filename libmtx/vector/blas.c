@@ -1383,6 +1383,18 @@ int mtxvector_blas_iamax(
  * Technical Forum,” ACM TOMS, Vol. 28, No. 2, June 2002, pp. 239-267.
  */
 
+static struct mtxvector_packed mtxvector_packed_base_from_blas(
+    const struct mtxvector_packed * x)
+{
+    struct mtxvector_packed xbase = {
+        .size = x->size,
+        .num_nonzeros = x->num_nonzeros,
+        .idx = x->idx,
+        .x = { .type = mtxvector_base, .storage.base = x->x.storage.blas.base }
+    };
+    return xbase;
+}
+
 /**
  * ‘mtxvector_blas_ussdot()’ computes the Euclidean dot product of two
  * vectors in single precision floating point.
@@ -1393,58 +1405,13 @@ int mtxvector_blas_iamax(
  * is undefined.
  */
 int mtxvector_blas_ussdot(
-    const struct mtxvector_packed * xpacked,
-    const struct mtxvector_blas * yblas,
+    const struct mtxvector_packed * x,
+    const struct mtxvector_blas * y,
     float * dot,
     int64_t * num_flops)
 {
-    if (xpacked->x.type != mtxvector_blas) return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
-    const struct mtxvector_blas * xblas = &xpacked->x.storage.blas;
-    const struct mtxvector_base * x = &xblas->base;
-    const struct mtxvector_base * y = &yblas->base;
-    if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
-    if (x->precision != y->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
-    if (xpacked->size != y->size) return MTX_ERR_INCOMPATIBLE_SIZE;
-    if (xpacked->num_nonzeros != x->size) return MTX_ERR_INCOMPATIBLE_SIZE;
-    const int64_t * idx = xpacked->idx;
-    if (x->field == mtx_field_real) {
-        if (x->precision == mtx_single) {
-            const float * xdata = x->data.real_single;
-            const float * ydata = y->data.real_single;
-            float c = 0;
-            for (int64_t k = 0; k < x->size; k++)
-                c += xdata[k]*ydata[idx[k]];
-            *dot = c;
-            if (num_flops) *num_flops += 2*x->size;
-        } else if (x->precision == mtx_double) {
-            const double * xdata = x->data.real_double;
-            const double * ydata = y->data.real_double;
-            float c = 0;
-            for (int64_t k = 0; k < x->size; k++)
-                c += xdata[k]*ydata[idx[k]];
-            *dot = c;
-            if (num_flops) *num_flops += 2*x->size;
-        } else { return MTX_ERR_INVALID_PRECISION; }
-    } else if (x->field == mtx_field_integer) {
-        if (x->precision == mtx_single) {
-            const int32_t * xdata = x->data.integer_single;
-            const int32_t * ydata = y->data.integer_single;
-            float c = 0;
-            for (int64_t k = 0; k < x->size; k++)
-                c += xdata[k]*ydata[idx[k]];
-            *dot = c;
-            if (num_flops) *num_flops += 2*x->size;
-        } else if (x->precision == mtx_double) {
-            const int64_t * xdata = x->data.integer_double;
-            const int64_t * ydata = y->data.integer_double;
-            float c = 0;
-            for (int64_t k = 0; k < x->size; k++)
-                c += xdata[k]*ydata[idx[k]];
-            *dot = c;
-            if (num_flops) *num_flops += 2*x->size;
-        } else { return MTX_ERR_INVALID_PRECISION; }
-    } else { return MTX_ERR_INVALID_FIELD; }
-    return MTX_SUCCESS;
+    struct mtxvector_packed xbase = mtxvector_packed_base_from_blas(x);
+    return mtxvector_base_ussdot(&xbase, &y->base, dot, num_flops);
 }
 
 /**
@@ -1457,58 +1424,13 @@ int mtxvector_blas_ussdot(
  * is undefined.
  */
 int mtxvector_blas_usddot(
-    const struct mtxvector_packed * xpacked,
-    const struct mtxvector_blas * yblas,
+    const struct mtxvector_packed * x,
+    const struct mtxvector_blas * y,
     double * dot,
     int64_t * num_flops)
 {
-    if (xpacked->x.type != mtxvector_blas) return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
-    const struct mtxvector_blas * xblas = &xpacked->x.storage.blas;
-    const struct mtxvector_base * x = &xblas->base;
-    const struct mtxvector_base * y = &yblas->base;
-    if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
-    if (x->precision != y->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
-    if (xpacked->size != y->size) return MTX_ERR_INCOMPATIBLE_SIZE;
-    if (xpacked->num_nonzeros != x->size) return MTX_ERR_INCOMPATIBLE_SIZE;
-    const int64_t * idx = xpacked->idx;
-    if (x->field == mtx_field_real) {
-        if (x->precision == mtx_single) {
-            const float * xdata = x->data.real_single;
-            const float * ydata = y->data.real_single;
-            double c = 0;
-            for (int64_t k = 0; k < x->size; k++)
-                c += xdata[k]*ydata[idx[k]];
-            *dot = c;
-            if (num_flops) *num_flops += 2*x->size;
-        } else if (x->precision == mtx_double) {
-            const double * xdata = x->data.real_double;
-            const double * ydata = y->data.real_double;
-            double c = 0;
-            for (int64_t k = 0; k < x->size; k++)
-                c += xdata[k]*ydata[idx[k]];
-            *dot = c;
-            if (num_flops) *num_flops += 2*x->size;
-        } else { return MTX_ERR_INVALID_PRECISION; }
-    } else if (x->field == mtx_field_integer) {
-        if (x->precision == mtx_single) {
-            const int32_t * xdata = x->data.integer_single;
-            const int32_t * ydata = y->data.integer_single;
-            double c = 0;
-            for (int64_t k = 0; k < x->size; k++)
-                c += xdata[k]*ydata[idx[k]];
-            *dot = c;
-            if (num_flops) *num_flops += 2*x->size;
-        } else if (x->precision == mtx_double) {
-            const int64_t * xdata = x->data.integer_double;
-            const int64_t * ydata = y->data.integer_double;
-            double c = 0;
-            for (int64_t k = 0; k < x->size; k++)
-                c += xdata[k]*ydata[idx[k]];
-            *dot = c;
-            if (num_flops) *num_flops += 2*x->size;
-        } else { return MTX_ERR_INVALID_PRECISION; }
-    } else { return MTX_ERR_INVALID_FIELD; }
-    return MTX_SUCCESS;
+    struct mtxvector_packed xbase = mtxvector_packed_base_from_blas(x);
+    return mtxvector_base_usddot(&xbase, &y->base, dot, num_flops);
 }
 
 /**
@@ -1522,47 +1444,13 @@ int mtxvector_blas_usddot(
  * is undefined.
  */
 int mtxvector_blas_uscdotu(
-    const struct mtxvector_packed * xpacked,
-    const struct mtxvector_blas * yblas,
+    const struct mtxvector_packed * x,
+    const struct mtxvector_blas * y,
     float (* dot)[2],
     int64_t * num_flops)
 {
-    if (xpacked->x.type != mtxvector_blas) return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
-    const struct mtxvector_blas * xblas = &xpacked->x.storage.blas;
-    const struct mtxvector_base * x = &xblas->base;
-    const struct mtxvector_base * y = &yblas->base;
-    if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
-    if (x->precision != y->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
-    if (xpacked->size != y->size) return MTX_ERR_INCOMPATIBLE_SIZE;
-    if (xpacked->num_nonzeros != x->size) return MTX_ERR_INCOMPATIBLE_SIZE;
-    const int64_t * idx = xpacked->idx;
-    if (x->field == mtx_field_complex) {
-        if (x->precision == mtx_single) {
-            const float (* xdata)[2] = x->data.complex_single;
-            const float (* ydata)[2] = y->data.complex_single;
-            float c0 = 0, c1 = 0;
-            for (int64_t k = 0; k < x->size; k++) {
-                c0 += xdata[k][0]*ydata[idx[k]][0] - xdata[k][1]*ydata[idx[k]][1];
-                c1 += xdata[k][0]*ydata[idx[k]][1] + xdata[k][1]*ydata[idx[k]][0];
-            }
-            (*dot)[0] = c0; (*dot)[1] = c1;
-            if (num_flops) *num_flops += 8*x->size;
-        } else if (x->precision == mtx_double) {
-            const double (* xdata)[2] = x->data.complex_double;
-            const double (* ydata)[2] = y->data.complex_double;
-            float c0 = 0, c1 = 0;
-            for (int64_t k = 0; k < x->size; k++) {
-                c0 += xdata[k][0]*ydata[idx[k]][0] - xdata[k][1]*ydata[idx[k]][1];
-                c1 += xdata[k][0]*ydata[idx[k]][1] + xdata[k][1]*ydata[idx[k]][0];
-            }
-            (*dot)[0] = c0; (*dot)[1] = c1;
-            if (num_flops) *num_flops += 8*x->size;
-        } else { return MTX_ERR_INVALID_PRECISION; }
-    } else {
-        (*dot)[1] = 0;
-        return mtxvector_blas_ussdot(xpacked, yblas, &(*dot)[0], num_flops);
-    }
-    return MTX_SUCCESS;
+    struct mtxvector_packed xbase = mtxvector_packed_base_from_blas(x);
+    return mtxvector_base_uscdotu(&xbase, &y->base, dot, num_flops);
 }
 
 /**
@@ -1576,47 +1464,13 @@ int mtxvector_blas_uscdotu(
  * is undefined.
  */
 int mtxvector_blas_uszdotu(
-    const struct mtxvector_packed * xpacked,
-    const struct mtxvector_blas * yblas,
+    const struct mtxvector_packed * x,
+    const struct mtxvector_blas * y,
     double (* dot)[2],
     int64_t * num_flops)
 {
-    if (xpacked->x.type != mtxvector_blas) return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
-    const struct mtxvector_blas * xblas = &xpacked->x.storage.blas;
-    const struct mtxvector_base * x = &xblas->base;
-    const struct mtxvector_base * y = &yblas->base;
-    if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
-    if (x->precision != y->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
-    if (xpacked->size != y->size) return MTX_ERR_INCOMPATIBLE_SIZE;
-    if (xpacked->num_nonzeros != x->size) return MTX_ERR_INCOMPATIBLE_SIZE;
-    const int64_t * idx = xpacked->idx;
-    if (x->field == mtx_field_complex) {
-        if (x->precision == mtx_single) {
-            const float (* xdata)[2] = x->data.complex_single;
-            const float (* ydata)[2] = y->data.complex_single;
-            double c0 = 0, c1 = 0;
-            for (int64_t k = 0; k < x->size; k++) {
-                c0 += xdata[k][0]*ydata[idx[k]][0] - xdata[k][1]*ydata[idx[k]][1];
-                c1 += xdata[k][0]*ydata[idx[k]][1] + xdata[k][1]*ydata[idx[k]][0];
-            }
-            (*dot)[0] = c0; (*dot)[1] = c1;
-            if (num_flops) *num_flops += 8*x->size;
-        } else if (x->precision == mtx_double) {
-            const double (* xdata)[2] = x->data.complex_double;
-            const double (* ydata)[2] = y->data.complex_double;
-            double c0 = 0, c1 = 0;
-            for (int64_t k = 0; k < x->size; k++) {
-                c0 += xdata[k][0]*ydata[idx[k]][0] - xdata[k][1]*ydata[idx[k]][1];
-                c1 += xdata[k][0]*ydata[idx[k]][1] + xdata[k][1]*ydata[idx[k]][0];
-            }
-            (*dot)[0] = c0; (*dot)[1] = c1;
-            if (num_flops) *num_flops += 8*x->size;
-        } else { return MTX_ERR_INVALID_PRECISION; }
-    } else {
-        (*dot)[1] = 0;
-        return mtxvector_blas_usddot(xpacked, yblas, &(*dot)[0], num_flops);
-    }
-    return MTX_SUCCESS;
+    struct mtxvector_packed xbase = mtxvector_packed_base_from_blas(x);
+    return mtxvector_base_uszdotu(&xbase, &y->base, dot, num_flops);
 }
 
 /**
@@ -1629,47 +1483,13 @@ int mtxvector_blas_uszdotu(
  * is undefined.
  */
 int mtxvector_blas_uscdotc(
-    const struct mtxvector_packed * xpacked,
-    const struct mtxvector_blas * yblas,
+    const struct mtxvector_packed * x,
+    const struct mtxvector_blas * y,
     float (* dot)[2],
     int64_t * num_flops)
 {
-    if (xpacked->x.type != mtxvector_blas) return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
-    const struct mtxvector_blas * xblas = &xpacked->x.storage.blas;
-    const struct mtxvector_base * x = &xblas->base;
-    const struct mtxvector_base * y = &yblas->base;
-    if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
-    if (x->precision != y->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
-    if (xpacked->size != y->size) return MTX_ERR_INCOMPATIBLE_SIZE;
-    if (xpacked->num_nonzeros != x->size) return MTX_ERR_INCOMPATIBLE_SIZE;
-    const int64_t * idx = xpacked->idx;
-    if (x->field == mtx_field_complex) {
-        if (x->precision == mtx_single) {
-            const float (* xdata)[2] = x->data.complex_single;
-            const float (* ydata)[2] = y->data.complex_single;
-            float c0 = 0, c1 = 0;
-            for (int64_t k = 0; k < x->size; k++) {
-                c0 += xdata[k][0]*ydata[idx[k]][0] + xdata[k][1]*ydata[idx[k]][1];
-                c1 += xdata[k][0]*ydata[idx[k]][1] - xdata[k][1]*ydata[idx[k]][0];
-            }
-            (*dot)[0] = c0; (*dot)[1] = c1;
-            if (num_flops) *num_flops += 8*x->size;
-        } else if (x->precision == mtx_double) {
-            const double (* xdata)[2] = x->data.complex_double;
-            const double (* ydata)[2] = y->data.complex_double;
-            float c0 = 0, c1 = 0;
-            for (int64_t k = 0; k < x->size; k++) {
-                c0 += xdata[k][0]*ydata[idx[k]][0] + xdata[k][1]*ydata[idx[k]][1];
-                c1 += xdata[k][0]*ydata[idx[k]][1] - xdata[k][1]*ydata[idx[k]][0];
-            }
-            (*dot)[0] = c0; (*dot)[1] = c1;
-            if (num_flops) *num_flops += 8*x->size;
-        } else { return MTX_ERR_INVALID_PRECISION; }
-    } else {
-        (*dot)[1] = 0;
-        return mtxvector_blas_ussdot(xpacked, yblas, &(*dot)[0], num_flops);
-    }
-    return MTX_SUCCESS;
+    struct mtxvector_packed xbase = mtxvector_packed_base_from_blas(x);
+    return mtxvector_base_uscdotc(&xbase, &y->base, dot, num_flops);
 }
 
 /**
@@ -1682,47 +1502,13 @@ int mtxvector_blas_uscdotc(
  * is undefined.
  */
 int mtxvector_blas_uszdotc(
-    const struct mtxvector_packed * xpacked,
-    const struct mtxvector_blas * yblas,
+    const struct mtxvector_packed * x,
+    const struct mtxvector_blas * y,
     double (* dot)[2],
     int64_t * num_flops)
 {
-    if (xpacked->x.type != mtxvector_blas) return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
-    const struct mtxvector_blas * xblas = &xpacked->x.storage.blas;
-    const struct mtxvector_base * x = &xblas->base;
-    const struct mtxvector_base * y = &yblas->base;
-    if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
-    if (x->precision != y->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
-    if (xpacked->size != y->size) return MTX_ERR_INCOMPATIBLE_SIZE;
-    if (xpacked->num_nonzeros != x->size) return MTX_ERR_INCOMPATIBLE_SIZE;
-    const int64_t * idx = xpacked->idx;
-    if (x->field == mtx_field_complex) {
-        if (x->precision == mtx_single) {
-            const float (* xdata)[2] = x->data.complex_single;
-            const float (* ydata)[2] = y->data.complex_single;
-            double c0 = 0, c1 = 0;
-            for (int64_t k = 0; k < x->size; k++) {
-                c0 += xdata[k][0]*ydata[idx[k]][0] + xdata[k][1]*ydata[idx[k]][1];
-                c1 += xdata[k][0]*ydata[idx[k]][1] - xdata[k][1]*ydata[idx[k]][0];
-            }
-            (*dot)[0] = c0; (*dot)[1] = c1;
-            if (num_flops) *num_flops += 8*x->size;
-        } else if (x->precision == mtx_double) {
-            const double (* xdata)[2] = x->data.complex_double;
-            const double (* ydata)[2] = y->data.complex_double;
-            double c0 = 0, c1 = 0;
-            for (int64_t k = 0; k < x->size; k++) {
-                c0 += xdata[k][0]*ydata[idx[k]][0] + xdata[k][1]*ydata[idx[k]][1];
-                c1 += xdata[k][0]*ydata[idx[k]][1] - xdata[k][1]*ydata[idx[k]][0];
-            }
-            (*dot)[0] = c0; (*dot)[1] = c1;
-            if (num_flops) *num_flops += 8*x->size;
-        } else { return MTX_ERR_INVALID_PRECISION; }
-    } else {
-        (*dot)[1] = 0;
-        return mtxvector_blas_usddot(xpacked, yblas, &(*dot)[0], num_flops);
-    }
-    return MTX_SUCCESS;
+    struct mtxvector_packed xbase = mtxvector_packed_base_from_blas(x);
+    return mtxvector_base_uszdotc(&xbase, &y->base, dot, num_flops);
 }
 
 /**
@@ -1735,68 +1521,13 @@ int mtxvector_blas_uszdotc(
  * otherwise the result is undefined.
  */
 int mtxvector_blas_ussaxpy(
-    struct mtxvector_blas * yblas,
+    struct mtxvector_blas * y,
     float alpha,
-    const struct mtxvector_packed * xpacked,
+    const struct mtxvector_packed * x,
     int64_t * num_flops)
 {
-    if (xpacked->x.type != mtxvector_blas) return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
-    const struct mtxvector_blas * xblas = &xpacked->x.storage.blas;
-    const struct mtxvector_base * x = &xblas->base;
-    struct mtxvector_base * y = &yblas->base;
-    if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
-    if (x->precision != y->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
-    if (xpacked->size != y->size) return MTX_ERR_INCOMPATIBLE_SIZE;
-    if (xpacked->num_nonzeros != x->size) return MTX_ERR_INCOMPATIBLE_SIZE;
-    const int64_t * idx = xpacked->idx;
-    if (x->field == mtx_field_real) {
-        if (x->precision == mtx_single) {
-            const float * xdata = x->data.real_single;
-            float * ydata = y->data.real_single;
-            for (int64_t k = 0; k < x->size; k++)
-                ydata[idx[k]] += alpha*xdata[k];
-            if (num_flops) *num_flops += 2*x->size;
-        } else if (x->precision == mtx_double) {
-            const double * xdata = x->data.real_double;
-            double * ydata = y->data.real_double;
-            for (int64_t k = 0; k < x->size; k++)
-                ydata[idx[k]] += alpha*xdata[k];
-            if (num_flops) *num_flops += 2*x->size;
-        } else { return MTX_ERR_INVALID_PRECISION; }
-    } else if (x->field == mtx_field_complex) {
-        if (x->precision == mtx_single) {
-            const float (* xdata)[2] = x->data.complex_single;
-            float (* ydata)[2] = y->data.complex_single;
-            for (int64_t k = 0; k < x->size; k++) {
-                ydata[idx[k]][0] += alpha*xdata[k][0];
-                ydata[idx[k]][1] += alpha*xdata[k][1];
-            }
-            if (num_flops) *num_flops += 4*x->size;
-        } else if (x->precision == mtx_double) {
-            const double (* xdata)[2] = x->data.complex_double;
-            double (* ydata)[2] = y->data.complex_double;
-            for (int64_t k = 0; k < x->size; k++) {
-                ydata[idx[k]][0] += alpha*xdata[k][0];
-                ydata[idx[k]][1] += alpha*xdata[k][1];
-            }
-            if (num_flops) *num_flops += 4*x->size;
-        } else { return MTX_ERR_INVALID_PRECISION; }
-    } else if (x->field == mtx_field_integer) {
-        if (x->precision == mtx_single) {
-            const int32_t * xdata = x->data.integer_single;
-            int32_t * ydata = y->data.integer_single;
-            for (int64_t k = 0; k < x->size; k++)
-                ydata[idx[k]] += alpha*xdata[k];
-            if (num_flops) *num_flops += 2*x->size;
-        } else if (x->precision == mtx_double) {
-            const int64_t * xdata = x->data.integer_double;
-            int64_t * ydata = y->data.integer_double;
-            for (int64_t k = 0; k < x->size; k++)
-                ydata[idx[k]] += alpha*xdata[k];
-            if (num_flops) *num_flops += 2*x->size;
-        } else { return MTX_ERR_INVALID_PRECISION; }
-    } else { return MTX_ERR_INVALID_FIELD; }
-    return MTX_SUCCESS;
+    struct mtxvector_packed xbase = mtxvector_packed_base_from_blas(x);
+    return mtxvector_base_ussaxpy(&y->base, alpha, &xbase, num_flops);
 }
 
 /**
@@ -1809,68 +1540,13 @@ int mtxvector_blas_ussaxpy(
  * otherwise the result is undefined.
  */
 int mtxvector_blas_usdaxpy(
-    struct mtxvector_blas * yblas,
+    struct mtxvector_blas * y,
     double alpha,
-    const struct mtxvector_packed * xpacked,
+    const struct mtxvector_packed * x,
     int64_t * num_flops)
 {
-    if (xpacked->x.type != mtxvector_blas) return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
-    const struct mtxvector_blas * xblas = &xpacked->x.storage.blas;
-    const struct mtxvector_base * x = &xblas->base;
-    struct mtxvector_base * y = &yblas->base;
-    if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
-    if (x->precision != y->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
-    if (xpacked->size != y->size) return MTX_ERR_INCOMPATIBLE_SIZE;
-    if (xpacked->num_nonzeros != x->size) return MTX_ERR_INCOMPATIBLE_SIZE;
-    const int64_t * idx = xpacked->idx;
-    if (x->field == mtx_field_real) {
-        if (x->precision == mtx_single) {
-            const float * xdata = x->data.real_single;
-            float * ydata = y->data.real_single;
-            for (int64_t k = 0; k < x->size; k++)
-                ydata[idx[k]] += alpha*xdata[k];
-            if (num_flops) *num_flops += 2*x->size;
-        } else if (x->precision == mtx_double) {
-            const double * xdata = x->data.real_double;
-            double * ydata = y->data.real_double;
-            for (int64_t k = 0; k < x->size; k++)
-                ydata[idx[k]] += alpha*xdata[k];
-            if (num_flops) *num_flops += 2*x->size;
-        } else { return MTX_ERR_INVALID_PRECISION; }
-    } else if (x->field == mtx_field_complex) {
-        if (x->precision == mtx_single) {
-            const float (* xdata)[2] = x->data.complex_single;
-            float (* ydata)[2] = y->data.complex_single;
-            for (int64_t k = 0; k < x->size; k++) {
-                ydata[idx[k]][0] += alpha*xdata[k][0];
-                ydata[idx[k]][1] += alpha*xdata[k][1];
-            }
-            if (num_flops) *num_flops += 4*x->size;
-        } else if (x->precision == mtx_double) {
-            const double (* xdata)[2] = x->data.complex_double;
-            double (* ydata)[2] = y->data.complex_double;
-            for (int64_t k = 0; k < x->size; k++) {
-                ydata[idx[k]][0] += alpha*xdata[k][0];
-                ydata[idx[k]][1] += alpha*xdata[k][1];
-            }
-            if (num_flops) *num_flops += 4*x->size;
-        } else { return MTX_ERR_INVALID_PRECISION; }
-    } else if (x->field == mtx_field_integer) {
-        if (x->precision == mtx_single) {
-            const int32_t * xdata = x->data.integer_single;
-            int32_t * ydata = y->data.integer_single;
-            for (int64_t k = 0; k < x->size; k++)
-                ydata[idx[k]] += alpha*xdata[k];
-            if (num_flops) *num_flops += 2*x->size;
-        } else if (x->precision == mtx_double) {
-            const int64_t * xdata = x->data.integer_double;
-            int64_t * ydata = y->data.integer_double;
-            for (int64_t k = 0; k < x->size; k++)
-                ydata[idx[k]] += alpha*xdata[k];
-            if (num_flops) *num_flops += 2*x->size;
-        } else { return MTX_ERR_INVALID_PRECISION; }
-    } else { return MTX_ERR_INVALID_FIELD; }
-    return MTX_SUCCESS;
+    struct mtxvector_packed xbase = mtxvector_packed_base_from_blas(x);
+    return mtxvector_base_usdaxpy(&y->base, alpha, &xbase, num_flops);
 }
 
 /**
@@ -1883,40 +1559,13 @@ int mtxvector_blas_usdaxpy(
  * otherwise the result is undefined.
  */
 int mtxvector_blas_uscaxpy(
-    struct mtxvector_blas * yblas,
+    struct mtxvector_blas * y,
     float alpha[2],
-    const struct mtxvector_packed * xpacked,
+    const struct mtxvector_packed * x,
     int64_t * num_flops)
 {
-    if (xpacked->x.type != mtxvector_blas) return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
-    const struct mtxvector_blas * xblas = &xpacked->x.storage.blas;
-    const struct mtxvector_base * x = &xblas->base;
-    struct mtxvector_base * y = &yblas->base;
-    if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
-    if (x->precision != y->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
-    if (xpacked->size != y->size) return MTX_ERR_INCOMPATIBLE_SIZE;
-    if (xpacked->num_nonzeros != x->size) return MTX_ERR_INCOMPATIBLE_SIZE;
-    const int64_t * idx = xpacked->idx;
-    if (x->field == mtx_field_complex) {
-        if (x->precision == mtx_single) {
-            const float (* xdata)[2] = x->data.complex_single;
-            float (* ydata)[2] = y->data.complex_single;
-            for (int64_t k = 0; k < x->size; k++) {
-                ydata[idx[k]][0] += alpha[0]*xdata[k][0] - alpha[1]*xdata[k][1];
-                ydata[idx[k]][1] += alpha[0]*xdata[k][1] + alpha[1]*xdata[k][0];
-            }
-            if (num_flops) *num_flops += 8*x->size;
-        } else if (x->precision == mtx_double) {
-            const double (* xdata)[2] = x->data.complex_double;
-            double (* ydata)[2] = y->data.complex_double;
-            for (int64_t k = 0; k < x->size; k++) {
-                ydata[idx[k]][0] += alpha[0]*xdata[k][0] - alpha[1]*xdata[k][1];
-                ydata[idx[k]][1] += alpha[0]*xdata[k][1] + alpha[1]*xdata[k][0];
-            }
-            if (num_flops) *num_flops += 8*x->size;
-        } else { return MTX_ERR_INVALID_PRECISION; }
-    } else { return MTX_ERR_INVALID_FIELD; }
-    return MTX_SUCCESS;
+    struct mtxvector_packed xbase = mtxvector_packed_base_from_blas(x);
+    return mtxvector_base_uscaxpy(&y->base, alpha, &xbase, num_flops);
 }
 
 /**
@@ -1929,40 +1578,13 @@ int mtxvector_blas_uscaxpy(
  * otherwise the result is undefined.
  */
 int mtxvector_blas_uszaxpy(
-    struct mtxvector_blas * yblas,
+    struct mtxvector_blas * y,
     double alpha[2],
-    const struct mtxvector_packed * xpacked,
+    const struct mtxvector_packed * x,
     int64_t * num_flops)
 {
-    if (xpacked->x.type != mtxvector_blas) return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
-    const struct mtxvector_blas * xblas = &xpacked->x.storage.blas;
-    const struct mtxvector_base * x = &xblas->base;
-    struct mtxvector_base * y = &yblas->base;
-    if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
-    if (x->precision != y->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
-    if (xpacked->size != y->size) return MTX_ERR_INCOMPATIBLE_SIZE;
-    if (xpacked->num_nonzeros != x->size) return MTX_ERR_INCOMPATIBLE_SIZE;
-    const int64_t * idx = xpacked->idx;
-    if (x->field == mtx_field_complex) {
-        if (x->precision == mtx_single) {
-            const float (* xdata)[2] = x->data.complex_single;
-            float (* ydata)[2] = y->data.complex_single;
-            for (int64_t k = 0; k < x->size; k++) {
-                ydata[idx[k]][0] += alpha[0]*xdata[k][0] - alpha[1]*xdata[k][1];
-                ydata[idx[k]][1] += alpha[0]*xdata[k][1] + alpha[1]*xdata[k][0];
-            }
-            if (num_flops) *num_flops += 8*x->size;
-        } else if (x->precision == mtx_double) {
-            const double (* xdata)[2] = x->data.complex_double;
-            double (* ydata)[2] = y->data.complex_double;
-            for (int64_t k = 0; k < x->size; k++) {
-                ydata[idx[k]][0] += alpha[0]*xdata[k][0] - alpha[1]*xdata[k][1];
-                ydata[idx[k]][1] += alpha[0]*xdata[k][1] + alpha[1]*xdata[k][0];
-            }
-            if (num_flops) *num_flops += 8*x->size;
-        } else { return MTX_ERR_INVALID_PRECISION; }
-    } else { return MTX_ERR_INVALID_FIELD; }
-    return MTX_SUCCESS;
+    struct mtxvector_packed xbase = mtxvector_packed_base_from_blas(x);
+    return mtxvector_base_uszaxpy(&y->base, alpha, &xbase, num_flops);
 }
 
 /**
@@ -1971,60 +1593,25 @@ int mtxvector_blas_uszaxpy(
  * the packed vector are allowed.
  */
 int mtxvector_blas_usga(
-    struct mtxvector_packed * xpacked,
-    const struct mtxvector_blas * yblas)
+    struct mtxvector_packed * x,
+    const struct mtxvector_blas * y)
 {
-    if (xpacked->x.type != mtxvector_blas) return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
-    struct mtxvector_blas * xblas = &xpacked->x.storage.blas;
-    struct mtxvector_base * x = &xblas->base;
-    const struct mtxvector_base * y = &yblas->base;
-    if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
-    if (x->precision != y->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
-    if (xpacked->size != y->size) return MTX_ERR_INCOMPATIBLE_SIZE;
-    if (xpacked->num_nonzeros != x->size) return MTX_ERR_INCOMPATIBLE_SIZE;
-    const int64_t * idx = xpacked->idx;
-    if (x->field == mtx_field_real) {
-        if (x->precision == mtx_single) {
-            float * xdata = x->data.real_single;
-            const float * ydata = y->data.real_single;
-            for (int64_t k = 0; k < x->size; k++)
-                xdata[k] = ydata[idx[k]];
-        } else if (x->precision == mtx_double) {
-            double * xdata = x->data.real_double;
-            const double * ydata = y->data.real_double;
-            for (int64_t k = 0; k < x->size; k++)
-                xdata[k] = ydata[idx[k]];
-        } else { return MTX_ERR_INVALID_PRECISION; }
-    } else if (x->field == mtx_field_complex) {
-        if (x->precision == mtx_single) {
-            float (* xdata)[2] = x->data.complex_single;
-            const float (* ydata)[2] = y->data.complex_single;
-            for (int64_t k = 0; k < x->size; k++) {
-                xdata[k][0] = ydata[idx[k]][0];
-                xdata[k][1] = ydata[idx[k]][1];
-            }
-        } else if (x->precision == mtx_double) {
-            double (* xdata)[2] = x->data.complex_double;
-            const double (* ydata)[2] = y->data.complex_double;
-            for (int64_t k = 0; k < x->size; k++) {
-                xdata[k][0] = ydata[idx[k]][0];
-                xdata[k][1] = ydata[idx[k]][1];
-            }
-        } else { return MTX_ERR_INVALID_PRECISION; }
-    } else if (x->field == mtx_field_integer) {
-        if (x->precision == mtx_single) {
-            int32_t * xdata = x->data.integer_single;
-            const int32_t * ydata = y->data.integer_single;
-            for (int64_t k = 0; k < x->size; k++)
-                xdata[k] = ydata[idx[k]];
-        } else if (x->precision == mtx_double) {
-            int64_t * xdata = x->data.integer_double;
-            const int64_t * ydata = y->data.integer_double;
-            for (int64_t k = 0; k < x->size; k++)
-                xdata[k] = ydata[idx[k]];
-        } else { return MTX_ERR_INVALID_PRECISION; }
-    } else { return MTX_ERR_INVALID_FIELD; }
-    return MTX_SUCCESS;
+    struct mtxvector_packed xbase = mtxvector_packed_base_from_blas(x);
+    return mtxvector_base_usga(&xbase, &y->base);
+}
+
+/**
+ * ‘mtxvector_blas_usgz()’ performs a gather operation from a vector
+ * ‘y’ into a sparse vector ‘x’ in packed form, while zeroing the
+ * values of the source vector ‘y’ that were copied to ‘x’. Repeated
+ * indices in the packed vector are allowed.
+ */
+int mtxvector_blas_usgz(
+    struct mtxvector_packed * x,
+    struct mtxvector_blas * y)
+{
+    struct mtxvector_packed xbase = mtxvector_packed_base_from_blas(x);
+    return mtxvector_base_usgz(&xbase, &y->base);
 }
 
 /**
@@ -2034,60 +1621,11 @@ int mtxvector_blas_usga(
  * undefined.
  */
 int mtxvector_blas_ussc(
-    struct mtxvector_blas * yblas,
-    const struct mtxvector_packed * xpacked)
+    struct mtxvector_blas * y,
+    const struct mtxvector_packed * x)
 {
-    if (xpacked->x.type != mtxvector_blas) return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
-    const struct mtxvector_blas * xblas = &xpacked->x.storage.blas;
-    const struct mtxvector_base * x = &xblas->base;
-    struct mtxvector_base * y = &yblas->base;
-    if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
-    if (x->precision != y->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
-    if (xpacked->size != y->size) return MTX_ERR_INCOMPATIBLE_SIZE;
-    if (xpacked->num_nonzeros != x->size) return MTX_ERR_INCOMPATIBLE_SIZE;
-    const int64_t * idx = xpacked->idx;
-    if (x->field == mtx_field_real) {
-        if (x->precision == mtx_single) {
-            const float * xdata = x->data.real_single;
-            float * ydata = y->data.real_single;
-            for (int64_t k = 0; k < x->size; k++)
-                ydata[idx[k]] = xdata[k];
-        } else if (x->precision == mtx_double) {
-            const double * xdata = x->data.real_double;
-            double * ydata = y->data.real_double;
-            for (int64_t k = 0; k < x->size; k++)
-                ydata[idx[k]] = xdata[k];
-        } else { return MTX_ERR_INVALID_PRECISION; }
-    } else if (x->field == mtx_field_complex) {
-        if (x->precision == mtx_single) {
-            const float (* xdata)[2] = x->data.complex_single;
-            float (* ydata)[2] = y->data.complex_single;
-            for (int64_t k = 0; k < x->size; k++) {
-                ydata[idx[k]][0] = xdata[k][0];
-                ydata[idx[k]][1] = xdata[k][1];
-            }
-        } else if (x->precision == mtx_double) {
-            const double (* xdata)[2] = x->data.complex_double;
-            double (* ydata)[2] = y->data.complex_double;
-            for (int64_t k = 0; k < x->size; k++) {
-                ydata[idx[k]][0] = xdata[k][0];
-                ydata[idx[k]][1] = xdata[k][1];
-            }
-        } else { return MTX_ERR_INVALID_PRECISION; }
-    } else if (x->field == mtx_field_integer) {
-        if (x->precision == mtx_single) {
-            const int32_t * xdata = x->data.integer_single;
-            int32_t * ydata = y->data.integer_single;
-            for (int64_t k = 0; k < x->size; k++)
-                ydata[idx[k]] = xdata[k];
-        } else if (x->precision == mtx_double) {
-            const int64_t * xdata = x->data.integer_double;
-            int64_t * ydata = y->data.integer_double;
-            for (int64_t k = 0; k < x->size; k++)
-                ydata[idx[k]] = xdata[k];
-        } else { return MTX_ERR_INVALID_PRECISION; }
-    } else { return MTX_ERR_INVALID_FIELD; }
-    return MTX_SUCCESS;
+    struct mtxvector_packed xbase = mtxvector_packed_base_from_blas(x);
+    return mtxvector_base_ussc(&y->base, &xbase);
 }
 
 /*
@@ -2102,31 +1640,12 @@ int mtxvector_blas_ussc(
  * are, however, allowed in the packed vector ‘z’.
  */
 int mtxvector_blas_usscga(
-    struct mtxvector_packed * zpacked,
-    const struct mtxvector_packed * xpacked)
+    struct mtxvector_packed * z,
+    const struct mtxvector_packed * x)
 {
-    if (xpacked->x.type != mtxvector_blas) return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
-    const struct mtxvector_blas * xblas = &xpacked->x.storage.blas;
-    const struct mtxvector_base * x = &xblas->base;
-    if (zpacked->x.type != mtxvector_blas) return MTX_ERR_INCOMPATIBLE_VECTOR_TYPE;
-    const struct mtxvector_blas * zblas = &zpacked->x.storage.blas;
-    const struct mtxvector_base * z = &zblas->base;
-    if (x->field != z->field) return MTX_ERR_INCOMPATIBLE_FIELD;
-    if (x->precision != z->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
-    if (xpacked->size != zpacked->size) return MTX_ERR_INCOMPATIBLE_SIZE;
-    struct mtxvector_packed xpackedbase;
-    xpackedbase.size = xpacked->size;
-    xpackedbase.num_nonzeros = xpacked->num_nonzeros;
-    xpackedbase.idx = xpacked->idx;
-    xpackedbase.x.type = mtxvector_base;
-    xpackedbase.x.storage.base = xpacked->x.storage.blas.base;
-    struct mtxvector_packed zpackedbase;
-    zpackedbase.size = zpacked->size;
-    zpackedbase.num_nonzeros = zpacked->num_nonzeros;
-    zpackedbase.idx = zpacked->idx;
-    zpackedbase.x.type = mtxvector_base;
-    zpackedbase.x.storage.base = zpacked->x.storage.blas.base;
-    return mtxvector_base_usscga(&zpackedbase, &xpackedbase);
+    struct mtxvector_packed zbase = mtxvector_packed_base_from_blas(z);
+    struct mtxvector_packed xbase = mtxvector_packed_base_from_blas(x);
+    return mtxvector_base_usscga(&zbase, &xbase);
 }
 
 /*
