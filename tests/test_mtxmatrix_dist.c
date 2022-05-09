@@ -804,7 +804,7 @@ int test_mtxmatrix_dist_to_mtxdistfile2(void)
         int nnz = rank == 0 ? 2 : 3;
         struct mtxmatrix_dist x;
         err = mtxmatrix_dist_init_real_single(
-            &x, mtxmatrix_base, size, nnz, idx, xdata, comm, &disterr);
+            &x, mtxmatrix_coordinate, size, nnz, rowidx, colidx, xdata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxdistfile2 mtxdistfile2;
         err = mtxmatrix_dist_to_mtxdistfile2(
@@ -841,7 +841,7 @@ int test_mtxmatrix_dist_to_mtxdistfile2(void)
         int nnz = rank == 0 ? 2 : 3;
         struct mtxmatrix_dist x;
         err = mtxmatrix_dist_init_real_double(
-            &x, mtxmatrix_base, size, nnz, idx, xdata, comm, &disterr);
+            &x, mtxmatrix_coordinate, size, nnz, rowidx, colidx, xdata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxdistfile2 mtxdistfile2;
         err = mtxmatrix_dist_to_mtxdistfile2(
@@ -878,7 +878,7 @@ int test_mtxmatrix_dist_to_mtxdistfile2(void)
         int nnz = rank == 0 ? 2 : 1;
         struct mtxmatrix_dist x;
         err = mtxmatrix_dist_init_complex_single(
-            &x, mtxmatrix_base, size, nnz, idx, xdata, comm, &disterr);
+            &x, mtxmatrix_coordinate, size, nnz, rowidx, colidx, xdata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxdistfile2 mtxdistfile2;
         err = mtxmatrix_dist_to_mtxdistfile2(
@@ -919,7 +919,7 @@ int test_mtxmatrix_dist_to_mtxdistfile2(void)
         int nnz = rank == 0 ? 2 : 1;
         struct mtxmatrix_dist x;
         err = mtxmatrix_dist_init_complex_double(
-            &x, mtxmatrix_base, size, nnz, idx, xdata, comm, &disterr);
+            &x, mtxmatrix_coordinate, size, nnz, rowidx, colidx, xdata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxdistfile2 mtxdistfile2;
         err = mtxmatrix_dist_to_mtxdistfile2(
@@ -960,7 +960,7 @@ int test_mtxmatrix_dist_to_mtxdistfile2(void)
         int nnz = rank == 0 ? 2 : 3;
         struct mtxmatrix_dist x;
         err = mtxmatrix_dist_init_integer_single(
-            &x, mtxmatrix_base, size, nnz, idx, xdata, comm, &disterr);
+            &x, mtxmatrix_coordinate, size, nnz, rowidx, colidx, xdata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxdistfile2 mtxdistfile2;
         err = mtxmatrix_dist_to_mtxdistfile2(
@@ -997,7 +997,7 @@ int test_mtxmatrix_dist_to_mtxdistfile2(void)
         int nnz = rank == 0 ? 2 : 3;
         struct mtxmatrix_dist x;
         err = mtxmatrix_dist_init_integer_double(
-            &x, mtxmatrix_base, size, nnz, idx, xdata, comm, &disterr);
+            &x, mtxmatrix_coordinate, size, nnz, rowidx, colidx, xdata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxdistfile2 mtxdistfile2;
         err = mtxmatrix_dist_to_mtxdistfile2(
@@ -1030,10 +1030,9 @@ int test_mtxmatrix_dist_to_mtxdistfile2(void)
     mtxdisterror_free(&disterr);
     return TEST_SUCCESS;
 }
-
+#endif
 /**
- * ‘test_mtxmatrix_dist_swap()’ tests swapping values of two
- * matrices.
+ * ‘test_mtxmatrix_dist_swap()’ tests swapping values of two matrices.
  */
 int test_mtxmatrix_dist_swap(void)
 {
@@ -1065,319 +1064,113 @@ int test_mtxmatrix_dist_swap(void)
     {
         struct mtxmatrix_dist x;
         struct mtxmatrix_dist y;
-        int size = 12;
-        int64_t * xidx = rank == 0 ? (int64_t[2]) {0, 3} : (int64_t[3]) {5, 6, 9};
+        int num_rows = 3;
+        int num_columns = 3;
+        int64_t * xrowidx = rank == 0 ? (int64_t[2]) {0, 1} : (int64_t[3]) {1, 2, 2};
+        int64_t * xcolidx = rank == 0 ? (int64_t[2]) {0, 0} : (int64_t[3]) {2, 0, 2};
         float * xdata = rank == 0 ? (float[2]) {1.0f, 1.0f} : (float[3]) {1.0f, 2.0f, 3.0f};
         int xnnz = rank == 0 ? 2 : 3;
-        int64_t * yidx = rank == 0 ? (int64_t[2]) {1, 2} : (int64_t[3]) {4, 6, 9};
+        int64_t * yrowidx = rank == 0 ? (int64_t[2]) {0, 1} : (int64_t[3]) {1, 2, 2};
+        int64_t * ycolidx = rank == 0 ? (int64_t[2]) {0, 0} : (int64_t[3]) {2, 0, 2};
         float * ydata = rank == 0 ? (float[2]) {2.0f, 1.0f} : (float[3]) {0.0f, 2.0f, 1.0f};
         int ynnz = rank == 0 ? 2 : 3;
-        err = mtxmatrix_dist_init_real_single(
-            &x, mtxmatrix_base, size, xnnz, xidx, xdata, comm, &disterr);
+        err = mtxmatrix_dist_init_entries_global_real_single(
+            &x, mtxmatrix_coordinate, mtx_unsymmetric, num_rows, num_columns, xnnz, xrowidx, xcolidx, xdata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxmatrix_dist_init_real_single(
-            &y, mtxmatrix_base, size, ynnz, yidx, ydata, comm, &disterr);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxmatrix_dist_swap(&x, &y, &disterr);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        TEST_ASSERT_EQ(12, x.size);
-        TEST_ASSERT_EQ(12, x.xp.size);
-        TEST_ASSERT_EQ_MSG(5, x.num_nonzeros, "x.num_nonzeros=%d", x.num_nonzeros);
-        if (rank == 0) {
-            TEST_ASSERT_EQ(2, x.xp.num_nonzeros);
-            TEST_ASSERT_EQ(x.xp.idx[0], 1);
-            TEST_ASSERT_EQ(x.xp.idx[1], 2);
-        } else if (rank == 1) {
-            TEST_ASSERT_EQ(3, x.xp.num_nonzeros);
-            TEST_ASSERT_EQ(x.xp.idx[0], 4);
-            TEST_ASSERT_EQ(x.xp.idx[1], 6);
-            TEST_ASSERT_EQ(x.xp.idx[2], 9);
-        }
-        TEST_ASSERT_EQ(12, y.size);
-        TEST_ASSERT_EQ(12, y.xp.size);
-        TEST_ASSERT_EQ(5, y.num_nonzeros);
-        if (rank == 0) {
-            TEST_ASSERT_EQ(2, y.xp.num_nonzeros);
-            TEST_ASSERT_EQ(y.xp.idx[0], 0);
-            TEST_ASSERT_EQ(y.xp.idx[1], 3);
-        } else if (rank == 1) {
-            TEST_ASSERT_EQ(3, y.xp.num_nonzeros);
-            TEST_ASSERT_EQ(y.xp.idx[0], 5);
-            TEST_ASSERT_EQ(y.xp.idx[1], 6);
-            TEST_ASSERT_EQ(y.xp.idx[2], 9);
-        }
-        TEST_ASSERT_EQ(mtxmatrix_base, x.xp.x.type);
-        TEST_ASSERT_EQ(mtx_field_real, x.xp.x.storage.base.field);
-        TEST_ASSERT_EQ(mtx_single, x.xp.x.storage.base.precision);
-        if (rank == 0) {
-            TEST_ASSERT_EQ(2, x.xp.x.storage.base.size);
-            TEST_ASSERT_EQ(2.0f, x.xp.x.storage.base.data.real_single[0]);
-            TEST_ASSERT_EQ(1.0f, x.xp.x.storage.base.data.real_single[1]);
-        } else if (rank == 1) {
-            TEST_ASSERT_EQ(3, x.xp.x.storage.base.size);
-            TEST_ASSERT_EQ(0.0f, x.xp.x.storage.base.data.real_single[0]);
-            TEST_ASSERT_EQ(2.0f, x.xp.x.storage.base.data.real_single[1]);
-            TEST_ASSERT_EQ(1.0f, x.xp.x.storage.base.data.real_single[2]);
-        }
-        TEST_ASSERT_EQ(mtxmatrix_base, y.xp.x.type);
-        TEST_ASSERT_EQ(mtx_field_real, y.xp.x.storage.base.field);
-        TEST_ASSERT_EQ(mtx_single, y.xp.x.storage.base.precision);
-        if (rank == 0) {
-            TEST_ASSERT_EQ(2, y.xp.x.storage.base.size);
-            TEST_ASSERT_EQ(1.0f, y.xp.x.storage.base.data.real_single[0]);
-            TEST_ASSERT_EQ(1.0f, y.xp.x.storage.base.data.real_single[1]);
-        } else if (rank == 1) {
-            TEST_ASSERT_EQ(3, y.xp.x.storage.base.size);
-            TEST_ASSERT_EQ(1.0f, y.xp.x.storage.base.data.real_single[0]);
-            TEST_ASSERT_EQ(2.0f, y.xp.x.storage.base.data.real_single[1]);
-            TEST_ASSERT_EQ(3.0f, y.xp.x.storage.base.data.real_single[2]);
-        }
-        mtxmatrix_dist_free(&y);
-        mtxmatrix_dist_free(&x);
-    }
-    {
-        struct mtxmatrix_dist x;
-        struct mtxmatrix_dist y;
-        int size = 12;
-        int64_t * xidx = rank == 0 ? (int64_t[2]) {0, 3} : (int64_t[3]) {5, 6, 9};
-        double * xdata = rank == 0 ? (double[2]) {1.0, 1.0} : (double[3]) {1.0, 2.0, 3.0};
-        int xnnz = rank == 0 ? 2 : 3;
-        int64_t * yidx = rank == 0 ? (int64_t[2]) {1, 2} : (int64_t[3]) {4, 6, 9};
-        double * ydata = rank == 0 ? (double[2]) {2.0, 1.0} : (double[3]) {0.0, 2.0, 1.0};
-        int ynnz = rank == 0 ? 2 : 3;
-        err = mtxmatrix_dist_init_real_double(
-            &x, mtxmatrix_base, size, xnnz, xidx, xdata, comm, &disterr);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxmatrix_dist_init_real_double(
-            &y, mtxmatrix_base, size, ynnz, yidx, ydata, comm, &disterr);
+        err = mtxmatrix_dist_init_entries_global_real_single(
+            &y, mtxmatrix_coordinate, mtx_unsymmetric, num_rows, num_columns, ynnz, yrowidx, ycolidx, ydata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxmatrix_dist_swap(&x, &y, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        TEST_ASSERT_EQ(12, x.size);
-        TEST_ASSERT_EQ(12, x.xp.size);
-        TEST_ASSERT_EQ_MSG(5, x.num_nonzeros, "x.num_nonzeros=%d", x.num_nonzeros);
+        TEST_ASSERT_EQ(3, x.num_rows);
+        TEST_ASSERT_EQ(3, x.num_columns);
+        TEST_ASSERT_EQ(5, x.num_nonzeros);
         if (rank == 0) {
-            TEST_ASSERT_EQ(2, x.xp.num_nonzeros);
-            TEST_ASSERT_EQ(x.xp.idx[0], 1);
-            TEST_ASSERT_EQ(x.xp.idx[1], 2);
+            TEST_ASSERT_EQ(2, x.rowmapsize);
+            TEST_ASSERT_EQ(0, x.rowmap[0]);
+            TEST_ASSERT_EQ(1, x.rowmap[1]);
+            TEST_ASSERT_EQ(1, x.colmapsize);
+            TEST_ASSERT_EQ(0, x.colmap[0]);
+            TEST_ASSERT_EQ(mtxmatrix_coordinate, x.xp.type);
+            const struct mtxmatrix_coordinate * Ap = &x.xp.storage.coordinate;
+            TEST_ASSERT_EQ(mtx_unsymmetric, Ap->symmetry);
+            TEST_ASSERT_EQ(2, Ap->num_rows);
+            TEST_ASSERT_EQ(1, Ap->num_columns);
+            TEST_ASSERT_EQ(2, Ap->num_entries);
+            TEST_ASSERT_EQ(2, Ap->num_nonzeros);
+            TEST_ASSERT_EQ(2, Ap->size);
+            TEST_ASSERT_EQ(0, Ap->rowidx[0]); TEST_ASSERT_EQ(0, Ap->colidx[0]);
+            TEST_ASSERT_EQ(1, Ap->rowidx[1]); TEST_ASSERT_EQ(0, Ap->colidx[1]);
+            const float * a = Ap->a.data.real_single;
+            TEST_ASSERT_EQ(2.0f, a[0]);
+            TEST_ASSERT_EQ(1.0f, a[1]);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ(3, x.xp.num_nonzeros);
-            TEST_ASSERT_EQ(x.xp.idx[0], 4);
-            TEST_ASSERT_EQ(x.xp.idx[1], 6);
-            TEST_ASSERT_EQ(x.xp.idx[2], 9);
+            TEST_ASSERT_EQ(2, x.rowmapsize);
+            TEST_ASSERT_EQ(1, x.rowmap[0]);
+            TEST_ASSERT_EQ(2, x.rowmap[1]);
+            TEST_ASSERT_EQ(2, x.colmapsize);
+            TEST_ASSERT_EQ(0, x.colmap[0]);
+            TEST_ASSERT_EQ(2, x.colmap[1]);
+            TEST_ASSERT_EQ(mtxmatrix_coordinate, x.xp.type);
+            const struct mtxmatrix_coordinate * Ap = &x.xp.storage.coordinate;
+            TEST_ASSERT_EQ(mtx_unsymmetric, Ap->symmetry);
+            TEST_ASSERT_EQ(2, Ap->num_rows);
+            TEST_ASSERT_EQ(2, Ap->num_columns);
+            TEST_ASSERT_EQ(4, Ap->num_entries);
+            TEST_ASSERT_EQ(3, Ap->num_nonzeros);
+            TEST_ASSERT_EQ(3, Ap->size);
+            TEST_ASSERT_EQ(0, Ap->rowidx[0]); TEST_ASSERT_EQ(1, Ap->colidx[0]);
+            TEST_ASSERT_EQ(1, Ap->rowidx[1]); TEST_ASSERT_EQ(0, Ap->colidx[1]);
+            TEST_ASSERT_EQ(1, Ap->rowidx[2]); TEST_ASSERT_EQ(1, Ap->colidx[2]);
+            const float * a = Ap->a.data.real_single;
+            TEST_ASSERT_EQ(0.0f, a[0]);
+            TEST_ASSERT_EQ(2.0f, a[1]);
+            TEST_ASSERT_EQ(1.0f, a[2]);
         }
-        TEST_ASSERT_EQ(12, y.size);
-        TEST_ASSERT_EQ(12, y.xp.size);
+        TEST_ASSERT_EQ(3, y.num_rows);
+        TEST_ASSERT_EQ(3, y.num_columns);
         TEST_ASSERT_EQ(5, y.num_nonzeros);
         if (rank == 0) {
-            TEST_ASSERT_EQ(2, y.xp.num_nonzeros);
-            TEST_ASSERT_EQ(y.xp.idx[0], 0);
-            TEST_ASSERT_EQ(y.xp.idx[1], 3);
+            TEST_ASSERT_EQ(2, y.rowmapsize);
+            TEST_ASSERT_EQ(0, y.rowmap[0]);
+            TEST_ASSERT_EQ(1, y.rowmap[1]);
+            TEST_ASSERT_EQ(1, y.colmapsize);
+            TEST_ASSERT_EQ(0, y.colmap[0]);
+            TEST_ASSERT_EQ(mtxmatrix_coordinate, y.xp.type);
+            const struct mtxmatrix_coordinate * Ap = &y.xp.storage.coordinate;
+            TEST_ASSERT_EQ(mtx_unsymmetric, Ap->symmetry);
+            TEST_ASSERT_EQ(2, Ap->num_rows);
+            TEST_ASSERT_EQ(1, Ap->num_columns);
+            TEST_ASSERT_EQ(2, Ap->num_entries);
+            TEST_ASSERT_EQ(2, Ap->num_nonzeros);
+            TEST_ASSERT_EQ(2, Ap->size);
+            TEST_ASSERT_EQ(0, Ap->rowidx[0]); TEST_ASSERT_EQ(0, Ap->colidx[0]);
+            TEST_ASSERT_EQ(1, Ap->rowidx[1]); TEST_ASSERT_EQ(0, Ap->colidx[1]);
+            const float * a = Ap->a.data.real_single;
+            TEST_ASSERT_EQ(1.0f, a[0]);
+            TEST_ASSERT_EQ(1.0f, a[1]);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ(3, y.xp.num_nonzeros);
-            TEST_ASSERT_EQ(y.xp.idx[0], 5);
-            TEST_ASSERT_EQ(y.xp.idx[1], 6);
-            TEST_ASSERT_EQ(y.xp.idx[2], 9);
-        }
-        TEST_ASSERT_EQ(mtxmatrix_base, x.xp.x.type);
-        TEST_ASSERT_EQ(mtx_field_real, x.xp.x.storage.base.field);
-        TEST_ASSERT_EQ(mtx_double, x.xp.x.storage.base.precision);
-        if (rank == 0) {
-            TEST_ASSERT_EQ(2, x.xp.x.storage.base.size);
-            TEST_ASSERT_EQ(2.0, x.xp.x.storage.base.data.real_double[0]);
-            TEST_ASSERT_EQ(1.0, x.xp.x.storage.base.data.real_double[1]);
-        } else if (rank == 1) {
-            TEST_ASSERT_EQ(3, x.xp.x.storage.base.size);
-            TEST_ASSERT_EQ(0.0, x.xp.x.storage.base.data.real_double[0]);
-            TEST_ASSERT_EQ(2.0, x.xp.x.storage.base.data.real_double[1]);
-            TEST_ASSERT_EQ(1.0, x.xp.x.storage.base.data.real_double[2]);
-        }
-        TEST_ASSERT_EQ(mtxmatrix_base, y.xp.x.type);
-        TEST_ASSERT_EQ(mtx_field_real, y.xp.x.storage.base.field);
-        TEST_ASSERT_EQ(mtx_double, y.xp.x.storage.base.precision);
-        if (rank == 0) {
-            TEST_ASSERT_EQ(2, y.xp.x.storage.base.size);
-            TEST_ASSERT_EQ(1.0, y.xp.x.storage.base.data.real_double[0]);
-            TEST_ASSERT_EQ(1.0, y.xp.x.storage.base.data.real_double[1]);
-        } else if (rank == 1) {
-            TEST_ASSERT_EQ(3, y.xp.x.storage.base.size);
-            TEST_ASSERT_EQ(1.0, y.xp.x.storage.base.data.real_double[0]);
-            TEST_ASSERT_EQ(2.0, y.xp.x.storage.base.data.real_double[1]);
-            TEST_ASSERT_EQ(3.0, y.xp.x.storage.base.data.real_double[2]);
-        }
-        mtxmatrix_dist_free(&y);
-        mtxmatrix_dist_free(&x);
-    }
-    {
-        struct mtxmatrix_dist x;
-        struct mtxmatrix_dist y;
-        int size = 12;
-        int64_t * xidx = rank == 0 ? (int64_t[2]) {0, 3} : (int64_t[3]) {5, 6, 9};
-        float (* xdata)[2] = rank == 0
-            ? ((float[2][2]) {{1.0f,-1.0f}, {1.0f,-1.0f}})
-            : ((float[3][2]) {{1.0f,-1.0f}, {2.0f,-2.0f}, {3.0f,-3.0f}});
-        int xnnz = rank == 0 ? 2 : 3;
-        int64_t * yidx = rank == 0 ? (int64_t[2]) {1, 2} : (int64_t[3]) {4, 6, 9};
-        float (* ydata)[2] = rank == 0
-            ? ((float[2][2]) {{2.0f,-2.0f}, {1.0f,-1.0f}})
-            : ((float[3][2]) {{0.0f,0.0f}, {2.0f,-2.0f}, {1.0f,-1.0f}});
-        int ynnz = rank == 0 ? 2 : 3;
-        err = mtxmatrix_dist_init_complex_single(
-            &x, mtxmatrix_base, size, xnnz, xidx, xdata, comm, &disterr);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxmatrix_dist_init_complex_single(
-            &y, mtxmatrix_base, size, ynnz, yidx, ydata, comm, &disterr);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxmatrix_dist_swap(&x, &y, &disterr);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        TEST_ASSERT_EQ(12, x.size);
-        TEST_ASSERT_EQ(12, x.xp.size);
-        TEST_ASSERT_EQ_MSG(5, x.num_nonzeros, "x.num_nonzeros=%d", x.num_nonzeros);
-        if (rank == 0) {
-            TEST_ASSERT_EQ(2, x.xp.num_nonzeros);
-            TEST_ASSERT_EQ(x.xp.idx[0], 1);
-            TEST_ASSERT_EQ(x.xp.idx[1], 2);
-        } else if (rank == 1) {
-            TEST_ASSERT_EQ(3, x.xp.num_nonzeros);
-            TEST_ASSERT_EQ(x.xp.idx[0], 4);
-            TEST_ASSERT_EQ(x.xp.idx[1], 6);
-            TEST_ASSERT_EQ(x.xp.idx[2], 9);
-        }
-        TEST_ASSERT_EQ(12, y.size);
-        TEST_ASSERT_EQ(12, y.xp.size);
-        TEST_ASSERT_EQ(5, y.num_nonzeros);
-        if (rank == 0) {
-            TEST_ASSERT_EQ(2, y.xp.num_nonzeros);
-            TEST_ASSERT_EQ(y.xp.idx[0], 0);
-            TEST_ASSERT_EQ(y.xp.idx[1], 3);
-        } else if (rank == 1) {
-            TEST_ASSERT_EQ(3, y.xp.num_nonzeros);
-            TEST_ASSERT_EQ(y.xp.idx[0], 5);
-            TEST_ASSERT_EQ(y.xp.idx[1], 6);
-            TEST_ASSERT_EQ(y.xp.idx[2], 9);
-        }
-        TEST_ASSERT_EQ(mtxmatrix_base, x.xp.x.type);
-        TEST_ASSERT_EQ(mtx_field_complex, x.xp.x.storage.base.field);
-        TEST_ASSERT_EQ(mtx_single, x.xp.x.storage.base.precision);
-        if (rank == 0) {
-            TEST_ASSERT_EQ(2, x.xp.x.storage.base.size);
-            TEST_ASSERT_EQ( 2.0f, x.xp.x.storage.base.data.complex_single[0][0]);
-            TEST_ASSERT_EQ(-2.0f, x.xp.x.storage.base.data.complex_single[0][1]);
-            TEST_ASSERT_EQ( 1.0f, x.xp.x.storage.base.data.complex_single[1][0]);
-            TEST_ASSERT_EQ(-1.0f, x.xp.x.storage.base.data.complex_single[1][1]);
-        } else if (rank == 1) {
-            TEST_ASSERT_EQ(3, x.xp.x.storage.base.size);
-            TEST_ASSERT_EQ( 0.0f, x.xp.x.storage.base.data.complex_single[0][0]);
-            TEST_ASSERT_EQ( 0.0f, x.xp.x.storage.base.data.complex_single[0][1]);
-            TEST_ASSERT_EQ( 2.0f, x.xp.x.storage.base.data.complex_single[1][0]);
-            TEST_ASSERT_EQ(-2.0f, x.xp.x.storage.base.data.complex_single[1][1]);
-            TEST_ASSERT_EQ( 1.0f, x.xp.x.storage.base.data.complex_single[2][0]);
-            TEST_ASSERT_EQ(-1.0f, x.xp.x.storage.base.data.complex_single[2][1]);
-        }
-        TEST_ASSERT_EQ(mtxmatrix_base, y.xp.x.type);
-        TEST_ASSERT_EQ(mtx_field_complex, y.xp.x.storage.base.field);
-        TEST_ASSERT_EQ(mtx_single, y.xp.x.storage.base.precision);
-        if (rank == 0) {
-            TEST_ASSERT_EQ(2, y.xp.x.storage.base.size);
-            TEST_ASSERT_EQ( 1.0f, y.xp.x.storage.base.data.complex_single[0][0]);
-            TEST_ASSERT_EQ(-1.0f, y.xp.x.storage.base.data.complex_single[0][1]);
-            TEST_ASSERT_EQ( 1.0f, y.xp.x.storage.base.data.complex_single[1][0]);
-            TEST_ASSERT_EQ(-1.0f, y.xp.x.storage.base.data.complex_single[1][1]);
-        } else if (rank == 1) {
-            TEST_ASSERT_EQ(3, y.xp.x.storage.base.size);
-            TEST_ASSERT_EQ( 1.0f, y.xp.x.storage.base.data.complex_single[0][0]);
-            TEST_ASSERT_EQ(-1.0f, y.xp.x.storage.base.data.complex_single[0][1]);
-            TEST_ASSERT_EQ( 2.0f, y.xp.x.storage.base.data.complex_single[1][0]);
-            TEST_ASSERT_EQ(-2.0f, y.xp.x.storage.base.data.complex_single[1][1]);
-            TEST_ASSERT_EQ( 3.0f, y.xp.x.storage.base.data.complex_single[2][0]);
-            TEST_ASSERT_EQ(-3.0f, y.xp.x.storage.base.data.complex_single[2][1]);
-        }
-        mtxmatrix_dist_free(&y);
-        mtxmatrix_dist_free(&x);
-    }
-    {
-        struct mtxmatrix_dist x;
-        struct mtxmatrix_dist y;
-        int size = 12;
-        int64_t * xidx = rank == 0 ? (int64_t[2]) {0, 3} : (int64_t[3]) {5, 6, 9};
-        double (* xdata)[2] = rank == 0
-            ? ((double[2][2]) {{1.0f,-1.0f}, {1.0f,-1.0f}})
-            : ((double[3][2]) {{1.0f,-1.0f}, {2.0f,-2.0f}, {3.0f,-3.0f}});
-        int xnnz = rank == 0 ? 2 : 3;
-        int64_t * yidx = rank == 0 ? (int64_t[2]) {1, 2} : (int64_t[3]) {4, 6, 9};
-        double (* ydata)[2] = rank == 0
-            ? ((double[2][2]) {{2.0f,-2.0f}, {1.0f,-1.0f}})
-            : ((double[3][2]) {{0.0f,0.0f}, {2.0f,-2.0f}, {1.0f,-1.0f}});
-        int ynnz = rank == 0 ? 2 : 3;
-        err = mtxmatrix_dist_init_complex_double(
-            &x, mtxmatrix_base, size, xnnz, xidx, xdata, comm, &disterr);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxmatrix_dist_init_complex_double(
-            &y, mtxmatrix_base, size, ynnz, yidx, ydata, comm, &disterr);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxmatrix_dist_swap(&x, &y, &disterr);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        TEST_ASSERT_EQ(12, x.size);
-        TEST_ASSERT_EQ(12, x.xp.size);
-        TEST_ASSERT_EQ_MSG(5, x.num_nonzeros, "x.num_nonzeros=%d", x.num_nonzeros);
-        if (rank == 0) {
-            TEST_ASSERT_EQ(2, x.xp.num_nonzeros);
-            TEST_ASSERT_EQ(x.xp.idx[0], 1);
-            TEST_ASSERT_EQ(x.xp.idx[1], 2);
-        } else if (rank == 1) {
-            TEST_ASSERT_EQ(3, x.xp.num_nonzeros);
-            TEST_ASSERT_EQ(x.xp.idx[0], 4);
-            TEST_ASSERT_EQ(x.xp.idx[1], 6);
-            TEST_ASSERT_EQ(x.xp.idx[2], 9);
-        }
-        TEST_ASSERT_EQ(12, y.size);
-        TEST_ASSERT_EQ(12, y.xp.size);
-        TEST_ASSERT_EQ(5, y.num_nonzeros);
-        if (rank == 0) {
-            TEST_ASSERT_EQ(2, y.xp.num_nonzeros);
-            TEST_ASSERT_EQ(y.xp.idx[0], 0);
-            TEST_ASSERT_EQ(y.xp.idx[1], 3);
-        } else if (rank == 1) {
-            TEST_ASSERT_EQ(3, y.xp.num_nonzeros);
-            TEST_ASSERT_EQ(y.xp.idx[0], 5);
-            TEST_ASSERT_EQ(y.xp.idx[1], 6);
-            TEST_ASSERT_EQ(y.xp.idx[2], 9);
-        }
-        TEST_ASSERT_EQ(mtxmatrix_base, x.xp.x.type);
-        TEST_ASSERT_EQ(mtx_field_complex, x.xp.x.storage.base.field);
-        TEST_ASSERT_EQ(mtx_double, x.xp.x.storage.base.precision);
-        if (rank == 0) {
-            TEST_ASSERT_EQ(2, x.xp.x.storage.base.size);
-            TEST_ASSERT_EQ( 2.0f, x.xp.x.storage.base.data.complex_double[0][0]);
-            TEST_ASSERT_EQ(-2.0f, x.xp.x.storage.base.data.complex_double[0][1]);
-            TEST_ASSERT_EQ( 1.0f, x.xp.x.storage.base.data.complex_double[1][0]);
-            TEST_ASSERT_EQ(-1.0f, x.xp.x.storage.base.data.complex_double[1][1]);
-        } else if (rank == 1) {
-            TEST_ASSERT_EQ(3, x.xp.x.storage.base.size);
-            TEST_ASSERT_EQ( 0.0f, x.xp.x.storage.base.data.complex_double[0][0]);
-            TEST_ASSERT_EQ( 0.0f, x.xp.x.storage.base.data.complex_double[0][1]);
-            TEST_ASSERT_EQ( 2.0f, x.xp.x.storage.base.data.complex_double[1][0]);
-            TEST_ASSERT_EQ(-2.0f, x.xp.x.storage.base.data.complex_double[1][1]);
-            TEST_ASSERT_EQ( 1.0f, x.xp.x.storage.base.data.complex_double[2][0]);
-            TEST_ASSERT_EQ(-1.0f, x.xp.x.storage.base.data.complex_double[2][1]);
-        }
-        TEST_ASSERT_EQ(mtxmatrix_base, y.xp.x.type);
-        TEST_ASSERT_EQ(mtx_field_complex, y.xp.x.storage.base.field);
-        TEST_ASSERT_EQ(mtx_double, y.xp.x.storage.base.precision);
-        if (rank == 0) {
-            TEST_ASSERT_EQ(2, y.xp.x.storage.base.size);
-            TEST_ASSERT_EQ( 1.0f, y.xp.x.storage.base.data.complex_double[0][0]);
-            TEST_ASSERT_EQ(-1.0f, y.xp.x.storage.base.data.complex_double[0][1]);
-            TEST_ASSERT_EQ( 1.0f, y.xp.x.storage.base.data.complex_double[1][0]);
-            TEST_ASSERT_EQ(-1.0f, y.xp.x.storage.base.data.complex_double[1][1]);
-        } else if (rank == 1) {
-            TEST_ASSERT_EQ(3, y.xp.x.storage.base.size);
-            TEST_ASSERT_EQ( 1.0f, y.xp.x.storage.base.data.complex_double[0][0]);
-            TEST_ASSERT_EQ(-1.0f, y.xp.x.storage.base.data.complex_double[0][1]);
-            TEST_ASSERT_EQ( 2.0f, y.xp.x.storage.base.data.complex_double[1][0]);
-            TEST_ASSERT_EQ(-2.0f, y.xp.x.storage.base.data.complex_double[1][1]);
-            TEST_ASSERT_EQ( 3.0f, y.xp.x.storage.base.data.complex_double[2][0]);
-            TEST_ASSERT_EQ(-3.0f, y.xp.x.storage.base.data.complex_double[2][1]);
+            TEST_ASSERT_EQ(2, y.rowmapsize);
+            TEST_ASSERT_EQ(1, y.rowmap[0]);
+            TEST_ASSERT_EQ(2, y.rowmap[1]);
+            TEST_ASSERT_EQ(2, y.colmapsize);
+            TEST_ASSERT_EQ(0, y.colmap[0]);
+            TEST_ASSERT_EQ(2, y.colmap[1]);
+            TEST_ASSERT_EQ(mtxmatrix_coordinate, y.xp.type);
+            const struct mtxmatrix_coordinate * Ap = &y.xp.storage.coordinate;
+            TEST_ASSERT_EQ(mtx_unsymmetric, Ap->symmetry);
+            TEST_ASSERT_EQ(2, Ap->num_rows);
+            TEST_ASSERT_EQ(2, Ap->num_columns);
+            TEST_ASSERT_EQ(4, Ap->num_entries);
+            TEST_ASSERT_EQ(3, Ap->num_nonzeros);
+            TEST_ASSERT_EQ(3, Ap->size);
+            TEST_ASSERT_EQ(0, Ap->rowidx[0]); TEST_ASSERT_EQ(1, Ap->colidx[0]);
+            TEST_ASSERT_EQ(1, Ap->rowidx[1]); TEST_ASSERT_EQ(0, Ap->colidx[1]);
+            TEST_ASSERT_EQ(1, Ap->rowidx[2]); TEST_ASSERT_EQ(1, Ap->colidx[2]);
+            const float * a = Ap->a.data.real_single;
+            TEST_ASSERT_EQ(1.0f, a[0]);
+            TEST_ASSERT_EQ(2.0f, a[1]);
+            TEST_ASSERT_EQ(3.0f, a[2]);
         }
         mtxmatrix_dist_free(&y);
         mtxmatrix_dist_free(&x);
@@ -1420,205 +1213,68 @@ int test_mtxmatrix_dist_copy(void)
     {
         struct mtxmatrix_dist x;
         struct mtxmatrix_dist y;
-        int size = 12;
-        int64_t * xidx = rank == 0 ? (int64_t[2]) {0, 3} : (int64_t[3]) {5, 6, 9};
+        int num_rows = 3;
+        int num_columns = 3;
+        int64_t * xrowidx = rank == 0 ? (int64_t[2]) {0, 1} : (int64_t[3]) {1, 2, 2};
+        int64_t * xcolidx = rank == 0 ? (int64_t[2]) {0, 0} : (int64_t[3]) {2, 0, 2};
         float * xdata = rank == 0 ? (float[2]) {1.0f, 1.0f} : (float[3]) {1.0f, 2.0f, 3.0f};
         int xnnz = rank == 0 ? 2 : 3;
-        int64_t * yidx = rank == 0 ? (int64_t[2]) {1, 2} : (int64_t[3]) {4, 6, 9};
+        int64_t * yrowidx = rank == 0 ? (int64_t[2]) {0, 1} : (int64_t[3]) {1, 2, 2};
+        int64_t * ycolidx = rank == 0 ? (int64_t[2]) {0, 0} : (int64_t[3]) {2, 0, 2};
         float * ydata = rank == 0 ? (float[2]) {2.0f, 1.0f} : (float[3]) {0.0f, 2.0f, 1.0f};
         int ynnz = rank == 0 ? 2 : 3;
-        err = mtxmatrix_dist_init_real_single(
-            &x, mtxmatrix_base, size, xnnz, xidx, xdata, comm, &disterr);
+        err = mtxmatrix_dist_init_entries_global_real_single(
+            &x, mtxmatrix_coordinate, mtx_unsymmetric, num_rows, num_columns, xnnz, xrowidx, xcolidx, xdata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxmatrix_dist_init_real_single(
-            &y, mtxmatrix_base, size, ynnz, yidx, ydata, comm, &disterr);
+        err = mtxmatrix_dist_init_entries_global_real_single(
+            &y, mtxmatrix_coordinate, mtx_unsymmetric, num_rows, num_columns, ynnz, yrowidx, ycolidx, ydata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxmatrix_dist_copy(&y, &x, &disterr);
+        err = mtxmatrix_dist_swap(&x, &y, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        TEST_ASSERT_EQ(12, y.size);
-        TEST_ASSERT_EQ(12, y.xp.size);
+         TEST_ASSERT_EQ(3, y.num_rows);
+        TEST_ASSERT_EQ(3, y.num_columns);
         TEST_ASSERT_EQ(5, y.num_nonzeros);
         if (rank == 0) {
-            TEST_ASSERT_EQ(2, y.xp.num_nonzeros);
-            TEST_ASSERT_EQ(y.xp.idx[0], 0);
-            TEST_ASSERT_EQ(y.xp.idx[1], 3);
+            TEST_ASSERT_EQ(2, y.rowmapsize);
+            TEST_ASSERT_EQ(0, y.rowmap[0]);
+            TEST_ASSERT_EQ(1, y.rowmap[1]);
+            TEST_ASSERT_EQ(1, y.colmapsize);
+            TEST_ASSERT_EQ(0, y.colmap[0]);
+            TEST_ASSERT_EQ(mtxmatrix_coordinate, y.xp.type);
+            const struct mtxmatrix_coordinate * Ap = &y.xp.storage.coordinate;
+            TEST_ASSERT_EQ(mtx_unsymmetric, Ap->symmetry);
+            TEST_ASSERT_EQ(2, Ap->num_rows);
+            TEST_ASSERT_EQ(1, Ap->num_columns);
+            TEST_ASSERT_EQ(2, Ap->num_entries);
+            TEST_ASSERT_EQ(2, Ap->num_nonzeros);
+            TEST_ASSERT_EQ(2, Ap->size);
+            TEST_ASSERT_EQ(0, Ap->rowidx[0]); TEST_ASSERT_EQ(0, Ap->colidx[0]);
+            TEST_ASSERT_EQ(1, Ap->rowidx[1]); TEST_ASSERT_EQ(0, Ap->colidx[1]);
+            const float * a = Ap->a.data.real_single;
+            TEST_ASSERT_EQ(1.0f, a[0]);
+            TEST_ASSERT_EQ(1.0f, a[1]);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ(3, y.xp.num_nonzeros);
-            TEST_ASSERT_EQ(y.xp.idx[0], 5);
-            TEST_ASSERT_EQ(y.xp.idx[1], 6);
-            TEST_ASSERT_EQ(y.xp.idx[2], 9);
-        }
-        TEST_ASSERT_EQ(mtxmatrix_base, y.xp.x.type);
-        TEST_ASSERT_EQ(mtx_field_real, y.xp.x.storage.base.field);
-        TEST_ASSERT_EQ(mtx_single, y.xp.x.storage.base.precision);
-        if (rank == 0) {
-            TEST_ASSERT_EQ(2, y.xp.x.storage.base.size);
-            TEST_ASSERT_EQ(1.0f, y.xp.x.storage.base.data.real_single[0]);
-            TEST_ASSERT_EQ(1.0f, y.xp.x.storage.base.data.real_single[1]);
-        } else if (rank == 1) {
-            TEST_ASSERT_EQ(3, y.xp.x.storage.base.size);
-            TEST_ASSERT_EQ(1.0f, y.xp.x.storage.base.data.real_single[0]);
-            TEST_ASSERT_EQ(2.0f, y.xp.x.storage.base.data.real_single[1]);
-            TEST_ASSERT_EQ(3.0f, y.xp.x.storage.base.data.real_single[2]);
-        }
-        mtxmatrix_dist_free(&y);
-        mtxmatrix_dist_free(&x);
-    }
-    {
-        struct mtxmatrix_dist x;
-        struct mtxmatrix_dist y;
-        int size = 12;
-        int64_t * xidx = rank == 0 ? (int64_t[2]) {0, 3} : (int64_t[3]) {5, 6, 9};
-        double * xdata = rank == 0 ? (double[2]) {1.0, 1.0} : (double[3]) {1.0, 2.0, 3.0};
-        int xnnz = rank == 0 ? 2 : 3;
-        int64_t * yidx = rank == 0 ? (int64_t[2]) {1, 2} : (int64_t[3]) {4, 6, 9};
-        double * ydata = rank == 0 ? (double[2]) {2.0, 1.0} : (double[3]) {0.0, 2.0, 1.0};
-        int ynnz = rank == 0 ? 2 : 3;
-        err = mtxmatrix_dist_init_real_double(
-            &x, mtxmatrix_base, size, xnnz, xidx, xdata, comm, &disterr);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxmatrix_dist_init_real_double(
-            &y, mtxmatrix_base, size, ynnz, yidx, ydata, comm, &disterr);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxmatrix_dist_copy(&y, &x, &disterr);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        TEST_ASSERT_EQ(12, y.size);
-        TEST_ASSERT_EQ(12, y.xp.size);
-        TEST_ASSERT_EQ(5, y.num_nonzeros);
-        if (rank == 0) {
-            TEST_ASSERT_EQ(2, y.xp.num_nonzeros);
-            TEST_ASSERT_EQ(y.xp.idx[0], 0);
-            TEST_ASSERT_EQ(y.xp.idx[1], 3);
-        } else if (rank == 1) {
-            TEST_ASSERT_EQ(3, y.xp.num_nonzeros);
-            TEST_ASSERT_EQ(y.xp.idx[0], 5);
-            TEST_ASSERT_EQ(y.xp.idx[1], 6);
-            TEST_ASSERT_EQ(y.xp.idx[2], 9);
-        }
-        TEST_ASSERT_EQ(mtxmatrix_base, y.xp.x.type);
-        TEST_ASSERT_EQ(mtx_field_real, y.xp.x.storage.base.field);
-        TEST_ASSERT_EQ(mtx_double, y.xp.x.storage.base.precision);
-        if (rank == 0) {
-            TEST_ASSERT_EQ(2, y.xp.x.storage.base.size);
-            TEST_ASSERT_EQ(1.0, y.xp.x.storage.base.data.real_double[0]);
-            TEST_ASSERT_EQ(1.0, y.xp.x.storage.base.data.real_double[1]);
-        } else if (rank == 1) {
-            TEST_ASSERT_EQ(3, y.xp.x.storage.base.size);
-            TEST_ASSERT_EQ(1.0, y.xp.x.storage.base.data.real_double[0]);
-            TEST_ASSERT_EQ(2.0, y.xp.x.storage.base.data.real_double[1]);
-            TEST_ASSERT_EQ(3.0, y.xp.x.storage.base.data.real_double[2]);
-        }
-        mtxmatrix_dist_free(&y);
-        mtxmatrix_dist_free(&x);
-    }
-    {
-        struct mtxmatrix_dist x;
-        struct mtxmatrix_dist y;
-        int size = 12;
-        int64_t * xidx = rank == 0 ? (int64_t[2]) {0, 3} : (int64_t[3]) {5, 6, 9};
-        float (* xdata)[2] = rank == 0
-            ? ((float[2][2]) {{1.0f,-1.0f}, {1.0f,-1.0f}})
-            : ((float[3][2]) {{1.0f,-1.0f}, {2.0f,-2.0f}, {3.0f,-3.0f}});
-        int xnnz = rank == 0 ? 2 : 3;
-        int64_t * yidx = rank == 0 ? (int64_t[2]) {1, 2} : (int64_t[3]) {4, 6, 9};
-        float (* ydata)[2] = rank == 0
-            ? ((float[2][2]) {{2.0f,-2.0f}, {1.0f,-1.0f}})
-            : ((float[3][2]) {{0.0f,0.0f}, {2.0f,-2.0f}, {1.0f,-1.0f}});
-        int ynnz = rank == 0 ? 2 : 3;
-        err = mtxmatrix_dist_init_complex_single(
-            &x, mtxmatrix_base, size, xnnz, xidx, xdata, comm, &disterr);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxmatrix_dist_init_complex_single(
-            &y, mtxmatrix_base, size, ynnz, yidx, ydata, comm, &disterr);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxmatrix_dist_copy(&y, &x, &disterr);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        TEST_ASSERT_EQ(12, y.size);
-        TEST_ASSERT_EQ(12, y.xp.size);
-        TEST_ASSERT_EQ(5, y.num_nonzeros);
-        if (rank == 0) {
-            TEST_ASSERT_EQ(2, y.xp.num_nonzeros);
-            TEST_ASSERT_EQ(y.xp.idx[0], 0);
-            TEST_ASSERT_EQ(y.xp.idx[1], 3);
-        } else if (rank == 1) {
-            TEST_ASSERT_EQ(3, y.xp.num_nonzeros);
-            TEST_ASSERT_EQ(y.xp.idx[0], 5);
-            TEST_ASSERT_EQ(y.xp.idx[1], 6);
-            TEST_ASSERT_EQ(y.xp.idx[2], 9);
-        }
-        TEST_ASSERT_EQ(mtxmatrix_base, y.xp.x.type);
-        TEST_ASSERT_EQ(mtx_field_complex, y.xp.x.storage.base.field);
-        TEST_ASSERT_EQ(mtx_single, y.xp.x.storage.base.precision);
-        if (rank == 0) {
-            TEST_ASSERT_EQ(2, y.xp.x.storage.base.size);
-            TEST_ASSERT_EQ( 1.0f, y.xp.x.storage.base.data.complex_single[0][0]);
-            TEST_ASSERT_EQ(-1.0f, y.xp.x.storage.base.data.complex_single[0][1]);
-            TEST_ASSERT_EQ( 1.0f, y.xp.x.storage.base.data.complex_single[1][0]);
-            TEST_ASSERT_EQ(-1.0f, y.xp.x.storage.base.data.complex_single[1][1]);
-        } else if (rank == 1) {
-            TEST_ASSERT_EQ(3, y.xp.x.storage.base.size);
-            TEST_ASSERT_EQ( 1.0f, y.xp.x.storage.base.data.complex_single[0][0]);
-            TEST_ASSERT_EQ(-1.0f, y.xp.x.storage.base.data.complex_single[0][1]);
-            TEST_ASSERT_EQ( 2.0f, y.xp.x.storage.base.data.complex_single[1][0]);
-            TEST_ASSERT_EQ(-2.0f, y.xp.x.storage.base.data.complex_single[1][1]);
-            TEST_ASSERT_EQ( 3.0f, y.xp.x.storage.base.data.complex_single[2][0]);
-            TEST_ASSERT_EQ(-3.0f, y.xp.x.storage.base.data.complex_single[2][1]);
-        }
-        mtxmatrix_dist_free(&y);
-        mtxmatrix_dist_free(&x);
-    }
-    {
-        struct mtxmatrix_dist x;
-        struct mtxmatrix_dist y;
-        int size = 12;
-        int64_t * xidx = rank == 0 ? (int64_t[2]) {0, 3} : (int64_t[3]) {5, 6, 9};
-        double (* xdata)[2] = rank == 0
-            ? ((double[2][2]) {{1.0f,-1.0f}, {1.0f,-1.0f}})
-            : ((double[3][2]) {{1.0f,-1.0f}, {2.0f,-2.0f}, {3.0f,-3.0f}});
-        int xnnz = rank == 0 ? 2 : 3;
-        int64_t * yidx = rank == 0 ? (int64_t[2]) {1, 2} : (int64_t[3]) {4, 6, 9};
-        double (* ydata)[2] = rank == 0
-            ? ((double[2][2]) {{2.0f,-2.0f}, {1.0f,-1.0f}})
-            : ((double[3][2]) {{0.0f,0.0f}, {2.0f,-2.0f}, {1.0f,-1.0f}});
-        int ynnz = rank == 0 ? 2 : 3;
-        err = mtxmatrix_dist_init_complex_double(
-            &x, mtxmatrix_base, size, xnnz, xidx, xdata, comm, &disterr);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxmatrix_dist_init_complex_double(
-            &y, mtxmatrix_base, size, ynnz, yidx, ydata, comm, &disterr);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxmatrix_dist_copy(&y, &x, &disterr);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        TEST_ASSERT_EQ(12, y.size);
-        TEST_ASSERT_EQ(12, y.xp.size);
-        TEST_ASSERT_EQ(5, y.num_nonzeros);
-        if (rank == 0) {
-            TEST_ASSERT_EQ(2, y.xp.num_nonzeros);
-            TEST_ASSERT_EQ(y.xp.idx[0], 0);
-            TEST_ASSERT_EQ(y.xp.idx[1], 3);
-        } else if (rank == 1) {
-            TEST_ASSERT_EQ(3, y.xp.num_nonzeros);
-            TEST_ASSERT_EQ(y.xp.idx[0], 5);
-            TEST_ASSERT_EQ(y.xp.idx[1], 6);
-            TEST_ASSERT_EQ(y.xp.idx[2], 9);
-        }
-        TEST_ASSERT_EQ(mtxmatrix_base, y.xp.x.type);
-        TEST_ASSERT_EQ(mtx_field_complex, y.xp.x.storage.base.field);
-        TEST_ASSERT_EQ(mtx_double, y.xp.x.storage.base.precision);
-        if (rank == 0) {
-            TEST_ASSERT_EQ(2, y.xp.x.storage.base.size);
-            TEST_ASSERT_EQ( 1.0f, y.xp.x.storage.base.data.complex_double[0][0]);
-            TEST_ASSERT_EQ(-1.0f, y.xp.x.storage.base.data.complex_double[0][1]);
-            TEST_ASSERT_EQ( 1.0f, y.xp.x.storage.base.data.complex_double[1][0]);
-            TEST_ASSERT_EQ(-1.0f, y.xp.x.storage.base.data.complex_double[1][1]);
-        } else if (rank == 1) {
-            TEST_ASSERT_EQ(3, y.xp.x.storage.base.size);
-            TEST_ASSERT_EQ( 1.0f, y.xp.x.storage.base.data.complex_double[0][0]);
-            TEST_ASSERT_EQ(-1.0f, y.xp.x.storage.base.data.complex_double[0][1]);
-            TEST_ASSERT_EQ( 2.0f, y.xp.x.storage.base.data.complex_double[1][0]);
-            TEST_ASSERT_EQ(-2.0f, y.xp.x.storage.base.data.complex_double[1][1]);
-            TEST_ASSERT_EQ( 3.0f, y.xp.x.storage.base.data.complex_double[2][0]);
-            TEST_ASSERT_EQ(-3.0f, y.xp.x.storage.base.data.complex_double[2][1]);
+            TEST_ASSERT_EQ(2, y.rowmapsize);
+            TEST_ASSERT_EQ(1, y.rowmap[0]);
+            TEST_ASSERT_EQ(2, y.rowmap[1]);
+            TEST_ASSERT_EQ(2, y.colmapsize);
+            TEST_ASSERT_EQ(0, y.colmap[0]);
+            TEST_ASSERT_EQ(2, y.colmap[1]);
+            TEST_ASSERT_EQ(mtxmatrix_coordinate, y.xp.type);
+            const struct mtxmatrix_coordinate * Ap = &y.xp.storage.coordinate;
+            TEST_ASSERT_EQ(mtx_unsymmetric, Ap->symmetry);
+            TEST_ASSERT_EQ(2, Ap->num_rows);
+            TEST_ASSERT_EQ(2, Ap->num_columns);
+            TEST_ASSERT_EQ(4, Ap->num_entries);
+            TEST_ASSERT_EQ(3, Ap->num_nonzeros);
+            TEST_ASSERT_EQ(3, Ap->size);
+            TEST_ASSERT_EQ(0, Ap->rowidx[0]); TEST_ASSERT_EQ(1, Ap->colidx[0]);
+            TEST_ASSERT_EQ(1, Ap->rowidx[1]); TEST_ASSERT_EQ(0, Ap->colidx[1]);
+            TEST_ASSERT_EQ(1, Ap->rowidx[2]); TEST_ASSERT_EQ(1, Ap->colidx[2]);
+            const float * a = Ap->a.data.real_single;
+            TEST_ASSERT_EQ(1.0f, a[0]);
+            TEST_ASSERT_EQ(2.0f, a[1]);
+            TEST_ASSERT_EQ(3.0f, a[2]);
         }
         mtxmatrix_dist_free(&y);
         mtxmatrix_dist_free(&x);
@@ -1659,181 +1315,189 @@ int test_mtxmatrix_dist_scal(void)
     if (err) MPI_Abort(comm, EXIT_FAILURE);
     {
         struct mtxmatrix_dist x;
-        int size = 12;
-        int64_t * xidx = rank == 0 ? (int64_t[2]) {0, 3} : (int64_t[3]) {5, 6, 9};
+        int num_rows = 3;
+        int num_columns = 3;
+        int64_t * xrowidx = rank == 0 ? (int64_t[2]) {0, 1} : (int64_t[3]) {1, 2, 2};
+        int64_t * xcolidx = rank == 0 ? (int64_t[2]) {0, 0} : (int64_t[3]) {2, 0, 2};
         float * xdata = rank == 0 ? (float[2]) {1.0f, 1.0f} : (float[3]) {1.0f, 2.0f, 3.0f};
         int xnnz = rank == 0 ? 2 : 3;
-        err = mtxmatrix_dist_init_real_single(
-            &x, mtxmatrix_base, size, xnnz, xidx, xdata, comm, &disterr);
+        err = mtxmatrix_dist_init_entries_global_real_single(
+            &x, mtxmatrix_coordinate, mtx_unsymmetric, num_rows, num_columns, xnnz, xrowidx, xcolidx, xdata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxmatrix_dist_sscal(2.0f, &x, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         if (rank == 0) {
-            TEST_ASSERT_EQ(2.0f, x.xp.x.storage.base.data.real_single[0]);
-            TEST_ASSERT_EQ(2.0f, x.xp.x.storage.base.data.real_single[1]);
+            TEST_ASSERT_EQ(2.0f, x.xp.storage.coordinate.a.data.real_single[0]);
+            TEST_ASSERT_EQ(2.0f, x.xp.storage.coordinate.a.data.real_single[1]);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ(2.0f, x.xp.x.storage.base.data.real_single[0]);
-            TEST_ASSERT_EQ(4.0f, x.xp.x.storage.base.data.real_single[1]);
-            TEST_ASSERT_EQ(6.0f, x.xp.x.storage.base.data.real_single[2]);
+            TEST_ASSERT_EQ(2.0f, x.xp.storage.coordinate.a.data.real_single[0]);
+            TEST_ASSERT_EQ(4.0f, x.xp.storage.coordinate.a.data.real_single[1]);
+            TEST_ASSERT_EQ(6.0f, x.xp.storage.coordinate.a.data.real_single[2]);
         }
         err = mtxmatrix_dist_dscal(2.0, &x, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         if (rank == 0) {
-            TEST_ASSERT_EQ( 4.0f, x.xp.x.storage.base.data.real_single[0]);
-            TEST_ASSERT_EQ( 4.0f, x.xp.x.storage.base.data.real_single[1]);
+            TEST_ASSERT_EQ( 4.0f, x.xp.storage.coordinate.a.data.real_single[0]);
+            TEST_ASSERT_EQ( 4.0f, x.xp.storage.coordinate.a.data.real_single[1]);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ( 4.0f, x.xp.x.storage.base.data.real_single[0]);
-            TEST_ASSERT_EQ( 8.0f, x.xp.x.storage.base.data.real_single[1]);
-            TEST_ASSERT_EQ(12.0f, x.xp.x.storage.base.data.real_single[2]);
+            TEST_ASSERT_EQ( 4.0f, x.xp.storage.coordinate.a.data.real_single[0]);
+            TEST_ASSERT_EQ( 8.0f, x.xp.storage.coordinate.a.data.real_single[1]);
+            TEST_ASSERT_EQ(12.0f, x.xp.storage.coordinate.a.data.real_single[2]);
         }
         mtxmatrix_dist_free(&x);
     }
     {
         struct mtxmatrix_dist x;
-        int size = 12;
-        int64_t * xidx = rank == 0 ? (int64_t[2]) {0, 3} : (int64_t[3]) {5, 6, 9};
+        int num_rows = 3;
+        int num_columns = 3;
+        int64_t * xrowidx = rank == 0 ? (int64_t[2]) {0, 1} : (int64_t[3]) {1, 2, 2};
+        int64_t * xcolidx = rank == 0 ? (int64_t[2]) {0, 0} : (int64_t[3]) {2, 0, 2};
         double * xdata = rank == 0 ? (double[2]) {1.0, 1.0} : (double[3]) {1.0, 2.0, 3.0};
         int xnnz = rank == 0 ? 2 : 3;
-        err = mtxmatrix_dist_init_real_double(
-            &x, mtxmatrix_base, size, xnnz, xidx, xdata, comm, &disterr);
+        err = mtxmatrix_dist_init_entries_global_real_double(
+            &x, mtxmatrix_coordinate, mtx_unsymmetric, num_rows, num_columns, xnnz, xrowidx, xcolidx, xdata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxmatrix_dist_sscal(2.0f, &x, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         if (rank == 0) {
-            TEST_ASSERT_EQ(2.0f, x.xp.x.storage.base.data.real_double[0]);
-            TEST_ASSERT_EQ(2.0f, x.xp.x.storage.base.data.real_double[1]);
+            TEST_ASSERT_EQ(2.0f, x.xp.storage.coordinate.a.data.real_double[0]);
+            TEST_ASSERT_EQ(2.0f, x.xp.storage.coordinate.a.data.real_double[1]);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ(2.0f, x.xp.x.storage.base.data.real_double[0]);
-            TEST_ASSERT_EQ(4.0f, x.xp.x.storage.base.data.real_double[1]);
-            TEST_ASSERT_EQ(6.0f, x.xp.x.storage.base.data.real_double[2]);
+            TEST_ASSERT_EQ(2.0f, x.xp.storage.coordinate.a.data.real_double[0]);
+            TEST_ASSERT_EQ(4.0f, x.xp.storage.coordinate.a.data.real_double[1]);
+            TEST_ASSERT_EQ(6.0f, x.xp.storage.coordinate.a.data.real_double[2]);
         }
         err = mtxmatrix_dist_dscal(2.0, &x, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         if (rank == 0) {
-            TEST_ASSERT_EQ( 4.0f, x.xp.x.storage.base.data.real_double[0]);
-            TEST_ASSERT_EQ( 4.0f, x.xp.x.storage.base.data.real_double[1]);
+            TEST_ASSERT_EQ( 4.0f, x.xp.storage.coordinate.a.data.real_double[0]);
+            TEST_ASSERT_EQ( 4.0f, x.xp.storage.coordinate.a.data.real_double[1]);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ( 4.0f, x.xp.x.storage.base.data.real_double[0]);
-            TEST_ASSERT_EQ( 8.0f, x.xp.x.storage.base.data.real_double[1]);
-            TEST_ASSERT_EQ(12.0f, x.xp.x.storage.base.data.real_double[2]);
+            TEST_ASSERT_EQ( 4.0f, x.xp.storage.coordinate.a.data.real_double[0]);
+            TEST_ASSERT_EQ( 8.0f, x.xp.storage.coordinate.a.data.real_double[1]);
+            TEST_ASSERT_EQ(12.0f, x.xp.storage.coordinate.a.data.real_double[2]);
         }
         mtxmatrix_dist_free(&x);
     }
     {
         struct mtxmatrix_dist x;
-        int size = 12;
-        int64_t * xidx = rank == 0 ? (int64_t[2]) {0, 3} : (int64_t[3]) {5};
+        int num_rows = 3;
+        int num_columns = 3;
+        int64_t * xrowidx = rank == 0 ? (int64_t[2]) {0, 1} : (int64_t[1]) {2};
+        int64_t * xcolidx = rank == 0 ? (int64_t[2]) {0, 0} : (int64_t[1]) {2};
         float (* xdata)[2] = rank == 0
             ? ((float[2][2]) {{1.0f,1.0f}, {1.0f,2.0f}})
             : ((float[1][2]) {{3.0f,0.0f}});
         int xnnz = rank == 0 ? 2 : 1;
-        err = mtxmatrix_dist_init_complex_single(
-            &x, mtxmatrix_base, size, xnnz, xidx, xdata, comm, &disterr);
+        err = mtxmatrix_dist_init_entries_global_complex_single(
+            &x, mtxmatrix_coordinate, mtx_unsymmetric, num_rows, num_columns, xnnz, xrowidx, xcolidx, xdata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxmatrix_dist_sscal(2.0f, &x, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         if (rank == 0) {
-            TEST_ASSERT_EQ(2.0f, x.xp.x.storage.base.data.complex_single[0][0]);
-            TEST_ASSERT_EQ(2.0f, x.xp.x.storage.base.data.complex_single[0][1]);
-            TEST_ASSERT_EQ(2.0f, x.xp.x.storage.base.data.complex_single[1][0]);
-            TEST_ASSERT_EQ(4.0f, x.xp.x.storage.base.data.complex_single[1][1]);
+            TEST_ASSERT_EQ(2.0f, x.xp.storage.coordinate.a.data.complex_single[0][0]);
+            TEST_ASSERT_EQ(2.0f, x.xp.storage.coordinate.a.data.complex_single[0][1]);
+            TEST_ASSERT_EQ(2.0f, x.xp.storage.coordinate.a.data.complex_single[1][0]);
+            TEST_ASSERT_EQ(4.0f, x.xp.storage.coordinate.a.data.complex_single[1][1]);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ(6.0f, x.xp.x.storage.base.data.complex_single[0][0]);
-            TEST_ASSERT_EQ(0.0f, x.xp.x.storage.base.data.complex_single[0][1]);
+            TEST_ASSERT_EQ(6.0f, x.xp.storage.coordinate.a.data.complex_single[0][0]);
+            TEST_ASSERT_EQ(0.0f, x.xp.storage.coordinate.a.data.complex_single[0][1]);
         }
         err = mtxmatrix_dist_dscal(2.0, &x, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         if (rank == 0) {
-            TEST_ASSERT_EQ( 4.0f, x.xp.x.storage.base.data.complex_single[0][0]);
-            TEST_ASSERT_EQ( 4.0f, x.xp.x.storage.base.data.complex_single[0][1]);
-            TEST_ASSERT_EQ( 4.0f, x.xp.x.storage.base.data.complex_single[1][0]);
-            TEST_ASSERT_EQ( 8.0f, x.xp.x.storage.base.data.complex_single[1][1]);
+            TEST_ASSERT_EQ( 4.0f, x.xp.storage.coordinate.a.data.complex_single[0][0]);
+            TEST_ASSERT_EQ( 4.0f, x.xp.storage.coordinate.a.data.complex_single[0][1]);
+            TEST_ASSERT_EQ( 4.0f, x.xp.storage.coordinate.a.data.complex_single[1][0]);
+            TEST_ASSERT_EQ( 8.0f, x.xp.storage.coordinate.a.data.complex_single[1][1]);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ(12.0f, x.xp.x.storage.base.data.complex_single[0][0]);
-            TEST_ASSERT_EQ( 0.0f, x.xp.x.storage.base.data.complex_single[0][1]);
+            TEST_ASSERT_EQ(12.0f, x.xp.storage.coordinate.a.data.complex_single[0][0]);
+            TEST_ASSERT_EQ( 0.0f, x.xp.storage.coordinate.a.data.complex_single[0][1]);
         }
         float as[2] = {2, 3};
         err = mtxmatrix_dist_cscal(as, &x, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         if (rank == 0) {
-            TEST_ASSERT_EQ( -4.0f, x.xp.x.storage.base.data.complex_single[0][0]);
-            TEST_ASSERT_EQ( 20.0f, x.xp.x.storage.base.data.complex_single[0][1]);
-            TEST_ASSERT_EQ(-16.0f, x.xp.x.storage.base.data.complex_single[1][0]);
-            TEST_ASSERT_EQ( 28.0f, x.xp.x.storage.base.data.complex_single[1][1]);
+            TEST_ASSERT_EQ( -4.0f, x.xp.storage.coordinate.a.data.complex_single[0][0]);
+            TEST_ASSERT_EQ( 20.0f, x.xp.storage.coordinate.a.data.complex_single[0][1]);
+            TEST_ASSERT_EQ(-16.0f, x.xp.storage.coordinate.a.data.complex_single[1][0]);
+            TEST_ASSERT_EQ( 28.0f, x.xp.storage.coordinate.a.data.complex_single[1][1]);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ( 24.0f, x.xp.x.storage.base.data.complex_single[0][0]);
-            TEST_ASSERT_EQ( 36.0f, x.xp.x.storage.base.data.complex_single[0][1]);
+            TEST_ASSERT_EQ( 24.0f, x.xp.storage.coordinate.a.data.complex_single[0][0]);
+            TEST_ASSERT_EQ( 36.0f, x.xp.storage.coordinate.a.data.complex_single[0][1]);
         }
         double ad[2] = {2, 3};
         err = mtxmatrix_dist_zscal(ad, &x, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         if (rank == 0) {
-            TEST_ASSERT_EQ( -68.0f, x.xp.x.storage.base.data.complex_single[0][0]);
-            TEST_ASSERT_EQ(  28.0f, x.xp.x.storage.base.data.complex_single[0][1]);
-            TEST_ASSERT_EQ(-116.0f, x.xp.x.storage.base.data.complex_single[1][0]);
-            TEST_ASSERT_EQ(   8.0f, x.xp.x.storage.base.data.complex_single[1][1]);
+            TEST_ASSERT_EQ( -68.0f, x.xp.storage.coordinate.a.data.complex_single[0][0]);
+            TEST_ASSERT_EQ(  28.0f, x.xp.storage.coordinate.a.data.complex_single[0][1]);
+            TEST_ASSERT_EQ(-116.0f, x.xp.storage.coordinate.a.data.complex_single[1][0]);
+            TEST_ASSERT_EQ(   8.0f, x.xp.storage.coordinate.a.data.complex_single[1][1]);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ( -60.0f, x.xp.x.storage.base.data.complex_single[0][0]);
-            TEST_ASSERT_EQ( 144.0f, x.xp.x.storage.base.data.complex_single[0][1]);
+            TEST_ASSERT_EQ( -60.0f, x.xp.storage.coordinate.a.data.complex_single[0][0]);
+            TEST_ASSERT_EQ( 144.0f, x.xp.storage.coordinate.a.data.complex_single[0][1]);
         }
         mtxmatrix_dist_free(&x);
     }
     {
         struct mtxmatrix_dist x;
-        int size = 12;
-        int64_t * xidx = rank == 0 ? (int64_t[2]) {0, 3} : (int64_t[3]) {5};
+        int num_rows = 3;
+        int num_columns = 3;
+        int64_t * xrowidx = rank == 0 ? (int64_t[2]) {0, 1} : (int64_t[1]) {2};
+        int64_t * xcolidx = rank == 0 ? (int64_t[2]) {0, 0} : (int64_t[1]) {2};
         double (* xdata)[2] = rank == 0
             ? ((double[2][2]) {{1.0f,1.0f}, {1.0f,2.0f}})
             : ((double[1][2]) {{3.0f,0.0f}});
         int xnnz = rank == 0 ? 2 : 1;
-        err = mtxmatrix_dist_init_complex_double(
-            &x, mtxmatrix_base, size, xnnz, xidx, xdata, comm, &disterr);
+        err = mtxmatrix_dist_init_entries_global_complex_double(
+            &x, mtxmatrix_coordinate, mtx_unsymmetric, num_rows, num_columns, xnnz, xrowidx, xcolidx, xdata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxmatrix_dist_sscal(2.0f, &x, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         if (rank == 0) {
-            TEST_ASSERT_EQ(2.0f, x.xp.x.storage.base.data.complex_double[0][0]);
-            TEST_ASSERT_EQ(2.0f, x.xp.x.storage.base.data.complex_double[0][1]);
-            TEST_ASSERT_EQ(2.0f, x.xp.x.storage.base.data.complex_double[1][0]);
-            TEST_ASSERT_EQ(4.0f, x.xp.x.storage.base.data.complex_double[1][1]);
+            TEST_ASSERT_EQ(2.0f, x.xp.storage.coordinate.a.data.complex_double[0][0]);
+            TEST_ASSERT_EQ(2.0f, x.xp.storage.coordinate.a.data.complex_double[0][1]);
+            TEST_ASSERT_EQ(2.0f, x.xp.storage.coordinate.a.data.complex_double[1][0]);
+            TEST_ASSERT_EQ(4.0f, x.xp.storage.coordinate.a.data.complex_double[1][1]);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ(6.0f, x.xp.x.storage.base.data.complex_double[0][0]);
-            TEST_ASSERT_EQ(0.0f, x.xp.x.storage.base.data.complex_double[0][1]);
+            TEST_ASSERT_EQ(6.0f, x.xp.storage.coordinate.a.data.complex_double[0][0]);
+            TEST_ASSERT_EQ(0.0f, x.xp.storage.coordinate.a.data.complex_double[0][1]);
         }
         err = mtxmatrix_dist_dscal(2.0, &x, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         if (rank == 0) {
-            TEST_ASSERT_EQ( 4.0f, x.xp.x.storage.base.data.complex_double[0][0]);
-            TEST_ASSERT_EQ( 4.0f, x.xp.x.storage.base.data.complex_double[0][1]);
-            TEST_ASSERT_EQ( 4.0f, x.xp.x.storage.base.data.complex_double[1][0]);
-            TEST_ASSERT_EQ( 8.0f, x.xp.x.storage.base.data.complex_double[1][1]);
+            TEST_ASSERT_EQ( 4.0f, x.xp.storage.coordinate.a.data.complex_double[0][0]);
+            TEST_ASSERT_EQ( 4.0f, x.xp.storage.coordinate.a.data.complex_double[0][1]);
+            TEST_ASSERT_EQ( 4.0f, x.xp.storage.coordinate.a.data.complex_double[1][0]);
+            TEST_ASSERT_EQ( 8.0f, x.xp.storage.coordinate.a.data.complex_double[1][1]);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ(12.0f, x.xp.x.storage.base.data.complex_double[0][0]);
-            TEST_ASSERT_EQ( 0.0f, x.xp.x.storage.base.data.complex_double[0][1]);
+            TEST_ASSERT_EQ(12.0f, x.xp.storage.coordinate.a.data.complex_double[0][0]);
+            TEST_ASSERT_EQ( 0.0f, x.xp.storage.coordinate.a.data.complex_double[0][1]);
         }
         float as[2] = {2, 3};
         err = mtxmatrix_dist_cscal(as, &x, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         if (rank == 0) {
-            TEST_ASSERT_EQ( -4.0, x.xp.x.storage.base.data.complex_double[0][0]);
-            TEST_ASSERT_EQ( 20.0, x.xp.x.storage.base.data.complex_double[0][1]);
-            TEST_ASSERT_EQ(-16.0, x.xp.x.storage.base.data.complex_double[1][0]);
-            TEST_ASSERT_EQ( 28.0, x.xp.x.storage.base.data.complex_double[1][1]);
+            TEST_ASSERT_EQ( -4.0, x.xp.storage.coordinate.a.data.complex_double[0][0]);
+            TEST_ASSERT_EQ( 20.0, x.xp.storage.coordinate.a.data.complex_double[0][1]);
+            TEST_ASSERT_EQ(-16.0, x.xp.storage.coordinate.a.data.complex_double[1][0]);
+            TEST_ASSERT_EQ( 28.0, x.xp.storage.coordinate.a.data.complex_double[1][1]);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ( 24.0, x.xp.x.storage.base.data.complex_double[0][0]);
-            TEST_ASSERT_EQ( 36.0, x.xp.x.storage.base.data.complex_double[0][1]);
+            TEST_ASSERT_EQ( 24.0, x.xp.storage.coordinate.a.data.complex_double[0][0]);
+            TEST_ASSERT_EQ( 36.0, x.xp.storage.coordinate.a.data.complex_double[0][1]);
         }
         double ad[2] = {2, 3};
         err = mtxmatrix_dist_zscal(ad, &x, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         if (rank == 0) {
-            TEST_ASSERT_EQ( -68.0, x.xp.x.storage.base.data.complex_double[0][0]);
-            TEST_ASSERT_EQ(  28.0, x.xp.x.storage.base.data.complex_double[0][1]);
-            TEST_ASSERT_EQ(-116.0, x.xp.x.storage.base.data.complex_double[1][0]);
-            TEST_ASSERT_EQ(   8.0, x.xp.x.storage.base.data.complex_double[1][1]);
+            TEST_ASSERT_EQ( -68.0, x.xp.storage.coordinate.a.data.complex_double[0][0]);
+            TEST_ASSERT_EQ(  28.0, x.xp.storage.coordinate.a.data.complex_double[0][1]);
+            TEST_ASSERT_EQ(-116.0, x.xp.storage.coordinate.a.data.complex_double[1][0]);
+            TEST_ASSERT_EQ(   8.0, x.xp.storage.coordinate.a.data.complex_double[1][1]);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ( -60.0, x.xp.x.storage.base.data.complex_double[0][0]);
-            TEST_ASSERT_EQ( 144.0, x.xp.x.storage.base.data.complex_double[0][1]);
+            TEST_ASSERT_EQ( -60.0, x.xp.storage.coordinate.a.data.complex_double[0][0]);
+            TEST_ASSERT_EQ( 144.0, x.xp.storage.coordinate.a.data.complex_double[0][1]);
         }
         mtxmatrix_dist_free(&x);
     }
@@ -1875,56 +1539,58 @@ int test_mtxmatrix_dist_axpy(void)
     {
         struct mtxmatrix_dist x;
         struct mtxmatrix_dist y;
-        int size = 12;
-        int64_t * idx = rank == 0 ? (int64_t[2]) {0, 3} : (int64_t[3]) {5, 6, 9};
+        int num_rows = 3;
+        int num_columns = 3;
+        int64_t * rowidx = rank == 0 ? (int64_t[2]) {0, 1} : (int64_t[3]) {1, 2, 2};
+        int64_t * colidx = rank == 0 ? (int64_t[2]) {0, 0} : (int64_t[3]) {2, 0, 2};
         float * xdata = rank == 0 ? (float[2]) {1.0f, 1.0f} : (float[3]) {1.0f, 2.0f, 3.0f};
         float * ydata = rank == 0 ? (float[2]) {2.0f, 1.0f} : (float[3]) {0.0f, 2.0f, 1.0f};
         int nnz = rank == 0 ? 2 : 3;
-        err = mtxmatrix_dist_init_real_single(
-            &x, mtxmatrix_base, size, nnz, idx, xdata, comm, &disterr);
+        err = mtxmatrix_dist_init_entries_global_real_single(
+            &x, mtxmatrix_coordinate, mtx_unsymmetric, num_rows, num_columns, nnz, rowidx, colidx, xdata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxmatrix_dist_init_real_single(
-            &y, mtxmatrix_base, size, nnz, idx, ydata, comm, &disterr);
+        err = mtxmatrix_dist_init_entries_global_real_single(
+            &y, mtxmatrix_coordinate, mtx_unsymmetric, num_rows, num_columns, nnz, rowidx, colidx, ydata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxmatrix_dist_saxpy(2.0f, &x, &y, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         if (rank == 0) {
-            TEST_ASSERT_EQ( 4.0f, y.xp.x.storage.base.data.real_single[0]);
-            TEST_ASSERT_EQ( 3.0f, y.xp.x.storage.base.data.real_single[1]);
+            TEST_ASSERT_EQ( 4.0f, y.xp.storage.coordinate.a.data.real_single[0]);
+            TEST_ASSERT_EQ( 3.0f, y.xp.storage.coordinate.a.data.real_single[1]);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ( 2.0f, y.xp.x.storage.base.data.real_single[0]);
-            TEST_ASSERT_EQ( 6.0f, y.xp.x.storage.base.data.real_single[1]);
-            TEST_ASSERT_EQ( 7.0f, y.xp.x.storage.base.data.real_single[2]);
+            TEST_ASSERT_EQ( 2.0f, y.xp.storage.coordinate.a.data.real_single[0]);
+            TEST_ASSERT_EQ( 6.0f, y.xp.storage.coordinate.a.data.real_single[1]);
+            TEST_ASSERT_EQ( 7.0f, y.xp.storage.coordinate.a.data.real_single[2]);
         }
         err = mtxmatrix_dist_daxpy(2.0, &x, &y, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         if (rank == 0) {
-            TEST_ASSERT_EQ( 6.0f, y.xp.x.storage.base.data.real_single[0]);
-            TEST_ASSERT_EQ( 5.0f, y.xp.x.storage.base.data.real_single[1]);
+            TEST_ASSERT_EQ( 6.0f, y.xp.storage.coordinate.a.data.real_single[0]);
+            TEST_ASSERT_EQ( 5.0f, y.xp.storage.coordinate.a.data.real_single[1]);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ( 4.0f, y.xp.x.storage.base.data.real_single[0]);
-            TEST_ASSERT_EQ(10.0f, y.xp.x.storage.base.data.real_single[1]);
-            TEST_ASSERT_EQ(13.0f, y.xp.x.storage.base.data.real_single[2]);
+            TEST_ASSERT_EQ( 4.0f, y.xp.storage.coordinate.a.data.real_single[0]);
+            TEST_ASSERT_EQ(10.0f, y.xp.storage.coordinate.a.data.real_single[1]);
+            TEST_ASSERT_EQ(13.0f, y.xp.storage.coordinate.a.data.real_single[2]);
         }
         err = mtxmatrix_dist_saypx(2.0f, &y, &x, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         if (rank == 0) {
-            TEST_ASSERT_EQ(13.0f, y.xp.x.storage.base.data.real_single[0]);
-            TEST_ASSERT_EQ(11.0f, y.xp.x.storage.base.data.real_single[1]);
+            TEST_ASSERT_EQ(13.0f, y.xp.storage.coordinate.a.data.real_single[0]);
+            TEST_ASSERT_EQ(11.0f, y.xp.storage.coordinate.a.data.real_single[1]);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ( 9.0f, y.xp.x.storage.base.data.real_single[0]);
-            TEST_ASSERT_EQ(22.0f, y.xp.x.storage.base.data.real_single[1]);
-            TEST_ASSERT_EQ(29.0f, y.xp.x.storage.base.data.real_single[2]);
+            TEST_ASSERT_EQ( 9.0f, y.xp.storage.coordinate.a.data.real_single[0]);
+            TEST_ASSERT_EQ(22.0f, y.xp.storage.coordinate.a.data.real_single[1]);
+            TEST_ASSERT_EQ(29.0f, y.xp.storage.coordinate.a.data.real_single[2]);
         }
         err = mtxmatrix_dist_daypx(2.0, &y, &x, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         if (rank == 0) {
-            TEST_ASSERT_EQ(27.0f, y.xp.x.storage.base.data.real_single[0]);
-            TEST_ASSERT_EQ(23.0f, y.xp.x.storage.base.data.real_single[1]);
+            TEST_ASSERT_EQ(27.0f, y.xp.storage.coordinate.a.data.real_single[0]);
+            TEST_ASSERT_EQ(23.0f, y.xp.storage.coordinate.a.data.real_single[1]);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ(19.0f, y.xp.x.storage.base.data.real_single[0]);
-            TEST_ASSERT_EQ(46.0f, y.xp.x.storage.base.data.real_single[1]);
-            TEST_ASSERT_EQ(61.0f, y.xp.x.storage.base.data.real_single[2]);
+            TEST_ASSERT_EQ(19.0f, y.xp.storage.coordinate.a.data.real_single[0]);
+            TEST_ASSERT_EQ(46.0f, y.xp.storage.coordinate.a.data.real_single[1]);
+            TEST_ASSERT_EQ(61.0f, y.xp.storage.coordinate.a.data.real_single[2]);
         }
         mtxmatrix_dist_free(&y);
         mtxmatrix_dist_free(&x);
@@ -1932,56 +1598,58 @@ int test_mtxmatrix_dist_axpy(void)
     {
         struct mtxmatrix_dist x;
         struct mtxmatrix_dist y;
-        int size = 12;
-        int64_t * idx = rank == 0 ? (int64_t[2]) {0, 3} : (int64_t[3]) {5, 6, 9};
+        int num_rows = 3;
+        int num_columns = 3;
+        int64_t * rowidx = rank == 0 ? (int64_t[2]) {0, 1} : (int64_t[3]) {1, 2, 2};
+        int64_t * colidx = rank == 0 ? (int64_t[2]) {0, 0} : (int64_t[3]) {2, 0, 2};
         double * xdata = rank == 0 ? (double[2]) {1.0, 1.0} : (double[3]) {1.0, 2.0, 3.0};
         double * ydata = rank == 0 ? (double[2]) {2.0, 1.0} : (double[3]) {0.0, 2.0, 1.0};
         int nnz = rank == 0 ? 2 : 3;
-        err = mtxmatrix_dist_init_real_double(
-            &x, mtxmatrix_base, size, nnz, idx, xdata, comm, &disterr);
+        err = mtxmatrix_dist_init_entries_global_real_double(
+            &x, mtxmatrix_coordinate, mtx_unsymmetric, num_rows, num_columns, nnz, rowidx, colidx, xdata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxmatrix_dist_init_real_double(
-            &y, mtxmatrix_base, size, nnz, idx, ydata, comm, &disterr);
+        err = mtxmatrix_dist_init_entries_global_real_double(
+            &y, mtxmatrix_coordinate, mtx_unsymmetric, num_rows, num_columns, nnz, rowidx, colidx, ydata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxmatrix_dist_saxpy(2.0f, &x, &y, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         if (rank == 0) {
-            TEST_ASSERT_EQ( 4.0, y.xp.x.storage.base.data.real_double[0]);
-            TEST_ASSERT_EQ( 3.0, y.xp.x.storage.base.data.real_double[1]);
+            TEST_ASSERT_EQ( 4.0, y.xp.storage.coordinate.a.data.real_double[0]);
+            TEST_ASSERT_EQ( 3.0, y.xp.storage.coordinate.a.data.real_double[1]);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ( 2.0, y.xp.x.storage.base.data.real_double[0]);
-            TEST_ASSERT_EQ( 6.0, y.xp.x.storage.base.data.real_double[1]);
-            TEST_ASSERT_EQ( 7.0, y.xp.x.storage.base.data.real_double[2]);
+            TEST_ASSERT_EQ( 2.0, y.xp.storage.coordinate.a.data.real_double[0]);
+            TEST_ASSERT_EQ( 6.0, y.xp.storage.coordinate.a.data.real_double[1]);
+            TEST_ASSERT_EQ( 7.0, y.xp.storage.coordinate.a.data.real_double[2]);
         }
         err = mtxmatrix_dist_daxpy(2.0, &x, &y, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         if (rank == 0) {
-            TEST_ASSERT_EQ( 6.0, y.xp.x.storage.base.data.real_double[0]);
-            TEST_ASSERT_EQ( 5.0, y.xp.x.storage.base.data.real_double[1]);
+            TEST_ASSERT_EQ( 6.0, y.xp.storage.coordinate.a.data.real_double[0]);
+            TEST_ASSERT_EQ( 5.0, y.xp.storage.coordinate.a.data.real_double[1]);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ( 4.0, y.xp.x.storage.base.data.real_double[0]);
-            TEST_ASSERT_EQ(10.0, y.xp.x.storage.base.data.real_double[1]);
-            TEST_ASSERT_EQ(13.0, y.xp.x.storage.base.data.real_double[2]);
+            TEST_ASSERT_EQ( 4.0, y.xp.storage.coordinate.a.data.real_double[0]);
+            TEST_ASSERT_EQ(10.0, y.xp.storage.coordinate.a.data.real_double[1]);
+            TEST_ASSERT_EQ(13.0, y.xp.storage.coordinate.a.data.real_double[2]);
         }
         err = mtxmatrix_dist_saypx(2.0f, &y, &x, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         if (rank == 0) {
-            TEST_ASSERT_EQ(13.0, y.xp.x.storage.base.data.real_double[0]);
-            TEST_ASSERT_EQ(11.0, y.xp.x.storage.base.data.real_double[1]);
+            TEST_ASSERT_EQ(13.0, y.xp.storage.coordinate.a.data.real_double[0]);
+            TEST_ASSERT_EQ(11.0, y.xp.storage.coordinate.a.data.real_double[1]);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ( 9.0, y.xp.x.storage.base.data.real_double[0]);
-            TEST_ASSERT_EQ(22.0, y.xp.x.storage.base.data.real_double[1]);
-            TEST_ASSERT_EQ(29.0, y.xp.x.storage.base.data.real_double[2]);
+            TEST_ASSERT_EQ( 9.0, y.xp.storage.coordinate.a.data.real_double[0]);
+            TEST_ASSERT_EQ(22.0, y.xp.storage.coordinate.a.data.real_double[1]);
+            TEST_ASSERT_EQ(29.0, y.xp.storage.coordinate.a.data.real_double[2]);
         }
         err = mtxmatrix_dist_daypx(2.0, &y, &x, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         if (rank == 0) {
-            TEST_ASSERT_EQ(27.0, y.xp.x.storage.base.data.real_double[0]);
-            TEST_ASSERT_EQ(23.0, y.xp.x.storage.base.data.real_double[1]);
+            TEST_ASSERT_EQ(27.0, y.xp.storage.coordinate.a.data.real_double[0]);
+            TEST_ASSERT_EQ(23.0, y.xp.storage.coordinate.a.data.real_double[1]);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ(19.0, y.xp.x.storage.base.data.real_double[0]);
-            TEST_ASSERT_EQ(46.0, y.xp.x.storage.base.data.real_double[1]);
-            TEST_ASSERT_EQ(61.0, y.xp.x.storage.base.data.real_double[2]);
+            TEST_ASSERT_EQ(19.0, y.xp.storage.coordinate.a.data.real_double[0]);
+            TEST_ASSERT_EQ(46.0, y.xp.storage.coordinate.a.data.real_double[1]);
+            TEST_ASSERT_EQ(61.0, y.xp.storage.coordinate.a.data.real_double[2]);
         }
         mtxmatrix_dist_free(&y);
         mtxmatrix_dist_free(&x);
@@ -1989,8 +1657,10 @@ int test_mtxmatrix_dist_axpy(void)
     {
         struct mtxmatrix_dist x;
         struct mtxmatrix_dist y;
-        int size = 12;
-        int64_t * idx = rank == 0 ? (int64_t[2]) {0, 3} : (int64_t[1]) {5};
+        int num_rows = 3;
+        int num_columns = 3;
+        int64_t * rowidx = rank == 0 ? (int64_t[2]) {0, 1} : (int64_t[1]) {2};
+        int64_t * colidx = rank == 0 ? (int64_t[2]) {0, 0} : (int64_t[1]) {2};
         float (* xdata)[2] = rank == 0
             ? ((float[2][2]) {{1.0f,1.0f}, {1.0f,2.0f}})
             : ((float[1][2]) {{3.0f,0.0f}});
@@ -1998,55 +1668,55 @@ int test_mtxmatrix_dist_axpy(void)
             ? ((float[2][2]) {{2.0f,1.0f}, {0.0f,2.0f}})
             : ((float[1][2]) {{1.0f,0.0f}});
         int nnz = rank == 0 ? 2 : 1;
-        err = mtxmatrix_dist_init_complex_single(
-            &x, mtxmatrix_base, size, nnz, idx, xdata, comm, &disterr);
+        err = mtxmatrix_dist_init_entries_global_complex_single(
+            &x, mtxmatrix_coordinate, mtx_unsymmetric, num_rows, num_columns, nnz, rowidx, colidx, xdata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxmatrix_dist_init_complex_single(
-            &y, mtxmatrix_base, size, nnz, idx, ydata, comm, &disterr);
+        err = mtxmatrix_dist_init_entries_global_complex_single(
+            &y, mtxmatrix_coordinate, mtx_unsymmetric, num_rows, num_columns, nnz, rowidx, colidx, ydata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxmatrix_dist_saxpy(2.0f, &x, &y, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         if (rank == 0) {
-            TEST_ASSERT_EQ(4.0f, y.xp.x.storage.base.data.complex_single[0][0]);
-            TEST_ASSERT_EQ(3.0f, y.xp.x.storage.base.data.complex_single[0][1]);
-            TEST_ASSERT_EQ(2.0f, y.xp.x.storage.base.data.complex_single[1][0]);
-            TEST_ASSERT_EQ(6.0f, y.xp.x.storage.base.data.complex_single[1][1]);
+            TEST_ASSERT_EQ(4.0f, y.xp.storage.coordinate.a.data.complex_single[0][0]);
+            TEST_ASSERT_EQ(3.0f, y.xp.storage.coordinate.a.data.complex_single[0][1]);
+            TEST_ASSERT_EQ(2.0f, y.xp.storage.coordinate.a.data.complex_single[1][0]);
+            TEST_ASSERT_EQ(6.0f, y.xp.storage.coordinate.a.data.complex_single[1][1]);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ(7.0f, y.xp.x.storage.base.data.complex_single[0][0]);
-            TEST_ASSERT_EQ(0.0f, y.xp.x.storage.base.data.complex_single[0][1]);
+            TEST_ASSERT_EQ(7.0f, y.xp.storage.coordinate.a.data.complex_single[0][0]);
+            TEST_ASSERT_EQ(0.0f, y.xp.storage.coordinate.a.data.complex_single[0][1]);
         }
         err = mtxmatrix_dist_daxpy(2.0, &x, &y, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         if (rank == 0) {
-            TEST_ASSERT_EQ( 6.0f, y.xp.x.storage.base.data.complex_single[0][0]);
-            TEST_ASSERT_EQ( 5.0f, y.xp.x.storage.base.data.complex_single[0][1]);
-            TEST_ASSERT_EQ( 4.0f, y.xp.x.storage.base.data.complex_single[1][0]);
-            TEST_ASSERT_EQ(10.0f, y.xp.x.storage.base.data.complex_single[1][1]);
+            TEST_ASSERT_EQ( 6.0f, y.xp.storage.coordinate.a.data.complex_single[0][0]);
+            TEST_ASSERT_EQ( 5.0f, y.xp.storage.coordinate.a.data.complex_single[0][1]);
+            TEST_ASSERT_EQ( 4.0f, y.xp.storage.coordinate.a.data.complex_single[1][0]);
+            TEST_ASSERT_EQ(10.0f, y.xp.storage.coordinate.a.data.complex_single[1][1]);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ(13.0f, y.xp.x.storage.base.data.complex_single[0][0]);
-            TEST_ASSERT_EQ( 0.0f, y.xp.x.storage.base.data.complex_single[0][1]);
+            TEST_ASSERT_EQ(13.0f, y.xp.storage.coordinate.a.data.complex_single[0][0]);
+            TEST_ASSERT_EQ( 0.0f, y.xp.storage.coordinate.a.data.complex_single[0][1]);
         }
         err = mtxmatrix_dist_saypx(2.0f, &y, &x, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         if (rank == 0) {
-            TEST_ASSERT_EQ(13.0f, y.xp.x.storage.base.data.complex_single[0][0]);
-            TEST_ASSERT_EQ(11.0f, y.xp.x.storage.base.data.complex_single[0][1]);
-            TEST_ASSERT_EQ( 9.0f, y.xp.x.storage.base.data.complex_single[1][0]);
-            TEST_ASSERT_EQ(22.0f, y.xp.x.storage.base.data.complex_single[1][1]);
+            TEST_ASSERT_EQ(13.0f, y.xp.storage.coordinate.a.data.complex_single[0][0]);
+            TEST_ASSERT_EQ(11.0f, y.xp.storage.coordinate.a.data.complex_single[0][1]);
+            TEST_ASSERT_EQ( 9.0f, y.xp.storage.coordinate.a.data.complex_single[1][0]);
+            TEST_ASSERT_EQ(22.0f, y.xp.storage.coordinate.a.data.complex_single[1][1]);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ(29.0f, y.xp.x.storage.base.data.complex_single[0][0]);
-            TEST_ASSERT_EQ( 0.0f, y.xp.x.storage.base.data.complex_single[0][1]);
+            TEST_ASSERT_EQ(29.0f, y.xp.storage.coordinate.a.data.complex_single[0][0]);
+            TEST_ASSERT_EQ( 0.0f, y.xp.storage.coordinate.a.data.complex_single[0][1]);
         }
         err = mtxmatrix_dist_daypx(2.0, &y, &x, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         if (rank == 0) {
-            TEST_ASSERT_EQ(27.0f, y.xp.x.storage.base.data.complex_single[0][0]);
-            TEST_ASSERT_EQ(23.0f, y.xp.x.storage.base.data.complex_single[0][1]);
-            TEST_ASSERT_EQ(19.0f, y.xp.x.storage.base.data.complex_single[1][0]);
-            TEST_ASSERT_EQ(46.0f, y.xp.x.storage.base.data.complex_single[1][1]);
+            TEST_ASSERT_EQ(27.0f, y.xp.storage.coordinate.a.data.complex_single[0][0]);
+            TEST_ASSERT_EQ(23.0f, y.xp.storage.coordinate.a.data.complex_single[0][1]);
+            TEST_ASSERT_EQ(19.0f, y.xp.storage.coordinate.a.data.complex_single[1][0]);
+            TEST_ASSERT_EQ(46.0f, y.xp.storage.coordinate.a.data.complex_single[1][1]);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ(61.0f, y.xp.x.storage.base.data.complex_single[0][0]);
-            TEST_ASSERT_EQ( 0.0f, y.xp.x.storage.base.data.complex_single[0][1]);
+            TEST_ASSERT_EQ(61.0f, y.xp.storage.coordinate.a.data.complex_single[0][0]);
+            TEST_ASSERT_EQ( 0.0f, y.xp.storage.coordinate.a.data.complex_single[0][1]);
         }
         mtxmatrix_dist_free(&y);
         mtxmatrix_dist_free(&x);
@@ -2054,8 +1724,10 @@ int test_mtxmatrix_dist_axpy(void)
     {
         struct mtxmatrix_dist x;
         struct mtxmatrix_dist y;
-        int size = 12;
-        int64_t * idx = rank == 0 ? (int64_t[2]) {0, 3} : (int64_t[1]) {5};
+        int num_rows = 3;
+        int num_columns = 3;
+        int64_t * rowidx = rank == 0 ? (int64_t[2]) {0, 1} : (int64_t[1]) {2};
+        int64_t * colidx = rank == 0 ? (int64_t[2]) {0, 0} : (int64_t[1]) {2};
         double (* xdata)[2] = rank == 0
             ? ((double[2][2]) {{1.0,1.0}, {1.0,2.0}})
             : ((double[1][2]) {{3.0,0.0}});
@@ -2063,55 +1735,55 @@ int test_mtxmatrix_dist_axpy(void)
             ? ((double[2][2]) {{2.0,1.0}, {0.0,2.0}})
             : ((double[1][2]) {{1.0,0.0}});
         int nnz = rank == 0 ? 2 : 1;
-        err = mtxmatrix_dist_init_complex_double(
-            &x, mtxmatrix_base, size, nnz, idx, xdata, comm, &disterr);
+        err = mtxmatrix_dist_init_entries_global_complex_double(
+            &x, mtxmatrix_coordinate, mtx_unsymmetric, num_rows, num_columns, nnz, rowidx, colidx, xdata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxmatrix_dist_init_complex_double(
-            &y, mtxmatrix_base, size, nnz, idx, ydata, comm, &disterr);
+        err = mtxmatrix_dist_init_entries_global_complex_double(
+            &y, mtxmatrix_coordinate, mtx_unsymmetric, num_rows, num_columns, nnz, rowidx, colidx, ydata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxmatrix_dist_saxpy(2.0f, &x, &y, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         if (rank == 0) {
-            TEST_ASSERT_EQ(4.0, y.xp.x.storage.base.data.complex_double[0][0]);
-            TEST_ASSERT_EQ(3.0, y.xp.x.storage.base.data.complex_double[0][1]);
-            TEST_ASSERT_EQ(2.0, y.xp.x.storage.base.data.complex_double[1][0]);
-            TEST_ASSERT_EQ(6.0, y.xp.x.storage.base.data.complex_double[1][1]);
+            TEST_ASSERT_EQ(4.0, y.xp.storage.coordinate.a.data.complex_double[0][0]);
+            TEST_ASSERT_EQ(3.0, y.xp.storage.coordinate.a.data.complex_double[0][1]);
+            TEST_ASSERT_EQ(2.0, y.xp.storage.coordinate.a.data.complex_double[1][0]);
+            TEST_ASSERT_EQ(6.0, y.xp.storage.coordinate.a.data.complex_double[1][1]);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ(7.0, y.xp.x.storage.base.data.complex_double[0][0]);
-            TEST_ASSERT_EQ(0.0, y.xp.x.storage.base.data.complex_double[0][1]);
+            TEST_ASSERT_EQ(7.0, y.xp.storage.coordinate.a.data.complex_double[0][0]);
+            TEST_ASSERT_EQ(0.0, y.xp.storage.coordinate.a.data.complex_double[0][1]);
         }
         err = mtxmatrix_dist_daxpy(2.0, &x, &y, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         if (rank == 0) {
-            TEST_ASSERT_EQ( 6.0, y.xp.x.storage.base.data.complex_double[0][0]);
-            TEST_ASSERT_EQ( 5.0, y.xp.x.storage.base.data.complex_double[0][1]);
-            TEST_ASSERT_EQ( 4.0, y.xp.x.storage.base.data.complex_double[1][0]);
-            TEST_ASSERT_EQ(10.0, y.xp.x.storage.base.data.complex_double[1][1]);
+            TEST_ASSERT_EQ( 6.0, y.xp.storage.coordinate.a.data.complex_double[0][0]);
+            TEST_ASSERT_EQ( 5.0, y.xp.storage.coordinate.a.data.complex_double[0][1]);
+            TEST_ASSERT_EQ( 4.0, y.xp.storage.coordinate.a.data.complex_double[1][0]);
+            TEST_ASSERT_EQ(10.0, y.xp.storage.coordinate.a.data.complex_double[1][1]);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ(13.0, y.xp.x.storage.base.data.complex_double[0][0]);
-            TEST_ASSERT_EQ( 0.0, y.xp.x.storage.base.data.complex_double[0][1]);
+            TEST_ASSERT_EQ(13.0, y.xp.storage.coordinate.a.data.complex_double[0][0]);
+            TEST_ASSERT_EQ( 0.0, y.xp.storage.coordinate.a.data.complex_double[0][1]);
         }
         err = mtxmatrix_dist_saypx(2.0f, &y, &x, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         if (rank == 0) {
-            TEST_ASSERT_EQ(13.0, y.xp.x.storage.base.data.complex_double[0][0]);
-            TEST_ASSERT_EQ(11.0, y.xp.x.storage.base.data.complex_double[0][1]);
-            TEST_ASSERT_EQ( 9.0, y.xp.x.storage.base.data.complex_double[1][0]);
-            TEST_ASSERT_EQ(22.0, y.xp.x.storage.base.data.complex_double[1][1]);
+            TEST_ASSERT_EQ(13.0, y.xp.storage.coordinate.a.data.complex_double[0][0]);
+            TEST_ASSERT_EQ(11.0, y.xp.storage.coordinate.a.data.complex_double[0][1]);
+            TEST_ASSERT_EQ( 9.0, y.xp.storage.coordinate.a.data.complex_double[1][0]);
+            TEST_ASSERT_EQ(22.0, y.xp.storage.coordinate.a.data.complex_double[1][1]);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ(29.0, y.xp.x.storage.base.data.complex_double[0][0]);
-            TEST_ASSERT_EQ( 0.0, y.xp.x.storage.base.data.complex_double[0][1]);
+            TEST_ASSERT_EQ(29.0, y.xp.storage.coordinate.a.data.complex_double[0][0]);
+            TEST_ASSERT_EQ( 0.0, y.xp.storage.coordinate.a.data.complex_double[0][1]);
         }
         err = mtxmatrix_dist_daypx(2.0, &y, &x, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         if (rank == 0) {
-            TEST_ASSERT_EQ(27.0, y.xp.x.storage.base.data.complex_double[0][0]);
-            TEST_ASSERT_EQ(23.0, y.xp.x.storage.base.data.complex_double[0][1]);
-            TEST_ASSERT_EQ(19.0, y.xp.x.storage.base.data.complex_double[1][0]);
-            TEST_ASSERT_EQ(46.0, y.xp.x.storage.base.data.complex_double[1][1]);
+            TEST_ASSERT_EQ(27.0, y.xp.storage.coordinate.a.data.complex_double[0][0]);
+            TEST_ASSERT_EQ(23.0, y.xp.storage.coordinate.a.data.complex_double[0][1]);
+            TEST_ASSERT_EQ(19.0, y.xp.storage.coordinate.a.data.complex_double[1][0]);
+            TEST_ASSERT_EQ(46.0, y.xp.storage.coordinate.a.data.complex_double[1][1]);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ(61.0, y.xp.x.storage.base.data.complex_double[0][0]);
-            TEST_ASSERT_EQ( 0.0, y.xp.x.storage.base.data.complex_double[0][1]);
+            TEST_ASSERT_EQ(61.0, y.xp.storage.coordinate.a.data.complex_double[0][0]);
+            TEST_ASSERT_EQ( 0.0, y.xp.storage.coordinate.a.data.complex_double[0][1]);
         }
         mtxmatrix_dist_free(&y);
         mtxmatrix_dist_free(&x);
@@ -2154,16 +1826,18 @@ int test_mtxmatrix_dist_dot(void)
     {
         struct mtxmatrix_dist x;
         struct mtxmatrix_dist y;
-        int size = 12;
-        int64_t * idx = rank == 0 ? (int64_t[2]) {0, 3} : (int64_t[3]) {5, 6, 9};
+        int num_rows = 3;
+        int num_columns = 3;
+        int64_t * rowidx = rank == 0 ? (int64_t[2]) {0, 1} : (int64_t[3]) {1, 2, 2};
+        int64_t * colidx = rank == 0 ? (int64_t[2]) {0, 0} : (int64_t[3]) {2, 0, 2};
         float * xdata = rank == 0 ? (float[2]) {1.0f, 1.0f} : (float[3]) {1.0f, 2.0f, 3.0f};
         float * ydata = rank == 0 ? (float[2]) {3.0f, 2.0f} : (float[3]) {1.0f, 0.0f, 1.0f};
         int nnz = rank == 0 ? 2 : 3;
-        err = mtxmatrix_dist_init_real_single(
-            &x, mtxmatrix_base, size, nnz, idx, xdata, comm, &disterr);
+        err = mtxmatrix_dist_init_entries_global_real_single(
+            &x, mtxmatrix_coordinate, mtx_unsymmetric, num_rows, num_columns, nnz, rowidx, colidx, xdata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxmatrix_dist_init_real_single(
-            &y, mtxmatrix_base, size, nnz, idx, ydata, comm, &disterr);
+        err = mtxmatrix_dist_init_entries_global_real_single(
+            &y, mtxmatrix_coordinate, mtx_unsymmetric, num_rows, num_columns, nnz, rowidx, colidx, ydata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         float sdot;
         err = mtxmatrix_dist_sdot(&x, &y, &sdot, NULL, &disterr);
@@ -2195,16 +1869,18 @@ int test_mtxmatrix_dist_dot(void)
     {
         struct mtxmatrix_dist x;
         struct mtxmatrix_dist y;
-        int size = 12;
-        int64_t * idx = rank == 0 ? (int64_t[2]) {0, 3} : (int64_t[3]) {5, 6, 9};
+        int num_rows = 3;
+        int num_columns = 3;
+        int64_t * rowidx = rank == 0 ? (int64_t[2]) {0, 1} : (int64_t[3]) {1, 2, 2};
+        int64_t * colidx = rank == 0 ? (int64_t[2]) {0, 0} : (int64_t[3]) {2, 0, 2};
         double * xdata = rank == 0 ? (double[2]) {1.0, 1.0} : (double[3]) {1.0, 2.0, 3.0};
         double * ydata = rank == 0 ? (double[2]) {3.0, 2.0} : (double[3]) {1.0, 0.0, 1.0};
         int nnz = rank == 0 ? 2 : 3;
-        err = mtxmatrix_dist_init_real_double(
-            &x, mtxmatrix_base, size, nnz, idx, xdata, comm, &disterr);
+        err = mtxmatrix_dist_init_entries_global_real_double(
+            &x, mtxmatrix_coordinate, mtx_unsymmetric, num_rows, num_columns, nnz, rowidx, colidx, xdata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxmatrix_dist_init_real_double(
-            &y, mtxmatrix_base, size, nnz, idx, ydata, comm, &disterr);
+        err = mtxmatrix_dist_init_entries_global_real_double(
+            &y, mtxmatrix_coordinate, mtx_unsymmetric, num_rows, num_columns, nnz, rowidx, colidx, ydata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         float sdot;
         err = mtxmatrix_dist_sdot(&x, &y, &sdot, NULL, &disterr);
@@ -2236,8 +1912,10 @@ int test_mtxmatrix_dist_dot(void)
     {
         struct mtxmatrix_dist x;
         struct mtxmatrix_dist y;
-        int size = 12;
-        int64_t * idx = rank == 0 ? (int64_t[2]) {0, 3} : (int64_t[1]) {5};
+        int num_rows = 3;
+        int num_columns = 3;
+        int64_t * rowidx = rank == 0 ? (int64_t[2]) {0, 1} : (int64_t[1]) {2};
+        int64_t * colidx = rank == 0 ? (int64_t[2]) {0, 0} : (int64_t[1]) {2};
         float (* xdata)[2] = rank == 0
             ? ((float[2][2]) {{1.0f,1.0f}, {1.0f,2.0f}})
             : ((float[1][2]) {{3.0f,0.0f}});
@@ -2245,11 +1923,11 @@ int test_mtxmatrix_dist_dot(void)
             ? ((float[2][2]) {{3.0f,2.0f}, {1.0f,0.0f}})
             : ((float[1][2]) {{1.0f,0.0f}});
         int nnz = rank == 0 ? 2 : 1;
-        err = mtxmatrix_dist_init_complex_single(
-            &x, mtxmatrix_base, size, nnz, idx, xdata, comm, &disterr);
+        err = mtxmatrix_dist_init_entries_global_complex_single(
+            &x, mtxmatrix_coordinate, mtx_unsymmetric, num_rows, num_columns, nnz, rowidx, colidx, xdata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxmatrix_dist_init_complex_single(
-            &y, mtxmatrix_base, size, nnz, idx, ydata, comm, &disterr);
+        err = mtxmatrix_dist_init_entries_global_complex_single(
+            &y, mtxmatrix_coordinate, mtx_unsymmetric, num_rows, num_columns, nnz, rowidx, colidx, ydata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         float cdotu[2];
         err = mtxmatrix_dist_cdotu(&x, &y, &cdotu, NULL, &disterr);
@@ -2273,8 +1951,10 @@ int test_mtxmatrix_dist_dot(void)
     {
         struct mtxmatrix_dist x;
         struct mtxmatrix_dist y;
-        int size = 12;
-        int64_t * idx = rank == 0 ? (int64_t[2]) {0, 3} : (int64_t[1]) {5};
+        int num_rows = 3;
+        int num_columns = 3;
+        int64_t * rowidx = rank == 0 ? (int64_t[2]) {0, 1} : (int64_t[1]) {2};
+        int64_t * colidx = rank == 0 ? (int64_t[2]) {0, 0} : (int64_t[1]) {2};
         double (* xdata)[2] = rank == 0
             ? ((double[2][2]) {{1.0,1.0}, {1.0,2.0}})
             : ((double[1][2]) {{3.0,0.0}});
@@ -2282,11 +1962,11 @@ int test_mtxmatrix_dist_dot(void)
             ? ((double[2][2]) {{3.0,2.0}, {1.0,0.0}})
             : ((double[1][2]) {{1.0,0.0}});
         int nnz = rank == 0 ? 2 : 1;
-        err = mtxmatrix_dist_init_complex_double(
-            &x, mtxmatrix_base, size, nnz, idx, xdata, comm, &disterr);
+        err = mtxmatrix_dist_init_entries_global_complex_double(
+            &x, mtxmatrix_coordinate, mtx_unsymmetric, num_rows, num_columns, nnz, rowidx, colidx, xdata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxmatrix_dist_init_complex_double(
-            &y, mtxmatrix_base, size, nnz, idx, ydata, comm, &disterr);
+        err = mtxmatrix_dist_init_entries_global_complex_double(
+            &y, mtxmatrix_coordinate, mtx_unsymmetric, num_rows, num_columns, nnz, rowidx, colidx, ydata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         float cdotu[2];
         err = mtxmatrix_dist_cdotu(&x, &y, &cdotu, NULL, &disterr);
@@ -2344,12 +2024,14 @@ int test_mtxmatrix_dist_nrm2(void)
     if (err) MPI_Abort(comm, EXIT_FAILURE);
     {
         struct mtxmatrix_dist x;
-        int size = 12;
-        int64_t * xidx = rank == 0 ? (int64_t[2]) {0, 3} : (int64_t[3]) {5, 6, 9};
+        int num_rows = 3;
+        int num_columns = 3;
+        int64_t * xrowidx = rank == 0 ? (int64_t[2]) {0, 1} : (int64_t[3]) {1, 2, 2};
+        int64_t * xcolidx = rank == 0 ? (int64_t[2]) {0, 0} : (int64_t[3]) {2, 0, 2};
         float * xdata = rank == 0 ? (float[2]) {1.0f, 1.0f} : (float[3]) {1.0f, 2.0f, 3.0f};
         int xnnz = rank == 0 ? 2 : 3;
-        err = mtxmatrix_dist_init_real_single(
-            &x, mtxmatrix_base, size, xnnz, xidx, xdata, comm, &disterr);
+        err = mtxmatrix_dist_init_entries_global_real_single(
+            &x, mtxmatrix_coordinate, mtx_unsymmetric, num_rows, num_columns, xnnz, xrowidx, xcolidx, xdata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         float snrm2;
         err = mtxmatrix_dist_snrm2(&x, &snrm2, NULL, &disterr);
@@ -2363,12 +2045,14 @@ int test_mtxmatrix_dist_nrm2(void)
     }
     {
         struct mtxmatrix_dist x;
-        int size = 12;
-        int64_t * xidx = rank == 0 ? (int64_t[2]) {0, 3} : (int64_t[3]) {5, 6, 9};
+        int num_rows = 3;
+        int num_columns = 3;
+        int64_t * xrowidx = rank == 0 ? (int64_t[2]) {0, 1} : (int64_t[3]) {1, 2, 2};
+        int64_t * xcolidx = rank == 0 ? (int64_t[2]) {0, 0} : (int64_t[3]) {2, 0, 2};
         double * xdata = rank == 0 ? (double[2]) {1.0, 1.0} : (double[3]) {1.0, 2.0, 3.0};
         int xnnz = rank == 0 ? 2 : 3;
-        err = mtxmatrix_dist_init_real_double(
-            &x, mtxmatrix_base, size, xnnz, xidx, xdata, comm, &disterr);
+        err = mtxmatrix_dist_init_entries_global_real_double(
+            &x, mtxmatrix_coordinate, mtx_unsymmetric, num_rows, num_columns, xnnz, xrowidx, xcolidx, xdata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         float snrm2;
         err = mtxmatrix_dist_snrm2(&x, &snrm2, NULL, &disterr);
@@ -2382,14 +2066,16 @@ int test_mtxmatrix_dist_nrm2(void)
     }
     {
         struct mtxmatrix_dist x;
-        int size = 12;
-        int64_t * xidx = rank == 0 ? (int64_t[2]) {0, 3} : (int64_t[3]) {5};
+        int num_rows = 3;
+        int num_columns = 3;
+        int64_t * xrowidx = rank == 0 ? (int64_t[2]) {0, 1} : (int64_t[1]) {2};
+        int64_t * xcolidx = rank == 0 ? (int64_t[2]) {0, 0} : (int64_t[1]) {2};
         float (* xdata)[2] = rank == 0
             ? ((float[2][2]) {{1.0f,1.0f}, {1.0f,2.0f}})
             : ((float[1][2]) {{3.0f,0.0f}});
         int xnnz = rank == 0 ? 2 : 1;
-        err = mtxmatrix_dist_init_complex_single(
-            &x, mtxmatrix_base, size, xnnz, xidx, xdata, comm, &disterr);
+        err = mtxmatrix_dist_init_entries_global_complex_single(
+            &x, mtxmatrix_coordinate, mtx_unsymmetric, num_rows, num_columns, xnnz, xrowidx, xcolidx, xdata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         float snrm2;
         err = mtxmatrix_dist_snrm2(&x, &snrm2, NULL, &disterr);
@@ -2403,14 +2089,16 @@ int test_mtxmatrix_dist_nrm2(void)
     }
     {
         struct mtxmatrix_dist x;
-        int size = 12;
-        int64_t * xidx = rank == 0 ? (int64_t[2]) {0, 3} : (int64_t[3]) {5};
+        int num_rows = 3;
+        int num_columns = 3;
+        int64_t * xrowidx = rank == 0 ? (int64_t[2]) {0, 1} : (int64_t[1]) {2};
+        int64_t * xcolidx = rank == 0 ? (int64_t[2]) {0, 0} : (int64_t[1]) {2};
         double (* xdata)[2] = rank == 0
             ? ((double[2][2]) {{1.0f,1.0f}, {1.0f,2.0f}})
             : ((double[1][2]) {{3.0f,0.0f}});
         int xnnz = rank == 0 ? 2 : 1;
-        err = mtxmatrix_dist_init_complex_double(
-            &x, mtxmatrix_base, size, xnnz, xidx, xdata, comm, &disterr);
+        err = mtxmatrix_dist_init_entries_global_complex_double(
+            &x, mtxmatrix_coordinate, mtx_unsymmetric, num_rows, num_columns, xnnz, xrowidx, xcolidx, xdata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         float snrm2;
         err = mtxmatrix_dist_snrm2(&x, &snrm2, NULL, &disterr);
@@ -2459,12 +2147,14 @@ int test_mtxmatrix_dist_asum(void)
     if (err) MPI_Abort(comm, EXIT_FAILURE);
     {
         struct mtxmatrix_dist x;
-        int size = 12;
-        int64_t * xidx = rank == 0 ? (int64_t[2]) {0, 3} : (int64_t[3]) {5, 6, 9};
+        int num_rows = 3;
+        int num_columns = 3;
+        int64_t * xrowidx = rank == 0 ? (int64_t[2]) {0, 1} : (int64_t[3]) {1, 2, 2};
+        int64_t * xcolidx = rank == 0 ? (int64_t[2]) {0, 0} : (int64_t[3]) {2, 0, 2};
         float * xdata = rank == 0 ? (float[2]) {-1.0f, 1.0f} : (float[3]) {1.0f, 2.0f, 3.0f};
         int xnnz = rank == 0 ? 2 : 3;
-        err = mtxmatrix_dist_init_real_single(
-            &x, mtxmatrix_base, size, xnnz, xidx, xdata, comm, &disterr);
+        err = mtxmatrix_dist_init_entries_global_real_single(
+            &x, mtxmatrix_coordinate, mtx_unsymmetric, num_rows, num_columns, xnnz, xrowidx, xcolidx, xdata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         float sasum;
         err = mtxmatrix_dist_sasum(&x, &sasum, NULL, &disterr);
@@ -2478,12 +2168,14 @@ int test_mtxmatrix_dist_asum(void)
     }
     {
         struct mtxmatrix_dist x;
-        int size = 12;
-        int64_t * xidx = rank == 0 ? (int64_t[2]) {0, 3} : (int64_t[3]) {5, 6, 9};
+        int num_rows = 3;
+        int num_columns = 3;
+        int64_t * xrowidx = rank == 0 ? (int64_t[2]) {0, 1} : (int64_t[3]) {1, 2, 2};
+        int64_t * xcolidx = rank == 0 ? (int64_t[2]) {0, 0} : (int64_t[3]) {2, 0, 2};
         double * xdata = rank == 0 ? (double[2]) {-1.0, 1.0} : (double[3]) {1.0, 2.0, 3.0};
         int xnnz = rank == 0 ? 2 : 3;
-        err = mtxmatrix_dist_init_real_double(
-            &x, mtxmatrix_base, size, xnnz, xidx, xdata, comm, &disterr);
+        err = mtxmatrix_dist_init_entries_global_real_double(
+            &x, mtxmatrix_coordinate, mtx_unsymmetric, num_rows, num_columns, xnnz, xrowidx, xcolidx, xdata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         float sasum;
         err = mtxmatrix_dist_sasum(&x, &sasum, NULL, &disterr);
@@ -2497,14 +2189,16 @@ int test_mtxmatrix_dist_asum(void)
     }
     {
         struct mtxmatrix_dist x;
-        int size = 12;
-        int64_t * xidx = rank == 0 ? (int64_t[2]) {0, 3} : (int64_t[3]) {5};
+        int num_rows = 3;
+        int num_columns = 3;
+        int64_t * xrowidx = rank == 0 ? (int64_t[2]) {0, 1} : (int64_t[1]) {2};
+        int64_t * xcolidx = rank == 0 ? (int64_t[2]) {0, 0} : (int64_t[1]) {2};
         float (* xdata)[2] = rank == 0
             ? ((float[2][2]) {{-1.0f,-1.0f}, {1.0f,2.0f}})
             : ((float[1][2]) {{3.0f,0.0f}});
         int xnnz = rank == 0 ? 2 : 1;
-        err = mtxmatrix_dist_init_complex_single(
-            &x, mtxmatrix_base, size, xnnz, xidx, xdata, comm, &disterr);
+        err = mtxmatrix_dist_init_entries_global_complex_single(
+            &x, mtxmatrix_coordinate, mtx_unsymmetric, num_rows, num_columns, xnnz, xrowidx, xcolidx, xdata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         float sasum;
         err = mtxmatrix_dist_sasum(&x, &sasum, NULL, &disterr);
@@ -2518,14 +2212,16 @@ int test_mtxmatrix_dist_asum(void)
     }
     {
         struct mtxmatrix_dist x;
-        int size = 12;
-        int64_t * xidx = rank == 0 ? (int64_t[2]) {0, 3} : (int64_t[3]) {5};
+        int num_rows = 3;
+        int num_columns = 3;
+        int64_t * xrowidx = rank == 0 ? (int64_t[2]) {0, 1} : (int64_t[1]) {2};
+        int64_t * xcolidx = rank == 0 ? (int64_t[2]) {0, 0} : (int64_t[1]) {2};
         double (* xdata)[2] = rank == 0
             ? ((double[2][2]) {{-1.0f,-1.0f}, {1.0f,2.0f}})
             : ((double[1][2]) {{3.0f,0.0f}});
         int xnnz = rank == 0 ? 2 : 1;
-        err = mtxmatrix_dist_init_complex_double(
-            &x, mtxmatrix_base, size, xnnz, xidx, xdata, comm, &disterr);
+        err = mtxmatrix_dist_init_entries_global_complex_double(
+            &x, mtxmatrix_coordinate, mtx_unsymmetric, num_rows, num_columns, xnnz, xrowidx, xcolidx, xdata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         float sasum;
         err = mtxmatrix_dist_sasum(&x, &sasum, NULL, &disterr);
@@ -2540,7 +2236,7 @@ int test_mtxmatrix_dist_asum(void)
     mtxdisterror_free(&disterr);
     return TEST_SUCCESS;
 }
-#endif
+
 /**
  * ‘main()’ entry point and test driver.
  */
@@ -2566,8 +2262,7 @@ int main(int argc, char * argv[])
     TEST_RUN(test_mtxmatrix_dist_from_mtxfile);
     TEST_RUN(test_mtxmatrix_dist_to_mtxfile);
     TEST_RUN(test_mtxmatrix_dist_from_mtxdistfile2);
-#if 0
-    TEST_RUN(test_mtxmatrix_dist_to_mtxdistfile2);
+    /* TEST_RUN(test_mtxmatrix_dist_to_mtxdistfile2); */
     TEST_RUN(test_mtxmatrix_dist_swap);
     TEST_RUN(test_mtxmatrix_dist_copy);
     TEST_RUN(test_mtxmatrix_dist_scal);
@@ -2575,7 +2270,6 @@ int main(int argc, char * argv[])
     TEST_RUN(test_mtxmatrix_dist_dot);
     TEST_RUN(test_mtxmatrix_dist_nrm2);
     TEST_RUN(test_mtxmatrix_dist_asum);
-#endif
     TEST_SUITE_END();
 
     /* 3. clean up and return. */
