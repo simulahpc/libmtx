@@ -101,8 +101,7 @@ static int mtxvector_dist_init_size(
     int comm_size = x->comm_size;
     int rank = x->rank;
     x->blksize = (N+comm_size-1) / comm_size;
-    x->blkstart = rank*(N/comm_size)
-        + (rank < (N % comm_size) ? rank : (N % comm_size));
+    x->blkstart = rank*x->blksize;
     x->ranks = malloc(x->blksize * sizeof(int));
     err = !x->ranks ? MTX_ERR_ERRNO : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
@@ -117,7 +116,6 @@ static int mtxvector_dist_init_map(
     int64_t N = x->size;
     int comm_size = x->comm_size;
     int rank = x->rank;
-    int64_t blksize = (N+comm_size-1) / comm_size;
     int64_t num_nonzeros = x->xp.num_nonzeros;
     const int64_t * idx = x->xp.idx;
     MPI_Win window;
@@ -134,8 +132,8 @@ static int mtxvector_dist_init_map(
         return MTX_ERR_MPI_COLLECTIVE;
     }
     for (int64_t i = 0; i < num_nonzeros; i++) {
-        int assumedrank = idx[i] / blksize;
-        int assumedidx = idx[i] % blksize;
+        int assumedrank = idx[i] / x->blksize;
+        int assumedidx = idx[i] % x->blksize;
         disterr->mpierrcode = MPI_Put(
             &rank, 1, MPI_INT, assumedrank, assumedidx, 1, MPI_INT, window);
         err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
@@ -152,6 +150,21 @@ static int mtxvector_dist_init_map(
         return MTX_ERR_MPI_COLLECTIVE;
     }
     MPI_Win_free(&window);
+
+#if 0
+    for (int p = 0; p < comm_size; p++) {
+        if (rank == p) {
+            fprintf(stderr, "x->size=%"PRId64", x->blkstart=%"PRId64", x->blksize=%"PRId64", comm_size=%d, ", x->size, x->blkstart, x->blksize, comm_size);
+            fprintf(stderr, "x->ranks=[");
+            for (int64_t i = 0; i < x->blksize; i++)
+                fprintf(stderr, " %d", x->ranks[i]);
+            fprintf(stderr, "]\n");
+        }
+        MPI_Barrier(x->comm);
+        sleep(1);
+    }
+#endif
+
     return MTX_SUCCESS;
 }
 
@@ -202,7 +215,25 @@ static int mtxvector_dist_ranks(
      */
 
     for (int64_t i = 0; i < size; i++)
-        ranks[i] = idx[i] / (x->size / comm_size);
+        ranks[i] = idx[i] / x->blksize;
+
+#if 0
+    for (int p = 0; p < comm_size; p++) {
+        if (rank == p) {
+            fprintf(stderr, "size=%"PRId64", x->size=%"PRId64", comm_size=%d, ", size, x->size, comm_size);
+            fprintf(stderr, "idx=[");
+            for (int64_t i = 0; i < size; i++)
+                fprintf(stderr, " %"PRId64, idx[i]);
+            fprintf(stderr, "], ");
+            fprintf(stderr, "ranks=[");
+            for (int64_t i = 0; i < size; i++)
+                fprintf(stderr, " %d", ranks[i]);
+            fprintf(stderr, "]\n");
+        }
+        MPI_Barrier(comm);
+        sleep(1);
+    }
+#endif
 
     /*
      * Step 2: On each process, sort the array of global offsets of
@@ -267,7 +298,7 @@ static int mtxvector_dist_ranks(
     for (int p = 0; p < nrecvranks; p++)
         rdispls[p+1] = rdispls[p] + recvcounts[p];
     int * idxsendbuf = malloc(size * sizeof(int));
-    err = !rdispls ? MTX_ERR_ERRNO : MTX_SUCCESS;
+    err = !idxsendbuf ? MTX_ERR_ERRNO : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err)) {
         free(rdispls);
         free(recvcounts);
@@ -2361,6 +2392,7 @@ int mtxvector_dist_usscga(
     disterr->mpierrcode = MPI_Win_fence(0, window);
     err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err)) {
+        MPI_Win_free(&window);
         free(idxsendbuf);
         free(rdispls);
         free(recvcounts);
@@ -2368,14 +2400,15 @@ int mtxvector_dist_usscga(
         free(zperm);
         return MTX_ERR_MPI_COLLECTIVE;
     }
-    int one = 1;
     for (int p = 0; p < nrecvranks; p++) {
+        int one = 1;
         disterr->mpierrcode = MPI_Accumulate(
             &one, 1, MPI_INT, recvranks[p], 0, 1, MPI_INT, MPI_SUM, window);
         err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
         if (err) break;
     }
     if (mtxdisterror_allreduce(disterr, err)) {
+        MPI_Win_free(&window);
         free(idxsendbuf);
         free(rdispls);
         free(recvcounts);
@@ -2386,6 +2419,7 @@ int mtxvector_dist_usscga(
     disterr->mpierrcode = MPI_Win_fence(0, window);
     err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err)) {
+        MPI_Win_free(&window);
         free(idxsendbuf);
         free(rdispls);
         free(recvcounts);
@@ -2626,7 +2660,7 @@ int mtxvector_dist_usscga(
 
     /*
      * Step 6: For each process to which the current process must send
-     * data, Fill a buffer with the required input vector elements.
+     * data, fill a buffer with the required input vector elements.
      */
 
     struct mtxvector_packed sendbuf;

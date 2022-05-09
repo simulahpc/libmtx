@@ -42,7 +42,6 @@
 #include <stdio.h>
 
 struct mtxfile;
-struct mtxpartition;
 struct mtxdistfile2;
 struct mtxdisterror;
 
