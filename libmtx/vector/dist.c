@@ -127,29 +127,21 @@ static int mtxvector_dist_init_map(
     MPI_Win_set_errhandler(window, MPI_ERRORS_RETURN);
     disterr->mpierrcode = MPI_Win_fence(0, window);
     err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
-    if (mtxdisterror_allreduce(disterr, err)) {
-        MPI_Win_free(&window);
-        return MTX_ERR_MPI_COLLECTIVE;
-    }
-    for (int64_t i = 0; i < num_nonzeros; i++) {
+    for (int64_t i = 0; i < num_nonzeros && !err; i++) {
         int assumedrank = idx[i] / x->blksize;
         int assumedidx = idx[i] % x->blksize;
         disterr->mpierrcode = MPI_Put(
             &rank, 1, MPI_INT, assumedrank, assumedidx, 1, MPI_INT, window);
         err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
-        if (err) break;
     }
-    if (mtxdisterror_allreduce(disterr, err)) {
-        MPI_Win_free(&window);
-        return MTX_ERR_MPI_COLLECTIVE;
-    }
-    disterr->mpierrcode = MPI_Win_fence(0, window);
-    err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
-    if (mtxdisterror_allreduce(disterr, err)) {
-        MPI_Win_free(&window);
-        return MTX_ERR_MPI_COLLECTIVE;
+    if (err) {
+        MPI_Win_fence(0, window);
+    } else {
+        disterr->mpierrcode = MPI_Win_fence(0, window);
+        err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
     }
     MPI_Win_free(&window);
+    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
 
 #if 0
     for (int p = 0; p < comm_size; p++) {
@@ -332,43 +324,27 @@ static int mtxvector_dist_ranks(
     }
     disterr->mpierrcode = MPI_Win_fence(0, window);
     err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
-    if (mtxdisterror_allreduce(disterr, err)) {
-        MPI_Win_free(&window);
-        free(idxsendbuf);
-        free(rdispls);
-        free(recvcounts);
-        free(recvranks);
-        free(perm);
-        return MTX_ERR_MPI_COLLECTIVE;
-    }
-    for (int p = 0; p < nrecvranks; p++) {
+    for (int p = 0; p < nrecvranks && !err; p++) {
         int one = 1;
         disterr->mpierrcode = MPI_Accumulate(
             &one, 1, MPI_INT, recvranks[p], 0, 1, MPI_INT, MPI_SUM, window);
         err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
-        if (err) break;
     }
-    if (mtxdisterror_allreduce(disterr, err)) {
-        MPI_Win_free(&window);
-        free(idxsendbuf);
-        free(rdispls);
-        free(recvcounts);
-        free(recvranks);
-        free(perm);
-        return MTX_ERR_MPI_COLLECTIVE;
-    }
-    disterr->mpierrcode = MPI_Win_fence(0, window);
-    err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
-    if (mtxdisterror_allreduce(disterr, err)) {
-        MPI_Win_free(&window);
-        free(idxsendbuf);
-        free(rdispls);
-        free(recvcounts);
-        free(recvranks);
-        free(perm);
-        return MTX_ERR_MPI_COLLECTIVE;
+    if (err) {
+        MPI_Win_fence(0, window);
+    } else {
+        disterr->mpierrcode = MPI_Win_fence(0, window);
+        err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
     }
     MPI_Win_free(&window);
+    if (mtxdisterror_allreduce(disterr, err)) {
+        free(idxsendbuf);
+        free(rdispls);
+        free(recvcounts);
+        free(recvranks);
+        free(perm);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
 
     /*
      * Step 4: Post non-blocking, wildcard receives for every process
@@ -2391,43 +2367,27 @@ int mtxvector_dist_usscga(
     }
     disterr->mpierrcode = MPI_Win_fence(0, window);
     err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
-    if (mtxdisterror_allreduce(disterr, err)) {
-        MPI_Win_free(&window);
-        free(idxsendbuf);
-        free(rdispls);
-        free(recvcounts);
-        free(recvranks);
-        free(zperm);
-        return MTX_ERR_MPI_COLLECTIVE;
-    }
-    for (int p = 0; p < nrecvranks; p++) {
+    for (int p = 0; p < nrecvranks && !err; p++) {
         int one = 1;
         disterr->mpierrcode = MPI_Accumulate(
             &one, 1, MPI_INT, recvranks[p], 0, 1, MPI_INT, MPI_SUM, window);
         err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
-        if (err) break;
     }
-    if (mtxdisterror_allreduce(disterr, err)) {
-        MPI_Win_free(&window);
-        free(idxsendbuf);
-        free(rdispls);
-        free(recvcounts);
-        free(recvranks);
-        free(zperm);
-        return MTX_ERR_MPI_COLLECTIVE;
-    }
-    disterr->mpierrcode = MPI_Win_fence(0, window);
-    err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
-    if (mtxdisterror_allreduce(disterr, err)) {
-        MPI_Win_free(&window);
-        free(idxsendbuf);
-        free(rdispls);
-        free(recvcounts);
-        free(recvranks);
-        free(zperm);
-        return MTX_ERR_MPI_COLLECTIVE;
+    if (err) {
+        MPI_Win_fence(0, window);
+    } else {
+        disterr->mpierrcode = MPI_Win_fence(0, window);
+        err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
     }
     MPI_Win_free(&window);
+    if (mtxdisterror_allreduce(disterr, err)) {
+        free(idxsendbuf);
+        free(rdispls);
+        free(recvcounts);
+        free(recvranks);
+        free(zperm);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
 
 #if 0
     for (int p = 0; p < comm_size; p++) {
