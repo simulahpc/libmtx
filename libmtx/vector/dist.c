@@ -2639,12 +2639,14 @@ int mtxvector_dist_usscga(
         return MTX_ERR_MPI_COLLECTIVE;
     }
     for (int i = 0; i < sdispls[nsendranks]; i++) {
+        sendbuf.idx[i] = -1;
         for (int64_t j = 0; j < x->xp.num_nonzeros; j++) {
             if (idxrecvbuf[i] == x->xp.idx[j]) {
                 sendbuf.idx[i] = j;
                 break;
             }
         }
+        if (sendbuf.idx[i] == -1) err = MTX_ERR_INDEX_OUT_OF_BOUNDS;
     }
     err = err ? err : mtxvector_usga(&sendbuf, &x->xp.x);
     if (mtxdisterror_allreduce(disterr, err)) {
