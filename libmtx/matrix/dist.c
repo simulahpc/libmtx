@@ -2339,6 +2339,33 @@ int mtxmatrix_dist_sgemv(
     int64_t * num_flops,
     struct mtxdisterror * disterr)
 {
+    MPI_Comm comm = A->comm;
+    enum mtxfield field;
+    int err = mtxvector_field(&x->xp.x, &field);
+    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+    enum mtxprecision precision;
+    err = mtxvector_precision(&x->xp.x, &precision);
+    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+
+    struct mtxvector_dist z;
+    err = mtxvector_dist_alloc(
+        &z, x->xp.x.type, field, precision, x->size,
+        A->colmapsize, A->colmap, comm, disterr);
+    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+
+    err = mtxvector_dist_usscga(&z, x, disterr);
+    if (mtxdisterror_allreduce(disterr, err)) {
+        mtxvector_dist_free(&z);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+
+    err = mtxmatrix_sgemv(
+        trans, alpha, &A->xp, &z.xp.x, beta, &y->xp.x, num_flops);
+    if (mtxdisterror_allreduce(disterr, err)) {
+        mtxvector_dist_free(&z);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+    mtxvector_dist_free(&z);
     return MTX_SUCCESS;
 }
 
