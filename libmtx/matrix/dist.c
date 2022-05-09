@@ -904,7 +904,7 @@ int mtxmatrix_dist_init_entries_global_strided_real_single(
 {
     int err = mtxmatrix_dist_alloc_entries_global(
         A, type, mtx_field_real, mtx_single, symmetry,
-        num_rows, num_columns, idxstride, idxbase, num_nonzeros,
+        num_rows, num_columns, num_nonzeros, idxstride, idxbase,
         rowidx, colidx, comm, disterr);
     if (err) return err;
     err = mtxmatrix_set_real_single(&A->xp, num_nonzeros, datastride, data);
@@ -966,7 +966,7 @@ int mtxmatrix_dist_init_entries_global_strided_complex_single(
 {
     int err = mtxmatrix_dist_alloc_entries_global(
         A, type, mtx_field_complex, mtx_single, symmetry,
-        num_rows, num_columns, idxstride, idxbase, num_nonzeros,
+        num_rows, num_columns, num_nonzeros, idxstride, idxbase,
         rowidx, colidx, comm, disterr);
     if (err) return err;
     err = mtxmatrix_set_complex_single(&A->xp, num_nonzeros, datastride, data);
@@ -997,7 +997,7 @@ int mtxmatrix_dist_init_entries_global_strided_complex_double(
 {
     int err = mtxmatrix_dist_alloc_entries_global(
         A, type, mtx_field_complex, mtx_double, symmetry,
-        num_rows, num_columns, idxstride, idxbase, num_nonzeros,
+        num_rows, num_columns, num_nonzeros, idxstride, idxbase,
         rowidx, colidx, comm, disterr);
     if (err) return err;
     err = mtxmatrix_set_complex_double(&A->xp, num_nonzeros, datastride, data);
@@ -1028,7 +1028,7 @@ int mtxmatrix_dist_init_entries_global_strided_integer_single(
 {
     int err = mtxmatrix_dist_alloc_entries_global(
         A, type, mtx_field_integer, mtx_single, symmetry,
-        num_rows, num_columns, idxstride, idxbase, num_nonzeros,
+        num_rows, num_columns, num_nonzeros, idxstride, idxbase,
         rowidx, colidx, comm, disterr);
     if (err) return err;
     err = mtxmatrix_set_integer_single(&A->xp, num_nonzeros, datastride, data);
@@ -1059,7 +1059,7 @@ int mtxmatrix_dist_init_entries_global_strided_integer_double(
 {
     int err = mtxmatrix_dist_alloc_entries_global(
         A, type, mtx_field_integer, mtx_double, symmetry,
-        num_rows, num_columns, idxstride, idxbase, num_nonzeros,
+        num_rows, num_columns, num_nonzeros, idxstride, idxbase,
         rowidx, colidx, comm, disterr);
     if (err) return err;
     err = mtxmatrix_set_integer_double(&A->xp, num_nonzeros, datastride, data);
@@ -1088,7 +1088,7 @@ int mtxmatrix_dist_init_entries_global_strided_pattern(
 {
     return mtxmatrix_dist_alloc_entries_global(
         A, type, mtx_field_pattern, mtx_single, symmetry,
-        num_rows, num_columns, idxstride, idxbase, num_nonzeros,
+        num_rows, num_columns, num_nonzeros, idxstride, idxbase,
         rowidx, colidx, comm, disterr);
 }
 

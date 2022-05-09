@@ -657,7 +657,7 @@ int test_mtxmatrix_dist_to_mtxfile(void)
     mtxdisterror_free(&disterr);
     return TEST_SUCCESS;
 }
-#if 0
+
 /**
  * ‘test_mtxmatrix_dist_from_mtxdistfile2()’ tests converting
  *  distributed Matrix Market files to matrices.
@@ -691,56 +691,81 @@ int test_mtxmatrix_dist_from_mtxdistfile2(void)
     if (err) MPI_Abort(comm, EXIT_FAILURE);
 
     {
-        int num_rows = 9;
-        const struct mtxfile_matrix_coordinate_real_single * srcdata = (rank == 0)
-            ? ((const struct mtxfile_matrix_coordinate_real_single[2])
-                {{1,1.0f}, {2,2.0f}})
-            : ((const struct mtxfile_matrix_coordinate_real_single[1])
-                {{4,4.0f}});
-        int64_t num_nonzeros = 3;
-        int64_t localdatasize = rank == 0 ? 2 : 1;
-
+        int num_rows = 3;
+        int num_columns = 3;
+        const struct mtxfile_matrix_coordinate_real_single * srcdata = rank == 0
+            ? ((const struct mtxfile_matrix_coordinate_real_single[3])
+                {{1,1,1.0f}, {1,3,3.0f}, {2,1,4.0f}})
+            : ((const struct mtxfile_matrix_coordinate_real_single[2])
+                {{3,1,7.0f}, {3,3,9.0f}});
+        int64_t num_nonzeros = 5;
+        int64_t localdatasize = rank == 0 ? 3 : 2;
         struct mtxdistfile2 src;
         err = mtxdistfile2_init_matrix_coordinate_real_single(
-            &src, num_rows, num_nonzeros, localdatasize, NULL,
-            srcdata, comm, &disterr);
+            &src, mtx_unsymmetric, num_rows, num_columns, num_nonzeros,
+            localdatasize, NULL, srcdata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
 
-        struct mtxmatrix_dist xdist;
+        struct mtxmatrix_dist A;
         err = mtxmatrix_dist_from_mtxdistfile2(
-            &xdist, &src, mtxmatrix_base, comm, &disterr);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxdisterror_description(&disterr));
-        TEST_ASSERT_EQ(9, xdist.size);
-        TEST_ASSERT_EQ(9, xdist.xp.size);
+            &A, &src, mtxmatrix_coordinate, comm, &disterr);
+        TEST_ASSERT_EQ_MSG(
+            MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
+            ? mtxdisterror_description(&disterr) : mtxstrerror(err));
+        TEST_ASSERT_EQ(3, A.num_rows);
+        TEST_ASSERT_EQ(3, A.num_columns);
+        TEST_ASSERT_EQ(5, A.num_nonzeros);
         if (rank == 0) {
-            TEST_ASSERT_EQ(2, xdist.xp.num_nonzeros);
-            TEST_ASSERT_EQ(0, xdist.xp.idx[0]);
-            TEST_ASSERT_EQ(1, xdist.xp.idx[1]);
+            TEST_ASSERT_EQ(2, A.rowmapsize);
+            TEST_ASSERT_EQ(0, A.rowmap[0]);
+            TEST_ASSERT_EQ(1, A.rowmap[1]);
+            TEST_ASSERT_EQ(2, A.colmapsize);
+            TEST_ASSERT_EQ(0, A.colmap[0]);
+            TEST_ASSERT_EQ(2, A.colmap[1]);
+            TEST_ASSERT_EQ(mtxmatrix_coordinate, A.xp.type);
+            const struct mtxmatrix_coordinate * Ap = &A.xp.storage.coordinate;
+            TEST_ASSERT_EQ(mtx_unsymmetric, Ap->symmetry);
+            TEST_ASSERT_EQ(2, Ap->num_rows);
+            TEST_ASSERT_EQ(2, Ap->num_columns);
+            TEST_ASSERT_EQ(4, Ap->num_entries);
+            TEST_ASSERT_EQ(3, Ap->num_nonzeros);
+            TEST_ASSERT_EQ(3, Ap->size);
+            TEST_ASSERT_EQ(0, Ap->rowidx[0]); TEST_ASSERT_EQ(0, Ap->colidx[0]);
+            TEST_ASSERT_EQ(0, Ap->rowidx[1]); TEST_ASSERT_EQ(1, Ap->colidx[1]);
+            TEST_ASSERT_EQ(1, Ap->rowidx[2]); TEST_ASSERT_EQ(0, Ap->colidx[2]);
+            const float * a = Ap->a.data.real_single;
+            TEST_ASSERT_EQ(1.0f, a[0]);
+            TEST_ASSERT_EQ(3.0f, a[1]);
+            TEST_ASSERT_EQ(4.0f, a[2]);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ(1, xdist.xp.num_nonzeros);
-            TEST_ASSERT_EQ(3, xdist.xp.idx[0]);
+            TEST_ASSERT_EQ(1, A.rowmapsize);
+            TEST_ASSERT_EQ(2, A.rowmap[0]);
+            TEST_ASSERT_EQ(2, A.colmapsize);
+            TEST_ASSERT_EQ(0, A.colmap[0]);
+            TEST_ASSERT_EQ(2, A.colmap[1]);
+            TEST_ASSERT_EQ(mtxmatrix_coordinate, A.xp.type);
+            const struct mtxmatrix_coordinate * Ap = &A.xp.storage.coordinate;
+            TEST_ASSERT_EQ(mtx_unsymmetric, Ap->symmetry);
+            TEST_ASSERT_EQ(1, Ap->num_rows);
+            TEST_ASSERT_EQ(2, Ap->num_columns);
+            TEST_ASSERT_EQ(2, Ap->num_entries);
+            TEST_ASSERT_EQ(2, Ap->num_nonzeros);
+            TEST_ASSERT_EQ(2, Ap->size);
+            TEST_ASSERT_EQ(0, Ap->rowidx[0]); TEST_ASSERT_EQ(0, Ap->colidx[0]);
+            TEST_ASSERT_EQ(0, Ap->rowidx[1]); TEST_ASSERT_EQ(1, Ap->colidx[1]);
+            const float * a = Ap->a.data.real_single;
+            TEST_ASSERT_EQ(7.0f, a[0]);
+            TEST_ASSERT_EQ(9.0f, a[1]);
         }
-        TEST_ASSERT_EQ(mtxmatrix_base, xdist.xp.x.type);
-        const struct mtxmatrix_base * xbase = &xdist.xp.x.storage.base;
-        TEST_ASSERT_EQ(mtx_field_real, xbase->field);
-        TEST_ASSERT_EQ(mtx_single, xbase->precision);
-        if (rank == 0) {
-            TEST_ASSERT_EQ(2, xbase->size);
-            TEST_ASSERT_EQ(1.0f, xbase->data.real_single[0]);
-            TEST_ASSERT_EQ(2.0f, xbase->data.real_single[1]);
-        } else if (rank == 1) {
-            TEST_ASSERT_EQ(1, xbase->size);
-            TEST_ASSERT_EQ(4.0f, xbase->data.real_single[0]);
-        }
-        mtxmatrix_dist_free(&xdist);
+        mtxmatrix_dist_free(&A);
         mtxdistfile2_free(&src);
     }
     mtxdisterror_free(&disterr);
     return TEST_SUCCESS;
 }
-
+#if 0
 /**
  * ‘test_mtxmatrix_dist_to_mtxdistfile2()’ tests converting matrices to
  * distributed Matrix Market files.
@@ -2540,8 +2565,8 @@ int main(int argc, char * argv[])
     TEST_SUITE_BEGIN("Running tests for distributed matrices\n");
     TEST_RUN(test_mtxmatrix_dist_from_mtxfile);
     TEST_RUN(test_mtxmatrix_dist_to_mtxfile);
-#if 0
     TEST_RUN(test_mtxmatrix_dist_from_mtxdistfile2);
+#if 0
     TEST_RUN(test_mtxmatrix_dist_to_mtxdistfile2);
     TEST_RUN(test_mtxmatrix_dist_swap);
     TEST_RUN(test_mtxmatrix_dist_copy);
