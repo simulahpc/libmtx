@@ -297,7 +297,7 @@ static int mtxvector_dist_ranks(
     rdispls[0] = 0;
     for (int p = 0; p < nrecvranks; p++)
         rdispls[p+1] = rdispls[p] + recvcounts[p];
-    int * idxsendbuf = malloc(size * sizeof(int));
+    int64_t * idxsendbuf = malloc(size * sizeof(int64_t));
     err = !idxsendbuf ? MTX_ERR_ERRNO : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err)) {
         free(rdispls);
@@ -488,7 +488,7 @@ static int mtxvector_dist_ranks(
      * elements.
      */
 
-    int * idxrecvbuf = malloc(sdispls[nsendranks] * sizeof(int));
+    int64_t * idxrecvbuf = malloc(sdispls[nsendranks] * sizeof(int64_t));
     err = !idxrecvbuf ? MTX_ERR_ERRNO : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err)) {
         free(sdispls);
@@ -504,7 +504,7 @@ static int mtxvector_dist_ranks(
     }
     for (int p = 0; p < nsendranks; p++) {
         disterr->mpierrcode = MPI_Irecv(
-            &idxrecvbuf[sdispls[p]], sendcounts[p], MPI_INT,
+            &idxrecvbuf[sdispls[p]], sendcounts[p], MPI_INT64_T,
             sendranks[p], 1, comm, &idxrequests[p]);
         err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
         if (err) break;
@@ -524,7 +524,7 @@ static int mtxvector_dist_ranks(
     }
     for (int p = 0; p < nrecvranks; p++) {
         disterr->mpierrcode = MPI_Send(
-            &idxsendbuf[rdispls[p]], recvcounts[p], MPI_INT, recvranks[p], 1, comm);
+            &idxsendbuf[rdispls[p]], recvcounts[p], MPI_INT64_T, recvranks[p], 1, comm);
         err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
         if (err) break;
     }
@@ -2338,7 +2338,7 @@ int mtxvector_dist_usscga(
     for (int p = 0; p < nrecvranks; p++)
         rdispls[p+1] = rdispls[p] + recvcounts[p];
     int idxsendcount = rdispls[nrecvranks];
-    int * idxsendbuf = malloc(idxsendcount * sizeof(int));
+    int64_t * idxsendbuf = malloc(idxsendcount * sizeof(int64_t));
     err = !idxsendbuf ? MTX_ERR_ERRNO : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err)) {
         free(rdispls);
@@ -2583,7 +2583,7 @@ int mtxvector_dist_usscga(
      * that owns one or more of those input vector elements.
      */
 
-    int * idxrecvbuf = malloc(sdispls[nsendranks] * sizeof(int));
+    int64_t * idxrecvbuf = malloc(sdispls[nsendranks] * sizeof(int64_t));
     err = !idxrecvbuf ? MTX_ERR_ERRNO : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err)) {
         free(sdispls);
@@ -2599,7 +2599,7 @@ int mtxvector_dist_usscga(
     }
     for (int p = 0; p < nsendranks; p++) {
         disterr->mpierrcode = MPI_Irecv(
-            &idxrecvbuf[sdispls[p]], sendcounts[p], MPI_INT,
+            &idxrecvbuf[sdispls[p]], sendcounts[p], MPI_INT64_T,
             sendranks[p], 4, comm, &idxrequests[p]);
         err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
         if (err) break;
@@ -2619,7 +2619,7 @@ int mtxvector_dist_usscga(
     }
     for (int p = 0; p < nrecvranks; p++) {
         disterr->mpierrcode = MPI_Send(
-            &idxsendbuf[rdispls[p]], recvcounts[p], MPI_INT, recvranks[p], 4, comm);
+            &idxsendbuf[rdispls[p]], recvcounts[p], MPI_INT64_T, recvranks[p], 4, comm);
         err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
         if (err) break;
     }
