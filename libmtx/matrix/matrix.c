@@ -616,11 +616,11 @@ int mtxmatrix_init_entries_strided_real_single(
     int num_rows,
     int num_columns,
     int64_t num_nonzeros,
-    int64_t idxstride,
+    int idxstride,
     int idxbase,
     const int * rowidx,
     const int * colidx,
-    int64_t datastride,
+    int datastride,
     const float * data)
 {
     return MTX_SUCCESS;
@@ -638,11 +638,11 @@ int mtxmatrix_init_entries_strided_real_double(
     int num_rows,
     int num_columns,
     int64_t num_nonzeros,
-    int64_t idxstride,
+    int idxstride,
     int idxbase,
     const int * rowidx,
     const int * colidx,
-    int64_t datastride,
+    int datastride,
     const double * data)
 {
     return MTX_SUCCESS;
@@ -660,11 +660,11 @@ int mtxmatrix_init_entries_strided_complex_single(
     int num_rows,
     int num_columns,
     int64_t num_nonzeros,
-    int64_t idxstride,
+    int idxstride,
     int idxbase,
     const int * rowidx,
     const int * colidx,
-    int64_t datastride,
+    int datastride,
     const float (* data)[2])
 {
     return MTX_SUCCESS;
@@ -682,11 +682,11 @@ int mtxmatrix_init_entries_strided_complex_double(
     int num_rows,
     int num_columns,
     int64_t num_nonzeros,
-    int64_t idxstride,
+    int idxstride,
     int idxbase,
     const int * rowidx,
     const int * colidx,
-    int64_t datastride,
+    int datastride,
     const double (* data)[2])
 {
     return MTX_SUCCESS;
@@ -704,11 +704,11 @@ int mtxmatrix_init_entries_strided_integer_single(
     int num_rows,
     int num_columns,
     int64_t num_nonzeros,
-    int64_t idxstride,
+    int idxstride,
     int idxbase,
     const int * rowidx,
     const int * colidx,
-    int64_t datastride,
+    int datastride,
     const int32_t * data)
 {
     return MTX_SUCCESS;
@@ -726,11 +726,11 @@ int mtxmatrix_init_entries_strided_integer_double(
     int num_rows,
     int num_columns,
     int64_t num_nonzeros,
-    int64_t idxstride,
+    int idxstride,
     int idxbase,
     const int * rowidx,
     const int * colidx,
-    int64_t datastride,
+    int datastride,
     const int64_t * data)
 {
     return MTX_SUCCESS;
@@ -748,7 +748,7 @@ int mtxmatrix_init_entries_strided_pattern(
     int num_rows,
     int num_columns,
     int64_t num_nonzeros,
-    int64_t idxstride,
+    int idxstride,
     int idxbase,
     const int * rowidx,
     const int * colidx)

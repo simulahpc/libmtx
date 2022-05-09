@@ -173,7 +173,7 @@ int mtxmatrix_size(
  * ‘mtxmatrix_free()’ frees storage allocated for a matrix.
  */
 void mtxmatrix_free(
-    struct mtxmatrix * matrix);
+    struct mtxmatrix * A);
 
 /**
  * ‘mtxmatrix_alloc_copy()’ allocates a copy of a matrix without
@@ -200,7 +200,7 @@ int mtxmatrix_init_copy(
  * entrywise data in coordinate format.
  */
 int mtxmatrix_alloc_entries(
-    struct mtxmatrix * matrix,
+    struct mtxmatrix * A,
     enum mtxmatrixtype type,
     enum mtxfield field,
     enum mtxprecision precision,
@@ -219,7 +219,7 @@ int mtxmatrix_alloc_entries(
  * coefficients.
  */
 int mtxmatrix_init_entries_real_single(
-    struct mtxmatrix * matrix,
+    struct mtxmatrix * A,
     enum mtxmatrixtype type,
     enum mtxsymmetry symmetry,
     int num_rows,
@@ -235,7 +235,7 @@ int mtxmatrix_init_entries_real_single(
  * coefficients.
  */
 int mtxmatrix_init_entries_real_double(
-    struct mtxmatrix * matrix,
+    struct mtxmatrix * A,
     enum mtxmatrixtype type,
     enum mtxsymmetry symmetry,
     int num_rows,
@@ -251,7 +251,7 @@ int mtxmatrix_init_entries_real_double(
  * single precision coefficients.
  */
 int mtxmatrix_init_entries_complex_single(
-    struct mtxmatrix * matrix,
+    struct mtxmatrix * A,
     enum mtxmatrixtype type,
     enum mtxsymmetry symmetry,
     int num_rows,
@@ -267,7 +267,7 @@ int mtxmatrix_init_entries_complex_single(
  * double precision coefficients.
  */
 int mtxmatrix_init_entries_complex_double(
-    struct mtxmatrix * matrix,
+    struct mtxmatrix * A,
     enum mtxmatrixtype type,
     enum mtxsymmetry symmetry,
     int num_rows,
@@ -283,7 +283,7 @@ int mtxmatrix_init_entries_complex_double(
  * single precision coefficients.
  */
 int mtxmatrix_init_entries_integer_single(
-    struct mtxmatrix * matrix,
+    struct mtxmatrix * A,
     enum mtxmatrixtype type,
     enum mtxsymmetry symmetry,
     int num_rows,
@@ -299,7 +299,7 @@ int mtxmatrix_init_entries_integer_single(
  * double precision coefficients.
  */
 int mtxmatrix_init_entries_integer_double(
-    struct mtxmatrix * matrix,
+    struct mtxmatrix * A,
     enum mtxmatrixtype type,
     enum mtxsymmetry symmetry,
     int num_rows,
@@ -315,7 +315,7 @@ int mtxmatrix_init_entries_integer_double(
  * precision coefficients.
  */
 int mtxmatrix_init_entries_pattern(
-    struct mtxmatrix * matrix,
+    struct mtxmatrix * A,
     enum mtxmatrixtype type,
     enum mtxsymmetry symmetry,
     int num_rows,
@@ -334,17 +334,17 @@ int mtxmatrix_init_entries_pattern(
  * coefficients.
  */
 int mtxmatrix_init_entries_strided_real_single(
-    struct mtxmatrix * matrix,
+    struct mtxmatrix * A,
     enum mtxmatrixtype type,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
     int64_t num_nonzeros,
-    int64_t idxstride,
+    int idxstride,
     int idxbase,
     const int * rowidx,
     const int * colidx,
-    int64_t datastride,
+    int datastride,
     const float * data);
 
 /**
@@ -353,17 +353,17 @@ int mtxmatrix_init_entries_strided_real_single(
  * coefficients.
  */
 int mtxmatrix_init_entries_strided_real_double(
-    struct mtxmatrix * matrix,
+    struct mtxmatrix * A,
     enum mtxmatrixtype type,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
     int64_t num_nonzeros,
-    int64_t idxstride,
+    int idxstride,
     int idxbase,
     const int * rowidx,
     const int * colidx,
-    int64_t datastride,
+    int datastride,
     const double * data);
 
 /**
@@ -372,17 +372,17 @@ int mtxmatrix_init_entries_strided_real_double(
  * single precision coefficients.
  */
 int mtxmatrix_init_entries_strided_complex_single(
-    struct mtxmatrix * matrix,
+    struct mtxmatrix * A,
     enum mtxmatrixtype type,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
     int64_t num_nonzeros,
-    int64_t idxstride,
+    int idxstride,
     int idxbase,
     const int * rowidx,
     const int * colidx,
-    int64_t datastride,
+    int datastride,
     const float (* data)[2]);
 
 /**
@@ -391,17 +391,17 @@ int mtxmatrix_init_entries_strided_complex_single(
  * double precision coefficients.
  */
 int mtxmatrix_init_entries_strided_complex_double(
-    struct mtxmatrix * matrix,
+    struct mtxmatrix * A,
     enum mtxmatrixtype type,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
     int64_t num_nonzeros,
-    int64_t idxstride,
+    int idxstride,
     int idxbase,
     const int * rowidx,
     const int * colidx,
-    int64_t datastride,
+    int datastride,
     const double (* data)[2]);
 
 /**
@@ -410,17 +410,17 @@ int mtxmatrix_init_entries_strided_complex_double(
  * single precision coefficients.
  */
 int mtxmatrix_init_entries_strided_integer_single(
-    struct mtxmatrix * matrix,
+    struct mtxmatrix * A,
     enum mtxmatrixtype type,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
     int64_t num_nonzeros,
-    int64_t idxstride,
+    int idxstride,
     int idxbase,
     const int * rowidx,
     const int * colidx,
-    int64_t datastride,
+    int datastride,
     const int32_t * data);
 
 /**
@@ -429,17 +429,17 @@ int mtxmatrix_init_entries_strided_integer_single(
  * double precision coefficients.
  */
 int mtxmatrix_init_entries_strided_integer_double(
-    struct mtxmatrix * matrix,
+    struct mtxmatrix * A,
     enum mtxmatrixtype type,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
     int64_t num_nonzeros,
-    int64_t idxstride,
+    int idxstride,
     int idxbase,
     const int * rowidx,
     const int * colidx,
-    int64_t datastride,
+    int datastride,
     const int64_t * data);
 
 /**
@@ -448,13 +448,13 @@ int mtxmatrix_init_entries_strided_integer_double(
  * precision coefficients.
  */
 int mtxmatrix_init_entries_strided_pattern(
-    struct mtxmatrix * matrix,
+    struct mtxmatrix * A,
     enum mtxmatrixtype type,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
     int64_t num_nonzeros,
-    int64_t idxstride,
+    int idxstride,
     int idxbase,
     const int * rowidx,
     const int * colidx);
@@ -539,7 +539,7 @@ int mtxmatrix_set_integer_double(
  * single row of the matrix.
  */
 int mtxmatrix_alloc_row_vector(
-    const struct mtxmatrix * matrix,
+    const struct mtxmatrix * A,
     struct mtxvector * vector,
     enum mtxvectortype vector_type);
 
@@ -549,7 +549,7 @@ int mtxmatrix_alloc_row_vector(
  * to a single column of the matrix.
  */
 int mtxmatrix_alloc_column_vector(
-    const struct mtxmatrix * matrix,
+    const struct mtxmatrix * A,
     struct mtxvector * vector,
     enum mtxvectortype vector_type);
 
@@ -605,7 +605,7 @@ int mtxmatrix_to_mtxfile(
  * encountered during the parsing of the matrix.
  */
 int mtxmatrix_read(
-    struct mtxmatrix * matrix,
+    struct mtxmatrix * A,
     enum mtxprecision precision,
     enum mtxmatrixtype type,
     const char * path,
@@ -631,7 +631,7 @@ int mtxmatrix_read(
  * encountered during the parsing of the matrix.
  */
 int mtxmatrix_fread(
-    struct mtxmatrix * matrix,
+    struct mtxmatrix * A,
     enum mtxprecision precision,
     enum mtxmatrixtype type,
     FILE * f,
@@ -658,7 +658,7 @@ int mtxmatrix_fread(
  * encountered during the parsing of the matrix.
  */
 int mtxmatrix_gzread(
-    struct mtxmatrix * matrix,
+    struct mtxmatrix * A,
     enum mtxprecision precision,
     enum mtxmatrixtype type,
     gzFile f,
@@ -689,7 +689,7 @@ int mtxmatrix_gzread(
  * allowed.
  */
 int mtxmatrix_write(
-    const struct mtxmatrix * matrix,
+    const struct mtxmatrix * A,
     int64_t num_rows,
     const int64_t * rowidx,
     int64_t num_columns,
@@ -721,7 +721,7 @@ int mtxmatrix_write(
  * is returned in ‘bytes_written’.
  */
 int mtxmatrix_fwrite(
-    const struct mtxmatrix * matrix,
+    const struct mtxmatrix * A,
     int64_t num_rows,
     const int64_t * rowidx,
     int64_t num_columns,
@@ -753,7 +753,7 @@ int mtxmatrix_fwrite(
  * is returned in ‘bytes_written’.
  */
 int mtxmatrix_gzwrite(
-    const struct mtxmatrix * matrix,
+    const struct mtxmatrix * A,
     int64_t num_rows,
     const int64_t * rowidx,
     int64_t num_columns,

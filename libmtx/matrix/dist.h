@@ -184,17 +184,17 @@ int mtxmatrix_dist_symmetry(
     enum mtxsymmetry * symmetry);
 
 /**
- * ‘mtxmatrix_dist_num_nonzeros()’ gets the number of the number of nonzero
- *  matrix entries, including those represented implicitly due to
- *  symmetry.
+ * ‘mtxmatrix_dist_num_nonzeros()’ gets the number of the number of
+ *  nonzero matrix entries, including those represented implicitly due
+ *  to symmetry.
  */
 int mtxmatrix_dist_num_nonzeros(
     const struct mtxmatrix_dist * A,
     int64_t * num_nonzeros);
 
 /**
- * ‘mtxmatrix_dist_size()’ gets the number of explicitly stored nonzeros of
- * a matrix.
+ * ‘mtxmatrix_dist_size()’ gets the number of explicitly stored
+ * nonzeros of a matrix.
  */
 int mtxmatrix_dist_size(
     const struct mtxmatrix_dist * A,
@@ -208,7 +208,7 @@ int mtxmatrix_dist_size(
  * ‘mtxmatrix_dist_free()’ frees storage allocated for a matrix.
  */
 void mtxmatrix_dist_free(
-    struct mtxmatrix_dist * x);
+    struct mtxmatrix_dist * A);
 
 /**
  * ‘mtxmatrix_dist_alloc_copy()’ allocates a copy of a matrix without
@@ -229,16 +229,199 @@ int mtxmatrix_dist_init_copy(
     struct mtxdisterror * disterr);
 
 /*
- * initialise matrices from data in coordinate format with global
- * offsets
+ * Initialise matrices from entrywise data in coordinate format with
+ * local row and column offsets and explicit mappings from local to
+ * global rows and columns.
  */
 
 /**
- * ‘mtxmatrix_dist_alloc_entries()’ allocates a distributed matrix,
- * where the local part of the matrix on each process is stored as a
- * matrix of the given type.
+ * ‘mtxmatrix_dist_alloc_entries_local()’ allocates storage for a
+ * matrix based on entrywise data in coordinate format.
  */
-int mtxmatrix_dist_alloc_entries(
+int mtxmatrix_dist_alloc_entries_local(
+    struct mtxmatrix_dist * A,
+    enum mtxmatrixtype type,
+    enum mtxfield field,
+    enum mtxprecision precision,
+    enum mtxsymmetry symmetry,
+    int64_t num_rows,
+    int64_t num_columns,
+    int rowmapsize,
+    const int64_t * rowmap,
+    int colmapsize,
+    const int64_t * colmap,
+    int64_t num_nonzeros,
+    int idxstride,
+    int idxbase,
+    const int * rowidx,
+    const int * colidx,
+    MPI_Comm comm,
+    struct mtxdisterror * disterr);
+
+/**
+ * ‘mtxmatrix_dist_init_entries_local_real_single()’ allocates and
+ * initialises a matrix from data in coordinate format with real,
+ * single precision coefficients.
+ */
+int mtxmatrix_dist_init_entries_local_real_single(
+    struct mtxmatrix_dist * A,
+    enum mtxmatrixtype type,
+    enum mtxsymmetry symmetry,
+    int64_t num_rows,
+    int64_t num_columns,
+    int rowmapsize,
+    const int64_t * rowmap,
+    int colmapsize,
+    const int64_t * colmap,
+    int64_t num_nonzeros,
+    const int * rowidx,
+    const int * colidx,
+    const float * data,
+    MPI_Comm comm,
+    struct mtxdisterror * disterr);
+
+/**
+ * ‘mtxmatrix_dist_init_entries_local_real_double()’ allocates and
+ * initialises a matrix from data in coordinate format with real,
+ * double precision coefficients.
+ */
+int mtxmatrix_dist_init_entries_local_real_double(
+    struct mtxmatrix_dist * A,
+    enum mtxmatrixtype type,
+    enum mtxsymmetry symmetry,
+    int64_t num_rows,
+    int64_t num_columns,
+    int rowmapsize,
+    const int64_t * rowmap,
+    int colmapsize,
+    const int64_t * colmap,
+    int64_t num_nonzeros,
+    const int * rowidx,
+    const int * colidx,
+    const double * data,
+    MPI_Comm comm,
+    struct mtxdisterror * disterr);
+
+/**
+ * ‘mtxmatrix_dist_init_entries_local_complex_single()’ allocates and
+ * initialises a matrix from data in coordinate format with complex,
+ * single precision coefficients.
+ */
+int mtxmatrix_dist_init_entries_local_complex_single(
+    struct mtxmatrix_dist * A,
+    enum mtxmatrixtype type,
+    enum mtxsymmetry symmetry,
+    int64_t num_rows,
+    int64_t num_columns,
+    int rowmapsize,
+    const int64_t * rowmap,
+    int colmapsize,
+    const int64_t * colmap,
+    int64_t num_nonzeros,
+    const int * rowidx,
+    const int * colidx,
+    const float (* data)[2],
+    MPI_Comm comm,
+    struct mtxdisterror * disterr);
+
+/**
+ * ‘mtxmatrix_dist_init_entries_local_complex_double()’ allocates and
+ * initialises a matrix from data in coordinate format with complex,
+ * double precision coefficients.
+ */
+int mtxmatrix_dist_init_entries_local_complex_double(
+    struct mtxmatrix_dist * A,
+    enum mtxmatrixtype type,
+    enum mtxsymmetry symmetry,
+    int64_t num_rows,
+    int64_t num_columns,
+    int rowmapsize,
+    const int64_t * rowmap,
+    int colmapsize,
+    const int64_t * colmap,
+    int64_t num_nonzeros,
+    const int * rowidx,
+    const int * colidx,
+    const double (* data)[2],
+    MPI_Comm comm,
+    struct mtxdisterror * disterr);
+
+/**
+ * ‘mtxmatrix_dist_init_entries_local_integer_single()’ allocates and
+ * initialises a matrix from data in coordinate format with integer,
+ * single precision coefficients.
+ */
+int mtxmatrix_dist_init_entries_local_integer_single(
+    struct mtxmatrix_dist * A,
+    enum mtxmatrixtype type,
+    enum mtxsymmetry symmetry,
+    int64_t num_rows,
+    int64_t num_columns,
+    int rowmapsize,
+    const int64_t * rowmap,
+    int colmapsize,
+    const int64_t * colmap,
+    int64_t num_nonzeros,
+    const int * rowidx,
+    const int * colidx,
+    const int32_t * data,
+    MPI_Comm comm,
+    struct mtxdisterror * disterr);
+
+/**
+ * ‘mtxmatrix_dist_init_entries_local_integer_double()’ allocates and
+ * initialises a matrix from data in coordinate format with integer,
+ * double precision coefficients.
+ */
+int mtxmatrix_dist_init_entries_local_integer_double(
+    struct mtxmatrix_dist * A,
+    enum mtxmatrixtype type,
+    enum mtxsymmetry symmetry,
+    int64_t num_rows,
+    int64_t num_columns,
+    int rowmapsize,
+    const int64_t * rowmap,
+    int colmapsize,
+    const int64_t * colmap,
+    int64_t num_nonzeros,
+    const int * rowidx,
+    const int * colidx,
+    const int64_t * data,
+    MPI_Comm comm,
+    struct mtxdisterror * disterr);
+
+/**
+ * ‘mtxmatrix_dist_init_entries_local_pattern()’ allocates and
+ * initialises a matrix from data in coordinate format with integer,
+ * double precision coefficients.
+ */
+int mtxmatrix_dist_init_entries_local_pattern(
+    struct mtxmatrix_dist * A,
+    enum mtxmatrixtype type,
+    enum mtxsymmetry symmetry,
+    int64_t num_rows,
+    int64_t num_columns,
+    int rowmapsize,
+    const int64_t * rowmap,
+    int colmapsize,
+    const int64_t * colmap,
+    int64_t num_nonzeros,
+    const int * rowidx,
+    const int * colidx,
+    MPI_Comm comm,
+    struct mtxdisterror * disterr);
+
+/*
+ * Initialise matrices from entrywise data in coordinate format with
+ * global row and columns offsets.
+ */
+
+/**
+ * ‘mtxmatrix_dist_alloc_entries_global()’ allocates a distributed
+ * matrix, where the local part of the matrix on each process is
+ * stored as a matrix of the given type.
+ */
+int mtxmatrix_dist_alloc_entries_global(
     struct mtxmatrix_dist * A,
     enum mtxmatrixtype type,
     enum mtxfield field,
@@ -255,235 +438,276 @@ int mtxmatrix_dist_alloc_entries(
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxmatrix_dist_init_global_coo_real_single()’ allocates and initialises a
- * matrix with real, single precision coefficients.
+ * ‘mtxmatrix_dist_init_entries_global_real_single()’ allocates and
+ * initialises a matrix with real, single precision coefficients.
  *
  * On each process, ‘idx’ and ‘data’ are arrays of length
  * ‘num_nonzeros’, containing the global offsets and values,
  * respectively, of the matrix elements stored on the process. Note
  * that ‘num_nonzeros’ may differ from one process to the next.
  */
-int mtxmatrix_dist_init_global_coo_real_single(
-    struct mtxmatrix_dist * x,
+int mtxmatrix_dist_init_entries_global_real_single(
+    struct mtxmatrix_dist * A,
     enum mtxmatrixtype type,
+    enum mtxsymmetry symmetry,
     int64_t num_rows,
     int64_t num_columns,
     int64_t num_nonzeros,
-    const int64_t * idx,
+    const int64_t * rowidx,
+    const int64_t * colidx,
     const float * data,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxmatrix_dist_init_global_coo_real_double()’ allocates and initialises a
- * matrix with real, double precision coefficients.
- */
-int mtxmatrix_dist_init_global_coo_real_double(
-    struct mtxmatrix_dist * x,
-    enum mtxmatrixtype type,
-    int64_t num_rows,
-    int64_t num_columns,
-    int64_t num_nonzeros,
-    const int64_t * idx,
-    const double * data,
-    MPI_Comm comm,
-    struct mtxdisterror * disterr);
-
-/**
- * ‘mtxmatrix_dist_init_global_coo_complex_single()’ allocates and initialises a
- * matrix with complex, single precision coefficients.
- */
-int mtxmatrix_dist_init_global_coo_complex_single(
-    struct mtxmatrix_dist * x,
-    enum mtxmatrixtype type,
-    int64_t num_rows,
-    int64_t num_columns,
-    int64_t num_nonzeros,
-    const int64_t * idx,
-    const float (* data)[2],
-    MPI_Comm comm,
-    struct mtxdisterror * disterr);
-
-/**
- * ‘mtxmatrix_dist_init_global_coo_complex_double()’ allocates and initialises a
- * matrix with complex, double precision coefficients.
- */
-int mtxmatrix_dist_init_global_coo_complex_double(
-    struct mtxmatrix_dist * x,
-    enum mtxmatrixtype type,
-    int64_t num_rows,
-    int64_t num_columns,
-    int64_t num_nonzeros,
-    const int64_t * idx,
-    const double (* data)[2],
-    MPI_Comm comm,
-    struct mtxdisterror * disterr);
-
-/**
- * ‘mtxmatrix_dist_init_global_coo_integer_single()’ allocates and initialises a
- * matrix with integer, single precision coefficients.
- */
-int mtxmatrix_dist_init_global_coo_integer_single(
-    struct mtxmatrix_dist * x,
-    enum mtxmatrixtype type,
-    int64_t num_rows,
-    int64_t num_columns,
-    int64_t num_nonzeros,
-    const int64_t * idx,
-    const int32_t * data,
-    MPI_Comm comm,
-    struct mtxdisterror * disterr);
-
-/**
- * ‘mtxmatrix_dist_init_global_coo_integer_double()’ allocates and initialises a
- * matrix with integer, double precision coefficients.
- */
-int mtxmatrix_dist_init_global_coo_integer_double(
-    struct mtxmatrix_dist * x,
-    enum mtxmatrixtype type,
-    int64_t num_rows,
-    int64_t num_columns,
-    int64_t num_nonzeros,
-    const int64_t * idx,
-    const int64_t * data,
-    MPI_Comm comm,
-    struct mtxdisterror * disterr);
-
-/**
- * ‘mtxmatrix_dist_init_global_coo_pattern()’ allocates and initialises a binary
- * pattern matrix, where every entry has a value of one.
- */
-int mtxmatrix_dist_init_global_coo_pattern(
-    struct mtxmatrix_dist * x,
-    enum mtxmatrixtype type,
-    int64_t num_rows,
-    int64_t num_columns,
-    int64_t num_nonzeros,
-    const int64_t * idx,
-    MPI_Comm comm,
-    struct mtxdisterror * disterr);
-
-/**
- * ‘mtxmatrix_dist_init_global_coo_strided_real_single()’ allocates and
- * initialises a matrix with real, single precision coefficients.
- */
-int mtxmatrix_dist_init_global_coo_strided_real_single(
-    struct mtxmatrix_dist * x,
-    enum mtxmatrixtype type,
-    int64_t num_rows,
-    int64_t num_columns,
-    int64_t num_nonzeros,
-    const int64_t * idx,
-    int idxstride,
-    int idxbase,
-    const float * data,
-    int64_t datastride,
-    MPI_Comm comm,
-    struct mtxdisterror * disterr);
-
-/**
- * ‘mtxmatrix_dist_init_global_coo_strided_real_double()’ allocates and
+ * ‘mtxmatrix_dist_init_entries_global_real_double()’ allocates and
  * initialises a matrix with real, double precision coefficients.
  */
-int mtxmatrix_dist_init_global_coo_strided_real_double(
-    struct mtxmatrix_dist * x,
+int mtxmatrix_dist_init_entries_global_real_double(
+    struct mtxmatrix_dist * A,
     enum mtxmatrixtype type,
+    enum mtxsymmetry symmetry,
     int64_t num_rows,
     int64_t num_columns,
     int64_t num_nonzeros,
-    const int64_t * idx,
-    int idxstride,
-    int idxbase,
+    const int64_t * rowidx,
+    const int64_t * colidx,
     const double * data,
-    int64_t datastride,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxmatrix_dist_init_global_coo_strided_complex_single()’ allocates and
+ * ‘mtxmatrix_dist_init_entries_global_complex_single()’ allocates and
  * initialises a matrix with complex, single precision coefficients.
  */
-int mtxmatrix_dist_init_global_coo_strided_complex_single(
-    struct mtxmatrix_dist * x,
+int mtxmatrix_dist_init_entries_global_complex_single(
+    struct mtxmatrix_dist * A,
     enum mtxmatrixtype type,
+    enum mtxsymmetry symmetry,
     int64_t num_rows,
     int64_t num_columns,
     int64_t num_nonzeros,
-    const int64_t * idx,
-    int idxstride,
-    int idxbase,
+    const int64_t * rowidx,
+    const int64_t * colidx,
     const float (* data)[2],
-    int64_t datastride,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxmatrix_dist_init_global_coo_strided_complex_double()’ allocates and
+ * ‘mtxmatrix_dist_init_entries_global_complex_double()’ allocates and
  * initialises a matrix with complex, double precision coefficients.
  */
-int mtxmatrix_dist_init_global_coo_strided_complex_double(
-    struct mtxmatrix_dist * x,
+int mtxmatrix_dist_init_entries_global_complex_double(
+    struct mtxmatrix_dist * A,
     enum mtxmatrixtype type,
+    enum mtxsymmetry symmetry,
     int64_t num_rows,
     int64_t num_columns,
     int64_t num_nonzeros,
-    const int64_t * idx,
-    int idxstride,
-    int idxbase,
+    const int64_t * rowidx,
+    const int64_t * colidx,
     const double (* data)[2],
-    int64_t datastride,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxmatrix_dist_init_global_coo_strided_integer_single()’ allocates and
+ * ‘mtxmatrix_dist_init_entries_global_integer_single()’ allocates and
  * initialises a matrix with integer, single precision coefficients.
  */
-int mtxmatrix_dist_init_global_coo_strided_integer_single(
-    struct mtxmatrix_dist * x,
+int mtxmatrix_dist_init_entries_global_integer_single(
+    struct mtxmatrix_dist * A,
     enum mtxmatrixtype type,
+    enum mtxsymmetry symmetry,
     int64_t num_rows,
     int64_t num_columns,
     int64_t num_nonzeros,
-    const int64_t * idx,
-    int idxstride,
-    int idxbase,
+    const int64_t * rowidx,
+    const int64_t * colidx,
     const int32_t * data,
-    int64_t datastride,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxmatrix_dist_init_global_coo_strided_integer_double()’ allocates and
+ * ‘mtxmatrix_dist_init_entries_global_integer_double()’ allocates and
  * initialises a matrix with integer, double precision coefficients.
  */
-int mtxmatrix_dist_init_global_coo_strided_integer_double(
-    struct mtxmatrix_dist * x,
+int mtxmatrix_dist_init_entries_global_integer_double(
+    struct mtxmatrix_dist * A,
     enum mtxmatrixtype type,
+    enum mtxsymmetry symmetry,
     int64_t num_rows,
     int64_t num_columns,
     int64_t num_nonzeros,
-    const int64_t * idx,
-    int idxstride,
-    int idxbase,
+    const int64_t * rowidx,
+    const int64_t * colidx,
     const int64_t * data,
-    int64_t datastride,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxmatrix_dist_init_global_coo_pattern()’ allocates and initialises a binary
- * pattern matrix, where every entry has a value of one.
+ * ‘mtxmatrix_dist_init_entries_global_pattern()’ allocates and
+ * initialises a binary pattern matrix, where every entry has a value
+ * of one.
  */
-int mtxmatrix_dist_init_global_coo_strided_pattern(
-    struct mtxmatrix_dist * x,
+int mtxmatrix_dist_init_entries_global_pattern(
+    struct mtxmatrix_dist * A,
     enum mtxmatrixtype type,
+    enum mtxsymmetry symmetry,
     int64_t num_rows,
     int64_t num_columns,
     int64_t num_nonzeros,
-    const int64_t * idx,
+    const int64_t * rowidx,
+    const int64_t * colidx,
+    MPI_Comm comm,
+    struct mtxdisterror * disterr);
+
+/*
+ * Initialise matrices from strided, entrywise data in coordinate
+ * format with global row and columns offsets.
+ */
+
+/**
+ * ‘mtxmatrix_dist_init_entries_global_strided_real_single()’
+ * allocates and initialises a matrix with real, single precision
+ * coefficients.
+ */
+int mtxmatrix_dist_init_entries_global_strided_real_single(
+    struct mtxmatrix_dist * A,
+    enum mtxmatrixtype type,
+    enum mtxsymmetry symmetry,
+    int64_t num_rows,
+    int64_t num_columns,
+    int64_t num_nonzeros,
     int idxstride,
     int idxbase,
+    const int64_t * rowidx,
+    const int64_t * colidx,
+    int datastride,
+    const float * data,
+    MPI_Comm comm,
+    struct mtxdisterror * disterr);
+
+/**
+ * ‘mtxmatrix_dist_init_entries_global_strided_real_double()’
+ * allocates and initialises a matrix with real, double precision
+ * coefficients.
+ */
+int mtxmatrix_dist_init_entries_global_strided_real_double(
+    struct mtxmatrix_dist * A,
+    enum mtxmatrixtype type,
+    enum mtxsymmetry symmetry,
+    int64_t num_rows,
+    int64_t num_columns,
+    int64_t num_nonzeros,
+    int idxstride,
+    int idxbase,
+    const int64_t * rowidx,
+    const int64_t * colidx,
+    int datastride,
+    const double * data,
+    MPI_Comm comm,
+    struct mtxdisterror * disterr);
+
+/**
+ * ‘mtxmatrix_dist_init_entries_global_strided_complex_single()’
+ * allocates and initialises a matrix with complex, single precision
+ * coefficients.
+ */
+int mtxmatrix_dist_init_entries_global_strided_complex_single(
+    struct mtxmatrix_dist * A,
+    enum mtxmatrixtype type,
+    enum mtxsymmetry symmetry,
+    int64_t num_rows,
+    int64_t num_columns,
+    int64_t num_nonzeros,
+    int idxstride,
+    int idxbase,
+    const int64_t * rowidx,
+    const int64_t * colidx,
+    int datastride,
+    const float (* data)[2],
+    MPI_Comm comm,
+    struct mtxdisterror * disterr);
+
+/**
+ * ‘mtxmatrix_dist_init_entries_global_strided_complex_double()’
+ * allocates and initialises a matrix with complex, double precision
+ * coefficients.
+ */
+int mtxmatrix_dist_init_entries_global_strided_complex_double(
+    struct mtxmatrix_dist * A,
+    enum mtxmatrixtype type,
+    enum mtxsymmetry symmetry,
+    int64_t num_rows,
+    int64_t num_columns,
+    int64_t num_nonzeros,
+    int idxstride,
+    int idxbase,
+    const int64_t * rowidx,
+    const int64_t * colidx,
+    int datastride,
+    const double (* data)[2],
+    MPI_Comm comm,
+    struct mtxdisterror * disterr);
+
+/**
+ * ‘mtxmatrix_dist_init_entries_global_strided_integer_single()’
+ * allocates and initialises a matrix with integer, single precision
+ * coefficients.
+ */
+int mtxmatrix_dist_init_entries_global_strided_integer_single(
+    struct mtxmatrix_dist * A,
+    enum mtxmatrixtype type,
+    enum mtxsymmetry symmetry,
+    int64_t num_rows,
+    int64_t num_columns,
+    int64_t num_nonzeros,
+    int idxstride,
+    int idxbase,
+    const int64_t * rowidx,
+    const int64_t * colidx,
+    int datastride,
+    const int32_t * data,
+    MPI_Comm comm,
+    struct mtxdisterror * disterr);
+
+/**
+ * ‘mtxmatrix_dist_init_entries_global_strided_integer_double()’
+ * allocates and initialises a matrix with integer, double precision
+ * coefficients.
+ */
+int mtxmatrix_dist_init_entries_global_strided_integer_double(
+    struct mtxmatrix_dist * A,
+    enum mtxmatrixtype type,
+    enum mtxsymmetry symmetry,
+    int64_t num_rows,
+    int64_t num_columns,
+    int64_t num_nonzeros,
+    int idxstride,
+    int idxbase,
+    const int64_t * rowidx,
+    const int64_t * colidx,
+    int datastride,
+    const int64_t * data,
+    MPI_Comm comm,
+    struct mtxdisterror * disterr);
+
+/**
+ * ‘mtxmatrix_dist_init_entries_global_pattern()’ allocates and
+ * initialises a binary pattern matrix, where every entry has a value
+ * of one.
+ */
+int mtxmatrix_dist_init_entries_global_strided_pattern(
+    struct mtxmatrix_dist * A,
+    enum mtxmatrixtype type,
+    enum mtxsymmetry symmetry,
+    int64_t num_rows,
+    int64_t num_columns,
+    int64_t num_nonzeros,
+    int idxstride,
+    int idxbase,
+    const int64_t * rowidx,
+    const int64_t * colidx,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
@@ -497,7 +721,7 @@ int mtxmatrix_dist_init_global_coo_strided_pattern(
  * point number.
  */
 int mtxmatrix_dist_set_constant_real_single(
-    struct mtxmatrix_dist * x,
+    struct mtxmatrix_dist * A,
     float a,
     struct mtxdisterror * disterr);
 
@@ -507,7 +731,7 @@ int mtxmatrix_dist_set_constant_real_single(
  * point number.
  */
 int mtxmatrix_dist_set_constant_real_double(
-    struct mtxmatrix_dist * x,
+    struct mtxmatrix_dist * A,
     double a,
     struct mtxdisterror * disterr);
 
@@ -517,7 +741,7 @@ int mtxmatrix_dist_set_constant_real_double(
  * point complex number.
  */
 int mtxmatrix_dist_set_constant_complex_single(
-    struct mtxmatrix_dist * x,
+    struct mtxmatrix_dist * A,
     float a[2],
     struct mtxdisterror * disterr);
 
@@ -527,7 +751,7 @@ int mtxmatrix_dist_set_constant_complex_single(
  * point complex number.
  */
 int mtxmatrix_dist_set_constant_complex_double(
-    struct mtxmatrix_dist * x,
+    struct mtxmatrix_dist * A,
     double a[2],
     struct mtxdisterror * disterr);
 
@@ -536,7 +760,7 @@ int mtxmatrix_dist_set_constant_complex_double(
  * entry of a matrix equal to a constant integer.
  */
 int mtxmatrix_dist_set_constant_integer_single(
-    struct mtxmatrix_dist * x,
+    struct mtxmatrix_dist * A,
     int32_t a,
     struct mtxdisterror * disterr);
 
@@ -545,7 +769,7 @@ int mtxmatrix_dist_set_constant_integer_single(
  * entry of a matrix equal to a constant integer.
  */
 int mtxmatrix_dist_set_constant_integer_double(
-    struct mtxmatrix_dist * x,
+    struct mtxmatrix_dist * A,
     int64_t a,
     struct mtxdisterror * disterr);
 
@@ -559,7 +783,7 @@ int mtxmatrix_dist_set_constant_integer_double(
  * a single row of the matrix.
  */
 int mtxmatrix_dist_alloc_row_vector(
-    const struct mtxmatrix_dist * matrix,
+    const struct mtxmatrix_dist * A,
     struct mtxvector_dist * vector,
     enum mtxvectortype vector_type,
     struct mtxdisterror * disterr);
@@ -570,7 +794,7 @@ int mtxmatrix_dist_alloc_row_vector(
  * equal to a single column of the matrix.
  */
 int mtxmatrix_dist_alloc_column_vector(
-    const struct mtxmatrix_dist * matrix,
+    const struct mtxmatrix_dist * A,
     struct mtxvector_dist * vector,
     enum mtxvectortype vector_type,
     struct mtxdisterror * disterr);
@@ -587,7 +811,7 @@ int mtxmatrix_dist_alloc_column_vector(
  * or implementation for the underlying ‘mtxmatrix’ on each process.
  */
 int mtxmatrix_dist_from_mtxfile(
-    struct mtxmatrix_dist * x,
+    struct mtxmatrix_dist * A,
     const struct mtxfile * mtxfile,
     enum mtxmatrixtype type,
     MPI_Comm comm,
@@ -600,7 +824,7 @@ int mtxmatrix_dist_from_mtxfile(
  */
 int mtxmatrix_dist_to_mtxfile(
     struct mtxfile * mtxfile,
-    const struct mtxmatrix_dist * x,
+    const struct mtxmatrix_dist * A,
     enum mtxfileformat mtxfmt,
     int root,
     struct mtxdisterror * disterr);
@@ -613,7 +837,7 @@ int mtxmatrix_dist_to_mtxfile(
  * or implementation for the underlying ‘mtxmatrix’ on each process.
  */
 int mtxmatrix_dist_from_mtxdistfile2(
-    struct mtxmatrix_dist * x,
+    struct mtxmatrix_dist * A,
     const struct mtxdistfile2 * mtxdistfile2,
     enum mtxmatrixtype type,
     MPI_Comm comm,
@@ -625,7 +849,7 @@ int mtxmatrix_dist_from_mtxdistfile2(
  */
 int mtxmatrix_dist_to_mtxdistfile2(
     struct mtxdistfile2 * mtxdistfile2,
-    const struct mtxmatrix_dist * x,
+    const struct mtxmatrix_dist * A,
     enum mtxfileformat mtxfmt,
     struct mtxdisterror * disterr);
 
@@ -664,7 +888,7 @@ int mtxmatrix_dist_to_mtxdistfile2(
  * calls to the function.
  */
 int mtxmatrix_dist_fwrite(
-    const struct mtxmatrix_dist * x,
+    const struct mtxmatrix_dist * A,
     enum mtxfileformat mtxfmt,
     FILE * f,
     const char * fmt,
@@ -677,8 +901,8 @@ int mtxmatrix_dist_fwrite(
  */
 
 /**
- * ‘mtxmatrix_dist_swap()’ swaps values of two matrices, simultaneously
- * performing ‘y <- x’ and ‘x <- y’.
+ * ‘mtxmatrix_dist_swap()’ swaps values of two matrices,
+ * simultaneously performing ‘y <- x’ and ‘x <- y’.
  *
  * The matrices ‘x’ and ‘y’ must have the same field, precision and
  * size, as well as the same total number of nonzero elements. On any
@@ -899,7 +1123,8 @@ int mtxmatrix_dist_zdotu(
 
 /**
  * ‘mtxmatrix_dist_cdotc()’ computes the Euclidean dot product of two
- * complex matrices in single precision floating point, ‘dot := x^H*y’.
+ * complex matrices in single precision floating point, ‘dot :=
+ * x^H*y’.
  *
  * The matrices ‘x’ and ‘y’ must have the same field, precision and
  * size, as well as the same number of nonzeros. On any given process,
@@ -918,7 +1143,8 @@ int mtxmatrix_dist_cdotc(
 
 /**
  * ‘mtxmatrix_dist_zdotc()’ computes the Euclidean dot product of two
- * complex matrices in double precision floating point, ‘dot := x^H*y’.
+ * complex matrices in double precision floating point, ‘dot :=
+ * x^H*y’.
  *
  * The matrices ‘x’ and ‘y’ must have the same field, precision and
  * size, as well as the same number of nonzeros. On any given process,
