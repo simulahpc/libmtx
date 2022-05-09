@@ -563,11 +563,11 @@ static int distgemv(
         }
     } else {
         if (verbose > 0) {
-            fprintf(diagf, "mtxvector_dist_alloc_row_vector: ");
+            fprintf(diagf, "mtxvector_dist_alloc_column_vector: ");
             fflush(diagf);
             clock_gettime(CLOCK_MONOTONIC, &t0);
         }
-        err = mtxmatrix_dist_alloc_row_vector(&A, &y, vectortype, disterr);
+        err = mtxmatrix_dist_alloc_column_vector(&A, &y, vectortype, disterr);
         if (err) {
             if (verbose > 0) fprintf(diagf, "\n");
             mtxmatrix_dist_free(&A);
@@ -1002,7 +1002,7 @@ int main(int argc, char *argv[])
                         program_invocation_short_name,
                         args.y_path, mtxstrerror(err));
             }
-            mtxdistfile2_free(&mtxdistfile2x);
+            if (args.x_path) mtxdistfile2_free(&mtxdistfile2x);
             mtxdistfile2_free(&mtxdistfile2A);
             program_options_free(&args);
             mtxdisterror_free(&disterr);
@@ -1039,7 +1039,7 @@ int main(int argc, char *argv[])
                             program_invocation_short_name, mtxstrerror(err));
                 }
                 if (rank == root) mtxfile_free(&mtxfiley);
-                mtxdistfile2_free(&mtxdistfile2x);
+                if (args.x_path) mtxdistfile2_free(&mtxdistfile2x);
                 mtxdistfile2_free(&mtxdistfile2A);
                 program_options_free(&args);
                 mtxdisterror_free(&disterr);
@@ -1061,7 +1061,7 @@ int main(int argc, char *argv[])
                         : mtxstrerror(err));
             }
             if (rank == root) mtxfile_free(&mtxfiley);
-            mtxdistfile2_free(&mtxdistfile2x);
+            if (args.x_path) mtxdistfile2_free(&mtxdistfile2x);
             mtxdistfile2_free(&mtxdistfile2A);
             program_options_free(&args);
             mtxdisterror_free(&disterr);
@@ -1094,8 +1094,8 @@ int main(int argc, char *argv[])
                     ? mtxdisterror_description(&disterr)
                     : mtxstrerror(err));
         }
-        mtxdistfile2_free(&mtxdistfile2y);
-        mtxdistfile2_free(&mtxdistfile2x);
+        if (args.y_path) mtxdistfile2_free(&mtxdistfile2y);
+        if (args.x_path) mtxdistfile2_free(&mtxdistfile2x);
         mtxdistfile2_free(&mtxdistfile2A);
         program_options_free(&args);
         mtxdisterror_free(&disterr);
@@ -1104,8 +1104,8 @@ int main(int argc, char *argv[])
     }
 
     /* 6. Clean up. */
-    mtxdistfile2_free(&mtxdistfile2y);
-    mtxdistfile2_free(&mtxdistfile2x);
+    if (args.y_path) mtxdistfile2_free(&mtxdistfile2y);
+    if (args.x_path) mtxdistfile2_free(&mtxdistfile2x);
     mtxdistfile2_free(&mtxdistfile2A);
     program_options_free(&args);
     mtxdisterror_free(&disterr);
