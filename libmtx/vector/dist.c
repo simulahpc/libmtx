@@ -206,10 +206,8 @@ static int mtxvector_dist_ranks(
      * ownership of any given vector element.
      */
 
-    for (int64_t i = 0; i < size; i++) {
-        int p = idx[i] / x->blksize;
-        ranks[i] = p == rank ? -1 : p;
-    }
+    for (int64_t i = 0; i < size; i++)
+        ranks[i] = idx[i] / x->blksize;
 
 #if 0
     for (int p = 0; p < comm_size; p++) {
@@ -250,10 +248,8 @@ static int mtxvector_dist_ranks(
         free(perm);
         return MTX_ERR_MPI_COLLECTIVE;
     }
-    int64_t start = 0;
-    while (ranks[start] < 0) start++;
-    int nrecvranks = start < size ? 1 : 0;
-    for (int64_t i = start+1; i < size; i++) {
+    int nrecvranks = size > 0 ? 1 : 0;
+    for (int64_t i = 1; i < size; i++) {
         if (ranks[i-1] != ranks[i])
             nrecvranks++;
     }
@@ -271,10 +267,10 @@ static int mtxvector_dist_ranks(
         return MTX_ERR_MPI_COLLECTIVE;
     }
     if (nrecvranks > 0) {
-        recvranks[0] = ranks[start];
+        recvranks[0] = ranks[0];
         recvcounts[0] = 1;
     }
-    for (int64_t i = start+1, p = 0; i < size; i++) {
+    for (int64_t i = 1, p = 0; i < size; i++) {
         if (ranks[i-1] != ranks[i]) {
             recvranks[++p] = ranks[i];
             recvcounts[p] = 0;
@@ -302,10 +298,8 @@ static int mtxvector_dist_ranks(
         free(perm);
         return MTX_ERR_MPI_COLLECTIVE;
     }
-    for (int64_t i = 0; i < size; i++) {
-        if (perm[i] >= start)
-            idxsendbuf[perm[i]-start] = idx[i];
-    }
+    for (int64_t i = 0; i < size; i++)
+        idxsendbuf[perm[i]] = idx[i];
 
     /*
      * Step 3: Count the number of processes requesting data from the
@@ -635,11 +629,8 @@ static int mtxvector_dist_ranks(
      * the output array.
      */
 
-    for (int64_t i = 0; i < size; i++) {
-        /* ranks[i] = recvbuf[perm[i]]; */
-        if (perm[i] >= start) ranks[i] = recvbuf[perm[i]-start];
-        else ranks[i] = rank;
-    }
+    for (int64_t i = 0; i < size; i++)
+        ranks[i] = recvbuf[perm[i]];
 
 #if 0
     for (int p = 0; p < comm_size; p++) {
