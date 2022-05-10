@@ -1083,7 +1083,7 @@ int main(int argc, char *argv[])
         args.x_path ? &mtxdistfile2x : NULL,
         args.y_path ? &mtxdistfile2y : NULL,
         args.matrix_type, args.vector_type, args.trans, args.repeat,
-        args.format, mtxdistfile2y.header.format,
+        args.format, args.y_path ? mtxdistfile2y.header.format : mtxfile_array,
         args.verbose, diagf, args.quiet,
         comm, comm_size, rank, root, &disterr);
     if (err) {
