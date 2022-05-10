@@ -2340,32 +2340,57 @@ int mtxmatrix_dist_sgemv(
     int64_t * num_flops,
     struct mtxdisterror * disterr)
 {
-    MPI_Comm comm = A->comm;
-    enum mtxfield field;
-    int err = mtxvector_field(&x->xp.x, &field);
-    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
-    enum mtxprecision precision;
-    err = mtxvector_precision(&x->xp.x, &precision);
-    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
-
+    int err;
     struct mtxvector_dist z;
-    err = mtxvector_dist_alloc(
-        &z, x->xp.x.type, field, precision, x->size,
-        A->colmapsize, A->colmap, comm, disterr);
-    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+    if (trans == mtx_notrans) {
+        err = mtxmatrix_dist_alloc_row_vector(A, &z, x->xp.x.type, disterr);
+        if (err) return err;
+    } else if (trans == mtx_trans) {
+        err = mtxmatrix_dist_alloc_column_vector(A, &z, x->xp.x.type, disterr);
+        if (err) return err;
+    } else { return MTX_ERR_INVALID_TRANSPOSITION; }
+
+    struct mtxvector_dist w;
+    if (trans == mtx_notrans) {
+        err = mtxmatrix_dist_alloc_column_vector(A, &w, y->xp.x.type, disterr);
+        if (err) { mtxvector_dist_free(&z); return err; }
+    } else if (trans == mtx_trans) {
+        err = mtxmatrix_dist_alloc_row_vector(A, &w, y->xp.x.type, disterr);
+        if (err) { mtxvector_dist_free(&z); return err; }
+    } else { mtxvector_dist_free(&z); return MTX_ERR_INVALID_TRANSPOSITION; }
 
     err = mtxvector_dist_usscga(&z, x, disterr);
+    if (err) { mtxvector_dist_free(&w); mtxvector_dist_free(&z); return err; }
+    err = mtxvector_dist_setzero(&w, disterr);
+    if (err) { mtxvector_dist_free(&w); mtxvector_dist_free(&z); return err; }
+    err = mtxmatrix_sgemv(
+        trans, alpha, &A->xp, &z.xp.x, 1.0f, &w.xp.x, num_flops);
     if (mtxdisterror_allreduce(disterr, err)) {
+        mtxvector_dist_free(&w);
         mtxvector_dist_free(&z);
         return MTX_ERR_MPI_COLLECTIVE;
     }
 
-    err = mtxmatrix_sgemv(
-        trans, alpha, &A->xp, &z.xp.x, beta, &y->xp.x, num_flops);
-    if (mtxdisterror_allreduce(disterr, err)) {
+    if (trans == mtx_notrans) {
+        err = mtxvector_saypx(beta, &y->xp.x, &w.xp.x, num_flops);
+        if (mtxdisterror_allreduce(disterr, err)) {
+            mtxvector_dist_free(&w);
+            mtxvector_dist_free(&z);
+            return MTX_ERR_MPI_COLLECTIVE;
+        }
+    } else if (trans == mtx_trans) {
+        err = mtxvector_saypx(beta, &y->xp.x, &w.xp.x, num_flops);
+        if (mtxdisterror_allreduce(disterr, err)) {
+            mtxvector_dist_free(&w);
+            mtxvector_dist_free(&z);
+            return MTX_ERR_MPI_COLLECTIVE;
+        }
+    } else {
+        mtxvector_dist_free(&w);
         mtxvector_dist_free(&z);
-        return MTX_ERR_MPI_COLLECTIVE;
+        return MTX_ERR_INVALID_TRANSPOSITION;
     }
+    mtxvector_dist_free(&w);
     mtxvector_dist_free(&z);
     return MTX_SUCCESS;
 }
