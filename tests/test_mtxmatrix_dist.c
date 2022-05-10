@@ -2411,7 +2411,9 @@ int test_mtxmatrix_dist_gemv(void)
             err = mtxvector_dist_init_real_single(&y, mtxvector_base, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_sgemv(mtx_notrans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
-            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            TEST_ASSERT_EQ_MSG(
+                MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
+                ? mtxdisterror_description(&disterr) : mtxstrerror(err));
             TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
             const struct mtxvector_base * y_ = &y.xp.x.storage.base;
             TEST_ASSERT_EQ(mtx_field_real, y_->field);
