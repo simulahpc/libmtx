@@ -55,6 +55,7 @@
 void mtxvector_dist_free(
     struct mtxvector_dist * x)
 {
+    free(x->localidx);
     free(x->ranks);
     mtxvector_packed_free(&x->xp);
 }
@@ -106,6 +107,10 @@ static int mtxvector_dist_init_size(
     err = !x->ranks ? MTX_ERR_ERRNO : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     for (int64_t i = 0; i < x->blksize; i++) x->ranks[i] = -1;
+    x->localidx = malloc(x->blksize * sizeof(int64_t));
+    err = !x->localidx ? MTX_ERR_ERRNO : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err)) { free(x->ranks); return MTX_ERR_MPI_COLLECTIVE; }
+    for (int64_t i = 0; i < x->blksize; i++) x->localidx[i] = -1;
     return MTX_SUCCESS;
 }
 
@@ -143,6 +148,29 @@ static int mtxvector_dist_init_map(
     MPI_Win_free(&window);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
 
+    disterr->mpierrcode = MPI_Win_create(
+        x->localidx, x->blksize * sizeof(int64_t), sizeof(int64_t),
+        MPI_INFO_NULL, x->comm, &window);
+    err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+    disterr->mpierrcode = MPI_Win_fence(0, window);
+    err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    for (int64_t i = 0; i < num_nonzeros && !err; i++) {
+        int assumedrank = idx[i] / x->blksize;
+        int assumedidx = idx[i] % x->blksize;
+        disterr->mpierrcode = MPI_Put(
+            &i, 1, MPI_INT64_T, assumedrank, assumedidx, 1, MPI_INT64_T, window);
+        err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    }
+    if (err) {
+        MPI_Win_fence(0, window);
+    } else {
+        disterr->mpierrcode = MPI_Win_fence(0, window);
+        err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    }
+    MPI_Win_free(&window);
+    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+
 #if 0
     for (int p = 0; p < comm_size; p++) {
         if (rank == p) {
@@ -150,6 +178,10 @@ static int mtxvector_dist_init_map(
             fprintf(stderr, "x->ranks=[");
             for (int64_t i = 0; i < x->blksize; i++)
                 fprintf(stderr, " %d", x->ranks[i]);
+            fprintf(stderr, "], ");
+            fprintf(stderr, "x->localidx=[");
+            for (int64_t i = 0; i < x->blksize; i++)
+                fprintf(stderr, " %"PRId64, x->localidx[i]);
             fprintf(stderr, "]\n");
         }
         MPI_Barrier(x->comm);
@@ -184,12 +216,33 @@ static int mtxvector_dist_ranks(
     int64_t size,
     const int64_t * idx,
     int * ranks,
+    int64_t * localidx,
     struct mtxdisterror * disterr)
 {
     int err;
     MPI_Comm comm = x->comm;
     int comm_size = x->comm_size;
     int rank = x->rank;
+
+    /*
+     * TODO: Here we may just want to sort the ‘idx’ array
+     * instead. This requires modifying the input, but we can then
+     * just return the sorting permutation, if the user wants to map
+     * between the original ordering and the new one.
+     *
+     * Moreover, the sorting can be skipped entirely if the user
+     * already provides a sorted input array, so maybe we should
+     * provide an option for arrays that are already sorted.  This
+     * would also avoid allocating a separate send buffer
+     * (‘idxsendbuf’), since the ‘idx’ array could be used directly
+     * for this purpose.
+     */
+
+    /* /\* check that ‘idx’ is sorted and without duplicates *\/ */
+    /* for (int64_t i = 1; i < size; i++) { */
+    /*     if (idx[i-1] >= idx[i]) err = MTX_ERR_INDEX_OUT_OF_BOUNDS; */
+    /* } */
+    /* if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE; */
 
     /*
      * Step 1: For each vector element with the global offset
@@ -206,8 +259,10 @@ static int mtxvector_dist_ranks(
      * ownership of any given vector element.
      */
 
-    for (int64_t i = 0; i < size; i++)
+    for (int64_t i = 0; i < size; i++) {
         ranks[i] = idx[i] / x->blksize;
+        localidx[i] = idx[i] % x->blksize;
+    }
 
 #if 0
     for (int p = 0; p < comm_size; p++) {
@@ -220,6 +275,10 @@ static int mtxvector_dist_ranks(
             fprintf(stderr, "ranks=[");
             for (int64_t i = 0; i < size; i++)
                 fprintf(stderr, " %d", ranks[i]);
+            fprintf(stderr, "], ");
+            fprintf(stderr, "localidx=[");
+            for (int64_t i = 0; i < size; i++)
+                fprintf(stderr, " %"PRId64, localidx[i]);
             fprintf(stderr, "]\n");
         }
         MPI_Barrier(comm);
@@ -352,6 +411,9 @@ static int mtxvector_dist_ranks(
      * current process sends the number of requested elements to each
      * process from which it needs data.
      */
+
+    /* TODO: With some additional checks, each process should be able
+     * to avoid sending to itself. */
 
     MPI_Request * idxrequests = malloc(nsendranks * sizeof(MPI_Request));
     err = !idxrequests ? MTX_ERR_ERRNO : MTX_SUCCESS;
@@ -522,7 +584,7 @@ static int mtxvector_dist_ranks(
 
     /*
      * Step 6: For each process to which the current process must send
-     * data, Fill a buffer with the data to be sent.
+     * data, fill a buffer with the data to be sent.
      */
 
     int * sendbuf = malloc(sdispls[nsendranks] * sizeof(int));
@@ -542,14 +604,50 @@ static int mtxvector_dist_ranks(
     for (int i = 0; i < sdispls[nsendranks]; i++)
         sendbuf[i] = x->ranks[idxrecvbuf[i] - x->blkstart];
 
+    int64_t * sendbuflocalidx = malloc(sdispls[nsendranks] * sizeof(int64_t));
+    err = !sendbuflocalidx ? MTX_ERR_ERRNO : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err)) {
+        free(sendbuf);
+        free(idxrecvbuf);
+        free(sdispls);
+        free(sendcounts);
+        free(sendranks);
+        free(idxsendbuf);
+        free(rdispls);
+        free(recvcounts);
+        free(recvranks);
+        free(perm);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+    for (int i = 0; i < sdispls[nsendranks]; i++)
+        sendbuflocalidx[i] = x->localidx[idxrecvbuf[i] - x->blkstart];
+
     /*
-     * Step 7: Send the actual owning ranks to the destination
-     * processes.
+     * Step 7: Send the actual owning ranks and local offsets to the
+     * destination processes.
      */
 
     int * recvbuf = malloc(size * sizeof(int));
     err = !recvbuf ? MTX_ERR_ERRNO : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err)) {
+        free(sendbuflocalidx);
+        free(sendbuf);
+        free(idxrecvbuf);
+        free(sdispls);
+        free(sendcounts);
+        free(sendranks);
+        free(idxsendbuf);
+        free(rdispls);
+        free(recvcounts);
+        free(recvranks);
+        free(perm);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+    int64_t * recvbuflocalidx = malloc(size * sizeof(int64_t));
+    err = !recvbuf ? MTX_ERR_ERRNO : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err)) {
+        free(recvbuf);
+        free(sendbuflocalidx);
         free(sendbuf);
         free(idxrecvbuf);
         free(sdispls);
@@ -565,7 +663,9 @@ static int mtxvector_dist_ranks(
     MPI_Request * requests = malloc(nrecvranks * sizeof(MPI_Request));
     err = !requests ? MTX_ERR_ERRNO : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err)) {
+        free(recvbuflocalidx);
         free(recvbuf);
+        free(sendbuflocalidx);
         free(sendbuf);
         free(idxrecvbuf);
         free(sdispls);
@@ -587,7 +687,9 @@ static int mtxvector_dist_ranks(
     }
     if (mtxdisterror_allreduce(disterr, err)) {
         free(requests);
+        free(recvbuflocalidx);
         free(recvbuf);
+        free(sendbuflocalidx);
         free(sendbuf);
         free(idxrecvbuf);
         free(sdispls);
@@ -608,7 +710,58 @@ static int mtxvector_dist_ranks(
     }
     if (mtxdisterror_allreduce(disterr, err)) {
         free(requests);
+        free(recvbuflocalidx);
         free(recvbuf);
+        free(sendbuflocalidx);
+        free(sendbuf);
+        free(idxrecvbuf);
+        free(sdispls);
+        free(sendcounts);
+        free(sendranks);
+        free(idxsendbuf);
+        free(rdispls);
+        free(recvcounts);
+        free(recvranks);
+        free(perm);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+    MPI_Waitall(nrecvranks, requests, MPI_STATUSES_IGNORE);
+
+    for (int p = 0; p < nrecvranks; p++) {
+        disterr->mpierrcode = MPI_Irecv(
+            &recvbuflocalidx[rdispls[p]], recvcounts[p], MPI_INT64_T,
+            recvranks[p], 6, comm, &requests[p]);
+        err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+        if (err) break;
+    }
+    if (mtxdisterror_allreduce(disterr, err)) {
+        free(requests);
+        free(recvbuflocalidx);
+        free(recvbuf);
+        free(sendbuflocalidx);
+        free(sendbuf);
+        free(idxrecvbuf);
+        free(sdispls);
+        free(sendcounts);
+        free(sendranks);
+        free(idxsendbuf);
+        free(rdispls);
+        free(recvcounts);
+        free(recvranks);
+        free(perm);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+    for (int p = 0; p < nsendranks; p++) {
+        disterr->mpierrcode = MPI_Send(
+            &sendbuflocalidx[sdispls[p]], sendcounts[p], MPI_INT64_T, sendranks[p], 6, comm);
+        err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+        if (err) break;
+    }
+    if (mtxdisterror_allreduce(disterr, err)) {
+        free(requests);
+        free(recvbuflocalidx);
+        free(recvbuf);
+        free(sendbuflocalidx);
         free(sendbuf);
         free(idxrecvbuf);
         free(sdispls);
@@ -631,6 +784,8 @@ static int mtxvector_dist_ranks(
 
     for (int64_t i = 0; i < size; i++)
         ranks[i] = recvbuf[perm[i]];
+    for (int64_t i = 0; i < size; i++)
+        localidx[i] = recvbuflocalidx[perm[i]];
 
 #if 0
     for (int p = 0; p < comm_size; p++) {
@@ -642,6 +797,10 @@ static int mtxvector_dist_ranks(
             fprintf(stderr, "ranks=[");
             for (int64_t i = 0; i < size; i++)
                 fprintf(stderr, " %d", ranks[i]);
+            fprintf(stderr, "],");
+            fprintf(stderr, "localidx=[");
+            for (int64_t i = 0; i < size; i++)
+                fprintf(stderr, " %d", localidx[i]);
             fprintf(stderr, "]\n");
         }
         MPI_Barrier(comm);
@@ -649,7 +808,9 @@ static int mtxvector_dist_ranks(
     }
 #endif
 
+    free(recvbuflocalidx);
     free(recvbuf);
+    free(sendbuflocalidx);
     free(sendbuf);
     free(idxrecvbuf);
     free(sdispls);
@@ -2224,9 +2385,16 @@ int mtxvector_dist_usscga(
     int * idxsrcrank = malloc(z->xp.num_nonzeros * sizeof(int));
     err = !idxsrcrank ? MTX_ERR_ERRNO : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+    int64_t * idxsrclocalidx = malloc(z->xp.num_nonzeros * sizeof(int64_t));
+    err = !idxsrclocalidx ? MTX_ERR_ERRNO : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err)) {
+        free(idxsrcrank);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
     err = mtxvector_dist_ranks(
-        x, z->xp.num_nonzeros, z->xp.idx, idxsrcrank, disterr);
+        x, z->xp.num_nonzeros, z->xp.idx, idxsrcrank, idxsrclocalidx, disterr);
     if (err) {
+        free(idxsrclocalidx);
         free(idxsrcrank);
         return err;
     }
@@ -2237,6 +2405,10 @@ int mtxvector_dist_usscga(
             fprintf(stderr, "idxsrcrank=[");
             for (int64_t i = 0; i < z->xp.num_nonzeros; i++)
                 fprintf(stderr, " %d", idxsrcrank[i]);
+            fprintf(stderr, "], ");
+            fprintf(stderr, "idxsrclocalidx=[");
+            for (int64_t i = 0; i < z->xp.num_nonzeros; i++)
+                fprintf(stderr, " %"PRId64, idxsrclocalidx[i]);
             fprintf(stderr, "]\n");
         }
         MPI_Barrier(comm);
@@ -2259,12 +2431,14 @@ int mtxvector_dist_usscga(
     int64_t * zperm = malloc(z->xp.num_nonzeros * sizeof(int64_t));
     err = !zperm ? MTX_ERR_ERRNO : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err)) {
+        free(idxsrclocalidx);
         free(idxsrcrank);
         return MTX_ERR_MPI_COLLECTIVE;
     }
     err = radix_sort_int(z->xp.num_nonzeros, idxsrcrank, zperm);
     if (mtxdisterror_allreduce(disterr, err)) {
         free(zperm);
+        free(idxsrclocalidx);
         free(idxsrcrank);
         return MTX_ERR_MPI_COLLECTIVE;
     }
@@ -2279,6 +2453,7 @@ int mtxvector_dist_usscga(
     err = !recvranks ? MTX_ERR_ERRNO : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err)) {
         free(zperm);
+        free(idxsrclocalidx);
         free(idxsrcrank);
         return MTX_ERR_MPI_COLLECTIVE;
     }
@@ -2287,6 +2462,7 @@ int mtxvector_dist_usscga(
     if (mtxdisterror_allreduce(disterr, err)) {
         free(recvranks);
         free(zperm);
+        free(idxsrclocalidx);
         free(idxsrcrank);
         return MTX_ERR_MPI_COLLECTIVE;
     }
@@ -2309,6 +2485,7 @@ int mtxvector_dist_usscga(
         free(recvcounts);
         free(recvranks);
         free(zperm);
+        free(idxsrclocalidx);
         return MTX_ERR_MPI_COLLECTIVE;
     }
     rdispls[0] = 0;
@@ -2322,12 +2499,14 @@ int mtxvector_dist_usscga(
         free(recvcounts);
         free(recvranks);
         free(zperm);
+        free(idxsrclocalidx);
         return MTX_ERR_MPI_COLLECTIVE;
     }
     for (int64_t i = 0; i < z->xp.num_nonzeros; i++) {
         if (zperm[i] >= idxsrcrankstart)
-            idxsendbuf[zperm[i]-idxsrcrankstart] = z->xp.idx[i];
+            idxsendbuf[zperm[i]-idxsrcrankstart] = idxsrclocalidx[i];
     }
+    free(idxsrclocalidx);
 
 #if 0
     for (int p = 0; p < comm_size; p++) {
@@ -2544,6 +2723,9 @@ int mtxvector_dist_usscga(
      * that owns one or more of those input vector elements.
      */
 
+    /* TODO: Here we can avoid allocating ‘idxrecvbuf’ and just use
+     * ‘sendbuf.idx’ directly. */
+
     int64_t * idxrecvbuf = malloc(sdispls[nsendranks] * sizeof(int64_t));
     err = !idxrecvbuf ? MTX_ERR_ERRNO : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err)) {
@@ -2627,31 +2809,8 @@ int mtxvector_dist_usscga(
     struct mtxvector_packed sendbuf;
     err = mtxvector_packed_alloc(
         &sendbuf, x->xp.x.type, field, precision,
-        x->xp.num_nonzeros, sdispls[nsendranks], NULL);
+        x->xp.num_nonzeros, sdispls[nsendranks], idxrecvbuf);
     if (mtxdisterror_allreduce(disterr, err)) {
-        free(idxrecvbuf);
-        free(sdispls);
-        free(sendcounts);
-        free(sendranks);
-        free(rdispls);
-        free(recvcounts);
-        free(recvranks);
-        free(zperm);
-        return MTX_ERR_MPI_COLLECTIVE;
-    }
-    for (int i = 0; i < sdispls[nsendranks]; i++) {
-        sendbuf.idx[i] = -1;
-        for (int64_t j = 0; j < x->xp.num_nonzeros; j++) {
-            if (idxrecvbuf[i] == x->xp.idx[j]) {
-                sendbuf.idx[i] = j;
-                break;
-            }
-        }
-        if (sendbuf.idx[i] == -1) err = MTX_ERR_INDEX_OUT_OF_BOUNDS;
-    }
-    err = err ? err : mtxvector_usga(&sendbuf, &x->xp.x);
-    if (mtxdisterror_allreduce(disterr, err)) {
-        mtxvector_packed_free(&sendbuf);
         free(idxrecvbuf);
         free(sdispls);
         free(sendcounts);
@@ -2663,6 +2822,18 @@ int mtxvector_dist_usscga(
         return MTX_ERR_MPI_COLLECTIVE;
     }
     free(idxrecvbuf);
+    err = mtxvector_usga(&sendbuf, &x->xp.x);
+    if (mtxdisterror_allreduce(disterr, err)) {
+        mtxvector_packed_free(&sendbuf);
+        free(sdispls);
+        free(sendcounts);
+        free(sendranks);
+        free(rdispls);
+        free(recvcounts);
+        free(recvranks);
+        free(zperm);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
 
 #if 0
     for (int p = 0; p < comm_size; p++) {

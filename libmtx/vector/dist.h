@@ -117,6 +117,17 @@ struct mtxvector_dist
      * element.
      */
     int * ranks;
+
+    /**
+     * ‘localidx’ is an array of size ‘blksize’. The “assumed
+     * partition” strategy assumes that elements are partitioned and
+     * distributed among processes in equal-sized, contiguous
+     * blocks. For each element in the block of the current process,
+     * the array ‘localidx’ contains the offset of that element
+     * according to the local numbering of elements on the process
+     * that actually owns the element.
+     */
+    int64_t * localidx;
 };
 
 /*
