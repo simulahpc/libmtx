@@ -2432,15 +2432,21 @@ int test_mtxmatrix_dist_gemv(void)
             err = mtxvector_dist_init_real_single(&y, mtxvector_base, num_rows, ynnz, yidx, ydata, comm, &disterr);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             err = mtxmatrix_dist_sgemv(mtx_trans, 2.0f, &A, &x, 3.0f, &y, NULL, &disterr);
-            TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+            TEST_ASSERT_EQ_MSG(
+                MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
+                ? mtxdisterror_description(&disterr) : mtxstrerror(err));
             TEST_ASSERT_EQ(mtxvector_base, y.xp.x.type);
             const struct mtxvector_base * y_ = &y.xp.x.storage.base;
             TEST_ASSERT_EQ(mtx_field_real, y_->field);
             TEST_ASSERT_EQ(mtx_single, y_->precision);
-            TEST_ASSERT_EQ(3, y_->size);
-            TEST_ASSERT_EQ(y_->data.real_single[0], 39.0f);
-            TEST_ASSERT_EQ(y_->data.real_single[1], 48.0f);
-            TEST_ASSERT_EQ(y_->data.real_single[2], 48.0f);
+            if (rank == 0) {
+                TEST_ASSERT_EQ(2, y_->size);
+                TEST_ASSERT_EQ(y_->data.real_single[0], 39.0f);
+                TEST_ASSERT_EQ(y_->data.real_single[1], 48.0f);
+            } else if (rank == 1) {
+                TEST_ASSERT_EQ(1, y_->size);
+                TEST_ASSERT_EQ(y_->data.real_single[0], 48.0f);
+            }
             mtxvector_dist_free(&y);
         }
         /* { */
@@ -2452,10 +2458,14 @@ int test_mtxmatrix_dist_gemv(void)
         /*     const struct mtxvector_base * y_ = &y.xp.x.storage.base; */
         /*     TEST_ASSERT_EQ(mtx_field_real, y_->field); */
         /*     TEST_ASSERT_EQ(mtx_single, y_->precision); */
-        /*     TEST_ASSERT_EQ(3, y_->size); */
+        /*     if (rank == 0) { */
+        /*         TEST_ASSERT_EQ(2, y_->size); */
         /*     TEST_ASSERT_EQ(y_->data.real_single[0], 17.0f); */
         /*     TEST_ASSERT_EQ(y_->data.real_single[1], 56.0f); */
-        /*     TEST_ASSERT_EQ(y_->data.real_single[2], 98.0f); */
+        /*     } else if (rank == 1) { */
+        /*         TEST_ASSERT_EQ(1, y_->size); */
+        /*     TEST_ASSERT_EQ(y_->data.real_single[0], 98.0f); */
+        /*     } */
         /*     mtxvector_dist_free(&y); */
         /* } */
         /* { */
@@ -2467,10 +2477,14 @@ int test_mtxmatrix_dist_gemv(void)
         /*     const struct mtxvector_base * y_ = &y.xp.x.storage.base; */
         /*     TEST_ASSERT_EQ(mtx_field_real, y_->field); */
         /*     TEST_ASSERT_EQ(mtx_single, y_->precision); */
-        /*     TEST_ASSERT_EQ(3, y_->size); */
+        /*     if (rank == 0) { */
+        /*         TEST_ASSERT_EQ(2, y_->size); */
         /*     TEST_ASSERT_EQ(y_->data.real_single[0], 39.0f); */
         /*     TEST_ASSERT_EQ(y_->data.real_single[1], 48.0f); */
-        /*     TEST_ASSERT_EQ(y_->data.real_single[2], 48.0f); */
+        /*     } else if (rank == 1) { */
+        /*         TEST_ASSERT_EQ(1, y_->size); */
+        /*     TEST_ASSERT_EQ(y_->data.real_single[0], 48.0f); */
+        /*     } */
         /*     mtxvector_dist_free(&y); */
         /* } */
         mtxvector_dist_free(&x);
@@ -2507,10 +2521,14 @@ int test_mtxmatrix_dist_gemv(void)
             const struct mtxvector_base * y_ = &y.xp.x.storage.base;
             TEST_ASSERT_EQ(mtx_field_real, y_->field);
             TEST_ASSERT_EQ(mtx_single, y_->precision);
-            TEST_ASSERT_EQ(3, y_->size);
-            TEST_ASSERT_EQ(y_->data.real_single[0], 17.0f);
-            TEST_ASSERT_EQ(y_->data.real_single[1], 44.0f);
-            TEST_ASSERT_EQ(y_->data.real_single[2], 48.0f);
+            if (rank == 0) {
+                TEST_ASSERT_EQ(2, y_->size);
+                TEST_ASSERT_EQ(y_->data.real_single[0], 17.0f);
+                TEST_ASSERT_EQ(y_->data.real_single[1], 44.0f);
+            } else if (rank == 1) {
+                TEST_ASSERT_EQ(1, y_->size);
+                TEST_ASSERT_EQ(y_->data.real_single[0], 48.0f);
+            }
             mtxvector_dist_free(&y);
         }
         {
@@ -2522,10 +2540,14 @@ int test_mtxmatrix_dist_gemv(void)
             const struct mtxvector_base * y_ = &y.xp.x.storage.base;
             TEST_ASSERT_EQ(mtx_field_real, y_->field);
             TEST_ASSERT_EQ(mtx_single, y_->precision);
-            TEST_ASSERT_EQ(3, y_->size);
-            TEST_ASSERT_EQ(y_->data.real_single[0], 17.0f);
-            TEST_ASSERT_EQ(y_->data.real_single[1], 44.0f);
-            TEST_ASSERT_EQ(y_->data.real_single[2], 48.0f);
+            if (rank == 0) {
+                TEST_ASSERT_EQ(2, y_->size);
+                TEST_ASSERT_EQ(y_->data.real_single[0], 17.0f);
+                TEST_ASSERT_EQ(y_->data.real_single[1], 44.0f);
+            } else if (rank == 1) {
+                TEST_ASSERT_EQ(1, y_->size);
+                TEST_ASSERT_EQ(y_->data.real_single[0], 48.0f);
+            }
             mtxvector_dist_free(&y);
         }
         {
@@ -2537,10 +2559,14 @@ int test_mtxmatrix_dist_gemv(void)
             const struct mtxvector_base * y_ = &y.xp.x.storage.base;
             TEST_ASSERT_EQ(mtx_field_real, y_->field);
             TEST_ASSERT_EQ(mtx_single, y_->precision);
-            TEST_ASSERT_EQ(3, y_->size);
-            TEST_ASSERT_EQ(y_->data.real_single[0], 17.0f);
-            TEST_ASSERT_EQ(y_->data.real_single[1], 44.0f);
-            TEST_ASSERT_EQ(y_->data.real_single[2], 48.0f);
+            if (rank == 0) {
+                TEST_ASSERT_EQ(2, y_->size);
+                TEST_ASSERT_EQ(y_->data.real_single[0], 17.0f);
+                TEST_ASSERT_EQ(y_->data.real_single[1], 44.0f);
+            } else if (rank == 1) {
+                TEST_ASSERT_EQ(1, y_->size);
+                TEST_ASSERT_EQ(y_->data.real_single[0], 48.0f);
+            }
             mtxvector_dist_free(&y);
         }
         {
@@ -2552,10 +2578,14 @@ int test_mtxmatrix_dist_gemv(void)
             const struct mtxvector_base * y_ = &y.xp.x.storage.base;
             TEST_ASSERT_EQ(mtx_field_real, y_->field);
             TEST_ASSERT_EQ(mtx_single, y_->precision);
-            TEST_ASSERT_EQ(3, y_->size);
-            TEST_ASSERT_EQ(y_->data.real_single[0], 17.0f);
-            TEST_ASSERT_EQ(y_->data.real_single[1], 44.0f);
-            TEST_ASSERT_EQ(y_->data.real_single[2], 48.0f);
+            if (rank == 0) {
+                TEST_ASSERT_EQ(2, y_->size);
+                TEST_ASSERT_EQ(y_->data.real_single[0], 17.0f);
+                TEST_ASSERT_EQ(y_->data.real_single[1], 44.0f);
+            } else if (rank == 1) {
+                TEST_ASSERT_EQ(1, y_->size);
+                TEST_ASSERT_EQ(y_->data.real_single[0], 48.0f);
+            }
             mtxvector_dist_free(&y);
         }
         mtxvector_dist_free(&x);
@@ -2592,10 +2622,14 @@ int test_mtxmatrix_dist_gemv(void)
             const struct mtxvector_base * y_ = &y.xp.x.storage.base;
             TEST_ASSERT_EQ(mtx_field_real, y_->field);
             TEST_ASSERT_EQ(mtx_double, y_->precision);
-            TEST_ASSERT_EQ(3, y_->size);
-            TEST_ASSERT_EQ(y_->data.real_double[0], 17.0);
-            TEST_ASSERT_EQ(y_->data.real_double[1], 56.0);
-            TEST_ASSERT_EQ(y_->data.real_double[2], 98.0);
+            if (rank == 0) {
+                TEST_ASSERT_EQ(2, y_->size);
+                TEST_ASSERT_EQ(y_->data.real_double[0], 17.0);
+                TEST_ASSERT_EQ(y_->data.real_double[1], 56.0);
+            } else if (rank == 1) {
+                TEST_ASSERT_EQ(1, y_->size);
+                TEST_ASSERT_EQ(y_->data.real_double[0], 98.0);
+            }
             mtxvector_dist_free(&y);
         }
         {
@@ -2607,10 +2641,14 @@ int test_mtxmatrix_dist_gemv(void)
             const struct mtxvector_base * y_ = &y.xp.x.storage.base;
             TEST_ASSERT_EQ(mtx_field_real, y_->field);
             TEST_ASSERT_EQ(mtx_double, y_->precision);
-            TEST_ASSERT_EQ(3, y_->size);
-            TEST_ASSERT_EQ(y_->data.real_double[0], 39.0);
-            TEST_ASSERT_EQ(y_->data.real_double[1], 48.0);
-            TEST_ASSERT_EQ(y_->data.real_double[2], 48.0);
+            if (rank == 0) {
+                TEST_ASSERT_EQ(2, y_->size);
+                TEST_ASSERT_EQ(y_->data.real_double[0], 39.0);
+                TEST_ASSERT_EQ(y_->data.real_double[1], 48.0);
+            } else if (rank == 1) {
+                TEST_ASSERT_EQ(1, y_->size);
+                TEST_ASSERT_EQ(y_->data.real_double[0], 48.0);
+            }
             mtxvector_dist_free(&y);
         }
         {
@@ -2622,10 +2660,12 @@ int test_mtxmatrix_dist_gemv(void)
             const struct mtxvector_base * y_ = &y.xp.x.storage.base;
             TEST_ASSERT_EQ(mtx_field_real, y_->field);
             TEST_ASSERT_EQ(mtx_double, y_->precision);
-            TEST_ASSERT_EQ(3, y_->size);
-            TEST_ASSERT_EQ(y_->data.real_double[0], 17.0);
-            TEST_ASSERT_EQ(y_->data.real_double[1], 56.0);
-            TEST_ASSERT_EQ(y_->data.real_double[2], 98.0);
+            if (rank == 0) {
+                TEST_ASSERT_EQ(2, y_->size);
+                TEST_ASSERT_EQ(y_->data.real_double[0], 17.0);
+                TEST_ASSERT_EQ(y_->data.real_double[1], 56.0);
+                TEST_ASSERT_EQ(y_->data.real_double[0], 98.0);
+            }
             mtxvector_dist_free(&y);
         }
         {
@@ -2637,10 +2677,14 @@ int test_mtxmatrix_dist_gemv(void)
             const struct mtxvector_base * y_ = &y.xp.x.storage.base;
             TEST_ASSERT_EQ(mtx_field_real, y_->field);
             TEST_ASSERT_EQ(mtx_double, y_->precision);
-            TEST_ASSERT_EQ(3, y_->size);
-            TEST_ASSERT_EQ(y_->data.real_double[0], 39.0);
-            TEST_ASSERT_EQ(y_->data.real_double[1], 48.0);
-            TEST_ASSERT_EQ(y_->data.real_double[2], 48.0);
+            if (rank == 0) {
+                TEST_ASSERT_EQ(2, y_->size);
+                TEST_ASSERT_EQ(y_->data.real_double[0], 39.0);
+                TEST_ASSERT_EQ(y_->data.real_double[1], 48.0);
+            } else if (rank == 1) {
+                TEST_ASSERT_EQ(1, y_->size);
+                TEST_ASSERT_EQ(y_->data.real_double[0], 48.0);
+            }
             mtxvector_dist_free(&y);
         }
         mtxvector_dist_free(&x);
@@ -2677,10 +2721,14 @@ int test_mtxmatrix_dist_gemv(void)
             const struct mtxvector_base * y_ = &y.xp.x.storage.base;
             TEST_ASSERT_EQ(mtx_field_real, y_->field);
             TEST_ASSERT_EQ(mtx_double, y_->precision);
-            TEST_ASSERT_EQ(3, y_->size);
-            TEST_ASSERT_EQ(y_->data.real_double[0], 17.0);
-            TEST_ASSERT_EQ(y_->data.real_double[1], 44.0);
-            TEST_ASSERT_EQ(y_->data.real_double[2], 48.0);
+            if (rank == 0) {
+                TEST_ASSERT_EQ(2, y_->size);
+                TEST_ASSERT_EQ(y_->data.real_double[0], 17.0);
+                TEST_ASSERT_EQ(y_->data.real_double[1], 44.0);
+            } else if (rank == 1) {
+                TEST_ASSERT_EQ(1, y_->size);
+                TEST_ASSERT_EQ(y_->data.real_double[0], 48.0);
+            }
             mtxvector_dist_free(&y);
         }
         {
@@ -2692,10 +2740,14 @@ int test_mtxmatrix_dist_gemv(void)
             const struct mtxvector_base * y_ = &y.xp.x.storage.base;
             TEST_ASSERT_EQ(mtx_field_real, y_->field);
             TEST_ASSERT_EQ(mtx_double, y_->precision);
-            TEST_ASSERT_EQ(3, y_->size);
-            TEST_ASSERT_EQ(y_->data.real_double[0], 17.0);
-            TEST_ASSERT_EQ(y_->data.real_double[1], 44.0);
-            TEST_ASSERT_EQ(y_->data.real_double[2], 48.0);
+            if (rank == 0) {
+                TEST_ASSERT_EQ(2, y_->size);
+                TEST_ASSERT_EQ(y_->data.real_double[0], 17.0);
+                TEST_ASSERT_EQ(y_->data.real_double[1], 44.0);
+            } else if (rank == 1) {
+                TEST_ASSERT_EQ(1, y_->size);
+                TEST_ASSERT_EQ(y_->data.real_double[0], 48.0);
+            }
             mtxvector_dist_free(&y);
         }
         {
@@ -2707,10 +2759,14 @@ int test_mtxmatrix_dist_gemv(void)
             const struct mtxvector_base * y_ = &y.xp.x.storage.base;
             TEST_ASSERT_EQ(mtx_field_real, y_->field);
             TEST_ASSERT_EQ(mtx_double, y_->precision);
-            TEST_ASSERT_EQ(3, y_->size);
-            TEST_ASSERT_EQ(y_->data.real_double[0], 17.0);
-            TEST_ASSERT_EQ(y_->data.real_double[1], 44.0);
-            TEST_ASSERT_EQ(y_->data.real_double[2], 48.0);
+            if (rank == 0) {
+                TEST_ASSERT_EQ(2, y_->size);
+                TEST_ASSERT_EQ(y_->data.real_double[0], 17.0);
+                TEST_ASSERT_EQ(y_->data.real_double[1], 44.0);
+            } else if (rank == 1) {
+                TEST_ASSERT_EQ(1, y_->size);
+                TEST_ASSERT_EQ(y_->data.real_double[0], 48.0);
+            }
             mtxvector_dist_free(&y);
         }
         {
@@ -2722,10 +2778,14 @@ int test_mtxmatrix_dist_gemv(void)
             const struct mtxvector_base * y_ = &y.xp.x.storage.base;
             TEST_ASSERT_EQ(mtx_field_real, y_->field);
             TEST_ASSERT_EQ(mtx_double, y_->precision);
-            TEST_ASSERT_EQ(3, y_->size);
-            TEST_ASSERT_EQ(y_->data.real_double[0], 17.0);
-            TEST_ASSERT_EQ(y_->data.real_double[1], 44.0);
-            TEST_ASSERT_EQ(y_->data.real_double[2], 48.0);
+            if (rank == 0) {
+                TEST_ASSERT_EQ(2, y_->size);
+                TEST_ASSERT_EQ(y_->data.real_double[0], 17.0);
+                TEST_ASSERT_EQ(y_->data.real_double[1], 44.0);
+            } else if (rank == 1) {
+                TEST_ASSERT_EQ(1, y_->size);
+                TEST_ASSERT_EQ(y_->data.real_double[0], 48.0);
+            }
             mtxvector_dist_free(&y);
         }
         mtxvector_dist_free(&x);
@@ -4088,10 +4148,14 @@ int test_mtxmatrix_dist_gemv(void)
             const struct mtxvector_base * y_ = &y.xp.x.storage.base;
             TEST_ASSERT_EQ(mtx_field_integer, y_->field);
             TEST_ASSERT_EQ(mtx_single, y_->precision);
-            TEST_ASSERT_EQ(3, y_->size);
-            TEST_ASSERT_EQ(y_->data.integer_single[0], 23);
-            TEST_ASSERT_EQ(y_->data.integer_single[1], 56);
-            TEST_ASSERT_EQ(y_->data.integer_single[2], 98);
+            if (rank == 0) {
+                TEST_ASSERT_EQ(2, y_->size);
+                TEST_ASSERT_EQ(y_->data.integer_single[0], 23);
+                TEST_ASSERT_EQ(y_->data.integer_single[1], 56);
+            } else if (rank == 1) {
+                TEST_ASSERT_EQ(1, y_->size);
+                TEST_ASSERT_EQ(y_->data.integer_single[0], 98);
+            }
             mtxvector_dist_free(&y);
         }
         {
@@ -4103,10 +4167,14 @@ int test_mtxmatrix_dist_gemv(void)
             const struct mtxvector_base * y_ = &y.xp.x.storage.base;
             TEST_ASSERT_EQ(mtx_field_integer, y_->field);
             TEST_ASSERT_EQ(mtx_single, y_->precision);
-            TEST_ASSERT_EQ(3, y_->size);
-            TEST_ASSERT_EQ(y_->data.integer_single[0], 39);
-            TEST_ASSERT_EQ(y_->data.integer_single[1], 48);
-            TEST_ASSERT_EQ(y_->data.integer_single[2], 66);
+            if (rank == 0) {
+                TEST_ASSERT_EQ(2, y_->size);
+                TEST_ASSERT_EQ(y_->data.integer_single[0], 39);
+                TEST_ASSERT_EQ(y_->data.integer_single[1], 48);
+            } else if (rank == 1) {
+                TEST_ASSERT_EQ(1, y_->size);
+                TEST_ASSERT_EQ(y_->data.integer_single[0], 66);
+            }
             mtxvector_dist_free(&y);
         }
         {
@@ -4118,10 +4186,14 @@ int test_mtxmatrix_dist_gemv(void)
             const struct mtxvector_base * y_ = &y.xp.x.storage.base;
             TEST_ASSERT_EQ(mtx_field_integer, y_->field);
             TEST_ASSERT_EQ(mtx_single, y_->precision);
-            TEST_ASSERT_EQ(3, y_->size);
-            TEST_ASSERT_EQ(y_->data.integer_single[0], 23);
-            TEST_ASSERT_EQ(y_->data.integer_single[1], 56);
-            TEST_ASSERT_EQ(y_->data.integer_single[2], 98);
+            if (rank == 0) {
+                TEST_ASSERT_EQ(2, y_->size);
+                TEST_ASSERT_EQ(y_->data.integer_single[0], 23);
+                TEST_ASSERT_EQ(y_->data.integer_single[1], 56);
+            } else if (rank == 1) {
+                TEST_ASSERT_EQ(1, y_->size);
+                TEST_ASSERT_EQ(y_->data.integer_single[0], 98);
+            }
             mtxvector_dist_free(&y);
         }
         {
@@ -4133,10 +4205,14 @@ int test_mtxmatrix_dist_gemv(void)
             const struct mtxvector_base * y_ = &y.xp.x.storage.base;
             TEST_ASSERT_EQ(mtx_field_integer, y_->field);
             TEST_ASSERT_EQ(mtx_single, y_->precision);
-            TEST_ASSERT_EQ(3, y_->size);
-            TEST_ASSERT_EQ(y_->data.integer_single[0], 39);
-            TEST_ASSERT_EQ(y_->data.integer_single[1], 48);
-            TEST_ASSERT_EQ(y_->data.integer_single[2], 66);
+            if (rank == 0) {
+                TEST_ASSERT_EQ(2, y_->size);
+                TEST_ASSERT_EQ(y_->data.integer_single[0], 39);
+                TEST_ASSERT_EQ(y_->data.integer_single[1], 48);
+            } else if (rank == 1) {
+                TEST_ASSERT_EQ(1, y_->size);
+                TEST_ASSERT_EQ(y_->data.integer_single[0], 66);
+            }
             mtxvector_dist_free(&y);
         }
         mtxvector_dist_free(&x);
@@ -4173,10 +4249,14 @@ int test_mtxmatrix_dist_gemv(void)
             const struct mtxvector_base * y_ = &y.xp.x.storage.base;
             TEST_ASSERT_EQ(mtx_field_integer, y_->field);
             TEST_ASSERT_EQ(mtx_single, y_->precision);
-            TEST_ASSERT_EQ(3, y_->size);
-            TEST_ASSERT_EQ(y_->data.integer_single[0], 23);
-            TEST_ASSERT_EQ(y_->data.integer_single[1], 44);
-            TEST_ASSERT_EQ(y_->data.integer_single[2], 66);
+            if (rank == 0) {
+                TEST_ASSERT_EQ(2, y_->size);
+                TEST_ASSERT_EQ(y_->data.integer_single[0], 23);
+                TEST_ASSERT_EQ(y_->data.integer_single[1], 44);
+            } else if (rank == 1) {
+                TEST_ASSERT_EQ(1, y_->size);
+                TEST_ASSERT_EQ(y_->data.integer_single[0], 66);
+            }
             mtxvector_dist_free(&y);
         }
         {
@@ -4188,10 +4268,14 @@ int test_mtxmatrix_dist_gemv(void)
             const struct mtxvector_base * y_ = &y.xp.x.storage.base;
             TEST_ASSERT_EQ(mtx_field_integer, y_->field);
             TEST_ASSERT_EQ(mtx_single, y_->precision);
-            TEST_ASSERT_EQ(3, y_->size);
-            TEST_ASSERT_EQ(y_->data.integer_single[0], 23);
-            TEST_ASSERT_EQ(y_->data.integer_single[1], 44);
-            TEST_ASSERT_EQ(y_->data.integer_single[2], 66);
+            if (rank == 0) {
+                TEST_ASSERT_EQ(2, y_->size);
+                TEST_ASSERT_EQ(y_->data.integer_single[0], 23);
+                TEST_ASSERT_EQ(y_->data.integer_single[1], 44);
+            } else if (rank == 1) {
+                TEST_ASSERT_EQ(1, y_->size);
+                TEST_ASSERT_EQ(y_->data.integer_single[0], 66);
+            }
             mtxvector_dist_free(&y);
         }
         {
@@ -4203,10 +4287,14 @@ int test_mtxmatrix_dist_gemv(void)
             const struct mtxvector_base * y_ = &y.xp.x.storage.base;
             TEST_ASSERT_EQ(mtx_field_integer, y_->field);
             TEST_ASSERT_EQ(mtx_single, y_->precision);
-            TEST_ASSERT_EQ(3, y_->size);
-            TEST_ASSERT_EQ(y_->data.integer_single[0], 23);
-            TEST_ASSERT_EQ(y_->data.integer_single[1], 44);
-            TEST_ASSERT_EQ(y_->data.integer_single[2], 66);
+            if (rank == 0) {
+                TEST_ASSERT_EQ(2, y_->size);
+                TEST_ASSERT_EQ(y_->data.integer_single[0], 23);
+                TEST_ASSERT_EQ(y_->data.integer_single[1], 44);
+            } else if (rank == 1) {
+                TEST_ASSERT_EQ(1, y_->size);
+                TEST_ASSERT_EQ(y_->data.integer_single[0], 66);
+            }
             mtxvector_dist_free(&y);
         }
         {
@@ -4218,10 +4306,14 @@ int test_mtxmatrix_dist_gemv(void)
             const struct mtxvector_base * y_ = &y.xp.x.storage.base;
             TEST_ASSERT_EQ(mtx_field_integer, y_->field);
             TEST_ASSERT_EQ(mtx_single, y_->precision);
-            TEST_ASSERT_EQ(3, y_->size);
-            TEST_ASSERT_EQ(y_->data.integer_single[0], 23);
-            TEST_ASSERT_EQ(y_->data.integer_single[1], 44);
-            TEST_ASSERT_EQ(y_->data.integer_single[2], 66);
+            if (rank == 0) {
+                TEST_ASSERT_EQ(2, y_->size);
+                TEST_ASSERT_EQ(y_->data.integer_single[0], 23);
+                TEST_ASSERT_EQ(y_->data.integer_single[1], 44);
+            } else if (rank == 1) {
+                TEST_ASSERT_EQ(1, y_->size);
+                TEST_ASSERT_EQ(y_->data.integer_single[0], 66);
+            }
             mtxvector_dist_free(&y);
         }
         mtxvector_dist_free(&x);
@@ -4258,10 +4350,14 @@ int test_mtxmatrix_dist_gemv(void)
             const struct mtxvector_base * y_ = &y.xp.x.storage.base;
             TEST_ASSERT_EQ(mtx_field_integer, y_->field);
             TEST_ASSERT_EQ(mtx_double, y_->precision);
-            TEST_ASSERT_EQ(3, y_->size);
-            TEST_ASSERT_EQ(y_->data.integer_double[0], 23);
-            TEST_ASSERT_EQ(y_->data.integer_double[1], 56);
-            TEST_ASSERT_EQ(y_->data.integer_double[2], 98);
+            if (rank == 0) {
+                TEST_ASSERT_EQ(2, y_->size);
+                TEST_ASSERT_EQ(y_->data.integer_double[0], 23);
+                TEST_ASSERT_EQ(y_->data.integer_double[1], 56);
+            } else if (rank == 1) {
+                TEST_ASSERT_EQ(1, y_->size);
+                TEST_ASSERT_EQ(y_->data.integer_double[0], 98);
+            }
             mtxvector_dist_free(&y);
         }
         {
@@ -4273,10 +4369,14 @@ int test_mtxmatrix_dist_gemv(void)
             const struct mtxvector_base * y_ = &y.xp.x.storage.base;
             TEST_ASSERT_EQ(mtx_field_integer, y_->field);
             TEST_ASSERT_EQ(mtx_double, y_->precision);
-            TEST_ASSERT_EQ(3, y_->size);
-            TEST_ASSERT_EQ(y_->data.integer_double[0], 39);
-            TEST_ASSERT_EQ(y_->data.integer_double[1], 48);
-            TEST_ASSERT_EQ(y_->data.integer_double[2], 66);
+            if (rank == 0) {
+                TEST_ASSERT_EQ(2, y_->size);
+                TEST_ASSERT_EQ(y_->data.integer_double[0], 39);
+                TEST_ASSERT_EQ(y_->data.integer_double[1], 48);
+            } else if (rank == 1) {
+                TEST_ASSERT_EQ(1, y_->size);
+                TEST_ASSERT_EQ(y_->data.integer_double[0], 66);
+            }
             mtxvector_dist_free(&y);
         }
         {
@@ -4288,10 +4388,14 @@ int test_mtxmatrix_dist_gemv(void)
             const struct mtxvector_base * y_ = &y.xp.x.storage.base;
             TEST_ASSERT_EQ(mtx_field_integer, y_->field);
             TEST_ASSERT_EQ(mtx_double, y_->precision);
-            TEST_ASSERT_EQ(3, y_->size);
-            TEST_ASSERT_EQ(y_->data.integer_double[0], 23);
-            TEST_ASSERT_EQ(y_->data.integer_double[1], 56);
-            TEST_ASSERT_EQ(y_->data.integer_double[2], 98);
+            if (rank == 0) {
+                TEST_ASSERT_EQ(2, y_->size);
+                TEST_ASSERT_EQ(y_->data.integer_double[0], 23);
+                TEST_ASSERT_EQ(y_->data.integer_double[1], 56);
+            } else if (rank == 1) {
+                TEST_ASSERT_EQ(1, y_->size);
+                TEST_ASSERT_EQ(y_->data.integer_double[0], 98);
+            }
             mtxvector_dist_free(&y);
         }
         {
@@ -4303,10 +4407,14 @@ int test_mtxmatrix_dist_gemv(void)
             const struct mtxvector_base * y_ = &y.xp.x.storage.base;
             TEST_ASSERT_EQ(mtx_field_integer, y_->field);
             TEST_ASSERT_EQ(mtx_double, y_->precision);
-            TEST_ASSERT_EQ(3, y_->size);
-            TEST_ASSERT_EQ(y_->data.integer_double[0], 39);
-            TEST_ASSERT_EQ(y_->data.integer_double[1], 48);
-            TEST_ASSERT_EQ(y_->data.integer_double[2], 66);
+            if (rank == 0) {
+                TEST_ASSERT_EQ(2, y_->size);
+                TEST_ASSERT_EQ(y_->data.integer_double[0], 39);
+                TEST_ASSERT_EQ(y_->data.integer_double[1], 48);
+            } else if (rank == 1) {
+                TEST_ASSERT_EQ(1, y_->size);
+                TEST_ASSERT_EQ(y_->data.integer_double[0], 66);
+            }
             mtxvector_dist_free(&y);
         }
         mtxvector_dist_free(&x);
@@ -4343,10 +4451,14 @@ int test_mtxmatrix_dist_gemv(void)
             const struct mtxvector_base * y_ = &y.xp.x.storage.base;
             TEST_ASSERT_EQ(mtx_field_integer, y_->field);
             TEST_ASSERT_EQ(mtx_double, y_->precision);
-            TEST_ASSERT_EQ(3, y_->size);
-            TEST_ASSERT_EQ(y_->data.integer_double[0], 23);
-            TEST_ASSERT_EQ(y_->data.integer_double[1], 44);
-            TEST_ASSERT_EQ(y_->data.integer_double[2], 66);
+            if (rank == 0) {
+                TEST_ASSERT_EQ(2, y_->size);
+                TEST_ASSERT_EQ(y_->data.integer_double[0], 23);
+                TEST_ASSERT_EQ(y_->data.integer_double[1], 44);
+            } else if (rank == 1) {
+                TEST_ASSERT_EQ(1, y_->size);
+                TEST_ASSERT_EQ(y_->data.integer_double[0], 66);
+            }
             mtxvector_dist_free(&y);
         }
         {
@@ -4358,10 +4470,14 @@ int test_mtxmatrix_dist_gemv(void)
             const struct mtxvector_base * y_ = &y.xp.x.storage.base;
             TEST_ASSERT_EQ(mtx_field_integer, y_->field);
             TEST_ASSERT_EQ(mtx_double, y_->precision);
-            TEST_ASSERT_EQ(3, y_->size);
-            TEST_ASSERT_EQ(y_->data.integer_double[0], 23);
-            TEST_ASSERT_EQ(y_->data.integer_double[1], 44);
-            TEST_ASSERT_EQ(y_->data.integer_double[2], 66);
+            if (rank == 0) {
+                TEST_ASSERT_EQ(2, y_->size);
+                TEST_ASSERT_EQ(y_->data.integer_double[0], 23);
+                TEST_ASSERT_EQ(y_->data.integer_double[1], 44);
+            } else if (rank == 1) {
+                TEST_ASSERT_EQ(1, y_->size);
+                TEST_ASSERT_EQ(y_->data.integer_double[0], 66);
+            }
             mtxvector_dist_free(&y);
         }
         {
@@ -4373,10 +4489,14 @@ int test_mtxmatrix_dist_gemv(void)
             const struct mtxvector_base * y_ = &y.xp.x.storage.base;
             TEST_ASSERT_EQ(mtx_field_integer, y_->field);
             TEST_ASSERT_EQ(mtx_double, y_->precision);
-            TEST_ASSERT_EQ(3, y_->size);
-            TEST_ASSERT_EQ(y_->data.integer_double[0], 23);
-            TEST_ASSERT_EQ(y_->data.integer_double[1], 44);
-            TEST_ASSERT_EQ(y_->data.integer_double[2], 66);
+            if (rank == 0) {
+                TEST_ASSERT_EQ(2, y_->size);
+                TEST_ASSERT_EQ(y_->data.integer_double[0], 23);
+                TEST_ASSERT_EQ(y_->data.integer_double[1], 44);
+            } else if (rank == 1) {
+                TEST_ASSERT_EQ(1, y_->size);
+                TEST_ASSERT_EQ(y_->data.integer_double[0], 66);
+            }
             mtxvector_dist_free(&y);
         }
         {
@@ -4388,10 +4508,14 @@ int test_mtxmatrix_dist_gemv(void)
             const struct mtxvector_base * y_ = &y.xp.x.storage.base;
             TEST_ASSERT_EQ(mtx_field_integer, y_->field);
             TEST_ASSERT_EQ(mtx_double, y_->precision);
-            TEST_ASSERT_EQ(3, y_->size);
-            TEST_ASSERT_EQ(y_->data.integer_double[0], 23);
-            TEST_ASSERT_EQ(y_->data.integer_double[1], 44);
-            TEST_ASSERT_EQ(y_->data.integer_double[2], 66);
+            if (rank == 0) {
+                TEST_ASSERT_EQ(2, y_->size);
+                TEST_ASSERT_EQ(y_->data.integer_double[0], 23);
+                TEST_ASSERT_EQ(y_->data.integer_double[1], 44);
+            } else if (rank == 1) {
+                TEST_ASSERT_EQ(1, y_->size);
+                TEST_ASSERT_EQ(y_->data.integer_double[0], 66);
+            }
             mtxvector_dist_free(&y);
         }
         mtxvector_dist_free(&x);
