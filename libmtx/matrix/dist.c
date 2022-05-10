@@ -1469,7 +1469,8 @@ int mtxmatrix_dist_to_mtxfile(
         mtxsize.num_nonzeros = A->num_nonzeros;
     } else { return MTX_ERR_INVALID_MTX_FORMAT; }
 
-    err = mtxfile_alloc(mtxfile, &mtxheader, NULL, &mtxsize, precision);
+    if (A->rank == root)
+        err = mtxfile_alloc(mtxfile, &mtxheader, NULL, &mtxsize, precision);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
 
     int64_t recvoffset = 0;

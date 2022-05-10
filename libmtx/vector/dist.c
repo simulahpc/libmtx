@@ -1343,7 +1343,8 @@ int mtxvector_dist_to_mtxfile(
         mtxsize.num_nonzeros = x->num_nonzeros;
     } else { return MTX_ERR_INVALID_MTX_FORMAT; }
 
-    err = mtxfile_alloc(mtxfile, &mtxheader, NULL, &mtxsize, precision);
+    if (x->rank == root)
+        err = mtxfile_alloc(mtxfile, &mtxheader, NULL, &mtxsize, precision);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
 
     int64_t offset = 0;

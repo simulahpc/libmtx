@@ -217,6 +217,7 @@ int mtxmatrix_csr_init_entries_real_single(
     x.x.storage.base.data.real_single = (float *) data;
     err = mtxvector_base_ussc(&A->a, &x);
     if (err) { mtxmatrix_csr_free(A); free(perm); return err; }
+    free(perm);
     return MTX_SUCCESS;
 }
 
@@ -252,6 +253,7 @@ int mtxmatrix_csr_init_entries_real_double(
     x.x.storage.base.data.real_double = (double *) data;
     err = mtxvector_base_ussc(&A->a, &x);
     if (err) { mtxmatrix_csr_free(A); free(perm); return err; }
+    free(perm);
     return MTX_SUCCESS;
 }
 
@@ -287,6 +289,7 @@ int mtxmatrix_csr_init_entries_complex_single(
     x.x.storage.base.data.complex_single = (float (*)[2]) data;
     err = mtxvector_base_ussc(&A->a, &x);
     if (err) { mtxmatrix_csr_free(A); free(perm); return err; }
+    free(perm);
     return MTX_SUCCESS;
 }
 
@@ -322,6 +325,7 @@ int mtxmatrix_csr_init_entries_complex_double(
     x.x.storage.base.data.complex_double = (double (*)[2]) data;
     err = mtxvector_base_ussc(&A->a, &x);
     if (err) { mtxmatrix_csr_free(A); free(perm); return err; }
+    free(perm);
     return MTX_SUCCESS;
 }
 
@@ -357,6 +361,7 @@ int mtxmatrix_csr_init_entries_integer_single(
     x.x.storage.base.data.integer_single = (int32_t *) data;
     err = mtxvector_base_ussc(&A->a, &x);
     if (err) { mtxmatrix_csr_free(A); free(perm); return err; }
+    free(perm);
     return MTX_SUCCESS;
 }
 
@@ -392,6 +397,7 @@ int mtxmatrix_csr_init_entries_integer_double(
     x.x.storage.base.data.integer_double = (int64_t *) data;
     err = mtxvector_base_ussc(&A->a, &x);
     if (err) { mtxmatrix_csr_free(A); free(perm); return err; }
+    free(perm);
     return MTX_SUCCESS;
 }
 

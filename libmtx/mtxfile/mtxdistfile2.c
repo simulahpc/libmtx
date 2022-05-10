@@ -60,6 +60,7 @@
 void mtxdistfile2_free(
     struct mtxdistfile2 * mtxdistfile2)
 {
+    free(mtxdistfile2->idx);
     mtxfiledata_free(
         &mtxdistfile2->data,
         mtxdistfile2->header.object,
