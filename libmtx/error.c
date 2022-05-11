@@ -225,6 +225,8 @@ const char * mtxstrerror(
         return "invalid MPI communicator";
     case MTX_ERR_INCOMPATIBLE_MPI_COMM:
         return "incompatible MPI communicator";
+    case MTX_ERR_SCATTER_CONFLICT:
+        return "scatter conflict (one or more duplicate entries)";
     default:
         return "unknown error";
     }

@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-04-30
+ * Last modified: 2022-05-11
  *
  * Data types and functions for partitioning finite sets.
  */
@@ -252,6 +252,85 @@ int distpartition_block_cyclic_int64(
     int * dstpart,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
+
+/*
+ * The “assumed partition” strategy, a parallel rendezvous protocol
+ * algorithm to answer queries about the ownership and location of
+ * distributed data.
+ */
+
+/**
+ * ‘assumedpartition_write()’ sets up the data structures needed to
+ * query about ownership and location of distributed data using the
+ * assumed partition strategy.
+ *
+ * The method assumed an underlying one-dimensional array of ‘size’
+ * elements distributed among ‘P’ processes, where ‘P’ is the size of
+ * the MPI communicator ‘comm’.
+ *
+ * On a given process, ‘partsize’ is the number of elements it owns
+ * and ‘globalidx’ is an array containing the global numbers of those
+ * elements. Because ‘globalidx’ may be modified (sorted) by the
+ * function, the array ‘perm’ is used to write the permutation that is
+ * applied to the elements of ‘globalidx’.
+ *
+ * The ‘apownerrank’ and ‘apowneridx’ arrays are of length ‘apsize’,
+ * which must be at least equal to ‘(size+P-1)/P’. For each element
+ * that is assumed to be owned by a given process (according to an
+ * equal-sized block partitioning), these arrays are used to write the
+ * actual owning rank, as well as the offset to the element among
+ * elements of the owning rank.
+ */
+int assumedpartition_write(
+    int64_t size,
+    int64_t partsize,
+    const int64_t * globalidx,
+    int apsize,
+    int * apownerrank,
+    int * apowneridx,
+    MPI_Comm comm,
+    struct mtxdisterror * disterr);
+
+/**
+ * ‘assumedpartition_read()’ performs a query to learn the ownership
+ * and location of distributed data using the assumed partition
+ * strategy.
+ *
+ * The method assumed an underlying one-dimensional array of ‘size’
+ * elements distributed among ‘P’ processes, where ‘P’ is the size of
+ * the MPI communicator ‘comm’.
+ *
+ * The ‘apownerrank’ and ‘apowneridx’ arrays are of length ‘apsize’,
+ * which must be at least equal to ‘(size+P-1)/P’. For each element
+ * that is assumed to be owned by a given process (according to an
+ * equal-sized block partitioning), these arrays specify the actual
+ * owning rank, as well as the offset to the element among elements of
+ * the owning rank. See also ‘assumedpartition_write’ for how to set
+ * up these arrays.
+ *
+ * On a given process, ‘partsize’ is the number of elements to query
+ * for ownership information and ‘globalidx’ is an array containing
+ * the global numbers of those elements. Because ‘globalidx’ may be
+ * modified (sorted) by the function, the array ‘perm’ is used to
+ * write the permutation that is applied to the elements of
+ * ‘globalidx’.
+ *
+ * The ‘ownerrank’ and ‘owneridx’ arrays must also be of length
+ * ‘partsize’. They are used to write the actual owning rank, as well
+ * as the offset to the element among elements of the owning rank.
+ */
+int assumedpartition_read(
+    int64_t size,
+    int apsize,
+    const int * apownerrank,
+    const int * apowneridx,
+    int64_t partsize,
+    const int64_t * globalidx,
+    int * ownerrank,
+    int * owneridx,
+    MPI_Comm comm,
+    struct mtxdisterror * disterr);
+
 #endif
 
 /*

@@ -41,6 +41,7 @@ EXTRA_DIST = \
 	manual/image/webbase-1M_rcm.eps \
 	manual/image/webbase-1M_rcm.png \
 	manual/texinfo.css \
+	tests/test_assumedpartition_parallel \
 	tests/test_distsort_parallel \
 	tests/test_mtx_mpi_parallel \
 	tests/test_mtxdistfile_parallel \
@@ -402,6 +403,15 @@ TESTS = \
 	tests/test_submatrix \
 	tests/test_vector
 
+
+if HAVE_MPI
+tests_test_assumedpartition_CPPFLAGS =
+tests_test_assumedpartition_LDADD = $(top_builddir)/libmtx.la
+tests_test_assumedpartition_SOURCES = tests/test_assumedpartition.c tests/test.h
+check_PROGRAMS += tests/test_assumedpartition
+TESTS += tests/test_assumedpartition_parallel
+tests/test_assumedpartition_parallel:  tests/test_assumedpartition
+endif
 
 if HAVE_MPI
 tests_test_mtxdistfile2_CPPFLAGS =
