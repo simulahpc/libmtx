@@ -93,41 +93,6 @@ struct mtxvector_dist
      * form belonging to the current process.
      */
     struct mtxvector_packed xp;
-
-    /**
-     * ‘blksize’ is the number of vector elements owned by the current
-     * process, if the elements were partitioned and distributed among
-     * processes in equal-sized blocks.
-     */
-    int64_t blksize;
-
-    /**
-     * ‘blkstart’ is the offset to the first vector element owned by
-     * the current process, if the elements were partitioned and
-     * distributed among processes in equal-sized, contiguous blocks.
-     */
-    int64_t blkstart;
-
-    /**
-     * ‘ranks’ is an array of size ‘blksize’. The “assumed partition”
-     * strategy assumes that elements are partitioned and distributed
-     * among processes in equal-sized, contiguous blocks. For each
-     * element in the block of the current process, the array ‘ranks’
-     * contains the rank of the process that actually owns the
-     * element.
-     */
-    int * ranks;
-
-    /**
-     * ‘localidx’ is an array of size ‘blksize’. The “assumed
-     * partition” strategy assumes that elements are partitioned and
-     * distributed among processes in equal-sized, contiguous
-     * blocks. For each element in the block of the current process,
-     * the array ‘localidx’ contains the offset of that element
-     * according to the local numbering of elements on the process
-     * that actually owns the element.
-     */
-    int64_t * localidx;
 };
 
 /*
