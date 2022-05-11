@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-04-26
+ * Last modified: 2022-05-11
  *
  * Data structures and routines for distributed sparse vectors in
  * packed form.
@@ -123,52 +123,63 @@ static int mtxvector_dist_init_map(
     int rank = x->rank;
     int64_t num_nonzeros = x->xp.num_nonzeros;
     const int64_t * idx = x->xp.idx;
-    MPI_Win window;
+
+    MPI_Win windowa;
     disterr->mpierrcode = MPI_Win_create(
         x->ranks, x->blksize * sizeof(int), sizeof(int),
-        MPI_INFO_NULL, x->comm, &window);
+        MPI_INFO_NULL, x->comm, &windowa);
     int err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
-    MPI_Win_set_errhandler(window, MPI_ERRORS_RETURN);
-    disterr->mpierrcode = MPI_Win_fence(0, window);
-    err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
-    for (int64_t i = 0; i < num_nonzeros && !err; i++) {
-        int assumedrank = idx[i] / x->blksize;
-        int assumedidx = idx[i] % x->blksize;
-        disterr->mpierrcode = MPI_Put(
-            &rank, 1, MPI_INT, assumedrank, assumedidx, 1, MPI_INT, window);
-        err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
-    }
-    if (err) {
-        MPI_Win_fence(0, window);
-    } else {
-        disterr->mpierrcode = MPI_Win_fence(0, window);
-        err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
-    }
-    MPI_Win_free(&window);
-    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+    MPI_Win_set_errhandler(windowa, MPI_ERRORS_RETURN);
 
+    MPI_Win windowb;
     disterr->mpierrcode = MPI_Win_create(
         x->localidx, x->blksize * sizeof(int64_t), sizeof(int64_t),
-        MPI_INFO_NULL, x->comm, &window);
+        MPI_INFO_NULL, x->comm, &windowb);
     err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
-    disterr->mpierrcode = MPI_Win_fence(0, window);
+
+    disterr->mpierrcode = MPI_Win_fence(0, windowa);
     err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
     for (int64_t i = 0; i < num_nonzeros && !err; i++) {
         int assumedrank = idx[i] / x->blksize;
         int assumedidx = idx[i] % x->blksize;
-        disterr->mpierrcode = MPI_Put(
-            &i, 1, MPI_INT64_T, assumedrank, assumedidx, 1, MPI_INT64_T, window);
+        /* disterr->mpierrcode = MPI_Put( */
+        /*     &rank, 1, MPI_INT, assumedrank, assumedidx, 1, MPI_INT, windowa); */
+        disterr->mpierrcode = MPI_Accumulate(
+            &rank, 1, MPI_INT, assumedrank, assumedidx, 1, MPI_INT, MPI_MAX, windowa);
         err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    }
+    MPI_Win_fence(0, windowa);
+
+    disterr->mpierrcode = MPI_Win_fence(0, windowa);
+    err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    disterr->mpierrcode = MPI_Win_fence(0, windowb);
+    err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+    for (int64_t i = 0; i < num_nonzeros && !err; i++) {
+        int assumedrank = idx[i] / x->blksize;
+        int assumedidx = idx[i] % x->blksize;
+        int idxrank;
+        disterr->mpierrcode = MPI_Get(
+            &idxrank, 1, MPI_INT, assumedrank, assumedidx, 1, MPI_INT, windowa);
+        err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+        if (!err && rank == idxrank) {
+            disterr->mpierrcode = MPI_Put(
+                &i, 1, MPI_INT64_T, assumedrank, assumedidx, 1, MPI_INT64_T, windowb);
+            err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+        }
     }
     if (err) {
-        MPI_Win_fence(0, window);
+        MPI_Win_fence(0, windowb);
+        MPI_Win_fence(0, windowa);
     } else {
-        disterr->mpierrcode = MPI_Win_fence(0, window);
+        disterr->mpierrcode = MPI_Win_fence(0, windowb);
+        err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
+        disterr->mpierrcode = MPI_Win_fence(0, windowa);
         err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
     }
-    MPI_Win_free(&window);
+    MPI_Win_free(&windowb);
+    MPI_Win_free(&windowa);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
 
 #if 0
