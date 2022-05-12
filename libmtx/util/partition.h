@@ -178,10 +178,10 @@ int partition_custom_int64(
  *   partitioned set.
  *
  * - If ‘type’ is ‘mtx_block_cyclic’, then items are arranged in
- *   contiguous block of size ‘blksize’, which are then partitioned in
- *   a cyclic fashion into ‘num_parts’ parts.
+ *   contiguous blocks of size ‘blksize’, which are then partitioned
+ *   in a cyclic fashion into ‘num_parts’ parts.
  *
- * - If ‘type’ is ‘mtx_block_cyclic’, then ‘parts’ is an array of
+ * - If ‘type’ is ‘mtx_custom_partition’, then ‘parts’ is an array of
  *   length ‘size’, which specifies the part number of each element in
  *   the set.
  */
@@ -245,6 +245,40 @@ int distpartition_block_int64(
  */
 int distpartition_block_cyclic_int64(
     int64_t size,
+    int64_t blksize,
+    int64_t idxsize,
+    int idxstride,
+    const int64_t * idx,
+    int * dstpart,
+    MPI_Comm comm,
+    struct mtxdisterror * disterr);
+
+/**
+ * ‘distpartition_int64()’ partitions elements of a set of 64-bit
+ * signed integers based on a given partitioning to produce an array
+ * of part numbers assigned to each element in the input array.
+ *
+ * The number of parts is equal to the number of processes in the
+ * communicator ‘comm’.
+ *
+ * The array to be partitioned, ‘idx’, contains ‘idxsize’ items.
+ * Moreover, the user must provide an output array, ‘dstpart’, of size
+ * ‘idxsize’, which is used to write the part number assigned to each
+ * element of the input array.
+ *
+ * The set to be partitioned consists of ‘size’ items.
+ *
+ * - If ‘type’ is ‘mtx_block’, then ‘partsize’ specifies the size of
+ *   the block on the current MPI process.
+ *
+ * - If ‘type’ is ‘mtx_block_cyclic’, then items are arranged in
+ *   contiguous blocks of size ‘blksize’, which are then partitioned
+ *   in a cyclic fashion.
+ */
+int distpartition_int64(
+    enum mtxpartitioning type,
+    int64_t size,
+    int64_t partsize,
     int64_t blksize,
     int64_t idxsize,
     int idxstride,

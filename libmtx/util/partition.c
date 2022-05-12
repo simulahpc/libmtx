@@ -273,6 +273,50 @@ int distpartition_block_cyclic_int64(
         size, comm_size, blksize, idxsize, idxstride, idx, dstpart);
 }
 
+
+/**
+ * ‘distpartition_int64()’ partitions elements of a set of 64-bit
+ * signed integers based on a given partitioning to produce an array
+ * of part numbers assigned to each element in the input array.
+ *
+ * The number of parts is equal to the number of processes in the
+ * communicator ‘comm’.
+ *
+ * The array to be partitioned, ‘idx’, contains ‘idxsize’ items.
+ * Moreover, the user must provide an output array, ‘dstpart’, of size
+ * ‘idxsize’, which is used to write the part number assigned to each
+ * element of the input array.
+ *
+ * The set to be partitioned consists of ‘size’ items.
+ *
+ * - If ‘type’ is ‘mtx_block’, then ‘partsize’ specifies the size of
+ *   the block on the current MPI process.
+ *
+ * - If ‘type’ is ‘mtx_block_cyclic’, then items are arranged in
+ *   contiguous blocks of size ‘blksize’, which are then partitioned
+ *   in a cyclic fashion.
+ */
+int distpartition_int64(
+    enum mtxpartitioning type,
+    int64_t size,
+    int64_t partsize,
+    int64_t blksize,
+    int64_t idxsize,
+    int idxstride,
+    const int64_t * idx,
+    int * dstpart,
+    MPI_Comm comm,
+    struct mtxdisterror * disterr)
+{
+    if (type == mtx_block) {
+        return distpartition_block_int64(
+            size, partsize, idxsize, idxstride, idx, dstpart, comm, disterr);
+    } else if (type == mtx_block_cyclic) {
+        return distpartition_block_cyclic_int64(
+            size, blksize, idxsize, idxstride, idx, dstpart, comm, disterr);
+    } else { return MTX_ERR_INVALID_PARTITION_TYPE; }
+}
+
 /*
  * The “assumed partition” strategy, a parallel rendezvous protocol
  * algorithm to answer queries about the ownership and location of
