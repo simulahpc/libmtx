@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-04-30
+ * Last modified: 2022-05-11
  *
  * Data types and functions for partitioning finite sets.
  */
@@ -277,6 +277,10 @@ int distpartition_block_cyclic_int64(
  * The “assumed partition” strategy, a parallel rendezvous protocol
  * algorithm to answer queries about the ownership and location of
  * distributed data.
+ *
+ * See A.H. Baker, R.D. Falgout and U.M. Yang, “An assumed partition
+ * algorithm for determining processor inter-communication,” Parallel
+ * Computing, Vol. 32, No. 5–6, June 2006, pp. 319–414.
  */
 
 /**
