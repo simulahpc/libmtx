@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-04-14
+ * Last modified: 2022-05-12
  *
  * Data structures and routines for distributed sparse vectors in
  * packed form.
@@ -868,6 +868,69 @@ int mtxvector_dist_iamax(
 int mtxvector_dist_usscga(
     struct mtxvector_dist * z,
     const struct mtxvector_dist * x,
+    struct mtxdisterror * disterr);
+
+/**
+ * ‘mtxvector_dist_usscga’ is a data structure for a persistent,
+ * asynchronous, combined scatter-gather operation.
+ */
+struct mtxvector_dist_usscga
+{
+    /**
+     * ‘z’ is a distributed, sparse destination vector in packed form.
+     */
+    struct mtxvector_dist * z;
+
+    /**
+     * ‘x’ is a distributed, sparse source vector in packed form.
+     */
+    const struct mtxvector_dist * x;
+
+    struct mtxvector_dist_usscga_impl * impl;
+};
+
+/**
+ * ‘mtxvector_dist_usscga_init()’ allocates data structures for a
+ * persistent, combined scatter-gather operation.
+ *
+ * This is used in cases where the combined scatter-gather operation
+ * is performed repeatedly, since the setup phase only needs to be
+ * carried out once.
+ */
+int mtxvector_dist_usscga_init(
+    struct mtxvector_dist_usscga * usscga,
+    struct mtxvector_dist * z,
+    const struct mtxvector_dist * x,
+    struct mtxdisterror * disterr);
+
+/**
+ * ‘mtxvector_dist_usscga_free()’ frees resources associated with a
+ * persistent, combined scatter-gather operation.
+ */
+void mtxvector_dist_usscga_free(
+    struct mtxvector_dist_usscga * usscga);
+
+/**
+ * ‘mtxvector_dist_usscga_start()’ initiates a combined scatter-gather
+ * operation from a distributed sparse vector ‘x’ in packed form into
+ * another distributed sparse vector ‘z’ in packed form. Repeated
+ * indices in the packed vector ‘x’ are not allowed, otherwise the
+ * result is undefined. They are, however, allowed in the packed
+ * vector ‘z’.
+ *
+ * The operation may not complete before
+ * ‘mtxvector_dist_usscga_wait()’ is called.
+ */
+int mtxvector_dist_usscga_start(
+    struct mtxvector_dist_usscga * usscga,
+    struct mtxdisterror * disterr);
+
+/**
+ * ‘mtxvector_dist_usscga_wait()’ waits for a persistent, combined
+ * scatter-gather operation to finish.
+ */
+int mtxvector_dist_usscga_wait(
+    struct mtxvector_dist_usscga * usscga,
     struct mtxdisterror * disterr);
 #endif
 #endif

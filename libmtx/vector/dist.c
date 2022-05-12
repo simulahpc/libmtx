@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-05-11
+ * Last modified: 2022-05-12
  *
  * Data structures and routines for distributed sparse vectors in
  * packed form.
@@ -1579,6 +1579,62 @@ int mtxvector_dist_usscga(
     const struct mtxvector_dist * x,
     struct mtxdisterror * disterr)
 {
+    struct mtxvector_dist_usscga usscga;
+    int err = mtxvector_dist_usscga_init(&usscga, z, x, disterr);
+    if (err) return err;
+    err = mtxvector_dist_usscga_start(&usscga, disterr);
+    if (err) { mtxvector_dist_usscga_free(&usscga); return err; }
+    err = mtxvector_dist_usscga_wait(&usscga, disterr);
+    if (err) { mtxvector_dist_usscga_free(&usscga); return err; }
+    mtxvector_dist_usscga_free(&usscga);
+    return MTX_SUCCESS;
+}
+
+/**
+ * ‘mtxvector_dist_usscga_impl’ is a data structure for a persistent,
+ * asynchronous, combined scatter-gather operation.
+ */
+struct mtxvector_dist_usscga_impl
+{
+    MPI_Comm comm;
+    int commsize;
+    int rank;
+    enum mtxfield field;
+    enum mtxprecision precision;
+    int64_t * zperm;
+    int64_t idxsrcrankstart;
+    int nrecvranks;
+    int * recvranks;
+    int * recvcounts;
+    int * rdispls;
+    int nsendranks;
+    int * sendranks;
+    int * sendcounts;
+    int * sdispls;
+    struct mtxvector_packed sendbuf;
+    struct mtxvector_packed recvbuf;
+
+    /**
+     * ‘req’ is an array of length ‘comm_size’, containing MPI
+     * requests used for non-blocking communication.
+     */
+    MPI_Request * req;
+};
+
+/**
+ * ‘mtxvector_dist_usscga_init()’ allocates data structures for a
+ * persistent, combined scatter-gather operation.
+ *
+ * This is used in cases where the combined scatter-gather operation
+ * is performed repeatedly, since the setup phase only needs to be
+ * carried out once.
+ */
+int mtxvector_dist_usscga_init(
+    struct mtxvector_dist_usscga * usscga,
+    struct mtxvector_dist * z,
+    const struct mtxvector_dist * x,
+    struct mtxdisterror * disterr)
+{
     int err;
     int result;
     disterr->mpierrcode = MPI_Comm_compare(x->comm, z->comm, &result);
@@ -1594,10 +1650,10 @@ int mtxvector_dist_usscga(
 
     enum mtxfield field;
     err = mtxvector_field(&x->xp.x, &field);
-    if (err) return err;
+    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     enum mtxprecision precision;
     err = mtxvector_precision(&x->xp.x, &precision);
-    if (err) return err;
+    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
 
     /*
      * The algorithm proceeds in two phases, where the first phase
@@ -1617,10 +1673,11 @@ int mtxvector_dist_usscga(
      * to receive and where they will be received from, and they will
      * also know which of their input vector elements to send and
      * where they must be sent to. The data exchange can therefore be
-     * carried out, for example, by calling ‘MPI_Alltoallv’.
+     * carried out with appropriate calls to ‘MPI_Send’ and
+     * ‘MPI_Recv’.
      */
 
-#ifdef MTXDEBUG_MTXVECTOR_DIST_USSCGA
+#ifdef MTXDEBUG_MTXVECTOR_DIST_USSCGA_INIT
     for (int p = 0; p < comm_size; p++) {
         if (rank == p) {
             fprintf(stderr, "x->xp.idx=[");
@@ -1658,14 +1715,13 @@ int mtxvector_dist_usscga(
         return err;
     }
 
-#ifdef MTXDEBUG_MTXVECTOR_DIST_USSCGA
+#ifdef MTXDEBUG_MTXVECTOR_DIST_USSCGA_INIT
     for (int p = 0; p < comm_size; p++) {
         if (rank == p) {
             fprintf(stderr, "apownerrank=[");
             for (int64_t i = 0; i < apsize; i++)
                 fprintf(stderr, " %d", apownerrank[i]);
-            fprintf(stderr, "], ");
-            fprintf(stderr, "apowneridx=[");
+            fprintf(stderr, "], apowneridx=[");
             for (int64_t i = 0; i < apsize; i++)
                 fprintf(stderr, " %d", apowneridx[i]);
             fprintf(stderr, "]\n");
@@ -1707,14 +1763,13 @@ int mtxvector_dist_usscga(
     }
     free(apowneridx); free(apownerrank);
 
-#ifdef MTXDEBUG_MTXVECTOR_DIST_USSCGA
+#ifdef MTXDEBUG_MTXVECTOR_DIST_USSCGA_INIT
     for (int p = 0; p < comm_size; p++) {
         if (rank == p) {
             fprintf(stderr, "idxsrcrank=[");
             for (int64_t i = 0; i < z->xp.num_nonzeros; i++)
                 fprintf(stderr, " %d", idxsrcrank[i]);
-            fprintf(stderr, "], ");
-            fprintf(stderr, "idxsrclocalidx=[");
+            fprintf(stderr, "], idxsrclocalidx=[");
             for (int64_t i = 0; i < z->xp.num_nonzeros; i++)
                 fprintf(stderr, " %d", idxsrclocalidx[i]);
             fprintf(stderr, "]\n");
@@ -1739,15 +1794,12 @@ int mtxvector_dist_usscga(
     int64_t * zperm = malloc(z->xp.num_nonzeros * sizeof(int64_t));
     err = !zperm ? MTX_ERR_ERRNO : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err)) {
-        free(idxsrclocalidx);
-        free(idxsrcrank);
+        free(idxsrclocalidx); free(idxsrcrank);
         return MTX_ERR_MPI_COLLECTIVE;
     }
     err = radix_sort_int(z->xp.num_nonzeros, idxsrcrank, zperm);
     if (mtxdisterror_allreduce(disterr, err)) {
-        free(zperm);
-        free(idxsrclocalidx);
-        free(idxsrcrank);
+        free(zperm); free(idxsrclocalidx); free(idxsrcrank);
         return MTX_ERR_MPI_COLLECTIVE;
     }
     int64_t idxsrcrankstart = 0;
@@ -1760,18 +1812,14 @@ int mtxvector_dist_usscga(
     int * recvranks = malloc(nrecvranks * sizeof(int));
     err = !recvranks ? MTX_ERR_ERRNO : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err)) {
-        free(zperm);
-        free(idxsrclocalidx);
-        free(idxsrcrank);
+        free(zperm); free(idxsrclocalidx); free(idxsrcrank);
         return MTX_ERR_MPI_COLLECTIVE;
     }
     int * recvcounts = malloc(nrecvranks * sizeof(int));
     err = !recvcounts ? MTX_ERR_ERRNO : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err)) {
         free(recvranks);
-        free(zperm);
-        free(idxsrclocalidx);
-        free(idxsrcrank);
+        free(zperm); free(idxsrclocalidx); free(idxsrcrank);
         return MTX_ERR_MPI_COLLECTIVE;
     }
     if (nrecvranks > 0) {
@@ -1790,10 +1838,8 @@ int mtxvector_dist_usscga(
     int * rdispls = malloc((nrecvranks+1) * sizeof(int));
     err = !rdispls ? MTX_ERR_ERRNO : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err)) {
-        free(recvcounts);
-        free(recvranks);
-        free(zperm);
-        free(idxsrclocalidx);
+        free(recvcounts); free(recvranks);
+        free(zperm); free(idxsrclocalidx);
         return MTX_ERR_MPI_COLLECTIVE;
     }
     rdispls[0] = 0;
@@ -1803,11 +1849,8 @@ int mtxvector_dist_usscga(
     int64_t * idxsendbuf = malloc(idxsendcount * sizeof(int64_t));
     err = !idxsendbuf ? MTX_ERR_ERRNO : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err)) {
-        free(rdispls);
-        free(recvcounts);
-        free(recvranks);
-        free(zperm);
-        free(idxsrclocalidx);
+        free(rdispls); free(recvcounts); free(recvranks);
+        free(zperm); free(idxsrclocalidx);
         return MTX_ERR_MPI_COLLECTIVE;
     }
     for (int64_t i = 0; i < z->xp.num_nonzeros; i++) {
@@ -1816,14 +1859,13 @@ int mtxvector_dist_usscga(
     }
     free(idxsrclocalidx);
 
-#ifdef MTXDEBUG_MTXVECTOR_DIST_USSCGA
+#ifdef MTXDEBUG_MTXVECTOR_DIST_USSCGA_INIT
     for (int p = 0; p < comm_size; p++) {
         if (rank == p) {
             fprintf(stderr, "idxsrcrankstart=%d, zperm=[", idxsrcrankstart);
             for (int64_t i = 0; i < z->xp.num_nonzeros; i++)
                 fprintf(stderr, " %d", zperm[i]);
-            fprintf(stderr, "], ");
-            fprintf(stderr, "idxsendbuf=[");
+            fprintf(stderr, "], idxsendbuf=[");
             for (int64_t i = 0; i < idxsendcount; i++)
                 fprintf(stderr, " %"PRId64, idxsendbuf[i]);
             fprintf(stderr, "]\n");
@@ -1840,6 +1882,7 @@ int mtxvector_dist_usscga(
      * can atomically update remote counters on other processes, if it
      * needs data from them.
      */
+
     int nsendranks = 0;
     MPI_Win window;
     disterr->mpierrcode = MPI_Win_create(
@@ -1847,9 +1890,7 @@ int mtxvector_dist_usscga(
     err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err)) {
         free(idxsendbuf);
-        free(rdispls);
-        free(recvcounts);
-        free(recvranks);
+        free(rdispls); free(recvcounts); free(recvranks);
         free(zperm);
         return MTX_ERR_MPI_COLLECTIVE;
     }
@@ -1870,22 +1911,19 @@ int mtxvector_dist_usscga(
     MPI_Win_free(&window);
     if (mtxdisterror_allreduce(disterr, err)) {
         free(idxsendbuf);
-        free(rdispls);
-        free(recvcounts);
-        free(recvranks);
+        free(rdispls); free(recvcounts); free(recvranks);
         free(zperm);
         return MTX_ERR_MPI_COLLECTIVE;
     }
 
-#ifdef MTXDEBUG_MTXVECTOR_DIST_USSCGA
+#ifdef MTXDEBUG_MTXVECTOR_DIST_USSCGA_INIT
     for (int p = 0; p < comm_size; p++) {
         if (rank == p) {
             fprintf(stderr, "nrecvranks=%d, ", nrecvranks);
             fprintf(stderr, "recvranks=[");
             for (int64_t i = 0; i < nrecvranks; i++)
                 fprintf(stderr, " %d", recvranks[i]);
-            fprintf(stderr, "], ");
-            fprintf(stderr, "recvcounts=[");
+            fprintf(stderr, "], recvcounts=[");
             for (int64_t i = 0; i < nrecvranks; i++)
                 fprintf(stderr, " %d", recvcounts[i]);
             fprintf(stderr, "]\n");
@@ -1906,20 +1944,15 @@ int mtxvector_dist_usscga(
     err = !idxrequests ? MTX_ERR_ERRNO : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err)) {
         free(idxsendbuf);
-        free(rdispls);
-        free(recvcounts);
-        free(recvranks);
+        free(rdispls); free(recvcounts); free(recvranks);
         free(zperm);
         return MTX_ERR_MPI_COLLECTIVE;
     }
     int * sendranks = malloc(nsendranks * sizeof(int));
     err = !sendranks ? MTX_ERR_ERRNO : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err)) {
-        free(idxrequests);
-        free(idxsendbuf);
-        free(rdispls);
-        free(recvcounts);
-        free(recvranks);
+        free(idxrequests); free(idxsendbuf);
+        free(rdispls); free(recvcounts); free(recvranks);
         free(zperm);
         return MTX_ERR_MPI_COLLECTIVE;
     }
@@ -1927,11 +1960,8 @@ int mtxvector_dist_usscga(
     err = !sendcounts ? MTX_ERR_ERRNO : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err)) {
         free(sendranks);
-        free(idxrequests);
-        free(idxsendbuf);
-        free(rdispls);
-        free(recvcounts);
-        free(recvranks);
+        free(idxrequests); free(idxsendbuf);
+        free(rdispls); free(recvcounts); free(recvranks);
         free(zperm);
         return MTX_ERR_MPI_COLLECTIVE;
     }
@@ -1942,13 +1972,9 @@ int mtxvector_dist_usscga(
         if (err) break;
     }
     if (mtxdisterror_allreduce(disterr, err)) {
-        free(sendcounts);
-        free(sendranks);
-        free(idxrequests);
-        free(idxsendbuf);
-        free(rdispls);
-        free(recvcounts);
-        free(recvranks);
+        free(sendcounts); free(sendranks);
+        free(idxrequests); free(idxsendbuf);
+        free(rdispls); free(recvcounts); free(recvranks);
         free(zperm);
         return MTX_ERR_MPI_COLLECTIVE;
     }
@@ -1959,13 +1985,9 @@ int mtxvector_dist_usscga(
         if (err) break;
     }
     if (mtxdisterror_allreduce(disterr, err)) {
-        free(sendcounts);
-        free(sendranks);
-        free(idxrequests);
-        free(idxsendbuf);
-        free(rdispls);
-        free(recvcounts);
-        free(recvranks);
+        free(sendcounts); free(sendranks);
+        free(idxrequests); free(idxsendbuf);
+        free(rdispls); free(recvcounts); free(recvranks);
         free(zperm);
         return MTX_ERR_MPI_COLLECTIVE;
     }
@@ -1977,26 +1999,18 @@ int mtxvector_dist_usscga(
         sendranks[p] = status.MPI_SOURCE;
     }
     if (mtxdisterror_allreduce(disterr, err)) {
-        free(sendcounts);
-        free(sendranks);
-        free(idxrequests);
-        free(idxsendbuf);
-        free(rdispls);
-        free(recvcounts);
-        free(recvranks);
+        free(sendcounts); free(sendranks);
+        free(idxrequests); free(idxsendbuf);
+        free(rdispls); free(recvcounts); free(recvranks);
         free(zperm);
         return MTX_ERR_MPI_COLLECTIVE;
     }
     int * sdispls = malloc((nsendranks+1) * sizeof(int));
     err = !sdispls ? MTX_ERR_ERRNO : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err)) {
-        free(sendcounts);
-        free(sendranks);
-        free(idxrequests);
-        free(idxsendbuf);
-        free(rdispls);
-        free(recvcounts);
-        free(recvranks);
+        free(sendcounts); free(sendranks);
+        free(idxrequests); free(idxsendbuf);
+        free(rdispls); free(recvcounts); free(recvranks);
         free(zperm);
         return MTX_ERR_MPI_COLLECTIVE;
     }
@@ -2004,15 +2018,14 @@ int mtxvector_dist_usscga(
     for (int p = 0; p < nsendranks; p++)
         sdispls[p+1] = sdispls[p] + sendcounts[p];
 
-#ifdef MTXDEBUG_MTXVECTOR_DIST_USSCGA
+#ifdef MTXDEBUG_MTXVECTOR_DIST_USSCGA_INIT
     for (int p = 0; p < comm_size; p++) {
         if (rank == p) {
             fprintf(stderr, "nsendranks=%d, ", nrecvranks);
             fprintf(stderr, "sendranks=[");
             for (int64_t i = 0; i < nsendranks; i++)
                 fprintf(stderr, " %d", sendranks[i]);
-            fprintf(stderr, "], ");
-            fprintf(stderr, "sendcounts=[");
+            fprintf(stderr, "], sendcounts=[");
             for (int64_t i = 0; i < nsendranks; i++)
                 fprintf(stderr, " %d", sendcounts[i]);
             fprintf(stderr, "]\n");
@@ -2037,14 +2050,9 @@ int mtxvector_dist_usscga(
     int64_t * idxrecvbuf = malloc(sdispls[nsendranks] * sizeof(int64_t));
     err = !idxrecvbuf ? MTX_ERR_ERRNO : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err)) {
-        free(sdispls);
-        free(sendcounts);
-        free(sendranks);
-        free(idxrequests);
-        free(idxsendbuf);
-        free(rdispls);
-        free(recvcounts);
-        free(recvranks);
+        free(sdispls); free(sendcounts); free(sendranks);
+        free(idxrequests); free(idxsendbuf);
+        free(rdispls); free(recvcounts); free(recvranks);
         free(zperm);
         return MTX_ERR_MPI_COLLECTIVE;
     }
@@ -2057,14 +2065,9 @@ int mtxvector_dist_usscga(
     }
     if (mtxdisterror_allreduce(disterr, err)) {
         free(idxrecvbuf);
-        free(sdispls);
-        free(sendcounts);
-        free(sendranks);
-        free(idxrequests);
-        free(idxsendbuf);
-        free(rdispls);
-        free(recvcounts);
-        free(recvranks);
+        free(sdispls); free(sendcounts); free(sendranks);
+        free(idxrequests); free(idxsendbuf);
+        free(rdispls); free(recvcounts); free(recvranks);
         free(zperm);
         return MTX_ERR_MPI_COLLECTIVE;
     }
@@ -2076,18 +2079,14 @@ int mtxvector_dist_usscga(
     }
     if (mtxdisterror_allreduce(disterr, err)) {
         free(idxrecvbuf);
-        free(sdispls);
-        free(sendcounts);
-        free(sendranks);
-        free(idxrequests);
-        free(idxsendbuf);
-        free(rdispls);
-        free(recvcounts);
-        free(recvranks);
+        free(sdispls); free(sendcounts); free(sendranks);
+        free(idxrequests); free(idxsendbuf);
+        free(rdispls); free(recvcounts); free(recvranks);
         free(zperm);
         return MTX_ERR_MPI_COLLECTIVE;
     }
     MPI_Waitall(nsendranks, idxrequests, MPI_STATUSES_IGNORE);
+    free(idxsendbuf);
     free(idxrequests);
 
 #ifdef MTXDEBUG_MTXVECTOR_DIST_USSCGA
@@ -2095,10 +2094,9 @@ int mtxvector_dist_usscga(
         if (rank == p) {
             fprintf(stderr, "idxrecvbuf=[");
             for (int q = 0; q < nsendranks; q++) {
-                fprintf(stderr, "[");
+                if (q > 0) fprintf(stderr, " |");
                 for (int64_t i = sdispls[q]; i < sdispls[q+1]; i++)
                     fprintf(stderr, " %"PRId64, idxrecvbuf[i]);
-                fprintf(stderr, "]");
             }
             fprintf(stderr, "]\n");
         }
@@ -2107,11 +2105,8 @@ int mtxvector_dist_usscga(
     }
 #endif
 
-    free(idxsendbuf);
-
     /*
-     * Step 6: For each process to which the current process must send
-     * data, fill a buffer with the required input vector elements.
+     * Step 6: Allocate buffers to use for sending and receiving data.
      */
 
     struct mtxvector_packed sendbuf;
@@ -2120,30 +2115,119 @@ int mtxvector_dist_usscga(
         x->xp.num_nonzeros, sdispls[nsendranks], idxrecvbuf);
     if (mtxdisterror_allreduce(disterr, err)) {
         free(idxrecvbuf);
-        free(sdispls);
-        free(sendcounts);
-        free(sendranks);
-        free(rdispls);
-        free(recvcounts);
-        free(recvranks);
+        free(sdispls); free(sendcounts); free(sendranks);
+        free(rdispls); free(recvcounts); free(recvranks);
         free(zperm);
         return MTX_ERR_MPI_COLLECTIVE;
     }
     free(idxrecvbuf);
-    err = mtxvector_usga(&sendbuf, &x->xp.x);
+
+    struct mtxvector_packed recvbuf;
+    err = mtxvector_packed_alloc(
+        &recvbuf, z->xp.x.type, field, precision,
+        z->xp.num_nonzeros, rdispls[nrecvranks], NULL);
     if (mtxdisterror_allreduce(disterr, err)) {
         mtxvector_packed_free(&sendbuf);
-        free(sdispls);
-        free(sendcounts);
-        free(sendranks);
-        free(rdispls);
-        free(recvcounts);
-        free(recvranks);
+        free(sdispls); free(sendcounts); free(sendranks);
+        free(rdispls); free(recvcounts); free(recvranks);
+        free(zperm);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+    MPI_Request * req = malloc(nrecvranks * sizeof(MPI_Request));
+    err = !req ? MTX_ERR_ERRNO : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err)) {
+        mtxvector_packed_free(&recvbuf);
+        mtxvector_packed_free(&sendbuf);
+        free(sdispls); free(sendcounts); free(sendranks);
+        free(rdispls); free(recvcounts); free(recvranks);
         free(zperm);
         return MTX_ERR_MPI_COLLECTIVE;
     }
 
-#ifdef MTXDEBUG_MTXVECTOR_DIST_USSCGA
+    usscga->z = z;
+    usscga->x = x;
+    usscga->impl = malloc(sizeof(struct mtxvector_dist_usscga_impl));
+    err = !usscga->impl ? MTX_ERR_ERRNO : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err)) {
+        free(req);
+        mtxvector_packed_free(&recvbuf);
+        mtxvector_packed_free(&sendbuf);
+        free(sdispls); free(sendcounts); free(sendranks);
+        free(rdispls); free(recvcounts); free(recvranks);
+        free(zperm);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+    usscga->impl->comm = comm;
+    usscga->impl->commsize = comm_size;
+    usscga->impl->rank = rank;
+    usscga->impl->field = field;
+    usscga->impl->precision = precision;
+    usscga->impl->zperm = zperm;
+    usscga->impl->idxsrcrankstart = idxsrcrankstart;
+    usscga->impl->nrecvranks = nrecvranks;
+    usscga->impl->recvranks = recvranks;
+    usscga->impl->recvcounts = recvcounts;
+    usscga->impl->rdispls = rdispls;
+    usscga->impl->nsendranks = nsendranks;
+    usscga->impl->sendranks = sendranks;
+    usscga->impl->sendcounts = sendcounts;
+    usscga->impl->sdispls = sdispls;
+    usscga->impl->sendbuf = sendbuf;
+    usscga->impl->recvbuf = recvbuf;
+    usscga->impl->req = req;
+    return MTX_SUCCESS;
+}
+
+/**
+ * ‘mtxvector_dist_usscga_free()’ frees resources associated with a
+ * persistent, combined scatter-gather operation.
+ */
+void mtxvector_dist_usscga_free(
+    struct mtxvector_dist_usscga * usscga)
+{
+    free(usscga->impl->req);
+    mtxvector_packed_free(&usscga->impl->recvbuf);
+    mtxvector_packed_free(&usscga->impl->sendbuf);
+    free(usscga->impl->sdispls);
+    free(usscga->impl->sendcounts);
+    free(usscga->impl->sendranks);
+    free(usscga->impl->rdispls);
+    free(usscga->impl->recvcounts);
+    free(usscga->impl->recvranks);
+    free(usscga->impl->zperm);
+    free(usscga->impl);
+}
+
+/**
+ * ‘mtxvector_dist_usscga_start()’ initiates a combined scatter-gather
+ * operation from a distributed sparse vector ‘x’ in packed form into
+ * another distributed sparse vector ‘z’ in packed form. Repeated
+ * indices in the packed vector ‘x’ are not allowed, otherwise the
+ * result is undefined. They are, however, allowed in the packed
+ * vector ‘z’.
+ *
+ * The operation may not complete before
+ * ‘mtxvector_dist_usscga_wait()’ is called.
+ */
+int mtxvector_dist_usscga_start(
+    struct mtxvector_dist_usscga * usscga,
+    struct mtxdisterror * disterr)
+{
+    MPI_Comm comm = usscga->impl->comm;
+    int comm_size = usscga->impl->commsize;
+    int rank = usscga->impl->rank;
+
+    /*
+     * Step 7: For each process to which the current process must send data,
+     * fill a buffer with the required input vector elements.
+     */
+
+    struct mtxvector_packed * sendbuf = &usscga->impl->sendbuf;
+    const struct mtxvector_dist * x = usscga->x;
+    int err = mtxvector_usga(sendbuf, &x->xp.x);
+    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+
+#ifdef MTXDEBUG_MTXVECTOR_DIST_USSCGA_START
     for (int p = 0; p < comm_size; p++) {
         if (rank == p) {
             fprintf(stderr, "sendbuf=(");
@@ -2157,123 +2241,71 @@ int mtxvector_dist_usscga(
 #endif
 
     /*
-     * Step 7: Send the requested input vector elements to the
+     * Step 8a: Send the requested input vector elements to the
      * destination processes.
      */
 
-    struct mtxvector_packed recvbuf;
-    err = mtxvector_packed_alloc(
-        &recvbuf, z->xp.x.type, field, precision,
-        z->xp.num_nonzeros, rdispls[nrecvranks], NULL);
-    if (mtxdisterror_allreduce(disterr, err)) {
-        mtxvector_packed_free(&sendbuf);
-        free(sdispls);
-        free(sendcounts);
-        free(sendranks);
-        free(rdispls);
-        free(recvcounts);
-        free(recvranks);
-        free(zperm);
-        return MTX_ERR_MPI_COLLECTIVE;
-    }
-    MPI_Request * requests = malloc(nrecvranks * sizeof(MPI_Request));
-    err = !requests ? MTX_ERR_ERRNO : MTX_SUCCESS;
-    if (mtxdisterror_allreduce(disterr, err)) {
-        mtxvector_packed_free(&recvbuf);
-        mtxvector_packed_free(&sendbuf);
-        free(sdispls);
-        free(sendcounts);
-        free(sendranks);
-        free(rdispls);
-        free(recvcounts);
-        free(recvranks);
-        free(zperm);
-        return MTX_ERR_MPI_COLLECTIVE;
-    }
+    struct mtxvector_packed * recvbuf = &usscga->impl->recvbuf;
+    int nrecvranks = usscga->impl->nrecvranks;
+    const int * recvranks = usscga->impl->recvranks;
+    const int * recvcounts = usscga->impl->recvcounts;
+    const int * rdispls = usscga->impl->rdispls;
+    MPI_Request * req = usscga->impl->req;
     for (int p = 0; p < nrecvranks; p++) {
         err = mtxvector_irecv(
-            &recvbuf.x, rdispls[p], recvcounts[p], recvranks[p],
-            5, comm, &requests[p], &disterr->mpierrcode);
+            &recvbuf->x, rdispls[p], recvcounts[p], recvranks[p],
+            5, comm, &req[p], &disterr->mpierrcode);
         if (err) break;
     }
-    if (mtxdisterror_allreduce(disterr, err)) {
-        mtxvector_packed_free(&recvbuf);
-        mtxvector_packed_free(&sendbuf);
-        free(sdispls);
-        free(sendcounts);
-        free(sendranks);
-        free(rdispls);
-        free(recvcounts);
-        free(recvranks);
-        free(zperm);
-        return MTX_ERR_MPI_COLLECTIVE;
-    }
+    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+
+    int nsendranks = usscga->impl->nsendranks;
+    const int * sendranks = usscga->impl->sendranks;
+    const int * sendcounts = usscga->impl->sendcounts;
+    const int * sdispls = usscga->impl->sdispls;
     for (int p = 0; p < nsendranks; p++) {
         err = mtxvector_send(
-            &sendbuf.x, sdispls[p], sendcounts[p], sendranks[p], 5, comm,
+            &sendbuf->x, sdispls[p], sendcounts[p], sendranks[p], 5, comm,
             &disterr->mpierrcode);
         if (err) break;
     }
-    if (mtxdisterror_allreduce(disterr, err)) {
-        mtxvector_packed_free(&recvbuf);
-        mtxvector_packed_free(&sendbuf);
-        free(sdispls);
-        free(sendcounts);
-        free(sendranks);
-        free(rdispls);
-        free(recvcounts);
-        free(recvranks);
-        free(zperm);
-        return MTX_ERR_MPI_COLLECTIVE;
-    }
-    MPI_Waitall(nrecvranks, requests, MPI_STATUSES_IGNORE);
-    free(requests);
+    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+    return MTX_SUCCESS;
+}
 
-#ifdef MTXDEBUG_MTXVECTOR_DIST_USSCGA
-    for (int p = 0; p < comm_size; p++) {
-        if (rank == p) {
-            fprintf(stderr, "recvbuf=(");
-            mtxvector_fwrite(&recvbuf.x, recvbuf.size, recvbuf.idx,
-                             mtxfile_coordinate, stderr, NULL, NULL);
-            fprintf(stderr, ")\n");
-        }
-        MPI_Barrier(comm);
-        sleep(1);
-    }
-#endif
+/**
+ * ‘mtxvector_dist_usscga_wait()’ waits for a persistent, combined
+ * scatter-gather operation to finish.
+ */
+int mtxvector_dist_usscga_wait(
+    struct mtxvector_dist_usscga * usscga,
+    struct mtxdisterror * disterr)
+{
+    struct mtxvector_dist * z = usscga->z;
+    const struct mtxvector_dist * x = usscga->x;
+    const int64_t * zperm = usscga->impl->zperm;
+    const int64_t idxsrcrankstart = usscga->impl->idxsrcrankstart;
+    int nrecvranks = usscga->impl->nrecvranks;
+    MPI_Request * req = usscga->impl->req;
+    struct mtxvector_packed * recvbuf = &usscga->impl->recvbuf;
 
     /*
-     * Step 8: Scatter the received input vector elements to their
+     * Step 8b: Wait for data to be received.
+     */
+
+    MPI_Waitall(nrecvranks, req, MPI_STATUSES_IGNORE);
+
+    /*
+     * Step 9: Scatter the received input vector elements to their
      * final destinations in the output vector array.
      */
 
     for (int64_t i = 0; i < z->xp.num_nonzeros; i++) {
         if (zperm[i] >= idxsrcrankstart)
-            recvbuf.idx[zperm[i]-idxsrcrankstart] = i;
+            recvbuf->idx[zperm[i]-idxsrcrankstart] = i;
     }
-    err = mtxvector_ussc(&z->xp.x, &recvbuf);
-    if (mtxdisterror_allreduce(disterr, err)) {
-        mtxvector_packed_free(&recvbuf);
-        mtxvector_packed_free(&sendbuf);
-        free(sdispls);
-        free(sendcounts);
-        free(sendranks);
-        free(rdispls);
-        free(recvcounts);
-        free(recvranks);
-        free(zperm);
-        return MTX_ERR_MPI_COLLECTIVE;
-    }
-
-    mtxvector_packed_free(&recvbuf);
-    mtxvector_packed_free(&sendbuf);
-    free(sdispls);
-    free(sendcounts);
-    free(sendranks);
-    free(rdispls);
-    free(recvcounts);
-    free(recvranks);
-    free(zperm);
+    int err = mtxvector_ussc(&z->xp.x, recvbuf);
+    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     return MTX_SUCCESS;
 }
 #endif
