@@ -519,16 +519,49 @@ static int distgemv(
         }
     } else {
         if (verbose > 0) {
-            fprintf(diagf, "mtxvector_dist_alloc_row_vector: ");
+            fprintf(diagf, "mtxvector_dist_alloc: ");
             fflush(diagf);
             clock_gettime(CLOCK_MONOTONIC, &t0);
         }
-        err = mtxmatrix_dist_alloc_row_vector(&A, &x, vectortype, disterr);
-        if (err) {
+
+        /* partition the matrix columns into equal-sized blocks */
+        int64_t num_columns = A.num_columns;
+        int64_t colpartsize = num_columns / commsize +
+            (rank < (num_columns % commsize) ? 1 : 0);
+        int64_t colpartoffset = rank * (num_columns / commsize) +
+            (rank < (num_columns % commsize) ? rank : (num_columns % commsize));
+
+        enum mtxfield field;
+        err = mtxmatrix_dist_field(&A, &field);
+        enum mtxprecision precision;
+        err = err ? err : mtxmatrix_dist_precision(&A, &precision);
+        if (mtxdisterror_allreduce(disterr, err)) {
             if (verbose > 0) fprintf(diagf, "\n");
             mtxmatrix_dist_free(&A);
             return err;
         }
+
+        int64_t * idx = malloc(colpartsize * sizeof(int64_t));
+        err = !idx ? MTX_ERR_ERRNO : MTX_SUCCESS;
+        if (mtxdisterror_allreduce(disterr, err)) {
+            if (verbose > 0) fprintf(diagf, "\n");
+            mtxmatrix_dist_free(&A);
+            return err;
+        }
+        for (int64_t i = 0; i < colpartsize; i++)
+            idx[i] = colpartoffset+i;
+
+        err = mtxvector_dist_alloc(
+            &x, vectortype, field, precision, num_columns,
+            colpartsize, idx, comm, disterr);
+        if (err) {
+            if (verbose > 0) fprintf(diagf, "\n");
+            free(idx);
+            mtxmatrix_dist_free(&A);
+            return err;
+        }
+        free(idx);
+
         err = mtxvector_dist_set_constant_real_single(&x, 1.0f, disterr);
         if (err) {
             if (verbose > 0) fprintf(diagf, "\n");
@@ -820,14 +853,14 @@ int main(int argc, char *argv[])
         clock_gettime(CLOCK_MONOTONIC, &t0);
     }
 
-    /* partition the rows into equal-sized blocks */
-    int64_t partsize = 0;
+    /* partition the matrix rows into equal-sized blocks */
+    int64_t rowpartsize = 0;
     if (args.partition == mtx_block) {
         if (rank == root) {
-            partsize = mtxfileA.size.num_rows / comm_size +
+            rowpartsize = mtxfileA.size.num_rows / comm_size +
                 (rank < (mtxfileA.size.num_rows % comm_size) ? 1 : 0);
         }
-        disterr.mpierrcode = MPI_Bcast(&partsize, 1, MPI_INT64_T, root, comm);
+        disterr.mpierrcode = MPI_Bcast(&rowpartsize, 1, MPI_INT64_T, root, comm);
         err = disterr.mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
         if (mtxdisterror_allreduce(&disterr, err)) {
             if (args.verbose > 0) fprintf(diagf, "\n");
@@ -845,7 +878,7 @@ int main(int argc, char *argv[])
 
     struct mtxdistfile2 mtxdistfile2A;
     err = mtxdistfile2_from_mtxfile_rowwise(
-        &mtxdistfile2A, &mtxfileA, args.partition, partsize, args.blksize,
+        &mtxdistfile2A, &mtxfileA, args.partition, rowpartsize, args.blksize,
         comm, root, &disterr);
     if (err) {
         if (args.verbose > 0) fprintf(diagf, "\n");
