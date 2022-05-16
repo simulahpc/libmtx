@@ -227,6 +227,8 @@ const char * mtxstrerror(
         return "incompatible MPI communicator";
     case MTX_ERR_SCATTER_CONFLICT:
         return "scatter conflict (one or more duplicate entries)";
+    case MTX_ERR_INVALID_GEMVOVERLAP:
+        return "invalid overlap type for matrix-vector multiply";
     default:
         return "unknown error";
     }

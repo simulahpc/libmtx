@@ -97,7 +97,10 @@ enum mtxerror
     MTX_ERR_INVALID_PROCESS_GRID,     /* invalid process grid */
     MTX_ERR_INVALID_MPI_COMM,         /* invalid MPI communicator */
     MTX_ERR_INCOMPATIBLE_MPI_COMM,    /* incompatible MPI communicator */
-    MTX_ERR_SCATTER_CONFLICT,         /* scatter conflict  (one or more duplicate entries) */
+    MTX_ERR_SCATTER_CONFLICT,         /* scatter conflict  (one or
+                                       * more duplicate entries) */
+    MTX_ERR_INVALID_GEMVOVERLAP,      /* invalid overlap type for
+                                       * matrix-vector multiply */
 };
 
 /**

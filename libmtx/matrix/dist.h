@@ -1305,5 +1305,146 @@ int mtxmatrix_dist_zgemv(
     struct mtxvector_dist * y,
     int64_t * num_flops,
     struct mtxdisterror * disterr);
+
+/*
+ * persistent matrix-vector multiply operations, with optional
+ * overlapping of computation and communication
+ */
+
+/**
+ * ‘mtxgemvoverlap’ is used to enumerate different methods for
+ * overlapping computation with communication matrix formats.
+ */
+enum mtxgemvoverlap
+{
+    mtxgemvoverlap_none,   /* no overlap */
+};
+
+struct mtxmatrix_dist_gemv_impl;
+
+/**
+ * ‘mtxmatrix_dist_gemv’ is a data structure for a persistent,
+ * matrix-vector multiply operation.
+ */
+struct mtxmatrix_dist_gemv
+{
+    enum mtxtransposition trans;
+    const struct mtxmatrix_dist * A;
+    const struct mtxvector_dist * x;
+    struct mtxvector_dist * y;
+    enum mtxgemvoverlap overlap;
+    struct mtxmatrix_dist_gemv_impl * impl;
+};
+
+/**
+ * ‘mtxmatrix_dist_gemv_init()’ allocates data structures for a
+ * persistent, matrix-vector multiply operation.
+ *
+ * This is used in cases where the matrix-vector multiply operation is
+ * performed repeatedly, since the setup phase only needs to be
+ * carried out once.
+ */
+int mtxmatrix_dist_gemv_init(
+    struct mtxmatrix_dist_gemv * gemv,
+    enum mtxtransposition trans,
+    const struct mtxmatrix_dist * A,
+    const struct mtxvector_dist * x,
+    struct mtxvector_dist * y,
+    enum mtxgemvoverlap overlap,
+    struct mtxdisterror * disterr);
+
+/**
+ * ‘mtxmatrix_dist_gemv_free()’ frees resources associated with a
+ * persistent, matrix-vector multiply operation.
+ */
+void mtxmatrix_dist_gemv_free(
+    struct mtxmatrix_dist_gemv * gemv);
+
+/**
+ * ‘mtxmatrix_dist_gemv_sgemv()’ initiates a matrix-vector multiply
+ * operation to multiply a matrix ‘A’ or its transpose ‘A'’ by a real
+ * scalar ‘alpha’ (‘α’) and a vector ‘x’, before adding the result to
+ * another vector ‘y’ multiplied by another real scalar ‘beta’
+ * (‘β’). That is, ‘y = α*A*x + β*y’ or ‘y = α*A'*x + β*y’.
+ *
+ * The scalars ‘alpha’ and ‘beta’ are given as single precision
+ * floating point numbers.
+ *
+ * The operation may not complete before ‘mtxmatrix_dist_gemv_wait()’
+ * is called.
+ */
+int mtxmatrix_dist_gemv_sgemv(
+    struct mtxmatrix_dist_gemv * gemv,
+    float alpha,
+    float beta,
+    struct mtxdisterror * disterr);
+
+/**
+ * ‘mtxmatrix_dist_gemv_dgemv()’ initiates a matrix-vector multiply
+ * operation to multiply a matrix ‘A’ or its transpose ‘A'’ by a real
+ * scalar ‘alpha’ (‘α’) and a vector ‘x’, before adding the result to
+ * another vector ‘y’ multiplied by another real scalar ‘beta’
+ * (‘β’). That is, ‘y = α*A*x + β*y’ or ‘y = α*A'*x + β*y’.
+ *
+ * The scalars ‘alpha’ and ‘beta’ are given as double precision
+ * floating point numbers.
+ *
+ * The operation may not complete before ‘mtxmatrix_dist_gemv_wait()’
+ * is called.
+ */
+int mtxmatrix_dist_gemv_dgemv(
+    struct mtxmatrix_dist_gemv * gemv,
+    double alpha,
+    double beta,
+    struct mtxdisterror * disterr);
+
+/**
+ * ‘mtxmatrix_dist_gemv_cgemv()’ initiates a matrix-vector multiply
+ * operation to multiply a complex-values matrix ‘A’, its transpose
+ * ‘A'’ or its conjugate transpose ‘Aᴴ’ by a complex scalar ‘alpha’
+ * (‘α’) and a vector ‘x’, before adding the result to another vector
+ * ‘y’ multiplied by another complex ‘beta’ (‘β’). That is, ‘y = α*A*x
+ * + β*y’, ‘y = α*A'*x + β*y’ or ‘y = α*Aᴴ*x + β*y’.
+ *
+ * The scalars ‘alpha’ and ‘beta’ are given as single precision
+ * floating point numbers.
+ *
+ * The operation may not complete before ‘mtxmatrix_dist_gemv_wait()’
+ * is called.
+ */
+int mtxmatrix_dist_gemv_cgemv(
+    struct mtxmatrix_dist_gemv * gemv,
+    float alpha[2],
+    float beta[2],
+    struct mtxdisterror * disterr);
+
+/**
+ * ‘mtxmatrix_dist_gemv_zgemv()’ initiates a matrix-vector multiply
+ * operation to multiply a complex-values matrix ‘A’, its transpose
+ * ‘A'’ or its conjugate transpose ‘Aᴴ’ by a complex scalar ‘alpha’
+ * (‘α’) and a vector ‘x’, before adding the result to another vector
+ * ‘y’ multiplied by another complex ‘beta’ (‘β’). That is, ‘y = α*A*x
+ * + β*y’, ‘y = α*A'*x + β*y’ or ‘y = α*Aᴴ*x + β*y’.
+ *
+ * The scalars ‘alpha’ and ‘beta’ are given as double precision
+ * floating point numbers.
+ *
+ * The operation may not complete before ‘mtxmatrix_dist_gemv_wait()’
+ * is called.
+ */
+int mtxmatrix_dist_gemv_zgemv(
+    struct mtxmatrix_dist_gemv * gemv,
+    double alpha[2],
+    double beta[2],
+    struct mtxdisterror * disterr);
+
+/**
+ * ‘mtxmatrix_dist_gemv_wait()’ waits for a persistent, matrix-vector
+ * multiply operation to finish.
+ */
+int mtxmatrix_dist_gemv_wait(
+    struct mtxmatrix_dist_gemv * gemv,
+    int64_t * num_flops,
+    struct mtxdisterror * disterr);
 #endif
 #endif

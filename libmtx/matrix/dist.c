@@ -2340,58 +2340,15 @@ int mtxmatrix_dist_sgemv(
     int64_t * num_flops,
     struct mtxdisterror * disterr)
 {
-    int err;
-    struct mtxvector_dist z;
-    if (trans == mtx_notrans) {
-        err = mtxmatrix_dist_alloc_row_vector(A, &z, x->xp.x.type, disterr);
-        if (err) return err;
-    } else if (trans == mtx_trans) {
-        err = mtxmatrix_dist_alloc_column_vector(A, &z, x->xp.x.type, disterr);
-        if (err) return err;
-    } else { return MTX_ERR_INVALID_TRANSPOSITION; }
-
-    struct mtxvector_dist w;
-    if (trans == mtx_notrans) {
-        err = mtxmatrix_dist_alloc_column_vector(A, &w, y->xp.x.type, disterr);
-        if (err) { mtxvector_dist_free(&z); return err; }
-    } else if (trans == mtx_trans) {
-        err = mtxmatrix_dist_alloc_row_vector(A, &w, y->xp.x.type, disterr);
-        if (err) { mtxvector_dist_free(&z); return err; }
-    } else { mtxvector_dist_free(&z); return MTX_ERR_INVALID_TRANSPOSITION; }
-
-    err = mtxvector_dist_usscga(&z, x, disterr);
-    if (err) { mtxvector_dist_free(&w); mtxvector_dist_free(&z); return err; }
-    err = mtxvector_dist_setzero(&w, disterr);
-    if (err) { mtxvector_dist_free(&w); mtxvector_dist_free(&z); return err; }
-    err = mtxmatrix_sgemv(
-        trans, alpha, &A->xp, &z.xp.x, 1.0f, &w.xp.x, num_flops);
-    if (mtxdisterror_allreduce(disterr, err)) {
-        mtxvector_dist_free(&w);
-        mtxvector_dist_free(&z);
-        return MTX_ERR_MPI_COLLECTIVE;
-    }
-
-    if (trans == mtx_notrans) {
-        err = mtxvector_saypx(beta, &y->xp.x, &w.xp.x, num_flops);
-        if (mtxdisterror_allreduce(disterr, err)) {
-            mtxvector_dist_free(&w);
-            mtxvector_dist_free(&z);
-            return MTX_ERR_MPI_COLLECTIVE;
-        }
-    } else if (trans == mtx_trans) {
-        err = mtxvector_saypx(beta, &y->xp.x, &w.xp.x, num_flops);
-        if (mtxdisterror_allreduce(disterr, err)) {
-            mtxvector_dist_free(&w);
-            mtxvector_dist_free(&z);
-            return MTX_ERR_MPI_COLLECTIVE;
-        }
-    } else {
-        mtxvector_dist_free(&w);
-        mtxvector_dist_free(&z);
-        return MTX_ERR_INVALID_TRANSPOSITION;
-    }
-    mtxvector_dist_free(&w);
-    mtxvector_dist_free(&z);
+    struct mtxmatrix_dist_gemv gemv;
+    enum mtxgemvoverlap overlap = mtxgemvoverlap_none;
+    int err = mtxmatrix_dist_gemv_init(&gemv, trans, A, x, y, overlap, disterr);
+    if (err) { return err; }
+    err = mtxmatrix_dist_gemv_sgemv(&gemv, alpha, beta, disterr);
+    if (err) { mtxmatrix_dist_gemv_free(&gemv); return err; }
+    err = mtxmatrix_dist_gemv_wait(&gemv, num_flops, disterr);
+    if (err) { mtxmatrix_dist_gemv_free(&gemv); return err; }
+    mtxmatrix_dist_gemv_free(&gemv);
     return MTX_SUCCESS;
 }
 
@@ -2414,6 +2371,15 @@ int mtxmatrix_dist_dgemv(
     int64_t * num_flops,
     struct mtxdisterror * disterr)
 {
+    struct mtxmatrix_dist_gemv gemv;
+    enum mtxgemvoverlap overlap = mtxgemvoverlap_none;
+    int err = mtxmatrix_dist_gemv_init(&gemv, trans, A, x, y, overlap, disterr);
+    if (err) { return err; }
+    err = mtxmatrix_dist_gemv_dgemv(&gemv, alpha, beta, disterr);
+    if (err) { mtxmatrix_dist_gemv_free(&gemv); return err; }
+    err = mtxmatrix_dist_gemv_wait(&gemv, num_flops, disterr);
+    if (err) { mtxmatrix_dist_gemv_free(&gemv); return err; }
+    mtxmatrix_dist_gemv_free(&gemv);
     return MTX_SUCCESS;
 }
 
@@ -2458,4 +2424,263 @@ int mtxmatrix_dist_zgemv(
     struct mtxvector_dist * y,
     int64_t * num_flops,
     struct mtxdisterror * disterr);
+
+/*
+ * persistent matrix-vector multiply operations, with optional
+ * overlapping of computation and communication
+ */
+
+/**
+ * ‘mtxmatrix_dist_gemv_impl’ is an internal data structure for
+ * persistent, matrix-vector multiply operations.
+ */
+struct mtxmatrix_dist_gemv_impl
+{
+    struct mtxvector_dist z;
+    struct mtxvector_dist w;
+    int64_t num_flops;
+    struct mtxvector_dist_usscga usscga;
+};
+
+/**
+ * ‘mtxmatrix_dist_gemv_init()’ allocates data structures for a
+ * persistent, matrix-vector multiply operation.
+ *
+ * This is used in cases where the matrix-vector multiply operation is
+ * performed repeatedly, since the setup phase only needs to be
+ * carried out once.
+ */
+int mtxmatrix_dist_gemv_init(
+    struct mtxmatrix_dist_gemv * gemv,
+    enum mtxtransposition trans,
+    const struct mtxmatrix_dist * A,
+    const struct mtxvector_dist * x,
+    struct mtxvector_dist * y,
+    enum mtxgemvoverlap overlap,
+    struct mtxdisterror * disterr)
+{
+    gemv->trans = trans;
+    gemv->A = A;
+    gemv->x = x;
+    gemv->y = y;
+    gemv->overlap = overlap;
+    gemv->impl = malloc(sizeof(struct mtxmatrix_dist_gemv_impl));
+    int err = !gemv->impl ? MTX_ERR_ERRNO : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+    struct mtxmatrix_dist_gemv_impl * impl = gemv->impl;
+
+    if (trans == mtx_notrans) {
+        err = mtxmatrix_dist_alloc_row_vector(
+            A, &impl->z, x->xp.x.type, disterr);
+    } else if (trans == mtx_trans) {
+        err = mtxmatrix_dist_alloc_column_vector(
+            A, &impl->z, x->xp.x.type, disterr);
+    } else {
+        free(gemv->impl);
+        return MTX_ERR_INVALID_TRANSPOSITION;
+    }
+    if (err) {
+        free(gemv->impl);
+        return err;
+    }
+
+    if (trans == mtx_notrans) {
+        err = mtxmatrix_dist_alloc_column_vector(
+            A, &impl->w, y->xp.x.type, disterr);
+    } else if (trans == mtx_trans) {
+        err = mtxmatrix_dist_alloc_row_vector(
+            A, &impl->w, y->xp.x.type, disterr);
+    } else {
+        mtxvector_dist_free(&impl->z);
+        free(impl);
+        return MTX_ERR_INVALID_TRANSPOSITION;
+    }
+    if (err) {
+        mtxvector_dist_free(&impl->z);
+        free(impl);
+        return err;
+    }
+
+    impl->num_flops = 0;
+    err = mtxvector_dist_usscga_init(
+        &gemv->impl->usscga, &gemv->impl->z, x, disterr);
+    if (err) {
+        mtxvector_dist_free(&impl->w);
+        mtxvector_dist_free(&impl->z);
+        free(impl);
+        return err;
+    }
+    return MTX_SUCCESS;
+}
+
+/**
+ * ‘mtxmatrix_dist_gemv_free()’ frees resources associated with a
+ * persistent, matrix-vector multiply operation.
+ */
+void mtxmatrix_dist_gemv_free(
+    struct mtxmatrix_dist_gemv * gemv)
+{
+    mtxvector_dist_usscga_free(&gemv->impl->usscga);
+    mtxvector_dist_free(&gemv->impl->w);
+    mtxvector_dist_free(&gemv->impl->z);
+    free(gemv->impl);
+}
+
+/**
+ * ‘mtxmatrix_dist_gemv_sgemv()’ initiates a matrix-vector multiply
+ * operation to multiply a matrix ‘A’ or its transpose ‘A'’ by a real
+ * scalar ‘alpha’ (‘α’) and a vector ‘x’, before adding the result to
+ * another vector ‘y’ multiplied by another real scalar ‘beta’
+ * (‘β’). That is, ‘y = α*A*x + β*y’ or ‘y = α*A'*x + β*y’.
+ *
+ * The scalars ‘alpha’ and ‘beta’ are given as single precision
+ * floating point numbers.
+ *
+ * The operation may not complete before ‘mtxmatrix_dist_gemv_wait()’
+ * is called.
+ */
+int mtxmatrix_dist_gemv_sgemv(
+    struct mtxmatrix_dist_gemv * gemv,
+    float alpha,
+    float beta,
+    struct mtxdisterror * disterr)
+{
+    struct mtxmatrix_dist_gemv_impl * impl = gemv->impl;
+    int err = mtxvector_dist_usscga_start(&impl->usscga, disterr);
+    if (err) return err;
+    if (gemv->overlap == mtxgemvoverlap_none) {
+        mtxvector_dist_usscga_wait(&impl->usscga, disterr);
+        if (err) return err;
+        err = mtxvector_dist_setzero(&impl->w, disterr);
+        if (err) return err;
+        err = mtxmatrix_sgemv(
+            gemv->trans, alpha, &gemv->A->xp,
+            &impl->z.xp.x, 1.0f, &impl->w.xp.x, &impl->num_flops);
+        if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+        if (gemv->trans == mtx_notrans) {
+            err = mtxvector_saypx(
+                beta, &gemv->y->xp.x, &impl->w.xp.x, &impl->num_flops);
+            if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+        } else if (gemv->trans == mtx_trans) {
+            err = mtxvector_saypx(
+                beta, &gemv->y->xp.x, &impl->w.xp.x, &impl->num_flops);
+            if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+        } else { return MTX_ERR_INVALID_TRANSPOSITION; }
+    } else {
+        /* TODO: allow overlapping computation with communication */
+        return MTX_ERR_INVALID_GEMVOVERLAP;
+    }
+    return MTX_SUCCESS;
+}
+
+/**
+ * ‘mtxmatrix_dist_gemv_dgemv()’ initiates a matrix-vector multiply
+ * operation to multiply a matrix ‘A’ or its transpose ‘A'’ by a real
+ * scalar ‘alpha’ (‘α’) and a vector ‘x’, before adding the result to
+ * another vector ‘y’ multiplied by another real scalar ‘beta’
+ * (‘β’). That is, ‘y = α*A*x + β*y’ or ‘y = α*A'*x + β*y’.
+ *
+ * The scalars ‘alpha’ and ‘beta’ are given as double precision
+ * floating point numbers.
+ *
+ * The operation may not complete before ‘mtxmatrix_dist_gemv_wait()’
+ * is called.
+ */
+int mtxmatrix_dist_gemv_dgemv(
+    struct mtxmatrix_dist_gemv * gemv,
+    double alpha,
+    double beta,
+    struct mtxdisterror * disterr)
+{
+    struct mtxmatrix_dist_gemv_impl * impl = gemv->impl;
+    int err = mtxvector_dist_usscga_start(&impl->usscga, disterr);
+    if (err) return err;
+
+    if (gemv->overlap == mtxgemvoverlap_none) {
+        mtxvector_dist_usscga_wait(&impl->usscga, disterr);
+        if (err) return err;
+        err = mtxvector_dist_setzero(&impl->w, disterr);
+        if (err) return err;
+        err = mtxmatrix_dgemv(
+            gemv->trans, alpha, &gemv->A->xp,
+            &impl->z.xp.x, 1.0, &impl->w.xp.x, &impl->num_flops);
+        if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+        if (gemv->trans == mtx_notrans) {
+            err = mtxvector_daypx(
+                beta, &gemv->y->xp.x, &impl->w.xp.x, &impl->num_flops);
+            if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+        } else if (gemv->trans == mtx_trans) {
+            err = mtxvector_daypx(
+                beta, &gemv->y->xp.x, &impl->w.xp.x, &impl->num_flops);
+            if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+        } else { return MTX_ERR_INVALID_TRANSPOSITION; }
+    } else {
+        /* TODO: allow overlapping computation with communication */
+        return MTX_ERR_INVALID_GEMVOVERLAP;
+    }
+    return MTX_SUCCESS;
+}
+
+/**
+ * ‘mtxmatrix_dist_gemv_cgemv()’ initiates a matrix-vector multiply
+ * operation to multiply a complex-values matrix ‘A’, its transpose
+ * ‘A'’ or its conjugate transpose ‘Aᴴ’ by a complex scalar ‘alpha’
+ * (‘α’) and a vector ‘x’, before adding the result to another vector
+ * ‘y’ multiplied by another complex ‘beta’ (‘β’). That is, ‘y = α*A*x
+ * + β*y’, ‘y = α*A'*x + β*y’ or ‘y = α*Aᴴ*x + β*y’.
+ *
+ * The scalars ‘alpha’ and ‘beta’ are given as single precision
+ * floating point numbers.
+ *
+ * The operation may not complete before ‘mtxmatrix_dist_gemv_wait()’
+ * is called.
+ */
+int mtxmatrix_dist_gemv_cgemv(
+    struct mtxmatrix_dist_gemv * gemv,
+    float alpha[2],
+    float beta[2],
+    struct mtxdisterror * disterr);
+
+/**
+ * ‘mtxmatrix_dist_gemv_zgemv()’ initiates a matrix-vector multiply
+ * operation to multiply a complex-values matrix ‘A’, its transpose
+ * ‘A'’ or its conjugate transpose ‘Aᴴ’ by a complex scalar ‘alpha’
+ * (‘α’) and a vector ‘x’, before adding the result to another vector
+ * ‘y’ multiplied by another complex ‘beta’ (‘β’). That is, ‘y = α*A*x
+ * + β*y’, ‘y = α*A'*x + β*y’ or ‘y = α*Aᴴ*x + β*y’.
+ *
+ * The scalars ‘alpha’ and ‘beta’ are given as double precision
+ * floating point numbers.
+ *
+ * The operation may not complete before ‘mtxmatrix_dist_gemv_wait()’
+ * is called.
+ */
+int mtxmatrix_dist_gemv_zgemv(
+    struct mtxmatrix_dist_gemv * gemv,
+    double alpha[2],
+    double beta[2],
+    struct mtxdisterror * disterr);
+
+/**
+ * ‘mtxmatrix_dist_gemv_wait()’ waits for a persistent, matrix-vector
+ * multiply operation to finish.
+ */
+int mtxmatrix_dist_gemv_wait(
+    struct mtxmatrix_dist_gemv * gemv,
+    int64_t * num_flops,
+    struct mtxdisterror * disterr)
+{
+    if (gemv->overlap == mtxgemvoverlap_none) {
+        if (num_flops) *num_flops += gemv->impl->num_flops;
+        gemv->impl->num_flops = 0;
+        return MTX_SUCCESS;
+    } else {
+        /* TODO: allow overlapping computation with communication */
+
+        /* int err = mtxvector_dist_usscga_wait(&gemv->impl->usscga, disterr); */
+        /* if (err) return err; */
+
+        return MTX_ERR_INVALID_GEMVOVERLAP;
+    }
+}
 #endif
