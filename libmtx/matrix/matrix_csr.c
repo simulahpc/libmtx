@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-05-05
+ * Last modified: 2022-05-18
  *
  * Data structures for matrices in coordinate format.
  */
@@ -67,9 +67,9 @@ int mtxmatrix_csr_alloc_copy(
     struct mtxmatrix_csr * dst,
     const struct mtxmatrix_csr * src)
 {
-    /* return mtxmatrix_csr_alloc_rows( */
-    /*     dst, src->a.field, src->a.precision, src->symmetry, */
-    /*     src->num_rows, src->num_columns, src->rowptr, src->colidx); */
+    return mtxmatrix_csr_alloc_rows(
+        dst, src->a.field, src->a.precision, src->symmetry,
+        src->num_rows, src->num_columns, src->rowptr, src->colidx);
 }
 
 /**
@@ -565,7 +565,67 @@ int mtxmatrix_csr_alloc_rows(
     int num_rows,
     int num_columns,
     const int64_t * rowptr,
-    const int * colidx);
+    const int * colidx)
+{
+    A->symmetry = symmetry;
+    A->num_rows = num_rows;
+    A->num_columns = num_columns;
+    if (__builtin_mul_overflow(num_rows, num_columns, &A->num_entries)) {
+        errno = EOVERFLOW; return MTX_ERR_ERRNO;
+    }
+    A->num_nonzeros = 0;
+    A->size = rowptr[num_rows];
+
+    /* copy row pointers and column indices */
+    A->rowptr = malloc((num_rows+1) * sizeof(int64_t));
+    if (!A->rowptr) return MTX_ERR_ERRNO;
+    for (int i = 0; i <= num_rows; i++) A->rowptr[i] = rowptr[i];
+    A->colidx = malloc(A->size * sizeof(int));
+    if (!A->colidx) { free(A->rowptr); return MTX_ERR_ERRNO; }
+    for (int64_t k = 0; k < A->size; k++) A->colidx[k] = colidx[k];
+    int err = mtxvector_base_alloc(&A->a, field, precision, A->size);
+    if (err) { free(A->colidx); free(A->rowptr); return err; }
+
+    /* extract diagonals for symmetric and Hermitian matrices */
+    if (num_rows == num_columns &&
+        (symmetry == mtx_symmetric ||
+         symmetry == mtx_skew_symmetric ||
+         symmetry == mtx_hermitian))
+    {
+        int64_t num_diagonals = 0;
+        for (int i = 0; i < num_rows; i++) {
+            for (int64_t k = A->rowptr[i]; k < A->rowptr[i+1]; k++) {
+                if (i == A->colidx[k]) num_diagonals++;
+            }
+        }
+        A->num_nonzeros = 2*A->size-num_diagonals;
+        err = mtxvector_packed_alloc(
+            &A->diag, mtxvector_base, field, precision,
+            A->size, num_diagonals, NULL);
+        if (err) {
+            mtxvector_base_free(&A->a);
+            free(A->colidx); free(A->rowptr);
+            return err;
+        }
+        int64_t * diagidx = A->diag.idx;
+        num_diagonals = 0;
+        for (int i = 0; i < num_rows; i++) {
+            for (int64_t k = A->rowptr[i]; k < A->rowptr[i+1]; k++) {
+                if (i == A->colidx[k]) diagidx[num_diagonals++] = k;
+            }
+        }
+    } else if (symmetry == mtx_unsymmetric) {
+        A->num_nonzeros = A->size;
+        err = mtxvector_packed_alloc(
+            &A->diag, mtxvector_base, field, precision, A->size, 0, NULL);
+        if (err) {
+            mtxvector_base_free(&A->a);
+            free(A->colidx); free(A->rowptr);
+            return err;
+        }
+    } else { return MTX_ERR_INVALID_SYMMETRY; }
+    return MTX_SUCCESS;
+}
 
 /**
  * ‘mtxmatrix_csr_init_rows_real_single()’ allocates and initialises a
@@ -579,7 +639,16 @@ int mtxmatrix_csr_init_rows_real_single(
     int num_columns,
     const int64_t * rowptr,
     const int * colidx,
-    const float * data);
+    const float * data)
+{
+    int err = mtxmatrix_csr_alloc_rows(
+        A, mtx_field_real, mtx_single, symmetry,
+	num_rows, num_columns, rowptr, colidx);
+    if (err) return err;
+    err = mtxvector_base_init_real_single(&A->a, rowptr[num_rows], data);
+    if (err) { mtxmatrix_csr_free(A); return err; }
+    return MTX_SUCCESS;
+}
 
 /**
  * ‘mtxmatrix_csr_init_rows_real_double()’ allocates and initialises a
@@ -593,7 +662,16 @@ int mtxmatrix_csr_init_rows_real_double(
     int num_columns,
     const int64_t * rowptr,
     const int * colidx,
-    const double * data);
+    const double * data)
+{
+    int err = mtxmatrix_csr_alloc_rows(
+        A, mtx_field_real, mtx_double, symmetry,
+	num_rows, num_columns, rowptr, colidx);
+    if (err) return err;
+    err = mtxvector_base_init_real_double(&A->a, rowptr[num_rows], data);
+    if (err) { mtxmatrix_csr_free(A); return err; }
+    return MTX_SUCCESS;
+}
 
 /**
  * ‘mtxmatrix_csr_init_rows_complex_single()’ allocates and
@@ -607,7 +685,16 @@ int mtxmatrix_csr_init_rows_complex_single(
     int num_columns,
     const int64_t * rowptr,
     const int * colidx,
-    const float (* data)[2]);
+    const float (* data)[2])
+{
+    int err = mtxmatrix_csr_alloc_rows(
+        A, mtx_field_complex, mtx_single, symmetry,
+	num_rows, num_columns, rowptr, colidx);
+    if (err) return err;
+    err = mtxvector_base_init_complex_single(&A->a, rowptr[num_rows], data);
+    if (err) { mtxmatrix_csr_free(A); return err; }
+    return MTX_SUCCESS;
+}
 
 /**
  * ‘mtxmatrix_csr_init_rows_complex_double()’ allocates and
@@ -621,7 +708,16 @@ int mtxmatrix_csr_init_rows_complex_double(
     int num_columns,
     const int64_t * rowptr,
     const int * colidx,
-    const double (* data)[2]);
+    const double (* data)[2])
+{
+    int err = mtxmatrix_csr_alloc_rows(
+        A, mtx_field_complex, mtx_double, symmetry,
+	num_rows, num_columns, rowptr, colidx);
+    if (err) return err;
+    err = mtxvector_base_init_complex_double(&A->a, rowptr[num_rows], data);
+    if (err) { mtxmatrix_csr_free(A); return err; }
+    return MTX_SUCCESS;
+}
 
 /**
  * ‘mtxmatrix_csr_init_rows_integer_single()’ allocates and
@@ -635,7 +731,16 @@ int mtxmatrix_csr_init_rows_integer_single(
     int num_columns,
     const int64_t * rowptr,
     const int * colidx,
-    const int32_t * data);
+    const int32_t * data)
+{
+    int err = mtxmatrix_csr_alloc_rows(
+        A, mtx_field_integer, mtx_single, symmetry,
+	num_rows, num_columns, rowptr, colidx);
+    if (err) return err;
+    err = mtxvector_base_init_integer_single(&A->a, rowptr[num_rows], data);
+    if (err) { mtxmatrix_csr_free(A); return err; }
+    return MTX_SUCCESS;
+}
 
 /**
  * ‘mtxmatrix_csr_init_rows_integer_double()’ allocates and
@@ -649,7 +754,16 @@ int mtxmatrix_csr_init_rows_integer_double(
     int num_columns,
     const int64_t * rowptr,
     const int * colidx,
-    const int64_t * data);
+    const int64_t * data)
+{
+    int err = mtxmatrix_csr_alloc_rows(
+        A, mtx_field_integer, mtx_double, symmetry,
+	num_rows, num_columns, rowptr, colidx);
+    if (err) return err;
+    err = mtxvector_base_init_integer_double(&A->a, rowptr[num_rows], data);
+    if (err) { mtxmatrix_csr_free(A); return err; }
+    return MTX_SUCCESS;
+}
 
 /**
  * ‘mtxmatrix_csr_init_rows_pattern()’ allocates and initialises a
@@ -662,7 +776,16 @@ int mtxmatrix_csr_init_rows_pattern(
     int num_rows,
     int num_columns,
     const int64_t * rowptr,
-    const int * colidx);
+    const int * colidx)
+{
+    int err = mtxmatrix_csr_alloc_rows(
+        A, mtx_field_pattern, mtx_single, symmetry,
+	num_rows, num_columns, rowptr, colidx);
+    if (err) return err;
+    err = mtxvector_base_init_pattern(&A->a, rowptr[num_rows]);
+    if (err) { mtxmatrix_csr_free(A); return err; }
+    return MTX_SUCCESS;
+}
 
 /*
  * initialise matrices from column-wise data in compressed column
