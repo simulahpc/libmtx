@@ -16,7 +16,7 @@
 # along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
 #
 # Authors: James D. Trotter <james@simula.no>
-# Last modified: 2022-05-02
+# Last modified: 2022-05-19
 #
 # Makefile for the top-level directory of Libmtx.
 #
@@ -214,85 +214,88 @@ nobase_nodist_include_HEADERS = \
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = libmtx/libmtx-$(LIBMTX_MAJOR_VERSION).pc
 
+#
 # Matrix Market utility programs
-bin_PROGRAMS = \
-	mtxaxpy \
-	mtxcg \
-	mtxdot \
-	mtxgemv \
-	mtxinfo \
-	mtxnrm2 \
-	mtxpartition \
-	mtxreorder \
-	mtxscal \
-	mtxsort \
-	mtxtranspose
-if HAVE_LIBPNG
-bin_PROGRAMS += \
-	mtxspy
-endif
+#
+bin_PROGRAMS =
 
 # mtxaxpy
+bin_PROGRAMS += mtxaxpy
 mtxaxpy_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/src $(MPICPPFLAGS)
 mtxaxpy_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
 mtxaxpy_SOURCES = src/mtxaxpy.c
 
 # mtxcg
+bin_PROGRAMS += mtxcg
 mtxcg_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/src $(MPICPPFLAGS)
 mtxcg_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
 mtxcg_SOURCES = src/mtxcg.c
 
 # mtxdot
+bin_PROGRAMS += mtxdot
 mtxdot_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/src $(MPICPPFLAGS)
 mtxdot_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
 mtxdot_SOURCES = src/mtxdot.c
 
 # mtxgemv
+bin_PROGRAMS += mtxgemv
 mtxgemv_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/src $(MPICPPFLAGS)
 mtxgemv_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
 mtxgemv_SOURCES = src/mtxgemv.c
 
 # mtxinfo
+bin_PROGRAMS += mtxinfo
 mtxinfo_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/src $(MPICPPFLAGS)
 mtxinfo_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
 mtxinfo_SOURCES = src/mtxinfo.c
 
 # mtxnrm2
+bin_PROGRAMS += mtxnrm2
 mtxnrm2_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/src $(MPICPPFLAGS)
 mtxnrm2_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
 mtxnrm2_SOURCES = src/mtxnrm2.c
 
 # mtxpartition
+bin_PROGRAMS += mtxpartition
 mtxpartition_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/src $(MPICPPFLAGS)
 mtxpartition_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
 mtxpartition_SOURCES = src/mtxpartition.c
 
 # mtxreorder
+bin_PROGRAMS += mtxreorder
 mtxreorder_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/src $(MPICPPFLAGS)
 mtxreorder_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
 mtxreorder_SOURCES = src/mtxreorder.c
 
 # mtxscal
+bin_PROGRAMS += mtxscal
 mtxscal_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/src $(MPICPPFLAGS)
 mtxscal_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
 mtxscal_SOURCES = src/mtxscal.c
 
 # mtxsort
+bin_PROGRAMS += mtxsort
 mtxsort_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/src $(MPICPPFLAGS)
 mtxsort_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
 mtxsort_SOURCES = src/mtxsort.c
 
 # mtxtranspose
+bin_PROGRAMS += mtxtranspose
 mtxtranspose_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/src $(MPICPPFLAGS)
 mtxtranspose_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
 mtxtranspose_SOURCES = src/mtxtranspose.c
 
 # mtxspy
+if HAVE_LIBPNG
+bin_PROGRAMS += mtxspy
 mtxspy_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/src $(MPICPPFLAGS) $(LIBPNG_CPPFLAGS)
 mtxspy_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS) $(LIBPNG_LIBS)
 mtxspy_SOURCES = src/mtxspy.c
+endif
 
+#
 # Unit tests
+#
 check_PROGRAMS = \
 	tests/test_index_set \
 	tests/test_format \
