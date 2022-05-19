@@ -37,7 +37,6 @@
 #include <libmtx/mtx/assembly.h>
 #include <libmtx/mtx/header.h>
 #include <libmtx/mtx/io.h>
-#include <libmtx/mtx/mpi.h>
 #include <libmtx/mtx/mtx.h>
 #include <libmtx/mtx/reorder.h>
 #include <libmtx/mtx/sort.h>
