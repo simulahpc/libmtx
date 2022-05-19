@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-04-26
+ * Last modified: 2022-05-19
  *
  * Data structures for vectors.
  */
@@ -257,7 +257,7 @@ int mtxvector_init_copy(
         dst->type = mtxvector_array;
         return mtxvector_array_init_copy(
             &dst->storage.array, &src->storage.array);
-    } else if (src->type == mtxvector_array) {
+    } else if (src->type == mtxvector_base) {
         dst->type = mtxvector_base;
         return mtxvector_base_init_copy(&dst->storage.base, &src->storage.base);
     } else if (src->type == mtxvector_blas) {
