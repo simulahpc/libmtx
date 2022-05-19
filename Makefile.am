@@ -98,6 +98,7 @@ libmtx_la_SOURCES = \
 	libmtx/mtxfile/mtxfile.c \
 	libmtx/mtxfile/size.c \
 	libmtx/precision.c \
+	libmtx/solver/cg.c \
 	libmtx/util/cuthill_mckee.c \
 	libmtx/util/cuthill_mckee.h \
 	libmtx/util/distpartition.c \
@@ -183,6 +184,7 @@ nobase_include_HEADERS = \
 	libmtx/mtxfile/mtxfile.h \
 	libmtx/mtxfile/size.h \
 	libmtx/precision.h \
+	libmtx/solver/cg.h \
 	libmtx/util/distpartition.h \
 	libmtx/util/index_set.h \
 	libmtx/util/partition.h \

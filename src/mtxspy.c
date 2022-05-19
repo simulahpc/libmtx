@@ -105,22 +105,14 @@ static int program_options_init(
 static void program_options_free(
     struct program_options * args)
 {
-    if (args->mtx_path)
-        free(args->mtx_path);
-    if (args->png_output_path)
-        free(args->png_output_path);
-    if(args->title)
-        free(args->title);
-    if(args->author)
-        free(args->author);
-    if(args->description)
-        free(args->description);
-    if(args->copyright)
-        free(args->copyright);
-    if(args->email)
-        free(args->email);
-    if(args->url)
-        free(args->url);
+    if (args->mtx_path) free(args->mtx_path);
+    if (args->png_output_path) free(args->png_output_path);
+    if (args->title) free(args->title);
+    if (args->author) free(args->author);
+    if (args->description) free(args->description);
+    if (args->copyright) free(args->copyright);
+    if (args->email) free(args->email);
+    if (args->url) free(args->url);
 }
 
 /**

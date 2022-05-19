@@ -50,6 +50,7 @@
 #include <libmtx/mtxfile/mtxdistfile2.h>
 #include <libmtx/mtxfile/mtxfile.h>
 #include <libmtx/precision.h>
+#include <libmtx/solver/cg.h>
 #include <libmtx/util/index_set.h>
 #include <libmtx/util/partition.h>
 #include <libmtx/vector/array.h>

@@ -16,10 +16,10 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-02-24
+ * Last modified: 2022-05-19
  *
  * Use the conjugate gradient method to (approximately) solve a
- * symmetric, positive definite linear system of equations `Ax=b'.
+ * symmetric, positive definite linear system of equations ‘Ax=b’.
  */
 
 #include <libmtx/libmtx.h>
@@ -29,6 +29,7 @@
 #include <errno.h>
 
 #include <float.h>
+#include <locale.h>
 #include <math.h>
 #include <inttypes.h>
 #include <stdbool.h>
@@ -41,7 +42,7 @@
 const char * program_name = "mtxcg";
 const char * program_version = LIBMTX_VERSION;
 const char * program_copyright =
-    "Copyright (C) 2021 James D. Trotter";
+    "Copyright (C) 2022 James D. Trotter";
 const char * program_license =
     "License GPLv3+: GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html>\n"
     "This is free software: you are free to change and redistribute it.\n"
@@ -50,70 +51,66 @@ const char * program_invocation_name;
 const char * program_invocation_short_name;
 
 /**
- * `program_options` contains data to related program options.
+ * ‘program_options’ contains data to related program options.
  */
 struct program_options
 {
-    double alpha;
-    double beta;
     char * A_path;
     char * b_path;
     char * x_path;
     char * format;
     enum mtxprecision precision;
-    bool gzip;
+    enum mtxmatrixtype matrix_type;
+    enum mtxvectortype vector_type;
     double atol;
     double rtol;
     int max_iterations;
     int progress;
     int restart;
+    bool gzip;
     int verbose;
     bool quiet;
 };
 
 /**
- * `program_options_init()` configures the default program options.
+ * ‘program_options_init()’ configures the default program options.
  */
 static int program_options_init(
     struct program_options * args)
 {
-    args->alpha = 1.0;
-    args->beta = 1.0;
     args->A_path = NULL;
     args->b_path = NULL;
     args->x_path = NULL;
     args->format = NULL;
     args->precision = mtx_double;
-    args->gzip = false;
+    args->matrix_type = mtxmatrix_coordinate;
+    args->vector_type = mtxvector_base;
     args->atol = 0;
     args->rtol = 1e-6;
     args->max_iterations = 100;
     args->progress = 0;
     args->restart = 0;
+    args->gzip = false;
     args->quiet = false;
     args->verbose = 0;
     return 0;
 }
 
 /**
- * `program_options_free()` frees memory and other resources
+ * ‘program_options_free()’ frees memory and other resources
  * associated with parsing program options.
  */
 static void program_options_free(
     struct program_options * args)
 {
-    if (args->A_path)
-        free(args->A_path);
-    if (args->b_path)
-        free(args->b_path);
-    if (args->x_path)
-        free(args->x_path);
-    if(args->format)
-        free(args->format);
+    if (args->A_path) free(args->A_path);
+    if (args->b_path) free(args->b_path);
+    if (args->x_path) free(args->x_path);
+    if (args->format) free(args->format);
 }
 
 /**
- * `program_options_print_usage()` prints a usage text.
+ * ‘program_options_print_usage()’ prints a usage text.
  */
 static void program_options_print_usage(
     FILE * f)
@@ -122,7 +119,7 @@ static void program_options_print_usage(
 }
 
 /**
- * `program_options_print_help()` prints a help text.
+ * ‘program_options_print_help()’ prints a help text.
  */
 static void program_options_print_help(
     FILE * f)
@@ -131,10 +128,10 @@ static void program_options_print_help(
     fprintf(f, "\n");
     fprintf(f, " Solve a linear system with the conjugate gradient (CG) method.\n");
     fprintf(f, "\n");
-    fprintf(f, " The linear system `A*x=b' is (approximately) solved using\n");
-    fprintf(f, " the conjugate gradient method. The matrix `A' should be\n");
-    fprintf(f, " symmetric and positive definite, `b' is the right-hand side\n");
-    fprintf(f, " and `x' is the solution.\n");
+    fprintf(f, " The linear system ‘A*x=b’ is (approximately) solved using\n");
+    fprintf(f, " the conjugate gradient method. The matrix ‘A’ should be\n");
+    fprintf(f, " symmetric and positive definite, ‘b’ is the right-hand side\n");
+    fprintf(f, " and ‘x’ is the solution.\n");
     fprintf(f, "\n");
     fprintf(f, " Positional arguments are:\n");
     fprintf(f, "  A\tPath to Matrix Market file for the matrix A.\n");
@@ -157,6 +154,9 @@ static void program_options_print_help(
     fprintf(f, " Other options are:\n");
     fprintf(f, "  --precision=PRECISION\tprecision used to represent matrix or\n");
     fprintf(f, "\t\t\tvector values: single or double. (default: double)\n");
+    fprintf(f, "  --matrix-type=TYPE\tformat for representing matrices:\n");
+    fprintf(f, "\t\t\t‘blas’, ‘dense’, ‘coordinate’ (default) or ‘csr’.\n");
+    fprintf(f, "  --vector-type=TYPE\ttype of vectors: ‘base’ (default), ‘blas’ or ‘omp’.\n");
     fprintf(f, "  -z, --gzip, --gunzip, --ungzip\tfilter files through gzip\n");
     fprintf(f, "  --format=FORMAT\tFormat string for outputting numerical values.\n");
     fprintf(f, "\t\t\tFor real, double and complex values, the format specifiers\n");
@@ -173,7 +173,7 @@ static void program_options_print_help(
 }
 
 /**
- * `program_options_print_version()` prints version information.
+ * ‘program_options_print_version()’ prints version information.
  */
 static void program_options_print_version(
     FILE * f)
@@ -184,243 +184,184 @@ static void program_options_print_version(
 }
 
 /**
- * `parse_program_options()` parses program options.
+ * ‘parse_program_options()’ parses program options.
  */
 static int parse_program_options(
-    int * argc,
-    char *** argv,
-    struct program_options * args)
+    int argc,
+    char ** argv,
+    struct program_options * args,
+    int * nargs)
 {
     int err;
+    *nargs = 0;
 
     /* Set program invocation name. */
-    program_invocation_name = (*argv)[0];
+    program_invocation_name = argv[0];
     program_invocation_short_name = (
         strrchr(program_invocation_name, '/')
         ? strrchr(program_invocation_name, '/') + 1
         : program_invocation_name);
-    (*argc)--; (*argv)++;
+    (*nargs)++; argv++;
 
     /* Set default program options. */
     err = program_options_init(args);
-    if (err)
-        return err;
+    if (err) return err;
 
     /* Parse program options. */
-    int num_arguments_consumed = 0;
     int num_positional_arguments_consumed = 0;
-    while (*argc > 0) {
-        *argc -= num_arguments_consumed;
-        *argv += num_arguments_consumed;
-        num_arguments_consumed = 0;
-        if (*argc <= 0)
-            break;
-
-        if (strcmp((*argv)[0], "--precision") == 0) {
-            if (*argc < 2) {
-                program_options_free(args);
-                return EINVAL;
-            }
-            char * s = (*argv)[1];
+    while (*nargs < argc) {
+        if (strcmp(argv[0], "--precision") == 0) {
+            if (argc - *nargs < 2) { program_options_free(args); return EINVAL; }
+            (*nargs)++; argv++;
+            err = mtxprecision_parse(&args->precision, NULL, NULL, argv[0], "");
+            if (err) { program_options_free(args); return EINVAL; }
+            (*nargs)++; argv++; continue;
+        } else if (strstr(argv[0], "--precision=") == argv[0]) {
+            char * s = argv[0] + strlen("--precision=");
             err = mtxprecision_parse(&args->precision, NULL, NULL, s, "");
-            if (err) {
-                program_options_free(args);
-                return EINVAL;
-            }
-            num_arguments_consumed += 2;
-            continue;
-        } else if (strstr((*argv)[0], "--precision=") == (*argv)[0]) {
-            char * s = (*argv)[0] + strlen("--precision=");
-            err = mtxprecision_parse(&args->precision, NULL, NULL, s, "");
-            if (err) {
-                program_options_free(args);
-                return EINVAL;
-            }
-            num_arguments_consumed++;
-            continue;
+            if (err) { program_options_free(args); return EINVAL; }
+            (*nargs)++; argv++; continue;
         }
 
-        if (strcmp((*argv)[0], "-z") == 0 ||
-            strcmp((*argv)[0], "--gzip") == 0 ||
-            strcmp((*argv)[0], "--gunzip") == 0 ||
-            strcmp((*argv)[0], "--ungzip") == 0)
+        if (strcmp(argv[0], "--matrix-type") == 0) {
+            if (argc - *nargs < 2) { program_options_free(args); return EINVAL; }
+            (*nargs)++; argv++;
+            err = mtxmatrixtype_parse(&args->matrix_type, NULL, NULL, argv[0], "");
+            if (err) { program_options_free(args); return EINVAL; }
+            (*nargs)++; argv++; continue;
+        } else if (strstr(argv[0], "--matrix-type=") == argv[0]) {
+            char * s = argv[0] + strlen("--matrix-type=");
+            err = mtxmatrixtype_parse(&args->matrix_type, NULL, NULL, s, "");
+            if (err) { program_options_free(args); return EINVAL; }
+            (*nargs)++; argv++; continue;
+        }
+
+        if (strcmp(argv[0], "--vector-type") == 0) {
+            if (argc - *nargs < 2) { program_options_free(args); return EINVAL; }
+            (*nargs)++; argv++;
+            err = mtxvectortype_parse(&args->vector_type, NULL, NULL, argv[0], "");
+            if (err) { program_options_free(args); return EINVAL; }
+            (*nargs)++; argv++; continue;
+        } else if (strstr(argv[0], "--vector-type=") == argv[0]) {
+            char * s = argv[0] + strlen("--vector-type=");
+            err = mtxvectortype_parse(&args->vector_type, NULL, NULL, s, "");
+            if (err) { program_options_free(args); return EINVAL; }
+            (*nargs)++; argv++; continue;
+        }
+
+        if (strcmp(argv[0], "--restart") == 0) {
+            if (argc - *nargs < 2) { program_options_free(args); return EINVAL; }
+            (*nargs)++; argv++;
+            err = parse_int32_ex(argv[0], NULL, &args->restart, NULL);
+            if (err) { program_options_free(args); return err; }
+            (*nargs)++; argv++; continue;
+        } else if (strstr(argv[0], "--restart=") == argv[0]) {
+            err = parse_int32_ex(
+                argv[0] + strlen("--restart="), NULL, &args->restart, NULL);
+            if (err) { program_options_free(args); return err; }
+            (*nargs)++; argv++; continue;
+        }
+
+        if (strcmp(argv[0], "--progress") == 0) {
+            if (argc - *nargs < 2) { program_options_free(args); return EINVAL; }
+            (*nargs)++; argv++;
+            err = parse_int32_ex(argv[0], NULL, &args->progress, NULL);
+            if (err) { program_options_free(args); return err; }
+            (*nargs)++; argv++; continue;
+        } else if (strstr(argv[0], "--progress=") == argv[0]) {
+            err = parse_int32_ex(
+                argv[0] + strlen("--progress="), NULL, &args->progress, NULL);
+            if (err) { program_options_free(args); return err; }
+            (*nargs)++; argv++; continue;
+        }
+
+        if (strcmp(argv[0], "--atol") == 0) {
+            if (argc - *nargs < 2) { program_options_free(args); return EINVAL; }
+            (*nargs)++; argv++;
+            err = parse_double_ex(argv[0], NULL, &args->atol, NULL);
+            if (err) { program_options_free(args); return err; }
+            (*nargs)++; argv++; continue;
+        } else if (strstr(argv[0], "--atol=") == argv[0]) {
+            err = parse_double_ex(
+                argv[0] + strlen("--atol="), NULL, &args->atol, NULL);
+            if (err) { program_options_free(args); return err; }
+            (*nargs)++; argv++; continue;
+        }
+
+        if (strcmp(argv[0], "--rtol") == 0) {
+            if (argc - *nargs < 2) { program_options_free(args); return EINVAL; }
+            (*nargs)++; argv++;
+            err = parse_double_ex(argv[0], NULL, &args->rtol, NULL);
+            if (err) { program_options_free(args); return err; }
+            (*nargs)++; argv++; continue;
+        } else if (strstr(argv[0], "--rtol=") == argv[0]) {
+            err = parse_double_ex(
+                argv[0] + strlen("--rtol="), NULL, &args->rtol, NULL);
+            if (err) { program_options_free(args); return err; }
+            (*nargs)++; argv++; continue;
+        }
+
+        if (strcmp(argv[0], "--max-iterations") == 0) {
+            if (argc - *nargs < 2) { program_options_free(args); return EINVAL; }
+            (*nargs)++; argv++;
+            err = parse_int32_ex(argv[0], NULL, &args->max_iterations, NULL);
+            if (err) { program_options_free(args); return err; }
+            (*nargs)++; argv++; continue;
+        } else if (strstr(argv[0], "--max-iterations=") == argv[0]) {
+            err = parse_int32_ex(
+                argv[0] + strlen("--max-iterations="), NULL, &args->max_iterations, NULL);
+            if (err) { program_options_free(args); return err; }
+            (*nargs)++; argv++; continue;
+        }
+
+        if (strcmp(argv[0], "-z") == 0 ||
+            strcmp(argv[0], "--gzip") == 0 ||
+            strcmp(argv[0], "--gunzip") == 0 ||
+            strcmp(argv[0], "--ungzip") == 0)
         {
             args->gzip = true;
-            num_arguments_consumed++;
-            continue;
+            (*nargs)++; argv++; continue;
         }
 
-        if (strcmp((*argv)[0], "--format") == 0) {
-            if (*argc < 2) {
-                program_options_free(args);
-                return EINVAL;
-            }
-            args->format = strdup((*argv)[1]);
-            if (!args->format) {
-                program_options_free(args);
-                return errno;
-            }
-            num_arguments_consumed += 2;
-            continue;
-        } else if (strstr((*argv)[0], "--format=") == (*argv)[0]) {
-            args->format = strdup((*argv)[0] + strlen("--format="));
-            if (!args->format) {
-                program_options_free(args);
-                return errno;
-            }
-            num_arguments_consumed++;
-            continue;
+        if (strcmp(argv[0], "--format") == 0) {
+            if (argc - *nargs < 2) { program_options_free(args); return EINVAL; }
+            (*nargs)++; argv++;
+            args->format = strdup(argv[0]);
+            if (!args->format) { program_options_free(args); return errno; }
+            (*nargs)++; argv++; continue;
+        } else if (strstr(argv[0], "--format=") == argv[0]) {
+            args->format = strdup(argv[0] + strlen("--format="));
+            if (!args->format) { program_options_free(args); return errno; }
+            (*nargs)++; argv++; continue;
         }
 
-        if (strcmp((*argv)[0], "--restart") == 0) {
-            if (*argc < 2) {
-                program_options_free(args);
-                return EINVAL;
-            }
-            err = parse_int32_ex((*argv)[1], NULL, &args->restart, NULL);
-            if (err) {
-                program_options_free(args);
-                return err;
-            }
-            num_arguments_consumed += 2;
-            continue;
-        } else if (strstr((*argv)[0], "--restart=") == (*argv)[0]) {
-            err = parse_int32_ex(
-                (*argv)[0] + strlen("--restart="), NULL,
-                &args->restart, NULL);
-            if (err) {
-                program_options_free(args);
-                return err;
-            }
-            num_arguments_consumed++;
-            continue;
-        }
-
-        if (strcmp((*argv)[0], "--progress") == 0) {
-            if (*argc < 2) {
-                program_options_free(args);
-                return EINVAL;
-            }
-            err = parse_int32_ex((*argv)[1], NULL, &args->progress, NULL);
-            if (err) {
-                program_options_free(args);
-                return err;
-            }
-            num_arguments_consumed += 2;
-            continue;
-        } else if (strstr((*argv)[0], "--progress=") == (*argv)[0]) {
-            err = parse_int32_ex(
-                (*argv)[0] + strlen("--progress="), NULL,
-                &args->progress, NULL);
-            if (err) {
-                program_options_free(args);
-                return err;
-            }
-            num_arguments_consumed++;
-            continue;
-        }
-
-        if (strcmp((*argv)[0], "--atol") == 0) {
-            if (*argc < 2) {
-                program_options_free(args);
-                return EINVAL;
-            }
-            err = parse_double_ex((*argv)[1], NULL, &args->atol, NULL);
-            if (err) {
-                program_options_free(args);
-                return err;
-            }
-            num_arguments_consumed += 2;
-            continue;
-        } else if (strstr((*argv)[0], "--atol=") == (*argv)[0]) {
-            err = parse_double_ex(
-                (*argv)[0] + strlen("--atol="), NULL,
-                &args->atol, NULL);
-            if (err) {
-                program_options_free(args);
-                return err;
-            }
-            num_arguments_consumed++;
-            continue;
-        }
-
-        if (strcmp((*argv)[0], "--rtol") == 0) {
-            if (*argc < 2) {
-                program_options_free(args);
-                return EINVAL;
-            }
-            err = parse_double_ex((*argv)[1], NULL, &args->rtol, NULL);
-            if (err) {
-                program_options_free(args);
-                return err;
-            }
-            num_arguments_consumed += 2;
-            continue;
-        } else if (strstr((*argv)[0], "--rtol=") == (*argv)[0]) {
-            err = parse_double_ex(
-                (*argv)[0] + strlen("--rtol="), NULL,
-                &args->rtol, NULL);
-            if (err) {
-                program_options_free(args);
-                return err;
-            }
-            num_arguments_consumed++;
-            continue;
-        }
-
-        if (strcmp((*argv)[0], "--max-iterations") == 0) {
-            if (*argc < 2) {
-                program_options_free(args);
-                return EINVAL;
-            }
-            err = parse_int32_ex((*argv)[1], NULL, &args->max_iterations, NULL);
-            if (err) {
-                program_options_free(args);
-                return err;
-            }
-            num_arguments_consumed += 2;
-            continue;
-        } else if (strstr((*argv)[0], "--max-iterations=") == (*argv)[0]) {
-            err = parse_int32_ex(
-                (*argv)[0] + strlen("--max-iterations="), NULL,
-                &args->max_iterations, NULL);
-            if (err) {
-                program_options_free(args);
-                return err;
-            }
-            num_arguments_consumed++;
-            continue;
-        }
-
-        if (strcmp((*argv)[0], "-q") == 0 || strcmp((*argv)[0], "--quiet") == 0) {
+        if (strcmp(argv[0], "-q") == 0 || strcmp(argv[0], "--quiet") == 0) {
             args->quiet = true;
-            num_arguments_consumed++;
-            continue;
+            (*nargs)++; argv++; continue;
         }
 
-        if (strcmp((*argv)[0], "-v") == 0 || strcmp((*argv)[0], "--verbose") == 0) {
+        if (strcmp(argv[0], "-v") == 0 || strcmp(argv[0], "--verbose") == 0) {
             args->verbose++;
-            num_arguments_consumed++;
-            continue;
+            (*nargs)++; argv++; continue;
         }
 
         /* If requested, print program help text. */
-        if (strcmp((*argv)[0], "-h") == 0 || strcmp((*argv)[0], "--help") == 0) {
+        if (strcmp(argv[0], "-h") == 0 || strcmp(argv[0], "--help") == 0) {
             program_options_free(args);
             program_options_print_help(stdout);
             exit(EXIT_SUCCESS);
         }
 
         /* If requested, print program version information. */
-        if (strcmp((*argv)[0], "--version") == 0) {
+        if (strcmp(argv[0], "--version") == 0) {
             program_options_free(args);
             program_options_print_version(stdout);
             exit(EXIT_SUCCESS);
         }
 
         /* Stop parsing options after '--'.  */
-        if (strcmp((*argv)[0], "--") == 0) {
-            (*argc)--; (*argv)++;
+        if (strcmp(argv[0], "--") == 0) {
+            (*nargs)++; argv++;
             break;
         }
 
@@ -428,30 +369,17 @@ static int parse_program_options(
          * Parse positional arguments.
          */
         if (num_positional_arguments_consumed == 0) {
-            args->A_path = strdup((*argv)[0]);
-            if (!args->A_path) {
-                program_options_free(args);
-                return errno;
-            }
+            args->A_path = strdup(argv[0]);
+            if (!args->A_path) { program_options_free(args); return errno; }
         } else if (num_positional_arguments_consumed == 1) {
-            args->b_path = strdup((*argv)[0]);
-            if (!args->b_path) {
-                program_options_free(args);
-                return errno;
-            }
+            args->b_path = strdup(argv[0]);
+            if (!args->b_path) { program_options_free(args); return errno; }
         } else if (num_positional_arguments_consumed == 2) {
-            args->x_path = strdup((*argv)[0]);
-            if (!args->x_path) {
-                program_options_free(args);
-                return errno;
-            }
-        } else {
-            program_options_free(args);
-            return EINVAL;
-        }
-
+            args->x_path = strdup(argv[0]);
+            if (!args->x_path) { program_options_free(args); return errno; }
+        } else { program_options_free(args); return EINVAL; }
         num_positional_arguments_consumed++;
-        num_arguments_consumed++;
+        (*nargs)++; argv++;
     }
 
     if (num_positional_arguments_consumed < 1) {
@@ -459,12 +387,11 @@ static int parse_program_options(
         program_options_print_usage(stdout);
         exit(EXIT_FAILURE);
     }
-
     return 0;
 }
 
 /**
- * `timespec_duration()` is the duration, in seconds, elapsed between
+ * ‘timespec_duration()’ is the duration, in seconds, elapsed between
  * two given time points.
  */
 static double timespec_duration(
@@ -476,38 +403,202 @@ static double timespec_duration(
 }
 
 /**
- * `main()'.
+ * ‘cg()’ solves a linear system using CG.
+ */
+static int cg(
+    const struct mtxmatrix * A,
+    const struct mtxvector * b,
+    struct mtxvector * x,
+    enum mtxprecision precision,
+    double atol,
+    double rtol,
+    int max_iterations,
+    int progress,
+    int restart,
+    const char * format,
+    int verbose,
+    FILE * diagf,
+    bool quiet)
+{
+    int err;
+    struct timespec t0, t1;
+
+    if (verbose > 0) {
+        fprintf(diagf, "mtxcg_init: ");
+        fflush(diagf);
+        clock_gettime(CLOCK_MONOTONIC, &t0);
+    }
+
+    /* allocate working space for the solver */
+    struct mtxcg cg;
+    int64_t num_flops = 0;
+    err = mtxcg_init(&cg, A, b, x, &num_flops);
+    if (err) {
+        if (verbose > 0) fprintf(diagf, "\n");
+        return err;
+    }
+
+    if (verbose > 0) {
+        clock_gettime(CLOCK_MONOTONIC, &t1);
+        fprintf(diagf, "%'.6f seconds (%'.3f Gflop/s)\n",
+                timespec_duration(t0, t1),
+                1.0e-9 * num_flops / timespec_duration(t0, t1));
+    }
+
+    int num_iterations = 0;
+    while (num_iterations < max_iterations) {
+        int next_progress =
+            (progress > 0 && progress <= max_iterations)
+            ? (progress - (num_iterations % progress))
+            : max_iterations+1;
+        int next_restart =
+            (restart > 0 && restart <= max_iterations)
+            ? restart - (num_iterations % restart)
+            : max_iterations+1;
+        int max_iterations_in_current_round =
+            max_iterations - num_iterations;
+        if (max_iterations_in_current_round > next_progress)
+            max_iterations_in_current_round = next_progress;
+        if (max_iterations_in_current_round > next_restart)
+            max_iterations_in_current_round = next_restart;
+
+        if (verbose > 0 ||
+            next_progress <= max_iterations ||
+            next_restart <= max_iterations)
+        {
+            fprintf(diagf, "mtxcg_solve: ");
+            fflush(diagf);
+            clock_gettime(CLOCK_MONOTONIC, &t0);
+        }
+
+        int64_t num_flops = 0;
+        int num_iterations_in_current_round;
+        double b_nrm2;
+        double r_nrm2;
+        err = mtxcg_solve(
+            &cg, x, atol, rtol, max_iterations_in_current_round,
+            &num_iterations_in_current_round, &b_nrm2, &r_nrm2, &num_flops);
+        if (err != MTX_SUCCESS && err != MTX_ERR_NOT_CONVERGED) {
+            if (verbose > 0) fprintf(diagf, "\n");
+            mtxcg_free(&cg);
+            return err;
+        }
+        num_iterations += num_iterations_in_current_round;
+
+        if (verbose > 0 ||
+            next_progress <= max_iterations ||
+            next_restart <= max_iterations)
+        {
+            clock_gettime(CLOCK_MONOTONIC, &t1);
+            if (err == MTX_SUCCESS) {
+                fprintf(
+                    diagf, "%.6f seconds (%'.3f Gflop/s) - "
+                    "converged after %d iterations, "
+                    "residual 2-norm %.*g, right-hand side 2-norm %.*g, "
+                    "relative residual %.*g, "
+                    "absolute tolerance %.*g, relative tolerance %.*g\n",
+                    timespec_duration(t0, t1),
+                    1.0e-9 * num_flops / timespec_duration(t0, t1),
+                    num_iterations, DBL_DIG, r_nrm2, DBL_DIG, b_nrm2,
+                    DBL_DIG, fabs(b_nrm2) > DBL_EPSILON ? r_nrm2 / b_nrm2 : INFINITY,
+                    DBL_DIG, atol, DBL_DIG, rtol);
+            } else if (err == MTX_ERR_NOT_CONVERGED) {
+                fprintf(
+                    diagf, "%.6f seconds (%'.3f Gflop/s) - "
+                    "not converged after %d iterations, "
+                    "residual 2-norm %.*g, right-hand side 2-norm %.*g, "
+                    "relative residual %.*g, "
+                    "absolute tolerance %.*g, relative tolerance %.*g%s\n",
+                    timespec_duration(t0, t1),
+                    1.0e-9 * num_flops / timespec_duration(t0, t1),
+                    num_iterations, DBL_DIG, r_nrm2, DBL_DIG, b_nrm2,
+                    DBL_DIG, fabs(b_nrm2) > DBL_EPSILON ? r_nrm2 / b_nrm2 : INFINITY,
+                    DBL_DIG, atol, DBL_DIG, rtol,
+                    next_restart == num_iterations_in_current_round ?
+                    ", restarting" : "");
+            }
+        }
+        if (err == MTX_SUCCESS) break;
+
+        if (num_iterations < max_iterations
+            && next_restart == num_iterations_in_current_round)
+        {
+            mtxcg_free(&cg);
+            err = mtxcg_init(&cg, A, b, x, &num_flops);
+            if (err) { mtxcg_free(&cg); return err; }
+        }
+    }
+    mtxcg_free(&cg);
+
+    /* write the solution vector to standard output */
+    if (!quiet) {
+        if (verbose > 0) {
+            fprintf(diagf, "mtxvector_fwrite: ");
+            fflush(diagf);
+            clock_gettime(CLOCK_MONOTONIC, &t0);
+        }
+        int64_t bytes_written = 0;
+        err = mtxvector_fwrite(
+            x, 0, NULL, mtxfile_array, stdout, format, &bytes_written);
+        if (err) {
+            if (verbose > 0)
+                fprintf(diagf, "\n");
+            return err;
+        }
+        if (verbose > 0) {
+            clock_gettime(CLOCK_MONOTONIC, &t1);
+            fprintf(diagf, "%'.6f seconds (%'.1f MB/s)\n",
+                    timespec_duration(t0, t1),
+                    1.0e-6 * bytes_written / timespec_duration(t0, t1));
+        }
+    }
+    return MTX_SUCCESS;
+}
+
+/**
+ * ‘main()’.
  */
 int main(int argc, char *argv[])
 {
     int err;
     struct timespec t0, t1;
     FILE * diagf = stderr;
+    setlocale(LC_ALL, "");
 
     /* 1. Parse program options. */
     struct program_options args;
-    int argc_copy = argc;
-    char ** argv_copy = argv;
-    err = parse_program_options(&argc_copy, &argv_copy, &args);
+    int nargs;
+    err = parse_program_options(argc, argv, &args, &nargs);
     if (err) {
         fprintf(stderr, "%s: %s %s\n", program_invocation_short_name,
-                strerror(err), argv_copy[0]);
+                strerror(err), argv[nargs]);
         return EXIT_FAILURE;
     }
 
     /* 2. Read the matrix from a Matrix Market file. */
-    struct mtx A;
     if (args.verbose > 0) {
-        fprintf(diagf, "mtx_read: ");
+        fprintf(diagf, "mtxmatrix_read: ");
         fflush(diagf);
         clock_gettime(CLOCK_MONOTONIC, &t0);
     }
 
-    int line_number, column_number;
-    err = mtx_read(
-        &A, args.precision, args.A_path ? args.A_path : "", args.gzip,
-        &line_number, &column_number);
-    if (err && (line_number == -1 && column_number == -1)) {
+    struct mtxmatrix A;
+    int64_t lines_read = 0;
+    int64_t bytes_read = 0;
+    err = mtxmatrix_read(
+        &A, args.precision, args.matrix_type,
+        args.A_path ? args.A_path : "", args.gzip,
+        &lines_read, &bytes_read);
+    if (err && lines_read >= 0) {
+        if (args.verbose > 0)
+            fprintf(diagf, "\n");
+        fprintf(stderr, "%s: %s:%d: %s\n",
+                program_invocation_short_name,
+                args.A_path, lines_read+1,
+                mtxstrerror(err));
+        program_options_free(&args);
+        return EXIT_FAILURE;
+    } else if (err) {
         if (args.verbose > 0)
             fprintf(diagf, "\n");
         fprintf(stderr, "%s: %s: %s\n",
@@ -515,192 +606,143 @@ int main(int argc, char *argv[])
                 args.A_path, mtxstrerror(err));
         program_options_free(&args);
         return EXIT_FAILURE;
-    } else if (err) {
-        if (args.verbose > 0)
-            fprintf(diagf, "\n");
-        fprintf(stderr, "%s: %s:%d:%d: %s\n",
-                program_invocation_short_name,
-                args.A_path, line_number, column_number,
-                mtxstrerror(err));
-        program_options_free(&args);
-        return EXIT_FAILURE;
     }
 
     if (args.verbose > 0) {
         clock_gettime(CLOCK_MONOTONIC, &t1);
-        fprintf(diagf, "%.6f seconds\n",
-                timespec_duration(t0, t1));
+        fprintf(diagf, "%'.6f seconds (%'.1f MB/s)\n",
+                timespec_duration(t0, t1),
+                1.0e-6 * bytes_read / timespec_duration(t0, t1));
     }
 
-    /* 3. Read the vector b from a Matrix Market file, or use a vector
-     * of all ones. */
-    struct mtx b;
+    /* 3. Read the vector ‘b’ from a Matrix Market file, or use a
+     * vector of all ones. */
+    struct mtxvector b;
     if (args.b_path && strlen(args.b_path) > 0) {
         if (args.verbose) {
-            fprintf(diagf, "mtx_read: ");
+            fprintf(diagf, "mtxvector_read: ");
             fflush(diagf);
             clock_gettime(CLOCK_MONOTONIC, &t0);
         }
 
-        int line_number, column_number;
-        err = mtx_read(
-            &b, args.precision, args.b_path, args.gzip,
-            &line_number, &column_number);
-        if (err && (line_number == -1 && column_number == -1)) {
+        int64_t lines_read = 0;
+        int64_t bytes_read;
+        err = mtxvector_read(
+            &b, args.precision, args.vector_type,
+            args.b_path ? args.b_path : "", args.gzip,
+            &lines_read, &bytes_read);
+        if (err && lines_read >= 0) {
+            if (args.verbose > 0)
+                fprintf(diagf, "\n");
+            fprintf(stderr, "%s: %s:%d: %s\n",
+                    program_invocation_short_name,
+                    args.b_path, lines_read+1,
+                    mtxstrerror(err));
+            mtxmatrix_free(&A);
+            program_options_free(&args);
+            return EXIT_FAILURE;
+        } else if (err) {
             if (args.verbose > 0)
                 fprintf(diagf, "\n");
             fprintf(stderr, "%s: %s: %s\n",
                     program_invocation_short_name,
                     args.b_path, mtxstrerror(err));
-            mtx_free(&A);
-            program_options_free(&args);
-            return EXIT_FAILURE;
-        } else if (err) {
-            if (args.verbose > 0)
-                fprintf(diagf, "\n");
-            fprintf(stderr, "%s: %s:%d:%d: %s\n",
-                    program_invocation_short_name,
-                    args.b_path, line_number, column_number,
-                    mtxstrerror(err));
-            mtx_free(&A);
+            mtxmatrix_free(&A);
             program_options_free(&args);
             return EXIT_FAILURE;
         }
-
         if (args.verbose > 0) {
             clock_gettime(CLOCK_MONOTONIC, &t1);
-            fprintf(diagf, "%.6f seconds\n",
-                    timespec_duration(t0, t1));
+            fprintf(diagf, "%'.6f seconds (%'.1f MB/s)\n",
+                    timespec_duration(t0, t1),
+                    1.0e-6 * bytes_read / timespec_duration(t0, t1));
         }
     } else {
-        err = mtx_alloc_vector_array(
-            &b, A.field, args.precision, 0, NULL, A.num_columns);
+        err = mtxmatrix_alloc_row_vector(&A, &b, args.vector_type);
         if (err) {
             fprintf(stderr, "%s: %s\n",
                     program_invocation_short_name,
                     mtxstrerror(err));
-            mtx_free(&A);
+            mtxmatrix_free(&A);
             program_options_free(&args);
             return EXIT_FAILURE;
         }
 
-        err = mtx_set_constant_real_single(&b, 1.0f);
+        err = mtxvector_set_constant_real_single(&b, 1.0f);
         if (err) {
             fprintf(stderr, "%s: %s\n",
                     program_invocation_short_name,
                     mtxstrerror(err));
-            mtx_free(&b);
-            mtx_free(&A);
+            mtxvector_free(&b);
+            mtxmatrix_free(&A);
             program_options_free(&args);
             return EXIT_FAILURE;
         }
     }
 
-    /* 4. Read the vector x from a Matrix Market file, or use a vector
-     * of all zeros. */
-    struct mtx x;
+    /* 4. Read the vector ‘x’ from a Matrix Market file, or use a
+     * vector of all zeros. */
+    struct mtxvector x;
     if (args.x_path) {
         if (args.verbose) {
-            fprintf(diagf, "mtx_read: ");
+            fprintf(diagf, "mtxvector_read: ");
             fflush(diagf);
             clock_gettime(CLOCK_MONOTONIC, &t0);
         }
-
-        int line_number, column_number;
-        err = mtx_read(
-            &x, args.precision, args.x_path ? args.x_path : "", args.gzip,
-            &line_number, &column_number);
-        if (err && (line_number == -1 && column_number == -1)) {
+        int64_t lines_read = 0;
+        int64_t bytes_read = 0;
+        err = mtxvector_read(
+            &x, args.precision, args.vector_type,
+            args.x_path ? args.x_path : "", args.gzip,
+            &lines_read, &bytes_read);
+        if (err && lines_read >= 0) {
+            if (args.verbose > 0)
+                fprintf(diagf, "\n");
+            fprintf(stderr, "%s: %s:%d: %s\n",
+                    program_invocation_short_name,
+                    args.x_path, lines_read+1,
+                    mtxstrerror(err));
+            mtxvector_free(&b);
+            mtxmatrix_free(&A);
+            program_options_free(&args);
+            return EXIT_FAILURE;
+        } else if (err) {
             if (args.verbose > 0)
                 fprintf(diagf, "\n");
             fprintf(stderr, "%s: %s: %s\n",
                     program_invocation_short_name,
                     args.x_path, mtxstrerror(err));
-            mtx_free(&b);
-            mtx_free(&A);
-            program_options_free(&args);
-            return EXIT_FAILURE;
-        } else if (err) {
-            if (args.verbose > 0)
-                fprintf(diagf, "\n");
-            fprintf(stderr, "%s: %s:%d:%d: %s\n",
-                    program_invocation_short_name,
-                    args.x_path, line_number, column_number,
-                    mtxstrerror(err));
-            mtx_free(&b);
-            mtx_free(&A);
+            mtxvector_free(&b);
+            mtxmatrix_free(&A);
             program_options_free(&args);
             return EXIT_FAILURE;
         }
-
         if (args.verbose > 0) {
             clock_gettime(CLOCK_MONOTONIC, &t1);
-            fprintf(diagf, "%.6f seconds\n",
-                    timespec_duration(t0, t1));
+            fprintf(diagf, "%'.6f seconds (%'.1f MB/s)\n",
+                    timespec_duration(t0, t1),
+                    1.0e-6 * bytes_read / timespec_duration(t0, t1));
         }
     } else {
-        err = mtx_alloc_vector_array(
-            &x, A.field, args.precision, 0, NULL, A.num_rows);
+        err = mtxmatrix_alloc_column_vector(&A, &x, args.vector_type);
         if (err) {
             fprintf(stderr, "%s: %s\n",
                     program_invocation_short_name,
                     mtxstrerror(err));
-            mtx_free(&b);
-            mtx_free(&A);
+            mtxvector_free(&b);
+            mtxmatrix_free(&A);
             program_options_free(&args);
             return EXIT_FAILURE;
         }
 
-        err = mtx_set_zero(&x);
+        err = mtxvector_setzero(&x);
         if (err) {
             fprintf(stderr, "%s: %s\n",
                     program_invocation_short_name,
                     mtxstrerror(err));
-            mtx_free(&x);
-            mtx_free(&b);
-            mtx_free(&A);
-            program_options_free(&args);
-            return EXIT_FAILURE;
-        }
-    }
-
-    /* Allocate working space for the conjugate gradient algorithm. */
-    struct mtx_scg_workspace * scg_workspace = NULL;
-    struct mtx_dcg_workspace * dcg_workspace = NULL;
-    if (A.field == mtx_real) {
-        if (args.precision == mtx_single) {
-            err = mtx_scg_workspace_alloc(
-                &scg_workspace, &A, &b, &x);
-            if (err) {
-                fprintf(stderr, "%s: %s\n",
-                        program_invocation_short_name,
-                        mtxstrerror(err));
-                mtx_free(&x);
-                mtx_free(&b);
-                mtx_free(&A);
-                program_options_free(&args);
-                return EXIT_FAILURE;
-            }
-        } else if (args.precision == mtx_double) {
-            err = mtx_dcg_workspace_alloc(
-                &dcg_workspace, &A, &b, &x);
-            if (err) {
-                fprintf(stderr, "%s: %s\n",
-                        program_invocation_short_name,
-                        mtxstrerror(err));
-                mtx_free(&x);
-                mtx_free(&b);
-                mtx_free(&A);
-                program_options_free(&args);
-                return EXIT_FAILURE;
-            }
-        } else {
-            fprintf(stderr, "%s: %s\n",
-                    program_invocation_short_name,
-                    mtxstrerror(MTX_ERR_INVALID_PRECISION));
-            mtx_free(&x);
-            mtx_free(&b);
-            mtx_free(&A);
+            mtxvector_free(&x);
+            mtxvector_free(&b);
+            mtxmatrix_free(&A);
             program_options_free(&args);
             return EXIT_FAILURE;
         }
@@ -708,289 +750,25 @@ int main(int argc, char *argv[])
 
     /* 5. Solve the linear system using the conjugate gradient
      * method. */
-    int num_iterations = 0;
-    while (num_iterations < args.max_iterations) {
-        int next_progress =
-            (args.progress > 0 && args.progress <= args.max_iterations)
-            ? (args.progress - (num_iterations % args.progress))
-            : args.max_iterations+1;
-        int next_restart =
-            (args.restart > 0 && args.restart <= args.max_iterations)
-            ? args.restart - (num_iterations % args.restart)
-            : args.max_iterations+1;
-        int max_iterations_in_current_round =
-            args.max_iterations - num_iterations;
-        if (max_iterations_in_current_round > next_progress)
-            max_iterations_in_current_round = next_progress;
-        if (max_iterations_in_current_round > next_restart)
-            max_iterations_in_current_round = next_restart;
-        int num_iterations_in_current_round;
-
-        if (A.field == mtx_real) {
-            if (args.precision == mtx_single) {
-                if (args.verbose > 0 ||
-                    next_progress <= args.max_iterations ||
-                    next_restart <= args.max_iterations)
-                {
-                    fprintf(diagf, "mtx_scg: ");
-                    fflush(diagf);
-                    clock_gettime(CLOCK_MONOTONIC, &t0);
-                }
-
-                float b_nrm2;
-                float r_nrm2;
-                err = mtx_scg(
-                    &A, &x, &b,
-                    args.atol, args.rtol, max_iterations_in_current_round,
-                    &num_iterations_in_current_round, &b_nrm2, &r_nrm2,
-                    scg_workspace);
-                if (err != MTX_SUCCESS && err != MTX_ERR_NOT_CONVERGED) {
-                    if (args.verbose > 0)
-                        fprintf(diagf, "\n");
-                    fprintf(stderr, "%s: %s\n",
-                            program_invocation_short_name,
-                            mtxstrerror(err));
-                    mtx_scg_workspace_free(scg_workspace);
-                    mtx_free(&x);
-                    mtx_free(&b);
-                    mtx_free(&A);
-                    program_options_free(&args);
-                    return EXIT_FAILURE;
-                }
-                num_iterations += num_iterations_in_current_round;
-
-                if (args.verbose > 0 ||
-                    next_progress <= args.max_iterations ||
-                    next_restart <= args.max_iterations)
-                {
-                    clock_gettime(CLOCK_MONOTONIC, &t1);
-                    if (err == MTX_SUCCESS) {
-                        fprintf(
-                            diagf, "%.6f seconds - converged after %d iterations, "
-                            "residual 2-norm %.*g, right-hand side 2-norm %.*g, "
-                            "relative residual %.*g, "
-                            "absolute tolerance %.*g, relative tolerance %.*g\n",
-                            timespec_duration(t0, t1),
-                            num_iterations, FLT_DIG, r_nrm2,FLT_DIG, b_nrm2,
-                            FLT_DIG, fabs(b_nrm2) > FLT_EPSILON ? r_nrm2 / b_nrm2 : INFINITY,
-                            DBL_DIG, args.atol, DBL_DIG, args.rtol);
-                    } else if (err == MTX_ERR_NOT_CONVERGED) {
-                        fprintf(
-                            diagf, "%.6f seconds - not converged after %d iterations, "
-                            "residual 2-norm %.*g, right-hand side 2-norm %.*g, "
-                            "relative residual %.*g, "
-                            "absolute tolerance %.*g, relative tolerance %.*g%s\n",
-                            timespec_duration(t0, t1),
-                            num_iterations, FLT_DIG, r_nrm2, FLT_DIG, b_nrm2,
-                            FLT_DIG, fabs(b_nrm2) > FLT_EPSILON ? r_nrm2 / b_nrm2 : INFINITY,
-                            DBL_DIG, args.atol, DBL_DIG, args.rtol,
-                            next_restart == num_iterations_in_current_round ?
-                            ", restarting" : "");
-                    }
-                }
-                if (err == MTX_SUCCESS)
-                    break;
-
-                if (num_iterations < args.max_iterations &&
-                    next_restart == num_iterations_in_current_round)
-                {
-                    err = mtx_dcg_restart(dcg_workspace, &A, &b, &x);
-                    if (err) {
-                        fprintf(stderr, "%s: %s\n",
-                                program_invocation_short_name,
-                                mtxstrerror(err));
-                        mtx_dcg_workspace_free(dcg_workspace);
-                        mtx_free(&x);
-                        mtx_free(&b);
-                        mtx_free(&A);
-                        program_options_free(&args);
-                        return EXIT_FAILURE;
-                    }
-                }
-
-            } else if (args.precision == mtx_double) {
-                if (args.verbose > 0 ||
-                    next_progress <= args.max_iterations ||
-                    next_restart <= args.max_iterations)
-                {
-                    fprintf(diagf, "mtx_dcg: ");
-                    fflush(diagf);
-                    clock_gettime(CLOCK_MONOTONIC, &t0);
-                }
-
-                int num_iterations_in_current_round;
-                double b_nrm2;
-                double r_nrm2;
-                err = mtx_dcg(
-                    &A, &x, &b,
-                    args.atol, args.rtol, max_iterations_in_current_round,
-                    &num_iterations_in_current_round, &b_nrm2, &r_nrm2,
-                    dcg_workspace);
-                if (err != MTX_SUCCESS && err != MTX_ERR_NOT_CONVERGED) {
-                    if (args.verbose > 0)
-                        fprintf(diagf, "\n");
-                    fprintf(stderr, "%s: %s\n",
-                            program_invocation_short_name,
-                            mtxstrerror(err));
-                    mtx_dcg_workspace_free(dcg_workspace);
-                    mtx_free(&x);
-                    mtx_free(&b);
-                    mtx_free(&A);
-                    program_options_free(&args);
-                    return EXIT_FAILURE;
-                }
-                num_iterations += num_iterations_in_current_round;
-
-                if (args.verbose > 0 ||
-                    next_progress <= args.max_iterations ||
-                    next_restart <= args.max_iterations)
-                {
-                    clock_gettime(CLOCK_MONOTONIC, &t1);
-                    if (err == MTX_SUCCESS) {
-                        fprintf(
-                            diagf, "%.6f seconds - converged after %d iterations, "
-                            "residual 2-norm %.*g, right-hand side 2-norm %.*g, "
-                            "relative residual %.*g, "
-                            "absolute tolerance %.*g, relative tolerance %.*g\n",
-                            timespec_duration(t0, t1),
-                            num_iterations, DBL_DIG, r_nrm2, DBL_DIG, b_nrm2,
-                            DBL_DIG, fabs(b_nrm2) > DBL_EPSILON ? r_nrm2 / b_nrm2 : INFINITY,
-                            DBL_DIG, args.atol, DBL_DIG, args.rtol);
-                    } else if (err == MTX_ERR_NOT_CONVERGED) {
-                        fprintf(
-                            diagf, "%.6f seconds - not converged after %d iterations, "
-                            "residual 2-norm %.*g, right-hand side 2-norm %.*g, "
-                            "relative residual %.*g, "
-                            "absolute tolerance %.*g, relative tolerance %.*g%s\n",
-                            timespec_duration(t0, t1),
-                            num_iterations, DBL_DIG, r_nrm2, DBL_DIG, b_nrm2,
-                            DBL_DIG, fabs(b_nrm2) > DBL_EPSILON ? r_nrm2 / b_nrm2 : INFINITY,
-                            DBL_DIG, args.atol, DBL_DIG, args.rtol,
-                            next_restart == num_iterations_in_current_round ?
-                            ", restarting" : "");
-                    }
-                }
-                if (err == MTX_SUCCESS)
-                    break;
-
-                if (num_iterations < args.max_iterations
-                    && next_restart == num_iterations_in_current_round)
-                {
-                    err = mtx_dcg_restart(dcg_workspace, &A, &b, &x);
-                    if (err) {
-                        fprintf(stderr, "%s: %s\n",
-                                program_invocation_short_name,
-                                mtxstrerror(err));
-                        mtx_dcg_workspace_free(dcg_workspace);
-                        mtx_free(&x);
-                        mtx_free(&b);
-                        mtx_free(&A);
-                        program_options_free(&args);
-                        return EXIT_FAILURE;
-                    }
-                }
-
-            } else {
-                fprintf(stderr, "%s: %s\n",
-                        program_invocation_short_name,
-                        mtxstrerror(MTX_ERR_INVALID_PRECISION));
-                mtx_free(&x);
-                mtx_free(&b);
-                mtx_free(&A);
-                program_options_free(&args);
-                return EXIT_FAILURE;
-            }
-
-        } else if (A.field == mtx_complex ||
-                   A.field == mtx_integer ||
-                   A.field == mtx_pattern)
-        {
-            fprintf(stderr, "%s: %s\n",
-                    program_invocation_short_name,
-                    strerror(ENOTSUP));
-            mtx_free(&x);
-            mtx_free(&b);
-            mtx_free(&A);
-            program_options_free(&args);
-            return EXIT_FAILURE;
-        } else {
-            fprintf(stderr, "%s: %s\n",
-                    program_invocation_short_name,
-                    mtxstrerror(MTX_ERR_INVALID_MTX_FIELD));
-            mtx_free(&x);
-            mtx_free(&b);
-            mtx_free(&A);
-            program_options_free(&args);
-            return EXIT_FAILURE;
-        }
+    err = cg(&A, &b, &x, args.precision,
+             args.atol, args.rtol, args.max_iterations,
+             args.progress, args.restart,
+             args.format, args.verbose, diagf, args.quiet);
+    if (err) {
+        fprintf(stderr, "%s: %s\n",
+                program_invocation_short_name,
+                mtxstrerror(err));
+        mtxvector_free(&x);
+        mtxvector_free(&b);
+        mtxmatrix_free(&A);
+        program_options_free(&args);
+        return EXIT_FAILURE;
     }
 
-    if (A.field == mtx_real) {
-        if (args.precision == mtx_single) {
-            mtx_scg_workspace_free(scg_workspace);
-        } else if (args.precision == mtx_double) {
-            mtx_dcg_workspace_free(dcg_workspace);
-        } else {
-            fprintf(stderr, "%s: %s\n",
-                    program_invocation_short_name,
-                    mtxstrerror(MTX_ERR_INVALID_PRECISION));
-            mtx_free(&x);
-            mtx_free(&b);
-            mtx_free(&A);
-            program_options_free(&args);
-            return EXIT_FAILURE;
-        }
-    }
-
-    /* 6. Write the result vector to standard output. */
-    if (!args.quiet) {
-        if (args.verbose > 0) {
-            fprintf(diagf, "mtx_fwrite: ");
-            fflush(diagf);
-            clock_gettime(CLOCK_MONOTONIC, &t0);
-        }
-
-        err = mtx_add_comment_line_printf(
-            &x, "%% This file was generated by %s %s\n",
-            program_name, program_version);
-        if (err) {
-            if (args.verbose > 0)
-                fprintf(diagf, "\n");
-            fprintf(stderr, "%s: %s\n",
-                    program_invocation_short_name,
-                    mtxstrerror(err));
-            mtx_free(&x);
-            mtx_free(&b);
-            mtx_free(&A);
-            program_options_free(&args);
-            return EXIT_FAILURE;
-        }
-
-        err = mtx_fwrite(&x, stdout, args.format);
-        if (err) {
-            if (args.verbose > 0)
-                fprintf(diagf, "\n");
-            fprintf(stderr, "%s: %s\n",
-                    program_invocation_short_name,
-                    mtxstrerror(err));
-            mtx_free(&x);
-            mtx_free(&b);
-            mtx_free(&A);
-            program_options_free(&args);
-            return EXIT_FAILURE;
-        }
-
-        if (args.verbose > 0) {
-            clock_gettime(CLOCK_MONOTONIC, &t1);
-            fprintf(diagf, "%.6f seconds\n", timespec_duration(t0, t1));
-            fflush(diagf);
-        }
-    }
-
-    /* 7. Clean up. */
-    mtx_free(&x);
-    mtx_free(&b);
-    mtx_free(&A);
+    /* 6. clean up */
+    mtxvector_free(&x);
+    mtxvector_free(&b);
+    mtxmatrix_free(&A);
     program_options_free(&args);
     return EXIT_SUCCESS;
 }
