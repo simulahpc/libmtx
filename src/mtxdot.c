@@ -471,7 +471,7 @@ static int distvector_dot(
     }
 
     /* 2. Compute the dot product. */
-    if (mtxdistfile2x->header.field == mtx_complex) {
+    if (mtxdistfile2x->header.field == mtx_field_complex) {
         if (precision == mtx_single) {
             float dot[2] = {0.0f, 0.0f};
             for (int i = 0; i < repeat; i++) {
@@ -1070,7 +1070,7 @@ static int vector_dot(
     }
 
     /* 2. Compute the dot product. */
-    if (mtxfilex->header.field == mtx_complex) {
+    if (mtxfilex->header.field == mtx_field_complex) {
         if (precision == mtx_single) {
             float dot[2] = {0.0f, 0.0f};
             for (int i = 0; i < repeat; i++) {
