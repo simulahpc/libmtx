@@ -26,8 +26,8 @@
 
 #include <libmtx/libmtx-config.h>
 
-#include <libmtx/precision.h>
-#include <libmtx/field.h>
+#include <libmtx/vector/precision.h>
+#include <libmtx/vector/field.h>
 #include <libmtx/matrix/symmetry.h>
 #include <libmtx/matrix/transpose.h>
 #include <libmtx/vector/base.h>

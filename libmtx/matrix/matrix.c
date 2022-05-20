@@ -26,7 +26,7 @@
 #include <libmtx/error.h>
 #include <libmtx/matrix/matrix.h>
 #include <libmtx/mtxfile/mtxfile.h>
-#include <libmtx/precision.h>
+#include <libmtx/vector/precision.h>
 #include <libmtx/util/partition.h>
 
 #ifdef LIBMTX_HAVE_LIBZ

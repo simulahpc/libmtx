@@ -24,11 +24,11 @@
 #include <libmtx/libmtx-config.h>
 
 #include <libmtx/error.h>
-#include <libmtx/field.h>
+#include <libmtx/vector/field.h>
 #include <libmtx/matrix/matrix.h>
 #include <libmtx/matrix/matrix_coordinate.h>
 #include <libmtx/mtxfile/mtxfile.h>
-#include <libmtx/precision.h>
+#include <libmtx/vector/precision.h>
 #include <libmtx/vector/base.h>
 #include <libmtx/vector/vector.h>
 

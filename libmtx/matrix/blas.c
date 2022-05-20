@@ -24,8 +24,8 @@
 #include <libmtx/libmtx-config.h>
 
 #include <libmtx/error.h>
-#include <libmtx/field.h>
-#include <libmtx/precision.h>
+#include <libmtx/vector/field.h>
+#include <libmtx/vector/precision.h>
 
 #include <libmtx/matrix/blas.h>
 #include <libmtx/matrix/matrix.h>

@@ -55,20 +55,22 @@ libmtx_la_LIBADD = $(BLAS_LIBS) $(MPILDFLAGS)
 # Source files
 libmtx_la_SOURCES = \
 	libmtx/error.c \
-	libmtx/field.c \
 	libmtx/matrix/blas.c \
 	libmtx/matrix/dense.c \
 	libmtx/matrix/dist.c \
 	libmtx/matrix/matrix.c \
 	libmtx/matrix/matrix_coordinate.c \
 	libmtx/matrix/matrix_csr.c \
+	libmtx/matrix/symmetry.c \
+	libmtx/matrix/symmetry.h \
+	libmtx/matrix/transpose.c \
+	libmtx/matrix/transpose.h \
 	libmtx/mtxfile/comments.c \
 	libmtx/mtxfile/data.c \
 	libmtx/mtxfile/header.c \
 	libmtx/mtxfile/mtxdistfile.c \
 	libmtx/mtxfile/mtxfile.c \
 	libmtx/mtxfile/size.c \
-	libmtx/precision.c \
 	libmtx/solver/cg.c \
 	libmtx/util/cuthill_mckee.c \
 	libmtx/util/cuthill_mckee.h \
@@ -87,22 +89,19 @@ libmtx_la_SOURCES = \
 	libmtx/util/permute.h \
 	libmtx/util/sort.c \
 	libmtx/util/sort.h \
-	libmtx/matrix/symmetry.c \
-	libmtx/matrix/symmetry.h \
-	libmtx/matrix/transpose.c \
-	libmtx/matrix/transpose.h \
 	libmtx/vector/base.c \
 	libmtx/vector/blas.c \
 	libmtx/vector/dist.c \
+	libmtx/vector/field.c \
 	libmtx/vector/omp.c \
 	libmtx/vector/packed.c \
+	libmtx/vector/precision.c \
 	libmtx/vector/vector.c \
 	libmtx/version.c
 
 # Header files
 nobase_include_HEADERS = \
 	libmtx/error.h \
-	libmtx/field.h \
 	libmtx/libmtx.h \
 	libmtx/matrix/blas.h \
 	libmtx/matrix/dense.h \
@@ -116,7 +115,6 @@ nobase_include_HEADERS = \
 	libmtx/mtxfile/mtxdistfile.h \
 	libmtx/mtxfile/mtxfile.h \
 	libmtx/mtxfile/size.h \
-	libmtx/precision.h \
 	libmtx/solver/cg.h \
 	libmtx/util/distpartition.h \
 	libmtx/util/index_set.h \
@@ -124,8 +122,10 @@ nobase_include_HEADERS = \
 	libmtx/vector/base.h \
 	libmtx/vector/blas.h \
 	libmtx/vector/dist.h \
+	libmtx/vector/field.h \
 	libmtx/vector/omp.h \
 	libmtx/vector/packed.h \
+	libmtx/vector/precision.h \
 	libmtx/vector/vector.h \
 	libmtx/version.h
 

@@ -25,7 +25,7 @@
 
 #include <libmtx/error.h>
 #include <libmtx/mtxfile/mtxfile.h>
-#include <libmtx/precision.h>
+#include <libmtx/vector/precision.h>
 #include <libmtx/util/partition.h>
 #include <libmtx/vector/base.h>
 #include <libmtx/vector/blas.h>

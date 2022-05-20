@@ -22,7 +22,7 @@
  */
 
 #include <libmtx/error.h>
-#include <libmtx/field.h>
+#include <libmtx/vector/field.h>
 
 #include <stdint.h>
 #include <string.h>
