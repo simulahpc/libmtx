@@ -21,8 +21,8 @@
  * Matrices in CSR format.
  */
 
-#ifndef LIBMTX_MATRIX_CSR_H
-#define LIBMTX_MATRIX_CSR_H
+#ifndef LIBMTX_MATRIX_BASE_CSR_H
+#define LIBMTX_MATRIX_BASE_CSR_H
 
 #include <libmtx/libmtx-config.h>
 

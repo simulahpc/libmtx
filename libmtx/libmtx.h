@@ -32,7 +32,7 @@
 #include <libmtx/matrix/dist.h>
 #include <libmtx/matrix/matrix.h>
 #include <libmtx/matrix/base/coo.h>
-#include <libmtx/matrix/matrix_csr.h>
+#include <libmtx/matrix/base/csr.h>
 #include <libmtx/matrix/symmetry.h>
 #include <libmtx/matrix/transpose.h>
 #include <libmtx/mtxfile/mtxdistfile.h>

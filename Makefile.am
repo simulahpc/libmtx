@@ -60,7 +60,7 @@ libmtx_la_SOURCES = \
 	libmtx/matrix/dist.c \
 	libmtx/matrix/matrix.c \
 	libmtx/matrix/base/coo.c \
-	libmtx/matrix/matrix_csr.c \
+	libmtx/matrix/base/csr.c \
 	libmtx/matrix/symmetry.c \
 	libmtx/matrix/symmetry.h \
 	libmtx/matrix/transpose.c \
@@ -104,7 +104,7 @@ nobase_include_HEADERS = \
 	libmtx/matrix/dist.h \
 	libmtx/matrix/matrix.h \
 	libmtx/matrix/base/coo.h \
-	libmtx/matrix/matrix_csr.h \
+	libmtx/matrix/base/csr.h \
 	libmtx/mtxfile/comments.h \
 	libmtx/mtxfile/data.h \
 	libmtx/mtxfile/header.h \
@@ -216,7 +216,6 @@ endif
 check_PROGRAMS = \
 	tests/test_format \
 	tests/test_mtxfile \
-	tests/test_mtxmatrix_csr \
 	tests/test_parse \
 	tests/test_partition \
 	tests/test_permute \
@@ -225,9 +224,6 @@ check_PROGRAMS = \
 tests_test_mtxfile_CPPFLAGS = $(MPICPPFLAGS)
 tests_test_mtxfile_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
 tests_test_mtxfile_SOURCES = tests/test_mtxfile.c tests/test.h
-tests_test_mtxmatrix_csr_CPPFLAGS = $(MPICPPFLAGS)
-tests_test_mtxmatrix_csr_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
-tests_test_mtxmatrix_csr_SOURCES = tests/test_mtxmatrix_csr.c tests/test.h
 tests_test_format_CPPFLAGS = $(MPICPPFLAGS)
 tests_test_format_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
 tests_test_format_SOURCES = tests/test_fmtspec.c tests/test.h
@@ -247,7 +243,6 @@ tests_test_sort_SOURCES = tests/test_sort.c tests/test.h
 TESTS = \
 	tests/test_format \
 	tests/test_mtxfile \
-	tests/test_mtxmatrix_csr \
 	tests/test_parse \
 	tests/test_partition \
 	tests/test_permute \
@@ -271,6 +266,8 @@ check_PROGRAMS += tests/test_mtxdistfile
 TESTS += tests/test_mtxdistfile_parallel
 tests/test_mtxdistfile_parallel:  tests/test_mtxdistfile
 endif
+
+# vector
 
 tests_test_mtxvector_base_CPPFLAGS =
 tests_test_mtxvector_base_LDADD = $(top_builddir)/libmtx.la
@@ -309,6 +306,8 @@ TESTS += tests/test_mtxvector_dist_parallel
 tests/test_mtxvector_dist_parallel:  tests/test_mtxvector_dist
 endif
 
+# matrix
+
 tests_test_mtxmatrix_blas_CPPFLAGS =
 tests_test_mtxmatrix_blas_LDADD = $(top_builddir)/libmtx.la
 tests_test_mtxmatrix_blas_SOURCES = tests/test_mtxmatrix_blas.c tests/test.h
@@ -320,6 +319,12 @@ tests_test_mtxmatrix_base_coo_LDADD = $(top_builddir)/libmtx.la
 tests_test_mtxmatrix_base_coo_SOURCES = tests/test_mtxmatrix_base_coo.c tests/test.h
 check_PROGRAMS += tests/test_mtxmatrix_base_coo
 TESTS += tests/test_mtxmatrix_base_coo
+
+tests_test_mtxmatrix_base_csr_CPPFLAGS =
+tests_test_mtxmatrix_base_csr_LDADD = $(top_builddir)/libmtx.la
+tests_test_mtxmatrix_base_csr_SOURCES = tests/test_mtxmatrix_base_csr.c tests/test.h
+check_PROGRAMS += tests/test_mtxmatrix_base_csr
+TESTS += tests/test_mtxmatrix_base_csr
 
 tests_test_mtxmatrix_base_dense_CPPFLAGS =
 tests_test_mtxmatrix_base_dense_LDADD = $(top_builddir)/libmtx.la

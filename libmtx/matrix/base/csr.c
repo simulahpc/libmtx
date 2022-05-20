@@ -26,7 +26,7 @@
 #include <libmtx/error.h>
 #include <libmtx/vector/field.h>
 #include <libmtx/matrix/matrix.h>
-#include <libmtx/matrix/matrix_csr.h>
+#include <libmtx/matrix/base/csr.h>
 #include <libmtx/mtxfile/mtxfile.h>
 #include <libmtx/vector/precision.h>
 #include <libmtx/util/sort.h>
