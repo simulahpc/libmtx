@@ -42,7 +42,7 @@
 #include <stdio.h>
 
 struct mtxfile;
-struct mtxdistfile2;
+struct mtxdistfile;
 struct mtxdisterror;
 
 /**
@@ -463,25 +463,25 @@ int mtxvector_dist_to_mtxfile(
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxvector_dist_from_mtxdistfile2()’ converts from a vector in
+ * ‘mtxvector_dist_from_mtxdistfile()’ converts from a vector in
  * Matrix Market format that is distributed among multiple processes.
  *
  * The ‘type’ argument may be used to specify a desired storage format
  * or implementation for the underlying ‘mtxvector’ on each process.
  */
-int mtxvector_dist_from_mtxdistfile2(
+int mtxvector_dist_from_mtxdistfile(
     struct mtxvector_dist * x,
-    const struct mtxdistfile2 * mtxdistfile2,
+    const struct mtxdistfile * mtxdistfile,
     enum mtxvectortype type,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxvector_dist_to_mtxdistfile2()’ converts to a vector in Matrix
+ * ‘mtxvector_dist_to_mtxdistfile()’ converts to a vector in Matrix
  * Market format that is distributed among multiple processes.
  */
-int mtxvector_dist_to_mtxdistfile2(
-    struct mtxdistfile2 * mtxdistfile2,
+int mtxvector_dist_to_mtxdistfile(
+    struct mtxdistfile * mtxdistfile,
     const struct mtxvector_dist * x,
     enum mtxfileformat mtxfmt,
     struct mtxdisterror * disterr);

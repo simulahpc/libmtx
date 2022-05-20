@@ -22,4 +22,4 @@
 # Unit tests for distributed Matrix Market files.
 
 timeout --kill-after=60 60 \
-	mpirun --tag-output -np 2 tests/test_mtxdistfile2
+	mpirun --tag-output -np 2 tests/test_mtxdistfile

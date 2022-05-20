@@ -416,8 +416,8 @@ static double timespec_duration(
  * standard output.
  */
 static int distvector_dot(
-    struct mtxdistfile2 * mtxdistfile2x,
-    struct mtxdistfile2 * mtxdistfile2y,
+    struct mtxdistfile * mtxdistfilex,
+    struct mtxdistfile * mtxdistfiley,
     enum mtxvectortype vector_type,
     const char * format,
     int repeat,
@@ -432,17 +432,17 @@ static int distvector_dot(
 {
     int err;
     struct timespec t0, t1;
-    enum mtxprecision precision = mtxdistfile2x->precision;
+    enum mtxprecision precision = mtxdistfilex->precision;
 
     /* 1. Convert Matrix Market files to vectors. */
     if (verbose > 0) {
-        fprintf(diagf, "mtxvector_dist_from_mtxdistfile2: ");
+        fprintf(diagf, "mtxvector_dist_from_mtxdistfile: ");
         fflush(diagf);
         clock_gettime(CLOCK_MONOTONIC, &t0);
     }
     struct mtxvector_dist x;
-    err = mtxvector_dist_from_mtxdistfile2(
-        &x, mtxdistfile2x, vector_type, comm, disterr);
+    err = mtxvector_dist_from_mtxdistfile(
+        &x, mtxdistfilex, vector_type, comm, disterr);
     if (err) {
         if (verbose > 0) fprintf(diagf, "\n");
         return err;
@@ -453,13 +453,13 @@ static int distvector_dot(
     }
 
     if (verbose > 0) {
-        fprintf(diagf, "mtxvector_dist_from_mtxdistfile2: ");
+        fprintf(diagf, "mtxvector_dist_from_mtxdistfile: ");
         fflush(diagf);
         clock_gettime(CLOCK_MONOTONIC, &t0);
     }
     struct mtxvector_dist y;
-    err = mtxvector_dist_from_mtxdistfile2(
-        &y, mtxdistfile2y, vector_type, comm, disterr);
+    err = mtxvector_dist_from_mtxdistfile(
+        &y, mtxdistfiley, vector_type, comm, disterr);
     if (err) {
         if (verbose > 0) fprintf(diagf, "\n");
         mtxvector_dist_free(&x);
@@ -471,7 +471,7 @@ static int distvector_dot(
     }
 
     /* 2. Compute the dot product. */
-    if (mtxdistfile2x->header.field == mtx_field_complex) {
+    if (mtxdistfilex->header.field == mtx_field_complex) {
         if (precision == mtx_single) {
             float dot[2] = {0.0f, 0.0f};
             for (int i = 0; i < repeat; i++) {
@@ -763,7 +763,7 @@ int main(int argc, char *argv[])
     }
 
     if (args.verbose > 0) {
-        fprintf(diagf, "mtxdistfile2_from_mtxfile_rowwise: ");
+        fprintf(diagf, "mtxdistfile_from_mtxfile_rowwise: ");
         fflush(diagf);
         clock_gettime(CLOCK_MONOTONIC, &t0);
     }
@@ -791,9 +791,9 @@ int main(int argc, char *argv[])
         }
     }
 
-    struct mtxdistfile2 mtxdistfile2x;
-    err = mtxdistfile2_from_mtxfile_rowwise(
-        &mtxdistfile2x, &mtxfilex, args.partition, partsize, args.blksize,
+    struct mtxdistfile mtxdistfilex;
+    err = mtxdistfile_from_mtxfile_rowwise(
+        &mtxdistfilex, &mtxfilex, args.partition, partsize, args.blksize,
         comm, root, &disterr);
     if (err) {
         if (args.verbose > 0) fprintf(diagf, "\n");
@@ -820,7 +820,7 @@ int main(int argc, char *argv[])
 
     /* 4. Read the ‘y’ vector from a Matrix Market file, or use a
      * vector of all ones. */
-    struct mtxdistfile2 mtxdistfile2y;
+    struct mtxdistfile mtxdistfiley;
     if (args.y_path) {
         if (args.verbose > 0) {
             fprintf(diagf, "mtxfile_read: ");
@@ -849,7 +849,7 @@ int main(int argc, char *argv[])
                         program_invocation_short_name,
                         args.y_path, mtxstrerror(err));
             }
-            mtxdistfile2_free(&mtxdistfile2x);
+            mtxdistfile_free(&mtxdistfilex);
             program_options_free(&args);
             mtxdisterror_free(&disterr);
             MPI_Finalize();
@@ -864,7 +864,7 @@ int main(int argc, char *argv[])
         }
 
         if (args.verbose > 0) {
-            fprintf(diagf, "mtxdistfile2_from_mtxfile_rowwise: ");
+            fprintf(diagf, "mtxdistfile_from_mtxfile_rowwise: ");
             fflush(diagf);
             clock_gettime(CLOCK_MONOTONIC, &t0);
         }
@@ -885,7 +885,7 @@ int main(int argc, char *argv[])
                             program_invocation_short_name, mtxstrerror(err));
                 }
                 if (rank == root) mtxfile_free(&mtxfiley);
-                mtxdistfile2_free(&mtxdistfile2x);
+                mtxdistfile_free(&mtxdistfilex);
                 program_options_free(&args);
                 mtxdisterror_free(&disterr);
                 MPI_Finalize();
@@ -893,8 +893,8 @@ int main(int argc, char *argv[])
             }
         }
 
-        err = mtxdistfile2_from_mtxfile_rowwise(
-            &mtxdistfile2y, &mtxfiley, args.partition, partsize, args.blksize,
+        err = mtxdistfile_from_mtxfile_rowwise(
+            &mtxdistfiley, &mtxfiley, args.partition, partsize, args.blksize,
             comm, root, &disterr);
         if (err) {
             if (args.verbose > 0) fprintf(diagf, "\n");
@@ -906,7 +906,7 @@ int main(int argc, char *argv[])
                         : mtxstrerror(err));
             }
             if (rank == root) mtxfile_free(&mtxfiley);
-            mtxdistfile2_free(&mtxdistfile2x);
+            mtxdistfile_free(&mtxdistfilex);
             program_options_free(&args);
             mtxdisterror_free(&disterr);
             MPI_Finalize();
@@ -920,7 +920,7 @@ int main(int argc, char *argv[])
                     timespec_duration(t0, t1));
         }
     } else {
-        err = mtxdistfile2_init_copy(&mtxdistfile2y, &mtxdistfile2x, &disterr);
+        err = mtxdistfile_init_copy(&mtxdistfiley, &mtxdistfilex, &disterr);
         if (err) {
             if (rank == root) {
                 fprintf(stderr, "%s: %s\n",
@@ -929,14 +929,14 @@ int main(int argc, char *argv[])
                         ? mtxdisterror_description(&disterr)
                         : mtxstrerror(err));
             }
-            mtxdistfile2_free(&mtxdistfile2x);
+            mtxdistfile_free(&mtxdistfilex);
             program_options_free(&args);
             mtxdisterror_free(&disterr);
             MPI_Finalize();
             return EXIT_FAILURE;
         }
 
-        err = mtxdistfile2_set_constant_real_single(&mtxdistfile2y, 1.0f, &disterr);
+        err = mtxdistfile_set_constant_real_single(&mtxdistfiley, 1.0f, &disterr);
         if (err) {
             if (rank == root) {
                 fprintf(stderr, "%s: %s\n",
@@ -945,8 +945,8 @@ int main(int argc, char *argv[])
                         ? mtxdisterror_description(&disterr)
                         : mtxstrerror(err));
             }
-            mtxdistfile2_free(&mtxdistfile2y);
-            mtxdistfile2_free(&mtxdistfile2x);
+            mtxdistfile_free(&mtxdistfiley);
+            mtxdistfile_free(&mtxdistfilex);
             program_options_free(&args);
             mtxdisterror_free(&disterr);
             MPI_Finalize();
@@ -955,23 +955,23 @@ int main(int argc, char *argv[])
     }
 
     /* 5. Compute the dot product. */
-    if (mtxdistfile2x.header.object == mtxfile_matrix) {
+    if (mtxdistfilex.header.object == mtxfile_matrix) {
         /* TODO: Compute the Frobenius inner product of the matrices. */
         if (rank == root) {
             fprintf(stderr, "%s: %s\n",
                     program_invocation_short_name,
                     strerror(ENOTSUP));
         }
-        mtxdistfile2_free(&mtxdistfile2y);
-        mtxdistfile2_free(&mtxdistfile2x);
+        mtxdistfile_free(&mtxdistfiley);
+        mtxdistfile_free(&mtxdistfilex);
         program_options_free(&args);
         mtxdisterror_free(&disterr);
         MPI_Finalize();
         return EXIT_FAILURE;
 
-    } else if (mtxdistfile2x.header.object == mtxfile_vector) {
+    } else if (mtxdistfilex.header.object == mtxfile_vector) {
         err = distvector_dot(
-            &mtxdistfile2x, &mtxdistfile2y, args.vector_type, args.format,
+            &mtxdistfilex, &mtxdistfiley, args.vector_type, args.format,
             args.repeat, args.verbose, diagf, args.quiet,
             comm, comm_size, rank, root, &disterr);
         if (err) {
@@ -982,8 +982,8 @@ int main(int argc, char *argv[])
                         ? mtxdisterror_description(&disterr)
                         : mtxstrerror(err));
             }
-            mtxdistfile2_free(&mtxdistfile2y);
-            mtxdistfile2_free(&mtxdistfile2x);
+            mtxdistfile_free(&mtxdistfiley);
+            mtxdistfile_free(&mtxdistfilex);
             program_options_free(&args);
             mtxdisterror_free(&disterr);
             MPI_Finalize();
@@ -996,8 +996,8 @@ int main(int argc, char *argv[])
                     program_invocation_short_name,
                     mtxstrerror(MTX_ERR_INVALID_MTX_OBJECT));
         }
-        mtxdistfile2_free(&mtxdistfile2y);
-        mtxdistfile2_free(&mtxdistfile2x);
+        mtxdistfile_free(&mtxdistfiley);
+        mtxdistfile_free(&mtxdistfilex);
         program_options_free(&args);
         mtxdisterror_free(&disterr);
         MPI_Finalize();
@@ -1005,8 +1005,8 @@ int main(int argc, char *argv[])
     }
 
     /* 5. Clean up. */
-    mtxdistfile2_free(&mtxdistfile2y);
-    mtxdistfile2_free(&mtxdistfile2x);
+    mtxdistfile_free(&mtxdistfiley);
+    mtxdistfile_free(&mtxdistfilex);
     program_options_free(&args);
     mtxdisterror_free(&disterr);
     MPI_Finalize();

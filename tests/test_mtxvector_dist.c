@@ -27,7 +27,7 @@
 
 #include <libmtx/error.h>
 #include <libmtx/mtxfile/mtxfile.h>
-#include <libmtx/mtxfile/mtxdistfile2.h>
+#include <libmtx/mtxfile/mtxdistfile.h>
 #include <libmtx/vector/base.h>
 #include <libmtx/vector/dist.h>
 #include <libmtx/vector/packed.h>
@@ -576,10 +576,10 @@ int test_mtxvector_dist_to_mtxfile(void)
 }
 
 /**
- * ‘test_mtxvector_dist_from_mtxdistfile2()’ tests converting
+ * ‘test_mtxvector_dist_from_mtxdistfile()’ tests converting
  *  distributed Matrix Market files to vectors.
  */
-int test_mtxvector_dist_from_mtxdistfile2(void)
+int test_mtxvector_dist_from_mtxdistfile(void)
 {
     int err;
     char mpierrstr[MPI_MAX_ERROR_STRING];
@@ -617,8 +617,8 @@ int test_mtxvector_dist_from_mtxdistfile2(void)
         int64_t num_nonzeros = 3;
         int64_t localdatasize = rank == 0 ? 2 : 1;
 
-        struct mtxdistfile2 src;
-        err = mtxdistfile2_init_vector_coordinate_real_single(
+        struct mtxdistfile src;
+        err = mtxdistfile_init_vector_coordinate_real_single(
             &src, num_rows, num_nonzeros, localdatasize, NULL,
             srcdata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
@@ -626,7 +626,7 @@ int test_mtxvector_dist_from_mtxdistfile2(void)
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
 
         struct mtxvector_dist xdist;
-        err = mtxvector_dist_from_mtxdistfile2(
+        err = mtxvector_dist_from_mtxdistfile(
             &xdist, &src, mtxvector_base, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxdisterror_description(&disterr));
         TEST_ASSERT_EQ(9, xdist.size);
@@ -652,17 +652,17 @@ int test_mtxvector_dist_from_mtxdistfile2(void)
             TEST_ASSERT_EQ(4.0f, xbase->data.real_single[0]);
         }
         mtxvector_dist_free(&xdist);
-        mtxdistfile2_free(&src);
+        mtxdistfile_free(&src);
     }
     mtxdisterror_free(&disterr);
     return TEST_SUCCESS;
 }
 
 /**
- * ‘test_mtxvector_dist_to_mtxdistfile2()’ tests converting vectors to
+ * ‘test_mtxvector_dist_to_mtxdistfile()’ tests converting vectors to
  * distributed Matrix Market files.
  */
-int test_mtxvector_dist_to_mtxdistfile2(void)
+int test_mtxvector_dist_to_mtxdistfile(void)
 {
     int err;
     char mpierrstr[MPI_MAX_ERROR_STRING];
@@ -698,32 +698,32 @@ int test_mtxvector_dist_to_mtxdistfile2(void)
         err = mtxvector_dist_init_real_single(
             &x, mtxvector_base, size, nnz, idx, xdata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        struct mtxdistfile2 mtxdistfile2;
-        err = mtxvector_dist_to_mtxdistfile2(
-            &mtxdistfile2, &x, mtxfile_coordinate, &disterr);
+        struct mtxdistfile mtxdistfile;
+        err = mtxvector_dist_to_mtxdistfile(
+            &mtxdistfile, &x, mtxfile_coordinate, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        TEST_ASSERT_EQ(mtxfile_vector, mtxdistfile2.header.object);
-        TEST_ASSERT_EQ(mtxfile_coordinate, mtxdistfile2.header.format);
-        TEST_ASSERT_EQ(mtxfile_real, mtxdistfile2.header.field);
-        TEST_ASSERT_EQ(mtxfile_general, mtxdistfile2.header.symmetry);
-        TEST_ASSERT_EQ(size, mtxdistfile2.size.num_rows);
-        TEST_ASSERT_EQ(-1, mtxdistfile2.size.num_columns);
-        TEST_ASSERT_EQ(5, mtxdistfile2.size.num_nonzeros);
-        TEST_ASSERT_EQ(mtx_single, mtxdistfile2.precision);
-        TEST_ASSERT_EQ(5, mtxdistfile2.datasize);
+        TEST_ASSERT_EQ(mtxfile_vector, mtxdistfile.header.object);
+        TEST_ASSERT_EQ(mtxfile_coordinate, mtxdistfile.header.format);
+        TEST_ASSERT_EQ(mtxfile_real, mtxdistfile.header.field);
+        TEST_ASSERT_EQ(mtxfile_general, mtxdistfile.header.symmetry);
+        TEST_ASSERT_EQ(size, mtxdistfile.size.num_rows);
+        TEST_ASSERT_EQ(-1, mtxdistfile.size.num_columns);
+        TEST_ASSERT_EQ(5, mtxdistfile.size.num_nonzeros);
+        TEST_ASSERT_EQ(mtx_single, mtxdistfile.precision);
+        TEST_ASSERT_EQ(5, mtxdistfile.datasize);
         const struct mtxfile_vector_coordinate_real_single * data =
-            mtxdistfile2.data.vector_coordinate_real_single;
+            mtxdistfile.data.vector_coordinate_real_single;
         if (rank == 0) {
-            TEST_ASSERT_EQ(2, mtxdistfile2.localdatasize);
+            TEST_ASSERT_EQ(2, mtxdistfile.localdatasize);
             TEST_ASSERT_EQ( 2, data[0].i); TEST_ASSERT_EQ(1.0f, data[0].a);
             TEST_ASSERT_EQ( 4, data[1].i); TEST_ASSERT_EQ(1.0f, data[1].a);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ(3, mtxdistfile2.localdatasize);
+            TEST_ASSERT_EQ(3, mtxdistfile.localdatasize);
             TEST_ASSERT_EQ( 6, data[0].i); TEST_ASSERT_EQ(1.0f, data[0].a);
             TEST_ASSERT_EQ( 8, data[1].i); TEST_ASSERT_EQ(2.0f, data[1].a);
             TEST_ASSERT_EQ(10, data[2].i); TEST_ASSERT_EQ(3.0f, data[2].a);
         }
-        mtxdistfile2_free(&mtxdistfile2);
+        mtxdistfile_free(&mtxdistfile);
         mtxvector_dist_free(&x);
     }
     {
@@ -735,32 +735,32 @@ int test_mtxvector_dist_to_mtxdistfile2(void)
         err = mtxvector_dist_init_real_double(
             &x, mtxvector_base, size, nnz, idx, xdata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        struct mtxdistfile2 mtxdistfile2;
-        err = mtxvector_dist_to_mtxdistfile2(
-            &mtxdistfile2, &x, mtxfile_coordinate, &disterr);
+        struct mtxdistfile mtxdistfile;
+        err = mtxvector_dist_to_mtxdistfile(
+            &mtxdistfile, &x, mtxfile_coordinate, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        TEST_ASSERT_EQ(mtxfile_vector, mtxdistfile2.header.object);
-        TEST_ASSERT_EQ(mtxfile_coordinate, mtxdistfile2.header.format);
-        TEST_ASSERT_EQ(mtxfile_real, mtxdistfile2.header.field);
-        TEST_ASSERT_EQ(mtxfile_general, mtxdistfile2.header.symmetry);
-        TEST_ASSERT_EQ(size, mtxdistfile2.size.num_rows);
-        TEST_ASSERT_EQ(-1, mtxdistfile2.size.num_columns);
-        TEST_ASSERT_EQ(5, mtxdistfile2.size.num_nonzeros);
-        TEST_ASSERT_EQ(mtx_double, mtxdistfile2.precision);
-        TEST_ASSERT_EQ(5, mtxdistfile2.datasize);
+        TEST_ASSERT_EQ(mtxfile_vector, mtxdistfile.header.object);
+        TEST_ASSERT_EQ(mtxfile_coordinate, mtxdistfile.header.format);
+        TEST_ASSERT_EQ(mtxfile_real, mtxdistfile.header.field);
+        TEST_ASSERT_EQ(mtxfile_general, mtxdistfile.header.symmetry);
+        TEST_ASSERT_EQ(size, mtxdistfile.size.num_rows);
+        TEST_ASSERT_EQ(-1, mtxdistfile.size.num_columns);
+        TEST_ASSERT_EQ(5, mtxdistfile.size.num_nonzeros);
+        TEST_ASSERT_EQ(mtx_double, mtxdistfile.precision);
+        TEST_ASSERT_EQ(5, mtxdistfile.datasize);
         const struct mtxfile_vector_coordinate_real_double * data =
-            mtxdistfile2.data.vector_coordinate_real_double;
+            mtxdistfile.data.vector_coordinate_real_double;
         if (rank == 0) {
-            TEST_ASSERT_EQ(2, mtxdistfile2.localdatasize);
+            TEST_ASSERT_EQ(2, mtxdistfile.localdatasize);
             TEST_ASSERT_EQ( 2, data[0].i); TEST_ASSERT_EQ(1.0, data[0].a);
             TEST_ASSERT_EQ( 4, data[1].i); TEST_ASSERT_EQ(1.0, data[1].a);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ(3, mtxdistfile2.localdatasize);
+            TEST_ASSERT_EQ(3, mtxdistfile.localdatasize);
             TEST_ASSERT_EQ( 6, data[0].i); TEST_ASSERT_EQ(1.0, data[0].a);
             TEST_ASSERT_EQ( 8, data[1].i); TEST_ASSERT_EQ(2.0, data[1].a);
             TEST_ASSERT_EQ(10, data[2].i); TEST_ASSERT_EQ(3.0, data[2].a);
         }
-        mtxdistfile2_free(&mtxdistfile2);
+        mtxdistfile_free(&mtxdistfile);
         mtxvector_dist_free(&x);
     }
     {
@@ -772,23 +772,23 @@ int test_mtxvector_dist_to_mtxdistfile2(void)
         err = mtxvector_dist_init_complex_single(
             &x, mtxvector_base, size, nnz, idx, xdata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        struct mtxdistfile2 mtxdistfile2;
-        err = mtxvector_dist_to_mtxdistfile2(
-            &mtxdistfile2, &x, mtxfile_coordinate, &disterr);
+        struct mtxdistfile mtxdistfile;
+        err = mtxvector_dist_to_mtxdistfile(
+            &mtxdistfile, &x, mtxfile_coordinate, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        TEST_ASSERT_EQ(mtxfile_vector, mtxdistfile2.header.object);
-        TEST_ASSERT_EQ(mtxfile_coordinate, mtxdistfile2.header.format);
-        TEST_ASSERT_EQ(mtxfile_complex, mtxdistfile2.header.field);
-        TEST_ASSERT_EQ(mtxfile_general, mtxdistfile2.header.symmetry);
-        TEST_ASSERT_EQ(size, mtxdistfile2.size.num_rows);
-        TEST_ASSERT_EQ(-1, mtxdistfile2.size.num_columns);
-        TEST_ASSERT_EQ( 3, mtxdistfile2.size.num_nonzeros);
-        TEST_ASSERT_EQ(mtx_single, mtxdistfile2.precision);
-        TEST_ASSERT_EQ(3, mtxdistfile2.datasize);
+        TEST_ASSERT_EQ(mtxfile_vector, mtxdistfile.header.object);
+        TEST_ASSERT_EQ(mtxfile_coordinate, mtxdistfile.header.format);
+        TEST_ASSERT_EQ(mtxfile_complex, mtxdistfile.header.field);
+        TEST_ASSERT_EQ(mtxfile_general, mtxdistfile.header.symmetry);
+        TEST_ASSERT_EQ(size, mtxdistfile.size.num_rows);
+        TEST_ASSERT_EQ(-1, mtxdistfile.size.num_columns);
+        TEST_ASSERT_EQ( 3, mtxdistfile.size.num_nonzeros);
+        TEST_ASSERT_EQ(mtx_single, mtxdistfile.precision);
+        TEST_ASSERT_EQ(3, mtxdistfile.datasize);
         const struct mtxfile_vector_coordinate_complex_single * data =
-            mtxdistfile2.data.vector_coordinate_complex_single;
+            mtxdistfile.data.vector_coordinate_complex_single;
         if (rank == 0) {
-            TEST_ASSERT_EQ(2, mtxdistfile2.localdatasize);
+            TEST_ASSERT_EQ(2, mtxdistfile.localdatasize);
             TEST_ASSERT_EQ(2, data[0].i);
             TEST_ASSERT_EQ(1.0f, data[0].a[0]);
             TEST_ASSERT_EQ(1.0f, data[0].a[1]);
@@ -796,12 +796,12 @@ int test_mtxvector_dist_to_mtxdistfile2(void)
             TEST_ASSERT_EQ(1.0f, data[1].a[0]);
             TEST_ASSERT_EQ(2.0f, data[1].a[1]);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ(1, mtxdistfile2.localdatasize);
+            TEST_ASSERT_EQ(1, mtxdistfile.localdatasize);
             TEST_ASSERT_EQ(6, data[0].i);
             TEST_ASSERT_EQ(3.0f, data[0].a[0]);
             TEST_ASSERT_EQ(0.0f, data[0].a[1]);
         }
-        mtxdistfile2_free(&mtxdistfile2);
+        mtxdistfile_free(&mtxdistfile);
         mtxvector_dist_free(&x);
     }
     {
@@ -813,23 +813,23 @@ int test_mtxvector_dist_to_mtxdistfile2(void)
         err = mtxvector_dist_init_complex_double(
             &x, mtxvector_base, size, nnz, idx, xdata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        struct mtxdistfile2 mtxdistfile2;
-        err = mtxvector_dist_to_mtxdistfile2(
-            &mtxdistfile2, &x, mtxfile_coordinate, &disterr);
+        struct mtxdistfile mtxdistfile;
+        err = mtxvector_dist_to_mtxdistfile(
+            &mtxdistfile, &x, mtxfile_coordinate, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        TEST_ASSERT_EQ(mtxfile_vector, mtxdistfile2.header.object);
-        TEST_ASSERT_EQ(mtxfile_coordinate, mtxdistfile2.header.format);
-        TEST_ASSERT_EQ(mtxfile_complex, mtxdistfile2.header.field);
-        TEST_ASSERT_EQ(mtxfile_general, mtxdistfile2.header.symmetry);
-        TEST_ASSERT_EQ(size, mtxdistfile2.size.num_rows);
-        TEST_ASSERT_EQ(-1, mtxdistfile2.size.num_columns);
-        TEST_ASSERT_EQ( 3, mtxdistfile2.size.num_nonzeros);
-        TEST_ASSERT_EQ(mtx_double, mtxdistfile2.precision);
-        TEST_ASSERT_EQ(3, mtxdistfile2.datasize);
+        TEST_ASSERT_EQ(mtxfile_vector, mtxdistfile.header.object);
+        TEST_ASSERT_EQ(mtxfile_coordinate, mtxdistfile.header.format);
+        TEST_ASSERT_EQ(mtxfile_complex, mtxdistfile.header.field);
+        TEST_ASSERT_EQ(mtxfile_general, mtxdistfile.header.symmetry);
+        TEST_ASSERT_EQ(size, mtxdistfile.size.num_rows);
+        TEST_ASSERT_EQ(-1, mtxdistfile.size.num_columns);
+        TEST_ASSERT_EQ( 3, mtxdistfile.size.num_nonzeros);
+        TEST_ASSERT_EQ(mtx_double, mtxdistfile.precision);
+        TEST_ASSERT_EQ(3, mtxdistfile.datasize);
         const struct mtxfile_vector_coordinate_complex_double * data =
-            mtxdistfile2.data.vector_coordinate_complex_double;
+            mtxdistfile.data.vector_coordinate_complex_double;
         if (rank == 0) {
-            TEST_ASSERT_EQ(2, mtxdistfile2.localdatasize);
+            TEST_ASSERT_EQ(2, mtxdistfile.localdatasize);
             TEST_ASSERT_EQ(2, data[0].i);
             TEST_ASSERT_EQ(1.0, data[0].a[0]);
             TEST_ASSERT_EQ(1.0, data[0].a[1]);
@@ -837,12 +837,12 @@ int test_mtxvector_dist_to_mtxdistfile2(void)
             TEST_ASSERT_EQ(1.0, data[1].a[0]);
             TEST_ASSERT_EQ(2.0, data[1].a[1]);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ(1, mtxdistfile2.localdatasize);
+            TEST_ASSERT_EQ(1, mtxdistfile.localdatasize);
             TEST_ASSERT_EQ(6, data[0].i);
             TEST_ASSERT_EQ(3.0, data[0].a[0]);
             TEST_ASSERT_EQ(0.0, data[0].a[1]);
         }
-        mtxdistfile2_free(&mtxdistfile2);
+        mtxdistfile_free(&mtxdistfile);
         mtxvector_dist_free(&x);
     }
     {
@@ -854,32 +854,32 @@ int test_mtxvector_dist_to_mtxdistfile2(void)
         err = mtxvector_dist_init_integer_single(
             &x, mtxvector_base, size, nnz, idx, xdata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        struct mtxdistfile2 mtxdistfile2;
-        err = mtxvector_dist_to_mtxdistfile2(
-            &mtxdistfile2, &x, mtxfile_coordinate, &disterr);
+        struct mtxdistfile mtxdistfile;
+        err = mtxvector_dist_to_mtxdistfile(
+            &mtxdistfile, &x, mtxfile_coordinate, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        TEST_ASSERT_EQ(mtxfile_vector, mtxdistfile2.header.object);
-        TEST_ASSERT_EQ(mtxfile_coordinate, mtxdistfile2.header.format);
-        TEST_ASSERT_EQ(mtxfile_integer, mtxdistfile2.header.field);
-        TEST_ASSERT_EQ(mtxfile_general, mtxdistfile2.header.symmetry);
-        TEST_ASSERT_EQ(size, mtxdistfile2.size.num_rows);
-        TEST_ASSERT_EQ(-1, mtxdistfile2.size.num_columns);
-        TEST_ASSERT_EQ( 5, mtxdistfile2.size.num_nonzeros);
-        TEST_ASSERT_EQ(mtx_single, mtxdistfile2.precision);
-        TEST_ASSERT_EQ(5, mtxdistfile2.datasize);
+        TEST_ASSERT_EQ(mtxfile_vector, mtxdistfile.header.object);
+        TEST_ASSERT_EQ(mtxfile_coordinate, mtxdistfile.header.format);
+        TEST_ASSERT_EQ(mtxfile_integer, mtxdistfile.header.field);
+        TEST_ASSERT_EQ(mtxfile_general, mtxdistfile.header.symmetry);
+        TEST_ASSERT_EQ(size, mtxdistfile.size.num_rows);
+        TEST_ASSERT_EQ(-1, mtxdistfile.size.num_columns);
+        TEST_ASSERT_EQ( 5, mtxdistfile.size.num_nonzeros);
+        TEST_ASSERT_EQ(mtx_single, mtxdistfile.precision);
+        TEST_ASSERT_EQ(5, mtxdistfile.datasize);
         const struct mtxfile_vector_coordinate_integer_single * data =
-            mtxdistfile2.data.vector_coordinate_integer_single;
+            mtxdistfile.data.vector_coordinate_integer_single;
         if (rank == 0) {
-            TEST_ASSERT_EQ(2, mtxdistfile2.localdatasize);
+            TEST_ASSERT_EQ(2, mtxdistfile.localdatasize);
             TEST_ASSERT_EQ( 2, data[0].i); TEST_ASSERT_EQ(1, data[0].a);
             TEST_ASSERT_EQ( 4, data[1].i); TEST_ASSERT_EQ(1, data[1].a);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ(3, mtxdistfile2.localdatasize);
+            TEST_ASSERT_EQ(3, mtxdistfile.localdatasize);
             TEST_ASSERT_EQ( 6, data[0].i); TEST_ASSERT_EQ(1, data[0].a);
             TEST_ASSERT_EQ( 8, data[1].i); TEST_ASSERT_EQ(2, data[1].a);
             TEST_ASSERT_EQ(10, data[2].i); TEST_ASSERT_EQ(3, data[2].a);
         }
-        mtxdistfile2_free(&mtxdistfile2);
+        mtxdistfile_free(&mtxdistfile);
         mtxvector_dist_free(&x);
     }
     {
@@ -891,32 +891,32 @@ int test_mtxvector_dist_to_mtxdistfile2(void)
         err = mtxvector_dist_init_integer_double(
             &x, mtxvector_base, size, nnz, idx, xdata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        struct mtxdistfile2 mtxdistfile2;
-        err = mtxvector_dist_to_mtxdistfile2(
-            &mtxdistfile2, &x, mtxfile_coordinate, &disterr);
+        struct mtxdistfile mtxdistfile;
+        err = mtxvector_dist_to_mtxdistfile(
+            &mtxdistfile, &x, mtxfile_coordinate, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        TEST_ASSERT_EQ(mtxfile_vector, mtxdistfile2.header.object);
-        TEST_ASSERT_EQ(mtxfile_coordinate, mtxdistfile2.header.format);
-        TEST_ASSERT_EQ(mtxfile_integer, mtxdistfile2.header.field);
-        TEST_ASSERT_EQ(mtxfile_general, mtxdistfile2.header.symmetry);
-        TEST_ASSERT_EQ(size, mtxdistfile2.size.num_rows);
-        TEST_ASSERT_EQ(-1, mtxdistfile2.size.num_columns);
-        TEST_ASSERT_EQ( 5, mtxdistfile2.size.num_nonzeros);
-        TEST_ASSERT_EQ(mtx_double, mtxdistfile2.precision);
-        TEST_ASSERT_EQ(5, mtxdistfile2.datasize);
+        TEST_ASSERT_EQ(mtxfile_vector, mtxdistfile.header.object);
+        TEST_ASSERT_EQ(mtxfile_coordinate, mtxdistfile.header.format);
+        TEST_ASSERT_EQ(mtxfile_integer, mtxdistfile.header.field);
+        TEST_ASSERT_EQ(mtxfile_general, mtxdistfile.header.symmetry);
+        TEST_ASSERT_EQ(size, mtxdistfile.size.num_rows);
+        TEST_ASSERT_EQ(-1, mtxdistfile.size.num_columns);
+        TEST_ASSERT_EQ( 5, mtxdistfile.size.num_nonzeros);
+        TEST_ASSERT_EQ(mtx_double, mtxdistfile.precision);
+        TEST_ASSERT_EQ(5, mtxdistfile.datasize);
         const struct mtxfile_vector_coordinate_integer_double * data =
-            mtxdistfile2.data.vector_coordinate_integer_double;
+            mtxdistfile.data.vector_coordinate_integer_double;
         if (rank == 0) {
-            TEST_ASSERT_EQ(2, mtxdistfile2.localdatasize);
+            TEST_ASSERT_EQ(2, mtxdistfile.localdatasize);
             TEST_ASSERT_EQ( 2, data[0].i); TEST_ASSERT_EQ(1, data[0].a);
             TEST_ASSERT_EQ( 4, data[1].i); TEST_ASSERT_EQ(1, data[1].a);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ(3, mtxdistfile2.localdatasize);
+            TEST_ASSERT_EQ(3, mtxdistfile.localdatasize);
             TEST_ASSERT_EQ( 6, data[0].i); TEST_ASSERT_EQ(1, data[0].a);
             TEST_ASSERT_EQ( 8, data[1].i); TEST_ASSERT_EQ(2, data[1].a);
             TEST_ASSERT_EQ(10, data[2].i); TEST_ASSERT_EQ(3, data[2].a);
         }
-        mtxdistfile2_free(&mtxdistfile2);
+        mtxdistfile_free(&mtxdistfile);
         mtxvector_dist_free(&x);
     }
     mtxdisterror_free(&disterr);
@@ -2657,8 +2657,8 @@ int main(int argc, char * argv[])
     TEST_SUITE_BEGIN("Running tests for distributed vectors\n");
     TEST_RUN(test_mtxvector_dist_from_mtxfile);
     TEST_RUN(test_mtxvector_dist_to_mtxfile);
-    TEST_RUN(test_mtxvector_dist_from_mtxdistfile2);
-    TEST_RUN(test_mtxvector_dist_to_mtxdistfile2);
+    TEST_RUN(test_mtxvector_dist_from_mtxdistfile);
+    TEST_RUN(test_mtxvector_dist_to_mtxdistfile);
     TEST_RUN(test_mtxvector_dist_swap);
     TEST_RUN(test_mtxvector_dist_copy);
     TEST_RUN(test_mtxvector_dist_scal);

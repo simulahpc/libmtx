@@ -43,7 +43,7 @@ EXTRA_DIST = \
 	manual/texinfo.css \
 	tests/test_assumedpartition_parallel \
 	tests/test_distsort_parallel \
-	tests/test_mtxdistfile2_parallel \
+	tests/test_mtxdistfile_parallel \
 	tests/test_mtxfile_mpi_parallel
 
 # Matrix Market library
@@ -65,7 +65,7 @@ libmtx_la_SOURCES = \
 	libmtx/mtxfile/comments.c \
 	libmtx/mtxfile/data.c \
 	libmtx/mtxfile/header.c \
-	libmtx/mtxfile/mtxdistfile2.c \
+	libmtx/mtxfile/mtxdistfile.c \
 	libmtx/mtxfile/mtxfile.c \
 	libmtx/mtxfile/size.c \
 	libmtx/precision.c \
@@ -113,7 +113,7 @@ nobase_include_HEADERS = \
 	libmtx/mtxfile/comments.h \
 	libmtx/mtxfile/data.h \
 	libmtx/mtxfile/header.h \
-	libmtx/mtxfile/mtxdistfile2.h \
+	libmtx/mtxfile/mtxdistfile.h \
 	libmtx/mtxfile/mtxfile.h \
 	libmtx/mtxfile/size.h \
 	libmtx/precision.h \
@@ -280,12 +280,12 @@ tests/test_assumedpartition_parallel:  tests/test_assumedpartition
 endif
 
 if HAVE_MPI
-tests_test_mtxdistfile2_CPPFLAGS =
-tests_test_mtxdistfile2_LDADD = $(top_builddir)/libmtx.la
-tests_test_mtxdistfile2_SOURCES = tests/test_mtxdistfile2.c tests/test.h
-check_PROGRAMS += tests/test_mtxdistfile2
-TESTS += tests/test_mtxdistfile2_parallel
-tests/test_mtxdistfile2_parallel:  tests/test_mtxdistfile2
+tests_test_mtxdistfile_CPPFLAGS =
+tests_test_mtxdistfile_LDADD = $(top_builddir)/libmtx.la
+tests_test_mtxdistfile_SOURCES = tests/test_mtxdistfile.c tests/test.h
+check_PROGRAMS += tests/test_mtxdistfile
+TESTS += tests/test_mtxdistfile_parallel
+tests/test_mtxdistfile_parallel:  tests/test_mtxdistfile
 endif
 
 tests_test_mtxvector_base_CPPFLAGS =

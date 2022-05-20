@@ -34,7 +34,7 @@
 #include <libmtx/matrix/matrix.h>
 #include <libmtx/matrix/matrix_coordinate.h>
 #include <libmtx/matrix/matrix_csr.h>
-#include <libmtx/mtxfile/mtxdistfile2.h>
+#include <libmtx/mtxfile/mtxdistfile.h>
 #include <libmtx/mtxfile/mtxfile.h>
 #include <libmtx/precision.h>
 #include <libmtx/solver/cg.h>

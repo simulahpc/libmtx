@@ -495,7 +495,7 @@ static double timespec_duration(
  */
 static int distvector_scal(
     double alpha,
-    struct mtxdistfile2 * mtxdistfile2,
+    struct mtxdistfile * mtxdistfile,
     enum mtxvectortype vector_type,
     const char * format,
     enum mtxfileformat mtxfmt,
@@ -511,18 +511,18 @@ static int distvector_scal(
 {
     int err;
     struct timespec t0, t1;
-    enum mtxprecision precision = mtxdistfile2->precision;
+    enum mtxprecision precision = mtxdistfile->precision;
 
     /* 1. Convert Matrix Market file to a vector. */
     if (verbose > 0) {
-        fprintf(diagf, "mtxvector_dist_from_mtxdistfile2: ");
+        fprintf(diagf, "mtxvector_dist_from_mtxdistfile: ");
         fflush(diagf);
         clock_gettime(CLOCK_MONOTONIC, &t0);
     }
 
     struct mtxvector_dist x;
-    err = mtxvector_dist_from_mtxdistfile2(
-        &x, mtxdistfile2, vector_type, comm, disterr);
+    err = mtxvector_dist_from_mtxdistfile(
+        &x, mtxdistfile, vector_type, comm, disterr);
     if (err) {
         if (verbose > 0) fprintf(diagf, "\n");
         return err;
@@ -746,7 +746,7 @@ int main(int argc, char *argv[])
     }
 
     if (args.verbose > 0) {
-        fprintf(diagf, "mtxdistfile2_from_mtxfile_rowwise: ");
+        fprintf(diagf, "mtxdistfile_from_mtxfile_rowwise: ");
         fflush(diagf);
         clock_gettime(CLOCK_MONOTONIC, &t0);
     }
@@ -774,9 +774,9 @@ int main(int argc, char *argv[])
         }
     }
 
-    struct mtxdistfile2 mtxdistfile2;
-    err = mtxdistfile2_from_mtxfile_rowwise(
-        &mtxdistfile2, &mtxfile, args.partition, partsize, args.blksize,
+    struct mtxdistfile mtxdistfile;
+    err = mtxdistfile_from_mtxfile_rowwise(
+        &mtxdistfile, &mtxfile, args.partition, partsize, args.blksize,
         comm, root, &disterr);
     if (err) {
         if (args.verbose > 0) fprintf(diagf, "\n");
@@ -802,23 +802,23 @@ int main(int argc, char *argv[])
     }
 
     /* 4. Scale the vector by a constant. */
-    if (mtxdistfile2.header.object == mtxfile_matrix) {
+    if (mtxdistfile.header.object == mtxfile_matrix) {
         /* TODO: Scale a matrix by a constant. */
         if (rank == root) {
             fprintf(stderr, "%s: %s\n",
                     program_invocation_short_name,
                     strerror(ENOTSUP));
         }
-        mtxdistfile2_free(&mtxdistfile2);
+        mtxdistfile_free(&mtxdistfile);
         program_options_free(&args);
         mtxdisterror_free(&disterr);
         MPI_Finalize();
         return EXIT_FAILURE;
 
-    } else if (mtxdistfile2.header.object == mtxfile_vector) {
+    } else if (mtxdistfile.header.object == mtxfile_vector) {
         err = distvector_scal(
-            args.alpha, &mtxdistfile2, args.vector_type, args.format,
-            mtxdistfile2.header.format,
+            args.alpha, &mtxdistfile, args.vector_type, args.format,
+            mtxdistfile.header.format,
             args.repeat, args.verbose, diagf, args.quiet,
             comm, comm_size, rank, root, &disterr);
         if (err) {
@@ -829,7 +829,7 @@ int main(int argc, char *argv[])
                         ? mtxdisterror_description(&disterr)
                         : mtxstrerror(err));
             }
-            mtxdistfile2_free(&mtxdistfile2);
+            mtxdistfile_free(&mtxdistfile);
             program_options_free(&args);
             mtxdisterror_free(&disterr);
             MPI_Finalize();
@@ -842,7 +842,7 @@ int main(int argc, char *argv[])
                     program_invocation_short_name,
                     mtxstrerror(MTX_ERR_INVALID_MTX_OBJECT));
         }
-        mtxdistfile2_free(&mtxdistfile2);
+        mtxdistfile_free(&mtxdistfile);
         program_options_free(&args);
         mtxdisterror_free(&disterr);
         MPI_Finalize();
@@ -850,7 +850,7 @@ int main(int argc, char *argv[])
     }
 
     /* 5. Clean up. */
-    mtxdistfile2_free(&mtxdistfile2);
+    mtxdistfile_free(&mtxdistfile);
     program_options_free(&args);
     mtxdisterror_free(&disterr);
     MPI_Finalize();

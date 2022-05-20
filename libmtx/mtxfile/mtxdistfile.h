@@ -52,7 +52,7 @@ struct mtxdisterror;
 
 #ifdef LIBMTX_HAVE_MPI
 /**
- * ‘mtxdistfile2’ represents a file in the Matrix Market file format
+ * ‘mtxdistfile’ represents a file in the Matrix Market file format
  * distributed among multiple processes, where MPI is used for
  * communicating between processes.
  *
@@ -60,7 +60,7 @@ struct mtxdisterror;
  * lines of the underlying Matrix Market file are distributed among
  * processes according to a specified partitioning.
  */
-struct mtxdistfile2
+struct mtxdistfile
 {
     /**
      * ‘comm’ is an MPI communicator for processes among which the
@@ -134,7 +134,7 @@ struct mtxdistfile2
  */
 
 /**
- * ‘mtxdistfile2_alloc()’ allocates storage for a distributed Matrix
+ * ‘mtxdistfile_alloc()’ allocates storage for a distributed Matrix
  * Market file with the given header line, comment lines, size line
  * and precision.
  *
@@ -146,8 +146,8 @@ struct mtxdistfile2
  * ‘comm’ must be the same MPI communicator that was used to create
  * ‘disterr’.
  */
-int mtxdistfile2_alloc(
-    struct mtxdistfile2 * mtxdistfile2,
+int mtxdistfile_alloc(
+    struct mtxdistfile * mtxdistfile,
     const struct mtxfileheader * header,
     const struct mtxfilecomments * comments,
     const struct mtxfilesize * size,
@@ -158,29 +158,29 @@ int mtxdistfile2_alloc(
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxdistfile2_free()’ frees storage allocated for a distributed
+ * ‘mtxdistfile_free()’ frees storage allocated for a distributed
  * Matrix Market file.
  */
-void mtxdistfile2_free(
-    struct mtxdistfile2 * mtxdistfile2);
+void mtxdistfile_free(
+    struct mtxdistfile * mtxdistfile);
 
 /**
- * ‘mtxdistfile2_alloc_copy()’ allocates storage for a copy of a
+ * ‘mtxdistfile_alloc_copy()’ allocates storage for a copy of a
  * distributed Matrix Market file without initialising the underlying
  * values.
  */
-int mtxdistfile2_alloc_copy(
-    struct mtxdistfile2 * dst,
-    const struct mtxdistfile2 * src,
+int mtxdistfile_alloc_copy(
+    struct mtxdistfile * dst,
+    const struct mtxdistfile * src,
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxdistfile2_init_copy()’ creates a copy of a distributed Matrix
+ * ‘mtxdistfile_init_copy()’ creates a copy of a distributed Matrix
  * Market file.
  */
-int mtxdistfile2_init_copy(
-    struct mtxdistfile2 * dst,
-    const struct mtxdistfile2 * src,
+int mtxdistfile_init_copy(
+    struct mtxdistfile * dst,
+    const struct mtxdistfile * src,
     struct mtxdisterror * disterr);
 
 /*
@@ -188,11 +188,11 @@ int mtxdistfile2_init_copy(
  */
 
 /**
- * ‘mtxdistfile2_alloc_matrix_array()’ allocates a distributed matrix
+ * ‘mtxdistfile_alloc_matrix_array()’ allocates a distributed matrix
  * in array format.
  */
-int mtxdistfile2_alloc_matrix_array(
-    struct mtxdistfile2 * mtxdistfile2,
+int mtxdistfile_alloc_matrix_array(
+    struct mtxdistfile * mtxdistfile,
     enum mtxfilefield field,
     enum mtxfilesymmetry symmetry,
     enum mtxprecision precision,
@@ -204,12 +204,12 @@ int mtxdistfile2_alloc_matrix_array(
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxdistfile2_init_matrix_array_real_single()’ allocates and
+ * ‘mtxdistfile_init_matrix_array_real_single()’ allocates and
  * initialises a distributed matrix in array format with real, single
  * precision coefficients.
  */
-int mtxdistfile2_init_matrix_array_real_single(
-    struct mtxdistfile2 * mtxdistfile2,
+int mtxdistfile_init_matrix_array_real_single(
+    struct mtxdistfile * mtxdistfile,
     enum mtxfilesymmetry symmetry,
     int64_t num_rows,
     int64_t num_columns,
@@ -220,11 +220,11 @@ int mtxdistfile2_init_matrix_array_real_single(
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxdistfile2_init_matrix_array_real_double()’ allocates and initialises
+ * ‘mtxdistfile_init_matrix_array_real_double()’ allocates and initialises
  * a matrix in array format with real, double precision coefficients.
  */
-int mtxdistfile2_init_matrix_array_real_double(
-    struct mtxdistfile2 * mtxdistfile2,
+int mtxdistfile_init_matrix_array_real_double(
+    struct mtxdistfile * mtxdistfile,
     enum mtxfilesymmetry symmetry,
     int64_t num_rows,
     int64_t num_columns,
@@ -235,12 +235,12 @@ int mtxdistfile2_init_matrix_array_real_double(
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxdistfile2_init_matrix_array_complex_single()’ allocates and
+ * ‘mtxdistfile_init_matrix_array_complex_single()’ allocates and
  * initialises a distributed matrix in array format with complex,
  * single precision coefficients.
  */
-int mtxdistfile2_init_matrix_array_complex_single(
-    struct mtxdistfile2 * mtxdistfile2,
+int mtxdistfile_init_matrix_array_complex_single(
+    struct mtxdistfile * mtxdistfile,
     enum mtxfilesymmetry symmetry,
     int64_t num_rows,
     int64_t num_columns,
@@ -251,12 +251,12 @@ int mtxdistfile2_init_matrix_array_complex_single(
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxdistfile2_init_matrix_array_complex_double()’ allocates and
+ * ‘mtxdistfile_init_matrix_array_complex_double()’ allocates and
  * initialises a matrix in array format with complex, double precision
  * coefficients.
  */
-int mtxdistfile2_init_matrix_array_complex_double(
-    struct mtxdistfile2 * mtxdistfile2,
+int mtxdistfile_init_matrix_array_complex_double(
+    struct mtxdistfile * mtxdistfile,
     enum mtxfilesymmetry symmetry,
     int64_t num_rows,
     int64_t num_columns,
@@ -267,12 +267,12 @@ int mtxdistfile2_init_matrix_array_complex_double(
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxdistfile2_init_matrix_array_integer_single()’ allocates and
+ * ‘mtxdistfile_init_matrix_array_integer_single()’ allocates and
  * initialises a distributed matrix in array format with integer,
  * single precision coefficients.
  */
-int mtxdistfile2_init_matrix_array_integer_single(
-    struct mtxdistfile2 * mtxdistfile2,
+int mtxdistfile_init_matrix_array_integer_single(
+    struct mtxdistfile * mtxdistfile,
     enum mtxfilesymmetry symmetry,
     int64_t num_rows,
     int64_t num_columns,
@@ -283,12 +283,12 @@ int mtxdistfile2_init_matrix_array_integer_single(
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxdistfile2_init_matrix_array_integer_double()’ allocates and
+ * ‘mtxdistfile_init_matrix_array_integer_double()’ allocates and
  * initialises a matrix in array format with integer, double precision
  * coefficients.
  */
-int mtxdistfile2_init_matrix_array_integer_double(
-    struct mtxdistfile2 * mtxdistfile2,
+int mtxdistfile_init_matrix_array_integer_double(
+    struct mtxdistfile * mtxdistfile,
     enum mtxfilesymmetry symmetry,
     int64_t num_rows,
     int64_t num_columns,
@@ -303,11 +303,11 @@ int mtxdistfile2_init_matrix_array_integer_double(
  */
 
 /**
- * ‘mtxdistfile2_alloc_vector_array()’ allocates a distributed vector
+ * ‘mtxdistfile_alloc_vector_array()’ allocates a distributed vector
  * in array format.
  */
-int mtxdistfile2_alloc_vector_array(
-    struct mtxdistfile2 * mtxdistfile2,
+int mtxdistfile_alloc_vector_array(
+    struct mtxdistfile * mtxdistfile,
     enum mtxfilefield field,
     enum mtxprecision precision,
     int64_t num_rows,
@@ -317,12 +317,12 @@ int mtxdistfile2_alloc_vector_array(
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxdistfile2_init_vector_array_real_single()’ allocates and
+ * ‘mtxdistfile_init_vector_array_real_single()’ allocates and
  * initialises a distributed vector in array format with real, single
  * precision coefficients.
  */
-int mtxdistfile2_init_vector_array_real_single(
-    struct mtxdistfile2 * mtxdistfile2,
+int mtxdistfile_init_vector_array_real_single(
+    struct mtxdistfile * mtxdistfile,
     int64_t num_rows,
     int64_t localdatasize,
     const int64_t * idx,
@@ -331,12 +331,12 @@ int mtxdistfile2_init_vector_array_real_single(
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxdistfile2_init_vector_array_real_double()’ allocates and
+ * ‘mtxdistfile_init_vector_array_real_double()’ allocates and
  * initialises a vector in array format with real, double precision
  * coefficients.
  */
-int mtxdistfile2_init_vector_array_real_double(
-    struct mtxdistfile2 * mtxdistfile2,
+int mtxdistfile_init_vector_array_real_double(
+    struct mtxdistfile * mtxdistfile,
     int64_t num_rows,
     int64_t localdatasize,
     const int64_t * idx,
@@ -345,12 +345,12 @@ int mtxdistfile2_init_vector_array_real_double(
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxdistfile2_init_vector_array_complex_single()’ allocates and
+ * ‘mtxdistfile_init_vector_array_complex_single()’ allocates and
  * initialises a distributed vector in array format with complex,
  * single precision coefficients.
  */
-int mtxdistfile2_init_vector_array_complex_single(
-    struct mtxdistfile2 * mtxdistfile2,
+int mtxdistfile_init_vector_array_complex_single(
+    struct mtxdistfile * mtxdistfile,
     int64_t num_rows,
     int64_t localdatasize,
     const int64_t * idx,
@@ -359,12 +359,12 @@ int mtxdistfile2_init_vector_array_complex_single(
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxdistfile2_init_vector_array_complex_double()’ allocates and
+ * ‘mtxdistfile_init_vector_array_complex_double()’ allocates and
  * initialises a vector in array format with complex, double precision
  * coefficients.
  */
-int mtxdistfile2_init_vector_array_complex_double(
-    struct mtxdistfile2 * mtxdistfile2,
+int mtxdistfile_init_vector_array_complex_double(
+    struct mtxdistfile * mtxdistfile,
     int64_t num_rows,
     int64_t localdatasize,
     const int64_t * idx,
@@ -373,12 +373,12 @@ int mtxdistfile2_init_vector_array_complex_double(
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxdistfile2_init_vector_array_integer_single()’ allocates and
+ * ‘mtxdistfile_init_vector_array_integer_single()’ allocates and
  * initialises a distributed vector in array format with integer,
  * single precision coefficients.
  */
-int mtxdistfile2_init_vector_array_integer_single(
-    struct mtxdistfile2 * mtxdistfile2,
+int mtxdistfile_init_vector_array_integer_single(
+    struct mtxdistfile * mtxdistfile,
     int64_t num_rows,
     int64_t localdatasize,
     const int64_t * idx,
@@ -387,12 +387,12 @@ int mtxdistfile2_init_vector_array_integer_single(
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxdistfile2_init_vector_array_integer_double()’ allocates and
+ * ‘mtxdistfile_init_vector_array_integer_double()’ allocates and
  * initialises a vector in array format with integer, double precision
  * coefficients.
  */
-int mtxdistfile2_init_vector_array_integer_double(
-    struct mtxdistfile2 * mtxdistfile2,
+int mtxdistfile_init_vector_array_integer_double(
+    struct mtxdistfile * mtxdistfile,
     int64_t num_rows,
     int64_t localdatasize,
     const int64_t * idx,
@@ -405,11 +405,11 @@ int mtxdistfile2_init_vector_array_integer_double(
  */
 
 /**
- * ‘mtxdistfile2_alloc_matrix_coordinate()’ allocates a distributed
+ * ‘mtxdistfile_alloc_matrix_coordinate()’ allocates a distributed
  * matrix in coordinate format.
  */
-int mtxdistfile2_alloc_matrix_coordinate(
-    struct mtxdistfile2 * mtxdistfile2,
+int mtxdistfile_alloc_matrix_coordinate(
+    struct mtxdistfile * mtxdistfile,
     enum mtxfilefield field,
     enum mtxfilesymmetry symmetry,
     enum mtxprecision precision,
@@ -422,12 +422,12 @@ int mtxdistfile2_alloc_matrix_coordinate(
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxdistfile2_init_matrix_coordinate_real_single()’ allocates and
+ * ‘mtxdistfile_init_matrix_coordinate_real_single()’ allocates and
  * initialises a distributed matrix in coordinate format with real,
  * single precision coefficients.
  */
-int mtxdistfile2_init_matrix_coordinate_real_single(
-    struct mtxdistfile2 * mtxdistfile2,
+int mtxdistfile_init_matrix_coordinate_real_single(
+    struct mtxdistfile * mtxdistfile,
     enum mtxfilesymmetry symmetry,
     int64_t num_rows,
     int64_t num_columns,
@@ -439,12 +439,12 @@ int mtxdistfile2_init_matrix_coordinate_real_single(
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxdistfile2_init_matrix_coordinate_real_double()’ allocates and
+ * ‘mtxdistfile_init_matrix_coordinate_real_double()’ allocates and
  * initialises a matrix in coordinate format with real, double
  * precision coefficients.
  */
-int mtxdistfile2_init_matrix_coordinate_real_double(
-    struct mtxdistfile2 * mtxdistfile2,
+int mtxdistfile_init_matrix_coordinate_real_double(
+    struct mtxdistfile * mtxdistfile,
     enum mtxfilesymmetry symmetry,
     int64_t num_rows,
     int64_t num_columns,
@@ -456,12 +456,12 @@ int mtxdistfile2_init_matrix_coordinate_real_double(
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxdistfile2_init_matrix_coordinate_complex_single()’ allocates and
+ * ‘mtxdistfile_init_matrix_coordinate_complex_single()’ allocates and
  * initialises a distributed matrix in coordinate format with complex,
  * single precision coefficients.
  */
-int mtxdistfile2_init_matrix_coordinate_complex_single(
-    struct mtxdistfile2 * mtxdistfile2,
+int mtxdistfile_init_matrix_coordinate_complex_single(
+    struct mtxdistfile * mtxdistfile,
     enum mtxfilesymmetry symmetry,
     int64_t num_rows,
     int64_t num_columns,
@@ -473,12 +473,12 @@ int mtxdistfile2_init_matrix_coordinate_complex_single(
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxdistfile2_init_matrix_coordinate_complex_double()’ allocates and
+ * ‘mtxdistfile_init_matrix_coordinate_complex_double()’ allocates and
  * initialises a matrix in coordinate format with complex, double
  * precision coefficients.
  */
-int mtxdistfile2_init_matrix_coordinate_complex_double(
-    struct mtxdistfile2 * mtxdistfile2,
+int mtxdistfile_init_matrix_coordinate_complex_double(
+    struct mtxdistfile * mtxdistfile,
     enum mtxfilesymmetry symmetry,
     int64_t num_rows,
     int64_t num_columns,
@@ -490,12 +490,12 @@ int mtxdistfile2_init_matrix_coordinate_complex_double(
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxdistfile2_init_matrix_coordinate_integer_single()’ allocates and
+ * ‘mtxdistfile_init_matrix_coordinate_integer_single()’ allocates and
  * initialises a distributed matrix in coordinate format with integer,
  * single precision coefficients.
  */
-int mtxdistfile2_init_matrix_coordinate_integer_single(
-    struct mtxdistfile2 * mtxdistfile2,
+int mtxdistfile_init_matrix_coordinate_integer_single(
+    struct mtxdistfile * mtxdistfile,
     enum mtxfilesymmetry symmetry,
     int64_t num_rows,
     int64_t num_columns,
@@ -507,12 +507,12 @@ int mtxdistfile2_init_matrix_coordinate_integer_single(
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxdistfile2_init_matrix_coordinate_integer_double()’ allocates and
+ * ‘mtxdistfile_init_matrix_coordinate_integer_double()’ allocates and
  * initialises a matrix in coordinate format with integer, double
  * precision coefficients.
  */
-int mtxdistfile2_init_matrix_coordinate_integer_double(
-    struct mtxdistfile2 * mtxdistfile2,
+int mtxdistfile_init_matrix_coordinate_integer_double(
+    struct mtxdistfile * mtxdistfile,
     enum mtxfilesymmetry symmetry,
     int64_t num_rows,
     int64_t num_columns,
@@ -524,12 +524,12 @@ int mtxdistfile2_init_matrix_coordinate_integer_double(
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxdistfile2_init_matrix_coordinate_pattern()’ allocates and
+ * ‘mtxdistfile_init_matrix_coordinate_pattern()’ allocates and
  * initialises a matrix in coordinate format with boolean (pattern)
  * precision coefficients.
  */
-int mtxdistfile2_init_matrix_coordinate_pattern(
-    struct mtxdistfile2 * mtxdistfile2,
+int mtxdistfile_init_matrix_coordinate_pattern(
+    struct mtxdistfile * mtxdistfile,
     enum mtxfilesymmetry symmetry,
     int64_t num_rows,
     int64_t num_columns,
@@ -545,11 +545,11 @@ int mtxdistfile2_init_matrix_coordinate_pattern(
  */
 
 /**
- * ‘mtxdistfile2_alloc_vector_coordinate()’ allocates a distributed
+ * ‘mtxdistfile_alloc_vector_coordinate()’ allocates a distributed
  * vector in coordinate format.
  */
-int mtxdistfile2_alloc_vector_coordinate(
-    struct mtxdistfile2 * mtxdistfile2,
+int mtxdistfile_alloc_vector_coordinate(
+    struct mtxdistfile * mtxdistfile,
     enum mtxfilefield field,
     enum mtxprecision precision,
     int64_t num_rows,
@@ -560,12 +560,12 @@ int mtxdistfile2_alloc_vector_coordinate(
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxdistfile2_init_vector_coordinate_real_single()’ allocates and
+ * ‘mtxdistfile_init_vector_coordinate_real_single()’ allocates and
  * initialises a distributed vector in coordinate format with real,
  * single precision coefficients.
  */
-int mtxdistfile2_init_vector_coordinate_real_single(
-    struct mtxdistfile2 * mtxdistfile2,
+int mtxdistfile_init_vector_coordinate_real_single(
+    struct mtxdistfile * mtxdistfile,
     int64_t num_rows,
     int64_t num_nonzeros,
     int64_t localdatasize,
@@ -575,12 +575,12 @@ int mtxdistfile2_init_vector_coordinate_real_single(
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxdistfile2_init_vector_coordinate_real_double()’ allocates and
+ * ‘mtxdistfile_init_vector_coordinate_real_double()’ allocates and
  * initialises a vector in coordinate format with real, double
  * precision coefficients.
  */
-int mtxdistfile2_init_vector_coordinate_real_double(
-    struct mtxdistfile2 * mtxdistfile2,
+int mtxdistfile_init_vector_coordinate_real_double(
+    struct mtxdistfile * mtxdistfile,
     int64_t num_rows,
     int64_t num_nonzeros,
     int64_t localdatasize,
@@ -590,12 +590,12 @@ int mtxdistfile2_init_vector_coordinate_real_double(
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxdistfile2_init_vector_coordinate_complex_single()’ allocates and
+ * ‘mtxdistfile_init_vector_coordinate_complex_single()’ allocates and
  * initialises a distributed vector in coordinate format with complex,
  * single precision coefficients.
  */
-int mtxdistfile2_init_vector_coordinate_complex_single(
-    struct mtxdistfile2 * mtxdistfile2,
+int mtxdistfile_init_vector_coordinate_complex_single(
+    struct mtxdistfile * mtxdistfile,
     int64_t num_rows,
     int64_t num_nonzeros,
     int64_t localdatasize,
@@ -605,12 +605,12 @@ int mtxdistfile2_init_vector_coordinate_complex_single(
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxdistfile2_init_vector_coordinate_complex_double()’ allocates and
+ * ‘mtxdistfile_init_vector_coordinate_complex_double()’ allocates and
  * initialises a vector in coordinate format with complex, double
  * precision coefficients.
  */
-int mtxdistfile2_init_vector_coordinate_complex_double(
-    struct mtxdistfile2 * mtxdistfile2,
+int mtxdistfile_init_vector_coordinate_complex_double(
+    struct mtxdistfile * mtxdistfile,
     int64_t num_rows,
     int64_t num_nonzeros,
     int64_t localdatasize,
@@ -620,12 +620,12 @@ int mtxdistfile2_init_vector_coordinate_complex_double(
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxdistfile2_init_vector_coordinate_integer_single()’ allocates and
+ * ‘mtxdistfile_init_vector_coordinate_integer_single()’ allocates and
  * initialises a distributed vector in coordinate format with integer,
  * single precision coefficients.
  */
-int mtxdistfile2_init_vector_coordinate_integer_single(
-    struct mtxdistfile2 * mtxdistfile2,
+int mtxdistfile_init_vector_coordinate_integer_single(
+    struct mtxdistfile * mtxdistfile,
     int64_t num_rows,
     int64_t num_nonzeros,
     int64_t localdatasize,
@@ -635,12 +635,12 @@ int mtxdistfile2_init_vector_coordinate_integer_single(
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxdistfile2_init_vector_coordinate_integer_double()’ allocates and
+ * ‘mtxdistfile_init_vector_coordinate_integer_double()’ allocates and
  * initialises a vector in coordinate format with integer, double
  * precision coefficients.
  */
-int mtxdistfile2_init_vector_coordinate_integer_double(
-    struct mtxdistfile2 * mtxdistfile2,
+int mtxdistfile_init_vector_coordinate_integer_double(
+    struct mtxdistfile * mtxdistfile,
     int64_t num_rows,
     int64_t num_nonzeros,
     int64_t localdatasize,
@@ -650,12 +650,12 @@ int mtxdistfile2_init_vector_coordinate_integer_double(
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxdistfile2_init_vector_coordinate_pattern()’ allocates and
+ * ‘mtxdistfile_init_vector_coordinate_pattern()’ allocates and
  * initialises a vector in coordinate format with boolean (pattern)
  * precision coefficients.
  */
-int mtxdistfile2_init_vector_coordinate_pattern(
-    struct mtxdistfile2 * mtxdistfile2,
+int mtxdistfile_init_vector_coordinate_pattern(
+    struct mtxdistfile * mtxdistfile,
     int64_t num_rows,
     int64_t num_nonzeros,
     int64_t localdatasize,
@@ -669,60 +669,60 @@ int mtxdistfile2_init_vector_coordinate_pattern(
  */
 
 /**
- * ‘mtxdistfile2_set_constant_real_single()’ sets every (nonzero) value
+ * ‘mtxdistfile_set_constant_real_single()’ sets every (nonzero) value
  * of a matrix or vector equal to a constant, single precision
  * floating point number.
  */
-int mtxdistfile2_set_constant_real_single(
-    struct mtxdistfile2 * mtxdistfile2,
+int mtxdistfile_set_constant_real_single(
+    struct mtxdistfile * mtxdistfile,
     float a,
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxdistfile2_set_constant_real_double()’ sets every (nonzero) value
+ * ‘mtxdistfile_set_constant_real_double()’ sets every (nonzero) value
  * of a matrix or vector equal to a constant, double precision
  * floating point number.
  */
-int mtxdistfile2_set_constant_real_double(
-    struct mtxdistfile2 * mtxdistfile2,
+int mtxdistfile_set_constant_real_double(
+    struct mtxdistfile * mtxdistfile,
     double a,
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxdistfile2_set_constant_complex_single()’ sets every (nonzero)
+ * ‘mtxdistfile_set_constant_complex_single()’ sets every (nonzero)
  * value of a matrix or vector equal to a constant, single precision
  * floating point complex number.
  */
-int mtxdistfile2_set_constant_complex_single(
-    struct mtxdistfile2 * mtxdistfile2,
+int mtxdistfile_set_constant_complex_single(
+    struct mtxdistfile * mtxdistfile,
     float a[2],
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxdistfile2_set_constant_complex_double()’ sets every (nonzero)
+ * ‘mtxdistfile_set_constant_complex_double()’ sets every (nonzero)
  * value of a matrix or vector equal to a constant, double precision
  * floating point complex number.
  */
-int mtxdistfile2_set_constant_complex_double(
-    struct mtxdistfile2 * mtxdistfile2,
+int mtxdistfile_set_constant_complex_double(
+    struct mtxdistfile * mtxdistfile,
     double a[2],
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxdistfile2_set_constant_integer_single()’ sets every (nonzero)
+ * ‘mtxdistfile_set_constant_integer_single()’ sets every (nonzero)
  * value of a matrix or vector equal to a constant, 32-bit integer.
  */
-int mtxdistfile2_set_constant_integer_single(
-    struct mtxdistfile2 * mtxdistfile2,
+int mtxdistfile_set_constant_integer_single(
+    struct mtxdistfile * mtxdistfile,
     int32_t a,
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxdistfile2_set_constant_integer_double()’ sets every (nonzero)
+ * ‘mtxdistfile_set_constant_integer_double()’ sets every (nonzero)
  * value of a matrix or vector equal to a constant, 64-bit integer.
  */
-int mtxdistfile2_set_constant_integer_double(
-    struct mtxdistfile2 * mtxdistfile2,
+int mtxdistfile_set_constant_integer_double(
+    struct mtxdistfile * mtxdistfile,
     int64_t a,
     struct mtxdisterror * disterr);
 
@@ -731,7 +731,7 @@ int mtxdistfile2_set_constant_integer_double(
  */
 
 /**
- * ‘mtxdistfile2_from_mtxfile_rowwise()’ creates a distributed Matrix
+ * ‘mtxdistfile_from_mtxfile_rowwise()’ creates a distributed Matrix
  * Market file from a Matrix Market file stored on a single root
  * process by partitioning the underlying matrix or vector rowwise and
  * distributing the parts among processes.
@@ -740,8 +740,8 @@ int mtxdistfile2_set_constant_integer_double(
  * requires every process in the communicator to perform matching
  * calls to this function.
  */
-int mtxdistfile2_from_mtxfile_rowwise(
-    struct mtxdistfile2 * dst,
+int mtxdistfile_from_mtxfile_rowwise(
+    struct mtxdistfile * dst,
     struct mtxfile * src,
     enum mtxpartitioning parttype,
     int64_t partsize,
@@ -751,16 +751,16 @@ int mtxdistfile2_from_mtxfile_rowwise(
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxdistfile2_to_mtxfile()’ creates a Matrix Market file on a given
+ * ‘mtxdistfile_to_mtxfile()’ creates a Matrix Market file on a given
  * root process from a distributed Matrix Market file.
  *
  * This function performs collective communication and therefore
  * requires every process in the communicator to perform matching
  * calls to this function.
  */
-int mtxdistfile2_to_mtxfile(
+int mtxdistfile_to_mtxfile(
     struct mtxfile * dst,
-    const struct mtxdistfile2 * src,
+    const struct mtxdistfile * src,
     int root,
     struct mtxdisterror * disterr);
 
@@ -769,7 +769,7 @@ int mtxdistfile2_to_mtxfile(
  */
 
 /**
- * ‘mtxdistfile2_read_rowwise()’ reads a Matrix Market file from the
+ * ‘mtxdistfile_read_rowwise()’ reads a Matrix Market file from the
  * given path and distributes the data among MPI processes in a
  * communicator. The file may optionally be compressed by gzip.
  *
@@ -793,8 +793,8 @@ int mtxdistfile2_to_mtxfile(
  * requires every process in the communicator to perform matching
  * calls to the function.
  */
-int mtxdistfile2_read_rowwise(
-    struct mtxdistfile2 * mtxdistfile2,
+int mtxdistfile_read_rowwise(
+    struct mtxdistfile * mtxdistfile,
     enum mtxprecision precision,
     enum mtxpartitioning parttype,
     int64_t partsize,
@@ -808,7 +808,7 @@ int mtxdistfile2_read_rowwise(
     struct mtxdisterror * disterr);
 
 /**
- * ‘mtxdistfile2_fread_rowwise()’ reads a Matrix Market file from a
+ * ‘mtxdistfile_fread_rowwise()’ reads a Matrix Market file from a
  * stream and distributes the data among MPI processes in a
  * communicator.
  *
@@ -834,8 +834,8 @@ int mtxdistfile2_read_rowwise(
  * requires every process in the communicator to perform matching
  * calls to the function.
  */
-int mtxdistfile2_fread_rowwise(
-    struct mtxdistfile2 * mtxdistfile2,
+int mtxdistfile_fread_rowwise(
+    struct mtxdistfile * mtxdistfile,
     enum mtxprecision precision,
     enum mtxpartitioning parttype,
     int64_t partsize,
@@ -851,7 +851,7 @@ int mtxdistfile2_fread_rowwise(
 
 #ifdef LIBMTX_HAVE_LIBZ
 /**
- * ‘mtxdistfile2_gzread_rowwise()’ reads a Matrix Market file from a
+ * ‘mtxdistfile_gzread_rowwise()’ reads a Matrix Market file from a
  * gzip-compressed stream and distributes the data among MPI processes
  * in a communicator.
  *
@@ -877,8 +877,8 @@ int mtxdistfile2_fread_rowwise(
  * requires every process in the communicator to perform matching
  * calls to the function.
  */
-int mtxdistfile2_gzread_rowwise(
-    struct mtxdistfile2 * mtxdistfile2,
+int mtxdistfile_gzread_rowwise(
+    struct mtxdistfile * mtxdistfile,
     enum mtxprecision precision,
     enum mtxpartitioning parttype,
     int64_t partsize,
@@ -894,7 +894,7 @@ int mtxdistfile2_gzread_rowwise(
 #endif
 
 /**
- * ‘mtxdistfile2_fwrite()’ writes a distributed Matrix Market
+ * ‘mtxdistfile_fwrite()’ writes a distributed Matrix Market
  * file to a single stream that is shared by every process in the
  * communicator.
  *
@@ -923,8 +923,8 @@ int mtxdistfile2_gzread_rowwise(
  * requires every process in the communicator to perform matching
  * calls to the function.
  */
-int mtxdistfile2_fwrite(
-    const struct mtxdistfile2 * mtxdistfile2,
+int mtxdistfile_fwrite(
+    const struct mtxdistfile * mtxdistfile,
     FILE * f,
     const char * fmt,
     int64_t * bytes_written,

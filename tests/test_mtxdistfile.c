@@ -26,7 +26,7 @@
 #include <libmtx/libmtx-config.h>
 
 #include <libmtx/error.h>
-#include <libmtx/mtxfile/mtxdistfile2.h>
+#include <libmtx/mtxfile/mtxdistfile.h>
 #include <libmtx/util/partition.h>
 
 #include <mpi.h>
@@ -35,14 +35,14 @@
 
 #include <stdlib.h>
 
-const char * program_invocation_short_name = "test_mtxdistfile2";
+const char * program_invocation_short_name = "test_mtxdistfile";
 
 /**
- * ‘test_mtxdistfile2_from_mtxfile_rowwise()’ tests converting Matrix
+ * ‘test_mtxdistfile_from_mtxfile_rowwise()’ tests converting Matrix
  * Market files stored on a single process to distributed Matrix
  * Market files based on a rowwise partitioning.
  */
-int test_mtxdistfile2_from_mtxfile_rowwise(void)
+int test_mtxdistfile_from_mtxfile_rowwise(void)
 {
     int err;
     char mpierrstr[MPI_MAX_ERROR_STRING];
@@ -86,8 +86,8 @@ int test_mtxdistfile2_from_mtxfile_rowwise(void)
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
         int64_t partsize = rank == 0 ? 2 : 1;
-        struct mtxdistfile2 dst;
-        err = mtxdistfile2_from_mtxfile_rowwise(
+        struct mtxdistfile dst;
+        err = mtxdistfile_from_mtxfile_rowwise(
             &dst, &src, mtx_block, partsize, 0, comm, root, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
@@ -116,7 +116,7 @@ int test_mtxdistfile2_from_mtxfile_rowwise(void)
             TEST_ASSERT_EQ(data->array_real_double[1], 8.0);
             TEST_ASSERT_EQ(data->array_real_double[2], 9.0);
         }
-        mtxdistfile2_free(&dst);
+        mtxdistfile_free(&dst);
         mtxfile_free(&src);
     }
 
@@ -130,8 +130,8 @@ int test_mtxdistfile2_from_mtxfile_rowwise(void)
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
         int64_t partsize = rank == 0 ? 4 : 4;
-        struct mtxdistfile2 dst;
-        err = mtxdistfile2_from_mtxfile_rowwise(
+        struct mtxdistfile dst;
+        err = mtxdistfile_from_mtxfile_rowwise(
             &dst, &src, mtx_block, partsize, 0, comm, root, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
@@ -160,7 +160,7 @@ int test_mtxdistfile2_from_mtxfile_rowwise(void)
             TEST_ASSERT_EQ(data->array_real_double[2], 7.0);
             TEST_ASSERT_EQ(data->array_real_double[3], 8.0);
         }
-        mtxdistfile2_free(&dst);
+        mtxdistfile_free(&dst);
         mtxfile_free(&src);
     }
 
@@ -181,8 +181,8 @@ int test_mtxdistfile2_from_mtxfile_rowwise(void)
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
         int64_t partsize = rank == 0 ? 2 : 3;
-        struct mtxdistfile2 dst;
-        err = mtxdistfile2_from_mtxfile_rowwise(
+        struct mtxdistfile dst;
+        err = mtxdistfile_from_mtxfile_rowwise(
             &dst, &src, mtx_block, partsize, 0, comm, root, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
@@ -212,7 +212,7 @@ int test_mtxdistfile2_from_mtxfile_rowwise(void)
             TEST_ASSERT_EQ(  3, data[1].i); TEST_ASSERT_EQ(   3, data[1].j);
             TEST_ASSERT_EQ(3.0, data[1].a);
         }
-        mtxdistfile2_free(&dst);
+        mtxdistfile_free(&dst);
         mtxfile_free(&src);
     }
 
@@ -231,8 +231,8 @@ int test_mtxdistfile2_from_mtxfile_rowwise(void)
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
         int64_t partsize = rank == 0 ? 3 : 3;
-        struct mtxdistfile2 dst;
-        err = mtxdistfile2_from_mtxfile_rowwise(
+        struct mtxdistfile dst;
+        err = mtxdistfile_from_mtxfile_rowwise(
             &dst, &src, mtx_block, partsize, 0, comm, root, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
@@ -262,7 +262,7 @@ int test_mtxdistfile2_from_mtxfile_rowwise(void)
             TEST_ASSERT_EQ(0, dst.idx[0]);
             TEST_ASSERT_EQ(5, data[0].i); TEST_ASSERT_EQ(5.0, data[0].a);
         }
-        mtxdistfile2_free(&dst);
+        mtxdistfile_free(&dst);
         mtxfile_free(&src);
     }
 
@@ -271,10 +271,10 @@ int test_mtxdistfile2_from_mtxfile_rowwise(void)
 }
 
 /**
- * ‘test_mtxdistfile2_fread_rowwise()’ tests reading Matrix Market
+ * ‘test_mtxdistfile_fread_rowwise()’ tests reading Matrix Market
  * files from a stream and distributing them among MPI processes.
  */
-int test_mtxdistfile2_fread_rowwise(void)
+int test_mtxdistfile_fread_rowwise(void)
 {
     int err;
     char mpierrstr[MPI_MAX_ERROR_STRING];
@@ -315,10 +315,10 @@ int test_mtxdistfile2_fread_rowwise(void)
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         int64_t lines_read = 0;
         int64_t bytes_read = 0;
-        struct mtxdistfile2 mtxdistfile2;
+        struct mtxdistfile mtxdistfile;
         enum mtxprecision precision = mtx_single;
-        err = mtxdistfile2_fread_rowwise(
-            &mtxdistfile2, precision, mtx_block_cyclic, 0, 1,
+        err = mtxdistfile_fread_rowwise(
+            &mtxdistfile, precision, mtx_block_cyclic, 0, 1,
             f, &lines_read, &bytes_read, 0, NULL,
             comm, root, &disterr);
         TEST_ASSERT_EQ_MSG(
@@ -332,23 +332,23 @@ int test_mtxdistfile2_fread_rowwise(void)
                 "read %"PRId64" of %zu bytes", bytes_read, strlen(s));
             TEST_ASSERT_EQ(5, lines_read);
         }
-        TEST_ASSERT_EQ(mtxfile_matrix, mtxdistfile2.header.object);
-        TEST_ASSERT_EQ(mtxfile_array, mtxdistfile2.header.format);
-        TEST_ASSERT_EQ(mtxfile_real, mtxdistfile2.header.field);
-        TEST_ASSERT_EQ(mtxfile_general, mtxdistfile2.header.symmetry);
-        TEST_ASSERT_EQ(2, mtxdistfile2.size.num_rows);
-        TEST_ASSERT_EQ(1, mtxdistfile2.size.num_columns);
-        TEST_ASSERT_EQ(-1, mtxdistfile2.size.num_nonzeros);
-        TEST_ASSERT_EQ(precision, mtxdistfile2.precision);
-        TEST_ASSERT_EQ(2, mtxdistfile2.datasize);
+        TEST_ASSERT_EQ(mtxfile_matrix, mtxdistfile.header.object);
+        TEST_ASSERT_EQ(mtxfile_array, mtxdistfile.header.format);
+        TEST_ASSERT_EQ(mtxfile_real, mtxdistfile.header.field);
+        TEST_ASSERT_EQ(mtxfile_general, mtxdistfile.header.symmetry);
+        TEST_ASSERT_EQ(2, mtxdistfile.size.num_rows);
+        TEST_ASSERT_EQ(1, mtxdistfile.size.num_columns);
+        TEST_ASSERT_EQ(-1, mtxdistfile.size.num_nonzeros);
+        TEST_ASSERT_EQ(precision, mtxdistfile.precision);
+        TEST_ASSERT_EQ(2, mtxdistfile.datasize);
         if (rank == 0) {
-            TEST_ASSERT_EQ(1, mtxdistfile2.localdatasize);
-            TEST_ASSERT_EQ(mtxdistfile2.data.array_real_single[0], 1.5f);
+            TEST_ASSERT_EQ(1, mtxdistfile.localdatasize);
+            TEST_ASSERT_EQ(mtxdistfile.data.array_real_single[0], 1.5f);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ(1, mtxdistfile2.localdatasize);
-            TEST_ASSERT_EQ(mtxdistfile2.data.array_real_single[0], 1.6f);
+            TEST_ASSERT_EQ(1, mtxdistfile.localdatasize);
+            TEST_ASSERT_EQ(mtxdistfile.data.array_real_single[0], 1.6f);
         }
-        mtxdistfile2_free(&mtxdistfile2);
+        mtxdistfile_free(&mtxdistfile);
         fclose(f);
     }
     {
@@ -360,10 +360,10 @@ int test_mtxdistfile2_fread_rowwise(void)
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         int64_t lines_read = 0;
         int64_t bytes_read = 0;
-        struct mtxdistfile2 mtxdistfile2;
+        struct mtxdistfile mtxdistfile;
         enum mtxprecision precision = mtx_double;
-        err = mtxdistfile2_fread_rowwise(
-            &mtxdistfile2, precision, mtx_block_cyclic, 0, 1,
+        err = mtxdistfile_fread_rowwise(
+            &mtxdistfile, precision, mtx_block_cyclic, 0, 1,
             f, &lines_read, &bytes_read, 0, NULL, comm, root, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s",
@@ -376,23 +376,23 @@ int test_mtxdistfile2_fread_rowwise(void)
                 "read %"PRId64" of %zu bytes", bytes_read, strlen(s));
             TEST_ASSERT_EQ(5, lines_read);
         }
-        TEST_ASSERT_EQ(mtxfile_matrix, mtxdistfile2.header.object);
-        TEST_ASSERT_EQ(mtxfile_array, mtxdistfile2.header.format);
-        TEST_ASSERT_EQ(mtxfile_real, mtxdistfile2.header.field);
-        TEST_ASSERT_EQ(mtxfile_general, mtxdistfile2.header.symmetry);
-        TEST_ASSERT_EQ(2, mtxdistfile2.size.num_rows);
-        TEST_ASSERT_EQ(1, mtxdistfile2.size.num_columns);
-        TEST_ASSERT_EQ(-1, mtxdistfile2.size.num_nonzeros);
-        TEST_ASSERT_EQ(precision, mtxdistfile2.precision);
-        TEST_ASSERT_EQ(2, mtxdistfile2.datasize);
+        TEST_ASSERT_EQ(mtxfile_matrix, mtxdistfile.header.object);
+        TEST_ASSERT_EQ(mtxfile_array, mtxdistfile.header.format);
+        TEST_ASSERT_EQ(mtxfile_real, mtxdistfile.header.field);
+        TEST_ASSERT_EQ(mtxfile_general, mtxdistfile.header.symmetry);
+        TEST_ASSERT_EQ(2, mtxdistfile.size.num_rows);
+        TEST_ASSERT_EQ(1, mtxdistfile.size.num_columns);
+        TEST_ASSERT_EQ(-1, mtxdistfile.size.num_nonzeros);
+        TEST_ASSERT_EQ(precision, mtxdistfile.precision);
+        TEST_ASSERT_EQ(2, mtxdistfile.datasize);
         if (rank == 0) {
-            TEST_ASSERT_EQ(1, mtxdistfile2.localdatasize);
-            TEST_ASSERT_EQ(mtxdistfile2.data.array_real_double[0], 1.5);
+            TEST_ASSERT_EQ(1, mtxdistfile.localdatasize);
+            TEST_ASSERT_EQ(mtxdistfile.data.array_real_double[0], 1.5);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ(1, mtxdistfile2.localdatasize);
-            TEST_ASSERT_EQ(mtxdistfile2.data.array_real_double[0], 1.6);
+            TEST_ASSERT_EQ(1, mtxdistfile.localdatasize);
+            TEST_ASSERT_EQ(mtxdistfile.data.array_real_double[0], 1.6);
         }
-        mtxdistfile2_free(&mtxdistfile2);
+        mtxdistfile_free(&mtxdistfile);
         fclose(f);
     }
     {
@@ -404,10 +404,10 @@ int test_mtxdistfile2_fread_rowwise(void)
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         int64_t lines_read = 0;
         int64_t bytes_read = 0;
-        struct mtxdistfile2 mtxdistfile2;
+        struct mtxdistfile mtxdistfile;
         enum mtxprecision precision = mtx_single;
-        err = mtxdistfile2_fread_rowwise(
-            &mtxdistfile2, precision, mtx_block_cyclic, 0, 1,
+        err = mtxdistfile_fread_rowwise(
+            &mtxdistfile, precision, mtx_block_cyclic, 0, 1,
             f, &lines_read, &bytes_read, 0, NULL, comm, root, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s",
@@ -420,25 +420,25 @@ int test_mtxdistfile2_fread_rowwise(void)
                 "read %"PRId64" of %zu bytes", bytes_read, strlen(s));
             TEST_ASSERT_EQ(5, lines_read);
         }
-        TEST_ASSERT_EQ(mtxfile_matrix, mtxdistfile2.header.object);
-        TEST_ASSERT_EQ(mtxfile_array, mtxdistfile2.header.format);
-        TEST_ASSERT_EQ(mtxfile_complex, mtxdistfile2.header.field);
-        TEST_ASSERT_EQ(mtxfile_general, mtxdistfile2.header.symmetry);
-        TEST_ASSERT_EQ(2, mtxdistfile2.size.num_rows);
-        TEST_ASSERT_EQ(1, mtxdistfile2.size.num_columns);
-        TEST_ASSERT_EQ(-1, mtxdistfile2.size.num_nonzeros);
-        TEST_ASSERT_EQ(precision, mtxdistfile2.precision);
-        TEST_ASSERT_EQ(2, mtxdistfile2.datasize);
+        TEST_ASSERT_EQ(mtxfile_matrix, mtxdistfile.header.object);
+        TEST_ASSERT_EQ(mtxfile_array, mtxdistfile.header.format);
+        TEST_ASSERT_EQ(mtxfile_complex, mtxdistfile.header.field);
+        TEST_ASSERT_EQ(mtxfile_general, mtxdistfile.header.symmetry);
+        TEST_ASSERT_EQ(2, mtxdistfile.size.num_rows);
+        TEST_ASSERT_EQ(1, mtxdistfile.size.num_columns);
+        TEST_ASSERT_EQ(-1, mtxdistfile.size.num_nonzeros);
+        TEST_ASSERT_EQ(precision, mtxdistfile.precision);
+        TEST_ASSERT_EQ(2, mtxdistfile.datasize);
         if (rank == 0) {
-            TEST_ASSERT_EQ(1, mtxdistfile2.localdatasize);
-            TEST_ASSERT_EQ(mtxdistfile2.data.array_complex_single[0][0], 1.5f);
-            TEST_ASSERT_EQ(mtxdistfile2.data.array_complex_single[0][1], 2.1f);
+            TEST_ASSERT_EQ(1, mtxdistfile.localdatasize);
+            TEST_ASSERT_EQ(mtxdistfile.data.array_complex_single[0][0], 1.5f);
+            TEST_ASSERT_EQ(mtxdistfile.data.array_complex_single[0][1], 2.1f);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ(1, mtxdistfile2.localdatasize);
-            TEST_ASSERT_EQ(mtxdistfile2.data.array_complex_single[0][0], 1.6f);
-            TEST_ASSERT_EQ(mtxdistfile2.data.array_complex_single[0][1], 2.2f);
+            TEST_ASSERT_EQ(1, mtxdistfile.localdatasize);
+            TEST_ASSERT_EQ(mtxdistfile.data.array_complex_single[0][0], 1.6f);
+            TEST_ASSERT_EQ(mtxdistfile.data.array_complex_single[0][1], 2.2f);
         }
-        mtxdistfile2_free(&mtxdistfile2);
+        mtxdistfile_free(&mtxdistfile);
         fclose(f);
     }
     {
@@ -450,10 +450,10 @@ int test_mtxdistfile2_fread_rowwise(void)
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         int64_t lines_read = 0;
         int64_t bytes_read = 0;
-        struct mtxdistfile2 mtxdistfile2;
+        struct mtxdistfile mtxdistfile;
         enum mtxprecision precision = mtx_double;
-        err = mtxdistfile2_fread_rowwise(
-            &mtxdistfile2, precision, mtx_block_cyclic, 0, 1,
+        err = mtxdistfile_fread_rowwise(
+            &mtxdistfile, precision, mtx_block_cyclic, 0, 1,
             f, &lines_read, &bytes_read, 0, NULL, comm, root, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s",
@@ -466,25 +466,25 @@ int test_mtxdistfile2_fread_rowwise(void)
                 "read %"PRId64" of %zu bytes", bytes_read, strlen(s));
             TEST_ASSERT_EQ(5, lines_read);
         }
-        TEST_ASSERT_EQ(mtxfile_matrix, mtxdistfile2.header.object);
-        TEST_ASSERT_EQ(mtxfile_array, mtxdistfile2.header.format);
-        TEST_ASSERT_EQ(mtxfile_complex, mtxdistfile2.header.field);
-        TEST_ASSERT_EQ(mtxfile_general, mtxdistfile2.header.symmetry);
-        TEST_ASSERT_EQ(2, mtxdistfile2.size.num_rows);
-        TEST_ASSERT_EQ(1, mtxdistfile2.size.num_columns);
-        TEST_ASSERT_EQ(-1, mtxdistfile2.size.num_nonzeros);
-        TEST_ASSERT_EQ(precision, mtxdistfile2.precision);
-        TEST_ASSERT_EQ(2, mtxdistfile2.datasize);
+        TEST_ASSERT_EQ(mtxfile_matrix, mtxdistfile.header.object);
+        TEST_ASSERT_EQ(mtxfile_array, mtxdistfile.header.format);
+        TEST_ASSERT_EQ(mtxfile_complex, mtxdistfile.header.field);
+        TEST_ASSERT_EQ(mtxfile_general, mtxdistfile.header.symmetry);
+        TEST_ASSERT_EQ(2, mtxdistfile.size.num_rows);
+        TEST_ASSERT_EQ(1, mtxdistfile.size.num_columns);
+        TEST_ASSERT_EQ(-1, mtxdistfile.size.num_nonzeros);
+        TEST_ASSERT_EQ(precision, mtxdistfile.precision);
+        TEST_ASSERT_EQ(2, mtxdistfile.datasize);
         if (rank == 0) {
-            TEST_ASSERT_EQ(1, mtxdistfile2.localdatasize);
-            TEST_ASSERT_EQ(mtxdistfile2.data.array_complex_double[0][0], 1.5);
-            TEST_ASSERT_EQ(mtxdistfile2.data.array_complex_double[0][1], 2.1);
+            TEST_ASSERT_EQ(1, mtxdistfile.localdatasize);
+            TEST_ASSERT_EQ(mtxdistfile.data.array_complex_double[0][0], 1.5);
+            TEST_ASSERT_EQ(mtxdistfile.data.array_complex_double[0][1], 2.1);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ(1, mtxdistfile2.localdatasize);
-            TEST_ASSERT_EQ(mtxdistfile2.data.array_complex_double[0][0], 1.6);
-            TEST_ASSERT_EQ(mtxdistfile2.data.array_complex_double[0][1], 2.2);
+            TEST_ASSERT_EQ(1, mtxdistfile.localdatasize);
+            TEST_ASSERT_EQ(mtxdistfile.data.array_complex_double[0][0], 1.6);
+            TEST_ASSERT_EQ(mtxdistfile.data.array_complex_double[0][1], 2.2);
         }
-        mtxdistfile2_free(&mtxdistfile2);
+        mtxdistfile_free(&mtxdistfile);
         fclose(f);
     }
     {
@@ -496,10 +496,10 @@ int test_mtxdistfile2_fread_rowwise(void)
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         int64_t lines_read = 0;
         int64_t bytes_read = 0;
-        struct mtxdistfile2 mtxdistfile2;
+        struct mtxdistfile mtxdistfile;
         enum mtxprecision precision = mtx_single;
-        err = mtxdistfile2_fread_rowwise(
-            &mtxdistfile2, precision, mtx_block_cyclic, 0, 1,
+        err = mtxdistfile_fread_rowwise(
+            &mtxdistfile, precision, mtx_block_cyclic, 0, 1,
             f, &lines_read, &bytes_read, 0, NULL, comm, root, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s",
@@ -512,23 +512,23 @@ int test_mtxdistfile2_fread_rowwise(void)
                 "read %"PRId64" of %zu bytes", bytes_read, strlen(s));
             TEST_ASSERT_EQ(5, lines_read);
         }
-        TEST_ASSERT_EQ(mtxfile_matrix, mtxdistfile2.header.object);
-        TEST_ASSERT_EQ(mtxfile_array, mtxdistfile2.header.format);
-        TEST_ASSERT_EQ(mtxfile_integer, mtxdistfile2.header.field);
-        TEST_ASSERT_EQ(mtxfile_general, mtxdistfile2.header.symmetry);
-        TEST_ASSERT_EQ(2, mtxdistfile2.size.num_rows);
-        TEST_ASSERT_EQ(1, mtxdistfile2.size.num_columns);
-        TEST_ASSERT_EQ(-1, mtxdistfile2.size.num_nonzeros);
-        TEST_ASSERT_EQ(precision, mtxdistfile2.precision);
-        TEST_ASSERT_EQ(2, mtxdistfile2.datasize);
+        TEST_ASSERT_EQ(mtxfile_matrix, mtxdistfile.header.object);
+        TEST_ASSERT_EQ(mtxfile_array, mtxdistfile.header.format);
+        TEST_ASSERT_EQ(mtxfile_integer, mtxdistfile.header.field);
+        TEST_ASSERT_EQ(mtxfile_general, mtxdistfile.header.symmetry);
+        TEST_ASSERT_EQ(2, mtxdistfile.size.num_rows);
+        TEST_ASSERT_EQ(1, mtxdistfile.size.num_columns);
+        TEST_ASSERT_EQ(-1, mtxdistfile.size.num_nonzeros);
+        TEST_ASSERT_EQ(precision, mtxdistfile.precision);
+        TEST_ASSERT_EQ(2, mtxdistfile.datasize);
         if (rank == 0) {
-            TEST_ASSERT_EQ(1, mtxdistfile2.localdatasize);
-            TEST_ASSERT_EQ(mtxdistfile2.data.array_integer_single[0], 2);
+            TEST_ASSERT_EQ(1, mtxdistfile.localdatasize);
+            TEST_ASSERT_EQ(mtxdistfile.data.array_integer_single[0], 2);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ(1, mtxdistfile2.localdatasize);
-            TEST_ASSERT_EQ(mtxdistfile2.data.array_integer_single[0], 3);
+            TEST_ASSERT_EQ(1, mtxdistfile.localdatasize);
+            TEST_ASSERT_EQ(mtxdistfile.data.array_integer_single[0], 3);
         }
-        mtxdistfile2_free(&mtxdistfile2);
+        mtxdistfile_free(&mtxdistfile);
         fclose(f);
     }
     {
@@ -540,10 +540,10 @@ int test_mtxdistfile2_fread_rowwise(void)
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         int64_t lines_read = 0;
         int64_t bytes_read = 0;
-        struct mtxdistfile2 mtxdistfile2;
+        struct mtxdistfile mtxdistfile;
         enum mtxprecision precision = mtx_double;
-        err = mtxdistfile2_fread_rowwise(
-            &mtxdistfile2, precision, mtx_block_cyclic, 0, 1,
+        err = mtxdistfile_fread_rowwise(
+            &mtxdistfile, precision, mtx_block_cyclic, 0, 1,
             f, &lines_read, &bytes_read, 0, NULL, comm, root, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s",
@@ -556,23 +556,23 @@ int test_mtxdistfile2_fread_rowwise(void)
                 "read %"PRId64" of %zu bytes", bytes_read, strlen(s));
             TEST_ASSERT_EQ(5, lines_read);
         }
-        TEST_ASSERT_EQ(mtxfile_matrix, mtxdistfile2.header.object);
-        TEST_ASSERT_EQ(mtxfile_array, mtxdistfile2.header.format);
-        TEST_ASSERT_EQ(mtxfile_integer, mtxdistfile2.header.field);
-        TEST_ASSERT_EQ(mtxfile_general, mtxdistfile2.header.symmetry);
-        TEST_ASSERT_EQ(2, mtxdistfile2.size.num_rows);
-        TEST_ASSERT_EQ(1, mtxdistfile2.size.num_columns);
-        TEST_ASSERT_EQ(-1, mtxdistfile2.size.num_nonzeros);
-        TEST_ASSERT_EQ(precision, mtxdistfile2.precision);
-        TEST_ASSERT_EQ(2, mtxdistfile2.datasize);
+        TEST_ASSERT_EQ(mtxfile_matrix, mtxdistfile.header.object);
+        TEST_ASSERT_EQ(mtxfile_array, mtxdistfile.header.format);
+        TEST_ASSERT_EQ(mtxfile_integer, mtxdistfile.header.field);
+        TEST_ASSERT_EQ(mtxfile_general, mtxdistfile.header.symmetry);
+        TEST_ASSERT_EQ(2, mtxdistfile.size.num_rows);
+        TEST_ASSERT_EQ(1, mtxdistfile.size.num_columns);
+        TEST_ASSERT_EQ(-1, mtxdistfile.size.num_nonzeros);
+        TEST_ASSERT_EQ(precision, mtxdistfile.precision);
+        TEST_ASSERT_EQ(2, mtxdistfile.datasize);
         if (rank == 0) {
-            TEST_ASSERT_EQ(1, mtxdistfile2.localdatasize);
-            TEST_ASSERT_EQ(mtxdistfile2.data.array_integer_double[0], 2);
+            TEST_ASSERT_EQ(1, mtxdistfile.localdatasize);
+            TEST_ASSERT_EQ(mtxdistfile.data.array_integer_double[0], 2);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ(1, mtxdistfile2.localdatasize);
-            TEST_ASSERT_EQ(mtxdistfile2.data.array_integer_double[0], 3);
+            TEST_ASSERT_EQ(1, mtxdistfile.localdatasize);
+            TEST_ASSERT_EQ(mtxdistfile.data.array_integer_double[0], 3);
         }
-        mtxdistfile2_free(&mtxdistfile2);
+        mtxdistfile_free(&mtxdistfile);
         fclose(f);
     }
 
@@ -589,10 +589,10 @@ int test_mtxdistfile2_fread_rowwise(void)
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         int64_t lines_read = 0;
         int64_t bytes_read = 0;
-        struct mtxdistfile2 mtxdistfile2;
+        struct mtxdistfile mtxdistfile;
         enum mtxprecision precision = mtx_single;
-        err = mtxdistfile2_fread_rowwise(
-            &mtxdistfile2, precision, mtx_block_cyclic, 0, 1,
+        err = mtxdistfile_fread_rowwise(
+            &mtxdistfile, precision, mtx_block_cyclic, 0, 1,
             f, &lines_read, &bytes_read, 0, NULL, comm, root, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s",
@@ -605,27 +605,27 @@ int test_mtxdistfile2_fread_rowwise(void)
                 "read %"PRId64" of %zu bytes", bytes_read, strlen(s));
             TEST_ASSERT_EQ(5, lines_read);
         }
-        TEST_ASSERT_EQ(mtxfile_matrix, mtxdistfile2.header.object);
-        TEST_ASSERT_EQ(mtxfile_coordinate, mtxdistfile2.header.format);
-        TEST_ASSERT_EQ(mtxfile_real, mtxdistfile2.header.field);
-        TEST_ASSERT_EQ(mtxfile_general, mtxdistfile2.header.symmetry);
-        TEST_ASSERT_EQ(3, mtxdistfile2.size.num_rows);
-        TEST_ASSERT_EQ(3, mtxdistfile2.size.num_columns);
-        TEST_ASSERT_EQ(2, mtxdistfile2.size.num_nonzeros);
-        TEST_ASSERT_EQ(precision, mtxdistfile2.precision);
-        TEST_ASSERT_EQ(2, mtxdistfile2.datasize);
+        TEST_ASSERT_EQ(mtxfile_matrix, mtxdistfile.header.object);
+        TEST_ASSERT_EQ(mtxfile_coordinate, mtxdistfile.header.format);
+        TEST_ASSERT_EQ(mtxfile_real, mtxdistfile.header.field);
+        TEST_ASSERT_EQ(mtxfile_general, mtxdistfile.header.symmetry);
+        TEST_ASSERT_EQ(3, mtxdistfile.size.num_rows);
+        TEST_ASSERT_EQ(3, mtxdistfile.size.num_columns);
+        TEST_ASSERT_EQ(2, mtxdistfile.size.num_nonzeros);
+        TEST_ASSERT_EQ(precision, mtxdistfile.precision);
+        TEST_ASSERT_EQ(2, mtxdistfile.datasize);
         if (rank == 0) {
-            TEST_ASSERT_EQ(1, mtxdistfile2.localdatasize);
-            TEST_ASSERT_EQ(mtxdistfile2.data.matrix_coordinate_real_single[0].i, 3);
-            TEST_ASSERT_EQ(mtxdistfile2.data.matrix_coordinate_real_single[0].j, 2);
-            TEST_ASSERT_EQ(mtxdistfile2.data.matrix_coordinate_real_single[0].a, 1.5f);
+            TEST_ASSERT_EQ(1, mtxdistfile.localdatasize);
+            TEST_ASSERT_EQ(mtxdistfile.data.matrix_coordinate_real_single[0].i, 3);
+            TEST_ASSERT_EQ(mtxdistfile.data.matrix_coordinate_real_single[0].j, 2);
+            TEST_ASSERT_EQ(mtxdistfile.data.matrix_coordinate_real_single[0].a, 1.5f);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ(1, mtxdistfile2.localdatasize);
-            TEST_ASSERT_EQ(mtxdistfile2.data.matrix_coordinate_real_single[0].i, 2);
-            TEST_ASSERT_EQ(mtxdistfile2.data.matrix_coordinate_real_single[0].j, 3);
-            TEST_ASSERT_EQ(mtxdistfile2.data.matrix_coordinate_real_single[0].a, 1.5f);
+            TEST_ASSERT_EQ(1, mtxdistfile.localdatasize);
+            TEST_ASSERT_EQ(mtxdistfile.data.matrix_coordinate_real_single[0].i, 2);
+            TEST_ASSERT_EQ(mtxdistfile.data.matrix_coordinate_real_single[0].j, 3);
+            TEST_ASSERT_EQ(mtxdistfile.data.matrix_coordinate_real_single[0].a, 1.5f);
         }
-        mtxdistfile2_free(&mtxdistfile2);
+        mtxdistfile_free(&mtxdistfile);
         fclose(f);
     }
     {
@@ -638,10 +638,10 @@ int test_mtxdistfile2_fread_rowwise(void)
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         int64_t lines_read = 0;
         int64_t bytes_read = 0;
-        struct mtxdistfile2 mtxdistfile2;
+        struct mtxdistfile mtxdistfile;
         enum mtxprecision precision = mtx_double;
-        err = mtxdistfile2_fread_rowwise(
-            &mtxdistfile2, precision, mtx_block_cyclic, 0, 1,
+        err = mtxdistfile_fread_rowwise(
+            &mtxdistfile, precision, mtx_block_cyclic, 0, 1,
             f, &lines_read, &bytes_read, 0, NULL, comm, root, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s",
@@ -654,29 +654,29 @@ int test_mtxdistfile2_fread_rowwise(void)
                 "read %"PRId64" of %zu bytes", bytes_read, strlen(s));
             TEST_ASSERT_EQ(5, lines_read);
         }
-        TEST_ASSERT_EQ(mtxfile_matrix, mtxdistfile2.header.object);
-        TEST_ASSERT_EQ(mtxfile_coordinate, mtxdistfile2.header.format);
-        TEST_ASSERT_EQ(mtxfile_complex, mtxdistfile2.header.field);
-        TEST_ASSERT_EQ(mtxfile_general, mtxdistfile2.header.symmetry);
-        TEST_ASSERT_EQ(3, mtxdistfile2.size.num_rows);
-        TEST_ASSERT_EQ(3, mtxdistfile2.size.num_columns);
-        TEST_ASSERT_EQ(2, mtxdistfile2.size.num_nonzeros);
-        TEST_ASSERT_EQ(precision, mtxdistfile2.precision);
-        TEST_ASSERT_EQ(2, mtxdistfile2.datasize);
+        TEST_ASSERT_EQ(mtxfile_matrix, mtxdistfile.header.object);
+        TEST_ASSERT_EQ(mtxfile_coordinate, mtxdistfile.header.format);
+        TEST_ASSERT_EQ(mtxfile_complex, mtxdistfile.header.field);
+        TEST_ASSERT_EQ(mtxfile_general, mtxdistfile.header.symmetry);
+        TEST_ASSERT_EQ(3, mtxdistfile.size.num_rows);
+        TEST_ASSERT_EQ(3, mtxdistfile.size.num_columns);
+        TEST_ASSERT_EQ(2, mtxdistfile.size.num_nonzeros);
+        TEST_ASSERT_EQ(precision, mtxdistfile.precision);
+        TEST_ASSERT_EQ(2, mtxdistfile.datasize);
         if (rank == 0) {
-            TEST_ASSERT_EQ(1, mtxdistfile2.localdatasize);
-            TEST_ASSERT_EQ(mtxdistfile2.data.matrix_coordinate_complex_double[0].i, 3);
-            TEST_ASSERT_EQ(mtxdistfile2.data.matrix_coordinate_complex_double[0].j, 2);
-            TEST_ASSERT_EQ(mtxdistfile2.data.matrix_coordinate_complex_double[0].a[0], 1.5);
-            TEST_ASSERT_EQ(mtxdistfile2.data.matrix_coordinate_complex_double[0].a[1], 2.1);
+            TEST_ASSERT_EQ(1, mtxdistfile.localdatasize);
+            TEST_ASSERT_EQ(mtxdistfile.data.matrix_coordinate_complex_double[0].i, 3);
+            TEST_ASSERT_EQ(mtxdistfile.data.matrix_coordinate_complex_double[0].j, 2);
+            TEST_ASSERT_EQ(mtxdistfile.data.matrix_coordinate_complex_double[0].a[0], 1.5);
+            TEST_ASSERT_EQ(mtxdistfile.data.matrix_coordinate_complex_double[0].a[1], 2.1);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ(1, mtxdistfile2.localdatasize);
-            TEST_ASSERT_EQ(mtxdistfile2.data.matrix_coordinate_complex_double[0].i, 2);
-            TEST_ASSERT_EQ(mtxdistfile2.data.matrix_coordinate_complex_double[0].j, 3);
-            TEST_ASSERT_EQ(mtxdistfile2.data.matrix_coordinate_complex_double[0].a[0], -1.5);
-            TEST_ASSERT_EQ(mtxdistfile2.data.matrix_coordinate_complex_double[0].a[1], -2.1);
+            TEST_ASSERT_EQ(1, mtxdistfile.localdatasize);
+            TEST_ASSERT_EQ(mtxdistfile.data.matrix_coordinate_complex_double[0].i, 2);
+            TEST_ASSERT_EQ(mtxdistfile.data.matrix_coordinate_complex_double[0].j, 3);
+            TEST_ASSERT_EQ(mtxdistfile.data.matrix_coordinate_complex_double[0].a[0], -1.5);
+            TEST_ASSERT_EQ(mtxdistfile.data.matrix_coordinate_complex_double[0].a[1], -2.1);
         }
-        mtxdistfile2_free(&mtxdistfile2);
+        mtxdistfile_free(&mtxdistfile);
         fclose(f);
     }
     {
@@ -688,10 +688,10 @@ int test_mtxdistfile2_fread_rowwise(void)
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         int64_t lines_read = 0;
         int64_t bytes_read = 0;
-        struct mtxdistfile2 mtxdistfile2;
+        struct mtxdistfile mtxdistfile;
         enum mtxprecision precision = mtx_single;
-        err = mtxdistfile2_fread_rowwise(
-            &mtxdistfile2, precision, mtx_block_cyclic, 0, 1,
+        err = mtxdistfile_fread_rowwise(
+            &mtxdistfile, precision, mtx_block_cyclic, 0, 1,
             f, &lines_read, &bytes_read, 0, NULL, comm, root, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s",
@@ -704,27 +704,27 @@ int test_mtxdistfile2_fread_rowwise(void)
                 "read %"PRId64" of %zu bytes", bytes_read, strlen(s));
             TEST_ASSERT_EQ(5, lines_read);
         }
-        TEST_ASSERT_EQ(mtxfile_matrix, mtxdistfile2.header.object);
-        TEST_ASSERT_EQ(mtxfile_coordinate, mtxdistfile2.header.format);
-        TEST_ASSERT_EQ(mtxfile_integer, mtxdistfile2.header.field);
-        TEST_ASSERT_EQ(mtxfile_general, mtxdistfile2.header.symmetry);
-        TEST_ASSERT_EQ(3, mtxdistfile2.size.num_rows);
-        TEST_ASSERT_EQ(3, mtxdistfile2.size.num_columns);
-        TEST_ASSERT_EQ(2, mtxdistfile2.size.num_nonzeros);
-        TEST_ASSERT_EQ(precision, mtxdistfile2.precision);
-        TEST_ASSERT_EQ(2, mtxdistfile2.datasize);
+        TEST_ASSERT_EQ(mtxfile_matrix, mtxdistfile.header.object);
+        TEST_ASSERT_EQ(mtxfile_coordinate, mtxdistfile.header.format);
+        TEST_ASSERT_EQ(mtxfile_integer, mtxdistfile.header.field);
+        TEST_ASSERT_EQ(mtxfile_general, mtxdistfile.header.symmetry);
+        TEST_ASSERT_EQ(3, mtxdistfile.size.num_rows);
+        TEST_ASSERT_EQ(3, mtxdistfile.size.num_columns);
+        TEST_ASSERT_EQ(2, mtxdistfile.size.num_nonzeros);
+        TEST_ASSERT_EQ(precision, mtxdistfile.precision);
+        TEST_ASSERT_EQ(2, mtxdistfile.datasize);
         if (rank == 0) {
-            TEST_ASSERT_EQ(1, mtxdistfile2.localdatasize);
-            TEST_ASSERT_EQ(mtxdistfile2.data.matrix_coordinate_integer_single[0].i, 3);
-            TEST_ASSERT_EQ(mtxdistfile2.data.matrix_coordinate_integer_single[0].j, 2);
-            TEST_ASSERT_EQ(mtxdistfile2.data.matrix_coordinate_integer_single[0].a, 5);
+            TEST_ASSERT_EQ(1, mtxdistfile.localdatasize);
+            TEST_ASSERT_EQ(mtxdistfile.data.matrix_coordinate_integer_single[0].i, 3);
+            TEST_ASSERT_EQ(mtxdistfile.data.matrix_coordinate_integer_single[0].j, 2);
+            TEST_ASSERT_EQ(mtxdistfile.data.matrix_coordinate_integer_single[0].a, 5);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ(1, mtxdistfile2.localdatasize);
-            TEST_ASSERT_EQ(mtxdistfile2.data.matrix_coordinate_integer_single[0].i, 2);
-            TEST_ASSERT_EQ(mtxdistfile2.data.matrix_coordinate_integer_single[0].j, 3);
-            TEST_ASSERT_EQ(mtxdistfile2.data.matrix_coordinate_integer_single[0].a, 6);
+            TEST_ASSERT_EQ(1, mtxdistfile.localdatasize);
+            TEST_ASSERT_EQ(mtxdistfile.data.matrix_coordinate_integer_single[0].i, 2);
+            TEST_ASSERT_EQ(mtxdistfile.data.matrix_coordinate_integer_single[0].j, 3);
+            TEST_ASSERT_EQ(mtxdistfile.data.matrix_coordinate_integer_single[0].a, 6);
         }
-        mtxdistfile2_free(&mtxdistfile2);
+        mtxdistfile_free(&mtxdistfile);
         fclose(f);
     }
     {
@@ -736,10 +736,10 @@ int test_mtxdistfile2_fread_rowwise(void)
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         int64_t lines_read = 0;
         int64_t bytes_read = 0;
-        struct mtxdistfile2 mtxdistfile2;
+        struct mtxdistfile mtxdistfile;
         enum mtxprecision precision = mtx_single;
-        err = mtxdistfile2_fread_rowwise(
-            &mtxdistfile2, precision, mtx_block_cyclic, 0, 1,
+        err = mtxdistfile_fread_rowwise(
+            &mtxdistfile, precision, mtx_block_cyclic, 0, 1,
             f, &lines_read, &bytes_read, 0, NULL, comm, root, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s",
@@ -752,25 +752,25 @@ int test_mtxdistfile2_fread_rowwise(void)
                 "read %"PRId64" of %zu bytes", bytes_read, strlen(s));
             TEST_ASSERT_EQ(5, lines_read);
         }
-        TEST_ASSERT_EQ(mtxfile_matrix, mtxdistfile2.header.object);
-        TEST_ASSERT_EQ(mtxfile_coordinate, mtxdistfile2.header.format);
-        TEST_ASSERT_EQ(mtxfile_pattern, mtxdistfile2.header.field);
-        TEST_ASSERT_EQ(mtxfile_general, mtxdistfile2.header.symmetry);
-        TEST_ASSERT_EQ(3, mtxdistfile2.size.num_rows);
-        TEST_ASSERT_EQ(3, mtxdistfile2.size.num_columns);
-        TEST_ASSERT_EQ(2, mtxdistfile2.size.num_nonzeros);
-        TEST_ASSERT_EQ(precision, mtxdistfile2.precision);
-        TEST_ASSERT_EQ(2, mtxdistfile2.datasize);
+        TEST_ASSERT_EQ(mtxfile_matrix, mtxdistfile.header.object);
+        TEST_ASSERT_EQ(mtxfile_coordinate, mtxdistfile.header.format);
+        TEST_ASSERT_EQ(mtxfile_pattern, mtxdistfile.header.field);
+        TEST_ASSERT_EQ(mtxfile_general, mtxdistfile.header.symmetry);
+        TEST_ASSERT_EQ(3, mtxdistfile.size.num_rows);
+        TEST_ASSERT_EQ(3, mtxdistfile.size.num_columns);
+        TEST_ASSERT_EQ(2, mtxdistfile.size.num_nonzeros);
+        TEST_ASSERT_EQ(precision, mtxdistfile.precision);
+        TEST_ASSERT_EQ(2, mtxdistfile.datasize);
         if (rank == 0) {
-            TEST_ASSERT_EQ(1, mtxdistfile2.localdatasize);
-            TEST_ASSERT_EQ(mtxdistfile2.data.matrix_coordinate_pattern[0].i, 3);
-            TEST_ASSERT_EQ(mtxdistfile2.data.matrix_coordinate_pattern[0].j, 2);
+            TEST_ASSERT_EQ(1, mtxdistfile.localdatasize);
+            TEST_ASSERT_EQ(mtxdistfile.data.matrix_coordinate_pattern[0].i, 3);
+            TEST_ASSERT_EQ(mtxdistfile.data.matrix_coordinate_pattern[0].j, 2);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ(1, mtxdistfile2.localdatasize);
-            TEST_ASSERT_EQ(mtxdistfile2.data.matrix_coordinate_pattern[0].i, 2);
-            TEST_ASSERT_EQ(mtxdistfile2.data.matrix_coordinate_pattern[0].j, 3);
+            TEST_ASSERT_EQ(1, mtxdistfile.localdatasize);
+            TEST_ASSERT_EQ(mtxdistfile.data.matrix_coordinate_pattern[0].i, 2);
+            TEST_ASSERT_EQ(mtxdistfile.data.matrix_coordinate_pattern[0].j, 3);
         }
-        mtxdistfile2_free(&mtxdistfile2);
+        mtxdistfile_free(&mtxdistfile);
         fclose(f);
     }
 
@@ -787,10 +787,10 @@ int test_mtxdistfile2_fread_rowwise(void)
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         int64_t lines_read = 0;
         int64_t bytes_read = 0;
-        struct mtxdistfile2 mtxdistfile2;
+        struct mtxdistfile mtxdistfile;
         enum mtxprecision precision = mtx_single;
-        err = mtxdistfile2_fread_rowwise(
-            &mtxdistfile2, precision, mtx_block_cyclic, 0, 1,
+        err = mtxdistfile_fread_rowwise(
+            &mtxdistfile, precision, mtx_block_cyclic, 0, 1,
             f, &lines_read, &bytes_read, 0, NULL, comm, root, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s",
@@ -803,25 +803,25 @@ int test_mtxdistfile2_fread_rowwise(void)
                 "read %"PRId64" of %zu bytes", bytes_read, strlen(s));
             TEST_ASSERT_EQ(5, lines_read);
         }
-        TEST_ASSERT_EQ(mtxfile_vector, mtxdistfile2.header.object);
-        TEST_ASSERT_EQ(mtxfile_coordinate, mtxdistfile2.header.format);
-        TEST_ASSERT_EQ(mtxfile_real, mtxdistfile2.header.field);
-        TEST_ASSERT_EQ(mtxfile_general, mtxdistfile2.header.symmetry);
-        TEST_ASSERT_EQ(3, mtxdistfile2.size.num_rows);
-        TEST_ASSERT_EQ(-1, mtxdistfile2.size.num_columns);
-        TEST_ASSERT_EQ(2, mtxdistfile2.size.num_nonzeros);
-        TEST_ASSERT_EQ(precision, mtxdistfile2.precision);
-        TEST_ASSERT_EQ(2, mtxdistfile2.datasize);
+        TEST_ASSERT_EQ(mtxfile_vector, mtxdistfile.header.object);
+        TEST_ASSERT_EQ(mtxfile_coordinate, mtxdistfile.header.format);
+        TEST_ASSERT_EQ(mtxfile_real, mtxdistfile.header.field);
+        TEST_ASSERT_EQ(mtxfile_general, mtxdistfile.header.symmetry);
+        TEST_ASSERT_EQ(3, mtxdistfile.size.num_rows);
+        TEST_ASSERT_EQ(-1, mtxdistfile.size.num_columns);
+        TEST_ASSERT_EQ(2, mtxdistfile.size.num_nonzeros);
+        TEST_ASSERT_EQ(precision, mtxdistfile.precision);
+        TEST_ASSERT_EQ(2, mtxdistfile.datasize);
         if (rank == 0) {
-            TEST_ASSERT_EQ(1, mtxdistfile2.localdatasize);
-            TEST_ASSERT_EQ(mtxdistfile2.data.vector_coordinate_real_single[0].i, 3);
-            TEST_ASSERT_EQ(mtxdistfile2.data.vector_coordinate_real_single[0].a, 1.5f);
+            TEST_ASSERT_EQ(1, mtxdistfile.localdatasize);
+            TEST_ASSERT_EQ(mtxdistfile.data.vector_coordinate_real_single[0].i, 3);
+            TEST_ASSERT_EQ(mtxdistfile.data.vector_coordinate_real_single[0].a, 1.5f);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ(1, mtxdistfile2.localdatasize);
-            TEST_ASSERT_EQ(mtxdistfile2.data.vector_coordinate_real_single[0].i, 2);
-            TEST_ASSERT_EQ(mtxdistfile2.data.vector_coordinate_real_single[0].a, 1.5f);
+            TEST_ASSERT_EQ(1, mtxdistfile.localdatasize);
+            TEST_ASSERT_EQ(mtxdistfile.data.vector_coordinate_real_single[0].i, 2);
+            TEST_ASSERT_EQ(mtxdistfile.data.vector_coordinate_real_single[0].a, 1.5f);
         }
-        mtxdistfile2_free(&mtxdistfile2);
+        mtxdistfile_free(&mtxdistfile);
         fclose(f);
     }
     {
@@ -834,10 +834,10 @@ int test_mtxdistfile2_fread_rowwise(void)
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         int64_t lines_read = 0;
         int64_t bytes_read = 0;
-        struct mtxdistfile2 mtxdistfile2;
+        struct mtxdistfile mtxdistfile;
         enum mtxprecision precision = mtx_double;
-        err = mtxdistfile2_fread_rowwise(
-            &mtxdistfile2, precision, mtx_block_cyclic, 0, 1,
+        err = mtxdistfile_fread_rowwise(
+            &mtxdistfile, precision, mtx_block_cyclic, 0, 1,
             f, &lines_read, &bytes_read, 0, NULL, comm, root, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s",
@@ -850,27 +850,27 @@ int test_mtxdistfile2_fread_rowwise(void)
                 "read %"PRId64" of %zu bytes", bytes_read, strlen(s));
             TEST_ASSERT_EQ(5, lines_read);
         }
-        TEST_ASSERT_EQ(mtxfile_vector, mtxdistfile2.header.object);
-        TEST_ASSERT_EQ(mtxfile_coordinate, mtxdistfile2.header.format);
-        TEST_ASSERT_EQ(mtxfile_complex, mtxdistfile2.header.field);
-        TEST_ASSERT_EQ(mtxfile_general, mtxdistfile2.header.symmetry);
-        TEST_ASSERT_EQ(3, mtxdistfile2.size.num_rows);
-        TEST_ASSERT_EQ(-1, mtxdistfile2.size.num_columns);
-        TEST_ASSERT_EQ(2, mtxdistfile2.size.num_nonzeros);
-        TEST_ASSERT_EQ(precision, mtxdistfile2.precision);
-        TEST_ASSERT_EQ(2, mtxdistfile2.datasize);
+        TEST_ASSERT_EQ(mtxfile_vector, mtxdistfile.header.object);
+        TEST_ASSERT_EQ(mtxfile_coordinate, mtxdistfile.header.format);
+        TEST_ASSERT_EQ(mtxfile_complex, mtxdistfile.header.field);
+        TEST_ASSERT_EQ(mtxfile_general, mtxdistfile.header.symmetry);
+        TEST_ASSERT_EQ(3, mtxdistfile.size.num_rows);
+        TEST_ASSERT_EQ(-1, mtxdistfile.size.num_columns);
+        TEST_ASSERT_EQ(2, mtxdistfile.size.num_nonzeros);
+        TEST_ASSERT_EQ(precision, mtxdistfile.precision);
+        TEST_ASSERT_EQ(2, mtxdistfile.datasize);
         if (rank == 0) {
-            TEST_ASSERT_EQ(1, mtxdistfile2.localdatasize);
-            TEST_ASSERT_EQ(mtxdistfile2.data.vector_coordinate_complex_double[0].i, 3);
-            TEST_ASSERT_EQ(mtxdistfile2.data.vector_coordinate_complex_double[0].a[0], 1.5);
-            TEST_ASSERT_EQ(mtxdistfile2.data.vector_coordinate_complex_double[0].a[1], 2.1);
+            TEST_ASSERT_EQ(1, mtxdistfile.localdatasize);
+            TEST_ASSERT_EQ(mtxdistfile.data.vector_coordinate_complex_double[0].i, 3);
+            TEST_ASSERT_EQ(mtxdistfile.data.vector_coordinate_complex_double[0].a[0], 1.5);
+            TEST_ASSERT_EQ(mtxdistfile.data.vector_coordinate_complex_double[0].a[1], 2.1);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ(1, mtxdistfile2.localdatasize);
-            TEST_ASSERT_EQ(mtxdistfile2.data.vector_coordinate_complex_double[0].i, 2);
-            TEST_ASSERT_EQ(mtxdistfile2.data.vector_coordinate_complex_double[0].a[0], -1.5);
-            TEST_ASSERT_EQ(mtxdistfile2.data.vector_coordinate_complex_double[0].a[1], -2.1);
+            TEST_ASSERT_EQ(1, mtxdistfile.localdatasize);
+            TEST_ASSERT_EQ(mtxdistfile.data.vector_coordinate_complex_double[0].i, 2);
+            TEST_ASSERT_EQ(mtxdistfile.data.vector_coordinate_complex_double[0].a[0], -1.5);
+            TEST_ASSERT_EQ(mtxdistfile.data.vector_coordinate_complex_double[0].a[1], -2.1);
         }
-        mtxdistfile2_free(&mtxdistfile2);
+        mtxdistfile_free(&mtxdistfile);
         fclose(f);
     }
     {
@@ -883,10 +883,10 @@ int test_mtxdistfile2_fread_rowwise(void)
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         int64_t lines_read = 0;
         int64_t bytes_read = 0;
-        struct mtxdistfile2 mtxdistfile2;
+        struct mtxdistfile mtxdistfile;
         enum mtxprecision precision = mtx_single;
-        err = mtxdistfile2_fread_rowwise(
-            &mtxdistfile2, precision, mtx_block_cyclic, 0, 1,
+        err = mtxdistfile_fread_rowwise(
+            &mtxdistfile, precision, mtx_block_cyclic, 0, 1,
             f, &lines_read, &bytes_read, 0, NULL, comm, root, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s",
@@ -899,25 +899,25 @@ int test_mtxdistfile2_fread_rowwise(void)
                 "read %"PRId64" of %zu bytes", bytes_read, strlen(s));
             TEST_ASSERT_EQ(5, lines_read);
         }
-        TEST_ASSERT_EQ(mtxfile_vector, mtxdistfile2.header.object);
-        TEST_ASSERT_EQ(mtxfile_coordinate, mtxdistfile2.header.format);
-        TEST_ASSERT_EQ(mtxfile_integer, mtxdistfile2.header.field);
-        TEST_ASSERT_EQ(mtxfile_general, mtxdistfile2.header.symmetry);
-        TEST_ASSERT_EQ(3, mtxdistfile2.size.num_rows);
-        TEST_ASSERT_EQ(-1, mtxdistfile2.size.num_columns);
-        TEST_ASSERT_EQ(2, mtxdistfile2.size.num_nonzeros);
-        TEST_ASSERT_EQ(precision, mtxdistfile2.precision);
-        TEST_ASSERT_EQ(2, mtxdistfile2.datasize);
+        TEST_ASSERT_EQ(mtxfile_vector, mtxdistfile.header.object);
+        TEST_ASSERT_EQ(mtxfile_coordinate, mtxdistfile.header.format);
+        TEST_ASSERT_EQ(mtxfile_integer, mtxdistfile.header.field);
+        TEST_ASSERT_EQ(mtxfile_general, mtxdistfile.header.symmetry);
+        TEST_ASSERT_EQ(3, mtxdistfile.size.num_rows);
+        TEST_ASSERT_EQ(-1, mtxdistfile.size.num_columns);
+        TEST_ASSERT_EQ(2, mtxdistfile.size.num_nonzeros);
+        TEST_ASSERT_EQ(precision, mtxdistfile.precision);
+        TEST_ASSERT_EQ(2, mtxdistfile.datasize);
         if (rank == 0) {
-            TEST_ASSERT_EQ(1, mtxdistfile2.localdatasize);
-            TEST_ASSERT_EQ(mtxdistfile2.data.vector_coordinate_integer_single[0].i, 3);
-            TEST_ASSERT_EQ(mtxdistfile2.data.vector_coordinate_integer_single[0].a, 5);
+            TEST_ASSERT_EQ(1, mtxdistfile.localdatasize);
+            TEST_ASSERT_EQ(mtxdistfile.data.vector_coordinate_integer_single[0].i, 3);
+            TEST_ASSERT_EQ(mtxdistfile.data.vector_coordinate_integer_single[0].a, 5);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ(1, mtxdistfile2.localdatasize);
-            TEST_ASSERT_EQ(mtxdistfile2.data.vector_coordinate_integer_single[0].i, 2);
-            TEST_ASSERT_EQ(mtxdistfile2.data.vector_coordinate_integer_single[0].a, 6);
+            TEST_ASSERT_EQ(1, mtxdistfile.localdatasize);
+            TEST_ASSERT_EQ(mtxdistfile.data.vector_coordinate_integer_single[0].i, 2);
+            TEST_ASSERT_EQ(mtxdistfile.data.vector_coordinate_integer_single[0].a, 6);
         }
-        mtxdistfile2_free(&mtxdistfile2);
+        mtxdistfile_free(&mtxdistfile);
         fclose(f);
     }
     {
@@ -930,10 +930,10 @@ int test_mtxdistfile2_fread_rowwise(void)
         TEST_ASSERT_NEQ_MSG(NULL, f, "%s", strerror(errno));
         int64_t lines_read = 0;
         int64_t bytes_read = 0;
-        struct mtxdistfile2 mtxdistfile2;
+        struct mtxdistfile mtxdistfile;
         enum mtxprecision precision = mtx_single;
-        err = mtxdistfile2_fread_rowwise(
-            &mtxdistfile2, precision, mtx_block_cyclic, 0, 1,
+        err = mtxdistfile_fread_rowwise(
+            &mtxdistfile, precision, mtx_block_cyclic, 0, 1,
             f, &lines_read, &bytes_read, 0, NULL, comm, root, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s",
@@ -946,23 +946,23 @@ int test_mtxdistfile2_fread_rowwise(void)
                 "read %"PRId64" of %zu bytes", bytes_read, strlen(s));
             TEST_ASSERT_EQ(5, lines_read);
         }
-        TEST_ASSERT_EQ(mtxfile_vector, mtxdistfile2.header.object);
-        TEST_ASSERT_EQ(mtxfile_coordinate, mtxdistfile2.header.format);
-        TEST_ASSERT_EQ(mtxfile_pattern, mtxdistfile2.header.field);
-        TEST_ASSERT_EQ(mtxfile_general, mtxdistfile2.header.symmetry);
-        TEST_ASSERT_EQ(3, mtxdistfile2.size.num_rows);
-        TEST_ASSERT_EQ(-1, mtxdistfile2.size.num_columns);
-        TEST_ASSERT_EQ(2, mtxdistfile2.size.num_nonzeros);
-        TEST_ASSERT_EQ(precision, mtxdistfile2.precision);
-        TEST_ASSERT_EQ(2, mtxdistfile2.datasize);
+        TEST_ASSERT_EQ(mtxfile_vector, mtxdistfile.header.object);
+        TEST_ASSERT_EQ(mtxfile_coordinate, mtxdistfile.header.format);
+        TEST_ASSERT_EQ(mtxfile_pattern, mtxdistfile.header.field);
+        TEST_ASSERT_EQ(mtxfile_general, mtxdistfile.header.symmetry);
+        TEST_ASSERT_EQ(3, mtxdistfile.size.num_rows);
+        TEST_ASSERT_EQ(-1, mtxdistfile.size.num_columns);
+        TEST_ASSERT_EQ(2, mtxdistfile.size.num_nonzeros);
+        TEST_ASSERT_EQ(precision, mtxdistfile.precision);
+        TEST_ASSERT_EQ(2, mtxdistfile.datasize);
         if (rank == 0) {
-            TEST_ASSERT_EQ(1, mtxdistfile2.localdatasize);
-            TEST_ASSERT_EQ(mtxdistfile2.data.vector_coordinate_pattern[0].i, 3);
+            TEST_ASSERT_EQ(1, mtxdistfile.localdatasize);
+            TEST_ASSERT_EQ(mtxdistfile.data.vector_coordinate_pattern[0].i, 3);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ(1, mtxdistfile2.localdatasize);
-            TEST_ASSERT_EQ(mtxdistfile2.data.vector_coordinate_pattern[0].i, 2);
+            TEST_ASSERT_EQ(1, mtxdistfile.localdatasize);
+            TEST_ASSERT_EQ(mtxdistfile.data.vector_coordinate_pattern[0].i, 2);
         }
-        mtxdistfile2_free(&mtxdistfile2);
+        mtxdistfile_free(&mtxdistfile);
         fclose(f);
     }
     mtxdisterror_free(&disterr);
@@ -970,11 +970,11 @@ int test_mtxdistfile2_fread_rowwise(void)
 }
 
 /**
- * ‘test_mtxdistfile2_to_mtxfile()’ tests converting to Matrix Market
+ * ‘test_mtxdistfile_to_mtxfile()’ tests converting to Matrix Market
  * files stored on a single process from distributed Matrix Market
  * files.
  */
-int test_mtxdistfile2_to_mtxfile(void)
+int test_mtxdistfile_to_mtxfile(void)
 {
     int err;
     char mpierrstr[MPI_MAX_ERROR_STRING];
@@ -1015,8 +1015,8 @@ int test_mtxdistfile2_to_mtxfile(void)
             : ((const double[3]) {7.0, 8.0, 9.0});
         int64_t localsize = rank == 0 ? 6 : 3;
 
-        struct mtxdistfile2 src;
-        err = mtxdistfile2_init_matrix_array_real_double(
+        struct mtxdistfile src;
+        err = mtxdistfile_init_matrix_array_real_double(
             &src, mtxfile_general, num_rows, num_columns,
             localsize, NULL, srcdata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
@@ -1024,7 +1024,7 @@ int test_mtxdistfile2_to_mtxfile(void)
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
 
         struct mtxfile dst;
-        err = mtxdistfile2_to_mtxfile(&dst, &src, root, &disterr);
+        err = mtxdistfile_to_mtxfile(&dst, &src, root, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
@@ -1050,7 +1050,7 @@ int test_mtxdistfile2_to_mtxfile(void)
             TEST_ASSERT_EQ(data->array_real_double[8], 9.0);
             mtxfile_free(&dst);
         }
-        mtxdistfile2_free(&src);
+        mtxdistfile_free(&src);
     }
 
     {
@@ -1064,8 +1064,8 @@ int test_mtxdistfile2_to_mtxfile(void)
             : ((const double[3]) {4.0, 5.0, 6.0});
         int64_t localsize = rank == 0 ? 6 : 3;
 
-        struct mtxdistfile2 src;
-        err = mtxdistfile2_init_matrix_array_real_double(
+        struct mtxdistfile src;
+        err = mtxdistfile_init_matrix_array_real_double(
             &src, mtxfile_general, num_rows, num_columns,
             localsize, idx, srcdata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
@@ -1073,7 +1073,7 @@ int test_mtxdistfile2_to_mtxfile(void)
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
 
         struct mtxfile dst;
-        err = mtxdistfile2_to_mtxfile(&dst, &src, root, &disterr);
+        err = mtxdistfile_to_mtxfile(&dst, &src, root, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
@@ -1099,7 +1099,7 @@ int test_mtxdistfile2_to_mtxfile(void)
             TEST_ASSERT_EQ(data->array_real_double[8], 9.0);
             mtxfile_free(&dst);
         }
-        mtxdistfile2_free(&src);
+        mtxdistfile_free(&src);
     }
 
     {
@@ -1109,15 +1109,15 @@ int test_mtxdistfile2_to_mtxfile(void)
             : ((const double[3]) {7.0, 8.0, 9.0});
         int64_t localsize = rank == 0 ? 6 : 3;
 
-        struct mtxdistfile2 src;
-        err = mtxdistfile2_init_vector_array_real_double(
+        struct mtxdistfile src;
+        err = mtxdistfile_init_vector_array_real_double(
             &src, num_rows, localsize, NULL, srcdata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
 
         struct mtxfile dst;
-        err = mtxdistfile2_to_mtxfile(&dst, &src, root, &disterr);
+        err = mtxdistfile_to_mtxfile(&dst, &src, root, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
@@ -1143,7 +1143,7 @@ int test_mtxdistfile2_to_mtxfile(void)
             TEST_ASSERT_EQ(data->array_real_double[8], 9.0);
             mtxfile_free(&dst);
         }
-        mtxdistfile2_free(&src);
+        mtxdistfile_free(&src);
     }
 
     /*
@@ -1161,8 +1161,8 @@ int test_mtxdistfile2_to_mtxfile(void)
                 {{1, 1, 1.0}, {1, 3, 3.0}});
         int64_t localsize = rank == 0 ? 3 : 2;
 
-        struct mtxdistfile2 src;
-        err = mtxdistfile2_init_matrix_coordinate_real_double(
+        struct mtxdistfile src;
+        err = mtxdistfile_init_matrix_coordinate_real_double(
             &src, mtxfile_general, num_rows, num_columns, num_nonzeros,
             localsize, NULL, srcdata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
@@ -1170,7 +1170,7 @@ int test_mtxdistfile2_to_mtxfile(void)
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
 
         struct mtxfile dst;
-        err = mtxdistfile2_to_mtxfile(&dst, &src, root, &disterr);
+        err = mtxdistfile_to_mtxfile(&dst, &src, root, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
@@ -1198,7 +1198,7 @@ int test_mtxdistfile2_to_mtxfile(void)
             TEST_ASSERT_EQ( 3.0, data[4].a);
             mtxfile_free(&dst);
         }
-        mtxdistfile2_free(&src);
+        mtxdistfile_free(&src);
     }
 
     /*
@@ -1215,15 +1215,15 @@ int test_mtxdistfile2_to_mtxfile(void)
                 {{1, 1.0}, {5, 3.0}});
         int64_t localsize = rank == 0 ? 3 : 2;
 
-        struct mtxdistfile2 src;
-        err = mtxdistfile2_init_vector_coordinate_real_double(
+        struct mtxdistfile src;
+        err = mtxdistfile_init_vector_coordinate_real_double(
             &src, num_rows, num_nonzeros, localsize, NULL, srcdata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
 
         struct mtxfile dst;
-        err = mtxdistfile2_to_mtxfile(&dst, &src, root, &disterr);
+        err = mtxdistfile_to_mtxfile(&dst, &src, root, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
@@ -1246,7 +1246,7 @@ int test_mtxdistfile2_to_mtxfile(void)
             TEST_ASSERT_EQ(5, data[4].i); TEST_ASSERT_EQ( 3.0, data[4].a);
             mtxfile_free(&dst);
         }
-        mtxdistfile2_free(&src);
+        mtxdistfile_free(&src);
     }
     mtxdisterror_free(&disterr);
     return TEST_SUCCESS;
@@ -1281,9 +1281,9 @@ int main(int argc, char * argv[])
 
     /* 2. Run test suite. */
     TEST_SUITE_BEGIN("Running tests for distributed Matrix Market files\n");
-    TEST_RUN(test_mtxdistfile2_from_mtxfile_rowwise);
-    TEST_RUN(test_mtxdistfile2_fread_rowwise);
-    TEST_RUN(test_mtxdistfile2_to_mtxfile);
+    TEST_RUN(test_mtxdistfile_from_mtxfile_rowwise);
+    TEST_RUN(test_mtxdistfile_fread_rowwise);
+    TEST_RUN(test_mtxdistfile_to_mtxfile);
     TEST_SUITE_END();
 
     /* 3. Clean up and return. */

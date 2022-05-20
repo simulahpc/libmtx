@@ -30,7 +30,7 @@
 #include <libmtx/mtxfile/data.h>
 #include <libmtx/mtxfile/header.h>
 #include <libmtx/mtxfile/mtxfile.h>
-#include <libmtx/mtxfile/mtxdistfile2.h>
+#include <libmtx/mtxfile/mtxdistfile.h>
 #include <libmtx/util/merge.h>
 #include <libmtx/util/sort.h>
 #include <libmtx/matrix/dist.h>
@@ -1526,132 +1526,132 @@ int mtxmatrix_dist_to_mtxfile(
 }
 
 /**
- * ‘mtxmatrix_dist_from_mtxdistfile2()’ converts from a matrix in
+ * ‘mtxmatrix_dist_from_mtxdistfile()’ converts from a matrix in
  * Matrix Market format that is distributed among multiple processes.
  *
  * The ‘type’ argument may be used to specify a desired storage format
  * or implementation for the underlying ‘mtxmatrix’ on each process.
  */
-int mtxmatrix_dist_from_mtxdistfile2(
+int mtxmatrix_dist_from_mtxdistfile(
     struct mtxmatrix_dist * A,
-    const struct mtxdistfile2 * mtxdistfile2,
+    const struct mtxdistfile * mtxdistfile,
     enum mtxmatrixtype type,
     MPI_Comm comm,
     struct mtxdisterror * disterr)
 {
-    if (mtxdistfile2->header.object != mtxfile_matrix)
+    if (mtxdistfile->header.object != mtxfile_matrix)
         return MTX_ERR_INCOMPATIBLE_MTX_OBJECT;
 
     enum mtxsymmetry symmetry;
     int err = mtxfilesymmetry_to_mtxsymmetry(
-        &symmetry, mtxdistfile2->header.symmetry);
+        &symmetry, mtxdistfile->header.symmetry);
     if (err) return err;
-    int64_t num_rows = mtxdistfile2->size.num_rows;
-    int64_t num_columns = mtxdistfile2->size.num_columns;
-    int64_t num_nonzeros = mtxdistfile2->localdatasize;
+    int64_t num_rows = mtxdistfile->size.num_rows;
+    int64_t num_columns = mtxdistfile->size.num_columns;
+    int64_t num_nonzeros = mtxdistfile->localdatasize;
 
-    if (mtxdistfile2->header.format == mtxfile_array) {
+    if (mtxdistfile->header.format == mtxfile_array) {
         return MTX_ERR_INVALID_MTX_FORMAT;
-        /* const int64_t * idx = mtxdistfile2->idx; */
-        /* if (mtxdistfile2->header.field == mtxfile_real) { */
-        /*     if (mtxdistfile2->precision == mtx_single) { */
-        /*         const float * data = mtxdistfile2->data.array_real_single; */
+        /* const int64_t * idx = mtxdistfile->idx; */
+        /* if (mtxdistfile->header.field == mtxfile_real) { */
+        /*     if (mtxdistfile->precision == mtx_single) { */
+        /*         const float * data = mtxdistfile->data.array_real_single; */
         /*         err = mtxmatrix_dist_init_real_single( */
         /*             A, type, symmetry, num_rows, num_columns, num_nonzeros, idx, data, comm, disterr); */
         /*         if (err) { return err; } */
-        /*     } else if (mtxdistfile2->precision == mtx_double) { */
-        /*         const double * data = mtxdistfile2->data.array_real_double; */
+        /*     } else if (mtxdistfile->precision == mtx_double) { */
+        /*         const double * data = mtxdistfile->data.array_real_double; */
         /*         err = mtxmatrix_dist_init_real_double( */
         /*             A, type, symmetry, num_rows, num_columns, num_nonzeros, idx, data, comm, disterr); */
         /*         if (err) { return err; } */
         /*     } else { return MTX_ERR_INVALID_PRECISION; } */
-        /* } else if (mtxdistfile2->header.field == mtxfile_complex) { */
-        /*     if (mtxdistfile2->precision == mtx_single) { */
-        /*         const float (* data)[2] = mtxdistfile2->data.array_complex_single; */
+        /* } else if (mtxdistfile->header.field == mtxfile_complex) { */
+        /*     if (mtxdistfile->precision == mtx_single) { */
+        /*         const float (* data)[2] = mtxdistfile->data.array_complex_single; */
         /*         err = mtxmatrix_dist_init_complex_single( */
         /*             A, type, symmetry, num_rows, num_columns, num_nonzeros, idx, data, comm, disterr); */
         /*         if (err) { return err; } */
-        /*     } else if (mtxdistfile2->precision == mtx_double) { */
-        /*         const double (* data)[2] = mtxdistfile2->data.array_complex_double; */
+        /*     } else if (mtxdistfile->precision == mtx_double) { */
+        /*         const double (* data)[2] = mtxdistfile->data.array_complex_double; */
         /*         err = mtxmatrix_dist_init_complex_double( */
         /*             A, type, symmetry, num_rows, num_columns, num_nonzeros, idx, data, comm, disterr); */
         /*         if (err) { return err; } */
         /*     } else { return MTX_ERR_INVALID_PRECISION; } */
-        /* } else if (mtxdistfile2->header.field == mtxfile_integer) { */
-        /*     if (mtxdistfile2->precision == mtx_single) { */
-        /*         const int32_t * data = mtxdistfile2->data.array_integer_single; */
+        /* } else if (mtxdistfile->header.field == mtxfile_integer) { */
+        /*     if (mtxdistfile->precision == mtx_single) { */
+        /*         const int32_t * data = mtxdistfile->data.array_integer_single; */
         /*         err = mtxmatrix_dist_init_integer_single( */
         /*             A, type, symmetry, num_rows, num_columns, num_nonzeros, idx, data, comm, disterr); */
         /*         if (err) { return err; } */
-        /*     } else if (mtxdistfile2->precision == mtx_double) { */
-        /*         const int64_t * data = mtxdistfile2->data.array_integer_double; */
+        /*     } else if (mtxdistfile->precision == mtx_double) { */
+        /*         const int64_t * data = mtxdistfile->data.array_integer_double; */
         /*         err = mtxmatrix_dist_init_integer_double( */
         /*             A, type, symmetry, num_rows, num_columns, num_nonzeros, idx, data, comm, disterr); */
         /*         if (err) { return err; } */
         /*     } else { return MTX_ERR_INVALID_PRECISION; } */
-        /* } else if (mtxdistfile2->header.field == mtxfile_pattern) { */
+        /* } else if (mtxdistfile->header.field == mtxfile_pattern) { */
         /*     err = mtxmatrix_dist_init_pattern( */
         /*         A, type, symmetry, num_rows, num_columns, num_nonzeros, idx, comm, disterr); */
         /*     if (err) { return err; } */
         /* } else { return MTX_ERR_INVALID_MTX_FIELD; } */
-    } else if (mtxdistfile2->header.format == mtxfile_coordinate) {
-        if (mtxdistfile2->header.field == mtxfile_real) {
-            if (mtxdistfile2->precision == mtx_single) {
+    } else if (mtxdistfile->header.format == mtxfile_coordinate) {
+        if (mtxdistfile->header.field == mtxfile_real) {
+            if (mtxdistfile->precision == mtx_single) {
                 const struct mtxfile_matrix_coordinate_real_single * data =
-                    mtxdistfile2->data.matrix_coordinate_real_single;
+                    mtxdistfile->data.matrix_coordinate_real_single;
                 err = mtxmatrix_dist_init_entries_global_strided_real_single(
                     A, type, symmetry, num_rows, num_columns, num_nonzeros,
                     sizeof(*data), 1, &data[0].i, &data[0].j,
                     sizeof(*data), &data[0].a, comm, disterr);
                 if (err) return err;
-            } else if (mtxdistfile2->precision == mtx_double) {
+            } else if (mtxdistfile->precision == mtx_double) {
                 const struct mtxfile_matrix_coordinate_real_double * data =
-                    mtxdistfile2->data.matrix_coordinate_real_double;
+                    mtxdistfile->data.matrix_coordinate_real_double;
                 err = mtxmatrix_dist_init_entries_global_strided_real_double(
                     A, type, symmetry, num_rows, num_columns, num_nonzeros,
                     sizeof(*data), 1, &data[0].i, &data[0].j,
                     sizeof(*data), &data[0].a, comm, disterr);
                 if (err) return err;
             } else { return MTX_ERR_INVALID_PRECISION; }
-        } else if (mtxdistfile2->header.field == mtxfile_complex) {
-            if (mtxdistfile2->precision == mtx_single) {
+        } else if (mtxdistfile->header.field == mtxfile_complex) {
+            if (mtxdistfile->precision == mtx_single) {
                 const struct mtxfile_matrix_coordinate_complex_single * data =
-                    mtxdistfile2->data.matrix_coordinate_complex_single;
+                    mtxdistfile->data.matrix_coordinate_complex_single;
                 err = mtxmatrix_dist_init_entries_global_strided_complex_single(
                     A, type, symmetry, num_rows, num_columns, num_nonzeros,
                     sizeof(*data), 1, &data[0].i, &data[0].j,
                     sizeof(*data), &data[0].a, comm, disterr);
                 if (err) return err;
-            } else if (mtxdistfile2->precision == mtx_double) {
+            } else if (mtxdistfile->precision == mtx_double) {
                 const struct mtxfile_matrix_coordinate_complex_double * data =
-                    mtxdistfile2->data.matrix_coordinate_complex_double;
+                    mtxdistfile->data.matrix_coordinate_complex_double;
                 err = mtxmatrix_dist_init_entries_global_strided_complex_double(
                     A, type, symmetry, num_rows, num_columns, num_nonzeros,
                     sizeof(*data), 1, &data[0].i, &data[0].j,
                     sizeof(*data), &data[0].a, comm, disterr);
                 if (err) return err;
             } else { return MTX_ERR_INVALID_PRECISION; }
-        } else if (mtxdistfile2->header.field == mtxfile_integer) {
-            if (mtxdistfile2->precision == mtx_single) {
+        } else if (mtxdistfile->header.field == mtxfile_integer) {
+            if (mtxdistfile->precision == mtx_single) {
                 const struct mtxfile_matrix_coordinate_integer_single * data =
-                    mtxdistfile2->data.matrix_coordinate_integer_single;
+                    mtxdistfile->data.matrix_coordinate_integer_single;
                 err = mtxmatrix_dist_init_entries_global_strided_integer_single(
                     A, type, symmetry, num_rows, num_columns, num_nonzeros,
                     sizeof(*data), 1, &data[0].i, &data[0].j,
                     sizeof(*data), &data[0].a, comm, disterr);
                 if (err) return err;
-            } else if (mtxdistfile2->precision == mtx_double) {
+            } else if (mtxdistfile->precision == mtx_double) {
                 const struct mtxfile_matrix_coordinate_integer_double * data =
-                    mtxdistfile2->data.matrix_coordinate_integer_double;
+                    mtxdistfile->data.matrix_coordinate_integer_double;
                 err = mtxmatrix_dist_init_entries_global_strided_integer_double(
                     A, type, symmetry, num_rows, num_columns, num_nonzeros,
                     sizeof(*data), 1, &data[0].i, &data[0].j,
                     sizeof(*data), &data[0].a, comm, disterr);
                 if (err) return err;
             } else { return MTX_ERR_INVALID_PRECISION; }
-        } else if (mtxdistfile2->header.field == mtxfile_pattern) {
+        } else if (mtxdistfile->header.field == mtxfile_pattern) {
             const struct mtxfile_matrix_coordinate_pattern * data =
-                mtxdistfile2->data.matrix_coordinate_pattern;
+                mtxdistfile->data.matrix_coordinate_pattern;
             err = mtxmatrix_dist_init_entries_global_strided_pattern(
                     A, type, symmetry, num_rows, num_columns, num_nonzeros,
                     sizeof(*data), 1, &data[0].i, &data[0].j, comm, disterr);
@@ -1662,11 +1662,11 @@ int mtxmatrix_dist_from_mtxdistfile2(
 }
 
 /**
- * ‘mtxmatrix_dist_to_mtxdistfile2()’ converts to a matrix in Matrix
+ * ‘mtxmatrix_dist_to_mtxdistfile()’ converts to a matrix in Matrix
  * Market format that is distributed among multiple processes.
  */
-int mtxmatrix_dist_to_mtxdistfile2(
-    struct mtxdistfile2 * mtxdistfile2,
+int mtxmatrix_dist_to_mtxdistfile(
+    struct mtxdistfile * mtxdistfile,
     const struct mtxmatrix_dist * x,
     enum mtxfileformat mtxfmt,
     struct mtxdisterror * disterr)
@@ -1700,26 +1700,26 @@ int mtxmatrix_dist_to_mtxdistfile2(
     /*     mtxsize.num_nonzeros = x->num_nonzeros; */
     /* } else { return MTX_ERR_INVALID_MTX_FORMAT; } */
 
-    /* err = mtxdistfile2_alloc( */
-    /*     mtxdistfile2, &mtxheader, NULL, &mtxsize, precision, */
+    /* err = mtxdistfile_alloc( */
+    /*     mtxdistfile, &mtxheader, NULL, &mtxsize, precision, */
     /*     x->xp.num_nonzeros, x->xp.idx, x->comm, disterr); */
     /* if (err) return err; */
 
     /* struct mtxfile mtxfile; */
     /* err = mtxmatrix_to_mtxfile(&mtxfile, &x->xp, mtxfmt); */
     /* if (mtxdisterror_allreduce(disterr, err)) { */
-    /*     mtxdistfile2_free(mtxdistfile2); */
+    /*     mtxdistfile_free(mtxdistfile); */
     /*     return MTX_ERR_MPI_COLLECTIVE; */
     /* } */
 
     /* err = mtxfiledata_copy( */
-    /*     &mtxdistfile2->data, &mtxfile.data, */
+    /*     &mtxdistfile->data, &mtxfile.data, */
     /*     mtxfile.header.object, mtxfile.header.format, */
     /*     mtxfile.header.field, mtxfile.precision, */
     /*     x->xp.num_nonzeros, 0, 0); */
     /* if (mtxdisterror_allreduce(disterr, err)) { */
     /*     mtxfile_free(&mtxfile); */
-    /*     mtxdistfile2_free(mtxdistfile2); */
+    /*     mtxdistfile_free(mtxdistfile); */
     /*     return MTX_ERR_MPI_COLLECTIVE; */
     /* } */
     /* mtxfile_free(&mtxfile); */
@@ -1769,12 +1769,12 @@ int mtxmatrix_dist_fwrite(
     int root,
     struct mtxdisterror * disterr)
 {
-    struct mtxdistfile2 dst;
-    int err = mtxmatrix_dist_to_mtxdistfile2(&dst, x, mtxfmt, disterr);
+    struct mtxdistfile dst;
+    int err = mtxmatrix_dist_to_mtxdistfile(&dst, x, mtxfmt, disterr);
     if (err) return err;
-    err = mtxdistfile2_fwrite(&dst, f, fmt, bytes_written, root, disterr);
-    if (err) { mtxdistfile2_free(&dst); return err; }
-    mtxdistfile2_free(&dst);
+    err = mtxdistfile_fwrite(&dst, f, fmt, bytes_written, root, disterr);
+    if (err) { mtxdistfile_free(&dst); return err; }
+    mtxdistfile_free(&dst);
     return MTX_SUCCESS;
 }
 
