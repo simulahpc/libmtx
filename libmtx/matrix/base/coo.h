@@ -21,8 +21,8 @@
  * Data structures for matrices in coordinate format.
  */
 
-#ifndef LIBMTX_MATRIX_COORDINATE_H
-#define LIBMTX_MATRIX_COORDINATE_H
+#ifndef LIBMTX_MATRIX_BASE_COO_H
+#define LIBMTX_MATRIX_BASE_COO_H
 
 #include <libmtx/libmtx-config.h>
 
