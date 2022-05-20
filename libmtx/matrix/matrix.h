@@ -58,7 +58,7 @@ struct mtxvector;
 enum mtxmatrixtype
 {
     mtxmatrix_blas,       /* dense matrices with BLAS-accelerated operations */
-    mtxmatrix_coordinate, /* coordinate format for sparse matrices */
+    mtxmatrix_coo,        /* coordinate format */
     mtxmatrix_csr,        /* compressed sparse row */
     mtxmatrix_dense,      /* dense matrices */
 };
@@ -120,7 +120,7 @@ struct mtxmatrix
     union
     {
         struct mtxmatrix_blas blas;
-        struct mtxmatrix_coordinate coordinate;
+        struct mtxmatrix_coo coordinate;
         struct mtxmatrix_csr csr;
         struct mtxmatrix_dense dense;
     } storage;

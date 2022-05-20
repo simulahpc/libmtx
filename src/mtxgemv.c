@@ -90,7 +90,7 @@ static int program_options_init(
     args->y_path = NULL;
     args->format = NULL;
     args->precision = mtx_double;
-    args->matrix_type = mtxmatrix_coordinate;
+    args->matrix_type = mtxmatrix_coo;
     args->vector_type = mtxvector_base;
     args->partition = mtx_block;
     args->blksize = 1;

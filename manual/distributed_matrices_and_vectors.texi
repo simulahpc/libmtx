@@ -1002,7 +1002,7 @@ format or implementation for the underlying @code{mtxmatrix} on each
 process. If @code{type} is @samp{mtxmatrix_auto}, then the type of
 @code{mtxmatrix} is chosen to match the type of @code{src}. That is,
 @samp{mtxmatrix_array} is used if @code{src} is in array format, and
-@samp{mtxmatrix_coordinate} is used if @code{src} is in coordinate
+@samp{mtxmatrix_coo} is used if @code{src} is in coordinate
 format.
 
 Furthermore, @code{rowpart} and @code{colpart} must be partitionings

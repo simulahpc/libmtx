@@ -52,7 +52,7 @@ int test_mtxcg_2x2(void)
     double Adata[] = {2.0, -1.0, -1.0, 2.0};
     size_t size = sizeof(Adata) / sizeof(*Adata);
     err = mtxmatrix_init_entries_real_double(
-        &A, mtxmatrix_coordinate, mtx_unsymmetric,
+        &A, mtxmatrix_coo, mtx_unsymmetric,
         num_rows, num_columns, size, rowidx, colidx, Adata);
     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
@@ -136,7 +136,7 @@ int test_mtxcg_poisson(void)
     rowidx[k] = num_rows-1; colidx[k] = num_rows-1; Adata[k] =  2.0; k++;
 
     err = mtxmatrix_init_entries_real_double(
-        &A, mtxmatrix_coordinate, mtx_unsymmetric,
+        &A, mtxmatrix_coo, mtx_unsymmetric,
         num_rows, num_columns, size, rowidx, colidx, Adata);
     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 

@@ -83,7 +83,7 @@ static int program_options_init(
     args->x_path = NULL;
     args->format = NULL;
     args->precision = mtx_double;
-    args->matrix_type = mtxmatrix_coordinate;
+    args->matrix_type = mtxmatrix_coo;
     args->vector_type = mtxvector_base;
     args->atol = 0;
     args->rtol = 1e-6;
@@ -155,7 +155,7 @@ static void program_options_print_help(
     fprintf(f, "  --precision=PRECISION\tprecision used to represent matrix or\n");
     fprintf(f, "\t\t\tvector values: single or double. (default: double)\n");
     fprintf(f, "  --matrix-type=TYPE\tformat for representing matrices:\n");
-    fprintf(f, "\t\t\t‘blas’, ‘dense’, ‘coordinate’ (default) or ‘csr’.\n");
+    fprintf(f, "\t\t\t‘blas’, ‘dense’, ‘coo’ (default) or ‘csr’.\n");
     fprintf(f, "  --vector-type=TYPE\ttype of vectors: ‘base’ (default), ‘blas’ or ‘omp’.\n");
     fprintf(f, "  -z, --gzip, --gunzip, --ungzip\tfilter files through gzip\n");
     fprintf(f, "  --format=FORMAT\tFormat string for outputting numerical values.\n");

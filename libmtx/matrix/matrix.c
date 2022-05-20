@@ -51,7 +51,7 @@ const char * mtxmatrixtype_str(
 {
     switch (type) {
     case mtxmatrix_blas: return "blas";
-    case mtxmatrix_coordinate: return "coordinate";
+    case mtxmatrix_coo: return "coo";
     case mtxmatrix_csr: return "csr";
     case mtxmatrix_dense: return "dense";
     default: return mtxstrerror(MTX_ERR_INVALID_MATRIX_TYPE);
@@ -92,7 +92,7 @@ int mtxmatrixtype_parse(
         *matrix_type = mtxmatrix_blas;
     } else if (strncmp("coordinate", t, strlen("coordinate")) == 0) {
         t += strlen("coordinate");
-        *matrix_type = mtxmatrix_coordinate;
+        *matrix_type = mtxmatrix_coo;
     } else if (strncmp("csr", t, strlen("csr")) == 0) {
         t += strlen("csr");
         *matrix_type = mtxmatrix_csr;
@@ -119,7 +119,7 @@ int mtxmatrix_field(
 {
     if (A->type == mtxmatrix_blas) {
         *field = A->storage.blas.a.base.field;
-    } else if (A->type == mtxmatrix_coordinate) {
+    } else if (A->type == mtxmatrix_coo) {
         *field = A->storage.coordinate.a.field;
     } else if (A->type == mtxmatrix_dense) {
         *field = A->storage.dense.a.field;
@@ -138,7 +138,7 @@ int mtxmatrix_precision(
 {
     if (A->type == mtxmatrix_blas) {
         *precision = A->storage.blas.a.base.precision;
-    } else if (A->type == mtxmatrix_coordinate) {
+    } else if (A->type == mtxmatrix_coo) {
         *precision = A->storage.coordinate.a.precision;
     } else if (A->type == mtxmatrix_dense) {
         *precision = A->storage.dense.a.precision;
@@ -157,7 +157,7 @@ int mtxmatrix_symmetry(
 {
     if (A->type == mtxmatrix_blas) {
         *symmetry = A->storage.blas.symmetry;
-    } else if (A->type == mtxmatrix_coordinate) {
+    } else if (A->type == mtxmatrix_coo) {
         *symmetry = A->storage.coordinate.symmetry;
     } else if (A->type == mtxmatrix_dense) {
         *symmetry = A->storage.dense.symmetry;
@@ -178,7 +178,7 @@ int mtxmatrix_num_nonzeros(
 {
     if (A->type == mtxmatrix_blas) {
         *num_nonzeros = A->storage.blas.num_nonzeros;
-    } else if (A->type == mtxmatrix_coordinate) {
+    } else if (A->type == mtxmatrix_coo) {
         *num_nonzeros = A->storage.coordinate.num_nonzeros;
     } else if (A->type == mtxmatrix_dense) {
         *num_nonzeros = A->storage.dense.num_nonzeros;
@@ -198,7 +198,7 @@ int mtxmatrix_size(
 {
     if (A->type == mtxmatrix_blas) {
         *size = A->storage.blas.size;
-    } else if (A->type == mtxmatrix_coordinate) {
+    } else if (A->type == mtxmatrix_coo) {
         *size = A->storage.coordinate.size;
     } else if (A->type == mtxmatrix_dense) {
         *size = A->storage.dense.size;
@@ -220,8 +220,8 @@ void mtxmatrix_free(
 {
     if (matrix->type == mtxmatrix_blas) {
         mtxmatrix_blas_free(&matrix->storage.blas);
-    } else if (matrix->type == mtxmatrix_coordinate) {
-        mtxmatrix_coordinate_free(&matrix->storage.coordinate);
+    } else if (matrix->type == mtxmatrix_coo) {
+        mtxmatrix_coo_free(&matrix->storage.coordinate);
     } else if (matrix->type == mtxmatrix_csr) {
         mtxmatrix_csr_free(&matrix->storage.csr);
     } else if (matrix->type == mtxmatrix_dense) {
@@ -240,8 +240,8 @@ int mtxmatrix_alloc_copy(
     if (src->type == mtxmatrix_blas) {
         return mtxmatrix_blas_alloc_copy(
             &dst->storage.blas, &src->storage.blas);
-    } else if (src->type == mtxmatrix_coordinate) {
-        return mtxmatrix_coordinate_alloc_copy(
+    } else if (src->type == mtxmatrix_coo) {
+        return mtxmatrix_coo_alloc_copy(
             &dst->storage.coordinate, &src->storage.coordinate);
     } else if (src->type == mtxmatrix_csr) {
         return mtxmatrix_csr_alloc_copy(
@@ -263,8 +263,8 @@ int mtxmatrix_init_copy(
     if (src->type == mtxmatrix_blas) {
         return mtxmatrix_blas_init_copy(
             &dst->storage.blas, &src->storage.blas);
-    } else if (src->type == mtxmatrix_coordinate) {
-        return mtxmatrix_coordinate_init_copy(
+    } else if (src->type == mtxmatrix_coo) {
+        return mtxmatrix_coo_init_copy(
             &dst->storage.coordinate, &src->storage.coordinate);
     } else if (src->type == mtxmatrix_csr) {
         return mtxmatrix_csr_init_copy(
@@ -303,9 +303,9 @@ int mtxmatrix_alloc_entries(
             &A->storage.blas, field, precision, symmetry,
             num_rows, num_columns, num_nonzeros,
             idxstride, idxbase, rowidx, colidx);
-    } else if (type == mtxmatrix_coordinate) {
-        A->type = mtxmatrix_coordinate;
-        return mtxmatrix_coordinate_alloc_entries(
+    } else if (type == mtxmatrix_coo) {
+        A->type = mtxmatrix_coo;
+        return mtxmatrix_coo_alloc_entries(
             &A->storage.coordinate, field, precision, symmetry,
             num_rows, num_columns, num_nonzeros,
             idxstride, idxbase, rowidx, colidx);
@@ -345,9 +345,9 @@ int mtxmatrix_init_entries_real_single(
         return mtxmatrix_blas_init_entries_real_single(
             &A->storage.blas, symmetry,
             num_rows, num_columns, num_nonzeros, rowidx, colidx, data);
-    } else if (type == mtxmatrix_coordinate) {
-        A->type = mtxmatrix_coordinate;
-        return mtxmatrix_coordinate_init_entries_real_single(
+    } else if (type == mtxmatrix_coo) {
+        A->type = mtxmatrix_coo;
+        return mtxmatrix_coo_init_entries_real_single(
             &A->storage.coordinate, symmetry,
             num_rows, num_columns, num_nonzeros, rowidx, colidx, data);
     } else if (type == mtxmatrix_csr) {
@@ -384,9 +384,9 @@ int mtxmatrix_init_entries_real_double(
         return mtxmatrix_blas_init_entries_real_double(
             &A->storage.blas, symmetry,
             num_rows, num_columns, num_nonzeros, rowidx, colidx, data);
-    } else if (type == mtxmatrix_coordinate) {
-        A->type = mtxmatrix_coordinate;
-        return mtxmatrix_coordinate_init_entries_real_double(
+    } else if (type == mtxmatrix_coo) {
+        A->type = mtxmatrix_coo;
+        return mtxmatrix_coo_init_entries_real_double(
             &A->storage.coordinate, symmetry,
             num_rows, num_columns, num_nonzeros, rowidx, colidx, data);
     } else if (type == mtxmatrix_csr) {
@@ -423,9 +423,9 @@ int mtxmatrix_init_entries_complex_single(
         return mtxmatrix_blas_init_entries_complex_single(
             &A->storage.blas, symmetry,
             num_rows, num_columns, num_nonzeros, rowidx, colidx, data);
-    } else if (type == mtxmatrix_coordinate) {
-        A->type = mtxmatrix_coordinate;
-        return mtxmatrix_coordinate_init_entries_complex_single(
+    } else if (type == mtxmatrix_coo) {
+        A->type = mtxmatrix_coo;
+        return mtxmatrix_coo_init_entries_complex_single(
             &A->storage.coordinate, symmetry,
             num_rows, num_columns, num_nonzeros, rowidx, colidx, data);
     } else if (type == mtxmatrix_csr) {
@@ -462,9 +462,9 @@ int mtxmatrix_init_entries_complex_double(
         return mtxmatrix_blas_init_entries_complex_double(
             &A->storage.blas, symmetry,
             num_rows, num_columns, num_nonzeros, rowidx, colidx, data);
-    } else if (type == mtxmatrix_coordinate) {
-        A->type = mtxmatrix_coordinate;
-        return mtxmatrix_coordinate_init_entries_complex_double(
+    } else if (type == mtxmatrix_coo) {
+        A->type = mtxmatrix_coo;
+        return mtxmatrix_coo_init_entries_complex_double(
             &A->storage.coordinate, symmetry,
             num_rows, num_columns, num_nonzeros, rowidx, colidx, data);
     } else if (type == mtxmatrix_csr) {
@@ -501,9 +501,9 @@ int mtxmatrix_init_entries_integer_single(
         return mtxmatrix_blas_init_entries_integer_single(
             &A->storage.blas, symmetry,
             num_rows, num_columns, num_nonzeros, rowidx, colidx, data);
-    } else if (type == mtxmatrix_coordinate) {
-        A->type = mtxmatrix_coordinate;
-        return mtxmatrix_coordinate_init_entries_integer_single(
+    } else if (type == mtxmatrix_coo) {
+        A->type = mtxmatrix_coo;
+        return mtxmatrix_coo_init_entries_integer_single(
             &A->storage.coordinate, symmetry,
             num_rows, num_columns, num_nonzeros, rowidx, colidx, data);
     } else if (type == mtxmatrix_csr) {
@@ -540,9 +540,9 @@ int mtxmatrix_init_entries_integer_double(
         return mtxmatrix_blas_init_entries_integer_double(
             &A->storage.blas, symmetry,
             num_rows, num_columns, num_nonzeros, rowidx, colidx, data);
-    } else if (type == mtxmatrix_coordinate) {
-        A->type = mtxmatrix_coordinate;
-        return mtxmatrix_coordinate_init_entries_integer_double(
+    } else if (type == mtxmatrix_coo) {
+        A->type = mtxmatrix_coo;
+        return mtxmatrix_coo_init_entries_integer_double(
             &A->storage.coordinate, symmetry,
             num_rows, num_columns, num_nonzeros, rowidx, colidx, data);
     } else if (type == mtxmatrix_csr) {
@@ -578,9 +578,9 @@ int mtxmatrix_init_entries_pattern(
         return mtxmatrix_blas_init_entries_pattern(
             &A->storage.blas, symmetry,
             num_rows, num_columns, num_nonzeros, rowidx, colidx);
-    } else if (type == mtxmatrix_coordinate) {
-        A->type = mtxmatrix_coordinate;
-        return mtxmatrix_coordinate_init_entries_pattern(
+    } else if (type == mtxmatrix_coo) {
+        A->type = mtxmatrix_coo;
+        return mtxmatrix_coo_init_entries_pattern(
             &A->storage.coordinate, symmetry,
             num_rows, num_columns, num_nonzeros, rowidx, colidx);
     } else if (type == mtxmatrix_csr) {
@@ -764,8 +764,8 @@ int mtxmatrix_setzero(
 {
     if (A->type == mtxmatrix_blas) {
         return mtxmatrix_blas_setzero(&A->storage.blas);
-    } else if (A->type == mtxmatrix_coordinate) {
-        return mtxmatrix_coordinate_setzero(&A->storage.coordinate);
+    } else if (A->type == mtxmatrix_coo) {
+        return mtxmatrix_coo_setzero(&A->storage.coordinate);
     } else if (A->type == mtxmatrix_csr) {
         return mtxmatrix_csr_setzero(&A->storage.csr);
     } else if (A->type == mtxmatrix_dense) {
@@ -786,8 +786,8 @@ int mtxmatrix_set_real_single(
     if (A->type == mtxmatrix_blas) {
         return mtxmatrix_blas_set_real_single(
             &A->storage.blas, size, stride, a);
-    } else if (A->type == mtxmatrix_coordinate) {
-        return mtxmatrix_coordinate_set_real_single(
+    } else if (A->type == mtxmatrix_coo) {
+        return mtxmatrix_coo_set_real_single(
             &A->storage.coordinate, size, stride, a);
     } else if (A->type == mtxmatrix_csr) {
         return mtxmatrix_csr_set_real_single(
@@ -811,8 +811,8 @@ int mtxmatrix_set_real_double(
     if (A->type == mtxmatrix_blas) {
         return mtxmatrix_blas_set_real_double(
             &A->storage.blas, size, stride, a);
-    } else if (A->type == mtxmatrix_coordinate) {
-        return mtxmatrix_coordinate_set_real_double(
+    } else if (A->type == mtxmatrix_coo) {
+        return mtxmatrix_coo_set_real_double(
             &A->storage.coordinate, size, stride, a);
     } else if (A->type == mtxmatrix_csr) {
         return mtxmatrix_csr_set_real_double(
@@ -836,8 +836,8 @@ int mtxmatrix_set_complex_single(
     if (A->type == mtxmatrix_blas) {
         return mtxmatrix_blas_set_complex_single(
             &A->storage.blas, size, stride, a);
-    } else if (A->type == mtxmatrix_coordinate) {
-        return mtxmatrix_coordinate_set_complex_single(
+    } else if (A->type == mtxmatrix_coo) {
+        return mtxmatrix_coo_set_complex_single(
             &A->storage.coordinate, size, stride, a);
     } else if (A->type == mtxmatrix_csr) {
         return mtxmatrix_csr_set_complex_single(
@@ -861,8 +861,8 @@ int mtxmatrix_set_complex_double(
     if (A->type == mtxmatrix_blas) {
         return mtxmatrix_blas_set_complex_double(
             &A->storage.blas, size, stride, a);
-    } else if (A->type == mtxmatrix_coordinate) {
-        return mtxmatrix_coordinate_set_complex_double(
+    } else if (A->type == mtxmatrix_coo) {
+        return mtxmatrix_coo_set_complex_double(
             &A->storage.coordinate, size, stride, a);
     } else if (A->type == mtxmatrix_csr) {
         return mtxmatrix_csr_set_complex_double(
@@ -886,8 +886,8 @@ int mtxmatrix_set_integer_single(
     if (A->type == mtxmatrix_blas) {
         return mtxmatrix_blas_set_integer_single(
             &A->storage.blas, size, stride, a);
-    } else if (A->type == mtxmatrix_coordinate) {
-        return mtxmatrix_coordinate_set_integer_single(
+    } else if (A->type == mtxmatrix_coo) {
+        return mtxmatrix_coo_set_integer_single(
             &A->storage.coordinate, size, stride, a);
     } else if (A->type == mtxmatrix_csr) {
         return mtxmatrix_csr_set_integer_single(
@@ -911,8 +911,8 @@ int mtxmatrix_set_integer_double(
     if (A->type == mtxmatrix_blas) {
         return mtxmatrix_blas_set_integer_double(
             &A->storage.blas, size, stride, a);
-    } else if (A->type == mtxmatrix_coordinate) {
-        return mtxmatrix_coordinate_set_integer_double(
+    } else if (A->type == mtxmatrix_coo) {
+        return mtxmatrix_coo_set_integer_double(
             &A->storage.coordinate, size, stride, a);
     } else if (A->type == mtxmatrix_csr) {
         return mtxmatrix_csr_set_integer_double(
@@ -940,8 +940,8 @@ int mtxmatrix_alloc_row_vector(
     if (matrix->type == mtxmatrix_blas) {
         return mtxmatrix_blas_alloc_row_vector(
             &matrix->storage.blas, vector, vectortype);
-    } else if (matrix->type == mtxmatrix_coordinate) {
-        return mtxmatrix_coordinate_alloc_row_vector(
+    } else if (matrix->type == mtxmatrix_coo) {
+        return mtxmatrix_coo_alloc_row_vector(
             &matrix->storage.coordinate, vector, vectortype);
     } else if (matrix->type == mtxmatrix_csr) {
         return mtxmatrix_csr_alloc_row_vector(
@@ -965,8 +965,8 @@ int mtxmatrix_alloc_column_vector(
     if (matrix->type == mtxmatrix_blas) {
         return mtxmatrix_blas_alloc_column_vector(
             &matrix->storage.blas, vector, vectortype);
-    } else if (matrix->type == mtxmatrix_coordinate) {
-        return mtxmatrix_coordinate_alloc_column_vector(
+    } else if (matrix->type == mtxmatrix_coo) {
+        return mtxmatrix_coo_alloc_column_vector(
             &matrix->storage.coordinate, vector, vectortype);
     } else if (matrix->type == mtxmatrix_csr) {
         return mtxmatrix_csr_alloc_column_vector(
@@ -994,9 +994,9 @@ int mtxmatrix_from_mtxfile(
         matrix->type = mtxmatrix_blas;
         return mtxmatrix_blas_from_mtxfile(
             &matrix->storage.blas, mtxfile);
-    } else if (type == mtxmatrix_coordinate) {
-        matrix->type = mtxmatrix_coordinate;
-        return mtxmatrix_coordinate_from_mtxfile(
+    } else if (type == mtxmatrix_coo) {
+        matrix->type = mtxmatrix_coo;
+        return mtxmatrix_coo_from_mtxfile(
             &matrix->storage.coordinate, mtxfile);
     } else if (type == mtxmatrix_csr) {
         matrix->type = mtxmatrix_csr;
@@ -1025,8 +1025,8 @@ int mtxmatrix_to_mtxfile(
         return mtxmatrix_blas_to_mtxfile(
             dst, &src->storage.blas,
             num_rows, rowidx, num_columns, colidx, mtxfmt);
-    } else if (src->type == mtxmatrix_coordinate) {
-        return mtxmatrix_coordinate_to_mtxfile(
+    } else if (src->type == mtxmatrix_coo) {
+        return mtxmatrix_coo_to_mtxfile(
             dst, &src->storage.coordinate,
             num_rows, rowidx, num_columns, colidx, mtxfmt);
     } else if (src->type == mtxmatrix_csr) {
@@ -1313,8 +1313,8 @@ int mtxmatrix_swap(
     if (X->type == mtxmatrix_blas && Y->type == mtxmatrix_blas) {
         return mtxmatrix_blas_swap(
             &X->storage.blas, &Y->storage.blas);
-    } else if (X->type == mtxmatrix_coordinate && Y->type == mtxmatrix_coordinate) {
-        return mtxmatrix_coordinate_swap(
+    } else if (X->type == mtxmatrix_coo && Y->type == mtxmatrix_coo) {
+        return mtxmatrix_coo_swap(
             &X->storage.coordinate, &Y->storage.coordinate);
     } else if (X->type == mtxmatrix_csr && Y->type == mtxmatrix_csr) {
         return mtxmatrix_csr_swap(
@@ -1335,8 +1335,8 @@ int mtxmatrix_copy(
     if (X->type == mtxmatrix_blas && Y->type == mtxmatrix_blas) {
         return mtxmatrix_blas_copy(
             &Y->storage.blas, &X->storage.blas);
-    } else if (X->type == mtxmatrix_coordinate && Y->type == mtxmatrix_coordinate) {
-        return mtxmatrix_coordinate_copy(
+    } else if (X->type == mtxmatrix_coo && Y->type == mtxmatrix_coo) {
+        return mtxmatrix_coo_copy(
             &Y->storage.coordinate, &X->storage.coordinate);
     } else if (X->type == mtxmatrix_csr && Y->type == mtxmatrix_csr) {
         return mtxmatrix_csr_copy(
@@ -1359,8 +1359,8 @@ int mtxmatrix_sscal(
     if (X->type == mtxmatrix_blas) {
         return mtxmatrix_blas_sscal(
             a, &X->storage.blas, num_flops);
-    } else if (X->type == mtxmatrix_coordinate) {
-        return mtxmatrix_coordinate_sscal(
+    } else if (X->type == mtxmatrix_coo) {
+        return mtxmatrix_coo_sscal(
             a, &X->storage.coordinate, num_flops);
     } else if (X->type == mtxmatrix_csr) {
         return mtxmatrix_csr_sscal(
@@ -1383,8 +1383,8 @@ int mtxmatrix_dscal(
     if (X->type == mtxmatrix_blas) {
         return mtxmatrix_blas_dscal(
             a, &X->storage.blas, num_flops);
-    } else if (X->type == mtxmatrix_coordinate) {
-        return mtxmatrix_coordinate_dscal(
+    } else if (X->type == mtxmatrix_coo) {
+        return mtxmatrix_coo_dscal(
             a, &X->storage.coordinate, num_flops);
     } else if (X->type == mtxmatrix_csr) {
         return mtxmatrix_csr_dscal(
@@ -1407,8 +1407,8 @@ int mtxmatrix_cscal(
     if (X->type == mtxmatrix_blas) {
         return mtxmatrix_blas_cscal(
             a, &X->storage.blas, num_flops);
-    } else if (X->type == mtxmatrix_coordinate) {
-        return mtxmatrix_coordinate_cscal(
+    } else if (X->type == mtxmatrix_coo) {
+        return mtxmatrix_coo_cscal(
             a, &X->storage.coordinate, num_flops);
     } else if (X->type == mtxmatrix_dense) {
         return mtxmatrix_dense_cscal(
@@ -1429,8 +1429,8 @@ int mtxmatrix_zscal(
     if (X->type == mtxmatrix_blas) {
         return mtxmatrix_blas_zscal(
             a, &X->storage.blas, num_flops);
-    } else if (X->type == mtxmatrix_coordinate) {
-        return mtxmatrix_coordinate_zscal(
+    } else if (X->type == mtxmatrix_coo) {
+        return mtxmatrix_coo_zscal(
             a, &X->storage.coordinate, num_flops);
     } else if (X->type == mtxmatrix_dense) {
         return mtxmatrix_dense_zscal(
@@ -1452,8 +1452,8 @@ int mtxmatrix_saxpy(
     if (X->type == mtxmatrix_blas && Y->type == mtxmatrix_blas) {
         return mtxmatrix_blas_saxpy(
             a, &X->storage.blas, &Y->storage.blas, num_flops);
-    } else if (X->type == mtxmatrix_coordinate && Y->type == mtxmatrix_coordinate) {
-        return mtxmatrix_coordinate_saxpy(
+    } else if (X->type == mtxmatrix_coo && Y->type == mtxmatrix_coo) {
+        return mtxmatrix_coo_saxpy(
             a, &X->storage.coordinate, &Y->storage.coordinate, num_flops);
     } else if (X->type == mtxmatrix_csr && Y->type == mtxmatrix_csr) {
         return mtxmatrix_csr_saxpy(
@@ -1477,8 +1477,8 @@ int mtxmatrix_daxpy(
     if (X->type == mtxmatrix_blas && Y->type == mtxmatrix_blas) {
         return mtxmatrix_blas_daxpy(
             a, &X->storage.blas, &Y->storage.blas, num_flops);
-    } else if (X->type == mtxmatrix_coordinate && Y->type == mtxmatrix_coordinate) {
-        return mtxmatrix_coordinate_daxpy(
+    } else if (X->type == mtxmatrix_coo && Y->type == mtxmatrix_coo) {
+        return mtxmatrix_coo_daxpy(
             a, &X->storage.coordinate, &Y->storage.coordinate, num_flops);
     } else if (X->type == mtxmatrix_csr && Y->type == mtxmatrix_csr) {
         return mtxmatrix_csr_daxpy(
@@ -1502,8 +1502,8 @@ int mtxmatrix_saypx(
     if (X->type == mtxmatrix_blas && Y->type == mtxmatrix_blas) {
         return mtxmatrix_blas_saypx(
             a, &Y->storage.blas, &X->storage.blas, num_flops);
-    } else if (X->type == mtxmatrix_coordinate && Y->type == mtxmatrix_coordinate) {
-        return mtxmatrix_coordinate_saypx(
+    } else if (X->type == mtxmatrix_coo && Y->type == mtxmatrix_coo) {
+        return mtxmatrix_coo_saypx(
             a, &Y->storage.coordinate, &X->storage.coordinate, num_flops);
     } else if (X->type == mtxmatrix_csr && Y->type == mtxmatrix_csr) {
         return mtxmatrix_csr_saypx(
@@ -1527,8 +1527,8 @@ int mtxmatrix_daypx(
     if (X->type == mtxmatrix_blas && Y->type == mtxmatrix_blas) {
         return mtxmatrix_blas_daypx(
             a, &Y->storage.blas, &X->storage.blas, num_flops);
-    } else if (X->type == mtxmatrix_coordinate && Y->type == mtxmatrix_coordinate) {
-        return mtxmatrix_coordinate_daypx(
+    } else if (X->type == mtxmatrix_coo && Y->type == mtxmatrix_coo) {
+        return mtxmatrix_coo_daypx(
             a, &Y->storage.coordinate, &X->storage.coordinate, num_flops);
     } else if (X->type == mtxmatrix_csr && Y->type == mtxmatrix_csr) {
         return mtxmatrix_csr_daypx(
@@ -1552,8 +1552,8 @@ int mtxmatrix_sdot(
     if (X->type == mtxmatrix_blas && Y->type == mtxmatrix_blas) {
         return mtxmatrix_blas_sdot(
             &X->storage.blas, &Y->storage.blas, dot, num_flops);
-    } else if (X->type == mtxmatrix_coordinate && Y->type == mtxmatrix_coordinate) {
-        return mtxmatrix_coordinate_sdot(
+    } else if (X->type == mtxmatrix_coo && Y->type == mtxmatrix_coo) {
+        return mtxmatrix_coo_sdot(
             &X->storage.coordinate, &Y->storage.coordinate, dot, num_flops);
     } else if (X->type == mtxmatrix_csr && Y->type == mtxmatrix_csr) {
         return mtxmatrix_csr_sdot(
@@ -1577,8 +1577,8 @@ int mtxmatrix_ddot(
     if (X->type == mtxmatrix_blas && Y->type == mtxmatrix_blas) {
         return mtxmatrix_blas_ddot(
             &X->storage.blas, &Y->storage.blas, dot, num_flops);
-    } else if (X->type == mtxmatrix_coordinate && Y->type == mtxmatrix_coordinate) {
-        return mtxmatrix_coordinate_ddot(
+    } else if (X->type == mtxmatrix_coo && Y->type == mtxmatrix_coo) {
+        return mtxmatrix_coo_ddot(
             &X->storage.coordinate, &Y->storage.coordinate, dot, num_flops);
     } else if (X->type == mtxmatrix_csr && Y->type == mtxmatrix_csr) {
         return mtxmatrix_csr_ddot(
@@ -1604,8 +1604,8 @@ int mtxmatrix_cdotu(
     if (X->type == mtxmatrix_blas && Y->type == mtxmatrix_blas) {
         return mtxmatrix_blas_cdotu(
             &X->storage.blas, &Y->storage.blas, dot, num_flops);
-    } else if (X->type == mtxmatrix_coordinate && Y->type == mtxmatrix_coordinate) {
-        return mtxmatrix_coordinate_cdotu(
+    } else if (X->type == mtxmatrix_coo && Y->type == mtxmatrix_coo) {
+        return mtxmatrix_coo_cdotu(
             &X->storage.coordinate, &Y->storage.coordinate, dot, num_flops);
     } else if (X->type == mtxmatrix_csr && Y->type == mtxmatrix_csr) {
         return mtxmatrix_csr_cdotu(
@@ -1631,8 +1631,8 @@ int mtxmatrix_zdotu(
     if (X->type == mtxmatrix_blas && Y->type == mtxmatrix_blas) {
         return mtxmatrix_blas_zdotu(
             &X->storage.blas, &Y->storage.blas, dot, num_flops);
-    } else if (X->type == mtxmatrix_coordinate && Y->type == mtxmatrix_coordinate) {
-        return mtxmatrix_coordinate_zdotu(
+    } else if (X->type == mtxmatrix_coo && Y->type == mtxmatrix_coo) {
+        return mtxmatrix_coo_zdotu(
             &X->storage.coordinate, &Y->storage.coordinate, dot, num_flops);
     } else if (X->type == mtxmatrix_csr && Y->type == mtxmatrix_csr) {
         return mtxmatrix_csr_zdotu(
@@ -1657,8 +1657,8 @@ int mtxmatrix_cdotc(
     if (X->type == mtxmatrix_blas && Y->type == mtxmatrix_blas) {
         return mtxmatrix_blas_cdotc(
             &X->storage.blas, &Y->storage.blas, dot, num_flops);
-    } else if (X->type == mtxmatrix_coordinate && Y->type == mtxmatrix_coordinate) {
-        return mtxmatrix_coordinate_cdotc(
+    } else if (X->type == mtxmatrix_coo && Y->type == mtxmatrix_coo) {
+        return mtxmatrix_coo_cdotc(
             &X->storage.coordinate, &Y->storage.coordinate, dot, num_flops);
     } else if (X->type == mtxmatrix_csr && Y->type == mtxmatrix_csr) {
         return mtxmatrix_csr_cdotc(
@@ -1683,8 +1683,8 @@ int mtxmatrix_zdotc(
     if (X->type == mtxmatrix_blas && Y->type == mtxmatrix_blas) {
         return mtxmatrix_blas_zdotc(
             &X->storage.blas, &Y->storage.blas, dot, num_flops);
-    } else if (X->type == mtxmatrix_coordinate && Y->type == mtxmatrix_coordinate) {
-        return mtxmatrix_coordinate_zdotc(
+    } else if (X->type == mtxmatrix_coo && Y->type == mtxmatrix_coo) {
+        return mtxmatrix_coo_zdotc(
             &X->storage.coordinate, &Y->storage.coordinate, dot, num_flops);
     } else if (X->type == mtxmatrix_csr && Y->type == mtxmatrix_csr) {
         return mtxmatrix_csr_zdotc(
@@ -1706,8 +1706,8 @@ int mtxmatrix_snrm2(
 {
     if (X->type == mtxmatrix_blas) {
         return mtxmatrix_blas_snrm2(&X->storage.blas, nrm2, num_flops);
-    } else if (X->type == mtxmatrix_coordinate) {
-        return mtxmatrix_coordinate_snrm2(&X->storage.coordinate, nrm2, num_flops);
+    } else if (X->type == mtxmatrix_coo) {
+        return mtxmatrix_coo_snrm2(&X->storage.coordinate, nrm2, num_flops);
     } else if (X->type == mtxmatrix_csr) {
         return mtxmatrix_csr_snrm2(&X->storage.csr, nrm2, num_flops);
     } else if (X->type == mtxmatrix_dense) {
@@ -1726,8 +1726,8 @@ int mtxmatrix_dnrm2(
 {
     if (X->type == mtxmatrix_blas) {
         return mtxmatrix_blas_dnrm2(&X->storage.blas, nrm2, num_flops);
-    } else if (X->type == mtxmatrix_coordinate) {
-        return mtxmatrix_coordinate_dnrm2(&X->storage.coordinate, nrm2, num_flops);
+    } else if (X->type == mtxmatrix_coo) {
+        return mtxmatrix_coo_dnrm2(&X->storage.coordinate, nrm2, num_flops);
     } else if (X->type == mtxmatrix_csr) {
         return mtxmatrix_csr_dnrm2(&X->storage.csr, nrm2, num_flops);
     } else if (X->type == mtxmatrix_dense) {
@@ -1748,8 +1748,8 @@ int mtxmatrix_sasum(
 {
     if (X->type == mtxmatrix_blas) {
         return mtxmatrix_blas_sasum(&X->storage.blas, asum, num_flops);
-    } else if (X->type == mtxmatrix_coordinate) {
-        return mtxmatrix_coordinate_sasum(&X->storage.coordinate, asum, num_flops);
+    } else if (X->type == mtxmatrix_coo) {
+        return mtxmatrix_coo_sasum(&X->storage.coordinate, asum, num_flops);
     } else if (X->type == mtxmatrix_csr) {
         return mtxmatrix_csr_sasum(&X->storage.csr, asum, num_flops);
     } else if (X->type == mtxmatrix_dense) {
@@ -1770,8 +1770,8 @@ int mtxmatrix_dasum(
 {
     if (X->type == mtxmatrix_blas) {
         return mtxmatrix_blas_dasum(&X->storage.blas, asum, num_flops);
-    } else if (X->type == mtxmatrix_coordinate) {
-        return mtxmatrix_coordinate_dasum(&X->storage.coordinate, asum, num_flops);
+    } else if (X->type == mtxmatrix_coo) {
+        return mtxmatrix_coo_dasum(&X->storage.coordinate, asum, num_flops);
     } else if (X->type == mtxmatrix_csr) {
         return mtxmatrix_csr_dasum(&X->storage.csr, asum, num_flops);
     } else if (X->type == mtxmatrix_dense) {
@@ -1791,8 +1791,8 @@ int mtxmatrix_iamax(
 {
     if (X->type == mtxmatrix_blas) {
         return mtxmatrix_blas_iamax(&X->storage.blas, iamax);
-    } else if (X->type == mtxmatrix_coordinate) {
-        return mtxmatrix_coordinate_iamax(&X->storage.coordinate, iamax);
+    } else if (X->type == mtxmatrix_coo) {
+        return mtxmatrix_coo_iamax(&X->storage.coordinate, iamax);
     } else if (X->type == mtxmatrix_csr) {
         return mtxmatrix_csr_iamax(&X->storage.csr, iamax);
     } else if (X->type == mtxmatrix_dense) {
@@ -1825,8 +1825,8 @@ int mtxmatrix_sgemv(
     if (A->type == mtxmatrix_blas) {
         return mtxmatrix_blas_sgemv(
             trans, alpha, &A->storage.blas, x, beta, y, num_flops);
-    } else if (A->type == mtxmatrix_coordinate) {
-        return mtxmatrix_coordinate_sgemv(
+    } else if (A->type == mtxmatrix_coo) {
+        return mtxmatrix_coo_sgemv(
             trans, alpha, &A->storage.coordinate, x, beta, y, num_flops);
     } else if (A->type == mtxmatrix_csr) {
         return mtxmatrix_csr_sgemv(
@@ -1858,8 +1858,8 @@ int mtxmatrix_dgemv(
     if (A->type == mtxmatrix_blas) {
         return mtxmatrix_blas_dgemv(
             trans, alpha, &A->storage.blas, x, beta, y, num_flops);
-    } else if (A->type == mtxmatrix_coordinate) {
-        return mtxmatrix_coordinate_dgemv(
+    } else if (A->type == mtxmatrix_coo) {
+        return mtxmatrix_coo_dgemv(
             trans, alpha, &A->storage.coordinate, x, beta, y, num_flops);
     } else if (A->type == mtxmatrix_csr) {
         return mtxmatrix_csr_dgemv(
@@ -1892,8 +1892,8 @@ int mtxmatrix_cgemv(
     if (A->type == mtxmatrix_blas) {
         return mtxmatrix_blas_cgemv(
             trans, alpha, &A->storage.blas, x, beta, y, num_flops);
-    } else if (A->type == mtxmatrix_coordinate) {
-        return mtxmatrix_coordinate_cgemv(
+    } else if (A->type == mtxmatrix_coo) {
+        return mtxmatrix_coo_cgemv(
             trans, alpha, &A->storage.coordinate, x, beta, y, num_flops);
     } else if (A->type == mtxmatrix_csr) {
         return mtxmatrix_csr_cgemv(
@@ -1926,8 +1926,8 @@ int mtxmatrix_zgemv(
     if (A->type == mtxmatrix_blas) {
         return mtxmatrix_blas_zgemv(
             trans, alpha, &A->storage.blas, x, beta, y, num_flops);
-    } else if (A->type == mtxmatrix_coordinate) {
-        return mtxmatrix_coordinate_zgemv(
+    } else if (A->type == mtxmatrix_coo) {
+        return mtxmatrix_coo_zgemv(
             trans, alpha, &A->storage.coordinate, x, beta, y, num_flops);
     } else if (A->type == mtxmatrix_csr) {
         return mtxmatrix_csr_zgemv(
