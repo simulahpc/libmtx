@@ -667,6 +667,136 @@ int mtxvector_omp_set_constant_integer_double(
     return MTX_SUCCESS;
 }
 
+/**
+ * ‘mtxvector_omp_set_real_single()’ sets values of a vector based on
+ * an array of single precision floating point numbers.
+ */
+int mtxvector_omp_set_real_single(
+    struct mtxvector_omp * x,
+    int64_t size,
+    int stride,
+    const float * a)
+{
+    if (x->base.field != mtx_field_real) return MTX_ERR_INVALID_FIELD;
+    if (x->base.precision != mtx_single) return MTX_ERR_INVALID_PRECISION;
+    if (x->base.size != size) return MTX_ERR_INCOMPATIBLE_SIZE;
+    int num_threads = x->num_threads;
+    float * b = x->base.data.real_single;
+    #pragma omp parallel for num_threads(num_threads)
+    for (int64_t i = 0; i < size; i++)
+        b[i] = *(const float *)((const char *) a + i*stride);
+    return MTX_SUCCESS;
+}
+
+/**
+ * ‘mtxvector_omp_set_real_double()’ sets values of a vector based on
+ * an array of double precision floating point numbers.
+ */
+int mtxvector_omp_set_real_double(
+    struct mtxvector_omp * x,
+    int64_t size,
+    int stride,
+    const double * a)
+{
+    if (x->base.field != mtx_field_real) return MTX_ERR_INVALID_FIELD;
+    if (x->base.precision != mtx_double) return MTX_ERR_INVALID_PRECISION;
+    if (x->base.size != size) return MTX_ERR_INCOMPATIBLE_SIZE;
+    int num_threads = x->num_threads;
+    double * b = x->base.data.real_double;
+    #pragma omp parallel for num_threads(num_threads)
+    for (int64_t i = 0; i < size; i++)
+        b[i] = *(const double *)((const char *) a + i*stride);
+    return MTX_SUCCESS;
+}
+
+/**
+ * ‘mtxvector_omp_set_complex_single()’ sets values of a vector based
+ * on an array of single precision floating point complex numbers.
+ */
+int mtxvector_omp_set_complex_single(
+    struct mtxvector_omp * x,
+    int64_t size,
+    int stride,
+    const float (*a)[2])
+{
+    if (x->base.field != mtx_field_complex) return MTX_ERR_INVALID_FIELD;
+    if (x->base.precision != mtx_single) return MTX_ERR_INVALID_PRECISION;
+    if (x->base.size != size) return MTX_ERR_INCOMPATIBLE_SIZE;
+    int num_threads = x->num_threads;
+    float (* b)[2] = x->base.data.complex_single;
+    #pragma omp parallel for num_threads(num_threads)
+    for (int64_t i = 0; i < size; i++) {
+        b[i][0] = (*(const float (*)[2])((const char *) a + i*stride))[0];
+        b[i][1] = (*(const float (*)[2])((const char *) a + i*stride))[1];
+    }
+    return MTX_SUCCESS;
+}
+
+/**
+ * ‘mtxvector_omp_set_complex_double()’ sets values of a vector based
+ * on an array of double precision floating point complex numbers.
+ */
+int mtxvector_omp_set_complex_double(
+    struct mtxvector_omp * x,
+    int64_t size,
+    int stride,
+    const double (*a)[2])
+{
+    if (x->base.field != mtx_field_complex) return MTX_ERR_INVALID_FIELD;
+    if (x->base.precision != mtx_double) return MTX_ERR_INVALID_PRECISION;
+    if (x->base.size != size) return MTX_ERR_INCOMPATIBLE_SIZE;
+    int num_threads = x->num_threads;
+    double (* b)[2] = x->base.data.complex_double;
+    #pragma omp parallel for num_threads(num_threads)
+    for (int64_t i = 0; i < size; i++) {
+        b[i][0] = (*(const double (*)[2])((const char *) a + i*stride))[0];
+        b[i][1] = (*(const double (*)[2])((const char *) a + i*stride))[1];
+    }
+    return MTX_SUCCESS;
+}
+
+/**
+ * ‘mtxvector_omp_set_integer_single()’ sets values of a vector based
+ * on an array of integers.
+ */
+int mtxvector_omp_set_integer_single(
+    struct mtxvector_omp * x,
+    int64_t size,
+    int stride,
+    const int32_t * a)
+{
+    if (x->base.field != mtx_field_real) return MTX_ERR_INVALID_FIELD;
+    if (x->base.precision != mtx_single) return MTX_ERR_INVALID_PRECISION;
+    if (x->base.size != size) return MTX_ERR_INCOMPATIBLE_SIZE;
+    int num_threads = x->num_threads;
+    int32_t * b = x->base.data.integer_single;
+    #pragma omp parallel for num_threads(num_threads)
+    for (int64_t i = 0; i < size; i++)
+        b[i] = *(const int32_t *)((const char *) a + i*stride);
+    return MTX_SUCCESS;
+}
+
+/**
+ * ‘mtxvector_omp_set_integer_double()’ sets values of a vector based
+ * on an array of integers.
+ */
+int mtxvector_omp_set_integer_double(
+    struct mtxvector_omp * x,
+    int64_t size,
+    int stride,
+    const int64_t * a)
+{
+    if (x->base.field != mtx_field_integer) return MTX_ERR_INVALID_FIELD;
+    if (x->base.precision != mtx_double) return MTX_ERR_INVALID_PRECISION;
+    if (x->base.size != size) return MTX_ERR_INCOMPATIBLE_SIZE;
+    int num_threads = x->num_threads;
+    int64_t * b = x->base.data.integer_double;
+    #pragma omp parallel for num_threads(num_threads)
+    for (int64_t i = 0; i < size; i++)
+        b[i] = *(const int64_t *)((const char *) a + i*stride);
+    return MTX_SUCCESS;
+}
+
 /*
  * Convert to and from Matrix Market format
  */

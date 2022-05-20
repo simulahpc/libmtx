@@ -459,6 +459,66 @@ int mtxvector_set_constant_integer_double(
     struct mtxvector * x,
     int64_t a);
 
+/**
+ * ‘mtxvector_set_real_single()’ sets values of a vector from an array
+ * of single precision floating point numbers.
+ */
+int mtxvector_set_real_single(
+    struct mtxvector * x,
+    int64_t size,
+    int stride,
+    const float * a);
+
+/**
+ * ‘mtxvector_set_real_double()’ sets values of a vector from an array
+ * of double precision floating point numbers.
+ */
+int mtxvector_set_real_double(
+    struct mtxvector * x,
+    int64_t size,
+    int stride,
+    const double * a);
+
+/**
+ * ‘mtxvector_set_complex_single()’ sets values of a vector from an
+ * array of single precision floating point complex numbers.
+ */
+int mtxvector_set_complex_single(
+    struct mtxvector * x,
+    int64_t size,
+    int stride,
+    const float (*a)[2]);
+
+/**
+ * ‘mtxvector_set_complex_double()’ sets values of a vector from an
+ * array of double precision floating point complex numbers.
+ */
+int mtxvector_set_complex_double(
+    struct mtxvector * x,
+    int64_t size,
+    int stride,
+    const double (*a)[2]);
+
+/**
+ * ‘mtxvector_set_integer_single()’ sets values of a vector from an
+ * array of integers.
+ */
+int mtxvector_set_integer_single(
+    struct mtxvector * x,
+    int64_t size,
+    int stride,
+    const int32_t * a);
+
+/**
+ * ‘mtxvector_set_integer_double()’ sets values of a vector from an
+ * array of integers.
+ */
+int mtxvector_set_integer_double(
+    struct mtxvector * x,
+    int64_t size,
+    int stride,
+    const int64_t * a);
+
 /*
  * Convert to and from Matrix Market format
  */

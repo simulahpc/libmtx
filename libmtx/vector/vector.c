@@ -1021,6 +1021,168 @@ int mtxvector_set_constant_integer_double(
     } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
 }
 
+/**
+ * ‘mtxvector_set_real_single()’ sets values of a vector from an array
+ * of single precision floating point numbers.
+ */
+int mtxvector_set_real_single(
+    struct mtxvector * x,
+    int64_t size,
+    int stride,
+    const float * a)
+{
+    if (x->type == mtxvector_base) {
+        return mtxvector_base_set_real_single(&x->storage.base, size, stride, a);
+    } else if (x->type == mtxvector_blas) {
+#ifdef LIBMTX_HAVE_BLAS
+        return mtxvector_blas_set_real_single(&x->storage.blas, size, stride, a);
+#else
+        return MTX_ERR_BLAS_NOT_SUPPORTED;
+#endif
+    } else if (x->type == mtxvector_omp) {
+#ifdef LIBMTX_HAVE_OPENMP
+        return mtxvector_omp_set_real_single(&x->storage.omp, size, stride, a);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
+    } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
+}
+
+/**
+ * ‘mtxvector_set_real_double()’ sets values of a vector from an array
+ * of double precision floating point numbers.
+ */
+int mtxvector_set_real_double(
+    struct mtxvector * x,
+    int64_t size,
+    int stride,
+    const double * a)
+{
+    if (x->type == mtxvector_base) {
+        return mtxvector_base_set_real_double(&x->storage.base, size, stride, a);
+    } else if (x->type == mtxvector_blas) {
+#ifdef LIBMTX_HAVE_BLAS
+        return mtxvector_blas_set_real_double(&x->storage.blas, size, stride, a);
+#else
+        return MTX_ERR_BLAS_NOT_SUPPORTED;
+#endif
+    } else if (x->type == mtxvector_omp) {
+#ifdef LIBMTX_HAVE_OPENMP
+        return mtxvector_omp_set_real_double(&x->storage.omp, size, stride, a);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
+    } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
+}
+
+/**
+ * ‘mtxvector_set_complex_single()’ sets values of a vector from an
+ * array of single precision floating point complex numbers.
+ */
+int mtxvector_set_complex_single(
+    struct mtxvector * x,
+    int64_t size,
+    int stride,
+    const float (*a)[2])
+{
+    if (x->type == mtxvector_base) {
+        return mtxvector_base_set_complex_single(&x->storage.base, size, stride, a);
+    } else if (x->type == mtxvector_blas) {
+#ifdef LIBMTX_HAVE_BLAS
+        return mtxvector_blas_set_complex_single(&x->storage.blas, size, stride, a);
+#else
+        return MTX_ERR_BLAS_NOT_SUPPORTED;
+#endif
+    } else if (x->type == mtxvector_omp) {
+#ifdef LIBMTX_HAVE_OPENMP
+        return mtxvector_omp_set_complex_single(&x->storage.omp, size, stride, a);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
+    } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
+}
+
+/**
+ * ‘mtxvector_set_complex_double()’ sets values of a vector from an
+ * array of double precision floating point complex numbers.
+ */
+int mtxvector_set_complex_double(
+    struct mtxvector * x,
+    int64_t size,
+    int stride,
+    const double (*a)[2])
+{
+    if (x->type == mtxvector_base) {
+        return mtxvector_base_set_complex_double(&x->storage.base, size, stride, a);
+    } else if (x->type == mtxvector_blas) {
+#ifdef LIBMTX_HAVE_BLAS
+        return mtxvector_blas_set_complex_double(&x->storage.blas, size, stride, a);
+#else
+        return MTX_ERR_BLAS_NOT_SUPPORTED;
+#endif
+    } else if (x->type == mtxvector_omp) {
+#ifdef LIBMTX_HAVE_OPENMP
+        return mtxvector_omp_set_complex_double(&x->storage.omp, size, stride, a);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
+    } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
+}
+
+/**
+ * ‘mtxvector_set_integer_single()’ sets values of a vector from an
+ * array of integers.
+ */
+int mtxvector_set_integer_single(
+    struct mtxvector * x,
+    int64_t size,
+    int stride,
+    const int32_t * a)
+{
+    if (x->type == mtxvector_base) {
+        return mtxvector_base_set_integer_single(&x->storage.base, size, stride, a);
+    } else if (x->type == mtxvector_blas) {
+#ifdef LIBMTX_HAVE_BLAS
+        return mtxvector_blas_set_integer_single(&x->storage.blas, size, stride, a);
+#else
+        return MTX_ERR_BLAS_NOT_SUPPORTED;
+#endif
+    } else if (x->type == mtxvector_omp) {
+#ifdef LIBMTX_HAVE_OPENMP
+        return mtxvector_omp_set_integer_single(&x->storage.omp, size, stride, a);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
+    } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
+}
+
+/**
+ * ‘mtxvector_set_integer_double()’ sets values of a vector from an
+ * array of integers.
+ */
+int mtxvector_set_integer_double(
+    struct mtxvector * x,
+    int64_t size,
+    int stride,
+    const int64_t * a)
+{
+    if (x->type == mtxvector_base) {
+        return mtxvector_base_set_integer_double(&x->storage.base, size, stride, a);
+    } else if (x->type == mtxvector_blas) {
+#ifdef LIBMTX_HAVE_BLAS
+        return mtxvector_blas_set_integer_double(&x->storage.blas, size, stride, a);
+#else
+        return MTX_ERR_BLAS_NOT_SUPPORTED;
+#endif
+    } else if (x->type == mtxvector_omp) {
+#ifdef LIBMTX_HAVE_OPENMP
+        return mtxvector_omp_set_integer_double(&x->storage.omp, size, stride, a);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
+    } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
+}
+
 /*
  * Convert to and from Matrix Market format
  */
