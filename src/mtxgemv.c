@@ -150,7 +150,7 @@ static void program_options_print_help(
     fprintf(f, "  --precision=PRECISION\tprecision used to represent matrix or\n");
     fprintf(f, "\t\t\tvector values: ‘single’ or ‘double’ (default).\n");
     fprintf(f, "  --matrix-type=TYPE\tformat for representing matrices:\n");
-    fprintf(f, "\t\t\t‘blas’, ‘dense’, ‘coordinate’ (default) or ‘csr’.\n");
+    fprintf(f, "\t\t\t‘blas’, ‘dense’, ‘coo’ (default) or ‘csr’.\n");
     fprintf(f, "  --vector-type=TYPE\ttype of vectors: ‘base’ (default), ‘blas’ or ‘omp’.\n");
     fprintf(f, "  --partition=TYPE\tmethod of partitioning: ‘block’ (default), ‘block-cyclic’.\n");
     fprintf(f, "  --blksize=N\t\tblock size to use for block-cyclic partitioning\n");
