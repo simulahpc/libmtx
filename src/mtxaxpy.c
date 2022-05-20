@@ -1052,9 +1052,7 @@ static int vector_axpy(
             clock_gettime(CLOCK_MONOTONIC, &t0);
         }
         int64_t bytes_written = 0;
-        enum mtxfileformat mtxfmt =
-            y.type == mtxvector_coordinate
-            ? mtxfile_coordinate : mtxfile_array;
+        enum mtxfileformat mtxfmt = mtxfiley->header.format;
         err = mtxvector_fwrite(
             &y, 0, NULL, mtxfmt, stdout, format, &bytes_written);
         if (err) {
