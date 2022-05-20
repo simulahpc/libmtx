@@ -27,7 +27,7 @@
 #include <libmtx/vector/field.h>
 #include <libmtx/vector/precision.h>
 
-#include <libmtx/matrix/blas.h>
+#include <libmtx/matrix/blas/dense.h>
 #include <libmtx/matrix/matrix.h>
 #include <libmtx/mtxfile/mtxfile.h>
 #include <libmtx/vector/vector.h>

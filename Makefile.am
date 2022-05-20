@@ -58,7 +58,7 @@ libmtx_la_SOURCES = \
 	libmtx/matrix/base/coo.c \
 	libmtx/matrix/base/csr.c \
 	libmtx/matrix/base/dense.c \
-	libmtx/matrix/blas.c \
+	libmtx/matrix/blas/dense.c \
 	libmtx/matrix/dist.c \
 	libmtx/matrix/matrix.c \
 	libmtx/matrix/symmetry.c \
@@ -102,7 +102,7 @@ nobase_include_HEADERS = \
 	libmtx/matrix/base/coo.h \
 	libmtx/matrix/base/csr.h \
 	libmtx/matrix/base/dense.h \
-	libmtx/matrix/blas.h \
+	libmtx/matrix/blas/dense.h \
 	libmtx/matrix/dist.h \
 	libmtx/matrix/matrix.h \
 	libmtx/mtxfile/comments.h \
@@ -289,11 +289,11 @@ tests_test_mtxmatrix_base_dense_SOURCES = tests/test_mtxmatrix_base_dense.c test
 check_PROGRAMS += tests/test_mtxmatrix_base_dense
 TESTS += tests/test_mtxmatrix_base_dense
 if HAVE_BLAS
-tests_test_mtxmatrix_blas_CPPFLAGS =
-tests_test_mtxmatrix_blas_LDADD = $(top_builddir)/libmtx.la
-tests_test_mtxmatrix_blas_SOURCES = tests/test_mtxmatrix_blas.c tests/test.h
-check_PROGRAMS += tests/test_mtxmatrix_blas
-TESTS += tests/test_mtxmatrix_blas
+tests_test_mtxmatrix_blas_dense_CPPFLAGS =
+tests_test_mtxmatrix_blas_dense_LDADD = $(top_builddir)/libmtx.la
+tests_test_mtxmatrix_blas_dense_SOURCES = tests/test_mtxmatrix_blas_dense.c tests/test.h
+check_PROGRAMS += tests/test_mtxmatrix_blas_dense
+TESTS += tests/test_mtxmatrix_blas_dense
 endif
 if HAVE_MPI
 tests_test_mtxmatrix_dist_CPPFLAGS =

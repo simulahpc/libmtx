@@ -27,12 +27,12 @@
 #include <libmtx/libmtx-config.h>
 
 #include <libmtx/error.h>
-#include <libmtx/matrix/blas.h>
-#include <libmtx/matrix/base/dense.h>
-#include <libmtx/matrix/dist.h>
-#include <libmtx/matrix/matrix.h>
 #include <libmtx/matrix/base/coo.h>
 #include <libmtx/matrix/base/csr.h>
+#include <libmtx/matrix/base/dense.h>
+#include <libmtx/matrix/blas/dense.h>
+#include <libmtx/matrix/dist.h>
+#include <libmtx/matrix/matrix.h>
 #include <libmtx/matrix/symmetry.h>
 #include <libmtx/matrix/transpose.h>
 #include <libmtx/mtxfile/mtxdistfile.h>

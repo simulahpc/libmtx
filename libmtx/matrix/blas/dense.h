@@ -16,31 +16,29 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-05-05
+ * Last modified: 2022-05-20
  *
  * Dense matrices with BLAS-accelerated operations.
  */
 
-#ifndef LIBMTX_MATRIX_BLAS_H
-#define LIBMTX_MATRIX_BLAS_H
+#ifndef LIBMTX_MATRIX_BLAS_DENSE_H
+#define LIBMTX_MATRIX_BLAS_DENSE_H
 
 #include <libmtx/libmtx-config.h>
 
-#include <libmtx/vector/precision.h>
-#include <libmtx/vector/field.h>
 #include <libmtx/matrix/symmetry.h>
 #include <libmtx/matrix/transpose.h>
 #include <libmtx/vector/base.h>
+#include <libmtx/vector/field.h>
+#include <libmtx/vector/precision.h>
 #include <libmtx/vector/vector.h>
 
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stddef.h>
-#include <stdio.h>
 
 struct mtxfile;
 struct mtxmatrix;
-struct mtxpartition;
 
 /**
  * ‘mtxmatrix_blas’ represents a dense matrix with entries stored in
