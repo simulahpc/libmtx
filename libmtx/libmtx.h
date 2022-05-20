@@ -39,11 +39,12 @@
 #include <libmtx/solver/cg.h>
 #include <libmtx/util/index_set.h>
 #include <libmtx/util/partition.h>
+#include <libmtx/vector/base.h>
+#include <libmtx/vector/blas.h>
 #include <libmtx/vector/dist.h>
-#include <libmtx/vector/distvector.h>
+#include <libmtx/vector/omp.h>
+#include <libmtx/vector/packed.h>
 #include <libmtx/vector/vector.h>
-#include <libmtx/vector/vector_array.h>
-#include <libmtx/vector/vector_coordinate.h>
 #include <libmtx/version.h>
 
 #endif

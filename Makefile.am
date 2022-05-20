@@ -45,7 +45,6 @@ EXTRA_DIST = \
 	tests/test_distsort_parallel \
 	tests/test_mtxdistfile_parallel \
 	tests/test_mtxdistfile2_parallel \
-	tests/test_mtxdistvector_parallel \
 	tests/test_mtxfile_mpi_parallel
 
 # Matrix Market library
@@ -97,12 +96,9 @@ libmtx_la_SOURCES = \
 	libmtx/vector/base.c \
 	libmtx/vector/blas.c \
 	libmtx/vector/dist.c \
-	libmtx/vector/distvector.c \
 	libmtx/vector/omp.c \
 	libmtx/vector/packed.c \
 	libmtx/vector/vector.c \
-	libmtx/vector/vector_array.c \
-	libmtx/vector/vector_coordinate.c \
 	libmtx/version.c
 
 # Header files
@@ -131,12 +127,9 @@ nobase_include_HEADERS = \
 	libmtx/vector/base.h \
 	libmtx/vector/blas.h \
 	libmtx/vector/dist.h \
-	libmtx/vector/distvector.h \
 	libmtx/vector/omp.h \
 	libmtx/vector/packed.h \
 	libmtx/vector/vector.h \
-	libmtx/vector/vector_array.h \
-	libmtx/vector/vector_coordinate.h \
 	libmtx/version.h
 
 # Header files that will not be distributed
@@ -235,8 +228,6 @@ check_PROGRAMS = \
 	tests/test_mtxfile \
 	tests/test_mtxmatrix_coordinate \
 	tests/test_mtxmatrix_csr \
-	tests/test_mtxvector_array \
-	tests/test_mtxvector_coordinate \
 	tests/test_parse \
 	tests/test_partition \
 	tests/test_permute \
@@ -254,12 +245,6 @@ tests_test_mtxmatrix_coordinate_SOURCES = tests/test_mtxmatrix_coordinate.c test
 tests_test_mtxmatrix_csr_CPPFLAGS = $(MPICPPFLAGS)
 tests_test_mtxmatrix_csr_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
 tests_test_mtxmatrix_csr_SOURCES = tests/test_mtxmatrix_csr.c tests/test.h
-tests_test_mtxvector_array_CPPFLAGS = $(MPICPPFLAGS)
-tests_test_mtxvector_array_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
-tests_test_mtxvector_array_SOURCES = tests/test_mtxvector_array.c tests/test.h
-tests_test_mtxvector_coordinate_CPPFLAGS = $(MPICPPFLAGS)
-tests_test_mtxvector_coordinate_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
-tests_test_mtxvector_coordinate_SOURCES = tests/test_mtxvector_coordinate.c tests/test.h
 tests_test_format_CPPFLAGS = $(MPICPPFLAGS)
 tests_test_format_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
 tests_test_format_SOURCES = tests/test_fmtspec.c tests/test.h
@@ -282,8 +267,6 @@ TESTS = \
 	tests/test_mtxfile \
 	tests/test_mtxmatrix_coordinate \
 	tests/test_mtxmatrix_csr \
-	tests/test_mtxvector_array \
-	tests/test_mtxvector_coordinate \
 	tests/test_parse \
 	tests/test_partition \
 	tests/test_permute \
@@ -396,8 +379,6 @@ if HAVE_MPI
 check_PROGRAMS += \
 	tests/test_distsort \
 	tests/test_mtxdistfile \
-	tests/test_mtxdistvector_array \
-	tests/test_mtxdistvector_coordinate \
 	tests/test_mtxfile_mpi
 
 tests_test_distsort_CPPFLAGS = $(MPICPPFLAGS)
@@ -415,19 +396,10 @@ tests_test_mtxdistfile_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LI
 tests_test_mtxdistfile_SOURCES = tests/test_mtxdistfile.c tests/test.h
 tests/test_mtxdistfile_parallel: tests/test_mtxdistfile
 
-tests_test_mtxdistvector_array_CPPFLAGS = $(MPICPPFLAGS)
-tests_test_mtxdistvector_array_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
-tests_test_mtxdistvector_array_SOURCES = tests/test_mtxdistvector_array.c tests/test.h
-tests_test_mtxdistvector_coordinate_CPPFLAGS = $(MPICPPFLAGS)
-tests_test_mtxdistvector_coordinate_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
-tests_test_mtxdistvector_coordinate_SOURCES = tests/test_mtxdistvector_coordinate.c tests/test.h
-tests/test_mtxdistvector_parallel:  tests/test_mtxdistvector_array tests/test_mtxdistvector_coordinate
-
 TESTS += \
 	tests/test_distsort_parallel \
 	tests/test_mtxfile_mpi_parallel \
-	tests/test_mtxdistfile_parallel \
-	tests/test_mtxdistvector_parallel
+	tests/test_mtxdistfile_parallel
 endif
 
 # Documentation

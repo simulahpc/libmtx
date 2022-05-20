@@ -31,8 +31,6 @@
 #include <libmtx/vector/base.h>
 #include <libmtx/vector/blas.h>
 #include <libmtx/vector/omp.h>
-#include <libmtx/vector/vector_array.h>
-#include <libmtx/vector/vector_coordinate.h>
 
 #ifdef LIBMTX_HAVE_LIBZ
 #include <zlib.h>
@@ -55,14 +53,11 @@ struct mtxvector_packed;
  */
 enum mtxvectortype
 {
-    mtxvector_auto,       /* automatic selection of vector type */
-    mtxvector_array,      /* array format for dense vectors */
     mtxvector_base,       /* basic dense vectors */
     mtxvector_blas,       /* dense vectors with vector operations
                            * performed by an external BLAS library */
     mtxvector_omp,        /* dense vectors using OpenMP for shared
                            * memory parallel operations */
-    mtxvector_coordinate, /* coordinate format for sparse vectors */
 };
 
 /**
@@ -120,7 +115,6 @@ struct mtxvector
      */
     union
     {
-        struct mtxvector_array array;
         struct mtxvector_base base;
 #ifdef LIBMTX_HAVE_BLAS
         struct mtxvector_blas blas;
@@ -128,7 +122,6 @@ struct mtxvector
 #ifdef LIBMTX_HAVE_OPENMP
         struct mtxvector_omp omp;
 #endif
-        struct mtxvector_coordinate coordinate;
     } storage;
 };
 
@@ -393,73 +386,6 @@ int mtxvector_init_base_integer_double(
     const int64_t * data);
 
 /*
- * Dense vectors in array format
- */
-
-/**
- * ‘mtxvector_alloc_array()’ allocates a vector in array format.
- */
-int mtxvector_alloc_array(
-    struct mtxvector * x,
-    enum mtxfield field,
-    enum mtxprecision precision,
-    int64_t size);
-
-/**
- * ‘mtxvector_init_array_real_single()’ allocates and initialises a
- * vector in array format with real, single precision coefficients.
- */
-int mtxvector_init_array_real_single(
-    struct mtxvector * x,
-    int64_t size,
-    const float * data);
-
-/**
- * ‘mtxvector_init_array_real_double()’ allocates and initialises a
- * vector in array format with real, double precision coefficients.
- */
-int mtxvector_init_array_real_double(
-    struct mtxvector * x,
-    int64_t size,
-    const double * data);
-
-/**
- * ‘mtxvector_init_array_complex_single()’ allocates and initialises a
- * vector in array format with complex, single precision coefficients.
- */
-int mtxvector_init_array_complex_single(
-    struct mtxvector * x,
-    int64_t size,
-    const float (* data)[2]);
-
-/**
- * ‘mtxvector_init_array_complex_double()’ allocates and initialises a
- * vector in array format with complex, double precision coefficients.
- */
-int mtxvector_init_array_complex_double(
-    struct mtxvector * x,
-    int64_t size,
-    const double (* data)[2]);
-
-/**
- * ‘mtxvector_init_array_integer_single()’ allocates and initialises a
- * vector in array format with integer, single precision coefficients.
- */
-int mtxvector_init_array_integer_single(
-    struct mtxvector * x,
-    int64_t size,
-    const int32_t * data);
-
-/**
- * ‘mtxvector_init_array_integer_double()’ allocates and initialises a
- * vector in array format with integer, double precision coefficients.
- */
-int mtxvector_init_array_integer_double(
-    struct mtxvector * x,
-    int64_t size,
-    const int64_t * data);
-
-/*
  * Basic, dense vectors
  */
 
@@ -676,104 +602,6 @@ int mtxvector_init_omp_integer_double(
     int num_threads);
 
 /*
- * Vector coordinate formats
- */
-
-/**
- * ‘mtxvector_alloc_coordinate()’ allocates a vector in
- * coordinate format.
- */
-int mtxvector_alloc_coordinate(
-    struct mtxvector * x,
-    enum mtxfield field,
-    enum mtxprecision precision,
-    int64_t size,
-    int64_t num_nonzeros);
-
-/**
- * ‘mtxvector_init_coordinate_real_single()’ allocates and initialises
- * a vector in coordinate format with real, single precision
- * coefficients.
- */
-int mtxvector_init_coordinate_real_single(
-    struct mtxvector * x,
-    int64_t size,
-    int64_t num_nonzeros,
-    const int * indices,
-    const float * values);
-
-/**
- * ‘mtxvector_init_coordinate_real_double()’ allocates and initialises
- * a vector in coordinate format with real, double precision
- * coefficients.
- */
-int mtxvector_init_coordinate_real_double(
-    struct mtxvector * x,
-    int64_t size,
-    int64_t num_nonzeros,
-    const int * indices,
-    const double * values);
-
-/**
- * ‘mtxvector_init_coordinate_complex_single()’ allocates and
- * initialises a vector in coordinate format with complex, single
- * precision coefficients.
- */
-int mtxvector_init_coordinate_complex_single(
-    struct mtxvector * x,
-    int64_t size,
-    int64_t num_nonzeros,
-    const int * indices,
-    const float (* values)[2]);
-
-/**
- * ‘mtxvector_init_coordinate_complex_double()’ allocates and
- * initialises a vector in coordinate format with complex, double
- * precision coefficients.
- */
-int mtxvector_init_coordinate_complex_double(
-    struct mtxvector * x,
-    int64_t size,
-    int64_t num_nonzeros,
-    const int * indices,
-    const double (* values)[2]);
-
-/**
- * ‘mtxvector_init_coordinate_integer_single()’ allocates and
- * initialises a vector in coordinate format with integer, single
- * precision coefficients.
- */
-int mtxvector_init_coordinate_integer_single(
-    struct mtxvector * x,
-    int64_t size,
-    int64_t num_nonzeros,
-    const int * indices,
-    const int32_t * values);
-
-/**
- * ‘mtxvector_init_coordinate_integer_double()’ allocates and
- * initialises a vector in coordinate format with integer, double
- * precision coefficients.
- */
-int mtxvector_init_coordinate_integer_double(
-    struct mtxvector * x,
-    int64_t size,
-    int64_t num_nonzeros,
-    const int * indices,
-    const int64_t * values);
-
-/**
- * ‘mtxvector_init_coordinate_pattern()’ allocates and initialises a
- * vector in coordinate format with integer, double precision
- * coefficients.
- */
-int mtxvector_init_coordinate_pattern(
-    struct mtxvector * x,
-    int64_t size,
-    int64_t num_nonzeros,
-    const int * indices);
-
-/*
  * Modifying values
  */
 
@@ -870,10 +698,7 @@ int mtxvector_to_mtxfile(
  * storing vector values.
  *
  * The ‘type’ argument specifies which format to use for representing
- * the vector.  If ‘type’ is ‘mtxvector_auto’, then the underlying
- * vector is stored in array format or coordinate format according to
- * the format of the Matrix Market file.  Otherwise, an attempt is
- * made to convert the vector to the desired type.
+ * the vector.
  *
  * If ‘path’ is ‘-’, then standard input is used.
  *
@@ -901,10 +726,7 @@ int mtxvector_read(
  * the values of vector entries.
  *
  * The ‘type’ argument specifies which format to use for representing
- * the vector.  If ‘type’ is ‘mtxvector_auto’, then the underlying
- * vector is stored in array format or coordinate format according to
- * the format of the Matrix Market file.  Otherwise, an attempt is
- * made to convert the vector to the desired type.
+ * the vector.
  *
  * If an error code is returned, then ‘lines_read’ and ‘bytes_read’
  * are used to return the line number and byte at which the error was
@@ -928,10 +750,7 @@ int mtxvector_fread(
  * the values of vector entries.
  *
  * The ‘type’ argument specifies which format to use for representing
- * the vector.  If ‘type’ is ‘mtxvector_auto’, then the underlying
- * vector is stored in array format or coordinate format according to
- * the format of the Matrix Market file.  Otherwise, an attempt is
- * made to convert the vector to the desired type.
+ * the vector.
  *
  * If an error code is returned, then ‘lines_read’ and ‘bytes_read’
  * are used to return the line number and byte at which the error was
@@ -1487,49 +1306,6 @@ int mtxvector_usscga(
     const struct mtxvector_packed * x);
 
 /*
- * Sorting
- */
-
-/**
- * ‘mtxvector_permute()’ permutes the elements of a vector according
- * to a given permutation.
- *
- * The array ‘perm’ should be an array of length ‘size’ that stores a
- * permutation of the integers ‘0,1,...,N-1’, where ‘N’ is the number
- * of vector elements.
- *
- * After permuting, the 1st vector element of the original vector is
- * now located at position ‘perm[0]’ in the sorted vector ‘x’, the 2nd
- * element is now at position ‘perm[1]’, and so on.
- */
-int mtxvector_permute(
-    struct mtxvector * x,
-    int64_t offset,
-    int64_t size,
-    int64_t * perm);
-
-/**
- * ‘mtxvector_sort()’ sorts elements of a vector by the given keys.
- *
- * The array ‘keys’ must be an array of length ‘size’ that stores a
- * 64-bit unsigned integer sorting key that is used to define the
- * order in which to sort the vector elements..
- *
- * If it is not ‘NULL’, then ‘perm’ must point to an array of length
- * ‘size’, which is then used to store the sorting permutation. That
- * is, ‘perm’ is a permutation of the integers ‘0,1,...,N-1’, where
- * ‘N’ is the number of vector elements, such that the 1st vector
- * element in the original vector is now located at position ‘perm[0]’
- * in the sorted vector ‘x’, the 2nd element is now at position
- * ‘perm[1]’, and so on.
- */
-int mtxvector_sort(
-    struct mtxvector * x,
-    int64_t size,
-    uint64_t * keys,
-    int64_t * perm);
-
-/*
  * MPI functions
  */
 
@@ -1581,82 +1357,6 @@ int mtxvector_irecv(
     MPI_Comm comm,
     MPI_Request * request,
     int * mpierrcode);
-
-/**
- * ‘mtxvector_bcast()’ broadcasts a vector from an MPI root process to
- * other processes in a communicator.
- *
- * This is analogous to ‘MPI_Bcast()’ and requires every process in
- * the communicator to perform matching calls to
- * ‘mtxvector_bcast()’.
- */
-int mtxvector_bcast(
-    struct mtxvector * x,
-    int64_t size,
-    int64_t offset,
-    int root,
-    MPI_Comm comm,
-    struct mtxdisterror * disterr);
-
-/**
- * ‘mtxvector_gatherv()’ gathers a vector onto an MPI root process
- * from other processes in a communicator.
- *
- * This is analogous to ‘MPI_Gatherv()’ and requires every process in
- * the communicator to perform matching calls to
- * ‘mtxvector_gatherv()’.
- */
-int mtxvector_gatherv(
-    const struct mtxvector * sendbuf,
-    int64_t sendoffset,
-    int sendcount,
-    struct mtxvector * recvbuf,
-    int64_t recvoffset,
-    const int * recvcounts,
-    const int * recvdispls,
-    int root,
-    MPI_Comm comm,
-    struct mtxdisterror * disterr);
-
-/**
- * ‘mtxvector_scatterv()’ scatters a vector from an MPI root process
- * to other processes in a communicator.
- *
- * This is analogous to ‘MPI_Scatterv()’ and requires every process in
- * the communicator to perform matching calls to
- * ‘mtxvector_scatterv()’.
- */
-int mtxvector_scatterv(
-    const struct mtxvector * sendbuf,
-    int64_t sendoffset,
-    const int * sendcounts,
-    const int * displs,
-    struct mtxvector * recvbuf,
-    int64_t recvoffset,
-    int recvcount,
-    int root,
-    MPI_Comm comm,
-    struct mtxdisterror * disterr);
-
-/**
- * ‘mtxvector_alltoallv()’ performs an all-to-all exchange of a vector
- * between MPI processes in a communicator.
- *
- * This is analogous to ‘MPI_Alltoallv()’ and requires every process
- * in the communicator to perform matching calls to
- * ‘mtxvector_alltoallv()’.
- */
-int mtxvector_alltoallv(
-    const struct mtxvector * sendbuf,
-    int64_t sendoffset,
-    const int * sendcounts,
-    const int * senddispls,
-    struct mtxvector * recvbuf,
-    int64_t recvoffset,
-    const int * recvcounts,
-    const int * recvdispls,
-    MPI_Comm comm,
-    struct mtxdisterror * disterr);
 #endif
 
 #endif
