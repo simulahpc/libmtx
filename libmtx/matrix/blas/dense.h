@@ -82,7 +82,7 @@ struct mtxmatrix_blas
     /**
      * ‘a’ is a vector storing the underlying nonzero matrix entries.
      */
-    struct mtxvector a;
+    struct mtxvector_blas a;
 };
 
 /*
@@ -121,7 +121,6 @@ int mtxmatrix_blas_init_copy(
  */
 int mtxmatrix_blas_alloc_entries(
     struct mtxmatrix_blas * A,
-    enum mtxvectortype vectortype,
     enum mtxfield field,
     enum mtxprecision precision,
     enum mtxsymmetry symmetry,
@@ -140,7 +139,6 @@ int mtxmatrix_blas_alloc_entries(
  */
 int mtxmatrix_blas_init_entries_real_single(
     struct mtxmatrix_blas * A,
-    enum mtxvectortype vectortype,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -156,7 +154,6 @@ int mtxmatrix_blas_init_entries_real_single(
  */
 int mtxmatrix_blas_init_entries_real_double(
     struct mtxmatrix_blas * A,
-    enum mtxvectortype vectortype,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -172,7 +169,6 @@ int mtxmatrix_blas_init_entries_real_double(
  */
 int mtxmatrix_blas_init_entries_complex_single(
     struct mtxmatrix_blas * A,
-    enum mtxvectortype vectortype,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -188,7 +184,6 @@ int mtxmatrix_blas_init_entries_complex_single(
  */
 int mtxmatrix_blas_init_entries_complex_double(
     struct mtxmatrix_blas * A,
-    enum mtxvectortype vectortype,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -204,7 +199,6 @@ int mtxmatrix_blas_init_entries_complex_double(
  */
 int mtxmatrix_blas_init_entries_integer_single(
     struct mtxmatrix_blas * A,
-    enum mtxvectortype vectortype,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -220,7 +214,6 @@ int mtxmatrix_blas_init_entries_integer_single(
  */
 int mtxmatrix_blas_init_entries_integer_double(
     struct mtxmatrix_blas * A,
-    enum mtxvectortype vectortype,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -236,7 +229,6 @@ int mtxmatrix_blas_init_entries_integer_double(
  */
 int mtxmatrix_blas_init_entries_pattern(
     struct mtxmatrix_blas * A,
-    enum mtxvectortype vectortype,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -256,7 +248,6 @@ int mtxmatrix_blas_init_entries_pattern(
  */
 int mtxmatrix_blas_init_entries_strided_real_single(
     struct mtxmatrix_blas * A,
-    enum mtxvectortype vectortype,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -275,7 +266,6 @@ int mtxmatrix_blas_init_entries_strided_real_single(
  */
 int mtxmatrix_blas_init_entries_strided_real_double(
     struct mtxmatrix_blas * A,
-    enum mtxvectortype vectortype,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -294,7 +284,6 @@ int mtxmatrix_blas_init_entries_strided_real_double(
  */
 int mtxmatrix_blas_init_entries_strided_complex_single(
     struct mtxmatrix_blas * A,
-    enum mtxvectortype vectortype,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -313,7 +302,6 @@ int mtxmatrix_blas_init_entries_strided_complex_single(
  */
 int mtxmatrix_blas_init_entries_strided_complex_double(
     struct mtxmatrix_blas * A,
-    enum mtxvectortype vectortype,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -332,7 +320,6 @@ int mtxmatrix_blas_init_entries_strided_complex_double(
  */
 int mtxmatrix_blas_init_entries_strided_integer_single(
     struct mtxmatrix_blas * A,
-    enum mtxvectortype vectortype,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -351,7 +338,6 @@ int mtxmatrix_blas_init_entries_strided_integer_single(
  */
 int mtxmatrix_blas_init_entries_strided_integer_double(
     struct mtxmatrix_blas * A,
-    enum mtxvectortype vectortype,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -370,7 +356,6 @@ int mtxmatrix_blas_init_entries_strided_integer_double(
  */
 int mtxmatrix_blas_init_entries_strided_pattern(
     struct mtxmatrix_blas * A,
-    enum mtxvectortype vectortype,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -390,7 +375,6 @@ int mtxmatrix_blas_init_entries_strided_pattern(
  */
 int mtxmatrix_blas_alloc_rows(
     struct mtxmatrix_blas * A,
-    enum mtxvectortype vectortype,
     enum mtxfield field,
     enum mtxprecision precision,
     enum mtxsymmetry symmetry,
@@ -406,7 +390,6 @@ int mtxmatrix_blas_alloc_rows(
  */
 int mtxmatrix_blas_init_rows_real_single(
     struct mtxmatrix_blas * A,
-    enum mtxvectortype vectortype,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -421,7 +404,6 @@ int mtxmatrix_blas_init_rows_real_single(
  */
 int mtxmatrix_blas_init_rows_real_double(
     struct mtxmatrix_blas * A,
-    enum mtxvectortype vectortype,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -436,7 +418,6 @@ int mtxmatrix_blas_init_rows_real_double(
  */
 int mtxmatrix_blas_init_rows_complex_single(
     struct mtxmatrix_blas * A,
-    enum mtxvectortype vectortype,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -451,7 +432,6 @@ int mtxmatrix_blas_init_rows_complex_single(
  */
 int mtxmatrix_blas_init_rows_complex_double(
     struct mtxmatrix_blas * A,
-    enum mtxvectortype vectortype,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -466,7 +446,6 @@ int mtxmatrix_blas_init_rows_complex_double(
  */
 int mtxmatrix_blas_init_rows_integer_single(
     struct mtxmatrix_blas * A,
-    enum mtxvectortype vectortype,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -481,7 +460,6 @@ int mtxmatrix_blas_init_rows_integer_single(
  */
 int mtxmatrix_blas_init_rows_integer_double(
     struct mtxmatrix_blas * A,
-    enum mtxvectortype vectortype,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -496,7 +474,6 @@ int mtxmatrix_blas_init_rows_integer_double(
  */
 int mtxmatrix_blas_init_rows_pattern(
     struct mtxmatrix_blas * A,
-    enum mtxvectortype vectortype,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -514,7 +491,6 @@ int mtxmatrix_blas_init_rows_pattern(
  */
 int mtxmatrix_blas_alloc_columns(
     struct mtxmatrix_blas * A,
-    enum mtxvectortype vectortype,
     enum mtxfield field,
     enum mtxprecision precision,
     enum mtxsymmetry symmetry,
@@ -530,7 +506,6 @@ int mtxmatrix_blas_alloc_columns(
  */
 int mtxmatrix_blas_init_columns_real_single(
     struct mtxmatrix_blas * A,
-    enum mtxvectortype vectortype,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -545,7 +520,6 @@ int mtxmatrix_blas_init_columns_real_single(
  */
 int mtxmatrix_blas_init_columns_real_double(
     struct mtxmatrix_blas * A,
-    enum mtxvectortype vectortype,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -560,7 +534,6 @@ int mtxmatrix_blas_init_columns_real_double(
  */
 int mtxmatrix_blas_init_columns_complex_single(
     struct mtxmatrix_blas * A,
-    enum mtxvectortype vectortype,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -575,7 +548,6 @@ int mtxmatrix_blas_init_columns_complex_single(
  */
 int mtxmatrix_blas_init_columns_complex_double(
     struct mtxmatrix_blas * A,
-    enum mtxvectortype vectortype,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -590,7 +562,6 @@ int mtxmatrix_blas_init_columns_complex_double(
  */
 int mtxmatrix_blas_init_columns_integer_single(
     struct mtxmatrix_blas * A,
-    enum mtxvectortype vectortype,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -605,7 +576,6 @@ int mtxmatrix_blas_init_columns_integer_single(
  */
 int mtxmatrix_blas_init_columns_integer_double(
     struct mtxmatrix_blas * A,
-    enum mtxvectortype vectortype,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -620,7 +590,6 @@ int mtxmatrix_blas_init_columns_integer_double(
  */
 int mtxmatrix_blas_init_columns_pattern(
     struct mtxmatrix_blas * A,
-    enum mtxvectortype vectortype,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -637,7 +606,6 @@ int mtxmatrix_blas_init_columns_pattern(
  */
 int mtxmatrix_blas_alloc_cliques(
     struct mtxmatrix_blas * A,
-    enum mtxvectortype vectortype,
     enum mtxfield field,
     enum mtxprecision precision,
     enum mtxsymmetry symmetry,
@@ -655,7 +623,6 @@ int mtxmatrix_blas_alloc_cliques(
  */
 int mtxmatrix_blas_init_cliques_real_single(
     struct mtxmatrix_blas * A,
-    enum mtxvectortype vectortype,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -672,7 +639,6 @@ int mtxmatrix_blas_init_cliques_real_single(
  */
 int mtxmatrix_blas_init_cliques_real_double(
     struct mtxmatrix_blas * A,
-    enum mtxvectortype vectortype,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -689,7 +655,6 @@ int mtxmatrix_blas_init_cliques_real_double(
  */
 int mtxmatrix_blas_init_cliques_complex_single(
     struct mtxmatrix_blas * A,
-    enum mtxvectortype vectortype,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -706,7 +671,6 @@ int mtxmatrix_blas_init_cliques_complex_single(
  */
 int mtxmatrix_blas_init_cliques_complex_double(
     struct mtxmatrix_blas * A,
-    enum mtxvectortype vectortype,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -723,7 +687,6 @@ int mtxmatrix_blas_init_cliques_complex_double(
  */
 int mtxmatrix_blas_init_cliques_integer_single(
     struct mtxmatrix_blas * A,
-    enum mtxvectortype vectortype,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -740,7 +703,6 @@ int mtxmatrix_blas_init_cliques_integer_single(
  */
 int mtxmatrix_blas_init_cliques_integer_double(
     struct mtxmatrix_blas * A,
-    enum mtxvectortype vectortype,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -756,7 +718,6 @@ int mtxmatrix_blas_init_cliques_integer_double(
  */
 int mtxmatrix_blas_init_cliques_pattern(
     struct mtxmatrix_blas * A,
-    enum mtxvectortype vectortype,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
