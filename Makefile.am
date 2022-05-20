@@ -76,8 +76,6 @@ libmtx_la_SOURCES = \
 	libmtx/util/cuthill_mckee.h \
 	libmtx/util/fmtspec.c \
 	libmtx/util/fmtspec.h \
-	libmtx/util/io.c \
-	libmtx/util/io.h \
 	libmtx/util/merge.c \
 	libmtx/util/merge.h \
 	libmtx/util/parse.c \
