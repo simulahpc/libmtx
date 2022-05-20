@@ -28,7 +28,7 @@
 
 #include <libmtx/error.h>
 #include <libmtx/matrix/blas.h>
-#include <libmtx/matrix/dense.h>
+#include <libmtx/matrix/base/dense.h>
 #include <libmtx/matrix/dist.h>
 #include <libmtx/matrix/matrix.h>
 #include <libmtx/matrix/matrix_coordinate.h>

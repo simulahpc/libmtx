@@ -33,7 +33,7 @@
 #include <libmtx/matrix/matrix_coordinate.h>
 #include <libmtx/matrix/matrix_csr.h>
 #include <libmtx/matrix/blas.h>
-#include <libmtx/matrix/dense.h>
+#include <libmtx/matrix/base/dense.h>
 #include <libmtx/vector/vector.h>
 
 #ifdef LIBMTX_HAVE_LIBZ
