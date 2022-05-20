@@ -365,6 +365,152 @@ int mtxvector_base_init_strided_integer_double(
 }
 
 /*
+ * accessing values
+ */
+
+/**
+ * ‘mtxvector_base_get_real_single()’ obtains the values of a vector
+ * of single precision floating point numbers.
+ *
+ * The array ‘a’ must be large enough to store ‘size’ elements
+ * separated by the given stride (in bytes), and ‘size’ must be
+ * greater than or equal to the number of elements in the vector.
+ */
+int mtxvector_base_get_real_single(
+    const struct mtxvector_base * x,
+    int64_t size,
+    int stride,
+    float * a)
+{
+    if (x->field != mtx_field_real) return MTX_ERR_INVALID_FIELD;
+    if (x->precision != mtx_single) return MTX_ERR_INVALID_PRECISION;
+    if (size < x->size) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+    float * b = x->data.real_single;
+    for (int64_t i = 0; i < x->size; i++)
+        *(float *)((char *) a + i*stride) = b[i];
+    return MTX_SUCCESS;
+}
+
+/**
+ * ‘mtxvector_base_get_real_double()’ obtains the values of a vector
+ * of double precision floating point numbers.
+ *
+ * The array ‘a’ must be large enough to store ‘size’ elements
+ * separated by the given stride (in bytes), and ‘size’ must be
+ * greater than or equal to the number of elements in the vector.
+ */
+int mtxvector_base_get_real_double(
+    const struct mtxvector_base * x,
+    int64_t size,
+    int stride,
+    double * a)
+{
+    if (x->field != mtx_field_real) return MTX_ERR_INVALID_FIELD;
+    if (x->precision != mtx_double) return MTX_ERR_INVALID_PRECISION;
+    if (size < x->size) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+    double * b = x->data.real_double;
+    for (int64_t i = 0; i < x->size; i++)
+        *(double *)((char *) a + i*stride) = b[i];
+    return MTX_SUCCESS;
+}
+
+/**
+ * ‘mtxvector_base_get_complex_single()’ obtains the values of a
+ * vector of single precision floating point complex numbers.
+ *
+ * The array ‘a’ must be large enough to store ‘size’ elements
+ * separated by the given stride (in bytes), and ‘size’ must be
+ * greater than or equal to the number of elements in the vector.
+ */
+int mtxvector_base_get_complex_single(
+    struct mtxvector_base * x,
+    int64_t size,
+    int stride,
+    float (* a)[2])
+{
+    if (x->field != mtx_field_complex) return MTX_ERR_INVALID_FIELD;
+    if (x->precision != mtx_single) return MTX_ERR_INVALID_PRECISION;
+    if (size < x->size) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+    float (* b)[2] = x->data.complex_single;
+    for (int64_t i = 0; i < x->size; i++) {
+        (*(float (*)[2])((char *) a + i*stride))[0] = b[i][0];
+        (*(float (*)[2])((char *) a + i*stride))[1] = b[i][1];
+    }
+    return MTX_SUCCESS;
+}
+
+/**
+ * ‘mtxvector_base_get_complex_double()’ obtains the values of a
+ * vector of double precision floating point complex numbers.
+ *
+ * The array ‘a’ must be large enough to store ‘size’ elements
+ * separated by the given stride (in bytes), and ‘size’ must be
+ * greater than or equal to the number of elements in the vector.
+ */
+int mtxvector_base_get_complex_double(
+    struct mtxvector_base * x,
+    int64_t size,
+    int stride,
+    double (* a)[2])
+{
+    if (x->field != mtx_field_complex) return MTX_ERR_INVALID_FIELD;
+    if (x->precision != mtx_double) return MTX_ERR_INVALID_PRECISION;
+    if (size < x->size) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+    double (* b)[2] = x->data.complex_double;
+    for (int64_t i = 0; i < x->size; i++) {
+        (*(double (*)[2])((char *) a + i*stride))[0] = b[i][0];
+        (*(double (*)[2])((char *) a + i*stride))[1] = b[i][1];
+    }
+    return MTX_SUCCESS;
+}
+
+/**
+ * ‘mtxvector_base_get_integer_single()’ obtains the values of a
+ * vector of single precision integers.
+ *
+ * The array ‘a’ must be large enough to store ‘size’ elements
+ * separated by the given stride (in bytes), and ‘size’ must be
+ * greater than or equal to the number of elements in the vector.
+ */
+int mtxvector_base_get_integer_single(
+    struct mtxvector_base * x,
+    int64_t size,
+    int stride,
+    int32_t * a)
+{
+    if (x->field != mtx_field_integer) return MTX_ERR_INVALID_FIELD;
+    if (x->precision != mtx_single) return MTX_ERR_INVALID_PRECISION;
+    if (size < x->size) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+    int32_t * b = x->data.integer_single;
+    for (int64_t i = 0; i < x->size; i++)
+        *(int32_t *)((char *) a + i*stride) = b[i];
+    return MTX_SUCCESS;
+}
+
+/**
+ * ‘mtxvector_base_get_integer_double()’ obtains the values of a
+ * vector of double precision integers.
+ *
+ * The array ‘a’ must be large enough to store ‘size’ elements
+ * separated by the given stride (in bytes), and ‘size’ must be
+ * greater than or equal to the number of elements in the vector.
+ */
+int mtxvector_base_get_integer_double(
+    struct mtxvector_base * x,
+    int64_t size,
+    int stride,
+    int64_t * a)
+{
+    if (x->field != mtx_field_integer) return MTX_ERR_INVALID_FIELD;
+    if (x->precision != mtx_double) return MTX_ERR_INVALID_PRECISION;
+    if (size < x->size) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+    int64_t * b = x->data.integer_double;
+    for (int64_t i = 0; i < x->size; i++)
+        *(int64_t *)((char *) a + i*stride) = b[i];
+    return MTX_SUCCESS;
+}
+
+/*
  * Modifying values
  */
 

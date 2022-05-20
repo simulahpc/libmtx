@@ -263,6 +263,112 @@ int mtxvector_blas_init_strided_integer_double(
 }
 
 /*
+ * accessing values
+ */
+
+/**
+ * ‘mtxvector_blas_get_real_single()’ obtains the values of a vector
+ * of single precision floating point numbers.
+ *
+ * The array ‘a’ must be large enough to store ‘size’ elements
+ * separated by the given stride (in bytes), and ‘size’ must be
+ * greater than or equal to the number of elements in the vector.
+ */
+int mtxvector_blas_get_real_single(
+    const struct mtxvector_blas * x,
+    int64_t size,
+    int stride,
+    float * a)
+{
+    return mtxvector_base_get_real_single(&x->base, size, stride, a);
+}
+
+/**
+ * ‘mtxvector_blas_get_real_double()’ obtains the values of a vector
+ * of double precision floating point numbers.
+ *
+ * The array ‘a’ must be large enough to store ‘size’ elements
+ * separated by the given stride (in bytes), and ‘size’ must be
+ * greater than or equal to the number of elements in the vector.
+ */
+int mtxvector_blas_get_real_double(
+    const struct mtxvector_blas * x,
+    int64_t size,
+    int stride,
+    double * a)
+{
+    return mtxvector_base_get_real_double(&x->base, size, stride, a);
+}
+
+/**
+ * ‘mtxvector_blas_get_complex_single()’ obtains the values of a
+ * vector of single precision floating point complex numbers.
+ *
+ * The array ‘a’ must be large enough to store ‘size’ elements
+ * separated by the given stride (in bytes), and ‘size’ must be
+ * greater than or equal to the number of elements in the vector.
+ */
+int mtxvector_blas_get_complex_single(
+    struct mtxvector_blas * x,
+    int64_t size,
+    int stride,
+    float (* a)[2])
+{
+    return mtxvector_base_get_complex_single(&x->base, size, stride, a);
+}
+
+/**
+ * ‘mtxvector_blas_get_complex_double()’ obtains the values of a
+ * vector of double precision floating point complex numbers.
+ *
+ * The array ‘a’ must be large enough to store ‘size’ elements
+ * separated by the given stride (in bytes), and ‘size’ must be
+ * greater than or equal to the number of elements in the vector.
+ */
+int mtxvector_blas_get_complex_double(
+    struct mtxvector_blas * x,
+    int64_t size,
+    int stride,
+    double (* a)[2])
+{
+    return mtxvector_base_get_complex_double(&x->base, size, stride, a);
+}
+
+/**
+ * ‘mtxvector_blas_get_integer_single()’ obtains the values of a
+ * vector of single precision integers.
+ *
+ * The array ‘a’ must be large enough to store ‘size’ elements
+ * separated by the given stride (in bytes), and ‘size’ must be
+ * greater than or equal to the number of elements in the vector.
+ */
+int mtxvector_blas_get_integer_single(
+    struct mtxvector_blas * x,
+    int64_t size,
+    int stride,
+    int32_t * a)
+{
+    return mtxvector_base_get_integer_single(&x->base, size, stride, a);
+}
+
+/**
+ * ‘mtxvector_blas_get_integer_double()’ obtains the values of a
+ * vector of double precision integers.
+ *
+ * The array ‘a’ must be large enough to store ‘size’ elements
+ * separated by the given stride (in bytes), and ‘size’ must be
+ * greater than or equal to the number of elements in the vector.
+ */
+int mtxvector_blas_get_integer_double(
+    struct mtxvector_blas * x,
+    int64_t size,
+    int stride,
+    int64_t * a)
+{
+    return mtxvector_base_get_integer_double(&x->base, size, stride, a);
+}
+
+/*
  * Modifying values
  */
 

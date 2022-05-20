@@ -400,6 +400,94 @@ int mtxvector_init_omp_integer_double(
     int num_threads);
 
 /*
+ * accessing values
+ */
+
+/**
+ * ‘mtxvector_get_real_single()’ obtains the values of a vector of
+ * single precision floating point numbers.
+ *
+ * The array ‘a’ must be large enough to store ‘size’ elements
+ * separated by the given stride (in bytes), and ‘size’ must be
+ * greater than or equal to the number of elements in the vector.
+ */
+int mtxvector_get_real_single(
+    const struct mtxvector * x,
+    int64_t size,
+    int stride,
+    float * a);
+
+/**
+ * ‘mtxvector_get_real_double()’ obtains the values of a vector of
+ * double precision floating point numbers.
+ *
+ * The array ‘a’ must be large enough to store ‘size’ elements
+ * separated by the given stride (in bytes), and ‘size’ must be
+ * greater than or equal to the number of elements in the vector.
+ */
+int mtxvector_get_real_double(
+    const struct mtxvector * x,
+    int64_t size,
+    int stride,
+    double * a);
+
+/**
+ * ‘mtxvector_get_complex_single()’ obtains the values of a vector of
+ * single precision floating point complex numbers.
+ *
+ * The array ‘a’ must be large enough to store ‘size’ elements
+ * separated by the given stride (in bytes), and ‘size’ must be
+ * greater than or equal to the number of elements in the vector.
+ */
+int mtxvector_get_complex_single(
+    struct mtxvector * x,
+    int64_t size,
+    int stride,
+    float (* a)[2]);
+
+/**
+ * ‘mtxvector_get_complex_double()’ obtains the values of a vector of
+ * double precision floating point complex numbers.
+ *
+ * The array ‘a’ must be large enough to store ‘size’ elements
+ * separated by the given stride (in bytes), and ‘size’ must be
+ * greater than or equal to the number of elements in the vector.
+ */
+int mtxvector_get_complex_double(
+    struct mtxvector * x,
+    int64_t size,
+    int stride,
+    double (* a)[2]);
+
+/**
+ * ‘mtxvector_get_integer_single()’ obtains the values of a vector of
+ * single precision integers.
+ *
+ * The array ‘a’ must be large enough to store ‘size’ elements
+ * separated by the given stride (in bytes), and ‘size’ must be
+ * greater than or equal to the number of elements in the vector.
+ */
+int mtxvector_get_integer_single(
+    struct mtxvector * x,
+    int64_t size,
+    int stride,
+    int32_t * a);
+
+/**
+ * ‘mtxvector_get_integer_double()’ obtains the values of a vector of
+ * double precision integers.
+ *
+ * The array ‘a’ must be large enough to store ‘size’ elements
+ * separated by the given stride (in bytes), and ‘size’ must be
+ * greater than or equal to the number of elements in the vector.
+ */
+int mtxvector_get_integer_double(
+    struct mtxvector * x,
+    int64_t size,
+    int stride,
+    int64_t * a);
+
+/*
  * Modifying values
  */
 

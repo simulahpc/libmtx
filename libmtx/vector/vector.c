@@ -680,23 +680,6 @@ int mtxvector_init_strided_integer_double(
 }
 
 /*
- * Basic, dense vectors
- */
-
-/**
- * ‘mtxvector_alloc_base()’ allocates a dense vector.
- */
-int mtxvector_alloc_base(
-    struct mtxvector * x,
-    enum mtxfield field,
-    enum mtxprecision precision,
-    int64_t size)
-{
-    x->type = mtxvector_base;
-    return mtxvector_base_alloc(&x->storage.base, field, precision, size);
-}
-
-/*
  * OpenMP shared-memory parallel vectors
  */
 
@@ -838,6 +821,196 @@ int mtxvector_init_omp_integer_double(
 #else
     return MTX_ERR_OPENMP_NOT_SUPPORTED;
 #endif
+}
+
+/*
+ * accessing values
+ */
+
+/**
+ * ‘mtxvector_get_real_single()’ obtains the values of a vector of
+ * single precision floating point numbers.
+ *
+ * The array ‘a’ must be large enough to store ‘size’ elements
+ * separated by the given stride (in bytes), and ‘size’ must be
+ * greater than or equal to the number of elements in the vector.
+ */
+int mtxvector_get_real_single(
+    const struct mtxvector * x,
+    int64_t size,
+    int stride,
+    float * a)
+{
+    if (x->type == mtxvector_base) {
+        return mtxvector_base_get_real_single(&x->storage.base, size, stride, a);
+    } else if (x->type == mtxvector_blas) {
+#ifdef LIBMTX_HAVE_BLAS
+        return mtxvector_blas_get_real_single(&x->storage.blas, size, stride, a);
+#else
+        return MTX_ERR_BLAS_NOT_SUPPORTED;
+#endif
+    } else if (x->type == mtxvector_omp) {
+#ifdef LIBMTX_HAVE_OPENMP
+        return mtxvector_omp_get_real_single(&x->storage.omp, size, stride, a);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
+    } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
+}
+
+/**
+ * ‘mtxvector_get_real_double()’ obtains the values of a vector of
+ * double precision floating point numbers.
+ *
+ * The array ‘a’ must be large enough to store ‘size’ elements
+ * separated by the given stride (in bytes), and ‘size’ must be
+ * greater than or equal to the number of elements in the vector.
+ */
+int mtxvector_get_real_double(
+    const struct mtxvector * x,
+    int64_t size,
+    int stride,
+    double * a)
+{
+    if (x->type == mtxvector_base) {
+        return mtxvector_base_get_real_double(&x->storage.base, size, stride, a);
+    } else if (x->type == mtxvector_blas) {
+#ifdef LIBMTX_HAVE_BLAS
+        return mtxvector_blas_get_real_double(&x->storage.blas, size, stride, a);
+#else
+        return MTX_ERR_BLAS_NOT_SUPPORTED;
+#endif
+    } else if (x->type == mtxvector_omp) {
+#ifdef LIBMTX_HAVE_OPENMP
+        return mtxvector_omp_get_real_double(&x->storage.omp, size, stride, a);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
+    } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
+}
+
+/**
+ * ‘mtxvector_get_complex_single()’ obtains the values of a vector of
+ * single precision floating point complex numbers.
+ *
+ * The array ‘a’ must be large enough to store ‘size’ elements
+ * separated by the given stride (in bytes), and ‘size’ must be
+ * greater than or equal to the number of elements in the vector.
+ */
+int mtxvector_get_complex_single(
+    struct mtxvector * x,
+    int64_t size,
+    int stride,
+    float (* a)[2])
+{
+    if (x->type == mtxvector_base) {
+        return mtxvector_base_get_complex_single(&x->storage.base, size, stride, a);
+    } else if (x->type == mtxvector_blas) {
+#ifdef LIBMTX_HAVE_BLAS
+        return mtxvector_blas_get_complex_single(&x->storage.blas, size, stride, a);
+#else
+        return MTX_ERR_BLAS_NOT_SUPPORTED;
+#endif
+    } else if (x->type == mtxvector_omp) {
+#ifdef LIBMTX_HAVE_OPENMP
+        return mtxvector_omp_get_complex_single(&x->storage.omp, size, stride, a);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
+    } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
+}
+
+/**
+ * ‘mtxvector_get_complex_double()’ obtains the values of a vector of
+ * double precision floating point complex numbers.
+ *
+ * The array ‘a’ must be large enough to store ‘size’ elements
+ * separated by the given stride (in bytes), and ‘size’ must be
+ * greater than or equal to the number of elements in the vector.
+ */
+int mtxvector_get_complex_double(
+    struct mtxvector * x,
+    int64_t size,
+    int stride,
+    double (* a)[2])
+{
+    if (x->type == mtxvector_base) {
+        return mtxvector_base_get_complex_double(&x->storage.base, size, stride, a);
+    } else if (x->type == mtxvector_blas) {
+#ifdef LIBMTX_HAVE_BLAS
+        return mtxvector_blas_get_complex_double(&x->storage.blas, size, stride, a);
+#else
+        return MTX_ERR_BLAS_NOT_SUPPORTED;
+#endif
+    } else if (x->type == mtxvector_omp) {
+#ifdef LIBMTX_HAVE_OPENMP
+        return mtxvector_omp_get_complex_double(&x->storage.omp, size, stride, a);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
+    } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
+}
+
+/**
+ * ‘mtxvector_get_integer_single()’ obtains the values of a vector of
+ * single precision integers.
+ *
+ * The array ‘a’ must be large enough to store ‘size’ elements
+ * separated by the given stride (in bytes), and ‘size’ must be
+ * greater than or equal to the number of elements in the vector.
+ */
+int mtxvector_get_integer_single(
+    struct mtxvector * x,
+    int64_t size,
+    int stride,
+    int32_t * a)
+{
+    if (x->type == mtxvector_base) {
+        return mtxvector_base_get_integer_single(&x->storage.base, size, stride, a);
+    } else if (x->type == mtxvector_blas) {
+#ifdef LIBMTX_HAVE_BLAS
+        return mtxvector_blas_get_integer_single(&x->storage.blas, size, stride, a);
+#else
+        return MTX_ERR_BLAS_NOT_SUPPORTED;
+#endif
+    } else if (x->type == mtxvector_omp) {
+#ifdef LIBMTX_HAVE_OPENMP
+        return mtxvector_omp_get_integer_single(&x->storage.omp, size, stride, a);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
+    } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
+}
+
+/**
+ * ‘mtxvector_get_integer_double()’ obtains the values of a vector of
+ * double precision integers.
+ *
+ * The array ‘a’ must be large enough to store ‘size’ elements
+ * separated by the given stride (in bytes), and ‘size’ must be
+ * greater than or equal to the number of elements in the vector.
+ */
+int mtxvector_get_integer_double(
+    struct mtxvector * x,
+    int64_t size,
+    int stride,
+    int64_t * a)
+{
+    if (x->type == mtxvector_base) {
+        return mtxvector_base_get_integer_double(&x->storage.base, size, stride, a);
+    } else if (x->type == mtxvector_blas) {
+#ifdef LIBMTX_HAVE_BLAS
+        return mtxvector_blas_get_integer_double(&x->storage.blas, size, stride, a);
+#else
+        return MTX_ERR_BLAS_NOT_SUPPORTED;
+#endif
+    } else if (x->type == mtxvector_omp) {
+#ifdef LIBMTX_HAVE_OPENMP
+        return mtxvector_omp_get_integer_double(&x->storage.omp, size, stride, a);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
+    } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
 }
 
 /*
