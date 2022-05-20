@@ -74,10 +74,8 @@ libmtx_la_SOURCES = \
 	libmtx/solver/cg.c \
 	libmtx/util/cuthill_mckee.c \
 	libmtx/util/cuthill_mckee.h \
-	libmtx/util/distpartition.c \
 	libmtx/util/fmtspec.c \
 	libmtx/util/fmtspec.h \
-	libmtx/util/index_set.c \
 	libmtx/util/io.c \
 	libmtx/util/io.h \
 	libmtx/util/merge.c \
@@ -116,8 +114,6 @@ nobase_include_HEADERS = \
 	libmtx/mtxfile/mtxfile.h \
 	libmtx/mtxfile/size.h \
 	libmtx/solver/cg.h \
-	libmtx/util/distpartition.h \
-	libmtx/util/index_set.h \
 	libmtx/util/partition.h \
 	libmtx/vector/base.h \
 	libmtx/vector/blas.h \
@@ -220,7 +216,6 @@ endif
 # Unit tests
 #
 check_PROGRAMS = \
-	tests/test_index_set \
 	tests/test_format \
 	tests/test_mtxfile \
 	tests/test_mtxmatrix_coordinate \
@@ -230,9 +225,6 @@ check_PROGRAMS = \
 	tests/test_permute \
 	tests/test_sort
 
-tests_test_index_set_CPPFLAGS = $(MPICPPFLAGS)
-tests_test_index_set_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
-tests_test_index_set_SOURCES = tests/test_index_set.c tests/test.h
 tests_test_mtxfile_CPPFLAGS = $(MPICPPFLAGS)
 tests_test_mtxfile_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
 tests_test_mtxfile_SOURCES = tests/test_mtxfile.c tests/test.h
@@ -260,7 +252,6 @@ tests_test_sort_SOURCES = tests/test_sort.c tests/test.h
 
 TESTS = \
 	tests/test_format \
-	tests/test_index_set \
 	tests/test_mtxfile \
 	tests/test_mtxmatrix_coordinate \
 	tests/test_mtxmatrix_csr \
@@ -361,15 +352,6 @@ tests_test_merge_LDADD = $(top_builddir)/libmtx.la
 tests_test_merge_SOURCES = tests/test_merge.c tests/test.h
 check_PROGRAMS += tests/test_merge
 TESTS += tests/test_merge
-
-if HAVE_MPI
-tests_test_distpartition_CPPFLAGS =
-tests_test_distpartition_LDADD = $(top_builddir)/libmtx.la
-tests_test_distpartition_SOURCES = tests/test_distpartition.c tests/test.h
-check_PROGRAMS += tests/test_distpartition
-TESTS += tests/test_distpartition_parallel
-tests/test_distpartition_parallel:  tests/test_distpartition
-endif
 
 # MPI unit tests
 if HAVE_MPI

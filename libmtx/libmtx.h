@@ -38,7 +38,6 @@
 #include <libmtx/mtxfile/mtxdistfile.h>
 #include <libmtx/mtxfile/mtxfile.h>
 #include <libmtx/solver/cg.h>
-#include <libmtx/util/index_set.h>
 #include <libmtx/util/partition.h>
 #include <libmtx/vector/base.h>
 #include <libmtx/vector/blas.h>
