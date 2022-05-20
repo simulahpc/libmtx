@@ -16,7 +16,7 @@
 # along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
 #
 # Authors: James D. Trotter <james@simula.no>
-# Last modified: 2022-05-19
+# Last modified: 2022-05-20
 #
 # Makefile for the top-level directory of Libmtx.
 #
@@ -55,12 +55,12 @@ libmtx_la_LIBADD = $(BLAS_LIBS) $(MPILDFLAGS)
 # Source files
 libmtx_la_SOURCES = \
 	libmtx/error.c \
-	libmtx/matrix/blas.c \
-	libmtx/matrix/base/dense.c \
-	libmtx/matrix/dist.c \
-	libmtx/matrix/matrix.c \
 	libmtx/matrix/base/coo.c \
 	libmtx/matrix/base/csr.c \
+	libmtx/matrix/base/dense.c \
+	libmtx/matrix/blas.c \
+	libmtx/matrix/dist.c \
+	libmtx/matrix/matrix.c \
 	libmtx/matrix/symmetry.c \
 	libmtx/matrix/symmetry.h \
 	libmtx/matrix/transpose.c \
@@ -99,12 +99,12 @@ libmtx_la_SOURCES = \
 nobase_include_HEADERS = \
 	libmtx/error.h \
 	libmtx/libmtx.h \
-	libmtx/matrix/blas.h \
-	libmtx/matrix/base/dense.h \
-	libmtx/matrix/dist.h \
-	libmtx/matrix/matrix.h \
 	libmtx/matrix/base/coo.h \
 	libmtx/matrix/base/csr.h \
+	libmtx/matrix/base/dense.h \
+	libmtx/matrix/blas.h \
+	libmtx/matrix/dist.h \
+	libmtx/matrix/matrix.h \
 	libmtx/mtxfile/comments.h \
 	libmtx/mtxfile/data.h \
 	libmtx/mtxfile/header.h \
@@ -132,7 +132,7 @@ pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = libmtx/libmtx-$(LIBMTX_MAJOR_VERSION).pc
 
 #
-# Matrix Market utility programs
+# utility programs
 #
 bin_PROGRAMS =
 
@@ -213,54 +213,22 @@ endif
 #
 # Unit tests
 #
-check_PROGRAMS = \
-	tests/test_format \
-	tests/test_mtxfile \
-	tests/test_parse \
-	tests/test_partition \
-	tests/test_permute \
-	tests/test_sort
 
+# mtxfile
+check_PROGRAMS = tests/test_mtxfile
 tests_test_mtxfile_CPPFLAGS = $(MPICPPFLAGS)
 tests_test_mtxfile_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
 tests_test_mtxfile_SOURCES = tests/test_mtxfile.c tests/test.h
-tests_test_format_CPPFLAGS = $(MPICPPFLAGS)
-tests_test_format_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
-tests_test_format_SOURCES = tests/test_fmtspec.c tests/test.h
-tests_test_parse_CPPFLAGS = $(MPICPPFLAGS)
-tests_test_parse_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
-tests_test_parse_SOURCES = tests/test_parse.c tests/test.h
-tests_test_partition_CPPFLAGS = $(MPICPPFLAGS)
-tests_test_partition_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
-tests_test_partition_SOURCES = tests/test_partition.c tests/test.h
-tests_test_permute_CPPFLAGS = $(MPICPPFLAGS)
-tests_test_permute_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
-tests_test_permute_SOURCES = tests/test_permute.c tests/test.h
-tests_test_sort_CPPFLAGS = $(MPICPPFLAGS)
-tests_test_sort_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
-tests_test_sort_SOURCES = tests/test_sort.c tests/test.h
-
-TESTS = \
-	tests/test_format \
-	tests/test_mtxfile \
-	tests/test_parse \
-	tests/test_partition \
-	tests/test_permute \
-	tests/test_sort
-
-
+TESTS = tests/test_mtxfile
 if HAVE_MPI
-tests_test_assumedpartition_CPPFLAGS =
-tests_test_assumedpartition_LDADD = $(top_builddir)/libmtx.la
-tests_test_assumedpartition_SOURCES = tests/test_assumedpartition.c tests/test.h
-check_PROGRAMS += tests/test_assumedpartition
-TESTS += tests/test_assumedpartition_parallel
-tests/test_assumedpartition_parallel:  tests/test_assumedpartition
-endif
-
-if HAVE_MPI
-tests_test_mtxdistfile_CPPFLAGS =
-tests_test_mtxdistfile_LDADD = $(top_builddir)/libmtx.la
+tests_test_mtxfile_mpi_CPPFLAGS = $(MPICPPFLAGS)
+tests_test_mtxfile_mpi_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
+tests_test_mtxfile_mpi_SOURCES = tests/test_mtxfile_mpi.c tests/test.h
+check_PROGRAMS += tests/test_mtxfile_mpi
+TESTS += tests/test_mtxfile_mpi_parallel
+tests/test_mtxfile_mpi_parallel: tests/test_mtxfile_mpi
+tests_test_mtxdistfile_CPPFLAGS = $(MPICPPFLAGS)
+tests_test_mtxdistfile_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
 tests_test_mtxdistfile_SOURCES = tests/test_mtxdistfile.c tests/test.h
 check_PROGRAMS += tests/test_mtxdistfile
 TESTS += tests/test_mtxdistfile_parallel
@@ -268,12 +236,16 @@ tests/test_mtxdistfile_parallel:  tests/test_mtxdistfile
 endif
 
 # vector
-
 tests_test_mtxvector_base_CPPFLAGS =
 tests_test_mtxvector_base_LDADD = $(top_builddir)/libmtx.la
 tests_test_mtxvector_base_SOURCES = tests/test_mtxvector_base.c tests/test.h
 check_PROGRAMS += tests/test_mtxvector_base
 TESTS += tests/test_mtxvector_base
+tests_test_mtxvector_packed_CPPFLAGS =
+tests_test_mtxvector_packed_LDADD = $(top_builddir)/libmtx.la
+tests_test_mtxvector_packed_SOURCES = tests/test_mtxvector_packed.c tests/test.h
+check_PROGRAMS += tests/test_mtxvector_packed
+TESTS += tests/test_mtxvector_packed
 
 if HAVE_BLAS
 tests_test_mtxvector_blas_CPPFLAGS =
@@ -291,12 +263,6 @@ check_PROGRAMS += tests/test_mtxvector_omp
 TESTS += tests/test_mtxvector_omp
 endif
 
-tests_test_mtxvector_packed_CPPFLAGS =
-tests_test_mtxvector_packed_LDADD = $(top_builddir)/libmtx.la
-tests_test_mtxvector_packed_SOURCES = tests/test_mtxvector_packed.c tests/test.h
-check_PROGRAMS += tests/test_mtxvector_packed
-TESTS += tests/test_mtxvector_packed
-
 if HAVE_MPI
 tests_test_mtxvector_dist_CPPFLAGS =
 tests_test_mtxvector_dist_LDADD = $(top_builddir)/libmtx.la
@@ -307,31 +273,28 @@ tests/test_mtxvector_dist_parallel:  tests/test_mtxvector_dist
 endif
 
 # matrix
-
-tests_test_mtxmatrix_blas_CPPFLAGS =
-tests_test_mtxmatrix_blas_LDADD = $(top_builddir)/libmtx.la
-tests_test_mtxmatrix_blas_SOURCES = tests/test_mtxmatrix_blas.c tests/test.h
-check_PROGRAMS += tests/test_mtxmatrix_blas
-TESTS += tests/test_mtxmatrix_blas
-
 tests_test_mtxmatrix_base_coo_CPPFLAGS =
 tests_test_mtxmatrix_base_coo_LDADD = $(top_builddir)/libmtx.la
 tests_test_mtxmatrix_base_coo_SOURCES = tests/test_mtxmatrix_base_coo.c tests/test.h
 check_PROGRAMS += tests/test_mtxmatrix_base_coo
 TESTS += tests/test_mtxmatrix_base_coo
-
 tests_test_mtxmatrix_base_csr_CPPFLAGS =
 tests_test_mtxmatrix_base_csr_LDADD = $(top_builddir)/libmtx.la
 tests_test_mtxmatrix_base_csr_SOURCES = tests/test_mtxmatrix_base_csr.c tests/test.h
 check_PROGRAMS += tests/test_mtxmatrix_base_csr
 TESTS += tests/test_mtxmatrix_base_csr
-
 tests_test_mtxmatrix_base_dense_CPPFLAGS =
 tests_test_mtxmatrix_base_dense_LDADD = $(top_builddir)/libmtx.la
 tests_test_mtxmatrix_base_dense_SOURCES = tests/test_mtxmatrix_base_dense.c tests/test.h
 check_PROGRAMS += tests/test_mtxmatrix_base_dense
 TESTS += tests/test_mtxmatrix_base_dense
-
+if HAVE_BLAS
+tests_test_mtxmatrix_blas_CPPFLAGS =
+tests_test_mtxmatrix_blas_LDADD = $(top_builddir)/libmtx.la
+tests_test_mtxmatrix_blas_SOURCES = tests/test_mtxmatrix_blas.c tests/test.h
+check_PROGRAMS += tests/test_mtxmatrix_blas
+TESTS += tests/test_mtxmatrix_blas
+endif
 if HAVE_MPI
 tests_test_mtxmatrix_dist_CPPFLAGS =
 tests_test_mtxmatrix_dist_LDADD = $(top_builddir)/libmtx.la
@@ -342,7 +305,6 @@ tests/test_mtxmatrix_dist_parallel:  tests/test_mtxmatrix_dist
 endif
 
 # solver
-
 tests_test_mtxcg_CPPFLAGS =
 tests_test_mtxcg_LDADD = $(top_builddir)/libmtx.la
 tests_test_mtxcg_SOURCES = tests/test_mtxcg.c tests/test.h
@@ -350,35 +312,54 @@ check_PROGRAMS += tests/test_mtxcg
 TESTS += tests/test_mtxcg
 
 # util
-
+tests_test_fmtspec_CPPFLAGS =
+tests_test_fmtspec_LDADD = $(top_builddir)/libmtx.la
+tests_test_fmtspec_SOURCES = tests/test_fmtspec.c tests/test.h
+check_PROGRAMS += tests/test_fmtspec
+TESTS += tests/test_fmtspec
 tests_test_merge_CPPFLAGS =
 tests_test_merge_LDADD = $(top_builddir)/libmtx.la
 tests_test_merge_SOURCES = tests/test_merge.c tests/test.h
 check_PROGRAMS += tests/test_merge
 TESTS += tests/test_merge
-
-# MPI unit tests
+tests_test_parse_CPPFLAGS =
+tests_test_parse_LDADD = $(top_builddir)/libmtx.la
+tests_test_parse_SOURCES = tests/test_parse.c tests/test.h
+check_PROGRAMS += tests/test_parse
+TESTS += tests/test_parse
+tests_test_partition_CPPFLAGS =
+tests_test_partition_LDADD = $(top_builddir)/libmtx.la
+tests_test_partition_SOURCES = tests/test_partition.c tests/test.h
+check_PROGRAMS += tests/test_partition
+TESTS += tests/test_partition
+tests_test_permute_CPPFLAGS =
+tests_test_permute_LDADD = $(top_builddir)/libmtx.la
+tests_test_permute_SOURCES = tests/test_permute.c tests/test.h
+check_PROGRAMS += tests/test_permute
+TESTS += tests/test_permute
+tests_test_sort_CPPFLAGS =
+tests_test_sort_LDADD = $(top_builddir)/libmtx.la
+tests_test_sort_SOURCES = tests/test_sort.c tests/test.h
+check_PROGRAMS += tests/test_sort
+TESTS += tests/test_sort
 if HAVE_MPI
-check_PROGRAMS += \
-	tests/test_distsort \
-	tests/test_mtxfile_mpi
-
+tests_test_assumedpartition_CPPFLAGS =
+tests_test_assumedpartition_LDADD = $(top_builddir)/libmtx.la
+tests_test_assumedpartition_SOURCES = tests/test_assumedpartition.c tests/test.h
+check_PROGRAMS += tests/test_assumedpartition
+TESTS += tests/test_assumedpartition_parallel
+tests/test_assumedpartition_parallel: tests/test_assumedpartition
 tests_test_distsort_CPPFLAGS = $(MPICPPFLAGS)
 tests_test_distsort_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
 tests_test_distsort_SOURCES = tests/test_distsort.c tests/test.h
+check_PROGRAMS += tests/test_distsort
+TESTS += tests/test_distsort_parallel
 tests/test_distsort_parallel: tests/test_distsort
-
-tests_test_mtxfile_mpi_CPPFLAGS = $(MPICPPFLAGS)
-tests_test_mtxfile_mpi_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
-tests_test_mtxfile_mpi_SOURCES = tests/test_mtxfile_mpi.c tests/test.h
-tests/test_mtxfile_mpi_parallel: tests/test_mtxfile_mpi
-
-TESTS += \
-	tests/test_distsort_parallel \
-	tests/test_mtxfile_mpi_parallel
 endif
 
+#
 # Documentation
+#
 info_TEXINFOS = manual/libmtx.texi
 manual_libmtx_TEXINFOS = \
 	manual/introduction.texi \
