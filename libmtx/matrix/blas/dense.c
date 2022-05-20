@@ -56,7 +56,7 @@
 void mtxmatrix_blas_free(
     struct mtxmatrix_blas * A)
 {
-    mtxvector_blas_free(&A->a);
+    mtxvector_free(&A->a);
 }
 
 /**
@@ -67,8 +67,13 @@ int mtxmatrix_blas_alloc_copy(
     struct mtxmatrix_blas * dst,
     const struct mtxmatrix_blas * src)
 {
+    enum mtxfield field;
+    int err = mtxvector_field(&src->a, &field);
+    if (err) return err;
+    enum mtxprecision precision;
+    err = mtxvector_precision(&src->a, &precision);
     return mtxmatrix_blas_alloc_entries(
-        dst, src->a.base.field, src->a.base.precision, src->symmetry,
+        dst, field, precision, src->symmetry,
         src->num_rows, src->num_columns, src->size,
         0, 0, NULL, NULL);
 }
@@ -128,7 +133,7 @@ int mtxmatrix_blas_alloc_entries(
         A->num_nonzeros = num_entries-num_rows;
         A->size = num_rows*(num_columns-1)/2;
     } else { return MTX_ERR_INVALID_SYMMETRY; }
-    return mtxvector_blas_alloc(&A->a, field, precision, A->size);
+    return mtxvector_alloc(&A->a, mtxvector_blas, field, precision, A->size);
 }
 
 /**
@@ -153,7 +158,7 @@ int mtxmatrix_blas_init_entries_real_single(
     }
     int err = mtxmatrix_blas_alloc_entries(
         A, mtx_field_real, mtx_single, symmetry, num_rows, num_columns,
-        size, 0, 0, NULL, NULL);
+        size, sizeof(*rowidx), 0, rowidx, colidx);
     if (err) return err;
     err = mtxmatrix_blas_setzero(A);
     if (err) return err;
@@ -966,7 +971,7 @@ int mtxmatrix_blas_init_cliques_pattern(
 int mtxmatrix_blas_setzero(
     struct mtxmatrix_blas * A)
 {
-    return mtxvector_blas_setzero(&A->a);
+    return mtxvector_setzero(&A->a);
 }
 
 /**
@@ -979,7 +984,7 @@ int mtxmatrix_blas_set_real_single(
     int stride,
     const float * a)
 {
-    return mtxvector_blas_set_real_single(&A->a, size, stride, a);
+    return mtxvector_set_real_single(&A->a, size, stride, a);
 }
 
 /**
@@ -992,7 +997,7 @@ int mtxmatrix_blas_set_real_double(
     int stride,
     const double * a)
 {
-    return mtxvector_blas_set_real_double(&A->a, size, stride, a);
+    return mtxvector_set_real_double(&A->a, size, stride, a);
 }
 
 /**
@@ -1006,7 +1011,7 @@ int mtxmatrix_blas_set_complex_single(
     int stride,
     const float (*a)[2])
 {
-    return mtxvector_blas_set_complex_single(&A->a, size, stride, a);
+    return mtxvector_set_complex_single(&A->a, size, stride, a);
 }
 
 /**
@@ -1020,7 +1025,7 @@ int mtxmatrix_blas_set_complex_double(
     int stride,
     const double (*a)[2])
 {
-    return mtxvector_blas_set_complex_double(&A->a, size, stride, a);
+    return mtxvector_set_complex_double(&A->a, size, stride, a);
 }
 
 /**
@@ -1033,7 +1038,7 @@ int mtxmatrix_blas_set_integer_single(
     int stride,
     const int32_t * a)
 {
-    return mtxvector_blas_set_integer_single(&A->a, size, stride, a);
+    return mtxvector_set_integer_single(&A->a, size, stride, a);
 }
 
 /**
@@ -1046,7 +1051,7 @@ int mtxmatrix_blas_set_integer_double(
     int stride,
     const int64_t * a)
 {
-    return mtxvector_blas_set_integer_double(&A->a, size, stride, a);
+    return mtxvector_set_integer_double(&A->a, size, stride, a);
 }
 
 /*
@@ -1668,7 +1673,7 @@ int mtxmatrix_blas_swap(
     struct mtxmatrix_blas * x,
     struct mtxmatrix_blas * y)
 {
-    return mtxvector_blas_swap(&x->a, &y->a);
+    return mtxvector_swap(&x->a, &y->a);
 }
 
 /**
@@ -1682,7 +1687,7 @@ int mtxmatrix_blas_copy(
     struct mtxmatrix_blas * y,
     const struct mtxmatrix_blas * x)
 {
-    return mtxvector_blas_copy(&y->a, &x->a);
+    return mtxvector_copy(&y->a, &x->a);
 }
 
 /**
@@ -1694,7 +1699,7 @@ int mtxmatrix_blas_sscal(
     struct mtxmatrix_blas * x,
     int64_t * num_flops)
 {
-    return mtxvector_blas_sscal(a, &x->a, num_flops);
+    return mtxvector_sscal(a, &x->a, num_flops);
 }
 
 /**
@@ -1706,7 +1711,7 @@ int mtxmatrix_blas_dscal(
     struct mtxmatrix_blas * x,
     int64_t * num_flops)
 {
-    return mtxvector_blas_dscal(a, &x->a, num_flops);
+    return mtxvector_dscal(a, &x->a, num_flops);
 }
 
 /**
@@ -1718,7 +1723,7 @@ int mtxmatrix_blas_cscal(
     struct mtxmatrix_blas * x,
     int64_t * num_flops)
 {
-    return mtxvector_blas_cscal(a, &x->a, num_flops);
+    return mtxvector_cscal(a, &x->a, num_flops);
 }
 
 /**
@@ -1730,7 +1735,7 @@ int mtxmatrix_blas_zscal(
     struct mtxmatrix_blas * x,
     int64_t * num_flops)
 {
-    return mtxvector_blas_zscal(a, &x->a, num_flops);
+    return mtxvector_zscal(a, &x->a, num_flops);
 }
 
 /**
@@ -1747,7 +1752,7 @@ int mtxmatrix_blas_saxpy(
     struct mtxmatrix_blas * y,
     int64_t * num_flops)
 {
-    return mtxvector_blas_saxpy(a, &x->a, &y->a, num_flops);
+    return mtxvector_saxpy(a, &x->a, &y->a, num_flops);
 }
 
 /**
@@ -1764,7 +1769,7 @@ int mtxmatrix_blas_daxpy(
     struct mtxmatrix_blas * y,
     int64_t * num_flops)
 {
-    return mtxvector_blas_daxpy(a, &x->a, &y->a, num_flops);
+    return mtxvector_daxpy(a, &x->a, &y->a, num_flops);
 }
 
 /**
@@ -1781,7 +1786,7 @@ int mtxmatrix_blas_saypx(
     const struct mtxmatrix_blas * x,
     int64_t * num_flops)
 {
-    return mtxvector_blas_saypx(a, &y->a, &x->a, num_flops);
+    return mtxvector_saypx(a, &y->a, &x->a, num_flops);
 }
 
 /**
@@ -1798,7 +1803,7 @@ int mtxmatrix_blas_daypx(
     const struct mtxmatrix_blas * x,
     int64_t * num_flops)
 {
-    return mtxvector_blas_daypx(a, &y->a, &x->a, num_flops);
+    return mtxvector_daypx(a, &y->a, &x->a, num_flops);
 }
 
 /**
@@ -1815,7 +1820,7 @@ int mtxmatrix_blas_sdot(
     float * dot,
     int64_t * num_flops)
 {
-    return mtxvector_blas_sdot(&x->a, &y->a, dot, num_flops);
+    return mtxvector_sdot(&x->a, &y->a, dot, num_flops);
 }
 
 /**
@@ -1832,7 +1837,7 @@ int mtxmatrix_blas_ddot(
     double * dot,
     int64_t * num_flops)
 {
-    return mtxvector_blas_ddot(&x->a, &y->a, dot, num_flops);
+    return mtxvector_ddot(&x->a, &y->a, dot, num_flops);
 }
 
 /**
@@ -1850,7 +1855,7 @@ int mtxmatrix_blas_cdotu(
     float (* dot)[2],
     int64_t * num_flops)
 {
-    return mtxvector_blas_cdotu(&x->a, &y->a, dot, num_flops);
+    return mtxvector_cdotu(&x->a, &y->a, dot, num_flops);
 }
 
 /**
@@ -1868,7 +1873,7 @@ int mtxmatrix_blas_zdotu(
     double (* dot)[2],
     int64_t * num_flops)
 {
-    return mtxvector_blas_zdotu(&x->a, &y->a, dot, num_flops);
+    return mtxvector_zdotu(&x->a, &y->a, dot, num_flops);
 }
 
 /**
@@ -1886,7 +1891,7 @@ int mtxmatrix_blas_cdotc(
     float (* dot)[2],
     int64_t * num_flops)
 {
-    return mtxvector_blas_cdotc(&x->a, &y->a, dot, num_flops);
+    return mtxvector_cdotc(&x->a, &y->a, dot, num_flops);
 }
 
 /**
@@ -1904,7 +1909,7 @@ int mtxmatrix_blas_zdotc(
     double (* dot)[2],
     int64_t * num_flops)
 {
-    return mtxvector_blas_zdotc(&x->a, &y->a, dot, num_flops);
+    return mtxvector_zdotc(&x->a, &y->a, dot, num_flops);
 }
 
 /**
@@ -1916,7 +1921,7 @@ int mtxmatrix_blas_snrm2(
     float * nrm2,
     int64_t * num_flops)
 {
-    return mtxvector_blas_snrm2(&x->a, nrm2, num_flops);
+    return mtxvector_snrm2(&x->a, nrm2, num_flops);
 }
 
 /**
@@ -1928,7 +1933,7 @@ int mtxmatrix_blas_dnrm2(
     double * nrm2,
     int64_t * num_flops)
 {
-    return mtxvector_blas_dnrm2(&x->a, nrm2, num_flops);
+    return mtxvector_dnrm2(&x->a, nrm2, num_flops);
 }
 
 /**
@@ -1942,7 +1947,7 @@ int mtxmatrix_blas_sasum(
     float * asum,
     int64_t * num_flops)
 {
-    return mtxvector_blas_sasum(&x->a, asum, num_flops);
+    return mtxvector_sasum(&x->a, asum, num_flops);
 }
 
 /**
@@ -1956,7 +1961,7 @@ int mtxmatrix_blas_dasum(
     double * asum,
     int64_t * num_flops)
 {
-    return mtxvector_blas_dasum(&x->a, asum, num_flops);
+    return mtxvector_dasum(&x->a, asum, num_flops);
 }
 
 /**
@@ -1970,7 +1975,7 @@ int mtxmatrix_blas_iamax(
     const struct mtxmatrix_blas * x,
     int * iamax)
 {
-    return mtxvector_blas_iamax(&x->a, iamax);
+    return mtxvector_iamax(&x->a, iamax);
 }
 
 /*
