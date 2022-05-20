@@ -57,7 +57,6 @@ struct mtxvector;
  */
 enum mtxmatrixtype
 {
-    mtxmatrix_auto,       /* automatic selection of matrix type */
     mtxmatrix_blas,       /* dense matrices with BLAS-accelerated operations */
     mtxmatrix_coordinate, /* coordinate format for sparse matrices */
     mtxmatrix_csr,        /* compressed sparse row */
@@ -590,10 +589,7 @@ int mtxmatrix_to_mtxfile(
  * storing matrix or matrix values.
  *
  * The ‘type’ argument specifies which format to use for representing
- * the matrix.  If ‘type’ is ‘mtxmatrix_auto’, then the underlying
- * matrix is stored in array format or coordinate format according to
- * the format of the Matrix Market file.  Otherwise, an attempt is
- * made to convert the matrix to the desired type.
+ * the matrix.
  *
  * If ‘path’ is ‘-’, then standard input is used.
  *
@@ -621,10 +617,7 @@ int mtxmatrix_read(
  * the values of matrix or matrix entries.
  *
  * The ‘type’ argument specifies which format to use for representing
- * the matrix.  If ‘type’ is ‘mtxmatrix_auto’, then the underlying
- * matrix is stored in array format or coordinate format according to
- * the format of the Matrix Market file.  Otherwise, an attempt is
- * made to convert the matrix to the desired type.
+ * the matrix.
  *
  * If an error code is returned, then ‘lines_read’ and ‘bytes_read’
  * are used to return the line number and byte at which the error was
@@ -648,10 +641,7 @@ int mtxmatrix_fread(
  * the values of matrix or matrix entries.
  *
  * The ‘type’ argument specifies which format to use for representing
- * the matrix.  If ‘type’ is ‘mtxmatrix_auto’, then the underlying
- * matrix is stored in array format or coordinate format according to
- * the format of the Matrix Market file.  Otherwise, an attempt is
- * made to convert the matrix to the desired type.
+ * the matrix.
  *
  * If an error code is returned, then ‘lines_read’ and ‘bytes_read’
  * are used to return the line number and byte at which the error was

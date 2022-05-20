@@ -50,7 +50,6 @@ const char * mtxmatrixtype_str(
     enum mtxmatrixtype type)
 {
     switch (type) {
-    case mtxmatrix_auto: return "auto";
     case mtxmatrix_blas: return "blas";
     case mtxmatrix_coordinate: return "coordinate";
     case mtxmatrix_csr: return "csr";
@@ -88,10 +87,7 @@ int mtxmatrixtype_parse(
     const char * valid_delimiters)
 {
     const char * t = s;
-    if (strncmp("auto", t, strlen("auto")) == 0) {
-        t += strlen("auto");
-        *matrix_type = mtxmatrix_auto;
-    } else if (strncmp("blas", t, strlen("blas")) == 0) {
+    if (strncmp("blas", t, strlen("blas")) == 0) {
         t += strlen("blas");
         *matrix_type = mtxmatrix_blas;
     } else if (strncmp("coordinate", t, strlen("coordinate")) == 0) {
@@ -1056,10 +1052,7 @@ int mtxmatrix_to_mtxfile(
  * storing matrix or matrix values.
  *
  * The ‘type’ argument specifies which format to use for representing
- * the matrix.  If ‘type’ is ‘mtxmatrix_auto’, then the underlying
- * matrix is stored in array format or coordinate format according to
- * the format of the Matrix Market file.  Otherwise, an attempt is
- * made to convert the matrix to the desired type.
+ * the matrix.
  *
  * If ‘path’ is ‘-’, then standard input is used.
  *
@@ -1100,10 +1093,7 @@ int mtxmatrix_read(
  * the values of matrix or matrix entries.
  *
  * The ‘type’ argument specifies which format to use for representing
- * the matrix.  If ‘type’ is ‘mtxmatrix_auto’, then the underlying
- * matrix is stored in array format or coordinate format according to
- * the format of the Matrix Market file.  Otherwise, an attempt is
- * made to convert the matrix to the desired type.
+ * the matrix.
  *
  * If an error code is returned, then ‘lines_read’ and ‘bytes_read’
  * are used to return the line number and byte at which the error was
@@ -1140,10 +1130,7 @@ int mtxmatrix_fread(
  * the values of matrix or matrix entries.
  *
  * The ‘type’ argument specifies which format to use for representing
- * the matrix.  If ‘type’ is ‘mtxmatrix_auto’, then the underlying
- * matrix is stored in array format or coordinate format according to
- * the format of the Matrix Market file.  Otherwise, an attempt is
- * made to convert the matrix to the desired type.
+ * the matrix.
  *
  * If an error code is returned, then ‘lines_read’ and ‘bytes_read’
  * are used to return the line number and byte at which the error was
