@@ -118,7 +118,7 @@ int mtxmatrix_field(
     enum mtxfield * field)
 {
     if (A->type == mtxmatrix_blas) {
-        return mtxvector_field(&A->storage.blas.a, field);
+        *field = A->storage.blas.a.base.field;
     } else if (A->type == mtxmatrix_coo) {
         *field = A->storage.coordinate.a.field;
     } else if (A->type == mtxmatrix_dense) {
@@ -137,7 +137,7 @@ int mtxmatrix_precision(
     enum mtxprecision * precision)
 {
     if (A->type == mtxmatrix_blas) {
-        return mtxvector_precision(&A->storage.blas.a, precision);
+        *precision = A->storage.blas.a.base.precision;
     } else if (A->type == mtxmatrix_coo) {
         *precision = A->storage.coordinate.a.precision;
     } else if (A->type == mtxmatrix_dense) {
