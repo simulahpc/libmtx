@@ -612,52 +612,50 @@ int mtxvector_setzero(
     struct mtxvector * x);
 
 /**
- * ‘mtxvector_set_constant_real_single()’ sets every (nonzero) value
- * of a vector equal to a constant, single precision floating point
- * number.
+ * ‘mtxvector_set_constant_real_single()’ sets every element of a
+ * vector equal to a constant, single precision floating point number.
  */
 int mtxvector_set_constant_real_single(
     struct mtxvector * x,
     float a);
 
 /**
- * ‘mtxvector_set_constant_real_double()’ sets every (nonzero) value
- * of a vector equal to a constant, double precision floating point
- * number.
+ * ‘mtxvector_set_constant_real_double()’ sets every element of a
+ * vector equal to a constant, double precision floating point number.
  */
 int mtxvector_set_constant_real_double(
     struct mtxvector * x,
     double a);
 
 /**
- * ‘mtxvector_set_constant_complex_single()’ sets every (nonzero)
- * value of a vector equal to a constant, single precision floating
- * point complex number.
+ * ‘mtxvector_set_constant_complex_single()’ sets every element of a
+ * vector equal to a constant, single precision floating point complex
+ * number.
  */
 int mtxvector_set_constant_complex_single(
     struct mtxvector * x,
     float a[2]);
 
 /**
- * ‘mtxvector_set_constant_complex_double()’ sets every (nonzero)
- * value of a vector equal to a constant, double precision floating
- * point complex number.
+ * ‘mtxvector_set_constant_complex_double()’ sets every element of a
+ * vector equal to a constant, double precision floating point complex
+ * number.
  */
 int mtxvector_set_constant_complex_double(
     struct mtxvector * x,
     double a[2]);
 
 /**
- * ‘mtxvector_set_constant_integer_single()’ sets every (nonzero)
- * value of a vector equal to a constant integer.
+ * ‘mtxvector_set_constant_integer_single()’ sets every element of a
+ * vector equal to a constant integer.
  */
 int mtxvector_set_constant_integer_single(
     struct mtxvector * x,
     int32_t a);
 
 /**
- * ‘mtxvector_set_constant_integer_double()’ sets every (nonzero)
- * value of a vector equal to a constant integer.
+ * ‘mtxvector_set_constant_integer_double()’ sets every element of a
+ * vector equal to a constant integer.
  */
 int mtxvector_set_constant_integer_double(
     struct mtxvector * x,
