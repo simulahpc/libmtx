@@ -43,7 +43,6 @@ EXTRA_DIST = \
 	manual/texinfo.css \
 	tests/test_assumedpartition_parallel \
 	tests/test_distsort_parallel \
-	tests/test_mtxdistfile_parallel \
 	tests/test_mtxdistfile2_parallel \
 	tests/test_mtxfile_mpi_parallel
 
@@ -66,7 +65,6 @@ libmtx_la_SOURCES = \
 	libmtx/mtxfile/comments.c \
 	libmtx/mtxfile/data.c \
 	libmtx/mtxfile/header.c \
-	libmtx/mtxfile/mtxdistfile.c \
 	libmtx/mtxfile/mtxdistfile2.c \
 	libmtx/mtxfile/mtxfile.c \
 	libmtx/mtxfile/size.c \
@@ -115,7 +113,6 @@ nobase_include_HEADERS = \
 	libmtx/mtxfile/comments.h \
 	libmtx/mtxfile/data.h \
 	libmtx/mtxfile/header.h \
-	libmtx/mtxfile/mtxdistfile.h \
 	libmtx/mtxfile/mtxdistfile2.h \
 	libmtx/mtxfile/mtxfile.h \
 	libmtx/mtxfile/size.h \
@@ -378,7 +375,6 @@ endif
 if HAVE_MPI
 check_PROGRAMS += \
 	tests/test_distsort \
-	tests/test_mtxdistfile \
 	tests/test_mtxfile_mpi
 
 tests_test_distsort_CPPFLAGS = $(MPICPPFLAGS)
@@ -391,15 +387,9 @@ tests_test_mtxfile_mpi_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LI
 tests_test_mtxfile_mpi_SOURCES = tests/test_mtxfile_mpi.c tests/test.h
 tests/test_mtxfile_mpi_parallel: tests/test_mtxfile_mpi
 
-tests_test_mtxdistfile_CPPFLAGS = $(MPICPPFLAGS)
-tests_test_mtxdistfile_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
-tests_test_mtxdistfile_SOURCES = tests/test_mtxdistfile.c tests/test.h
-tests/test_mtxdistfile_parallel: tests/test_mtxdistfile
-
 TESTS += \
 	tests/test_distsort_parallel \
-	tests/test_mtxfile_mpi_parallel \
-	tests/test_mtxdistfile_parallel
+	tests/test_mtxfile_mpi_parallel
 endif
 
 # Documentation

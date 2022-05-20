@@ -29,10 +29,11 @@
 #include <libmtx/error.h>
 #include <libmtx/field.h>
 #include <libmtx/matrix/blas.h>
+#include <libmtx/matrix/dense.h>
 #include <libmtx/matrix/dist.h>
 #include <libmtx/matrix/matrix.h>
 #include <libmtx/matrix/matrix_coordinate.h>
-#include <libmtx/mtxfile/mtxdistfile.h>
+#include <libmtx/matrix/matrix_csr.h>
 #include <libmtx/mtxfile/mtxdistfile2.h>
 #include <libmtx/mtxfile/mtxfile.h>
 #include <libmtx/precision.h>
