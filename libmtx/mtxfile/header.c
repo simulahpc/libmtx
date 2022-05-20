@@ -25,7 +25,7 @@
 
 #include <libmtx/error.h>
 #include <libmtx/mtxfile/header.h>
-#include <libmtx/util/symmetry.h>
+#include <libmtx/matrix/symmetry.h>
 
 #ifdef LIBMTX_HAVE_MPI
 #include <mpi.h>

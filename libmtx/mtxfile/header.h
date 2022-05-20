@@ -27,7 +27,7 @@
 #include <libmtx/libmtx-config.h>
 
 #include <libmtx/field.h>
-#include <libmtx/util/symmetry.h>
+#include <libmtx/matrix/symmetry.h>
 
 #ifdef LIBMTX_HAVE_MPI
 #include <mpi.h>

@@ -28,8 +28,8 @@
 
 #include <libmtx/precision.h>
 #include <libmtx/field.h>
-#include <libmtx/util/symmetry.h>
-#include <libmtx/util/transpose.h>
+#include <libmtx/matrix/symmetry.h>
+#include <libmtx/matrix/transpose.h>
 #include <libmtx/matrix/matrix_coordinate.h>
 #include <libmtx/matrix/matrix_csr.h>
 #include <libmtx/matrix/blas.h>

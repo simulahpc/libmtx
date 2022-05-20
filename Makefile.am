@@ -87,10 +87,10 @@ libmtx_la_SOURCES = \
 	libmtx/util/permute.h \
 	libmtx/util/sort.c \
 	libmtx/util/sort.h \
-	libmtx/util/symmetry.c \
-	libmtx/util/symmetry.h \
-	libmtx/util/transpose.c \
-	libmtx/util/transpose.h \
+	libmtx/matrix/symmetry.c \
+	libmtx/matrix/symmetry.h \
+	libmtx/matrix/transpose.c \
+	libmtx/matrix/transpose.h \
 	libmtx/vector/base.c \
 	libmtx/vector/blas.c \
 	libmtx/vector/dist.c \

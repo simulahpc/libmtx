@@ -22,7 +22,7 @@
  */
 
 #include <libmtx/error.h>
-#include <libmtx/util/transpose.h>
+#include <libmtx/matrix/transpose.h>
 
 #include <stdint.h>
 #include <string.h>

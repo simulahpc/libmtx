@@ -22,7 +22,7 @@
  */
 
 #include <libmtx/error.h>
-#include <libmtx/util/symmetry.h>
+#include <libmtx/matrix/symmetry.h>
 
 #include <stdint.h>
 #include <string.h>
