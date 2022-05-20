@@ -131,6 +131,45 @@ int mtxmatrix_blas_alloc_entries(
     return mtxvector_blas_alloc(&A->a, field, precision, A->size);
 }
 
+static int mtxmatrix_blas_init_entries_idx(
+    struct mtxmatrix_blas * A,
+    enum mtxsymmetry symmetry,
+    int num_rows,
+    int num_columns,
+    int64_t size,
+    const int * rowidx,
+    const int * colidx,
+    int64_t * idx)
+{
+    for (int64_t k = 0; k < size; k++) {
+        if (rowidx[k] < 0 || rowidx[k] >= num_rows ||
+            colidx[k] < 0 || colidx[k] >= num_columns)
+            return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+    }
+
+    if (symmetry == mtx_unsymmetric) {
+        for (int64_t k = 0; k < size; k++)
+            idx[k] = rowidx[k]*num_columns+colidx[k];
+    } else if (num_rows == num_columns &&
+               (symmetry == mtx_symmetric || symmetry == mtx_hermitian))
+    {
+        int64_t N = num_rows;
+        for (int64_t k = 0; k < size; k++) {
+            int64_t i = rowidx[k] < colidx[k] ? rowidx[k] : colidx[k];
+            int64_t j = rowidx[k] < colidx[k] ? colidx[k] : rowidx[k];
+            idx[k] = N*(N-1)/2 - (N-i)*(N-i-1)/2 + j;
+        }
+    } else if (num_rows == num_columns && symmetry == mtx_skew_symmetric) {
+        int64_t N = num_rows;
+        for (int64_t k = 0; k < size; k++) {
+            int64_t i = rowidx[k] < colidx[k] ? rowidx[k] : colidx[k];
+            int64_t j = rowidx[k] < colidx[k] ? colidx[k] : rowidx[k];
+            idx[k] = N*(N-1)/2 - (N-i)*(N-i-1)/2 + j-i-1;
+        }
+    } else { return MTX_ERR_INVALID_SYMMETRY; }
+    return MTX_SUCCESS;
+}
+
 /**
  * ‘mtxmatrix_blas_init_entries_real_single()’ allocates and
  * initialises a matrix from entrywise data in coordinate format with
@@ -146,40 +185,26 @@ int mtxmatrix_blas_init_entries_real_single(
     const int * colidx,
     const float * data)
 {
-    for (int64_t k = 0; k < size; k++) {
-        if (rowidx[k] < 0 || rowidx[k] >= num_rows ||
-            colidx[k] < 0 || colidx[k] >= num_columns)
-            return MTX_ERR_INDEX_OUT_OF_BOUNDS;
-    }
     int err = mtxmatrix_blas_alloc_entries(
         A, mtx_field_real, mtx_single, symmetry, num_rows, num_columns,
         size, 0, 0, NULL, NULL);
     if (err) return err;
     err = mtxmatrix_blas_setzero(A);
-    if (err) return err;
-    float * a = A->a.base.data.real_single;
-    if (symmetry == mtx_unsymmetric) {
-        for (int64_t k = 0; k < size; k++) {
-            int64_t i = rowidx[k], j = colidx[k];
-            a[i*num_columns+j] = data[k];
-        }
-    } else if (num_rows == num_columns &&
-               (symmetry == mtx_symmetric || symmetry == mtx_hermitian))
-    {
-        int64_t N = num_rows;
-        for (int64_t k = 0; k < size; k++) {
-            int64_t i = rowidx[k] < colidx[k] ? rowidx[k] : colidx[k];
-            int64_t j = rowidx[k] < colidx[k] ? colidx[k] : rowidx[k];
-            a[N*(N-1)/2 - (N-i)*(N-i-1)/2 + j] = data[k];
-        }
-    } else if (num_rows == num_columns && symmetry == mtx_skew_symmetric) {
-        int64_t N = num_rows;
-        for (int64_t k = 0; k < size; k++) {
-            int64_t i = rowidx[k] < colidx[k] ? rowidx[k] : colidx[k];
-            int64_t j = rowidx[k] < colidx[k] ? colidx[k] : rowidx[k];
-            a[N*(N-1)/2 - (N-i)*(N-i-1)/2 + j-i-1] = data[k];
-        }
-    } else { mtxmatrix_blas_free(A); return MTX_ERR_INVALID_SYMMETRY; }
+    if (err) { mtxmatrix_blas_free(A); return err; }
+    int64_t * idx = malloc(size * sizeof(int64_t));
+    if (!idx) { mtxmatrix_blas_free(A); return MTX_ERR_ERRNO; }
+    err = mtxmatrix_blas_init_entries_idx(
+        A, symmetry, num_rows, num_columns, size, rowidx, colidx, idx);
+    if (err) { free(idx); mtxmatrix_blas_free(A); return err; }
+    struct mtxvector_packed x;
+    enum mtxvectortype vectortype = mtxvector_blas;
+    err = mtxvector_packed_init_real_single(
+        &x, vectortype, A->size, size, idx, data);
+    if (err) { free(idx); mtxmatrix_blas_free(A); return err; }
+    free(idx);
+    err = mtxvector_blas_ussc(&A->a, &x);
+    if (err) { mtxvector_packed_free(&x); mtxmatrix_blas_free(A); return err; }
+    mtxvector_packed_free(&x);
     return MTX_SUCCESS;
 }
 
@@ -198,40 +223,26 @@ int mtxmatrix_blas_init_entries_real_double(
     const int * colidx,
     const double * data)
 {
-    for (int64_t k = 0; k < size; k++) {
-        if (rowidx[k] < 0 || rowidx[k] >= num_rows ||
-            colidx[k] < 0 || colidx[k] >= num_columns)
-            return MTX_ERR_INDEX_OUT_OF_BOUNDS;
-    }
     int err = mtxmatrix_blas_alloc_entries(
         A, mtx_field_real, mtx_double, symmetry, num_rows, num_columns,
         size, 0, 0, NULL, NULL);
     if (err) return err;
     err = mtxmatrix_blas_setzero(A);
-    if (err) return err;
-    double * a = A->a.base.data.real_double;
-    if (symmetry == mtx_unsymmetric) {
-        for (int64_t k = 0; k < size; k++) {
-            int64_t i = rowidx[k], j = colidx[k];
-            a[i*num_columns+j] = data[k];
-        }
-    } else if (num_rows == num_columns &&
-               (symmetry == mtx_symmetric || symmetry == mtx_hermitian))
-    {
-        int64_t N = num_rows;
-        for (int64_t k = 0; k < size; k++) {
-            int64_t i = rowidx[k] < colidx[k] ? rowidx[k] : colidx[k];
-            int64_t j = rowidx[k] < colidx[k] ? colidx[k] : rowidx[k];
-            a[N*(N-1)/2 - (N-i)*(N-i-1)/2 + j] = data[k];
-        }
-    } else if (num_rows == num_columns && symmetry == mtx_skew_symmetric) {
-        int64_t N = num_rows;
-        for (int64_t k = 0; k < size; k++) {
-            int64_t i = rowidx[k] < colidx[k] ? rowidx[k] : colidx[k];
-            int64_t j = rowidx[k] < colidx[k] ? colidx[k] : rowidx[k];
-            a[N*(N-1)/2 - (N-i)*(N-i-1)/2 + j-i-1] = data[k];
-        }
-    } else { mtxmatrix_blas_free(A); return MTX_ERR_INVALID_SYMMETRY; }
+    if (err) { mtxmatrix_blas_free(A); return err; }
+    int64_t * idx = malloc(size * sizeof(int64_t));
+    if (!idx) { mtxmatrix_blas_free(A); return MTX_ERR_ERRNO; }
+    err = mtxmatrix_blas_init_entries_idx(
+        A, symmetry, num_rows, num_columns, size, rowidx, colidx, idx);
+    if (err) { free(idx); mtxmatrix_blas_free(A); return err; }
+    struct mtxvector_packed x;
+    enum mtxvectortype vectortype = mtxvector_blas;
+    err = mtxvector_packed_init_real_double(
+        &x, vectortype, A->size, size, idx, data);
+    if (err) { free(idx); mtxmatrix_blas_free(A); return err; }
+    free(idx);
+    err = mtxvector_blas_ussc(&A->a, &x);
+    if (err) { mtxvector_packed_free(&x); mtxmatrix_blas_free(A); return err; }
+    mtxvector_packed_free(&x);
     return MTX_SUCCESS;
 }
 
@@ -250,43 +261,26 @@ int mtxmatrix_blas_init_entries_complex_single(
     const int * colidx,
     const float (* data)[2])
 {
-    for (int64_t k = 0; k < size; k++) {
-        if (rowidx[k] < 0 || rowidx[k] >= num_rows ||
-            colidx[k] < 0 || colidx[k] >= num_columns)
-            return MTX_ERR_INDEX_OUT_OF_BOUNDS;
-    }
     int err = mtxmatrix_blas_alloc_entries(
         A, mtx_field_complex, mtx_single, symmetry, num_rows, num_columns,
         size, 0, 0, NULL, NULL);
     if (err) return err;
     err = mtxmatrix_blas_setzero(A);
-    if (err) return err;
-    float (* a)[2] = A->a.base.data.complex_single;
-    if (symmetry == mtx_unsymmetric) {
-        for (int64_t k = 0; k < size; k++) {
-            int64_t i = rowidx[k], j = colidx[k];
-            a[i*num_columns+j][0] = data[k][0];
-            a[i*num_columns+j][1] = data[k][1];
-        }
-    } else if (num_rows == num_columns &&
-               (symmetry == mtx_symmetric || symmetry == mtx_hermitian))
-    {
-        int64_t N = num_rows;
-        for (int64_t k = 0; k < size; k++) {
-            int64_t i = rowidx[k] < colidx[k] ? rowidx[k] : colidx[k];
-            int64_t j = rowidx[k] < colidx[k] ? colidx[k] : rowidx[k];
-            a[N*(N-1)/2 - (N-i)*(N-i-1)/2 + j][0] = data[k][0];
-            a[N*(N-1)/2 - (N-i)*(N-i-1)/2 + j][1] = data[k][1];
-        }
-    } else if (num_rows == num_columns && symmetry == mtx_skew_symmetric) {
-        int64_t N = num_rows;
-        for (int64_t k = 0; k < size; k++) {
-            int64_t i = rowidx[k] < colidx[k] ? rowidx[k] : colidx[k];
-            int64_t j = rowidx[k] < colidx[k] ? colidx[k] : rowidx[k];
-            a[N*(N-1)/2 - (N-i)*(N-i-1)/2 + j-i-1][0] = data[k][0];
-            a[N*(N-1)/2 - (N-i)*(N-i-1)/2 + j-i-1][1] = data[k][1];
-        }
-    } else { mtxmatrix_blas_free(A); return MTX_ERR_INVALID_SYMMETRY; }
+    if (err) { mtxmatrix_blas_free(A); return err; }
+    int64_t * idx = malloc(size * sizeof(int64_t));
+    if (!idx) { mtxmatrix_blas_free(A); return MTX_ERR_ERRNO; }
+    err = mtxmatrix_blas_init_entries_idx(
+        A, symmetry, num_rows, num_columns, size, rowidx, colidx, idx);
+    if (err) { free(idx); mtxmatrix_blas_free(A); return err; }
+    struct mtxvector_packed x;
+    enum mtxvectortype vectortype = mtxvector_blas;
+    err = mtxvector_packed_init_complex_single(
+        &x, vectortype, A->size, size, idx, data);
+    if (err) { free(idx); mtxmatrix_blas_free(A); return err; }
+    free(idx);
+    err = mtxvector_blas_ussc(&A->a, &x);
+    if (err) { mtxvector_packed_free(&x); mtxmatrix_blas_free(A); return err; }
+    mtxvector_packed_free(&x);
     return MTX_SUCCESS;
 }
 
@@ -305,43 +299,26 @@ int mtxmatrix_blas_init_entries_complex_double(
     const int * colidx,
     const double (* data)[2])
 {
-    for (int64_t k = 0; k < size; k++) {
-        if (rowidx[k] < 0 || rowidx[k] >= num_rows ||
-            colidx[k] < 0 || colidx[k] >= num_columns)
-            return MTX_ERR_INDEX_OUT_OF_BOUNDS;
-    }
     int err = mtxmatrix_blas_alloc_entries(
         A, mtx_field_complex, mtx_double, symmetry, num_rows, num_columns,
         size, 0, 0, NULL, NULL);
     if (err) return err;
     err = mtxmatrix_blas_setzero(A);
-    if (err) return err;
-    double (* a)[2] = A->a.base.data.complex_double;
-    if (symmetry == mtx_unsymmetric) {
-        for (int64_t k = 0; k < size; k++) {
-            int64_t i = rowidx[k], j = colidx[k];
-            a[i*num_columns+j][0] = data[k][0];
-            a[i*num_columns+j][1] = data[k][1];
-        }
-    } else if (num_rows == num_columns &&
-               (symmetry == mtx_symmetric || symmetry == mtx_hermitian))
-    {
-        int64_t N = num_rows;
-        for (int64_t k = 0; k < size; k++) {
-            int64_t i = rowidx[k] < colidx[k] ? rowidx[k] : colidx[k];
-            int64_t j = rowidx[k] < colidx[k] ? colidx[k] : rowidx[k];
-            a[N*(N-1)/2 - (N-i)*(N-i-1)/2 + j][0] = data[k][0];
-            a[N*(N-1)/2 - (N-i)*(N-i-1)/2 + j][1] = data[k][1];
-        }
-    } else if (num_rows == num_columns && symmetry == mtx_skew_symmetric) {
-        int64_t N = num_rows;
-        for (int64_t k = 0; k < size; k++) {
-            int64_t i = rowidx[k] < colidx[k] ? rowidx[k] : colidx[k];
-            int64_t j = rowidx[k] < colidx[k] ? colidx[k] : rowidx[k];
-            a[N*(N-1)/2 - (N-i)*(N-i-1)/2 + j-i-1][0] = data[k][0];
-            a[N*(N-1)/2 - (N-i)*(N-i-1)/2 + j-i-1][1] = data[k][1];
-        }
-    } else { mtxmatrix_blas_free(A); return MTX_ERR_INVALID_SYMMETRY; }
+    if (err) { mtxmatrix_blas_free(A); return err; }
+    int64_t * idx = malloc(size * sizeof(int64_t));
+    if (!idx) { mtxmatrix_blas_free(A); return MTX_ERR_ERRNO; }
+    err = mtxmatrix_blas_init_entries_idx(
+        A, symmetry, num_rows, num_columns, size, rowidx, colidx, idx);
+    if (err) { free(idx); mtxmatrix_blas_free(A); return err; }
+    struct mtxvector_packed x;
+    enum mtxvectortype vectortype = mtxvector_blas;
+    err = mtxvector_packed_init_complex_double(
+        &x, vectortype, A->size, size, idx, data);
+    if (err) { free(idx); mtxmatrix_blas_free(A); return err; }
+    free(idx);
+    err = mtxvector_blas_ussc(&A->a, &x);
+    if (err) { mtxvector_packed_free(&x); mtxmatrix_blas_free(A); return err; }
+    mtxvector_packed_free(&x);
     return MTX_SUCCESS;
 }
 
@@ -360,40 +337,26 @@ int mtxmatrix_blas_init_entries_integer_single(
     const int * colidx,
     const int32_t * data)
 {
-    for (int64_t k = 0; k < size; k++) {
-        if (rowidx[k] < 0 || rowidx[k] >= num_rows ||
-            colidx[k] < 0 || colidx[k] >= num_columns)
-            return MTX_ERR_INDEX_OUT_OF_BOUNDS;
-    }
     int err = mtxmatrix_blas_alloc_entries(
         A, mtx_field_integer, mtx_single, symmetry, num_rows, num_columns,
         size, 0, 0, NULL, NULL);
     if (err) return err;
     err = mtxmatrix_blas_setzero(A);
-    if (err) return err;
-    int32_t * a = A->a.base.data.integer_single;
-    if (symmetry == mtx_unsymmetric) {
-        for (int64_t k = 0; k < size; k++) {
-            int64_t i = rowidx[k], j = colidx[k];
-            a[i*num_columns+j] = data[k];
-        }
-    } else if (num_rows == num_columns &&
-               (symmetry == mtx_symmetric || symmetry == mtx_hermitian))
-    {
-        int64_t N = num_rows;
-        for (int64_t k = 0; k < size; k++) {
-            int64_t i = rowidx[k] < colidx[k] ? rowidx[k] : colidx[k];
-            int64_t j = rowidx[k] < colidx[k] ? colidx[k] : rowidx[k];
-            a[N*(N-1)/2 - (N-i)*(N-i-1)/2 + j] = data[k];
-        }
-    } else if (num_rows == num_columns && symmetry == mtx_skew_symmetric) {
-        int64_t N = num_rows;
-        for (int64_t k = 0; k < size; k++) {
-            int64_t i = rowidx[k] < colidx[k] ? rowidx[k] : colidx[k];
-            int64_t j = rowidx[k] < colidx[k] ? colidx[k] : rowidx[k];
-            a[N*(N-1)/2 - (N-i)*(N-i-1)/2 + j-i-1] = data[k];
-        }
-    } else { mtxmatrix_blas_free(A); return MTX_ERR_INVALID_SYMMETRY; }
+    if (err) { mtxmatrix_blas_free(A); return err; }
+    int64_t * idx = malloc(size * sizeof(int64_t));
+    if (!idx) { mtxmatrix_blas_free(A); return MTX_ERR_ERRNO; }
+    err = mtxmatrix_blas_init_entries_idx(
+        A, symmetry, num_rows, num_columns, size, rowidx, colidx, idx);
+    if (err) { free(idx); mtxmatrix_blas_free(A); return err; }
+    struct mtxvector_packed x;
+    enum mtxvectortype vectortype = mtxvector_blas;
+    err = mtxvector_packed_init_integer_single(
+        &x, vectortype, A->size, size, idx, data);
+    if (err) { free(idx); mtxmatrix_blas_free(A); return err; }
+    free(idx);
+    err = mtxvector_blas_ussc(&A->a, &x);
+    if (err) { mtxvector_packed_free(&x); mtxmatrix_blas_free(A); return err; }
+    mtxvector_packed_free(&x);
     return MTX_SUCCESS;
 }
 
@@ -412,40 +375,26 @@ int mtxmatrix_blas_init_entries_integer_double(
     const int * colidx,
     const int64_t * data)
 {
-    for (int64_t k = 0; k < size; k++) {
-        if (rowidx[k] < 0 || rowidx[k] >= num_rows ||
-            colidx[k] < 0 || colidx[k] >= num_columns)
-            return MTX_ERR_INDEX_OUT_OF_BOUNDS;
-    }
     int err = mtxmatrix_blas_alloc_entries(
-        A, mtx_field_integer, mtx_double, symmetry, num_rows, num_columns,
-        size, 0, 0, NULL, NULL);
+        A, mtx_field_integer, mtx_double, symmetry,
+        num_rows, num_columns, size, 0, 0, NULL, NULL);
     if (err) return err;
     err = mtxmatrix_blas_setzero(A);
-    if (err) return err;
-    int64_t * a = A->a.base.data.integer_double;
-    if (symmetry == mtx_unsymmetric) {
-        for (int64_t k = 0; k < size; k++) {
-            int64_t i = rowidx[k], j = colidx[k];
-            a[i*num_columns+j] = data[k];
-        }
-    } else if (num_rows == num_columns &&
-               (symmetry == mtx_symmetric || symmetry == mtx_hermitian))
-    {
-        int64_t N = num_rows;
-        for (int64_t k = 0; k < size; k++) {
-            int64_t i = rowidx[k] < colidx[k] ? rowidx[k] : colidx[k];
-            int64_t j = rowidx[k] < colidx[k] ? colidx[k] : rowidx[k];
-            a[N*(N-1)/2 - (N-i)*(N-i-1)/2 + j] = data[k];
-        }
-    } else if (num_rows == num_columns && symmetry == mtx_skew_symmetric) {
-        int64_t N = num_rows;
-        for (int64_t k = 0; k < size; k++) {
-            int64_t i = rowidx[k] < colidx[k] ? rowidx[k] : colidx[k];
-            int64_t j = rowidx[k] < colidx[k] ? colidx[k] : rowidx[k];
-            a[N*(N-1)/2 - (N-i)*(N-i-1)/2 + j-i-1] = data[k];
-        }
-    } else { mtxmatrix_blas_free(A); return MTX_ERR_INVALID_SYMMETRY; }
+    if (err) { mtxmatrix_blas_free(A); return err; }
+    int64_t * idx = malloc(size * sizeof(int64_t));
+    if (!idx) { mtxmatrix_blas_free(A); return MTX_ERR_ERRNO; }
+    err = mtxmatrix_blas_init_entries_idx(
+        A, symmetry, num_rows, num_columns, size, rowidx, colidx, idx);
+    if (err) { free(idx); mtxmatrix_blas_free(A); return err; }
+    struct mtxvector_packed x;
+    enum mtxvectortype vectortype = mtxvector_blas;
+    err = mtxvector_packed_init_integer_double(
+        &x, vectortype, A->size, size, idx, data);
+    if (err) { free(idx); mtxmatrix_blas_free(A); return err; }
+    free(idx);
+    err = mtxvector_blas_ussc(&A->a, &x);
+    if (err) { mtxvector_packed_free(&x); mtxmatrix_blas_free(A); return err; }
+    mtxvector_packed_free(&x);
     return MTX_SUCCESS;
 }
 
