@@ -30,7 +30,7 @@
 #include <libmtx/vector/field.h>
 #include <libmtx/matrix/symmetry.h>
 #include <libmtx/matrix/transpose.h>
-#include <libmtx/vector/base.h>
+#include <libmtx/vector/omp.h>
 #include <libmtx/vector/packed.h>
 #include <libmtx/vector/vector.h>
 
@@ -100,13 +100,25 @@ struct mtxmatrix_ompcsr
     /**
      * ‘a’ is a vector storing the underlying nonzero matrix entries.
      */
-    struct mtxvector_base a;
+    struct mtxvector_omp a;
 
     /**
      * ‘diag’ is a vector storing the diagonal nonzero matrix entries.
      */
     struct mtxvector_packed diag;
 };
+
+/**
+ * ‘mtxmatrix_ompcsr_field()’ gets the field of a matrix.
+ */
+enum mtxfield mtxmatrix_ompcsr_field(
+    const struct mtxmatrix_ompcsr * A);
+
+/**
+ * ‘mtxmatrix_ompcsr_precision()’ gets the precision of a matrix.
+ */
+enum mtxprecision mtxmatrix_ompcsr_precision(
+    const struct mtxmatrix_ompcsr * A);
 
 /*
  * memory management
@@ -1156,6 +1168,9 @@ int mtxmatrix_ompcsr_iamax(
  * the number of rows of ‘A’. if ‘trans’ is ‘mtx_trans’ or
  * ‘mtx_conjtrans’, then the size of ‘x’ must equal the number of rows
  * of ‘A’ and the size of ‘y’ must equal the number of columns of ‘A’.
+ *
+ * For now, the only case that is parallelised with OpenMP is
+ * multiplication with non-transposed and unsymmetric matrices.
  */
 int mtxmatrix_ompcsr_sgemv(
     enum mtxtransposition trans,
@@ -1187,6 +1202,9 @@ int mtxmatrix_ompcsr_sgemv(
  * the number of rows of ‘A’. if ‘trans’ is ‘mtx_trans’ or
  * ‘mtx_conjtrans’, then the size of ‘x’ must equal the number of rows
  * of ‘A’ and the size of ‘y’ must equal the number of columns of ‘A’.
+ *
+ * For now, the only case that is parallelised with OpenMP is
+ * multiplication with non-transposed and unsymmetric matrices.
  */
 int mtxmatrix_ompcsr_dgemv(
     enum mtxtransposition trans,
@@ -1215,6 +1233,9 @@ int mtxmatrix_ompcsr_dgemv(
  * the number of rows of ‘A’. if ‘trans’ is ‘mtx_trans’ or
  * ‘mtx_conjtrans’, then the size of ‘x’ must equal the number of rows
  * of ‘A’ and the size of ‘y’ must equal the number of columns of ‘A’.
+ *
+ * For now, the only case that is parallelised with OpenMP is
+ * multiplication with non-transposed and unsymmetric matrices.
  */
 int mtxmatrix_ompcsr_cgemv(
     enum mtxtransposition trans,
@@ -1243,6 +1264,9 @@ int mtxmatrix_ompcsr_cgemv(
  * the number of rows of ‘A’. if ‘trans’ is ‘mtx_trans’ or
  * ‘mtx_conjtrans’, then the size of ‘x’ must equal the number of rows
  * of ‘A’ and the size of ‘y’ must equal the number of columns of ‘A’.
+ *
+ * For now, the only case that is parallelised with OpenMP is
+ * multiplication with non-transposed and unsymmetric matrices.
  */
 int mtxmatrix_ompcsr_zgemv(
     enum mtxtransposition trans,

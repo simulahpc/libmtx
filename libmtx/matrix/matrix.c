@@ -130,7 +130,7 @@ int mtxmatrix_field(
     } else if (A->type == mtxmatrix_csr) {
         *field = A->storage.csr.a.field;
     } else if (A->type == mtxmatrix_ompcsr) {
-        *field = A->storage.ompcsr.a.field;
+        *field = A->storage.ompcsr.a.base.field;
     } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
     return MTX_SUCCESS;
 }
@@ -151,7 +151,7 @@ int mtxmatrix_precision(
     } else if (A->type == mtxmatrix_csr) {
         *precision = A->storage.csr.a.precision;
     } else if (A->type == mtxmatrix_ompcsr) {
-        *precision = A->storage.ompcsr.a.precision;
+        *precision = A->storage.ompcsr.a.base.precision;
     } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
     return MTX_SUCCESS;
 }
