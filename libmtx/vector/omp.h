@@ -28,10 +28,10 @@
 #include <libmtx/libmtx-config.h>
 
 #ifdef LIBMTX_HAVE_OPENMP
-#include <libmtx/vector/precision.h>
-#include <libmtx/vector/field.h>
 #include <libmtx/mtxfile/header.h>
 #include <libmtx/vector/base.h>
+#include <libmtx/vector/field.h>
+#include <libmtx/vector/precision.h>
 
 #include <omp.h>
 

@@ -82,7 +82,9 @@ int mtxmatrix_csr_init_copy(
 {
     int err = mtxmatrix_csr_alloc_copy(dst, src);
     if (err) return err;
-    return mtxmatrix_csr_copy(dst, src);
+    err = mtxmatrix_csr_copy(dst, src);
+    if (err) { mtxmatrix_csr_free(dst); return err; }
+    return MTX_SUCCESS;
 }
 
 /*
@@ -645,7 +647,7 @@ int mtxmatrix_csr_init_rows_real_single(
         A, mtx_field_real, mtx_single, symmetry,
 	num_rows, num_columns, rowptr, colidx);
     if (err) return err;
-    err = mtxvector_base_init_real_single(&A->a, rowptr[num_rows], data);
+    err = mtxvector_base_set_real_single(&A->a, rowptr[num_rows], sizeof(*data), data);
     if (err) { mtxmatrix_csr_free(A); return err; }
     return MTX_SUCCESS;
 }
@@ -668,7 +670,7 @@ int mtxmatrix_csr_init_rows_real_double(
         A, mtx_field_real, mtx_double, symmetry,
 	num_rows, num_columns, rowptr, colidx);
     if (err) return err;
-    err = mtxvector_base_init_real_double(&A->a, rowptr[num_rows], data);
+    err = mtxvector_base_set_real_double(&A->a, rowptr[num_rows], sizeof(*data), data);
     if (err) { mtxmatrix_csr_free(A); return err; }
     return MTX_SUCCESS;
 }
@@ -691,7 +693,7 @@ int mtxmatrix_csr_init_rows_complex_single(
         A, mtx_field_complex, mtx_single, symmetry,
 	num_rows, num_columns, rowptr, colidx);
     if (err) return err;
-    err = mtxvector_base_init_complex_single(&A->a, rowptr[num_rows], data);
+    err = mtxvector_base_set_complex_single(&A->a, rowptr[num_rows], sizeof(*data), data);
     if (err) { mtxmatrix_csr_free(A); return err; }
     return MTX_SUCCESS;
 }
@@ -714,7 +716,7 @@ int mtxmatrix_csr_init_rows_complex_double(
         A, mtx_field_complex, mtx_double, symmetry,
 	num_rows, num_columns, rowptr, colidx);
     if (err) return err;
-    err = mtxvector_base_init_complex_double(&A->a, rowptr[num_rows], data);
+    err = mtxvector_base_set_complex_double(&A->a, rowptr[num_rows], sizeof(*data), data);
     if (err) { mtxmatrix_csr_free(A); return err; }
     return MTX_SUCCESS;
 }
@@ -737,7 +739,7 @@ int mtxmatrix_csr_init_rows_integer_single(
         A, mtx_field_integer, mtx_single, symmetry,
 	num_rows, num_columns, rowptr, colidx);
     if (err) return err;
-    err = mtxvector_base_init_integer_single(&A->a, rowptr[num_rows], data);
+    err = mtxvector_base_set_integer_single(&A->a, rowptr[num_rows], sizeof(*data), data);
     if (err) { mtxmatrix_csr_free(A); return err; }
     return MTX_SUCCESS;
 }
@@ -760,7 +762,7 @@ int mtxmatrix_csr_init_rows_integer_double(
         A, mtx_field_integer, mtx_double, symmetry,
 	num_rows, num_columns, rowptr, colidx);
     if (err) return err;
-    err = mtxvector_base_init_integer_double(&A->a, rowptr[num_rows], data);
+    err = mtxvector_base_set_integer_double(&A->a, rowptr[num_rows], sizeof(*data), data);
     if (err) { mtxmatrix_csr_free(A); return err; }
     return MTX_SUCCESS;
 }
@@ -778,13 +780,9 @@ int mtxmatrix_csr_init_rows_pattern(
     const int64_t * rowptr,
     const int * colidx)
 {
-    int err = mtxmatrix_csr_alloc_rows(
+    return mtxmatrix_csr_alloc_rows(
         A, mtx_field_pattern, mtx_single, symmetry,
 	num_rows, num_columns, rowptr, colidx);
-    if (err) return err;
-    err = mtxvector_base_init_pattern(&A->a, rowptr[num_rows]);
-    if (err) { mtxmatrix_csr_free(A); return err; }
-    return MTX_SUCCESS;
 }
 
 /*

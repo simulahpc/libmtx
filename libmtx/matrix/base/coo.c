@@ -81,7 +81,9 @@ int mtxmatrix_coo_init_copy(
 {
     int err = mtxmatrix_coo_alloc_copy(dst, src);
     if (err) return err;
-    return mtxmatrix_coo_copy(dst, src);
+    err = mtxmatrix_coo_copy(dst, src);
+    if (err) { mtxmatrix_coo_free(dst); return err; }
+    return MTX_SUCCESS;
 }
 
 /*

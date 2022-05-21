@@ -83,7 +83,9 @@ int mtxmatrix_blas_init_copy(
 {
     int err = mtxmatrix_blas_alloc_copy(dst, src);
     if (err) return err;
-    return mtxmatrix_blas_copy(dst, src);
+    err = mtxmatrix_blas_copy(dst, src);
+    if (err) { mtxmatrix_blas_free(dst); return err; }
+    return MTX_SUCCESS;
 }
 
 /*

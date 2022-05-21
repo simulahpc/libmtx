@@ -79,7 +79,9 @@ int mtxmatrix_dense_init_copy(
 {
     int err = mtxmatrix_dense_alloc_copy(dst, src);
     if (err) return err;
-    return mtxmatrix_dense_copy(dst, src);
+    err = mtxmatrix_dense_copy(dst, src);
+    if (err) { mtxmatrix_dense_free(dst); return err; }
+    return MTX_SUCCESS;
 }
 
 /*
