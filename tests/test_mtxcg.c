@@ -94,6 +94,7 @@ int test_mtxcg_2x2(void)
         2.0/3.0, mtxdata[0], 1e-12, "mtxdata[0]=%.15g", mtxdata[0]);
     TEST_ASSERT_DOUBLE_NEAR_MSG(
         1.0/3.0, mtxdata[1], 1e-12, "mtxdata[1]=%.15g", mtxdata[1]);
+    mtxcg_free(&cg);
     mtxvector_free(&b);
     mtxvector_free(&x);
     mtxmatrix_free(&A);
@@ -199,6 +200,7 @@ int test_mtxcg_poisson(void)
             i, sin(2.0*M_PI*(i+1)*h)/(4.0*M_PI*M_PI), xbase->data.real_double[i]);
     }
 
+    mtxcg_free(&cg);
     mtxvector_free(&b);
     mtxvector_free(&x);
     mtxmatrix_free(&A);
