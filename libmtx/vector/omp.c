@@ -2203,7 +2203,6 @@ int mtxvector_omp_cscal(
     int64_t * num_flops)
 {
     struct mtxvector_base * x = &xomp->base;
-    int num_threads = xomp->num_threads;
     if (x->field != mtx_field_complex) return MTX_ERR_INCOMPATIBLE_FIELD;
     if (x->precision == mtx_single) {
         float (* xdata)[2] = x->data.complex_single;
@@ -2265,7 +2264,6 @@ int mtxvector_omp_zscal(
     int64_t * num_flops)
 {
     struct mtxvector_base * x = &xomp->base;
-    int num_threads = xomp->num_threads;
     if (x->field != mtx_field_complex) return MTX_ERR_INCOMPATIBLE_FIELD;
     if (x->precision == mtx_single) {
         float (* xdata)[2] = x->data.complex_single;
@@ -2596,8 +2594,6 @@ int mtxvector_omp_saypx(
 {
     const struct mtxvector_base * x = &xomp->base;
     struct mtxvector_base * y = &yomp->base;
-    int num_threads = xomp->num_threads < yomp->num_threads
-        ? xomp->num_threads : yomp->num_threads;
     if (y->field != x->field) return MTX_ERR_INCOMPATIBLE_FIELD;
     if (y->precision != x->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
     if (y->size != x->size) return MTX_ERR_INCOMPATIBLE_SIZE;
@@ -2730,8 +2726,6 @@ int mtxvector_omp_daypx(
 {
     const struct mtxvector_base * x = &xomp->base;
     struct mtxvector_base * y = &yomp->base;
-    int num_threads = xomp->num_threads < yomp->num_threads
-        ? xomp->num_threads : yomp->num_threads;
     if (y->field != x->field) return MTX_ERR_INCOMPATIBLE_FIELD;
     if (y->precision != x->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
     if (y->size != x->size) return MTX_ERR_INCOMPATIBLE_SIZE;
@@ -3321,7 +3315,6 @@ int mtxvector_omp_snrm2(
     int64_t * num_flops)
 {
     const struct mtxvector_base * x = &xomp->base;
-    int num_threads = xomp->num_threads;
     float c = 0;
     if (x->field == mtx_field_real) {
         if (x->precision == mtx_single) {
@@ -3434,7 +3427,6 @@ int mtxvector_omp_dnrm2(
     int64_t * num_flops)
 {
     const struct mtxvector_base * x = &xomp->base;
-    int num_threads = xomp->num_threads;
     double c = 0;
     if (x->field == mtx_field_real) {
         if (x->precision == mtx_single) {
@@ -3549,7 +3541,6 @@ int mtxvector_omp_sasum(
     int64_t * num_flops)
 {
     const struct mtxvector_base * x = &xomp->base;
-    int num_threads = xomp->num_threads;
     float c = 0;
     if (x->field == mtx_field_real) {
         if (x->precision == mtx_single) {
@@ -3664,7 +3655,6 @@ int mtxvector_omp_dasum(
     int64_t * num_flops)
 {
     const struct mtxvector_base * x = &xomp->base;
-    int num_threads = xomp->num_threads;
     double c = 0;
     if (x->field == mtx_field_real) {
         if (x->precision == mtx_single) {
@@ -3808,54 +3798,82 @@ int mtxvector_omp_ussdot(
     const struct mtxvector_omp * xomp = &xpacked->x.storage.omp;
     const struct mtxvector_base * x = &xomp->base;
     const struct mtxvector_base * y = &yomp->base;
-    int num_threads = xomp->num_threads < yomp->num_threads
-        ? xomp->num_threads : yomp->num_threads;
     if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
     if (x->precision != y->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
     if (xpacked->size != y->size) return MTX_ERR_INCOMPATIBLE_SIZE;
     if (xpacked->num_nonzeros != x->size) return MTX_ERR_INCOMPATIBLE_SIZE;
     const int64_t * idx = xpacked->idx;
+    float c = 0;
     if (x->field == mtx_field_real) {
         if (x->precision == mtx_single) {
             const float * xdata = x->data.real_single;
             const float * ydata = y->data.real_single;
-            float c = 0;
-            #pragma omp parallel for reduction(+:c)
-            for (int64_t k = 0; k < x->size; k++)
-                c += xdata[k]*ydata[idx[k]];
-            *dot = c;
+            if (xomp->offsets) {
+                #pragma omp parallel num_threads(xomp->num_threads) reduction(+:c)
+                {
+                    int t = omp_get_thread_num();
+                    for (int64_t k = xomp->offsets[t]; k < xomp->offsets[t+1]; k++)
+                        c += xdata[k]*ydata[idx[k]];
+                }
+            } else {
+                #pragma omp parallel for reduction(+:c)
+                for (int64_t k = 0; k < x->size; k++)
+                    c += xdata[k]*ydata[idx[k]];
+            }
             if (num_flops) *num_flops += 2*x->size;
         } else if (x->precision == mtx_double) {
             const double * xdata = x->data.real_double;
             const double * ydata = y->data.real_double;
-            float c = 0;
-            #pragma omp parallel for reduction(+:c)
-            for (int64_t k = 0; k < x->size; k++)
-                c += xdata[k]*ydata[idx[k]];
-            *dot = c;
+            if (xomp->offsets) {
+                #pragma omp parallel num_threads(xomp->num_threads) reduction(+:c)
+                {
+                    int t = omp_get_thread_num();
+                    for (int64_t k = xomp->offsets[t]; k < xomp->offsets[t+1]; k++)
+                        c += xdata[k]*ydata[idx[k]];
+                }
+            } else {
+                #pragma omp parallel for reduction(+:c)
+                for (int64_t k = 0; k < x->size; k++)
+                    c += xdata[k]*ydata[idx[k]];
+            }
             if (num_flops) *num_flops += 2*x->size;
         } else { return MTX_ERR_INVALID_PRECISION; }
     } else if (x->field == mtx_field_integer) {
         if (x->precision == mtx_single) {
             const int32_t * xdata = x->data.integer_single;
             const int32_t * ydata = y->data.integer_single;
-            float c = 0;
-            #pragma omp parallel for reduction(+:c)
-            for (int64_t k = 0; k < x->size; k++)
-                c += xdata[k]*ydata[idx[k]];
-            *dot = c;
+            if (xomp->offsets) {
+                #pragma omp parallel num_threads(xomp->num_threads) reduction(+:c)
+                {
+                    int t = omp_get_thread_num();
+                    for (int64_t k = xomp->offsets[t]; k < xomp->offsets[t+1]; k++)
+                        c += xdata[k]*ydata[idx[k]];
+                }
+            } else {
+                #pragma omp parallel for reduction(+:c)
+                for (int64_t k = 0; k < x->size; k++)
+                    c += xdata[k]*ydata[idx[k]];
+            }
             if (num_flops) *num_flops += 2*x->size;
         } else if (x->precision == mtx_double) {
             const int64_t * xdata = x->data.integer_double;
             const int64_t * ydata = y->data.integer_double;
-            float c = 0;
-            #pragma omp parallel for reduction(+:c)
-            for (int64_t k = 0; k < x->size; k++)
-                c += xdata[k]*ydata[idx[k]];
-            *dot = c;
+            if (xomp->offsets) {
+                #pragma omp parallel num_threads(xomp->num_threads) reduction(+:c)
+                {
+                    int t = omp_get_thread_num();
+                    for (int64_t k = xomp->offsets[t]; k < xomp->offsets[t+1]; k++)
+                        c += xdata[k]*ydata[idx[k]];
+                }
+            } else {
+                #pragma omp parallel for reduction(+:c)
+                for (int64_t k = 0; k < x->size; k++)
+                    c += xdata[k]*ydata[idx[k]];
+            }
             if (num_flops) *num_flops += 2*x->size;
         } else { return MTX_ERR_INVALID_PRECISION; }
     } else { return MTX_ERR_INVALID_FIELD; }
+    *dot = c;
     return MTX_SUCCESS;
 }
 
@@ -3878,54 +3896,82 @@ int mtxvector_omp_usddot(
     const struct mtxvector_omp * xomp = &xpacked->x.storage.omp;
     const struct mtxvector_base * x = &xomp->base;
     const struct mtxvector_base * y = &yomp->base;
-    int num_threads = xomp->num_threads < yomp->num_threads
-        ? xomp->num_threads : yomp->num_threads;
     if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
     if (x->precision != y->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
     if (xpacked->size != y->size) return MTX_ERR_INCOMPATIBLE_SIZE;
     if (xpacked->num_nonzeros != x->size) return MTX_ERR_INCOMPATIBLE_SIZE;
     const int64_t * idx = xpacked->idx;
+    double c = 0;
     if (x->field == mtx_field_real) {
         if (x->precision == mtx_single) {
             const float * xdata = x->data.real_single;
             const float * ydata = y->data.real_single;
-            double c = 0;
-            #pragma omp parallel for reduction(+:c)
-            for (int64_t k = 0; k < x->size; k++)
-                c += xdata[k]*ydata[idx[k]];
-            *dot = c;
+            if (xomp->offsets) {
+                #pragma omp parallel num_threads(xomp->num_threads) reduction(+:c)
+                {
+                    int t = omp_get_thread_num();
+                    for (int64_t k = xomp->offsets[t]; k < xomp->offsets[t+1]; k++)
+                        c += xdata[k]*ydata[idx[k]];
+                }
+            } else {
+                #pragma omp parallel for reduction(+:c)
+                for (int64_t k = 0; k < x->size; k++)
+                    c += xdata[k]*ydata[idx[k]];
+            }
             if (num_flops) *num_flops += 2*x->size;
         } else if (x->precision == mtx_double) {
             const double * xdata = x->data.real_double;
             const double * ydata = y->data.real_double;
-            double c = 0;
-            #pragma omp parallel for reduction(+:c)
-            for (int64_t k = 0; k < x->size; k++)
-                c += xdata[k]*ydata[idx[k]];
-            *dot = c;
+            if (xomp->offsets) {
+                #pragma omp parallel num_threads(xomp->num_threads) reduction(+:c)
+                {
+                    int t = omp_get_thread_num();
+                    for (int64_t k = xomp->offsets[t]; k < xomp->offsets[t+1]; k++)
+                        c += xdata[k]*ydata[idx[k]];
+                }
+            } else {
+                #pragma omp parallel for reduction(+:c)
+                for (int64_t k = 0; k < x->size; k++)
+                    c += xdata[k]*ydata[idx[k]];
+            }
             if (num_flops) *num_flops += 2*x->size;
         } else { return MTX_ERR_INVALID_PRECISION; }
     } else if (x->field == mtx_field_integer) {
         if (x->precision == mtx_single) {
             const int32_t * xdata = x->data.integer_single;
             const int32_t * ydata = y->data.integer_single;
-            double c = 0;
-            #pragma omp parallel for reduction(+:c)
-            for (int64_t k = 0; k < x->size; k++)
-                c += xdata[k]*ydata[idx[k]];
-            *dot = c;
+            if (xomp->offsets) {
+                #pragma omp parallel num_threads(xomp->num_threads) reduction(+:c)
+                {
+                    int t = omp_get_thread_num();
+                    for (int64_t k = xomp->offsets[t]; k < xomp->offsets[t+1]; k++)
+                        c += xdata[k]*ydata[idx[k]];
+                }
+            } else {
+                #pragma omp parallel for reduction(+:c)
+                for (int64_t k = 0; k < x->size; k++)
+                    c += xdata[k]*ydata[idx[k]];
+            }
             if (num_flops) *num_flops += 2*x->size;
         } else if (x->precision == mtx_double) {
             const int64_t * xdata = x->data.integer_double;
             const int64_t * ydata = y->data.integer_double;
-            double c = 0;
-            #pragma omp parallel for reduction(+:c)
-            for (int64_t k = 0; k < x->size; k++)
-                c += xdata[k]*ydata[idx[k]];
-            *dot = c;
+            if (xomp->offsets) {
+                #pragma omp parallel num_threads(xomp->num_threads) reduction(+:c)
+                {
+                    int t = omp_get_thread_num();
+                    for (int64_t k = xomp->offsets[t]; k < xomp->offsets[t+1]; k++)
+                        c += xdata[k]*ydata[idx[k]];
+                }
+            } else {
+                #pragma omp parallel for reduction(+:c)
+                for (int64_t k = 0; k < x->size; k++)
+                    c += xdata[k]*ydata[idx[k]];
+            }
             if (num_flops) *num_flops += 2*x->size;
         } else { return MTX_ERR_INVALID_PRECISION; }
     } else { return MTX_ERR_INVALID_FIELD; }
+    *dot = c;
     return MTX_SUCCESS;
 }
 
@@ -3949,37 +3995,55 @@ int mtxvector_omp_uscdotu(
     const struct mtxvector_omp * xomp = &xpacked->x.storage.omp;
     const struct mtxvector_base * x = &xomp->base;
     const struct mtxvector_base * y = &yomp->base;
-    int num_threads = xomp->num_threads < yomp->num_threads
-        ? xomp->num_threads : yomp->num_threads;
     if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
     if (x->precision != y->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
     if (xpacked->size != y->size) return MTX_ERR_INCOMPATIBLE_SIZE;
     if (xpacked->num_nonzeros != x->size) return MTX_ERR_INCOMPATIBLE_SIZE;
     const int64_t * idx = xpacked->idx;
+    float c0 = 0, c1 = 0;
     if (x->field == mtx_field_complex) {
         if (x->precision == mtx_single) {
             const float (* xdata)[2] = x->data.complex_single;
             const float (* ydata)[2] = y->data.complex_single;
-            float c0 = 0, c1 = 0;
-            #pragma omp parallel for reduction(+:c0,c1)
-            for (int64_t k = 0; k < x->size; k++) {
-                c0 += xdata[k][0]*ydata[idx[k]][0] - xdata[k][1]*ydata[idx[k]][1];
-                c1 += xdata[k][0]*ydata[idx[k]][1] + xdata[k][1]*ydata[idx[k]][0];
+            if (xomp->offsets) {
+                #pragma omp parallel num_threads(xomp->num_threads) reduction(+:c0,c1)
+                {
+                    int t = omp_get_thread_num();
+                    for (int64_t k = xomp->offsets[t]; k < xomp->offsets[t+1]; k++) {
+                        c0 += xdata[k][0]*ydata[idx[k]][0] - xdata[k][1]*ydata[idx[k]][1];
+                        c1 += xdata[k][0]*ydata[idx[k]][1] + xdata[k][1]*ydata[idx[k]][0];
+                    }
+                }
+            } else {
+                #pragma omp parallel for reduction(+:c0,c1)
+                for (int64_t k = 0; k < x->size; k++) {
+                    c0 += xdata[k][0]*ydata[idx[k]][0] - xdata[k][1]*ydata[idx[k]][1];
+                    c1 += xdata[k][0]*ydata[idx[k]][1] + xdata[k][1]*ydata[idx[k]][0];
+                }
             }
-            (*dot)[0] = c0; (*dot)[1] = c1;
             if (num_flops) *num_flops += 8*x->size;
         } else if (x->precision == mtx_double) {
             const double (* xdata)[2] = x->data.complex_double;
             const double (* ydata)[2] = y->data.complex_double;
-            float c0 = 0, c1 = 0;
-            #pragma omp parallel for reduction(+:c0,c1)
-            for (int64_t k = 0; k < x->size; k++) {
-                c0 += xdata[k][0]*ydata[idx[k]][0] - xdata[k][1]*ydata[idx[k]][1];
-                c1 += xdata[k][0]*ydata[idx[k]][1] + xdata[k][1]*ydata[idx[k]][0];
+            if (xomp->offsets) {
+                #pragma omp parallel num_threads(xomp->num_threads) reduction(+:c0,c1)
+                {
+                    int t = omp_get_thread_num();
+                    for (int64_t k = xomp->offsets[t]; k < xomp->offsets[t+1]; k++) {
+                        c0 += xdata[k][0]*ydata[idx[k]][0] - xdata[k][1]*ydata[idx[k]][1];
+                        c1 += xdata[k][0]*ydata[idx[k]][1] + xdata[k][1]*ydata[idx[k]][0];
+                    }
+                }
+            } else {
+                #pragma omp parallel for reduction(+:c0,c1)
+                for (int64_t k = 0; k < x->size; k++) {
+                    c0 += xdata[k][0]*ydata[idx[k]][0] - xdata[k][1]*ydata[idx[k]][1];
+                    c1 += xdata[k][0]*ydata[idx[k]][1] + xdata[k][1]*ydata[idx[k]][0];
+                }
             }
-            (*dot)[0] = c0; (*dot)[1] = c1;
             if (num_flops) *num_flops += 8*x->size;
         } else { return MTX_ERR_INVALID_PRECISION; }
+        (*dot)[0] = c0; (*dot)[1] = c1;
     } else {
         (*dot)[1] = 0;
         return mtxvector_omp_ussdot(xpacked, yomp, &(*dot)[0], num_flops);
@@ -4007,37 +4071,55 @@ int mtxvector_omp_uszdotu(
     const struct mtxvector_omp * xomp = &xpacked->x.storage.omp;
     const struct mtxvector_base * x = &xomp->base;
     const struct mtxvector_base * y = &yomp->base;
-    int num_threads = xomp->num_threads < yomp->num_threads
-        ? xomp->num_threads : yomp->num_threads;
     if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
     if (x->precision != y->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
     if (xpacked->size != y->size) return MTX_ERR_INCOMPATIBLE_SIZE;
     if (xpacked->num_nonzeros != x->size) return MTX_ERR_INCOMPATIBLE_SIZE;
     const int64_t * idx = xpacked->idx;
+    double c0 = 0, c1 = 0;
     if (x->field == mtx_field_complex) {
         if (x->precision == mtx_single) {
             const float (* xdata)[2] = x->data.complex_single;
             const float (* ydata)[2] = y->data.complex_single;
-            double c0 = 0, c1 = 0;
-            #pragma omp parallel for reduction(+:c0,c1)
-            for (int64_t k = 0; k < x->size; k++) {
-                c0 += xdata[k][0]*ydata[idx[k]][0] - xdata[k][1]*ydata[idx[k]][1];
-                c1 += xdata[k][0]*ydata[idx[k]][1] + xdata[k][1]*ydata[idx[k]][0];
+            if (xomp->offsets) {
+                #pragma omp parallel num_threads(xomp->num_threads) reduction(+:c0,c1)
+                {
+                    int t = omp_get_thread_num();
+                    for (int64_t k = xomp->offsets[t]; k < xomp->offsets[t+1]; k++) {
+                        c0 += xdata[k][0]*ydata[idx[k]][0] - xdata[k][1]*ydata[idx[k]][1];
+                        c1 += xdata[k][0]*ydata[idx[k]][1] + xdata[k][1]*ydata[idx[k]][0];
+                    }
+                }
+            } else {
+                #pragma omp parallel for reduction(+:c0,c1)
+                for (int64_t k = 0; k < x->size; k++) {
+                    c0 += xdata[k][0]*ydata[idx[k]][0] - xdata[k][1]*ydata[idx[k]][1];
+                    c1 += xdata[k][0]*ydata[idx[k]][1] + xdata[k][1]*ydata[idx[k]][0];
+                }
             }
-            (*dot)[0] = c0; (*dot)[1] = c1;
             if (num_flops) *num_flops += 8*x->size;
         } else if (x->precision == mtx_double) {
             const double (* xdata)[2] = x->data.complex_double;
             const double (* ydata)[2] = y->data.complex_double;
-            double c0 = 0, c1 = 0;
-            #pragma omp parallel for reduction(+:c0,c1)
-            for (int64_t k = 0; k < x->size; k++) {
-                c0 += xdata[k][0]*ydata[idx[k]][0] - xdata[k][1]*ydata[idx[k]][1];
-                c1 += xdata[k][0]*ydata[idx[k]][1] + xdata[k][1]*ydata[idx[k]][0];
+            if (xomp->offsets) {
+                #pragma omp parallel num_threads(xomp->num_threads) reduction(+:c0,c1)
+                {
+                    int t = omp_get_thread_num();
+                    for (int64_t k = xomp->offsets[t]; k < xomp->offsets[t+1]; k++) {
+                        c0 += xdata[k][0]*ydata[idx[k]][0] - xdata[k][1]*ydata[idx[k]][1];
+                        c1 += xdata[k][0]*ydata[idx[k]][1] + xdata[k][1]*ydata[idx[k]][0];
+                    }
+                }
+            } else {
+                #pragma omp parallel for reduction(+:c0,c1)
+                for (int64_t k = 0; k < x->size; k++) {
+                    c0 += xdata[k][0]*ydata[idx[k]][0] - xdata[k][1]*ydata[idx[k]][1];
+                    c1 += xdata[k][0]*ydata[idx[k]][1] + xdata[k][1]*ydata[idx[k]][0];
+                }
             }
-            (*dot)[0] = c0; (*dot)[1] = c1;
             if (num_flops) *num_flops += 8*x->size;
         } else { return MTX_ERR_INVALID_PRECISION; }
+        (*dot)[0] = c0; (*dot)[1] = c1;
     } else {
         (*dot)[1] = 0;
         return mtxvector_omp_usddot(xpacked, yomp, &(*dot)[0], num_flops);
@@ -4064,37 +4146,55 @@ int mtxvector_omp_uscdotc(
     const struct mtxvector_omp * xomp = &xpacked->x.storage.omp;
     const struct mtxvector_base * x = &xomp->base;
     const struct mtxvector_base * y = &yomp->base;
-    int num_threads = xomp->num_threads < yomp->num_threads
-        ? xomp->num_threads : yomp->num_threads;
     if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
     if (x->precision != y->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
     if (xpacked->size != y->size) return MTX_ERR_INCOMPATIBLE_SIZE;
     if (xpacked->num_nonzeros != x->size) return MTX_ERR_INCOMPATIBLE_SIZE;
     const int64_t * idx = xpacked->idx;
+    float c0 = 0, c1 = 0;
     if (x->field == mtx_field_complex) {
         if (x->precision == mtx_single) {
             const float (* xdata)[2] = x->data.complex_single;
             const float (* ydata)[2] = y->data.complex_single;
-            float c0 = 0, c1 = 0;
-            #pragma omp parallel for reduction(+:c0,c1)
-            for (int64_t k = 0; k < x->size; k++) {
-                c0 += xdata[k][0]*ydata[idx[k]][0] + xdata[k][1]*ydata[idx[k]][1];
-                c1 += xdata[k][0]*ydata[idx[k]][1] - xdata[k][1]*ydata[idx[k]][0];
+            if (xomp->offsets) {
+                #pragma omp parallel num_threads(xomp->num_threads) reduction(+:c0,c1)
+                {
+                    int t = omp_get_thread_num();
+                    for (int64_t k = xomp->offsets[t]; k < xomp->offsets[t+1]; k++) {
+                        c0 += xdata[k][0]*ydata[idx[k]][0] + xdata[k][1]*ydata[idx[k]][1];
+                        c1 += xdata[k][0]*ydata[idx[k]][1] - xdata[k][1]*ydata[idx[k]][0];
+                    }
+                }
+            } else {
+                #pragma omp parallel for reduction(+:c0,c1)
+                for (int64_t k = 0; k < x->size; k++) {
+                    c0 += xdata[k][0]*ydata[idx[k]][0] + xdata[k][1]*ydata[idx[k]][1];
+                    c1 += xdata[k][0]*ydata[idx[k]][1] - xdata[k][1]*ydata[idx[k]][0];
+                }
             }
-            (*dot)[0] = c0; (*dot)[1] = c1;
             if (num_flops) *num_flops += 8*x->size;
         } else if (x->precision == mtx_double) {
             const double (* xdata)[2] = x->data.complex_double;
             const double (* ydata)[2] = y->data.complex_double;
-            float c0 = 0, c1 = 0;
-            #pragma omp parallel for reduction(+:c0,c1)
-            for (int64_t k = 0; k < x->size; k++) {
-                c0 += xdata[k][0]*ydata[idx[k]][0] + xdata[k][1]*ydata[idx[k]][1];
-                c1 += xdata[k][0]*ydata[idx[k]][1] - xdata[k][1]*ydata[idx[k]][0];
+            if (xomp->offsets) {
+                #pragma omp parallel num_threads(xomp->num_threads) reduction(+:c0,c1)
+                {
+                    int t = omp_get_thread_num();
+                    for (int64_t k = xomp->offsets[t]; k < xomp->offsets[t+1]; k++) {
+                        c0 += xdata[k][0]*ydata[idx[k]][0] + xdata[k][1]*ydata[idx[k]][1];
+                        c1 += xdata[k][0]*ydata[idx[k]][1] - xdata[k][1]*ydata[idx[k]][0];
+                    }
+                }
+            } else {
+                #pragma omp parallel for reduction(+:c0,c1)
+                for (int64_t k = 0; k < x->size; k++) {
+                    c0 += xdata[k][0]*ydata[idx[k]][0] + xdata[k][1]*ydata[idx[k]][1];
+                    c1 += xdata[k][0]*ydata[idx[k]][1] - xdata[k][1]*ydata[idx[k]][0];
+                }
             }
-            (*dot)[0] = c0; (*dot)[1] = c1;
             if (num_flops) *num_flops += 8*x->size;
         } else { return MTX_ERR_INVALID_PRECISION; }
+        (*dot)[0] = c0; (*dot)[1] = c1;
     } else {
         (*dot)[1] = 0;
         return mtxvector_omp_ussdot(xpacked, yomp, &(*dot)[0], num_flops);
@@ -4121,37 +4221,55 @@ int mtxvector_omp_uszdotc(
     const struct mtxvector_omp * xomp = &xpacked->x.storage.omp;
     const struct mtxvector_base * x = &xomp->base;
     const struct mtxvector_base * y = &yomp->base;
-    int num_threads = xomp->num_threads < yomp->num_threads
-        ? xomp->num_threads : yomp->num_threads;
     if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
     if (x->precision != y->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
     if (xpacked->size != y->size) return MTX_ERR_INCOMPATIBLE_SIZE;
     if (xpacked->num_nonzeros != x->size) return MTX_ERR_INCOMPATIBLE_SIZE;
     const int64_t * idx = xpacked->idx;
+    double c0 = 0, c1 = 0;
     if (x->field == mtx_field_complex) {
         if (x->precision == mtx_single) {
             const float (* xdata)[2] = x->data.complex_single;
             const float (* ydata)[2] = y->data.complex_single;
-            double c0 = 0, c1 = 0;
-            #pragma omp parallel for reduction(+:c0,c1)
-            for (int64_t k = 0; k < x->size; k++) {
-                c0 += xdata[k][0]*ydata[idx[k]][0] + xdata[k][1]*ydata[idx[k]][1];
-                c1 += xdata[k][0]*ydata[idx[k]][1] - xdata[k][1]*ydata[idx[k]][0];
+            if (xomp->offsets) {
+                #pragma omp parallel num_threads(xomp->num_threads) reduction(+:c0,c1)
+                {
+                    int t = omp_get_thread_num();
+                    for (int64_t k = xomp->offsets[t]; k < xomp->offsets[t+1]; k++) {
+                        c0 += xdata[k][0]*ydata[idx[k]][0] + xdata[k][1]*ydata[idx[k]][1];
+                        c1 += xdata[k][0]*ydata[idx[k]][1] - xdata[k][1]*ydata[idx[k]][0];
+                    }
+                }
+            } else {
+                #pragma omp parallel for reduction(+:c0,c1)
+                for (int64_t k = 0; k < x->size; k++) {
+                    c0 += xdata[k][0]*ydata[idx[k]][0] + xdata[k][1]*ydata[idx[k]][1];
+                    c1 += xdata[k][0]*ydata[idx[k]][1] - xdata[k][1]*ydata[idx[k]][0];
+                }
             }
-            (*dot)[0] = c0; (*dot)[1] = c1;
             if (num_flops) *num_flops += 8*x->size;
         } else if (x->precision == mtx_double) {
             const double (* xdata)[2] = x->data.complex_double;
             const double (* ydata)[2] = y->data.complex_double;
-            double c0 = 0, c1 = 0;
-            #pragma omp parallel for reduction(+:c0,c1)
-            for (int64_t k = 0; k < x->size; k++) {
-                c0 += xdata[k][0]*ydata[idx[k]][0] + xdata[k][1]*ydata[idx[k]][1];
-                c1 += xdata[k][0]*ydata[idx[k]][1] - xdata[k][1]*ydata[idx[k]][0];
+            if (xomp->offsets) {
+                #pragma omp parallel num_threads(xomp->num_threads) reduction(+:c0,c1)
+                {
+                    int t = omp_get_thread_num();
+                    for (int64_t k = xomp->offsets[t]; k < xomp->offsets[t+1]; k++) {
+                        c0 += xdata[k][0]*ydata[idx[k]][0] + xdata[k][1]*ydata[idx[k]][1];
+                        c1 += xdata[k][0]*ydata[idx[k]][1] - xdata[k][1]*ydata[idx[k]][0];
+                    }
+                }
+            } else {
+                #pragma omp parallel for reduction(+:c0,c1)
+                for (int64_t k = 0; k < x->size; k++) {
+                    c0 += xdata[k][0]*ydata[idx[k]][0] + xdata[k][1]*ydata[idx[k]][1];
+                    c1 += xdata[k][0]*ydata[idx[k]][1] - xdata[k][1]*ydata[idx[k]][0];
+                }
             }
-            (*dot)[0] = c0; (*dot)[1] = c1;
             if (num_flops) *num_flops += 8*x->size;
         } else { return MTX_ERR_INVALID_PRECISION; }
+        (*dot)[0] = c0; (*dot)[1] = c1;
     } else {
         (*dot)[1] = 0;
         return mtxvector_omp_usddot(xpacked, yomp, &(*dot)[0], num_flops);
@@ -4178,8 +4296,6 @@ int mtxvector_omp_ussaxpy(
     const struct mtxvector_omp * xomp = &xpacked->x.storage.omp;
     const struct mtxvector_base * x = &xomp->base;
     struct mtxvector_base * y = &yomp->base;
-    int num_threads = xomp->num_threads < yomp->num_threads
-        ? xomp->num_threads : yomp->num_threads;
     if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
     if (x->precision != y->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
     if (xpacked->size != y->size) return MTX_ERR_INCOMPATIBLE_SIZE;
@@ -4189,35 +4305,75 @@ int mtxvector_omp_ussaxpy(
         if (x->precision == mtx_single) {
             const float * xdata = x->data.real_single;
             float * ydata = y->data.real_single;
-            #pragma omp parallel for
-            for (int64_t k = 0; k < x->size; k++)
-                ydata[idx[k]] += alpha*xdata[k];
+            if (xomp->offsets) {
+                #pragma omp parallel num_threads(xomp->num_threads)
+                {
+                    int t = omp_get_thread_num();
+                    for (int64_t k = xomp->offsets[t]; k < xomp->offsets[t+1]; k++)
+                        ydata[idx[k]] += alpha*xdata[k];
+                }
+            } else {
+                #pragma omp parallel for
+                for (int64_t k = 0; k < x->size; k++)
+                    ydata[idx[k]] += alpha*xdata[k];
+            }
             if (num_flops) *num_flops += 2*x->size;
         } else if (x->precision == mtx_double) {
             const double * xdata = x->data.real_double;
             double * ydata = y->data.real_double;
-            #pragma omp parallel for
-            for (int64_t k = 0; k < x->size; k++)
-                ydata[idx[k]] += alpha*xdata[k];
+            if (xomp->offsets) {
+                #pragma omp parallel num_threads(xomp->num_threads)
+                {
+                    int t = omp_get_thread_num();
+                    for (int64_t k = xomp->offsets[t]; k < xomp->offsets[t+1]; k++)
+                        ydata[idx[k]] += alpha*xdata[k];
+                }
+            } else {
+                #pragma omp parallel for
+                for (int64_t k = 0; k < x->size; k++)
+                    ydata[idx[k]] += alpha*xdata[k];
+            }
             if (num_flops) *num_flops += 2*x->size;
         } else { return MTX_ERR_INVALID_PRECISION; }
     } else if (x->field == mtx_field_complex) {
         if (x->precision == mtx_single) {
             const float (* xdata)[2] = x->data.complex_single;
             float (* ydata)[2] = y->data.complex_single;
-            #pragma omp parallel for
-            for (int64_t k = 0; k < x->size; k++) {
-                ydata[idx[k]][0] += alpha*xdata[k][0];
-                ydata[idx[k]][1] += alpha*xdata[k][1];
+            if (xomp->offsets) {
+                #pragma omp parallel num_threads(xomp->num_threads)
+                {
+                    int t = omp_get_thread_num();
+                    for (int64_t k = xomp->offsets[t]; k < xomp->offsets[t+1]; k++) {
+                        ydata[idx[k]][0] += alpha*xdata[k][0];
+                        ydata[idx[k]][1] += alpha*xdata[k][1];
+                    }
+                }
+            } else {
+                #pragma omp parallel for
+                for (int64_t k = 0; k < x->size; k++) {
+                    ydata[idx[k]][0] += alpha*xdata[k][0];
+                    ydata[idx[k]][1] += alpha*xdata[k][1];
+                }
             }
             if (num_flops) *num_flops += 4*x->size;
         } else if (x->precision == mtx_double) {
             const double (* xdata)[2] = x->data.complex_double;
             double (* ydata)[2] = y->data.complex_double;
-            #pragma omp parallel for
-            for (int64_t k = 0; k < x->size; k++) {
-                ydata[idx[k]][0] += alpha*xdata[k][0];
-                ydata[idx[k]][1] += alpha*xdata[k][1];
+            if (xomp->offsets) {
+                #pragma omp parallel num_threads(xomp->num_threads)
+                {
+                    int t = omp_get_thread_num();
+                    for (int64_t k = xomp->offsets[t]; k < xomp->offsets[t+1]; k++) {
+                        ydata[idx[k]][0] += alpha*xdata[k][0];
+                        ydata[idx[k]][1] += alpha*xdata[k][1];
+                    }
+                }
+            } else {
+                #pragma omp parallel for
+                for (int64_t k = 0; k < x->size; k++) {
+                    ydata[idx[k]][0] += alpha*xdata[k][0];
+                    ydata[idx[k]][1] += alpha*xdata[k][1];
+                }
             }
             if (num_flops) *num_flops += 4*x->size;
         } else { return MTX_ERR_INVALID_PRECISION; }
@@ -4225,16 +4381,34 @@ int mtxvector_omp_ussaxpy(
         if (x->precision == mtx_single) {
             const int32_t * xdata = x->data.integer_single;
             int32_t * ydata = y->data.integer_single;
-            #pragma omp parallel for
-            for (int64_t k = 0; k < x->size; k++)
-                ydata[idx[k]] += alpha*xdata[k];
+            if (xomp->offsets) {
+                #pragma omp parallel num_threads(xomp->num_threads)
+                {
+                    int t = omp_get_thread_num();
+                    for (int64_t k = xomp->offsets[t]; k < xomp->offsets[t+1]; k++)
+                        ydata[idx[k]] += alpha*xdata[k];
+                }
+            } else {
+                #pragma omp parallel for
+                for (int64_t k = 0; k < x->size; k++)
+                    ydata[idx[k]] += alpha*xdata[k];
+            }
             if (num_flops) *num_flops += 2*x->size;
         } else if (x->precision == mtx_double) {
             const int64_t * xdata = x->data.integer_double;
             int64_t * ydata = y->data.integer_double;
-            #pragma omp parallel for
-            for (int64_t k = 0; k < x->size; k++)
-                ydata[idx[k]] += alpha*xdata[k];
+            if (xomp->offsets) {
+                #pragma omp parallel num_threads(xomp->num_threads)
+                {
+                    int t = omp_get_thread_num();
+                    for (int64_t k = xomp->offsets[t]; k < xomp->offsets[t+1]; k++)
+                        ydata[idx[k]] += alpha*xdata[k];
+                }
+            } else {
+                #pragma omp parallel for
+                for (int64_t k = 0; k < x->size; k++)
+                    ydata[idx[k]] += alpha*xdata[k];
+            }
             if (num_flops) *num_flops += 2*x->size;
         } else { return MTX_ERR_INVALID_PRECISION; }
     } else { return MTX_ERR_INVALID_FIELD; }
@@ -4260,8 +4434,6 @@ int mtxvector_omp_usdaxpy(
     const struct mtxvector_omp * xomp = &xpacked->x.storage.omp;
     const struct mtxvector_base * x = &xomp->base;
     struct mtxvector_base * y = &yomp->base;
-    int num_threads = xomp->num_threads < yomp->num_threads
-        ? xomp->num_threads : yomp->num_threads;
     if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
     if (x->precision != y->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
     if (xpacked->size != y->size) return MTX_ERR_INCOMPATIBLE_SIZE;
@@ -4271,35 +4443,75 @@ int mtxvector_omp_usdaxpy(
         if (x->precision == mtx_single) {
             const float * xdata = x->data.real_single;
             float * ydata = y->data.real_single;
-            #pragma omp parallel for
-            for (int64_t k = 0; k < x->size; k++)
-                ydata[idx[k]] += alpha*xdata[k];
+            if (xomp->offsets) {
+                #pragma omp parallel num_threads(xomp->num_threads)
+                {
+                    int t = omp_get_thread_num();
+                    for (int64_t k = xomp->offsets[t]; k < xomp->offsets[t+1]; k++)
+                        ydata[idx[k]] += alpha*xdata[k];
+                }
+            } else {
+                #pragma omp parallel for
+                for (int64_t k = 0; k < x->size; k++)
+                    ydata[idx[k]] += alpha*xdata[k];
+            }
             if (num_flops) *num_flops += 2*x->size;
         } else if (x->precision == mtx_double) {
             const double * xdata = x->data.real_double;
             double * ydata = y->data.real_double;
-            #pragma omp parallel for
-            for (int64_t k = 0; k < x->size; k++)
-                ydata[idx[k]] += alpha*xdata[k];
+            if (xomp->offsets) {
+                #pragma omp parallel num_threads(xomp->num_threads)
+                {
+                    int t = omp_get_thread_num();
+                    for (int64_t k = xomp->offsets[t]; k < xomp->offsets[t+1]; k++)
+                        ydata[idx[k]] += alpha*xdata[k];
+                }
+            } else {
+                #pragma omp parallel for
+                for (int64_t k = 0; k < x->size; k++)
+                    ydata[idx[k]] += alpha*xdata[k];
+            }
             if (num_flops) *num_flops += 2*x->size;
         } else { return MTX_ERR_INVALID_PRECISION; }
     } else if (x->field == mtx_field_complex) {
         if (x->precision == mtx_single) {
             const float (* xdata)[2] = x->data.complex_single;
             float (* ydata)[2] = y->data.complex_single;
-            #pragma omp parallel for
-            for (int64_t k = 0; k < x->size; k++) {
-                ydata[idx[k]][0] += alpha*xdata[k][0];
-                ydata[idx[k]][1] += alpha*xdata[k][1];
+            if (xomp->offsets) {
+                #pragma omp parallel num_threads(xomp->num_threads)
+                {
+                    int t = omp_get_thread_num();
+                    for (int64_t k = xomp->offsets[t]; k < xomp->offsets[t+1]; k++) {
+                        ydata[idx[k]][0] += alpha*xdata[k][0];
+                        ydata[idx[k]][1] += alpha*xdata[k][1];
+                    }
+                }
+            } else {
+                #pragma omp parallel for
+                for (int64_t k = 0; k < x->size; k++) {
+                    ydata[idx[k]][0] += alpha*xdata[k][0];
+                    ydata[idx[k]][1] += alpha*xdata[k][1];
+                }
             }
             if (num_flops) *num_flops += 4*x->size;
         } else if (x->precision == mtx_double) {
             const double (* xdata)[2] = x->data.complex_double;
             double (* ydata)[2] = y->data.complex_double;
-            #pragma omp parallel for
-            for (int64_t k = 0; k < x->size; k++) {
-                ydata[idx[k]][0] += alpha*xdata[k][0];
-                ydata[idx[k]][1] += alpha*xdata[k][1];
+            if (xomp->offsets) {
+                #pragma omp parallel num_threads(xomp->num_threads)
+                {
+                    int t = omp_get_thread_num();
+                    for (int64_t k = xomp->offsets[t]; k < xomp->offsets[t+1]; k++) {
+                        ydata[idx[k]][0] += alpha*xdata[k][0];
+                        ydata[idx[k]][1] += alpha*xdata[k][1];
+                    }
+                }
+            } else {
+                #pragma omp parallel for
+                for (int64_t k = 0; k < x->size; k++) {
+                    ydata[idx[k]][0] += alpha*xdata[k][0];
+                    ydata[idx[k]][1] += alpha*xdata[k][1];
+                }
             }
             if (num_flops) *num_flops += 4*x->size;
         } else { return MTX_ERR_INVALID_PRECISION; }
@@ -4307,16 +4519,34 @@ int mtxvector_omp_usdaxpy(
         if (x->precision == mtx_single) {
             const int32_t * xdata = x->data.integer_single;
             int32_t * ydata = y->data.integer_single;
-            #pragma omp parallel for
-            for (int64_t k = 0; k < x->size; k++)
-                ydata[idx[k]] += alpha*xdata[k];
+            if (xomp->offsets) {
+                #pragma omp parallel num_threads(xomp->num_threads)
+                {
+                    int t = omp_get_thread_num();
+                    for (int64_t k = xomp->offsets[t]; k < xomp->offsets[t+1]; k++)
+                        ydata[idx[k]] += alpha*xdata[k];
+                }
+            } else {
+                #pragma omp parallel for
+                for (int64_t k = 0; k < x->size; k++)
+                    ydata[idx[k]] += alpha*xdata[k];
+            }
             if (num_flops) *num_flops += 2*x->size;
         } else if (x->precision == mtx_double) {
             const int64_t * xdata = x->data.integer_double;
             int64_t * ydata = y->data.integer_double;
-            #pragma omp parallel for
-            for (int64_t k = 0; k < x->size; k++)
-                ydata[idx[k]] += alpha*xdata[k];
+            if (xomp->offsets) {
+                #pragma omp parallel num_threads(xomp->num_threads)
+                {
+                    int t = omp_get_thread_num();
+                    for (int64_t k = xomp->offsets[t]; k < xomp->offsets[t+1]; k++)
+                        ydata[idx[k]] += alpha*xdata[k];
+                }
+            } else {
+                #pragma omp parallel for
+                for (int64_t k = 0; k < x->size; k++)
+                    ydata[idx[k]] += alpha*xdata[k];
+            }
             if (num_flops) *num_flops += 2*x->size;
         } else { return MTX_ERR_INVALID_PRECISION; }
     } else { return MTX_ERR_INVALID_FIELD; }
@@ -4342,8 +4572,6 @@ int mtxvector_omp_uscaxpy(
     const struct mtxvector_omp * xomp = &xpacked->x.storage.omp;
     const struct mtxvector_base * x = &xomp->base;
     struct mtxvector_base * y = &yomp->base;
-    int num_threads = xomp->num_threads < yomp->num_threads
-        ? xomp->num_threads : yomp->num_threads;
     if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
     if (x->precision != y->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
     if (xpacked->size != y->size) return MTX_ERR_INCOMPATIBLE_SIZE;
@@ -4353,19 +4581,41 @@ int mtxvector_omp_uscaxpy(
         if (x->precision == mtx_single) {
             const float (* xdata)[2] = x->data.complex_single;
             float (* ydata)[2] = y->data.complex_single;
-            #pragma omp parallel for
-            for (int64_t k = 0; k < x->size; k++) {
-                ydata[idx[k]][0] += alpha[0]*xdata[k][0] - alpha[1]*xdata[k][1];
-                ydata[idx[k]][1] += alpha[0]*xdata[k][1] + alpha[1]*xdata[k][0];
+            if (xomp->offsets) {
+                #pragma omp parallel num_threads(xomp->num_threads)
+                {
+                    int t = omp_get_thread_num();
+                    for (int64_t k = xomp->offsets[t]; k < xomp->offsets[t+1]; k++) {
+                        ydata[idx[k]][0] += alpha[0]*xdata[k][0] - alpha[1]*xdata[k][1];
+                        ydata[idx[k]][1] += alpha[0]*xdata[k][1] + alpha[1]*xdata[k][0];
+                    }
+                }
+            } else {
+                #pragma omp parallel for
+                for (int64_t k = 0; k < x->size; k++) {
+                    ydata[idx[k]][0] += alpha[0]*xdata[k][0] - alpha[1]*xdata[k][1];
+                    ydata[idx[k]][1] += alpha[0]*xdata[k][1] + alpha[1]*xdata[k][0];
+                }
             }
             if (num_flops) *num_flops += 8*x->size;
         } else if (x->precision == mtx_double) {
             const double (* xdata)[2] = x->data.complex_double;
             double (* ydata)[2] = y->data.complex_double;
-            #pragma omp parallel for
-            for (int64_t k = 0; k < x->size; k++) {
-                ydata[idx[k]][0] += alpha[0]*xdata[k][0] - alpha[1]*xdata[k][1];
-                ydata[idx[k]][1] += alpha[0]*xdata[k][1] + alpha[1]*xdata[k][0];
+            if (xomp->offsets) {
+                #pragma omp parallel num_threads(xomp->num_threads)
+                {
+                    int t = omp_get_thread_num();
+                    for (int64_t k = xomp->offsets[t]; k < xomp->offsets[t+1]; k++) {
+                        ydata[idx[k]][0] += alpha[0]*xdata[k][0] - alpha[1]*xdata[k][1];
+                        ydata[idx[k]][1] += alpha[0]*xdata[k][1] + alpha[1]*xdata[k][0];
+                    }
+                }
+            } else {
+                #pragma omp parallel for
+                for (int64_t k = 0; k < x->size; k++) {
+                    ydata[idx[k]][0] += alpha[0]*xdata[k][0] - alpha[1]*xdata[k][1];
+                    ydata[idx[k]][1] += alpha[0]*xdata[k][1] + alpha[1]*xdata[k][0];
+                }
             }
             if (num_flops) *num_flops += 8*x->size;
         } else { return MTX_ERR_INVALID_PRECISION; }
@@ -4392,8 +4642,6 @@ int mtxvector_omp_uszaxpy(
     const struct mtxvector_omp * xomp = &xpacked->x.storage.omp;
     const struct mtxvector_base * x = &xomp->base;
     struct mtxvector_base * y = &yomp->base;
-    int num_threads = xomp->num_threads < yomp->num_threads
-        ? xomp->num_threads : yomp->num_threads;
     if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
     if (x->precision != y->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
     if (xpacked->size != y->size) return MTX_ERR_INCOMPATIBLE_SIZE;
@@ -4403,19 +4651,41 @@ int mtxvector_omp_uszaxpy(
         if (x->precision == mtx_single) {
             const float (* xdata)[2] = x->data.complex_single;
             float (* ydata)[2] = y->data.complex_single;
-            #pragma omp parallel for
-            for (int64_t k = 0; k < x->size; k++) {
-                ydata[idx[k]][0] += alpha[0]*xdata[k][0] - alpha[1]*xdata[k][1];
-                ydata[idx[k]][1] += alpha[0]*xdata[k][1] + alpha[1]*xdata[k][0];
+            if (xomp->offsets) {
+                #pragma omp parallel num_threads(xomp->num_threads)
+                {
+                    int t = omp_get_thread_num();
+                    for (int64_t k = xomp->offsets[t]; k < xomp->offsets[t+1]; k++) {
+                        ydata[idx[k]][0] += alpha[0]*xdata[k][0] - alpha[1]*xdata[k][1];
+                        ydata[idx[k]][1] += alpha[0]*xdata[k][1] + alpha[1]*xdata[k][0];
+                    }
+                }
+            } else {
+                #pragma omp parallel for
+                for (int64_t k = 0; k < x->size; k++) {
+                    ydata[idx[k]][0] += alpha[0]*xdata[k][0] - alpha[1]*xdata[k][1];
+                    ydata[idx[k]][1] += alpha[0]*xdata[k][1] + alpha[1]*xdata[k][0];
+                }
             }
             if (num_flops) *num_flops += 8*x->size;
         } else if (x->precision == mtx_double) {
             const double (* xdata)[2] = x->data.complex_double;
             double (* ydata)[2] = y->data.complex_double;
-            #pragma omp parallel for
-            for (int64_t k = 0; k < x->size; k++) {
-                ydata[idx[k]][0] += alpha[0]*xdata[k][0] - alpha[1]*xdata[k][1];
-                ydata[idx[k]][1] += alpha[0]*xdata[k][1] + alpha[1]*xdata[k][0];
+            if (xomp->offsets) {
+                #pragma omp parallel num_threads(xomp->num_threads)
+                {
+                    int t = omp_get_thread_num();
+                    for (int64_t k = xomp->offsets[t]; k < xomp->offsets[t+1]; k++) {
+                        ydata[idx[k]][0] += alpha[0]*xdata[k][0] - alpha[1]*xdata[k][1];
+                        ydata[idx[k]][1] += alpha[0]*xdata[k][1] + alpha[1]*xdata[k][0];
+                    }
+                }
+            } else {
+                #pragma omp parallel for
+                for (int64_t k = 0; k < x->size; k++) {
+                    ydata[idx[k]][0] += alpha[0]*xdata[k][0] - alpha[1]*xdata[k][1];
+                    ydata[idx[k]][1] += alpha[0]*xdata[k][1] + alpha[1]*xdata[k][0];
+                }
             }
             if (num_flops) *num_flops += 8*x->size;
         } else { return MTX_ERR_INVALID_PRECISION; }
@@ -4436,8 +4706,6 @@ int mtxvector_omp_usga(
     struct mtxvector_omp * xomp = &xpacked->x.storage.omp;
     struct mtxvector_base * x = &xomp->base;
     const struct mtxvector_base * y = &yomp->base;
-    int num_threads = xomp->num_threads < yomp->num_threads
-        ? xomp->num_threads : yomp->num_threads;
     if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
     if (x->precision != y->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
     if (xpacked->size != y->size) return MTX_ERR_INCOMPATIBLE_SIZE;
@@ -4565,8 +4833,6 @@ int mtxvector_omp_usgz(
     struct mtxvector_omp * xomp = &xpacked->x.storage.omp;
     struct mtxvector_base * x = &xomp->base;
     const struct mtxvector_base * y = &yomp->base;
-    int num_threads = xomp->num_threads < yomp->num_threads
-        ? xomp->num_threads : yomp->num_threads;
     if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
     if (x->precision != y->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
     if (xpacked->size != y->size) return MTX_ERR_INCOMPATIBLE_SIZE;
@@ -4701,8 +4967,6 @@ int mtxvector_omp_ussc(
     const struct mtxvector_omp * xomp = &xpacked->x.storage.omp;
     const struct mtxvector_base * x = &xomp->base;
     struct mtxvector_base * y = &yomp->base;
-    int num_threads = xomp->num_threads < yomp->num_threads
-        ? xomp->num_threads : yomp->num_threads;
     if (x->field != y->field) return MTX_ERR_INCOMPATIBLE_FIELD;
     if (x->precision != y->precision) return MTX_ERR_INCOMPATIBLE_PRECISION;
     if (xpacked->size != y->size) return MTX_ERR_INCOMPATIBLE_SIZE;
