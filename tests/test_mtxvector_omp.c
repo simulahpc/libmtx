@@ -188,12 +188,11 @@ int test_mtxvector_omp_from_mtxfile(void)
 int test_mtxvector_omp_to_mtxfile(void)
 {
     int err;
-    int num_threads = 2;
     {
         struct mtxvector x;
         float xdata[] = {1.0f, 1.0f, 1.0f, 2.0f, 3.0f};
         int xsize = sizeof(xdata) / sizeof(*xdata);
-        err = mtxvector_init_omp_real_single(&x, xsize, xdata, num_threads);
+        err = mtxvector_init_real_single(&x, mtxvector_omp, xsize, xdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxfile mtxfile;
         err = mtxvector_to_mtxfile(&mtxfile, &x, 0, NULL, mtxfile_array);
@@ -216,7 +215,7 @@ int test_mtxvector_omp_to_mtxfile(void)
         struct mtxvector x;
         double xdata[] = {1.0, 1.0, 1.0, 2.0, 3.0};
         int xsize = sizeof(xdata) / sizeof(*xdata);
-        err = mtxvector_init_omp_real_double(&x, xsize, xdata, num_threads);
+        err = mtxvector_init_real_double(&x, mtxvector_omp, xsize, xdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxfile mtxfile;
         err = mtxvector_to_mtxfile(&mtxfile, &x, 0, NULL, mtxfile_array);
@@ -239,7 +238,7 @@ int test_mtxvector_omp_to_mtxfile(void)
         struct mtxvector x;
         float xdata[][2] = {{1.0f, 1.0f}, {1.0f, 2.0f}, {3.0f, 0.0f}};
         int xsize = sizeof(xdata) / sizeof(*xdata);
-        err = mtxvector_init_omp_complex_single(&x, xsize, xdata, num_threads);
+        err = mtxvector_init_complex_single(&x, mtxvector_omp, xsize, xdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxfile mtxfile;
         err = mtxvector_to_mtxfile(&mtxfile, &x, 0, NULL, mtxfile_array);
@@ -264,7 +263,7 @@ int test_mtxvector_omp_to_mtxfile(void)
         struct mtxvector x;
         double xdata[][2] = {{1.0, 1.0}, {1.0, 2.0}, {3.0, 0.0}};
         int xsize = sizeof(xdata) / sizeof(*xdata);
-        err = mtxvector_init_omp_complex_double(&x, xsize, xdata, num_threads);
+        err = mtxvector_init_complex_double(&x, mtxvector_omp, xsize, xdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxfile mtxfile;
         err = mtxvector_to_mtxfile(&mtxfile, &x, 0, NULL, mtxfile_array);
@@ -289,7 +288,7 @@ int test_mtxvector_omp_to_mtxfile(void)
         struct mtxvector x;
         int32_t xdata[] = {1, 1, 1, 2, 3};
         int xsize = sizeof(xdata) / sizeof(*xdata);
-        err = mtxvector_init_omp_integer_single(&x, xsize, xdata, num_threads);
+        err = mtxvector_init_integer_single(&x, mtxvector_omp, xsize, xdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxfile mtxfile;
         err = mtxvector_to_mtxfile(&mtxfile, &x, 0, NULL, mtxfile_array);
@@ -312,7 +311,7 @@ int test_mtxvector_omp_to_mtxfile(void)
         struct mtxvector x;
         int64_t xdata[] = {1, 1, 1, 2, 3};
         int xsize = sizeof(xdata) / sizeof(*xdata);
-        err = mtxvector_init_omp_integer_double(&x, xsize, xdata, num_threads);
+        err = mtxvector_init_integer_double(&x, mtxvector_omp, xsize, xdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxfile mtxfile;
         err = mtxvector_to_mtxfile(&mtxfile, &x, 0, NULL, mtxfile_array);
@@ -340,13 +339,11 @@ int test_mtxvector_omp_to_mtxfile(void)
 int test_mtxvector_omp_partition(void)
 {
     int err;
-    int num_threads = 2;
-
     {
         struct mtxvector src;
         float srcdata[] = {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0, 8.0f, 9.0f};
         int srcsize = sizeof(srcdata) / sizeof(*srcdata);
-        err = mtxvector_init_omp_real_single(&src, srcsize, srcdata, num_threads);
+        err = mtxvector_init_real_single(&src, mtxvector_omp, srcsize, srcdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
         int num_parts = 2;
@@ -396,16 +393,14 @@ int test_mtxvector_omp_partition(void)
 int test_mtxvector_omp_join(void)
 {
     int err;
-    int num_threads = 2;
-
     {
         struct mtxvector srcs[2];
         int num_rows[] = {6, 3};
         float srcdata0[] = {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f};
         float srcdata1[] = {7.0, 8.0f, 9.0f};
-        err = mtxvector_init_omp_real_single(&srcs[0], num_rows[0], srcdata0, num_threads);
+        err = mtxvector_init_real_single(&srcs[0], mtxvector_omp, num_rows[0], srcdata0);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxvector_init_omp_real_single(&srcs[1], num_rows[1], srcdata1, num_threads);
+        err = mtxvector_init_real_single(&srcs[1], mtxvector_omp, num_rows[1], srcdata1);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
         int num_parts = 2;
@@ -448,16 +443,15 @@ int test_mtxvector_omp_join(void)
 int test_mtxvector_omp_swap(void)
 {
     int err;
-    int num_threads = 2;
     {
         struct mtxvector x;
         struct mtxvector y;
         float xdata[] = {1.0f, 1.0f, 1.0f, 2.0f, 3.0f};
         float ydata[] = {2.0f, 1.0f, 0.0f, 2.0f, 1.0f};
         int size = sizeof(xdata) / sizeof(*xdata);
-        err = mtxvector_init_omp_real_single(&x, size, xdata, num_threads);
+        err = mtxvector_init_real_single(&x, mtxvector_omp, size, xdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxvector_init_omp_real_single(&y, size, ydata, num_threads);
+        err = mtxvector_init_real_single(&y, mtxvector_omp, size, ydata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxvector_swap(&x, &y);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
@@ -480,9 +474,9 @@ int test_mtxvector_omp_swap(void)
         double xdata[] = {1.0, 1.0, 1.0, 2.0, 3.0};
         double ydata[] = {2.0, 1.0, 0.0, 2.0, 1.0};
         int size = sizeof(xdata) / sizeof(*xdata);
-        err = mtxvector_init_omp_real_double(&x, size, xdata, num_threads);
+        err = mtxvector_init_real_double(&x, mtxvector_omp, size, xdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxvector_init_omp_real_double(&y, size, ydata, num_threads);
+        err = mtxvector_init_real_double(&y, mtxvector_omp, size, ydata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxvector_swap(&x, &y);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
@@ -505,9 +499,9 @@ int test_mtxvector_omp_swap(void)
         float xdata[][2] = {{1.0f,1.0f}, {1.0f,2.0f}, {3.0f,0.0f}};
         float ydata[][2] = {{2.0f,1.0f}, {0.0f,2.0f}, {1.0f,0.0f}};
         int size = sizeof(xdata) / sizeof(*xdata);
-        err = mtxvector_init_omp_complex_single(&x, size, xdata, num_threads);
+        err = mtxvector_init_complex_single(&x, mtxvector_omp, size, xdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxvector_init_omp_complex_single(&y, size, ydata, num_threads);
+        err = mtxvector_init_complex_single(&y, mtxvector_omp, size, ydata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxvector_swap(&x, &y);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
@@ -532,9 +526,9 @@ int test_mtxvector_omp_swap(void)
         double xdata[][2] = {{1.0,1.0}, {1.0,2.0}, {3.0,0.0}};
         double ydata[][2] = {{2.0,1.0}, {0.0,2.0}, {1.0,0.0}};
         int size = sizeof(xdata) / sizeof(*xdata);
-        err = mtxvector_init_omp_complex_double(&x, size, xdata, num_threads);
+        err = mtxvector_init_complex_double(&x, mtxvector_omp, size, xdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxvector_init_omp_complex_double(&y, size, ydata, num_threads);
+        err = mtxvector_init_complex_double(&y, mtxvector_omp, size, ydata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxvector_swap(&x, &y);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
@@ -563,16 +557,15 @@ int test_mtxvector_omp_swap(void)
 int test_mtxvector_omp_copy(void)
 {
     int err;
-    int num_threads = 2;
     {
         struct mtxvector x;
         struct mtxvector y;
         float xdata[] = {1.0f, 1.0f, 1.0f, 2.0f, 3.0f};
         float ydata[] = {2.0f, 1.0f, 0.0f, 2.0f, 1.0f};
         int size = sizeof(xdata) / sizeof(*xdata);
-        err = mtxvector_init_omp_real_single(&x, size, xdata, num_threads);
+        err = mtxvector_init_real_single(&x, mtxvector_omp, size, xdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxvector_init_omp_real_single(&y, size, ydata, num_threads);
+        err = mtxvector_init_real_single(&y, mtxvector_omp, size, ydata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxvector_copy(&y, &x);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
@@ -590,9 +583,9 @@ int test_mtxvector_omp_copy(void)
         double xdata[] = {1.0, 1.0, 1.0, 2.0, 3.0};
         double ydata[] = {2.0, 1.0, 0.0, 2.0, 1.0};
         int size = sizeof(xdata) / sizeof(*xdata);
-        err = mtxvector_init_omp_real_double(&x, size, xdata, num_threads);
+        err = mtxvector_init_real_double(&x, mtxvector_omp, size, xdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxvector_init_omp_real_double(&y, size, ydata, num_threads);
+        err = mtxvector_init_real_double(&y, mtxvector_omp, size, ydata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxvector_copy(&y, &x);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
@@ -610,9 +603,9 @@ int test_mtxvector_omp_copy(void)
         float xdata[][2] = {{1.0f,1.0f}, {1.0f,2.0f}, {3.0f,0.0f}};
         float ydata[][2] = {{2.0f,1.0f}, {0.0f,2.0f}, {1.0f,0.0f}};
         int size = sizeof(xdata) / sizeof(*xdata);
-        err = mtxvector_init_omp_complex_single(&x, size, xdata, num_threads);
+        err = mtxvector_init_complex_single(&x, mtxvector_omp, size, xdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxvector_init_omp_complex_single(&y, size, ydata, num_threads);
+        err = mtxvector_init_complex_single(&y, mtxvector_omp, size, ydata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxvector_copy(&y, &x);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
@@ -631,9 +624,9 @@ int test_mtxvector_omp_copy(void)
         double xdata[][2] = {{1.0,1.0}, {1.0,2.0}, {3.0,0.0}};
         double ydata[][2] = {{2.0,1.0}, {0.0,2.0}, {1.0,0.0}};
         int size = sizeof(xdata) / sizeof(*xdata);
-        err = mtxvector_init_omp_complex_double(&x, size, xdata, num_threads);
+        err = mtxvector_init_complex_double(&x, mtxvector_omp, size, xdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxvector_init_omp_complex_double(&y, size, ydata, num_threads);
+        err = mtxvector_init_complex_double(&y, mtxvector_omp, size, ydata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxvector_copy(&y, &x);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
@@ -656,12 +649,11 @@ int test_mtxvector_omp_copy(void)
 int test_mtxvector_omp_scal(void)
 {
     int err;
-    int num_threads = 2;
     {
         struct mtxvector x;
         float data[] = {1.0f, 1.0f, 1.0f, 2.0f, 3.0f};
         int size = sizeof(data) / sizeof(*data);
-        err = mtxvector_init_omp_real_single(&x, size, data, num_threads);
+        err = mtxvector_init_real_single(&x, mtxvector_omp, size, data);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxvector_sscal(2.0f, &x, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
@@ -683,7 +675,7 @@ int test_mtxvector_omp_scal(void)
         struct mtxvector x;
         double data[] = {1.0, 1.0, 1.0, 2.0, 3.0};
         int size = sizeof(data) / sizeof(*data);
-        err = mtxvector_init_omp_real_double(&x, size, data, num_threads);
+        err = mtxvector_init_real_double(&x, mtxvector_omp, size, data);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxvector_sscal(2.0f, &x, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
@@ -705,7 +697,7 @@ int test_mtxvector_omp_scal(void)
         struct mtxvector x;
         float data[][2] = {{1.0f,1.0f}, {1.0f,2.0f}, {3.0f,0.0f}};
         int size = sizeof(data) / sizeof(*data);
-        err = mtxvector_init_omp_complex_single(&x, size, data, num_threads);
+        err = mtxvector_init_complex_single(&x, mtxvector_omp, size, data);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxvector_sscal(2.0f, &x, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
@@ -747,7 +739,7 @@ int test_mtxvector_omp_scal(void)
         struct mtxvector x;
         double data[][2] = {{1.0,1.0}, {1.0,2.0}, {3.0,0.0}};
         int size = sizeof(data) / sizeof(*data);
-        err = mtxvector_init_omp_complex_double(&x, size, data, num_threads);
+        err = mtxvector_init_complex_double(&x, mtxvector_omp, size, data);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxvector_sscal(2.0f, &x, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
@@ -795,16 +787,15 @@ int test_mtxvector_omp_scal(void)
 int test_mtxvector_omp_axpy(void)
 {
     int err;
-    int num_threads = 2;
     {
         struct mtxvector x;
         struct mtxvector y;
         float xdata[] = {1.0f, 1.0f, 1.0f, 2.0f, 3.0f};
         float ydata[] = {2.0f, 1.0f, 0.0f, 2.0f, 1.0f};
         int size = sizeof(xdata) / sizeof(*xdata);
-        err = mtxvector_init_omp_real_single(&x, size, xdata, num_threads);
+        err = mtxvector_init_real_single(&x, mtxvector_omp, size, xdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxvector_init_omp_real_single(&y, size, ydata, num_threads);
+        err = mtxvector_init_real_single(&y, mtxvector_omp, size, ydata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxvector_saxpy(2.0f, &x, &y, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
@@ -843,9 +834,9 @@ int test_mtxvector_omp_axpy(void)
         double xdata[] = {1.0, 1.0, 1.0, 2.0, 3.0};
         double ydata[] = {2.0, 1.0, 0.0, 2.0, 1.0};
         int size = sizeof(xdata) / sizeof(*xdata);
-        err = mtxvector_init_omp_real_double(&x, size, xdata, num_threads);
+        err = mtxvector_init_real_double(&x, mtxvector_omp, size, xdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxvector_init_omp_real_double(&y, size, ydata, num_threads);
+        err = mtxvector_init_real_double(&y, mtxvector_omp, size, ydata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxvector_saxpy(2.0f, &x, &y, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
@@ -884,9 +875,9 @@ int test_mtxvector_omp_axpy(void)
         float xdata[][2] = {{1.0f,1.0f}, {1.0f,2.0f}, {3.0f,0.0f}};
         float ydata[][2] = {{2.0f,1.0f}, {0.0f,2.0f}, {1.0f,0.0f}};
         int size = sizeof(xdata) / sizeof(*xdata);
-        err = mtxvector_init_omp_complex_single(&x, size, xdata, num_threads);
+        err = mtxvector_init_complex_single(&x, mtxvector_omp, size, xdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxvector_init_omp_complex_single(&y, size, ydata, num_threads);
+        err = mtxvector_init_complex_single(&y, mtxvector_omp, size, ydata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxvector_saxpy(2.0f, &x, &y, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
@@ -929,9 +920,9 @@ int test_mtxvector_omp_axpy(void)
         double xdata[][2] = {{1.0,1.0}, {1.0,2.0}, {3.0,0.0}};
         double ydata[][2] = {{2.0,1.0}, {0.0,2.0}, {1.0,0.0}};
         int size = sizeof(xdata) / sizeof(*xdata);
-        err = mtxvector_init_omp_complex_double(&x, size, xdata, num_threads);
+        err = mtxvector_init_complex_double(&x, mtxvector_omp, size, xdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxvector_init_omp_complex_double(&y, size, ydata, num_threads);
+        err = mtxvector_init_complex_double(&y, mtxvector_omp, size, ydata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxvector_saxpy(2.0f, &x, &y, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
@@ -978,17 +969,16 @@ int test_mtxvector_omp_axpy(void)
 int test_mtxvector_omp_dot(void)
 {
     int err;
-    int num_threads = 2;
     {
         struct mtxvector x;
         float xdata[] = {1.0f, 1.0f, 1.0f, 2.0f, 3.0f};
         int xsize = sizeof(xdata) / sizeof(*xdata);
-        err = mtxvector_init_omp_real_single(&x, xsize, xdata, num_threads);
+        err = mtxvector_init_real_single(&x, mtxvector_omp, xsize, xdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxvector y;
         float ydata[] = {3.0f, 2.0f, 1.0f, 0.0f, 1.0f};
         int ysize = sizeof(ydata) / sizeof(*ydata);
-        err = mtxvector_init_omp_real_single(&y, ysize, ydata, num_threads);
+        err = mtxvector_init_real_single(&y, mtxvector_omp, ysize, ydata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         float sdot;
         err = mtxvector_sdot(&x, &y, &sdot, NULL);
@@ -1021,12 +1011,12 @@ int test_mtxvector_omp_dot(void)
         struct mtxvector x;
         double xdata[] = {1.0, 1.0, 1.0, 2.0, 3.0};
         int xsize = sizeof(xdata) / sizeof(*xdata);
-        err = mtxvector_init_omp_real_double(&x, xsize, xdata, num_threads);
+        err = mtxvector_init_real_double(&x, mtxvector_omp, xsize, xdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxvector y;
         double ydata[] = {3.0, 2.0, 1.0, 0.0, 1.0};
         int ysize = sizeof(ydata) / sizeof(*ydata);
-        err = mtxvector_init_omp_real_double(&y, ysize, ydata, num_threads);
+        err = mtxvector_init_real_double(&y, mtxvector_omp, ysize, ydata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         float sdot;
         err = mtxvector_sdot(&x, &y, &sdot, NULL);
@@ -1059,12 +1049,12 @@ int test_mtxvector_omp_dot(void)
         struct mtxvector x;
         float xdata[][2] = {{1.0f, 1.0f}, {1.0f, 2.0f}, {3.0f, 0.0f}};
         int xsize = sizeof(xdata) / sizeof(*xdata);
-        err = mtxvector_init_omp_complex_single(&x, xsize, xdata, num_threads);
+        err = mtxvector_init_complex_single(&x, mtxvector_omp, xsize, xdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxvector y;
         float ydata[][2] = {{3.0f, 2.0f}, {1.0f, 0.0f}, {1.0f, 0.0f}};
         int ysize = sizeof(ydata) / sizeof(*ydata);
-        err = mtxvector_init_omp_complex_single(&y, ysize, ydata, num_threads);
+        err = mtxvector_init_complex_single(&y, mtxvector_omp, ysize, ydata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         float sdot;
         err = mtxvector_sdot(&x, &y, &sdot, NULL);
@@ -1095,12 +1085,12 @@ int test_mtxvector_omp_dot(void)
         struct mtxvector x;
         double xdata[][2] = {{1.0, 1.0}, {1.0, 2.0}, {3.0, 0.0}};
         int xsize = sizeof(xdata) / sizeof(*xdata);
-        err = mtxvector_init_omp_complex_double(&x, xsize, xdata, num_threads);
+        err = mtxvector_init_complex_double(&x, mtxvector_omp, xsize, xdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxvector y;
         double ydata[][2] = {{3.0, 2.0}, {1.0, 0.0}, {1.0, 0.0}};
         int ysize = sizeof(ydata) / sizeof(*ydata);
-        err = mtxvector_init_omp_complex_double(&y, ysize, ydata, num_threads);
+        err = mtxvector_init_complex_double(&y, mtxvector_omp, ysize, ydata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         float sdot;
         err = mtxvector_sdot(&x, &y, &sdot, NULL);
@@ -1131,12 +1121,12 @@ int test_mtxvector_omp_dot(void)
         struct mtxvector x;
         int32_t xdata[] = {1, 1, 1, 2, 3};
         int xsize = sizeof(xdata) / sizeof(*xdata);
-        err = mtxvector_init_omp_integer_single(&x, xsize, xdata, num_threads);
+        err = mtxvector_init_integer_single(&x, mtxvector_omp, xsize, xdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxvector y;
         int32_t ydata[] = {3, 2, 1, 0, 1};
         int ysize = sizeof(ydata) / sizeof(*ydata);
-        err = mtxvector_init_omp_integer_single(&y, ysize, ydata, num_threads);
+        err = mtxvector_init_integer_single(&y, mtxvector_omp, ysize, ydata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         float sdot;
         err = mtxvector_sdot(&x, &y, &sdot, NULL);
@@ -1169,12 +1159,12 @@ int test_mtxvector_omp_dot(void)
         struct mtxvector x;
         int64_t xdata[] = {1, 1, 1, 2, 3};
         int xsize = sizeof(xdata) / sizeof(*xdata);
-        err = mtxvector_init_omp_integer_double(&x, xsize, xdata, num_threads);
+        err = mtxvector_init_integer_double(&x, mtxvector_omp, xsize, xdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         struct mtxvector y;
         int64_t ydata[] = {3, 2, 1, 0, 1};
         int ysize = sizeof(ydata) / sizeof(*ydata);
-        err = mtxvector_init_omp_integer_double(&y, ysize, ydata, num_threads);
+        err = mtxvector_init_integer_double(&y, mtxvector_omp, ysize, ydata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         float sdot;
         err = mtxvector_sdot(&x, &y, &sdot, NULL);
@@ -1213,12 +1203,11 @@ int test_mtxvector_omp_dot(void)
 int test_mtxvector_omp_nrm2(void)
 {
     int err;
-    int num_threads = 2;
     {
         struct mtxvector x;
         float data[] = {1.0f, 1.0f, 1.0f, 2.0f, 3.0f};
         int size = sizeof(data) / sizeof(*data);
-        err = mtxvector_init_omp_real_single(&x, size, data, num_threads);
+        err = mtxvector_init_real_single(&x, mtxvector_omp, size, data);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         float snrm2;
         err = mtxvector_snrm2(&x, &snrm2, NULL);
@@ -1234,7 +1223,7 @@ int test_mtxvector_omp_nrm2(void)
         struct mtxvector x;
         double data[] = {1.0, 1.0, 1.0, 2.0, 3.0};
         int size = sizeof(data) / sizeof(*data);
-        err = mtxvector_init_omp_real_double(&x, size, data, num_threads);
+        err = mtxvector_init_real_double(&x, mtxvector_omp, size, data);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         float snrm2;
         err = mtxvector_snrm2(&x, &snrm2, NULL);
@@ -1250,7 +1239,7 @@ int test_mtxvector_omp_nrm2(void)
         struct mtxvector x;
         float data[][2] = {{1.0f,1.0f}, {1.0f,2.0f}, {3.0f,0.0f}};
         int size = sizeof(data) / sizeof(*data);
-        err = mtxvector_init_omp_complex_single(&x, size, data, num_threads);
+        err = mtxvector_init_complex_single(&x, mtxvector_omp, size, data);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         float snrm2;
         err = mtxvector_snrm2(&x, &snrm2, NULL);
@@ -1266,7 +1255,7 @@ int test_mtxvector_omp_nrm2(void)
         struct mtxvector x;
         double data[][2] = {{1.0,1.0}, {1.0,2.0}, {3.0,0.0}};
         int size = sizeof(data) / sizeof(*data);
-        err = mtxvector_init_omp_complex_double(&x, size, data, num_threads);
+        err = mtxvector_init_complex_double(&x, mtxvector_omp, size, data);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         float snrm2;
         err = mtxvector_snrm2(&x, &snrm2, NULL);
@@ -1288,13 +1277,11 @@ int test_mtxvector_omp_nrm2(void)
 int test_mtxvector_omp_asum(void)
 {
     int err;
-    int num_threads = 2;
-
     {
         struct mtxvector x;
         float data[] = {-1.0f, 1.0f, 1.0f, 2.0f, 3.0f};
         int size = sizeof(data) / sizeof(*data);
-        err = mtxvector_init_omp_real_single(&x, size, data, num_threads);
+        err = mtxvector_init_real_single(&x, mtxvector_omp, size, data);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         float sasum;
         err = mtxvector_sasum(&x, &sasum, NULL);
@@ -1310,7 +1297,7 @@ int test_mtxvector_omp_asum(void)
         struct mtxvector x;
         double data[] = {-1.0, 1.0, 1.0, 2.0, 3.0};
         int size = sizeof(data) / sizeof(*data);
-        err = mtxvector_init_omp_real_double(&x, size, data, num_threads);
+        err = mtxvector_init_real_double(&x, mtxvector_omp, size, data);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         float sasum;
         err = mtxvector_sasum(&x, &sasum, NULL);
@@ -1326,7 +1313,7 @@ int test_mtxvector_omp_asum(void)
         struct mtxvector x;
         float data[][2] = {{-1.0f,-1.0f}, {1.0f,2.0f}, {3.0f,0.0f}};
         int size = sizeof(data) / sizeof(*data);
-        err = mtxvector_init_omp_complex_single(&x, size, data, num_threads);
+        err = mtxvector_init_complex_single(&x, mtxvector_omp, size, data);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         float sasum;
         err = mtxvector_sasum(&x, &sasum, NULL);
@@ -1342,7 +1329,7 @@ int test_mtxvector_omp_asum(void)
         struct mtxvector x;
         double data[][2] = {{-1.0,-1.0}, {1.0,2.0}, {3.0,0.0}};
         int size = sizeof(data) / sizeof(*data);
-        err = mtxvector_init_omp_complex_double(&x, size, data, num_threads);
+        err = mtxvector_init_complex_double(&x, mtxvector_omp, size, data);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         float sasum;
         err = mtxvector_sasum(&x, &sasum, NULL);
@@ -1364,12 +1351,11 @@ int test_mtxvector_omp_asum(void)
 int test_mtxvector_omp_iamax(void)
 {
     int err;
-    int num_threads = 2;
     {
         struct mtxvector x;
         float data[] = {-1.0f, 1.0f, 3.0f, 2.0f, 3.0f};
         int size = sizeof(data) / sizeof(*data);
-        err = mtxvector_init_omp_real_single(&x, size, data, num_threads);
+        err = mtxvector_init_real_single(&x, mtxvector_omp, size, data);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         int iamax;
         err = mtxvector_iamax(&x, &iamax);
@@ -1381,7 +1367,7 @@ int test_mtxvector_omp_iamax(void)
         struct mtxvector x;
         double data[] = {-1.0, 1.0, 3.0, 2.0, 3.0};
         int size = sizeof(data) / sizeof(*data);
-        err = mtxvector_init_omp_real_double(&x, size, data, num_threads);
+        err = mtxvector_init_real_double(&x, mtxvector_omp, size, data);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         int iamax;
         err = mtxvector_iamax(&x, &iamax);
@@ -1393,7 +1379,7 @@ int test_mtxvector_omp_iamax(void)
         struct mtxvector x;
         float data[][2] = {{-1.0f,-1.0f}, {1.0f,2.0f}, {3.0f,0.0f}};
         int size = sizeof(data) / sizeof(*data);
-        err = mtxvector_init_omp_complex_single(&x, size, data, num_threads);
+        err = mtxvector_init_complex_single(&x, mtxvector_omp, size, data);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         int iamax;
         err = mtxvector_iamax(&x, &iamax);
@@ -1405,7 +1391,7 @@ int test_mtxvector_omp_iamax(void)
         struct mtxvector x;
         double data[][2] = {{-1.0,-1.0}, {1.0,2.0}, {3.0,0.0}};
         int size = sizeof(data) / sizeof(*data);
-        err = mtxvector_init_omp_complex_double(&x, size, data, num_threads);
+        err = mtxvector_init_complex_double(&x, mtxvector_omp, size, data);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         int iamax;
         err = mtxvector_iamax(&x, &iamax);
@@ -1423,7 +1409,6 @@ int test_mtxvector_omp_iamax(void)
 int test_mtxvector_omp_usdot(void)
 {
     int err;
-    int num_threads = 2;
     {
         struct mtxvector_packed x;
         struct mtxvector y;
@@ -1435,7 +1420,7 @@ int test_mtxvector_omp_usdot(void)
         err = mtxvector_packed_init_real_single(
             &x, mtxvector_omp, size, num_nonzeros, idx, xdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxvector_init_omp_real_single(&y, size, ydata, num_threads);
+        err = mtxvector_init_real_single(&y, mtxvector_omp, size, ydata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         float sdot;
         err = mtxvector_ussdot(&x, &y, &sdot, NULL);
@@ -1459,7 +1444,7 @@ int test_mtxvector_omp_usdot(void)
         err = mtxvector_packed_init_real_double(
             &x, mtxvector_omp, size, num_nonzeros, idx, xdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxvector_init_omp_real_double(&y, size, ydata, num_threads);
+        err = mtxvector_init_real_double(&y, mtxvector_omp, size, ydata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         float sdot;
         err = mtxvector_ussdot(&x, &y, &sdot, NULL);
@@ -1483,7 +1468,7 @@ int test_mtxvector_omp_usdot(void)
         err = mtxvector_packed_init_complex_single(
             &x, mtxvector_omp, size, num_nonzeros, idx, xdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxvector_init_omp_complex_single(&y, size, ydata, num_threads);
+        err = mtxvector_init_complex_single(&y, mtxvector_omp, size, ydata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         float cdotu[2];
         err = mtxvector_uscdotu(&x, &y, &cdotu, NULL);
@@ -1515,7 +1500,7 @@ int test_mtxvector_omp_usdot(void)
         err = mtxvector_packed_init_complex_double(
             &x, mtxvector_omp, size, num_nonzeros, idx, xdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxvector_init_omp_complex_double(&y, size, ydata, num_threads);
+        err = mtxvector_init_complex_double(&y, mtxvector_omp, size, ydata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         float cdotu[2];
         err = mtxvector_uscdotu(&x, &y, &cdotu, NULL);
@@ -1546,7 +1531,6 @@ int test_mtxvector_omp_usdot(void)
 int test_mtxvector_omp_usaxpy(void)
 {
     int err;
-    int num_threads = 2;
     {
         struct mtxvector_packed x;
         struct mtxvector y;
@@ -1558,7 +1542,7 @@ int test_mtxvector_omp_usaxpy(void)
         err = mtxvector_packed_init_real_single(
             &x, mtxvector_omp, size, num_nonzeros, idx, xdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxvector_init_omp_real_single(&y, size, ydata, num_threads);
+        err = mtxvector_init_real_single(&y, mtxvector_omp, size, ydata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         float alpha = 2.0f;
         err = mtxvector_ussaxpy(&y, alpha, &x, NULL);
@@ -1589,7 +1573,7 @@ int test_mtxvector_omp_usaxpy(void)
         err = mtxvector_packed_init_real_double(
             &x, mtxvector_omp, size, num_nonzeros, idx, xdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxvector_init_omp_real_double(&y, size, ydata, num_threads);
+        err = mtxvector_init_real_double(&y, mtxvector_omp, size, ydata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         double alpha = 2.0;
         err = mtxvector_usdaxpy(&y, alpha, &x, NULL);
@@ -1620,7 +1604,7 @@ int test_mtxvector_omp_usaxpy(void)
         err = mtxvector_packed_init_complex_single(
             &x, mtxvector_omp, size, num_nonzeros, idx, xdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxvector_init_omp_complex_single(&y, size, ydata, num_threads);
+        err = mtxvector_init_complex_single(&y, mtxvector_omp, size, ydata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         float alpha[2] = {2.0f, 1.0f};
         err = mtxvector_uscaxpy(&y, alpha, &x, NULL);
@@ -1651,7 +1635,7 @@ int test_mtxvector_omp_usaxpy(void)
         err = mtxvector_packed_init_complex_double(
             &x, mtxvector_omp, size, num_nonzeros, idx, xdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxvector_init_omp_complex_double(&y, size, ydata, num_threads);
+        err = mtxvector_init_complex_double(&y, mtxvector_omp, size, ydata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         double alpha[2] = {2.0, 1.0};
         err = mtxvector_uszaxpy(&y, alpha, &x, NULL);
@@ -1681,7 +1665,6 @@ int test_mtxvector_omp_usaxpy(void)
 int test_mtxvector_omp_usga(void)
 {
     int err;
-    int num_threads = 2;
     {
         struct mtxvector_packed x;
         struct mtxvector y;
@@ -1693,7 +1676,7 @@ int test_mtxvector_omp_usga(void)
         err = mtxvector_packed_init_real_single(
             &x, mtxvector_omp, size, num_nonzeros, idx, xdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxvector_init_omp_real_single(&y, size, ydata, num_threads);
+        err = mtxvector_init_real_single(&y, mtxvector_omp, size, ydata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxvector_usga(&x, &y);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
@@ -1718,7 +1701,7 @@ int test_mtxvector_omp_usga(void)
         err = mtxvector_packed_init_real_double(
             &x, mtxvector_omp, size, num_nonzeros, idx, xdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxvector_init_omp_real_double(&y, size, ydata, num_threads);
+        err = mtxvector_init_real_double(&y, mtxvector_omp, size, ydata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxvector_usga(&x, &y);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
@@ -1743,7 +1726,7 @@ int test_mtxvector_omp_usga(void)
         err = mtxvector_packed_init_complex_single(
             &x, mtxvector_omp, size, num_nonzeros, idx, xdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxvector_init_omp_complex_single(&y, size, ydata, num_threads);
+        err = mtxvector_init_complex_single(&y, mtxvector_omp, size, ydata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxvector_usga(&x, &y);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
@@ -1769,7 +1752,7 @@ int test_mtxvector_omp_usga(void)
         err = mtxvector_packed_init_complex_double(
             &x, mtxvector_omp, size, num_nonzeros, idx, xdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxvector_init_omp_complex_double(&y, size, ydata, num_threads);
+        err = mtxvector_init_complex_double(&y, mtxvector_omp, size, ydata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxvector_usga(&x, &y);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
@@ -1794,7 +1777,6 @@ int test_mtxvector_omp_usga(void)
 int test_mtxvector_omp_ussc(void)
 {
     int err;
-    int num_threads = 2;
     {
         struct mtxvector_packed x;
         struct mtxvector y;
@@ -1806,7 +1788,7 @@ int test_mtxvector_omp_ussc(void)
         err = mtxvector_packed_init_real_single(
             &x, mtxvector_omp, size, num_nonzeros, idx, xdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxvector_init_omp_real_single(&y, size, ydata, num_threads);
+        err = mtxvector_init_real_single(&y, mtxvector_omp, size, ydata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxvector_ussc(&y, &x);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
@@ -1836,7 +1818,7 @@ int test_mtxvector_omp_ussc(void)
         err = mtxvector_packed_init_real_double(
             &x, mtxvector_omp, size, num_nonzeros, idx, xdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxvector_init_omp_real_double(&y, size, ydata, num_threads);
+        err = mtxvector_init_real_double(&y, mtxvector_omp, size, ydata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxvector_ussc(&y, &x);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
@@ -1866,7 +1848,7 @@ int test_mtxvector_omp_ussc(void)
         err = mtxvector_packed_init_complex_single(
             &x, mtxvector_omp, size, num_nonzeros, idx, xdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxvector_init_omp_complex_single(&y, size, ydata, num_threads);
+        err = mtxvector_init_complex_single(&y, mtxvector_omp, size, ydata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxvector_ussc(&y, &x);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
@@ -1896,7 +1878,7 @@ int test_mtxvector_omp_ussc(void)
         err = mtxvector_packed_init_complex_double(
             &x, mtxvector_omp, size, num_nonzeros, idx, xdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxvector_init_omp_complex_double(&y, size, ydata, num_threads);
+        err = mtxvector_init_complex_double(&y, mtxvector_omp, size, ydata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxvector_ussc(&y, &x);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
@@ -2048,24 +2030,27 @@ int test_mtxvector_omp_usscga(void)
  */
 int main(int argc, char * argv[])
 {
+    omp_set_num_threads(2);
     TEST_SUITE_BEGIN("Running tests for OpenMP vectors\n");
-    TEST_RUN(test_mtxvector_omp_from_mtxfile);
-    TEST_RUN(test_mtxvector_omp_to_mtxfile);
-    TEST_RUN(test_mtxvector_omp_partition);
-    TEST_RUN(test_mtxvector_omp_join);
-    TEST_RUN(test_mtxvector_omp_swap);
-    TEST_RUN(test_mtxvector_omp_copy);
-    TEST_RUN(test_mtxvector_omp_scal);
-    TEST_RUN(test_mtxvector_omp_axpy);
-    TEST_RUN(test_mtxvector_omp_dot);
-    TEST_RUN(test_mtxvector_omp_nrm2);
-    TEST_RUN(test_mtxvector_omp_asum);
-    TEST_RUN(test_mtxvector_omp_iamax);
-    TEST_RUN(test_mtxvector_omp_usdot);
-    TEST_RUN(test_mtxvector_omp_usaxpy);
-    TEST_RUN(test_mtxvector_omp_usga);
-    TEST_RUN(test_mtxvector_omp_ussc);
-    TEST_RUN(test_mtxvector_omp_usscga);
+    {
+        TEST_RUN(test_mtxvector_omp_from_mtxfile);
+        TEST_RUN(test_mtxvector_omp_to_mtxfile);
+        TEST_RUN(test_mtxvector_omp_partition);
+        TEST_RUN(test_mtxvector_omp_join);
+        TEST_RUN(test_mtxvector_omp_swap);
+        TEST_RUN(test_mtxvector_omp_copy);
+        TEST_RUN(test_mtxvector_omp_scal);
+        TEST_RUN(test_mtxvector_omp_axpy);
+        TEST_RUN(test_mtxvector_omp_dot);
+        TEST_RUN(test_mtxvector_omp_nrm2);
+        TEST_RUN(test_mtxvector_omp_asum);
+        TEST_RUN(test_mtxvector_omp_iamax);
+        TEST_RUN(test_mtxvector_omp_usdot);
+        TEST_RUN(test_mtxvector_omp_usaxpy);
+        TEST_RUN(test_mtxvector_omp_usga);
+        TEST_RUN(test_mtxvector_omp_ussc);
+        TEST_RUN(test_mtxvector_omp_usscga);
+    }
     TEST_SUITE_END();
     return (TEST_SUITE_STATUS == TEST_SUCCESS) ?
         EXIT_SUCCESS : EXIT_FAILURE;

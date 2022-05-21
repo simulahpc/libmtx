@@ -275,7 +275,7 @@ int mtxvector_alloc(
     } else if (type == mtxvector_omp) {
 #ifdef LIBMTX_HAVE_OPENMP
         x->type = mtxvector_omp;
-        return mtxvector_omp_alloc(&x->storage.omp, field, precision, size, 0);
+        return mtxvector_omp_alloc(&x->storage.omp, field, precision, size);
 #else
         return MTX_ERR_OPENMP_NOT_SUPPORTED;
 #endif
@@ -307,7 +307,7 @@ int mtxvector_init_real_single(
     } else if (type == mtxvector_omp) {
 #ifdef LIBMTX_HAVE_OPENMP
         x->type = mtxvector_omp;
-        return mtxvector_omp_init_real_single(&x->storage.omp, size, data, 0);
+        return mtxvector_omp_init_real_single(&x->storage.omp, size, data);
 #else
         return MTX_ERR_OPENMP_NOT_SUPPORTED;
 #endif
@@ -337,7 +337,7 @@ int mtxvector_init_real_double(
     } else if (type == mtxvector_omp) {
 #ifdef LIBMTX_HAVE_OPENMP
         x->type = mtxvector_omp;
-        return mtxvector_omp_init_real_double(&x->storage.omp, size, data, 0);
+        return mtxvector_omp_init_real_double(&x->storage.omp, size, data);
 #else
         return MTX_ERR_OPENMP_NOT_SUPPORTED;
 #endif
@@ -367,7 +367,7 @@ int mtxvector_init_complex_single(
     } else if (type == mtxvector_omp) {
 #ifdef LIBMTX_HAVE_OPENMP
         x->type = mtxvector_omp;
-        return mtxvector_omp_init_complex_single(&x->storage.omp, size, data, 0);
+        return mtxvector_omp_init_complex_single(&x->storage.omp, size, data);
 #else
         return MTX_ERR_OPENMP_NOT_SUPPORTED;
 #endif
@@ -397,7 +397,7 @@ int mtxvector_init_complex_double(
     } else if (type == mtxvector_omp) {
 #ifdef LIBMTX_HAVE_OPENMP
         x->type = mtxvector_omp;
-        return mtxvector_omp_init_complex_double(&x->storage.omp, size, data, 0);
+        return mtxvector_omp_init_complex_double(&x->storage.omp, size, data);
 #else
         return MTX_ERR_OPENMP_NOT_SUPPORTED;
 #endif
@@ -427,7 +427,7 @@ int mtxvector_init_integer_single(
     } else if (type == mtxvector_omp) {
 #ifdef LIBMTX_HAVE_OPENMP
         x->type = mtxvector_omp;
-        return mtxvector_omp_init_integer_single(&x->storage.omp, size, data, 0);
+        return mtxvector_omp_init_integer_single(&x->storage.omp, size, data);
 #else
         return MTX_ERR_OPENMP_NOT_SUPPORTED;
 #endif
@@ -457,7 +457,7 @@ int mtxvector_init_integer_double(
     } else if (type == mtxvector_omp) {
 #ifdef LIBMTX_HAVE_OPENMP
         x->type = mtxvector_omp;
-        return mtxvector_omp_init_integer_double(&x->storage.omp, size, data, 0);
+        return mtxvector_omp_init_integer_double(&x->storage.omp, size, data);
 #else
         return MTX_ERR_OPENMP_NOT_SUPPORTED;
 #endif
@@ -486,7 +486,7 @@ int mtxvector_init_pattern(
     } else if (type == mtxvector_omp) {
 #ifdef LIBMTX_HAVE_OPENMP
         x->type = mtxvector_omp;
-        return mtxvector_omp_init_pattern(&x->storage.omp, size, 0);
+        return mtxvector_omp_init_pattern(&x->storage.omp, size);
 #else
         return MTX_ERR_OPENMP_NOT_SUPPORTED;
 #endif
@@ -517,7 +517,7 @@ int mtxvector_init_strided_real_single(
     } else if (type == mtxvector_omp) {
 #ifdef LIBMTX_HAVE_OPENMP
         x->type = mtxvector_omp;
-        return mtxvector_omp_init_strided_real_single(&x->storage.omp, size, stride, data, 0);
+        return mtxvector_omp_init_strided_real_single(&x->storage.omp, size, stride, data);
 #else
         return MTX_ERR_OPENMP_NOT_SUPPORTED;
 #endif
@@ -548,7 +548,7 @@ int mtxvector_init_strided_real_double(
     } else if (type == mtxvector_omp) {
 #ifdef LIBMTX_HAVE_OPENMP
         x->type = mtxvector_omp;
-        return mtxvector_omp_init_strided_real_double(&x->storage.omp, size, stride, data, 0);
+        return mtxvector_omp_init_strided_real_double(&x->storage.omp, size, stride, data);
 #else
         return MTX_ERR_OPENMP_NOT_SUPPORTED;
 #endif
@@ -579,7 +579,7 @@ int mtxvector_init_strided_complex_single(
     } else if (type == mtxvector_omp) {
 #ifdef LIBMTX_HAVE_OPENMP
         x->type = mtxvector_omp;
-        return mtxvector_omp_init_strided_complex_single(&x->storage.omp, size, stride, data, 0);
+        return mtxvector_omp_init_strided_complex_single(&x->storage.omp, size, stride, data);
 #else
         return MTX_ERR_OPENMP_NOT_SUPPORTED;
 #endif
@@ -610,7 +610,7 @@ int mtxvector_init_strided_complex_double(
     } else if (type == mtxvector_omp) {
 #ifdef LIBMTX_HAVE_OPENMP
         x->type = mtxvector_omp;
-        return mtxvector_omp_init_strided_complex_double(&x->storage.omp, size, stride, data, 0);
+        return mtxvector_omp_init_strided_complex_double(&x->storage.omp, size, stride, data);
 #else
         return MTX_ERR_OPENMP_NOT_SUPPORTED;
 #endif
@@ -641,7 +641,7 @@ int mtxvector_init_strided_integer_single(
     } else if (type == mtxvector_omp) {
 #ifdef LIBMTX_HAVE_OPENMP
         x->type = mtxvector_omp;
-        return mtxvector_omp_init_strided_integer_single(&x->storage.omp, size, stride, data, 0);
+        return mtxvector_omp_init_strided_integer_single(&x->storage.omp, size, stride, data);
 #else
         return MTX_ERR_OPENMP_NOT_SUPPORTED;
 #endif
@@ -672,155 +672,11 @@ int mtxvector_init_strided_integer_double(
     } else if (type == mtxvector_omp) {
 #ifdef LIBMTX_HAVE_OPENMP
         x->type = mtxvector_omp;
-        return mtxvector_omp_init_strided_integer_double(&x->storage.omp, size, stride, data, 0);
+        return mtxvector_omp_init_strided_integer_double(&x->storage.omp, size, stride, data);
 #else
         return MTX_ERR_OPENMP_NOT_SUPPORTED;
 #endif
     } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
-}
-
-/*
- * OpenMP shared-memory parallel vectors
- */
-
-/**
- * ‘mtxvector_alloc_omp()’ allocates an OpenMP shared-memory parallel
- * vector.
- */
-int mtxvector_alloc_omp(
-    struct mtxvector * x,
-    enum mtxfield field,
-    enum mtxprecision precision,
-    int64_t size,
-    int num_threads)
-{
-#ifdef LIBMTX_HAVE_OPENMP
-    x->type = mtxvector_omp;
-    return mtxvector_omp_alloc(
-        &x->storage.omp, field, precision, size, num_threads);
-#else
-    return MTX_ERR_OPENMP_NOT_SUPPORTED;
-#endif
-}
-
-/**
- * ‘mtxvector_init_omp_real_single()’ allocates and initialises an
- *  OpenMP shared-memory parallel vector with real, single precision
- *  coefficients.
- */
-int mtxvector_init_omp_real_single(
-    struct mtxvector * x,
-    int64_t size,
-    const float * data,
-    int num_threads)
-{
-#ifdef LIBMTX_HAVE_OPENMP
-    x->type = mtxvector_omp;
-    return mtxvector_omp_init_real_single(
-        &x->storage.omp, size, data, num_threads);
-#else
-    return MTX_ERR_OPENMP_NOT_SUPPORTED;
-#endif
-}
-
-/**
- * ‘mtxvector_init_omp_real_double()’ allocates and initialises an
- *  OpenMP shared-memory parallel vector with real, double precision
- *  coefficients.
- */
-int mtxvector_init_omp_real_double(
-    struct mtxvector * x,
-    int64_t size,
-    const double * data,
-    int num_threads)
-{
-#ifdef LIBMTX_HAVE_OPENMP
-    x->type = mtxvector_omp;
-    return mtxvector_omp_init_real_double(
-        &x->storage.omp, size, data, num_threads);
-#else
-    return MTX_ERR_OPENMP_NOT_SUPPORTED;
-#endif
-}
-
-/**
- * ‘mtxvector_init_omp_complex_single()’ allocates and initialises an
- *  OpenMP shared-memory parallel vector with complex, single
- *  precision coefficients.
- */
-int mtxvector_init_omp_complex_single(
-    struct mtxvector * x,
-    int64_t size,
-    const float (* data)[2],
-    int num_threads)
-{
-#ifdef LIBMTX_HAVE_OPENMP
-    x->type = mtxvector_omp;
-    return mtxvector_omp_init_complex_single(
-        &x->storage.omp, size, data, num_threads);
-#else
-    return MTX_ERR_OPENMP_NOT_SUPPORTED;
-#endif
-}
-
-/**
- * ‘mtxvector_init_omp_complex_double()’ allocates and initialises an
- *  OpenMP shared-memory parallel vector with complex, double
- *  precision coefficients.
- */
-int mtxvector_init_omp_complex_double(
-    struct mtxvector * x,
-    int64_t size,
-    const double (* data)[2],
-    int num_threads)
-{
-#ifdef LIBMTX_HAVE_OPENMP
-    x->type = mtxvector_omp;
-    return mtxvector_omp_init_complex_double(
-        &x->storage.omp, size, data, num_threads);
-#else
-    return MTX_ERR_OPENMP_NOT_SUPPORTED;
-#endif
-}
-
-/**
- * ‘mtxvector_init_omp_integer_single()’ allocates and initialises an
- *  OpenMP shared-memory parallel vector with integer, single
- *  precision coefficients.
- */
-int mtxvector_init_omp_integer_single(
-    struct mtxvector * x,
-    int64_t size,
-    const int32_t * data,
-    int num_threads)
-{
-#ifdef LIBMTX_HAVE_OPENMP
-    x->type = mtxvector_omp;
-    return mtxvector_omp_init_integer_single(
-        &x->storage.omp, size, data, num_threads);
-#else
-    return MTX_ERR_OPENMP_NOT_SUPPORTED;
-#endif
-}
-
-/**
- * ‘mtxvector_init_omp_integer_double()’ allocates and initialises an
- *  OpenMP shared-memory parallel vector with integer, double
- *  precision coefficients.
- */
-int mtxvector_init_omp_integer_double(
-    struct mtxvector * x,
-    int64_t size,
-    const int64_t * data,
-    int num_threads)
-{
-#ifdef LIBMTX_HAVE_OPENMP
-    x->type = mtxvector_omp;
-    return mtxvector_omp_init_integer_double(
-        &x->storage.omp, size, data, num_threads);
-#else
-    return MTX_ERR_OPENMP_NOT_SUPPORTED;
-#endif
 }
 
 /*

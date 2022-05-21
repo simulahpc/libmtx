@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-04-26
+ * Last modified: 2022-05-21
  *
  * Data structures and routines for shared-memory parallel, dense
  * vectors using OpenMP.
@@ -32,6 +32,8 @@
 #include <libmtx/vector/field.h>
 #include <libmtx/mtxfile/header.h>
 #include <libmtx/vector/base.h>
+
+#include <omp.h>
 
 #include <stdarg.h>
 #include <stdbool.h>
@@ -53,6 +55,38 @@ struct mtxvector_omp
      * when carrying out operations on the underlying vector.
      */
     int num_threads;
+
+    /**
+     * ‘offsets’ is an optional array that may be used to specify a
+     * variable-sized block distribution of vector elements.
+     *
+     * Whenever ‘offsets’ is not ‘NULL’, then it is an array of length
+     * ‘num_threads+1’ containing non-decreasing offsets in the range
+     * ‘0’ up to ‘N’, where ‘N’ is the number of vector elements. For
+     * each thread, the array stores the offset to the first vector
+     * element assigned to the thread. The final value in the array
+     * must be equal to the number of vector elements ‘N’.
+     *
+     * If ‘offsets’ is ‘NULL’, then parallel loops instead use a
+     * schedule determined by ‘sched’ and ‘chunk_size’.
+     */
+    int64_t * offsets;
+
+    /**
+     * ‘sched’ is the schedule to use for parallel loops.
+     *
+     * This is used only if ‘offsets’ is ‘NULL’.
+     */
+    omp_sched_t sched;
+
+    /**
+     * ‘chunk_size’ is the chunk size to use for parallel loops.
+     *
+     * This is used only if ‘offsets’ is ‘NULL’. If ‘chunk_size’ is
+     * set to ‘0’, a default chunk size is used for the given
+     * schedule.
+     */
+    int chunk_size;
 
     /**
      * ‘base’ is the underlying dense vector.
@@ -87,18 +121,19 @@ int mtxvector_omp_init_copy(
     const struct mtxvector_omp * src);
 
 /*
- * Allocation and initialisation
+ * allocation and initialisation
  */
 
 /**
  * ‘mtxvector_omp_alloc()’ allocates a vector.
+ *
+ * A default static schedule is used for parallel loops.
  */
 int mtxvector_omp_alloc(
     struct mtxvector_omp * x,
     enum mtxfield field,
     enum mtxprecision precision,
-    int64_t size,
-    int num_threads);
+    int64_t size);
 
 /**
  * ‘mtxvector_omp_init_real_single()’ allocates and initialises a
@@ -107,8 +142,7 @@ int mtxvector_omp_alloc(
 int mtxvector_omp_init_real_single(
     struct mtxvector_omp * x,
     int64_t size,
-    const float * data,
-    int num_threads);
+    const float * data);
 
 /**
  * ‘mtxvector_omp_init_real_double()’ allocates and initialises a
@@ -117,8 +151,7 @@ int mtxvector_omp_init_real_single(
 int mtxvector_omp_init_real_double(
     struct mtxvector_omp * x,
     int64_t size,
-    const double * data,
-    int num_threads);
+    const double * data);
 
 /**
  * ‘mtxvector_omp_init_complex_single()’ allocates and initialises a
@@ -127,8 +160,7 @@ int mtxvector_omp_init_real_double(
 int mtxvector_omp_init_complex_single(
     struct mtxvector_omp * x,
     int64_t size,
-    const float (* data)[2],
-    int num_threads);
+    const float (* data)[2]);
 
 /**
  * ‘mtxvector_omp_init_complex_double()’ allocates and initialises a
@@ -137,8 +169,7 @@ int mtxvector_omp_init_complex_single(
 int mtxvector_omp_init_complex_double(
     struct mtxvector_omp * x,
     int64_t size,
-    const double (* data)[2],
-    int num_threads);
+    const double (* data)[2]);
 
 /**
  * ‘mtxvector_omp_init_integer_single()’ allocates and initialises a
@@ -147,8 +178,7 @@ int mtxvector_omp_init_complex_double(
 int mtxvector_omp_init_integer_single(
     struct mtxvector_omp * x,
     int64_t size,
-    const int32_t * data,
-    int num_threads);
+    const int32_t * data);
 
 /**
  * ‘mtxvector_omp_init_integer_double()’ allocates and initialises a
@@ -157,8 +187,7 @@ int mtxvector_omp_init_integer_single(
 int mtxvector_omp_init_integer_double(
     struct mtxvector_omp * x,
     int64_t size,
-    const int64_t * data,
-    int num_threads);
+    const int64_t * data);
 
 /**
  * ‘mtxvector_omp_init_pattern()’ allocates and initialises a vector
@@ -166,8 +195,7 @@ int mtxvector_omp_init_integer_double(
  */
 int mtxvector_omp_init_pattern(
     struct mtxvector_omp * x,
-    int64_t size,
-    int num_threads);
+    int64_t size);
 
 /*
  * initialise vectors from strided arrays
@@ -181,8 +209,7 @@ int mtxvector_omp_init_strided_real_single(
     struct mtxvector_omp * x,
     int64_t size,
     int64_t stride,
-    const float * data,
-    int num_threads);
+    const float * data);
 
 /**
  * ‘mtxvector_omp_init_strided_real_double()’ allocates and
@@ -192,8 +219,7 @@ int mtxvector_omp_init_strided_real_double(
     struct mtxvector_omp * x,
     int64_t size,
     int64_t stride,
-    const double * data,
-    int num_threads);
+    const double * data);
 
 /**
  * ‘mtxvector_omp_init_strided_complex_single()’ allocates and
@@ -203,8 +229,7 @@ int mtxvector_omp_init_strided_complex_single(
     struct mtxvector_omp * x,
     int64_t size,
     int64_t stride,
-    const float (* data)[2],
-    int num_threads);
+    const float (* data)[2]);
 
 /**
  * ‘mtxvector_omp_init_strided_complex_double()’ allocates and
@@ -214,8 +239,7 @@ int mtxvector_omp_init_strided_complex_double(
     struct mtxvector_omp * x,
     int64_t size,
     int64_t stride,
-    const double (* data)[2],
-    int num_threads);
+    const double (* data)[2]);
 
 /**
  * ‘mtxvector_omp_init_strided_integer_single()’ allocates and
@@ -225,8 +249,7 @@ int mtxvector_omp_init_strided_integer_single(
     struct mtxvector_omp * x,
     int64_t size,
     int64_t stride,
-    const int32_t * data,
-    int num_threads);
+    const int32_t * data);
 
 /**
  * ‘mtxvector_omp_init_strided_integer_double()’ allocates and
@@ -236,8 +259,131 @@ int mtxvector_omp_init_strided_integer_double(
     struct mtxvector_omp * x,
     int64_t size,
     int64_t stride,
-    const int64_t * data,
-    int num_threads);
+    const int64_t * data);
+
+/*
+ * allocation and initialisation with custom schedule
+ */
+
+/**
+ * ‘mtxvector_omp_alloc_custom()’ allocates a vector with a
+ * user-defined schedule for parallel loops.
+ *
+ * If ‘offsets’ is ‘NULL’, then it is ignored. In this case, parallel
+ * loops employ a user-defined schedule and chunk size, as specified
+ * by ‘sched’ and ‘chunk_size’.
+ *
+ * Otherwise, a variable-sized block distribution of vector elements
+ * is used. In this case, ‘offsets’ must point to an array of length
+ * ‘num_threads+1’, containing the offsets to the first vector element
+ * assigned to each thread. Moreover, ‘offsets[num_threads]’ must be
+ * equal to the total number of vector elements.
+ */
+int mtxvector_omp_alloc_custom(
+    struct mtxvector_omp * x,
+    int num_threads,
+    const int64_t * offsets,
+    omp_sched_t sched,
+    int chunk_size,
+    enum mtxfield field,
+    enum mtxprecision precision,
+    int64_t size);
+
+/**
+ * ‘mtxvector_omp_init_custom_real_single()’ allocates and initialises
+ * a vector with real, single precision coefficients.
+ *
+ * See also ‘mtxvector_omp_alloc_custom()’.
+ */
+int mtxvector_omp_init_custom_real_single(
+    struct mtxvector_omp * x,
+    int num_threads,
+    const int64_t * offsets,
+    omp_sched_t sched,
+    int chunk_size,
+    int64_t size,
+    int stride,
+    const float * data);
+
+/**
+ * ‘mtxvector_omp_init_custom_real_double()’ allocates and initialises
+ * a vector with real, double precision coefficients.
+ *
+ * See also ‘mtxvector_omp_alloc_custom()’.
+ */
+int mtxvector_omp_init_custom_real_double(
+    struct mtxvector_omp * x,
+    int num_threads,
+    const int64_t * offsets,
+    omp_sched_t sched,
+    int chunk_size,
+    int64_t size,
+    int stride,
+    const double * data);
+
+/**
+ * ‘mtxvector_omp_init_custom_complex_single()’ allocates and
+ * initialises a vector with complex, single precision coefficients.
+ *
+ * See also ‘mtxvector_omp_alloc_custom()’.
+ */
+int mtxvector_omp_init_custom_complex_single(
+    struct mtxvector_omp * x,
+    int num_threads,
+    const int64_t * offsets,
+    omp_sched_t sched,
+    int chunk_size,
+    int64_t size,
+    int stride,
+    const float (* data)[2]);
+
+/**
+ * ‘mtxvector_omp_init_custom_complex_double()’ allocates and
+ * initialises a vector with complex, double precision coefficients.
+ *
+ * See also ‘mtxvector_omp_alloc_custom()’.
+ */
+int mtxvector_omp_init_custom_complex_double(
+    struct mtxvector_omp * x,
+    int num_threads,
+    const int64_t * offsets,
+    omp_sched_t sched,
+    int chunk_size,
+    int64_t size,
+    int stride,
+    const double (* data)[2]);
+
+/**
+ * ‘mtxvector_omp_init_custom_integer_single()’ allocates and
+ * initialises a vector with integer, single precision coefficients.
+ *
+ * See also ‘mtxvector_omp_alloc_custom()’.
+ */
+int mtxvector_omp_init_custom_integer_single(
+    struct mtxvector_omp * x,
+    int num_threads,
+    const int64_t * offsets,
+    omp_sched_t sched,
+    int chunk_size,
+    int64_t size,
+    int stride,
+    const int32_t * data);
+
+/**
+ * ‘mtxvector_omp_init_custom_integer_double()’ allocates and
+ * initialises a vector with integer, double precision coefficients.
+ *
+ * See also ‘mtxvector_omp_alloc_custom()’.
+ */
+int mtxvector_omp_init_custom_integer_double(
+    struct mtxvector_omp * x,
+    int num_threads,
+    const int64_t * offsets,
+    omp_sched_t sched,
+    int chunk_size,
+    int64_t size,
+    int stride,
+    const int64_t * data);
 
 /*
  * accessing values
