@@ -684,9 +684,10 @@ static int distgemv(
                 MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
             }
             if (verbose > 0) {
-                fprintf(diagf, "%'.6f seconds (%'.3f Gflop/s)\n",
+                fprintf(diagf, "%'.6f seconds (%'.3f Gflop/s, %'.3f Gnz/s)\n",
                         timespec_duration(t0, t1),
-                        1.0e-9 * num_flops / timespec_duration(t0, t1));
+                        1.0e-9 * num_flops / timespec_duration(t0, t1),
+                        1.0e-9 * A.num_nonzeros / timespec_duration(t0, t1));
             }
         }
     } else if (precision == mtx_double) {
@@ -730,9 +731,10 @@ static int distgemv(
                 MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
             }
             if (verbose > 0) {
-                fprintf(diagf, "%'.6f seconds (%'.3f Gflop/s)\n",
+                fprintf(diagf, "%'.6f seconds (%'.3f Gflop/s, %'.3f Gnz/s)\n",
                         timespec_duration(t0, t1),
-                        1.0e-9 * num_flops / timespec_duration(t0, t1));
+                        1.0e-9 * num_flops / timespec_duration(t0, t1),
+                        1.0e-9 * A.num_nonzeros / timespec_duration(t0, t1));
             }
         }
     } else {
@@ -1219,15 +1221,17 @@ static int gemv(
             int64_t num_flops = 0;
             err = mtxmatrix_sgemv(trans, alpha, A, x, 1.0f, y, &num_flops);
             if (err) {
-                if (verbose > 0)
-                    fprintf(diagf, "\n");
+                if (verbose > 0) fprintf(diagf, "\n");
                 return err;
             }
             if (verbose > 0) {
                 clock_gettime(CLOCK_MONOTONIC, &t1);
-                fprintf(diagf, "%'.6f seconds (%'.3f Gflop/s)\n",
+                int64_t num_nonzeros = 0;
+                mtxmatrix_num_nonzeros(A, &num_nonzeros);
+                fprintf(diagf, "%'.6f seconds (%'.3f Gflop/s, %'.3f Gnz/s)\n",
                         timespec_duration(t0, t1),
-                        1.0e-9 * num_flops / timespec_duration(t0, t1));
+                        1.0e-9 * num_flops / timespec_duration(t0, t1),
+                        1.0e-9 * num_nonzeros / timespec_duration(t0, t1));
             }
         }
     } else if (precision == mtx_double) {
@@ -1240,15 +1244,17 @@ static int gemv(
             int64_t num_flops = 0;
             err = mtxmatrix_dgemv(trans, alpha, A, x, 1.0, y, &num_flops);
             if (err) {
-                if (verbose > 0)
-                    fprintf(diagf, "\n");
+                if (verbose > 0) fprintf(diagf, "\n");
                 return err;
             }
             if (verbose > 0) {
                 clock_gettime(CLOCK_MONOTONIC, &t1);
-                fprintf(diagf, "%'.6f seconds (%'.3f Gflop/s)\n",
+                int64_t num_nonzeros = 0;
+                mtxmatrix_num_nonzeros(A, &num_nonzeros);
+                fprintf(diagf, "%'.6f seconds (%'.3f Gflop/s, %'.3f Gnz/s)\n",
                         timespec_duration(t0, t1),
-                        1.0e-9 * num_flops / timespec_duration(t0, t1));
+                        1.0e-9 * num_flops / timespec_duration(t0, t1),
+                        1.0e-9 * num_nonzeros / timespec_duration(t0, t1));
             }
         }
     } else {
