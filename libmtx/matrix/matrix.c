@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-05-02
+ * Last modified: 2022-05-21
  *
  * Data structures for matrices.
  */
@@ -90,8 +90,8 @@ int mtxmatrixtype_parse(
     if (strncmp("blas", t, strlen("blas")) == 0) {
         t += strlen("blas");
         *matrix_type = mtxmatrix_blas;
-    } else if (strncmp("coordinate", t, strlen("coordinate")) == 0) {
-        t += strlen("coordinate");
+    } else if (strncmp("coo", t, strlen("coo")) == 0) {
+        t += strlen("coo");
         *matrix_type = mtxmatrix_coo;
     } else if (strncmp("csr", t, strlen("csr")) == 0) {
         t += strlen("csr");
