@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-05-02
+ * Last modified: 2022-05-21
  *
  * Data structures for matrices.
  */
@@ -30,6 +30,7 @@
 #include <libmtx/matrix/base/csr.h>
 #include <libmtx/matrix/base/dense.h>
 #include <libmtx/matrix/blas/dense.h>
+#include <libmtx/matrix/omp/csr.h>
 #include <libmtx/matrix/symmetry.h>
 #include <libmtx/matrix/transpose.h>
 #include <libmtx/vector/field.h>
@@ -61,6 +62,7 @@ enum mtxmatrixtype
     mtxmatrix_coo,        /* coordinate format */
     mtxmatrix_csr,        /* compressed sparse row */
     mtxmatrix_dense,      /* dense matrices */
+    mtxmatrix_ompcsr,     /* compressed sparse row with OpenMP */
 };
 
 /**
@@ -123,6 +125,7 @@ struct mtxmatrix
         struct mtxmatrix_coo coordinate;
         struct mtxmatrix_csr csr;
         struct mtxmatrix_dense dense;
+        struct mtxmatrix_ompcsr ompcsr;
     } storage;
 };
 
