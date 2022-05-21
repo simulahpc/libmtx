@@ -66,7 +66,29 @@ int mtxvector_omp_alloc_copy(
     struct mtxvector_omp * dst,
     const struct mtxvector_omp * src)
 {
-    return mtxvector_base_alloc_copy(&dst->base, &src->base);
+    dst->num_threads = src->num_threads;
+    if (src->offsets) {
+        dst->offsets = malloc((dst->num_threads+1) * sizeof(int64_t));
+        if (!dst->offsets) return MTX_ERR_ERRNO;
+        for (int i = 0; i <= dst->num_threads; i++) {
+            if (i > 0 && src->offsets[i] < src->offsets[i-1]) {
+                free(dst->offsets);
+                return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            }
+            dst->offsets[i] = src->offsets[i];
+        }
+        if (dst->offsets[dst->num_threads] != src->base.size) {
+            free(dst->offsets);
+            return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+        }
+        dst->sched = omp_sched_static;
+        dst->chunk_size = 0;
+    } else { dst->offsets = NULL; }
+    dst->sched = src->sched;
+    dst->chunk_size = src->chunk_size;
+    int err = mtxvector_base_alloc_copy(&dst->base, &src->base);
+    if (err) { free(dst->offsets); return err; }
+    return MTX_SUCCESS;
 }
 
 /**
@@ -77,6 +99,28 @@ int mtxvector_omp_init_copy(
     struct mtxvector_omp * dst,
     const struct mtxvector_omp * src)
 {
+    dst->num_threads = src->num_threads;
+    if (src->offsets) {
+        dst->offsets = malloc((dst->num_threads+1) * sizeof(int64_t));
+        if (!dst->offsets) return MTX_ERR_ERRNO;
+        for (int i = 0; i <= dst->num_threads; i++) {
+            if (i > 0 && src->offsets[i] < src->offsets[i-1]) {
+                free(dst->offsets);
+                return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            }
+            dst->offsets[i] = src->offsets[i];
+        }
+        if (dst->offsets[dst->num_threads] != src->base.size) {
+            free(dst->offsets);
+            return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+        }
+        dst->sched = omp_sched_static;
+        dst->chunk_size = 0;
+    } else { dst->offsets = NULL; }
+    dst->sched = src->sched;
+    dst->chunk_size = src->chunk_size;
+    int err = mtxvector_base_alloc_copy(&dst->base, &src->base);
+    if (err) { free(dst->offsets); return err; }
     return mtxvector_base_init_copy(&dst->base, &src->base);
 }
 
@@ -97,9 +141,7 @@ int mtxvector_omp_alloc(
     x->offsets = NULL;
     x->sched = omp_sched_static;
     x->chunk_size = 0;
-    int err = mtxvector_base_alloc(&x->base, field, precision, size);
-    if (err) return err;
-    return MTX_SUCCESS;
+    return mtxvector_base_alloc(&x->base, field, precision, size);
 }
 
 /**
@@ -389,11 +431,16 @@ int mtxvector_omp_alloc_custom(
         x->offsets = malloc((num_threads+1) * sizeof(int64_t));
         if (!x->offsets) return MTX_ERR_ERRNO;
         for (int i = 0; i <= num_threads; i++) {
-            if (i > 0 && offsets[i] < offsets[i-1])
+            if (i > 0 && offsets[i] < offsets[i-1]) {
+                free(x->offsets);
                 return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            }
             x->offsets[i] = offsets[i];
         }
-        if (x->offsets[num_threads] != size) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+        if (x->offsets[num_threads] != size) {
+            free(x->offsets);
+            return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+        }
         x->sched = omp_sched_static;
         x->chunk_size = 0;
     } else {
@@ -403,7 +450,7 @@ int mtxvector_omp_alloc_custom(
         x->chunk_size = chunk_size;
     }
     int err = mtxvector_base_alloc(&x->base, field, precision, size);
-    if (err) return err;
+    if (err) { free(x->offsets); return err; }
     return MTX_SUCCESS;
 }
 
