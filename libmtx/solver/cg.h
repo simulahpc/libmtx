@@ -58,8 +58,7 @@ void mtxcg_free(
 int mtxcg_init(
     struct mtxcg * cg,
     const struct mtxmatrix * A,
-    enum mtxvectortype vectortype,
-    int64_t * num_flops);
+    enum mtxvectortype vectortype);
 
 /**
  * ‘mtxcg_solve()’ solves a linear system using CG.
@@ -68,7 +67,6 @@ int mtxcg_solve(
     struct mtxcg * cg,
     const struct mtxvector * b,
     struct mtxvector * x,
-    const struct mtxvector * x0,
     double atol,
     double rtol,
     int max_iterations,

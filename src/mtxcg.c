@@ -439,7 +439,7 @@ static int cg(
     /* allocate working space for the solver */
     struct mtxcg cg;
     int64_t num_flops = 0;
-    err = mtxcg_init(&cg, A, vectortype, &num_flops);
+    err = mtxcg_init(&cg, A, vectortype);
     if (err) {
         if (verbose > 0) fprintf(diagf, "\n");
         return err;
@@ -447,9 +447,7 @@ static int cg(
 
     if (verbose > 0) {
         clock_gettime(CLOCK_MONOTONIC, &t1);
-        fprintf(diagf, "%'.6f seconds (%'.3f Gflop/s)\n",
-                timespec_duration(t0, t1),
-                1.0e-9 * num_flops / timespec_duration(t0, t1));
+        fprintf(diagf, "%'.6f seconds\n", timespec_duration(t0, t1));
     }
 
     int num_iterations = 0;
@@ -485,7 +483,7 @@ static int cg(
         double b_nrm2;
         double r_nrm2;
         err = mtxcg_solve(
-            &cg, b, x, x, atol, rtol, max_iterations_in_current_round,
+            &cg, b, x, atol, rtol, max_iterations_in_current_round,
             recompute_residual, &num_iterations_in_current_round,
             &b_nrm2, &r_nrm2, num_iterations == 0 ? &r0_nrm2 : NULL, &num_flops);
         if (err != MTX_SUCCESS && err != MTX_ERR_NOT_CONVERGED) {

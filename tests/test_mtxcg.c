@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-05-19
+ * Last modified: 2022-05-22
  *
  * Unit tests for an iterative linear solver based on the conjugate
  * gradient method.
@@ -71,7 +71,7 @@ int test_mtxcg_2x2(void)
 
     /* solve */
     struct mtxcg cg;
-    err = mtxcg_init(&cg, &A, &b, &x, NULL);
+    err = mtxcg_init(&cg, &A, mtxvector_base);
     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
     double atol = 1e-15;
@@ -81,7 +81,7 @@ int test_mtxcg_2x2(void)
     double b_nrm2;
     double r_nrm2;
     err = mtxcg_solve(
-        &cg, &x, atol, rtol, max_iterations,
+        &cg, &b, &x, atol, rtol, max_iterations, false,
         &num_iterations, &b_nrm2, &r_nrm2, NULL, NULL);
     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
@@ -159,7 +159,7 @@ int test_mtxcg_poisson(void)
 
     /* solve */
     struct mtxcg cg;
-    err = mtxcg_init(&cg, &A, &b, &x, NULL);
+    err = mtxcg_init(&cg, &A, mtxvector_base);
     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
     double atol = 1e-15;
@@ -169,7 +169,7 @@ int test_mtxcg_poisson(void)
     double b_nrm2;
     double r_nrm2;
     err = mtxcg_solve(
-        &cg, &x, atol, rtol, max_iterations,
+        &cg, &b, &x, atol, rtol, max_iterations, false,
         &num_iterations, &b_nrm2, &r_nrm2, NULL, NULL);
     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 

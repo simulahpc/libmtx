@@ -49,8 +49,7 @@ void mtxcg_free(
 int mtxcg_init(
     struct mtxcg * cg,
     const struct mtxmatrix * A,
-    enum mtxvectortype vectortype,
-    int64_t * num_flops)
+    enum mtxvectortype vectortype)
 {
     cg->A = A;
     int err = mtxmatrix_alloc_row_vector(A, &cg->r, vectortype);
@@ -70,7 +69,6 @@ int mtxcg_solve(
     struct mtxcg * cg,
     const struct mtxvector * b,
     struct mtxvector * x,
-    const struct mtxvector * x0,
     double atol,
     double rtol,
     int max_iterations,
@@ -97,10 +95,9 @@ int mtxcg_solve(
     if (out_b_nrm2) *out_b_nrm2 = b_nrm2;
     rtol *= b_nrm2;
 
-    // r0 = b - A*x0, and p = r
+    // r = b - A*x, and p = r
     if (!cg->started || recompute_residual) {
         err = mtxvector_copy(r, b); if (err) return err;
-        if (x0 && x != x0) { err = mtxvector_copy(x, x0); if (err) return err; }
         err = mtxmatrix_dgemv(mtx_notrans, -1.0, A, x, 1.0, r, num_flops);
         if (err) return err;
         err = mtxvector_copy(p, r); if (err) return err;
