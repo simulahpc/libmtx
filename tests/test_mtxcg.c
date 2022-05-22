@@ -82,7 +82,7 @@ int test_mtxcg_2x2(void)
     double r_nrm2;
     err = mtxcg_solve(
         &cg, &x, atol, rtol, max_iterations,
-        &num_iterations, &b_nrm2, &r_nrm2, NULL);
+        &num_iterations, &b_nrm2, &r_nrm2, NULL, NULL);
     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
     const struct mtxvector_base * xbase = &x.storage.base;
@@ -170,7 +170,7 @@ int test_mtxcg_poisson(void)
     double r_nrm2;
     err = mtxcg_solve(
         &cg, &x, atol, rtol, max_iterations,
-        &num_iterations, &b_nrm2, &r_nrm2, NULL);
+        &num_iterations, &b_nrm2, &r_nrm2, NULL, NULL);
     TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
     const struct mtxvector_base * xbase = &x.storage.base;

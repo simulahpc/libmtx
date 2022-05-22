@@ -49,26 +49,17 @@ void mtxcg_free(
 int mtxcg_init(
     struct mtxcg * cg,
     const struct mtxmatrix * A,
-    const struct mtxvector * b,
-    const struct mtxvector * x0,
+    enum mtxvectortype vectortype,
     int64_t * num_flops)
 {
     cg->A = A;
-    cg->b = b;
-    cg->x0 = x0;
-    cg->b_nrm2 = INFINITY;
-    int err = mtxvector_dnrm2(b, &cg->b_nrm2, num_flops);
+    int err = mtxmatrix_alloc_row_vector(A, &cg->r, vectortype);
     if (err) return err;
-
-    // r0 = b - A*x0, and p = r
-    err = mtxvector_init_copy(&cg->r, b);
-    if (err) return err;
-    err = mtxmatrix_dgemv(mtx_notrans, -1.0, A, x0, 1.0, &cg->r, num_flops);
-    if (err) { mtxcg_free(cg); return err; }
-    err = mtxvector_init_copy(&cg->p, &cg->r);
+    err = mtxvector_alloc_copy(&cg->p, &cg->r);
     if (err) { mtxvector_free(&cg->r); return err; }
-    err = mtxvector_alloc_copy(&cg->t, x0);
+    err = mtxmatrix_alloc_column_vector(A, &cg->t, vectortype);
     if (err) { mtxvector_free(&cg->p); mtxvector_free(&cg->r); return err; }
+    cg->started = false;
     return MTX_SUCCESS;
 }
 
@@ -77,32 +68,55 @@ int mtxcg_init(
  */
 int mtxcg_solve(
     struct mtxcg * cg,
+    const struct mtxvector * b,
     struct mtxvector * x,
+    const struct mtxvector * x0,
     double atol,
     double rtol,
     int max_iterations,
+    bool recompute_residual,
     int * num_iterations,
-    double * b_nrm2,
-    double * r_nrm2,
+    double * out_b_nrm2,
+    double * out_r_nrm2,
+    double * out_r0_nrm2,
     int64_t * num_flops)
 {
     const struct mtxmatrix * A = cg->A;
-    const struct mtxvector * b = cg->b;
     struct mtxvector * r = &cg->r;
     struct mtxvector * p = &cg->p;
     struct mtxvector * t = &cg->t;
 
     if (num_iterations) *num_iterations = 0;
-    *b_nrm2 = cg->b_nrm2;
-    rtol *= *b_nrm2;
-    *r_nrm2 = INFINITY;
+    if (out_b_nrm2) *out_b_nrm2 = INFINITY;
+    if (out_r0_nrm2) *out_r0_nrm2 = INFINITY;
+    if (out_r_nrm2) *out_r_nrm2 = INFINITY;
+
+    double b_nrm2;
+    int err = mtxvector_dnrm2(b, &b_nrm2, num_flops);
+    if (err) return err;
+    if (out_b_nrm2) *out_b_nrm2 = b_nrm2;
+    rtol *= b_nrm2;
+
+    // r0 = b - A*x0, and p = r
+    if (!cg->started || recompute_residual) {
+        err = mtxvector_copy(r, b); if (err) return err;
+        if (x0 && x != x0) { err = mtxvector_copy(x, x0); if (err) return err; }
+        err = mtxmatrix_dgemv(mtx_notrans, -1.0, A, x, 1.0, r, num_flops);
+        if (err) return err;
+        err = mtxvector_copy(p, r); if (err) return err;
+        cg->started = true;
+    }
 
     double r_nrm2_sqr;
-    int err = mtxvector_ddot(r, r, &r_nrm2_sqr, num_flops);
+    err = mtxvector_ddot(r, r, &r_nrm2_sqr, num_flops);
     if (err) return err;
-    *r_nrm2 = sqrt(r_nrm2_sqr);
 
-    if (max_iterations <= 0 && (*r_nrm2 <= rtol || *r_nrm2 <= atol)) return MTX_SUCCESS;
+    double r_nrm2;
+    r_nrm2 = sqrt(r_nrm2_sqr);
+    if (out_r_nrm2) *out_r_nrm2 = r_nrm2;
+    if (out_r0_nrm2) *out_r0_nrm2 = r_nrm2;
+
+    if (max_iterations <= 0 && (r_nrm2 <= rtol || r_nrm2 <= atol)) return MTX_SUCCESS;
     else if (max_iterations <= 0) return MTX_ERR_NOT_CONVERGED;
 
     for (int k = 0; k < max_iterations; k++) {
@@ -131,9 +145,10 @@ int mtxcg_solve(
         beta = r_nrm2_sqr / beta;
 
         // check for convergence
-        *r_nrm2 = sqrt(r_nrm2_sqr);
+        r_nrm2 = sqrt(r_nrm2_sqr);
+        if (out_r_nrm2) *out_r_nrm2 = r_nrm2;
         if (num_iterations) (*num_iterations)++;
-        if (*r_nrm2 <= rtol || *r_nrm2 <= atol) return MTX_SUCCESS;
+        if (r_nrm2 <= rtol || r_nrm2 <= atol) return MTX_SUCCESS;
 
         // p = beta*p + r
         err = mtxvector_daypx(beta, p, r, num_flops);

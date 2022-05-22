@@ -30,6 +30,8 @@
 #include <libmtx/vector/field.h>
 #include <libmtx/vector/vector.h>
 
+#include <stdbool.h>
+
 struct mtxmatrix;
 
 /**
@@ -38,12 +40,10 @@ struct mtxmatrix;
 struct mtxcg
 {
     const struct mtxmatrix * A;
-    const struct mtxvector * b;
-    const struct mtxvector * x0;
-    double b_nrm2;
     struct mtxvector r;
     struct mtxvector p;
     struct mtxvector t;
+    bool started;
 };
 
 /**
@@ -58,8 +58,7 @@ void mtxcg_free(
 int mtxcg_init(
     struct mtxcg * cg,
     const struct mtxmatrix * A,
-    const struct mtxvector * b,
-    const struct mtxvector * x0,
+    enum mtxvectortype vectortype,
     int64_t * num_flops);
 
 /**
@@ -67,13 +66,17 @@ int mtxcg_init(
  */
 int mtxcg_solve(
     struct mtxcg * cg,
+    const struct mtxvector * b,
     struct mtxvector * x,
+    const struct mtxvector * x0,
     double atol,
     double rtol,
     int max_iterations,
+    bool recompute_residual,
     int * num_iterations,
     double * b_nrm2,
     double * r_nrm2,
+    double * r0_nrm2,
     int64_t * num_flops);
 
 #endif

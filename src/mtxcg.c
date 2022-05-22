@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-05-19
+ * Last modified: 2022-05-22
  *
  * Use the conjugate gradient method to (approximately) solve a
  * symmetric, positive definite linear system of equations ‘Ax=b’.
@@ -147,9 +147,9 @@ static void program_options_print_help(
     fprintf(f, "\t\t\tif the norm of the residual divided by the norm of the \n");
     fprintf(f, "\t\t\tright-hand side drops below (default: 1e-6)\n");
     fprintf(f, "  --max-iterations=N\tmaximum number of iterations (default: 100)\n");
-    fprintf(f, "  --restart=N\t\trestart the iterative solver every N iterations.\n");
     fprintf(f, "  --progress=N\t\tprint a progress report every N iterations.\n");
     fprintf(f, "\t\t\tThe default is to not print any progress report.\n");
+    fprintf(f, "  --restart=N\t\trestart the iterative solver every N iterations.\n");
     fprintf(f, "\n");
     fprintf(f, " Other options are:\n");
     fprintf(f, "  --precision=PRECISION\tprecision used to represent matrix or\n");
@@ -249,19 +249,6 @@ static int parse_program_options(
             (*nargs)++; argv++; continue;
         }
 
-        if (strcmp(argv[0], "--restart") == 0) {
-            if (argc - *nargs < 2) { program_options_free(args); return EINVAL; }
-            (*nargs)++; argv++;
-            err = parse_int32_ex(argv[0], NULL, &args->restart, NULL);
-            if (err) { program_options_free(args); return err; }
-            (*nargs)++; argv++; continue;
-        } else if (strstr(argv[0], "--restart=") == argv[0]) {
-            err = parse_int32_ex(
-                argv[0] + strlen("--restart="), NULL, &args->restart, NULL);
-            if (err) { program_options_free(args); return err; }
-            (*nargs)++; argv++; continue;
-        }
-
         if (strcmp(argv[0], "--progress") == 0) {
             if (argc - *nargs < 2) { program_options_free(args); return EINVAL; }
             (*nargs)++; argv++;
@@ -271,6 +258,19 @@ static int parse_program_options(
         } else if (strstr(argv[0], "--progress=") == argv[0]) {
             err = parse_int32_ex(
                 argv[0] + strlen("--progress="), NULL, &args->progress, NULL);
+            if (err) { program_options_free(args); return err; }
+            (*nargs)++; argv++; continue;
+        }
+
+        if (strcmp(argv[0], "--restart") == 0) {
+            if (argc - *nargs < 2) { program_options_free(args); return EINVAL; }
+            (*nargs)++; argv++;
+            err = parse_int32_ex(argv[0], NULL, &args->restart, NULL);
+            if (err) { program_options_free(args); return err; }
+            (*nargs)++; argv++; continue;
+        } else if (strstr(argv[0], "--restart=") == argv[0]) {
+            err = parse_int32_ex(
+                argv[0] + strlen("--restart="), NULL, &args->restart, NULL);
             if (err) { program_options_free(args); return err; }
             (*nargs)++; argv++; continue;
         }
@@ -365,6 +365,12 @@ static int parse_program_options(
             break;
         }
 
+        /* Unrecognised option. */
+        if (strlen(argv[0]) > 0 && argv[0][0] == '-') {
+            program_options_free(args);
+            return EINVAL;
+        }
+
         /*
          * Parse positional arguments.
          */
@@ -410,6 +416,7 @@ static int cg(
     const struct mtxvector * b,
     struct mtxvector * x,
     enum mtxprecision precision,
+    enum mtxvectortype vectortype,
     double atol,
     double rtol,
     int max_iterations,
@@ -432,7 +439,7 @@ static int cg(
     /* allocate working space for the solver */
     struct mtxcg cg;
     int64_t num_flops = 0;
-    err = mtxcg_init(&cg, A, b, x, &num_flops);
+    err = mtxcg_init(&cg, A, vectortype, &num_flops);
     if (err) {
         if (verbose > 0) fprintf(diagf, "\n");
         return err;
@@ -446,6 +453,8 @@ static int cg(
     }
 
     int num_iterations = 0;
+    double r0_nrm2;
+    bool recompute_residual = false;
     while (num_iterations < max_iterations) {
         int next_progress =
             (progress > 0 && progress <= max_iterations)
@@ -476,14 +485,16 @@ static int cg(
         double b_nrm2;
         double r_nrm2;
         err = mtxcg_solve(
-            &cg, x, atol, rtol, max_iterations_in_current_round,
-            &num_iterations_in_current_round, &b_nrm2, &r_nrm2, &num_flops);
+            &cg, b, x, x, atol, rtol, max_iterations_in_current_round,
+            recompute_residual, &num_iterations_in_current_round,
+            &b_nrm2, &r_nrm2, num_iterations == 0 ? &r0_nrm2 : NULL, &num_flops);
         if (err != MTX_SUCCESS && err != MTX_ERR_NOT_CONVERGED) {
             if (verbose > 0) fprintf(diagf, "\n");
             mtxcg_free(&cg);
             return err;
         }
         num_iterations += num_iterations_in_current_round;
+        recompute_residual = false;
 
         if (verbose > 0 ||
             next_progress <= max_iterations ||
@@ -494,39 +505,36 @@ static int cg(
                 fprintf(
                     diagf, "%.6f seconds (%'.3f Gflop/s) - "
                     "converged after %d iterations, "
-                    "residual 2-norm %.*g, right-hand side 2-norm %.*g, "
+                    "right-hand side 2-norm %.*g, "
+                    "residual 2-norm %.*g, "
+                    "initial residual 2-norm %.*g, "
                     "relative residual %.*g, "
                     "absolute tolerance %.*g, relative tolerance %.*g\n",
                     timespec_duration(t0, t1),
                     1.0e-9 * num_flops / timespec_duration(t0, t1),
-                    num_iterations, DBL_DIG, r_nrm2, DBL_DIG, b_nrm2,
+                    num_iterations, DBL_DIG, b_nrm2, DBL_DIG, r_nrm2, DBL_DIG, r0_nrm2,
                     DBL_DIG, fabs(b_nrm2) > DBL_EPSILON ? r_nrm2 / b_nrm2 : INFINITY,
                     DBL_DIG, atol, DBL_DIG, rtol);
             } else if (err == MTX_ERR_NOT_CONVERGED) {
                 fprintf(
                     diagf, "%.6f seconds (%'.3f Gflop/s) - "
                     "not converged after %d iterations, "
-                    "residual 2-norm %.*g, right-hand side 2-norm %.*g, "
+                    "right-hand side 2-norm %.*g, "
+                    "residual 2-norm %.*g, "
+                    "initial residual 2-norm %.*g, "
                     "relative residual %.*g, "
                     "absolute tolerance %.*g, relative tolerance %.*g%s\n",
                     timespec_duration(t0, t1),
                     1.0e-9 * num_flops / timespec_duration(t0, t1),
-                    num_iterations, DBL_DIG, r_nrm2, DBL_DIG, b_nrm2,
+                    num_iterations, DBL_DIG, b_nrm2, DBL_DIG, r_nrm2, DBL_DIG, r0_nrm2,
                     DBL_DIG, fabs(b_nrm2) > DBL_EPSILON ? r_nrm2 / b_nrm2 : INFINITY,
                     DBL_DIG, atol, DBL_DIG, rtol,
-                    next_restart == num_iterations_in_current_round ?
-                    ", restarting" : "");
+                    num_iterations < max_iterations &&
+                    next_restart == num_iterations_in_current_round ? ", restarting" : "");
+                recompute_residual = true;
             }
         }
         if (err == MTX_SUCCESS) break;
-
-        if (num_iterations < max_iterations
-            && next_restart == num_iterations_in_current_round)
-        {
-            mtxcg_free(&cg);
-            err = mtxcg_init(&cg, A, b, x, &num_flops);
-            if (err) { mtxcg_free(&cg); return err; }
-        }
     }
     mtxcg_free(&cg);
 
@@ -750,7 +758,7 @@ int main(int argc, char *argv[])
 
     /* 5. Solve the linear system using the conjugate gradient
      * method. */
-    err = cg(&A, &b, &x, args.precision,
+    err = cg(&A, &b, &x, args.precision, args.vector_type,
              args.atol, args.rtol, args.max_iterations,
              args.progress, args.restart,
              args.format, args.verbose, diagf, args.quiet);
