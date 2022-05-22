@@ -186,6 +186,12 @@ mtxreorder_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/src $(MPICPPFLAGS)
 mtxreorder_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
 mtxreorder_SOURCES = src/mtxreorder.c
 
+# mtxsplit
+bin_PROGRAMS += mtxsplit
+mtxsplit_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/src $(MPICPPFLAGS)
+mtxsplit_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
+mtxsplit_SOURCES = src/mtxsplit.c
+
 # mtxscal
 bin_PROGRAMS += mtxscal
 mtxscal_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/src $(MPICPPFLAGS)
