@@ -2015,7 +2015,6 @@ int mtxfile_join(
     int err;
     int num_row_parts = rowpart ? rowpart->num_parts : 1;
     int num_col_parts = colpart ? colpart->num_parts : 1;
-    int num_parts = num_row_parts * num_col_parts;
     if (num_row_parts <= 0 || num_col_parts <= 0) return MTX_ERR_INVALID_PARTITION;
 
     /* Check that the blocks are of the same type */
@@ -2682,8 +2681,6 @@ int mtxfile_reorder(
     bool * symmetric,
     int * rcm_starting_vertex)
 {
-    int err;
-
     /* rectangular matrices always yield unsymmetric orderings */
     int64_t num_rows = mtxfile->size.num_rows;
     int64_t num_columns = mtxfile->size.num_columns;

@@ -521,6 +521,7 @@ int mtxvector_dist_setzero(
 {
     int err = mtxvector_packed_setzero(&x->xp);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+    return MTX_SUCCESS;
 }
 
 /**
@@ -535,6 +536,7 @@ int mtxvector_dist_set_constant_real_single(
 {
     int err = mtxvector_packed_set_constant_real_single(&x->xp, a);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+    return MTX_SUCCESS;
 }
 
 /**
@@ -549,6 +551,7 @@ int mtxvector_dist_set_constant_real_double(
 {
     int err = mtxvector_packed_set_constant_real_double(&x->xp, a);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+    return MTX_SUCCESS;
 }
 
 /**
@@ -563,6 +566,7 @@ int mtxvector_dist_set_constant_complex_single(
 {
     int err = mtxvector_packed_set_constant_complex_single(&x->xp, a);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+    return MTX_SUCCESS;
 }
 
 /**
@@ -577,6 +581,7 @@ int mtxvector_dist_set_constant_complex_double(
 {
     int err = mtxvector_packed_set_constant_complex_double(&x->xp, a);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+    return MTX_SUCCESS;
 }
 
 /**
@@ -590,6 +595,7 @@ int mtxvector_dist_set_constant_integer_single(
 {
     int err = mtxvector_packed_set_constant_integer_single(&x->xp, a);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+    return MTX_SUCCESS;
 }
 
 /**
@@ -603,6 +609,7 @@ int mtxvector_dist_set_constant_integer_double(
 {
     int err = mtxvector_packed_set_constant_integer_double(&x->xp, a);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+    return MTX_SUCCESS;
 }
 
 /*
@@ -926,9 +933,6 @@ int mtxvector_dist_to_mtxdistfile(
     enum mtxfileformat mtxfmt,
     struct mtxdisterror * disterr)
 {
-    MPI_Comm comm = x->comm;
-    int comm_size = x->comm_size;
-    int rank = x->rank;
     enum mtxfield field;
     int err = mtxvector_field(&x->xp.x, &field);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
@@ -2214,8 +2218,6 @@ int mtxvector_dist_usscga_start(
     struct mtxdisterror * disterr)
 {
     MPI_Comm comm = usscga->impl->comm;
-    int comm_size = usscga->impl->commsize;
-    int rank = usscga->impl->rank;
 
     /*
      * Step 7: For each process to which the current process must send data,
@@ -2228,6 +2230,8 @@ int mtxvector_dist_usscga_start(
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
 
 #ifdef MTXDEBUG_MTXVECTOR_DIST_USSCGA_START
+    int comm_size = usscga->impl->commsize;
+    int rank = usscga->impl->rank;
     for (int p = 0; p < comm_size; p++) {
         if (rank == p) {
             fprintf(stderr, "sendbuf=(");
@@ -2282,7 +2286,6 @@ int mtxvector_dist_usscga_wait(
     struct mtxdisterror * disterr)
 {
     struct mtxvector_dist * z = usscga->z;
-    const struct mtxvector_dist * x = usscga->x;
     const int64_t * zperm = usscga->impl->zperm;
     const int64_t idxsrcrankstart = usscga->impl->idxsrcrankstart;
     int nrecvranks = usscga->impl->nrecvranks;

@@ -104,10 +104,8 @@ int mtxfileobject_parse(
             return MTX_ERR_INVALID_MTX_OBJECT;
         t++;
     }
-    if (bytes_read)
-        *bytes_read += t-s;
-    if (endptr)
-        *endptr = t;
+    if (bytes_read) *bytes_read += t-s;
+    if (endptr) *endptr = (char *) t;
     return MTX_SUCCESS;
 }
 
@@ -168,10 +166,8 @@ int mtxfileformat_parse(
             return MTX_ERR_INVALID_MTX_FORMAT;
         t++;
     }
-    if (bytes_read)
-        *bytes_read += t-s;
-    if (endptr)
-        *endptr = t;
+    if (bytes_read) *bytes_read += t-s;
+    if (endptr) *endptr = (char *) t;
     return MTX_SUCCESS;
 }
 
@@ -240,10 +236,8 @@ int mtxfilefield_parse(
             return MTX_ERR_INVALID_MTX_FIELD;
         t++;
     }
-    if (bytes_read)
-        *bytes_read += t-s;
-    if (endptr)
-        *endptr = t;
+    if (bytes_read) *bytes_read += t-s;
+    if (endptr) *endptr = (char *) t;
     return MTX_SUCCESS;
 }
 
@@ -352,10 +346,8 @@ int mtxfilesymmetry_parse(
             return MTX_ERR_INVALID_MTX_SYMMETRY;
         t++;
     }
-    if (bytes_read)
-        *bytes_read += t-s;
-    if (endptr)
-        *endptr = t;
+    if (bytes_read) *bytes_read += t-s;
+    if (endptr) *endptr = (char *) t;
     return MTX_SUCCESS;
 }
 
@@ -418,10 +410,8 @@ static int mtxfile_parse_identifier(
             return MTX_ERR_INVALID_MTX_HEADER;
         t++;
     }
-    if (bytes_read)
-        *bytes_read += t-s;
-    if (endptr)
-        *endptr = t;
+    if (bytes_read) *bytes_read += t-s;
+    if (endptr) *endptr = (char *) t;
     return MTX_SUCCESS;
 }
 
@@ -442,30 +432,23 @@ static int mtxfile_parse_identifier(
 int mtxfileheader_parse(
     struct mtxfileheader * header,
     int64_t * bytes_read,
-    char ** endptr,
+    char ** outendptr,
     const char * s)
 {
     int err;
-    const char * t = s;
-    if (bytes_read)
-        *bytes_read = 0;
-    err = mtxfile_parse_identifier(bytes_read, &t, t, " ");
-    if (err)
-        return err;
-    err = mtxfileobject_parse(&header->object, bytes_read, &t, t, " ");
-    if (err)
-        return err;
-    err = mtxfileformat_parse(&header->format, bytes_read, &t, t, " ");
-    if (err)
-        return err;
-    err = mtxfilefield_parse(&header->field, bytes_read, &t, t, " ");
-    if (err)
-        return err;
-    err = mtxfilesymmetry_parse(&header->symmetry, bytes_read, &t, t, "\n");
-    if (err)
-        return err;
-    if (endptr)
-        *endptr = t;
+    char * endptr;
+    if (bytes_read) *bytes_read = 0;
+    err = mtxfile_parse_identifier(bytes_read, &endptr, s, " ");
+    if (err) return err;
+    err = mtxfileobject_parse(&header->object, bytes_read, &endptr, endptr, " ");
+    if (err) return err;
+    err = mtxfileformat_parse(&header->format, bytes_read, &endptr, endptr, " ");
+    if (err) return err;
+    err = mtxfilefield_parse(&header->field, bytes_read, &endptr, endptr, " ");
+    if (err) return err;
+    err = mtxfilesymmetry_parse(&header->symmetry, bytes_read, &endptr, endptr, "\n");
+    if (err) return err;
+    if (outendptr) *outendptr = endptr;
     return MTX_SUCCESS;
 }
 

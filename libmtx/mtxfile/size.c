@@ -211,7 +211,6 @@ int mtxfilesize_cat(
     enum mtxfileobject object,
     enum mtxfileformat format)
 {
-    int err;
     if (format == mtxfile_array) {
         if (object == mtxfile_matrix) {
             if (dst->num_columns != src->num_columns)
@@ -219,17 +218,13 @@ int mtxfilesize_cat(
             dst->num_rows += src->num_rows;
         } else if (object == mtxfile_vector) {
             dst->num_rows += src->num_rows;
-        } else {
-            return MTX_ERR_INVALID_MTX_OBJECT;
-        }
+        } else { return MTX_ERR_INVALID_MTX_OBJECT; }
     } else if (format == mtxfile_coordinate) {
         if (dst->num_rows != src->num_rows ||
             dst->num_columns != src->num_columns)
             return MTX_ERR_INVALID_MTX_SIZE;
         dst->num_nonzeros += src->num_nonzeros;
-    } else {
-        return MTX_ERR_INVALID_MTX_FORMAT;
-    }
+    } else { return MTX_ERR_INVALID_MTX_FORMAT; }
     return MTX_SUCCESS;
 }
 

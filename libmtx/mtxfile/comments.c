@@ -476,24 +476,20 @@ int mtxfilecomments_send(
     MPI_Comm comm,
     struct mtxdisterror * disterr)
 {
-    int err;
     int num_comments = 0;
     const struct mtxfilecomment * node;
     for (node = comments->root; node; node = node->next)
         num_comments++;
 
     disterr->err = MPI_Send(&num_comments, 1, MPI_INT, dest, tag, comm);
-    if (disterr->err)
-        return MTX_ERR_MPI;
+    if (disterr->err) return MTX_ERR_MPI;
 
     for (node = comments->root; node; node = node->next) {
         int len = strlen(node->comment_line);
         disterr->err = MPI_Send(&len, 1, MPI_INT, dest, tag, comm);
-        if (disterr->err)
-            return MTX_ERR_MPI;
+        if (disterr->err) return MTX_ERR_MPI;
         disterr->err = MPI_Send(node->comment_line, len, MPI_CHAR, dest, tag, comm);
-        if (disterr->err)
-            return MTX_ERR_MPI;
+        if (disterr->err) return MTX_ERR_MPI;
     }
     return MTX_SUCCESS;
 }

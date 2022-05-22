@@ -920,7 +920,6 @@ int assumedpartition_read(
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
 
     int blksize = (N+comm_size-1) / comm_size;
-    int64_t blkstart = rank*blksize;
     if (apsize < blksize) err = MTX_ERR_INDEX_OUT_OF_BOUNDS;
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
 
@@ -1733,7 +1732,6 @@ int mtxpartition_init_block(
     int num_parts,
     const int64_t * part_sizes)
 {
-    int err;
     if (num_parts <= 0)
         return MTX_ERR_INVALID_PARTITION;
     if (size / num_parts >= INT_MAX) {
@@ -1785,7 +1783,6 @@ int mtxpartition_init_cyclic(
     int64_t size,
     int num_parts)
 {
-    int err;
     if (num_parts <= 0)
         return MTX_ERR_INVALID_PARTITION;
     if (size / num_parts >= INT_MAX) {
@@ -1889,7 +1886,6 @@ int mtxpartition_init_custom(
     const int64_t * part_sizes,
     const int64_t * elements_per_part)
 {
-    int err;
     if (num_parts <= 0)
         return MTX_ERR_INVALID_PARTITION;
 

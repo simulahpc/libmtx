@@ -66,7 +66,7 @@ int mtxblaserror(void)
  * ‘mtxblaserrorclear()’ clears any error flags that may have been set
  * during error handling in BLAS routines.
  */
-int mtxblaserrorclear(void)
+void mtxblaserrorclear(void)
 {
     snprintf(mtxblaserrstr, sizeof(mtxblaserrstr), "unknown BLAS error");
     mtxblaserr = 0;

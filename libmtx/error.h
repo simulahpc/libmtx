@@ -127,7 +127,7 @@ int mtxblaserror(void);
  * ‘mtxblaserrorclear()’ clears any error flags that may have been set
  * during error handling in BLAS routines.
  */
-int mtxblaserrorclear(void);
+void mtxblaserrorclear(void);
 
 /**
  * ‘mtxdiststrerror()’ is a string describing an error code.

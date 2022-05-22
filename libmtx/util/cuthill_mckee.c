@@ -38,7 +38,6 @@ static int minimum_degree_vertex(
     int * out_vertex,
     int * out_degree)
 {
-    int err;
     if (num_vertices == 0) {
         *out_vertex = -1;
         *out_degree = -1;
@@ -83,7 +82,6 @@ static int rooted_level_structure(
     int ** out_vertices_per_level,
     int ** out_vertex_in_set)
 {
-    int err;
     bool square = num_rows == num_columns;
     int num_vertices = square ? num_rows : num_rows + num_columns;
 

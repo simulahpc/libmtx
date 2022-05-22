@@ -438,7 +438,6 @@ static int cg(
 
     /* allocate working space for the solver */
     struct mtxcg cg;
-    int64_t num_flops = 0;
     err = mtxcg_init(&cg, A, vectortype);
     if (err) {
         if (verbose > 0) fprintf(diagf, "\n");
@@ -598,7 +597,7 @@ int main(int argc, char *argv[])
     if (err && lines_read >= 0) {
         if (args.verbose > 0)
             fprintf(diagf, "\n");
-        fprintf(stderr, "%s: %s:%d: %s\n",
+        fprintf(stderr, "%s: %s:%"PRId64": %s\n",
                 program_invocation_short_name,
                 args.A_path, lines_read+1,
                 mtxstrerror(err));
@@ -640,7 +639,7 @@ int main(int argc, char *argv[])
         if (err && lines_read >= 0) {
             if (args.verbose > 0)
                 fprintf(diagf, "\n");
-            fprintf(stderr, "%s: %s:%d: %s\n",
+            fprintf(stderr, "%s: %s:%"PRId64": %s\n",
                     program_invocation_short_name,
                     args.b_path, lines_read+1,
                     mtxstrerror(err));
@@ -704,7 +703,7 @@ int main(int argc, char *argv[])
         if (err && lines_read >= 0) {
             if (args.verbose > 0)
                 fprintf(diagf, "\n");
-            fprintf(stderr, "%s: %s:%d: %s\n",
+            fprintf(stderr, "%s: %s:%"PRId64": %s\n",
                     program_invocation_short_name,
                     args.x_path, lines_read+1,
                     mtxstrerror(err));

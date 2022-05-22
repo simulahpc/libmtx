@@ -355,7 +355,6 @@ int radix_sort_uint32(
     uint32_t * keys,
     int64_t * sorting_permutation)
 {
-    int err;
     uint32_t * extra_keys = malloc(size * sizeof(uint32_t));
     if (!extra_keys)
         return MTX_ERR_ERRNO;
@@ -445,7 +444,7 @@ static void swap_int64_t(
     int64_t ** a,
     int64_t ** b)
 {
-    uint64_t * tmp = *a;
+    int64_t * tmp = *a;
     *a = *b;
     *b = tmp;
 }
@@ -470,7 +469,6 @@ int radix_sort_uint64(
     uint64_t * keys,
     int64_t * sorting_permutation)
 {
-    int err;
     uint64_t * extra_keys = malloc(size * sizeof(uint64_t));
     if (!extra_keys)
         return MTX_ERR_ERRNO;

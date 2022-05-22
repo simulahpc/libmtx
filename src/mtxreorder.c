@@ -459,7 +459,7 @@ int main(int argc, char *argv[])
     if (err && lines_read >= 0) {
         if (args.verbose > 0)
             fprintf(diagf, "\n");
-        fprintf(stderr, "%s: %s:%d: %s\n",
+        fprintf(stderr, "%s: %s:%"PRId64": %s\n",
                 program_invocation_short_name,
                 args.mtx_path, lines_read+1,
                 mtxstrerror(err));
@@ -523,7 +523,7 @@ int main(int argc, char *argv[])
             if (args.verbose > 0)
                 fprintf(diagf, "\n");
             if (lines_read >= 0) {
-                fprintf(stderr, "%s: %s:%d: %s\n",
+                fprintf(stderr, "%s: %s:%"PRId64": %s\n",
                         program_invocation_short_name,
                         args.rowperm_path, lines_read+1,
                         mtxstrerror(err));
@@ -600,7 +600,7 @@ int main(int argc, char *argv[])
             if (args.verbose > 0)
                 fprintf(diagf, "\n");
             if (lines_read >= 0) {
-                fprintf(stderr, "%s: %s:%d: %s\n",
+                fprintf(stderr, "%s: %s:%"PRId64": %s\n",
                         program_invocation_short_name,
                         args.colperm_path, lines_read+1,
                         mtxstrerror(err));

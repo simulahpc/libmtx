@@ -1543,7 +1543,6 @@ int mtxfiledata_rowcolidx64(
     int64_t * rowidx,
     int64_t * colidx)
 {
-    int err;
     if (rowidx && colidx) {
         if (object == mtxfile_matrix) {
             if (format == mtxfile_coordinate) {
@@ -1830,7 +1829,6 @@ int mtxfiledata_rowcolidx(
     int * rowidx,
     int * colidx)
 {
-    int err;
     if (rowidx && colidx) {
         if (object == mtxfile_matrix) {
             if (format == mtxfile_coordinate) {
@@ -3592,7 +3590,7 @@ int mtxfiledata_fwrite(
                 if (precision == mtx_single) {
                     for (int64_t k = 0; k < size; k++) {
                         ret = fprintf(
-                            f, "%d %d ",
+                            f, "%"PRId64" %"PRId64" ",
                             data->matrix_coordinate_real_single[k].i,
                             data->matrix_coordinate_real_single[k].j);
                         if (ret < 0) { err = MTX_ERR_ERRNO; goto fwrite_exit; }
@@ -3609,7 +3607,7 @@ int mtxfiledata_fwrite(
                 } else if (precision == mtx_double) {
                     for (int64_t k = 0; k < size; k++) {
                         ret = fprintf(
-                            f, "%d %d ",
+                            f, "%"PRId64" %"PRId64" ",
                             data->matrix_coordinate_real_double[k].i,
                             data->matrix_coordinate_real_double[k].j);
                         if (ret < 0) { err = MTX_ERR_ERRNO; goto fwrite_exit; }
@@ -3630,7 +3628,7 @@ int mtxfiledata_fwrite(
                 if (precision == mtx_single) {
                     for (int64_t k = 0; k < size; k++) {
                         ret = fprintf(
-                            f, "%d %d ",
+                            f, "%"PRId64" %"PRId64" ",
                             data->matrix_coordinate_complex_single[k].i,
                             data->matrix_coordinate_complex_single[k].j);
                         if (ret < 0) { err = MTX_ERR_ERRNO; goto fwrite_exit; }
@@ -3655,7 +3653,7 @@ int mtxfiledata_fwrite(
                 } else if (precision == mtx_double) {
                     for (int64_t k = 0; k < size; k++) {
                         ret = fprintf(
-                            f, "%d %d ",
+                            f, "%"PRId64" %"PRId64" ",
                             data->matrix_coordinate_complex_double[k].i,
                             data->matrix_coordinate_complex_double[k].j);
                         if (ret < 0) { err = MTX_ERR_ERRNO; goto fwrite_exit; }
@@ -3684,7 +3682,7 @@ int mtxfiledata_fwrite(
                 if (precision == mtx_single) {
                     for (int64_t k = 0; k < size; k++) {
                         ret = fprintf(
-                            f, "%d %d ",
+                            f, "%"PRId64" %"PRId64" ",
                             data->matrix_coordinate_integer_single[k].i,
                             data->matrix_coordinate_integer_single[k].j);
                         if (ret < 0) { err = MTX_ERR_ERRNO; goto fwrite_exit; }
@@ -3701,7 +3699,7 @@ int mtxfiledata_fwrite(
                 } else if (precision == mtx_double) {
                     for (int64_t k = 0; k < size; k++) {
                         ret = fprintf(
-                            f, "%d %d ",
+                            f, "%"PRId64" %"PRId64" ",
                             data->matrix_coordinate_integer_double[k].i,
                             data->matrix_coordinate_integer_double[k].j);
                         if (ret < 0) { err = MTX_ERR_ERRNO; goto fwrite_exit; }
@@ -3721,7 +3719,7 @@ int mtxfiledata_fwrite(
             } else if (field == mtxfile_pattern) {
                 for (int64_t k = 0; k < size; k++) {
                     ret = fprintf(
-                        f, "%d %d\n",
+                        f, "%"PRId64" %"PRId64"\n",
                         data->matrix_coordinate_pattern[k].i,
                         data->matrix_coordinate_pattern[k].j);
                     if (ret < 0) { err = MTX_ERR_ERRNO; goto fwrite_exit; }
@@ -3736,7 +3734,7 @@ int mtxfiledata_fwrite(
                 if (precision == mtx_single) {
                     for (int64_t k = 0; k < size; k++) {
                         ret = fprintf(
-                            f, "%d ", data->vector_coordinate_real_single[k].i);
+                            f, "%"PRId64" ", data->vector_coordinate_real_single[k].i);
                         if (ret < 0) { err = MTX_ERR_ERRNO; goto fwrite_exit; }
                         if (bytes_written) *bytes_written += ret;
                         ret = fprintf(
@@ -3751,7 +3749,7 @@ int mtxfiledata_fwrite(
                 } else if (precision == mtx_double) {
                     for (int64_t k = 0; k < size; k++) {
                         ret = fprintf(
-                            f, "%d ", data->vector_coordinate_real_double[k].i);
+                            f, "%"PRId64" ", data->vector_coordinate_real_double[k].i);
                         if (ret < 0) { err = MTX_ERR_ERRNO; goto fwrite_exit; }
                         if (bytes_written) *bytes_written += ret;
                         ret = fprintf(
@@ -3770,7 +3768,7 @@ int mtxfiledata_fwrite(
                 if (precision == mtx_single) {
                     for (int64_t k = 0; k < size; k++) {
                         ret = fprintf(
-                            f, "%d ", data->vector_coordinate_complex_single[k].i);
+                            f, "%"PRId64" ", data->vector_coordinate_complex_single[k].i);
                         if (ret < 0) { err = MTX_ERR_ERRNO; goto fwrite_exit; }
                         if (bytes_written) *bytes_written += ret;
                         ret = fprintf(
@@ -3793,7 +3791,7 @@ int mtxfiledata_fwrite(
                 } else if (precision == mtx_double) {
                     for (int64_t k = 0; k < size; k++) {
                         ret = fprintf(
-                            f, "%d ", data->vector_coordinate_complex_double[k].i);
+                            f, "%"PRId64" ", data->vector_coordinate_complex_double[k].i);
                         if (ret < 0) { err = MTX_ERR_ERRNO; goto fwrite_exit; }
                         if (bytes_written) *bytes_written += ret;
                         ret = fprintf(
@@ -3820,7 +3818,7 @@ int mtxfiledata_fwrite(
                 if (precision == mtx_single) {
                     for (int64_t k = 0; k < size; k++) {
                         ret = fprintf(
-                            f, "%d ", data->vector_coordinate_integer_single[k].i);
+                            f, "%"PRId64" ", data->vector_coordinate_integer_single[k].i);
                         if (ret < 0) { err = MTX_ERR_ERRNO; goto fwrite_exit; }
                         if (bytes_written) *bytes_written += ret;
                         ret = fprintf(
@@ -3835,7 +3833,7 @@ int mtxfiledata_fwrite(
                 } else if (precision == mtx_double) {
                     for (int64_t k = 0; k < size; k++) {
                         ret = fprintf(
-                            f, "%d ", data->vector_coordinate_integer_double[k].i);
+                            f, "%"PRId64" ", data->vector_coordinate_integer_double[k].i);
                         if (ret < 0) { err = MTX_ERR_ERRNO; goto fwrite_exit; }
                         if (bytes_written) *bytes_written += ret;
                         ret = fprintf(
@@ -3853,7 +3851,7 @@ int mtxfiledata_fwrite(
             } else if (field == mtxfile_pattern) {
                 for (int64_t k = 0; k < size; k++) {
                     ret = fprintf(
-                        f, "%d\n", data->vector_coordinate_pattern[k].i);
+                        f, "%"PRId64"\n", data->vector_coordinate_pattern[k].i);
                     if (ret < 0) { err = MTX_ERR_ERRNO; goto fwrite_exit; }
                     if (bytes_written) *bytes_written += ret;
                 }
@@ -4753,8 +4751,6 @@ int mtxfiledata_sortkey_row_major(
     int64_t size,
     uint64_t * keys)
 {
-    int err;
-
     if (object == mtxfile_matrix) {
         if (format == mtxfile_array) {
             if ((offset + size) > num_rows * num_columns)
@@ -4890,8 +4886,6 @@ int mtxfiledata_sortkey_column_major(
     int64_t size,
     uint64_t * keys)
 {
-    int err;
-
     if (object == mtxfile_matrix) {
         if (format == mtxfile_array) {
             if ((offset + size) > num_rows * num_columns)
@@ -4985,8 +4979,6 @@ int mtxfiledata_sortkey_morton(
     int64_t size,
     uint64_t * keys)
 {
-    int err;
-
     if (object == mtxfile_matrix) {
         if (format == mtxfile_array) {
             if ((offset + size) > num_rows * num_columns)

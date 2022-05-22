@@ -1281,7 +1281,6 @@ int mtxmatrix_dist_from_mtxfile(
     int64_t sendoffset = 0;
     for (int p = 0; p < comm_size; p++) {
         /* extract matrix market data for the current process */
-        union mtxfiledata senddata;
         if (rank == root && p != root) {
             /* send from the root process */
             int64_t sendsize;

@@ -193,8 +193,6 @@ static int parse_program_options(
         if (*argc <= 0)
             break;
 
-        char * s;
-
         if (strcmp((*argv)[0], "--precision") == 0) {
             if (*argc < 2) {
                 program_options_free(args);
@@ -1028,7 +1026,7 @@ int main(int argc, char *argv[])
     if (err && lines_read >= 0) {
         if (args.verbose > 0)
             fprintf(diagf, "\n");
-        fprintf(stderr, "%s: %s:%d: %s\n",
+        fprintf(stderr, "%s: %s:%"PRId64": %s\n",
                 program_invocation_short_name,
                 args.mtx_path, lines_read+1,
                 mtxstrerror(err));
