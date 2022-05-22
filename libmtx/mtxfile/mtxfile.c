@@ -1985,6 +1985,192 @@ int mtxfile_partition(
 }
 
 /**
+ * ‘mtxfile_split()’ splits a Matrix Market file into several files
+ * according to a given partition of the underlying (nonzero) matrix
+ * or vector elements.
+ *
+ * The partitioning of the matrix or vector elements is specified by
+ * the array ‘parts’. The length of the ‘parts’ array is given by
+ * ‘size’, which must match the number of (nonzero) matrix or vector
+ * elements in ‘src’. Each entry in the array is an integer in the
+ * range ‘[0, num_parts)’ designating the part to which the
+ * corresponding nonzero element belongs.
+ *
+ * The argument ‘dsts’ is an array of ‘num_parts’ pointers to objects
+ * of type ‘struct mtxfile’. If successful, then ‘dsts[p]’ points to a
+ * matrix market file consisting of (nonzero) elements from ‘src’ that
+ * belong to the ‘p’th part, according to the ‘parts’ array.
+ *
+ * If ‘src’ is a matrix (or vector) in coordinate format, then each of
+ * the matrices or vectors in ‘dsts’ is also a matrix (or vector) in
+ * coordinate format with the same number of rows and columns as
+ * ‘src’. In this case, the arguments ‘num_rows_per_part’ and
+ * ‘num_columns_per_part’ are not used and may be set to ‘NULL’.
+ *
+ * Otherwise, if ‘src’ is a matrix (or vector) in array format, then
+ * the arrays ‘num_rows_per_part’ and ‘num_columns_per_part’ (both of
+ * length ‘num_parts’) are used to specify the dimensions of each
+ * matrix (or vector) in ‘dsts’. For a given part ‘p’, the number of
+ * matrix (or vector) elements assigned to that part must be equal to
+ * the product of ‘num_rows_per_part[p]’ and
+ * ‘num_columns_per_part[p]’.
+ *
+ * The user is responsible for freeing storage allocated for each
+ * Matrix Market file in the ‘dsts’ array.
+ */
+int mtxfile_split(
+    int num_parts,
+    struct mtxfile ** dsts,
+    const struct mtxfile * src,
+    int64_t size,
+    int * parts,
+    const int64_t * num_rows_per_part,
+    const int64_t * num_columns_per_part)
+{
+    if (size != src->datasize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+    for (int64_t k = 0; k < size; k++) {
+        if (parts[k] < 0 || parts[k] >= num_parts)
+            return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+    }
+
+    /* create a copy of the data that can be sorted */
+    union mtxfiledata data;
+    int err = mtxfiledata_alloc(
+        &data, src->header.object, src->header.format,
+        src->header.field, src->precision, src->datasize);
+    if (err) return err;
+    err = mtxfiledata_copy(
+        &data, &src->data, src->header.object, src->header.format,
+        src->header.field, src->precision, src->datasize, 0, 0);
+    if (err) {
+        mtxfiledata_free(
+            &data, src->header.object, src->header.format,
+            src->header.field, src->precision);
+        return err;
+    }
+
+    /* sort by part number */
+    err = mtxfiledata_sort_int(
+        &data, src->header.object, src->header.format,
+        src->header.field, src->precision,
+        src->size.num_rows, src->size.num_columns,
+        src->datasize, parts, NULL);
+    if (err) {
+        mtxfiledata_free(
+            &data, src->header.object, src->header.format,
+            src->header.field, src->precision);
+        return err;
+    }
+
+    /* count the number of elements in each part */
+    int64_t * partsizes = malloc(num_parts * sizeof(int64_t));
+    if (!partsizes) {
+        mtxfiledata_free(
+            &data, src->header.object, src->header.format,
+            src->header.field, src->precision);
+        return MTX_ERR_ERRNO;
+    }
+    for (int p = 0; p < num_parts; p++)
+        partsizes[p] = 0;
+    for (int64_t k = 0; k < src->datasize; k++)
+        partsizes[parts[k]]++;
+
+    /* extract a submatrix or -vector for each part */
+    int64_t srcoffset = 0;
+    for (int p = 0; p < num_parts; p++) {
+        struct mtxfilesize dstsize;
+        if (src->header.object == mtxfile_matrix) {
+            if (src->header.format == mtxfile_coordinate) {
+                dstsize.num_rows = src->size.num_rows;
+                dstsize.num_columns = src->size.num_columns;
+                dstsize.num_nonzeros = partsizes[p];
+            } else if (src->header.format == mtxfile_array) {
+                dstsize.num_rows = num_rows_per_part[p];
+                dstsize.num_columns = num_columns_per_part[p];
+                dstsize.num_nonzeros = -1;
+                if (partsizes[p] != num_rows_per_part[p]*num_columns_per_part[p]) {
+                    for (int s = p-1; s >= 0; s--) mtxfile_free(dsts[s]);
+                    free(partsizes);
+                    mtxfiledata_free(
+                        &data, src->header.object, src->header.format,
+                        src->header.field, src->precision);
+                    return MTX_ERR_INVALID_MTX_SIZE;
+                }
+            } else {
+                for (int s = p-1; s >= 0; s--) mtxfile_free(dsts[s]);
+                free(partsizes);
+                mtxfiledata_free(
+                    &data, src->header.object, src->header.format,
+                    src->header.field, src->precision);
+                return MTX_ERR_INVALID_MTX_FORMAT;
+            }
+        } else if (src->header.object == mtxfile_vector) {
+            if (src->header.format == mtxfile_coordinate) {
+                dstsize.num_rows = src->size.num_rows;
+                dstsize.num_columns = -1;
+                dstsize.num_nonzeros = partsizes[p];
+            } else if (src->header.format == mtxfile_array) {
+                dstsize.num_rows = num_rows_per_part[p];
+                dstsize.num_columns = -1;
+                dstsize.num_nonzeros = -1;
+                if (partsizes[p] != num_rows_per_part[p]) {
+                    for (int s = p-1; s >= 0; s--) mtxfile_free(dsts[s]);
+                    free(partsizes);
+                    mtxfiledata_free(
+                        &data, src->header.object, src->header.format,
+                        src->header.field, src->precision);
+                    return MTX_ERR_INVALID_MTX_SIZE;
+                }
+            } else {
+                for (int s = p-1; s >= 0; s--) mtxfile_free(dsts[s]);
+                free(partsizes);
+                mtxfiledata_free(
+                    &data, src->header.object, src->header.format,
+                    src->header.field, src->precision);
+                return MTX_ERR_INVALID_MTX_FORMAT;
+            }
+        } else {
+            for (int s = p-1; s >= 0; s--) mtxfile_free(dsts[s]);
+            free(partsizes);
+            mtxfiledata_free(
+                &data, src->header.object, src->header.format,
+                src->header.field, src->precision);
+            return MTX_ERR_INVALID_MTX_OBJECT;
+        }
+
+        err = mtxfile_alloc(
+            dsts[p], &src->header, &src->comments,  &dstsize, src->precision);
+        if (err) {
+            for (int s = p-1; s >= 0; s--) mtxfile_free(dsts[s]);
+            free(partsizes);
+            mtxfiledata_free(
+                &data, src->header.object, src->header.format,
+                src->header.field, src->precision);
+            return err;
+        }
+
+        err = mtxfiledata_copy(
+            &dsts[p]->data, &data, dsts[p]->header.object, dsts[p]->header.format,
+            dsts[p]->header.field, dsts[p]->precision, partsizes[p], 0, srcoffset);
+        if (err) {
+            for (int s = p; s >= 0; s--) mtxfile_free(dsts[s]);
+            free(partsizes);
+            mtxfiledata_free(
+                &data, src->header.object, src->header.format,
+                src->header.field, src->precision);
+            return err;
+        }
+        srcoffset += partsizes[p];
+    }
+
+    free(partsizes);
+    mtxfiledata_free(
+        &data, src->header.object, src->header.format,
+        src->header.field, src->precision);
+    return MTX_SUCCESS;
+}
+
+/**
  * ‘mtxfile_join()’ joins together Matrix Market files representing
  * compatible blocks of a partitioned matrix or vector to form a
  * larger matrix or vector.
