@@ -70,7 +70,6 @@ int test_distradix_sort(void)
     char mpierrstr[MPI_MAX_ERROR_STRING];
     int mpierrstrlen;
     MPI_Comm comm = MPI_COMM_WORLD;
-    int root = 0;
 
     int comm_size;
     err = MPI_Comm_size(comm, &comm_size);
@@ -178,7 +177,7 @@ int test_distradix_sort(void)
             err = MPI_Recv(&key, 1, MPI_UINT32_T, 1, 0, comm, MPI_STATUS_IGNORE);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_LE_MSG(
-                keys[size-1], key, "keys[%lld]=%"PRIu32", keys[%lld]=%"PRIu32"",
+                keys[size-1], key, "keys[%"PRId64"]=%"PRIu32", keys[%"PRId64"]=%"PRIu32"",
                 size-1, keys[size-1], size, key);
         } else if (rank == 1) {
             err = MPI_Send(&keys[0], 1, MPI_UINT32_T, 0, 0, comm);
@@ -303,7 +302,7 @@ int test_distradix_sort(void)
             err = MPI_Recv(&key, 1, MPI_UINT64_T, 1, 0, comm, MPI_STATUS_IGNORE);
             TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
             TEST_ASSERT_LE_MSG(
-                keys[size-1], key, "keys[%lld]=%"PRIu64", keys[%lld]=%"PRIu64"",
+                keys[size-1], key, "keys[%"PRId64"]=%"PRIu64", keys[%"PRId64"]=%"PRIu64"",
                 size-1, keys[size-1], size, key);
         } else if (rank == 1) {
             err = MPI_Send(&keys[0], 1, MPI_UINT64_T, 0, 0, comm);
@@ -360,8 +359,6 @@ int main(int argc, char * argv[])
     int mpierrstrlen;
 
     /* 1. Initialise MPI. */
-    const MPI_Comm mpi_comm = MPI_COMM_WORLD;
-    const int mpi_root = 0;
     mpierr = MPI_Init(&argc, &argv);
     if (mpierr) {
         MPI_Error_string(mpierr, mpierrstr, &mpierrstrlen);

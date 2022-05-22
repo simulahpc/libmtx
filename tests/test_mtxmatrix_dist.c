@@ -203,7 +203,7 @@ int test_mtxmatrix_dist_from_mtxfile(void)
         int num_rows = 3;
         int num_columns = 3;
         struct mtxfile_matrix_coordinate_complex_single mtxdata[] = {
-            {1,1,1.0f,-1.0f}, {1,3,3.0f,-3.0f}, {2,1,4.0f,-4.0f}, {3,1,7.0f,-7.0f}, {3,3,9.0f,-9.0f}};
+            {1,1,{1.0f,-1.0f}}, {1,3,{3.0f,-3.0f}}, {2,1,{4.0f,-4.0f}}, {3,1,{7.0f,-7.0f}}, {3,3,{9.0f,-9.0f}}};
         int64_t num_nonzeros = sizeof(mtxdata) / sizeof(*mtxdata);
         struct mtxfile mtxfile;
         err = mtxfile_init_matrix_coordinate_complex_single(
@@ -266,7 +266,7 @@ int test_mtxmatrix_dist_from_mtxfile(void)
         int num_rows = 3;
         int num_columns = 3;
         struct mtxfile_matrix_coordinate_complex_double mtxdata[] = {
-            {1,1,1.0,-1.0}, {1,3,3.0,-3.0}, {2,1,4.0,-4.0}, {3,1,7.0,-7.0}, {3,3,9.0,-9.0}};
+            {1,1,{1.0,-1.0}}, {1,3,{3.0,-3.0}}, {2,1,{4.0,-4.0}}, {3,1,{7.0,-7.0}}, {3,3,{9.0,-9.0}}};
         int64_t num_nonzeros = sizeof(mtxdata) / sizeof(*mtxdata);
         struct mtxfile mtxfile;
         err = mtxfile_init_matrix_coordinate_complex_double(
@@ -669,7 +669,6 @@ int test_mtxmatrix_dist_from_mtxdistfile(void)
     char mpierrstr[MPI_MAX_ERROR_STRING];
     int mpierrstrlen;
     MPI_Comm comm = MPI_COMM_WORLD;
-    int root = 0;
     int comm_size;
     err = MPI_Comm_size(comm, &comm_size);
     if (err) {
@@ -1041,7 +1040,6 @@ int test_mtxmatrix_dist_swap(void)
     char mpierrstr[MPI_MAX_ERROR_STRING];
     int mpierrstrlen;
     MPI_Comm comm = MPI_COMM_WORLD;
-    int root = 0;
     int comm_size;
     err = MPI_Comm_size(comm, &comm_size);
     if (err) {
@@ -1190,7 +1188,6 @@ int test_mtxmatrix_dist_copy(void)
     char mpierrstr[MPI_MAX_ERROR_STRING];
     int mpierrstrlen;
     MPI_Comm comm = MPI_COMM_WORLD;
-    int root = 0;
     int comm_size;
     err = MPI_Comm_size(comm, &comm_size);
     if (err) {
@@ -1293,7 +1290,6 @@ int test_mtxmatrix_dist_scal(void)
     char mpierrstr[MPI_MAX_ERROR_STRING];
     int mpierrstrlen;
     MPI_Comm comm = MPI_COMM_WORLD;
-    int root = 0;
     int comm_size;
     err = MPI_Comm_size(comm, &comm_size);
     if (err) {
@@ -1516,7 +1512,6 @@ int test_mtxmatrix_dist_axpy(void)
     char mpierrstr[MPI_MAX_ERROR_STRING];
     int mpierrstrlen;
     MPI_Comm comm = MPI_COMM_WORLD;
-    int root = 0;
     int comm_size;
     err = MPI_Comm_size(comm, &comm_size);
     if (err) {
@@ -1803,7 +1798,6 @@ int test_mtxmatrix_dist_dot(void)
     char mpierrstr[MPI_MAX_ERROR_STRING];
     int mpierrstrlen;
     MPI_Comm comm = MPI_COMM_WORLD;
-    int root = 0;
     int comm_size;
     err = MPI_Comm_size(comm, &comm_size);
     if (err) {
@@ -2002,7 +1996,6 @@ int test_mtxmatrix_dist_nrm2(void)
     char mpierrstr[MPI_MAX_ERROR_STRING];
     int mpierrstrlen;
     MPI_Comm comm = MPI_COMM_WORLD;
-    int root = 0;
     int comm_size;
     err = MPI_Comm_size(comm, &comm_size);
     if (err) {
@@ -2125,7 +2118,6 @@ int test_mtxmatrix_dist_asum(void)
     char mpierrstr[MPI_MAX_ERROR_STRING];
     int mpierrstrlen;
     MPI_Comm comm = MPI_COMM_WORLD;
-    int root = 0;
     int comm_size;
     err = MPI_Comm_size(comm, &comm_size);
     if (err) {
@@ -2248,7 +2240,6 @@ int test_mtxmatrix_dist_gemv(void)
     char mpierrstr[MPI_MAX_ERROR_STRING];
     int mpierrstrlen;
     MPI_Comm comm = MPI_COMM_WORLD;
-    int root = 0;
     int comm_size;
     err = MPI_Comm_size(comm, &comm_size);
     if (err) {
@@ -2385,7 +2376,6 @@ int test_mtxmatrix_dist_gemv(void)
         struct mtxvector_dist y;
         int num_rows = 3;
         int num_columns = 3;
-        int num_nonzeros = 8;
         /* int Arowidx[] = {0, 0, 1, 1, 1, 2, 2, 2}; */
         /* int Acolidx[] = {0, 1, 0, 1, 2, 0, 1, 2}; */
         /* float * Adata = {1.0f, 2.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f, 9.0f}; */
@@ -4536,8 +4526,6 @@ int main(int argc, char * argv[])
     int mpierrstrlen;
 
     /* 1. initialise MPI. */
-    const MPI_Comm mpi_comm = MPI_COMM_WORLD;
-    const int mpi_root = 0;
     mpierr = MPI_Init(&argc, &argv);
     if (mpierr) {
         MPI_Error_string(mpierr, mpierrstr, &mpierrstrlen);

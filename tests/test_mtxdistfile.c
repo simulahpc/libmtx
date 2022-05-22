@@ -79,7 +79,6 @@ int test_mtxdistfile_from_mtxfile_rowwise(void)
         int num_rows = 3;
         int num_columns = 3;
         const double mtxdata[] = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0};
-        int64_t num_nonzeros = sizeof(mtxdata) / sizeof(*mtxdata);
         struct mtxfile src;
         err = mtxfile_init_matrix_array_real_double(
             &src, mtxfile_general, num_rows, num_columns, mtxdata);
@@ -123,7 +122,6 @@ int test_mtxdistfile_from_mtxfile_rowwise(void)
     {
         int num_rows = 8;
         const double mtxdata[] = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0};
-        int64_t num_nonzeros = sizeof(mtxdata) / sizeof(*mtxdata);
         struct mtxfile src;
         err = mtxfile_init_vector_array_real_double(
             &src, num_rows, mtxdata);
@@ -1263,7 +1261,6 @@ int main(int argc, char * argv[])
 
     /* 1. Initialise MPI. */
     const MPI_Comm comm = MPI_COMM_WORLD;
-    const int root = 0;
     mpierr = MPI_Init(&argc, &argv);
     if (mpierr) {
         MPI_Error_string(mpierr, mpierrstr, &mpierrstrlen);

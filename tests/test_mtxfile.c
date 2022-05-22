@@ -553,7 +553,7 @@ int test_mtxfileheader_fread(void)
         int64_t bytes_read = 0;
         err = mtxfileheader_fread(&header, f, &lines_read, &bytes_read, 0, NULL);
         TEST_ASSERT_EQ_MSG(
-            MTX_ERR_INVALID_MTX_HEADER, err, "%d: %s", lines_read+1,
+            MTX_ERR_INVALID_MTX_HEADER, err, "%"PRId64": %s", lines_read+1,
             mtxstrerror(err));
         fclose(f);
     }
@@ -569,7 +569,7 @@ int test_mtxfileheader_fread(void)
         int64_t bytes_read = 0;
         err = mtxfileheader_fread(&header, f, &lines_read, &bytes_read, 0, NULL);
         TEST_ASSERT_EQ_MSG(
-            MTX_ERR_INVALID_MTX_HEADER, err, "%d: %s", lines_read+1,
+            MTX_ERR_INVALID_MTX_HEADER, err, "%"PRId64": %s", lines_read+1,
             mtxstrerror(err));
         fclose(f);
     }
@@ -593,7 +593,7 @@ int test_mtxfileheader_fread(void)
         int64_t bytes_read = 0;
         err = mtxfileheader_fread(&header, f, &lines_read, &bytes_read, 0, NULL);
         TEST_ASSERT_NEQ_MSG(
-            MTX_ERR_LINE_TOO_LONG, err, "%d: %s", lines_read+1,
+            MTX_ERR_LINE_TOO_LONG, err, "%"PRId64": %s", lines_read+1,
             mtxstrerror(err));
         fclose(f);
         free(mtxfile);
@@ -615,7 +615,7 @@ int test_mtxfileheader_fread(void)
         int64_t bytes_read = 0;
         err = mtxfileheader_fread(&header, f, &lines_read, &bytes_read, 0, NULL);
         TEST_ASSERT_EQ_MSG(
-            MTX_ERR_LINE_TOO_LONG, err, "%d: %s", lines_read+1,
+            MTX_ERR_LINE_TOO_LONG, err, "%"PRId64": %s", lines_read+1,
             mtxstrerror(err));
         fclose(f);
         free(mtxfile);
@@ -632,7 +632,7 @@ int test_mtxfileheader_fread(void)
         int64_t bytes_read = 0;
         err = mtxfileheader_fread(&header, f, &lines_read, &bytes_read, 0, NULL);
         TEST_ASSERT_EQ_MSG(
-            MTX_ERR_INVALID_MTX_OBJECT, err, "%d: %s", lines_read+1,
+            MTX_ERR_INVALID_MTX_OBJECT, err, "%"PRId64": %s", lines_read+1,
             mtxstrerror(err));
         fclose(f);
     }
@@ -648,7 +648,7 @@ int test_mtxfileheader_fread(void)
         int64_t bytes_read = 0;
         err = mtxfileheader_fread(&header, f, &lines_read, &bytes_read, 0, NULL);
         TEST_ASSERT_EQ_MSG(
-            MTX_ERR_INVALID_MTX_FORMAT, err, "%d: %s", lines_read+1,
+            MTX_ERR_INVALID_MTX_FORMAT, err, "%"PRId64": %s", lines_read+1,
             mtxstrerror(err));
         fclose(f);
     }
@@ -665,7 +665,7 @@ int test_mtxfileheader_fread(void)
         int64_t bytes_read = 0;
         err = mtxfileheader_fread(&header, f, &lines_read, &bytes_read, 0, NULL);
         TEST_ASSERT_EQ_MSG(
-            MTX_ERR_INVALID_MTX_FIELD, err, "%d: %s", lines_read+1,
+            MTX_ERR_INVALID_MTX_FIELD, err, "%"PRId64": %s", lines_read+1,
             mtxstrerror(err));
         fclose(f);
     }
@@ -682,7 +682,7 @@ int test_mtxfileheader_fread(void)
         int64_t bytes_read = 0;
         err = mtxfileheader_fread(&header, f, &lines_read, &bytes_read, 0, NULL);
         TEST_ASSERT_EQ_MSG(
-            MTX_ERR_INVALID_MTX_SYMMETRY, err, "%d: %s", lines_read+1,
+            MTX_ERR_INVALID_MTX_SYMMETRY, err, "%"PRId64": %s", lines_read+1,
             mtxstrerror(err));
         fclose(f);
     }
@@ -699,7 +699,7 @@ int test_mtxfileheader_fread(void)
         int64_t bytes_read = 0;
         err = mtxfileheader_fread(&header, f, &lines_read, &bytes_read, 0, NULL);
         TEST_ASSERT_EQ_MSG(
-            MTX_SUCCESS, err, "%d: %s", lines_read+1, mtxstrerror(err));
+            MTX_SUCCESS, err, "%"PRId64": %s", lines_read+1, mtxstrerror(err));
         TEST_ASSERT_EQ(mtxfile_matrix, header.object);
         TEST_ASSERT_EQ(mtxfile_coordinate, header.format);
         TEST_ASSERT_EQ(mtxfile_real, header.field);
@@ -757,7 +757,7 @@ int test_mtxfile_fread_comments(void)
         int64_t bytes_read = 0;
         err = mtxfile_fread_comments(&comments, f, &lines_read, &bytes_read, 0, NULL);
         TEST_ASSERT_EQ_MSG(
-            MTX_SUCCESS, err, "%d: %s", lines_read+1, mtxstrerror(err));
+            MTX_SUCCESS, err, "%"PRId64": %s", lines_read+1, mtxstrerror(err));
         TEST_ASSERT_EQ(2, lines_read);
         TEST_ASSERT_EQ(strlen(mtxfile), bytes_read);
         TEST_ASSERT_NEQ(NULL, comments.root);
@@ -789,7 +789,7 @@ int test_mtxfilesize_fread(void)
             &size, f, &lines_read, &bytes_read, 0, NULL,
             mtxfile_matrix, mtxfile_array);
         TEST_ASSERT_EQ_MSG(
-            MTX_SUCCESS, err, "%d: %s", lines_read, mtxstrerror(err));
+            MTX_SUCCESS, err, "%"PRId64": %s", lines_read+1, mtxstrerror(err));
         TEST_ASSERT_EQ( 8, size.num_rows);
         TEST_ASSERT_EQ(10, size.num_columns);
         TEST_ASSERT_EQ(-1, size.num_nonzeros);
@@ -808,7 +808,7 @@ int test_mtxfilesize_fread(void)
             &size, f, &lines_read, &bytes_read, 0, NULL,
             mtxfile_matrix, mtxfile_coordinate);
         TEST_ASSERT_EQ_MSG(
-            MTX_SUCCESS, err, "%d: %s", lines_read, mtxstrerror(err));
+            MTX_SUCCESS, err, "%"PRId64": %s", lines_read+1, mtxstrerror(err));
         TEST_ASSERT_EQ(10, size.num_rows);
         TEST_ASSERT_EQ( 8, size.num_columns);
         TEST_ASSERT_EQ(16, size.num_nonzeros);
@@ -827,7 +827,7 @@ int test_mtxfilesize_fread(void)
             &size, f, &lines_read, &bytes_read, 0, NULL,
             mtxfile_vector, mtxfile_array);
         TEST_ASSERT_EQ_MSG(
-            MTX_SUCCESS, err, "%d: %s", lines_read, mtxstrerror(err));
+            MTX_SUCCESS, err, "%"PRId64": %s", lines_read+1, mtxstrerror(err));
         TEST_ASSERT_EQ( 4, size.num_rows);
         TEST_ASSERT_EQ(-1, size.num_columns);
         TEST_ASSERT_EQ(-1, size.num_nonzeros);
@@ -846,7 +846,7 @@ int test_mtxfilesize_fread(void)
             &size, f, &lines_read, &bytes_read, 0, NULL,
             mtxfile_vector, mtxfile_coordinate);
         TEST_ASSERT_EQ_MSG(
-            MTX_SUCCESS, err, "%d: %s", lines_read, mtxstrerror(err));
+            MTX_SUCCESS, err, "%"PRId64": %s", lines_read+1, mtxstrerror(err));
         TEST_ASSERT_EQ(15, size.num_rows);
         TEST_ASSERT_EQ(-1, size.num_columns);
         TEST_ASSERT_EQ( 4, size.num_nonzeros);
@@ -1491,7 +1491,7 @@ int test_mtxfile_fread(void)
         err = mtxfile_fread(
             &mtxfile, precision, f, &lines_read, &bytes_read, 0, NULL);
         TEST_ASSERT_EQ(MTX_SUCCESS, err);
-        TEST_ASSERT_EQ_MSG(strlen(s), bytes_read, "strlen(s)=%d bytes_read=%d", strlen(s), bytes_read);
+        TEST_ASSERT_EQ_MSG(strlen(s), bytes_read, "strlen(s)=%"PRId64" bytes_read=%"PRId64"", strlen(s), bytes_read);
         TEST_ASSERT_EQ(5, lines_read);
         TEST_ASSERT_EQ(mtxfile_matrix, mtxfile.header.object);
         TEST_ASSERT_EQ(mtxfile_array, mtxfile.header.format);
@@ -1684,7 +1684,7 @@ int test_mtxfile_fread(void)
         enum mtxprecision precision = mtx_single;
         err = mtxfile_fread(
             &mtxfile, precision, f, &lines_read, &bytes_read, 0, NULL);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%d: %s",lines_read+1,mtxstrerror(err));
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%"PRId64": %s",lines_read+1,mtxstrerror(err));
         TEST_ASSERT_EQ(strlen(s), bytes_read);
         TEST_ASSERT_EQ(5, lines_read);
         TEST_ASSERT_EQ(mtxfile_matrix, mtxfile.header.object);
@@ -1720,7 +1720,7 @@ int test_mtxfile_fread(void)
         enum mtxprecision precision = mtx_double;
         err = mtxfile_fread(
             &mtxfile, precision, f, &lines_read, &bytes_read, 0, NULL);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%d: %s",lines_read+1,mtxstrerror(err));
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%"PRId64": %s",lines_read+1,mtxstrerror(err));
         TEST_ASSERT_EQ(strlen(s), bytes_read);
         TEST_ASSERT_EQ(5, lines_read);
         TEST_ASSERT_EQ(mtxfile_matrix, mtxfile.header.object);
@@ -1757,7 +1757,7 @@ int test_mtxfile_fread(void)
         enum mtxprecision precision = mtx_single;
         err = mtxfile_fread(
             &mtxfile, precision, f, &lines_read, &bytes_read, 0, NULL);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%d: %s",lines_read+1,mtxstrerror(err));
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%"PRId64": %s",lines_read+1,mtxstrerror(err));
         TEST_ASSERT_EQ(strlen(s), bytes_read);
         TEST_ASSERT_EQ(5, lines_read);
         TEST_ASSERT_EQ(mtxfile_matrix, mtxfile.header.object);
@@ -1792,7 +1792,7 @@ int test_mtxfile_fread(void)
         enum mtxprecision precision = mtx_single;
         err = mtxfile_fread(
             &mtxfile, precision, f, &lines_read, &bytes_read, 0, NULL);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%d: %s",lines_read+1,mtxstrerror(err));
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%"PRId64": %s",lines_read+1,mtxstrerror(err));
         TEST_ASSERT_EQ(strlen(s), bytes_read);
         TEST_ASSERT_EQ(5, lines_read);
         TEST_ASSERT_EQ(mtxfile_matrix, mtxfile.header.object);
@@ -1829,7 +1829,7 @@ int test_mtxfile_fread(void)
         enum mtxprecision precision = mtx_single;
         err = mtxfile_fread(
             &mtxfile, precision, f, &lines_read, &bytes_read, 0, NULL);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%d: %s",lines_read+1,mtxstrerror(err));
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%"PRId64": %s",lines_read+1,mtxstrerror(err));
         TEST_ASSERT_EQ(strlen(s), bytes_read);
         TEST_ASSERT_EQ(5, lines_read);
         TEST_ASSERT_EQ(mtxfile_vector, mtxfile.header.object);
@@ -1863,7 +1863,7 @@ int test_mtxfile_fread(void)
         enum mtxprecision precision = mtx_double;
         err = mtxfile_fread(
             &mtxfile, precision, f, &lines_read, &bytes_read, 0, NULL);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%d: %s",lines_read+1,mtxstrerror(err));
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%"PRId64": %s",lines_read+1,mtxstrerror(err));
         TEST_ASSERT_EQ(strlen(s), bytes_read);
         TEST_ASSERT_EQ(5, lines_read);
         TEST_ASSERT_EQ(mtxfile_vector, mtxfile.header.object);
@@ -1899,7 +1899,7 @@ int test_mtxfile_fread(void)
         enum mtxprecision precision = mtx_single;
         err = mtxfile_fread(
             &mtxfile, precision, f, &lines_read, &bytes_read, 0, NULL);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%d: %s",lines_read+1,mtxstrerror(err));
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%"PRId64": %s",lines_read+1,mtxstrerror(err));
         TEST_ASSERT_EQ(strlen(s), bytes_read);
         TEST_ASSERT_EQ(5, lines_read);
         TEST_ASSERT_EQ(mtxfile_vector, mtxfile.header.object);
@@ -1933,7 +1933,7 @@ int test_mtxfile_fread(void)
         enum mtxprecision precision = mtx_single;
         err = mtxfile_fread(
             &mtxfile, precision, f, &lines_read, &bytes_read, 0, NULL);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%d: %s",lines_read+1,mtxstrerror(err));
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%"PRId64": %s",lines_read+1,mtxstrerror(err));
         TEST_ASSERT_EQ(strlen(s), bytes_read);
         TEST_ASSERT_EQ(5, lines_read);
         TEST_ASSERT_EQ(mtxfile_vector, mtxfile.header.object);
@@ -2151,7 +2151,7 @@ int test_mtxfile_gzread(void)
     enum mtxprecision precision = mtx_single;
     err = mtxfile_gzread(
         &mtxfile, precision, gz_f, &lines_read, &bytes_read, 0, NULL);
-    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%d: %s",lines_read+1,mtxstrerror(err));
+    TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%"PRId64": %s",lines_read+1,mtxstrerror(err));
     TEST_ASSERT_EQ(84, bytes_read);
     TEST_ASSERT_EQ(6, lines_read);
     TEST_ASSERT_EQ(mtxfile_matrix, mtxfile.header.object);
@@ -2311,7 +2311,6 @@ int test_mtxfile_transpose(void)
         int num_rows = 3;
         int num_columns = 3;
         const double srcdata[] = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0};
-        int64_t num_nonzeros = sizeof(srcdata) / sizeof(*srcdata);
         struct mtxfile mtx;
         err = mtxfile_init_matrix_array_real_double(
             &mtx, mtxfile_general, num_rows, num_columns, srcdata);
@@ -2343,7 +2342,6 @@ int test_mtxfile_transpose(void)
         int num_rows = 2;
         int num_columns = 3;
         const double srcdata[] = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0};
-        int64_t num_nonzeros = sizeof(srcdata) / sizeof(*srcdata);
         struct mtxfile mtx;
         err = mtxfile_init_matrix_array_real_double(
             &mtx, mtxfile_general, num_rows, num_columns, srcdata);
@@ -2371,7 +2369,6 @@ int test_mtxfile_transpose(void)
     {
         int num_rows = 3;
         const double srcdata[] = {1.0, 2.0, 3.0};
-        int64_t num_nonzeros = sizeof(srcdata) / sizeof(*srcdata);
         struct mtxfile mtx;
         err = mtxfile_init_vector_array_real_double(
             &mtx, num_rows, srcdata);
@@ -2858,7 +2855,6 @@ int test_mtxfile_compact(void)
         int num_rows = 3;
         int num_columns = 3;
         const double srcdata[] = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0};
-        int64_t num_nonzeros = sizeof(srcdata) / sizeof(*srcdata);
         struct mtxfile mtx;
         err = mtxfile_init_matrix_array_real_double(
             &mtx, mtxfile_general, num_rows, num_columns, srcdata);
@@ -2889,7 +2885,6 @@ int test_mtxfile_compact(void)
     {
         int num_rows = 3;
         const double srcdata[] = {1.0, 2.0, 3.0};
-        int64_t num_nonzeros = sizeof(srcdata) / sizeof(*srcdata);
         struct mtxfile mtx;
         err = mtxfile_init_vector_array_real_double(
             &mtx, num_rows, srcdata);
@@ -3074,7 +3069,6 @@ int test_mtxfile_assemble(void)
         int num_rows = 3;
         int num_columns = 3;
         const double srcdata[] = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0};
-        int64_t num_nonzeros = sizeof(srcdata) / sizeof(*srcdata);
         struct mtxfile mtx;
         err = mtxfile_init_matrix_array_real_double(
             &mtx, mtxfile_general, num_rows, num_columns, srcdata);
@@ -3105,7 +3099,6 @@ int test_mtxfile_assemble(void)
     {
         int num_rows = 3;
         const double srcdata[] = {1.0, 2.0, 3.0};
-        int64_t num_nonzeros = sizeof(srcdata) / sizeof(*srcdata);
         struct mtxfile mtx;
         err = mtxfile_init_vector_array_real_double(
             &mtx, num_rows, srcdata);
@@ -3251,7 +3244,6 @@ int test_mtxfile_partition_rowwise(void)
         int num_rows = 3;
         int num_columns = 3;
         const double srcdata[] = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0};
-        int64_t num_nonzeros = sizeof(srcdata) / sizeof(*srcdata);
         struct mtxfile src;
         err = mtxfile_init_matrix_array_real_double(
             &src, mtxfile_general, num_rows, num_columns, srcdata);
@@ -3299,7 +3291,6 @@ int test_mtxfile_partition_rowwise(void)
         int num_rows = 3;
         int num_columns = 3;
         const double srcdata[] = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0};
-        int64_t num_nonzeros = sizeof(srcdata) / sizeof(*srcdata);
         struct mtxfile src;
         err = mtxfile_init_matrix_array_real_double(
             &src, mtxfile_general, num_rows, num_columns, srcdata);
@@ -3373,7 +3364,7 @@ int test_mtxfile_partition_rowwise(void)
         TEST_ASSERT_EQ(4, src.size.num_nonzeros);
         const struct mtxfile_matrix_coordinate_real_double * data =
             src.data.matrix_coordinate_real_double;
-        fprintf(stderr, "data=[(%d %d %f) (%d %d %f) (%d %d %f) (%d %d %f)]\n",
+        fprintf(stderr, "data=[(%"PRId64" %"PRId64" %f) (%"PRId64" %"PRId64" %f) (%"PRId64" %"PRId64" %f) (%"PRId64" %"PRId64" %f)]\n",
                 data[0].i, data[0].j, data[0].a,
                 data[1].i, data[1].j, data[1].a,
                 data[2].i, data[2].j, data[2].a,
@@ -3413,7 +3404,6 @@ int test_mtxfile_partition(void)
         int num_rows = 3;
         int num_columns = 3;
         const double srcdata[] = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0};
-        int64_t num_nonzeros = sizeof(srcdata) / sizeof(*srcdata);
         struct mtxfile src;
         err = mtxfile_init_matrix_array_real_double(
             &src, mtxfile_general, num_rows, num_columns, srcdata);
@@ -3472,7 +3462,6 @@ int test_mtxfile_partition(void)
         int num_rows = 3;
         int num_columns = 3;
         const double srcdata[] = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0};
-        int64_t num_nonzeros = sizeof(srcdata) / sizeof(*srcdata);
         struct mtxfile src;
         err = mtxfile_init_matrix_array_real_double(
             &src, mtxfile_general, num_rows, num_columns, srcdata);
@@ -3531,7 +3520,6 @@ int test_mtxfile_partition(void)
         int num_rows = 3;
         int num_columns = 3;
         const double srcdata[] = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0};
-        int64_t num_nonzeros = sizeof(srcdata) / sizeof(*srcdata);
         struct mtxfile src;
         err = mtxfile_init_matrix_array_real_double(
             &src, mtxfile_general, num_rows, num_columns, srcdata);
@@ -3598,7 +3586,6 @@ int test_mtxfile_partition(void)
         int num_rows = 3;
         int num_columns = 3;
         const double srcdata[] = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0};
-        int64_t num_nonzeros = sizeof(srcdata) / sizeof(*srcdata);
         struct mtxfile src;
         err = mtxfile_init_matrix_array_real_double(
             &src, mtxfile_general, num_rows, num_columns, srcdata);
@@ -3657,7 +3644,6 @@ int test_mtxfile_partition(void)
         int num_rows = 3;
         int num_columns = 3;
         const double srcdata[] = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0};
-        int64_t num_nonzeros = sizeof(srcdata) / sizeof(*srcdata);
         struct mtxfile src;
         err = mtxfile_init_matrix_array_real_double(
             &src, mtxfile_general, num_rows, num_columns, srcdata);
@@ -3748,7 +3734,6 @@ int test_mtxfile_partition(void)
         int num_rows = 3;
         int num_columns = 3;
         const double srcdata[] = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0};
-        int64_t num_nonzeros = sizeof(srcdata) / sizeof(*srcdata);
         struct mtxfile src;
         err = mtxfile_init_matrix_array_real_double(
             &src, mtxfile_general, num_rows, num_columns, srcdata);
@@ -3838,7 +3823,6 @@ int test_mtxfile_partition(void)
     {
         int num_rows = 8;
         const double srcdata[] = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0};
-        int64_t num_nonzeros = sizeof(srcdata) / sizeof(*srcdata);
         struct mtxfile src;
         err = mtxfile_init_vector_array_real_double(&src, num_rows, srcdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
@@ -4580,7 +4564,6 @@ int test_mtxfile_permute(void)
         int num_rows = 3;
         int num_columns = 3;
         const double srcdata[] = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0};
-        int64_t num_nonzeros = sizeof(srcdata) / sizeof(*srcdata);
         struct mtxfile mtx;
         err = mtxfile_init_matrix_array_real_double(
             &mtx, mtxfile_general, num_rows, num_columns, srcdata);
@@ -4613,7 +4596,6 @@ int test_mtxfile_permute(void)
         int num_rows = 3;
         int num_columns = 3;
         const double srcdata[] = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0};
-        int64_t num_nonzeros = sizeof(srcdata) / sizeof(*srcdata);
         struct mtxfile mtx;
         err = mtxfile_init_matrix_array_real_double(
             &mtx, mtxfile_general, num_rows, num_columns, srcdata);
@@ -4646,7 +4628,6 @@ int test_mtxfile_permute(void)
         int num_rows = 3;
         int num_columns = 3;
         const double srcdata[] = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0};
-        int64_t num_nonzeros = sizeof(srcdata) / sizeof(*srcdata);
         struct mtxfile mtx;
         err = mtxfile_init_matrix_array_real_double(
             &mtx, mtxfile_general, num_rows, num_columns, srcdata);
@@ -4678,7 +4659,6 @@ int test_mtxfile_permute(void)
     {
         int num_rows = 3;
         const double srcdata[] = {1.0, 2.0, 3.0};
-        int64_t num_nonzeros = sizeof(srcdata) / sizeof(*srcdata);
         struct mtxfile mtx;
         err = mtxfile_init_vector_array_real_double(
             &mtx, num_rows, srcdata);

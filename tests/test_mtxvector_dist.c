@@ -153,7 +153,7 @@ int test_mtxvector_dist_from_mtxfile(void)
     {
         int size = 9;
         struct mtxfile_vector_coordinate_complex_single mtxdata[] = {
-            {1,1.0f,-1.0f}, {2,2.0f,-2.0f}, {4,4.0f,-4.0f}};
+            {1,{1.0f,-1.0f}}, {2,{2.0f,-2.0f}}, {4,{4.0f,-4.0f}}};
         int64_t num_nonzeros = sizeof(mtxdata) / sizeof(*mtxdata);
         struct mtxfile mtxfile;
         err = mtxfile_init_vector_coordinate_complex_single(
@@ -193,7 +193,7 @@ int test_mtxvector_dist_from_mtxfile(void)
     {
         int size = 9;
         struct mtxfile_vector_coordinate_complex_double mtxdata[] = {
-            {1,1.0,-1.0}, {2,2.0,-2.0}, {4,4.0,-4.0}};
+            {1,{1.0,-1.0}}, {2,{2.0,-2.0}}, {4,{4.0,-4.0}}};
         int64_t num_nonzeros = sizeof(mtxdata) / sizeof(*mtxdata);
         struct mtxfile mtxfile;
         err = mtxfile_init_vector_coordinate_complex_double(
@@ -585,7 +585,6 @@ int test_mtxvector_dist_from_mtxdistfile(void)
     char mpierrstr[MPI_MAX_ERROR_STRING];
     int mpierrstrlen;
     MPI_Comm comm = MPI_COMM_WORLD;
-    int root = 0;
     int comm_size;
     err = MPI_Comm_size(comm, &comm_size);
     if (err) {
@@ -668,7 +667,6 @@ int test_mtxvector_dist_to_mtxdistfile(void)
     char mpierrstr[MPI_MAX_ERROR_STRING];
     int mpierrstrlen;
     MPI_Comm comm = MPI_COMM_WORLD;
-    int root = 0;
     int comm_size;
     err = MPI_Comm_size(comm, &comm_size);
     if (err) {
@@ -933,7 +931,6 @@ int test_mtxvector_dist_swap(void)
     char mpierrstr[MPI_MAX_ERROR_STRING];
     int mpierrstrlen;
     MPI_Comm comm = MPI_COMM_WORLD;
-    int root = 0;
     int comm_size;
     err = MPI_Comm_size(comm, &comm_size);
     if (err) {
@@ -974,7 +971,7 @@ int test_mtxvector_dist_swap(void)
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(12, x.size);
         TEST_ASSERT_EQ(12, x.xp.size);
-        TEST_ASSERT_EQ_MSG(5, x.num_nonzeros, "x.num_nonzeros=%d", x.num_nonzeros);
+        TEST_ASSERT_EQ(5, x.num_nonzeros);
         if (rank == 0) {
             TEST_ASSERT_EQ(2, x.xp.num_nonzeros);
             TEST_ASSERT_EQ(x.xp.idx[0], 1);
@@ -1047,7 +1044,7 @@ int test_mtxvector_dist_swap(void)
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(12, x.size);
         TEST_ASSERT_EQ(12, x.xp.size);
-        TEST_ASSERT_EQ_MSG(5, x.num_nonzeros, "x.num_nonzeros=%d", x.num_nonzeros);
+        TEST_ASSERT_EQ(5, x.num_nonzeros);
         if (rank == 0) {
             TEST_ASSERT_EQ(2, x.xp.num_nonzeros);
             TEST_ASSERT_EQ(x.xp.idx[0], 1);
@@ -1124,7 +1121,7 @@ int test_mtxvector_dist_swap(void)
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(12, x.size);
         TEST_ASSERT_EQ(12, x.xp.size);
-        TEST_ASSERT_EQ_MSG(5, x.num_nonzeros, "x.num_nonzeros=%d", x.num_nonzeros);
+        TEST_ASSERT_EQ(5, x.num_nonzeros);
         if (rank == 0) {
             TEST_ASSERT_EQ(2, x.xp.num_nonzeros);
             TEST_ASSERT_EQ(x.xp.idx[0], 1);
@@ -1211,7 +1208,7 @@ int test_mtxvector_dist_swap(void)
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(12, x.size);
         TEST_ASSERT_EQ(12, x.xp.size);
-        TEST_ASSERT_EQ_MSG(5, x.num_nonzeros, "x.num_nonzeros=%d", x.num_nonzeros);
+        TEST_ASSERT_EQ(5, x.num_nonzeros);
         if (rank == 0) {
             TEST_ASSERT_EQ(2, x.xp.num_nonzeros);
             TEST_ASSERT_EQ(x.xp.idx[0], 1);
@@ -1288,7 +1285,6 @@ int test_mtxvector_dist_copy(void)
     char mpierrstr[MPI_MAX_ERROR_STRING];
     int mpierrstrlen;
     MPI_Comm comm = MPI_COMM_WORLD;
-    int root = 0;
     int comm_size;
     err = MPI_Comm_size(comm, &comm_size);
     if (err) {
@@ -1528,7 +1524,6 @@ int test_mtxvector_dist_scal(void)
     char mpierrstr[MPI_MAX_ERROR_STRING];
     int mpierrstrlen;
     MPI_Comm comm = MPI_COMM_WORLD;
-    int root = 0;
     int comm_size;
     err = MPI_Comm_size(comm, &comm_size);
     if (err) {
@@ -1743,7 +1738,6 @@ int test_mtxvector_dist_axpy(void)
     char mpierrstr[MPI_MAX_ERROR_STRING];
     int mpierrstrlen;
     MPI_Comm comm = MPI_COMM_WORLD;
-    int root = 0;
     int comm_size;
     err = MPI_Comm_size(comm, &comm_size);
     if (err) {
@@ -2022,7 +2016,6 @@ int test_mtxvector_dist_dot(void)
     char mpierrstr[MPI_MAX_ERROR_STRING];
     int mpierrstrlen;
     MPI_Comm comm = MPI_COMM_WORLD;
-    int root = 0;
     int comm_size;
     err = MPI_Comm_size(comm, &comm_size);
     if (err) {
@@ -2213,7 +2206,6 @@ int test_mtxvector_dist_nrm2(void)
     char mpierrstr[MPI_MAX_ERROR_STRING];
     int mpierrstrlen;
     MPI_Comm comm = MPI_COMM_WORLD;
-    int root = 0;
     int comm_size;
     err = MPI_Comm_size(comm, &comm_size);
     if (err) {
@@ -2328,7 +2320,6 @@ int test_mtxvector_dist_asum(void)
     char mpierrstr[MPI_MAX_ERROR_STRING];
     int mpierrstrlen;
     MPI_Comm comm = MPI_COMM_WORLD;
-    int root = 0;
     int comm_size;
     err = MPI_Comm_size(comm, &comm_size);
     if (err) {
@@ -2444,7 +2435,6 @@ int test_mtxvector_dist_usscga(void)
     char mpierrstr[MPI_MAX_ERROR_STRING];
     int mpierrstrlen;
     MPI_Comm comm = MPI_COMM_WORLD;
-    int root = 0;
     int comm_size;
     err = MPI_Comm_size(comm, &comm_size);
     if (err) {
@@ -2643,8 +2633,6 @@ int main(int argc, char * argv[])
     int mpierrstrlen;
 
     /* 1. initialise MPI. */
-    const MPI_Comm mpi_comm = MPI_COMM_WORLD;
-    const int mpi_root = 0;
     mpierr = MPI_Init(&argc, &argv);
     if (mpierr) {
         MPI_Error_string(mpierr, mpierrstr, &mpierrstrlen);

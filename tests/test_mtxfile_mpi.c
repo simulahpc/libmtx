@@ -65,7 +65,7 @@ int test_mtxfile_sendrecv(void)
     int rank;
     mpierr = MPI_Comm_rank(comm, &rank);
     if (mpierr) {
-        MPI_Error_string(err, mpierrstr, &mpierrstrlen);
+        MPI_Error_string(mpierr, mpierrstr, &mpierrstrlen);
         fprintf(stderr, "%s: MPI_Comm_rank failed with %s\n",
                 program_invocation_short_name, mpierrstr);
         MPI_Abort(comm, EXIT_FAILURE);
@@ -169,7 +169,7 @@ int test_mtxfile_bcast(void)
     int rank;
     mpierr = MPI_Comm_rank(comm, &rank);
     if (mpierr) {
-        MPI_Error_string(err, mpierrstr, &mpierrstrlen);
+        MPI_Error_string(mpierr, mpierrstr, &mpierrstrlen);
         fprintf(stderr, "%s: MPI_Comm_rank failed with %s\n",
                 program_invocation_short_name, mpierrstr);
         MPI_Abort(comm, EXIT_FAILURE);
@@ -264,7 +264,7 @@ int test_mtxfile_gather(void)
     int rank;
     mpierr = MPI_Comm_rank(comm, &rank);
     if (mpierr) {
-        MPI_Error_string(err, mpierrstr, &mpierrstrlen);
+        MPI_Error_string(mpierr, mpierrstr, &mpierrstrlen);
         fprintf(stderr, "%s: MPI_Comm_rank failed with %s\n",
                 program_invocation_short_name, mpierrstr);
         MPI_Abort(comm, EXIT_FAILURE);
@@ -285,7 +285,6 @@ int test_mtxfile_gather(void)
         const double * srcdata = (rank == 0)
             ? ((const double[6]) {1.0, 2.0, 3.0, 4.0, 5.0, 6.0})
             : ((const double[3]) {7.0, 8.0, 9.0});
-        int64_t num_nonzeros = (rank == 0) ? 6 : 3;
         struct mtxfile srcmtx;
         err = mtxfile_init_matrix_array_real_double(
             &srcmtx, mtxfile_general, num_rows, num_columns, srcdata);
@@ -337,7 +336,6 @@ int test_mtxfile_gather(void)
         const double * srcdata = (rank == 0)
             ? ((const double[2]) {1.0, 2.0})
             : ((const double[3]) {3.0, 4.0, 5.0});
-        int64_t num_nonzeros = (rank == 0) ? 2 : 3;
         struct mtxfile srcmtx;
         err = mtxfile_init_vector_array_real_double(&srcmtx, num_rows, srcdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
@@ -452,7 +450,6 @@ int test_mtxfile_allgather(void)
     int mpierr;
     char mpierrstr[MPI_MAX_ERROR_STRING];
     int mpierrstrlen;
-    int root = 0;
 
     /* Get the size of the MPI communicator. */
     MPI_Comm comm = MPI_COMM_WORLD;
@@ -471,7 +468,7 @@ int test_mtxfile_allgather(void)
     int rank;
     mpierr = MPI_Comm_rank(comm, &rank);
     if (mpierr) {
-        MPI_Error_string(err, mpierrstr, &mpierrstrlen);
+        MPI_Error_string(mpierr, mpierrstr, &mpierrstrlen);
         fprintf(stderr, "%s: MPI_Comm_rank failed with %s\n",
                 program_invocation_short_name, mpierrstr);
         MPI_Abort(comm, EXIT_FAILURE);
@@ -492,7 +489,6 @@ int test_mtxfile_allgather(void)
         const double * srcdata = (rank == 0)
             ? ((const double[6]) {1.0, 2.0, 3.0, 4.0, 5.0, 6.0})
             : ((const double[3]) {7.0, 8.0, 9.0});
-        int64_t num_nonzeros = (rank == 0) ? 6 : 3;
         struct mtxfile srcmtx;
         err = mtxfile_init_matrix_array_real_double(
             &srcmtx, mtxfile_general, num_rows, num_columns, srcdata);
@@ -542,7 +538,6 @@ int test_mtxfile_allgather(void)
         const double * srcdata = (rank == 0)
             ? ((const double[2]) {1.0, 2.0})
             : ((const double[3]) {3.0, 4.0, 5.0});
-        int64_t num_nonzeros = (rank == 0) ? 2 : 3;
         struct mtxfile srcmtx;
         err = mtxfile_init_vector_array_real_double(&srcmtx, num_rows, srcdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
@@ -672,7 +667,7 @@ int test_mtxfile_scatter(void)
     int rank;
     mpierr = MPI_Comm_rank(comm, &rank);
     if (mpierr) {
-        MPI_Error_string(err, mpierrstr, &mpierrstrlen);
+        MPI_Error_string(mpierr, mpierrstr, &mpierrstrlen);
         fprintf(stderr, "%s: MPI_Comm_rank failed with %s\n",
                 program_invocation_short_name, mpierrstr);
         MPI_Abort(comm, EXIT_FAILURE);
@@ -692,7 +687,6 @@ int test_mtxfile_scatter(void)
         int num_columns = 3;
         const double srcdata0[] = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0};
         const double srcdata1[] = {7.0, 8.0, 9.0};
-        int64_t num_nonzeros[] = {6, 3};
         struct mtxfile srcmtxs[2];
         err = mtxfile_init_matrix_array_real_double(
             &srcmtxs[0], mtxfile_general, num_rows[0], num_columns, srcdata0);
@@ -820,7 +814,7 @@ int test_mtxfile_alltoall(void)
     int rank;
     mpierr = MPI_Comm_rank(comm, &rank);
     if (mpierr) {
-        MPI_Error_string(err, mpierrstr, &mpierrstrlen);
+        MPI_Error_string(mpierr, mpierrstr, &mpierrstrlen);
         fprintf(stderr, "%s: MPI_Comm_rank failed with %s\n",
                 program_invocation_short_name, mpierrstr);
         MPI_Abort(comm, EXIT_FAILURE);
@@ -844,7 +838,6 @@ int test_mtxfile_alltoall(void)
         const double * srcdata1 = (rank == 0)
             ? ((const double[3]) {4.0, 5.0, 6.0})
             : ((const double[3]) {6.0, 5.0, 4.0});
-        int64_t num_nonzeros[] = {3, 3};
         struct mtxfile srcmtxs[2];
         err = mtxfile_init_matrix_array_real_double(
             &srcmtxs[0], mtxfile_general, num_rows[0], num_columns, srcdata0);
@@ -1028,7 +1021,7 @@ int test_mtxfile_scatterv(void)
     int rank;
     mpierr = MPI_Comm_rank(comm, &rank);
     if (mpierr) {
-        MPI_Error_string(err, mpierrstr, &mpierrstrlen);
+        MPI_Error_string(mpierr, mpierrstr, &mpierrstrlen);
         fprintf(stderr, "%s: MPI_Comm_rank failed with %s\n",
                 program_invocation_short_name, mpierrstr);
         MPI_Abort(comm, EXIT_FAILURE);
@@ -1048,7 +1041,6 @@ int test_mtxfile_scatterv(void)
         int num_columns = 3;
         const double srcdata[] = {
             1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0};
-        int64_t num_nonzeros = sizeof(srcdata) / sizeof(*srcdata);
         struct mtxfile srcmtx;
         if (rank == root) {
             err = mtxfile_init_matrix_array_real_double(
@@ -1098,7 +1090,6 @@ int test_mtxfile_scatterv(void)
     {
         int num_rows = 4;
         const double srcdata[] = {1.0, 2.0, 3.0, 4.0};
-        int64_t num_nonzeros = sizeof(srcdata) / sizeof(*srcdata);
         struct mtxfile srcmtx;
         if (rank == root) {
             err = mtxfile_init_vector_array_real_double(&srcmtx, num_rows, srcdata);
@@ -1210,8 +1201,6 @@ int main(int argc, char * argv[])
     int mpierrstrlen;
 
     /* 1. Initialise MPI. */
-    const MPI_Comm mpi_comm = MPI_COMM_WORLD;
-    const int mpi_root = 0;
     mpierr = MPI_Init(&argc, &argv);
     if (mpierr) {
         MPI_Error_string(mpierr, mpierrstr, &mpierrstrlen);

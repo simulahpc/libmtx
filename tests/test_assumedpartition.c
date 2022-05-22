@@ -45,7 +45,6 @@ int test_assumedpartition_write(void)
     char mpierrstr[MPI_MAX_ERROR_STRING];
     int mpierrstrlen;
     MPI_Comm comm = MPI_COMM_WORLD;
-    int root = 0;
     int comm_size;
     err = MPI_Comm_size(comm, &comm_size);
     if (err) {
@@ -143,7 +142,6 @@ int test_assumedpartition_read(void)
     char mpierrstr[MPI_MAX_ERROR_STRING];
     int mpierrstrlen;
     MPI_Comm comm = MPI_COMM_WORLD;
-    int root = 0;
     int comm_size;
     err = MPI_Comm_size(comm, &comm_size);
     if (err) {
@@ -245,7 +243,6 @@ int main(int argc, char * argv[])
 
     /* 1. Initialise MPI. */
     const MPI_Comm comm = MPI_COMM_WORLD;
-    const int root = 0;
     mpierr = MPI_Init(&argc, &argv);
     if (mpierr) {
         MPI_Error_string(mpierr, mpierrstr, &mpierrstrlen);

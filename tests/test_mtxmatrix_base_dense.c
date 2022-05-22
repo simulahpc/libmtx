@@ -51,7 +51,6 @@ int test_mtxmatrix_dense_from_mtxfile(void)
         int num_rows = 3;
         int num_columns = 3;
         const float mtxdata[] = {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f, 9.0f};
-        int64_t num_nonzeros = sizeof(mtxdata) / sizeof(*mtxdata);
         struct mtxfile mtxfile;
         err = mtxfile_init_matrix_array_real_single(
             &mtxfile, mtxfile_general, num_rows, num_columns, mtxdata);
@@ -84,7 +83,6 @@ int test_mtxmatrix_dense_from_mtxfile(void)
         int num_rows = 3;
         int num_columns = 3;
         const float mtxdata[] = {1.0f, 2.0f, 3.0f, /*4.0f,*/ 5.0f, 6.0f, /*7.0f, 8.0f,*/ 9.0f};
-        int64_t num_nonzeros = sizeof(mtxdata) / sizeof(*mtxdata);
         struct mtxfile mtxfile;
         err = mtxfile_init_matrix_array_real_single(
             &mtxfile, mtxfile_symmetric, num_rows, num_columns, mtxdata);
@@ -114,7 +112,6 @@ int test_mtxmatrix_dense_from_mtxfile(void)
         int num_rows = 3;
         int num_columns = 3;
         const float mtxdata[] = {/*1.0f,*/ 2.0f, 3.0f, /*4.0f, 5.0f,*/ 6.0f, /*7.0f, 8.0f, 9.0f*/};
-        int64_t num_nonzeros = sizeof(mtxdata) / sizeof(*mtxdata);
         struct mtxfile mtxfile;
         err = mtxfile_init_matrix_array_real_single(
             &mtxfile, mtxfile_skew_symmetric, num_rows, num_columns, mtxdata);

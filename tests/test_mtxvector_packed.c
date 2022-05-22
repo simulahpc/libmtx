@@ -47,7 +47,6 @@ int test_mtxvector_packed_from_mtxfile(void)
     {
         int num_rows = 3;
         const float mtxdata[] = {3.0f, 4.0f, 5.0f};
-        int64_t num_nonzeros = sizeof(mtxdata) / sizeof(*mtxdata);
         struct mtxfile mtxfile;
         err = mtxfile_init_vector_array_real_single(&mtxfile, num_rows, mtxdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
@@ -127,7 +126,7 @@ int test_mtxvector_packed_from_mtxfile(void)
     {
         int size = 4;
         struct mtxfile_vector_coordinate_complex_single mtxdata[] = {
-            {1,1.0f,-1.0f}, {2,2.0f,-2.0f}, {4,4.0f,-4.0f}};
+            {1,{1.0f,-1.0f}}, {2,{2.0f,-2.0f}}, {4,{4.0f,-4.0f}}};
         int64_t num_nonzeros = sizeof(mtxdata) / sizeof(*mtxdata);
         struct mtxfile mtxfile;
         err = mtxfile_init_vector_coordinate_complex_single(
@@ -158,7 +157,7 @@ int test_mtxvector_packed_from_mtxfile(void)
     {
         int size = 4;
         struct mtxfile_vector_coordinate_complex_double mtxdata[] = {
-            {1,1.0,-1.0}, {2,2.0,-2.0}, {4,4.0,-4.0}};
+            {1,{1.0,-1.0}}, {2,{2.0,-2.0}}, {4,{4.0,-4.0}}};
         int64_t num_nonzeros = sizeof(mtxdata) / sizeof(*mtxdata);
         struct mtxfile mtxfile;
         err = mtxfile_init_vector_coordinate_complex_double(
@@ -363,7 +362,6 @@ int test_mtxvector_packed_to_mtxfile(void)
         int64_t idx[] = {1, 3, 5, 7, 9};
         struct mtxvector_packed x;
         double xdata[] = {1.0, 1.0, 1.0, 2.0, 3.0};
-        int xsize = sizeof(xdata) / sizeof(*xdata);
         err = mtxvector_packed_init_real_double(
             &x, mtxvector_base, size, nnz, idx, xdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
@@ -393,7 +391,6 @@ int test_mtxvector_packed_to_mtxfile(void)
         int64_t idx[] = {1, 3, 5, 7, 9};
         struct mtxvector_packed x;
         float xdata[][2] = {{1.0f, 1.0f}, {1.0f, 2.0f}, {3.0f, 0.0f}};
-        int xsize = sizeof(xdata) / sizeof(*xdata);
         err = mtxvector_packed_init_complex_single(
             &x, mtxvector_base, size, nnz, idx, xdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
@@ -424,7 +421,6 @@ int test_mtxvector_packed_to_mtxfile(void)
         int64_t idx[] = {1, 3, 5, 7, 9};
         struct mtxvector_packed x;
         double xdata[][2] = {{1.0, 1.0}, {1.0, 2.0}, {3.0, 0.0}};
-        int xsize = sizeof(xdata) / sizeof(*xdata);
         err = mtxvector_packed_init_complex_double(
             &x, mtxvector_base, size, nnz, idx, xdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
@@ -455,7 +451,6 @@ int test_mtxvector_packed_to_mtxfile(void)
         int64_t idx[] = {1, 3, 5, 7, 9};
         struct mtxvector_packed x;
         int32_t xdata[] = {1, 1, 1, 2, 3};
-        int xsize = sizeof(xdata) / sizeof(*xdata);
         err = mtxvector_packed_init_integer_single(
             &x, mtxvector_base, size, nnz, idx, xdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
@@ -485,7 +480,6 @@ int test_mtxvector_packed_to_mtxfile(void)
         int64_t idx[] = {1, 3, 5, 7, 9};
         struct mtxvector_packed x;
         int64_t xdata[] = {1, 1, 1, 2, 3};
-        int xsize = sizeof(xdata) / sizeof(*xdata);
         err = mtxvector_packed_init_integer_double(
             &x, mtxvector_base, size, nnz, idx, xdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));

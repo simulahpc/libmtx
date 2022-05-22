@@ -48,7 +48,6 @@ int test_mtxvector_omp_from_mtxfile(void)
     {
         int num_rows = 3;
         const float mtxdata[] = {3.0f, 4.0f, 5.0f};
-        int64_t num_nonzeros = sizeof(mtxdata) / sizeof(*mtxdata);
         struct mtxfile mtxfile;
         err = mtxfile_init_vector_array_real_single(&mtxfile, num_rows, mtxdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
@@ -69,7 +68,6 @@ int test_mtxvector_omp_from_mtxfile(void)
     {
         int num_rows = 3;
         const double mtxdata[] = {3.0, 4.0, 5.0};
-        int64_t num_nonzeros = sizeof(mtxdata) / sizeof(*mtxdata);
         struct mtxfile mtxfile;
         err = mtxfile_init_vector_array_real_double(&mtxfile, num_rows, mtxdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
@@ -90,7 +88,6 @@ int test_mtxvector_omp_from_mtxfile(void)
     {
         int num_rows = 3;
         const float mtxdata[][2] = {{3.0f, 4.0f}, {5.0f, 6.0f}, {7.0f, 8.0f}};
-        int64_t num_nonzeros = sizeof(mtxdata) / sizeof(*mtxdata);
         struct mtxfile mtxfile;
         err = mtxfile_init_vector_array_complex_single(&mtxfile, num_rows, mtxdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
@@ -114,7 +111,6 @@ int test_mtxvector_omp_from_mtxfile(void)
     {
         int num_rows = 3;
         const double mtxdata[][2] = {{3.0, 4.0}, {5.0, 6.0}, {7.0, 8.0}};
-        int64_t num_nonzeros = sizeof(mtxdata) / sizeof(*mtxdata);
         struct mtxfile mtxfile;
         err = mtxfile_init_vector_array_complex_double(&mtxfile, num_rows, mtxdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
@@ -138,7 +134,6 @@ int test_mtxvector_omp_from_mtxfile(void)
     {
         int num_rows = 3;
         const int32_t mtxdata[] = {3, 4, 5};
-        int64_t num_nonzeros = sizeof(mtxdata) / sizeof(*mtxdata);
         struct mtxfile mtxfile;
         err = mtxfile_init_vector_array_integer_single(&mtxfile, num_rows, mtxdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
@@ -159,7 +154,6 @@ int test_mtxvector_omp_from_mtxfile(void)
     {
         int num_rows = 3;
         const int64_t mtxdata[] = {3, 4, 5};
-        int64_t num_nonzeros = sizeof(mtxdata) / sizeof(*mtxdata);
         struct mtxfile mtxfile;
         err = mtxfile_init_vector_array_integer_double(&mtxfile, num_rows, mtxdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
