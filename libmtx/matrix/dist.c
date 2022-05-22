@@ -1283,7 +1283,7 @@ int mtxmatrix_dist_from_mtxfile(
         /* extract matrix market data for the current process */
         if (rank == root && p != root) {
             /* send from the root process */
-            int64_t sendsize;
+            int64_t sendsize = 0;
             if (mtxheader.format == mtxfile_array) {
                 int64_t num_entries = mtxsize.num_rows*mtxsize.num_columns;
                 sendsize = num_entries / comm_size
@@ -1479,7 +1479,7 @@ int mtxmatrix_dist_to_mtxfile(
             /* receive at the root process */
             struct mtxfile recvmtxfile;
             err = err ? err : mtxfile_recv(&recvmtxfile, p, 0, A->comm, disterr);
-            int64_t num_nonzeros;
+            int64_t num_nonzeros = 0;
             if (mtxfile->header.format == mtxfile_array) {
                 num_nonzeros = recvmtxfile.size.num_rows*recvmtxfile.size.num_columns;
             } else if (mtxfile->header.format == mtxfile_coordinate) {
@@ -1505,7 +1505,7 @@ int mtxmatrix_dist_to_mtxfile(
             err = mtxmatrix_to_mtxfile(
                 &localmtxfile, &A->xp, A->num_rows, A->rowmap,
                 A->num_columns, A->colmap, mtxfmt);
-            int64_t num_nonzeros;
+            int64_t num_nonzeros = 0;
             if (mtxfile->header.format == mtxfile_array) {
                 num_nonzeros = localmtxfile.size.num_rows*localmtxfile.size.num_columns;
             } else if (mtxfile->header.format == mtxfile_coordinate) {

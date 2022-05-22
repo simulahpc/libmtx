@@ -3364,11 +3364,6 @@ int test_mtxfile_partition_rowwise(void)
         TEST_ASSERT_EQ(4, src.size.num_nonzeros);
         const struct mtxfile_matrix_coordinate_real_double * data =
             src.data.matrix_coordinate_real_double;
-        fprintf(stderr, "data=[(%"PRId64" %"PRId64" %f) (%"PRId64" %"PRId64" %f) (%"PRId64" %"PRId64" %f) (%"PRId64" %"PRId64" %f)]\n",
-                data[0].i, data[0].j, data[0].a,
-                data[1].i, data[1].j, data[1].a,
-                data[2].i, data[2].j, data[2].a,
-                data[3].i, data[3].j, data[3].a);
         TEST_ASSERT_EQ(2, data[0].i); TEST_ASSERT_EQ(2, data[0].j);
         TEST_ASSERT_EQ(1, data[1].i); TEST_ASSERT_EQ(1, data[1].j);
         TEST_ASSERT_EQ(3, data[2].i); TEST_ASSERT_EQ(3, data[2].j);

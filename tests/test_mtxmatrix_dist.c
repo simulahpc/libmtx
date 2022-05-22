@@ -702,7 +702,7 @@ int test_mtxmatrix_dist_from_mtxdistfile(void)
         int64_t localdatasize = rank == 0 ? 3 : 2;
         struct mtxdistfile src;
         err = mtxdistfile_init_matrix_coordinate_real_single(
-            &src, mtx_unsymmetric, num_rows, num_columns, num_nonzeros,
+            &src, mtxfile_general, num_rows, num_columns, num_nonzeros,
             localdatasize, NULL, srcdata, comm, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE

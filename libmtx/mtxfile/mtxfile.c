@@ -1926,7 +1926,7 @@ int mtxfile_partition(
             src->header.field, src->precision);
         free(data_lines_per_part_ptr);
         free(num_data_lines_per_part);
-        return MTX_ERR_ERRNO;
+        return err;
     }
 
     free(sortkeys);

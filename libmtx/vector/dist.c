@@ -762,7 +762,7 @@ int mtxvector_dist_to_mtxfile(
             /* receive from the root process */
             struct mtxfile recvmtxfile;
             err = err ? err : mtxfile_recv(&recvmtxfile, p, 0, x->comm, disterr);
-            int64_t num_nonzeros;
+            int64_t num_nonzeros = 0;
             if (mtxfile->header.format == mtxfile_array) {
                 num_nonzeros = recvmtxfile.size.num_rows;
             } else if (mtxfile->header.format == mtxfile_coordinate) {
