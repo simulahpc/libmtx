@@ -21,8 +21,8 @@
  * Symmetry properties of matrices.
  */
 
-#ifndef LIBMTX_UTIL_SYMMETRY_H
-#define LIBMTX_UTIL_SYMMETRY_H
+#ifndef LIBMTX_MATRIX_SYMMETRY_H
+#define LIBMTX_MATRIX_SYMMETRY_H
 
 #include <stdint.h>
 

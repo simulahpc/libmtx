@@ -38,7 +38,7 @@ const char * mtxsymmetry_str(
     case mtx_symmetric: return "symmetric";
     case mtx_skew_symmetric: return "skew-symmetric";
     case mtx_hermitian: return "hermitian";
-    default: return mtxstrerror(MTX_ERR_INVALID_TRANSPOSITION);
+    default: return mtxstrerror(MTX_ERR_INVALID_SYMMETRY);
     }
 }
 
@@ -83,17 +83,13 @@ int mtxsymmetry_parse(
     } else if (strncmp("hermitian", t, strlen("hermitian")) == 0) {
         t += strlen("hermitian");
         *symmetry = mtx_hermitian;
-    } else {
-        return MTX_ERR_INVALID_TRANSPOSITION;
-    }
+    } else { return MTX_ERR_INVALID_SYMMETRY; }
     if (valid_delimiters && *t != '\0') {
         if (!strchr(valid_delimiters, *t))
-            return MTX_ERR_INVALID_TRANSPOSITION;
+            return MTX_ERR_INVALID_SYMMETRY;
         t++;
     }
-    if (bytes_read)
-        *bytes_read += t-s;
-    if (endptr)
-        *endptr = t;
+    if (bytes_read) *bytes_read += t-s;
+    if (endptr) *endptr = t;
     return MTX_SUCCESS;
 }

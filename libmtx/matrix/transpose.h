@@ -21,8 +21,8 @@
  * Different ways of transposing matrices and vectors.
  */
 
-#ifndef LIBMTX_UTIL_TRANSPOSE_H
-#define LIBMTX_UTIL_TRANSPOSE_H
+#ifndef LIBMTX_MATRIX_TRANSPOSE_H
+#define LIBMTX_MATRIX_TRANSPOSE_H
 
 #include <stdint.h>
 

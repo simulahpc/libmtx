@@ -1,6 +1,6 @@
 /* This file is part of Libmtx.
  *
- * Copyright (C) 2021 James D. Trotter
+ * Copyright (C) 2022 James D. Trotter
  *
  * Libmtx is free software: you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -17,13 +17,13 @@
  * <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-10-08
+ * Last modified: 2022-05-23
  *
  * Precision of data types used to store matrices and vectors.
  */
 
-#ifndef LIBMTX_MTX_PRECISION_H
-#define LIBMTX_MTX_PRECISION_H
+#ifndef LIBMTX_VECTOR_PRECISION_H
+#define LIBMTX_VECTOR_PRECISION_H
 
 #include <stdint.h>
 

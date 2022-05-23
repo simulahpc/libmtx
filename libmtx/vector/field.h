@@ -16,13 +16,13 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-01-14
+ * Last modified: 2022-05-23
  *
  * Fields for values of matrices and vectors.
  */
 
-#ifndef LIBMTX_UTIL_FIELD_H
-#define LIBMTX_UTIL_FIELD_H
+#ifndef LIBMTX_VECTOR_FIELD_H
+#define LIBMTX_VECTOR_FIELD_H
 
 #include <stdint.h>
 

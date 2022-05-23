@@ -16,13 +16,13 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-05-04
+ * Last modified: 2022-05-23
  *
  * Data structures for dense matrices.
  */
 
-#ifndef LIBMTX_MATRIX_DENSE_H
-#define LIBMTX_MATRIX_DENSE_H
+#ifndef LIBMTX_MATRIX_BASE_DENSE_H
+#define LIBMTX_MATRIX_BASE_DENSE_H
 
 #include <libmtx/libmtx-config.h>
 
