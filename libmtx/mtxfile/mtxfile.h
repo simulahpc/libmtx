@@ -889,6 +889,32 @@ int mtxfile_partition_nonzeros(
     int64_t * partsptr);
 
 /**
+ * ‘mtxfile_partition_rowwise()’ partitions the entries of a Matrix
+ * Market file according to a given row partitioning.
+ *
+ * See ‘partition_int64()’ for an explanation of the meaning of the
+ * arguments ‘parttype’, ‘num_parts’, ‘partsizes’ and ‘blksize’.
+ *
+ * The array ‘dstpart’ must contain enough storage for
+ * ‘mtxfile->datasize’ values of type ‘int’. If successful, ‘dstpart’
+ * is used to store the part number assigned to the matrix or vector
+ * nonzeros.
+ *
+ * If it is not ‘NULL’, then the array ‘partsptr’ must contain enough
+ * storage for ‘num_parts+1’ values of type ‘int64_t’. If successful,
+ * ‘partsptr’ will contain offsets to the first element belonging to
+ * each part.
+ */
+int mtxfile_partition_rowwise(
+    const struct mtxfile * mtxfile,
+    enum mtxpartitioning parttype,
+    int num_parts,
+    const int64_t * partsizes,
+    int64_t blksize,
+    int * dstpart,
+    int64_t * partsptr);
+
+/**
  * ‘mtxfile_partition_columnwise()’ partitions the entries of a Matrix
  * Market file according to a given column partitioning.
  *
@@ -915,11 +941,15 @@ int mtxfile_partition_columnwise(
     int64_t * partsptr);
 
 /**
- * ‘mtxfile_partition_rowwise()’ partitions the entries of a Matrix
- * Market file according to a given row partitioning.
+ * ‘mtxfile_partition_2d()’ partitions a matrix in Matrix Market
+ * format according to given row and column partitionings.
+ *
+ * The number of parts is equal to the product of ‘num_row_parts’ and
+ * ‘num_column_parts’.
  *
  * See ‘partition_int64()’ for an explanation of the meaning of the
- * arguments ‘parttype’, ‘num_parts’, ‘partsizes’ and ‘blksize’.
+ * arguments ‘rowparttype’, ‘num_row_parts’, ‘rowpartsizes’ and
+ * ‘rowblksize’, and so on.
  *
  * The array ‘dstpart’ must contain enough storage for
  * ‘mtxfile->datasize’ values of type ‘int’. If successful, ‘dstpart’
@@ -927,16 +957,20 @@ int mtxfile_partition_columnwise(
  * nonzeros.
  *
  * If it is not ‘NULL’, then the array ‘partsptr’ must contain enough
- * storage for ‘num_parts+1’ values of type ‘int64_t’. If successful,
- * ‘partsptr’ will contain offsets to the first element belonging to
- * each part.
+ * storage for ‘num_row_parts*num_column_parts+1’ values of type
+ * ‘int64_t’. If successful, ‘partsptr’ will contain offsets to the
+ * first element belonging to each part.
  */
-int mtxfile_partition_rowwise(
+int mtxfile_partition_2d(
     const struct mtxfile * mtxfile,
-    enum mtxpartitioning parttype,
-    int num_parts,
-    const int64_t * partsizes,
-    int64_t blksize,
+    enum mtxpartitioning rowparttype,
+    int num_row_parts,
+    const int64_t * rowpartsizes,
+    int64_t rowblksize,
+    enum mtxpartitioning colparttype,
+    int num_column_parts,
+    const int64_t * colpartsizes,
+    int64_t colblksize,
     int * dstpart,
     int64_t * partsptr);
 

@@ -1431,6 +1431,52 @@ int mtxfiledata_partition_columnwise(
     int64_t * partsptr);
 
 /**
+ * ‘mtxfiledata_partition_2d()’ partitions data lines according
+ * to given row and column partitionings.
+ *
+ * The number of parts is equal to the product of ‘num_row_parts’ and
+ * ‘num_column_parts’.
+ *
+ * See ‘partition_int64()’ for an explanation of the meaning of the
+ * arguments ‘rowparttype’, ‘num_row_parts’, ‘rowpartsizes’ and
+ * ‘rowblksize’, and so on.
+ *
+ * The array ‘dstpart’ must contain enough storage for ‘size’ values
+ * of type ‘int’. If successful, ‘dstpart’ is used to store the part
+ * number assigned to the matrix or vector nonzeros.
+ *
+ * If it is not ‘NULL’, then the array ‘partsptr’ must contain enough
+ * storage for ‘num_row_parts*num_column_parts+1’ values of type
+ * ‘int64_t’. If successful, ‘partsptr’ will contain offsets to the
+ * first element belonging to each part.
+ *
+ * If ‘format’ is ‘mtxfile_array’, then a non-negative ‘offset’ value
+ * can be used to partition matrix or vector entries starting from the
+ * specified offset, instead of beginning with the first entry of the
+ * matrix or vector.
+ */
+int mtxfiledata_partition_2d(
+    const union mtxfiledata * data,
+    enum mtxfileobject object,
+    enum mtxfileformat format,
+    enum mtxfilefield field,
+    enum mtxprecision precision,
+    int64_t num_rows,
+    int64_t num_columns,
+    int64_t offset,
+    int64_t size,
+    enum mtxpartitioning rowparttype,
+    int num_row_parts,
+    const int64_t * rowpartsizes,
+    int64_t rowblksize,
+    enum mtxpartitioning colparttype,
+    int num_column_parts,
+    const int64_t * colpartsizes,
+    int64_t colblksize,
+    int * dstpart,
+    int64_t * partsptr);
+
+/**
  * ‘mtxfiledata_partition()’ partitions data lines according to given
  * row and column partitions.
  *

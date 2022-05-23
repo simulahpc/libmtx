@@ -1728,6 +1728,49 @@ int mtxfile_partition_columnwise(
 }
 
 /**
+ * ‘mtxfile_partition_2d()’ partitions a matrix in Matrix Market
+ * format according to given row and column partitionings.
+ *
+ * The number of parts is equal to the product of ‘num_row_parts’ and
+ * ‘num_column_parts’.
+ *
+ * See ‘partition_int64()’ for an explanation of the meaning of the
+ * arguments ‘rowparttype’, ‘num_row_parts’, ‘rowpartsizes’ and
+ * ‘rowblksize’, and so on.
+ *
+ * The array ‘dstpart’ must contain enough storage for
+ * ‘mtxfile->datasize’ values of type ‘int’. If successful, ‘dstpart’
+ * is used to store the part number assigned to the matrix or vector
+ * nonzeros.
+ *
+ * If it is not ‘NULL’, then the array ‘partsptr’ must contain enough
+ * storage for ‘num_row_parts*num_column_parts+1’ values of type
+ * ‘int64_t’. If successful, ‘partsptr’ will contain offsets to the
+ * first element belonging to each part.
+ */
+int mtxfile_partition_2d(
+    const struct mtxfile * mtxfile,
+    enum mtxpartitioning rowparttype,
+    int num_row_parts,
+    const int64_t * rowpartsizes,
+    int64_t rowblksize,
+    enum mtxpartitioning colparttype,
+    int num_column_parts,
+    const int64_t * colpartsizes,
+    int64_t colblksize,
+    int * dstpart,
+    int64_t * partsptr)
+{
+    return mtxfiledata_partition_2d(
+        &mtxfile->data, mtxfile->header.object, mtxfile->header.format,
+        mtxfile->header.field, mtxfile->precision,
+        mtxfile->size.num_rows, mtxfile->size.num_columns, 0, mtxfile->datasize,
+        rowparttype, num_row_parts, rowpartsizes, rowblksize,
+        colparttype, num_column_parts, colpartsizes, colblksize,
+        dstpart, partsptr);
+}
+
+/**
  * ‘mtxfile_partition()’ partitions a Matrix Market file according to
  * the given row and column partitions.
  *

@@ -92,14 +92,23 @@ int partition_block_int64(
     const int64_t * idx,
     int * dstpart)
 {
-    for (int64_t i = 0; i < idxsize; i++) {
-        int64_t x = *(const int64_t *) ((const unsigned char *) idx+i*idxstride);
-        if (x < 0 || x >= size) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
-        int p = 0;
-        while (p < num_parts && x >= partsizes[p])
-            x -= partsizes[p++];
-        if (p >= num_parts) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
-        dstpart[i] = p;
+    if (partsizes) {
+        for (int64_t i = 0; i < idxsize; i++) {
+            int64_t x = *(const int64_t *) ((const unsigned char *) idx+i*idxstride);
+            if (x < 0 || x >= size) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            int p = 0;
+            while (p < num_parts && x >= partsizes[p])
+                x -= partsizes[p++];
+            if (p >= num_parts) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            dstpart[i] = p;
+        }
+    } else {
+        int64_t blksize = (size+num_parts-1) / num_parts;
+        for (int64_t i = 0; i < idxsize; i++) {
+            int64_t x = *(const int64_t *) ((const unsigned char *) idx+i*idxstride);
+            if (x < 0 || x >= size) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            dstpart[i] = x / blksize;
+        }
     }
     return MTX_SUCCESS;
 }
