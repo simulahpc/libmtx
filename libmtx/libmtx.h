@@ -33,6 +33,7 @@
 #include <libmtx/matrix/blas/dense.h>
 #include <libmtx/matrix/dist.h>
 #include <libmtx/matrix/matrix.h>
+#include <libmtx/matrix/partition.h>
 #include <libmtx/matrix/symmetry.h>
 #include <libmtx/matrix/transpose.h>
 #include <libmtx/mtxfile/mtxdistfile.h>

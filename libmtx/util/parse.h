@@ -27,6 +27,31 @@
 #include <stdint.h>
 
 /**
+ * ‘parse_int()’ parses a string to produce a number that may be
+ * represented as an integer.
+ *
+ * The number is parsed using ‘strtoll()’, following the conventions
+ * documented in the man page for that function. In addition, some
+ * further error checking is performed to ensure that the number is
+ * parsed correctly. The parsed number is stored in ‘x’.
+ *
+ * If ‘endptr’ is not ‘NULL’, the address stored in ‘endptr’ points to
+ * the first character beyond the characters that were consumed during
+ * parsing.
+ *
+ * On success, ‘MTX_SUCCESS’ is returned. Otherwise, if the input
+ * contained invalid characters, errno is set to ‘EINVAL’ and
+ * ‘MTX_ERR_ERRNO’ is returned. If the resulting number cannot be
+ * represented as a signed integer, errno is set to ‘ERANGE’ and
+ * ‘MTX_ERR_ERRNO’ is returned.
+ */
+int parse_int(
+    int * x,
+    const char * s,
+    char ** endptr,
+    int64_t * bytes_read);
+
+/**
  * ‘parse_int32()’ parses a string to produce a number that may be
  * represented as a 32-bit integer.
  *

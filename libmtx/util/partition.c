@@ -103,6 +103,7 @@ int partition_block_int64(
             dstpart[i] = p;
         }
     } else {
+        if (num_parts <= 0) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
         int64_t blksize = (size+num_parts-1) / num_parts;
         for (int64_t i = 0; i < idxsize; i++) {
             int64_t x = *(const int64_t *) ((const unsigned char *) idx+i*idxstride);

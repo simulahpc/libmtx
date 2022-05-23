@@ -62,10 +62,9 @@ libmtx_la_SOURCES = \
 	libmtx/matrix/dist.c \
 	libmtx/matrix/matrix.c \
 	libmtx/matrix/omp/csr.c \
+	libmtx/matrix/partition.c \
 	libmtx/matrix/symmetry.c \
-	libmtx/matrix/symmetry.h \
 	libmtx/matrix/transpose.c \
-	libmtx/matrix/transpose.h \
 	libmtx/mtxfile/comments.c \
 	libmtx/mtxfile/data.c \
 	libmtx/mtxfile/header.c \
@@ -107,6 +106,9 @@ nobase_include_HEADERS = \
 	libmtx/matrix/dist.h \
 	libmtx/matrix/matrix.h \
 	libmtx/matrix/omp/csr.h \
+	libmtx/matrix/partition.h \
+	libmtx/matrix/symmetry.h \
+	libmtx/matrix/transpose.h \
 	libmtx/mtxfile/comments.h \
 	libmtx/mtxfile/data.h \
 	libmtx/mtxfile/header.h \

@@ -183,6 +183,8 @@ const char * mtxstrerror(
         return "invalid field";
     case MTX_ERR_INVALID_SYMMETRY:
         return "invalid symmetry";
+    case MTX_ERR_INVALID_MATRIXPARTTYPE:
+        return "invalid matrix partitioning";
     case MTX_ERR_INVALID_VECTOR_TYPE:
         return "invalid vector type";
     case MTX_ERR_INCOMPATIBLE_MTX_OBJECT:

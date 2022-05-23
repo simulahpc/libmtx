@@ -31,6 +31,7 @@
 #include <libmtx/mtxfile/data.h>
 #include <libmtx/mtxfile/header.h>
 #include <libmtx/mtxfile/size.h>
+#include <libmtx/matrix/partition.h>
 #include <libmtx/util/partition.h>
 
 #ifdef LIBMTX_HAVE_MPI
@@ -963,6 +964,56 @@ int mtxfile_partition_columnwise(
  */
 int mtxfile_partition_2d(
     const struct mtxfile * mtxfile,
+    enum mtxpartitioning rowparttype,
+    int num_row_parts,
+    const int64_t * rowpartsizes,
+    int64_t rowblksize,
+    enum mtxpartitioning colparttype,
+    int num_column_parts,
+    const int64_t * colpartsizes,
+    int64_t colblksize,
+    int * dstpart,
+    int64_t * partsptr);
+
+/**
+ * ‘mtxfile_partition2()’ partitions the entries of a Matrix Market
+ * file, and, optionally, also partitions the rows and columns of the
+ * underlying matrix or vector.
+ *
+ * The type of partitioning to perform is determined by
+ * ‘matrixparttype’.
+ *
+ *  - If ‘matrixparttype’ is ‘mtx_matrixparttype_nonzeros’, the
+ *    nonzeros of the underlying matrix or vector are partitioned as a
+ *    one-dimensional array. The nonzeros are partitioned into
+ *    ‘num_nz_parts’ parts according to the partitioning
+ *    ‘nzparttype’. If ‘nzparttype’ is ‘mtx_block’, then ‘nzpartsizes’
+ *    may be used to specify the size of each part. If ‘nzparttype’ is
+ *    ‘mtx_block_cyclic’, then ‘nzblksize’ is used to specify the
+ *    block size.
+ *
+ *  - If ‘matrixparttype’ is ‘mtx_matrixparttype_rows’, the nonzeros
+ *    of the underlying matrix or vector are partitioned rowwise.
+ *
+ *  - If ‘matrixparttype’ is ‘mtx_matrixparttype_columns’, the
+ *    nonzeros of the underlying matrix are partitioned columnwise.
+ *
+ *  - If ‘matrixparttype’ is ‘mtx_matrixparttype_2d’, the nonzeros of
+ *    the underlying matrix are partitioned in rectangular blocks
+ *    according to the partitioning of the rows and columns.
+ *
+ *  - If ‘matrixparttype’ is ‘mtx_matrixparttype_metis’, then the rows
+ *    and columns of the underlying matrix are partitioned by the
+ *    METIS graph partitioner, and the matrix nonzeros are partitioned
+ *    accordingly.
+ */
+int mtxfile_partition2(
+    struct mtxfile * mtxfile,
+    enum mtxmatrixparttype matrixparttype,
+    enum mtxpartitioning nzparttype,
+    int num_nz_parts,
+    const int64_t * nzpartsizes,
+    int64_t nzblksize,
     enum mtxpartitioning rowparttype,
     int num_row_parts,
     const int64_t * rowpartsizes,
