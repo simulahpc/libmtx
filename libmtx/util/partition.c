@@ -39,6 +39,35 @@
  */
 
 /**
+ * ‘partition_cyclic_int64()’ partitions elements of a set of 64-bit
+ * signed integers based on a cyclic partitioning to produce an array
+ * of part numbers assigned to each element in the input array.
+ *
+ * The array to be partitioned, ‘idx’, contains ‘idxsize’ items.
+ * Moreover, the user must provide an output array, ‘dstpart’, of size
+ * ‘idxsize’, which is used to write the part number assigned to each
+ * element of the input array.
+ *
+ * The set to be partitioned consists of ‘size’ items, which are
+ * partitioned in a cyclic fashion into ‘num_parts’ parts.
+ */
+int partition_cyclic_int64(
+    int64_t size,
+    int num_parts,
+    int64_t idxsize,
+    int idxstride,
+    const int64_t * idx,
+    int * dstpart)
+{
+    for (int64_t i = 0; i < idxsize; i++) {
+        int64_t x = *(const int64_t *) ((const unsigned char *) idx+i*idxstride);
+        if (x < 0 || x >= size) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+        dstpart[i] = x % num_parts;
+    }
+    return MTX_SUCCESS;
+}
+
+/**
  * ‘partition_block_int64()’ partitions elements of a set of 64-bit
  * signed integers based on a block partitioning to produce an array
  * of part numbers assigned to each element in the input array.
@@ -108,37 +137,6 @@ int partition_block_cyclic_int64(
 }
 
 /**
- * ‘partition_custom_int64()’ partitions elements of a set of 64-bit
- * signed integers based on a user-defined partitioning to produce an
- * array of part numbers assigned to each element in the input array.
- *
- * The array to be partitioned, ‘idx’, contains ‘idxsize’ items.
- * Moreover, the user must provide an output array, ‘dstpart’, of size
- * ‘idxsize’, which is used to write the part number assigned to each
- * element of the input array.
- *
- * The set to be partitioned consists of ‘size’ items. Moreover,
- * ‘parts’ is an array of length ‘size’, which specifies the part
- * number of each element in the set.
- */
-int partition_custom_int64(
-    int64_t size,
-    int num_parts,
-    const int64_t * parts,
-    int64_t idxsize,
-    int idxstride,
-    const int64_t * idx,
-    int * dstpart)
-{
-    for (int64_t i = 0; i < idxsize; i++) {
-        int64_t x = *(const int64_t *) ((const unsigned char *) idx+i*idxstride);
-        if (x < 0 || x >= size) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
-        dstpart[i] = parts[x];
-    }
-    return MTX_SUCCESS;
-}
-
-/**
  * ‘partition_int64()’ partitions elements of a set of 64-bit signed
  * integers based on a given partitioning to produce an array of part
  * numbers assigned to each element in the input array.
@@ -150,17 +148,16 @@ int partition_custom_int64(
  *
  * The set to be partitioned consists of ‘size’ items.
  *
+ * - If ‘type’ is ‘mtx_cyclic’, then items are partitioned in a cyclic
+ *   fashion into ‘num_parts’ parts.
+ *
  * - If ‘type’ is ‘mtx_block’, then the array ‘partsizes’ contains
  *   ‘num_parts’ integers, specifying the size of each block of the
  *   partitioned set.
  *
  * - If ‘type’ is ‘mtx_block_cyclic’, then items are arranged in
- *   contiguous block of size ‘blksize’, which are then partitioned in
- *   a cyclic fashion into ‘num_parts’ parts.
- *
- * - If ‘type’ is ‘mtx_block_cyclic’, then ‘parts’ is an array of
- *   length ‘size’, which specifies the part number of each element in
- *   the set.
+ *   contiguous blocks of size ‘blksize’, which are then partitioned
+ *   in a cyclic fashion into ‘num_parts’ parts.
  */
 int partition_int64(
     enum mtxpartitioning type,
@@ -168,21 +165,20 @@ int partition_int64(
     int num_parts,
     const int64_t * partsizes,
     int64_t blksize,
-    const int64_t * parts,
     int64_t idxsize,
     int idxstride,
     const int64_t * idx,
     int * dstpart)
 {
-    if (type == mtx_block) {
+    if (type == mtx_cyclic) {
+        return partition_cyclic_int64(
+            size, num_parts, idxsize, idxstride, idx, dstpart);
+    } else if (type == mtx_block) {
         return partition_block_int64(
             size, num_parts, partsizes, idxsize, idxstride, idx, dstpart);
     } else if (type == mtx_block_cyclic) {
         return partition_block_cyclic_int64(
             size, num_parts, blksize, idxsize, idxstride, idx, dstpart);
-    } else if (type == mtx_custom_partition) {
-        return partition_custom_int64(
-            size, num_parts, parts, idxsize, idxstride, idx, dstpart);
     } else { return MTX_ERR_INVALID_PARTITION_TYPE; }
 }
 

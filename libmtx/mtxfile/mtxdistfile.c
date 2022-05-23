@@ -1368,10 +1368,6 @@ int mtxdistfile_from_mtxfile_rowwise(
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     if (root < 0 || root >= comm_size) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
 
-    /* TODO: only block and block-cyclic partitioning work for now. */
-    if (parttype != mtx_block && parttype != mtx_block_cyclic)
-        return MTX_ERR_INVALID_PARTITION_TYPE;
-
     /* allocate storage for offsets to each part */
     int64_t * partsptr = malloc((comm_size+1) * sizeof(int64_t));
     err = !partsptr ? MTX_ERR_ERRNO : MTX_SUCCESS;
@@ -1390,23 +1386,44 @@ int mtxdistfile_from_mtxfile_rowwise(
         }
     }
 
-    /* allocate storage for permutation */
-    int64_t * perm = rank == root ? malloc(src->datasize * sizeof(int64_t)) : NULL;
-    err = rank == root && !perm ? MTX_ERR_ERRNO : MTX_SUCCESS;
+    /* allocate storage for part numbers */
+    int * dstpart = rank == root ? malloc(src->datasize * sizeof(int)) : NULL;
+    err = rank == root && !dstpart ? MTX_ERR_ERRNO : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err)) {
         free(partsptr);
         return MTX_ERR_MPI_COLLECTIVE;
     }
 
-    /* Partition the Matrix Market file on the root process. */
+    /* partition the Matrix Market file on the root process */
     err = rank == root ? mtxfile_partition_rowwise(
-        src, parttype, comm_size, partsizes, blksize, NULL, partsptr, perm)
+        src, parttype, comm_size, partsizes, blksize, dstpart, partsptr)
         : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err)) {
-        free(perm); free(partsptr);
+        free(dstpart); free(partsptr);
         return MTX_ERR_MPI_COLLECTIVE;
     }
 
+    /* allocate storage for sorting permutation */
+    int64_t * perm = rank == root ? malloc(src->datasize * sizeof(int64_t)) : NULL;
+    err = rank == root && !perm ? MTX_ERR_ERRNO : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err)) {
+        free(dstpart); free(partsptr);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+
+    /* sort the nonzeros in ascending order of their part numbers */
+    err = rank == root ? mtxfiledata_sort_int(
+        &src->data, src->header.object, src->header.format,
+        src->header.field, src->precision, src->size.num_rows,
+        src->size.num_columns, src->datasize, dstpart, perm)
+        : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err)) {
+        free(perm); free(dstpart); free(partsptr);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+    free(dstpart);
+
+    /* invert the sorting permutation */
     int64_t * tmp = rank == root ? malloc(src->datasize * sizeof(int64_t)) : NULL;
     err = rank == root && !perm ? MTX_ERR_ERRNO : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err)) {
@@ -1418,17 +1435,6 @@ int mtxdistfile_from_mtxfile_rowwise(
         for (int64_t i = 0; i < src->datasize; i++) perm[tmp[i]] = i;
     }
     free(tmp);
-
-#if 0
-    /* broadcast the size of each part */
-    disterr->mpierrcode = MPI_Bcast(
-        &partsptr, comm_size+1, MPI_INT64_T, root, comm);
-    err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
-    if (mtxdisterror_allreduce(disterr, err)) {
-        free(perm); free(partsptr);
-        return MTX_ERR_MPI_COLLECTIVE;
-    }
-#endif
 
     err = mtxdistfile_from_mtxfile_distribute(
         dst, src, partsptr, perm, comm, root, disterr);

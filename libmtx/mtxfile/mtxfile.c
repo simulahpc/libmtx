@@ -1621,22 +1621,33 @@ int mtxfile_assemble(
 /**
  * ‘mtxfile_partition_rowwise()’ partitions the entries of a Matrix
  * Market file according to a given row partitioning.
+ *
+ * See ‘partition_int64()’ for an explanation of the meaning of the
+ * arguments ‘parttype’, ‘num_parts’, ‘partsizes’ and ‘blksize’.
+ *
+ * The array ‘dstpart’ must contain enough storage for ‘size’ values
+ * of type ‘int’. If successful, ‘dstpart’ is used to store the part
+ * number assigned to the matrix or vector nonzeros.
+ *
+ * If it is not ‘NULL’, then the array ‘partsptr’ must contain enough
+ * storage for ‘num_parts+1’ values of type ‘int64_t’. If successful,
+ * ‘partsptr’ will contain offsets to the first element belonging to
+ * each part.
  */
 int mtxfile_partition_rowwise(
-    struct mtxfile * mtxfile,
+    const struct mtxfile * mtxfile,
     enum mtxpartitioning parttype,
     int num_parts,
     const int64_t * partsizes,
     int64_t blksize,
-    const int64_t * parts,
-    int64_t * partsptr,
-    int64_t * perm)
+    int * dstpart,
+    int64_t * partsptr)
 {
     return mtxfiledata_partition_rowwise(
         &mtxfile->data, mtxfile->header.object, mtxfile->header.format,
         mtxfile->header.field, mtxfile->precision,
         mtxfile->size.num_rows, mtxfile->size.num_columns, 0, mtxfile->datasize,
-        parttype, num_parts, partsizes, blksize, parts, partsptr, perm);
+        parttype, num_parts, partsizes, blksize, dstpart, partsptr);
 }
 
 /**

@@ -5626,9 +5626,17 @@ int mtxfiledata_compact(
  * ‘mtxfiledata_partition_rowwise()’ partitions data lines according
  * to a given row partition.
  *
- * The array ‘parts’ must contain enough storage for ‘size’ values of
- * type ‘int’. If successful, ‘parts’ will contain the part number of
- * each data line in the partitioning.
+ * See ‘partition_int64()’ for an explanation of the meaning of the
+ * arguments ‘type’, ‘num_parts’, ‘partsizes’ and ‘blksize’.
+ *
+ * The array ‘dstpart’ must contain enough storage for ‘size’ values
+ * of type ‘int’. If successful, ‘dstpart’ is used to store the part
+ * number assigned to the matrix or vector nonzeros.
+ *
+ * If it is not ‘NULL’, then the array ‘partsptr’ must contain enough
+ * storage for ‘num_parts+1’ values of type ‘int64_t’. If successful,
+ * ‘partsptr’ will contain offsets to the first element belonging to
+ * each part.
  *
  * If ‘format’ is ‘mtxfile_array’, then a non-negative ‘offset’ value
  * can be used to partition matrix or vector entries starting from the
@@ -5636,7 +5644,7 @@ int mtxfiledata_compact(
  * matrix or vector.
  */
 int mtxfiledata_partition_rowwise(
-    union mtxfiledata * data,
+    const union mtxfiledata * data,
     enum mtxfileobject object,
     enum mtxfileformat format,
     enum mtxfilefield field,
@@ -5649,9 +5657,8 @@ int mtxfiledata_partition_rowwise(
     int num_parts,
     const int64_t * partsizes,
     int64_t blksize,
-    const int64_t * parts,
-    int64_t * partsptr,
-    int64_t * perm)
+    int * dstpart,
+    int64_t * partsptr)
 {
     int64_t * rowidx = malloc(size * sizeof(int64_t));
     if (!rowidx) return MTX_ERR_ERRNO;
@@ -5660,20 +5667,16 @@ int mtxfiledata_partition_rowwise(
         num_rows, num_columns, offset, size, rowidx, NULL);
     if (err) { free(rowidx); return err; }
     for (int64_t k = 0; k < size; k++) rowidx[k]--;
-    int * dstpart = malloc(size * sizeof(int));
-    if (!dstpart) { free(rowidx); return MTX_ERR_ERRNO; }
     err = partition_int64(
-        type, num_rows, num_parts, partsizes, blksize, parts,
+        type, num_rows, num_parts, partsizes, blksize,
         size, sizeof(int64_t), rowidx, dstpart);
     if (err) { free(rowidx); return err; }
-    for (int p = 0; p <= num_parts; p++) partsptr[p] = 0;
-    for (int64_t k = 0; k < size; k++) partsptr[dstpart[k]+1]++;
-    for (int p = 1; p <= num_parts; p++) partsptr[p] += partsptr[p-1];
-    err = mtxfiledata_sort_int(
-        data, object, format, field, precision,
-        num_rows, num_columns, size, dstpart, perm);
-    if (err) { free(dstpart); free(rowidx); return err; }
-    free(dstpart); free(rowidx);
+    if (partsptr) {
+        for (int p = 0; p <= num_parts; p++) partsptr[p] = 0;
+        for (int64_t k = 0; k < size; k++) partsptr[dstpart[k]+1]++;
+        for (int p = 1; p <= num_parts; p++) partsptr[p] += partsptr[p-1];
+    }
+    free(rowidx);
     return MTX_SUCCESS;
 }
 

@@ -1358,9 +1358,17 @@ int mtxfiledata_compact(
  * ‘mtxfiledata_partition_rowwise()’ partitions data lines according
  * to a given row partition.
  *
- * The array ‘parts’ must contain enough storage for ‘size’ values of
- * type ‘int’. If successful, ‘parts’ will contain the part number of
- * each data line in the partitioning.
+ * See ‘partition_int64()’ for an explanation of the meaning of the
+ * arguments ‘type’, ‘num_parts’, ‘partsizes’ and ‘blksize’.
+ *
+ * The array ‘dstpart’ must contain enough storage for ‘size’ values
+ * of type ‘int’. If successful, ‘dstpart’ is used to store the part
+ * number assigned to the matrix or vector nonzeros.
+ *
+ * If it is not ‘NULL’, then the array ‘partsptr’ must contain enough
+ * storage for ‘num_parts+1’ values of type ‘int64_t’. If successful,
+ * ‘partsptr’ will contain offsets to the first element belonging to
+ * each part.
  *
  * If ‘format’ is ‘mtxfile_array’, then a non-negative ‘offset’ value
  * can be used to partition matrix or vector entries starting from the
@@ -1368,7 +1376,7 @@ int mtxfiledata_compact(
  * matrix or vector.
  */
 int mtxfiledata_partition_rowwise(
-    union mtxfiledata * data,
+    const union mtxfiledata * data,
     enum mtxfileobject object,
     enum mtxfileformat format,
     enum mtxfilefield field,
@@ -1381,9 +1389,8 @@ int mtxfiledata_partition_rowwise(
     int num_parts,
     const int64_t * partsizes,
     int64_t blksize,
-    const int64_t * parts,
-    int64_t * partsptr,
-    int64_t * perm);
+    int * dstpart,
+    int64_t * partsptr);
 
 /**
  * ‘mtxfiledata_partition()’ partitions data lines according to given

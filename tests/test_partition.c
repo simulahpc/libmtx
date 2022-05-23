@@ -212,63 +212,6 @@ int test_partition_block_cyclic(void)
 }
 
 /**
- * ‘test_partition_custom()’ tests custom partitioning.
- */
-int test_partition_custom(void)
-{
-    int err;
-    {
-        int size = 5;
-        int num_parts = 1;
-        int64_t parts[] = {0,0,0,0,0};
-        int64_t idx[] = {0,2,1,4,3};
-        int idxsize = sizeof(idx) / sizeof(*idx);
-        int dstpart[5] = {};
-        err = partition_custom_int64(
-            size, num_parts, parts, idxsize, sizeof(*idx), idx, dstpart);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        TEST_ASSERT_EQ(0, dstpart[0]);
-        TEST_ASSERT_EQ(0, dstpart[1]);
-        TEST_ASSERT_EQ(0, dstpart[2]);
-        TEST_ASSERT_EQ(0, dstpart[3]);
-        TEST_ASSERT_EQ(0, dstpart[4]);
-    }
-    {
-        int size = 5;
-        int num_parts = 2;
-        int64_t parts[] = {1,0,0,0,1};
-        int64_t idx[] = {0,2,1,4,3};
-        int idxsize = sizeof(idx) / sizeof(*idx);
-        int dstpart[5] = {};
-        err = partition_custom_int64(
-            size, num_parts, parts, idxsize, sizeof(*idx), idx, dstpart);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        TEST_ASSERT_EQ(1, dstpart[0]);
-        TEST_ASSERT_EQ(0, dstpart[1]);
-        TEST_ASSERT_EQ(0, dstpart[2]);
-        TEST_ASSERT_EQ(1, dstpart[3]);
-        TEST_ASSERT_EQ(0, dstpart[4]);
-    }
-    {
-        int size = 5;
-        int num_parts = 3;
-        int64_t parts[] = {2,0,2,1,0};
-        int64_t idx[] = {0,2,1,4,3};
-        int idxsize = sizeof(idx) / sizeof(*idx);
-        int dstpart[5] = {};
-        err = partition_custom_int64(
-            size, num_parts, parts, idxsize, sizeof(*idx), idx, dstpart);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        TEST_ASSERT_EQ(2, dstpart[0]);
-        TEST_ASSERT_EQ(2, dstpart[1]);
-        TEST_ASSERT_EQ(0, dstpart[2]);
-        TEST_ASSERT_EQ(0, dstpart[3]);
-        TEST_ASSERT_EQ(1, dstpart[4]);
-    }
-    return TEST_SUCCESS;
-}
-
-/**
  * ‘test_mtxpartition_singleton()’ tests singleton partitioning.
  */
 int test_mtxpartition_singleton(void)
@@ -2116,7 +2059,6 @@ int main(int argc, char * argv[])
     TEST_SUITE_BEGIN("Running tests for partitioning\n");
     TEST_RUN(test_partition_block);
     TEST_RUN(test_partition_block_cyclic);
-    TEST_RUN(test_partition_custom);
     TEST_RUN(test_mtxpartition_singleton);
     TEST_RUN(test_mtxpartition_block);
     TEST_RUN(test_mtxpartition_blockv);
