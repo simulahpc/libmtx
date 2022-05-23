@@ -1618,6 +1618,49 @@ int mtxfile_assemble(
  * Partitioning
  */
 
+
+/**
+ * ‘mtxfile_partition_nonzeros()’ partitions the nonzeros of a Matrix
+ * Market file.
+ *
+ * See ‘partition_int64()’ for an explanation of the meaning of the
+ * arguments ‘parttype’, ‘num_parts’, ‘partsizes’ and ‘blksize’.
+ *
+ * The array ‘dstpart’ must contain enough storage for
+ * ‘mtxfile->datasize’ values of type ‘int’. If successful, ‘dstpart’
+ * is used to store the part number assigned to the matrix or vector
+ * nonzeros.
+ *
+ * If it is not ‘NULL’, then the array ‘partsptr’ must contain enough
+ * storage for ‘num_parts+1’ values of type ‘int64_t’. If successful,
+ * ‘partsptr’ will contain offsets to the first element belonging to
+ * each part.
+ */
+int mtxfile_partition_nonzeros(
+    const struct mtxfile * mtxfile,
+    enum mtxpartitioning parttype,
+    int num_parts,
+    const int64_t * partsizes,
+    int64_t blksize,
+    int * dstpart,
+    int64_t * partsptr)
+{
+    int64_t * idx = malloc(mtxfile->datasize * sizeof(int64_t));
+    if (!idx) return MTX_ERR_ERRNO;
+    for (int64_t k = 0; k < mtxfile->datasize; k++) idx[k] = k;
+    int err = partition_int64(
+        parttype, mtxfile->datasize, num_parts, partsizes, blksize,
+        mtxfile->datasize, sizeof(int64_t), idx, dstpart);
+    if (err) { free(idx); return err; }
+    if (partsptr) {
+        for (int p = 0; p <= num_parts; p++) partsptr[p] = 0;
+        for (int64_t k = 0; k < mtxfile->datasize; k++) partsptr[dstpart[k]+1]++;
+        for (int p = 1; p <= num_parts; p++) partsptr[p] += partsptr[p-1];
+    }
+    free(idx);
+    return MTX_SUCCESS;
+}
+
 /**
  * ‘mtxfile_partition_rowwise()’ partitions the entries of a Matrix
  * Market file according to a given row partitioning.
@@ -1625,9 +1668,10 @@ int mtxfile_assemble(
  * See ‘partition_int64()’ for an explanation of the meaning of the
  * arguments ‘parttype’, ‘num_parts’, ‘partsizes’ and ‘blksize’.
  *
- * The array ‘dstpart’ must contain enough storage for ‘size’ values
- * of type ‘int’. If successful, ‘dstpart’ is used to store the part
- * number assigned to the matrix or vector nonzeros.
+ * The array ‘dstpart’ must contain enough storage for
+ * ‘mtxfile->datasize’ values of type ‘int’. If successful, ‘dstpart’
+ * is used to store the part number assigned to the matrix or vector
+ * nonzeros.
  *
  * If it is not ‘NULL’, then the array ‘partsptr’ must contain enough
  * storage for ‘num_parts+1’ values of type ‘int64_t’. If successful,
@@ -1644,6 +1688,39 @@ int mtxfile_partition_rowwise(
     int64_t * partsptr)
 {
     return mtxfiledata_partition_rowwise(
+        &mtxfile->data, mtxfile->header.object, mtxfile->header.format,
+        mtxfile->header.field, mtxfile->precision,
+        mtxfile->size.num_rows, mtxfile->size.num_columns, 0, mtxfile->datasize,
+        parttype, num_parts, partsizes, blksize, dstpart, partsptr);
+}
+
+/**
+ * ‘mtxfile_partition_columnwise()’ partitions the entries of a Matrix
+ * Market file according to a given column partitioning.
+ *
+ * See ‘partition_int64()’ for an explanation of the meaning of the
+ * arguments ‘parttype’, ‘num_parts’, ‘partsizes’ and ‘blksize’.
+ *
+ * The array ‘dstpart’ must contain enough storage for
+ * ‘mtxfile->datasize’ values of type ‘int’. If successful, ‘dstpart’
+ * is used to store the part number assigned to the matrix or vector
+ * nonzeros.
+ *
+ * If it is not ‘NULL’, then the array ‘partsptr’ must contain enough
+ * storage for ‘num_parts+1’ values of type ‘int64_t’. If successful,
+ * ‘partsptr’ will contain offsets to the first element belonging to
+ * each part.
+ */
+int mtxfile_partition_columnwise(
+    const struct mtxfile * mtxfile,
+    enum mtxpartitioning parttype,
+    int num_parts,
+    const int64_t * partsizes,
+    int64_t blksize,
+    int * dstpart,
+    int64_t * partsptr)
+{
+    return mtxfiledata_partition_columnwise(
         &mtxfile->data, mtxfile->header.object, mtxfile->header.format,
         mtxfile->header.field, mtxfile->precision,
         mtxfile->size.num_rows, mtxfile->size.num_columns, 0, mtxfile->datasize,

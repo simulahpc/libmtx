@@ -5681,6 +5681,64 @@ int mtxfiledata_partition_rowwise(
 }
 
 /**
+ * ‘mtxfiledata_partition_columnwise()’ partitions data lines according
+ * to a given column partition.
+ *
+ * See ‘partition_int64()’ for an explanation of the meaning of the
+ * arguments ‘type’, ‘num_parts’, ‘partsizes’ and ‘blksize’.
+ *
+ * The array ‘dstpart’ must contain enough storage for ‘size’ values
+ * of type ‘int’. If successful, ‘dstpart’ is used to store the part
+ * number assigned to the matrix or vector nonzeros.
+ *
+ * If it is not ‘NULL’, then the array ‘partsptr’ must contain enough
+ * storage for ‘num_parts+1’ values of type ‘int64_t’. If successful,
+ * ‘partsptr’ will contain offsets to the first element belonging to
+ * each part.
+ *
+ * If ‘format’ is ‘mtxfile_array’, then a non-negative ‘offset’ value
+ * can be used to partition matrix or vector entries starting from the
+ * specified offset, instead of beginning with the first entry of the
+ * matrix or vector.
+ */
+int mtxfiledata_partition_columnwise(
+    const union mtxfiledata * data,
+    enum mtxfileobject object,
+    enum mtxfileformat format,
+    enum mtxfilefield field,
+    enum mtxprecision precision,
+    int64_t num_rows,
+    int64_t num_columns,
+    int64_t offset,
+    int64_t size,
+    enum mtxpartitioning type,
+    int num_parts,
+    const int64_t * partsizes,
+    int64_t blksize,
+    int * dstpart,
+    int64_t * partsptr)
+{
+    int64_t * colidx = malloc(size * sizeof(int64_t));
+    if (!colidx) return MTX_ERR_ERRNO;
+    int err = mtxfiledata_rowcolidx64(
+        data, object, format, field, precision,
+        num_rows, num_columns, offset, size, NULL, colidx);
+    if (err) { free(colidx); return err; }
+    for (int64_t k = 0; k < size; k++) colidx[k]--;
+    err = partition_int64(
+        type, num_columns, num_parts, partsizes, blksize,
+        size, sizeof(int64_t), colidx, dstpart);
+    if (err) { free(colidx); return err; }
+    if (partsptr) {
+        for (int p = 0; p <= num_parts; p++) partsptr[p] = 0;
+        for (int64_t k = 0; k < size; k++) partsptr[dstpart[k]+1]++;
+        for (int p = 1; p <= num_parts; p++) partsptr[p] += partsptr[p-1];
+    }
+    free(colidx);
+    return MTX_SUCCESS;
+}
+
+/**
  * ‘mtxfiledata_partition()’ partitions data lines according to given
  * row and column partitions.
  *
