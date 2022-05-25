@@ -5003,116 +5003,6 @@ int mtxfiledata_sort_int(
 }
 
 /**
- * ‘mtxfiledata_coordinate_rowcolidxptrs()’ obtain pointers and
- * associated stridess for row and column indices of Matrix Market
- * data in coordinate format.
- */
-static int mtxfiledata_coordinate_rowcolidxptrs(
-    union mtxfiledata * data,
-    enum mtxfileobject object,
-    enum mtxfileformat format,
-    enum mtxfilefield field,
-    enum mtxprecision precision,
-    int * rowidxstride,
-    int64_t ** rowidx,
-    int * colidxstride,
-    int64_t ** colidx)
-{
-    if (format == mtxfile_coordinate) {
-        if (object == mtxfile_matrix) {
-            if (field == mtxfile_real) {
-                if (precision == mtx_single) {
-                    struct mtxfile_matrix_coordinate_real_single * src =
-                        data->matrix_coordinate_real_single;
-                    *rowidxstride = *colidxstride = sizeof(*src);
-                    *rowidx = &src[0].i; *colidx = &src[0].j;
-                } else if (precision == mtx_double) {
-                    struct mtxfile_matrix_coordinate_real_double * src =
-                        data->matrix_coordinate_real_double;
-                    *rowidxstride = *colidxstride = sizeof(*src);
-                    *rowidx = &src[0].i; *colidx = &src[0].j;
-                } else { return MTX_ERR_INVALID_PRECISION; }
-            } else if (field == mtxfile_complex) {
-                if (precision == mtx_single) {
-                    struct mtxfile_matrix_coordinate_complex_single * src =
-                        data->matrix_coordinate_complex_single;
-                    *rowidxstride = *colidxstride = sizeof(*src);
-                    *rowidx = &src[0].i; *colidx = &src[0].j;
-                } else if (precision == mtx_double) {
-                    struct mtxfile_matrix_coordinate_complex_double * src =
-                        data->matrix_coordinate_complex_double;
-                    *rowidxstride = *colidxstride = sizeof(*src);
-                    *rowidx = &src[0].i; *colidx = &src[0].j;
-                } else { return MTX_ERR_INVALID_PRECISION; }
-            } else if (field == mtxfile_integer) {
-                if (precision == mtx_single) {
-                    struct mtxfile_matrix_coordinate_integer_single * src =
-                        data->matrix_coordinate_integer_single;
-                    *rowidxstride = *colidxstride = sizeof(*src);
-                    *rowidx = &src[0].i; *colidx = &src[0].j;
-                } else if (precision == mtx_double) {
-                    struct mtxfile_matrix_coordinate_integer_double * src =
-                        data->matrix_coordinate_integer_double;
-                    *rowidxstride = *colidxstride = sizeof(*src);
-                    *rowidx = &src[0].i; *colidx = &src[0].j;
-                } else { return MTX_ERR_INVALID_PRECISION; }
-            } else if (field == mtxfile_pattern) {
-                struct mtxfile_matrix_coordinate_pattern * src =
-                    data->matrix_coordinate_pattern;
-                *rowidxstride = *colidxstride = sizeof(*src);
-                *rowidx = &src[0].i; *colidx = &src[0].j;
-            } else { return MTX_ERR_INVALID_MTX_FIELD; }
-        } else if (object == mtxfile_vector) {
-            if (field == mtxfile_real) {
-                if (precision == mtx_single) {
-                    struct mtxfile_vector_coordinate_real_single * src =
-                        data->vector_coordinate_real_single;
-                    *rowidxstride = sizeof(*src);
-                    *rowidx = &src[0].i;
-                } else if (precision == mtx_double) {
-                    struct mtxfile_vector_coordinate_real_double * src =
-                        data->vector_coordinate_real_double;
-                    *rowidxstride = sizeof(*src);
-                    *rowidx = &src[0].i;
-                } else { return MTX_ERR_INVALID_PRECISION; }
-            } else if (field == mtxfile_complex) {
-                if (precision == mtx_single) {
-                    struct mtxfile_vector_coordinate_complex_single * src =
-                        data->vector_coordinate_complex_single;
-                    *rowidxstride = sizeof(*src);
-                    *rowidx = &src[0].i;
-                } else if (precision == mtx_double) {
-                    struct mtxfile_vector_coordinate_complex_double * src =
-                        data->vector_coordinate_complex_double;
-                    *rowidxstride = sizeof(*src);
-                    *rowidx = &src[0].i;
-                } else { return MTX_ERR_INVALID_PRECISION; }
-            } else if (field == mtxfile_integer) {
-                if (precision == mtx_single) {
-                    struct mtxfile_vector_coordinate_integer_single * src =
-                        data->vector_coordinate_integer_single;
-                    *rowidxstride = sizeof(*src);
-                    *rowidx = &src[0].i;
-                } else if (precision == mtx_double) {
-                    struct mtxfile_vector_coordinate_integer_double * src =
-                        data->vector_coordinate_integer_double;
-                    *rowidxstride = sizeof(*src);
-                    *rowidx = &src[0].i;
-                } else { return MTX_ERR_INVALID_PRECISION; }
-            } else if (field == mtxfile_pattern) {
-                struct mtxfile_vector_coordinate_pattern * src =
-                    data->vector_coordinate_pattern;
-                *rowidxstride = sizeof(*src);
-                *rowidx = &src[0].i;
-            } else { return MTX_ERR_INVALID_MTX_FIELD; }
-            *colidxstride = 0;
-            *colidx = NULL;
-        } else { return MTX_ERR_INVALID_MTX_OBJECT; }
-    } else { return MTX_ERR_INVALID_MTX_FORMAT; }
-    return MTX_SUCCESS;
-}
-
-/**
  * ‘mtxfiledata_sort_row_major()’ sorts data lines of a Matrix Market
  * file in row major order.
  *
@@ -5133,15 +5023,13 @@ int mtxfiledata_sort_row_major(
     if (format == mtxfile_array) {
         if (perm) { for (int64_t k = 0; k < size; k++) perm[k] = k+1; }
     } else if (format == mtxfile_coordinate) {
-        int rowidxstride;
+        int idxstride;
         int64_t * rowidx;
-        int colidxstride;
         int64_t * colidx;
-        int err = mtxfiledata_coordinate_rowcolidxptrs(
+        int err = mtxfiledata_rowcolidxptr(
             data, object, format, field, precision,
-            &rowidxstride, &rowidx, &colidxstride, &colidx);
+            &idxstride, &rowidx, &colidx);
         if (err) return err;
-
         if (object == mtxfile_matrix) {
             /* sort row and column indices and then permute values */
             int64_t * tmpperm = perm;
@@ -5150,7 +5038,7 @@ int mtxfiledata_sort_row_major(
                 if (!tmpperm) return MTX_ERR_ERRNO;
             }
             int err = radix_sort_int64_pair(
-                size, rowidxstride, rowidx, colidxstride, colidx, tmpperm);
+                size, idxstride, rowidx, idxstride, colidx, tmpperm);
             if (err) { if (!perm) free(tmpperm); return err; }
             if (tmpperm) {
                 err = mtxfiledata_coordinate_permute_values(
@@ -5168,7 +5056,7 @@ int mtxfiledata_sort_row_major(
                 tmpperm = malloc(size * sizeof(int64_t));
                 if (!tmpperm) return MTX_ERR_ERRNO;
             }
-            int err = radix_sort_int64(size, rowidxstride, rowidx, tmpperm);
+            int err = radix_sort_int64(size, idxstride, rowidx, tmpperm);
             if (err) { if (!perm) free(tmpperm); return err; }
             if (tmpperm) {
                 err = mtxfiledata_coordinate_permute_values(
@@ -5212,13 +5100,12 @@ int mtxfiledata_sort_column_major(
             }
         }
     } else if (format == mtxfile_coordinate) {
-        int rowidxstride;
+        int idxstride;
         int64_t * rowidx;
-        int colidxstride;
         int64_t * colidx;
-        int err = mtxfiledata_coordinate_rowcolidxptrs(
+        int err = mtxfiledata_rowcolidxptr(
             data, object, format, field, precision,
-            &rowidxstride, &rowidx, &colidxstride, &colidx);
+            &idxstride, &rowidx, &colidx);
         if (err) return err;
         if (object == mtxfile_matrix) {
             /* sort row and column indices and then permute values */
@@ -5228,7 +5115,7 @@ int mtxfiledata_sort_column_major(
                 if (!tmpperm) return MTX_ERR_ERRNO;
             }
             int err = radix_sort_int64_pair(
-                size, colidxstride, colidx, rowidxstride, rowidx, tmpperm);
+                size, idxstride, colidx, idxstride, rowidx, tmpperm);
             if (err) { if (!perm) free(tmpperm); return err; }
             if (tmpperm) {
                 err = mtxfiledata_coordinate_permute_values(
@@ -5305,13 +5192,12 @@ int mtxfiledata_sort_morton(
             return MTX_SUCCESS;
         } else { return MTX_ERR_INVALID_MTX_OBJECT; }
     } else if (format == mtxfile_coordinate) {
-        int rowidxstride;
+        int idxstride;
         int64_t * rowidx;
-        int colidxstride;
         int64_t * colidx;
-        int err = mtxfiledata_coordinate_rowcolidxptrs(
+        int err = mtxfiledata_rowcolidxptr(
             data, object, format, field, precision,
-            &rowidxstride, &rowidx, &colidxstride, &colidx);
+            &idxstride, &rowidx, &colidx);
         if (err) return err;
 
         if (object == mtxfile_matrix) {
@@ -5324,24 +5210,20 @@ int mtxfiledata_sort_morton(
             /* convert from Cartesian to 2D Morton order, sort, then
              * convert back to Cartesian */
             for (int64_t k = 0; k < size; k++) {
-                (*(int64_t *) ((char *) rowidx + k*rowidxstride))--;
-                (*(int64_t *) ((char *) colidx + k*colidxstride))--;
+                (*(int64_t *) ((char *) rowidx + k*idxstride))--;
+                (*(int64_t *) ((char *) colidx + k*idxstride))--;
             }
             morton2d_from_cartesian_uint64(
-                size, rowidxstride, (uint64_t *) rowidx,
-                colidxstride, (uint64_t *) colidx,
-                rowidxstride, (uint64_t *) rowidx,
-                colidxstride, (uint64_t *) colidx);
+                size, idxstride, (uint64_t *) rowidx, idxstride, (uint64_t *) colidx,
+                idxstride, (uint64_t *) rowidx, idxstride, (uint64_t *) colidx);
             int err = radix_sort_int64_pair(
-                size, rowidxstride, rowidx, colidxstride, colidx, tmpperm);
+                size, idxstride, rowidx, idxstride, colidx, tmpperm);
             morton2d_to_cartesian_uint64(
-                size, rowidxstride, (uint64_t *) rowidx,
-                colidxstride, (uint64_t *) colidx,
-                rowidxstride, (uint64_t *) rowidx,
-                colidxstride, (uint64_t *) colidx);
+                size, idxstride, (uint64_t *) rowidx, idxstride, (uint64_t *) colidx,
+                idxstride, (uint64_t *) rowidx, idxstride, (uint64_t *) colidx);
             for (int64_t k = 0; k < size; k++) {
-                (*(int64_t *) ((char *) rowidx + k*rowidxstride))++;
-                (*(int64_t *) ((char *) colidx + k*colidxstride))++;
+                (*(int64_t *) ((char *) rowidx + k*idxstride))++;
+                (*(int64_t *) ((char *) colidx + k*idxstride))++;
             }
 
             if (err) { if (!perm) free(tmpperm); return err; }

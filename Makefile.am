@@ -16,7 +16,7 @@
 # along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
 #
 # Authors: James D. Trotter <james@simula.no>
-# Last modified: 2022-05-20
+# Last modified: 2022-05-24
 #
 # Makefile for the top-level directory of Libmtx.
 #
@@ -78,6 +78,8 @@ libmtx_la_SOURCES = \
 	libmtx/util/fmtspec.h \
 	libmtx/util/merge.c \
 	libmtx/util/merge.h \
+	libmtx/util/metis.c \
+	libmtx/util/metis.h \
 	libmtx/util/morton.c \
 	libmtx/util/morton.h \
 	libmtx/util/parse.c \

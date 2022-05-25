@@ -127,12 +127,17 @@ const char * mtxstrerror(
         return "BLAS not supported; please rebuild with BLAS support";
     case MTX_ERR_LIBPNG_NOT_SUPPORTED:
         return "libpng not supported; please rebuild with libpng support";
+    case MTX_ERR_METIS_NOT_SUPPORTED:
+        return "METIS not supported; please rebuild with METIS support";
     case MTX_ERR_MPI:
         return "MPI error";
     case MTX_ERR_MPI_COLLECTIVE:
         return "collective MPI error";
     case MTX_ERR_BLAS:
         return mtxblaserrstr;
+    case MTX_ERR_METIS_INPUT: return "METIS: input error";
+    case MTX_ERR_METIS_MEMORY: return "METIS: cannot allocate memory";
+    case MTX_ERR_METIS: "METIS: error";
     case MTX_ERR_EOF:
         if (errno) return strerror(errno);
         else return "unexpected end-of-file";

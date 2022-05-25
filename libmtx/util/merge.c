@@ -218,6 +218,186 @@ int compact_sorted_int(
 }
 
 /**
+ * ‘compact_sorted_int32_pair()’ performs a stream compaction on a
+ * sorted array of pairs of 32-bit signed integers to produce a sorted
+ * output array of unique elements from the input array.
+ *
+ * The array to be compacted, ‘a’, contains ‘asize’ items. The array
+ * must be sorted in ascending, lexicographic order and values may
+ * appear more than once.
+ *
+ * If ‘b’ is ‘NULL’, then no output is written. However, ‘bsize’ is
+ * used to indicate the number of items (pairs) that would have been
+ * written if an output array were provided.
+ *
+ * Otherwise, the user must provide an output array ‘b’ with enough
+ * storage to hold the compacted results. Moreover, the user must
+ * specify the allocated size of the output array with the value
+ * pointed to by ‘bsize’. On success, the value returned in ‘bsize’
+ * indicates the number of items that were written to the output
+ * array.
+ *
+ * If ‘dstidx’ is not ‘NULL’, then it must point to an array of length
+ * ‘asize’. For a given item (pair) in the input array ‘a’ the
+ * corresponding value in ‘dstidx’ indicates the offset to the same
+ * item (pair) in the output array ‘b’.
+ */
+int compact_sorted_int32_pair(
+    int64_t * bsize,
+    int32_t (* b)[2],
+    int64_t asize,
+    const int32_t (* a)[2],
+    int64_t * dstidx)
+{
+    int64_t i = 0, k = 0;
+    if (b && dstidx) {
+        while (i < asize) {
+            if (k >= *bsize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            dstidx[i] = k; b[k][0] = a[i][0]; b[k][1] = a[i][1]; k++;
+            for (i++; i < asize && a[i][0] == a[i-1][0] && a[i][1] == a[i-1][1]; i++) { dstidx[i] = k-1; }
+        }
+    } else if (b) {
+        while (i < asize) {
+            if (k >= *bsize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            b[k][0] = a[i][0]; b[k][1] = a[i][1]; k++;
+            for (i++; i < asize && a[i][0] == a[i-1][0] && a[i][1] == a[i-1][1]; i++) {}
+        }
+    } else if (dstidx) {
+        while (i < asize) {
+            dstidx[i] = k; k++;
+            for (i++; i < asize && a[i][0] == a[i-1][0] && a[i][1] == a[i-1][1]; i++) { dstidx[i] = k-1; }
+        }
+    } else {
+        while (i < asize) {
+            k++;
+            for (i++; i < asize && a[i][0] == a[i-1][0] && a[i][1] == a[i-1][1]; i++) {}
+        }
+    }
+    *bsize = k;
+    return MTX_SUCCESS;
+}
+
+/**
+ * ‘compact_sorted_int64_pair()’ performs a stream compaction on a
+ * sorted array of pairs of 64-bit signed integers to produce a sorted
+ * output array of unique elements from the input array.
+ *
+ * The array to be compacted, ‘a’, contains ‘asize’ items. The array
+ * must be sorted in ascending, lexicographic order and values may
+ * appear more than once.
+ *
+ * If ‘b’ is ‘NULL’, then no output is written. However, ‘bsize’ is
+ * used to indicate the number of items (pairs) that would have been
+ * written if an output array were provided.
+ *
+ * Otherwise, the user must provide an output array ‘b’ with enough
+ * storage to hold the compacted results. Moreover, the user must
+ * specify the allocated size of the output array with the value
+ * pointed to by ‘bsize’. On success, the value returned in ‘bsize’
+ * indicates the number of items that were written to the output
+ * array.
+ *
+ * If ‘dstidx’ is not ‘NULL’, then it must point to an array of length
+ * ‘asize’. For a given item (pair) in the input array ‘a’ the
+ * corresponding value in ‘dstidx’ indicates the offset to the same
+ * item (pair) in the output array ‘b’.
+ */
+int compact_sorted_int64_pair(
+    int64_t * bsize,
+    int64_t (* b)[2],
+    int64_t asize,
+    const int64_t (* a)[2],
+    int64_t * dstidx)
+{
+    int64_t i = 0, k = 0;
+    if (b && dstidx) {
+        while (i < asize) {
+            if (k >= *bsize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            dstidx[i] = k; b[k][0] = a[i][0]; b[k][1] = a[i][1]; k++;
+            for (i++; i < asize && a[i][0] == a[i-1][0] && a[i][1] == a[i-1][1]; i++) { dstidx[i] = k-1; }
+        }
+    } else if (b) {
+        while (i < asize) {
+            if (k >= *bsize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            b[k][0] = a[i][0]; b[k][1] = a[i][1]; k++;
+            for (i++; i < asize && a[i][0] == a[i-1][0] && a[i][1] == a[i-1][1]; i++) {}
+        }
+    } else if (dstidx) {
+        while (i < asize) {
+            dstidx[i] = k; k++;
+            for (i++; i < asize && a[i][0] == a[i-1][0] && a[i][1] == a[i-1][1]; i++) { dstidx[i] = k-1; }
+        }
+    } else {
+        while (i < asize) {
+            k++;
+            for (i++; i < asize && a[i][0] == a[i-1][0] && a[i][1] == a[i-1][1]; i++) {}
+        }
+    }
+    *bsize = k;
+    return MTX_SUCCESS;
+}
+
+/**
+ * ‘compact_sorted_int_pair()’ performs a stream compaction on a
+ * sorted array of pairs of signed integers to produce a sorted output
+ * array of unique elements from the input array.
+ *
+ * The array to be compacted, ‘a’, contains ‘asize’ items. The array
+ * must be sorted in ascending, lexicographic order and values may
+ * appear more than once.
+ *
+ * If ‘b’ is ‘NULL’, then no output is written. However, ‘bsize’ is
+ * used to indicate the number of items (pairs) that would have been
+ * written if an output array were provided.
+ *
+ * Otherwise, the user must provide an output array ‘b’ with enough
+ * storage to hold the compacted results. Moreover, the user must
+ * specify the allocated size of the output array with the value
+ * pointed to by ‘bsize’. On success, the value returned in ‘bsize’
+ * indicates the number of items that were written to the output
+ * array.
+ *
+ * If ‘dstidx’ is not ‘NULL’, then it must point to an array of length
+ * ‘asize’. For a given item (pair) in the input array ‘a’ the
+ * corresponding value in ‘dstidx’ indicates the offset to the same
+ * item (pair) in the output array ‘b’.
+ */
+int compact_sorted_int_pair(
+    int64_t * bsize,
+    int (* b)[2],
+    int64_t asize,
+    const int (* a)[2],
+    int64_t * dstidx)
+{
+    int64_t i = 0, k = 0;
+    if (b && dstidx) {
+        while (i < asize) {
+            if (k >= *bsize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            dstidx[i] = k; b[k][0] = a[i][0]; b[k][1] = a[i][1]; k++;
+            for (i++; i < asize && a[i][0] == a[i-1][0] && a[i][1] == a[i-1][1]; i++) { dstidx[i] = k-1; }
+        }
+    } else if (b) {
+        while (i < asize) {
+            if (k >= *bsize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            b[k][0] = a[i][0]; b[k][1] = a[i][1]; k++;
+            for (i++; i < asize && a[i][0] == a[i-1][0] && a[i][1] == a[i-1][1]; i++) {}
+        }
+    } else if (dstidx) {
+        while (i < asize) {
+            dstidx[i] = k; k++;
+            for (i++; i < asize && a[i][0] == a[i-1][0] && a[i][1] == a[i-1][1]; i++) { dstidx[i] = k-1; }
+        }
+    } else {
+        while (i < asize) {
+            k++;
+            for (i++; i < asize && a[i][0] == a[i-1][0] && a[i][1] == a[i-1][1]; i++) {}
+        }
+    }
+    *bsize = k;
+    return MTX_SUCCESS;
+}
+
+/**
  * ‘compact_unsorted_int32()’ performs a stream compaction on a sorted
  * array of 32-bit signed integers to produce a sorted output array of
  * unique elements from the input array.
@@ -335,6 +515,129 @@ int compact_unsorted_int(
     int err = radix_sort_int(asize, a, perm);
     if (err) return err;
     return compact_sorted_int(bsize, b, asize, a, dstidx);
+}
+
+/**
+ * ‘compact_unsorted_int32_pair()’ performs a stream compaction on a
+ * sorted array of pairs of 32-bit signed integers to produce a sorted
+ * output array of unique elements from the input array.
+ *
+ * The array to be compacted, ‘a’, contains ‘asize’ items (pairs). The
+ * arrays need not be sorted beforehand, but it will be sorted if the
+ * function returns successfully. Duplicate values are allowed in the
+ * input array.
+ *
+ * If ‘b’ is ‘NULL’, then no output is written. However, ‘bsize’ is
+ * used to indicate the number of items (pairs) that would have been
+ * written if an output array were provided.
+ *
+ * Otherwise, the user must provide an output array ‘b’ with enough
+ * storage to hold the compacted results. (The input and output arrays
+ * may be the same.) Moreover, the user must specify the allocated
+ * size of the output array with the value pointed to by ‘bsize’. On
+ * success, the value returned in ‘bsize’ indicates the number of
+ * items (pairs) that were written to the output array. The output
+ * will be sorted in ascending, lexicographic order.
+ *
+ * If ‘dstidx’ is not ‘NULL’, then it must point to an array of length
+ * ‘asize’. For a given item (pair) in the input array ‘a’ the
+ * corresponding value in ‘dstidx’ indicates the offset to the same
+ * item (pair) in the output array ‘b’.
+ */
+int compact_unsorted_int32_pair(
+    int64_t * bsize,
+    int32_t (* b)[2],
+    int64_t asize,
+    int32_t (* a)[2],
+    int64_t * perm,
+    int64_t * dstidx)
+{
+    int err = radix_sort_int32_pair(
+        asize, sizeof(*a), &a[0][0], sizeof(*a), &a[0][1], perm);
+    if (err) return err;
+    return compact_sorted_int32_pair(bsize, b, asize, a, dstidx);
+}
+
+/**
+ * ‘compact_unsorted_int64_pair()’ performs a stream compaction on a
+ * sorted array of pairs of 64-bit signed integers to produce a sorted
+ * output array of unique elements from the input array.
+ *
+ * The array to be compacted, ‘a’, contains ‘asize’ items (pairs). The
+ * arrays need not be sorted beforehand, but it will be sorted if the
+ * function returns successfully. Duplicate values are allowed in the
+ * input array.
+ *
+ * If ‘b’ is ‘NULL’, then no output is written. However, ‘bsize’ is
+ * used to indicate the number of items (pairs) that would have been
+ * written if an output array were provided.
+ *
+ * Otherwise, the user must provide an output array ‘b’ with enough
+ * storage to hold the compacted results. (The input and output arrays
+ * may be the same.) Moreover, the user must specify the allocated
+ * size of the output array with the value pointed to by ‘bsize’. On
+ * success, the value returned in ‘bsize’ indicates the number of
+ * items (pairs) that were written to the output array. The output
+ * will be sorted in ascending, lexicographic order.
+ *
+ * If ‘dstidx’ is not ‘NULL’, then it must point to an array of length
+ * ‘asize’. For a given item (pair) in the input array ‘a’ the
+ * corresponding value in ‘dstidx’ indicates the offset to the same
+ * item (pair) in the output array ‘b’.
+ */
+int compact_unsorted_int64_pair(
+    int64_t * bsize,
+    int64_t (* b)[2],
+    int64_t asize,
+    int64_t (* a)[2],
+    int64_t * perm,
+    int64_t * dstidx)
+{
+    int err = radix_sort_int64_pair(
+        asize, sizeof(*a), &a[0][0], sizeof(*a), &a[0][1], perm);
+    if (err) return err;
+    return compact_sorted_int64_pair(bsize, b, asize, a, dstidx);
+}
+
+/**
+ * ‘compact_unsorted_int_pair()’ performs a stream compaction on a
+ * sorted array of pairs of signed integers to produce a sorted output
+ * array of unique elements from the input array.
+ *
+ * The array to be compacted, ‘a’, contains ‘asize’ items (pairs). The
+ * arrays need not be sorted beforehand, but it will be sorted if the
+ * function returns successfully. Duplicate values are allowed in the
+ * input array.
+ *
+ * If ‘b’ is ‘NULL’, then no output is written. However, ‘bsize’ is
+ * used to indicate the number of items (pairs) that would have been
+ * written if an output array were provided.
+ *
+ * Otherwise, the user must provide an output array ‘b’ with enough
+ * storage to hold the compacted results. (The input and output arrays
+ * may be the same.) Moreover, the user must specify the allocated
+ * size of the output array with the value pointed to by ‘bsize’. On
+ * success, the value returned in ‘bsize’ indicates the number of
+ * items (pairs) that were written to the output array. The output
+ * will be sorted in ascending, lexicographic order.
+ *
+ * If ‘dstidx’ is not ‘NULL’, then it must point to an array of length
+ * ‘asize’. For a given item (pair) in the input array ‘a’ the
+ * corresponding value in ‘dstidx’ indicates the offset to the same
+ * item (pair) in the output array ‘b’.
+ */
+int compact_unsorted_int_pair(
+    int64_t * bsize,
+    int (* b)[2],
+    int64_t asize,
+    int (* a)[2],
+    int64_t * perm,
+    int64_t * dstidx)
+{
+    int err = radix_sort_int_pair(
+        asize, sizeof(*a), &a[0][0], sizeof(*a), &a[0][1], perm);
+    if (err) return err;
+    return compact_sorted_int_pair(bsize, b, asize, a, dstidx);
 }
 
 /*

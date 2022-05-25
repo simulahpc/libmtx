@@ -346,6 +346,33 @@ int radix_sort_int64_pair(
     int64_t * b,
     int64_t * perm);
 
+/**
+ * ‘radix_sort_int_pair()’ sorts pairs of signed integers in
+ * ascending, lexicographic order using a radix sort algorithm.
+ *
+ * The number of pairs to sort is given by ‘size’, and the unsorted,
+ * integer keys are given in the arrays ‘a’ and ‘b’. On success, the
+ * same arrays will contain the keys in sorted order.
+ *
+ * The values ‘astride’ and ‘bstride’ may be used to specify strides
+ * (in bytes) that are used when accessing the keys in ‘a’ and ‘b’,
+ * respectively. This is useful for cases where the keys are not
+ * necessarily stored contiguously in memory.
+ *
+ * If ‘perm’ is ‘NULL’, then this argument is ignored and a sorting
+ * permutation is not computed. Otherwise, it must point to an array
+ * of length ‘size’. On success, this array will contain the sorting
+ * permutation, mapping the locations of the original, unsorted keys
+ * to their new locations in the sorted array.
+ */
+int radix_sort_int_pair(
+    int64_t size,
+    int astride,
+    int * a,
+    int bstride,
+    int * b,
+    int64_t * perm);
+
 /*
  * distributed-memory radix sort
  */

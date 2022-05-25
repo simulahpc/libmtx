@@ -46,10 +46,14 @@ enum mtxerror
     MTX_ERR_ZLIB_NOT_SUPPORTED,       /* zlib not supported */
     MTX_ERR_BLAS_NOT_SUPPORTED,       /* BLAS not supported */
     MTX_ERR_LIBPNG_NOT_SUPPORTED,     /* libpng not supported */
+    MTX_ERR_METIS_NOT_SUPPORTED,      /* METIS not supported */
     MTX_ERR_MPI,                      /* MPI error */
     MTX_ERR_MPI_COLLECTIVE,           /* MPI collective error */
     MTX_ERR_MPI_NOT_INITIALIZED,      /* MPI not initialized */
     MTX_ERR_BLAS,                     /* BLAS error */
+    MTX_ERR_METIS_INPUT,              /* METIS: input error */
+    MTX_ERR_METIS_MEMORY,             /* METIS: cannot allocate memory */
+    MTX_ERR_METIS,                    /* METIS: error */
     MTX_ERR_EOF,                      /* unexpected end-of-file */
     MTX_ERR_LINE_TOO_LONG,            /* line exceeds maximum length */
     MTX_ERR_INVALID_MTX_HEADER,       /* invalid Matrix Market header */
