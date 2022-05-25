@@ -78,6 +78,8 @@ libmtx_la_SOURCES = \
 	libmtx/util/fmtspec.h \
 	libmtx/util/merge.c \
 	libmtx/util/merge.h \
+	libmtx/util/morton.c \
+	libmtx/util/morton.h \
 	libmtx/util/parse.c \
 	libmtx/util/parse.h \
 	libmtx/util/partition.c \
@@ -339,6 +341,11 @@ tests_test_merge_LDADD = $(top_builddir)/libmtx.la
 tests_test_merge_SOURCES = tests/test_merge.c tests/test.h
 check_PROGRAMS += tests/test_merge
 TESTS += tests/test_merge
+tests_test_morton_CPPFLAGS =
+tests_test_morton_LDADD = $(top_builddir)/libmtx.la
+tests_test_morton_SOURCES = tests/test_morton.c tests/test.h
+check_PROGRAMS += tests/test_morton
+TESTS += tests/test_morton
 tests_test_parse_CPPFLAGS =
 tests_test_parse_LDADD = $(top_builddir)/libmtx.la
 tests_test_parse_SOURCES = tests/test_parse.c tests/test.h
