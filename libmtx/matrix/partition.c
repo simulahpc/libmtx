@@ -39,6 +39,7 @@ const char * mtxmatrixparttype_str(
     case mtx_matrixparttype_rows: return "rows";
     case mtx_matrixparttype_columns: return "columns";
     case mtx_matrixparttype_2d: return "2d";
+    case mtx_matrixparttype_metis: return "metis";
     default: return mtxstrerror(MTX_ERR_INVALID_MATRIXPARTTYPE);
     }
 }
@@ -84,6 +85,9 @@ int mtxmatrixparttype_parse(
     } else if (strncmp("2d", t, strlen("2d")) == 0) {
         t += strlen("2d");
         *matrixparttype = mtx_matrixparttype_2d;
+    } else if (strncmp("metis", t, strlen("metis")) == 0) {
+        t += strlen("metis");
+        *matrixparttype = mtx_matrixparttype_metis;
     } else { return MTX_ERR_INVALID_MATRIXPARTTYPE; }
     if (valid_delimiters && *t != '\0') {
         if (!strchr(valid_delimiters, *t))

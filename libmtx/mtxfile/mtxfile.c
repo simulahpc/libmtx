@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-05-01
+ * Last modified: 2022-05-23
  *
  * Matrix Market files.
  */
@@ -24,14 +24,15 @@
 #include <libmtx/libmtx-config.h>
 
 #include <libmtx/error.h>
-#include <libmtx/vector/precision.h>
 #include <libmtx/mtxfile/comments.h>
 #include <libmtx/mtxfile/data.h>
 #include <libmtx/mtxfile/header.h>
 #include <libmtx/mtxfile/mtxfile.h>
 #include <libmtx/mtxfile/size.h>
-#include <libmtx/util/partition.h>
 #include <libmtx/util/cuthill_mckee.h>
+#include <libmtx/util/metis.h>
+#include <libmtx/util/partition.h>
+#include <libmtx/vector/precision.h>
 
 #ifdef LIBMTX_HAVE_MPI
 #include <mpi.h>
@@ -1771,6 +1772,267 @@ int mtxfile_partition_2d(
 }
 
 /**
+ * ‘mtxfile_partition_metis()’ partitions a matrix in Matrix Market
+ * format using the METIS graph partitioner.
+ *
+ * The array ‘dstnzpart’ must be of length ‘mtxfile->datasize’, and it
+ * is used to store the part numbers assigned to the matrix nonzeros.
+ *
+ * The array ‘dstrowpart’ must be of length ‘mtxfile->size.num_rows’.
+ * This array is used to store the part numbers assigned to the matrix
+ * rows. If the matrix is non-square, then ‘dstcolpart’ must be an
+ * array of length ‘mtxfile->size.num_columns’, which is then
+ * similarly used to store the part numbers assigned to the matrix
+ * columns.
+ *
+ * Unless they are set to ‘NULL’, then ‘nzpartsptr’, ‘rowpartsptr’ and
+ * ‘colpartsptr’ must be arrays of length ‘num_parts+1’. If
+ * successful, these three arrays will contain offsets to the first
+ * nonzero, row and column belonging to each part.
+ */
+int mtxfile_partition_metis(
+    const struct mtxfile * mtxfile,
+    int num_parts,
+    int * dstnzpart,
+    int64_t * nzpartsptr,
+    int * dstrowpart,
+    int64_t * rowpartsptr,
+    int * dstcolpart,
+    int64_t * colpartsptr)
+{
+    int err;
+    int64_t num_rows = mtxfile->size.num_rows;
+    int64_t num_columns = mtxfile->size.num_columns;
+    int64_t num_nonzeros = mtxfile->size.num_nonzeros;
+    bool square = num_rows == num_columns;
+    int num_vertices = square ? num_rows : num_rows + num_columns;
+    bool symmetric = square && (
+        mtxfile->header.symmetry == mtxfile_symmetric ||
+        mtxfile->header.symmetry == mtxfile_skew_symmetric ||
+        mtxfile->header.symmetry == mtxfile_hermitian);
+
+    if (mtxfile->header.object != mtxfile_matrix)
+        return MTX_ERR_INCOMPATIBLE_MTX_OBJECT;
+    if (mtxfile->header.format != mtxfile_coordinate)
+        return MTX_ERR_INCOMPATIBLE_MTX_FORMAT;
+
+    /* 1. obtain row and column offsets */
+    int * rowidx = malloc(src->datasize * sizeof(int));
+    if (!rowidx) return MTX_ERR_ERRNO;
+    int * colidx = malloc(src->datasize * sizeof(int));
+    if (!colidx) { free(rowidx); return MTX_ERR_ERRNO; }
+    err = mtxfiledata_rowcolidx(
+        &mtxfile->data, mtxfile->header.object, mtxfile->header.format,
+        mtxfile->header.field, mtxfile->precision,
+        mtxfile->size.num_rows, mtxfile->size.num_columns,
+        0, mtxfile->datasize, rowidx, colidx);
+    if (err) { free(colidx); free(rowidx); return err; }
+    for (int64_t k = 0; k < num_nonzeros; k++) { rowidx[k]--; colidx[k]--; }
+
+    /* /\* 1. obtain row pointers and column indices *\/ */
+    /* int64_t * rowptr = malloc((num_rows+1) * sizeof(int64_t)); */
+    /* if (!rowptr) return MTX_ERR_ERRNO; */
+    /* int * colidx = malloc(num_nonzeros * sizeof(int)); */
+    /* if (!colidx) { free(rowptr); return MTX_ERR_ERRNO; } */
+    /* err = mtxfiledata_rowptr( */
+    /*     &mtxfile->data, mtxfile->header.object, mtxfile->header.format, */
+    /*     mtxfile->header.field, mtxfile->precision, num_rows, num_nonzeros, */
+    /*     rowptr, colidx, NULL); */
+    /* if (err) { */
+    /*     free(colidx); free(rowptr); */
+    /*     return err; */
+    /* } */
+    /* for (int64_t k = 0; k < num_nonzeros; k++) colidx[k]--; */
+
+    /* /\* 2. If the matrix is not square, obtain column pointers and row */
+    /*  * indices, which is equivalent to row pointers and column indices */
+    /*  * of the transposed matrix. *\/ */
+    /* int64_t * colptr = NULL; */
+    /* int * rowidx = NULL; */
+    /* // if (!square) { */
+    /*     colptr = malloc((num_columns+1) * sizeof(int64_t)); */
+    /*     if (!colptr) { */
+    /*         free(colidx); free(rowptr); */
+    /*         return MTX_ERR_ERRNO; */
+    /*     } */
+    /*     rowidx = malloc(num_nonzeros * sizeof(int)); */
+    /*     if (!rowidx) { */
+    /*         free(colptr); */
+    /*         free(colidx); free(rowptr); */
+    /*         return MTX_ERR_ERRNO; */
+    /*     } */
+    /*     err = mtxfiledata_colptr( */
+    /*         &mtxfile->data, mtxfile->header.object, mtxfile->header.format, */
+    /*         mtxfile->header.field, mtxfile->precision, num_columns, num_nonzeros, */
+    /*         colptr, rowidx, NULL); */
+    /*     if (err) { */
+    /*         free(rowidx); free(colptr); */
+    /*         free(colidx); free(rowptr); */
+    /*         return err; */
+    /*     } */
+    /*     for (int64_t k = 0; k < num_nonzeros; k++) rowidx[k]--; */
+    /* // } */
+
+    /* 3. allocate storage for vertex parts */
+    int * vertexparts = malloc(num_vertices * sizeof(int));
+    if (!vertexparts) {
+        free(colidx); free(rowidx);
+        /* free(rowidx); free(colptr); */
+        /* free(colidx); free(rowptr); */
+        return MTX_ERR_ERRNO;
+    }
+
+    /* 4. partition the graph */
+    err = metis_partgraph(
+        num_parts, num_rows, num_columns, symmetric,
+        size, rowidx, colidx, num_vertices, vertexparts);
+    if (err) {
+        free(vertexparts);
+        free(colidx); free(rowidx);
+        /* free(rowidx); free(colptr); */
+        /* free(colidx); free(rowptr); */
+        return err;
+    }
+
+    /* /\* 4. partition the graph *\/ */
+    /* err = metis_partgraph( */
+    /*     num_parts, */
+    /*     num_rows, num_columns, rowptr, colidx, colptr, rowidx, */
+    /*     num_vertices, vertexparts); */
+    /* if (err) { */
+    /*     free(vertexparts); */
+    /*     /\* free(rowidx); free(colptr); *\/ */
+    /*     /\* free(colidx); free(rowptr); *\/ */
+    /*     return err; */
+    /* } */
+
+    free(vertexparts);
+    free(colidx); free(rowidx);
+    /* free(rowidx); free(colptr); */
+    /* free(colidx); free(rowptr); */
+
+    /* /\* Add one to shift from 0-based to 1-based indexing. *\/ */
+    /* for (int i = 0; i < num_vertices; i++) */
+    /*     vertexparts[i]++; */
+
+    /* /\* 5. Reverse the ordering. *\/ */
+    /* for (int i = 0; i < num_vertices/2; i++) { */
+    /*     int tmp = vertexparts[i]; */
+    /*     vertexparts[i] = vertexparts[num_vertices-i-1]; */
+    /*     vertexparts[num_vertices-i-1] = tmp; */
+    /* } */
+
+    /* bool alloc_rowperm = !rowperm; */
+    /* if (alloc_rowperm) { */
+    /*     rowperm = malloc(num_rows * sizeof(int)); */
+    /*     if (!rowperm) { */
+    /*         free(vertexparts); */
+    /*         return MTX_ERR_ERRNO; */
+    /*     } */
+    /* } */
+    /* bool alloc_colperm = !square && !colperm; */
+    /* if (alloc_colperm) { */
+    /*     colperm = malloc(num_columns * sizeof(int)); */
+    /*     if (!colperm) { */
+    /*         if (alloc_rowperm) */
+    /*             free(rowperm); */
+    /*         free(vertexparts); */
+    /*         return MTX_ERR_ERRNO; */
+    /*     } */
+    /* } */
+
+    /* if (square) { */
+    /*     for (int i = 0; i < num_vertices; i++) */
+    /*         rowperm[vertexparts[i]-1] = i+1; */
+    /*     if (colperm) { */
+    /*         for (int i = 0; i < num_vertices; i++) */
+    /*             colperm[i] = rowperm[i]; */
+    /*     } */
+    /* } else { */
+    /*     int * row_order = malloc((num_rows + num_columns) * sizeof(int)); */
+    /*     if (!row_order) { */
+    /*         if (alloc_colperm) */
+    /*             free(colperm); */
+    /*         if (alloc_rowperm) */
+    /*             free(rowperm); */
+    /*         free(vertexparts); */
+    /*         return MTX_ERR_ERRNO; */
+    /*     } */
+    /*     int * col_order = &row_order[num_rows]; */
+
+    /*     int k = 0; */
+    /*     int l = 0; */
+    /*     for (int i = 0; i < num_vertices; i++) { */
+    /*         if (vertexparts[i] <= num_rows) { */
+    /*             row_order[k] = vertexparts[i]; */
+    /*             k++; */
+    /*         } else { */
+    /*             col_order[l] = vertexparts[i]-num_rows; */
+    /*             l++; */
+    /*         } */
+    /*     } */
+
+    /*     for (int i = 0; i < num_rows; i++) */
+    /*         rowperm[row_order[i]-1] = i+1; */
+    /*     for (int i = 0; i < num_columns; i++) */
+    /*         colperm[col_order[i]-1] = i+1; */
+    /*     free(row_order); */
+    /* } */
+
+    /* /\* 7. Permute the matrix. *\/ */
+    /* if (permute) { */
+    /*     err = mtxfile_permute( */
+    /*         mtxfile, rowperm, square ? rowperm : colperm); */
+    /*     if (err) { */
+    /*         if (alloc_colperm) */
+    /*             free(colperm); */
+    /*         if (alloc_rowperm) */
+    /*             free(rowperm); */
+    /*         free(vertexparts); */
+    /*         return err; */
+    /*     } */
+    /* } */
+
+    /* if (alloc_colperm) */
+    /*     free(colperm); */
+    /* if (alloc_rowperm) */
+    /*     free(rowperm); */
+    /* free(vertexparts); */
+    /* return MTX_SUCCESS; */
+
+    /* int64_t * rowidx = malloc(size * sizeof(int64_t)); */
+    /* if (!rowidx) return MTX_ERR_ERRNO; */
+    /* int64_t * colidx = malloc(size * sizeof(int64_t)); */
+    /* if (!colidx) { free(rowidx); return MTX_ERR_ERRNO; } */
+    /* int err = mtxfiledata_rowcolidx64( */
+    /*     data, object, format, field, precision, */
+    /*     num_rows, num_columns, offset, size, rowidx, colidx); */
+    /* if (err) { free(rowidx); free(colidx); return err; } */
+    /* for (int64_t k = 0; k < size; k++) { rowidx[k]--; colidx[k]--; } */
+    /* int * rowpart = malloc(size * sizeof(int)); */
+    /* if (!rowpart) { free(rowidx); free(colidx); return MTX_ERR_ERRNO; } */
+    /* err = partition_int64( */
+    /*     rowparttype, num_rows, num_row_parts, rowpartsizes, rowblksize, */
+    /*     size, sizeof(int64_t), rowidx, rowpart); */
+    /* if (err) { free(rowpart); free(rowidx); free(colidx); return err; } */
+    /* err = partition_int64( */
+    /*     colparttype, num_columns, num_column_parts, colpartsizes, colblksize, */
+    /*     size, sizeof(int64_t), colidx, dstpart); */
+    /* if (err) { free(rowpart); free(rowidx); free(colidx); return err; } */
+    /* for (int64_t k = 0; k < size; k++) */
+    /*     dstpart[k] = rowpart[k]*num_column_parts + dstpart[k]; */
+    /* if (partsptr) { */
+    /*     for (int p = 0; p <= num_parts; p++) partsptr[p] = 0; */
+    /*     for (int64_t k = 0; k < size; k++) partsptr[dstpart[k]+1]++; */
+    /*     for (int p = 1; p <= num_parts; p++) partsptr[p] += partsptr[p-1]; */
+    /* } */
+    /* free(rowpart); free(rowidx); free(colidx); */
+    /* return MTX_SUCCESS; */
+
+    return MTX_SUCCESS;
+}
+
+/**
  * ‘mtxfile_partition2()’ partitions the entries of a Matrix Market
  * file, and, optionally, also partitions the rows and columns of the
  * underlying matrix or vector.
@@ -1801,6 +2063,28 @@ int mtxfile_partition_2d(
  *    and columns of the underlying matrix are partitioned by the
  *    METIS graph partitioner, and the matrix nonzeros are partitioned
  *    accordingly.
+ *
+ *
+ * In any case, the array ‘dstnzpart’ is used to store the part
+ * numbers assigned to the matrix nonzeros and must therefore be of
+ * length ‘mtxfile->datasize’.
+ *
+ * If the rows are partitioned, then the array ‘dstrowpart’ must be of
+ * length ‘mtxfile->size.num_rows’. This array is used to store the
+ * part numbers assigned to the matrix rows. In this case, ‘*rowpart’
+ * is also set to ‘true’, whereas it is ‘false’ otherwise.
+ *
+ * Similarly, if the columns are partitioned (e.g., when partitioning
+ * columnwise, 2d or a graph-based partitioning of a non-square
+ * matrix), then ‘dstcolpart’ is used to store the part numbers
+ * assigned to the matrix columns, and it must therefore be an array
+ * of length ‘mtxfile->size.num_columns’. Moreover, ‘*colpart’ is set
+ * to ‘true’, whereas it is ‘false’ otherwise.
+ *
+ * Unless they are set to ‘NULL’, then ‘nzpartsptr’, ‘rowpartsptr’ and
+ * ‘colpartsptr’ must be arrays of length ‘num_parts+1’. If
+ * successful, these three arrays will contain offsets to the first
+ * nonzero, row and column belonging to each part.
  */
 int mtxfile_partition2(
     struct mtxfile * mtxfile,
@@ -1817,27 +2101,47 @@ int mtxfile_partition2(
     int num_column_parts,
     const int64_t * colpartsizes,
     int64_t colblksize,
-    int * dstpart,
-    int64_t * partsptr)
+    int * dstnzpart,
+    int64_t * nzpartsptr,
+    bool * rowpart,
+    int * dstrowpart,
+    int64_t * rowpartsptr,
+    bool * colpart,
+    int * dstcolpart,
+    int64_t * colpartsptr)
 {
     if (matrixparttype == mtx_matrixparttype_nonzeros) {
+        *rowpart = false;
+        *colpart = false;
         return mtxfile_partition_nonzeros(
             mtxfile, nzparttype, num_nz_parts, nzpartsizes, nzblksize,
-            dstpart, partsptr);
+            dstnzpart, nzpartsptr);
     } else if (matrixparttype == mtx_matrixparttype_rows) {
+        *rowpart = false;
+        *colpart = false;
         return mtxfile_partition_rowwise(
             mtxfile, rowparttype, num_row_parts, rowpartsizes, rowblksize,
-            dstpart, partsptr);
+            dstnzpart, nzpartsptr);
     } else if (matrixparttype == mtx_matrixparttype_columns) {
+        *rowpart = false;
+        *colpart = false;
         return mtxfile_partition_columnwise(
             mtxfile, colparttype, num_column_parts, colpartsizes, colblksize,
-            dstpart, partsptr);
+            dstnzpart, nzpartsptr);
     } else if (matrixparttype == mtx_matrixparttype_2d) {
+        *rowpart = false;
+        *colpart = false;
         return mtxfile_partition_2d(
             mtxfile, rowparttype, num_row_parts, rowpartsizes, rowblksize,
             colparttype, num_column_parts, colpartsizes, colblksize,
-            dstpart, partsptr);
-    }
+            dstnzpart, nzpartsptr);
+    } else if (matrixparttype == mtx_matrixparttype_metis) {
+        *rowpart = true;
+        *colpart = true;
+        return mtxfile_partition_metis(
+            mtxfile, num_nz_parts, dstnzpart, nzpartsptr,
+            dstrowpart, rowpartsptr, dstcolpart, colpartsptr);
+    } else { return MTX_ERR_INVALID_MATRIXPARTTYPE; }
     return MTX_SUCCESS;
 }
 
@@ -2893,49 +3197,53 @@ int mtxfile_reorder_rcm(
     if (mtxfile->header.object != mtxfile_matrix)
         return MTX_ERR_INCOMPATIBLE_MTX_OBJECT;
     if (mtxfile->header.format != mtxfile_coordinate)
-        return MTX_ERR_INCOMPATIBLE_MTX_OBJECT;
+        return MTX_ERR_INCOMPATIBLE_MTX_FORMAT;
     if (starting_vertex && (*starting_vertex < 0 || *starting_vertex > num_vertices))
         return MTX_ERR_INDEX_OUT_OF_BOUNDS;
 
     /* 1. Obtain row pointers and column indices */
-    int64_t * rowptr = malloc(
-        (num_rows+1)*sizeof(int64_t) + num_nonzeros*sizeof(int));
-    if (!rowptr)
-        return MTX_ERR_ERRNO;
-    int * colidx = (int *) (&rowptr[num_rows+1]);
+    int64_t * rowptr = malloc((num_rows+1) * sizeof(int64_t));
+    if (!rowptr) return MTX_ERR_ERRNO;
+    int * colidx = malloc(num_nonzeros * sizeof(int));
+    if (!colidx) { free(rowptr); return MTX_ERR_ERRNO; }
     err = mtxfiledata_rowptr(
         &mtxfile->data, mtxfile->header.object, mtxfile->header.format,
         mtxfile->header.field, mtxfile->precision, num_rows, num_nonzeros,
         rowptr, colidx, NULL);
     if (err) {
-        free(rowptr);
+        free(colidx); free(rowptr);
         return err;
     }
 
-    /* 2. Obtain column pointers and row indices, which is equivalent
-     * to row pointers and column indices of the transposed matrix. */
-    int64_t * colptr = malloc(
-        (num_columns+1)*sizeof(int64_t) + num_nonzeros*sizeof(int));
+    /* 2. If the matrix is not square, obtain column pointers and row
+     * indices, which is equivalent to row pointers and column indices
+     * of the transposed matrix. */
+    int64_t * colptr = malloc((num_columns+1) * sizeof(int64_t));
     if (!colptr) {
-        free(rowptr);
+        free(colidx); free(rowptr);
         return MTX_ERR_ERRNO;
     }
-    int * rowidx = (int *) (&colptr[num_columns+1]);
+    int * rowidx = malloc(num_nonzeros * sizeof(int));
+    if (!rowidx) {
+        free(colptr);
+        free(colidx); free(rowptr);
+        return MTX_ERR_ERRNO;
+    }
     err = mtxfiledata_colptr(
         &mtxfile->data, mtxfile->header.object, mtxfile->header.format,
         mtxfile->header.field, mtxfile->precision, num_columns, num_nonzeros,
         colptr, rowidx, NULL);
     if (err) {
-        free(colptr);
-        free(rowptr);
+        free(rowidx); free(colptr);
+        free(colidx); free(rowptr);
         return err;
     }
 
-    /* 3. Allocate storage for vertex ordering */
+    /* 3. allocate storage for vertex ordering */
     int * vertex_order = malloc(num_vertices * sizeof(int));
     if (!vertex_order) {
-        free(colptr);
-        free(rowptr);
+        free(rowidx); free(colptr);
+        free(colidx); free(rowptr);
         return MTX_ERR_ERRNO;
     }
 
@@ -2945,13 +3253,13 @@ int mtxfile_reorder_rcm(
         starting_vertex, num_vertices, vertex_order);
     if (err) {
         free(vertex_order);
-        free(colptr);
-        free(rowptr);
+        free(rowidx); free(colptr);
+        free(colidx); free(rowptr);
         return err;
     }
 
-    free(colptr);
-    free(rowptr);
+    free(rowidx); free(colptr);
+    free(colidx); free(rowptr);
 
     /* Add one to shift from 0-based to 1-based indexing. */
     for (int i = 0; i < num_vertices; i++)
