@@ -206,7 +206,7 @@ int test_radix_sort(void)
         int64_t size = 5;
         uint64_t keys[5] = {0,255,30,1,2};
         int64_t permutation[5];
-        err = radix_sort_uint64(size, keys, permutation);
+        err = radix_sort_uint64(size, sizeof(*keys), keys, permutation);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(  0, keys[0]);
         TEST_ASSERT_EQ(  1, keys[1]);
@@ -225,7 +225,7 @@ int test_radix_sort(void)
         int64_t size = 5;
         uint64_t keys[5] = {25820, 24732, 1352, 34041, 38784};
         int64_t permutation[5];
-        err = radix_sort_uint64(size, keys, permutation);
+        err = radix_sort_uint64(size, sizeof(*keys), keys, permutation);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ( 1352, keys[0]);
         TEST_ASSERT_EQ(24732, keys[1]);
@@ -245,7 +245,7 @@ int test_radix_sort(void)
         uint64_t keys[100];
         for (int i = 0; i < size; i++)
             keys[i] = rand_uint64();
-        err = radix_sort_uint64(size, keys, NULL);
+        err = radix_sort_uint64(size, sizeof(*keys), keys, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         for (int i = 1; i < size; i++)
             TEST_ASSERT_LE_MSG(keys[i-1], keys[i], "i=%d, keys[i-1]=%"PRIu64", keys[i]=%"PRIu64"",
@@ -267,7 +267,7 @@ int test_radix_sort(void)
         fflush(stderr);
         clock_gettime(CLOCK_MONOTONIC, &t0);
 
-        err = radix_sort_uint64(size, keys, NULL);
+        err = radix_sort_uint64(size, sizeof(*keys), keys, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
 
         clock_gettime(CLOCK_MONOTONIC, &t1);

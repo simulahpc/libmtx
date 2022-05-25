@@ -135,16 +135,18 @@ int test_morton2d_to_cartesian(void)
         TEST_ASSERT_EQ(3, x[14]); TEST_ASSERT_EQ(2, y[14]);
         TEST_ASSERT_EQ(3, x[15]); TEST_ASSERT_EQ(3, y[15]);
     }
-#if 0
+
     /* 64-bit unsigned integers */
     {
         int size = 16;
         uint64_t x[16] = {};
         uint64_t y[16] = {};
         uint64_t z[16][2] = {
-            {0,0},{0,1},{0,2},{0,3},{0,4},{0,5},{0,6},{0,7},{0,8},{0,9},{0,10},{0,11},{0,12},{0,13},{0,14},{0,15}};
+            {0,0},{0,1},{0,2},{0,3},{0,4},{0,5},{0,6},{0,7},{0,8},
+            {0,9},{0,10},{0,11},{0,12},{0,13},{0,14},{0,15}};
         int err = morton2d_to_cartesian_uint64(
-            size, sizeof(*z), z, sizeof(*x), x, sizeof(*y), y);
+            size, sizeof(*z), &z[0][0], sizeof(*z), &z[0][1],
+            sizeof(*x), x, sizeof(*y), y);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(0, x[ 0]); TEST_ASSERT_EQ(0, y[ 0]);
         TEST_ASSERT_EQ(0, x[ 1]); TEST_ASSERT_EQ(1, y[ 1]);
@@ -177,10 +179,11 @@ int test_morton2d_to_cartesian(void)
         }
         int err = morton2d_from_cartesian_uint64(
             size, sizeof(*xin), xin, sizeof(*yin), yin,
-            sizeof(*z), &z[0][0], sizeof(*z) &z[0][1]);
+            sizeof(*z), &z[0][0], sizeof(*z), &z[0][1]);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = morton2d_to_cartesian_uint64(
-            size, sizeof(*z), z, sizeof(*xout), xout, sizeof(*yout), yout);
+            size, sizeof(*z), &z[0][0], sizeof(*z), &z[0][1],
+            sizeof(*xout), xout, sizeof(*yout), yout);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         for (int i = 0; i < size; i++) {
             TEST_ASSERT_MSG(
@@ -190,8 +193,6 @@ int test_morton2d_to_cartesian(void)
                 i, xin[i], xout[i], yin[i], yout[i]);
         }
     }
-
-#endif
     return TEST_SUCCESS;
 }
 

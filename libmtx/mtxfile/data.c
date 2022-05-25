@@ -33,6 +33,7 @@
 
 #include <libmtx/util/parse.h>
 #include <libmtx/util/fmtspec.h>
+#include <libmtx/util/morton.h>
 #include <libmtx/util/partition.h>
 #include <libmtx/util/sort.h>
 
@@ -51,6 +52,17 @@ static inline uint32_t _pdep_u32(uint32_t val, uint32_t mask)
 {
     uint32_t res = 0;
     for (uint32_t bb = 1; mask; bb += bb) {
+        if (val & bb)
+            res |= mask & -mask;
+        mask &= mask - 1;
+    }
+    return res;
+}
+
+static inline uint64_t _pdep_u64(uint64_t val, uint64_t mask)
+{
+    uint64_t res = 0;
+    for (uint64_t bb = 1; mask; bb += bb) {
         if (val & bb)
             res |= mask & -mask;
         mask &= mask - 1;
@@ -4726,20 +4738,15 @@ int mtxfiledata_permute(
 }
 
 /**
- * ‘mtxfiledata_sortkey_row_major()’ provides an array of keys that
- * can be used to sort the data lines of the given Matrix Market file
- * in row major order.
+ * ‘mtxfiledata_coordinate_permute_values()’ permutes only the values
+ * of a Matrix Market file in coordinate format according to a given
+ * permutation.
  *
- * The array ‘keys’ must contain enough storage for an array of ‘size’
- * values of type ‘int64_t’.  If successful, the ‘k’-th value of
- * ‘keys’ is the sorting key for the ‘k’-th data line.
- *
- * If ‘format’ is ‘mtxfile_array’, then a non-negative ‘offset’ value
- * can be used to obtain sorting keys for matrix or vector entries
- * starting from the specified offset, instead of beginning with the
- * first entry of the matrix or vector.
+ * The array ‘perm’ should be a permutation of the integers
+ * ‘0,1,...,N-1’, where ‘N’ is the number of data lines in the matrix
+ * or vector.
  */
-int mtxfiledata_sortkey_row_major(
+static int mtxfiledata_coordinate_permute_values(
     union mtxfiledata * data,
     enum mtxfileobject object,
     enum mtxfileformat format,
@@ -4747,297 +4754,165 @@ int mtxfiledata_sortkey_row_major(
     enum mtxprecision precision,
     int64_t num_rows,
     int64_t num_columns,
-    int64_t offset,
     int64_t size,
-    uint64_t * keys)
+    const int64_t * perm)
 {
-    if (object == mtxfile_matrix) {
-        if (format == mtxfile_array) {
-            if ((offset + size) > num_rows * num_columns)
-                return MTX_ERR_INDEX_OUT_OF_BOUNDS;
-            for (int64_t k = offset, l = 0; l < size; k++, l++) {
-                int64_t i = k / num_columns;
-                int64_t j = k % num_columns;
-                keys[l] = ((uint64_t) i << 32) | j;
-            }
-        } else if (format == mtxfile_coordinate) {
+    for (int64_t k = 0; k < size; k++) {
+        if (perm[k] < 0 || perm[k] >= size)
+            return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+    }
+
+    union mtxfiledata srcdata;
+    int err = mtxfiledata_alloc(
+        &srcdata, object, format, field, precision, size);
+    if (err) return err;
+    err = mtxfiledata_copy(
+        &srcdata, data, object, format, field, precision,
+        size, 0, 0);
+    if (err) {
+        mtxfiledata_free(&srcdata, object, format, field, precision);
+        return err;
+    }
+
+    if (format == mtxfile_coordinate) {
+        if (object == mtxfile_matrix) {
             if (field == mtxfile_real) {
                 if (precision == mtx_single) {
-                    const struct mtxfile_matrix_coordinate_real_single * src =
+                    struct mtxfile_matrix_coordinate_real_single * dst =
                         data->matrix_coordinate_real_single;
-                    for (int64_t k = 0; k < size; k++)
-                        keys[k] = ((uint64_t) src[k].i << 32) | src[k].j;
+                    const struct mtxfile_matrix_coordinate_real_single * src =
+                        srcdata.matrix_coordinate_real_single;
+                    for (int64_t k = 0; k < size; k++) dst[perm[k]].a = src[k].a;
                 } else if (precision == mtx_double) {
-                    const struct mtxfile_matrix_coordinate_real_double * src =
+                    struct mtxfile_matrix_coordinate_real_double * dst =
                         data->matrix_coordinate_real_double;
-                    for (int64_t k = 0; k < size; k++)
-                        keys[k] = ((uint64_t) src[k].i << 32) | src[k].j;
-                } else { return MTX_ERR_INVALID_PRECISION; }
+                    const struct mtxfile_matrix_coordinate_real_double * src =
+                        srcdata.matrix_coordinate_real_double;
+                    for (int64_t k = 0; k < size; k++) dst[perm[k]].a = src[k].a;
+                } else {
+                    mtxfiledata_free(&srcdata, object, format, field, precision);
+                    return MTX_ERR_INVALID_PRECISION;
+                }
             } else if (field == mtxfile_complex) {
                 if (precision == mtx_single) {
-                    const struct mtxfile_matrix_coordinate_complex_single * src =
+                    struct mtxfile_matrix_coordinate_complex_single * dst =
                         data->matrix_coordinate_complex_single;
-                    for (int64_t k = 0; k < size; k++)
-                        keys[k] = ((uint64_t) src[k].i << 32) | src[k].j;
+                    const struct mtxfile_matrix_coordinate_complex_single * src =
+                        srcdata.matrix_coordinate_complex_single;
+                    for (int64_t k = 0; k < size; k++) {
+                        dst[perm[k]].a[0] = src[k].a[0];
+                        dst[perm[k]].a[1] = src[k].a[1];
+                    }
                 } else if (precision == mtx_double) {
-                    const struct mtxfile_matrix_coordinate_complex_double * src =
+                    struct mtxfile_matrix_coordinate_complex_double * dst =
                         data->matrix_coordinate_complex_double;
-                    for (int64_t k = 0; k < size; k++)
-                        keys[k] = ((uint64_t) src[k].i << 32) | src[k].j;
-                } else { return MTX_ERR_INVALID_PRECISION; }
+                    const struct mtxfile_matrix_coordinate_complex_double * src =
+                        srcdata.matrix_coordinate_complex_double;
+                    for (int64_t k = 0; k < size; k++) {
+                        dst[perm[k]].a[0] = src[k].a[0];
+                        dst[perm[k]].a[1] = src[k].a[1];
+                    }
+                } else {
+                    mtxfiledata_free(&srcdata, object, format, field, precision);
+                    return MTX_ERR_INVALID_PRECISION;
+                }
             } else if (field == mtxfile_integer) {
                 if (precision == mtx_single) {
-                    const struct mtxfile_matrix_coordinate_integer_single * src =
+                    struct mtxfile_matrix_coordinate_integer_single * dst =
                         data->matrix_coordinate_integer_single;
-                    for (int64_t k = 0; k < size; k++)
-                        keys[k] = ((uint64_t) src[k].i << 32) | src[k].j;
+                    const struct mtxfile_matrix_coordinate_integer_single * src =
+                        srcdata.matrix_coordinate_integer_single;
+                    for (int64_t k = 0; k < size; k++) dst[perm[k]].a = src[k].a;
                 } else if (precision == mtx_double) {
-                    const struct mtxfile_matrix_coordinate_integer_double * src =
+                    struct mtxfile_matrix_coordinate_integer_double * dst =
                         data->matrix_coordinate_integer_double;
-                    for (int64_t k = 0; k < size; k++)
-                        keys[k] = ((uint64_t) src[k].i << 32) | src[k].j;
-                } else { return MTX_ERR_INVALID_PRECISION; }
+                    const struct mtxfile_matrix_coordinate_integer_double * src =
+                        srcdata.matrix_coordinate_integer_double;
+                    for (int64_t k = 0; k < size; k++) dst[perm[k]].a = src[k].a;
+                } else {
+                    mtxfiledata_free(&srcdata, object, format, field, precision);
+                    return MTX_ERR_INVALID_PRECISION;
+                }
             } else if (field == mtxfile_pattern) {
-                const struct mtxfile_matrix_coordinate_pattern * src =
-                    data->matrix_coordinate_pattern;
-                for (int64_t k = 0; k < size; k++)
-                    keys[k] = ((uint64_t) src[k].i << 32) | src[k].j;
-            } else { return MTX_ERR_INVALID_MTX_FIELD; }
-        } else { return MTX_ERR_INVALID_MTX_FORMAT; }
-    } else if (object == mtxfile_vector) {
-        if (format == mtxfile_array) {
-            if (num_columns != -1)
-                return MTX_ERR_INVALID_MTX_SIZE;
-            if (offset + size > num_rows)
-                return MTX_ERR_INDEX_OUT_OF_BOUNDS;
-            for (int64_t k = offset, l = 0; l < size; k++, l++)
-                keys[l] = k;
-        } else if (format == mtxfile_coordinate) {
+                /* nothing to be done */
+            } else {
+                mtxfiledata_free(&srcdata, object, format, field, precision);
+                return MTX_ERR_INVALID_MTX_FIELD;
+            }
+        } else if (object == mtxfile_vector) {
             if (field == mtxfile_real) {
                 if (precision == mtx_single) {
-                    const struct mtxfile_vector_coordinate_real_single * src =
+                    struct mtxfile_vector_coordinate_real_single * dst =
                         data->vector_coordinate_real_single;
-                    for (int64_t k = 0; k < size; k++)
-                        keys[k] = src[k].i;
+                    const struct mtxfile_vector_coordinate_real_single * src =
+                        srcdata.vector_coordinate_real_single;
+                    for (int64_t k = 0; k < size; k++) dst[perm[k]].a = src[k].a;
                 } else if (precision == mtx_double) {
-                    const struct mtxfile_vector_coordinate_real_double * src =
+                    struct mtxfile_vector_coordinate_real_double * dst =
                         data->vector_coordinate_real_double;
-                    for (int64_t k = 0; k < size; k++)
-                        keys[k] = src[k].i;
-                } else { return MTX_ERR_INVALID_PRECISION; }
+                    const struct mtxfile_vector_coordinate_real_double * src =
+                        srcdata.vector_coordinate_real_double;
+                    for (int64_t k = 0; k < size; k++) dst[perm[k]].a = src[k].a;
+                } else {
+                    mtxfiledata_free(&srcdata, object, format, field, precision);
+                    return MTX_ERR_INVALID_PRECISION;
+                }
             } else if (field == mtxfile_complex) {
                 if (precision == mtx_single) {
-                    const struct mtxfile_vector_coordinate_complex_single * src =
+                    struct mtxfile_vector_coordinate_complex_single * dst =
                         data->vector_coordinate_complex_single;
-                    for (int64_t k = 0; k < size; k++)
-                        keys[k] = src[k].i;
+                    const struct mtxfile_vector_coordinate_complex_single * src =
+                        srcdata.vector_coordinate_complex_single;
+                    for (int64_t k = 0; k < size; k++) {
+                        dst[perm[k]].a[0] = src[k].a[0];
+                        dst[perm[k]].a[1] = src[k].a[1];
+                    }
                 } else if (precision == mtx_double) {
-                    const struct mtxfile_vector_coordinate_complex_double * src =
+                    struct mtxfile_vector_coordinate_complex_double * dst =
                         data->vector_coordinate_complex_double;
-                    for (int64_t k = 0; k < size; k++)
-                        keys[k] = src[k].i;
-                } else { return MTX_ERR_INVALID_PRECISION; }
+                    const struct mtxfile_vector_coordinate_complex_double * src =
+                        srcdata.vector_coordinate_complex_double;
+                    for (int64_t k = 0; k < size; k++) {
+                        dst[perm[k]].a[0] = src[k].a[0];
+                        dst[perm[k]].a[1] = src[k].a[1];
+                    }
+                } else {
+                    mtxfiledata_free(&srcdata, object, format, field, precision);
+                    return MTX_ERR_INVALID_PRECISION;
+                }
             } else if (field == mtxfile_integer) {
                 if (precision == mtx_single) {
-                    const struct mtxfile_vector_coordinate_integer_single * src =
+                    struct mtxfile_vector_coordinate_integer_single * dst =
                         data->vector_coordinate_integer_single;
+                    const struct mtxfile_vector_coordinate_integer_single * src =
+                        srcdata.vector_coordinate_integer_single;
                     for (int64_t k = 0; k < size; k++)
-                        keys[k] = src[k].i;
+                        dst[perm[k]].a = src[k].a;
                 } else if (precision == mtx_double) {
-                    const struct mtxfile_vector_coordinate_integer_double * src =
+                    struct mtxfile_vector_coordinate_integer_double * dst =
                         data->vector_coordinate_integer_double;
-                    for (int64_t k = 0; k < size; k++)
-                        keys[k] = src[k].i;
-                } else { return MTX_ERR_INVALID_PRECISION; }
+                    const struct mtxfile_vector_coordinate_integer_double * src =
+                        srcdata.vector_coordinate_integer_double;
+                    for (int64_t k = 0; k < size; k++) dst[perm[k]].a = src[k].a;
+                } else {
+                    mtxfiledata_free(&srcdata, object, format, field, precision);
+                    return MTX_ERR_INVALID_PRECISION;
+                }
             } else if (field == mtxfile_pattern) {
-                const struct mtxfile_vector_coordinate_pattern * src =
-                    data->vector_coordinate_pattern;
-                for (int64_t k = 0; k < size; k++)
-                    keys[k] = src[k].i;
-            } else { return MTX_ERR_INVALID_MTX_FIELD; }
-        } else { return MTX_ERR_INVALID_MTX_FORMAT; }
-    } else { return MTX_ERR_INVALID_MTX_OBJECT; }
-    return MTX_SUCCESS;
-}
-
-/**
- * ‘mtxfiledata_sortkey_column_major()’ provides an array of keys
- * that can be used to sort the data lines of the given Matrix Market
- * file in column major order.
- *
- * The array ‘keys’ must contain enough storage for an array of ‘size’
- * values of type ‘int64_t’.  If successful, the ‘k’-th value of
- * ‘keys’ is the sorting key for the ‘k’-th data line.
- *
- * If ‘format’ is ‘mtxfile_array’, then a non-negative ‘offset’ value
- * can be used to obtain sorting keys for matrix or vector entries
- * starting from the specified offset, instead of beginning with the
- * first entry of the matrix or vector.
- */
-int mtxfiledata_sortkey_column_major(
-    union mtxfiledata * data,
-    enum mtxfileobject object,
-    enum mtxfileformat format,
-    enum mtxfilefield field,
-    enum mtxprecision precision,
-    int64_t num_rows,
-    int64_t num_columns,
-    int64_t offset,
-    int64_t size,
-    uint64_t * keys)
-{
-    if (object == mtxfile_matrix) {
-        if (format == mtxfile_array) {
-            if ((offset + size) > num_rows * num_columns)
-                return MTX_ERR_INDEX_OUT_OF_BOUNDS;
-            for (int64_t k = offset, l = 0; l < size; k++, l++) {
-                int64_t i = k / num_columns;
-                int64_t j = k % num_columns;
-                keys[l] = ((uint64_t) j << 32) | i;
+                /* nothing to be done */
+            } else {
+                mtxfiledata_free(&srcdata, object, format, field, precision);
+                return MTX_ERR_INVALID_MTX_FIELD;
             }
-        } else if (format == mtxfile_coordinate) {
-            if (field == mtxfile_real) {
-                if (precision == mtx_single) {
-                    const struct mtxfile_matrix_coordinate_real_single * src =
-                        data->matrix_coordinate_real_single;
-                    for (int64_t k = 0; k < size; k++)
-                        keys[k] = ((uint64_t) src[k].j << 32) | src[k].i;
-                } else if (precision == mtx_double) {
-                    const struct mtxfile_matrix_coordinate_real_double * src =
-                        data->matrix_coordinate_real_double;
-                    for (int64_t k = 0; k < size; k++)
-                        keys[k] = ((uint64_t) src[k].j << 32) | src[k].i;
-                } else { return MTX_ERR_INVALID_PRECISION; }
-            } else if (field == mtxfile_complex) {
-                if (precision == mtx_single) {
-                    const struct mtxfile_matrix_coordinate_complex_single * src =
-                        data->matrix_coordinate_complex_single;
-                    for (int64_t k = 0; k < size; k++)
-                        keys[k] = ((uint64_t) src[k].j << 32) | src[k].i;
-                } else if (precision == mtx_double) {
-                    const struct mtxfile_matrix_coordinate_complex_double * src =
-                        data->matrix_coordinate_complex_double;
-                    for (int64_t k = 0; k < size; k++)
-                        keys[k] = ((uint64_t) src[k].j << 32) | src[k].i;
-                } else { return MTX_ERR_INVALID_PRECISION; }
-            } else if (field == mtxfile_integer) {
-                if (precision == mtx_single) {
-                    const struct mtxfile_matrix_coordinate_integer_single * src =
-                        data->matrix_coordinate_integer_single;
-                    for (int64_t k = 0; k < size; k++)
-                        keys[k] = ((uint64_t) src[k].j << 32) | src[k].i;
-                } else if (precision == mtx_double) {
-                    const struct mtxfile_matrix_coordinate_integer_double * src =
-                        data->matrix_coordinate_integer_double;
-                    for (int64_t k = 0; k < size; k++)
-                        keys[k] = ((uint64_t) src[k].j << 32) | src[k].i;
-                } else { return MTX_ERR_INVALID_PRECISION; }
-            } else if (field == mtxfile_pattern) {
-                const struct mtxfile_matrix_coordinate_pattern * src =
-                    data->matrix_coordinate_pattern;
-                for (int64_t k = 0; k < size; k++)
-                    keys[k] = ((uint64_t) src[k].j << 32) | src[k].i;
-            } else { return MTX_ERR_INVALID_MTX_FIELD; }
-        } else { return MTX_ERR_INVALID_MTX_FORMAT; }
-    } else if (object == mtxfile_vector) {
-        /* For vectors, column major is the same as row major. */
-        return mtxfiledata_sortkey_row_major(
-            data, object, format, field, precision,
-            num_rows, num_columns, offset, size, keys);
-    } else { return MTX_ERR_INVALID_MTX_OBJECT; }
-    return MTX_SUCCESS;
-}
-
-static inline uint64_t xy_to_morton(uint32_t x, uint32_t y)
-{
-    return _pdep_u32(x, 0x55555555) | _pdep_u32(y, 0xaaaaaaaa);
-}
-
-/**
- * ‘mtxfiledata_sortkey_morton()’ provides an array of keys that can
- * be used to sort the data lines of the given Matrix Market file in
- * Morton order (Z-order).
- *
- * The array ‘keys’ must contain enough storage for an array of ‘size’
- * values of type ‘int64_t’.  If successful, the ‘k’-th value of
- * ‘keys’ is the sorting key for the ‘k’-th data line.
- *
- * If ‘format’ is ‘mtxfile_array’, then a non-negative ‘offset’ value
- * can be used to obtain sorting keys for matrix or vector entries
- * starting from the specified offset, instead of beginning with the
- * first entry of the matrix or vector.
- */
-int mtxfiledata_sortkey_morton(
-    union mtxfiledata * data,
-    enum mtxfileobject object,
-    enum mtxfileformat format,
-    enum mtxfilefield field,
-    enum mtxprecision precision,
-    int64_t num_rows,
-    int64_t num_columns,
-    int64_t offset,
-    int64_t size,
-    uint64_t * keys)
-{
-    if (object == mtxfile_matrix) {
-        if (format == mtxfile_array) {
-            if ((offset + size) > num_rows * num_columns)
-                return MTX_ERR_INDEX_OUT_OF_BOUNDS;
-            for (int64_t k = offset, l = 0; l < size; k++, l++) {
-                int64_t i = k / num_columns;
-                int64_t j = k % num_columns;
-                keys[l] = xy_to_morton(j, i);
-            }
-        } else if (format == mtxfile_coordinate) {
-            if (field == mtxfile_real) {
-                if (precision == mtx_single) {
-                    const struct mtxfile_matrix_coordinate_real_single * src =
-                        data->matrix_coordinate_real_single;
-                    for (int64_t k = 0; k < size; k++)
-                        keys[k] = xy_to_morton(src[k].j-1, src[k].i-1);
-                } else if (precision == mtx_double) {
-                    const struct mtxfile_matrix_coordinate_real_double * src =
-                        data->matrix_coordinate_real_double;
-                    for (int64_t k = 0; k < size; k++)
-                        keys[k] = xy_to_morton(src[k].j-1, src[k].i-1);
-                } else { return MTX_ERR_INVALID_PRECISION; }
-            } else if (field == mtxfile_complex) {
-                if (precision == mtx_single) {
-                    const struct mtxfile_matrix_coordinate_complex_single * src =
-                        data->matrix_coordinate_complex_single;
-                    for (int64_t k = 0; k < size; k++)
-                        keys[k] = xy_to_morton(src[k].j-1, src[k].i-1);
-                } else if (precision == mtx_double) {
-                    const struct mtxfile_matrix_coordinate_complex_double * src =
-                        data->matrix_coordinate_complex_double;
-                    for (int64_t k = 0; k < size; k++)
-                        keys[k] = xy_to_morton(src[k].j-1, src[k].i-1);
-                } else { return MTX_ERR_INVALID_PRECISION; }
-            } else if (field == mtxfile_integer) {
-                if (precision == mtx_single) {
-                    const struct mtxfile_matrix_coordinate_integer_single * src =
-                        data->matrix_coordinate_integer_single;
-                    for (int64_t k = 0; k < size; k++)
-                        keys[k] = xy_to_morton(src[k].j-1, src[k].i-1);
-                } else if (precision == mtx_double) {
-                    const struct mtxfile_matrix_coordinate_integer_double * src =
-                        data->matrix_coordinate_integer_double;
-                    for (int64_t k = 0; k < size; k++)
-                        keys[k] = xy_to_morton(src[k].j-1, src[k].i-1);
-                } else { return MTX_ERR_INVALID_PRECISION; }
-            } else if (field == mtxfile_pattern) {
-                const struct mtxfile_matrix_coordinate_pattern * src =
-                    data->matrix_coordinate_pattern;
-                for (int64_t k = 0; k < size; k++)
-                    keys[k] = xy_to_morton(src[k].j-1, src[k].i-1);
-            } else { return MTX_ERR_INVALID_MTX_FIELD; }
-        } else { return MTX_ERR_INVALID_MTX_FORMAT; }
-    } else if (object == mtxfile_vector) {
-        /* For vectors, Morton order is the same as row major. */
-        return mtxfiledata_sortkey_row_major(
-            data, object, format, field, precision,
-            num_rows, num_columns, offset, size, keys);
-    } else { return MTX_ERR_INVALID_MTX_OBJECT; }
+        } else {
+            mtxfiledata_free(&srcdata, object, format, field, precision);
+            return MTX_ERR_INVALID_MTX_OBJECT;
+        }
+    } else {
+        mtxfiledata_free(&srcdata, object, format, field, precision);
+        return MTX_ERR_INVALID_MTX_FORMAT;
+    }
+    mtxfiledata_free(&srcdata, object, format, field, precision);
     return MTX_SUCCESS;
 }
 
@@ -5066,7 +4941,7 @@ int mtxfiledata_sort_keys(
         if (!sorting_permutation)
             return MTX_ERR_ERRNO;
     }
-    err = radix_sort_uint64(size, keys, sorting_permutation);
+    err = radix_sort_uint64(size, sizeof(*keys), keys, sorting_permutation);
     if (err) {
         if (alloc_sorting_permutation)
             free(sorting_permutation);
@@ -5128,11 +5003,121 @@ int mtxfiledata_sort_int(
 }
 
 /**
+ * ‘mtxfiledata_coordinate_rowcolidxptrs()’ obtain pointers and
+ * associated stridess for row and column indices of Matrix Market
+ * data in coordinate format.
+ */
+static int mtxfiledata_coordinate_rowcolidxptrs(
+    union mtxfiledata * data,
+    enum mtxfileobject object,
+    enum mtxfileformat format,
+    enum mtxfilefield field,
+    enum mtxprecision precision,
+    int * rowidxstride,
+    int64_t ** rowidx,
+    int * colidxstride,
+    int64_t ** colidx)
+{
+    if (format == mtxfile_coordinate) {
+        if (object == mtxfile_matrix) {
+            if (field == mtxfile_real) {
+                if (precision == mtx_single) {
+                    struct mtxfile_matrix_coordinate_real_single * src =
+                        data->matrix_coordinate_real_single;
+                    *rowidxstride = *colidxstride = sizeof(*src);
+                    *rowidx = &src[0].i; *colidx = &src[0].j;
+                } else if (precision == mtx_double) {
+                    struct mtxfile_matrix_coordinate_real_double * src =
+                        data->matrix_coordinate_real_double;
+                    *rowidxstride = *colidxstride = sizeof(*src);
+                    *rowidx = &src[0].i; *colidx = &src[0].j;
+                } else { return MTX_ERR_INVALID_PRECISION; }
+            } else if (field == mtxfile_complex) {
+                if (precision == mtx_single) {
+                    struct mtxfile_matrix_coordinate_complex_single * src =
+                        data->matrix_coordinate_complex_single;
+                    *rowidxstride = *colidxstride = sizeof(*src);
+                    *rowidx = &src[0].i; *colidx = &src[0].j;
+                } else if (precision == mtx_double) {
+                    struct mtxfile_matrix_coordinate_complex_double * src =
+                        data->matrix_coordinate_complex_double;
+                    *rowidxstride = *colidxstride = sizeof(*src);
+                    *rowidx = &src[0].i; *colidx = &src[0].j;
+                } else { return MTX_ERR_INVALID_PRECISION; }
+            } else if (field == mtxfile_integer) {
+                if (precision == mtx_single) {
+                    struct mtxfile_matrix_coordinate_integer_single * src =
+                        data->matrix_coordinate_integer_single;
+                    *rowidxstride = *colidxstride = sizeof(*src);
+                    *rowidx = &src[0].i; *colidx = &src[0].j;
+                } else if (precision == mtx_double) {
+                    struct mtxfile_matrix_coordinate_integer_double * src =
+                        data->matrix_coordinate_integer_double;
+                    *rowidxstride = *colidxstride = sizeof(*src);
+                    *rowidx = &src[0].i; *colidx = &src[0].j;
+                } else { return MTX_ERR_INVALID_PRECISION; }
+            } else if (field == mtxfile_pattern) {
+                struct mtxfile_matrix_coordinate_pattern * src =
+                    data->matrix_coordinate_pattern;
+                *rowidxstride = *colidxstride = sizeof(*src);
+                *rowidx = &src[0].i; *colidx = &src[0].j;
+            } else { return MTX_ERR_INVALID_MTX_FIELD; }
+        } else if (object == mtxfile_vector) {
+            if (field == mtxfile_real) {
+                if (precision == mtx_single) {
+                    struct mtxfile_vector_coordinate_real_single * src =
+                        data->vector_coordinate_real_single;
+                    *rowidxstride = sizeof(*src);
+                    *rowidx = &src[0].i;
+                } else if (precision == mtx_double) {
+                    struct mtxfile_vector_coordinate_real_double * src =
+                        data->vector_coordinate_real_double;
+                    *rowidxstride = sizeof(*src);
+                    *rowidx = &src[0].i;
+                } else { return MTX_ERR_INVALID_PRECISION; }
+            } else if (field == mtxfile_complex) {
+                if (precision == mtx_single) {
+                    struct mtxfile_vector_coordinate_complex_single * src =
+                        data->vector_coordinate_complex_single;
+                    *rowidxstride = sizeof(*src);
+                    *rowidx = &src[0].i;
+                } else if (precision == mtx_double) {
+                    struct mtxfile_vector_coordinate_complex_double * src =
+                        data->vector_coordinate_complex_double;
+                    *rowidxstride = sizeof(*src);
+                    *rowidx = &src[0].i;
+                } else { return MTX_ERR_INVALID_PRECISION; }
+            } else if (field == mtxfile_integer) {
+                if (precision == mtx_single) {
+                    struct mtxfile_vector_coordinate_integer_single * src =
+                        data->vector_coordinate_integer_single;
+                    *rowidxstride = sizeof(*src);
+                    *rowidx = &src[0].i;
+                } else if (precision == mtx_double) {
+                    struct mtxfile_vector_coordinate_integer_double * src =
+                        data->vector_coordinate_integer_double;
+                    *rowidxstride = sizeof(*src);
+                    *rowidx = &src[0].i;
+                } else { return MTX_ERR_INVALID_PRECISION; }
+            } else if (field == mtxfile_pattern) {
+                struct mtxfile_vector_coordinate_pattern * src =
+                    data->vector_coordinate_pattern;
+                *rowidxstride = sizeof(*src);
+                *rowidx = &src[0].i;
+            } else { return MTX_ERR_INVALID_MTX_FIELD; }
+            *colidxstride = 0;
+            *colidx = NULL;
+        } else { return MTX_ERR_INVALID_MTX_OBJECT; }
+    } else { return MTX_ERR_INVALID_MTX_FORMAT; }
+    return MTX_SUCCESS;
+}
+
+/**
  * ‘mtxfiledata_sort_row_major()’ sorts data lines of a Matrix Market
  * file in row major order.
  *
  * Matrices and vectors in ‘array’ format are already in row major
- * order, which means that nothing is done in this case. Otherwise,
+ * order, which means that nothing is done in this case.
  */
 int mtxfiledata_sort_row_major(
     union mtxfiledata * data,
@@ -5143,35 +5128,57 @@ int mtxfiledata_sort_row_major(
     int64_t num_rows,
     int64_t num_columns,
     int64_t size,
-    int64_t * sorting_permutation)
+    int64_t * perm)
 {
-    int err;
     if (format == mtxfile_array) {
-        if (sorting_permutation) {
-            for (int64_t k = 0; k < size; k++)
-                sorting_permutation[k] = k+1;
-        }
-        return MTX_SUCCESS;
+        if (perm) { for (int64_t k = 0; k < size; k++) perm[k] = k+1; }
     } else if (format == mtxfile_coordinate) {
-        uint64_t * keys = malloc(size * sizeof(uint64_t));
-        if (!keys)
-            return MTX_ERR_ERRNO;
-        err = mtxfiledata_sortkey_row_major(
+        int rowidxstride;
+        int64_t * rowidx;
+        int colidxstride;
+        int64_t * colidx;
+        int err = mtxfiledata_coordinate_rowcolidxptrs(
             data, object, format, field, precision,
-            num_rows, num_columns, 0, size, keys);
-        if (err) {
-            free(keys);
-            return err;
-        }
-        err = mtxfiledata_sort_keys(
-            data, object, format, field, precision,
-            num_rows, num_columns, size,
-            keys, sorting_permutation);
-        if (err) {
-            free(keys);
-            return err;
-        }
-        free(keys);
+            &rowidxstride, &rowidx, &colidxstride, &colidx);
+        if (err) return err;
+
+        if (object == mtxfile_matrix) {
+            /* sort row and column indices and then permute values */
+            int64_t * tmpperm = perm;
+            if (!perm && field != mtxfile_pattern) {
+                tmpperm = malloc(size * sizeof(int64_t));
+                if (!tmpperm) return MTX_ERR_ERRNO;
+            }
+            int err = radix_sort_int64_pair(
+                size, rowidxstride, rowidx, colidxstride, colidx, tmpperm);
+            if (err) { if (!perm) free(tmpperm); return err; }
+            if (tmpperm) {
+                err = mtxfiledata_coordinate_permute_values(
+                    data, object, format, field, precision,
+                    num_rows, num_columns, size, tmpperm);
+                if (err) { if (!perm) free(tmpperm); return err; }
+            }
+            if (!perm) { free(tmpperm); }
+            else { for (int64_t i = 0; i < size; i++) perm[i]++; }
+
+        } else if (object == mtxfile_vector) {
+            /* sort row indices and then permute values */
+            int64_t * tmpperm = perm;
+            if (!perm && field != mtxfile_pattern) {
+                tmpperm = malloc(size * sizeof(int64_t));
+                if (!tmpperm) return MTX_ERR_ERRNO;
+            }
+            int err = radix_sort_int64(size, rowidxstride, rowidx, tmpperm);
+            if (err) { if (!perm) free(tmpperm); return err; }
+            if (tmpperm) {
+                err = mtxfiledata_coordinate_permute_values(
+                    data, object, format, field, precision,
+                    num_rows, num_columns, size, tmpperm);
+                if (err) { if (!perm) free(tmpperm); return err; }
+            }
+            if (!perm) { free(tmpperm); }
+            else { for (int64_t i = 0; i < size; i++) perm[i]++; }
+        } else { return MTX_ERR_INVALID_MTX_OBJECT; }
     } else { return MTX_ERR_INVALID_MTX_FORMAT; }
     return MTX_SUCCESS;
 }
@@ -5180,8 +5187,8 @@ int mtxfiledata_sort_row_major(
  * ‘mtxfiledata_sort_column_major()’ sorts data lines of a Matrix
  * Market file in column major order.
  *
- * Matrices and vectors in ‘array’ format are already in column major
- * order, which means that nothing is done in this case. Otherwise,
+ * Vectors in ‘array’ format are already in column major order, which
+ * means that nothing is done in this case.
  */
 int mtxfiledata_sort_column_major(
     union mtxfiledata * data,
@@ -5192,31 +5199,52 @@ int mtxfiledata_sort_column_major(
     int64_t num_rows,
     int64_t num_columns,
     int64_t size,
-    int64_t * sorting_permutation)
+    int64_t * perm)
 {
-    int err;
+    if (format == mtxfile_array) {
+        int err = mtxfiledata_transpose(
+            data, object, format, field, precision,
+            num_rows, num_columns, size);
+        if (perm) {
+            for (int64_t i = 0; i < size; i++) {
+                for (int64_t j = 0; j < size; j++)
+                    perm[j*num_rows+i] = i*num_columns+j+1;
+            }
+        }
+    } else if (format == mtxfile_coordinate) {
+        int rowidxstride;
+        int64_t * rowidx;
+        int colidxstride;
+        int64_t * colidx;
+        int err = mtxfiledata_coordinate_rowcolidxptrs(
+            data, object, format, field, precision,
+            &rowidxstride, &rowidx, &colidxstride, &colidx);
+        if (err) return err;
+        if (object == mtxfile_matrix) {
+            /* sort row and column indices and then permute values */
+            int64_t * tmpperm = perm;
+            if (!perm && field != mtxfile_pattern) {
+                tmpperm = malloc(size * sizeof(int64_t));
+                if (!tmpperm) return MTX_ERR_ERRNO;
+            }
+            int err = radix_sort_int64_pair(
+                size, colidxstride, colidx, rowidxstride, rowidx, tmpperm);
+            if (err) { if (!perm) free(tmpperm); return err; }
+            if (tmpperm) {
+                err = mtxfiledata_coordinate_permute_values(
+                    data, object, format, field, precision,
+                    num_rows, num_columns, size, tmpperm);
+                if (err) { if (!perm) free(tmpperm); return err; }
+            }
+            if (!perm) { free(tmpperm); }
+            else { for (int64_t i = 0; i < size; i++) perm[i]++; }
 
-    uint64_t * keys = malloc(size * sizeof(uint64_t));
-    if (!keys)
-        return MTX_ERR_ERRNO;
-
-    err = mtxfiledata_sortkey_column_major(
-        data, object, format, field, precision,
-        num_rows, num_columns, 0, size, keys);
-    if (err) {
-        free(keys);
-        return err;
-    }
-
-    err = mtxfiledata_sort_keys(
-        data, object, format, field, precision,
-        num_rows, num_columns, size,
-        keys, sorting_permutation);
-    if (err) {
-        free(keys);
-        return err;
-    }
-    free(keys);
+        } else if (object == mtxfile_vector) {
+            return mtxfiledata_sort_row_major(
+                data, object, format, field, precision,
+                num_rows, num_columns, size, perm);
+        } else { return MTX_ERR_INVALID_MTX_OBJECT; }
+    } else { return MTX_ERR_INVALID_MTX_FORMAT; }
     return MTX_SUCCESS;
 }
 
@@ -5235,32 +5263,103 @@ int mtxfiledata_sort_morton(
     int64_t num_rows,
     int64_t num_columns,
     int64_t size,
-    int64_t * sorting_permutation)
+    int64_t * perm)
 {
-    int err;
+    if (format == mtxfile_array) {
+        if (object == mtxfile_matrix) {
+            int64_t * rowidx = malloc(size * sizeof(int64_t));
+            if (!rowidx) return MTX_ERR_ERRNO;
+            int64_t * colidx = malloc(size * sizeof(int64_t));
+            if (!colidx) { free(rowidx); return MTX_ERR_ERRNO; }
 
-    /* 1. Allocate storage for and extract the sorting keys. */
-    uint64_t * keys = malloc(size * sizeof(uint64_t));
-    if (!keys)
-        return MTX_ERR_ERRNO;
+            int64_t * tmpperm = perm;
+            if (!perm) {
+                tmpperm = malloc(size * sizeof(int64_t));
+                if (!tmpperm) { free(colidx); free(rowidx); return MTX_ERR_ERRNO; }
+            }
 
-    err = mtxfiledata_sortkey_morton(
-        data, object, format, field, precision,
-        num_rows, num_columns, 0, size, keys);
-    if (err) {
-        free(keys);
-        return err;
-    }
+            /* convert from Cartesian to 2D Morton order, sort, then
+             * convert back to Cartesian */
+            for (int64_t i = 0, k = 0; i < num_rows && k < size; i++) {
+                for (int64_t j = 0; j < num_columns && k < size; j++, k++) {
+                    rowidx[k] = i; colidx[k] = j;
+                }
+            }
+            morton2d_from_cartesian_uint64(
+                size, sizeof(*rowidx), (const uint64_t *) rowidx,
+                sizeof(*colidx), (const uint64_t *) colidx,
+                sizeof(*rowidx), (uint64_t *) rowidx,
+                sizeof(*colidx), (uint64_t *) colidx);
+            int err = radix_sort_int64_pair(
+                size, sizeof(*rowidx), rowidx, sizeof(*colidx), colidx, tmpperm);
+            if (err) { free(colidx); free(rowidx); if (!perm) free(tmpperm); return err; }
+            free(colidx); free(rowidx);
+            for (int64_t i = 0; i < size; i++) tmpperm[i]++;
+            err = mtxfiledata_permute(
+                data, object, format, field, precision,
+                num_rows, num_columns, size, tmpperm);
+            if (err) { if (!perm) free(tmpperm); return err; }
+            if (!perm) free(tmpperm);
+        } else if (object == mtxfile_vector) {
+            if (perm) { for (int64_t k = 0; k < size; k++) perm[k] = k+1; }
+            return MTX_SUCCESS;
+        } else { return MTX_ERR_INVALID_MTX_OBJECT; }
+    } else if (format == mtxfile_coordinate) {
+        int rowidxstride;
+        int64_t * rowidx;
+        int colidxstride;
+        int64_t * colidx;
+        int err = mtxfiledata_coordinate_rowcolidxptrs(
+            data, object, format, field, precision,
+            &rowidxstride, &rowidx, &colidxstride, &colidx);
+        if (err) return err;
 
-    err = mtxfiledata_sort_keys(
-        data, object, format, field, precision,
-        num_rows, num_columns, size,
-        keys, sorting_permutation);
-    if (err) {
-        free(keys);
-        return err;
-    }
-    free(keys);
+        if (object == mtxfile_matrix) {
+            int64_t * tmpperm = perm;
+            if (!perm && field != mtxfile_pattern) {
+                tmpperm = malloc(size * sizeof(int64_t));
+                if (!tmpperm) return MTX_ERR_ERRNO;
+            }
+
+            /* convert from Cartesian to 2D Morton order, sort, then
+             * convert back to Cartesian */
+            for (int64_t k = 0; k < size; k++) {
+                (*(int64_t *) ((char *) rowidx + k*rowidxstride))--;
+                (*(int64_t *) ((char *) colidx + k*colidxstride))--;
+            }
+            morton2d_from_cartesian_uint64(
+                size, rowidxstride, (uint64_t *) rowidx,
+                colidxstride, (uint64_t *) colidx,
+                rowidxstride, (uint64_t *) rowidx,
+                colidxstride, (uint64_t *) colidx);
+            int err = radix_sort_int64_pair(
+                size, rowidxstride, rowidx, colidxstride, colidx, tmpperm);
+            morton2d_to_cartesian_uint64(
+                size, rowidxstride, (uint64_t *) rowidx,
+                colidxstride, (uint64_t *) colidx,
+                rowidxstride, (uint64_t *) rowidx,
+                colidxstride, (uint64_t *) colidx);
+            for (int64_t k = 0; k < size; k++) {
+                (*(int64_t *) ((char *) rowidx + k*rowidxstride))++;
+                (*(int64_t *) ((char *) colidx + k*colidxstride))++;
+            }
+
+            if (err) { if (!perm) free(tmpperm); return err; }
+            if (tmpperm) {
+                err = mtxfiledata_coordinate_permute_values(
+                    data, object, format, field, precision,
+                    num_rows, num_columns, size, tmpperm);
+                if (err) { if (!perm) free(tmpperm); return err; }
+            }
+            if (!perm) { free(tmpperm); }
+            else { for (int64_t i = 0; i < size; i++) perm[i]++; }
+
+        } else if (object == mtxfile_vector) {
+            return mtxfiledata_sort_row_major(
+                data, object, format, field, precision,
+                num_rows, num_columns, size, perm);
+        } else { return MTX_ERR_INVALID_MTX_OBJECT; }
+    } else { return MTX_ERR_INVALID_MTX_FORMAT; }
     return MTX_SUCCESS;
 }
 

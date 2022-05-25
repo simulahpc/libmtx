@@ -82,4 +82,24 @@ int morton2d_to_cartesian_uint32(
     int ystride,
     uint32_t * y);
 
+/**
+ * ‘morton2d_to_cartesian_uint64()’ converts to Cartesian coordinates
+ * from 2D Morton Z-order for 64-bit unsigned integers.
+ *
+ * The arrays ‘x’, ‘y’, ‘z0’ and ‘z1’ must be of length ‘size’. The
+ * arrays ‘z0’ and ‘z1’ are used to specify the Morton code of each
+ * point, whereas ‘x’ and ‘y’ are used to output the cooresponding
+ * Cartesian coordinates.
+ */
+int morton2d_to_cartesian_uint64(
+    int64_t size,
+    int z0stride,
+    const uint64_t * z0,
+    int z1stride,
+    const uint64_t * z1,
+    int xstride,
+    uint64_t * x,
+    int ystride,
+    uint64_t * y);
+
 #endif

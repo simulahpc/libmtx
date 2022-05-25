@@ -394,7 +394,7 @@ int assumedpartition_write(
         free(globalidxsorted);
         return MTX_ERR_MPI_COLLECTIVE;
     }
-    err = radix_sort_int64(partsize, globalidxsorted, perm);
+    err = radix_sort_int64(partsize, sizeof(*globalidxsorted), globalidxsorted, perm);
     if (mtxdisterror_allreduce(disterr, err)) {
         free(perm); free(globalidxsorted);
         return MTX_ERR_MPI_COLLECTIVE;
@@ -945,7 +945,7 @@ int assumedpartition_read(
         free(globalidxsorted);
         return MTX_ERR_MPI_COLLECTIVE;
     }
-    err = radix_sort_int64(partsize, globalidxsorted, perm);
+    err = radix_sort_int64(partsize, sizeof(*globalidxsorted), globalidxsorted, perm);
     if (mtxdisterror_allreduce(disterr, err)) {
         free(perm); free(globalidxsorted);
         return MTX_ERR_MPI_COLLECTIVE;

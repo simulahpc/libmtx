@@ -292,7 +292,7 @@ int compact_unsorted_int64(
     int64_t * perm,
     int64_t * dstidx)
 {
-    int err = radix_sort_int64(asize, a, perm);
+    int err = radix_sort_int64(asize, sizeof(*a), a, perm);
     if (err) return err;
     return compact_sorted_int64(bsize, b, asize, a, dstidx);
 }
@@ -921,9 +921,9 @@ int setunion_unsorted_unique_int64(
     int64_t bsize,
     int64_t * b)
 {
-    int err = radix_sort_int64(asize, a, NULL);
+    int err = radix_sort_int64(asize, sizeof(*a), a, NULL);
     if (err) return err;
-    err = radix_sort_int64(bsize, b, NULL);
+    err = radix_sort_int64(bsize, sizeof(*b), b, NULL);
     if (err) return err;
     return setunion_sorted_unique_int64(csize, c, asize, a, bsize, b);
 }
@@ -1028,9 +1028,9 @@ int setunion_unsorted_nonunique_int64(
     int64_t bsize,
     int64_t * b)
 {
-    int err = radix_sort_int64(asize, a, NULL);
+    int err = radix_sort_int64(asize, sizeof(*a), a, NULL);
     if (err) return err;
-    err = radix_sort_int64(bsize, b, NULL);
+    err = radix_sort_int64(bsize, sizeof(*b), b, NULL);
     if (err) return err;
     return setunion_sorted_nonunique_int64(csize, c, asize, a, bsize, b);
 }
@@ -1460,9 +1460,9 @@ int setintersection_unsorted_unique_int64(
     int64_t bsize,
     int64_t * b)
 {
-    int err = radix_sort_int64(asize, a, NULL);
+    int err = radix_sort_int64(asize, sizeof(*a), a, NULL);
     if (err) return err;
-    err = radix_sort_int64(bsize, b, NULL);
+    err = radix_sort_int64(bsize, sizeof(*b), b, NULL);
     if (err) return err;
     return setintersection_sorted_unique_int64(csize, c, asize, a, bsize, b);
 }
@@ -1567,9 +1567,9 @@ int setintersection_unsorted_nonunique_int64(
     int64_t bsize,
     int64_t * b)
 {
-    int err = radix_sort_int64(asize, a, NULL);
+    int err = radix_sort_int64(asize, sizeof(*a), a, NULL);
     if (err) return err;
-    err = radix_sort_int64(bsize, b, NULL);
+    err = radix_sort_int64(bsize, sizeof(*b), b, NULL);
     if (err) return err;
     return setintersection_sorted_nonunique_int64(csize, c, asize, a, bsize, b);
 }
@@ -2035,9 +2035,9 @@ int setdifference_unsorted_unique_int64(
     int64_t bsize,
     int64_t * b)
 {
-    int err = radix_sort_int64(asize, a, NULL);
+    int err = radix_sort_int64(asize, sizeof(*a), a, NULL);
     if (err) return err;
-    err = radix_sort_int64(bsize, b, NULL);
+    err = radix_sort_int64(bsize, sizeof(*b), b, NULL);
     if (err) return err;
     return setdifference_sorted_unique_int64(csize, c, asize, a, bsize, b);
 }
@@ -2142,9 +2142,9 @@ int setdifference_unsorted_nonunique_int64(
     int64_t bsize,
     int64_t * b)
 {
-    int err = radix_sort_int64(asize, a, NULL);
+    int err = radix_sort_int64(asize, sizeof(*a), a, NULL);
     if (err) return err;
-    err = radix_sort_int64(bsize, b, NULL);
+    err = radix_sort_int64(bsize, sizeof(*b), b, NULL);
     if (err) return err;
     return setdifference_sorted_nonunique_int64(csize, c, asize, a, bsize, b);
 }

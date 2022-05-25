@@ -29,6 +29,8 @@
 #include <libmtx/mtxfile/mtxfile.h>
 #include <libmtx/vector/vector.h>
 
+#include <omp.h>
+
 #include <errno.h>
 #include <unistd.h>
 
@@ -3234,6 +3236,8 @@ int test_mtxmatrix_ompcsr_gemv(void)
  */
 int main(int argc, char * argv[])
 {
+    omp_set_num_threads(2);
+
     TEST_SUITE_BEGIN("Running tests for OpenMP CSR matrices\n");
     TEST_RUN(test_mtxmatrix_ompcsr_from_mtxfile);
     TEST_RUN(test_mtxmatrix_ompcsr_to_mtxfile);

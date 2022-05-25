@@ -56,11 +56,10 @@ struct mtxdisterror;
  * sorted order. Note that the arrays ‘keys’ and ‘sorted_keys’ must
  * not overlap.
  *
- * If ‘sorting_permutation’ is ‘NULL’, then this argument is ignored
- * and a sorting permutation is not computed. Otherwise, it must point
- * to an array that holds enough storage for ‘size’ values of type
- * ‘int64_t’. On success, this array will contain the sorting
- * permutation.
+ * If ‘perm’ is ‘NULL’, then this argument is ignored and a sorting
+ * permutation is not computed. Otherwise, it must point to an array
+ * that holds enough storage for ‘size’ values of type ‘int64_t’. On
+ * success, this array will contain the sorting permutation.
  *
  * If ‘bucketptr’ is ‘NULL’, then the function will internally
  * allocate a temporary array of 257 ‘int64_t’ values. Otherwise, the
@@ -74,7 +73,7 @@ int counting_sort_uint8(
     const uint8_t * keys,
     int dststride,
     uint8_t * sorted_keys,
-    int64_t * sorting_permutation,
+    int64_t * perm,
     int64_t bucketptr[257]);
 
 /**
@@ -95,11 +94,10 @@ int counting_sort_uint8(
  * sorted order. Note that the arrays ‘keys’ and ‘sorted_keys’ must
  * not overlap.
  *
- * If ‘sorting_permutation’ is ‘NULL’, then this argument is ignored
- * and a sorting permutation is not computed. Otherwise, it must point
- * to an array that holds enough storage for ‘size’ values of type
- * ‘int64_t’. On success, this array will contain the sorting
- * permutation.
+ * If ‘perm’ is ‘NULL’, then this argument is ignored and a sorting
+ * permutation is not computed. Otherwise, it must point to an array
+ * that holds enough storage for ‘size’ values of type ‘int64_t’. On
+ * success, this array will contain the sorting permutation.
  *
  * If ‘bucketptr’ is ‘NULL’, then the function will internally
  * allocate a temporary array of 65537 ‘int64_t’ values. Otherwise,
@@ -113,7 +111,7 @@ int counting_sort_uint16(
     const uint16_t * keys,
     int dststride,
     uint16_t * sorted_keys,
-    int64_t * sorting_permutation,
+    int64_t * perm,
     int64_t bucketptr[65537]);
 
 /*
@@ -128,17 +126,17 @@ int counting_sort_uint16(
  * integer keys are given in the array ‘keys’. On success, the same
  * array will contain the keys in sorted order.
  *
- * If ‘sorting_permutation’ is ‘NULL’, then this argument is ignored
- * and a sorting permutation is not computed. Otherwise, it must point
- * to an array that holds enough storage for ‘size’ values of type
- * ‘int64_t’. On success, this array will contain the sorting
- * permutation, mapping the locations of the original, unsorted keys
- * to their new locations in the sorted array.
+ * If ‘perm’ is ‘NULL’, then this argument is ignored and a sorting
+ * permutation is not computed. Otherwise, it must point to an array
+ * that holds enough storage for ‘size’ values of type ‘int64_t’. On
+ * success, this array will contain the sorting permutation, mapping
+ * the locations of the original, unsorted keys to their new locations
+ * in the sorted array.
  */
 int radix_sort_uint32(
     int64_t size,
     uint32_t * keys,
-    int64_t * sorting_permutation);
+    int64_t * perm);
 
 /**
  * ‘radix_sort_uint64()’ sorts an array of 64-bit unsigned integers in
@@ -148,37 +146,23 @@ int radix_sort_uint32(
  * integer keys are given in the array ‘keys’. On success, the same
  * array will contain the keys in sorted order.
  *
- * If ‘sorting_permutation’ is ‘NULL’, then this argument is ignored
- * and a sorting permutation is not computed. Otherwise, it must point
- * to an array that holds enough storage for ‘size’ values of type
- * ‘int64_t’. On success, this array will contain the sorting
- * permutation, mapping the locations of the original, unsorted keys
- * to their new locations in the sorted array.
+ * The value ‘stride’ is used to specify a stride (in bytes), which is
+ * used when accessing elements of the ‘keys’ array. This is useful
+ * for cases where the keys are not necessarily stored contiguously in
+ * memory.
+ *
+ * If ‘perm’ is ‘NULL’, then this argument is ignored and a sorting
+ * permutation is not computed. Otherwise, it must point to an array
+ * that holds enough storage for ‘size’ values of type ‘int64_t’. On
+ * success, this array will contain the sorting permutation, mapping
+ * the locations of the original, unsorted keys to their new locations
+ * in the sorted array.
  */
 int radix_sort_uint64(
     int64_t size,
+    int stride,
     uint64_t * keys,
-    int64_t * sorting_permutation);
-
-/**
- * ‘radix_sort_uint64()’ sorts an array of 64-bit unsigned integers in
- * ascending order using a radix sort algorithm.
- *
- * The number of keys to sort is given by ‘size’, and the unsorted,
- * integer keys are given in the array ‘keys’. On success, the same
- * array will contain the keys in sorted order.
- *
- * If ‘sorting_permutation’ is ‘NULL’, then this argument is ignored
- * and a sorting permutation is not computed. Otherwise, it must point
- * to an array that holds enough storage for ‘size’ values of type
- * ‘int64_t’. On success, this array will contain the sorting
- * permutation, mapping the locations of the original, unsorted keys
- * to their new locations in the sorted array.
- */
-int radix_sort_uint64(
-    int64_t size,
-    uint64_t * keys,
-    int64_t * sorting_permutation);
+    int64_t * perm);
 
 /*
  * radix sort for signed integers
@@ -192,17 +176,17 @@ int radix_sort_uint64(
  * integer keys are given in the array ‘keys’. On success, the same
  * array will contain the keys in sorted order.
  *
- * If ‘sorting_permutation’ is ‘NULL’, then this argument is ignored
- * and a sorting permutation is not computed. Otherwise, it must point
- * to an array that holds enough storage for ‘size’ values of type
- * ‘int64_t’. On success, this array will contain the sorting
- * permutation, mapping the locations of the original, unsorted keys
- * to their new locations in the sorted array.
+ * If ‘perm’ is ‘NULL’, then this argument is ignored and a sorting
+ * permutation is not computed. Otherwise, it must point to an array
+ * that holds enough storage for ‘size’ values of type ‘int64_t’. On
+ * success, this array will contain the sorting permutation, mapping
+ * the locations of the original, unsorted keys to their new locations
+ * in the sorted array.
  */
 int radix_sort_int32(
     int64_t size,
     int32_t * keys,
-    int64_t * sorting_permutation);
+    int64_t * perm);
 
 /**
  * ‘radix_sort_int64()’ sorts an array of 64-bit (signed) integers in
@@ -212,17 +196,23 @@ int radix_sort_int32(
  * integer keys are given in the array ‘keys’. On success, the same
  * array will contain the keys in sorted order.
  *
- * If ‘sorting_permutation’ is ‘NULL’, then this argument is ignored
- * and a sorting permutation is not computed. Otherwise, it must point
- * to an array that holds enough storage for ‘size’ values of type
- * ‘int64_t’. On success, this array will contain the sorting
- * permutation, mapping the locations of the original, unsorted keys
- * to their new locations in the sorted array.
+ * The value ‘stride’ is used to specify a stride (in bytes), which is
+ * used when accessing elements of the ‘keys’ array. This is useful
+ * for cases where the keys are not necessarily stored contiguously in
+ * memory.
+ *
+ * If ‘perm’ is ‘NULL’, then this argument is ignored and a sorting
+ * permutation is not computed. Otherwise, it must point to an array
+ * that holds enough storage for ‘size’ values of type ‘int64_t’. On
+ * success, this array will contain the sorting permutation, mapping
+ * the locations of the original, unsorted keys to their new locations
+ * in the sorted array.
  */
 int radix_sort_int64(
     int64_t size,
+    int stride,
     int64_t * keys,
-    int64_t * sorting_permutation);
+    int64_t * perm);
 
 /**
  * ‘radix_sort_int()’ sorts an array of (signed) integers in ascending
@@ -232,17 +222,17 @@ int radix_sort_int64(
  * integer keys are given in the array ‘keys’. On success, the same
  * array will contain the keys in sorted order.
  *
- * If ‘sorting_permutation’ is ‘NULL’, then this argument is ignored
- * and a sorting permutation is not computed. Otherwise, it must point
- * to an array that holds enough storage for ‘size’ values of type
- * ‘int64_t’. On success, this array will contain the sorting
- * permutation, mapping the locations of the original, unsorted keys
- * to their new locations in the sorted array.
+ * If ‘perm’ is ‘NULL’, then this argument is ignored and a sorting
+ * permutation is not computed. Otherwise, it must point to an array
+ * that holds enough storage for ‘size’ values of type ‘int64_t’. On
+ * success, this array will contain the sorting permutation, mapping
+ * the locations of the original, unsorted keys to their new locations
+ * in the sorted array.
  */
 int radix_sort_int(
     int64_t size,
     int * keys,
-    int64_t * sorting_permutation);
+    int64_t * perm);
 
 /*
  * radix sort for pairs of integers
@@ -261,10 +251,9 @@ int radix_sort_int(
  * respectively. This is useful for cases where the keys are not
  * necessarily stored contiguously in memory.
  *
- * If ‘sorting_permutation’ is ‘NULL’, then this argument is ignored
- * and a sorting permutation is not computed. Otherwise, it must point
- * to an array that holds enough storage for ‘size’ values of type
- * ‘int64_t’. On success, this array will contain the sorting
+ * If ‘perm’ is ‘NULL’, then this argument is ignored and a sorting
+ * permutation is not computed. Otherwise, it must point to an array
+ * of length ‘size’. On success, this array will contain the sorting
  * permutation, mapping the locations of the original, unsorted keys
  * to their new locations in the sorted array.
  */
@@ -274,7 +263,7 @@ int radix_sort_uint32_pair(
     uint32_t * a,
     int bstride,
     uint32_t * b,
-    int64_t * sorting_permutation);
+    int64_t * perm);
 
 /**
  * ‘radix_sort_uint64_pair()’ sorts pairs of 64-bit unsigned integers
@@ -289,10 +278,9 @@ int radix_sort_uint32_pair(
  * respectively. This is useful for cases where the keys are not
  * necessarily stored contiguously in memory.
  *
- * If ‘sorting_permutation’ is ‘NULL’, then this argument is ignored
- * and a sorting permutation is not computed. Otherwise, it must point
- * to an array that holds enough storage for ‘size’ values of type
- * ‘int64_t’. On success, this array will contain the sorting
+ * If ‘perm’ is ‘NULL’, then this argument is ignored and a sorting
+ * permutation is not computed. Otherwise, it must point to an array
+ * of length ‘size’. On success, this array will contain the sorting
  * permutation, mapping the locations of the original, unsorted keys
  * to their new locations in the sorted array.
  */
@@ -302,7 +290,61 @@ int radix_sort_uint64_pair(
     uint64_t * a,
     int bstride,
     uint64_t * b,
-    int64_t * sorting_permutation);
+    int64_t * perm);
+
+/**
+ * ‘radix_sort_int32_pair()’ sorts pairs of 32-bit signed integers
+ * in ascending, lexicographic order using a radix sort algorithm.
+ *
+ * The number of pairs to sort is given by ‘size’, and the unsorted,
+ * integer keys are given in the arrays ‘a’ and ‘b’. On success, the
+ * same arrays will contain the keys in sorted order.
+ *
+ * The values ‘astride’ and ‘bstride’ may be used to specify strides
+ * (in bytes) that are used when accessing the keys in ‘a’ and ‘b’,
+ * respectively. This is useful for cases where the keys are not
+ * necessarily stored contiguously in memory.
+ *
+ * If ‘perm’ is ‘NULL’, then this argument is ignored and a sorting
+ * permutation is not computed. Otherwise, it must point to an array
+ * of length ‘size’. On success, this array will contain the sorting
+ * permutation, mapping the locations of the original, unsorted keys
+ * to their new locations in the sorted array.
+ */
+int radix_sort_int32_pair(
+    int64_t size,
+    int astride,
+    int32_t * a,
+    int bstride,
+    int32_t * b,
+    int64_t * perm);
+
+/**
+ * ‘radix_sort_int64_pair()’ sorts pairs of 64-bit signed integers
+ * in ascending, lexicographic order using a radix sort algorithm.
+ *
+ * The number of pairs to sort is given by ‘size’, and the unsorted,
+ * integer keys are given in the arrays ‘a’ and ‘b’. On success, the
+ * same arrays will contain the keys in sorted order.
+ *
+ * The values ‘astride’ and ‘bstride’ may be used to specify strides
+ * (in bytes) that are used when accessing the keys in ‘a’ and ‘b’,
+ * respectively. This is useful for cases where the keys are not
+ * necessarily stored contiguously in memory.
+ *
+ * If ‘perm’ is ‘NULL’, then this argument is ignored and a sorting
+ * permutation is not computed. Otherwise, it must point to an array
+ * of length ‘size’. On success, this array will contain the sorting
+ * permutation, mapping the locations of the original, unsorted keys
+ * to their new locations in the sorted array.
+ */
+int radix_sort_int64_pair(
+    int64_t size,
+    int astride,
+    int64_t * a,
+    int bstride,
+    int64_t * b,
+    int64_t * perm);
 
 /*
  * distributed-memory radix sort
@@ -319,7 +361,7 @@ int radix_sort_uint64_pair(
  * process are given in the array ‘keys’. On success, the same array
  * will contain ‘size’ keys in a globally sorted order.
  *
- * If ‘sorting_permutation’ is ‘NULL’, then this argument is ignored
+ * If ‘perm’ is ‘NULL’, then this argument is ignored
  * and a sorting permutation is not computed. Otherwise, it must point
  * to an array that holds enough storage for ‘size’ values of type
  * ‘int64_t’ on each MPI process. On success, this array will contain
@@ -329,7 +371,7 @@ int radix_sort_uint64_pair(
 int distradix_sort_uint32(
     int64_t size,
     uint32_t * keys,
-    int64_t * sorting_permutation,
+    int64_t * perm,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 
@@ -343,17 +385,17 @@ int distradix_sort_uint32(
  * process are given in the array ‘keys’. On success, the same array
  * will contain ‘size’ keys in a globally sorted order.
  *
- * If ‘sorting_permutation’ is ‘NULL’, then this argument is ignored
- * and a sorting permutation is not computed. Otherwise, it must point
- * to an array that holds enough storage for ‘size’ values of type
- * ‘int64_t’ on each MPI process. On success, this array will contain
- * the sorting permutation, mapping the locations of the original,
- * unsorted keys to their new locations in the sorted array.
+ * If ‘perm’ is ‘NULL’, then this argument is ignored and a sorting
+ * permutation is not computed. Otherwise, it must point to an array
+ * that holds enough storage for ‘size’ values of type ‘int64_t’ on
+ * each MPI process. On success, this array will contain the sorting
+ * permutation, mapping the locations of the original, unsorted keys
+ * to their new locations in the sorted array.
  */
 int distradix_sort_uint64(
     int64_t size,
     uint64_t * keys,
-    int64_t * sorting_permutation,
+    int64_t * perm,
     MPI_Comm comm,
     struct mtxdisterror * disterr);
 #endif

@@ -107,15 +107,15 @@ static void program_options_print_help(
     fprintf(f, "\n");
     fprintf(f, " Options are:\n");
     fprintf(f, "  --precision=PRECISION\tprecision used to represent matrix or\n");
-    fprintf(f, "\t\t\tvector values: single or double. (default: double)\n");
+    fprintf(f, "\t\t\tvector values: single or double (default).\n");
     fprintf(f, "  -z, --gzip, --gunzip, --ungzip\tfilter the file through gzip\n");
     fprintf(f, "  --format=FORMAT\tFormat string for outputting numerical values.\n");
     fprintf(f, "\t\t\tFor real, double and complex values, the format specifiers\n");
     fprintf(f, "\t\t\t'%%e', '%%E', '%%f', '%%F', '%%g' or '%%G' may be used,\n");
     fprintf(f, "\t\t\twhereas '%%d' must be used for integers. Flags, field width\n");
     fprintf(f, "\t\t\tand precision can optionally be specified, e.g., \"%%+3.1f\".\n");
-    fprintf(f, "  --sorting=SORTING\tsorting order: unsorted, permute, row-major,\n");
-    fprintf(f, "\t\t\tcolumn-major or morton (default: row-major)\n");
+    fprintf(f, "  --sorting=SORTING\tsorting order: unsorted, permute, row-major (default),\n");
+    fprintf(f, "\t\t\tcolumn-major or morton\n");
     fprintf(f, "  --perm-path=FILE\tPath to output the sorting permutation,\n");
     fprintf(f, "\t\t\tunless the sorting order is ‘permute’, in which case\n");
     fprintf(f, "\t\t\tthe given path is used to read the sorting permutation.\n");

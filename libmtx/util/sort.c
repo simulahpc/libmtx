@@ -62,7 +62,7 @@
  * sorted order. Note that the arrays ‘keys’ and ‘sorted_keys’ must
  * not overlap.
  *
- * If ‘sorting_permutation’ is ‘NULL’, then this argument is ignored
+ * If ‘perm’ is ‘NULL’, then this argument is ignored
  * and a sorting permutation is not computed. Otherwise, it must point
  * to an array that holds enough storage for ‘size’ values of type
  * ‘int64_t’. On success, this array will contain the sorting
@@ -80,7 +80,7 @@ int counting_sort_uint8(
     const uint8_t * keys,
     int dststride,
     uint8_t * sorted_keys,
-    int64_t * sorting_permutation,
+    int64_t * perm,
     int64_t bucketptr[257])
 {
     bool alloc_bucketptr = !bucketptr;
@@ -101,11 +101,11 @@ int counting_sort_uint8(
         bucketptr[j+1] += bucketptr[j];
 
     /* 3. Sort the keys into their respective buckets. */
-    if (sorted_keys && sorting_permutation) {
+    if (sorted_keys && perm) {
         for (int64_t i = 0; i < size; i++) {
             int64_t destidx = bucketptr[keys[srcstride*i]];
             sorted_keys[dststride*destidx] = keys[srcstride*i];
-            sorting_permutation[i] = destidx;
+            perm[i] = destidx;
             bucketptr[keys[srcstride*i]]++;
         }
     } else if (sorted_keys) {
@@ -114,10 +114,10 @@ int counting_sort_uint8(
             sorted_keys[dststride*destidx] = keys[srcstride*i];
             bucketptr[keys[srcstride*i]]++;
         }
-    } else if (sorting_permutation) {
+    } else if (perm) {
         for (int64_t i = 0; i < size; i++) {
             int64_t destidx = bucketptr[keys[srcstride*i]];
-            sorting_permutation[i] = destidx;
+            perm[i] = destidx;
             bucketptr[keys[srcstride*i]]++;
         }
     } else {
@@ -154,7 +154,7 @@ int counting_sort_uint8(
  * sorted order. Note that the arrays ‘keys’ and ‘sorted_keys’ must
  * not overlap.
  *
- * If ‘sorting_permutation’ is ‘NULL’, then this argument is ignored
+ * If ‘perm’ is ‘NULL’, then this argument is ignored
  * and a sorting permutation is not computed. Otherwise, it must point
  * to an array that holds enough storage for ‘size’ values of type
  * ‘int64_t’. On success, this array will contain the sorting
@@ -172,7 +172,7 @@ int counting_sort_uint16(
     const uint16_t * keys,
     int dststride,
     uint16_t * sorted_keys,
-    int64_t * sorting_permutation,
+    int64_t * perm,
     int64_t bucketptr[65537])
 {
     bool alloc_bucketptr = !bucketptr;
@@ -195,13 +195,13 @@ int counting_sort_uint16(
         bucketptr[j+1] += bucketptr[j];
 
     /* 3. Sort the keys into their respective buckets. */
-    if (sorted_keys && sorting_permutation) {
+    if (sorted_keys && perm) {
         for (int64_t i = 0; i < size; i++) {
             const uint16_t * src = (const uint16_t *) ((uint8_t *) keys + srcstride*i);
             int64_t destidx = bucketptr[*src]++;
             uint16_t * dest = (uint16_t *)((uint8_t *) sorted_keys+dststride*destidx);
             *dest = *src;
-            sorting_permutation[i] = destidx;
+            perm[i] = destidx;
         }
     } else if (sorted_keys) {
         for (int64_t i = 0; i < size; i++) {
@@ -210,11 +210,11 @@ int counting_sort_uint16(
             uint16_t * dest = (uint16_t *)((uint8_t *) sorted_keys+dststride*destidx);
             *dest = *src;
         }
-    } else if (sorting_permutation) {
+    } else if (perm) {
         for (int64_t i = 0; i < size; i++) {
             const uint16_t * src = (const uint16_t *) ((uint8_t *) keys + srcstride*i);
             int64_t destidx = bucketptr[*src]++;
-            sorting_permutation[i] = destidx;
+            perm[i] = destidx;
         }
     } else {
         /* Nothing to be done. */
@@ -238,7 +238,7 @@ int counting_sort_uint8_uint32(
     const uint8_t * keys,
     const uint32_t * values,
     uint32_t * sorted_values,
-    int64_t * sorting_permutation,
+    int64_t * perm,
     int64_t bucketptr[257])
 {
     bool alloc_bucketptr = !bucketptr;
@@ -259,21 +259,21 @@ int counting_sort_uint8_uint32(
         bucketptr[j+1] += bucketptr[j];
 
     /* 3. Sort the keys into their respective buckets. */
-    if (values && sorted_values && sorting_permutation) {
+    if (values && sorted_values && perm) {
         for (int64_t i = 0; i < size; i++) {
             int64_t destidx = bucketptr[keys[stride*i]]++;
             sorted_values[destidx] = values[i];
-            sorting_permutation[i] = destidx;
+            perm[i] = destidx;
         }
     } else if (values && sorted_values) {
         for (int64_t i = 0; i < size; i++) {
             int64_t destidx = bucketptr[keys[stride*i]]++;
             sorted_values[destidx] = values[i];
         }
-    } else if (sorting_permutation) {
+    } else if (perm) {
         for (int64_t i = 0; i < size; i++) {
             int64_t destidx = bucketptr[keys[stride*i]]++;
-            sorting_permutation[i] = destidx;
+            perm[i] = destidx;
         }
     } else {
         /* Nothing to be done. */
@@ -351,7 +351,7 @@ int counting_sort_uint8_values(
  * integer keys are given in the array ‘keys’. On success, the same
  * array will contain the keys in sorted order.
  *
- * If ‘sorting_permutation’ is ‘NULL’, then this argument is ignored
+ * If ‘perm’ is ‘NULL’, then this argument is ignored
  * and a sorting permutation is not computed. Otherwise, it must point
  * to an array that holds enough storage for ‘size’ values of type
  * ‘int64_t’. On success, this array will contain the sorting
@@ -361,7 +361,7 @@ int counting_sort_uint8_values(
 int radix_sort_uint32(
     int64_t size,
     uint32_t * keys,
-    int64_t * sorting_permutation)
+    int64_t * perm)
 {
     uint32_t * extra_keys = malloc(size * sizeof(uint32_t));
     if (!extra_keys)
@@ -373,10 +373,10 @@ int radix_sort_uint32(
         return MTX_ERR_ERRNO;
     }
 
-    int64_t * extra_sorting_permutation = NULL;
-    if (sorting_permutation) {
-        extra_sorting_permutation = malloc(size * sizeof(int64_t));
-        if (!extra_sorting_permutation) {
+    int64_t * extra_perm = NULL;
+    if (perm) {
+        extra_perm = malloc(size * sizeof(int64_t));
+        if (!extra_perm) {
             free(bucketptr);
             free(extra_keys);
             return MTX_ERR_ERRNO;
@@ -396,17 +396,17 @@ int radix_sort_uint32(
             bucketptr[j+1] += bucketptr[j];
 
         /* 3. Sort the keys into their respective buckets. */
-        if (sorting_permutation && k == 0) {
+        if (perm && k == 0) {
             for (int64_t i = 0; i < size; i++) {
                 int64_t destidx = bucketptr[((keys[i] >> (8*k)) & 0xff)]++;
                 extra_keys[destidx] = keys[i];
-                sorting_permutation[destidx] = i;
+                perm[destidx] = i;
             }
-        } else if (sorting_permutation) {
+        } else if (perm) {
             for (int64_t i = 0; i < size; i++) {
                 int64_t destidx = bucketptr[((keys[i] >> (8*k)) & 0xff)]++;
                 extra_keys[destidx] = keys[i];
-                extra_sorting_permutation[destidx] = sorting_permutation[i];
+                extra_perm[destidx] = perm[i];
             }
         } else {
             for (int64_t i = 0; i < size; i++) {
@@ -416,15 +416,15 @@ int radix_sort_uint32(
         }
 
         /* 4. Copy data needed for the next round. */
-        if (sorting_permutation && k == 3) {
+        if (perm && k == 3) {
             for (int64_t j = 0; j < size; j++) {
                 keys[j] = extra_keys[j];
-                sorting_permutation[extra_sorting_permutation[j]] = j;
+                perm[extra_perm[j]] = j;
             }
-        } else if (sorting_permutation && k > 0) {
+        } else if (perm && k > 0) {
             for (int64_t j = 0; j < size; j++) {
                 keys[j] = extra_keys[j];
-                sorting_permutation[j] = extra_sorting_permutation[j];
+                perm[j] = extra_perm[j];
             }
         } else {
             for (int64_t j = 0; j < size; j++)
@@ -432,8 +432,8 @@ int radix_sort_uint32(
         }
     }
 
-    if (sorting_permutation)
-        free(extra_sorting_permutation);
+    if (perm)
+        free(extra_perm);
     free(bucketptr);
     free(extra_keys);
     return MTX_SUCCESS;
@@ -456,36 +456,39 @@ static void swap_uint64ptr(uint64_t ** a, uint64_t ** b) { uint64_t * tmp = *a; 
  * integer keys are given in the array ‘keys’. On success, the same
  * array will contain the keys in sorted order.
  *
- * If ‘sorting_permutation’ is ‘NULL’, then this argument is ignored
- * and a sorting permutation is not computed. Otherwise, it must point
- * to an array that holds enough storage for ‘size’ values of type
- * ‘int64_t’. On success, this array will contain the sorting
- * permutation, mapping the locations of the original, unsorted keys
- * to their new locations in the sorted array.
+ * The value ‘stride’ is used to specify a stride (in bytes), which is
+ * used when accessing elements of the ‘keys’ array. This is useful
+ * for cases where the keys are not necessarily stored contiguously in
+ * memory.
+ *
+ * If ‘perm’ is ‘NULL’, then this argument is ignored and a sorting
+ * permutation is not computed. Otherwise, it must point to an array
+ * that holds enough storage for ‘size’ values of type ‘int64_t’. On
+ * success, this array will contain the sorting permutation, mapping
+ * the locations of the original, unsorted keys to their new locations
+ * in the sorted array.
  */
 int radix_sort_uint64(
     int64_t size,
+    int stride,
     uint64_t * keys,
-    int64_t * sorting_permutation)
+    int64_t * perm)
 {
-    uint64_t * extra_keys = malloc(size * sizeof(uint64_t));
-    if (!extra_keys)
-        return MTX_ERR_ERRNO;
+    uint64_t * tmpkeys = malloc(size * sizeof(uint64_t));
+    if (!tmpkeys) return MTX_ERR_ERRNO;
+    int tmpkeysstride = sizeof(*tmpkeys);
 
     /* allocate six buckets to count occurrences and offsets for
      * 11-digit binary numbers. */
     int64_t * bucketptr = malloc(6*2049 * sizeof(int64_t));
-    if (!bucketptr) {
-        free(extra_keys);
-        return MTX_ERR_ERRNO;
-    }
+    if (!bucketptr) { free(tmpkeys); return MTX_ERR_ERRNO; }
 
-    int64_t * extra_sorting_permutation = NULL;
-    if (sorting_permutation) {
-        extra_sorting_permutation = malloc(size * sizeof(int64_t));
-        if (!extra_sorting_permutation) {
+    int64_t * tmpperm = NULL;
+    if (perm) {
+        tmpperm = malloc(size * sizeof(int64_t));
+        if (!tmpperm) {
             free(bucketptr);
-            free(extra_keys);
+            free(tmpkeys);
             return MTX_ERR_ERRNO;
         }
     }
@@ -497,12 +500,13 @@ int radix_sort_uint64(
         }
     }
     for (int64_t i = 0; i < size; i++) {
-        bucketptr[0*2049+((keys[i] >> (11*0)) & 0x7ff)+1]++;
-        bucketptr[1*2049+((keys[i] >> (11*1)) & 0x7ff)+1]++;
-        bucketptr[2*2049+((keys[i] >> (11*2)) & 0x7ff)+1]++;
-        bucketptr[3*2049+((keys[i] >> (11*3)) & 0x7ff)+1]++;
-        bucketptr[4*2049+((keys[i] >> (11*4)) & 0x7ff)+1]++;
-        bucketptr[5*2049+((keys[i] >> (11*5)) & 0x7ff)+1]++;
+        uint64_t x = *(const uint64_t *) ((const char *) keys + i*stride);
+        bucketptr[0*2049+((x >> (11*0)) & 0x7ff)+1]++;
+        bucketptr[1*2049+((x >> (11*1)) & 0x7ff)+1]++;
+        bucketptr[2*2049+((x >> (11*2)) & 0x7ff)+1]++;
+        bucketptr[3*2049+((x >> (11*3)) & 0x7ff)+1]++;
+        bucketptr[4*2049+((x >> (11*4)) & 0x7ff)+1]++;
+        bucketptr[5*2049+((x >> (11*5)) & 0x7ff)+1]++;
     }
 
     /* 2. Compute offset to first key in each bucket. */
@@ -523,86 +527,96 @@ int radix_sort_uint64(
      * article "Radix Tricks" by Michael Herf, published online in
      * December 2001 at http://stereopsis.com/radix.html.
      */
-    if (sorting_permutation) {
+    if (perm) {
         for (int64_t i = 0; i < size; i++) {
-            int64_t destidx = bucketptr[0*2049+((keys[i] >> (11*0)) & 0x7ff)]++;
-            extra_keys[destidx] = keys[i];
-            sorting_permutation[destidx] = i;
+            uint64_t x = *(const uint64_t *) ((const char *) keys + i*stride);
+            int64_t dst = bucketptr[0*2049+((x >> (11*0)) & 0x7ff)]++;
+            *(uint64_t *) ((char *) tmpkeys + dst*tmpkeysstride) = x;
+            perm[dst] = i;
         }
-        swap_uint64ptr(&keys, &extra_keys);
+        swap_uint64ptr(&keys, &tmpkeys); swap_int(&stride, &tmpkeysstride);
         for (int64_t i = 0; i < size; i++) {
-            int64_t destidx = bucketptr[1*2049+((keys[i] >> (11*1)) & 0x7ff)]++;
-            extra_keys[destidx] = keys[i];
-            extra_sorting_permutation[destidx] = sorting_permutation[i];
+            uint64_t x = *(const uint64_t *) ((const char *) keys + i*stride);
+            int64_t dst = bucketptr[1*2049+((x >> (11*1)) & 0x7ff)]++;
+            *(uint64_t *) ((char *) tmpkeys + dst*tmpkeysstride) = x;
+            tmpperm[dst] = perm[i];
         }
-        swap_uint64ptr(&keys, &extra_keys);
-        swap_int64ptr(&sorting_permutation, &extra_sorting_permutation);
+        swap_uint64ptr(&keys, &tmpkeys); swap_int(&stride, &tmpkeysstride);
+        swap_int64ptr(&perm, &tmpperm);
         for (int64_t i = 0; i < size; i++) {
-            int64_t destidx = bucketptr[2*2049+((keys[i] >> (11*2)) & 0x7ff)]++;
-            extra_keys[destidx] = keys[i];
-            extra_sorting_permutation[destidx] = sorting_permutation[i];
+            uint64_t x = *(const uint64_t *) ((const char *) keys + i*stride);
+            int64_t dst = bucketptr[2*2049+((x >> (11*2)) & 0x7ff)]++;
+            *(uint64_t *) ((char *) tmpkeys + dst*tmpkeysstride) = x;
+            tmpperm[dst] = perm[i];
         }
-        swap_uint64ptr(&keys, &extra_keys);
-        swap_int64ptr(&sorting_permutation, &extra_sorting_permutation);
+        swap_uint64ptr(&keys, &tmpkeys); swap_int(&stride, &tmpkeysstride);
+        swap_int64ptr(&perm, &tmpperm);
         for (int64_t i = 0; i < size; i++) {
-            int64_t destidx = bucketptr[3*2049+((keys[i] >> (11*3)) & 0x7ff)]++;
-            extra_keys[destidx] = keys[i];
-            extra_sorting_permutation[destidx] = sorting_permutation[i];
+            uint64_t x = *(const uint64_t *) ((const char *) keys + i*stride);
+            int64_t dst = bucketptr[3*2049+((x >> (11*3)) & 0x7ff)]++;
+            *(uint64_t *) ((char *) tmpkeys + dst*tmpkeysstride) = x;
+            tmpperm[dst] = perm[i];
         }
-        swap_uint64ptr(&keys, &extra_keys);
-        swap_int64ptr(&sorting_permutation, &extra_sorting_permutation);
+        swap_uint64ptr(&keys, &tmpkeys); swap_int(&stride, &tmpkeysstride);
+        swap_int64ptr(&perm, &tmpperm);
         for (int64_t i = 0; i < size; i++) {
-            int64_t destidx = bucketptr[4*2049+((keys[i] >> (11*4)) & 0x7ff)]++;
-            extra_keys[destidx] = keys[i];
-            extra_sorting_permutation[destidx] = sorting_permutation[i];
+            uint64_t x = *(const uint64_t *) ((const char *) keys + i*stride);
+            int64_t dst = bucketptr[4*2049+((x >> (11*4)) & 0x7ff)]++;
+            *(uint64_t *) ((char *) tmpkeys + dst*tmpkeysstride) = x;
+            tmpperm[dst] = perm[i];
         }
-        swap_uint64ptr(&keys, &extra_keys);
-        swap_int64ptr(&sorting_permutation, &extra_sorting_permutation);
+        swap_uint64ptr(&keys, &tmpkeys); swap_int(&stride, &tmpkeysstride);
+        swap_int64ptr(&perm, &tmpperm);
         for (int64_t i = 0; i < size; i++) {
-            int64_t destidx = bucketptr[5*2049+((keys[i] >> (11*5)) & 0x7ff)]++;
-            extra_keys[destidx] = keys[i];
-            extra_sorting_permutation[destidx] = sorting_permutation[i];
+            uint64_t x = *(const uint64_t *) ((const char *) keys + i*stride);
+            int64_t dst = bucketptr[5*2049+((x >> (11*5)) & 0x7ff)]++;
+            *(uint64_t *) ((char *) tmpkeys + dst*tmpkeysstride) = x;
+            tmpperm[dst] = perm[i];
         }
-        swap_uint64ptr(&keys, &extra_keys);
+        swap_uint64ptr(&keys, &tmpkeys); swap_int(&stride, &tmpkeysstride);
         for (int64_t j = 0; j < size; j++)
-            sorting_permutation[extra_sorting_permutation[j]] = j;
+            perm[tmpperm[j]] = j;
     } else {
         for (int64_t i = 0; i < size; i++) {
-            int64_t destidx = bucketptr[0*2049+((keys[i] >> (11*0)) & 0x7ff)]++;
-            extra_keys[destidx] = keys[i];
+            uint64_t x = *(const uint64_t *) ((const char *) keys + i*stride);
+            int64_t dst = bucketptr[0*2049+((x >> (11*0)) & 0x7ff)]++;
+            *(uint64_t *) ((char *) tmpkeys + dst*tmpkeysstride) = x;
         }
-        swap_uint64ptr(&keys, &extra_keys);
+        swap_uint64ptr(&keys, &tmpkeys); swap_int(&stride, &tmpkeysstride);
         for (int64_t i = 0; i < size; i++) {
-            int64_t destidx = bucketptr[1*2049+((keys[i] >> (11*1)) & 0x7ff)]++;
-            extra_keys[destidx] = keys[i];
+            uint64_t x = *(const uint64_t *) ((const char *) keys + i*stride);
+            int64_t dst = bucketptr[1*2049+((x >> (11*1)) & 0x7ff)]++;
+            *(uint64_t *) ((char *) tmpkeys + dst*tmpkeysstride) = x;
         }
-        swap_uint64ptr(&keys, &extra_keys);
+        swap_uint64ptr(&keys, &tmpkeys); swap_int(&stride, &tmpkeysstride);
         for (int64_t i = 0; i < size; i++) {
-            int64_t destidx = bucketptr[2*2049+((keys[i] >> (11*2)) & 0x7ff)]++;
-            extra_keys[destidx] = keys[i];
+            uint64_t x = *(const uint64_t *) ((const char *) keys + i*stride);
+            int64_t dst = bucketptr[2*2049+((x >> (11*2)) & 0x7ff)]++;
+            *(uint64_t *) ((char *) tmpkeys + dst*tmpkeysstride) = x;
         }
-        swap_uint64ptr(&keys, &extra_keys);
+        swap_uint64ptr(&keys, &tmpkeys); swap_int(&stride, &tmpkeysstride);
         for (int64_t i = 0; i < size; i++) {
-            int64_t destidx = bucketptr[3*2049+((keys[i] >> (11*3)) & 0x7ff)]++;
-            extra_keys[destidx] = keys[i];
+            uint64_t x = *(const uint64_t *) ((const char *) keys + i*stride);
+            int64_t dst = bucketptr[3*2049+((x >> (11*3)) & 0x7ff)]++;
+            *(uint64_t *) ((char *) tmpkeys + dst*tmpkeysstride) = x;
         }
-        swap_uint64ptr(&keys, &extra_keys);
+        swap_uint64ptr(&keys, &tmpkeys); swap_int(&stride, &tmpkeysstride);
         for (int64_t i = 0; i < size; i++) {
-            int64_t destidx = bucketptr[4*2049+((keys[i] >> (11*4)) & 0x7ff)]++;
-            extra_keys[destidx] = keys[i];
+            uint64_t x = *(const uint64_t *) ((const char *) keys + i*stride);
+            int64_t dst = bucketptr[4*2049+((x >> (11*4)) & 0x7ff)]++;
+            *(uint64_t *) ((char *) tmpkeys + dst*tmpkeysstride) = x;
         }
-        swap_uint64ptr(&keys, &extra_keys);
+        swap_uint64ptr(&keys, &tmpkeys); swap_int(&stride, &tmpkeysstride);
         for (int64_t i = 0; i < size; i++) {
-            int64_t destidx = bucketptr[5*2049+((keys[i] >> (11*5)) & 0x7ff)]++;
-            extra_keys[destidx] = keys[i];
+            uint64_t x = *(const uint64_t *) ((const char *) keys + i*stride);
+            int64_t dst = bucketptr[5*2049+((x >> (11*5)) & 0x7ff)]++;
+            *(uint64_t *) ((char *) tmpkeys + dst*tmpkeysstride) = x;
         }
-        swap_uint64ptr(&keys, &extra_keys);
+        swap_uint64ptr(&keys, &tmpkeys); swap_int(&stride, &tmpkeysstride);
     }
 
-    if (sorting_permutation)
-        free(extra_sorting_permutation);
-    free(bucketptr);
-    free(extra_keys);
+    if (perm) free(tmpperm);
+    free(bucketptr); free(tmpkeys);
     return MTX_SUCCESS;
 }
 
@@ -618,7 +632,7 @@ int radix_sort_uint64(
  * integer keys are given in the array ‘keys’. On success, the same
  * array will contain the keys in sorted order.
  *
- * If ‘sorting_permutation’ is ‘NULL’, then this argument is ignored
+ * If ‘perm’ is ‘NULL’, then this argument is ignored
  * and a sorting permutation is not computed. Otherwise, it must point
  * to an array that holds enough storage for ‘size’ values of type
  * ‘int64_t’. On success, this array will contain the sorting
@@ -628,12 +642,11 @@ int radix_sort_uint64(
 int radix_sort_int32(
     int64_t size,
     int32_t * keys,
-    int64_t * sorting_permutation)
+    int64_t * perm)
 {
-    int err;
     for (int64_t i = 0; i < size; i++)
         keys[i] ^= INT32_MIN;
-    err = radix_sort_uint32(size, (uint32_t *) keys, sorting_permutation);
+    int err = radix_sort_uint32(size, (uint32_t *) keys, perm);
     for (int64_t i = 0; i < size; i++)
         keys[i] ^= INT32_MIN;
     return err;
@@ -647,24 +660,29 @@ int radix_sort_int32(
  * integer keys are given in the array ‘keys’. On success, the same
  * array will contain the keys in sorted order.
  *
- * If ‘sorting_permutation’ is ‘NULL’, then this argument is ignored
- * and a sorting permutation is not computed. Otherwise, it must point
- * to an array that holds enough storage for ‘size’ values of type
- * ‘int64_t’. On success, this array will contain the sorting
- * permutation, mapping the locations of the original, unsorted keys
- * to their new locations in the sorted array.
+ * The value ‘stride’ is used to specify a stride (in bytes), which is
+ * used when accessing elements of the ‘keys’ array. This is useful
+ * for cases where the keys are not necessarily stored contiguously in
+ * memory.
+ *
+ * If ‘perm’ is ‘NULL’, then this argument is ignored and a sorting
+ * permutation is not computed. Otherwise, it must point to an array
+ * that holds enough storage for ‘size’ values of type ‘int64_t’. On
+ * success, this array will contain the sorting permutation, mapping
+ * the locations of the original, unsorted keys to their new locations
+ * in the sorted array.
  */
 int radix_sort_int64(
     int64_t size,
+    int stride,
     int64_t * keys,
-    int64_t * sorting_permutation)
+    int64_t * perm)
 {
-    int err;
     for (int64_t i = 0; i < size; i++)
-        keys[i] ^= INT64_MIN;
-    err = radix_sort_uint64(size, (uint64_t *) keys, sorting_permutation);
+        *(int64_t *)((char *) keys+i*stride) ^= INT64_MIN;
+    int err = radix_sort_uint64(size, stride, (uint64_t *) keys, perm);
     for (int64_t i = 0; i < size; i++)
-        keys[i] ^= INT64_MIN;
+        *(int64_t *)((char *) keys+i*stride) ^= INT64_MIN;
     return err;
 }
 
@@ -676,7 +694,7 @@ int radix_sort_int64(
  * integer keys are given in the array ‘keys’. On success, the same
  * array will contain the keys in sorted order.
  *
- * If ‘sorting_permutation’ is ‘NULL’, then this argument is ignored
+ * If ‘perm’ is ‘NULL’, then this argument is ignored
  * and a sorting permutation is not computed. Otherwise, it must point
  * to an array that holds enough storage for ‘size’ values of type
  * ‘int64_t’. On success, this array will contain the sorting
@@ -686,12 +704,12 @@ int radix_sort_int64(
 int radix_sort_int(
     int64_t size,
     int * keys,
-    int64_t * sorting_permutation)
+    int64_t * perm)
 {
     if (sizeof(int) == sizeof(int32_t)) {
-        return radix_sort_int32(size, (int32_t *) keys, sorting_permutation);
+        return radix_sort_int32(size, (int32_t *) keys, perm);
     } else if (sizeof(int) == sizeof(int64_t)) {
-        return radix_sort_int64(size, (int64_t *) keys, sorting_permutation);
+        return radix_sort_int64(size, sizeof(*keys), (int64_t *) keys, perm);
     } else {
         return MTX_ERR_NOT_SUPPORTED;
     }
@@ -1249,6 +1267,87 @@ int radix_sort_uint64_pair(
     return MTX_SUCCESS;
 }
 
+
+/**
+ * ‘radix_sort_int32_pair()’ sorts pairs of 32-bit signed integers
+ * in ascending, lexicographic order using a radix sort algorithm.
+ *
+ * The number of pairs to sort is given by ‘size’, and the unsorted,
+ * integer keys are given in the arrays ‘a’ and ‘b’. On success, the
+ * same arrays will contain the keys in sorted order.
+ *
+ * The values ‘astride’ and ‘bstride’ may be used to specify strides
+ * (in bytes) that are used when accessing the keys in ‘a’ and ‘b’,
+ * respectively. This is useful for cases where the keys are not
+ * necessarily stored contiguously in memory.
+ *
+ * If ‘perm’ is ‘NULL’, then this argument is ignored and a sorting
+ * permutation is not computed. Otherwise, it must point to an array
+ * of length ‘size’. On success, this array will contain the sorting
+ * permutation, mapping the locations of the original, unsorted keys
+ * to their new locations in the sorted array.
+ */
+int radix_sort_int32_pair(
+    int64_t size,
+    int astride,
+    int32_t * a,
+    int bstride,
+    int32_t * b,
+    int64_t * perm)
+{
+    for (int64_t i = 0; i < size; i++) {
+        *(int32_t *)((char *) a+i*astride) ^= INT32_MIN;
+        *(int32_t *)((char *) b+i*bstride) ^= INT32_MIN;
+    }
+    int err = radix_sort_uint32_pair(
+        size, astride, (uint32_t *) a, bstride, (uint32_t *) b, perm);
+    for (int64_t i = 0; i < size; i++) {
+        *(int32_t *)((char *) a+i*astride) ^= INT32_MIN;
+        *(int32_t *)((char *) b+i*bstride) ^= INT32_MIN;
+    }
+    return err;
+}
+
+/**
+ * ‘radix_sort_int64_pair()’ sorts pairs of 64-bit signed integers
+ * in ascending, lexicographic order using a radix sort algorithm.
+ *
+ * The number of pairs to sort is given by ‘size’, and the unsorted,
+ * integer keys are given in the arrays ‘a’ and ‘b’. On success, the
+ * same arrays will contain the keys in sorted order.
+ *
+ * The values ‘astride’ and ‘bstride’ may be used to specify strides
+ * (in bytes) that are used when accessing the keys in ‘a’ and ‘b’,
+ * respectively. This is useful for cases where the keys are not
+ * necessarily stored contiguously in memory.
+ *
+ * If ‘perm’ is ‘NULL’, then this argument is ignored and a sorting
+ * permutation is not computed. Otherwise, it must point to an array
+ * of length ‘size’. On success, this array will contain the sorting
+ * permutation, mapping the locations of the original, unsorted keys
+ * to their new locations in the sorted array.
+ */
+int radix_sort_int64_pair(
+    int64_t size,
+    int astride,
+    int64_t * a,
+    int bstride,
+    int64_t * b,
+    int64_t * perm)
+{
+    for (int64_t i = 0; i < size; i++) {
+        *(int64_t *)((char *) a+i*astride) ^= INT64_MIN;
+        *(int64_t *)((char *) b+i*bstride) ^= INT64_MIN;
+    }
+    int err = radix_sort_uint64_pair(
+        size, astride, (uint64_t *) a, bstride, (uint64_t *) b, perm);
+    for (int64_t i = 0; i < size; i++) {
+        *(int64_t *)((char *) a+i*astride) ^= INT64_MIN;
+        *(int64_t *)((char *) b+i*bstride) ^= INT64_MIN;
+    }
+    return err;
+}
+
 #ifdef LIBMTX_HAVE_MPI
 /**
  * ‘distradix_sort_uint32()’ sorts a distributed array of 32-bit
@@ -1260,7 +1359,7 @@ int radix_sort_uint64_pair(
  * process are given in the array ‘keys’. On success, the same array
  * will contain ‘size’ keys in a globally sorted order.
  *
- * If ‘sorting_permutation’ is ‘NULL’, then this argument is ignored
+ * If ‘perm’ is ‘NULL’, then this argument is ignored
  * and a sorting permutation is not computed. Otherwise, it must point
  * to an array that holds enough storage for ‘size’ values of type
  * ‘int64_t’ on each MPI process. On success, this array will contain
@@ -1270,7 +1369,7 @@ int radix_sort_uint64_pair(
 int distradix_sort_uint32(
     int64_t size,
     uint32_t * keys,
-    int64_t * sorting_permutation,
+    int64_t * perm,
     MPI_Comm comm,
     struct mtxdisterror * disterr)
 {
@@ -1321,10 +1420,10 @@ int distradix_sort_uint32(
     }
     int64_t * bucketptr = &bucketptrs[rank*257];
 
-    int64_t * extra_sorting_permutation = NULL;
-    if (sorting_permutation) {
-        extra_sorting_permutation = malloc(size * sizeof(int64_t));
-        err = !extra_sorting_permutation ? MTX_ERR_ERRNO : MTX_SUCCESS;
+    int64_t * extra_perm = NULL;
+    if (perm) {
+        extra_perm = malloc(size * sizeof(int64_t));
+        err = !extra_perm ? MTX_ERR_ERRNO : MTX_SUCCESS;
         if (mtxdisterror_allreduce(disterr, err)) {
             free(bucketptrs);
             free(extra_keys);
@@ -1335,8 +1434,8 @@ int distradix_sort_uint32(
     int * sendrecvbufs = malloc(comm_size * 5 * sizeof(int));
     err = !sendrecvbufs ? MTX_ERR_ERRNO : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err)) {
-        if (extra_sorting_permutation)
-            free(extra_sorting_permutation);
+        if (extra_perm)
+            free(extra_perm);
         free(bucketptrs);
         free(extra_keys);
         return MTX_ERR_MPI_COLLECTIVE;
@@ -1372,17 +1471,17 @@ int distradix_sort_uint32(
             bucketptr[j+1] += bucketptr[j];
 
         /* 3. Sort the keys into their respective buckets. */
-        if (sorting_permutation && k == 0) {
+        if (perm && k == 0) {
             for (int64_t i = 0; i < size; i++) {
                 int64_t destidx = bucketptr[((keys[i] >> (8*k)) & 0xff)]++;
                 extra_keys[destidx] = keys[i];
-                extra_sorting_permutation[destidx] = global_offset+i;
+                extra_perm[destidx] = global_offset+i;
             }
-        } else if (sorting_permutation) {
+        } else if (perm) {
             for (int64_t i = 0; i < size; i++) {
                 int64_t destidx = bucketptr[((keys[i] >> (8*k)) & 0xff)]++;
                 extra_keys[destidx] = keys[i];
-                extra_sorting_permutation[destidx] = sorting_permutation[i];
+                extra_perm[destidx] = perm[i];
             }
         } else {
             for (int64_t i = 0; i < size; i++) {
@@ -1402,9 +1501,9 @@ int distradix_sort_uint32(
                 fprintf(stderr, "middle of round %d, process %d, extra_keys=[", k, rank);
                 for (int64_t i = 0; i < size; i++)
                     fprintf(stderr, " %lld (0x%02x)", extra_keys[i], (extra_keys[i] >> (8*k)) & 0xff);
-                fprintf(stderr, "], extra_sorting_permutation=[");
+                fprintf(stderr, "], extra_perm=[");
                 for (int64_t i = 0; i < size; i++)
-                    fprintf(stderr, " %2lld", extra_sorting_permutation[i]);
+                    fprintf(stderr, " %2lld", extra_perm[i]);
                 fprintf(stderr, "]\n");
             }
             MPI_Barrier(comm);
@@ -1429,8 +1528,8 @@ int distradix_sort_uint32(
         err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
         if (mtxdisterror_allreduce(disterr, err)) {
             free(sendrecvbufs);
-            if (sorting_permutation)
-                free(extra_sorting_permutation);
+            if (perm)
+                free(extra_perm);
             free(bucketptrs);
             free(extra_keys);
             return MTX_ERR_MPI_COLLECTIVE;
@@ -1494,8 +1593,8 @@ int distradix_sort_uint32(
         }
         if (mtxdisterror_allreduce(disterr, err)) {
             free(sendrecvbufs);
-            if (sorting_permutation)
-                free(extra_sorting_permutation);
+            if (perm)
+                free(extra_perm);
             free(bucketptrs);
             free(extra_keys);
             return MTX_ERR_MPI_COLLECTIVE;
@@ -1531,23 +1630,23 @@ int distradix_sort_uint32(
         err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
         if (mtxdisterror_allreduce(disterr, err)) {
             free(sendrecvbufs);
-            if (sorting_permutation)
-                free(extra_sorting_permutation);
+            if (perm)
+                free(extra_perm);
             free(bucketptrs);
             free(extra_keys);
             return MTX_ERR_MPI_COLLECTIVE;
         }
 
         /* Also, redistribute the sorting permutation. */
-        if (sorting_permutation) {
+        if (perm) {
             disterr->mpierrcode = MPI_Alltoallv(
-                extra_sorting_permutation, sendcounts, senddisps, MPI_INT64_T,
-                sorting_permutation, recvcounts, recvdisps, MPI_INT64_T, comm);
+                extra_perm, sendcounts, senddisps, MPI_INT64_T,
+                perm, recvcounts, recvdisps, MPI_INT64_T, comm);
             err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
             if (mtxdisterror_allreduce(disterr, err)) {
                 free(sendrecvbufs);
-                if (sorting_permutation)
-                    free(extra_sorting_permutation);
+                if (perm)
+                    free(extra_perm);
                 free(bucketptrs);
                 free(extra_keys);
                 return MTX_ERR_MPI_COLLECTIVE;
@@ -1560,9 +1659,9 @@ int distradix_sort_uint32(
                 fprintf(stderr, "after redistribution in round %d, process %d, keys=[", k, rank);
                 for (int64_t i = 0; i < size; i++)
                     fprintf(stderr, " %lld (0x%02x)", keys[i], (keys[i] >> (8*k)) & 0xff);
-                fprintf(stderr, "], sorting_permutation=[");
+                fprintf(stderr, "], perm=[");
                 for (int64_t i = 0; i < size; i++)
-                    fprintf(stderr, " %2lld", sorting_permutation[i]);
+                    fprintf(stderr, " %2lld", perm[i]);
                 fprintf(stderr, "]\n");
             }
             MPI_Barrier(comm);
@@ -1580,11 +1679,11 @@ int distradix_sort_uint32(
             bucketptr[j+1] += bucketptr[j];
 
         /* 3. Sort the keys into their respective buckets. */
-        if (sorting_permutation) {
+        if (perm) {
             for (int64_t i = 0; i < size; i++) {
                 int64_t destidx = bucketptr[((keys[i] >> (8*k)) & 0xff)]++;
                 extra_keys[destidx] = keys[i];
-                extra_sorting_permutation[destidx] = sorting_permutation[i];
+                extra_perm[destidx] = perm[i];
             }
         } else {
             for (int64_t i = 0; i < size; i++) {
@@ -1594,10 +1693,10 @@ int distradix_sort_uint32(
         }
 
         /* 4. Copy data needed for the next round. */
-        if (sorting_permutation) {
+        if (perm) {
             for (int64_t j = 0; j < size; j++) {
                 keys[j] = extra_keys[j];
-                sorting_permutation[j] = extra_sorting_permutation[j];
+                perm[j] = extra_perm[j];
             }
         } else {
             for (int64_t j = 0; j < size; j++)
@@ -1610,9 +1709,9 @@ int distradix_sort_uint32(
                 fprintf(stderr, "after round %d, process %d, keys=[", k, rank);
                 for (int64_t i = 0; i < size; i++)
                     fprintf(stderr, " %lld (0x%02x)", keys[i], (keys[i] >> (8*k)) & 0xff);
-                fprintf(stderr, "], sorting_permutation=[");
+                fprintf(stderr, "], perm=[");
                 for (int64_t i = 0; i < size; i++)
-                    fprintf(stderr, " %2lld", sorting_permutation[i]);
+                    fprintf(stderr, " %2lld", perm[i]);
                 fprintf(stderr, "]\n");
             }
             MPI_Barrier(comm);
@@ -1625,11 +1724,11 @@ int distradix_sort_uint32(
     free(extra_keys);
 
     /* Invert the sorting permutation */
-    if (sorting_permutation) {
+    if (perm) {
         int64_t * global_offsets = malloc((comm_size+1) * sizeof(int64_t));
         err = !global_offsets ? MTX_ERR_ERRNO : MTX_SUCCESS;
         if (mtxdisterror_allreduce(disterr, err)) {
-            free(extra_sorting_permutation);
+            free(extra_perm);
             return MTX_ERR_MPI_COLLECTIVE;
         }
 
@@ -1639,19 +1738,19 @@ int distradix_sort_uint32(
         err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
         if (mtxdisterror_allreduce(disterr, err)) {
             free(global_offsets);
-            free(extra_sorting_permutation);
+            free(extra_perm);
             return MTX_ERR_MPI_COLLECTIVE;
         }
         global_offsets[comm_size] = total_size;
 
         MPI_Win window;
         disterr->mpierrcode = MPI_Win_create(
-            sorting_permutation, size * sizeof(int64_t),
+            perm, size * sizeof(int64_t),
             sizeof(int64_t), MPI_INFO_NULL, comm, &window);
         err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
         if (mtxdisterror_allreduce(disterr, err)) {
             free(global_offsets);
-            free(extra_sorting_permutation);
+            free(extra_perm);
             return MTX_ERR_MPI_COLLECTIVE;
         }
         MPI_Win_fence(0, window);
@@ -1668,9 +1767,9 @@ int distradix_sort_uint32(
         }
         for (int p = 0; p < comm_size; p++) {
             if (rank == p) {
-                fprintf(stderr, "process %d, sorting_permutation=[", rank);
+                fprintf(stderr, "process %d, perm=[", rank);
                 for (int64_t i = 0; i < size; i++)
-                    fprintf(stderr, " %lld", sorting_permutation[i]);
+                    fprintf(stderr, " %lld", perm[i]);
                 fprintf(stderr, "]\n");
             }
             MPI_Barrier(comm);
@@ -1680,9 +1779,9 @@ int distradix_sort_uint32(
 #ifdef DEBUG_DISTRADIXSORT
         for (int p = 0; p < comm_size; p++) {
             if (rank == p) {
-                fprintf(stderr, "process %d, extra_sorting_permutation=[", rank);
+                fprintf(stderr, "process %d, extra_perm=[", rank);
                 for (int64_t i = 0; i < size; i++)
-                    fprintf(stderr, " %lld", extra_sorting_permutation[i]);
+                    fprintf(stderr, " %lld", extra_perm[i]);
                 fprintf(stderr, "]\n");
             }
             MPI_Barrier(comm);
@@ -1692,7 +1791,7 @@ int distradix_sort_uint32(
         err = MTX_SUCCESS;
         for (int64_t j = 0; j < size; j++) {
             int64_t destidx = global_offset + j;
-            int64_t srcidx = extra_sorting_permutation[j];
+            int64_t srcidx = extra_perm[j];
 
             int p = 0;
             while (p < comm_size && global_offsets[p+1] <= srcidx)
@@ -1710,22 +1809,22 @@ int distradix_sort_uint32(
                 if (err)
                     break;
             } else {
-                sorting_permutation[srcidx-global_offset] = destidx;
+                perm[srcidx-global_offset] = destidx;
             }
         }
         MPI_Win_fence(0, window);
         MPI_Win_free(&window);
         free(global_offsets);
-        free(extra_sorting_permutation);
+        free(extra_perm);
         if (mtxdisterror_allreduce(disterr, err))
             return MTX_ERR_MPI_COLLECTIVE;
 
 #ifdef DEBUG_DISTRADIXSORT
         for (int p = 0; p < comm_size; p++) {
             if (rank == p) {
-                fprintf(stderr, "after inverting sorting permutation, sorting_permutation=[");
+                fprintf(stderr, "after inverting sorting permutation, perm=[");
                 for (int64_t i = 0; i < size; i++)
-                    fprintf(stderr, " %2lld", sorting_permutation[i]);
+                    fprintf(stderr, " %2lld", perm[i]);
                 fprintf(stderr, "]\n");
             }
             MPI_Barrier(comm);
@@ -1746,7 +1845,7 @@ int distradix_sort_uint32(
  * process are given in the array ‘keys’. On success, the same array
  * will contain ‘size’ keys in a globally sorted order.
  *
- * If ‘sorting_permutation’ is ‘NULL’, then this argument is ignored
+ * If ‘perm’ is ‘NULL’, then this argument is ignored
  * and a sorting permutation is not computed. Otherwise, it must point
  * to an array that holds enough storage for ‘size’ values of type
  * ‘int64_t’ on each MPI process. On success, this array will contain
@@ -1756,7 +1855,7 @@ int distradix_sort_uint32(
 int distradix_sort_uint64(
     int64_t size,
     uint64_t * keys,
-    int64_t * sorting_permutation,
+    int64_t * perm,
     MPI_Comm comm,
     struct mtxdisterror * disterr)
 {
@@ -1807,10 +1906,10 @@ int distradix_sort_uint64(
     }
     int64_t * bucketptr = &bucketptrs[rank*257];
 
-    int64_t * extra_sorting_permutation = NULL;
-    if (sorting_permutation) {
-        extra_sorting_permutation = malloc(size * sizeof(int64_t));
-        err = !extra_sorting_permutation ? MTX_ERR_ERRNO : MTX_SUCCESS;
+    int64_t * extra_perm = NULL;
+    if (perm) {
+        extra_perm = malloc(size * sizeof(int64_t));
+        err = !extra_perm ? MTX_ERR_ERRNO : MTX_SUCCESS;
         if (mtxdisterror_allreduce(disterr, err)) {
             free(bucketptrs);
             free(extra_keys);
@@ -1821,8 +1920,8 @@ int distradix_sort_uint64(
     int * sendrecvbufs = malloc(comm_size * 5 * sizeof(int));
     err = !sendrecvbufs ? MTX_ERR_ERRNO : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err)) {
-        if (extra_sorting_permutation)
-            free(extra_sorting_permutation);
+        if (extra_perm)
+            free(extra_perm);
         free(bucketptrs);
         free(extra_keys);
         return MTX_ERR_MPI_COLLECTIVE;
@@ -1846,17 +1945,17 @@ int distradix_sort_uint64(
             bucketptr[j+1] += bucketptr[j];
 
         /* 3. Sort the keys into their respective buckets. */
-        if (sorting_permutation && k == 0) {
+        if (perm && k == 0) {
             for (int64_t i = 0; i < size; i++) {
                 int64_t destidx = bucketptr[((keys[i] >> (8*k)) & 0xff)]++;
                 extra_keys[destidx] = keys[i];
-                extra_sorting_permutation[destidx] = global_offset+i;
+                extra_perm[destidx] = global_offset+i;
             }
-        } else if (sorting_permutation) {
+        } else if (perm) {
             for (int64_t i = 0; i < size; i++) {
                 int64_t destidx = bucketptr[((keys[i] >> (8*k)) & 0xff)]++;
                 extra_keys[destidx] = keys[i];
-                extra_sorting_permutation[destidx] = sorting_permutation[i];
+                extra_perm[destidx] = perm[i];
             }
         } else {
             for (int64_t i = 0; i < size; i++) {
@@ -1876,8 +1975,8 @@ int distradix_sort_uint64(
         err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
         if (mtxdisterror_allreduce(disterr, err)) {
             free(sendrecvbufs);
-            if (sorting_permutation)
-                free(extra_sorting_permutation);
+            if (perm)
+                free(extra_perm);
             free(bucketptrs);
             free(extra_keys);
             return MTX_ERR_MPI_COLLECTIVE;
@@ -1930,8 +2029,8 @@ int distradix_sort_uint64(
         }
         if (mtxdisterror_allreduce(disterr, err)) {
             free(sendrecvbufs);
-            if (sorting_permutation)
-                free(extra_sorting_permutation);
+            if (perm)
+                free(extra_perm);
             free(bucketptrs);
             free(extra_keys);
             return MTX_ERR_MPI_COLLECTIVE;
@@ -1951,23 +2050,23 @@ int distradix_sort_uint64(
         err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
         if (mtxdisterror_allreduce(disterr, err)) {
             free(sendrecvbufs);
-            if (sorting_permutation)
-                free(extra_sorting_permutation);
+            if (perm)
+                free(extra_perm);
             free(bucketptrs);
             free(extra_keys);
             return MTX_ERR_MPI_COLLECTIVE;
         }
 
         /* Also, redistribute the sorting permutation. */
-        if (sorting_permutation) {
+        if (perm) {
             disterr->mpierrcode = MPI_Alltoallv(
-                extra_sorting_permutation, sendcounts, senddisps, MPI_INT64_T,
-                sorting_permutation, recvcounts, recvdisps, MPI_INT64_T, comm);
+                extra_perm, sendcounts, senddisps, MPI_INT64_T,
+                perm, recvcounts, recvdisps, MPI_INT64_T, comm);
             err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
             if (mtxdisterror_allreduce(disterr, err)) {
                 free(sendrecvbufs);
-                if (sorting_permutation)
-                    free(extra_sorting_permutation);
+                if (perm)
+                    free(extra_perm);
                 free(bucketptrs);
                 free(extra_keys);
                 return MTX_ERR_MPI_COLLECTIVE;
@@ -1985,11 +2084,11 @@ int distradix_sort_uint64(
             bucketptr[j+1] += bucketptr[j];
 
         /* 3. Sort the keys into their respective buckets. */
-        if (sorting_permutation) {
+        if (perm) {
             for (int64_t i = 0; i < size; i++) {
                 int64_t destidx = bucketptr[((keys[i] >> (8*k)) & 0xff)]++;
                 extra_keys[destidx] = keys[i];
-                extra_sorting_permutation[destidx] = sorting_permutation[i];
+                extra_perm[destidx] = perm[i];
             }
         } else {
             for (int64_t i = 0; i < size; i++) {
@@ -1999,10 +2098,10 @@ int distradix_sort_uint64(
         }
 
         /* 4. Copy data needed for the next round. */
-        if (sorting_permutation) {
+        if (perm) {
             for (int64_t j = 0; j < size; j++) {
                 keys[j] = extra_keys[j];
-                sorting_permutation[j] = extra_sorting_permutation[j];
+                perm[j] = extra_perm[j];
             }
         } else {
             for (int64_t j = 0; j < size; j++)
@@ -2015,11 +2114,11 @@ int distradix_sort_uint64(
     free(extra_keys);
 
     /* Invert the sorting permutation */
-    if (sorting_permutation) {
+    if (perm) {
         int64_t * global_offsets = malloc((comm_size+1) * sizeof(int64_t));
         err = !global_offsets ? MTX_ERR_ERRNO : MTX_SUCCESS;
         if (mtxdisterror_allreduce(disterr, err)) {
-            free(extra_sorting_permutation);
+            free(extra_perm);
             return MTX_ERR_MPI_COLLECTIVE;
         }
 
@@ -2029,19 +2128,19 @@ int distradix_sort_uint64(
         err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
         if (mtxdisterror_allreduce(disterr, err)) {
             free(global_offsets);
-            free(extra_sorting_permutation);
+            free(extra_perm);
             return MTX_ERR_MPI_COLLECTIVE;
         }
         global_offsets[comm_size] = total_size;
 
         MPI_Win window;
         disterr->mpierrcode = MPI_Win_create(
-            sorting_permutation, size * sizeof(int64_t),
+            perm, size * sizeof(int64_t),
             sizeof(int64_t), MPI_INFO_NULL, comm, &window);
         err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
         if (mtxdisterror_allreduce(disterr, err)) {
             free(global_offsets);
-            free(extra_sorting_permutation);
+            free(extra_perm);
             return MTX_ERR_MPI_COLLECTIVE;
         }
         MPI_Win_fence(0, window);
@@ -2053,7 +2152,7 @@ int distradix_sort_uint64(
         err = MTX_SUCCESS;
         for (int64_t j = 0; j < size; j++) {
             int64_t destidx = global_offset + j;
-            int64_t srcidx = extra_sorting_permutation[j];
+            int64_t srcidx = extra_perm[j];
 
             int p = 0;
             while (p < comm_size && global_offsets[p+1] <= srcidx)
@@ -2067,13 +2166,13 @@ int distradix_sort_uint64(
                 if (err)
                     break;
             } else {
-                sorting_permutation[srcidx-global_offset] = destidx;
+                perm[srcidx-global_offset] = destidx;
             }
         }
         MPI_Win_fence(0, window);
         MPI_Win_free(&window);
         free(global_offsets);
-        free(extra_sorting_permutation);
+        free(extra_perm);
         if (mtxdisterror_allreduce(disterr, err))
             return MTX_ERR_MPI_COLLECTIVE;
     }
