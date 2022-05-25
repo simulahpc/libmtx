@@ -78,8 +78,6 @@ libmtx_la_SOURCES = \
 	libmtx/util/fmtspec.h \
 	libmtx/util/merge.c \
 	libmtx/util/merge.h \
-	libmtx/util/metis.c \
-	libmtx/util/metis.h \
 	libmtx/util/parse.c \
 	libmtx/util/parse.h \
 	libmtx/util/partition.c \

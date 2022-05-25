@@ -1006,28 +1006,6 @@ int mtxfile_partition_2d(
  *    and columns of the underlying matrix are partitioned by the
  *    METIS graph partitioner, and the matrix nonzeros are partitioned
  *    accordingly.
- *
- *
- * In any case, the array ‘dstnzpart’ is used to store the part
- * numbers assigned to the matrix nonzeros and must therefore be of
- * length ‘mtxfile->datasize’.
- *
- * If the rows are partitioned, then the array ‘dstrowpart’ must be of
- * length ‘mtxfile->size.num_rows’. This array is used to store the
- * part numbers assigned to the matrix rows. In this case, ‘*rowpart’
- * is also set to ‘true’, whereas it is ‘false’ otherwise.
- *
- * Similarly, if the columns are partitioned (e.g., when partitioning
- * columnwise, 2d or a graph-based partitioning of a non-square
- * matrix), then ‘dstcolpart’ is used to store the part numbers
- * assigned to the matrix columns, and it must therefore be an array
- * of length ‘mtxfile->size.num_columns’. Moreover, ‘*colpart’ is set
- * to ‘true’, whereas it is ‘false’ otherwise.
- *
- * Unless they are set to ‘NULL’, then ‘nzpartsptr’, ‘rowpartsptr’ and
- * ‘colpartsptr’ must be arrays of length ‘num_parts+1’. If
- * successful, these three arrays will contain offsets to the first
- * nonzero, row and column belonging to each part.
  */
 int mtxfile_partition2(
     struct mtxfile * mtxfile,
@@ -1044,14 +1022,8 @@ int mtxfile_partition2(
     int num_column_parts,
     const int64_t * colpartsizes,
     int64_t colblksize,
-    int * dstnzpart,
-    int64_t * nzpartsptr,
-    bool * rowpart,
-    int * dstrowpart,
-    int64_t * rowpartsptr,
-    bool * colpart,
-    int * dstcolpart,
-    int64_t * colpartsptr);
+    int * dstpart,
+    int64_t * partsptr);
 
 /**
  * ‘mtxfile_split()’ splits a Matrix Market file into several files

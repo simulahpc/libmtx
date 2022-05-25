@@ -16,7 +16,7 @@ dnl You should have received a copy of the GNU General Public License
 dnl along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
 dnl
 dnl Authors: James D. Trotter <james@simula.no>
-dnl Last modified: 2022-05-23
+dnl Last modified: 2022-03-22
 dnl
 dnl autoconf script for the top-level directory of Libmtx.
 dnl
@@ -183,18 +183,6 @@ AX_LIBPNG([
 ])
 AM_CONDITIONAL([HAVE_LIBPNG],
   [test x"$with_libpng" != xno -a x"$libpng_found" != xno])
-
-dnl Check for METIS
-AX_LIB_METIS([
-  CPPFLAGS="$CPPFLAGS $METIS_INCLUDE"
-  LDFLAGS="$LDFLAGS $METIS_LIB"
-  LIBS="-lmetis $LIBS"
-  libmtx_CPPFLAGS="$libmtx_CPPFLAGS -DLIBMTX_HAVE_METIS"
-  AC_DEFINE([LIBMTX_HAVE_METIS], [1], [Define to 1 if you have METIS])
-  AC_SUBST(LIBMTX_HAVE_METIS)
-],AC_MSG_ERROR([either specify a valid METIS installation with --with-metis=DIR or disable METIS usage with --without-metis]))
-AM_CONDITIONAL([HAVE_METIS],
-  [test x"$with_metis" != xno -a x"$metis_found" != xno])
 
 AC_SUBST(libmtx_CPPFLAGS)
 
