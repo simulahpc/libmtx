@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-01-20
+ * Last modified: 2022-05-24
  *
  * Sorting.
  */
@@ -39,6 +39,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+/*
+ * counting sort
+ */
 
 /**
  * ‘counting_sort_uint8()’ sorts an array of 8-bit integer keys using
@@ -335,6 +339,10 @@ int counting_sort_uint8_values(
     return MTX_SUCCESS;
 }
 
+/*
+ * radix sort for unsigned integers
+ */
+
 /**
  * ‘radix_sort_uint32()’ sorts an array of 32-bit unsigned integers in
  * ascending order using a radix sort algorithm.
@@ -431,23 +439,14 @@ int radix_sort_uint32(
     return MTX_SUCCESS;
 }
 
-static void swap_uint64_t(
-    uint64_t ** a,
-    uint64_t ** b)
-{
-    uint64_t * tmp = *a;
-    *a = *b;
-    *b = tmp;
-}
-
-static void swap_int64_t(
-    int64_t ** a,
-    int64_t ** b)
-{
-    int64_t * tmp = *a;
-    *a = *b;
-    *b = tmp;
-}
+static void swap_int(int * a, int * b) { int tmp = *a; *a = *b; *b = tmp; }
+static void swap_int32_t(int32_t * a, int32_t * b) { int32_t tmp = *a; *a = *b; *b = tmp; }
+static void swap_int64_t(int64_t * a, int64_t * b) { int64_t tmp = *a; *a = *b; *b = tmp; }
+static void swap_uint32_t(uint32_t * a, uint32_t * b) { uint32_t tmp = *a; *a = *b; *b = tmp; }
+static void swap_uint64_t(uint64_t * a, uint64_t * b) { uint64_t tmp = *a; *a = *b; *b = tmp; }
+static void swap_int64ptr(int64_t ** a, int64_t ** b) { int64_t * tmp = *a; *a = *b; *b = tmp; }
+static void swap_uint32ptr(uint32_t ** a, uint32_t ** b) { uint32_t * tmp = *a; *a = *b; *b = tmp; }
+static void swap_uint64ptr(uint64_t ** a, uint64_t ** b) { uint64_t * tmp = *a; *a = *b; *b = tmp; }
 
 /**
  * ‘radix_sort_uint64()’ sorts an array of 64-bit unsigned integers in
@@ -530,41 +529,41 @@ int radix_sort_uint64(
             extra_keys[destidx] = keys[i];
             sorting_permutation[destidx] = i;
         }
-        swap_uint64_t(&keys, &extra_keys);
+        swap_uint64ptr(&keys, &extra_keys);
         for (int64_t i = 0; i < size; i++) {
             int64_t destidx = bucketptr[1*2049+((keys[i] >> (11*1)) & 0x7ff)]++;
             extra_keys[destidx] = keys[i];
             extra_sorting_permutation[destidx] = sorting_permutation[i];
         }
-        swap_uint64_t(&keys, &extra_keys);
-        swap_int64_t(&sorting_permutation, &extra_sorting_permutation);
+        swap_uint64ptr(&keys, &extra_keys);
+        swap_int64ptr(&sorting_permutation, &extra_sorting_permutation);
         for (int64_t i = 0; i < size; i++) {
             int64_t destidx = bucketptr[2*2049+((keys[i] >> (11*2)) & 0x7ff)]++;
             extra_keys[destidx] = keys[i];
             extra_sorting_permutation[destidx] = sorting_permutation[i];
         }
-        swap_uint64_t(&keys, &extra_keys);
-        swap_int64_t(&sorting_permutation, &extra_sorting_permutation);
+        swap_uint64ptr(&keys, &extra_keys);
+        swap_int64ptr(&sorting_permutation, &extra_sorting_permutation);
         for (int64_t i = 0; i < size; i++) {
             int64_t destidx = bucketptr[3*2049+((keys[i] >> (11*3)) & 0x7ff)]++;
             extra_keys[destidx] = keys[i];
             extra_sorting_permutation[destidx] = sorting_permutation[i];
         }
-        swap_uint64_t(&keys, &extra_keys);
-        swap_int64_t(&sorting_permutation, &extra_sorting_permutation);
+        swap_uint64ptr(&keys, &extra_keys);
+        swap_int64ptr(&sorting_permutation, &extra_sorting_permutation);
         for (int64_t i = 0; i < size; i++) {
             int64_t destidx = bucketptr[4*2049+((keys[i] >> (11*4)) & 0x7ff)]++;
             extra_keys[destidx] = keys[i];
             extra_sorting_permutation[destidx] = sorting_permutation[i];
         }
-        swap_uint64_t(&keys, &extra_keys);
-        swap_int64_t(&sorting_permutation, &extra_sorting_permutation);
+        swap_uint64ptr(&keys, &extra_keys);
+        swap_int64ptr(&sorting_permutation, &extra_sorting_permutation);
         for (int64_t i = 0; i < size; i++) {
             int64_t destidx = bucketptr[5*2049+((keys[i] >> (11*5)) & 0x7ff)]++;
             extra_keys[destidx] = keys[i];
             extra_sorting_permutation[destidx] = sorting_permutation[i];
         }
-        swap_uint64_t(&keys, &extra_keys);
+        swap_uint64ptr(&keys, &extra_keys);
         for (int64_t j = 0; j < size; j++)
             sorting_permutation[extra_sorting_permutation[j]] = j;
     } else {
@@ -572,32 +571,32 @@ int radix_sort_uint64(
             int64_t destidx = bucketptr[0*2049+((keys[i] >> (11*0)) & 0x7ff)]++;
             extra_keys[destidx] = keys[i];
         }
-        swap_uint64_t(&keys, &extra_keys);
+        swap_uint64ptr(&keys, &extra_keys);
         for (int64_t i = 0; i < size; i++) {
             int64_t destidx = bucketptr[1*2049+((keys[i] >> (11*1)) & 0x7ff)]++;
             extra_keys[destidx] = keys[i];
         }
-        swap_uint64_t(&keys, &extra_keys);
+        swap_uint64ptr(&keys, &extra_keys);
         for (int64_t i = 0; i < size; i++) {
             int64_t destidx = bucketptr[2*2049+((keys[i] >> (11*2)) & 0x7ff)]++;
             extra_keys[destidx] = keys[i];
         }
-        swap_uint64_t(&keys, &extra_keys);
+        swap_uint64ptr(&keys, &extra_keys);
         for (int64_t i = 0; i < size; i++) {
             int64_t destidx = bucketptr[3*2049+((keys[i] >> (11*3)) & 0x7ff)]++;
             extra_keys[destidx] = keys[i];
         }
-        swap_uint64_t(&keys, &extra_keys);
+        swap_uint64ptr(&keys, &extra_keys);
         for (int64_t i = 0; i < size; i++) {
             int64_t destidx = bucketptr[4*2049+((keys[i] >> (11*4)) & 0x7ff)]++;
             extra_keys[destidx] = keys[i];
         }
-        swap_uint64_t(&keys, &extra_keys);
+        swap_uint64ptr(&keys, &extra_keys);
         for (int64_t i = 0; i < size; i++) {
             int64_t destidx = bucketptr[5*2049+((keys[i] >> (11*5)) & 0x7ff)]++;
             extra_keys[destidx] = keys[i];
         }
-        swap_uint64_t(&keys, &extra_keys);
+        swap_uint64ptr(&keys, &extra_keys);
     }
 
     if (sorting_permutation)
@@ -606,6 +605,10 @@ int radix_sort_uint64(
     free(extra_keys);
     return MTX_SUCCESS;
 }
+
+/*
+ * radix sort for signed integers
+ */
 
 /**
  * ‘radix_sort_int32()’ sorts an array of 32-bit (signed) integers in
@@ -692,6 +695,558 @@ int radix_sort_int(
     } else {
         return MTX_ERR_NOT_SUPPORTED;
     }
+}
+
+/*
+ * radix sort for pairs of integers
+ */
+
+/**
+ * ‘radix_sort_uint32_pair()’ sorts pairs of 32-bit unsigned integers
+ * in ascending, lexicographic order using a radix sort algorithm.
+ *
+ * The number of pairs to sort is given by ‘size’, and the unsorted,
+ * integer keys are given in the arrays ‘a’ and ‘b’. On success, the
+ * same arrays will contain the keys in sorted order.
+ *
+ * The values ‘astride’ and ‘bstride’ may be used to specify strides
+ * (in bytes) that are used when accessing the keys in ‘a’ and ‘b’,
+ * respectively. This is useful for cases where the keys are not
+ * necessarily stored contiguously in memory.
+ *
+ * If ‘perm’ is ‘NULL’, then this argument is ignored and a sorting
+ * permutation is not computed. Otherwise, it must point to an array
+ * of length ‘size’. On success, this array will contain the sorting
+ * permutation, mapping the locations of the original, unsorted keys
+ * to their new locations in the sorted array.
+ */
+int radix_sort_uint32_pair(
+    int64_t size,
+    int astride,
+    uint32_t * a,
+    int bstride,
+    uint32_t * b,
+    int64_t * perm)
+{
+    uint32_t * tmpa = malloc(size * sizeof(uint32_t));
+    int tmpastride = sizeof(*tmpa);
+    if (!tmpa) return MTX_ERR_ERRNO;
+    uint32_t * tmpb = malloc(size * sizeof(uint32_t));
+    if (!tmpb) { free(tmpa); return MTX_ERR_ERRNO; }
+    int tmpbstride = sizeof(*tmpb);
+
+    /* allocate six buckets to count occurrences and offsets for
+     * 11-digit binary numbers. */
+    int64_t * bucketptr = malloc(6*2049 * sizeof(int64_t));
+    if (!bucketptr) { free(tmpb); free(tmpa); return MTX_ERR_ERRNO; }
+
+    int64_t * tmpperm = NULL;
+    if (perm) {
+        tmpperm = malloc(size * sizeof(int64_t));
+        if (!tmpperm) {
+            free(bucketptr); free(tmpb); free(tmpa);
+            return MTX_ERR_ERRNO;
+        }
+    }
+
+    /* 1. count the number of keys in each bucket */
+    for (int k = 0; k < 6; k++) {
+        for (int j = 0; j <= 2048; j++) {
+            bucketptr[k*2049+j] = 0;
+        }
+    }
+    for (int64_t i = 0; i < size; i++) {
+        uint32_t x = *(const uint32_t *) ((const char *) a + i*astride);
+        uint32_t y = *(const uint32_t *) ((const char *) b + i*bstride);
+        bucketptr[0*2049+((y >> (11*0)) & 0x7ff)+1]++;
+        bucketptr[1*2049+((y >> (11*1)) & 0x7ff)+1]++;
+        bucketptr[2*2049+((y >> (11*2)) & 0x3ff)+1]++;
+        bucketptr[3*2049+((x >> (11*0)) & 0x7ff)+1]++;
+        bucketptr[4*2049+((x >> (11*1)) & 0x7ff)+1]++;
+        bucketptr[5*2049+((x >> (11*2)) & 0x3ff)+1]++;
+    }
+
+    /* 2. compute offset to first key in each bucket */
+    for (int k = 0; k < 6; k++) {
+        for (int j = 0; j < 2048; j++) {
+            bucketptr[k*2049+j+1] += bucketptr[k*2049+j];
+        }
+    }
+
+    /*
+     * 3. Sort in 6 rounds with 11 binary digits treated in each
+     * round. Note that pointers to the original and auxiliary arrays
+     * of keys (and sorting permutation) are swapped after each round.
+     * There is an even number of swaps, so that the sorted keys (and
+     * the final sorting permutation) end up in the original array.
+     *
+     * The choice of using 11 bits in each round is described in the
+     * article "Radix Tricks" by Michael Herf, published online in
+     * December 2001 at http://stereopsis.com/radix.html.
+     */
+    if (perm) {
+        for (int64_t i = 0; i < size; i++) {
+            uint32_t x = *(const uint32_t *) ((const char *) a + i*astride);
+            uint32_t y = *(const uint32_t *) ((const char *) b + i*bstride);
+            int64_t dst = bucketptr[0*2049+((y >> (11*0)) & 0x7ff)]++;
+            *(uint32_t *) ((char *) tmpa + dst*tmpastride) = x;
+            *(uint32_t *) ((char *) tmpb + dst*tmpbstride) = y;
+            perm[dst] = i;
+        }
+        swap_uint32ptr(&a, &tmpa); swap_int(&astride, &tmpastride);
+        swap_uint32ptr(&b, &tmpb); swap_int(&bstride, &tmpbstride);
+        for (int64_t i = 0; i < size; i++) {
+            uint32_t x = *(const uint32_t *) ((const char *) a + i*astride);
+            uint32_t y = *(const uint32_t *) ((const char *) b + i*bstride);
+            int64_t dst = bucketptr[1*2049+((y >> (11*1)) & 0x7ff)]++;
+            *(uint32_t *) ((char *) tmpa + dst*tmpastride) = x;
+            *(uint32_t *) ((char *) tmpb + dst*tmpbstride) = y;
+            tmpperm[dst] = perm[i];
+        }
+        swap_uint32ptr(&a, &tmpa); swap_int(&astride, &tmpastride);
+        swap_uint32ptr(&b, &tmpb); swap_int(&bstride, &tmpbstride);
+        swap_int64ptr(&perm, &tmpperm);
+        for (int64_t i = 0; i < size; i++) {
+            uint32_t x = *(const uint32_t *) ((const char *) a + i*astride);
+            uint32_t y = *(const uint32_t *) ((const char *) b + i*bstride);
+            int64_t dst = bucketptr[2*2049+((y >> (11*2)) & 0x3ff)]++;
+            *(uint32_t *) ((char *) tmpa + dst*tmpastride) = x;
+            *(uint32_t *) ((char *) tmpb + dst*tmpbstride) = y;
+            tmpperm[dst] = perm[i];
+        }
+        swap_uint32ptr(&a, &tmpa); swap_int(&astride, &tmpastride);
+        swap_uint32ptr(&b, &tmpb); swap_int(&bstride, &tmpbstride);
+        swap_int64ptr(&perm, &tmpperm);
+        for (int64_t i = 0; i < size; i++) {
+            uint32_t x = *(const uint32_t *) ((const char *) a + i*astride);
+            uint32_t y = *(const uint32_t *) ((const char *) b + i*bstride);
+            int64_t dst = bucketptr[3*2049+((x >> (11*0)) & 0x7ff)]++;
+            *(uint32_t *) ((char *) tmpa + dst*tmpastride) = x;
+            *(uint32_t *) ((char *) tmpb + dst*tmpbstride) = y;
+            tmpperm[dst] = perm[i];
+        }
+        swap_uint32ptr(&a, &tmpa); swap_int(&astride, &tmpastride);
+        swap_uint32ptr(&b, &tmpb); swap_int(&bstride, &tmpbstride);
+        swap_int64ptr(&perm, &tmpperm);
+        for (int64_t i = 0; i < size; i++) {
+            uint32_t x = *(const uint32_t *) ((const char *) a + i*astride);
+            uint32_t y = *(const uint32_t *) ((const char *) b + i*bstride);
+            int64_t dst = bucketptr[4*2049+((x >> (11*1)) & 0x7ff)]++;
+            *(uint32_t *) ((char *) tmpa + dst*tmpastride) = x;
+            *(uint32_t *) ((char *) tmpb + dst*tmpbstride) = y;
+            tmpperm[dst] = perm[i];
+        }
+        swap_uint32ptr(&a, &tmpa); swap_int(&astride, &tmpastride);
+        swap_uint32ptr(&b, &tmpb); swap_int(&bstride, &tmpbstride);
+        swap_int64ptr(&perm, &tmpperm);
+        for (int64_t i = 0; i < size; i++) {
+            uint32_t x = *(const uint32_t *) ((const char *) a + i*astride);
+            uint32_t y = *(const uint32_t *) ((const char *) b + i*bstride);
+            int64_t dst = bucketptr[5*2049+((x >> (11*2)) & 0x3ff)]++;
+            *(uint32_t *) ((char *) tmpa + dst*tmpastride) = x;
+            *(uint32_t *) ((char *) tmpb + dst*tmpbstride) = y;
+            tmpperm[dst] = perm[i];
+        }
+        swap_uint32ptr(&a, &tmpa); swap_int(&astride, &tmpastride);
+        swap_uint32ptr(&b, &tmpb); swap_int(&bstride, &tmpbstride);
+        for (int64_t j = 0; j < size; j++) perm[tmpperm[j]] = j;
+    } else {
+        for (int64_t i = 0; i < size; i++) {
+            uint32_t x = *(const uint32_t *) ((const char *) a + i*astride);
+            uint32_t y = *(const uint32_t *) ((const char *) b + i*bstride);
+            int64_t dst = bucketptr[0*2049+((y >> (11*0)) & 0x7ff)]++;
+            *(uint32_t *) ((char *) tmpa + dst*tmpastride) = x;
+            *(uint32_t *) ((char *) tmpb + dst*tmpbstride) = y;
+        }
+        swap_uint32ptr(&a, &tmpa); swap_int(&astride, &tmpastride);
+        swap_uint32ptr(&b, &tmpb); swap_int(&bstride, &tmpbstride);
+        for (int64_t i = 0; i < size; i++) {
+            uint32_t x = *(const uint32_t *) ((const char *) a + i*astride);
+            uint32_t y = *(const uint32_t *) ((const char *) b + i*bstride);
+            int64_t dst = bucketptr[1*2049+((y >> (11*1)) & 0x7ff)]++;
+            *(uint32_t *) ((char *) tmpa + dst*tmpastride) = x;
+            *(uint32_t *) ((char *) tmpb + dst*tmpbstride) = y;
+        }
+        swap_uint32ptr(&a, &tmpa); swap_int(&astride, &tmpastride);
+        swap_uint32ptr(&b, &tmpb); swap_int(&bstride, &tmpbstride);
+        for (int64_t i = 0; i < size; i++) {
+            uint32_t x = *(const uint32_t *) ((const char *) a + i*astride);
+            uint32_t y = *(const uint32_t *) ((const char *) b + i*bstride);
+            int64_t dst = bucketptr[2*2049+((y >> (11*2)) & 0x3ff)]++;
+            *(uint32_t *) ((char *) tmpa + dst*tmpastride) = x;
+            *(uint32_t *) ((char *) tmpb + dst*tmpbstride) = y;
+        }
+        swap_uint32ptr(&a, &tmpa); swap_int(&astride, &tmpastride);
+        swap_uint32ptr(&b, &tmpb); swap_int(&bstride, &tmpbstride);
+        for (int64_t i = 0; i < size; i++) {
+            uint32_t x = *(const uint32_t *) ((const char *) a + i*astride);
+            uint32_t y = *(const uint32_t *) ((const char *) b + i*bstride);
+            int64_t dst = bucketptr[3*2049+((x >> (11*0)) & 0x7ff)]++;
+            *(uint32_t *) ((char *) tmpa + dst*tmpastride) = x;
+            *(uint32_t *) ((char *) tmpb + dst*tmpbstride) = y;
+        }
+        swap_uint32ptr(&a, &tmpa); swap_int(&astride, &tmpastride);
+        swap_uint32ptr(&b, &tmpb); swap_int(&bstride, &tmpbstride);
+        for (int64_t i = 0; i < size; i++) {
+            uint32_t x = *(const uint32_t *) ((const char *) a + i*astride);
+            uint32_t y = *(const uint32_t *) ((const char *) b + i*bstride);
+            int64_t dst = bucketptr[4*2049+((x >> (11*1)) & 0x7ff)]++;
+            *(uint32_t *) ((char *) tmpa + dst*tmpastride) = x;
+            *(uint32_t *) ((char *) tmpb + dst*tmpbstride) = y;
+        }
+        swap_uint32ptr(&a, &tmpa); swap_int(&astride, &tmpastride);
+        swap_uint32ptr(&b, &tmpb); swap_int(&bstride, &tmpbstride);
+        for (int64_t i = 0; i < size; i++) {
+            uint32_t x = *(const uint32_t *) ((const char *) a + i*astride);
+            uint32_t y = *(const uint32_t *) ((const char *) b + i*bstride);
+            int64_t dst = bucketptr[5*2049+((x >> (11*2)) & 0x3ff)]++;
+            *(uint32_t *) ((char *) tmpa + dst*tmpastride) = x;
+            *(uint32_t *) ((char *) tmpb + dst*tmpbstride) = y;
+        }
+        swap_uint32ptr(&a, &tmpa); swap_int(&astride, &tmpastride);
+        swap_uint32ptr(&b, &tmpb); swap_int(&bstride, &tmpbstride);
+    }
+
+    if (perm) free(tmpperm);
+    free(bucketptr); free(tmpb); free(tmpa);
+    return MTX_SUCCESS;
+}
+
+/**
+ * ‘radix_sort_uint64_pair()’ sorts pairs of 64-bit unsigned integers
+ * in ascending, lexicographic order using a radix sort algorithm.
+ *
+ * The number of pairs to sort is given by ‘size’, and the unsorted,
+ * integer keys are given in the arrays ‘a’ and ‘b’. On success, the
+ * same arrays will contain the keys in sorted order.
+ *
+ * The values ‘astride’ and ‘bstride’ may be used to specify strides
+ * (in bytes) that are used when accessing the keys in ‘a’ and ‘b’,
+ * respectively. This is useful for cases where the keys are not
+ * necessarily stored contiguously in memory.
+ *
+ * If ‘perm’ is ‘NULL’, then this argument is ignored and a sorting
+ * permutation is not computed. Otherwise, it must point to an array
+ * of length ‘size’. On success, this array will contain the sorting
+ * permutation, mapping the locations of the original, unsorted keys
+ * to their new locations in the sorted array.
+ */
+int radix_sort_uint64_pair(
+    int64_t size,
+    int astride,
+    uint64_t * a,
+    int bstride,
+    uint64_t * b,
+    int64_t * perm)
+{
+    uint64_t * tmpa = malloc(size * sizeof(uint64_t));
+    int tmpastride = sizeof(*tmpa);
+    if (!tmpa) return MTX_ERR_ERRNO;
+    uint64_t * tmpb = malloc(size * sizeof(uint64_t));
+    if (!tmpb) { free(tmpa); return MTX_ERR_ERRNO; }
+    int tmpbstride = sizeof(*tmpb);
+
+    /* allocate twelve buckets to count occurrences and offsets for
+     * 11-digit binary numbers. */
+    int64_t * bucketptr = malloc(12*2049 * sizeof(int64_t));
+    if (!bucketptr) { free(tmpb); free(tmpa); return MTX_ERR_ERRNO; }
+
+    int64_t * tmpperm = NULL;
+    if (perm) {
+        tmpperm = malloc(size * sizeof(int64_t));
+        if (!tmpperm) {
+            free(bucketptr); free(tmpb); free(tmpa);
+            return MTX_ERR_ERRNO;
+        }
+    }
+
+    /* 1. count the number of keys in each bucket */
+    for (int k = 0; k < 12; k++) {
+        for (int j = 0; j <= 2048; j++) {
+            bucketptr[k*2049+j] = 0;
+        }
+    }
+    for (int64_t i = 0; i < size; i++) {
+        uint64_t x = *(const uint64_t *) ((const char *) a + i*astride);
+        uint64_t y = *(const uint64_t *) ((const char *) b + i*bstride);
+        bucketptr[ 0*2049+((y >> (11*0)) & 0x7ff)+1]++;
+        bucketptr[ 1*2049+((y >> (11*1)) & 0x7ff)+1]++;
+        bucketptr[ 2*2049+((y >> (11*2)) & 0x7ff)+1]++;
+        bucketptr[ 3*2049+((y >> (11*3)) & 0x7ff)+1]++;
+        bucketptr[ 4*2049+((y >> (11*4)) & 0x7ff)+1]++;
+        bucketptr[ 5*2049+((y >> (11*5)) & 0x1ff)+1]++;
+        bucketptr[ 6*2049+((x >> (11*0)) & 0x7ff)+1]++;
+        bucketptr[ 7*2049+((x >> (11*1)) & 0x7ff)+1]++;
+        bucketptr[ 8*2049+((x >> (11*2)) & 0x7ff)+1]++;
+        bucketptr[ 9*2049+((x >> (11*3)) & 0x7ff)+1]++;
+        bucketptr[10*2049+((x >> (11*4)) & 0x7ff)+1]++;
+        bucketptr[11*2049+((x >> (11*5)) & 0x1ff)+1]++;
+    }
+
+    /* 2. compute offset to first key in each bucket */
+    for (int k = 0; k < 12; k++) {
+        for (int j = 0; j < 2048; j++) {
+            bucketptr[k*2049+j+1] += bucketptr[k*2049+j];
+        }
+    }
+
+    /*
+     * 3. Sort in 12 rounds with 11 binary digits treated in each
+     * round. Note that pointers to the original and auxiliary arrays
+     * of keys (and sorting permutation) are swapped after each round.
+     * There is an even number of swaps, so that the sorted keys (and
+     * the final sorting permutation) end up in the original array.
+     *
+     * The choice of using 11 bits in each round is described in the
+     * article "Radix Tricks" by Michael Herf, published online in
+     * December 2001 at http://stereopsis.com/radix.html.
+     */
+    if (perm) {
+        for (int64_t i = 0; i < size; i++) {
+            uint64_t x = *(const uint64_t *) ((const char *) a + i*astride);
+            uint64_t y = *(const uint64_t *) ((const char *) b + i*bstride);
+            int64_t dst = bucketptr[0*2049+((y >> (11*0)) & 0x7ff)]++;
+            *(uint64_t *) ((char *) tmpa + dst*tmpastride) = x;
+            *(uint64_t *) ((char *) tmpb + dst*tmpbstride) = y;
+            perm[dst] = i;
+        }
+        swap_uint64ptr(&a, &tmpa); swap_int(&astride, &tmpastride);
+        swap_uint64ptr(&b, &tmpb); swap_int(&bstride, &tmpbstride);
+        for (int64_t i = 0; i < size; i++) {
+            uint64_t x = *(const uint64_t *) ((const char *) a + i*astride);
+            uint64_t y = *(const uint64_t *) ((const char *) b + i*bstride);
+            int64_t dst = bucketptr[1*2049+((y >> (11*1)) & 0x7ff)]++;
+            *(uint64_t *) ((char *) tmpa + dst*tmpastride) = x;
+            *(uint64_t *) ((char *) tmpb + dst*tmpbstride) = y;
+            tmpperm[dst] = perm[i];
+        }
+        swap_uint64ptr(&a, &tmpa); swap_int(&astride, &tmpastride);
+        swap_uint64ptr(&b, &tmpb); swap_int(&bstride, &tmpbstride);
+        swap_int64ptr(&perm, &tmpperm);
+        for (int64_t i = 0; i < size; i++) {
+            uint64_t x = *(const uint64_t *) ((const char *) a + i*astride);
+            uint64_t y = *(const uint64_t *) ((const char *) b + i*bstride);
+            int64_t dst = bucketptr[2*2049+((y >> (11*2)) & 0x7ff)]++;
+            *(uint64_t *) ((char *) tmpa + dst*tmpastride) = x;
+            *(uint64_t *) ((char *) tmpb + dst*tmpbstride) = y;
+            tmpperm[dst] = perm[i];
+        }
+        swap_uint64ptr(&a, &tmpa); swap_int(&astride, &tmpastride);
+        swap_uint64ptr(&b, &tmpb); swap_int(&bstride, &tmpbstride);
+        swap_int64ptr(&perm, &tmpperm);
+        for (int64_t i = 0; i < size; i++) {
+            uint64_t x = *(const uint64_t *) ((const char *) a + i*astride);
+            uint64_t y = *(const uint64_t *) ((const char *) b + i*bstride);
+            int64_t dst = bucketptr[3*2049+((y >> (11*3)) & 0x7ff)]++;
+            *(uint64_t *) ((char *) tmpa + dst*tmpastride) = x;
+            *(uint64_t *) ((char *) tmpb + dst*tmpbstride) = y;
+            tmpperm[dst] = perm[i];
+        }
+        swap_uint64ptr(&a, &tmpa); swap_int(&astride, &tmpastride);
+        swap_uint64ptr(&b, &tmpb); swap_int(&bstride, &tmpbstride);
+        swap_int64ptr(&perm, &tmpperm);
+        for (int64_t i = 0; i < size; i++) {
+            uint64_t x = *(const uint64_t *) ((const char *) a + i*astride);
+            uint64_t y = *(const uint64_t *) ((const char *) b + i*bstride);
+            int64_t dst = bucketptr[4*2049+((y >> (11*4)) & 0x7ff)]++;
+            *(uint64_t *) ((char *) tmpa + dst*tmpastride) = x;
+            *(uint64_t *) ((char *) tmpb + dst*tmpbstride) = y;
+            tmpperm[dst] = perm[i];
+        }
+        swap_uint64ptr(&a, &tmpa); swap_int(&astride, &tmpastride);
+        swap_uint64ptr(&b, &tmpb); swap_int(&bstride, &tmpbstride);
+        swap_int64ptr(&perm, &tmpperm);
+        for (int64_t i = 0; i < size; i++) {
+            uint64_t x = *(const uint64_t *) ((const char *) a + i*astride);
+            uint64_t y = *(const uint64_t *) ((const char *) b + i*bstride);
+            int64_t dst = bucketptr[5*2049+((y >> (11*5)) & 0x1ff)]++;
+            *(uint64_t *) ((char *) tmpa + dst*tmpastride) = x;
+            *(uint64_t *) ((char *) tmpb + dst*tmpbstride) = y;
+            tmpperm[dst] = perm[i];
+        }
+        swap_uint64ptr(&a, &tmpa); swap_int(&astride, &tmpastride);
+        swap_uint64ptr(&b, &tmpb); swap_int(&bstride, &tmpbstride);
+        swap_int64ptr(&perm, &tmpperm);
+        for (int64_t i = 0; i < size; i++) {
+            uint64_t x = *(const uint64_t *) ((const char *) a + i*astride);
+            uint64_t y = *(const uint64_t *) ((const char *) b + i*bstride);
+            int64_t dst = bucketptr[6*2049+((x >> (11*0)) & 0x7ff)]++;
+            *(uint64_t *) ((char *) tmpa + dst*tmpastride) = x;
+            *(uint64_t *) ((char *) tmpb + dst*tmpbstride) = y;
+            tmpperm[dst] = perm[i];
+        }
+        swap_uint64ptr(&a, &tmpa); swap_int(&astride, &tmpastride);
+        swap_uint64ptr(&b, &tmpb); swap_int(&bstride, &tmpbstride);
+        swap_int64ptr(&perm, &tmpperm);
+        for (int64_t i = 0; i < size; i++) {
+            uint64_t x = *(const uint64_t *) ((const char *) a + i*astride);
+            uint64_t y = *(const uint64_t *) ((const char *) b + i*bstride);
+            int64_t dst = bucketptr[7*2049+((x >> (11*1)) & 0x7ff)]++;
+            *(uint64_t *) ((char *) tmpa + dst*tmpastride) = x;
+            *(uint64_t *) ((char *) tmpb + dst*tmpbstride) = y;
+            tmpperm[dst] = perm[i];
+        }
+        swap_uint64ptr(&a, &tmpa); swap_int(&astride, &tmpastride);
+        swap_uint64ptr(&b, &tmpb); swap_int(&bstride, &tmpbstride);
+        swap_int64ptr(&perm, &tmpperm);
+        for (int64_t i = 0; i < size; i++) {
+            uint64_t x = *(const uint64_t *) ((const char *) a + i*astride);
+            uint64_t y = *(const uint64_t *) ((const char *) b + i*bstride);
+            int64_t dst = bucketptr[8*2049+((x >> (11*2)) & 0x7ff)]++;
+            *(uint64_t *) ((char *) tmpa + dst*tmpastride) = x;
+            *(uint64_t *) ((char *) tmpb + dst*tmpbstride) = y;
+            tmpperm[dst] = perm[i];
+        }
+        swap_uint64ptr(&a, &tmpa); swap_int(&astride, &tmpastride);
+        swap_uint64ptr(&b, &tmpb); swap_int(&bstride, &tmpbstride);
+        swap_int64ptr(&perm, &tmpperm);
+        for (int64_t i = 0; i < size; i++) {
+            uint64_t x = *(const uint64_t *) ((const char *) a + i*astride);
+            uint64_t y = *(const uint64_t *) ((const char *) b + i*bstride);
+            int64_t dst = bucketptr[9*2049+((x >> (11*3)) & 0x7ff)]++;
+            *(uint64_t *) ((char *) tmpa + dst*tmpastride) = x;
+            *(uint64_t *) ((char *) tmpb + dst*tmpbstride) = y;
+            tmpperm[dst] = perm[i];
+        }
+        swap_uint64ptr(&a, &tmpa); swap_int(&astride, &tmpastride);
+        swap_uint64ptr(&b, &tmpb); swap_int(&bstride, &tmpbstride);
+        swap_int64ptr(&perm, &tmpperm);
+        for (int64_t i = 0; i < size; i++) {
+            uint64_t x = *(const uint64_t *) ((const char *) a + i*astride);
+            uint64_t y = *(const uint64_t *) ((const char *) b + i*bstride);
+            int64_t dst = bucketptr[10*2049+((x >> (11*4)) & 0x7ff)]++;
+            *(uint64_t *) ((char *) tmpa + dst*tmpastride) = x;
+            *(uint64_t *) ((char *) tmpb + dst*tmpbstride) = y;
+            tmpperm[dst] = perm[i];
+        }
+        swap_uint64ptr(&a, &tmpa); swap_int(&astride, &tmpastride);
+        swap_uint64ptr(&b, &tmpb); swap_int(&bstride, &tmpbstride);
+        swap_int64ptr(&perm, &tmpperm);
+        for (int64_t i = 0; i < size; i++) {
+            uint64_t x = *(const uint64_t *) ((const char *) a + i*astride);
+            uint64_t y = *(const uint64_t *) ((const char *) b + i*bstride);
+            int64_t dst = bucketptr[11*2049+((x >> (11*5)) & 0x1ff)]++;
+            *(uint64_t *) ((char *) tmpa + dst*tmpastride) = x;
+            *(uint64_t *) ((char *) tmpb + dst*tmpbstride) = y;
+            tmpperm[dst] = perm[i];
+        }
+        swap_uint64ptr(&a, &tmpa); swap_int(&astride, &tmpastride);
+        swap_uint64ptr(&b, &tmpb); swap_int(&bstride, &tmpbstride);
+        for (int64_t j = 0; j < size; j++) perm[tmpperm[j]] = j;
+    } else {
+        for (int64_t i = 0; i < size; i++) {
+            uint64_t x = *(const uint64_t *) ((const char *) a + i*astride);
+            uint64_t y = *(const uint64_t *) ((const char *) b + i*bstride);
+            int64_t dst = bucketptr[0*2049+((y >> (11*0)) & 0x7ff)]++;
+            *(uint64_t *) ((char *) tmpa + dst*tmpastride) = x;
+            *(uint64_t *) ((char *) tmpb + dst*tmpbstride) = y;
+        }
+        swap_uint64ptr(&a, &tmpa); swap_int(&astride, &tmpastride);
+        swap_uint64ptr(&b, &tmpb); swap_int(&bstride, &tmpbstride);
+        for (int64_t i = 0; i < size; i++) {
+            uint64_t x = *(const uint64_t *) ((const char *) a + i*astride);
+            uint64_t y = *(const uint64_t *) ((const char *) b + i*bstride);
+            int64_t dst = bucketptr[1*2049+((y >> (11*1)) & 0x7ff)]++;
+            *(uint64_t *) ((char *) tmpa + dst*tmpastride) = x;
+            *(uint64_t *) ((char *) tmpb + dst*tmpbstride) = y;
+        }
+        swap_uint64ptr(&a, &tmpa); swap_int(&astride, &tmpastride);
+        swap_uint64ptr(&b, &tmpb); swap_int(&bstride, &tmpbstride);
+        for (int64_t i = 0; i < size; i++) {
+            uint64_t x = *(const uint64_t *) ((const char *) a + i*astride);
+            uint64_t y = *(const uint64_t *) ((const char *) b + i*bstride);
+            int64_t dst = bucketptr[2*2049+((y >> (11*2)) & 0x7ff)]++;
+            *(uint64_t *) ((char *) tmpa + dst*tmpastride) = x;
+            *(uint64_t *) ((char *) tmpb + dst*tmpbstride) = y;
+        }
+        swap_uint64ptr(&a, &tmpa); swap_int(&astride, &tmpastride);
+        swap_uint64ptr(&b, &tmpb); swap_int(&bstride, &tmpbstride);
+        for (int64_t i = 0; i < size; i++) {
+            uint64_t x = *(const uint64_t *) ((const char *) a + i*astride);
+            uint64_t y = *(const uint64_t *) ((const char *) b + i*bstride);
+            int64_t dst = bucketptr[3*2049+((y >> (11*3)) & 0x7ff)]++;
+            *(uint64_t *) ((char *) tmpa + dst*tmpastride) = x;
+            *(uint64_t *) ((char *) tmpb + dst*tmpbstride) = y;
+        }
+        swap_uint64ptr(&a, &tmpa); swap_int(&astride, &tmpastride);
+        swap_uint64ptr(&b, &tmpb); swap_int(&bstride, &tmpbstride);
+        for (int64_t i = 0; i < size; i++) {
+            uint64_t x = *(const uint64_t *) ((const char *) a + i*astride);
+            uint64_t y = *(const uint64_t *) ((const char *) b + i*bstride);
+            int64_t dst = bucketptr[4*2049+((y >> (11*4)) & 0x7ff)]++;
+            *(uint64_t *) ((char *) tmpa + dst*tmpastride) = x;
+            *(uint64_t *) ((char *) tmpb + dst*tmpbstride) = y;
+        }
+        swap_uint64ptr(&a, &tmpa); swap_int(&astride, &tmpastride);
+        swap_uint64ptr(&b, &tmpb); swap_int(&bstride, &tmpbstride);
+        for (int64_t i = 0; i < size; i++) {
+            uint64_t x = *(const uint64_t *) ((const char *) a + i*astride);
+            uint64_t y = *(const uint64_t *) ((const char *) b + i*bstride);
+            int64_t dst = bucketptr[5*2049+((y >> (11*5)) & 0x1ff)]++;
+            *(uint64_t *) ((char *) tmpa + dst*tmpastride) = x;
+            *(uint64_t *) ((char *) tmpb + dst*tmpbstride) = y;
+        }
+        swap_uint64ptr(&a, &tmpa); swap_int(&astride, &tmpastride);
+        swap_uint64ptr(&b, &tmpb); swap_int(&bstride, &tmpbstride);
+        for (int64_t i = 0; i < size; i++) {
+            uint64_t x = *(const uint64_t *) ((const char *) a + i*astride);
+            uint64_t y = *(const uint64_t *) ((const char *) b + i*bstride);
+            int64_t dst = bucketptr[6*2049+((x >> (11*0)) & 0x7ff)]++;
+            *(uint64_t *) ((char *) tmpa + dst*tmpastride) = x;
+            *(uint64_t *) ((char *) tmpb + dst*tmpbstride) = y;
+        }
+        swap_uint64ptr(&a, &tmpa); swap_int(&astride, &tmpastride);
+        swap_uint64ptr(&b, &tmpb); swap_int(&bstride, &tmpbstride);
+        for (int64_t i = 0; i < size; i++) {
+            uint64_t x = *(const uint64_t *) ((const char *) a + i*astride);
+            uint64_t y = *(const uint64_t *) ((const char *) b + i*bstride);
+            int64_t dst = bucketptr[7*2049+((x >> (11*1)) & 0x7ff)]++;
+            *(uint64_t *) ((char *) tmpa + dst*tmpastride) = x;
+            *(uint64_t *) ((char *) tmpb + dst*tmpbstride) = y;
+        }
+        swap_uint64ptr(&a, &tmpa); swap_int(&astride, &tmpastride);
+        swap_uint64ptr(&b, &tmpb); swap_int(&bstride, &tmpbstride);
+        for (int64_t i = 0; i < size; i++) {
+            uint64_t x = *(const uint64_t *) ((const char *) a + i*astride);
+            uint64_t y = *(const uint64_t *) ((const char *) b + i*bstride);
+            int64_t dst = bucketptr[8*2049+((x >> (11*2)) & 0x7ff)]++;
+            *(uint64_t *) ((char *) tmpa + dst*tmpastride) = x;
+            *(uint64_t *) ((char *) tmpb + dst*tmpbstride) = y;
+        }
+        swap_uint64ptr(&a, &tmpa); swap_int(&astride, &tmpastride);
+        swap_uint64ptr(&b, &tmpb); swap_int(&bstride, &tmpbstride);
+        for (int64_t i = 0; i < size; i++) {
+            uint64_t x = *(const uint64_t *) ((const char *) a + i*astride);
+            uint64_t y = *(const uint64_t *) ((const char *) b + i*bstride);
+            int64_t dst = bucketptr[9*2049+((x >> (11*3)) & 0x7ff)]++;
+            *(uint64_t *) ((char *) tmpa + dst*tmpastride) = x;
+            *(uint64_t *) ((char *) tmpb + dst*tmpbstride) = y;
+        }
+        swap_uint64ptr(&a, &tmpa); swap_int(&astride, &tmpastride);
+        swap_uint64ptr(&b, &tmpb); swap_int(&bstride, &tmpbstride);
+        for (int64_t i = 0; i < size; i++) {
+            uint64_t x = *(const uint64_t *) ((const char *) a + i*astride);
+            uint64_t y = *(const uint64_t *) ((const char *) b + i*bstride);
+            int64_t dst = bucketptr[10*2049+((x >> (11*4)) & 0x7ff)]++;
+            *(uint64_t *) ((char *) tmpa + dst*tmpastride) = x;
+            *(uint64_t *) ((char *) tmpb + dst*tmpbstride) = y;
+        }
+        swap_uint64ptr(&a, &tmpa); swap_int(&astride, &tmpastride);
+        swap_uint64ptr(&b, &tmpb); swap_int(&bstride, &tmpbstride);
+        for (int64_t i = 0; i < size; i++) {
+            uint64_t x = *(const uint64_t *) ((const char *) a + i*astride);
+            uint64_t y = *(const uint64_t *) ((const char *) b + i*bstride);
+            int64_t dst = bucketptr[11*2049+((x >> (11*5)) & 0x1ff)]++;
+            *(uint64_t *) ((char *) tmpa + dst*tmpastride) = x;
+            *(uint64_t *) ((char *) tmpb + dst*tmpbstride) = y;
+        }
+        swap_uint64ptr(&a, &tmpa); swap_int(&astride, &tmpastride);
+        swap_uint64ptr(&b, &tmpb); swap_int(&bstride, &tmpbstride);
+    }
+
+    if (perm) free(tmpperm);
+    free(bucketptr); free(tmpb); free(tmpa);
+    return MTX_SUCCESS;
 }
 
 #ifdef LIBMTX_HAVE_MPI

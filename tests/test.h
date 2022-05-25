@@ -107,6 +107,15 @@
         return TEST_FAILURE;                            \
     }
 
+#define TEST_ASSERT_MSG(condition, msg, ...)            \
+    if (!(condition)) {                                 \
+        fprintf(stdout, "FAIL:%s:%s:%d: "               \
+                "Assertion failed: %s ("msg")\n",       \
+                __FUNCTION__, __FILE__, __LINE__,       \
+                #condition, ##__VA_ARGS__);             \
+        return TEST_FAILURE;                            \
+    }
+
 #define TEST_ASSERT_FALSE(condition)                    \
     if ((condition)) {                                  \
         fprintf(stdout, "FAIL:%s:%s:%d: "               \

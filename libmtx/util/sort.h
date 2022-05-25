@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-01-20
+ * Last modified: 2022-05-24
  *
  * Sorting.
  */
@@ -33,6 +33,10 @@
 #include <stdint.h>
 
 struct mtxdisterror;
+
+/*
+ * counting sort
+ */
 
 /**
  * ‘counting_sort_uint8()’ sorts an array of 8-bit integer keys using
@@ -112,6 +116,10 @@ int counting_sort_uint16(
     int64_t * sorting_permutation,
     int64_t bucketptr[65537]);
 
+/*
+ * radix sort for unsigned integers
+ */
+
 /**
  * ‘radix_sort_uint32()’ sorts an array of 32-bit unsigned integers in
  * ascending order using a radix sort algorithm.
@@ -151,6 +159,30 @@ int radix_sort_uint64(
     int64_t size,
     uint64_t * keys,
     int64_t * sorting_permutation);
+
+/**
+ * ‘radix_sort_uint64()’ sorts an array of 64-bit unsigned integers in
+ * ascending order using a radix sort algorithm.
+ *
+ * The number of keys to sort is given by ‘size’, and the unsorted,
+ * integer keys are given in the array ‘keys’. On success, the same
+ * array will contain the keys in sorted order.
+ *
+ * If ‘sorting_permutation’ is ‘NULL’, then this argument is ignored
+ * and a sorting permutation is not computed. Otherwise, it must point
+ * to an array that holds enough storage for ‘size’ values of type
+ * ‘int64_t’. On success, this array will contain the sorting
+ * permutation, mapping the locations of the original, unsorted keys
+ * to their new locations in the sorted array.
+ */
+int radix_sort_uint64(
+    int64_t size,
+    uint64_t * keys,
+    int64_t * sorting_permutation);
+
+/*
+ * radix sort for signed integers
+ */
 
 /**
  * ‘radix_sort_int32()’ sorts an array of 32-bit (signed) integers in
@@ -211,6 +243,70 @@ int radix_sort_int(
     int64_t size,
     int * keys,
     int64_t * sorting_permutation);
+
+/*
+ * radix sort for pairs of integers
+ */
+
+/**
+ * ‘radix_sort_uint32_pair()’ sorts pairs of 32-bit unsigned integers
+ * in ascending, lexicographic order using a radix sort algorithm.
+ *
+ * The number of pairs to sort is given by ‘size’, and the unsorted,
+ * integer keys are given in the arrays ‘a’ and ‘b’. On success, the
+ * same arrays will contain the keys in sorted order.
+ *
+ * The values ‘astride’ and ‘bstride’ may be used to specify strides
+ * (in bytes) that are used when accessing the keys in ‘a’ and ‘b’,
+ * respectively. This is useful for cases where the keys are not
+ * necessarily stored contiguously in memory.
+ *
+ * If ‘sorting_permutation’ is ‘NULL’, then this argument is ignored
+ * and a sorting permutation is not computed. Otherwise, it must point
+ * to an array that holds enough storage for ‘size’ values of type
+ * ‘int64_t’. On success, this array will contain the sorting
+ * permutation, mapping the locations of the original, unsorted keys
+ * to their new locations in the sorted array.
+ */
+int radix_sort_uint32_pair(
+    int64_t size,
+    int astride,
+    uint32_t * a,
+    int bstride,
+    uint32_t * b,
+    int64_t * sorting_permutation);
+
+/**
+ * ‘radix_sort_uint64_pair()’ sorts pairs of 64-bit unsigned integers
+ * in ascending, lexicographic order using a radix sort algorithm.
+ *
+ * The number of pairs to sort is given by ‘size’, and the unsorted,
+ * integer keys are given in the arrays ‘a’ and ‘b’. On success, the
+ * same arrays will contain the keys in sorted order.
+ *
+ * The values ‘astride’ and ‘bstride’ may be used to specify strides
+ * (in bytes) that are used when accessing the keys in ‘a’ and ‘b’,
+ * respectively. This is useful for cases where the keys are not
+ * necessarily stored contiguously in memory.
+ *
+ * If ‘sorting_permutation’ is ‘NULL’, then this argument is ignored
+ * and a sorting permutation is not computed. Otherwise, it must point
+ * to an array that holds enough storage for ‘size’ values of type
+ * ‘int64_t’. On success, this array will contain the sorting
+ * permutation, mapping the locations of the original, unsorted keys
+ * to their new locations in the sorted array.
+ */
+int radix_sort_uint64_pair(
+    int64_t size,
+    int astride,
+    uint64_t * a,
+    int bstride,
+    uint64_t * b,
+    int64_t * sorting_permutation);
+
+/*
+ * distributed-memory radix sort
+ */
 
 #ifdef LIBMTX_HAVE_MPI
 /**

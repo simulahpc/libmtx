@@ -1,6 +1,6 @@
 /* This file is part of Libmtx.
  *
- * Copyright (C) 2021 James D. Trotter
+ * Copyright (C) 2022 James D. Trotter
  *
  * Libmtx is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2021-30-11
+ * Last modified: 2022-05-24
  *
  * Unit tests for sorting functions.
  */
@@ -369,6 +369,107 @@ int test_radix_sort(void)
 }
 
 /**
+ * ‘test_radix_sort_pairs()’ tests radix sort on pairs.
+ */
+int test_radix_sort_pairs(void)
+{
+    /*
+     * pairs of 32-bit unsigned integer keys.
+     */
+
+    {
+        int err;
+        int64_t size = 7;
+        uint32_t a[7] = {0,255,30,30,0,1,2};
+        uint32_t b[7] = {7,  6, 5, 4,3,2,1};
+        int64_t perm[7];
+        err = radix_sort_uint32_pair(
+            size, sizeof(*a), a, sizeof(*b), b, perm);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(  0, a[0]); TEST_ASSERT_EQ(3, b[0]);
+        TEST_ASSERT_EQ(  0, a[1]); TEST_ASSERT_EQ(7, b[1]);
+        TEST_ASSERT_EQ(  1, a[2]); TEST_ASSERT_EQ(2, b[2]);
+        TEST_ASSERT_EQ(  2, a[3]); TEST_ASSERT_EQ(1, b[3]);
+        TEST_ASSERT_EQ( 30, a[4]); TEST_ASSERT_EQ(4, b[4]);
+        TEST_ASSERT_EQ( 30, a[5]); TEST_ASSERT_EQ(5, b[5]);
+        TEST_ASSERT_EQ(255, a[6]); TEST_ASSERT_EQ(6, b[6]);
+        TEST_ASSERT_EQ(1, perm[0]);
+        TEST_ASSERT_EQ(6, perm[1]);
+        TEST_ASSERT_EQ(5, perm[2]);
+        TEST_ASSERT_EQ(4, perm[3]);
+        TEST_ASSERT_EQ(0, perm[4]);
+        TEST_ASSERT_EQ(2, perm[5]);
+        TEST_ASSERT_EQ(3, perm[6]);
+    }
+    {
+        int err;
+        int64_t size = 100;
+        uint32_t a[100];
+        uint32_t b[100];
+        srand(415);
+        for (int i = 0; i < size; i++) {
+            a[i] = rand(); b[i] = rand();
+        }
+        err = radix_sort_uint32_pair(size, sizeof(*a), a, sizeof(*b), b, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        for (int i = 1; i < size; i++)
+            TEST_ASSERT_MSG(
+                a[i-1] <= a[i] || (a[i-1] == a[i] && b[i-1] <= b[i]),
+                "i=%d, a[i-1]=%"PRIu32", a[i]=%"PRIu32", "
+                "b[i-1]=%"PRIu32", b[i]=%"PRIu32"",
+                i, a[i-1], a[i], b[i-1], b[i]);
+    }
+
+    /*
+     * pairs of 64-bit unsigned integer keys.
+     */
+
+    {
+        int err;
+        int64_t size = 7;
+        uint64_t a[7] = {0,255,30,30,0,1,2};
+        uint64_t b[7] = {7,  6, 5, 4,3,2,1};
+        int64_t perm[7];
+        err = radix_sort_uint64_pair(
+            size, sizeof(*a), a, sizeof(*b), b, perm);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(  0, a[0]); TEST_ASSERT_EQ(3, b[0]);
+        TEST_ASSERT_EQ(  0, a[1]); TEST_ASSERT_EQ(7, b[1]);
+        TEST_ASSERT_EQ(  1, a[2]); TEST_ASSERT_EQ(2, b[2]);
+        TEST_ASSERT_EQ(  2, a[3]); TEST_ASSERT_EQ(1, b[3]);
+        TEST_ASSERT_EQ( 30, a[4]); TEST_ASSERT_EQ(4, b[4]);
+        TEST_ASSERT_EQ( 30, a[5]); TEST_ASSERT_EQ(5, b[5]);
+        TEST_ASSERT_EQ(255, a[6]); TEST_ASSERT_EQ(6, b[6]);
+        TEST_ASSERT_EQ(1, perm[0]);
+        TEST_ASSERT_EQ(6, perm[1]);
+        TEST_ASSERT_EQ(5, perm[2]);
+        TEST_ASSERT_EQ(4, perm[3]);
+        TEST_ASSERT_EQ(0, perm[4]);
+        TEST_ASSERT_EQ(2, perm[5]);
+        TEST_ASSERT_EQ(3, perm[6]);
+    }
+    {
+        int err;
+        int64_t size = 100;
+        uint64_t a[100];
+        uint64_t b[100];
+        srand(415);
+        for (int i = 0; i < size; i++) {
+            a[i] = rand_uint64(); b[i] = rand_uint64();
+        }
+        err = radix_sort_uint64_pair(size, sizeof(*a), a, sizeof(*b), b, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        for (int i = 1; i < size; i++)
+            TEST_ASSERT_MSG(
+                a[i-1] <= a[i] || (a[i-1] == a[i] && b[i-1] <= b[i]),
+                "i=%d, a[i-1]=%"PRIu64", a[i]=%"PRIu64", "
+                "b[i-1]=%"PRIu64", b[i]=%"PRIu64"",
+                i, a[i-1], a[i], b[i-1], b[i]);
+    }
+    return TEST_SUCCESS;
+}
+
+/**
  * ‘main()’ entry point and test driver.
  */
 int main(int argc, char * argv[])
@@ -376,6 +477,7 @@ int main(int argc, char * argv[])
     TEST_SUITE_BEGIN("Running tests for sorting functions\n");
     TEST_RUN(test_counting_sort);
     TEST_RUN(test_radix_sort);
+    TEST_RUN(test_radix_sort_pairs);
     TEST_SUITE_END();
     return (TEST_SUITE_STATUS == TEST_SUCCESS) ?
         EXIT_SUCCESS : EXIT_FAILURE;
