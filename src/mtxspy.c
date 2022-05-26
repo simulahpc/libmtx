@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-02-24
+ * Last modified: 2022-05-26
  *
  * Draw an image of a matrix sparsity pattern and save to a PNG file.
  */
@@ -51,14 +51,14 @@ const char * program_invocation_name;
 const char * program_invocation_short_name;
 
 /**
- * `program_options` contains data to related program options.
+ * ‘program_options’ contains data to related program options.
  */
 struct program_options
 {
-    char * mtx_path;
+    char * mtxpath;
     enum mtxprecision precision;
     bool gzip;
-    char * png_output_path;
+    char * outputpath;
     int max_width;
     int max_height;
     double gamma;
@@ -70,19 +70,20 @@ struct program_options
     char * copyright;
     char * email;
     char * url;
+    bool quiet;
     int verbose;
 };
 
 /**
- * `program_options_init()` configures the default program options.
+ * ‘program_options_init()’ configures the default program options.
  */
 static int program_options_init(
     struct program_options * args)
 {
-    args->mtx_path = NULL;
+    args->mtxpath = NULL;
     args->precision = mtx_double;
     args->gzip = false;
-    args->png_output_path = strdup("out.png");
+    args->outputpath = strdup("out.png");
     args->max_width = 1000;
     args->max_height = 1000;
     args->gamma = -1.0;
@@ -94,19 +95,20 @@ static int program_options_init(
     args->copyright = NULL;
     args->email = NULL;
     args->url = NULL;
+    args->quiet = false;
     args->verbose = 0;
     return 0;
 }
 
 /**
- * `program_options_free()` frees memory and other resources
+ * ‘program_options_free()’ frees memory and other resources
  * associated with parsing program options.
  */
 static void program_options_free(
     struct program_options * args)
 {
-    if (args->mtx_path) free(args->mtx_path);
-    if (args->png_output_path) free(args->png_output_path);
+    if (args->mtxpath) free(args->mtxpath);
+    if (args->outputpath) free(args->outputpath);
     if (args->title) free(args->title);
     if (args->author) free(args->author);
     if (args->description) free(args->description);
@@ -116,33 +118,45 @@ static void program_options_free(
 }
 
 /**
- * `program_options_print_help()` prints a help text.
+ * ‘program_options_print_usage()’ prints a usage text.
+ */
+static void program_options_print_usage(
+    FILE * f)
+{
+    fprintf(f, "Usage: %s [OPTION..] FILE\n", program_name);
+}
+
+/**
+ * ‘program_options_print_help()’ prints a help text.
  */
 static void program_options_print_help(
     FILE * f)
 {
-    fprintf(f, "Usage: %s [OPTION..] FILE\n", program_name);
+    program_options_print_usage(f);
     fprintf(f, "\n");
     fprintf(f, " Save an image of a matrix sparsity pattern to a PNG file.\n");
     fprintf(f, "\n");
     fprintf(f, " Options are:\n");
     fprintf(f, "  --precision=PRECISION\tprecision used to represent matrix or\n");
-    fprintf(f, "\t\t\tvector values: single or double. (default: double)\n");
+    fprintf(f, "\t\t\tvector values: ‘single’ or ‘double’ (default).\n");
     fprintf(f, "  -z, --gzip, --gunzip, --ungzip\tfilter files through gzip\n");
-    fprintf(f, "  --output-path=FILE\tpath for outputting the image (default: out.png).\n");
+    fprintf(f, "  -q, --quiet\t\tdo not output PNG image\n");
     fprintf(f, "  -v, --verbose\t\tbe more verbose\n");
-    fprintf(f, "  --max-height=M\tmaximum height of image in pixels (default: 1000).\n");
-    fprintf(f, "  --max-width=N\t\tmaximum width of image in pixels (default: 1000).\n");
-    fprintf(f, "  --gamma=GAMMA\t\tgamma value (default: none)\n");
-    fprintf(f, "  --fgcolor=COLOR\tforeground color in hexadecimal (default: #000000).\n");
-    fprintf(f, "  --bgcolor=COLOR\tbackground color in hexadecimal (default: #FFFFFF).\n");
     fprintf(f, "\n");
-    fprintf(f, "  --title=TEXT\t\tTitle field of the PNG image.\n");
-    fprintf(f, "  --author=TEXT\t\tAuthor field of the PNG image.\n");
-    fprintf(f, "  --description=TEXT\tDescription field of the PNG image.\n");
-    fprintf(f, "  --copyright=TEXT\tCopyright field of the PNG image.\n");
-    fprintf(f, "  --email=TEXT\t\tE-mail field of the PNG image.\n");
-    fprintf(f, "  --url=TEXT\t\tURL field of the PNG image.\n");
+    fprintf(f, " Options for PNG output are:\n");
+    fprintf(f, "  --output-path=FILE\tpath for outputting the image (default: out.png)\n");
+    fprintf(f, "  --max-height=M\tmaximum height of image in pixels (default: 1000)\n");
+    fprintf(f, "  --max-width=N\t\tmaximum width of image in pixels (default: 1000)\n");
+    fprintf(f, "  --fgcolor=COLOR\tforeground color in hexadecimal (default: #000000)\n");
+    fprintf(f, "  --bgcolor=COLOR\tbackground color in hexadecimal (default: #FFFFFF)\n");
+    fprintf(f, "  --gamma=GAMMA\t\tgamma value\n");
+    fprintf(f, "\n");
+    fprintf(f, "  --title=TEXT\t\ttitle field of the PNG image\n");
+    fprintf(f, "  --author=TEXT\t\tauthor field of the PNG image\n");
+    fprintf(f, "  --description=TEXT\tdescription field of the PNG image\n");
+    fprintf(f, "  --copyright=TEXT\tcopyright field of the PNG image\n");
+    fprintf(f, "  --email=TEXT\t\te-mail field of the PNG image\n");
+    fprintf(f, "  --url=TEXT\t\tURL field of the PNG image\n");
     fprintf(f, "\n");
     fprintf(f, "  -h, --help\t\tdisplay this help and exit\n");
     fprintf(f, "  --version\t\tdisplay version information and exit\n");
@@ -151,7 +165,7 @@ static void program_options_print_help(
 }
 
 /**
- * `program_options_print_version()` prints version information.
+ * ‘program_options_print_version()’ prints version information.
  */
 static void program_options_print_version(
     FILE * f)
@@ -162,22 +176,24 @@ static void program_options_print_version(
 }
 
 /**
- * `parse_program_options()` parses program options.
+ * ‘parse_program_options()’ parses program options.
  */
 static int parse_program_options(
-    int * argc,
-    char *** argv,
-    struct program_options * args)
+    int argc,
+    char ** argv,
+    struct program_options * args,
+    int * nargs)
 {
     int err;
+    *nargs = 0;
 
     /* Set program invocation name. */
-    program_invocation_name = (*argv)[0];
+    program_invocation_name = argv[0];
     program_invocation_short_name = (
         strrchr(program_invocation_name, '/')
         ? strrchr(program_invocation_name, '/') + 1
         : program_invocation_name);
-    (*argc)--; (*argv)++;
+    (*nargs)++; argv++;
 
     /* Set default program options. */
     err = program_options_init(args);
@@ -185,357 +201,249 @@ static int parse_program_options(
         return err;
 
     /* Parse program options. */
-    int num_arguments_consumed = 0;
-    while (*argc > 0) {
-        *argc -= num_arguments_consumed;
-        *argv += num_arguments_consumed;
-        num_arguments_consumed = 0;
-        if (*argc <= 0)
-            break;
-
-        if (strcmp((*argv)[0], "--precision") == 0) {
-            if (*argc < 2) {
-                program_options_free(args);
-                return EINVAL;
-            }
-            char * s = (*argv)[1];
+    int num_positional_arguments_consumed = 0;
+    while (*nargs < argc) {
+        if (strcmp(argv[0], "--precision") == 0) {
+            if (argc - *nargs < 2) { program_options_free(args); return EINVAL; }
+            (*nargs)++; argv++;
+            err = mtxprecision_parse(&args->precision, NULL, NULL, argv[0], "");
+            if (err) { program_options_free(args); return EINVAL; }
+            (*nargs)++; argv++; continue;
+        } else if (strstr(argv[0], "--precision=") == argv[0]) {
+            char * s = argv[0] + strlen("--precision=");
             err = mtxprecision_parse(&args->precision, NULL, NULL, s, "");
-            if (err) {
-                program_options_free(args);
-                return EINVAL;
-            }
-            num_arguments_consumed += 2;
-            continue;
-        } else if (strstr((*argv)[0], "--precision=") == (*argv)[0]) {
-            char * s = (*argv)[0] + strlen("--precision=");
-            err = mtxprecision_parse(&args->precision, NULL, NULL, s, "");
-            if (err) {
-                program_options_free(args);
-                return EINVAL;
-            }
-            num_arguments_consumed++;
-            continue;
+            if (err) { program_options_free(args); return EINVAL; }
+            (*nargs)++; argv++; continue;
         }
 
-        if (strcmp((*argv)[0], "-z") == 0 ||
-            strcmp((*argv)[0], "--gzip") == 0 ||
-            strcmp((*argv)[0], "--gunzip") == 0 ||
-            strcmp((*argv)[0], "--ungzip") == 0)
+        if (strcmp(argv[0], "-z") == 0 ||
+            strcmp(argv[0], "--gzip") == 0 ||
+            strcmp(argv[0], "--gunzip") == 0 ||
+            strcmp(argv[0], "--ungzip") == 0)
         {
             args->gzip = true;
-            num_arguments_consumed++;
-            continue;
+            (*nargs)++; argv++; continue;
         }
 
-        /* Parse output path. */
-        if (strcmp((*argv)[0], "--output-path") == 0 && *argc >= 2) {
-            if (args->png_output_path)
-                free(args->png_output_path);
-            args->png_output_path = strdup((*argv)[1]);
-            if (!args->png_output_path) {
-                program_options_free(args);
-                return errno;
-            }
-            num_arguments_consumed += 2;
-            continue;
-        } else if (strstr((*argv)[0], "--output-path=") == (*argv)[0]) {
-            if (args->png_output_path)
-                free(args->png_output_path);
-            args->png_output_path =
-                strdup((*argv)[0] + strlen("--output-path="));
-            if (!args->png_output_path) {
-                program_options_free(args);
-                return errno;
-            }
-            num_arguments_consumed++;
-            continue;
+        if (strcmp(argv[0], "-q") == 0 || strcmp(argv[0], "--quiet") == 0) {
+            args->quiet = true;
+            (*nargs)++; argv++; continue;
         }
 
-        /* Parse image maximum width and height. */
-        if (strcmp((*argv)[0], "--max-height") == 0 && *argc >= 2) {
-            err = parse_int32_ex((*argv)[1], NULL, &args->max_height, NULL);
-            if (err) {
-                program_options_free(args);
-                return err;
-            }
-            num_arguments_consumed += 2;
-            continue;
-        } else if (strstr((*argv)[0], "--max-height=") == (*argv)[0]) {
-            err = parse_int32_ex(
-                (*argv)[0] + strlen("--max-height="), NULL,
-                &args->max_height, NULL);
-            if (err) {
-                program_options_free(args);
-                return err;
-            }
-            num_arguments_consumed++;
-            continue;
-        }
-        if (strcmp((*argv)[0], "--max-width") == 0 && *argc >= 2) {
-            err = parse_int32_ex((*argv)[1], NULL, &args->max_width, NULL);
-            if (err) {
-                program_options_free(args);
-                return err;
-            }
-            num_arguments_consumed += 2;
-            continue;
-        } else if (strstr((*argv)[0], "--max-width=") == (*argv)[0]) {
-            err = parse_int32_ex(
-                (*argv)[0] + strlen("--max-width="), NULL,
-                &args->max_width, NULL);
-            if (err) {
-                program_options_free(args);
-                return err;
-            }
-            num_arguments_consumed++;
-            continue;
-        }
-
-        if (strcmp((*argv)[0], "--fgcolor") == 0 && *argc >= 2) {
-            if ((*argv)[1][0] == '#') // Skip the optional '#' character
-                ((*argv)[1])++;
-            err = parse_int32_hex((*argv)[1], NULL, &args->fgcolor, NULL);
-            if (err) {
-                program_options_free(args);
-                return err;
-            }
-            num_arguments_consumed += 2;
-            continue;
-        } else if (strstr((*argv)[0], "--fgcolor=") == (*argv)[0]) {
-            int n = strlen("--fgcolor=");
-            if ((*argv)[0][n] == '#') // Skip the optional '#' character
-                n++;
-            err = parse_int32_hex(
-                (*argv)[0] + n, NULL, &args->fgcolor, NULL);
-            if (err) {
-                program_options_free(args);
-                return err;
-            }
-            num_arguments_consumed++;
-            continue;
-        }
-        if (strcmp((*argv)[0], "--bgcolor") == 0 && *argc >= 2) {
-            if ((*argv)[1][0] == '#') // Skip the optional '#' character
-                ((*argv)[1])++;
-            err = parse_int32_hex((*argv)[1], NULL, &args->bgcolor, NULL);
-            if (err) {
-                program_options_free(args);
-                return err;
-            }
-            num_arguments_consumed += 2;
-            continue;
-        } else if (strstr((*argv)[0], "--bgcolor=") == (*argv)[0]) {
-            int n = strlen("--bgcolor=");
-            if ((*argv)[0][n] == '#') // Skip the optional '#' character
-                n++;
-            err = parse_int32_hex(
-                (*argv)[0] + n, NULL, &args->bgcolor, NULL);
-            if (err) {
-                program_options_free(args);
-                return err;
-            }
-            num_arguments_consumed++;
-            continue;
-        }
-
-        if (strcmp((*argv)[0], "--gamma") == 0 && *argc >= 2) {
-            err = parse_double_ex((*argv)[1], NULL, &args->gamma, NULL);
-            if (err) {
-                program_options_free(args);
-                return err;
-            }
-            num_arguments_consumed += 2;
-            continue;
-        } else if (strstr((*argv)[0], "--gamma=") == (*argv)[0]) {
-            err = parse_double_ex(
-                (*argv)[0] + strlen("--gamma="), NULL,
-                &args->gamma, NULL);
-            if (err) {
-                program_options_free(args);
-                return err;
-            }
-            num_arguments_consumed++;
-            continue;
-        }
-
-        if (strcmp((*argv)[0], "--title") == 0 && *argc >= 2) {
-            if (args->title)
-                free(args->title);
-            args->title = strdup((*argv)[1]);
-            if (!args->title) {
-                program_options_free(args);
-                return errno;
-            }
-            num_arguments_consumed += 2;
-            continue;
-        } else if (strstr((*argv)[0], "--title=") == (*argv)[0]) {
-            if (args->title)
-                free(args->title);
-            args->title = strdup((*argv)[0] + strlen("--title="));
-            if (!args->title) {
-                program_options_free(args);
-                return errno;
-            }
-            num_arguments_consumed++;
-            continue;
-        }
-
-        if (strcmp((*argv)[0], "--author") == 0 && *argc >= 2) {
-            if (args->author)
-                free(args->author);
-            args->author = strdup((*argv)[1]);
-            if (!args->author) {
-                program_options_free(args);
-                return errno;
-            }
-            num_arguments_consumed += 2;
-            continue;
-        } else if (strstr((*argv)[0], "--author=") == (*argv)[0]) {
-            if (args->author)
-                free(args->author);
-            args->author = strdup((*argv)[0] + strlen("--author="));
-            if (!args->author) {
-                program_options_free(args);
-                return errno;
-            }
-            num_arguments_consumed++;
-            continue;
-        }
-
-        if (strcmp((*argv)[0], "--description") == 0 && *argc >= 2) {
-            if (args->description)
-                free(args->description);
-            args->description = strdup((*argv)[1]);
-            if (!args->description) {
-                program_options_free(args);
-                return errno;
-            }
-            num_arguments_consumed += 2;
-            continue;
-        } else if (strstr((*argv)[0], "--description=") == (*argv)[0]) {
-            if (args->description)
-                free(args->description);
-            args->description = strdup((*argv)[0] + strlen("--description="));
-            if (!args->description) {
-                program_options_free(args);
-                return errno;
-            }
-            num_arguments_consumed++;
-            continue;
-        }
-
-        if (strcmp((*argv)[0], "--copyright") == 0 && *argc >= 2) {
-            if (args->copyright)
-                free(args->copyright);
-            args->copyright = strdup((*argv)[1]);
-            if (!args->copyright) {
-                program_options_free(args);
-                return errno;
-            }
-            num_arguments_consumed += 2;
-            continue;
-        } else if (strstr((*argv)[0], "--copyright=") == (*argv)[0]) {
-            if (args->copyright)
-                free(args->copyright);
-            args->copyright = strdup((*argv)[0] + strlen("--copyright="));
-            if (!args->copyright) {
-                program_options_free(args);
-                return errno;
-            }
-            num_arguments_consumed++;
-            continue;
-        }
-
-        if (strcmp((*argv)[0], "--email") == 0 && *argc >= 2) {
-            if (args->email)
-                free(args->email);
-            args->email = strdup((*argv)[1]);
-            if (!args->email) {
-                program_options_free(args);
-                return errno;
-            }
-            num_arguments_consumed += 2;
-            continue;
-        } else if (strstr((*argv)[0], "--email=") == (*argv)[0]) {
-            if (args->email)
-                free(args->email);
-            args->email = strdup((*argv)[0] + strlen("--email="));
-            if (!args->email) {
-                program_options_free(args);
-                return errno;
-            }
-            num_arguments_consumed++;
-            continue;
-        }
-
-        if (strcmp((*argv)[0], "--url") == 0 && *argc >= 2) {
-            if (args->url)
-                free(args->url);
-            args->url = strdup((*argv)[1]);
-            if (!args->url) {
-                program_options_free(args);
-                return errno;
-            }
-            num_arguments_consumed += 2;
-            continue;
-        } else if (strstr((*argv)[0], "--url=") == (*argv)[0]) {
-            if (args->url)
-                free(args->url);
-            args->url = strdup((*argv)[0] + strlen("--url="));
-            if (!args->url) {
-                program_options_free(args);
-                return errno;
-            }
-            num_arguments_consumed++;
-            continue;
-        }
-
-        if (strcmp((*argv)[0], "-v") == 0 || strcmp((*argv)[0], "--verbose") == 0) {
+        if (strcmp(argv[0], "-v") == 0 || strcmp(argv[0], "--verbose") == 0) {
             args->verbose++;
-            num_arguments_consumed++;
-            continue;
+            (*nargs)++; argv++; continue;
+        }
+
+        if (strcmp(argv[0], "--output-path") == 0) {
+            if (argc - *nargs < 2) { program_options_free(args); return EINVAL; }
+            (*nargs)++; argv++;
+            if (args->outputpath) free(args->outputpath);
+            args->outputpath = strdup(argv[0]);
+            if (!args->outputpath) { program_options_free(args); return errno; }
+            (*nargs)++; argv++; continue;
+        } else if (strstr(argv[0], "--output-path=") == argv[0]) {
+            char * s = argv[0] + strlen("--output-path=");
+            if (args->outputpath) free(args->outputpath);
+            args->outputpath = strdup(s);
+            if (!args->outputpath) { program_options_free(args); return errno; }
+            (*nargs)++; argv++; continue;
+        }
+        if (strcmp(argv[0], "--max-height") == 0) {
+            if (argc - *nargs < 2) { program_options_free(args); return EINVAL; }
+            (*nargs)++; argv++;
+            err = parse_int(&args->max_height, argv[0], NULL, NULL);
+            if (err) { program_options_free(args); return EINVAL; }
+            (*nargs)++; argv++; continue;
+        } else if (strstr(argv[0], "--max-height=") == argv[0]) {
+            char * s = argv[0] + strlen("--max-height=");
+            err = parse_int(&args->max_height, s, NULL, NULL);
+            if (err) { program_options_free(args); return EINVAL; }
+            (*nargs)++; argv++; continue;
+        }
+        if (strcmp(argv[0], "--max-width") == 0) {
+            if (argc - *nargs < 2) { program_options_free(args); return EINVAL; }
+            (*nargs)++; argv++;
+            err = parse_int(&args->max_width, argv[0], NULL, NULL);
+            if (err) { program_options_free(args); return EINVAL; }
+            (*nargs)++; argv++; continue;
+        } else if (strstr(argv[0], "--max-width=") == argv[0]) {
+            char * s = argv[0] + strlen("--max-width=");
+            err = parse_int(&args->max_width, s, NULL, NULL);
+            if (err) { program_options_free(args); return EINVAL; }
+            (*nargs)++; argv++; continue;
+        }
+        if (strcmp(argv[0], "--fgcolor") == 0) {
+            if (argc - *nargs < 2) { program_options_free(args); return EINVAL; }
+            (*nargs)++; argv++;
+            err = parse_int32_hex(
+                argv[0][0] == '#' ? &argv[0][1] : &argv[0][0],
+                NULL, &args->fgcolor, NULL);
+            if (err) { program_options_free(args); return EINVAL; }
+            (*nargs)++; argv++; continue;
+        } else if (strstr(argv[0], "--fgcolor=") == argv[0]) {
+            char * s = argv[0] + strlen("--fgcolor=");
+            err = parse_int32_hex(
+                s[0] == '#' ? &s[1] : &s[0], NULL, &args->fgcolor, NULL);
+            if (err) { program_options_free(args); return EINVAL; }
+            (*nargs)++; argv++; continue;
+        }
+        if (strcmp(argv[0], "--bgcolor") == 0) {
+            if (argc - *nargs < 2) { program_options_free(args); return EINVAL; }
+            (*nargs)++; argv++;
+            err = parse_int32_hex(
+                argv[0][0] == '#' ? &argv[0][1] : &argv[0][0],
+                NULL, &args->bgcolor, NULL);
+            if (err) { program_options_free(args); return EINVAL; }
+            (*nargs)++; argv++; continue;
+        } else if (strstr(argv[0], "--bgcolor=") == argv[0]) {
+            char * s = argv[0] + strlen("--bgcolor=");
+            err = parse_int32_hex(
+                s[0] == '#' ? &s[1] : &s[0], NULL, &args->bgcolor, NULL);
+            if (err) { program_options_free(args); return EINVAL; }
+            (*nargs)++; argv++; continue;
+        }
+        if (strcmp(argv[0], "--gamma") == 0) {
+            if (argc - *nargs < 2) { program_options_free(args); return EINVAL; }
+            (*nargs)++; argv++;
+            err = parse_double(&args->gamma, argv[0], NULL, NULL);
+            if (err) { program_options_free(args); return EINVAL; }
+            (*nargs)++; argv++; continue;
+        } else if (strstr(argv[0], "--gamma=") == argv[0]) {
+            char * s = argv[0] + strlen("--gamma=");
+            err = parse_double(&args->gamma, s, NULL, NULL);
+            if (err) { program_options_free(args); return EINVAL; }
+            (*nargs)++; argv++; continue;
+        }
+        if (strcmp(argv[0], "--title") == 0) {
+            if (argc - *nargs < 2) { program_options_free(args); return EINVAL; }
+            (*nargs)++; argv++;
+            if (args->title) free(args->title);
+            args->title = strdup(argv[0]);
+            if (!args->title) { program_options_free(args); return errno; }
+            (*nargs)++; argv++; continue;
+        } else if (strstr(argv[0], "--title=") == argv[0]) {
+            char * s = argv[0] + strlen("--title=");
+            if (args->title) free(args->title);
+            args->title = strdup(s);
+            if (!args->title) { program_options_free(args); return errno; }
+            (*nargs)++; argv++; continue;
+        }
+        if (strcmp(argv[0], "--author") == 0) {
+            if (argc - *nargs < 2) { program_options_free(args); return EINVAL; }
+            (*nargs)++; argv++;
+            if (args->author) free(args->author);
+            args->author = strdup(argv[0]);
+            if (!args->author) { program_options_free(args); return errno; }
+            (*nargs)++; argv++; continue;
+        } else if (strstr(argv[0], "--author=") == argv[0]) {
+            char * s = argv[0] + strlen("--author=");
+            if (args->author) free(args->author);
+            args->author = strdup(s);
+            if (!args->author) { program_options_free(args); return errno; }
+            (*nargs)++; argv++; continue;
+        }
+        if (strcmp(argv[0], "--description") == 0) {
+            if (argc - *nargs < 2) { program_options_free(args); return EINVAL; }
+            (*nargs)++; argv++;
+            if (args->description) free(args->description);
+            args->description = strdup(argv[0]);
+            if (!args->description) { program_options_free(args); return errno; }
+            (*nargs)++; argv++; continue;
+        } else if (strstr(argv[0], "--description=") == argv[0]) {
+            char * s = argv[0] + strlen("--description=");
+            if (args->description) free(args->description);
+            args->description = strdup(s);
+            if (!args->description) { program_options_free(args); return errno; }
+            (*nargs)++; argv++; continue;
+        }
+        if (strcmp(argv[0], "--copyright") == 0) {
+            if (argc - *nargs < 2) { program_options_free(args); return EINVAL; }
+            (*nargs)++; argv++;
+            if (args->copyright) free(args->copyright);
+            args->copyright = strdup(argv[0]);
+            if (!args->copyright) { program_options_free(args); return errno; }
+            (*nargs)++; argv++; continue;
+        } else if (strstr(argv[0], "--copyright=") == argv[0]) {
+            char * s = argv[0] + strlen("--copyright=");
+            if (args->copyright) free(args->copyright);
+            args->copyright = strdup(s);
+            if (!args->copyright) { program_options_free(args); return errno; }
+            (*nargs)++; argv++; continue;
+        }
+        if (strcmp(argv[0], "--email") == 0) {
+            if (argc - *nargs < 2) { program_options_free(args); return EINVAL; }
+            (*nargs)++; argv++;
+            if (args->email) free(args->email);
+            args->email = strdup(argv[0]);
+            if (!args->email) { program_options_free(args); return errno; }
+            (*nargs)++; argv++; continue;
+        } else if (strstr(argv[0], "--email=") == argv[0]) {
+            char * s = argv[0] + strlen("--email=");
+            if (args->email) free(args->email);
+            args->email = strdup(s);
+            if (!args->email) { program_options_free(args); return errno; }
+            (*nargs)++; argv++; continue;
+        }
+        if (strcmp(argv[0], "--url") == 0) {
+            if (argc - *nargs < 2) { program_options_free(args); return EINVAL; }
+            (*nargs)++; argv++;
+            if (args->url) free(args->url);
+            args->url = strdup(argv[0]);
+            if (!args->url) { program_options_free(args); return errno; }
+            (*nargs)++; argv++; continue;
+        } else if (strstr(argv[0], "--url=") == argv[0]) {
+            char * s = argv[0] + strlen("--url=");
+            if (args->url) free(args->url);
+            args->url = strdup(s);
+            if (!args->url) { program_options_free(args); return errno; }
+            (*nargs)++; argv++; continue;
         }
 
         /* If requested, print program help text. */
-        if (strcmp((*argv)[0], "-h") == 0 || strcmp((*argv)[0], "--help") == 0) {
+        if (strcmp(argv[0], "-h") == 0 || strcmp(argv[0], "--help") == 0) {
             program_options_free(args);
             program_options_print_help(stdout);
             exit(EXIT_SUCCESS);
         }
 
         /* If requested, print program version information. */
-        if (strcmp((*argv)[0], "--version") == 0) {
+        if (strcmp(argv[0], "--version") == 0) {
             program_options_free(args);
             program_options_print_version(stdout);
             exit(EXIT_SUCCESS);
         }
 
         /* Stop parsing options after '--'.  */
-        if (strcmp((*argv)[0], "--") == 0) {
-            (*argc)--; (*argv)++;
+        if (strcmp(argv[0], "--") == 0) {
+            (*nargs)++; argv++;
             break;
         }
 
-        /* Parse Matrix Market input path ('-' is used for stdin). */
-        if ((strlen((*argv)[0]) > 0 && (*argv)[0][0] != '-') ||
-            (strlen((*argv)[0]) == 1 && (*argv)[0][0] == '-'))
+        /* Unrecognised option. */
+        if (strlen(argv[0]) > 1 && argv[0][0] == '-' &&
+            ((argv[0][1] < '0' || argv[0][1] > '9') && argv[0][1] != '.'))
         {
-            if (args->mtx_path)
-                free(args->mtx_path);
-            args->mtx_path = strdup((*argv)[0]);
-            if (!args->mtx_path) {
-                program_options_free(args);
-                return errno;
-            }
-            num_arguments_consumed++;
-            continue;
+            program_options_free(args);
+            return EINVAL;
         }
 
-        /* Unrecognised option. */
-        program_options_free(args);
-        return EINVAL;
+        /*
+         * Parse positional arguments.
+         */
+        if (num_positional_arguments_consumed == 0) {
+            args->mtxpath = strdup(argv[0]);
+            if (!args->mtxpath) { program_options_free(args); return errno; }
+        } else { program_options_free(args); return EINVAL; }
+        num_positional_arguments_consumed++;
+        (*nargs)++; argv++;
     }
 
+    if (num_positional_arguments_consumed < 1) {
+        program_options_free(args);
+        program_options_print_usage(stdout);
+        exit(EXIT_FAILURE);
+    }
     return 0;
 }
 
@@ -568,7 +476,7 @@ static void draw_sparsity_pattern_point(
 }
 
 /**
- * `draw_sparsity_pattern_binary()' renders the sparsity pattern of a
+ * ‘draw_sparsity_pattern_binary()’ renders the sparsity pattern of a
  * matrix to a 2D array of RGB values.
  */
 static int draw_sparsity_pattern(
@@ -811,7 +719,7 @@ struct png_error
 };
 
 /**
- * `png_handle_error()' is an error-handling callback function for
+ * ‘png_handle_error()’ is an error-handling callback function for
  * errors from libpng.
  */
 static void png_handle_error(
@@ -831,7 +739,7 @@ static void png_handle_error(
 }
 
 /**
- * `png_handle_warning()' is an error-handling callback function for
+ * ‘png_handle_warning()’ is an error-handling callback function for
  * warnings from libpng.
  */
 static void png_handle_warning(
@@ -851,7 +759,7 @@ static void png_handle_warning(
 }
 
 /**
- * `png_write()' writes a PNG image to the specified file.
+ * ‘png_write()’ writes a PNG image to the specified file.
  */
 static int png_write(
     FILE * f,
@@ -972,7 +880,7 @@ static int png_write(
 }
 
 /**
- * `timespec_duration()` is the duration, in seconds, elapsed between
+ * ‘timespec_duration()’ is the duration, in seconds, elapsed between
  * two given time points.
  */
 static double timespec_duration(
@@ -984,7 +892,7 @@ static double timespec_duration(
 }
 
 /**
- * `main()`.
+ * ‘main()’.
  */
 int main(int argc, char *argv[])
 {
@@ -993,20 +901,20 @@ int main(int argc, char *argv[])
     FILE * diagf = stderr;
     setlocale(LC_ALL, "");
 
-    /* 1. Parse program options. */
+    /* set program invocation name */
+    program_invocation_name = argv[0];
+    program_invocation_short_name = (
+        strrchr(program_invocation_name, '/')
+        ? strrchr(program_invocation_name, '/') + 1
+        : program_invocation_name);
+
+    /* 1. parse program options */
     struct program_options args;
-    int argc_copy = argc;
-    char ** argv_copy = argv;
-    err = parse_program_options(&argc_copy, &argv_copy, &args);
+    int nargs;
+    err = parse_program_options(argc, argv, &args, &nargs);
     if (err) {
         fprintf(stderr, "%s: %s %s\n", program_invocation_short_name,
-                strerror(err), argv_copy[0]);
-        return EXIT_FAILURE;
-    }
-    if (!args.mtx_path) {
-        fprintf(stderr, "%s: Please specify a Matrix Market file\n",
-                program_invocation_short_name);
-        program_options_free(&args);
+                strerror(err), argv[nargs]);
         return EXIT_FAILURE;
     }
 
@@ -1021,23 +929,21 @@ int main(int argc, char *argv[])
     int64_t lines_read = 0;
     int64_t bytes_read;
     err = mtxfile_read(
-        &mtxfile, args.precision, args.mtx_path, args.gzip,
+        &mtxfile, args.precision, args.mtxpath, args.gzip,
         &lines_read, &bytes_read);
     if (err && lines_read >= 0) {
-        if (args.verbose > 0)
-            fprintf(diagf, "\n");
+        if (args.verbose > 0) fprintf(diagf, "\n");
         fprintf(stderr, "%s: %s:%"PRId64": %s\n",
                 program_invocation_short_name,
-                args.mtx_path, lines_read+1,
+                args.mtxpath, lines_read+1,
                 mtxstrerror(err));
         program_options_free(&args);
         return EXIT_FAILURE;
     } else if (err) {
-        if (args.verbose > 0)
-            fprintf(diagf, "\n");
+        if (args.verbose > 0) fprintf(diagf, "\n");
         fprintf(stderr, "%s: %s: %s\n",
                 program_invocation_short_name,
-                args.mtx_path, mtxstrerror(err));
+                args.mtxpath, mtxstrerror(err));
         program_options_free(&args);
         return EXIT_FAILURE;
     }
@@ -1062,16 +968,15 @@ int main(int argc, char *argv[])
     int pixel_size;
     int color_type;
     unsigned char * imgbuf;
-    unsigned char ** row_pointers;
+    unsigned char ** rowptr;
     err = draw_sparsity_pattern(
         &mtxfile, args.fgcolor, args.bgcolor,
         args.max_width, args.max_height,
         &width, &height, &bit_depth,
         &pixel_size, &color_type,
-        &imgbuf, &row_pointers);
+        &imgbuf, &rowptr);
     if (err) {
-        if (args.verbose > 0)
-            fprintf(diagf, "\n");
+        if (args.verbose > 0) fprintf(diagf, "\n");
         fprintf(stderr, "%s: %s\n",
                 program_invocation_short_name, mtxstrerror(err));
         mtxfile_free(&mtxfile);
@@ -1087,7 +992,7 @@ int main(int argc, char *argv[])
     mtxfile_free(&mtxfile);
 
     /* 3. Write the PNG image to file. */
-    if (args.png_output_path) {
+    if (!args.quiet && args.outputpath) {
         if (args.verbose > 0) {
             fprintf(diagf, "png_write: ");
             fflush(diagf);
@@ -1095,13 +1000,12 @@ int main(int argc, char *argv[])
         }
 
         FILE * f;
-        if ((f = fopen(args.png_output_path, "w")) == NULL) {
-            if (args.verbose > 0)
-                fprintf(diagf, "\n");
+        if ((f = fopen(args.outputpath, "w")) == NULL) {
+            if (args.verbose > 0) fprintf(diagf, "\n");
             fprintf(stderr, "%s: %s: %s\n",
                     program_invocation_short_name,
-                    args.png_output_path, strerror(errno));
-            free(row_pointers);
+                    args.outputpath, strerror(errno));
+            free(rowptr);
             free(imgbuf);
             program_options_free(&args);
             return EXIT_FAILURE;
@@ -1113,21 +1017,19 @@ int main(int argc, char *argv[])
             args.gamma, args.bgcolor,
             args.title, args.author, args.description,
             args.copyright, args.email, args.url,
-            imgbuf, row_pointers, &error_msg);
+            imgbuf, rowptr, &error_msg);
         if (err) {
-            if (args.verbose > 0)
-                fprintf(diagf, "\n");
+            if (args.verbose > 0) fprintf(diagf, "\n");
             fprintf(stderr, "%s: %s: %s\n",
                     program_invocation_short_name,
-                    args.png_output_path,
-                    error_msg ? error_msg : strerror(errno));
-            free(row_pointers);
+                    args.outputpath, error_msg ? error_msg : strerror(errno));
+            free(rowptr);
             free(imgbuf);
             fclose(f);
             program_options_free(&args);
             return EXIT_FAILURE;
         }
-        free(row_pointers);
+        free(rowptr);
         free(imgbuf);
         fclose(f);
 
@@ -1137,11 +1039,11 @@ int main(int argc, char *argv[])
             fflush(diagf);
         }
     } else {
-        free(row_pointers);
+        free(rowptr);
         free(imgbuf);
     }
 
-    /* 4. Clean up. */
+    /* 4. clean up. */
     program_options_free(&args);
     return EXIT_SUCCESS;
 }
