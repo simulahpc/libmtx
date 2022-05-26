@@ -76,12 +76,19 @@ int metis_partgraphsym(
 #else
     if (N > IDX_MAX) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
     if (size > IDX_MAX) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+    if (num_parts <= 0) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
 
     /* perform some bounds checking on the input graph */
     for (int64_t k = 0; k < size; k++) {
         int i = *(const int *) ((const char *) rowidx + k*rowidxstride);
         int j = *(const int *) ((const char *) colidx + k*colidxstride);
         if (i < 0 || i >= N || j < 0 || j >= N) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+    }
+
+    /* handle edge case which causes METIS to crash */
+    if (num_parts == 1) {
+        for (idx_t i = 0; i < N; i++) dstpart[i] = 0;
+        return MTX_SUCCESS;
     }
 
     /* configure partitioning options */

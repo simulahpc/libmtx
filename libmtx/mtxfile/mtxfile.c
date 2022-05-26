@@ -1795,8 +1795,10 @@ int mtxfile_partition_metis(
     int num_parts,
     int * dstnzpart,
     int64_t * nzpartsptr,
+    bool * rowpart,
     int * dstrowpart,
     int64_t * rowpartsptr,
+    bool * colpart,
     int * dstcolpart,
     int64_t * colpartsptr,
     int verbose)
@@ -1840,6 +1842,25 @@ int mtxfile_partition_metis(
         }
     }
 
+    /* 4. calculate part sizes */
+    if (nzpartsptr) {
+        for (int p = 0; p <= num_parts; p++) nzpartsptr[p] = 0;
+        for (int64_t k = 0; k < size; k++) nzpartsptr[dstnzpart[k]+1]++;
+        for (int p = 1; p <= num_parts; p++) nzpartsptr[p] += nzpartsptr[p-1];
+    }
+    if (rowpartsptr) {
+        for (int p = 0; p <= num_parts; p++) rowpartsptr[p] = 0;
+        for (int64_t i = 0; i < num_rows; i++) rowpartsptr[dstrowpart[i]+1]++;
+        for (int p = 1; p <= num_parts; p++) rowpartsptr[p] += rowpartsptr[p-1];
+    }
+    if (!square && colpartsptr) {
+        for (int p = 0; p <= num_parts; p++) colpartsptr[p] = 0;
+        for (int64_t j = 0; j < num_columns; j++) colpartsptr[dstcolpart[j]+1]++;
+        for (int p = 1; p <= num_parts; p++) colpartsptr[p] += colpartsptr[p-1];
+    }
+
+    *rowpart = true;
+    *colpart = !square;
     free(colidx); free(rowidx);
     return MTX_SUCCESS;
 }
@@ -1953,8 +1974,8 @@ int mtxfile_partition2(
         *colpart = true;
         return mtxfile_partition_metis(
             mtxfile, num_nz_parts, dstnzpart, nzpartsptr,
-            dstrowpart, rowpartsptr, dstcolpart, colpartsptr,
-            verbose);
+            rowpart, dstrowpart, rowpartsptr,
+            colpart, dstcolpart, colpartsptr, verbose);
     } else { return MTX_ERR_INVALID_MATRIXPARTTYPE; }
     return MTX_SUCCESS;
 }
