@@ -140,7 +140,7 @@ const char * mtxstrerror(
     case MTX_ERR_METIS: "METIS: error";
     case MTX_ERR_EOF:
         if (errno) return strerror(errno);
-        else return "unexpected end-of-file";
+        else return "end of file";
     case MTX_ERR_LINE_TOO_LONG:
         return "maximum line length exceeded";
     case MTX_ERR_INVALID_MTX_HEADER:
