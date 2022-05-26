@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-03-11
+ * Last modified: 2022-05-26
  *
  * Reorder the nonzeros of a sparse matrix and any number of vectors
  * in Matrix Market format according to a specified reordering
@@ -50,34 +50,34 @@ const char * program_invocation_name;
 const char * program_invocation_short_name;
 
 /**
- * `program_options` contains data to related program options.
+ * ‘program_options’ contains data to related program options.
  */
 struct program_options
 {
-    char * mtx_path;
+    char * mtxpath;
     enum mtxprecision precision;
     bool gzip;
     char * format;
-    char * rowperm_path;
-    char * colperm_path;
+    char * rowpermpath;
+    char * colpermpath;
     enum mtxfileordering ordering;
-    int rcm_starting_vertex;
+    int64_t rcm_starting_vertex;
     int verbose;
     bool quiet;
 };
 
 /**
- * `program_options_init()` configures the default program options.
+ * ‘program_options_init()’ configures the default program options.
  */
 static int program_options_init(
     struct program_options * args)
 {
-    args->mtx_path = NULL;
+    args->mtxpath = NULL;
     args->precision = mtx_double;
     args->gzip = false;
     args->format = NULL;
-    args->rowperm_path = NULL;
-    args->colperm_path = NULL;
+    args->rowpermpath = NULL;
+    args->colpermpath = NULL;
     args->ordering = mtxfile_rcm;
     args->rcm_starting_vertex = 0;
     args->verbose = 0;
@@ -86,52 +86,59 @@ static int program_options_init(
 }
 
 /**
- * `program_options_free()` frees memory and other resources
+ * ‘program_options_free()’ frees memory and other resources
  * associated with parsing program options.
  */
 static void program_options_free(
     struct program_options * args)
 {
-    if (args->mtx_path)
-        free(args->mtx_path);
-    if (args->format)
-        free(args->format);
-    if (args->rowperm_path)
-        free(args->rowperm_path);
-    if (args->colperm_path)
-        free(args->colperm_path);
+    if (args->mtxpath) free(args->mtxpath);
+    if (args->format) free(args->format);
+    if (args->rowpermpath) free(args->rowpermpath);
+    if (args->colpermpath) free(args->colpermpath);
 }
 
 /**
- * `program_options_print_help()` prints a help text.
+ * ‘program_options_print_usage()’ prints a usage text.
+ */
+static void program_options_print_usage(
+    FILE * f)
+{
+    fprintf(f, "Usage: %s [OPTION..] FILE\n", program_name);
+}
+
+/**
+ * ‘program_options_print_help()’ prints a help text.
  */
 static void program_options_print_help(
     FILE * f)
 {
-    fprintf(f, "Usage: %s [OPTION..] FILE\n", program_name);
+    program_options_print_usage(f);
     fprintf(f, "\n");
     fprintf(f, " Reorder rows and columns of a matrix in Matrix Market format.\n");
     fprintf(f, "\n");
     fprintf(f, " Options are:\n");
     fprintf(f, "  --precision=PRECISION\tprecision used to represent matrix or\n");
-    fprintf(f, "\t\t\tvector values: single or double. (default: double)\n");
-    fprintf(f, "  -z, --gzip, --gunzip, --ungzip\tfilter the file through gzip\n");
+    fprintf(f, "\t\t\tvector values: ‘single’ or ‘double’ (default).\n");
+    fprintf(f, "  -z, --gzip, --gunzip, --ungzip\tfilter files through gzip\n");
     fprintf(f, "  --format=FORMAT\tFormat string for outputting numerical values.\n");
     fprintf(f, "\t\t\tFor real, double and complex values, the format specifiers\n");
     fprintf(f, "\t\t\t'%%e', '%%E', '%%f', '%%F', '%%g' or '%%G' may be used,\n");
     fprintf(f, "\t\t\twhereas '%%d' must be used for integers. Flags, field width\n");
     fprintf(f, "\t\t\tand precision can optionally be specified, e.g., \"%%+3.1f\".\n");
+    fprintf(f, "  -q, --quiet\t\tdo not print Matrix Market output\n");
+    fprintf(f, "  -v, --verbose\t\tbe more verbose\n");
+    fprintf(f, "\n");
+    fprintf(f, " Options for reordering are:\n");
     fprintf(f, "  --rowperm-path=FILE\tPath for outputting row permutation, unless the ordering\n");
     fprintf(f, "\t\t\tis ‘custom’, in which case the path is used to specify\n");
     fprintf(f, "\t\t\ta row permutation to apply.\n");
     fprintf(f, "  --colperm-path=FILE\tPath for outputting column permutation, unless the ordering\n");
     fprintf(f, "\t\t\tis ‘custom’, in which case the path is used to specify\n");
     fprintf(f, "\t\t\ta column permutation to apply.\n");
-    fprintf(f, "  --ordering=ORDERING\tordering to use: default, custom, rcm (default: rcm).\n");
+    fprintf(f, "  --ordering=ORDERING\tordering to use: default, custom, rcm (default).\n");
     fprintf(f, "  --rcm-starting-vertex=N\tstarting vertex for the RCM algorithm.\n");
     fprintf(f, "\t\t\tThe default value is 0, which means to choose automatically.\n");
-    fprintf(f, "  -q, --quiet\t\tdo not print Matrix Market output\n");
-    fprintf(f, "  -v, --verbose\t\tbe more verbose\n");
     fprintf(f, "\n");
     fprintf(f, "  -h, --help\t\tdisplay this help and exit\n");
     fprintf(f, "  --version\t\tdisplay version information and exit\n");
@@ -140,7 +147,7 @@ static void program_options_print_help(
 }
 
 /**
- * `program_options_print_version()` prints version information.
+ * ‘program_options_print_version()’ prints version information.
  */
 static void program_options_print_version(
     FILE * f)
@@ -151,22 +158,24 @@ static void program_options_print_version(
 }
 
 /**
- * `parse_program_options()` parses program options.
+ * ‘parse_program_options()’ parses program options.
  */
 static int parse_program_options(
-    int * argc,
-    char *** argv,
-    struct program_options * args)
+    int argc,
+    char ** argv,
+    struct program_options * args,
+    int * nargs)
 {
     int err;
+    *nargs = 0;
 
     /* Set program invocation name. */
-    program_invocation_name = (*argv)[0];
+    program_invocation_name = argv[0];
     program_invocation_short_name = (
         strrchr(program_invocation_name, '/')
         ? strrchr(program_invocation_name, '/') + 1
         : program_invocation_name);
-    (*argc)--; (*argv)++;
+    (*nargs)++; argv++;
 
     /* Set default program options. */
     err = program_options_init(args);
@@ -174,232 +183,156 @@ static int parse_program_options(
         return err;
 
     /* Parse program options. */
-    int num_arguments_consumed = 0;
-    while (*argc > 0) {
-        *argc -= num_arguments_consumed;
-        *argv += num_arguments_consumed;
-        num_arguments_consumed = 0;
-        if (*argc <= 0)
-            break;
-
-        if (strcmp((*argv)[0], "--precision") == 0) {
-            if (*argc < 2) {
-                program_options_free(args);
-                return EINVAL;
-            }
-            char * s = (*argv)[1];
+    int num_positional_arguments_consumed = 0;
+    while (*nargs < argc) {
+        if (strcmp(argv[0], "--precision") == 0) {
+            if (argc - *nargs < 2) { program_options_free(args); return EINVAL; }
+            (*nargs)++; argv++;
+            err = mtxprecision_parse(&args->precision, NULL, NULL, argv[0], "");
+            if (err) { program_options_free(args); return EINVAL; }
+            (*nargs)++; argv++; continue;
+        } else if (strstr(argv[0], "--precision=") == argv[0]) {
+            char * s = argv[0] + strlen("--precision=");
             err = mtxprecision_parse(&args->precision, NULL, NULL, s, "");
-            if (err) {
-                program_options_free(args);
-                return EINVAL;
-            }
-            num_arguments_consumed += 2;
-            continue;
-        } else if (strstr((*argv)[0], "--precision=") == (*argv)[0]) {
-            char * s = (*argv)[0] + strlen("--precision=");
-            err = mtxprecision_parse(&args->precision, NULL, NULL, s, "");
-            if (err) {
-                program_options_free(args);
-                return EINVAL;
-            }
-            num_arguments_consumed++;
-            continue;
+            if (err) { program_options_free(args); return EINVAL; }
+            (*nargs)++; argv++; continue;
         }
 
-        if (strcmp((*argv)[0], "-z") == 0 ||
-            strcmp((*argv)[0], "--gzip") == 0 ||
-            strcmp((*argv)[0], "--gunzip") == 0 ||
-            strcmp((*argv)[0], "--ungzip") == 0)
+        if (strcmp(argv[0], "-z") == 0 ||
+            strcmp(argv[0], "--gzip") == 0 ||
+            strcmp(argv[0], "--gunzip") == 0 ||
+            strcmp(argv[0], "--ungzip") == 0)
         {
             args->gzip = true;
-            num_arguments_consumed++;
-            continue;
+            (*nargs)++; argv++; continue;
         }
 
-        if (strcmp((*argv)[0], "--format") == 0) {
-            if (*argc < 2) {
-                program_options_free(args);
-                return EINVAL;
-            }
-            args->format = strdup((*argv)[1]);
-            if (!args->format) {
-                program_options_free(args);
-                return errno;
-            }
-            num_arguments_consumed += 2;
-            continue;
-        } else if (strstr((*argv)[0], "--format=") == (*argv)[0]) {
-            args->format = strdup((*argv)[0] + strlen("--format="));
-            if (!args->format) {
-                program_options_free(args);
-                return errno;
-            }
-            num_arguments_consumed++;
-            continue;
+        if (strcmp(argv[0], "--format") == 0) {
+            if (argc - *nargs < 2) { program_options_free(args); return EINVAL; }
+            (*nargs)++; argv++;
+            args->format = strdup(argv[0]);
+            if (!args->format) { program_options_free(args); return errno; }
+            (*nargs)++; argv++; continue;
+        } else if (strstr(argv[0], "--format=") == argv[0]) {
+            args->format = strdup(argv[0] + strlen("--format="));
+            if (!args->format) { program_options_free(args); return errno; }
+            (*nargs)++; argv++; continue;
         }
 
-        /* Parse output path for row permutation. */
-        if (strcmp((*argv)[0], "--rowperm-path") == 0) {
-            if (*argc < 2) {
-                program_options_free(args);
-                return EINVAL;
-            }
-            if (args->rowperm_path)
-                free(args->rowperm_path);
-            args->rowperm_path = strdup((*argv)[1]);
-            if (!args->rowperm_path) {
-                program_options_free(args);
-                return errno;
-            }
-            num_arguments_consumed += 2;
-            continue;
-        } else if (strstr((*argv)[0], "--rowperm-path=") == (*argv)[0]) {
-            if (args->rowperm_path)
-                free(args->rowperm_path);
-            args->rowperm_path =
-                strdup((*argv)[0] + strlen("--rowperm-path="));
-            if (!args->rowperm_path) {
-                program_options_free(args);
-                return errno;
-            }
-            num_arguments_consumed++;
-            continue;
-        }
-
-        /* Parse output path for column permutation. */
-        if (strcmp((*argv)[0], "--colperm-path") == 0) {
-            if (*argc < 2) {
-                program_options_free(args);
-                return EINVAL;
-            }
-            if (args->colperm_path)
-                free(args->colperm_path);
-            args->colperm_path = strdup((*argv)[1]);
-            if (!args->colperm_path) {
-                program_options_free(args);
-                return errno;
-            }
-            num_arguments_consumed += 2;
-            continue;
-        } else if (strstr((*argv)[0], "--colperm-path=") == (*argv)[0]) {
-            if (args->colperm_path)
-                free(args->colperm_path);
-            args->colperm_path =
-                strdup((*argv)[0] + strlen("--colperm-path="));
-            if (!args->colperm_path) {
-                program_options_free(args);
-                return errno;
-            }
-            num_arguments_consumed++;
-            continue;
-        }
-
-        /* Parse ordering. */
-        if (strcmp((*argv)[0], "--ordering") == 0) {
-            if (*argc < 2) {
-                program_options_free(args);
-                return EINVAL;
-            }
-            char * s = (*argv)[1];
-            err = mtxfileordering_parse(&args->ordering, NULL, NULL, s, "");
-            if (err) {
-                program_options_free(args);
-                return EINVAL;
-            }
-            num_arguments_consumed += 2;
-            continue;
-        } else if (strstr((*argv)[0], "--ordering=") == (*argv)[0]) {
-            char * s = (*argv)[0] + strlen("--ordering=");
-            err = mtxfileordering_parse(&args->ordering, NULL, NULL, s, "");
-            if (err) {
-                program_options_free(args);
-                return EINVAL;
-            }
-            num_arguments_consumed++;
-            continue;
-        }
-
-        if (strcmp((*argv)[0], "--rcm-starting-vertex") == 0) {
-            if (*argc < 2) {
-                program_options_free(args);
-                return EINVAL;
-            }
-            err = parse_int32_ex((*argv)[1], NULL, &args->rcm_starting_vertex, NULL);
-            if (err) {
-                program_options_free(args);
-                return err;
-            }
-            num_arguments_consumed += 2;
-            continue;
-        } else if (strstr((*argv)[0], "--rcm-starting-vertex=") == (*argv)[0]) {
-            err = parse_int32_ex(
-                (*argv)[0] + strlen("--rcm-starting-vertex="), NULL,
-                &args->rcm_starting_vertex, NULL);
-            if (err) {
-                program_options_free(args);
-                return err;
-            }
-            num_arguments_consumed++;
-            continue;
-        }
-
-        if (strcmp((*argv)[0], "-q") == 0 || strcmp((*argv)[0], "--quiet") == 0) {
+        if (strcmp(argv[0], "-q") == 0 || strcmp(argv[0], "--quiet") == 0) {
             args->quiet = true;
-            num_arguments_consumed++;
-            continue;
+            (*nargs)++; argv++; continue;
         }
 
-        if (strcmp((*argv)[0], "-v") == 0 || strcmp((*argv)[0], "--verbose") == 0) {
+        if (strcmp(argv[0], "-v") == 0 || strcmp(argv[0], "--verbose") == 0) {
             args->verbose++;
-            num_arguments_consumed++;
-            continue;
+            (*nargs)++; argv++; continue;
+        }
+
+        if (strcmp(argv[0], "--rowperm-path") == 0) {
+            if (argc - *nargs < 2) { program_options_free(args); return EINVAL; }
+            (*nargs)++; argv++;
+            if (args->rowpermpath) free(args->rowpermpath);
+            args->rowpermpath = strdup(argv[0]);
+            if (!args->rowpermpath) { program_options_free(args); return errno; }
+            (*nargs)++; argv++; continue;
+        } else if (strstr(argv[0], "--rowperm-path=") == argv[0]) {
+            char * s = argv[0] + strlen("--rowperm-path=");
+            if (args->rowpermpath) free(args->rowpermpath);
+            args->rowpermpath = strdup(s);
+            if (!args->rowpermpath) { program_options_free(args); return errno; }
+            (*nargs)++; argv++; continue;
+        }
+
+        if (strcmp(argv[0], "--colperm-path") == 0) {
+            if (argc - *nargs < 2) { program_options_free(args); return EINVAL; }
+            (*nargs)++; argv++;
+            if (args->colpermpath) free(args->colpermpath);
+            args->colpermpath = strdup(argv[0]);
+            if (!args->colpermpath) { program_options_free(args); return errno; }
+            (*nargs)++; argv++; continue;
+        } else if (strstr(argv[0], "--colperm-path=") == argv[0]) {
+            char * s = argv[0] + strlen("--colperm-path=");
+            if (args->colpermpath) free(args->colpermpath);
+            args->colpermpath = strdup(s);
+            if (!args->colpermpath) { program_options_free(args); return errno; }
+            (*nargs)++; argv++; continue;
+        }
+
+        if (strcmp(argv[0], "--ordering") == 0) {
+            if (argc - *nargs < 2) { program_options_free(args); return EINVAL; }
+            (*nargs)++; argv++;
+            err = mtxfileordering_parse(&args->ordering, NULL, NULL, argv[0], "");
+            if (err) { program_options_free(args); return EINVAL; }
+            (*nargs)++; argv++; continue;
+        } else if (strstr(argv[0], "--ordering=") == argv[0]) {
+            char * s = argv[0] + strlen("--ordering=");
+            err = mtxfileordering_parse(&args->ordering, NULL, NULL, s, "");
+            if (err) { program_options_free(args); return EINVAL; }
+            (*nargs)++; argv++; continue;
+        }
+        if (strcmp(argv[0], "--rcm-starting-vertex") == 0) {
+            if (argc - *nargs < 2) { program_options_free(args); return EINVAL; }
+            (*nargs)++; argv++;
+            err = parse_int64(&args->rcm_starting_vertex, argv[0], NULL, NULL);
+            if (err) { program_options_free(args); return EINVAL; }
+            (*nargs)++; argv++; continue;
+        } else if (strstr(argv[0], "--rcm-starting-vertex=") == argv[0]) {
+            char * s = argv[0] + strlen("--rcm-starting-vertex=");
+            err = parse_int64(&args->rcm_starting_vertex, s, NULL, NULL);
+            if (err) { program_options_free(args); return EINVAL; }
+            (*nargs)++; argv++; continue;
         }
 
         /* If requested, print program help text. */
-        if (strcmp((*argv)[0], "-h") == 0 || strcmp((*argv)[0], "--help") == 0) {
+        if (strcmp(argv[0], "-h") == 0 || strcmp(argv[0], "--help") == 0) {
             program_options_free(args);
             program_options_print_help(stdout);
             exit(EXIT_SUCCESS);
         }
 
         /* If requested, print program version information. */
-        if (strcmp((*argv)[0], "--version") == 0) {
+        if (strcmp(argv[0], "--version") == 0) {
             program_options_free(args);
             program_options_print_version(stdout);
             exit(EXIT_SUCCESS);
         }
 
         /* Stop parsing options after '--'.  */
-        if (strcmp((*argv)[0], "--") == 0) {
-            (*argc)--; (*argv)++;
+        if (strcmp(argv[0], "--") == 0) {
+            (*nargs)++; argv++;
             break;
         }
 
-        /* Parse Matrix Market input path ('-' is used for stdin). */
-        if ((strlen((*argv)[0]) > 0 && (*argv)[0][0] != '-') ||
-            (strlen((*argv)[0]) == 1 && (*argv)[0][0] == '-'))
+        /* Unrecognised option. */
+        if (strlen(argv[0]) > 1 && argv[0][0] == '-' &&
+            ((argv[0][1] < '0' || argv[0][1] > '9') && argv[0][1] != '.'))
         {
-            if (args->mtx_path)
-                free(args->mtx_path);
-            args->mtx_path = strdup((*argv)[0]);
-            if (!args->mtx_path) {
-                program_options_free(args);
-                return errno;
-            }
-            num_arguments_consumed++;
-            continue;
+            program_options_free(args);
+            return EINVAL;
         }
 
-        /* Unrecognised option. */
-        program_options_free(args);
-        return EINVAL;
+        /*
+         * Parse positional arguments.
+         */
+        if (num_positional_arguments_consumed == 0) {
+            args->mtxpath = strdup(argv[0]);
+            if (!args->mtxpath) { program_options_free(args); return errno; }
+        } else { program_options_free(args); return EINVAL; }
+        num_positional_arguments_consumed++;
+        (*nargs)++; argv++;
     }
 
+    if (num_positional_arguments_consumed < 1) {
+        program_options_free(args);
+        program_options_print_usage(stdout);
+        exit(EXIT_FAILURE);
+    }
     return 0;
 }
 
 /**
- * `timespec_duration()` is the duration, in seconds, elapsed between
+ * ‘timespec_duration()’ is the duration, in seconds, elapsed between
  * two given time points.
  */
 static double timespec_duration(
@@ -411,7 +344,7 @@ static double timespec_duration(
 }
 
 /**
- * `main()`.
+ * ‘main()’.
  */
 int main(int argc, char *argv[])
 {
@@ -420,30 +353,34 @@ int main(int argc, char *argv[])
     FILE * diagf = stderr;
     setlocale(LC_ALL, "");
 
-    /* 1. Parse program options. */
+    /* set program invocation name */
+    program_invocation_name = argv[0];
+    program_invocation_short_name = (
+        strrchr(program_invocation_name, '/')
+        ? strrchr(program_invocation_name, '/') + 1
+        : program_invocation_name);
+
+    /* 1. parse program options */
     struct program_options args;
-    int argc_copy = argc;
-    char ** argv_copy = argv;
-    err = parse_program_options(&argc_copy, &argv_copy, &args);
+    int nargs;
+    err = parse_program_options(argc, argv, &args, &nargs);
     if (err) {
         fprintf(stderr, "%s: %s %s\n", program_invocation_short_name,
-                strerror(err), argv_copy[0]);
+                strerror(err), argv[nargs]);
         return EXIT_FAILURE;
     }
-    if (!args.mtx_path) {
-        fprintf(stderr, "%s: Please specify a Matrix Market file\n",
+
+    if (args.ordering == mtxfile_custom_order &&
+        !args.rowpermpath && !args.colpermpath)
+    {
+        fprintf(stderr, "%s: Please specify a row or column permutation with "
+                "‘--rowperm-path=FILE’ or ‘--colperm-path=FILE’\n",
                 program_invocation_short_name);
         program_options_free(&args);
         return EXIT_FAILURE;
     }
-    if (args.ordering == mtxfile_custom_order && !args.rowperm_path && !args.colperm_path) {
-        fprintf(stderr, "%s: Please specify a row or column permutation with "
-                "‘--rowperm-path=FILE’ or ‘--colperm-path=FILE’\n", program_invocation_short_name);
-        program_options_free(&args);
-        return EXIT_FAILURE;
-    }
 
-    /* 2. Read a Matrix Market file. */
+    /* 2. read a Matrix Market file. */
     if (args.verbose > 0) {
         fprintf(diagf, "mtxfile_read: ");
         fflush(diagf);
@@ -452,25 +389,23 @@ int main(int argc, char *argv[])
 
     struct mtxfile mtxfile;
     int64_t lines_read = 0;
-    int64_t bytes_read;
+    int64_t bytes_read = 0;
     err = mtxfile_read(
-        &mtxfile, args.precision, args.mtx_path, args.gzip,
+        &mtxfile, args.precision, args.mtxpath, args.gzip,
         &lines_read, &bytes_read);
     if (err && lines_read >= 0) {
-        if (args.verbose > 0)
-            fprintf(diagf, "\n");
+        if (args.verbose > 0) fprintf(diagf, "\n");
         fprintf(stderr, "%s: %s:%"PRId64": %s\n",
                 program_invocation_short_name,
-                args.mtx_path, lines_read+1,
+                args.mtxpath, lines_read+1,
                 mtxstrerror(err));
         program_options_free(&args);
         return EXIT_FAILURE;
     } else if (err) {
-        if (args.verbose > 0)
-            fprintf(diagf, "\n");
+        if (args.verbose > 0) fprintf(diagf, "\n");
         fprintf(stderr, "%s: %s: %s\n",
                 program_invocation_short_name,
-                args.mtx_path, mtxstrerror(err));
+                args.mtxpath, mtxstrerror(err));
         program_options_free(&args);
         return EXIT_FAILURE;
     }
@@ -488,8 +423,7 @@ int main(int argc, char *argv[])
     else if (mtxfile.header.format != mtxfile_coordinate)
         err = MTX_ERR_INCOMPATIBLE_MTX_FORMAT;
     if (err) {
-        if (args.verbose > 0)
-            fprintf(diagf, "\n");
+        if (args.verbose > 0) fprintf(diagf, "\n");
         fprintf(stderr, "%s: %s\n",
                 program_invocation_short_name,
                 mtxstrerror(err));
@@ -505,7 +439,7 @@ int main(int argc, char *argv[])
     int num_columns = mtxfile.size.num_columns;
     int * rowperm = NULL;
     int * colperm = NULL;
-    if (args.ordering == mtxfile_custom_order && args.rowperm_path) {
+    if (args.ordering == mtxfile_custom_order && args.rowpermpath) {
         if (args.verbose > 0) {
             fprintf(diagf, "mtxfile_read: ");
             fflush(diagf);
@@ -517,20 +451,19 @@ int main(int argc, char *argv[])
         int64_t bytes_read;
         err = mtxfile_read(
             &rowperm_mtxfile, mtx_single,
-            args.rowperm_path, args.gzip,
+            args.rowpermpath, args.gzip,
             &lines_read, &bytes_read);
         if (err) {
-            if (args.verbose > 0)
-                fprintf(diagf, "\n");
+            if (args.verbose > 0) fprintf(diagf, "\n");
             if (lines_read >= 0) {
                 fprintf(stderr, "%s: %s:%"PRId64": %s\n",
                         program_invocation_short_name,
-                        args.rowperm_path, lines_read+1,
+                        args.rowpermpath, lines_read+1,
                         mtxstrerror(err));
             } else {
                 fprintf(stderr, "%s: %s: %s\n",
                         program_invocation_short_name,
-                        args.rowperm_path, mtxstrerror(err));
+                        args.rowpermpath, mtxstrerror(err));
             }
             mtxfile_free(&mtxfile);
             program_options_free(&args);
@@ -554,8 +487,7 @@ int main(int argc, char *argv[])
         else if (rowperm_mtxfile.size.num_rows != mtxfile.size.num_rows)
             err = MTX_ERR_INCOMPATIBLE_MTX_SIZE;
         if (err) {
-            if (args.verbose > 0)
-                fprintf(diagf, "\n");
+            if (args.verbose > 0) fprintf(diagf, "\n");
             fprintf(stderr, "%s: %s\n",
                     program_invocation_short_name,
                     mtxstrerror(err));
@@ -568,11 +500,10 @@ int main(int argc, char *argv[])
         rowperm = rowperm_mtxfile.data.array_integer_single;
         rowperm_mtxfile.data.array_integer_single = NULL;
         mtxfile_free(&rowperm_mtxfile);
-    } else if (args.rowperm_path) {
+    } else if (args.rowpermpath) {
         int * rowperm = malloc(num_rows * sizeof(int));
         if (!rowperm) {
-            if (args.verbose > 0)
-                fprintf(diagf, "\n");
+            if (args.verbose > 0) fprintf(diagf, "\n");
             fprintf(stderr, "%s: %s\n",
                     program_invocation_short_name,
                     mtxstrerror(MTX_ERR_ERRNO));
@@ -582,7 +513,7 @@ int main(int argc, char *argv[])
         }
     }
 
-    if (args.ordering == mtxfile_custom_order && args.colperm_path) {
+    if (args.ordering == mtxfile_custom_order && args.colpermpath) {
         if (args.verbose > 0) {
             fprintf(diagf, "mtxfile_read: ");
             fflush(diagf);
@@ -594,20 +525,19 @@ int main(int argc, char *argv[])
         int64_t bytes_read;
         err = mtxfile_read(
             &colperm_mtxfile, mtx_single,
-            args.colperm_path, args.gzip,
+            args.colpermpath, args.gzip,
             &lines_read, &bytes_read);
         if (err) {
-            if (args.verbose > 0)
-                fprintf(diagf, "\n");
+            if (args.verbose > 0) fprintf(diagf, "\n");
             if (lines_read >= 0) {
                 fprintf(stderr, "%s: %s:%"PRId64": %s\n",
                         program_invocation_short_name,
-                        args.colperm_path, lines_read+1,
+                        args.colpermpath, lines_read+1,
                         mtxstrerror(err));
             } else {
                 fprintf(stderr, "%s: %s: %s\n",
                         program_invocation_short_name,
-                        args.colperm_path, mtxstrerror(err));
+                        args.colpermpath, mtxstrerror(err));
             }
             free(rowperm);
             mtxfile_free(&mtxfile);
@@ -632,8 +562,7 @@ int main(int argc, char *argv[])
         else if (colperm_mtxfile.size.num_rows != mtxfile.size.num_columns)
             err = MTX_ERR_INCOMPATIBLE_MTX_SIZE;
         if (err) {
-            if (args.verbose > 0)
-                fprintf(diagf, "\n");
+            if (args.verbose > 0) fprintf(diagf, "\n");
             fprintf(stderr, "%s: %s\n",
                     program_invocation_short_name,
                     mtxstrerror(err));
@@ -647,11 +576,10 @@ int main(int argc, char *argv[])
         colperm = colperm_mtxfile.data.array_integer_single;
         colperm_mtxfile.data.array_integer_single = NULL;
         mtxfile_free(&colperm_mtxfile);
-    } else if (args.colperm_path) {
+    } else if (args.colpermpath) {
         int * colperm = malloc(num_columns * sizeof(int));
         if (!colperm) {
-            if (args.verbose > 0)
-                fprintf(diagf, "\n");
+            if (args.verbose > 0) fprintf(diagf, "\n");
             fprintf(stderr, "%s: %s\n",
                     program_invocation_short_name,
                     mtxstrerror(MTX_ERR_ERRNO));
@@ -675,13 +603,11 @@ int main(int argc, char *argv[])
         &mtxfile, args.ordering, rowperm, colperm,
         !args.quiet, &symmetric, &rcm_starting_vertex);
     if (err) {
-        if (args.verbose > 0)
-            fprintf(diagf, "\n");
+        if (args.verbose > 0) fprintf(diagf, "\n");
         fprintf(stderr, "%s: %s\n",
                 program_invocation_short_name,
                 mtxstrerror(err));
-        free(colperm);
-        free(rowperm);
+        free(colperm); free(rowperm);
         mtxfile_free(&mtxfile);
         program_options_free(&args);
         return EXIT_FAILURE;
@@ -703,7 +629,7 @@ int main(int argc, char *argv[])
 
         if (args.ordering == mtxfile_rcm) {
             err = mtxfilecomments_printf(
-                &mtxfile.comments, "%% This file was generated by %s %s (%s, starting vertex %d)\n",
+                &mtxfile.comments, "%% This file was generated by %s %s (%s, starting vertex %'d)\n",
                 program_name, program_version, mtxfileordering_str(args.ordering), rcm_starting_vertex);
         } else {
             err = mtxfilecomments_printf(
@@ -711,13 +637,11 @@ int main(int argc, char *argv[])
                 program_name, program_version, mtxfileordering_str(args.ordering));
         }
         if (err) {
-            if (args.verbose > 0)
-                fprintf(diagf, "\n");
+            if (args.verbose > 0) fprintf(diagf, "\n");
             fprintf(stderr, "%s: %s\n",
                     program_invocation_short_name,
                     mtxstrerror(err));
-            free(colperm);
-            free(rowperm);
+            free(colperm); free(rowperm);
             mtxfile_free(&mtxfile);
             program_options_free(&args);
             return EXIT_FAILURE;
@@ -726,13 +650,11 @@ int main(int argc, char *argv[])
         int64_t bytes_written = 0;
         err = mtxfile_fwrite(&mtxfile, stdout, args.format, &bytes_written);
         if (err) {
-            if (args.verbose > 0)
-                fprintf(diagf, "\n");
+            if (args.verbose > 0) fprintf(diagf, "\n");
             fprintf(stderr, "%s: %s\n",
                     program_invocation_short_name,
                     mtxstrerror(err));
-            free(colperm);
-            free(rowperm);
+            free(colperm); free(rowperm);
             mtxfile_free(&mtxfile);
             program_options_free(&args);
             return EXIT_FAILURE;
@@ -748,7 +670,7 @@ int main(int argc, char *argv[])
     }
 
     /* Write the row permutation to a Matrix Market file. */
-    if (args.ordering != mtxfile_custom_order && args.rowperm_path) {
+    if (args.ordering != mtxfile_custom_order && args.rowpermpath) {
         struct mtxfile rowperm_mtxfile;
         err = mtxfile_init_vector_array_integer_single(
             &rowperm_mtxfile, mtxfile.size.num_rows, rowperm);
@@ -756,8 +678,7 @@ int main(int argc, char *argv[])
             fprintf(stderr, "%s: %s\n",
                     program_invocation_short_name,
                     mtxstrerror(err));
-            free(colperm);
-            free(rowperm);
+            free(colperm); free(rowperm);
             mtxfile_free(&mtxfile);
             program_options_free(&args);
             return EXIT_FAILURE;
@@ -771,7 +692,7 @@ int main(int argc, char *argv[])
 
         if (args.ordering == mtxfile_rcm) {
             err = mtxfilecomments_printf(
-                &rowperm_mtxfile.comments, "%% This file was generated by %s %s (%s, starting vertex %d)\n",
+                &rowperm_mtxfile.comments, "%% This file was generated by %s %s (%s, starting vertex %'d)\n",
                 program_name, program_version, mtxfileordering_str(args.ordering), rcm_starting_vertex);
         } else {
             err = mtxfilecomments_printf(
@@ -779,14 +700,12 @@ int main(int argc, char *argv[])
                 program_name, program_version, mtxfileordering_str(args.ordering));
         }
         if (err) {
-            if (args.verbose > 0)
-                fprintf(diagf, "\n");
+            if (args.verbose > 0) fprintf(diagf, "\n");
             fprintf(stderr, "%s: %s\n",
                     program_invocation_short_name,
                     mtxstrerror(err));
             mtxfile_free(&rowperm_mtxfile);
-            free(colperm);
-            free(rowperm);
+            free(colperm); free(rowperm);
             mtxfile_free(&mtxfile);
             program_options_free(&args);
             return EXIT_FAILURE;
@@ -794,16 +713,14 @@ int main(int argc, char *argv[])
 
         int64_t bytes_written = 0;
         err = mtxfile_write(
-            &rowperm_mtxfile, args.rowperm_path, false, "%d", &bytes_written);
+            &rowperm_mtxfile, args.rowpermpath, false, "%d", &bytes_written);
         if (err) {
-            if (args.verbose > 0)
-                fprintf(diagf, "\n");
+            if (args.verbose > 0) fprintf(diagf, "\n");
             fprintf(stderr, "%s: %s\n",
                     program_invocation_short_name,
                     mtxstrerror(err));
             mtxfile_free(&rowperm_mtxfile);
-            free(colperm);
-            free(rowperm);
+            free(colperm); free(rowperm);
             mtxfile_free(&mtxfile);
             program_options_free(&args);
             return EXIT_FAILURE;
@@ -821,7 +738,7 @@ int main(int argc, char *argv[])
     }
 
     /* Write the column permutation to a Matrix Market file. */
-    if (args.ordering != mtxfile_custom_order && args.colperm_path && !symmetric) {
+    if (args.ordering != mtxfile_custom_order && args.colpermpath && !symmetric) {
         struct mtxfile colperm_mtxfile;
         err = mtxfile_init_vector_array_integer_single(
             &colperm_mtxfile, mtxfile.size.num_columns, colperm);
@@ -829,8 +746,7 @@ int main(int argc, char *argv[])
             fprintf(stderr, "%s: %s\n",
                     program_invocation_short_name,
                     mtxstrerror(err));
-            free(colperm);
-            free(rowperm);
+            free(colperm); free(rowperm);
             mtxfile_free(&mtxfile);
             program_options_free(&args);
             return EXIT_FAILURE;
@@ -844,7 +760,7 @@ int main(int argc, char *argv[])
 
         if (args.ordering == mtxfile_rcm) {
             err = mtxfilecomments_printf(
-                &colperm_mtxfile.comments, "%% This file was generated by %s %s (%s, starting vertex %d)\n",
+                &colperm_mtxfile.comments, "%% This file was generated by %s %s (%s, starting vertex %'d)\n",
                 program_name, program_version, mtxfileordering_str(args.ordering), rcm_starting_vertex);
         } else {
             err = mtxfilecomments_printf(
@@ -852,14 +768,12 @@ int main(int argc, char *argv[])
                 program_name, program_version, mtxfileordering_str(args.ordering));
         }
         if (err) {
-            if (args.verbose > 0)
-                fprintf(diagf, "\n");
+            if (args.verbose > 0) fprintf(diagf, "\n");
             fprintf(stderr, "%s: %s\n",
                     program_invocation_short_name,
                     mtxstrerror(err));
             mtxfile_free(&colperm_mtxfile);
-            free(colperm);
-            free(rowperm);
+            free(colperm); free(rowperm);
             mtxfile_free(&mtxfile);
             program_options_free(&args);
             return EXIT_FAILURE;
@@ -867,16 +781,14 @@ int main(int argc, char *argv[])
 
         int64_t bytes_written = 0;
         err = mtxfile_write(
-            &colperm_mtxfile, args.colperm_path, false, "%d", &bytes_written);
+            &colperm_mtxfile, args.colpermpath, false, "%d", &bytes_written);
         if (err) {
-            if (args.verbose > 0)
-                fprintf(diagf, "\n");
+            if (args.verbose > 0) fprintf(diagf, "\n");
             fprintf(stderr, "%s: %s\n",
                     program_invocation_short_name,
                     mtxstrerror(err));
             mtxfile_free(&colperm_mtxfile);
-            free(colperm);
-            free(rowperm);
+            free(colperm); free(rowperm);
             mtxfile_free(&mtxfile);
             program_options_free(&args);
             return EXIT_FAILURE;
@@ -892,9 +804,8 @@ int main(int argc, char *argv[])
         mtxfile_free(&colperm_mtxfile);
     }
 
-    /* 5. Clean up. */
-    free(colperm);
-    free(rowperm);
+    /* 5. clean up. */
+    free(colperm); free(rowperm);
     mtxfile_free(&mtxfile);
     program_options_free(&args);
     return EXIT_SUCCESS;
