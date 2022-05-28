@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-05-21
+ * Last modified: 2022-05-28
  *
  * Data structures for matrices in coordinate format.
  */
@@ -1382,6 +1382,190 @@ int mtxmatrix_ompcsr_to_mtxfile(
             }
         }
     } else { return MTX_ERR_INVALID_FIELD; }
+    return MTX_SUCCESS;
+}
+
+/*
+ * partitioning
+ */
+
+/**
+ * ‘mtxmatrix_ompcsr_split()’ splits a matrix into multiple matrices
+ * according to a given assignment of parts to each nonzero matrix
+ * element.
+ *
+ * The partitioning of the nonzero matrix elements is specified by the
+ * array ‘parts’. The length of the ‘parts’ array is given by ‘size’,
+ * which must match the number of explicitly stored nonzero matrix
+ * entries in ‘src’. Each entry in the ‘parts’ array is an integer in
+ * the range ‘[0, num_parts)’ designating the part to which the
+ * corresponding matrix nonzero belongs.
+ *
+ * The argument ‘dsts’ is an array of ‘num_parts’ pointers to objects
+ * of type ‘struct mtxmatrix_ompcsr’. If successful, then ‘dsts[p]’
+ * points to a matrix consisting of elements from ‘src’ that belong to
+ * the ‘p’th part, as designated by the ‘parts’ array.
+ *
+ * The caller is responsible for calling ‘mtxmatrix_ompcsr_free()’ to
+ * free storage allocated for each matrix in the ‘dsts’ array.
+ */
+int mtxmatrix_ompcsr_split(
+    int num_parts,
+    struct mtxmatrix_ompcsr ** dsts,
+    const struct mtxmatrix_ompcsr * src,
+    int64_t size,
+    int * parts)
+{
+    if (size != src->size) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+    bool sorted = true;
+    for (int64_t k = 0; k < size; k++) {
+        if (parts[k] < 0 || parts[k] >= num_parts)
+            return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+        if (k > 0 && parts[k-1] > parts[k]) sorted = false;
+    }
+
+    /* sort by part number and invert the sorting permutation */
+    int64_t * invperm;
+    if (sorted) {
+        invperm = malloc(size * sizeof(int64_t));
+        if (!invperm) return MTX_ERR_ERRNO;
+        for (int64_t k = 0; k < size; k++) invperm[k] = k;
+    } else {
+        int64_t * perm = malloc(size * sizeof(int64_t));
+        if (!perm) return MTX_ERR_ERRNO;
+        int err = radix_sort_int(size, parts, perm);
+        if (err) { free(perm); return err; }
+        invperm = malloc(size * sizeof(int64_t));
+        if (!invperm) { free(perm); return MTX_ERR_ERRNO; }
+        for (int64_t k = 0; k < size; k++) invperm[perm[k]] = k;
+        free(perm);
+    }
+
+    int * rowidx = malloc(size * sizeof(int));
+    if (!rowidx) { free(invperm); return MTX_ERR_ERRNO; }
+    for (int i = 0; i < src->num_rows; i++) {
+        for (int64_t k = src->rowptr[i]; k < src->rowptr[i+1]; k++) {
+            rowidx[k] = i;
+        }
+    }
+
+    /*
+     * Extract each part by a) counting the number elements in the
+     * part, b) allocating storage, and c) gathering row and column
+     * offsets, as well as nonzeros, for the part.
+     */
+    int64_t offset = 0;
+    for (int p = 0; p < num_parts; p++) {
+        int64_t partsize = 0;
+        while (offset+partsize < size && parts[offset+partsize] == p) partsize++;
+
+        dsts[p]->symmetry = src->symmetry;
+        dsts[p]->num_rows = src->num_rows;
+        dsts[p]->num_columns = src->num_columns;
+        dsts[p]->num_entries = src->num_entries;
+        dsts[p]->num_nonzeros = 0;
+        dsts[p]->size = partsize;
+        dsts[p]->rowptr = malloc((dsts[p]->num_rows+1) * sizeof(int64_t));
+        if (!dsts[p]->rowptr) {
+            for (int q = p-1; q >= 0; q--) mtxmatrix_ompcsr_free(dsts[q]);
+            free(rowidx); free(invperm);
+            return MTX_ERR_ERRNO;
+        }
+        dsts[p]->colidx = malloc(partsize * sizeof(int));
+        if (!dsts[p]->colidx) {
+            free(dsts[p]->rowptr);
+            for (int q = p-1; q >= 0; q--) mtxmatrix_ompcsr_free(dsts[q]);
+            free(rowidx); free(invperm);
+            return MTX_ERR_ERRNO;
+        }
+        for (int64_t k = 0; k < partsize; k++) {
+            int i = rowidx[invperm[offset+k]];
+            dsts[p]->rowptr[i+1]++;
+            dsts[p]->colidx[k] = src->colidx[invperm[offset+k]];
+            dsts[p]->num_nonzeros +=
+                (dsts[p]->symmetry == mtx_unsymmetric ||
+                 dsts[p]->rowptr[k] == dsts[p]->colidx[k]) ? 1 : 2;
+        }
+        for (int i = 0; i < dsts[p]->num_rows; i++)
+            dsts[p]->rowptr[i+1] += dsts[p]->rowptr[i];
+
+        struct mtxvector_packed dst;
+        dst.size = size;
+        dst.num_nonzeros = partsize;
+        dst.idx = &invperm[offset];
+        dst.x.type = mtxvector_omp;
+        int err = mtxvector_omp_alloc(
+            &dst.x.storage.omp, src->a.base.field, src->a.base.precision, partsize);
+        if (err) {
+            free(dsts[p]->colidx); free(dsts[p]->rowptr);
+            for (int q = p-1; q >= 0; q--) mtxmatrix_ompcsr_free(dsts[q]);
+            free(rowidx); free(invperm);
+            return err;
+        }
+        err = mtxvector_omp_usga(&dst, &src->a);
+        if (err) {
+            mtxvector_omp_free(&dst.x.storage.omp);
+            free(dsts[p]->colidx); free(dsts[p]->rowptr);
+            for (int q = p-1; q >= 0; q--) mtxmatrix_ompcsr_free(dsts[q]);
+            free(rowidx); free(invperm);
+            return err;
+        }
+        dsts[p]->a = dst.x.storage.omp;
+
+        /* extract diagonals for symmetric and Hermitian matrices */
+        if (dsts[p]->num_rows == dsts[p]->num_columns &&
+            (dsts[p]->symmetry == mtx_symmetric ||
+             dsts[p]->symmetry == mtx_skew_symmetric ||
+             dsts[p]->symmetry == mtx_hermitian))
+        {
+            int64_t num_diagonals = 0;
+            for (int i = 0; i < dsts[p]->num_rows; i++) {
+                for (int64_t k = dsts[p]->rowptr[i]; k < dsts[p]->rowptr[i+1]; k++) {
+                    if (i == dsts[p]->colidx[k]) num_diagonals++;
+                }
+            }
+            dsts[p]->num_nonzeros = 2*dsts[p]->size-num_diagonals;
+            err = mtxvector_packed_alloc(
+                &dsts[p]->diag, mtxvector_omp,
+                dsts[p]->a.base.field, dsts[p]->a.base.precision,
+                dsts[p]->size, num_diagonals, NULL);
+            if (err) {
+                mtxvector_omp_free(&dsts[p]->a);
+                free(dsts[p]->colidx); free(dsts[p]->rowptr);
+                for (int q = p-1; q >= 0; q--) mtxmatrix_ompcsr_free(dsts[q]);
+                free(rowidx); free(invperm);
+                return err;
+            }
+            int64_t * diagidx = dsts[p]->diag.idx;
+            num_diagonals = 0;
+            for (int i = 0; i < dsts[p]->num_rows; i++) {
+                for (int64_t k = dsts[p]->rowptr[i]; k < dsts[p]->rowptr[i+1]; k++) {
+                    if (i == dsts[p]->colidx[k]) diagidx[num_diagonals++] = k;
+                }
+            }
+        } else if (dsts[p]->symmetry == mtx_unsymmetric) {
+            dsts[p]->num_nonzeros = dsts[p]->size;
+            err = mtxvector_packed_alloc(
+                &dsts[p]->diag, mtxvector_omp,
+                dsts[p]->a.base.field, dsts[p]->a.base.precision, dsts[p]->size, 0, NULL);
+            if (err) {
+                mtxvector_omp_free(&dsts[p]->a);
+                free(dsts[p]->colidx); free(dsts[p]->rowptr);
+                for (int q = p-1; q >= 0; q--) mtxmatrix_ompcsr_free(dsts[q]);
+                free(rowidx); free(invperm);
+                return err;
+            }
+        } else {
+            mtxvector_omp_free(&dsts[p]->a);
+            free(dsts[p]->colidx); free(dsts[p]->rowptr);
+            for (int q = p-1; q >= 0; q--) mtxmatrix_ompcsr_free(dsts[q]);
+            free(rowidx); free(invperm);
+            return MTX_ERR_INVALID_SYMMETRY;
+        }
+
+        offset += partsize;
+    }
+    free(rowidx); free(invperm);
     return MTX_SUCCESS;
 }
 

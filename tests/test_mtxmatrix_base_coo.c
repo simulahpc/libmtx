@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-05-04
+ * Last modified: 2022-05-28
  *
  * Unit tests for sparse matrices in coordinate format.
  */
@@ -58,7 +58,7 @@ int test_mtxmatrix_coo_from_mtxfile(void)
         err = mtxmatrix_from_mtxfile(&x, mtxmatrix_coo, &mtxfile);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(mtxmatrix_coo, x.type);
-        const struct mtxmatrix_coo * x_ = &x.storage.coordinate;
+        const struct mtxmatrix_coo * x_ = &x.storage.coo;
         TEST_ASSERT_EQ(mtx_unsymmetric, x_->symmetry);
         TEST_ASSERT_EQ(3, x_->num_rows);
         TEST_ASSERT_EQ(3, x_->num_columns);
@@ -91,7 +91,7 @@ int test_mtxmatrix_coo_from_mtxfile(void)
         err = mtxmatrix_from_mtxfile(&x, mtxmatrix_coo, &mtxfile);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(mtxmatrix_coo, x.type);
-        const struct mtxmatrix_coo * x_ = &x.storage.coordinate;
+        const struct mtxmatrix_coo * x_ = &x.storage.coo;
         TEST_ASSERT_EQ(mtx_symmetric, x_->symmetry);
         TEST_ASSERT_EQ(3, x_->num_rows);
         TEST_ASSERT_EQ(3, x_->num_columns);
@@ -125,7 +125,7 @@ int test_mtxmatrix_coo_from_mtxfile(void)
         err = mtxmatrix_from_mtxfile(&x, mtxmatrix_coo, &mtxfile);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(mtxmatrix_coo, x.type);
-        const struct mtxmatrix_coo * x_ = &x.storage.coordinate;
+        const struct mtxmatrix_coo * x_ = &x.storage.coo;
         TEST_ASSERT_EQ(mtx_skew_symmetric, x_->symmetry);
         TEST_ASSERT_EQ(3, x_->num_rows);
         TEST_ASSERT_EQ(3, x_->num_columns);
@@ -157,7 +157,7 @@ int test_mtxmatrix_coo_from_mtxfile(void)
         err = mtxmatrix_from_mtxfile(&x, mtxmatrix_coo, &mtxfile);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(mtxmatrix_coo, x.type);
-        const struct mtxmatrix_coo * x_ = &x.storage.coordinate;
+        const struct mtxmatrix_coo * x_ = &x.storage.coo;
         TEST_ASSERT_EQ(mtx_unsymmetric, x_->symmetry);
         TEST_ASSERT_EQ(3, x_->num_rows);
         TEST_ASSERT_EQ(3, x_->num_columns);
@@ -190,7 +190,7 @@ int test_mtxmatrix_coo_from_mtxfile(void)
         err = mtxmatrix_from_mtxfile(&x, mtxmatrix_coo, &mtxfile);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(mtxmatrix_coo, x.type);
-        const struct mtxmatrix_coo * x_ = &x.storage.coordinate;
+        const struct mtxmatrix_coo * x_ = &x.storage.coo;
         TEST_ASSERT_EQ(mtx_symmetric, x_->symmetry);
         TEST_ASSERT_EQ(3, x_->num_rows);
         TEST_ASSERT_EQ(3, x_->num_columns);
@@ -224,7 +224,7 @@ int test_mtxmatrix_coo_from_mtxfile(void)
         err = mtxmatrix_from_mtxfile(&x, mtxmatrix_coo, &mtxfile);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(mtxmatrix_coo, x.type);
-        const struct mtxmatrix_coo * x_ = &x.storage.coordinate;
+        const struct mtxmatrix_coo * x_ = &x.storage.coo;
         TEST_ASSERT_EQ(mtx_skew_symmetric, x_->symmetry);
         TEST_ASSERT_EQ(3, x_->num_rows);
         TEST_ASSERT_EQ(3, x_->num_columns);
@@ -257,7 +257,7 @@ int test_mtxmatrix_coo_from_mtxfile(void)
         err = mtxmatrix_from_mtxfile(&x, mtxmatrix_coo, &mtxfile);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(mtxmatrix_coo, x.type);
-        const struct mtxmatrix_coo * x_ = &x.storage.coordinate;
+        const struct mtxmatrix_coo * x_ = &x.storage.coo;
         TEST_ASSERT_EQ(mtx_unsymmetric, x_->symmetry);
         TEST_ASSERT_EQ(3, x_->num_rows);
         TEST_ASSERT_EQ(3, x_->num_columns);
@@ -295,7 +295,7 @@ int test_mtxmatrix_coo_from_mtxfile(void)
         err = mtxmatrix_from_mtxfile(&x, mtxmatrix_coo, &mtxfile);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(mtxmatrix_coo, x.type);
-        const struct mtxmatrix_coo * x_ = &x.storage.coordinate;
+        const struct mtxmatrix_coo * x_ = &x.storage.coo;
         TEST_ASSERT_EQ(mtx_symmetric, x_->symmetry);
         TEST_ASSERT_EQ(3, x_->num_rows);
         TEST_ASSERT_EQ(3, x_->num_columns);
@@ -333,7 +333,7 @@ int test_mtxmatrix_coo_from_mtxfile(void)
         err = mtxmatrix_from_mtxfile(&x, mtxmatrix_coo, &mtxfile);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(mtxmatrix_coo, x.type);
-        const struct mtxmatrix_coo * x_ = &x.storage.coordinate;
+        const struct mtxmatrix_coo * x_ = &x.storage.coo;
         TEST_ASSERT_EQ(mtx_skew_symmetric, x_->symmetry);
         TEST_ASSERT_EQ(3, x_->num_rows);
         TEST_ASSERT_EQ(3, x_->num_columns);
@@ -368,7 +368,7 @@ int test_mtxmatrix_coo_from_mtxfile(void)
         err = mtxmatrix_from_mtxfile(&x, mtxmatrix_coo, &mtxfile);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(mtxmatrix_coo, x.type);
-        const struct mtxmatrix_coo * x_ = &x.storage.coordinate;
+        const struct mtxmatrix_coo * x_ = &x.storage.coo;
         TEST_ASSERT_EQ(mtx_hermitian, x_->symmetry);
         TEST_ASSERT_EQ(3, x_->num_rows);
         TEST_ASSERT_EQ(3, x_->num_columns);
@@ -407,7 +407,7 @@ int test_mtxmatrix_coo_from_mtxfile(void)
         err = mtxmatrix_from_mtxfile(&x, mtxmatrix_coo, &mtxfile);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(mtxmatrix_coo, x.type);
-        const struct mtxmatrix_coo * x_ = &x.storage.coordinate;
+        const struct mtxmatrix_coo * x_ = &x.storage.coo;
         TEST_ASSERT_EQ(mtx_unsymmetric, x_->symmetry);
         TEST_ASSERT_EQ(3, x_->num_rows);
         TEST_ASSERT_EQ(3, x_->num_columns);
@@ -445,7 +445,7 @@ int test_mtxmatrix_coo_from_mtxfile(void)
         err = mtxmatrix_from_mtxfile(&x, mtxmatrix_coo, &mtxfile);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(mtxmatrix_coo, x.type);
-        const struct mtxmatrix_coo * x_ = &x.storage.coordinate;
+        const struct mtxmatrix_coo * x_ = &x.storage.coo;
         TEST_ASSERT_EQ(mtx_unsymmetric, x_->symmetry);
         TEST_ASSERT_EQ(3, x_->num_rows);
         TEST_ASSERT_EQ(3, x_->num_columns);
@@ -478,7 +478,7 @@ int test_mtxmatrix_coo_from_mtxfile(void)
         err = mtxmatrix_from_mtxfile(&x, mtxmatrix_coo, &mtxfile);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(mtxmatrix_coo, x.type);
-        const struct mtxmatrix_coo * x_ = &x.storage.coordinate;
+        const struct mtxmatrix_coo * x_ = &x.storage.coo;
         TEST_ASSERT_EQ(mtx_symmetric, x_->symmetry);
         TEST_ASSERT_EQ(3, x_->num_rows);
         TEST_ASSERT_EQ(3, x_->num_columns);
@@ -512,7 +512,7 @@ int test_mtxmatrix_coo_from_mtxfile(void)
         err = mtxmatrix_from_mtxfile(&x, mtxmatrix_coo, &mtxfile);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(mtxmatrix_coo, x.type);
-        const struct mtxmatrix_coo * x_ = &x.storage.coordinate;
+        const struct mtxmatrix_coo * x_ = &x.storage.coo;
         TEST_ASSERT_EQ(mtx_skew_symmetric, x_->symmetry);
         TEST_ASSERT_EQ(3, x_->num_rows);
         TEST_ASSERT_EQ(3, x_->num_columns);
@@ -544,7 +544,7 @@ int test_mtxmatrix_coo_from_mtxfile(void)
         err = mtxmatrix_from_mtxfile(&x, mtxmatrix_coo, &mtxfile);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(mtxmatrix_coo, x.type);
-        const struct mtxmatrix_coo * x_ = &x.storage.coordinate;
+        const struct mtxmatrix_coo * x_ = &x.storage.coo;
         TEST_ASSERT_EQ(mtx_unsymmetric, x_->symmetry);
         TEST_ASSERT_EQ(3, x_->num_rows);
         TEST_ASSERT_EQ(3, x_->num_columns);
@@ -577,7 +577,7 @@ int test_mtxmatrix_coo_from_mtxfile(void)
         err = mtxmatrix_from_mtxfile(&x, mtxmatrix_coo, &mtxfile);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(mtxmatrix_coo, x.type);
-        const struct mtxmatrix_coo * x_ = &x.storage.coordinate;
+        const struct mtxmatrix_coo * x_ = &x.storage.coo;
         TEST_ASSERT_EQ(mtx_symmetric, x_->symmetry);
         TEST_ASSERT_EQ(3, x_->num_rows);
         TEST_ASSERT_EQ(3, x_->num_columns);
@@ -611,7 +611,7 @@ int test_mtxmatrix_coo_from_mtxfile(void)
         err = mtxmatrix_from_mtxfile(&x, mtxmatrix_coo, &mtxfile);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(mtxmatrix_coo, x.type);
-        const struct mtxmatrix_coo * x_ = &x.storage.coordinate;
+        const struct mtxmatrix_coo * x_ = &x.storage.coo;
         TEST_ASSERT_EQ(mtx_skew_symmetric, x_->symmetry);
         TEST_ASSERT_EQ(3, x_->num_rows);
         TEST_ASSERT_EQ(3, x_->num_columns);
@@ -643,7 +643,7 @@ int test_mtxmatrix_coo_from_mtxfile(void)
         err = mtxmatrix_from_mtxfile(&x, mtxmatrix_coo, &mtxfile);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(mtxmatrix_coo, x.type);
-        const struct mtxmatrix_coo * x_ = &x.storage.coordinate;
+        const struct mtxmatrix_coo * x_ = &x.storage.coo;
         TEST_ASSERT_EQ(3, x_->num_rows);
         TEST_ASSERT_EQ(3, x_->num_columns);
         TEST_ASSERT_EQ(4, x_->num_nonzeros);
@@ -670,7 +670,7 @@ int test_mtxmatrix_coo_from_mtxfile(void)
         err = mtxmatrix_from_mtxfile(&x, mtxmatrix_coo, &mtxfile);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(mtxmatrix_coo, x.type);
-        const struct mtxmatrix_coo * x_ = &x.storage.coordinate;
+        const struct mtxmatrix_coo * x_ = &x.storage.coo;
         TEST_ASSERT_EQ(3, x_->num_rows);
         TEST_ASSERT_EQ(3, x_->num_columns);
         TEST_ASSERT_EQ(6, x_->num_nonzeros);
@@ -1022,6 +1022,69 @@ int test_mtxmatrix_coo_to_mtxfile(void)
         }
         mtxfile_free(&mtxfile);
         mtxmatrix_free(&A);
+    }
+    return TEST_SUCCESS;
+}
+
+/**
+ * ‘test_mtxmatrix_coo_split()’ tests splitting matrices.
+ */
+int test_mtxmatrix_coo_split(void)
+{
+    int err;
+    {
+        struct mtxmatrix src;
+        int num_parts = 2;
+        struct mtxmatrix dst0, dst1;
+        struct mtxmatrix * dsts[] = {&dst0, &dst1};
+        int num_rows = 3;
+        int num_columns = 3;
+        int num_nonzeros = 8;
+        int srcrowidx[] = {0, 0, 1, 1, 1, 2, 2, 2};
+        int srccolidx[] = {0, 1, 0, 1, 2, 0, 1, 2};
+        float srcdata[] = {1.0f, 2.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f, 9.0f};
+        int parts[] =     {0, 1, 0, 0, 1, 1, 0, 1};
+        int srcsize = sizeof(srcdata) / sizeof(*srcdata);
+        err = mtxmatrix_init_entries_real_single(
+            &src, mtxmatrix_coo, mtx_unsymmetric,
+            num_rows, num_columns, num_nonzeros,
+            srcrowidx, srccolidx, srcdata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        err = mtxmatrix_split(num_parts, dsts, &src, srcsize, parts);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(mtxmatrix_coo, dst0.type);
+        TEST_ASSERT_EQ(mtx_unsymmetric, dst0.storage.coo.symmetry);
+        TEST_ASSERT_EQ(3, dst0.storage.coo.num_rows);
+        TEST_ASSERT_EQ(3, dst0.storage.coo.num_columns);
+        TEST_ASSERT_EQ(4, dst0.storage.coo.num_nonzeros);
+        TEST_ASSERT_EQ(4, dst0.storage.coo.size);
+        TEST_ASSERT_EQ(dst0.storage.coo.rowidx[0], 0); TEST_ASSERT_EQ(dst0.storage.coo.colidx[0], 0);
+        TEST_ASSERT_EQ(dst0.storage.coo.rowidx[1], 1); TEST_ASSERT_EQ(dst0.storage.coo.colidx[1], 0);
+        TEST_ASSERT_EQ(dst0.storage.coo.rowidx[2], 1); TEST_ASSERT_EQ(dst0.storage.coo.colidx[2], 1);
+        TEST_ASSERT_EQ(dst0.storage.coo.rowidx[3], 2); TEST_ASSERT_EQ(dst0.storage.coo.colidx[3], 1);
+        TEST_ASSERT_EQ(mtx_field_real, dst0.storage.coo.a.field);
+        TEST_ASSERT_EQ(mtx_single, dst0.storage.coo.a.precision);
+        TEST_ASSERT_EQ(dst0.storage.coo.a.data.real_single[0], 1.0f);
+        TEST_ASSERT_EQ(dst0.storage.coo.a.data.real_single[1], 4.0f);
+        TEST_ASSERT_EQ(dst0.storage.coo.a.data.real_single[2], 5.0f);
+        TEST_ASSERT_EQ(dst0.storage.coo.a.data.real_single[3], 8.0f);
+        TEST_ASSERT_EQ(mtxmatrix_coo, dst1.type);
+        TEST_ASSERT_EQ(mtx_unsymmetric, dst1.storage.coo.symmetry);
+        TEST_ASSERT_EQ(3, dst1.storage.coo.num_rows);
+        TEST_ASSERT_EQ(3, dst1.storage.coo.num_columns);
+        TEST_ASSERT_EQ(4, dst1.storage.coo.num_nonzeros);
+        TEST_ASSERT_EQ(4, dst1.storage.coo.size);
+        TEST_ASSERT_EQ(dst1.storage.coo.rowidx[0], 0); TEST_ASSERT_EQ(dst1.storage.coo.colidx[0], 1);
+        TEST_ASSERT_EQ(dst1.storage.coo.rowidx[1], 1); TEST_ASSERT_EQ(dst1.storage.coo.colidx[1], 2);
+        TEST_ASSERT_EQ(dst1.storage.coo.rowidx[2], 2); TEST_ASSERT_EQ(dst1.storage.coo.colidx[2], 0);
+        TEST_ASSERT_EQ(dst1.storage.coo.rowidx[3], 2); TEST_ASSERT_EQ(dst1.storage.coo.colidx[3], 2);
+        TEST_ASSERT_EQ(mtx_field_real, dst1.storage.coo.a.field);
+        TEST_ASSERT_EQ(mtx_single, dst1.storage.coo.a.precision);
+        TEST_ASSERT_EQ(dst1.storage.coo.a.data.real_single[0], 2.0f);
+        TEST_ASSERT_EQ(dst1.storage.coo.a.data.real_single[1], 6.0f);
+        TEST_ASSERT_EQ(dst1.storage.coo.a.data.real_single[2], 7.0f);
+        TEST_ASSERT_EQ(dst1.storage.coo.a.data.real_single[3], 9.0f);
+        mtxmatrix_free(&dst1); mtxmatrix_free(&dst0); mtxmatrix_free(&src);
     }
     return TEST_SUCCESS;
 }
@@ -3155,6 +3218,7 @@ int main(int argc, char * argv[])
     TEST_SUITE_BEGIN("Running tests for coordinate matrices\n");
     TEST_RUN(test_mtxmatrix_coo_from_mtxfile);
     TEST_RUN(test_mtxmatrix_coo_to_mtxfile);
+    TEST_RUN(test_mtxmatrix_coo_split);
     TEST_RUN(test_mtxmatrix_coo_gemv);
     TEST_SUITE_END();
     return (TEST_SUITE_STATUS == TEST_SUCCESS) ?

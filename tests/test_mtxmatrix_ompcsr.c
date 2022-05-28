@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-05-21
+ * Last modified: 2022-05-28
  *
  * Unit tests for sparse matrices in CSR format with OpenMP
  * shared-memory parallelism.
@@ -1106,6 +1106,77 @@ int test_mtxmatrix_ompcsr_to_mtxfile(void)
         }
         mtxfile_free(&mtxfile);
         mtxmatrix_free(&A);
+    }
+    return TEST_SUCCESS;
+}
+
+/**
+ * ‘test_mtxmatrix_ompcsr_split()’ tests splitting matrices.
+ */
+int test_mtxmatrix_ompcsr_split(void)
+{
+    int err;
+    {
+        struct mtxmatrix src;
+        int num_parts = 2;
+        struct mtxmatrix dst0, dst1;
+        struct mtxmatrix * dsts[] = {&dst0, &dst1};
+        int num_rows = 3;
+        int num_columns = 3;
+        int num_nonzeros = 8;
+        int srcrowidx[] = {0, 0, 1, 1, 1, 2, 2, 2};
+        int srccolidx[] = {0, 1, 0, 1, 2, 0, 1, 2};
+        float srcdata[] = {1.0f, 2.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f, 9.0f};
+        int parts[] =     {0, 1, 0, 0, 1, 1, 0, 1};
+        int srcsize = sizeof(srcdata) / sizeof(*srcdata);
+        err = mtxmatrix_init_entries_real_single(
+            &src, mtxmatrix_ompcsr, mtx_unsymmetric,
+            num_rows, num_columns, num_nonzeros,
+            srcrowidx, srccolidx, srcdata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        err = mtxmatrix_split(num_parts, dsts, &src, srcsize, parts);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(mtxmatrix_ompcsr, dst0.type);
+        TEST_ASSERT_EQ(mtx_unsymmetric, dst0.storage.ompcsr.symmetry);
+        TEST_ASSERT_EQ(3, dst0.storage.ompcsr.num_rows);
+        TEST_ASSERT_EQ(3, dst0.storage.ompcsr.num_columns);
+        TEST_ASSERT_EQ(4, dst0.storage.ompcsr.num_nonzeros);
+        TEST_ASSERT_EQ(4, dst0.storage.ompcsr.size);
+        TEST_ASSERT_EQ(dst0.storage.ompcsr.rowptr[0], 0);
+        TEST_ASSERT_EQ(dst0.storage.ompcsr.rowptr[1], 1);
+        TEST_ASSERT_EQ(dst0.storage.ompcsr.rowptr[2], 3);
+        TEST_ASSERT_EQ(dst0.storage.ompcsr.rowptr[3], 4);
+        TEST_ASSERT_EQ(dst0.storage.ompcsr.colidx[0], 0);
+        TEST_ASSERT_EQ(dst0.storage.ompcsr.colidx[1], 0);
+        TEST_ASSERT_EQ(dst0.storage.ompcsr.colidx[2], 1);
+        TEST_ASSERT_EQ(dst0.storage.ompcsr.colidx[3], 1);
+        TEST_ASSERT_EQ(mtx_field_real, dst0.storage.ompcsr.a.base.field);
+        TEST_ASSERT_EQ(mtx_single, dst0.storage.ompcsr.a.base.precision);
+        TEST_ASSERT_EQ(dst0.storage.ompcsr.a.base.data.real_single[0], 1.0f);
+        TEST_ASSERT_EQ(dst0.storage.ompcsr.a.base.data.real_single[1], 4.0f);
+        TEST_ASSERT_EQ(dst0.storage.ompcsr.a.base.data.real_single[2], 5.0f);
+        TEST_ASSERT_EQ(dst0.storage.ompcsr.a.base.data.real_single[3], 8.0f);
+        TEST_ASSERT_EQ(mtxmatrix_ompcsr, dst1.type);
+        TEST_ASSERT_EQ(mtx_unsymmetric, dst1.storage.ompcsr.symmetry);
+        TEST_ASSERT_EQ(3, dst1.storage.ompcsr.num_rows);
+        TEST_ASSERT_EQ(3, dst1.storage.ompcsr.num_columns);
+        TEST_ASSERT_EQ(4, dst1.storage.ompcsr.num_nonzeros);
+        TEST_ASSERT_EQ(4, dst1.storage.ompcsr.size);
+        TEST_ASSERT_EQ(dst1.storage.ompcsr.rowptr[0], 0);
+        TEST_ASSERT_EQ(dst1.storage.ompcsr.rowptr[1], 1);
+        TEST_ASSERT_EQ(dst1.storage.ompcsr.rowptr[2], 2);
+        TEST_ASSERT_EQ(dst1.storage.ompcsr.rowptr[3], 4);
+        TEST_ASSERT_EQ(dst1.storage.ompcsr.colidx[0], 1);
+        TEST_ASSERT_EQ(dst1.storage.ompcsr.colidx[1], 2);
+        TEST_ASSERT_EQ(dst1.storage.ompcsr.colidx[2], 0);
+        TEST_ASSERT_EQ(dst1.storage.ompcsr.colidx[3], 2);
+        TEST_ASSERT_EQ(mtx_field_real, dst1.storage.ompcsr.a.base.field);
+        TEST_ASSERT_EQ(mtx_single, dst1.storage.ompcsr.a.base.precision);
+        TEST_ASSERT_EQ(dst1.storage.ompcsr.a.base.data.real_single[0], 2.0f);
+        TEST_ASSERT_EQ(dst1.storage.ompcsr.a.base.data.real_single[1], 6.0f);
+        TEST_ASSERT_EQ(dst1.storage.ompcsr.a.base.data.real_single[2], 7.0f);
+        TEST_ASSERT_EQ(dst1.storage.ompcsr.a.base.data.real_single[3], 9.0f);
+        mtxmatrix_free(&dst1); mtxmatrix_free(&dst0); mtxmatrix_free(&src);
     }
     return TEST_SUCCESS;
 }
@@ -3241,6 +3312,7 @@ int main(int argc, char * argv[])
     TEST_SUITE_BEGIN("Running tests for OpenMP CSR matrices\n");
     TEST_RUN(test_mtxmatrix_ompcsr_from_mtxfile);
     TEST_RUN(test_mtxmatrix_ompcsr_to_mtxfile);
+    TEST_RUN(test_mtxmatrix_ompcsr_split);
     TEST_RUN(test_mtxmatrix_ompcsr_gemv);
     TEST_SUITE_END();
     return (TEST_SUITE_STATUS == TEST_SUCCESS) ?

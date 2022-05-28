@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-05-05
+ * Last modified: 2022-05-28
  *
  * Matrices in CSR format.
  */
@@ -873,6 +873,37 @@ int mtxmatrix_csr_to_mtxfile(
     int64_t num_columns,
     const int64_t * colidx,
     enum mtxfileformat mtxfmt);
+
+/*
+ * partitioning
+ */
+
+/**
+ * ‘mtxmatrix_csr_split()’ splits a matrix into multiple matrices
+ * according to a given assignment of parts to each nonzero matrix
+ * element.
+ *
+ * The partitioning of the nonzero matrix elements is specified by the
+ * array ‘parts’. The length of the ‘parts’ array is given by ‘size’,
+ * which must match the number of explicitly stored nonzero matrix
+ * entries in ‘src’. Each entry in the ‘parts’ array is an integer in
+ * the range ‘[0, num_parts)’ designating the part to which the
+ * corresponding matrix nonzero belongs.
+ *
+ * The argument ‘dsts’ is an array of ‘num_parts’ pointers to objects
+ * of type ‘struct mtxmatrix_csr’. If successful, then ‘dsts[p]’
+ * points to a matrix consisting of elements from ‘src’ that belong to
+ * the ‘p’th part, as designated by the ‘parts’ array.
+ *
+ * The caller is responsible for calling ‘mtxmatrix_csr_free()’ to
+ * free storage allocated for each matrix in the ‘dsts’ array.
+ */
+int mtxmatrix_csr_split(
+    int num_parts,
+    struct mtxmatrix_csr ** dsts,
+    const struct mtxmatrix_csr * src,
+    int64_t size,
+    int * parts);
 
 /*
  * Level 1 BLAS operations

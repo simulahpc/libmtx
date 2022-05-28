@@ -1108,6 +1108,77 @@ int test_mtxmatrix_csr_to_mtxfile(void)
 }
 
 /**
+ * ‘test_mtxmatrix_csr_split()’ tests splitting matrices.
+ */
+int test_mtxmatrix_csr_split(void)
+{
+    int err;
+    {
+        struct mtxmatrix src;
+        int num_parts = 2;
+        struct mtxmatrix dst0, dst1;
+        struct mtxmatrix * dsts[] = {&dst0, &dst1};
+        int num_rows = 3;
+        int num_columns = 3;
+        int num_nonzeros = 8;
+        int srcrowidx[] = {0, 0, 1, 1, 1, 2, 2, 2};
+        int srccolidx[] = {0, 1, 0, 1, 2, 0, 1, 2};
+        float srcdata[] = {1.0f, 2.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f, 9.0f};
+        int parts[] =     {0, 1, 0, 0, 1, 1, 0, 1};
+        int srcsize = sizeof(srcdata) / sizeof(*srcdata);
+        err = mtxmatrix_init_entries_real_single(
+            &src, mtxmatrix_csr, mtx_unsymmetric,
+            num_rows, num_columns, num_nonzeros,
+            srcrowidx, srccolidx, srcdata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        err = mtxmatrix_split(num_parts, dsts, &src, srcsize, parts);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(mtxmatrix_csr, dst0.type);
+        TEST_ASSERT_EQ(mtx_unsymmetric, dst0.storage.csr.symmetry);
+        TEST_ASSERT_EQ(3, dst0.storage.csr.num_rows);
+        TEST_ASSERT_EQ(3, dst0.storage.csr.num_columns);
+        TEST_ASSERT_EQ(4, dst0.storage.csr.num_nonzeros);
+        TEST_ASSERT_EQ(4, dst0.storage.csr.size);
+        TEST_ASSERT_EQ(dst0.storage.csr.rowptr[0], 0);
+        TEST_ASSERT_EQ(dst0.storage.csr.rowptr[1], 1);
+        TEST_ASSERT_EQ(dst0.storage.csr.rowptr[2], 3);
+        TEST_ASSERT_EQ(dst0.storage.csr.rowptr[3], 4);
+        TEST_ASSERT_EQ(dst0.storage.csr.colidx[0], 0);
+        TEST_ASSERT_EQ(dst0.storage.csr.colidx[1], 0);
+        TEST_ASSERT_EQ(dst0.storage.csr.colidx[2], 1);
+        TEST_ASSERT_EQ(dst0.storage.csr.colidx[3], 1);
+        TEST_ASSERT_EQ(mtx_field_real, dst0.storage.csr.a.field);
+        TEST_ASSERT_EQ(mtx_single, dst0.storage.csr.a.precision);
+        TEST_ASSERT_EQ(dst0.storage.csr.a.data.real_single[0], 1.0f);
+        TEST_ASSERT_EQ(dst0.storage.csr.a.data.real_single[1], 4.0f);
+        TEST_ASSERT_EQ(dst0.storage.csr.a.data.real_single[2], 5.0f);
+        TEST_ASSERT_EQ(dst0.storage.csr.a.data.real_single[3], 8.0f);
+        TEST_ASSERT_EQ(mtxmatrix_csr, dst1.type);
+        TEST_ASSERT_EQ(mtx_unsymmetric, dst1.storage.csr.symmetry);
+        TEST_ASSERT_EQ(3, dst1.storage.csr.num_rows);
+        TEST_ASSERT_EQ(3, dst1.storage.csr.num_columns);
+        TEST_ASSERT_EQ(4, dst1.storage.csr.num_nonzeros);
+        TEST_ASSERT_EQ(4, dst1.storage.csr.size);
+        TEST_ASSERT_EQ(dst1.storage.csr.rowptr[0], 0);
+        TEST_ASSERT_EQ(dst1.storage.csr.rowptr[1], 1);
+        TEST_ASSERT_EQ(dst1.storage.csr.rowptr[2], 2);
+        TEST_ASSERT_EQ(dst1.storage.csr.rowptr[3], 4);
+        TEST_ASSERT_EQ(dst1.storage.csr.colidx[0], 1);
+        TEST_ASSERT_EQ(dst1.storage.csr.colidx[1], 2);
+        TEST_ASSERT_EQ(dst1.storage.csr.colidx[2], 0);
+        TEST_ASSERT_EQ(dst1.storage.csr.colidx[3], 2);
+        TEST_ASSERT_EQ(mtx_field_real, dst1.storage.csr.a.field);
+        TEST_ASSERT_EQ(mtx_single, dst1.storage.csr.a.precision);
+        TEST_ASSERT_EQ(dst1.storage.csr.a.data.real_single[0], 2.0f);
+        TEST_ASSERT_EQ(dst1.storage.csr.a.data.real_single[1], 6.0f);
+        TEST_ASSERT_EQ(dst1.storage.csr.a.data.real_single[2], 7.0f);
+        TEST_ASSERT_EQ(dst1.storage.csr.a.data.real_single[3], 9.0f);
+        mtxmatrix_free(&dst1); mtxmatrix_free(&dst0); mtxmatrix_free(&src);
+    }
+    return TEST_SUCCESS;
+}
+
+/**
  * ‘test_mtxmatrix_csr_gemv()’ tests computing matrix-vector
  * products for matrices in coordinate format.
  */
@@ -3236,6 +3307,7 @@ int main(int argc, char * argv[])
     TEST_SUITE_BEGIN("Running tests for CSR matrices\n");
     TEST_RUN(test_mtxmatrix_csr_from_mtxfile);
     TEST_RUN(test_mtxmatrix_csr_to_mtxfile);
+    TEST_RUN(test_mtxmatrix_csr_split);
     TEST_RUN(test_mtxmatrix_csr_gemv);
     TEST_SUITE_END();
     return (TEST_SUITE_STATUS == TEST_SUCCESS) ?
