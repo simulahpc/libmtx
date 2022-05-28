@@ -16,7 +16,7 @@
 # along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
 #
 # Authors: James D. Trotter <james@simula.no>
-# Last modified: 2022-05-24
+# Last modified: 2022-05-28
 #
 # Makefile for the top-level directory of Libmtx.
 #
@@ -93,6 +93,7 @@ libmtx_la_SOURCES = \
 	libmtx/vector/blas.c \
 	libmtx/vector/dist.c \
 	libmtx/vector/field.c \
+	libmtx/vector/null.c \
 	libmtx/vector/omp.c \
 	libmtx/vector/packed.c \
 	libmtx/vector/precision.c \
@@ -125,6 +126,7 @@ nobase_include_HEADERS = \
 	libmtx/vector/blas.h \
 	libmtx/vector/dist.h \
 	libmtx/vector/field.h \
+	libmtx/vector/null.h \
 	libmtx/vector/omp.h \
 	libmtx/vector/packed.h \
 	libmtx/vector/precision.h \
