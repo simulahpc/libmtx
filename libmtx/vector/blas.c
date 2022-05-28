@@ -594,53 +594,6 @@ int mtxvector_blas_split(
     return err;
 }
 
-/**
- * ‘mtxvector_blas_join()’ joins together block vectors to form a
- * larger vector.
- *
- * The argument ‘srcs’ is an array of size ‘P’, where ‘P’ is the
- * number of parts in the partitioning (i.e, ‘part->num_parts’).
- */
-int mtxvector_blas_join(
-    struct mtxvector_blas * dst,
-    const struct mtxvector * srcs,
-    const struct mtxpartition * part)
-{
-    int err;
-    int num_parts = part ? part->num_parts : 1;
-    struct mtxfile * srcmtxfiles = malloc(sizeof(struct mtxfile) * num_parts);
-    if (!srcmtxfiles) return MTX_ERR_ERRNO;
-    for (int p = 0; p < num_parts; p++) {
-        err = mtxvector_to_mtxfile(&srcmtxfiles[p], &srcs[p], 0, NULL, mtxfile_array);
-        if (err) {
-            for (int q = p-1; q >= 0; q--)
-                mtxfile_free(&srcmtxfiles[q]);
-            free(srcmtxfiles);
-            return err;
-        }
-    }
-
-    struct mtxfile dstmtxfile;
-    err = mtxfile_join(&dstmtxfile, srcmtxfiles, part, NULL);
-    if (err) {
-        for (int p = 0; p < num_parts; p++)
-            mtxfile_free(&srcmtxfiles[p]);
-        free(srcmtxfiles);
-        return err;
-    }
-    for (int p = 0; p < num_parts; p++)
-        mtxfile_free(&srcmtxfiles[p]);
-    free(srcmtxfiles);
-
-    err = mtxvector_blas_from_mtxfile(dst, &dstmtxfile);
-    if (err) {
-        mtxfile_free(&dstmtxfile);
-        return err;
-    }
-    mtxfile_free(&dstmtxfile);
-    return MTX_SUCCESS;
-}
-
 /*
  * Level 1 BLAS operations
  */

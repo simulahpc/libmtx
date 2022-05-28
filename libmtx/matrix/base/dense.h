@@ -40,7 +40,6 @@
 
 struct mtxfile;
 struct mtxmatrix;
-struct mtxpartition;
 
 /**
  * ‘mtxmatrix_dense’ represents a dense matrix with entries stored in
