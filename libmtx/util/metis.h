@@ -57,9 +57,11 @@ int metis_partgraphsym(
     int64_t N,
     int64_t size,
     int rowidxstride,
-    const int * rowidx,
+    int rowidxbase,
+    const int64_t * rowidx,
     int colidxstride,
-    const int * colidx,
+    int colidxbase,
+    const int64_t * colidx,
     int * dstpart,
     int verbose);
 
@@ -108,11 +110,15 @@ int metis_partgraphsym(
  */
 int metis_partgraph(
     int num_parts,
-    int num_rows,
-    int num_columns,
+    int64_t num_rows,
+    int64_t num_columns,
     int64_t num_nonzeros,
-    int * rowidx,
-    int * colidx,
+    int rowidxstride,
+    int rowidxbase,
+    const int64_t * rowidx,
+    int colidxstride,
+    int colidxbase,
+    const int64_t * colidx,
     int * dstrowpart,
     int * dstcolpart,
     int verbose);

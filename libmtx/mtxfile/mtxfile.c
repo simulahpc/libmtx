@@ -1619,7 +1619,6 @@ int mtxfile_assemble(
  * Partitioning
  */
 
-
 /**
  * ‘mtxfile_partition_nonzeros()’ partitions the nonzeros of a Matrix
  * Market file.
@@ -1808,37 +1807,50 @@ int mtxfile_partition_metis(
     int64_t num_columns = mtxfile->size.num_columns;
     int64_t size = mtxfile->datasize;
     bool square = num_rows == num_columns;
+    bool symmetric = square && (
+        mtxfile->header.symmetry == mtxfile_symmetric ||
+        mtxfile->header.symmetry == mtxfile_skew_symmetric ||
+        mtxfile->header.symmetry == mtxfile_hermitian);
     if (mtxfile->header.object != mtxfile_matrix)
         return MTX_ERR_INCOMPATIBLE_MTX_OBJECT;
     if (mtxfile->header.format != mtxfile_coordinate)
         return MTX_ERR_INCOMPATIBLE_MTX_FORMAT;
 
     /* 1. obtain row and column offsets */
-    int * rowidx = malloc(size * sizeof(int));
-    if (!rowidx) return MTX_ERR_ERRNO;
-    int * colidx = malloc(size * sizeof(int));
-    if (!colidx) { free(rowidx); return MTX_ERR_ERRNO; }
-    err = mtxfiledata_rowcolidx(
+    int idxstride;
+    int64_t * rowidx;
+    int64_t * colidx;
+    err = mtxfiledata_rowcolidxptr(
         &mtxfile->data, mtxfile->header.object, mtxfile->header.format,
         mtxfile->header.field, mtxfile->precision,
-        mtxfile->size.num_rows, mtxfile->size.num_columns,
-        0, mtxfile->datasize, rowidx, colidx);
-    if (err) { free(colidx); free(rowidx); return err; }
-    for (int64_t k = 0; k < size; k++) { rowidx[k]--; colidx[k]--; }
+        &idxstride, &rowidx, &colidx);
+    if (err) return err;
 
     /* 2. partition the graph */
-    err = metis_partgraph(
-        num_parts, num_rows, num_columns, size,
-        rowidx, colidx, dstrowpart, dstcolpart, verbose);
-    if (err) { free(colidx); free(rowidx); return err; }
+    if (symmetric) {
+        err = metis_partgraphsym(
+            num_parts, num_rows, size,
+            idxstride, 1, rowidx, idxstride, 1, colidx,
+            dstrowpart, verbose);
+        if (err) return err;
+    } else {
+        err = metis_partgraph(
+            num_parts, num_rows, num_columns, size,
+            idxstride, 1, rowidx, idxstride, 1, colidx,
+            dstrowpart, dstcolpart, verbose);
+        if (err) return err;
+    }
 
     /* 3. assign parts to the nonzeros */
     if (square) {
-        for (int64_t k = 0; k < size; k++) dstnzpart[k] = dstrowpart[rowidx[k]];
+        for (int64_t k = 0; k < size; k++) {
+            int64_t i = *(const int64_t *) ((const char *) rowidx + k*idxstride)-1;
+            dstnzpart[k] = dstrowpart[i];
+        }
     } else {
         for (int64_t k = 0; k < size; k++) {
-            /* dstnzpart[k] = dstrowpart[rowidx[k]]*num_parts+dstcolpart[colidx[k]]; */
-            dstnzpart[k] = dstrowpart[rowidx[k]];
+            int64_t i = *(const int64_t *) ((const char *) rowidx + k*idxstride)-1;
+            dstnzpart[k] = dstrowpart[i];
         }
     }
 
@@ -1861,7 +1873,6 @@ int mtxfile_partition_metis(
 
     *rowpart = true;
     *colpart = !square;
-    free(colidx); free(rowidx);
     return MTX_SUCCESS;
 }
 

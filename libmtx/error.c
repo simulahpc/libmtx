@@ -33,6 +33,10 @@
 #include <cblas.h>
 #endif
 
+#if LIBMTX_HAVE_METIS
+#include <metis.h>
+#endif
+
 #include <errno.h>
 
 #include <stdio.h>
@@ -137,7 +141,14 @@ const char * mtxstrerror(
         return mtxblaserrstr;
     case MTX_ERR_METIS_INPUT: return "METIS: input error";
     case MTX_ERR_METIS_MEMORY: return "METIS: cannot allocate memory";
-    case MTX_ERR_METIS: "METIS: error";
+    case MTX_ERR_METIS: return "METIS: error";
+    case MTX_ERR_METIS_EOVERFLOW:
+#if LIBMTX_HAVE_METIS && IDXTYPEWIDTH < 64
+        return "METIS: value too large for defined data type; "
+            "please rebuild METIS with support for 64-bit integer types";
+#else
+        return "METIS: value too large for defined data type;";
+#endif
     case MTX_ERR_EOF:
         if (errno) return strerror(errno);
         else return "end of file";

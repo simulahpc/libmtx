@@ -65,23 +65,25 @@ int metis_partgraphsym(
     int64_t N,
     int64_t size,
     int rowidxstride,
-    const int * rowidx,
+    int rowidxbase,
+    const int64_t * rowidx,
     int colidxstride,
-    const int * colidx,
+    int colidxbase,
+    const int64_t * colidx,
     int * dstpart,
     int verbose)
 {
 #ifndef LIBMTX_HAVE_METIS
     return MTX_ERR_METIS_NOT_SUPPORTED;
 #else
-    if (N > IDX_MAX) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
-    if (size > IDX_MAX) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+    if (N > IDX_MAX-1) { return MTX_ERR_METIS_EOVERFLOW; }
+    if (size > IDX_MAX) { return MTX_ERR_METIS_EOVERFLOW; }
     if (num_parts <= 0) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
 
     /* perform some bounds checking on the input graph */
     for (int64_t k = 0; k < size; k++) {
-        int i = *(const int *) ((const char *) rowidx + k*rowidxstride);
-        int j = *(const int *) ((const char *) colidx + k*colidxstride);
+        int64_t i = *(const int64_t *) ((const char *) rowidx + k*rowidxstride)-rowidxbase;
+        int64_t j = *(const int64_t *) ((const char *) colidx + k*colidxstride)-colidxbase;
         if (i < 0 || i >= N || j < 0 || j >= N) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
     }
 
@@ -190,12 +192,15 @@ int metis_partgraphsym(
     if (!xadj) return MTX_ERR_ERRNO;
     for (idx_t i = 0; i <= nvtxs; i++) xadj[i] = 0;
     for (int64_t k = 0; k < size; k++) {
-        int i = *(const int *) ((const char *) rowidx + k*rowidxstride);
-        int j = *(const int *) ((const char *) colidx + k*colidxstride);
+        int64_t i = *(const int64_t *) ((const char *) rowidx + k*rowidxstride)-rowidxbase;
+        int64_t j = *(const int64_t *) ((const char *) colidx + k*colidxstride)-colidxbase;
         xadj[i+1]++;
         if (i != j) xadj[j+1]++;
     }
-    for (idx_t i = 1; i <= nvtxs; i++) xadj[i] += xadj[i-1];
+    for (idx_t i = 1; i <= nvtxs; i++) {
+        if (xadj[i] > IDX_MAX - xadj[i-1]) { free(xadj); return MTX_ERR_METIS_EOVERFLOW; }
+        xadj[i] += xadj[i-1];
+    }
 
     /* adjacency structure of the graph (column offsets) */
     idx_t * adjncy = NULL;
@@ -203,8 +208,8 @@ int metis_partgraphsym(
     if (!adjncy) { free(xadj); return MTX_ERR_ERRNO; }
 
     for (int64_t k = 0; k < size; k++) {
-        int i = *(const int *) ((const char *) rowidx + k*rowidxstride);
-        int j = *(const int *) ((const char *) colidx + k*colidxstride);
+        int64_t i = *(const int64_t *) ((const char *) rowidx + k*rowidxstride)-rowidxbase;
+        int64_t j = *(const int64_t *) ((const char *) colidx + k*colidxstride)-colidxbase;
         adjncy[xadj[i]++] = j;
         if (i != j) adjncy[xadj[j]++] = i;
     }
@@ -237,9 +242,9 @@ int metis_partgraphsym(
      * weight for the ith partition and jth constraint is specified at
      * tpwgts[i*ncon+j] (the numbering for both partitions and
      * constraints starts from 0). For each constraint, the sum of the
-     * tpwgts[] entries must be 1.0 (i.e., 􏰓i tpwgts[i ∗ ncon + j] =
-     * 1.0).  A NULL value can be passed to indicate that the graph
-     * should be equally divided among the partitions. */
+     * tpwgts[] entries must be 1.0. A NULL value can be passed to
+     * indicate that the graph should be equally divided among the
+     * partitions. */
     real_t * tpwgts = malloc(nparts * sizeof(real_t));
     if (!tpwgts) { free(adjncy); free(xadj); return MTX_ERR_ERRNO; }
     for (idx_t p = 0; p < nparts; p++) tpwgts[p] = 1.0 / nparts;
@@ -363,11 +368,15 @@ int metis_partgraphsym(
  */
 int metis_partgraph(
     int num_parts,
-    int num_rows,
-    int num_columns,
+    int64_t num_rows,
+    int64_t num_columns,
     int64_t num_nonzeros,
-    int * rowidx,
-    int * colidx,
+    int rowidxstride,
+    int rowidxbase,
+    const int64_t * rowidx,
+    int colidxstride,
+    int colidxbase,
+    const int64_t * colidx,
     int * dstrowpart,
     int * dstcolpart,
     int verbose)
@@ -384,22 +393,20 @@ int metis_partgraph(
          * nonzeros and their symmetric counterparts, then compact,
          * (i.e., sort and remove duplicates).
          */
-        int (* idx)[2] = malloc(num_nonzeros * sizeof(int[2]));
+        int64_t (* idx)[2] = malloc(num_nonzeros * sizeof(int64_t[2]));
         if (!idx) return MTX_ERR_ERRNO;
-        for (int64_t k = 0, l = 0; k < num_nonzeros; k++) {
-            int i = rowidx[k]; int j = colidx[k];
-            if (rowidx[k] <= colidx[k]) {
-                idx[l][0] = rowidx[k]; idx[l][1] = colidx[k]; l++;
-            } else {
-                idx[l][0] = colidx[k]; idx[l][1] = rowidx[k]; l++;
-            }
+        for (int64_t k = 0; k < num_nonzeros; k++) {
+            int64_t i = *(const int64_t *) ((const char *) rowidx + k*rowidxstride)-rowidxbase;
+            int64_t j = *(const int64_t *) ((const char *) colidx + k*colidxstride)-colidxbase;
+            if (i <= j) { idx[k][0] = i; idx[k][1] = j; }
+            else        { idx[k][0] = j; idx[k][1] = i; }
         }
-        int err = compact_unsorted_int_pair(
+        int err = compact_unsorted_int64_pair(
             &num_nonzeros, idx, num_nonzeros, idx, NULL, NULL);
         if (err) { free(idx); return err; }
         err = metis_partgraphsym(
-            num_parts, N, num_nonzeros, sizeof(*idx), &idx[0][0],
-            sizeof(*idx), &idx[0][1], dstrowpart, verbose);
+            num_parts, N, num_nonzeros, sizeof(*idx), 0, &idx[0][0],
+            sizeof(*idx), 0, &idx[0][1], dstrowpart, verbose);
         if (err) { free(idx); return err; }
         free(idx);
     } else {
@@ -411,11 +418,11 @@ int metis_partgraph(
         int * dstpart = malloc(N * sizeof(int));
         if (!dstpart) return MTX_ERR_ERRNO;
         int err = metis_partgraphsym(
-            num_parts, N, num_nonzeros, sizeof(*rowidx), rowidx,
-            sizeof(*colidx), colidx, dstpart, verbose);
+            num_parts, N, num_nonzeros, sizeof(*rowidx), rowidxbase, rowidx,
+            sizeof(*colidx), colidxbase, colidx, dstpart, verbose);
         if (err) { free(dstpart); return err; }
-        for (int i = 0; i < num_rows; i++) dstrowpart[i] = dstpart[i];
-        for (int j = 0; j < num_columns; j++) dstcolpart[j] = dstpart[num_rows+j];
+        for (int64_t i = 0; i < num_rows; i++) dstrowpart[i] = dstpart[i];
+        for (int64_t j = 0; j < num_columns; j++) dstcolpart[j] = dstpart[num_rows+j];
         free(dstpart);
     }
     return MTX_SUCCESS;
