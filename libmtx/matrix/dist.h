@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-05-02
+ * Last modified: 2022-05-28
  *
  * Data structures and routines for distributed matrices.
  */
@@ -135,7 +135,7 @@ struct mtxmatrix_dist
      * ‘xp’ is the underlying storage of the sparse matrix belonging
      * to the current process.
      */
-    struct mtxmatrix xp;
+    struct mtxmatrix Ap;
 
     /**
      * ‘blksize’ is the number of matrix elements owned by the current

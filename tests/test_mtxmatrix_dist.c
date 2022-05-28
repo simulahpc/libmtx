@@ -98,8 +98,8 @@ int test_mtxmatrix_dist_from_mtxfile(void)
             TEST_ASSERT_EQ(2, A.colmapsize);
             TEST_ASSERT_EQ(0, A.colmap[0]);
             TEST_ASSERT_EQ(2, A.colmap[1]);
-            TEST_ASSERT_EQ(mtxmatrix_coo, A.xp.type);
-            const struct mtxmatrix_coo * Ap = &A.xp.storage.coo;
+            TEST_ASSERT_EQ(mtxmatrix_coo, A.Ap.type);
+            const struct mtxmatrix_coo * Ap = &A.Ap.storage.coo;
             TEST_ASSERT_EQ(mtx_unsymmetric, Ap->symmetry);
             TEST_ASSERT_EQ(2, Ap->num_rows);
             TEST_ASSERT_EQ(2, Ap->num_columns);
@@ -119,8 +119,8 @@ int test_mtxmatrix_dist_from_mtxfile(void)
             TEST_ASSERT_EQ(2, A.colmapsize);
             TEST_ASSERT_EQ(0, A.colmap[0]);
             TEST_ASSERT_EQ(2, A.colmap[1]);
-            TEST_ASSERT_EQ(mtxmatrix_coo, A.xp.type);
-            const struct mtxmatrix_coo * Ap = &A.xp.storage.coo;
+            TEST_ASSERT_EQ(mtxmatrix_coo, A.Ap.type);
+            const struct mtxmatrix_coo * Ap = &A.Ap.storage.coo;
             TEST_ASSERT_EQ(mtx_unsymmetric, Ap->symmetry);
             TEST_ASSERT_EQ(1, Ap->num_rows);
             TEST_ASSERT_EQ(2, Ap->num_columns);
@@ -161,8 +161,8 @@ int test_mtxmatrix_dist_from_mtxfile(void)
             TEST_ASSERT_EQ(2, A.colmapsize);
             TEST_ASSERT_EQ(0, A.colmap[0]);
             TEST_ASSERT_EQ(2, A.colmap[1]);
-            TEST_ASSERT_EQ(mtxmatrix_coo, A.xp.type);
-            const struct mtxmatrix_coo * Ap = &A.xp.storage.coo;
+            TEST_ASSERT_EQ(mtxmatrix_coo, A.Ap.type);
+            const struct mtxmatrix_coo * Ap = &A.Ap.storage.coo;
             TEST_ASSERT_EQ(mtx_unsymmetric, Ap->symmetry);
             TEST_ASSERT_EQ(2, Ap->num_rows);
             TEST_ASSERT_EQ(2, Ap->num_columns);
@@ -182,8 +182,8 @@ int test_mtxmatrix_dist_from_mtxfile(void)
             TEST_ASSERT_EQ(2, A.colmapsize);
             TEST_ASSERT_EQ(0, A.colmap[0]);
             TEST_ASSERT_EQ(2, A.colmap[1]);
-            TEST_ASSERT_EQ(mtxmatrix_coo, A.xp.type);
-            const struct mtxmatrix_coo * Ap = &A.xp.storage.coo;
+            TEST_ASSERT_EQ(mtxmatrix_coo, A.Ap.type);
+            const struct mtxmatrix_coo * Ap = &A.Ap.storage.coo;
             TEST_ASSERT_EQ(mtx_unsymmetric, Ap->symmetry);
             TEST_ASSERT_EQ(1, Ap->num_rows);
             TEST_ASSERT_EQ(2, Ap->num_columns);
@@ -224,8 +224,8 @@ int test_mtxmatrix_dist_from_mtxfile(void)
             TEST_ASSERT_EQ(2, A.colmapsize);
             TEST_ASSERT_EQ(0, A.colmap[0]);
             TEST_ASSERT_EQ(2, A.colmap[1]);
-            TEST_ASSERT_EQ(mtxmatrix_coo, A.xp.type);
-            const struct mtxmatrix_coo * Ap = &A.xp.storage.coo;
+            TEST_ASSERT_EQ(mtxmatrix_coo, A.Ap.type);
+            const struct mtxmatrix_coo * Ap = &A.Ap.storage.coo;
             TEST_ASSERT_EQ(mtx_unsymmetric, Ap->symmetry);
             TEST_ASSERT_EQ(2, Ap->num_rows);
             TEST_ASSERT_EQ(2, Ap->num_columns);
@@ -245,8 +245,8 @@ int test_mtxmatrix_dist_from_mtxfile(void)
             TEST_ASSERT_EQ(2, A.colmapsize);
             TEST_ASSERT_EQ(0, A.colmap[0]);
             TEST_ASSERT_EQ(2, A.colmap[1]);
-            TEST_ASSERT_EQ(mtxmatrix_coo, A.xp.type);
-            const struct mtxmatrix_coo * Ap = &A.xp.storage.coo;
+            TEST_ASSERT_EQ(mtxmatrix_coo, A.Ap.type);
+            const struct mtxmatrix_coo * Ap = &A.Ap.storage.coo;
             TEST_ASSERT_EQ(mtx_unsymmetric, Ap->symmetry);
             TEST_ASSERT_EQ(1, Ap->num_rows);
             TEST_ASSERT_EQ(2, Ap->num_columns);
@@ -287,8 +287,8 @@ int test_mtxmatrix_dist_from_mtxfile(void)
             TEST_ASSERT_EQ(2, A.colmapsize);
             TEST_ASSERT_EQ(0, A.colmap[0]);
             TEST_ASSERT_EQ(2, A.colmap[1]);
-            TEST_ASSERT_EQ(mtxmatrix_coo, A.xp.type);
-            const struct mtxmatrix_coo * Ap = &A.xp.storage.coo;
+            TEST_ASSERT_EQ(mtxmatrix_coo, A.Ap.type);
+            const struct mtxmatrix_coo * Ap = &A.Ap.storage.coo;
             TEST_ASSERT_EQ(mtx_unsymmetric, Ap->symmetry);
             TEST_ASSERT_EQ(2, Ap->num_rows);
             TEST_ASSERT_EQ(2, Ap->num_columns);
@@ -308,8 +308,8 @@ int test_mtxmatrix_dist_from_mtxfile(void)
             TEST_ASSERT_EQ(2, A.colmapsize);
             TEST_ASSERT_EQ(0, A.colmap[0]);
             TEST_ASSERT_EQ(2, A.colmap[1]);
-            TEST_ASSERT_EQ(mtxmatrix_coo, A.xp.type);
-            const struct mtxmatrix_coo * Ap = &A.xp.storage.coo;
+            TEST_ASSERT_EQ(mtxmatrix_coo, A.Ap.type);
+            const struct mtxmatrix_coo * Ap = &A.Ap.storage.coo;
             TEST_ASSERT_EQ(mtx_unsymmetric, Ap->symmetry);
             TEST_ASSERT_EQ(1, Ap->num_rows);
             TEST_ASSERT_EQ(2, Ap->num_columns);
@@ -350,8 +350,8 @@ int test_mtxmatrix_dist_from_mtxfile(void)
             TEST_ASSERT_EQ(2, A.colmapsize);
             TEST_ASSERT_EQ(0, A.colmap[0]);
             TEST_ASSERT_EQ(2, A.colmap[1]);
-            TEST_ASSERT_EQ(mtxmatrix_coo, A.xp.type);
-            const struct mtxmatrix_coo * Ap = &A.xp.storage.coo;
+            TEST_ASSERT_EQ(mtxmatrix_coo, A.Ap.type);
+            const struct mtxmatrix_coo * Ap = &A.Ap.storage.coo;
             TEST_ASSERT_EQ(mtx_unsymmetric, Ap->symmetry);
             TEST_ASSERT_EQ(2, Ap->num_rows);
             TEST_ASSERT_EQ(2, Ap->num_columns);
@@ -371,8 +371,8 @@ int test_mtxmatrix_dist_from_mtxfile(void)
             TEST_ASSERT_EQ(2, A.colmapsize);
             TEST_ASSERT_EQ(0, A.colmap[0]);
             TEST_ASSERT_EQ(2, A.colmap[1]);
-            TEST_ASSERT_EQ(mtxmatrix_coo, A.xp.type);
-            const struct mtxmatrix_coo * Ap = &A.xp.storage.coo;
+            TEST_ASSERT_EQ(mtxmatrix_coo, A.Ap.type);
+            const struct mtxmatrix_coo * Ap = &A.Ap.storage.coo;
             TEST_ASSERT_EQ(mtx_unsymmetric, Ap->symmetry);
             TEST_ASSERT_EQ(1, Ap->num_rows);
             TEST_ASSERT_EQ(2, Ap->num_columns);
@@ -413,8 +413,8 @@ int test_mtxmatrix_dist_from_mtxfile(void)
             TEST_ASSERT_EQ(2, A.colmapsize);
             TEST_ASSERT_EQ(0, A.colmap[0]);
             TEST_ASSERT_EQ(2, A.colmap[1]);
-            TEST_ASSERT_EQ(mtxmatrix_coo, A.xp.type);
-            const struct mtxmatrix_coo * Ap = &A.xp.storage.coo;
+            TEST_ASSERT_EQ(mtxmatrix_coo, A.Ap.type);
+            const struct mtxmatrix_coo * Ap = &A.Ap.storage.coo;
             TEST_ASSERT_EQ(mtx_unsymmetric, Ap->symmetry);
             TEST_ASSERT_EQ(2, Ap->num_rows);
             TEST_ASSERT_EQ(2, Ap->num_columns);
@@ -434,8 +434,8 @@ int test_mtxmatrix_dist_from_mtxfile(void)
             TEST_ASSERT_EQ(2, A.colmapsize);
             TEST_ASSERT_EQ(0, A.colmap[0]);
             TEST_ASSERT_EQ(2, A.colmap[1]);
-            TEST_ASSERT_EQ(mtxmatrix_coo, A.xp.type);
-            const struct mtxmatrix_coo * Ap = &A.xp.storage.coo;
+            TEST_ASSERT_EQ(mtxmatrix_coo, A.Ap.type);
+            const struct mtxmatrix_coo * Ap = &A.Ap.storage.coo;
             TEST_ASSERT_EQ(mtx_unsymmetric, Ap->symmetry);
             TEST_ASSERT_EQ(1, Ap->num_rows);
             TEST_ASSERT_EQ(2, Ap->num_columns);
@@ -476,8 +476,8 @@ int test_mtxmatrix_dist_from_mtxfile(void)
             TEST_ASSERT_EQ(2, A.colmapsize);
             TEST_ASSERT_EQ(0, A.colmap[0]);
             TEST_ASSERT_EQ(2, A.colmap[1]);
-            TEST_ASSERT_EQ(mtxmatrix_coo, A.xp.type);
-            const struct mtxmatrix_coo * Ap = &A.xp.storage.coo;
+            TEST_ASSERT_EQ(mtxmatrix_coo, A.Ap.type);
+            const struct mtxmatrix_coo * Ap = &A.Ap.storage.coo;
             TEST_ASSERT_EQ(mtx_unsymmetric, Ap->symmetry);
             TEST_ASSERT_EQ(2, Ap->num_rows);
             TEST_ASSERT_EQ(2, Ap->num_columns);
@@ -493,8 +493,8 @@ int test_mtxmatrix_dist_from_mtxfile(void)
             TEST_ASSERT_EQ(2, A.colmapsize);
             TEST_ASSERT_EQ(0, A.colmap[0]);
             TEST_ASSERT_EQ(2, A.colmap[1]);
-            TEST_ASSERT_EQ(mtxmatrix_coo, A.xp.type);
-            const struct mtxmatrix_coo * Ap = &A.xp.storage.coo;
+            TEST_ASSERT_EQ(mtxmatrix_coo, A.Ap.type);
+            const struct mtxmatrix_coo * Ap = &A.Ap.storage.coo;
             TEST_ASSERT_EQ(mtx_unsymmetric, Ap->symmetry);
             TEST_ASSERT_EQ(1, Ap->num_rows);
             TEST_ASSERT_EQ(2, Ap->num_columns);
@@ -724,8 +724,8 @@ int test_mtxmatrix_dist_from_mtxdistfile(void)
             TEST_ASSERT_EQ(2, A.colmapsize);
             TEST_ASSERT_EQ(0, A.colmap[0]);
             TEST_ASSERT_EQ(2, A.colmap[1]);
-            TEST_ASSERT_EQ(mtxmatrix_coo, A.xp.type);
-            const struct mtxmatrix_coo * Ap = &A.xp.storage.coo;
+            TEST_ASSERT_EQ(mtxmatrix_coo, A.Ap.type);
+            const struct mtxmatrix_coo * Ap = &A.Ap.storage.coo;
             TEST_ASSERT_EQ(mtx_unsymmetric, Ap->symmetry);
             TEST_ASSERT_EQ(2, Ap->num_rows);
             TEST_ASSERT_EQ(2, Ap->num_columns);
@@ -745,8 +745,8 @@ int test_mtxmatrix_dist_from_mtxdistfile(void)
             TEST_ASSERT_EQ(2, A.colmapsize);
             TEST_ASSERT_EQ(0, A.colmap[0]);
             TEST_ASSERT_EQ(2, A.colmap[1]);
-            TEST_ASSERT_EQ(mtxmatrix_coo, A.xp.type);
-            const struct mtxmatrix_coo * Ap = &A.xp.storage.coo;
+            TEST_ASSERT_EQ(mtxmatrix_coo, A.Ap.type);
+            const struct mtxmatrix_coo * Ap = &A.Ap.storage.coo;
             TEST_ASSERT_EQ(mtx_unsymmetric, Ap->symmetry);
             TEST_ASSERT_EQ(1, Ap->num_rows);
             TEST_ASSERT_EQ(2, Ap->num_columns);
@@ -1090,8 +1090,8 @@ int test_mtxmatrix_dist_swap(void)
             TEST_ASSERT_EQ(1, x.rowmap[1]);
             TEST_ASSERT_EQ(1, x.colmapsize);
             TEST_ASSERT_EQ(0, x.colmap[0]);
-            TEST_ASSERT_EQ(mtxmatrix_coo, x.xp.type);
-            const struct mtxmatrix_coo * Ap = &x.xp.storage.coo;
+            TEST_ASSERT_EQ(mtxmatrix_coo, x.Ap.type);
+            const struct mtxmatrix_coo * Ap = &x.Ap.storage.coo;
             TEST_ASSERT_EQ(mtx_unsymmetric, Ap->symmetry);
             TEST_ASSERT_EQ(2, Ap->num_rows);
             TEST_ASSERT_EQ(1, Ap->num_columns);
@@ -1110,8 +1110,8 @@ int test_mtxmatrix_dist_swap(void)
             TEST_ASSERT_EQ(2, x.colmapsize);
             TEST_ASSERT_EQ(0, x.colmap[0]);
             TEST_ASSERT_EQ(2, x.colmap[1]);
-            TEST_ASSERT_EQ(mtxmatrix_coo, x.xp.type);
-            const struct mtxmatrix_coo * Ap = &x.xp.storage.coo;
+            TEST_ASSERT_EQ(mtxmatrix_coo, x.Ap.type);
+            const struct mtxmatrix_coo * Ap = &x.Ap.storage.coo;
             TEST_ASSERT_EQ(mtx_unsymmetric, Ap->symmetry);
             TEST_ASSERT_EQ(2, Ap->num_rows);
             TEST_ASSERT_EQ(2, Ap->num_columns);
@@ -1135,8 +1135,8 @@ int test_mtxmatrix_dist_swap(void)
             TEST_ASSERT_EQ(1, y.rowmap[1]);
             TEST_ASSERT_EQ(1, y.colmapsize);
             TEST_ASSERT_EQ(0, y.colmap[0]);
-            TEST_ASSERT_EQ(mtxmatrix_coo, y.xp.type);
-            const struct mtxmatrix_coo * Ap = &y.xp.storage.coo;
+            TEST_ASSERT_EQ(mtxmatrix_coo, y.Ap.type);
+            const struct mtxmatrix_coo * Ap = &y.Ap.storage.coo;
             TEST_ASSERT_EQ(mtx_unsymmetric, Ap->symmetry);
             TEST_ASSERT_EQ(2, Ap->num_rows);
             TEST_ASSERT_EQ(1, Ap->num_columns);
@@ -1155,8 +1155,8 @@ int test_mtxmatrix_dist_swap(void)
             TEST_ASSERT_EQ(2, y.colmapsize);
             TEST_ASSERT_EQ(0, y.colmap[0]);
             TEST_ASSERT_EQ(2, y.colmap[1]);
-            TEST_ASSERT_EQ(mtxmatrix_coo, y.xp.type);
-            const struct mtxmatrix_coo * Ap = &y.xp.storage.coo;
+            TEST_ASSERT_EQ(mtxmatrix_coo, y.Ap.type);
+            const struct mtxmatrix_coo * Ap = &y.Ap.storage.coo;
             TEST_ASSERT_EQ(mtx_unsymmetric, Ap->symmetry);
             TEST_ASSERT_EQ(2, Ap->num_rows);
             TEST_ASSERT_EQ(2, Ap->num_columns);
@@ -1238,8 +1238,8 @@ int test_mtxmatrix_dist_copy(void)
             TEST_ASSERT_EQ(1, y.rowmap[1]);
             TEST_ASSERT_EQ(1, y.colmapsize);
             TEST_ASSERT_EQ(0, y.colmap[0]);
-            TEST_ASSERT_EQ(mtxmatrix_coo, y.xp.type);
-            const struct mtxmatrix_coo * Ap = &y.xp.storage.coo;
+            TEST_ASSERT_EQ(mtxmatrix_coo, y.Ap.type);
+            const struct mtxmatrix_coo * Ap = &y.Ap.storage.coo;
             TEST_ASSERT_EQ(mtx_unsymmetric, Ap->symmetry);
             TEST_ASSERT_EQ(2, Ap->num_rows);
             TEST_ASSERT_EQ(1, Ap->num_columns);
@@ -1258,8 +1258,8 @@ int test_mtxmatrix_dist_copy(void)
             TEST_ASSERT_EQ(2, y.colmapsize);
             TEST_ASSERT_EQ(0, y.colmap[0]);
             TEST_ASSERT_EQ(2, y.colmap[1]);
-            TEST_ASSERT_EQ(mtxmatrix_coo, y.xp.type);
-            const struct mtxmatrix_coo * Ap = &y.xp.storage.coo;
+            TEST_ASSERT_EQ(mtxmatrix_coo, y.Ap.type);
+            const struct mtxmatrix_coo * Ap = &y.Ap.storage.coo;
             TEST_ASSERT_EQ(mtx_unsymmetric, Ap->symmetry);
             TEST_ASSERT_EQ(2, Ap->num_rows);
             TEST_ASSERT_EQ(2, Ap->num_columns);
@@ -1324,22 +1324,22 @@ int test_mtxmatrix_dist_scal(void)
         err = mtxmatrix_dist_sscal(2.0f, &x, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         if (rank == 0) {
-            TEST_ASSERT_EQ(2.0f, x.xp.storage.coo.a.data.real_single[0]);
-            TEST_ASSERT_EQ(2.0f, x.xp.storage.coo.a.data.real_single[1]);
+            TEST_ASSERT_EQ(2.0f, x.Ap.storage.coo.a.data.real_single[0]);
+            TEST_ASSERT_EQ(2.0f, x.Ap.storage.coo.a.data.real_single[1]);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ(2.0f, x.xp.storage.coo.a.data.real_single[0]);
-            TEST_ASSERT_EQ(4.0f, x.xp.storage.coo.a.data.real_single[1]);
-            TEST_ASSERT_EQ(6.0f, x.xp.storage.coo.a.data.real_single[2]);
+            TEST_ASSERT_EQ(2.0f, x.Ap.storage.coo.a.data.real_single[0]);
+            TEST_ASSERT_EQ(4.0f, x.Ap.storage.coo.a.data.real_single[1]);
+            TEST_ASSERT_EQ(6.0f, x.Ap.storage.coo.a.data.real_single[2]);
         }
         err = mtxmatrix_dist_dscal(2.0, &x, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         if (rank == 0) {
-            TEST_ASSERT_EQ( 4.0f, x.xp.storage.coo.a.data.real_single[0]);
-            TEST_ASSERT_EQ( 4.0f, x.xp.storage.coo.a.data.real_single[1]);
+            TEST_ASSERT_EQ( 4.0f, x.Ap.storage.coo.a.data.real_single[0]);
+            TEST_ASSERT_EQ( 4.0f, x.Ap.storage.coo.a.data.real_single[1]);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ( 4.0f, x.xp.storage.coo.a.data.real_single[0]);
-            TEST_ASSERT_EQ( 8.0f, x.xp.storage.coo.a.data.real_single[1]);
-            TEST_ASSERT_EQ(12.0f, x.xp.storage.coo.a.data.real_single[2]);
+            TEST_ASSERT_EQ( 4.0f, x.Ap.storage.coo.a.data.real_single[0]);
+            TEST_ASSERT_EQ( 8.0f, x.Ap.storage.coo.a.data.real_single[1]);
+            TEST_ASSERT_EQ(12.0f, x.Ap.storage.coo.a.data.real_single[2]);
         }
         mtxmatrix_dist_free(&x);
     }
@@ -1357,22 +1357,22 @@ int test_mtxmatrix_dist_scal(void)
         err = mtxmatrix_dist_sscal(2.0f, &x, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         if (rank == 0) {
-            TEST_ASSERT_EQ(2.0f, x.xp.storage.coo.a.data.real_double[0]);
-            TEST_ASSERT_EQ(2.0f, x.xp.storage.coo.a.data.real_double[1]);
+            TEST_ASSERT_EQ(2.0f, x.Ap.storage.coo.a.data.real_double[0]);
+            TEST_ASSERT_EQ(2.0f, x.Ap.storage.coo.a.data.real_double[1]);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ(2.0f, x.xp.storage.coo.a.data.real_double[0]);
-            TEST_ASSERT_EQ(4.0f, x.xp.storage.coo.a.data.real_double[1]);
-            TEST_ASSERT_EQ(6.0f, x.xp.storage.coo.a.data.real_double[2]);
+            TEST_ASSERT_EQ(2.0f, x.Ap.storage.coo.a.data.real_double[0]);
+            TEST_ASSERT_EQ(4.0f, x.Ap.storage.coo.a.data.real_double[1]);
+            TEST_ASSERT_EQ(6.0f, x.Ap.storage.coo.a.data.real_double[2]);
         }
         err = mtxmatrix_dist_dscal(2.0, &x, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         if (rank == 0) {
-            TEST_ASSERT_EQ( 4.0f, x.xp.storage.coo.a.data.real_double[0]);
-            TEST_ASSERT_EQ( 4.0f, x.xp.storage.coo.a.data.real_double[1]);
+            TEST_ASSERT_EQ( 4.0f, x.Ap.storage.coo.a.data.real_double[0]);
+            TEST_ASSERT_EQ( 4.0f, x.Ap.storage.coo.a.data.real_double[1]);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ( 4.0f, x.xp.storage.coo.a.data.real_double[0]);
-            TEST_ASSERT_EQ( 8.0f, x.xp.storage.coo.a.data.real_double[1]);
-            TEST_ASSERT_EQ(12.0f, x.xp.storage.coo.a.data.real_double[2]);
+            TEST_ASSERT_EQ( 4.0f, x.Ap.storage.coo.a.data.real_double[0]);
+            TEST_ASSERT_EQ( 8.0f, x.Ap.storage.coo.a.data.real_double[1]);
+            TEST_ASSERT_EQ(12.0f, x.Ap.storage.coo.a.data.real_double[2]);
         }
         mtxmatrix_dist_free(&x);
     }
@@ -1392,48 +1392,48 @@ int test_mtxmatrix_dist_scal(void)
         err = mtxmatrix_dist_sscal(2.0f, &x, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         if (rank == 0) {
-            TEST_ASSERT_EQ(2.0f, x.xp.storage.coo.a.data.complex_single[0][0]);
-            TEST_ASSERT_EQ(2.0f, x.xp.storage.coo.a.data.complex_single[0][1]);
-            TEST_ASSERT_EQ(2.0f, x.xp.storage.coo.a.data.complex_single[1][0]);
-            TEST_ASSERT_EQ(4.0f, x.xp.storage.coo.a.data.complex_single[1][1]);
+            TEST_ASSERT_EQ(2.0f, x.Ap.storage.coo.a.data.complex_single[0][0]);
+            TEST_ASSERT_EQ(2.0f, x.Ap.storage.coo.a.data.complex_single[0][1]);
+            TEST_ASSERT_EQ(2.0f, x.Ap.storage.coo.a.data.complex_single[1][0]);
+            TEST_ASSERT_EQ(4.0f, x.Ap.storage.coo.a.data.complex_single[1][1]);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ(6.0f, x.xp.storage.coo.a.data.complex_single[0][0]);
-            TEST_ASSERT_EQ(0.0f, x.xp.storage.coo.a.data.complex_single[0][1]);
+            TEST_ASSERT_EQ(6.0f, x.Ap.storage.coo.a.data.complex_single[0][0]);
+            TEST_ASSERT_EQ(0.0f, x.Ap.storage.coo.a.data.complex_single[0][1]);
         }
         err = mtxmatrix_dist_dscal(2.0, &x, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         if (rank == 0) {
-            TEST_ASSERT_EQ( 4.0f, x.xp.storage.coo.a.data.complex_single[0][0]);
-            TEST_ASSERT_EQ( 4.0f, x.xp.storage.coo.a.data.complex_single[0][1]);
-            TEST_ASSERT_EQ( 4.0f, x.xp.storage.coo.a.data.complex_single[1][0]);
-            TEST_ASSERT_EQ( 8.0f, x.xp.storage.coo.a.data.complex_single[1][1]);
+            TEST_ASSERT_EQ( 4.0f, x.Ap.storage.coo.a.data.complex_single[0][0]);
+            TEST_ASSERT_EQ( 4.0f, x.Ap.storage.coo.a.data.complex_single[0][1]);
+            TEST_ASSERT_EQ( 4.0f, x.Ap.storage.coo.a.data.complex_single[1][0]);
+            TEST_ASSERT_EQ( 8.0f, x.Ap.storage.coo.a.data.complex_single[1][1]);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ(12.0f, x.xp.storage.coo.a.data.complex_single[0][0]);
-            TEST_ASSERT_EQ( 0.0f, x.xp.storage.coo.a.data.complex_single[0][1]);
+            TEST_ASSERT_EQ(12.0f, x.Ap.storage.coo.a.data.complex_single[0][0]);
+            TEST_ASSERT_EQ( 0.0f, x.Ap.storage.coo.a.data.complex_single[0][1]);
         }
         float as[2] = {2, 3};
         err = mtxmatrix_dist_cscal(as, &x, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         if (rank == 0) {
-            TEST_ASSERT_EQ( -4.0f, x.xp.storage.coo.a.data.complex_single[0][0]);
-            TEST_ASSERT_EQ( 20.0f, x.xp.storage.coo.a.data.complex_single[0][1]);
-            TEST_ASSERT_EQ(-16.0f, x.xp.storage.coo.a.data.complex_single[1][0]);
-            TEST_ASSERT_EQ( 28.0f, x.xp.storage.coo.a.data.complex_single[1][1]);
+            TEST_ASSERT_EQ( -4.0f, x.Ap.storage.coo.a.data.complex_single[0][0]);
+            TEST_ASSERT_EQ( 20.0f, x.Ap.storage.coo.a.data.complex_single[0][1]);
+            TEST_ASSERT_EQ(-16.0f, x.Ap.storage.coo.a.data.complex_single[1][0]);
+            TEST_ASSERT_EQ( 28.0f, x.Ap.storage.coo.a.data.complex_single[1][1]);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ( 24.0f, x.xp.storage.coo.a.data.complex_single[0][0]);
-            TEST_ASSERT_EQ( 36.0f, x.xp.storage.coo.a.data.complex_single[0][1]);
+            TEST_ASSERT_EQ( 24.0f, x.Ap.storage.coo.a.data.complex_single[0][0]);
+            TEST_ASSERT_EQ( 36.0f, x.Ap.storage.coo.a.data.complex_single[0][1]);
         }
         double ad[2] = {2, 3};
         err = mtxmatrix_dist_zscal(ad, &x, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         if (rank == 0) {
-            TEST_ASSERT_EQ( -68.0f, x.xp.storage.coo.a.data.complex_single[0][0]);
-            TEST_ASSERT_EQ(  28.0f, x.xp.storage.coo.a.data.complex_single[0][1]);
-            TEST_ASSERT_EQ(-116.0f, x.xp.storage.coo.a.data.complex_single[1][0]);
-            TEST_ASSERT_EQ(   8.0f, x.xp.storage.coo.a.data.complex_single[1][1]);
+            TEST_ASSERT_EQ( -68.0f, x.Ap.storage.coo.a.data.complex_single[0][0]);
+            TEST_ASSERT_EQ(  28.0f, x.Ap.storage.coo.a.data.complex_single[0][1]);
+            TEST_ASSERT_EQ(-116.0f, x.Ap.storage.coo.a.data.complex_single[1][0]);
+            TEST_ASSERT_EQ(   8.0f, x.Ap.storage.coo.a.data.complex_single[1][1]);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ( -60.0f, x.xp.storage.coo.a.data.complex_single[0][0]);
-            TEST_ASSERT_EQ( 144.0f, x.xp.storage.coo.a.data.complex_single[0][1]);
+            TEST_ASSERT_EQ( -60.0f, x.Ap.storage.coo.a.data.complex_single[0][0]);
+            TEST_ASSERT_EQ( 144.0f, x.Ap.storage.coo.a.data.complex_single[0][1]);
         }
         mtxmatrix_dist_free(&x);
     }
@@ -1453,48 +1453,48 @@ int test_mtxmatrix_dist_scal(void)
         err = mtxmatrix_dist_sscal(2.0f, &x, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         if (rank == 0) {
-            TEST_ASSERT_EQ(2.0f, x.xp.storage.coo.a.data.complex_double[0][0]);
-            TEST_ASSERT_EQ(2.0f, x.xp.storage.coo.a.data.complex_double[0][1]);
-            TEST_ASSERT_EQ(2.0f, x.xp.storage.coo.a.data.complex_double[1][0]);
-            TEST_ASSERT_EQ(4.0f, x.xp.storage.coo.a.data.complex_double[1][1]);
+            TEST_ASSERT_EQ(2.0f, x.Ap.storage.coo.a.data.complex_double[0][0]);
+            TEST_ASSERT_EQ(2.0f, x.Ap.storage.coo.a.data.complex_double[0][1]);
+            TEST_ASSERT_EQ(2.0f, x.Ap.storage.coo.a.data.complex_double[1][0]);
+            TEST_ASSERT_EQ(4.0f, x.Ap.storage.coo.a.data.complex_double[1][1]);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ(6.0f, x.xp.storage.coo.a.data.complex_double[0][0]);
-            TEST_ASSERT_EQ(0.0f, x.xp.storage.coo.a.data.complex_double[0][1]);
+            TEST_ASSERT_EQ(6.0f, x.Ap.storage.coo.a.data.complex_double[0][0]);
+            TEST_ASSERT_EQ(0.0f, x.Ap.storage.coo.a.data.complex_double[0][1]);
         }
         err = mtxmatrix_dist_dscal(2.0, &x, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         if (rank == 0) {
-            TEST_ASSERT_EQ( 4.0f, x.xp.storage.coo.a.data.complex_double[0][0]);
-            TEST_ASSERT_EQ( 4.0f, x.xp.storage.coo.a.data.complex_double[0][1]);
-            TEST_ASSERT_EQ( 4.0f, x.xp.storage.coo.a.data.complex_double[1][0]);
-            TEST_ASSERT_EQ( 8.0f, x.xp.storage.coo.a.data.complex_double[1][1]);
+            TEST_ASSERT_EQ( 4.0f, x.Ap.storage.coo.a.data.complex_double[0][0]);
+            TEST_ASSERT_EQ( 4.0f, x.Ap.storage.coo.a.data.complex_double[0][1]);
+            TEST_ASSERT_EQ( 4.0f, x.Ap.storage.coo.a.data.complex_double[1][0]);
+            TEST_ASSERT_EQ( 8.0f, x.Ap.storage.coo.a.data.complex_double[1][1]);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ(12.0f, x.xp.storage.coo.a.data.complex_double[0][0]);
-            TEST_ASSERT_EQ( 0.0f, x.xp.storage.coo.a.data.complex_double[0][1]);
+            TEST_ASSERT_EQ(12.0f, x.Ap.storage.coo.a.data.complex_double[0][0]);
+            TEST_ASSERT_EQ( 0.0f, x.Ap.storage.coo.a.data.complex_double[0][1]);
         }
         float as[2] = {2, 3};
         err = mtxmatrix_dist_cscal(as, &x, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         if (rank == 0) {
-            TEST_ASSERT_EQ( -4.0, x.xp.storage.coo.a.data.complex_double[0][0]);
-            TEST_ASSERT_EQ( 20.0, x.xp.storage.coo.a.data.complex_double[0][1]);
-            TEST_ASSERT_EQ(-16.0, x.xp.storage.coo.a.data.complex_double[1][0]);
-            TEST_ASSERT_EQ( 28.0, x.xp.storage.coo.a.data.complex_double[1][1]);
+            TEST_ASSERT_EQ( -4.0, x.Ap.storage.coo.a.data.complex_double[0][0]);
+            TEST_ASSERT_EQ( 20.0, x.Ap.storage.coo.a.data.complex_double[0][1]);
+            TEST_ASSERT_EQ(-16.0, x.Ap.storage.coo.a.data.complex_double[1][0]);
+            TEST_ASSERT_EQ( 28.0, x.Ap.storage.coo.a.data.complex_double[1][1]);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ( 24.0, x.xp.storage.coo.a.data.complex_double[0][0]);
-            TEST_ASSERT_EQ( 36.0, x.xp.storage.coo.a.data.complex_double[0][1]);
+            TEST_ASSERT_EQ( 24.0, x.Ap.storage.coo.a.data.complex_double[0][0]);
+            TEST_ASSERT_EQ( 36.0, x.Ap.storage.coo.a.data.complex_double[0][1]);
         }
         double ad[2] = {2, 3};
         err = mtxmatrix_dist_zscal(ad, &x, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         if (rank == 0) {
-            TEST_ASSERT_EQ( -68.0, x.xp.storage.coo.a.data.complex_double[0][0]);
-            TEST_ASSERT_EQ(  28.0, x.xp.storage.coo.a.data.complex_double[0][1]);
-            TEST_ASSERT_EQ(-116.0, x.xp.storage.coo.a.data.complex_double[1][0]);
-            TEST_ASSERT_EQ(   8.0, x.xp.storage.coo.a.data.complex_double[1][1]);
+            TEST_ASSERT_EQ( -68.0, x.Ap.storage.coo.a.data.complex_double[0][0]);
+            TEST_ASSERT_EQ(  28.0, x.Ap.storage.coo.a.data.complex_double[0][1]);
+            TEST_ASSERT_EQ(-116.0, x.Ap.storage.coo.a.data.complex_double[1][0]);
+            TEST_ASSERT_EQ(   8.0, x.Ap.storage.coo.a.data.complex_double[1][1]);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ( -60.0, x.xp.storage.coo.a.data.complex_double[0][0]);
-            TEST_ASSERT_EQ( 144.0, x.xp.storage.coo.a.data.complex_double[0][1]);
+            TEST_ASSERT_EQ( -60.0, x.Ap.storage.coo.a.data.complex_double[0][0]);
+            TEST_ASSERT_EQ( 144.0, x.Ap.storage.coo.a.data.complex_double[0][1]);
         }
         mtxmatrix_dist_free(&x);
     }
@@ -1551,42 +1551,42 @@ int test_mtxmatrix_dist_axpy(void)
         err = mtxmatrix_dist_saxpy(2.0f, &x, &y, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         if (rank == 0) {
-            TEST_ASSERT_EQ( 4.0f, y.xp.storage.coo.a.data.real_single[0]);
-            TEST_ASSERT_EQ( 3.0f, y.xp.storage.coo.a.data.real_single[1]);
+            TEST_ASSERT_EQ( 4.0f, y.Ap.storage.coo.a.data.real_single[0]);
+            TEST_ASSERT_EQ( 3.0f, y.Ap.storage.coo.a.data.real_single[1]);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ( 2.0f, y.xp.storage.coo.a.data.real_single[0]);
-            TEST_ASSERT_EQ( 6.0f, y.xp.storage.coo.a.data.real_single[1]);
-            TEST_ASSERT_EQ( 7.0f, y.xp.storage.coo.a.data.real_single[2]);
+            TEST_ASSERT_EQ( 2.0f, y.Ap.storage.coo.a.data.real_single[0]);
+            TEST_ASSERT_EQ( 6.0f, y.Ap.storage.coo.a.data.real_single[1]);
+            TEST_ASSERT_EQ( 7.0f, y.Ap.storage.coo.a.data.real_single[2]);
         }
         err = mtxmatrix_dist_daxpy(2.0, &x, &y, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         if (rank == 0) {
-            TEST_ASSERT_EQ( 6.0f, y.xp.storage.coo.a.data.real_single[0]);
-            TEST_ASSERT_EQ( 5.0f, y.xp.storage.coo.a.data.real_single[1]);
+            TEST_ASSERT_EQ( 6.0f, y.Ap.storage.coo.a.data.real_single[0]);
+            TEST_ASSERT_EQ( 5.0f, y.Ap.storage.coo.a.data.real_single[1]);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ( 4.0f, y.xp.storage.coo.a.data.real_single[0]);
-            TEST_ASSERT_EQ(10.0f, y.xp.storage.coo.a.data.real_single[1]);
-            TEST_ASSERT_EQ(13.0f, y.xp.storage.coo.a.data.real_single[2]);
+            TEST_ASSERT_EQ( 4.0f, y.Ap.storage.coo.a.data.real_single[0]);
+            TEST_ASSERT_EQ(10.0f, y.Ap.storage.coo.a.data.real_single[1]);
+            TEST_ASSERT_EQ(13.0f, y.Ap.storage.coo.a.data.real_single[2]);
         }
         err = mtxmatrix_dist_saypx(2.0f, &y, &x, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         if (rank == 0) {
-            TEST_ASSERT_EQ(13.0f, y.xp.storage.coo.a.data.real_single[0]);
-            TEST_ASSERT_EQ(11.0f, y.xp.storage.coo.a.data.real_single[1]);
+            TEST_ASSERT_EQ(13.0f, y.Ap.storage.coo.a.data.real_single[0]);
+            TEST_ASSERT_EQ(11.0f, y.Ap.storage.coo.a.data.real_single[1]);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ( 9.0f, y.xp.storage.coo.a.data.real_single[0]);
-            TEST_ASSERT_EQ(22.0f, y.xp.storage.coo.a.data.real_single[1]);
-            TEST_ASSERT_EQ(29.0f, y.xp.storage.coo.a.data.real_single[2]);
+            TEST_ASSERT_EQ( 9.0f, y.Ap.storage.coo.a.data.real_single[0]);
+            TEST_ASSERT_EQ(22.0f, y.Ap.storage.coo.a.data.real_single[1]);
+            TEST_ASSERT_EQ(29.0f, y.Ap.storage.coo.a.data.real_single[2]);
         }
         err = mtxmatrix_dist_daypx(2.0, &y, &x, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         if (rank == 0) {
-            TEST_ASSERT_EQ(27.0f, y.xp.storage.coo.a.data.real_single[0]);
-            TEST_ASSERT_EQ(23.0f, y.xp.storage.coo.a.data.real_single[1]);
+            TEST_ASSERT_EQ(27.0f, y.Ap.storage.coo.a.data.real_single[0]);
+            TEST_ASSERT_EQ(23.0f, y.Ap.storage.coo.a.data.real_single[1]);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ(19.0f, y.xp.storage.coo.a.data.real_single[0]);
-            TEST_ASSERT_EQ(46.0f, y.xp.storage.coo.a.data.real_single[1]);
-            TEST_ASSERT_EQ(61.0f, y.xp.storage.coo.a.data.real_single[2]);
+            TEST_ASSERT_EQ(19.0f, y.Ap.storage.coo.a.data.real_single[0]);
+            TEST_ASSERT_EQ(46.0f, y.Ap.storage.coo.a.data.real_single[1]);
+            TEST_ASSERT_EQ(61.0f, y.Ap.storage.coo.a.data.real_single[2]);
         }
         mtxmatrix_dist_free(&y);
         mtxmatrix_dist_free(&x);
@@ -1610,42 +1610,42 @@ int test_mtxmatrix_dist_axpy(void)
         err = mtxmatrix_dist_saxpy(2.0f, &x, &y, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         if (rank == 0) {
-            TEST_ASSERT_EQ( 4.0, y.xp.storage.coo.a.data.real_double[0]);
-            TEST_ASSERT_EQ( 3.0, y.xp.storage.coo.a.data.real_double[1]);
+            TEST_ASSERT_EQ( 4.0, y.Ap.storage.coo.a.data.real_double[0]);
+            TEST_ASSERT_EQ( 3.0, y.Ap.storage.coo.a.data.real_double[1]);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ( 2.0, y.xp.storage.coo.a.data.real_double[0]);
-            TEST_ASSERT_EQ( 6.0, y.xp.storage.coo.a.data.real_double[1]);
-            TEST_ASSERT_EQ( 7.0, y.xp.storage.coo.a.data.real_double[2]);
+            TEST_ASSERT_EQ( 2.0, y.Ap.storage.coo.a.data.real_double[0]);
+            TEST_ASSERT_EQ( 6.0, y.Ap.storage.coo.a.data.real_double[1]);
+            TEST_ASSERT_EQ( 7.0, y.Ap.storage.coo.a.data.real_double[2]);
         }
         err = mtxmatrix_dist_daxpy(2.0, &x, &y, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         if (rank == 0) {
-            TEST_ASSERT_EQ( 6.0, y.xp.storage.coo.a.data.real_double[0]);
-            TEST_ASSERT_EQ( 5.0, y.xp.storage.coo.a.data.real_double[1]);
+            TEST_ASSERT_EQ( 6.0, y.Ap.storage.coo.a.data.real_double[0]);
+            TEST_ASSERT_EQ( 5.0, y.Ap.storage.coo.a.data.real_double[1]);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ( 4.0, y.xp.storage.coo.a.data.real_double[0]);
-            TEST_ASSERT_EQ(10.0, y.xp.storage.coo.a.data.real_double[1]);
-            TEST_ASSERT_EQ(13.0, y.xp.storage.coo.a.data.real_double[2]);
+            TEST_ASSERT_EQ( 4.0, y.Ap.storage.coo.a.data.real_double[0]);
+            TEST_ASSERT_EQ(10.0, y.Ap.storage.coo.a.data.real_double[1]);
+            TEST_ASSERT_EQ(13.0, y.Ap.storage.coo.a.data.real_double[2]);
         }
         err = mtxmatrix_dist_saypx(2.0f, &y, &x, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         if (rank == 0) {
-            TEST_ASSERT_EQ(13.0, y.xp.storage.coo.a.data.real_double[0]);
-            TEST_ASSERT_EQ(11.0, y.xp.storage.coo.a.data.real_double[1]);
+            TEST_ASSERT_EQ(13.0, y.Ap.storage.coo.a.data.real_double[0]);
+            TEST_ASSERT_EQ(11.0, y.Ap.storage.coo.a.data.real_double[1]);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ( 9.0, y.xp.storage.coo.a.data.real_double[0]);
-            TEST_ASSERT_EQ(22.0, y.xp.storage.coo.a.data.real_double[1]);
-            TEST_ASSERT_EQ(29.0, y.xp.storage.coo.a.data.real_double[2]);
+            TEST_ASSERT_EQ( 9.0, y.Ap.storage.coo.a.data.real_double[0]);
+            TEST_ASSERT_EQ(22.0, y.Ap.storage.coo.a.data.real_double[1]);
+            TEST_ASSERT_EQ(29.0, y.Ap.storage.coo.a.data.real_double[2]);
         }
         err = mtxmatrix_dist_daypx(2.0, &y, &x, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         if (rank == 0) {
-            TEST_ASSERT_EQ(27.0, y.xp.storage.coo.a.data.real_double[0]);
-            TEST_ASSERT_EQ(23.0, y.xp.storage.coo.a.data.real_double[1]);
+            TEST_ASSERT_EQ(27.0, y.Ap.storage.coo.a.data.real_double[0]);
+            TEST_ASSERT_EQ(23.0, y.Ap.storage.coo.a.data.real_double[1]);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ(19.0, y.xp.storage.coo.a.data.real_double[0]);
-            TEST_ASSERT_EQ(46.0, y.xp.storage.coo.a.data.real_double[1]);
-            TEST_ASSERT_EQ(61.0, y.xp.storage.coo.a.data.real_double[2]);
+            TEST_ASSERT_EQ(19.0, y.Ap.storage.coo.a.data.real_double[0]);
+            TEST_ASSERT_EQ(46.0, y.Ap.storage.coo.a.data.real_double[1]);
+            TEST_ASSERT_EQ(61.0, y.Ap.storage.coo.a.data.real_double[2]);
         }
         mtxmatrix_dist_free(&y);
         mtxmatrix_dist_free(&x);
@@ -1673,46 +1673,46 @@ int test_mtxmatrix_dist_axpy(void)
         err = mtxmatrix_dist_saxpy(2.0f, &x, &y, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         if (rank == 0) {
-            TEST_ASSERT_EQ(4.0f, y.xp.storage.coo.a.data.complex_single[0][0]);
-            TEST_ASSERT_EQ(3.0f, y.xp.storage.coo.a.data.complex_single[0][1]);
-            TEST_ASSERT_EQ(2.0f, y.xp.storage.coo.a.data.complex_single[1][0]);
-            TEST_ASSERT_EQ(6.0f, y.xp.storage.coo.a.data.complex_single[1][1]);
+            TEST_ASSERT_EQ(4.0f, y.Ap.storage.coo.a.data.complex_single[0][0]);
+            TEST_ASSERT_EQ(3.0f, y.Ap.storage.coo.a.data.complex_single[0][1]);
+            TEST_ASSERT_EQ(2.0f, y.Ap.storage.coo.a.data.complex_single[1][0]);
+            TEST_ASSERT_EQ(6.0f, y.Ap.storage.coo.a.data.complex_single[1][1]);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ(7.0f, y.xp.storage.coo.a.data.complex_single[0][0]);
-            TEST_ASSERT_EQ(0.0f, y.xp.storage.coo.a.data.complex_single[0][1]);
+            TEST_ASSERT_EQ(7.0f, y.Ap.storage.coo.a.data.complex_single[0][0]);
+            TEST_ASSERT_EQ(0.0f, y.Ap.storage.coo.a.data.complex_single[0][1]);
         }
         err = mtxmatrix_dist_daxpy(2.0, &x, &y, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         if (rank == 0) {
-            TEST_ASSERT_EQ( 6.0f, y.xp.storage.coo.a.data.complex_single[0][0]);
-            TEST_ASSERT_EQ( 5.0f, y.xp.storage.coo.a.data.complex_single[0][1]);
-            TEST_ASSERT_EQ( 4.0f, y.xp.storage.coo.a.data.complex_single[1][0]);
-            TEST_ASSERT_EQ(10.0f, y.xp.storage.coo.a.data.complex_single[1][1]);
+            TEST_ASSERT_EQ( 6.0f, y.Ap.storage.coo.a.data.complex_single[0][0]);
+            TEST_ASSERT_EQ( 5.0f, y.Ap.storage.coo.a.data.complex_single[0][1]);
+            TEST_ASSERT_EQ( 4.0f, y.Ap.storage.coo.a.data.complex_single[1][0]);
+            TEST_ASSERT_EQ(10.0f, y.Ap.storage.coo.a.data.complex_single[1][1]);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ(13.0f, y.xp.storage.coo.a.data.complex_single[0][0]);
-            TEST_ASSERT_EQ( 0.0f, y.xp.storage.coo.a.data.complex_single[0][1]);
+            TEST_ASSERT_EQ(13.0f, y.Ap.storage.coo.a.data.complex_single[0][0]);
+            TEST_ASSERT_EQ( 0.0f, y.Ap.storage.coo.a.data.complex_single[0][1]);
         }
         err = mtxmatrix_dist_saypx(2.0f, &y, &x, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         if (rank == 0) {
-            TEST_ASSERT_EQ(13.0f, y.xp.storage.coo.a.data.complex_single[0][0]);
-            TEST_ASSERT_EQ(11.0f, y.xp.storage.coo.a.data.complex_single[0][1]);
-            TEST_ASSERT_EQ( 9.0f, y.xp.storage.coo.a.data.complex_single[1][0]);
-            TEST_ASSERT_EQ(22.0f, y.xp.storage.coo.a.data.complex_single[1][1]);
+            TEST_ASSERT_EQ(13.0f, y.Ap.storage.coo.a.data.complex_single[0][0]);
+            TEST_ASSERT_EQ(11.0f, y.Ap.storage.coo.a.data.complex_single[0][1]);
+            TEST_ASSERT_EQ( 9.0f, y.Ap.storage.coo.a.data.complex_single[1][0]);
+            TEST_ASSERT_EQ(22.0f, y.Ap.storage.coo.a.data.complex_single[1][1]);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ(29.0f, y.xp.storage.coo.a.data.complex_single[0][0]);
-            TEST_ASSERT_EQ( 0.0f, y.xp.storage.coo.a.data.complex_single[0][1]);
+            TEST_ASSERT_EQ(29.0f, y.Ap.storage.coo.a.data.complex_single[0][0]);
+            TEST_ASSERT_EQ( 0.0f, y.Ap.storage.coo.a.data.complex_single[0][1]);
         }
         err = mtxmatrix_dist_daypx(2.0, &y, &x, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         if (rank == 0) {
-            TEST_ASSERT_EQ(27.0f, y.xp.storage.coo.a.data.complex_single[0][0]);
-            TEST_ASSERT_EQ(23.0f, y.xp.storage.coo.a.data.complex_single[0][1]);
-            TEST_ASSERT_EQ(19.0f, y.xp.storage.coo.a.data.complex_single[1][0]);
-            TEST_ASSERT_EQ(46.0f, y.xp.storage.coo.a.data.complex_single[1][1]);
+            TEST_ASSERT_EQ(27.0f, y.Ap.storage.coo.a.data.complex_single[0][0]);
+            TEST_ASSERT_EQ(23.0f, y.Ap.storage.coo.a.data.complex_single[0][1]);
+            TEST_ASSERT_EQ(19.0f, y.Ap.storage.coo.a.data.complex_single[1][0]);
+            TEST_ASSERT_EQ(46.0f, y.Ap.storage.coo.a.data.complex_single[1][1]);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ(61.0f, y.xp.storage.coo.a.data.complex_single[0][0]);
-            TEST_ASSERT_EQ( 0.0f, y.xp.storage.coo.a.data.complex_single[0][1]);
+            TEST_ASSERT_EQ(61.0f, y.Ap.storage.coo.a.data.complex_single[0][0]);
+            TEST_ASSERT_EQ( 0.0f, y.Ap.storage.coo.a.data.complex_single[0][1]);
         }
         mtxmatrix_dist_free(&y);
         mtxmatrix_dist_free(&x);
@@ -1740,46 +1740,46 @@ int test_mtxmatrix_dist_axpy(void)
         err = mtxmatrix_dist_saxpy(2.0f, &x, &y, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         if (rank == 0) {
-            TEST_ASSERT_EQ(4.0, y.xp.storage.coo.a.data.complex_double[0][0]);
-            TEST_ASSERT_EQ(3.0, y.xp.storage.coo.a.data.complex_double[0][1]);
-            TEST_ASSERT_EQ(2.0, y.xp.storage.coo.a.data.complex_double[1][0]);
-            TEST_ASSERT_EQ(6.0, y.xp.storage.coo.a.data.complex_double[1][1]);
+            TEST_ASSERT_EQ(4.0, y.Ap.storage.coo.a.data.complex_double[0][0]);
+            TEST_ASSERT_EQ(3.0, y.Ap.storage.coo.a.data.complex_double[0][1]);
+            TEST_ASSERT_EQ(2.0, y.Ap.storage.coo.a.data.complex_double[1][0]);
+            TEST_ASSERT_EQ(6.0, y.Ap.storage.coo.a.data.complex_double[1][1]);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ(7.0, y.xp.storage.coo.a.data.complex_double[0][0]);
-            TEST_ASSERT_EQ(0.0, y.xp.storage.coo.a.data.complex_double[0][1]);
+            TEST_ASSERT_EQ(7.0, y.Ap.storage.coo.a.data.complex_double[0][0]);
+            TEST_ASSERT_EQ(0.0, y.Ap.storage.coo.a.data.complex_double[0][1]);
         }
         err = mtxmatrix_dist_daxpy(2.0, &x, &y, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         if (rank == 0) {
-            TEST_ASSERT_EQ( 6.0, y.xp.storage.coo.a.data.complex_double[0][0]);
-            TEST_ASSERT_EQ( 5.0, y.xp.storage.coo.a.data.complex_double[0][1]);
-            TEST_ASSERT_EQ( 4.0, y.xp.storage.coo.a.data.complex_double[1][0]);
-            TEST_ASSERT_EQ(10.0, y.xp.storage.coo.a.data.complex_double[1][1]);
+            TEST_ASSERT_EQ( 6.0, y.Ap.storage.coo.a.data.complex_double[0][0]);
+            TEST_ASSERT_EQ( 5.0, y.Ap.storage.coo.a.data.complex_double[0][1]);
+            TEST_ASSERT_EQ( 4.0, y.Ap.storage.coo.a.data.complex_double[1][0]);
+            TEST_ASSERT_EQ(10.0, y.Ap.storage.coo.a.data.complex_double[1][1]);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ(13.0, y.xp.storage.coo.a.data.complex_double[0][0]);
-            TEST_ASSERT_EQ( 0.0, y.xp.storage.coo.a.data.complex_double[0][1]);
+            TEST_ASSERT_EQ(13.0, y.Ap.storage.coo.a.data.complex_double[0][0]);
+            TEST_ASSERT_EQ( 0.0, y.Ap.storage.coo.a.data.complex_double[0][1]);
         }
         err = mtxmatrix_dist_saypx(2.0f, &y, &x, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         if (rank == 0) {
-            TEST_ASSERT_EQ(13.0, y.xp.storage.coo.a.data.complex_double[0][0]);
-            TEST_ASSERT_EQ(11.0, y.xp.storage.coo.a.data.complex_double[0][1]);
-            TEST_ASSERT_EQ( 9.0, y.xp.storage.coo.a.data.complex_double[1][0]);
-            TEST_ASSERT_EQ(22.0, y.xp.storage.coo.a.data.complex_double[1][1]);
+            TEST_ASSERT_EQ(13.0, y.Ap.storage.coo.a.data.complex_double[0][0]);
+            TEST_ASSERT_EQ(11.0, y.Ap.storage.coo.a.data.complex_double[0][1]);
+            TEST_ASSERT_EQ( 9.0, y.Ap.storage.coo.a.data.complex_double[1][0]);
+            TEST_ASSERT_EQ(22.0, y.Ap.storage.coo.a.data.complex_double[1][1]);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ(29.0, y.xp.storage.coo.a.data.complex_double[0][0]);
-            TEST_ASSERT_EQ( 0.0, y.xp.storage.coo.a.data.complex_double[0][1]);
+            TEST_ASSERT_EQ(29.0, y.Ap.storage.coo.a.data.complex_double[0][0]);
+            TEST_ASSERT_EQ( 0.0, y.Ap.storage.coo.a.data.complex_double[0][1]);
         }
         err = mtxmatrix_dist_daypx(2.0, &y, &x, NULL, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         if (rank == 0) {
-            TEST_ASSERT_EQ(27.0, y.xp.storage.coo.a.data.complex_double[0][0]);
-            TEST_ASSERT_EQ(23.0, y.xp.storage.coo.a.data.complex_double[0][1]);
-            TEST_ASSERT_EQ(19.0, y.xp.storage.coo.a.data.complex_double[1][0]);
-            TEST_ASSERT_EQ(46.0, y.xp.storage.coo.a.data.complex_double[1][1]);
+            TEST_ASSERT_EQ(27.0, y.Ap.storage.coo.a.data.complex_double[0][0]);
+            TEST_ASSERT_EQ(23.0, y.Ap.storage.coo.a.data.complex_double[0][1]);
+            TEST_ASSERT_EQ(19.0, y.Ap.storage.coo.a.data.complex_double[1][0]);
+            TEST_ASSERT_EQ(46.0, y.Ap.storage.coo.a.data.complex_double[1][1]);
         } else if (rank == 1) {
-            TEST_ASSERT_EQ(61.0, y.xp.storage.coo.a.data.complex_double[0][0]);
-            TEST_ASSERT_EQ( 0.0, y.xp.storage.coo.a.data.complex_double[0][1]);
+            TEST_ASSERT_EQ(61.0, y.Ap.storage.coo.a.data.complex_double[0][0]);
+            TEST_ASSERT_EQ( 0.0, y.Ap.storage.coo.a.data.complex_double[0][1]);
         }
         mtxmatrix_dist_free(&y);
         mtxmatrix_dist_free(&x);

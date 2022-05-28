@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-05-02
+ * Last modified: 2022-05-28
  *
  * Data structures and routines for distributed matrices.
  */
@@ -54,7 +54,7 @@ int mtxmatrix_dist_field(
     const struct mtxmatrix_dist * A,
     enum mtxfield * field)
 {
-    return mtxmatrix_field(&A->xp, field);
+    return mtxmatrix_field(&A->Ap, field);
 }
 
 /**
@@ -64,7 +64,7 @@ int mtxmatrix_dist_precision(
     const struct mtxmatrix_dist * A,
     enum mtxprecision * precision)
 {
-    return mtxmatrix_precision(&A->xp, precision);
+    return mtxmatrix_precision(&A->Ap, precision);
 }
 
 /**
@@ -74,7 +74,7 @@ int mtxmatrix_dist_symmetry(
     const struct mtxmatrix_dist * A,
     enum mtxsymmetry * symmetry)
 {
-    return mtxmatrix_symmetry(&A->xp, symmetry);
+    return mtxmatrix_symmetry(&A->Ap, symmetry);
 }
 
 /*
@@ -88,7 +88,7 @@ void mtxmatrix_dist_free(
     struct mtxmatrix_dist * x)
 {
     /* free(x->ranks); */
-    mtxmatrix_free(&x->xp);
+    mtxmatrix_free(&x->Ap);
 }
 
 static int mtxmatrix_dist_init_comm(
@@ -201,8 +201,8 @@ static int mtxmatrix_dist_init_rowmap_global(
     /* int comm_size = A->comm_size; */
     /* int rank = A->rank; */
     /* int64_t blksize = (N+comm_size-1) / comm_size; */
-    /* int64_t num_nonzeros = A->xp.num_nonzeros; */
-    /* const int64_t * idx = A->xp.idx; */
+    /* int64_t num_nonzeros = A->Ap.num_nonzeros; */
+    /* const int64_t * idx = A->Ap.idx; */
     /* MPI_Win window; */
     /* disterr->mpierrcode = MPI_Win_create( */
     /*     A->ranks, A->blksize * sizeof(int), sizeof(int), */
@@ -294,8 +294,8 @@ static int mtxmatrix_dist_init_colmap_global(
     /* int comm_size = A->comm_size; */
     /* int rank = A->rank; */
     /* int64_t blksize = (N+comm_size-1) / comm_size; */
-    /* int64_t num_nonzeros = A->xp.num_nonzeros; */
-    /* const int64_t * idx = A->xp.idx; */
+    /* int64_t num_nonzeros = A->Ap.num_nonzeros; */
+    /* const int64_t * idx = A->Ap.idx; */
     /* MPI_Win window; */
     /* disterr->mpierrcode = MPI_Win_create( */
     /*     A->ranks, A->blksize * sizeof(int), sizeof(int), */
@@ -425,7 +425,7 @@ int mtxmatrix_dist_alloc_entries_local(
 
     /* allocate storage for the local matrix */
     err = mtxmatrix_alloc_entries(
-        &A->xp, type, field, precision, symmetry,
+        &A->Ap, type, field, precision, symmetry,
         A->rowmapsize, A->colmapsize, num_nonzeros,
         idxstride, idxbase, rowidx, colidx);
     if (mtxdisterror_allreduce(disterr, err)) {
@@ -434,7 +434,7 @@ int mtxmatrix_dist_alloc_entries_local(
     }
 
     /* sum the number of nonzeros across all processes */
-    err = mtxmatrix_num_nonzeros(&A->xp, &A->num_nonzeros);
+    err = mtxmatrix_num_nonzeros(&A->Ap, &A->num_nonzeros);
     if (mtxdisterror_allreduce(disterr, err)) {
         free(A->colmap); free(A->rowmap);
         return MTX_ERR_MPI_COLLECTIVE;
@@ -476,7 +476,7 @@ int mtxmatrix_dist_init_entries_local_real_single(
         num_rows, num_columns, rowmapsize, rowmap, colmapsize, colmap,
         num_nonzeros, sizeof(*rowidx), 0, rowidx, colidx, comm, disterr);
     if (err) return err;
-    err = mtxmatrix_set_real_single(&A->xp, num_nonzeros, sizeof(*data), data);
+    err = mtxmatrix_set_real_single(&A->Ap, num_nonzeros, sizeof(*data), data);
     if (err) { mtxmatrix_dist_free(A); return err; }
     return MTX_SUCCESS;
 }
@@ -661,7 +661,7 @@ int mtxmatrix_dist_alloc_entries_global(
 
     /* allocate storage for the local matrix */
     err = mtxmatrix_alloc_entries(
-        &A->xp, type, field, precision, symmetry,
+        &A->Ap, type, field, precision, symmetry,
         A->rowmapsize, A->colmapsize, num_nonzeros,
         sizeof(*localrowidx), 0, localrowidx, localcolidx);
     if (mtxdisterror_allreduce(disterr, err)) {
@@ -672,7 +672,7 @@ int mtxmatrix_dist_alloc_entries_global(
     free(localcolidx); free(localrowidx);
 
     /* sum the number of nonzeros across all processes */
-    err = mtxmatrix_num_nonzeros(&A->xp, &A->num_nonzeros);
+    err = mtxmatrix_num_nonzeros(&A->Ap, &A->num_nonzeros);
     if (mtxdisterror_allreduce(disterr, err)) {
         free(A->colmap); free(A->rowmap);
         return MTX_ERR_MPI_COLLECTIVE;
@@ -714,7 +714,7 @@ int mtxmatrix_dist_init_entries_global_real_single(
         num_rows, num_columns, num_nonzeros, sizeof(*rowidx), 0,
         rowidx, colidx, comm, disterr);
     if (err) return err;
-    err = mtxmatrix_set_real_single(&A->xp, num_nonzeros, sizeof(*data), data);
+    err = mtxmatrix_set_real_single(&A->Ap, num_nonzeros, sizeof(*data), data);
     if (err) { mtxmatrix_dist_free(A); return err; }
     return MTX_SUCCESS;
 }
@@ -741,7 +741,7 @@ int mtxmatrix_dist_init_entries_global_real_double(
         num_rows, num_columns, num_nonzeros, sizeof(*rowidx), 0,
         rowidx, colidx, comm, disterr);
     if (err) return err;
-    err = mtxmatrix_set_real_double(&A->xp, num_nonzeros, sizeof(*data), data);
+    err = mtxmatrix_set_real_double(&A->Ap, num_nonzeros, sizeof(*data), data);
     if (err) { mtxmatrix_dist_free(A); return err; }
     return MTX_SUCCESS;
 }
@@ -768,7 +768,7 @@ int mtxmatrix_dist_init_entries_global_complex_single(
         num_rows, num_columns, num_nonzeros, sizeof(*rowidx), 0,
         rowidx, colidx, comm, disterr);
     if (err) return err;
-    err = mtxmatrix_set_complex_single(&A->xp, num_nonzeros, sizeof(*data), data);
+    err = mtxmatrix_set_complex_single(&A->Ap, num_nonzeros, sizeof(*data), data);
     if (err) { mtxmatrix_dist_free(A); return err; }
     return MTX_SUCCESS;
 }
@@ -795,7 +795,7 @@ int mtxmatrix_dist_init_entries_global_complex_double(
         num_rows, num_columns, num_nonzeros, sizeof(*rowidx), 0,
         rowidx, colidx, comm, disterr);
     if (err) return err;
-    err = mtxmatrix_set_complex_double(&A->xp, num_nonzeros, sizeof(*data), data);
+    err = mtxmatrix_set_complex_double(&A->Ap, num_nonzeros, sizeof(*data), data);
     if (err) { mtxmatrix_dist_free(A); return err; }
     return MTX_SUCCESS;
 }
@@ -822,7 +822,7 @@ int mtxmatrix_dist_init_entries_global_integer_single(
         num_rows, num_columns, num_nonzeros, sizeof(*rowidx), 0,
         rowidx, colidx, comm, disterr);
     if (err) return err;
-    err = mtxmatrix_set_integer_single(&A->xp, num_nonzeros, sizeof(*data), data);
+    err = mtxmatrix_set_integer_single(&A->Ap, num_nonzeros, sizeof(*data), data);
     if (err) { mtxmatrix_dist_free(A); return err; }
     return MTX_SUCCESS;
 }
@@ -849,7 +849,7 @@ int mtxmatrix_dist_init_entries_global_integer_double(
         num_rows, num_columns, num_nonzeros, sizeof(*rowidx), 0,
         rowidx, colidx, comm, disterr);
     if (err) return err;
-    err = mtxmatrix_set_integer_double(&A->xp, num_nonzeros, sizeof(*data), data);
+    err = mtxmatrix_set_integer_double(&A->Ap, num_nonzeros, sizeof(*data), data);
     if (err) { mtxmatrix_dist_free(A); return err; }
     return MTX_SUCCESS;
 }
@@ -908,7 +908,7 @@ int mtxmatrix_dist_init_entries_global_strided_real_single(
         num_rows, num_columns, num_nonzeros, idxstride, idxbase,
         rowidx, colidx, comm, disterr);
     if (err) return err;
-    err = mtxmatrix_set_real_single(&A->xp, num_nonzeros, datastride, data);
+    err = mtxmatrix_set_real_single(&A->Ap, num_nonzeros, datastride, data);
     if (err) { mtxmatrix_dist_free(A); return err; }
     return MTX_SUCCESS;
 }
@@ -939,7 +939,7 @@ int mtxmatrix_dist_init_entries_global_strided_real_double(
         num_rows, num_columns, num_nonzeros, idxstride, idxbase,
         rowidx, colidx, comm, disterr);
     if (err) return err;
-    err = mtxmatrix_set_real_double(&A->xp, num_nonzeros, datastride, data);
+    err = mtxmatrix_set_real_double(&A->Ap, num_nonzeros, datastride, data);
     if (err) { mtxmatrix_dist_free(A); return err; }
     return MTX_SUCCESS;
 }
@@ -970,7 +970,7 @@ int mtxmatrix_dist_init_entries_global_strided_complex_single(
         num_rows, num_columns, num_nonzeros, idxstride, idxbase,
         rowidx, colidx, comm, disterr);
     if (err) return err;
-    err = mtxmatrix_set_complex_single(&A->xp, num_nonzeros, datastride, data);
+    err = mtxmatrix_set_complex_single(&A->Ap, num_nonzeros, datastride, data);
     if (err) { mtxmatrix_dist_free(A); return err; }
     return MTX_SUCCESS;
 }
@@ -1001,7 +1001,7 @@ int mtxmatrix_dist_init_entries_global_strided_complex_double(
         num_rows, num_columns, num_nonzeros, idxstride, idxbase,
         rowidx, colidx, comm, disterr);
     if (err) return err;
-    err = mtxmatrix_set_complex_double(&A->xp, num_nonzeros, datastride, data);
+    err = mtxmatrix_set_complex_double(&A->Ap, num_nonzeros, datastride, data);
     if (err) { mtxmatrix_dist_free(A); return err; }
     return MTX_SUCCESS;
 }
@@ -1032,7 +1032,7 @@ int mtxmatrix_dist_init_entries_global_strided_integer_single(
         num_rows, num_columns, num_nonzeros, idxstride, idxbase,
         rowidx, colidx, comm, disterr);
     if (err) return err;
-    err = mtxmatrix_set_integer_single(&A->xp, num_nonzeros, datastride, data);
+    err = mtxmatrix_set_integer_single(&A->Ap, num_nonzeros, datastride, data);
     if (err) { mtxmatrix_dist_free(A); return err; }
     return MTX_SUCCESS;
 }
@@ -1063,7 +1063,7 @@ int mtxmatrix_dist_init_entries_global_strided_integer_double(
         num_rows, num_columns, num_nonzeros, idxstride, idxbase,
         rowidx, colidx, comm, disterr);
     if (err) return err;
-    err = mtxmatrix_set_integer_double(&A->xp, num_nonzeros, datastride, data);
+    err = mtxmatrix_set_integer_double(&A->Ap, num_nonzeros, datastride, data);
     if (err) { mtxmatrix_dist_free(A); return err; }
     return MTX_SUCCESS;
 }
@@ -1361,7 +1361,7 @@ int mtxmatrix_dist_from_mtxfile(
     }
 
     err = mtxmatrix_alloc_entries(
-        &A->xp, type, field, precision, symmetry,
+        &A->Ap, type, field, precision, symmetry,
         A->rowmapsize, A->colmapsize, num_nonzeros,
         sizeof(*localrowidx), 0, localrowidx, localcolidx);
     if (mtxdisterror_allreduce(disterr, err)) {
@@ -1377,36 +1377,36 @@ int mtxmatrix_dist_from_mtxfile(
         if (mtxheader.field == mtxfile_real) {
             if (precision == mtx_single) {
                 err = mtxmatrix_set_real_single(
-                    &A->xp, num_nonzeros,
+                    &A->Ap, num_nonzeros,
                     sizeof(*recvdata.matrix_coordinate_real_single),
                     &recvdata.matrix_coordinate_real_single[0].a);
             } else if (precision == mtx_double) {
                 err = mtxmatrix_set_real_double(
-                    &A->xp, num_nonzeros,
+                    &A->Ap, num_nonzeros,
                     sizeof(*recvdata.matrix_coordinate_real_double),
                     &recvdata.matrix_coordinate_real_double[0].a);
             } else { return MTX_ERR_INVALID_PRECISION; }
         } else if (mtxheader.field == mtxfile_complex) {
             if (precision == mtx_single) {
                 err = mtxmatrix_set_complex_single(
-                    &A->xp, num_nonzeros,
+                    &A->Ap, num_nonzeros,
                     sizeof(*recvdata.matrix_coordinate_complex_single),
                     &recvdata.matrix_coordinate_complex_single[0].a);
             } else if (precision == mtx_double) {
                 err = mtxmatrix_set_complex_double(
-                    &A->xp, num_nonzeros,
+                    &A->Ap, num_nonzeros,
                     sizeof(*recvdata.matrix_coordinate_complex_double),
                     &recvdata.matrix_coordinate_complex_double[0].a);
             } else { return MTX_ERR_INVALID_PRECISION; }
         } else if (mtxheader.field == mtxfile_integer) {
             if (precision == mtx_single) {
                 err = mtxmatrix_set_integer_single(
-                    &A->xp, num_nonzeros,
+                    &A->Ap, num_nonzeros,
                     sizeof(*recvdata.matrix_coordinate_integer_single),
                     &recvdata.matrix_coordinate_integer_single[0].a);
             } else if (precision == mtx_double) {
                 err = mtxmatrix_set_integer_double(
-                    &A->xp, num_nonzeros,
+                    &A->Ap, num_nonzeros,
                     sizeof(*recvdata.matrix_coordinate_integer_double),
                     &recvdata.matrix_coordinate_integer_double[0].a);
             } else { return MTX_ERR_INVALID_PRECISION; }
@@ -1496,14 +1496,14 @@ int mtxmatrix_dist_to_mtxfile(
             /* send to the root process */
             struct mtxfile sendmtxfile;
             err = mtxmatrix_to_mtxfile(
-                &sendmtxfile, &A->xp, A->num_rows, A->rowmap,
+                &sendmtxfile, &A->Ap, A->num_rows, A->rowmap,
                 A->num_columns, A->colmap, mtxfmt);
             err = err ? err : mtxfile_send(&sendmtxfile, root, 0, A->comm, disterr);
             mtxfile_free(&sendmtxfile);
         } else if (A->rank == root && p == root) {
             struct mtxfile localmtxfile;
             err = mtxmatrix_to_mtxfile(
-                &localmtxfile, &A->xp, A->num_rows, A->rowmap,
+                &localmtxfile, &A->Ap, A->num_rows, A->rowmap,
                 A->num_columns, A->colmap, mtxfmt);
             int64_t num_nonzeros = 0;
             if (mtxfile->header.format == mtxfile_array) {
@@ -1674,10 +1674,10 @@ int mtxmatrix_dist_to_mtxdistfile(
     /* int comm_size = x->comm_size; */
     /* int rank = x->rank; */
     /* enum mtxfield field; */
-    /* int err = mtxmatrix_field(&x->xp.x, &field); */
+    /* int err = mtxmatrix_field(&x->Ap.x, &field); */
     /* if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE; */
     /* enum mtxprecision precision; */
-    /* err = mtxmatrix_precision(&x->xp.x, &precision); */
+    /* err = mtxmatrix_precision(&x->Ap.x, &precision); */
     /* if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE; */
 
     /* struct mtxfileheader mtxheader; */
@@ -1701,11 +1701,11 @@ int mtxmatrix_dist_to_mtxdistfile(
 
     /* err = mtxdistfile_alloc( */
     /*     mtxdistfile, &mtxheader, NULL, &mtxsize, precision, */
-    /*     x->xp.num_nonzeros, x->xp.idx, x->comm, disterr); */
+    /*     x->Ap.num_nonzeros, x->Ap.idx, x->comm, disterr); */
     /* if (err) return err; */
 
     /* struct mtxfile mtxfile; */
-    /* err = mtxmatrix_to_mtxfile(&mtxfile, &x->xp, mtxfmt); */
+    /* err = mtxmatrix_to_mtxfile(&mtxfile, &x->Ap, mtxfmt); */
     /* if (mtxdisterror_allreduce(disterr, err)) { */
     /*     mtxdistfile_free(mtxdistfile); */
     /*     return MTX_ERR_MPI_COLLECTIVE; */
@@ -1715,7 +1715,7 @@ int mtxmatrix_dist_to_mtxdistfile(
     /*     &mtxdistfile->data, &mtxfile.data, */
     /*     mtxfile.header.object, mtxfile.header.format, */
     /*     mtxfile.header.field, mtxfile.precision, */
-    /*     x->xp.num_nonzeros, 0, 0); */
+    /*     x->Ap.num_nonzeros, 0, 0); */
     /* if (mtxdisterror_allreduce(disterr, err)) { */
     /*     mtxfile_free(&mtxfile); */
     /*     mtxdistfile_free(mtxdistfile); */
@@ -1798,7 +1798,7 @@ int mtxmatrix_dist_swap(
     if (x->num_rows != y->num_rows) return MTX_ERR_INCOMPATIBLE_SIZE;
     if (x->num_columns != y->num_columns) return MTX_ERR_INCOMPATIBLE_SIZE;
     if (x->num_nonzeros != y->num_nonzeros) return MTX_ERR_INCOMPATIBLE_SIZE;
-    int err = mtxmatrix_swap(&x->xp, &y->xp);
+    int err = mtxmatrix_swap(&x->Ap, &y->Ap);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     return MTX_SUCCESS;
 }
@@ -1819,7 +1819,7 @@ int mtxmatrix_dist_copy(
     if (x->num_rows != y->num_rows) return MTX_ERR_INCOMPATIBLE_SIZE;
     if (x->num_columns != y->num_columns) return MTX_ERR_INCOMPATIBLE_SIZE;
     if (x->num_nonzeros != y->num_nonzeros) return MTX_ERR_INCOMPATIBLE_SIZE;
-    int err = mtxmatrix_copy(&y->xp, &x->xp);
+    int err = mtxmatrix_copy(&y->Ap, &x->Ap);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     return MTX_SUCCESS;
 }
@@ -1834,7 +1834,7 @@ int mtxmatrix_dist_sscal(
     int64_t * num_flops,
     struct mtxdisterror * disterr)
 {
-    int err = mtxmatrix_sscal(a, &x->xp, num_flops);
+    int err = mtxmatrix_sscal(a, &x->Ap, num_flops);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     return MTX_SUCCESS;
 }
@@ -1849,7 +1849,7 @@ int mtxmatrix_dist_dscal(
     int64_t * num_flops,
     struct mtxdisterror * disterr)
 {
-    int err = mtxmatrix_dscal(a, &x->xp, num_flops);
+    int err = mtxmatrix_dscal(a, &x->Ap, num_flops);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     return MTX_SUCCESS;
 }
@@ -1864,7 +1864,7 @@ int mtxmatrix_dist_cscal(
     int64_t * num_flops,
     struct mtxdisterror * disterr)
 {
-    int err = mtxmatrix_cscal(a, &x->xp, num_flops);
+    int err = mtxmatrix_cscal(a, &x->Ap, num_flops);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     return MTX_SUCCESS;
 }
@@ -1879,7 +1879,7 @@ int mtxmatrix_dist_zscal(
     int64_t * num_flops,
     struct mtxdisterror * disterr)
 {
-    int err = mtxmatrix_zscal(a, &x->xp, num_flops);
+    int err = mtxmatrix_zscal(a, &x->Ap, num_flops);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     return MTX_SUCCESS;
 }
@@ -1906,7 +1906,7 @@ int mtxmatrix_dist_saxpy(
     if (x->num_rows != y->num_rows) return MTX_ERR_INCOMPATIBLE_SIZE;
     if (x->num_columns != y->num_columns) return MTX_ERR_INCOMPATIBLE_SIZE;
     if (x->num_nonzeros != y->num_nonzeros) return MTX_ERR_INCOMPATIBLE_SIZE;
-    int err = mtxmatrix_saxpy(a, &x->xp, &y->xp, num_flops);
+    int err = mtxmatrix_saxpy(a, &x->Ap, &y->Ap, num_flops);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     return MTX_SUCCESS;
 }
@@ -1933,7 +1933,7 @@ int mtxmatrix_dist_daxpy(
     if (x->num_rows != y->num_rows) return MTX_ERR_INCOMPATIBLE_SIZE;
     if (x->num_columns != y->num_columns) return MTX_ERR_INCOMPATIBLE_SIZE;
     if (x->num_nonzeros != y->num_nonzeros) return MTX_ERR_INCOMPATIBLE_SIZE;
-    int err = mtxmatrix_daxpy(a, &x->xp, &y->xp, num_flops);
+    int err = mtxmatrix_daxpy(a, &x->Ap, &y->Ap, num_flops);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     return MTX_SUCCESS;
 }
@@ -1960,7 +1960,7 @@ int mtxmatrix_dist_saypx(
     if (x->num_rows != y->num_rows) return MTX_ERR_INCOMPATIBLE_SIZE;
     if (x->num_columns != y->num_columns) return MTX_ERR_INCOMPATIBLE_SIZE;
     if (x->num_nonzeros != y->num_nonzeros) return MTX_ERR_INCOMPATIBLE_SIZE;
-    int err = mtxmatrix_saypx(a, &y->xp, &x->xp, num_flops);
+    int err = mtxmatrix_saypx(a, &y->Ap, &x->Ap, num_flops);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     return MTX_SUCCESS;
 }
@@ -1987,7 +1987,7 @@ int mtxmatrix_dist_daypx(
     if (x->num_rows != y->num_rows) return MTX_ERR_INCOMPATIBLE_SIZE;
     if (x->num_columns != y->num_columns) return MTX_ERR_INCOMPATIBLE_SIZE;
     if (x->num_nonzeros != y->num_nonzeros) return MTX_ERR_INCOMPATIBLE_SIZE;
-    int err = mtxmatrix_daypx(a, &y->xp, &x->xp, num_flops);
+    int err = mtxmatrix_daypx(a, &y->Ap, &x->Ap, num_flops);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     return MTX_SUCCESS;
 }
@@ -2020,7 +2020,7 @@ int mtxmatrix_dist_sdot(
     if (x->num_rows != y->num_rows) return MTX_ERR_INCOMPATIBLE_SIZE;
     if (x->num_columns != y->num_columns) return MTX_ERR_INCOMPATIBLE_SIZE;
     if (x->num_nonzeros != y->num_nonzeros) return MTX_ERR_INCOMPATIBLE_SIZE;
-    err = mtxmatrix_sdot(&x->xp, &y->xp, dot, num_flops);
+    err = mtxmatrix_sdot(&x->Ap, &y->Ap, dot, num_flops);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     disterr->mpierrcode = MPI_Allreduce(
         MPI_IN_PLACE, dot, 1, MPI_FLOAT, MPI_SUM, x->comm);
@@ -2057,7 +2057,7 @@ int mtxmatrix_dist_ddot(
     if (x->num_rows != y->num_rows) return MTX_ERR_INCOMPATIBLE_SIZE;
     if (x->num_columns != y->num_columns) return MTX_ERR_INCOMPATIBLE_SIZE;
     if (x->num_nonzeros != y->num_nonzeros) return MTX_ERR_INCOMPATIBLE_SIZE;
-    err = mtxmatrix_ddot(&x->xp, &y->xp, dot, num_flops);
+    err = mtxmatrix_ddot(&x->Ap, &y->Ap, dot, num_flops);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     disterr->mpierrcode = MPI_Allreduce(
         MPI_IN_PLACE, dot, 1, MPI_DOUBLE, MPI_SUM, x->comm);
@@ -2095,7 +2095,7 @@ int mtxmatrix_dist_cdotu(
     if (x->num_rows != y->num_rows) return MTX_ERR_INCOMPATIBLE_SIZE;
     if (x->num_columns != y->num_columns) return MTX_ERR_INCOMPATIBLE_SIZE;
     if (x->num_nonzeros != y->num_nonzeros) return MTX_ERR_INCOMPATIBLE_SIZE;
-    err = mtxmatrix_cdotu(&x->xp, &y->xp, dot, num_flops);
+    err = mtxmatrix_cdotu(&x->Ap, &y->Ap, dot, num_flops);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     disterr->mpierrcode = MPI_Allreduce(
         MPI_IN_PLACE, dot, 2, MPI_FLOAT, MPI_SUM, x->comm);
@@ -2133,7 +2133,7 @@ int mtxmatrix_dist_zdotu(
     if (x->num_rows != y->num_rows) return MTX_ERR_INCOMPATIBLE_SIZE;
     if (x->num_columns != y->num_columns) return MTX_ERR_INCOMPATIBLE_SIZE;
     if (x->num_nonzeros != y->num_nonzeros) return MTX_ERR_INCOMPATIBLE_SIZE;
-    err = mtxmatrix_zdotu(&x->xp, &y->xp, dot, num_flops);
+    err = mtxmatrix_zdotu(&x->Ap, &y->Ap, dot, num_flops);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     disterr->mpierrcode = MPI_Allreduce(
         MPI_IN_PLACE, dot, 2, MPI_DOUBLE, MPI_SUM, x->comm);
@@ -2170,7 +2170,7 @@ int mtxmatrix_dist_cdotc(
     if (x->num_rows != y->num_rows) return MTX_ERR_INCOMPATIBLE_SIZE;
     if (x->num_columns != y->num_columns) return MTX_ERR_INCOMPATIBLE_SIZE;
     if (x->num_nonzeros != y->num_nonzeros) return MTX_ERR_INCOMPATIBLE_SIZE;
-    err = mtxmatrix_cdotc(&x->xp, &y->xp, dot, num_flops);
+    err = mtxmatrix_cdotc(&x->Ap, &y->Ap, dot, num_flops);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     disterr->mpierrcode = MPI_Allreduce(
         MPI_IN_PLACE, dot, 2, MPI_FLOAT, MPI_SUM, x->comm);
@@ -2207,7 +2207,7 @@ int mtxmatrix_dist_zdotc(
     if (x->num_rows != y->num_rows) return MTX_ERR_INCOMPATIBLE_SIZE;
     if (x->num_columns != y->num_columns) return MTX_ERR_INCOMPATIBLE_SIZE;
     if (x->num_nonzeros != y->num_nonzeros) return MTX_ERR_INCOMPATIBLE_SIZE;
-    err = mtxmatrix_zdotc(&x->xp, &y->xp, dot, num_flops);
+    err = mtxmatrix_zdotc(&x->Ap, &y->Ap, dot, num_flops);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     disterr->mpierrcode = MPI_Allreduce(
         MPI_IN_PLACE, dot, 2, MPI_DOUBLE, MPI_SUM, x->comm);
@@ -2228,7 +2228,7 @@ int mtxmatrix_dist_snrm2(
     struct mtxdisterror * disterr)
 {
     float dot[2] = {0.0f, 0.0f};
-    int err = mtxmatrix_cdotc(&x->xp, &x->xp, &dot, num_flops);
+    int err = mtxmatrix_cdotc(&x->Ap, &x->Ap, &dot, num_flops);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     disterr->mpierrcode = MPI_Allreduce(
         MPI_IN_PLACE, dot, 1, MPI_FLOAT, MPI_SUM, x->comm);
@@ -2250,7 +2250,7 @@ int mtxmatrix_dist_dnrm2(
     struct mtxdisterror * disterr)
 {
     double dot[2] = {0.0, 0.0};
-    int err = mtxmatrix_zdotc(&x->xp, &x->xp, &dot, num_flops);
+    int err = mtxmatrix_zdotc(&x->Ap, &x->Ap, &dot, num_flops);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     disterr->mpierrcode = MPI_Allreduce(
         MPI_IN_PLACE, dot, 1, MPI_DOUBLE, MPI_SUM, x->comm);
@@ -2273,7 +2273,7 @@ int mtxmatrix_dist_sasum(
     int64_t * num_flops,
     struct mtxdisterror * disterr)
 {
-    int err = mtxmatrix_sasum(&x->xp, asum, num_flops);
+    int err = mtxmatrix_sasum(&x->Ap, asum, num_flops);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     disterr->mpierrcode = MPI_Allreduce(
         MPI_IN_PLACE, asum, 1, MPI_FLOAT, MPI_SUM, x->comm);
@@ -2295,7 +2295,7 @@ int mtxmatrix_dist_dasum(
     int64_t * num_flops,
     struct mtxdisterror * disterr)
 {
-    int err = mtxmatrix_dasum(&x->xp, asum, num_flops);
+    int err = mtxmatrix_dasum(&x->Ap, asum, num_flops);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     disterr->mpierrcode = MPI_Allreduce(
         MPI_IN_PLACE, asum, 1, MPI_DOUBLE, MPI_SUM, x->comm);
@@ -2554,7 +2554,7 @@ int mtxmatrix_dist_gemv_sgemv(
         err = mtxvector_dist_setzero(&impl->w, disterr);
         if (err) return err;
         err = mtxmatrix_sgemv(
-            gemv->trans, alpha, &gemv->A->xp,
+            gemv->trans, alpha, &gemv->A->Ap,
             &impl->z.xp.x, 1.0f, &impl->w.xp.x, &impl->num_flops);
         if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
         if (gemv->trans == mtx_notrans) {
@@ -2602,7 +2602,7 @@ int mtxmatrix_dist_gemv_dgemv(
         err = mtxvector_dist_setzero(&impl->w, disterr);
         if (err) return err;
         err = mtxmatrix_dgemv(
-            gemv->trans, alpha, &gemv->A->xp,
+            gemv->trans, alpha, &gemv->A->Ap,
             &impl->z.xp.x, 1.0, &impl->w.xp.x, &impl->num_flops);
         if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
         if (gemv->trans == mtx_notrans) {
