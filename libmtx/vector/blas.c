@@ -595,60 +595,6 @@ int mtxvector_blas_split(
 }
 
 /**
- * ‘mtxvector_blas_partition()’ partitions a vector into blocks
- * according to the given partitioning.
- *
- * The partition ‘part’ is allowed to be ‘NULL’, in which case a
- * trivial, singleton partition is used to partition the entries of
- * the vector. Otherwise, ‘part’ must partition the entries of the
- * vector ‘src’. That is, ‘part->size’ must be equal to the size of
- * the vector.
- *
- * The argument ‘dsts’ is an array that must have enough storage for
- * ‘P’ values of type ‘struct mtxvector’, where ‘P’ is the number of
- * parts, ‘part->num_parts’.
- *
- * The user is responsible for freeing storage allocated for each
- * vector in the ‘dsts’ array.
- */
-int mtxvector_blas_partition(
-    struct mtxvector * dsts,
-    const struct mtxvector_blas * src,
-    const struct mtxpartition * part)
-{
-    int err;
-    int num_parts = part ? part->num_parts : 1;
-    struct mtxfile mtxfile;
-    err = mtxvector_blas_to_mtxfile(&mtxfile, src, 0, NULL, mtxfile_array);
-    if (err) return err;
-
-    struct mtxfile * dstmtxfiles = malloc(sizeof(struct mtxfile) * num_parts);
-    if (!dstmtxfiles) return MTX_ERR_ERRNO;
-    err = mtxfile_partition(dstmtxfiles, &mtxfile, part, NULL);
-    if (err) {
-        free(dstmtxfiles);
-        mtxfile_free(&mtxfile);
-        return err;
-    }
-    mtxfile_free(&mtxfile);
-
-    for (int p = 0; p < num_parts; p++) {
-        dsts[p].type = mtxvector_blas;
-        err = mtxvector_blas_from_mtxfile(
-            &dsts[p].storage.blas, &dstmtxfiles[p]);
-        if (err) {
-            for (int q = p; q < num_parts; q++)
-                mtxfile_free(&dstmtxfiles[q]);
-            free(dstmtxfiles);
-            return err;
-        }
-        mtxfile_free(&dstmtxfiles[p]);
-    }
-    free(dstmtxfiles);
-    return MTX_SUCCESS;
-}
-
-/**
  * ‘mtxvector_blas_join()’ joins together block vectors to form a
  * larger vector.
  *

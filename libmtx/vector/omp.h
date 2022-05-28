@@ -645,40 +645,6 @@ int mtxvector_omp_split(
     int64_t size,
     int * parts);
 
-/**
- * ‘mtxvector_omp_partition()’ partitions a vector into blocks
- * according to the given partitioning.
- *
- * The partition ‘part’ is allowed to be ‘NULL’, in which case a
- * trivial, singleton partition is used to partition the entries of
- * the vector. Otherwise, ‘part’ must partition the entries of the
- * vector ‘src’. That is, ‘part->size’ must be equal to the size of
- * the vector.
- *
- * The argument ‘dsts’ is an array that must have enough storage for
- * ‘P’ values of type ‘struct mtxvector’, where ‘P’ is the number of
- * parts, ‘part->num_parts’.
- *
- * The user is responsible for freeing storage allocated for each
- * vector in the ‘dsts’ array.
- */
-int mtxvector_omp_partition(
-    struct mtxvector * dsts,
-    const struct mtxvector_omp * src,
-    const struct mtxpartition * part);
-
-/**
- * ‘mtxvector_omp_join()’ joins together block vectors to form a
- * larger vector.
- *
- * The argument ‘srcs’ is an array of size ‘P’, where ‘P’ is the
- * number of parts in the partitioning (i.e, ‘part->num_parts’).
- */
-int mtxvector_omp_join(
-    struct mtxvector_omp * dst,
-    const struct mtxvector * srcs,
-    const struct mtxpartition * part);
-
 /*
  * Level 1 BLAS operations
  */

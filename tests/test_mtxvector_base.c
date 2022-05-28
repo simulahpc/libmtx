@@ -440,110 +440,6 @@ int test_mtxvector_base_split(void)
 }
 
 /**
- * ‘test_mtxvector_base_partition()’ tests partitioning vectors.
- */
-int test_mtxvector_base_partition(void)
-{
-    int err;
-    {
-        struct mtxvector src;
-        float srcdata[] = {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0, 8.0f, 9.0f};
-        int srcsize = sizeof(srcdata) / sizeof(*srcdata);
-        err = mtxvector_init_real_single(&src, mtxvector_base, srcsize, srcdata);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-
-        int num_parts = 2;
-        enum mtxpartitioning parttype = mtx_block;
-        struct mtxpartition part;
-        err = mtxpartition_init(
-            &part, parttype, srcsize, num_parts, NULL, 0, NULL, NULL);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-
-        struct mtxvector dsts[num_parts];
-        err = mtxvector_partition(dsts, &src, &part);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        {
-            TEST_ASSERT_EQ(mtxvector_base, dsts[0].type);
-            const struct mtxvector_base * x = &dsts[0].storage.base;
-            TEST_ASSERT_EQ(mtx_field_real, x->field);
-            TEST_ASSERT_EQ(mtx_single, x->precision);
-            TEST_ASSERT_EQ(5, x->size);
-            TEST_ASSERT_EQ(x->data.real_single[0], 1.0f);
-            TEST_ASSERT_EQ(x->data.real_single[1], 2.0f);
-            TEST_ASSERT_EQ(x->data.real_single[2], 3.0f);
-            TEST_ASSERT_EQ(x->data.real_single[3], 4.0f);
-            TEST_ASSERT_EQ(x->data.real_single[4], 5.0f);
-            mtxvector_free(&dsts[0]);
-        }
-        {
-            TEST_ASSERT_EQ(mtxvector_base, dsts[1].type);
-            const struct mtxvector_base * x = &dsts[1].storage.base;
-            TEST_ASSERT_EQ(mtx_field_real, x->field);
-            TEST_ASSERT_EQ(mtx_single, x->precision);
-            TEST_ASSERT_EQ(4, x->size);
-            TEST_ASSERT_EQ(x->data.real_single[0], 6.0f);
-            TEST_ASSERT_EQ(x->data.real_single[1], 7.0f);
-            TEST_ASSERT_EQ(x->data.real_single[2], 8.0f);
-            TEST_ASSERT_EQ(x->data.real_single[3], 9.0f);
-            mtxvector_free(&dsts[1]);
-        }
-        mtxpartition_free(&part);
-        mtxvector_free(&src);
-    }
-    return TEST_SUCCESS;
-}
-
-/**
- * ‘test_mtxvector_base_join()’ tests joining vectors.
- */
-int test_mtxvector_base_join(void)
-{
-    int err;
-    {
-        struct mtxvector srcs[2];
-        int num_rows[] = {6, 3};
-        float srcdata0[] = {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f};
-        float srcdata1[] = {7.0, 8.0f, 9.0f};
-        err = mtxvector_init_real_single(&srcs[0], mtxvector_base, num_rows[0], srcdata0);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxvector_init_real_single(&srcs[1], mtxvector_base, num_rows[1], srcdata1);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-
-        int num_parts = 2;
-        int64_t partsizes[] = {6, 3};
-        enum mtxpartitioning parttype = mtx_block;
-        struct mtxpartition part;
-        err = mtxpartition_init(
-            &part, parttype, num_rows[0]+num_rows[1],
-            num_parts, partsizes, 0, NULL, NULL);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-
-        struct mtxvector dst;
-        err = mtxvector_join(&dst, srcs, &part);
-        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        TEST_ASSERT_EQ(mtxvector_base, dst.type);
-        const struct mtxvector_base * x = &dst.storage.base;
-        TEST_ASSERT_EQ(mtx_field_real, x->field);
-        TEST_ASSERT_EQ(mtx_single, x->precision);
-        TEST_ASSERT_EQ(9, x->size);
-        TEST_ASSERT_EQ(x->data.real_single[0], 1.0f);
-        TEST_ASSERT_EQ(x->data.real_single[1], 2.0f);
-        TEST_ASSERT_EQ(x->data.real_single[2], 3.0f);
-        TEST_ASSERT_EQ(x->data.real_single[3], 4.0f);
-        TEST_ASSERT_EQ(x->data.real_single[4], 5.0f);
-        TEST_ASSERT_EQ(x->data.real_single[5], 6.0f);
-        TEST_ASSERT_EQ(x->data.real_single[6], 7.0f);
-        TEST_ASSERT_EQ(x->data.real_single[7], 8.0f);
-        TEST_ASSERT_EQ(x->data.real_single[8], 9.0f);
-        mtxvector_free(&dst);
-        mtxpartition_free(&part);
-        mtxvector_free(&srcs[1]);
-        mtxvector_free(&srcs[0]);
-    }
-    return TEST_SUCCESS;
-}
-
-/**
  * ‘test_mtxvector_base_swap()’ tests swapping values of two vectors.
  */
 int test_mtxvector_base_swap(void)
@@ -2140,8 +2036,6 @@ int main(int argc, char * argv[])
     TEST_RUN(test_mtxvector_base_from_mtxfile);
     TEST_RUN(test_mtxvector_base_to_mtxfile);
     TEST_RUN(test_mtxvector_base_split);
-    TEST_RUN(test_mtxvector_base_partition);
-    TEST_RUN(test_mtxvector_base_join);
     TEST_RUN(test_mtxvector_base_swap);
     TEST_RUN(test_mtxvector_base_copy);
     TEST_RUN(test_mtxvector_base_scal);
