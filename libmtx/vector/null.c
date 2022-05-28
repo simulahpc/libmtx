@@ -556,6 +556,44 @@ int mtxvector_null_to_mtxfile(
 }
 
 /*
+ * Partitioning
+ */
+
+/**
+ * ‘mtxvector_null_split()’ splits a vector into multiple vectors
+ * according to a given assignment of parts to each vector element.
+ *
+ * The partitioning of the vector elements is specified by the array
+ * ‘parts’. The length of the ‘parts’ array is given by ‘size’, which
+ * must match the size of the vector ‘src’. Each entry in the array is
+ * an integer in the range ‘[0, num_parts)’ designating the part to
+ * which the corresponding vector element belongs.
+ *
+ * The argument ‘dsts’ is an array of ‘num_parts’ pointers to objects
+ * of type ‘struct mtxvector_null’. If successful, then ‘dsts[p]’
+ * points to a vector consisting of elements from ‘src’ that belong to
+ * the ‘p’th part, as designated by the ‘parts’ array.
+ *
+ * The caller is responsible for calling ‘mtxvector_null_free()’ to
+ * free storage allocated for each vector in the ‘dsts’ array.
+ */
+int mtxvector_null_split(
+    int num_parts,
+    struct mtxvector_null ** dsts,
+    const struct mtxvector_null * src,
+    int64_t size,
+    int * parts)
+{
+    struct mtxvector_base ** basedsts = malloc(
+        num_parts * sizeof(struct mtxvector_base *));
+    if (!basedsts) return MTX_ERR_ERRNO;
+    for (int p = 0; p < num_parts; p++) basedsts[p] = &dsts[p]->base;
+    int err = mtxvector_base_split(num_parts, basedsts, &src->base, size, parts);
+    free(basedsts);
+    return err;
+}
+
+/*
  * Level 1 BLAS operations
  */
 

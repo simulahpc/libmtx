@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-04-14
+ * Last modified: 2022-05-28
  *
  * Unit tests for shared-memory parallel, dense vectors using OpenMP.
  */
@@ -323,6 +323,42 @@ int test_mtxvector_omp_to_mtxfile(void)
             TEST_ASSERT_EQ(xdata[k], data[k]);
         mtxfile_free(&mtxfile);
         mtxvector_free(&x);
+    }
+    return TEST_SUCCESS;
+}
+
+/**
+ * ‘test_mtxvector_omp_split()’ tests splitting vectors.
+ */
+int test_mtxvector_omp_split(void)
+{
+    int err;
+    {
+        struct mtxvector src;
+        struct mtxvector dst0, dst1;
+        struct mtxvector * dsts[] = {&dst0, &dst1};
+        int num_parts = 2;
+        float srcdata[] = {1.0f, 2.0f, 3.0f, 4.0f, 5.0f};
+        int parts[] = {0, 1, 0, 0, 1};
+        int srcsize = sizeof(srcdata) / sizeof(*srcdata);
+        err = mtxvector_init_real_single(&src, mtxvector_omp, srcsize, srcdata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        err = mtxvector_split(num_parts, dsts, &src, srcsize, parts);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(mtxvector_omp, dst0.type);
+        TEST_ASSERT_EQ(mtx_field_real, dst0.storage.omp.base.field);
+        TEST_ASSERT_EQ(mtx_single, dst0.storage.omp.base.precision);
+        TEST_ASSERT_EQ(3, dst0.storage.omp.base.size);
+        TEST_ASSERT_EQ(1.0f, dst0.storage.omp.base.data.real_single[0]);
+        TEST_ASSERT_EQ(3.0f, dst0.storage.omp.base.data.real_single[1]);
+        TEST_ASSERT_EQ(4.0f, dst0.storage.omp.base.data.real_single[2]);
+        TEST_ASSERT_EQ(mtxvector_omp, dst1.type);
+        TEST_ASSERT_EQ(mtx_field_real, dst1.storage.omp.base.field);
+        TEST_ASSERT_EQ(mtx_single, dst1.storage.omp.base.precision);
+        TEST_ASSERT_EQ(2, dst1.storage.omp.base.size);
+        TEST_ASSERT_EQ(2.0f, dst1.storage.omp.base.data.real_single[0]);
+        TEST_ASSERT_EQ(5.0f, dst1.storage.omp.base.data.real_single[1]);
+        mtxvector_free(&dst1); mtxvector_free(&dst0); mtxvector_free(&src);
     }
     return TEST_SUCCESS;
 }
@@ -2029,6 +2065,7 @@ int main(int argc, char * argv[])
     {
         TEST_RUN(test_mtxvector_omp_from_mtxfile);
         TEST_RUN(test_mtxvector_omp_to_mtxfile);
+        TEST_RUN(test_mtxvector_omp_split);
         TEST_RUN(test_mtxvector_omp_partition);
         TEST_RUN(test_mtxvector_omp_join);
         TEST_RUN(test_mtxvector_omp_swap);

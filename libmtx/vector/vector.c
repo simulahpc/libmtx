@@ -41,6 +41,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 /*
@@ -1639,6 +1640,90 @@ int mtxvector_gzwrite(
 /*
  * Partitioning
  */
+
+/**
+ * ‘mtxvector_split()’ splits a vector into multiple vectors according
+ * to a given assignment of parts to each vector element.
+ *
+ * The partitioning of the vector elements is specified by the array
+ * ‘parts’. The length of the ‘parts’ array is given by ‘size’, which
+ * must match the size of the vector ‘src’. Each entry in the array is
+ * an integer in the range ‘[0, num_parts)’ designating the part to
+ * which the corresponding vector element belongs.
+ *
+ * The argument ‘dsts’ is an array of ‘num_parts’ pointers to objects
+ * of type ‘struct mtxvector’. If successful, then ‘dsts[p]’ points to
+ * a vector consisting of elements from ‘src’ that belong to the ‘p’th
+ * part, as designated by the ‘parts’ array.
+ *
+ * The caller is responsible for calling ‘mtxvector_free()’ to free
+ * storage allocated for each vector in the ‘dsts’ array.
+ */
+int mtxvector_split(
+    int num_parts,
+    struct mtxvector ** dsts,
+    const struct mtxvector * src,
+    int64_t size,
+    int * parts)
+{
+    if (src->type == mtxvector_base) {
+        struct mtxvector_base ** basedsts = malloc(
+            num_parts * sizeof(struct mtxvector_base *));
+        if (!basedsts) return MTX_ERR_ERRNO;
+        for (int p = 0; p < num_parts; p++) {
+            dsts[p]->type = mtxvector_base;
+            basedsts[p] = &dsts[p]->storage.base;
+        }
+        int err = mtxvector_base_split(
+            num_parts, basedsts, &src->storage.base, size, parts);
+        free(basedsts);
+        return err;
+    } else if (src->type == mtxvector_blas) {
+#ifdef LIBMTX_HAVE_BLAS
+        struct mtxvector_blas ** blasdsts = malloc(
+            num_parts * sizeof(struct mtxvector_blas *));
+        if (!blasdsts) return MTX_ERR_ERRNO;
+        for (int p = 0; p < num_parts; p++) {
+            dsts[p]->type = mtxvector_blas;
+            blasdsts[p] = &dsts[p]->storage.blas;
+        }
+        int err = mtxvector_blas_split(
+            num_parts, blasdsts, &src->storage.blas, size, parts);
+        free(blasdsts);
+        return err;
+#else
+        return MTX_ERR_BLAS_NOT_SUPPORTED;
+#endif
+    } else if (src->type == mtxvector_null) {
+        struct mtxvector_null ** nulldsts = malloc(
+            num_parts * sizeof(struct mtxvector_null *));
+        if (!nulldsts) return MTX_ERR_ERRNO;
+        for (int p = 0; p < num_parts; p++) {
+            dsts[p]->type = mtxvector_null;
+            nulldsts[p] = &dsts[p]->storage.null;
+        }
+        int err = mtxvector_null_split(
+            num_parts, nulldsts, &src->storage.null, size, parts);
+        free(nulldsts);
+        return err;
+    } else if (src->type == mtxvector_omp) {
+#ifdef LIBMTX_HAVE_OPENMP
+        struct mtxvector_omp ** ompdsts = malloc(
+            num_parts * sizeof(struct mtxvector_omp *));
+        if (!ompdsts) return MTX_ERR_ERRNO;
+        for (int p = 0; p < num_parts; p++) {
+            dsts[p]->type = mtxvector_omp;
+            ompdsts[p] = &dsts[p]->storage.omp;
+        }
+        int err = mtxvector_omp_split(
+            num_parts, ompdsts, &src->storage.omp, size, parts);
+        free(ompdsts);
+        return err;
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
+    } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
+}
 
 /**
  * ‘mtxvector_partition()’ partitions a vector into blocks according
