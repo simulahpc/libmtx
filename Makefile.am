@@ -60,6 +60,7 @@ libmtx_la_SOURCES = \
 	libmtx/matrix/base/dense.c \
 	libmtx/matrix/blas/dense.c \
 	libmtx/matrix/dist.c \
+	libmtx/matrix/gemvoverlap.c \
 	libmtx/matrix/matrix.c \
 	libmtx/matrix/null/coo.c \
 	libmtx/matrix/omp/csr.c \
@@ -110,6 +111,7 @@ nobase_include_HEADERS = \
 	libmtx/matrix/base/dense.h \
 	libmtx/matrix/blas/dense.h \
 	libmtx/matrix/dist.h \
+	libmtx/matrix/gemvoverlap.h \
 	libmtx/matrix/matrix.h \
 	libmtx/matrix/null/coo.h \
 	libmtx/matrix/omp/csr.h \

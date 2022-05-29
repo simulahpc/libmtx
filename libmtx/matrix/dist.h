@@ -27,10 +27,12 @@
 #include <libmtx/libmtx-config.h>
 
 #ifdef LIBMTX_HAVE_MPI
-#include <libmtx/vector/precision.h>
-#include <libmtx/vector/field.h>
-#include <libmtx/mtxfile/header.h>
 #include <libmtx/matrix/matrix.h>
+#include <libmtx/matrix/gemvoverlap.h>
+#include <libmtx/matrix/transpose.h>
+#include <libmtx/mtxfile/header.h>
+#include <libmtx/vector/field.h>
+#include <libmtx/vector/precision.h>
 
 #include <mpi.h>
 
@@ -1310,15 +1312,6 @@ int mtxmatrix_dist_zgemv(
  * persistent matrix-vector multiply operations, with optional
  * overlapping of computation and communication
  */
-
-/**
- * ‘mtxgemvoverlap’ is used to enumerate different methods for
- * overlapping computation with communication matrix formats.
- */
-enum mtxgemvoverlap
-{
-    mtxgemvoverlap_none,   /* no overlap */
-};
 
 struct mtxmatrix_dist_gemv_impl;
 

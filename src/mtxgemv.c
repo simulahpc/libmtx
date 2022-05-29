@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-05-02
+ * Last modified: 2022-05-28
  *
  * Multiply a general, unsymmetric matrix with a vector.
  *
@@ -72,6 +72,7 @@ struct program_options
     enum mtxpartitioning partition;
     int64_t blksize;
     enum mtxtransposition trans;
+    enum mtxgemvoverlap overlap;
     int repeat;
     bool gzip;
     int verbose;
@@ -95,6 +96,7 @@ static int program_options_init(
     args->partition = mtx_block;
     args->blksize = 1;
     args->trans = mtx_notrans;
+    args->overlap = mtxgemvoverlap_none;
     args->repeat = 1;
     args->gzip = false;
     args->quiet = false;
@@ -156,6 +158,8 @@ static void program_options_print_help(
     fprintf(f, "  --blksize=N\t\tblock size to use for block-cyclic partitioning\n");
     fprintf(f, "  --trans=TRANS\t\tCompute transpose or conjugate transpose matrix-vector product.\n");
     fprintf(f, "\t\t\tOptions are ‘notrans’ (default), ‘trans’ or ‘conjtrans’.\n");
+    fprintf(f, "  --overlap=TYPE\t\ttype of communication-computation overlap:\n");
+    fprintf(f, "\t\t\t‘none’ (default).\n");
     fprintf(f, "  --repeat=N\t\trepeat matrix-vector multiplication N times\n");
     fprintf(f, "  -z, --gzip, --gunzip, --ungzip\tfilter files through gzip\n");
     fprintf(f, "  --format=FORMAT\tFormat string for outputting numerical values.\n");
@@ -258,6 +262,19 @@ static int parse_program_options(
         } else if (strstr(argv[0], "--trans=") == argv[0]) {
             char * s = argv[0] + strlen("--trans=");
             err = mtxtransposition_parse(&args->trans, NULL, NULL, s, "");
+            if (err) { program_options_free(args); return EINVAL; }
+            (*nargs)++; argv++; continue;
+        }
+
+        if (strcmp(argv[0], "--overlap") == 0) {
+            if (argc - *nargs < 2) { program_options_free(args); return EINVAL; }
+            (*nargs)++; argv++;
+            err = mtxgemvoverlap_parse(&args->overlap, NULL, NULL, argv[0], "");
+            if (err) { program_options_free(args); return EINVAL; }
+            (*nargs)++; argv++; continue;
+        } else if (strstr(argv[0], "--overlap=") == argv[0]) {
+            char * s = argv[0] + strlen("--overlap=");
+            err = mtxgemvoverlap_parse(&args->overlap, NULL, NULL, s, "");
             if (err) { program_options_free(args); return EINVAL; }
             (*nargs)++; argv++; continue;
         }
@@ -463,6 +480,7 @@ static int distgemv(
     enum mtxmatrixtype matrixtype,
     enum mtxvectortype vectortype,
     enum mtxtransposition trans,
+    enum mtxgemvoverlap overlap,
     int repeat,
     const char * format,
     enum mtxfileformat mtxfmt,
@@ -627,7 +645,6 @@ static int distgemv(
         clock_gettime(CLOCK_MONOTONIC, &t0);
     }
     struct mtxmatrix_dist_gemv gemv;
-    enum mtxgemvoverlap overlap = mtxgemvoverlap_none;
     err = mtxmatrix_dist_gemv_init(
         &gemv, trans, &A, &x, &y, overlap, disterr);
     if (err) {
@@ -1160,7 +1177,7 @@ int main(int argc, char *argv[])
         args.alpha, &mtxdistfileA,
         args.x_path ? &mtxdistfilex : NULL,
         args.y_path ? &mtxdistfiley : NULL,
-        args.matrix_type, args.vector_type, args.trans, args.repeat,
+        args.matrix_type, args.vector_type, args.trans, args.overlap, args.repeat,
         args.format, args.y_path ? mtxdistfiley.header.format : mtxfile_array,
         args.verbose, diagf, args.quiet,
         comm, comm_size, rank, root, &disterr);
