@@ -56,6 +56,25 @@ struct mtxvector_blas
 };
 
 /*
+ * vector properties
+ */
+
+/**
+ * ‘mtxvector_blas_field()’ gets the field of a vector.
+ */
+enum mtxfield mtxvector_blas_field(const struct mtxvector_blas * x);
+
+/**
+ * ‘mtxvector_blas_precision()’ gets the precision of a vector.
+ */
+enum mtxprecision mtxvector_blas_precision(const struct mtxvector_blas * x);
+
+/**
+ * ‘mtxvector_blas_size()’ gets the size of a vector.
+ */
+int64_t mtxvector_blas_size(const struct mtxvector_blas * x);
+
+/*
  * Memory management
  */
 

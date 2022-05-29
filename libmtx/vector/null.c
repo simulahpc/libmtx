@@ -46,6 +46,34 @@
 #include <string.h>
 
 /*
+ * vector properties
+ */
+
+/**
+ * ‘mtxvector_null_field()’ gets the field of a vector.
+ */
+enum mtxfield mtxvector_null_field(const struct mtxvector_null * x)
+{
+    return mtxvector_base_field(&x->base);
+}
+
+/**
+ * ‘mtxvector_null_precision()’ gets the precision of a vector.
+ */
+enum mtxprecision mtxvector_null_precision(const struct mtxvector_null * x)
+{
+    return mtxvector_base_precision(&x->base);
+}
+
+/**
+ * ‘mtxvector_null_size()’ gets the size of a vector.
+ */
+int64_t mtxvector_null_size(const struct mtxvector_null * x)
+{
+    return mtxvector_base_size(&x->base);
+}
+
+/*
  * Memory management
  */
 

@@ -77,6 +77,25 @@ struct mtxvector_base
 };
 
 /*
+ * vector properties
+ */
+
+/**
+ * ‘mtxvector_base_field()’ gets the field of a vector.
+ */
+enum mtxfield mtxvector_base_field(const struct mtxvector_base * x);
+
+/**
+ * ‘mtxvector_base_precision()’ gets the precision of a vector.
+ */
+enum mtxprecision mtxvector_base_precision(const struct mtxvector_base * x);
+
+/**
+ * ‘mtxvector_base_size()’ gets the size of a vector.
+ */
+int64_t mtxvector_base_size(const struct mtxvector_base * x);
+
+/*
  * Memory management
  */
 

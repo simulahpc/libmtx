@@ -61,6 +61,7 @@ libmtx_la_SOURCES = \
 	libmtx/matrix/blas/dense.c \
 	libmtx/matrix/dist.c \
 	libmtx/matrix/matrix.c \
+	libmtx/matrix/null/coo.c \
 	libmtx/matrix/omp/csr.c \
 	libmtx/matrix/partition.c \
 	libmtx/matrix/symmetry.c \
@@ -110,6 +111,7 @@ nobase_include_HEADERS = \
 	libmtx/matrix/blas/dense.h \
 	libmtx/matrix/dist.h \
 	libmtx/matrix/matrix.h \
+	libmtx/matrix/null/coo.h \
 	libmtx/matrix/omp/csr.h \
 	libmtx/matrix/partition.h \
 	libmtx/matrix/symmetry.h \

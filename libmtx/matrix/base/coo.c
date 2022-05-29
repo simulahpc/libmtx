@@ -44,6 +44,53 @@
 #include <string.h>
 
 /*
+ * matrix properties
+ */
+
+/**
+ * ‘mtxmatrix_coo_field()’ gets the field of a matrix.
+ */
+enum mtxfield mtxmatrix_coo_field(const struct mtxmatrix_coo * A)
+{
+    return mtxvector_base_field(&A->a);
+}
+
+/**
+ * ‘mtxmatrix_coo_precision()’ gets the precision of a matrix.
+ */
+enum mtxprecision mtxmatrix_coo_precision(const struct mtxmatrix_coo * A)
+{
+    return mtxvector_base_precision(&A->a);
+}
+
+/**
+ * ‘mtxmatrix_coo_symmetry()’ gets the symmetry of a matrix.
+ */
+enum mtxsymmetry mtxmatrix_coo_symmetry(const struct mtxmatrix_coo * A)
+{
+    return A->symmetry;
+}
+
+/**
+ * ‘mtxmatrix_coo_num_nonzeros()’ gets the number of the number of
+ *  nonzero matrix entries, including those represented implicitly due
+ *  to symmetry.
+ */
+int64_t mtxmatrix_coo_num_nonzeros(const struct mtxmatrix_coo * A)
+{
+    return A->num_nonzeros;
+}
+
+/**
+ * ‘mtxmatrix_coo_size()’ gets the number of explicitly stored
+ * nonzeros of a matrix.
+ */
+int64_t mtxmatrix_coo_size(const struct mtxmatrix_coo * A)
+{
+    return A->size;
+}
+
+/*
  * memory management
  */
 
@@ -503,7 +550,33 @@ int mtxmatrix_coo_alloc_rows(
     int num_rows,
     int num_columns,
     const int64_t * rowptr,
-    const int * colidx);
+    const int * colidx)
+{
+    A->symmetry = symmetry;
+    A->num_rows = num_rows;
+    A->num_columns = num_columns;
+    if (__builtin_mul_overflow(num_rows, num_columns, &A->num_entries)) {
+        errno = EOVERFLOW;
+        return MTX_ERR_ERRNO;
+    }
+    A->num_nonzeros = 0;
+    A->size = rowptr[num_rows];
+    A->rowidx = malloc(A->size * sizeof(int));
+    if (!A->rowidx) return MTX_ERR_ERRNO;
+    A->colidx = malloc(A->size * sizeof(int));
+    if (!A->colidx) { free(A->rowidx); return MTX_ERR_ERRNO; }
+    for (int i = 0; i < num_rows; i++) {
+        for (int64_t k = rowptr[i]; k < rowptr[i+1]; k++) {
+            A->rowidx[k] = i;
+            A->colidx[k] = colidx[k];
+            A->num_nonzeros +=
+                (symmetry == mtx_unsymmetric || A->rowidx[k] == A->colidx[k]) ? 1 : 2;
+        }
+    }
+    int err = mtxvector_base_alloc(&A->a, field, precision, A->size);
+    if (err) { free(A->colidx); free(A->rowidx); return err; }
+    return MTX_SUCCESS;
+}
 
 /**
  * ‘mtxmatrix_coo_init_rows_real_single()’ allocates and
@@ -517,7 +590,17 @@ int mtxmatrix_coo_init_rows_real_single(
     int num_columns,
     const int64_t * rowptr,
     const int * colidx,
-    const float * data);
+    const float * data)
+{
+    int err = mtxmatrix_coo_alloc_rows(
+        A, mtx_field_real, mtx_single, symmetry,
+        num_rows, num_columns, rowptr, colidx);
+    if (err) return err;
+    err = mtxvector_base_set_real_single(
+        &A->a, rowptr[num_rows], sizeof(*data), data);
+    if (err) { mtxmatrix_coo_free(A); return err; }
+    return MTX_SUCCESS;
+}
 
 /**
  * ‘mtxmatrix_coo_init_rows_real_double()’ allocates and
@@ -531,7 +614,17 @@ int mtxmatrix_coo_init_rows_real_double(
     int num_columns,
     const int64_t * rowptr,
     const int * colidx,
-    const double * data);
+    const double * data)
+{
+    int err = mtxmatrix_coo_alloc_rows(
+        A, mtx_field_real, mtx_double, symmetry,
+        num_rows, num_columns, rowptr, colidx);
+    if (err) return err;
+    err = mtxvector_base_set_real_double(
+        &A->a, rowptr[num_rows], sizeof(*data), data);
+    if (err) { mtxmatrix_coo_free(A); return err; }
+    return MTX_SUCCESS;
+}
 
 /**
  * ‘mtxmatrix_coo_init_rows_complex_single()’ allocates and
@@ -545,7 +638,17 @@ int mtxmatrix_coo_init_rows_complex_single(
     int num_columns,
     const int64_t * rowptr,
     const int * colidx,
-    const float (* data)[2]);
+    const float (* data)[2])
+{
+    int err = mtxmatrix_coo_alloc_rows(
+        A, mtx_field_complex, mtx_single, symmetry,
+        num_rows, num_columns, rowptr, colidx);
+    if (err) return err;
+    err = mtxvector_base_set_complex_single(
+        &A->a, rowptr[num_rows], sizeof(*data), data);
+    if (err) { mtxmatrix_coo_free(A); return err; }
+    return MTX_SUCCESS;
+}
 
 /**
  * ‘mtxmatrix_coo_init_rows_complex_double()’ allocates and
@@ -559,7 +662,17 @@ int mtxmatrix_coo_init_rows_complex_double(
     int num_columns,
     const int64_t * rowptr,
     const int * colidx,
-    const double (* data)[2]);
+    const double (* data)[2])
+{
+    int err = mtxmatrix_coo_alloc_rows(
+        A, mtx_field_complex, mtx_double, symmetry,
+        num_rows, num_columns, rowptr, colidx);
+    if (err) return err;
+    err = mtxvector_base_set_complex_double(
+        &A->a, rowptr[num_rows], sizeof(*data), data);
+    if (err) { mtxmatrix_coo_free(A); return err; }
+    return MTX_SUCCESS;
+}
 
 /**
  * ‘mtxmatrix_coo_init_rows_integer_single()’ allocates and
@@ -573,7 +686,17 @@ int mtxmatrix_coo_init_rows_integer_single(
     int num_columns,
     const int64_t * rowptr,
     const int * colidx,
-    const int32_t * data);
+    const int32_t * data)
+{
+    int err = mtxmatrix_coo_alloc_rows(
+        A, mtx_field_integer, mtx_single, symmetry,
+        num_rows, num_columns, rowptr, colidx);
+    if (err) return err;
+    err = mtxvector_base_set_integer_single(
+        &A->a, rowptr[num_rows], sizeof(*data), data);
+    if (err) { mtxmatrix_coo_free(A); return err; }
+    return MTX_SUCCESS;
+}
 
 /**
  * ‘mtxmatrix_coo_init_rows_integer_double()’ allocates and
@@ -587,7 +710,17 @@ int mtxmatrix_coo_init_rows_integer_double(
     int num_columns,
     const int64_t * rowptr,
     const int * colidx,
-    const int64_t * data);
+    const int64_t * data)
+{
+    int err = mtxmatrix_coo_alloc_rows(
+        A, mtx_field_integer, mtx_double, symmetry,
+        num_rows, num_columns, rowptr, colidx);
+    if (err) return err;
+    err = mtxvector_base_set_integer_double(
+        &A->a, rowptr[num_rows], sizeof(*data), data);
+    if (err) { mtxmatrix_coo_free(A); return err; }
+    return MTX_SUCCESS;
+}
 
 /**
  * ‘mtxmatrix_coo_init_rows_pattern()’ allocates and
@@ -600,7 +733,12 @@ int mtxmatrix_coo_init_rows_pattern(
     int num_rows,
     int num_columns,
     const int64_t * rowptr,
-    const int * colidx);
+    const int * colidx)
+{
+    return mtxmatrix_coo_alloc_rows(
+        A, mtx_field_pattern, mtx_single, symmetry,
+        num_rows, num_columns, rowptr, colidx);
+}
 
 /*
  * initialise matrices from column-wise data in compressed column

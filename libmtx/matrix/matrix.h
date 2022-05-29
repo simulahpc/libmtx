@@ -30,6 +30,7 @@
 #include <libmtx/matrix/base/csr.h>
 #include <libmtx/matrix/base/dense.h>
 #include <libmtx/matrix/blas/dense.h>
+#include <libmtx/matrix/null/coo.h>
 #include <libmtx/matrix/omp/csr.h>
 #include <libmtx/matrix/symmetry.h>
 #include <libmtx/matrix/transpose.h>
@@ -62,6 +63,8 @@ enum mtxmatrixtype
     mtxmatrix_coo,        /* coordinate format */
     mtxmatrix_csr,        /* compressed sparse row */
     mtxmatrix_dense,      /* dense matrices */
+    mtxmatrix_nullcoo,    /* coordinate format where matrix operations
+                           * do nothing (for debugging purposes) */
     mtxmatrix_ompcsr,     /* compressed sparse row with OpenMP */
 };
 
@@ -125,29 +128,34 @@ struct mtxmatrix
         struct mtxmatrix_coo coo;
         struct mtxmatrix_csr csr;
         struct mtxmatrix_dense dense;
+        struct mtxmatrix_nullcoo nullcoo;
         struct mtxmatrix_ompcsr ompcsr;
     } storage;
 };
+
+/*
+ * matrix properties
+ */
 
 /**
  * ‘mtxmatrix_field()’ gets the field of a matrix.
  */
 int mtxmatrix_field(
-    const struct mtxmatrix * x,
+    const struct mtxmatrix * A,
     enum mtxfield * field);
 
 /**
  * ‘mtxmatrix_precision()’ gets the precision of a matrix.
  */
 int mtxmatrix_precision(
-    const struct mtxmatrix * x,
+    const struct mtxmatrix * A,
     enum mtxprecision * precision);
 
 /**
  * ‘mtxmatrix_symmetry()’ gets the symmetry of a matrix.
  */
 int mtxmatrix_symmetry(
-    const struct mtxmatrix * x,
+    const struct mtxmatrix * A,
     enum mtxsymmetry * symmetry);
 
 /**

@@ -18,155 +18,112 @@
  * Authors: James D. Trotter <james@simula.no>
  * Last modified: 2022-05-28
  *
- * Data structures for matrices in coordinate format.
+ * Data structures for matrices in coordinate format, where matrix
+ * operations do nothing. While this produces incorrect results, it is
+ * sometimes useful for the purpose of eliminating matrix operations
+ * while debugging or carrying out performance measurements.
  */
 
-#ifndef LIBMTX_MATRIX_BASE_COO_H
-#define LIBMTX_MATRIX_BASE_COO_H
+#ifndef LIBMTX_MATRIX_NULL_COO_H
+#define LIBMTX_MATRIX_NULL_COO_H
 
 #include <libmtx/libmtx-config.h>
 
-#include <libmtx/vector/precision.h>
-#include <libmtx/vector/field.h>
+#include <libmtx/matrix/base/coo.h>
 #include <libmtx/matrix/symmetry.h>
 #include <libmtx/matrix/transpose.h>
-#include <libmtx/vector/base.h>
+#include <libmtx/vector/field.h>
+#include <libmtx/vector/precision.h>
 #include <libmtx/vector/vector.h>
 
 #include <stdarg.h>
-#include <stdbool.h>
 #include <stddef.h>
-#include <stdio.h>
 
 struct mtxfile;
 struct mtxmatrix;
 
 /**
- * ‘mtxmatrix_coo’ represents a matrix in coordinate format.
+ * ‘mtxvector_null’ represents a matrix in coordinate (COO) format,
+ * where matrix operations are implemented to do nothing.
+ *
+ * This produces incorrect results, so it is only useful for the
+ * purpose of eliminating matrix operations while debugging or
+ * carrying out performance measurements.
  */
-struct mtxmatrix_coo
+struct mtxmatrix_nullcoo
 {
-    /**
-     * ‘symmetry’ is the matrix symmetry: ‘unsymmetric’, ‘symmetric’,
-     * ‘skew-symmetric’ or ‘hermitian’.
-     */
-    enum mtxsymmetry symmetry;
-
-    /**
-     * ‘num_rows’ is the number of matrix rows.
-     */
-    int num_rows;
-
-    /**
-     * ‘num_columns’ is the number of matrix columns.
-     */
-    int num_columns;
-
-    /**
-     * ‘num_entries’ is the total number of (zero and nonzero) matrix
-     * entries, which is therefore equal to ‘num_rows*num_columns’.
-     */
-    int64_t num_entries;
-
-    /**
-     * ‘num_nonzeros’ is the number of nonzero matrix entries,
-     *  including those represented implicitly due to symmetry.
-     */
-    int64_t num_nonzeros;
-
-    /**
-     * ‘size’ is the number of explicitly stored matrix entries.
-     */
-    int64_t size;
-
-    /**
-     * ‘rowidx’ is an array containing the row indices of nonzero
-     * matrix entries.  Note that row indices are 0-based, unlike the
-     * Matrix Market format, where indices are 1-based.
-     */
-    int * rowidx;
-
-    /**
-     * ‘colidx’ is an array containing the column indices of nonzero
-     * matrix entries.  Note that column indices are 0-based, unlike
-     * the Matrix Market format, where indices are 1-based.
-     */
-    int * colidx;
-
-    /**
-     * ‘a’ is a vector storing the underlying nonzero matrix entries.
-     */
-    struct mtxvector_base a;
+    struct mtxmatrix_coo base;
 };
+
 
 /*
  * matrix properties
  */
 
 /**
- * ‘mtxmatrix_coo_field()’ gets the field of a matrix.
+ * ‘mtxmatrix_nullcoo_field()’ gets the field of a matrix.
  */
-enum mtxfield mtxmatrix_coo_field(const struct mtxmatrix_coo * A);
+enum mtxfield mtxmatrix_nullcoo_field(const struct mtxmatrix_nullcoo * A);
 
 /**
- * ‘mtxmatrix_coo_precision()’ gets the precision of a matrix.
+ * ‘mtxmatrix_nullcoo_precision()’ gets the precision of a matrix.
  */
-enum mtxprecision mtxmatrix_coo_precision(const struct mtxmatrix_coo * A);
+enum mtxprecision mtxmatrix_nullcoo_precision(const struct mtxmatrix_nullcoo * A);
 
 /**
- * ‘mtxmatrix_coo_symmetry()’ gets the symmetry of a matrix.
+ * ‘mtxmatrix_nullcoo_symmetry()’ gets the symmetry of a matrix.
  */
-enum mtxsymmetry mtxmatrix_coo_symmetry(const struct mtxmatrix_coo * A);
+enum mtxsymmetry mtxmatrix_nullcoo_symmetry(const struct mtxmatrix_nullcoo * A);
 
 /**
- * ‘mtxmatrix_coo_num_nonzeros()’ gets the number of the number of
+ * ‘mtxmatrix_nullcoo_num_nonzeros()’ gets the number of the number of
  *  nonzero matrix entries, including those represented implicitly due
  *  to symmetry.
  */
-int64_t mtxmatrix_coo_num_nonzeros(const struct mtxmatrix_coo * A);
+int64_t mtxmatrix_nullcoo_num_nonzeros(const struct mtxmatrix_nullcoo * A);
 
 /**
- * ‘mtxmatrix_coo_size()’ gets the number of explicitly stored
+ * ‘mtxmatrix_nullcoo_size()’ gets the number of explicitly stored
  * nonzeros of a matrix.
  */
-int64_t mtxmatrix_coo_size(const struct mtxmatrix_coo * A);
+int64_t mtxmatrix_nullcoo_size(const struct mtxmatrix_nullcoo * A);
 
 /*
  * memory management
  */
 
 /**
- * ‘mtxmatrix_coo_free()’ frees storage allocated for a matrix.
+ * ‘mtxmatrix_nullcoo_free()’ frees storage allocated for a matrix.
  */
-void mtxmatrix_coo_free(
-    struct mtxmatrix_coo * A);
+void mtxmatrix_nullcoo_free(
+    struct mtxmatrix_nullcoo * A);
 
 /**
- * ‘mtxmatrix_coo_alloc_copy()’ allocates a copy of a matrix
- * without initialising the values.
+ * ‘mtxmatrix_nullcoo_alloc_copy()’ allocates a copy of a matrix without
+ * initialising the values.
  */
-int mtxmatrix_coo_alloc_copy(
-    struct mtxmatrix_coo * dst,
-    const struct mtxmatrix_coo * src);
+int mtxmatrix_nullcoo_alloc_copy(
+    struct mtxmatrix_nullcoo * dst,
+    const struct mtxmatrix_nullcoo * src);
 
 /**
- * ‘mtxmatrix_coo_init_copy()’ allocates a copy of a matrix and
- * also copies the values.
+ * ‘mtxmatrix_nullcoo_init_copy()’ allocates a copy of a matrix and also
+ * copies the values.
  */
-int mtxmatrix_coo_init_copy(
-    struct mtxmatrix_coo * dst,
-    const struct mtxmatrix_coo * src);
+int mtxmatrix_nullcoo_init_copy(
+    struct mtxmatrix_nullcoo * dst,
+    const struct mtxmatrix_nullcoo * src);
 
 /*
  * initialise matrices from entrywise data in coordinate format
  */
 
 /**
- * ‘mtxmatrix_coo_alloc_entries()’ allocates a matrix from
- * entrywise data in coordinate format.
+ * ‘mtxmatrix_nullcoo_alloc_entries()’ allocates a matrix from entrywise
+ * data in coordinate format.
  */
-int mtxmatrix_coo_alloc_entries(
-    struct mtxmatrix_coo * A,
+int mtxmatrix_nullcoo_alloc_entries(
+    struct mtxmatrix_nullcoo * A,
     enum mtxfield field,
     enum mtxprecision precision,
     enum mtxsymmetry symmetry,
@@ -179,12 +136,12 @@ int mtxmatrix_coo_alloc_entries(
     const int * colidx);
 
 /**
- * ‘mtxmatrix_coo_init_entries_real_single()’ allocates and
+ * ‘mtxmatrix_nullcoo_init_entries_real_single()’ allocates and
  * initialises a matrix from entrywise data in coordinate format with
  * real, single precision coefficients.
  */
-int mtxmatrix_coo_init_entries_real_single(
-    struct mtxmatrix_coo * A,
+int mtxmatrix_nullcoo_init_entries_real_single(
+    struct mtxmatrix_nullcoo * A,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -194,12 +151,12 @@ int mtxmatrix_coo_init_entries_real_single(
     const float * data);
 
 /**
- * ‘mtxmatrix_coo_init_entries_real_double()’ allocates and
+ * ‘mtxmatrix_nullcoo_init_entries_real_double()’ allocates and
  * initialises a matrix from entrywise data in coordinate format with
  * real, double precision coefficients.
  */
-int mtxmatrix_coo_init_entries_real_double(
-    struct mtxmatrix_coo * A,
+int mtxmatrix_nullcoo_init_entries_real_double(
+    struct mtxmatrix_nullcoo * A,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -209,12 +166,12 @@ int mtxmatrix_coo_init_entries_real_double(
     const double * data);
 
 /**
- * ‘mtxmatrix_coo_init_entries_complex_single()’ allocates and
+ * ‘mtxmatrix_nullcoo_init_entries_complex_single()’ allocates and
  * initialises a matrix from entrywise data in coordinate format with
  * complex, single precision coefficients.
  */
-int mtxmatrix_coo_init_entries_complex_single(
-    struct mtxmatrix_coo * A,
+int mtxmatrix_nullcoo_init_entries_complex_single(
+    struct mtxmatrix_nullcoo * A,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -224,12 +181,12 @@ int mtxmatrix_coo_init_entries_complex_single(
     const float (* data)[2]);
 
 /**
- * ‘mtxmatrix_coo_init_entries_complex_double()’ allocates and
+ * ‘mtxmatrix_nullcoo_init_entries_complex_double()’ allocates and
  * initialises a matrix from entrywise data in coordinate format with
  * complex, double precision coefficients.
  */
-int mtxmatrix_coo_init_entries_complex_double(
-    struct mtxmatrix_coo * A,
+int mtxmatrix_nullcoo_init_entries_complex_double(
+    struct mtxmatrix_nullcoo * A,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -239,12 +196,12 @@ int mtxmatrix_coo_init_entries_complex_double(
     const double (* data)[2]);
 
 /**
- * ‘mtxmatrix_coo_init_entries_integer_single()’ allocates and
+ * ‘mtxmatrix_nullcoo_init_entries_integer_single()’ allocates and
  * initialises a matrix from entrywise data in coordinate format with
  * integer, single precision coefficients.
  */
-int mtxmatrix_coo_init_entries_integer_single(
-    struct mtxmatrix_coo * A,
+int mtxmatrix_nullcoo_init_entries_integer_single(
+    struct mtxmatrix_nullcoo * A,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -254,12 +211,12 @@ int mtxmatrix_coo_init_entries_integer_single(
     const int32_t * data);
 
 /**
- * ‘mtxmatrix_coo_init_entries_integer_double()’ allocates and
+ * ‘mtxmatrix_nullcoo_init_entries_integer_double()’ allocates and
  * initialises a matrix from entrywise data in coordinate format with
  * integer, double precision coefficients.
  */
-int mtxmatrix_coo_init_entries_integer_double(
-    struct mtxmatrix_coo * A,
+int mtxmatrix_nullcoo_init_entries_integer_double(
+    struct mtxmatrix_nullcoo * A,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -269,12 +226,12 @@ int mtxmatrix_coo_init_entries_integer_double(
     const int64_t * data);
 
 /**
- * ‘mtxmatrix_coo_init_entries_pattern()’ allocates and
- * initialises a matrix from entrywise data in coordinate format with
- * boolean coefficients.
+ * ‘mtxmatrix_nullcoo_init_entries_pattern()’ allocates and initialises a
+ * matrix from entrywise data in coordinate format with boolean
+ * coefficients.
  */
-int mtxmatrix_coo_init_entries_pattern(
-    struct mtxmatrix_coo * A,
+int mtxmatrix_nullcoo_init_entries_pattern(
+    struct mtxmatrix_nullcoo * A,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -288,12 +245,12 @@ int mtxmatrix_coo_init_entries_pattern(
  */
 
 /**
- * ‘mtxmatrix_coo_init_entries_strided_real_single()’ allocates
- * and initialises a matrix from entrywise data in coordinate format
- * with real, single precision coefficients.
+ * ‘mtxmatrix_nullcoo_init_entries_strided_real_single()’ allocates and
+ * initialises a matrix from entrywise data in coordinate format with
+ * real, single precision coefficients.
  */
-int mtxmatrix_coo_init_entries_strided_real_single(
-    struct mtxmatrix_coo * A,
+int mtxmatrix_nullcoo_init_entries_strided_real_single(
+    struct mtxmatrix_nullcoo * A,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -306,12 +263,12 @@ int mtxmatrix_coo_init_entries_strided_real_single(
     const float * data);
 
 /**
- * ‘mtxmatrix_coo_init_entries_strided_real_double()’ allocates
- * and initialises a matrix from entrywise data in coordinate format
- * with real, double precision coefficients.
+ * ‘mtxmatrix_nullcoo_init_entries_strided_real_double()’ allocates and
+ * initialises a matrix from entrywise data in coordinate format with
+ * real, double precision coefficients.
  */
-int mtxmatrix_coo_init_entries_strided_real_double(
-    struct mtxmatrix_coo * A,
+int mtxmatrix_nullcoo_init_entries_strided_real_double(
+    struct mtxmatrix_nullcoo * A,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -324,12 +281,12 @@ int mtxmatrix_coo_init_entries_strided_real_double(
     const double * data);
 
 /**
- * ‘mtxmatrix_coo_init_entries_strided_complex_single()’
- * allocates and initialises a matrix from entrywise data in
- * coordinate format with complex, single precision coefficients.
+ * ‘mtxmatrix_nullcoo_init_entries_strided_complex_single()’ allocates and
+ * initialises a matrix from entrywise data in coordinate format with
+ * complex, single precision coefficients.
  */
-int mtxmatrix_coo_init_entries_strided_complex_single(
-    struct mtxmatrix_coo * A,
+int mtxmatrix_nullcoo_init_entries_strided_complex_single(
+    struct mtxmatrix_nullcoo * A,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -342,12 +299,12 @@ int mtxmatrix_coo_init_entries_strided_complex_single(
     const float (* data)[2]);
 
 /**
- * ‘mtxmatrix_coo_init_entries_strided_complex_double()’
- * allocates and initialises a matrix from entrywise data in
- * coordinate format with complex, double precision coefficients.
+ * ‘mtxmatrix_nullcoo_init_entries_strided_complex_double()’ allocates and
+ * initialises a matrix from entrywise data in coordinate format with
+ * complex, double precision coefficients.
  */
-int mtxmatrix_coo_init_entries_strided_complex_double(
-    struct mtxmatrix_coo * A,
+int mtxmatrix_nullcoo_init_entries_strided_complex_double(
+    struct mtxmatrix_nullcoo * A,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -360,12 +317,12 @@ int mtxmatrix_coo_init_entries_strided_complex_double(
     const double (* data)[2]);
 
 /**
- * ‘mtxmatrix_coo_init_entries_strided_integer_single()’
- * allocates and initialises a matrix from entrywise data in
- * coordinate format with integer, single precision coefficients.
+ * ‘mtxmatrix_nullcoo_init_entries_strided_integer_single()’ allocates and
+ * initialises a matrix from entrywise data in coordinate format with
+ * integer, single precision coefficients.
  */
-int mtxmatrix_coo_init_entries_strided_integer_single(
-    struct mtxmatrix_coo * A,
+int mtxmatrix_nullcoo_init_entries_strided_integer_single(
+    struct mtxmatrix_nullcoo * A,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -378,12 +335,12 @@ int mtxmatrix_coo_init_entries_strided_integer_single(
     const int32_t * data);
 
 /**
- * ‘mtxmatrix_coo_init_entries_strided_integer_double()’
- * allocates and initialises a matrix from entrywise data in
- * coordinate format with integer, double precision coefficients.
+ * ‘mtxmatrix_nullcoo_init_entries_strided_integer_double()’ allocates and
+ * initialises a matrix from entrywise data in coordinate format with
+ * integer, double precision coefficients.
  */
-int mtxmatrix_coo_init_entries_strided_integer_double(
-    struct mtxmatrix_coo * A,
+int mtxmatrix_nullcoo_init_entries_strided_integer_double(
+    struct mtxmatrix_nullcoo * A,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -396,12 +353,12 @@ int mtxmatrix_coo_init_entries_strided_integer_double(
     const int64_t * data);
 
 /**
- * ‘mtxmatrix_coo_init_entries_strided_pattern()’ allocates and
+ * ‘mtxmatrix_nullcoo_init_entries_strided_pattern()’ allocates and
  * initialises a matrix from entrywise data in coordinate format with
  * boolean coefficients.
  */
-int mtxmatrix_coo_init_entries_strided_pattern(
-    struct mtxmatrix_coo * A,
+int mtxmatrix_nullcoo_init_entries_strided_pattern(
+    struct mtxmatrix_nullcoo * A,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -416,11 +373,11 @@ int mtxmatrix_coo_init_entries_strided_pattern(
  */
 
 /**
- * ‘mtxmatrix_coo_alloc_rows()’ allocates a matrix from
- * row-wise data in compressed row format.
+ * ‘mtxmatrix_nullcoo_alloc_rows()’ allocates a matrix from row-wise data
+ * in compressed row format.
  */
-int mtxmatrix_coo_alloc_rows(
-    struct mtxmatrix_coo * A,
+int mtxmatrix_nullcoo_alloc_rows(
+    struct mtxmatrix_nullcoo * A,
     enum mtxfield field,
     enum mtxprecision precision,
     enum mtxsymmetry symmetry,
@@ -430,12 +387,12 @@ int mtxmatrix_coo_alloc_rows(
     const int * colidx);
 
 /**
- * ‘mtxmatrix_coo_init_rows_real_single()’ allocates and
- * initialises a matrix from row-wise data in compressed row format
- * with real, single precision coefficients.
+ * ‘mtxmatrix_nullcoo_init_rows_real_single()’ allocates and initialises a
+ * matrix from row-wise data in compressed row format with real,
+ * single precision coefficients.
  */
-int mtxmatrix_coo_init_rows_real_single(
-    struct mtxmatrix_coo * A,
+int mtxmatrix_nullcoo_init_rows_real_single(
+    struct mtxmatrix_nullcoo * A,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -444,12 +401,12 @@ int mtxmatrix_coo_init_rows_real_single(
     const float * data);
 
 /**
- * ‘mtxmatrix_coo_init_rows_real_double()’ allocates and
- * initialises a matrix from row-wise data in compressed row format
- * with real, double precision coefficients.
+ * ‘mtxmatrix_nullcoo_init_rows_real_double()’ allocates and initialises a
+ * matrix from row-wise data in compressed row format with real,
+ * double precision coefficients.
  */
-int mtxmatrix_coo_init_rows_real_double(
-    struct mtxmatrix_coo * A,
+int mtxmatrix_nullcoo_init_rows_real_double(
+    struct mtxmatrix_nullcoo * A,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -458,12 +415,12 @@ int mtxmatrix_coo_init_rows_real_double(
     const double * data);
 
 /**
- * ‘mtxmatrix_coo_init_rows_complex_single()’ allocates and
+ * ‘mtxmatrix_nullcoo_init_rows_complex_single()’ allocates and
  * initialises a matrix from row-wise data in compressed row format
  * with complex, single precision coefficients.
  */
-int mtxmatrix_coo_init_rows_complex_single(
-    struct mtxmatrix_coo * A,
+int mtxmatrix_nullcoo_init_rows_complex_single(
+    struct mtxmatrix_nullcoo * A,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -472,12 +429,12 @@ int mtxmatrix_coo_init_rows_complex_single(
     const float (* data)[2]);
 
 /**
- * ‘mtxmatrix_coo_init_rows_complex_double()’ allocates and
+ * ‘mtxmatrix_nullcoo_init_rows_complex_double()’ allocates and
  * initialises a matrix from row-wise data in compressed row format
  * with complex, double precision coefficients.
  */
-int mtxmatrix_coo_init_rows_complex_double(
-    struct mtxmatrix_coo * A,
+int mtxmatrix_nullcoo_init_rows_complex_double(
+    struct mtxmatrix_nullcoo * A,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -486,12 +443,12 @@ int mtxmatrix_coo_init_rows_complex_double(
     const double (* data)[2]);
 
 /**
- * ‘mtxmatrix_coo_init_rows_integer_single()’ allocates and
+ * ‘mtxmatrix_nullcoo_init_rows_integer_single()’ allocates and
  * initialises a matrix from row-wise data in compressed row format
  * with integer, single precision coefficients.
  */
-int mtxmatrix_coo_init_rows_integer_single(
-    struct mtxmatrix_coo * A,
+int mtxmatrix_nullcoo_init_rows_integer_single(
+    struct mtxmatrix_nullcoo * A,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -500,12 +457,12 @@ int mtxmatrix_coo_init_rows_integer_single(
     const int32_t * data);
 
 /**
- * ‘mtxmatrix_coo_init_rows_integer_double()’ allocates and
+ * ‘mtxmatrix_nullcoo_init_rows_integer_double()’ allocates and
  * initialises a matrix from row-wise data in compressed row format
  * with integer, double precision coefficients.
  */
-int mtxmatrix_coo_init_rows_integer_double(
-    struct mtxmatrix_coo * A,
+int mtxmatrix_nullcoo_init_rows_integer_double(
+    struct mtxmatrix_nullcoo * A,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -514,12 +471,12 @@ int mtxmatrix_coo_init_rows_integer_double(
     const int64_t * data);
 
 /**
- * ‘mtxmatrix_coo_init_rows_pattern()’ allocates and
- * initialises a matrix from row-wise data in compressed row format
- * with boolean coefficients.
+ * ‘mtxmatrix_nullcoo_init_rows_pattern()’ allocates and initialises a
+ * matrix from row-wise data in compressed row format with boolean
+ * coefficients.
  */
-int mtxmatrix_coo_init_rows_pattern(
-    struct mtxmatrix_coo * A,
+int mtxmatrix_nullcoo_init_rows_pattern(
+    struct mtxmatrix_nullcoo * A,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -532,11 +489,11 @@ int mtxmatrix_coo_init_rows_pattern(
  */
 
 /**
- * ‘mtxmatrix_coo_alloc_columns()’ allocates a matrix from
- * column-wise data in compressed column format.
+ * ‘mtxmatrix_nullcoo_alloc_columns()’ allocates a matrix from column-wise
+ * data in compressed column format.
  */
-int mtxmatrix_coo_alloc_columns(
-    struct mtxmatrix_coo * A,
+int mtxmatrix_nullcoo_alloc_columns(
+    struct mtxmatrix_nullcoo * A,
     enum mtxfield field,
     enum mtxprecision precision,
     enum mtxsymmetry symmetry,
@@ -546,12 +503,12 @@ int mtxmatrix_coo_alloc_columns(
     const int * rowidx);
 
 /**
- * ‘mtxmatrix_coo_init_columns_real_single()’ allocates and
+ * ‘mtxmatrix_nullcoo_init_columns_real_single()’ allocates and
  * initialises a matrix from column-wise data in compressed column
  * format with real, single precision coefficients.
  */
-int mtxmatrix_coo_init_columns_real_single(
-    struct mtxmatrix_coo * A,
+int mtxmatrix_nullcoo_init_columns_real_single(
+    struct mtxmatrix_nullcoo * A,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -560,12 +517,12 @@ int mtxmatrix_coo_init_columns_real_single(
     const float * data);
 
 /**
- * ‘mtxmatrix_coo_init_columns_real_double()’ allocates and
+ * ‘mtxmatrix_nullcoo_init_columns_real_double()’ allocates and
  * initialises a matrix from column-wise data in compressed column
  * format with real, double precision coefficients.
  */
-int mtxmatrix_coo_init_columns_real_double(
-    struct mtxmatrix_coo * A,
+int mtxmatrix_nullcoo_init_columns_real_double(
+    struct mtxmatrix_nullcoo * A,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -574,12 +531,12 @@ int mtxmatrix_coo_init_columns_real_double(
     const double * data);
 
 /**
- * ‘mtxmatrix_coo_init_columns_complex_single()’ allocates and
+ * ‘mtxmatrix_nullcoo_init_columns_complex_single()’ allocates and
  * initialises a matrix from column-wise data in compressed column
  * format with complex, single precision coefficients.
  */
-int mtxmatrix_coo_init_columns_complex_single(
-    struct mtxmatrix_coo * A,
+int mtxmatrix_nullcoo_init_columns_complex_single(
+    struct mtxmatrix_nullcoo * A,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -588,12 +545,12 @@ int mtxmatrix_coo_init_columns_complex_single(
     const float (* data)[2]);
 
 /**
- * ‘mtxmatrix_coo_init_columns_complex_double()’ allocates and
+ * ‘mtxmatrix_nullcoo_init_columns_complex_double()’ allocates and
  * initialises a matrix from column-wise data in compressed column
  * format with complex, double precision coefficients.
  */
-int mtxmatrix_coo_init_columns_complex_double(
-    struct mtxmatrix_coo * A,
+int mtxmatrix_nullcoo_init_columns_complex_double(
+    struct mtxmatrix_nullcoo * A,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -602,12 +559,12 @@ int mtxmatrix_coo_init_columns_complex_double(
     const double (* data)[2]);
 
 /**
- * ‘mtxmatrix_coo_init_columns_integer_single()’ allocates and
+ * ‘mtxmatrix_nullcoo_init_columns_integer_single()’ allocates and
  * initialises a matrix from column-wise data in compressed column
  * format with integer, single precision coefficients.
  */
-int mtxmatrix_coo_init_columns_integer_single(
-    struct mtxmatrix_coo * A,
+int mtxmatrix_nullcoo_init_columns_integer_single(
+    struct mtxmatrix_nullcoo * A,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -616,12 +573,12 @@ int mtxmatrix_coo_init_columns_integer_single(
     const int32_t * data);
 
 /**
- * ‘mtxmatrix_coo_init_columns_integer_double()’ allocates and
+ * ‘mtxmatrix_nullcoo_init_columns_integer_double()’ allocates and
  * initialises a matrix from column-wise data in compressed column
  * format with integer, double precision coefficients.
  */
-int mtxmatrix_coo_init_columns_integer_double(
-    struct mtxmatrix_coo * A,
+int mtxmatrix_nullcoo_init_columns_integer_double(
+    struct mtxmatrix_nullcoo * A,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -630,12 +587,12 @@ int mtxmatrix_coo_init_columns_integer_double(
     const int64_t * data);
 
 /**
- * ‘mtxmatrix_coo_init_columns_pattern()’ allocates and
- * initialises a matrix from column-wise data in compressed column
- * format with boolean coefficients.
+ * ‘mtxmatrix_nullcoo_init_columns_pattern()’ allocates and initialises a
+ * matrix from column-wise data in compressed column format with
+ * boolean coefficients.
  */
-int mtxmatrix_coo_init_columns_pattern(
-    struct mtxmatrix_coo * A,
+int mtxmatrix_nullcoo_init_columns_pattern(
+    struct mtxmatrix_nullcoo * A,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -647,11 +604,11 @@ int mtxmatrix_coo_init_columns_pattern(
  */
 
 /**
- * ‘mtxmatrix_coo_alloc_cliques()’ allocates a matrix from a
- * list of dense cliques.
+ * ‘mtxmatrix_nullcoo_alloc_cliques()’ allocates a matrix from a list of
+ * dense cliques.
  */
-int mtxmatrix_coo_alloc_cliques(
-    struct mtxmatrix_coo * A,
+int mtxmatrix_nullcoo_alloc_cliques(
+    struct mtxmatrix_nullcoo * A,
     enum mtxfield field,
     enum mtxprecision precision,
     enum mtxsymmetry symmetry,
@@ -663,12 +620,12 @@ int mtxmatrix_coo_alloc_cliques(
     const int * colidx);
 
 /**
- * ‘mtxmatrix_coo_init_cliques_real_single()’ allocates and
+ * ‘mtxmatrix_nullcoo_init_cliques_real_single()’ allocates and
  * initialises a matrix from a list of dense cliques with real, single
  * precision coefficients.
  */
-int mtxmatrix_coo_init_cliques_real_single(
-    struct mtxmatrix_coo * A,
+int mtxmatrix_nullcoo_init_cliques_real_single(
+    struct mtxmatrix_nullcoo * A,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -679,12 +636,12 @@ int mtxmatrix_coo_init_cliques_real_single(
     const float * data);
 
 /**
- * ‘mtxmatrix_coo_init_cliques_real_double()’ allocates and
+ * ‘mtxmatrix_nullcoo_init_cliques_real_double()’ allocates and
  * initialises a matrix from a list of dense cliques with real, double
  * precision coefficients.
  */
-int mtxmatrix_coo_init_cliques_real_double(
-    struct mtxmatrix_coo * A,
+int mtxmatrix_nullcoo_init_cliques_real_double(
+    struct mtxmatrix_nullcoo * A,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -695,12 +652,12 @@ int mtxmatrix_coo_init_cliques_real_double(
     const double * data);
 
 /**
- * ‘mtxmatrix_coo_init_cliques_complex_single()’ allocates and
+ * ‘mtxmatrix_nullcoo_init_cliques_complex_single()’ allocates and
  * initialises a matrix from a list of dense cliques with complex,
  * single precision coefficients.
  */
-int mtxmatrix_coo_init_cliques_complex_single(
-    struct mtxmatrix_coo * A,
+int mtxmatrix_nullcoo_init_cliques_complex_single(
+    struct mtxmatrix_nullcoo * A,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -711,12 +668,12 @@ int mtxmatrix_coo_init_cliques_complex_single(
     const float (* data)[2]);
 
 /**
- * ‘mtxmatrix_coo_init_cliques_complex_double()’ allocates and
+ * ‘mtxmatrix_nullcoo_init_cliques_complex_double()’ allocates and
  * initialises a matrix from a list of dense cliques with complex,
  * double precision coefficients.
  */
-int mtxmatrix_coo_init_cliques_complex_double(
-    struct mtxmatrix_coo * A,
+int mtxmatrix_nullcoo_init_cliques_complex_double(
+    struct mtxmatrix_nullcoo * A,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -727,12 +684,12 @@ int mtxmatrix_coo_init_cliques_complex_double(
     const double (* data)[2]);
 
 /**
- * ‘mtxmatrix_coo_init_cliques_integer_single()’ allocates and
+ * ‘mtxmatrix_nullcoo_init_cliques_integer_single()’ allocates and
  * initialises a matrix from a list of dense cliques with integer,
  * single precision coefficients.
  */
-int mtxmatrix_coo_init_cliques_integer_single(
-    struct mtxmatrix_coo * A,
+int mtxmatrix_nullcoo_init_cliques_integer_single(
+    struct mtxmatrix_nullcoo * A,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -743,12 +700,12 @@ int mtxmatrix_coo_init_cliques_integer_single(
     const int32_t * data);
 
 /**
- * ‘mtxmatrix_coo_init_cliques_integer_double()’ allocates and
+ * ‘mtxmatrix_nullcoo_init_cliques_integer_double()’ allocates and
  * initialises a matrix from a list of dense cliques with integer,
  * double precision coefficients.
  */
-int mtxmatrix_coo_init_cliques_integer_double(
-    struct mtxmatrix_coo * A,
+int mtxmatrix_nullcoo_init_cliques_integer_double(
+    struct mtxmatrix_nullcoo * A,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -759,12 +716,11 @@ int mtxmatrix_coo_init_cliques_integer_double(
     const int64_t * data);
 
 /**
- * ‘mtxmatrix_coo_init_cliques_pattern()’ allocates and
- * initialises a matrix from a list of dense cliques with boolean
- * coefficients.
+ * ‘mtxmatrix_nullcoo_init_cliques_pattern()’ allocates and initialises a
+ * matrix from a list of dense cliques with boolean coefficients.
  */
-int mtxmatrix_coo_init_cliques_pattern(
-    struct mtxmatrix_coo * A,
+int mtxmatrix_nullcoo_init_cliques_pattern(
+    struct mtxmatrix_nullcoo * A,
     enum mtxsymmetry symmetry,
     int num_rows,
     int num_columns,
@@ -778,70 +734,67 @@ int mtxmatrix_coo_init_cliques_pattern(
  */
 
 /**
- * ‘mtxmatrix_coo_setzero()’ sets every value of a matrix to
- * zero.
+ * ‘mtxmatrix_nullcoo_setzero()’ sets every value of a matrix to zero.
  */
-int mtxmatrix_coo_setzero(
-    struct mtxmatrix_coo * A);
+int mtxmatrix_nullcoo_setzero(
+    struct mtxmatrix_nullcoo * A);
 
 /**
- * ‘mtxmatrix_coo_set_real_single()’ sets values of a matrix
- * based on an array of single precision floating point numbers.
+ * ‘mtxmatrix_nullcoo_set_real_single()’ sets values of a matrix based on
+ * an array of single precision floating point numbers.
  */
-int mtxmatrix_coo_set_real_single(
-    struct mtxmatrix_coo * A,
+int mtxmatrix_nullcoo_set_real_single(
+    struct mtxmatrix_nullcoo * A,
     int64_t size,
     int stride,
     const float * a);
 
 /**
- * ‘mtxmatrix_coo_set_real_double()’ sets values of a matrix
- * based on an array of double precision floating point numbers.
+ * ‘mtxmatrix_nullcoo_set_real_double()’ sets values of a matrix based on
+ * an array of double precision floating point numbers.
  */
-int mtxmatrix_coo_set_real_double(
-    struct mtxmatrix_coo * A,
+int mtxmatrix_nullcoo_set_real_double(
+    struct mtxmatrix_nullcoo * A,
     int64_t size,
     int stride,
     const double * a);
 
 /**
- * ‘mtxmatrix_coo_set_complex_single()’ sets values of a matrix
- * based on an array of single precision floating point complex
- * numbers.
+ * ‘mtxmatrix_nullcoo_set_complex_single()’ sets values of a matrix based
+ * on an array of single precision floating point complex numbers.
  */
-int mtxmatrix_coo_set_complex_single(
-    struct mtxmatrix_coo * A,
+int mtxmatrix_nullcoo_set_complex_single(
+    struct mtxmatrix_nullcoo * A,
     int64_t size,
     int stride,
     const float (*a)[2]);
 
 /**
- * ‘mtxmatrix_coo_set_complex_double()’ sets values of a matrix
- * based on an array of double precision floating point complex
- * numbers.
+ * ‘mtxmatrix_nullcoo_set_complex_double()’ sets values of a matrix based
+ * on an array of double precision floating point complex numbers.
  */
-int mtxmatrix_coo_set_complex_double(
-    struct mtxmatrix_coo * A,
+int mtxmatrix_nullcoo_set_complex_double(
+    struct mtxmatrix_nullcoo * A,
     int64_t size,
     int stride,
     const double (*a)[2]);
 
 /**
- * ‘mtxmatrix_coo_set_integer_single()’ sets values of a matrix
- * based on an array of integers.
+ * ‘mtxmatrix_nullcoo_set_integer_single()’ sets values of a matrix based
+ * on an array of integers.
  */
-int mtxmatrix_coo_set_integer_single(
-    struct mtxmatrix_coo * A,
+int mtxmatrix_nullcoo_set_integer_single(
+    struct mtxmatrix_nullcoo * A,
     int64_t size,
     int stride,
     const int32_t * a);
 
 /**
- * ‘mtxmatrix_coo_set_integer_double()’ sets values of a matrix
- * based on an array of integers.
+ * ‘mtxmatrix_nullcoo_set_integer_double()’ sets values of a matrix based
+ * on an array of integers.
  */
-int mtxmatrix_coo_set_integer_double(
-    struct mtxmatrix_coo * A,
+int mtxmatrix_nullcoo_set_integer_double(
+    struct mtxmatrix_nullcoo * A,
     int64_t size,
     int stride,
     const int64_t * a);
@@ -851,22 +804,22 @@ int mtxmatrix_coo_set_integer_double(
  */
 
 /**
- * ‘mtxmatrix_coo_alloc_row_vector()’ allocates a row vector
- * for a given matrix, where a row vector is a vector whose length
- * equal to a single row of the matrix.
+ * ‘mtxmatrix_nullcoo_alloc_row_vector()’ allocates a row vector for a
+ * given matrix, where a row vector is a vector whose length equal to
+ * a single row of the matrix.
  */
-int mtxmatrix_coo_alloc_row_vector(
-    const struct mtxmatrix_coo * A,
+int mtxmatrix_nullcoo_alloc_row_vector(
+    const struct mtxmatrix_nullcoo * A,
     struct mtxvector * x,
     enum mtxvectortype vectortype);
 
 /**
- * ‘mtxmatrix_coo_alloc_column_vector()’ allocates a column
- * vector for a given matrix, where a column vector is a vector whose
- * length equal to a single column of the matrix.
+ * ‘mtxmatrix_nullcoo_alloc_column_vector()’ allocates a column vector for
+ * a given matrix, where a column vector is a vector whose length
+ * equal to a single column of the matrix.
  */
-int mtxmatrix_coo_alloc_column_vector(
-    const struct mtxmatrix_coo * A,
+int mtxmatrix_nullcoo_alloc_column_vector(
+    const struct mtxmatrix_nullcoo * A,
     struct mtxvector * y,
     enum mtxvectortype vectortype);
 
@@ -875,20 +828,20 @@ int mtxmatrix_coo_alloc_column_vector(
  */
 
 /**
- * ‘mtxmatrix_coo_from_mtxfile()’ converts a matrix from Matrix
- * Market format.
+ * ‘mtxmatrix_nullcoo_from_mtxfile()’ converts a matrix from Matrix Market
+ * format.
  */
-int mtxmatrix_coo_from_mtxfile(
-    struct mtxmatrix_coo * A,
+int mtxmatrix_nullcoo_from_mtxfile(
+    struct mtxmatrix_nullcoo * A,
     const struct mtxfile * mtxfile);
 
 /**
- * ‘mtxmatrix_coo_to_mtxfile()’ converts a matrix to Matrix
- *  Market format.
+ * ‘mtxmatrix_nullcoo_to_mtxfile()’ converts a matrix to Matrix Market
+ *  format.
  */
-int mtxmatrix_coo_to_mtxfile(
+int mtxmatrix_nullcoo_to_mtxfile(
     struct mtxfile * mtxfile,
-    const struct mtxmatrix_coo * A,
+    const struct mtxmatrix_nullcoo * A,
     int64_t num_rows,
     const int64_t * rowidx,
     int64_t num_columns,
@@ -900,7 +853,7 @@ int mtxmatrix_coo_to_mtxfile(
  */
 
 /**
- * ‘mtxmatrix_coo_split()’ splits a matrix into multiple matrices
+ * ‘mtxmatrix_nullcoo_split()’ splits a matrix into multiple matrices
  * according to a given assignment of parts to each nonzero matrix
  * element.
  *
@@ -912,17 +865,17 @@ int mtxmatrix_coo_to_mtxfile(
  * corresponding matrix nonzero belongs.
  *
  * The argument ‘dsts’ is an array of ‘num_parts’ pointers to objects
- * of type ‘struct mtxmatrix_coo’. If successful, then ‘dsts[p]’
+ * of type ‘struct mtxmatrix_nullcoo’. If successful, then ‘dsts[p]’
  * points to a matrix consisting of elements from ‘src’ that belong to
  * the ‘p’th part, as designated by the ‘parts’ array.
  *
- * The caller is responsible for calling ‘mtxmatrix_coo_free()’ to
+ * The caller is responsible for calling ‘mtxmatrix_nullcoo_free()’ to
  * free storage allocated for each matrix in the ‘dsts’ array.
  */
-int mtxmatrix_coo_split(
+int mtxmatrix_nullcoo_split(
     int num_parts,
-    struct mtxmatrix_coo ** dsts,
-    const struct mtxmatrix_coo * src,
+    struct mtxmatrix_nullcoo ** dsts,
+    const struct mtxmatrix_nullcoo * src,
     int64_t size,
     int * parts);
 
@@ -931,261 +884,256 @@ int mtxmatrix_coo_split(
  */
 
 /**
- * ‘mtxmatrix_coo_swap()’ swaps values of two matrices,
- * simultaneously performing ‘y <- x’ and ‘x <- y’.
+ * ‘mtxmatrix_nullcoo_swap()’ swaps values of two matrices, simultaneously
+ * performing ‘y <- x’ and ‘x <- y’.
  *
  * The matrices ‘x’ and ‘y’ must have the same field, precision and
  * size. Moreover, it is assumed that they have the same underlying
  * sparsity pattern, or else the results are undefined.
  */
-int mtxmatrix_coo_swap(
-    struct mtxmatrix_coo * x,
-    struct mtxmatrix_coo * y);
+int mtxmatrix_nullcoo_swap(
+    struct mtxmatrix_nullcoo * x,
+    struct mtxmatrix_nullcoo * y);
 
 /**
- * ‘mtxmatrix_coo_copy()’ copies values of a matrix, ‘y = x’.
+ * ‘mtxmatrix_nullcoo_copy()’ copies values of a matrix, ‘y = x’.
  *
  * The matrices ‘x’ and ‘y’ must have the same field, precision and
  * size. Moreover, it is assumed that they have the same underlying
  * sparsity pattern, or else the results are undefined.
  */
-int mtxmatrix_coo_copy(
-    struct mtxmatrix_coo * y,
-    const struct mtxmatrix_coo * x);
+int mtxmatrix_nullcoo_copy(
+    struct mtxmatrix_nullcoo * y,
+    const struct mtxmatrix_nullcoo * x);
 
 /**
- * ‘mtxmatrix_coo_sscal()’ scales a matrix by a single
- * precision floating point scalar, ‘x = a*x’.
+ * ‘mtxmatrix_nullcoo_sscal()’ scales a matrix by a single precision
+ * floating point scalar, ‘x = a*x’.
  */
-int mtxmatrix_coo_sscal(
+int mtxmatrix_nullcoo_sscal(
     float a,
-    struct mtxmatrix_coo * x,
+    struct mtxmatrix_nullcoo * x,
     int64_t * num_flops);
 
 /**
- * ‘mtxmatrix_coo_dscal()’ scales a matrix by a double
- * precision floating point scalar, ‘x = a*x’.
+ * ‘mtxmatrix_nullcoo_dscal()’ scales a matrix by a double precision
+ * floating point scalar, ‘x = a*x’.
  */
-int mtxmatrix_coo_dscal(
+int mtxmatrix_nullcoo_dscal(
     double a,
-    struct mtxmatrix_coo * x,
+    struct mtxmatrix_nullcoo * x,
     int64_t * num_flops);
 
 /**
- * ‘mtxmatrix_coo_cscal()’ scales a matrix by a complex, single
+ * ‘mtxmatrix_nullcoo_cscal()’ scales a matrix by a complex, single
  * precision floating point scalar, ‘x = (a+b*i)*x’.
  */
-int mtxmatrix_coo_cscal(
+int mtxmatrix_nullcoo_cscal(
     float a[2],
-    struct mtxmatrix_coo * x,
+    struct mtxmatrix_nullcoo * x,
     int64_t * num_flops);
 
 /**
- * ‘mtxmatrix_coo_zscal()’ scales a matrix by a complex, double
+ * ‘mtxmatrix_nullcoo_zscal()’ scales a matrix by a complex, double
  * precision floating point scalar, ‘x = (a+b*i)*x’.
  */
-int mtxmatrix_coo_zscal(
+int mtxmatrix_nullcoo_zscal(
     double a[2],
-    struct mtxmatrix_coo * x,
+    struct mtxmatrix_nullcoo * x,
     int64_t * num_flops);
 
 /**
- * ‘mtxmatrix_coo_saxpy()’ adds a matrix to another one
- * multiplied by a single precision floating point value, ‘y = a*x +
- * y’.
+ * ‘mtxmatrix_nullcoo_saxpy()’ adds a matrix to another one multiplied by
+ * a single precision floating point value, ‘y = a*x + y’.
  *
  * The matrices ‘x’ and ‘y’ must have the same field, precision and
  * size. Moreover, it is assumed that they have the same underlying
  * sparsity pattern, or else the results are undefined.
  */
-int mtxmatrix_coo_saxpy(
+int mtxmatrix_nullcoo_saxpy(
     float a,
-    const struct mtxmatrix_coo * x,
-    struct mtxmatrix_coo * y,
+    const struct mtxmatrix_nullcoo * x,
+    struct mtxmatrix_nullcoo * y,
     int64_t * num_flops);
 
 /**
- * ‘mtxmatrix_coo_daxpy()’ adds a matrix to another one
- * multiplied by a double precision floating point value, ‘y = a*x +
- * y’.
+ * ‘mtxmatrix_nullcoo_daxpy()’ adds a matrix to another one multiplied by
+ * a double precision floating point value, ‘y = a*x + y’.
  *
  * The matrices ‘x’ and ‘y’ must have the same field, precision and
  * size. Moreover, it is assumed that they have the same underlying
  * sparsity pattern, or else the results are undefined.
  */
-int mtxmatrix_coo_daxpy(
+int mtxmatrix_nullcoo_daxpy(
     double a,
-    const struct mtxmatrix_coo * x,
-    struct mtxmatrix_coo * y,
+    const struct mtxmatrix_nullcoo * x,
+    struct mtxmatrix_nullcoo * y,
     int64_t * num_flops);
 
 /**
- * ‘mtxmatrix_coo_saypx()’ multiplies a matrix by a single
- * precision floating point scalar and adds another matrix, ‘y = a*y +
- * x’.
+ * ‘mtxmatrix_nullcoo_saypx()’ multiplies a matrix by a single precision
+ * floating point scalar and adds another matrix, ‘y = a*y + x’.
  *
  * The matrices ‘x’ and ‘y’ must have the same field, precision and
  * size. Moreover, it is assumed that they have the same underlying
  * sparsity pattern, or else the results are undefined.
  */
-int mtxmatrix_coo_saypx(
+int mtxmatrix_nullcoo_saypx(
     float a,
-    struct mtxmatrix_coo * y,
-    const struct mtxmatrix_coo * x,
+    struct mtxmatrix_nullcoo * y,
+    const struct mtxmatrix_nullcoo * x,
     int64_t * num_flops);
 
 /**
- * ‘mtxmatrix_coo_daypx()’ multiplies a matrix by a double
- * precision floating point scalar and adds another matrix, ‘y = a*y +
- * x’.
+ * ‘mtxmatrix_nullcoo_daypx()’ multiplies a matrix by a double precision
+ * floating point scalar and adds another matrix, ‘y = a*y + x’.
  *
  * The matrices ‘x’ and ‘y’ must have the same field, precision and
  * size. Moreover, it is assumed that they have the same underlying
  * sparsity pattern, or else the results are undefined.
  */
-int mtxmatrix_coo_daypx(
+int mtxmatrix_nullcoo_daypx(
     double a,
-    struct mtxmatrix_coo * y,
-    const struct mtxmatrix_coo * x,
+    struct mtxmatrix_nullcoo * y,
+    const struct mtxmatrix_nullcoo * x,
     int64_t * num_flops);
 
 /**
- * ‘mtxmatrix_coo_sdot()’ computes the Frobenius inner product
- * of two matrices in single precision floating point.
+ * ‘mtxmatrix_nullcoo_sdot()’ computes the Frobenius inner product of two
+ * matrices in single precision floating point.
  *
  * The matrices ‘x’ and ‘y’ must have the same field, precision and
  * size. Moreover, it is assumed that they have the same underlying
  * sparsity pattern, or else the results are undefined.
  */
-int mtxmatrix_coo_sdot(
-    const struct mtxmatrix_coo * x,
-    const struct mtxmatrix_coo * y,
+int mtxmatrix_nullcoo_sdot(
+    const struct mtxmatrix_nullcoo * x,
+    const struct mtxmatrix_nullcoo * y,
     float * dot,
     int64_t * num_flops);
 
 /**
- * ‘mtxmatrix_coo_ddot()’ computes the Frobenius inner product
- * of two matrices in double precision floating point.
+ * ‘mtxmatrix_nullcoo_ddot()’ computes the Frobenius inner product of two
+ * matrices in double precision floating point.
  *
  * The matrices ‘x’ and ‘y’ must have the same field, precision and
  * size. Moreover, it is assumed that they have the same underlying
  * sparsity pattern, or else the results are undefined.
  */
-int mtxmatrix_coo_ddot(
-    const struct mtxmatrix_coo * x,
-    const struct mtxmatrix_coo * y,
+int mtxmatrix_nullcoo_ddot(
+    const struct mtxmatrix_nullcoo * x,
+    const struct mtxmatrix_nullcoo * y,
     double * dot,
     int64_t * num_flops);
 
 /**
- * ‘mtxmatrix_coo_cdotu()’ computes the product of the
- * transpose of a complex row matrix with another complex row matrix
- * in single precision floating point, ‘dot := x^T*y’.
+ * ‘mtxmatrix_nullcoo_cdotu()’ computes the product of the transpose of a
+ * complex row matrix with another complex row matrix in single
+ * precision floating point, ‘dot := x^T*y’.
  *
  * The matrices ‘x’ and ‘y’ must have the same field, precision and
  * size. Moreover, it is assumed that they have the same underlying
  * sparsity pattern, or else the results are undefined.
  */
-int mtxmatrix_coo_cdotu(
-    const struct mtxmatrix_coo * x,
-    const struct mtxmatrix_coo * y,
+int mtxmatrix_nullcoo_cdotu(
+    const struct mtxmatrix_nullcoo * x,
+    const struct mtxmatrix_nullcoo * y,
     float (* dot)[2],
     int64_t * num_flops);
 
 /**
- * ‘mtxmatrix_coo_zdotu()’ computes the product of the
- * transpose of a complex row matrix with another complex row matrix
- * in double precision floating point, ‘dot := x^T*y’.
+ * ‘mtxmatrix_nullcoo_zdotu()’ computes the product of the transpose of a
+ * complex row matrix with another complex row matrix in double
+ * precision floating point, ‘dot := x^T*y’.
  *
  * The matrices ‘x’ and ‘y’ must have the same field, precision and
  * size. Moreover, it is assumed that they have the same underlying
  * sparsity pattern, or else the results are undefined.
  */
-int mtxmatrix_coo_zdotu(
-    const struct mtxmatrix_coo * x,
-    const struct mtxmatrix_coo * y,
+int mtxmatrix_nullcoo_zdotu(
+    const struct mtxmatrix_nullcoo * x,
+    const struct mtxmatrix_nullcoo * y,
     double (* dot)[2],
     int64_t * num_flops);
 
 /**
- * ‘mtxmatrix_coo_cdotc()’ computes the Frobenius inner product
- * of two complex matrices in single precision floating point, ‘dot :=
+ * ‘mtxmatrix_nullcoo_cdotc()’ computes the Frobenius inner product of two
+ * complex matrices in single precision floating point, ‘dot :=
  * x^H*y’.
  *
  * The matrices ‘x’ and ‘y’ must have the same field, precision and
  * size. Moreover, it is assumed that they have the same underlying
  * sparsity pattern, or else the results are undefined.
  */
-int mtxmatrix_coo_cdotc(
-    const struct mtxmatrix_coo * x,
-    const struct mtxmatrix_coo * y,
+int mtxmatrix_nullcoo_cdotc(
+    const struct mtxmatrix_nullcoo * x,
+    const struct mtxmatrix_nullcoo * y,
     float (* dot)[2],
     int64_t * num_flops);
 
 /**
- * ‘mtxmatrix_coo_zdotc()’ computes the Frobenius inner product
- * of two complex matrices in double precision floating point, ‘dot :=
+ * ‘mtxmatrix_nullcoo_zdotc()’ computes the Frobenius inner product of two
+ * complex matrices in double precision floating point, ‘dot :=
  * x^H*y’.
  *
  * The matrices ‘x’ and ‘y’ must have the same field, precision and
  * size. Moreover, it is assumed that they have the same underlying
  * sparsity pattern, or else the results are undefined.
  */
-int mtxmatrix_coo_zdotc(
-    const struct mtxmatrix_coo * x,
-    const struct mtxmatrix_coo * y,
+int mtxmatrix_nullcoo_zdotc(
+    const struct mtxmatrix_nullcoo * x,
+    const struct mtxmatrix_nullcoo * y,
     double (* dot)[2],
     int64_t * num_flops);
 
 /**
- * ‘mtxmatrix_coo_snrm2()’ computes the Frobenius norm of a
- * matrix in single precision floating point.
+ * ‘mtxmatrix_nullcoo_snrm2()’ computes the Frobenius norm of a matrix in
+ * single precision floating point.
  */
-int mtxmatrix_coo_snrm2(
-    const struct mtxmatrix_coo * x,
+int mtxmatrix_nullcoo_snrm2(
+    const struct mtxmatrix_nullcoo * x,
     float * nrm2,
     int64_t * num_flops);
 
 /**
- * ‘mtxmatrix_coo_dnrm2()’ computes the Frobenius norm of a
- * matrix in double precision floating point.
+ * ‘mtxmatrix_nullcoo_dnrm2()’ computes the Frobenius norm of a matrix in
+ * double precision floating point.
  */
-int mtxmatrix_coo_dnrm2(
-    const struct mtxmatrix_coo * x,
+int mtxmatrix_nullcoo_dnrm2(
+    const struct mtxmatrix_nullcoo * x,
     double * nrm2,
     int64_t * num_flops);
 
 /**
- * ‘mtxmatrix_coo_sasum()’ computes the sum of absolute values
+ * ‘mtxmatrix_nullcoo_sasum()’ computes the sum of absolute values
  * (1-norm) of a matrix in single precision floating point.  If the
  * matrix is complex-valued, then the sum of the absolute values of
  * the real and imaginary parts is computed.
  */
-int mtxmatrix_coo_sasum(
-    const struct mtxmatrix_coo * x,
+int mtxmatrix_nullcoo_sasum(
+    const struct mtxmatrix_nullcoo * x,
     float * asum,
     int64_t * num_flops);
 
 /**
- * ‘mtxmatrix_coo_dasum()’ computes the sum of absolute values
+ * ‘mtxmatrix_nullcoo_dasum()’ computes the sum of absolute values
  * (1-norm) of a matrix in double precision floating point.  If the
  * matrix is complex-valued, then the sum of the absolute values of
  * the real and imaginary parts is computed.
  */
-int mtxmatrix_coo_dasum(
-    const struct mtxmatrix_coo * x,
+int mtxmatrix_nullcoo_dasum(
+    const struct mtxmatrix_nullcoo * x,
     double * asum,
     int64_t * num_flops);
 
 /**
- * ‘mtxmatrix_coo_iamax()’ finds the index of the first element
- * having the maximum absolute value.  If the matrix is
- * complex-valued, then the index points to the first element having
- * the maximum sum of the absolute values of the real and imaginary
- * parts.
+ * ‘mtxmatrix_nullcoo_iamax()’ finds the index of the first element having
+ * the maximum absolute value.  If the matrix is complex-valued, then
+ * the index points to the first element having the maximum sum of the
+ * absolute values of the real and imaginary parts.
  */
-int mtxmatrix_coo_iamax(
-    const struct mtxmatrix_coo * x,
+int mtxmatrix_nullcoo_iamax(
+    const struct mtxmatrix_nullcoo * x,
     int * iamax);
 
 /*
@@ -1193,11 +1141,10 @@ int mtxmatrix_coo_iamax(
  */
 
 /**
- * ‘mtxmatrix_coo_sgemv()’ multiplies a matrix ‘A’ or its
- * transpose ‘A'’ by a real scalar ‘alpha’ (‘α’) and a vector ‘x’,
- * before adding the result to another vector ‘y’ multiplied by
- * another real scalar ‘beta’ (‘β’). That is, ‘y = α*A*x + β*y’ or ‘y
- * = α*A'*x + β*y’.
+ * ‘mtxmatrix_nullcoo_sgemv()’ multiplies a matrix ‘A’ or its transpose
+ * ‘A'’ by a real scalar ‘alpha’ (‘α’) and a vector ‘x’, before adding
+ * the result to another vector ‘y’ multiplied by another real scalar
+ * ‘beta’ (‘β’). That is, ‘y = α*A*x + β*y’ or ‘y = α*A'*x + β*y’.
  *
  * The scalars ‘alpha’ and ‘beta’ are given as single precision
  * floating point numbers.
@@ -1214,22 +1161,24 @@ int mtxmatrix_coo_iamax(
  * the number of rows of ‘A’. if ‘trans’ is ‘mtx_trans’ or
  * ‘mtx_conjtrans’, then the size of ‘x’ must equal the number of rows
  * of ‘A’ and the size of ‘y’ must equal the number of columns of ‘A’.
+ *
+ * For now, the only case that is parallelised with OpenMP is
+ * multiplication with non-transposed and unsymmetric matrices.
  */
-int mtxmatrix_coo_sgemv(
+int mtxmatrix_nullcoo_sgemv(
     enum mtxtransposition trans,
     float alpha,
-    const struct mtxmatrix_coo * A,
+    const struct mtxmatrix_nullcoo * A,
     const struct mtxvector * x,
     float beta,
     struct mtxvector * y,
     int64_t * num_flops);
 
 /**
- * ‘mtxmatrix_coo_dgemv()’ multiplies a matrix ‘A’ or its
- * transpose ‘A'’ by a real scalar ‘alpha’ (‘α’) and a vector ‘x’,
- * before adding the result to another vector ‘y’ multiplied by
- * another scalar real ‘beta’ (‘β’).  That is, ‘y = α*A*x + β*y’ or ‘y
- * = α*A'*x + β*y’.
+ * ‘mtxmatrix_nullcoo_dgemv()’ multiplies a matrix ‘A’ or its transpose
+ * ‘A'’ by a real scalar ‘alpha’ (‘α’) and a vector ‘x’, before adding
+ * the result to another vector ‘y’ multiplied by another scalar real
+ * ‘beta’ (‘β’).  That is, ‘y = α*A*x + β*y’ or ‘y = α*A'*x + β*y’.
  *
  * The scalars ‘alpha’ and ‘beta’ are given as double precision
  * floating point numbers.
@@ -1246,23 +1195,25 @@ int mtxmatrix_coo_sgemv(
  * the number of rows of ‘A’. if ‘trans’ is ‘mtx_trans’ or
  * ‘mtx_conjtrans’, then the size of ‘x’ must equal the number of rows
  * of ‘A’ and the size of ‘y’ must equal the number of columns of ‘A’.
+ *
+ * For now, the only case that is parallelised with OpenMP is
+ * multiplication with non-transposed and unsymmetric matrices.
  */
-int mtxmatrix_coo_dgemv(
+int mtxmatrix_nullcoo_dgemv(
     enum mtxtransposition trans,
     double alpha,
-    const struct mtxmatrix_coo * A,
+    const struct mtxmatrix_nullcoo * A,
     const struct mtxvector * x,
     double beta,
     struct mtxvector * y,
     int64_t * num_flops);
 
 /**
- * ‘mtxmatrix_coo_cgemv()’ multiplies a complex-valued matrix
- * ‘A’, its transpose ‘A'’ or its conjugate transpose ‘Aᴴ’ by a
- * complex scalar ‘alpha’ (‘α’) and a vector ‘x’, before adding the
- * result to another vector ‘y’ multiplied by another complex scalar
- * ‘beta’ (‘β’).  That is, ‘y = α*A*x + β*y’, ‘y = α*A'*x + β*y’ or ‘y
- * = α*Aᴴ*x + β*y’.
+ * ‘mtxmatrix_nullcoo_cgemv()’ multiplies a complex-valued matrix ‘A’, its
+ * transpose ‘A'’ or its conjugate transpose ‘Aᴴ’ by a complex scalar
+ * ‘alpha’ (‘α’) and a vector ‘x’, before adding the result to another
+ * vector ‘y’ multiplied by another complex scalar ‘beta’ (‘β’).  That
+ * is, ‘y = α*A*x + β*y’, ‘y = α*A'*x + β*y’ or ‘y = α*Aᴴ*x + β*y’.
  *
  * The scalars ‘alpha’ and ‘beta’ are given as single precision
  * floating point numbers.
@@ -1275,23 +1226,25 @@ int mtxmatrix_coo_dgemv(
  * the number of rows of ‘A’. if ‘trans’ is ‘mtx_trans’ or
  * ‘mtx_conjtrans’, then the size of ‘x’ must equal the number of rows
  * of ‘A’ and the size of ‘y’ must equal the number of columns of ‘A’.
+ *
+ * For now, the only case that is parallelised with OpenMP is
+ * multiplication with non-transposed and unsymmetric matrices.
  */
-int mtxmatrix_coo_cgemv(
+int mtxmatrix_nullcoo_cgemv(
     enum mtxtransposition trans,
     float alpha[2],
-    const struct mtxmatrix_coo * A,
+    const struct mtxmatrix_nullcoo * A,
     const struct mtxvector * x,
     float beta[2],
     struct mtxvector * y,
     int64_t * num_flops);
 
 /**
- * ‘mtxmatrix_coo_zgemv()’ multiplies a complex-valued matrix
- * ‘A’, its transpose ‘A'’ or its conjugate transpose ‘Aᴴ’ by a
- * complex scalar ‘alpha’ (‘α’) and a vector ‘x’, before adding the
- * result to another vector ‘y’ multiplied by another complex scalar
- * ‘beta’ (‘β’).  That is, ‘y = α*A*x + β*y’, ‘y = α*A'*x + β*y’ or ‘y
- * = α*Aᴴ*x + β*y’.
+ * ‘mtxmatrix_nullcoo_zgemv()’ multiplies a complex-valued matrix ‘A’, its
+ * transpose ‘A'’ or its conjugate transpose ‘Aᴴ’ by a complex scalar
+ * ‘alpha’ (‘α’) and a vector ‘x’, before adding the result to another
+ * vector ‘y’ multiplied by another complex scalar ‘beta’ (‘β’).  That
+ * is, ‘y = α*A*x + β*y’, ‘y = α*A'*x + β*y’ or ‘y = α*Aᴴ*x + β*y’.
  *
  * The scalars ‘alpha’ and ‘beta’ are given as double precision
  * floating point numbers.
@@ -1304,11 +1257,14 @@ int mtxmatrix_coo_cgemv(
  * the number of rows of ‘A’. if ‘trans’ is ‘mtx_trans’ or
  * ‘mtx_conjtrans’, then the size of ‘x’ must equal the number of rows
  * of ‘A’ and the size of ‘y’ must equal the number of columns of ‘A’.
+ *
+ * For now, the only case that is parallelised with OpenMP is
+ * multiplication with non-transposed and unsymmetric matrices.
  */
-int mtxmatrix_coo_zgemv(
+int mtxmatrix_nullcoo_zgemv(
     enum mtxtransposition trans,
     double alpha[2],
-    const struct mtxmatrix_coo * A,
+    const struct mtxmatrix_nullcoo * A,
     const struct mtxvector * x,
     double beta[2],
     struct mtxvector * y,

@@ -45,6 +45,34 @@
 #include <string.h>
 
 /*
+ * vector properties
+ */
+
+/**
+ * ‘mtxvector_omp_field()’ gets the field of a vector.
+ */
+enum mtxfield mtxvector_omp_field(const struct mtxvector_omp * x)
+{
+    return mtxvector_base_field(&x->base);
+}
+
+/**
+ * ‘mtxvector_omp_precision()’ gets the precision of a vector.
+ */
+enum mtxprecision mtxvector_omp_precision(const struct mtxvector_omp * x)
+{
+    return mtxvector_base_precision(&x->base);
+}
+
+/**
+ * ‘mtxvector_omp_size()’ gets the size of a vector.
+ */
+int64_t mtxvector_omp_size(const struct mtxvector_omp * x)
+{
+    return mtxvector_base_size(&x->base);
+}
+
+/*
  * Memory management
  */
 

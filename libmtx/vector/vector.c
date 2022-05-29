@@ -115,6 +115,10 @@ int mtxvectortype_parse(
     return MTX_SUCCESS;
 }
 
+/*
+ * vector properties
+ */
+
 /**
  * ‘mtxvector_field()’ gets the field of a vector.
  */
@@ -132,8 +136,8 @@ int mtxvector_field(
 #else
         return MTX_ERR_BLAS_NOT_SUPPORTED;
 #endif
-    } else if (x->type == mtxvector_blas) {
-        *field = x->storage.null.base.field;
+    } else if (x->type == mtxvector_null) {
+        *field = mtxvector_null_field(&x->storage.null);
         return MTX_SUCCESS;
     } else if (x->type == mtxvector_omp) {
 #ifdef LIBMTX_HAVE_OPENMP
@@ -163,7 +167,7 @@ int mtxvector_precision(
         return MTX_ERR_BLAS_NOT_SUPPORTED;
 #endif
     } else if (x->type == mtxvector_null) {
-        *precision = x->storage.null.base.precision;
+        *precision = mtxvector_null_precision(&x->storage.null);
         return MTX_SUCCESS;
     } else if (x->type == mtxvector_omp) {
 #ifdef LIBMTX_HAVE_OPENMP
@@ -228,9 +232,7 @@ int mtxvector_alloc_copy(
 #else
         return MTX_ERR_OPENMP_NOT_SUPPORTED;
 #endif
-    } else {
-        return MTX_ERR_INVALID_VECTOR_TYPE;
-    }
+    } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
 }
 
 /**
@@ -262,9 +264,7 @@ int mtxvector_init_copy(
 #else
         return MTX_ERR_OPENMP_NOT_SUPPORTED;
 #endif
-    } else {
-        return MTX_ERR_INVALID_VECTOR_TYPE;
-    }
+    } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
 }
 
 /*
@@ -301,9 +301,7 @@ int mtxvector_alloc(
 #else
         return MTX_ERR_OPENMP_NOT_SUPPORTED;
 #endif
-    } else {
-        return MTX_ERR_INVALID_VECTOR_TYPE;
-    }
+    } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
 }
 
 /**
