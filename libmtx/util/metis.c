@@ -76,8 +76,8 @@ int metis_partgraphsym(
 #ifndef LIBMTX_HAVE_METIS
     return MTX_ERR_METIS_NOT_SUPPORTED;
 #else
-    if (N > IDX_MAX-1) { return MTX_ERR_METIS_EOVERFLOW; }
-    if (size > IDX_MAX) { return MTX_ERR_METIS_EOVERFLOW; }
+    if (N > IDX_MAX-1) return MTX_ERR_METIS_EOVERFLOW;
+    if (size > IDX_MAX) return MTX_ERR_METIS_EOVERFLOW;
     if (num_parts <= 0) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
 
     /* perform some bounds checking on the input graph */
@@ -187,15 +187,13 @@ int metis_partgraphsym(
     idx_t ncon = 1;
 
     /* adjacency structure of the graph (row pointers) */
-    idx_t * xadj = NULL;
-    xadj = malloc((nvtxs+1) * sizeof(idx_t));
+    idx_t * xadj = malloc((nvtxs+1) * sizeof(idx_t));
     if (!xadj) return MTX_ERR_ERRNO;
     for (idx_t i = 0; i <= nvtxs; i++) xadj[i] = 0;
     for (int64_t k = 0; k < size; k++) {
         int64_t i = *(const int64_t *) ((const char *) rowidx + k*rowidxstride)-rowidxbase;
         int64_t j = *(const int64_t *) ((const char *) colidx + k*colidxstride)-colidxbase;
-        xadj[i+1]++;
-        if (i != j) xadj[j+1]++;
+        if (i != j) { xadj[i+1]++; xadj[j+1]++; }
     }
     for (idx_t i = 1; i <= nvtxs; i++) {
         if (xadj[i] > IDX_MAX - xadj[i-1]) { free(xadj); return MTX_ERR_METIS_EOVERFLOW; }
@@ -203,15 +201,13 @@ int metis_partgraphsym(
     }
 
     /* adjacency structure of the graph (column offsets) */
-    idx_t * adjncy = NULL;
-    adjncy = malloc(xadj[nvtxs] * sizeof(idx_t));
+    idx_t * adjncy = malloc(xadj[nvtxs] * sizeof(idx_t));
     if (!adjncy) { free(xadj); return MTX_ERR_ERRNO; }
 
     for (int64_t k = 0; k < size; k++) {
         int64_t i = *(const int64_t *) ((const char *) rowidx + k*rowidxstride)-rowidxbase;
         int64_t j = *(const int64_t *) ((const char *) colidx + k*colidxstride)-colidxbase;
-        adjncy[xadj[i]++] = j;
-        if (i != j) adjncy[xadj[j]++] = i;
+        if (i != j) { adjncy[xadj[i]++] = j; adjncy[xadj[j]++] = i; }
     }
     for (idx_t i = nvtxs; i > 0; i--) xadj[i] = xadj[i-1];
     xadj[0] = 0;
@@ -303,6 +299,7 @@ int metis_partgraphsym(
     else { err = MTX_SUCCESS; }
 
     if (err) {
+        if (free_part) free(part);
         free(tpwgts); free(adjncy); free(xadj);
         return err;
     }

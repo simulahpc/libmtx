@@ -649,7 +649,7 @@ int main(int argc, char *argv[])
     if (args.verbose > 1) {
         fprintf(diagf, "partitioned into %'d parts:\n", num_parts);
         for (int p = 0; p < num_parts; p++) {
-            fprintf(diagf, "part %'4d: %'12d nonzeros\n",
+            fprintf(diagf, "part %'5d: %'13"PRId64" nonzeros\n",
                     p, nzpartsptr[p+1]-nzpartsptr[p]);
         }
     }
