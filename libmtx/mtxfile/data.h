@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-04-14
+ * Last modified: 2022-05-31
  *
  * Matrix Market data lines.
  */
@@ -43,7 +43,6 @@
 #include <stdio.h>
 
 struct mtxdisterror;
-struct mtxpartition;
 
 /*
  * Matrix coordinate formats
@@ -1281,15 +1280,14 @@ int mtxfiledata_compact(
  * to a given row partition.
  *
  * See ‘partition_int64()’ for an explanation of the meaning of the
- * arguments ‘type’, ‘num_parts’, ‘partsizes’ and ‘blksize’.
+ * arguments ‘type’, ‘num_parts’, ‘partsizes’, ‘blksize’ and ‘parts’.
  *
  * The array ‘dstpart’ must contain enough storage for ‘size’ values
  * of type ‘int’. If successful, ‘dstpart’ is used to store the part
  * number assigned to the matrix or vector nonzeros.
  *
- * If it is not ‘NULL’, then the array ‘partsptr’ must contain enough
- * storage for ‘num_parts+1’ values of type ‘int64_t’. If successful,
- * ‘partsptr’ will contain offsets to the first element belonging to
+ * If ‘dstpartsizes’ is not ‘NULL’, then it must be an array of length
+ * ‘num_parts’, which is used to store the number of items assigned to
  * each part.
  *
  * If ‘format’ is ‘mtxfile_array’, then a non-negative ‘offset’ value
@@ -1311,23 +1309,23 @@ int mtxfiledata_partition_rowwise(
     int num_parts,
     const int64_t * partsizes,
     int64_t blksize,
+    const int * parts,
     int * dstpart,
-    int64_t * partsptr);
+    int64_t * dstpartsizes);
 
 /**
  * ‘mtxfiledata_partition_columnwise()’ partitions data lines according
  * to a given column partition.
  *
  * See ‘partition_int64()’ for an explanation of the meaning of the
- * arguments ‘type’, ‘num_parts’, ‘partsizes’ and ‘blksize’.
+ * arguments ‘type’, ‘num_parts’, ‘partsizes’, ‘blksize’ and ‘parts’.
  *
  * The array ‘dstpart’ must contain enough storage for ‘size’ values
  * of type ‘int’. If successful, ‘dstpart’ is used to store the part
  * number assigned to the matrix or vector nonzeros.
  *
- * If it is not ‘NULL’, then the array ‘partsptr’ must contain enough
- * storage for ‘num_parts+1’ values of type ‘int64_t’. If successful,
- * ‘partsptr’ will contain offsets to the first element belonging to
+ * If ‘dstpartsizes’ is not ‘NULL’, then it must be an array of length
+ * ‘num_parts’, which is used to store the number of items assigned to
  * each part.
  *
  * If ‘format’ is ‘mtxfile_array’, then a non-negative ‘offset’ value
@@ -1349,8 +1347,9 @@ int mtxfiledata_partition_columnwise(
     int num_parts,
     const int64_t * partsizes,
     int64_t blksize,
+    const int * parts,
     int * dstpart,
-    int64_t * partsptr);
+    int64_t * dstpartsizes);
 
 /**
  * ‘mtxfiledata_partition_2d()’ partitions data lines according
@@ -1361,16 +1360,15 @@ int mtxfiledata_partition_columnwise(
  *
  * See ‘partition_int64()’ for an explanation of the meaning of the
  * arguments ‘rowparttype’, ‘num_row_parts’, ‘rowpartsizes’ and
- * ‘rowblksize’, and so on.
+ * ‘rowblksize’, ‘rowparts’, and so on.
  *
  * The array ‘dstpart’ must contain enough storage for ‘size’ values
  * of type ‘int’. If successful, ‘dstpart’ is used to store the part
  * number assigned to the matrix or vector nonzeros.
  *
- * If it is not ‘NULL’, then the array ‘partsptr’ must contain enough
- * storage for ‘num_row_parts*num_column_parts+1’ values of type
- * ‘int64_t’. If successful, ‘partsptr’ will contain offsets to the
- * first element belonging to each part.
+ * If ‘dstpartsizes’ is not ‘NULL’, then it must be an array of length
+ * ‘num_parts’, which is used to store the number of items assigned to
+ * each part.
  *
  * If ‘format’ is ‘mtxfile_array’, then a non-negative ‘offset’ value
  * can be used to partition matrix or vector entries starting from the
@@ -1391,12 +1389,14 @@ int mtxfiledata_partition_2d(
     int num_row_parts,
     const int64_t * rowpartsizes,
     int64_t rowblksize,
+    const int * rowparts,
     enum mtxpartitioning colparttype,
     int num_column_parts,
     const int64_t * colpartsizes,
     int64_t colblksize,
+    const int * colparts,
     int * dstpart,
-    int64_t * partsptr);
+    int64_t * dstpartsizes);
 
 /*
  * Reordering

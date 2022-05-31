@@ -50,6 +50,10 @@
  *
  * The set to be partitioned consists of ‘size’ items, which are
  * partitioned in a cyclic fashion into ‘num_parts’ parts.
+ *
+ * If ‘dstpartsizes’ is not ‘NULL’, then it must be an array of length
+ * ‘num_parts’, which is used to store the number of items assigned to
+ * each part.
  */
 int partition_cyclic_int64(
     int64_t size,
@@ -57,12 +61,53 @@ int partition_cyclic_int64(
     int64_t idxsize,
     int idxstride,
     const int64_t * idx,
-    int * dstpart)
+    int * dstpart,
+    int64_t * dstpartsizes)
 {
+    if (num_parts <= 0) return MTX_ERR_INVALID_PARTITION;
+    if (dstpartsizes) { for (int p = 0; p < num_parts; p++) dstpartsizes[p] = 0; }
     for (int64_t i = 0; i < idxsize; i++) {
         int64_t x = *(const int64_t *) ((const unsigned char *) idx+i*idxstride);
         if (x < 0 || x >= size) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
         dstpart[i] = x % num_parts;
+        if (dstpartsizes) dstpartsizes[dstpart[i]]++;
+    }
+    return MTX_SUCCESS;
+}
+
+/**
+ * ‘partition_cyclic_int()’ partitions elements of a set of signed
+ * integers based on a cyclic partitioning to produce an array of part
+ * numbers assigned to each element in the input array.
+ *
+ * The array to be partitioned, ‘idx’, contains ‘idxsize’ items.
+ * Moreover, the user must provide an output array, ‘dstpart’, of size
+ * ‘idxsize’, which is used to write the part number assigned to each
+ * element of the input array.
+ *
+ * The set to be partitioned consists of ‘size’ items, which are
+ * partitioned in a cyclic fashion into ‘num_parts’ parts.
+ *
+ * If ‘dstpartsizes’ is not ‘NULL’, then it must be an array of length
+ * ‘num_parts’, which is used to store the number of items assigned to
+ * each part.
+ */
+int partition_cyclic_int(
+    int size,
+    int num_parts,
+    int64_t idxsize,
+    int idxstride,
+    const int * idx,
+    int * dstpart,
+    int64_t * dstpartsizes)
+{
+    if (num_parts <= 0) return MTX_ERR_INVALID_PARTITION;
+    if (dstpartsizes) { for (int p = 0; p < num_parts; p++) dstpartsizes[p] = 0; }
+    for (int64_t i = 0; i < idxsize; i++) {
+        int x = *(const int *) ((const unsigned char *) idx+i*idxstride);
+        if (x < 0 || x >= size) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+        dstpart[i] = x % num_parts;
+        if (dstpartsizes) dstpartsizes[dstpart[i]]++;
     }
     return MTX_SUCCESS;
 }
@@ -82,6 +127,10 @@ int partition_cyclic_int64(
  * array ‘partsizes’ contains ‘num_parts’ integers, specifying the
  * size of each block of the partitioned set. The sum of the entries
  * in ‘partsizes’ should therefore be equal to ‘size’.
+ *
+ * If ‘dstpartsizes’ is not ‘NULL’, then it must be an array of length
+ * ‘num_parts’, which is used to store the number of items assigned to
+ * each part.
  */
 int partition_block_int64(
     int64_t size,
@@ -90,8 +139,10 @@ int partition_block_int64(
     int64_t idxsize,
     int idxstride,
     const int64_t * idx,
-    int * dstpart)
+    int * dstpart,
+    int64_t * dstpartsizes)
 {
+    if (dstpartsizes) { for (int p = 0; p < num_parts; p++) dstpartsizes[p] = 0; }
     if (partsizes) {
         for (int64_t i = 0; i < idxsize; i++) {
             int64_t x = *(const int64_t *) ((const unsigned char *) idx+i*idxstride);
@@ -101,14 +152,72 @@ int partition_block_int64(
                 x -= partsizes[p++];
             if (p >= num_parts) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
             dstpart[i] = p;
+            if (dstpartsizes) dstpartsizes[dstpart[i]]++;
         }
     } else {
         if (num_parts <= 0) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
         int64_t blksize = (size+num_parts-1) / num_parts;
+        if (blksize <= 0) return MTX_ERR_INVALID_PARTITION;
         for (int64_t i = 0; i < idxsize; i++) {
             int64_t x = *(const int64_t *) ((const unsigned char *) idx+i*idxstride);
             if (x < 0 || x >= size) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
             dstpart[i] = x / blksize;
+            if (dstpartsizes) dstpartsizes[dstpart[i]]++;
+        }
+    }
+    return MTX_SUCCESS;
+}
+
+/**
+ * ‘partition_block_int()’ partitions elements of a set of signed
+ * integers based on a block partitioning to produce an array of part
+ * numbers assigned to each element in the input array.
+ *
+ * The array to be partitioned, ‘idx’, contains ‘idxsize’ items.
+ * Moreover, the user must provide an output array, ‘dstpart’, of size
+ * ‘idxsize’, which is used to write the part number assigned to each
+ * element of the input array.
+ *
+ * The set to be partitioned consists of ‘size’ items that are
+ * partitioned into ‘num_parts’ contiguous blocks. Furthermore, the
+ * array ‘partsizes’ contains ‘num_parts’ integers, specifying the
+ * size of each block of the partitioned set.
+ *
+ * If ‘dstpartsizes’ is not ‘NULL’, then it must be an array of length
+ * ‘num_parts’, which is used to store the number of items assigned to
+ * each part.
+ */
+int partition_block_int(
+    int size,
+    int num_parts,
+    const int * partsizes,
+    int64_t idxsize,
+    int idxstride,
+    const int * idx,
+    int * dstpart,
+    int64_t * dstpartsizes)
+{
+    if (dstpartsizes) { for (int p = 0; p < num_parts; p++) dstpartsizes[p] = 0; }
+    if (partsizes) {
+        for (int64_t i = 0; i < idxsize; i++) {
+            int x = *(const int *) ((const unsigned char *) idx+i*idxstride);
+            if (x < 0 || x >= size) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            int p = 0;
+            while (p < num_parts && x >= partsizes[p])
+                x -= partsizes[p++];
+            if (p >= num_parts) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            dstpart[i] = p;
+            if (dstpartsizes) dstpartsizes[dstpart[i]]++;
+        }
+    } else {
+        if (num_parts <= 0) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+        int blksize = (size+num_parts-1) / num_parts;
+        if (blksize <= 0) return MTX_ERR_INVALID_PARTITION;
+        for (int64_t i = 0; i < idxsize; i++) {
+            int x = *(const int *) ((const unsigned char *) idx+i*idxstride);
+            if (x < 0 || x >= size) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            dstpart[i] = x / blksize;
+            if (dstpartsizes) dstpartsizes[dstpart[i]]++;
         }
     }
     return MTX_SUCCESS;
@@ -128,6 +237,10 @@ int partition_block_int64(
  * The set to be partitioned consists of ‘size’ items arranged in
  * contiguous block of size ‘blksize’, which are then partitioned in a
  * cyclic fashion into ‘num_parts’ parts.
+ *
+ * If ‘dstpartsizes’ is not ‘NULL’, then it must be an array of length
+ * ‘num_parts’, which is used to store the number of items assigned to
+ * each part.
  */
 int partition_block_cyclic_int64(
     int64_t size,
@@ -136,12 +249,136 @@ int partition_block_cyclic_int64(
     int64_t idxsize,
     int idxstride,
     const int64_t * idx,
-    int * dstpart)
+    int * dstpart,
+    int64_t * dstpartsizes)
 {
+    if (num_parts <= 0 || blksize <= 0) return MTX_ERR_INVALID_PARTITION;
+    if (dstpartsizes) { for (int p = 0; p < num_parts; p++) dstpartsizes[p] = 0; }
     for (int64_t i = 0; i < idxsize; i++) {
         int64_t x = *(const int64_t *) ((const unsigned char *) idx+i*idxstride);
         if (x < 0 || x >= size) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
         dstpart[i] = (x / blksize) % num_parts;
+        if (dstpartsizes) dstpartsizes[dstpart[i]]++;
+    }
+    return MTX_SUCCESS;
+}
+
+/**
+ * ‘partition_block_cyclic_int()’ partitions elements of a set of
+ * signed integers based on a block-cyclic partitioning to produce an
+ * array of part numbers assigned to each element in the input array.
+ *
+ * The array to be partitioned, ‘idx’, contains ‘idxsize’ items.
+ * Moreover, the user must provide an output array, ‘dstpart’, of size
+ * ‘idxsize’, which is used to write the part number assigned to each
+ * element of the input array.
+ *
+ * The set to be partitioned consists of ‘size’ items arranged in
+ * contiguous block of size ‘blksize’, which are then partitioned in a
+ * cyclic fashion into ‘num_parts’ parts.
+ *
+ * If ‘dstpartsizes’ is not ‘NULL’, then it must be an array of length
+ * ‘num_parts’, which is used to store the number of items assigned to
+ * each part.
+ */
+int partition_block_cyclic_int(
+    int size,
+    int num_parts,
+    int blksize,
+    int64_t idxsize,
+    int idxstride,
+    const int * idx,
+    int * dstpart,
+    int64_t * dstpartsizes)
+{
+    if (num_parts <= 0 || blksize <= 0) return MTX_ERR_INVALID_PARTITION;
+    if (dstpartsizes) { for (int p = 0; p < num_parts; p++) dstpartsizes[p] = 0; }
+    for (int64_t i = 0; i < idxsize; i++) {
+        int x = *(const int *) ((const unsigned char *) idx+i*idxstride);
+        if (x < 0 || x >= size) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+        dstpart[i] = (x / blksize) % num_parts;
+        if (dstpartsizes) dstpartsizes[dstpart[i]]++;
+    }
+    return MTX_SUCCESS;
+}
+
+/**
+ * ‘partition_custom_int64()’ partitions elements of a set of 64-bit
+ * signed integers based on a custom, user-defined partitioning to
+ * produce an array of part numbers assigned to each element in the
+ * input array.
+ *
+ * The array to be partitioned, ‘idx’, contains ‘idxsize’ items.
+ * Moreover, the user must provide an output array, ‘dstpart’, of size
+ * ‘idxsize’, which is used to write the part number assigned to each
+ * element of the input array.
+ *
+ * The set to be partitioned consists of ‘size’ items. Moreover, the
+ * array ‘parts’ must be of length ‘size’, and it is used to specify
+ * the part number for each element ‘0,1,...,size-1’. The values must
+ * therefore be in the range ‘[0,num_parts)’.
+ *
+ * If ‘dstpartsizes’ is not ‘NULL’, then it must be an array of length
+ * ‘num_parts’, which is used to store the number of items assigned to
+ * each part.
+ */
+int partition_custom_int64(
+    int64_t size,
+    int num_parts,
+    const int * parts,
+    int64_t idxsize,
+    int idxstride,
+    const int64_t * idx,
+    int * dstpart,
+    int64_t * dstpartsizes)
+{
+    if (num_parts <= 0) return MTX_ERR_INVALID_PARTITION;
+    if (dstpartsizes) { for (int p = 0; p < num_parts; p++) dstpartsizes[p] = 0; }
+    for (int64_t i = 0; i < idxsize; i++) {
+        int64_t x = *(const int64_t *) ((const unsigned char *) idx+i*idxstride);
+        if (x < 0 || x >= size) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+        dstpart[i] = parts[x];
+        if (dstpartsizes) dstpartsizes[dstpart[i]]++;
+    }
+    return MTX_SUCCESS;
+}
+
+/**
+ * ‘partition_custom_int()’ partitions elements of a set of signed
+ * integers based on a custom, user-defined partitioning to produce an
+ * array of part numbers assigned to each element in the input array.
+ *
+ * The array to be partitioned, ‘idx’, contains ‘idxsize’ items.
+ * Moreover, the user must provide an output array, ‘dstpart’, of size
+ * ‘idxsize’, which is used to write the part number assigned to each
+ * element of the input array.
+ *
+ * The set to be partitioned consists of ‘size’ items. Moreover, the
+ * array ‘parts’ must be of length ‘size’, and it is used to specify
+ * the part number for each element ‘0,1,...,size-1’. The values must
+ * therefore be in the range ‘[0,num_parts)’.
+ *
+ * If ‘dstpartsizes’ is not ‘NULL’, then it must be an array of length
+ * ‘num_parts’, which is used to store the number of items assigned to
+ * each part.
+ */
+int partition_custom_int(
+    int size,
+    int num_parts,
+    const int * parts,
+    int64_t idxsize,
+    int idxstride,
+    const int * idx,
+    int * dstpart,
+    int64_t * dstpartsizes)
+{
+    if (num_parts <= 0) return MTX_ERR_INVALID_PARTITION;
+    if (dstpartsizes) { for (int p = 0; p < num_parts; p++) dstpartsizes[p] = 0; }
+    for (int64_t i = 0; i < idxsize; i++) {
+        int x = *(const int *) ((const unsigned char *) idx+i*idxstride);
+        if (x < 0 || x >= size) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+        dstpart[i] = parts[x];
+        if (dstpartsizes) dstpartsizes[dstpart[i]]++;
     }
     return MTX_SUCCESS;
 }
@@ -156,6 +393,10 @@ int partition_block_cyclic_int64(
  * ‘idxsize’, which is used to write the part number assigned to each
  * element of the input array.
  *
+ * If ‘dstpartsizes’ is not ‘NULL’, then it must be an array of length
+ * ‘num_parts’, which is used to store the number of items assigned to
+ * each part.
+ *
  * The set to be partitioned consists of ‘size’ items.
  *
  * - If ‘type’ is ‘mtx_cyclic’, then items are partitioned in a cyclic
@@ -168,6 +409,10 @@ int partition_block_cyclic_int64(
  * - If ‘type’ is ‘mtx_block_cyclic’, then items are arranged in
  *   contiguous blocks of size ‘blksize’, which are then partitioned
  *   in a cyclic fashion into ‘num_parts’ parts.
+ *
+ * - If ‘type’ is ‘mtx_custom_partition’, then the array ‘parts’ must
+ *   be of length ‘size’ and should contain the part number (i.e., an
+ *   integer in the range ‘[0,num_parts)’) for each element.
  */
 int partition_int64(
     enum mtxpartitioning type,
@@ -175,20 +420,92 @@ int partition_int64(
     int num_parts,
     const int64_t * partsizes,
     int64_t blksize,
+    const int * parts,
     int64_t idxsize,
     int idxstride,
     const int64_t * idx,
-    int * dstpart)
+    int * dstpart,
+    int64_t * dstpartsizes)
 {
     if (type == mtx_cyclic) {
         return partition_cyclic_int64(
-            size, num_parts, idxsize, idxstride, idx, dstpart);
+            size, num_parts, idxsize, idxstride, idx,
+            dstpart, dstpartsizes);
     } else if (type == mtx_block) {
         return partition_block_int64(
-            size, num_parts, partsizes, idxsize, idxstride, idx, dstpart);
+            size, num_parts, partsizes, idxsize, idxstride, idx,
+            dstpart, dstpartsizes);
     } else if (type == mtx_block_cyclic) {
         return partition_block_cyclic_int64(
-            size, num_parts, blksize, idxsize, idxstride, idx, dstpart);
+            size, num_parts, blksize, idxsize, idxstride, idx,
+            dstpart, dstpartsizes);
+    } else if (type == mtx_custom_partition) {
+        return partition_custom_int64(
+            size, num_parts, parts, idxsize, idxstride, idx,
+            dstpart, dstpartsizes);
+    } else { return MTX_ERR_INVALID_PARTITION_TYPE; }
+}
+
+/**
+ * ‘partition_int()’ partitions elements of a set of signed integers
+ * based on a given partitioning to produce an array of part numbers
+ * assigned to each element in the input array.
+ *
+ * The array to be partitioned, ‘idx’, contains ‘idxsize’ items.
+ * Moreover, the user must provide an output array, ‘dstpart’, of size
+ * ‘idxsize’, which is used to write the part number assigned to each
+ * element of the input array.
+ *
+ * If ‘dstpartsizes’ is not ‘NULL’, then it must be an array of length
+ * ‘num_parts’, which is used to store the number of items assigned to
+ * each part.
+ *
+ * The set to be partitioned consists of ‘size’ items.
+ *
+ * - If ‘type’ is ‘mtx_cyclic’, then items are partitioned in a cyclic
+ *   fashion into ‘num_parts’ parts.
+ *
+ * - If ‘type’ is ‘mtx_block’, then the array ‘partsizes’ contains
+ *   ‘num_parts’ integers, specifying the size of each block of the
+ *   partitioned set.
+ *
+ * - If ‘type’ is ‘mtx_block_cyclic’, then items are arranged in
+ *   contiguous blocks of size ‘blksize’, which are then partitioned
+ *   in a cyclic fashion into ‘num_parts’ parts.
+ *
+ * - If ‘type’ is ‘mtx_custom_partition’, then the array ‘parts’ must
+ *   be of length ‘size’ and should contain the part number (i.e., an
+ *   integer in the range ‘[0,num_parts)’) for each element.
+ */
+int partition_int(
+    enum mtxpartitioning type,
+    int size,
+    int num_parts,
+    const int * partsizes,
+    int blksize,
+    const int * parts,
+    int64_t idxsize,
+    int idxstride,
+    const int * idx,
+    int * dstpart,
+    int64_t * dstpartsizes)
+{
+    if (type == mtx_cyclic) {
+        return partition_cyclic_int(
+            size, num_parts, idxsize, idxstride, idx,
+            dstpart, dstpartsizes);
+    } else if (type == mtx_block) {
+        return partition_block_int(
+            size, num_parts, partsizes, idxsize, idxstride, idx,
+            dstpart, dstpartsizes);
+    } else if (type == mtx_block_cyclic) {
+        return partition_block_cyclic_int(
+            size, num_parts, blksize, idxsize, idxstride, idx,
+            dstpart, dstpartsizes);
+    } else if (type == mtx_custom_partition) {
+        return partition_custom_int(
+            size, num_parts, parts, idxsize, idxstride, idx,
+            dstpart, dstpartsizes);
     } else { return MTX_ERR_INVALID_PARTITION_TYPE; }
 }
 
@@ -236,7 +553,7 @@ int distpartition_block_int64(
         return MTX_ERR_MPI_COLLECTIVE;
     }
     err = partition_block_int64(
-        size, comm_size, partsizes, idxsize, idxstride, idx, dstpart);
+        size, comm_size, partsizes, idxsize, idxstride, idx, dstpart, NULL);
     if (mtxdisterror_allreduce(disterr, err)) {
         free(partsizes);
         return MTX_ERR_MPI_COLLECTIVE;
@@ -276,7 +593,7 @@ int distpartition_block_cyclic_int64(
     int err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     return partition_block_cyclic_int64(
-        size, comm_size, blksize, idxsize, idxstride, idx, dstpart);
+        size, comm_size, blksize, idxsize, idxstride, idx, dstpart, NULL);
 }
 
 

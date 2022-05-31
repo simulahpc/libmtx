@@ -42,7 +42,6 @@
 #include <stddef.h>
 #include <stdio.h>
 
-struct mtxpartition;
 struct mtxvector_packed;
 
 /*

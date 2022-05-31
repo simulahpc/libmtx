@@ -1624,16 +1624,16 @@ int mtxfile_assemble(
  * Market file.
  *
  * See ‘partition_int64()’ for an explanation of the meaning of the
- * arguments ‘parttype’, ‘num_parts’, ‘partsizes’ and ‘blksize’.
+ * arguments ‘parttype’, ‘num_parts’, ‘partsizes’, ‘blksize’ and
+ * ‘parts’.
  *
  * The array ‘dstpart’ must contain enough storage for
  * ‘mtxfile->datasize’ values of type ‘int’. If successful, ‘dstpart’
  * is used to store the part number assigned to the matrix or vector
  * nonzeros.
  *
- * If it is not ‘NULL’, then the array ‘partsptr’ must contain enough
- * storage for ‘num_parts+1’ values of type ‘int64_t’. If successful,
- * ‘partsptr’ will contain offsets to the first element belonging to
+ * If ‘dstpartsizes’ is not ‘NULL’, then it must be an array of length
+ * ‘num_parts’, which is used to store the number of items assigned to
  * each part.
  */
 int mtxfile_partition_nonzeros(
@@ -1642,21 +1642,17 @@ int mtxfile_partition_nonzeros(
     int num_parts,
     const int64_t * partsizes,
     int64_t blksize,
+    const int * parts,
     int * dstpart,
-    int64_t * partsptr)
+    int64_t * dstpartsizes)
 {
     int64_t * idx = malloc(mtxfile->datasize * sizeof(int64_t));
     if (!idx) return MTX_ERR_ERRNO;
     for (int64_t k = 0; k < mtxfile->datasize; k++) idx[k] = k;
     int err = partition_int64(
-        parttype, mtxfile->datasize, num_parts, partsizes, blksize,
-        mtxfile->datasize, sizeof(int64_t), idx, dstpart);
+        parttype, mtxfile->datasize, num_parts, partsizes, blksize, parts,
+        mtxfile->datasize, sizeof(int64_t), idx, dstpart, dstpartsizes);
     if (err) { free(idx); return err; }
-    if (partsptr) {
-        for (int p = 0; p <= num_parts; p++) partsptr[p] = 0;
-        for (int64_t k = 0; k < mtxfile->datasize; k++) partsptr[dstpart[k]+1]++;
-        for (int p = 1; p <= num_parts; p++) partsptr[p] += partsptr[p-1];
-    }
     free(idx);
     return MTX_SUCCESS;
 }
@@ -1666,16 +1662,16 @@ int mtxfile_partition_nonzeros(
  * Market file according to a given row partitioning.
  *
  * See ‘partition_int64()’ for an explanation of the meaning of the
- * arguments ‘parttype’, ‘num_parts’, ‘partsizes’ and ‘blksize’.
+ * arguments ‘parttype’, ‘num_parts’, ‘partsizes’, ‘blksize’ and
+ * ‘parts’.
  *
  * The array ‘dstpart’ must contain enough storage for
  * ‘mtxfile->datasize’ values of type ‘int’. If successful, ‘dstpart’
  * is used to store the part number assigned to the matrix or vector
  * nonzeros.
  *
- * If it is not ‘NULL’, then the array ‘partsptr’ must contain enough
- * storage for ‘num_parts+1’ values of type ‘int64_t’. If successful,
- * ‘partsptr’ will contain offsets to the first element belonging to
+ * If ‘dstpartsizes’ is not ‘NULL’, then it must be an array of length
+ * ‘num_parts’, which is used to store the number of items assigned to
  * each part.
  */
 int mtxfile_partition_rowwise(
@@ -1684,14 +1680,15 @@ int mtxfile_partition_rowwise(
     int num_parts,
     const int64_t * partsizes,
     int64_t blksize,
+    const int * parts,
     int * dstpart,
-    int64_t * partsptr)
+    int64_t * dstpartsizes)
 {
     return mtxfiledata_partition_rowwise(
         &mtxfile->data, mtxfile->header.object, mtxfile->header.format,
         mtxfile->header.field, mtxfile->precision,
         mtxfile->size.num_rows, mtxfile->size.num_columns, 0, mtxfile->datasize,
-        parttype, num_parts, partsizes, blksize, dstpart, partsptr);
+        parttype, num_parts, partsizes, blksize, parts, dstpart, dstpartsizes);
 }
 
 /**
@@ -1699,16 +1696,16 @@ int mtxfile_partition_rowwise(
  * Market file according to a given column partitioning.
  *
  * See ‘partition_int64()’ for an explanation of the meaning of the
- * arguments ‘parttype’, ‘num_parts’, ‘partsizes’ and ‘blksize’.
+ * arguments ‘parttype’, ‘num_parts’, ‘partsizes’, ‘blksize’ and
+ * ‘parts’.
  *
  * The array ‘dstpart’ must contain enough storage for
  * ‘mtxfile->datasize’ values of type ‘int’. If successful, ‘dstpart’
  * is used to store the part number assigned to the matrix or vector
  * nonzeros.
  *
- * If it is not ‘NULL’, then the array ‘partsptr’ must contain enough
- * storage for ‘num_parts+1’ values of type ‘int64_t’. If successful,
- * ‘partsptr’ will contain offsets to the first element belonging to
+ * If ‘dstpartsizes’ is not ‘NULL’, then it must be an array of length
+ * ‘num_parts’, which is used to store the number of items assigned to
  * each part.
  */
 int mtxfile_partition_columnwise(
@@ -1717,14 +1714,15 @@ int mtxfile_partition_columnwise(
     int num_parts,
     const int64_t * partsizes,
     int64_t blksize,
+    const int * parts,
     int * dstpart,
-    int64_t * partsptr)
+    int64_t * dstpartsizes)
 {
     return mtxfiledata_partition_columnwise(
         &mtxfile->data, mtxfile->header.object, mtxfile->header.format,
         mtxfile->header.field, mtxfile->precision,
         mtxfile->size.num_rows, mtxfile->size.num_columns, 0, mtxfile->datasize,
-        parttype, num_parts, partsizes, blksize, dstpart, partsptr);
+        parttype, num_parts, partsizes, blksize, parts, dstpart, dstpartsizes);
 }
 
 /**
@@ -1736,17 +1734,16 @@ int mtxfile_partition_columnwise(
  *
  * See ‘partition_int64()’ for an explanation of the meaning of the
  * arguments ‘rowparttype’, ‘num_row_parts’, ‘rowpartsizes’ and
- * ‘rowblksize’, and so on.
+ * ‘rowblksize’, ‘rowparts’, and so on.
  *
  * The array ‘dstpart’ must contain enough storage for
  * ‘mtxfile->datasize’ values of type ‘int’. If successful, ‘dstpart’
  * is used to store the part number assigned to the matrix or vector
  * nonzeros.
  *
- * If it is not ‘NULL’, then the array ‘partsptr’ must contain enough
- * storage for ‘num_row_parts*num_column_parts+1’ values of type
- * ‘int64_t’. If successful, ‘partsptr’ will contain offsets to the
- * first element belonging to each part.
+ * If ‘dstpartsizes’ is not ‘NULL’, then it must be an array of length
+ * ‘num_parts’, which is used to store the number of items assigned to
+ * each part.
  */
 int mtxfile_partition_2d(
     const struct mtxfile * mtxfile,
@@ -1754,20 +1751,22 @@ int mtxfile_partition_2d(
     int num_row_parts,
     const int64_t * rowpartsizes,
     int64_t rowblksize,
+    const int * rowparts,
     enum mtxpartitioning colparttype,
     int num_column_parts,
     const int64_t * colpartsizes,
     int64_t colblksize,
+    const int * colparts,
     int * dstpart,
-    int64_t * partsptr)
+    int64_t * dstpartsizes)
 {
     return mtxfiledata_partition_2d(
         &mtxfile->data, mtxfile->header.object, mtxfile->header.format,
         mtxfile->header.field, mtxfile->precision,
         mtxfile->size.num_rows, mtxfile->size.num_columns, 0, mtxfile->datasize,
-        rowparttype, num_row_parts, rowpartsizes, rowblksize,
-        colparttype, num_column_parts, colpartsizes, colblksize,
-        dstpart, partsptr);
+        rowparttype, num_row_parts, rowpartsizes, rowblksize, rowparts,
+        colparttype, num_column_parts, colpartsizes, colblksize, colparts,
+        dstpart, dstpartsizes);
 }
 
 /**
@@ -1784,22 +1783,22 @@ int mtxfile_partition_2d(
  * similarly used to store the part numbers assigned to the matrix
  * columns.
  *
- * Unless they are set to ‘NULL’, then ‘nzpartsptr’, ‘rowpartsptr’ and
- * ‘colpartsptr’ must be arrays of length ‘num_parts+1’. If
- * successful, these three arrays will contain offsets to the first
- * nonzero, row and column belonging to each part.
+ * Unless they are set to ‘NULL’, then ‘dstnzpartsizes’,
+ * ‘dstrowpartsizes’ and ‘dstcolpartsizes’ must be arrays of length
+ * ‘num_parts’, which are used to store the number of nonzeros, rows
+ * and columns, respectively, belonging to each part.
  */
-int mtxfile_partition_metis(
+static int mtxfile_partition_metis(
     const struct mtxfile * mtxfile,
     int num_parts,
     int * dstnzpart,
-    int64_t * nzpartsptr,
+    int64_t * dstnzpartsizes,
     bool * rowpart,
     int * dstrowpart,
-    int64_t * rowpartsptr,
+    int64_t * dstrowpartsizes,
     bool * colpart,
     int * dstcolpart,
-    int64_t * colpartsptr,
+    int64_t * dstcolpartsizes,
     int verbose)
 {
     int err;
@@ -1855,20 +1854,17 @@ int mtxfile_partition_metis(
     }
 
     /* 4. calculate part sizes */
-    if (nzpartsptr) {
-        for (int p = 0; p <= num_parts; p++) nzpartsptr[p] = 0;
-        for (int64_t k = 0; k < size; k++) nzpartsptr[dstnzpart[k]+1]++;
-        for (int p = 1; p <= num_parts; p++) nzpartsptr[p] += nzpartsptr[p-1];
+    if (dstnzpartsizes) {
+        for (int p = 0; p < num_parts; p++) dstnzpartsizes[p] = 0;
+        for (int64_t k = 0; k < size; k++) dstnzpartsizes[dstnzpart[k]]++;
     }
-    if (rowpartsptr) {
-        for (int p = 0; p <= num_parts; p++) rowpartsptr[p] = 0;
-        for (int64_t i = 0; i < num_rows; i++) rowpartsptr[dstrowpart[i]+1]++;
-        for (int p = 1; p <= num_parts; p++) rowpartsptr[p] += rowpartsptr[p-1];
+    if (dstrowpartsizes) {
+        for (int p = 0; p < num_parts; p++) dstrowpartsizes[p] = 0;
+        for (int64_t i = 0; i < num_rows; i++) dstrowpartsizes[dstrowpart[i]]++;
     }
-    if (!square && colpartsptr) {
-        for (int p = 0; p <= num_parts; p++) colpartsptr[p] = 0;
-        for (int64_t j = 0; j < num_columns; j++) colpartsptr[dstcolpart[j]+1]++;
-        for (int p = 1; p <= num_parts; p++) colpartsptr[p] += colpartsptr[p-1];
+    if (!square && dstcolpartsizes) {
+        for (int p = 0; p < num_parts; p++) dstcolpartsizes[p] = 0;
+        for (int64_t j = 0; j < num_columns; j++) dstcolpartsizes[dstcolpart[j]]++;
     }
 
     *rowpart = true;
@@ -1925,10 +1921,10 @@ int mtxfile_partition_metis(
  * of length ‘mtxfile->size.num_columns’. Moreover, ‘*colpart’ is set
  * to ‘true’, whereas it is ‘false’ otherwise.
  *
- * Unless they are set to ‘NULL’, then ‘nzpartsptr’, ‘rowpartsptr’ and
- * ‘colpartsptr’ must be arrays of length ‘num_parts+1’. If
- * successful, these three arrays will contain offsets to the first
- * nonzero, row and column belonging to each part.
+ * Unless they are set to ‘NULL’, then ‘dstnzpartsizes’,
+ * ‘dstrowpartsizes’ and ‘dstcolpartsizes’ must be arrays of length
+ * ‘num_parts’, which are then used to store the number of nonzeros,
+ * rows and columns assigned to each part, respectively.
  */
 int mtxfile_partition2(
     struct mtxfile * mtxfile,
@@ -1937,56 +1933,59 @@ int mtxfile_partition2(
     int num_nz_parts,
     const int64_t * nzpartsizes,
     int64_t nzblksize,
+    const int * nzparts,
     enum mtxpartitioning rowparttype,
     int num_row_parts,
     const int64_t * rowpartsizes,
     int64_t rowblksize,
+    const int * rowparts,
     enum mtxpartitioning colparttype,
     int num_column_parts,
     const int64_t * colpartsizes,
     int64_t colblksize,
+    const int * colparts,
     int * dstnzpart,
-    int64_t * nzpartsptr,
+    int64_t * dstnzpartsizes,
     bool * rowpart,
     int * dstrowpart,
-    int64_t * rowpartsptr,
+    int64_t * dstrowpartsizes,
     bool * colpart,
     int * dstcolpart,
-    int64_t * colpartsptr,
+    int64_t * dstcolpartsizes,
     int verbose)
 {
     if (matrixparttype == mtx_matrixparttype_nonzeros) {
         *rowpart = false;
         *colpart = false;
         return mtxfile_partition_nonzeros(
-            mtxfile, nzparttype, num_nz_parts, nzpartsizes, nzblksize,
-            dstnzpart, nzpartsptr);
+            mtxfile, nzparttype, num_nz_parts, nzpartsizes, nzblksize, nzparts,
+            dstnzpart, dstnzpartsizes);
     } else if (matrixparttype == mtx_matrixparttype_rows) {
         *rowpart = false;
         *colpart = false;
         return mtxfile_partition_rowwise(
-            mtxfile, rowparttype, num_row_parts, rowpartsizes, rowblksize,
-            dstnzpart, nzpartsptr);
+            mtxfile, rowparttype, num_row_parts, rowpartsizes, rowblksize, rowparts,
+            dstnzpart, dstnzpartsizes);
     } else if (matrixparttype == mtx_matrixparttype_columns) {
         *rowpart = false;
         *colpart = false;
         return mtxfile_partition_columnwise(
-            mtxfile, colparttype, num_column_parts, colpartsizes, colblksize,
-            dstnzpart, nzpartsptr);
+            mtxfile, colparttype, num_column_parts, colpartsizes, colblksize, colparts,
+            dstnzpart, dstnzpartsizes);
     } else if (matrixparttype == mtx_matrixparttype_2d) {
         *rowpart = false;
         *colpart = false;
         return mtxfile_partition_2d(
-            mtxfile, rowparttype, num_row_parts, rowpartsizes, rowblksize,
-            colparttype, num_column_parts, colpartsizes, colblksize,
-            dstnzpart, nzpartsptr);
+            mtxfile, rowparttype, num_row_parts, rowpartsizes, rowblksize, rowparts,
+            colparttype, num_column_parts, colpartsizes, colblksize, colparts,
+            dstnzpart, dstnzpartsizes);
     } else if (matrixparttype == mtx_matrixparttype_metis) {
         *rowpart = true;
         *colpart = true;
         return mtxfile_partition_metis(
-            mtxfile, num_nz_parts, dstnzpart, nzpartsptr,
-            rowpart, dstrowpart, rowpartsptr,
-            colpart, dstcolpart, colpartsptr, verbose);
+            mtxfile, num_nz_parts, dstnzpart, dstnzpartsizes,
+            rowpart, dstrowpart, dstrowpartsizes,
+            colpart, dstcolpart, dstcolpartsizes, verbose);
     } else { return MTX_ERR_INVALID_MATRIXPARTTYPE; }
     return MTX_SUCCESS;
 }

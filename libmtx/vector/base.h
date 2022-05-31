@@ -36,7 +36,6 @@
 #include <stdio.h>
 
 struct mtxfile;
-struct mtxpartition;
 struct mtxvector;
 struct mtxvector_packed;
 

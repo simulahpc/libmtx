@@ -5608,15 +5608,14 @@ int mtxfiledata_compact(
  * to a given row partition.
  *
  * See ‘partition_int64()’ for an explanation of the meaning of the
- * arguments ‘type’, ‘num_parts’, ‘partsizes’ and ‘blksize’.
+ * arguments ‘type’, ‘num_parts’, ‘partsizes’, ‘blksize’ and ‘parts’.
  *
  * The array ‘dstpart’ must contain enough storage for ‘size’ values
  * of type ‘int’. If successful, ‘dstpart’ is used to store the part
  * number assigned to the matrix or vector nonzeros.
  *
- * If it is not ‘NULL’, then the array ‘partsptr’ must contain enough
- * storage for ‘num_parts+1’ values of type ‘int64_t’. If successful,
- * ‘partsptr’ will contain offsets to the first element belonging to
+ * If ‘dstpartsizes’ is not ‘NULL’, then it must be an array of length
+ * ‘num_parts’, which is used to store the number of items assigned to
  * each part.
  *
  * If ‘format’ is ‘mtxfile_array’, then a non-negative ‘offset’ value
@@ -5638,8 +5637,9 @@ int mtxfiledata_partition_rowwise(
     int num_parts,
     const int64_t * partsizes,
     int64_t blksize,
+    const int * parts,
     int * dstpart,
-    int64_t * partsptr)
+    int64_t * dstpartsizes)
 {
     int64_t * rowidx = malloc(size * sizeof(int64_t));
     if (!rowidx) return MTX_ERR_ERRNO;
@@ -5649,14 +5649,9 @@ int mtxfiledata_partition_rowwise(
     if (err) { free(rowidx); return err; }
     for (int64_t k = 0; k < size; k++) rowidx[k]--;
     err = partition_int64(
-        type, num_rows, num_parts, partsizes, blksize,
-        size, sizeof(int64_t), rowidx, dstpart);
+        type, num_rows, num_parts, partsizes, blksize, parts,
+        size, sizeof(int64_t), rowidx, dstpart, dstpartsizes);
     if (err) { free(rowidx); return err; }
-    if (partsptr) {
-        for (int p = 0; p <= num_parts; p++) partsptr[p] = 0;
-        for (int64_t k = 0; k < size; k++) partsptr[dstpart[k]+1]++;
-        for (int p = 1; p <= num_parts; p++) partsptr[p] += partsptr[p-1];
-    }
     free(rowidx);
     return MTX_SUCCESS;
 }
@@ -5666,15 +5661,14 @@ int mtxfiledata_partition_rowwise(
  * to a given column partition.
  *
  * See ‘partition_int64()’ for an explanation of the meaning of the
- * arguments ‘type’, ‘num_parts’, ‘partsizes’ and ‘blksize’.
+ * arguments ‘type’, ‘num_parts’, ‘partsizes’, ‘blksize’ and ‘parts’.
  *
  * The array ‘dstpart’ must contain enough storage for ‘size’ values
  * of type ‘int’. If successful, ‘dstpart’ is used to store the part
  * number assigned to the matrix or vector nonzeros.
  *
- * If it is not ‘NULL’, then the array ‘partsptr’ must contain enough
- * storage for ‘num_parts+1’ values of type ‘int64_t’. If successful,
- * ‘partsptr’ will contain offsets to the first element belonging to
+ * If ‘dstpartsizes’ is not ‘NULL’, then it must be an array of length
+ * ‘num_parts’, which is used to store the number of items assigned to
  * each part.
  *
  * If ‘format’ is ‘mtxfile_array’, then a non-negative ‘offset’ value
@@ -5696,8 +5690,9 @@ int mtxfiledata_partition_columnwise(
     int num_parts,
     const int64_t * partsizes,
     int64_t blksize,
+    const int * parts,
     int * dstpart,
-    int64_t * partsptr)
+    int64_t * dstpartsizes)
 {
     int64_t * colidx = malloc(size * sizeof(int64_t));
     if (!colidx) return MTX_ERR_ERRNO;
@@ -5707,18 +5702,12 @@ int mtxfiledata_partition_columnwise(
     if (err) { free(colidx); return err; }
     for (int64_t k = 0; k < size; k++) colidx[k]--;
     err = partition_int64(
-        type, num_columns, num_parts, partsizes, blksize,
-        size, sizeof(int64_t), colidx, dstpart);
+        type, num_columns, num_parts, partsizes, blksize, parts,
+        size, sizeof(int64_t), colidx, dstpart, dstpartsizes);
     if (err) { free(colidx); return err; }
-    if (partsptr) {
-        for (int p = 0; p <= num_parts; p++) partsptr[p] = 0;
-        for (int64_t k = 0; k < size; k++) partsptr[dstpart[k]+1]++;
-        for (int p = 1; p <= num_parts; p++) partsptr[p] += partsptr[p-1];
-    }
     free(colidx);
     return MTX_SUCCESS;
 }
-
 
 /**
  * ‘mtxfiledata_partition_2d()’ partitions data lines according
@@ -5729,16 +5718,15 @@ int mtxfiledata_partition_columnwise(
  *
  * See ‘partition_int64()’ for an explanation of the meaning of the
  * arguments ‘rowparttype’, ‘num_row_parts’, ‘rowpartsizes’ and
- * ‘rowblksize’, and so on.
+ * ‘rowblksize’, ‘rowparts’, and so on.
  *
  * The array ‘dstpart’ must contain enough storage for ‘size’ values
  * of type ‘int’. If successful, ‘dstpart’ is used to store the part
  * number assigned to the matrix or vector nonzeros.
  *
- * If it is not ‘NULL’, then the array ‘partsptr’ must contain enough
- * storage for ‘num_row_parts*num_column_parts+1’ values of type
- * ‘int64_t’. If successful, ‘partsptr’ will contain offsets to the
- * first element belonging to each part.
+ * If ‘dstpartsizes’ is not ‘NULL’, then it must be an array of length
+ * ‘num_parts’, which is used to store the number of items assigned to
+ * each part.
  *
  * If ‘format’ is ‘mtxfile_array’, then a non-negative ‘offset’ value
  * can be used to partition matrix or vector entries starting from the
@@ -5759,12 +5747,14 @@ int mtxfiledata_partition_2d(
     int num_row_parts,
     const int64_t * rowpartsizes,
     int64_t rowblksize,
+    const int * rowparts,
     enum mtxpartitioning colparttype,
     int num_column_parts,
     const int64_t * colpartsizes,
     int64_t colblksize,
+    const int * colparts,
     int * dstpart,
-    int64_t * partsptr)
+    int64_t * dstpartsizes)
 {
     int num_parts = num_row_parts * num_column_parts;
     int64_t * rowidx = malloc(size * sizeof(int64_t));
@@ -5776,24 +5766,23 @@ int mtxfiledata_partition_2d(
         num_rows, num_columns, offset, size, rowidx, colidx);
     if (err) { free(rowidx); free(colidx); return err; }
     for (int64_t k = 0; k < size; k++) { rowidx[k]--; colidx[k]--; }
-    int * rowpart = malloc(size * sizeof(int));
-    if (!rowpart) { free(rowidx); free(colidx); return MTX_ERR_ERRNO; }
+    int * dstrowpart = malloc(size * sizeof(int));
+    if (!dstrowpart) { free(rowidx); free(colidx); return MTX_ERR_ERRNO; }
     err = partition_int64(
-        rowparttype, num_rows, num_row_parts, rowpartsizes, rowblksize,
-        size, sizeof(int64_t), rowidx, rowpart);
-    if (err) { free(rowpart); free(rowidx); free(colidx); return err; }
+        rowparttype, num_rows, num_row_parts, rowpartsizes, rowblksize, rowparts,
+        size, sizeof(int64_t), rowidx, dstrowpart, NULL);
+    if (err) { free(dstrowpart); free(rowidx); free(colidx); return err; }
     err = partition_int64(
-        colparttype, num_columns, num_column_parts, colpartsizes, colblksize,
-        size, sizeof(int64_t), colidx, dstpart);
-    if (err) { free(rowpart); free(rowidx); free(colidx); return err; }
+        colparttype, num_columns, num_column_parts, colpartsizes, colblksize, colparts,
+        size, sizeof(int64_t), colidx, dstpart, NULL);
+    if (err) { free(dstrowpart); free(rowidx); free(colidx); return err; }
     for (int64_t k = 0; k < size; k++)
-        dstpart[k] = rowpart[k]*num_column_parts + dstpart[k];
-    if (partsptr) {
-        for (int p = 0; p <= num_parts; p++) partsptr[p] = 0;
-        for (int64_t k = 0; k < size; k++) partsptr[dstpart[k]+1]++;
-        for (int p = 1; p <= num_parts; p++) partsptr[p] += partsptr[p-1];
+        dstpart[k] = dstrowpart[k]*num_column_parts + dstpart[k];
+    if (dstpartsizes) {
+        for (int p = 0; p < num_parts; p++) dstpartsizes[p] = 0;
+        for (int64_t k = 0; k < size; k++) dstpartsizes[dstpart[k]]++;
     }
-    free(rowpart); free(rowidx); free(colidx);
+    free(dstrowpart); free(rowidx); free(colidx);
     return MTX_SUCCESS;
 }
 

@@ -939,8 +939,9 @@ int main(int argc, char *argv[])
     }
 
     struct mtxdistfile mtxdistfileA;
+    const int * parts = NULL;
     err = mtxdistfile_from_mtxfile_rowwise(
-        &mtxdistfileA, &mtxfileA, args.partition, rowpartsize, args.blksize,
+        &mtxdistfileA, &mtxfileA, args.partition, rowpartsize, args.blksize, parts,
         comm, root, &disterr);
     if (err) {
         if (args.verbose > 0) fprintf(diagf, "\n");
@@ -1038,8 +1039,9 @@ int main(int argc, char *argv[])
             }
         }
 
+        const int * parts = NULL;
         err = mtxdistfile_from_mtxfile_rowwise(
-            &mtxdistfilex, &mtxfilex, args.partition, partsize, args.blksize,
+            &mtxdistfilex, &mtxfilex, args.partition, partsize, args.blksize, parts,
             comm, root, &disterr);
         if (err) {
             if (args.verbose > 0) fprintf(diagf, "\n");
@@ -1143,8 +1145,9 @@ int main(int argc, char *argv[])
             }
         }
 
+        const int * parts = NULL;
         err = mtxdistfile_from_mtxfile_rowwise(
-            &mtxdistfiley, &mtxfiley, args.partition, partsize, args.blksize,
+            &mtxdistfiley, &mtxfiley, args.partition, partsize, args.blksize, parts,
             comm, root, &disterr);
         if (err) {
             if (args.verbose > 0) fprintf(diagf, "\n");

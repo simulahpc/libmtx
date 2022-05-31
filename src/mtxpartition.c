@@ -566,8 +566,8 @@ int main(int argc, char *argv[])
         program_options_free(&args);
         return EXIT_FAILURE;
     }
-    int64_t * nzpartsptr = malloc((num_parts+1) * sizeof(int64_t));
-    if (!nzpartsptr) {
+    int64_t * dstnzpartsizes = malloc(num_parts * sizeof(int64_t));
+    if (!dstnzpartsizes) {
         if (args.verbose > 0) fprintf(diagf, "\n");
         fprintf(stderr, "%s: %s\n", program_invocation_short_name, strerror(errno));
         free(dstnzpart);
@@ -581,17 +581,17 @@ int main(int argc, char *argv[])
     if (!dstrowpart) {
         if (args.verbose > 0) fprintf(diagf, "\n");
         fprintf(stderr, "%s: %s\n", program_invocation_short_name, strerror(errno));
-        free(nzpartsptr); free(dstnzpart);
+        free(dstnzpartsizes); free(dstnzpart);
         mtxfile_free(&mtxfile);
         program_options_free(&args);
         return EXIT_FAILURE;
     }
-    int64_t * rowpartsptr = malloc((num_parts+1) * sizeof(int64_t));
-    if (!rowpartsptr) {
+    int64_t * dstrowpartsizes = malloc(num_parts * sizeof(int64_t));
+    if (!dstrowpartsizes) {
         if (args.verbose > 0) fprintf(diagf, "\n");
         fprintf(stderr, "%s: %s\n", program_invocation_short_name, strerror(errno));
         free(dstrowpart);
-        free(nzpartsptr); free(dstnzpart);
+        free(dstnzpartsizes); free(dstnzpart);
         mtxfile_free(&mtxfile);
         program_options_free(&args);
         return EXIT_FAILURE;
@@ -602,19 +602,19 @@ int main(int argc, char *argv[])
     if (!dstcolpart) {
         if (args.verbose > 0) fprintf(diagf, "\n");
         fprintf(stderr, "%s: %s\n", program_invocation_short_name, strerror(errno));
-        free(rowpartsptr); free(dstrowpart);
-        free(nzpartsptr); free(dstnzpart);
+        free(dstrowpartsizes); free(dstrowpart);
+        free(dstnzpartsizes); free(dstnzpart);
         mtxfile_free(&mtxfile);
         program_options_free(&args);
         return EXIT_FAILURE;
     }
-    int64_t * colpartsptr = malloc((num_parts+1) * sizeof(int64_t));
-    if (!colpartsptr) {
+    int64_t * dstcolpartsizes = malloc(num_parts * sizeof(int64_t));
+    if (!dstcolpartsizes) {
         if (args.verbose > 0) fprintf(diagf, "\n");
         fprintf(stderr, "%s: %s\n", program_invocation_short_name, strerror(errno));
         free(dstcolpart);
-        free(rowpartsptr); free(dstrowpart);
-        free(nzpartsptr); free(dstnzpart);
+        free(dstrowpartsizes); free(dstrowpart);
+        free(dstnzpartsizes); free(dstnzpart);
         mtxfile_free(&mtxfile);
         program_options_free(&args);
         return EXIT_FAILURE;
@@ -623,17 +623,17 @@ int main(int argc, char *argv[])
     bool rowpart, colpart;
     err = mtxfile_partition2(
         &mtxfile, args.matrixparttype,
-        args.nzparttype, args.num_nz_parts, NULL, args.nzblksize,
-        args.rowparttype, args.num_row_parts, NULL, args.rowblksize,
-        args.colparttype, args.num_column_parts, NULL, args.colblksize,
-        dstnzpart, nzpartsptr, &rowpart, dstrowpart, rowpartsptr,
-        &colpart, dstcolpart, colpartsptr, args.verbose > 2);
+        args.nzparttype, args.num_nz_parts, NULL, args.nzblksize, NULL,
+        args.rowparttype, args.num_row_parts, NULL, args.rowblksize, NULL,
+        args.colparttype, args.num_column_parts, NULL, args.colblksize, NULL,
+        dstnzpart, dstnzpartsizes, &rowpart, dstrowpart, dstrowpartsizes,
+        &colpart, dstcolpart, dstcolpartsizes, args.verbose > 2);
     if (err) {
         if (args.verbose > 0) fprintf(diagf, "\n");
         fprintf(stderr, "%s: %s\n", program_invocation_short_name, mtxstrerror(err));
-        free(colpartsptr); free(dstcolpart);
-        free(rowpartsptr); free(dstrowpart);
-        free(nzpartsptr); free(dstnzpart);
+        free(dstcolpartsizes); free(dstcolpart);
+        free(dstrowpartsizes); free(dstrowpart);
+        free(dstnzpartsizes); free(dstnzpart);
         mtxfile_free(&mtxfile);
         program_options_free(&args);
         return EXIT_FAILURE;
@@ -650,7 +650,7 @@ int main(int argc, char *argv[])
         fprintf(diagf, "partitioned into %'d parts:\n", num_parts);
         for (int p = 0; p < num_parts; p++) {
             fprintf(diagf, "part %'5d: %'13"PRId64" nonzeros\n",
-                    p, nzpartsptr[p+1]-nzpartsptr[p]);
+                    p, dstnzpartsizes[p+1]-dstnzpartsizes[p]);
         }
     }
 
@@ -668,9 +668,9 @@ int main(int argc, char *argv[])
         if (err) {
             fprintf(stderr, "%s: %s\n",
                     program_invocation_short_name, mtxstrerror(err));
-            free(colpartsptr); free(dstcolpart);
-            free(rowpartsptr); free(dstrowpart);
-            free(nzpartsptr); free(dstnzpart);
+            free(dstcolpartsizes); free(dstcolpart);
+            free(dstrowpartsizes); free(dstrowpart);
+            free(dstnzpartsizes); free(dstnzpart);
             mtxfile_free(&mtxfile);
             program_options_free(&args);
             return EXIT_FAILURE;
@@ -687,9 +687,9 @@ int main(int argc, char *argv[])
             fprintf(stderr, "%s: %s\n",
                     program_invocation_short_name, mtxstrerror(err));
             mtxfile_free(&colpartsmtxfile);
-            free(colpartsptr); free(dstcolpart);
-            free(rowpartsptr); free(dstrowpart);
-            free(nzpartsptr); free(dstnzpart);
+            free(dstcolpartsizes); free(dstcolpart);
+            free(dstrowpartsizes); free(dstrowpart);
+            free(dstnzpartsizes); free(dstnzpart);
             program_options_free(&args);
             return EXIT_FAILURE;
         }
@@ -710,9 +710,9 @@ int main(int argc, char *argv[])
             fprintf(stderr, "%s: %s\n",
                     program_invocation_short_name, mtxstrerror(err));
             mtxfile_free(&colpartsmtxfile);
-            free(colpartsptr); free(dstcolpart);
-            free(rowpartsptr); free(dstrowpart);
-            free(nzpartsptr); free(dstnzpart);
+            free(dstcolpartsizes); free(dstcolpart);
+            free(dstrowpartsizes); free(dstrowpart);
+            free(dstnzpartsizes); free(dstnzpart);
             program_options_free(&args);
             return EXIT_FAILURE;
         }
@@ -726,7 +726,7 @@ int main(int argc, char *argv[])
         }
         mtxfile_free(&colpartsmtxfile);
     }
-    free(colpartsptr); free(dstcolpart);
+    free(dstcolpartsizes); free(dstcolpart);
 
     /* 6. write a file containing part numbers of each row. */
     if (rowpart && !args.quiet && args.rowpartpath) {
@@ -742,8 +742,8 @@ int main(int argc, char *argv[])
         if (err) {
             fprintf(stderr, "%s: %s\n",
                     program_invocation_short_name, mtxstrerror(err));
-            free(rowpartsptr); free(dstrowpart);
-            free(nzpartsptr); free(dstnzpart);
+            free(dstrowpartsizes); free(dstrowpart);
+            free(dstnzpartsizes); free(dstnzpart);
             mtxfile_free(&mtxfile);
             program_options_free(&args);
             return EXIT_FAILURE;
@@ -760,8 +760,8 @@ int main(int argc, char *argv[])
             fprintf(stderr, "%s: %s\n",
                     program_invocation_short_name, mtxstrerror(err));
             mtxfile_free(&rowpartsmtxfile);
-            free(rowpartsptr); free(dstrowpart);
-            free(nzpartsptr); free(dstnzpart);
+            free(dstrowpartsizes); free(dstrowpart);
+            free(dstnzpartsizes); free(dstnzpart);
             program_options_free(&args);
             return EXIT_FAILURE;
         }
@@ -782,8 +782,8 @@ int main(int argc, char *argv[])
             fprintf(stderr, "%s: %s\n",
                     program_invocation_short_name, mtxstrerror(err));
             mtxfile_free(&rowpartsmtxfile);
-            free(rowpartsptr); free(dstrowpart);
-            free(nzpartsptr); free(dstnzpart);
+            free(dstrowpartsizes); free(dstrowpart);
+            free(dstnzpartsizes); free(dstnzpart);
             program_options_free(&args);
             return EXIT_FAILURE;
         }
@@ -797,7 +797,7 @@ int main(int argc, char *argv[])
         }
         mtxfile_free(&rowpartsmtxfile);
     }
-    free(rowpartsptr); free(dstrowpart);
+    free(dstrowpartsizes); free(dstrowpart);
 
     /* 5. write a file containing part numbers of each nonzero. */
     if (!args.quiet) {
@@ -813,7 +813,7 @@ int main(int argc, char *argv[])
         if (err) {
             fprintf(stderr, "%s: %s\n",
                     program_invocation_short_name, mtxstrerror(err));
-            free(nzpartsptr); free(dstnzpart);
+            free(dstnzpartsizes); free(dstnzpart);
             mtxfile_free(&mtxfile);
             program_options_free(&args);
             return EXIT_FAILURE;
@@ -830,7 +830,7 @@ int main(int argc, char *argv[])
             fprintf(stderr, "%s: %s\n",
                     program_invocation_short_name, mtxstrerror(err));
             mtxfile_free(&nzpartsmtxfile);
-            free(nzpartsptr); free(dstnzpart);
+            free(dstnzpartsizes); free(dstnzpart);
             program_options_free(&args);
             return EXIT_FAILURE;
         }
@@ -849,7 +849,7 @@ int main(int argc, char *argv[])
             fprintf(stderr, "%s: %s\n",
                     program_invocation_short_name, mtxstrerror(err));
             mtxfile_free(&nzpartsmtxfile);
-            free(nzpartsptr); free(dstnzpart);
+            free(dstnzpartsizes); free(dstnzpart);
             program_options_free(&args);
             return EXIT_FAILURE;
         }
@@ -865,7 +865,7 @@ int main(int argc, char *argv[])
     }
 
     /* 6. clean up */
-    free(nzpartsptr); free(dstnzpart);
+    free(dstnzpartsizes); free(dstnzpart);
     program_options_free(&args);
     return EXIT_SUCCESS;
 }

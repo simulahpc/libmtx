@@ -1214,7 +1214,7 @@ int mtxdistfile_set_constant_integer_double(
 static int mtxdistfile_from_mtxfile_distribute(
     struct mtxdistfile * dst,
     const struct mtxfile * src,
-    int64_t * partsptr,
+    int64_t * partsizes,
     const int64_t * idx,
     MPI_Comm comm,
     int root,
@@ -1274,21 +1274,22 @@ static int mtxdistfile_from_mtxfile_distribute(
     }
 
     /* receive from the root process. */
+    int64_t offset = 0;
     for (int p = 0; p < comm_size; p++) {
         if (p != root && rank == root) {
-            int64_t localdatasize = partsptr[p+1] - partsptr[p];
+            int64_t localdatasize = partsizes[p];
             disterr->mpierrcode = MPI_Send(
                 &localdatasize, 1, MPI_INT64_T, p, 0, comm);
             err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
             if (!err) {
                 disterr->mpierrcode = MPI_Send(
-                    &idx[partsptr[p]], localdatasize, MPI_INT64_T, p, 1, comm);
+                    &idx[offset], localdatasize, MPI_INT64_T, p, 1, comm);
                 err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
             }
             err = err ? err : mtxfiledata_send(
                 &src->data, src->header.object, src->header.format,
                 src->header.field, src->precision, localdatasize,
-                partsptr[p], p, 0, comm, disterr);
+                offset, p, 0, comm, disterr);
         } else if (p != root && rank == p) {
             disterr->mpierrcode = MPI_Recv(
                 &dst->localdatasize, 1, MPI_INT64_T, root, 0, comm,
@@ -1312,7 +1313,7 @@ static int mtxdistfile_from_mtxfile_distribute(
                 dst->header.field, dst->precision, dst->localdatasize,
                 0, root, 0, comm, disterr);
         } else if (p == root && rank == root) {
-            dst->localdatasize = partsptr[p+1] - partsptr[p];
+            dst->localdatasize = partsizes[p];
             err = err ? err : mtxfiledata_alloc(
                 &dst->data, dst->header.object, dst->header.format,
                 dst->header.field, dst->precision, dst->localdatasize);
@@ -1324,7 +1325,7 @@ static int mtxdistfile_from_mtxfile_distribute(
             err = err ? err : mtxfiledata_copy(
                 &dst->data, &src->data, dst->header.object,
                 dst->header.format, dst->header.field, dst->precision,
-                dst->localdatasize, 0, partsptr[p]);
+                dst->localdatasize, 0, offset);
         }
         if (mtxdisterror_allreduce(disterr, err)) {
             if (rank < p) {
@@ -1334,6 +1335,7 @@ static int mtxdistfile_from_mtxfile_distribute(
             }
             return MTX_ERR_MPI_COLLECTIVE;
         }
+        offset += partsizes[p];
     }
     return MTX_SUCCESS;
 }
@@ -1351,9 +1353,10 @@ static int mtxdistfile_from_mtxfile_distribute(
 int mtxdistfile_from_mtxfile_rowwise(
     struct mtxdistfile * dst,
     struct mtxfile * src,
-    enum mtxpartitioning parttype,
-    int64_t partsize,
-    int64_t blksize,
+    enum mtxpartitioning rowparttype,
+    int64_t rowpartsize,
+    int64_t rowblksize,
+    const int * rowparts,
     MPI_Comm comm,
     int root,
     struct mtxdisterror * disterr)
@@ -1368,20 +1371,25 @@ int mtxdistfile_from_mtxfile_rowwise(
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     if (root < 0 || root >= comm_size) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
 
-    /* allocate storage for offsets to each part */
-    int64_t * partsptr = malloc((comm_size+1) * sizeof(int64_t));
-    err = !partsptr ? MTX_ERR_ERRNO : MTX_SUCCESS;
+    /* allocate storage for the size of each part */
+    int64_t * dstpartsizes = malloc(comm_size * sizeof(int64_t));
+    err = !dstpartsizes ? MTX_ERR_ERRNO : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
 
     /* In the case of a block partitioning, gather part sizes onto the
      * root process. */
-    int64_t * partsizes = partsptr;
-    if (parttype == mtx_block) {
+    int64_t * rowpartsizes = NULL;
+    if (rowparttype == mtx_block) {
+        /* allocate storage for the size of each part */
+        rowpartsizes = malloc(comm_size * sizeof(int64_t));
+        err = !rowpartsizes ? MTX_ERR_ERRNO : MTX_SUCCESS;
+        if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+
         disterr->mpierrcode = MPI_Allgather(
-            &partsize, 1, MPI_INT64_T, partsizes, 1, MPI_INT64_T, comm);
+            &rowpartsize, 1, MPI_INT64_T, rowpartsizes, 1, MPI_INT64_T, comm);
         err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
         if (mtxdisterror_allreduce(disterr, err)) {
-            free(partsptr);
+            free(rowpartsizes); free(dstpartsizes);
             return MTX_ERR_MPI_COLLECTIVE;
         }
     }
@@ -1390,16 +1398,17 @@ int mtxdistfile_from_mtxfile_rowwise(
     int * dstpart = rank == root ? malloc(src->datasize * sizeof(int)) : NULL;
     err = rank == root && !dstpart ? MTX_ERR_ERRNO : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err)) {
-        free(partsptr);
+        free(rowpartsizes); free(dstpartsizes);
         return MTX_ERR_MPI_COLLECTIVE;
     }
 
     /* partition the Matrix Market file on the root process */
     err = rank == root ? mtxfile_partition_rowwise(
-        src, parttype, comm_size, partsizes, blksize, dstpart, partsptr)
+        src, rowparttype, comm_size, rowpartsizes, rowblksize, rowparts,
+        dstpart, dstpartsizes)
         : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err)) {
-        free(dstpart); free(partsptr);
+        free(dstpart); free(rowpartsizes); free(dstpartsizes);
         return MTX_ERR_MPI_COLLECTIVE;
     }
 
@@ -1407,7 +1416,7 @@ int mtxdistfile_from_mtxfile_rowwise(
     int64_t * perm = rank == root ? malloc(src->datasize * sizeof(int64_t)) : NULL;
     err = rank == root && !perm ? MTX_ERR_ERRNO : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err)) {
-        free(dstpart); free(partsptr);
+        free(dstpart); free(rowpartsizes); free(dstpartsizes);
         return MTX_ERR_MPI_COLLECTIVE;
     }
 
@@ -1418,7 +1427,7 @@ int mtxdistfile_from_mtxfile_rowwise(
         src->size.num_columns, src->datasize, dstpart, perm)
         : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err)) {
-        free(perm); free(dstpart); free(partsptr);
+        free(perm); free(dstpart); free(rowpartsizes); free(dstpartsizes);
         return MTX_ERR_MPI_COLLECTIVE;
     }
     free(dstpart);
@@ -1427,7 +1436,7 @@ int mtxdistfile_from_mtxfile_rowwise(
     int64_t * tmp = rank == root ? malloc(src->datasize * sizeof(int64_t)) : NULL;
     err = rank == root && !perm ? MTX_ERR_ERRNO : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err)) {
-        free(perm); free(partsptr);
+        free(perm); free(rowpartsizes); free(dstpartsizes);
         return MTX_ERR_MPI_COLLECTIVE;
     }
     if (rank == root) {
@@ -1437,12 +1446,12 @@ int mtxdistfile_from_mtxfile_rowwise(
     free(tmp);
 
     err = mtxdistfile_from_mtxfile_distribute(
-        dst, src, partsptr, perm, comm, root, disterr);
+        dst, src, dstpartsizes, perm, comm, root, disterr);
     if (mtxdisterror_allreduce(disterr, err)) {
-        free(perm); free(partsptr);
+        free(perm); free(rowpartsizes);
         return MTX_ERR_MPI_COLLECTIVE;
     }
-    free(perm); free(partsptr);
+    free(perm); free(rowpartsizes); free(dstpartsizes);
     return MTX_SUCCESS;
 }
 
@@ -1600,6 +1609,7 @@ int mtxdistfile_read_rowwise(
     enum mtxpartitioning parttype,
     int64_t partsize,
     int64_t blksize,
+    const int * parts,
     const char * path,
     bool gzip,
     int64_t * lines_read,
@@ -1617,7 +1627,7 @@ int mtxdistfile_read_rowwise(
         err = mtxfile_read(&src, precision, path, gzip, lines_read, bytes_read);
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     err = mtxdistfile_from_mtxfile_rowwise(
-        mtxdistfile, &src, parttype, partsize, blksize, comm, root, disterr);
+        mtxdistfile, &src, parttype, partsize, blksize, parts, comm, root, disterr);
     if (err) { if (rank == root) mtxfile_free(&src); return err; } 
     if (rank == root) mtxfile_free(&src);
     return MTX_SUCCESS;
@@ -1656,6 +1666,7 @@ int mtxdistfile_fread_rowwise(
     enum mtxpartitioning parttype,
     int64_t partsize,
     int64_t blksize,
+    const int * parts,
     FILE * f,
     int64_t * lines_read,
     int64_t * bytes_read,
@@ -1676,7 +1687,7 @@ int mtxdistfile_fread_rowwise(
     }
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     err = mtxdistfile_from_mtxfile_rowwise(
-        mtxdistfile, &src, parttype, partsize, blksize, comm, root, disterr);
+        mtxdistfile, &src, parttype, partsize, blksize, parts, comm, root, disterr);
     if (err) { if (rank == root) mtxfile_free(&src); return err; } 
     if (rank == root) mtxfile_free(&src);
     return MTX_SUCCESS;
@@ -1716,6 +1727,7 @@ int mtxdistfile_gzread_rowwise(
     enum mtxpartitioning parttype,
     int64_t partsize,
     int64_t blksize,
+    const int * parts,
     gzFile f,
     int64_t * lines_read,
     int64_t * bytes_read,
@@ -1736,7 +1748,7 @@ int mtxdistfile_gzread_rowwise(
     }
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     err = mtxdistfile_from_mtxfile_rowwise(
-        mtxdistfile, &src, parttype, partsize, blksize, comm, root, disterr);
+        mtxdistfile, &src, parttype, partsize, blksize, parts, comm, root, disterr);
     if (err) { if (rank == root) mtxfile_free(&src); return err; } 
     if (rank == root) mtxfile_free(&src);
     return MTX_SUCCESS;

@@ -3249,23 +3249,22 @@ int test_mtxfile_partition_nonzeros(void)
             &src, mtxfile_general, num_rows, num_columns, srcdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         int64_t partsizes[2] = {3,6};
-        int64_t partsptr[3] = {};
-        int parts[9] = {};
+        int64_t dstpartsizes[2] = {};
+        int dstparts[9] = {};
         err = mtxfile_partition_nonzeros(
-            &src, mtx_block, 2, partsizes, 0, parts, partsptr);
+            &src, mtx_block, 2, partsizes, 0, NULL, dstparts, dstpartsizes);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        TEST_ASSERT_EQ(0, partsptr[0]);
-        TEST_ASSERT_EQ(3, partsptr[1]);
-        TEST_ASSERT_EQ(9, partsptr[2]);
-        TEST_ASSERT_EQ(0, parts[0]);
-        TEST_ASSERT_EQ(0, parts[1]);
-        TEST_ASSERT_EQ(0, parts[2]);
-        TEST_ASSERT_EQ(1, parts[3]);
-        TEST_ASSERT_EQ(1, parts[4]);
-        TEST_ASSERT_EQ(1, parts[5]);
-        TEST_ASSERT_EQ(1, parts[6]);
-        TEST_ASSERT_EQ(1, parts[7]);
-        TEST_ASSERT_EQ(1, parts[8]);
+        TEST_ASSERT_EQ(3, dstpartsizes[0]);
+        TEST_ASSERT_EQ(6, dstpartsizes[1]);
+        TEST_ASSERT_EQ(0, dstparts[0]);
+        TEST_ASSERT_EQ(0, dstparts[1]);
+        TEST_ASSERT_EQ(0, dstparts[2]);
+        TEST_ASSERT_EQ(1, dstparts[3]);
+        TEST_ASSERT_EQ(1, dstparts[4]);
+        TEST_ASSERT_EQ(1, dstparts[5]);
+        TEST_ASSERT_EQ(1, dstparts[6]);
+        TEST_ASSERT_EQ(1, dstparts[7]);
+        TEST_ASSERT_EQ(1, dstparts[8]);
         mtxfile_free(&src);
     }
 
@@ -3277,23 +3276,22 @@ int test_mtxfile_partition_nonzeros(void)
         err = mtxfile_init_matrix_array_real_double(
             &src, mtxfile_general, num_rows, num_columns, srcdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        int64_t partsptr[3] = {};
-        int parts[9] = {};
+        int64_t dstpartsizes[2] = {};
+        int dstparts[9] = {};
         err = mtxfile_partition_nonzeros(
-            &src, mtx_cyclic, 2, NULL, 0, parts, partsptr);
+            &src, mtx_cyclic, 2, NULL, 0, NULL, dstparts, dstpartsizes);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        TEST_ASSERT_EQ(0, partsptr[0]);
-        TEST_ASSERT_EQ(5, partsptr[1]);
-        TEST_ASSERT_EQ(9, partsptr[2]);
-        TEST_ASSERT_EQ(0, parts[0]);
-        TEST_ASSERT_EQ(1, parts[1]);
-        TEST_ASSERT_EQ(0, parts[2]);
-        TEST_ASSERT_EQ(1, parts[3]);
-        TEST_ASSERT_EQ(0, parts[4]);
-        TEST_ASSERT_EQ(1, parts[5]);
-        TEST_ASSERT_EQ(0, parts[6]);
-        TEST_ASSERT_EQ(1, parts[7]);
-        TEST_ASSERT_EQ(0, parts[8]);
+        TEST_ASSERT_EQ(5, dstpartsizes[0]);
+        TEST_ASSERT_EQ(4, dstpartsizes[1]);
+        TEST_ASSERT_EQ(0, dstparts[0]);
+        TEST_ASSERT_EQ(1, dstparts[1]);
+        TEST_ASSERT_EQ(0, dstparts[2]);
+        TEST_ASSERT_EQ(1, dstparts[3]);
+        TEST_ASSERT_EQ(0, dstparts[4]);
+        TEST_ASSERT_EQ(1, dstparts[5]);
+        TEST_ASSERT_EQ(0, dstparts[6]);
+        TEST_ASSERT_EQ(1, dstparts[7]);
+        TEST_ASSERT_EQ(0, dstparts[8]);
         mtxfile_free(&src);
     }
 
@@ -3312,18 +3310,17 @@ int test_mtxfile_partition_nonzeros(void)
             &src, mtxfile_general, num_rows, num_columns, num_nonzeros, srcdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         int64_t partsizes[2] = {2,2};
-        int64_t partsptr[3] = {};
-        int parts[4] = {};
+        int64_t dstpartsizes[2] = {};
+        int dstparts[4] = {};
         err = mtxfile_partition_nonzeros(
-            &src, mtx_block, 2, partsizes, 0, parts, partsptr);
+            &src, mtx_block, 2, partsizes, 0, NULL, dstparts, dstpartsizes);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        TEST_ASSERT_EQ(0, partsptr[0]);
-        TEST_ASSERT_EQ(2, partsptr[1]);
-        TEST_ASSERT_EQ(4, partsptr[2]);
-        TEST_ASSERT_EQ(0, parts[0]);
-        TEST_ASSERT_EQ(0, parts[1]);
-        TEST_ASSERT_EQ(1, parts[2]);
-        TEST_ASSERT_EQ(1, parts[3]);
+        TEST_ASSERT_EQ(2, dstpartsizes[0]);
+        TEST_ASSERT_EQ(2, dstpartsizes[1]);
+        TEST_ASSERT_EQ(0, dstparts[0]);
+        TEST_ASSERT_EQ(0, dstparts[1]);
+        TEST_ASSERT_EQ(1, dstparts[2]);
+        TEST_ASSERT_EQ(1, dstparts[3]);
         mtxfile_free(&src);
     }
     return TEST_SUCCESS;
@@ -3350,23 +3347,22 @@ int test_mtxfile_partition_rowwise(void)
             &src, mtxfile_general, num_rows, num_columns, srcdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         int64_t partsizes[2] = {2,1};
-        int64_t partsptr[3] = {};
-        int parts[9] = {};
+        int64_t dstpartsizes[2] = {};
+        int dstparts[9] = {};
         err = mtxfile_partition_rowwise(
-            &src, mtx_block, 2, partsizes, 0, parts, partsptr);
+            &src, mtx_block, 2, partsizes, 0, NULL, dstparts, dstpartsizes);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        TEST_ASSERT_EQ(0, partsptr[0]);
-        TEST_ASSERT_EQ(6, partsptr[1]);
-        TEST_ASSERT_EQ(9, partsptr[2]);
-        TEST_ASSERT_EQ(0, parts[0]);
-        TEST_ASSERT_EQ(0, parts[1]);
-        TEST_ASSERT_EQ(0, parts[2]);
-        TEST_ASSERT_EQ(0, parts[3]);
-        TEST_ASSERT_EQ(0, parts[4]);
-        TEST_ASSERT_EQ(0, parts[5]);
-        TEST_ASSERT_EQ(1, parts[6]);
-        TEST_ASSERT_EQ(1, parts[7]);
-        TEST_ASSERT_EQ(1, parts[8]);
+        TEST_ASSERT_EQ(6, dstpartsizes[0]);
+        TEST_ASSERT_EQ(3, dstpartsizes[1]);
+        TEST_ASSERT_EQ(0, dstparts[0]);
+        TEST_ASSERT_EQ(0, dstparts[1]);
+        TEST_ASSERT_EQ(0, dstparts[2]);
+        TEST_ASSERT_EQ(0, dstparts[3]);
+        TEST_ASSERT_EQ(0, dstparts[4]);
+        TEST_ASSERT_EQ(0, dstparts[5]);
+        TEST_ASSERT_EQ(1, dstparts[6]);
+        TEST_ASSERT_EQ(1, dstparts[7]);
+        TEST_ASSERT_EQ(1, dstparts[8]);
         mtxfile_free(&src);
     }
 
@@ -3378,23 +3374,22 @@ int test_mtxfile_partition_rowwise(void)
         err = mtxfile_init_matrix_array_real_double(
             &src, mtxfile_general, num_rows, num_columns, srcdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        int64_t partsptr[3] = {};
-        int parts[9] = {};
+        int64_t dstpartsizes[2] = {};
+        int dstparts[9] = {};
         err = mtxfile_partition_rowwise(
-            &src, mtx_cyclic, 2, NULL, 0, parts, partsptr);
+            &src, mtx_cyclic, 2, NULL, 0, NULL, dstparts, dstpartsizes);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        TEST_ASSERT_EQ(0, partsptr[0]);
-        TEST_ASSERT_EQ(6, partsptr[1]);
-        TEST_ASSERT_EQ(9, partsptr[2]);
-        TEST_ASSERT_EQ(0, parts[0]);
-        TEST_ASSERT_EQ(0, parts[1]);
-        TEST_ASSERT_EQ(0, parts[2]);
-        TEST_ASSERT_EQ(1, parts[3]);
-        TEST_ASSERT_EQ(1, parts[4]);
-        TEST_ASSERT_EQ(1, parts[5]);
-        TEST_ASSERT_EQ(0, parts[6]);
-        TEST_ASSERT_EQ(0, parts[7]);
-        TEST_ASSERT_EQ(0, parts[8]);
+        TEST_ASSERT_EQ(6, dstpartsizes[0]);
+        TEST_ASSERT_EQ(3, dstpartsizes[1]);
+        TEST_ASSERT_EQ(0, dstparts[0]);
+        TEST_ASSERT_EQ(0, dstparts[1]);
+        TEST_ASSERT_EQ(0, dstparts[2]);
+        TEST_ASSERT_EQ(1, dstparts[3]);
+        TEST_ASSERT_EQ(1, dstparts[4]);
+        TEST_ASSERT_EQ(1, dstparts[5]);
+        TEST_ASSERT_EQ(0, dstparts[6]);
+        TEST_ASSERT_EQ(0, dstparts[7]);
+        TEST_ASSERT_EQ(0, dstparts[8]);
         mtxfile_free(&src);
     }
 
@@ -3404,23 +3399,22 @@ int test_mtxfile_partition_rowwise(void)
         struct mtxfile src;
         err = mtxfile_init_vector_array_real_double(&src, num_rows, srcdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        int64_t partsptr[4] = {};
-        int parts[8] = {};
+        int64_t dstpartsizes[3] = {};
+        int dstparts[8] = {};
         err = mtxfile_partition_rowwise(
-            &src, mtx_block, 3, NULL, 0, parts, partsptr);
+            &src, mtx_block, 3, NULL, 0, NULL, dstparts, dstpartsizes);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        TEST_ASSERT_EQ(0, partsptr[0]);
-        TEST_ASSERT_EQ(3, partsptr[1]);
-        TEST_ASSERT_EQ(6, partsptr[2]);
-        TEST_ASSERT_EQ(8, partsptr[3]);
-        TEST_ASSERT_EQ(0, parts[0]);
-        TEST_ASSERT_EQ(0, parts[1]);
-        TEST_ASSERT_EQ(0, parts[2]);
-        TEST_ASSERT_EQ(1, parts[3]);
-        TEST_ASSERT_EQ(1, parts[4]);
-        TEST_ASSERT_EQ(1, parts[5]);
-        TEST_ASSERT_EQ(2, parts[6]);
-        TEST_ASSERT_EQ(2, parts[7]);
+        TEST_ASSERT_EQ(3, dstpartsizes[0]);
+        TEST_ASSERT_EQ(3, dstpartsizes[1]);
+        TEST_ASSERT_EQ(2, dstpartsizes[2]);
+        TEST_ASSERT_EQ(0, dstparts[0]);
+        TEST_ASSERT_EQ(0, dstparts[1]);
+        TEST_ASSERT_EQ(0, dstparts[2]);
+        TEST_ASSERT_EQ(1, dstparts[3]);
+        TEST_ASSERT_EQ(1, dstparts[4]);
+        TEST_ASSERT_EQ(1, dstparts[5]);
+        TEST_ASSERT_EQ(2, dstparts[6]);
+        TEST_ASSERT_EQ(2, dstparts[7]);
         mtxfile_free(&src);
     }
 
@@ -3439,18 +3433,17 @@ int test_mtxfile_partition_rowwise(void)
             &src, mtxfile_general, num_rows, num_columns, num_nonzeros, srcdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         int64_t partsizes[2] = {2,1};
-        int64_t partsptr[3] = {};
-        int parts[4] = {};
+        int64_t dstpartsizes[2] = {};
+        int dstparts[4] = {};
         err = mtxfile_partition_rowwise(
-            &src, mtx_block, 2, partsizes, 0, parts, partsptr);
+            &src, mtx_block, 2, partsizes, 0, NULL, dstparts, dstpartsizes);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        TEST_ASSERT_EQ(0, partsptr[0]);
-        TEST_ASSERT_EQ(2, partsptr[1]);
-        TEST_ASSERT_EQ(4, partsptr[2]);
-        TEST_ASSERT_EQ(1, parts[0]);
-        TEST_ASSERT_EQ(1, parts[1]);
-        TEST_ASSERT_EQ(0, parts[2]);
-        TEST_ASSERT_EQ(0, parts[3]);
+        TEST_ASSERT_EQ(2, dstpartsizes[0]);
+        TEST_ASSERT_EQ(2, dstpartsizes[1]);
+        TEST_ASSERT_EQ(1, dstparts[0]);
+        TEST_ASSERT_EQ(1, dstparts[1]);
+        TEST_ASSERT_EQ(0, dstparts[2]);
+        TEST_ASSERT_EQ(0, dstparts[3]);
         mtxfile_free(&src);
     }
 
@@ -3463,20 +3456,19 @@ int test_mtxfile_partition_rowwise(void)
         err = mtxfile_init_vector_coordinate_real_double(
             &src, num_rows, num_nonzeros, srcdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        int64_t partsptr[4] = {};
-        int parts[5] = {};
+        int64_t dstpartsizes[3] = {};
+        int dstparts[5] = {};
         err = mtxfile_partition_rowwise(
-            &src, mtx_block, 3, NULL, 0, parts, partsptr);
+            &src, mtx_block, 3, NULL, 0, NULL, dstparts, dstpartsizes);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        TEST_ASSERT_EQ(0, partsptr[0]);
-        TEST_ASSERT_EQ(2, partsptr[1]);
-        TEST_ASSERT_EQ(4, partsptr[2]);
-        TEST_ASSERT_EQ(5, partsptr[3]);
-        TEST_ASSERT_EQ(0, parts[0]);
-        TEST_ASSERT_EQ(0, parts[1]);
-        TEST_ASSERT_EQ(1, parts[2]);
-        TEST_ASSERT_EQ(1, parts[3]);
-        TEST_ASSERT_EQ(2, parts[4]);
+        TEST_ASSERT_EQ(2, dstpartsizes[0]);
+        TEST_ASSERT_EQ(2, dstpartsizes[1]);
+        TEST_ASSERT_EQ(1, dstpartsizes[2]);
+        TEST_ASSERT_EQ(0, dstparts[0]);
+        TEST_ASSERT_EQ(0, dstparts[1]);
+        TEST_ASSERT_EQ(1, dstparts[2]);
+        TEST_ASSERT_EQ(1, dstparts[3]);
+        TEST_ASSERT_EQ(2, dstparts[4]);
         mtxfile_free(&src);
     }
     return TEST_SUCCESS;
@@ -3503,23 +3495,22 @@ int test_mtxfile_partition_columnwise(void)
             &src, mtxfile_general, num_rows, num_columns, srcdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         int64_t partsizes[2] = {2,1};
-        int64_t partsptr[3] = {};
-        int parts[9] = {};
+        int64_t dstpartsizes[2] = {};
+        int dstparts[9] = {};
         err = mtxfile_partition_columnwise(
-            &src, mtx_block, 2, partsizes, 0, parts, partsptr);
+            &src, mtx_block, 2, partsizes, 0, NULL, dstparts, dstpartsizes);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        TEST_ASSERT_EQ(0, partsptr[0]);
-        TEST_ASSERT_EQ(6, partsptr[1]);
-        TEST_ASSERT_EQ(9, partsptr[2]);
-        TEST_ASSERT_EQ(0, parts[0]);
-        TEST_ASSERT_EQ(0, parts[1]);
-        TEST_ASSERT_EQ(1, parts[2]);
-        TEST_ASSERT_EQ(0, parts[3]);
-        TEST_ASSERT_EQ(0, parts[4]);
-        TEST_ASSERT_EQ(1, parts[5]);
-        TEST_ASSERT_EQ(0, parts[6]);
-        TEST_ASSERT_EQ(0, parts[7]);
-        TEST_ASSERT_EQ(1, parts[8]);
+        TEST_ASSERT_EQ(6, dstpartsizes[0]);
+        TEST_ASSERT_EQ(3, dstpartsizes[1]);
+        TEST_ASSERT_EQ(0, dstparts[0]);
+        TEST_ASSERT_EQ(0, dstparts[1]);
+        TEST_ASSERT_EQ(1, dstparts[2]);
+        TEST_ASSERT_EQ(0, dstparts[3]);
+        TEST_ASSERT_EQ(0, dstparts[4]);
+        TEST_ASSERT_EQ(1, dstparts[5]);
+        TEST_ASSERT_EQ(0, dstparts[6]);
+        TEST_ASSERT_EQ(0, dstparts[7]);
+        TEST_ASSERT_EQ(1, dstparts[8]);
         mtxfile_free(&src);
     }
 
@@ -3531,23 +3522,22 @@ int test_mtxfile_partition_columnwise(void)
         err = mtxfile_init_matrix_array_real_double(
             &src, mtxfile_general, num_rows, num_columns, srcdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        int64_t partsptr[3] = {};
-        int parts[9] = {};
+        int64_t dstpartsizes[2] = {};
+        int dstparts[9] = {};
         err = mtxfile_partition_columnwise(
-            &src, mtx_cyclic, 2, NULL, 0, parts, partsptr);
+            &src, mtx_cyclic, 2, NULL, 0, NULL, dstparts, dstpartsizes);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        TEST_ASSERT_EQ(0, partsptr[0]);
-        TEST_ASSERT_EQ(6, partsptr[1]);
-        TEST_ASSERT_EQ(9, partsptr[2]);
-        TEST_ASSERT_EQ(0, parts[0]);
-        TEST_ASSERT_EQ(1, parts[1]);
-        TEST_ASSERT_EQ(0, parts[2]);
-        TEST_ASSERT_EQ(0, parts[3]);
-        TEST_ASSERT_EQ(1, parts[4]);
-        TEST_ASSERT_EQ(0, parts[5]);
-        TEST_ASSERT_EQ(0, parts[6]);
-        TEST_ASSERT_EQ(1, parts[7]);
-        TEST_ASSERT_EQ(0, parts[8]);
+        TEST_ASSERT_EQ(6, dstpartsizes[0]);
+        TEST_ASSERT_EQ(3, dstpartsizes[1]);
+        TEST_ASSERT_EQ(0, dstparts[0]);
+        TEST_ASSERT_EQ(1, dstparts[1]);
+        TEST_ASSERT_EQ(0, dstparts[2]);
+        TEST_ASSERT_EQ(0, dstparts[3]);
+        TEST_ASSERT_EQ(1, dstparts[4]);
+        TEST_ASSERT_EQ(0, dstparts[5]);
+        TEST_ASSERT_EQ(0, dstparts[6]);
+        TEST_ASSERT_EQ(1, dstparts[7]);
+        TEST_ASSERT_EQ(0, dstparts[8]);
         mtxfile_free(&src);
     }
 
@@ -3566,18 +3556,17 @@ int test_mtxfile_partition_columnwise(void)
             &src, mtxfile_general, num_rows, num_columns, num_nonzeros, srcdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         int64_t partsizes[2] = {2,1};
-        int64_t partsptr[3] = {};
-        int parts[4] = {};
+        int64_t dstpartsizes[2] = {};
+        int dstparts[4] = {};
         err = mtxfile_partition_columnwise(
-            &src, mtx_block, 2, partsizes, 0, parts, partsptr);
+            &src, mtx_block, 2, partsizes, 0, NULL, dstparts, dstpartsizes);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        TEST_ASSERT_EQ(0, partsptr[0]);
-        TEST_ASSERT_EQ(3, partsptr[1]);
-        TEST_ASSERT_EQ(4, partsptr[2]);
-        TEST_ASSERT_EQ(1, parts[0]);
-        TEST_ASSERT_EQ(0, parts[1]);
-        TEST_ASSERT_EQ(0, parts[2]);
-        TEST_ASSERT_EQ(0, parts[3]);
+        TEST_ASSERT_EQ(3, dstpartsizes[0]);
+        TEST_ASSERT_EQ(1, dstpartsizes[1]);
+        TEST_ASSERT_EQ(1, dstparts[0]);
+        TEST_ASSERT_EQ(0, dstparts[1]);
+        TEST_ASSERT_EQ(0, dstparts[2]);
+        TEST_ASSERT_EQ(0, dstparts[3]);
         mtxfile_free(&src);
     }
     return TEST_SUCCESS;
@@ -3605,26 +3594,26 @@ int test_mtxfile_partition_2d(void)
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         int64_t rowpartsizes[2] = {2,1};
         int64_t colpartsizes[2] = {2,1};
-        int64_t partsptr[5] = {};
-        int parts[9] = {};
+        int64_t dstpartsizes[4] = {};
+        int dstparts[9] = {};
         err = mtxfile_partition_2d(
-            &src, mtx_block, 2, rowpartsizes, 0, mtx_block, 2, colpartsizes, 0,
-            parts, partsptr);
+            &src, mtx_block, 2, rowpartsizes, 0, NULL,
+            mtx_block, 2, colpartsizes, 0, NULL,
+            dstparts, dstpartsizes);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        TEST_ASSERT_EQ(0, partsptr[0]);
-        TEST_ASSERT_EQ(4, partsptr[1]);
-        TEST_ASSERT_EQ(6, partsptr[2]);
-        TEST_ASSERT_EQ(8, partsptr[3]);
-        TEST_ASSERT_EQ(9, partsptr[4]);
-        TEST_ASSERT_EQ(0, parts[0]);
-        TEST_ASSERT_EQ(0, parts[1]);
-        TEST_ASSERT_EQ(1, parts[2]);
-        TEST_ASSERT_EQ(0, parts[3]);
-        TEST_ASSERT_EQ(0, parts[4]);
-        TEST_ASSERT_EQ(1, parts[5]);
-        TEST_ASSERT_EQ(2, parts[6]);
-        TEST_ASSERT_EQ(2, parts[7]);
-        TEST_ASSERT_EQ(3, parts[8]);
+        TEST_ASSERT_EQ(4, dstpartsizes[0]);
+        TEST_ASSERT_EQ(2, dstpartsizes[1]);
+        TEST_ASSERT_EQ(2, dstpartsizes[2]);
+        TEST_ASSERT_EQ(1, dstpartsizes[3]);
+        TEST_ASSERT_EQ(0, dstparts[0]);
+        TEST_ASSERT_EQ(0, dstparts[1]);
+        TEST_ASSERT_EQ(1, dstparts[2]);
+        TEST_ASSERT_EQ(0, dstparts[3]);
+        TEST_ASSERT_EQ(0, dstparts[4]);
+        TEST_ASSERT_EQ(1, dstparts[5]);
+        TEST_ASSERT_EQ(2, dstparts[6]);
+        TEST_ASSERT_EQ(2, dstparts[7]);
+        TEST_ASSERT_EQ(3, dstparts[8]);
         mtxfile_free(&src);
     }
 
@@ -3636,25 +3625,25 @@ int test_mtxfile_partition_2d(void)
         err = mtxfile_init_matrix_array_real_double(
             &src, mtxfile_general, num_rows, num_columns, srcdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        int64_t partsptr[5] = {};
-        int parts[9] = {};
+        int64_t dstpartsizes[4] = {};
+        int dstparts[9] = {};
         err = mtxfile_partition_2d(
-            &src, mtx_cyclic, 2, NULL, 0, mtx_cyclic, 2, NULL, 0, parts, partsptr);
+            &src, mtx_cyclic, 2, NULL, 0, NULL,
+            mtx_cyclic, 2, NULL, 0, NULL, dstparts, dstpartsizes);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        TEST_ASSERT_EQ(0, partsptr[0]);
-        TEST_ASSERT_EQ(4, partsptr[1]);
-        TEST_ASSERT_EQ(6, partsptr[2]);
-        TEST_ASSERT_EQ(8, partsptr[3]);
-        TEST_ASSERT_EQ(9, partsptr[4]);
-        TEST_ASSERT_EQ(0, parts[0]);
-        TEST_ASSERT_EQ(1, parts[1]);
-        TEST_ASSERT_EQ(0, parts[2]);
-        TEST_ASSERT_EQ(2, parts[3]);
-        TEST_ASSERT_EQ(3, parts[4]);
-        TEST_ASSERT_EQ(2, parts[5]);
-        TEST_ASSERT_EQ(0, parts[6]);
-        TEST_ASSERT_EQ(1, parts[7]);
-        TEST_ASSERT_EQ(0, parts[8]);
+        TEST_ASSERT_EQ(4, dstpartsizes[0]);
+        TEST_ASSERT_EQ(2, dstpartsizes[1]);
+        TEST_ASSERT_EQ(2, dstpartsizes[2]);
+        TEST_ASSERT_EQ(1, dstpartsizes[3]);
+        TEST_ASSERT_EQ(0, dstparts[0]);
+        TEST_ASSERT_EQ(1, dstparts[1]);
+        TEST_ASSERT_EQ(0, dstparts[2]);
+        TEST_ASSERT_EQ(2, dstparts[3]);
+        TEST_ASSERT_EQ(3, dstparts[4]);
+        TEST_ASSERT_EQ(2, dstparts[5]);
+        TEST_ASSERT_EQ(0, dstparts[6]);
+        TEST_ASSERT_EQ(1, dstparts[7]);
+        TEST_ASSERT_EQ(0, dstparts[8]);
         mtxfile_free(&src);
     }
 
@@ -3674,21 +3663,21 @@ int test_mtxfile_partition_2d(void)
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         int64_t rowpartsizes[2] = {2,1};
         int64_t colpartsizes[2] = {2,1};
-        int64_t partsptr[5] = {};
-        int parts[4] = {};
+        int64_t dstpartsizes[4] = {};
+        int dstparts[4] = {};
         err = mtxfile_partition_2d(
-            &src, mtx_block, 2, rowpartsizes, 0, mtx_block, 2, colpartsizes, 0,
-            parts, partsptr);
+            &src, mtx_block, 2, rowpartsizes, 0, NULL,
+            mtx_block, 2, colpartsizes, 0, NULL,
+            dstparts, dstpartsizes);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        TEST_ASSERT_EQ(0, partsptr[0]);
-        TEST_ASSERT_EQ(2, partsptr[1]);
-        TEST_ASSERT_EQ(2, partsptr[2]);
-        TEST_ASSERT_EQ(3, partsptr[3]);
-        TEST_ASSERT_EQ(4, partsptr[4]);
-        TEST_ASSERT_EQ(3, parts[0]);
-        TEST_ASSERT_EQ(2, parts[1]);
-        TEST_ASSERT_EQ(0, parts[2]);
-        TEST_ASSERT_EQ(0, parts[3]);
+        TEST_ASSERT_EQ(2, dstpartsizes[0]);
+        TEST_ASSERT_EQ(0, dstpartsizes[1]);
+        TEST_ASSERT_EQ(1, dstpartsizes[2]);
+        TEST_ASSERT_EQ(1, dstpartsizes[3]);
+        TEST_ASSERT_EQ(3, dstparts[0]);
+        TEST_ASSERT_EQ(2, dstparts[1]);
+        TEST_ASSERT_EQ(0, dstparts[2]);
+        TEST_ASSERT_EQ(0, dstparts[3]);
         mtxfile_free(&src);
     }
     return TEST_SUCCESS;

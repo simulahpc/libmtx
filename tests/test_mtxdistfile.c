@@ -87,7 +87,7 @@ int test_mtxdistfile_from_mtxfile_rowwise(void)
         int64_t partsize = rank == 0 ? 2 : 1;
         struct mtxdistfile dst;
         err = mtxdistfile_from_mtxfile_rowwise(
-            &dst, &src, mtx_block, partsize, 0, comm, root, &disterr);
+            &dst, &src, mtx_block, partsize, 0, NULL, comm, root, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
@@ -130,7 +130,7 @@ int test_mtxdistfile_from_mtxfile_rowwise(void)
         int64_t partsize = rank == 0 ? 4 : 4;
         struct mtxdistfile dst;
         err = mtxdistfile_from_mtxfile_rowwise(
-            &dst, &src, mtx_block, partsize, 0, comm, root, &disterr);
+            &dst, &src, mtx_block, partsize, 0, NULL, comm, root, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
@@ -181,7 +181,7 @@ int test_mtxdistfile_from_mtxfile_rowwise(void)
         int64_t partsize = rank == 0 ? 2 : 3;
         struct mtxdistfile dst;
         err = mtxdistfile_from_mtxfile_rowwise(
-            &dst, &src, mtx_block, partsize, 0, comm, root, &disterr);
+            &dst, &src, mtx_block, partsize, 0, NULL, comm, root, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
@@ -231,7 +231,7 @@ int test_mtxdistfile_from_mtxfile_rowwise(void)
         int64_t partsize = rank == 0 ? 3 : 3;
         struct mtxdistfile dst;
         err = mtxdistfile_from_mtxfile_rowwise(
-            &dst, &src, mtx_block, partsize, 0, comm, root, &disterr);
+            &dst, &src, mtx_block, partsize, 0, NULL, comm, root, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
             ? mtxdisterror_description(&disterr) : mtxstrerror(err));
@@ -316,7 +316,7 @@ int test_mtxdistfile_fread_rowwise(void)
         struct mtxdistfile mtxdistfile;
         enum mtxprecision precision = mtx_single;
         err = mtxdistfile_fread_rowwise(
-            &mtxdistfile, precision, mtx_block_cyclic, 0, 1,
+            &mtxdistfile, precision, mtx_block_cyclic, 0, 1, NULL,
             f, &lines_read, &bytes_read, 0, NULL,
             comm, root, &disterr);
         TEST_ASSERT_EQ_MSG(
@@ -361,7 +361,7 @@ int test_mtxdistfile_fread_rowwise(void)
         struct mtxdistfile mtxdistfile;
         enum mtxprecision precision = mtx_double;
         err = mtxdistfile_fread_rowwise(
-            &mtxdistfile, precision, mtx_block_cyclic, 0, 1,
+            &mtxdistfile, precision, mtx_block_cyclic, 0, 1, NULL,
             f, &lines_read, &bytes_read, 0, NULL, comm, root, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s",
@@ -405,7 +405,7 @@ int test_mtxdistfile_fread_rowwise(void)
         struct mtxdistfile mtxdistfile;
         enum mtxprecision precision = mtx_single;
         err = mtxdistfile_fread_rowwise(
-            &mtxdistfile, precision, mtx_block_cyclic, 0, 1,
+            &mtxdistfile, precision, mtx_block_cyclic, 0, 1, NULL,
             f, &lines_read, &bytes_read, 0, NULL, comm, root, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s",
@@ -451,7 +451,7 @@ int test_mtxdistfile_fread_rowwise(void)
         struct mtxdistfile mtxdistfile;
         enum mtxprecision precision = mtx_double;
         err = mtxdistfile_fread_rowwise(
-            &mtxdistfile, precision, mtx_block_cyclic, 0, 1,
+            &mtxdistfile, precision, mtx_block_cyclic, 0, 1, NULL,
             f, &lines_read, &bytes_read, 0, NULL, comm, root, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s",
@@ -497,7 +497,7 @@ int test_mtxdistfile_fread_rowwise(void)
         struct mtxdistfile mtxdistfile;
         enum mtxprecision precision = mtx_single;
         err = mtxdistfile_fread_rowwise(
-            &mtxdistfile, precision, mtx_block_cyclic, 0, 1,
+            &mtxdistfile, precision, mtx_block_cyclic, 0, 1, NULL,
             f, &lines_read, &bytes_read, 0, NULL, comm, root, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s",
@@ -541,7 +541,7 @@ int test_mtxdistfile_fread_rowwise(void)
         struct mtxdistfile mtxdistfile;
         enum mtxprecision precision = mtx_double;
         err = mtxdistfile_fread_rowwise(
-            &mtxdistfile, precision, mtx_block_cyclic, 0, 1,
+            &mtxdistfile, precision, mtx_block_cyclic, 0, 1, NULL,
             f, &lines_read, &bytes_read, 0, NULL, comm, root, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s",
@@ -590,7 +590,7 @@ int test_mtxdistfile_fread_rowwise(void)
         struct mtxdistfile mtxdistfile;
         enum mtxprecision precision = mtx_single;
         err = mtxdistfile_fread_rowwise(
-            &mtxdistfile, precision, mtx_block_cyclic, 0, 1,
+            &mtxdistfile, precision, mtx_block_cyclic, 0, 1, NULL,
             f, &lines_read, &bytes_read, 0, NULL, comm, root, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s",
@@ -639,7 +639,7 @@ int test_mtxdistfile_fread_rowwise(void)
         struct mtxdistfile mtxdistfile;
         enum mtxprecision precision = mtx_double;
         err = mtxdistfile_fread_rowwise(
-            &mtxdistfile, precision, mtx_block_cyclic, 0, 1,
+            &mtxdistfile, precision, mtx_block_cyclic, 0, 1, NULL,
             f, &lines_read, &bytes_read, 0, NULL, comm, root, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s",
@@ -689,7 +689,7 @@ int test_mtxdistfile_fread_rowwise(void)
         struct mtxdistfile mtxdistfile;
         enum mtxprecision precision = mtx_single;
         err = mtxdistfile_fread_rowwise(
-            &mtxdistfile, precision, mtx_block_cyclic, 0, 1,
+            &mtxdistfile, precision, mtx_block_cyclic, 0, 1, NULL,
             f, &lines_read, &bytes_read, 0, NULL, comm, root, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s",
@@ -737,7 +737,7 @@ int test_mtxdistfile_fread_rowwise(void)
         struct mtxdistfile mtxdistfile;
         enum mtxprecision precision = mtx_single;
         err = mtxdistfile_fread_rowwise(
-            &mtxdistfile, precision, mtx_block_cyclic, 0, 1,
+            &mtxdistfile, precision, mtx_block_cyclic, 0, 1, NULL,
             f, &lines_read, &bytes_read, 0, NULL, comm, root, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s",
@@ -788,7 +788,7 @@ int test_mtxdistfile_fread_rowwise(void)
         struct mtxdistfile mtxdistfile;
         enum mtxprecision precision = mtx_single;
         err = mtxdistfile_fread_rowwise(
-            &mtxdistfile, precision, mtx_block_cyclic, 0, 1,
+            &mtxdistfile, precision, mtx_block_cyclic, 0, 1, NULL,
             f, &lines_read, &bytes_read, 0, NULL, comm, root, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s",
@@ -835,7 +835,7 @@ int test_mtxdistfile_fread_rowwise(void)
         struct mtxdistfile mtxdistfile;
         enum mtxprecision precision = mtx_double;
         err = mtxdistfile_fread_rowwise(
-            &mtxdistfile, precision, mtx_block_cyclic, 0, 1,
+            &mtxdistfile, precision, mtx_block_cyclic, 0, 1, NULL,
             f, &lines_read, &bytes_read, 0, NULL, comm, root, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s",
@@ -884,7 +884,7 @@ int test_mtxdistfile_fread_rowwise(void)
         struct mtxdistfile mtxdistfile;
         enum mtxprecision precision = mtx_single;
         err = mtxdistfile_fread_rowwise(
-            &mtxdistfile, precision, mtx_block_cyclic, 0, 1,
+            &mtxdistfile, precision, mtx_block_cyclic, 0, 1, NULL,
             f, &lines_read, &bytes_read, 0, NULL, comm, root, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s",
@@ -931,7 +931,7 @@ int test_mtxdistfile_fread_rowwise(void)
         struct mtxdistfile mtxdistfile;
         enum mtxprecision precision = mtx_single;
         err = mtxdistfile_fread_rowwise(
-            &mtxdistfile, precision, mtx_block_cyclic, 0, 1,
+            &mtxdistfile, precision, mtx_block_cyclic, 0, 1, NULL,
             f, &lines_read, &bytes_read, 0, NULL, comm, root, &disterr);
         TEST_ASSERT_EQ_MSG(
             MTX_SUCCESS, err, "%s",
