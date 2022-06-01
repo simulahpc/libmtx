@@ -621,7 +621,7 @@ int main(int argc, char *argv[])
     }
 
     bool rowpart, colpart;
-    err = mtxfile_partition2(
+    err = mtxfile_partition(
         &mtxfile, args.matrixparttype,
         args.nzparttype, args.num_nz_parts, NULL, args.nzblksize, NULL,
         args.rowparttype, args.num_row_parts, NULL, args.rowblksize, NULL,

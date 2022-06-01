@@ -1873,7 +1873,7 @@ static int mtxfile_partition_metis(
 }
 
 /**
- * ‘mtxfile_partition2()’ partitions the entries of a Matrix Market
+ * ‘mtxfile_partition()’ partitions the entries of a Matrix Market
  * file, and, optionally, also partitions the rows and columns of the
  * underlying matrix or vector.
  *
@@ -1926,7 +1926,7 @@ static int mtxfile_partition_metis(
  * ‘num_parts’, which are then used to store the number of nonzeros,
  * rows and columns assigned to each part, respectively.
  */
-int mtxfile_partition2(
+int mtxfile_partition(
     struct mtxfile * mtxfile,
     enum mtxmatrixparttype matrixparttype,
     enum mtxpartitioning nzparttype,
