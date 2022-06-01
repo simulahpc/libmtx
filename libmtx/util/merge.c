@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-04-26
+ * Last modified: 2022-06-01
  *
  * Merge operations on arrays.
  */
@@ -661,18 +661,31 @@ int merge_sorted_int32(
     int32_t * c,
     int64_t asize,
     const int32_t * a,
+    int64_t * adstidx,
     int64_t bsize,
-    const int32_t * b)
+    const int32_t * b,
+    int64_t * bdstidx)
 {
     if (csize < asize + bsize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
-    int64_t i = 0, j = 0, k = 0;
-    while (i < asize && j < bsize) {
-        if (a[i] < b[j]) c[k++] = a[i++];
-        else if (a[i] > b[j]) c[k++] = b[j++];
-        else { c[k++] = a[i++]; }
+    if (adstidx && bdstidx) {
+        int64_t i = 0, j = 0, k = 0;
+        while (i < asize && j < bsize) {
+            if (a[i] < b[j]) { adstidx[i] = k; c[k++] = a[i++]; }
+            else if (a[i] > b[j]) { bdstidx[j] = k; c[k++] = b[j++]; }
+            else { adstidx[i] = bdstidx[j] = k; c[k++] = a[i++]; }
+        }
+        while (i < asize) { adstidx[i] = k; c[k++] = a[i++]; }
+        while (j < bsize) { bdstidx[j] = k; c[k++] = b[j++]; }
+    } else {
+        int64_t i = 0, j = 0, k = 0;
+        while (i < asize && j < bsize) {
+            if (a[i] < b[j]) c[k++] = a[i++];
+            else if (a[i] > b[j]) c[k++] = b[j++];
+            else { c[k++] = a[i++]; }
+        }
+        while (i < asize) c[k++] = a[i++];
+        while (j < bsize) c[k++] = b[j++];
     }
-    while (i < asize) c[k++] = a[i++];
-    while (j < bsize) c[k++] = b[j++];
     return MTX_SUCCESS;
 }
 
@@ -693,18 +706,31 @@ int merge_sorted_int64(
     int64_t * c,
     int64_t asize,
     const int64_t * a,
+    int64_t * adstidx,
     int64_t bsize,
-    const int64_t * b)
+    const int64_t * b,
+    int64_t * bdstidx)
 {
     if (csize < asize + bsize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
-    int64_t i = 0, j = 0, k = 0;
-    while (i < asize && j < bsize) {
-        if (a[i] < b[j]) c[k++] = a[i++];
-        else if (a[i] > b[j]) c[k++] = b[j++];
-        else { c[k++] = a[i++]; }
+    if (adstidx && bdstidx) {
+        int64_t i = 0, j = 0, k = 0;
+        while (i < asize && j < bsize) {
+            if (a[i] < b[j]) { adstidx[i] = k; c[k++] = a[i++]; }
+            else if (a[i] > b[j]) { bdstidx[j] = k; c[k++] = b[j++]; }
+            else { adstidx[i] = bdstidx[j] = k; c[k++] = a[i++]; }
+        }
+        while (i < asize) { adstidx[i] = k; c[k++] = a[i++]; }
+        while (j < bsize) { bdstidx[j] = k; c[k++] = b[j++]; }
+    } else {
+        int64_t i = 0, j = 0, k = 0;
+        while (i < asize && j < bsize) {
+            if (a[i] < b[j]) c[k++] = a[i++];
+            else if (a[i] > b[j]) c[k++] = b[j++];
+            else { c[k++] = a[i++]; }
+        }
+        while (i < asize) c[k++] = a[i++];
+        while (j < bsize) c[k++] = b[j++];
     }
-    while (i < asize) c[k++] = a[i++];
-    while (j < bsize) c[k++] = b[j++];
     return MTX_SUCCESS;
 }
 
@@ -725,18 +751,31 @@ int merge_sorted_int(
     int * c,
     int64_t asize,
     const int * a,
+    int64_t * adstidx,
     int64_t bsize,
-    const int * b)
+    const int * b,
+    int64_t * bdstidx)
 {
     if (csize < asize + bsize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
-    int64_t i = 0, j = 0, k = 0;
-    while (i < asize && j < bsize) {
-        if (a[i] < b[j]) c[k++] = a[i++];
-        else if (a[i] > b[j]) c[k++] = b[j++];
-        else { c[k++] = a[i++]; }
+    if (adstidx && bdstidx) {
+        int64_t i = 0, j = 0, k = 0;
+        while (i < asize && j < bsize) {
+            if (a[i] < b[j]) { adstidx[i] = k; c[k++] = a[i++]; }
+            else if (a[i] > b[j]) { bdstidx[j] = k; c[k++] = b[j++]; }
+            else { adstidx[i] = bdstidx[j] = k; c[k++] = a[i++]; }
+        }
+        while (i < asize) { adstidx[i] = k; c[k++] = a[i++]; }
+        while (j < bsize) { bdstidx[j] = k; c[k++] = b[j++]; }
+    } else {
+        int64_t i = 0, j = 0, k = 0;
+        while (i < asize && j < bsize) {
+            if (a[i] < b[j]) c[k++] = a[i++];
+            else if (a[i] > b[j]) c[k++] = b[j++];
+            else { c[k++] = a[i++]; }
+        }
+        while (i < asize) c[k++] = a[i++];
+        while (j < bsize) c[k++] = b[j++];
     }
-    while (i < asize) c[k++] = a[i++];
-    while (j < bsize) c[k++] = b[j++];
     return MTX_SUCCESS;
 }
 
@@ -768,10 +807,31 @@ int setunion_sorted_unique_int32(
     int32_t * c,
     int64_t asize,
     const int32_t * a,
+    int64_t * adstidx,
     int64_t bsize,
-    const int32_t * b)
+    const int32_t * b,
+    int64_t * bdstidx)
 {
-    if (c) {
+    if (c && adstidx && bdstidx) {
+        int64_t i = 0, j = 0, k = 0;
+        while (i < asize && j < bsize) {
+            if (k >= *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            if (a[i] < b[j]) { adstidx[i] = k; c[k++] = a[i++]; }
+            else if (a[i] > b[j]) { bdstidx[j] = k; c[k++] = b[j++]; }
+            else { adstidx[i] = k; bdstidx[j] = k; c[k++] = a[i++]; j++; }
+        }
+        if (asize - i >= *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+        while (i < asize) {
+            if (k >= *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            adstidx[i] = k; c[k++] = a[i++];
+        }
+        if (bsize - j >= *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+        while (j < bsize) {
+            if (k >= *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            bdstidx[i] = k; c[k++] = b[j++];
+        }
+        *csize = k;
+    } else if (c) {
         int64_t i = 0, j = 0, k = 0;
         while (i < asize && j < bsize) {
             if (k >= *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
@@ -827,10 +887,31 @@ int setunion_sorted_unique_int64(
     int64_t * c,
     int64_t asize,
     const int64_t * a,
+    int64_t * adstidx,
     int64_t bsize,
-    const int64_t * b)
+    const int64_t * b,
+    int64_t * bdstidx)
 {
-    if (c) {
+    if (c && adstidx && bdstidx) {
+        int64_t i = 0, j = 0, k = 0;
+        while (i < asize && j < bsize) {
+            if (k >= *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            if (a[i] < b[j]) { adstidx[i] = k; c[k++] = a[i++]; }
+            else if (a[i] > b[j]) { bdstidx[j] = k; c[k++] = b[j++]; }
+            else { adstidx[i] = k; bdstidx[j] = k; c[k++] = a[i++]; j++; }
+        }
+        if (asize - i >= *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+        while (i < asize) {
+            if (k >= *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            adstidx[i] = k; c[k++] = a[i++];
+        }
+        if (bsize - j >= *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+        while (j < bsize) {
+            if (k >= *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            bdstidx[i] = k; c[k++] = b[j++];
+        }
+        *csize = k;
+    } else if (c) {
         int64_t i = 0, j = 0, k = 0;
         while (i < asize && j < bsize) {
             if (k >= *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
@@ -886,10 +967,31 @@ int setunion_sorted_unique_int(
     int * c,
     int64_t asize,
     const int * a,
+    int64_t * adstidx,
     int64_t bsize,
-    const int * b)
+    const int * b,
+    int64_t * bdstidx)
 {
-    if (c) {
+    if (c && adstidx && bdstidx) {
+        int64_t i = 0, j = 0, k = 0;
+        while (i < asize && j < bsize) {
+            if (k >= *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            if (a[i] < b[j]) { adstidx[i] = k; c[k++] = a[i++]; }
+            else if (a[i] > b[j]) { bdstidx[j] = k; c[k++] = b[j++]; }
+            else { adstidx[i] = k; bdstidx[j] = k; c[k++] = a[i++]; j++; }
+        }
+        if (asize - i >= *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+        while (i < asize) {
+            if (k >= *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            adstidx[i] = k; c[k++] = a[i++];
+        }
+        if (bsize - j >= *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+        while (j < bsize) {
+            if (k >= *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            bdstidx[i] = k; c[k++] = b[j++];
+        }
+        *csize = k;
+    } else if (c) {
         int64_t i = 0, j = 0, k = 0;
         while (i < asize && j < bsize) {
             if (k >= *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
@@ -950,10 +1052,41 @@ int setunion_sorted_nonunique_int32(
     int32_t * c,
     int64_t asize,
     const int32_t * a,
+    int64_t * adstidx,
     int64_t bsize,
-    const int32_t * b)
+    const int32_t * b,
+    int64_t * bdstidx)
 {
-    if (c) {
+    if (c && adstidx && bdstidx) {
+        int64_t i = 0, j = 0, k = 0;
+        while (i < asize && j < bsize) {
+            if (k >= *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            if (a[i] < b[j]) {
+                adstidx[i] = k; c[k++] = a[i];
+                for (i++; i < asize && a[i] == a[i-1]; i++) { adstidx[i] = adstidx[i-1]; }
+            } else if (a[i] > b[j]) {
+                bdstidx[j] = k; c[k++] = b[j];
+                for (j++; j < bsize && b[j] == b[j-1]; j++) { bdstidx[j] = bdstidx[j-1]; }
+            } else {
+                adstidx[i] = bdstidx[j] = k; c[k++] = a[i];
+                for (i++; i < asize && a[i] == a[i-1]; i++) { adstidx[i] = adstidx[i-1]; }
+                for (j++; j < bsize && b[j] == b[j-1]; j++) { bdstidx[j] = bdstidx[j-1]; }
+            }
+        }
+        if (asize - i >= *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+        while (i < asize) {
+            if (k >= *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            adstidx[i] = k; c[k++] = a[i];
+            for (i++; i < asize && a[i] == a[i-1]; i++) { adstidx[i] = adstidx[i-1]; }
+        }
+        if (bsize - j >= *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+        while (j < bsize) {
+            if (k >= *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            bdstidx[j] = k; c[k++] = b[j];
+            for (j++; j < bsize && b[j] == b[j-1]; j++) { bdstidx[j] = bdstidx[j-1]; }
+        }
+        *csize = k;
+    } else if (c) {
         int64_t i = 0, j = 0, k = 0;
         while (i < asize && j < bsize) {
             if (k >= *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
@@ -1027,10 +1160,41 @@ int setunion_sorted_nonunique_int64(
     int64_t * c,
     int64_t asize,
     const int64_t * a,
+    int64_t * adstidx,
     int64_t bsize,
-    const int64_t * b)
+    const int64_t * b,
+    int64_t * bdstidx)
 {
-    if (c) {
+    if (c && adstidx && bdstidx) {
+        int64_t i = 0, j = 0, k = 0;
+        while (i < asize && j < bsize) {
+            if (k >= *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            if (a[i] < b[j]) {
+                adstidx[i] = k; c[k++] = a[i];
+                for (i++; i < asize && a[i] == a[i-1]; i++) { adstidx[i] = adstidx[i-1]; }
+            } else if (a[i] > b[j]) {
+                bdstidx[j] = k; c[k++] = b[j];
+                for (j++; j < bsize && b[j] == b[j-1]; j++) { bdstidx[j] = bdstidx[j-1]; }
+            } else {
+                adstidx[i] = bdstidx[j] = k; c[k++] = a[i];
+                for (i++; i < asize && a[i] == a[i-1]; i++) { adstidx[i] = adstidx[i-1]; }
+                for (j++; j < bsize && b[j] == b[j-1]; j++) { bdstidx[j] = bdstidx[j-1]; }
+            }
+        }
+        if (asize - i >= *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+        while (i < asize) {
+            if (k >= *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            adstidx[i] = k; c[k++] = a[i];
+            for (i++; i < asize && a[i] == a[i-1]; i++) { adstidx[i] = adstidx[i-1]; }
+        }
+        if (bsize - j >= *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+        while (j < bsize) {
+            if (k >= *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            bdstidx[j] = k; c[k++] = b[j];
+            for (j++; j < bsize && b[j] == b[j-1]; j++) { bdstidx[j] = bdstidx[j-1]; }
+        }
+        *csize = k;
+    } else if (c) {
         int64_t i = 0, j = 0, k = 0;
         while (i < asize && j < bsize) {
             if (k >= *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
@@ -1104,10 +1268,41 @@ int setunion_sorted_nonunique_int(
     int * c,
     int64_t asize,
     const int * a,
+    int64_t * adstidx,
     int64_t bsize,
-    const int * b)
+    const int * b,
+    int64_t * bdstidx)
 {
-    if (c) {
+    if (c && adstidx && bdstidx) {
+        int64_t i = 0, j = 0, k = 0;
+        while (i < asize && j < bsize) {
+            if (k >= *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            if (a[i] < b[j]) {
+                adstidx[i] = k; c[k++] = a[i];
+                for (i++; i < asize && a[i] == a[i-1]; i++) { adstidx[i] = adstidx[i-1]; }
+            } else if (a[i] > b[j]) {
+                bdstidx[j] = k; c[k++] = b[j];
+                for (j++; j < bsize && b[j] == b[j-1]; j++) { bdstidx[j] = bdstidx[j-1]; }
+            } else {
+                adstidx[i] = bdstidx[j] = k; c[k++] = a[i];
+                for (i++; i < asize && a[i] == a[i-1]; i++) { adstidx[i] = adstidx[i-1]; }
+                for (j++; j < bsize && b[j] == b[j-1]; j++) { bdstidx[j] = bdstidx[j-1]; }
+            }
+        }
+        if (asize - i >= *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+        while (i < asize) {
+            if (k >= *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            adstidx[i] = k; c[k++] = a[i];
+            for (i++; i < asize && a[i] == a[i-1]; i++) { adstidx[i] = adstidx[i-1]; }
+        }
+        if (bsize - j >= *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+        while (j < bsize) {
+            if (k >= *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+            bdstidx[j] = k; c[k++] = b[j];
+            for (j++; j < bsize && b[j] == b[j-1]; j++) { bdstidx[j] = bdstidx[j-1]; }
+        }
+        *csize = k;
+    } else if (c) {
         int64_t i = 0, j = 0, k = 0;
         while (i < asize && j < bsize) {
             if (k >= *csize) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
@@ -1187,14 +1382,19 @@ int setunion_unsorted_unique_int32(
     int32_t * c,
     int64_t asize,
     int32_t * a,
+    int64_t * aperm,
+    int64_t * adstidx,
     int64_t bsize,
-    int32_t * b)
+    int32_t * b,
+    int64_t * bperm,
+    int64_t * bdstidx)
 {
-    int err = radix_sort_int32(asize, a, NULL);
+    int err = radix_sort_int32(asize, a, aperm);
     if (err) return err;
-    err = radix_sort_int32(bsize, b, NULL);
+    err = radix_sort_int32(bsize, b, bperm);
     if (err) return err;
-    return setunion_sorted_unique_int32(csize, c, asize, a, bsize, b);
+    return setunion_sorted_unique_int32(
+        csize, c, asize, a, adstidx, bsize, b, bdstidx);
 }
 
 /**
@@ -1221,14 +1421,19 @@ int setunion_unsorted_unique_int64(
     int64_t * c,
     int64_t asize,
     int64_t * a,
+    int64_t * aperm,
+    int64_t * adstidx,
     int64_t bsize,
-    int64_t * b)
+    int64_t * b,
+    int64_t * bperm,
+    int64_t * bdstidx)
 {
-    int err = radix_sort_int64(asize, sizeof(*a), a, NULL);
+    int err = radix_sort_int64(asize, sizeof(*a), a, aperm);
     if (err) return err;
-    err = radix_sort_int64(bsize, sizeof(*b), b, NULL);
+    err = radix_sort_int64(bsize, sizeof(*b), b, bperm);
     if (err) return err;
-    return setunion_sorted_unique_int64(csize, c, asize, a, bsize, b);
+    return setunion_sorted_unique_int64(
+        csize, c, asize, a, adstidx, bsize, b, bdstidx);
 }
 
 /**
@@ -1255,14 +1460,19 @@ int setunion_unsorted_unique_int(
     int * c,
     int64_t asize,
     int * a,
+    int64_t * aperm,
+    int64_t * adstidx,
     int64_t bsize,
-    int * b)
+    int * b,
+    int64_t * bperm,
+    int64_t * bdstidx)
 {
-    int err = radix_sort_int(asize, a, NULL);
+    int err = radix_sort_int(asize, a, aperm);
     if (err) return err;
-    err = radix_sort_int(bsize, b, NULL);
+    err = radix_sort_int(bsize, b, bperm);
     if (err) return err;
-    return setunion_sorted_unique_int(csize, c, asize, a, bsize, b);
+    return setunion_sorted_unique_int(
+        csize, c, asize, a, adstidx, bsize, b, bdstidx);
 }
 
 /*
@@ -1294,14 +1504,19 @@ int setunion_unsorted_nonunique_int32(
     int32_t * c,
     int64_t asize,
     int32_t * a,
+    int64_t * aperm,
+    int64_t * adstidx,
     int64_t bsize,
-    int32_t * b)
+    int32_t * b,
+    int64_t * bperm,
+    int64_t * bdstidx)
 {
-    int err = radix_sort_int32(asize, a, NULL);
+    int err = radix_sort_int32(asize, a, aperm);
     if (err) return err;
-    err = radix_sort_int32(bsize, b, NULL);
+    err = radix_sort_int32(bsize, b, bperm);
     if (err) return err;
-    return setunion_sorted_nonunique_int32(csize, c, asize, a, bsize, b);
+    return setunion_sorted_nonunique_int32(
+        csize, c, asize, a, adstidx, bsize, b, bdstidx);
 }
 
 /**
@@ -1328,14 +1543,19 @@ int setunion_unsorted_nonunique_int64(
     int64_t * c,
     int64_t asize,
     int64_t * a,
+    int64_t * aperm,
+    int64_t * adstidx,
     int64_t bsize,
-    int64_t * b)
+    int64_t * b,
+    int64_t * bperm,
+    int64_t * bdstidx)
 {
-    int err = radix_sort_int64(asize, sizeof(*a), a, NULL);
+    int err = radix_sort_int64(asize, sizeof(*a), a, aperm);
     if (err) return err;
-    err = radix_sort_int64(bsize, sizeof(*b), b, NULL);
+    err = radix_sort_int64(bsize, sizeof(*b), b, bperm);
     if (err) return err;
-    return setunion_sorted_nonunique_int64(csize, c, asize, a, bsize, b);
+    return setunion_sorted_nonunique_int64(
+        csize, c, asize, a, adstidx, bsize, b, bdstidx);
 }
 
 /**
@@ -1362,14 +1582,19 @@ int setunion_unsorted_nonunique_int(
     int * c,
     int64_t asize,
     int * a,
+    int64_t * aperm,
+    int64_t * adstidx,
     int64_t bsize,
-    int * b)
+    int * b,
+    int64_t * bperm,
+    int64_t * bdstidx)
 {
-    int err = radix_sort_int(asize, a, NULL);
+    int err = radix_sort_int(asize, a, aperm);
     if (err) return err;
-    err = radix_sort_int(bsize, b, NULL);
+    err = radix_sort_int(bsize, b, bperm);
     if (err) return err;
-    return setunion_sorted_nonunique_int(csize, c, asize, a, bsize, b);
+    return setunion_sorted_nonunique_int(
+        csize, c, asize, a, adstidx, bsize, b, bdstidx);
 }
 
 /*
@@ -1400,10 +1625,23 @@ int setintersection_sorted_unique_int32(
     int32_t * c,
     int64_t asize,
     const int32_t * a,
+    int64_t * adstidx,
     int64_t bsize,
-    const int32_t * b)
+    const int32_t * b,
+    int64_t * bdstidx)
 {
-    if (c) {
+    if (c && adstidx && bdstidx) {
+        int64_t i = 0, j = 0, k = 0;
+        while (i < asize && j < bsize) {
+            if (a[i] < b[j]) { adstidx[i] = -1; i++; }
+            else if (a[i] > b[j]) { bdstidx[j] = -1; j++; }
+            else if (k < *csize) { adstidx[i] = bdstidx[j] = k; c[k++] = a[i]; i++; j++; }
+            else { return MTX_ERR_INDEX_OUT_OF_BOUNDS; }
+        }
+        *csize = k;
+        while (i < asize) { adstidx[i++] = -1; }
+        while (j < bsize) { bdstidx[j++] = -1; }
+    } else if (c) {
         int64_t i = 0, j = 0, k = 0;
         while (i < asize && j < bsize) {
             if (a[i] < b[j]) { i++; }
@@ -1447,10 +1685,23 @@ int setintersection_sorted_unique_int64(
     int64_t * c,
     int64_t asize,
     const int64_t * a,
+    int64_t * adstidx,
     int64_t bsize,
-    const int64_t * b)
+    const int64_t * b,
+    int64_t * bdstidx)
 {
-    if (c) {
+    if (c && adstidx && bdstidx) {
+        int64_t i = 0, j = 0, k = 0;
+        while (i < asize && j < bsize) {
+            if (a[i] < b[j]) { adstidx[i] = -1; i++; }
+            else if (a[i] > b[j]) { bdstidx[j] = -1; j++; }
+            else if (k < *csize) { adstidx[i] = bdstidx[j] = k; c[k++] = a[i]; i++; j++; }
+            else { return MTX_ERR_INDEX_OUT_OF_BOUNDS; }
+        }
+        *csize = k;
+        while (i < asize) { adstidx[i++] = -1; }
+        while (j < bsize) { bdstidx[j++] = -1; }
+    } else if (c) {
         int64_t i = 0, j = 0, k = 0;
         while (i < asize && j < bsize) {
             if (a[i] < b[j]) { i++; }
@@ -1494,10 +1745,23 @@ int setintersection_sorted_unique_int(
     int * c,
     int64_t asize,
     const int * a,
+    int64_t * adstidx,
     int64_t bsize,
-    const int * b)
+    const int * b,
+    int64_t * bdstidx)
 {
-    if (c) {
+    if (c && adstidx && bdstidx) {
+        int64_t i = 0, j = 0, k = 0;
+        while (i < asize && j < bsize) {
+            if (a[i] < b[j]) { adstidx[i] = -1; i++; }
+            else if (a[i] > b[j]) { bdstidx[j] = -1; j++; }
+            else if (k < *csize) { adstidx[i] = bdstidx[j] = k; c[k++] = a[i]; i++; j++; }
+            else { return MTX_ERR_INDEX_OUT_OF_BOUNDS; }
+        }
+        *csize = k;
+        while (i < asize) { adstidx[i++] = -1; }
+        while (j < bsize) { bdstidx[j++] = -1; }
+    } else if (c) {
         int64_t i = 0, j = 0, k = 0;
         while (i < asize && j < bsize) {
             if (a[i] < b[j]) { i++; }
@@ -1546,10 +1810,32 @@ int setintersection_sorted_nonunique_int32(
     int32_t * c,
     int64_t asize,
     const int32_t * a,
+    int64_t * adstidx,
     int64_t bsize,
-    const int32_t * b)
+    const int32_t * b,
+    int64_t * bdstidx)
 {
-    if (c) {
+    if (c && adstidx && bdstidx) {
+        int64_t i = 0, j = 0, k = 0;
+        while (i < asize && j < bsize) {
+            if (a[i] < b[j]) {
+                adstidx[i] = -1;
+                for (i++; i < asize && a[i] == a[i-1]; i++) { adstidx[i] = -1; }
+            } else if (a[i] > b[j]) {
+                bdstidx[j] = -1;
+                for (j++; j < bsize && b[j] == b[j-1]; j++) { bdstidx[j] = -1; }
+            } else if (k < *csize) {
+                adstidx[i] = bdstidx[j] = k;
+                c[k] = a[i];
+                for (i++; i < asize && a[i] == a[i-1]; i++) { adstidx[i] = k; }
+                for (j++; j < bsize && b[j] == b[j-1]; j++) { bdstidx[j] = k; }
+                k++;
+            } else { return MTX_ERR_INDEX_OUT_OF_BOUNDS; }
+        }
+        *csize = k;
+        while (i < asize) { adstidx[i++] = -1; }
+        while (j < bsize) { bdstidx[j++] = -1; }
+    } else if (c) {
         int64_t i = 0, j = 0, k = 0;
         while (i < asize && j < bsize) {
             if (a[i] < b[j]) {
@@ -1604,10 +1890,32 @@ int setintersection_sorted_nonunique_int64(
     int64_t * c,
     int64_t asize,
     const int64_t * a,
+    int64_t * adstidx,
     int64_t bsize,
-    const int64_t * b)
+    const int64_t * b,
+    int64_t * bdstidx)
 {
-    if (c) {
+    if (c && adstidx && bdstidx) {
+        int64_t i = 0, j = 0, k = 0;
+        while (i < asize && j < bsize) {
+            if (a[i] < b[j]) {
+                adstidx[i] = -1;
+                for (i++; i < asize && a[i] == a[i-1]; i++) { adstidx[i] = -1; }
+            } else if (a[i] > b[j]) {
+                bdstidx[j] = -1;
+                for (j++; j < bsize && b[j] == b[j-1]; j++) { bdstidx[j] = -1; }
+            } else if (k < *csize) {
+                adstidx[i] = bdstidx[j] = k;
+                c[k] = a[i];
+                for (i++; i < asize && a[i] == a[i-1]; i++) { adstidx[i] = k; }
+                for (j++; j < bsize && b[j] == b[j-1]; j++) { bdstidx[j] = k; }
+                k++;
+            } else { return MTX_ERR_INDEX_OUT_OF_BOUNDS; }
+        }
+        *csize = k;
+        while (i < asize) { adstidx[i++] = -1; }
+        while (j < bsize) { bdstidx[j++] = -1; }
+    } else if (c) {
         int64_t i = 0, j = 0, k = 0;
         while (i < asize && j < bsize) {
             if (a[i] < b[j]) {
@@ -1662,10 +1970,32 @@ int setintersection_sorted_nonunique_int(
     int * c,
     int64_t asize,
     const int * a,
+    int64_t * adstidx,
     int64_t bsize,
-    const int * b)
+    const int * b,
+    int64_t * bdstidx)
 {
-    if (c) {
+    if (c && adstidx && bdstidx) {
+        int64_t i = 0, j = 0, k = 0;
+        while (i < asize && j < bsize) {
+            if (a[i] < b[j]) {
+                adstidx[i] = -1;
+                for (i++; i < asize && a[i] == a[i-1]; i++) { adstidx[i] = -1; }
+            } else if (a[i] > b[j]) {
+                bdstidx[j] = -1;
+                for (j++; j < bsize && b[j] == b[j-1]; j++) { bdstidx[j] = -1; }
+            } else if (k < *csize) {
+                adstidx[i] = bdstidx[j] = k;
+                c[k] = a[i];
+                for (i++; i < asize && a[i] == a[i-1]; i++) { adstidx[i] = k; }
+                for (j++; j < bsize && b[j] == b[j-1]; j++) { bdstidx[j] = k; }
+                k++;
+            } else { return MTX_ERR_INDEX_OUT_OF_BOUNDS; }
+        }
+        *csize = k;
+        while (i < asize) { adstidx[i++] = -1; }
+        while (j < bsize) { bdstidx[j++] = -1; }
+    } else if (c) {
         int64_t i = 0, j = 0, k = 0;
         while (i < asize && j < bsize) {
             if (a[i] < b[j]) {
@@ -1726,14 +2056,19 @@ int setintersection_unsorted_unique_int32(
     int32_t * c,
     int64_t asize,
     int32_t * a,
+    int64_t * aperm,
+    int64_t * adstidx,
     int64_t bsize,
-    int32_t * b)
+    int32_t * b,
+    int64_t * bperm,
+    int64_t * bdstidx)
 {
-    int err = radix_sort_int32(asize, a, NULL);
+    int err = radix_sort_int32(asize, a, aperm);
     if (err) return err;
-    err = radix_sort_int32(bsize, b, NULL);
+    err = radix_sort_int32(bsize, b, bperm);
     if (err) return err;
-    return setintersection_sorted_unique_int32(csize, c, asize, a, bsize, b);
+    return setintersection_sorted_unique_int32(
+        csize, c, asize, a, adstidx, bsize, b, bdstidx);
 }
 
 /**
@@ -1760,14 +2095,19 @@ int setintersection_unsorted_unique_int64(
     int64_t * c,
     int64_t asize,
     int64_t * a,
+    int64_t * aperm,
+    int64_t * adstidx,
     int64_t bsize,
-    int64_t * b)
+    int64_t * b,
+    int64_t * bperm,
+    int64_t * bdstidx)
 {
-    int err = radix_sort_int64(asize, sizeof(*a), a, NULL);
+    int err = radix_sort_int64(asize, sizeof(*a), a, aperm);
     if (err) return err;
-    err = radix_sort_int64(bsize, sizeof(*b), b, NULL);
+    err = radix_sort_int64(bsize, sizeof(*b), b, bperm);
     if (err) return err;
-    return setintersection_sorted_unique_int64(csize, c, asize, a, bsize, b);
+    return setintersection_sorted_unique_int64(
+        csize, c, asize, a, adstidx, bsize, b, bdstidx);
 }
 
 /**
@@ -1794,14 +2134,19 @@ int setintersection_unsorted_unique_int(
     int * c,
     int64_t asize,
     int * a,
+    int64_t * aperm,
+    int64_t * adstidx,
     int64_t bsize,
-    int * b)
+    int * b,
+    int64_t * bperm,
+    int64_t * bdstidx)
 {
-    int err = radix_sort_int(asize, a, NULL);
+    int err = radix_sort_int(asize, a, aperm);
     if (err) return err;
-    err = radix_sort_int(bsize, b, NULL);
+    err = radix_sort_int(bsize, b, bperm);
     if (err) return err;
-    return setintersection_sorted_unique_int(csize, c, asize, a, bsize, b);
+    return setintersection_sorted_unique_int(
+        csize, c, asize, a, adstidx, bsize, b, bdstidx);
 }
 
 /*
@@ -1833,14 +2178,19 @@ int setintersection_unsorted_nonunique_int32(
     int32_t * c,
     int64_t asize,
     int32_t * a,
+    int64_t * aperm,
+    int64_t * adstidx,
     int64_t bsize,
-    int32_t * b)
+    int32_t * b,
+    int64_t * bperm,
+    int64_t * bdstidx)
 {
-    int err = radix_sort_int32(asize, a, NULL);
+    int err = radix_sort_int32(asize, a, aperm);
     if (err) return err;
-    err = radix_sort_int32(bsize, b, NULL);
+    err = radix_sort_int32(bsize, b, bperm);
     if (err) return err;
-    return setintersection_sorted_nonunique_int32(csize, c, asize, a, bsize, b);
+    return setintersection_sorted_nonunique_int32(
+        csize, c, asize, a, adstidx, bsize, b, bdstidx);
 }
 
 /**
@@ -1867,14 +2217,19 @@ int setintersection_unsorted_nonunique_int64(
     int64_t * c,
     int64_t asize,
     int64_t * a,
+    int64_t * aperm,
+    int64_t * adstidx,
     int64_t bsize,
-    int64_t * b)
+    int64_t * b,
+    int64_t * bperm,
+    int64_t * bdstidx)
 {
-    int err = radix_sort_int64(asize, sizeof(*a), a, NULL);
+    int err = radix_sort_int64(asize, sizeof(*a), a, aperm);
     if (err) return err;
-    err = radix_sort_int64(bsize, sizeof(*b), b, NULL);
+    err = radix_sort_int64(bsize, sizeof(*b), b, bperm);
     if (err) return err;
-    return setintersection_sorted_nonunique_int64(csize, c, asize, a, bsize, b);
+    return setintersection_sorted_nonunique_int64(
+        csize, c, asize, a, adstidx, bsize, b, bdstidx);
 }
 
 /**
@@ -1901,14 +2256,19 @@ int setintersection_unsorted_nonunique_int(
     int * c,
     int64_t asize,
     int * a,
+    int64_t * aperm,
+    int64_t * adstidx,
     int64_t bsize,
-    int * b)
+    int * b,
+    int64_t * bperm,
+    int64_t * bdstidx)
 {
-    int err = radix_sort_int(asize, a, NULL);
+    int err = radix_sort_int(asize, a, aperm);
     if (err) return err;
-    err = radix_sort_int(bsize, b, NULL);
+    err = radix_sort_int(bsize, b, bperm);
     if (err) return err;
-    return setintersection_sorted_nonunique_int(csize, c, asize, a, bsize, b);
+    return setintersection_sorted_nonunique_int(
+        csize, c, asize, a, adstidx, bsize, b, bdstidx);
 }
 
 /*

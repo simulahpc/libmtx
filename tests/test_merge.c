@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-04-26
+ * Last modified: 2022-06-01
  *
  * Unit tests for merging functions.
  */
@@ -314,7 +314,7 @@ int test_merge_sorted(void)
         int32_t b[9] = {0,1,2,4,5,6,8,9,12};
         int64_t csize = 17;
         int32_t c[17] = {};
-        err = merge_sorted_int32(csize, c, asize, a, bsize, b);
+        err = merge_sorted_int32(csize, c, asize, a, NULL, bsize, b, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ( 0, c[ 0]);
         TEST_ASSERT_EQ( 0, c[ 1]);
@@ -342,7 +342,7 @@ int test_merge_sorted(void)
         int32_t b[10] = {0,0,1,2,4,5,6,8,9,12};
         int64_t csize = 19;
         int32_t c[19] = {};
-        err = merge_sorted_int32(csize, c, asize, a, bsize, b);
+        err = merge_sorted_int32(csize, c, asize, a, NULL, bsize, b, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ( 0, c[ 0]);
         TEST_ASSERT_EQ( 0, c[ 1]);
@@ -364,6 +364,38 @@ int test_merge_sorted(void)
         TEST_ASSERT_EQ(12, c[17]);
         TEST_ASSERT_EQ(14, c[18]);
     }
+    {
+        int err;
+        int64_t asize = 9;
+        int32_t a[ 9] = {0,2,4,6,6,8,10,12,14};
+        int64_t adstidx[9] = {};
+        int64_t bsize = 10;
+        int32_t b[10] = {0,0,1,2,4,5,6,8,9,12};
+        int64_t bdstidx[10] = {};
+        int64_t csize = 19;
+        int32_t c[19] = {};
+        err = merge_sorted_int32(csize, c, asize, a, adstidx, bsize, b, bdstidx);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ( 0, c[ 0]); TEST_ASSERT_EQ( 0, adstidx[0]);
+        TEST_ASSERT_EQ( 0, c[ 1]); TEST_ASSERT_EQ( 1, bdstidx[0]);
+        TEST_ASSERT_EQ( 0, c[ 2]); TEST_ASSERT_EQ( 2, bdstidx[1]);
+        TEST_ASSERT_EQ( 1, c[ 3]); TEST_ASSERT_EQ( 3, bdstidx[2]);
+        TEST_ASSERT_EQ( 2, c[ 4]); TEST_ASSERT_EQ( 4, adstidx[1]);
+        TEST_ASSERT_EQ( 2, c[ 5]); TEST_ASSERT_EQ( 5, bdstidx[3]);
+        TEST_ASSERT_EQ( 4, c[ 6]); TEST_ASSERT_EQ( 6, adstidx[2]);
+        TEST_ASSERT_EQ( 4, c[ 7]); TEST_ASSERT_EQ( 7, bdstidx[4]);
+        TEST_ASSERT_EQ( 5, c[ 8]); TEST_ASSERT_EQ( 8, bdstidx[5]);
+        TEST_ASSERT_EQ( 6, c[ 9]); TEST_ASSERT_EQ( 9, adstidx[3]);
+        TEST_ASSERT_EQ( 6, c[10]); TEST_ASSERT_EQ(10, adstidx[4]);
+        TEST_ASSERT_EQ( 6, c[11]); TEST_ASSERT_EQ(11, bdstidx[6]);
+        TEST_ASSERT_EQ( 8, c[12]); TEST_ASSERT_EQ(12, adstidx[5]);
+        TEST_ASSERT_EQ( 8, c[13]); TEST_ASSERT_EQ(13, bdstidx[7]);
+        TEST_ASSERT_EQ( 9, c[14]); TEST_ASSERT_EQ(14, bdstidx[8]);
+        TEST_ASSERT_EQ(10, c[15]); TEST_ASSERT_EQ(15, adstidx[6]);
+        TEST_ASSERT_EQ(12, c[16]); TEST_ASSERT_EQ(16, adstidx[7]);
+        TEST_ASSERT_EQ(12, c[17]); TEST_ASSERT_EQ(17, bdstidx[9]);
+        TEST_ASSERT_EQ(14, c[18]); TEST_ASSERT_EQ(18, adstidx[8]);
+    }
 
     /* 64-bit signed integers */
     {
@@ -374,7 +406,7 @@ int test_merge_sorted(void)
         int64_t b[9] = {0,1,2,4,5,6,8,9,12};
         int64_t csize = 17;
         int64_t c[17] = {};
-        err = merge_sorted_int64(csize, c, asize, a, bsize, b);
+        err = merge_sorted_int64(csize, c, asize, a, NULL, bsize, b, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ( 0, c[ 0]);
         TEST_ASSERT_EQ( 0, c[ 1]);
@@ -402,7 +434,7 @@ int test_merge_sorted(void)
         int64_t b[10] = {0,0,1,2,4,5,6,8,9,12};
         int64_t csize = 19;
         int64_t c[19] = {};
-        err = merge_sorted_int64(csize, c, asize, a, bsize, b);
+        err = merge_sorted_int64(csize, c, asize, a, NULL, bsize, b, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ( 0, c[ 0]);
         TEST_ASSERT_EQ( 0, c[ 1]);
@@ -434,7 +466,7 @@ int test_merge_sorted(void)
         int b[9] = {0,1,2,4,5,6,8,9,12};
         int64_t csize = 17;
         int c[17] = {};
-        err = merge_sorted_int(csize, c, asize, a, bsize, b);
+        err = merge_sorted_int(csize, c, asize, a, NULL, bsize, b, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ( 0, c[ 0]);
         TEST_ASSERT_EQ( 0, c[ 1]);
@@ -462,7 +494,7 @@ int test_merge_sorted(void)
         int b[10] = {0,0,1,2,4,5,6,8,9,12};
         int64_t csize = 19;
         int c[19] = {};
-        err = merge_sorted_int(csize, c, asize, a, bsize, b);
+        err = merge_sorted_int(csize, c, asize, a, NULL, bsize, b, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ( 0, c[ 0]);
         TEST_ASSERT_EQ( 0, c[ 1]);
@@ -503,10 +535,10 @@ int test_setunion_sorted_unique(void)
         int32_t b[9] = {0,1,2,4,5,6,8,9,12};
         int64_t csize = 17;
         int32_t c[17] = {};
-        err = setunion_sorted_unique_int32(&csize, NULL, asize, a, bsize, b);
+        err = setunion_sorted_unique_int32(&csize, NULL, asize, a, NULL, bsize, b, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(11, csize);
-        err = setunion_sorted_unique_int32(&csize, c, asize, a, bsize, b);
+        err = setunion_sorted_unique_int32(&csize, c, asize, a, NULL, bsize, b, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(11, csize);
         TEST_ASSERT_EQ( 0, c[0]);
@@ -521,6 +553,51 @@ int test_setunion_sorted_unique(void)
         TEST_ASSERT_EQ(12, c[9]);
         TEST_ASSERT_EQ(14, c[10]);
     }
+    {
+        int err;
+        int64_t asize = 8;
+        int32_t a[8] = {0,2,4,6,8,10,12,14};
+        int64_t bsize = 9;
+        int32_t b[9] = {0,1,2,4,5,6,8,9,12};
+        int64_t csize = 17;
+        int32_t c[17] = {};
+        int64_t adstidx[8] = {};
+        int64_t bdstidx[9] = {};
+        err = setunion_sorted_unique_int32(&csize, NULL, asize, a, adstidx, bsize, b, bdstidx);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(11, csize);
+        err = setunion_sorted_unique_int32(&csize, c, asize, a, adstidx, bsize, b, bdstidx);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(11, csize);
+        TEST_ASSERT_EQ( 0, c[0]);
+        TEST_ASSERT_EQ( 1, c[1]);
+        TEST_ASSERT_EQ( 2, c[2]);
+        TEST_ASSERT_EQ( 4, c[3]);
+        TEST_ASSERT_EQ( 5, c[4]);
+        TEST_ASSERT_EQ( 6, c[5]);
+        TEST_ASSERT_EQ( 8, c[6]);
+        TEST_ASSERT_EQ( 9, c[7]);
+        TEST_ASSERT_EQ(10, c[8]);
+        TEST_ASSERT_EQ(12, c[9]);
+        TEST_ASSERT_EQ(14, c[10]);
+        TEST_ASSERT_EQ( 0, adstidx[0]);
+        TEST_ASSERT_EQ( 2, adstidx[1]);
+        TEST_ASSERT_EQ( 3, adstidx[2]);
+        TEST_ASSERT_EQ( 5, adstidx[3]);
+        TEST_ASSERT_EQ( 6, adstidx[4]);
+        TEST_ASSERT_EQ( 8, adstidx[5]);
+        TEST_ASSERT_EQ( 9, adstidx[6]);
+        TEST_ASSERT_EQ(10, adstidx[7]);
+        TEST_ASSERT_EQ( 0, bdstidx[0]);
+        TEST_ASSERT_EQ( 1, bdstidx[1]);
+        TEST_ASSERT_EQ( 2, bdstidx[2]);
+        TEST_ASSERT_EQ( 3, bdstidx[3]);
+        TEST_ASSERT_EQ( 4, bdstidx[4]);
+        TEST_ASSERT_EQ( 5, bdstidx[5]);
+        TEST_ASSERT_EQ( 6, bdstidx[6]);
+        TEST_ASSERT_EQ( 7, bdstidx[7]);
+        TEST_ASSERT_EQ( 9, bdstidx[8]);
+    }
 
     /* 64-bit signed integers */
     {
@@ -531,10 +608,10 @@ int test_setunion_sorted_unique(void)
         int64_t b[9] = {0,1,2,4,5,6,8,9,12};
         int64_t csize = 17;
         int64_t c[17] = {};
-        err = setunion_sorted_unique_int64(&csize, NULL, asize, a, bsize, b);
+        err = setunion_sorted_unique_int64(&csize, NULL, asize, a, NULL, bsize, b, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(11, csize);
-        err = setunion_sorted_unique_int64(&csize, c, asize, a, bsize, b);
+        err = setunion_sorted_unique_int64(&csize, c, asize, a, NULL, bsize, b, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(11, csize);
         TEST_ASSERT_EQ( 0, c[0]);
@@ -559,10 +636,10 @@ int test_setunion_sorted_unique(void)
         int b[9] = {0,1,2,4,5,6,8,9,12};
         int64_t csize = 17;
         int c[17] = {};
-        err = setunion_sorted_unique_int(&csize, NULL, asize, a, bsize, b);
+        err = setunion_sorted_unique_int(&csize, NULL, asize, a, NULL, bsize, b, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(11, csize);
-        err = setunion_sorted_unique_int(&csize, c, asize, a, bsize, b);
+        err = setunion_sorted_unique_int(&csize, c, asize, a, NULL, bsize, b, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(11, csize);
         TEST_ASSERT_EQ( 0, c[0]);
@@ -596,10 +673,10 @@ int test_setunion_sorted_nonunique(void)
         int32_t b[9] = {0,1,2,4,5,6,8,9,12};
         int64_t csize = 17;
         int32_t c[17] = {};
-        err = setunion_sorted_nonunique_int32(&csize, NULL, asize, a, bsize, b);
+        err = setunion_sorted_nonunique_int32(&csize, NULL, asize, a, NULL, bsize, b, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(11, csize);
-        err = setunion_sorted_nonunique_int32(&csize, c, asize, a, bsize, b);
+        err = setunion_sorted_nonunique_int32(&csize, c, asize, a, NULL, bsize, b, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(11, csize);
         TEST_ASSERT_EQ( 0, c[0]);
@@ -622,10 +699,10 @@ int test_setunion_sorted_nonunique(void)
         int32_t b[13] = {0,0,1,2,2,4,4,5,6,8,9,9,12};
         int64_t csize = 24;
         int32_t c[24] = {};
-        err = setunion_sorted_nonunique_int32(&csize, NULL, asize, a, bsize, b);
+        err = setunion_sorted_nonunique_int32(&csize, NULL, asize, a, NULL, bsize, b, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(11, csize);
-        err = setunion_sorted_nonunique_int32(&csize, c, asize, a, bsize, b);
+        err = setunion_sorted_nonunique_int32(&csize, c, asize, a, NULL, bsize, b, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(11, csize);
         TEST_ASSERT_EQ( 0, c[0]);
@@ -640,6 +717,58 @@ int test_setunion_sorted_nonunique(void)
         TEST_ASSERT_EQ(12, c[9]);
         TEST_ASSERT_EQ(14, c[10]);
     }
+    {
+        int err;
+        int64_t asize = 11;
+        int32_t a[11] = {0,2,2,2,4,6,8,10,10,12,14};
+        int64_t adstidx[11] = {};
+        int64_t bsize = 13;
+        int32_t b[13] = {0,0,1,2,2,4,4,5,6,8,9,9,12};
+        int64_t bdstidx[13] = {};
+        int64_t csize = 24;
+        int32_t c[24] = {};
+        err = setunion_sorted_nonunique_int32(&csize, NULL, asize, a, NULL, bsize, b, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(11, csize);
+        err = setunion_sorted_nonunique_int32(&csize, c, asize, a, adstidx, bsize, b, bdstidx);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(11, csize);
+        TEST_ASSERT_EQ( 0, c[0]);
+        TEST_ASSERT_EQ( 1, c[1]);
+        TEST_ASSERT_EQ( 2, c[2]);
+        TEST_ASSERT_EQ( 4, c[3]);
+        TEST_ASSERT_EQ( 5, c[4]);
+        TEST_ASSERT_EQ( 6, c[5]);
+        TEST_ASSERT_EQ( 8, c[6]);
+        TEST_ASSERT_EQ( 9, c[7]);
+        TEST_ASSERT_EQ(10, c[8]);
+        TEST_ASSERT_EQ(12, c[9]);
+        TEST_ASSERT_EQ(14, c[10]);
+        TEST_ASSERT_EQ( 0, adstidx[ 0]);
+        TEST_ASSERT_EQ( 2, adstidx[ 1]);
+        TEST_ASSERT_EQ( 2, adstidx[ 2]);
+        TEST_ASSERT_EQ( 2, adstidx[ 3]);
+        TEST_ASSERT_EQ( 3, adstidx[ 4]);
+        TEST_ASSERT_EQ( 5, adstidx[ 5]);
+        TEST_ASSERT_EQ( 6, adstidx[ 6]);
+        TEST_ASSERT_EQ( 8, adstidx[ 7]);
+        TEST_ASSERT_EQ( 8, adstidx[ 8]);
+        TEST_ASSERT_EQ( 9, adstidx[ 9]);
+        TEST_ASSERT_EQ(10, adstidx[10]);
+        TEST_ASSERT_EQ( 0, bdstidx[ 0]);
+        TEST_ASSERT_EQ( 0, bdstidx[ 1]);
+        TEST_ASSERT_EQ( 1, bdstidx[ 2]);
+        TEST_ASSERT_EQ( 2, bdstidx[ 3]);
+        TEST_ASSERT_EQ( 2, bdstidx[ 4]);
+        TEST_ASSERT_EQ( 3, bdstidx[ 5]);
+        TEST_ASSERT_EQ( 3, bdstidx[ 6]);
+        TEST_ASSERT_EQ( 4, bdstidx[ 7]);
+        TEST_ASSERT_EQ( 5, bdstidx[ 8]);
+        TEST_ASSERT_EQ( 6, bdstidx[ 9]);
+        TEST_ASSERT_EQ( 7, bdstidx[10]);
+        TEST_ASSERT_EQ( 7, bdstidx[11]);
+        TEST_ASSERT_EQ( 9, bdstidx[12]);
+    }
 
     /* 64-bit signed integers */
     {
@@ -650,10 +779,10 @@ int test_setunion_sorted_nonunique(void)
         int64_t b[9] = {0,1,2,4,5,6,8,9,12};
         int64_t csize = 17;
         int64_t c[17] = {};
-        err = setunion_sorted_nonunique_int64(&csize, NULL, asize, a, bsize, b);
+        err = setunion_sorted_nonunique_int64(&csize, NULL, asize, a, NULL, bsize, b, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(11, csize);
-        err = setunion_sorted_nonunique_int64(&csize, c, asize, a, bsize, b);
+        err = setunion_sorted_nonunique_int64(&csize, c, asize, a, NULL, bsize, b, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(11, csize);
         TEST_ASSERT_EQ( 0, c[0]);
@@ -676,10 +805,10 @@ int test_setunion_sorted_nonunique(void)
         int64_t b[13] = {0,0,1,2,2,4,4,5,6,8,9,9,12};
         int64_t csize = 24;
         int64_t c[24] = {};
-        err = setunion_sorted_nonunique_int64(&csize, NULL, asize, a, bsize, b);
+        err = setunion_sorted_nonunique_int64(&csize, NULL, asize, a, NULL, bsize, b, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(11, csize);
-        err = setunion_sorted_nonunique_int64(&csize, c, asize, a, bsize, b);
+        err = setunion_sorted_nonunique_int64(&csize, c, asize, a, NULL, bsize, b, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(11, csize);
         TEST_ASSERT_EQ( 0, c[0]);
@@ -704,10 +833,10 @@ int test_setunion_sorted_nonunique(void)
         int b[9] = {0,1,2,4,5,6,8,9,12};
         int64_t csize = 17;
         int c[17] = {};
-        err = setunion_sorted_nonunique_int(&csize, NULL, asize, a, bsize, b);
+        err = setunion_sorted_nonunique_int(&csize, NULL, asize, a, NULL, bsize, b, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(11, csize);
-        err = setunion_sorted_nonunique_int(&csize, c, asize, a, bsize, b);
+        err = setunion_sorted_nonunique_int(&csize, c, asize, a, NULL, bsize, b, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(11, csize);
         TEST_ASSERT_EQ( 0, c[0]);
@@ -730,10 +859,10 @@ int test_setunion_sorted_nonunique(void)
         int b[13] = {0,0,1,2,2,4,4,5,6,8,9,9,12};
         int64_t csize = 24;
         int c[24] = {};
-        err = setunion_sorted_nonunique_int(&csize, NULL, asize, a, bsize, b);
+        err = setunion_sorted_nonunique_int(&csize, NULL, asize, a, NULL, bsize, b, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(11, csize);
-        err = setunion_sorted_nonunique_int(&csize, c, asize, a, bsize, b);
+        err = setunion_sorted_nonunique_int(&csize, c, asize, a, NULL, bsize, b, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(11, csize);
         TEST_ASSERT_EQ( 0, c[0]);
@@ -767,10 +896,10 @@ int test_setunion_unsorted_unique(void)
         int32_t b[9] = {0,1,4,2,5,6,12,9,8};
         int64_t csize = 17;
         int32_t c[17] = {};
-        err = setunion_unsorted_unique_int32(&csize, NULL, asize, a, bsize, b);
+        err = setunion_unsorted_unique_int32(&csize, NULL, asize, a, NULL, NULL, bsize, b, NULL, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(11, csize);
-        err = setunion_unsorted_unique_int32(&csize, c, asize, a, bsize, b);
+        err = setunion_unsorted_unique_int32(&csize, c, asize, a, NULL, NULL, bsize, b, NULL, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(11, csize);
         TEST_ASSERT_EQ( 0, c[0]);
@@ -785,6 +914,53 @@ int test_setunion_unsorted_unique(void)
         TEST_ASSERT_EQ(12, c[9]);
         TEST_ASSERT_EQ(14, c[10]);
     }
+    {
+        int err;
+        int64_t asize = 8;
+        int32_t a[8] = {10,2,14,6,8,0,4,12};
+        int64_t aperm[8] = {};
+        int64_t adstidx[8] = {};
+        int64_t bsize = 9;
+        int32_t b[9] = {0,1,4,2,5,6,12,9,8};
+        int64_t bperm[9] = {};
+        int64_t bdstidx[9] = {};
+        int64_t csize = 17;
+        int32_t c[17] = {};
+        err = setunion_unsorted_unique_int32(&csize, NULL, asize, a, aperm, NULL, bsize, b, bperm, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(11, csize);
+        err = setunion_sorted_unique_int32(&csize, c, asize, a, adstidx, bsize, b, bdstidx);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(11, csize);
+        TEST_ASSERT_EQ( 0, c[0]);
+        TEST_ASSERT_EQ( 1, c[1]);
+        TEST_ASSERT_EQ( 2, c[2]);
+        TEST_ASSERT_EQ( 4, c[3]);
+        TEST_ASSERT_EQ( 5, c[4]);
+        TEST_ASSERT_EQ( 6, c[5]);
+        TEST_ASSERT_EQ( 8, c[6]);
+        TEST_ASSERT_EQ( 9, c[7]);
+        TEST_ASSERT_EQ(10, c[8]);
+        TEST_ASSERT_EQ(12, c[9]);
+        TEST_ASSERT_EQ(14, c[10]);
+        TEST_ASSERT_EQ( 5, aperm[ 0]); TEST_ASSERT_EQ( 0, adstidx[ 0]);
+        TEST_ASSERT_EQ( 1, aperm[ 1]); TEST_ASSERT_EQ( 2, adstidx[ 1]);
+        TEST_ASSERT_EQ( 7, aperm[ 2]); TEST_ASSERT_EQ( 3, adstidx[ 2]);
+        TEST_ASSERT_EQ( 3, aperm[ 3]); TEST_ASSERT_EQ( 5, adstidx[ 3]);
+        TEST_ASSERT_EQ( 4, aperm[ 4]); TEST_ASSERT_EQ( 6, adstidx[ 4]);
+        TEST_ASSERT_EQ( 0, aperm[ 5]); TEST_ASSERT_EQ( 8, adstidx[ 5]);
+        TEST_ASSERT_EQ( 2, aperm[ 6]); TEST_ASSERT_EQ( 9, adstidx[ 6]);
+        TEST_ASSERT_EQ( 6, aperm[ 7]); TEST_ASSERT_EQ(10, adstidx[ 7]);
+        TEST_ASSERT_EQ( 0, bperm[ 0]); TEST_ASSERT_EQ( 0, bdstidx[ 0]);
+        TEST_ASSERT_EQ( 1, bperm[ 1]); TEST_ASSERT_EQ( 1, bdstidx[ 1]);
+        TEST_ASSERT_EQ( 3, bperm[ 2]); TEST_ASSERT_EQ( 2, bdstidx[ 2]);
+        TEST_ASSERT_EQ( 2, bperm[ 3]); TEST_ASSERT_EQ( 3, bdstidx[ 3]);
+        TEST_ASSERT_EQ( 4, bperm[ 4]); TEST_ASSERT_EQ( 4, bdstidx[ 4]);
+        TEST_ASSERT_EQ( 5, bperm[ 5]); TEST_ASSERT_EQ( 5, bdstidx[ 5]);
+        TEST_ASSERT_EQ( 8, bperm[ 6]); TEST_ASSERT_EQ( 6, bdstidx[ 6]);
+        TEST_ASSERT_EQ( 7, bperm[ 7]); TEST_ASSERT_EQ( 7, bdstidx[ 7]);
+        TEST_ASSERT_EQ( 6, bperm[ 8]); TEST_ASSERT_EQ( 9, bdstidx[ 8]);
+    }
 
     /* 64-bit signed integers */
     {
@@ -795,10 +971,10 @@ int test_setunion_unsorted_unique(void)
         int64_t b[9] = {0,1,4,2,5,6,12,9,8};
         int64_t csize = 17;
         int64_t c[17] = {};
-        err = setunion_unsorted_unique_int64(&csize, NULL, asize, a, bsize, b);
+        err = setunion_unsorted_unique_int64(&csize, NULL, asize, a, NULL, NULL, bsize, b, NULL, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(11, csize);
-        err = setunion_unsorted_unique_int64(&csize, c, asize, a, bsize, b);
+        err = setunion_unsorted_unique_int64(&csize, c, asize, a, NULL, NULL, bsize, b, NULL, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(11, csize);
         TEST_ASSERT_EQ( 0, c[0]);
@@ -823,10 +999,10 @@ int test_setunion_unsorted_unique(void)
         int b[9] = {0,1,4,2,5,6,12,9,8};
         int64_t csize = 17;
         int c[17] = {};
-        err = setunion_unsorted_unique_int(&csize, NULL, asize, a, bsize, b);
+        err = setunion_unsorted_unique_int(&csize, NULL, asize, a, NULL, NULL, bsize, b, NULL, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(11, csize);
-        err = setunion_unsorted_unique_int(&csize, c, asize, a, bsize, b);
+        err = setunion_unsorted_unique_int(&csize, c, asize, a, NULL, NULL, bsize, b, NULL, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(11, csize);
         TEST_ASSERT_EQ( 0, c[0]);
@@ -860,10 +1036,10 @@ int test_setunion_unsorted_nonunique(void)
         int32_t b[9] = {0,1,4,2,5,6,12,9,8};
         int64_t csize = 17;
         int32_t c[17] = {};
-        err = setunion_unsorted_nonunique_int32(&csize, NULL, asize, a, bsize, b);
+        err = setunion_unsorted_nonunique_int32(&csize, NULL, asize, a, NULL, NULL, bsize, b, NULL, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(11, csize);
-        err = setunion_unsorted_nonunique_int32(&csize, c, asize, a, bsize, b);
+        err = setunion_unsorted_nonunique_int32(&csize, c, asize, a, NULL, NULL, bsize, b, NULL, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(11, csize);
         TEST_ASSERT_EQ( 0, c[0]);
@@ -886,10 +1062,10 @@ int test_setunion_unsorted_nonunique(void)
         int32_t b[13] = {4,0,1,2,2,4,0,5,9,8,9,6,12};
         int64_t csize = 24;
         int32_t c[24] = {};
-        err = setunion_unsorted_nonunique_int32(&csize, NULL, asize, a, bsize, b);
+        err = setunion_unsorted_nonunique_int32(&csize, NULL, asize, a, NULL, NULL, bsize, b, NULL, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(11, csize);
-        err = setunion_unsorted_nonunique_int32(&csize, c, asize, a, bsize, b);
+        err = setunion_unsorted_nonunique_int32(&csize, c, asize, a, NULL, NULL, bsize, b, NULL, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(11, csize);
         TEST_ASSERT_EQ( 0, c[0]);
@@ -904,6 +1080,60 @@ int test_setunion_unsorted_nonunique(void)
         TEST_ASSERT_EQ(12, c[9]);
         TEST_ASSERT_EQ(14, c[10]);
     }
+    {
+        int err;
+        int64_t asize = 11;
+        int32_t a[11] = {2,0,2,2,4,8,6,10,14,12,10};
+        int64_t aperm[11] = {};
+        int64_t adstidx[11] = {};
+        int64_t bsize = 13;
+        int32_t b[13] = {4,0,1,2,2,4,0,5,9,8,9,6,12};
+        int64_t bperm[13] = {};
+        int64_t bdstidx[13] = {};
+        int64_t csize = 24;
+        int32_t c[24] = {};
+        err = setunion_unsorted_nonunique_int32(&csize, NULL, asize, a, aperm, NULL, bsize, b, bperm, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(11, csize);
+        err = setunion_sorted_nonunique_int32(&csize, c, asize, a, adstidx, bsize, b, bdstidx);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(11, csize);
+        TEST_ASSERT_EQ( 0, c[0]);
+        TEST_ASSERT_EQ( 1, c[1]);
+        TEST_ASSERT_EQ( 2, c[2]);
+        TEST_ASSERT_EQ( 4, c[3]);
+        TEST_ASSERT_EQ( 5, c[4]);
+        TEST_ASSERT_EQ( 6, c[5]);
+        TEST_ASSERT_EQ( 8, c[6]);
+        TEST_ASSERT_EQ( 9, c[7]);
+        TEST_ASSERT_EQ(10, c[8]);
+        TEST_ASSERT_EQ(12, c[9]);
+        TEST_ASSERT_EQ(14, c[10]);
+        TEST_ASSERT_EQ( 1, aperm[ 0]); TEST_ASSERT_EQ( 0, adstidx[ 0]);
+        TEST_ASSERT_EQ( 0, aperm[ 1]); TEST_ASSERT_EQ( 2, adstidx[ 1]);
+        TEST_ASSERT_EQ( 2, aperm[ 2]); TEST_ASSERT_EQ( 2, adstidx[ 2]);
+        TEST_ASSERT_EQ( 3, aperm[ 3]); TEST_ASSERT_EQ( 2, adstidx[ 3]);
+        TEST_ASSERT_EQ( 4, aperm[ 4]); TEST_ASSERT_EQ( 3, adstidx[ 4]);
+        TEST_ASSERT_EQ( 6, aperm[ 5]); TEST_ASSERT_EQ( 5, adstidx[ 5]);
+        TEST_ASSERT_EQ( 5, aperm[ 6]); TEST_ASSERT_EQ( 6, adstidx[ 6]);
+        TEST_ASSERT_EQ( 7, aperm[ 7]); TEST_ASSERT_EQ( 8, adstidx[ 7]);
+        TEST_ASSERT_EQ(10, aperm[ 8]); TEST_ASSERT_EQ( 8, adstidx[ 8]);
+        TEST_ASSERT_EQ( 9, aperm[ 9]); TEST_ASSERT_EQ( 9, adstidx[ 9]);
+        TEST_ASSERT_EQ( 8, aperm[10]); TEST_ASSERT_EQ(10, adstidx[10]);
+        TEST_ASSERT_EQ( 5, bperm[ 0]); TEST_ASSERT_EQ( 0, bdstidx[ 0]);
+        TEST_ASSERT_EQ( 0, bperm[ 1]); TEST_ASSERT_EQ( 0, bdstidx[ 1]);
+        TEST_ASSERT_EQ( 2, bperm[ 2]); TEST_ASSERT_EQ( 1, bdstidx[ 2]);
+        TEST_ASSERT_EQ( 3, bperm[ 3]); TEST_ASSERT_EQ( 2, bdstidx[ 3]);
+        TEST_ASSERT_EQ( 4, bperm[ 4]); TEST_ASSERT_EQ( 2, bdstidx[ 4]);
+        TEST_ASSERT_EQ( 6, bperm[ 5]); TEST_ASSERT_EQ( 3, bdstidx[ 5]);
+        TEST_ASSERT_EQ( 1, bperm[ 6]); TEST_ASSERT_EQ( 3, bdstidx[ 6]);
+        TEST_ASSERT_EQ( 7, bperm[ 7]); TEST_ASSERT_EQ( 4, bdstidx[ 7]);
+        TEST_ASSERT_EQ(10, bperm[ 8]); TEST_ASSERT_EQ( 5, bdstidx[ 8]);
+        TEST_ASSERT_EQ( 9, bperm[ 9]); TEST_ASSERT_EQ( 6, bdstidx[ 9]);
+        TEST_ASSERT_EQ(11, bperm[10]); TEST_ASSERT_EQ( 7, bdstidx[10]);
+        TEST_ASSERT_EQ( 8, bperm[11]); TEST_ASSERT_EQ( 7, bdstidx[11]);
+        TEST_ASSERT_EQ(12, bperm[12]); TEST_ASSERT_EQ( 9, bdstidx[12]);
+    }
 
     /* 64-bit signed integers */
     {
@@ -914,10 +1144,10 @@ int test_setunion_unsorted_nonunique(void)
         int64_t b[9] = {0,1,4,2,5,6,12,9,8};
         int64_t csize = 17;
         int64_t c[17] = {};
-        err = setunion_unsorted_nonunique_int64(&csize, NULL, asize, a, bsize, b);
+        err = setunion_unsorted_nonunique_int64(&csize, NULL, asize, a, NULL, NULL, bsize, b, NULL, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(11, csize);
-        err = setunion_unsorted_nonunique_int64(&csize, c, asize, a, bsize, b);
+        err = setunion_unsorted_nonunique_int64(&csize, c, asize, a, NULL, NULL, bsize, b, NULL, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(11, csize);
         TEST_ASSERT_EQ( 0, c[0]);
@@ -940,10 +1170,10 @@ int test_setunion_unsorted_nonunique(void)
         int64_t b[13] = {4,0,1,2,2,4,0,5,9,8,9,6,12};
         int64_t csize = 24;
         int64_t c[24] = {};
-        err = setunion_unsorted_nonunique_int64(&csize, NULL, asize, a, bsize, b);
+        err = setunion_unsorted_nonunique_int64(&csize, NULL, asize, a, NULL, NULL, bsize, b, NULL, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(11, csize);
-        err = setunion_unsorted_nonunique_int64(&csize, c, asize, a, bsize, b);
+        err = setunion_unsorted_nonunique_int64(&csize, c, asize, a, NULL, NULL, bsize, b, NULL, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(11, csize);
         TEST_ASSERT_EQ( 0, c[0]);
@@ -968,10 +1198,10 @@ int test_setunion_unsorted_nonunique(void)
         int b[9] = {0,1,4,2,5,6,12,9,8};
         int64_t csize = 17;
         int c[17] = {};
-        err = setunion_unsorted_nonunique_int(&csize, NULL, asize, a, bsize, b);
+        err = setunion_unsorted_nonunique_int(&csize, NULL, asize, a, NULL, NULL, bsize, b, NULL, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(11, csize);
-        err = setunion_unsorted_nonunique_int(&csize, c, asize, a, bsize, b);
+        err = setunion_unsorted_nonunique_int(&csize, c, asize, a, NULL, NULL, bsize, b, NULL, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(11, csize);
         TEST_ASSERT_EQ( 0, c[0]);
@@ -994,10 +1224,10 @@ int test_setunion_unsorted_nonunique(void)
         int b[13] = {4,0,1,2,2,4,0,5,9,8,9,6,12};
         int64_t csize = 24;
         int c[24] = {};
-        err = setunion_unsorted_nonunique_int(&csize, NULL, asize, a, bsize, b);
+        err = setunion_unsorted_nonunique_int(&csize, NULL, asize, a, NULL, NULL, bsize, b, NULL, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(11, csize);
-        err = setunion_unsorted_nonunique_int(&csize, c, asize, a, bsize, b);
+        err = setunion_unsorted_nonunique_int(&csize, c, asize, a, NULL, NULL, bsize, b, NULL, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(11, csize);
         TEST_ASSERT_EQ( 0, c[0]);
@@ -1031,10 +1261,10 @@ int test_setintersection_sorted_unique(void)
         int32_t b[9] = {0,1,2,4,5,6,8,9,12};
         int64_t csize = 17;
         int32_t c[17] = {};
-        err = setintersection_sorted_unique_int32(&csize, NULL, asize, a, bsize, b);
+        err = setintersection_sorted_unique_int32(&csize, NULL, asize, a, NULL, bsize, b, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ( 6, csize);
-        err = setintersection_sorted_unique_int32(&csize, c, asize, a, bsize, b);
+        err = setintersection_sorted_unique_int32(&csize, c, asize, a, NULL, bsize, b, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ( 6, csize);
         TEST_ASSERT_EQ( 0, c[0]);
@@ -1043,6 +1273,46 @@ int test_setintersection_sorted_unique(void)
         TEST_ASSERT_EQ( 6, c[3]);
         TEST_ASSERT_EQ( 8, c[4]);
         TEST_ASSERT_EQ(12, c[5]);
+    }
+    {
+        int err;
+        int64_t asize = 8;
+        int32_t a[8] = {0,2,4,6,8,10,12,14};
+        int64_t adstidx[8] = {};
+        int64_t bsize = 9;
+        int32_t b[9] = {0,1,2,4,5,6,8,9,12};
+        int64_t bdstidx[9] = {};
+        int64_t csize = 17;
+        int32_t c[17] = {};
+        err = setintersection_sorted_unique_int32(&csize, NULL, asize, a, NULL, bsize, b, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ( 6, csize);
+        err = setintersection_sorted_unique_int32(&csize, c, asize, a, adstidx, bsize, b, bdstidx);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ( 6, csize);
+        TEST_ASSERT_EQ( 0, c[0]);
+        TEST_ASSERT_EQ( 2, c[1]);
+        TEST_ASSERT_EQ( 4, c[2]);
+        TEST_ASSERT_EQ( 6, c[3]);
+        TEST_ASSERT_EQ( 8, c[4]);
+        TEST_ASSERT_EQ(12, c[5]);
+        TEST_ASSERT_EQ( 0, adstidx[0]);
+        TEST_ASSERT_EQ( 1, adstidx[1]);
+        TEST_ASSERT_EQ( 2, adstidx[2]);
+        TEST_ASSERT_EQ( 3, adstidx[3]);
+        TEST_ASSERT_EQ( 4, adstidx[4]);
+        TEST_ASSERT_EQ(-1, adstidx[5]);
+        TEST_ASSERT_EQ( 5, adstidx[6]);
+        TEST_ASSERT_EQ(-1, adstidx[7]);
+        TEST_ASSERT_EQ( 0, bdstidx[0]);
+        TEST_ASSERT_EQ(-1, bdstidx[1]);
+        TEST_ASSERT_EQ( 1, bdstidx[2]);
+        TEST_ASSERT_EQ( 2, bdstidx[3]);
+        TEST_ASSERT_EQ(-1, bdstidx[4]);
+        TEST_ASSERT_EQ( 3, bdstidx[5]);
+        TEST_ASSERT_EQ( 4, bdstidx[6]);
+        TEST_ASSERT_EQ(-1, bdstidx[7]);
+        TEST_ASSERT_EQ( 5, bdstidx[8]);
     }
 
     /* 64-bit signed integers */
@@ -1054,10 +1324,10 @@ int test_setintersection_sorted_unique(void)
         int64_t b[9] = {0,1,2,4,5,6,8,9,12};
         int64_t csize = 17;
         int64_t c[17] = {};
-        err = setintersection_sorted_unique_int64(&csize, NULL, asize, a, bsize, b);
+        err = setintersection_sorted_unique_int64(&csize, NULL, asize, a, NULL, bsize, b, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ( 6, csize);
-        err = setintersection_sorted_unique_int64(&csize, c, asize, a, bsize, b);
+        err = setintersection_sorted_unique_int64(&csize, c, asize, a, NULL, bsize, b, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ( 6, csize);
         TEST_ASSERT_EQ( 0, c[0]);
@@ -1077,10 +1347,10 @@ int test_setintersection_sorted_unique(void)
         int b[9] = {0,1,2,4,5,6,8,9,12};
         int64_t csize = 17;
         int c[17] = {};
-        err = setintersection_sorted_unique_int(&csize, NULL, asize, a, bsize, b);
+        err = setintersection_sorted_unique_int(&csize, NULL, asize, a, NULL, bsize, b, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ( 6, csize);
-        err = setintersection_sorted_unique_int(&csize, c, asize, a, bsize, b);
+        err = setintersection_sorted_unique_int(&csize, c, asize, a, NULL, bsize, b, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ( 6, csize);
         TEST_ASSERT_EQ( 0, c[0]);
@@ -1109,10 +1379,10 @@ int test_setintersection_sorted_nonunique(void)
         int32_t b[9] = {0,1,2,4,5,6,8,9,12};
         int64_t csize = 17;
         int32_t c[17] = {};
-        err = setintersection_sorted_nonunique_int32(&csize, NULL, asize, a, bsize, b);
+        err = setintersection_sorted_nonunique_int32(&csize, NULL, asize, a, NULL, bsize, b, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ( 6, csize);
-        err = setintersection_sorted_nonunique_int32(&csize, c, asize, a, bsize, b);
+        err = setintersection_sorted_nonunique_int32(&csize, c, asize, a, NULL, bsize, b, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ( 6, csize);
         TEST_ASSERT_EQ( 0, c[0]);
@@ -1130,10 +1400,10 @@ int test_setintersection_sorted_nonunique(void)
         int32_t b[13] = {0,0,1,2,2,4,4,5,6,8,9,9,12};
         int64_t csize = 24;
         int32_t c[24] = {};
-        err = setintersection_sorted_nonunique_int32(&csize, NULL, asize, a, bsize, b);
+        err = setintersection_sorted_nonunique_int32(&csize, NULL, asize, a, NULL, bsize, b, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(6, csize);
-        err = setintersection_sorted_nonunique_int32(&csize, c, asize, a, bsize, b);
+        err = setintersection_sorted_nonunique_int32(&csize, c, asize, a, NULL, bsize, b, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(6, csize);
         TEST_ASSERT_EQ( 0, c[0]);
@@ -1142,6 +1412,53 @@ int test_setintersection_sorted_nonunique(void)
         TEST_ASSERT_EQ( 6, c[3]);
         TEST_ASSERT_EQ( 8, c[4]);
         TEST_ASSERT_EQ(12, c[5]);
+    }
+    {
+        int err;
+        int64_t asize = 11;
+        int32_t a[11] = {0,2,2,2,4,6,8,10,10,12,14};
+        int64_t adstidx[11] = {};
+        int64_t bsize = 13;
+        int32_t b[13] = {0,0,1,2,2,4,4,5,6,8,9,9,12};
+        int64_t bdstidx[13] = {};
+        int64_t csize = 24;
+        int32_t c[24] = {};
+        err = setintersection_sorted_nonunique_int32(&csize, NULL, asize, a, NULL, bsize, b, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(6, csize);
+        err = setintersection_sorted_nonunique_int32(&csize, c, asize, a, adstidx, bsize, b, bdstidx);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(6, csize);
+        TEST_ASSERT_EQ( 0, c[0]);
+        TEST_ASSERT_EQ( 2, c[1]);
+        TEST_ASSERT_EQ( 4, c[2]);
+        TEST_ASSERT_EQ( 6, c[3]);
+        TEST_ASSERT_EQ( 8, c[4]);
+        TEST_ASSERT_EQ(12, c[5]);
+        TEST_ASSERT_EQ( 0, adstidx[ 0]);
+        TEST_ASSERT_EQ( 1, adstidx[ 1]);
+        TEST_ASSERT_EQ( 1, adstidx[ 2]);
+        TEST_ASSERT_EQ( 1, adstidx[ 3]);
+        TEST_ASSERT_EQ( 2, adstidx[ 4]);
+        TEST_ASSERT_EQ( 3, adstidx[ 5]);
+        TEST_ASSERT_EQ( 4, adstidx[ 6]);
+        TEST_ASSERT_EQ(-1, adstidx[ 7]);
+        TEST_ASSERT_EQ(-1, adstidx[ 8]);
+        TEST_ASSERT_EQ( 5, adstidx[ 9]);
+        TEST_ASSERT_EQ(-1, adstidx[10]);
+        TEST_ASSERT_EQ( 0, bdstidx[ 0]);
+        TEST_ASSERT_EQ( 0, bdstidx[ 1]);
+        TEST_ASSERT_EQ(-1, bdstidx[ 2]);
+        TEST_ASSERT_EQ( 1, bdstidx[ 3]);
+        TEST_ASSERT_EQ( 1, bdstidx[ 4]);
+        TEST_ASSERT_EQ( 2, bdstidx[ 5]);
+        TEST_ASSERT_EQ( 2, bdstidx[ 6]);
+        TEST_ASSERT_EQ(-1, bdstidx[ 7]);
+        TEST_ASSERT_EQ( 3, bdstidx[ 8]);
+        TEST_ASSERT_EQ( 4, bdstidx[ 9]);
+        TEST_ASSERT_EQ(-1, bdstidx[10]);
+        TEST_ASSERT_EQ(-1, bdstidx[11]);
+        TEST_ASSERT_EQ( 5, bdstidx[12]);
     }
 
     /* 64-bit signed integers */
@@ -1153,10 +1470,10 @@ int test_setintersection_sorted_nonunique(void)
         int64_t b[9] = {0,1,2,4,5,6,8,9,12};
         int64_t csize = 17;
         int64_t c[17] = {};
-        err = setintersection_sorted_nonunique_int64(&csize, NULL, asize, a, bsize, b);
+        err = setintersection_sorted_nonunique_int64(&csize, NULL, asize, a, NULL, bsize, b, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ( 6, csize);
-        err = setintersection_sorted_nonunique_int64(&csize, c, asize, a, bsize, b);
+        err = setintersection_sorted_nonunique_int64(&csize, c, asize, a, NULL, bsize, b, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ( 6, csize);
         TEST_ASSERT_EQ( 0, c[0]);
@@ -1174,10 +1491,10 @@ int test_setintersection_sorted_nonunique(void)
         int64_t b[13] = {0,0,1,2,2,4,4,5,6,8,9,9,12};
         int64_t csize = 24;
         int64_t c[24] = {};
-        err = setintersection_sorted_nonunique_int64(&csize, NULL, asize, a, bsize, b);
+        err = setintersection_sorted_nonunique_int64(&csize, NULL, asize, a, NULL, bsize, b, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(6, csize);
-        err = setintersection_sorted_nonunique_int64(&csize, c, asize, a, bsize, b);
+        err = setintersection_sorted_nonunique_int64(&csize, c, asize, a, NULL, bsize, b, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(6, csize);
         TEST_ASSERT_EQ( 0, c[0]);
@@ -1197,10 +1514,10 @@ int test_setintersection_sorted_nonunique(void)
         int b[9] = {0,1,2,4,5,6,8,9,12};
         int64_t csize = 17;
         int c[17] = {};
-        err = setintersection_sorted_nonunique_int(&csize, NULL, asize, a, bsize, b);
+        err = setintersection_sorted_nonunique_int(&csize, NULL, asize, a, NULL, bsize, b, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ( 6, csize);
-        err = setintersection_sorted_nonunique_int(&csize, c, asize, a, bsize, b);
+        err = setintersection_sorted_nonunique_int(&csize, c, asize, a, NULL, bsize, b, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ( 6, csize);
         TEST_ASSERT_EQ( 0, c[0]);
@@ -1218,10 +1535,10 @@ int test_setintersection_sorted_nonunique(void)
         int b[13] = {0,0,1,2,2,4,4,5,6,8,9,9,12};
         int64_t csize = 24;
         int c[24] = {};
-        err = setintersection_sorted_nonunique_int(&csize, NULL, asize, a, bsize, b);
+        err = setintersection_sorted_nonunique_int(&csize, NULL, asize, a, NULL, bsize, b, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(6, csize);
-        err = setintersection_sorted_nonunique_int(&csize, c, asize, a, bsize, b);
+        err = setintersection_sorted_nonunique_int(&csize, c, asize, a, NULL, bsize, b, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(6, csize);
         TEST_ASSERT_EQ( 0, c[0]);
@@ -1250,10 +1567,10 @@ int test_setintersection_unsorted_unique(void)
         int32_t b[9] = {0,1,4,2,5,6,12,9,8};
         int64_t csize = 17;
         int32_t c[17] = {};
-        err = setintersection_unsorted_unique_int32(&csize, NULL, asize, a, bsize, b);
+        err = setintersection_unsorted_unique_int32(&csize, NULL, asize, a, NULL, NULL, bsize, b, NULL, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ( 6, csize);
-        err = setintersection_unsorted_unique_int32(&csize, c, asize, a, bsize, b);
+        err = setintersection_unsorted_unique_int32(&csize, c, asize, a, NULL, NULL, bsize, b, NULL, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ( 6, csize);
         TEST_ASSERT_EQ( 0, c[0]);
@@ -1262,6 +1579,48 @@ int test_setintersection_unsorted_unique(void)
         TEST_ASSERT_EQ( 6, c[3]);
         TEST_ASSERT_EQ( 8, c[4]);
         TEST_ASSERT_EQ(12, c[5]);
+    }
+    {
+        int err;
+        int64_t asize = 8;
+        int32_t a[8] = {10,2,14,6,8,0,4,12};
+        int64_t aperm[8] = {};
+        int64_t adstidx[8] = {};
+        int64_t bsize = 9;
+        int32_t b[9] = {0,1,4,2,5,6,12,9,8};
+        int64_t bperm[9] = {};
+        int64_t bdstidx[9] = {};
+        int64_t csize = 17;
+        int32_t c[17] = {};
+        err = setintersection_unsorted_unique_int32(&csize, NULL, asize, a, aperm, NULL, bsize, b, bperm, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(6, csize);
+        err = setintersection_sorted_unique_int32(&csize, c, asize, a, adstidx, bsize, b, bdstidx);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(6, csize);
+        TEST_ASSERT_EQ( 0, c[0]);
+        TEST_ASSERT_EQ( 2, c[1]);
+        TEST_ASSERT_EQ( 4, c[2]);
+        TEST_ASSERT_EQ( 6, c[3]);
+        TEST_ASSERT_EQ( 8, c[4]);
+        TEST_ASSERT_EQ(12, c[5]);
+        TEST_ASSERT_EQ( 5, aperm[ 0]); TEST_ASSERT_EQ( 0, adstidx[ 0]);
+        TEST_ASSERT_EQ( 1, aperm[ 1]); TEST_ASSERT_EQ( 1, adstidx[ 1]);
+        TEST_ASSERT_EQ( 7, aperm[ 2]); TEST_ASSERT_EQ( 2, adstidx[ 2]);
+        TEST_ASSERT_EQ( 3, aperm[ 3]); TEST_ASSERT_EQ( 3, adstidx[ 3]);
+        TEST_ASSERT_EQ( 4, aperm[ 4]); TEST_ASSERT_EQ( 4, adstidx[ 4]);
+        TEST_ASSERT_EQ( 0, aperm[ 5]); TEST_ASSERT_EQ(-1, adstidx[ 5]);
+        TEST_ASSERT_EQ( 2, aperm[ 6]); TEST_ASSERT_EQ( 5, adstidx[ 6]);
+        TEST_ASSERT_EQ( 6, aperm[ 7]); TEST_ASSERT_EQ(-1, adstidx[ 7]);
+        TEST_ASSERT_EQ( 0, bperm[ 0]); TEST_ASSERT_EQ( 0, bdstidx[ 0]);
+        TEST_ASSERT_EQ( 1, bperm[ 1]); TEST_ASSERT_EQ(-1, bdstidx[ 1]);
+        TEST_ASSERT_EQ( 3, bperm[ 2]); TEST_ASSERT_EQ( 1, bdstidx[ 2]);
+        TEST_ASSERT_EQ( 2, bperm[ 3]); TEST_ASSERT_EQ( 2, bdstidx[ 3]);
+        TEST_ASSERT_EQ( 4, bperm[ 4]); TEST_ASSERT_EQ(-1, bdstidx[ 4]);
+        TEST_ASSERT_EQ( 5, bperm[ 5]); TEST_ASSERT_EQ( 3, bdstidx[ 5]);
+        TEST_ASSERT_EQ( 8, bperm[ 6]); TEST_ASSERT_EQ( 4, bdstidx[ 6]);
+        TEST_ASSERT_EQ( 7, bperm[ 7]); TEST_ASSERT_EQ(-1, bdstidx[ 7]);
+        TEST_ASSERT_EQ( 6, bperm[ 8]); TEST_ASSERT_EQ( 5, bdstidx[ 8]);
     }
 
     /* 64-bit signed integers */
@@ -1273,10 +1632,10 @@ int test_setintersection_unsorted_unique(void)
         int64_t b[9] = {0,1,4,2,5,6,12,9,8};
         int64_t csize = 17;
         int64_t c[17] = {};
-        err = setintersection_unsorted_unique_int64(&csize, NULL, asize, a, bsize, b);
+        err = setintersection_unsorted_unique_int64(&csize, NULL, asize, a, NULL, NULL, bsize, b, NULL, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ( 6, csize);
-        err = setintersection_unsorted_unique_int64(&csize, c, asize, a, bsize, b);
+        err = setintersection_unsorted_unique_int64(&csize, c, asize, a, NULL, NULL, bsize, b, NULL, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ( 6, csize);
         TEST_ASSERT_EQ( 0, c[0]);
@@ -1296,10 +1655,10 @@ int test_setintersection_unsorted_unique(void)
         int b[9] = {0,1,4,2,5,6,12,9,8};
         int64_t csize = 17;
         int c[17] = {};
-        err = setintersection_unsorted_unique_int(&csize, NULL, asize, a, bsize, b);
+        err = setintersection_unsorted_unique_int(&csize, NULL, asize, a, NULL, NULL, bsize, b, NULL, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ( 6, csize);
-        err = setintersection_unsorted_unique_int(&csize, c, asize, a, bsize, b);
+        err = setintersection_unsorted_unique_int(&csize, c, asize, a, NULL, NULL, bsize, b, NULL, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ( 6, csize);
         TEST_ASSERT_EQ( 0, c[0]);
@@ -1328,10 +1687,10 @@ int test_setintersection_unsorted_nonunique(void)
         int32_t b[9] = {0,1,4,2,5,6,12,9,8};
         int64_t csize = 17;
         int32_t c[17] = {};
-        err = setintersection_unsorted_nonunique_int32(&csize, NULL, asize, a, bsize, b);
+        err = setintersection_unsorted_nonunique_int32(&csize, NULL, asize, a, NULL, NULL, bsize, b, NULL, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ( 6, csize);
-        err = setintersection_unsorted_nonunique_int32(&csize, c, asize, a, bsize, b);
+        err = setintersection_unsorted_nonunique_int32(&csize, c, asize, a, NULL, NULL, bsize, b, NULL, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ( 6, csize);
         TEST_ASSERT_EQ( 0, c[0]);
@@ -1349,10 +1708,10 @@ int test_setintersection_unsorted_nonunique(void)
         int32_t b[13] = {4,0,1,2,2,4,0,5,9,8,9,6,12};
         int64_t csize = 24;
         int32_t c[24] = {};
-        err = setintersection_unsorted_nonunique_int32(&csize, NULL, asize, a, bsize, b);
+        err = setintersection_unsorted_nonunique_int32(&csize, NULL, asize, a, NULL, NULL, bsize, b, NULL, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ( 6, csize);
-        err = setintersection_unsorted_nonunique_int32(&csize, c, asize, a, bsize, b);
+        err = setintersection_unsorted_nonunique_int32(&csize, c, asize, a, NULL, NULL, bsize, b, NULL, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ( 6, csize);
         TEST_ASSERT_EQ( 0, c[0]);
@@ -1372,10 +1731,10 @@ int test_setintersection_unsorted_nonunique(void)
         int64_t b[9] = {0,1,4,2,5,6,12,9,8};
         int64_t csize = 17;
         int64_t c[17] = {};
-        err = setintersection_unsorted_nonunique_int64(&csize, NULL, asize, a, bsize, b);
+        err = setintersection_unsorted_nonunique_int64(&csize, NULL, asize, a, NULL, NULL, bsize, b, NULL, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ( 6, csize);
-        err = setintersection_unsorted_nonunique_int64(&csize, c, asize, a, bsize, b);
+        err = setintersection_unsorted_nonunique_int64(&csize, c, asize, a, NULL, NULL, bsize, b, NULL, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ( 6, csize);
         TEST_ASSERT_EQ( 0, c[0]);
@@ -1393,10 +1752,10 @@ int test_setintersection_unsorted_nonunique(void)
         int64_t b[13] = {4,0,1,2,2,4,0,5,9,8,9,6,12};
         int64_t csize = 24;
         int64_t c[24] = {};
-        err = setintersection_unsorted_nonunique_int64(&csize, NULL, asize, a, bsize, b);
+        err = setintersection_unsorted_nonunique_int64(&csize, NULL, asize, a, NULL, NULL, bsize, b, NULL, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ( 6, csize);
-        err = setintersection_unsorted_nonunique_int64(&csize, c, asize, a, bsize, b);
+        err = setintersection_unsorted_nonunique_int64(&csize, c, asize, a, NULL, NULL, bsize, b, NULL, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ( 6, csize);
         TEST_ASSERT_EQ( 0, c[0]);
@@ -1416,10 +1775,10 @@ int test_setintersection_unsorted_nonunique(void)
         int b[9] = {0,1,4,2,5,6,12,9,8};
         int64_t csize = 17;
         int c[17] = {};
-        err = setintersection_unsorted_nonunique_int(&csize, NULL, asize, a, bsize, b);
+        err = setintersection_unsorted_nonunique_int(&csize, NULL, asize, a, NULL, NULL, bsize, b, NULL, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ( 6, csize);
-        err = setintersection_unsorted_nonunique_int(&csize, c, asize, a, bsize, b);
+        err = setintersection_unsorted_nonunique_int(&csize, c, asize, a, NULL, NULL, bsize, b, NULL, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ( 6, csize);
         TEST_ASSERT_EQ( 0, c[0]);
@@ -1437,10 +1796,10 @@ int test_setintersection_unsorted_nonunique(void)
         int b[13] = {4,0,1,2,2,4,0,5,9,8,9,6,12};
         int64_t csize = 24;
         int c[24] = {};
-        err = setintersection_unsorted_nonunique_int(&csize, NULL, asize, a, bsize, b);
+        err = setintersection_unsorted_nonunique_int(&csize, NULL, asize, a, NULL, NULL, bsize, b, NULL, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ( 6, csize);
-        err = setintersection_unsorted_nonunique_int(&csize, c, asize, a, bsize, b);
+        err = setintersection_unsorted_nonunique_int(&csize, c, asize, a, NULL, NULL, bsize, b, NULL, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ( 6, csize);
         TEST_ASSERT_EQ( 0, c[0]);

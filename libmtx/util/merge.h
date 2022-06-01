@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-04-26
+ * Last modified: 2022-06-01
  *
  * Merge operations on arrays.
  */
@@ -491,8 +491,10 @@ int merge_sorted_int32(
     int32_t * c,
     int64_t asize,
     const int32_t * a,
+    int64_t * adstidx,
     int64_t bsize,
-    const int32_t * b);
+    const int32_t * b,
+    int64_t * bdstidx);
 
 /**
  * ‘merge_sorted_int64()’ merges two sorted arrays of 64-bit signed
@@ -511,8 +513,10 @@ int merge_sorted_int64(
     int64_t * c,
     int64_t asize,
     const int64_t * a,
+    int64_t * adstidx,
     int64_t bsize,
-    const int64_t * b);
+    const int64_t * b,
+    int64_t * bdstidx);
 
 /**
  * ‘merge_sorted_int()’ merges two sorted arrays of signed integers to
@@ -531,8 +535,10 @@ int merge_sorted_int(
     int * c,
     int64_t asize,
     const int * a,
+    int64_t * adstidx,
     int64_t bsize,
-    const int * b);
+    const int * b,
+    int64_t * bdstidx);
 
 /*
  * set union operations on sorted arrays of unique values (i.e., no
@@ -562,8 +568,10 @@ int setunion_sorted_unique_int32(
     int32_t * c,
     int64_t asize,
     const int32_t * a,
+    int64_t * adstidx,
     int64_t bsize,
-    const int32_t * b);
+    const int32_t * b,
+    int64_t * bdstidx);
 
 /**
  * ‘setunion_sorted_unique_int64()’ merges two sorted arrays of 64-bit
@@ -588,8 +596,10 @@ int setunion_sorted_unique_int64(
     int64_t * c,
     int64_t asize,
     const int64_t * a,
+    int64_t * adstidx,
     int64_t bsize,
-    const int64_t * b);
+    const int64_t * b,
+    int64_t * bdstidx);
 
 /**
  * ‘setunion_sorted_unique_int()’ merges two sorted arrays of signed
@@ -614,8 +624,10 @@ int setunion_sorted_unique_int(
     int * c,
     int64_t asize,
     const int * a,
+    int64_t * adstidx,
     int64_t bsize,
-    const int * b);
+    const int * b,
+    int64_t * bdstidx);
 
 /*
  * set union on sorted arrays, possibly containing non-unique values
@@ -645,8 +657,10 @@ int setunion_sorted_nonunique_int32(
     int32_t * c,
     int64_t asize,
     const int32_t * a,
+    int64_t * adstidx,
     int64_t bsize,
-    const int32_t * b);
+    const int32_t * b,
+    int64_t * bdstidx);
 
 /**
  * ‘setunion_sorted_nonunique_int64()’ merges two sorted arrays of
@@ -671,8 +685,10 @@ int setunion_sorted_nonunique_int64(
     int64_t * c,
     int64_t asize,
     const int64_t * a,
+    int64_t * adstidx,
     int64_t bsize,
-    const int64_t * b);
+    const int64_t * b,
+    int64_t * bdstidx);
 
 /**
  * ‘setunion_sorted_nonunique_int()’ merges two sorted arrays of
@@ -697,8 +713,10 @@ int setunion_sorted_nonunique_int(
     int * c,
     int64_t asize,
     const int * a,
+    int64_t * adstidx,
     int64_t bsize,
-    const int * b);
+    const int * b,
+    int64_t * bdstidx);
 
 /*
  * set union operations on unsorted arrays of unique values (i.e., no
@@ -729,8 +747,12 @@ int setunion_unsorted_unique_int32(
     int32_t * c,
     int64_t asize,
     int32_t * a,
+    int64_t * aperm,
+    int64_t * adstidx,
     int64_t bsize,
-    int32_t * b);
+    int32_t * b,
+    int64_t * bperm,
+    int64_t * bdstidx);
 
 /**
  * ‘setunion_unsorted_unique_int64()’ merges two arrays of 64-bit
@@ -756,8 +778,12 @@ int setunion_unsorted_unique_int64(
     int64_t * c,
     int64_t asize,
     int64_t * a,
+    int64_t * aperm,
+    int64_t * adstidx,
     int64_t bsize,
-    int64_t * b);
+    int64_t * b,
+    int64_t * bperm,
+    int64_t * bdstidx);
 
 /**
  * ‘setunion_unsorted_unique_int()’ merges two arrays of signed
@@ -783,8 +809,12 @@ int setunion_unsorted_unique_int(
     int * c,
     int64_t asize,
     int * a,
+    int64_t * aperm,
+    int64_t * adstidx,
     int64_t bsize,
-    int * b);
+    int * b,
+    int64_t * bperm,
+    int64_t * bdstidx);
 
 /*
  * set union on unsorted arrays, possibly containing non-unique values
@@ -815,8 +845,12 @@ int setunion_unsorted_nonunique_int32(
     int32_t * c,
     int64_t asize,
     int32_t * a,
+    int64_t * aperm,
+    int64_t * adstidx,
     int64_t bsize,
-    int32_t * b);
+    int32_t * b,
+    int64_t * bperm,
+    int64_t * bdstidx);
 
 /**
  * ‘setunion_unsorted_nonunique_int64()’ merges two arrays of 64-bit
@@ -842,8 +876,12 @@ int setunion_unsorted_nonunique_int64(
     int64_t * c,
     int64_t asize,
     int64_t * a,
+    int64_t * aperm,
+    int64_t * adstidx,
     int64_t bsize,
-    int64_t * b);
+    int64_t * b,
+    int64_t * bperm,
+    int64_t * bdstidx);
 
 /**
  * ‘setunion_unsorted_nonunique_int()’ merges two arrays of signed
@@ -869,8 +907,12 @@ int setunion_unsorted_nonunique_int(
     int * c,
     int64_t asize,
     int * a,
+    int64_t * aperm,
+    int64_t * adstidx,
     int64_t bsize,
-    int * b);
+    int * b,
+    int64_t * bperm,
+    int64_t * bdstidx);
 
 /*
  * set intersection operations on sorted arrays of unique values
@@ -900,8 +942,10 @@ int setintersection_sorted_unique_int32(
     int32_t * c,
     int64_t asize,
     const int32_t * a,
+    int64_t * adstidx,
     int64_t bsize,
-    const int32_t * b);
+    const int32_t * b,
+    int64_t * bdsdtidx);
 
 /**
  * ‘setintersection_sorted_unique_int64()’ merges two sorted arrays of
@@ -926,8 +970,10 @@ int setintersection_sorted_unique_int64(
     int64_t * c,
     int64_t asize,
     const int64_t * a,
+    int64_t * adstidx,
     int64_t bsize,
-    const int64_t * b);
+    const int64_t * b,
+    int64_t * bdstidx);
 
 /**
  * ‘setintersection_sorted_unique_int()’ merges two sorted arrays of
@@ -952,8 +998,10 @@ int setintersection_sorted_unique_int(
     int * c,
     int64_t asize,
     const int * a,
+    int64_t * adstidx,
     int64_t bsize,
-    const int * b);
+    const int * b,
+    int64_t * bdstidx);
 
 /*
  * set intersection on sorted arrays, possibly containing non-unique
@@ -983,8 +1031,10 @@ int setintersection_sorted_nonunique_int32(
     int32_t * c,
     int64_t asize,
     const int32_t * a,
+    int64_t * adstidx,
     int64_t bsize,
-    const int32_t * b);
+    const int32_t * b,
+    int64_t * bdstidx);
 
 /**
  * ‘setintersection_sorted_nonunique_int64()’ merges two sorted arrays
@@ -1009,8 +1059,10 @@ int setintersection_sorted_nonunique_int64(
     int64_t * c,
     int64_t asize,
     const int64_t * a,
+    int64_t * adstidx,
     int64_t bsize,
-    const int64_t * b);
+    const int64_t * b,
+    int64_t * bdstidx);
 
 /**
  * ‘setintersection_sorted_nonunique_int()’ merges two sorted arrays
@@ -1035,8 +1087,10 @@ int setintersection_sorted_nonunique_int(
     int * c,
     int64_t asize,
     const int * a,
+    int64_t * adstidx,
     int64_t bsize,
-    const int * b);
+    const int * b,
+    int64_t * bdstidx);
 
 /*
  * set intersection operations on unsorted arrays of unique values
@@ -1067,8 +1121,12 @@ int setintersection_unsorted_unique_int32(
     int32_t * c,
     int64_t asize,
     int32_t * a,
+    int64_t * aperm,
+    int64_t * adstidx,
     int64_t bsize,
-    int32_t * b);
+    int32_t * b,
+    int64_t * bperm,
+    int64_t * bdstidx);
 
 /**
  * ‘setintersection_unsorted_unique_int64()’ merges two arrays of
@@ -1094,8 +1152,12 @@ int setintersection_unsorted_unique_int64(
     int64_t * c,
     int64_t asize,
     int64_t * a,
+    int64_t * aperm,
+    int64_t * adstidx,
     int64_t bsize,
-    int64_t * b);
+    int64_t * b,
+    int64_t * bperm,
+    int64_t * bdstidx);
 
 /**
  * ‘setintersection_unsorted_unique_int()’ merges two arrays of signed
@@ -1121,8 +1183,12 @@ int setintersection_unsorted_unique_int(
     int * c,
     int64_t asize,
     int * a,
+    int64_t * aperm,
+    int64_t * adstidx,
     int64_t bsize,
-    int * b);
+    int * b,
+    int64_t * bperm,
+    int64_t * bdstidx);
 
 /*
  * set intersection on unsorted arrays, possibly containing non-unique
@@ -1153,8 +1219,12 @@ int setintersection_unsorted_nonunique_int32(
     int32_t * c,
     int64_t asize,
     int32_t * a,
+    int64_t * aperm,
+    int64_t * adstidx,
     int64_t bsize,
-    int32_t * b);
+    int32_t * b,
+    int64_t * bperm,
+    int64_t * bdstidx);
 
 /**
  * ‘setintersection_unsorted_nonunique_int64()’ merges two arrays of
@@ -1180,8 +1250,12 @@ int setintersection_unsorted_nonunique_int64(
     int64_t * c,
     int64_t asize,
     int64_t * a,
+    int64_t * aperm,
+    int64_t * adstidx,
     int64_t bsize,
-    int64_t * b);
+    int64_t * b,
+    int64_t * bperm,
+    int64_t * bdstidx);
 
 /**
  * ‘setintersection_unsorted_nonunique_int()’ merges two arrays of
@@ -1207,8 +1281,12 @@ int setintersection_unsorted_nonunique_int(
     int * c,
     int64_t asize,
     int * a,
+    int64_t * aperm,
+    int64_t * adstidx,
     int64_t bsize,
-    int * b);
+    int * b,
+    int64_t * bperm,
+    int64_t * bdstidx);
 
 /*
  * set difference operations on sorted arrays of unique values (i.e.,
