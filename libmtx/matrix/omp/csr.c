@@ -1389,26 +1389,28 @@ int mtxmatrix_ompcsr_to_mtxfile(
  * partitioning
  */
 
-/*
- * partitioning
- */
-
 /**
- * ‘mtxmatrix_ompcsr_partition_rowwise()’ partitions the entries of a
- * matrix rowwise.
+ * ‘mtxmatrix_ompcsr_partition_rowwise()’ partitions the entries of a matrix
+ * rowwise.
  *
  * See ‘partition_int()’ for an explanation of the meaning of the
  * arguments ‘parttype’, ‘num_parts’, ‘partsizes’, ‘blksize’ and
  * ‘parts’.
  *
- * The length of the array ‘dstpart’ must be at least equal to the
+ * The length of the array ‘dstnzpart’ must be at least equal to the
  * number of (nonzero) matrix entries (which can be obtained by
- * calling ‘mtxmatrix_size()’). If successful, ‘dstpart’ is used to
+ * calling ‘mtxmatrix_size()’). If successful, ‘dstnzpart’ is used to
  * store the part numbers assigned to the matrix nonzeros.
  *
- * If ‘dstpartsizes’ is not ‘NULL’, then it must be an array of length
- * ‘num_parts’, which is used to store the number of nonzeros assigned
- * to each part.
+ * If ‘dstrowpart’ is not ‘NULL’, then it must be an array of length
+ * at least equal to the number of matrix rows, which is used to store
+ * the part numbers assigned to the rows.
+ *
+ * If ‘dstnzpartsizes’ is not ‘NULL’, then it must be an array of
+ * length ‘num_parts’, which is used to store the number of nonzeros
+ * assigned to each part. Similarly, if ‘dstrowpartsizes’ is not
+ * ‘NULL’, then it must be an array of length ‘num_parts’, and it is
+ * used to store the number of rows assigned to each part
  */
 int mtxmatrix_ompcsr_partition_rowwise(
     const struct mtxmatrix_ompcsr * A,
@@ -1417,9 +1419,19 @@ int mtxmatrix_ompcsr_partition_rowwise(
     const int * partsizes,
     int blksize,
     const int * parts,
-    int * dstpart,
-    int64_t * dstpartsizes)
+    int * dstnzpart,
+    int64_t * dstnzpartsizes,
+    int * dstrowpart,
+    int64_t * dstrowpartsizes)
 {
+    if (dstrowpart) {
+        for (int i = 0; i < A->num_rows; i++) dstrowpart[i] = i;
+        int err = partition_int(
+            parttype, A->num_rows, num_parts, partsizes, blksize, parts,
+            A->num_rows, sizeof(*dstrowpart), dstrowpart,
+            dstrowpart, dstrowpartsizes);
+        if (err) return err;
+    }
     int * rowidx = malloc(A->size * sizeof(int));
     if (!rowidx) return MTX_ERR_ERRNO;
     for (int i = 0; i < A->num_rows; i++) {
@@ -1428,28 +1440,34 @@ int mtxmatrix_ompcsr_partition_rowwise(
     }
     int err = partition_int(
         parttype, A->num_columns, num_parts, partsizes, blksize, parts,
-        A->size, sizeof(*rowidx), rowidx, dstpart, dstpartsizes);
+        A->size, sizeof(*rowidx), rowidx, dstnzpart, dstnzpartsizes);
     if (err) { free(rowidx); return err; }
     free(rowidx);
     return MTX_SUCCESS;
 }
 
 /**
- * ‘mtxmatrix_ompcsr_partition_columnwise()’ partitions the entries of
- * a matrix columnwise.
+ * ‘mtxmatrix_ompcsr_partition_columnwise()’ partitions the entries of a
+ * matrix columnwise.
  *
  * See ‘partition_int()’ for an explanation of the meaning of the
  * arguments ‘parttype’, ‘num_parts’, ‘partsizes’, ‘blksize’ and
  * ‘parts’.
  *
- * The length of the array ‘dstpart’ must be at least equal to the
+ * The length of the array ‘dstnzpart’ must be at least equal to the
  * number of (nonzero) matrix entries (which can be obtained by
- * calling ‘mtxmatrix_size()’). If successful, ‘dstpart’ is used to
+ * calling ‘mtxmatrix_size()’). If successful, ‘dstnzpart’ is used to
  * store the part numbers assigned to the matrix nonzeros.
  *
- * If ‘dstpartsizes’ is not ‘NULL’, then it must be an array of length
- * ‘num_parts’, which is used to store the number of nonzeros assigned
- * to each part.
+ * If ‘dstcolpart’ is not ‘NULL’, then it must be an array of length
+ * at least equal to the number of matrix columns, which is used to
+ * store the part numbers assigned to the columns.
+ *
+ * If ‘dstnzpartsizes’ is not ‘NULL’, then it must be an array of
+ * length ‘num_parts’, which is used to store the number of nonzeros
+ * assigned to each part. Similarly, if ‘dstcolpartsizes’ is not
+ * ‘NULL’, then it must be an array of length ‘num_parts’, and it is
+ * used to store the number of columns assigned to each part
  */
 int mtxmatrix_ompcsr_partition_columnwise(
     const struct mtxmatrix_ompcsr * A,
@@ -1458,12 +1476,86 @@ int mtxmatrix_ompcsr_partition_columnwise(
     const int * partsizes,
     int blksize,
     const int * parts,
-    int * dstpart,
-    int64_t * dstpartsizes)
+    int * dstnzpart,
+    int64_t * dstnzpartsizes,
+    int * dstcolpart,
+    int64_t * dstcolpartsizes)
 {
+    if (dstcolpart) {
+        for (int j = 0; j < A->num_columns; j++) dstcolpart[j] = j;
+        int err = partition_int(
+            parttype, A->num_columns, num_parts, partsizes, blksize, parts,
+            A->num_columns, sizeof(*dstcolpart), dstcolpart,
+            dstcolpart, dstcolpartsizes);
+        if (err) return err;
+    }
     return partition_int(
         parttype, A->num_columns, num_parts, partsizes, blksize, parts,
-        A->size, sizeof(*A->colidx), A->colidx, dstpart, dstpartsizes);
+        A->size, sizeof(*A->colidx), A->colidx, dstnzpart, dstnzpartsizes);
+}
+
+/**
+ * ‘mtxmatrix_ompcsr_partition_2d()’ partitions the entries of a matrix in a
+ * 2D manner.
+ *
+ * See ‘partition_int()’ for an explanation of the meaning of the
+ * arguments ‘rowparttype’, ‘num_row_parts’, ‘rowpartsizes’,
+ * ‘rowblksize’, ‘rowparts’, and so on.
+ *
+ * The length of the array ‘dstnzpart’ must be at least equal to the
+ * number of (nonzero) matrix entries (which can be obtained by
+ * calling ‘mtxmatrix_size()’). If successful, ‘dstnzpart’ is used to
+ * store the part numbers assigned to the matrix nonzeros.
+ *
+ * The length of the array ‘dstrowpart’ must be at least equal to the
+ * number of matrix rows, and it is used to store the part numbers
+ * assigned to the rows. Similarly, the length of ‘dstcolpart’ must be
+ * at least equal to the number of matrix columns, and it is used to
+ * store the part numbers assigned to the columns.
+ *
+ * If ‘dstrowpartsizes’ or ‘dstcolpartsizes’ are not ‘NULL’, then they
+ * must point to arrays of length ‘num_row_parts’ and ‘num_col_parts’,
+ * respectively, which are used to store the number of rows and
+ * columns assigned to each part.
+ */
+int mtxmatrix_ompcsr_partition_2d(
+    const struct mtxmatrix_ompcsr * A,
+    enum mtxpartitioning rowparttype,
+    int num_row_parts,
+    const int * rowpartsizes,
+    int rowblksize,
+    const int * rowparts,
+    enum mtxpartitioning colparttype,
+    int num_col_parts,
+    const int * colpartsizes,
+    int colblksize,
+    const int * colparts,
+    int * dstnzpart,
+    int64_t * dstnzpartsizes,
+    int * dstrowpart,
+    int64_t * dstrowpartsizes,
+    int * dstcolpart,
+    int64_t * dstcolpartsizes)
+{
+    int num_parts = num_row_parts * num_col_parts;
+    int * dstnzrowpart = malloc(A->size * sizeof(int));
+    if (!dstnzrowpart) return MTX_ERR_ERRNO;
+    int err = mtxmatrix_ompcsr_partition_rowwise(
+        A, rowparttype, num_row_parts, rowpartsizes, rowblksize, rowparts,
+        dstnzrowpart, NULL, dstrowpart, dstrowpartsizes);
+    if (err) { free(dstnzrowpart); return err; }
+    err = mtxmatrix_ompcsr_partition_columnwise(
+        A, colparttype, num_col_parts, colpartsizes, colblksize, colparts,
+        dstnzpart, NULL, dstcolpart, dstcolpartsizes);
+    if (err) { free(dstnzrowpart); return err; }
+    for (int64_t k = 0; k < A->size; k++)
+        dstnzpart[k] = dstnzrowpart[k]*num_col_parts + dstnzpart[k];
+    if (dstnzpartsizes) {
+        for (int p = 0; p < num_parts; p++) dstnzpartsizes[p] = 0;
+        for (int64_t k = 0; k < A->size; k++) dstnzpartsizes[dstnzpart[k]]++;
+    }
+    free(dstnzrowpart);
+    return MTX_SUCCESS;
 }
 
 /**
@@ -1555,6 +1647,7 @@ int mtxmatrix_ompcsr_split(
             free(rowidx); free(invperm);
             return MTX_ERR_ERRNO;
         }
+        for (int i = 0; i <= dsts[p]->num_rows; i++) dsts[p]->rowptr[i] = 0;
         for (int64_t k = 0; k < partsize; k++) {
             int i = rowidx[invperm[offset+k]];
             dsts[p]->rowptr[i+1]++;

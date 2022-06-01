@@ -959,21 +959,27 @@ int mtxmatrix_nullcoo_to_mtxfile(
  */
 
 /**
- * ‘mtxmatrix_nullcoo_partition_rowwise()’ partitions the entries of a
- * matrix rowwise.
+ * ‘mtxmatrix_nullcoo_partition_rowwise()’ partitions the entries of a matrix
+ * rowwise.
  *
  * See ‘partition_int()’ for an explanation of the meaning of the
  * arguments ‘parttype’, ‘num_parts’, ‘partsizes’, ‘blksize’ and
  * ‘parts’.
  *
- * The length of the array ‘dstpart’ must be at least equal to the
+ * The length of the array ‘dstnzpart’ must be at least equal to the
  * number of (nonzero) matrix entries (which can be obtained by
- * calling ‘mtxmatrix_size()’). If successful, ‘dstpart’ is used to
+ * calling ‘mtxmatrix_size()’). If successful, ‘dstnzpart’ is used to
  * store the part numbers assigned to the matrix nonzeros.
  *
- * If ‘dstpartsizes’ is not ‘NULL’, then it must be an array of length
- * ‘num_parts’, which is used to store the number of nonzeros assigned
- * to each part.
+ * If ‘dstrowpart’ is not ‘NULL’, then it must be an array of length
+ * at least equal to the number of matrix rows, which is used to store
+ * the part numbers assigned to the rows.
+ *
+ * If ‘dstnzpartsizes’ is not ‘NULL’, then it must be an array of
+ * length ‘num_parts’, which is used to store the number of nonzeros
+ * assigned to each part. Similarly, if ‘dstrowpartsizes’ is not
+ * ‘NULL’, then it must be an array of length ‘num_parts’, and it is
+ * used to store the number of rows assigned to each part
  */
 int mtxmatrix_nullcoo_partition_rowwise(
     const struct mtxmatrix_nullcoo * A,
@@ -982,30 +988,38 @@ int mtxmatrix_nullcoo_partition_rowwise(
     const int * partsizes,
     int blksize,
     const int * parts,
-    int * dstpart,
-    int64_t * dstpartsizes)
+    int * dstnzpart,
+    int64_t * dstnzpartsizes,
+    int * dstrowpart,
+    int64_t * dstrowpartsizes)
 {
     return mtxmatrix_coo_partition_rowwise(
         &A->base, parttype, num_parts, partsizes, blksize, parts,
-        dstpart, dstpartsizes);
+        dstnzpart, dstnzpartsizes, dstrowpart, dstrowpartsizes);
 }
 
 /**
- * ‘mtxmatrix_nullcoo_partition_columnwise()’ partitions the entries
- * of a matrix columnwise.
+ * ‘mtxmatrix_nullcoo_partition_columnwise()’ partitions the entries of a
+ * matrix columnwise.
  *
  * See ‘partition_int()’ for an explanation of the meaning of the
  * arguments ‘parttype’, ‘num_parts’, ‘partsizes’, ‘blksize’ and
  * ‘parts’.
  *
- * The length of the array ‘dstpart’ must be at least equal to the
+ * The length of the array ‘dstnzpart’ must be at least equal to the
  * number of (nonzero) matrix entries (which can be obtained by
- * calling ‘mtxmatrix_size()’). If successful, ‘dstpart’ is used to
+ * calling ‘mtxmatrix_size()’). If successful, ‘dstnzpart’ is used to
  * store the part numbers assigned to the matrix nonzeros.
  *
- * If ‘dstpartsizes’ is not ‘NULL’, then it must be an array of length
- * ‘num_parts’, which is used to store the number of nonzeros assigned
- * to each part.
+ * If ‘dstcolpart’ is not ‘NULL’, then it must be an array of length
+ * at least equal to the number of matrix columns, which is used to
+ * store the part numbers assigned to the columns.
+ *
+ * If ‘dstnzpartsizes’ is not ‘NULL’, then it must be an array of
+ * length ‘num_parts’, which is used to store the number of nonzeros
+ * assigned to each part. Similarly, if ‘dstcolpartsizes’ is not
+ * ‘NULL’, then it must be an array of length ‘num_parts’, and it is
+ * used to store the number of columns assigned to each part
  */
 int mtxmatrix_nullcoo_partition_columnwise(
     const struct mtxmatrix_nullcoo * A,
@@ -1014,12 +1028,66 @@ int mtxmatrix_nullcoo_partition_columnwise(
     const int * partsizes,
     int blksize,
     const int * parts,
-    int * dstpart,
-    int64_t * dstpartsizes)
+    int * dstnzpart,
+    int64_t * dstnzpartsizes,
+    int * dstcolpart,
+    int64_t * dstcolpartsizes)
 {
     return mtxmatrix_coo_partition_columnwise(
         &A->base, parttype, num_parts, partsizes, blksize, parts,
-        dstpart, dstpartsizes);
+        dstnzpart, dstnzpartsizes, dstcolpart, dstcolpartsizes);
+}
+
+/**
+ * ‘mtxmatrix_nullcoo_partition_2d()’ partitions the entries of a matrix in a
+ * 2D manner.
+ *
+ * See ‘partition_int()’ for an explanation of the meaning of the
+ * arguments ‘rowparttype’, ‘num_row_parts’, ‘rowpartsizes’,
+ * ‘rowblksize’, ‘rowparts’, and so on.
+ *
+ * The length of the array ‘dstnzpart’ must be at least equal to the
+ * number of (nonzero) matrix entries (which can be obtained by
+ * calling ‘mtxmatrix_size()’). If successful, ‘dstnzpart’ is used to
+ * store the part numbers assigned to the matrix nonzeros.
+ *
+ * The length of the array ‘dstrowpart’ must be at least equal to the
+ * number of matrix rows, and it is used to store the part numbers
+ * assigned to the rows. Similarly, the length of ‘dstcolpart’ must be
+ * at least equal to the number of matrix columns, and it is used to
+ * store the part numbers assigned to the columns.
+ *
+ * If ‘dstrowpartsizes’ or ‘dstcolpartsizes’ are not ‘NULL’, then they
+ * must point to arrays of length ‘num_row_parts’ and ‘num_col_parts’,
+ * respectively, which are used to store the number of rows and
+ * columns assigned to each part.
+ */
+int mtxmatrix_nullcoo_partition_2d(
+    const struct mtxmatrix_nullcoo * A,
+    enum mtxpartitioning rowparttype,
+    int num_row_parts,
+    const int * rowpartsizes,
+    int rowblksize,
+    const int * rowparts,
+    enum mtxpartitioning colparttype,
+    int num_col_parts,
+    const int * colpartsizes,
+    int colblksize,
+    const int * colparts,
+    int * dstnzpart,
+    int64_t * dstnzpartsizes,
+    int * dstrowpart,
+    int64_t * dstrowpartsizes,
+    int * dstcolpart,
+    int64_t * dstcolpartsizes)
+{
+    return mtxmatrix_coo_partition_2d(
+        &A->base,
+        rowparttype, num_row_parts, rowpartsizes, rowblksize, rowparts,
+        colparttype, num_col_parts, colpartsizes, colblksize, colparts,
+        dstnzpart, dstnzpartsizes,
+        dstrowpart, dstrowpartsizes,
+        dstcolpart, dstcolpartsizes);
 }
 
 /**
