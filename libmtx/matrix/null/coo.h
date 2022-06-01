@@ -35,6 +35,7 @@
 #include <libmtx/vector/field.h>
 #include <libmtx/vector/precision.h>
 #include <libmtx/vector/vector.h>
+#include <libmtx/util/partition.h>
 
 #include <stdarg.h>
 #include <stddef.h>
@@ -851,6 +852,60 @@ int mtxmatrix_nullcoo_to_mtxfile(
 /*
  * partitioning
  */
+
+/**
+ * ‘mtxmatrix_nullcoo_partition_rowwise()’ partitions the entries of a
+ * matrix rowwise.
+ *
+ * See ‘partition_int()’ for an explanation of the meaning of the
+ * arguments ‘parttype’, ‘num_parts’, ‘partsizes’, ‘blksize’ and
+ * ‘parts’.
+ *
+ * The length of the array ‘dstpart’ must be at least equal to the
+ * number of (nonzero) matrix entries (which can be obtained by
+ * calling ‘mtxmatrix_size()’). If successful, ‘dstpart’ is used to
+ * store the part numbers assigned to the matrix nonzeros.
+ *
+ * If ‘dstpartsizes’ is not ‘NULL’, then it must be an array of length
+ * ‘num_parts’, which is used to store the number of nonzeros assigned
+ * to each part.
+ */
+int mtxmatrix_nullcoo_partition_rowwise(
+    const struct mtxmatrix_nullcoo * A,
+    enum mtxpartitioning parttype,
+    int num_parts,
+    const int * partsizes,
+    int blksize,
+    const int * parts,
+    int * dstpart,
+    int64_t * dstpartsizes);
+
+/**
+ * ‘mtxmatrix_nullcoo_partition_columnwise()’ partitions the entries
+ * of a matrix columnwise.
+ *
+ * See ‘partition_int()’ for an explanation of the meaning of the
+ * arguments ‘parttype’, ‘num_parts’, ‘partsizes’, ‘blksize’ and
+ * ‘parts’.
+ *
+ * The length of the array ‘dstpart’ must be at least equal to the
+ * number of (nonzero) matrix entries (which can be obtained by
+ * calling ‘mtxmatrix_size()’). If successful, ‘dstpart’ is used to
+ * store the part numbers assigned to the matrix nonzeros.
+ *
+ * If ‘dstpartsizes’ is not ‘NULL’, then it must be an array of length
+ * ‘num_parts’, which is used to store the number of nonzeros assigned
+ * to each part.
+ */
+int mtxmatrix_nullcoo_partition_columnwise(
+    const struct mtxmatrix_nullcoo * A,
+    enum mtxpartitioning parttype,
+    int num_parts,
+    const int * partsizes,
+    int blksize,
+    const int * parts,
+    int * dstpart,
+    int64_t * dstpartsizes);
 
 /**
  * ‘mtxmatrix_nullcoo_split()’ splits a matrix into multiple matrices

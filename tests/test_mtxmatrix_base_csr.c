@@ -1108,6 +1108,214 @@ int test_mtxmatrix_csr_to_mtxfile(void)
 }
 
 /**
+ * ‘test_mtxmatrix_csr_partition_rowwise()’ tests partitioning
+ * matrices rowwise.
+ */
+int test_mtxmatrix_csr_partition_rowwise(void)
+{
+    int err;
+    {
+        struct mtxmatrix src;
+        int num_parts = 2;
+        struct mtxmatrix dst0, dst1;
+        struct mtxmatrix * dsts[] = {&dst0, &dst1};
+        int num_rows = 3;
+        int num_columns = 3;
+        int num_nonzeros = 8;
+        int srcrowidx[] = {0, 0, 1, 1, 1, 2, 2, 2};
+        int srccolidx[] = {0, 1, 0, 1, 2, 0, 1, 2};
+        float srcdata[] = {1.0f, 2.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f, 9.0f};
+        int srcsize = sizeof(srcdata) / sizeof(*srcdata);
+        err = mtxmatrix_init_entries_real_single(
+            &src, mtxmatrix_csr, mtx_unsymmetric,
+            num_rows, num_columns, num_nonzeros,
+            srcrowidx, srccolidx, srcdata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        int dstparts[8] = {};
+        err = mtxmatrix_partition_rowwise(
+            &src, mtx_block, 2, NULL, 0, NULL, dstparts, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(0, dstparts[0]);
+        TEST_ASSERT_EQ(0, dstparts[1]);
+        TEST_ASSERT_EQ(0, dstparts[2]);
+        TEST_ASSERT_EQ(0, dstparts[3]);
+        TEST_ASSERT_EQ(0, dstparts[4]);
+        TEST_ASSERT_EQ(1, dstparts[5]);
+        TEST_ASSERT_EQ(1, dstparts[6]);
+        TEST_ASSERT_EQ(1, dstparts[7]);
+        mtxmatrix_free(&src);
+    }
+    {
+        struct mtxmatrix src;
+        int num_parts = 2;
+        struct mtxmatrix dst0, dst1;
+        struct mtxmatrix * dsts[] = {&dst0, &dst1};
+        int num_rows = 3;
+        int num_columns = 3;
+        int num_nonzeros = 8;
+        int srcrowidx[] = {0, 0, 1, 1, 1, 2, 2, 2};
+        int srccolidx[] = {0, 1, 0, 1, 2, 0, 1, 2};
+        float srcdata[] = {1.0f, 2.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f, 9.0f};
+        int srcsize = sizeof(srcdata) / sizeof(*srcdata);
+        err = mtxmatrix_init_entries_real_single(
+            &src, mtxmatrix_csr, mtx_unsymmetric,
+            num_rows, num_columns, num_nonzeros,
+            srcrowidx, srccolidx, srcdata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        int dstparts[8] = {};
+        err = mtxmatrix_partition_rowwise(
+            &src, mtx_cyclic, 2, NULL, 0, NULL, dstparts, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(0, dstparts[0]);
+        TEST_ASSERT_EQ(0, dstparts[1]);
+        TEST_ASSERT_EQ(1, dstparts[2]);
+        TEST_ASSERT_EQ(1, dstparts[3]);
+        TEST_ASSERT_EQ(1, dstparts[4]);
+        TEST_ASSERT_EQ(0, dstparts[5]);
+        TEST_ASSERT_EQ(0, dstparts[6]);
+        TEST_ASSERT_EQ(0, dstparts[7]);
+        mtxmatrix_free(&src);
+    }
+    {
+        struct mtxmatrix src;
+        int num_parts = 2;
+        struct mtxmatrix dst0, dst1;
+        struct mtxmatrix * dsts[] = {&dst0, &dst1};
+        int num_rows = 3;
+        int num_columns = 3;
+        int num_nonzeros = 8;
+        int srcrowidx[] = {0, 0, 1, 1, 1, 2, 2, 2};
+        int srccolidx[] = {0, 1, 0, 1, 2, 0, 1, 2};
+        float srcdata[] = {1.0f, 2.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f, 9.0f};
+        int srcsize = sizeof(srcdata) / sizeof(*srcdata);
+        err = mtxmatrix_init_entries_real_single(
+            &src, mtxmatrix_csr, mtx_unsymmetric,
+            num_rows, num_columns, num_nonzeros,
+            srcrowidx, srccolidx, srcdata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        int parts[3] = {1, 1, 0};
+        int dstparts[8] = {};
+        err = mtxmatrix_partition_rowwise(
+            &src, mtx_custom_partition, 2, NULL, 0, parts, dstparts, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(1, dstparts[0]);
+        TEST_ASSERT_EQ(1, dstparts[1]);
+        TEST_ASSERT_EQ(1, dstparts[2]);
+        TEST_ASSERT_EQ(1, dstparts[3]);
+        TEST_ASSERT_EQ(1, dstparts[4]);
+        TEST_ASSERT_EQ(0, dstparts[5]);
+        TEST_ASSERT_EQ(0, dstparts[6]);
+        TEST_ASSERT_EQ(0, dstparts[7]);
+        mtxmatrix_free(&src);
+    }
+    return TEST_SUCCESS;
+}
+
+/**
+ * ‘test_mtxmatrix_csr_partition_columnwise()’ tests partitioning
+ * matrices columnwise.
+ */
+int test_mtxmatrix_csr_partition_columnwise(void)
+{
+    int err;
+    {
+        struct mtxmatrix src;
+        int num_parts = 2;
+        struct mtxmatrix dst0, dst1;
+        struct mtxmatrix * dsts[] = {&dst0, &dst1};
+        int num_rows = 3;
+        int num_columns = 3;
+        int num_nonzeros = 8;
+        int srcrowidx[] = {0, 0, 1, 1, 1, 2, 2, 2};
+        int srccolidx[] = {0, 1, 0, 1, 2, 0, 1, 2};
+        float srcdata[] = {1.0f, 2.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f, 9.0f};
+        int srcsize = sizeof(srcdata) / sizeof(*srcdata);
+        err = mtxmatrix_init_entries_real_single(
+            &src, mtxmatrix_csr, mtx_unsymmetric,
+            num_rows, num_columns, num_nonzeros,
+            srcrowidx, srccolidx, srcdata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        int dstparts[8] = {};
+        err = mtxmatrix_partition_columnwise(
+            &src, mtx_block, 2, NULL, 0, NULL, dstparts, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(0, dstparts[0]);
+        TEST_ASSERT_EQ(0, dstparts[1]);
+        TEST_ASSERT_EQ(0, dstparts[2]);
+        TEST_ASSERT_EQ(0, dstparts[3]);
+        TEST_ASSERT_EQ(1, dstparts[4]);
+        TEST_ASSERT_EQ(0, dstparts[5]);
+        TEST_ASSERT_EQ(0, dstparts[6]);
+        TEST_ASSERT_EQ(1, dstparts[7]);
+        mtxmatrix_free(&src);
+    }
+    {
+        struct mtxmatrix src;
+        int num_parts = 2;
+        struct mtxmatrix dst0, dst1;
+        struct mtxmatrix * dsts[] = {&dst0, &dst1};
+        int num_rows = 3;
+        int num_columns = 3;
+        int num_nonzeros = 8;
+        int srcrowidx[] = {0, 0, 1, 1, 1, 2, 2, 2};
+        int srccolidx[] = {0, 1, 0, 1, 2, 0, 1, 2};
+        float srcdata[] = {1.0f, 2.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f, 9.0f};
+        int srcsize = sizeof(srcdata) / sizeof(*srcdata);
+        err = mtxmatrix_init_entries_real_single(
+            &src, mtxmatrix_csr, mtx_unsymmetric,
+            num_rows, num_columns, num_nonzeros,
+            srcrowidx, srccolidx, srcdata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        int dstparts[8] = {};
+        err = mtxmatrix_partition_columnwise(
+            &src, mtx_cyclic, 2, NULL, 0, NULL, dstparts, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(0, dstparts[0]);
+        TEST_ASSERT_EQ(1, dstparts[1]);
+        TEST_ASSERT_EQ(0, dstparts[2]);
+        TEST_ASSERT_EQ(1, dstparts[3]);
+        TEST_ASSERT_EQ(0, dstparts[4]);
+        TEST_ASSERT_EQ(0, dstparts[5]);
+        TEST_ASSERT_EQ(1, dstparts[6]);
+        TEST_ASSERT_EQ(0, dstparts[7]);
+        mtxmatrix_free(&src);
+    }
+    {
+        struct mtxmatrix src;
+        int num_parts = 2;
+        struct mtxmatrix dst0, dst1;
+        struct mtxmatrix * dsts[] = {&dst0, &dst1};
+        int num_rows = 3;
+        int num_columns = 3;
+        int num_nonzeros = 8;
+        int srcrowidx[] = {0, 0, 1, 1, 1, 2, 2, 2};
+        int srccolidx[] = {0, 1, 0, 1, 2, 0, 1, 2};
+        float srcdata[] = {1.0f, 2.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f, 9.0f};
+        int srcsize = sizeof(srcdata) / sizeof(*srcdata);
+        err = mtxmatrix_init_entries_real_single(
+            &src, mtxmatrix_csr, mtx_unsymmetric,
+            num_rows, num_columns, num_nonzeros,
+            srcrowidx, srccolidx, srcdata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        int parts[3] = {1, 1, 0};
+        int dstparts[8] = {};
+        err = mtxmatrix_partition_columnwise(
+            &src, mtx_custom_partition, 2, NULL, 0, parts, dstparts, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(1, dstparts[0]);
+        TEST_ASSERT_EQ(1, dstparts[1]);
+        TEST_ASSERT_EQ(1, dstparts[2]);
+        TEST_ASSERT_EQ(1, dstparts[3]);
+        TEST_ASSERT_EQ(0, dstparts[4]);
+        TEST_ASSERT_EQ(1, dstparts[5]);
+        TEST_ASSERT_EQ(1, dstparts[6]);
+        TEST_ASSERT_EQ(0, dstparts[7]);
+        mtxmatrix_free(&src);
+    }
+    return TEST_SUCCESS;
+}
+
+/**
  * ‘test_mtxmatrix_csr_split()’ tests splitting matrices.
  */
 int test_mtxmatrix_csr_split(void)
@@ -1179,8 +1387,7 @@ int test_mtxmatrix_csr_split(void)
 }
 
 /**
- * ‘test_mtxmatrix_csr_gemv()’ tests computing matrix-vector
- * products for matrices in coordinate format.
+ * ‘test_mtxmatrix_csr_gemv()’ tests computing matrix-vector products.
  */
 int test_mtxmatrix_csr_gemv(void)
 {
@@ -3307,6 +3514,8 @@ int main(int argc, char * argv[])
     TEST_SUITE_BEGIN("Running tests for CSR matrices\n");
     TEST_RUN(test_mtxmatrix_csr_from_mtxfile);
     TEST_RUN(test_mtxmatrix_csr_to_mtxfile);
+    TEST_RUN(test_mtxmatrix_csr_partition_rowwise);
+    TEST_RUN(test_mtxmatrix_csr_partition_columnwise);
     TEST_RUN(test_mtxmatrix_csr_split);
     TEST_RUN(test_mtxmatrix_csr_gemv);
     TEST_SUITE_END();

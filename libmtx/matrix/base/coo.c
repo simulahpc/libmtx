@@ -1353,6 +1353,70 @@ int mtxmatrix_coo_to_mtxfile(
  */
 
 /**
+ * ‘mtxmatrix_coo_partition_rowwise()’ partitions the entries of a
+ * matrix rowwise.
+ *
+ * See ‘partition_int()’ for an explanation of the meaning of the
+ * arguments ‘parttype’, ‘num_parts’, ‘partsizes’, ‘blksize’ and
+ * ‘parts’.
+ *
+ * The length of the array ‘dstpart’ must be at least equal to the
+ * number of (nonzero) matrix entries (which can be obtained by
+ * calling ‘mtxmatrix_size()’). If successful, ‘dstpart’ is used to
+ * store the part numbers assigned to the matrix nonzeros.
+ *
+ * If ‘dstpartsizes’ is not ‘NULL’, then it must be an array of length
+ * ‘num_parts’, which is used to store the number of nonzeros assigned
+ * to each part.
+ */
+int mtxmatrix_coo_partition_rowwise(
+    const struct mtxmatrix_coo * A,
+    enum mtxpartitioning parttype,
+    int num_parts,
+    const int * partsizes,
+    int blksize,
+    const int * parts,
+    int * dstpart,
+    int64_t * dstpartsizes)
+{
+    return partition_int(
+        parttype, A->num_rows, num_parts, partsizes, blksize, parts,
+        A->size, sizeof(*A->rowidx), A->rowidx, dstpart, dstpartsizes);
+}
+
+/**
+ * ‘mtxmatrix_coo_partition_columnwise()’ partitions the entries of a
+ * matrix columnwise.
+ *
+ * See ‘partition_int()’ for an explanation of the meaning of the
+ * arguments ‘parttype’, ‘num_parts’, ‘partsizes’, ‘blksize’ and
+ * ‘parts’.
+ *
+ * The length of the array ‘dstpart’ must be at least equal to the
+ * number of (nonzero) matrix entries (which can be obtained by
+ * calling ‘mtxmatrix_size()’). If successful, ‘dstpart’ is used to
+ * store the part numbers assigned to the matrix nonzeros.
+ *
+ * If ‘dstpartsizes’ is not ‘NULL’, then it must be an array of length
+ * ‘num_parts’, which is used to store the number of nonzeros assigned
+ * to each part.
+ */
+int mtxmatrix_coo_partition_columnwise(
+    const struct mtxmatrix_coo * A,
+    enum mtxpartitioning parttype,
+    int num_parts,
+    const int * partsizes,
+    int blksize,
+    const int * parts,
+    int * dstpart,
+    int64_t * dstpartsizes)
+{
+    return partition_int(
+        parttype, A->num_columns, num_parts, partsizes, blksize, parts,
+        A->size, sizeof(*A->colidx), A->colidx, dstpart, dstpartsizes);
+}
+
+/**
  * ‘mtxmatrix_coo_split()’ splits a matrix into multiple matrices
  * according to a given assignment of parts to each nonzero matrix
  * element.
