@@ -69,8 +69,8 @@ int partition_cyclic_int64(
     for (int64_t i = 0; i < idxsize; i++) {
         int64_t x = *(const int64_t *) ((const unsigned char *) idx+i*idxstride);
         if (x < 0 || x >= size) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
-        dstpart[i] = x % num_parts;
-        if (dstpartsizes) dstpartsizes[dstpart[i]]++;
+        if (dstpart) dstpart[i] = x % num_parts;
+        if (dstpartsizes) dstpartsizes[x % num_parts]++;
     }
     return MTX_SUCCESS;
 }
@@ -106,8 +106,8 @@ int partition_cyclic_int(
     for (int64_t i = 0; i < idxsize; i++) {
         int x = *(const int *) ((const unsigned char *) idx+i*idxstride);
         if (x < 0 || x >= size) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
-        dstpart[i] = x % num_parts;
-        if (dstpartsizes) dstpartsizes[dstpart[i]]++;
+        if (dstpart) dstpart[i] = x % num_parts;
+        if (dstpartsizes) dstpartsizes[x % num_parts]++;
     }
     return MTX_SUCCESS;
 }
@@ -151,8 +151,8 @@ int partition_block_int64(
             while (p < num_parts && x >= partsizes[p])
                 x -= partsizes[p++];
             if (p >= num_parts) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
-            dstpart[i] = p;
-            if (dstpartsizes) dstpartsizes[dstpart[i]]++;
+            if (dstpart) dstpart[i] = p;
+            if (dstpartsizes) dstpartsizes[p]++;
         }
     } else {
         if (num_parts <= 0) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
@@ -161,8 +161,8 @@ int partition_block_int64(
         for (int64_t i = 0; i < idxsize; i++) {
             int64_t x = *(const int64_t *) ((const unsigned char *) idx+i*idxstride);
             if (x < 0 || x >= size) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
-            dstpart[i] = x / blksize;
-            if (dstpartsizes) dstpartsizes[dstpart[i]]++;
+            if (dstpart) dstpart[i] = x / blksize;
+            if (dstpartsizes) dstpartsizes[x / blksize]++;
         }
     }
     return MTX_SUCCESS;
@@ -206,8 +206,8 @@ int partition_block_int(
             while (p < num_parts && x >= partsizes[p])
                 x -= partsizes[p++];
             if (p >= num_parts) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
-            dstpart[i] = p;
-            if (dstpartsizes) dstpartsizes[dstpart[i]]++;
+            if (dstpart) dstpart[i] = p;
+            if (dstpartsizes) dstpartsizes[p]++;
         }
     } else {
         if (num_parts <= 0) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
@@ -216,8 +216,8 @@ int partition_block_int(
         for (int64_t i = 0; i < idxsize; i++) {
             int x = *(const int *) ((const unsigned char *) idx+i*idxstride);
             if (x < 0 || x >= size) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
-            dstpart[i] = x / blksize;
-            if (dstpartsizes) dstpartsizes[dstpart[i]]++;
+            if (dstpart) dstpart[i] = x / blksize;
+            if (dstpartsizes) dstpartsizes[x / blksize]++;
         }
     }
     return MTX_SUCCESS;
@@ -257,8 +257,8 @@ int partition_block_cyclic_int64(
     for (int64_t i = 0; i < idxsize; i++) {
         int64_t x = *(const int64_t *) ((const unsigned char *) idx+i*idxstride);
         if (x < 0 || x >= size) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
-        dstpart[i] = (x / blksize) % num_parts;
-        if (dstpartsizes) dstpartsizes[dstpart[i]]++;
+        if (dstpart) dstpart[i] = (x / blksize) % num_parts;
+        if (dstpartsizes) dstpartsizes[(x / blksize) % num_parts]++;
     }
     return MTX_SUCCESS;
 }
@@ -296,8 +296,8 @@ int partition_block_cyclic_int(
     for (int64_t i = 0; i < idxsize; i++) {
         int x = *(const int *) ((const unsigned char *) idx+i*idxstride);
         if (x < 0 || x >= size) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
-        dstpart[i] = (x / blksize) % num_parts;
-        if (dstpartsizes) dstpartsizes[dstpart[i]]++;
+        if (dstpart) dstpart[i] = (x / blksize) % num_parts;
+        if (dstpartsizes) dstpartsizes[(x / blksize) % num_parts]++;
     }
     return MTX_SUCCESS;
 }
@@ -337,8 +337,8 @@ int partition_custom_int64(
     for (int64_t i = 0; i < idxsize; i++) {
         int64_t x = *(const int64_t *) ((const unsigned char *) idx+i*idxstride);
         if (x < 0 || x >= size) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
-        dstpart[i] = parts[x];
-        if (dstpartsizes) dstpartsizes[dstpart[i]]++;
+        if (dstpart) dstpart[i] = parts[x];
+        if (dstpartsizes) dstpartsizes[parts[x]]++;
     }
     return MTX_SUCCESS;
 }
@@ -377,8 +377,8 @@ int partition_custom_int(
     for (int64_t i = 0; i < idxsize; i++) {
         int x = *(const int *) ((const unsigned char *) idx+i*idxstride);
         if (x < 0 || x >= size) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
-        dstpart[i] = parts[x];
-        if (dstpartsizes) dstpartsizes[dstpart[i]]++;
+        if (dstpart) dstpart[i] = parts[x];
+        if (dstpartsizes) dstpartsizes[parts[x]]++;
     }
     return MTX_SUCCESS;
 }
