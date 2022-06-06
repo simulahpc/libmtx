@@ -530,6 +530,45 @@ int mtxvector_dist_fwrite(
     struct mtxdisterror * disterr);
 
 /*
+ * partitioning
+ */
+
+/**
+ * ‘mtxvector_dist_split()’ splits a vector into multiple vectors
+ * according to a given assignment of parts to each vector element.
+ *
+ * The partitioning of the vector elements is specified by the array
+ * ‘parts’. The length of the ‘parts’ array is given by ‘size’, which
+ * must match the size of the vector ‘src’. Each entry in the array is
+ * an integer in the range ‘[0, num_parts)’ designating the part to
+ * which the corresponding vector element belongs.
+ *
+ * The argument ‘dsts’ is an array of ‘num_parts’ pointers to objects
+ * of type ‘struct mtxvector_dist’. If successful, then ‘dsts[p]’
+ * points to a vector consisting of elements from ‘src’ that belong to
+ * the ‘p’th part, as designated by the ‘parts’ array.
+ *
+ * Finally, the argument ‘invperm’ may either be ‘NULL’, in which case
+ * it is ignored, or it must point to an array of length ‘size’, which
+ * is used to store the inverse permutation obtained from sorting the
+ * vector elements in ascending order according to their assigned
+ * parts. That is, ‘invperm[i]’ is the original position (before
+ * sorting) of the vector element that now occupies the ‘i’th position
+ * among the sorted elements.
+ *
+ * The caller is responsible for calling ‘mtxvector_dist_free()’ to
+ * free storage allocated for each vector in the ‘dsts’ array.
+ */
+int mtxvector_dist_split(
+    int num_parts,
+    struct mtxvector_dist ** dsts,
+    const struct mtxvector_dist * src,
+    int64_t size,
+    int * parts,
+    int64_t * invperm,
+    struct mtxdisterror * disterr);
+
+/*
  * Level 1 BLAS operations
  */
 

@@ -722,7 +722,7 @@ int mtxvector_packed_split(
         dsts[p]->x.type = src->x.type;
     }
     int err = mtxvector_split(num_parts, vectordsts, &src->x, size, parts, invperm);
-    if (err) { if (free_invperm) { free(invperm); } return err; }
+    if (err) { free(vectordsts); if (free_invperm) { free(invperm); } return err; }
     free(vectordsts);
     int64_t offset = 0;
     for (int p = 0; p < num_parts; p++) {
@@ -739,7 +739,7 @@ int mtxvector_packed_split(
         if (!dsts[p]->idx) {
             for (int q = num_parts-1; q >= 0; q--) mtxvector_free(&dsts[q]->x);
             if (free_invperm) free(invperm);
-            return err;
+            return MTX_ERR_ERRNO;
         }
         for (int64_t i = 0; i < dstsize; i++)
             dsts[p]->idx[i] = src->idx[invperm[offset+i]];

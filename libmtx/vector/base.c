@@ -1142,7 +1142,7 @@ int mtxvector_base_split(
     int * parts,
     int64_t * invperm)
 {
-    if (size != src->size) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
+    if (size != src->size) return MTX_ERR_INCOMPATIBLE_SIZE;
     bool sorted = true;
     for (int64_t k = 0; k < size; k++) {
         if (parts[k] < 0 || parts[k] >= num_parts)
