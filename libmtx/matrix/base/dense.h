@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-05-23
+ * Last modified: 2022-06-06
  *
  * Data structures for dense matrices.
  */
@@ -85,6 +85,61 @@ struct mtxmatrix_dense
      */
     struct mtxvector_base a;
 };
+
+/*
+ * matrix properties
+ */
+
+/**
+ * ‘mtxmatrix_dense_field()’ gets the field of a matrix.
+ */
+enum mtxfield mtxmatrix_dense_field(const struct mtxmatrix_dense * A);
+
+/**
+ * ‘mtxmatrix_dense_precision()’ gets the precision of a matrix.
+ */
+enum mtxprecision mtxmatrix_dense_precision(const struct mtxmatrix_dense * A);
+
+/**
+ * ‘mtxmatrix_dense_symmetry()’ gets the symmetry of a matrix.
+ */
+enum mtxsymmetry mtxmatrix_dense_symmetry(const struct mtxmatrix_dense * A);
+
+/**
+ * ‘mtxmatrix_dense_num_rows()’ gets the number of matrix rows.
+ */
+int mtxmatrix_dense_num_rows(const struct mtxmatrix_dense * A);
+
+/**
+ * ‘mtxmatrix_dense_num_columns()’ gets the number of matrix columns.
+ */
+int mtxmatrix_dense_num_columns(const struct mtxmatrix_dense * A);
+
+/**
+ * ‘mtxmatrix_dense_num_nonzeros()’ gets the number of the number of
+ *  nonzero matrix entries, including those represented implicitly due
+ *  to symmetry.
+ */
+int64_t mtxmatrix_dense_num_nonzeros(const struct mtxmatrix_dense * A);
+
+/**
+ * ‘mtxmatrix_dense_size()’ gets the number of explicitly stored
+ * nonzeros of a matrix.
+ */
+int64_t mtxmatrix_dense_size(const struct mtxmatrix_dense * A);
+
+/**
+ * ‘mtxmatrix_dense_rowcolidx()’ gets the row and column indices of the
+ * explicitly stored matrix nonzeros.
+ *
+ * The arguments ‘rowidx’ and ‘colidx’ may be ‘NULL’ or must point to
+ * an arrays of length ‘size’.
+ */
+int mtxmatrix_dense_rowcolidx(
+    const struct mtxmatrix_dense * A,
+    int64_t size,
+    int * rowidx,
+    int * colidx);
 
 /*
  * memory management

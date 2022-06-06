@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-05-28
+ * Last modified: 2022-06-06
  *
  * Data structures for matrices in coordinate format, where matrix
  * operations do nothing. While this produces incorrect results, it is
@@ -77,6 +77,16 @@ enum mtxprecision mtxmatrix_nullcoo_precision(const struct mtxmatrix_nullcoo * A
 enum mtxsymmetry mtxmatrix_nullcoo_symmetry(const struct mtxmatrix_nullcoo * A);
 
 /**
+ * ‘mtxmatrix_nullcoo_num_rows()’ gets the number of matrix rows.
+ */
+int mtxmatrix_nullcoo_num_rows(const struct mtxmatrix_nullcoo * A);
+
+/**
+ * ‘mtxmatrix_nullcoo_num_columns()’ gets the number of matrix columns.
+ */
+int mtxmatrix_nullcoo_num_columns(const struct mtxmatrix_nullcoo * A);
+
+/**
  * ‘mtxmatrix_nullcoo_num_nonzeros()’ gets the number of the number of
  *  nonzero matrix entries, including those represented implicitly due
  *  to symmetry.
@@ -88,6 +98,19 @@ int64_t mtxmatrix_nullcoo_num_nonzeros(const struct mtxmatrix_nullcoo * A);
  * nonzeros of a matrix.
  */
 int64_t mtxmatrix_nullcoo_size(const struct mtxmatrix_nullcoo * A);
+
+/**
+ * ‘mtxmatrix_nullcoo_rowcolidx()’ gets the row and column indices of the
+ * explicitly stored matrix nonzeros.
+ *
+ * The arguments ‘rowidx’ and ‘colidx’ may be ‘NULL’ or must point to
+ * an arrays of length ‘size’.
+ */
+int mtxmatrix_nullcoo_rowcolidx(
+    const struct mtxmatrix_nullcoo * A,
+    int64_t size,
+    int * rowidx,
+    int * colidx);
 
 /*
  * memory management

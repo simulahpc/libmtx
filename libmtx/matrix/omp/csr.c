@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-05-28
+ * Last modified: 2022-06-06
  *
  * Data structures for matrices in coordinate format.
  */
@@ -44,22 +44,91 @@
 #include <stdlib.h>
 #include <string.h>
 
+/*
+ * matrix properties
+ */
+
 /**
  * ‘mtxmatrix_ompcsr_field()’ gets the field of a matrix.
  */
-enum mtxfield mtxmatrix_ompcsr_field(
-    const struct mtxmatrix_ompcsr * A)
+enum mtxfield mtxmatrix_ompcsr_field(const struct mtxmatrix_ompcsr * A)
 {
-    return A->a.base.field;
+    return mtxvector_omp_field(&A->a);
 }
 
 /**
  * ‘mtxmatrix_ompcsr_precision()’ gets the precision of a matrix.
  */
-enum mtxprecision mtxmatrix_ompcsr_precision(
-    const struct mtxmatrix_ompcsr * A)
+enum mtxprecision mtxmatrix_ompcsr_precision(const struct mtxmatrix_ompcsr * A)
 {
-    return A->a.base.precision;
+    return mtxvector_omp_precision(&A->a);
+}
+
+/**
+ * ‘mtxmatrix_ompcsr_symmetry()’ gets the symmetry of a matrix.
+ */
+enum mtxsymmetry mtxmatrix_ompcsr_symmetry(const struct mtxmatrix_ompcsr * A)
+{
+    return A->symmetry;
+}
+
+/**
+ * ‘mtxmatrix_ompcsr_num_rows()’ gets the number of matrix rows.
+ */
+int mtxmatrix_ompcsr_num_rows(const struct mtxmatrix_ompcsr * A)
+{
+    return A->num_rows;
+}
+
+/**
+ * ‘mtxmatrix_ompcsr_num_columns()’ gets the number of matrix columns.
+ */
+int mtxmatrix_ompcsr_num_columns(const struct mtxmatrix_ompcsr * A)
+{
+    return A->num_columns;
+}
+
+/**
+ * ‘mtxmatrix_ompcsr_num_nonzeros()’ gets the number of the number of
+ *  nonzero matrix entries, including those represented implicitly due
+ *  to symmetry.
+ */
+int64_t mtxmatrix_ompcsr_num_nonzeros(const struct mtxmatrix_ompcsr * A)
+{
+    return A->num_nonzeros;
+}
+
+/**
+ * ‘mtxmatrix_ompcsr_size()’ gets the number of explicitly stored
+ * nonzeros of a matrix.
+ */
+int64_t mtxmatrix_ompcsr_size(const struct mtxmatrix_ompcsr * A)
+{
+    return A->size;
+}
+
+/**
+ * ‘mtxmatrix_ompcsr_rowcolidx()’ gets the row and column indices of the
+ * explicitly stored matrix nonzeros.
+ *
+ * The arguments ‘rowidx’ and ‘colidx’ may be ‘NULL’ or must point to
+ * an arrays of length ‘size’.
+ */
+int mtxmatrix_ompcsr_rowcolidx(
+    const struct mtxmatrix_ompcsr * A,
+    int64_t size,
+    int * rowidx,
+    int * colidx)
+{
+    if (size != A->size) return MTX_ERR_INCOMPATIBLE_SIZE;
+    if (rowidx) {
+        for (int i = 0; i < A->num_rows; i++) {
+            for (int64_t k = A->rowptr[i]; k < A->rowptr[i+1]; k++)
+                rowidx[k] = i;
+        }
+    }
+    if (colidx) { for (int64_t k = 0; k < A->size; k++) colidx[k] = A->colidx[k]; }
+    return MTX_SUCCESS;
 }
 
 /*

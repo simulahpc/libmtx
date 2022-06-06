@@ -67,6 +67,22 @@ enum mtxsymmetry mtxmatrix_nullcoo_symmetry(const struct mtxmatrix_nullcoo * A)
 }
 
 /**
+ * ‘mtxmatrix_nullcoo_num_rows()’ gets the number of matrix rows.
+ */
+int mtxmatrix_nullcoo_num_rows(const struct mtxmatrix_nullcoo * A)
+{
+    return mtxmatrix_coo_num_rows(&A->base);
+}
+
+/**
+ * ‘mtxmatrix_nullcoo_num_columns()’ gets the number of matrix columns.
+ */
+int mtxmatrix_nullcoo_num_columns(const struct mtxmatrix_nullcoo * A)
+{
+    return mtxmatrix_coo_num_columns(&A->base);
+}
+
+/**
  * ‘mtxmatrix_nullcoo_num_nonzeros()’ gets the number of the number of
  *  nonzero matrix entries, including those represented implicitly due
  *  to symmetry.
@@ -83,6 +99,22 @@ int64_t mtxmatrix_nullcoo_num_nonzeros(const struct mtxmatrix_nullcoo * A)
 int64_t mtxmatrix_nullcoo_size(const struct mtxmatrix_nullcoo * A)
 {
     return mtxmatrix_coo_size(&A->base);
+}
+
+/**
+ * ‘mtxmatrix_nullcoo_rowcolidx()’ gets the row and column indices of
+ * the explicitly stored matrix nonzeros.
+ *
+ * The arguments ‘rowidx’ and ‘colidx’ may be ‘NULL’ or must point to
+ * an arrays of length ‘size’.
+ */
+int mtxmatrix_nullcoo_rowcolidx(
+    const struct mtxmatrix_nullcoo * A,
+    int64_t size,
+    int * rowidx,
+    int * colidx)
+{
+    return mtxmatrix_coo_rowcolidx(&A->base, size, rowidx, colidx);
 }
 
 /*

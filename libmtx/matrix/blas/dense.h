@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-05-20
+ * Last modified: 2022-06-06
  *
  * Dense matrices with BLAS-accelerated operations.
  */
@@ -84,6 +84,61 @@ struct mtxmatrix_blas
      */
     struct mtxvector_blas a;
 };
+
+/*
+ * matrix properties
+ */
+
+/**
+ * ‘mtxmatrix_blas_field()’ gets the field of a matrix.
+ */
+enum mtxfield mtxmatrix_blas_field(const struct mtxmatrix_blas * A);
+
+/**
+ * ‘mtxmatrix_blas_precision()’ gets the precision of a matrix.
+ */
+enum mtxprecision mtxmatrix_blas_precision(const struct mtxmatrix_blas * A);
+
+/**
+ * ‘mtxmatrix_blas_symmetry()’ gets the symmetry of a matrix.
+ */
+enum mtxsymmetry mtxmatrix_blas_symmetry(const struct mtxmatrix_blas * A);
+
+/**
+ * ‘mtxmatrix_blas_num_rows()’ gets the number of matrix rows.
+ */
+int mtxmatrix_blas_num_rows(const struct mtxmatrix_blas * A);
+
+/**
+ * ‘mtxmatrix_blas_num_columns()’ gets the number of matrix columns.
+ */
+int mtxmatrix_blas_num_columns(const struct mtxmatrix_blas * A);
+
+/**
+ * ‘mtxmatrix_blas_num_nonzeros()’ gets the number of the number of
+ *  nonzero matrix entries, including those represented implicitly due
+ *  to symmetry.
+ */
+int64_t mtxmatrix_blas_num_nonzeros(const struct mtxmatrix_blas * A);
+
+/**
+ * ‘mtxmatrix_blas_size()’ gets the number of explicitly stored
+ * nonzeros of a matrix.
+ */
+int64_t mtxmatrix_blas_size(const struct mtxmatrix_blas * A);
+
+/**
+ * ‘mtxmatrix_blas_rowcolidx()’ gets the row and column indices of the
+ * explicitly stored matrix nonzeros.
+ *
+ * The arguments ‘rowidx’ and ‘colidx’ may be ‘NULL’ or must point to
+ * an arrays of length ‘size’.
+ */
+int mtxmatrix_blas_rowcolidx(
+    const struct mtxmatrix_blas * A,
+    int64_t size,
+    int * rowidx,
+    int * colidx);
 
 /*
  * memory management

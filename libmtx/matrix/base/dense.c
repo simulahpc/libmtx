@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-05-04
+ * Last modified: 2022-06-06
  *
  * Data structures for dense matrices.
  */
@@ -41,6 +41,112 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+/*
+ * matrix properties
+ */
+
+/**
+ * ‘mtxmatrix_dense_field()’ gets the field of a matrix.
+ */
+enum mtxfield mtxmatrix_dense_field(const struct mtxmatrix_dense * A)
+{
+    return mtxvector_base_field(&A->a);
+}
+
+/**
+ * ‘mtxmatrix_dense_precision()’ gets the precision of a matrix.
+ */
+enum mtxprecision mtxmatrix_dense_precision(const struct mtxmatrix_dense * A)
+{
+    return mtxvector_base_precision(&A->a);
+}
+
+/**
+ * ‘mtxmatrix_dense_symmetry()’ gets the symmetry of a matrix.
+ */
+enum mtxsymmetry mtxmatrix_dense_symmetry(const struct mtxmatrix_dense * A)
+{
+    return A->symmetry;
+}
+
+/**
+ * ‘mtxmatrix_dense_num_rows()’ gets the number of matrix rows.
+ */
+int mtxmatrix_dense_num_rows(const struct mtxmatrix_dense * A)
+{
+    return A->num_rows;
+}
+
+/**
+ * ‘mtxmatrix_dense_num_columns()’ gets the number of matrix columns.
+ */
+int mtxmatrix_dense_num_columns(const struct mtxmatrix_dense * A)
+{
+    return A->num_columns;
+}
+
+/**
+ * ‘mtxmatrix_dense_num_nonzeros()’ gets the number of the number of
+ *  nonzero matrix entries, including those represented implicitly due
+ *  to symmetry.
+ */
+int64_t mtxmatrix_dense_num_nonzeros(const struct mtxmatrix_dense * A)
+{
+    return A->num_nonzeros;
+}
+
+/**
+ * ‘mtxmatrix_dense_size()’ gets the number of explicitly stored
+ * nonzeros of a matrix.
+ */
+int64_t mtxmatrix_dense_size(const struct mtxmatrix_dense * A)
+{
+    return A->size;
+}
+
+/**
+ * ‘mtxmatrix_dense_rowcolidx()’ gets the row and column indices of the
+ * explicitly stored matrix nonzeros.
+ *
+ * The arguments ‘rowidx’ and ‘colidx’ may be ‘NULL’ or must point to
+ * an arrays of length ‘size’.
+ */
+int mtxmatrix_dense_rowcolidx(
+    const struct mtxmatrix_dense * A,
+    int64_t size,
+    int * rowidx,
+    int * colidx)
+{
+    if (A->symmetry == mtx_unsymmetric) {
+        int64_t k = 0;
+        for (int i = 0; i < A->num_rows; i++) {
+            for (int j = 0; j < A->num_columns; j++, k++) {
+                if (rowidx) rowidx[k] = i;
+                if (colidx) colidx[k] = j;
+            }
+        }
+    } else if (A->num_rows == A->num_columns &&
+               (A->symmetry == mtx_symmetric || A->symmetry == mtx_hermitian))
+    {
+        int64_t k = 0;
+        for (int i = 0; i < A->num_rows; i++) {
+            for (int j = i; j < A->num_columns; j++, k++) {
+                if (rowidx) rowidx[k] = i;
+                if (colidx) colidx[k] = j;
+            }
+        }
+    } else if (A->num_rows == A->num_columns && A->symmetry == mtx_skew_symmetric) {
+        int64_t k = 0;
+        for (int i = 0; i < A->num_rows; i++) {
+            for (int j = i+1; j < A->num_columns; j++, k++) {
+                if (rowidx) rowidx[k] = i;
+                if (colidx) colidx[k] = j;
+            }
+        }
+    } else { return MTX_ERR_INVALID_SYMMETRY; }
+    return MTX_SUCCESS;
+}
 
 /*
  * memory management

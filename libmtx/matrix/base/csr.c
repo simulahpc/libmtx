@@ -44,6 +44,93 @@
 #include <string.h>
 
 /*
+ * matrix properties
+ */
+
+/**
+ * ‘mtxmatrix_csr_field()’ gets the field of a matrix.
+ */
+enum mtxfield mtxmatrix_csr_field(const struct mtxmatrix_csr * A)
+{
+    return mtxvector_base_field(&A->a);
+}
+
+/**
+ * ‘mtxmatrix_csr_precision()’ gets the precision of a matrix.
+ */
+enum mtxprecision mtxmatrix_csr_precision(const struct mtxmatrix_csr * A)
+{
+    return mtxvector_base_precision(&A->a);
+}
+
+/**
+ * ‘mtxmatrix_csr_symmetry()’ gets the symmetry of a matrix.
+ */
+enum mtxsymmetry mtxmatrix_csr_symmetry(const struct mtxmatrix_csr * A)
+{
+    return A->symmetry;
+}
+
+/**
+ * ‘mtxmatrix_csr_num_rows()’ gets the number of matrix rows.
+ */
+int mtxmatrix_csr_num_rows(const struct mtxmatrix_csr * A)
+{
+    return A->num_rows;
+}
+
+/**
+ * ‘mtxmatrix_csr_num_columns()’ gets the number of matrix columns.
+ */
+int mtxmatrix_csr_num_columns(const struct mtxmatrix_csr * A)
+{
+    return A->num_columns;
+}
+
+/**
+ * ‘mtxmatrix_csr_num_nonzeros()’ gets the number of the number of
+ *  nonzero matrix entries, including those represented implicitly due
+ *  to symmetry.
+ */
+int64_t mtxmatrix_csr_num_nonzeros(const struct mtxmatrix_csr * A)
+{
+    return A->num_nonzeros;
+}
+
+/**
+ * ‘mtxmatrix_csr_size()’ gets the number of explicitly stored
+ * nonzeros of a matrix.
+ */
+int64_t mtxmatrix_csr_size(const struct mtxmatrix_csr * A)
+{
+    return A->size;
+}
+
+/**
+ * ‘mtxmatrix_csr_rowcolidx()’ gets the row and column indices of the
+ * explicitly stored matrix nonzeros.
+ *
+ * The arguments ‘rowidx’ and ‘colidx’ may be ‘NULL’ or must point to
+ * an arrays of length ‘size’.
+ */
+int mtxmatrix_csr_rowcolidx(
+    const struct mtxmatrix_csr * A,
+    int64_t size,
+    int * rowidx,
+    int * colidx)
+{
+    if (size != A->size) return MTX_ERR_INCOMPATIBLE_SIZE;
+    if (rowidx) {
+        for (int i = 0; i < A->num_rows; i++) {
+            for (int64_t k = A->rowptr[i]; k < A->rowptr[i+1]; k++)
+                rowidx[k] = i;
+        }
+    }
+    if (colidx) { for (int64_t k = 0; k < A->size; k++) colidx[k] = A->colidx[k]; }
+    return MTX_SUCCESS;
+}
+
+/*
  * memory management
  */
 

@@ -176,6 +176,19 @@ int mtxmatrix_size(
     const struct mtxmatrix * A,
     int64_t * size);
 
+/**
+ * ‘mtxmatrix_rowcolidx()’ gets the row and column indices of the
+ * explicitly stored matrix nonzeros.
+ *
+ * The arguments ‘rowidx’ and ‘colidx’ may be ‘NULL’ or must point to
+ * an arrays of length ‘size’.
+ */
+int mtxmatrix_rowcolidx(
+    const struct mtxmatrix * A,
+    int64_t size,
+    int * rowidx,
+    int * colidx);
+
 /*
  * Memory management
  */

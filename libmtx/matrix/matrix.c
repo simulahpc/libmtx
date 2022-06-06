@@ -119,6 +119,10 @@ int mtxmatrixtype_parse(
     return MTX_SUCCESS;
 }
 
+/*
+ * matrix properties
+ */
+
 /**
  * ‘mtxmatrix_field()’ gets the field of a matrix.
  */
@@ -127,17 +131,17 @@ int mtxmatrix_field(
     enum mtxfield * field)
 {
     if (A->type == mtxmatrix_blas) {
-        *field = A->storage.blas.a.base.field;
+        *field = mtxmatrix_blas_field(&A->storage.blas);
     } else if (A->type == mtxmatrix_coo) {
-        *field = A->storage.coo.a.field;
+        *field = mtxmatrix_coo_field(&A->storage.coo);
     } else if (A->type == mtxmatrix_dense) {
-        *field = A->storage.dense.a.field;
+        *field = mtxmatrix_dense_field(&A->storage.dense);
     } else if (A->type == mtxmatrix_csr) {
-        *field = A->storage.csr.a.field;
+        *field = mtxmatrix_csr_field(&A->storage.csr);
     } else if (A->type == mtxmatrix_nullcoo) {
         *field = mtxmatrix_nullcoo_field(&A->storage.nullcoo);
     } else if (A->type == mtxmatrix_ompcsr) {
-        *field = A->storage.ompcsr.a.base.field;
+        *field = mtxmatrix_ompcsr_field(&A->storage.ompcsr);
     } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
     return MTX_SUCCESS;
 }
@@ -150,17 +154,17 @@ int mtxmatrix_precision(
     enum mtxprecision * precision)
 {
     if (A->type == mtxmatrix_blas) {
-        *precision = A->storage.blas.a.base.precision;
+        *precision = mtxmatrix_blas_precision(&A->storage.blas);
     } else if (A->type == mtxmatrix_coo) {
-        *precision = A->storage.coo.a.precision;
+        *precision = mtxmatrix_coo_precision(&A->storage.coo);
     } else if (A->type == mtxmatrix_dense) {
-        *precision = A->storage.dense.a.precision;
+        *precision = mtxmatrix_dense_precision(&A->storage.dense);
     } else if (A->type == mtxmatrix_csr) {
-        *precision = A->storage.csr.a.precision;
+        *precision = mtxmatrix_csr_precision(&A->storage.csr);
     } else if (A->type == mtxmatrix_nullcoo) {
         *precision = mtxmatrix_nullcoo_precision(&A->storage.nullcoo);
     } else if (A->type == mtxmatrix_ompcsr) {
-        *precision = A->storage.ompcsr.a.base.precision;
+        *precision = mtxmatrix_ompcsr_precision(&A->storage.ompcsr);
     } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
     return MTX_SUCCESS;
 }
@@ -173,17 +177,17 @@ int mtxmatrix_symmetry(
     enum mtxsymmetry * symmetry)
 {
     if (A->type == mtxmatrix_blas) {
-        *symmetry = A->storage.blas.symmetry;
+        *symmetry = mtxmatrix_blas_symmetry(&A->storage.blas);
     } else if (A->type == mtxmatrix_coo) {
-        *symmetry = A->storage.coo.symmetry;
+        *symmetry = mtxmatrix_coo_symmetry(&A->storage.coo);
     } else if (A->type == mtxmatrix_dense) {
-        *symmetry = A->storage.dense.symmetry;
+        *symmetry = mtxmatrix_dense_symmetry(&A->storage.dense);
     } else if (A->type == mtxmatrix_csr) {
-        *symmetry = A->storage.csr.symmetry;
+        *symmetry = mtxmatrix_csr_symmetry(&A->storage.csr);
     } else if (A->type == mtxmatrix_nullcoo) {
         *symmetry = mtxmatrix_nullcoo_symmetry(&A->storage.nullcoo);
     } else if (A->type == mtxmatrix_ompcsr) {
-        *symmetry = A->storage.ompcsr.symmetry;
+        *symmetry = mtxmatrix_ompcsr_symmetry(&A->storage.ompcsr);
     } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
     return MTX_SUCCESS;
 }
@@ -198,17 +202,17 @@ int mtxmatrix_num_nonzeros(
     int64_t * num_nonzeros)
 {
     if (A->type == mtxmatrix_blas) {
-        *num_nonzeros = A->storage.blas.num_nonzeros;
+        *num_nonzeros = mtxmatrix_blas_num_nonzeros(&A->storage.blas);
     } else if (A->type == mtxmatrix_coo) {
-        *num_nonzeros = A->storage.coo.num_nonzeros;
+        *num_nonzeros = mtxmatrix_coo_num_nonzeros(&A->storage.coo);
     } else if (A->type == mtxmatrix_dense) {
-        *num_nonzeros = A->storage.dense.num_nonzeros;
+        *num_nonzeros = mtxmatrix_dense_num_nonzeros(&A->storage.dense);
     } else if (A->type == mtxmatrix_csr) {
-        *num_nonzeros = A->storage.csr.num_nonzeros;
+        *num_nonzeros = mtxmatrix_csr_num_nonzeros(&A->storage.csr);
     } else if (A->type == mtxmatrix_nullcoo) {
         *num_nonzeros = mtxmatrix_nullcoo_num_nonzeros(&A->storage.nullcoo);
     } else if (A->type == mtxmatrix_ompcsr) {
-        *num_nonzeros = A->storage.ompcsr.num_nonzeros;
+        *num_nonzeros = mtxmatrix_ompcsr_num_nonzeros(&A->storage.ompcsr);
     } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
     return MTX_SUCCESS;
 }
@@ -222,19 +226,47 @@ int mtxmatrix_size(
     int64_t * size)
 {
     if (A->type == mtxmatrix_blas) {
-        *size = A->storage.blas.size;
+        *size = mtxmatrix_blas_size(&A->storage.blas);
     } else if (A->type == mtxmatrix_coo) {
-        *size = A->storage.coo.size;
+        *size = mtxmatrix_coo_size(&A->storage.coo);
     } else if (A->type == mtxmatrix_dense) {
-        *size = A->storage.dense.size;
+        *size = mtxmatrix_dense_size(&A->storage.dense);
     } else if (A->type == mtxmatrix_csr) {
-        *size = A->storage.csr.size;
+        *size = mtxmatrix_csr_size(&A->storage.csr);
     } else if (A->type == mtxmatrix_nullcoo) {
         *size = mtxmatrix_nullcoo_size(&A->storage.nullcoo);
     } else if (A->type == mtxmatrix_ompcsr) {
-        *size = A->storage.ompcsr.size;
+        *size = mtxmatrix_ompcsr_size(&A->storage.ompcsr);
     } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
     return MTX_SUCCESS;
+}
+
+/**
+ * ‘mtxmatrix_rowcolidx()’ gets the row and column indices of the
+ * explicitly stored matrix nonzeros.
+ *
+ * The arguments ‘rowidx’ and ‘colidx’ may be ‘NULL’ or must point to
+ * an arrays of length ‘size’.
+ */
+int mtxmatrix_rowcolidx(
+    const struct mtxmatrix * A,
+    int64_t size,
+    int * rowidx,
+    int * colidx)
+{
+    if (A->type == mtxmatrix_blas) {
+        return mtxmatrix_blas_rowcolidx(&A->storage.blas, size, rowidx, colidx);
+    } else if (A->type == mtxmatrix_coo) {
+        return mtxmatrix_coo_rowcolidx(&A->storage.coo, size, rowidx, colidx);
+    } else if (A->type == mtxmatrix_csr) {
+        return mtxmatrix_csr_rowcolidx(&A->storage.csr, size, rowidx, colidx);
+    } else if (A->type == mtxmatrix_dense) {
+        return mtxmatrix_dense_rowcolidx(&A->storage.dense, size, rowidx, colidx);
+    } else if (A->type == mtxmatrix_nullcoo) {
+        return mtxmatrix_nullcoo_rowcolidx(&A->storage.nullcoo, size, rowidx, colidx);
+    } else if (A->type == mtxmatrix_ompcsr) {
+        return mtxmatrix_ompcsr_rowcolidx(&A->storage.ompcsr, size, rowidx, colidx);
+    } else { return MTX_ERR_INVALID_MATRIX_TYPE; }
 }
 
 /*

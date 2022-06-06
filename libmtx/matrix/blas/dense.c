@@ -47,6 +47,112 @@
 #include <string.h>
 
 /*
+ * matrix properties
+ */
+
+/**
+ * ‘mtxmatrix_blas_field()’ gets the field of a matrix.
+ */
+enum mtxfield mtxmatrix_blas_field(const struct mtxmatrix_blas * A)
+{
+    return mtxvector_blas_field(&A->a);
+}
+
+/**
+ * ‘mtxmatrix_blas_precision()’ gets the precision of a matrix.
+ */
+enum mtxprecision mtxmatrix_blas_precision(const struct mtxmatrix_blas * A)
+{
+    return mtxvector_blas_precision(&A->a);
+}
+
+/**
+ * ‘mtxmatrix_blas_symmetry()’ gets the symmetry of a matrix.
+ */
+enum mtxsymmetry mtxmatrix_blas_symmetry(const struct mtxmatrix_blas * A)
+{
+    return A->symmetry;
+}
+
+/**
+ * ‘mtxmatrix_blas_num_rows()’ gets the number of matrix rows.
+ */
+int mtxmatrix_blas_num_rows(const struct mtxmatrix_blas * A)
+{
+    return A->num_rows;
+}
+
+/**
+ * ‘mtxmatrix_blas_num_columns()’ gets the number of matrix columns.
+ */
+int mtxmatrix_blas_num_columns(const struct mtxmatrix_blas * A)
+{
+    return A->num_columns;
+}
+
+/**
+ * ‘mtxmatrix_blas_num_nonzeros()’ gets the number of the number of
+ *  nonzero matrix entries, including those represented implicitly due
+ *  to symmetry.
+ */
+int64_t mtxmatrix_blas_num_nonzeros(const struct mtxmatrix_blas * A)
+{
+    return A->num_nonzeros;
+}
+
+/**
+ * ‘mtxmatrix_blas_size()’ gets the number of explicitly stored
+ * nonzeros of a matrix.
+ */
+int64_t mtxmatrix_blas_size(const struct mtxmatrix_blas * A)
+{
+    return A->size;
+}
+
+/**
+ * ‘mtxmatrix_blas_rowcolidx()’ gets the row and column indices of the
+ * explicitly stored matrix nonzeros.
+ *
+ * The arguments ‘rowidx’ and ‘colidx’ may be ‘NULL’ or must point to
+ * an arrays of length ‘size’.
+ */
+int mtxmatrix_blas_rowcolidx(
+    const struct mtxmatrix_blas * A,
+    int64_t size,
+    int * rowidx,
+    int * colidx)
+{
+    if (A->symmetry == mtx_unsymmetric) {
+        int64_t k = 0;
+        for (int i = 0; i < A->num_rows; i++) {
+            for (int j = 0; j < A->num_columns; j++, k++) {
+                if (rowidx) rowidx[k] = i;
+                if (colidx) colidx[k] = j;
+            }
+        }
+    } else if (A->num_rows == A->num_columns &&
+               (A->symmetry == mtx_symmetric || A->symmetry == mtx_hermitian))
+    {
+        int64_t k = 0;
+        for (int i = 0; i < A->num_rows; i++) {
+            for (int j = i; j < A->num_columns; j++, k++) {
+                if (rowidx) rowidx[k] = i;
+                if (colidx) colidx[k] = j;
+            }
+        }
+    } else if (A->num_rows == A->num_columns && A->symmetry == mtx_skew_symmetric) {
+        int64_t k = 0;
+        for (int i = 0; i < A->num_rows; i++) {
+            for (int j = i+1; j < A->num_columns; j++, k++) {
+                if (rowidx) rowidx[k] = i;
+                if (colidx) colidx[k] = j;
+            }
+        }
+    } else { return MTX_ERR_INVALID_SYMMETRY; }
+    return MTX_SUCCESS;
+}
+
+/*
  * memory management
  */
 

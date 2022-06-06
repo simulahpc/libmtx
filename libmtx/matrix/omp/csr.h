@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-05-28
+ * Last modified: 2022-06-06
  *
  * Matrices in CSR format with OpenMP shared-memory parallelism.
  */
@@ -108,17 +108,60 @@ struct mtxmatrix_ompcsr
     struct mtxvector_packed diag;
 };
 
+/*
+ * matrix properties
+ */
+
 /**
  * ‘mtxmatrix_ompcsr_field()’ gets the field of a matrix.
  */
-enum mtxfield mtxmatrix_ompcsr_field(
-    const struct mtxmatrix_ompcsr * A);
+enum mtxfield mtxmatrix_ompcsr_field(const struct mtxmatrix_ompcsr * A);
 
 /**
  * ‘mtxmatrix_ompcsr_precision()’ gets the precision of a matrix.
  */
-enum mtxprecision mtxmatrix_ompcsr_precision(
-    const struct mtxmatrix_ompcsr * A);
+enum mtxprecision mtxmatrix_ompcsr_precision(const struct mtxmatrix_ompcsr * A);
+
+/**
+ * ‘mtxmatrix_ompcsr_symmetry()’ gets the symmetry of a matrix.
+ */
+enum mtxsymmetry mtxmatrix_ompcsr_symmetry(const struct mtxmatrix_ompcsr * A);
+
+/**
+ * ‘mtxmatrix_ompcsr_num_rows()’ gets the number of matrix rows.
+ */
+int mtxmatrix_ompcsr_num_rows(const struct mtxmatrix_ompcsr * A);
+
+/**
+ * ‘mtxmatrix_ompcsr_num_columns()’ gets the number of matrix columns.
+ */
+int mtxmatrix_ompcsr_num_columns(const struct mtxmatrix_ompcsr * A);
+
+/**
+ * ‘mtxmatrix_ompcsr_num_nonzeros()’ gets the number of the number of
+ *  nonzero matrix entries, including those represented implicitly due
+ *  to symmetry.
+ */
+int64_t mtxmatrix_ompcsr_num_nonzeros(const struct mtxmatrix_ompcsr * A);
+
+/**
+ * ‘mtxmatrix_ompcsr_size()’ gets the number of explicitly stored
+ * nonzeros of a matrix.
+ */
+int64_t mtxmatrix_ompcsr_size(const struct mtxmatrix_ompcsr * A);
+
+/**
+ * ‘mtxmatrix_ompcsr_rowcolidx()’ gets the row and column indices of the
+ * explicitly stored matrix nonzeros.
+ *
+ * The arguments ‘rowidx’ and ‘colidx’ may be ‘NULL’ or must point to
+ * an arrays of length ‘size’.
+ */
+int mtxmatrix_ompcsr_rowcolidx(
+    const struct mtxmatrix_ompcsr * A,
+    int64_t size,
+    int * rowidx,
+    int * colidx);
 
 /*
  * memory management
