@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-05-28
+ * Last modified: 2022-06-06
  *
  * Unit tests for distributed matrices.
  */
@@ -1031,6 +1031,137 @@ int test_mtxmatrix_dist_to_mtxdistfile(void)
     return TEST_SUCCESS;
 }
 #endif
+
+/**
+ * ‘test_mtxmatrix_dist_split()’ tests splitting matrices.
+ */
+int test_mtxmatrix_dist_split(void)
+{
+    int err;
+    char mpierrstr[MPI_MAX_ERROR_STRING];
+    int mpierrstrlen;
+    MPI_Comm comm = MPI_COMM_WORLD;
+    int comm_size;
+    err = MPI_Comm_size(comm, &comm_size);
+    if (err) {
+        MPI_Error_string(err, mpierrstr, &mpierrstrlen);
+        fprintf(stderr, "%s: MPI_Comm_size failed with %s\n",
+                program_invocation_short_name, mpierrstr);
+        MPI_Abort(comm, EXIT_FAILURE);
+    }
+    int rank;
+    err = MPI_Comm_rank(comm, &rank);
+    if (err) {
+        MPI_Error_string(err, mpierrstr, &mpierrstrlen);
+        fprintf(stderr, "%s: MPI_Comm_rank failed with %s\n",
+                program_invocation_short_name, mpierrstr);
+        MPI_Abort(comm, EXIT_FAILURE);
+    }
+    if (comm_size != 2) TEST_FAIL_MSG("Expected exactly two MPI processes");
+    struct mtxdisterror disterr;
+    err = mtxdisterror_alloc(&disterr, comm, NULL);
+    if (err) MPI_Abort(comm, EXIT_FAILURE);
+    {
+        struct mtxmatrix_dist src;
+        struct mtxmatrix_dist dst0, dst1;
+        struct mtxmatrix_dist * dsts[] = {&dst0, &dst1};
+        int num_parts = 2;
+        int num_rows = 3;
+        int num_columns = 3;
+        int srcnnz = rank == 0 ? 2 : 3;
+        int64_t * srcrowidx = rank == 0 ? (int64_t[2]) {0, 0} : (int64_t[3]) {1, 2, 2};
+        int64_t * srccolidx = rank == 0 ? (int64_t[2]) {0, 2} : (int64_t[3]) {0, 0, 2};
+        float * srcdata = rank == 0 ? (float[2]) {1.0f, 3.0f} : (float[3]) {5.0f, 7.0f, 9.0f};
+        err = mtxmatrix_dist_init_entries_global_real_single(
+            &src, mtxmatrix_coo, mtx_unsymmetric, num_rows, num_columns,
+            srcnnz, srcrowidx, srccolidx, srcdata, comm, &disterr);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        int * parts = rank == 0 ? (int[2]) {0, 0} : (int[3]) {0, 1, 1};
+        err = mtxmatrix_dist_split(
+            num_parts, dsts, &src, srcnnz, parts, NULL, &disterr);
+        TEST_ASSERT_EQ_MSG(
+            MTX_SUCCESS, err, "%s", err == MTX_ERR_MPI_COLLECTIVE
+            ? mtxdisterror_description(&disterr) : mtxstrerror(err));
+        TEST_ASSERT_EQ(3, dst0.num_rows);
+        TEST_ASSERT_EQ(3, dst0.num_columns);
+        TEST_ASSERT_EQ(3, dst0.num_nonzeros);
+        if (rank == 0) {
+            TEST_ASSERT_EQ(1, dst0.rowmapsize);
+            TEST_ASSERT_EQ(0, dst0.rowmap[0]);
+            TEST_ASSERT_EQ(2, dst0.colmapsize);
+            TEST_ASSERT_EQ(0, dst0.colmap[0]);
+            TEST_ASSERT_EQ(2, dst0.colmap[1]);
+            TEST_ASSERT_EQ(mtxmatrix_coo, dst0.Ap.type);
+            const struct mtxmatrix_coo * Ap = &dst0.Ap.storage.coo;
+            TEST_ASSERT_EQ(mtx_unsymmetric, Ap->symmetry);
+            TEST_ASSERT_EQ(1, Ap->num_rows);
+            TEST_ASSERT_EQ(2, Ap->num_columns);
+            TEST_ASSERT_EQ(2, Ap->num_entries);
+            TEST_ASSERT_EQ(2, Ap->num_nonzeros);
+            TEST_ASSERT_EQ(2, Ap->size);
+            TEST_ASSERT_EQ(0, Ap->rowidx[0]); TEST_ASSERT_EQ(0, Ap->colidx[0]);
+            TEST_ASSERT_EQ(0, Ap->rowidx[1]); TEST_ASSERT_EQ(1, Ap->colidx[1]);
+            const float * a = Ap->a.data.real_single;
+            TEST_ASSERT_EQ(1.0f, a[0]);
+            TEST_ASSERT_EQ(3.0f, a[1]);
+        } else if (rank == 1) {
+            TEST_ASSERT_EQ(1, dst0.rowmapsize);
+            TEST_ASSERT_EQ(1, dst0.rowmap[0]);
+            TEST_ASSERT_EQ(1, dst0.colmapsize);
+            TEST_ASSERT_EQ(0, dst0.colmap[0]);
+            TEST_ASSERT_EQ(mtxmatrix_coo, dst0.Ap.type);
+            const struct mtxmatrix_coo * Ap = &dst0.Ap.storage.coo;
+            TEST_ASSERT_EQ(mtx_unsymmetric, Ap->symmetry);
+            TEST_ASSERT_EQ(1, Ap->num_rows);
+            TEST_ASSERT_EQ(1, Ap->num_columns);
+            TEST_ASSERT_EQ(1, Ap->num_entries);
+            TEST_ASSERT_EQ(1, Ap->num_nonzeros);
+            TEST_ASSERT_EQ(1, Ap->size);
+            TEST_ASSERT_EQ(0, Ap->rowidx[0]); TEST_ASSERT_EQ(0, Ap->colidx[0]);
+            const float * a = Ap->a.data.real_single;
+            TEST_ASSERT_EQ(5.0f, a[0]);
+        }
+        TEST_ASSERT_EQ(3, dst1.num_rows);
+        TEST_ASSERT_EQ(3, dst1.num_columns);
+        TEST_ASSERT_EQ(2, dst1.num_nonzeros);
+        if (rank == 0) {
+            TEST_ASSERT_EQ(0, dst1.rowmapsize);
+            TEST_ASSERT_EQ(0, dst1.colmapsize);
+            TEST_ASSERT_EQ(mtxmatrix_coo, dst1.Ap.type);
+            const struct mtxmatrix_coo * Ap = &dst1.Ap.storage.coo;
+            TEST_ASSERT_EQ(mtx_unsymmetric, Ap->symmetry);
+            TEST_ASSERT_EQ(0, Ap->num_rows);
+            TEST_ASSERT_EQ(0, Ap->num_columns);
+            TEST_ASSERT_EQ(0, Ap->num_entries);
+            TEST_ASSERT_EQ(0, Ap->num_nonzeros);
+            TEST_ASSERT_EQ(0, Ap->size);
+        } else if (rank == 1) {
+            TEST_ASSERT_EQ(1, dst1.rowmapsize);
+            TEST_ASSERT_EQ(2, dst1.rowmap[0]);
+            TEST_ASSERT_EQ(2, dst1.colmapsize);
+            TEST_ASSERT_EQ(0, dst1.colmap[0]);
+            TEST_ASSERT_EQ(2, dst1.colmap[1]);
+            TEST_ASSERT_EQ(mtxmatrix_coo, dst1.Ap.type);
+            const struct mtxmatrix_coo * Ap = &dst1.Ap.storage.coo;
+            TEST_ASSERT_EQ(mtx_unsymmetric, Ap->symmetry);
+            TEST_ASSERT_EQ(1, Ap->num_rows);
+            TEST_ASSERT_EQ(2, Ap->num_columns);
+            TEST_ASSERT_EQ(2, Ap->num_entries);
+            TEST_ASSERT_EQ(2, Ap->num_nonzeros);
+            TEST_ASSERT_EQ(2, Ap->size);
+            TEST_ASSERT_EQ(0, Ap->rowidx[0]); TEST_ASSERT_EQ(0, Ap->colidx[0]);
+            TEST_ASSERT_EQ(0, Ap->rowidx[1]); TEST_ASSERT_EQ(1, Ap->colidx[1]);
+            const float * a = Ap->a.data.real_single;
+            TEST_ASSERT_EQ(7.0f, a[0]);
+            TEST_ASSERT_EQ(9.0f, a[1]);
+        }
+        mtxmatrix_dist_free(&dst1); mtxmatrix_dist_free(&dst0);
+        mtxmatrix_dist_free(&src);
+    }
+    mtxdisterror_free(&disterr);
+    return TEST_SUCCESS;
+}
+
 /**
  * ‘test_mtxmatrix_dist_swap()’ tests swapping values of two matrices.
  */
@@ -1229,7 +1360,7 @@ int test_mtxmatrix_dist_copy(void)
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         err = mtxmatrix_dist_swap(&x, &y, &disterr);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-         TEST_ASSERT_EQ(3, y.num_rows);
+        TEST_ASSERT_EQ(3, y.num_rows);
         TEST_ASSERT_EQ(3, y.num_columns);
         TEST_ASSERT_EQ(5, y.num_nonzeros);
         if (rank == 0) {
@@ -4540,6 +4671,7 @@ int main(int argc, char * argv[])
     TEST_RUN(test_mtxmatrix_dist_to_mtxfile);
     TEST_RUN(test_mtxmatrix_dist_from_mtxdistfile);
     /* TEST_RUN(test_mtxmatrix_dist_to_mtxdistfile); */
+    TEST_RUN(test_mtxmatrix_dist_split);
     TEST_RUN(test_mtxmatrix_dist_swap);
     TEST_RUN(test_mtxmatrix_dist_copy);
     TEST_RUN(test_mtxmatrix_dist_scal);

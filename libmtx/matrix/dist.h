@@ -875,6 +875,39 @@ int mtxmatrix_dist_fwrite(
     struct mtxdisterror * disterr);
 
 /*
+ * partitioning
+ */
+
+/**
+ * ‘mtxmatrix_dist_split()’ splits a matrix into multiple matrices
+ * according to a given assignment of parts to each nonzero matrix
+ * element.
+ *
+ * The partitioning of the nonzero matrix elements is specified by the
+ * array ‘parts’. The length of the ‘parts’ array is given by ‘size’,
+ * which must match the number of explicitly stored nonzero matrix
+ * entries in ‘src’. Each entry in the ‘parts’ array is an integer in
+ * the range ‘[0, num_parts)’ designating the part to which the
+ * corresponding matrix nonzero belongs.
+ *
+ * The argument ‘dsts’ is an array of ‘num_parts’ pointers to objects
+ * of type ‘struct mtxmatrix_dist’. If successful, then ‘dsts[p]’
+ * points to a matrix consisting of elements from ‘src’ that belong to
+ * the ‘p’th part, as designated by the ‘parts’ array.
+ *
+ * The caller is responsible for calling ‘mtxmatrix_dist_free()’ to
+ * free storage allocated for each matrix in the ‘dsts’ array.
+ */
+int mtxmatrix_dist_split(
+    int num_parts,
+    struct mtxmatrix_dist ** dsts,
+    const struct mtxmatrix_dist * src,
+    int64_t size,
+    int * parts,
+    int64_t * invperm,
+    struct mtxdisterror * disterr);
+
+/*
  * Level 1 BLAS operations
  */
 

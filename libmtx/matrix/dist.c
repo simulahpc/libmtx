@@ -87,7 +87,8 @@ int mtxmatrix_dist_symmetry(
 void mtxmatrix_dist_free(
     struct mtxmatrix_dist * x)
 {
-    /* free(x->ranks); */
+    free(x->colmap);
+    free(x->rowmap);
     mtxmatrix_free(&x->Ap);
 }
 
@@ -330,9 +331,6 @@ int mtxmatrix_dist_alloc_entries_local(
         return MTX_ERR_MPI_COLLECTIVE;
     }
     for (int i = 0; i < colmapsize; i++) A->colmap[i] = colmap[i];
-
-    /* TODO: initialise maps of owning processes for the "assumed
-     * partitioning" strategy. */
 
     /* allocate storage for the local matrix */
     err = mtxmatrix_alloc_entries(
@@ -1685,6 +1683,162 @@ int mtxmatrix_dist_fwrite(
     err = mtxdistfile_fwrite(&dst, f, fmt, bytes_written, root, disterr);
     if (err) { mtxdistfile_free(&dst); return err; }
     mtxdistfile_free(&dst);
+    return MTX_SUCCESS;
+}
+
+/*
+ * partitioning
+ */
+
+/**
+ * ‘mtxmatrix_dist_split()’ splits a matrix into multiple matrices
+ * according to a given assignment of parts to each nonzero matrix
+ * element.
+ *
+ * The partitioning of the nonzero matrix elements is specified by the
+ * array ‘parts’. The length of the ‘parts’ array is given by ‘size’,
+ * which must match the number of explicitly stored nonzero matrix
+ * entries in ‘src’. Each entry in the ‘parts’ array is an integer in
+ * the range ‘[0, num_parts)’ designating the part to which the
+ * corresponding matrix nonzero belongs.
+ *
+ * The argument ‘dsts’ is an array of ‘num_parts’ pointers to objects
+ * of type ‘struct mtxmatrix_dist’. If successful, then ‘dsts[p]’
+ * points to a matrix consisting of elements from ‘src’ that belong to
+ * the ‘p’th part, as designated by the ‘parts’ array.
+ *
+ * The caller is responsible for calling ‘mtxmatrix_dist_free()’ to
+ * free storage allocated for each matrix in the ‘dsts’ array.
+ */
+int mtxmatrix_dist_split(
+    int num_parts,
+    struct mtxmatrix_dist ** dsts,
+    const struct mtxmatrix_dist * src,
+    int64_t size,
+    int * parts,
+    int64_t * invperm,
+    struct mtxdisterror * disterr)
+{
+    MPI_Comm comm = src->comm;
+    enum mtxmatrixtype type = src->Ap.type;
+    enum mtxfield field;
+    int err = mtxmatrix_field(&src->Ap, &field);
+    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+    enum mtxprecision precision;
+    err = mtxmatrix_precision(&src->Ap, &precision);
+    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+    enum mtxsymmetry symmetry;
+    err = mtxmatrix_symmetry(&src->Ap, &symmetry);
+    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+    int64_t num_rows = src->num_rows;
+    int64_t num_columns = src->num_columns;
+
+    struct mtxmatrix * matrices = malloc(num_parts * sizeof(struct mtxmatrix));
+    err = !matrices ? MTX_ERR_ERRNO : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
+    struct mtxmatrix ** matrixdsts = malloc(num_parts * sizeof(struct mtxmatrix *));
+    err = !matrixdsts ? MTX_ERR_ERRNO : MTX_SUCCESS;
+    if (mtxdisterror_allreduce(disterr, err)) {
+        free(matrices);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+    for (int p = 0; p < num_parts; p++) matrixdsts[p] = &matrices[p];
+    err = mtxmatrix_split(num_parts, matrixdsts, &src->Ap, size, parts/* , invperm */);
+    if (mtxdisterror_allreduce(disterr, err)) {
+        free(matrixdsts); free(matrices);
+        return MTX_ERR_MPI_COLLECTIVE;
+    }
+    free(matrixdsts);
+    for (int p = 0; p < num_parts; p++) {
+        int64_t dstsize;
+        err = mtxmatrix_size(&matrices[p], &dstsize);
+        if (mtxdisterror_allreduce(disterr, err)) {
+            for (int q = p-1; q >= 0; q--) mtxmatrix_free(&dsts[q]->Ap);
+            for (int q = p; q < num_parts; q++) mtxmatrix_free(&matrices[q]);
+            free(matrices);
+            return MTX_ERR_MPI_COLLECTIVE;
+        }
+
+        /* obtain the local row and column indices of the matrix part */
+        int * localrowidx = malloc(dstsize * sizeof(int));
+        err = !localrowidx ? MTX_ERR_ERRNO : MTX_SUCCESS;
+        if (mtxdisterror_allreduce(disterr, err)) {
+            for (int q = p-1; q >= 0; q--) mtxmatrix_free(&dsts[q]->Ap);
+            for (int q = p; q < num_parts; q++) mtxmatrix_free(&matrices[q]);
+            free(matrices);
+            return MTX_ERR_MPI_COLLECTIVE;
+        }
+        int * localcolidx = malloc(dstsize * sizeof(int));
+        err = !localcolidx ? MTX_ERR_ERRNO : MTX_SUCCESS;
+        if (mtxdisterror_allreduce(disterr, err)) {
+            free(localrowidx);
+            for (int q = p-1; q >= 0; q--) mtxmatrix_free(&dsts[q]->Ap);
+            for (int q = p; q < num_parts; q++) mtxmatrix_free(&matrices[q]);
+            free(matrices);
+            return MTX_ERR_MPI_COLLECTIVE;
+        }
+        err = mtxmatrix_rowcolidx(&matrices[p], dstsize, localrowidx, localcolidx);
+        if (mtxdisterror_allreduce(disterr, err)) {
+            free(localcolidx); free(localrowidx);
+            for (int q = p-1; q >= 0; q--) mtxmatrix_free(&dsts[q]->Ap);
+            for (int q = p; q < num_parts; q++) mtxmatrix_free(&matrices[q]);
+            free(matrices);
+            return MTX_ERR_MPI_COLLECTIVE;
+        }
+
+        /* translate to global row and column indices */
+        int64_t * globalrowidx = malloc(dstsize * sizeof(int64_t));
+        err = !globalrowidx ? MTX_ERR_ERRNO : MTX_SUCCESS;
+        if (mtxdisterror_allreduce(disterr, err)) {
+            free(localcolidx); free(localrowidx);
+            for (int q = p-1; q >= 0; q--) mtxmatrix_free(&dsts[q]->Ap);
+            for (int q = p; q < num_parts; q++) mtxmatrix_free(&matrices[q]);
+            free(matrices);
+            return MTX_ERR_MPI_COLLECTIVE;
+        }
+        int64_t * globalcolidx = malloc(dstsize * sizeof(int64_t));
+        err = !globalcolidx ? MTX_ERR_ERRNO : MTX_SUCCESS;
+        if (mtxdisterror_allreduce(disterr, err)) {
+            free(globalrowidx);
+            free(localcolidx); free(localrowidx);
+            for (int q = p-1; q >= 0; q--) mtxmatrix_free(&dsts[q]->Ap);
+            for (int q = p; q < num_parts; q++) mtxmatrix_free(&matrices[q]);
+            free(matrices);
+            return MTX_ERR_MPI_COLLECTIVE;
+        }
+        for (int64_t k = 0; k < dstsize; k++) {
+            globalrowidx[k] = src->rowmap[localrowidx[k]];
+            globalcolidx[k] = src->colmap[localcolidx[k]];
+        }
+        free(localcolidx); free(localrowidx);
+
+        /* allocate a new distributed matrix for the part, including
+         * row and column maps */
+        err = mtxmatrix_dist_alloc_entries_global(
+            dsts[p], type, field, precision, symmetry,
+            num_rows, num_columns, dstsize, sizeof(*globalrowidx), 0,
+            globalrowidx, globalcolidx, comm, disterr);
+        if (mtxdisterror_allreduce(disterr, err)) {
+            free(globalcolidx); free(globalrowidx);
+            for (int q = p-1; q >= 0; q--) mtxmatrix_free(&dsts[q]->Ap);
+            for (int q = p; q < num_parts; q++) mtxmatrix_free(&matrices[q]);
+            free(matrices);
+            return MTX_ERR_MPI_COLLECTIVE;
+        }
+        free(globalcolidx); free(globalrowidx);
+
+        /* copy data from the existing matrix */
+        err = mtxmatrix_copy(&dsts[p]->Ap, &matrices[p]);
+        if (mtxdisterror_allreduce(disterr, err)) {
+            free(globalcolidx); free(globalrowidx);
+            for (int q = p-1; q >= 0; q--) mtxmatrix_free(&dsts[q]->Ap);
+            for (int q = p; q < num_parts; q++) mtxmatrix_free(&matrices[q]);
+            free(matrices);
+            return MTX_ERR_MPI_COLLECTIVE;
+        }
+        mtxmatrix_free(&matrices[p]);
+    }
+    free(matrices);
     return MTX_SUCCESS;
 }
 
