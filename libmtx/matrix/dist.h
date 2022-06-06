@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-05-28
+ * Last modified: 2022-06-06
  *
  * Data structures and routines for distributed matrices.
  */
@@ -134,34 +134,10 @@ struct mtxmatrix_dist
     int64_t * colmap;
 
     /**
-     * ‘xp’ is the underlying storage of the sparse matrix belonging
-     * to the current process.
+     * ‘Ap’ is the underlying storage for the part of the matrix
+     * belonging to the current process.
      */
     struct mtxmatrix Ap;
-
-    /**
-     * ‘blksize’ is the number of matrix elements owned by the current
-     * process, if the elements were partitioned and distributed among
-     * processes in equal-sized blocks.
-     */
-    int64_t blksize;
-
-    /**
-     * ‘blkstart’ is the offset to the first matrix element owned by
-     * the current process, if the elements were partitioned and
-     * distributed among processes in equal-sized, contiguous blocks.
-     */
-    int64_t blkstart;
-
-    /**
-     * ‘ranks’ is an array of size ‘blksize’. The “assumed partition”
-     * strategy assumes that elements are partitioned and distributed
-     * among processes in equal-sized, contiguous blocks. For each
-     * element in the block of the current process, the array ‘ranks’
-     * contains the rank of the process that actually owns the
-     * element.
-     */
-    int * ranks;
 };
 
 /**

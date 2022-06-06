@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-05-28
+ * Last modified: 2022-06-06
  *
  * Data structures and routines for distributed matrices.
  */
@@ -131,17 +131,6 @@ static int mtxmatrix_dist_init_size(
         MPI_IN_PLACE, &x->num_nonzeros, 1, MPI_INT64_T, MPI_SUM, comm);
     err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
-
-    /* int64_t N = x->size; */
-    /* int comm_size = x->comm_size; */
-    /* int rank = x->rank; */
-    /* x->blksize = (N+comm_size-1) / comm_size; */
-    /* x->blkstart = rank*(N/comm_size) */
-    /*     + (rank < (N % comm_size) ? rank : (N % comm_size)); */
-    /* x->ranks = malloc(x->blksize * sizeof(int)); */
-    /* err = !x->ranks ? MTX_ERR_ERRNO : MTX_SUCCESS; */
-    /* if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE; */
-    /* for (int64_t i = 0; i < x->blksize; i++) x->ranks[i] = -1; */
     return MTX_SUCCESS;
 }
 
@@ -196,45 +185,6 @@ static int mtxmatrix_dist_init_rowmap_global(
     for (int64_t k = 0; k < num_nonzeros; k++)
         localrowidx[k] = rowdstidx[rowperm[k]];
     free(rowdstidx); free(rowperm);
-
-    /* int64_t N = A->size; */
-    /* int comm_size = A->comm_size; */
-    /* int rank = A->rank; */
-    /* int64_t blksize = (N+comm_size-1) / comm_size; */
-    /* int64_t num_nonzeros = A->Ap.num_nonzeros; */
-    /* const int64_t * idx = A->Ap.idx; */
-    /* MPI_Win window; */
-    /* disterr->mpierrcode = MPI_Win_create( */
-    /*     A->ranks, A->blksize * sizeof(int), sizeof(int), */
-    /*     MPI_INFO_NULL, A->comm, &window); */
-    /* int err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS; */
-    /* if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE; */
-    /* MPI_Win_set_errhandler(window, MPI_ERRORS_RETURN); */
-    /* disterr->mpierrcode = MPI_Win_fence(0, window); */
-    /* err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS; */
-    /* if (mtxdisterror_allreduce(disterr, err)) { */
-    /*     MPI_Win_free(&window); */
-    /*     return MTX_ERR_MPI_COLLECTIVE; */
-    /* } */
-    /* for (int64_t i = 0; i < num_nonzeros; i++) { */
-    /*     int assumedrank = idx[i] / blksize; */
-    /*     int assumedidx = idx[i] % blksize; */
-    /*     disterr->mpierrcode = MPI_Put( */
-    /*         &rank, 1, MPI_INT, assumedrank, assumedidx, 1, MPI_INT, window); */
-    /*     err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS; */
-    /*     if (err) break; */
-    /* } */
-    /* if (mtxdisterror_allreduce(disterr, err)) { */
-    /*     MPI_Win_free(&window); */
-    /*     return MTX_ERR_MPI_COLLECTIVE; */
-    /* } */
-    /* disterr->mpierrcode = MPI_Win_fence(0, window); */
-    /* err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS; */
-    /* if (mtxdisterror_allreduce(disterr, err)) { */
-    /*     MPI_Win_free(&window); */
-    /*     return MTX_ERR_MPI_COLLECTIVE; */
-    /* } */
-    /* MPI_Win_free(&window); */
     return MTX_SUCCESS;
 }
 
@@ -289,45 +239,6 @@ static int mtxmatrix_dist_init_colmap_global(
     for (int64_t k = 0; k < num_nonzeros; k++)
         localcolidx[k] = coldstidx[colperm[k]];
     free(coldstidx); free(colperm);
-
-    /* int64_t N = A->size; */
-    /* int comm_size = A->comm_size; */
-    /* int rank = A->rank; */
-    /* int64_t blksize = (N+comm_size-1) / comm_size; */
-    /* int64_t num_nonzeros = A->Ap.num_nonzeros; */
-    /* const int64_t * idx = A->Ap.idx; */
-    /* MPI_Win window; */
-    /* disterr->mpierrcode = MPI_Win_create( */
-    /*     A->ranks, A->blksize * sizeof(int), sizeof(int), */
-    /*     MPI_INFO_NULL, A->comm, &window); */
-    /* int err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS; */
-    /* if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE; */
-    /* MPI_Win_set_errhandler(window, MPI_ERRORS_RETURN); */
-    /* disterr->mpierrcode = MPI_Win_fence(0, window); */
-    /* err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS; */
-    /* if (mtxdisterror_allreduce(disterr, err)) { */
-    /*     MPI_Win_free(&window); */
-    /*     return MTX_ERR_MPI_COLLECTIVE; */
-    /* } */
-    /* for (int64_t i = 0; i < num_nonzeros; i++) { */
-    /*     int assumedrank = idx[i] / blksize; */
-    /*     int assumedidx = idx[i] % blksize; */
-    /*     disterr->mpierrcode = MPI_Put( */
-    /*         &rank, 1, MPI_INT, assumedrank, assumedidx, 1, MPI_INT, window); */
-    /*     err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS; */
-    /*     if (err) break; */
-    /* } */
-    /* if (mtxdisterror_allreduce(disterr, err)) { */
-    /*     MPI_Win_free(&window); */
-    /*     return MTX_ERR_MPI_COLLECTIVE; */
-    /* } */
-    /* disterr->mpierrcode = MPI_Win_fence(0, window); */
-    /* err = disterr->mpierrcode ? MTX_ERR_MPI : MTX_SUCCESS; */
-    /* if (mtxdisterror_allreduce(disterr, err)) { */
-    /*     MPI_Win_free(&window); */
-    /*     return MTX_ERR_MPI_COLLECTIVE; */
-    /* } */
-    /* MPI_Win_free(&window); */
     return MTX_SUCCESS;
 }
 

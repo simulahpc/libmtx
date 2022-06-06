@@ -32,7 +32,9 @@
 #include <libmtx/matrix/base/dense.h>
 #include <libmtx/matrix/blas/dense.h>
 #include <libmtx/matrix/dist.h>
+#include <libmtx/matrix/gemvoverlap.h>
 #include <libmtx/matrix/matrix.h>
+#include <libmtx/matrix/null/coo.h>
 #include <libmtx/matrix/partition.h>
 #include <libmtx/matrix/symmetry.h>
 #include <libmtx/matrix/transpose.h>
@@ -44,6 +46,7 @@
 #include <libmtx/vector/blas.h>
 #include <libmtx/vector/dist.h>
 #include <libmtx/vector/field.h>
+#include <libmtx/vector/null.h>
 #include <libmtx/vector/omp.h>
 #include <libmtx/vector/packed.h>
 #include <libmtx/vector/precision.h>
