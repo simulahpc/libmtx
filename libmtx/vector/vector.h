@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-05-28
+ * Last modified: 2022-06-06
  *
  * Data structures for vectors.
  */
@@ -141,6 +141,13 @@ int mtxvector_field(
 int mtxvector_precision(
     const struct mtxvector * x,
     enum mtxprecision * precision);
+
+/**
+ * ‘mtxvector_size()’ gets the size (number of elements) of a vector.
+ */
+int mtxvector_size(
+    const struct mtxvector * x,
+    int64_t * size);
 
 /*
  * Memory management
@@ -742,6 +749,14 @@ int mtxvector_gzwrite(
  * a vector consisting of elements from ‘src’ that belong to the ‘p’th
  * part, as designated by the ‘parts’ array.
  *
+ * Finally, the argument ‘invperm’ may either be ‘NULL’, in which case
+ * it is ignored, or it must point to an array of length ‘size’, which
+ * is used to store the inverse permutation obtained from sorting the
+ * vector elements in ascending order according to their assigned
+ * parts. That is, ‘invperm[i]’ is the original position (before
+ * sorting) of the vector element that now occupies the ‘i’th position
+ * among the sorted elements.
+ *
  * The caller is responsible for calling ‘mtxvector_free()’ to free
  * storage allocated for each vector in the ‘dsts’ array.
  */
@@ -750,7 +765,8 @@ int mtxvector_split(
     struct mtxvector ** dsts,
     const struct mtxvector * src,
     int64_t size,
-    int * parts);
+    int * parts,
+    int64_t * invperm);
 
 /*
  * Level 1 BLAS operations

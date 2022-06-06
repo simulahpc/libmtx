@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-05-28
+ * Last modified: 2022-06-06
  *
  * Unit tests for basic dense vectors.
  */
@@ -392,7 +392,8 @@ int test_mtxvector_base_split(void)
         int srcsize = sizeof(srcdata) / sizeof(*srcdata);
         err = mtxvector_init_real_single(&src, mtxvector_base, srcsize, srcdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxvector_split(num_parts, dsts, &src, srcsize, parts);
+        int64_t invperm[5] = {};
+        err = mtxvector_split(num_parts, dsts, &src, srcsize, parts, invperm);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(mtxvector_base, dst0.type);
         TEST_ASSERT_EQ(mtx_field_real, dst0.storage.base.field);
@@ -407,6 +408,11 @@ int test_mtxvector_base_split(void)
         TEST_ASSERT_EQ(2, dst1.storage.base.size);
         TEST_ASSERT_EQ(4.0f, dst1.storage.base.data.real_single[0]);
         TEST_ASSERT_EQ(5.0f, dst1.storage.base.data.real_single[1]);
+        TEST_ASSERT_EQ(0, invperm[0]);
+        TEST_ASSERT_EQ(1, invperm[1]);
+        TEST_ASSERT_EQ(2, invperm[2]);
+        TEST_ASSERT_EQ(3, invperm[3]);
+        TEST_ASSERT_EQ(4, invperm[4]);
         mtxvector_free(&dst1); mtxvector_free(&dst0); mtxvector_free(&src);
     }
     {
@@ -419,7 +425,8 @@ int test_mtxvector_base_split(void)
         int srcsize = sizeof(srcdata) / sizeof(*srcdata);
         err = mtxvector_init_real_single(&src, mtxvector_base, srcsize, srcdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxvector_split(num_parts, dsts, &src, srcsize, parts);
+        int64_t invperm[5] = {};
+        err = mtxvector_split(num_parts, dsts, &src, srcsize, parts, invperm);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(mtxvector_base, dst0.type);
         TEST_ASSERT_EQ(mtx_field_real, dst0.storage.base.field);
@@ -434,6 +441,11 @@ int test_mtxvector_base_split(void)
         TEST_ASSERT_EQ(2, dst1.storage.base.size);
         TEST_ASSERT_EQ(2.0f, dst1.storage.base.data.real_single[0]);
         TEST_ASSERT_EQ(5.0f, dst1.storage.base.data.real_single[1]);
+        TEST_ASSERT_EQ(0, invperm[0]);
+        TEST_ASSERT_EQ(2, invperm[1]);
+        TEST_ASSERT_EQ(3, invperm[2]);
+        TEST_ASSERT_EQ(1, invperm[3]);
+        TEST_ASSERT_EQ(4, invperm[4]);
         mtxvector_free(&dst1); mtxvector_free(&dst0); mtxvector_free(&src);
     }
     return TEST_SUCCESS;

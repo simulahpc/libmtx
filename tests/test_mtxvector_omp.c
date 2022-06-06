@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-05-28
+ * Last modified: 2022-06-06
  *
  * Unit tests for shared-memory parallel, dense vectors using OpenMP.
  */
@@ -343,7 +343,7 @@ int test_mtxvector_omp_split(void)
         int srcsize = sizeof(srcdata) / sizeof(*srcdata);
         err = mtxvector_init_real_single(&src, mtxvector_omp, srcsize, srcdata);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
-        err = mtxvector_split(num_parts, dsts, &src, srcsize, parts);
+        err = mtxvector_split(num_parts, dsts, &src, srcsize, parts, NULL);
         TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
         TEST_ASSERT_EQ(mtxvector_omp, dst0.type);
         TEST_ASSERT_EQ(mtx_field_real, dst0.storage.omp.base.field);

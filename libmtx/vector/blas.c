@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-05-28
+ * Last modified: 2022-06-06
  *
  * Data structures and routines for dense vectors with vector
  * operations accelerated by an external BLAS library.
@@ -603,6 +603,14 @@ int mtxvector_blas_to_mtxfile(
  * points to a vector consisting of elements from ‘src’ that belong to
  * the ‘p’th part, as designated by the ‘parts’ array.
  *
+ * Finally, the argument ‘invperm’ may either be ‘NULL’, in which case
+ * it is ignored, or it must point to an array of length ‘size’, which
+ * is used to store the inverse permutation obtained from sorting the
+ * vector elements in ascending order according to their assigned
+ * parts. That is, ‘invperm[i]’ is the original position (before
+ * sorting) of the vector element that now occupies the ‘i’th position
+ * among the sorted elements.
+ *
  * The caller is responsible for calling ‘mtxvector_blas_free()’ to
  * free storage allocated for each vector in the ‘dsts’ array.
  */
@@ -611,13 +619,15 @@ int mtxvector_blas_split(
     struct mtxvector_blas ** dsts,
     const struct mtxvector_blas * src,
     int64_t size,
-    int * parts)
+    int * parts,
+    int64_t * invperm)
 {
     struct mtxvector_base ** basedsts = malloc(
         num_parts * sizeof(struct mtxvector_base *));
     if (!basedsts) return MTX_ERR_ERRNO;
     for (int p = 0; p < num_parts; p++) basedsts[p] = &dsts[p]->base;
-    int err = mtxvector_base_split(num_parts, basedsts, &src->base, size, parts);
+    int err = mtxvector_base_split(
+        num_parts, basedsts, &src->base, size, parts, invperm);
     free(basedsts);
     return err;
 }

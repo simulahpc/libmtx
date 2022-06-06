@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-05-28
+ * Last modified: 2022-06-06
  *
  * Data structures for vectors.
  */
@@ -177,6 +177,33 @@ int mtxvector_precision(
         return MTX_ERR_OPENMP_NOT_SUPPORTED;
 #endif
     } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
+}
+
+/**
+ * ‘mtxvector_size()’ gets the size (number of elements) of a vector.
+ */
+int mtxvector_size(
+    const struct mtxvector * x,
+    int64_t * size)
+{
+    if (x->type == mtxvector_base) {
+        *size = mtxvector_base_size(&x->storage.base);
+    } else if (x->type == mtxvector_blas) {
+#ifdef LIBMTX_HAVE_BLAS
+        *size = mtxvector_blas_size(&x->storage.blas);
+#else
+        return MTX_ERR_BLAS_NOT_SUPPORTED;
+#endif
+    } else if (x->type == mtxvector_null) {
+        *size = mtxvector_null_size(&x->storage.null);
+    } else if (x->type == mtxvector_omp) {
+#ifdef LIBMTX_HAVE_OPENMP
+        *size = mtxvector_omp_size(&x->storage.omp);
+#else
+        return MTX_ERR_OPENMP_NOT_SUPPORTED;
+#endif
+    } else { return MTX_ERR_INVALID_VECTOR_TYPE; }
+    return MTX_SUCCESS;
 }
 
 /*
@@ -1654,6 +1681,14 @@ int mtxvector_gzwrite(
  * a vector consisting of elements from ‘src’ that belong to the ‘p’th
  * part, as designated by the ‘parts’ array.
  *
+ * Finally, the argument ‘invperm’ may either be ‘NULL’, in which case
+ * it is ignored, or it must point to an array of length ‘size’, which
+ * is used to store the inverse permutation obtained from sorting the
+ * vector elements in ascending order according to their assigned
+ * parts. That is, ‘invperm[i]’ is the original position (before
+ * sorting) of the vector element that now occupies the ‘i’th position
+ * among the sorted elements.
+ *
  * The caller is responsible for calling ‘mtxvector_free()’ to free
  * storage allocated for each vector in the ‘dsts’ array.
  */
@@ -1662,7 +1697,8 @@ int mtxvector_split(
     struct mtxvector ** dsts,
     const struct mtxvector * src,
     int64_t size,
-    int * parts)
+    int * parts,
+    int64_t * invperm)
 {
     if (src->type == mtxvector_base) {
         struct mtxvector_base ** basedsts = malloc(
@@ -1673,7 +1709,7 @@ int mtxvector_split(
             basedsts[p] = &dsts[p]->storage.base;
         }
         int err = mtxvector_base_split(
-            num_parts, basedsts, &src->storage.base, size, parts);
+            num_parts, basedsts, &src->storage.base, size, parts, invperm);
         free(basedsts);
         return err;
     } else if (src->type == mtxvector_blas) {
@@ -1686,7 +1722,7 @@ int mtxvector_split(
             blasdsts[p] = &dsts[p]->storage.blas;
         }
         int err = mtxvector_blas_split(
-            num_parts, blasdsts, &src->storage.blas, size, parts);
+            num_parts, blasdsts, &src->storage.blas, size, parts, invperm);
         free(blasdsts);
         return err;
 #else
@@ -1701,7 +1737,7 @@ int mtxvector_split(
             nulldsts[p] = &dsts[p]->storage.null;
         }
         int err = mtxvector_null_split(
-            num_parts, nulldsts, &src->storage.null, size, parts);
+            num_parts, nulldsts, &src->storage.null, size, parts, invperm);
         free(nulldsts);
         return err;
     } else if (src->type == mtxvector_omp) {
@@ -1714,7 +1750,7 @@ int mtxvector_split(
             ompdsts[p] = &dsts[p]->storage.omp;
         }
         int err = mtxvector_omp_split(
-            num_parts, ompdsts, &src->storage.omp, size, parts);
+            num_parts, ompdsts, &src->storage.omp, size, parts, invperm);
         free(ompdsts);
         return err;
 #else

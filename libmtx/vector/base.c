@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-05-28
+ * Last modified: 2022-06-06
  *
  * Data structures and routines for basic dense vectors.
  */
@@ -1123,6 +1123,14 @@ int mtxvector_base_to_mtxfile(
  * points to a vector consisting of elements from ‘src’ that belong to
  * the ‘p’th part, as designated by the ‘parts’ array.
  *
+ * Finally, the argument ‘invperm’ may either be ‘NULL’, in which case
+ * it is ignored, or it must point to an array of length ‘size’, which
+ * is used to store the inverse permutation obtained from sorting the
+ * vector elements in ascending order according to their assigned
+ * parts. That is, ‘invperm[i]’ is the original position (before
+ * sorting) of the vector element that now occupies the ‘i’th position
+ * among the sorted elements.
+ *
  * The caller is responsible for calling ‘mtxvector_base_free()’ to
  * free storage allocated for each vector in the ‘dsts’ array.
  */
@@ -1131,7 +1139,8 @@ int mtxvector_base_split(
     struct mtxvector_base ** dsts,
     const struct mtxvector_base * src,
     int64_t size,
-    int * parts)
+    int * parts,
+    int64_t * invperm)
 {
     if (size != src->size) return MTX_ERR_INDEX_OUT_OF_BOUNDS;
     bool sorted = true;
@@ -1142,18 +1151,22 @@ int mtxvector_base_split(
     }
 
     /* sort by part number and invert the sorting permutation */
-    int64_t * invperm;
+    bool free_invperm = !invperm;
     if (sorted) {
-        invperm = malloc(size * sizeof(int64_t));
-        if (!invperm) return MTX_ERR_ERRNO;
+        if (!invperm) {
+            invperm = malloc(size * sizeof(int64_t));
+            if (!invperm) return MTX_ERR_ERRNO;
+        }
         for (int64_t k = 0; k < size; k++) invperm[k] = k;
     } else {
         int64_t * perm = malloc(size * sizeof(int64_t));
         if (!perm) return MTX_ERR_ERRNO;
         int err = radix_sort_int(size, parts, perm);
         if (err) { free(perm); return err; }
-        invperm = malloc(size * sizeof(int64_t));
-        if (!invperm) { free(perm); return MTX_ERR_ERRNO; }
+        if (!invperm) {
+            invperm = malloc(size * sizeof(int64_t));
+            if (!invperm) { free(perm); return MTX_ERR_ERRNO; }
+        }
         for (int64_t k = 0; k < size; k++) invperm[perm[k]] = k;
         free(perm);
     }
@@ -1185,13 +1198,13 @@ int mtxvector_base_split(
         if (err) {
             mtxvector_base_free(&dst.x.storage.base);
             for (int q = p-1; q >= 0; q--) mtxvector_base_free(dsts[q]);
-            free(invperm);
+            if (free_invperm) free(invperm);
             return err;
         }
         *dsts[p] = dst.x.storage.base;
         offset += partsize;
     }
-    free(invperm);
+    if (free_invperm) free(invperm);
     return MTX_SUCCESS;
 }
 

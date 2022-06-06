@@ -16,7 +16,7 @@
  * along with Libmtx.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Authors: James D. Trotter <james@simula.no>
- * Last modified: 2022-04-28
+ * Last modified: 2022-06-06
  *
  * Unit tests for sparse vectors in packed storage format.
  */
@@ -502,6 +502,55 @@ int test_mtxvector_packed_to_mtxfile(void)
         }
         mtxfile_free(&mtxfile);
         mtxvector_packed_free(&x);
+    }
+    return TEST_SUCCESS;
+}
+
+/**
+ * ‘test_mtxvector_packed_split()’ tests splitting vectors.
+ */
+int test_mtxvector_packed_split(void)
+{
+    int err;
+    {
+        struct mtxvector_packed src;
+        struct mtxvector_packed dst0, dst1;
+        struct mtxvector_packed * dsts[] = {&dst0, &dst1};
+        int num_parts = 2;
+        int size = 12;
+        int srcnnz = 5;
+        int64_t srcidx[] = {1, 3, 5, 7, 9};
+        float srcdata[] = {1.0f, 3.0f, 5.0f, 7.0f, 9.0f};
+        int parts[] = {0, 0, 0, 1, 1};
+        err = mtxvector_packed_init_real_single(
+            &src, mtxvector_base, size, srcnnz, srcidx, srcdata);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        err = mtxvector_packed_split(num_parts, dsts, &src, srcnnz, parts, NULL);
+        TEST_ASSERT_EQ_MSG(MTX_SUCCESS, err, "%s", mtxstrerror(err));
+        TEST_ASSERT_EQ(12, dst0.size);
+        TEST_ASSERT_EQ(3, dst0.num_nonzeros);
+        TEST_ASSERT_EQ(1, dst0.idx[0]);
+        TEST_ASSERT_EQ(3, dst0.idx[1]);
+        TEST_ASSERT_EQ(5, dst0.idx[2]);
+        TEST_ASSERT_EQ(mtxvector_base, dst0.x.type);
+        TEST_ASSERT_EQ(mtx_field_real, dst0.x.storage.base.field);
+        TEST_ASSERT_EQ(mtx_single, dst0.x.storage.base.precision);
+        TEST_ASSERT_EQ(3, dst0.x.storage.base.size);
+        TEST_ASSERT_EQ(1.0f, dst0.x.storage.base.data.real_single[0]);
+        TEST_ASSERT_EQ(3.0f, dst0.x.storage.base.data.real_single[1]);
+        TEST_ASSERT_EQ(5.0f, dst0.x.storage.base.data.real_single[2]);
+        TEST_ASSERT_EQ(12, dst1.size);
+        TEST_ASSERT_EQ(2, dst1.num_nonzeros);
+        TEST_ASSERT_EQ(7, dst1.idx[0]);
+        TEST_ASSERT_EQ(9, dst1.idx[1]);
+        TEST_ASSERT_EQ(mtxvector_base, dst1.x.type);
+        TEST_ASSERT_EQ(mtx_field_real, dst1.x.storage.base.field);
+        TEST_ASSERT_EQ(mtx_single, dst1.x.storage.base.precision);
+        TEST_ASSERT_EQ(2, dst1.x.storage.base.size);
+        TEST_ASSERT_EQ(7.0f, dst1.x.storage.base.data.real_single[0]);
+        TEST_ASSERT_EQ(9.0f, dst1.x.storage.base.data.real_single[1]);
+        mtxvector_packed_free(&dst1); mtxvector_packed_free(&dst0);
+        mtxvector_packed_free(&src);
     }
     return TEST_SUCCESS;
 }
@@ -1709,6 +1758,7 @@ int main(int argc, char * argv[])
     TEST_SUITE_BEGIN("Running tests for sparse vectors in packed storage format\n");
     TEST_RUN(test_mtxvector_packed_from_mtxfile);
     TEST_RUN(test_mtxvector_packed_to_mtxfile);
+    TEST_RUN(test_mtxvector_packed_split);
     TEST_RUN(test_mtxvector_packed_swap);
     TEST_RUN(test_mtxvector_packed_copy);
     TEST_RUN(test_mtxvector_packed_scal);
