@@ -650,7 +650,7 @@ int main(int argc, char *argv[])
         fprintf(diagf, "partitioned into %'d parts:\n", num_parts);
         for (int p = 0; p < num_parts; p++) {
             fprintf(diagf, "part %'5d: %'13"PRId64" nonzeros\n",
-                    p, dstnzpartsizes[p+1]-dstnzpartsizes[p]);
+                    p, dstnzpartsizes[p]);
         }
     }
 
