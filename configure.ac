@@ -192,7 +192,8 @@ AX_LIB_METIS([
   libmtx_CPPFLAGS="$libmtx_CPPFLAGS -DLIBMTX_HAVE_METIS"
   AC_DEFINE([LIBMTX_HAVE_METIS], [1], [Define to 1 if you have METIS])
   AC_SUBST(LIBMTX_HAVE_METIS)
-],AC_MSG_ERROR([either specify a valid METIS installation with --with-metis=DIR or disable METIS usage with --without-metis]))
+],
+AC_MSG_WARN([either specify a valid METIS installation with --with-metis=DIR or disable METIS usage with --without-metis]))
 AM_CONDITIONAL([HAVE_METIS],
   [test x"$with_metis" != xno -a x"$metis_found" != xno])
 
