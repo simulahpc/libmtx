@@ -68,7 +68,6 @@ following subsections.
 @node Header line
 @section Header line
 
-@cindex Matrix Market format @subentry header line
 @cindex header line
 The @dfn{header line} of a Matrix Market file is on the form:
 
@@ -83,13 +82,11 @@ that follow describe different properties of the Matrix Market object,
 such as whether it is a matrix or a vector, and if it is stored in
 sparse or dense form.
 
-@cindex Matrix Market format @subentry object
 @cindex object
 @enumerate
 @item @t{@var{object}}
       is either @samp{matrix} or @samp{vector}.
 
-@cindex Matrix Market format @subentry format
 @cindex format
 @cindex array
 @cindex coordinate
@@ -97,7 +94,6 @@ sparse or dense form.
       is @samp{array} if the data is stored in a dense format, or
       @samp{coordinate} if it is stored in a sparse format.
 
-@cindex Matrix Market format @subentry field
 @cindex field
 @cindex real
 @cindex complex
@@ -108,7 +104,6 @@ sparse or dense form.
       belong, and may be one of the following: @samp{real},
       @samp{complex}, @samp{integer} or @samp{pattern}.
 
-@cindex Matrix Market format @subentry symmetry
 @cindex symmetry
 @cindex unsymmetric
 @cindex symmetric
@@ -202,7 +197,6 @@ assumed to be an equal, complex conjugated value present at location
 
 @node Comment lines
 @section Comment lines
-@cindex Matrix Market format @subentry comment lines
 @cindex comment lines
 Matrix Market files allow for an optional section of comments, which
 are ignored when processing the file. If present, comments must follow
@@ -213,7 +207,6 @@ the end of the line.
 
 @node Size line
 @section Size line
-@cindex Matrix Market format @subentry size line
 @cindex size line
 The @dfn{size line} describes the size of the object stored in a
 Matrix Market file, and it depends both on the @t{@var{object}} and
@@ -314,7 +307,6 @@ file.
 
 @node Data lines
 @section Data lines
-@cindex Matrix Market format @subentry data lines
 @cindex data lines
 The final section of a Matrix Market file contains @dfn{data lines}
 for each (nonzero) matrix or vector entry. The number of data lines

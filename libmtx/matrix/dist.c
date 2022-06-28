@@ -2666,7 +2666,7 @@ static int mtxmatrix_dist_gemv_colparts(
 
     /* partition vector elements into interior and halo parts */
     for (int j = 0; j < x->xp.num_nonzeros; j++) {
-        fprintf(stderr, "%s:%d: j=%d of %d, x->xp.idx[j]=%d, domainmapperm[j]=%d, domainmapdstidx[j]=%d\n", __FILE__, __LINE__, j, x->xp.num_nonzeros, x->xp.idx[j], domainmapperm[j], domainmapdstidx[j]);
+        /* fprintf(stderr, "%s:%d: j=%d of %d, x->xp.idx[j]=%d, domainmapperm[j]=%d, domainmapdstidx[j]=%d\n", __FILE__, __LINE__, j, x->xp.num_nonzeros, x->xp.idx[j], domainmapperm[j], domainmapdstidx[j]); */
         dstxcolparts[j] = domainmapdstidx[domainmapperm[j]] == -1 ? 1 : 0;
     }
     free(domainmapdstidx); free(domainmapperm);
