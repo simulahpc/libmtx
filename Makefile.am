@@ -44,7 +44,9 @@ EXTRA_DIST = \
 	tests/test_assumedpartition_parallel \
 	tests/test_distsort_parallel \
 	tests/test_mtxdistfile_parallel \
-	tests/test_mtxfile_mpi_parallel
+	tests/test_mtxfile_mpi_parallel \
+	tests/test_mtxmatrix_dist_parallel \
+	tests/test_mtxvector_dist_parallel
 
 # Matrix Market library
 lib_LTLIBRARIES = libmtx.la
@@ -284,8 +286,8 @@ TESTS += tests/test_mtxvector_omp
 endif
 
 if HAVE_MPI
-tests_test_mtxvector_dist_CPPFLAGS =
-tests_test_mtxvector_dist_LDADD = $(top_builddir)/libmtx.la
+tests_test_mtxvector_dist_CPPFLAGS = $(MPICPPFLAGS)
+tests_test_mtxvector_dist_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
 tests_test_mtxvector_dist_SOURCES = tests/test_mtxvector_dist.c tests/test.h
 check_PROGRAMS += tests/test_mtxvector_dist
 TESTS += tests/test_mtxvector_dist_parallel
@@ -323,8 +325,8 @@ check_PROGRAMS += tests/test_mtxmatrix_ompcsr
 TESTS += tests/test_mtxmatrix_ompcsr
 endif
 if HAVE_MPI
-tests_test_mtxmatrix_dist_CPPFLAGS =
-tests_test_mtxmatrix_dist_LDADD = $(top_builddir)/libmtx.la
+tests_test_mtxmatrix_dist_CPPFLAGS = $(MPICPPFLAGS)
+tests_test_mtxmatrix_dist_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
 tests_test_mtxmatrix_dist_SOURCES = tests/test_mtxmatrix_dist.c tests/test.h
 check_PROGRAMS += tests/test_mtxmatrix_dist
 TESTS += tests/test_mtxmatrix_dist_parallel
@@ -375,8 +377,8 @@ tests_test_sort_SOURCES = tests/test_sort.c tests/test.h
 check_PROGRAMS += tests/test_sort
 TESTS += tests/test_sort
 if HAVE_MPI
-tests_test_assumedpartition_CPPFLAGS =
-tests_test_assumedpartition_LDADD = $(top_builddir)/libmtx.la
+tests_test_assumedpartition_CPPFLAGS = $(MPICPPFLAGS)
+tests_test_assumedpartition_LDADD = $(top_builddir)/libmtx.la $(MPILDFLAGS) $(BLAS_LIBS)
 tests_test_assumedpartition_SOURCES = tests/test_assumedpartition.c tests/test.h
 check_PROGRAMS += tests/test_assumedpartition
 TESTS += tests/test_assumedpartition_parallel
