@@ -188,7 +188,7 @@ int test_morton2d_to_cartesian(void)
         for (int i = 0; i < size; i++) {
             TEST_ASSERT_MSG(
                 xin[i] == xout[i] && yin[i] == yout[i],
-                "i=%d, xin[i]=%"PRIu64", xout[i]=%"PRIu64"",
+                "i=%d, xin[i]=%"PRIu64", xout[i]=%"PRIu64", "
                 "yin[i]=%"PRIu64", yout[i]=%"PRIu64,
                 i, xin[i], xout[i], yin[i], yout[i]);
         }
