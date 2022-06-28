@@ -1,5 +1,30 @@
 * Noteworthy changes in the upcoming release
 
-This is the initial release of Libmtx, which supports reading
-and writing Matrix Market files, sorting sparse matrices and basic
-BLAS operations, such as matrix-vector multiplication.
+
+* Noteworthy changes in release 0.2.0 (2022-06-28)
+
+  MPI support is added for many operations, such as sorting and vector
+  operations. There is work in progress to implement distributed
+  sparse matrix-vector multiplication.
+
+  Several implementations for vector operations now provided,
+  including a serial implementation, a BLAS-accelerated
+  implementation, and an OpenMP shared-memory parallel
+  implementation.
+
+  Matrices can now be reordered using Reverse Cuthill-McKee and
+  partitioned using METIS.
+
+
+* Noteworthy changes in release 0.1.0 (2021-06-18)
+
+  This is the initial release of Libmtx, which supports reading and
+  writing Matrix Market files, sorting sparse matrices and basic BLAS
+  operations, such as matrix-vector multiplication.
+
+
+Copyright (C) 2022 James D. Trotter
+
+Copying and distribution of this file, with or without modification,
+are permitted provided the copyright notice and this notice are
+preserved.
