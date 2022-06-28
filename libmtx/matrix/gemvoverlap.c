@@ -36,6 +36,7 @@ const char * mtxgemvoverlap_str(
 {
     switch (overlap) {
     case mtxgemvoverlap_none: return "none";
+    case mtxgemvoverlap_irecv: return "irecv";
     default: return mtxstrerror(MTX_ERR_INVALID_GEMVOVERLAP);
     }
 }
@@ -72,6 +73,9 @@ int mtxgemvoverlap_parse(
     if (strncmp("none", t, strlen("none")) == 0) {
         t += strlen("none");
         *overlap = mtxgemvoverlap_none;
+    } else if (strncmp("irecv", t, strlen("irecv")) == 0) {
+        t += strlen("irecv");
+        *overlap = mtxgemvoverlap_irecv;
     } else { return MTX_ERR_INVALID_GEMVOVERLAP; }
     if (valid_delimiters && *t != '\0') {
         if (!strchr(valid_delimiters, *t))

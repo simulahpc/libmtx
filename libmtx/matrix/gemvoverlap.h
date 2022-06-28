@@ -35,6 +35,7 @@
 enum mtxgemvoverlap
 {
     mtxgemvoverlap_none,    /* no overlap */
+    mtxgemvoverlap_irecv,   /* overlap using non-blocking receive (MPI_Irecv) */
 };
 
 /**

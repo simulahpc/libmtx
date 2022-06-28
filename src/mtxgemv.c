@@ -664,7 +664,7 @@ static int distgemv(
         for (int i = 0; i < repeat; i++) {
             MPI_Barrier(comm);
             if (verbose > 0) {
-                fprintf(diagf, "mtxmatrix_dist_sgemv: ");
+                fprintf(diagf, "mtxmatrix_dist_gemv_sgemv: ");
                 fflush(diagf);
                 clock_gettime(CLOCK_MONOTONIC, &t0);
             }
@@ -711,7 +711,7 @@ static int distgemv(
         for (int i = 0; i < repeat; i++) {
             MPI_Barrier(comm);
             if (verbose > 0) {
-                fprintf(diagf, "mtxmatrix_dist_dgemv: ");
+                fprintf(diagf, "mtxmatrix_dist_gemv_dgemv: ");
                 fflush(diagf);
                 clock_gettime(CLOCK_MONOTONIC, &t0);
             }

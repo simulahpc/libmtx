@@ -2501,11 +2501,345 @@ int mtxmatrix_dist_zgemv(
  */
 struct mtxmatrix_dist_gemv_impl
 {
+    struct mtxmatrix_dist Aint;
+    struct mtxmatrix_dist Arowhalo;
+    struct mtxmatrix_dist Acolhalo;
+    struct mtxmatrix_dist Aext;
+    struct mtxvector_dist xint;
+    struct mtxvector_dist xhalo;
+    bool yhalo_needed;
+    struct mtxvector_packed yint;
+    struct mtxvector_packed yhalo;
+    struct mtxvector_dist_usscga usscga_xint;
+    struct mtxvector_dist_usscga usscga_xhalo;
+
     struct mtxvector_dist z;
     struct mtxvector_dist w;
     int64_t num_flops;
     struct mtxvector_dist_usscga usscga;
+    enum mtxfield field;
+    enum mtxprecision precision;
+    float salpha, sbeta;
+    double dalpha, dbeta;
 };
+
+/**
+ * ‘mtxmatrix_dist_gemv_rowparts()’ partitions the linear system
+ * rowwise into interior and halo parts. The interior corresponds to
+ * nonzero matrix rows where the current process also owns the
+ * corresponding element of the destination vector, whereas the halo
+ * corresponds to nonzero matrix rows where a remote process owns the
+ * corresponding destination vector element.
+ *
+ * The array ‘dstrowparts’ must be of length ‘A->rowmapsize’.
+ */
+static int mtxmatrix_dist_gemv_rowparts(
+    enum mtxtransposition trans,
+    const struct mtxmatrix_dist * A,
+    const struct mtxvector_dist * x,
+    const struct mtxvector_dist * y,
+    int * dstrowparts)
+{
+    /* Make temporary copies of the row map (i.e., nonzero matrix rows
+     * on the current process) and range map (i.e., the elements of
+     * the destination vector, y, on the current process).  This is
+     * needed, because the arrays must be sorted before computing the
+     * intersection. */
+    int64_t * rowmap = malloc(A->rowmapsize * sizeof(int64_t));
+    if (!rowmap) return MTX_ERR_ERRNO;
+    for (int64_t j = 0; j < A->rowmapsize; j++) rowmap[j] = A->rowmap[j];
+    int64_t * rangemap = malloc(x->xp.num_nonzeros * sizeof(int64_t));
+    if (!rangemap) { free(rowmap); return MTX_ERR_ERRNO; }
+    for (int64_t j = 0; j < x->xp.num_nonzeros; j++) rangemap[j] = x->xp.idx[j];
+    int64_t * rowmapperm = malloc(A->rowmapsize * sizeof(int64_t));
+    if (!rowmapperm) { free(rangemap); free(rowmap); return MTX_ERR_ERRNO; }
+    int64_t * rangemapperm = malloc(x->xp.num_nonzeros * sizeof(int64_t));
+    if (!rangemapperm) { free(rowmapperm); free(rangemap); free(rowmap); return MTX_ERR_ERRNO; }
+
+    /* compute the intersection of the row map and range map */
+    int64_t introwmapsize = 0;
+    int err = setintersection_unsorted_unique_int64(
+        &introwmapsize, NULL, A->rowmapsize, rowmap, rowmapperm, NULL,
+        x->xp.num_nonzeros, rangemap, rangemapperm, NULL);
+    if (err) { free(rangemapperm); free(rowmapperm); free(rangemap); free(rowmap); return err; }
+    int64_t * introwmap = malloc(introwmapsize * sizeof(int64_t));
+    if (!introwmap) { free(rangemapperm); free(rowmapperm); free(rangemap); free(rowmap); return MTX_ERR_ERRNO; }
+    int64_t * rowmapdstidx = malloc(A->rowmapsize * sizeof(int64_t));
+    if (!rowmapdstidx) { free(introwmap); free(rangemapperm); free(rowmapperm); free(rangemap); free(rowmap); return MTX_ERR_ERRNO; }
+    int64_t * rangemapdstidx = malloc(x->xp.num_nonzeros * sizeof(int64_t));
+    if (!rangemapdstidx) { free(rowmapdstidx); free(introwmap); free(rangemapperm); free(rowmapperm); free(rangemap); free(rowmap); return MTX_ERR_ERRNO; }
+    err = setintersection_sorted_unique_int64(
+        &introwmapsize, introwmap, A->rowmapsize, rowmap, rowmapdstidx,
+        x->xp.num_nonzeros, rangemap, rangemapdstidx);
+    if (err) { free(rowmapdstidx); free(introwmap); free(rangemapperm); free(rowmapperm); free(rangemap); free(rowmap); return err; }
+    free(rangemapdstidx); free(introwmap); free(rangemap); free(rowmap);
+
+    /* partition matrix rows into interior and halo parts */
+    for (int j = 0; j < A->rowmapsize; j++)
+        dstrowparts[j] = rowmapdstidx[rowmapperm[j]] == -1 ? 1 : 0;
+    free(rowmapdstidx); free(rangemapperm); free(rowmapperm);
+    return MTX_SUCCESS;
+}
+
+/**
+ * ‘mtxmatrix_dist_gemv_colparts()’ partitions the linear system
+ * columnwise into interior and halo parts. The interior corresponds
+ * to nonzero matrix columns where the current process also owns the
+ * corresponding element of the source vector, whereas the halo
+ * corresponds to nonzero matrix columns where a remote process owns
+ * the corresponding source vector element.
+ *
+ * The array ‘dstcolparts’ must be of length ‘A->colmapsize’.
+ */
+static int mtxmatrix_dist_gemv_colparts(
+    enum mtxtransposition trans,
+    const struct mtxmatrix_dist * A,
+    const struct mtxvector_dist * x,
+    const struct mtxvector_dist * y,
+    int * dstcolparts,
+    int * dstxcolparts)
+{
+    /* Make temporary copies of the column map (i.e., nonzero matrix
+     * columns on the current process) and domain map (i.e., the
+     * elements of the source vector, x, on the current process).
+     * This is needed, because the arrays must be sorted before
+     * computing the intersection. */
+    int64_t * colmap = malloc(A->colmapsize * sizeof(int64_t));
+    if (!colmap) return MTX_ERR_ERRNO;
+    for (int64_t j = 0; j < A->colmapsize; j++) colmap[j] = A->colmap[j];
+    int64_t * domainmap = malloc(x->xp.num_nonzeros * sizeof(int64_t));
+    if (!domainmap) { free(colmap); return MTX_ERR_ERRNO; }
+    for (int64_t j = 0; j < x->xp.num_nonzeros; j++) domainmap[j] = x->xp.idx[j];
+    int64_t * colmapperm = malloc(A->colmapsize * sizeof(int64_t));
+    if (!colmapperm) { free(domainmap); free(colmap); return MTX_ERR_ERRNO; }
+    int64_t * domainmapperm = malloc(x->xp.num_nonzeros * sizeof(int64_t));
+    if (!domainmapperm) {
+        free(colmapperm);
+        free(domainmap); free(colmap);
+        return MTX_ERR_ERRNO;
+    }
+
+    /* compute the intersection of the column map and domain map */
+    int64_t intcolmapsize = 0;
+    int err = setintersection_unsorted_unique_int64(
+        &intcolmapsize, NULL, A->colmapsize, colmap, colmapperm, NULL,
+        x->xp.num_nonzeros, domainmap, domainmapperm, NULL);
+    if (err) {
+        free(domainmapperm); free(colmapperm);
+        free(domainmap); free(colmap);
+        return err;
+    }
+    int64_t * intcolmap = malloc(intcolmapsize * sizeof(int64_t));
+    if (!intcolmap) {
+        free(domainmapperm); free(colmapperm);
+        free(domainmap); free(colmap);
+        return MTX_ERR_ERRNO;
+    }
+    int64_t * colmapdstidx = malloc(A->colmapsize * sizeof(int64_t));
+    if (!colmapdstidx) {
+        free(intcolmap); free(domainmapperm); free(colmapperm);
+        free(domainmap); free(colmap);
+        return MTX_ERR_ERRNO;
+    }
+    int64_t * domainmapdstidx = malloc(x->xp.num_nonzeros * sizeof(int64_t));
+    if (!domainmapdstidx) {
+        free(colmapdstidx); free(intcolmap);
+        free(domainmapperm); free(colmapperm);
+        free(domainmap); free(colmap);
+        return MTX_ERR_ERRNO;
+    }
+    err = setintersection_sorted_unique_int64(
+        &intcolmapsize, intcolmap, A->colmapsize, colmap, colmapdstidx,
+        x->xp.num_nonzeros, domainmap, domainmapdstidx);
+    if (err) {
+        free(colmapdstidx); free(intcolmap);
+        free(domainmapperm); free(colmapperm);
+        free(domainmap); free(colmap);
+        return err;
+    }
+    free(intcolmap); free(domainmap); free(colmap);
+
+    /* partition matrix columns into interior and halo parts */
+    for (int j = 0; j < A->colmapsize; j++)
+        dstcolparts[j] = colmapdstidx[colmapperm[j]] == -1 ? 1 : 0;
+    free(colmapdstidx); free(colmapperm);
+
+    /* partition vector elements into interior and halo parts */
+    for (int j = 0; j < x->xp.num_nonzeros; j++) {
+        fprintf(stderr, "%s:%d: j=%d of %d, x->xp.idx[j]=%d, domainmapperm[j]=%d, domainmapdstidx[j]=%d\n", __FILE__, __LINE__, j, x->xp.num_nonzeros, x->xp.idx[j], domainmapperm[j], domainmapdstidx[j]);
+        dstxcolparts[j] = domainmapdstidx[domainmapperm[j]] == -1 ? 1 : 0;
+    }
+    free(domainmapdstidx); free(domainmapperm);
+    return MTX_SUCCESS;
+}
+
+/*
+ * partition the local parts of a distributed matrix into four parts:
+ * interior, exterior, row halo and column halo.
+ */
+
+/**
+ * ‘mtxmatrix_dist_gemv_partition()’ partitions the part of the
+ * distributed linear system residing on the current process. The
+ * linear system is partitioned in a 2D manner into interior, halo and
+ * exterior parts. The interior corresponds to matrix nonzeros, where
+ * the current process also owns the corresponding elements of the
+ * source and destination vector. The row halo corresponds to matrix
+ * nonzeros where a remote process owns the corresponding destination
+ * vector element, whereas the column halo corresponds to matrix
+ * nonzeros where a remote process owns the corresponding source
+ * vector element. Finally, the exterior corresponds to matrix
+ * nonzeros for which a remote process owns both the source and
+ * destination vector elements.
+ */
+static int mtxmatrix_dist_gemv_partition(
+    enum mtxtransposition trans,
+    const struct mtxmatrix_dist * A,
+    const struct mtxvector_dist * x,
+    const struct mtxvector_dist * y,
+    struct mtxmatrix_dist * Aint,
+    struct mtxmatrix_dist * Aext,
+    struct mtxmatrix_dist * Arowhalo,
+    struct mtxmatrix_dist * Acolhalo,
+    struct mtxvector_dist * xint,
+    struct mtxvector_dist * xhalo,
+    bool * yhalo_needed,
+    struct mtxvector_packed * yint,
+    struct mtxvector_packed * yhalo,
+    struct mtxdisterror * disterr)
+{
+    int64_t size;
+    int err = mtxmatrix_size(&A->Ap, &size);
+    if (err) return err;
+
+    /* partition matrix rows into interior and halo parts */
+    int * dstrowparts = malloc(A->rowmapsize * sizeof(int));
+    if (!dstrowparts) return MTX_ERR_ERRNO;
+    err = mtxmatrix_dist_gemv_rowparts(trans, A, x, y, dstrowparts);
+    if (err) { free(dstrowparts); return err; }
+
+    /* partition matrix columns into interior and halo parts */
+    int * dstcolparts = malloc(A->colmapsize * sizeof(int));
+    if (!dstcolparts) { free(dstrowparts); return MTX_ERR_ERRNO; }
+    int * dstxcolparts = malloc(x->xp.num_nonzeros * sizeof(int));
+    if (!dstxcolparts) { free(dstcolparts); free(dstrowparts); return MTX_ERR_ERRNO; }
+    err = mtxmatrix_dist_gemv_colparts(trans, A, x, y, dstcolparts, dstxcolparts);
+    if (err) { free(dstxcolparts); free(dstcolparts); free(dstrowparts); return err; }
+
+    /* partition matrix nonzeros accordingly */
+    int * dstnzparts = malloc(size * sizeof(int));
+    if (!dstnzparts) { free(dstcolparts); free(dstrowparts); return MTX_ERR_ERRNO; }
+    int * ydstrowparts = malloc(A->rowmapsize * sizeof(int));
+    if (!ydstrowparts) {
+        free(dstnzparts); free(dstcolparts); free(dstrowparts);
+        return MTX_ERR_ERRNO;
+    }
+
+    int64_t dstnzpartsizes[4] = {};
+    int64_t dstrowpartsizes[2] = {};
+    int64_t dstcolpartsizes[2] = {};
+
+#if 0
+    for (int p = 0; p < A->comm_size; p++) {
+        if (A->rank == p) {
+            fprintf(stderr, "%s:%d dstrowparts=(", __FILE__, __LINE__);
+            for (int i = 0; i < A->rowmapsize; i++) fprintf(stderr, " %d", dstrowparts[i]);
+            fprintf(stderr, ") ");
+            fprintf(stderr, "dstcolparts=(");
+            for (int i = 0; i < A->colmapsize; i++) fprintf(stderr, " %d", dstcolparts[i]);
+            fprintf(stderr, ")\n");
+        }
+        sleep(1);
+        MPI_Barrier(A->comm);
+    }
+#endif
+
+    err = mtxmatrix_partition_2d(
+        &A->Ap,
+        mtx_custom_partition, 2, NULL, 0, dstrowparts,
+        mtx_custom_partition, 2, NULL, 0, dstcolparts,
+        dstnzparts, dstnzpartsizes,
+        ydstrowparts, dstrowpartsizes,
+        NULL, dstcolpartsizes);
+    if (err) {
+        free(dstxcolparts); free(ydstrowparts);
+        free(dstnzparts); free(dstcolparts); free(dstrowparts);
+        return err;
+    }
+
+#if 0
+    for (int p = 0; p < A->comm_size; p++) {
+        if (A->rank == p) {
+            fprintf(stderr, "%s:%d dstrowparts=(", __FILE__, __LINE__);
+            for (int i = 0; i < A->rowmapsize; i++) fprintf(stderr, " %d", dstrowparts[i]);
+            fprintf(stderr, ") ");
+            fprintf(stderr, "dstcolparts=(");
+            for (int i = 0; i < A->colmapsize; i++) fprintf(stderr, " %d", dstcolparts[i]);
+            fprintf(stderr, ") ");
+            fprintf(stderr, "dstnzparts=(");
+            for (int i = 0; i < size; i++) fprintf(stderr, " %d", dstnzparts[i]);
+            fprintf(stderr, ")\n");
+        }
+        fprintf(stderr, "A: %d-by-%d (%d), "
+                "Aint: %d-by-%d (%d), "
+                "Acolhalo: %d-by-%d (%d), "
+                "Arowhalo: %d-by-%d (%d), "
+                "Aext: %d-by-%d (%d)\n",
+                A->num_rows, A->num_columns, A->num_nonzeros,
+                dstrowpartsizes[0], dstcolpartsizes[0], dstnzpartsizes[0],
+                dstrowpartsizes[0], dstcolpartsizes[1], dstnzpartsizes[1],
+                dstrowpartsizes[1], dstcolpartsizes[0], dstnzpartsizes[2],
+                dstrowpartsizes[1], dstcolpartsizes[1], dstnzpartsizes[3]);
+        sleep(1);
+        MPI_Barrier(A->comm);
+    }
+#endif
+
+    /* split the matrix into interior, exterior and halo parts */
+    struct mtxmatrix_dist * dsts[4] = {Aint, Acolhalo, Arowhalo, Aext};
+    err = mtxmatrix_dist_split(4, dsts, A, size, dstnzparts, NULL, disterr);
+    if (err) {
+        free(dstxcolparts); free(ydstrowparts);
+        free(dstnzparts); free(dstcolparts); free(dstrowparts);
+        return err;
+    }
+    free(dstnzparts);
+
+    *yhalo_needed = dstrowpartsizes[1] > 0;
+    if (*yhalo_needed) {
+        /* split the destination vector into interior and halo parts */
+        struct mtxvector_packed * ydsts[2] = {yint, yhalo};
+        err = mtxvector_packed_split(
+            2, ydsts, &y->xp, y->xp.num_nonzeros, ydstrowparts, NULL);
+        if (err) {
+            mtxmatrix_dist_free(Aint); mtxmatrix_dist_free(Aext);
+            mtxmatrix_dist_free(Acolhalo); mtxmatrix_dist_free(Arowhalo);
+            free(dstxcolparts); free(ydstrowparts);
+            free(dstcolparts); free(dstrowparts);
+            return err;
+        }
+    }
+    free(ydstrowparts);
+
+    /* /\* split the source vector into interior and halo parts *\/ */
+    /* struct mtxvector_dist * xdsts[2] = {xint, xhalo}; */
+    /* err = mtxvector_dist_split( */
+    /*     2, xdsts, x, x->xp.num_nonzeros, dstxcolparts, NULL, disterr); */
+    /* if (err) { */
+    /*     free(dstxcolparts); free(dstcolparts); */
+    /*     mtxvector_packed_free(yint); mtxvector_packed_free(yhalo); */
+    /*     free(dstrowparts); */
+    /*     return err; */
+    /* } */
+
+    /* allocate source vectors for the interior and halo parts */
+
+    /* TODO: fix error handling */
+    err = mtxmatrix_dist_alloc_column_vector(Aint, xint, x->xp.x.type, disterr);
+    err = mtxmatrix_dist_alloc_column_vector(Acolhalo, xhalo, x->xp.x.type, disterr);
+    free(dstxcolparts);
+    return MTX_SUCCESS;
+}
 
 /**
  * ‘mtxmatrix_dist_gemv_init()’ allocates data structures for a
@@ -2533,48 +2867,82 @@ int mtxmatrix_dist_gemv_init(
     int err = !gemv->impl ? MTX_ERR_ERRNO : MTX_SUCCESS;
     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
     struct mtxmatrix_dist_gemv_impl * impl = gemv->impl;
-
-    if (trans == mtx_notrans) {
-        err = mtxmatrix_dist_alloc_row_vector(
-            A, &impl->z, x->xp.x.type, disterr);
-    } else if (trans == mtx_trans) {
-        err = mtxmatrix_dist_alloc_column_vector(
-            A, &impl->z, x->xp.x.type, disterr);
-    } else {
-        free(gemv->impl);
-        return MTX_ERR_INVALID_TRANSPOSITION;
-    }
-    if (err) {
-        free(gemv->impl);
-        return err;
-    }
-
-    if (trans == mtx_notrans) {
-        err = mtxmatrix_dist_alloc_column_vector(
-            A, &impl->w, y->xp.x.type, disterr);
-    } else if (trans == mtx_trans) {
-        err = mtxmatrix_dist_alloc_row_vector(
-            A, &impl->w, y->xp.x.type, disterr);
-    } else {
-        mtxvector_dist_free(&impl->z);
-        free(impl);
-        return MTX_ERR_INVALID_TRANSPOSITION;
-    }
-    if (err) {
-        mtxvector_dist_free(&impl->z);
-        free(impl);
-        return err;
-    }
-
     impl->num_flops = 0;
-    err = mtxvector_dist_usscga_init(
-        &gemv->impl->usscga, &gemv->impl->z, x, disterr);
-    if (err) {
-        mtxvector_dist_free(&impl->w);
-        mtxvector_dist_free(&impl->z);
-        free(impl);
-        return err;
-    }
+
+    if (overlap == mtxgemvoverlap_none) {
+        /* no need to partition the matrix in this case */
+
+        if (trans == mtx_notrans) {
+            err = mtxmatrix_dist_alloc_row_vector(
+                A, &impl->z, x->xp.x.type, disterr);
+        } else if (trans == mtx_trans) {
+            err = mtxmatrix_dist_alloc_column_vector(
+                A, &impl->z, x->xp.x.type, disterr);
+        } else { free(gemv->impl); return MTX_ERR_INVALID_TRANSPOSITION; }
+        if (err) { free(gemv->impl); return err; }
+
+        if (trans == mtx_notrans) {
+            err = mtxmatrix_dist_alloc_column_vector(
+                A, &impl->w, y->xp.x.type, disterr);
+        } else if (trans == mtx_trans) {
+            err = mtxmatrix_dist_alloc_row_vector(
+                A, &impl->w, y->xp.x.type, disterr);
+        } else {
+            mtxvector_dist_free(&impl->z);
+            free(impl);
+            return MTX_ERR_INVALID_TRANSPOSITION;
+        }
+        if (err) {
+            mtxvector_dist_free(&impl->z);
+            free(impl);
+            return err;
+        }
+
+        err = mtxvector_dist_usscga_init(
+            &gemv->impl->usscga, &gemv->impl->z, x, disterr);
+        if (err) {
+            mtxvector_dist_free(&impl->w);
+            mtxvector_dist_free(&impl->z);
+            free(impl);
+            return err;
+        }
+
+    } else if (overlap == mtxgemvoverlap_irecv) {
+
+        /* partition the local part of the linear system into
+         * interior, exterior and halo parts. */
+        err = mtxmatrix_dist_gemv_partition(
+            trans, A, x, y,
+            &impl->Aint, &impl->Aext, &impl->Arowhalo, &impl->Acolhalo,
+            &impl->xint, &impl->xhalo,
+            &impl->yhalo_needed, &impl->yint, &impl->yhalo, disterr);
+        if (err) return err;
+
+        /* set up the communication for the source vector halo */
+        err = mtxvector_dist_usscga_init(&impl->usscga_xint, &impl->xint, x, disterr);
+        if (err) {
+            if (impl->yhalo_needed) { mtxvector_packed_free(&impl->yint); mtxvector_packed_free(&impl->yhalo); }
+            mtxvector_dist_free(&impl->xint); mtxvector_dist_free(&impl->xhalo);
+            mtxmatrix_dist_free(&impl->Aint); mtxmatrix_dist_free(&impl->Aext);
+            mtxmatrix_dist_free(&impl->Arowhalo); mtxmatrix_dist_free(&impl->Acolhalo);
+            free(impl);
+            return err;
+        }
+
+        /* set up the communication for the source vector halo */
+        err = mtxvector_dist_usscga_init(&impl->usscga_xhalo, &impl->xhalo, x, disterr);
+        if (err) {
+            mtxvector_dist_usscga_free(&impl->usscga_xint);
+            if (impl->yhalo_needed) { mtxvector_packed_free(&impl->yint); mtxvector_packed_free(&impl->yhalo); }
+            mtxvector_dist_free(&impl->xint); mtxvector_dist_free(&impl->xhalo);
+            mtxmatrix_dist_free(&impl->Aint); mtxmatrix_dist_free(&impl->Aext);
+            mtxmatrix_dist_free(&impl->Arowhalo); mtxmatrix_dist_free(&impl->Acolhalo);
+            free(impl);
+            return err;
+        }
+
+    } else { free(impl); return MTX_ERR_INVALID_GEMVOVERLAP; }
+
     return MTX_SUCCESS;
 }
 
@@ -2585,9 +2953,18 @@ int mtxmatrix_dist_gemv_init(
 void mtxmatrix_dist_gemv_free(
     struct mtxmatrix_dist_gemv * gemv)
 {
-    mtxvector_dist_usscga_free(&gemv->impl->usscga);
-    mtxvector_dist_free(&gemv->impl->w);
-    mtxvector_dist_free(&gemv->impl->z);
+    if (gemv->overlap == mtxgemvoverlap_none) {
+        mtxvector_dist_usscga_free(&gemv->impl->usscga);
+        mtxvector_dist_free(&gemv->impl->w);
+        mtxvector_dist_free(&gemv->impl->z);
+    } else if (gemv->overlap == mtxgemvoverlap_irecv) {
+        mtxvector_dist_usscga_free(&gemv->impl->usscga_xint);
+        mtxvector_dist_usscga_free(&gemv->impl->usscga_xhalo);
+        if (gemv->impl->yhalo_needed) { mtxvector_packed_free(&gemv->impl->yint); mtxvector_packed_free(&gemv->impl->yhalo); }
+        mtxvector_dist_free(&gemv->impl->xint); mtxvector_dist_free(&gemv->impl->xhalo);
+        mtxmatrix_dist_free(&gemv->impl->Aint); mtxmatrix_dist_free(&gemv->impl->Aext);
+        mtxmatrix_dist_free(&gemv->impl->Arowhalo); mtxmatrix_dist_free(&gemv->impl->Acolhalo);
+    }
     free(gemv->impl);
 }
 
@@ -2657,11 +3034,12 @@ int mtxmatrix_dist_gemv_dgemv(
     double beta,
     struct mtxdisterror * disterr)
 {
+    int err;
     struct mtxmatrix_dist_gemv_impl * impl = gemv->impl;
-    int err = mtxvector_dist_usscga_start(&impl->usscga, disterr);
-    if (err) return err;
 
     if (gemv->overlap == mtxgemvoverlap_none) {
+        err = mtxvector_dist_usscga_start(&impl->usscga, disterr);
+        if (err) return err;
         mtxvector_dist_usscga_wait(&impl->usscga, disterr);
         if (err) return err;
         err = mtxvector_dist_setzero(&impl->w, disterr);
@@ -2679,10 +3057,47 @@ int mtxmatrix_dist_gemv_dgemv(
                 beta, &gemv->y->xp.x, &impl->w.xp.x, &impl->num_flops);
             if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE;
         } else { return MTX_ERR_INVALID_TRANSPOSITION; }
-    } else {
-        /* TODO: allow overlapping computation with communication */
-        return MTX_ERR_INVALID_GEMVOVERLAP;
-    }
+
+    } else if (gemv->overlap == mtxgemvoverlap_irecv) {
+
+        impl->field = mtx_field_real;
+        impl->precision = mtx_double;
+        impl->dalpha = alpha;
+        impl->dbeta = beta;
+
+        /* TODO: gather values from the source vector, x, to the
+         * temporary vector, xint, which is used for multiplying the
+         * interior part of the matrix */
+        /* err = mtxvector_ussc(&impl->xint.xp.x, &gemv->x->xp); */
+        /* if (err) return err; */
+
+        err = mtxvector_dist_usscga_start(&impl->usscga_xhalo, disterr);
+        if (err) return err;
+        err = mtxvector_dist_usscga_start(&impl->usscga_xint, disterr);
+        if (err) return err;
+        err = mtxvector_dist_usscga_wait(&impl->usscga_xint, disterr);
+        if (err) return err;
+
+        /* multiply the interior part */
+        if (!impl->yhalo_needed) {
+            err = mtxmatrix_dgemv(
+                gemv->trans, alpha, &gemv->impl->Aint.Ap,
+                &impl->xint.xp.x, 1.0, &gemv->y->xp.x, &impl->num_flops);
+            if (err) return err;
+        } else {
+            err = mtxvector_packed_setzero(&impl->yint);
+            if (err) return err;
+            err = mtxvector_packed_setzero(&impl->yhalo);
+            if (err) return err;
+
+            /* TODO: support the case where the matrix rows and
+             * destination vector elements are not owned by the same
+             * process */
+
+            return MTX_ERR_INVALID_GEMVOVERLAP;
+        }
+
+    } else { return MTX_ERR_INVALID_GEMVOVERLAP; }
     return MTX_SUCCESS;
 }
 
@@ -2735,10 +3150,50 @@ int mtxmatrix_dist_gemv_wait(
     int64_t * num_flops,
     struct mtxdisterror * disterr)
 {
+    int err;
+    struct mtxmatrix_dist_gemv_impl * impl = gemv->impl;
+
     if (gemv->overlap == mtxgemvoverlap_none) {
         if (num_flops) *num_flops += gemv->impl->num_flops;
         gemv->impl->num_flops = 0;
-        return MTX_SUCCESS;
+
+    } else if (gemv->overlap == mtxgemvoverlap_irecv) {
+
+        err = mtxvector_dist_usscga_wait(&impl->usscga_xhalo, disterr);
+        if (err) return err;
+
+        if (impl->field == mtx_field_real) {
+            if (impl->precision == mtx_single) {
+            } else if (impl->precision == mtx_double) {
+                if (!impl->yhalo_needed) {
+                    err = mtxmatrix_dgemv(
+                        gemv->trans, impl->dalpha, &gemv->impl->Acolhalo.Ap,
+                        &impl->xhalo.xp.x, 1.0, &gemv->y->xp.x, &impl->num_flops);
+                    if (mtxdisterror_allreduce(disterr, err))
+                        return MTX_ERR_MPI_COLLECTIVE;
+                } else {
+                    /* TODO: support the case where the matrix rows and
+                     * destination vector elements are not owned by the same
+                     * process */
+                    return MTX_ERR_INVALID_GEMVOVERLAP;
+                }
+
+                /* if (gemv->trans == mtx_notrans) { */
+                /*     err = mtxvector_daypx( */
+                /*         impl->dbeta, &gemv->y->xp.x, &impl->w.xp.x, &impl->num_flops); */
+                /*     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE; */
+                /* } else if (gemv->trans == mtx_trans) { */
+                /*     err = mtxvector_daypx( */
+                /*         impl->dbeta, &gemv->y->xp.x, &impl->w.xp.x, &impl->num_flops); */
+                /*     if (mtxdisterror_allreduce(disterr, err)) return MTX_ERR_MPI_COLLECTIVE; */
+                /* } else { return MTX_ERR_INVALID_TRANSPOSITION; } */
+
+            } else { return MTX_ERR_INVALID_PRECISION; }
+        } else { return MTX_ERR_INVALID_FIELD; }
+
+        if (num_flops) *num_flops += gemv->impl->num_flops;
+        gemv->impl->num_flops = 0;
+
     } else {
         /* TODO: allow overlapping computation with communication */
 
@@ -2747,5 +3202,7 @@ int mtxmatrix_dist_gemv_wait(
 
         return MTX_ERR_INVALID_GEMVOVERLAP;
     }
+
+    return MTX_SUCCESS;
 }
 #endif
