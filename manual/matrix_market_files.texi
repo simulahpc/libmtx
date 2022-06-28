@@ -277,23 +277,15 @@ vector values to fixed-precision integer or floating point types. The
 (32-bit) and double (64-bit) precision at runtime.
 
 @cindex precision
-@c @cindex half precision
 @cindex single precision
 @cindex double precision
-@c @cindex quad precision
-@c @cindex arbitrary precision
 @tindex enum mtxprecision
 @example
 @code{enum mtxprecision @{
-@c    mtx_half,         /* Half (16-bit) precision */
-    mtx_single,       /* Single (32-bit) precision */
-    mtx_double,       /* Double (64-bit) precision */
-@c    mtx_quadruple,    /* Quadruple (128-bit) precision */
-@c    mtx_arbitrary,    /* Arbitrary precision */
+    mtx_single,       /* single (32-bit) precision */
+    mtx_double,       /* double (64-bit) precision */
 @};}
 @end example
-@c Arbitrary precision support is based on GNU GMP for integers and GNU
-@c MPFR for floating point numbers.
 
 
 @node Data
@@ -1023,308 +1015,308 @@ compaction.
 
 @node Partition
 @subsection Partition
-@cindex partition
-@cindex join
-Partitioning refers to the process of dividing up a matrix or vector
-into several parts. This is needed, for example, when distributing a
-matrix or vector among multiple processes (see @ref{Distributed Matrix
-Market files} and @ref{Distributed matrices and vectors}). Conversely,
-matrix or vector blocks can also be @dfn{joined} together, if they are
-compatible, to form a larger matrix or vector.
+@c @cindex partition
+@c @cindex join
+@c Partitioning refers to the process of dividing up a matrix or vector
+@c into several parts. This is needed, for example, when distributing a
+@c matrix or vector among multiple processes (see @ref{Distributed Matrix
+@c Market files} and @ref{Distributed matrices and vectors}). Conversely,
+@c matrix or vector blocks can also be @dfn{joined} together, if they are
+@c compatible, to form a larger matrix or vector.
 
-@tindex enum mtxpartitioning
-The file @code{libmtx/util/partition.h} defines the type @code{enum
-mtxpartitioning}, which is used to distinguish between different ways
-of partitioning a finite set (e.g., the rows or columns of a
-matrix). The values of this enum type are described below. We follow
-the convention of using the integers 0, 1, ..., @var{N}@minus{}1 to label
-the elements of a finite set of size @var{N} that is to be
-partitioned. Moreover, we use @var{P} to denote the number of parts in
-the partition, and the set @var{P}@sub{@var{i}} denotes the @var{i}th
-part.
+@c @tindex enum mtxpartitioning
+@c The file @code{libmtx/util/partition.h} defines the type @code{enum
+@c mtxpartitioning}, which is used to distinguish between different ways
+@c of partitioning a finite set (e.g., the rows or columns of a
+@c matrix). The values of this enum type are described below. We follow
+@c the convention of using the integers 0, 1, ..., @var{N}@minus{}1 to label
+@c the elements of a finite set of size @var{N} that is to be
+@c partitioned. Moreover, we use @var{P} to denote the number of parts in
+@c the partition, and the set @var{P}@sub{@var{i}} denotes the @var{i}th
+@c part.
 
-In addition to the ``global'' numbering of elements mentioned above,
-partitioning a set automatically introduces a local numbering of
-elements. The local number of an element has two components: the part
-number and the local number of the element within that part. More
-specifically, the @var{i}th part of a partition, @var{P}@sub{@var{i}},
-consists of @var{N}@sub{@var{i}} elements, @var{P}@sub{@var{i},0},
-@var{P}@sub{@var{i},1}, ...,
-@var{P}@sub{@var{i},@var{N}@sub{@var{i}}@minus{}1}.
+@c In addition to the ``global'' numbering of elements mentioned above,
+@c partitioning a set automatically introduces a local numbering of
+@c elements. The local number of an element has two components: the part
+@c number and the local number of the element within that part. More
+@c specifically, the @var{i}th part of a partition, @var{P}@sub{@var{i}},
+@c consists of @var{N}@sub{@var{i}} elements, @var{P}@sub{@var{i},0},
+@c @var{P}@sub{@var{i},1}, ...,
+@c @var{P}@sub{@var{i},@var{N}@sub{@var{i}}@minus{}1}.
 
-The following methods of partitioning are supported.
+@c The following methods of partitioning are supported.
 
-@itemize
-@item @code{mtx_singleton}
-@cindex singleton partition
-is a singleton partition with only one non-empty component. That is,
-@var{P} = 1 and @var{P}@sub{0} = @{0, 1, ..., @var{N}@minus{}1@}.
+@c @itemize
+@c @item @code{mtx_singleton}
+@c @cindex singleton partition
+@c is a singleton partition with only one non-empty component. That is,
+@c @var{P} = 1 and @var{P}@sub{0} = @{0, 1, ..., @var{N}@minus{}1@}.
 
-@item @code{mtx_block}
-@cindex block partition
-is a partitioning into contiguous blocks of varying size. Let
-@var{N}@sub{@var{i}} denote the number of elements in the @var{i}th
-part, @var{P}@sub{@var{i}}. Furthermore, let @var{S}@sub{@var{i}}
-denote the number of elements that precede the @var{i}th part. In
-other words, @var{S}@sub{0} = 0, @var{S}@sub{1} = @var{N}@sub{0},
-@var{S}@sub{2} = @var{N}@sub{0} @math{+} @var{N}@sub{1}, and so
-on. The @var{i}th part, @var{P}@sub{@var{i}}, is empty if
-@var{N}@sub{@var{i}} is zero. Otherwise, it is made up of the elements
-@{@var{S}@sub{@var{i}}, @var{S}@sub{@var{i}} @math{+} 1, ...,
-@var{S}@sub{@var{i}} @math{+} @var{N}@sub{@var{i}}@minus{}1@}.
+@c @item @code{mtx_block}
+@c @cindex block partition
+@c is a partitioning into contiguous blocks of varying size. Let
+@c @var{N}@sub{@var{i}} denote the number of elements in the @var{i}th
+@c part, @var{P}@sub{@var{i}}. Furthermore, let @var{S}@sub{@var{i}}
+@c denote the number of elements that precede the @var{i}th part. In
+@c other words, @var{S}@sub{0} = 0, @var{S}@sub{1} = @var{N}@sub{0},
+@c @var{S}@sub{2} = @var{N}@sub{0} @math{+} @var{N}@sub{1}, and so
+@c on. The @var{i}th part, @var{P}@sub{@var{i}}, is empty if
+@c @var{N}@sub{@var{i}} is zero. Otherwise, it is made up of the elements
+@c @{@var{S}@sub{@var{i}}, @var{S}@sub{@var{i}} @math{+} 1, ...,
+@c @var{S}@sub{@var{i}} @math{+} @var{N}@sub{@var{i}}@minus{}1@}.
 
-@item @code{mtx_cyclic}
-@cindex cyclic partition
-is a cyclic partitioning, where the @var{i}th part,
-@var{P}@sub{@var{i}}, is made up of the elements @{@var{i}, @var{i}
-@math{+} @var{P}, @var{i} @math{+} 2@var{P}, ..., @var{i} @math{+}
-(@var{N}@sub{@var{i}}@minus{}1)@var{P}@}. To find the number of elements in
-each part, @var{N}@sub{@var{i}}, we divide the total number of
-elements @var{N} by the number of parts @var{P}. More specifically,
-@var{N} = @var{q}@var{P} @math{+} @var{r}, where @var{q} is the
-largest integer no greater than @var{N}/@var{P} and @var{r} is the
-remainder of the division.  Then, @var{N}@sub{@var{i}} =
-@var{q} @math{+} 1 if @var{i} is less than @var{r}, and
-@var{N}@sub{@var{i}} = @var{q} otherwise.
+@c @item @code{mtx_cyclic}
+@c @cindex cyclic partition
+@c is a cyclic partitioning, where the @var{i}th part,
+@c @var{P}@sub{@var{i}}, is made up of the elements @{@var{i}, @var{i}
+@c @math{+} @var{P}, @var{i} @math{+} 2@var{P}, ..., @var{i} @math{+}
+@c (@var{N}@sub{@var{i}}@minus{}1)@var{P}@}. To find the number of elements in
+@c each part, @var{N}@sub{@var{i}}, we divide the total number of
+@c elements @var{N} by the number of parts @var{P}. More specifically,
+@c @var{N} = @var{q}@var{P} @math{+} @var{r}, where @var{q} is the
+@c largest integer no greater than @var{N}/@var{P} and @var{r} is the
+@c remainder of the division.  Then, @var{N}@sub{@var{i}} =
+@c @var{q} @math{+} 1 if @var{i} is less than @var{r}, and
+@c @var{N}@sub{@var{i}} = @var{q} otherwise.
 
-@item @code{mtx_block_cyclic}
-@cindex block-cyclic partition
-is cyclic partitioning of fixed-size blocks. If the size of each block
-is denoted by @var{M}, then the @var{j}th block, @var{B}@sub{@var{j}},
-is made up of the elements @{@var{j}@var{M}, @var{j}@var{M} @math{+}
-1, ..., @var{j}@var{M} @math{+} @var{M}@minus{}1@}. The blocks
-@var{B}@sub{@var{j}} are then assigned in a cyclic fashion to the
-parts @var{P}@sub{@var{i}}.
+@c @item @code{mtx_block_cyclic}
+@c @cindex block-cyclic partition
+@c is cyclic partitioning of fixed-size blocks. If the size of each block
+@c is denoted by @var{M}, then the @var{j}th block, @var{B}@sub{@var{j}},
+@c is made up of the elements @{@var{j}@var{M}, @var{j}@var{M} @math{+}
+@c 1, ..., @var{j}@var{M} @math{+} @var{M}@minus{}1@}. The blocks
+@c @var{B}@sub{@var{j}} are then assigned in a cyclic fashion to the
+@c parts @var{P}@sub{@var{i}}.
 
-@item @code{mtx_custom_partition}
-@cindex user-defined partition
-is a general, user-defined partitioning, where each part,
-@var{P}@sub{@var{i}}, is given in the form of an array of length
-@var{N}@sub{@var{i}} consisting of unique elements
-@code{P@sub{@var{i}}[0], P@sub{@var{i}}[1], ...,
-P@sub{@var{i}}[@var{N}@sub{@var{i}}@minus{}1]}. Every element 0, 1,
-..., @var{N}@minus{}1 should belong to exactly one array
-@code{P@sub{@var{i}}} to ensure that parts are pairwise disjoint and
-cover the entire set.
-@end itemize
+@c @item @code{mtx_custom_partition}
+@c @cindex user-defined partition
+@c is a general, user-defined partitioning, where each part,
+@c @var{P}@sub{@var{i}}, is given in the form of an array of length
+@c @var{N}@sub{@var{i}} consisting of unique elements
+@c @code{P@sub{@var{i}}[0], P@sub{@var{i}}[1], ...,
+@c P@sub{@var{i}}[@var{N}@sub{@var{i}}@minus{}1]}. Every element 0, 1,
+@c ..., @var{N}@minus{}1 should belong to exactly one array
+@c @code{P@sub{@var{i}}} to ensure that parts are pairwise disjoint and
+@c cover the entire set.
+@c @end itemize
 
-The different partitioning methods are also illustrated in
-@ref{fig:partition}.
+@c The different partitioning methods are also illustrated in
+@c @ref{fig:partition}.
 
-@float Figure,fig:partition
-@center @image{image/partition,,,,.png}
-@caption{Examples of partitioning a set into three parts, where each
-part is indicated by a different colour.}
-@end float
+@c @float Figure,fig:partition
+@c @center @image{image/partition,,,,.png}
+@c @caption{Examples of partitioning a set into three parts, where each
+@c part is indicated by a different colour.}
+@c @end float
 
-@tindex struct mtxpartition
-The type @code{struct mtxpartition} is used represent a partitioning
-of a finite set based on one of the methods described above.
+@c @tindex struct mtxpartition
+@c The type @code{struct mtxpartition} is used represent a partitioning
+@c of a finite set based on one of the methods described above.
 
-@example
-@code{struct mtxpartition @{
-    enum mtxpartitioning type;
-    int64_t size;
-    int num_parts;
-    int64_t * part_sizes;
-    int64_t * parts_ptr;
-    int * parts;
-    int64_t * elements_per_part;
-@};}
-@end example
+@c @example
+@c @code{struct mtxpartition @{
+@c     enum mtxpartitioning type;
+@c     int64_t size;
+@c     int num_parts;
+@c     int64_t * part_sizes;
+@c     int64_t * parts_ptr;
+@c     int * parts;
+@c     int64_t * elements_per_part;
+@c @};}
+@c @end example
 
-@noindent
-The @code{type} member describes the type of partitioning
-used. @code{size} and @code{num_parts} are the size of the partitioned
-set and the number of parts, respectively. @code{part_sizes} is an
-array of length @code{num_parts}, which specifies the number of
-elements in each part of the partition.  @code{parts_ptr} is an array
-of length @samp{num_parts+1}, such that, if the elements of the
-partition are ordered by their assigned parts, then
-@code{parts_ptr[p]} is an offset to the first element of the
-@code{p}th part.
+@c @noindent
+@c The @code{type} member describes the type of partitioning
+@c used. @code{size} and @code{num_parts} are the size of the partitioned
+@c set and the number of parts, respectively. @code{part_sizes} is an
+@c array of length @code{num_parts}, which specifies the number of
+@c elements in each part of the partition.  @code{parts_ptr} is an array
+@c of length @samp{num_parts+1}, such that, if the elements of the
+@c partition are ordered by their assigned parts, then
+@c @code{parts_ptr[p]} is an offset to the first element of the
+@c @code{p}th part.
 
-The pointers @code{parts} and @code{elements_per_part} are both
-@samp{NULL}, unless @code{type} is @samp{mtx_custom_partition}.
-However, if @code{type} is @samp{mtx_custom_partition}, then
-@code{parts} and @code{elements_per_part} point to arrays of length
-@code{size}. The former contains the part number assigned to each
-element in the partitioned set, whereas the latter specifies the
-elements belonging to each part. That is, the elements belonging to
-the @code{p}th part are given by @code{elements_per_part[i]}, for
-@code{i} in @code{parts_ptr[p], parts_ptr[p]+1, ...,
-parts_ptr[p+1]-1}.
+@c The pointers @code{parts} and @code{elements_per_part} are both
+@c @samp{NULL}, unless @code{type} is @samp{mtx_custom_partition}.
+@c However, if @code{type} is @samp{mtx_custom_partition}, then
+@c @code{parts} and @code{elements_per_part} point to arrays of length
+@c @code{size}. The former contains the part number assigned to each
+@c element in the partitioned set, whereas the latter specifies the
+@c elements belonging to each part. That is, the elements belonging to
+@c the @code{p}th part are given by @code{elements_per_part[i]}, for
+@c @code{i} in @code{parts_ptr[p], parts_ptr[p]+1, ...,
+@c parts_ptr[p+1]-1}.
 
-@findex mtxpartition_init_singleton
-@findex mtxpartition_init_block
-@findex mtxpartition_init_block_cyclic
-@findex mtxpartition_init_cyclic
-@findex mtxpartition_init_custom
-Several functions are provided to create partitions corresponding to
-the different types described above.
+@c @findex mtxpartition_init_singleton
+@c @findex mtxpartition_init_block
+@c @findex mtxpartition_init_block_cyclic
+@c @findex mtxpartition_init_cyclic
+@c @findex mtxpartition_init_custom
+@c Several functions are provided to create partitions corresponding to
+@c the different types described above.
 
-@example
-int mtxpartition_init_singleton(
-    struct mtxpartition * partition,
-    int64_t size);
+@c @example
+@c int mtxpartition_init_singleton(
+@c     struct mtxpartition * partition,
+@c     int64_t size);
 
-int mtxpartition_init_block(
-    struct mtxpartition * partition,
-    int64_t size,
-    int num_parts,
-    const int64_t * part_sizes);
+@c int mtxpartition_init_block(
+@c     struct mtxpartition * partition,
+@c     int64_t size,
+@c     int num_parts,
+@c     const int64_t * part_sizes);
 
-int mtxpartition_init_cyclic(
-    struct mtxpartition * partition,
-    int64_t size,
-    int num_parts);
+@c int mtxpartition_init_cyclic(
+@c     struct mtxpartition * partition,
+@c     int64_t size,
+@c     int num_parts);
 
-int mtxpartition_init_block_cyclic(
-    struct mtxpartition * partition,
-    int64_t size,
-    int num_parts,
-    int block_size);
+@c int mtxpartition_init_block_cyclic(
+@c     struct mtxpartition * partition,
+@c     int64_t size,
+@c     int num_parts,
+@c     int block_size);
 
-int mtxpartition_init_custom(
-    struct mtxpartition * partition,
-    int64_t size,
-    int num_parts,
-    const int * parts,
-    const int64_t * part_sizes,
-    const int64_t * elements_per_part);
-@end example
+@c int mtxpartition_init_custom(
+@c     struct mtxpartition * partition,
+@c     int64_t size,
+@c     int num_parts,
+@c     const int * parts,
+@c     const int64_t * part_sizes,
+@c     const int64_t * elements_per_part);
+@c @end example
 
-@findex mtxpartition_init
-For convenience, the function @code{mtxpartition_init} is also
-provided to create a partition when the type is given by @code{enum
-mtxpartitioning}.
-@example
-@code{int mtxpartition_init(
-    struct mtxpartition * partition,
-    enum mtxpartitioning type,
-    int64_t size,
-    int num_parts,
-    const int64_t * part_sizes,
-    int block_size,
-    const int * parts);}
-@end example
+@c @findex mtxpartition_init
+@c For convenience, the function @code{mtxpartition_init} is also
+@c provided to create a partition when the type is given by @code{enum
+@c mtxpartitioning}.
+@c @example
+@c @code{int mtxpartition_init(
+@c     struct mtxpartition * partition,
+@c     enum mtxpartitioning type,
+@c     int64_t size,
+@c     int num_parts,
+@c     const int64_t * part_sizes,
+@c     int block_size,
+@c     const int * parts);}
+@c @end example
 
-@findex mtxpartition_free
-Note that resources that were allocated when creating a partition with
-any of the above functions must be freed by calling
-@code{mtxpartition_free}.
-@example
-@code{void mtxpartition_free(struct mtxpartition * partition);}
-@end example
+@c @findex mtxpartition_free
+@c Note that resources that were allocated when creating a partition with
+@c any of the above functions must be freed by calling
+@c @code{mtxpartition_free}.
+@c @example
+@c @code{void mtxpartition_free(struct mtxpartition * partition);}
+@c @end example
 
-@cindex local-to-global mapping
-@cindex global-to-local mapping
-Once a set has been partitioned, it is frequently necessary to
-translate between the global numbering of elements and the local
-numbering within each part. This can be done with the functions
-@code{mtxpartition_globalidx} and @code{mtxpartition_localidx}.
+@c @cindex local-to-global mapping
+@c @cindex global-to-local mapping
+@c Once a set has been partitioned, it is frequently necessary to
+@c translate between the global numbering of elements and the local
+@c numbering within each part. This can be done with the functions
+@c @code{mtxpartition_globalidx} and @code{mtxpartition_localidx}.
 
-@example
-@code{int mtxpartition_globalidx(
-    const struct mtxpartition * partition,
-    int part,
-    int64_t size,
-    const int64_t * localelem,
-    int64_t * globalelem);
+@c @example
+@c @code{int mtxpartition_globalidx(
+@c     const struct mtxpartition * partition,
+@c     int part,
+@c     int64_t size,
+@c     const int64_t * localelem,
+@c     int64_t * globalelem);
 
-int mtxpartition_localidx(
-    const struct mtxpartition * partition,
-    int part,
-    int64_t size,
-    const int64_t * globalelem,
-    int64_t * localelem);}
-@end example
+@c int mtxpartition_localidx(
+@c     const struct mtxpartition * partition,
+@c     int part,
+@c     int64_t size,
+@c     const int64_t * globalelem,
+@c     int64_t * localelem);}
+@c @end example
 
-@noindent
-Here, @code{part} is an integer between @samp{0} and
-@samp{partition->num_parts-1} signifying the part number to use when
-translating from local to global element numbers or from global to
-local element numbers. The arguments @code{localelem} and
-@code{globalelem} are arrays of length @code{size}. For
-@code{mtxpartition_globalidx}, the @code{localelem} array contains the
-local element numbers that should be translated to their corresponding
-global element numbers. The global numbers are stored in
-@code{globalelem}. Conversely, for @code{mtxpartition_localidx}, the
-@code{globalelem} array contains the global element numbers that
-should be translated to their corresponding local element numbers,
-which are stored in @code{localelem}.
+@c @noindent
+@c Here, @code{part} is an integer between @samp{0} and
+@c @samp{partition->num_parts-1} signifying the part number to use when
+@c translating from local to global element numbers or from global to
+@c local element numbers. The arguments @code{localelem} and
+@c @code{globalelem} are arrays of length @code{size}. For
+@c @code{mtxpartition_globalidx}, the @code{localelem} array contains the
+@c local element numbers that should be translated to their corresponding
+@c global element numbers. The global numbers are stored in
+@c @code{globalelem}. Conversely, for @code{mtxpartition_localidx}, the
+@c @code{globalelem} array contains the global element numbers that
+@c should be translated to their corresponding local element numbers,
+@c which are stored in @code{localelem}.
 
-@findex mtxfile_partition
-If a row and column partition is given, the function
-@code{mtxfile_partition} can be used to partition a Matrix Market file
-into parts.
+@c @findex mtxfile_partition
+@c If a row and column partition is given, the function
+@c @code{mtxfile_partition} can be used to partition a Matrix Market file
+@c into parts.
 
-@example
-@code{int mtxfile_partition(
-    struct mtxfile * dsts,
-    const struct mtxfile * src,
-    const struct mtxpartition * rowpart,
-    const struct mtxpartition * colpart);}
-@end example
+@c @example
+@c @code{int mtxfile_partition(
+@c     struct mtxfile * dsts,
+@c     const struct mtxfile * src,
+@c     const struct mtxpartition * rowpart,
+@c     const struct mtxpartition * colpart);}
+@c @end example
 
-@noindent
-The partitions @code{rowpart} and @code{colpart} are allowed to be
-@samp{NULL}, in which case a trivial, singleton partition is used for
-the rows and columns, respectively. Otherwise, @code{rowpart} and
-@code{colpart} must partition the rows and columns, respectively, of
-the matrix or vector @code{src}. That is, @samp{rowpart->size} must be
-equal to @samp{src->size.num_rows}, and @samp{colpart->size} must be
-equal to @samp{src->size.num_columns}.
+@c @noindent
+@c The partitions @code{rowpart} and @code{colpart} are allowed to be
+@c @samp{NULL}, in which case a trivial, singleton partition is used for
+@c the rows and columns, respectively. Otherwise, @code{rowpart} and
+@c @code{colpart} must partition the rows and columns, respectively, of
+@c the matrix or vector @code{src}. That is, @samp{rowpart->size} must be
+@c equal to @samp{src->size.num_rows}, and @samp{colpart->size} must be
+@c equal to @samp{src->size.num_columns}.
 
-The argument @code{dsts} is an array that must have enough storage for
-@samp{P*Q} values of type @code{struct mtxfile}, where @samp{P} is the
-number of row parts (@samp{rowpart->num_parts}), and @samp{Q} is the
-number of column parts (@samp{colpart->num_parts}). Note that the
-@code{r}th part corresponds to a row part @code{p} and column part
-@code{q}, such that @samp{r=p*Q+q}. Thus, the @code{r}th entry of
-@code{dsts} is the submatrix corresponding to the @code{p}th row and
-@code{q}th column of the 2D partitioning.
+@c The argument @code{dsts} is an array that must have enough storage for
+@c @samp{P*Q} values of type @code{struct mtxfile}, where @samp{P} is the
+@c number of row parts (@samp{rowpart->num_parts}), and @samp{Q} is the
+@c number of column parts (@samp{colpart->num_parts}). Note that the
+@c @code{r}th part corresponds to a row part @code{p} and column part
+@c @code{q}, such that @samp{r=p*Q+q}. Thus, the @code{r}th entry of
+@c @code{dsts} is the submatrix corresponding to the @code{p}th row and
+@c @code{q}th column of the 2D partitioning.
 
-Note that the user is responsible for freeing storage allocated for
-each Matrix Market file in the @code{dsts} array.
+@c Note that the user is responsible for freeing storage allocated for
+@c each Matrix Market file in the @code{dsts} array.
 
-@cindex join
-@findex mtxfile_join
-To join together compatible blocks of matrices or vectors, use the
-function @code{mtxfile_join}.
+@c @cindex join
+@c @findex mtxfile_join
+@c To join together compatible blocks of matrices or vectors, use the
+@c function @code{mtxfile_join}.
 
-@example
-@code{int mtxfile_join(
-    struct mtxfile * dst,
-    const struct mtxfile * srcs,
-    const struct mtxpartition * rowpart,
-    const struct mtxpartition * colpart);}
-@end example
+@c @example
+@c @code{int mtxfile_join(
+@c     struct mtxfile * dst,
+@c     const struct mtxfile * srcs,
+@c     const struct mtxpartition * rowpart,
+@c     const struct mtxpartition * colpart);}
+@c @end example
 
-@noindent
-The partitions @code{rowpart} and @code{colpart} are allowed to be
-@samp{NULL}, in which case a trivial, singleton partition is used for
-the rows and columns, respectively. Otherwise, @code{rowpart} and
-@code{colpart} must partition the rows and columns, respectively, of
-the @emph{joined} matrix or vector @code{dst}.
+@c @noindent
+@c The partitions @code{rowpart} and @code{colpart} are allowed to be
+@c @samp{NULL}, in which case a trivial, singleton partition is used for
+@c the rows and columns, respectively. Otherwise, @code{rowpart} and
+@c @code{colpart} must partition the rows and columns, respectively, of
+@c the @emph{joined} matrix or vector @code{dst}.
 
-The argument @code{srcs} is logically arranged as a two-dimensional
-array of size @samp{P*Q}, where @samp{P} is the number of row parts
-(@samp{rowpart->num_parts}) and @samp{Q} is the number of column
-parts (@samp{colpart->num_parts}).  Note that the @code{r}th part
-corresponds to a row part @code{p} and column part @code{q}, such that
-@samp{r=p*Q+q}. Thus, the @code{r}th entry of @code{srcs} is the
-submatrix corresponding to the @code{p}th row and @code{q}th column of
-the 2D partitioning.
+@c The argument @code{srcs} is logically arranged as a two-dimensional
+@c array of size @samp{P*Q}, where @samp{P} is the number of row parts
+@c (@samp{rowpart->num_parts}) and @samp{Q} is the number of column
+@c parts (@samp{colpart->num_parts}).  Note that the @code{r}th part
+@c corresponds to a row part @code{p} and column part @code{q}, such that
+@c @samp{r=p*Q+q}. Thus, the @code{r}th entry of @code{srcs} is the
+@c submatrix corresponding to the @code{p}th row and @code{q}th column of
+@c the 2D partitioning.
 
-Moreover, the blocks must be compatible, which means that each part in
-the same block row @code{p}, must have the same number of rows.
-Similarly, each part in the same block column @code{q} must have the
-same number of columns. Finally, for each block column @code{q}, the
-sum of @samp{srcs[p*Q+q]->size.num_rows} for @samp{p=0,1,...,P-1} must
-be equal to @samp{rowpart->size}. Likewise, for each block row
-@code{p}, the sum of @samp{srcs[p*Q+q]->size.num_columns} for
-@samp{q=0,1,...,Q-1} must be equal to @samp{colpart->size}.
+@c Moreover, the blocks must be compatible, which means that each part in
+@c the same block row @code{p}, must have the same number of rows.
+@c Similarly, each part in the same block column @code{q} must have the
+@c same number of columns. Finally, for each block column @code{q}, the
+@c sum of @samp{srcs[p*Q+q]->size.num_rows} for @samp{p=0,1,...,P-1} must
+@c be equal to @samp{rowpart->size}. Likewise, for each block row
+@c @code{p}, the sum of @samp{srcs[p*Q+q]->size.num_columns} for
+@c @samp{q=0,1,...,Q-1} must be equal to @samp{colpart->size}.
 
 @node Reorder
 @subsection Reorder
