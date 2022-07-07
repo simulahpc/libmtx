@@ -437,8 +437,8 @@ int main(int argc, char *argv[])
      * column permutations. */
     int num_rows = mtxfile.size.num_rows;
     int num_columns = mtxfile.size.num_columns;
-    int * rowperm = NULL;
-    int * colperm = NULL;
+    int32_t * rowperm = NULL;
+    int32_t * colperm = NULL;
     if (args.ordering == mtxfile_custom_order && args.rowpermpath) {
         if (args.verbose > 0) {
             fprintf(diagf, "mtxfile_read: ");
@@ -501,7 +501,7 @@ int main(int argc, char *argv[])
         rowperm_mtxfile.data.array_integer_single = NULL;
         mtxfile_free(&rowperm_mtxfile);
     } else if (args.rowpermpath) {
-        int * rowperm = malloc(num_rows * sizeof(int));
+        rowperm = malloc(num_rows * sizeof(int32_t));
         if (!rowperm) {
             if (args.verbose > 0) fprintf(diagf, "\n");
             fprintf(stderr, "%s: %s\n",
@@ -577,7 +577,7 @@ int main(int argc, char *argv[])
         colperm_mtxfile.data.array_integer_single = NULL;
         mtxfile_free(&colperm_mtxfile);
     } else if (args.colpermpath) {
-        int * colperm = malloc(num_columns * sizeof(int));
+        colperm = malloc(num_columns * sizeof(int32_t));
         if (!colperm) {
             if (args.verbose > 0) fprintf(diagf, "\n");
             fprintf(stderr, "%s: %s\n",
